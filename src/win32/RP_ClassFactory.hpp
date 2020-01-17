@@ -44,7 +44,7 @@ class RP_ClassFactory : public LibWin32Common::ComBase<IClassFactory>, public cr
 				return E_POINTER;
 			}
 
-			if (!LibWin32Common::pQISearch) {
+			if (!LibWin32Common::pfnQISearch) {
 				// QISearch() could not be loaded.
 				*ppvObject = nullptr;
 				return E_UNEXPECTED;
@@ -57,7 +57,7 @@ class RP_ClassFactory : public LibWin32Common::ComBase<IClassFactory>, public cr
 				{ 0, 0 }
 			};
 #pragma warning(pop)
-			return LibWin32Common::pQISearch(this, rgqit, riid, ppvObject);
+			return LibWin32Common::pfnQISearch(this, rgqit, riid, ppvObject);
 		}
 
 		/** IClassFactory **/

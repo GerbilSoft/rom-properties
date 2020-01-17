@@ -119,6 +119,28 @@ typedef enum {
 	MD_IO_MEGA_MOUSE	= 'M',
 } MD_IO_Support;
 
+/**
+ * Sega 32X security program user header.
+ * Reference: http://gendev.spritesmind.net/forum/viewtopic.php?t=65
+ *
+ * All fields are in big-endian.
+ * (Part of the MC68000 program, not the SH-2 subprograms.)
+ */
+#define __32X_SecurityProgram_UserHeader_ADDRESS 0x03C0
+#define __32X_SecurityProgram_UserHeader_MODULE_NAME "MARS CHECK MODE "
+typedef struct __32X_SecurityProgram_UserHeader {
+	char module_name[16];		// [0x000] Module name (space-padded)
+	uint32_t version;		// [0x010]
+	uint32_t src_addr;		// [0x014]
+	uint32_t dest_addr;		// [0x018]
+	uint32_t size;			// [0x01C]
+	uint32_t msh2_start_addr;	// [0x020] Master SH-2 start address
+	uint32_t ssh2_start_addr;	// [0x024] Slave SH-2 start address
+	uint32_t msh2_vbr;		// [0x028] Master SH-2 VBR
+	uint32_t ssh2_vbr;		// [0x02C] Slave SH-2 VBR
+} _32X_SecurityProgram_UserHeader;
+ASSERT_STRUCT(_32X_SecurityProgram_UserHeader, 48);
+
 #pragma pack()
 
 #ifdef __cplusplus

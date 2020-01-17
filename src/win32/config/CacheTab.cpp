@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * CacheTab.cpp: Thumbnail Cache tab for rp-config.                        *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -10,19 +10,11 @@
 #include "CacheTab.hpp"
 #include "res/resource.h"
 
-// librpbase
-#include "librpbase/TextFuncs_wchar.hpp"
-#include "librpbase/file/FileSystem.hpp"
+// librpbase, libwin32common
 using namespace LibRpBase;
-
-// libi18n
-#include "libi18n/i18n.h"
-
-// libwin32common
-#include "libwin32common/RegKey.hpp"
-#include "libwin32common/sdk/commctrl_ts.h"
-#include "libwin32common/sdk/GUID_fn.h"
 using LibWin32Common::RegKey;
+using LibWin32Common::WTSSessionNotification;
+
 // IEmptyVolumeCacheCallBack implementation.
 #include "RP_EmptyVolumeCacheCallback.hpp"
 // Windows: WM_DEVICECHANGE structs.
@@ -32,13 +24,13 @@ using LibWin32Common::RegKey;
 // COM smart pointer typedefs.
 _COM_SMARTPTR_TYPEDEF(IEmptyVolumeCache, IID_IEmptyVolumeCache);
 
-// C includes. (C++ namespace)
-#include <cassert>
+#ifdef __CRT_UUID_DECL
+// FIXME: MSYS2/MinGW-w64 (gcc-9.2.0-2, MinGW-w64 7.0.0.5524.2346384e-1)
+// doesn't declare the UUID for IEmptyVolumeCacheCallBack for __uuidof() emulation.
+__CRT_UUID_DECL(IEmptyVolumeCache, __MSABI_LONG(0x8fce5227), 0x04da, 0x11d1, 0xa0,0x04, 0x00, 0x80, 0x5f, 0x8a, 0xbe, 0x06)
+#endif
 
-// C++ includes.
-#include <string>
-#include <utility>
-#include <vector>
+// C++ STL classes.
 using std::pair;
 using std::string;
 using std::vector;
@@ -121,6 +113,10 @@ class CacheTabPrivate
 		HPROPSHEETPAGE hPropSheetPage;
 		HWND hWndPropSheet;
 
+		// Function pointer for SHGetImageList.
+		// This function is not exported by name prior to Windows XP.
+		typedef HRESULT (STDAPICALLTYPE *PFNSHGETIMAGELIST)(_In_ int iImageList, _In_ REFIID riid, _Outptr_result_nullonfailure_ void **ppvObj);
+
 		// Image list for the XP drive list.
 		IImageList *pImageList;
 
@@ -129,6 +125,9 @@ class CacheTabPrivate
 
 		// Is this Windows Vista or later?
 		bool isVista;
+
+		// wtsapi32.dll for Remote Desktop status. (WinXP and later)
+		WTSSessionNotification wts;
 };
 
 /** CacheTabPrivate **/
@@ -197,13 +196,23 @@ void CacheTabPrivate::initDialog(void)
 	if (!hListView)
 		return;
 
-	// Initialize the ListView image list.
-	// NOTE: HIMAGELIST and IImageList are compatible.
-	// Since this is a system image list, we should *not*
-	// release/destroy it when we're done using it.
-	HRESULT hr = SHGetImageList(SHIL_SMALL, IID_PPV_ARGS(&pImageList));
-	if (SUCCEEDED(hr)) {
-		ListView_SetImageList(hListView, reinterpret_cast<HIMAGELIST>(pImageList), LVSIL_SMALL);
+	// NOTE: CacheTab, DllMain, and others call SHELL32 functions
+	// directly, so we can assume SHELL32.DLL is loaded.
+	HMODULE hShell32_dll = GetModuleHandle(_T("shell32"));
+	assert(hShell32_dll != nullptr);
+	if (hShell32_dll) {
+		// Get SHGetImageList() by ordinal.
+		PFNSHGETIMAGELIST pfnSHGetImageList = (PFNSHGETIMAGELIST)GetProcAddress(hShell32_dll, MAKEINTRESOURCEA(727));
+		if (pfnSHGetImageList) {
+			// Initialize the ListView image list.
+			// NOTE: HIMAGELIST and IImageList are compatible.
+			// Since this is a system image list, we should *not*
+			// release/destroy it when we're done using it.
+			HRESULT hr = pfnSHGetImageList(SHIL_SMALL, IID_PPV_ARGS(&pImageList));
+			if (SUCCEEDED(hr)) {
+				ListView_SetImageList(hListView, reinterpret_cast<HIMAGELIST>(pImageList), LVSIL_SMALL);
+			}
+		}
 	}
 
 	// Enable double-buffering if not using RDP.
@@ -212,7 +221,7 @@ void CacheTabPrivate::initDialog(void)
 	}
 
 	// Register for WTS session notifications. (Remote Desktop)
-	WTSRegisterSessionNotification(hWndPropSheet, NOTIFY_FOR_THIS_SESSION);
+	wts.registerSessionNotification(hWndPropSheet, NOTIFY_FOR_THIS_SESSION);
 
 	// Enumerate the drives.
 	enumDrivesXP();

@@ -83,7 +83,7 @@ static const TCHAR CLSIDs[5][40] = {
 			if (hkeyCLSID) { \
 				RegCloseKey(hkeyCLSID); \
 			} \
-			ret = pfn(nullptr, hInstance, lpCmdLine, nCmdShow); \
+			ret = pfn(NULL, hInstance, lpCmdLine, nCmdShow); \
 			FreeLibrary(hRpDll); \
 			return ret; \
 		} \
@@ -119,7 +119,7 @@ int CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 	// - https://stackoverflow.com/questions/4191465/how-to-run-only-one-instance-of-application
 	// - https://stackoverflow.com/a/33531179
 	// TODO: Localized window title?
-	hSingleInstanceMutex = CreateMutex(nullptr, TRUE, _T("Local\\com.gerbilsoft.rom-properties.rp-config"));
+	hSingleInstanceMutex = CreateMutex(NULL, TRUE, _T("Local\\com.gerbilsoft.rom-properties.rp-config"));
 	if (!hSingleInstanceMutex || GetLastError() == ERROR_ALREADY_EXISTS) {
 		// Mutex already exists.
 		// Set focus to the existing instance.
@@ -223,7 +223,7 @@ int CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 			// Expand the string.
 			// cchExpand includes the NULL terminator.
 			TCHAR *wbuf;
-			DWORD cchExpand = ExpandEnvironmentStrings(dll_filename, nullptr, 0);
+			DWORD cchExpand = ExpandEnvironmentStrings(dll_filename, NULL, 0);
 			if (cchExpand == 0) {
 				// Error expanding the string.
 				continue;

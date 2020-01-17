@@ -3,14 +3,12 @@
  * byteswap_sse2.c: Byteswapping functions.                                *
  * SSE2-optimized version.                                                 *
  *                                                                         *
- * Copyright (c) 2008-2018 by David Korth                                  *
+ * Copyright (c) 2008-2019 by David Korth                                  *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+#include "stdafx.h"
 #include "byteswap.h"
-
-// C includes.
-#include <assert.h>
 
 // SSE2 intrinsics.
 #include <emmintrin.h>
@@ -21,7 +19,7 @@
  * @param ptr Pointer to array to swap. (MUST be 16-bit aligned!)
  * @param n Number of bytes to swap. (Must be divisible by 2; an extra odd byte will be ignored.)
  */
-void __byte_swap_16_array_sse2(uint16_t *ptr, unsigned int n)
+void __byte_swap_16_array_sse2(uint16_t *ptr, size_t n)
 {
 	// Verify the block is 16-bit aligned
 	// and is a multiple of 2 bytes.
@@ -71,7 +69,7 @@ void __byte_swap_16_array_sse2(uint16_t *ptr, unsigned int n)
  * @param ptr Pointer to array to swap. (MUST be 32-bit aligned!)
  * @param n Number of bytes to swap. (Must be divisible by 4; extra bytes will be ignored.)
  */
-void __byte_swap_32_array_sse2(uint32_t *ptr, unsigned int n)
+void __byte_swap_32_array_sse2(uint32_t *ptr, size_t n)
 {
 	// Verify the block is 32-bit aligned
 	// and is a multiple of 4 bytes.

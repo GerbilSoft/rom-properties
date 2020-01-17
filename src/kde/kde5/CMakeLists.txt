@@ -84,15 +84,20 @@ STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-kde5_SRCS "${rom-properti
 STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-kde5_H    "${rom-properties-kde_H}")
 STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-kde5_UIS  "${rom-properties-kde_UIS}")
 
+STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-kio5_SRCS "${rom-properties-kio_SRCS}")
+STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-kio5_H    "${rom-properties-kio_H}")
+
 # Sources and headers. (KDE5-specific)
 SET(rom-properties-kde5_SRCS
 	${rom-properties-kde5_SRCS}
+	${rom-properties-kio5_SRCS}
 	RpExtractorPlugin.cpp
 	RpOverlayIconPlugin.cpp
 	RomPropertiesDialogPluginFactoryKDE5.cpp
 	)
 SET(rom-properties-kde5_H
 	${rom-properties-kde5_H}
+	${rom-properties-kio5_H}
 	RpExtractorPlugin.hpp
 	RpOverlayIconPlugin.hpp
 	)
@@ -129,7 +134,7 @@ IF(BUILD_KDE5)
 		TARGET_LINK_LIBRARIES(rom-properties-kde5 PRIVATE i18n)
 	ENDIF(ENABLE_NLS)
 	TARGET_LINK_LIBRARIES(rom-properties-kde5 PRIVATE ${ZLIB_LIBRARY})
-	TARGET_LINK_LIBRARIES(rom-properties-kde5 PUBLIC KF5::KIOWidgets KF5::WidgetsAddons KF5::FileMetaData)
+	TARGET_LINK_LIBRARIES(rom-properties-kde5 PUBLIC KF5::KIOCore KF5::KIOWidgets KF5::WidgetsAddons KF5::FileMetaData)
 	TARGET_LINK_LIBRARIES(rom-properties-kde5 PUBLIC Qt5::Widgets Qt5::Gui Qt5::Core)
 
 	# Add zlib and png directories for the About tab.

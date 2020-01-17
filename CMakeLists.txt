@@ -55,11 +55,12 @@ IF(VERSION_DEVEL)
 ENDIF(VERSION_DEVEL)
 SET(VERSION_STRING_WIN32 "${VERSION_MAJOR},${VERSION_MINOR},${VERSION_PATCH},${VERSION_DEVEL}")
 
-# Split Debug macro.
+# Split Debug function.
 # Also sets the image version for Windows builds.
-INCLUDE(Win32ImageVersionLinkerFlags)
-MACRO(DO_SPLIT_DEBUG _target)
-	IF(TARGET ${_target})
+# TODO: Move to SplitDebugInformation.cmake?
+FUNCTION(DO_SPLIT_DEBUG _target)
+	GET_TARGET_PROPERTY(_target_type ${_target} TYPE)
+	IF(TARGET ${_target} AND NOT _target_type STREQUAL "STATIC_LIBRARY")
 		# Split debug information.
 		INCLUDE(SetMSVCDebugPath)
 		SET_MSVC_DEBUG_PATH(${_target})
@@ -67,13 +68,16 @@ MACRO(DO_SPLIT_DEBUG _target)
 			INCLUDE(SplitDebugInformation)
 			SPLIT_DEBUG_INFORMATION(${_target})
 		ENDIF(SPLIT_DEBUG)
-		# Set image version.
-		# Subprojects can override ${VERSION_MAJOR} and ${VERSION_MINOR}.
-		# FIXME: If minor version is e.g. "3", Windows interprets it as "03",
-		# so "1.3" will actually be "1.03".
-		WIN32_IMAGE_VERSION_LINKER_FLAGS(${VERSION_MAJOR} ${VERSION_MINOR})
-	ENDIF(TARGET ${_target})
-ENDMACRO(DO_SPLIT_DEBUG)
+		IF(WIN32)
+			# Set image version.
+			# Subprojects can override ${VERSION_MAJOR} and ${VERSION_MINOR}.
+			# FIXME: If minor version is e.g. "3", Windows interprets it as "03",
+			# so "1.3" will actually be "1.03".
+			INCLUDE(Win32ImageVersionLinkerFlags)
+			WIN32_IMAGE_VERSION_LINKER_FLAGS(${VERSION_MAJOR} ${VERSION_MINOR})
+		ENDIF(WIN32)
+	ENDIF(TARGET ${_target} AND NOT _target_type STREQUAL "STATIC_LIBRARY")
+ENDFUNCTION(DO_SPLIT_DEBUG)
 
 # Git version information.
 FIND_PROGRAM(POSIX_SH sh)
@@ -151,6 +155,9 @@ ENDIF(BUILD_GNOME)
 IF(BUILD_MATE)
 	SET(UI_FRONTENDS "${UI_FRONTENDS} MATE")
 ENDIF(BUILD_MATE)
+IF(BUILD_CINNAMON)
+	SET(UI_FRONTENDS "${UI_FRONTENDS} Cinnamon")
+ENDIF(BUILD_CINNAMON)
 IF(BUILD_WIN32)
 	SET(UI_FRONTENDS "${UI_FRONTENDS} Win32")
 ENDIF(BUILD_WIN32)
@@ -174,11 +181,12 @@ ELSE(ENABLE_XML)
 	SET(ENABLE_XML_MSG "Disabled")
 ENDIF(ENABLE_XML)
 
-IF(ENABLE_GL)
-	SET(ENABLE_KTX_MSG "Enabled")
-ELSE(ENABLE_GL)
-	SET(ENABLE_KTX_MSG "Disabled")
-ENDIF(ENABLE_GL)
+IF(ENABLE_PVRTC)
+	SET(ENABLE_PVRTC_MSG "Enabled")
+ELSE(ENABLE_PVRTC)
+	SET(ENABLE_PVRTC_MSG "Disabled")
+ENDIF(ENABLE_PVRTC)
+
 
 UNSET(EXTLIB_BUILD)
 IF(USE_INTERNAL_ZLIB)
@@ -206,7 +214,7 @@ MESSAGE("
 - Building command-line frontend: ${CLI_BUILD_MSG}
 - Decryption functionality: ${ENABLE_DECRYPTION_MSG}
 - XML parsing: ${ENABLE_XML_MSG}
-- KTX textures: ${ENABLE_KTX_MSG}
+- PVRTC decoder: ${ENABLE_PVRTC_MSG}
 
 - Building these third-party libraries from extlib:
 ${EXTLIB_BUILD}")

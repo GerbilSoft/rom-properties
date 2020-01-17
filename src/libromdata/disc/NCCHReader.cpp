@@ -6,25 +6,20 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+#include "stdafx.h"
 #include "librpbase/config.librpbase.h"
+
 #include "NCCHReader.hpp"
 
 // librpbase
-#include "librpbase/file/IRpFile.hpp"
-#include "librpbase/disc/PartitionFile.hpp"
 #ifdef ENABLE_DECRYPTION
 #include "librpbase/crypto/AesCipherFactory.hpp"
 #include "librpbase/crypto/IAesCipher.hpp"
 #endif /* ENABLE_DECRYPTION */
 using namespace LibRpBase;
 
-// C includes. (C++ namespace)
-#include <cassert>
-#include <cerrno>
-#include <cstring>
-
-// C++ includes.
-#include <algorithm>
+// CIA Reader.
+#include "disc/CIAReader.hpp"
 
 #include "NCCHReader_p.hpp"
 namespace LibRomData {
@@ -62,12 +57,7 @@ NCCHReaderPrivate::NCCHReaderPrivate(NCCHReader *q,
 		// NOTE: readFromROM() sets q->m_lastError.
 		// TODO: Better verifyResult?
 		verifyResult = KeyManager::VERIFY_WRONG_KEY;
-		if (q->m_hasDiscReader) {
-			q->m_discReader = nullptr;
-		} else {
-			q->m_file->unref();
-			q->m_file = nullptr;
-		}
+		closeFileOrDiscReader();
 		return;
 	}
 
@@ -80,12 +70,7 @@ NCCHReaderPrivate::NCCHReaderPrivate(NCCHReader *q,
 			// 0004800F-484E4841
 			verifyResult = KeyManager::VERIFY_OK;
 			nonNcchContentType = NONCCH_NDHT;
-			if (q->m_hasDiscReader) {
-				q->m_discReader = nullptr;
-			} else {
-				q->m_file->unref();
-				q->m_file = nullptr;
-			}
+			closeFileOrDiscReader();
 			return;
 		}
 
@@ -95,32 +80,22 @@ NCCHReaderPrivate::NCCHReaderPrivate(NCCHReader *q,
 			// 0004800F-484E4C41
 			verifyResult = KeyManager::VERIFY_OK;
 			nonNcchContentType = NONCCH_NARC;
-			if (q->m_hasDiscReader) {
-				q->m_discReader = nullptr;
-			} else {
-				q->m_file->unref();
-				q->m_file = nullptr;
+		} else {
+			// TODO: Better verifyResult? (May be DSiWare...)
+			verifyResult = KeyManager::VERIFY_WRONG_KEY;
+			if (q->m_lastError == 0) {
+				q->m_lastError = EIO;
 			}
-			return;
 		}
 
-		// TODO: Better verifyResult? (May be DSiWare...)
-		verifyResult = KeyManager::VERIFY_WRONG_KEY;
-		if (q->m_lastError == 0) {
-			q->m_lastError = EIO;
-		}
-		if (q->m_hasDiscReader) {
-			q->m_discReader = nullptr;
-		} else {
-			q->m_file->unref();
-			q->m_file = nullptr;
-		}
+		closeFileOrDiscReader();
 		return;
 	}
 	headers_loaded |= HEADER_NCCH;
 
 #ifdef ENABLE_DECRYPTION
 	// Byteswap the title ID. (It's used for the AES counter.)
+	// FIXME: Verify this on big-endian.
 	tid_be = __swab64(ncch_header.hdr.program_id.id);
 
 	// Determine the keyset to use.
@@ -137,12 +112,7 @@ NCCHReaderPrivate::NCCHReaderPrivate(NCCHReader *q,
 			// Zero out the keys.
 			memset(ncch_keys, 0, sizeof(ncch_keys));
 			q->m_lastError = EIO;
-			if (q->m_hasDiscReader) {
-				q->m_discReader = nullptr;
-			} else {
-				q->m_file->unref();
-				q->m_file = nullptr;
-			}
+			closeFileOrDiscReader();
 			return;
 		}
 		// Debug keys worked.
@@ -154,12 +124,7 @@ NCCHReaderPrivate::NCCHReaderPrivate(NCCHReader *q,
 		// Unsupported.
 		verifyResult = KeyManager::VERIFY_NO_SUPPORT;
 		q->m_lastError = EIO;
-		if (q->m_hasDiscReader) {
-			q->m_discReader = nullptr;
-		} else {
-			q->m_file->unref();
-			q->m_file = nullptr;
-		}
+		closeFileOrDiscReader();
 		return;
 	}
 	// No decryption is required.
@@ -177,12 +142,7 @@ NCCHReaderPrivate::NCCHReaderPrivate(NCCHReader *q,
 		if (size != sizeof(exefs_header)) {
 			// Read error.
 			// NOTE: readFromROM() sets q->m_lastError.
-			if (q->m_hasDiscReader) {
-				q->m_discReader = nullptr;
-			} else {
-				q->m_file->unref();
-				q->m_file = nullptr;
-			}
+			closeFileOrDiscReader();
 			return;
 		}
 
@@ -205,8 +165,14 @@ NCCHReaderPrivate::NCCHReaderPrivate(NCCHReader *q,
 			cipher->setIV(ctr.u8, sizeof(ctr.u8));
 			cipher->decrypt(reinterpret_cast<uint8_t*>(&exefs_header), sizeof(exefs_header));
 
-			// First file should be ".code".
-			if (strcmp(exefs_header.files[0].name, ".code") != 0) {
+			// For CXI: First file should be ".code".
+			// For CFA: First file should be "icon".
+			// Checking for both just in case there's an exception.
+
+			// Check the first filename.
+			if (strcmp(exefs_header.files[0].name, ".code") != 0 &&
+			    strcmp(exefs_header.files[0].name, "icon") != 0)
+			{
 				if (isDebug) {
 					// We already tried both sets.
 					// Zero out the keys.
@@ -214,12 +180,7 @@ NCCHReaderPrivate::NCCHReaderPrivate(NCCHReader *q,
 					q->m_lastError = EIO;
 					delete cipher;
 					cipher = nullptr;
-					if (q->m_hasDiscReader) {
-						q->m_discReader = nullptr;
-					} else {
-						q->m_file->unref();
-						q->m_file = nullptr;
-					}
+					closeFileOrDiscReader();
 					return;
 				}
 
@@ -235,12 +196,7 @@ NCCHReaderPrivate::NCCHReaderPrivate(NCCHReader *q,
 					q->m_lastError = EIO;
 					delete cipher;
 					cipher = nullptr;
-					if (q->m_hasDiscReader) {
-						q->m_discReader = nullptr;
-					} else {
-						q->m_file->unref();
-						q->m_file = nullptr;
-					}
+					closeFileOrDiscReader();
 					return;
 				}
 
@@ -251,12 +207,7 @@ NCCHReaderPrivate::NCCHReaderPrivate(NCCHReader *q,
 					// NOTE: readFromROM() sets q->m_lastError.
 					delete cipher;
 					cipher = nullptr;
-					if (q->m_hasDiscReader) {
-						q->m_discReader = nullptr;
-					} else {
-						q->m_file->unref();
-						q->m_file = nullptr;
-					}
+					closeFileOrDiscReader();
 					return;
 				}
 
@@ -267,18 +218,15 @@ NCCHReaderPrivate::NCCHReaderPrivate(NCCHReader *q,
 				cipher->setIV(ctr.u8, sizeof(ctr.u8));
 				cipher->decrypt(reinterpret_cast<uint8_t*>(&exefs_header), sizeof(exefs_header));
 
-				// First file should be ".code".
-				if (strcmp(exefs_header.files[0].name, ".code") != 0) {
+				// Check the first filename, again.
+				if (strcmp(exefs_header.files[0].name, ".code") != 0 &&
+				    strcmp(exefs_header.files[0].name, "icon") != 0)
+				{
 					// Still not usable.
 					delete cipher;
 					q->m_lastError = EIO;
 					cipher = nullptr;
-					if (q->m_hasDiscReader) {
-						q->m_discReader = nullptr;
-					} else {
-						q->m_file->unref();
-						q->m_file = nullptr;
-					}
+					closeFileOrDiscReader();
 					return;
 				}
 
@@ -556,22 +504,22 @@ NCCHReader::NCCHReader(IRpFile *file, uint8_t media_unit_shift,
 { }
 
 /**
- * Construct an NCCHReader with the specified IDiscReader.
+ * Construct an NCCHReader with the specified CIAReader.
  *
- * NOTE: The NCCHReader *takes ownership* of the IDiscReader.
+ * NOTE: The NCCHReader *takes ownership* of the CIAReader.
  * This makes it easier to create a temporary CIAReader
  * without worrying about keeping track of it.
  *
- * @param discReader 		[in] IDiscReader. (for CCIs or CIAs)
+ * @param ciaReader		[in] CIAReader. (for CIAs only)
  * @param media_unit_shift	[in] Media unit shift.
  * @param ncch_offset		[in] NCCH start offset, in bytes.
  * @param ncch_length		[in] NCCH length, in bytes.
  * @param ticket		[in,opt] Ticket for CIA decryption. (nullptr if NoCrypto)
  * @param tmd_content_index	[in,opt] TMD content index for CIA decryption.
  */
-NCCHReader::NCCHReader(IDiscReader *discReader, uint8_t media_unit_shift,
+NCCHReader::NCCHReader(CIAReader *ciaReader, uint8_t media_unit_shift,
 		int64_t ncch_offset, uint32_t ncch_length)
-	: super(discReader)
+	: super(ciaReader)
 	, d_ptr(new NCCHReaderPrivate(this, media_unit_shift, ncch_offset, ncch_length))
 { }
 

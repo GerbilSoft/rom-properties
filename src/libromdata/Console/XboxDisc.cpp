@@ -6,25 +6,15 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+#include "stdafx.h"
 #include "XboxDisc.hpp"
-#include "librpbase/RomData_p.hpp"
 
-// librpbase
-#include "librpbase/common.h"
-#include "librpbase/byteswap.h"
-#include "librpbase/TextFuncs.hpp"
-#include "librpbase/file/IRpFile.hpp"
+// librpbase, librptexture
 #include "librpbase/file/RpFile.hpp"
 using namespace LibRpBase;
-
-// libi18n
-#include "libi18n/i18n.h"
-
-// libtexture
 using LibRpTexture::rp_image;
 
 // XDVDFSPartition
-#include "librpbase/disc/DiscReader.hpp"
 #include "../iso_structs.h"
 #include "../disc/xdvdfs_structs.h"
 #include "../disc/XDVDFSPartition.hpp"
@@ -34,15 +24,7 @@ using LibRpTexture::rp_image;
 #include "Xbox_XBE.hpp"
 #include "Xbox360_XEX.hpp"
 
-// C includes. (C++ namespace)
-#include <cassert>
-#include <cerrno>
-#include <cstring>
-#include <ctime>
-
-// C++ includes.
-#include <string>
-#include <vector>
+// C++ STL classes.
 using std::string;
 using std::vector;
 
@@ -414,15 +396,20 @@ void XboxDisc::close(void)
 {
 	RP_D(XboxDisc);
 
+	// NOTE: Don't delete these. They have rp_image objects
+	// that may be used by the UI later.
 	if (d->defaultExeData) {
-		d->defaultExeData->unref();
-		d->defaultExeData = nullptr;
+		d->defaultExeData->close();
 	}
-
-	delete d->xdvdfsPartition;
-	delete d->discReader;
-	d->xdvdfsPartition = nullptr;
-	d->discReader = nullptr;
+#if 0
+	// TODO: Add close() functions?
+	if (d->xdvdfsPartition) {
+		d->xdvdfsPartition->close();
+	}
+	if (d->discReader) {
+		d->discReader->close();
+	}
+#endif
 
 	// Call the superclass function.
 	super::close();

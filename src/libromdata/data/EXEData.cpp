@@ -2,15 +2,13 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * EXEData.cpp: DOS/Windows executable data.                               *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2019 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+#include "stdafx.h"
 #include "EXEData.hpp"
 #include "Other/exe_structs.h"
-
-// C includes.
-#include <stdlib.h>
 
 namespace LibRomData {
 
@@ -70,6 +68,9 @@ const EXEDataPrivate::MachineType EXEDataPrivate::machineTypes_PE[] = {
 	{IMAGE_FILE_MACHINE_TRICORE,	"Infineon TriCore"},
 	{IMAGE_FILE_MACHINE_CEF,	"Common Executable Format"},
 	{IMAGE_FILE_MACHINE_EBC,	"EFI Byte Code"},
+	{IMAGE_FILE_MACHINE_RISCV32,	"RISC-V (32-bit address space)"},
+	{IMAGE_FILE_MACHINE_RISCV64,	"RISC-V (64-bit address space)"},
+	{IMAGE_FILE_MACHINE_RISCV128,	"RISC-V (128-bit address space)"},
 	{IMAGE_FILE_MACHINE_AMD64,	"AMD64"},
 	{IMAGE_FILE_MACHINE_M32R,	"Mitsubishi M32R"},
 	{IMAGE_FILE_MACHINE_ARM64,	"ARM (64-bit)"},

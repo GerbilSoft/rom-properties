@@ -6,27 +6,16 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+#include "stdafx.h"
 #include "librpbase/config.librpbase.h"
 
 #include "GcnFst.hpp"
 #include "../Console/gcn_structs.h"
 
 // librpbase
-#include "librpbase/byteswap.h"
-#include "librpbase/TextFuncs.hpp"
 using namespace LibRpBase;
 
-// C includes.
-#include <stdlib.h>
-
-// C includes. (C++ namespace)
-#include <cassert>
-#include <cerrno>
-#include <cstring>
-
-// C++ includes.
-#include <string>
-#include <unordered_map>
+// C++ STL classes.
 using std::string;
 using std::unordered_map;
 

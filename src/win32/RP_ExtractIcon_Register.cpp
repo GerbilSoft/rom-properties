@@ -3,7 +3,7 @@
  * RP_ExtractIcon_Register.cpp: IExtractIcon implementation.               *
  * COM registration functions.                                             *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -11,11 +11,10 @@
 #include "RP_ExtractIcon.hpp"
 #include "RP_ExtractIcon_p.hpp"
 
-#include "libwin32common/RegKey.hpp"
+// libwin32common
 using LibWin32Common::RegKey;
 
-// C++ includes.
-#include <string>
+// C++ STL classes.
 using std::tstring;
 
 #define CLSID_RP_ExtractIcon_String	TEXT("{E51BC107-E491-4B29-A6A3-2A4309259802}")

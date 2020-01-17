@@ -6,27 +6,14 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+#include "stdafx.h"
 #include "NGPC.hpp"
-#include "librpbase/RomData_p.hpp"
-
 #include "ngpc_structs.h"
 
 // librpbase
-#include "librpbase/byteswap.h"
-#include "librpbase/TextFuncs.hpp"
-#include "librpbase/file/IRpFile.hpp"
 using namespace LibRpBase;
 
-// libi18n
-#include "libi18n/i18n.h"
-
-// C includes. (C++ namespace)
-#include <cassert>
-#include <cerrno>
-
-// C++ includes.
-#include <string>
-#include <vector>
+// C++ STL classes.
 using std::string;
 using std::vector;
 
@@ -272,7 +259,8 @@ int NGPC::loadFieldData(void)
 	// Title
 	// NOTE: It's listed as ASCII. We'll use Latin-1.
 	d->fields->addField_string(C_("RomData", "Title"),
-		latin1_to_utf8(romHeader->title, sizeof(romHeader->title)));
+		latin1_to_utf8(romHeader->title, sizeof(romHeader->title)),
+		RomFields::STRF_TRIM_END);
 
 	// Product ID
 	d->fields->addField_string(C_("RomData", "Product ID"),

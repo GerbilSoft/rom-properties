@@ -6,31 +6,14 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+#include "stdafx.h"
 #include "VGM.hpp"
-#include "librpbase/RomData_p.hpp"
-
 #include "vgm_structs.h"
 
 // librpbase
-#include "librpbase/common.h"
-#include "librpbase/byteswap.h"
-#include "librpbase/TextFuncs.hpp"
-#include "librpbase/file/IRpFile.hpp"
-#include "libi18n/i18n.h"
 using namespace LibRpBase;
 
-// C includes. (C++ namespace)
-#include <cassert>
-#include <cerrno>
-#include <cstddef>
-#include <cstdio>
-#include <cstring>
-
-// C++ includes.
-#include <array>
-#include <memory>
-#include <string>
-#include <vector>
+// C++ STL classes.
 using std::array;
 using std::string;
 using std::unique_ptr;

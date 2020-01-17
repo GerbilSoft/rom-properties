@@ -6,8 +6,8 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+#include "stdafx.h"
 #include "GameCube.hpp"
-#include "librpbase/RomData_p.hpp"
 
 #include "gcn_structs.h"
 #include "gcn_banner.h"
@@ -18,21 +18,11 @@
 #include "data/NintendoLanguage.hpp"
 #include "GameCubeRegions.hpp"
 
-// librpbase
-#include "librpbase/common.h"
-#include "librpbase/byteswap.h"
-#include "librpbase/TextFuncs.hpp"
-#include "librpbase/file/IRpFile.hpp"
+// librpbase, librptexture
 using namespace LibRpBase;
-
-// libi18n
-#include "libi18n/i18n.h"
-
-// librptexture
 using LibRpTexture::rp_image;
 
 // DiscReader
-#include "librpbase/disc/DiscReader.hpp"
 #include "disc/WbfsReader.hpp"
 #include "disc/CisoGcnReader.hpp"
 #include "disc/NASOSReader.hpp"
@@ -45,18 +35,7 @@ using LibRpTexture::rp_image;
 // for strnlen() if it's not available in <string.h>
 #include "librpbase/TextFuncs_libc.h"
 
-// C includes. (C++ namespace)
-#include "librpbase/ctypex.h"
-#include <cassert>
-#include <cerrno>
-#include <cstdio>
-#include <cstring>
-
-// C++ includes.
-#include <algorithm>
-#include <memory>
-#include <string>
-#include <vector>
+// C++ STL classes.
 using std::string;
 using std::unique_ptr;
 using std::vector;
@@ -206,7 +185,7 @@ class GameCubePrivate : public RomDataPrivate
 		 * @param partition Partition to check.
 		 * @return nullptr if partition is readable; error message if not.
 		 */
-		const char *wii_getCryptoStatus(const WiiPartition *partition);
+		const char *wii_getCryptoStatus(WiiPartition *partition);
 };
 
 /** GameCubePrivate **/
@@ -705,7 +684,7 @@ string GameCubePrivate::wii_getBannerName(void) const
  * @param partition Partition to check.
  * @return nullptr if partition is readable; error message if not.
  */
-const char *GameCubePrivate::wii_getCryptoStatus(const WiiPartition *partition)
+const char *GameCubePrivate::wii_getCryptoStatus(WiiPartition *partition)
 {
 	const KeyManager::VerifyResult res = partition->verifyResult();
 	if (res == KeyManager::VERIFY_KEY_NOT_FOUND) {
@@ -713,6 +692,24 @@ const char *GameCubePrivate::wii_getCryptoStatus(const WiiPartition *partition)
 		if (partition->encKey() == WiiPartition::ENCKEY_UNKNOWN) {
 			// Invalid key index.
 			return C_("GameCube", "ERROR: Invalid common key index.");
+		}
+	}
+
+	if (res == KeyManager::VERIFY_OK) {
+		// Debug discs may have incrementing values instead of a
+		// valid update partition.
+		static const uint8_t incr_vals[32] = {
+			0x00,0x00,0x00,0x00, 0x00,0x00,0x00,0x04,
+			0x00,0x00,0x00,0x08, 0x00,0x00,0x00,0x0C,
+			0x00,0x00,0x00,0x10, 0x00,0x00,0x00,0x14,
+			0x00,0x00,0x00,0x18, 0x00,0x00,0x00,0x1C,
+		};
+
+		uint8_t data[32];
+		size_t size = partition->seekAndRead(0, data, sizeof(data));
+		if (size == sizeof(incr_vals) && !memcmp(data, incr_vals, sizeof(data))) {
+			// Found incrementing values.
+			return C_("GameCube", "Incrementing values");
 		}
 	}
 
@@ -882,11 +879,11 @@ GameCube::GameCube(IRpFile *file)
 		pt.pt = 0;
 		pt.partition = new WiiPartition(d->discReader, pt.start, pt.size);
 
-		if (title_id.lo == be32_to_cpu('\0UPD') || title_id.lo == be32_to_cpu('\0UPE')) {
+		if (title_id.lo == be32_to_cpu('UPD') || title_id.lo == be32_to_cpu('UPE')) {
 			// Update partition.
 			pt.type = RVL_PT_UPDATE;
 			d->updatePartition = pt.partition;
-		} else if (title_id.lo == be32_to_cpu('\0INS')) {
+		} else if (title_id.lo == be32_to_cpu('INS')) {
 			// Channel partition.
 			pt.type = RVL_PT_CHANNEL;
 		} else {

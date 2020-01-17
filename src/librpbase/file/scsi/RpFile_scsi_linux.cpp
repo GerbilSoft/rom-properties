@@ -10,6 +10,7 @@
 # error RpFile_scsi_linux.cpp is for Linux ONLY.
 #endif /* __linux__ */
 
+#include "stdafx.h"
 #include "../RpFile.hpp"
 #include "../RpFile_p.hpp"
 
@@ -21,11 +22,6 @@
 #include <scsi/scsi.h>
 #include <linux/cdrom.h>
 #include <linux/fs.h>
-
-// C includes. (C++ namespace)
-#include <cassert>
-#include <cerrno>
-#include <cstring>
 
 namespace LibRpBase {
 

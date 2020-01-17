@@ -11,6 +11,9 @@
 
 #include "byteswap.h"
 
+// C includes. (C++ namespace)
+#include <cmath>
+
 namespace LibRpTexture { namespace PixelConversion {
 
 /** Color conversion functions. **/
@@ -530,6 +533,37 @@ static inline uint32_t A2B10G10R10_to_ARGB32(uint32_t px32)
 	       ((px32 >> 22) & 0x0000FF) |	// Blue
 	       a2_lookup[px32 >> 30];		// Alpha
 	return argb;
+}
+
+/**
+ * Convert an RGB9_E5 pixel to ARGB32.
+ * NOTE: RGB9_E5 is an HDR format; this converts to LDR.
+ * @param px32 A2B10G10R10 pixel.
+ * @return ARGB32 pixel.
+ */
+static inline uint32_t RGB9_E5_to_ARGB32(uint32_t px32)
+{
+	// NOTE: This will truncate the color channels.
+	// TODO: Add ARGB64 support?
+
+	// Reference: https://www.khronos.org/registry/OpenGL/extensions/EXT/EXT_texture_shared_exponent.txt
+	// RGB9_E5: EEEEEBBB BBBBBBGG GGGGGGGR RRRRRRRR
+	//  ARGB32: AAAAAAAA RRRRRRRR GGGGGGGG BBBBBBBB
+	int8_t e = (px32 >> 27) - 15 - 9;
+
+	// Process as float.
+	// TODO: SSE optimizations?
+	float rf =  (px32        & 0x1FF) * powf(2, e);
+	float gf = ((px32 >>  9) & 0x1FF) * powf(2, e);
+	float bf = ((px32 >> 18) & 0x1FF) * powf(2, e);
+
+	// Convert to uint8_t, clamping to [0,255].
+	uint8_t r = (rf <= 0.0f ? 0 : (rf >= 1.0f ? 255 : ((uint8_t)floorf(rf * 256.0f))));
+	uint8_t g = (gf <= 0.0f ? 0 : (gf >= 1.0f ? 255 : ((uint8_t)floorf(gf * 256.0f))));
+	uint8_t b = (bf <= 0.0f ? 0 : (bf >= 1.0f ? 255 : ((uint8_t)floorf(bf * 256.0f))));
+
+	// Convert back to ARGB32.
+	return (0xFF000000 | (r << 16) | (g << 8) | b);
 }
 
 // PlayStation 2-specific 32-bit RGB

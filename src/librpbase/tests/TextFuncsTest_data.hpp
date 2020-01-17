@@ -553,4 +553,160 @@ const char16_t TextFuncsTest::latin1_utf16_data[249+1] =
 	0x00FF,0x0000
 };
 
+/** Specialized code page functions. **/
+
+/**
+ * Atari ST to UTF-8 test string.
+ * Contains all Atari ST characters that can be converted to Unicode.
+ */
+const char TextFuncsTest::atariST_data[236+1] =
+	// 0x00
+	"\x01\x02\x03\x04\x05\x08\n\x0B\x0C\r\x1A\x1B"
+	// 0x20
+	" !\"#$%&'()*+,-./0123456789:;<=>?"
+	// 0x40
+	"@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_"
+	// 0x60
+	"`abcdefghijklmnopqrstuvwxyz{|}~\x7F"
+	// 0x80
+	"\x80\x81\x82\x83\x84\x85\x86\x87\x88\x89\x8A\x8B\x8C\x8D\x8E\x8F"
+	// 0x90
+	"\x90\x91\x92\x93\x94\x95\x96\x97\x98\x99\x9A\x9B\x9C\x9D\x9E\x9F"
+	// 0xA0
+	"\xA0\xA1\xA2\xA3\xA4\xA5\xA6\xA7\xA8\xA9\xAA\xAB\xAC\xAD\xAE\xAF"
+	// 0xB0
+	"\xB0\xB1\xB2\xB3\xB4\xB5\xB6\xB7\xB8\xB9\xBA\xBB\xBC\xBD\xBE\xBF"
+	// 0xC0
+	"\xC0\xC1\xC2\xC3\xC4\xC5\xC6\xC7\xC8\xC9\xCA\xCB\xCC\xCD\xCE\xCF"
+	// 0xD0
+	"\xD0\xD1\xD2\xD3\xD4\xD5\xD6\xD7\xD8\xD9\xDA\xDB\xDC\xDD\xDE\xDF"
+	// 0xE0
+	"\xE0\xE1\xE2\xE3\xE4\xE5\xE6\xE7\xE8\xE9\xEA\xEB\xEC\xED\xEE\xEF"
+	// 0xF0
+	"\xF0\xF1\xF2\xF3\xF4\xF5\xF6\xF7\xF8\xF9\xFA\xFB\xFC\xFD\xFE\xFF";
+
+/**
+ * Atari ST to UTF-16 test string.
+ * Contains the expected result from:
+ * - utf8_to_utf16(atariST_to_utf8(atariST_data, ARRAY_SIZE(atariST_data)))
+ */
+const char16_t TextFuncsTest::atariST_utf16_data[236+1] =
+{
+	0x21E7, 0x21E9, 0x21E8, 0x21E6, 0x274E, 0x2713, '\n', 0x266A, 0x240C, '\r', 0x0259, 0x241B,
+	// 0x20
+	' ', '!', '"', '#', '$', '%', '&', '\'', '(', ')', '*', '+', ',', '-', '.', '/',
+	// 0x30
+	'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', ':', ';', '<', '=', '>', '?',
+	// 0x40
+	'@', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O',
+	// 0x50
+	'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '[', '\\', ']', '^', '_',
+	// 0x60
+	'`', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o',
+	// 0x70
+	'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', '{', '|', '}', '~', 0x2302,
+	// 0x80
+	0x00C7, 0x00FC, 0x00E9, 0x00E2, 0x00E4, 0x00E0, 0x00E5, 0x00E7,
+	0x00EA, 0x00EB, 0x00E8, 0x00EF, 0x00EE, 0x00EC, 0x00C4, 0x00C5,
+	// 0x90
+	0x00C9, 0x00E6, 0x00C6, 0x00F4, 0x00F6, 0x00F2, 0x00FB, 0x00F9,
+	0x00FF, 0x00D6, 0x00DC, 0x00A2, 0x00A3, 0x00A5, 0x00DF, 0x0192,
+	// 0xA0
+	0x00E1, 0x00ED, 0x00F3, 0x00FA, 0x00F1, 0x00D1, 0x00AA, 0x00BA,
+	0x00BF, 0x2310, 0x00AC, 0x00BD, 0x00BC, 0x00A1, 0x00AB, 0x00BB,
+	// 0xB0
+	0x00E3, 0x00F5, 0x00D8, 0x00F8, 0x0153, 0x0152, 0x00C0, 0x00C3,
+	0x00D5, 0x00A8, 0x00B4, 0x2020, 0x00B6, 0x00A9, 0x00AE, 0x2122,
+	// 0xC0
+	0x0133, 0x0132, 0x05D0, 0x05D1, 0x05D2, 0x05D3, 0x05D4, 0x05D5,
+	0x05D6, 0x05D7, 0x05D8, 0x05D9, 0x05DB, 0x05DC, 0x05DE, 0x05E0,
+	// 0xD0
+	0x05E1, 0x05E2, 0x05E4, 0x05E6, 0x05E7, 0x05E8, 0x05E9, 0x05EA,
+	0x05DF, 0x05DA, 0x05DD, 0x05E3, 0x05E5, 0x00A7, 0x2227, 0x221E,
+	// 0xE0
+	0x03B1, 0x03B2, 0x0393, 0x03C0, 0x03A3, 0x03C3, 0x00B5, 0x03C4,
+	0x03A6, 0x0398, 0x03A9, 0x03B4, 0x222E, 0x03D5, 0x2208, 0x2229,
+	// 0xF0
+	0x2261, 0x00B1, 0x2265, 0x2264, 0x2320, 0x2321, 0x00F7, 0x2248,
+	0x00B0, 0x2022, 0x00B7, 0x221A, 0x207F, 0x00B2, 0x00B3, 0x00AF,
+
+	0
+};
+
+/**
+ * Atari ATASCII to UTF-8 test string.
+ * Contains all Atari ATASCII characters that can be converted to Unicode.
+ */
+const char TextFuncsTest::atascii_data[229+1] =
+	// 0x00
+	// NOTE: This string starts with a NULL...
+	"\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0A\x0B\x0C\x0D\x0E\x0F"
+	// 0x10
+	"\x10\x11\x12\x13\x14\x15\x16\x17\x18\x19\x1A\x1B\x1C\x1D\x1E\x1F"
+	// 0x20
+	" !\"#$%&'()*+,-./0123456789:;<=>?"
+	// 0x40
+	"@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_"
+	// 0x60
+	"\x60" "abcdefghijklmnopqrstuvwxyz\x7B|\x7D\x7E\x7F"
+
+	// 0x80
+	"\x82\x88\x89\x8A\x8B\x8C\x8D\x8F\x95\x99\x9B"
+	// 0xA0
+	"\xA0\xA1\xA2\xA3\xA4\xA5\xA6\xA7\xA8\xA9\xAA\xAB\xAC\xAD\xAE\xAF"
+	// 0xB0
+	"\xB0\xB1\xB2\xB3\xB4\xB5\xB6\xB7\xB8\xB9\xBA\xBB\xBC\xBD\xBE\xBF"
+	// 0xC0
+	"\xC0\xC1\xC2\xC3\xC4\xC5\xC6\xC7\xC8\xC9\xCA\xCB\xCC\xCD\xCE\xCF"
+	// 0xD0
+	"\xD0\xD1\xD2\xD3\xD4\xD5\xD6\xD7\xD8\xD9\xDA\xDB\xDC\xDD\xDE\xDF"
+	// 0xE0
+	"\xE1\xE2\xE3\xE4\xE5\xE6\xE7\xE8\xE9\xEA\xEB\xEC\xED\xEE\xEF"
+	// 0xF0
+	"\xF0\xF1\xF2\xF3\xF4\xF5\xF6\xF7\xF8\xF9\xFA";
+
+/**
+ * Atari ATASCII to UTF-16 test string.
+ * Contains the expected result from:
+ * - utf8_to_utf16(atascii_to_utf8(atascii_data, ARRAY_SIZE(atascii_data)-1))
+ */
+const char16_t TextFuncsTest::atascii_utf16_data[229+1] =
+{
+	// 0x00
+	0x2665, 0x251C, 0x2590, 0x2518, 0x2524, 0x2510, 0x2571, 0x2572,
+	0x25E2, 0x2597, 0x25E3, 0x259D, 0x2598, 0x2580, 0x2582, 0x2596,
+	// 0x10
+	0x2663, 0x250C, 0x2500, 0x253C, 0x25CF, 0x2584, 0x258E, 0x252C,
+	0x2534, 0x258C, 0x2514, 0x001B, 0x2191, 0x2193, 0x2190, 0x2192,
+	// 0x20
+	' ', '!', '"', '#', '$', '%', '&', '\'', '(', ')', '*', '+', ',', '-', '.', '/',
+	// 0x30
+	'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', ':', ';', '<', '=', '>', '?',
+	// 0x40
+	'@', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O',
+	// 0x50
+	'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '[', '\\', ']', '^', '_',
+	// 0x60
+	0x2666, 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o',
+	// 0x70
+	'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', 0x2660, '|', 0x21B0, 0x25C0, 0x25B6,
+
+	// 0x80
+	0x258A, 0x25E4, 0x259B, 0x25E5, 0x2599, 0x259F, 0x2586, 0x259C, 0x2580, 0x2590, '\n',
+	// 0xA0
+	0x2588, '!', '"', '#', '$', '%', '&', '\'', '(', ')', '*', '+', ',', '-', '.', '/',
+	// 0xB0
+	'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', ':', ';', '<', '=', '>', '?',
+	// 0xC0
+	'@', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O',
+	// 0xD0
+	'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '[', '\\', ']', '^', '_',
+	// 0xE0
+	'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o',
+	// 0xF0
+	'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
+
+	0
+};
+
 #endif /* __ROMPROPERTIES_LIBRPBASE_TESTS_TEXTFUNCSTEST_DATA_HPP__ */

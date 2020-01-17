@@ -6,26 +6,15 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+#include "stdafx.h"
 #include "IsoPartition.hpp"
-
 #include "iso_structs.h"
 
 // librpbase
-#include "librpbase/TextFuncs.hpp"
-#include "librpbase/disc/PartitionFile.hpp"
 using namespace LibRpBase;
 
-// C includes. (C++ namespace)
-#include <cassert>
-#include <cerrno>
-
-// C++ includes.
-#include <string>
+// C++ STL classes.
 using std::string;
-
-// Uninitialized vector class.
-// Reference: http://andreoffringa.org/?q=uvector
-#include "uvector.h"
 
 namespace LibRomData {
 

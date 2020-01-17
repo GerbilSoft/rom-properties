@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>466</width>
-    <height>307</height>
+    <width>490</width>
+    <height>356</height>
    </rect>
   </property>
   <layout class="QVBoxLayout" name="vboxMain">
@@ -40,10 +40,10 @@ This may increase bandwidth usage.</string>
        </widget>
       </item>
       <item>
-       <widget class="QCheckBox" name="chkEnableThumbnailOnNetworkFS">
+       <widget class="QCheckBox" name="chkStoreFileOriginInfo">
         <property name="text">
-         <string>Enable thumbnailing and metadata extraction on network
-file systems. This may slow down file browsing.</string>
+         <string>Store cached file origin information using extended attributes.
+This helps to identify where cached files were downloaded from.</string>
         </property>
        </widget>
       </item>
@@ -61,6 +61,14 @@ file systems. This may slow down file browsing.</string>
         <property name="text">
          <string>Show a security overlay icon for ROM images with
 &quot;dangerous&quot; permissions.</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QCheckBox" name="chkEnableThumbnailOnNetworkFS">
+        <property name="text">
+         <string>Enable thumbnailing and metadata extraction on network
+file systems. This may slow down file browsing.</string>
         </property>
        </widget>
       </item>
@@ -155,12 +163,28 @@ file systems. This may slow down file browsing.</string>
    <slot>checkBox_clicked()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>47</x>
-     <y>166</y>
+     <x>61</x>
+     <y>335</y>
     </hint>
     <hint type="destinationlabel">
      <x>1</x>
      <y>169</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>chkStoreFileOriginInfo</sender>
+   <signal>clicked()</signal>
+   <receiver>OptionsTab</receiver>
+   <slot>checkBox_clicked()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>86</x>
+     <y>171</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>0</x>
+     <y>207</y>
     </hint>
    </hints>
   </connection>

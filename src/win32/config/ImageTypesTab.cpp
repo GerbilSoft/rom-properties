@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * ImageTypesTab.cpp: Image type priorities tab. (Part of ConfigDialog.)   *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -10,23 +10,10 @@
 #include "ImageTypesTab.hpp"
 #include "res/resource.h"
 
-// libwin32common
-#include "libwin32common/WinUI.hpp"
-
 // librpbase
-#include "librpbase/TextFuncs.hpp"
-#include "librpbase/TextFuncs_wchar.hpp"
-#include "librpbase/config/Config.hpp"
 using namespace LibRpBase;
 
-// libi18n
-#include "libi18n/i18n.h"
-
-// C includes. (C++ namespace)
-#include <cassert>
-
-// C++ includes.
-#include <string>
+// C++ STL classes.
 using std::tstring;
 
 // TImageTypesConfig is a templated class,

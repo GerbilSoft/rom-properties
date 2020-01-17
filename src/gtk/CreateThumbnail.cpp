@@ -14,6 +14,9 @@
 #include "librpbase/img/RpPngWriter.hpp"
 using namespace LibRpBase;
 
+// RpFileGio
+#include "RpFile_gio.hpp"
+
 // librptexture
 #include "librptexture/img/rp_image.hpp"
 using LibRpTexture::rp_image;
@@ -44,6 +47,19 @@ using std::unique_ptr;
 
 // PIMGTYPE
 #include "PIMGTYPE.hpp"
+
+// GTK+ major version.
+// We can't simply use GTK_MAJOR_VERSION because
+// that has parentheses.
+#if GTK_CHECK_VERSION(4,0,0)
+# error Needs updating for GTK4.
+#elif GTK_CHECK_VERSION(3,0,0)
+# define GTK_MAJOR_STR "3"
+#elif GTK_CHECK_VERSION(2,0,0)
+# define GTK_MAJOR_STR "2"
+#else
+# error GTK+ is too old.
+#endif
 
 /** CreateThumbnailPrivate **/
 
@@ -218,7 +234,7 @@ string CreateThumbnailPrivate::proxyForUrl(const string &url) const
 
 /**
  * Thumbnail creator function for wrapper programs.
- * @param source_file Source file. (UTF-8)
+ * @param source_file Source file or URI. (UTF-8)
  * @param output_file Output file. (UTF-8)
  * @param maximum_size Maximum size.
  * @return 0 on success; non-zero on error.
@@ -244,20 +260,82 @@ G_MODULE_EXPORT int rp_create_thumbnail(const char *source_file, const char *out
 	// ROM file and getting RomData*, but we're doing it here
 	// in order to return better error codes.
 
+	// Is this a URI or a filename?
+	char *source_uri = nullptr;
+	char *source_filename = nullptr;
+	bool free_source_uri = false;
+	bool free_source_filename = false;
+
+	char *const uri_scheme = g_uri_parse_scheme(source_file);
+	if (uri_scheme != nullptr) {
+		// This is a URI.
+		source_uri = const_cast<char*>(source_file);
+		g_free(uri_scheme);
+		// Check if it's a local filename.
+		source_filename = g_filename_from_uri(source_file, nullptr, nullptr);
+		if (source_filename) {
+			// It's a local filename.
+			free_source_filename = true;
+		}
+	} else {
+		// This is a filename.
+		source_filename = const_cast<char*>(source_file);
+
+		// We might have a relative path.
+		// If so, it needs to be converted to an absolute path.
+		if (g_path_is_absolute(source_file)) {
+			// We have an absolute path.
+			source_uri = g_filename_to_uri(source_file, nullptr, nullptr);
+		} else {
+			// We have a relative path.
+			// Convert the filename to an absolute path.
+			GFile *curdir = g_file_new_for_path(".");
+			if (curdir) {
+				GFile *abspath = g_file_resolve_relative_path(curdir, source_file);
+				if (abspath) {
+					source_uri = g_file_get_uri(abspath);
+					g_object_unref(abspath);
+				}
+				g_object_unref(curdir);
+			}
+		}
+		free_source_uri = true;
+	}
+
 	// Check for "bad" file systems.
-	const Config *const config = Config::instance();
-	if (FileSystem::isOnBadFS(source_file, config->enableThumbnailOnNetworkFS())) {
-		// This file is on a "bad" file system.
-		return RPCT_SOURCE_FILE_BAD_FS;
+	if (source_filename) {
+		const Config *const config = Config::instance();
+		if (FileSystem::isOnBadFS(source_filename, config->enableThumbnailOnNetworkFS())) {
+			// This file is on a "bad" file system.
+			if (free_source_uri) {
+				g_free(source_uri);
+			}
+			if (free_source_filename) {
+				g_free(source_filename);
+			}
+			return RPCT_SOURCE_FILE_BAD_FS;
+		}
 	}
 
 	// Attempt to open the ROM file.
-	// TODO: RpGVfsFile wrapper.
-	// For now, using RpFile, which is an stdio wrapper.
-	RpFile *const file = new RpFile(source_file, RpFile::FM_OPEN_READ_GZ);
+	IRpFile *file;
+	if (source_filename) {
+		// Local file. Use RpFile.
+		file = new RpFile(source_filename, RpFile::FM_OPEN_READ_GZ);
+	} else {
+		// Not a local file. Use RpFileGio.
+		file = new RpFileGio(source_uri);
+	}
+
 	if (!file->isOpen()) {
 		// Could not open the file.
 		file->unref();
+		if (free_source_uri) {
+			g_free(source_uri);
+		}
+		if (free_source_filename) {
+			g_free(source_filename);
+		}
 		return RPCT_SOURCE_FILE_ERROR;
 	}
 
@@ -267,6 +345,12 @@ G_MODULE_EXPORT int rp_create_thumbnail(const char *source_file, const char *out
 	file->unref();	// file is ref()'d by RomData.
 	if (!romData) {
 		// ROM is not supported.
+		if (free_source_uri) {
+			g_free(source_uri);
+		}
+		if (free_source_filename) {
+			g_free(source_filename);
+		}
 		return RPCT_SOURCE_FILE_NOT_SUPPORTED;
 	}
 
@@ -283,6 +367,12 @@ G_MODULE_EXPORT int rp_create_thumbnail(const char *source_file, const char *out
 			d->freeImgClass(ret_img);
 		}
 		romData->unref();
+		if (free_source_uri) {
+			g_free(source_uri);
+		}
+		if (free_source_filename) {
+			g_free(source_filename);
+		}
 		return RPCT_SOURCE_FILE_NO_IMAGE;
 	}
 
@@ -298,9 +388,8 @@ G_MODULE_EXPORT int rp_create_thumbnail(const char *source_file, const char *out
 	RpPngWriter::kv_vector kv;
 	char mtime_str[32];
 	char szFile_str[32];
-	GFile *f_src;
-	gchar *content_type;
-	gchar *uri = nullptr;
+	GFile *f_src = nullptr;
+	gchar *content_type = nullptr;
 
 	// gdk-pixbuf doesn't support CI8, so we'll assume all
 	// images are ARGB32. (Well, ABGR32, but close enough.)
@@ -322,15 +411,12 @@ G_MODULE_EXPORT int rp_create_thumbnail(const char *source_file, const char *out
 	kv.reserve(5);
 
 	// Software.
-	// TODO: Distinguish between GNOME and XFCE?
-	// TODO: Does gdk_pixbuf_savev() support zTXt?
-	// TODO: Set keys in the Qt one.
-	kv.push_back(std::make_pair("Software", "ROM Properties Page shell extension (GTK+)"));
+	kv.push_back(std::make_pair("Software", "ROM Properties Page shell extension (GTK" GTK_MAJOR_STR ")"));
 
 	// Modification time and file size.
 	mtime_str[0] = 0;
 	szFile_str[0] = 0;
-	f_src = g_file_new_for_path(source_file);
+	f_src = g_file_new_for_uri(source_uri);
 	if (f_src) {
 		GError *error = nullptr;
 		GFileInfo *const fi_src = g_file_query_info(f_src,
@@ -363,7 +449,8 @@ G_MODULE_EXPORT int rp_create_thumbnail(const char *source_file, const char *out
 
 	// MIME type.
 	// TODO: Get this directly from the D-Bus call or similar?
-	content_type = g_content_type_guess(source_file, nullptr, 0, nullptr);
+	// FIXME: Handle URIs?
+	content_type = g_content_type_guess(source_uri, nullptr, 0, nullptr);
 	if (content_type) {
 		gchar *const mime_type = g_content_type_get_mime_type(content_type);
 		if (mime_type) {
@@ -386,27 +473,7 @@ G_MODULE_EXPORT int rp_create_thumbnail(const char *source_file, const char *out
 	// References:
 	// - https://bugs.kde.org/show_bug.cgi?id=393015
 	// - https://specifications.freedesktop.org/thumbnail-spec/thumbnail-spec-latest.html
-	if (g_path_is_absolute(source_file)) {
-		// We have an absolute path.
-		uri = g_filename_to_uri(source_file, nullptr, nullptr);
-	} else {
-		// We have a relative path.
-		// Convert the filename to an absolute path.
-		GFile *curdir = g_file_new_for_path(".");
-		if (curdir) {
-			GFile *abspath = g_file_resolve_relative_path(curdir, source_file);
-			if (abspath) {
-				uri = g_file_get_uri(abspath);
-				g_object_unref(abspath);
-			}
-			g_object_unref(curdir);
-		}
-	}
-
-	if (uri) {
-		kv.push_back(std::make_pair("Thumb::URI", uri));
-		g_free(uri);
-	}
+	kv.push_back(std::make_pair("Thumb::URI", source_uri));
 
 	// Write the tEXt chunks.
 	pngWriter->write_tEXt(kv);
@@ -457,5 +524,11 @@ G_MODULE_EXPORT int rp_create_thumbnail(const char *source_file, const char *out
 cleanup:
 	d->freeImgClass(ret_img);
 	romData->unref();
+	if (free_source_uri) {
+		g_free(source_uri);
+	}
+	if (free_source_filename) {
+		g_free(source_filename);
+	}
 	return ret;
 }

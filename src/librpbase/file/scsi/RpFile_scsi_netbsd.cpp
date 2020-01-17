@@ -10,6 +10,7 @@
 # error RpFile_scsi_netbsd.cpp is for NetBSD and OpenBSD ONLY.
 #endif /* __linux__ */
 
+#include "stdafx.h"
 #include "../RpFile.hpp"
 #include "../RpFile_p.hpp"
 
@@ -22,11 +23,6 @@
 #include <sys/scsiio.h>
 //#include <sys/disk.h>
 //#include <sys/cdio.h>
-
-// C includes. (C++ namespace)
-#include <cassert>
-#include <cerrno>
-#include <cstring>
 
 namespace LibRpBase {
 

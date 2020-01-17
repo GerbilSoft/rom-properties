@@ -6,36 +6,17 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+#include "stdafx.h"
 #include "SNES.hpp"
-#include "librpbase/RomData_p.hpp"
-
 #include "data/NintendoPublishers.hpp"
 #include "snes_structs.h"
 #include "CopierFormats.h"
 
 // librpbase
-#include "librpbase/common.h"
-#include "librpbase/byteswap.h"
-#include "librpbase/bitstuff.h"
-#include "librpbase/TextFuncs.hpp"
 #include "librpbase/SystemRegion.hpp"
-#include "librpbase/file/IRpFile.hpp"
-#include "librpbase/file/FileSystem.hpp"
 using namespace LibRpBase;
 
-// libi18n
-#include "libi18n/i18n.h"
-
-// C includes. (C++ namespace)
-#include "librpbase/ctypex.h"
-#include <cassert>
-#include <cerrno>
-#include <cstring>
-#include <ctime>
-
-// C++ includes.
-#include <string>
-#include <vector>
+// C++ STL classes.
 using std::string;
 using std::vector;
 
@@ -176,7 +157,7 @@ bool SNESPrivate::isSnesRomHeaderValid(const SNES_RomHeader *romHeader, bool isH
 			if (ISALNUM(romHeader->snes.ext.id4[i])) {
 				// Alphanumeric character.
 				continue;
-			} else if (romHeader->snes.ext.id4[i] == ' ' && i >= 2) {
+			} else if (i >= 2 && romHeader->snes.ext.id4[i] == ' ') {
 				// Some game IDs are two characters,
 				// and the remaining characters are spaces.
 				continue;
@@ -489,6 +470,13 @@ int SNES::isRomSupported_static(const DetectInfo *info)
 				}
 			}
 		}
+
+		// Extra check for ".ic1", used by MAME for Nintendo Super System.
+		if (!strcasecmp(info->ext, ".ic1")) {
+			// File extension is supported.
+			// TODO: Special handling for NSS?
+			return SNESPrivate::ROM_SNES;
+		}
 	}
 
 	// TODO: BS-X heuristics.
@@ -628,6 +616,9 @@ const char *const *SNES::supportedFileExtensions_static(void)
 
 		// BS-X
 		".bs", ".bsx",
+
+		// Nintendo Super System (MAME) (TODO)
+		//".ic1",
 
 		nullptr
 	};
@@ -870,19 +861,22 @@ int SNES::loadFieldData(void)
 		NOP_C_("Region", "Other"),
 		NOP_C_("Region", "Other"),
 	};
-	const char *region_lkup = (romHeader->snes.destination_code < ARRAY_SIZE(region_tbl)
+	const char *const region_lkup = (romHeader->snes.destination_code < ARRAY_SIZE(region_tbl)
 					? region_tbl[romHeader->snes.destination_code]
 					: nullptr);
 
 	switch (d->romType) {
 		case SNESPrivate::ROM_SNES: {
 			// Region
-			const char *const region = (region_lkup
-				? dpgettext_expr(RP_I18N_DOMAIN, "Region Code", region_lkup)
-				: nullptr);
-			d->fields->addField_string(C_("RomData", "Region Code"),
-				region ? region : rp_sprintf(C_("RomData", "Unknown (0x%02X)"),
-					romHeader->snes.destination_code));
+			const char *const region_title = C_("RomData", "Region Code");
+			if (region_lkup) {
+				d->fields->addField_string(region_title,
+					dpgettext_expr(RP_I18N_DOMAIN, "Region", region_lkup));
+			} else {
+				d->fields->addField_string(region_title,
+					rp_sprintf(C_("RomData", "Unknown (0x%02X)"),
+						romHeader->snes.destination_code));
+			}
 
 			// Revision
 			d->fields->addField_string_numeric(C_("SNES", "Revision"),
@@ -936,10 +930,10 @@ int SNES::loadFieldData(void)
 					program_type = "65c816";
 					break;
 				case SNES_BSX_PRG_SCRIPT:
-					program_type = C_("SNES", "BS-X Script");
+					program_type = C_("SNES|ProgramType", "BS-X Script");
 					break;
 				case SNES_BSX_PRG_SA_1:
-					program_type = C_("SNES", "SA-1");
+					program_type = C_("SNES|ProgramType", "SA-1");
 					break;
 				default:
 					program_type = nullptr;
@@ -947,7 +941,8 @@ int SNES::loadFieldData(void)
 			}
 			const char *const program_type_title = C_("SNES", "Program Type");
 			if (program_type) {
-				d->fields->addField_string(program_type_title, program_type);
+				d->fields->addField_string(program_type_title,
+					dpgettext_expr(RP_I18N_DOMAIN, "SNES|ProgramType", program_type));
 			} else {
 				d->fields->addField_string(program_type_title,
 					rp_sprintf(C_("RomData", "Unknown (0x%08X)"),

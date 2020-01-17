@@ -3,14 +3,12 @@
  * byteswap.c: Byteswapping functions.                                     *
  * Standard version. (C code only)                                         *
  *                                                                         *
- * Copyright (c) 2008-2018 by David Korth                                  *
+ * Copyright (c) 2008-2019 by David Korth                                  *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+#include "stdafx.h"
 #include "byteswap.h"
-
-// C includes.
-#include <assert.h>
 
 /**
  * Byteswap two 16-bit WORDs in a 32-bit DWORD.
@@ -30,7 +28,7 @@ static inline uint32_t swap_two_16_in_32(uint32_t dword)
  * @param ptr Pointer to array to swap. (MUST be 16-bit aligned!)
  * @param n Number of bytes to swap. (Must be divisible by 2; an extra odd byte will be ignored.)
  */
-void __byte_swap_16_array_c(uint16_t *ptr, unsigned int n)
+void __byte_swap_16_array_c(uint16_t *ptr, size_t n)
 {
 	uint32_t *dwptr;
 
@@ -70,7 +68,7 @@ void __byte_swap_16_array_c(uint16_t *ptr, unsigned int n)
  * @param ptr Pointer to array to swap. (MUST be 32-bit aligned!)
  * @param n Number of bytes to swap. (Must be divisible by 4; extra bytes will be ignored.)
  */
-void __byte_swap_32_array_c(uint32_t *ptr, unsigned int n)
+void __byte_swap_32_array_c(uint32_t *ptr, size_t n)
 {
 	// Verify the block is 32-bit aligned
 	// and is a multiple of 4 bytes.

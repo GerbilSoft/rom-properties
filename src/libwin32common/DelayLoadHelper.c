@@ -78,7 +78,7 @@ static HMODULE WINAPI rp_loadLibrary(LPCSTR pszModuleName)
 	}
 	if (!match) {
 		// Not a match. Use standard delay-load.
-		return nullptr;
+		return NULL;
 	}
 
 	// NOTE: Delay-load only supports ANSI module names.
@@ -90,14 +90,14 @@ static HMODULE WINAPI rp_loadLibrary(LPCSTR pszModuleName)
 		// Cannot get the current module filename.
 		// TODO: Windows XP doesn't SetLastError() if the
 		// filename is too big for the buffer.
-		return nullptr;
+		return NULL;
 	}
 
 	// Find the last backslash in dll_fullpath[].
 	bs = _tcsrchr(dll_fullpath, _T('\\'));
 	if (!bs) {
 		// No backslashes...
-		return nullptr;
+		return NULL;
 	}
 
 	// Append the module name.
@@ -113,7 +113,7 @@ static HMODULE WINAPI rp_loadLibrary(LPCSTR pszModuleName)
 
 	// Attempt to load the DLL.
 	hDll = LoadLibrary(dll_fullpath);
-	if (hDll != nullptr) {
+	if (hDll != NULL) {
 		// DLL loaded successfully.
 		return hDll;
 	}
@@ -150,7 +150,7 @@ static FARPROC WINAPI rp_dliNotifyHook(unsigned int dliNotify, PDelayLoadInfo pd
 			break;
 	}
 
-	return nullptr;
+	return NULL;
 }
 
 // Set the delay-load notification hook.

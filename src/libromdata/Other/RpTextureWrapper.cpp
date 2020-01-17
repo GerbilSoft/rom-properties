@@ -6,41 +6,20 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "config.librptexture.h"
-
+#include "stdafx.h"
 #include "RpTextureWrapper.hpp"
-#include "librpbase/RomData_p.hpp"
 
 // librpbase
-#include "librpbase/common.h"
-#include "librpbase/byteswap.h"
-#include "librpbase/aligned_malloc.h"
-#include "librpbase/TextFuncs.hpp"
-#include "librpbase/file/IRpFile.hpp"
-
-#include "libi18n/i18n.h"
 using namespace LibRpBase;
 
 // librptexture
+#include "librptexture/FileFormatFactory.hpp"
 #include "librptexture/fileformat/FileFormat.hpp"
-// TEMPORARY: Switch to FileFormatFactory once it's available.
-#include "librptexture/fileformat/DirectDrawSurface.hpp"
-#ifdef ENABLE_GL
-# include "librptexture/fileformat/KhronosKTX.hpp"
-#endif /* ENABLE_GL */
-#include "librptexture/fileformat/SegaPVR.hpp"
-#include "librptexture/fileformat/ValveVTF.hpp"
-#include "librptexture/fileformat/ValveVTF3.hpp"
-#include "librptexture/fileformat/XboxXPR.hpp"
 using LibRpTexture::rp_image;
 using LibRpTexture::FileFormat;
+using LibRpTexture::FileFormatFactory;
 
-// C includes. (C++ namespace)
-#include <cassert>
-#include <cstring>
-
-// C++ includes.
-#include <vector>
+// C++ STL classes.
 using std::vector;
 
 namespace LibRomData {
@@ -105,56 +84,10 @@ RpTextureWrapper::RpTextureWrapper(IRpFile *file)
 		return;
 	}
 
-	// Read the texture's magic number.
-	uint32_t magic;
-	d->file->rewind();
-	size_t size = d->file->read(&magic, sizeof(magic));
-	if (size != sizeof(magic)) {
-		d->file->unref();
-		d->file = nullptr;
-		return;
-	}
-
-	// TODO: Create a factory class similar to RomDataFactory.
-	switch (be32_to_cpu(magic)) {
-		case 'DDS ':
-			// DirectDrawSurface
-			d->texture = new LibRpTexture::DirectDrawSurface(d->file);
-			break;
-#ifdef ENABLE_GL
-		case (uint32_t)'\xABKTX':
-			// KhronosKTX
-			d->texture = new LibRpTexture::KhronosKTX(d->file);
-			break;
-#endif /* ENABLE_GL */
-		case 'PVRT': case 'GVRT': case 'PVRX':
-		case 'GBIX': case 'GCIX':
-			// SegaPVR
-			d->texture = new LibRpTexture::SegaPVR(d->file);
-			break;
-		case 'VTF\0':
-			// ValveVTF
-			d->texture = new LibRpTexture::ValveVTF(d->file);
-			break;
-		case 'VTF3':
-			// ValveVTF3
-			d->texture = new LibRpTexture::ValveVTF3(d->file);
-			break;
-		case 'XPR0':
-			// XboxXPR
-			d->texture = new LibRpTexture::XboxXPR(d->file);
-			break;
-		default:
-			// Not supported.
-			d->file->unref();
-			d->file = nullptr;
-			return;
-	}
-
-	if (!d->texture->isValid()) {
+	// Create a FileFormat instance.
+	d->texture = FileFormatFactory::create(d->file);
+	if (!d->texture) {
 		// Not a valid texture.
-		d->texture->unref();
-		d->texture = nullptr;
 		d->file->unref();
 		d->file = nullptr;
 		return;
@@ -182,34 +115,9 @@ int RpTextureWrapper::isRomSupported_static(const DetectInfo *info)
 		return -1;
 	}
 
-	// TODO: Create a factory class similar to RomDataFactory.
-	const uint32_t *const pData32 = reinterpret_cast<const uint32_t*>(info->header.pData);
-	switch (be32_to_cpu(pData32[0])) {
-		case 'DDS ':
-			// DirectDrawSurface
-#ifdef ENABLE_GL
-		case (uint32_t)'\xABKTX':
-			// KhronosKTX
-#endif /* ENABLE_GL */
-		case 'PVRT': case 'GVRT': case 'PVRX':
-		case 'GBIX': case 'GCIX':
-			// SegaPVR
-		case 'VTF\0':
-			// ValveVTF
-		case 'VTF3':
-			// ValveVTF3
-		case 'XPR0':
-			// XboxXPR
-
-			// Supported!
-			return 0;
-
-		default:
-			break;
-	}
-
-	// Not supported.
-	return -1;
+	// TODO: FileFormatFactory::isTextureSupported()
+	// For now, delegate to FileFormatFactory::create().
+	return 0;
 }
 
 /**

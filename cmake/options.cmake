@@ -29,10 +29,11 @@ IF(UNIX AND NOT APPLE)
 	OPTION_UI(XFCE3 "Build the XFCE (GTK+ 3.x) plugin. (Thunar 1.8 and later)")
 	OPTION_UI(GNOME "Build the GNOME (GTK+ 3.x) plugin.")
 	OPTION_UI(MATE "Build the MATE (GTK+ 3.x) plugin.")
+	OPTION_UI(CINNAMON "Build the Cinnamon (GTK+ 3.x) plugin.")
 
 	# Set BUILD_GTK2 and/or BUILD_GTK3 depending on frontends.
 	SET(BUILD_GTK2 ${BUILD_XFCE} CACHE INTERNAL "Check for GTK+ 2.x." FORCE)
-	IF(BUILD_GNOME OR BUILD_XFCE3 OR BUILD_MATE)
+	IF(BUILD_GNOME OR BUILD_XFCE3 OR BUILD_MATE OR BUILD_CINNAMON)
 		SET(BUILD_GTK3 ON CACHE INTERNAL "Check for GTK+ 3.x." FORCE)
 	ELSE()
 		SET(BUILD_GTK3 OFF CACHE INTERNAL "Check for GTK+ 3.x." FORCE)
@@ -74,14 +75,23 @@ ENDIF(WIN32)
 # TODO: Tri-state like UI frontends.
 OPTION(ENABLE_DECRYPTION "Enable decryption for newer ROM and disc images." ON)
 
-# Enable OpenGL for Khronos KTX support.
-OPTION(ENABLE_GL "Enable OpenGL for Khronos KTX support." ON)
-
 # Enable UnICE68 for Atari ST SNDH files. (GPLv3)
 OPTION(ENABLE_UNICE68 "Enable UnICE68 for Atari ST SNDH files. (GPLv3)" ON)
 
 # Enable libmspack-xenia for Xbox 360 executables.
 OPTION(ENABLE_LIBMSPACK "Enable libmspack-xenia for Xbox 360 executables." ON)
+
+# Enable the PowerVR Native SDK subset for PVRTC decompression.
+OPTION(ENABLE_PVRTC "Enable the PowerVR Native SDK subset for PVRTC decompression." ON)
+
+# Enable precompiled headers.
+# FIXME: Not working properly on older gcc. Use cmake-3.16.0's built-in PCH?
+IF(MSVC)
+	SET(PCH_DEFAULT ON)
+ELSE()
+	SET(PCH_DEFAULT OFF)
+ENDIF()
+OPTION(ENABLE_PCH "Enable precompiled headers for faster builds." ${PCH_DEFAULT})
 
 # Link-time optimization.
 # FIXME: Not working in clang builds and Ubuntu's gcc...
@@ -107,3 +117,10 @@ OPTION(ENABLE_COVERAGE "Enable code coverage checking. (gcc/clang only)" OFF)
 
 # Enable NLS. (internationalization)
 OPTION(ENABLE_NLS "Enable NLS using gettext for localized messages." ON)
+
+IF(WIN32 AND MSVC)
+	# Enable compatibility with older Windows.
+	OPTION(ENABLE_OLDWINCOMPAT "Enable compatibility with Windows 2000 with MSVC 2010+. (forces static CRT)" OFF)
+ELSE(WIN32 AND MSVC)
+	SET(ENABLE_OLDWINCOMPAT OFF)
+ENDIF(WIN32 AND MSVC)

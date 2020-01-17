@@ -2,14 +2,12 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * NintendoPublishers.cpp: Nintendo third-party publishers list.           *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2019 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+#include "stdafx.h"
 #include "NintendoPublishers.hpp"
-
-// C includes.
-#include <stdlib.h>
 
 namespace LibRomData {
 
@@ -268,6 +266,7 @@ const NintendoPublishersPrivate::ThirdPartyEntry NintendoPublishersPrivate::thir
 	{'8F',	"I'Max"},
 	{'8G',	"Saurus"},
 	{'8J',	"General Entertainment"},
+	{'8M',	"Cyberfront Korea"},
 	{'8N',	"Success"},
 	{'8P',	"Sega Japan"},
 	{'90',	"Takara Amusement"},
@@ -406,7 +405,7 @@ const NintendoPublishersPrivate::ThirdPartyEntry NintendoPublishersPrivate::thir
 	{'FQ',	"iQue"},
 	{'FR',	"Digital Tainment Pool"},
 	{'FS',	"XS Games / Jack Of All Games"},
-	{'FT',	"Daiwon"},
+	{'FT',	"Daewon Media"},
 	{'G0',	"Alpha Unit"},
 	{'G1',	"PCCW Japan"},
 	{'G2',	"Yuke's Media Creations"},
@@ -482,6 +481,7 @@ const NintendoPublishersPrivate::ThirdPartyEntry NintendoPublishersPrivate::thir
 	{'YF',	"O2 Games"},
 	{'YM',	"Bergsala Lightweight"},
 	{'YT',	"Valcon Games"},
+	{'Z1',	"Barunson Creative"},
 	{'Z4',	"Ntreev Soft"},
 	{'ZA',	"WBA Interactive"},
 	{'ZH',	"Internal Engine"},

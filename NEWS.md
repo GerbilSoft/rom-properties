@@ -1,6 +1,6 @@
 # Changes
 
-## v1.5 (released 2019/??/??)
+## v1.5 (released 2020/??/??)
 
 * New features:
   * Improved support for FreeBSD and DragonFly BSD:
@@ -13,10 +13,42 @@
     * FIXME: Need to make use of the cache in the "contiguous" read section.
   * Image handling has been split from librpbase to librptexture. This will
     allow the texture decoding functionality to be used by other programs.
+  * Key Manager: Import the Korean key from Wii keys.bin if it's present.
+  * Added a UI frontend for the Cinnamon Desktop Environment using the Nemo
+    file browser.
+  * Cached files now contain origin information indicating the URL they were
+    downloaded from. This can be disabled in rp-config if it isn't wanted.
+  * The GTK+ frontends now support GVfs for network transparency.
+  * KDE frontend: Icons can now be dragged and dropped from the property tab
+    to another file browser window to extract them. This includes the icon,
+    banner, and icons from ListView widgets.
+    * Drag & drop support for Win32 and GTK+ may be implemented before release.
+
+* New parsers:
+  * DidjTex: Leapster Didj .tex and .texs texture files. For .texs, currently
+    only the first texture of the archive is supported.
+  * PowerVR3: PowerVR 3.0.0 textures. Used mainly by iOS applications. Not
+    related to Sega Dreamcast PVR format.
+  * PokemonMini: Pokémon Mini ROM images.
 
 * New parser features:
   * WiiWAD, iQuePlayer: Display the console IDs from tickets. This is usually
     0x00000000 for system titles and unlicensed copies.
+  * KhronosKTX: Added support for BPTC (BC7) texture compression.
+  * amiibo: Updated the internal database to be current as of 2020/01/11.
+    Added some missing entries and fixed a few incorrect entries.
+
+* New compressed texture formats:
+  * PowerVR Texture Compression. Supports PVRTC-I 2bpp and 4bpp in PowerVR
+    3.0.0, Khronos KTX, and DirectDraw Surface texture files. Uses code from
+    the PowerVR Native SDK, which is redistributable under the MIT License.
+  * PVRTC-II is partially supported.
+    * TODO: Hard transition flag, images that aren't a multiple of the
+      tile size.
+  * RGB9_E5 is now supported in PowerVR 3.0, KTX, and DDS textures.
+    * KTX and DDS are untested and may need adjustments.
+    * RGB9_E5 is an HDR format, but rom-properties currently converts it
+      to ARGB32 (LDR) for display purposes.
 
 * Bug fixes:
   * Fixed misdetection of NCCH sections if keys are missing.
@@ -30,6 +62,24 @@
     happen if the texture format is swizzled but texture decoding fails.
   * SegaPVR: Added the .svr extension. Without this, SVR decoding doesn't
     work on Windows because it doesn't get registered for .svr files.
+  * Fixed detection issues that caused the Nintendo DS ROM image "Live On
+    Card Live-R DS" to be detected as an Xbox 360 STFS package. Reported by
+    @Whovian9369.
+  * Fixed transparent gzip decompression for files where the gzipped version
+    is actually larger than the uncompressed version.
+  * KhronosKTX: The metadata keys should be treated as case-insensitive, since
+    some programs write "KTXOrientation" instead of "KTXorientation".
+  * dll-search.c: The Mate Desktop check incorrectly had two entries for MATE
+    and lacked an entry for GNOME.
+  * Nintendo3DS: Fixed NCCH detection for CFAs with an "icon" file but no
+    ".code" file, which is usually the case for DLC CIAs.
+    https://github.com/GerbilSoft/rom-properties/issues/208
+  * GameCube: Fixed the GameTDB region code for Italy.
+  * CurlDownloader: Use a case-insensitive check for HTTP headers.
+    cURL provides headers in lowercase when accessing an HTTP/2 server.
+    This fixes handling of mtimes and content length.
+  * UrlmonDownloader: Handle ERROR_INSUFFICIENT_BUFFER for the cache info
+    entry correctly. Otherwise, we won't get the mtime.
 
 * Other changes:
   * Removed the internal copy of libjpeg-turbo. On Windows, gdiplus is now
@@ -38,6 +88,8 @@
     is staying put.
   * Xbox360_XEX: A warning is now shown if a required encryption key isn't
     available.
+  * MegaDrive: Do a quick check of the 32X security code to verify that a
+    32X ROM is in fact for 32X.
 
 ## v1.4.3 (released 2019/09/16)
 
@@ -133,7 +185,7 @@
       the ISO-9660 PVD using the new ISO-9660 parser.
   * XboxDisc: Xbox and Xbox 360 disc image parser.
     * Reads default.xbe and/or default.xex from the XDVDFS partition and
-      calls the appropriate parser to handle thise files.
+      calls the appropriate parser to handle these files.
     * Supports reading original discs if a supported DVD-ROM drive with Kreon
       firmware is connected.
   * Xbox_XBE: Original Xbox executables.

@@ -6,6 +6,7 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+#include "stdafx.h"
 #include "config.librpbase.h"
 #include "TextFuncs.hpp"
 #include "TextFuncs_NULL.hpp"
@@ -37,16 +38,7 @@
 # include <iconv.h>
 #endif
 
-// C includes.
-#include <stdlib.h>
-
-// C includes. (C++ namespace)
-#include <cassert>
-#include <cstdio>
-
-// C++ includes.
-#include <string>
-using std::basic_string;
+// C++ STL classes.
 using std::string;
 using std::u16string;
 
@@ -73,7 +65,7 @@ static char *rp_iconv(const char *src, int len,
 	static_assert(sizeof(wchar_t) != sizeof(char16_t), "RP_WIS16 is not defined, but wchar_t is 16-bit!");
 #endif /* RP_WIS16 */
 	assert(src != nullptr);
-	assert(len > 0);
+	//assert(len > 0);	// Don't assert on empty strings.
 	assert(src_charset != nullptr);
 	assert(dest_charset != nullptr);
 	if (!src || len <= 0 || !src_charset || !dest_charset)

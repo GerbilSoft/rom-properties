@@ -6,37 +6,24 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+#include "stdafx.h"
 #include "librpbase/config.librpbase.h"
 #include "libromdata/config.libromdata.h"
-// TODO: Remove after adding FileFormatFactory.
-#include "librptexture/config.librptexture.h"
 
 #include "RomDataFactory.hpp"
 
 // librpbase
-#include "librpbase/common.h"
-#include "librpbase/byteswap.h"
-#include "librpbase/RomData.hpp"
-#include "librpbase/file/IRpFile.hpp"
-#include "librpbase/file/FileSystem.hpp"
 #include "librpbase/file/RelatedFile.hpp"
-#include "librpbase/threads/pthread_once.h"
 using namespace LibRpBase;
+
+// librpthreads
+#include "librpthreads/pthread_once.h"
 
 // librptexture
 #include "librptexture/FileFormatFactory.hpp"
 using LibRpTexture::FileFormatFactory;
 
-// C includes. (C++ namespace)
-#include <cassert>
-#include <cstring>
-
-// C++ includes.
-#include <algorithm>
-#include <string>
-#include <unordered_map>
-#include <unordered_set>
-#include <vector>
+// C++ STL classes.
 using std::string;
 using std::unordered_map;
 using std::unordered_set;
@@ -80,6 +67,7 @@ using std::vector;
 #include "Handheld/Nintendo3DSFirm.hpp"
 #include "Handheld/Nintendo3DS_SMDH.hpp"
 #include "Handheld/NintendoDS.hpp"
+#include "Handheld/PokemonMini.hpp"
 #include "Handheld/VirtualBoy.hpp"
 
 // RomData subclasses: Audio
@@ -251,9 +239,6 @@ const RomDataFactoryPrivate::RomDataFns RomDataFactoryPrivate::romDataFns_magic[
 	// Consoles
 	GetRomDataFns_addr(WiiWIBN, ATTR_HAS_THUMBNAIL, 0, 'WIBN'),
 	GetRomDataFns_addr(Xbox_XBE, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'XBEH'),
-	GetRomDataFns_addr(Xbox360_STFS, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'CON '),
-	GetRomDataFns_addr(Xbox360_STFS, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'PIRS'),
-	GetRomDataFns_addr(Xbox360_STFS, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'LIVE'),
 	GetRomDataFns_addr(Xbox360_XDBF, ATTR_HAS_THUMBNAIL, 0, 'XDBF'),
 	GetRomDataFns_addr(Xbox360_XEX, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'XEX1'),
 	GetRomDataFns_addr(Xbox360_XEX, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'XEX2'),
@@ -265,20 +250,8 @@ const RomDataFactoryPrivate::RomDataFns RomDataFactoryPrivate::romDataFns_magic[
 	GetRomDataFns_addr(NGPC, ATTR_HAS_METADATA, 12, ' SNK'),
 	GetRomDataFns_addr(Nintendo3DSFirm, ATTR_NONE, 0, 'FIRM'),
 	GetRomDataFns_addr(Nintendo3DS_SMDH, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'SMDH'),
-
-	// RpTextureWrapper
-	GetRomDataFns_addr(RpTextureWrapper, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'DDS '),
-#ifdef ENABLE_GL
-	GetRomDataFns_addr(RpTextureWrapper, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, (uint32_t)'\xABKTX'),
-#endif /* ENABLE_GL */
-	GetRomDataFns_addr(RpTextureWrapper, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'PVRT'),
-	GetRomDataFns_addr(RpTextureWrapper, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'GVRT'),
-	GetRomDataFns_addr(RpTextureWrapper, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'PVRX'),
-	GetRomDataFns_addr(RpTextureWrapper, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'GBIX'),
-	GetRomDataFns_addr(RpTextureWrapper, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'GCIX'),
-	GetRomDataFns_addr(RpTextureWrapper, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'VTF\0'),
-	GetRomDataFns_addr(RpTextureWrapper, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'VTF3'),
-	GetRomDataFns_addr(RpTextureWrapper, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'XPR0'),
+	GetRomDataFns_addr(NintendoDS, ATTR_HAS_THUMBNAIL | ATTR_HAS_DPOVERLAY | ATTR_HAS_METADATA, 0xC0, 0x24FFAE51),
+	GetRomDataFns_addr(NintendoDS, ATTR_HAS_THUMBNAIL | ATTR_HAS_DPOVERLAY | ATTR_HAS_METADATA, 0xC0, 0xC8604FE2),
 
 	// Audio
 	GetRomDataFns_addr(BRSTM, ATTR_HAS_METADATA, 0, 'RSTM'),
@@ -289,6 +262,13 @@ const RomDataFactoryPrivate::RomDataFns RomDataFactoryPrivate::romDataFns_magic[
 
 	// Other
 	GetRomDataFns_addr(ELF, ATTR_NONE, 0, '\177ELF'),
+
+	// Consoles: Xbox 360 STFS
+	// Moved here to prevent conflicts with the Nintendo DS ROM image
+	// "Live On Card Live-R DS".
+	GetRomDataFns_addr(Xbox360_STFS, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'CON '),
+	GetRomDataFns_addr(Xbox360_STFS, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'PIRS'),
+	GetRomDataFns_addr(Xbox360_STFS, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'LIVE'),
 
 	{nullptr, nullptr, nullptr, nullptr, ATTR_NONE, 0, 0}
 };
@@ -315,7 +295,6 @@ const RomDataFactoryPrivate::RomDataFns RomDataFactoryPrivate::romDataFns_header
 
 	// Handhelds
 	GetRomDataFns(Nintendo3DS, ATTR_HAS_THUMBNAIL | ATTR_HAS_DPOVERLAY | ATTR_HAS_METADATA),
-	GetRomDataFns(NintendoDS, ATTR_HAS_THUMBNAIL | ATTR_HAS_DPOVERLAY | ATTR_HAS_METADATA),
 
 	// Audio
 	GetRomDataFns(ADX, ATTR_HAS_METADATA),
@@ -341,6 +320,7 @@ const RomDataFactoryPrivate::RomDataFns RomDataFactoryPrivate::romDataFns_header
 
 	// Headers with non-zero addresses.
 	GetRomDataFns_addr(Sega8Bit, ATTR_HAS_METADATA, 0x7FE0, 0x20),
+	GetRomDataFns_addr(PokemonMini, ATTR_HAS_METADATA, 0x2100, 0xD0),
 	// NOTE: game.com may be at either 0 or 0x40000.
 	// The 0 address is checked above.
 	GetRomDataFns_addr(GameCom, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0x40000, 0x20),
@@ -601,6 +581,19 @@ RomData *RomDataFactory::create(IRpFile *file, unsigned int attrs)
 				romData->unref();
 			}
 		}
+	}
+
+	// Check for supported textures.
+	{
+		// TODO: RpTextureWrapper::isRomSupported()?
+		RomData *const romData = new RpTextureWrapper(file);
+		if (romData->isValid()) {
+			// RomData subclass obtained.
+			return romData;
+		}
+
+		// Not actually supported.
+		romData->unref();
 	}
 
 	// Check other RomData subclasses that take a header,

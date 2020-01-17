@@ -6,6 +6,7 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+#include "stdafx.h"
 #include "ConfReader.hpp"
 #include "ConfReader_p.hpp"
 
@@ -15,14 +16,6 @@
 #ifdef _WIN32
 # include "TextFuncs_wchar.hpp"
 #endif
-
-// C includes.
-#include <stdlib.h>
-
-// C includes. (C++ namespace)
-#include <cerrno>
-#include <cmath>
-#include <ctime>
 
 namespace LibRpBase {
 

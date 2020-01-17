@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * OptionsTab.cpp: Options tab for rp-config.                              *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -11,19 +11,9 @@
 #include "res/resource.h"
 
 // librpbase
-#include "librpbase/TextFuncs.hpp"
-#include "librpbase/TextFuncs_wchar.hpp"
-#include "librpbase/config/Config.hpp"
 using LibRpBase::Config;
 
-// libi18n
-#include "libi18n/i18n.h"
-
-// C includes. (C++ namespace)
-#include <cassert>
-
-// C++ includes.
-#include <string>
+// C++ STL classes.
 using std::tstring;
 
 class OptionsTabPrivate
@@ -139,6 +129,7 @@ void OptionsTabPrivate::reset(void)
 	CheckDlgButton(hWndPropSheet, IDC_EXTIMGDL, boolToBstChecked(config->extImgDownloadEnabled()));
 	CheckDlgButton(hWndPropSheet, IDC_INTICONSMALL, boolToBstChecked(config->useIntIconForSmallSizes()));
 	CheckDlgButton(hWndPropSheet, IDC_HIGHRESDL, boolToBstChecked(config->downloadHighResScans()));
+	CheckDlgButton(hWndPropSheet, IDC_STOREFILEORIGININFO, boolToBstChecked(config->storeFileOriginInfo()));
 	CheckDlgButton(hWndPropSheet, IDC_DANGEROUSPERMISSIONS,
 		boolToBstChecked(config->showDangerousPermissionsOverlayIcon()));
 	CheckDlgButton(hWndPropSheet, IDC_ENABLETHUMBNAILONNETWORKFS,
@@ -159,6 +150,7 @@ void OptionsTabPrivate::loadDefaults(void)
 	static const bool extImgDownloadEnabled_default = true;
 	static const bool useIntIconForSmallSizes_default = true;
 	static const bool downloadHighResScans_default = true;
+	static const bool storeFileOriginInfo_default = true;
 	static const bool showDangerousPermissionsOverlayIcon_default = true;
 	static const bool enableThumbnailOnNetworkFS_default = false;
 	bool isDefChanged = false;
@@ -176,6 +168,12 @@ void OptionsTabPrivate::loadDefaults(void)
 	cur = bstCheckedToBool(IsDlgButtonChecked(hWndPropSheet, IDC_HIGHRESDL));
 	if (cur != downloadHighResScans_default) {
 		CheckDlgButton(hWndPropSheet, IDC_HIGHRESDL, boolToBstChecked(downloadHighResScans_default));
+		isDefChanged = true;
+	}
+	cur = bstCheckedToBool(IsDlgButtonChecked(hWndPropSheet, IDC_STOREFILEORIGININFO));
+	if (cur != storeFileOriginInfo_default) {
+		CheckDlgButton(hWndPropSheet, IDC_STOREFILEORIGININFO,
+			boolToBstChecked(storeFileOriginInfo_default));
 		isDefChanged = true;
 	}
 	cur = bstCheckedToBool(IsDlgButtonChecked(hWndPropSheet, IDC_DANGEROUSPERMISSIONS));
@@ -222,6 +220,9 @@ void OptionsTabPrivate::save(void)
 
 	btstr = bstCheckedToBoolString(IsDlgButtonChecked(hWndPropSheet, IDC_HIGHRESDL));
 	WritePrivateProfileString(_T("Downloads"), _T("DownloadHighResScans"), btstr, U82T_c(filename));
+
+	btstr = bstCheckedToBoolString(IsDlgButtonChecked(hWndPropSheet, IDC_STOREFILEORIGININFO));
+	WritePrivateProfileString(_T("Downloads"), _T("StoreFileOriginInfo"), btstr, U82T_c(filename));
 
 	btstr = bstCheckedToBoolString(IsDlgButtonChecked(hWndPropSheet, IDC_DANGEROUSPERMISSIONS));
 	WritePrivateProfileString(_T("Options"), _T("ShowDangerousPermissionsOverlayIcon"), btstr, U82T_c(filename));

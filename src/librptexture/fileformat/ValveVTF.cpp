@@ -11,36 +11,24 @@
  * - https://developer.valvesoftware.com/wiki/Valve_Texture_Format
  */
 
+#include "stdafx.h"
 #include "ValveVTF.hpp"
 #include "FileFormat_p.hpp"
 
 #include "vtf_structs.h"
 
 // librpbase
-#include "librpbase/common.h"
-#include "librpbase/byteswap.h"
 #include "librpbase/bitstuff.h"
-#include "librpbase/aligned_malloc.h"
-#include "librpbase/RomFields.hpp"
-#include "librpbase/TextFuncs.hpp"
-#include "librpbase/file/IRpFile.hpp"
-using namespace LibRpBase;
+using LibRpBase::IRpFile;
+using LibRpBase::rp_sprintf;
+using LibRpBase::RomFields;
 
 // librptexture
 #include "img/rp_image.hpp"
 #include "decoder/ImageDecoder.hpp"
 
-// C includes. (C++ namespace)
-#include <cassert>
-#include <cerrno>
-#include <cstring>
-
-// C++ includes.
-#include <algorithm>
-#include <string>
-#include <vector>
+// C++ STL classes.
 using std::string;
-//using std::unique_ptr;
 using std::vector;
 
 namespace LibRpTexture {
@@ -105,8 +93,9 @@ class ValveVTFPrivate : public FileFormatPrivate
 
 		/**
 		 * Get mipmap information.
+		 * @return 0 on success; negative POSIX error code on error.
 		 */
-		void getMipmapInfo(void);
+		int getMipmapInfo(void);
 
 		/**
 		 * Load the image.
@@ -313,19 +302,24 @@ unsigned int ValveVTFPrivate::getMinBlockSize(VTF_IMAGE_FORMAT format)
 
 /**
  * Get mipmap information.
+ * @return 0 on success; non-zero on error.
  */
-void ValveVTFPrivate::getMipmapInfo(void)
+int ValveVTFPrivate::getMipmapInfo(void)
 {
 	if (!mipmaps.empty()) {
 		// Mipmap info was already obtained.
-		return;
+		return 0;
 	}
 
 	// Resize based on mipmap count.
 	unsigned int mipmapCount = vtfHeader.mipmapCount;
+	assert(mipmapCount <= 128);
 	if (mipmapCount == 0) {
 		// No mipmaps == one image.
 		mipmapCount = 1;
+	} else if (mipmapCount > 128) {
+		// Too many mipmaps...
+		return -ENOMEM;
 	}
 
 	// Starting address.
@@ -360,15 +354,19 @@ void ValveVTFPrivate::getMipmapInfo(void)
 		row_width, height);
 	if (mipmap_size == 0) {
 		// Invalid image size.
-		return;
+		return -EIO;
+	}
+
+	const unsigned int minBlockSize = getMinBlockSize(
+		static_cast<VTF_IMAGE_FORMAT>(vtfHeader.highResImageFormat));
+	if (minBlockSize == 0) {
+		// Invalid minimum block size.
+		return -EIO;
 	}
 
 	// Set up mipmap arrays.
 	mipmaps.resize(mipmapCount);
 	mipmap_data.resize(mipmapCount);
-
-	const unsigned int minBlockSize = getMinBlockSize(
-		static_cast<VTF_IMAGE_FORMAT>(vtfHeader.highResImageFormat));
 
 	// Mipmaps are stored from smallest to largest.
 	// Calculate mipmap sizes and width/height first.
@@ -399,6 +397,9 @@ void ValveVTFPrivate::getMipmapInfo(void)
 		mdata.addr = addr;
 		addr += mdata.size;
 	}
+
+	// Done calculating mipmaps.
+	return 0;
 }
 
 /**
@@ -449,7 +450,13 @@ const rp_image *ValveVTFPrivate::loadImage(int mip)
 	const uint32_t file_sz = static_cast<uint32_t>(file->size());
 
 	// Make sure we have the mipmap info.
-	getMipmapInfo();
+	int ret = getMipmapInfo();
+	assert(ret == 0);
+	assert(!mipmap_data.empty());
+	if (ret != 0 || mipmap_data.empty()) {
+		// Error getting the mipmap info.
+		return nullptr;
+	}
 	const auto &mdata = mipmap_data[mip];
 
 	// TODO: Handle environment maps (6-faced cube map) and volumetric textures.
@@ -819,7 +826,9 @@ const char *ValveVTF::pixelFormat(void) const
 	const int fmt = d->vtfHeader.highResImageFormat;
 
 	if (fmt >= 0 && fmt < ARRAY_SIZE(d->img_format_tbl)) {
-		return d->img_format_tbl[fmt];
+		if (d->img_format_tbl[fmt] != nullptr) {
+			return d->img_format_tbl[fmt];
+		}
 	} else if (fmt < 0) {
 		// Negative == none (usually -1)
 		// TODO: Localization?

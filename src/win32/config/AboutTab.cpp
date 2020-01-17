@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * AboutTab.cpp: About tab for rp-config.                                  *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -12,28 +12,15 @@
 #include "AboutTab.hpp"
 #include "res/resource.h"
 
-// libwin32common
-#include "libwin32common/WinUI.hpp"
-
 // librpbase
-#include "librpbase/TextFuncs.hpp"
-#include "librpbase/TextFuncs_wchar.hpp"
 #include "librpbase/config/AboutTabText.hpp"
 using namespace LibRpBase;
-
-// libi18n
-#include "libi18n/i18n.h"
 
 // Property sheet icon.
 // Extracted from imageres.dll or shell32.dll.
 #include "PropSheetIcon.hpp"
 
-// C includes. (C++ namespace)
-#include <cassert>
-#include <cstring>
-
-// C++ includes.
-#include <string>
+// C++ STL classes.
 using std::string;
 using std::wstring;
 using std::u16string;
@@ -545,7 +532,22 @@ void AboutTabPrivate::initProgramTitleText(void)
 			s_version += AboutTabText::git_describe;
 		}
 	}
-	SetWindowText(hStaticVersion, U82T_s(s_version));
+	const tstring st_version = U82T_s(s_version);
+	SetWindowText(hStaticVersion, st_version.c_str());
+
+	// Reduce the vertical size of hStaticVersion to fit the text.
+	// High DPI (e.g. 150% on 1920x1080) can cause the label to
+	// overlap the tab control.
+	// FIXME: If we have too many lines of text, this might still cause problems.
+	SIZE sz_hStaticVersion;
+	int ret = LibWin32Common::measureTextSize(hWndPropSheet, hFontDlg, st_version.c_str(), &sz_hStaticVersion);
+	if (ret == 0) {
+		RECT rectStaticVersion;
+		GetWindowRect(hStaticVersion, &rectStaticVersion);
+		SetWindowPos(hStaticVersion, 0, 0, 0,
+			rectStaticVersion.right - rectStaticVersion.left, sz_hStaticVersion.cy,
+			SWP_NOZORDER | SWP_NOOWNERZORDER | SWP_NOMOVE);
+	}
 
 	// Set the icon.
 	HICON hIcon = PropSheetIcon::get96Icon();
@@ -694,7 +696,7 @@ void AboutTabPrivate::initCreditsTab(void)
 void AboutTabPrivate::initLibrariesTab(void)
 {
 	sLibraries.clear();
-	sLibraries.reserve(4096);
+	sLibraries.reserve(8192);
 
 	// RTF starting sequence.
 	sLibraries = RTF_START;
@@ -716,8 +718,9 @@ void AboutTabPrivate::initLibrariesTab(void)
 #ifdef HAVE_PNG
 	sLibraries += RTF_BR RTF_BR
 		"Compiled with libpng " PNG_LIBPNG_VER_STRING "." RTF_BR
-		"libpng version 1.6.34 - September 29, 2017" RTF_BR
-		"Copyright (c) 1998-2002,2004,2006-2017 Glenn Randers-Pehrson" RTF_BR
+		"libpng version 1.6.37 - April 14, 2019" RTF_BR
+		"Copyright (c) 2018-2019 Cosmin Truta" RTF_BR
+		"Copyright (c) 1998-2002,2004,2006-2018 Glenn Randers-Pehrson" RTF_BR
 		"Copyright (c) 1996-1997 Andreas Dilger" RTF_BR
 		"Copyright (c) 1995-1996 Guy Eric Schalnat, Group 42, Inc." RTF_BR
 		"http://www.libpng.org/pub/png/libpng.html" RTF_BR
@@ -737,7 +740,7 @@ void AboutTabPrivate::initLibrariesTab(void)
 	sLibraries += sXmlVersion;
 	sLibraries += '.';
 	sLibraries += RTF_BR
-		"Copyright (C) 2000-2017 Lee Thomason" RTF_BR
+		"Copyright (C) 2000-2019 Lee Thomason" RTF_BR
 		"http://www.grinninglizard.com/" RTF_BR
 		"License: zlib license";
 #endif /* ENABLE_XML */

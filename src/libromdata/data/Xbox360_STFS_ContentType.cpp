@@ -6,14 +6,9 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+#include "stdafx.h"
 #include "Xbox360_STFS_ContentType.hpp"
 #include "../Console/xbox360_stfs_structs.h"
-
-// libi18n
-#include "libi18n/i18n.h"
-
-// C includes.
-#include <stdlib.h>
 
 namespace LibRomData {
 

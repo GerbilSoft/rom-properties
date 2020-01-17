@@ -2,16 +2,15 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * NintendoLanguage.hpp: Get the system language for Nintendo systems.     *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2019 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+#include "stdafx.h"
 #include "NintendoLanguage.hpp"
+
 #include "librpbase/SystemRegion.hpp"
 using LibRpBase::SystemRegion;
-
-// C includes. (C++ namespace)
-#include <cassert>
 
 // Nintendo system structs.
 #include "Console/gcn_banner.h"
@@ -151,9 +150,19 @@ int NintendoLanguage::getN3DSLanguage(void)
 		case 'es':
 			return N3DS_LANG_SPANISH;
 		case 'zh':
-			// TODO: Simplified vs. Traditional?
-			// May need to check the country code.
-			return N3DS_LANG_CHINESE_SIMP;
+			// Check the country code for simplified vs. traditional.
+			// NOTE: Defaulting to traditional if country code isn't available,
+			// since Nintendo products more commonly have traditional Chinese
+			// translations compared to simplified Chinese.
+			switch (SystemRegion::getCountryCode()) {
+				case 'CN':
+				case 'SG':
+					return N3DS_LANG_CHINESE_SIMP;
+				case 'TW':
+				case 'HK':
+				default:
+					return N3DS_LANG_CHINESE_TRAD;
+			}
 		case 'ko':
 			return N3DS_LANG_KOREAN;
 		case 'nl':

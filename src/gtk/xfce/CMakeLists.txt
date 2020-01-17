@@ -5,10 +5,11 @@ PROJECT(rom-properties-xfce)
 # Find packages.
 FIND_PACKAGE(GLib2 ${REQUIRE_XFCE} 2.26.0)
 FIND_PACKAGE(GObject2 ${REQUIRE_XFCE} 2.26.0)
+FIND_PACKAGE(GIO ${REQUIRE_XFCE} 2.26.0)
 FIND_PACKAGE(GdkPixbuf2 ${REQUIRE_XFCE})
 # GTK2 minimum is 2.0.0, so no version check is needed.
 FIND_PACKAGE(GTK2 ${REQUIRE_XFCE} COMPONENTS gtk)
-IF(GLib2_FOUND AND GObject2_FOUND AND GdkPixbuf2_FOUND AND GTK2_FOUND)
+IF(GLib2_FOUND AND GObject2_FOUND AND GIO_FOUND AND GdkPixbuf2_FOUND AND GTK2_FOUND)
 	# Find the ThunarX 2 library.
 	FIND_PACKAGE(ThunarX2 ${REQUIRE_XFCE})
 	IF(NOT ThunarX2_FOUND)
@@ -16,11 +17,11 @@ IF(GLib2_FOUND AND GObject2_FOUND AND GdkPixbuf2_FOUND AND GTK2_FOUND)
 		# Disable the XFCE frontend.
 		SET(BUILD_XFCE OFF CACHE INTERNAL "Build the XFCE (GTK+ 2.x) plugin. (Thunar 1.7 and earlier)" FORCE)
 	ENDIF(NOT ThunarX2_FOUND)
-ELSE(GLib2_FOUND AND GObject2_FOUND AND GdkPixbuf2_FOUND AND GTK2_FOUND)
+ELSE(GLib2_FOUND AND GObject2_FOUND AND GIO_FOUND AND GdkPixbuf2_FOUND AND GTK2_FOUND)
 	# GTK+ 2.x (or required dependencies) were not found.
 	# Disable the XFCE frontend.
 	SET(BUILD_XFCE OFF CACHE INTERNAL "Build the XFCE (GTK+ 2.x) plugin. (Thunar 1.7 and earlier)" FORCE)
-ENDIF(GLib2_FOUND AND GObject2_FOUND AND GdkPixbuf2_FOUND AND GTK2_FOUND)
+ENDIF(GLib2_FOUND AND GObject2_FOUND AND GIO_FOUND AND GdkPixbuf2_FOUND AND GTK2_FOUND)
 
 # Sources and headers. (GTK+ common)
 STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-xfce_SRCS  "${rom-properties-gtk_SRCS}")
@@ -35,10 +36,8 @@ IF(rom-properties-gtk2_SSSE3_SRCS)
 
 	# Disable LTO on the IFUNC files if LTO is known to be broken.
 	IF(GCC_5xx_LTO_ISSUES)
-		FOREACH(ifunc_file ${rom-properties-xfce_IFUNC_SRCS})
-			SET_SOURCE_FILES_PROPERTIES(${ifunc_file}
-				APPEND_STRING PROPERTIES COMPILE_FLAGS " -fno-lto ")
-		ENDFOREACH()
+		SET_SOURCE_FILES_PROPERTIES(${rom-properties-xfce_IFUNC_SRCS}
+			APPEND_STRING PROPERTIES COMPILE_FLAGS " -fno-lto ")
 	ENDIF(GCC_5xx_LTO_ISSUES)
 
 	IF(MSVC AND NOT CMAKE_CL_64)
@@ -48,10 +47,8 @@ IF(rom-properties-gtk2_SSSE3_SRCS)
 		SET(SSSE3_FLAG "-mssse3")
 	ENDIF()
 	IF(SSSE3_FLAG)
-		FOREACH(ssse3_file ${rom-properties-xfce_SSSE3_SRCS})
-			SET_SOURCE_FILES_PROPERTIES(${ssse3_file}
-				APPEND_STRING PROPERTIES COMPILE_FLAGS " ${SSSE3_FLAG} ")
-		ENDFOREACH(ssse3_file ${rom-properties-xfce_SSSE3_SRCS})
+		SET_SOURCE_FILES_PROPERTIES(${rom-properties-xfce_SSSE3_SRCS}
+			APPEND_STRING PROPERTIES COMPILE_FLAGS " ${SSSE3_FLAG} ")
 	ENDIF(SSSE3_FLAG)
 ENDIF()
 UNSET(arch)
@@ -93,7 +90,7 @@ IF(BUILD_XFCE)
 	ENDIF(ENABLE_NLS)
 	TARGET_LINK_LIBRARIES(rom-properties-xfce PUBLIC Xfce::thunarx-2)
 	TARGET_LINK_LIBRARIES(rom-properties-xfce PRIVATE GdkPixbuf2::gdkpixbuf2)
-	TARGET_LINK_LIBRARIES(rom-properties-xfce PUBLIC ${GTK2_LIBRARIES} GLib2::gobject GLib2::glib)
+	TARGET_LINK_LIBRARIES(rom-properties-xfce PUBLIC ${GTK2_LIBRARIES} GLib2::gio GLib2::gobject GLib2::glib)
 	# TODO: Move GTK2_DEFINITIONS to TARGET_COMPILE_DEFINITIONS.
 	# (Requires removing the "-D" switches.)
 	ADD_DEFINITIONS(${GTK2_DEFINITIONS})

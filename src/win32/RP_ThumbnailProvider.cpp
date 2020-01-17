@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * RP_ThumbnailProvider.hpp: IThumbnailProvider implementation.            *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -11,25 +11,14 @@
 #include "RP_ThumbnailProvider.hpp"
 #include "RpImageWin32.hpp"
 
-// librpbase
-#include "librpbase/RomData.hpp"
-#include "librpbase/file/RpFile.hpp"
+// librpbase, librptexture
 using namespace LibRpBase;
-
-// librptexture
-#include "librptexture/img/rp_image.hpp"
 using LibRpTexture::rp_image;
 
 // RpFile_IStream
 #include "RpFile_IStream.hpp"
 
-// C includes. (C++ namespace)
-#include <cassert>
-#include <cstdio>
-#include <cstring>
-
-// C++ includes.
-#include <string>
+// C++ STL classes.
 using std::wstring;
 
 // CLSID
@@ -51,7 +40,9 @@ RP_ThumbnailProvider_Private::~RP_ThumbnailProvider_Private()
 {
 	// pstream is owned by file,
 	// so don't Release() it here.
-	file->unref();
+	if (file) {
+		file->unref();
+	}
 }
 
 /** RP_ThumbnailProvider **/
@@ -78,7 +69,7 @@ IFACEMETHODIMP RP_ThumbnailProvider::QueryInterface(REFIID riid, LPVOID *ppvObj)
 		{ 0, 0 }
 	};
 #pragma warning(pop)
-	return LibWin32Common::pQISearch(this, rgqit, riid, ppvObj);
+	return LibWin32Common::pfnQISearch(this, rgqit, riid, ppvObj);
 }
 
 /** IInitializeWithStream **/

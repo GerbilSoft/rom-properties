@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libcachemgr)                      *
  * UrlmonDownloader.cpp: urlmon-based file downloader.                     *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -57,6 +57,7 @@ int UrlmonDownloader::download(void)
 	// TODO: IBindStatusCallback to enforce data size?
 	// TODO: Check Content-Length to prevent large files in the first place?
 	// TODO: Replace with WinInet?
+	// TODO: Set the User-Agent.
 
 	// Buffer for cache filename.
 	TCHAR szFileName[MAX_PATH];
@@ -80,9 +81,12 @@ int UrlmonDownloader::download(void)
 	}
 
 	// Get the cache information.
+	// NOTE: GetUrlCacheEntryInfo() might fail with lastError == ERROR_INSUFFICIENT_BUFFER.
+	// FIXME: amiibo.life downloads aren't found here. (CDN redirection issues?)
 	DWORD cbCacheEntryInfo = 0;
 	BOOL bRet = GetUrlCacheEntryInfo(t_url.c_str(), nullptr, &cbCacheEntryInfo);
-	if (bRet) {
+	DWORD dwLastError = GetLastError();
+	if (bRet || dwLastError == ERROR_INSUFFICIENT_BUFFER) {
 		uint8_t *pCacheEntryInfoBuf =
 			static_cast<uint8_t*>(malloc(cbCacheEntryInfo));
 		if (!pCacheEntryInfoBuf) {

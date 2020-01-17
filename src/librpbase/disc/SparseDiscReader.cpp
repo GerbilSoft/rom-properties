@@ -7,15 +7,9 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+#include "stdafx.h"
 #include "SparseDiscReader.hpp"
 #include "SparseDiscReader_p.hpp"
-
-#include "../file/IRpFile.hpp"
-
-// C includes. (C++ namespace)
-#include <cassert>
-#include <cerrno>
-#include <cstring>
 
 namespace LibRpBase {
 

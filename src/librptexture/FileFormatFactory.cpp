@@ -1,39 +1,30 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (libFileFormat)                    *
+ * ROM Properties Page shell extension. (librptexture)                     *
  * FileFormatFactory.cpp: FileFormat factory class.                        *
  *                                                                         *
  * Copyright (c) 2016-2019 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+#include "stdafx.h"
 #include "librpbase/config.librpbase.h"
-#include "librptexture/config.librptexture.h"
 
 #include "FileFormatFactory.hpp"
 #include "fileformat/FileFormat.hpp"
 
 // librpbase
-#include "librpbase/common.h"
-#include "librpbase/byteswap.h"
-#include "librpbase/file/IRpFile.hpp"
-#include "librpbase/file/FileSystem.hpp"
 using namespace LibRpBase;
 
-// C includes. (C++ namespace)
-#include <cassert>
-#include <cstring>
-
-// C++ includes.
-#include <string>
-#include <unordered_set>
-#include <vector>
+// C++ STL classes.
 using std::string;
 using std::unordered_set;
 using std::vector;
 
 // FileFormat subclasses.
+#include "fileformat/DidjTex.hpp"
 #include "fileformat/DirectDrawSurface.hpp"
 #include "fileformat/KhronosKTX.hpp"
+#include "fileformat/PowerVR3.hpp"
 #include "fileformat/SegaPVR.hpp"
 #include "fileformat/ValveVTF.hpp"
 #include "fileformat/ValveVTF3.hpp"
@@ -97,9 +88,9 @@ class FileFormatFactoryPrivate
 // TODO: Add support for multiple magic numbers per class.
 const FileFormatFactoryPrivate::FileFormatFns FileFormatFactoryPrivate::FileFormatFns_magic[] = {
 	GetFileFormatFns(DirectDrawSurface, 'DDS '),
-#ifdef ENABLE_GL
 	GetFileFormatFns(KhronosKTX, (uint32_t)'\xABKTX'),
-#endif /* ENABLE_GL */
+	GetFileFormatFns(PowerVR3, 'PVR\x03'),
+	GetFileFormatFns(PowerVR3, '\x03RVP'),
 	GetFileFormatFns(SegaPVR, 'PVRT'),
 	GetFileFormatFns(SegaPVR, 'GVRT'),
 	GetFileFormatFns(SegaPVR, 'PVRX'),
@@ -108,6 +99,9 @@ const FileFormatFactoryPrivate::FileFormatFns FileFormatFactoryPrivate::FileForm
 	GetFileFormatFns(ValveVTF, 'VTF\0'),
 	GetFileFormatFns(ValveVTF3, 'VTF3'),
 	GetFileFormatFns(XboxXPR, 'XPR0'),
+
+	// Less common formats.
+	GetFileFormatFns(DidjTex, (uint32_t)0x03000000),
 
 	{nullptr, nullptr, nullptr, 0}
 };
@@ -152,13 +146,6 @@ FileFormat *FileFormatFactory::create(IRpFile *file)
 	// Magic number needs to be in host-endian.
 	magic = be32_to_cpu(magic);
 #endif /* SYS_BYTEORDER == SYS_LIL_ENDIAN */
-
-	// Get the file extension.
-	const string filename = file->filename();
-	const char *pExt = nullptr;
-	if (!filename.empty()) {
-		pExt = FileSystem::file_ext(filename);
-	}
 
 	// Check FileFormat subclasses that take a header at 0
 	// and definitely have a 32-bit magic number at address 0.

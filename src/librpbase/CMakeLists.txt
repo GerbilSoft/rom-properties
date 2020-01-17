@@ -61,6 +61,13 @@ ELSE(NOT WIN32)
 		LANGUAGE C)
 ENDIF(NOT WIN32)
 
+IF(APPLE)
+	CHECK_SYMBOL_EXISTS(fsetxattr "sys/xattr.h" HAVE_FSETXATTR_MAC)
+ELSEIF(NOT WIN32)
+	CHECK_SYMBOL_EXISTS(fsetxattr "sys/xattr.h" HAVE_FSETXATTR_LINUX)
+	CHECK_SYMBOL_EXISTS(extattr_set_fd "sys/extattr.h" HAVE_EXTATTR_SET_FD)
+ENDIF()
+
 # Check for reentrant C library functions.
 INCLUDE(CheckSymbolExistsOrInline)
 # putenv(), setenv(), and related.
@@ -273,26 +280,6 @@ IF(CMAKE_COMPILER_IS_GNUCXX)
 		PROPERTIES COMPILE_FLAGS "-Wno-unused")
 ENDIF(CMAKE_COMPILER_IS_GNUCXX)
 
-# Find the system threading library.
-FIND_PACKAGE(Threads REQUIRED)
-# Threading implementation.
-SET(librpbase_THREAD_H
-	threads/Atomics.h
-	threads/Semaphore.hpp
-	threads/Mutex.hpp
-	threads/pthread_once.h
-	)
-IF(CMAKE_USE_WIN32_THREADS_INIT)
-	SET(HAVE_WIN32_THREADS 1)
-	SET(librpbase_THREAD_SRCS
-		threads/pthread_once.c
-		)
-ELSEIF(CMAKE_USE_PTHREADS_INIT)
-	SET(HAVE_PTHREADS 1)
-ELSE()
-	MESSAGE(FATAL_ERROR "No threading model is supported on this system.")
-ENDIF()
-
 # CPU-specific and optimized sources.
 IF(CPU_i386 OR CPU_amd64)
 	SET(librpbase_CPU_SRCS cpuflags_x86.c)
@@ -325,10 +312,8 @@ IF(CPU_i386 OR CPU_amd64)
 		SET(librpbase_IFUNC_SRCS byteswap_ifunc.c)
 		# Disable LTO on the IFUNC files if LTO is known to be broken.
 		IF(GCC_5xx_LTO_ISSUES)
-			FOREACH(ifunc_file ${librpbase_IFUNC_SRCS})
-				SET_SOURCE_FILES_PROPERTIES(${ifunc_file}
-					APPEND_STRING PROPERTIES COMPILE_FLAGS " -fno-lto ")
-			ENDFOREACH()
+			SET_SOURCE_FILES_PROPERTIES(${librpbase_IFUNC_SRCS}
+				APPEND_STRING PROPERTIES COMPILE_FLAGS " -fno-lto ")
 		ENDIF(GCC_5xx_LTO_ISSUES)
 	ENDIF(UNIX AND NOT APPLE)
 
@@ -343,24 +328,18 @@ IF(CPU_i386 OR CPU_amd64)
 	ENDIF()
 
 	IF(MMX_FLAG)
-		FOREACH(mmx_file ${librpbase_MMX_SRCS})
-			SET_SOURCE_FILES_PROPERTIES(${mmx_file}
-				APPEND_STRING PROPERTIES COMPILE_FLAGS " ${MMX_FLAG} ")
-		ENDFOREACH()
+		SET_SOURCE_FILES_PROPERTIES(${librpbase_MMX_SRCS}
+			APPEND_STRING PROPERTIES COMPILE_FLAGS " ${MMX_FLAG} ")
 	ENDIF(MMX_FLAG)
 
 	IF(SSE2_FLAG)
-		FOREACH(sse2_file ${librpbase_SSE2_SRCS})
-			SET_SOURCE_FILES_PROPERTIES(${sse2_file}
-				APPEND_STRING PROPERTIES COMPILE_FLAGS " ${SSE2_FLAG} ")
-		ENDFOREACH()
+		SET_SOURCE_FILES_PROPERTIES(${librpbase_SSE2_SRCS}
+			APPEND_STRING PROPERTIES COMPILE_FLAGS " ${SSE2_FLAG} ")
 	ENDIF(SSE2_FLAG)
 
 	IF(SSSE3_FLAG)
-		FOREACH(ssse3_file ${librpbase_SSSE3_SRCS})
-			SET_SOURCE_FILES_PROPERTIES(${ssse3_file}
-				APPEND_STRING PROPERTIES COMPILE_FLAGS " ${SSSE3_FLAG} ")
-		ENDFOREACH()
+		SET_SOURCE_FILES_PROPERTIES(${librpbase_SSSE3_SRCS}
+			APPEND_STRING PROPERTIES COMPILE_FLAGS " ${SSSE3_FLAG} ")
 	ENDIF(SSSE3_FLAG)
 ENDIF()
 UNSET(arch)
@@ -389,22 +368,37 @@ ENDIF(NOT MSVC)
 CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/config.librpbase.h.in" "${CMAKE_CURRENT_BINARY_DIR}/config.librpbase.h")
 CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/config.byteswap.h.in" "${CMAKE_CURRENT_BINARY_DIR}/config.byteswap.h")
 
+IF(ENABLE_PCH)
+	# Precompiled headers.
+	INCLUDE(PrecompiledHeader)
+	SET(librpbase_PCH_C stdafx.c)
+	SET(librpbase_PCH_CXX stdafx.cpp)
+	SET(librpbase_PCH_SRC ${librpbase_PCH_C} ${librpbase_PCH_CXX})
+	SET(librpbase_PCH_H stdafx.h)
+ENDIF(ENABLE_PCH)
+
 ######################
 # Build the library. #
 ######################
 
 ADD_LIBRARY(rpbase STATIC
+	${librpbase_PCH_SRC} ${librpbase_PCH_H}
 	${librpbase_SRCS} ${librpbase_H}
 	${librpbase_OS_SRCS} ${librpbase_OS_H}
 	${librpbase_CRYPTO_SRCS} ${librpbase_CRYPTO_H}
 	${librpbase_CRYPTO_OS_SRCS} ${librpbase_CRYPTO_OS_H}
-	${librpbase_THREAD_SRCS} ${librpbase_THREAD_H}
 	${librpbase_CPU_SRCS} ${librpbase_CPU_H}
 	${librpbase_IFUNC_SRCS}
 	${librpbase_MMX_SRCS}
 	${librpbase_SSE2_SRCS}
 	${librpbase_SSSE3_SRCS}
 	)
+IF(ENABLE_PCH)
+	ADD_PRECOMPILED_HEADER(rpbase ${librpbase_PCH_H}
+		SOURCE_C ${librpbase_PCH_C}
+		SOURCE_CXX ${librpbase_PCH_CXX}
+		)
+ENDIF(ENABLE_PCH)
 INCLUDE(SetMSVCDebugPath)
 SET_MSVC_DEBUG_PATH(rpbase)
 
@@ -440,7 +434,7 @@ IF(librpbase_NEEDS_DL AND CMAKE_DL_LIBS)
 ENDIF(librpbase_NEEDS_DL AND CMAKE_DL_LIBS)
 
 # Other libraries.
-TARGET_LINK_LIBRARIES(rpbase PRIVATE rptexture inih)
+TARGET_LINK_LIBRARIES(rpbase PRIVATE rptexture inih rpthreads)
 IF(Iconv_LIBRARY AND NOT Iconv_IS_BUILT_IN)
 	TARGET_LINK_LIBRARIES(rpbase PRIVATE Iconv::Iconv)
 ENDIF(Iconv_LIBRARY AND NOT Iconv_IS_BUILT_IN)
@@ -478,9 +472,6 @@ IF(SCSI_LIBRARY)
 	# An extra library is needed for SCSI support.
 	TARGET_LINK_LIBRARIES(rpbase PRIVATE ${SCSI_LIBRARY})
 ENDIF(SCSI_LIBRARY)
-IF(CMAKE_THREAD_LIBS_INIT)
-	TARGET_LINK_LIBRARIES(rpbase PRIVATE ${CMAKE_THREAD_LIBS_INIT})
-ENDIF(CMAKE_THREAD_LIBS_INIT)
 
 IF(ENABLE_NLS)
 	TARGET_LINK_LIBRARIES(rpbase PRIVATE i18n)

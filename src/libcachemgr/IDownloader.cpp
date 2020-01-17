@@ -2,11 +2,12 @@
  * ROM Properties Page shell extension. (libcachemgr)                      *
  * IDownloader.cpp: Downloader interface.                                  *
  *                                                                         *
- * Copyright (c) 2016 by David Korth.                                      *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #include "IDownloader.hpp"
+#include "config.version.h"
 
 // C includes. (C++ namespace)
 #include <cassert>
@@ -21,21 +22,27 @@ IDownloader::IDownloader()
 	: m_mtime(-1)
 	, m_inProgress(false)
 	, m_maxSize(0)
-{ }
+{
+	createUserAgent();
+}
 
 IDownloader::IDownloader(const char *url)
 	: m_url(url)
 	, m_mtime(-1)
 	, m_inProgress(false)
 	, m_maxSize(0)
-{ }
+{
+	createUserAgent();
+}
 
 IDownloader::IDownloader(const string &url)
 	: m_url(url)
 	, m_mtime(-1)
 	, m_inProgress(false)
 	, m_maxSize(0)
-{ }
+{
+	createUserAgent();
+}
 
 IDownloader::~IDownloader()
 { }
@@ -178,6 +185,86 @@ void IDownloader::clear(void)
 	assert(!m_inProgress);
 	// TODO: Don't clear if m_inProgress?
 	m_data.clear();
+}
+
+/**
+ * Create the User-Agent value.
+ */
+void IDownloader::createUserAgent(void)
+{
+	m_userAgent.reserve(256);
+	m_userAgent = "rom-properties/" RP_VERSION_STRING;
+
+	// CPU
+#if defined(_M_ARM64) || defined(__aarch64__)
+# define CPU "ARM64"
+# define MAC_CPU "ARM64"
+#elif defined(_M_ARM) || defined(__arm__)
+# define CPU "ARM"
+# define MAC_CPU "ARM"
+#elif defined(_M_X64) || defined(_M_AMD64) || defined(__amd64__) || defined(__x86_64__)
+# ifdef _WIN32
+#  define CPU "x64"
+# else /* !_WIN32 */
+#  define CPU "x86_64"
+# endif
+# define MAC_CPU "Intel"
+#elif defined(_M_IX86) || defined(__i386__)
+# ifdef _WIN32
+#  define CPU ""
+#  define NO_CPU 1
+# else /* !_WIN32 */
+#  define CPU "i386"
+# endif /* _WIN32 */
+# define MAC_CPU "Intel"
+#elif defined(__powerpc64__) || defined(__ppc64__)
+# define CPU "PPC64"
+# define MAC_CPU "PPC"
+#elif defined(__powerpc__) || defined(__ppc__)
+# define CPU "PPC"
+# define MAC_CPU "PPC"
+#endif
+
+#ifdef _WIN32
+	// TODO: OS version number.
+	// For now, assuming "Windows NT".
+	m_userAgent += " (Windows NT";
+# ifndef NO_CPU
+	m_userAgent += "; ";
+#  ifdef _WIN64
+	m_userAgent += "Win64; ";
+#  endif /* _WIN64 */
+	m_userAgent += CPU ")";
+# endif /* !NO_CPU */
+
+#elif defined(__linux__)
+	// TODO: Kernel version and/or lsb_release?
+	m_userAgent += " (Linux " CPU ")";
+#elif defined(__FreeBSD__)
+	// TODO: Distribution version?
+	m_userAgent += " (FreeBSD " CPU ")";
+#elif defined(__NetBSD__)
+	// TODO: Distribution version?
+	m_userAgent += " (NetBSD " CPU ")";
+#elif defined(__OpenBSD__)
+	// TODO: Distribution version?
+	m_userAgent += " (OpenBSD " CPU ")";
+#elif defined(__bsdi__)
+	// TODO: Distribution version?
+	m_userAgent += " (BSDi " CPU ")";
+#elif defined(__DragonFly__)
+	// TODO: Distribution version?
+	m_userAgent += " (DragonFlyBSD " CPU ")";
+#elif defined(__APPLE__)
+	// TODO: OS version?
+	m_userAgent += " (Macintosh; " MAC_CPU " Mac OS X)";
+#elif defined(__unix__)
+	// Generic UNIX fallback.
+	m_userAgent += " (Unix " CPU ")";
+#else
+	// Unknown OS...
+	m_userAgent += " (Unknown " CPU ")";
+#endif
 }
 
 }

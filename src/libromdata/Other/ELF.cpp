@@ -6,24 +6,13 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+#include "stdafx.h"
 #include "ELF.hpp"
-#include "librpbase/RomData_p.hpp"
-
 #include "data/ELFData.hpp"
 #include "elf_structs.h"
 
 // librpbase
-#include "librpbase/common.h"
-#include "librpbase/byteswap.h"
-#include "librpbase/TextFuncs.hpp"
-#include "librpbase/file/IRpFile.hpp"
-#include "libi18n/i18n.h"
 using namespace LibRpBase;
-
-// C includes. (C++ namespace)
-#include <cassert>
-#include <cerrno>
-#include <cstring>
 
 // cinttypes was added in MSVC 2013.
 // For older versions, we'll need to manually define PRIX64.
@@ -41,10 +30,7 @@ using namespace LibRpBase;
 # endif
 #endif
 
-// C++ includes.
-#include <memory>
-#include <string>
-#include <vector>
+// C++ STL classes.
 using std::string;
 using std::unique_ptr;
 using std::vector;

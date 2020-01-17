@@ -21,9 +21,10 @@ SET(RP_EXE_LINKER_FLAGS_COMMON "/NOLOGO /DYNAMICBASE /NXCOMPAT /LARGEADDRESSAWAR
 SET(RP_SHARED_LINKER_FLAGS_COMMON "${RP_EXE_LINKER_FLAGS_COMMON}")
 SET(RP_MODULE_LINKER_FLAGS_COMMON "${RP_EXE_LINKER_FLAGS_COMMON}")
 
-# Test for "/sdl" and "/guard:cf".
+# Test for MSVC-specific compiler flags.
+# /utf-8 was added in MSVC 2015.
 INCLUDE(CheckCCompilerFlag)
-FOREACH(FLAG_TEST "/sdl" "/guard:cf")
+FOREACH(FLAG_TEST "/sdl" "/guard:cf" "/utf-8")
 	# CMake doesn't like certain characters in variable names.
 	STRING(REGEX REPLACE "/|:" "_" FLAG_TEST_VARNAME "${FLAG_TEST}")
 

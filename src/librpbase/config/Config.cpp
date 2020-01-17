@@ -2,35 +2,22 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * Config.cpp: Configuration manager.                                      *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "librpbase/config.librpbase.h"
+#include "stdafx.h"
+#include "config.librpbase.h"
 
 #include "Config.hpp"
 #include "ConfReader_p.hpp"
 
-// C includes. (C++ namespace)
-#include "librpbase/ctypex.h"
-#include <cassert>
-#include <cstring>
-
-// C++ includes.
-#include <algorithm>
-#include <memory>
-#include <string>
-#include <unordered_map>
-#include <utility>
+// C++ STL classes.
 using std::string;
 using std::unique_ptr;
 using std::unordered_map;
 
 #include "RomData.hpp"
-
-// Uninitialized vector class.
-// Reference: http://andreoffringa.org/?q=uvector
-#include "uvector.h"
 
 namespace LibRpBase {
 
@@ -94,6 +81,9 @@ class ConfigPrivate : public ConfReaderPrivate
 		bool extImgDownloadEnabled;
 		bool useIntIconForSmallSizes;
 		bool downloadHighResScans;
+		bool storeFileOriginInfo;
+
+		// Other options.
 		bool showDangerousPermissionsOverlayIcon;
 		bool enableThumbnailOnNetworkFS;
 };
@@ -129,6 +119,7 @@ ConfigPrivate::ConfigPrivate()
 	, extImgDownloadEnabled(true)
 	, useIntIconForSmallSizes(true)
 	, downloadHighResScans(true)
+	, storeFileOriginInfo(true)
 	/* Overlay icon */
 	, showDangerousPermissionsOverlayIcon(true)
 	/* Enable thumbnailing and metadata on network FS */
@@ -157,6 +148,7 @@ void ConfigPrivate::reset(void)
 	extImgDownloadEnabled = true;
 	useIntIconForSmallSizes = true;
 	downloadHighResScans = true;
+	storeFileOriginInfo = true;
 	// Overlay icon
 	showDangerousPermissionsOverlayIcon = true;
 	// Enable thumbnail and metadata on network FS
@@ -195,6 +187,8 @@ int ConfigPrivate::processConfigLine(const char *section, const char *name, cons
 			param = &useIntIconForSmallSizes;
 		} else if (!strcasecmp(name, "DownloadHighResScans")) {
 			param = &downloadHighResScans;
+		} else if (!strcasecmp(name, "StoreFileOriginInfo")) {
+			param = &storeFileOriginInfo;
 		} else {
 			// Invalid option.
 			return 1;
@@ -300,7 +294,6 @@ int ConfigPrivate::processConfigLine(const char *section, const char *name, cons
 			}
 
 			// Check the image type.
-			// TODO: Hash comparison?
 			// First byte of 'name' is a length value for optimization purposes.
 			// NOTE: "\x08ExtMedia" is interpreted as a 0x8E byte by both
 			// MSVC 2015 and gcc-4.5.2. In order to get it to work correctly,
@@ -513,6 +506,17 @@ bool Config::downloadHighResScans(void) const
 }
 
 /**
+ * Store file origin information?
+ * NOTE: Call load() before using this function.
+ * @return True if we should; false if not.
+ */
+bool Config::storeFileOriginInfo(void) const
+{
+	RP_D(const Config);
+	return d->storeFileOriginInfo;
+}
+
+/**
  * Show an overlay icon for "dangerous" permissions?
  * NOTE: Call load() before using this function.
  * @return True if we should show the overlay icon; false if not.
@@ -525,6 +529,7 @@ bool Config::showDangerousPermissionsOverlayIcon(void) const
 
 /**
  * Enable thumbnailing and metadata on network filesystems?
+ * NOTE: Call load() before using this function.
  * @return True if we should enable; false if not.
  */
 bool Config::enableThumbnailOnNetworkFS(void) const

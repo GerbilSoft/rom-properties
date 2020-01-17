@@ -6,26 +6,19 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+#include "stdafx.h"
 #include "ValveVTF3.hpp"
 #include "FileFormat_p.hpp"
 
 #include "vtf3_structs.h"
 
 // librpbase
-#include "librpbase/common.h"
-#include "librpbase/byteswap.h"
-#include "librpbase/aligned_malloc.h"
-#include "librpbase/file/IRpFile.hpp"
-using namespace LibRpBase;
+using LibRpBase::IRpFile;
+using LibRpBase::RomFields;
 
 // librptexture
 #include "img/rp_image.hpp"
 #include "decoder/ImageDecoder.hpp"
-
-// C includes. (C++ namespace)
-#include <cassert>
-#include <cerrno>
-#include <cstring>
 
 namespace LibRpTexture {
 

@@ -1,8 +1,5 @@
 PROJECT(librptexture)
 
-# Find the system threading library.
-FIND_PACKAGE(Threads REQUIRED)
-
 # Sources.
 SET(librptexture_SRCS
 	FileFormatFactory.cpp
@@ -23,13 +20,17 @@ SET(librptexture_SRCS
 	decoder/PixelConversion.cpp
 
 	fileformat/FileFormat.cpp
+	fileformat/DidjTex.cpp
 	fileformat/DirectDrawSurface.cpp
+	fileformat/KhronosKTX.cpp
+	fileformat/PowerVR3.cpp
 	fileformat/SegaPVR.cpp
 	fileformat/ValveVTF.cpp
 	fileformat/ValveVTF3.cpp
 	fileformat/XboxXPR.cpp
 
 	data/DX10Formats.cpp
+	data/GLenumStrings.cpp
 	)
 # Headers.
 SET(librptexture_H
@@ -46,33 +47,29 @@ SET(librptexture_H
 	fileformat/FileFormat.hpp
 	fileformat/FileFormat_p.hpp
 	fileformat/FileFormat_decl.hpp
+	fileformat/DidjTex.hpp
 	fileformat/DirectDrawSurface.hpp
+	fileformat/KhronosKTX.hpp
+	fileformat/PowerVR3.hpp
 	fileformat/SegaPVR.hpp
 	fileformat/ValveVTF.hpp
 	fileformat/ValveVTF3.hpp
 	fileformat/XboxXPR.hpp
 
 	fileformat/dds_structs.h
+	fileformat/didj_tex_structs.h
+	fileformat/ktx_structs.h
 	fileformat/pvr_structs.h
+	fileformat/pvr3_structs.h
 	fileformat/vtf_structs.h
 	fileformat/vtf3_structs.h
 	fileformat/xbox_xpr_structs.h
 
-	data/DX10Formats.hpp
-	)
+	fileformat/gl_defs.h
 
-IF(ENABLE_GL)
-	SET(librptexture_GL_SRCS
-		fileformat/KhronosKTX.cpp
-		data/GLenumStrings.cpp
-		)
-	SET(librptexture_GL_H
-		fileformat/KhronosKTX.hpp
-		fileformat/ktx_structs.h
-		fileformat/gl_defs.h
-		data/GLenumStrings.hpp
-		)
-ENDIF(ENABLE_GL)
+	data/DX10Formats.hpp
+	data/GLenumStrings.hpp
+	)
 
 IF(WIN32)
 	SET(librptexture_OS_SRCS
@@ -84,6 +81,10 @@ IF(WIN32)
 		img/RpGdiplusBackend.hpp
 		)
 ENDIF(WIN32)
+
+IF(ENABLE_PVRTC)
+	SET(librptexture_PVRTC_SRCS decoder/ImageDecoder_PVRTC.cpp)
+ENDIF(ENABLE_PVRTC)
 
 # CPU-specific and optimized sources.
 IF(CPU_i386 OR CPU_amd64)
@@ -113,10 +114,8 @@ IF(CPU_i386 OR CPU_amd64)
 		SET(librptexture_IFUNC_SRCS decoder/ImageDecoder_ifunc.cpp)
 		# Disable LTO on the IFUNC files if LTO is known to be broken.
 		IF(GCC_5xx_LTO_ISSUES)
-			FOREACH(ifunc_file ${librptexture_IFUNC_SRCS})
-				SET_SOURCE_FILES_PROPERTIES(${ifunc_file}
-					APPEND_STRING PROPERTIES COMPILE_FLAGS " -fno-lto ")
-			ENDFOREACH()
+			SET_SOURCE_FILES_PROPERTIES(${librptexture_IFUNC_SRCS}
+				APPEND_STRING PROPERTIES COMPILE_FLAGS " -fno-lto ")
 		ENDIF(GCC_5xx_LTO_ISSUES)
 	ENDIF(UNIX AND NOT APPLE)
 
@@ -133,31 +132,23 @@ IF(CPU_i386 OR CPU_amd64)
 	ENDIF()
 
 	IF(MMX_FLAG)
-		FOREACH(mmx_file ${librptexture_MMX_SRCS})
-			SET_SOURCE_FILES_PROPERTIES(${mmx_file}
-				APPEND_STRING PROPERTIES COMPILE_FLAGS " ${MMX_FLAG} ")
-		ENDFOREACH()
+		SET_SOURCE_FILES_PROPERTIES(${librptexture_MMX_SRCS}
+			APPEND_STRING PROPERTIES COMPILE_FLAGS " ${MMX_FLAG} ")
 	ENDIF(MMX_FLAG)
 
 	IF(SSE2_FLAG)
-		FOREACH(sse2_file ${librptexture_SSE2_SRCS})
-			SET_SOURCE_FILES_PROPERTIES(${sse2_file}
-				APPEND_STRING PROPERTIES COMPILE_FLAGS " ${SSE2_FLAG} ")
-		ENDFOREACH()
+		SET_SOURCE_FILES_PROPERTIES(${librptexture_SSE2_SRCS}
+			APPEND_STRING PROPERTIES COMPILE_FLAGS " ${SSE2_FLAG} ")
 	ENDIF(SSE2_FLAG)
 
 	IF(SSSE3_FLAG)
-		FOREACH(ssse3_file ${librptexture_SSSE3_SRCS})
-			SET_SOURCE_FILES_PROPERTIES(${ssse3_file}
-				APPEND_STRING PROPERTIES COMPILE_FLAGS " ${SSSE3_FLAG} ")
-		ENDFOREACH()
+		SET_SOURCE_FILES_PROPERTIES(${librptexture_SSSE3_SRCS}
+			APPEND_STRING PROPERTIES COMPILE_FLAGS " ${SSSE3_FLAG} ")
 	ENDIF(SSSE3_FLAG)
 
 	IF(SSE41_FLAG)
-		FOREACH(sse41_file ${librptexture_SSE41_SRCS})
-			SET_SOURCE_FILES_PROPERTIES(${sse41_file}
-				APPEND_STRING PROPERTIES COMPILE_FLAGS " ${SSE41_FLAG} ")
-		ENDFOREACH()
+		SET_SOURCE_FILES_PROPERTIES(${librptexture_SSE41_SRCS}
+			APPEND_STRING PROPERTIES COMPILE_FLAGS " ${SSE41_FLAG} ")
 	ENDIF(SSE41_FLAG)
 ENDIF()
 UNSET(arch)
@@ -165,25 +156,40 @@ UNSET(arch)
 # Write the config.h files.
 CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/config.librptexture.h.in" "${CMAKE_CURRENT_BINARY_DIR}/config.librptexture.h")
 
+# Precompiled headers.
+IF(ENABLE_PCH)
+	INCLUDE(PrecompiledHeader)
+	SET(librptexture_PCH_CXX stdafx.cpp)
+	SET(librptexture_PCH_SRC ${librptexture_PCH_CXX})
+	SET(librptexture_PCH_H stdafx.h)
+ENDIF(ENABLE_PCH)
+
 ######################
 # Build the library. #
 ######################
 
 ADD_LIBRARY(rptexture STATIC
+	${librptexture_PCH_SRC} ${librptexture_PCH_H}
 	${librptexture_SRCS} ${librptexture_H}
 	${librptexture_OS_SRCS} ${librptexture_OS_H}
-	${librptexture_GL_SRCS} ${librptexture_GL_H}
+	${librptexture_PVRTC_SRCS}
 	${librptexture_IFUNC_SRCS}
 	${librptexture_MMX_SRCS}
 	${librptexture_SSE2_SRCS}
 	${librptexture_SSSE3_SRCS}
 	${librptexture_SSE41_SRCS}
 	)
+IF(ENABLE_PCH)
+	ADD_PRECOMPILED_HEADER(rptexture ${librptexture_PCH_H}
+		SOURCE_CXX ${librptexture_PCH_CXX}
+		)
+ENDIF(ENABLE_PCH)
 INCLUDE(SetMSVCDebugPath)
 SET_MSVC_DEBUG_PATH(rptexture)
 
 # TODO: More public/private library stuff.
 TARGET_LINK_LIBRARIES(rptexture PUBLIC rpbase)
+TARGET_LINK_LIBRARIES(rptexture PRIVATE rpthreads)
 
 # Include paths:
 # - Public: Current source and binary directories.
@@ -202,6 +208,17 @@ ENDIF(MSVC)
 # Exclude from ALL builds.
 SET_TARGET_PROPERTIES(rptexture PROPERTIES EXCLUDE_FROM_ALL TRUE)
 
+# zlib
+IF(NOT ZLIB_LIBRARY)
+	MESSAGE(FATAL_ERROR "ZLIB_LIBRARY has not been set by CheckZLIB.cmake.")
+ENDIF(NOT ZLIB_LIBRARY)
+TARGET_LINK_LIBRARIES(rptexture PRIVATE ${ZLIB_LIBRARY})
+
+# PowerVR Native SDK
+IF(ENABLE_PVRTC)
+	TARGET_LINK_LIBRARIES(rptexture PRIVATE pvrtc)
+ENDIF(ENABLE_PVRTC)
+
 # Other libraries.
 IF(WIN32)
 	# libwin32common
@@ -209,9 +226,6 @@ IF(WIN32)
 	# Windows system libraries
 	TARGET_LINK_LIBRARIES(rptexture PRIVATE gdiplus)
 ENDIF(WIN32)
-IF(CMAKE_THREAD_LIBS_INIT)
-	TARGET_LINK_LIBRARIES(rptexture PRIVATE ${CMAKE_THREAD_LIBS_INIT})
-ENDIF(CMAKE_THREAD_LIBS_INIT)
 
 # Unix: Add -fpic/-fPIC in order to use this static library in plugins.
 IF(UNIX AND NOT APPLE)

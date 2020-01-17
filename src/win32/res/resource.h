@@ -90,11 +90,12 @@
 #define IDC_IMAGETYPES_VIEWPORT_INNER		40011
 
 // Options
-#define IDC_EXTIMGDL                            40101
-#define IDC_INTICONSMALL                        40102
-#define IDC_HIGHRESDL                           40103
-#define IDC_DANGEROUSPERMISSIONS                40104
-#define IDC_ENABLETHUMBNAILONNETWORKFS          40105
+#define IDC_EXTIMGDL				40101
+#define IDC_INTICONSMALL			40102
+#define IDC_HIGHRESDL				40103
+#define IDC_STOREFILEORIGININFO			40104
+#define IDC_DANGEROUSPERMISSIONS		40105
+#define IDC_ENABLETHUMBNAILONNETWORKFS		40106
 
 // Thumbnail cache
 #define IDC_CACHE_DESCRIPTION                   40201

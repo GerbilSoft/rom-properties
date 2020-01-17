@@ -10,6 +10,7 @@
 # error RpFile_scsi_freebsd.cpp is for FreeBSD and DragonFly BSD ONLY.
 #endif /* !__FreeBSD__ && !__DragonFly__ */
 
+#include "stdafx.h"
 #include "../RpFile.hpp"
 #include "../RpFile_p.hpp"
 
@@ -17,11 +18,6 @@
 
 // C includes.
 #include <fcntl.h>
-
-// C includes. (C++ namespace)
-#include <cassert>
-#include <cerrno>
-#include <cstring>
 
 #include "config.librpbase.h"
 // SCSI and CD-ROM IOCTLs.

@@ -6,24 +6,13 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+#include "stdafx.h"
 #include "EXE.hpp"
 
 // librpbase
-#include "librpbase/common.h"
-#include "librpbase/byteswap.h"
-#include "librpbase/TextFuncs.hpp"
-#include "librpbase/file/IRpFile.hpp"
-#include "libi18n/i18n.h"
 using namespace LibRpBase;
 
-// C includes. (C++ namespace)
-#include <cassert>
-#include <cerrno>
-#include <cstring>
-
-// C++ includes.
-#include <string>
-#include <vector>
+// C++ STL classes.
 using std::string;
 using std::vector;
 
@@ -179,12 +168,9 @@ void EXEPrivate::addFields_VS_VERSION_INFO(const VS_FIXEDFILEINFO *pVsFfi, const
 		NOP_C_("EXE|FileType", "Static Library"),
 	};
 	const char *const fileType_title = C_("EXE", "File Type");
-	const char *s_fileType = (pVsFfi->dwFileType < ARRAY_SIZE(fileTypes_tbl)
-					? fileTypes_tbl[pVsFfi->dwFileType]
-					: nullptr);
-	if (s_fileType) {
+	if (pVsFfi->dwFileType < ARRAY_SIZE(fileTypes_tbl)) {
 		fields->addField_string(fileType_title,
-			dpgettext_expr(RP_I18N_DOMAIN, "EXE|FileType", s_fileType));
+			dpgettext_expr(RP_I18N_DOMAIN, "EXE|FileType", fileTypes_tbl[pVsFfi->dwFileType]));
 	} else {
 		fields->addField_string(fileType_title,
 			rp_sprintf(C_("RomData", "Unknown (0x%08X)"), pVsFfi->dwFileType));
@@ -224,9 +210,9 @@ void EXEPrivate::addFields_VS_VERSION_INFO(const VS_FIXEDFILEINFO *pVsFfi, const
 				// tr: VFT2_DRV_VERSIONED_PRINTER
 				NOP_C_("EXE|FileSubType", "Versioned Printer"),
 			};
-			fileSubtype = (pVsFfi->dwFileSubtype < ARRAY_SIZE(fileSubtypes_DRV)
-						? fileSubtypes_DRV[pVsFfi->dwFileSubtype]
-						: nullptr);
+			if (pVsFfi->dwFileSubtype < ARRAY_SIZE(fileSubtypes_DRV)) {
+				fileSubtype = fileSubtypes_DRV[pVsFfi->dwFileSubtype];
+			}
 			break;
 		};
 
@@ -242,9 +228,9 @@ void EXEPrivate::addFields_VS_VERSION_INFO(const VS_FIXEDFILEINFO *pVsFfi, const
 				// tr: VFT2_FONT_TRUETYPE
 				NOP_C_("EXE|FileSubType", "TrueType"),
 			};
-			fileSubtype = (pVsFfi->dwFileSubtype < ARRAY_SIZE(fileSubtypes_FONT)
-						? fileSubtypes_FONT[pVsFfi->dwFileSubtype]
-						: nullptr);
+			if (pVsFfi->dwFileSubtype < ARRAY_SIZE(fileSubtypes_FONT)) {
+				fileSubtype = fileSubtypes_FONT[pVsFfi->dwFileSubtype];
+			}
 			break;
 		};
 
@@ -373,11 +359,8 @@ void EXEPrivate::addFields_LE(void)
 	// NOTE: Same as NE.
 	const char *const targetOS_title = C_("EXE", "Target OS");
 	const uint16_t targOS = le16_to_cpu(hdr.le.targOS);
-	const char *const targetOS = (targOS < ARRAY_SIZE(NE_TargetOSes))
-					? NE_TargetOSes[targOS]
-					: nullptr;
-	if (targetOS) {
-		fields->addField_string(targetOS_title, targetOS);
+	if (targOS < ARRAY_SIZE(NE_TargetOSes)) {
+		fields->addField_string(targetOS_title, NE_TargetOSes[targOS]);
 	} else {
 		fields->addField_string(targetOS_title,
 			rp_sprintf(C_("RomData", "Unknown (0x%02X)"), targOS));

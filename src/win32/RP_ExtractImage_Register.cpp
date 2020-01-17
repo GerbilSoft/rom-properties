@@ -3,7 +3,7 @@
  * RP_ExtractImage_Register.cpp: IExtractImage implementation.             *
  * COM registration functions.                                             *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -11,11 +11,10 @@
 #include "RP_ExtractImage.hpp"
 #include "RP_ExtractImage_p.hpp"
 
-#include "libwin32common/RegKey.hpp"
+// libwin32common
 using LibWin32Common::RegKey;
 
-// C++ includes.
-#include <string>
+// C++ STL classes.
 using std::tstring;
 
 #define IID_IExtractImage_String	TEXT("{BB2E617C-0920-11D1-9A0B-00C04FC2D6C1}")

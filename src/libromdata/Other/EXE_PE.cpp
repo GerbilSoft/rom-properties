@@ -7,29 +7,15 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+#include "stdafx.h"
 #include "EXE_p.hpp"
-
 #include "data/EXEData.hpp"
 #include "disc/PEResourceReader.hpp"
 
 // librpbase
-#include "librpbase/common.h"
-#include "librpbase/byteswap.h"
-#include "librpbase/TextFuncs.hpp"
-#include "librpbase/file/IRpFile.hpp"
-#include "libi18n/i18n.h"
 using namespace LibRpBase;
 
-// C includes. (C++ namespace)
-#include <cassert>
-#include <cerrno>
-#include <cstring>
-
-// C++ includes.
-#include <memory>
-#include <string>
-#include <unordered_set>
-#include <vector>
+// C++ STL classes.
 using std::string;
 using std::unique_ptr;
 using std::unordered_set;
@@ -257,18 +243,21 @@ int EXEPrivate::findPERuntimeDLL(string &refDesc, string &refLink)
 	// one in the import directory table area. This code uses
 	// the import directory table area, though it might be
 	// easier to use the first copy...
-
-	// Load the import directory table.
-	ao::uvector<IMAGE_IMPORT_DIRECTORY> impDirTbl;
-	assert(dataDir.Size % sizeof(IMAGE_IMPORT_DIRECTORY) == 0);
-	impDirTbl.resize(dataDir.Size / sizeof(IMAGE_IMPORT_DIRECTORY));
-	if (impDirTbl.empty()) {
-		// Effectively empty?
+	if (dataDir.Size < sizeof(IMAGE_IMPORT_DIRECTORY)) {
+		// Not enough space for the import table...
 		return -ENOENT;
 	}
-	const size_t impDirTbl_size_bytes = impDirTbl.size() * sizeof(IMAGE_IMPORT_DIRECTORY);
-	size_t size = file->seekAndRead(imptbl_paddr, impDirTbl.data(), impDirTbl_size_bytes);
-	if (size != impDirTbl_size_bytes) {
+
+	// Load the import directory table.
+	// NOTE: The DLL filename strings may be included in the import
+	// directory table area (MinGW), or they might be located before
+	// the import directory table (MSVC 2017). The import directory
+	// table size might not be an exact multiple of
+	// IMAGE_IMPORT_DIRECTORY in the former case.
+	ao::uvector<uint8_t> impDirTbl;
+	impDirTbl.resize(dataDir.Size);
+	size_t size = file->seekAndRead(imptbl_paddr, impDirTbl.data(), impDirTbl.size());
+	if (size != impDirTbl.size()) {
 		// Seek and/or read error.
 		return -EIO;
 	}
@@ -279,18 +268,21 @@ int EXEPrivate::findPERuntimeDLL(string &refDesc, string &refLink)
 	// Find the lowest and highest DLL name VAs in the import directory table.
 	uint32_t dll_vaddr_low = ~0U;
 	uint32_t dll_vaddr_high = 0U;
-	for (auto iter = impDirTbl.cbegin(); iter != impDirTbl.cend(); ++iter) {
-		if (iter->rvaImportLookupTable == 0 || iter->rvaModuleName == 0) {
+	const IMAGE_IMPORT_DIRECTORY *pImpDirTbl = reinterpret_cast<const IMAGE_IMPORT_DIRECTORY*>(impDirTbl.data());
+	const IMAGE_IMPORT_DIRECTORY *const pImpDirTblEnd = pImpDirTbl + (impDirTbl.size() / sizeof(IMAGE_IMPORT_DIRECTORY));
+	for (; pImpDirTbl < pImpDirTblEnd; pImpDirTbl++) {
+		if (pImpDirTbl->rvaImportLookupTable == 0 || pImpDirTbl->rvaModuleName == 0) {
 			// End of table.
 			break;
 		}
 
-		set_dll_vaddrs.insert(iter->rvaModuleName);
-		if (iter->rvaModuleName < dll_vaddr_low) {
-			dll_vaddr_low = iter->rvaModuleName;
+		const uint32_t rvaModuleName = le32_to_cpu(pImpDirTbl->rvaModuleName);
+		set_dll_vaddrs.insert(rvaModuleName);
+		if (rvaModuleName < dll_vaddr_low) {
+			dll_vaddr_low = rvaModuleName;
 		}
-		if (iter->rvaModuleName > dll_vaddr_high) {
-			dll_vaddr_high = iter->rvaModuleName;
+		if (rvaModuleName > dll_vaddr_high) {
+			dll_vaddr_high = rvaModuleName;
 		}
 	}
 

@@ -6,14 +6,11 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+#include "stdafx.h"
 #include "PartitionFile.hpp"
 #include "IDiscReader.hpp"
 
-// C includes. (C++ namespace)
-#include <cerrno>
-
-// C++ includes.
-#include <string>
+// C++ STL classes.
 using std::string;
 
 namespace LibRpBase {

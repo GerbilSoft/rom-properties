@@ -10,23 +10,15 @@
 // - https://github.com/dolphin-emu/dolphin/blob/master/Source/Core/DiscIO/CISOBlob.cpp
 // - https://github.com/dolphin-emu/dolphin/blob/master/Source/Core/DiscIO/CISOBlob.h
 
+#include "stdafx.h"
 #include "CisoGcnReader.hpp"
 #include "librpbase/disc/SparseDiscReader_p.hpp"
 #include "ciso_gcn.h"
 
 // librpbase
-#include "librpbase/byteswap.h"
-#include "librpbase/bitstuff.h"
-#include "librpbase/file/IRpFile.hpp"
 using namespace LibRpBase;
 
-// C includes. (C++ namespace)
-#include <cassert>
-#include <cerrno>
-#include <cstring>
-
-// C++ includes.
-#include <array>
+// C++ STL classes.
 using std::array;
 
 namespace LibRomData {

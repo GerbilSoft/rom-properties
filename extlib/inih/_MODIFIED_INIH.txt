@@ -1,4 +1,9 @@
-This copy of inih-r45 is a modified version of the original.
+This copy of inih-r47 is a modified version of the original.
+
+commit 75fe6b1a03d99a9728b9924f9af30729e51357c2
+Make INIReader not crash when INI_CALL_HANDLER_ON_NEW_SECTION enabled (name NULL)
+
+Tag: r47 (+1 commit)
 
 The following changes have been made to the original:
 
@@ -8,5 +13,5 @@ The following changes have been made to the original:
   they work properly if compiling with 32-bit MSVC using /Gz.
   (default stdcall)
 
-To obtain the original inih-r45, visit:
+To obtain the original inih-r47, visit:
 https://github.com/benhoyt/inih

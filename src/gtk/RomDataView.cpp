@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * RomDataView.cpp: RomData viewer widget.                                 *
  *                                                                         *
- * Copyright (c) 2017-2019 by David Korth.                                 *
+ * Copyright (c) 2017-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -18,6 +18,9 @@
 #include "librpbase/img/IconAnimData.hpp"
 #include "librpbase/img/IconAnimHelper.hpp"
 using namespace LibRpBase;
+
+// RpFileGio
+#include "RpFile_gio.hpp"
 
 // libi18n
 #include "libi18n/i18n.h"
@@ -35,8 +38,10 @@ using LibRomData::RomDataFactory;
 
 // C++ includes.
 #include <algorithm>
+#include <array>
 #include <string>
 #include <vector>
+using std::array;
 using std::string;
 using std::vector;
 
@@ -72,7 +77,7 @@ static inline GtkWidget *gtk_tree_view_column_get_button(GtkTreeViewColumn *tree
 /* Property identifiers */
 enum {
 	PROP_0,
-	PROP_FILENAME,
+	PROP_URI,
 	PROP_DESC_FORMAT_TYPE,
 	PROP_LAST
 };
@@ -88,7 +93,7 @@ static void	rom_data_view_set_property	(GObject	*object,
 						 const GValue	*value,
 						 GParamSpec	*pspec);
 // TODO: Make 'page' the first argument?
-static void	rom_data_view_filename_changed	(const gchar 	*filename,
+static void	rom_data_view_uri_changed	(const gchar 	*uri,
 						 RomDataView	*page);
 static void	rom_data_view_desc_format_type_changed(RpDescFormatType desc_format_type,
 						 RomDataView	*page);
@@ -113,22 +118,24 @@ static void	start_anim_timer(RomDataView *page);
 static void	stop_anim_timer (RomDataView *page);
 static gboolean	anim_timer_func (RomDataView *page);
 
+#if GTK_CHECK_VERSION(3,0,0)
+typedef GtkBoxClass superclass;
+typedef GtkBox super;
+#define GTK_TYPE_SUPER GTK_TYPE_BOX
+#else
+typedef GtkVBoxClass superclass;
+typedef GtkVBox super;
+#define GTK_TYPE_SUPER GTK_TYPE_VBOX
+#endif
+
 // XFCE property page class.
 struct _RomDataViewClass {
-#if GTK_CHECK_VERSION(3,0,0)
-	GtkBoxClass __parent__;
-#else
-	GtkVBoxClass __parent__;
-#endif
+	superclass __parent__;
 };
 
 // XFCE property page.
 struct _RomDataView {
-#if GTK_CHECK_VERSION(3,0,0)
-	GtkBox __parent__;
-#else
-	GtkVBox __parent__;
-#endif
+	super __parent__;
 
 	/* Timeouts */
 	guint		changed_idle;
@@ -139,15 +146,14 @@ struct _RomDataView {
 	GtkWidget	*imgIcon;
 	GtkWidget	*imgBanner;
 
-	// Filename.
-	gchar		*filename;
+	// URI. (GVfs)
+	gchar		*uri;
 
 	// ROM data.
 	RomData		*romData;
 
 	// Animated icon data.
-	// TODO: Use std::array<>?
-	PIMGTYPE	iconFrames[IconAnimData::MAX_FRAMES];
+	array<PIMGTYPE, IconAnimData::MAX_FRAMES> iconFrames;
 	IconAnimHelper	*iconAnimHelper;
 	int		last_frame_number;	// Last frame number.
 
@@ -162,24 +168,18 @@ struct _RomDataView {
 		GtkWidget	*table;		// GtkTable (2.x); GtkGrid (3.x)
 		GtkWidget	*lblCredits;
 	};
-	vector<tab> *tabs;
+	vector<tab>	*tabs;
 
 	// Description labels.
-	RpDescFormatType		desc_format_type;
-	vector<GtkWidget*>		*vecDescLabels;
+	RpDescFormatType	desc_format_type;
+	vector<GtkWidget*>	*vecDescLabels;
 };
 
 // FIXME: G_DEFINE_TYPE() doesn't work in C++ mode with gcc-6.2
 // due to an implicit int to GTypeFlags conversion.
-#if GTK_CHECK_VERSION(3,0,0)
-//G_DEFINE_TYPE(RomDataView, rom_data_view, GTK_TYPE_BOX);
+//G_DEFINE_TYPE(RomDataView, rom_data_view, GTK_TYPE_SUPER);
 G_DEFINE_TYPE_EXTENDED(RomDataView, rom_data_view,
-	GTK_TYPE_BOX, static_cast<GTypeFlags>(0), {});
-#else
-//G_DEFINE_TYPE(RomDataView, rom_data_view, GTK_TYPE_VBOX);
-G_DEFINE_TYPE_EXTENDED(RomDataView, rom_data_view,
-	GTK_TYPE_VBOX, static_cast<GTypeFlags>(0), {});
-#endif
+	GTK_TYPE_SUPER, static_cast<GTypeFlags>(0), {});
 
 static GParamSpec *properties[PROP_LAST];
 
@@ -193,12 +193,12 @@ rom_data_view_class_init(RomDataViewClass *klass)
 	gobject_class->set_property = rom_data_view_set_property;
 
 	/**
-	 * RomDataView:filename:
+	 * RomDataView:uri:
 	 *
-	 * The name of the file being displayed on this page.
+	 * The URI of the file being displayed on this page.
 	 **/
-	properties[PROP_FILENAME] = g_param_spec_string(
-		"filename", "Filename", "Filename of the ROM image being displayed.",
+	properties[PROP_URI] = g_param_spec_string(
+		"uri", "URI", "URI of the ROM image being displayed.",
 		nullptr,
 		(GParamFlags)(G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
@@ -215,7 +215,7 @@ rom_data_view_class_init(RomDataViewClass *klass)
 		(GParamFlags)(G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
 	// Install the properties.
-	g_object_class_install_property(gobject_class, PROP_FILENAME, properties[PROP_FILENAME]);
+	g_object_class_install_property(gobject_class, PROP_URI, properties[PROP_URI]);
 	g_object_class_install_property(gobject_class, PROP_DESC_FORMAT_TYPE, properties[PROP_DESC_FORMAT_TYPE]);
 }
 
@@ -241,6 +241,8 @@ set_label_format_type(GtkLabel *label, RpDescFormatType desc_format_type)
 	}
 
 	// Check for DE-specific formatting.
+	GtkJustification justify;
+	float xalign, yalign;
 	switch (desc_format_type) {
 		case RP_DFT_XFCE:
 		default:
@@ -248,19 +250,9 @@ set_label_format_type(GtkLabel *label, RpDescFormatType desc_format_type)
 			// NOTE: No changes between GTK+ 2.x and 3.x.
 
 			// Text alignment: Right
-			gtk_label_set_justify(label, GTK_JUSTIFY_RIGHT);
-#if GTK_CHECK_VERSION(3,16,0)
-			// NOTE: gtk_widget_set_?align() doesn't work properly
-			// when using a GtkSizeGroup on GTK+ 3.x.
-			// gtk_label_set_?align() was introduced in GTK+ 3.16.
-			gtk_label_set_xalign(label, 1.0);
-			gtk_label_set_yalign(label, 0.0);
-#else
-			// NOTE: GtkMisc is deprecated on GTK+ 3.x, but it's
-			// needed for proper text alignment when using
-			// GtkSizeGroup prior to GTK+ 3.16.
-			gtk_misc_set_alignment(GTK_MISC(label), 1.0f, 0.0f);
-#endif
+			justify = GTK_JUSTIFY_RIGHT;
+			xalign = 1.0f;
+			yalign = 0.0f;
 
 			if (!is_warning) {
 				// Text style: Bold
@@ -270,27 +262,32 @@ set_label_format_type(GtkLabel *label, RpDescFormatType desc_format_type)
 			break;
 
 		case RP_DFT_GNOME:
-			// GNOME style. (Also used for MATE.)
+			// GNOME style. (Also used for MATE and Cinnamon.)
 			// TODO: Changes for GNOME 2.
 
 			// Text alignment: Left
-			gtk_label_set_justify(label, GTK_JUSTIFY_LEFT);
-#if GTK_CHECK_VERSION(3,16,0)
-			// NOTE: gtk_widget_set_?align() doesn't work properly
-			// when using a GtkSizeGroup on GTK+ 3.x.
-			// gtk_label_set_?align() was introduced in GTK+ 3.16.
-			gtk_label_set_xalign(label, 0.0);
-			gtk_label_set_yalign(label, 0.0);
-#else
-			// NOTE: GtkMisc is deprecated on GTK+ 3.x, but it's
-			// needed for proper text alignment when using
-			// GtkSizeGroup prior to GTK+ 3.16.
-			gtk_misc_set_alignment(GTK_MISC(label), 0.0f, 0.0f);
-#endif
+			justify = GTK_JUSTIFY_LEFT;
+			xalign = 0.0f;
+			yalign = 0.0f;
 
 			// Text style: Normal (no Pango attributes)
 			break;
 	}
+
+	gtk_label_set_justify(label, justify);
+
+#if GTK_CHECK_VERSION(3,16,0)
+	// NOTE: gtk_widget_set_?align() doesn't work properly
+	// when using a GtkSizeGroup on GTK+ 3.x.
+	// gtk_label_set_?align() was introduced in GTK+ 3.16.
+	gtk_label_set_xalign(label, xalign);
+	gtk_label_set_yalign(label, yalign);
+#else
+	// NOTE: GtkMisc is deprecated on GTK+ 3.x, but it's
+	// needed for proper text alignment when using
+	// GtkSizeGroup prior to GTK+ 3.16.
+	gtk_misc_set_alignment(GTK_MISC(label), xalign, yalign);
+#endif
 
 	gtk_label_set_attributes(label, attr_lst);
 	pango_attr_list_unref(attr_lst);
@@ -300,7 +297,7 @@ static void
 rom_data_view_init(RomDataView *page)
 {
 	// No ROM data initially.
-	page->filename = nullptr;
+	page->uri = nullptr;
 	page->romData = nullptr;
 	page->last_frame_number = 0;
 	page->iconAnimHelper = new IconAnimHelper();
@@ -404,8 +401,8 @@ rom_data_view_finalize(GObject *object)
 {
 	RomDataView *page = ROM_DATA_VIEW(object);
 
-	// Free the filename.
-	g_free(page->filename);
+	// Free the URI.
+	g_free(page->uri);
 
 	// Delete the C++ objects.
 	delete page->iconAnimHelper;
@@ -436,8 +433,8 @@ rom_data_view_get_property(GObject	*object,
 	RomDataView *page = ROM_DATA_VIEW(object);
 
 	switch (prop_id) {
-		case PROP_FILENAME:
-			g_value_set_string(value, page->filename);
+		case PROP_URI:
+			g_value_set_string(value, page->uri);
 			break;
 
 		case PROP_DESC_FORMAT_TYPE:
@@ -459,8 +456,8 @@ rom_data_view_set_property(GObject	*object,
 	RomDataView *page = ROM_DATA_VIEW(object);
 
 	switch (prop_id) {
-		case PROP_FILENAME:
-			rom_data_view_set_filename(page, g_value_get_string(value));
+		case PROP_URI:
+			rom_data_view_set_uri(page, g_value_get_string(value));
 			break;
 
 		case PROP_DESC_FORMAT_TYPE:
@@ -475,41 +472,41 @@ rom_data_view_set_property(GObject	*object,
 }
 
 /**
- * rom_data_view_get_filename:
+ * rom_data_view_get_uri:
  * @page : a #RomDataView.
  *
- * Returns the current filename for the @page.
+ * Returns the current URI for the @page.
  *
  * Return value: the file associated with this property page.
  **/
 const gchar*
-rom_data_view_get_filename(RomDataView *page)
+rom_data_view_get_uri(RomDataView *page)
 {
 	g_return_val_if_fail(IS_ROM_DATA_VIEW(page), nullptr);
-	return page->filename;
+	return page->uri;
 }
 
 /**
- * rom_data_view_set_filename:
+ * rom_data_view_set_uri:
  * @page : a #RomDataView.
- * @filename : a filename.
+ * @uri : a URI.
  *
- * Sets the filename for this @page.
+ * Sets the URI for this @page.
  **/
 void
-rom_data_view_set_filename(RomDataView	*page,
-			   const gchar	*filename)
+rom_data_view_set_uri(RomDataView	*page,
+		      const gchar	*uri)
 {
 	g_return_if_fail(IS_ROM_DATA_VIEW(page));
 
 	/* Check if we already use this file */
-	if (G_UNLIKELY(!g_strcmp0(page->filename, filename)))
+	if (G_UNLIKELY(!g_strcmp0(page->uri, uri)))
 		return;
 
 	/* Disconnect from the previous file (if any) */
-	if (G_LIKELY(page->filename != nullptr)) {
-		g_free(page->filename);
-		page->filename = nullptr;
+	if (G_LIKELY(page->uri != nullptr)) {
+		g_free(page->uri);
+		page->uri = nullptr;
 
 		// Unreference the existing RomData object.
 		if (page->romData) {
@@ -522,11 +519,11 @@ rom_data_view_set_filename(RomDataView	*page,
 	}
 
 	/* Assign the value */
-	page->filename = g_strdup(filename);
+	page->uri = g_strdup(uri);
 
 	/* Connect to the new file (if any) */
-	if (G_LIKELY(page->filename != nullptr)) {
-		rom_data_view_filename_changed(page->filename, page);
+	if (G_LIKELY(page->uri != nullptr)) {
+		rom_data_view_uri_changed(page->uri, page);
 	} else {
 		// Hide the header row
 		if (page->hboxHeaderRow) {
@@ -534,17 +531,17 @@ rom_data_view_set_filename(RomDataView	*page,
 		}
 	}
 
-	// Filename has been changed.
-	g_object_notify_by_pspec(G_OBJECT(page), properties[PROP_FILENAME]);
+	// URI has been changed.
+	g_object_notify_by_pspec(G_OBJECT(page), properties[PROP_URI]);
 }
 
 static void
-rom_data_view_filename_changed(const gchar	*filename,
-			       RomDataView	*page)
+rom_data_view_uri_changed(const gchar	*uri,
+			  RomDataView	*page)
 {
-	g_return_if_fail(filename != nullptr);
+	g_return_if_fail(uri != nullptr);
 	g_return_if_fail(IS_ROM_DATA_VIEW(page));
-	g_return_if_fail(!g_strcmp0(page->filename, filename));
+	g_return_if_fail(!g_strcmp0(page->uri, uri));
 
 	if (page->changed_idle == 0) {
 		page->changed_idle = g_idle_add(rom_data_view_load_rom_data, page);
@@ -1094,7 +1091,7 @@ rom_data_view_init_listdata(G_GNUC_UNUSED RomDataView *page, const RomFields::Fi
 
 	// Row height is recalculated when the window is first visible
 	// and/or the system theme is changed.
-	// TODO: Set an actual default number of rows, or let Qt handle it?
+	// TODO: Set an actual default number of rows, or let GTK+ handle it?
 	// (Windows uses 5.)
 	g_object_set_data(G_OBJECT(treeView), "RFT_LISTDATA_rows_visible",
 		GINT_TO_POINTER(listDataDesc.rows_visible));
@@ -1145,7 +1142,7 @@ rom_data_view_init_datetime(G_GNUC_UNUSED RomDataView *page, const RomFields::Fi
 	assert(format != nullptr);
 	GtkWidget *widget = nullptr;
 	if (format) {
-		gchar *str = g_date_time_format(dateTime, format);
+		gchar *const str = g_date_time_format(dateTime, format);
 		if (str) {
 			widget = rom_data_view_init_string(page, field, str);
 			g_free(str);
@@ -1166,7 +1163,7 @@ static GtkWidget*
 rom_data_view_init_age_ratings(G_GNUC_UNUSED RomDataView *page, const RomFields::Field *field)
 {
 	// Age ratings.
-	const RomFields::age_ratings_t *age_ratings = field->data.age_ratings;
+	const RomFields::age_ratings_t *const age_ratings = field->data.age_ratings;
 	assert(age_ratings != nullptr);
 	if (!age_ratings) {
 		// tr: No age ratings data.
@@ -1223,7 +1220,7 @@ rom_data_view_update_display(RomDataView *page)
 	}
 
 	// Get the fields.
-	const RomFields *fields = page->romData->fields();
+	const RomFields *const fields = page->romData->fields();
 	if (!fields) {
 		// No fields.
 		// TODO: Show an error?
@@ -1372,7 +1369,7 @@ rom_data_view_update_display(RomDataView *page)
 			auto &tab = page->tabs->at(tabIdx);
 
 			// tr: Field description label.
-			string txt = rp_sprintf(desc_label_fmt, field->name.c_str());
+			const string txt = rp_sprintf(desc_label_fmt, field->name.c_str());
 			GtkWidget *lblDesc = gtk_label_new(txt.c_str());
 			gtk_label_set_use_underline(GTK_LABEL(lblDesc), false);
 			gtk_widget_show(lblDesc);
@@ -1502,30 +1499,42 @@ rom_data_view_load_rom_data(gpointer data)
 {
 	RomDataView *page = ROM_DATA_VIEW(data);
 	g_return_val_if_fail(page != nullptr || IS_ROM_DATA_VIEW(page), false);
-	g_return_val_if_fail(page->filename != nullptr, false);
+	g_return_val_if_fail(page->uri != nullptr, false);
 
-	// Open the ROM file.
-	// TODO: gvfs support.
-	if (G_LIKELY(page->filename != nullptr)) {
-		// Open the ROM file.
-		RpFile *const file = new RpFile(page->filename, RpFile::FM_OPEN_READ_GZ);
-		if (file->isOpen()) {
-			// Create the RomData object.
-			// file is ref()'d by RomData.
-			page->romData = RomDataFactory::create(file);
-
-			// Update the display widgets.
-			rom_data_view_update_display(page);
-
-			// Make sure the underlying file handle is closed,
-			// since we don't need it once the RomData has been
-			// loaded by RomDataView.
-			if (page->romData) {
-				page->romData->close();
-			}
-		}
-		file->unref();
+	if (G_UNLIKELY(page->uri == nullptr)) {
+		// No URI.
+		page->changed_idle = 0;
+		return false;
 	}
+
+	// Check if the URI maps to a local file.
+	IRpFile *file = nullptr;
+	gchar *const filename = g_filename_from_uri(page->uri, nullptr, nullptr);
+	if (filename) {
+		// Local file. Use RpFile.
+		file = new RpFile(filename, RpFile::FM_OPEN_READ_GZ);
+		g_free(filename);
+	} else {
+		// Not a local file. Use RpFileGio.
+		file = new RpFileGio(page->uri);
+	}
+
+	if (file->isOpen()) {
+		// Create the RomData object.
+		// file is ref()'d by RomData.
+		page->romData = RomDataFactory::create(file);
+
+		// Update the display widgets.
+		rom_data_view_update_display(page);
+
+		// Make sure the underlying file handle is closed,
+		// since we don't need it once the RomData has been
+		// loaded by RomDataView.
+		if (page->romData) {
+			page->romData->close();
+		}
+	}
+	file->unref();
 
 	// Animation timer will be started when the page
 	// receives the "map" signal.
@@ -1572,7 +1581,7 @@ rom_data_view_delete_tabs(RomDataView *page)
 	page->vecDescLabels->clear();
 
 	// Delete the icon frames.
-	for (int i = ARRAY_SIZE(page->iconFrames)-1; i >= 0; i--) {
+	for (int i = page->iconFrames.size()-1; i >= 0; i--) {
 		if (page->iconFrames[i]) {
 			PIMGTYPE_destroy(page->iconFrames[i]);
 			page->iconFrames[i] = nullptr;
@@ -1778,12 +1787,13 @@ static gboolean anim_timer_func(RomDataView *page)
 		page->last_frame_number = frame;
 	}
 
-	// Set a new timer and unset the current one.
 	if (page->last_delay != delay) {
+		// Set a new timer and unset the current one.
 		page->last_delay = delay;
 		page->tmrIconAnim = g_timeout_add(delay,
 			reinterpret_cast<GSourceFunc>(anim_timer_func), page);
 		return false;
 	}
+	// Keep the current timer running.
 	return true;
 }

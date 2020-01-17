@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libcachemgr)                      *
  * CurlDownloader.cpp: libcurl-based file downloader.                      *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -100,7 +100,7 @@ size_t CurlDownloader::parse_header(char *ptr, size_t size, size_t nitems, void 
 	static const char http_last_modified[] = "Last-Modified: ";
 
 	if (len >= sizeof(http_content_length) &&
-	    !memcmp(ptr, http_content_length, sizeof(http_content_length)-1))
+	    !strncasecmp(ptr, http_content_length, sizeof(http_content_length)-1))
 	{
 		// Found the Content-Length.
 		// Parse the value.
@@ -132,7 +132,7 @@ size_t CurlDownloader::parse_header(char *ptr, size_t size, size_t nitems, void 
 		vec->reserve(fileSize);
 	}
 	else if (len >= sizeof(http_last_modified) &&
-	         !memcmp(ptr, http_last_modified, sizeof(http_last_modified)-1))
+	         !strncasecmp(ptr, http_last_modified, sizeof(http_last_modified)-1))
 	{
 		// Found the Last-Modified time.
 		// Should be in the format: "Wed, 15 Nov 1995 04:58:08 GMT"
@@ -209,6 +209,9 @@ int CurlDownloader::download(void)
 	// - Total timeout: 20 seconds.
 	curl_easy_setopt(curl, CURLOPT_CONNECTTIMEOUT, 2);
 	curl_easy_setopt(curl, CURLOPT_TIMEOUT, 20);
+
+	// Set the User-Agent.
+	curl_easy_setopt(curl, CURLOPT_USERAGENT, m_userAgent.c_str());
 
 	// TODO: Set the User-Agent?
 	CURLcode res = curl_easy_perform(curl);

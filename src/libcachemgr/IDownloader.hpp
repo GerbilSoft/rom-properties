@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libcachemgr)                      *
  * IDownloader.hpp: Downloader interface.                                  *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -134,6 +134,12 @@ class IDownloader
 		 */
 		virtual int download(void) = 0;
 
+	private:
+		/**
+		 * Create the User-Agent value.
+		 */
+		void createUserAgent(void);
+
 	protected:
 		std::string m_url;
 		std::string m_proxyUrl;
@@ -147,6 +153,9 @@ class IDownloader
 
 		bool m_inProgress;	// Set when downloading.
 		size_t m_maxSize;	// Maximum buffer size. (0 == unlimited)
+
+		// User-Agent.
+		std::string m_userAgent;
 };
 
 }

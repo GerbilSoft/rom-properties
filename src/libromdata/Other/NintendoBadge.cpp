@@ -6,36 +6,18 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+#include "stdafx.h"
 #include "NintendoBadge.hpp"
-#include "librpbase/RomData_p.hpp"
-
 #include "badge_structs.h"
 #include "Handheld/n3ds_structs.h"
 #include "data/Nintendo3DSSysTitles.hpp"
 #include "data/NintendoLanguage.hpp"
 
-// librpbase
-#include "librpbase/common.h"
-#include "librpbase/byteswap.h"
-#include "librpbase/aligned_malloc.h"
-#include "librpbase/TextFuncs.hpp"
-#include "librpbase/file/IRpFile.hpp"
-
-#include "libi18n/i18n.h"
+// librpbase, librptexture
 using namespace LibRpBase;
-
-// librptexture
-#include "librptexture/img/rp_image.hpp"
-#include "librptexture/decoder/ImageDecoder.hpp"
 using namespace LibRpTexture;
 
-// C includes. (C++ namespace)
-#include <cassert>
-#include <cstring>
-
-// C++ includes.
-#include <string>
-#include <vector>
+// C++ STL classes.
 using std::string;
 using std::vector;
 

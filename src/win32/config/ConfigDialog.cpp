@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * ConfigDialog.cpp: Configuration dialog.                                 *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -12,26 +12,13 @@
 #include "res/resource.h"
 
 // librpbase
-#include "librpbase/TextFuncs.hpp"
-#include "librpbase/TextFuncs_wchar.hpp"
-#include "librpbase/config/Config.hpp"
 using namespace LibRpBase;
-
-// libi18n
-#include "libi18n/i18n.h"
 
 // Property sheet icon.
 // Extracted from imageres.dll or shell32.dll.
 #include "PropSheetIcon.hpp"
 
-// C includes.
-#include <stdlib.h>
-
-// C includes. (C++ namespace)
-#include <cassert>
-
-// C++ includes.
-#include <string>
+// C++ STL classes.
 using std::tstring;
 
 #include "libi18n/config.libi18n.h"
@@ -39,7 +26,6 @@ using std::tstring;
 // MSVC: Exception handling for /DELAYLOAD.
 #include "libwin32common/DelayLoadHelper.h"
 // DelayLoad test implementation.
-#include "libi18n/i18n.h"
 DELAYLOAD_TEST_FUNCTION_IMPL1(textdomain, nullptr);
 #endif /* defined(_MSC_VER) && defined(ENABLE_NLS) */
 

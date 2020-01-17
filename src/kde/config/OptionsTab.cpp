@@ -84,6 +84,7 @@ void OptionsTab::reset(void)
 	d->ui.chkExtImgDownloadEnabled->setChecked(config->extImgDownloadEnabled());
 	d->ui.chkUseIntIconForSmallSizes->setChecked(config->useIntIconForSmallSizes());
 	d->ui.chkDownloadHighResScans->setChecked(config->downloadHighResScans());
+	d->ui.chkStoreFileOriginInfo->setChecked(config->storeFileOriginInfo());
 	d->ui.chkShowDangerousPermissionsOverlayIcon->setChecked(config->showDangerousPermissionsOverlayIcon());
 	d->ui.chkEnableThumbnailOnNetworkFS->setChecked(config->enableThumbnailOnNetworkFS());
 }
@@ -100,6 +101,7 @@ void OptionsTab::loadDefaults(void)
 	static const bool extImgDownloadEnabled_default = true;
 	static const bool useIntIconForSmallSizes_default = true;
 	static const bool downloadHighResScans_default = true;
+	static const bool storeFileOriginInfo_default = true;
 	static const bool showDangerousPermissionsOverlayIcon_default = true;
 	static const bool enableThumbnailOnNetworkFS = false;
 	bool isDefChanged = false;
@@ -115,6 +117,10 @@ void OptionsTab::loadDefaults(void)
 	}
 	if (d->ui.chkDownloadHighResScans->isChecked() != downloadHighResScans_default) {
 		d->ui.chkDownloadHighResScans->setChecked(downloadHighResScans_default);
+		isDefChanged = true;
+	}
+	if (d->ui.chkStoreFileOriginInfo->isChecked() != storeFileOriginInfo_default) {
+		d->ui.chkStoreFileOriginInfo->setChecked(storeFileOriginInfo_default);
 		isDefChanged = true;
 	}
 	if (d->ui.chkShowDangerousPermissionsOverlayIcon->isChecked() !=
@@ -154,6 +160,8 @@ void OptionsTab::save(QSettings *pSettings)
 		d->ui.chkUseIntIconForSmallSizes->isChecked());
 	pSettings->setValue(QLatin1String("DownloadHighResScans"),
 		d->ui.chkDownloadHighResScans->isChecked());
+	pSettings->setValue(QLatin1String("StoreFileOriginInfo"),
+		d->ui.chkStoreFileOriginInfo->isChecked());
 	pSettings->endGroup();
 
 	pSettings->beginGroup(QLatin1String("Options"));

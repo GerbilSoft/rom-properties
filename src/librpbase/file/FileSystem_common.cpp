@@ -6,13 +6,10 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+#include "stdafx.h"
 #include "FileSystem.hpp"
 
-// C includes.
-#include <stddef.h>	/* size_t */
-
-// C++ includes.
-#include <string>
+// C++ STL classes.
 using std::string;
 
 namespace LibRpBase { namespace FileSystem {

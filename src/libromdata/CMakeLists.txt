@@ -33,11 +33,12 @@ SET(libromdata_SRCS
 	Handheld/GameBoyAdvance.cpp
 	Handheld/GameCom.cpp
 	Handheld/Lynx.cpp
+	Handheld/NGPC.cpp
 	Handheld/Nintendo3DS.cpp
 	Handheld/Nintendo3DSFirm.cpp
 	Handheld/Nintendo3DS_SMDH.cpp
 	Handheld/NintendoDS.cpp
-	Handheld/NGPC.cpp
+	Handheld/PokemonMini.cpp
 	Handheld/VirtualBoy.cpp
 
 	Audio/ADX.cpp
@@ -162,6 +163,7 @@ SET(libromdata_H
 	Handheld/Nintendo3DSFirm.hpp
 	Handheld/Nintendo3DS_SMDH.hpp
 	Handheld/NintendoDS.hpp
+	Handheld/PokemonMini.hpp
 	Handheld/VirtualBoy.hpp
 
 	Handheld/dmg_structs.h
@@ -170,6 +172,7 @@ SET(libromdata_H
 	Handheld/n3ds_structs.h
 	Handheld/nds_structs.h
 	Handheld/ngpc_structs.h
+	Handheld/pkmnmini_structs.h
 	Handheld/lnx_structs.h
 	Handheld/vb_structs.h
 
@@ -285,10 +288,8 @@ IF(CPU_i386 OR CPU_amd64)
 		SET(libromdata_IFUNC_SRCS utils/SuperMagicDrive_ifunc.cpp)
 		# Disable LTO on the IFUNC files if LTO is known to be broken.
 		IF(GCC_5xx_LTO_ISSUES)
-			FOREACH(ifunc_file ${libromdata_IFUNC_SRCS})
-				SET_SOURCE_FILES_PROPERTIES(${ifunc_file}
-					APPEND_STRING PROPERTIES COMPILE_FLAGS " -fno-lto ")
-			ENDFOREACH()
+			SET_SOURCE_FILES_PROPERTIES(${libromdata_IFUNC_SRCS}
+				APPEND_STRING PROPERTIES COMPILE_FLAGS " -fno-lto ")
 		ENDIF(GCC_5xx_LTO_ISSUES)
 	ENDIF(UNIX AND NOT APPLE)
 
@@ -327,11 +328,20 @@ ENDIF()
 # Write the config.h file.
 CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/config.libromdata.h.in" "${CMAKE_CURRENT_BINARY_DIR}/config.libromdata.h")
 
+IF(ENABLE_PCH)
+	# Precompiled headers.
+	INCLUDE(PrecompiledHeader)
+	SET(libromdata_PCH_CXX stdafx.cpp)
+	SET(libromdata_PCH_SRC ${libromdata_PCH_CXX})
+	SET(libromdata_PCH_H stdafx.h)
+ENDIF(ENABLE_PCH)
+
 ######################
 # Build the library. #
 ######################
 
 ADD_LIBRARY(romdata STATIC
+	${libromdata_PCH_SRC} ${libromdata_PCH_H}
 	${libromdata_SRCS} ${libromdata_H}
 	${libromdata_OS_SRCS} ${libromdata_OS_H}
 	${libromdata_CRYPTO_SRCS} ${libromdata_CRYPTO_H}
@@ -339,11 +349,17 @@ ADD_LIBRARY(romdata STATIC
 	${libromdata_MMX_SRCS}
 	${libromdata_SSE2_SRCS}
 	)
+IF(ENABLE_PCH)
+	ADD_PRECOMPILED_HEADER(romdata ${libromdata_PCH_H}
+		SOURCE_CXX ${libromdata_PCH_CXX}
+		)
+ENDIF(ENABLE_PCH)
 INCLUDE(SetMSVCDebugPath)
 SET_MSVC_DEBUG_PATH(romdata)
 
 # TODO: More public/private library stuff.
 TARGET_LINK_LIBRARIES(romdata PUBLIC rptexture rpbase)
+TARGET_LINK_LIBRARIES(romdata PRIVATE rpthreads)
 IF(ENABLE_NLS)
 	TARGET_LINK_LIBRARIES(romdata PRIVATE i18n)
 ENDIF(ENABLE_NLS)
@@ -371,9 +387,6 @@ IF(ENABLE_XML AND TinyXML2_FOUND)
 	TARGET_LINK_LIBRARIES(romdata PRIVATE ${TinyXML2_LIBRARY})
 	TARGET_INCLUDE_DIRECTORIES(romdata PRIVATE ${TinyXML2_INCLUDE_DIR})
 ENDIF(ENABLE_XML AND TinyXML2_FOUND)
-IF(ENABLE_GL AND OPENGL_FOUND)
-	TARGET_INCLUDE_DIRECTORIES(romdata PRIVATE ${OPENGL_INCLUDE_DIR})
-ENDIF(ENABLE_GL AND OPENGL_FOUND)
 
 IF(ENABLE_UNICE68)
 	TARGET_LINK_LIBRARIES(romdata PRIVATE unice68_lib)

@@ -42,14 +42,15 @@ STYLE DS_3DLOOK | DS_CONTROL | DS_SHELLFONT | WS_VISIBLE | WS_CHILDWINDOW | WS_T
 EXSTYLE WS_EX_NOPARENTNOTIFY | WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", FW_NORMAL, 0, 0
 BEGIN
-    GROUPBOX        "&Downloads", IDC_STATIC, 7, 7, 397, 63, BS_GROUPBOX, WS_EX_TRANSPARENT
+    GROUPBOX        "&Downloads", IDC_STATIC, 7, 7, 397, 84, BS_GROUPBOX, WS_EX_TRANSPARENT
     AUTOCHECKBOX    "Enable external image downloads.", IDC_EXTIMGDL, 15, 19, 381, 8, 0, WS_EX_TRANSPARENT
     AUTOCHECKBOX    "Always use the internal icon (if present) for small sizes.", IDC_INTICONSMALL, 15, 33, 381, 8, 0, WS_EX_TRANSPARENT
     AUTOCHECKBOX    "Download high-resolution scans if viewing large thumbnails.\nThis may increase bandwidth usage.", IDC_HIGHRESDL, 15, 47, 381, 16, BS_MULTILINE, WS_EX_TRANSPARENT
+    AUTOCHECKBOX    "Store cached file origin information using extended attributes.\nThis helps to identify where cached files were downloaded from.", IDC_STOREFILEORIGININFO, 15, 68, 381, 16, BS_MULTILINE, WS_EX_TRANSPARENT
 
-    GROUPBOX        "&Options", IDC_STATIC, 7, 71, 397, 55, BS_GROUPBOX, WS_EX_TRANSPARENT
-    AUTOCHECKBOX    "Show a security overlay icon for ROM images with\n""dangerous"" permissions.", IDC_DANGEROUSPERMISSIONS, 15, 83, 381, 16, BS_MULTILINE, WS_EX_TRANSPARENT
-    AUTOCHECKBOX    "Enable thumbnailing and metadata extraction on network\nfile systems. This may slow down file browsing.", IDC_ENABLETHUMBNAILONNETWORKFS, 15, 103, 381, 16, BS_MULTILINE, WS_EX_TRANSPARENT
+    GROUPBOX        "&Options", IDC_STATIC, 7, 92, 397, 50, BS_GROUPBOX, WS_EX_TRANSPARENT
+    AUTOCHECKBOX    "Show a security overlay icon for ROM images with\n""dangerous"" permissions.", IDC_DANGEROUSPERMISSIONS, 15, 103, 381, 16, BS_MULTILINE, WS_EX_TRANSPARENT
+    AUTOCHECKBOX    "Enable thumbnailing and metadata extraction on network\nfile systems. This may slow down file browsing.", IDC_ENABLETHUMBNAILONNETWORKFS, 15, 120, 381, 16, BS_MULTILINE, WS_EX_TRANSPARENT
 END
 
 /**
@@ -132,7 +133,7 @@ STYLE DS_3DLOOK | DS_CONTROL | DS_SHELLFONT | WS_VISIBLE | WS_CHILDWINDOW | WS_T
 EXSTYLE WS_EX_NOPARENTNOTIFY | WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", FW_NORMAL, 0, 0
 BEGIN
-    CONTROL         "", IDC_ABOUT_ICON, WC_STATIC, SS_ICON, 7, 7, 16, 16, NOT WS_VISIBLE | WS_EX_LEFT
+    CONTROL         "", IDC_ABOUT_ICON, WC_STATIC, SS_ICON, 7, 7, 16, 16, WS_EX_LEFT
     CTEXT           "ROM Properties Page", IDC_ABOUT_LINE1, 7, 7, 398, 9, SS_CENTER, WS_EX_LEFT
     CTEXT           "Shell Extension", IDC_ABOUT_LINE2, 7, 16, 398, 9, SS_CENTER, WS_EX_LEFT
     CTEXT           "", IDC_ABOUT_VERSION, 7, 28, 398, 32, SS_CENTER, WS_EX_LEFT

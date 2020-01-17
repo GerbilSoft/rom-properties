@@ -3,10 +3,11 @@ PROJECT(rom-properties-gnome)
 # GNOME (Nautilus) frontend for rom-properties.
 FIND_PACKAGE(GLib2 ${REQUIRE_GNOME} 2.26.0)
 FIND_PACKAGE(GObject2 ${REQUIRE_GNOME} 2.26.0)
-FIND_PACKAGE(Cairo)
+FIND_PACKAGE(GIO ${REQUIRE_GNOME} 2.26.0)
+FIND_PACKAGE(Cairo ${REQUIRE_GNOME})
 # GTK3 minimum is 3.10.0. (gtk_image_set_from_surface)
 FIND_PACKAGE(GTK3 3.10.0 ${REQUIRE_GNOME})
-IF(GLib2_FOUND AND GObject2_FOUND AND Cairo_FOUND AND GTK3_FOUND)
+IF(GLib2_FOUND AND GObject2_FOUND AND GIO_FOUND AND Cairo_FOUND AND GTK3_FOUND)
 	# Find the Nautilus extension library.
 	# TODO: Minimum version, and ensure it's 3, not 4?
 	FIND_PACKAGE(LibNautilusExtension ${REQUIRE_GNOME} 3.0.0)
@@ -22,11 +23,11 @@ IF(GLib2_FOUND AND GObject2_FOUND AND Cairo_FOUND AND GTK3_FOUND)
 		# Disable the GNOME frontend.
 		SET(BUILD_GNOME OFF CACHE INTERNAL "Build the GNOME (GTK+ 3.x) plugin." FORCE)
 	ENDIF(LibNautilusExtension_FOUND)
-ELSE(GLib2_FOUND AND GObject2_FOUND AND Cairo_FOUND AND GTK3_FOUND)
+ELSE(GLib2_FOUND AND GObject2_FOUND AND GIO_FOUND AND Cairo_FOUND AND GTK3_FOUND)
 	# GTK+ 3.x (or required dependencies) were not found.
 	# Disable the GNOME frontend.
 	SET(BUILD_GNOME OFF CACHE INTERNAL "Build the GNOME (GTK+ 3.x) plugin." FORCE)
-ENDIF(GLib2_FOUND AND GObject2_FOUND AND Cairo_FOUND AND GTK3_FOUND)
+ENDIF(GLib2_FOUND AND GObject2_FOUND AND GIO_FOUND AND Cairo_FOUND AND GTK3_FOUND)
 
 # Sources and headers. (GTK+ common)
 STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-gnome_SRCS  "${rom-properties-gtk_SRCS}")
@@ -41,10 +42,8 @@ IF(rom-properties-gtk3_SSSE3_SRCS)
 
 	# Disable LTO on the IFUNC files if LTO is known to be broken.
 	IF(GCC_5xx_LTO_ISSUES)
-		FOREACH(ifunc_file ${rom-properties-gnome_IFUNC_SRCS})
-			SET_SOURCE_FILES_PROPERTIES(${ifunc_file}
-				APPEND_STRING PROPERTIES COMPILE_FLAGS " -fno-lto ")
-		ENDFOREACH()
+		SET_SOURCE_FILES_PROPERTIES(${rom-properties-gnome_IFUNC_SRCS}
+			APPEND_STRING PROPERTIES COMPILE_FLAGS " -fno-lto ")
 	ENDIF(GCC_5xx_LTO_ISSUES)
 
 	IF(MSVC AND NOT CMAKE_CL_64)
@@ -54,10 +53,8 @@ IF(rom-properties-gtk3_SSSE3_SRCS)
 		SET(SSSE3_FLAG "-mssse3")
 	ENDIF()
 	IF(SSSE3_FLAG)
-		FOREACH(ssse3_file ${rom-properties-gnome_SSSE3_SRCS})
-			SET_SOURCE_FILES_PROPERTIES(${ssse3_file}
-				APPEND_STRING PROPERTIES COMPILE_FLAGS " ${SSSE3_FLAG} ")
-		ENDFOREACH(ssse3_file ${rom-properties-gnome_SSSE3_SRCS})
+		SET_SOURCE_FILES_PROPERTIES(${rom-properties-gnome_SSSE3_SRCS}
+			APPEND_STRING PROPERTIES COMPILE_FLAGS " ${SSSE3_FLAG} ")
 	ENDIF(SSSE3_FLAG)
 ENDIF()
 UNSET(arch)
@@ -98,7 +95,7 @@ IF(BUILD_GNOME)
 	ENDIF(ENABLE_NLS)
 	TARGET_LINK_LIBRARIES(rom-properties-gnome PUBLIC Gnome::libnautilus-extension)
 	TARGET_LINK_LIBRARIES(rom-properties-gnome PRIVATE Cairo::cairo)
-	TARGET_LINK_LIBRARIES(rom-properties-gnome PUBLIC Gtk3::gtk3 GLib2::gobject GLib2::glib)
+	TARGET_LINK_LIBRARIES(rom-properties-gnome PUBLIC Gtk3::gtk3 GLib2::gio GLib2::gobject GLib2::glib)
 	TARGET_COMPILE_DEFINITIONS(rom-properties-gnome
 		PRIVATE G_LOG_DOMAIN=\"rom-properties-gnome\"
 			RP_UI_GTK3_GNOME

@@ -131,6 +131,18 @@ class RpFile : public IRpFile
 		std::string filename(void) const final;
 
 	public:
+		/** File properties (NON-VIRTUAL) **/
+
+		/**
+		 * Set the file origin info.
+		 * This uses xattrs on Linux and ADS on Windows.
+		 * @param url Origin URL.
+		 * @param mtime If >= 0, this value is set as the mtime.
+		 * @return 0 on success; negative POSIX error code on error.
+		 */
+		int setOriginInfo(const std::string &url, time_t mtime);
+
+	public:
 		/** Device file functions **/
 
 		/**

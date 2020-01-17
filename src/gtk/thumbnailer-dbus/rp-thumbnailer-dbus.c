@@ -89,8 +89,6 @@ static gboolean	rp_thumbnailer_dequeue		(OrgFreedesktopThumbnailsSpecializedThum
 
 struct _RpThumbnailerClass {
 	GObjectClass __parent__;
-
-	// TODO: Store signal_ids outside of the class?
 	guint signal_ids[SIGNAL_LAST];
 };
 
@@ -235,7 +233,6 @@ rp_thumbnailer_init(GTypeInstance *instance, gpointer g_class)
 	thumbnailer->idle_process = 0;
 	thumbnailer->last_handle = 0;
 	thumbnailer->request_queue = g_queue_new();
-	// TODO: Is there a GHashTable reserve function?
 
 	/** Properties. **/
 	thumbnailer->connection = NULL;
@@ -518,7 +515,6 @@ rp_thumbnailer_process(RpThumbnailer *thumbnailer)
 {
 	g_return_val_if_fail(IS_RP_THUMBNAILER(thumbnailer), FALSE);
 
-	gchar *filename;
 	GChecksum *md5 = NULL;
 	const gchar *md5_string;	// owned by md5 object
 	const struct request_info *req;	// request info from the map
@@ -532,17 +528,6 @@ rp_thumbnailer_process(RpThumbnailer *thumbnailer)
 	if (req == NULL) {
 		// Nothing in the queue.
 		goto cleanup;
-	}
-
-	// Verify that the specified URI is local.
-	// TODO: Support GVFS.
-	filename = g_filename_from_uri(req->uri, NULL, NULL);
-	if (!filename) {
-		// URI is not describing a local file.
-		org_freedesktop_thumbnails_specialized_thumbnailer1_emit_error(
-			thumbnailer->skeleton, req->handle, req->uri,
-			0, "URI is not describing a local file.");
-		goto finished;
 	}
 
 	// NOTE: cache_dir and pfn_rp_create_thumbnail should NOT be NULL
@@ -618,16 +603,15 @@ rp_thumbnailer_process(RpThumbnailer *thumbnailer)
 	}
 
 	// Thumbnail the image.
-	ret = thumbnailer->pfn_rp_create_thumbnail(filename, cache_filename,
-		req->large ? 256 : 128);
+	ret = thumbnailer->pfn_rp_create_thumbnail(req->uri, cache_filename, req->large ? 256 : 128);
 	if (ret == 0) {
 		// Image thumbnailed successfully.
-		g_debug("rom-properties thumbnail: %s -> %s [OK]", filename, cache_filename);
+		g_debug("rom-properties thumbnail: %s -> %s [OK]", req->uri, cache_filename);
 		org_freedesktop_thumbnails_specialized_thumbnailer1_emit_ready(
 			thumbnailer->skeleton, req->handle, req->uri);
 	} else {
 		// Error thumbnailing the image...
-		g_debug("rom-properties thumbnail: %s -> %s [ERR=%d]", filename, cache_filename, ret);
+		g_debug("rom-properties thumbnail: %s -> %s [ERR=%d]", req->uri, cache_filename, ret);
 		org_freedesktop_thumbnails_specialized_thumbnailer1_emit_error(
 			thumbnailer->skeleton, req->handle, req->uri,
 			2, "Image thumbnailing failed... (TODO: return code)");

@@ -9,8 +9,8 @@
 #include "stdafx.h"
 #include "PropSheetIcon.hpp"
 
-// One-time initialization.
-#include "threads/pthread_once.h"
+// librpthreads
+#include "librpthreads/pthread_once.h"
 
 class PropSheetIconPrivate
 {

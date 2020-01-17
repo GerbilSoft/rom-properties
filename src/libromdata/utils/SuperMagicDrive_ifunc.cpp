@@ -2,10 +2,11 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * SuperMagicDrive_ifunc.cpp: SuperMagicDrive IFUNC resolution functions.  *
  *                                                                         *
- * Copyright (c) 2016-2017 by David Korth.                                 *
+ * Copyright (c) 2016-2019 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+#include "stdafx.h"
 #include "config.librpbase.h"
 #include "cpu_dispatch.h"
 

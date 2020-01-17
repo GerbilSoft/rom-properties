@@ -9,6 +9,9 @@ SET(rom-properties-kde_SRCS
 	RomThumbCreator.cpp
 	RpQt.cpp
 	RpQImageBackend.cpp
+	DragImageLabel.cpp
+	RpQByteArrayFile.cpp
+	DragImageTreeWidget.cpp
 	config/stub-export.cpp
 	config/ConfigDialog.cpp
 	config/ITab.cpp
@@ -23,6 +26,9 @@ SET(rom-properties-kde_H
 	RpQt.hpp
 	RpQImageBackend.hpp
 	QImageData_qt4.hpp
+	DragImageLabel.hpp
+	RpQByteArrayFile.hpp
+	DragImageTreeWidget.hpp
 	config/ConfigDialog.hpp
 	config/ITab.hpp
 	config/ImageTypesTab.hpp
@@ -62,6 +68,11 @@ IF(ENABLE_NLS)
 	SET(rom-properties-kde_SRCS ${rom-properties-kde_SRCS} GettextTranslator.cpp)
 	SET(rom-properties-kde_H    ${rom-properties-kde_H}    GettextTranslator.hpp)
 ENDIF(ENABLE_NLS)
+
+# RpFile_kio requires KDE Frameworks 5.
+# FIXME: Dolphin ends up hanging for some reason...
+#SET(rom-properties-kio_SRCS RpFile_kio.cpp)
+#SET(rom-properties-kio_H RpFile_kio.hpp)
 
 # NOTE: RpExtractorPlugin cannot use common source because
 # Qt's moc doesn't support preprocessor directores like #ifdef.

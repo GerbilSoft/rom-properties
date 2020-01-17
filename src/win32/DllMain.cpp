@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * DllMain.cpp: DLL entry point and COM registration handler.              *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -18,6 +18,7 @@
 //   - http://www.codeproject.com/Articles/338268/COM-in-C
 
 #include "stdafx.h"
+#include "config.win32.h"
 #include "config.version.h"
 
 // FIXME: Overlay icon handler is crashing in some cases.
@@ -29,33 +30,24 @@
 #include "RP_ExtractImage.hpp"
 #include "RP_ShellPropSheetExt.hpp"
 #include "RP_ThumbnailProvider.hpp"
-#include "RP_PropertyStore.hpp"
+#ifdef HAVE_RP_PROPERTYSTORE_DEPS
+# include "RP_PropertyStore.hpp"
+#endif /* HAVE_RP_PROPERTYSTORE_DEPS */
 #include "RP_ShellIconOverlayIdentifier.hpp"
 
 // libwin32common
-#include "libwin32common/ComBase.hpp"
-#include "libwin32common/RegKey.hpp"
 using LibWin32Common::RegKey;
 
 // rp_image backend registration.
 #include "librptexture/img/RpGdiplusBackend.hpp"
-#include "librptexture/img/rp_image.hpp"
 using LibRpTexture::RpGdiplusBackend;
 using LibRpTexture::rp_image;
-
-// Text conversion functions and macros.
-#include "librpbase/TextFuncs.hpp"
-#include "librpbase/TextFuncs_wchar.hpp"
 
 // For file extensions.
 #include "libromdata/RomDataFactory.hpp"
 using LibRomData::RomDataFactory;
 
-// C++ includes.
-#include <memory>
-#include <string>
-#include <vector>
-#include <list>
+// C++ STL classes.
 using std::list;
 using std::string;
 using std::unique_ptr;
@@ -175,10 +167,12 @@ _Check_return_ STDAPI DllGetClassObject(_In_ REFCLSID rclsid, _In_ REFIID riid, 
 	else CHECK_INTERFACE(RP_ExtractImage)
 	else CHECK_INTERFACE(RP_ShellPropSheetExt)
 	else CHECK_INTERFACE(RP_ThumbnailProvider)
+#ifdef HAVE_RP_PROPERTYSTORE_DEPS
 	else CHECK_INTERFACE(RP_PropertyStore)
+#endif /* HAVE_RP_PROPERTYSTORE_DEPS */
 #ifdef ENABLE_OVERLAY_ICON_HANDLER
 	else CHECK_INTERFACE(RP_ShellIconOverlayIdentifier)
-#endif
+#endif /* ENABLE_OVERLAY_ICON_HANDLER */
 	else {
 		// Class not available.
 		hr = CLASS_E_CLASSNOTAVAILABLE;
@@ -239,11 +233,13 @@ static LONG RegisterFileType(RegKey &hkcr, RegKey *pHklm, const RomDataFactory::
 	hkey_OpenWithProgids.close();
 	hkey_ext.close();
 
+#ifdef HAVE_RP_PROPERTYSTORE_DEPS
 	// Register the property store handler.
 	if (pHklm && (extInfo.attrs & RomDataFactory::RDA_HAS_METADATA)) {
 		lResult = RP_PropertyStore::RegisterFileType(*pHklm, t_ext.c_str());
 		if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
 	}
+#endif /* HAVE_RP_PROPERTYSTORE_DEPS */
 
 	if (extInfo.attrs & RomDataFactory::RDA_HAS_THUMBNAIL) {
 		// Register the thumbnail handlers.
@@ -315,10 +311,12 @@ static LONG UnregisterFileType(RegKey &hkcr, RegKey *pHklm, const RomDataFactory
 	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
 	lResult = RP_ThumbnailProvider::UnregisterFileType(hkcr, t_ext.c_str());
 	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
+#ifdef HAVE_RP_PROPERTYSTORE_DEPS
 	if (pHklm) {
 		lResult = RP_PropertyStore::UnregisterFileType(*pHklm, t_ext.c_str());
 		if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
 	}
+#endif /* HAVE_RP_PROPERTYSTORE_DEPS */
 
 	// Delete keys if they're empty.
 	static const TCHAR *const keysToDel[] = {_T("ShellEx"), _T("RP_Fallback")};
@@ -601,12 +599,14 @@ STDAPI DllRegisterServer(void)
 	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
 	lResult = RP_ThumbnailProvider::RegisterCLSID();
 	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
+#ifdef HAVE_RP_PROPERTYSTORE_DEPS
 	lResult = RP_PropertyStore::RegisterCLSID();
 	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
+#endif /* HAVE_RP_PROPERTYSTORE_DEPS */
 #ifdef ENABLE_OVERLAY_ICON_HANDLER
 	lResult = RP_ShellIconOverlayIdentifier::RegisterCLSID();
 	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
-#endif
+#endif /* ENABLE_OVERLAY_ICON_HANDLER */
 
 	// Enumerate user hives.
 	RegKey hku(HKEY_USERS, nullptr, KEY_READ, false);
@@ -708,8 +708,10 @@ STDAPI DllUnregisterServer(void)
 	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
 	lResult = RP_ThumbnailProvider::UnregisterCLSID();
 	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
+#ifdef HAVE_RP_PROPERTYSTORE_DEPS
 	lResult = RP_PropertyStore::UnregisterCLSID();
 	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
+#endif /* HAVE_RP_PROPERTYSTORE_DEPS */
 	lResult = RP_ShellIconOverlayIdentifier::UnregisterCLSID();
 	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
 

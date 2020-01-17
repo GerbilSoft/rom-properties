@@ -6,8 +6,9 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+#include "stdafx.h"
 #include "DX10Formats.hpp"
-#include "fileformat/dds_structs.h"
+#include "../fileformat/dds_structs.h"
 
 namespace LibRpTexture {
 
@@ -123,6 +124,18 @@ const char *DX10Formats::lookup_dxgiFormat(unsigned int dxgiFormat)
 			case DXGI_FORMAT_FORCE_UINT:
 				texFormat = "FORCE_UINT";
 				break;
+
+			// FAKE formats.
+			// These aren't used by actual DX10 DDSes, but *are* used
+			// internally by rom-properties for some FourCCs that don't
+			// have corresponding DXGI_FORMAT values.
+			case DXGI_FORMAT_FAKE_PVRTC_2bpp:
+				texFormat = "PVRTC 2bpp RGBA";
+				break;
+			case DXGI_FORMAT_FAKE_PVRTC_4bpp:
+				texFormat = "PVRTC 4bpp RGBA";
+				break;
+
 			default:
 				break;
 		}

@@ -9,10 +9,10 @@
 #ifndef __ROMPROPERTIES_LIBRPTEXTURE_CONFIG_H__
 #define __ROMPROPERTIES_LIBRPTEXTURE_CONFIG_H__
 
-/* Define to 1 if OpenGL support should be enabled. */
-#cmakedefine ENABLE_GL 1
-
 /* Define to 1 if librpbase RomFields support should be enabled. */
 #define ENABLE_LIBRPBASE_ROMFIELDS 1
+
+/* Define to 1 if PVRTC decompression should be enabled. */
+#define ENABLE_PVRTC 1
 
 #endif /* __ROMPROPERTIES_LIBRPTEXTURE_CONFIG_H__ */

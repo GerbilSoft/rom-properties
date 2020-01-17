@@ -115,7 +115,7 @@ RP_ShellPropSheetExt : public LibWin32Common::ComBase2<IShellExtInit, IShellProp
 
 #ifdef __CRT_UUID_DECL
 // Required for MinGW-w64 __uuidof() emulation.
-__CRT_UUID_DECL(RP_ShellPropSheetExt, 0x2443c158, 0xdf7c, 0x4352, 0xb4, 0x35, 0xbc, 0x9f, 0x88, 0x5f, 0xfd, 0x52)
+__CRT_UUID_DECL(RP_ShellPropSheetExt, __MSABI_LONG(0x2443c158), 0xdf7c, 0x4352, 0xb4,0x35, 0xbc, 0x9f, 0x88, 0x5f, 0xfd, 0x52)
 #endif
 
 #endif /* __ROMPROPERTIES_WIN32_RP_SHELLPROPSHEETEXT_HPP__ */

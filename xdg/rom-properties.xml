@@ -120,7 +120,6 @@
     <generic-icon name="application-x-cd-image"/>
     <alias type="application/x-dreamcast-iso-image"/>
     <glob pattern="*.iso"/>
-    <glob pattern="*.bin"/>
     <magic priority="50">
       <match value="SEGA SEGAKATANA" type="string" offset="0"/>
       <match value="SEGA SEGAKATANA" type="string" offset="16"/>
@@ -354,7 +353,6 @@
   <mime-type type="application/x-game-com-rom">
     <comment>game.com ROM image</comment>
     <generic-icon name="application-x-executable"/>
-    <glob pattern="*.bin"/>
     <glob pattern="*.tgc"/>
     <magic priority="75">
       <match value="TigerDMGC" type="string" offset="5"/>
@@ -401,7 +399,6 @@
     <comment>Nintendo 3DS eMMC dump</comment>
     <sub-class-of type="application/x-raw-disk-image"/>
     <generic-icon name="application-x-raw-disk-image"/>
-    <glob pattern="*.bin"/>
     <magic priority="50">
       <match value="NCSD" type="string" offset="256">
         <match value="\x01\x02\x02\x02\x02\x00\x00\x00" type="string" offset="272"/>
@@ -440,7 +437,6 @@
     <comment>Nintendo 3DS firmware binary</comment>
     <generic-icon name="application-x-executable"/>
     <glob pattern="*.firm"/>
-    <glob pattern="*.bin"/>
     <magic priority="50">
       <match value="FIRM" type="string" offset="4"/>
     </magic>
@@ -480,7 +476,6 @@
     <!-- FIXME: Better icon. -->
     <sub-class-of type="application/octet-stream"/>
     <generic-icon name="application-octet-stream"/>
-    <glob pattern="*.bin"/>
     <magic priority="50">
       <match value="WIBN" type="string" offset="0"/>
     </magic>
@@ -489,16 +484,12 @@
   <!-- *** Other *** -->
 
   <!-- Amiibo -->
-  <!-- FIXME: This is too generic. -->
-  <!--
   <mime-type type="application/x-nintendo-amiibo">
     <comment>Nintendo amiibo NFC dump</comment>
     <generic-icon name="application-x-executable"/>
-    <glob pattern="*.bin"/>
     <glob pattern="*.nfc"/>
     <glob pattern="*.nfp"/>
   </mime-type>
-  -->
 
   <!-- Mach-O -->
   <!-- FIXME: Using the standard MIME types breaks KDE. -->

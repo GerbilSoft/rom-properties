@@ -36,7 +36,8 @@ following platforms:
 * KDE Frameworks 5.x
 * XFCE (GTK+ 2.x)
 * GNOME and Unity (GTK+ 3.x)
-* MATE (1.18+; GTK+ 3.x)
+* MATE Desktop (1.18+; GTK+ 3.x)
+* Cinnamon Desktop
 * Windows XP (and later)
 
 On Windows, you will need the MSVC 2015-2019 runtime:
@@ -116,18 +117,39 @@ button.
 | Nintendo Game Boy Advance     |       Yes      |    No    |       N/A       |       No       |
 | Nintendo DS(i)                |       Yes      |    Yes   |       Icon      |  Covers, Box   |
 | Nintendo 3DS                  |       Yes      |    Yes   |       Icon      |  Covers, Box   |
+| Pokémon Mini                  |       Yes      |    Yes   |       N/A       |       No       |
 | Tiger game.com                |       Yes      |    Yes   |       Icon      |       No       |
 
 ### Texture Formats
 
 |             System            | Properties Tab | Metadata | Internal Images | External Scans |
 |:-----------------------------:|:--------------:|:--------:|:---------------:|:--------------:|
-| Sega PVR/GVR/SVR Textures     |       Yes      |    Yes   |      Image      |       N/A      |
-| Microsoft DirectDraw Surface  |       Yes      |    Yes   |      Image      |       N/A      |
+| Leapster Didj .tex textures   |       Yes      |    Yes   |      Image      |       N/A      |
 | Khronos KTX Textures          |       Yes      |    Yes   |      Image      |       N/A      |
+| Microsoft DirectDraw Surface  |       Yes      |    Yes   |      Image      |       N/A      |
+| Microsoft Xbox XPR Textures   |       Yes      |    Yes   |      Image      |       N/A      |
+| PowerVR 3.0.0 Textures        |       Yes      |    Yes   |      Image      |       N/A      |
+| Sega PVR/GVR/SVR Textures     |       Yes      |    Yes   |      Image      |       N/A      |
 | Valve VTF Textures            |       Yes      |    Yes   |      Image      |       N/A      |
 | Valve VTF3 (PS3) Textures     |       Yes      |    Yes   |      Image      |       N/A      |
-| Microsoft Xbox XPR Textures   |       Yes      |    Yes   |      Image      |       N/A      |
+
+#### Texture Codecs
+* Assorted linear RGB formats, including 15-bit, 16-bit, 24-bit and 32-bit per pixel.
+  * Most of these formats have SSE2 and/or SSSE3-optimized decoders.
+  * RGB9_E5 is supported, though it is currently converted to ARGB32 for
+    display purposes. The decoder is also slow. (Contributions welcome.)
+* Dreamcast: Twiddled and Vector-Quantized
+* Nintendo DS: Tiled CI8 with BGR555 palette
+* Nintendo 3DS: Tiled and twiddled RGB565
+* GameCube: Tiled RGB5A3 and CI8 with RGB5A3 palette
+* S3TC: DXT1, DXT2, DXT3, DXT4, DXT5, BC4, and BC5 codecs.
+  * Supported file formats: DDS, KTX, VTF, VTF3, XPR
+  * GameCube 2x2-tiled DXT1 is supported in GVR texture files.
+* BC7: Supported in DDS, KTX, and PowerVR 3.0.0 texture files.
+  * The implementation is somewhat slow. (Contributions welcome.)
+* PVRTC: Supported in DDS, KTX, and PowerVR 3.0.0 texture files.
+  * PVRTC-II: Partially supported. The hard transition flag and images
+    that aren't a multiple of the tile size are not supported.
 
 ### Audio Formats
 
@@ -151,7 +173,7 @@ button.
 |             System             | Properties Tab | Metadata | Internal Images | External Scans |
 |:------------------------------:|:--------------:|:--------:|:---------------:|:--------------:|
 | Executable and Linkable Format |       Yes      |    No    |       N/A       |       N/A      |
-| ISO-9660 Disc Images           |       Yes      |    No    |        No       |
+| ISO-9660 Disc Images           |       Yes      |    No    |        No       |       N/A      |
 | Mach-O Binaries                |       Yes      |    No    |       N/A       |       N/A      |
 | Nintendo amiibo                |       Yes      |    No    |       N/A       |      Media     |
 | Nintendo Badge Arcade          |       Yes      |    No    |      Image      |       N/A      |

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * CreateThumbnail.cpp: TCreateThumbnail<HBITMAP> implementation.          *
  *                                                                         *
- * Copyright (c) 2016-2017 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -11,16 +11,10 @@
 #include "RpImageWin32.hpp"
 
 // librptexture
-#include "librptexture/img/rp_image.hpp"
 #include "librptexture/img/RpGdiplusBackend.hpp"
 using namespace LibRpTexture;
 
-// libwin32common
-#include "libwin32common/WinUI.hpp"
-
-// C++ includes.
-#include <memory>
-#include <string>
+// C++ STL classes.
 using std::string;
 using std::unique_ptr;
 

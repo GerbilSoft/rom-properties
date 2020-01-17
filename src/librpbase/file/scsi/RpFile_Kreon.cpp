@@ -6,22 +6,15 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+#include "stdafx.h"
 #include "config.librpbase.h"
 
 #include "../RpFile.hpp"
 #include "../RpFile_p.hpp"
 
 #include "scsi_protocol.h"
-#include "../../byteswap.h"
 
-// C includes. (C++ namespace)
-#include <cassert>
-#include <cerrno>
-#include <cstring>
-
-// C++ includes.
-#include <memory>
-#include <vector>
+// C++ STL classes.
 using std::unique_ptr;
 using std::vector;
 

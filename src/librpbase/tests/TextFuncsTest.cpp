@@ -176,6 +176,34 @@ class TextFuncsTest : public ::testing::Test
 		 * https://en.wikipedia.org/wiki/Latin-1_Supplement_(Unicode_block)
 		 */
 		static const char16_t latin1_utf16_data[249+1];
+
+		/** Specialized code page functions. **/
+
+		/**
+		 * Atari ST to UTF-8 test string.
+		 * Contains all Atari ST characters that can be converted to Unicode.
+		 */
+		static const char atariST_data[236+1];
+
+		/**
+		 * Atari ST to UTF-16 test string.
+		 * Contains the expected result from:
+		 * - utf8_to_utf16(atariST_to_utf8(atariST_data, ARRAY_SIZE(atariST_data)))
+		 */
+		static const char16_t atariST_utf16_data[236+1];
+
+		/**
+		 * Atari ATASCII to UTF-8 test string.
+		 * Contains all Atari ATASCII characters that can be converted to Unicode.
+		 */
+		static const char atascii_data[229+1];
+
+		/**
+		 * Atari ATASCII to UTF-16 test string.
+		 * Contains the expected result from:
+		 * - utf8_to_utf16(atascii_to_utf8(atascii_data, ARRAY_SIZE(atascii_data)-1))
+		 */
+		static const char16_t atascii_utf16_data[229+1];
 };
 
 // Test strings are located in TextFuncsTest_data.hpp.
@@ -830,6 +858,62 @@ TEST_F(TextFuncsTest, u16_strcasecmp)
 	EXPECT_LT(u16_strcasecmp(u16_str2, u16_str3), 0);
 	EXPECT_GT(u16_strcasecmp(u16_str3, u16_str1), 0);
 	EXPECT_GT(u16_strcasecmp(u16_str3, u16_str2), 0);
+}
+
+/** Specialized code page functions. **/
+
+TEST_F(TextFuncsTest, atariST_to_utf8)
+{
+	// This tests all code points that can be converted from the
+	// Atari ST character set to Unicode.
+	// Reference: https://en.wikipedia.org/wiki/Atari_ST_character_set
+
+	// Test with implicit length.
+	string str = atariST_to_utf8(atariST_data, -1);
+	u16string u16str = utf8_to_utf16(str);
+	EXPECT_EQ(ARRAY_SIZE(atariST_utf16_data)-1, u16str.size());
+	EXPECT_EQ(atariST_utf16_data, u16str);
+
+	// Test with explicit length.
+	str = atariST_to_utf8(atariST_data, ARRAY_SIZE(atariST_data)-1);
+	u16str = utf8_to_utf16(str);
+	EXPECT_EQ(ARRAY_SIZE(atariST_utf16_data)-1, u16str.size());
+	EXPECT_EQ(atariST_utf16_data, u16str);
+
+	// Test with explicit length and an extra NULL.
+	// The extra NULL should be trimmed.
+	str = atariST_to_utf8(atariST_data, ARRAY_SIZE(atariST_data));
+	u16str = utf8_to_utf16(str);
+	EXPECT_EQ(ARRAY_SIZE(atariST_utf16_data)-1, u16str.size());
+	EXPECT_EQ(atariST_utf16_data, u16str);
+}
+
+TEST_F(TextFuncsTest, atascii_to_utf8)
+{
+	// This tests all code points that can be converted from the
+	// Atari ATASCII character set to Unicode.
+	// Reference: https://en.wikipedia.org/wiki/ATASCII
+
+	// Test with implicit length.
+	// NOTE: We have to skip the first character, 0x00, because
+	// implicit length mode would interpret that as an empty string.
+	string str = atascii_to_utf8(&atascii_data[1], -1);
+	u16string u16str = utf8_to_utf16(str);
+	EXPECT_EQ(ARRAY_SIZE(atascii_utf16_data)-2, u16str.size());
+	EXPECT_EQ(&atascii_utf16_data[1], u16str);
+
+	// Test with explicit length.
+	str = atascii_to_utf8(atascii_data, ARRAY_SIZE(atascii_data)-1);
+	u16str = utf8_to_utf16(str);
+	EXPECT_EQ(ARRAY_SIZE(atascii_utf16_data)-1, u16str.size());
+	EXPECT_EQ(atascii_utf16_data, u16str);
+
+	// Test with explicit length and an extra NULL.
+	// The extra NULL should be trimmed.
+	str = atascii_to_utf8((const char*)atascii_data, ARRAY_SIZE(atascii_data));
+	u16str = utf8_to_utf16(str);
+	EXPECT_EQ(ARRAY_SIZE(atascii_utf16_data)-1, u16str.size());
+	EXPECT_EQ(atascii_utf16_data, u16str);
 }
 
 } }

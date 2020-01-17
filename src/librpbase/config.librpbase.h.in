@@ -106,14 +106,6 @@
 /* Define to 1 if iconv() is defined in libiconv. */
 #cmakedefine HAVE_ICONV_LIBICONV 1
 
-/** Threading model **/
-
-/* Define to 1 if the system uses Win32 threads. */
-#cmakedefine HAVE_WIN32_THREADS 1
-
-/* Define to 1 if the system uses POSIX threads. */
-#cmakedefine HAVE_PTHREADS 1
-
 /** putenv() and related **/
 
 /* Define to 1 if you have the `putenv` function. */
@@ -127,6 +119,15 @@
 
 /* Define to 1 if you have the `_wputenv_s` function. */
 #cmakedefine HAVE__WPUTENV_S 1
+
+/* Define to 1 if you have the Linux `fsetxattr` function. */
+#cmakedefine HAVE_FSETXATTR_LINUX 1
+
+/* Define to 1 if you have the Mac OS X `fsetxattr` function. */
+#cmakedefine HAVE_FSETXATTR_MAC 1
+
+/* Define to 1 if you have the FreeBSD `extattr_set_fd` function. */
+#cmakedefine HAVE_EXTATTR_SET_FD 1
 
 /** C++ standard library **/
 

@@ -158,6 +158,24 @@ class NCCHReaderPrivate
 
 		// Are we using debug keys?
 		bool isDebug;
+
+		/**
+		 * Close the file and/or IDiscReader.
+		 */
+		inline void closeFileOrDiscReader(void)
+		{
+			RP_Q(NCCHReader);
+			if (q->m_hasDiscReader) {
+				// Delete the IDiscReader, since it's
+				// most likely a temporary CIAReader.
+				// TODO: Use reference counting?
+				delete q->m_discReader;
+				q->m_discReader = nullptr;
+			} else if (q->m_file) {
+				q->m_file->unref();
+				q->m_file = nullptr;
+			}
+		}
 #endif /* ENABLE_DECRYPTION */
 };
 

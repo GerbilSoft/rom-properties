@@ -11,7 +11,9 @@
 
 // librpbase
 #include "librpbase/common.h"
-#include "librpbase/threads/Semaphore.hpp"
+
+// librpthreads
+#include "librpthreads/Semaphore.hpp"
 
 // C++ includes.
 #include <string>

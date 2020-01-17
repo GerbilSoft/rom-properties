@@ -20,6 +20,16 @@ extern "C" {
 # endif /* !inline */
 #endif /* _MSC_VER */
 
+#ifndef __cplusplus
+# if defined(_MSC_VER) && _MSC_VER >= 1800
+#  include <stdbool.h>
+# else
+typedef unsigned char bool;
+#  define true 1
+#  define false 0
+# endif
+#endif /* __cplusplus */
+
 /**
  * Unsigned integer log2(n).
  * @param n Value

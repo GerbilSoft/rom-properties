@@ -6,6 +6,7 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+#include "stdafx.h"
 #include "config.librpbase.h"
 #include "TextFuncs.hpp"
 #include "byteswap.h"
@@ -14,7 +15,6 @@
 #include "libi18n/i18n.h"
 
 // C includes.
-#include <stdlib.h>
 #ifdef HAVE_NL_LANGINFO
 # include <langinfo.h>
 #else /* !HAVE_NL_LANGINFO */
@@ -22,20 +22,13 @@
 #endif /* HAVE_NL_LANGINFO */
 
 // C includes. (C++ namespace)
-#include <cassert>
 #include <cstdarg>
-#include <cstdio>
-#include <cstring>
 #include <cwctype>
 
 // for strnlen() if it's not available in <string.h>
-#include "librpbase/TextFuncs_libc.h"
+#include "TextFuncs_libc.h"
 
-// C++ includes.
-#include <iomanip>
-#include <memory>
-#include <sstream>
-#include <string>
+// C++ STL classes.
 using std::ostringstream;
 using std::string;
 using std::u16string;
@@ -208,16 +201,19 @@ string rp_sprintf(const char *fmt, ...)
 	return (len == len2 ? string(buf.get(), len) : string());
 }
 
-#ifdef _MSC_VER
+#if defined(_MSC_VER) || defined(__MINGW32__)
 /**
  * sprintf()-style function for std::string.
  * This version supports positional format string arguments.
+ *
+ * MSVCRT doesn't support positional arguments in the standard
+ * printf() functions. Instead, it has printf_p().
  *
  * @param fmt Format string.
  * @param ... Arguments.
  * @return std::string
  */
-std::string rp_sprintf_p(const char *fmt, ...) ATTR_PRINTF(1, 2)
+std::string rp_sprintf_p(const char *fmt, ...)
 {
 	// Local buffer optimization to reduce memory allocation.
 	char locbuf[128];
@@ -248,7 +244,7 @@ std::string rp_sprintf_p(const char *fmt, ...) ATTR_PRINTF(1, 2)
 	assert(len == len2);
 	return (len == len2 ? string(buf.get(), len) : string());
 }
-#endif /* _MSC_VER */
+#endif /* _MSC_VER || __MINGW32__ */
 
 /** Other useful text functions **/
 

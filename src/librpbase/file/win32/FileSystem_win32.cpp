@@ -6,26 +6,21 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+#include "stdafx.h"
 #include "../FileSystem.hpp"
 
 // librpbase
 #include "TextFuncs.hpp"
 #include "TextFuncs_wchar.hpp"
 
-// One-time initialization.
-#include "threads/pthread_once.h"
+// librpthreads
+#include "librpthreads/pthread_once.h"
 
 // C includes.
 #include <sys/stat.h>
 #include <sys/utime.h>
 
-// C includes. (C++ namespace)
-#include "librpbase/ctypex.h"
-#include <cstring>
-#include <ctime>
-
-// C++ includes.
-#include <string>
+// C++ STL classes.
 using std::string;
 using std::u16string;
 using std::wstring;

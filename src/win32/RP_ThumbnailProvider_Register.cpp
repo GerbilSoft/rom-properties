@@ -3,7 +3,7 @@
  * RP_ThumbnailProvider_Register.cpp: IThumbnailProvider implementation.   *
  * COM registration functions.                                             *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -11,11 +11,10 @@
 #include "RP_ThumbnailProvider.hpp"
 #include "RP_ThumbnailProvider_p.hpp"
 
-#include "libwin32common/RegKey.hpp"
+// libwin32common
 using LibWin32Common::RegKey;
 
-// C++ includes.
-#include <string>
+// C++ STL classes.
 using std::tstring;
 
 #define IID_IThumbnailProvider_String		TEXT("{E357FCCD-A995-4576-B01F-234630154E96}")

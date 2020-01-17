@@ -6,13 +6,13 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+#include "stdafx.h"
 #include "config.librpbase.h"
-#include "WiiPartition.hpp"
 
+#include "WiiPartition.hpp"
 #include "Console/wii_structs.h"
 
 // librpbase
-#include "librpbase/byteswap.h"
 #include "librpbase/crypto/KeyManager.hpp"
 #ifdef ENABLE_DECRYPTION
 # include "librpbase/crypto/IAesCipher.hpp"
@@ -20,17 +20,10 @@
 #endif /* ENABLE_DECRYPTION */
 using namespace LibRpBase;
 
-// C includes. (C++ namespace)
-#include <cassert>
-#include <cerrno>
-#include <cstring>
-
-// C++ includes.
-#include <memory>
+// C++ STL classes.
 using std::unique_ptr;
 
 #include "GcnPartitionPrivate.hpp"
-
 namespace LibRomData {
 
 #define SECTOR_SIZE_ENCRYPTED 0x8000

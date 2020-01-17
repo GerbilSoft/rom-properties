@@ -13,6 +13,7 @@
 // - http://www.brokenthorn.com/Resources/OSDevPE.html
 // - https://msdn.microsoft.com/en-us/library/windows/desktop/ms648009(v=vs.85).aspx
 // - http://sandsprite.com/CodeStuff/Understanding_imports.html
+// - https://docs.microsoft.com/en-us/windows/win32/debug/pe-format
 
 #ifndef __ROMPROPERTIES_LIBROMDATA_EXE_STRUCTS_H__
 #define __ROMPROPERTIES_LIBROMDATA_EXE_STRUCTS_H__
@@ -101,6 +102,9 @@ typedef enum {
 	IMAGE_FILE_MACHINE_TRICORE	= 0x0520, /* Infinieon */
 	IMAGE_FILE_MACHINE_CEF		= 0x0CEF, /* Common Executable Format (Windows CE) */
 	IMAGE_FILE_MACHINE_EBC		= 0x0EBC, /* EFI byte code */
+	IMAGE_FILE_MACHINE_RISCV32	= 0x5032, /* RISC-V 32-bit address space */
+	IMAGE_FILE_MACHINE_RISCV64	= 0x5064, /* RISC-V 64-bit address space */
+	IMAGE_FILE_MACHINE_RISCV128	= 0x5128, /* RISC-V 128-bit address space */
 	IMAGE_FILE_MACHINE_AMD64	= 0x8664, /* x64 */
 	IMAGE_FILE_MACHINE_M32R		= 0x9041, /* Mitsubishi M32R little endian */
 	IMAGE_FILE_MACHINE_ARM64	= 0xAA64, /* ARM64 little-endian */
@@ -430,6 +434,7 @@ typedef enum {
 	VS_FF_SPECIALBUILD = 32,
 } VS_FileFlags;
 
+// updated from: https://source.winehq.org/git/wine.git/blob/7d77d330a5b60be918dbf17d9d9ca357d93bff29:/include/verrsrc.h
 typedef enum {
 	VOS_UNKNOWN		= 0,
 

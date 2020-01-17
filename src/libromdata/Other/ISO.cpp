@@ -6,9 +6,8 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+#include "stdafx.h"
 #include "ISO.hpp"
-#include "librpbase/RomData_p.hpp"
-
 #include "../iso_structs.h"
 
 // librpbase

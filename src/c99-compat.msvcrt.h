@@ -1,7 +1,7 @@
 /***************************************************************************
  * c99-compat.msvcrt.h: C99 compatibility header. (MSVC)                   *
  *                                                                         *
- * Copyright (c) 2011-2017 by David Korth.                                 *
+ * Copyright (c) 2011-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -51,8 +51,8 @@
 //  ftello64(), and it uses the FILE_OFFSET_BITS macro. LFS appears
 //  to be required on both 32-bit and 64-bit Windows, unlike on Linux
 //  where it's only required on 32-bit.)
-// TODO: Use _fseeki64() and _ftelli64() on MinGW-w64 to avoid
-// use of wrapper functions?
+// (NOTE 2: MinGW-w64 redirects to _fseeki64() and _ftelli64() when
+//  building with MSVCRT 14.0 [2015] or later.)
 #ifdef _MSC_VER
 # define fseeko(stream, offset, origin) _fseeki64(stream, offset, origin)
 # define ftello(stream) _ftelli64(stream)

@@ -109,6 +109,15 @@ class Config : public ConfReader
 		bool downloadHighResScans(void) const;
 
 		/**
+		 * Store file origin information?
+		 * NOTE: Call load() before using this function.
+		 * @return True if we should; false if not.
+		 */
+		bool storeFileOriginInfo(void) const;
+
+		/** Other options **/
+
+		/**
 		 * Show an overlay icon for "dangerous" permissions?
 		 * NOTE: Call load() before using this function.
 		 * @return True if we should show the overlay icon; false if not.
@@ -117,6 +126,7 @@ class Config : public ConfReader
 
 		/**
 		 * Enable thumbnailing and metadata on network filesystems?
+		 * NOTE: Call load() before using this function.
 		 * @return True if we should enable; false if not.
 		 */
 		bool enableThumbnailOnNetworkFS(void) const;

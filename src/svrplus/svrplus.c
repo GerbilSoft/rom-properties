@@ -30,6 +30,15 @@
 // Application resources.
 #include "resource.h"
 
+// These were introduced in MSVC 2015 or 2017.
+// AppVeyor is set to MSVC 2013, so it fails there.
+#ifndef _MAX_ITOSTR_BASE10_COUNT
+#define _MAX_ITOSTR_BASE10_COUNT   (1 + 10 + 1)
+#endif
+#ifndef _MAX_ULTOSTR_BASE10_COUNT
+#define _MAX_ULTOSTR_BASE10_COUNT  (10 + 1)
+#endif
+
 /**
  * Number of elements in an array.
  * (from librpbase/common.h)
@@ -408,6 +417,7 @@ static void InstallServerErrorMsg(
 	TCHAR *sErrBuf, size_t cchErrBuf)
 {
 	const TCHAR *dll_path, *entry_point;
+	TCHAR ultot_buf[_MAX_ULTOSTR_BASE10_COUNT];
 
 	if (!sErrBuf) {
 		// No error message buffer specified.
@@ -433,10 +443,14 @@ static void InstallServerErrorMsg(
 			_tcscpy_s(sErrBuf, cchErrBuf, _T("An unknown fatal error occurred."));
 			break;
 		case ISR_FILE_NOT_FOUND:
-			_sntprintf(sErrBuf, cchErrBuf, _T("%s is missing."), dll_path);
+			_tcscpy_s(sErrBuf, cchErrBuf, dll_path);
+			_tcscat_s(sErrBuf, cchErrBuf, _T(" is missing."));
 			break;
 		case ISR_CREATEPROCESS_FAILED:
-			_sntprintf(sErrBuf, cchErrBuf, _T("Could not start REGSVR32.exe. (Err:%u)"), errorCode);
+			_ultot_s(errorCode, ultot_buf, ARRAY_SIZE(ultot_buf), 10);
+			_tcscpy_s(sErrBuf, cchErrBuf, _T("Could not start REGSVR32.exe. (Err:"));
+			_tcscat_s(sErrBuf, cchErrBuf, ultot_buf);
+			_tcscat_s(sErrBuf, cchErrBuf, _T(")"));
 			break;
 		case ISR_PROCESS_STILL_ACTIVE:
 			_tcscpy_s(sErrBuf, cchErrBuf, _T("The REGSVR32 process never completed."));
@@ -450,18 +464,26 @@ static void InstallServerErrorMsg(
 					_tcscpy_s(sErrBuf, cchErrBuf, _T("REGSVR32 failed: OleInitialize() failed."));
 					break;
 				case REGSVR32_FAIL_LOAD:
-					_sntprintf(sErrBuf, cchErrBuf, _T("REGSVR32 failed: %s is not a valid DLL."), dll_path);
+					_tcscpy_s(sErrBuf, cchErrBuf, _T("REGSVR32 failed: "));
+					_tcscat_s(sErrBuf, cchErrBuf, dll_path);
+					_tcscat_s(sErrBuf, cchErrBuf, _T(" is not a valid DLL."));
 					break;
 				case REGSVR32_FAIL_ENTRY:
-					_sntprintf(sErrBuf, cchErrBuf, _T("REGSVR32 failed: %s is missing %s()."),
-						dll_path, entry_point);
+					_tcscpy_s(sErrBuf, cchErrBuf, _T("REGSVR32 failed: "));
+					_tcscat_s(sErrBuf, cchErrBuf, dll_path);
+					_tcscat_s(sErrBuf, cchErrBuf, _T(" is missing "));
+					_tcscat_s(sErrBuf, cchErrBuf, entry_point);
+					_tcscat_s(sErrBuf, cchErrBuf, _T("()."));
 					break;
 				case REGSVR32_FAIL_REG:
-					_sntprintf(sErrBuf, cchErrBuf, _T("REGSVR32 failed: %s() returned an error."),
-						entry_point);
+					_tcscpy_s(sErrBuf, cchErrBuf, _T("REGSVR32 failed: "));
+					_tcscat_s(sErrBuf, cchErrBuf, entry_point);
+					_tcscat_s(sErrBuf, cchErrBuf, _T("() returned an error."));
 					break;
 				default:
-					_sntprintf(sErrBuf, cchErrBuf, _T("REGSVR32 failed: Unknown exit code %u."), errorCode);
+					_ultot_s(errorCode, ultot_buf, ARRAY_SIZE(ultot_buf), 10);
+					_tcscpy_s(sErrBuf, cchErrBuf, _T("REGSVR32 failed: Unknown exit code: "));
+					_tcscat_s(sErrBuf, cchErrBuf, ultot_buf);
 					break;
 			}
 			break;
@@ -470,6 +492,9 @@ static void InstallServerErrorMsg(
 	return;
 }
 
+// Install parameters/state.
+// Statically allocated so we don't need to use malloc().
+// Only one (un)install can run at a time. (see g_inProgress)
 struct InstallParams {
 	HWND hWnd;        /**< Dialog window */
 	bool isUninstall; /**< true if uninstalling */
@@ -479,6 +504,7 @@ struct InstallParams {
 	DWORD errorCode32, errorCode64;
 	HANDLE hProcess32, hProcess64;
 };
+static struct InstallParams installParams = {NULL, false};
 
 static void InstallProc64(struct InstallParams *p);
 static void InstallProc32(struct InstallParams *p);
@@ -613,7 +639,13 @@ static void InstallProcEnd(struct InstallParams *p)
 	g_inProgress = false;
 	EnableButtons(p->hWnd, true);
 	DlgUpdateCursor();
-	free(p);
+	// Clean up the structure so that it may be reused
+	p->hWnd = NULL;
+	p->isUninstall = false;
+	p->state = 0;
+	p->res32 = p->res64 = ISR_OK;
+	p->errorCode32 = p->errorCode64 = 0;
+	p->hProcess32 = p->hProcess64 = NULL;
 }
 
 /**
@@ -744,6 +776,23 @@ static void InitDialog(HWND hDlg)
 }
 
 /**
+ * IDC_BUTTON_INSTALL / IDC_BUTTON_UNINSTALL handler.
+ * @param hDlg Dialog handle.
+ * @param isUninstall True for uninstall; false for install.
+ */
+static void HandleInstallUninstall(HWND hDlg, bool isUninstall)
+{
+	if (g_inProgress) {
+		// Already (un)installing...
+		return;
+	}
+
+	installParams.hWnd = hDlg;
+	installParams.isUninstall = isUninstall;
+	InstallProc64(&installParams);
+}
+
+/**
  * Main dialog message handler
  */
 static INT_PTR CALLBACK DialogProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam) {
@@ -778,25 +827,11 @@ static INT_PTR CALLBACK DialogProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM l
 		case WM_COMMAND:
 			switch (LOWORD(wParam)) {
 				case IDC_BUTTON_INSTALL:
-				case IDC_BUTTON_UNINSTALL: {
-					struct InstallParams *params;
-
-					if (g_inProgress) {
-						// Already (un)installing...
-						return TRUE;
-					}
-
-					params = malloc(sizeof(*params));
-					if (!params) {
-						// Could not allocate memory.
-						return TRUE;
-					}
-
-					params->hWnd = hDlg;
-					params->isUninstall = (LOWORD(wParam) == IDC_BUTTON_UNINSTALL);
-					InstallProc64(params);
-					return TRUE;
-				}
+					HandleInstallUninstall(hDlg, false);
+					break;
+				case IDC_BUTTON_UNINSTALL:
+					HandleInstallUninstall(hDlg, true);
+					break;
 
 				case IDOK:
 					// There's no "OK" button here...
@@ -839,9 +874,12 @@ static INT_PTR CALLBACK DialogProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM l
 					if (ret <= 32) {
 						// ShellExecute() failed.
 						TCHAR err[128];
-						_sntprintf(err, ARRAY_SIZE(err),
+						TCHAR itot_buf[_MAX_ITOSTR_BASE10_COUNT];
+						_itot_s(ret, itot_buf, ARRAY_SIZE(itot_buf), 10);
+						_tcscpy_s(err, ARRAY_SIZE(err),
 							_T("Could not open the URL.\n\n")
-							_T("Win32 error code: %d"), ret);
+							_T("Win32 error code: "));
+						_tcscat_s(err, ARRAY_SIZE(err), itot_buf);
 						MessageBox(hDlg, err, _T("Could not open URL"), MB_ICONERROR);
 					}
 					return TRUE;
@@ -982,7 +1020,9 @@ int CALLBACK wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 	}
 
 	// Set the C locale.
-	setlocale(LC_ALL, "");
+	// NOTE: svrplus doesn't use localization. Using setlocale()
+	// adds 28,672 bytes to the statically-linked executable
+	//setlocale(LC_ALL, "");
 
 #ifndef _WIN64
 	// Check if this is a 64-bit system. (Wow64)

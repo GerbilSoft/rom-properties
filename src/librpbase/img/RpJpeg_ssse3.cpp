@@ -7,16 +7,12 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+#include "stdafx.h"
 #include "RpJpeg_p.hpp"
-
-#include "../common.h"
 
 // librptexture
 using LibRpTexture::rp_image;
 using LibRpTexture::argb32_t;
-
-// C includes. (C++ namespace)
-#include <cassert>
 
 // SSSE3 intrinsics.
 #include <emmintrin.h>

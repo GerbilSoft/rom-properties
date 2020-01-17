@@ -6,6 +6,7 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+#include "stdafx.h"
 #include "config.librpbase.h"
 
 #include "RpJpeg.hpp"
@@ -23,17 +24,10 @@ using LibRpTexture::argb32_t;
 # include "librpbase/cpuflags_x86.h"
 #endif /* RPJPEG_HAS_SSSE3 */
 
-// C includes.
-#include <stdint.h>
-
 // C includes. (C++ namespace)
-#include <cassert>
 #include <csetjmp>
-#include <cstdio>
 
-// C++ includes.
-#include <algorithm>
-#include <memory>
+// C++ STL classes.
 using std::unique_ptr;
 
 #ifdef _WIN32

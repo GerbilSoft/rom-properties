@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * RP_PropertyStore.cpp: IPropertyStore implementation.                    *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -15,33 +15,18 @@
 #include <propkey.h>
 #include <propvarutil.h>
 
-// librpbase
-#include "librpbase/RomData.hpp"
+// librpbase, libromdata
 #include "librpbase/RomMetaData.hpp"
-#include "librpbase/TextFuncs.hpp"
-#include "librpbase/TextFuncs_wchar.hpp"
-#include "librpbase/file/RpFile.hpp"
 using namespace LibRpBase;
-
-// libromdata
-#include "libromdata/RomDataFactory.hpp"
 using LibRomData::RomDataFactory;
 
 // libwin32common
 #include "libwin32common/propsys_xp.h"
-#include "libwin32common/w32time.h"
 
 // RpFile_IStream
 #include "RpFile_IStream.hpp"
 
-// C includes. (C++ namespace)
-#include <cassert>
-#include <cstdio>
-#include <cstring>
-
-// C++ includes.
-#include <algorithm>
-#include <string>
+// C++ STL classes.
 using std::wstring;
 
 // CLSID
@@ -215,7 +200,7 @@ IFACEMETHODIMP RP_PropertyStore::QueryInterface(REFIID riid, LPVOID *ppvObj)
 		{ 0, 0 }
 	};
 #pragma warning(pop)
-	return LibWin32Common::pQISearch(this, rgqit, riid, ppvObj);
+	return LibWin32Common::pfnQISearch(this, rgqit, riid, ppvObj);
 }
 
 /** IInitializeWithStream **/

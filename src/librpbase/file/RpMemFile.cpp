@@ -2,18 +2,14 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * RpMemFile.cpp: IRpFile implementation using a memory buffer.            *
  *                                                                         *
- * Copyright (c) 2016 by David Korth.                                      *
+ * Copyright (c) 2016-2019 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+#include "stdafx.h"
 #include "RpMemFile.hpp"
 
-// C includes. (C++ namespace)
-#include <cerrno>
-#include <cstring>
-
-// C++ includes.
-#include <string>
+// C++ STL classes.
 using std::string;
 
 namespace LibRpBase {
@@ -71,8 +67,10 @@ size_t RpMemFile::read(void *ptr, size_t size)
 		return 0;
 	}
 
-	// Convert the const void* to a const uint8_t*.
-	const uint8_t *buf = static_cast<const uint8_t*>(m_buf);
+	if (unlikely(size == 0)) {
+		// Not reading anything...
+		return 0;
+	}
 
 	// Check if size is in bounds.
 	// NOTE: Need to use a signed comparison here.
@@ -82,12 +80,10 @@ size_t RpMemFile::read(void *ptr, size_t size)
 		size = m_size - m_pos;
 	}
 
-	if (size > 0) {
-		// Copy the data.
-		memcpy(ptr, &buf[m_pos], size);
-		m_pos += size;
-	}
-
+	// Copy the data.
+	const uint8_t *const buf = static_cast<const uint8_t*>(m_buf);
+	memcpy(ptr, &buf[m_pos], size);
+	m_pos += size;
 	return size;
 }
 
@@ -148,6 +144,7 @@ int64_t RpMemFile::tell(void)
 
 /**
  * Truncate the file.
+ * (NOTE: Not valid for RpMemFile; this will always return -1.)
  * @param size New size. (default is 0)
  * @return 0 on success; -1 on error.
  */
@@ -160,7 +157,7 @@ int RpMemFile::truncate(int64_t size)
 	return -1;
 }
 
-/** File properties. **/
+/** File properties **/
 
 /**
  * Get the file size.

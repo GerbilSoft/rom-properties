@@ -139,6 +139,7 @@ ConfigDialog::ConfigDialog(QWidget *parent)
 #else /* !Q_OS_MAC */
 	// Set the icon from the system theme.
 	// TODO: Fallback for older Qt?
+	// TODO: Make a custom icon instead of reusing the system icon.
 #if QT_VERSION >= 0x040600
 	QString iconName = QLatin1String("media-flash");
 	if (QIcon::hasThemeIcon(iconName)) {

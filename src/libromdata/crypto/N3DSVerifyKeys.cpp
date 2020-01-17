@@ -2,10 +2,11 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * N3DSVerifyKeys.cpp: Nintendo 3DS key verification data.                 *
  *                                                                         *
- * Copyright (c) 2016-2017 by David Korth.                                 *
+ * Copyright (c) 2016-2019 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+#include "stdafx.h"
 #include "N3DSVerifyKeys.hpp"
 
 // librpbase
@@ -18,12 +19,7 @@ using LibRpBase::KeyManager;
 // libromdata
 #include "CtrKeyScrambler.hpp"
 
-// C includes. (C++ namespace)
-#include <cassert>
-#include <cstring>
-
-// C++ includes.
-#include <memory>
+// C++ STL classes.
 using std::unique_ptr;
 
 namespace LibRomData {

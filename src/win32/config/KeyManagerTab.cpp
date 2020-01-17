@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * KeyManagerTab.hpp: Key Manager tab for rp-config.                       *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -18,17 +18,11 @@
 #include "KeyStore_OwnerDataCallback.hpp"
 
 // libwin32common
-#include "libwin32common/WinUI.hpp"
+using LibWin32Common::WTSSessionNotification;
 
 // librpbase
-#include "librpbase/TextFuncs.hpp"
-#include "librpbase/TextFuncs_wchar.hpp"
-#include "librpbase/config/Config.hpp"
 #include "librpbase/crypto/KeyManager.hpp"
 using namespace LibRpBase;
-
-// libi18n
-#include "libi18n/i18n.h"
 
 // libromdata
 #include "libromdata/disc/WiiPartition.hpp"
@@ -36,12 +30,7 @@ using namespace LibRpBase;
 #include "libromdata/crypto/N3DSVerifyKeys.hpp"
 using namespace LibRomData;
 
-// C includes. (C++ namespace)
-#include <cassert>
-
-// C++ includes.
-#include <algorithm>
-#include <string>
+// C++ STL classes.
 using std::string;
 using std::wstring;
 
@@ -160,6 +149,9 @@ class KeyManagerTabPrivate
 
 		// Is this COMCTL32.dll v6.10 or later?
 		bool isComCtl32_610;
+
+		// wtsapi32.dll for Remote Desktop status. (WinXP and later)
+		WTSSessionNotification wts;
 
 		// Icons for the "Valid?" column.
 		// NOTE: "?" and "X" are copies from User32.
@@ -515,7 +507,7 @@ void KeyManagerTabPrivate::initUI(void)
 	keyStore->setHWnd(hWndPropSheet);
 
 	// Register for WTS session notifications. (Remote Desktop)
-	WTSRegisterSessionNotification(hWndPropSheet, NOTIFY_FOR_THIS_SESSION);
+	wts.registerSessionNotification(hWndPropSheet, NOTIFY_FOR_THIS_SESSION);
 }
 
 /**

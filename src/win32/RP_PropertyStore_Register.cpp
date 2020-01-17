@@ -3,7 +3,7 @@
  * RP_PropSheet_Register.cpp: IPropertyStore implementation.               *
  * COM registration functions.                                             *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -11,11 +11,10 @@
 #include "RP_PropertyStore.hpp"
 #include "RP_PropertyStore_p.hpp"
 
-#include "libwin32common/RegKey.hpp"
+// libwin32common
 using LibWin32Common::RegKey;
 
-// C++ includes.
-#include <string>
+// C++ STL classes.
 using std::tstring;
 
 #define CLSID_RP_PropertyStore_String	TEXT("{4A1E3510-50BD-4B03-A801-E4C954F43B96}")

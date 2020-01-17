@@ -10,18 +10,10 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+#include "stdafx.h"
 #include "RomMetaData.hpp"
 
-#include "common.h"
-#include "TextFuncs.hpp"
-
-// C includes. (C++ namespace)
-#include <cassert>
-
-// C++ includes.
-#include <memory>
-#include <string>
-#include <vector>
+// C++ STL classes.
 using std::string;
 using std::unique_ptr;
 using std::vector;

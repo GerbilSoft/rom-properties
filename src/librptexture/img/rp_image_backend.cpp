@@ -6,10 +6,8 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+#include "stdafx.h"
 #include "rp_image_backend.hpp"
-
-// C includes (C++ namespace)
-#include <cassert>
 
 namespace LibRpTexture {
 

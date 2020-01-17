@@ -2,18 +2,14 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * AesNettle.cpp: AES decryption class using GNU Nettle.                   *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2019 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "librpbase/config.librpbase.h"
+#include "stdafx.h"
+#include "config.librpbase.h"
 
 #include "AesNettle.hpp"
-#include "../common.h"
-
-// C includes. (C++ namespace)
-#include <cerrno>
-#include <cstring>
 
 // Nettle AES functions.
 #include <nettle/nettle-types.h>

@@ -6,28 +6,19 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+#include "stdafx.h"
 #include "librpbase/config.librpbase.h"
 #include "libromdata/config.libromdata.h"
 
 #include "Xbox360_XEX.hpp"
 #include "Xbox360_XDBF.hpp"
 #include "../Other/EXE.hpp"
-#include "librpbase/RomData_p.hpp"
-
 #include "xbox360_xex_structs.h"
 
 // librpbase
-#include "librpbase/common.h"
-#include "librpbase/byteswap.h"
-#include "librpbase/TextFuncs.hpp"
 #include "librpbase/disc/CBCReader.hpp"
-#include "librpbase/disc/PartitionFile.hpp"
-#include "librpbase/file/IRpFile.hpp"
 #include "librpbase/file/RpMemFile.hpp"
 using namespace LibRpBase;
-
-// libi18n
-#include "libi18n/i18n.h"
 
 // librptexture
 using LibRpTexture::rp_image;
@@ -43,27 +34,12 @@ using LibRpTexture::rp_image;
 # include "xenia_lzx.h"
 #endif /* ENABLE_LIBMSPACK */
 
-// C includes. (C++ namespace)
-#include <cassert>
-#include <cerrno>
-#include <cstring>
-
-// C++ includes.
-#include <algorithm>
-#include <memory>
-#include <sstream>
-#include <string>
-#include <unordered_map>
-#include <vector>
+// C++ STL classes.
 using std::ostringstream;
 using std::string;
 using std::unique_ptr;
 using std::unordered_map;
 using std::vector;
-
-// Uninitialized vector class.
-// Reference: http://andreoffringa.org/?q=uvector
-#include "uvector.h"
 
 namespace LibRomData {
 
@@ -1059,43 +1035,44 @@ void Xbox360_XEX_Private::convertGameRatings(
 	// - Secondary index: Xbox 360 age value, from 0-15
 	// - Value: RomFields::age_ratings_t age value.
 	// If the Xbox 360 age value is over 15, the rating is invalid.
-	// If the age_ratings_t value is 0xFF, the rating is invalid.
+	// If the age_ratings_t value is -1, the rating is invalid.
 	//
 	// Values are set using the following formula:
 	// - If rating A is 0, and rating B is 2:
 	//   - The value for "A" gets slot 0.
 	//   - The value for "B" gets slots 1 and 2.
-	static const uint8_t region_values[14][16] = {
+	static const int8_t region_values[14][16] = {
 		// AGE_USA (ESRB)
-		{3, 6, 6, 10, 10, 13, 13, 17, 17, 18, 18, 18, 18, 18, 18, 0xFF},
+		{3, 6, 6, 10, 10, 13, 13, 17, 17, 18, 18, 18, 18, 18, 18, -1},
 		// AGE_EUROPE (PEGI)
-		{3, 4, 4, 4, 4, 12, 12, 12, 12, 12, 16, 16, 16, 16, 18, 0xFF},
+		{3, 4, 4, 4, 4, 12, 12, 12, 12, 12, 16, 16, 16, 16, 18, -1},
 		// AGE_FINLAND (PEGI-FI/MEKU)
-		{3, 7, 7, 7, 7, 11, 11, 11, 11, 15, 15, 15, 15, 18, 18, 0xFF},
+		{3, 7, 7, 7, 7, 11, 11, 11, 11, 15, 15, 15, 15, 18, 18, -1},
 		// AGE_PORTUGAL (PEGI-PT)
-		{4, 4, 6, 6, 12, 12, 12, 12, 12, 12, 16, 16, 16, 16, 18, 0xFF},
+		{4, 4, 6, 6, 12, 12, 12, 12, 12, 12, 16, 16, 16, 16, 18, -1},
 		// AGE_ENGLAND (BBFC)
 		// TODO: How are Universal and PG handled for Nintendo?
-		{3, 3, 7, 7, 7, 7, 12, 12, 12, 12, 15, 15, 15, 16, 18, 0xFF},
+		{3, 3, 7, 7, 7, 7, 12, 12, 12, 12, 15, 15, 15, 16, 18, -1},
 		// AGE_JAPAN (CERO)
-		{0, 12, 12, 15, 15, 17, 17, 18, 18,            0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF},
+		{0, 12, 12, 15, 15, 17, 17, 18, 18,    -1,-1,-1,-1,-1,-1,-1},
 		// AGE_GERMANY (USK)
-		{0, 6, 6, 12, 12, 16, 16, 18, 18,              0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF},
+		{0, 6, 6, 12, 12, 16, 16, 18, 18,      -1,-1,-1,-1,-1,-1,-1},
 		// AGE_AUSTRALIA (OFLC_AU)
 		// TODO: Is R18+ available on Xbox 360?
-		{0, 7, 7, 14, 14, 15, 15, 0xFF,           0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF},
+		{0, 7, 7, 14, 14, 15, 15, -1,       -1,-1,-1,-1,-1,-1,-1,-1},
 		// TODO: NZ
-		{0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF, 0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF},
+		{-1,-1,-1,-1,-1,-1,-1,-1,           -1,-1,-1,-1,-1,-1,-1,-1},
 		// AGE_SOUTH_KOREA (KMRB/GRB)
-		{0, 12, 12, 15, 15, 18, 18, 0xFF,         0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF},
+		{0, 12, 12, 15, 15, 18, 18, -1,     -1,-1,-1,-1,-1,-1,-1,-1},
+
 		// TODO: Brazil
-		{0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF, 0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF},
+		{-1,-1,-1,-1,-1,-1,-1,-1, -1,-1,-1,-1,-1,-1,-1,-1},
 		// TODO: FPB?
-		{0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF, 0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF},
+		{-1,-1,-1,-1,-1,-1,-1,-1, -1,-1,-1,-1,-1,-1,-1,-1},
 		// TODO: Taiwan
-		{0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF, 0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF},
+		{-1,-1,-1,-1,-1,-1,-1,-1, -1,-1,-1,-1,-1,-1,-1,-1},
 		// TODO: Singapore
-		{0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF, 0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF},
+		{-1,-1,-1,-1,-1,-1,-1,-1, -1,-1,-1,-1,-1,-1,-1,-1},
 	};
 
 	// 14 ratings for Xbox 360 games.
@@ -1112,13 +1089,13 @@ void Xbox360_XEX_Private::convertGameRatings(
 			continue;
 		}
 
-		uint8_t rf_val = region_values[ridx][xb_val];
-		if (rf_val == 0xFF) {
+		int8_t rf_val = region_values[ridx][xb_val];
+		if (rf_val < 0) {
 			// Invalid rating.
 			continue;
 		}
 
-		age_ratings[ar_idx] = rf_val | RomFields::AGEBF_ACTIVE;
+		age_ratings[ar_idx] = static_cast<uint8_t>(rf_val) | RomFields::AGEBF_ACTIVE;
 	}
 }
 
@@ -1387,17 +1364,20 @@ void Xbox360_XEX::close(void)
 {
 	RP_D(Xbox360_XEX);
 
+	// NOTE: Don't delete these. They have rp_image objects
+	// that may be used by the UI later.
 	if (d->pe_xdbf) {
-		d->pe_xdbf->unref();
-		d->pe_xdbf = nullptr;
+		d->pe_xdbf->close();
 	}
 	if (d->pe_exe) {
-		d->pe_exe->unref();
-		d->pe_exe = nullptr;
+		d->pe_exe->close();
 	}
-
-	delete d->peReader;
-	d->peReader = nullptr;
+#if 0
+	// TODO: Add CBCReader::close()?
+	if (d->peReader) {
+		d->peReader->close();
+	}
+#endif
 
 #ifdef ENABLE_LIBMSPACK
 	d->lzx_peHeader.clear();

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * CairoImageConv.cpp: Helper functions to convert from rp_image to Cairo. *
  *                                                                         *
- * Copyright (c) 2017-2018 by David Korth.                                 *
+ * Copyright (c) 2017-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -98,7 +98,6 @@ cairo_surface_t *CairoImageConv::rp_image_to_cairo_surface_t(const rp_image *img
 				break;
 
 			// Premultiply the palette.
-			// TODO: Use pointer arithmetic instead of array indexing?
 			uint32_t pal_prex[256];
 			for (int i = 0; i < palette_len; i++) {
 				pal_prex[i] = rp_image::premultiply_pixel(palette[i]);

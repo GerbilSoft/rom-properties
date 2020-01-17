@@ -7,33 +7,17 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+#include "stdafx.h"
 #include "NES.hpp"
-#include "librpbase/RomData_p.hpp"
-
 #include "data/NintendoPublishers.hpp"
 #include "data/NESMappers.hpp"
 #include "nes_structs.h"
 
 // librpbase
-#include "librpbase/common.h"
-#include "librpbase/byteswap.h"
-#include "librpbase/TextFuncs.hpp"
 #include "librpbase/SystemRegion.hpp"
-#include "librpbase/file/IRpFile.hpp"
 using namespace LibRpBase;
 
-// libi18n
-#include "libi18n/i18n.h"
-
- // C includes. (C++ namespace)
-#include <cassert>
-#include <cerrno>
-#include <cstring>
-#include <ctime>
-
- // C++ includes.
-#include <string>
-#include <vector>
+// C++ STL classes.
 using std::string;
 using std::vector;
 
@@ -222,9 +206,10 @@ NES::NES(IRpFile *file)
 	d->file->rewind();
 
 	// Read the ROM header. [128 bytes]
+	// NOTE: Allowing smaller headers for certain types.
 	uint8_t header[128];
 	size_t size = d->file->read(header, sizeof(header));
-	if (size != sizeof(header)) {
+	if (size < 16) {
 		d->file->unref();
 		d->file = nullptr;
 		return;
@@ -256,12 +241,24 @@ NES::NES(IRpFile *file)
 
 		case NESPrivate::ROM_FORMAT_FDS:
 			// FDS disk image.
+			if (size < sizeof(FDS_DiskHeader)) {
+				// Not enough data for an FDS image.
+				d->file->unref();
+				d->file = nullptr;
+				return;
+			}
 			d->fileType = FTYPE_DISK_IMAGE;
 			memcpy(&d->header.fds, header, sizeof(d->header.fds));
 			break;
 
 		case NESPrivate::ROM_FORMAT_FDS_FWNES:
 			// FDS disk image, with fwNES header.
+			if (size < (sizeof(FDS_DiskHeader) + sizeof(FDS_DiskHeader_fwNES))) {
+				// Not enough data for an FDS image with fwNES header.
+				d->file->unref();
+				d->file = nullptr;
+				return;
+			}
 			d->fileType = FTYPE_DISK_IMAGE;
 			memcpy(&d->header.fds_fwNES, header, sizeof(d->header.fds_fwNES));
 			memcpy(&d->header.fds, &header[16], sizeof(d->header.fds));

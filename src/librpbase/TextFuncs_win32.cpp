@@ -6,6 +6,7 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+#include "stdafx.h"
 #include "config.librpbase.h"
 #include "TextFuncs.hpp"
 #include "TextFuncs_NULL.hpp"
@@ -20,15 +21,7 @@
 // Windows
 #include "libwin32common/RpWin32_sdk.h"
 
-// C includes.
-#include <stdlib.h>
-
-// C includes. (C++ namespace)
-#include <cassert>
-#include <cstring>
-
-// C++ includes.
-#include <string>
+// C++ STL classes.
 using std::string;
 using std::u16string;
 using std::wstring;

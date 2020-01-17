@@ -6,8 +6,8 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+#include "stdafx.h"
 #include "MegaDrive.hpp"
-#include "librpbase/RomData_p.hpp"
 
 #include "md_structs.h"
 #include "data/SegaPublishers.hpp"
@@ -16,31 +16,12 @@
 #include "utils/SuperMagicDrive.hpp"
 
 // librpbase
-#include "librpbase/common.h"
-#include "librpbase/byteswap.h"
-#include "librpbase/aligned_malloc.h"
-#include "librpbase/TextFuncs.hpp"
-#include "librpbase/file/IRpFile.hpp"
 using namespace LibRpBase;
-
-// libi18n
-#include "libi18n/i18n.h"
 
 // Other RomData subclasses
 #include "Other/ISO.hpp"
 
-// C includes.
-#include <stdlib.h>
-
-// C includes. (C++ namespace)
-#include <cassert>
-#include <cerrno>
-#include <cstring>
-
-// C++ includes.
-#include <memory>
-#include <string>
-#include <vector>
+// C++ STL classes.
 using std::string;
 using std::unique_ptr;
 using std::vector;
@@ -460,6 +441,7 @@ void MegaDrivePrivate::addFields_vectorTable(const M68K_VectorTable *pVectors)
 		// TODO: Add a mapping table when skipping some.
 		// TODO: Use an iterator?
 		auto &data_row = vv_vectors->at(i);
+		data_row.reserve(3);
 
 		// Actual vector number.
 		const uint8_t vector_index = vectors_map[i];
@@ -518,10 +500,10 @@ MegaDrive::MegaDrive(IRpFile *file)
 	// Seek to the beginning of the file.
 	d->file->rewind();
 
-	// Read the ROM header. [0x400 bytes]
-	uint8_t header[0x400];
+	// Read the ROM header. [0x800 bytes; minimum 0x200]
+	uint8_t header[0x800];
 	size_t size = d->file->read(header, sizeof(header));
-	if (size != sizeof(header)) {
+	if (size < 0x200) {
 		d->file->unref();
 		d->file = nullptr;
 		return;
@@ -530,7 +512,7 @@ MegaDrive::MegaDrive(IRpFile *file)
 	// Check if this ROM is supported.
 	DetectInfo info;
 	info.header.addr = 0;
-	info.header.size = sizeof(header);
+	info.header.size = size;
 	info.header.pData = header;
 	info.ext = nullptr;	// Not needed for MD.
 	info.szFile = 0;	// Not needed for MD.
@@ -586,8 +568,14 @@ MegaDrive::MegaDrive(IRpFile *file)
 				break;
 
 			case MegaDrivePrivate::ROM_FORMAT_DISC_2352:
-				d->fileType = FTYPE_DISC_IMAGE;
+				if (size < 0x210) {
+					// Not enough data for a 2352-byte sector disc image.
+					d->file->unref();
+					d->file = nullptr;
+					return;
+				}
 
+				d->fileType = FTYPE_DISC_IMAGE;
 				// MCD-specific header is at 0x10. [TODO]
 				// MD-style header is at 0x110.
 				// No vector table is present on the disc.
@@ -697,14 +685,36 @@ int MegaDrive::isRomSupported_static(const DetectInfo *info)
 		}
 
 		// Check for other MD-based cartridge formats.
+		int sysId = MegaDrivePrivate::ROM_UNKNOWN;
 		for (int i = 0; i < ARRAY_SIZE(cart_magic); i++) {
 			if (!memcmp(&pHeader[0x100], cart_magic[i].sys_name, cart_magic[i].sys_name_len_100h) ||
 			    !memcmp(&pHeader[0x101], cart_magic[i].sys_name, cart_magic[i].sys_name_len_101h))
 			{
 				// Found a matching system name.
-				return MegaDrivePrivate::ROM_FORMAT_CART_BIN | cart_magic[i].system_id;
+				sysId = cart_magic[i].system_id;
+				break;
 			}
 		}
+
+		if (sysId == MegaDrivePrivate::ROM_SYSTEM_MD || sysId == MegaDrivePrivate::ROM_SYSTEM_32X) {
+			// Verify the 32X security program if possible.
+			static const uint32_t secprgaddr = 0x512;
+			static const char secprgdesc[] = "MARS Initial & Security Program";
+			if (info->header.size >= secprgaddr + sizeof(secprgdesc) - 1) {
+				// TODO: Check other parts of the security program?
+				if (!memcmp(&pHeader[secprgaddr], secprgdesc, sizeof(secprgdesc)-1)) {
+					// Module name is correct.
+					// TODO: Does the ROM header have to say "SEGA 32X"?
+					sysId = MegaDrivePrivate::ROM_SYSTEM_32X;
+				} else {
+					// Module name is incorrect.
+					// This ROM cannot activate 32X mode.
+					sysId = MegaDrivePrivate::ROM_SYSTEM_MD;
+				}
+			}
+		}
+
+		return MegaDrivePrivate::ROM_FORMAT_CART_BIN | sysId;
 	}
 
 	// Not supported.

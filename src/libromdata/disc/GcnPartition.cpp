@@ -6,23 +6,17 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+#include "stdafx.h"
 #include "GcnPartition.hpp"
 #include "GcnFst.hpp"
 
 // librpbase
-#include "librpbase/disc/PartitionFile.hpp"
 using namespace LibRpBase;
 
-// C includes. (C++ namespace)
-#include <cassert>
-#include <cerrno>
-
-// C++ includes.
-#include <memory>
+// C++ STL classes.
 using std::unique_ptr;
 
 #include "GcnPartitionPrivate.hpp"
-
 namespace LibRomData {
 
 /** GcnPartition **/

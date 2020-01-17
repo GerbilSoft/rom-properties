@@ -6,15 +6,14 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+#include "stdafx.h"
 #include "KeyStoreUI.hpp"
 
 // librpbase
-#include "librpbase/TextFuncs.hpp"
 #include "librpbase/crypto/KeyManager.hpp"
 #include "librpbase/crypto/IAesCipher.hpp"
 #include "librpbase/crypto/AesCipherFactory.hpp"
 #include "librpbase/file/RpFile.hpp"
-#include "libi18n/i18n.h"
 using namespace LibRpBase;
 
 // libromdata
@@ -24,17 +23,7 @@ using namespace LibRpBase;
 #include "../Console/Xbox360_XEX.hpp"
 using namespace LibRomData;
 
-// C includes. (C++ namespace)
-#include <cassert>
-#include <cerrno>
-#include <cstring>
-
-// C++ includes.
-#include <algorithm>
-#include <memory>
-#include <numeric>
-#include <string>
-#include <vector>
+// C++ STL classes.
 using std::string;
 using std::u16string;
 using std::unique_ptr;
@@ -74,7 +63,7 @@ class KeyStoreUIPrivate
 
 		// Sections.
 		struct Section {
-			string name;
+			//string name;		// NOTE: Not actually used...
 			int keyIdxStart;	// Starting index in keys.
 			int keyCount;		// Number of keys.
 		};
@@ -961,7 +950,9 @@ int KeyStoreUI::setKey(int sectIdx, int keyIdx, const string &value)
 			}
 			new_value = convKey;
 		}
-	} else {
+	}
+
+	if (new_value.empty()) {
 		// Hexadecimal only.
 		// TODO: Validate it here? We're already
 		// using a validator in the UI...
@@ -1125,12 +1116,12 @@ KeyStoreUI::ImportReturn KeyStoreUI::importWiiKeysBin(const char *filename)
 	}
 
 	// TODO:
-	// - rvl-korean may be in keys.bin files dumped from Korean systems.
 	// - SD keys are not present in keys.bin.
 
 	static const KeyStoreUIPrivate::KeyBinAddress keyBinAddress[] = {
 		{0x114, WiiPartition::Key_Rvl_Common},
 		{0x114, WiiPartition::Key_Rvt_Debug},
+		{0x274, WiiPartition::Key_Rvl_Korean},
 
 		{0, -1}
 	};
@@ -1409,7 +1400,6 @@ KeyStoreUI::ImportReturn KeyStoreUI::import3DSaeskeydb(const char *filename)
 
 			case 0x3D:
 				// KeyX, KeyY, and KeyNormal are available.
-				// TODO: Optimize Y/N cases by setting an array pointer?
 				switch (aesKey->type) {
 					case 'X': {
 						static const uint8_t keys_Slot0x3DKeyX[] = {

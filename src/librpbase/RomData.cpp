@@ -2,28 +2,20 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * RomData.cpp: ROM data base class.                                       *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth                                  *
+ * Copyright (c) 2016-2019 by David Korth                                  *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+#include "stdafx.h"
 #include "RomData.hpp"
 #include "RomData_p.hpp"
 
-#include "TextFuncs.hpp"
-#include "file/IRpFile.hpp"
-#include "threads/Atomics.h"
 #include "libi18n/i18n.h"
 
-// C includes. (C++ namespace)
-#include "librpbase/ctypex.h"
-#include <cassert>
-#include <cerrno>
-#include <ctime>
+// librpthreads
+#include "librpthreads/Atomics.h"
 
-// C++ includes.
-#include <algorithm>
-#include <string>
-#include <vector>
+// C++ STL classes.
 using std::string;
 using std::vector;
 

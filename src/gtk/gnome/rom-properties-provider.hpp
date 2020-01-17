@@ -22,6 +22,10 @@
 // MATE desktop (v1.18.0+; GTK+ 3.x)
 # include <libcaja-extension/caja-property-page-provider.h>
 typedef CajaFileInfo NautilusFileInfo;
+#elif defined(RP_UI_GTK3_CINNAMON)
+// Cinnamon desktop
+# include <libnemo-extension/nemo-property-page-provider.h>
+typedef NemoFileInfo NautilusFileInfo;
 #else
 # error GTK3 desktop environment not set and/or supported.
 #endif

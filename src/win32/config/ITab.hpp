@@ -22,7 +22,7 @@ class ITab
 	private:
 		RP_DISABLE_COPY(ITab)
 
-	public:
+	protected:
 		/**
 		 * Load a resource using the current i18n settings.
 		 * @param lpType Resource type.

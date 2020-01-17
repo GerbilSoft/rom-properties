@@ -6,23 +6,18 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+#include "stdafx.h"
 #include "SystemRegion.hpp"
-#include "librpbase/common.h"
 
-// One-time initialization.
-#include "threads/pthread_once.h"
-
-// C includes.
-#include <stdlib.h>
+// librpthreads
+#include "librpthreads/pthread_once.h"
 
 // C includes. (C++ namespace)
-#include "librpbase/ctypex.h"
 #include <clocale>
-#include <cstring>
 
 #ifdef _WIN32
 # include "libwin32common/RpWin32_sdk.h"
-#endif
+#endif /* _WIN32 */
 
 namespace LibRpBase {
 
@@ -150,12 +145,15 @@ int SystemRegionPrivate::getSystemRegion_LC_MESSAGES(const char *locale)
 		lc = 0;
 	}
 
-	// Look for an underscore. ('_')
-	const char *const underscore = strchr(locale, '_');
+	// Look for an underscore or a hyphen. ('_', '-')
+	const char *underscore = strchr(locale, '_');
 	if (!underscore) {
-		// No country code...
-		cc = 0;
-		return ret;
+		underscore = strchr(locale, '-');
+		if (!underscore) {
+			// No country code...
+			cc = 0;
+			return ret;
+		}
 	}
 
 	// Found an underscore.
@@ -170,6 +168,23 @@ int SystemRegionPrivate::getSystemRegion_LC_MESSAGES(const char *locale)
 			cc = ((TOUPPER(underscore[1]) << 16) |
 			      (TOUPPER(underscore[2]) << 8) |
 			       TOUPPER(underscore[3]));
+			ret = 0;
+		} else if (ISALPHA(underscore[4]) && !ISALPHA(underscore[5])) {
+			// 4-character country code.
+			cc = ((TOUPPER(underscore[1]) << 24) |
+			      (TOUPPER(underscore[2]) << 16) |
+			      (TOUPPER(underscore[3]) << 8) |
+			       TOUPPER(underscore[4]));
+
+			// Special handling for compatibility:
+			// - 'HANS' -> 'CN' (and/or 'SG')
+			// - 'HANT' -> 'TW' (and/or 'HK')
+			if (cc == 'HANS') {
+				cc = 'CN';
+			} else if (cc == 'HANT') {
+				cc = 'TW';
+			}
+
 			ret = 0;
 		} else {
 			// Invalid country code.

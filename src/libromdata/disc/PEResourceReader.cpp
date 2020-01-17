@@ -6,25 +6,13 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+#include "stdafx.h"
 #include "PEResourceReader.hpp"
 
 // librpbase
-#include "librpbase/common.h"
-#include "librpbase/byteswap.h"
-#include "librpbase/TextFuncs.hpp"
-#include "librpbase/file/IRpFile.hpp"
-#include "librpbase/disc/PartitionFile.hpp"
 using namespace LibRpBase;
 
-// C includes. (C++ namespace)
-#include <cassert>
-#include <cerrno>
-
-// C++ includes.
-#include <memory>
-#include <string>
-#include <unordered_map>
-#include <vector>
+// C++ STL classes.
 using std::string;
 using std::unique_ptr;
 using std::unordered_map;

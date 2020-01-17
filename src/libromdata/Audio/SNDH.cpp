@@ -9,17 +9,12 @@
 // Reference: http://sndh.atari.org/fileformat.php
 // NOTE: The header format consists of tags that may be in any order,
 // so we don't have a structs file.
+#include "stdafx.h"
 #include "libromdata/config.libromdata.h"
 
 #include "SNDH.hpp"
-#include "librpbase/RomData_p.hpp"
 
 // librpbase
-#include "librpbase/common.h"
-#include "librpbase/byteswap.h"
-#include "librpbase/TextFuncs.hpp"
-#include "librpbase/file/IRpFile.hpp"
-#include "libi18n/i18n.h"
 using namespace LibRpBase;
 
 // unice68
@@ -27,24 +22,10 @@ using namespace LibRpBase;
 # include "unice68.h"
 #endif
 
-// C includes. (C++ namespace)
-#include "librpbase/ctypex.h"
-#include <cassert>
-#include <cerrno>
-#include <cstring>
-#include <ctime>
-
 // for memmem() if it's not available in <string.h>
 #include "librpbase/TextFuncs_libc.h"
 
-// C++ includes.
-#include <algorithm>
-#include <memory>
-#include <numeric>
-#include <string>
-#include <unordered_map>
-#include <utility>
-#include <vector>
+// C++ STL classes.
 using std::pair;
 using std::string;
 using std::unique_ptr;

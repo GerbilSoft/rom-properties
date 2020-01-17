@@ -6,16 +6,13 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+#include "stdafx.h"
 #include <png.h>
 
 #include "APNG_dlopen.h"
 
-// C includes.
-#include <assert.h>
-#include <stdio.h>
-#include <stdlib.h>	/* MSVC _countof() */
-
-#include "threads/Atomics.h"
+// librpthreads
+#include "librpthreads/Atomics.h"
 
 #ifndef _WIN32
 // Unix dlopen()

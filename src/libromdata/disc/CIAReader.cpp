@@ -6,11 +6,11 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+#include "stdafx.h"
 #include "librpbase/config.librpbase.h"
 #include "CIAReader.hpp"
 
 // librpbase
-#include "librpbase/file/IRpFile.hpp"
 #include "librpbase/disc/CBCReader.hpp"
 #ifdef ENABLE_DECRYPTION
 # include "librpbase/crypto/AesCipherFactory.hpp"
@@ -19,12 +19,6 @@
 # include "../crypto/N3DSVerifyKeys.hpp"
 #endif /* ENABLE_DECRYPTION */
 using namespace LibRpBase;
-
-// C includes. (C++ namespace)
-#include <cassert>
-#include <cerrno>
-#include <cstdio>
-#include <cstring>
 
 namespace LibRomData {
 

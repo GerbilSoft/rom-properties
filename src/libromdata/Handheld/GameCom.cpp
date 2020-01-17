@@ -6,34 +6,15 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+#include "stdafx.h"
 #include "GameCom.hpp"
-#include "librpbase/RomData_p.hpp"
 #include "gcom_structs.h"
 
-// librpbase
-#include "librpbase/common.h"
-#include "librpbase/byteswap.h"
-#include "librpbase/bitstuff.h"
-#include "librpbase/TextFuncs.hpp"
-#include "librpbase/file/IRpFile.hpp"
-
-// libi18n
-#include "libi18n/i18n.h"
+// librpbase, librptexture
 using namespace LibRpBase;
-
-// librptexture
-#include "librptexture/img/rp_image.hpp"
 using LibRpTexture::rp_image;
 
-// C includes. (C++ namespace)
-#include <cassert>
-#include <cerrno>
-#include <cstring>
-
-// C++ includes.
-#include <memory>
-#include <string>
-#include <vector>
+// C++ STL classes.
 using std::string;
 using std::unique_ptr;
 using std::vector;

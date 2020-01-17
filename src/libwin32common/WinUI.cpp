@@ -201,10 +201,10 @@ int findMonospacedFont(LOGFONT *plfFontMono)
 	LOGFONT lfEnumFonts = { 0 };
 	lfEnumFonts.lfCharSet = DEFAULT_CHARSET;
 	lfEnumFonts.lfPitchAndFamily = FIXED_PITCH | FF_DONTCARE;
-	HDC hdc = GetDC(nullptr);
-	EnumFontFamiliesEx(hdc, &lfEnumFonts, MonospacedFontEnumProc,
+	HDC hDC = GetDC(nullptr);
+	EnumFontFamiliesEx(hDC, &lfEnumFonts, MonospacedFontEnumProc,
 		reinterpret_cast<LPARAM>(&enum_fonts), 0);
-	ReleaseDC(nullptr, hdc);
+	ReleaseDC(nullptr, hDC);
 
 	if (enum_fonts.empty()) {
 		// No fonts...

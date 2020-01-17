@@ -22,6 +22,7 @@ CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/config.version.h.in" "${CMAKE_CURREN
 
 # Source Code subdirectories.
 ADD_SUBDIRECTORY(libi18n)
+ADD_SUBDIRECTORY(librpthreads)
 ADD_SUBDIRECTORY(librpbase)
 ADD_SUBDIRECTORY(librptexture)
 ADD_SUBDIRECTORY(libromdata)

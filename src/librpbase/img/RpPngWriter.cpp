@@ -6,10 +6,10 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+#include "stdafx.h"
 #include "config.librpbase.h"
 #include "RpPngWriter.hpp"
 
-#include "common.h"
 #include "byteorder.h"
 #include "TextFuncs.hpp"
 #include "file/RpFile.hpp"
@@ -68,19 +68,10 @@ using LibRpTexture::argb32_t;
 # define PNG_Z_DEFAULT_COMPRESSION (-1)
 #endif
 
-// C includes.
-#include <stdlib.h>
-
 // C includes. (C++ namespace)
-#include <cassert>
-#include <cerrno>
 #include <csetjmp>
 
-// C++ includes.
-#include <algorithm>
-#include <memory>
-#include <string>
-#include <vector>
+// C++ STL classes.
 using std::string;
 using std::unique_ptr;
 using std::vector;

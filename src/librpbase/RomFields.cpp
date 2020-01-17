@@ -6,22 +6,15 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+#include "stdafx.h"
 #include "RomFields.hpp"
 
-#include "common.h"
-#include "TextFuncs.hpp"
-#include "threads/Atomics.h"
 #include "libi18n/i18n.h"
 
-// C includes. (C++ namespace)
-#include <cassert>
+// librpthreads
+#include "librpthreads/Atomics.h"
 
-// C++ includes.
-#include <algorithm>
-#include <limits>
-#include <memory>
-#include <string>
-#include <vector>
+// C++ STL classes.
 using std::string;
 using std::unique_ptr;
 using std::vector;

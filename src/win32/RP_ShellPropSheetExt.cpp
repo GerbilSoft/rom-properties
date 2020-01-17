@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * RP_ShellPropSheetExt.cpp: IShellPropSheetExt implementation.            *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -16,48 +16,23 @@
 #include "RpImageWin32.hpp"
 #include "res/resource.h"
 
+#include "DragImageLabel.hpp"
+
 // libwin32common
 #include "libwin32common/AutoGetDC.hpp"
-#include "libwin32common/WinUI.hpp"
-#include "libwin32common/w32time.h"
 using LibWin32Common::AutoGetDC;
+using LibWin32Common::WTSSessionNotification;
 
-// librpbase
-#include "librpbase/RomData.hpp"
-#include "librpbase/RomFields.hpp"
-#include "librpbase/TextFuncs.hpp"
-#include "librpbase/TextFuncs_wchar.hpp"
-#include "librpbase/file/FileSystem.hpp"
-#include "librpbase/file/RpFile.hpp"
-#include "librpbase/config/Config.hpp"
-using namespace LibRpBase;
-
-// libi18n
-// NOTE: Using "RomDataView" for the context, since that
+// NOTE: Using "RomDataView" for the libi18n context, since that
 // matches what's used for the KDE and GTK+ frontends.
-#include "libi18n/i18n.h"
 
-// librptexture
-#include "librptexture/img/rp_image.hpp"
+// librpbase, librptexture, libromdata
+#include "librpbase/RomFields.hpp"
+using namespace LibRpBase;
 using LibRpTexture::rp_image;
-
-// libromdata
-#include "libromdata/RomDataFactory.hpp"
 using LibRomData::RomDataFactory;
 
-// C includes. (C++ namespace)
-#include <cassert>
-#include <cstring>
-
-// C++ includes.
-#include <algorithm>
-#include <array>
-#include <memory>
-#include <numeric>
-#include <string>
-#include <unordered_map>
-#include <unordered_set>
-#include <vector>
+// C++ STL classes.
 using std::array;
 using std::unique_ptr;
 using std::unordered_map;
@@ -66,20 +41,8 @@ using std::string;
 using std::wstring;
 using std::vector;
 
-// Gdiplus for image drawing.
-// NOTE: Gdiplus requires min/max.
-#include <algorithm>
-namespace Gdiplus {
-	using std::min;
-	using std::max;
-}
-#include <gdiplus.h>
+// GDI+ scoped token.
 #include "librptexture/img/GdiplusHelper.hpp"
-#include "librptexture/img/RpGdiplusBackend.hpp"
-
-// Icon animation.
-#include "librpbase/img/IconAnimData.hpp"
-#include "librpbase/img/IconAnimHelper.hpp"
 
 // CLSID
 const CLSID CLSID_RP_ShellPropSheetExt =
@@ -151,12 +114,8 @@ class RP_ShellPropSheetExt_Private
 		// Header row widgets.
 		HWND lblSysInfo;
 
-		// Window background color.
-		COLORREF colorWinBg;
-		// XP theming.
-		typedef BOOL (STDAPICALLTYPE* PFNISTHEMEACTIVE)(void);
-		HMODULE hUxTheme_dll;
-		PFNISTHEMEACTIVE pfnIsThemeActive;
+		// wtsapi32.dll for Remote Desktop status. (WinXP and later)
+		WTSSessionNotification wts;
 
 		// Alternate row color.
 		COLORREF colorAltRow;
@@ -187,11 +146,9 @@ class RP_ShellPropSheetExt_Private
 		 */
 		inline int ListView_CustomDraw(NMLVCUSTOMDRAW *plvcd);
 
-		// Banner.
-		HBITMAP hbmpBanner;
-		POINT ptBanner;
-		SIZE szBanner;
-		bool nearest_banner;
+		// Banner and icon.
+		DragImageLabel *lblBanner;
+		DragImageLabel *lblIcon;
 
 		// Tab layout.
 		HWND hTabWidget;
@@ -201,25 +158,6 @@ class RP_ShellPropSheetExt_Private
 		};
 		vector<tab> tabs;
 		int curTabIndex;
-
-		// Animated icon data.
-		array<HBITMAP, IconAnimData::MAX_FRAMES> hbmpIconFrames;
-		RECT rectIcon;
-		SIZE szIcon;
-		bool nearest_icon;
-		IconAnimHelper iconAnimHelper;
-		UINT_PTR animTimerID;		// Animation timer ID. (non-zero == running)
-		int last_frame_number;		// Last frame number.
-
-		/**
-		 * Start the animation timer.
-		 */
-		void startAnimTimer(void);
-
-		/**
-		 * Stop the animation timer.
-		 */
-		void stopAnimTimer(void);
 
 	public:
 		/**
@@ -370,15 +308,6 @@ class RP_ShellPropSheetExt_Private
 		static UINT CALLBACK CallbackProc(HWND hWnd, UINT uMsg, LPPROPSHEETPAGE ppsp);
 
 		/**
-		 * Animated icon timer.
-		 * @param hWnd
-		 * @param uMsg
-		 * @param idEvent
-		 * @param dwTime
-		 */
-		static void CALLBACK AnimTimerProc(HWND hWnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime);
-
-		/**
 		 * Dialog procedure for subtabs.
 		 * @param hDlg
 		 * @param uMsg
@@ -403,33 +332,14 @@ RP_ShellPropSheetExt_Private::RP_ShellPropSheetExt_Private(RP_ShellPropSheetExt 
 	, hFontMono(nullptr)
 	, bPrevIsClearType(nullptr)
 	, lblSysInfo(nullptr)
-	, colorWinBg(0)
-	, hUxTheme_dll(nullptr)
-	, pfnIsThemeActive(nullptr)
 	, colorAltRow(0)
 	, isFullyInit(false)
-	, hbmpBanner(nullptr)
-	, nearest_banner(true)
+	, lblBanner(nullptr)
+	, lblIcon(nullptr)
 	, hTabWidget(nullptr)
 	, curTabIndex(0)
-	, nearest_icon(true)
-	, animTimerID(0)
-	, last_frame_number(0)
 {
 	memset(&lfFontMono, 0, sizeof(lfFontMono));
-	hbmpIconFrames.fill(nullptr);
-	memset(&ptBanner, 0, sizeof(ptBanner));
-	memset(&szBanner, 0, sizeof(szBanner));
-	memset(&rectIcon, 0, sizeof(rectIcon));
-	memset(&szIcon, 0, sizeof(szIcon));
-
-	// Attempt to get IsThemeActive() from uxtheme.dll.
-	// TODO: Move this to RP_ComBase so we don't have to look it up
-	// every time the property dialog is loaded?
-	hUxTheme_dll = LoadLibrary(_T("uxtheme.dll"));
-	if (hUxTheme_dll) {
-		pfnIsThemeActive = (PFNISTHEMEACTIVE)GetProcAddress(hUxTheme_dll, "IsThemeActive");
-	}
 
 	// Initialize the alternate row color.
 	colorAltRow = LibWin32Common::getAltRowColor();
@@ -437,19 +347,14 @@ RP_ShellPropSheetExt_Private::RP_ShellPropSheetExt_Private(RP_ShellPropSheetExt 
 
 RP_ShellPropSheetExt_Private::~RP_ShellPropSheetExt_Private()
 {
-	stopAnimTimer();
-	iconAnimHelper.setIconAnimData(nullptr);
+	// Delete the banner and icon frames.
+	delete lblBanner;
+	delete lblIcon;
+
+	// Unreference the RomData object.
 	if (romData) {
 		romData->unref();
 	}
-
-	// Delete the banner and icon frames.
-	if (hbmpBanner) {
-		DeleteObject(hbmpBanner);
-	}
-	std::for_each(hbmpIconFrames.begin(), hbmpIconFrames.end(),
-		[](HBITMAP hbmp) { if (hbmp) { DeleteObject(hbmp); } }
-	);
 
 	// Delete the fonts.
 	if (hFontBold) {
@@ -457,48 +362,6 @@ RP_ShellPropSheetExt_Private::~RP_ShellPropSheetExt_Private()
 	}
 	if (hFontMono) {
 		DeleteFont(hFontMono);
-	}
-
-	// Close uxtheme.dll.
-	if (hUxTheme_dll) {
-		FreeLibrary(hUxTheme_dll);
-	}
-}
-
-/**
- * Start the animation timer.
- */
-void RP_ShellPropSheetExt_Private::startAnimTimer(void)
-{
-	if (!iconAnimHelper.isAnimated()) {
-		// Not an animated icon.
-		return;
-	}
-
-	// Get the current frame information.
-	last_frame_number = iconAnimHelper.frameNumber();
-	const int delay = iconAnimHelper.frameDelay();
-	assert(delay > 0);
-	if (delay <= 0) {
-		// Invalid delay value.
-		return;
-	}
-
-	// Set a timer for the current frame.
-	// We're using the 'd' pointer as nIDEvent.
-	animTimerID = SetTimer(hDlgSheet,
-		reinterpret_cast<UINT_PTR>(this),
-		delay, AnimTimerProc);
-}
-
-/**
- * Stop the animation timer.
- */
-void RP_ShellPropSheetExt_Private::stopAnimTimer(void)
-{
-	if (animTimerID) {
-		KillTimer(hDlgSheet, animTimerID);
-		animTimerID = 0;
 	}
 }
 
@@ -513,103 +376,68 @@ void RP_ShellPropSheetExt_Private::stopAnimTimer(void)
  */
 void RP_ShellPropSheetExt_Private::loadImages(void)
 {
-	// Window background color.
-	// Static controls don't support alpha transparency (?? test),
-	// so we have to fake it.
-	// TODO: Get the actual background color of the window.
-	// TODO: Use DrawThemeBackground:
-	// - http://www.codeproject.com/Articles/5978/Correctly-drawn-themed-dialogs-in-WinXP
-	// - https://blogs.msdn.microsoft.com/dsui_team/2013/06/26/using-theme-apis-to-draw-the-border-of-a-control/
-	// - https://blogs.msdn.microsoft.com/pareshj/2011/11/03/draw-the-background-of-static-control-with-gradient-fill-when-theme-is-enabled/
-	int colorIndex;
-	if (pfnIsThemeActive && pfnIsThemeActive()) {
-		// Theme is active.
-		colorIndex = COLOR_WINDOW;
-	} else {
-		// Theme is not active.
-		colorIndex = COLOR_3DFACE;
-	}
-	const Gdiplus::ARGB gdipBgColor = LibWin32Common::GetSysColor_ARGB32(colorIndex);
-
 	// Supported image types.
 	const uint32_t imgbf = romData->supportedImageTypes();
 
 	// Banner.
 	if (imgbf & RomData::IMGBF_INT_BANNER) {
-		// Delete the old banner.
-		if (hbmpBanner != nullptr) {
-			DeleteObject(hbmpBanner);
-			hbmpBanner = nullptr;
-		}
-
 		// Get the banner.
 		const rp_image *banner = romData->image(RomData::IMG_INT_BANNER);
 		if (banner && banner->isValid()) {
-			// Save the banner size.
-			if (szBanner.cx == 0) {
-				szBanner.cx = banner->width();
-				szBanner.cy = banner->height();
-				// FIXME: Uncomment once proper aspect ratio scaling has been implemented.
-				// All banners are 96x32 right now.
-				//static const SIZE req_szBanner = {96, 32};
-				//nearest = rescaleImage(req_szBanner, szBanner);
-				nearest_banner = true;
+			if (!lblBanner) {
+				lblBanner = new DragImageLabel(hDlgSheet);
+				// TODO: Required size? For now, disabling scaling.
+				lblBanner->setRequiredSize(0, 0);
 			}
 
-			// Convert to HBITMAP using the window background color.
-			// TODO: Redo if the window background color changes.
-			hbmpBanner = RpImageWin32::toHBITMAP(banner, gdipBgColor, szBanner, nearest_banner);
+			bool ok = lblBanner->setRpImage(banner);
+			if (!ok) {
+				// Unable to load the banner...
+				delete lblBanner;
+				lblBanner = nullptr;
+			}
+		} else {
+			// Delete the icon if it was created previously.
+			delete lblBanner;
+			lblBanner = nullptr;
 		}
+	} else {
+		// Delete the icon if it was created previously.
+		delete lblBanner;
+		lblBanner = nullptr;
 	}
 
 	// Icon.
 	if (imgbf & RomData::IMGBF_INT_ICON) {
-		// Delete the old icons.
-		std::for_each(hbmpIconFrames.begin(), hbmpIconFrames.end(),
-			[](HBITMAP &hbmp) {
-				if (hbmp) {
-					DeleteObject(hbmp);
-					hbmp = nullptr;
-				}
-			}
-		);
-
 		// Get the icon.
 		const rp_image *icon = romData->image(RomData::IMG_INT_ICON);
 		if (icon && icon->isValid()) {
-			// Save the icon size.
-			if (szIcon.cx == 0) {
-				szIcon.cx = icon->width();
-				szIcon.cy = icon->height();
-				static const SIZE req_szIcon = {32, 32};
-				nearest_icon = rescaleImage(req_szIcon, szIcon);
+			if (!lblIcon) {
+				lblIcon = new DragImageLabel(hDlgSheet);
 			}
 
-			// Get the animated icon data.
-			const IconAnimData *const iconAnimData = romData->iconAnimData();
-			if (iconAnimData) {
-				// Convert the icons to GDI+ bitmaps.
-				for (int i = iconAnimData->count-1; i >= 0; i--) {
-					if (iconAnimData->frames[i] && iconAnimData->frames[i]->isValid()) {
-						// Convert to HBITMAP using the window background color.
-						hbmpIconFrames[i] = RpImageWin32::toHBITMAP(iconAnimData->frames[i], gdipBgColor, szIcon, nearest_icon);
-					}
-				}
-
-				// Set up the IconAnimHelper.
-				iconAnimHelper.setIconAnimData(iconAnimData);
-				last_frame_number = iconAnimHelper.frameNumber();
-
-				// Icon animation timer is set in startAnimTimer().
-			} else {
-				// Not an animated icon.
-				last_frame_number = 0;
-				iconAnimHelper.setIconAnimData(nullptr);
-
-				// Convert to HBITMAP using the window background color.
-				hbmpIconFrames[0] = RpImageWin32::toHBITMAP(icon, gdipBgColor, szIcon, nearest_icon);
+			// Is this an animated icon?
+			bool ok = lblIcon->setIconAnimData(romData->iconAnimData());
+			if (!ok) {
+				// Not an animated icon, or invalid icon data.
+				// Set the static icon.
+				ok = lblIcon->setRpImage(icon);
 			}
+
+			if (!ok) {
+				// Unable to load the icon...
+				delete lblIcon;
+				lblIcon = nullptr;
+			}
+		} else {
+			// Delete the icon if it was created previously.
+			delete lblIcon;
+			lblIcon = nullptr;
 		}
+	} else {
+		// Delete the icon if it was created previously.
+		delete lblIcon;
+		lblIcon = nullptr;
 	}
 }
 
@@ -716,14 +544,16 @@ int RP_ShellPropSheetExt_Private::createHeaderRow(HWND hDlg, const POINT &pt_sta
 	// Banner.
 	// TODO: Spacing between banner and text?
 	// Doesn't seem to be needed with Dreamcast saves...
-	total_widget_width += szBanner.cx;
+	const int banner_width = (lblBanner ? lblBanner->actualSize().cx : 0);
+	total_widget_width += banner_width;
 
 	// Icon.
-	if (szIcon.cx > 0) {
+	const int icon_width = (lblIcon ? lblIcon->actualSize().cx : 0);
+	if (icon_width > 0) {
 		if (total_widget_width > 0) {
 			total_widget_width += pt_start.x;
 		}
-		total_widget_width += szIcon.cx;
+		total_widget_width += icon_width;
 	}
 
 	// Starting point.
@@ -745,16 +575,15 @@ int RP_ShellPropSheetExt_Private::createHeaderRow(HWND hDlg, const POINT &pt_sta
 	}
 
 	// Banner.
-	if (szBanner.cx > 0) {
-		ptBanner = curPt;
-		curPt.x += szBanner.cx + pt_start.x;
+	if (banner_width > 0) {
+		lblBanner->setPosition(curPt);
+		curPt.x += banner_width + pt_start.x;
 	}
 
 	// Icon.
-	if (szIcon.cx > 0) {
-		SetRect(&rectIcon, curPt.x, curPt.y,
-			curPt.x + szIcon.cx, curPt.y + szIcon.cy);
-		curPt.x += szIcon.cx + pt_start.x;
+	if (icon_width > 0) {
+		lblIcon->setPosition(curPt);
+		curPt.x += icon_width + pt_start.x;
 	}
 
 	// Return the label height and some extra padding.
@@ -2215,7 +2044,7 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 	}
 
 	// Register for WTS session notifications. (Remote Desktop)
-	WTSRegisterSessionNotification(hDlg, NOTIFY_FOR_THIS_SESSION);
+	wts.registerSessionNotification(hDlg, NOTIFY_FOR_THIS_SESSION);
 
 	// Window is fully initialized.
 	isFullyInit = true;
@@ -2250,7 +2079,7 @@ IFACEMETHODIMP RP_ShellPropSheetExt::QueryInterface(REFIID riid, LPVOID *ppvObj)
 		{ 0 }
 	};
 #pragma warning(pop)
-	return LibWin32Common::pQISearch(this, rgqit, riid, ppvObj);
+	return LibWin32Common::pfnQISearch(this, rgqit, riid, ppvObj);
 }
 
 /** IShellExtInit **/
@@ -2562,11 +2391,15 @@ INT_PTR RP_ShellPropSheetExt_Private::DlgProc_WM_NOTIFY(HWND hDlg, NMHDR *pHdr)
 
 	switch (pHdr->code) {
 		case PSN_SETACTIVE:
-			startAnimTimer();
+			if (lblIcon) {
+				lblIcon->startAnimTimer();
+			}
 			break;
 
 		case PSN_KILLACTIVE:
-			stopAnimTimer();
+			if (lblIcon) {
+				lblIcon->stopAnimTimer();
+			}
 			break;
 
 #ifdef UNICODE
@@ -2654,7 +2487,7 @@ INT_PTR RP_ShellPropSheetExt_Private::DlgProc_WM_NOTIFY(HWND hDlg, NMHDR *pHdr)
  */
 INT_PTR RP_ShellPropSheetExt_Private::DlgProc_WM_PAINT(HWND hDlg)
 {
-	if (!hbmpBanner && !hbmpIconFrames[0]) {
+	if (!lblBanner && !lblIcon) {
 		// Nothing to draw...
 		return false;
 	}
@@ -2662,28 +2495,20 @@ INT_PTR RP_ShellPropSheetExt_Private::DlgProc_WM_PAINT(HWND hDlg)
 	PAINTSTRUCT ps;
 	HDC hdc = BeginPaint(hDlg, &ps);
 
-	// Memory DC for BitBlt.
-	HDC hdcMem = CreateCompatibleDC(hdc);
+	// TODO: Check paint rectangles?
+	// TODO: Share the memory DC between lblBanner and lblIcon?
 
 	// Draw the banner.
-	if (hbmpBanner) {
-		SelectBitmap(hdcMem, hbmpBanner);
-		BitBlt(hdc, ptBanner.x, ptBanner.y,
-			szBanner.cx, szBanner.cy,
-			hdcMem, 0, 0, SRCCOPY);
+	if (lblBanner) {
+		lblBanner->draw(hdc);
 	}
 
 	// Draw the icon.
-	if (hbmpIconFrames[last_frame_number]) {
-		SelectBitmap(hdcMem, hbmpIconFrames[last_frame_number]);
-		BitBlt(hdc, rectIcon.left, rectIcon.top,
-			szIcon.cx, szIcon.cy,
-			hdcMem, 0, 0, SRCCOPY);
+	if (lblIcon) {
+		lblIcon->draw(hdc);
 	}
 
-	DeleteDC(hdcMem);
 	EndPaint(hDlg, &ps);
-
 	return true;
 }
 
@@ -2767,8 +2592,10 @@ INT_PTR CALLBACK RP_ShellPropSheetExt_Private::DlgProc(HWND hDlg, UINT uMsg, WPA
 			// We can close the RomData's underlying IRpFile now.
 			d->romData->close();
 
-			// Start the animation timer.
-			d->startAnimTimer();
+			// Start the icon animation timer.
+			if (d->lblIcon) {
+				d->lblIcon->startAnimTimer();
+			}
 
 			// Continue normal processing.
 			break;
@@ -2777,9 +2604,9 @@ INT_PTR CALLBACK RP_ShellPropSheetExt_Private::DlgProc(HWND hDlg, UINT uMsg, WPA
 		case WM_DESTROY: {
 			RP_ShellPropSheetExt_Private *const d = static_cast<RP_ShellPropSheetExt_Private*>(
 				GetProp(hDlg, RP_ShellPropSheetExt_Private::D_PTR_PROP));
-			if (d) {
+			if (d && d->lblIcon) {
 				// Stop the animation timer.
-				d->stopAnimTimer();
+				d->lblIcon->stopAnimTimer();
 			}
 
 			// FIXME: Remove D_PTR_PROP from child windows.
@@ -2829,16 +2656,11 @@ INT_PTR CALLBACK RP_ShellPropSheetExt_Private::DlgProc(HWND hDlg, UINT uMsg, WPA
 			// Reinitialize the alternate row color.
 			d->colorAltRow = LibWin32Common::getAltRowColor();
 			// Invalidate the banner and icon rectangles.
-			if (d->hbmpBanner) {
-				const RECT rectBitmap = {
-					d->ptBanner.x, d->ptBanner.y,
-					d->ptBanner.x + d->szBanner.cx,
-					d->ptBanner.y + d->szBanner.cy,
-				};
-				InvalidateRect(d->hDlgSheet, &rectBitmap, false);
+			if (d->lblBanner) {
+				d->lblBanner->invalidateRect();
 			}
-			if (d->szIcon.cx > 0) {
-				InvalidateRect(d->hDlgSheet, &d->rectIcon, false);
+			if (d->lblIcon) {
+				d->lblIcon->invalidateRect();
 			}
 			break;
 		}
@@ -2955,47 +2777,6 @@ UINT CALLBACK RP_ShellPropSheetExt_Private::CallbackProc(HWND hWnd, UINT uMsg, L
 	}
 
 	return false;
-}
-
-/**
- * Animated icon timer.
- * @param hWnd
- * @param uMsg
- * @param idEvent
- * @param dwTime
- */
-void CALLBACK RP_ShellPropSheetExt_Private::AnimTimerProc(HWND hWnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime)
-{
-	if (hWnd == nullptr || idEvent == 0) {
-		// Not a valid timer procedure call...
-		// - hWnd should not be nullptr.
-		// - idEvent should be the 'd' pointer.
-		return;
-	}
-
-	RP_ShellPropSheetExt_Private *d =
-		reinterpret_cast<RP_ShellPropSheetExt_Private*>(idEvent);
-
-	// Next frame.
-	int delay = 0;
-	int frame = d->iconAnimHelper.nextFrame(&delay);
-	if (delay <= 0 || frame < 0) {
-		// Invalid frame...
-		KillTimer(hWnd, idEvent);
-		d->animTimerID = 0;
-		return;
-	}
-
-	if (frame != d->last_frame_number) {
-		// New frame number.
-		// Update the icon.
-		d->last_frame_number = frame;
-		InvalidateRect(d->hDlgSheet, &d->rectIcon, false);
-	}
-
-	// Update the timer.
-	// TODO: Verify that this affects the next callback.
-	SetTimer(hWnd, idEvent, delay, AnimTimerProc);
 }
 
 /**

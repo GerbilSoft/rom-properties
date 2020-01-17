@@ -6,6 +6,7 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+#include "stdafx.h"
 #include "config.librpbase.h"
 
 #include "RpImageLoader.hpp"
@@ -20,9 +21,6 @@ using LibRpTexture::rp_image;
 #ifdef HAVE_JPEG
 # include "RpJpeg.hpp"
 #endif /* HAVE_JPEG */
-
-// C includes. (C++ namespace)
-#include <cstring>
 
 namespace LibRpBase {
 

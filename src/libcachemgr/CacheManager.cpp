@@ -388,15 +388,14 @@ string CacheManager::download(
 
 	// Write the file.
 	file->write((void*)m_downloader->data(), m_downloader->dataSize());
+
+	// Save the original URL as an extended attribute.
+	// This will also set the mtime if it's available.
+	file->setOriginInfo(url, m_downloader->mtime());
+
+	// We're done here.
 	file->close();	// NOTE: May be redundant.
 	file->unref();
-
-	// Set the file's mtime if it was obtained by the downloader.
-	// TODO: IRpFile::set_mtime()?
-	time_t mtime = m_downloader->mtime();
-	if (mtime >= 0) {
-		set_mtime(cache_filename, mtime);
-	}
 
 	// Return the cache filename.
 	return cache_filename;
