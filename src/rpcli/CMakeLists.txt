@@ -57,11 +57,9 @@ ENDIF(MSVC)
 # Build the executable. #
 #########################
 
-IF(MSVC)
-	# Delay-load extlibs.
-	INCLUDE(../libwin32common/DelayLoadHelper.cmake)
-	SET_DELAY_LOAD_EXTLIB_FLAGS()
-ENDIF(MSVC)
+# Delay-load extlibs.
+INCLUDE(../libwin32common/DelayLoadHelper.cmake)
+SET_DELAY_LOAD_EXTLIB_FLAGS()
 
 ADD_EXECUTABLE(rpcli
 	${rom-properties-rpcli_PCH_SRC}
@@ -116,10 +114,8 @@ IF(MINGW)
 	SET(CMAKE_RC_FLAGS "${CMAKE_RC_FLAGS} -I \"${CMAKE_CURRENT_BINARY_DIR}\"")
 ENDIF(MINGW)
 
-# Delay-load some Windows system libraries.
-# TODO: MinGW delay-load?
 IF(MSVC)
-	SET(RP_SYS_DELAY_LOAD_FLAGS "/DELAYLOAD:wininet.dll")
+	# Extended delay-load functionality.
 	TARGET_LINK_LIBRARIES(rpcli PRIVATE delayimp)
 ENDIF(MSVC)
 
