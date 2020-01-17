@@ -146,9 +146,3 @@ TARGET_COMPILE_DEFINITIONS(SuperMagicDriveTest PRIVATE ${ZLIB_DEFINITIONS})
 DO_SPLIT_DEBUG(SuperMagicDriveTest)
 SET_WINDOWS_SUBSYSTEM(SuperMagicDriveTest CONSOLE)
 ADD_TEST(NAME SuperMagicDriveTest COMMAND SuperMagicDriveTest "--gtest_filter=-*benchmark*")
-
-# Delay-load shell32.dll to prevent a performance penalty due to gdi32.dll.
-# Reference: https://randomascii.wordpress.com/2018/12/03/a-not-called-function-can-cause-a-5x-slowdown/
-# This is also needed when disabling direct Win32k syscalls,
-# since loading gdi32.dll will crash in that case.
-ADD_DELAYLOAD_FLAGS(SuperMagicDriveTest shell32.dll)
