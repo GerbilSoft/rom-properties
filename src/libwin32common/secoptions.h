@@ -19,7 +19,7 @@ extern "C" {
  * rom-properties Windows executable initialization.
  * This sets various security options.
  * @param bHighSec If non-zero, enable high security for unprivileged processes.
- * @return 0 on success; non-zero on error.
+ * @return 0 on success; negative POSIX error code on error.
  */
 int rp_secoptions_init(BOOL bHighSec);
 

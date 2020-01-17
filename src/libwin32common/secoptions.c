@@ -10,6 +10,7 @@
 
 // C includes.
 #include <assert.h>
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -92,15 +93,20 @@ typedef BOOL (WINAPI *PFNSETPROCESSMITIGATIONPOLICY)(_In_ PROCESS_MITIGATION_POL
  * - https://github.com/chromium/chromium/blob/master/sandbox/win/src/process_mitigations.cc
  *
  * @param bHighSec If non-zero, enable high security for unprivileged processes.
- * @return 0 on success; non-zero on error.
+ * @return 0 on success; negative POSIX error code on error.
  */
 int rp_secoptions_init(BOOL bHighSec)
 {
+	OSVERSIONINFO osvi;
 	HMODULE hKernel32;
-	PFNSETPROCESSMITIGATIONPOLICY pfnSetProcessMitigationPolicy;
+	PFNHEAPSETINFORMATION pfnHeapSetInformation;
 	PFNSETDLLDIRECTORYW pfnSetDllDirectoryW;
 	PFNSETDEFAULTDLLDIRECTORIES pfnSetDefaultDllDirectories;
-	PFNHEAPSETINFORMATION pfnHeapSetInformation;
+#ifndef _WIN64
+	PFNSETPROCESSDEPPOLICY pfnSetProcessDEPPolicy;
+#endif /* _WIN64 */
+	PFNSETPROCESSMITIGATIONPOLICY pfnSetProcessMitigationPolicy;
+	BOOL bRet;
 
 #ifndef NDEBUG
 	// Make sure this function isn't called more than once.
@@ -118,160 +124,24 @@ int rp_secoptions_init(BOOL bHighSec)
 		return GetLastError();
 	}
 
-	// Check for SetProcessMitigationPolicy().
-	// If available, it supercedes many of these.
-	pfnSetProcessMitigationPolicy = (PFNSETPROCESSMITIGATIONPOLICY)GetProcAddress(hKernel32, "SetProcessMitigationPolicy");
-	if (pfnSetProcessMitigationPolicy) {
-#ifndef _WIN64
-		// DEP is always enabled on 64-bit for 64-bit programs.
-		// On 32-bit, we might have to enable it manually.
-
-		// Set DEP policy.
-		{
-			PROCESS_MITIGATION_DEP_POLICY dep = { 0 };
-			dep.Enable = TRUE;
-			dep.DisableAtlThunkEmulation = TRUE;
-			dep.Permanent = TRUE;
-			pfnSetProcessMitigationPolicy(ProcessDEPPolicy, &dep, sizeof(dep));
-		}
-#endif /* !_WIN64 */
-
-		// Set ASLR policy.
-		{
-			PROCESS_MITIGATION_ASLR_POLICY aslr = { 0 };
-			aslr.EnableBottomUpRandomization = TRUE;
-			aslr.EnableForceRelocateImages = TRUE;
-			aslr.EnableHighEntropy = TRUE;
-			aslr.DisallowStrippedImages = TRUE;
-			pfnSetProcessMitigationPolicy(ProcessASLRPolicy, &aslr, sizeof(aslr));
-		}
-
-		// Set dynamic code policy.
-		{
-			PROCESS_MITIGATION_DYNAMIC_CODE_POLICY dynamic_code = { 0 };
-			dynamic_code.ProhibitDynamicCode = TRUE;
-#if 0
-			// Added in Windows 10.0.14393 (v1607)
-			// TODO: Figure out how to detect the SDK build version.
-			dynamic_code.AllowThreadOptOut = 0;	// Win10
-			dynamic_code.AllowRemoteDowngrade = 0;	// Win10
-#endif
-			pfnSetProcessMitigationPolicy(ProcessDynamicCodePolicy,
-				&dynamic_code, sizeof(dynamic_code));
-		}
-
-		// Set strict handle check policy.
-		{
-			PROCESS_MITIGATION_STRICT_HANDLE_CHECK_POLICY strict_handle_check = { 0 };
-			strict_handle_check.RaiseExceptionOnInvalidHandleReference = TRUE;
-			strict_handle_check.HandleExceptionsPermanentlyEnabled = TRUE;
-			pfnSetProcessMitigationPolicy(ProcessStrictHandleCheckPolicy,
-				&strict_handle_check, sizeof(strict_handle_check));
-		}
-
-		// Set extension point disable policy.
-		// Extension point DLLs are some weird MFC-specific thing.
-		// https://msdn.microsoft.com/en-us/library/h5f7ck28.aspx
-		{
-			PROCESS_MITIGATION_EXTENSION_POINT_DISABLE_POLICY extension_point_disable = { 0 };
-			extension_point_disable.DisableExtensionPoints = TRUE;
-			pfnSetProcessMitigationPolicy(ProcessExtensionPointDisablePolicy,
-				&extension_point_disable, sizeof(extension_point_disable));
-		}
-
-		// Set image load policy.
-		{
-			PROCESS_MITIGATION_IMAGE_LOAD_POLICY image_load = { 0 };
-			image_load.NoRemoteImages = 0;	// TODO
-			image_load.NoLowMandatoryLabelImages = 1;
-			image_load.PreferSystem32Images = 1;
-			pfnSetProcessMitigationPolicy(ProcessImageLoadPolicy,
-				&image_load, sizeof(image_load));
-		}
-
-#if defined(_MSC_VER) && _MSC_VER >= 1900 && defined(_CONTROL_FLOW_GUARD)
-		// Set control flow guard policy.
-		// Requires MSVC 2015+ and /guard:cf.
-		{
-			PROCESS_MITIGATION_CONTROL_FLOW_GUARD_POLICY control_flow_guard = { 0 };
-			control_flow_guard.EnableControlFlowGuard = TRUE;
-
-			// TODO: Enable export suppression? May not be available on
-			// certain Windows versions, so if we enable it, fall back
-			// to not-enabled if it didn't work.
-			control_flow_guard.EnableExportSuppression = FALSE;
-			control_flow_guard.StrictMode = FALSE;
-
-			pfnSetProcessMitigationPolicy(ProcessControlFlowGuardPolicy,
-				&control_flow_guard, sizeof(control_flow_guard));
-		}
-#endif /* defined(_MSC_VER) && _MSC_VER >= 1900 && defined(_CONTROL_FLOW_GUARD) */
-
-		if (bHighSec) {
-			// High-security options that are useful for
-			// non-GUI applications, e.g. rp-download.
-
-			// Disable direct Win32k system call access.
-			// This prevents direct access to NTUser/GDI system calls.
-			// This is NOT usable in GUI applications.
-			// FIXME: On Win10 LTSC 1809, this is failing with ERROR_WRITE_PROTECT...
-			{
-				PROCESS_MITIGATION_SYSTEM_CALL_DISABLE_POLICY system_call_disable = { 0 };
-				system_call_disable.DisallowWin32kSystemCalls = TRUE;
-				//system_call_disable.AuditDisallowWin32kSystemCalls = FALSE;
-				pfnSetProcessMitigationPolicy(ProcessSystemCallDisablePolicy,
-					&system_call_disable, sizeof(system_call_disable));
-			}
-
-			// Disable loading non-system fonts.
-			{
-				PROCESS_MITIGATION_FONT_DISABLE_POLICY font_disable = { 0 };
-				font_disable.DisableNonSystemFonts = TRUE;
-				font_disable.AuditNonSystemFontLoading = FALSE;
-				pfnSetProcessMitigationPolicy(ProcessFontDisablePolicy,
-					&font_disable, sizeof(font_disable));
-			}
-		}
-	} else {
-		// Use the old functions if they're available.
-
-#ifndef _WIN64
-		// DEP is always enabled on 64-bit for 64-bit programs.
-		// On 32-bit, we might have to enable it manually.
-		PFNSETPROCESSDEPPOLICY pfnSetProcessDEPPolicy;
-
-		// Enable DEP/NX.
-		// NOTE: DEP/NX should be specified in the PE header
-		// using ld's --nxcompat, but we'll set it manually here,
-		// just in case the linker doesn't support it.
-
-		// SetProcessDEPPolicy() was added starting with Windows XP SP3.
-		pfnSetProcessDEPPolicy = (PFNSETPROCESSDEPPOLICY)GetProcAddress(hKernel32, "SetProcessDEPPolicy");
-		if (pfnSetProcessDEPPolicy) {
-			pfnSetProcessDEPPolicy(PROCESS_DEP_ENABLE | PROCESS_DEP_DISABLE_ATL_THUNK_EMULATION);
-		} else {
-			// SetProcessDEPPolicy() was not found.
-			// On Windows XP SP2, we can use NtSetInformationProcess.
-			// Reference: http://www.uninformed.org/?v=2&a=4
-			// FIXME: Do SetDllDirectory() first if available?
-			HMODULE hNtdll = LoadLibrary(_T("ntdll.dll"));
-			if (hNtdll) {
-				PFNNTSETINFORMATIONPROCESS pfnNtSetInformationProcess =
-					(PFNNTSETINFORMATIONPROCESS)GetProcAddress(hNtdll, "NtSetInformationProcess");
-				if (pfnNtSetInformationProcess) {
-					ULONG dep = MEM_EXECUTE_OPTION_DISABLE |
-					            MEM_EXECUTE_OPTION_PERMANENT;
-					pfnNtSetInformationProcess(GetCurrentProcess(),
-						ProcessExecuteFlags, &dep, sizeof(dep));
-				}
-				FreeLibrary(hNtdll);
-			}
-		}
-#endif /* !_WIN64 */
+	// GetVersionEx() should never fail...
+	osvi.dwOSVersionInfoSize = sizeof(osvi);
+	bRet = GetVersionEx(&osvi);
+	assert(bRet != 0);
+	if (!bRet) {
+		// GetVersionEx() failed somehow.
+		// Assume we're running Windows XP.
+		osvi.dwMajorVersion = 5;
+		osvi.dwMinorVersion = 1;
+		osvi.dwBuildNumber = 2600;
 	}
 
+	/** BEGIN: Windows XP/2003 **/
+
 	// Remove the current directory from the DLL search path.
-	pfnSetDllDirectoryW = (PFNSETDLLDIRECTORYW)GetProcAddress(hKernel32, "SetDllDirectoryW");
+	// TODO: Enable and test this.
+	pfnSetDllDirectoryW = (PFNSETDLLDIRECTORYW)
+		GetProcAddress(hKernel32, "SetDllDirectoryW");
 	if (pfnSetDllDirectoryW) {
 		//pfnSetDllDirectoryW(L"");
 	}
@@ -280,7 +150,9 @@ int rp_secoptions_init(BOOL bHighSec)
 	// The Delay-Load helper will handle bundled DLLs at runtime.
 	// NOTE: gdiplus.dll is not a "Known DLL", and since it isn't
 	// delay-loaded, it may be loaded from the application directory...
-	pfnSetDefaultDllDirectories = (PFNSETDEFAULTDLLDIRECTORIES)GetProcAddress(hKernel32, "SetDefaultDllDirectories");
+	// TODO: Enable and test this.
+	pfnSetDefaultDllDirectories = (PFNSETDEFAULTDLLDIRECTORIES)
+		GetProcAddress(hKernel32, "SetDefaultDllDirectories");
 	if (pfnSetDefaultDllDirectories) {
 		//pfnSetDefaultDllDirectories(LOAD_LIBRARY_SEARCH_SYSTEM32);
 	}
@@ -289,10 +161,172 @@ int rp_secoptions_init(BOOL bHighSec)
 	// NOTE: Parameter 2 is usually type enum HEAP_INFORMATION_CLASS,
 	// but this type isn't present in older versions of MinGW, so we're
 	// using int instead.
-	pfnHeapSetInformation = (PFNHEAPSETINFORMATION)GetProcAddress(hKernel32, "HeapSetInformation");
+	pfnHeapSetInformation = (PFNHEAPSETINFORMATION)
+		GetProcAddress(hKernel32, "HeapSetInformation");
 	if (pfnHeapSetInformation) {
 		// HeapEnableTerminationOnCorruption == 1
 		pfnHeapSetInformation(NULL, 1, NULL, 0);
+	}
+
+	// Enable DEP on 32-bit.
+	// DEP is always enabled on 64-bit for 64-bit programs,
+	// but on 32-bit, we might have to enable it manually.
+#ifndef _WIN64
+	// Enable DEP/NX.
+	// NOTE: DEP/NX should be specified in the PE header
+	// using ld's --nxcompat, but we'll set it manually here,
+	// just in case the linker doesn't support it.
+
+	// SetProcessDEPPolicy() was added starting with Windows XP SP3.
+	pfnSetProcessDEPPolicy = (PFNSETPROCESSDEPPOLICY)
+		GetProcAddress(hKernel32, "SetProcessDEPPolicy");
+	if (pfnSetProcessDEPPolicy) {
+		pfnSetProcessDEPPolicy(PROCESS_DEP_ENABLE | PROCESS_DEP_DISABLE_ATL_THUNK_EMULATION);
+	} else {
+		// SetProcessDEPPolicy() was not found.
+		// On Windows XP SP2, we can use NtSetInformationProcess.
+		// Reference: http://www.uninformed.org/?v=2&a=4
+		// FIXME: Do SetDllDirectory() first if available?
+		HMODULE hNtdll = LoadLibrary(_T("ntdll.dll"));
+		if (hNtdll) {
+			PFNNTSETINFORMATIONPROCESS pfnNtSetInformationProcess =
+				(PFNNTSETINFORMATIONPROCESS)GetProcAddress(hNtdll, "NtSetInformationProcess");
+			if (pfnNtSetInformationProcess) {
+				ULONG dep = MEM_EXECUTE_OPTION_DISABLE |
+				            MEM_EXECUTE_OPTION_PERMANENT;
+				pfnNtSetInformationProcess(GetCurrentProcess(),
+					ProcessExecuteFlags, &dep, sizeof(dep));
+			}
+			FreeLibrary(hNtdll);
+		}
+	}
+#endif /* !_WIN64 */
+
+	/** END: Windows XP/2003 **/
+	if (osvi.dwMajorVersion < 6) {
+		// We're done here.
+		return 0;
+	}
+
+	/** BEGIN: Windows Vista/7 **/
+
+	// TODO: Chromium has something for hardening the
+	// process integrity level policy.
+
+	/** END: Windows Vista/7 **/
+	if ((osvi.dwMajorVersion == 6 && osvi.dwMinorVersion < 2) ||
+	     osvi.dwMajorVersion < 7)
+	{
+		// We're done here.
+		return 0;
+	}
+
+	/** BEGIN: Windows 8 **/
+	// NOTE: Not separating out 8 vs. 8.1 vs. 10.
+
+	// Check for SetProcessMitigationPolicy().
+	// If available, it supercedes many of these.
+	pfnSetProcessMitigationPolicy = (PFNSETPROCESSMITIGATIONPOLICY)GetProcAddress(hKernel32, "SetProcessMitigationPolicy");
+	if (!pfnSetProcessMitigationPolicy) {
+		// SetProcessMitigationPolicy not found...
+		return -ENOENT;
+	}
+
+	// Set ASLR policy.
+	{
+		PROCESS_MITIGATION_ASLR_POLICY aslr = { 0 };
+		aslr.EnableBottomUpRandomization = TRUE;
+		aslr.EnableForceRelocateImages = TRUE;
+		aslr.EnableHighEntropy = TRUE;
+		aslr.DisallowStrippedImages = TRUE;
+		pfnSetProcessMitigationPolicy(ProcessASLRPolicy, &aslr, sizeof(aslr));
+	}
+
+	// Set dynamic code policy.
+	{
+		PROCESS_MITIGATION_DYNAMIC_CODE_POLICY dynamic_code = { 0 };
+		dynamic_code.ProhibitDynamicCode = TRUE;
+#if 0
+		// Added in Windows 10.0.14393 (v1607)
+		// TODO: Figure out how to detect the SDK build version.
+		dynamic_code.AllowThreadOptOut = 0;	// Win10
+		dynamic_code.AllowRemoteDowngrade = 0;	// Win10
+#endif
+		pfnSetProcessMitigationPolicy(ProcessDynamicCodePolicy,
+			&dynamic_code, sizeof(dynamic_code));
+	}
+
+	// Set strict handle check policy.
+	{
+		PROCESS_MITIGATION_STRICT_HANDLE_CHECK_POLICY strict_handle_check = { 0 };
+		strict_handle_check.RaiseExceptionOnInvalidHandleReference = TRUE;
+		strict_handle_check.HandleExceptionsPermanentlyEnabled = TRUE;
+		pfnSetProcessMitigationPolicy(ProcessStrictHandleCheckPolicy,
+			&strict_handle_check, sizeof(strict_handle_check));
+	}
+
+	// Set extension point disable policy.
+	// Extension point DLLs are some weird MFC-specific thing.
+	// https://msdn.microsoft.com/en-us/library/h5f7ck28.aspx
+	{
+		PROCESS_MITIGATION_EXTENSION_POINT_DISABLE_POLICY extension_point_disable = { 0 };
+		extension_point_disable.DisableExtensionPoints = TRUE;
+		pfnSetProcessMitigationPolicy(ProcessExtensionPointDisablePolicy,
+			&extension_point_disable, sizeof(extension_point_disable));
+	}
+
+	// Set image load policy.
+	{
+		PROCESS_MITIGATION_IMAGE_LOAD_POLICY image_load = { 0 };
+		image_load.NoRemoteImages = 0;	// TODO
+		image_load.NoLowMandatoryLabelImages = 1;
+		image_load.PreferSystem32Images = 1;
+		pfnSetProcessMitigationPolicy(ProcessImageLoadPolicy,
+			&image_load, sizeof(image_load));
+	}
+
+#if defined(_MSC_VER) && _MSC_VER >= 1900 && defined(_CONTROL_FLOW_GUARD)
+	// Set control flow guard policy.
+	// Requires MSVC 2015+ and /guard:cf.
+	{
+		PROCESS_MITIGATION_CONTROL_FLOW_GUARD_POLICY control_flow_guard = { 0 };
+		control_flow_guard.EnableControlFlowGuard = TRUE;
+
+		// TODO: Enable export suppression? May not be available on
+		// certain Windows versions, so if we enable it, fall back
+		// to not-enabled if it didn't work.
+		control_flow_guard.EnableExportSuppression = FALSE;
+		control_flow_guard.StrictMode = FALSE;
+
+		pfnSetProcessMitigationPolicy(ProcessControlFlowGuardPolicy,
+			&control_flow_guard, sizeof(control_flow_guard));
+	}
+#endif /* defined(_MSC_VER) && _MSC_VER >= 1900 && defined(_CONTROL_FLOW_GUARD) */
+
+	if (bHighSec) {
+		// High-security options that are useful for
+		// non-GUI applications, e.g. rp-download.
+
+		// Disable direct Win32k system call access.
+		// This prevents direct access to NTUser/GDI system calls.
+		// This is NOT usable in GUI applications.
+		// FIXME: On Win10 LTSC 1809, this is failing with ERROR_WRITE_PROTECT...
+		{
+			PROCESS_MITIGATION_SYSTEM_CALL_DISABLE_POLICY system_call_disable = { 0 };
+			system_call_disable.DisallowWin32kSystemCalls = TRUE;
+			//system_call_disable.AuditDisallowWin32kSystemCalls = FALSE;
+			pfnSetProcessMitigationPolicy(ProcessSystemCallDisablePolicy,
+				&system_call_disable, sizeof(system_call_disable));
+		}
+
+		// Disable loading non-system fonts.
+		{
+			PROCESS_MITIGATION_FONT_DISABLE_POLICY font_disable = { 0 };
+			font_disable.DisableNonSystemFonts = TRUE;
+			font_disable.AuditNonSystemFontLoading = FALSE;
+			pfnSetProcessMitigationPolicy(ProcessFontDisablePolicy,
+				&font_disable, sizeof(font_disable));
+		}
 	}
 
 	return 0;
