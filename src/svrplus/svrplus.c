@@ -467,7 +467,7 @@ typedef struct _ThreadParams {
 	HWND hWnd;		/**< Window that created the thread */
 	bool isUninstall;	/**< true if uninstalling */
 } ThreadParams;
-static ThreadParams threadParams = {nullptr, false};
+static ThreadParams threadParams = {NULL, false};
 
 /**
  * Worker thread procedure.
@@ -725,7 +725,7 @@ static void HandleInstallUninstall(HWND hDlg, bool isUninstall)
 		EnableButtons(hDlg, true);
 		DlgUpdateCursor();
 
-		threadParams.hWnd = nullptr;
+		threadParams.hWnd = NULL;
 		threadParams.isUninstall = false;
 		g_inProgress = false;
 	} else {
@@ -755,7 +755,7 @@ static INT_PTR CALLBACK DialogProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM l
 			DlgUpdateCursor();
 
 			g_inProgress = false;
-			threadParams.hWnd = nullptr;
+			threadParams.hWnd = NULL;
 			threadParams.isUninstall = false;
 			return TRUE;
 

@@ -12,8 +12,10 @@
 /**
  * We're compiling C code.
  * Provide replacements for C++ 2011 functionality.
+ *
+ * NOTE: Don't use nullptr in C code. Use NULL instead.
  */
-#define CXX11_COMPAT_NULLPTR
+/*#define CXX11_COMPAT_NULLPTR*/
 #define CXX11_COMPAT_CONSTEXPR
 #define CXX11_COMPAT_OVERRIDE
 #define CXX11_COMPAT_CHARTYPES

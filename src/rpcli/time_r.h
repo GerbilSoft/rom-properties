@@ -34,7 +34,7 @@ static inline struct tm *gmtime_r(const time_t *timep, struct tm *result)
 		*result = *tm;
 		return result;
 	}
-	return nullptr;
+	return NULL;
 #endif /* GMTIME_S */
 }
 #endif /* HAVE_GMTIME_R */
@@ -51,7 +51,7 @@ static inline struct tm *localtime_r(const time_t *timep, struct tm *result)
 		*result = *tm;
 		return result;
 	}
-	return nullptr;
+	return NULL;
 #endif /* HAVE_LOCALTIME_S */
 }
 #endif /* HAVE_LOCALTIME_R */

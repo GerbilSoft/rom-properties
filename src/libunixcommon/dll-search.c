@@ -265,7 +265,7 @@ static RP_Frontend get_active_de(void)
 		char *buf = strdup(xdg_current_desktop);
 		char *saveptr = NULL;
 		for (const char *token = strtok_r(buf, ":", &saveptr);
-		     token != nullptr; token = strtok_r(NULL, ":", &saveptr))
+		     token != NULL; token = strtok_r(NULL, ":", &saveptr))
 		{
 			RP_Frontend ret = check_xdg_desktop_name(token);
 			if (ret < RP_FE_MAX) {
