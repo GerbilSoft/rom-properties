@@ -22,7 +22,7 @@ int rp_download_os_secure(void)
 	IntegrityLevel level;
 
 	// Set Win32 security options.
-	secoptions_init(TRUE);
+	rp_secoptions_init(TRUE);
 
 	// Check the process integrity level.
 	// TODO: If it's higher than low, relaunch the program with low integrity if supported.

@@ -11,6 +11,7 @@ CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/config.libwin32common.h.in" "${CMAKE
 
 # Sources and headers.
 SET(libwin32common_SRCS
+	secoptions.c
 	wmain.c
 	DialogBuilder.cpp
 	RegKey.cpp

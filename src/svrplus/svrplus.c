@@ -864,7 +864,7 @@ int CALLBACK wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 	((void)hPrevInstance);
 
 	// Set Win32 security options.
-	secoptions_init(FALSE);
+	rp_secoptions_init(FALSE);
 
 	// Check if another instance of svrplus is already running.
 	// References:
