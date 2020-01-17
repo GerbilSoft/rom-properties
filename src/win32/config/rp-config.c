@@ -112,7 +112,7 @@ int CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 	RP_UNUSED(hPrevInstance);
 
 	// Set Win32 security options.
-	secoptions_init();
+	secoptions_init(TRUE);
 
 	// Check if another instance of rp-config is already running.
 	// References:

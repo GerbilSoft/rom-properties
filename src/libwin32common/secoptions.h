@@ -72,16 +72,19 @@ typedef BOOL (WINAPI *PFNSETPROCESSMITIGATIONPOLICY)(_In_ PROCESS_MITIGATION_POL
 #endif /* !INLINE */
 
 /**
- * libromdata Windows executable initialization.
+ * rom-properties Windows executable initialization.
  * This sets various security options.
- * Reference: http://msdn.microsoft.com/en-us/library/bb430720.aspx
+ * References:
+ * - https://msdn.microsoft.com/en-us/library/bb430720.aspx
+ * - https://chromium.googlesource.com/chromium/src/+/441d852dbcb7b9b31328393c7e31562b1e268399/sandbox/win/src/process_mitigations.cc
+ * - https://chromium.googlesource.com/chromium/src/+/refs/heads/master/sandbox/win/src/process_mitigations.cc
+ * - https://github.com/chromium/chromium/blob/master/sandbox/win/src/process_mitigations.cc
  *
  * @param bHighSec If non-zero, enable high security for unprivileged processes.
  * @return 0 on success; non-zero on error.
  */
-static INLINE int secoptions_init(void)
+static INLINE int secoptions_init(BOOL bHighSec)
 {
-	BOOL bHighSec = FALSE;	// TODO: Move back to a parameter.
 	HMODULE hKernel32;
 	PFNSETPROCESSMITIGATIONPOLICY pfnSetProcessMitigationPolicy;
 	PFNSETDLLDIRECTORYW pfnSetDllDirectoryW;
@@ -108,86 +111,81 @@ static INLINE int secoptions_init(void)
 	// If available, it supercedes many of these.
 	pfnSetProcessMitigationPolicy = (PFNSETPROCESSMITIGATIONPOLICY)GetProcAddress(hKernel32, "SetProcessMitigationPolicy");
 	if (pfnSetProcessMitigationPolicy) {
-		union {
-			// TODO: Some of these need further investigation.
-			DWORD flags;
-			PROCESS_MITIGATION_DEP_POLICY dep;
-			PROCESS_MITIGATION_ASLR_POLICY aslr;
-			PROCESS_MITIGATION_DYNAMIC_CODE_POLICY dynamic_code;
-			PROCESS_MITIGATION_STRICT_HANDLE_CHECK_POLICY strict_handle_check;
-			PROCESS_MITIGATION_SYSTEM_CALL_DISABLE_POLICY system_call_disable;
-			PROCESS_MITIGATION_EXTENSION_POINT_DISABLE_POLICY extension_point_disable;
-			PROCESS_MITIGATION_CONTROL_FLOW_GUARD_POLICY control_flow_guard;	// MSVC 2015+: /guard:cf
-			//PROCESS_MITIGATION_BINARY_SIGNATURE_POLICY binary_signature;
-			PROCESS_MITIGATION_FONT_DISABLE_POLICY font_disable;
-			PROCESS_MITIGATION_IMAGE_LOAD_POLICY image_load;
-		} policy;
-		// Most of these are 4 bytes, except for
-		// PROCESS_MITIGATION_DEP_POLICY, which is 8.
-		static_assert(sizeof(policy) == 8, "sizeof(policy) != 8");
-
 		// Set DEP policy.
-		policy.flags = 0;
-		policy.dep.Enable = 1;
-		policy.dep.DisableAtlThunkEmulation = 1;
-		policy.dep.Permanent = TRUE;
-		pfnSetProcessMitigationPolicy(ProcessDEPPolicy,
-			&policy.dep, sizeof(policy.dep));
+		{
+			PROCESS_MITIGATION_DEP_POLICY dep = { 0 };
+			dep.Enable = TRUE;
+			dep.DisableAtlThunkEmulation = TRUE;
+			dep.Permanent = TRUE;
+			pfnSetProcessMitigationPolicy(ProcessDEPPolicy, &dep, sizeof(dep));
+		}
 
 		// Set ASLR policy.
-		policy.flags = 0;
-		policy.aslr.EnableBottomUpRandomization = 1;
-		policy.aslr.EnableForceRelocateImages = 1;
-		policy.aslr.EnableHighEntropy = 1;
-		policy.aslr.DisallowStrippedImages = 1;
-		pfnSetProcessMitigationPolicy(ProcessASLRPolicy,
-			&policy.aslr, sizeof(policy.aslr));
+		{
+			PROCESS_MITIGATION_ASLR_POLICY aslr = { 0 };
+			aslr.EnableBottomUpRandomization = TRUE;
+			aslr.EnableForceRelocateImages = TRUE;
+			aslr.EnableHighEntropy = TRUE;
+			aslr.DisallowStrippedImages = TRUE;
+			pfnSetProcessMitigationPolicy(ProcessASLRPolicy, &aslr, sizeof(aslr));
+		}
 
 		// Set dynamic code policy.
-		policy.flags = 0;
-		policy.dynamic_code.ProhibitDynamicCode = 1;
+		{
+			PROCESS_MITIGATION_DYNAMIC_CODE_POLICY dynamic_code = { 0 };
+			dynamic_code.ProhibitDynamicCode = TRUE;
 #if 0
-		// Added in Windows 10.0.14393 (v1607)
-		// TODO: Figure out how to detect the SDK build version.
-		policy.dynamic_code.AllowThreadOptOut = 0;	// Win10
-		policy.dynamic_code.AllowRemoteDowngrade = 0;	// Win10
+			// Added in Windows 10.0.14393 (v1607)
+			// TODO: Figure out how to detect the SDK build version.
+			dynamic_code.AllowThreadOptOut = 0;	// Win10
+			dynamic_code.AllowRemoteDowngrade = 0;	// Win10
 #endif
-		pfnSetProcessMitigationPolicy(ProcessDynamicCodePolicy,
-			&policy.dynamic_code, sizeof(policy.dynamic_code));
+			pfnSetProcessMitigationPolicy(ProcessDynamicCodePolicy,
+				&dynamic_code, sizeof(dynamic_code));
+		}
 
 		// Set strict handle check policy.
-		policy.flags = 0;
-		policy.strict_handle_check.RaiseExceptionOnInvalidHandleReference = 1;
-		policy.strict_handle_check.HandleExceptionsPermanentlyEnabled = 1;
-		pfnSetProcessMitigationPolicy(ProcessStrictHandleCheckPolicy,
-			&policy.strict_handle_check, sizeof(policy.strict_handle_check));
+		{
+			PROCESS_MITIGATION_STRICT_HANDLE_CHECK_POLICY strict_handle_check = { 0 };
+			strict_handle_check.RaiseExceptionOnInvalidHandleReference = TRUE;
+			strict_handle_check.HandleExceptionsPermanentlyEnabled = TRUE;
+			pfnSetProcessMitigationPolicy(ProcessStrictHandleCheckPolicy,
+				&strict_handle_check, sizeof(strict_handle_check));
+		}
 
 		// Set extension point disable policy.
 		// Extension point DLLs are some weird MFC-specific thing.
 		// https://msdn.microsoft.com/en-us/library/h5f7ck28.aspx
-		policy.flags = 0;
-		policy.extension_point_disable.DisableExtensionPoints = 1;
-		pfnSetProcessMitigationPolicy(ProcessExtensionPointDisablePolicy,
-			&policy.extension_point_disable, sizeof(policy.extension_point_disable));
+		{
+			PROCESS_MITIGATION_EXTENSION_POINT_DISABLE_POLICY extension_point_disable = { 0 };
+			extension_point_disable.DisableExtensionPoints = TRUE;
+			pfnSetProcessMitigationPolicy(ProcessExtensionPointDisablePolicy,
+				&extension_point_disable, sizeof(extension_point_disable));
+		}
 
 		// Set image load policy.
-		policy.flags = 0;
-		policy.image_load.NoRemoteImages = 0;	// TODO
-		policy.image_load.NoLowMandatoryLabelImages = 1;
-		policy.image_load.PreferSystem32Images = 1;
-		pfnSetProcessMitigationPolicy(ProcessImageLoadPolicy,
-			&policy.image_load, sizeof(policy.image_load));
+		{
+			PROCESS_MITIGATION_IMAGE_LOAD_POLICY image_load = { 0 };
+			image_load.NoRemoteImages = 0;	// TODO
+			image_load.NoLowMandatoryLabelImages = 1;
+			image_load.PreferSystem32Images = 1;
+			pfnSetProcessMitigationPolicy(ProcessImageLoadPolicy,
+				&image_load, sizeof(image_load));
+		}
 
-#if defined(_MSC_VER) && _MSC_VER >= 1900
+#if defined(_MSC_VER) && _MSC_VER >= 1900 && defined(_CONTROL_FLOW_GUARD)
 		// Set control flow guard policy.
+		// Requires MSVC 2015+ and /guard:cf.
 		// TODO: Enable export suppression? May not be available on
 		// certain Windows versions, so if we enable it, fall back
 		// to not-enabled if it didn't work.
-		policy.flags = 0;
-		policy.control_flow_guard.EnableControlFlowGuard = 1;
-		pfnSetProcessMitigationPolicy(ProcessControlFlowGuardPolicy,
-			&policy.control_flow_guard, sizeof(policy.control_flow_guard));
-#endif /* defined(_MSC_VER) && _MSC_VER >= 1900 */
+		{
+			PROCESS_MITIGATION_CONTROL_FLOW_GUARD_POLICY control_flow_guard = { 0 };
+			control_flow_guard.EnableControlFlowGuard = TRUE;
+			pfnSetProcessMitigationPolicy(ProcessControlFlowGuardPolicy,
+				&control_flow_guard, sizeof(control_flow_guard));
+		}
+#endif /* defined(_MSC_VER) && _MSC_VER >= 1900 && defined(_CONTROL_FLOW_GUARD) */
 
 		if (bHighSec) {
 			// High-security options that are useful for
@@ -196,17 +194,22 @@ static INLINE int secoptions_init(void)
 			// Disable direct Win32k system call access.
 			// This prevents direct access to NTUser/GDI system calls.
 			// This is NOT usable in GUI applications.
-			policy.flags = 0;
-			policy.system_call_disable.DisallowWin32kSystemCalls = 1;
-			pfnSetProcessMitigationPolicy(ProcessSystemCallDisablePolicy,
-				&policy.system_call_disable, sizeof(policy.system_call_disable));
+			// FIXME: On Win10 LTSC 1809, this is failing with ERROR_WRITE_PROTECT...
+			{
+				PROCESS_MITIGATION_SYSTEM_CALL_DISABLE_POLICY system_call_disable = { 0 };
+				system_call_disable.DisallowWin32kSystemCalls = TRUE;
+				pfnSetProcessMitigationPolicy(ProcessSystemCallDisablePolicy,
+					&system_call_disable, sizeof(system_call_disable));
+			}
 
 			// Disable loading non-system fonts.
-			policy.flags = 0;
-			policy.font_disable.DisableNonSystemFonts = 1;
-			policy.font_disable.AuditNonSystemFontLoading = 0;
-			pfnSetProcessMitigationPolicy(ProcessFontDisablePolicy,
-				&policy.font_disable, sizeof(policy.font_disable));
+			{
+				PROCESS_MITIGATION_FONT_DISABLE_POLICY font_disable = { 0 };
+				font_disable.DisableNonSystemFonts = TRUE;
+				font_disable.AuditNonSystemFontLoading = FALSE;
+				pfnSetProcessMitigationPolicy(ProcessFontDisablePolicy,
+					&font_disable, sizeof(font_disable));
+			}
 		}
 	} else {
 		// Use the old functions if they're available.

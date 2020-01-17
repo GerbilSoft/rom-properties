@@ -28,8 +28,10 @@ int RP_C_API wmain(int argc, wchar_t *argv[])
 	char **u8argv;
 	int i, ret;
 
-	// Set Win32 security options.
-	secoptions_init();
+	// Win32 security options will be set by main(), since
+	// some programs will want to enable high-security mode
+	// while others won't.
+	//secoptions_init(FALSE);
 
 	// Convert the UTF-16 arguments to UTF-8.
 	// NOTE: Using WideCharToMultiByte() directly in order to

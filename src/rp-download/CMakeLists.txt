@@ -72,6 +72,12 @@ TARGET_INCLUDE_DIRECTORIES(rp-download
 IF(WIN32)
 	TARGET_LINK_LIBRARIES(rp-download PRIVATE win32common)
 	TARGET_LINK_LIBRARIES(rp-download PRIVATE wininet advapi32)
+	# Delay-load shell32.dll to prevent a performance penalty due to gdi32.dll.
+	# Reference: https://randomascii.wordpress.com/2018/12/03/a-not-called-function-can-cause-a-5x-slowdown/
+	# This is also needed when disabling direct Win32k syscalls,
+	# since loading gdi32.dll will crash in that case.
+	INCLUDE(../libwin32common/DelayLoadHelper.cmake)
+	ADD_DELAYLOAD_FLAGS(rp-download shell32.dll)
 ELSE(WIN32)
 	TARGET_LINK_LIBRARIES(rp-download PRIVATE ${CURL_LIBRARIES})
 ENDIF(WIN32)
