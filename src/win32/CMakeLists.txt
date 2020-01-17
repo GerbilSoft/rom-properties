@@ -123,8 +123,8 @@ ENDIF(ENABLE_PCH)
 
 IF(MSVC)
 	# Delay-load sources.
-	SET(rom-properties-win32-DELAY_LOAD_SRC ../libwin32common/DelayLoadHelper.c)
-	SET(rom-properties-win32-DELAY_LOAD_H ../libwin32common/DelayLoadHelper.h)
+	SET(rom-properties-win32-DELAYLOAD_SRC ../libwin32common/DelayLoadHelper.c)
+	SET(rom-properties-win32-DELAYLOAD_H ../libwin32common/DelayLoadHelper.h)
 ENDIF(MSVC)
 
 #####################
@@ -137,7 +137,7 @@ ADD_SUBDIRECTORY(config)
 
 # Delay-load extlibs.
 INCLUDE(../libwin32common/DelayLoadHelper.cmake)
-SET_DELAY_LOAD_EXTLIB_FLAGS()
+SET_DELAYLOAD_EXTLIB_FLAGS()
 
 # FIXME: Build both Win32 and Win64 DLLs?
 # NOTE: MODULE results in the .dll being placed in
@@ -145,7 +145,7 @@ SET_DELAY_LOAD_EXTLIB_FLAGS()
 # TODO: Disable building of import libraries.
 ADD_LIBRARY(rom-properties SHARED
 	${rom-properties-win32_PCH_SRC} ${rom-properties-win32_PCH_H}
-	${rom-properties-win32-DELAY_LOAD_SRC} ${rom-properties-win32-DELAY_LOAD_H}
+	${rom-properties-win32-DELAYLOAD_SRC} ${rom-properties-win32-DELAYLOAD_H}
 	${rom-properties-win32_SRCS} ${rom-properties-win32_H}
 	${rom-properties-win32-PropKey_SRCS} ${rom-properties-win32-PropKey_H}
 	${rom-properties-win32_CRYPTO_SRCS} ${rom-properties-win32_CRYPTO_H}

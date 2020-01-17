@@ -49,8 +49,8 @@ IF(MSVC)
 	SET(rom-properties-rpcli_PCH_H stdafx.h)
 
 	# Delay-load sources.
-	SET(rom-properties-rpcli-DELAY_LOAD_SRC ../libwin32common/DelayLoadHelper.c)
-	SET(rom-properties-rpcli-DELAY_LOAD_H ../libwin32common/DelayLoadHelper.h)
+	SET(rom-properties-rpcli-DELAYLOAD_SRC ../libwin32common/DelayLoadHelper.c)
+	SET(rom-properties-rpcli-DELAYLOAD_H ../libwin32common/DelayLoadHelper.h)
 ENDIF(MSVC)
 
 #########################
@@ -59,13 +59,13 @@ ENDIF(MSVC)
 
 # Delay-load extlibs.
 INCLUDE(../libwin32common/DelayLoadHelper.cmake)
-SET_DELAY_LOAD_EXTLIB_FLAGS()
+SET_DELAYLOAD_EXTLIB_FLAGS()
 
 ADD_EXECUTABLE(rpcli
 	${rom-properties-rpcli_PCH_SRC}
 	${rom-properties-rpcli_PCH_H}
-	${rom-properties-rpcli-DELAY_LOAD_SRC}
-	${rom-properties-rpcli-DELAY_LOAD_H}
+	${rom-properties-rpcli-DELAYLOAD_SRC}
+	${rom-properties-rpcli-DELAYLOAD_H}
 	${rom-properties-rpcli_SRCS}
 	${rom-properties-rpcli_H}
 	${rom-properties-rpcli_RC}
