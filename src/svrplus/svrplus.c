@@ -2,8 +2,8 @@
  * ROM Properties Page shell extension installer. (svrplus)                *
  * svrplus.c: Win32 installer for rom-properties.                          *
  *                                                                         *
- * Copyright (c) 2017-2019 by Egor.                                        *
- * Copyright (c) 2017-2019 by David Korth.                                 *
+ * Copyright (c) 2017-2020 by Egor.                                        *
+ * Copyright (c) 2017-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -285,11 +285,11 @@ typedef enum {
  *
  * @param isUninstall [in] When true, uninstalls the DLL, instead of installing it.
  * @param is64        [in] When true, installs 64-bit version.
- * @param pHandle     [out,opt] Process handle.
+ * @param pHandle     [out] Process handle.
  * @param pErrorCode  [out,opt] Additional error code.
  * @return InstallServerResult
  */
-static InstallServerResult InstallServer(bool isUninstall, bool is64, HANDLE *pHandle, DWORD *pErrorCode)
+static InstallServerResult InstallServer(_In_ bool isUninstall, _In_ bool is64, _Outptr_ HANDLE *pHandle, _Out_ DWORD *pErrorCode)
 {
 	TCHAR regsvr32_path[MAX_PATH];
 	TCHAR args[14 + MAX_PATH + 4 + 3 + ARRAY_SIZE(str_rp64path)] = _T("regsvr32.exe \"");
@@ -358,11 +358,9 @@ static InstallServerResult InstallServer(bool isUninstall, bool is64, HANDLE *pH
 		return ISR_CREATEPROCESS_FAILED;
 	}
 
-	CloseHandle(pi.hThread);
-
-	*pHandle = pi.hProcess;
-
 	// The calles should wait for the process to exit.
+	CloseHandle(pi.hThread);
+	*pHandle = pi.hProcess;
 	return ISR_OK;
 }
 
@@ -946,7 +944,8 @@ BOOL GetMessageObjects(MSG *msg, struct MsgObjState *state)
 				}
 			} else {
 				if (bRet == 0) { // Quitting
-					for (DWORD i = 0; i < state->count; i++) {
+					DWORD i;
+					for (i = 0; i < state->count; i++) {
 						CloseHandle(state->handles[i]);
 					}
 					state->count = 0;
@@ -972,12 +971,14 @@ INT_PTR DialogLoop(HINSTANCE hInstance, LPCTSTR lpTemplateName, HWND hWndParent,
 	MSG msg;
 	BOOL bRet;
 	HWND hDlg;
+	struct MsgObjState state;
 
 	if (!(hDlg = CreateDialogParam(hInstance, lpTemplateName, hWndParent, lpDialogFunc, dwInitParam))) {
 		return -1;
 	}
 
-	struct MsgObjState state = { hDlg };
+	memset(&state, 0, sizeof(state));
+	state.hWnd = hDlg;
 
 	while ((bRet = GetMessageObjects(&msg, &state)) != 0) {
 		if (bRet == -1) {
