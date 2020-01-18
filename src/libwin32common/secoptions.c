@@ -84,6 +84,116 @@ typedef BOOL (WINAPI *PFNHEAPSETINFORMATION)
 typedef BOOL (WINAPI *PFNSETPROCESSMITIGATIONPOLICY)(_In_ PROCESS_MITIGATION_POLICY MitigationPolicy, _In_ PVOID lpBuffer, _In_ SIZE_T dwLength);
 
 /**
+ * Harden the process's integrity level policy.
+ *
+ * References:
+ * - https://github.com/chromium/chromium/blob/4e88a3c4fa53bf4d3622d07fd13f3812d835e40f/sandbox/win/src/restricted_token_utils.cc
+ * - https://github.com/chromium/chromium/blob/master/sandbox/win/src/restricted_token_utils.cc
+ *
+ * @return 0 on success; GetLastError() on error.
+ */
+static DWORD HardenProcessIntegrityLevelPolicy(void)
+{
+	DWORD dwLastError;
+	DWORD nLengthNeeded;
+	HANDLE hToken;
+	char *pSecurityDescriptor = nullptr;
+
+	PACL sacl = NULL;
+	BOOL sacl_present = FALSE;
+	BOOL sacl_defaulted = FALSE;
+	DWORD dwAceIndex;
+
+	if (!OpenProcessToken(
+		GetCurrentProcess(),		// ProcessHandle
+		READ_CONTROL | WRITE_OWNER,	// DesiredAccess
+		&hToken))			// TokenHandle
+	{
+		// OpenProcessToken() failed.
+		return GetLastError();
+	}
+
+	// Get the object's security descriptor.
+	/** BEGIN: Chromium's GetObjectSecurityDescriptor() **/
+	GetKernelObjectSecurity(
+		hToken,				// Handle
+		LABEL_SECURITY_INFORMATION,	// RequestedInformation
+		NULL,				// pSecurityDescriptor
+		0,				// nLength
+		&nLengthNeeded);		// lpnLengthNeeded
+	dwLastError = GetLastError();
+	if (dwLastError != ERROR_INSUFFICIENT_BUFFER) {
+		// An unexpected error occurred.
+		return dwLastError;
+	}
+
+	pSecurityDescriptor = malloc(nLengthNeeded);
+	if (!pSecurityDescriptor) {
+		// malloc() failed.
+		dwLastError = ERROR_NOT_ENOUGH_MEMORY;
+		goto out;
+	}
+
+	if (!GetKernelObjectSecurity(
+		hToken,				// Handle
+		LABEL_SECURITY_INFORMATION,	// RequestedInformation
+		pSecurityDescriptor,		// pSecurityDescriptor
+		nLengthNeeded,			// nLength
+		&nLengthNeeded))		// lpnLengthNeeded
+	{
+		// Failed to get the security descriptor.
+		dwLastError = GetLastError();
+		goto out;
+	}
+
+	/** END: Chromium's GetObjectSecurityDescriptor() **/
+
+	// Get the System Access Control List.
+	if (!GetSecurityDescriptorSacl(
+		pSecurityDescriptor,	// pSecurityDescriptor
+		&sacl_present,		// lpbSaclPresent
+		&sacl,			// pSacl
+		&sacl_defaulted))	// lpbSaclDefaulted
+	{
+		// GetSecurityDescriptorSacl() failed.
+		dwLastError = GetLastError();
+		goto out;
+	}
+
+	for (dwAceIndex = 0; dwAceIndex < sacl->AceCount; ++dwAceIndex) {
+		PSYSTEM_MANDATORY_LABEL_ACE ace;
+		if (GetAce(sacl, dwAceIndex, &ace) &&
+		    ace->Header.AceType == SYSTEM_MANDATORY_LABEL_ACE_TYPE)
+		{
+			// Found the Mandatory Label ACE.
+			// TODO: Also NO_WRITE_UP?
+			// TODO: If the ACE wasn't found, skip SetKernelObjectSecurity()?
+			ace->Mask |= SYSTEM_MANDATORY_LABEL_NO_READ_UP |
+				     SYSTEM_MANDATORY_LABEL_NO_EXECUTE_UP;
+			break;
+		}
+	}
+
+	if (!SetKernelObjectSecurity(
+		hToken,				// Handle
+		LABEL_SECURITY_INFORMATION,	// SecurityInformation
+		pSecurityDescriptor))		// SecurityDescriptor
+	{
+		// SetKernelObjectSecurity() failed.
+		dwLastError = GetLastError();
+		goto out;
+	}
+
+	// Success!
+	dwLastError = 0;
+
+out:
+	free(pSecurityDescriptor);
+	CloseHandle(hToken);
+	return dwLastError;
+}
+
+/**
  * rom-properties Windows executable initialization.
  * This sets various security options.
  * References:
@@ -137,7 +247,6 @@ int rp_secoptions_init(BOOL bHighSec)
 	}
 
 	/** BEGIN: Windows XP/2003 **/
-
 	// Remove the current directory from the DLL search path.
 	// TODO: Enable and test this.
 	pfnSetDllDirectoryW = (PFNSETDLLDIRECTORYW)
@@ -202,26 +311,26 @@ int rp_secoptions_init(BOOL bHighSec)
 	}
 #endif /* !_WIN64 */
 
-	/** END: Windows XP/2003 **/
 	if (osvi.dwMajorVersion < 6) {
 		// We're done here.
 		return 0;
 	}
+	/** END: Windows XP/2003 **/
 
 	/** BEGIN: Windows Vista/7 **/
 
-	// TODO: Chromium has something for hardening the
-	// process integrity level policy.
+	// Harden the process's integrity level policy.
+	HardenProcessIntegrityLevelPolicy();
 
-	/** END: Windows Vista/7 **/
 	if ((osvi.dwMajorVersion == 6 && osvi.dwMinorVersion < 2) ||
 	     osvi.dwMajorVersion < 7)
 	{
 		// We're done here.
 		return 0;
 	}
+	/** END: Windows Vista/7 **/
 
-	/** BEGIN: Windows 8 **/
+	/** BEGIN: Windows 8/8.1/10 **/
 	// NOTE: Not separating out 8 vs. 8.1 vs. 10.
 
 	// Check for SetProcessMitigationPolicy().
@@ -328,6 +437,7 @@ int rp_secoptions_init(BOOL bHighSec)
 				&font_disable, sizeof(font_disable));
 		}
 	}
+	/** END: Windows 8/8.1/10 **/
 
 	return 0;
 }
