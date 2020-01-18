@@ -27,8 +27,11 @@
     DLL and into a separate executable. This will allow the downloading to be
     handled in a lower privilege environment.
     * Windows: On Vista and later, rp-download runs as a low-integrity process.
-      TODO before release: Add more security options; have rp-download drop
-      privileges if run directly.
+      * TODO before release:
+        * Add more security options.
+        * Have rp-download drop privileges if run directly.
+        * If rp-download.exe isn't in the current directory, check the
+          architecture-specific subdirectory.
     * Linux: TODO: Need to set up apparmor, possibly libseccomp.
   * Windows: The online database code has been rewritten to use WinInet
     directly instead of urlmon, which reduces overhead.
