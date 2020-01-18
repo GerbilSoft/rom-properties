@@ -14,8 +14,11 @@
 # error SetFileOriginInfo_posix.cpp is for POSIX systems, not Windows.
 #endif /* _WIN32 */
 
-// TODO: Read rom-properties.conf for storeFileOriginInfo.
-//#include "../config/Config.hpp"
+// libunixcommon
+#include "libunixcommon/userdirs.hpp"
+
+// INI parser.
+#include "ini.h"
 
 // C includes.
 #include <sys/time.h>
@@ -23,6 +26,10 @@
 
 // C includes. (C++ namespace)
 #include <cstring>
+
+// C++ includes.
+#include <string>
+using std::string;
 
 // xattrs
 #if defined(HAVE_FSETXATTR_LINUX)
@@ -47,7 +54,67 @@ static inline int fsetxattr(int fd, const char *name, const void *value, size_t 
 
 namespace RpDownload {
 
-/** File properties (NON-VIRTUAL) **/
+/**
+ * Process a configuration line.
+ * @param user Pointer to bool for StoreFileOriginInfo.
+ * @param section Section.
+ * @param name Key.
+ * @param value Value.
+ * @return 1 to continue; 0 to stop processing.
+ */
+static int processConfigLine(void *user, const char *section, const char *name, const char *value)
+{
+	if (!strcasecmp(section, "Downloads") &&
+	    !strcasecmp(name, "StoreFileOriginInfo"))
+	{
+		// Found the key.
+		// Parse the value.
+		if (!strcasecmp(value, _T("false")) || !strcmp(value, "0")) {
+			// Disabled.
+			*(bool*)user = false;
+			return 0;
+		} else {
+			// Enabled.
+			*(bool*)user = true;
+			return 0;
+		}
+	}
+
+	// Not StoreFileOriginInfo. Keep going.
+	return 1;
+}
+
+/**
+ * Get the storeFileOriginInfo setting from rom-properties.conf.
+ *
+ * Default value is true.
+ *
+ * @return storeFileOriginInfo setting.
+ */
+static bool getStoreFileOriginInfo(void)
+{
+	static const bool default_value = true;
+
+	// Get the config filename.
+	// NOTE: Not cached, since rp-download downloads one file per run.
+	string conf_filename = LibUnixCommon::getConfigDirectory().c_str();
+	if (conf_filename.empty()) {
+		// Empty filename...
+		return default_value;
+	}
+	// Add a trailing slash if necessary.
+	if (conf_filename.at(conf_filename.size()-1) != DIR_SEP_CHR) {
+		conf_filename += DIR_SEP_CHR;
+	}
+	conf_filename += "rom-properties/rom-properties.conf";
+
+	// Parse the INI file.
+	// NOTE: We're stopping parsing once we find the config entry,
+	// so ignore the return value.
+	bool bValue = default_value;
+	ini_parse(conf_filename.c_str(), processConfigLine, &bValue);
+	return bValue;
+}
 
 /**
  * Set the file origin info.
@@ -71,11 +138,8 @@ int setFileOriginInfo(FILE *file, const TCHAR *url, time_t mtime)
 
 	// xattr reference: https://github.com/pkg/xattr
 
-	// TODO: Read rom-properties.conf.
-	// For now, assuming "always enabled".
-	//const Config *const config = Config::instance();
-	//const bool storeFileOriginInfo = config->storeFileOriginInfo();
-	static const bool storeFileOriginInfo = true;
+	// Check if storeFileOriginInfo is enabled.
+	const bool storeFileOriginInfo = getStoreFileOriginInfo();
 	if (storeFileOriginInfo) {
 #if defined(HAVE_FSETXATTR_LINUX) || defined(HAVE_EXTATTR_SET_FD)
 		// fsetxattr() [Linux version]

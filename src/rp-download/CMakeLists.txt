@@ -79,6 +79,7 @@ IF(WIN32)
 	INCLUDE(../libwin32common/DelayLoadHelper.cmake)
 	ADD_DELAYLOAD_FLAGS(rp-download shell32.dll)
 ELSE(WIN32)
+	TARGET_LINK_LIBRARIES(rp-download PRIVATE unixcommon inih)
 	TARGET_LINK_LIBRARIES(rp-download PRIVATE ${CURL_LIBRARIES})
 ENDIF(WIN32)
 

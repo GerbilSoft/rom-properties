@@ -18,11 +18,13 @@
 
 // libwin32common
 #include "libwin32common/RpWin32_sdk.h"
+#include "libwin32common/userdirs.hpp"
 #include "libwin32common/w32err.h"
 #include "libwin32common/w32time.h"
 
 // C includes.
 #include <sys/utime.h>
+#include "tcharx.h"
 
 // C++ includes.
 #include <string>
@@ -48,7 +50,7 @@ static inline string T2U8(const TCHAR *wcs)
 	}
 	cbMbs--;
  
-	char *mbs = static_cast<char*>(malloc(cbMbs));
+	char *mbs = static_cast<char*>(malloc(cbMbs * sizeof(char)));
 	WideCharToMultiByte(CP_UTF8, 0, wcs, -1, mbs, cbMbs, nullptr, nullptr);
 	s_ret.assign(mbs, cbMbs);
 	free(mbs);
@@ -56,8 +58,76 @@ static inline string T2U8(const TCHAR *wcs)
 }
 #else /* !UNICODE */
 // TODO: Convert ANSI to UTF-8?
-# define T2U8(mbs) (mbs)
+# define T2U8(tcs) (tcs)
 #endif /* UNICODE */
+
+/**
+ * Internal U82T() function.
+ * @param mbs UTF-8 string.
+ * @return TCHAR C++ string.
+ */
+#ifdef UNICODE
+static inline tstring U82T(const char *mbs)
+{
+	tstring ts_ret;
+
+	// NOTE: cchWcs includes the NULL terminator.
+	int cchWcs = MultiByteToWideChar(CP_UTF8, 0, mbs, -1, nullptr, 0);
+	if (cchWcs <= 1) {
+		return ts_ret;
+	}
+	cchWcs--;
+ 
+	wchar_t *wcs = static_cast<wchar_t*>(malloc(cchWcs * sizeof(wchar_t)));
+	MultiByteToWideChar(CP_UTF8, 0, mbs, -1, wcs, cchWcs);
+	ts_ret.assign(wcs, cchWcs);
+	free(wcs);
+	return ts_ret;
+}
+#else /* !UNICODE */
+// TODO: Convert UTF-8 to ANSI?
+# define U82T(mbs) (mbs)
+#endif /* UNICODE */
+
+/**
+ * Get the storeFileOriginInfo setting from rom-properties.conf.
+ *
+ * Default value is true.
+ *
+ * @return storeFileOriginInfo setting.
+ */
+static bool getStoreFileOriginInfo(void)
+{
+	static const bool default_value = true;
+	DWORD dwRet;
+	TCHAR szValue[64];
+
+	// Get the config filename.
+	// NOTE: Not cached, since rp-download downloads one file per run.
+	tstring conf_filename = U82T(LibWin32Common::getConfigDirectory().c_str());
+	if (conf_filename.empty()) {
+		// Empty filename...
+		return default_value;
+	}
+	// Add a trailing slash if necessary.
+	if (conf_filename.at(conf_filename.size()-1) != DIR_SEP_CHR) {
+		conf_filename += DIR_SEP_CHR;
+	}
+	conf_filename += _T("rom-properties\\rom-properties.conf");
+
+	dwRet = GetPrivateProfileString(_T("Downloads"), _T("StoreFileOriginInfo"),
+		NULL, szValue, _countof(szValue), conf_filename.c_str());
+
+	if ((dwRet == 5 && !_tcsicmp(szValue, _T("false"))) ||
+	    (dwRet == 1 && szValue[0] == _T('0')))
+	{
+		// Disabled.
+		return false;
+	}
+
+	// Other value. Assume enabled.
+	return true;
+}
 
 /**
  * Set the file origin info.
@@ -81,11 +151,8 @@ int setFileOriginInfo(FILE *file, const TCHAR *filename, const TCHAR *url, time_
 # error 32-bit time_t is not supported. Get a newer compiler.
 #endif
 
-	// TODO: Read rom-properties.conf.
-	// For now, assuming "always enabled".
-	//const Config *const config = Config::instance();
-	//const bool storeFileOriginInfo = config->storeFileOriginInfo();
-	static const bool storeFileOriginInfo = true;
+	// Check if storeFileOriginInfo is enabled.
+	const bool storeFileOriginInfo = getStoreFileOriginInfo();
 	if (storeFileOriginInfo) {
 		// Create an ADS named "Zone.Identifier".
 		// References:
