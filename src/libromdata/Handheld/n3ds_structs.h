@@ -406,7 +406,7 @@ typedef struct _N3DS_NCCH_Header_NoSig_t {
 	uint32_t magic;				// [0x100] 'NCCH' (big-endian)
 	uint32_t content_size;			// [0x104] Content size, in media units. (1 media unit = 512 bytes)
 	union {
-		uint64_t partition_id;		// [0x108] Partition ID.
+		N3DS_TitleID_LE_t title_id;	// [0x108] Title ID. (3dbrew lists this as "partition ID".)
 		struct {
 			uint8_t reserved[6];	// [0x108]
 			uint16_t sysversion;	// [0x10E] System Update version for update partitions.

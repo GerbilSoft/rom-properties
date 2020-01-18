@@ -96,7 +96,7 @@ NCCHReaderPrivate::NCCHReaderPrivate(NCCHReader *q,
 #ifdef ENABLE_DECRYPTION
 	// Byteswap the title ID. (It's used for the AES counter.)
 	// FIXME: Verify this on big-endian.
-	tid_be = __swab64(ncch_header.hdr.program_id.id);
+	tid_be = __swab64(ncch_header.hdr.title_id.id);
 
 	// Determine the keyset to use.
 	// NOTE: Assuming Retail by default. Will fall back to
