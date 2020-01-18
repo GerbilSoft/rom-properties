@@ -14,6 +14,12 @@ SET(svrplus_H resource.h)
 # Use the static CRT.
 INCLUDE(ConfigureMSVCRuntime)
 CONFIGURE_MSVC_RUNTIME(static MinSizeRel Release RelWithDebInfo)
+IF(MSVC)
+	# libwin32common links to the dynamic CRT.
+	# TODO: Make a separate libwin32common build for static CRT?
+	# TODO: Split the security options code into a separate library?
+	SET(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS_RELEASE} /NODEFAULTLIB:MSVCRT")
+ENDIF(MSVC)
 
 ADD_EXECUTABLE(svrplus ${svrplus_SRCS} ${svrplus_H})
 SET_TARGET_PROPERTIES(svrplus PROPERTIES PREFIX "")

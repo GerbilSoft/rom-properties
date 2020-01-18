@@ -6,6 +6,9 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+// NOTE: Using LocalAlloc()/LocalFree() here to prevent issues
+// mixing and matching static and dynamic CRT versions.
+
 #include "secoptions.h"
 
 // C includes.
@@ -127,7 +130,8 @@ static DWORD HardenProcessIntegrityLevelPolicy(void)
 		return dwLastError;
 	}
 
-	pSecurityDescriptor = malloc(nLengthNeeded);
+	pSecurityDescriptor = LocalAlloc(LMEM_FIXED, nLengthNeeded);
+	assert(pSecurityDescriptor != NULL);
 	if (!pSecurityDescriptor) {
 		// malloc() failed.
 		dwLastError = ERROR_NOT_ENOUGH_MEMORY;
@@ -188,7 +192,7 @@ static DWORD HardenProcessIntegrityLevelPolicy(void)
 	dwLastError = 0;
 
 out:
-	free(pSecurityDescriptor);
+	LocalFree(pSecurityDescriptor);
 	CloseHandle(hToken);
 	return dwLastError;
 }

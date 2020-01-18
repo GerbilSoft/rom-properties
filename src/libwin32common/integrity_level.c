@@ -6,6 +6,9 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+// NOTE: Using LocalAlloc()/LocalFree() here to prevent issues
+// mixing and matching static and dynamic CRT versions.
+
 #include "integrity_level.h"
 
 // C includes.
@@ -177,7 +180,8 @@ IntegrityLevel GetIntegrityLevel(void)
 		goto out;
 	}
 
-	pTIL = malloc(dwLengthNeeded);
+	pTIL = LocalAlloc(LMEM_FIXED, dwLengthNeeded);
+	assert(pTIL != NULL);
 	if (!pTIL) {
 		// malloc() failed.
 		goto out;
@@ -214,7 +218,7 @@ IntegrityLevel GetIntegrityLevel(void)
 	}
 
 out:
-	free(pTIL);
+	LocalFree(pTIL);
 	if (hToken) {
 		CloseHandle(hToken);
 	}
