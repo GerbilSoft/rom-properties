@@ -502,15 +502,19 @@ class RomFields
 		struct AFLD_PARAMS {
 			AFLD_PARAMS()
 				: flags(0), rows_visible(0)
+				, headers(nullptr), list_data(nullptr)
 			{
 				alignment.headers = 0;
 				alignment.data = 0;
+				mxd.icons = nullptr;
 			}
 			AFLD_PARAMS(unsigned int flags, int rows_visible)
 				: flags(flags), rows_visible(rows_visible)
+				, headers(nullptr), list_data(nullptr)
 			{
 				alignment.headers = 0;
 				alignment.data = 0;
+				mxd.icons = nullptr;
 			}
 
 			// Formatting

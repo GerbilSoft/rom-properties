@@ -123,8 +123,8 @@ ENDIF(ENABLE_PCH)
 
 IF(MSVC)
 	# Delay-load sources.
-	SET(rom-properties-win32-DELAY_LOAD_SRC ../libwin32common/DelayLoadHelper.c)
-	SET(rom-properties-win32-DELAY_LOAD_H ../libwin32common/DelayLoadHelper.h)
+	SET(rom-properties-win32-DELAYLOAD_SRC ../libwin32common/DelayLoadHelper.c)
+	SET(rom-properties-win32-DELAYLOAD_H ../libwin32common/DelayLoadHelper.h)
 ENDIF(MSVC)
 
 #####################
@@ -135,11 +135,9 @@ ENDIF(MSVC)
 # NOTE: This must be *before* including the DelayLoad flags.
 ADD_SUBDIRECTORY(config)
 
-IF(MSVC)
-	# Delay-load extlibs.
-	INCLUDE(../libwin32common/DelayLoadHelper.cmake)
-	SET_DELAY_LOAD_FLAGS()
-ENDIF(MSVC)
+# Delay-load extlibs.
+INCLUDE(../libwin32common/DelayLoadHelper.cmake)
+SET_DELAYLOAD_EXTLIB_FLAGS()
 
 # FIXME: Build both Win32 and Win64 DLLs?
 # NOTE: MODULE results in the .dll being placed in
@@ -147,7 +145,7 @@ ENDIF(MSVC)
 # TODO: Disable building of import libraries.
 ADD_LIBRARY(rom-properties SHARED
 	${rom-properties-win32_PCH_SRC} ${rom-properties-win32_PCH_H}
-	${rom-properties-win32-DELAY_LOAD_SRC} ${rom-properties-win32-DELAY_LOAD_H}
+	${rom-properties-win32-DELAYLOAD_SRC} ${rom-properties-win32-DELAYLOAD_H}
 	${rom-properties-win32_SRCS} ${rom-properties-win32_H}
 	${rom-properties-win32-PropKey_SRCS} ${rom-properties-win32-PropKey_H}
 	${rom-properties-win32_CRYPTO_SRCS} ${rom-properties-win32_CRYPTO_H}
@@ -174,7 +172,7 @@ TARGET_INCLUDE_DIRECTORIES(rom-properties
 		$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/..>
 		$<BUILD_INTERFACE:${CMAKE_BINARY_DIR}>
 	)
-TARGET_LINK_LIBRARIES(rom-properties PRIVATE cachemgr romdata rpbase rpthreads win32common)
+TARGET_LINK_LIBRARIES(rom-properties PRIVATE romdata rpbase rpthreads win32common)
 IF(ENABLE_NLS)
 	TARGET_LINK_LIBRARIES(rom-properties PRIVATE i18n)
 ENDIF(ENABLE_NLS)
@@ -209,17 +207,11 @@ IF(MINGW)
 	SET(CMAKE_RC_FLAGS "${CMAKE_RC_FLAGS} -I \"${CMAKE_CURRENT_BINARY_DIR}\"")
 ENDIF(MINGW)
 
-# Delay-load some Windows system libraries.
-# TODO: MinGW delay-load?
-IF(MSVC)
-	SET(RP_SYS_DELAY_LOAD_FLAGS "/DELAYLOAD:urlmon.dll /DELAYLOAD:wininet.dll")
-	TARGET_LINK_LIBRARIES(rom-properties PRIVATE delayimp)
-ENDIF(MSVC)
-
 # Use the .def file for DLL exports.
-# Also add delay-load flags here. (TODO: MinGW?)
 IF(MSVC)
-	SET(RP_DLL_FLAGS "${RP_SYS_DELAY_LOAD_FLAGS} /DEF:${CMAKE_CURRENT_SOURCE_DIR}/rom-properties.def")
+	SET(RP_DLL_FLAGS "/DEF:${CMAKE_CURRENT_SOURCE_DIR}/rom-properties.def")
+	# Extended delay-load functionality.
+	TARGET_LINK_LIBRARIES(rom-properties PRIVATE delayimp)
 ELSEIF(MINGW)
 	# NOTE: Enabling stdcall fixups so we can use
 	# the same .def file for Win32 and Win64,

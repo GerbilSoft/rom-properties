@@ -1,5 +1,5 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (libcachemgr)                      *
+ * ROM Properties Page shell extension. (rp-download)                      *
  * IDownloader.cpp: Downloader interface.                                  *
  *                                                                         *
  * Copyright (c) 2016-2020 by David Korth.                                 *
@@ -14,9 +14,9 @@
 
 // C++ includes.
 #include <string>
-using std::string;
+using std::tstring;
 
-namespace LibCacheMgr {
+namespace RpDownload {
 
 IDownloader::IDownloader()
 	: m_mtime(-1)
@@ -26,7 +26,7 @@ IDownloader::IDownloader()
 	createUserAgent();
 }
 
-IDownloader::IDownloader(const char *url)
+IDownloader::IDownloader(const TCHAR *url)
 	: m_url(url)
 	, m_mtime(-1)
 	, m_inProgress(false)
@@ -35,7 +35,7 @@ IDownloader::IDownloader(const char *url)
 	createUserAgent();
 }
 
-IDownloader::IDownloader(const string &url)
+IDownloader::IDownloader(const tstring &url)
 	: m_url(url)
 	, m_mtime(-1)
 	, m_inProgress(false)
@@ -62,7 +62,7 @@ bool IDownloader::isInProgress(void) const
  * Get the current URL.
  * @return URL.
  */
-string IDownloader::url(void) const
+tstring IDownloader::url(void) const
 {
 	return m_url;
 }
@@ -71,7 +71,7 @@ string IDownloader::url(void) const
  * Set the URL.
  * @param url New URL.
  */
-void IDownloader::setUrl(const char *url)
+void IDownloader::setUrl(const TCHAR *url)
 {
 	assert(!m_inProgress);
 	// TODO: Don't set if m_inProgress?
@@ -82,7 +82,7 @@ void IDownloader::setUrl(const char *url)
  * Set the URL.
  * @param url New URL.
  */
-void IDownloader::setUrl(const string &url)
+void IDownloader::setUrl(const tstring &url)
 {
 	assert(!m_inProgress);
 	// TODO: Don't set if m_inProgress?
@@ -107,45 +107,6 @@ void IDownloader::setMaxSize(size_t maxSize)
 	assert(!m_inProgress);
 	// TODO: Don't set if m_inProgress?
 	m_maxSize = maxSize;
-}
-
-/** Proxy server functions. **/
-// NOTE: This is only useful for downloaders that
-// can't retrieve the system proxy server normally.
-
-/**
- * Get the proxy server.
- * @return Proxy server URL.
- */
-string IDownloader::proxyUrl(void) const
-{
-	return m_proxyUrl;
-}
-
-/**
- * Set the proxy server.
- * @param proxyUrl Proxy server URL. (Use nullptr or blank string for default settings.)
- */
-void IDownloader::setProxyUrl(const char *proxyUrl)
-{
-	assert(!m_inProgress);
-	// TODO: Don't set if m_inProgress?
-	if (proxyUrl) {
-		m_proxyUrl = proxyUrl;
-	} else {
-		m_proxyUrl.clear();
-	}
-}
-
-/**
- * Set the proxy server.
- * @param proxyUrl Proxy server URL. (Use blank string for default settings.)
- */
-void IDownloader::setProxyUrl(const string &proxyUrl)
-{
-	assert(!m_inProgress);
-	// TODO: Don't set if m_inProgress?
-	m_proxyUrl = proxyUrl;
 }
 
 /** Data accessors. **/
@@ -193,7 +154,7 @@ void IDownloader::clear(void)
 void IDownloader::createUserAgent(void)
 {
 	m_userAgent.reserve(256);
-	m_userAgent = "rom-properties/" RP_VERSION_STRING;
+	m_userAgent = _T("rom-properties/") _T(RP_VERSION_STRING);
 
 	// CPU
 #if defined(_M_ARM64) || defined(__aarch64__)
@@ -228,42 +189,42 @@ void IDownloader::createUserAgent(void)
 #ifdef _WIN32
 	// TODO: OS version number.
 	// For now, assuming "Windows NT".
-	m_userAgent += " (Windows NT";
+	m_userAgent += _T(" (Windows NT");
 # ifndef NO_CPU
-	m_userAgent += "; ";
+	m_userAgent += _T("; ");
 #  ifdef _WIN64
-	m_userAgent += "Win64; ";
+	m_userAgent += _T("Win64; ");
 #  endif /* _WIN64 */
-	m_userAgent += CPU ")";
+	m_userAgent += _T(CPU) _T(")");
 # endif /* !NO_CPU */
 
 #elif defined(__linux__)
 	// TODO: Kernel version and/or lsb_release?
-	m_userAgent += " (Linux " CPU ")";
+	m_userAgent += _T(" (Linux ") _T(CPU) _T(")");
 #elif defined(__FreeBSD__)
 	// TODO: Distribution version?
-	m_userAgent += " (FreeBSD " CPU ")";
+	m_userAgent += _T(" (FreeBSD ") _T(CPU) _T(")");
 #elif defined(__NetBSD__)
 	// TODO: Distribution version?
-	m_userAgent += " (NetBSD " CPU ")";
+	m_userAgent += _T(" (NetBSD ") _T(CPU) _T(")");
 #elif defined(__OpenBSD__)
 	// TODO: Distribution version?
-	m_userAgent += " (OpenBSD " CPU ")";
+	m_userAgent += _T(" (OpenBSD ") _T(CPU) _T(")");
 #elif defined(__bsdi__)
 	// TODO: Distribution version?
-	m_userAgent += " (BSDi " CPU ")";
+	m_userAgent += _T(" (BSDi ") _T(CPU) _T(")");
 #elif defined(__DragonFly__)
 	// TODO: Distribution version?
-	m_userAgent += " (DragonFlyBSD " CPU ")";
+	m_userAgent += _T(" (DragonFlyBSD ") _T(CPU) _T(")");
 #elif defined(__APPLE__)
 	// TODO: OS version?
-	m_userAgent += " (Macintosh; " MAC_CPU " Mac OS X)";
+	m_userAgent += _T(" (Macintosh; ") _T(MAC_CPU) _T(" Mac OS X)");
 #elif defined(__unix__)
 	// Generic UNIX fallback.
-	m_userAgent += " (Unix " CPU ")";
+	m_userAgent += _T(" (Unix ") _T(CPU) _T(")");
 #else
 	// Unknown OS...
-	m_userAgent += " (Unknown " CPU ")";
+	m_userAgent += _T(" (Unknown ") _T(CPU) _T(")");
 #endif
 }
 

@@ -1,8 +1,8 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (libromdata/tests)                 *
+ * ROM Properties Page shell extension. (libcachecommon/tests)             *
  * FilterCacheKeyTest.cpp: CacheManager::filterCacheKey() test.            *
  *                                                                         *
- * Copyright (c) 2016-2017 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -12,14 +12,14 @@
 // libromdata
 #include "librpbase/TextFuncs.hpp"
 
-// Cache Manager
-#include "../CacheManager.hpp"
+// libcachecommon
+#include "../CacheKeys.hpp"
 
 // C++ includes.
 #include <string>
 using std::string;
 
-namespace LibCacheMgr { namespace Tests {
+namespace LibCacheCommon { namespace Tests {
 
 struct FilterCacheKeyTest_mode
 {
@@ -67,7 +67,26 @@ TEST_P(FilterCacheKeyTest, filterCacheKey)
 {
 	const FilterCacheKeyTest_mode &mode = GetParam();
 
-	string keyFiltered = CacheManager::filterCacheKey(mode.keyOrig);
+	string keyFiltered = mode.keyOrig;
+	int ret = LibCacheCommon::filterCacheKey(keyFiltered);
+
+	// If it starts with certain invalid characters, we should expect -EINVAL.
+	// Otherwise, we'll expect 0.
+	if (mode.keyOrig[0] == '/' ||
+	    mode.keyOrig[0] == '\\' ||
+	    mode.keyOrig[0] == '.' ||
+	    mode.keyOrig[1] == ':')
+	{
+		EXPECT_EQ(-EINVAL, ret);
+		return;
+	}
+
+	// Expecting success.
+	EXPECT_EQ(0, ret);
+	if (ret != 0) {
+		return;
+	}
+
 #ifdef _WIN32
 	EXPECT_EQ(mode.keyFilteredWin32, keyFiltered);
 #else /* !_WIN32 */
@@ -147,7 +166,7 @@ INSTANTIATE_TEST_CASE_P(CacheManagerTest, FilterCacheKeyTest,
  */
 extern "C" int gtest_main(int argc, char *argv[])
 {
-	fprintf(stderr, "LibCacheMgr test suite: CacheManager::filterCacheKey() tests.\n\n");
+	fprintf(stderr, "LibCacheCommon test suite: LibCacheCommon::filterCacheKey() tests.\n\n");
 	fflush(nullptr);
 
 	// coverity[fun_call_w_exception]: uncaught exceptions cause nonzero exit anyway, so don't warn.

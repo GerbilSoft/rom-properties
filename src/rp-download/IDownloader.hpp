@@ -1,13 +1,13 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (libcachemgr)                      *
+ * ROM Properties Page shell extension. (rp-download)                      *
  * IDownloader.hpp: Downloader interface.                                  *
  *                                                                         *
  * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBCACHEMGR_IDOWNLOADER_HPP__
-#define __ROMPROPERTIES_LIBCACHEMGR_IDOWNLOADER_HPP__
+#ifndef __ROMPROPERTIES_RP_DOWNLOAD_IDOWNLOADER_HPP__
+#define __ROMPROPERTIES_RP_DOWNLOAD_IDOWNLOADER_HPP__
 
 // librpbase
 #include "librpbase/common.h"
@@ -26,14 +26,17 @@
 // Reference: http://andreoffringa.org/?q=uvector
 #include "uvector.h"
 
-namespace LibCacheMgr {
+// tcharx
+#include "tcharx.h"
+
+namespace RpDownload {
 
 class IDownloader
 {
 	public:
 		IDownloader();
-		explicit IDownloader(const char *url);
-		explicit IDownloader(const std::string &url);
+		explicit IDownloader(const TCHAR *url);
+		explicit IDownloader(const std::tstring &url);
 		virtual ~IDownloader();
 
 	private:
@@ -52,19 +55,19 @@ class IDownloader
 		 * Get the current URL.
 		 * @return URL.
 		 */
-		std::string url(void) const;
+		std::tstring url(void) const;
 
 		/**
 		 * Set the URL.
 		 * @param url New URL.
 		 */
-		void setUrl(const char *url);
+		void setUrl(const TCHAR *url);
 
 		/**
 		 * Set the URL.
 		 * @param url New URL.
 		 */
-		void setUrl(const std::string &url);
+		void setUrl(const std::tstring &url);
 
 		/**
 		 * Get the maximum buffer size. (0 == unlimited)
@@ -77,29 +80,6 @@ class IDownloader
 		 * @param maxSize Maximum buffer size.
 		 */
 		void setMaxSize(size_t maxSize);
-
-	public:
-		/** Proxy server functions. **/
-		// NOTE: This is only useful for downloaders that
-		// can't retrieve the system proxy server normally.
-
-		/**
-		 * Get the proxy server.
-		 * @return Proxy server URL.
-		 */
-		std::string proxyUrl(void) const;
-
-		/**
-		 * Set the proxy server.
-		 * @param proxyUrl Proxy server URL. (Use nullptr or blank string for default settings.)
-		 */
-		void setProxyUrl(const char *proxyUrl);
-
-		/**
-		 * Set the proxy server.
-		 * @param proxyUrl Proxy server URL. (Use blank string for default settings.)
-		 */
-		void setProxyUrl(const std::string &proxyUrl);
 
 	public:
 		/** Data accessors. **/
@@ -141,8 +121,7 @@ class IDownloader
 		void createUserAgent(void);
 
 	protected:
-		std::string m_url;
-		std::string m_proxyUrl;
+		std::tstring m_url;
 
 		// Uninitialized vector class.
 		// Reference: http://andreoffringa.org/?q=uvector
@@ -155,9 +134,9 @@ class IDownloader
 		size_t m_maxSize;	// Maximum buffer size. (0 == unlimited)
 
 		// User-Agent.
-		std::string m_userAgent;
+		std::tstring m_userAgent;
 };
 
 }
 
-#endif /* __ROMPROPERTIES_LIBCACHEMGR_CURLDOWNLOADER_HPP__ */
+#endif /* __ROMPROPERTIES_RP_DOWNLOAD_IDOWNLOADER_HPP__ */

@@ -17,6 +17,9 @@
 // MSVCRT-specific
 #include <process.h>
 
+// stdbool
+#include "stdboolx.h"
+
 // libwin32common
 #include "libwin32common/RpWin32_sdk.h"
 #include "libwin32common/secoptions.h"
@@ -47,19 +50,8 @@
  * Reference: http://stackoverflow.com/questions/8018843/macro-definition-array-size
  */
 #define ARRAY_SIZE(x) \
-	((int)(((sizeof(x) / sizeof(x[0]))) / \
-		(size_t)(!(sizeof(x) % sizeof(x[0])))))
-
-// TODO: Move to our own stdboolx.h file.
-#ifndef __cplusplus
-# if defined(_MSC_VER) && _MSC_VER >= 1800
-#  include <stdbool.h>
-# else
-typedef unsigned char bool;
-#  define true 1
-#  define false 0
-# endif
-#endif /* __cplusplus */
+	(((sizeof(x) / sizeof(x[0]))) / \
+		(size_t)(!(sizeof(x) % sizeof(x[0]))))
 
 // File paths
 static const TCHAR str_rp32path[] = _T("i386\\rom-properties.dll");
@@ -108,8 +100,8 @@ static RECT rectStatus1_icon;
 static void ShowStatusMessage(HWND hDlg, const TCHAR *line1, const TCHAR *line2, UINT uType)
 {
 	HICON hIcon;
-	int sw_status;
 	const RECT *rect;
+	int sw_status;
 
 	HWND const hStaticIcon = GetDlgItem(hDlg, IDC_STATIC_ICON);
 	HWND const hStatus1 = GetDlgItem(hDlg, IDC_STATIC_STATUS1);
@@ -294,6 +286,7 @@ static InstallServerResult InstallServer(bool isUninstall, bool is64, DWORD *pEr
 	STARTUPINFO si;
 	PROCESS_INFORMATION pi;
 	DWORD status;
+	BOOL bRet;
 
 	// Determine the REGSVR32 path.
 	int ret = GetSystemDirFilePath(regsvr32_path, ARRAY_SIZE(regsvr32_path), _T("regsvr32.exe"), is64);
@@ -334,7 +327,19 @@ static InstallServerResult InstallServer(bool isUninstall, bool is64, DWORD *pEr
 	memset(&pi, 0, sizeof(pi));
 	si.cb = sizeof(si);
 
-	if (!CreateProcess(regsvr32_path, args, NULL, NULL, FALSE, 0, NULL, NULL, &si, &pi)) {
+	bRet = CreateProcess(
+		regsvr32_path,		// lpApplicationName
+		args,			// lpCommandLine
+		NULL,			// lpProcessAttributes
+		NULL,			// lpThreadAttributes
+		FALSE,			// bInheritHandles
+		CREATE_NO_WINDOW,	// dwCreationFlags
+		NULL,			// lpEnvironment
+		NULL,			// lpCurrentDirectory
+		&si,			// lpStartupInfo
+		&pi);			// lpProcessInformation
+
+	if (!bRet) {
 		if (pErrorCode) {
 			*pErrorCode = GetLastError();
 		}
@@ -343,9 +348,15 @@ static InstallServerResult InstallServer(bool isUninstall, bool is64, DWORD *pEr
 
 	// Wait for the process to exit.
 	WaitForSingleObject(pi.hProcess, INFINITE);
-	GetExitCodeProcess(pi.hProcess, &status);
-	CloseHandle(pi.hProcess);
+	bRet = GetExitCodeProcess(pi.hProcess, &status);
 	CloseHandle(pi.hThread);
+	CloseHandle(pi.hProcess);
+
+	if (!bRet) {
+		// GetExitCodeProcess() failed.
+		// Assume the process is still active.
+		return ISR_PROCESS_STILL_ACTIVE;
+	}
 
 	switch (status) {
 		case STILL_ACTIVE:
@@ -793,7 +804,7 @@ static INT_PTR CALLBACK DialogProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM l
 				case NM_CLICK:
 				case NM_RETURN: {
 					const NMLINK *pNMLink;
-					int ret;
+					INT_PTR ret;
 
 					if (pHdr->idFrom != IDC_STATIC_STATUS2)
 						break;
@@ -804,12 +815,12 @@ static INT_PTR CALLBACK DialogProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM l
 					// - https://msdn.microsoft.com/en-us/library/windows/desktop/bb762153(v=vs.85).aspx
 					// - https://blogs.msdn.microsoft.com/oldnewthing/20061108-05/?p=29083
 					pNMLink = (const NMLINK*)pHdr;
-					ret = (int)(INT_PTR)ShellExecute(NULL, _T("open"), pNMLink->item.szUrl, NULL, NULL, SW_SHOW);
+					ret = (INT_PTR)ShellExecute(NULL, _T("open"), pNMLink->item.szUrl, NULL, NULL, SW_SHOW);
 					if (ret <= 32) {
 						// ShellExecute() failed.
 						TCHAR err[128];
 						TCHAR itot_buf[_MAX_ITOSTR_BASE10_COUNT];
-						_itot_s(ret, itot_buf, ARRAY_SIZE(itot_buf), 10);
+						_itot_s((int)ret, itot_buf, ARRAY_SIZE(itot_buf), 10);
 						_tcscpy_s(err, ARRAY_SIZE(err),
 							_T("Could not open the URL.\n\n")
 							_T("Win32 error code: "));
@@ -853,7 +864,7 @@ int CALLBACK wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 	((void)hPrevInstance);
 
 	// Set Win32 security options.
-	secoptions_init();
+	rp_secoptions_init(FALSE);
 
 	// Check if another instance of svrplus is already running.
 	// References:
@@ -893,6 +904,7 @@ int CALLBACK wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 	} else {
 		BOOL bWow;
 		if (!pfnIsWow64Process(GetCurrentProcess(), &bWow)) {
+			CloseHandle(hSingleInstanceMutex);
 			DebugBreak();
 			return EXIT_FAILURE;
 		}

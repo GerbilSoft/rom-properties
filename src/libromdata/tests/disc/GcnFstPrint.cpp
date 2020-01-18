@@ -43,7 +43,7 @@ int RP_C_API main(int argc, char *argv[])
 {
 #ifdef _WIN32
 	// Set Win32 security options.
-	secoptions_init();
+	rp_secoptions_init(TRUE);
 #endif /* _WIN32 */
 
 	// Set the C and C++ locales.

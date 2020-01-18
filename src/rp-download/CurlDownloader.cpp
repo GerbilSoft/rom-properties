@@ -1,5 +1,5 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (libcachemgr)                      *
+ * ROM Properties Page shell extension. (rp-download)                      *
  * CurlDownloader.cpp: libcurl-based file downloader.                      *
  *                                                                         *
  * Copyright (c) 2016-2020 by David Korth.                                 *
@@ -22,17 +22,17 @@ using std::string;
 // cURL for network access.
 #include <curl/curl.h>
 
-namespace LibCacheMgr {
+namespace RpDownload {
 
 CurlDownloader::CurlDownloader()
 	: super()
 { }
 
-CurlDownloader::CurlDownloader(const char *url)
+CurlDownloader::CurlDownloader(const TCHAR *url)
 	: super(url)
 { }
 
-CurlDownloader::CurlDownloader(const string &url)
+CurlDownloader::CurlDownloader(const tstring &url)
 	: super(url)
 { }
 
@@ -56,7 +56,6 @@ size_t CurlDownloader::write_data(char *ptr, size_t size, size_t nmemb, void *us
 
 	if (curlDL->m_maxSize > 0) {
 		// Maximum buffer size is set.
-		// TODO: Check Content-Length header before receiving anything?
 		if (vec->size() + len > curlDL->m_maxSize) {
 			// Out of memory.
 			return 0;
@@ -121,6 +120,9 @@ size_t CurlDownloader::parse_header(char *ptr, size_t size, size_t nitems, void 
 		if (*endptr != '\0' && !ISSPACE(*endptr)) {
 			// Content-Length is invalid.
 			return 0;
+		} else if (fileSize <= 0) {
+			// Content-Length is too small.
+			return 0;
 		} else if (curlDL->m_maxSize > 0 &&
 			   fileSize > (int64_t)curlDL->m_maxSize)
 		{
@@ -177,10 +179,8 @@ int CurlDownloader::download(void)
 		return -1;	// TODO: Better error?
 	}
 
-	// Proxy settings.
-	if (!m_proxyUrl.empty()) {
-		curl_easy_setopt(curl, CURLOPT_PROXY, m_proxyUrl.c_str());
-	}
+	// Proxy settings should be set by the calling application
+	// in the http_proxy and https_proxy variables.
 
 	// TODO: Send a HEAD request first?
 
@@ -206,9 +206,9 @@ int CurlDownloader::download(void)
 	// Set timeouts to ensure we don't take forever.
 	// TODO: User configuration?
 	// - Connect timeout: 2 seconds.
-	// - Total timeout: 20 seconds.
+	// - Total timeout: 10 seconds.
 	curl_easy_setopt(curl, CURLOPT_CONNECTTIMEOUT, 2);
-	curl_easy_setopt(curl, CURLOPT_TIMEOUT, 20);
+	curl_easy_setopt(curl, CURLOPT_TIMEOUT, 10);
 
 	// Set the User-Agent.
 	curl_easy_setopt(curl, CURLOPT_USERAGENT, m_userAgent.c_str());

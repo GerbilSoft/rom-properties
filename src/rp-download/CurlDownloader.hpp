@@ -1,24 +1,24 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (libcachemgr)                      *
+ * ROM Properties Page shell extension. (rp-download)                      *
  * CurlDownloader.hpp: libcurl-based file downloader.                      *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBCACHEMGR_CURLDOWNLOADER_HPP__
-#define __ROMPROPERTIES_LIBCACHEMGR_CURLDOWNLOADER_HPP__
+#ifndef __ROMPROPERTIES_RP_DOWNLOAD_CURLDOWNLOADER_HPP__
+#define __ROMPROPERTIES_RP_DOWNLOAD_CURLDOWNLOADER_HPP__
 
 #include "IDownloader.hpp"
 
-namespace LibCacheMgr {
+namespace RpDownload {
 
 class CurlDownloader : public IDownloader
 {
 	public:
 		CurlDownloader();
-		explicit CurlDownloader(const char *url);
-		explicit CurlDownloader(const std::string &url);
+		explicit CurlDownloader(const TCHAR *url);
+		explicit CurlDownloader(const std::tstring &url);
 
 	private:
 		typedef IDownloader super;
@@ -55,4 +55,4 @@ class CurlDownloader : public IDownloader
 
 }
 
-#endif /* __ROMPROPERTIES_LIBCACHEMGR_CURLDOWNLOADER_HPP__ */
+#endif /* __ROMPROPERTIES_RP_DOWNLOAD_CURLDOWNLOADER_HPP__ */

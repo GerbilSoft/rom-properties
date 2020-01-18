@@ -78,7 +78,7 @@ string RomDataPrivate::getURL_GameTDB(
 	const char *region, const char *gameID,
 	const char *ext)
 {
-	return rp_sprintf("http://art.gametdb.com/%s/%s/%s/%s%s",
+	return rp_sprintf("https://art.gametdb.com/%s/%s/%s/%s%s",
 		system, type, region, gameID, ext);
 }
 

@@ -27,6 +27,21 @@
 # define min(x, y) ((x) < (y) ? (x) : (y))
 #endif
 
+// bit_scan_forward
+#ifdef _MSC_VER
+#include <intrin.h>
+static __inline unsigned char bit_scan_forward(uint32_t v, uint32_t* out_first_set_index) {
+	return _BitScanForward((unsigned long*)(out_first_set_index), v) != 0;
+}
+#else /* !_MSC_VER */
+#include <strings.h>
+static inline unsigned char bit_scan_forward(uint32_t v, uint32_t* out_first_set_index) {
+	int i = ffs(v);
+	*out_first_set_index = i - 1;
+	return i != 0;
+}
+#endif /* _MSC_VER */
+
 typedef struct mspack_memory_file_t {
   struct mspack_system sys;
   void* buffer;
@@ -97,21 +112,16 @@ void mspack_memory_sys_destroy(struct mspack_system* sys) { free(sys); }
 int lzx_decompress(const void* lzx_data, size_t lzx_len, void* dest,
                    size_t dest_len, uint32_t window_size, void* window_data,
                    size_t window_data_len) {
-  uint32_t window_bits = 0;
-  uint32_t temp_sz = window_size;
-  size_t m;
   int result_code = 1;
+  uint32_t window_bits;
 
   struct mspack_system* sys;
   mspack_memory_file* lzxsrc;
   mspack_memory_file* lzxdst;
   struct lzxd_stream* lzxd;
 
-  for (m = 0; m < 32; m++, window_bits++) {
-    temp_sz >>= 1;
-    if (temp_sz == 0x00000000) {
-      break;
-    }
+  if (!bit_scan_forward(window_size, &window_bits)) {
+    return result_code;
   }
 
   sys = mspack_memory_sys_create();
@@ -123,10 +133,12 @@ int lzx_decompress(const void* lzx_data, size_t lzx_len, void* dest,
   if (lzxd) {
     if (window_data) {
       // zero the window and then copy window_data to the end of it
-      memset(lzxd->window, 0, window_data_len);
-      memcpy(lzxd->window + (window_size - window_data_len), window_data,
-                  window_data_len);
-      lzxd->ref_data_size = (uint32_t)window_data_len;
+      size_t padding_len = (size_t)window_size - window_data_len;
+      memset(&lzxd->window[0], 0, padding_len);
+      memcpy(&lzxd->window[padding_len], window_data, window_data_len);
+      // TODO(gibbed): should this be set regardless if source window data is
+      // available or not?
+      lzxd->ref_data_size = window_size;
     }
 
     result_code = lzxd_decompress(lzxd, (off_t)dest_len);

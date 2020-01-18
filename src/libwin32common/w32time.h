@@ -11,6 +11,9 @@
 
 #include "RpWin32_sdk.h"
 
+// C includes.
+#include <stdint.h>
+
 // Macros from MinGW-w64's gettimeofday.c.
 #define FILETIME_1970 116444736000000000LL	// Seconds between 1/1/1601 and 1/1/1970.
 #define HECTONANOSEC_PER_SEC 10000000LL

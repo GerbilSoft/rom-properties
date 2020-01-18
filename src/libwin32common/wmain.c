@@ -28,15 +28,22 @@ int RP_C_API wmain(int argc, wchar_t *argv[])
 	char **u8argv;
 	int i, ret;
 
-	// Set Win32 security options.
-	secoptions_init();
+	// Win32 security options will be set by main(), since
+	// some programs will want to enable high-security mode
+	// while others won't.
+	//rp_secoptions_init(FALSE);
 
 	// Convert the UTF-16 arguments to UTF-8.
 	// NOTE: Using WideCharToMultiByte() directly in order to
 	// avoid std::string overhead.
 	u8argv = malloc((argc+1)*sizeof(char*));
+	if (!u8argv) {
+		// Memory allocation failed.
+		return EXIT_FAILURE;
+	}
+
 	u8argv[argc] = NULL;
-	for (i = 0; i < argc; i++) {
+	for (i = argc-1; i >= 0; i--) {
 		int cbMbs = WideCharToMultiByte(CP_UTF8, 0, argv[i], -1, NULL, 0, NULL, NULL);
 		if (cbMbs <= 0) {
 			// Invalid string. Make it an empty string anyway.

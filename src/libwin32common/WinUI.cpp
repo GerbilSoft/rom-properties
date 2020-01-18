@@ -334,8 +334,8 @@ LRESULT CALLBACK MultiLineEditProc(
 			// References:
 			// - https://stackoverflow.com/questions/20876045/cricheditctrl-selects-all-text-when-it-gets-focus
 			// - https://stackoverflow.com/a/20884852
-			const DWORD code = static_cast<DWORD>(DefSubclassProc(hWnd, uMsg, wParam, lParam));
-			return (code & ~DLGC_HASSETSEL);
+			const LRESULT code = DefSubclassProc(hWnd, uMsg, wParam, lParam);
+			return (code & ~(LRESULT)DLGC_HASSETSEL);
 		}
 
 		case WM_NCDESTROY:
@@ -374,8 +374,8 @@ LRESULT CALLBACK SingleLineEditProc(
 			// References:
 			// - https://stackoverflow.com/questions/20876045/cricheditctrl-selects-all-text-when-it-gets-focus
 			// - https://stackoverflow.com/a/20884852
-			const DWORD code = static_cast<DWORD>(DefSubclassProc(hWnd, uMsg, wParam, lParam));
-			return (code & ~DLGC_HASSETSEL);
+			const LRESULT code = DefSubclassProc(hWnd, uMsg, wParam, lParam);
+			return (code & ~(LRESULT)DLGC_HASSETSEL);
 		}
 
 		case WM_NCDESTROY:

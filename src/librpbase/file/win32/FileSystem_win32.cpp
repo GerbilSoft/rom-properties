@@ -31,20 +31,9 @@ using std::wstring;
 #include "libwin32common/w32time.h"
 
 // Windows includes.
-#include <shlobj.h>
 #include <direct.h>
 
 namespace LibRpBase { namespace FileSystem {
-
-// pthread_once() control variable.
-static pthread_once_t once_control = PTHREAD_ONCE_INIT;
-
-// Configuration directories.
-
-// User's cache directory.
-static string cache_dir;
-// User's configuration directory.
-static string config_dir;
 
 #ifdef UNICODE
 /**
@@ -58,15 +47,16 @@ static inline wstring makeWinPath(const char *filename)
 	if (unlikely(!filename || filename[0] == 0))
 		return wstring();
 
+	// TODO: Don't bother if the filename is <= 240 characters?
 	wstring filenameW;
 	if (ISASCII(filename[0]) && ISALPHA(filename[0]) &&
 	    filename[1] == ':' && filename[2] == '\\')
 	{
-		// Absolute path. Prepend "\\?\" to the path.
+		// Absolute path. Prepend "\\\\?\\" to the path.
 		filenameW = L"\\\\?\\";
 		filenameW += U82W_c(filename);
 	} else {
-		// Not an absolute path, or "\\?\" is already
+		// Not an absolute path, or "\\\\?\\" is already
 		// prepended. Use it as-is.
 		filenameW = U82W_c(filename);
 	}
@@ -84,6 +74,7 @@ static inline wstring makeWinPath(const string &filename)
 	if (filename.empty())
 		return wstring();
 
+	// TODO: Don't bother if the filename is <= 240 characters?
 	wstring filenameW;
 	if (ISASCII(filename[0]) && ISALPHA(filename[0]) &&
 	    filename[1] == ':' && filename[2] == '\\')
@@ -167,7 +158,7 @@ int rmkdir(const string &path)
 	size_t slash_pos = 4;
 	while ((slash_pos = tpath.find(static_cast<char16_t>(DIR_SEP_CHR), slash_pos)) != string::npos) {
 		// Temporarily NULL out this slash.
-		tpath[slash_pos] = 0;
+		tpath[slash_pos] = _T('\0');
 
 		// Attempt to create this directory.
 		if (::_tmkdir(tpath.c_str()) != 0) {
@@ -211,103 +202,22 @@ int access(const string &pathname, int mode)
 int64_t filesize(const string &filename)
 {
 	const tstring tfilename = makeWinPath(filename);
-	struct _stati64 buf;
-	int ret = ::_tstati64(tfilename.c_str(), &buf);
+	struct _stati64 sb;
+	int ret = ::_tstati64(tfilename.c_str(), &sb);
 
 	if (ret != 0) {
 		// stat() failed.
 		ret = -errno;
 		if (ret == 0) {
 			// Something happened...
-			ret = -EINVAL;
+			ret = -EIO;
 		}
 
 		return ret;
 	}
 
 	// Return the file size.
-	return buf.st_size;
-}
-
-/**
- * Initialize the configuration directory paths.
- * Called by pthread_once().
- */
-static void initConfigDirectories(void)
-{
-	TCHAR path[MAX_PATH];
-	HRESULT hr;
-
-	/** Cache directory. **/
-
-	// Windows: Get CSIDL_LOCAL_APPDATA.
-	// - Windows XP: C:\Documents and Settings\username\Local Settings\Application Data
-	// - Windows Vista: C:\Users\username\AppData\Local
-	hr = SHGetFolderPath(nullptr, CSIDL_LOCAL_APPDATA,
-		nullptr, SHGFP_TYPE_CURRENT, path);
-	if (hr == S_OK) {
-		cache_dir = T2U8(path);
-		if (!cache_dir.empty()) {
-			// Add a trailing backslash if necessary.
-			if (cache_dir.at(cache_dir.size()-1) != '\\') {
-				cache_dir += '\\';
-			}
-
-			// Append "rom-properties\\cache".
-			cache_dir += "rom-properties\\cache";
-		}
-	}
-
-	/** Configuration directory. **/
-
-	// Windows: Get CSIDL_APPDATA.
-	// - Windows XP: C:\Documents and Settings\username\Application Data
-	// - Windows Vista: C:\Users\username\AppData\Roaming
-	hr = SHGetFolderPath(nullptr, CSIDL_APPDATA,
-		nullptr, SHGFP_TYPE_CURRENT, path);
-	if (hr == S_OK) {
-		config_dir = T2U8(path);
-		if (!config_dir.empty()) {
-			// Add a trailing backslash if necessary.
-			if (config_dir.at(config_dir.size()-1) != '\\') {
-				config_dir += '\\';
-			}
-
-			// Append "rom-properties".
-			config_dir += "rom-properties";
-		}
-	}
-}
-
-/**
- * Get the user's cache directory.
- * This is usually one of the following:
- * - Windows XP: %APPDATA%\Local Settings\rom-properties\cache
- * - Windows Vista: %LOCALAPPDATA%\rom-properties\cache
- * - Linux: ~/.cache/rom-properties
- *
- * @return User's rom-properties cache directory, or empty string on error.
- */
-const string &getCacheDirectory(void)
-{
-	// TODO: Handle errors.
-	pthread_once(&once_control, initConfigDirectories);
-	return cache_dir;
-}
-
-/**
- * Get the user's rom-properties configuration directory.
- * This is usually one of the following:
- * - Windows: %APPDATA%\rom-properties
- * - Linux: ~/.config/rom-properties
- *
- * @return User's rom-properties configuration directory, or empty string on error.
- */
-const string &getConfigDirectory(void)
-{
-	// TODO: Handle errors.
-	pthread_once(&once_control, initConfigDirectories);
-	return config_dir;
+	return sb.st_size;
 }
 
 /**

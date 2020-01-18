@@ -13,16 +13,8 @@
 // C includes.
 #include <stdlib.h>
 
-// TODO: Move to our own stdboolx.h file.
-#ifndef __cplusplus
-# if defined(_MSC_VER) && _MSC_VER >= 1800
-#  include <stdbool.h>
-# else
-typedef unsigned char bool;
-#  define true 1
-#  define false 0
-# endif
-#endif /* __cplusplus */
+// stdbool
+#include "stdboolx.h"
 
 // ImageBase for GetModuleFileName().
 // Reference: https://blogs.msdn.microsoft.com/oldnewthing/20041025-00/?p=37483

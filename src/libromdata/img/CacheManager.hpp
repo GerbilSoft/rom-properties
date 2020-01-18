@@ -1,13 +1,13 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (libcachemgr)                      *
+ * ROM Properties Page shell extension. (libromdata)                       *
  * CacheManager.hpp: Local cache manager.                                  *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBCACHEMGR_CACHEMANAGER_HPP__
-#define __ROMPROPERTIES_LIBCACHEMGR_CACHEMANAGER_HPP__
+#ifndef __ROMPROPERTIES_LIBROMDATA_IMG_CACHEMANAGER_HPP__
+#define __ROMPROPERTIES_LIBROMDATA_IMG_CACHEMANAGER_HPP__
 
 // librpbase
 #include "librpbase/common.h"
@@ -18,14 +18,13 @@
 // C++ includes.
 #include <string>
 
-namespace LibCacheMgr {
+namespace LibRomData {
 
-class IDownloader;
 class CacheManager
 {
 	public:
-		CacheManager();
-		~CacheManager();
+		CacheManager() { }
+		~CacheManager() { }
 
 	private:
 		RP_DISABLE_COPY(CacheManager)
@@ -53,28 +52,13 @@ class CacheManager
 		 */
 		void setProxyUrl(const std::string &proxyUrl);
 
-	protected:
-		/**
-		 * Get a cache filename.
-		 * @param cache_key Cache key. (Will be filtered using filterCacheKey().)
-		 * @return Cache filename, or empty string on error.
-		 */
-		std::string getCacheFilename(const std::string &cache_key);
-
-	public:
-		/**
-		 * Filter invalid characters from a cache key.
-		 * @param cache_key Cache key.
-		 * @return Filtered cache key.
-		 */
-		static std::string filterCacheKey(const std::string &cache_key);
-
 	public:
 		/**
 		 * Download a file.
 		 *
 		 * @param url URL.
-		 * @param cache_key Cache key.
+		 *
+		 * The URL will be determined based on the cache key.
 		 *
 		 * If the file is present in the cache, the cached version
 		 * will be retrieved. Otherwise, the file will be downloaded.
@@ -85,9 +69,7 @@ class CacheManager
 		 *
 		 * @return Absolute path to the cached file.
 		 */
-		std::string download(
-			const std::string &url,
-			const std::string &cache_key);
+		std::string download(const std::string &cache_key);
 
 		/**
 		 * Check if a file has already been cached.
@@ -97,8 +79,15 @@ class CacheManager
 		std::string findInCache(const std::string &cache_key);
 
 	protected:
+		/**
+		 * Execute rp-download.
+		 * @param filtered_cache_key Filtered cache key.
+		 * @return 0 on success; negative POSIX error code on error.
+		 */
+		int execRpDownload(const std::string &filtered_cache_key);
+
+	protected:
 		std::string m_proxyUrl;
-		IDownloader *m_downloader;
 
 		// Semaphore used to limit the number of simultaneous downloads.
 		static LibRpBase::Semaphore m_dlsem;
@@ -106,4 +95,4 @@ class CacheManager
 
 }
 
-#endif /* __ROMPROPERTIES_LIBCACHEMGR_CACHEMANAGER_HPP__ */
+#endif /* __ROMPROPERTIES_LIBROMDATA_IMG_CACHEMANAGER_HPP__ */

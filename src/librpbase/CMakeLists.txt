@@ -61,13 +61,6 @@ ELSE(NOT WIN32)
 		LANGUAGE C)
 ENDIF(NOT WIN32)
 
-IF(APPLE)
-	CHECK_SYMBOL_EXISTS(fsetxattr "sys/xattr.h" HAVE_FSETXATTR_MAC)
-ELSEIF(NOT WIN32)
-	CHECK_SYMBOL_EXISTS(fsetxattr "sys/xattr.h" HAVE_FSETXATTR_LINUX)
-	CHECK_SYMBOL_EXISTS(extattr_set_fd "sys/extattr.h" HAVE_EXTATTR_SET_FD)
-ENDIF()
-
 # Check for reentrant C library functions.
 INCLUDE(CheckSymbolExistsOrInline)
 # putenv(), setenv(), and related.
@@ -434,7 +427,7 @@ IF(librpbase_NEEDS_DL AND CMAKE_DL_LIBS)
 ENDIF(librpbase_NEEDS_DL AND CMAKE_DL_LIBS)
 
 # Other libraries.
-TARGET_LINK_LIBRARIES(rpbase PRIVATE rptexture inih rpthreads)
+TARGET_LINK_LIBRARIES(rpbase PRIVATE rptexture inih rpthreads cachecommon)
 IF(Iconv_LIBRARY AND NOT Iconv_IS_BUILT_IN)
 	TARGET_LINK_LIBRARIES(rpbase PRIVATE Iconv::Iconv)
 ENDIF(Iconv_LIBRARY AND NOT Iconv_IS_BUILT_IN)

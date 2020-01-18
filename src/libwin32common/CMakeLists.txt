@@ -11,6 +11,7 @@ CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/config.libwin32common.h.in" "${CMAKE
 
 # Sources and headers.
 SET(libwin32common_SRCS
+	secoptions.c
 	wmain.c
 	DialogBuilder.cpp
 	RegKey.cpp
@@ -18,6 +19,8 @@ SET(libwin32common_SRCS
 	w32err.c
 	ComBase.cpp
 	propsys_xp.c
+	userdirs.cpp
+	integrity_level.h
 	sdk/win_iid.c
 	sdk/GUID_fn.c
 	)
@@ -33,6 +36,8 @@ SET(libwin32common_H
 	ComBase.hpp
 	propsys_xp.h
 	WTSSessionNotification.hpp
+	userdirs.hpp
+	integrity_level.c
 	sdk/QITab.h
 	sdk/IListView.hpp
 	sdk/IOwnerDataCallback.hpp

@@ -1,0 +1,23 @@
+/***************************************************************************
+ * stdboolx.h: stdbool.h compatibility header.                             *
+ *                                                                         *
+ * Copyright (c) 2020 by David Korth.                                      *
+ * SPDX-License-Identifier: GPL-2.0-or-later                               *
+ ***************************************************************************/
+
+#ifndef __STDBOOLX_H__
+#define __STDBOOLX_H__
+
+#cmakedefine HAVE_STDBOOL_H 1
+
+#ifndef __cplusplus
+# ifdef HAVE_STDBOOL_H
+#  include <stdbool.h>
+# else /* !HAVE_STDBOOL_H */
+typedef unsigned char bool;
+#  define true 1
+#  define false 0
+# endif /* HAVE_STDBOOL_H */
+#endif /* __cplusplus */
+
+#endif /* __STDBOOLX_H__ */

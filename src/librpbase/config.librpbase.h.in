@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * config.librpbase.h.in: LibRpBase configuration. (source file)           *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -119,15 +119,6 @@
 
 /* Define to 1 if you have the `_wputenv_s` function. */
 #cmakedefine HAVE__WPUTENV_S 1
-
-/* Define to 1 if you have the Linux `fsetxattr` function. */
-#cmakedefine HAVE_FSETXATTR_LINUX 1
-
-/* Define to 1 if you have the Mac OS X `fsetxattr` function. */
-#cmakedefine HAVE_FSETXATTR_MAC 1
-
-/* Define to 1 if you have the FreeBSD `extattr_set_fd` function. */
-#cmakedefine HAVE_EXTATTR_SET_FD 1
 
 /** C++ standard library **/
 

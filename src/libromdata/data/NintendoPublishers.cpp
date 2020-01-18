@@ -29,8 +29,8 @@ class NintendoPublishersPrivate {
 		 * This list is valid for most Nintendo systems.
 		 *
 		 * References:
-		 * - http://www.gametdb.com/Wii
-		 * - http://www.gametdb.com/Wii/Downloads
+		 * - https://www.gametdb.com/Wii
+		 * - https://www.gametdb.com/Wii/Downloads
 		 */
 		static const ThirdPartyEntry thirdPartyList[];
 
@@ -76,8 +76,8 @@ class NintendoPublishersPrivate {
  * This list is valid for most Nintendo systems.
  *
  * References:
- * - http://www.gametdb.com/Wii
- * - http://www.gametdb.com/Wii/Downloads
+ * - https://www.gametdb.com/Wii
+ * - https://www.gametdb.com/Wii/Downloads
  * - https://wiki.nesdev.com/w/index.php/Family_Computer_Disk_System#Manufacturer_codes
  */
 const NintendoPublishersPrivate::ThirdPartyEntry NintendoPublishersPrivate::thirdPartyList[] = {

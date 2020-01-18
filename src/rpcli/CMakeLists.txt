@@ -49,25 +49,23 @@ IF(MSVC)
 	SET(rom-properties-rpcli_PCH_H stdafx.h)
 
 	# Delay-load sources.
-	SET(rom-properties-rpcli-DELAY_LOAD_SRC ../libwin32common/DelayLoadHelper.c)
-	SET(rom-properties-rpcli-DELAY_LOAD_H ../libwin32common/DelayLoadHelper.h)
+	SET(rom-properties-rpcli-DELAYLOAD_SRC ../libwin32common/DelayLoadHelper.c)
+	SET(rom-properties-rpcli-DELAYLOAD_H ../libwin32common/DelayLoadHelper.h)
 ENDIF(MSVC)
 
 #########################
 # Build the executable. #
 #########################
 
-IF(MSVC)
-	# Delay-load extlibs.
-	INCLUDE(../libwin32common/DelayLoadHelper.cmake)
-	SET_DELAY_LOAD_FLAGS()
-ENDIF(MSVC)
+# Delay-load extlibs.
+INCLUDE(../libwin32common/DelayLoadHelper.cmake)
+SET_DELAYLOAD_EXTLIB_FLAGS()
 
 ADD_EXECUTABLE(rpcli
 	${rom-properties-rpcli_PCH_SRC}
 	${rom-properties-rpcli_PCH_H}
-	${rom-properties-rpcli-DELAY_LOAD_SRC}
-	${rom-properties-rpcli-DELAY_LOAD_H}
+	${rom-properties-rpcli-DELAYLOAD_SRC}
+	${rom-properties-rpcli-DELAYLOAD_H}
 	${rom-properties-rpcli_SRCS}
 	${rom-properties-rpcli_H}
 	${rom-properties-rpcli_RC}
@@ -116,10 +114,14 @@ IF(MINGW)
 	SET(CMAKE_RC_FLAGS "${CMAKE_RC_FLAGS} -I \"${CMAKE_CURRENT_BINARY_DIR}\"")
 ENDIF(MINGW)
 
-# Delay-load some Windows system libraries.
-# TODO: MinGW delay-load?
+# Delay-load shell32.dll to prevent a performance penalty due to gdi32.dll.
+# Reference: https://randomascii.wordpress.com/2018/12/03/a-not-called-function-can-cause-a-5x-slowdown/
+# This is also needed when disabling direct Win32k syscalls,
+# since loading gdi32.dll will crash in that case.
+# FIXME: gdiplus.dll isn't linked in, though I'm pretty sure it's used...
+ADD_DELAYLOAD_FLAGS(rpcli shell32.dll)
 IF(MSVC)
-	SET(RP_SYS_DELAY_LOAD_FLAGS "/DELAYLOAD:urlmon.dll /DELAYLOAD:wininet.dll")
+	# Extended delay-load functionality.
 	TARGET_LINK_LIBRARIES(rpcli PRIVATE delayimp)
 ENDIF(MSVC)
 

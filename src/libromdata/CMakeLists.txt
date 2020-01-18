@@ -1,5 +1,9 @@
 PROJECT(libromdata)
 
+IF(NOT WIN32)
+	CHECK_SYMBOL_EXISTS(posix_spawn "spawn.h" HAVE_POSIX_SPAWN)
+ENDIF(NOT WIN32)
+
 # Sources.
 SET(libromdata_SRCS
 	RomDataFactory.cpp
@@ -98,6 +102,7 @@ SET(libromdata_SRCS
 
 	#config/TImageTypesConfig.cpp	# NOT listed here due to template stuff.
 	#img/TCreateThumbnail.cpp	# NOT listed here due to template stuff.
+	img/CacheManager.cpp
 	utils/SuperMagicDrive.cpp
 	)
 # Headers.
@@ -254,6 +259,7 @@ SET(libromdata_H
 
 	config/TImageTypesConfig.hpp
 	img/TCreateThumbnail.hpp
+	img/CacheManager.hpp
 	utils/SuperMagicDrive.hpp
 	)
 
@@ -276,6 +282,16 @@ IF(ENABLE_DECRYPTION)
 		crypto/KeyStoreUI.hpp
 		)
 ENDIF(ENABLE_DECRYPTION)
+
+# OS-specific sources.
+IF(WIN32)
+	SET(libromdata_OS_SRCS img/ExecRpDownload_win32.cpp)
+ELSEIF(UNIX AND NOT APPLE)
+	SET(libromdata_OS_SRCS img/ExecRpDownload_posix.cpp)
+ELSE()
+	# Dummy implementation for unsupported systems.
+	SET(libromdata_OS_SRCS img/ExecRpDownload_dummy.cpp)
+ENDIF()
 
 # Optimized sources.
 IF(CPU_i386 OR CPU_amd64)
@@ -326,6 +342,7 @@ IF(CPU_i386 OR CPU_amd64)
 ENDIF()
 
 # Write the config.h file.
+INCLUDE(DirInstallPaths)
 CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/config.libromdata.h.in" "${CMAKE_CURRENT_BINARY_DIR}/config.libromdata.h")
 
 IF(ENABLE_PCH)
@@ -359,7 +376,7 @@ SET_MSVC_DEBUG_PATH(romdata)
 
 # TODO: More public/private library stuff.
 TARGET_LINK_LIBRARIES(romdata PUBLIC rptexture rpbase)
-TARGET_LINK_LIBRARIES(romdata PRIVATE rpthreads)
+TARGET_LINK_LIBRARIES(romdata PRIVATE rpthreads cachecommon)
 IF(ENABLE_NLS)
 	TARGET_LINK_LIBRARIES(romdata PRIVATE i18n)
 ENDIF(ENABLE_NLS)
@@ -375,9 +392,12 @@ TARGET_INCLUDE_DIRECTORIES(romdata
 		$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/..>	# src
 		$<BUILD_INTERFACE:${CMAKE_BINARY_DIR}>			# top-level
 	)
-IF(MSVC)
-	TARGET_LINK_LIBRARIES(romdata PRIVATE delayimp)
-ENDIF(MSVC)
+IF(WIN32)
+	TARGET_LINK_LIBRARIES(romdata PRIVATE advapi32)
+	IF(MSVC)
+		TARGET_LINK_LIBRARIES(romdata PRIVATE delayimp)
+	ENDIF(MSVC)
+ENDIF(WIN32)
 # Exclude from ALL builds.
 SET_TARGET_PROPERTIES(romdata PROPERTIES EXCLUDE_FROM_ALL TRUE)
 

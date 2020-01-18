@@ -23,6 +23,18 @@
     to another file browser window to extract them. This includes the icon,
     banner, and icons from ListView widgets.
     * Drag & drop support for Win32 and GTK+ may be implemented before release.
+  * Downloading functionality for online databases has been split out of the
+    DLL and into a separate executable. This will allow the downloading to be
+    handled in a lower privilege environment.
+    * Windows: On Vista and later, rp-download runs as a low-integrity process.
+      * TODO before release:
+        * Add more security options.
+        * Have rp-download drop privileges if run directly.
+        * If rp-download.exe isn't in the current directory, check the
+          architecture-specific subdirectory.
+    * Linux: TODO: Need to set up apparmor, possibly libseccomp.
+  * Windows: The online database code has been rewritten to use WinInet
+    directly instead of urlmon, which reduces overhead.
 
 * New parsers:
   * DidjTex: Leapster Didj .tex and .texs texture files. For .texs, currently
@@ -80,6 +92,8 @@
     This fixes handling of mtimes and content length.
   * UrlmonDownloader: Handle ERROR_INSUFFICIENT_BUFFER for the cache info
     entry correctly. Otherwise, we won't get the mtime.
+  * Fixed some CBC decryption issues on Windows XP. This mostly affected
+    decrypting Xbox 360 executables.
 
 * Other changes:
   * Removed the internal copy of libjpeg-turbo. On Windows, gdiplus is now
