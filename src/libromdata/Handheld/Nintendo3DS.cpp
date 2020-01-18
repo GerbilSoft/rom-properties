@@ -868,6 +868,9 @@ void Nintendo3DSPrivate::addTitleIdAndProductCodeFields(bool showContentType)
 	// If using CIA/TMD, use the TMD Title ID.
 	// Otherwise, use the primary NCCH Title ID.
 
+	// The program ID will also be retrieved from the NCCH header
+	// and will be printed if it doesn't match the title ID.
+
 	// NCCH header.
 	NCCHReader *const ncch = loadNCCH();
 	const N3DS_NCCH_Header_NoSig_t *const ncch_header =
@@ -887,130 +890,141 @@ void Nintendo3DSPrivate::addTitleIdAndProductCodeFields(bool showContentType)
 		tid_lo = be32_to_cpu(mxh.tmd_header.title_id.lo);
 	} else if (ncch_header) {
 		tid_desc = C_("Nintendo3DS", "Title ID");
-		tid_lo = le32_to_cpu(ncch_header->program_id.lo);
-		tid_hi = le32_to_cpu(ncch_header->program_id.hi);
+		tid_lo = le32_to_cpu(ncch_header->title_id.lo);
+		tid_hi = le32_to_cpu(ncch_header->title_id.hi);
 	}
 
 	if (tid_desc) {
 		fields->addField_string(tid_desc, rp_sprintf("%08X-%08X", tid_hi, tid_lo));
 	}
 
-	if (ncch && ncch->isOpen()) {
-		// Product code.
-		if (ncch_header) {
-			fields->addField_string(C_("Nintendo3DS", "Product Code"),
-				latin1_to_utf8(ncch_header->product_code, sizeof(ncch_header->product_code)));
-		}
+	if (!ncch || !ncch->isOpen()) {
+		// Unable to open the NCCH header.
+		return;
+	}
 
-		// Content type.
-		// This is normally shown in the CIA content table.
-		if (showContentType) {
-			const char *const content_type = ncch->contentType();
-			// TODO: Remove context from "Unknown" and "Invalid" strings.
-			fields->addField_string(C_("Nintendo3DS", "Content Type"),
-				(content_type ? content_type : C_("RomData", "Unknown")));
+	// Program ID, if different from title ID.
+	if (ncch_header->program_id.id != ncch_header->title_id.id) {
+		uint32_t pid_lo = le32_to_cpu(ncch_header->program_id.lo);
+		uint32_t pid_hi = le32_to_cpu(ncch_header->program_id.hi);
+		fields->addField_string(C_("Nintendo3DS", "Program ID"),
+			rp_sprintf("%08X-%08X", pid_hi, pid_lo));
+	}
 
-			// Also show encryption type.
-			const N3DS_NCCH_Header_NoSig_t *const part_ncch_header = ncch->ncchHeader();
-			if (part_ncch_header) {
+	// Product code.
+	if (ncch_header) {
+		fields->addField_string(C_("Nintendo3DS", "Product Code"),
+			latin1_to_utf8(ncch_header->product_code, sizeof(ncch_header->product_code)));
+	}
+
+	// Content type.
+	// This is normally shown in the CIA content table.
+	if (showContentType) {
+		const char *const content_type = ncch->contentType();
+		// TODO: Remove context from "Unknown" and "Invalid" strings.
+		fields->addField_string(C_("Nintendo3DS", "Content Type"),
+			(content_type ? content_type : C_("RomData", "Unknown")));
+
+		// Also show encryption type.
+		const N3DS_NCCH_Header_NoSig_t *const part_ncch_header = ncch->ncchHeader();
+		if (part_ncch_header) {
 #ifdef ENABLE_DECRYPTION
-				fields->addField_string(C_("Nintendo3DS", "Issuer"),
-					ncch->isDebug()
-						? C_("Nintendo3DS", "Debug")
-						: C_("Nintendo3DS", "Retail"));
+			fields->addField_string(C_("Nintendo3DS", "Issuer"),
+				ncch->isDebug()
+					? C_("Nintendo3DS", "Debug")
+					: C_("Nintendo3DS", "Retail"));
 #endif /* ENABLE_DECRYPTION */
 
-				// Encryption.
-				const char *const s_encryption = C_("Nintendo3DS", "Encryption");
-				const char *const s_unknown = C_("RomData", "Unknown");
-				NCCHReader::CryptoType cryptoType = {nullptr, false, 0, false};
-				int ret = NCCHReader::cryptoType_static(&cryptoType, part_ncch_header);
-				if (ret != 0 || !cryptoType.encrypted || cryptoType.keyslot >= 0x40) {
-					// Not encrypted, or not using a predefined keyslot.
-					fields->addField_string(s_encryption,
-						cryptoType.name
-							? latin1_to_utf8(cryptoType.name, -1)
-							: s_unknown);
-				} else {
-					fields->addField_string(s_encryption,
-						rp_sprintf("%s%s (0x%02X)",
-							(cryptoType.name ? cryptoType.name : s_unknown),
-							(cryptoType.seed ? "+Seed" : ""),
-							cryptoType.keyslot));
-				}
+			// Encryption.
+			const char *const s_encryption = C_("Nintendo3DS", "Encryption");
+			const char *const s_unknown = C_("RomData", "Unknown");
+			NCCHReader::CryptoType cryptoType = {nullptr, false, 0, false};
+			int ret = NCCHReader::cryptoType_static(&cryptoType, part_ncch_header);
+			if (ret != 0 || !cryptoType.encrypted || cryptoType.keyslot >= 0x40) {
+				// Not encrypted, or not using a predefined keyslot.
+				fields->addField_string(s_encryption,
+					cryptoType.name
+						? latin1_to_utf8(cryptoType.name, -1)
+						: s_unknown);
+			} else {
+				fields->addField_string(s_encryption,
+					rp_sprintf("%s%s (0x%02X)",
+						(cryptoType.name ? cryptoType.name : s_unknown),
+						(cryptoType.seed ? "+Seed" : ""),
+						cryptoType.keyslot));
+			}
+		}
+	}
+
+	// Logo.
+	// NOTE: All known official logo binaries are 8 KB.
+	// The original and new "Homebrew" logos are also 8 KB.
+	uint32_t crc = 0;
+	IRpFile *const f_logo = ncch->openLogo();
+	if (f_logo) {
+		const int64_t szFile = f_logo->size();
+		if (szFile == 8192) {
+			// Calculate the CRC32.
+			unique_ptr<uint8_t[]> buf(new uint8_t[static_cast<unsigned int>(szFile)]);
+			size_t size = f_logo->read(buf.get(), static_cast<unsigned int>(szFile));
+			if (size == static_cast<unsigned int>(szFile)) {
+				crc = crc32(0, buf.get(), static_cast<unsigned int>(szFile));
+			}
+		} else if (szFile > 0) {
+			// Some other custom logo.
+			crc = 1;
+		}
+		f_logo->unref();
+	}
+
+	struct logo_crc_tbl_t {
+		uint32_t crc;
+		const char *name;
+	};
+	static const logo_crc_tbl_t logo_crc_tbl[] = {
+		// Official logos
+		// NOTE: Not translatable!
+		{0xCFD0EB8BU,	"Nintendo"},
+		{0x1093522BU,	"Licensed by Nintendo"},
+		{0x4FA8771CU,	"Distributed by Nintendo"},
+		{0x7F68B548U,	"iQue"},
+		{0xD8907ED7U,	"iQue (System)"},
+
+		// Homebrew logos
+		// TODO: Make them translatable?
+
+		// "Old" static Homebrew logo.
+		// Included with `makerom`.
+		{0x343A79D9U,	"Homebrew (static)"},
+
+		// "New" animated Homebrew logo.
+		// Uses the Homebrew Launcher theme.
+		// Reference: https://gbatemp.net/threads/release-default-homebrew-custom-logo-bin.457611/
+		{0xF257BD67U,	"Homebrew (animated)"},
+
+		{0U, nullptr}
+	};
+
+	// If CRC is zero, we don't have a valid logo section.
+	// Otherwise, search for a matching logo.
+	const char *logo_name = nullptr;
+	if (crc != 0) {
+		// Search for a matching logo.
+		for (const logo_crc_tbl_t *pLogo = logo_crc_tbl; pLogo->crc != 0; pLogo++) {
+			if (pLogo->crc == crc) {
+				// Found a matching logo.
+				logo_name = pLogo->name;
 			}
 		}
 
-		// Logo.
-		// NOTE: All known official logo binaries are 8 KB.
-		// The original and new "Homebrew" logos are also 8 KB.
-		uint32_t crc = 0;
-		IRpFile *const f_logo = ncch->openLogo();
-		if (f_logo) {
-			const int64_t szFile = f_logo->size();
-			if (szFile == 8192) {
-				// Calculate the CRC32.
-				unique_ptr<uint8_t[]> buf(new uint8_t[static_cast<unsigned int>(szFile)]);
-				size_t size = f_logo->read(buf.get(), static_cast<unsigned int>(szFile));
-				if (size == static_cast<unsigned int>(szFile)) {
-					crc = crc32(0, buf.get(), static_cast<unsigned int>(szFile));
-				}
-			} else if (szFile > 0) {
-				// Some other custom logo.
-				crc = 1;
-			}
-			f_logo->unref();
+		if (!logo_name) {
+			// Custom logo.
+			logo_name = C_("Nintendo3DS|Logo", "Custom");
 		}
+	}
 
-		struct logo_crc_tbl_t {
-			uint32_t crc;
-			const char *name;
-		};
-		static const logo_crc_tbl_t logo_crc_tbl[] = {
-			// Official logos
-			// NOTE: Not translatable!
-			{0xCFD0EB8BU,	"Nintendo"},
-			{0x1093522BU,	"Licensed by Nintendo"},
-			{0x4FA8771CU,	"Distributed by Nintendo"},
-			{0x7F68B548U,	"iQue"},
-			{0xD8907ED7U,	"iQue (System)"},
-
-			// Homebrew logos
-			// TODO: Make them translatable?
-
-			// "Old" static Homebrew logo.
-			// Included with `makerom`.
-			{0x343A79D9U,	"Homebrew (static)"},
-
-			// "New" animated Homebrew logo.
-			// Uses the Homebrew Launcher theme.
-			// Reference: https://gbatemp.net/threads/release-default-homebrew-custom-logo-bin.457611/
-			{0xF257BD67U,	"Homebrew (animated)"},
-
-			{0U, nullptr}
-		};
-
-		// If CRC is zero, we don't have a valid logo section.
-		// Otherwise, search for a matching logo.
-		const char *logo_name = nullptr;
-		if (crc != 0) {
-			// Search for a matching logo.
-			for (const logo_crc_tbl_t *pLogo = logo_crc_tbl; pLogo->crc != 0; pLogo++) {
-				if (pLogo->crc == crc) {
-					// Found a matching logo.
-					logo_name = pLogo->name;
-				}
-			}
-
-			if (!logo_name) {
-				// Custom logo.
-				logo_name = C_("Nintendo3DS|Logo", "Custom");
-			}
-		}
-
-		if (logo_name) {
-			fields->addField_string(C_("Nintendo3DS", "Logo"), logo_name);
-		}
+	if (logo_name) {
+		fields->addField_string(C_("Nintendo3DS", "Logo"), logo_name);
 	}
 }
 
@@ -1888,10 +1902,9 @@ int Nintendo3DS::loadFieldData(void)
 	// TODO: Split up into smaller functions?
 	const char *const s_unknown = C_("RomData", "Unknown");
 
-	// Maximum of 20 fields.
+	// Maximum of 22 fields.
 	// Tested with several CCI, CIA, and NCCH files.
-	// TODO: Add one for ticket console ID?
-	d->fields->reserve(20);
+	d->fields->reserve(22);
 
 	// Reserve at least 4 tabs:
 	// SMDH, NCSD/CIA, ExHeader, Permissions
