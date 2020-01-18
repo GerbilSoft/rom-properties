@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension installer. (svrplus)                *
  * svrplus.c: Win32 installer for rom-properties.                          *
  *                                                                         *
- * Copyright (c) 2017-2018 by Egor.                                        *
+ * Copyright (c) 2017-2019 by Egor.                                        *
  * Copyright (c) 2017-2019 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
@@ -13,6 +13,7 @@
 #include <locale.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <wchar.h>
 // MSVCRT-specific
 #include <process.h>
@@ -74,7 +75,10 @@ bool g_is64bit = false;			/**< true if running on 64-bit system */
 bool g_inProgress = false;		/**< true if currently (un)installing the DLLs */
 
 // Custom messages
-#define WM_APP_ENDTASK WM_APP
+enum {
+	WM_APP_SIGNAL = WM_APP,
+	WM_APP_WAIT
+};
 
 // Icons. (NOTE: These MUST be deleted after use!)
 static HICON hIconDialog = NULL;
@@ -163,6 +167,14 @@ static inline void EnableButtons(HWND hDlg, bool enable)
 {
 	EnableWindow(GetDlgItem(hDlg, IDC_BUTTON_INSTALL), enable);
 	EnableWindow(GetDlgItem(hDlg, IDC_BUTTON_UNINSTALL), enable);
+}
+
+/**
+ * Changes the cursor depending on wether installation is in progress.
+ */
+static inline void DlgUpdateCursor(void)
+{
+	SetCursor(LoadCursor(NULL, g_inProgress ? IDC_WAIT : IDC_ARROW));
 }
 
 /**
@@ -271,12 +283,13 @@ typedef enum {
 /**
  * (Un)installs the COM Server DLL.
  *
- * @param isUninstall	[in] When true, uninstalls the DLL, instead of installing it.
- * @param is64		[in] When true, installs 64-bit version.
- * @param pErrorCode	[out,opt] Additional error code.
+ * @param isUninstall [in] When true, uninstalls the DLL, instead of installing it.
+ * @param is64        [in] When true, installs 64-bit version.
+ * @param pHandle     [out,opt] Process handle.
+ * @param pErrorCode  [out,opt] Additional error code.
  * @return InstallServerResult
  */
-static InstallServerResult InstallServer(bool isUninstall, bool is64, DWORD *pErrorCode)
+static InstallServerResult InstallServer(bool isUninstall, bool is64, HANDLE *pHandle, DWORD *pErrorCode)
 {
 	TCHAR regsvr32_path[MAX_PATH];
 	TCHAR args[14 + MAX_PATH + 4 + 3 + ARRAY_SIZE(str_rp64path)] = _T("regsvr32.exe \"");
@@ -285,7 +298,6 @@ static InstallServerResult InstallServer(bool isUninstall, bool is64, DWORD *pEr
 
 	STARTUPINFO si;
 	PROCESS_INFORMATION pi;
-	DWORD status;
 	BOOL bRet;
 
 	// Determine the REGSVR32 path.
@@ -346,17 +358,31 @@ static InstallServerResult InstallServer(bool isUninstall, bool is64, DWORD *pEr
 		return ISR_CREATEPROCESS_FAILED;
 	}
 
-	// Wait for the process to exit.
-	WaitForSingleObject(pi.hProcess, INFINITE);
-	bRet = GetExitCodeProcess(pi.hProcess, &status);
 	CloseHandle(pi.hThread);
-	CloseHandle(pi.hProcess);
 
-	if (!bRet) {
-		// GetExitCodeProcess() failed.
-		// Assume the process is still active.
-		return ISR_PROCESS_STILL_ACTIVE;
+	*pHandle = pi.hProcess;
+
+	// The calles should wait for the process to exit.
+	return ISR_OK;
+}
+
+/**
+ * (Un)installs the COM Server DLL.
+ *
+ * @param handle     [in] Process handle from InstallServer
+ * @param pErrorCode [out,opt] Additional error code.
+ * @return InstallServerResult
+ */
+static InstallServerResult InstallServerEnd(HANDLE handle, DWORD *pErrorCode)
+{
+	DWORD status;
+
+	if (!handle) {
+		return ISR_FATAL_ERROR;
 	}
+
+	GetExitCodeProcess(handle, &status);
+	CloseHandle(handle);
 
 	switch (status) {
 		case STILL_ACTIVE:
@@ -380,27 +406,27 @@ static InstallServerResult InstallServer(bool isUninstall, bool is64, DWORD *pEr
 }
 
 /**
- * Tries to (un)install the COM Server DLL, displays errors in message boxes.
+ * Converts error codes from InstallServer into a string.
  *
- * @param hWnd		[in] owner window of message boxes
- * @param isUninstall	[in] when true, uninstalls the DLL, instead of installing it.
- * @param is64		[in] when true, installs 64-bit version
- * @param sErrBuf	[out,opt] error message buffer
- * @param cchErrBuf	[in,opt] size of sErrBuf, in characters
+ * @param res         [in] InstallServerResult as returned from InstallServer
+ * @param errorCode   [in] additional error code
+ * @param isUninstall [in] same as given to InstallServer
+ * @param is64        [in] same as given to InstallServer
+ * @param sErrBuf     [out,opt] error message buffer
+ * @param cchErrBuf   [in,opt] size of sErrBuf, in characters
  * @return InstallServerResult
  */
-static InstallServerResult TryInstallServer(HWND hWnd,
+static void InstallServerErrorMsg(
+	InstallServerResult res, DWORD errorCode,
 	bool isUninstall, bool is64,
 	TCHAR *sErrBuf, size_t cchErrBuf)
 {
 	const TCHAR *dll_path, *entry_point;
 	TCHAR ultot_buf[_MAX_ULTOSTR_BASE10_COUNT];
-	DWORD errorCode;
-	InstallServerResult res = InstallServer(isUninstall, is64, &errorCode);
 
 	if (!sErrBuf) {
 		// No error message buffer specified.
-		return res;
+		return;
 	}
 
 	dll_path = (is64 ? str_rp64path : str_rp32path);
@@ -468,51 +494,118 @@ static InstallServerResult TryInstallServer(HWND hWnd,
 			break;
 	}
 
-	return res;
+	return;
 }
 
-// Thread parameters.
+// Install parameters/state.
 // Statically allocated so we don't need to use malloc().
-// Only one thread can run at a time. (see g_inProgress)
-typedef struct _ThreadParams {
-	HWND hWnd;		/**< Window that created the thread */
-	bool isUninstall;	/**< true if uninstalling */
-} ThreadParams;
-static ThreadParams threadParams = {NULL, false};
+// Only one (un)install can run at a time. (see g_inProgress)
+struct InstallParams {
+	HWND hWnd;        /**< Dialog window */
+	bool isUninstall; /**< true if uninstalling */
+	/* State */
+	int state; /**< Determines which continuation to call next */
+	InstallServerResult res32, res64;
+	DWORD errorCode32, errorCode64;
+	HANDLE hProcess32, hProcess64;
+};
+static struct InstallParams installParams = {NULL, false};
+
+static void InstallProc64(struct InstallParams *p);
+static void InstallProc32(struct InstallParams *p);
+static void InstallProcEnd(struct InstallParams *p);
 
 /**
- * Worker thread procedure.
+ * Tries to (un)install the COM Server DLL, for both 32- and 64-bit
+ * architectures. Displays progress and errors.
  *
- * @param lpParameter ptr to parameters of type ThreadPrams. Owned by this thread.
+ * This function, as well as InstallProc32 and InstallProcEnd form a single
+ * unit.
+ *
+ * @param p parameters
  */
-static unsigned int WINAPI ThreadProc(LPVOID lpParameter)
+static void InstallProc64(struct InstallParams *p)
 {
-	TCHAR msg32[256], msg64[256];
-	InstallServerResult res32 = ISR_OK, res64 = ISR_OK;
+	const TCHAR *msg;
 
-	ThreadParams *const params = (ThreadParams*)lpParameter;
+	p->state = 0;
+	p->res32 = p->res64 = ISR_OK;
+	p->errorCode32 = p->errorCode64 = 0;
+	p->hProcess32 = p->hProcess64 = NULL;
+
+	if (g_is64bit) {
+		msg = (p->isUninstall
+			? _T("\n\nUnregistering DLLs...")
+			: _T("\n\nRegistering DLLs..."));
+	} else {
+		msg = (p->isUninstall
+			? _T("\n\nUnregistering DLL...")
+			: _T("\n\nRegistering DLL..."));
+	}
+	ShowStatusMessage(p->hWnd, msg, _T(""), 0);
+
+	EnableButtons(p->hWnd, false);
+	g_inProgress = true;
+	DlgUpdateCursor();
 
 	// Try to (un)install the 64-bit version.
 	if (g_is64bit) {
-		res64 = TryInstallServer(params->hWnd, params->isUninstall, true, msg64, ARRAY_SIZE(msg64));
+		p->res64 = InstallServer(p->isUninstall, true, &p->hProcess64, &p->errorCode64);
+		if (p->res64 == ISR_OK) {
+			p->state = 1;
+			PostMessage(NULL, WM_APP_WAIT, (WPARAM)p, (LPARAM)p->hProcess64);
+			return;
+		}
+	}
+	InstallProc32(p);
+}
+
+/** continuation of InstallProc64 */
+static void InstallProc32(struct InstallParams *p)
+{
+	if (g_is64bit && p->res64 == ISR_OK) {
+		p->res64 = InstallServerEnd(p->hProcess64, &p->errorCode64);
 	}
 
 	// Try to (un)install the 32-bit version.
-	res32 = TryInstallServer(params->hWnd, params->isUninstall, false, msg32, ARRAY_SIZE(msg32));
+	p->res32 = InstallServer(p->isUninstall, false, &p->hProcess32, &p->errorCode32);
+	if (p->res32 == ISR_OK) {
+		p->state = 2;
+		PostMessage(NULL, WM_APP_WAIT, (WPARAM)p, (LPARAM)p->hProcess32);
+		return;
+	}
+	InstallProcEnd(p);
+}
 
-	if (res32 == ISR_OK && res64 == ISR_OK) {
+/** continuation of InstallProc32 */
+static void InstallProcEnd(struct InstallParams *p)
+{
+	TCHAR msg32[256], msg64[256];
+
+	if (p->res32 == ISR_OK) {
+		p->res32 = InstallServerEnd(p->hProcess32, &p->errorCode32);
+	}
+
+	if (g_is64bit) {
+		InstallServerErrorMsg(p->res64, p->errorCode64,
+				p->isUninstall, true, msg64, ARRAY_SIZE(msg64));
+	}
+	InstallServerErrorMsg(p->res32, p->errorCode32,
+			p->isUninstall, false, msg32, ARRAY_SIZE(msg32));
+
+	if (p->res32 == ISR_OK && p->res64 == ISR_OK) {
 		// DLL(s) registered successfully.
 		const TCHAR *msg;
 		if (g_is64bit) {
-			msg = (params->isUninstall
+			msg = (p->isUninstall
 				? _T("DLLs unregistered successfully.")
 				: _T("DLLs registered successfully."));
 		} else {
-			msg = (params->isUninstall
+			msg = (p->isUninstall
 				? _T("DLL unregistered successfully.")
 				: _T("DLL registered successfully."));
 		}
-		ShowStatusMessage(params->hWnd, msg, _T(""), MB_ICONINFORMATION);
+		ShowStatusMessage(p->hWnd, msg, _T(""), MB_ICONINFORMATION);
 		MessageBeep(MB_ICONINFORMATION);
 	} else {
 		// At least one of the DLLs failed to register.
@@ -521,22 +614,22 @@ static unsigned int WINAPI ThreadProc(LPVOID lpParameter)
 		msg2[0] = _T('\0');
 
 		if (g_is64bit) {
-			msg1 = (params->isUninstall
+			msg1 = (p->isUninstall
 				? _T("An error occurred while unregistering the DLLs:")
 				: _T("An error occurred while registering the DLLs:"));
 		} else {
-			msg1 = (params->isUninstall
+			msg1 = (p->isUninstall
 				? _T("An error occurred while unregistering the DLL:")
 				: _T("An error occurred while registering the DLL:"));
 		}
 
-		if (res32 != ISR_OK) {
+		if (p->res32 != ISR_OK) {
 			if (g_is64bit) {
 				_tcscpy_s(msg2, ARRAY_SIZE(msg2), BULLET _T(" 32-bit: "));
 			}
 			_tcscat_s(msg2, ARRAY_SIZE(msg2), msg32);
 		}
-		if (res64 != ISR_OK) {
+		if (p->res64 != ISR_OK) {
 			if (msg2[0] != _T('\0')) {
 				_tcscat_s(msg2, ARRAY_SIZE(msg2), _T("\n"));
 			}
@@ -544,20 +637,20 @@ static unsigned int WINAPI ThreadProc(LPVOID lpParameter)
 			_tcscat_s(msg2, ARRAY_SIZE(msg2), msg64);
 		}
 
-		ShowStatusMessage(params->hWnd, msg1, msg2, MB_ICONSTOP);
+		ShowStatusMessage(p->hWnd, msg1, msg2, MB_ICONSTOP);
 		MessageBeep(MB_ICONSTOP);
 	}
 
-	SendMessage(params->hWnd, WM_APP_ENDTASK, 0, 0);
-	return 0;
-}
-
-/**
- * Changes the cursor depending on wether installation is in progress.
- */
-static inline void DlgUpdateCursor(void)
-{
-	SetCursor(LoadCursor(NULL, g_inProgress ? IDC_WAIT : IDC_ARROW));
+	g_inProgress = false;
+	EnableButtons(p->hWnd, true);
+	DlgUpdateCursor();
+	// Clean up the structure so that it may be reused
+	p->hWnd = NULL;
+	p->isUninstall = false;
+	p->state = 0;
+	p->res32 = p->res64 = ISR_OK;
+	p->errorCode32 = p->errorCode64 = 0;
+	p->hProcess32 = p->hProcess64 = NULL;
 }
 
 /**
@@ -694,57 +787,14 @@ static void InitDialog(HWND hDlg)
  */
 static void HandleInstallUninstall(HWND hDlg, bool isUninstall)
 {
-	HANDLE hThread;
-	const TCHAR *msg;
-
 	if (g_inProgress) {
 		// Already (un)installing...
 		return;
 	}
-	g_inProgress = true;
 
-	if (g_is64bit) {
-		msg = (isUninstall
-			? _T("\n\nUnregistering DLLs...")
-			: _T("\n\nRegistering DLLs..."));
-	} else {
-		msg = (isUninstall
-			? _T("\n\nUnregistering DLL...")
-			: _T("\n\nRegistering DLL..."));
-	}
-	ShowStatusMessage(hDlg, msg, _T(""), 0);
-
-	EnableButtons(hDlg, false);
-	DlgUpdateCursor();
-
-	// The installation is done on a separate thread so that we don't lock the message loop
-	threadParams.hWnd = hDlg;
-	threadParams.isUninstall = isUninstall;
-	hThread = (HANDLE)_beginthreadex(NULL, 0, ThreadProc, &threadParams, 0, NULL);
-	if (!hThread) {
-		// Couldn't start the worker thread.
-		TCHAR threadErr[128];
-		TCHAR ultot_buf[_MAX_ULTOSTR_BASE10_COUNT];
-
-		const DWORD lastError = GetLastError();
-		_ultot_s(lastError, ultot_buf, ARRAY_SIZE(ultot_buf), 10);
-		_tcscpy_s(threadErr, ARRAY_SIZE(threadErr), BULLET _T(" Win32 error code: "));
-		_tcscat_s(threadErr, ARRAY_SIZE(threadErr), ultot_buf);
-
-		ShowStatusMessage(hDlg, _T("An error occurred while starting the worker thread."), threadErr, MB_ICONSTOP);
-		MessageBeep(MB_ICONSTOP);
-		EnableButtons(hDlg, true);
-		DlgUpdateCursor();
-
-		threadParams.hWnd = NULL;
-		threadParams.isUninstall = false;
-		g_inProgress = false;
-	} else {
-		// Install/uninstall thread is running.
-		// We don't need to keep the thread handle open.
-		CloseHandle(hThread);
-	}
-	return;
+	installParams.hWnd = hDlg;
+	installParams.isUninstall = isUninstall;
+	InstallProc64(&installParams);
 }
 
 /**
@@ -760,14 +810,23 @@ static INT_PTR CALLBACK DialogProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM l
 			DlgUpdateCursor();
 			return TRUE;
 
-		case WM_APP_ENDTASK:
-			// Install/uninstall thread has completed.
-			EnableButtons(hDlg, true);
-			DlgUpdateCursor();
-
-			g_inProgress = false;
-			threadParams.hWnd = NULL;
-			threadParams.isUninstall = false;
+		case WM_APP_SIGNAL:
+			assert(g_inProgress);
+			if (g_inProgress) {
+				struct InstallParams *params = (struct InstallParams*)wParam;
+				assert(params);
+				if (params) {
+					assert(params->state == 1 || params->state == 2);
+					switch (params->state) {
+					case 1:
+						InstallProc32(params);
+						break;
+					case 2:
+						InstallProcEnd(params);
+						break;
+					}
+				}
+			}
 			return TRUE;
 
 		case WM_COMMAND:
@@ -787,7 +846,8 @@ static INT_PTR CALLBACK DialogProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM l
 				case IDCANCEL:
 					// User pressed Escape.
 					if (!g_inProgress) {
-						EndDialog(hDlg, 0);
+						DestroyWindow(hDlg);
+						PostQuitMessage(0);
 					}
 					return TRUE;
 
@@ -839,7 +899,8 @@ static INT_PTR CALLBACK DialogProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM l
 
 		case WM_CLOSE:
 			if (!g_inProgress) {
-				EndDialog(hDlg, 0);
+				DestroyWindow(hDlg);
+				PostQuitMessage(0);
 			}
 			return TRUE;
 
@@ -848,6 +909,88 @@ static INT_PTR CALLBACK DialogProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM l
 	}
 
 	return FALSE;
+}
+
+struct MsgObjState {
+	HWND hWnd; /**< Window that should receive SIGNAL messages */
+	DWORD count; /**< Count of objects to wait on */
+	WPARAM params[MAXIMUM_WAIT_OBJECTS-1]; /**< wParams corresponding to objects */
+	HANDLE handles[MAXIMUM_WAIT_OBJECTS-1]; /**< Objects to wait on */
+};
+
+/**
+ * Get messages and wait for objects
+ *
+ * To wait for an object, post WM_APP_WAIT to the thread message queue with
+ * lParam=handle. When an object is signaled, the main window (state->hWnd)
+ * receives WM_APP_SIGNAL, with the same parameters as the WAIT message (thus
+ * WPARAM can be used to store additional state info).
+ * Both WAIT and SIGNAL messages imply transfer of handle ownership.
+ *
+ * @param msg same as GetMessage
+ * @param state state that should persist between calls
+ * @return same as GetMessage
+ */
+BOOL GetMessageObjects(MSG *msg, struct MsgObjState *state)
+{
+	BOOL bRet;
+	for (;;) {
+		DWORD ev = MsgWaitForMultipleObjects(state->count, state->handles, FALSE, INFINITE, QS_ALLINPUT);
+		if (ev == WAIT_OBJECT_0 + state->count) { // Message
+			if ((bRet = GetMessage(msg, NULL, 0, 0)) > 0 && msg->message == WM_APP_WAIT) {
+				if (state->count < MAXIMUM_WAIT_OBJECTS-1) {
+					// Add event
+					state->params[state->count] = msg->wParam;
+					state->handles[state->count] = (HANDLE)msg->lParam;
+					state->count++;
+				}
+			} else {
+				if (bRet == 0) { // Quitting
+					for (DWORD i = 0; i < state->count; i++) {
+						CloseHandle(state->handles[i]);
+					}
+					state->count = 0;
+				}
+				return bRet;
+			}
+		} else if (ev >= WAIT_OBJECT_0 && ev < WAIT_OBJECT_0 + state->count) { // Object
+			ev -= WAIT_OBJECT_0;
+			PostMessage(state->hWnd, WM_APP_SIGNAL, state->params[ev], (LPARAM)state->handles[ev]);
+			// Remove event
+			memmove(&state->params[ev], &state->params[ev+1], (state->count-(ev+1))*sizeof(WPARAM));
+			memmove(&state->handles[ev], &state->handles[ev+1], (state->count-(ev+1))*sizeof(HANDLE));
+			state->count--;
+		}
+		// FIXME: handle WAIT_FAILED and others?
+	}
+}
+/**
+ * Dialog message loop
+ */
+INT_PTR DialogLoop(HINSTANCE hInstance, LPCTSTR lpTemplateName, HWND hWndParent, DLGPROC lpDialogFunc, LPARAM dwInitParam)
+{
+	MSG msg;
+	BOOL bRet;
+	HWND hDlg;
+
+	if (!(hDlg = CreateDialogParam(hInstance, lpTemplateName, hWndParent, lpDialogFunc, dwInitParam))) {
+		return -1;
+	}
+
+	struct MsgObjState state = { hDlg };
+
+	while ((bRet = GetMessageObjects(&msg, &state)) != 0) {
+		if (bRet == -1) {
+			break;
+		} else if (!IsWindow(hDlg) || !IsDialogMessage(hDlg, &msg)) {
+			TranslateMessage(&msg);
+			DispatchMessage(&msg);
+		}
+	}
+	if (bRet == 0) {
+		return msg.wParam;
+	}
+	return -1;
 }
 
 /**
@@ -924,7 +1067,7 @@ int CALLBACK wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 
 	// Run the dialog.
 	// FIXME: SysLink controls won't work in ANSI builds.
-	DialogBox(hInstance, MAKEINTRESOURCE(IDD_SVRPLUS), NULL, DialogProc);
+	DialogLoop(hInstance, MAKEINTRESOURCE(IDD_SVRPLUS), NULL, DialogProc, 0L);
 
 	// Delete the icons.
 	if (hIconDialog) {
