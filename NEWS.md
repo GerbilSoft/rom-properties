@@ -23,6 +23,15 @@
     to another file browser window to extract them. This includes the icon,
     banner, and icons from ListView widgets.
     * Drag & drop support for Win32 and GTK+ may be implemented before release.
+  * Downloading functionality for online databases has been split out of the
+    DLL and into a separate executable. This will allow the downloading to be
+    handled in a lower privilege environment.
+    * Windows: On Vista and later, rp-download runs as a low-integrity process.
+      TODO before release: Add more security options; have rp-download drop
+      privileges if run directly.
+    * Linux: TODO: Need to set up apparmor, possibly libseccomp.
+  * Windows: The online database code has been rewritten to use WinInet
+    directly instead of urlmon, which reduces overhead.
 
 * New parsers:
   * DidjTex: Leapster Didj .tex and .texs texture files. For .texs, currently
