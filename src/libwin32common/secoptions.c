@@ -97,7 +97,7 @@ static DWORD HardenProcessIntegrityLevelPolicy(void)
 	DWORD dwLastError;
 	DWORD nLengthNeeded;
 	HANDLE hToken;
-	char *pSecurityDescriptor = nullptr;
+	char *pSecurityDescriptor = NULL;
 
 	PACL sacl = NULL;
 	BOOL sacl_present = FALSE;
@@ -228,7 +228,7 @@ int rp_secoptions_init(BOOL bHighSec)
 	// KERNEL32 is always loaded, so we don't need to use
 	// GetModuleHandleEx() here.
 	hKernel32 = GetModuleHandle(_T("kernel32.dll"));
-	assert(hKernel32 != nullptr);
+	assert(hKernel32 != NULL);
 	if (!hKernel32) {
 		// Should never happen...
 		return GetLastError();

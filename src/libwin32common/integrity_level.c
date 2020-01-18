@@ -48,7 +48,7 @@ static void initIsVista(void)
  *
  * Caller must call CloseHandle() on the token when done using it.
  *
- * @return Low-integrity token, or nullptr on error.
+ * @return Low-integrity token, or NULL on error.
  */
 HANDLE CreateLowIntegrityToken(void)
 {
@@ -90,7 +90,7 @@ HANDLE CreateLowIntegrityToken(void)
 	bRet = DuplicateTokenEx(
 		hToken,			// hExistingToken
 		0,			// dwDesiredAccess
-		nullptr,		// lpTokenAttributes
+		NULL,			// lpTokenAttributes
 		SecurityImpersonation,	// ImpersonationLevel
 		TokenPrimary,		// TokenType
 		&hNewToken);		// phNewToken
