@@ -55,22 +55,24 @@ typedef enum {
 
 /**
  * XEX1: Security info.
+ * NOTE: XEX1 is only used on early preproduction XDKs.
+ *
  * All fields are in big-endian.
  */
 typedef struct PACKED _XEX1_Security_Info {
-	// TODO: Verify some of these fields.
-	uint32_t header_size;		// [0x000] Header size [should be at least sizeof(XEX2_Security_Info)]
+	uint32_t header_size;		// [0x000] Header size [should be at least sizeof(XEX1_Security_Info)]
 	uint32_t image_size;		// [0x004] Image size (slightly larger than the .xex file)
 	uint8_t rsa_signature[0x100];	// [0x008] RSA-2048 signature
-	uint8_t unk_0x108[40];		// [0x108]
+	uint8_t image_sha1[0x14];	// [0x108] SHA-1 of the entire image?
+	uint8_t import_table_sha1[0x14]; // [0x11C] Import table SHA-1
 	uint32_t load_address;		// [0x130] Load address
 	uint8_t title_key[0x10];	// [0x134] AES-128 title key (encrypted)
 	uint8_t xgd2_media_id[0x10];	// [0x144] XGD2 media ID (TODO: Verify?)
 	uint32_t region_code;		// [0x154] Region code (See XEX2_Region_Code_e)
-	uint32_t unk_0x158;		// [0x158]
-	uint32_t unk_0x15C_vaddr;	// [0x15C] Some virtual address
+	uint32_t image_flags;		// [0x158] Image flags (See XEX2_Image_Flags_e)
+	uint32_t export_table;		// [0x15C] Export table offset (0 if none)
 	uint32_t allowed_media_types;	// [0x160] Allowed media types (See XEX2_Media_Types_e)
-	uint32_t page_descriptor_count;	// [0x164] Page descriptor count (these follow XEX2_Security_Info) [VERIFY?]
+	uint32_t page_descriptor_count;	// [0x164] Page descriptor count (these follow XEX2_Security_Info)
 } XEX1_Security_Info;
 ASSERT_STRUCT(XEX1_Security_Info, 0x168);
 

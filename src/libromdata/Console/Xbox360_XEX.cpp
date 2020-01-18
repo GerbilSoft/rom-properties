@@ -1242,6 +1242,7 @@ const Xbox360_XDBF *Xbox360_XEX_Private::initXDBF(void)
 				}
 			}
 		}
+		printf("Expected XDBF: physaddr == %08X, size == %08X\n", xdbf_physaddr, pResInfo->size);
 		peFile_tmp = new PartitionFile(peReader, xdbf_physaddr, pResInfo->size);
 	}
 	if (peFile_tmp->isOpen()) {
@@ -1419,7 +1420,6 @@ int Xbox360_XEX::isRomSupported_static(const DetectInfo *info)
 		return Xbox360_XEX_Private::XEX_TYPE_XEX2;
 	} else if (xex2Header->magic == cpu_to_be32(XEX1_MAGIC)) {
 		// We have an XEX1 file.
-		// TODO: Differences between XEX1 and XEX2.
 		return Xbox360_XEX_Private::XEX_TYPE_XEX1;
 	}
 
@@ -1656,12 +1656,12 @@ int Xbox360_XEX::loadFieldData(void)
 	d->fields->addField_bitfield(C_("Xbox360_XEX", "Module Flags"),
 		v_module_flags, 4, xex2Header->module_flags);
 
+	// Image flags.
+	// NOTE: Same for both XEX1 and XEX2 according to Xenia.
 	// TODO: Show image flags as-is?
-	// TODO: XEX1 image flags.
-	uint32_t image_flags = 0;
-	if (d->xexType != Xbox360_XEX_Private::XEX_TYPE_XEX1) {
-		image_flags = be32_to_cpu(d->secInfo.xex2.image_flags);
-	}
+	uint32_t image_flags = (d->xexType != Xbox360_XEX_Private::XEX_TYPE_XEX1)
+		? be32_to_cpu(d->secInfo.xex2.image_flags)
+		: be32_to_cpu(d->secInfo.xex1.image_flags);
 
 	// Media types
 	// NOTE: Using a string instead of a bitfield because very rarely
@@ -1750,9 +1750,6 @@ int Xbox360_XEX::loadFieldData(void)
 	};
 
 	// Convert region code to a bitfield.
-	// TODO: xex2Security layout is different for XEX1.
-	if (d->xexType != Xbox360_XEX_Private::XEX_TYPE_XEX1) {
-
 	const uint32_t region_code_xbx = be32_to_cpu(
 		(d->xexType != Xbox360_XEX_Private::XEX_TYPE_XEX1
 			? d->secInfo.xex2.region_code
@@ -1782,8 +1779,6 @@ int Xbox360_XEX::loadFieldData(void)
 		"Region", region_code_tbl, ARRAY_SIZE(region_code_tbl));
 	d->fields->addField_bitfield(C_("RomData", "Region Code"),
 		v_region_code, 4, region_code);
-
-	}
 
 	// Media ID
 	d->fields->addField_string(C_("Xbox360_XEX", "Media ID"),
