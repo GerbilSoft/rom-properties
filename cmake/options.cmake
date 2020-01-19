@@ -24,7 +24,7 @@ IF(UNIX AND NOT APPLE)
 	# NOTE: OPTION() only supports BOOL values.
 	# Reference: https://cmake.org/pipermail/cmake/2016-October/064342.html
 	OPTION_UI(KDE4 "Build the KDE4 plugin.")
-	OPTION_UI(KF5 "Build the KDE Frameowrks 5 plugin.")
+	OPTION_UI(KF5 "Build the KDE Frameworks 5 plugin.")
 	OPTION_UI(XFCE "Build the XFCE (GTK+ 2.x) plugin. (Thunar 1.7 and earlier)")
 	OPTION_UI(XFCE3 "Build the XFCE (GTK+ 3.x) plugin. (Thunar 1.8 and later)")
 	OPTION_UI(GNOME "Build the GNOME (GTK+ 3.x) plugin.")
