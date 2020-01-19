@@ -94,6 +94,8 @@
   * Nintendo3DS: Fixed decryption of games where the title ID does not
     match the program ID. This seems to show up in Traditional Chinese
     releases that use a Japanese region code instead of Taiwan.
+  * rpcli JSON output: Fixed RFT_LISTDATA commas, RFT_DIMENSIONS format,
+    and external image URLs format.
 
 * Other changes:
   * Removed the internal copy of libjpeg-turbo. On Windows, gdiplus is now

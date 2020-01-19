@@ -823,9 +823,9 @@ public:
 
 						bool did_one = false;
 						for (auto jt = it->cbegin(); jt != it->cend(); ++jt) {
-							if (!did_one) os << ',';
-							os << JSONString(jt->c_str());
+							if (did_one) os << ',';
 							did_one = true;
+							os << JSONString(jt->c_str());
 						}
 						os << ']';
 					}
@@ -889,14 +889,14 @@ public:
 				   << "},\"data\":";
 
 				const int *const dimensions = romField->data.dimensions;
-				os << "[\"w\":" << dimensions[0];
+				os << "{\"w\":" << dimensions[0];
 				if (dimensions[1] > 0) {
 					os << ",\"h\":" << dimensions[1];
 					if (dimensions[2] > 0) {
 						os << ",\"d\":" << dimensions[2];
 					}
 				}
-				os << "]}";
+				os << "}}";
 				break;
 			}
 
@@ -1108,15 +1108,15 @@ std::ostream& operator<<(std::ostream& os, const JSONROMOutput& fo) {
 		}
 		// NOTE: IMGPF_ICON_ANIMATED won't ever appear in external image
 		os << ",\"exturls\":[";
-		bool firsturl = true;
-
+		bool did_one = false;
 		for (auto iter = extURLs.cbegin(); iter != extURLs.cend(); ++iter) {
-			if (firsturl) firsturl = false;
-			else os << ',';
+			if (did_one) os << ',';
+			did_one = true;
 
 			os << "{\"url\":" << JSONString(iter->url.c_str());
 			os << ",\"cache_key\":" << JSONString(iter->cache_key.c_str()) << '}';
 		}
+		os << "]}";
 	}
 	if (!first) {
 		os << ']';
