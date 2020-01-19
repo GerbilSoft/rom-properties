@@ -48,6 +48,15 @@ class SystemRegion
 		 * @return ISO-639 language code as a uint32_t, or 0 on error.
 		 */
 		static uint32_t getLanguageCode(void);
+
+		/**
+		 * Get a localized name for a language code.
+		 * Localized means in that language's language,
+		 * e.g. 'es' -> "Español".
+		 * @param lc Language code.
+		 * @return Localized name, or nullptr if not found.
+		 */
+		static const char *getLocalizedLanguageName(uint32_t lc);
 };
 
 }

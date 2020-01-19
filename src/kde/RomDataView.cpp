@@ -13,6 +13,7 @@
 // librpbase
 #include "librpbase/RomData.hpp"
 #include "librpbase/RomFields.hpp"
+#include "librpbase/SystemRegion.hpp"
 #include "librpbase/TextFuncs.hpp"
 using namespace LibRpBase;
 
@@ -29,9 +30,11 @@ using LibRpTexture::rp_image;
 // C++ includes.
 #include <algorithm>
 #include <array>
+#include <set>
 #include <string>
 #include <vector>
 using std::array;
+using std::set;
 using std::string;
 using std::vector;
 
@@ -41,9 +44,12 @@ using std::vector;
 #include <QtCore/QTimer>
 #include <QtCore/QVector>
 
-#include <QLabel>
+#include <QActionGroup>
 #include <QCheckBox>
 #include <QHeaderView>
+#include <QLabel>
+#include <QMenu>
+#include <QPushButton>
 #include <QSpacerItem>
 #include <QTreeWidget>
 
@@ -81,6 +87,10 @@ class RomDataViewPrivate
 		// RFT_STRING_MULTI value labels.
 		typedef QPair<QLabel*, const RomFields::Field*> Data_StringMulti_t;
 		QVector<Data_StringMulti_t> vec_stringMulti;
+		// Popup menu for language selection.
+		QPushButton *btnLanguage;
+		QMenu *menuLanguage;
+		QActionGroup *actgrpLanguage;
 
 		// RomData object.
 		RomData *romData;
@@ -166,6 +176,13 @@ class RomDataViewPrivate
 		void initStringMulti(QLabel *lblDesc, const RomFields::Field *field);
 
 		/**
+		 * Convert a language code from uint32_t to a QString.
+		 * @param lc Language code.
+		 * @return String.
+		 */
+		static QString lcToQString(uint32_t lc);
+
+		/**
 		 * Update all multi-language string fields.
 		 * @param def_lc ROM-default language code.
 		 * @param user_lc User-specified language code.
@@ -201,6 +218,8 @@ class RomDataViewPrivate
 
 RomDataViewPrivate::RomDataViewPrivate(RomDataView *q, RomData *romData)
 	: q_ptr(q)
+	, menuLanguage(nullptr)
+	, actgrpLanguage(nullptr)
 	, romData(romData->ref())
 {
 	// Register RpQImageBackend.
@@ -909,12 +928,34 @@ void RomDataViewPrivate::initStringMulti(QLabel *lblDesc, const RomFields::Field
 }
 
 /**
+ * Convert a language code from uint32_t to a QString.
+ * @param lc Language code.
+ * @return String.
+ */
+QString RomDataViewPrivate::lcToQString(uint32_t lc)
+{
+	QString s_lc;
+	s_lc.reserve(4);
+	for (uint32_t tmp_lc = lc; tmp_lc != 0; tmp_lc <<= 8) {
+		ushort chr = (ushort)(tmp_lc >> 24);
+		if (chr != 0) {
+			s_lc += QChar(chr);
+		}
+	}
+	return s_lc;
+}
+
+/**
  * Update all multi-language string fields.
  * @param def_lc ROM-default language code.
  * @param user_lc User-specified language code.
  */
 void RomDataViewPrivate::updateStringMulti(uint32_t def_lc, uint32_t user_lc)
 {
+	// Set of supported language codes.
+	// NOTE: Using std::set instead of QSet for sorting.
+	set<uint32_t> set_lc;
+
 	foreach(const Data_StringMulti_t &data, vec_stringMulti) {
 		QLabel *const lblString = data.first;
 		const RomFields::Field *const field = data.second;
@@ -924,6 +965,16 @@ void RomDataViewPrivate::updateStringMulti(uint32_t def_lc, uint32_t user_lc)
 		if (!pStr_multi || pStr_multi->empty()) {
 			// Invalid multi-string...
 			continue;
+		}
+
+		if (!menuLanguage) {
+			// Need to add all supported languages.
+			// TODO: Do we need to do this for all of them, or just one?
+			for (auto iter = pStr_multi->cbegin();
+			     iter != pStr_multi->cend(); ++iter)
+			{
+				set_lc.insert(iter->first);
+			}
 		}
 
 		// Try the user-specified language code first.
@@ -943,6 +994,63 @@ void RomDataViewPrivate::updateStringMulti(uint32_t def_lc, uint32_t user_lc)
 
 		// Update the text.
 		lblString->setText(U82Q(iter->second.c_str()));
+	}
+
+	if (!menuLanguage && set_lc.size() > 1) {
+		// Create the language menu.
+		Q_Q(RomDataView);
+		menuLanguage = new QMenu(q);
+		actgrpLanguage = new QActionGroup(q);
+		actgrpLanguage->setExclusive(true);
+		QString s_name;
+		for (auto iter = set_lc.cbegin(); iter != set_lc.cend(); ++iter) {
+			const uint32_t lc = *iter;
+			const char *const name = SystemRegion::getLocalizedLanguageName(lc);
+			s_name = (name ? U82Q(name) : lcToQString(lc));
+
+			// TODO: Flag; QSignalMapper
+			QAction *const act_lc = new QAction(s_name);
+			act_lc->setData(lc);
+			act_lc->setCheckable(true);
+			actgrpLanguage->addAction(act_lc);
+			menuLanguage->addAction(act_lc);
+
+			// Save the default index:
+			// - ROM-default language code.
+			// - English if it's not available.
+			if (lc == def_lc) {
+				// Select this action.
+				act_lc->setChecked(true);
+			}
+			if (lc == 'en') {
+				// English. Select this action if def_lc hasn't been found yet.
+				if (!actgrpLanguage->checkedAction()) {
+					act_lc->setChecked(true);
+				}
+			}
+		}
+
+		// Language button.
+		btnLanguage = new QPushButton(q);
+		btnLanguage->setMenu(menuLanguage);
+		btnLanguage->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Fixed);
+		ui.hboxHeaderRow->addWidget(btnLanguage);
+
+		// Update btnLanguage's icon and text.
+		QAction *selAction = actgrpLanguage->checkedAction();
+		if (!selAction) {
+			// Nothing is selected...
+			// Select the first action.
+			QList<QAction*> actionList = menuLanguage->actions();
+			if (!actionList.empty()) {
+				selAction = actionList.first();
+				selAction->setChecked(true);
+			}
+		}
+		if (selAction) {
+			btnLanguage->setIcon(selAction->icon());
+			btnLanguage->setText(lcToQString(selAction->data().value<uint32_t>()));
+		}
 	}
 }
 
