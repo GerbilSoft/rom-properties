@@ -565,8 +565,13 @@ public:
 class StringMultiField {
 	size_t width;
 	const RomFields::Field *romField;
+	uint32_t lang;
 public:
-	StringMultiField(size_t width, const RomFields::Field *romField) :width(width), romField(romField) {}
+	StringMultiField(size_t width, const RomFields::Field *romField, uint32_t lang)
+		:width(width), romField(romField), lang(lang)
+	{
+		assert(this->lang != 0);
+	}
 	friend ostream& operator<<(ostream& os, const StringMultiField& field) {
 		// NOTE: nullptr string is an empty string, not an error.
 		auto romField = field.romField;
@@ -574,9 +579,7 @@ public:
 
 		const auto *const pStr_multi = romField->data.str_multi;
 		if (pStr_multi && !pStr_multi->empty()) {
-			// TODO: User-specified language code? Using default for now.
-			auto iter = pStr_multi->find(romField->desc.str_multi.str_default);
-			assert(iter != pStr_multi->end());
+			auto iter = pStr_multi->find(field.lang);
 			if (iter == pStr_multi->end()) {
 				// Not found. Use the first string.
 				iter = pStr_multi->begin();
@@ -606,6 +609,11 @@ public:
 
 		const int tabCount = fo.fields.tabCount();
 		int tabIdx = -1;
+
+		// Default language code.
+		// TODO: Allow the user to override this?
+		uint32_t defaultLanguageCode = fo.fields.defaultLanguageCode();
+		assert(defaultLanguageCode != 0);
 
 		bool printed_first = false;
 		for (int i = 0; i < fo.fields.count(); i++) {
@@ -666,7 +674,7 @@ public:
 				break;
 			}
 			case RomFields::RFT_STRING_MULTI: {
-				os << StringMultiField(maxWidth, romField);
+				os << StringMultiField(maxWidth, romField, defaultLanguageCode);
 				break;
 			}
 			default: {

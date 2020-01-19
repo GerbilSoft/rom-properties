@@ -501,10 +501,10 @@ int Nintendo3DS_SMDH::loadFieldData(void)
 		}
 	}
 
-	const uint32_t str_default = d->getDefaultLanguageCode();
-	d->fields->addField_string_multi(C_("Nintendo3DS", "Title"), pMap_desc_short, str_default);
-	d->fields->addField_string_multi(C_("Nintendo3DS", "Full Title"), pMap_desc_long, str_default);
-	d->fields->addField_string_multi(C_("Nintendo3DS", "Publisher"), pMap_publisher, str_default);
+	const uint32_t defaultLanguageCode = d->getDefaultLanguageCode();
+	d->fields->addField_string_multi(C_("Nintendo3DS", "Title"), pMap_desc_short, defaultLanguageCode);
+	d->fields->addField_string_multi(C_("Nintendo3DS", "Full Title"), pMap_desc_long, defaultLanguageCode);
+	d->fields->addField_string_multi(C_("Nintendo3DS", "Publisher"), pMap_publisher, defaultLanguageCode);
 
 	// Region code.
 	// Maps directly to the SMDH field.

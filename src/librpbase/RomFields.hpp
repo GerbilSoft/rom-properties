@@ -214,13 +214,6 @@ class RomFields
 						uint32_t data;		// Data alignment
 					} alignment;
 				} list_data;
-				struct _str_multi {
-					// Flags.
-					unsigned int flags;
-
-					// Default language code.
-					uint32_t str_default;
-				} str_multi;
 			} desc;
 
 			// Field data.
@@ -376,6 +369,12 @@ class RomFields
 		 * @return Tab name, or nullptr if no name is set.
 		 */
 		const char *tabName(int tabIdx) const;
+
+		/**
+		 * Get the default language code for RFT_STRING_MULTI.
+		 * @return Default language code, or 0 if not set.
+		 */
+		uint32_t defaultLanguageCode(void) const;
 
 		/** Fields **/
 
@@ -611,12 +610,12 @@ class RomFields
 		 * NOTE: This object takes ownership of the map.
 		 * @param name Field name.
 		 * @param str_multi Map of strings with language codes.
-		 * @param str_default Default language code.
+		 * @param defaultLanguageCode Default language code.
 		 * @param flags Formatting flags.
 		 * @return Field index, or -1 on error.
 		 */
 		int addField_string_multi(const char *name, const StringMultiMap_t *str_multi,
-			uint32_t str_default = 'en', unsigned int flags = 0);
+			uint32_t defaultLanguageCode = 'en', unsigned int flags = 0);
 };
 
 }
