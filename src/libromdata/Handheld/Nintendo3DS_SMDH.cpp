@@ -61,7 +61,7 @@ class Nintendo3DS_SMDH_Private : public RomDataPrivate
 		const rp_image *loadIcon(int idx = 1);
 
 		// N3DS_Language_ID system language code mapping.
-		static const uint32_t N3DS_LangID_to_sysLang[N3DS_LANG_MAX];
+		static const uint32_t N3DS_LangID_to_lc[N3DS_LANG_MAX];
 
 		/**
 		 * Get the language ID to use for the title fields.
@@ -73,14 +73,14 @@ class Nintendo3DS_SMDH_Private : public RomDataPrivate
 		 * Get the default language code for the multi-string fields.
 		 * @return Language code, e.g. 'en' or 'es'.
 		 */
-		inline uint32_t getDefaultLanguageCode(void) const;
+		inline uint32_t getDefaultLC(void) const;
 };
 
 /** Nintendo3DS_SMDH_Private **/
 
 // N3DS_Language_ID system language code mapping.
-const uint32_t Nintendo3DS_SMDH_Private::N3DS_LangID_to_sysLang[N3DS_LANG_MAX] = {
-	'jp',	// N3DS_LANG_JAPANESE
+const uint32_t Nintendo3DS_SMDH_Private::N3DS_LangID_to_lc[N3DS_LANG_MAX] = {
+	'ja',	// N3DS_LANG_JAPANESE
 	'en',	// N3DS_LANG_ENGLISH
 	'fr',	// N3DS_LANG_FRENCH
 	'de',	// N3DS_LANG_GERMAN
@@ -177,8 +177,8 @@ N3DS_Language_ID Nintendo3DS_SMDH_Private::getLangID(void) const
 	// TODO: Verify against the game's region code?
 	N3DS_Language_ID langID = static_cast<N3DS_Language_ID>(NintendoLanguage::getN3DSLanguage());
 	assert(langID >= 0);
-	assert(langID < ARRAY_SIZE(N3DS_LangID_to_sysLang));
-	if (langID < 0 || langID >= ARRAY_SIZE(N3DS_LangID_to_sysLang)) {
+	assert(langID < ARRAY_SIZE(N3DS_LangID_to_lc));
+	if (langID < 0 || langID >= ARRAY_SIZE(N3DS_LangID_to_lc)) {
 		// This is bad...
 		// Default to English.
 		langID = N3DS_LANG_ENGLISH;
@@ -210,20 +210,20 @@ N3DS_Language_ID Nintendo3DS_SMDH_Private::getLangID(void) const
  * Get the default language code for the multi-string fields.
  * @return Language code, e.g. 'en' or 'es'.
  */
-inline uint32_t Nintendo3DS_SMDH_Private::getDefaultLanguageCode(void) const
+inline uint32_t Nintendo3DS_SMDH_Private::getDefaultLC(void) const
 {
 	// Get the system language.
 	// TODO: Verify against the game's region code?
 	N3DS_Language_ID langID = getLangID();
 	assert(langID >= 0);
-	assert(langID < ARRAY_SIZE(N3DS_LangID_to_sysLang));
-	if (langID < 0 || langID >= ARRAY_SIZE(N3DS_LangID_to_sysLang)) {
+	assert(langID < ARRAY_SIZE(N3DS_LangID_to_lc));
+	if (langID < 0 || langID >= ARRAY_SIZE(N3DS_LangID_to_lc)) {
 		// This is bad...
 		// Default to English.
 		langID = N3DS_LANG_ENGLISH;
 	}
 
-	return N3DS_LangID_to_sysLang[langID];
+	return N3DS_LangID_to_lc[langID];
 }
 
 /** Nintendo3DS_SMDH **/
@@ -480,31 +480,31 @@ int Nintendo3DS_SMDH::loadFieldData(void)
 	for (unsigned int langID = 0; langID < N3DS_LANG_MAX; langID++) {
 		if (smdhHeader->titles[langID].desc_short[0] != '\0') {
 			pMap_desc_short->insert(std::make_pair(
-				Nintendo3DS_SMDH_Private::N3DS_LangID_to_sysLang[langID],
+				Nintendo3DS_SMDH_Private::N3DS_LangID_to_lc[langID],
 				utf16le_to_utf8(
 					smdhHeader->titles[langID].desc_short,
 					ARRAY_SIZE(smdhHeader->titles[langID].desc_short))));
 		}
 		if (smdhHeader->titles[langID].desc_long[0] != '\0') {
 			pMap_desc_long->insert(std::make_pair(
-				Nintendo3DS_SMDH_Private::N3DS_LangID_to_sysLang[langID],
+				Nintendo3DS_SMDH_Private::N3DS_LangID_to_lc[langID],
 				utf16le_to_utf8(
 					smdhHeader->titles[langID].desc_long,
 					ARRAY_SIZE(smdhHeader->titles[langID].desc_long))));
 		}
 		if (smdhHeader->titles[langID].publisher[0] != '\0') {
 			pMap_publisher->insert(std::make_pair(
-				Nintendo3DS_SMDH_Private::N3DS_LangID_to_sysLang[langID],
+				Nintendo3DS_SMDH_Private::N3DS_LangID_to_lc[langID],
 				utf16le_to_utf8(
 					smdhHeader->titles[langID].publisher,
 					ARRAY_SIZE(smdhHeader->titles[langID].publisher))));
 		}
 	}
 
-	const uint32_t defaultLanguageCode = d->getDefaultLanguageCode();
-	d->fields->addField_string_multi(C_("Nintendo3DS", "Title"), pMap_desc_short, defaultLanguageCode);
-	d->fields->addField_string_multi(C_("Nintendo3DS", "Full Title"), pMap_desc_long, defaultLanguageCode);
-	d->fields->addField_string_multi(C_("Nintendo3DS", "Publisher"), pMap_publisher, defaultLanguageCode);
+	const uint32_t def_lc = d->getDefaultLC();
+	d->fields->addField_string_multi(C_("Nintendo3DS", "Title"), pMap_desc_short, def_lc);
+	d->fields->addField_string_multi(C_("Nintendo3DS", "Full Title"), pMap_desc_long, def_lc);
+	d->fields->addField_string_multi(C_("Nintendo3DS", "Publisher"), pMap_publisher, def_lc);
 
 	// Region code.
 	// Maps directly to the SMDH field.
