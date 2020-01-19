@@ -93,15 +93,30 @@ project uses the CMake build system.
 
 Clone the repository, then open an MSVC or MinGW command prompt and run the
 following commands from your rom-properties repository directory:
-* mkdir build
-* cd build
-* cmake .. -G "Visual Studio 15 2017"
-* make
-* cd src\win32
-* regsvr32 rom-properties.dll
+
+MSVC 2010-2017:
+```
+mkdir build
+cd build
+cmake .. -G "Visual Studio 15 2017 Win64"
+cmake --build . --config Release
+```
 
 Replace "Visual Studio 15 2017" with the version of Visual Studio you have
-installed. Add "Win64" after the year for a 64-bit version.
+installed. Leave out "Win64" to build a 32-bit version.
+
+MSVC 2019:
+```
+mkdir build
+cd build
+cmake .. -G "Visual Studio 16 2019" -A "x64"
+cmake --build . --config Release
+```
+
+Replace "x64" with "Win32" to build a 32-bit version.
+
+After building, you will need to run `regsvr32 rom-properties.dll` from
+the `build\bin\Release` directory as Administrator.
 
 Caveats:
 * Registering rom-properties.dll hard-codes the full path in the registry.
