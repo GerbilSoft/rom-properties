@@ -92,8 +92,6 @@
   * CurlDownloader: Use a case-insensitive check for HTTP headers.
     cURL provides headers in lowercase when accessing an HTTP/2 server.
     This fixes handling of mtimes and content length.
-  * UrlmonDownloader: Handle ERROR_INSUFFICIENT_BUFFER for the cache info
-    entry correctly. Otherwise, we won't get the mtime.
   * Fixed some CBC decryption issues on Windows XP. This mostly affected
     decrypting Xbox 360 executables.
   * Nintendo3DS: Fixed decryption of games where the title ID does not
