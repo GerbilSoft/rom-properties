@@ -1,3 +1,4 @@
+etc/apparmor.d/*.rp-download
 usr/bin/rp-stub
 usr/bin/rp-config
 usr/lib/*/libexec/rp-download

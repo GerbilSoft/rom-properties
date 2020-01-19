@@ -47,6 +47,9 @@ IF(UNIX AND NOT APPLE)
 	SET(DIR_INSTALL_DLL_DEBUG "lib/debug/${CMAKE_INSTALL_PREFIX}/${DIR_INSTALL_DLL}")
 	SET(DIR_INSTALL_LIB_DEBUG "lib/debug/${CMAKE_INSTALL_PREFIX}/${DIR_INSTALL_LIB}")
 	SET(DIR_INSTALL_LIBEXEC_DEBUG "lib/debug/${CMAKE_INSTALL_PREFIX}/${DIR_INSTALL_LIBEXEC}")
+
+	# AppArmor profile directory
+	SET(DIR_INSTALL_APPARMOR "/etc/apparmor.d")
 ELSEIF(APPLE)
 	# Mac OS X-style install paths.
 	# Install should be relative to the application bundle.
