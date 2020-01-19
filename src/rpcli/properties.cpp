@@ -579,6 +579,8 @@ public:
 		os << ColonPad(field.width, romField->name.c_str());
 
 		const auto *const pStr_multi = romField->data.str_multi;
+		assert(pStr_multi != nullptr);
+		assert(!pStr_multi->empty());
 		if (pStr_multi && !pStr_multi->empty()) {
 			// Try the user-specified language code first.
 			// TODO: Consolidate ->end() calls?
