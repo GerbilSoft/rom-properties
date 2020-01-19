@@ -39,6 +39,7 @@ using std::vector;
 #include <QtCore/QDateTime>
 #include <QtCore/QEvent>
 #include <QtCore/QTimer>
+#include <QtCore/QVector>
 
 #include <QLabel>
 #include <QCheckBox>
@@ -77,6 +78,10 @@ class RomDataViewPrivate
 		};
 		vector<tab> tabs;
 
+		// RFT_STRING_MULTI value labels.
+		typedef QPair<QLabel*, const RomFields::Field*> Data_StringMulti_t;
+		QVector<Data_StringMulti_t> vec_stringMulti;
+
 		// RomData object.
 		RomData *romData;
 
@@ -97,8 +102,9 @@ class RomDataViewPrivate
 		 * @param lblDesc	[in] Description label.
 		 * @param field		[in] RomFields::Field
 		 * @param str		[in,opt] String data. (If nullptr, field data is used.)
+		 * @return QLabel*, or nullptr on error.
 		 */
-		void initString(QLabel *lblDesc, const RomFields::Field *field, const QString *str = nullptr);
+		QLabel *initString(QLabel *lblDesc, const RomFields::Field *field, const QString *str = nullptr);
 
 		/**
 		 * Initialize a string field.
@@ -106,7 +112,7 @@ class RomDataViewPrivate
 		 * @param field		[in] RomFields::Field
 		 * @param str		[in,opt] String data. (If nullptr, field data is used.)
 		 */
-		inline void initString(QLabel *lblDesc, const RomFields::Field *field, const QString &str)
+		inline QLabel *initString(QLabel *lblDesc, const RomFields::Field *field, const QString &str)
 		{
 			return initString(lblDesc, field, &str);
 		}
@@ -151,6 +157,20 @@ class RomDataViewPrivate
 		 * @param field		[in] RomFields::Field
 		 */
 		void initDimensions(QLabel *lblDesc, const RomFields::Field *field);
+
+		/**
+		 * Initialize a multi-language string field.
+		 * @param lblDesc	[in] Description label.
+		 * @param field		[in] RomFields::Field
+		 */
+		void initStringMulti(QLabel *lblDesc, const RomFields::Field *field);
+
+		/**
+		 * Update all multi-language string fields.
+		 * @param def_lc ROM-default language code.
+		 * @param user_lc User-specified language code.
+		 */
+		void updateStringMulti(uint32_t def_lc, uint32_t user_lc);
 
 		/**
 		 * Initialize the display widgets.
@@ -362,8 +382,9 @@ void RomDataViewPrivate::clearLayout(QLayout *layout)
  * @param lblDesc	[in] Description label.
  * @param field		[in] RomFields::Field
  * @param str		[in,opt] String data. (If nullptr, field data is used.)
+ * @return QLabel*, or nullptr on error.
  */
-void RomDataViewPrivate::initString(QLabel *lblDesc, const RomFields::Field *field, const QString *str)
+QLabel *RomDataViewPrivate::initString(QLabel *lblDesc, const RomFields::Field *field, const QString *str)
 {
 	// String type.
 	Q_Q(RomDataView);
@@ -443,6 +464,7 @@ void RomDataViewPrivate::initString(QLabel *lblDesc, const RomFields::Field *fie
 		} else {
 			// Duplicate credits label.
 			delete lblString;
+			lblString = nullptr;
 		}
 
 		// No description field.
@@ -451,6 +473,8 @@ void RomDataViewPrivate::initString(QLabel *lblDesc, const RomFields::Field *fie
 		// Standard string row.
 		tab.formLayout->addRow(lblDesc, lblString);
 	}
+
+	return lblString;
 }
 
 /**
@@ -866,6 +890,63 @@ void RomDataViewPrivate::initDimensions(QLabel *lblDesc, const RomFields::Field 
 }
 
 /**
+ * Initialize a multi-language string field.
+ * @param lblDesc	[in] Description label.
+ * @param field		[in] RomFields::Field
+ */
+void RomDataViewPrivate::initStringMulti(QLabel *lblDesc, const RomFields::Field *field)
+{
+	// Mutli-language string.
+	// NOTE: The string contents won't be initialized here.
+	// They will be initialized separately, since the user will
+	// be able to change the displayed language.
+	Q_Q(RomDataView);
+	QString qs_empty;
+	QLabel *const lblStringMulti = initString(lblDesc, field, &qs_empty);
+	if (lblStringMulti) {
+		vec_stringMulti.append(Data_StringMulti_t(lblStringMulti, field));
+	}
+}
+
+/**
+ * Update all multi-language string fields.
+ * @param def_lc ROM-default language code.
+ * @param user_lc User-specified language code.
+ */
+void RomDataViewPrivate::updateStringMulti(uint32_t def_lc, uint32_t user_lc)
+{
+	foreach(const Data_StringMulti_t &data, vec_stringMulti) {
+		QLabel *const lblString = data.first;
+		const RomFields::Field *const field = data.second;
+		const auto *const pStr_multi = field->data.str_multi;
+		assert(pStr_multi != nullptr);
+		assert(!pStr_multi->empty());
+		if (!pStr_multi || pStr_multi->empty()) {
+			// Invalid multi-string...
+			continue;
+		}
+
+		// Try the user-specified language code first.
+		// TODO: Consolidate ->end() calls?
+		// TODO: Skip if user_lc == 0?
+		auto iter = pStr_multi->find(user_lc);
+		if (iter == pStr_multi->end()) {
+			// Not found. Try the ROM-default language code.
+			if (def_lc != user_lc) {
+				iter = pStr_multi->find(def_lc);
+				if (iter == pStr_multi->end()) {
+					// Still not found. Use the first string.
+					iter = pStr_multi->begin();
+				}
+			}
+		}
+
+		// Update the text.
+		lblString->setText(U82Q(iter->second.c_str()));
+	}
+}
+
+/**
  * Initialize the display widgets.
  * If the widgets already exist, they will
  * be deleted and recreated.
@@ -1022,7 +1103,16 @@ void RomDataViewPrivate::initDisplayWidgets(void)
 			case RomFields::RFT_DIMENSIONS:
 				initDimensions(lblDesc, field);
 				break;
+			case RomFields::RFT_STRING_MULTI:
+				initStringMulti(lblDesc, field);
+				break;
 		}
+	}
+
+	// Initial update of RFT_MULTI_STRING fields.
+	if (!vec_stringMulti.isEmpty()) {
+		// TODO: user_lc
+		updateStringMulti(fields->defaultLanguageCode(), 0);
 	}
 
 	// Check if the last field in the last tab
