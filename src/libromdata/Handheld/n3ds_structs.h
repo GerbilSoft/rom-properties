@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * n3ds_structs.h: Nintendo 3DS data structures.                           *
  *                                                                         *
- * Copyright (c) 2016-2017 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -139,6 +139,8 @@ typedef enum {
 	N3DS_LANG_PORTUGUESE	= 9,
 	N3DS_LANG_RUSSIAN	= 10,
 	N3DS_LANG_CHINESE_TRAD	= 11,
+
+	N3DS_LANG_MAX
 } N3DS_Language_ID;
 
 // NOTE: Windows SDK defines 'small' as 'char' for IDL.

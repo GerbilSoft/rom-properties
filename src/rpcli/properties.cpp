@@ -137,6 +137,7 @@ public:
 		return process(*this);
 	}
 };
+
 class StringField {
 	size_t width;
 	const RomFields::Field *romField;
@@ -561,6 +562,34 @@ public:
 	}
 };
 
+class StringMultiField {
+	size_t width;
+	const RomFields::Field *romField;
+public:
+	StringMultiField(size_t width, const RomFields::Field *romField) :width(width), romField(romField) {}
+	friend ostream& operator<<(ostream& os, const StringMultiField& field) {
+		// NOTE: nullptr string is an empty string, not an error.
+		auto romField = field.romField;
+		os << ColonPad(field.width, romField->name.c_str());
+
+		const auto *const pStr_multi = romField->data.str_multi;
+		if (pStr_multi && !pStr_multi->empty()) {
+			// TODO: User-specified language code? Using default for now.
+			auto iter = pStr_multi->find(romField->desc.str_multi.str_default);
+			assert(iter != pStr_multi->end());
+			if (iter == pStr_multi->end()) {
+				// Not found. Use the first string.
+				iter = pStr_multi->begin();
+			}
+			os << SafeString(&iter->second, true, field.width);
+		} else {
+			// Empty string.
+			os << "''";
+		}
+		return os;
+	}
+};
+
 class FieldsOutput {
 	const RomFields& fields;
 public:
@@ -634,6 +663,10 @@ public:
 			}
 			case RomFields::RFT_DIMENSIONS: {
 				os << DimensionsField(maxWidth, romField);
+				break;
+			}
+			case RomFields::RFT_STRING_MULTI: {
+				os << StringMultiField(maxWidth, romField);
 				break;
 			}
 			default: {
@@ -864,6 +897,32 @@ public:
 					}
 				}
 				os << "]}";
+				break;
+			}
+
+			case RomFields::RFT_STRING_MULTI: {
+				// TODO: Sort languages by name?
+				os << "{\"type\":\"STRING\",\"desc\":{\"name\":" << JSONString(romField->name.c_str())
+				   << ",\"format\":" << romField->desc.flags
+				   << "},\"data\":{\n";
+				const auto *const pStr_multi = romField->data.str_multi;
+				bool didFirst = false;
+				for (auto iter = pStr_multi->cbegin(); iter != pStr_multi->cend(); ++iter) {
+					// Convert the language code to ASCII.
+					if (didFirst) {
+						os << ",\n";
+					}
+					didFirst = true;
+					os << "\t\"";
+					for (uint32_t langCode = iter->first; langCode != 0; langCode <<= 8) {
+						char chr = (char)(langCode >> 24);
+						if (chr != 0) {
+							os << chr;
+						}
+					}
+					os << "\":" << JSONString(iter->second.c_str());
+				}
+				os << "\n}}";
 				break;
 			}
 
