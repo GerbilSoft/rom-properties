@@ -140,7 +140,21 @@ INSTALL(TARGETS rpcli
 	#ARCHIVE DESTINATION "${DIR_INSTALL_LIB}"
 	COMPONENT "program"
 	)
+IF(INSTALL_APPARMOR)
+	# AppArmor profile (Linux only)
+	# Convert the full path to use '.' instead of '/'.
+	STRING(REPLACE "/" "." APPARMOR_CONF "${CMAKE_INSTALL_PREFIX}/${DIR_INSTALL_EXE}/rpcli")
+	# Remove the leading slash if present.
+	STRING(REGEX REPLACE "^\\." "" APPARMOR_CONF "${APPARMOR_CONF}")
+
+	INSTALL(FILES rpcli.apparmor.conf
+		RENAME "${APPARMOR_CONF}"
+		DESTINATION "${DIR_INSTALL_APPARMOR}"
+		COMPONENT "apparmor"
+		)
+ENDIF(INSTALL_APPARMOR)
 IF(INSTALL_DEBUG)
+	# Split debug file
 	# FIXME: Generator expression $<TARGET_PROPERTY:${_target},PDB> didn't work with CPack-3.6.1.
 	GET_TARGET_PROPERTY(DEBUG_FILENAME rpcli PDB)
 	INSTALL(FILES "${DEBUG_FILENAME}"

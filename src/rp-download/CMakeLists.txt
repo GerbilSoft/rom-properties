@@ -100,20 +100,20 @@ INSTALL(TARGETS rp-download
 	COMPONENT "plugin"
 	)
 IF(INSTALL_APPARMOR)
-	# Convert the full path of rp-download to use '.' instead of '/'.
-	STRING(REPLACE "/" "." RP_DOWNLOAD_APPARMOR_CONF "${CMAKE_INSTALL_PREFIX}/${DIR_INSTALL_LIBEXEC}/rp-download")
+	# AppArmor profile (Linux only)
+	# Convert the full path to use '.' instead of '/'.
+	STRING(REPLACE "/" "." APPARMOR_CONF "${CMAKE_INSTALL_PREFIX}/${DIR_INSTALL_LIBEXEC}/rp-download")
 	# Remove the leading slash if present.
-	STRING(REGEX REPLACE "^\\." "" RP_DOWNLOAD_APPARMOR_CONF "${RP_DOWNLOAD_APPARMOR_CONF}")
+	STRING(REGEX REPLACE "^\\." "" APPARMOR_CONF "${APPARMOR_CONF}")
 
 	INSTALL(FILES rp-download.apparmor.conf
-		RENAME "${RP_DOWNLOAD_APPARMOR_CONF}"
+		RENAME "${APPARMOR_CONF}"
 		DESTINATION "${DIR_INSTALL_APPARMOR}"
 		COMPONENT "apparmor"
 		)
 ENDIF(INSTALL_APPARMOR)
-
-# Check if a split debug file should be installed.
 IF(INSTALL_DEBUG)
+	# Split debug file
 	# FIXME: Generator expression $<TARGET_PROPERTY:${_target},PDB> didn't work with CPack-3.6.1.
 	GET_TARGET_PROPERTY(DEBUG_FILENAME rp-download PDB)
 	IF(DEBUG_FILENAME)
