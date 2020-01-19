@@ -64,7 +64,7 @@ IF(ECM_MODULE_PATH AND ECM_KDE_MODULE_DIR)
 		FIND_PACKAGE(KF5 ${REQUIRE_KF5} COMPONENTS KIO WidgetsAddons FileMetaData)
 		IF(NOT KF5KIO_FOUND OR NOT KF5WidgetsAddons_FOUND OR NOT KF5FileMetaData_FOUND)
 			# KF5 not found.
-			SET(BUILD_KF5 OFF CACHE INTERNAL "Build the KF5 plugin." FORCE)
+			SET(BUILD_KF5 OFF CACHE INTERNAL "Build the KDE Frameowrks 5 plugin." FORCE)
 		ENDIF(NOT KF5KIO_FOUND OR NOT KF5WidgetsAddons_FOUND OR NOT KF5FileMetaData_FOUND)
 
 		# TODO: Can we get the subdirectory from KFileMetaData?
@@ -72,11 +72,11 @@ IF(ECM_MODULE_PATH AND ECM_KDE_MODULE_DIR)
 		SET(KFOV_PLUGIN_INSTALL_DIR "${PLUGIN_INSTALL_DIR}/kf5/overlayicon")
 	ELSE()
 		# Qt5 not found.
-		SET(BUILD_KF5 OFF CACHE INTERNAL "Build the KF5 plugin." FORCE)
+		SET(BUILD_KF5 OFF CACHE INTERNAL "Build the KDE Frameowrks 5 plugin." FORCE)
 	ENDIF()
 ELSE()
 	# KF5 Extra CMake Modules not found.
-	SET(BUILD_KF5 OFF CACHE INTERNAL "Build the KF5 plugin." FORCE)
+	SET(BUILD_KF5 OFF CACHE INTERNAL "Build the KDE Frameowrks 5 plugin." FORCE)
 ENDIF()
 
 # Sources and headers. (common)
