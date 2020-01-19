@@ -38,14 +38,16 @@ if they decide not to allow both ThunarX2 and ThunarX3 to be installed
 side-by-side.
 
 Clone the repository, then:
-* cd rom-properties
-* mkdir build
-* cd build
-* cmake .. -DCMAKE_INSTALL_PREFIX=/usr
-* make
-* sudo make install
-* (KDE 4.x) kbuildsycoca4 --noincremental
-* (KDE 5.x) kbuildsycoca5 --noincremental
+```
+$ cd rom-properties
+$ mkdir build
+$ cd build
+$ cmake .. -DCMAKE_INSTALL_PREFIX=/usr
+$ make
+$ sudo make install
+(KDE 4.x) $ kbuildsycoca4 --noincremental
+(KDE 5.x) $ kbuildsycoca5 --noincremental
+```
 
 NOTE: Neither KDE 4.x nor KDE 5.x will find the rom-properties plugin if it's
 installed in /usr/local/. It must be installed in /usr/.
