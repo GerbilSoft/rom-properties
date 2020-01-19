@@ -32,7 +32,9 @@
         * Have rp-download drop privileges if run directly.
         * If rp-download.exe isn't in the current directory, check the
           architecture-specific subdirectory.
-    * Linux: TODO: Need to set up apparmor, possibly libseccomp.
+    * Linux: Added AppArmor profiles for rp-download and rpcli.
+      * rp-stub AppArmor profiles will be added in a future release.
+      * libseccomp support will be added in a future release.
   * Windows: The online database code has been rewritten to use WinInet
     directly instead of urlmon, which reduces overhead.
 
