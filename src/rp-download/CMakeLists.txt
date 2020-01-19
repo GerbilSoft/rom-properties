@@ -99,7 +99,7 @@ INSTALL(TARGETS rp-download
 	RUNTIME DESTINATION "${DIR_INSTALL_LIBEXEC}"
 	COMPONENT "plugin"
 	)
-IF(UNIX AND NOT APPLE)
+IF(INSTALL_APPARMOR)
 	# Convert the full path of rp-download to use '.' instead of '/'.
 	STRING(REPLACE "/" "." RP_DOWNLOAD_APPARMOR_CONF "${CMAKE_INSTALL_PREFIX}/${DIR_INSTALL_LIBEXEC}/rp-download")
 	# Remove the leading slash if present.
@@ -110,7 +110,7 @@ IF(UNIX AND NOT APPLE)
 		DESTINATION "${DIR_INSTALL_APPARMOR}"
 		COMPONENT "apparmor"
 		)
-ENDIF(UNIX AND NOT APPLE)
+ENDIF(INSTALL_APPARMOR)
 
 # Check if a split debug file should be installed.
 IF(INSTALL_DEBUG)
