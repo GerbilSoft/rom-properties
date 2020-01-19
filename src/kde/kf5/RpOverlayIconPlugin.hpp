@@ -6,7 +6,7 @@
  * multiple plugins, so this file acts as a KOverlayIconPlugin,            *
  * and then forwards the request to the main library.                      *
  *                                                                         *
- * Copyright (c) 2018 by David Korth.                                      *
+ * Copyright (c) 2018-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -43,8 +43,8 @@ typedef RpOverlayIconPlugin* (*pfn_createOverlayIconPluginKDE_t)(QObject *parent
 #if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
 # error Qt6 is not supported.
 #elif QT_VERSION >= QT_VERSION_CHECK(5,0,0)
-# define PFN_CREATEOVERLAYICONPLUGINKDE_FN createOverlayIconPluginKDE5
-# define PFN_CREATEOVERLAYICONPLUGINKDE_NAME "createOverlayIconPluginKDE5"
+# define PFN_CREATEOVERLAYICONPLUGINKDE_FN createOverlayIconPluginKF5
+# define PFN_CREATEOVERLAYICONPLUGINKDE_NAME "createOverlayIconPluginKF5"
 #else /* QT_VERSION < QT_VERSION_CHECK(5,0,0) */
 # define PFN_CREATEOVERLAYICONPLUGINKDE_FN createOverlayIconPluginKDE4
 # define PFN_CREATEOVERLAYICONPLUGINKDE_NAME "createOverlayIconPluginKDE4"

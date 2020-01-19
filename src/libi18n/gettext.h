@@ -21,7 +21,7 @@
 #define _LIBGETTEXT_H 1
 
 #if defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 2))
-/* Disable -Wvla warnings enabled by KDE5's extra-cmake-modules. */
+/* Disable -Wvla warnings enabled by KF5's extra-cmake-modules. */
 # if (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6))
 #  pragma GCC diagnostic push
 # endif

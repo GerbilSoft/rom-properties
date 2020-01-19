@@ -320,7 +320,7 @@ LRESULT CALLBACK ConfigDialogPrivate::subclassProc(
 						SendMessage(hwndPropSheet, WM_RP_PROP_SHEET_DEFAULTS, 0, 0);
 					}
 
-					// KDE5 System Settings keeps focus on the "Defaults" button,
+					// KDE Plasma 5's System Settings keeps focus on the "Defaults" button,
 					// so we'll leave the focus as-is.
 
 					// Don't continue processing. Otherwise, weird things

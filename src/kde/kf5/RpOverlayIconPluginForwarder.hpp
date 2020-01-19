@@ -6,7 +6,7 @@
  * multiple plugins, so this file acts as a KOverlayIconPlugin,            *
  * and then forwards the request to the main library.                      *
  *                                                                         *
- * Copyright (c) 2018 by David Korth.                                      *
+ * Copyright (c) 2018-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -41,7 +41,7 @@ class RpOverlayIconPluginForwarder : public KOverlayIconPlugin
 		QStringList getOverlays(const QUrl &item) final;
 
 	private:
-		// rom-properties-kde5.so handle.
+		// rom-properties-kf5.so handle.
 		void *hRpKdeSo;
 
 		// Actual OverlayPlugin.

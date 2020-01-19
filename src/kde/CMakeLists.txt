@@ -1,6 +1,6 @@
 PROJECT(rom-properties-kde)
 
-# Common files for both KDE4 and KDE5.
+# Common files for both KDE4 and KF5.
 
 # Sources and headers.
 SET(rom-properties-kde_SRCS
@@ -100,6 +100,6 @@ SET(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -DQT_NO_DEBUG")
 IF(BUILD_KDE4)
 	ADD_SUBDIRECTORY(kde4)
 ENDIF(BUILD_KDE4)
-IF(BUILD_KDE5)
-	ADD_SUBDIRECTORY(kde5)
-ENDIF(BUILD_KDE5)
+IF(BUILD_KF5)
+	ADD_SUBDIRECTORY(kf5)
+ENDIF(BUILD_KF5)

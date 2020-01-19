@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libunixcommon)                    *
  * dll-search.c: Function to search for a usable rom-properties library.   *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -28,7 +28,7 @@
 // Supported rom-properties frontends.
 typedef enum {
 	RP_FE_KDE4,
-	RP_FE_KDE5,
+	RP_FE_KF5,
 	RP_FE_XFCE,
 	RP_FE_XFCE3,
 	RP_FE_GNOME,
@@ -45,8 +45,8 @@ static const char *const RP_Extension_Path[RP_FE_MAX] = {
 #else
 	NULL,
 #endif
-#ifdef KDE5_PLUGIN_INSTALL_DIR
-	KDE5_PLUGIN_INSTALL_DIR "/rom-properties-kde5.so",
+#ifdef KF5_PLUGIN_INSTALL_DIR
+	KF5_PLUGIN_INSTALL_DIR "/rom-properties-kf5.so",
 #else
 	NULL,
 #endif
@@ -81,13 +81,13 @@ static const char *const RP_Extension_Path[RP_FE_MAX] = {
 // - Index: Current desktop environment. (RP_Frontend)
 // - Value: Plugin to use. (RP_Frontend)
 static const uint8_t plugin_prio[RP_FE_MAX][RP_FE_MAX] = {
-	{RP_FE_KDE4, RP_FE_KDE5, RP_FE_XFCE, RP_FE_XFCE3, RP_FE_GNOME, RP_FE_MATE, RP_FE_CINNAMON},	// RP_FE_KDE4
-	{RP_FE_KDE5, RP_FE_KDE4, RP_FE_GNOME, RP_FE_XFCE, RP_FE_XFCE3, RP_FE_MATE, RP_FE_CINNAMON},	// RP_FE_KDE4
-	{RP_FE_XFCE, RP_FE_XFCE3, RP_FE_MATE, RP_FE_CINNAMON, RP_FE_GNOME, RP_FE_KDE5, RP_FE_KDE4},	// RP_FE_XFCE
-	{RP_FE_XFCE3, RP_FE_XFCE, RP_FE_MATE, RP_FE_CINNAMON, RP_FE_GNOME, RP_FE_KDE5, RP_FE_KDE4},	// RP_FE_XFCE3
-	{RP_FE_GNOME, RP_FE_MATE, RP_FE_CINNAMON, RP_FE_XFCE3, RP_FE_XFCE, RP_FE_KDE5, RP_FE_KDE4},	// RP_FE_GNOME
-	{RP_FE_MATE, RP_FE_CINNAMON, RP_FE_GNOME, RP_FE_XFCE3, RP_FE_XFCE, RP_FE_KDE5, RP_FE_KDE4},	// RP_FE_MATE
-	{RP_FE_CINNAMON, RP_FE_MATE, RP_FE_GNOME, RP_FE_XFCE3, RP_FE_XFCE, RP_FE_KDE5, RP_FE_KDE4},	// RP_FE_CINNAMON
+	{RP_FE_KDE4, RP_FE_KF5, RP_FE_XFCE, RP_FE_XFCE3, RP_FE_GNOME, RP_FE_MATE, RP_FE_CINNAMON},	// RP_FE_KDE4
+	{RP_FE_KF5, RP_FE_KDE4, RP_FE_GNOME, RP_FE_XFCE, RP_FE_XFCE3, RP_FE_MATE, RP_FE_CINNAMON},	// RP_FE_KF5
+	{RP_FE_XFCE, RP_FE_XFCE3, RP_FE_MATE, RP_FE_CINNAMON, RP_FE_GNOME, RP_FE_KF5, RP_FE_KDE4},	// RP_FE_XFCE
+	{RP_FE_XFCE3, RP_FE_XFCE, RP_FE_MATE, RP_FE_CINNAMON, RP_FE_GNOME, RP_FE_KF5, RP_FE_KDE4},	// RP_FE_XFCE3
+	{RP_FE_GNOME, RP_FE_MATE, RP_FE_CINNAMON, RP_FE_XFCE3, RP_FE_XFCE, RP_FE_KF5, RP_FE_KDE4},	// RP_FE_GNOME
+	{RP_FE_MATE, RP_FE_CINNAMON, RP_FE_GNOME, RP_FE_XFCE3, RP_FE_XFCE, RP_FE_KF5, RP_FE_KDE4},	// RP_FE_MATE
+	{RP_FE_CINNAMON, RP_FE_MATE, RP_FE_GNOME, RP_FE_XFCE3, RP_FE_XFCE, RP_FE_KF5, RP_FE_KDE4},	// RP_FE_CINNAMON
 };
 
 /**
@@ -136,7 +136,7 @@ static RP_Frontend walk_proc_tree(void)
 				if (len == 8) {
 					if (!strncmp(s_value, "kdeinit5", 8)) {
 						// Found kdeinit5.
-						ret = RP_FE_KDE5;
+						ret = RP_FE_KF5;
 						ppid = 0;
 						break;
 					} else if (!strncmp(s_value, "kdeinit4", 8)) {
@@ -206,11 +206,11 @@ static inline RP_Frontend check_xdg_desktop_name(const char *name)
 	if (!strcasecmp(name, "KDE")) {
 		// KDE.
 		// Check parent processes to determine the version.
-		// NOTE: Assuming KDE5 if unable to determine the KDE version.
+		// NOTE: Assuming KF5 if unable to determine the KDE version.
 		RP_Frontend ret = walk_proc_tree();
 		if (ret >= RP_FE_MAX) {
-			// Unknown. Assume KDE5.
-			ret = RP_FE_KDE5;
+			// Unknown. Assume KF5.
+			ret = RP_FE_KF5;
 		}
 		return ret;
 	} else if (!strcasecmp(name, "GNOME") ||
@@ -233,11 +233,11 @@ static inline RP_Frontend check_xdg_desktop_name(const char *name)
 		return RP_FE_CINNAMON;
 	}
 
-	// NOTE: "KDE4" and "KDE5" are not actually used.
+	// NOTE: "KDE4", "KDE5", and "KF5" are not actually used.
 	// They're used here for debugging purposes only.
-	if (!strcasecmp(name, "KDE5")) {
-		// KDE5.
-		return RP_FE_KDE5;
+	if (!strcasecmp(name, "KF5") || !strcasecmp(name, "KDE5")) {
+		// KF5.
+		return RP_FE_KF5;
 	} else if (!strcasecmp(name, "KDE4")) {
 		// KDE4.
 		return RP_FE_KDE4;
@@ -321,7 +321,7 @@ int rp_dll_search(const char *symname, void **ppDll, void **ppfn, PFN_RP_DLL_DEB
 	// Debug: Print the active desktop environment.
 	if (pfnDebug) {
 		static const char *const de_name_tbl[] = {
-			"KDE4", "KDE5",
+			"KDE4", "KF5",
 			"XFCE (GTK+ 2.x)", "XFCE (GTK+ 3.x)",
 			"GNOME", "MATE", "Cinnamon"
 		};

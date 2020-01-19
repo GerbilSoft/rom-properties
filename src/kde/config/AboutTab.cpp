@@ -287,7 +287,7 @@ void AboutTabPrivate::initLibrariesTab(void)
 	/** KDE **/
 	sLibraries += brbr;
 #if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
-	// NOTE: Can't obtain the runtime version for KDE5 easily...
+	// NOTE: Can't obtain the runtime version for KF5 easily...
 	sLibraries += rp_sprintf(sCompiledWith, "KDE Frameworks " KIO_VERSION_STRING);
 	sLibraries += BR
 		"Copyright (C) 1996-2020 KDE contributors." BR

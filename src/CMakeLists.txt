@@ -41,9 +41,9 @@ IF(BUILD_CLI)
 ENDIF(BUILD_CLI)
 
 IF(UNIX AND NOT APPLE)
-	IF(BUILD_KDE4 OR BUILD_KDE5)
+	IF(BUILD_KDE4 OR BUILD_KF5)
 		ADD_SUBDIRECTORY(kde)
-	ENDIF(BUILD_KDE4 OR BUILD_KDE5)
+	ENDIF(BUILD_KDE4 OR BUILD_KF5)
 	IF(BUILD_GTK2 OR BUILD_GTK3)
 		ADD_SUBDIRECTORY(gtk)
 	ENDIF(BUILD_GTK2 OR BUILD_GTK3)
@@ -58,7 +58,7 @@ ENDIF()
 # NOTE: libunixcommon must be *after* the UI frontends.
 # Otherwise, the UI frontend checks won't work right, and on
 # Unix systems, the qtpaths check will fail if Qt5 isn't
-# installed and KDE5 isn't explicitly disabled.
+# installed and KF5 isn't explicitly disabled.
 IF(WIN32)
 	ADD_SUBDIRECTORY(libwin32common)
 ELSE(WIN32)
