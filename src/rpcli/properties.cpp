@@ -565,12 +565,13 @@ public:
 class StringMultiField {
 	size_t width;
 	const RomFields::Field *romField;
-	uint32_t lang;
+	uint32_t def_lc;	// ROM-default language code.
+	uint32_t user_lc;	// User-specified language code.
 public:
-	StringMultiField(size_t width, const RomFields::Field *romField, uint32_t lang)
-		:width(width), romField(romField), lang(lang)
+	StringMultiField(size_t width, const RomFields::Field *romField, uint32_t def_lc, uint32_t user_lc)
+		:width(width), romField(romField), def_lc(def_lc), user_lc(user_lc)
 	{
-		assert(this->lang != 0);
+		assert(this->def_lc != 0);
 	}
 	friend ostream& operator<<(ostream& os, const StringMultiField& field) {
 		// NOTE: nullptr string is an empty string, not an error.
@@ -579,10 +580,19 @@ public:
 
 		const auto *const pStr_multi = romField->data.str_multi;
 		if (pStr_multi && !pStr_multi->empty()) {
-			auto iter = pStr_multi->find(field.lang);
+			// Try the user-specified language code first.
+			// TODO: Consolidate ->end() calls?
+			// TODO: Skip if user_lc == 0?
+			auto iter = pStr_multi->find(field.user_lc);
 			if (iter == pStr_multi->end()) {
-				// Not found. Use the first string.
-				iter = pStr_multi->begin();
+				// Not found. Try the ROM-default language code.
+				if (field.def_lc != field.user_lc) {
+					iter = pStr_multi->find(field.def_lc);
+					if (iter == pStr_multi->end()) {
+						// Still not found. Use the first string.
+						iter = pStr_multi->begin();
+					}
+				}
 			}
 			os << SafeString(&iter->second, true, field.width);
 		} else {
@@ -595,8 +605,10 @@ public:
 
 class FieldsOutput {
 	const RomFields& fields;
+	uint32_t lc;
 public:
-	explicit FieldsOutput(const RomFields& fields) :fields(fields) {}
+	explicit FieldsOutput(const RomFields& fields, uint32_t lc = 0)
+		: fields(fields), lc(lc) { }
 	friend std::ostream& operator<<(std::ostream& os, const FieldsOutput& fo) {
 		size_t maxWidth = 0;
 		for (int i = 0; i < fo.fields.count(); i++) {
@@ -610,10 +622,9 @@ public:
 		const int tabCount = fo.fields.tabCount();
 		int tabIdx = -1;
 
-		// Default language code.
-		// TODO: Allow the user to override this?
-		uint32_t defaultLanguageCode = fo.fields.defaultLanguageCode();
-		assert(defaultLanguageCode != 0);
+		// Language codes.
+		const uint32_t def_lc = fo.fields.defaultLanguageCode();
+		const uint32_t user_lc = (fo.lc != 0 ? fo.lc : def_lc);
 
 		bool printed_first = false;
 		for (int i = 0; i < fo.fields.count(); i++) {
@@ -674,7 +685,7 @@ public:
 				break;
 			}
 			case RomFields::RFT_STRING_MULTI: {
-				os << StringMultiField(maxWidth, romField, defaultLanguageCode);
+				os << StringMultiField(maxWidth, romField, def_lc, user_lc);
 				break;
 			}
 			default: {
@@ -922,8 +933,8 @@ public:
 					}
 					didFirst = true;
 					os << "\t\"";
-					for (uint32_t langCode = iter->first; langCode != 0; langCode <<= 8) {
-						char chr = (char)(langCode >> 24);
+					for (uint32_t lc = iter->first; lc != 0; lc <<= 8) {
+						char chr = (char)(lc >> 24);
 						if (chr != 0) {
 							os << chr;
 						}
@@ -950,7 +961,9 @@ public:
 
 
 
-ROMOutput::ROMOutput(const RomData *romdata) : romdata(romdata) { }
+ROMOutput::ROMOutput(const RomData *romdata, uint32_t lc)
+	: romdata(romdata)
+	, lc(lc) { }
 std::ostream& operator<<(std::ostream& os, const ROMOutput& fo) {
 	auto romdata = fo.romdata;
 	const char *const systemName = romdata->systemName(RomData::SYSNAME_TYPE_LONG | RomData::SYSNAME_REGION_GENERIC);
@@ -964,7 +977,7 @@ std::ostream& operator<<(std::ostream& os, const ROMOutput& fo) {
 	const RomFields *const fields = romdata->fields();
 	assert(fields != nullptr);
 	if (fields) {
-		os << FieldsOutput(*fields) << endl;
+		os << FieldsOutput(*fields, fo.lc) << endl;
 	}
 
 	const int supported = romdata->supportedImageTypes();
@@ -1010,7 +1023,9 @@ std::ostream& operator<<(std::ostream& os, const ROMOutput& fo) {
 	return os;
 }
 
-JSONROMOutput::JSONROMOutput(const RomData *romdata) : romdata(romdata) {}
+JSONROMOutput::JSONROMOutput(const RomData *romdata, uint32_t lc)
+	: romdata(romdata)
+	, lc(lc) { }
 std::ostream& operator<<(std::ostream& os, const JSONROMOutput& fo) {
 	auto romdata = fo.romdata;
 	assert(romdata && romdata->isValid());
