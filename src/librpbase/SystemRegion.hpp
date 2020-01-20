@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * SystemRegion.hpp: Get the system country code.                          *
  *                                                                         *
- * Copyright (c) 2016 by David Korth.                                      *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
