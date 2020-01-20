@@ -41,6 +41,7 @@ using std::vector;
 // Qt includes.
 #include <QtCore/QDateTime>
 #include <QtCore/QEvent>
+#include <QtCore/QSignalMapper>
 #include <QtCore/QTimer>
 #include <QtCore/QVector>
 
@@ -87,10 +88,12 @@ class RomDataViewPrivate
 		// RFT_STRING_MULTI value labels.
 		typedef QPair<QLabel*, const RomFields::Field*> Data_StringMulti_t;
 		QVector<Data_StringMulti_t> vec_stringMulti;
+		uint32_t def_lc;	// Default language code from RomFields.
 		// Popup menu for language selection.
 		QPushButton *btnLanguage;
 		QMenu *menuLanguage;
 		QActionGroup *actgrpLanguage;
+		QSignalMapper *sigmapLanguage;
 
 		// RomData object.
 		RomData *romData;
@@ -184,10 +187,9 @@ class RomDataViewPrivate
 
 		/**
 		 * Update all multi-language string fields.
-		 * @param def_lc ROM-default language code.
 		 * @param user_lc User-specified language code.
 		 */
-		void updateStringMulti(uint32_t def_lc, uint32_t user_lc);
+		void updateStringMulti(uint32_t user_lc);
 
 		/**
 		 * Initialize the display widgets.
@@ -218,8 +220,11 @@ class RomDataViewPrivate
 
 RomDataViewPrivate::RomDataViewPrivate(RomDataView *q, RomData *romData)
 	: q_ptr(q)
+	, def_lc(0)
+	, btnLanguage(nullptr)
 	, menuLanguage(nullptr)
 	, actgrpLanguage(nullptr)
+	, sigmapLanguage(nullptr)
 	, romData(romData->ref())
 {
 	// Register RpQImageBackend.
@@ -947,10 +952,9 @@ QString RomDataViewPrivate::lcToQString(uint32_t lc)
 
 /**
  * Update all multi-language string fields.
- * @param def_lc ROM-default language code.
  * @param user_lc User-specified language code.
  */
-void RomDataViewPrivate::updateStringMulti(uint32_t def_lc, uint32_t user_lc)
+void RomDataViewPrivate::updateStringMulti(uint32_t user_lc)
 {
 	// Set of supported language codes.
 	// NOTE: Using std::set instead of QSet for sorting.
@@ -979,8 +983,10 @@ void RomDataViewPrivate::updateStringMulti(uint32_t def_lc, uint32_t user_lc)
 
 		// Try the user-specified language code first.
 		// TODO: Consolidate ->end() calls?
-		// TODO: Skip if user_lc == 0?
-		auto iter = pStr_multi->find(user_lc);
+		auto iter = pStr_multi->end();
+		if (user_lc != 0) {
+			iter = pStr_multi->find(user_lc);
+		}
 		if (iter == pStr_multi->end()) {
 			// Not found. Try the ROM-default language code.
 			if (def_lc != user_lc) {
@@ -1003,6 +1009,11 @@ void RomDataViewPrivate::updateStringMulti(uint32_t def_lc, uint32_t user_lc)
 		actgrpLanguage = new QActionGroup(q);
 		actgrpLanguage->setExclusive(true);
 
+		// Signal mapper.
+		sigmapLanguage = new QSignalMapper(q);
+		QObject::connect(sigmapLanguage, SIGNAL(mapped(int)),
+		                 q, SLOT(rftStringMulti_language_changed_slot(int)));
+
 		// Country code.
 		const uint32_t cc = SystemRegion::getCountryCode();
 
@@ -1023,6 +1034,9 @@ void RomDataViewPrivate::updateStringMulti(uint32_t def_lc, uint32_t user_lc)
 			QAction *const act_lc = new QAction(s_name);
 			act_lc->setData(lc);
 			act_lc->setCheckable(true);
+			QObject::connect(act_lc, SIGNAL(triggered(bool)),
+			                 sigmapLanguage, SLOT(map()));
+			sigmapLanguage->setMapping(act_lc, static_cast<int>(lc));
 			actgrpLanguage->addAction(act_lc);
 			menuLanguage->addAction(act_lc);
 
@@ -1102,7 +1116,9 @@ void RomDataViewPrivate::updateStringMulti(uint32_t def_lc, uint32_t user_lc)
 		btnLanguage->setMenu(menuLanguage);
 		btnLanguage->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Fixed);
 		ui.hboxHeaderRow->addWidget(btnLanguage);
+	}
 
+	if (btnLanguage) {
 		// Update btnLanguage's icon and text.
 		QAction *selAction = actgrpLanguage->checkedAction();
 		if (!selAction) {
@@ -1286,8 +1302,8 @@ void RomDataViewPrivate::initDisplayWidgets(void)
 
 	// Initial update of RFT_MULTI_STRING fields.
 	if (!vec_stringMulti.isEmpty()) {
-		// TODO: user_lc
-		updateStringMulti(fields->defaultLanguageCode(), 0);
+		def_lc = fields->defaultLanguageCode();
+		updateStringMulti(0);
 	}
 
 	// Check if the last field in the last tab
@@ -1450,6 +1466,16 @@ void RomDataView::bitfield_toggled_slot(bool checked)
 		// Toggle this box.
 		sender->setChecked(value);
 	}
+}
+
+/**
+ * The RFT_MULTI_STRING language was changed.
+ * @param lc Language code. (Cast to uint32_t)
+ */
+void RomDataView::rftStringMulti_language_changed_slot(int lc)
+{
+	Q_D(RomDataView);
+	d->updateStringMulti(static_cast<uint32_t>(lc));
 }
 
 /** Properties. **/
