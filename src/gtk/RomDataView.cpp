@@ -39,9 +39,11 @@ using LibRomData::RomDataFactory;
 // C++ includes.
 #include <algorithm>
 #include <array>
+#include <set>
 #include <string>
 #include <vector>
 using std::array;
+using std::set;
 using std::string;
 using std::vector;
 
@@ -133,7 +135,10 @@ struct _RomDataViewClass {
 	superclass __parent__;
 };
 
-// XFCE property page.
+// RFT_STRING_MULTI widget and RomField.
+typedef std::pair<GtkWidget*, const RomFields::Field*> Data_StringMulti_t;
+
+// GTK+ property page.
 struct _RomDataView {
 	super __parent__;
 
@@ -173,6 +178,10 @@ struct _RomDataView {
 	// Description labels.
 	RpDescFormatType	desc_format_type;
 	vector<GtkWidget*>	*vecDescLabels;
+
+	// RFT_STRING_MULTI value labels.
+	std::vector<Data_StringMulti_t> *vecStringMulti;
+	uint32_t	def_lc;	// Default language code from RomFields.
 };
 
 // FIXME: G_DEFINE_TYPE() doesn't work in C++ mode with gcc-6.2
@@ -306,6 +315,8 @@ rom_data_view_init(RomDataView *page)
 
 	page->desc_format_type = RP_DFT_XFCE;
 	page->vecDescLabels = new vector<GtkWidget*>();
+	page->vecStringMulti = new vector<Data_StringMulti_t>();
+	page->def_lc = 0;
 
 	// Animation timer.
 	page->tmrIconAnim = 0;
@@ -408,6 +419,7 @@ rom_data_view_finalize(GObject *object)
 	delete page->iconAnimHelper;
 	delete page->tabs;
 	delete page->vecDescLabels;
+	delete page->vecStringMulti;
 
 	// Unreference romData.
 	if (page->romData) {
@@ -1203,6 +1215,85 @@ rom_data_view_init_dimensions(G_GNUC_UNUSED RomDataView *page, const RomFields::
 	return rom_data_view_init_string(page, field, buf);
 }
 
+/**
+ * Initialize a multi-language string field.
+ * @param page	[in] RomDataView object.
+ * @param field	[in] RomFields::Field
+ * @return Display widget, or nullptr on error.
+ */
+static GtkWidget*
+rom_data_view_init_string_multi(G_GNUC_UNUSED RomDataView *page, const RomFields::Field *field)
+{
+	// Mutli-language string.
+	// NOTE: The string contents won't be initialized here.
+	// They will be initialized separately, since the user will
+	// be able to change the displayed language.
+	GtkWidget *const lblStringMulti = rom_data_view_init_string(page, field, "");
+	if (lblStringMulti) {
+		page->vecStringMulti->push_back(std::make_pair(lblStringMulti, field));
+	}
+	return lblStringMulti;
+}
+
+/**
+ * Update all multi-language string fields.
+ * @param page		[in] RomDataView object.
+ * @param user_lc	[in] User-specified language code.
+ */
+static void
+rom_data_view_update_string_multi(RomDataView *page, uint32_t user_lc)
+{
+	// Set of supported language codes.
+	set<uint32_t> set_lc;
+
+	for (auto iter = page->vecStringMulti->cbegin();
+	     iter != page->vecStringMulti->cend(); ++iter)
+	{
+		GtkWidget *const lblString = iter->first;
+		const RomFields::Field *const field = iter->second;
+		const auto *const pStr_multi = field->data.str_multi;
+		assert(pStr_multi != nullptr);
+		assert(!pStr_multi->empty());
+		if (!pStr_multi || pStr_multi->empty()) {
+			// Invalid multi-string...
+			continue;
+		}
+
+		// TODO: GtkComboBox
+		if (/*!cboLanguage*/ 1) {
+			// Need to add all supported languages.
+			// TODO: Do we need to do this for all of them, or just one?
+			for (auto iter_sm = pStr_multi->cbegin();
+			     iter_sm != pStr_multi->cend(); ++iter_sm)
+			{
+				set_lc.insert(iter_sm->first);
+			}
+		}
+
+		// Try the user-specified language code first.
+		// TODO: Consolidate ->end() calls?
+		auto iter_sm = pStr_multi->end();
+		if (user_lc != 0) {
+			iter_sm = pStr_multi->find(user_lc);
+		}
+		if (iter_sm == pStr_multi->end()) {
+			// Not found. Try the ROM-default language code.
+			if (page->def_lc != user_lc) {
+				iter_sm = pStr_multi->find(page->def_lc);
+				if (iter_sm == pStr_multi->end()) {
+					// Still not found. Use the first string.
+					iter_sm = pStr_multi->begin();
+				}
+			}
+		}
+
+		// Update the text.
+		gtk_label_set_text(GTK_LABEL(lblString), iter_sm->second.c_str());
+	}
+
+	// TODO: Create the combobox.
+}
+
 static void
 rom_data_view_update_display(RomDataView *page)
 {
@@ -1362,6 +1453,9 @@ rom_data_view_update_display(RomDataView *page)
 			case RomFields::RFT_DIMENSIONS:
 				widget = rom_data_view_init_dimensions(page, field);
 				break;
+			case RomFields::RFT_STRING_MULTI:
+				widget = rom_data_view_init_string_multi(page, field);
+				break;
 		}
 
 		if (widget) {
@@ -1492,6 +1586,12 @@ rom_data_view_update_display(RomDataView *page)
 			}
 		}
 	}
+
+	// Initial update of RFT_MULTI_STRING fields.
+	if (!page->vecStringMulti->empty()) {
+		page->def_lc = fields->defaultLanguageCode();
+		rom_data_view_update_string_multi(page, 0);
+	}
 }
 
 static gboolean
@@ -1554,6 +1654,7 @@ rom_data_view_delete_tabs(RomDataView *page)
 	assert(page != nullptr);
 	assert(page->tabs != nullptr);
 	assert(page->vecDescLabels != nullptr);
+	assert(page->vecStringMulti != nullptr);
 
 	// Delete the tab contents.
 	std::for_each(page->tabs->begin(), page->tabs->end(),
@@ -1579,6 +1680,7 @@ rom_data_view_delete_tabs(RomDataView *page)
 
 	// Clear the various widget references.
 	page->vecDescLabels->clear();
+	page->vecStringMulti->clear();
 
 	// Delete the icon frames.
 	for (int i = page->iconFrames.size()-1; i >= 0; i--) {
