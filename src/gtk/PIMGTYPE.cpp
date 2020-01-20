@@ -18,6 +18,10 @@ extern "C" {
 #include <cassert>
 #include <cstring>
 
+// C++ STL classes.
+#include <unordered_map>
+using std::unordered_map;
+
 #ifdef RP_GTK_USE_CAIRO
 /**
  * PIMGTYPE scaling function.
@@ -96,6 +100,23 @@ static cairo_status_t PIMGTYPE_CairoReadFunc(void *closure, unsigned char *data,
 	d->pos += length;
 	return CAIRO_STATUS_SUCCESS;
 }
+#else /* !RP_GTK_USE_CAIRO */
+// Mapping of data pointers to GBytes* objects for unreference.
+static unordered_map<const void*, GBytes*> map_gbytes_unref;
+
+/**
+ * GDestroyNotify for g_memory_input_stream_new_from_data().
+ * @param data Data pointer from GBytes.
+ */
+static void gbytes_destroy_notify(gpointer data)
+{
+	auto iter = map_gbytes_unref.find(const_cast<const void*>(data));
+	if (iter != map_gbytes_unref.end()) {
+		GBytes *const pBytes = iter->second;
+		map_gbytes_unref.erase(iter);
+		g_bytes_unref(pBytes);
+	}
+}
 #endif /* RP_GTK_USE_CAIRO */
 
 /**
@@ -105,16 +126,16 @@ static cairo_status_t PIMGTYPE_CairoReadFunc(void *closure, unsigned char *data,
  */
 PIMGTYPE PIMGTYPE_load_png_from_gresource(const char *filename)
 {
-#ifdef RP_GTK_USE_CAIRO
-	GBytes *const pData = g_resource_lookup_data(_get_resource(), filename,
+	GBytes *const pBytes = g_resource_lookup_data(_get_resource(), filename,
 		G_RESOURCE_LOOKUP_FLAGS_NONE, nullptr);
-	if (!pData) {
+	if (!pBytes) {
 		// Not found.
 		return nullptr;
 	}
 
+#ifdef RP_GTK_USE_CAIRO
 	PIMGTYPE_CairoReadFunc_State_t state;
-	state.buf = static_cast<const uint8_t*>(g_bytes_get_data(pData, &state.size));
+	state.buf = static_cast<const uint8_t*>(g_bytes_get_data(pBytes, &state.size));
 	state.pos = 0;
 
 	PIMGTYPE surface = cairo_image_surface_create_from_png_stream(
@@ -124,11 +145,17 @@ PIMGTYPE PIMGTYPE_load_png_from_gresource(const char *filename)
 		surface = nullptr;
 	}
 
-	g_bytes_unref(pData);
+	g_bytes_unref(pBytes);
 	return surface;
 #else /* !RP_GTK_USE_CAIRO */
-	// FIXME: GdkPixbuf version.
-	//PIMGTYPE flags_16x16 = gdk_pixbuf_new_from_file(filename, nullptr);
-	return nullptr;
+	// glib-2.34.0 has g_memory_input_stream_new_from_bytes().
+	// We'll use g_memory_input_stream_new_from_data() for compatibility.
+	gsize size;
+	const void *pData = g_bytes_get_data(pBytes, &size);
+	GInputStream *const stream = g_memory_input_stream_new_from_data(
+		pData, size, gbytes_destroy_notify);
+	PIMGTYPE pixbuf = gdk_pixbuf_new_from_stream(stream, nullptr, nullptr);
+	g_object_unref(stream);
+	return pixbuf;
 #endif /* RP_GTK_USE_CAIRO */
 }
