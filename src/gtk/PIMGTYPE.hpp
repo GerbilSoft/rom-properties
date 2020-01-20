@@ -146,7 +146,7 @@ static inline PIMGTYPE PIMGTYPE_get_subsurface(PIMGTYPE pImgType, int x, int y, 
 		gdk_pixbuf_get_bits_per_sample(pImgType),
 		width, height);
 	if (surface) {
-		gdk_pixbuf_copy_area(pImgType, x, y, width, height, surface, width, height);
+		gdk_pixbuf_copy_area(pImgType, x, y, width, height, surface, 0, 0);
 	}
 	return surface;
 #endif /* RP_GTK_USE_CAIRO */

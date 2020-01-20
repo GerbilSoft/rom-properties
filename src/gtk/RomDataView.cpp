@@ -355,15 +355,15 @@ rom_data_view_init(RomDataView *page)
 	gtk_box_pack_start(GTK_BOX(page->hboxHeaderRow_outer), page->hboxHeaderRow, true, false, 0);
 	gtk_widget_show(page->hboxHeaderRow);
 #else /* !GTK_CHECK_VERSION(3,0,0) */
-	// Center-align the header row.
-	GtkWidget *centerAlign = gtk_alignment_new(0.5f, 0.0f, 0.0f, 0.0f);
-	gtk_box_pack_start(GTK_BOX(page), centerAlign, false, false, 0);
-	gtk_widget_show(centerAlign);
-
 	// Header row. (outer box)
 	page->hboxHeaderRow_outer = gtk_hbox_new(false, 0);
-	gtk_container_add(GTK_CONTAINER(centerAlign), page->hboxHeaderRow_outer);
+	gtk_box_pack_start(GTK_BOX(page), page->hboxHeaderRow_outer, true, false, 0);
 	gtk_widget_show(page->hboxHeaderRow_outer);
+
+	// Center-align the header row.
+	GtkWidget *centerAlign = gtk_alignment_new(0.5f, 0.0f, 1.0f, 0.0f);
+	gtk_box_pack_start(GTK_BOX(page->hboxHeaderRow_outer), centerAlign, true, false, 0);
+	gtk_widget_show(centerAlign);
 
 	// Header row. (inner box)
 	page->hboxHeaderRow = gtk_hbox_new(false, 8);
@@ -1384,7 +1384,7 @@ rom_data_view_update_string_multi(RomDataView *page, uint32_t user_lc)
 		gtk_widget_show(topAlign);
 
 		GtkWidget *const vboxCboLanguage = gtk_vbox_new(false, 0);
-		gtk_box_pack_end(GTK_BOX(topAlign), vboxCboLanguage, false, false, 0);
+		gtk_container_add(GTK_CONTAINER(topAlign), vboxCboLanguage);
 		gtk_widget_show(vboxCboLanguage);
 #endif /* GTK_CHECK_VERSION(3,0,0) */
 
