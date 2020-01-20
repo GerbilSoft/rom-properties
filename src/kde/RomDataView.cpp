@@ -85,7 +85,7 @@ class RomDataViewPrivate
 
 		// RFT_STRING_MULTI value labels.
 		typedef QPair<QLabel*, const RomFields::Field*> Data_StringMulti_t;
-		QVector<Data_StringMulti_t> vec_stringMulti;
+		QVector<Data_StringMulti_t> vecStringMulti;
 		uint32_t def_lc;	// Default language code from RomFields.
 		QComboBox *cboLanguage;
 
@@ -919,7 +919,7 @@ void RomDataViewPrivate::initStringMulti(QLabel *lblDesc, const RomFields::Field
 	QString qs_empty;
 	QLabel *const lblStringMulti = initString(lblDesc, field, &qs_empty);
 	if (lblStringMulti) {
-		vec_stringMulti.append(Data_StringMulti_t(lblStringMulti, field));
+		vecStringMulti.append(Data_StringMulti_t(lblStringMulti, field));
 	}
 }
 
@@ -951,7 +951,7 @@ void RomDataViewPrivate::updateStringMulti(uint32_t user_lc)
 	// NOTE: Using std::set instead of QSet for sorting.
 	set<uint32_t> set_lc;
 
-	foreach(const Data_StringMulti_t &data, vec_stringMulti) {
+	foreach(const Data_StringMulti_t &data, vecStringMulti) {
 		QLabel *const lblString = data.first;
 		const RomFields::Field *const field = data.second;
 		const auto *const pStr_multi = field->data.str_multi;
@@ -1260,7 +1260,7 @@ void RomDataViewPrivate::initDisplayWidgets(void)
 	}
 
 	// Initial update of RFT_MULTI_STRING fields.
-	if (!vec_stringMulti.isEmpty()) {
+	if (!vecStringMulti.isEmpty()) {
 		def_lc = fields->defaultLanguageCode();
 		updateStringMulti(0);
 	}
