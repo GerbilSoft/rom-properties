@@ -115,6 +115,8 @@ static void	rom_data_view_unmap_signal_handler  (RomDataView	*page,
 						     gpointer		 user_data);
 static void	tree_view_realize_signal_handler    (GtkTreeView	*treeView,
 						     RomDataView	*page);
+static void	cboLanguage_changed_signal_handler  (GtkComboBox	*widget,
+						     gpointer	 	 user_data);
 
 /** Icon animation timer. **/
 static void	start_anim_timer(RomDataView *page);
@@ -138,6 +140,7 @@ struct _RomDataViewClass {
 
 // RFT_STRING_MULTI widget and RomField.
 typedef std::pair<GtkWidget*, const RomFields::Field*> Data_StringMulti_t;
+typedef enum _StringMultiColumns { COL_TEXT, COL_LC } StringMultiColumns;
 
 // GTK+ property page.
 struct _RomDataView {
@@ -1326,9 +1329,9 @@ rom_data_view_update_string_multi(RomDataView *page, uint32_t user_lc)
 
 			GtkTreeIter gtiter;
 			gtk_list_store_append(page->lstoreLanguage, &gtiter);
-			gtk_list_store_set(page->lstoreLanguage, &gtiter, 1, lc, -1);
+			gtk_list_store_set(page->lstoreLanguage, &gtiter, COL_LC, lc, -1);
 			if (name) {
-				gtk_list_store_set(page->lstoreLanguage, &gtiter, 0, name, -1);
+				gtk_list_store_set(page->lstoreLanguage, &gtiter, COL_TEXT, name, -1);
 			} else {
 				string s_lc;
 				s_lc.reserve(4);
@@ -1338,7 +1341,7 @@ rom_data_view_update_string_multi(RomDataView *page, uint32_t user_lc)
 						s_lc += chr;
 					}
 				}
-				gtk_list_store_set(page->lstoreLanguage, &gtiter, 0, s_lc.c_str(), -1);
+				gtk_list_store_set(page->lstoreLanguage, &gtiter, COL_TEXT, s_lc.c_str(), -1);
 			}
 			int cur_idx = gtk_tree_model_iter_n_children(GTK_TREE_MODEL(page->lstoreLanguage), nullptr)-1;
 
@@ -1390,7 +1393,10 @@ rom_data_view_update_string_multi(RomDataView *page, uint32_t user_lc)
 		gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(page->cboLanguage), renderer, true);
 		gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(page->cboLanguage), renderer, "text", 0, NULL);
 
-		// TODO: Signals
+		// Connect the "changed" signal.
+		g_signal_connect(page->cboLanguage, "changed",
+			reinterpret_cast<GCallback>(cboLanguage_changed_signal_handler),
+			page);
 	}
 }
 
@@ -1919,6 +1925,38 @@ tree_view_realize_signal_handler(GtkTreeView	*treeView,
 	// NOTE: gtk_scrolled_window_set_max_content_height() doesn't seem to
 	// work properly for rows_visible=4, and it's GTK+ 3.x only.
 	gtk_widget_set_size_request(scrolledWindow, -1, height);
+}
+
+/**
+ * The RFT_MULTI_STRING language was changed.
+ * @param lc Language code. (Cast to uint32_t)
+ */
+static void
+cboLanguage_changed_signal_handler(GtkComboBox	*widget,
+				   gpointer	 user_data)
+{
+	RomDataView *page = ROM_DATA_VIEW(user_data);
+	gint index = gtk_combo_box_get_active(widget);
+	if (index < 0) {
+		// Invalid index...
+		return;
+	}
+
+	// Get the language code from the GtkListStore.
+	GtkTreeIter iter;
+	GtkTreePath *const path = gtk_tree_path_new_from_indices(index, -1);
+	gboolean success = gtk_tree_model_get_iter(
+		GTK_TREE_MODEL(page->lstoreLanguage), &iter, path);
+	gtk_tree_path_free(path);
+	assert(success);
+	if (!success) {
+		// Shouldn't happen...
+		return;
+	}
+
+	uint32_t lc = 0;
+	gtk_tree_model_get(GTK_TREE_MODEL(page->lstoreLanguage), &iter, COL_LC, &lc, -1);
+	rom_data_view_update_string_multi(page, lc);
 }
 
 /** Icon animation timer. **/
