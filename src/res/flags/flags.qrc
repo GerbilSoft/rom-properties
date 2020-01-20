@@ -2,50 +2,8 @@
   <qresource prefix="flags">
     <!-- Flag icons are from twemoji-12.1.4. -->
     <!-- https://github.com/twitter/twemoji -->
-
-    <!-- 16x16 -->
-    <file>16x16/cn.png</file>
-    <file>16x16/de.png</file>
-    <file>16x16/es.png</file>
-    <file>16x16/fr.png</file>
-    <file>16x16/gb.png</file>
-    <file>16x16/it.png</file>
-    <file>16x16/jp.png</file>
-    <file>16x16/kr.png</file>
-    <file>16x16/nl.png</file>
-    <file>16x16/pt.png</file>
-    <file>16x16/ru.png</file>
-    <file>16x16/tw.png</file>
-    <file>16x16/us.png</file>
-
-    <!-- 24x24 -->
-    <file>24x24/cn.png</file>
-    <file>24x24/de.png</file>
-    <file>24x24/es.png</file>
-    <file>24x24/fr.png</file>
-    <file>24x24/gb.png</file>
-    <file>24x24/it.png</file>
-    <file>24x24/jp.png</file>
-    <file>24x24/kr.png</file>
-    <file>24x24/nl.png</file>
-    <file>24x24/pt.png</file>
-    <file>24x24/ru.png</file>
-    <file>24x24/tw.png</file>
-    <file>24x24/us.png</file>
-
-    <!-- 32x32 -->
-    <file>32x32/cn.png</file>
-    <file>32x32/de.png</file>
-    <file>32x32/es.png</file>
-    <file>32x32/fr.png</file>
-    <file>32x32/gb.png</file>
-    <file>32x32/it.png</file>
-    <file>32x32/jp.png</file>
-    <file>32x32/kr.png</file>
-    <file>32x32/nl.png</file>
-    <file>32x32/pt.png</file>
-    <file>32x32/ru.png</file>
-    <file>32x32/tw.png</file>
-    <file>32x32/us.png</file>
+    <file>flags-16x16.png</file>
+    <file>flags-24x24.png</file>
+    <file>flags-32x32.png</file>
   </qresource>
 </RCC>

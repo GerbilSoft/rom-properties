@@ -1002,7 +1002,17 @@ void RomDataViewPrivate::updateStringMulti(uint32_t def_lc, uint32_t user_lc)
 		menuLanguage = new QMenu(q);
 		actgrpLanguage = new QActionGroup(q);
 		actgrpLanguage->setExclusive(true);
+
+		// Country code.
 		const uint32_t cc = SystemRegion::getCountryCode();
+
+		// Sprite sheets. (32x32, 24x24, 16x16)
+		const QPixmap spriteSheets[3] = {
+			QPixmap(QLatin1String(":/flags/flags-32x32.png")),
+			QPixmap(QLatin1String(":/flags/flags-24x24.png")),
+			QPixmap(QLatin1String(":/flags/flags-16x16.png")),
+		};
+
 		for (auto iter = set_lc.cbegin(); iter != set_lc.cend(); ++iter) {
 			const uint32_t lc = *iter;
 			const char *const name = SystemRegion::getLocalizedLanguageName(lc);
@@ -1017,43 +1027,60 @@ void RomDataViewPrivate::updateStringMulti(uint32_t def_lc, uint32_t user_lc)
 			menuLanguage->addAction(act_lc);
 
 			// Flag icon.
-			// Flag names use country codes, not language codes.
-			// TODO: Use a lookup table instead of switch/case?
-			QString s_flag_name = s_lc;
-			switch (lc) {
-				case 'en':
-					// Use "us" for US, and "gb" for everywhere else.
-					if (cc == 'US') {
-						s_flag_name = QLatin1String("us");
-					} else {
-						s_flag_name = QLatin1String("gb");
+			// Flags are stored in a sprite sheet, so we need to
+			// determine the column and row.
+			struct flagpos_t {
+				uint32_t lc;
+				uint16_t col;
+				uint16_t row;
+			};
+			static const flagpos_t flagpos[] = {
+				{'hans',	0, 0},
+				{'de',		1, 0},
+				{'es',		2, 0},
+				{'fr',		3, 0},
+				//{'gb',		0, 1},
+				{'it',		1, 1},
+				{'ja',		2, 1},
+				{'ko',		3, 1},
+				{'nl',		0, 2},
+				{'pt',		1, 2},
+				{'ru',		2, 2},
+				{'hant',	3, 2},
+				//{'us',		3, 0},
+
+				{0, 0, 0}
+			};
+
+			int col, row;
+			if (lc == 'en') {
+				// Special case for English:
+				// Use the 'us' flag if the country code is US,
+				// and the 'gb' flag for everywhere else.
+				col = 0;
+				row = (cc == 'US') ? 3 : 1;
+			} else {
+				// Other flags. Check the table.
+				col = -1;
+				row = -1;
+				for (const flagpos_t *p = flagpos; p->lc != 0; p++) {
+					if (p->lc == lc) {
+						// Match!
+						col = p->col;
+						row = p->row;
+						break;
 					}
-					break;
-				case 'ja':
-					s_flag_name = QLatin1String("jp");
-					break;
-				case 'ko':
-					s_flag_name = QLatin1String("kr");
-					break;
-				case 'hans':
-					s_flag_name = QLatin1String("cn");
-					break;
-				case 'hant':
-					s_flag_name = QLatin1String("tw");
-					break;
-				default:
-					break;
+				}
 			}
 
-			// Loading all icon sizes for Hi-DPI compatibility.
-			// TODO: Use sprite sheets instead?
-			static const char *const flag_sizes[] = {"32x32", "24x24", "16x16"};
-			QIcon flag_icon;
-			for (unsigned int i = 0; i < ARRAY_SIZE(flag_sizes); i++) {
-				QString flag_icon_path = QLatin1String(":/flags/%1/%2.png");
-				flag_icon.addPixmap(QPixmap(flag_icon_path.arg(QLatin1String(flag_sizes[i]), s_flag_name)));
+			if (col >= 0 && row >= 0) {
+				// Found a matching icon.
+				QIcon flag_icon;
+				flag_icon.addPixmap(spriteSheets[0].copy(col*32, row*32, 32, 32));
+				flag_icon.addPixmap(spriteSheets[1].copy(col*24, row*24, 24, 24));
+				flag_icon.addPixmap(spriteSheets[2].copy(col*16, row*16, 16, 16));
+				act_lc->setIcon(flag_icon);
 			}
-			act_lc->setIcon(flag_icon);
 
 			// Save the default index:
 			// - ROM-default language code.
