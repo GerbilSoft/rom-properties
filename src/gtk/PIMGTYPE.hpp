@@ -11,6 +11,7 @@
 
 #include <gtk/gtk.h>
 
+// librptexture
 #include "librptexture/img/rp_image.hpp"
 
 // NOTE: GTK+ 3.x earlier than 3.10 is not supported.
@@ -117,6 +118,13 @@ static inline PIMGTYPE PIMGTYPE_scale(PIMGTYPE pImgType, int width, int height, 
 		(bilinear ? GDK_INTERP_BILINEAR : GDK_INTERP_NEAREST));
 }
 #endif /* RP_GTK_USE_CAIRO */
+
+/**
+ * Load a PNG image from our glibresources.
+ * @param filename Filename within glibresources.
+ * @return PIMGTYPE, or nullptr if not found.
+ */
+PIMGTYPE PIMGTYPE_load_png_from_gresource(const char *filename);
 
 #ifdef __cplusplus
 }

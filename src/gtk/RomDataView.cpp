@@ -140,7 +140,7 @@ struct _RomDataViewClass {
 
 // RFT_STRING_MULTI widget and RomField.
 typedef std::pair<GtkWidget*, const RomFields::Field*> Data_StringMulti_t;
-typedef enum _StringMultiColumns { COL_TEXT, COL_LC } StringMultiColumns;
+typedef enum _StringMultiColumns { SM_COL_ICON, SM_COL_TEXT, SM_COL_LC } StringMultiColumns;
 
 // GTK+ property page.
 struct _RomDataView {
@@ -1315,12 +1315,15 @@ rom_data_view_update_string_multi(RomDataView *page, uint32_t user_lc)
 		// Columns:
 		// - 0: Display text
 		// - 1: Language code
-		page->lstoreLanguage = gtk_list_store_new(2, G_TYPE_STRING, G_TYPE_UINT);
+		page->lstoreLanguage = gtk_list_store_new(3, PIMGTYPE_GOBJECT_TYPE, G_TYPE_STRING, G_TYPE_UINT);
 
 		// Country code.
 		const uint32_t cc = SystemRegion::getCountryCode();
 
-		// TODO: Flag sprite sheets.
+		// TODO: Multiple icon sizes for high-DPI modes.
+		// For now, only using 16x16.
+		PIMGTYPE flags_16x16 = PIMGTYPE_load_png_from_gresource(
+			"/com/gerbilsoft/rom-properties/flags/flags-16x16.png");
 
 		int sel_idx = -1;
 		for (auto iter = set_lc.cbegin(); iter != set_lc.cend(); ++iter) {
@@ -1329,9 +1332,9 @@ rom_data_view_update_string_multi(RomDataView *page, uint32_t user_lc)
 
 			GtkTreeIter gtiter;
 			gtk_list_store_append(page->lstoreLanguage, &gtiter);
-			gtk_list_store_set(page->lstoreLanguage, &gtiter, COL_LC, lc, -1);
+			gtk_list_store_set(page->lstoreLanguage, &gtiter, SM_COL_LC, lc, -1);
 			if (name) {
-				gtk_list_store_set(page->lstoreLanguage, &gtiter, COL_TEXT, name, -1);
+				gtk_list_store_set(page->lstoreLanguage, &gtiter, SM_COL_TEXT, name, -1);
 			} else {
 				string s_lc;
 				s_lc.reserve(4);
@@ -1341,9 +1344,12 @@ rom_data_view_update_string_multi(RomDataView *page, uint32_t user_lc)
 						s_lc += chr;
 					}
 				}
-				gtk_list_store_set(page->lstoreLanguage, &gtiter, COL_TEXT, s_lc.c_str(), -1);
+				gtk_list_store_set(page->lstoreLanguage, &gtiter, SM_COL_TEXT, s_lc.c_str(), -1);
 			}
 			int cur_idx = gtk_tree_model_iter_n_children(GTK_TREE_MODEL(page->lstoreLanguage), nullptr)-1;
+
+			// Flag icon. (TODO: Get the individual 16x16 icon)
+			gtk_list_store_set(page->lstoreLanguage, &gtiter, SM_COL_ICON, flags_16x16, -1);
 
 			// Save the default index:
 			// - ROM-default language code.
@@ -1358,6 +1364,10 @@ rom_data_view_update_string_multi(RomDataView *page, uint32_t user_lc)
 				}
 			}
 		}
+
+		// We're done using the flags sprite sheets,
+		// so unreference them to prevent memory leaks.
+		PIMGTYPE_destroy(flags_16x16);
 
 		// Create a VBox for the combobox to reduce its vertical height.
 #if GTK_CHECK_VERSION(3,0,0)
@@ -1376,7 +1386,6 @@ rom_data_view_update_string_multi(RomDataView *page, uint32_t user_lc)
 #endif /* GTK_CHECK_VERSION(3,0,0) */
 
 		// Create the combobox and set the list store.
-		// TODO: Reduce combobox height?
 		page->cboLanguage = gtk_combo_box_new_with_model(GTK_TREE_MODEL(page->lstoreLanguage));
 		g_object_unref(page->lstoreLanguage);	// remove our reference
 		gtk_box_pack_end(GTK_BOX(vboxCboLanguage), page->cboLanguage, false, false, 0);
@@ -1384,14 +1393,16 @@ rom_data_view_update_string_multi(RomDataView *page, uint32_t user_lc)
 		gtk_widget_show(page->cboLanguage);
 
 		// cboLanguage: Icon renderer (TODO)
-		/*GtkCellRenderer *renderer = gtk_cell_renderer_pixbuf_new();
+		GtkCellRenderer *renderer = gtk_cell_renderer_pixbuf_new();
 		gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(page->cboLanguage), renderer, false);
-		gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(page->cboLanguage), renderer, "pixbuf", 0, NULL);*/
+		gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(page->cboLanguage),
+			renderer, GTK_CELL_RENDERER_PIXBUF_PROPERTY, SM_COL_ICON, NULL);
 
 		// cboLanguage: Text renderer
-		GtkCellRenderer *renderer = gtk_cell_renderer_text_new();
+		renderer = gtk_cell_renderer_text_new();
 		gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(page->cboLanguage), renderer, true);
-		gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(page->cboLanguage), renderer, "text", 0, NULL);
+		gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(page->cboLanguage),
+			renderer, "text", SM_COL_TEXT, NULL);
 
 		// Connect the "changed" signal.
 		g_signal_connect(page->cboLanguage, "changed",
@@ -1955,7 +1966,7 @@ cboLanguage_changed_signal_handler(GtkComboBox	*widget,
 	}
 
 	uint32_t lc = 0;
-	gtk_tree_model_get(GTK_TREE_MODEL(page->lstoreLanguage), &iter, COL_LC, &lc, -1);
+	gtk_tree_model_get(GTK_TREE_MODEL(page->lstoreLanguage), &iter, SM_COL_LC, &lc, -1);
 	rom_data_view_update_string_multi(page, lc);
 }
 

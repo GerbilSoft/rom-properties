@@ -1,0 +1,13 @@
+This copy of GCR_Macros 3.4 is a modified version of the original.
+
+commit c39fdece33041c8028acc6cb90455019c35dae17
+CompileGResources: Fix OPTIONS and *_ALL args not working
+
+Tag: 3.4
+
+The following changes have been made to the original:
+
+- Only the CMake modules are included.
+
+To obtain the original GCR_Macros 3.4, visit:
+https://github.com/Makman2/GCR_CMake
