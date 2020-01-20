@@ -351,7 +351,7 @@ rom_data_view_init(RomDataView *page)
 	gtk_widget_set_halign(page->hboxHeaderRow, GTK_ALIGN_CENTER);
 	gtk_box_pack_start(GTK_BOX(page->hboxHeaderRow_outer), page->hboxHeaderRow, true, false, 0);
 	gtk_widget_show(page->hboxHeaderRow);
-#else
+#else /* !GTK_CHECK_VERSION(3,0,0) */
 	// Center-align the header row.
 	GtkWidget *centerAlign = gtk_alignment_new(0.5f, 0.0f, 0.0f, 0.0f);
 	gtk_box_pack_start(GTK_BOX(page), centerAlign, false, false, 0);
@@ -366,7 +366,7 @@ rom_data_view_init(RomDataView *page)
 	page->hboxHeaderRow = gtk_hbox_new(false, 8);
 	gtk_container_add(GTK_CONTAINER(page->hboxHeaderRow_outer), page->hboxHeaderRow);
 	gtk_widget_show(page->hboxHeaderRow);
-#endif
+#endif /* GTK_CHECK_VERSION(3,0,0) */
 
 	// System information.
 	page->lblSysInfo = gtk_label_new(nullptr);
@@ -826,7 +826,7 @@ rom_data_view_init_bitfield(RomDataView *page, const RomFields::Field *field)
 	GtkWidget *widget = gtk_grid_new();
 	//gtk_grid_set_row_spacings(GTK_TABLE(widget), 2);
 	//gtk_grid_set_column_spacings(GTK_TABLE(widget), 8);
-#else
+#else /* !GTK_CHECK_VERSION(3,0,0) */
 	// Determine the total number of rows and columns.
 	int totalRows, totalCols;
 	if (bitfieldDesc.elemsPerRow == 0) {
@@ -845,7 +845,7 @@ rom_data_view_init_bitfield(RomDataView *page, const RomFields::Field *field)
 	GtkWidget *widget = gtk_table_new(totalRows, totalCols, false);
 	//gtk_table_set_row_spacings(GTK_TABLE(widget), 2);
 	//gtk_table_set_col_spacings(GTK_TABLE(widget), 8);
-#endif
+#endif /* GTK_CHECK_VERSION(3,0,0) */
 	gtk_widget_show(widget);
 
 	int row = 0, col = 0;
@@ -874,10 +874,10 @@ rom_data_view_init_bitfield(RomDataView *page, const RomFields::Field *field)
 #if GTK_CHECK_VERSION(3,0,0)
 		// TODO: GTK_FILL
 		gtk_grid_attach(GTK_GRID(widget), checkBox, col, row, 1, 1);
-#else
+#else /* !GTK_CHECK_VERSION(3,0,0) */
 		gtk_table_attach(GTK_TABLE(widget), checkBox, col, col+1, row, row+1,
 			GTK_FILL, GTK_FILL, 0, 0);
-#endif
+#endif /* GTK_CHECK_VERSION(3,0,0) */
 		col++;
 		if (col == bitfieldDesc.elemsPerRow) {
 			row++;
@@ -1356,11 +1356,27 @@ rom_data_view_update_string_multi(RomDataView *page, uint32_t user_lc)
 			}
 		}
 
+		// Create a VBox for the combobox to reduce its vertical height.
+#if GTK_CHECK_VERSION(3,0,0)
+		GtkWidget *const vboxCboLanguage = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+		gtk_widget_set_valign(vboxCboLanguage, GTK_ALIGN_START);
+		gtk_box_pack_end(GTK_BOX(page->hboxHeaderRow_outer), vboxCboLanguage, false, false, 0);
+		gtk_widget_show(vboxCboLanguage);
+#else /* !GTK_CHECK_VERSION(3,0,0) */
+		GtkWidget *const topAlign = gtk_alignment_new(0.5f, 0.0f, 0.0f, 0.0f);
+		gtk_box_pack_end(GTK_BOX(page->hboxHeaderRow_outer), topAlign, false, false, 0);
+		gtk_widget_show(topAlign);
+
+		GtkWidget *const vboxCboLanguage = gtk_vbox_new(false, 0);
+		gtk_box_pack_end(GTK_BOX(topAlign), vboxCboLanguage, false, false, 0);
+		gtk_widget_show(vboxCboLanguage);
+#endif /* GTK_CHECK_VERSION(3,0,0) */
+
 		// Create the combobox and set the list store.
 		// TODO: Reduce combobox height?
 		page->cboLanguage = gtk_combo_box_new_with_model(GTK_TREE_MODEL(page->lstoreLanguage));
 		g_object_unref(page->lstoreLanguage);	// remove our reference
-		gtk_box_pack_end(GTK_BOX(page->hboxHeaderRow_outer), page->cboLanguage, false, false, 0);
+		gtk_box_pack_end(GTK_BOX(vboxCboLanguage), page->cboLanguage, false, false, 0);
 		gtk_combo_box_set_active(GTK_COMBO_BOX(page->cboLanguage), sel_idx);
 		gtk_widget_show(page->cboLanguage);
 
