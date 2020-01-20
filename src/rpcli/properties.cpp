@@ -584,8 +584,10 @@ public:
 		if (pStr_multi && !pStr_multi->empty()) {
 			// Try the user-specified language code first.
 			// TODO: Consolidate ->end() calls?
-			// TODO: Skip if user_lc == 0?
-			auto iter = pStr_multi->find(field.user_lc);
+			auto iter = pStr_multi->end();
+			if (field.user_lc != 0) {
+				iter = pStr_multi->find(field.user_lc);
+			}
 			if (iter == pStr_multi->end()) {
 				// Not found. Try the ROM-default language code.
 				if (field.def_lc != field.user_lc) {
