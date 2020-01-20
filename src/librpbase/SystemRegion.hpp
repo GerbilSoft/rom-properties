@@ -57,6 +57,15 @@ class SystemRegion
 		 * @return Localized name, or nullptr if not found.
 		 */
 		static const char *getLocalizedLanguageName(uint32_t lc);
+
+		/**
+		 * Get the position of a language code's flag icon in the flags sprite sheet.
+		 * @param lc	[in] Language code.
+		 * @param pCol	[out] Pointer to store the column value. (-1 if not found)
+		 * @param pRow	[out] Pointer to store the row value. (-1 if not found)
+		 * @return 0 on success; negative POSIX error code on error.
+		 */
+		static int getFlagPosition(uint32_t lc, int *pCol, int *pRow);
 };
 
 }

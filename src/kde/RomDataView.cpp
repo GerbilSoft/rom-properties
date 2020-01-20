@@ -1000,9 +1000,6 @@ void RomDataViewPrivate::updateStringMulti(uint32_t user_lc)
 		cboLanguage->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Fixed);
 		ui.hboxHeaderRow->addWidget(cboLanguage);
 
-		// Country code.
-		const uint32_t cc = SystemRegion::getCountryCode();
-
 		// Sprite sheets. (32x32, 24x24, 16x16)
 		const QPixmap spriteSheets[3] = {
 			QPixmap(QLatin1String(":/flags/flags-32x32.png")),
@@ -1018,53 +1015,8 @@ void RomDataViewPrivate::updateStringMulti(uint32_t user_lc)
 			int cur_idx = cboLanguage->count()-1;
 
 			// Flag icon.
-			// Flags are stored in a sprite sheet, so we need to
-			// determine the column and row.
-			struct flagpos_t {
-				uint32_t lc;
-				uint16_t col;
-				uint16_t row;
-			};
-			static const flagpos_t flagpos[] = {
-				{'hans',	0, 0},
-				{'de',		1, 0},
-				{'es',		2, 0},
-				{'fr',		3, 0},
-				//{'gb',		0, 1},
-				{'it',		1, 1},
-				{'ja',		2, 1},
-				{'ko',		3, 1},
-				{'nl',		0, 2},
-				{'pt',		1, 2},
-				{'ru',		2, 2},
-				{'hant',	3, 2},
-				//{'us',		3, 0},
-
-				{0, 0, 0}
-			};
-
 			int col, row;
-			if (lc == 'en') {
-				// Special case for English:
-				// Use the 'us' flag if the country code is US,
-				// and the 'gb' flag for everywhere else.
-				col = 0;
-				row = (cc == 'US') ? 3 : 1;
-			} else {
-				// Other flags. Check the table.
-				col = -1;
-				row = -1;
-				for (const flagpos_t *p = flagpos; p->lc != 0; p++) {
-					if (p->lc == lc) {
-						// Match!
-						col = p->col;
-						row = p->row;
-						break;
-					}
-				}
-			}
-
-			if (col >= 0 && row >= 0) {
+			if (!SystemRegion::getFlagPosition(lc, &col, &row)) {
 				// Found a matching icon.
 				QIcon flag_icon;
 				flag_icon.addPixmap(spriteSheets[0].copy(col*32, row*32, 32, 32));

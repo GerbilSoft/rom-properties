@@ -408,4 +408,65 @@ const char *SystemRegion::getLocalizedLanguageName(uint32_t lc)
 	return (res ? res->name : nullptr);
 }
 
+/**
+ * Get the position of a language code's flag icon in the flags sprite sheet.
+ * @param lc	[in] Language code.
+ * @param pCol	[out] Pointer to store the column value. (-1 if not found)
+ * @param pRow	[out] Pointer to store the row value. (-1 if not found)
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int SystemRegion::getFlagPosition(uint32_t lc, int *pCol, int *pRow)
+{
+	int ret = -ENOENT;
+
+	// Flags are stored in a sprite sheet, so we need to
+	// determine the column and row.
+	struct flagpos_t {
+		uint32_t lc;
+		uint16_t col;
+		uint16_t row;
+		};
+	static const flagpos_t flagpos[] = {
+		{'hans',	0, 0},
+		{'de',		1, 0},
+		{'es',		2, 0},
+		{'fr',		3, 0},
+		//{'gb',		0, 1},
+		{'it',		1, 1},
+		{'ja',		2, 1},
+		{'ko',		3, 1},
+		{'nl',		0, 2},
+		{'pt',		1, 2},
+		{'ru',		2, 2},
+		{'hant',	3, 2},
+		//{'us',		3, 0},
+
+		{0, 0, 0}
+	};
+
+	if (lc == 'en') {
+		// Special case for English:
+		// Use the 'us' flag if the country code is US,
+		// and the 'gb' flag for everywhere else.
+		*pCol = 0;
+		*pRow = (getCountryCode() == 'US') ? 3 : 1;
+		ret = 0;
+	} else {
+		// Other flags. Check the table.
+		*pCol = -1;
+		*pRow = -1;
+		for (const flagpos_t *p = flagpos; p->lc != 0; p++) {
+			if (p->lc == lc) {
+				// Match!
+				*pCol = p->col;
+				*pRow = p->row;
+				ret = 0;
+				break;
+			}
+		}
+	}
+
+	return ret;
+}
+
 }

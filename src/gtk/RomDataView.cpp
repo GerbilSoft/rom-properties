@@ -1317,9 +1317,6 @@ rom_data_view_update_string_multi(RomDataView *page, uint32_t user_lc)
 		// - 1: Language code
 		page->lstoreLanguage = gtk_list_store_new(3, PIMGTYPE_GOBJECT_TYPE, G_TYPE_STRING, G_TYPE_UINT);
 
-		// Country code.
-		const uint32_t cc = SystemRegion::getCountryCode();
-
 		// TODO: Multiple icon sizes for high-DPI modes.
 		// For now, only using 16x16.
 		PIMGTYPE flags_16x16 = PIMGTYPE_load_png_from_gresource(
@@ -1348,8 +1345,14 @@ rom_data_view_update_string_multi(RomDataView *page, uint32_t user_lc)
 			}
 			int cur_idx = gtk_tree_model_iter_n_children(GTK_TREE_MODEL(page->lstoreLanguage), nullptr)-1;
 
-			// Flag icon. (TODO: Get the individual 16x16 icon)
-			gtk_list_store_set(page->lstoreLanguage, &gtiter, SM_COL_ICON, flags_16x16, -1);
+			// Flag icon.
+			int col, row;
+			if (!SystemRegion::getFlagPosition(lc, &col, &row)) {
+				// Found a matching icon.
+				PIMGTYPE icon = PIMGTYPE_get_subsurface(flags_16x16, col*16, row*16, 16, 16);
+				gtk_list_store_set(page->lstoreLanguage, &gtiter, SM_COL_ICON, icon, -1);
+				PIMGTYPE_destroy(icon);
+			}
 
 			// Save the default index:
 			// - ROM-default language code.

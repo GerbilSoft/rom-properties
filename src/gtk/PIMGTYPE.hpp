@@ -126,6 +126,32 @@ static inline PIMGTYPE PIMGTYPE_scale(PIMGTYPE pImgType, int width, int height, 
  */
 PIMGTYPE PIMGTYPE_load_png_from_gresource(const char *filename);
 
+/**
+ * Copy a subsurface from another PIMGTYPE.
+ * @param pImgType	[in] PIMGTYPE
+ * @param x		[in] X position
+ * @param y		[in] Y position
+ * @param width		[in] Width
+ * @param height	[in] Height
+ * @return Subsurface, or nullptr on error.
+ */
+static inline PIMGTYPE PIMGTYPE_get_subsurface(PIMGTYPE pImgType, int x, int y, int width, int height)
+{
+#ifdef RP_GTK_USE_CAIRO
+	return cairo_surface_create_for_rectangle(pImgType, x, y, width, height);
+#else /* !RP_GTK_USE_CAIRO */
+	PIMGTYPE surface = gdk_pixbuf_new(
+		gdk_pixbuf_get_colorspace(pImgType),
+		gdk_pixbuf_get_has_alpha(pImgType),
+		gdk_pixbuf_get_bits_per_sample(pImgType),
+		width, height);
+	if (surface) {
+		gdk_pixbuf_copy_area(pImgType, x, y, width, height, surface, width, height);
+	}
+	return surface;
+#endif /* RP_GTK_USE_CAIRO */
+}
+
 #ifdef __cplusplus
 }
 #endif
