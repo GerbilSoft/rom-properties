@@ -45,12 +45,10 @@ using std::vector;
 #include <QtCore/QTimer>
 #include <QtCore/QVector>
 
-#include <QActionGroup>
 #include <QCheckBox>
+#include <QComboBox>
 #include <QHeaderView>
 #include <QLabel>
-#include <QMenu>
-#include <QPushButton>
 #include <QSpacerItem>
 #include <QTreeWidget>
 
@@ -89,11 +87,7 @@ class RomDataViewPrivate
 		typedef QPair<QLabel*, const RomFields::Field*> Data_StringMulti_t;
 		QVector<Data_StringMulti_t> vec_stringMulti;
 		uint32_t def_lc;	// Default language code from RomFields.
-		// Popup menu for language selection.
-		QPushButton *btnLanguage;
-		QMenu *menuLanguage;
-		QActionGroup *actgrpLanguage;
-		QSignalMapper *sigmapLanguage;
+		QComboBox *cboLanguage;
 
 		// RomData object.
 		RomData *romData;
@@ -221,10 +215,7 @@ class RomDataViewPrivate
 RomDataViewPrivate::RomDataViewPrivate(RomDataView *q, RomData *romData)
 	: q_ptr(q)
 	, def_lc(0)
-	, btnLanguage(nullptr)
-	, menuLanguage(nullptr)
-	, actgrpLanguage(nullptr)
-	, sigmapLanguage(nullptr)
+	, cboLanguage(nullptr)
 	, romData(romData->ref())
 {
 	// Register RpQImageBackend.
@@ -971,7 +962,7 @@ void RomDataViewPrivate::updateStringMulti(uint32_t user_lc)
 			continue;
 		}
 
-		if (!menuLanguage) {
+		if (!cboLanguage) {
 			// Need to add all supported languages.
 			// TODO: Do we need to do this for all of them, or just one?
 			for (auto iter = pStr_multi->cbegin();
@@ -1002,17 +993,12 @@ void RomDataViewPrivate::updateStringMulti(uint32_t user_lc)
 		lblString->setText(U82Q(iter->second.c_str()));
 	}
 
-	if (!menuLanguage && set_lc.size() > 1) {
-		// Create the language menu.
+	if (!cboLanguage && set_lc.size() > 1) {
+		// Create the language combobox.
 		Q_Q(RomDataView);
-		menuLanguage = new QMenu(q);
-		actgrpLanguage = new QActionGroup(q);
-		actgrpLanguage->setExclusive(true);
-
-		// Signal mapper.
-		sigmapLanguage = new QSignalMapper(q);
-		QObject::connect(sigmapLanguage, SIGNAL(mapped(int)),
-		                 q, SLOT(rftStringMulti_language_changed_slot(int)));
+		cboLanguage = new QComboBox(q);
+		cboLanguage->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Fixed);
+		ui.hboxHeaderRow->addWidget(cboLanguage);
 
 		// Country code.
 		const uint32_t cc = SystemRegion::getCountryCode();
@@ -1024,21 +1010,12 @@ void RomDataViewPrivate::updateStringMulti(uint32_t user_lc)
 			QPixmap(QLatin1String(":/flags/flags-16x16.png")),
 		};
 
+		int sel_idx = -1;
 		for (auto iter = set_lc.cbegin(); iter != set_lc.cend(); ++iter) {
 			const uint32_t lc = *iter;
 			const char *const name = SystemRegion::getLocalizedLanguageName(lc);
-			QString s_lc = lcToQString(lc);
-			QString s_name = (name ? U82Q(name) : s_lc);
-
-			// TODO: QSignalMapper
-			QAction *const act_lc = new QAction(s_name);
-			act_lc->setData(lc);
-			act_lc->setCheckable(true);
-			QObject::connect(act_lc, SIGNAL(triggered(bool)),
-			                 sigmapLanguage, SLOT(map()));
-			sigmapLanguage->setMapping(act_lc, static_cast<int>(lc));
-			actgrpLanguage->addAction(act_lc);
-			menuLanguage->addAction(act_lc);
+			cboLanguage->addItem((name ? U82Q(name) : lcToQString(lc)), lc);
+			int cur_idx = cboLanguage->count()-1;
 
 			// Flag icon.
 			// Flags are stored in a sprite sheet, so we need to
@@ -1093,7 +1070,7 @@ void RomDataViewPrivate::updateStringMulti(uint32_t user_lc)
 				flag_icon.addPixmap(spriteSheets[0].copy(col*32, row*32, 32, 32));
 				flag_icon.addPixmap(spriteSheets[1].copy(col*24, row*24, 24, 24));
 				flag_icon.addPixmap(spriteSheets[2].copy(col*16, row*16, 16, 16));
-				act_lc->setIcon(flag_icon);
+				cboLanguage->setItemIcon(cur_idx, flag_icon);
 			}
 
 			// Save the default index:
@@ -1101,39 +1078,21 @@ void RomDataViewPrivate::updateStringMulti(uint32_t user_lc)
 			// - English if it's not available.
 			if (lc == def_lc) {
 				// Select this action.
-				act_lc->setChecked(true);
-			}
-			if (lc == 'en') {
+				sel_idx = cur_idx;
+			} else if (lc == 'en') {
 				// English. Select this action if def_lc hasn't been found yet.
-				if (!actgrpLanguage->checkedAction()) {
-					act_lc->setChecked(true);
+				if (sel_idx < 0) {
+					sel_idx = cur_idx;
 				}
 			}
 		}
 
-		// Language button.
-		btnLanguage = new QPushButton(q);
-		btnLanguage->setMenu(menuLanguage);
-		btnLanguage->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Fixed);
-		ui.hboxHeaderRow->addWidget(btnLanguage);
-	}
+		// Set the current index.
+		cboLanguage->setCurrentIndex(sel_idx);
 
-	if (btnLanguage) {
-		// Update btnLanguage's icon and text.
-		QAction *selAction = actgrpLanguage->checkedAction();
-		if (!selAction) {
-			// Nothing is selected...
-			// Select the first action.
-			QList<QAction*> actionList = menuLanguage->actions();
-			if (!actionList.empty()) {
-				selAction = actionList.first();
-				selAction->setChecked(true);
-			}
-		}
-		if (selAction) {
-			btnLanguage->setIcon(selAction->icon());
-			btnLanguage->setText(lcToQString(selAction->data().value<uint32_t>()));
-		}
+		// Connect the signal after everything's been initialized.
+		QObject::connect(cboLanguage, SIGNAL(currentIndexChanged(int)),
+		                 q, SLOT(cboLanguage_currentIndexChanged_slot(int)));
 	}
 }
 
@@ -1472,10 +1431,16 @@ void RomDataView::bitfield_toggled_slot(bool checked)
  * The RFT_MULTI_STRING language was changed.
  * @param lc Language code. (Cast to uint32_t)
  */
-void RomDataView::rftStringMulti_language_changed_slot(int lc)
+void RomDataView::cboLanguage_currentIndexChanged_slot(int index)
 {
 	Q_D(RomDataView);
-	d->updateStringMulti(static_cast<uint32_t>(lc));
+	if (index < 0) {
+		// Invalid index...
+		return;
+	}
+
+	const uint32_t lc = d->cboLanguage->itemData(index).value<uint32_t>();
+	d->updateStringMulti(lc);
 }
 
 /** Properties. **/
