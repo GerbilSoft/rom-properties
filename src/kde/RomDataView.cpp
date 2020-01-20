@@ -965,32 +965,32 @@ void RomDataViewPrivate::updateStringMulti(uint32_t user_lc)
 		if (!cboLanguage) {
 			// Need to add all supported languages.
 			// TODO: Do we need to do this for all of them, or just one?
-			for (auto iter = pStr_multi->cbegin();
-			     iter != pStr_multi->cend(); ++iter)
+			for (auto iter_sm = pStr_multi->cbegin();
+			     iter_sm != pStr_multi->cend(); ++iter_sm)
 			{
-				set_lc.insert(iter->first);
+				set_lc.insert(iter_sm->first);
 			}
 		}
 
 		// Try the user-specified language code first.
 		// TODO: Consolidate ->end() calls?
-		auto iter = pStr_multi->end();
+		auto iter_sm = pStr_multi->end();
 		if (user_lc != 0) {
-			iter = pStr_multi->find(user_lc);
+			iter_sm = pStr_multi->find(user_lc);
 		}
-		if (iter == pStr_multi->end()) {
+		if (iter_sm == pStr_multi->end()) {
 			// Not found. Try the ROM-default language code.
 			if (def_lc != user_lc) {
-				iter = pStr_multi->find(def_lc);
-				if (iter == pStr_multi->end()) {
+				iter_sm = pStr_multi->find(def_lc);
+				if (iter_sm == pStr_multi->end()) {
 					// Still not found. Use the first string.
-					iter = pStr_multi->begin();
+					iter_sm = pStr_multi->begin();
 				}
 			}
 		}
 
 		// Update the text.
-		lblString->setText(U82Q(iter->second.c_str()));
+		lblString->setText(U82Q(iter_sm->second.c_str()));
 	}
 
 	if (!cboLanguage && set_lc.size() > 1) {
