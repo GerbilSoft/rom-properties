@@ -16,6 +16,7 @@ extern "C" {
 
 // C includes. (C++ namespace)
 #include <cassert>
+#include <cstring>
 
 #ifdef RP_GTK_USE_CAIRO
 /**
