@@ -1002,18 +1002,58 @@ void RomDataViewPrivate::updateStringMulti(uint32_t def_lc, uint32_t user_lc)
 		menuLanguage = new QMenu(q);
 		actgrpLanguage = new QActionGroup(q);
 		actgrpLanguage->setExclusive(true);
-		QString s_name;
+		const uint32_t cc = SystemRegion::getCountryCode();
 		for (auto iter = set_lc.cbegin(); iter != set_lc.cend(); ++iter) {
 			const uint32_t lc = *iter;
 			const char *const name = SystemRegion::getLocalizedLanguageName(lc);
-			s_name = (name ? U82Q(name) : lcToQString(lc));
+			QString s_lc = lcToQString(lc);
+			QString s_name = (name ? U82Q(name) : s_lc);
 
-			// TODO: Flag; QSignalMapper
+			// TODO: QSignalMapper
 			QAction *const act_lc = new QAction(s_name);
 			act_lc->setData(lc);
 			act_lc->setCheckable(true);
 			actgrpLanguage->addAction(act_lc);
 			menuLanguage->addAction(act_lc);
+
+			// Flag icon.
+			// Flag names use country codes, not language codes.
+			// TODO: Use a lookup table instead of switch/case?
+			QString s_flag_name = s_lc;
+			switch (lc) {
+				case 'en':
+					// Use "us" for US, and "gb" for everywhere else.
+					if (cc == 'US') {
+						s_flag_name = QLatin1String("us");
+					} else {
+						s_flag_name = QLatin1String("gb");
+					}
+					break;
+				case 'ja':
+					s_flag_name = QLatin1String("jp");
+					break;
+				case 'ko':
+					s_flag_name = QLatin1String("kr");
+					break;
+				case 'hans':
+					s_flag_name = QLatin1String("cn");
+					break;
+				case 'hant':
+					s_flag_name = QLatin1String("tw");
+					break;
+				default:
+					break;
+			}
+
+			// Loading all icon sizes for Hi-DPI compatibility.
+			// TODO: Use sprite sheets instead?
+			static const char *const flag_sizes[] = {"32x32", "24x24", "16x16"};
+			QIcon flag_icon;
+			for (unsigned int i = 0; i < ARRAY_SIZE(flag_sizes); i++) {
+				QString flag_icon_path = QLatin1String(":/flags/%1/%2.png");
+				flag_icon.addPixmap(QPixmap(flag_icon_path.arg(QLatin1String(flag_sizes[i]), s_flag_name)));
+			}
+			act_lc->setIcon(flag_icon);
 
 			// Save the default index:
 			// - ROM-default language code.

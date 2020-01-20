@@ -83,14 +83,20 @@ ENDIF()
 STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-kf5_SRCS "${rom-properties-kde_SRCS}")
 STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-kf5_H    "${rom-properties-kde_H}")
 STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-kf5_UIS  "${rom-properties-kde_UIS}")
+STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-kf5_RCC_SRCS "${rom-properties-kde_RCC_SRCS}")
 
 STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-kio5_SRCS "${rom-properties-kio_SRCS}")
 STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-kio5_H    "${rom-properties-kio_H}")
 
 # Sources and headers. (KF5-specific)
+QT5_ADD_RESOURCES(
+	rom-properties-kf5_RCC_O ${rom-properties-kf5_RCC_SRCS}
+	OPTIONS -no-compress
+	)
 SET(rom-properties-kf5_SRCS
 	${rom-properties-kf5_SRCS}
 	${rom-properties-kio5_SRCS}
+	${rom-properties-kf5_RCC_O}
 	RpExtractorPlugin.cpp
 	RpOverlayIconPlugin.cpp
 	RomPropertiesDialogPluginFactoryKF5.cpp
