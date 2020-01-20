@@ -14,6 +14,7 @@
 #include "librpbase/TextFuncs.hpp"
 #include "librpbase/RomData.hpp"
 #include "librpbase/RomFields.hpp"
+#include "librpbase/SystemRegion.hpp"
 #include "librpbase/file/RpFile.hpp"
 #include "librpbase/img/IconAnimData.hpp"
 #include "librpbase/img/IconAnimHelper.hpp"
@@ -146,6 +147,7 @@ struct _RomDataView {
 	guint		changed_idle;
 
 	// Header row.
+	GtkWidget	*hboxHeaderRow_outer;
 	GtkWidget	*hboxHeaderRow;
 	GtkWidget	*lblSysInfo;
 	GtkWidget	*imgIcon;
@@ -182,6 +184,8 @@ struct _RomDataView {
 	// RFT_STRING_MULTI value labels.
 	std::vector<Data_StringMulti_t> *vecStringMulti;
 	uint32_t	def_lc;	// Default language code from RomFields.
+	GtkWidget	*cboLanguage;
+	GtkListStore	*lstoreLanguage;
 };
 
 // FIXME: G_DEFINE_TYPE() doesn't work in C++ mode with gcc-6.2
@@ -317,6 +321,8 @@ rom_data_view_init(RomDataView *page)
 	page->vecDescLabels = new vector<GtkWidget*>();
 	page->vecStringMulti = new vector<Data_StringMulti_t>();
 	page->def_lc = 0;
+	page->cboLanguage = nullptr;
+	page->lstoreLanguage = nullptr;
 
 	// Animation timer.
 	page->tmrIconAnim = 0;
@@ -335,10 +341,15 @@ rom_data_view_init(RomDataView *page)
 	// Make this a VBox.
 	gtk_orientable_set_orientation(GTK_ORIENTABLE(page), GTK_ORIENTATION_VERTICAL);
 
-	// Header row.
+	// Header row. (outer box)
+	page->hboxHeaderRow_outer = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+	gtk_box_pack_start(GTK_BOX(page), page->hboxHeaderRow_outer, true, false, 0);
+	gtk_widget_show(page->hboxHeaderRow_outer);
+
+	// Header row. (inner box)
 	page->hboxHeaderRow = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 8);
 	gtk_widget_set_halign(page->hboxHeaderRow, GTK_ALIGN_CENTER);
-	gtk_box_pack_start(GTK_BOX(page), page->hboxHeaderRow, false, false, 0);
+	gtk_box_pack_start(GTK_BOX(page->hboxHeaderRow_outer), page->hboxHeaderRow, true, false, 0);
 	gtk_widget_show(page->hboxHeaderRow);
 #else
 	// Center-align the header row.
@@ -346,9 +357,14 @@ rom_data_view_init(RomDataView *page)
 	gtk_box_pack_start(GTK_BOX(page), centerAlign, false, false, 0);
 	gtk_widget_show(centerAlign);
 
-	// Header row.
+	// Header row. (outer box)
+	page->hboxHeaderRow_outer = gtk_hbox_new(false, 0);
+	gtk_container_add(GTK_CONTAINER(centerAlign), page->hboxHeaderRow_outer);
+	gtk_widget_show(page->hboxHeaderRow_outer);
+
+	// Header row. (inner box)
 	page->hboxHeaderRow = gtk_hbox_new(false, 8);
-	gtk_container_add(GTK_CONTAINER(centerAlign), page->hboxHeaderRow);
+	gtk_container_add(GTK_CONTAINER(page->hboxHeaderRow_outer), page->hboxHeaderRow);
 	gtk_widget_show(page->hboxHeaderRow);
 #endif
 
@@ -1259,8 +1275,7 @@ rom_data_view_update_string_multi(RomDataView *page, uint32_t user_lc)
 			continue;
 		}
 
-		// TODO: GtkComboBox
-		if (/*!cboLanguage*/ 1) {
+		if (!page->cboLanguage) {
 			// Need to add all supported languages.
 			// TODO: Do we need to do this for all of them, or just one?
 			for (auto iter_sm = pStr_multi->cbegin();
@@ -1291,7 +1306,76 @@ rom_data_view_update_string_multi(RomDataView *page, uint32_t user_lc)
 		gtk_label_set_text(GTK_LABEL(lblString), iter_sm->second.c_str());
 	}
 
-	// TODO: Create the combobox.
+	if (!page->cboLanguage && set_lc.size() > 1) {
+		// Create the language combobox.
+		// TODO: G_TYPE_PIXBUF
+		// Columns:
+		// - 0: Display text
+		// - 1: Language code
+		page->lstoreLanguage = gtk_list_store_new(2, G_TYPE_STRING, G_TYPE_UINT);
+
+		// Country code.
+		const uint32_t cc = SystemRegion::getCountryCode();
+
+		// TODO: Flag sprite sheets.
+
+		int sel_idx = -1;
+		for (auto iter = set_lc.cbegin(); iter != set_lc.cend(); ++iter) {
+			const uint32_t lc = *iter;
+			const char *const name = SystemRegion::getLocalizedLanguageName(lc);
+
+			GtkTreeIter gtiter;
+			gtk_list_store_append(page->lstoreLanguage, &gtiter);
+			gtk_list_store_set(page->lstoreLanguage, &gtiter, 1, lc, -1);
+			if (name) {
+				gtk_list_store_set(page->lstoreLanguage, &gtiter, 0, name, -1);
+			} else {
+				string s_lc;
+				s_lc.reserve(4);
+				for (uint32_t tmp_lc = lc; tmp_lc != 0; tmp_lc <<= 8) {
+					char chr = (char)(tmp_lc >> 24);
+					if (chr != 0) {
+						s_lc += chr;
+					}
+				}
+				gtk_list_store_set(page->lstoreLanguage, &gtiter, 0, s_lc.c_str(), -1);
+			}
+			int cur_idx = gtk_tree_model_iter_n_children(GTK_TREE_MODEL(page->lstoreLanguage), nullptr)-1;
+
+			// Save the default index:
+			// - ROM-default language code.
+			// - English if it's not available.
+			if (lc == page->def_lc) {
+				// Select this action.
+				sel_idx = cur_idx;
+			} else if (lc == 'en') {
+				// English. Select this action if def_lc hasn't been found yet.
+				if (sel_idx < 0) {
+					sel_idx = cur_idx;
+				}
+			}
+		}
+
+		// Create the combobox and set the list store.
+		// TODO: Reduce combobox height?
+		page->cboLanguage = gtk_combo_box_new_with_model(GTK_TREE_MODEL(page->lstoreLanguage));
+		g_object_unref(page->lstoreLanguage);	// remove our reference
+		gtk_box_pack_end(GTK_BOX(page->hboxHeaderRow_outer), page->cboLanguage, false, false, 0);
+		gtk_combo_box_set_active(GTK_COMBO_BOX(page->cboLanguage), sel_idx);
+		gtk_widget_show(page->cboLanguage);
+
+		// cboLanguage: Icon renderer (TODO)
+		/*GtkCellRenderer *renderer = gtk_cell_renderer_pixbuf_new();
+		gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(page->cboLanguage), renderer, false);
+		gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(page->cboLanguage), renderer, "pixbuf", 0, NULL);*/
+
+		// cboLanguage: Text renderer
+		GtkCellRenderer *renderer = gtk_cell_renderer_text_new();
+		gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(page->cboLanguage), renderer, true);
+		gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(page->cboLanguage), renderer, "text", 0, NULL);
+
+		// TODO: Signals
+	}
 }
 
 static void
