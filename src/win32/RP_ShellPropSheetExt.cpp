@@ -1716,14 +1716,22 @@ void RP_ShellPropSheetExt_Private::updateStringMulti(uint32_t user_lc)
 		for (auto iter = set_lc.cbegin(); iter != set_lc.cend(); ++iter) {
 			const uint32_t lc = *iter;
 			const char *lc_str = SystemRegion::getLocalizedLanguageName(lc);
-			// TODO: Convert lc to string if lc_str is invalid.
-			if (!lc_str) {
-				lc_str = "ERR";
+			if (lc_str) {
+				vec_lc_str.emplace_back(std::move(U82T_c(lc_str)));
+			} else {
+				// Invalid language code.
+				tstring s_lc;
+				s_lc.reserve(4);
+				for (uint32_t tmp_lc = lc; tmp_lc != 0; tmp_lc <<= 8) {
+					TCHAR chr = (TCHAR)(tmp_lc >> 24);
+					if (chr != 0) {
+						s_lc += chr;
+					}
+				}
+				vec_lc_str.emplace_back(std::move(s_lc));
 			}
 
-			vec_lc_str.push_back(U82T_c(lc_str));
 			const tstring &tstr = vec_lc_str.at(vec_lc_str.size()-1);
-
 			SIZE size;
 			if (!LibWin32Common::measureTextSize(hDlgSheet, hFontDlg, tstr.c_str(), &size)) {
 				maxSize.cx = std::max(maxSize.cx, size.cx);
