@@ -117,7 +117,7 @@ class RomDataViewPrivate
 		 * Initialize a string field.
 		 * @param lblDesc	[in] Description label.
 		 * @param field		[in] RomFields::Field
-		 * @param str		[in,opt] String data. (If nullptr, field data is used.)
+		 * @param str		[in] String data.
 		 */
 		inline QLabel *initString(QLabel *lblDesc, const RomFields::Field *field, const QString &str)
 		{
