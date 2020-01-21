@@ -47,7 +47,7 @@ PokemonMiniPrivate::PokemonMiniPrivate(PokemonMini *q, IRpFile *file)
 /** PokemonMini **/
 
 /**
- * Read a Nintendo Game Boy Advance ROM image.
+ * Read a Pokémon Mini ROM image.
  *
  * A ROM image must be opened by the caller. The file handle
  * will be ref()'d and must be kept open in order to load
@@ -179,9 +179,8 @@ const char *PokemonMini::systemName(unsigned int type) const
  */
 const char *const *PokemonMini::supportedFileExtensions_static(void)
 {
-	// TODO
 	static const char *const exts[] = {
-		".bin",
+		".min",
 
 		nullptr
 	};
