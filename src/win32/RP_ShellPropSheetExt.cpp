@@ -28,6 +28,7 @@ using LibWin32Common::WTSSessionNotification;
 
 // librpbase, librptexture, libromdata
 #include "librpbase/RomFields.hpp"
+#include "librpbase/SystemRegion.hpp"
 using namespace LibRpBase;
 using LibRpTexture::rp_image;
 using LibRomData::RomDataFactory;
@@ -53,6 +54,7 @@ const CLSID CLSID_RP_ShellPropSheetExt =
 #define IDC_STATIC_BANNER		0x0100
 #define IDC_STATIC_ICON			0x0101
 #define IDC_TAB_WIDGET			0x0102
+#define IDC_CBO_LANGUAGE		0x0103
 #define IDC_TAB_PAGE(idx)		(0x0200 + (idx))
 #define IDC_STATIC_DESC(idx)		(0x1000 + (idx))
 #define IDC_RFT_STRING(idx)		(0x1400 + (idx))
@@ -114,6 +116,7 @@ class RP_ShellPropSheetExt_Private
 
 		// Header row widgets.
 		HWND lblSysInfo;
+		RECT rectHeader;
 
 		// wtsapi32.dll for Remote Desktop status. (WinXP and later)
 		WTSSessionNotification wts;
@@ -152,7 +155,7 @@ class RP_ShellPropSheetExt_Private
 		DragImageLabel *lblIcon;
 
 		// Tab layout.
-		HWND hTabWidget;
+		HWND tabWidget;
 		struct tab {
 			HWND hDlg;		// Tab child dialog.
 			POINT curPt;		// Current point.
@@ -365,7 +368,7 @@ RP_ShellPropSheetExt_Private::RP_ShellPropSheetExt_Private(RP_ShellPropSheetExt 
 	, isFullyInit(false)
 	, lblBanner(nullptr)
 	, lblIcon(nullptr)
-	, hTabWidget(nullptr)
+	, tabWidget(nullptr)
 	, curTabIndex(0)
 	, def_lc(0)
 	, cboLanguage(nullptr)
@@ -555,15 +558,14 @@ int RP_ShellPropSheetExt_Private::createHeaderRow(HWND hDlg, const POINT &pt_sta
 
 	if (!tSysInfo.empty()) {
 		// Determine the appropriate label size.
-		int ret = LibWin32Common::measureTextSize(hDlg, hFont, tSysInfo, &sz_lblSysInfo);
-		if (ret != 0) {
+		if (!LibWin32Common::measureTextSize(hDlg, hFont, tSysInfo, &sz_lblSysInfo)) {
+			// Start the total_widget_width.
+			total_widget_width = sz_lblSysInfo.cx;
+		} else {
 			// Error determining the label size.
 			// Don't draw the label.
 			sz_lblSysInfo.cx = 0;
 			sz_lblSysInfo.cy = 0;
-		} else {
-			// Start the total_widget_width.
-			total_widget_width = sz_lblSysInfo.cx;
 		}
 	}
 
@@ -1702,7 +1704,77 @@ void RP_ShellPropSheetExt_Private::updateStringMulti(uint32_t user_lc)
 	}
 
 	if (!cboLanguage && set_lc.size() > 1) {
-		// TODO: Create the combobox.
+		// Create the language combobox.
+		// TODO: Adjust the label/icon positioning.
+		// TODO: Flags?
+
+		// Get the language strings and determine the
+		// maximum width.
+		SIZE maxSize = {0, 0};
+		vector<tstring> vec_lc_str;
+		vec_lc_str.reserve(set_lc.size());
+		for (auto iter = set_lc.cbegin(); iter != set_lc.cend(); ++iter) {
+			const uint32_t lc = *iter;
+			const char *lc_str = SystemRegion::getLocalizedLanguageName(lc);
+			// TODO: Convert lc to string if lc_str is invalid.
+			if (!lc_str) {
+				lc_str = "ERR";
+			}
+
+			vec_lc_str.push_back(U82T_c(lc_str));
+			const tstring &tstr = vec_lc_str.at(vec_lc_str.size()-1);
+
+			SIZE size;
+			if (!LibWin32Common::measureTextSize(hDlgSheet, hFontDlg, tstr.c_str(), &size)) {
+				maxSize.cx = std::max(maxSize.cx, size.cx);
+				maxSize.cy = std::max(maxSize.cy, size.cy);
+			}
+		}
+
+		// Add vertical scrollbar width and CXEDGE.
+		// Reference: http://ntcoder.com/2013/10/07/mfc-resize-ccombobox-drop-down-list-based-on-contents/
+		maxSize.cx += GetSystemMetrics(SM_CXVSCROLL);
+		maxSize.cx += (GetSystemMetrics(SM_CXEDGE) * 4);
+
+		// Create the combobox.
+		// FIXME: May need to create this after the header row
+		// in order to preserve tab order. Need to check the
+		// KDE and GTK+ versions, too.
+		//rectHeader
+		cboLanguage = CreateWindowEx(WS_EX_NOPARENTNOTIFY,
+			WC_COMBOBOX, nullptr,
+			CBS_DROPDOWNLIST | WS_CHILD | WS_TABSTOP | WS_VISIBLE,
+			rectHeader.right - maxSize.cx, rectHeader.top,
+			maxSize.cx, maxSize.cy*4,
+			hDlgSheet, (HMENU)(INT_PTR)IDC_CBO_LANGUAGE,
+			nullptr, nullptr);
+		SetWindowFont(cboLanguage, hFontDlg, false);
+
+		// Add the strings.
+		auto iter_str = vec_lc_str.cbegin();
+		auto iter_lc = set_lc.cbegin();
+		int sel_idx = -1;
+		for (; iter_str != vec_lc_str.cend(); ++iter_str, ++iter_lc) {
+			const uint32_t lc = *iter_lc;
+			int cur_idx = ComboBox_AddString(cboLanguage, iter_str->c_str());
+			ComboBox_SetItemData(cboLanguage, cur_idx, lc);
+
+			// Save the default index:
+			// - ROM-default language code.
+			// - English if it's not available.
+			if (lc == def_lc) {
+				// Select this action.
+				sel_idx = cur_idx;
+			} else if (lc == 'en') {
+				// English. Select this action if def_lc hasn't been found yet.
+				if (sel_idx < 0) {
+					sel_idx = cur_idx;
+				}
+			}
+		}
+
+		// Set the current index.
+		ComboBox_SetCurSel(cboLanguage, sel_idx);
 	}
 }
 
@@ -1929,6 +2001,13 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 	// Create the header row.
 	const SIZE header_size = {dlgSize.cx, descSize.cy};
 	const int headerH = createHeaderRow(hDlg, headerPt, header_size);
+	// Save the header rect for later.
+	rectHeader.left = headerPt.x;
+	rectHeader.top = headerPt.y;
+	rectHeader.right = headerPt.x + dlgSize.cx;
+	rectHeader.bottom = headerPt.y + headerH;
+
+	// Adjust values for the tabs.
 	dlgRect.top += headerH;
 	dlgSize.cy -= headerH;
 	headerPt.y += headerH;
@@ -1946,13 +2025,13 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 
 		// Create the tab widget.
 		tabs.resize(tabCount);
-		hTabWidget = CreateWindowEx(WS_EX_NOPARENTNOTIFY | WS_EX_TRANSPARENT,
+		tabWidget = CreateWindowEx(WS_EX_NOPARENTNOTIFY | WS_EX_TRANSPARENT,
 			WC_TABCONTROL, nullptr,
 			WS_CHILD | WS_TABSTOP | WS_VISIBLE,
 			dlgRect.left, dlgRect.top, dlgSize.cx, dlgSize.cy,
 			hDlg, (HMENU)(INT_PTR)IDC_TAB_WIDGET,
 			nullptr, nullptr);
-		SetWindowFont(hTabWidget, hFontDlg, false);
+		SetWindowFont(tabWidget, hFontDlg, false);
 		curTabIndex = 0;
 
 		// Add tabs.
@@ -1970,11 +2049,11 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 			const tstring tstr = U82T_c(name);
 			tcItem.pszText = const_cast<LPTSTR>(tstr.c_str());
 			// FIXME: Does the index work correctly if a tab is skipped?
-			TabCtrl_InsertItem(hTabWidget, i, &tcItem);
+			TabCtrl_InsertItem(tabWidget, i, &tcItem);
 		}
 
 		// Adjust the dialog size for subtabs.
-		TabCtrl_AdjustRect(hTabWidget, false, &dlgRect);
+		TabCtrl_AdjustRect(tabWidget, false, &dlgRect);
 		// Update dlgSize.
 		dlgSize.cx = dlgRect.right - dlgRect.left;
 		dlgSize.cy = dlgRect.bottom - dlgRect.top;
@@ -2562,9 +2641,9 @@ INT_PTR RP_ShellPropSheetExt_Private::DlgProc_WM_NOTIFY(HWND hDlg, NMHDR *pHdr)
 
 		case TCN_SELCHANGE: {
 			// Tab change. Make sure this is the correct WC_TABCONTROL.
-			if (hTabWidget != nullptr && hTabWidget == pHdr->hwndFrom) {
+			if (tabWidget != nullptr && tabWidget == pHdr->hwndFrom) {
 				// Tab widget. Show the selected tab.
-				int newTabIndex = TabCtrl_GetCurSel(hTabWidget);
+				int newTabIndex = TabCtrl_GetCurSel(tabWidget);
 				ShowWindow(tabs[curTabIndex].hDlg, SW_HIDE);
 				curTabIndex = newTabIndex;
 				ShowWindow(tabs[newTabIndex].hDlg, SW_SHOW);
