@@ -34,10 +34,11 @@ using LibRomData::RomDataFactory;
 
 // C++ STL classes.
 using std::array;
+using std::set;
+using std::string;
 using std::unique_ptr;
 using std::unordered_map;
 using std::unordered_set;
-using std::string;
 using std::wstring;
 using std::vector;
 
@@ -159,6 +160,12 @@ class RP_ShellPropSheetExt_Private
 		vector<tab> tabs;
 		int curTabIndex;
 
+		// RFT_STRING_MULTI value labels.
+		typedef std::pair<HWND, const RomFields::Field*> Data_StringMulti_t;
+		vector<Data_StringMulti_t> vecStringMulti;
+		uint32_t def_lc;	// Default language code from RomFields.
+		HWND cboLanguage;
+
 	public:
 		/**
 		 * Load the banner and icon as HBITMAPs.
@@ -198,11 +205,13 @@ class RP_ShellPropSheetExt_Private
 		 * @param size		[in] Width and height for a single line label.
 		 * @param field		[in] RomFields::Field
 		 * @param str		[in,opt] String data. (If nullptr, field data is used.)
+		 * @param pOutHWND	[out,opt] Retrieves the control's HWND.
 		 * @return Field height, in pixels.
 		 */
-		int initString(HWND hDlg, HWND hWndTab,
-			const POINT &pt_start, int idx, const SIZE &size,
-			const RomFields::Field *field, LPCTSTR str);
+		int initString(_In_ HWND hDlg, _In_ HWND hWndTab,
+			_In_ const POINT &pt_start, _In_ int idx, _In_ const SIZE &size,
+			_In_ const RomFields::Field *field, _In_ LPCTSTR str = nullptr,
+			_Outptr_opt_ HWND *pOutHWND = nullptr);
 
 		/**
 		 * Initialize a bitfield layout.
@@ -278,6 +287,26 @@ class RP_ShellPropSheetExt_Private
 			const RomFields::Field *field);
 
 		/**
+		 * Initialize a multi-language string field.
+		 * @param hDlg		[in] Parent dialog window. (for dialog unit mapping)
+		 * @param hWndTab	[in] Tab window. (for the actual control)
+		 * @param pt_start	[in] Starting position, in pixels.
+		 * @param idx		[in] Field index.
+		 * @param size		[in] Width and height for a single line label.
+		 * @param field		[in] RomFields::Field
+		 * @return Field height, in pixels.
+		 */
+		int initStringMulti(HWND hDlg, HWND hWndTab,
+			const POINT &pt_start, int idx, const SIZE &size,
+			const RomFields::Field *field);
+
+		/**
+		 * Update all multi-language string fields.
+		 * @param user_lc User-specified language code.
+		 */
+		void updateStringMulti(uint32_t user_lc);
+
+		/**
 		 * Initialize the bold font.
 		 * @param hFont Base font.
 		 */
@@ -338,6 +367,8 @@ RP_ShellPropSheetExt_Private::RP_ShellPropSheetExt_Private(RP_ShellPropSheetExt 
 	, lblIcon(nullptr)
 	, hTabWidget(nullptr)
 	, curTabIndex(0)
+	, def_lc(0)
+	, cboLanguage(nullptr)
 {
 	memset(&lfFontMono, 0, sizeof(lfFontMono));
 
@@ -600,12 +631,19 @@ int RP_ShellPropSheetExt_Private::createHeaderRow(HWND hDlg, const POINT &pt_sta
  * @param size		[in] Width and height for a single line label.
  * @param field		[in] RomFields::Field
  * @param str		[in,opt] String data. (If nullptr, field data is used.)
+ * @param pOutHWND	[out,opt] Retrieves the control's HWND.
  * @return Field height, in pixels.
  */
-int RP_ShellPropSheetExt_Private::initString(HWND hDlg, HWND hWndTab,
-	const POINT &pt_start, int idx, const SIZE &size,
-	const RomFields::Field *field, LPCTSTR str)
+int RP_ShellPropSheetExt_Private::initString(_In_ HWND hDlg, _In_ HWND hWndTab,
+	_In_ const POINT &pt_start, _In_ int idx, _In_ const SIZE &size,
+	_In_ const RomFields::Field *field, _In_ LPCTSTR str,
+	_Outptr_opt_ HWND *pOutHWND)
 {
+	if (pOutHWND) {
+		// Clear the output HWND initially.
+		*pOutHWND = nullptr;
+	}
+
 	assert(hDlg != nullptr);
 	assert(hWndTab != nullptr);
 	assert(field != nullptr);
@@ -780,6 +818,11 @@ int RP_ShellPropSheetExt_Private::initString(HWND hDlg, HWND hWndTab,
 	}
 	if (isMonospace) {
 		hwndMonoControls.push_back(hDlgItem);
+	}
+
+	// Return the HWND if requested.
+	if (pOutHWND) {
+		*pOutHWND = hDlgItem;
 	}
 
 	return field_cy;
@@ -1579,6 +1622,91 @@ int RP_ShellPropSheetExt_Private::initDimensions(HWND hDlg, HWND hWndTab,
 }
 
 /**
+ * Initialize a multi-language string field.
+ * @param hDlg		[in] Parent dialog window. (for dialog unit mapping)
+ * @param hWndTab	[in] Tab window. (for the actual control)
+ * @param pt_start	[in] Starting position, in pixels.
+ * @param idx		[in] Field index.
+ * @param size		[in] Width and height for a single line label.
+ * @param field		[in] RomFields::Field
+ * @return Field height, in pixels.
+ */
+int RP_ShellPropSheetExt_Private::initStringMulti(HWND hDlg, HWND hWndTab,
+	const POINT &pt_start, int idx, const SIZE &size,
+	const RomFields::Field *field)
+{
+	// Mutli-language string.
+	// NOTE: The string contents won't be initialized here.
+	// They will be initialized separately, since the user will
+	// be able to change the displayed language.
+	HWND lblStringMulti = nullptr;
+	int field_cy = initString(hDlg, hWndTab, pt_start, idx, size, field,
+		_T(""), &lblStringMulti);
+	if (lblStringMulti) {
+		vecStringMulti.push_back(std::make_pair(lblStringMulti, field));
+	}
+	return field_cy;
+}
+
+/**
+ * Update all multi-language string fields.
+ * @param user_lc User-specified language code.
+ */
+void RP_ShellPropSheetExt_Private::updateStringMulti(uint32_t user_lc)
+{
+	// Set of supported language codes.
+	set<uint32_t> set_lc;
+
+	for (auto iter = vecStringMulti.cbegin();
+	     iter != vecStringMulti.cend(); ++iter)
+	{
+		const HWND lblString = iter->first;
+		const RomFields::Field *const field = iter->second;
+		const auto *const pStr_multi = field->data.str_multi;
+		assert(pStr_multi != nullptr);
+		assert(!pStr_multi->empty());
+		if (!pStr_multi || pStr_multi->empty()) {
+			// Invalid multi-string...
+			continue;
+		}
+
+		if (!cboLanguage) {
+			// Need to add all supported languages.
+			// TODO: Do we need to do this for all of them, or just one?
+			for (auto iter_sm = pStr_multi->cbegin();
+			     iter_sm != pStr_multi->cend(); ++iter_sm)
+			{
+				set_lc.insert(iter_sm->first);
+			}
+		}
+
+		// Try the user-specified language code first.
+		// TODO: Consolidate ->end() calls?
+		auto iter_sm = pStr_multi->end();
+		if (user_lc != 0) {
+			iter_sm = pStr_multi->find(user_lc);
+		}
+		if (iter_sm == pStr_multi->end()) {
+			// Not found. Try the ROM-default language code.
+			if (def_lc != user_lc) {
+				iter_sm = pStr_multi->find(def_lc);
+				if (iter_sm == pStr_multi->end()) {
+					// Still not found. Use the first string.
+					iter_sm = pStr_multi->begin();
+				}
+			}
+		}
+
+		// Update the text.
+		SetWindowText(lblString, U82T_s(iter_sm->second));
+	}
+
+	if (!cboLanguage && set_lc.size() > 1) {
+		// TODO: Create the combobox.
+	}
+}
+
+/**
  * Initialize the bold font.
  * @param hFont Base font.
  */
@@ -2026,6 +2154,13 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 				break;
 			}
 
+			case RomFields::RFT_STRING_MULTI: {
+				// Multi-language string field.
+				const SIZE size = {dlg_value_width, field_cy};
+				field_cy = initStringMulti(hDlg, tab.hDlg, pt_start, idx, size, field);
+				break;
+			}
+
 			default:
 				// Unsupported data type.
 				assert(!"Unsupported RomFields::RomFieldsType.");
@@ -2041,6 +2176,12 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 			// Remove the description label.
 			DestroyWindow(hStatic);
 		}
+	}
+
+	// Initial update of RFT_MULTI_STRING fields.
+	if (!vecStringMulti.empty()) {
+		def_lc = fields->defaultLanguageCode();
+		updateStringMulti(0);
 	}
 
 	// Register for WTS session notifications. (Remote Desktop)
