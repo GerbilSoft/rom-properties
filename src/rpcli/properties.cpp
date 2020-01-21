@@ -924,8 +924,8 @@ public:
 			}
 
 			case RomFields::RFT_STRING_MULTI: {
-				// TODO: Sort languages by name?
-				os << "{\"type\":\"STRING\",\"desc\":{\"name\":" << JSONString(romField->name.c_str())
+				// TODO: Act like RFT_STRING if there's only one language?
+				os << "{\"type\":\"STRING_MULTI\",\"desc\":{\"name\":" << JSONString(romField->name.c_str())
 				   << ",\"format\":" << romField->desc.flags
 				   << "},\"data\":{\n";
 				const auto *const pStr_multi = romField->data.str_multi;
