@@ -173,13 +173,6 @@ class RomDataViewPrivate
 		void initStringMulti(QLabel *lblDesc, const RomFields::Field *field);
 
 		/**
-		 * Convert a language code from uint32_t to a QString.
-		 * @param lc Language code.
-		 * @return String.
-		 */
-		static QString lcToQString(uint32_t lc);
-
-		/**
 		 * Update all multi-language string fields.
 		 * @param user_lc User-specified language code.
 		 */
@@ -924,24 +917,6 @@ void RomDataViewPrivate::initStringMulti(QLabel *lblDesc, const RomFields::Field
 }
 
 /**
- * Convert a language code from uint32_t to a QString.
- * @param lc Language code.
- * @return String.
- */
-QString RomDataViewPrivate::lcToQString(uint32_t lc)
-{
-	QString s_lc;
-	s_lc.reserve(4);
-	for (uint32_t tmp_lc = lc; tmp_lc != 0; tmp_lc <<= 8) {
-		ushort chr = (ushort)(tmp_lc >> 24);
-		if (chr != 0) {
-			s_lc += QChar(chr);
-		}
-	}
-	return s_lc;
-}
-
-/**
  * Update all multi-language string fields.
  * @param user_lc User-specified language code.
  */
@@ -1011,7 +986,19 @@ void RomDataViewPrivate::updateStringMulti(uint32_t user_lc)
 		for (auto iter = set_lc.cbegin(); iter != set_lc.cend(); ++iter) {
 			const uint32_t lc = *iter;
 			const char *const name = SystemRegion::getLocalizedLanguageName(lc);
-			cboLanguage->addItem((name ? U82Q(name) : lcToQString(lc)), lc);
+			if (name) {
+				cboLanguage->addItem(U82Q(name));
+			} else {
+				QString s_lc;
+				s_lc.reserve(4);
+				for (uint32_t tmp_lc = lc; tmp_lc != 0; tmp_lc <<= 8) {
+					ushort chr = (ushort)(tmp_lc >> 24);
+					if (chr != 0) {
+						s_lc += QChar(chr);
+					}
+				}
+				cboLanguage->addItem(s_lc);
+			}
 			int cur_idx = cboLanguage->count()-1;
 
 			// Flag icon.
