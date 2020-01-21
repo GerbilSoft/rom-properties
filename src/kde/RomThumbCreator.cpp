@@ -7,8 +7,8 @@
  ***************************************************************************/
 
 #include "RomThumbCreator.hpp"
-#include "RpQt.hpp"
 #include "RpQImageBackend.hpp"
+#include "RpQt.hpp"
 
 // librpbase
 #include "librpbase/RomData.hpp"
@@ -364,7 +364,7 @@ Q_DECL_EXPORT int rp_create_thumbnail(const char *source_file, const char *outpu
 	// in order to return better error codes.
 
 	if (getuid() == 0 || geteuid() == 0) {
-		qCritical("*** rom-properties-kde%u does not support running as root.", QT_VERSION >> 16);
+		qCritical("*** " RP_KDE_LOWER "%u does not support running as root.", QT_VERSION >> 16);
 		return RPCT_RUNNING_AS_ROOT;
 	}
 
@@ -506,7 +506,7 @@ Q_DECL_EXPORT int rp_create_thumbnail(const char *source_file, const char *outpu
 	}
 
 	// Software.
-	static const char sw[] = "ROM Properties Page shell extension (KDE" QT_MAJOR_STR ")";
+	static const char sw[] = "ROM Properties Page shell extension (" RP_KDE_UPPER QT_MAJOR_STR ")";
 	kv.push_back(std::make_pair("Software", sw));
 
 	// Modification time.
@@ -543,7 +543,7 @@ Q_DECL_EXPORT int rp_create_thumbnail(const char *source_file, const char *outpu
 
 	// URI.
 	// NOTE: KDE desktops don't urlencode spaces or non-ASCII characters.
-	// GTK+ desktops do urlencode spaces and non-ASCII characters.
+	// GTK+ desktops *do* urlencode spaces and non-ASCII characters.
 	kv.push_back(std::make_pair("Thumb::URI",
 		string(url.toString().toUtf8().constData())));
 

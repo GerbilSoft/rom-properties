@@ -2,11 +2,12 @@
  * ROM Properties Page shell extension. (KDE)                              *
  * stub-export.cpp: Exported function for the rp-config stub.              *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #include "ConfigDialog.hpp"
+#include "../RpQt.hpp"
 
 // C includes.
 #include <stdlib.h>
@@ -31,7 +32,7 @@ extern "C"
 Q_DECL_EXPORT int rp_show_config_dialog(int argc, char *argv[])
 {
 	if (getuid() == 0 || geteuid() == 0) {
-		qCritical("*** rom-properties-kde%u does not support running as root.", QT_VERSION >> 16);
+		qCritical("*** rom-properties-" RP_KDE_LOWER "%u does not support running as root.", QT_VERSION >> 16);
 		return EXIT_FAILURE;
 	}
 

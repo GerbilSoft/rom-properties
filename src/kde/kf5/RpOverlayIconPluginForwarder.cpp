@@ -12,6 +12,7 @@
 
 #include "RpOverlayIconPluginForwarder.hpp"
 #include "RpOverlayIconPlugin.hpp"
+#include "../RpQt.hpp"
 
 // C includes.
 #include <dlfcn.h>
@@ -34,7 +35,7 @@ RpOverlayIconPluginForwarder::RpOverlayIconPluginForwarder(QObject *parent)
 # error PLUGIN_INSTALL_DIR is not set.
 #endif
 	if (getuid() == 0 || geteuid() == 0) {
-		qCritical("*** rom-properties-kde%u does not support running as root.", QT_VERSION >> 16);
+		qCritical("*** overlayiconplugin_rom_properties_" RP_KDE_LOWER "%u does not support running as root.", QT_VERSION >> 16);
 		return;
 	}
 

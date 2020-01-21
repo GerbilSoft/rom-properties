@@ -65,12 +65,7 @@ extern "C" {
 	Q_DECL_EXPORT RpExtractorPlugin *PFN_CREATEEXTRACTORPLUGINKDE_FN(QObject *parent)
 	{
 		if (getuid() == 0 || geteuid() == 0) {
-#if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
-# define FILENAME_PREFIX "kfilemetadata_rom_properties_kf"
-#else /* QT_VERSION < QT_VERSION_CHECK(5,0,0) */
-# define FILENAME_PREFIX "kfilemetadata_rom_properties_kde"
-#endif
-			qCritical("*** " FILENAME_PREFIX "%u does not support running as root.", QT_VERSION >> 16);
+			qCritical("*** kfilemetadata_rom_properties_" RP_KDE_LOWER "%u does not support running as root.", QT_VERSION >> 16);
 			return nullptr;
 		}
 

@@ -45,7 +45,7 @@ RomPropertiesDialogPlugin::RomPropertiesDialogPlugin(KPropertiesDialog *props, c
 	: super(props)
 {
 	if (getuid() == 0 || geteuid() == 0) {
-		qCritical("*** rom-properties-kde%u does not support running as root.", QT_VERSION >> 16);
+		qCritical("*** rom-properties-" RP_KDE_LOWER "%u does not support running as root.", QT_VERSION >> 16);
 		return;
 	}
 

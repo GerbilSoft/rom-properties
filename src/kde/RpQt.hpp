@@ -9,15 +9,25 @@
 #ifndef __ROMPROPERTIES_KDE_RPQT_HPP__
 #define __ROMPROPERTIES_KDE_RPQT_HPP__
 
-#include <string>
-
 namespace LibRpTexture {
 	class rp_image;
 }
 
+// C++ includes.
+#include <string>
+
 // Qt includes.
 #include <QtCore/QString>
 #include <QtGui/QImage>
+
+// KDE Frameworks prefix. (KDE4/KF5)
+#if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
+# define RP_KDE_UPPER "KF"
+# define RP_KDE_LOWER "kf"
+#else /* !QT_VERSION >= QT_VERSION_CHECK(5,0,0) */
+# define RP_KDE_UPPER "KDE"
+# define RP_KDE_LOWER "kde"
+#endif /* QT_VERSION >= QT_VERSION_CHECK(5,0,0) */
 
 /** Text conversion. **/
 
