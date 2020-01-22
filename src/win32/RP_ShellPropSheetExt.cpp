@@ -116,6 +116,7 @@ class RP_ShellPropSheetExt_Private
 
 		// Header row widgets.
 		HWND lblSysInfo;
+		POINT ptSysInfo;
 		RECT rectHeader;
 
 		// wtsapi32.dll for Remote Desktop status. (WinXP and later)
@@ -530,7 +531,7 @@ int RP_ShellPropSheetExt_Private::createHeaderRow(HWND hDlg, const POINT &pt_sta
 	int total_widget_width = 0;
 
 	// Label size.
-	SIZE sz_lblSysInfo = {0, 0};
+	SIZE size_lblSysInfo = {0, 0};
 
 	// Font to use.
 	// TODO: Handle these assertions in release builds.
@@ -559,14 +560,14 @@ int RP_ShellPropSheetExt_Private::createHeaderRow(HWND hDlg, const POINT &pt_sta
 
 	if (!tSysInfo.empty()) {
 		// Determine the appropriate label size.
-		if (!LibWin32Common::measureTextSize(hDlg, hFont, tSysInfo, &sz_lblSysInfo)) {
+		if (!LibWin32Common::measureTextSize(hDlg, hFont, tSysInfo, &size_lblSysInfo)) {
 			// Start the total_widget_width.
-			total_widget_width = sz_lblSysInfo.cx;
+			total_widget_width = size_lblSysInfo.cx;
 		} else {
 			// Error determining the label size.
 			// Don't draw the label.
-			sz_lblSysInfo.cx = 0;
-			sz_lblSysInfo.cy = 0;
+			size_lblSysInfo.cx = 0;
+			size_lblSysInfo.cy = 0;
 		}
 	}
 
@@ -597,15 +598,18 @@ int RP_ShellPropSheetExt_Private::createHeaderRow(HWND hDlg, const POINT &pt_sta
 	};
 
 	// lblSysInfo
-	if (sz_lblSysInfo.cx > 0 && sz_lblSysInfo.cy > 0) {
+	if (size_lblSysInfo.cx > 0 && size_lblSysInfo.cy > 0) {
+		ptSysInfo.x = curPt.x;
+		ptSysInfo.y = curPt.y;
+
 		lblSysInfo = CreateWindowEx(WS_EX_NOPARENTNOTIFY | WS_EX_TRANSPARENT,
 			WC_STATIC, tSysInfo.c_str(),
 			WS_CHILD | WS_VISIBLE | SS_CENTER,
-			curPt.x, curPt.y,
-			sz_lblSysInfo.cx, sz_lblSysInfo.cy,
+			ptSysInfo.x, ptSysInfo.y,
+			size_lblSysInfo.cx, size_lblSysInfo.cy,
 			hDlg, (HMENU)IDC_STATIC, nullptr, nullptr);
 		SetWindowFont(lblSysInfo, hFont, false);
-		curPt.x += sz_lblSysInfo.cx + pt_start.x;
+		curPt.x += size_lblSysInfo.cx + pt_start.x;
 	}
 
 	// Banner.
@@ -622,7 +626,7 @@ int RP_ShellPropSheetExt_Private::createHeaderRow(HWND hDlg, const POINT &pt_sta
 
 	// Return the label height and some extra padding.
 	// TODO: Icon/banner height?
-	return sz_lblSysInfo.cy + (pt_start.y * 5 / 8);
+	return size_lblSysInfo.cy + (pt_start.y * 5 / 8);
 }
 
 /**
@@ -1784,6 +1788,30 @@ void RP_ShellPropSheetExt_Private::updateStringMulti(uint32_t user_lc)
 
 		// Set the current index.
 		ComboBox_SetCurSel(cboLanguage, sel_idx);
+
+		// Get the dialog margin.
+		// 7x7 DLU margin is recommended by the Windows UX guidelines.
+		// Reference: http://stackoverflow.com/questions/2118603/default-dialog-padding
+		RECT dlgMargin = { 7, 7, 8, 8 };
+		MapDialogRect(hDlgSheet, &dlgMargin);
+
+		// Adjust the header row.
+		const int adj = (maxSize.cx + dlgMargin.left) / 2;
+		if (lblSysInfo) {
+			ptSysInfo.x -= adj;
+			SetWindowPos(lblSysInfo, nullptr, ptSysInfo.x, ptSysInfo.y, 0, 0,
+				SWP_NOSIZE | SWP_NOOWNERZORDER | SWP_NOZORDER);
+		}
+		if (lblBanner) {
+			POINT pos = lblBanner->position();
+			pos.x -= adj;
+			lblBanner->setPosition(pos);
+		}
+		if (lblIcon) {
+			POINT pos = lblIcon->position();
+			pos.x -= adj;
+			lblIcon->setPosition(pos);
+		}
 	}
 }
 
