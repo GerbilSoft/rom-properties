@@ -1016,10 +1016,10 @@ void RomDataViewPrivate::updateStringMulti(uint32_t user_lc)
 			// - ROM-default language code.
 			// - English if it's not available.
 			if (lc == def_lc) {
-				// Select this action.
+				// Select this item.
 				sel_idx = cur_idx;
 			} else if (lc == 'en') {
-				// English. Select this action if def_lc hasn't been found yet.
+				// English. Select this item if def_lc hasn't been found yet.
 				if (sel_idx < 0) {
 					sel_idx = cur_idx;
 				}
