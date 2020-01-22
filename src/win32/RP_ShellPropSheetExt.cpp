@@ -332,6 +332,7 @@ class RP_ShellPropSheetExt_Private
 	private:
 		// Internal functions used by the callback functions.
 		INT_PTR DlgProc_WM_NOTIFY(HWND hDlg, NMHDR *pHdr);
+		INT_PTR DlgProc_WM_COMMAND(HWND hDlg, WPARAM wParam, LPARAM lParam);
 		INT_PTR DlgProc_WM_PAINT(HWND hDlg);
 
 	public:
@@ -2709,6 +2710,40 @@ INT_PTR RP_ShellPropSheetExt_Private::DlgProc_WM_NOTIFY(HWND hDlg, NMHDR *pHdr)
 }
 
 /**
+ * WM_COMMAND handler for the property sheet.
+ * @param hDlg Dialog window.
+ * @param wParam
+ * @param lParam
+ * @return Return value.
+ */
+INT_PTR RP_ShellPropSheetExt_Private::DlgProc_WM_COMMAND(HWND hDlg, WPARAM wParam, LPARAM lParam)
+{
+	INT_PTR ret = false;
+
+	switch (HIWORD(wParam)) {
+		case CBN_SELCHANGE: {
+			// The user may be changing the selected language
+			// for RFT_STRING_MULTI.
+			if (LOWORD(wParam) != IDC_CBO_LANGUAGE)
+				break;
+
+			// NOTE: lParam also has the ComboBox HWND.
+			const int sel_idx = ComboBox_GetCurSel(cboLanguage);
+			if (sel_idx >= 0) {
+				const uint32_t lc = static_cast<uint32_t>(ComboBox_GetItemData(cboLanguage, sel_idx));
+				updateStringMulti(lc);
+			}
+			break;
+		}
+
+		default:
+			break;
+	}
+
+	return ret;
+}
+
+/**
  * WM_PAINT handler for the property sheet.
  * @param hDlg Dialog window.
  * @return Return value.
@@ -2857,6 +2892,17 @@ INT_PTR CALLBACK RP_ShellPropSheetExt_Private::DlgProc(HWND hDlg, UINT uMsg, WPA
 			}
 
 			return d->DlgProc_WM_NOTIFY(hDlg, reinterpret_cast<NMHDR*>(lParam));
+		}
+
+		case WM_COMMAND: {
+			RP_ShellPropSheetExt_Private *const d = static_cast<RP_ShellPropSheetExt_Private*>(
+				GetProp(hDlg, RP_ShellPropSheetExt_Private::D_PTR_PROP));
+			if (!d) {
+				// No RP_ShellPropSheetExt_Private. Can't do anything...
+				return false;
+			}
+
+			return d->DlgProc_WM_COMMAND(hDlg, wParam, lParam);
 		}
 
 		case WM_PAINT: {
