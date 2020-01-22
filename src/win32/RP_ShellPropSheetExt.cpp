@@ -168,6 +168,7 @@ class RP_ShellPropSheetExt_Private
 		typedef std::pair<HWND, const RomFields::Field*> Data_StringMulti_t;
 		vector<Data_StringMulti_t> vecStringMulti;
 		uint32_t def_lc;	// Default language code from RomFields.
+		static const UINT iconSize = 16;	// TODO: Hi-DPI
 		HWND cboLanguage;
 
 	public:
@@ -1753,12 +1754,14 @@ void RP_ShellPropSheetExt_Private::updateStringMulti(uint32_t user_lc)
 		// FIXME: May need to create this after the header row
 		// in order to preserve tab order. Need to check the
 		// KDE and GTK+ versions, too.
-		//rectHeader
+		// ComboBoxEx was introduced in MSIE 3.0.
+		// NOTE: Needed to change maxSize.cy multipler from 4 to 12
+		// in order to show enough items in ComboBoxEx...
 		cboLanguage = CreateWindowEx(WS_EX_NOPARENTNOTIFY,
-			WC_COMBOBOX, nullptr,
+			WC_COMBOBOXEX, nullptr,
 			CBS_DROPDOWNLIST | WS_CHILD | WS_TABSTOP | WS_VISIBLE,
 			rectHeader.right - maxSize.cx, rectHeader.top,
-			maxSize.cx, maxSize.cy*4,
+			maxSize.cx, maxSize.cy*12,
 			hDlgSheet, (HMENU)(INT_PTR)IDC_CBO_LANGUAGE,
 			nullptr, nullptr);
 		SetWindowFont(cboLanguage, hFontDlg, false);
@@ -1767,21 +1770,26 @@ void RP_ShellPropSheetExt_Private::updateStringMulti(uint32_t user_lc)
 		auto iter_str = vec_lc_str.cbegin();
 		auto iter_lc = set_lc.cbegin();
 		int sel_idx = -1;
-		for (; iter_str != vec_lc_str.cend(); ++iter_str, ++iter_lc) {
+		COMBOBOXEXITEM cbItem;
+		cbItem.mask = CBEIF_TEXT | CBEIF_LPARAM;	// TODO: CBEIF_IMAGE
+		cbItem.iItem = 0;
+		for (; iter_str != vec_lc_str.cend(); ++iter_str, ++iter_lc, cbItem.iItem++) {
 			const uint32_t lc = *iter_lc;
-			int cur_idx = ComboBox_AddString(cboLanguage, iter_str->c_str());
-			ComboBox_SetItemData(cboLanguage, cur_idx, lc);
+			cbItem.pszText = const_cast<LPTSTR>(iter_str->c_str());
+			cbItem.cchTextMax = static_cast<int>(iter_str->size());
+			cbItem.lParam = static_cast<LPARAM>(lc);
+			SendMessage(cboLanguage, CBEM_INSERTITEM, 0, (LPARAM)&cbItem);
 
 			// Save the default index:
 			// - ROM-default language code.
 			// - English if it's not available.
 			if (lc == def_lc) {
-				// Select this action.
-				sel_idx = cur_idx;
+				// Select this item.
+				sel_idx = cbItem.iItem;
 			} else if (lc == 'en') {
-				// English. Select this action if def_lc hasn't been found yet.
+				// English. Select this item if def_lc hasn't been found yet.
 				if (sel_idx < 0) {
-					sel_idx = cur_idx;
+					sel_idx = cbItem.iItem;
 				}
 			}
 		}
@@ -1934,7 +1942,8 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 	// Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/bb775507(v=vs.85).aspx
 	INITCOMMONCONTROLSEX initCommCtrl;
 	initCommCtrl.dwSize = sizeof(initCommCtrl);
-	initCommCtrl.dwICC = ICC_LISTVIEW_CLASSES | ICC_LINK_CLASS | ICC_TAB_CLASSES;
+	initCommCtrl.dwICC = ICC_LISTVIEW_CLASSES | ICC_LINK_CLASS |
+	                     ICC_TAB_CLASSES | ICC_USEREX_CLASSES;
 	// TODO: Also ICC_STANDARD_CLASSES on XP+?
 	InitCommonControlsEx(&initCommCtrl);
 
