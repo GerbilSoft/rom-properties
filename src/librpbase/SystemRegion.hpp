@@ -58,6 +58,10 @@ class SystemRegion
 		 */
 		static const char *getLocalizedLanguageName(uint32_t lc);
 
+		// Flag sprite sheet columns/rows.
+		static const unsigned int FLAGS_SPRITE_SHEET_COLS = 4;
+		static const unsigned int FLAGS_SPRITE_SHEET_ROWS = 4;
+
 		/**
 		 * Get the position of a language code's flag icon in the flags sprite sheet.
 		 * @param lc	[in] Language code.

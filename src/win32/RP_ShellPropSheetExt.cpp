@@ -1794,6 +1794,17 @@ void RP_ShellPropSheetExt_Private::updateStringMulti(uint32_t user_lc)
 		const LONG lFlagStride = bmFlags16x16.bmWidthBytes / sizeof(uint32_t);
 		HDC hbmIconDC = GetDC(nullptr);
 
+		// Make sure the bitmap has the expected size.
+		assert(bmFlags16x16.bmWidth == (iconSize * SystemRegion::FLAGS_SPRITE_SHEET_COLS));
+		assert(bmFlags16x16.bmHeight == (iconSize * SystemRegion::FLAGS_SPRITE_SHEET_ROWS));
+		if (bmFlags16x16.bmWidth != (iconSize * SystemRegion::FLAGS_SPRITE_SHEET_COLS) ||
+		    bmFlags16x16.bmHeight != (iconSize * SystemRegion::FLAGS_SPRITE_SHEET_ROWS))
+		{
+			// Incorrect size. We can't use it.
+			DeleteBitmap(hbmFlags16x16);
+			hbmFlags16x16 = nullptr;
+		}
+
 		static const BITMAPINFOHEADER bmihDIBSection = {
 			sizeof(BITMAPINFOHEADER),	// biSize
 			iconSize,			// biWidth
@@ -1824,7 +1835,7 @@ void RP_ShellPropSheetExt_Private::updateStringMulti(uint32_t user_lc)
 			// Flag icon.
 			HBITMAP hbmIcon = nullptr;
 			int col, row;
-			if (!SystemRegion::getFlagPosition(lc, &col, &row)) {
+			if (hbmFlags16x16 != nullptr && !SystemRegion::getFlagPosition(lc, &col, &row)) {
 				// Found a matching icon.
 
 				// Create a DIB section for the sub-icon.
@@ -1842,10 +1853,10 @@ void RP_ShellPropSheetExt_Private::updateStringMulti(uint32_t user_lc)
 					// NOTE: BitBlt doesn't handle alpha properly, so we'll
 					// have to do this manually.
 					// NOTE: Bitmap is upside-down!
-					// TODO: Verify the sizes of everything.
 					const size_t rowBytes = iconSize * sizeof(uint32_t);
 					const uint32_t *pSrc = static_cast<const uint32_t*>(bmFlags16x16.bmBits);
-					pSrc += ((3-row) * iconSize * lFlagStride) + (col * iconSize);
+					pSrc += ((SystemRegion::FLAGS_SPRITE_SHEET_ROWS - 1 - row) * iconSize * lFlagStride);
+					pSrc += (col * iconSize);
 					uint32_t *pDest = static_cast<uint32_t*>(pvBits);
 					for (UINT bmRow = iconSize; bmRow > 0; bmRow--) {
 						memcpy(pDest, pSrc, rowBytes);
@@ -1885,7 +1896,9 @@ void RP_ShellPropSheetExt_Private::updateStringMulti(uint32_t user_lc)
 
 		GdiFlush();
 		ReleaseDC(nullptr, hbmIconDC);
-		DeleteBitmap(hbmFlags16x16);
+		if (hbmFlags16x16) {
+			DeleteBitmap(hbmFlags16x16);
+		}
 
 		// Set the current index.
 		ComboBox_SetCurSel(cboLanguage, sel_idx);
