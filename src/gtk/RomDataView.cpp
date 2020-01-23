@@ -1319,6 +1319,7 @@ rom_data_view_update_string_multi(RomDataView *page, uint32_t user_lc)
 
 		// TODO: Multiple icon sizes for high-DPI modes.
 		// For now, only using 16x16.
+		static const unsigned int iconSize = 16;
 		PIMGTYPE flags_16x16 = PIMGTYPE_load_png_from_gresource(
 			"/com/gerbilsoft/rom-properties/flags/flags-16x16.png");
 
@@ -1349,7 +1350,7 @@ rom_data_view_update_string_multi(RomDataView *page, uint32_t user_lc)
 			int col, row;
 			if (!SystemRegion::getFlagPosition(lc, &col, &row)) {
 				// Found a matching icon.
-				PIMGTYPE icon = PIMGTYPE_get_subsurface(flags_16x16, col*16, row*16, 16, 16);
+				PIMGTYPE icon = PIMGTYPE_get_subsurface(flags_16x16, col*iconSize, row*iconSize, iconSize, iconSize);
 				gtk_list_store_set(page->lstoreLanguage, &gtiter, SM_COL_ICON, icon, -1);
 				PIMGTYPE_destroy(icon);
 			}
