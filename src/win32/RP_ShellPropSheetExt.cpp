@@ -170,6 +170,7 @@ class RP_ShellPropSheetExt_Private
 		uint32_t def_lc;	// Default language code from RomFields.
 		static const UINT iconSize = 16;	// TODO: Hi-DPI
 		HWND cboLanguage;
+		HIMAGELIST himglFlags16x16;
 
 	public:
 		/**
@@ -375,6 +376,7 @@ RP_ShellPropSheetExt_Private::RP_ShellPropSheetExt_Private(RP_ShellPropSheetExt 
 	, curTabIndex(0)
 	, def_lc(0)
 	, cboLanguage(nullptr)
+	, himglFlags16x16(nullptr)
 {
 	memset(&lfFontMono, 0, sizeof(lfFontMono));
 
@@ -391,6 +393,14 @@ RP_ShellPropSheetExt_Private::~RP_ShellPropSheetExt_Private()
 	// Unreference the RomData object.
 	if (romData) {
 		romData->unref();
+	}
+
+	// Destroy the flags ImageList.
+	if (cboLanguage) {
+		SendMessage(cboLanguage, CBEM_SETIMAGELIST, 0, (LPARAM)nullptr);
+	}
+	if (himglFlags16x16) {
+		ImageList_Destroy(himglFlags16x16);
 	}
 
 	// Delete the fonts.
@@ -1745,6 +1755,12 @@ void RP_ShellPropSheetExt_Private::updateStringMulti(uint32_t user_lc)
 			}
 		}
 
+		// Create the image list.
+		himglFlags16x16 = ImageList_Create(16, 16, ILC_COLOR32, 13, 16);
+
+		// Add iconSize+2 for the icon. [TODO: Hi-DPI adjustments?]
+		maxSize.cx += iconSize+2;
+
 		// Add vertical scrollbar width and CXEDGE.
 		// Reference: http://ntcoder.com/2013/10/07/mfc-resize-ccombobox-drop-down-list-based-on-contents/
 		maxSize.cx += GetSystemMetrics(SM_CXVSCROLL);
@@ -1755,29 +1771,79 @@ void RP_ShellPropSheetExt_Private::updateStringMulti(uint32_t user_lc)
 		// in order to preserve tab order. Need to check the
 		// KDE and GTK+ versions, too.
 		// ComboBoxEx was introduced in MSIE 3.0.
-		// NOTE: Needed to change maxSize.cy multipler from 4 to 12
-		// in order to show enough items in ComboBoxEx...
+		// NOTE: Height is based on icon size.
 		cboLanguage = CreateWindowEx(WS_EX_NOPARENTNOTIFY,
 			WC_COMBOBOXEX, nullptr,
 			CBS_DROPDOWNLIST | WS_CHILD | WS_TABSTOP | WS_VISIBLE,
 			rectHeader.right - maxSize.cx, rectHeader.top,
-			maxSize.cx, maxSize.cy*12,
+			maxSize.cx, iconSize*(8+1) + maxSize.cy - (maxSize.cy / 8),
 			hDlgSheet, (HMENU)(INT_PTR)IDC_CBO_LANGUAGE,
 			nullptr, nullptr);
 		SetWindowFont(cboLanguage, hFontDlg, false);
+		SendMessage(cboLanguage, CBEM_SETIMAGELIST, 0, (LPARAM)himglFlags16x16);
+
+		// Country code.
+		const uint32_t cc = SystemRegion::getCountryCode();
 
 		// Add the strings.
 		auto iter_str = vec_lc_str.cbegin();
 		auto iter_lc = set_lc.cbegin();
 		int sel_idx = -1;
 		COMBOBOXEXITEM cbItem;
-		cbItem.mask = CBEIF_TEXT | CBEIF_LPARAM;	// TODO: CBEIF_IMAGE
+		cbItem.mask = CBEIF_TEXT | CBEIF_LPARAM;
 		cbItem.iItem = 0;
 		for (; iter_str != vec_lc_str.cend(); ++iter_str, ++iter_lc, cbItem.iItem++) {
 			const uint32_t lc = *iter_lc;
 			cbItem.pszText = const_cast<LPTSTR>(iter_str->c_str());
 			cbItem.cchTextMax = static_cast<int>(iter_str->size());
 			cbItem.lParam = static_cast<LPARAM>(lc);
+
+			// Flag icon.
+			uint32_t res_lc;
+			switch (lc) {
+				case 'en':
+					// Special case for English:
+					// Use the 'us' flag if the country code is US,
+					// and the 'gb' flag for everywhere else.
+					res_lc = (cc == 'US' ? 'us' : 'gb');
+					break;
+				case 'ja':
+					res_lc = 'jp';
+					break;
+				case 'ko':
+					res_lc = 'kr';
+					break;
+				case 'hans':
+					res_lc = 'cn';
+					break;
+				case 'hant':
+					res_lc = 'tw';
+					break;
+				default:
+					res_lc = lc;
+					break;
+			}
+
+			// We want the 16x16 flag.
+			// FIXME: Resource ID is 16-bit; need to encode icon size...
+			// TODO: Hi-DPI; store as PNG instead of bitmap?
+			// NOTE: If iSelectedImage is not set, the flag image
+			// will disappear after selecting, and will reappear
+			// once a different language is selected.
+			HBITMAP hbmFlag = (HBITMAP)LoadImage(HINST_THISCOMPONENT,
+				MAKEINTRESOURCE(res_lc),
+				IMAGE_BITMAP, 0, 0, LR_SHARED);
+			if (hbmFlag) {
+				// Bitmap retrieved.
+				cbItem.iImage = ImageList_Add(himglFlags16x16, hbmFlag, nullptr);
+				cbItem.iSelectedImage = cbItem.iImage;
+				cbItem.mask |= (CBEIF_IMAGE | CBEIF_SELECTEDIMAGE);
+			} else {
+				// No icon.
+				cbItem.mask &= ~(CBEIF_IMAGE | CBEIF_SELECTEDIMAGE);
+			}
+
+			// Insert the item.
 			SendMessage(cboLanguage, CBEM_INSERTITEM, 0, (LPARAM)&cbItem);
 
 			// Save the default index:
