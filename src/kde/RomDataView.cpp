@@ -987,7 +987,7 @@ void RomDataViewPrivate::updateStringMulti(uint32_t user_lc)
 			const uint32_t lc = *iter;
 			const char *const name = SystemRegion::getLocalizedLanguageName(lc);
 			if (name) {
-				cboLanguage->addItem(U82Q(name));
+				cboLanguage->addItem(U82Q(name), lc);
 			} else {
 				QString s_lc;
 				s_lc.reserve(4);
@@ -997,7 +997,7 @@ void RomDataViewPrivate::updateStringMulti(uint32_t user_lc)
 						s_lc += QChar(chr);
 					}
 				}
-				cboLanguage->addItem(s_lc);
+				cboLanguage->addItem(s_lc, lc);
 			}
 			int cur_idx = cboLanguage->count()-1;
 
