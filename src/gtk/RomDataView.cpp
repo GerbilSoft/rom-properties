@@ -1466,13 +1466,13 @@ rom_data_view_update_display(RomDataView *page)
 			tab.table = gtk_grid_new();
 			gtk_grid_set_row_spacing(GTK_GRID(tab.table), 2);
 			gtk_grid_set_column_spacing(GTK_GRID(tab.table), 8);
-#else
+#else /* !GTK_CHECK_VERSION(3,0,0) */
 			tab.vbox = gtk_vbox_new(false, 8);
 			// TODO: Adjust the table size?
 			tab.table = gtk_table_new(rowCount, 2, false);
 			gtk_table_set_row_spacings(GTK_TABLE(tab.table), 2);
 			gtk_table_set_col_spacings(GTK_TABLE(tab.table), 8);
-#endif
+#endif /* GTK_CHECK_VERSION(3,0,0) */
 
 			gtk_container_set_border_width(GTK_CONTAINER(tab.table), 8);
 			gtk_box_pack_start(GTK_BOX(tab.vbox), tab.table, false, false, 0);
@@ -1498,12 +1498,12 @@ rom_data_view_update_display(RomDataView *page)
 		tab.table = gtk_grid_new();
 		gtk_grid_set_row_spacing(GTK_GRID(tab.table), 2);
 		gtk_grid_set_column_spacing(GTK_GRID(tab.table), 8);
-#else
+#else /* !GTK_CHECK_VERSION(3,0,0) */
 		// TODO: Adjust the table size?
 		tab.table = gtk_table_new(count, 2, false);
 		gtk_table_set_row_spacings(GTK_TABLE(tab.table), 2);
 		gtk_table_set_col_spacings(GTK_TABLE(tab.table), 8);
-#endif
+#endif /* GTK_CHECK_VERSION(3,0,0) */
 
 		gtk_container_set_border_width(GTK_CONTAINER(tab.table), 8);
 		gtk_box_pack_start(GTK_BOX(page), tab.table, false, false, 0);
@@ -1606,19 +1606,19 @@ rom_data_view_update_display(RomDataView *page)
 			gtk_grid_attach(GTK_GRID(tab.table), lblDesc, 0, row, 1, 1);
 			// Widget halign is set above.
 			gtk_widget_set_valign(widget, GTK_ALIGN_START);
-#else
+#else /* !GTK_CHECK_VERSION(3,0,0) */
 			gtk_table_attach(GTK_TABLE(tab.table), lblDesc, 0, 1, row, row+1,
 				GTK_FILL, GTK_FILL, 0, 0);
-#endif
+#endif /* GTK_CHECK_VERSION(3,0,0) */
 
 			if (separate_rows) {
 				// Separate rows.
 				// Make sure the description label is left-aligned.
 #if GTK_CHECK_VERSION(3,16,0)
 				gtk_label_set_xalign(GTK_LABEL(lblDesc), 0.0);
-#else
+#else /* !GTK_CHECK_VERSION(3,16,0) */
 				gtk_misc_set_alignment(GTK_MISC(lblDesc), 0.0f, 0.0f);
-#endif
+#endif /* GTK_CHECK_VERSION(3,16,0) */
 
 				// If this is the last field in the tab,
 				// put the RFT_LISTDATA in the GtkGrid instead.
@@ -1678,7 +1678,7 @@ rom_data_view_update_display(RomDataView *page)
 						// TODO: Verify this.
 						gtk_box_reorder_child(GTK_BOX(tab.vbox), alignment, 1);
 					}
-#endif
+#endif /* GTK_CHECK_VERSION(3,0,0) */
 					// Increment row by one, since only one widget is
 					// actually being added to the GtkTable/GtkGrid.
 					row++;
@@ -1686,22 +1686,22 @@ rom_data_view_update_display(RomDataView *page)
 					// Add the widget to the GtkTable/GtkGrid.
 #if GTK_CHECK_VERSION(3,0,0)
 					gtk_grid_attach(GTK_GRID(tab.table), widget, 0, row+1, 2, 1);
-#else
+#else /* !GTK_CHECK_VERSION(3,0,0) */
 					rowCount++;
 					gtk_table_resize(GTK_TABLE(tab.table), rowCount, 2);
 					gtk_table_attach(GTK_TABLE(tab.table), widget, 0, 2, row+1, row+2,
 						GTK_FILL, GTK_FILL, 0, 0);
-#endif
+#endif /* GTK_CHECK_VERSION(3,0,0) */
 					row += 2;
 				}
 			} else {
 				// Single row.
 #if GTK_CHECK_VERSION(3,0,0)
 				gtk_grid_attach(GTK_GRID(tab.table), widget, 1, row, 1, 1);
-#else
+#else /* !GTK_CHECK_VERSION(3,0,0) */
 				gtk_table_attach(GTK_TABLE(tab.table), widget, 1, 2, row, row+1,
 					GTK_FILL, GTK_FILL, 0, 0);
-#endif
+#endif /* GTK_CHECK_VERSION(3,0,0) */
 				row++;
 			}
 		}
@@ -1928,12 +1928,12 @@ tree_view_realize_signal_handler(GtkTreeView	*treeView,
 	height += border.top + border.bottom;
 	height += padding.top + padding.bottom;
 	height += margin.top + margin.bottom;
-#else
+#else /* !GTK_CHECK_VERSION(3,0,0) */
 	// Get the GtkScrolledWindow's border.
 	// NOTE: Assuming we have a border set.
 	GtkStyle *style = gtk_widget_get_style(scrolledWindow);
 	height += (style->ythickness * 2);
-#endif
+#endif /* GTK_CHECK_VERSION(3,0,0) */
 
 	// Set the GtkScrolledWindow's height.
 	// NOTE: gtk_scrolled_window_set_max_content_height() doesn't seem to

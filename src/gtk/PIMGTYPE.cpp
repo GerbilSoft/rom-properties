@@ -10,9 +10,9 @@
 
 // glib resources
 // NOTE: glib-compile-resources doesn't have extern "C".
-extern "C" {
+G_BEGIN_DECLS
 #include "glibresources.h"
-}
+G_END_DECLS
 
 // C includes. (C++ namespace)
 #include <cassert>
