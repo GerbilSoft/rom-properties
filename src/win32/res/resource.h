@@ -10,7 +10,10 @@
 #define __ROMPROPERTIES_WIN32_RESOURCE_H__
 
 /** Icons. **/
-#define IDI_KEY_VALID           201
+#define IDI_KEY_VALID				201
+
+/** Bitmaps. **/
+#define IDB_FLAGS_16x16				301
 
 // Dialogs
 #define IDD_PROPERTY_SHEET                      100	/* Generic property sheet. */

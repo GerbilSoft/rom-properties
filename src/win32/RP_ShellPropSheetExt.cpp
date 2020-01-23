@@ -1782,8 +1782,31 @@ void RP_ShellPropSheetExt_Private::updateStringMulti(uint32_t user_lc)
 		SetWindowFont(cboLanguage, hFontDlg, false);
 		SendMessage(cboLanguage, CBEM_SETIMAGELIST, 0, (LPARAM)himglFlags16x16);
 
-		// Country code.
-		const uint32_t cc = SystemRegion::getCountryCode();
+		// Load the 16x16 flags sprite sheet.
+		// TODO: Different sizes for Hi-DPI mode?
+		// TODO: Is premultiplied alpha needed?
+		// Reference: https://stackoverflow.com/questions/307348/how-to-draw-32-bit-alpha-channel-bitmaps
+		BITMAP bmFlags16x16;
+		HBITMAP hbmFlags16x16 = (HBITMAP)LoadImage(HINST_THISCOMPONENT,
+			MAKEINTRESOURCE(IDB_FLAGS_16x16),
+			IMAGE_BITMAP, 0, 0, LR_CREATEDIBSECTION);
+		GetObject(hbmFlags16x16, sizeof(bmFlags16x16), &bmFlags16x16);
+		const LONG lFlagStride = bmFlags16x16.bmWidthBytes / sizeof(uint32_t);
+		HDC hbmIconDC = GetDC(nullptr);
+
+		static const BITMAPINFOHEADER bmihDIBSection = {
+			sizeof(BITMAPINFOHEADER),	// biSize
+			iconSize,			// biWidth
+			iconSize,			// biHeight
+			1,				// biPlanes
+			32,				// biBitCount
+			BI_RGB,				// biCompression
+			0,				// biSizeImage
+			96,				// biXPelsPerMeter
+			96,				// biYPelsPerMeter
+			0,				// biClrUsed
+			0,				// biClrImportant
+		};
 
 		// Add the strings.
 		auto iter_str = vec_lc_str.cbegin();
@@ -1799,45 +1822,45 @@ void RP_ShellPropSheetExt_Private::updateStringMulti(uint32_t user_lc)
 			cbItem.lParam = static_cast<LPARAM>(lc);
 
 			// Flag icon.
-			uint32_t res_lc;
-			switch (lc) {
-				case 'en':
-					// Special case for English:
-					// Use the 'us' flag if the country code is US,
-					// and the 'gb' flag for everywhere else.
-					res_lc = (cc == 'US' ? 'us' : 'gb');
-					break;
-				case 'ja':
-					res_lc = 'jp';
-					break;
-				case 'ko':
-					res_lc = 'kr';
-					break;
-				case 'hans':
-					res_lc = 'cn';
-					break;
-				case 'hant':
-					res_lc = 'tw';
-					break;
-				default:
-					res_lc = lc;
-					break;
+			HBITMAP hbmIcon = nullptr;
+			int col, row;
+			if (!SystemRegion::getFlagPosition(lc, &col, &row)) {
+				// Found a matching icon.
+
+				// Create a DIB section for the sub-icon.
+				void *pvBits;
+				hbmIcon = CreateDIBSection(
+					hbmIconDC,	// hdc
+					reinterpret_cast<const BITMAPINFO*>(&bmihDIBSection),	// pbmi
+					DIB_RGB_COLORS,	// usage
+					&pvBits,	// ppvBits
+					nullptr,	// hSection
+					0);		// offset
+				GdiFlush();	// TODO: Not sure if needed here...
+				if (hbmIcon) {
+					// Blit the icon from the sprite sheet.
+					// NOTE: BitBlt doesn't handle alpha properly, so we'll
+					// have to do this manually.
+					// NOTE: Bitmap is upside-down!
+					// TODO: Verify the sizes of everything.
+					const size_t rowBytes = iconSize * sizeof(uint32_t);
+					const uint32_t *pSrc = static_cast<const uint32_t*>(bmFlags16x16.bmBits);
+					pSrc += ((3-row) * iconSize * lFlagStride) + (col * iconSize);
+					uint32_t *pDest = static_cast<uint32_t*>(pvBits);
+					for (UINT bmRow = iconSize; bmRow > 0; bmRow--) {
+						memcpy(pDest, pSrc, rowBytes);
+						pDest += iconSize;
+						pSrc += lFlagStride;
+					}
+				}
 			}
 
-			// We want the 16x16 flag.
-			// FIXME: Resource ID is 16-bit; need to encode icon size...
-			// TODO: Hi-DPI; store as PNG instead of bitmap?
-			// NOTE: If iSelectedImage is not set, the flag image
-			// will disappear after selecting, and will reappear
-			// once a different language is selected.
-			HBITMAP hbmFlag = (HBITMAP)LoadImage(HINST_THISCOMPONENT,
-				MAKEINTRESOURCE(res_lc),
-				IMAGE_BITMAP, 0, 0, LR_SHARED);
-			if (hbmFlag) {
+			if (hbmIcon) {
 				// Bitmap retrieved.
-				cbItem.iImage = ImageList_Add(himglFlags16x16, hbmFlag, nullptr);
+				cbItem.iImage = ImageList_Add(himglFlags16x16, hbmIcon, nullptr);
 				cbItem.iSelectedImage = cbItem.iImage;
 				cbItem.mask |= (CBEIF_IMAGE | CBEIF_SELECTEDIMAGE);
+				DeleteBitmap(hbmIcon);
 			} else {
 				// No icon.
 				cbItem.mask &= ~(CBEIF_IMAGE | CBEIF_SELECTEDIMAGE);
@@ -1859,6 +1882,10 @@ void RP_ShellPropSheetExt_Private::updateStringMulti(uint32_t user_lc)
 				}
 			}
 		}
+
+		GdiFlush();
+		ReleaseDC(nullptr, hbmIconDC);
+		DeleteBitmap(hbmFlags16x16);
 
 		// Set the current index.
 		ComboBox_SetCurSel(cboLanguage, sel_idx);

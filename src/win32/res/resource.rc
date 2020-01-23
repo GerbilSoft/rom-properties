@@ -24,22 +24,7 @@ ISOLATIONAWARE_MANIFEST_RESOURCE_ID	RT_MANIFEST	"res\\rom-properties.dll.manifes
 IDI_KEY_VALID	ICON	"res\\dialog-ok-apply.ico"
 
 /** Bitmaps. **/
-// 32-bit flag bitmaps.
-// FIXME: Different naming scheme for different icon sizes?
-// The value is the country code, e.g. 'us'.
-0x636e	BITMAP	"res\\flags\\16x16\\cn.bmp"
-0x6465	BITMAP	"res\\flags\\16x16\\de.bmp"
-0x6573	BITMAP	"res\\flags\\16x16\\es.bmp"
-0x6672	BITMAP	"res\\flags\\16x16\\fr.bmp"
-0x6762	BITMAP	"res\\flags\\16x16\\gb.bmp"
-0x6974	BITMAP	"res\\flags\\16x16\\it.bmp"
-0x6a70	BITMAP	"res\\flags\\16x16\\jp.bmp"
-0x6b72	BITMAP	"res\\flags\\16x16\\kr.bmp"
-0x6e6c	BITMAP	"res\\flags\\16x16\\nl.bmp"
-0x7074	BITMAP	"res\\flags\\16x16\\pt.bmp"
-0x7275	BITMAP	"res\\flags\\16x16\\ru.bmp"
-0x7477	BITMAP	"res\\flags\\16x16\\tw.bmp"
-0x7573	BITMAP	"res\\flags\\16x16\\us.bmp"
+IDB_FLAGS_16x16	BITMAP	"res\\flags-16x16.bmp"
 
 // TODO: The git version gets cut off on Windows 7, since it uses
 // a ListView instead of separate ListBox and Edit controls like
