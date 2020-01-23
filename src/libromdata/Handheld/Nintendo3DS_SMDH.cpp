@@ -473,11 +473,34 @@ int Nintendo3DS_SMDH::loadFieldData(void)
 	d->fields->reserve(is_iQue ? 8 : 5);
 	d->fields->setTabName(0, "SMDH");
 
+	// Title: Check if English is valid.
+	// If it is, we'll de-duplicate fields.
+	bool dedupe_titles = (smdhHeader->titles[N3DS_LANG_ENGLISH].desc_short[0] != cpu_to_le16(0));
+
 	// Title fields.
 	RomFields::StringMultiMap_t *const pMap_desc_short = new RomFields::StringMultiMap_t();
 	RomFields::StringMultiMap_t *const pMap_desc_long = new RomFields::StringMultiMap_t();
 	RomFields::StringMultiMap_t *const pMap_publisher = new RomFields::StringMultiMap_t();
 	for (unsigned int langID = 0; langID < N3DS_LANG_MAX; langID++) {
+		if (dedupe_titles && langID != N3DS_LANG_ENGLISH) {
+			// Check if the title matches English.
+			// NOTE: Not byteswapping to host-endian first, since
+			// u16_strncmp() checks for equality and for 0.
+			if (!u16_strncmp(smdhHeader->titles[langID].desc_short,
+			                 smdhHeader->titles[N3DS_LANG_ENGLISH].desc_short,
+					 ARRAY_SIZE(smdhHeader->titles[N3DS_LANG_ENGLISH].desc_short)) &&
+			    !u16_strncmp(smdhHeader->titles[langID].desc_long,
+			                 smdhHeader->titles[N3DS_LANG_ENGLISH].desc_long,
+					 ARRAY_SIZE(smdhHeader->titles[N3DS_LANG_ENGLISH].desc_long)) &&
+			    !u16_strncmp(smdhHeader->titles[langID].publisher,
+			                 smdhHeader->titles[N3DS_LANG_ENGLISH].publisher,
+					 ARRAY_SIZE(smdhHeader->titles[N3DS_LANG_ENGLISH].publisher)))
+			{
+				// All three title fields match English.
+				continue;
+			}
+		}
+
 		if (smdhHeader->titles[langID].desc_short[0] != '\0') {
 			pMap_desc_short->insert(std::make_pair(
 				Nintendo3DS_SMDH_Private::N3DS_LangID_to_lc[langID],

@@ -130,6 +130,29 @@ int u16_strcmp(const char16_t *wcs1, const char16_t *wcs2)
 }
 
 /**
+ * char16_t strncmp().
+ * @param wcs1 16-bit string 1.
+ * @param wcs2 16-bit string 2.
+ * @return strncmp() result.
+ */
+int u16_strncmp(const char16_t *wcs1, const char16_t *wcs2, size_t n)
+{
+	// References:
+	// - http://stackoverflow.com/questions/20004458/optimized-strcmp-implementation
+	// - http://clc-wiki.net/wiki/C_standard_library%3astring.h%3astrcmp
+	while (n > 0 && *wcs1 && (*wcs1 == *wcs2)) {
+		wcs1++;
+		wcs2++;
+		n--;
+	}
+
+	if (n == 0) {
+		return 0;
+	}
+	return ((int)*wcs1 - (int)*wcs2);
+}
+
+/**
  * char16_t strcasecmp().
  * @param wcs1 16-bit string 1.
  * @param wcs2 16-bit string 2.
