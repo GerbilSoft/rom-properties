@@ -181,7 +181,7 @@ int NintendoLanguage::getN3DSLanguage(void)
 /**
  * Convert a Nintendo DS/3DS language ID to a language code.
  * @param langID Nintendo DS/3DS language ID.
- * @param maxID Maximum language ID. (es, hans, ko, or hant)
+ * @param maxID Maximum language ID, inclusive. (es, hans, ko, or hant)
  * @return Language code, or 0 on error.
  */
 uint32_t NintendoLanguage::getNDSLanguageCode(int langID, int maxID)
@@ -206,6 +206,10 @@ uint32_t NintendoLanguage::getNDSLanguageCode(int langID, int maxID)
 	};
 
 	assert(langID >= 0);
+	assert(maxID < ARRAY_SIZE(langID_to_lc));
+	if (maxID >= ARRAY_SIZE(langID_to_lc)) {
+		maxID = ARRAY_SIZE(langID_to_lc) - 1;
+	}
 	if (langID < 0 || langID > maxID) {
 		// Out of range.
 		return 0;

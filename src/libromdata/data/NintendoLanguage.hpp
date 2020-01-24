@@ -54,7 +54,7 @@ class NintendoLanguage
 		/**
 		 * Convert a Nintendo DS/3DS language ID to a language code.
 		 * @param langID Nintendo DS/3DS language ID.
-		 * @param maxID Maximum language ID. (es, hans, ko, or hant)
+		 * @param maxID Maximum language ID, inclusive. (es, hans, ko, or hant)
 		 * @return Language code, or 0 on error.
 		 */
 		static uint32_t getNDSLanguageCode(int langID, int maxID = 9001);
