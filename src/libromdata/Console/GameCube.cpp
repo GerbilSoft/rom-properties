@@ -1327,6 +1327,7 @@ const char *const *GameCube::supportedMimeTypes_static(void)
 
 		// Unofficial MIME types.
 		// TODO: Get these upstreamed on FreeDesktop.org.
+		"application/x-cso",		// technically a different format...
 		"application/x-nasos-image",
 
 		nullptr
