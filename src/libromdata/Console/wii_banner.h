@@ -119,6 +119,8 @@ typedef enum {
 	WII_LANG_DUTCH		= 6,
 	// 7 and 8 are unknown. (Chinese?)
 	WII_LANG_KOREAN		= 9,
+
+	WII_LANG_MAX
 } Wii_Language_ID;
 
 /**

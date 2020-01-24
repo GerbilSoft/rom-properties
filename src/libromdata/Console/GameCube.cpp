@@ -171,12 +171,11 @@ class GameCubePrivate : public RomDataPrivate
 		int gcn_addGameInfo(void) const;
 
 		/**
-		 * Get the game name from opening.bnr. (Wii version)
-		 * This uses the name that most closely matches
-		 * the host system language.
-		 * @return Game name, or empty string if opening.bnr was not loaded.
+		 * [Wii] Add the game name from opening.bnr.
+		 * This adds an RFT_STRING_MULTI field with all available languages.
+		 * @return 0 on success; negative POSIX error code on error.
 		 */
-		string wii_getBannerName(void) const;
+		int wii_addBannerName(void) const;
 
 		/**
 		 * Get the encryption status of a partition.
@@ -554,33 +553,33 @@ int GameCubePrivate::gcn_addGameInfo(void) const
 }
 
 /**
- * Get the game name from opening.bnr. (Wii version)
- * This uses the name that most closely matches
- * the host system language.
- * @return Game name, or empty string if opening.bnr was not loaded.
+ * [Wii] Add the game name from opening.bnr.
+ * This adds an RFT_STRING_MULTI field with all available languages.
+ * @return 0 on success; negative POSIX error code on error.
  */
-string GameCubePrivate::wii_getBannerName(void) const
+int GameCubePrivate::wii_addBannerName(void) const
 {
 	assert((discType & DISC_SYSTEM_MASK) == DISC_SYSTEM_WII);
 	if ((discType & DISC_SYSTEM_MASK) != DISC_SYSTEM_WII) {
 		// Not supported.
-		return string();
+		return -ENOENT;
 	}
 
 	if (!opening_bnr.wii.imet) {
 		// Attempt to load opening.bnr.
 		if (const_cast<GameCubePrivate*>(this)->wii_loadOpeningBnr() != 0) {
 			// Error loading opening.bnr.
-			return string();
+			return -ENOENT;
 		}
 
 		// Make sure it was actually loaded.
 		if (!opening_bnr.wii.imet) {
 			// opening.bnr was not loaded.
-			return string();
+			return -EIO;
 		}
 	}
 
+#if 0
 	// Get the system language.
 	// TODO: Verify against the region code somehow?
 	int lang = NintendoLanguage::getWiiLanguage();
@@ -600,7 +599,62 @@ string GameCubePrivate::wii_getBannerName(void) const
 		info += '\n';
 		info += utf16be_to_utf8(opening_bnr.wii.imet->names[lang][1], 21);
 	}
-	return info;
+#endif
+
+	// Check if English is valid.
+	// If it is, we'll de-duplicate fields.
+	bool dedupe_titles = (opening_bnr.wii.imet->names[WII_LANG_ENGLISH][0][0] != cpu_to_be16('\0'));
+
+	RomFields::StringMultiMap_t *const pMap_bannerName = new RomFields::StringMultiMap_t();
+	for (int langID = 0; langID < WII_LANG_MAX; langID++) {
+		if (langID == 7 || langID == 8) {
+			// Unknown languages. Skip them. (Maybe these were Chinese?)
+			// TODO: Just skip if NintendoLanguage::getWiiLanguageCode() returns 0?
+			continue;
+		}
+
+		if (dedupe_titles && langID != WII_LANG_ENGLISH) {
+			// Check if the comments match English.
+			// NOTE: Not converting to host-endian first, since
+			// u16_strncmp() checks for equality and for 0.
+			if (!u16_strncmp(opening_bnr.wii.imet->names[langID][0],
+			                 opening_bnr.wii.imet->names[WII_LANG_ENGLISH][0],
+			                 ARRAY_SIZE(opening_bnr.wii.imet->names[WII_LANG_ENGLISH][0])) &&
+			    !u16_strncmp(opening_bnr.wii.imet->names[langID][1],
+			                 opening_bnr.wii.imet->names[WII_LANG_ENGLISH][1],
+			                 ARRAY_SIZE(opening_bnr.wii.imet->names[WII_LANG_ENGLISH][1])))
+			{
+				// All fields match English.
+				continue;
+			}
+		}
+
+		const uint32_t lc = NintendoLanguage::getWiiLanguageCode(langID);
+		assert(lc != 0);
+		if (lc == 0)
+			continue;
+
+		if (opening_bnr.wii.imet->names[langID][0][0] != cpu_to_be16('\0')) {
+			// NOTE: The banner may have two lines.
+			// Each line is a maximum of 21 characters.
+			// Convert from UTF-16 BE and split into two lines at the same time.
+			string info = utf16be_to_utf8(opening_bnr.wii.imet->names[langID][0],
+			                              ARRAY_SIZE(opening_bnr.wii.imet->names[langID][0]));
+			if (opening_bnr.wii.imet->names[langID][1][0] != cpu_to_be16('\0')) {
+				info += '\n';
+				info += utf16be_to_utf8(opening_bnr.wii.imet->names[langID][1],
+				        ARRAY_SIZE(opening_bnr.wii.imet->names[langID][1]));
+			}
+
+			pMap_bannerName->insert(std::make_pair(lc, std::move(info)));
+		}
+	}
+
+	// Add the field.
+	const uint32_t def_lc = NintendoLanguage::getWiiLanguageCode(
+		NintendoLanguage::getWiiLanguage());
+	fields->addField_string_multi(C_("GameCube", "Game Info"), pMap_bannerName, def_lc);
+	return 0;
 }
 
 /**
@@ -1445,8 +1499,6 @@ int GameCube::loadFieldData(void)
 		return static_cast<int>(d->fields->count());
 	}
 
-	const char *const game_info_title = C_("GameCube", "Game Info");
-
 	// Region code.
 	// bi2.bin and/or RVL_RegionSetting is loaded in the constructor,
 	// and the region code is stored in d->gcnRegion.
@@ -1556,13 +1608,12 @@ int GameCube::loadFieldData(void)
 
 	// Display the Wii partition table(s).
 	if (wiiPtLoaded == 0) {
-		// Get the game name from opening.bnr.
-		string game_name = d->wii_getBannerName();
-		if (!game_name.empty()) {
-			d->fields->addField_string(game_info_title, game_name);
-		} else {
-			// Empty game name may be either because it's
-			// homebrew, a prototype, or a key error.
+		// Add the game name from opening.bnr.
+		int ret = d->wii_addBannerName();
+		if (ret != 0) {
+			// Unable to load the game name from opening.bnr.
+			// This might be because it's homebrew, a prototype, or a key error.
+			const char *const game_info_title = C_("GameCube", "Game Info");
 			if (!d->gamePartition) {
 				// No game partition.
 				if ((d->discType & GameCubePrivate::DISC_FORMAT_MASK) != GameCubePrivate::DISC_FORMAT_PARTITION) {

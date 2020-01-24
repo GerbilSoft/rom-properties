@@ -45,6 +45,13 @@ class NintendoLanguage
 		static int getWiiLanguage(void);
 
 		/**
+		 * Convert a Wii language ID to a language code.
+		 * @param langID GameCube PAL language ID.
+		 * @return Language code, or 0 on error.
+		 */
+		static uint32_t getWiiLanguageCode(int langID);
+
+		/**
 		 * Determine the system language for Nintendo DS.
 		 * @param version NDS_IconTitleData version.
 		 * @return NDS_Language_ID. If unknown, defaults to NDS_LANG_ENGLISH.

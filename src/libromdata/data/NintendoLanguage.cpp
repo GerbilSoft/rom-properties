@@ -115,6 +115,36 @@ int NintendoLanguage::getWiiLanguage(void)
 }
 
 /**
+ * Convert a Wii language ID to a language code.
+ * @param langID GameCube PAL language ID.
+ * @return Language code, or 0 on error.
+ */
+uint32_t NintendoLanguage::getWiiLanguageCode(int langID)
+{
+	// Wii_Language_ID system language code mapping.
+	static const uint32_t langID_to_lc[WII_LANG_MAX] = {
+		'ja',	// WII_LANG_JAPANESE
+		'en',	// WII_LANG_ENGLISH
+		'de',	// WII_LANG_GERMAN
+		'fr',	// WII_LANG_FRENCH
+		'es',	// WII_LANG_SPANISH
+		'it',	// WII_LANG_ITALIAN
+		'nl',	// WII_LANG_DUTCH
+		0,	// 7: unknown
+		0,	// 8: unknown
+		'ko',	// WII_LANG_KOREAN
+	};
+
+	assert(langID >= 0);
+	if (langID < 0 || langID >= ARRAY_SIZE(langID_to_lc)) {
+		// Out of range.
+		return 0;
+	}
+
+	return langID_to_lc[langID];
+}
+
+/**
  * Determine the system language for Nintendo DS.
  * @param version NDS_IconTitleData version.
  * @return NDS_Language. If unknown, defaults to NDS_LANG_ENGLISH.
