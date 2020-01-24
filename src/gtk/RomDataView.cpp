@@ -346,7 +346,7 @@ rom_data_view_init(RomDataView *page)
 
 	// Header row. (outer box)
 	page->hboxHeaderRow_outer = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-	gtk_box_pack_start(GTK_BOX(page), page->hboxHeaderRow_outer, true, false, 0);
+	gtk_box_pack_start(GTK_BOX(page), page->hboxHeaderRow_outer, false, false, 0);
 	gtk_widget_show(page->hboxHeaderRow_outer);
 
 	// Header row. (inner box)
@@ -357,7 +357,7 @@ rom_data_view_init(RomDataView *page)
 #else /* !GTK_CHECK_VERSION(3,0,0) */
 	// Header row. (outer box)
 	page->hboxHeaderRow_outer = gtk_hbox_new(false, 0);
-	gtk_box_pack_start(GTK_BOX(page), page->hboxHeaderRow_outer, true, false, 0);
+	gtk_box_pack_start(GTK_BOX(page), page->hboxHeaderRow_outer, false, false, 0);
 	gtk_widget_show(page->hboxHeaderRow_outer);
 
 	// Center-align the header row.
