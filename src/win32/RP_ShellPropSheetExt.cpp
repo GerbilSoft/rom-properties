@@ -170,7 +170,7 @@ class RP_ShellPropSheetExt_Private
 		uint32_t def_lc;	// Default language code from RomFields.
 		static const UINT iconSize = 16;	// TODO: Hi-DPI
 		HWND cboLanguage;
-		HIMAGELIST himglFlags16x16;
+		HIMAGELIST himglFlags;
 
 	public:
 		/**
@@ -376,7 +376,7 @@ RP_ShellPropSheetExt_Private::RP_ShellPropSheetExt_Private(RP_ShellPropSheetExt 
 	, curTabIndex(0)
 	, def_lc(0)
 	, cboLanguage(nullptr)
-	, himglFlags16x16(nullptr)
+	, himglFlags(nullptr)
 {
 	memset(&lfFontMono, 0, sizeof(lfFontMono));
 
@@ -399,8 +399,8 @@ RP_ShellPropSheetExt_Private::~RP_ShellPropSheetExt_Private()
 	if (cboLanguage) {
 		SendMessage(cboLanguage, CBEM_SETIMAGELIST, 0, (LPARAM)nullptr);
 	}
-	if (himglFlags16x16) {
-		ImageList_Destroy(himglFlags16x16);
+	if (himglFlags) {
+		ImageList_Destroy(himglFlags);
 	}
 
 	// Delete the fonts.
@@ -1721,8 +1721,6 @@ void RP_ShellPropSheetExt_Private::updateStringMulti(uint32_t user_lc)
 
 	if (!cboLanguage && set_lc.size() > 1) {
 		// Create the language combobox.
-		// TODO: Adjust the label/icon positioning.
-		// TODO: Flags?
 
 		// Get the language strings and determine the
 		// maximum width.
@@ -1755,16 +1753,42 @@ void RP_ShellPropSheetExt_Private::updateStringMulti(uint32_t user_lc)
 			}
 		}
 
-		// Create the image list.
-		himglFlags16x16 = ImageList_Create(16, 16, ILC_COLOR32, 13, 16);
+		// TODO:
+		// - Per-monitor DPI scaling (both v1 and v2)
+		// - Handle WM_DPICHANGED.
+		// Reference: https://docs.microsoft.com/en-us/windows/win32/hidpi/high-dpi-desktop-application-development-on-windows
+		const UINT dpi = rp_GetDpiForWindow(hDlgSheet);
+		unsigned int iconSize;
+		unsigned int iconMargin;
+		uint16_t flag_resource;
+		if (dpi < 120) {
+			// [96,120) dpi: Use 16x16.
+			iconSize = 16;
+			iconMargin = 2;
+			flag_resource = IDB_FLAGS_16x16;
+		} else if (dpi <= 144) {
+			// [120,144] dpi: Use 24x24.
+			// TODO: Maybe needs to be slightly higher?
+			iconSize = 24;
+			iconMargin = 3;
+			flag_resource = IDB_FLAGS_24x24;
+		} else {
+			// >144dpi: Use 32x32.
+			iconSize = 32;
+			iconMargin = 4;
+			flag_resource = IDB_FLAGS_32x32;
+		}
 
-		// Add iconSize+2 for the icon. [TODO: Hi-DPI adjustments?]
-		maxSize.cx += iconSize+2;
+		// Create the image list.
+		himglFlags = ImageList_Create(iconSize, iconSize, ILC_COLOR32, 13, 16);
+
+		// Add iconSize + iconMargin for the icon.
+		maxSize.cx += iconSize + iconMargin;
 
 		// Add vertical scrollbar width and CXEDGE.
 		// Reference: http://ntcoder.com/2013/10/07/mfc-resize-ccombobox-drop-down-list-based-on-contents/
-		maxSize.cx += GetSystemMetrics(SM_CXVSCROLL);
-		maxSize.cx += (GetSystemMetrics(SM_CXEDGE) * 4);
+		maxSize.cx += rp_GetSystemMetricsForDpi(SM_CXVSCROLL, dpi);
+		maxSize.cx += (rp_GetSystemMetricsForDpi(SM_CXEDGE, dpi) * 4);
 
 		// Create the combobox.
 		// FIXME: May need to create this after the header row
@@ -1780,32 +1804,34 @@ void RP_ShellPropSheetExt_Private::updateStringMulti(uint32_t user_lc)
 			hDlgSheet, (HMENU)(INT_PTR)IDC_CBO_LANGUAGE,
 			nullptr, nullptr);
 		SetWindowFont(cboLanguage, hFontDlg, false);
-		SendMessage(cboLanguage, CBEM_SETIMAGELIST, 0, (LPARAM)himglFlags16x16);
+		SendMessage(cboLanguage, CBEM_SETIMAGELIST, 0, (LPARAM)himglFlags);
 
-		// Load the 16x16 flags sprite sheet.
-		// TODO: Different sizes for Hi-DPI mode?
+		// Load the flags sprite sheet.
 		// TODO: Is premultiplied alpha needed?
 		// Reference: https://stackoverflow.com/questions/307348/how-to-draw-32-bit-alpha-channel-bitmaps
-		BITMAP bmFlags16x16;
-		HBITMAP hbmFlags16x16 = (HBITMAP)LoadImage(HINST_THISCOMPONENT,
-			MAKEINTRESOURCE(IDB_FLAGS_16x16),
+		BITMAP bmFlagsSheet;
+		HDC hdcIcon = nullptr;
+		LONG lFlagStride = 0;
+		HBITMAP hbmFlagsSheet = (HBITMAP)LoadImage(HINST_THISCOMPONENT,
+			MAKEINTRESOURCE(flag_resource),
 			IMAGE_BITMAP, 0, 0, LR_CREATEDIBSECTION);
-		GetObject(hbmFlags16x16, sizeof(bmFlags16x16), &bmFlags16x16);
-		const LONG lFlagStride = bmFlags16x16.bmWidthBytes / sizeof(uint32_t);
-		HDC hbmIconDC = GetDC(nullptr);
+		if (hbmFlagsSheet) {
+			GetObject(hbmFlagsSheet, sizeof(bmFlagsSheet), &bmFlagsSheet);
+			lFlagStride = bmFlagsSheet.bmWidthBytes / sizeof(uint32_t);
 
-		// Make sure the bitmap has the expected size.
-		assert(bmFlags16x16.bmWidth == (iconSize * SystemRegion::FLAGS_SPRITE_SHEET_COLS));
-		assert(bmFlags16x16.bmHeight == (iconSize * SystemRegion::FLAGS_SPRITE_SHEET_ROWS));
-		if (bmFlags16x16.bmWidth != (iconSize * SystemRegion::FLAGS_SPRITE_SHEET_COLS) ||
-		    bmFlags16x16.bmHeight != (iconSize * SystemRegion::FLAGS_SPRITE_SHEET_ROWS))
-		{
-			// Incorrect size. We can't use it.
-			DeleteBitmap(hbmFlags16x16);
-			hbmFlags16x16 = nullptr;
+			// Make sure the bitmap has the expected size.
+			assert(bmFlagsSheet.bmWidth == (iconSize * SystemRegion::FLAGS_SPRITE_SHEET_COLS));
+			assert(bmFlagsSheet.bmHeight == (iconSize * SystemRegion::FLAGS_SPRITE_SHEET_ROWS));
+			if (bmFlagsSheet.bmWidth != (iconSize * SystemRegion::FLAGS_SPRITE_SHEET_COLS) ||
+			bmFlagsSheet.bmHeight != (iconSize * SystemRegion::FLAGS_SPRITE_SHEET_ROWS))
+			{
+				// Incorrect size. We can't use it.
+				DeleteBitmap(hbmFlagsSheet);
+				hbmFlagsSheet = nullptr;
+			}
 		}
 
-		static const BITMAPINFOHEADER bmihDIBSection = {
+		const BITMAPINFOHEADER bmihDIBSection = {
 			sizeof(BITMAPINFOHEADER),	// biSize
 			iconSize,			// biWidth
 			iconSize,			// biHeight
@@ -1813,8 +1839,8 @@ void RP_ShellPropSheetExt_Private::updateStringMulti(uint32_t user_lc)
 			32,				// biBitCount
 			BI_RGB,				// biCompression
 			0,				// biSizeImage
-			96,				// biXPelsPerMeter
-			96,				// biYPelsPerMeter
+			dpi,				// biXPelsPerMeter
+			dpi,				// biYPelsPerMeter
 			0,				// biClrUsed
 			0,				// biClrImportant
 		};
@@ -1835,13 +1861,13 @@ void RP_ShellPropSheetExt_Private::updateStringMulti(uint32_t user_lc)
 			// Flag icon.
 			HBITMAP hbmIcon = nullptr;
 			int col, row;
-			if (hbmFlags16x16 != nullptr && !SystemRegion::getFlagPosition(lc, &col, &row)) {
+			if (hbmFlagsSheet != nullptr && !SystemRegion::getFlagPosition(lc, &col, &row)) {
 				// Found a matching icon.
 
 				// Create a DIB section for the sub-icon.
 				void *pvBits;
 				hbmIcon = CreateDIBSection(
-					hbmIconDC,	// hdc
+					hdcIcon,	// hdc
 					reinterpret_cast<const BITMAPINFO*>(&bmihDIBSection),	// pbmi
 					DIB_RGB_COLORS,	// usage
 					&pvBits,	// ppvBits
@@ -1854,7 +1880,7 @@ void RP_ShellPropSheetExt_Private::updateStringMulti(uint32_t user_lc)
 					// have to do this manually.
 					// NOTE: Bitmap is upside-down!
 					const size_t rowBytes = iconSize * sizeof(uint32_t);
-					const uint32_t *pSrc = static_cast<const uint32_t*>(bmFlags16x16.bmBits);
+					const uint32_t *pSrc = static_cast<const uint32_t*>(bmFlagsSheet.bmBits);
 					pSrc += ((SystemRegion::FLAGS_SPRITE_SHEET_ROWS - 1 - row) * iconSize * lFlagStride);
 					pSrc += (col * iconSize);
 					uint32_t *pDest = static_cast<uint32_t*>(pvBits);
@@ -1868,7 +1894,7 @@ void RP_ShellPropSheetExt_Private::updateStringMulti(uint32_t user_lc)
 
 			if (hbmIcon) {
 				// Bitmap retrieved.
-				cbItem.iImage = ImageList_Add(himglFlags16x16, hbmIcon, nullptr);
+				cbItem.iImage = ImageList_Add(himglFlags, hbmIcon, nullptr);
 				cbItem.iSelectedImage = cbItem.iImage;
 				cbItem.mask |= (CBEIF_IMAGE | CBEIF_SELECTEDIMAGE);
 				DeleteBitmap(hbmIcon);
@@ -1895,9 +1921,9 @@ void RP_ShellPropSheetExt_Private::updateStringMulti(uint32_t user_lc)
 		}
 
 		GdiFlush();
-		ReleaseDC(nullptr, hbmIconDC);
-		if (hbmFlags16x16) {
-			DeleteBitmap(hbmFlags16x16);
+		ReleaseDC(nullptr, hdcIcon);
+		if (hbmFlagsSheet) {
+			DeleteBitmap(hbmFlagsSheet);
 		}
 
 		// Set the current index.

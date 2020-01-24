@@ -14,6 +14,8 @@
 
 /** Bitmaps. **/
 #define IDB_FLAGS_16x16				301
+#define IDB_FLAGS_24x24				302
+#define IDB_FLAGS_32x32				303
 
 // Dialogs
 #define IDD_PROPERTY_SHEET                      100	/* Generic property sheet. */

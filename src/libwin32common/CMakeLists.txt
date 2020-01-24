@@ -6,6 +6,9 @@ PROJECT(libwin32common)
 # since MSVC will trim the object file. Compile it in the
 # executable target directly.
 
+# Check for Windows SDK headers.
+CHECK_INCLUDE_FILES("shellscalingapi.h" HAVE_SHELLSCALINGAPI_H)
+
 # Write the config.h file.
 CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/config.libwin32common.h.in" "${CMAKE_CURRENT_BINARY_DIR}/config.libwin32common.h")
 
@@ -21,6 +24,7 @@ SET(libwin32common_SRCS
 	propsys_xp.c
 	userdirs.cpp
 	integrity_level.h
+	HiDPI.h
 	sdk/win_iid.c
 	sdk/GUID_fn.c
 	)
@@ -38,6 +42,7 @@ SET(libwin32common_H
 	WTSSessionNotification.hpp
 	userdirs.hpp
 	integrity_level.c
+	HiDPI.c
 	sdk/QITab.h
 	sdk/IListView.hpp
 	sdk/IOwnerDataCallback.hpp

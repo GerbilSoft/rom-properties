@@ -25,6 +25,8 @@ IDI_KEY_VALID	ICON	"res\\dialog-ok-apply.ico"
 
 /** Bitmaps. **/
 IDB_FLAGS_16x16	BITMAP	"res\\flags-16x16.bmp"
+IDB_FLAGS_24x24	BITMAP	"res\\flags-24x24.bmp"
+IDB_FLAGS_32x32	BITMAP	"res\\flags-32x32.bmp"
 
 // TODO: The git version gets cut off on Windows 7, since it uses
 // a ListView instead of separate ListBox and Edit controls like

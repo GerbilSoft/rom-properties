@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libwin32common)                   *
  * w32time.h: Windows time conversion functions.                           *
  *                                                                         *
- * Copyright (c) 2016-2017 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -18,18 +18,12 @@
 #define FILETIME_1970 116444736000000000LL	// Seconds between 1/1/1601 and 1/1/1970.
 #define HECTONANOSEC_PER_SEC 10000000LL
 
-#if defined(_MSC_VER) && !defined(__cplusplus)
-#define TIME_INLINE __inline
-#else
-#define TIME_INLINE inline
-#endif
-
 /**
  * Convert from Unix time to Win32 FILETIME.
  * @param unix_time Unix time.
  * @param pFileTime FILETIME.
  */
-static TIME_INLINE void UnixTimeToFileTime(_In_ time_t unix_time, _Out_ FILETIME *pFileTime)
+static inline void UnixTimeToFileTime(_In_ time_t unix_time, _Out_ FILETIME *pFileTime)
 {
 	// Reference: https://support.microsoft.com/en-us/kb/167296
 	LARGE_INTEGER li;
@@ -43,7 +37,7 @@ static TIME_INLINE void UnixTimeToFileTime(_In_ time_t unix_time, _Out_ FILETIME
  * @param unix_time Unix time.
  * @param pSystemTime Win32 SYSTEMTIME.
  */
-static TIME_INLINE void UnixTimeToSystemTime(_In_ time_t unix_time, _Out_ SYSTEMTIME *pSystemTime)
+static inline void UnixTimeToSystemTime(_In_ time_t unix_time, _Out_ SYSTEMTIME *pSystemTime)
 {
 	// Reference: https://support.microsoft.com/en-us/kb/167296
 	FILETIME ft;
@@ -56,7 +50,7 @@ static TIME_INLINE void UnixTimeToSystemTime(_In_ time_t unix_time, _Out_ SYSTEM
  * @param pFileTime Win32 FILETIME.
  * @return Unix time.
  */
-static TIME_INLINE int64_t FileTimeToUnixTime(_In_ const FILETIME *pFileTime)
+static inline int64_t FileTimeToUnixTime(_In_ const FILETIME *pFileTime)
 {
 	// Reference: https://support.microsoft.com/en-us/kb/167296
 	LARGE_INTEGER li;
@@ -70,7 +64,7 @@ static TIME_INLINE int64_t FileTimeToUnixTime(_In_ const FILETIME *pFileTime)
  * @param pFileTime Win32 SYSTEMTIME.
  * @return Unix time.
  */
-static TIME_INLINE int64_t SystemTimeToUnixTime(_In_ const SYSTEMTIME *pSystemTime)
+static inline int64_t SystemTimeToUnixTime(_In_ const SYSTEMTIME *pSystemTime)
 {
 	FILETIME fileTime;
 	SystemTimeToFileTime(pSystemTime, &fileTime);

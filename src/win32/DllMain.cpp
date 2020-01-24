@@ -125,7 +125,14 @@ BOOL WINAPI DllMain(HINSTANCE hInstance, DWORD dwReason, LPVOID /*lpReserved*/)
  */
 STDAPI DllCanUnloadNow(void)
 {
-	return (LibWin32Common::ComBase_isReferenced() ? S_FALSE : S_OK);
+	if (!LibWin32Common::ComBase_isReferenced()) {
+		// Not referenced anywhere.
+		rp_DpiUnloadModules();	// FIXME: May need to be done elsewhere.
+		return S_OK;
+	}
+
+	// Still in use...
+	return S_FALSE;
 }
 
 /**
