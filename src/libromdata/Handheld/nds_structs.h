@@ -284,16 +284,16 @@ typedef enum {
 // NDS_IconTitleData version.
 typedef enum {
 	NDS_ICON_VERSION_ORIGINAL	= 0x0001,	// Original
-	NDS_ICON_VERSION_ZH		= 0x0002,	// +ZHCN
-	NDS_ICON_VERSION_ZH_KO		= 0x0003,	// +KO
+	NDS_ICON_VERSION_HANS		= 0x0002,	// +HANS
+	NDS_ICON_VERSION_HANS_KO	= 0x0003,	// +KO
 	NDS_ICON_VERSION_DSi		= 0x0103,	// +DSi
 } NDS_IconTitleData_Version;
 
 // NDS_IconTitleData sizes.
 typedef enum {
 	NDS_ICON_SIZE_ORIGINAL		= 0x0840,	// Original
-	NDS_ICON_SIZE_ZH		= 0x0940,	// +ZHCN
-	NDS_ICON_SIZE_ZH_KO		= 0x0A40,	// +KO
+	NDS_ICON_SIZE_HANS		= 0x0940,	// +HANS
+	NDS_ICON_SIZE_HANS_KO		= 0x0A40,	// +KO
 	NDS_ICON_SIZE_DSi		= 0x23C0,	// +DSi
 } NDS_IconTitleData_Size;
 
@@ -305,8 +305,10 @@ typedef enum {
 	NDS_LANG_GERMAN		= 3,
 	NDS_LANG_ITALIAN	= 4,
 	NDS_LANG_SPANISH	= 5,
-	NDS_LANG_CHINESE	= 6,
+	NDS_LANG_CHINESE_SIMP	= 6,	// Simplified Chinese
 	NDS_LANG_KOREAN		= 7,
+
+	NDS_LANG_MAX
 } NDS_Language_ID;
 
 /**

@@ -127,18 +127,21 @@ ASSERT_STRUCT(N3DS_SMDH_Header_t, 8256);
  * These are indexes in N3DS_SMDH_Header_t.titles[].
  */
 typedef enum {
+	// 0-7 are the same as Nintendo DS.
 	N3DS_LANG_JAPANESE	= 0,
 	N3DS_LANG_ENGLISH	= 1,
 	N3DS_LANG_FRENCH	= 2,
 	N3DS_LANG_GERMAN	= 3,
 	N3DS_LANG_ITALIAN	= 4,
 	N3DS_LANG_SPANISH	= 5,
-	N3DS_LANG_CHINESE_SIMP	= 6,
+	N3DS_LANG_CHINESE_SIMP	= 6,	// Simplified Chinese
 	N3DS_LANG_KOREAN	= 7,
+
+	// New to Nintendo 3DS.
 	N3DS_LANG_DUTCH		= 8,
 	N3DS_LANG_PORTUGUESE	= 9,
 	N3DS_LANG_RUSSIAN	= 10,
-	N3DS_LANG_CHINESE_TRAD	= 11,
+	N3DS_LANG_CHINESE_TRAD	= 11,	// Traditional Chinese
 
 	N3DS_LANG_MAX
 } N3DS_Language_ID;

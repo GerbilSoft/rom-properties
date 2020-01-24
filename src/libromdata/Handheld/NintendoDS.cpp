@@ -149,6 +149,25 @@ class NintendoDSPrivate : public RomDataPrivate
 		 * @return DSi flags string vector.
 		 */
 		static vector<vector<string> > *getDSiFlagsStringVector(void);
+
+		/**
+		 * Get the maximum supported language for an icon/title version.
+		 * @param version Icon/title version.
+		 * @return Maximum supported language.
+		 */
+		static NDS_Language_ID getMaxSupportedLanguage(uint16_t version);
+
+		/**
+		 * Get the language ID to use for the title fields.
+		 * @return NDS language ID.
+		 */
+		NDS_Language_ID getLanguageID(void) const;
+
+		/**
+		 * Get the default language code for the multi-string fields.
+		 * @return Language code, e.g. 'en' or 'es'.
+		 */
+		inline uint32_t getDefaultLC(void) const;
 };
 
 /** NintendoDSPrivate **/
@@ -191,6 +210,11 @@ int NintendoDSPrivate::loadIconTitleData(void)
 
 	// Get the address of the icon/title information.
 	const uint32_t icon_offset = le32_to_cpu(romHeader.icon_offset);
+	// Icon must be located after the "secure area".
+	if (icon_offset <= 0x8000) {
+		// No icon/title information.
+		return -ENOENT;
+	}
 
 	// Read the icon/title data.
 	size_t size = this->file->seekAndRead(icon_offset, &nds_icon_title, sizeof(nds_icon_title));
@@ -206,11 +230,11 @@ int NintendoDSPrivate::loadIconTitleData(void)
 		case NDS_ICON_VERSION_ORIGINAL:
 			req_size = NDS_ICON_SIZE_ORIGINAL;
 			break;
-		case NDS_ICON_VERSION_ZH:
-			req_size = NDS_ICON_SIZE_ZH;
+		case NDS_ICON_VERSION_HANS:
+			req_size = NDS_ICON_SIZE_HANS;
 			break;
-		case NDS_ICON_VERSION_ZH_KO:
-			req_size = NDS_ICON_SIZE_ZH_KO;
+		case NDS_ICON_VERSION_HANS_KO:
+			req_size = NDS_ICON_SIZE_HANS_KO;
 			break;
 		case NDS_ICON_VERSION_DSi:
 			req_size = NDS_ICON_SIZE_DSi;
@@ -334,51 +358,89 @@ const rp_image *NintendoDSPrivate::loadIcon(void)
 }
 
 /**
- * Get the title index.
- * The title that most closely matches the
- * host system language will be selected.
- * @return Title index, or -1 on error.
+ * Get the maximum supported language for an icon/title version.
+ * @param version Icon/title version.
+ * @return Maximum supported language.
  */
-int NintendoDSPrivate::getTitleIndex(void) const
+NDS_Language_ID NintendoDSPrivate::getMaxSupportedLanguage(uint16_t version)
+{
+	NDS_Language_ID maxID;
+	if (version >= NDS_ICON_VERSION_HANS_KO) {
+		maxID = NDS_LANG_KOREAN;
+	} else if (version >= NDS_ICON_VERSION_HANS) {
+		maxID = NDS_LANG_CHINESE_SIMP;
+	} else {
+		maxID = NDS_LANG_SPANISH;
+	}
+	return maxID;
+}
+
+/**
+ * Get the language ID to use for the title fields.
+ * @return NDS language ID.
+ */
+NDS_Language_ID NintendoDSPrivate::getLanguageID(void) const
 {
 	if (!nds_icon_title_loaded) {
 		// Attempt to load the icon/title data.
 		if (const_cast<NintendoDSPrivate*>(this)->loadIconTitleData() != 0) {
 			// Error loading the icon/title data.
-			return -1;
+			return (NDS_Language_ID)-1;
 		}
 
 		// Make sure it was actually loaded.
 		if (!nds_icon_title_loaded) {
 			// Icon/title data was not loaded.
-			return -1;
+			return (NDS_Language_ID)-1;
 		}
 	}
 
 	// Version number check is required for ZH and KO.
 	const uint16_t version = le16_to_cpu(nds_icon_title.version);
-	int lang = NintendoLanguage::getNDSLanguage(version);
+	NDS_Language_ID langID = (NDS_Language_ID)NintendoLanguage::getNDSLanguage(version);
 
 	// Check that the field is valid.
-	if (nds_icon_title.title[lang][0] == cpu_to_le16(0)) {
+	if (nds_icon_title.title[langID][0] == cpu_to_le16(0)) {
 		// Not valid. Check English.
 		if (nds_icon_title.title[NDS_LANG_ENGLISH][0] != cpu_to_le16(0)) {
 			// English is valid.
-			lang = NDS_LANG_ENGLISH;
+			langID = NDS_LANG_ENGLISH;
 		} else {
 			// Not valid. Check Japanese.
 			if (nds_icon_title.title[NDS_LANG_JAPANESE][0] != cpu_to_le16(0)) {
 				// Japanese is valid.
-				lang = NDS_LANG_JAPANESE;
+				langID = NDS_LANG_JAPANESE;
 			} else {
 				// Not valid...
-				// TODO: Check other languages?
-				lang = -1;
+				// Default to English anyway.
+				langID = NDS_LANG_ENGLISH;
 			}
 		}
 	}
 
-	return lang;
+	return langID;
+}
+
+/**
+ * Get the default language code for the multi-string fields.
+ * @return Language code, e.g. 'en' or 'es'.
+ */
+inline uint32_t NintendoDSPrivate::getDefaultLC(void) const
+{
+	// Get the system language.
+	// TODO: Verify against the game's region code?
+	NDS_Language_ID langID = getLanguageID();
+
+	// Version number check is required for ZH and KO.
+	const NDS_Language_ID maxID = getMaxSupportedLanguage(
+		le16_to_cpu(nds_icon_title.version));
+	uint32_t lc = NintendoLanguage::getNDSLanguageCode(langID, maxID);
+	if (lc == 0) {
+		// Invalid language code...
+		// Default to English.
+		lc = 'en';
+	}
+	return lc;
 }
 
 /**
@@ -1082,13 +1144,48 @@ int NintendoDS::loadFieldData(void)
 	d->fields->addField_string(C_("RomData", "Title"),
 		latin1_to_utf8(romHeader->title, ARRAY_SIZE(romHeader->title)));
 
-	// Full title.
-	// TODO: Where should this go?
-	int lang = d->getTitleIndex();
-	if (lang >= 0 && lang < ARRAY_SIZE(d->nds_icon_title.title)) {
-		d->fields->addField_string(C_("NintendoDS", "Full Title"),
-			utf16le_to_utf8(d->nds_icon_title.title[lang],
-				ARRAY_SIZE(d->nds_icon_title.title[lang])));
+	if (!d->nds_icon_title_loaded) {
+		// Attempt to load the icon/title data.
+		const_cast<NintendoDSPrivate*>(d)->loadIconTitleData();
+	}
+	if (d->nds_icon_title_loaded) {
+		// Full title: Check if English is valid.
+		// If it is, we'll de-duplicate fields.
+		bool dedupe_titles = (d->nds_icon_title.title[NDS_LANG_ENGLISH][0] != cpu_to_le16(0));
+
+		// Full title field.
+		RomFields::StringMultiMap_t *const pMap_full_title = new RomFields::StringMultiMap_t();
+		const NDS_Language_ID maxID = d->getMaxSupportedLanguage(
+			le16_to_cpu(d->nds_icon_title.version));
+		for (int langID = 0; langID <= maxID; langID++) {
+			if (dedupe_titles && langID != NDS_LANG_ENGLISH) {
+				// Check if the title matches English.
+				// NOTE: Not converting to host-endian first, since
+				// u16_strncmp() checks for equality and for 0.
+				if (!u16_strncmp(d->nds_icon_title.title[langID],
+						d->nds_icon_title.title[NDS_LANG_ENGLISH],
+						ARRAY_SIZE(d->nds_icon_title.title[NDS_LANG_ENGLISH])))
+				{
+					// Full title field matches English.
+					continue;
+				}
+			}
+
+			const uint32_t lc = NintendoLanguage::getNDSLanguageCode(langID, maxID);
+			assert(lc != 0);
+			if (lc == 0)
+				continue;
+
+			if (d->nds_icon_title.title[langID][0] != cpu_to_le16('\0')) {
+				pMap_full_title->insert(std::make_pair(lc,
+					utf16_to_utf8(
+						d->nds_icon_title.title[langID],
+						ARRAY_SIZE(d->nds_icon_title.title[langID]))));
+			}
+		}
+
+		const uint32_t def_lc = d->getDefaultLC();
+		d->fields->addField_string_multi(C_("NintendoDS", "Full Title"), pMap_full_title, def_lc);
 	}
 
 	// Game ID.
