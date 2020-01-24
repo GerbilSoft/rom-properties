@@ -426,12 +426,12 @@ typedef struct PACKED _IMAGE_RESOURCE_DATA_ENTRY {
 #define VS_FFI_STRUCVERSION 0x10000
 #define VS_FFI_FILEFLAGSMASK 0x3F
 typedef enum {
-	VS_FF_DEBUG = 1,
-	VS_FF_PRERELEASE = 2,
-	VS_FF_PATCHED = 4,
-	VS_FF_PRIVATEBUILD = 8,
-	VS_FF_INFOINFERRED = 16,
-	VS_FF_SPECIALBUILD = 32,
+	VS_FF_DEBUG		= 0x01,
+	VS_FF_PRERELEASE	= 0x02,
+	VS_FF_PATCHED		= 0x04,
+	VS_FF_PRIVATEBUILD	= 0x08,
+	VS_FF_INFOINFERRED	= 0x10,
+	VS_FF_SPECIALBUILD	= 0x20,
 } VS_FileFlags;
 
 // updated from: https://source.winehq.org/git/wine.git/blob/7d77d330a5b60be918dbf17d9d9ca357d93bff29:/include/verrsrc.h
