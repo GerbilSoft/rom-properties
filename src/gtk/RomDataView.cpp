@@ -1317,11 +1317,33 @@ rom_data_view_update_string_multi(RomDataView *page, uint32_t user_lc)
 		// - 1: Language code
 		page->lstoreLanguage = gtk_list_store_new(3, PIMGTYPE_GOBJECT_TYPE, G_TYPE_STRING, G_TYPE_UINT);
 
-		// TODO: Multiple icon sizes for high-DPI modes.
-		// For now, only using 16x16.
-		static const unsigned int iconSize = 16;
-		PIMGTYPE flags_16x16 = PIMGTYPE_load_png_from_gresource(
-			"/com/gerbilsoft/rom-properties/flags/flags-16x16.png");
+		// TODO:
+		// - High-DPI scaling on GTK+ earlier than 3.10
+		// - Fractional scaling
+		// - Runtime adjustment via "configure" event
+		// Reference: https://developer.gnome.org/gdk3/stable/gdk3-Windows.html#gdk-window-get-scale-factor
+		unsigned int iconSize = 16;
+#if GTK_CHECK_VERSION(3,10,0)
+# if 0
+		// FIXME: gtk_widget_get_window() doesn't work unless the window is realized.
+		// We might need to initialize the dropdown in the "realize" signal handler.
+		GdkWindow *const gdk_window = gtk_widget_get_window(GTK_WIDGET(page));
+		assert(gdk_window != nullptr);
+		if (gdk_window) {
+			const gint scale_factor = gdk_window_get_scale_factor(gdk_window);
+			if (scale_factor >= 2) {
+				// 2x scaling or higher.
+				// TODO: Larger icon sizes?
+				iconSize = 32;
+			}
+		}
+# endif /* 0 */
+#endif /* GTK_CHECK_VERSION(3,10,0) */
+		char flags_filename[64];
+		snprintf(flags_filename, sizeof(flags_filename),
+			"/com/gerbilsoft/rom-properties/flags/flags-%ux%u.png",
+			iconSize, iconSize);
+		PIMGTYPE flags_spriteSheet = PIMGTYPE_load_png_from_gresource(flags_filename);
 
 		int sel_idx = -1;
 		for (auto iter = set_lc.cbegin(); iter != set_lc.cend(); ++iter) {
@@ -1350,7 +1372,7 @@ rom_data_view_update_string_multi(RomDataView *page, uint32_t user_lc)
 			int col, row;
 			if (!SystemRegion::getFlagPosition(lc, &col, &row)) {
 				// Found a matching icon.
-				PIMGTYPE icon = PIMGTYPE_get_subsurface(flags_16x16, col*iconSize, row*iconSize, iconSize, iconSize);
+				PIMGTYPE icon = PIMGTYPE_get_subsurface(flags_spriteSheet, col*iconSize, row*iconSize, iconSize, iconSize);
 				gtk_list_store_set(page->lstoreLanguage, &gtiter, SM_COL_ICON, icon, -1);
 				PIMGTYPE_destroy(icon);
 			}
@@ -1371,7 +1393,7 @@ rom_data_view_update_string_multi(RomDataView *page, uint32_t user_lc)
 
 		// We're done using the flags sprite sheets,
 		// so unreference them to prevent memory leaks.
-		PIMGTYPE_destroy(flags_16x16);
+		PIMGTYPE_destroy(flags_spriteSheet);
 
 		// Create a VBox for the combobox to reduce its vertical height.
 #if GTK_CHECK_VERSION(3,0,0)
