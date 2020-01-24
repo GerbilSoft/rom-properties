@@ -383,10 +383,8 @@ int GameCubeBNR::loadFieldData(void)
 		return -EIO;
 	}
 
-	// Get the comment.
-	const gcn_banner_comment_t *comment = getComment();
-	if (!comment) {
-		// No comment...
+	if (!d->comments) {
+		// Banner comment data wasn't loaded...
 		return static_cast<int>(d->fields->count());
 	}
 	d->fields->reserve(3);	// Maximum of 3 fields.
@@ -399,8 +397,14 @@ int GameCubeBNR::loadFieldData(void)
 
 	if (d->bannerType == GameCubeBNRPrivate::BANNER_BNR1) {
 		// BNR1: Assuming Shift-JIS with cp1252 fallback.
+		// The language is either English or Japanese, so we're
+		// using RFT_STRING here.
+
 		// TODO: Improve Shift-JIS detection to eliminate the
 		// false positive with Metroid Prime. (GM8E01)
+
+		// Only one banner comment.
+		const gcn_banner_comment_t *const comment = &d->comments[0];
 
 		// Game name.
 		if (comment->gamename_full[0] != '\0') {
@@ -427,30 +431,84 @@ int GameCubeBNR::loadFieldData(void)
 		}
 	} else {
 		// BNR2: Assuming cp1252.
+		// Multiple languages may be present, so we're using
+		// RFT_STRING_MULTI here.
 
-		// Game name.
-		if (comment->gamename_full[0] != '\0') {
-			d->fields->addField_string(game_name_title,
-				cp1252_to_utf8(comment->gamename_full, sizeof(comment->gamename_full)));
-		} else if (comment->gamename[0] != '\0') {
-			d->fields->addField_string(game_name_title,
-				cp1252_to_utf8(comment->gamename, sizeof(comment->gamename)));
+		// Check if English is valid.
+		// If it is, we'll de-duplicate fields.
+		const gcn_banner_comment_t *const comment_en = &d->comments[GCN_PAL_LANG_ENGLISH];
+		bool dedupe_titles = (comment_en->gamename_full[0] != '\0') ||
+		                     (comment_en->gamename[0] != '\0');
+
+		// Fields.
+		RomFields::StringMultiMap_t *const pMap_gamename = new RomFields::StringMultiMap_t();
+		RomFields::StringMultiMap_t *const pMap_company = new RomFields::StringMultiMap_t();
+		RomFields::StringMultiMap_t *const pMap_gamedesc = new RomFields::StringMultiMap_t();
+		for (int langID = 0; langID < GCN_PAL_LANG_MAX; langID++) {
+			const gcn_banner_comment_t *const comment = &d->comments[langID];
+			if (dedupe_titles && langID != GCN_PAL_LANG_ENGLISH) {
+				// Check if the comments match English.
+				if (!strncmp(comment->gamename_full,
+				             comment_en->gamename_full,
+				             ARRAY_SIZE(comment_en->gamename_full)) &&
+				    !strncmp(comment->gamename,
+				             comment_en->gamename,
+				             ARRAY_SIZE(comment_en->gamename)) &&
+				    !strncmp(comment->company_full,
+				             comment_en->company_full,
+				             ARRAY_SIZE(comment_en->company_full)) &&
+				    !strncmp(comment->company,
+				             comment_en->company,
+				             ARRAY_SIZE(comment_en->company)) &&
+				    !strncmp(comment->gamedesc,
+				             comment_en->gamedesc,
+				             ARRAY_SIZE(comment_en->gamedesc)))
+				{
+					// All fields match English.
+					continue;
+				}
+			}
+
+			const uint32_t lc = NintendoLanguage::getGcnPalLanguageCode(langID);
+			assert(lc != 0);
+			if (lc == 0)
+				continue;
+
+			// Game name.
+			if (comment->gamename_full[0] != '\0') {
+				pMap_gamename->insert(std::make_pair(lc,
+					cp1252_to_utf8(comment->gamename_full,
+					ARRAY_SIZE(comment->gamename_full))));
+			} else if (comment->gamename[0] != '\0') {
+				pMap_gamename->insert(std::make_pair(lc,
+					cp1252_to_utf8(comment->gamename,
+					ARRAY_SIZE(comment->gamename))));
+			}
+
+			// Company.
+			if (comment->company_full[0] != '\0') {
+				pMap_company->insert(std::make_pair(lc,
+					cp1252_to_utf8(comment->company_full,
+					ARRAY_SIZE(comment->company_full))));
+			} else if (comment->company[0] != '\0') {
+				pMap_company->insert(std::make_pair(lc,
+					cp1252_to_utf8(comment->company,
+					ARRAY_SIZE(comment->company))));
+			}
+
+			// Game description.
+			if (comment->gamedesc[0] != '\0') {
+				pMap_gamedesc->insert(std::make_pair(lc,
+					cp1252_to_utf8(comment->gamedesc,
+					ARRAY_SIZE(comment->gamedesc))));
+			}
 		}
 
-		// Company.
-		if (comment->company_full[0] != '\0') {
-			d->fields->addField_string(company_title,
-				cp1252_to_utf8(comment->company_full, sizeof(comment->company_full)));
-		} else if (comment->company[0] != '\0') {
-			d->fields->addField_string(company_title,
-				cp1252_to_utf8(comment->company, sizeof(comment->company)));
-		}
-
-		// Game description.
-		if (comment->gamedesc[0] != '\0') {
-			d->fields->addField_string(description_title,
-				cp1252_to_utf8(comment->gamedesc, sizeof(comment->gamedesc)));
-		}
+		const uint32_t def_lc = NintendoLanguage::getGcnPalLanguageCode(
+			NintendoLanguage::getGcnPalLanguage());
+		d->fields->addField_string_multi(game_name_title, pMap_gamename, def_lc);
+		d->fields->addField_string_multi(company_title, pMap_company, def_lc);
+		d->fields->addField_string_multi(description_title, pMap_gamedesc, def_lc);
 	}
 
 	// Finished reading the field data.

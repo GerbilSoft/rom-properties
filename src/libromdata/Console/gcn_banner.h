@@ -74,6 +74,8 @@ typedef enum {
 	GCN_PAL_LANG_SPANISH	= 3,
 	GCN_PAL_LANG_ITALIAN	= 4,
 	GCN_PAL_LANG_DUTCH	= 5,
+
+	GCN_PAL_LANG_MAX
 } GCN_PAL_Language_ID;
 
 #pragma pack()

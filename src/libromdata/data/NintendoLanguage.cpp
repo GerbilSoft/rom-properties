@@ -55,6 +55,32 @@ int NintendoLanguage::getGcnPalLanguage(void)
 }
 
 /**
+ * Convert a GameCube PAL language ID to a language code.
+ * @param langID GameCube PAL language ID.
+ * @return Language code, or 0 on error.
+ */
+uint32_t NintendoLanguage::getGcnPalLanguageCode(int langID)
+{
+	// GCN_PAL_Language_ID system language code mapping.
+	static const uint32_t langID_to_lc[GCN_PAL_LANG_MAX] = {
+		'en',	// GCN_PAL_LANG_ENGLISH
+		'de',	// GCN_PAL_LANG_GERMAN
+		'fr',	// GCN_PAL_LANG_FRENCH
+		'es',	// GCN_PAL_LANG_SPANISH
+		'it',	// GCN_PAL_LANG_ITALIAN
+		'nl',	// GCN_PAL_LANG_DUTCH
+	};
+
+	assert(langID >= 0);
+	if (langID < 0 || langID >= ARRAY_SIZE(langID_to_lc)) {
+		// Out of range.
+		return 0;
+	}
+
+	return langID_to_lc[langID];
+}
+
+/**
  * Determine the system language for Wii.
  * @return Wii_Language_ID. (If unknown, defaults to WII_LANG_ENGLISH.)
  */

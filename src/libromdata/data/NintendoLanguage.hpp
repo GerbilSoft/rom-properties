@@ -32,6 +32,13 @@ class NintendoLanguage
 		static int getGcnPalLanguage(void);
 
 		/**
+		 * Convert a GameCube PAL language ID to a language code.
+		 * @param langID GameCube PAL language ID.
+		 * @return Language code, or 0 on error.
+		 */
+		static uint32_t getGcnPalLanguageCode(int langID);
+
+		/**
 		 * Determine the system language for Wii.
 		 * @return Wii_Language_ID. (If unknown, defaults to WII_LANG_ENGLISH.)
 		 */
