@@ -551,44 +551,47 @@ const char *SNES::systemName(unsigned int type) const
 			return nullptr;
 	}
 
-	bool foundRegion = false;
-	switch (d->romHeader.snes.destination_code) {
-		case SNES_DEST_JAPAN:
-			idx |= (0 << 2);
-			foundRegion = true;
-			break;
-		case SNES_DEST_SOUTH_KOREA:
-			idx |= (1 << 2);
-			foundRegion = true;
-			break;
-
-		case SNES_DEST_ALL:
-		case SNES_DEST_OTHER_X:
-		case SNES_DEST_OTHER_Y:
-		case SNES_DEST_OTHER_Z:
-			// Use the system locale.
-			break;
-
-		default: 
-			if (d->romHeader.snes.destination_code <= SNES_DEST_AUSTRALIA) {
-				idx |= (2 << 2);
-				foundRegion = true;
-			}
-			break;
-	}
-
-	if (!foundRegion) {
-		// Check the system locale.
-		switch (SystemRegion::getCountryCode()) {
-			case 'JP':
+	if ((type & SYSNAME_REGION_MASK) == SYSNAME_REGION_ROM_LOCAL) {
+		// Localized region name is requested.
+		bool foundRegion = false;
+		switch (d->romHeader.snes.destination_code) {
+			case SNES_DEST_JAPAN:
 				idx |= (0 << 2);
+				foundRegion = true;
 				break;
-			case 'KR':
+			case SNES_DEST_SOUTH_KOREA:
 				idx |= (1 << 2);
+				foundRegion = true;
 				break;
+
+			case SNES_DEST_ALL:
+			case SNES_DEST_OTHER_X:
+			case SNES_DEST_OTHER_Y:
+			case SNES_DEST_OTHER_Z:
+				// Use the system locale.
+				break;
+
 			default:
-				idx |= (2 << 2);
+				if (d->romHeader.snes.destination_code <= SNES_DEST_AUSTRALIA) {
+					idx |= (2 << 2);
+					foundRegion = true;
+				}
 				break;
+		}
+
+		if (!foundRegion) {
+			// Check the system locale.
+			switch (SystemRegion::getCountryCode()) {
+				case 'JP':
+					idx |= (0 << 2);
+					break;
+				case 'KR':
+					idx |= (1 << 2);
+					break;
+				default:
+					idx |= (2 << 2);
+					break;
+			}
 		}
 	}
 

@@ -1667,11 +1667,15 @@ const char *Nintendo3DS::systemName(unsigned int type) const
 		type |= (1 << 2);
 	}
 
-	// SMDH contains a region code bitfield.
-	uint32_t smdhRegion = const_cast<Nintendo3DSPrivate*>(d)->getSMDHRegionCode();
-	if (smdhRegion == N3DS_REGION_CHINA) {
-		// Chinese exclusive.
-		type |= (1 << 3);
+	// "iQue" is only used if the localized system name is requested
+	// *and* the ROM's region code is China only.
+	if ((type & SYSNAME_REGION_MASK) == SYSNAME_REGION_ROM_LOCAL) {
+		// SMDH contains a region code bitfield.
+		uint32_t smdhRegion = const_cast<Nintendo3DSPrivate*>(d)->getSMDHRegionCode();
+		if (smdhRegion == N3DS_REGION_CHINA) {
+			// Chinese exclusive.
+			type |= (1 << 3);
+		}
 	}
 
 	// Bits 0-1: Type. (long, short, abbreviation)

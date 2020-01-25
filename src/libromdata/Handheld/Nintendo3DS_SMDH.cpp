@@ -304,18 +304,30 @@ const char *Nintendo3DS_SMDH::systemName(unsigned int type) const
 	if (!d->isValid || !isSystemNameTypeValid(type))
 		return nullptr;
 
-	// Nintendo 3DS has the same name worldwide, so we can
-	// ignore the region selection.
 	static_assert(SYSNAME_TYPE_MASK == 3,
 		"Nintendo3DS_SMDH::systemName() array index optimization needs to be updated.");
 
+	unsigned int idx = (type & SYSNAME_TYPE_MASK);
+
+	// "iQue" is only used if the localized system name is requested
+	// *and* the ROM's region code is China only.
+	if ((type & SYSNAME_REGION_MASK) == SYSNAME_REGION_ROM_LOCAL) {
+		// SMDH contains a region code bitfield.
+		if (d->smdh.header.settings.region_code == cpu_to_le32(N3DS_REGION_CHINA)) {
+			// Chinese exclusive.
+			idx |= (1 << 2);
+		}
+	}
+
 	// Bits 0-1: Type. (long, short, abbreviation)
-	// TODO: SMDH-specific, or just use Nintendo 3DS?
-	static const char *const sysNames[4] = {
-		"Nintendo 3DS", "Nintendo 3DS", "3DS", nullptr
+	// Bit 2: iQue
+	// TODO: Is it possible to identify "*New*" Nintendo 3DS" from just the SMDH?
+	static const char *const sysNames[4*4] = {
+		"Nintendo 3DS", "Nintendo 3DS", "3DS", nullptr,
+		"iQue 3DS", "iQue 3DS", "3DS", nullptr,
 	};
 
-	return sysNames[type & SYSNAME_TYPE_MASK];
+	return sysNames[idx];
 }
 
 /**
@@ -448,7 +460,7 @@ int Nintendo3DS_SMDH::loadFieldData(void)
 	}
 
 	// Maximum of 5 fields, plus 3 for iQue 3DS.
-	const bool is_iQue = (le32_to_cpu(smdhHeader->settings.region_code) == N3DS_REGION_CHINA);
+	const bool is_iQue = (smdhHeader->settings.region_code == cpu_to_le32(N3DS_REGION_CHINA));
 	d->fields->reserve(is_iQue ? 8 : 5);
 	d->fields->setTabName(0, "SMDH");
 

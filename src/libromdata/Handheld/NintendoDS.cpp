@@ -888,6 +888,8 @@ const char *NintendoDS::systemName(unsigned int type) const
 		"iQue DSi", "iQue DSi", "DSi", nullptr
 	};
 
+	// "iQue" is only used if the localized system name is requested
+	// *and* the ROM's region code is China only.
 	unsigned int idx = (type & SYSNAME_TYPE_MASK);
 	if (d->romType == NintendoDSPrivate::ROM_DSi_ONLY) {
 		// DSi-exclusive game.

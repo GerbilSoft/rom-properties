@@ -153,7 +153,7 @@ const char *Nintendo3DSFirm::systemName(unsigned int type) const
 		"Nintendo3DSFirm::systemName() array index optimization needs to be updated.");
 
 	// Bits 0-1: Type. (long, short, abbreviation)
-	// TODO: *New* Nintendo 3DS for N3DS-exclusive titles.
+	// TODO: *New* Nintendo 3DS for N3DS-exclusive titles; iQue for China.
 	static const char *const sysNames[4] = {
 		"Nintendo 3DS", "Nintendo 3DS", "3DS", nullptr
 	};
