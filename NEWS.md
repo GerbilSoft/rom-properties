@@ -112,6 +112,7 @@
   * MegaDrive: Do a quick check of the 32X security code to verify that a
     32X ROM is in fact for 32X.
   * Renamed the KDE5 frontend to KF5 to match upstream branding guidelines.
+  * rpcli: Always use the localized system name that matches the ROM image.
 
 ## v1.4.3 (released 2019/09/16)
 

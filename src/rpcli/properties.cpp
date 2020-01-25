@@ -970,7 +970,7 @@ ROMOutput::ROMOutput(const RomData *romdata, uint32_t lc)
 	, lc(lc) { }
 std::ostream& operator<<(std::ostream& os, const ROMOutput& fo) {
 	auto romdata = fo.romdata;
-	const char *const systemName = romdata->systemName(RomData::SYSNAME_TYPE_LONG | RomData::SYSNAME_REGION_GENERIC);
+	const char *const systemName = romdata->systemName(RomData::SYSNAME_TYPE_LONG | RomData::SYSNAME_REGION_ROM_LOCAL);
 	const char *const fileType = romdata->fileType_string();
 	assert(systemName != nullptr);
 	assert(fileType != nullptr);
@@ -1034,7 +1034,7 @@ std::ostream& operator<<(std::ostream& os, const JSONROMOutput& fo) {
 	auto romdata = fo.romdata;
 	assert(romdata && romdata->isValid());
 
-	const char *const systemName = romdata->systemName(RomData::SYSNAME_TYPE_LONG | RomData::SYSNAME_REGION_GENERIC);
+	const char *const systemName = romdata->systemName(RomData::SYSNAME_TYPE_LONG | RomData::SYSNAME_REGION_ROM_LOCAL);
 	const char *const fileType = romdata->fileType_string();
 	assert(systemName != nullptr);
 	assert(fileType != nullptr);
