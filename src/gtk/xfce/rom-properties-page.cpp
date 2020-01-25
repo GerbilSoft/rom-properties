@@ -73,9 +73,8 @@ struct _RomPropertiesPage {
 # endif
 #endif /* !GLIB_CHECK_VERSION(2,59,1) */
 
-// FIXME: THUNARX_DEFINE_TYPE() doesn't work in C++ mode with gcc-6.2
+// NOTE: THUNARX_DEFINE_TYPE() doesn't work in C++ mode with gcc-6.2
 // due to an implicit int to GTypeFlags conversion.
-//THUNARX_DEFINE_TYPE(RomPropertiesPage, rom_properties_page, THUNARX_TYPE_PROPERTY_PAGE);
 THUNARX_DEFINE_TYPE_EXTENDED(RomPropertiesPage, rom_properties_page,
 	THUNARX_TYPE_PROPERTY_PAGE, static_cast<GTypeFlags>(0), {});
 

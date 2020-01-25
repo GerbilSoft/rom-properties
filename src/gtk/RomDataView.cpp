@@ -192,9 +192,8 @@ struct _RomDataView {
 	GtkListStore	*lstoreLanguage;
 };
 
-// FIXME: G_DEFINE_TYPE() doesn't work in C++ mode with gcc-6.2
+// NOTE: G_DEFINE_TYPE() doesn't work in C++ mode with gcc-6.2
 // due to an implicit int to GTypeFlags conversion.
-//G_DEFINE_TYPE(RomDataView, rom_data_view, GTK_TYPE_SUPER);
 G_DEFINE_TYPE_EXTENDED(RomDataView, rom_data_view,
 	GTK_TYPE_SUPER, static_cast<GTypeFlags>(0), {});
 

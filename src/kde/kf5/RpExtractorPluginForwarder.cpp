@@ -83,7 +83,7 @@ RpExtractorPluginForwarder::~RpExtractorPluginForwarder()
 {
 	delete fwd_plugin;
 
-	// FIXME: What does dlclose(nullptr) do?
+	// NOTE: dlclose(nullptr) may crash, so we have to check for nullptr.
 	if (hRpKdeSo) {
 		dlclose(hRpKdeSo);
 	}

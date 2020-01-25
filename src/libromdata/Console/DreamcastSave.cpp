@@ -450,8 +450,6 @@ const rp_image *DreamcastSavePrivate::loadIcon(void)
 
 	if (this->saveType == SAVE_TYPE_DCI) {
 		// Apply 32-bit byteswapping to the palette.
-		// TODO: Use an IRpFile subclass that automatically byteswaps
-		// instead of doing manual byteswapping here?
 		__byte_swap_32_array(buf.palette.u32, sizeof(buf.palette.u32));
 	}
 
@@ -475,8 +473,6 @@ const rp_image *DreamcastSavePrivate::loadIcon(void)
 
 		if (this->saveType == SAVE_TYPE_DCI) {
 			// Apply 32-bit byteswapping to the palette.
-			// TODO: Use an IRpFile subclass that automatically byteswaps
-			// instead of doing manual byteswapping here?
 			__byte_swap_32_array(buf.icon_color.u32, sizeof(buf.icon_color.u32));
 		}
 
@@ -557,8 +553,6 @@ const rp_image *DreamcastSavePrivate::loadIcon_ICONDATA_VMS(void)
 
 		if (this->saveType == SAVE_TYPE_DCI) {
 			// Apply 32-bit byteswapping to the palette.
-			// TODO: Use an IRpFile subclass that automatically byteswaps
-			// instead of doing manual byteswapping here?
 			__byte_swap_32_array(buf.palette.u32, sizeof(buf.palette.u32));
 		}
 
@@ -571,8 +565,6 @@ const rp_image *DreamcastSavePrivate::loadIcon_ICONDATA_VMS(void)
 
 		if (this->saveType == SAVE_TYPE_DCI) {
 			// Apply 32-bit byteswapping to the icon data.
-			// TODO: Use an IRpFile subclass that automatically byteswaps
-			// instead of doing manual byteswapping here?
 			__byte_swap_32_array(buf.icon_color.u32, sizeof(buf.icon_color.u32));
 		}
 
@@ -600,8 +592,6 @@ const rp_image *DreamcastSavePrivate::loadIcon_ICONDATA_VMS(void)
 
 	if (this->saveType == SAVE_TYPE_DCI) {
 		// Apply 32-bit byteswapping to the icon data.
-		// TODO: Use an IRpFile subclass that automatically byteswaps
-		// instead of doing manual byteswapping here?
 		__byte_swap_32_array(buf.icon_mono.u32, sizeof(buf.icon_mono.u32));
 	}
 
@@ -679,8 +669,6 @@ const rp_image *DreamcastSavePrivate::loadBanner(void)
 
 	if (this->saveType == SAVE_TYPE_DCI) {
 		// Apply 32-bit byteswapping to the eyecatch data.
-		// TODO: Use an IRpFile subclass that automatically byteswaps
-		// instead of doing manual byteswapping here?
 		__byte_swap_32_array(reinterpret_cast<uint32_t*>(data.get()), eyecatch_size);
 	}
 

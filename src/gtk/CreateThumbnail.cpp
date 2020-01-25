@@ -448,8 +448,9 @@ G_MODULE_EXPORT int rp_create_thumbnail(const char *source_file, const char *out
 	}
 
 	// MIME type.
+	// source_uri is only used for the file extension.
 	// TODO: Get this directly from the D-Bus call or similar?
-	// FIXME: Handle URIs?
+	// TODO: Get the ~4K header data read from RomDataFactory and use it here?
 	content_type = g_content_type_guess(source_uri, nullptr, 0, nullptr);
 	if (content_type) {
 		gchar *const mime_type = g_content_type_get_mime_type(content_type);

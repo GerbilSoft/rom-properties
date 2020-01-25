@@ -434,7 +434,6 @@ rp_thumbnailer_queue(OrgFreedesktopThumbnailsSpecializedThumbnailer1 *skeleton,
 	}
 
 	// Queue the URI for processing.
-	// TODO: Handle 'flavor', 'urgent', etc.
 	guint handle = ++thumbnailer->last_handle;
 	if (G_UNLIKELY(handle == 0)) {
 		// Overflow. Increment again so we
@@ -449,11 +448,11 @@ rp_thumbnailer_queue(OrgFreedesktopThumbnailsSpecializedThumbnailer1 *skeleton,
 	req->handle = handle;
 	req->large = flavor && (g_ascii_strcasecmp(flavor, "large") == 0);
 	req->urgent = urgent;
+	// TODO Put 'urgent' requests at the front of the queue?
 	g_queue_push_tail(thumbnailer->request_queue, req);
 
 	// Make sure the idle process is started.
-	// TODO: Make it multi-threaded?
-	// FIXME: Atomic compare and/or mutex if multi-threaded.
+	// TODO: Make it multi-threaded? (needs atomic compare and/or mutex...)
 	if (thumbnailer->idle_process == 0) {
 		thumbnailer->idle_process = g_idle_add((GSourceFunc)rp_thumbnailer_process, thumbnailer);
 	}

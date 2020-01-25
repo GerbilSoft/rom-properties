@@ -980,7 +980,7 @@ const AmiiboDataPrivate::char_id_t AmiiboDataPrivate::char_ids[] = {
 	AMIIBO_CHAR_ID_ONE(0x04B4, "Spike"),
 	AMIIBO_CHAR_ID_ONE(0x04B6, "Hornsby"),
 	AMIIBO_CHAR_ID_ONE(0x04B9, "Merengue"),
-	// FIXME: MSVC 2010 interprets \xA9e as 2718 because
+	// NOTE: MSVC 2010 interprets \xA9e as 2718 because
 	// it's too dumb to realize \x takes *two* nybbles.
 	AMIIBO_CHAR_ID_ONE(0x04BA, "Ren\303\251e"),
 	AMIIBO_CHAR_ID_ONE(0x04C5, "Vesta"),
@@ -1307,12 +1307,12 @@ const AmiiboDataPrivate::amiibo_id_t AmiiboDataPrivate::amiibo_ids[] = {
 	{ 25, 3, "Shulk"},		// 0x002B
 	{ 34, 4, "Ness"},		// 0x002C
 	{ 45, 6, "Mr. Game & Watch"},	// 0x002D
-	{ 54, 9, "R.O.B. (Famicom)"},	// 0x002E (FIXME: Localized release numbers.)
+	{ 54, 9, "R.O.B. (Famicom)"},	// 0x002E (TODO: Localized release numbers.)
 	{ 47, 6, "Duck Hunt"},		// 0x002F
 	{ 26, 3, "Sonic"},		// 0x0030
 	{ 27, 3, "Mega Man"},		// 0x0031
 	{ 35, 4, "Pac-Man"},		// 0x0032
-	{ 46, 6, "R.O.B. (NES)"},	// 0x0033 (FIXME: Localized release numbers.)
+	{ 46, 6, "R.O.B. (NES)"},	// 0x0033 (TODO: Localized release numbers.)
 
 	// SMB: Wave 1 [0x0034-0x0039]
 	{  1, 1, "Mario"},		// 0x0034
@@ -1368,7 +1368,7 @@ const AmiiboDataPrivate::amiibo_id_t AmiiboDataPrivate::amiibo_ids[] = {
 	{ 23, 1, "Cheri"},		// 0x005A
 	{ 24, 1, "Kyle"},		// 0x005B
 	{ 25, 1, "Al"},			// 0x005C
-	// FIXME: MSVC 2010 interprets \xA9e as 2718 because
+	// NOTE: MSVC 2010 interprets \xA9e as 2718 because
 	// it's too dumb to realize \x takes *two* nybbles.
 	{ 26, 1, "Ren\303\251e"},	// 0x005D
 	{ 27, 1, "Lopez"},		// 0x005E
@@ -2347,7 +2347,7 @@ const char *AmiiboData::lookup_char_name(uint32_t char_id)
  */
 const char *AmiiboData::lookup_amiibo_series_name(uint32_t amiibo_id)
 {
-	// FIXME: gcc-6.3.0 is trying to interpret 0x035E+1 as a
+	// NOTE: gcc-6.3.0 is trying to interpret 0x035E+1 as a
 	// floating-point hex constant:
 	// error: unable to find numeric literal operator ‘operator""+1’
 	static_assert(ARRAY_SIZE(AmiiboDataPrivate::amiibo_ids) == ((0x0399)+1),

@@ -102,12 +102,12 @@ ASSERT_STRUCT(GCN_Boot_Block, 32);
  */
 #define GCN_Boot_Info_ADDRESS 0x440
 typedef struct PACKED _GCN_Boot_Info {
-	uint32_t debug_mon_size;	// Debug monitor size. [FIXME: Listed as signed?]
-	uint32_t sim_mem_size;		// Simulated memory size. (bytes) [FIXME: Listed as signed?]
+	uint32_t debug_mon_size;	// Debug monitor size.
+	uint32_t sim_mem_size;		// Simulated memory size.
 	uint32_t arg_offset;		// Command line arguments.
 	uint32_t debug_flag;		// Debug flag. (set to 3 if using CodeWarrior on GDEV)
 	uint32_t trk_location;		// Target resident kernel location.
-	uint32_t trk_size;		// Size of TRK. [FIXME: Listed as signed?]
+	uint32_t trk_size;		// Size of TRK.
 	uint32_t region_code;		// Region code. (See GCN_Region_Code.)
 	uint32_t reserved1[3];
 	uint32_t dol_limit;		// Maximum total size of DOL text/data sections. (0 == unlimited)

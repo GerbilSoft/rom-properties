@@ -82,7 +82,7 @@ struct _RomPropertiesProvider {
 # endif
 #endif /* !GLIB_CHECK_VERSION(2,59,1) */
 
-// FIXME: G_DEFINE_DYNAMIC_TYPE() doesn't work in C++ mode with gcc-6.2
+// NOTE: G_DEFINE_TYPE() doesn't work in C++ mode with gcc-6.2
 // due to an implicit int to GTypeFlags conversion.
 G_DEFINE_DYNAMIC_TYPE_EXTENDED(RomPropertiesProvider, rom_properties_provider,
 	G_TYPE_OBJECT, 0,

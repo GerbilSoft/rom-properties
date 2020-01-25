@@ -559,7 +559,6 @@ const char *XboxDisc::systemName(unsigned int type) const
 
 	// XboxDisc has the same name worldwide, so we can
 	// ignore the region selection.
-	// TODO: Identify the OS, or list that in the fields instead?
 	static_assert(SYSNAME_TYPE_MASK == 3,
 		"XboxDisc::systemName() array index optimization needs to be updated.");
 

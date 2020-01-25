@@ -27,7 +27,7 @@ namespace LibRomData {
  */
 void SuperMagicDrive::decodeBlock_sse2(uint8_t *RESTRICT pDest, const uint8_t *RESTRICT pSrc)
 {
-	// FIXME: MSVC 2017 generates `movdqu` instead of `movdqa`.
+	// NOTE: MSVC 2017 generates `movdqu` instead of `movdqa`.
 	// https://developercommunity.visualstudio.com/content/problem/48123/perf-regression-movdqu-instructions-are-generated.html
 	ASSERT_ALIGNMENT(16, pDest);
 	ASSERT_ALIGNMENT(16, pSrc);

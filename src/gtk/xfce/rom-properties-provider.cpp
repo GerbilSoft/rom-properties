@@ -43,7 +43,7 @@ struct _RomPropertiesProvider {
 # endif
 #endif /* !GLIB_CHECK_VERSION(2,59,1) */
 
-// FIXME: THUNARX_DEFINE_TYPE_WITH_CODE() doesn't work in C++ mode with gcc-6.2
+// NOTE: THUNARX_DEFINE_TYPE_WITH_CODE() doesn't work in C++ mode with gcc-6.2
 // due to an implicit int to GTypeFlags conversion.
 THUNARX_DEFINE_TYPE_EXTENDED(RomPropertiesProvider, rom_properties_provider,
 	G_TYPE_OBJECT, static_cast<GTypeFlags>(0),
