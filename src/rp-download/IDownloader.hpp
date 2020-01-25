@@ -110,7 +110,7 @@ class IDownloader
 	public:
 		/**
 		 * Download the file.
-		 * @return 0 on success; non-zero on error. [TODO: HTTP error codes?]
+		 * @return 0 on success; negative POSIX error code, positive HTTP status code on error.
 		 */
 		virtual int download(void) = 0;
 

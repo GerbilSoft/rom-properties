@@ -44,7 +44,7 @@ WinInetDownloader::WinInetDownloader(const tstring &url)
 
 /**
  * Download the file.
- * @return 0 on success; non-zero on error. [TODO: HTTP error codes?]
+ * @return 0 on success; negative POSIX error code, positive HTTP status code on error.
  */
 int WinInetDownloader::download(void)
 {
@@ -87,7 +87,7 @@ int WinInetDownloader::download(void)
 		reinterpret_cast<DWORD_PTR>(this));	// dwContext
 	if (!hURL) {
 		// Error opening the URL.
-		// TODO: InternetGetLastResponseInfo()
+		// TODO: Is InternetGetLastResponseInfo() usable here?
 		int err = w32err_to_posix(GetLastError());
 		if (err == 0) {
 			err = EIO;
@@ -96,9 +96,32 @@ int WinInetDownloader::download(void)
 		return -err;
 	}
 
+	// Check if we got an HTTP response code.
+	DWORD dwHttpStatusCode = 0;
+	DWORD dwBufferLength = static_cast<DWORD>(sizeof(dwHttpStatusCode));
+	if (HttpQueryInfo(hURL,			// hRequest
+		HTTP_QUERY_STATUS_CODE |
+		HTTP_QUERY_FLAG_NUMBER,		// dwInfoLevel
+		&dwHttpStatusCode,		// lpBuffer
+		&dwBufferLength,		// lpdwBufferLength
+		0))				// lpdwIndex
+	{
+		// Received DWORD.
+		if (dwBufferLength == static_cast<DWORD>(sizeof(dwHttpStatusCode))) {
+			// Length is valid.
+			// We're only accepting HTTP 200.
+			if (dwHttpStatusCode != 200) {
+				// Unexpected status code.
+				InternetCloseHandle(hURL);
+				InternetCloseHandle(hConnection);
+				return static_cast<int>(dwHttpStatusCode);
+			}
+		}
+	}
+
 	// Get mtime if it's available.
 	SYSTEMTIME st_mtime;
-	DWORD dwBufferLength = static_cast<DWORD>(sizeof(st_mtime));
+	dwBufferLength = static_cast<DWORD>(sizeof(st_mtime));
 	if (HttpQueryInfo(hURL,			// hRequest
 		HTTP_QUERY_LAST_MODIFIED | 
 		HTTP_QUERY_FLAG_SYSTEMTIME,	// dwInfoLevel

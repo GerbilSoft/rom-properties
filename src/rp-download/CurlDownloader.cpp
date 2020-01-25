@@ -159,7 +159,7 @@ size_t CurlDownloader::parse_header(char *ptr, size_t size, size_t nitems, void 
 
 /**
  * Download the file.
- * @return 0 on success; non-zero on error. [TODO: HTTP error codes?]
+ * @return 0 on success; negative POSIX error code, positive HTTP status code on error.
  */
 int CurlDownloader::download(void)
 {
@@ -176,7 +176,7 @@ int CurlDownloader::download(void)
 	CURL *curl = curl_easy_init();
 	if (!curl) {
 		// Could not initialize cURL.
-		return -1;	// TODO: Better error?
+		return -ENOMEM;	// TODO: Better error?
 	}
 
 	// Proxy settings should be set by the calling application
@@ -218,13 +218,21 @@ int CurlDownloader::download(void)
 	curl_easy_cleanup(curl);
 	if (res != CURLE_OK) {
 		// Error downloading the file.
-		return -2;
+		// Check if we have an HTTP response code.
+		// NOTE: GameTDB sometimes returns nothing instead of 404...
+		long response_code = 0;
+		curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &response_code);
+		if (response_code <= 0) {
+			// No HTTP response code.
+			return -EIO;
+		}
+		return (int)response_code;
 	}
 
 	// Check if we have data.
 	if (m_data.empty()) {
 		// No data.
-		return -3;
+		return -EIO;	// TODO: Better error?
 	}
 
 	// Data retrieved.
