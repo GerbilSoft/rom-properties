@@ -29,6 +29,7 @@
 #endif /* !S_ISTYPE */
 
 // C includes. (C++ namespace)
+#include <cassert>
 #include <cerrno>
 #include <cstdarg>
 #include <cstdio>
@@ -107,26 +108,17 @@ show_error(const TCHAR *format, ...)
 }
 
 /**
- * Check if the file exists.
- * @param filename Filename.
- * @return True if the file exists; false if not.
+ * Get a file's size and time.
+ * @param filename	[in] Filename.
+ * @param pFileSize	[out] File size.
+ * @param pMtime	[out] Modification time.
+ * @return 0 on success; negative POSIX error code on error.
  */
-static bool check_file_exists(const TCHAR *filename)
+static int get_file_info(const TCHAR *filename, int64_t *pFileSize, time_t *pMtime)
 {
-#ifdef _WIN32
-	return (GetFileAttributes(filename) != INVALID_FILE_ATTRIBUTES);
-#else /* !_WIN32 */
-	return (access(filename, F_OK) == 0);
-#endif /* _WIN32 */
-}
+	assert(pFileSize != nullptr);
+	assert(pMtime != nullptr);
 
-/**
- * Get a file's size.
- * @param filename Filename.
- * @return File size on success; negative POSIX error code on error.
- */
-static int64_t get_file_size(const TCHAR *filename)
-{
 #ifdef _WIN32
 	struct _stati64 sb;
 	int ret = ::_tstati64(filename, &sb);
@@ -151,8 +143,10 @@ static int64_t get_file_size(const TCHAR *filename)
 		return -EISDIR;
 	}
 
-	// Return the file size.
-	return sb.st_size;
+	// Return the file size and mtime.
+	*pFileSize = sb.st_size;
+	*pMtime = sb.st_mtime;
+	return 0;
 }
 
 /**
@@ -385,45 +379,60 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 		cache_filename.insert(0, _T("\\\\?\\"));
 	}
 
-	// Does the cache file already exist?
-	// TODO: Open the file to prevent TOCTOU issues?
-	if (check_file_exists(cache_filename.c_str())) {
+	// Get the cache file information.
+	int64_t filesize;
+	time_t filemtime;
+	int ret = get_file_info(cache_filename.c_str(), &filesize, &filemtime);
+	if (ret == 0) {
 		// Check if the file is 0 bytes.
-		// If it is, we'll redownload it.
-		// (TODO: Implement mtime check here or no?)
-		int64_t filesize = get_file_size(cache_filename.c_str());
-		if (filesize < 0) {
-			// Error obtaining the file size.
-			if (verbose) {
-				show_error(_T("Error checking cache file: %s"), _tcserror((int)-filesize));
+		// TODO: How should we handle errors?
+		if (filesize == 0) {
+			// File is 0 bytes, which indicates it didn't exist
+			// on the server. If the file is older than a week,
+			// try to redownload it.
+			// TODO: Configurable time.
+			const time_t systime = time(nullptr);
+			if ((systime - filemtime) < (86400*7)) {
+				// Less than a week old.
+				if (verbose) {
+					show_error(_T("Negative cache file for '%s' has not expired; not redownloading."), cache_key);
+				}
+				return EXIT_FAILURE;
 			}
-			return EXIT_FAILURE;
-		}
 
-		if (filesize > 0) {
-			// Filesize is non-zero. The file doesn't need to be downloaded.
+			// More than a week old.
+			// Delete the cache file and redownload it.
+			// Delete the file and try to download it again.
+			if (_tremove(cache_filename.c_str()) != 0) {
+				if (verbose) {
+					show_error(_T("Error deleting negative cache file for '%s': %s"), cache_key, _tcserror(errno));
+				}
+				return EXIT_FAILURE;
+			}
+		} else if (filesize > 0) {
+			// File is larger than 0 bytes, which indicates
+			// it was previously cached successfully
 			if (verbose) {
 				show_error(_T("Cache file for '%s' is already downloaded."), cache_key);
 			}
 			return EXIT_SUCCESS;
 		}
-
-		// Delete the file and try to download it again.
-		if (_tremove(cache_filename.c_str()) != 0) {
-			if (verbose) {
-				show_error(_T("Error deleting 0-byte cache file: %s"), _tcserror(errno));
-			}
-			return EXIT_FAILURE;
-		}
-	} else {
+	} else if (ret == -ENOENT) {
+		// File not found. We'll need to download it.
 		// Make sure the path structure exists.
 		int ret = rmkdir(cache_filename.c_str());
 		if (ret != 0) {
 			if (verbose) {
-				show_error(_T("Error creating directory structure: %s"), _tcserror(errno));
+				show_error(_T("Error creating directory structure: %s"), _tcserror(-ret));
 			}
 			return EXIT_FAILURE;
 		}
+	} else {
+		// Other error.
+		if (verbose) {
+			show_error(_T("Error checking cache file for '%s': %s"), cache_key, _tcserror(-ret));
+		}
+		return EXIT_FAILURE;
 	}
 
 	// Attempt to download the file.
@@ -434,29 +443,8 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 	unique_ptr<IDownloader> m_downloader(new CurlDownloader());
 #endif /* _WIN32 */
 
-	// TODO: Configure this somewhere?
-	m_downloader->setMaxSize(4*1024*1024);
-
-	m_downloader->setUrl(full_url);
-	int ret = m_downloader->download();
-	if (ret != 0) {
-		// Error downloading the file.
-		// TODO: HTTP error, cURL error, etc.
-		if (verbose) {
-			show_error(_T("Error downloading file: %d"), ret);
-		}
-		return EXIT_FAILURE;
-	}
-
-	if (m_downloader->dataSize() <= 0) {
-		// No data downloaded...
-		if (verbose) {
-			show_error(_T("Error downloading file: 0 bytes received"));
-		}
-		return EXIT_FAILURE;
-	}
-
-	// Write the file to the cache.
+	// Open the cache file now so we can use it as a negative hit
+	// if the download fails.
 	FILE *f_out = _tfopen(cache_filename.c_str(), _T("wb"));
 	if (!f_out) {
 		// Error opening the cache file.
@@ -466,6 +454,31 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 		return EXIT_FAILURE;
 	}
 
+	// TODO: Configure this somewhere?
+	m_downloader->setMaxSize(4*1024*1024);
+
+	m_downloader->setUrl(full_url);
+	ret = m_downloader->download();
+	if (ret != 0) {
+		// Error downloading the file.
+		// TODO: HTTP error, cURL error, etc.
+		if (verbose) {
+			show_error(_T("Error downloading file: %d"), ret);
+		}
+		fclose(f_out);
+		return EXIT_FAILURE;
+	}
+
+	if (m_downloader->dataSize() <= 0) {
+		// No data downloaded...
+		if (verbose) {
+			show_error(_T("Error downloading file: 0 bytes received"));
+		}
+		fclose(f_out);
+		return EXIT_FAILURE;
+	}
+
+	// Write the file to the cache.
 	// TODO: Verify the size.
 	size_t size = fwrite(m_downloader->data(), 1, m_downloader->dataSize(), f_out);
 
