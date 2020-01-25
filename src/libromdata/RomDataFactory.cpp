@@ -622,6 +622,7 @@ RomData *RomDataFactory::create(IRpFile *file, unsigned int attrs)
 				".tgc",		/* game.com */
 				".iso",		/* ISO-9660 */
 				".xiso",	/* Xbox disc image */
+				".min",		/* Pokémon Mini */
 				nullptr
 			};
 
