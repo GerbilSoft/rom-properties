@@ -121,9 +121,7 @@ int PokemonMini::isRomSupported_static(const DetectInfo *info)
 		reinterpret_cast<const PokemonMini_RomHeader*>(&info->header.pData[info->header.addr - POKEMONMINI_HEADER_ADDRESS]);
 
 	// Check the header magic.
-	if (romHeader->pm_magic != be16_to_cpu(POKEMONMINI_PM_MAGIC) &&
-	    romHeader->pm_magic != be16_to_cpu(POKEMONMINI_MN_MAGIC))
-	{
+	if (romHeader->pm_magic != be16_to_cpu(POKEMONMINI_MN_MAGIC)) {
 		// Incorrect magic.
 		return -1;
 	}
@@ -304,7 +302,7 @@ int PokemonMini::loadFieldData(void)
 	static const uint8_t vec_empty_ff[6] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
 	static const uint8_t vec_empty_00[6] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 
-	auto vv_vectors = new vector<vector<string> >(ARRAY_SIZE(vectors_names));
+	auto vv_vectors = new RomFields::ListData_t(ARRAY_SIZE(vectors_names));
 	uint32_t pc = 0x2100 + offsetof(PokemonMini_RomHeader, irqs);
 	for (unsigned int i = 0; i < ARRAY_SIZE(vectors_names); i++, pc += 6) {
 		auto &data_row = vv_vectors->at(i);
@@ -355,7 +353,7 @@ int PokemonMini::loadFieldData(void)
 
 	RomFields::AFLD_PARAMS params(RomFields::RFT_LISTDATA_SEPARATE_ROW, 8);
 	params.headers = v_vectors_headers;
-	params.list_data = vv_vectors;
+	params.data.single = vv_vectors;
 	d->fields->addField_listData(C_("PokemonMini", "Vector Table"), &params);
 
 	// Finished reading the field data.
