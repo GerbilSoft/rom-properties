@@ -15,4 +15,9 @@
 /* Define to 1 if you have the <shellscalingapi.h> header file. */
 #cmakedefine HAVE_SHELLSCALINGAPI_H
 
+/** C++ standard library **/
+
+/* Define to 1 if you have the `unordered_set::reserve` function. */
+#cmakedefine HAVE_UNORDERED_SET_RESERVE 1
+
 #endif /* __ROMPROPERTIES_LIBWIN32COMMON_CONFIG_H__ */

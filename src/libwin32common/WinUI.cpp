@@ -6,6 +6,7 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+#include "config.libwin32common.h"
 #include "WinUI.hpp"
 #include "AutoGetDC.hpp"
 #include <commctrl.h>
@@ -193,10 +194,9 @@ int findMonospacedFont(LOGFONT *plfFontMono)
 	// Enumerate all monospaced fonts.
 	// Reference: http://www.catch22.net/tuts/fixed-width-font-enumeration
 	unordered_set<tstring> enum_fonts;
-	// FIXME: Use a CMake check like in librpbase.
-#if !defined(_MSC_VER) || _MSC_VER >= 1700
+#ifdef HAVE_UNORDERED_SET_RESERVE
 	enum_fonts.reserve(64);
-#endif
+#endif /* HAVE_UNORDERED_SET_RESERVE */
 
 	LOGFONT lfEnumFonts = { 0 };
 	lfEnumFonts.lfCharSet = DEFAULT_CHARSET;

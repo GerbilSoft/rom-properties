@@ -9,6 +9,17 @@ PROJECT(libwin32common)
 # Check for Windows SDK headers.
 CHECK_INCLUDE_FILES("shellscalingapi.h" HAVE_SHELLSCALINGAPI_H)
 
+# Check for unordered_set::reserve.
+SET(OLD_CMAKE_REQUIRED_INCLUDES ${CMAKE_REQUIRED_INCLUDES})
+CHECK_CXX_SOURCE_COMPILES("#include <unordered_set>
+int main(void) {
+	std::unordered_set<int> testSet;
+	testSet.reserve(4);
+	return 0;
+}" HAVE_UNORDERED_SET_RESERVE)
+SET(CMAKE_REQUIRED_INCLUDES ${OLD_CMAKE_REQUIRED_INCLUDES})
+UNSET(OLD_CMAKE_REQUIRED_INCLUDES)
+
 # Write the config.h file.
 CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/config.libwin32common.h.in" "${CMAKE_CURRENT_BINARY_DIR}/config.libwin32common.h")
 
