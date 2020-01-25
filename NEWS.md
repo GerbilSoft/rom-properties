@@ -37,6 +37,8 @@
       * libseccomp support will be added in a future release.
   * Windows: The online database code has been rewritten to use WinInet
     directly instead of urlmon, which reduces overhead.
+  * The UI frontends now show a dropdown box to select the language if the
+    ROM image has multiple translations for e.g. the game title.
 
 * New parsers:
   * DidjTex: Leapster Didj .tex and .texs texture files. For .texs, currently
