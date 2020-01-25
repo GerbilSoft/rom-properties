@@ -421,6 +421,7 @@ int SystemRegion::getFlagPosition(uint32_t lc, int *pCol, int *pRow)
 
 	// Flags are stored in a sprite sheet, so we need to
 	// determine the column and row.
+	// TODO: Sort by lc and use bsearch()?
 	struct flagpos_t {
 		uint32_t lc;
 		uint16_t col;
@@ -428,6 +429,7 @@ int SystemRegion::getFlagPosition(uint32_t lc, int *pCol, int *pRow)
 		};
 	static const flagpos_t flagpos[] = {
 		{'hans',	0, 0},
+		{'hant',	0, 0},
 		{'de',		1, 0},
 		{'es',		2, 0},
 		{'fr',		3, 0},
@@ -438,7 +440,6 @@ int SystemRegion::getFlagPosition(uint32_t lc, int *pCol, int *pRow)
 		{'nl',		0, 2},
 		{'pt',		1, 2},
 		{'ru',		2, 2},
-		{'hant',	3, 2},
 		//{'us',		3, 0},
 
 		{0, 0, 0}
@@ -448,8 +449,13 @@ int SystemRegion::getFlagPosition(uint32_t lc, int *pCol, int *pRow)
 		// Special case for English:
 		// Use the 'us' flag if the country code is US,
 		// and the 'gb' flag for everywhere else.
-		*pCol = 0;
-		*pRow = (getCountryCode() == 'US') ? 3 : 1;
+		if (getCountryCode() == 'US') {
+			*pCol = 3;
+			*pRow = 2;
+		} else {
+			*pCol = 0;
+			*pRow = 1;
+		}
 		ret = 0;
 	} else {
 		// Other flags. Check the table.
