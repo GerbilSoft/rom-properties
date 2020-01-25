@@ -356,6 +356,9 @@ int NEResourceReaderPrivate::load_StringTable(IRpFile *file, IResourceReader::St
 	}
 
 	// Read the 8-character language ID.
+	// Format: 040904E4
+	// - 0409: Language (US English)
+	// - 04E4: Code page (1252)
 	char s_langID[9];
 	size = file->read(s_langID, sizeof(s_langID));
 	if (size != sizeof(s_langID) || s_langID[8] != 0) {
@@ -371,6 +374,15 @@ int NEResourceReaderPrivate::load_StringTable(IRpFile *file, IResourceReader::St
 		// TODO: Better error code?
 		return -EIO;
 	}
+
+	// Get the code page from the language ID.
+	uint16_t codepage = (*langID & 0xFFFF);
+	assert(codepage != 0);
+	if (codepage == 0) {
+		// TODO: More extensive code page validation?
+		codepage = 1252;
+	}
+
 	// DWORD alignment.
 	IResourceReader::alignFileDWORD(file);
 
@@ -440,12 +452,29 @@ int NEResourceReaderPrivate::load_StringTable(IRpFile *file, IResourceReader::St
 			return -EIO;
 		}
 
+		string key_utf8, value_utf8;
+		if (key_len > 0) {
+			key_utf8 = cpN_to_utf8(codepage, key, key_len);
+			assert(!key_utf8.empty());
+			if (key_utf8.empty()) {
+				// Code page conversion failed.
+				// Default to 1252.
+				key_utf8 = cp1252_to_utf8(key, key_len);
+			}
+		}
+		if (value_len > 0) {
+			value_utf8 = cpN_to_utf8(codepage, value, value_len);
+			assert(!value_utf8.empty());
+			if (value_utf8.empty()) {
+				// Code page conversion failed.
+				// Default to 1252.
+				value_utf8 = cp1252_to_utf8(value, value_len);
+			}
+		}
+
 		// NOTE: Only converting the value from DOS to UNIX line endings.
 		// The key shouldn't have newlines.
-		// FIXME: Proper codepage conversion.
-		st.push_back(std::pair<string, string>(
-			cp1252_to_utf8(key, key_len),
-			dos2unix(cp1252_to_utf8(value, value_len))));
+		st.push_back(std::pair<string, string>(key_utf8, dos2unix(value_utf8)));
 
 		// DWORD alignment is required here.
 		tblPos += wValueLength;

@@ -103,6 +103,9 @@
     format, but GameCube .ciso is incorrectly identified as this.)
   * GameCube: Calculate the used partition size correctly for unencrypted
     Wii RVT-H Reader disc images.
+  * EXE: VS_VERSION_INFO resources in 16-bit Windows executables are now
+    displayed correctly if they're encoded using a code page other than
+    Windows-1252.
 
 * Other changes:
   * Removed the internal copy of libjpeg-turbo. On Windows, gdiplus is now
