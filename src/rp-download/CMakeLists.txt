@@ -69,6 +69,7 @@ SET_WINDOWS_SUBSYSTEM(rp-download CONSOLE)
 SET_WINDOWS_NO_MANIFEST(rp-download)
 SET_WINDOWS_ENTRYPOINT(rp-download wmain OFF)
 
+# FIXME: librpbase isn't actually needed; only the headers are.
 TARGET_LINK_LIBRARIES(rp-download PRIVATE rpbase cachecommon)
 TARGET_INCLUDE_DIRECTORIES(rp-download
 	PUBLIC	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>		# rp-download
