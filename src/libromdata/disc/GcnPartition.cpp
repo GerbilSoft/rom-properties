@@ -170,7 +170,6 @@ int64_t GcnPartition::partition_size_used(void) const
 
 	// FST/DOL offset and size.
 	int64_t size;
-	size <<= d->offsetShift;
 	if (d->bootBlock.dol_offset > d->bootBlock.fst_offset) {
 		// DOL is after the FST.
 		// TODO: Get the DOL size. (This case is unlikely, though...)
