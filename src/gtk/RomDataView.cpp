@@ -185,8 +185,9 @@ struct _RomDataView {
 	vector<GtkWidget*>	*vecDescLabels;
 
 	// RFT_STRING_MULTI value labels.
-	std::vector<Data_StringMulti_t> *vecStringMulti;
-	uint32_t	def_lc;	// Default language code from RomFields.
+	vector<Data_StringMulti_t> *vecStringMulti;
+	set<uint32_t>	*set_lc;	// Set of language codes from vecStringMulti.
+	uint32_t	def_lc;		// Default language code from RomFields.
 	GtkWidget	*cboLanguage;
 	GtkListStore	*lstoreLanguage;
 };
@@ -323,6 +324,7 @@ rom_data_view_init(RomDataView *page)
 	page->desc_format_type = RP_DFT_XFCE;
 	page->vecDescLabels = new vector<GtkWidget*>();
 	page->vecStringMulti = new vector<Data_StringMulti_t>();
+	page->set_lc = new set<uint32_t>();
 	page->def_lc = 0;
 	page->cboLanguage = nullptr;
 	page->lstoreLanguage = nullptr;
@@ -439,6 +441,7 @@ rom_data_view_finalize(GObject *object)
 	delete page->tabs;
 	delete page->vecDescLabels;
 	delete page->vecStringMulti;
+	delete page->set_lc;
 
 	// Unreference romData.
 	if (page->romData) {
@@ -1255,6 +1258,68 @@ rom_data_view_init_string_multi(G_GNUC_UNUSED RomDataView *page, const RomFields
 }
 
 /**
+ * Update the cboLanguage images.
+ * @param page		[in] RomDataView object.
+ */
+static void
+rom_data_view_update_cboLanguage_images(RomDataView *page)
+{
+	// TODO:
+	// - High-DPI scaling on GTK+ earlier than 3.10
+	// - Fractional scaling
+	// - Runtime adjustment via "configure" event
+	// Reference: https://developer.gnome.org/gdk3/stable/gdk3-Windows.html#gdk-window-get-scale-factor
+	unsigned int iconSize = 16;
+#if GTK_CHECK_VERSION(3,10,0)
+# if 0
+	// FIXME: gtk_widget_get_window() doesn't work unless the window is realized.
+	// We might need to initialize the dropdown in the "realize" signal handler.
+	GdkWindow *const gdk_window = gtk_widget_get_window(GTK_WIDGET(page));
+	assert(gdk_window != nullptr);
+	if (gdk_window) {
+		const gint scale_factor = gdk_window_get_scale_factor(gdk_window);
+		if (scale_factor >= 2) {
+			// 2x scaling or higher.
+			// TODO: Larger icon sizes?
+			iconSize = 32;
+		}
+	}
+# endif /* 0 */
+#endif /* GTK_CHECK_VERSION(3,10,0) */
+	char flags_filename[64];
+	snprintf(flags_filename, sizeof(flags_filename),
+		"/com/gerbilsoft/rom-properties/flags/flags-%ux%u.png",
+		iconSize, iconSize);
+	PIMGTYPE flags_spriteSheet = PIMGTYPE_load_png_from_gresource(flags_filename);
+	assert(flags_spriteSheet != nullptr);
+	if (!flags_spriteSheet) {
+		// Unable to load the flags sprite sheet.
+		return;
+	}
+
+	GtkTreeIter gtiter;
+	gboolean ok = gtk_tree_model_get_iter_first(GTK_TREE_MODEL(page->lstoreLanguage), &gtiter);
+	while (ok) {
+		uint32_t lc = 0;
+		int col, row;
+
+		gtk_tree_model_get(GTK_TREE_MODEL(page->lstoreLanguage), &gtiter, SM_COL_LC, &lc, -1);
+		if (!SystemRegion::getFlagPosition(lc, &col, &row)) {
+			// Found a matching icon.
+			PIMGTYPE icon = PIMGTYPE_get_subsurface(flags_spriteSheet, col*iconSize, row*iconSize, iconSize, iconSize);
+			gtk_list_store_set(page->lstoreLanguage, &gtiter, SM_COL_ICON, icon, -1);
+			PIMGTYPE_destroy(icon);
+		}
+
+		ok = gtk_tree_model_iter_next(GTK_TREE_MODEL(page->lstoreLanguage), &gtiter);
+	};
+
+	// We're done using the flags sprite sheets,
+	// so unreference them to prevent memory leaks.
+	PIMGTYPE_destroy(flags_spriteSheet);
+}
+
+/**
  * Update all multi-language string fields.
  * @param page		[in] RomDataView object.
  * @param user_lc	[in] User-specified language code.
@@ -1262,9 +1327,6 @@ rom_data_view_init_string_multi(G_GNUC_UNUSED RomDataView *page, const RomFields
 static void
 rom_data_view_update_string_multi(RomDataView *page, uint32_t user_lc)
 {
-	// Set of supported language codes.
-	set<uint32_t> set_lc;
-
 	for (auto iter = page->vecStringMulti->cbegin();
 	     iter != page->vecStringMulti->cend(); ++iter)
 	{
@@ -1284,7 +1346,7 @@ rom_data_view_update_string_multi(RomDataView *page, uint32_t user_lc)
 			for (auto iter_sm = pStr_multi->cbegin();
 			     iter_sm != pStr_multi->cend(); ++iter_sm)
 			{
-				set_lc.insert(iter_sm->first);
+				page->set_lc->insert(iter_sm->first);
 			}
 		}
 
@@ -1309,50 +1371,23 @@ rom_data_view_update_string_multi(RomDataView *page, uint32_t user_lc)
 		gtk_label_set_text(GTK_LABEL(lblString), iter_sm->second.c_str());
 	}
 
-	if (!page->cboLanguage && set_lc.size() > 1) {
+	if (!page->cboLanguage && page->set_lc->size() > 1) {
 		// Create the language combobox.
 		// TODO: G_TYPE_PIXBUF
 		// Columns:
-		// - 0: Display text
-		// - 1: Language code
+		// - 0: Icon
+		// - 1: Display text
+		// - 2: Language code
 		page->lstoreLanguage = gtk_list_store_new(3, PIMGTYPE_GOBJECT_TYPE, G_TYPE_STRING, G_TYPE_UINT);
 
-		// TODO:
-		// - High-DPI scaling on GTK+ earlier than 3.10
-		// - Fractional scaling
-		// - Runtime adjustment via "configure" event
-		// Reference: https://developer.gnome.org/gdk3/stable/gdk3-Windows.html#gdk-window-get-scale-factor
-		unsigned int iconSize = 16;
-#if GTK_CHECK_VERSION(3,10,0)
-# if 0
-		// FIXME: gtk_widget_get_window() doesn't work unless the window is realized.
-		// We might need to initialize the dropdown in the "realize" signal handler.
-		GdkWindow *const gdk_window = gtk_widget_get_window(GTK_WIDGET(page));
-		assert(gdk_window != nullptr);
-		if (gdk_window) {
-			const gint scale_factor = gdk_window_get_scale_factor(gdk_window);
-			if (scale_factor >= 2) {
-				// 2x scaling or higher.
-				// TODO: Larger icon sizes?
-				iconSize = 32;
-			}
-		}
-# endif /* 0 */
-#endif /* GTK_CHECK_VERSION(3,10,0) */
-		char flags_filename[64];
-		snprintf(flags_filename, sizeof(flags_filename),
-			"/com/gerbilsoft/rom-properties/flags/flags-%ux%u.png",
-			iconSize, iconSize);
-		PIMGTYPE flags_spriteSheet = PIMGTYPE_load_png_from_gresource(flags_filename);
-
 		int sel_idx = -1;
-		for (auto iter = set_lc.cbegin(); iter != set_lc.cend(); ++iter) {
+		for (auto iter = page->set_lc->cbegin(); iter != page->set_lc->cend(); ++iter) {
 			const uint32_t lc = *iter;
 			const char *const name = SystemRegion::getLocalizedLanguageName(lc);
 
 			GtkTreeIter gtiter;
 			gtk_list_store_append(page->lstoreLanguage, &gtiter);
-			gtk_list_store_set(page->lstoreLanguage, &gtiter, SM_COL_LC, lc, -1);
+			gtk_list_store_set(page->lstoreLanguage, &gtiter, SM_COL_ICON, nullptr, SM_COL_LC, lc, -1);
 			if (name) {
 				gtk_list_store_set(page->lstoreLanguage, &gtiter, SM_COL_TEXT, name, -1);
 			} else {
@@ -1368,15 +1403,6 @@ rom_data_view_update_string_multi(RomDataView *page, uint32_t user_lc)
 			}
 			int cur_idx = gtk_tree_model_iter_n_children(GTK_TREE_MODEL(page->lstoreLanguage), nullptr)-1;
 
-			// Flag icon.
-			int col, row;
-			if (!SystemRegion::getFlagPosition(lc, &col, &row)) {
-				// Found a matching icon.
-				PIMGTYPE icon = PIMGTYPE_get_subsurface(flags_spriteSheet, col*iconSize, row*iconSize, iconSize, iconSize);
-				gtk_list_store_set(page->lstoreLanguage, &gtiter, SM_COL_ICON, icon, -1);
-				PIMGTYPE_destroy(icon);
-			}
-
 			// Save the default index:
 			// - ROM-default language code.
 			// - English if it's not available.
@@ -1391,9 +1417,8 @@ rom_data_view_update_string_multi(RomDataView *page, uint32_t user_lc)
 			}
 		}
 
-		// We're done using the flags sprite sheets,
-		// so unreference them to prevent memory leaks.
-		PIMGTYPE_destroy(flags_spriteSheet);
+		// Initialize the images.
+		rom_data_view_update_cboLanguage_images(page);
 
 		// Create a VBox for the combobox to reduce its vertical height.
 #if GTK_CHECK_VERSION(3,0,0)
@@ -1824,6 +1849,7 @@ rom_data_view_delete_tabs(RomDataView *page)
 	// Clear the various widget references.
 	page->vecDescLabels->clear();
 	page->vecStringMulti->clear();
+	page->set_lc->clear();
 
 	// Delete the icon frames.
 	for (int i = page->iconFrames.size()-1; i >= 0; i--) {
