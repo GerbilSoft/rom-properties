@@ -150,18 +150,20 @@ int EXEPrivate::findNERuntimeDLL(string &refDesc, string &refLink, bool &refHasK
 	// Determine the low address.
 	// ModRefTable is usually first, but we can't be certain.
 	uint32_t read_low_addr;
-	size_t read_size;
-	size_t nameTable_size;
+	uint32_t read_size;
+	uint32_t nameTable_size;
 	if (modRefTable_addr < importNameTable_addr) {
 		// ModRefTable is first.
+		// Add 256 bytes for the nametable, since we can't determine how
+		// big the nametable actually is without reading it.
 		read_low_addr = modRefTable_addr;
-		nameTable_size = (9 * (static_cast<uint32_t>(modRefs) + 2));
+		nameTable_size = (9 * (static_cast<uint32_t>(modRefs) + 2)) + 256;
 		read_size = (importNameTable_addr - modRefTable_addr) + nameTable_size;
 	} else {
 		// ImportNameTable is first.
 		read_low_addr = importNameTable_addr;
 		nameTable_size = (modRefTable_addr - importNameTable_addr);
-		read_size = nameTable_size + (modRefs * sizeof(uint16_t));
+		read_size = nameTable_size + (modRefs * static_cast<uint32_t>(sizeof(uint16_t)));
 	}
 
 	unique_ptr<uint8_t[]> tbls(new uint8_t[read_size]);
