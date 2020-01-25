@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * PIMGTYPE.hpp: PIMGTYPE typedef and wrapper functions.                   *
  *                                                                         *
- * Copyright (c) 2017-2019 by David Korth.                                 *
+ * Copyright (c) 2017-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -11,6 +11,7 @@
 
 #include <gtk/gtk.h>
 
+// librptexture
 #include "librptexture/img/rp_image.hpp"
 
 // NOTE: GTK+ 3.x earlier than 3.10 is not supported.
@@ -117,6 +118,39 @@ static inline PIMGTYPE PIMGTYPE_scale(PIMGTYPE pImgType, int width, int height, 
 		(bilinear ? GDK_INTERP_BILINEAR : GDK_INTERP_NEAREST));
 }
 #endif /* RP_GTK_USE_CAIRO */
+
+/**
+ * Load a PNG image from our glibresources.
+ * @param filename Filename within glibresources.
+ * @return PIMGTYPE, or nullptr if not found.
+ */
+PIMGTYPE PIMGTYPE_load_png_from_gresource(const char *filename);
+
+/**
+ * Copy a subsurface from another PIMGTYPE.
+ * @param pImgType	[in] PIMGTYPE
+ * @param x		[in] X position
+ * @param y		[in] Y position
+ * @param width		[in] Width
+ * @param height	[in] Height
+ * @return Subsurface, or nullptr on error.
+ */
+static inline PIMGTYPE PIMGTYPE_get_subsurface(PIMGTYPE pImgType, int x, int y, int width, int height)
+{
+#ifdef RP_GTK_USE_CAIRO
+	return cairo_surface_create_for_rectangle(pImgType, x, y, width, height);
+#else /* !RP_GTK_USE_CAIRO */
+	PIMGTYPE surface = gdk_pixbuf_new(
+		gdk_pixbuf_get_colorspace(pImgType),
+		gdk_pixbuf_get_has_alpha(pImgType),
+		gdk_pixbuf_get_bits_per_sample(pImgType),
+		width, height);
+	if (surface) {
+		gdk_pixbuf_copy_area(pImgType, x, y, width, height, surface, 0, 0);
+	}
+	return surface;
+#endif /* RP_GTK_USE_CAIRO */
+}
 
 #ifdef __cplusplus
 }

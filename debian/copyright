@@ -10,6 +10,12 @@ License: GPL-2+
 Comment:
 
 Files:
+ cmake/macros/GCR_CMake/*
+Copyright: 2015-2019, Makman2 <makman@alice.de>
+License: GPL-3
+Comment:
+
+Files:
  src/librpbase/uvector.h
 Copyright:
  2013, André Offringa

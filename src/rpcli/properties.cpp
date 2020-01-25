@@ -137,6 +137,7 @@ public:
 		return process(*this);
 	}
 };
+
 class StringField {
 	size_t width;
 	const RomFields::Field *romField;
@@ -561,10 +562,57 @@ public:
 	}
 };
 
+class StringMultiField {
+	size_t width;
+	const RomFields::Field *romField;
+	uint32_t def_lc;	// ROM-default language code.
+	uint32_t user_lc;	// User-specified language code.
+public:
+	StringMultiField(size_t width, const RomFields::Field *romField, uint32_t def_lc, uint32_t user_lc)
+		:width(width), romField(romField), def_lc(def_lc), user_lc(user_lc)
+	{
+		assert(this->def_lc != 0);
+	}
+	friend ostream& operator<<(ostream& os, const StringMultiField& field) {
+		// NOTE: nullptr string is an empty string, not an error.
+		auto romField = field.romField;
+		os << ColonPad(field.width, romField->name.c_str());
+
+		const auto *const pStr_multi = romField->data.str_multi;
+		assert(pStr_multi != nullptr);
+		assert(!pStr_multi->empty());
+		if (pStr_multi && !pStr_multi->empty()) {
+			// Try the user-specified language code first.
+			// TODO: Consolidate ->end() calls?
+			auto iter = pStr_multi->end();
+			if (field.user_lc != 0) {
+				iter = pStr_multi->find(field.user_lc);
+			}
+			if (iter == pStr_multi->end()) {
+				// Not found. Try the ROM-default language code.
+				if (field.def_lc != field.user_lc) {
+					iter = pStr_multi->find(field.def_lc);
+					if (iter == pStr_multi->end()) {
+						// Still not found. Use the first string.
+						iter = pStr_multi->begin();
+					}
+				}
+			}
+			os << SafeString(&iter->second, true, field.width);
+		} else {
+			// Empty string.
+			os << "''";
+		}
+		return os;
+	}
+};
+
 class FieldsOutput {
 	const RomFields& fields;
+	uint32_t lc;
 public:
-	explicit FieldsOutput(const RomFields& fields) :fields(fields) {}
+	explicit FieldsOutput(const RomFields& fields, uint32_t lc = 0)
+		: fields(fields), lc(lc) { }
 	friend std::ostream& operator<<(std::ostream& os, const FieldsOutput& fo) {
 		size_t maxWidth = 0;
 		for (int i = 0; i < fo.fields.count(); i++) {
@@ -577,6 +625,10 @@ public:
 
 		const int tabCount = fo.fields.tabCount();
 		int tabIdx = -1;
+
+		// Language codes.
+		const uint32_t def_lc = fo.fields.defaultLanguageCode();
+		const uint32_t user_lc = (fo.lc != 0 ? fo.lc : def_lc);
 
 		bool printed_first = false;
 		for (int i = 0; i < fo.fields.count(); i++) {
@@ -634,6 +686,10 @@ public:
 			}
 			case RomFields::RFT_DIMENSIONS: {
 				os << DimensionsField(maxWidth, romField);
+				break;
+			}
+			case RomFields::RFT_STRING_MULTI: {
+				os << StringMultiField(maxWidth, romField, def_lc, user_lc);
 				break;
 			}
 			default: {
@@ -790,9 +846,9 @@ public:
 
 						bool did_one = false;
 						for (auto jt = it->cbegin(); jt != it->cend(); ++jt) {
-							if (!did_one) os << ',';
-							os << JSONString(jt->c_str());
+							if (did_one) os << ',';
 							did_one = true;
+							os << JSONString(jt->c_str());
 						}
 						os << ']';
 					}
@@ -856,14 +912,40 @@ public:
 				   << "},\"data\":";
 
 				const int *const dimensions = romField->data.dimensions;
-				os << "[\"w\":" << dimensions[0];
+				os << "{\"w\":" << dimensions[0];
 				if (dimensions[1] > 0) {
 					os << ",\"h\":" << dimensions[1];
 					if (dimensions[2] > 0) {
 						os << ",\"d\":" << dimensions[2];
 					}
 				}
-				os << "]}";
+				os << "}}";
+				break;
+			}
+
+			case RomFields::RFT_STRING_MULTI: {
+				// TODO: Act like RFT_STRING if there's only one language?
+				os << "{\"type\":\"STRING_MULTI\",\"desc\":{\"name\":" << JSONString(romField->name.c_str())
+				   << ",\"format\":" << romField->desc.flags
+				   << "},\"data\":{\n";
+				const auto *const pStr_multi = romField->data.str_multi;
+				bool didFirst = false;
+				for (auto iter = pStr_multi->cbegin(); iter != pStr_multi->cend(); ++iter) {
+					// Convert the language code to ASCII.
+					if (didFirst) {
+						os << ",\n";
+					}
+					didFirst = true;
+					os << "\t\"";
+					for (uint32_t lc = iter->first; lc != 0; lc <<= 8) {
+						char chr = (char)(lc >> 24);
+						if (chr != 0) {
+							os << chr;
+						}
+					}
+					os << "\":" << JSONString(iter->second.c_str());
+				}
+				os << "\n}}";
 				break;
 			}
 
@@ -883,7 +965,9 @@ public:
 
 
 
-ROMOutput::ROMOutput(const RomData *romdata) : romdata(romdata) { }
+ROMOutput::ROMOutput(const RomData *romdata, uint32_t lc)
+	: romdata(romdata)
+	, lc(lc) { }
 std::ostream& operator<<(std::ostream& os, const ROMOutput& fo) {
 	auto romdata = fo.romdata;
 	const char *const systemName = romdata->systemName(RomData::SYSNAME_TYPE_LONG | RomData::SYSNAME_REGION_GENERIC);
@@ -897,7 +981,7 @@ std::ostream& operator<<(std::ostream& os, const ROMOutput& fo) {
 	const RomFields *const fields = romdata->fields();
 	assert(fields != nullptr);
 	if (fields) {
-		os << FieldsOutput(*fields) << endl;
+		os << FieldsOutput(*fields, fo.lc) << endl;
 	}
 
 	const int supported = romdata->supportedImageTypes();
@@ -943,7 +1027,9 @@ std::ostream& operator<<(std::ostream& os, const ROMOutput& fo) {
 	return os;
 }
 
-JSONROMOutput::JSONROMOutput(const RomData *romdata) : romdata(romdata) {}
+JSONROMOutput::JSONROMOutput(const RomData *romdata, uint32_t lc)
+	: romdata(romdata)
+	, lc(lc) { }
 std::ostream& operator<<(std::ostream& os, const JSONROMOutput& fo) {
 	auto romdata = fo.romdata;
 	assert(romdata && romdata->isValid());
@@ -1049,15 +1135,15 @@ std::ostream& operator<<(std::ostream& os, const JSONROMOutput& fo) {
 		}
 		// NOTE: IMGPF_ICON_ANIMATED won't ever appear in external image
 		os << ",\"exturls\":[";
-		bool firsturl = true;
-
+		bool did_one = false;
 		for (auto iter = extURLs.cbegin(); iter != extURLs.cend(); ++iter) {
-			if (firsturl) firsturl = false;
-			else os << ',';
+			if (did_one) os << ',';
+			did_one = true;
 
 			os << "{\"url\":" << JSONString(iter->url.c_str());
 			os << ",\"cache_key\":" << JSONString(iter->cache_key.c_str()) << '}';
 		}
+		os << "]}";
 	}
 	if (!first) {
 		os << ']';

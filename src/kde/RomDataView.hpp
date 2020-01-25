@@ -66,6 +66,12 @@ class RomDataView : public QWidget
 		 */
 		void bitfield_toggled_slot(bool checked);
 
+		/**
+		 * The RFT_MULTI_STRING language was changed.
+		 * @param index Index.
+		 */
+		void cboLanguage_currentIndexChanged_slot(int index);
+
 	public:
 		/** Properties. **/
 

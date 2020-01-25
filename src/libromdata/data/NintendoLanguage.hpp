@@ -32,10 +32,24 @@ class NintendoLanguage
 		static int getGcnPalLanguage(void);
 
 		/**
+		 * Convert a GameCube PAL language ID to a language code.
+		 * @param langID GameCube PAL language ID.
+		 * @return Language code, or 0 on error.
+		 */
+		static uint32_t getGcnPalLanguageCode(int langID);
+
+		/**
 		 * Determine the system language for Wii.
 		 * @return Wii_Language_ID. (If unknown, defaults to WII_LANG_ENGLISH.)
 		 */
 		static int getWiiLanguage(void);
+
+		/**
+		 * Convert a Wii language ID to a language code.
+		 * @param langID GameCube PAL language ID.
+		 * @return Language code, or 0 on error.
+		 */
+		static uint32_t getWiiLanguageCode(int langID);
 
 		/**
 		 * Determine the system language for Nintendo DS.
@@ -50,6 +64,14 @@ class NintendoLanguage
 		 * @return N3DS_Language_ID. If unknown, defaults to N3DS_LANG_ENGLISH.
 		 */
 		static int getN3DSLanguage(void);
+
+		/**
+		 * Convert a Nintendo DS/3DS language ID to a language code.
+		 * @param langID Nintendo DS/3DS language ID.
+		 * @param maxID Maximum language ID, inclusive. (es, hans, ko, or hant)
+		 * @return Language code, or 0 on error.
+		 */
+		static uint32_t getNDSLanguageCode(int langID, int maxID = 9001);
 };
 
 }

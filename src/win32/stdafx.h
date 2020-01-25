@@ -67,6 +67,7 @@
 #include <list>
 #include <memory>
 #include <numeric>
+#include <set>
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
@@ -85,6 +86,7 @@
 #endif /* __cplusplus */
 
 // libwin32common C headers
+#include "libwin32common/HiDPI.h"
 #include "libwin32common/w32time.h"
 #include "libwin32common/sdk/GUID_fn.h"
 

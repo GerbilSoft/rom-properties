@@ -73,8 +73,8 @@ DELAYLOAD_TEST_FUNCTION_IMPL1(textdomain, nullptr);
 #endif /* defined(_MSC_VER) && defined(ENABLE_NLS) */
 
 struct ExtractParam {
-	int image_type; // Image Type. -1 = iconAnimData, MUST be between -1 and IMG_INT_MAX
-	const char* filename; // Target filename. Can be null due to argv[argc]
+	const char* filename;	// Target filename. Can be null due to argv[argc]
+	int image_type;		// Image Type. -1 = iconAnimData, MUST be between -1 and IMG_INT_MAX
 };
 
 /**
@@ -148,8 +148,9 @@ static void ExtractImages(const RomData *romData, vector<ExtractParam>& extract)
  * @param filename ROM filename
  * @param json Is program running in json mode?
  * @param extract Vector of image extraction parameters
+ * @param languageCode Language code. (0 for default)
  */
-static void DoFile(const char *filename, bool json, vector<ExtractParam>& extract)
+static void DoFile(const char *filename, bool json, vector<ExtractParam>& extract, uint32_t languageCode = 0)
 {
 	cerr << "== " << rp_sprintf(C_("rpcli", "Reading file '%s'..."), filename) << endl;
 	RpFile *const file = new RpFile(filename, RpFile::FM_OPEN_READ_GZ);
@@ -158,9 +159,9 @@ static void DoFile(const char *filename, bool json, vector<ExtractParam>& extrac
 		if (romData && romData->isValid()) {
 			if (json) {
 				cerr << "-- " << C_("rpcli", "Outputting JSON data") << endl;
-				cout << JSONROMOutput(romData) << endl;
+				cout << JSONROMOutput(romData, languageCode) << endl;
 			} else {
-				cout << ROMOutput(romData) << endl;
+				cout << ROMOutput(romData, languageCode) << endl;
 			}
 
 			ExtractImages(romData, extract);
@@ -309,13 +310,14 @@ int RP_C_API main(int argc, char *argv[])
 
 	if(argc < 2){
 #ifdef ENABLE_DECRYPTION
-		cerr << C_("rpcli", "Usage: rpcli [-k] [-c] [-j] [[-x[b]N outfile]... [-a apngoutfile] filename]...") << endl;
+		cerr << C_("rpcli", "Usage: rpcli [-k] [-c] [-j] [-l lang] [[-x[b]N outfile]... [-a apngoutfile] filename]...") << endl;
 		cerr << "  -k:   " << C_("rpcli", "Verify encryption keys in keys.conf.") << endl;
 #else /* !ENABLE_DECRYPTION */
-		cerr << C_("rpcli", "Usage: rpcli [-j] [[-x[b]N outfile]... [-a apngoutfile] filename]...") << endl;
+		cerr << C_("rpcli", "Usage: rpcli [-c] [-j] [-l lang] [[-x[b]N outfile]... [-a apngoutfile] filename]...") << endl;
 #endif /* ENABLE_DECRYPTION */
 		cerr << "  -c:   " << C_("rpcli", "Print system region information.") << endl;
 		cerr << "  -j:   " << C_("rpcli", "Use JSON output format.") << endl;
+		cerr << "  -l:   " << C_("rpcli", "Retrieve the specified language from the ROM image.") << endl;
 		cerr << "  -xN:  " << C_("rpcli", "Extract image N to outfile in PNG format.") << endl;
 		cerr << "  -a:   " << C_("rpcli", "Extract the animated icon to outfile in APNG format.") << endl;
 		cerr << endl;
@@ -348,6 +350,7 @@ int RP_C_API main(int argc, char *argv[])
 	bool inq_scsi = false;
 	bool inq_ata = false;
 #endif /* RP_OS_SCSI_SUPPORTED */
+	uint32_t languageCode = 0;
 	bool first = true;
 	int ret = 0;
 	for (int i = 1; i < argc; i++){
@@ -369,6 +372,39 @@ int RP_C_API main(int argc, char *argv[])
 				PrintSystemRegion();
 				break;
 			}
+			case 'l': {
+				// Language code.
+				// NOTE: Actual language may be immediately after 'l',
+				// or it might be a completely separate argument.
+				// NOTE 2: Allowing multiple language codes, since the
+				// language code affects files specified *after* it.
+				const char *s_lang;
+				if (argv[i][2] == '\0') {
+					// Separate argument.
+					s_lang = argv[i+1];
+					i++;
+				} else {
+					// Same argument.
+					s_lang = &argv[i][2];
+				}
+
+				// Parse the language code.
+				uint32_t lc = 0;
+				int pos;
+				for (pos = 0; pos < 4 && s_lang[pos] != '\0'; pos++) {
+					lc <<= 8;
+					lc |= (uint8_t)s_lang[pos];
+				}
+				if (pos == 4 && s_lang[pos] != '\0') {
+					// Invalid language code.
+					cerr << rp_sprintf(C_("rpcli", "Warning: ignoring invalid language code '%s'"), s_lang) << endl;
+					break;
+				}
+
+				// Language code set.
+				languageCode = lc;
+				break;
+			}
 			case 'x': {
 				ExtractParam ep;
 				long num = atol(argv[i] + 2);
@@ -376,15 +412,15 @@ int RP_C_API main(int argc, char *argv[])
 					cerr << rp_sprintf(C_("rpcli", "Warning: skipping unknown image type %ld"), num) << endl;
 					i++; continue;
 				}
-				ep.image_type = num;
 				ep.filename = argv[++i];
+				ep.image_type = num;
 				extract.push_back(ep);
 				break;
 			}
 			case 'a': {
 				ExtractParam ep;
-				ep.image_type = -1;
 				ep.filename = argv[++i];
+				ep.image_type = -1;
 				extract.push_back(ep);
 				break;
 			}
@@ -407,8 +443,7 @@ int RP_C_API main(int argc, char *argv[])
 				cerr << rp_sprintf(C_("rpcli", "Warning: skipping unknown switch '%c'"), argv[i][1]) << endl;
 				break;
 			}
-		}
-		else{
+		} else {
 			if (first) first = false;
 			else if (json) cout << "," << endl;
 
@@ -424,7 +459,7 @@ int RP_C_API main(int argc, char *argv[])
 #endif /* RP_OS_SCSI_SUPPORTED */
 			{
 				// Regular file.
-				DoFile(argv[i], json, extract);
+				DoFile(argv[i], json, extract, languageCode);
 			}
 
 #ifdef RP_OS_SCSI_SUPPORTED

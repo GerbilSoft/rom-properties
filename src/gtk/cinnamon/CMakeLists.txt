@@ -80,6 +80,7 @@ IF(BUILD_CINNAMON)
 			$<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src>
 			$<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/src>
 		)
+	TARGET_LINK_LIBRARIES(rom-properties-cinnamon PRIVATE glibresources)
 	TARGET_LINK_LIBRARIES(rom-properties-cinnamon PRIVATE romdata rpbase)
 	IF(ENABLE_NLS)
 		TARGET_LINK_LIBRARIES(rom-properties-cinnamon PRIVATE i18n)

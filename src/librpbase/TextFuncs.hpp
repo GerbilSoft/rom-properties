@@ -92,23 +92,39 @@ char16_t *u16_strdup(const char16_t *wcs);
 static inline int u16_strcmp(const char16_t *wcs1, const char16_t *wcs2)
 {
 	return wcscmp(reinterpret_cast<const wchar_t*>(wcs1),
-		      reinterpret_cast<const wchar_t*>(wcs2));
+	              reinterpret_cast<const wchar_t*>(wcs2));
 }
 #else /* !RP_WIS16 */
 int u16_strcmp(const char16_t *wcs1, const char16_t *wcs2);
 #endif /* RP_WIS16 */
 
 /**
- * char16_t strcmp().
+ * char16_t strncmp().
  * @param wcs1 16-bit string 1.
  * @param wcs2 16-bit string 2.
- * @return strcmp() result.
+ * @return strncmp() result.
+ */
+#ifdef RP_WIS16
+static inline int u16_strncmp(const char16_t *wcs1, const char16_t *wcs2, size_t n)
+{
+	return wcsncmp(reinterpret_cast<const wchar_t*>(wcs1),
+	               reinterpret_cast<const wchar_t*>(wcs2), n);
+}
+#else /* !RP_WIS16 */
+int u16_strncmp(const char16_t *wcs1, const char16_t *wcs2, size_t n);
+#endif /* RP_WIS16 */
+
+/**
+ * char16_t strcasecmp().
+ * @param wcs1 16-bit string 1.
+ * @param wcs2 16-bit string 2.
+ * @return strcasecmp() result.
  */
 #ifdef RP_WIS16
 static inline int u16_strcasecmp(const char16_t *wcs1, const char16_t *wcs2)
 {
 	return wcscasecmp(reinterpret_cast<const wchar_t*>(wcs1),
-			  reinterpret_cast<const wchar_t*>(wcs2));
+	                  reinterpret_cast<const wchar_t*>(wcs2));
 }
 #else /* !RP_WIS16 */
 int u16_strcasecmp(const char16_t *wcs1, const char16_t *wcs2);

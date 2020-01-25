@@ -20,6 +20,7 @@
 
 // C++ includes.
 #include <array>
+#include <map>
 #include <string>
 #include <vector>
 
@@ -61,6 +62,7 @@ class RomFields
 			RFT_DATETIME,		// Date/Time.
 			RFT_AGE_RATINGS,	// Age ratings.
 			RFT_DIMENSIONS,		// Image dimensions.
+			RFT_STRING_MULTI,	// Multi-language string.
 		};
 
 		// String format flags. (RFT_STRING)
@@ -165,6 +167,9 @@ class RomFields
 			TXA_RIGHT	= 3,
 		};
 
+		// Multi-language string map type.
+		typedef std::map<uint32_t, std::string> StringMultiMap_t;
+
 		// ROM field struct.
 		// Dynamically allocated.
 		struct Field {
@@ -249,6 +254,11 @@ class RomFields
 				// Up to three image dimensions.
 				// If a dimension is not present, set to 0.
 				int dimensions[3];
+
+				// RFT_STRING_MULTI
+				// - Key: Language code ('en', 'es', etc; multi-char constant)
+				// - Value: String
+				const StringMultiMap_t *str_multi;
 			} data;
 		};
 
@@ -359,6 +369,12 @@ class RomFields
 		 * @return Tab name, or nullptr if no name is set.
 		 */
 		const char *tabName(int tabIdx) const;
+
+		/**
+		 * Get the default language code for RFT_STRING_MULTI.
+		 * @return Default language code, or 0 if not set.
+		 */
+		uint32_t defaultLanguageCode(void) const;
 
 		/** Fields **/
 
@@ -588,6 +604,18 @@ class RomFields
 		 * @return Field index, or -1 on error.
 		 */
 		int addField_dimensions(const char *name, int dimX, int dimY = 0, int dimZ = 0);
+
+		/**
+		 * Add a multi-language string.
+		 * NOTE: This object takes ownership of the map.
+		 * @param name Field name.
+		 * @param str_multi Map of strings with language codes.
+		 * @param defaultLanguageCode Default language code.
+		 * @param flags Formatting flags.
+		 * @return Field index, or -1 on error.
+		 */
+		int addField_string_multi(const char *name, const StringMultiMap_t *str_multi,
+			uint32_t defaultLanguageCode = 'en', unsigned int flags = 0);
 };
 
 }

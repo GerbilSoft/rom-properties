@@ -53,7 +53,7 @@ tstring unix2dos(const TCHAR *tstr_unix, int *lf_count)
  * @param hFont		[in] Font.
  * @param tstr		[in] String.
  * @param lpSize	[out] Size.
- * @return 0 on success; non-zero on errro.
+ * @return 0 on success; non-zero on error.
  */
 int measureTextSize(HWND hWnd, HFONT hFont, const TCHAR *tstr, LPSIZE lpSize)
 {

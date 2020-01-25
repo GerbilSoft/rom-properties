@@ -37,6 +37,8 @@
       * libseccomp support will be added in a future release.
   * Windows: The online database code has been rewritten to use WinInet
     directly instead of urlmon, which reduces overhead.
+  * The UI frontends now show a dropdown box to select the language if the
+    ROM image has multiple translations for e.g. the game title.
 
 * New parsers:
   * DidjTex: Leapster Didj .tex and .texs texture files. For .texs, currently
@@ -94,6 +96,11 @@
   * Nintendo3DS: Fixed decryption of games where the title ID does not
     match the program ID. This seems to show up in Traditional Chinese
     releases that use a Japanese region code instead of Taiwan.
+  * rpcli JSON output: Fixed RFT_LISTDATA commas, RFT_DIMENSIONS format,
+    and external image URLs format.
+  * Linux: Added the "application/x-cso" MIME type for GameCube .ciso
+    format on Linux. (Note that this technically refers to a different
+    format, but GameCube .ciso is incorrectly identified as this.)
 
 * Other changes:
   * Removed the internal copy of libjpeg-turbo. On Windows, gdiplus is now

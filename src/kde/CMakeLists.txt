@@ -42,6 +42,9 @@ SET(rom-properties-kde_UIS
 	config/OptionsTab.ui
 	config/AboutTab.ui
 	)
+SET(rom-properties-kde_RCC_SRCS
+	../res/flags/flags.qrc
+	)
 
 IF(ENABLE_DECRYPTION)
 	SET(rom-properties-kde_SRCS

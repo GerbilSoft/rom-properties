@@ -80,6 +80,7 @@ IF(BUILD_MATE)
 			$<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src>
 			$<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/src>
 		)
+	TARGET_LINK_LIBRARIES(rom-properties-mate PRIVATE glibresources)
 	TARGET_LINK_LIBRARIES(rom-properties-mate PRIVATE romdata rpbase)
 	IF(ENABLE_NLS)
 		TARGET_LINK_LIBRARIES(rom-properties-mate PRIVATE i18n)

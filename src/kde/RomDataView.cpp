@@ -13,6 +13,7 @@
 // librpbase
 #include "librpbase/RomData.hpp"
 #include "librpbase/RomFields.hpp"
+#include "librpbase/SystemRegion.hpp"
 #include "librpbase/TextFuncs.hpp"
 using namespace LibRpBase;
 
@@ -29,20 +30,25 @@ using LibRpTexture::rp_image;
 // C++ includes.
 #include <algorithm>
 #include <array>
+#include <set>
 #include <string>
 #include <vector>
 using std::array;
+using std::set;
 using std::string;
 using std::vector;
 
 // Qt includes.
 #include <QtCore/QDateTime>
 #include <QtCore/QEvent>
+#include <QtCore/QSignalMapper>
 #include <QtCore/QTimer>
+#include <QtCore/QVector>
 
-#include <QLabel>
 #include <QCheckBox>
+#include <QComboBox>
 #include <QHeaderView>
+#include <QLabel>
 #include <QSpacerItem>
 #include <QTreeWidget>
 
@@ -77,6 +83,12 @@ class RomDataViewPrivate
 		};
 		vector<tab> tabs;
 
+		// RFT_STRING_MULTI value labels.
+		typedef QPair<QLabel*, const RomFields::Field*> Data_StringMulti_t;
+		QVector<Data_StringMulti_t> vecStringMulti;
+		uint32_t def_lc;	// Default language code from RomFields.
+		QComboBox *cboLanguage;
+
 		// RomData object.
 		RomData *romData;
 
@@ -97,16 +109,17 @@ class RomDataViewPrivate
 		 * @param lblDesc	[in] Description label.
 		 * @param field		[in] RomFields::Field
 		 * @param str		[in,opt] String data. (If nullptr, field data is used.)
+		 * @return QLabel*, or nullptr on error.
 		 */
-		void initString(QLabel *lblDesc, const RomFields::Field *field, const QString *str = nullptr);
+		QLabel *initString(QLabel *lblDesc, const RomFields::Field *field, const QString *str = nullptr);
 
 		/**
 		 * Initialize a string field.
 		 * @param lblDesc	[in] Description label.
 		 * @param field		[in] RomFields::Field
-		 * @param str		[in,opt] String data. (If nullptr, field data is used.)
+		 * @param str		[in] String data.
 		 */
-		inline void initString(QLabel *lblDesc, const RomFields::Field *field, const QString &str)
+		inline QLabel *initString(QLabel *lblDesc, const RomFields::Field *field, const QString &str)
 		{
 			return initString(lblDesc, field, &str);
 		}
@@ -153,6 +166,19 @@ class RomDataViewPrivate
 		void initDimensions(QLabel *lblDesc, const RomFields::Field *field);
 
 		/**
+		 * Initialize a multi-language string field.
+		 * @param lblDesc	[in] Description label.
+		 * @param field		[in] RomFields::Field
+		 */
+		void initStringMulti(QLabel *lblDesc, const RomFields::Field *field);
+
+		/**
+		 * Update all multi-language string fields.
+		 * @param user_lc User-specified language code.
+		 */
+		void updateStringMulti(uint32_t user_lc);
+
+		/**
 		 * Initialize the display widgets.
 		 * If the widgets already exist, they will
 		 * be deleted and recreated.
@@ -181,6 +207,8 @@ class RomDataViewPrivate
 
 RomDataViewPrivate::RomDataViewPrivate(RomDataView *q, RomData *romData)
 	: q_ptr(q)
+	, def_lc(0)
+	, cboLanguage(nullptr)
 	, romData(romData->ref())
 {
 	// Register RpQImageBackend.
@@ -362,8 +390,9 @@ void RomDataViewPrivate::clearLayout(QLayout *layout)
  * @param lblDesc	[in] Description label.
  * @param field		[in] RomFields::Field
  * @param str		[in,opt] String data. (If nullptr, field data is used.)
+ * @return QLabel*, or nullptr on error.
  */
-void RomDataViewPrivate::initString(QLabel *lblDesc, const RomFields::Field *field, const QString *str)
+QLabel *RomDataViewPrivate::initString(QLabel *lblDesc, const RomFields::Field *field, const QString *str)
 {
 	// String type.
 	Q_Q(RomDataView);
@@ -443,6 +472,7 @@ void RomDataViewPrivate::initString(QLabel *lblDesc, const RomFields::Field *fie
 		} else {
 			// Duplicate credits label.
 			delete lblString;
+			lblString = nullptr;
 		}
 
 		// No description field.
@@ -451,6 +481,8 @@ void RomDataViewPrivate::initString(QLabel *lblDesc, const RomFields::Field *fie
 		// Standard string row.
 		tab.formLayout->addRow(lblDesc, lblString);
 	}
+
+	return lblString;
 }
 
 /**
@@ -866,6 +898,144 @@ void RomDataViewPrivate::initDimensions(QLabel *lblDesc, const RomFields::Field 
 }
 
 /**
+ * Initialize a multi-language string field.
+ * @param lblDesc	[in] Description label.
+ * @param field		[in] RomFields::Field
+ */
+void RomDataViewPrivate::initStringMulti(QLabel *lblDesc, const RomFields::Field *field)
+{
+	// Mutli-language string.
+	// NOTE: The string contents won't be initialized here.
+	// They will be initialized separately, since the user will
+	// be able to change the displayed language.
+	Q_Q(RomDataView);
+	QString qs_empty;
+	QLabel *const lblStringMulti = initString(lblDesc, field, &qs_empty);
+	if (lblStringMulti) {
+		vecStringMulti.append(Data_StringMulti_t(lblStringMulti, field));
+	}
+}
+
+/**
+ * Update all multi-language string fields.
+ * @param user_lc User-specified language code.
+ */
+void RomDataViewPrivate::updateStringMulti(uint32_t user_lc)
+{
+	// Set of supported language codes.
+	// NOTE: Using std::set instead of QSet for sorting.
+	set<uint32_t> set_lc;
+
+	foreach(const Data_StringMulti_t &data, vecStringMulti) {
+		QLabel *const lblString = data.first;
+		const RomFields::Field *const field = data.second;
+		const auto *const pStr_multi = field->data.str_multi;
+		assert(pStr_multi != nullptr);
+		assert(!pStr_multi->empty());
+		if (!pStr_multi || pStr_multi->empty()) {
+			// Invalid multi-string...
+			continue;
+		}
+
+		if (!cboLanguage) {
+			// Need to add all supported languages.
+			// TODO: Do we need to do this for all of them, or just one?
+			for (auto iter_sm = pStr_multi->cbegin();
+			     iter_sm != pStr_multi->cend(); ++iter_sm)
+			{
+				set_lc.insert(iter_sm->first);
+			}
+		}
+
+		// Try the user-specified language code first.
+		// TODO: Consolidate ->end() calls?
+		auto iter_sm = pStr_multi->end();
+		if (user_lc != 0) {
+			iter_sm = pStr_multi->find(user_lc);
+		}
+		if (iter_sm == pStr_multi->end()) {
+			// Not found. Try the ROM-default language code.
+			if (def_lc != user_lc) {
+				iter_sm = pStr_multi->find(def_lc);
+				if (iter_sm == pStr_multi->end()) {
+					// Still not found. Use the first string.
+					iter_sm = pStr_multi->begin();
+				}
+			}
+		}
+
+		// Update the text.
+		lblString->setText(U82Q(iter_sm->second.c_str()));
+	}
+
+	if (!cboLanguage && set_lc.size() > 1) {
+		// Create the language combobox.
+		Q_Q(RomDataView);
+		cboLanguage = new QComboBox(q);
+		cboLanguage->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Fixed);
+		ui.hboxHeaderRow->addWidget(cboLanguage);
+
+		// Sprite sheets. (32x32, 24x24, 16x16)
+		const QPixmap spriteSheets[3] = {
+			QPixmap(QLatin1String(":/flags/flags-32x32.png")),
+			QPixmap(QLatin1String(":/flags/flags-24x24.png")),
+			QPixmap(QLatin1String(":/flags/flags-16x16.png")),
+		};
+
+		int sel_idx = -1;
+		for (auto iter = set_lc.cbegin(); iter != set_lc.cend(); ++iter) {
+			const uint32_t lc = *iter;
+			const char *const name = SystemRegion::getLocalizedLanguageName(lc);
+			if (name) {
+				cboLanguage->addItem(U82Q(name), lc);
+			} else {
+				QString s_lc;
+				s_lc.reserve(4);
+				for (uint32_t tmp_lc = lc; tmp_lc != 0; tmp_lc <<= 8) {
+					ushort chr = (ushort)(tmp_lc >> 24);
+					if (chr != 0) {
+						s_lc += QChar(chr);
+					}
+				}
+				cboLanguage->addItem(s_lc, lc);
+			}
+			int cur_idx = cboLanguage->count()-1;
+
+			// Flag icon.
+			int col, row;
+			if (!SystemRegion::getFlagPosition(lc, &col, &row)) {
+				// Found a matching icon.
+				QIcon flag_icon;
+				flag_icon.addPixmap(spriteSheets[0].copy(col*32, row*32, 32, 32));
+				flag_icon.addPixmap(spriteSheets[1].copy(col*24, row*24, 24, 24));
+				flag_icon.addPixmap(spriteSheets[2].copy(col*16, row*16, 16, 16));
+				cboLanguage->setItemIcon(cur_idx, flag_icon);
+			}
+
+			// Save the default index:
+			// - ROM-default language code.
+			// - English if it's not available.
+			if (lc == def_lc) {
+				// Select this item.
+				sel_idx = cur_idx;
+			} else if (lc == 'en') {
+				// English. Select this item if def_lc hasn't been found yet.
+				if (sel_idx < 0) {
+					sel_idx = cur_idx;
+				}
+			}
+		}
+
+		// Set the current index.
+		cboLanguage->setCurrentIndex(sel_idx);
+
+		// Connect the signal after everything's been initialized.
+		QObject::connect(cboLanguage, SIGNAL(currentIndexChanged(int)),
+		                 q, SLOT(cboLanguage_currentIndexChanged_slot(int)));
+	}
+}
+
+/**
  * Initialize the display widgets.
  * If the widgets already exist, they will
  * be deleted and recreated.
@@ -1022,7 +1192,16 @@ void RomDataViewPrivate::initDisplayWidgets(void)
 			case RomFields::RFT_DIMENSIONS:
 				initDimensions(lblDesc, field);
 				break;
+			case RomFields::RFT_STRING_MULTI:
+				initStringMulti(lblDesc, field);
+				break;
 		}
+	}
+
+	// Initial update of RFT_MULTI_STRING fields.
+	if (!vecStringMulti.isEmpty()) {
+		def_lc = fields->defaultLanguageCode();
+		updateStringMulti(0);
 	}
 
 	// Check if the last field in the last tab
@@ -1185,6 +1364,22 @@ void RomDataView::bitfield_toggled_slot(bool checked)
 		// Toggle this box.
 		sender->setChecked(value);
 	}
+}
+
+/**
+ * The RFT_MULTI_STRING language was changed.
+ * @param lc Language code. (Cast to uint32_t)
+ */
+void RomDataView::cboLanguage_currentIndexChanged_slot(int index)
+{
+	Q_D(RomDataView);
+	if (index < 0) {
+		// Invalid index...
+		return;
+	}
+
+	const uint32_t lc = d->cboLanguage->itemData(index).value<uint32_t>();
+	d->updateStringMulti(lc);
 }
 
 /** Properties. **/

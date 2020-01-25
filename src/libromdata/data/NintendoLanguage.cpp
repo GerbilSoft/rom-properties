@@ -18,6 +18,9 @@ using LibRpBase::SystemRegion;
 #include "Handheld/nds_structs.h"
 #include "Handheld/n3ds_structs.h"
 
+// C includes. (C++ namespace)
+#include <cassert>
+
 namespace LibRomData {
 
 /**
@@ -49,6 +52,33 @@ int NintendoLanguage::getGcnPalLanguage(void)
 	// Should not get here...
 	assert(!"Invalid code path.");
 	return GCN_PAL_LANG_ENGLISH;
+}
+
+/**
+ * Convert a GameCube PAL language ID to a language code.
+ * @param langID GameCube PAL language ID.
+ * @return Language code, or 0 on error.
+ */
+uint32_t NintendoLanguage::getGcnPalLanguageCode(int langID)
+{
+	// GCN_PAL_Language_ID system language code mapping.
+	static const uint32_t langID_to_lc[GCN_PAL_LANG_MAX] = {
+		'en',	// GCN_PAL_LANG_ENGLISH
+		'de',	// GCN_PAL_LANG_GERMAN
+		'fr',	// GCN_PAL_LANG_FRENCH
+		'es',	// GCN_PAL_LANG_SPANISH
+		'it',	// GCN_PAL_LANG_ITALIAN
+		'nl',	// GCN_PAL_LANG_DUTCH
+	};
+
+	assert(langID >= 0);
+	assert(langID < ARRAY_SIZE(langID_to_lc));
+	if (langID < 0 || langID >= ARRAY_SIZE(langID_to_lc)) {
+		// Out of range.
+		return 0;
+	}
+
+	return langID_to_lc[langID];
 }
 
 /**
@@ -86,6 +116,36 @@ int NintendoLanguage::getWiiLanguage(void)
 }
 
 /**
+ * Convert a Wii language ID to a language code.
+ * @param langID GameCube PAL language ID.
+ * @return Language code, or 0 on error.
+ */
+uint32_t NintendoLanguage::getWiiLanguageCode(int langID)
+{
+	// Wii_Language_ID system language code mapping.
+	static const uint32_t langID_to_lc[WII_LANG_MAX] = {
+		'ja',	// WII_LANG_JAPANESE
+		'en',	// WII_LANG_ENGLISH
+		'de',	// WII_LANG_GERMAN
+		'fr',	// WII_LANG_FRENCH
+		'es',	// WII_LANG_SPANISH
+		'it',	// WII_LANG_ITALIAN
+		'nl',	// WII_LANG_DUTCH
+		0,	// 7: unknown
+		0,	// 8: unknown
+		'ko',	// WII_LANG_KOREAN
+	};
+
+	assert(langID >= 0);
+	if (langID < 0 || langID >= ARRAY_SIZE(langID_to_lc)) {
+		// Out of range.
+		return 0;
+	}
+
+	return langID_to_lc[langID];
+}
+
+/**
  * Determine the system language for Nintendo DS.
  * @param version NDS_IconTitleData version.
  * @return NDS_Language. If unknown, defaults to NDS_LANG_ENGLISH.
@@ -107,16 +167,13 @@ int NintendoLanguage::getNDSLanguage(uint16_t version)
 		case 'es':
 			return NDS_LANG_SPANISH;
 		case 'zh':
-			if (version >= NDS_ICON_VERSION_ZH) {
-				// NOTE: No distinction between
-				// Simplified and Traditional Chinese
-				// on Nintendo DS...
-				return NDS_LANG_CHINESE;
+			if (version >= NDS_ICON_VERSION_HANS) {
+				return NDS_LANG_CHINESE_SIMP;
 			}
 			// No Chinese title here.
 			return NDS_LANG_ENGLISH;
 		case 'ko':
-			if (version >= NDS_ICON_VERSION_ZH_KO) {
+			if (version >= NDS_ICON_VERSION_HANS_KO) {
 				return NDS_LANG_KOREAN;
 			}
 			// No Korean title here.
@@ -176,6 +233,46 @@ int NintendoLanguage::getN3DSLanguage(void)
 	// Should not get here...
 	assert(!"Invalid code path.");
 	return N3DS_LANG_ENGLISH;
+}
+
+/**
+ * Convert a Nintendo DS/3DS language ID to a language code.
+ * @param langID Nintendo DS/3DS language ID.
+ * @param maxID Maximum language ID, inclusive. (es, hans, ko, or hant)
+ * @return Language code, or 0 on error.
+ */
+uint32_t NintendoLanguage::getNDSLanguageCode(int langID, int maxID)
+{
+	// N3DS_Language_ID system language code mapping.
+	static const uint32_t langID_to_lc[N3DS_LANG_MAX] = {
+		// 0-7 are the same as Nintendo DS.
+		'ja',	// N3DS_LANG_JAPANESE
+		'en',	// N3DS_LANG_ENGLISH
+		'fr',	// N3DS_LANG_FRENCH
+		'de',	// N3DS_LANG_GERMAN
+		'it',	// N3DS_LANG_ITALIAN
+		'es',	// N3DS_LANG_SPANISH
+		'hans',	// N3DS_LANG_CHINESE_SIMP
+
+		// New to Nintendo 3DS.
+		'ko',	// N3DS_LANG_KOREAN
+		'nl',	// N3DS_LANG_DUTCH
+		'pt',	// N3DS_LANG_PORTUGUESE
+		'ru',	// N3DS_LANG_RUSSIAN
+		'hant',	// N3DS_LANG_CHINESE_TRAD
+	};
+
+	assert(langID >= 0);
+	assert(maxID <= ARRAY_SIZE(langID_to_lc));
+	if (maxID > ARRAY_SIZE(langID_to_lc)) {
+		maxID = ARRAY_SIZE(langID_to_lc) - 1;
+	}
+	if (langID < 0 || langID > maxID) {
+		// Out of range.
+		return 0;
+	}
+
+	return langID_to_lc[langID];
 }
 
 }

@@ -28,16 +28,20 @@ using LibWin32Common::WTSSessionNotification;
 
 // librpbase, librptexture, libromdata
 #include "librpbase/RomFields.hpp"
+#include "librpbase/SystemRegion.hpp"
+#include "librpbase/file/RpMemFile.hpp"
+#include "librpbase/img/RpPng.hpp"
 using namespace LibRpBase;
 using LibRpTexture::rp_image;
 using LibRomData::RomDataFactory;
 
 // C++ STL classes.
 using std::array;
+using std::set;
+using std::string;
 using std::unique_ptr;
 using std::unordered_map;
 using std::unordered_set;
-using std::string;
 using std::wstring;
 using std::vector;
 
@@ -52,6 +56,7 @@ const CLSID CLSID_RP_ShellPropSheetExt =
 #define IDC_STATIC_BANNER		0x0100
 #define IDC_STATIC_ICON			0x0101
 #define IDC_TAB_WIDGET			0x0102
+#define IDC_CBO_LANGUAGE		0x0103
 #define IDC_TAB_PAGE(idx)		(0x0200 + (idx))
 #define IDC_STATIC_DESC(idx)		(0x1000 + (idx))
 #define IDC_RFT_STRING(idx)		(0x1400 + (idx))
@@ -113,6 +118,8 @@ class RP_ShellPropSheetExt_Private
 
 		// Header row widgets.
 		HWND lblSysInfo;
+		POINT ptSysInfo;
+		RECT rectHeader;
 
 		// wtsapi32.dll for Remote Desktop status. (WinXP and later)
 		WTSSessionNotification wts;
@@ -151,13 +158,22 @@ class RP_ShellPropSheetExt_Private
 		DragImageLabel *lblIcon;
 
 		// Tab layout.
-		HWND hTabWidget;
+		HWND tabWidget;
 		struct tab {
 			HWND hDlg;		// Tab child dialog.
 			POINT curPt;		// Current point.
 		};
 		vector<tab> tabs;
 		int curTabIndex;
+
+		// RFT_STRING_MULTI value labels.
+		typedef std::pair<HWND, const RomFields::Field*> Data_StringMulti_t;
+		vector<Data_StringMulti_t> vecStringMulti;
+		set<uint32_t> set_lc;	// Set of language codes from vecStringMulti.
+		uint32_t def_lc;	// Default language code from RomFields.
+		static const UINT iconSize = 16;	// TODO: Hi-DPI
+		HWND cboLanguage;
+		HIMAGELIST himglFlags;
 
 	public:
 		/**
@@ -198,11 +214,13 @@ class RP_ShellPropSheetExt_Private
 		 * @param size		[in] Width and height for a single line label.
 		 * @param field		[in] RomFields::Field
 		 * @param str		[in,opt] String data. (If nullptr, field data is used.)
+		 * @param pOutHWND	[out,opt] Retrieves the control's HWND.
 		 * @return Field height, in pixels.
 		 */
-		int initString(HWND hDlg, HWND hWndTab,
-			const POINT &pt_start, int idx, const SIZE &size,
-			const RomFields::Field *field, LPCTSTR str);
+		int initString(_In_ HWND hDlg, _In_ HWND hWndTab,
+			_In_ const POINT &pt_start, _In_ int idx, _In_ const SIZE &size,
+			_In_ const RomFields::Field *field, _In_ LPCTSTR str = nullptr,
+			_Outptr_opt_ HWND *pOutHWND = nullptr);
 
 		/**
 		 * Initialize a bitfield layout.
@@ -278,6 +296,39 @@ class RP_ShellPropSheetExt_Private
 			const RomFields::Field *field);
 
 		/**
+		 * Initialize a multi-language string field.
+		 * @param hDlg		[in] Parent dialog window. (for dialog unit mapping)
+		 * @param hWndTab	[in] Tab window. (for the actual control)
+		 * @param pt_start	[in] Starting position, in pixels.
+		 * @param idx		[in] Field index.
+		 * @param size		[in] Width and height for a single line label.
+		 * @param field		[in] RomFields::Field
+		 * @return Field height, in pixels.
+		 */
+		int initStringMulti(HWND hDlg, HWND hWndTab,
+			const POINT &pt_start, int idx, const SIZE &size,
+			const RomFields::Field *field);
+
+		/**
+		 * Load a PNG image from a Windows resource.
+		 * TODO: Move somewhere else.
+		 * @param lpName Windows resource.
+		 * @return PNG image, or nullptr on error.
+		 */
+		static rp_image *loadPngFromResource(LPCTSTR lpName);
+
+		/**
+		 * Build the cboLanguage image list.
+		 */
+		void buildCboLanguageImageList(void);
+
+		/**
+		 * Update all multi-language string fields.
+		 * @param user_lc User-specified language code.
+		 */
+		void updateStringMulti(uint32_t user_lc);
+
+		/**
 		 * Initialize the bold font.
 		 * @param hFont Base font.
 		 */
@@ -300,6 +351,7 @@ class RP_ShellPropSheetExt_Private
 	private:
 		// Internal functions used by the callback functions.
 		INT_PTR DlgProc_WM_NOTIFY(HWND hDlg, NMHDR *pHdr);
+		INT_PTR DlgProc_WM_COMMAND(HWND hDlg, WPARAM wParam, LPARAM lParam);
 		INT_PTR DlgProc_WM_PAINT(HWND hDlg);
 
 	public:
@@ -336,8 +388,11 @@ RP_ShellPropSheetExt_Private::RP_ShellPropSheetExt_Private(RP_ShellPropSheetExt 
 	, isFullyInit(false)
 	, lblBanner(nullptr)
 	, lblIcon(nullptr)
-	, hTabWidget(nullptr)
+	, tabWidget(nullptr)
 	, curTabIndex(0)
+	, def_lc(0)
+	, cboLanguage(nullptr)
+	, himglFlags(nullptr)
 {
 	memset(&lfFontMono, 0, sizeof(lfFontMono));
 
@@ -354,6 +409,14 @@ RP_ShellPropSheetExt_Private::~RP_ShellPropSheetExt_Private()
 	// Unreference the RomData object.
 	if (romData) {
 		romData->unref();
+	}
+
+	// Destroy the flags ImageList.
+	if (cboLanguage) {
+		SendMessage(cboLanguage, CBEM_SETIMAGELIST, 0, (LPARAM)nullptr);
+	}
+	if (himglFlags) {
+		ImageList_Destroy(himglFlags);
 	}
 
 	// Delete the fonts.
@@ -495,7 +558,7 @@ int RP_ShellPropSheetExt_Private::createHeaderRow(HWND hDlg, const POINT &pt_sta
 	int total_widget_width = 0;
 
 	// Label size.
-	SIZE sz_lblSysInfo = {0, 0};
+	SIZE size_lblSysInfo = {0, 0};
 
 	// Font to use.
 	// TODO: Handle these assertions in release builds.
@@ -524,15 +587,14 @@ int RP_ShellPropSheetExt_Private::createHeaderRow(HWND hDlg, const POINT &pt_sta
 
 	if (!tSysInfo.empty()) {
 		// Determine the appropriate label size.
-		int ret = LibWin32Common::measureTextSize(hDlg, hFont, tSysInfo, &sz_lblSysInfo);
-		if (ret != 0) {
+		if (!LibWin32Common::measureTextSize(hDlg, hFont, tSysInfo, &size_lblSysInfo)) {
+			// Start the total_widget_width.
+			total_widget_width = size_lblSysInfo.cx;
+		} else {
 			// Error determining the label size.
 			// Don't draw the label.
-			sz_lblSysInfo.cx = 0;
-			sz_lblSysInfo.cy = 0;
-		} else {
-			// Start the total_widget_width.
-			total_widget_width = sz_lblSysInfo.cx;
+			size_lblSysInfo.cx = 0;
+			size_lblSysInfo.cy = 0;
 		}
 	}
 
@@ -563,15 +625,18 @@ int RP_ShellPropSheetExt_Private::createHeaderRow(HWND hDlg, const POINT &pt_sta
 	};
 
 	// lblSysInfo
-	if (sz_lblSysInfo.cx > 0 && sz_lblSysInfo.cy > 0) {
+	if (size_lblSysInfo.cx > 0 && size_lblSysInfo.cy > 0) {
+		ptSysInfo.x = curPt.x;
+		ptSysInfo.y = curPt.y;
+
 		lblSysInfo = CreateWindowEx(WS_EX_NOPARENTNOTIFY | WS_EX_TRANSPARENT,
 			WC_STATIC, tSysInfo.c_str(),
 			WS_CHILD | WS_VISIBLE | SS_CENTER,
-			curPt.x, curPt.y,
-			sz_lblSysInfo.cx, sz_lblSysInfo.cy,
+			ptSysInfo.x, ptSysInfo.y,
+			size_lblSysInfo.cx, size_lblSysInfo.cy,
 			hDlg, (HMENU)IDC_STATIC, nullptr, nullptr);
 		SetWindowFont(lblSysInfo, hFont, false);
-		curPt.x += sz_lblSysInfo.cx + pt_start.x;
+		curPt.x += size_lblSysInfo.cx + pt_start.x;
 	}
 
 	// Banner.
@@ -588,7 +653,7 @@ int RP_ShellPropSheetExt_Private::createHeaderRow(HWND hDlg, const POINT &pt_sta
 
 	// Return the label height and some extra padding.
 	// TODO: Icon/banner height?
-	return sz_lblSysInfo.cy + (pt_start.y * 5 / 8);
+	return size_lblSysInfo.cy + (pt_start.y * 5 / 8);
 }
 
 /**
@@ -600,12 +665,19 @@ int RP_ShellPropSheetExt_Private::createHeaderRow(HWND hDlg, const POINT &pt_sta
  * @param size		[in] Width and height for a single line label.
  * @param field		[in] RomFields::Field
  * @param str		[in,opt] String data. (If nullptr, field data is used.)
+ * @param pOutHWND	[out,opt] Retrieves the control's HWND.
  * @return Field height, in pixels.
  */
-int RP_ShellPropSheetExt_Private::initString(HWND hDlg, HWND hWndTab,
-	const POINT &pt_start, int idx, const SIZE &size,
-	const RomFields::Field *field, LPCTSTR str)
+int RP_ShellPropSheetExt_Private::initString(_In_ HWND hDlg, _In_ HWND hWndTab,
+	_In_ const POINT &pt_start, _In_ int idx, _In_ const SIZE &size,
+	_In_ const RomFields::Field *field, _In_ LPCTSTR str,
+	_Outptr_opt_ HWND *pOutHWND)
 {
+	if (pOutHWND) {
+		// Clear the output HWND initially.
+		*pOutHWND = nullptr;
+	}
+
 	assert(hDlg != nullptr);
 	assert(hWndTab != nullptr);
 	assert(field != nullptr);
@@ -780,6 +852,11 @@ int RP_ShellPropSheetExt_Private::initString(HWND hDlg, HWND hWndTab,
 	}
 	if (isMonospace) {
 		hwndMonoControls.push_back(hDlgItem);
+	}
+
+	// Return the HWND if requested.
+	if (pOutHWND) {
+		*pOutHWND = hDlgItem;
 	}
 
 	return field_cy;
@@ -1204,8 +1281,7 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 
 		// Icons.
 		if (hasIcons) {
-			// TODO: Ideal icon size?
-			// Using 32x32 for now.
+			// Icon size is 32x32, adjusted for DPI. (TODO: WM_DPICHANGED)
 			// ImageList will resize the original icons to 32x32.
 
 			// NOTE: LVS_REPORT doesn't allow variable row sizes,
@@ -1215,18 +1291,19 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 			// 16 pixels.
 			// TODO: Handle this better.
 			// FIXME: This only works if the RFT_LISTDATA has icons.
-			SIZE szLstIcon = {32, 32};
+			const int px = rp_AdjustSizeForDpi(32, rp_GetDpiForWindow(hDlg));
+			SIZE sizeListIcon = {px, px};
 			bool resizeNeeded = false;
 			float factor = 1.0f;
 			if (nl_max >= 2) {
 				// Two or more newlines.
-				// Add 16px per newline over 1.
-				szLstIcon.cy += (16 * (nl_max - 1));
+				// Add half of the icon size per newline over 1.
+				sizeListIcon.cy += ((px/2) * (nl_max - 1));
 				resizeNeeded = true;
-				factor = (float)szLstIcon.cy / 32.0f;
+				factor = (float)sizeListIcon.cy / (float)sizeListIcon.cy;
 			}
 
-			HIMAGELIST himl = ImageList_Create(szLstIcon.cx, szLstIcon.cy,
+			HIMAGELIST himl = ImageList_Create(sizeListIcon.cx, sizeListIcon.cy,
 				ILC_COLOR32, static_cast<int>(list_data->size()), 0);
 			assert(himl != nullptr);
 			if (himl) {
@@ -1579,6 +1656,407 @@ int RP_ShellPropSheetExt_Private::initDimensions(HWND hDlg, HWND hWndTab,
 }
 
 /**
+ * Initialize a multi-language string field.
+ * @param hDlg		[in] Parent dialog window. (for dialog unit mapping)
+ * @param hWndTab	[in] Tab window. (for the actual control)
+ * @param pt_start	[in] Starting position, in pixels.
+ * @param idx		[in] Field index.
+ * @param size		[in] Width and height for a single line label.
+ * @param field		[in] RomFields::Field
+ * @return Field height, in pixels.
+ */
+int RP_ShellPropSheetExt_Private::initStringMulti(HWND hDlg, HWND hWndTab,
+	const POINT &pt_start, int idx, const SIZE &size,
+	const RomFields::Field *field)
+{
+	// Mutli-language string.
+	// NOTE: The string contents won't be initialized here.
+	// They will be initialized separately, since the user will
+	// be able to change the displayed language.
+	HWND lblStringMulti = nullptr;
+	int field_cy = initString(hDlg, hWndTab, pt_start, idx, size, field,
+		_T(""), &lblStringMulti);
+	if (lblStringMulti) {
+		vecStringMulti.push_back(std::make_pair(lblStringMulti, field));
+	}
+	return field_cy;
+}
+
+/**
+ * Load a PNG image from a Windows resource.
+ * TODO: Move somewhere else.
+ * @param lpName Windows resource.
+ * @return PNG image, or nullptr on error.
+ */
+rp_image *RP_ShellPropSheetExt_Private::loadPngFromResource(LPCTSTR lpName)
+{
+	HRSRC hRsrc = FindResource(HINST_THISCOMPONENT, lpName, MAKEINTRESOURCE(RT_PNG));
+	if (!hRsrc)
+		return nullptr;
+
+	DWORD dwSize = SizeofResource(HINST_THISCOMPONENT, hRsrc);
+	if (dwSize == 0) {
+		// Unable to get the resource size.
+		return nullptr;
+	}
+
+	HGLOBAL hGlobal = LoadResource(HINST_THISCOMPONENT, hRsrc);
+	if (!hGlobal) {
+		// Unable to load the resource.
+		return nullptr;
+	}
+
+	void *lpData = LockResource(hGlobal);
+	if (!lpData) {
+		// Failed to lock the resource.
+		FreeResource(hGlobal);
+		return nullptr;
+	}
+
+	// Create an RpMemFile wrapper.
+	// TODO: RpResourceFile?
+	RpMemFile *const memFile = new RpMemFile(lpData, dwSize);
+
+	// Load the PNG image.
+	rp_image *const img = RpPng::loadUnchecked(memFile);
+
+	// Clean up.
+	memFile->unref();
+	UnlockResource(lpData);
+	FreeResource(hGlobal);
+
+	return img;
+}
+
+/**
+ * Build the cboLanguage image list.
+ */
+void RP_ShellPropSheetExt_Private::buildCboLanguageImageList(void)
+{
+	if (cboLanguage) {
+		// Removing the existing ImageList first.
+		SendMessage(cboLanguage, CBEM_SETIMAGELIST, 0, (LPARAM)nullptr);
+	}
+	if (himglFlags) {
+		// Deleting the existing ImageList first.
+		ImageList_Destroy(himglFlags);
+		himglFlags = nullptr;
+	}
+
+	if (vecStringMulti.empty() || set_lc.size() <= 1) {
+		// No multi-language string fields, or not enough
+		// languages for cboLanguage.
+		return;
+	}
+
+	// Get the icon size for the current DPI.
+	// Reference: https://docs.microsoft.com/en-us/windows/win32/hidpi/high-dpi-desktop-application-development-on-windows
+	// TODO: Adjust cboLanguage if necessary?
+	const UINT dpi = rp_GetDpiForWindow(hDlgSheet);
+	unsigned int iconSize;
+	uint16_t flagResource;
+	if (dpi < 120) {
+		// [96,120) dpi: Use 16x16.
+		iconSize = 16;
+		flagResource = IDP_FLAGS_16x16;
+	} else if (dpi <= 144) {
+		// [120,144] dpi: Use 24x24.
+		// TODO: Maybe needs to be slightly higher?
+		iconSize = 24;
+		flagResource = IDP_FLAGS_24x24;
+	} else {
+		// >144dpi: Use 32x32.
+		iconSize = 32;
+		flagResource = IDP_FLAGS_32x32;
+	}
+
+	// Load the flags sprite sheet.
+	// TODO: Is premultiplied alpha needed?
+	// Reference: https://stackoverflow.com/questions/307348/how-to-draw-32-bit-alpha-channel-bitmaps
+	unique_ptr<rp_image> imgFlagsSheet(loadPngFromResource(MAKEINTRESOURCE(flagResource)));
+	if (!imgFlagsSheet) {
+		// Unable to load the flags sprite sheet.
+		return;
+	}
+	const int flagStride = imgFlagsSheet->stride() / sizeof(uint32_t);
+	HDC hdcIcon = GetDC(nullptr);
+
+	// Make sure the bitmap has the expected size.
+	assert(imgFlagsSheet->width() == (iconSize * SystemRegion::FLAGS_SPRITE_SHEET_COLS));
+	assert(imgFlagsSheet->height() == (iconSize * SystemRegion::FLAGS_SPRITE_SHEET_ROWS));
+	if (imgFlagsSheet->width() != (iconSize * SystemRegion::FLAGS_SPRITE_SHEET_COLS) ||
+	    imgFlagsSheet->height() != (iconSize * SystemRegion::FLAGS_SPRITE_SHEET_ROWS))
+	{
+		// Incorrect size. We can't use it.
+		return;
+	}
+
+	// Create the image list.
+	himglFlags = ImageList_Create(iconSize, iconSize, ILC_COLOR32, 13, 16);
+	assert(himglFlags != nullptr);
+	if (!himglFlags) {
+		// Unable to create the ImageList.
+		return;
+	}
+
+	const BITMAPINFOHEADER bmihDIBSection = {
+		sizeof(BITMAPINFOHEADER),	// biSize
+		iconSize,			// biWidth
+		-(int)iconSize,			// biHeight (negative for right-side up)
+		1,				// biPlanes
+		32,				// biBitCount
+		BI_RGB,				// biCompression
+		0,				// biSizeImage
+		dpi,				// biXPelsPerMeter
+		dpi,				// biYPelsPerMeter
+		0,				// biClrUsed
+		0,				// biClrImportant
+	};
+
+	for (auto iter = set_lc.cbegin(); iter != set_lc.end(); ++iter) {
+		int col, row;
+		int ret = SystemRegion::getFlagPosition(*iter, &col, &row);
+		assert(ret == 0);
+		if (ret != 0) {
+			// Icon not found. Use a blank icon to prevent issues.
+			col = 3;
+			row = 3;
+		}
+
+		// Create a DIB section for the sub-icon.
+		void *pvBits;
+		HBITMAP hbmIcon = CreateDIBSection(
+			hdcIcon,	// hdc
+			reinterpret_cast<const BITMAPINFO*>(&bmihDIBSection),	// pbmi
+			DIB_RGB_COLORS,	// usage
+			&pvBits,	// ppvBits
+			nullptr,	// hSection
+			0);		// offset
+
+		GdiFlush();	// TODO: Not sure if needed here...
+		assert(hbmIcon != nullptr);
+		if (hbmIcon) {
+			// Copy the icon from the sprite sheet.
+			const size_t rowBytes = iconSize * sizeof(uint32_t);
+			const uint32_t *pSrc = static_cast<const uint32_t*>(imgFlagsSheet->scanLine(row * iconSize));
+			pSrc += (col * iconSize);
+			uint32_t *pDest = static_cast<uint32_t*>(pvBits);
+			for (UINT bmRow = iconSize; bmRow > 0; bmRow--) {
+				memcpy(pDest, pSrc, rowBytes);
+				pDest += iconSize;
+				pSrc += flagStride;
+			}
+
+			// Add the icon to the ImageList.
+			GdiFlush();
+			ImageList_Add(himglFlags, hbmIcon, nullptr);
+		}
+	}
+
+	ReleaseDC(nullptr, hdcIcon);
+
+	if (cboLanguage) {
+		// Set the new ImageList.
+		SendMessage(cboLanguage, CBEM_SETIMAGELIST, 0, (LPARAM)himglFlags);
+	}
+}
+
+/**
+ * Update all multi-language string fields.
+ * @param user_lc User-specified language code.
+ */
+void RP_ShellPropSheetExt_Private::updateStringMulti(uint32_t user_lc)
+{
+	for (auto iter = vecStringMulti.cbegin();
+	     iter != vecStringMulti.cend(); ++iter)
+	{
+		const HWND lblString = iter->first;
+		const RomFields::Field *const field = iter->second;
+		const auto *const pStr_multi = field->data.str_multi;
+		assert(pStr_multi != nullptr);
+		assert(!pStr_multi->empty());
+		if (!pStr_multi || pStr_multi->empty()) {
+			// Invalid multi-string...
+			continue;
+		}
+
+		if (!cboLanguage) {
+			// Need to add all supported languages.
+			// TODO: Do we need to do this for all of them, or just one?
+			for (auto iter_sm = pStr_multi->cbegin();
+			     iter_sm != pStr_multi->cend(); ++iter_sm)
+			{
+				set_lc.insert(iter_sm->first);
+			}
+		}
+
+		// Try the user-specified language code first.
+		// TODO: Consolidate ->end() calls?
+		auto iter_sm = pStr_multi->end();
+		if (user_lc != 0) {
+			iter_sm = pStr_multi->find(user_lc);
+		}
+		if (iter_sm == pStr_multi->end()) {
+			// Not found. Try the ROM-default language code.
+			if (def_lc != user_lc) {
+				iter_sm = pStr_multi->find(def_lc);
+				if (iter_sm == pStr_multi->end()) {
+					// Still not found. Use the first string.
+					iter_sm = pStr_multi->begin();
+				}
+			}
+		}
+
+		// Update the text.
+		SetWindowText(lblString, U82T_s(iter_sm->second));
+	}
+
+	if (!cboLanguage && set_lc.size() > 1) {
+		// Create the language combobox.
+
+		// Get the language strings and determine the
+		// maximum width.
+		SIZE maxSize = {0, 0};
+		vector<tstring> vec_lc_str;
+		vec_lc_str.reserve(set_lc.size());
+		for (auto iter = set_lc.cbegin(); iter != set_lc.cend(); ++iter) {
+			const uint32_t lc = *iter;
+			const char *lc_str = SystemRegion::getLocalizedLanguageName(lc);
+			if (lc_str) {
+				vec_lc_str.emplace_back(std::move(U82T_c(lc_str)));
+			} else {
+				// Invalid language code.
+				tstring s_lc;
+				s_lc.reserve(4);
+				for (uint32_t tmp_lc = lc; tmp_lc != 0; tmp_lc <<= 8) {
+					TCHAR chr = (TCHAR)(tmp_lc >> 24);
+					if (chr != 0) {
+						s_lc += chr;
+					}
+				}
+				vec_lc_str.emplace_back(std::move(s_lc));
+			}
+
+			const tstring &tstr = vec_lc_str.at(vec_lc_str.size()-1);
+			SIZE size;
+			if (!LibWin32Common::measureTextSize(hDlgSheet, hFontDlg, tstr.c_str(), &size)) {
+				maxSize.cx = std::max(maxSize.cx, size.cx);
+				maxSize.cy = std::max(maxSize.cy, size.cy);
+			}
+		}
+
+		// TODO:
+		// - Per-monitor DPI scaling (both v1 and v2)
+		// - Handle WM_DPICHANGED.
+		// Reference: https://docs.microsoft.com/en-us/windows/win32/hidpi/high-dpi-desktop-application-development-on-windows
+		const UINT dpi = rp_GetDpiForWindow(hDlgSheet);
+		unsigned int iconSize;
+		unsigned int iconMargin;
+		if (dpi < 120) {
+			// [96,120) dpi: Use 16x16.
+			iconSize = 16;
+			iconMargin = 2;
+		} else if (dpi <= 144) {
+			// [120,144] dpi: Use 24x24.
+			// TODO: Maybe needs to be slightly higher?
+			iconSize = 24;
+			iconMargin = 3;
+		} else {
+			// >144dpi: Use 32x32.
+			iconSize = 32;
+			iconMargin = 4;
+		}
+
+		// Add iconSize + iconMargin for the icon.
+		maxSize.cx += iconSize + iconMargin;
+
+		// Add vertical scrollbar width and CXEDGE.
+		// Reference: http://ntcoder.com/2013/10/07/mfc-resize-ccombobox-drop-down-list-based-on-contents/
+		maxSize.cx += rp_GetSystemMetricsForDpi(SM_CXVSCROLL, dpi);
+		maxSize.cx += (rp_GetSystemMetricsForDpi(SM_CXEDGE, dpi) * 4);
+
+		// Create the combobox.
+		// FIXME: May need to create this after the header row
+		// in order to preserve tab order. Need to check the
+		// KDE and GTK+ versions, too.
+		// ComboBoxEx was introduced in MSIE 3.0.
+		// NOTE: Height is based on icon size.
+		cboLanguage = CreateWindowEx(WS_EX_NOPARENTNOTIFY,
+			WC_COMBOBOXEX, nullptr,
+			CBS_DROPDOWNLIST | WS_CHILD | WS_TABSTOP | WS_VISIBLE,
+			rectHeader.right - maxSize.cx, rectHeader.top,
+			maxSize.cx, iconSize*(8+1) + maxSize.cy - (maxSize.cy / 8),
+			hDlgSheet, (HMENU)(INT_PTR)IDC_CBO_LANGUAGE,
+			nullptr, nullptr);
+		SetWindowFont(cboLanguage, hFontDlg, false);
+		SendMessage(cboLanguage, CBEM_SETIMAGELIST, 0, (LPARAM)himglFlags);
+
+		// Add the strings.
+		auto iter_str = vec_lc_str.cbegin();
+		auto iter_lc = set_lc.cbegin();
+		int sel_idx = -1;
+		COMBOBOXEXITEM cbItem;
+		cbItem.mask = CBEIF_TEXT | CBEIF_LPARAM | CBEIF_IMAGE | CBEIF_SELECTEDIMAGE;
+		cbItem.iItem = 0;
+		int iImage = 0;
+		for (; iter_str != vec_lc_str.cend(); ++iter_str, ++iter_lc, cbItem.iItem++, iImage++) {
+			const uint32_t lc = *iter_lc;
+			cbItem.pszText = const_cast<LPTSTR>(iter_str->c_str());
+			cbItem.cchTextMax = static_cast<int>(iter_str->size());
+			cbItem.lParam = static_cast<LPARAM>(lc);
+			cbItem.iImage = iImage;
+			cbItem.iSelectedImage = iImage;
+
+			// Insert the item.
+			SendMessage(cboLanguage, CBEM_INSERTITEM, 0, (LPARAM)&cbItem);
+
+			// Save the default index:
+			// - ROM-default language code.
+			// - English if it's not available.
+			if (lc == def_lc) {
+				// Select this item.
+				sel_idx = cbItem.iItem;
+			} else if (lc == 'en') {
+				// English. Select this item if def_lc hasn't been found yet.
+				if (sel_idx < 0) {
+					sel_idx = cbItem.iItem;
+				}
+			}
+		}
+
+		// Build the ImageList.
+		buildCboLanguageImageList();
+
+		// Set the current index.
+		ComboBox_SetCurSel(cboLanguage, sel_idx);
+
+		// Get the dialog margin.
+		// 7x7 DLU margin is recommended by the Windows UX guidelines.
+		// Reference: http://stackoverflow.com/questions/2118603/default-dialog-padding
+		RECT dlgMargin = { 7, 7, 8, 8 };
+		MapDialogRect(hDlgSheet, &dlgMargin);
+
+		// Adjust the header row.
+		const int adj = (maxSize.cx + dlgMargin.left) / 2;
+		if (lblSysInfo) {
+			ptSysInfo.x -= adj;
+			SetWindowPos(lblSysInfo, nullptr, ptSysInfo.x, ptSysInfo.y, 0, 0,
+				SWP_NOSIZE | SWP_NOOWNERZORDER | SWP_NOZORDER);
+		}
+		if (lblBanner) {
+			POINT pos = lblBanner->position();
+			pos.x -= adj;
+			lblBanner->setPosition(pos);
+		}
+		if (lblIcon) {
+			POINT pos = lblIcon->position();
+			pos.x -= adj;
+			lblIcon->setPosition(pos);
+		}
+	}
+}
+
+/**
  * Initialize the bold font.
  * @param hFont Base font.
  */
@@ -1697,7 +2175,8 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 	// Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/bb775507(v=vs.85).aspx
 	INITCOMMONCONTROLSEX initCommCtrl;
 	initCommCtrl.dwSize = sizeof(initCommCtrl);
-	initCommCtrl.dwICC = ICC_LISTVIEW_CLASSES | ICC_LINK_CLASS | ICC_TAB_CLASSES;
+	initCommCtrl.dwICC = ICC_LISTVIEW_CLASSES | ICC_LINK_CLASS |
+	                     ICC_TAB_CLASSES | ICC_USEREX_CLASSES;
 	// TODO: Also ICC_STANDARD_CLASSES on XP+?
 	InitCommonControlsEx(&initCommCtrl);
 
@@ -1801,6 +2280,13 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 	// Create the header row.
 	const SIZE header_size = {dlgSize.cx, descSize.cy};
 	const int headerH = createHeaderRow(hDlg, headerPt, header_size);
+	// Save the header rect for later.
+	rectHeader.left = headerPt.x;
+	rectHeader.top = headerPt.y;
+	rectHeader.right = headerPt.x + dlgSize.cx;
+	rectHeader.bottom = headerPt.y + headerH;
+
+	// Adjust values for the tabs.
 	dlgRect.top += headerH;
 	dlgSize.cy -= headerH;
 	headerPt.y += headerH;
@@ -1818,13 +2304,13 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 
 		// Create the tab widget.
 		tabs.resize(tabCount);
-		hTabWidget = CreateWindowEx(WS_EX_NOPARENTNOTIFY | WS_EX_TRANSPARENT,
+		tabWidget = CreateWindowEx(WS_EX_NOPARENTNOTIFY | WS_EX_TRANSPARENT,
 			WC_TABCONTROL, nullptr,
 			WS_CHILD | WS_TABSTOP | WS_VISIBLE,
 			dlgRect.left, dlgRect.top, dlgSize.cx, dlgSize.cy,
 			hDlg, (HMENU)(INT_PTR)IDC_TAB_WIDGET,
 			nullptr, nullptr);
-		SetWindowFont(hTabWidget, hFontDlg, false);
+		SetWindowFont(tabWidget, hFontDlg, false);
 		curTabIndex = 0;
 
 		// Add tabs.
@@ -1842,11 +2328,11 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 			const tstring tstr = U82T_c(name);
 			tcItem.pszText = const_cast<LPTSTR>(tstr.c_str());
 			// FIXME: Does the index work correctly if a tab is skipped?
-			TabCtrl_InsertItem(hTabWidget, i, &tcItem);
+			TabCtrl_InsertItem(tabWidget, i, &tcItem);
 		}
 
 		// Adjust the dialog size for subtabs.
-		TabCtrl_AdjustRect(hTabWidget, false, &dlgRect);
+		TabCtrl_AdjustRect(tabWidget, false, &dlgRect);
 		// Update dlgSize.
 		dlgSize.cx = dlgRect.right - dlgRect.left;
 		dlgSize.cy = dlgRect.bottom - dlgRect.top;
@@ -1925,27 +2411,24 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 		// Create the value widget.
 		int field_cy = descSize.cy;	// Default row size.
 		const POINT pt_start = {tab.curPt.x + descSize.cx, tab.curPt.y};
+		SIZE size = {dlg_value_width, field_cy};
 		switch (field->type) {
 			case RomFields::RFT_INVALID:
 				// No data here.
 				field_cy = 0;
 				break;
 
-			case RomFields::RFT_STRING: {
+			case RomFields::RFT_STRING:
 				// String data.
-				const SIZE size = {dlg_value_width, field_cy};
 				field_cy = initString(hDlg, tab.hDlg, pt_start, idx, size, field, nullptr);
 				break;
-			}
-
 			case RomFields::RFT_BITFIELD:
 				// Create checkboxes starting at the current point.
 				field_cy = initBitfield(hDlg, tab.hDlg, pt_start, idx, field);
 				break;
-
 			case RomFields::RFT_LISTDATA: {
 				// Create a ListView control.
-				SIZE size = {dlg_value_width, field_cy*6};
+				size.cy *= 6;	// TODO: Is this needed?
 				POINT pt_ListData = pt_start;
 
 				// Should the RFT_LISTDATA be placed on its own row?
@@ -2005,26 +2488,22 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 				break;
 			}
 
-			case RomFields::RFT_DATETIME: {
+			case RomFields::RFT_DATETIME:
 				// Date/Time in Unix format.
-				const SIZE size = {dlg_value_width, field_cy};
 				field_cy = initDateTime(hDlg, tab.hDlg, pt_start, idx, size, field);
 				break;
-			}
-
-			case RomFields::RFT_AGE_RATINGS: {
+			case RomFields::RFT_AGE_RATINGS:
 				// Age Ratings field.
-				const SIZE size = {dlg_value_width, field_cy};
 				field_cy = initAgeRatings(hDlg, tab.hDlg, pt_start, idx, size, field);
 				break;
-			}
-
-			case RomFields::RFT_DIMENSIONS: {
+			case RomFields::RFT_DIMENSIONS:
 				// Dimensions field.
-				const SIZE size = {dlg_value_width, field_cy};
 				field_cy = initDimensions(hDlg, tab.hDlg, pt_start, idx, size, field);
 				break;
-			}
+			case RomFields::RFT_STRING_MULTI:
+				// Multi-language string field.
+				field_cy = initStringMulti(hDlg, tab.hDlg, pt_start, idx, size, field);
+				break;
 
 			default:
 				// Unsupported data type.
@@ -2041,6 +2520,12 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 			// Remove the description label.
 			DestroyWindow(hStatic);
 		}
+	}
+
+	// Initial update of RFT_MULTI_STRING fields.
+	if (!vecStringMulti.empty()) {
+		def_lc = fields->defaultLanguageCode();
+		updateStringMulti(0);
 	}
 
 	// Register for WTS session notifications. (Remote Desktop)
@@ -2421,9 +2906,9 @@ INT_PTR RP_ShellPropSheetExt_Private::DlgProc_WM_NOTIFY(HWND hDlg, NMHDR *pHdr)
 
 		case TCN_SELCHANGE: {
 			// Tab change. Make sure this is the correct WC_TABCONTROL.
-			if (hTabWidget != nullptr && hTabWidget == pHdr->hwndFrom) {
+			if (tabWidget != nullptr && tabWidget == pHdr->hwndFrom) {
 				// Tab widget. Show the selected tab.
-				int newTabIndex = TabCtrl_GetCurSel(hTabWidget);
+				int newTabIndex = TabCtrl_GetCurSel(tabWidget);
 				ShowWindow(tabs[curTabIndex].hDlg, SW_HIDE);
 				curTabIndex = newTabIndex;
 				ShowWindow(tabs[newTabIndex].hDlg, SW_SHOW);
@@ -2470,6 +2955,40 @@ INT_PTR RP_ShellPropSheetExt_Private::DlgProc_WM_NOTIFY(HWND hDlg, NMHDR *pHdr)
 			// Set result to true if the state difference is non-zero (i.e. it's changed).
 			SetWindowLongPtr(hDlg, DWLP_MSGRESULT, (state != 0));
 			ret = true;
+			break;
+		}
+
+		default:
+			break;
+	}
+
+	return ret;
+}
+
+/**
+ * WM_COMMAND handler for the property sheet.
+ * @param hDlg Dialog window.
+ * @param wParam
+ * @param lParam
+ * @return Return value.
+ */
+INT_PTR RP_ShellPropSheetExt_Private::DlgProc_WM_COMMAND(HWND hDlg, WPARAM wParam, LPARAM lParam)
+{
+	INT_PTR ret = false;
+
+	switch (HIWORD(wParam)) {
+		case CBN_SELCHANGE: {
+			// The user may be changing the selected language
+			// for RFT_STRING_MULTI.
+			if (LOWORD(wParam) != IDC_CBO_LANGUAGE)
+				break;
+
+			// NOTE: lParam also has the ComboBox HWND.
+			const int sel_idx = ComboBox_GetCurSel(cboLanguage);
+			if (sel_idx >= 0) {
+				const uint32_t lc = static_cast<uint32_t>(ComboBox_GetItemData(cboLanguage, sel_idx));
+				updateStringMulti(lc);
+			}
 			break;
 		}
 
@@ -2631,6 +3150,17 @@ INT_PTR CALLBACK RP_ShellPropSheetExt_Private::DlgProc(HWND hDlg, UINT uMsg, WPA
 			return d->DlgProc_WM_NOTIFY(hDlg, reinterpret_cast<NMHDR*>(lParam));
 		}
 
+		case WM_COMMAND: {
+			RP_ShellPropSheetExt_Private *const d = static_cast<RP_ShellPropSheetExt_Private*>(
+				GetProp(hDlg, RP_ShellPropSheetExt_Private::D_PTR_PROP));
+			if (!d) {
+				// No RP_ShellPropSheetExt_Private. Can't do anything...
+				return false;
+			}
+
+			return d->DlgProc_WM_COMMAND(hDlg, wParam, lParam);
+		}
+
 		case WM_PAINT: {
 			RP_ShellPropSheetExt_Private *const d = static_cast<RP_ShellPropSheetExt_Private*>(
 				GetProp(hDlg, RP_ShellPropSheetExt_Private::D_PTR_PROP));
@@ -2651,17 +3181,31 @@ INT_PTR CALLBACK RP_ShellPropSheetExt_Private::DlgProc(HWND hDlg, UINT uMsg, WPA
 				return false;
 			}
 
-			// Reload images in case the background color changed.
-			d->loadImages();
-			// Reinitialize the alternate row color.
-			d->colorAltRow = LibWin32Common::getAltRowColor();
-			// Invalidate the banner and icon rectangles.
-			if (d->lblBanner) {
-				d->lblBanner->invalidateRect();
+			// Did the background color change?
+			// NOTE: Assuming the main background color changed if
+			// the alternate row color changed.
+			COLORREF colorAltRow = LibWin32Common::getAltRowColor();
+			if (colorAltRow != d->colorAltRow) {
+				// Alternate row color changed.
+				d->colorAltRow = colorAltRow;
+
+				// Reload images with the new row color.
+				d->loadImages();
+
+				// Invalidate the banner and icon rectangles.
+				if (d->lblBanner) {
+					d->lblBanner->invalidateRect();
+				}
+				if (d->lblIcon) {
+					d->lblIcon->invalidateRect();
+				}
+
+				// TODO: Check for RFT_LISTDATA with icons and reinitialize
+				// the icons if the background color changed.
+				// Alternatively, maybe store them as ARGB32 bitmaps?
+				// That method works for ComboBoxEx...
 			}
-			if (d->lblIcon) {
-				d->lblIcon->invalidateRect();
-			}
+
 			break;
 		}
 

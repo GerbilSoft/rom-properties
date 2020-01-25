@@ -8,6 +8,11 @@ LIST(APPEND CMAKE_MODULE_PATH
 	"${CMAKE_SOURCE_DIR}/cmake/modules"
 	"${CMAKE_SOURCE_DIR}/cmake/libs"
 	)
+IF(UNIX AND NOT APPLE)
+	LIST(APPEND CMAKE_MODULE_PATH
+		"${CMAKE_SOURCE_DIR}/cmake/macros/GCR_CMake"
+		)
+ENDIF(UNIX AND NOT APPLE)
 
 # If no build type is set, default to "Debug".
 # TODO: Default to "Release"?
