@@ -290,10 +290,11 @@ void EXEPrivate::addFields_VS_VERSION_INFO(const VS_FIXEDFILEINFO *pVsFfi, const
 
 	// Fields.
 	static const char *const field_names[] = {
-		"Key", "Value"
+		NOP_C_("EXE|StringFileInfo", "Key"),
+		NOP_C_("EXE|StringFileInfo", "Value"),
 	};
-	vector<string> *const v_field_names = RomFields::strArrayToVector(
-		field_names, ARRAY_SIZE(field_names));
+	vector<string> *const v_field_names = RomFields::strArrayToVector_i18n(
+		"EXE|StringFileInfo", field_names, ARRAY_SIZE(field_names));
 
 	// Add the StringFileInfo.
 	RomFields::AFLD_PARAMS params;
