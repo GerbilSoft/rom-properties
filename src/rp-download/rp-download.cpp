@@ -75,6 +75,9 @@ using std::string;
 #include "SetFileOriginInfo.hpp"
 using namespace RpDownload;
 
+// HTTP status codes.
+#include "http-status.h"
+
 static const TCHAR *argv0 = nullptr;
 static bool verbose = false;
 
@@ -461,9 +464,19 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 	ret = m_downloader->download();
 	if (ret != 0) {
 		// Error downloading the file.
-		// TODO: HTTP error, cURL error, etc.
 		if (verbose) {
-			show_error(_T("Error downloading file: %d"), ret);
+			if (ret < 0) {
+				// POSIX error code
+				show_error(_T("Error downloading file: %s"), _tcserror(errno));
+			} else /*if (ret > 0)*/ {
+				// HTTP status code
+				const TCHAR *msg = http_status_string(ret);
+				if (msg) {
+					show_error(_T("Error downloading file: HTTP %d %s"), ret, msg);
+				} else {
+					show_error(_T("Error downloading file: HTTP %d"), ret);
+				}
+			}
 		}
 		fclose(f_out);
 		return EXIT_FAILURE;

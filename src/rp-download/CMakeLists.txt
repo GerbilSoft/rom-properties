@@ -16,8 +16,16 @@ IF(WIN32)
 	CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/rp-download.exe.manifest.in" "${CMAKE_CURRENT_BINARY_DIR}/rp-download.exe.manifest" @ONLY)
 ENDIF(WIN32)
 
-SET(rp-download_SRCS rp-download.cpp IDownloader.cpp)
-SET(rp-download_H os-secure.h IDownloader.hpp)
+SET(rp-download_SRCS
+	rp-download.cpp
+	IDownloader.cpp
+	http-status.c
+	)
+SET(rp-download_H
+	os-secure.h
+	IDownloader.hpp
+	http-status.h
+	)
 
 IF(WIN32)
 	# Windows: Use WinInet.
