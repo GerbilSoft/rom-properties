@@ -29,6 +29,8 @@ using LibWin32Common::WTSSessionNotification;
 // librpbase, librptexture, libromdata
 #include "librpbase/RomFields.hpp"
 #include "librpbase/SystemRegion.hpp"
+#include "librpbase/file/RpMemFile.hpp"
+#include "librpbase/img/RpPng.hpp"
 using namespace LibRpBase;
 using LibRpTexture::rp_image;
 using LibRomData::RomDataFactory;
@@ -306,6 +308,14 @@ class RP_ShellPropSheetExt_Private
 		int initStringMulti(HWND hDlg, HWND hWndTab,
 			const POINT &pt_start, int idx, const SIZE &size,
 			const RomFields::Field *field);
+
+		/**
+		 * Load a PNG image from a Windows resource.
+		 * TODO: Move somewhere else.
+		 * @param lpName Windows resource.
+		 * @return PNG image, or nullptr on error.
+		 */
+		static rp_image *loadPngFromResource(LPCTSTR lpName);
 
 		/**
 		 * Build the cboLanguage image list.
@@ -1673,6 +1683,52 @@ int RP_ShellPropSheetExt_Private::initStringMulti(HWND hDlg, HWND hWndTab,
 }
 
 /**
+ * Load a PNG image from a Windows resource.
+ * TODO: Move somewhere else.
+ * @param lpName Windows resource.
+ * @return PNG image, or nullptr on error.
+ */
+rp_image *RP_ShellPropSheetExt_Private::loadPngFromResource(LPCTSTR lpName)
+{
+	HRSRC hRsrc = FindResource(HINST_THISCOMPONENT, lpName, MAKEINTRESOURCE(RT_PNG));
+	if (!hRsrc)
+		return nullptr;
+
+	DWORD dwSize = SizeofResource(HINST_THISCOMPONENT, hRsrc);
+	if (dwSize == 0) {
+		// Unable to get the resource size.
+		return nullptr;
+	}
+
+	HGLOBAL hGlobal = LoadResource(HINST_THISCOMPONENT, hRsrc);
+	if (!hGlobal) {
+		// Unable to load the resource.
+		return nullptr;
+	}
+
+	void *lpData = LockResource(hGlobal);
+	if (!lpData) {
+		// Failed to lock the resource.
+		FreeResource(hGlobal);
+		return nullptr;
+	}
+
+	// Create an RpMemFile wrapper.
+	// TODO: RpResourceFile?
+	RpMemFile *const memFile = new RpMemFile(lpData, dwSize);
+
+	// Load the PNG image.
+	rp_image *const img = RpPng::loadUnchecked(memFile);
+
+	// Clean up.
+	memFile->unref();
+	UnlockResource(lpData);
+	FreeResource(hGlobal);
+
+	return img;
+}
+
+/**
  * Build the cboLanguage image list.
  */
 void RP_ShellPropSheetExt_Private::buildCboLanguageImageList(void)
@@ -1698,46 +1754,40 @@ void RP_ShellPropSheetExt_Private::buildCboLanguageImageList(void)
 	// TODO: Adjust cboLanguage if necessary?
 	const UINT dpi = rp_GetDpiForWindow(hDlgSheet);
 	unsigned int iconSize;
-	uint16_t flag_resource;
+	uint16_t flagResource;
 	if (dpi < 120) {
 		// [96,120) dpi: Use 16x16.
 		iconSize = 16;
-		flag_resource = IDB_FLAGS_16x16;
+		flagResource = IDP_FLAGS_16x16;
 	} else if (dpi <= 144) {
 		// [120,144] dpi: Use 24x24.
 		// TODO: Maybe needs to be slightly higher?
 		iconSize = 24;
-		flag_resource = IDB_FLAGS_24x24;
+		flagResource = IDP_FLAGS_24x24;
 	} else {
 		// >144dpi: Use 32x32.
 		iconSize = 32;
-		flag_resource = IDB_FLAGS_32x32;
+		flagResource = IDP_FLAGS_32x32;
 	}
 
 	// Load the flags sprite sheet.
 	// TODO: Is premultiplied alpha needed?
 	// Reference: https://stackoverflow.com/questions/307348/how-to-draw-32-bit-alpha-channel-bitmaps
-	BITMAP bmFlagsSheet;
-	HBITMAP hbmFlagsSheet = (HBITMAP)LoadImage(HINST_THISCOMPONENT,
-		MAKEINTRESOURCE(flag_resource),
-		IMAGE_BITMAP, 0, 0, LR_CREATEDIBSECTION);
-	assert(hbmFlagsSheet != nullptr);
-	if (!hbmFlagsSheet) {
-		// Unable to get the flags sprite sheet.
+	unique_ptr<rp_image> imgFlagsSheet(loadPngFromResource(MAKEINTRESOURCE(flagResource)));
+	if (!imgFlagsSheet) {
+		// Unable to load the flags sprite sheet.
 		return;
 	}
-	GetObject(hbmFlagsSheet, sizeof(bmFlagsSheet), &bmFlagsSheet);
-	const LONG lFlagStride = bmFlagsSheet.bmWidthBytes / sizeof(uint32_t);
+	const int flagStride = imgFlagsSheet->stride() / sizeof(uint32_t);
 	HDC hdcIcon = GetDC(nullptr);
 
 	// Make sure the bitmap has the expected size.
-	assert(bmFlagsSheet.bmWidth == (iconSize * SystemRegion::FLAGS_SPRITE_SHEET_COLS));
-	assert(bmFlagsSheet.bmHeight == (iconSize * SystemRegion::FLAGS_SPRITE_SHEET_ROWS));
-	if (bmFlagsSheet.bmWidth != (iconSize * SystemRegion::FLAGS_SPRITE_SHEET_COLS) ||
-	    bmFlagsSheet.bmHeight != (iconSize * SystemRegion::FLAGS_SPRITE_SHEET_ROWS))
+	assert(imgFlagsSheet->width() == (iconSize * SystemRegion::FLAGS_SPRITE_SHEET_COLS));
+	assert(imgFlagsSheet->height() == (iconSize * SystemRegion::FLAGS_SPRITE_SHEET_ROWS));
+	if (imgFlagsSheet->width() != (iconSize * SystemRegion::FLAGS_SPRITE_SHEET_COLS) ||
+	    imgFlagsSheet->height() != (iconSize * SystemRegion::FLAGS_SPRITE_SHEET_ROWS))
 	{
 		// Incorrect size. We can't use it.
-		DeleteBitmap(hbmFlagsSheet);
 		return;
 	}
 
@@ -1746,14 +1796,13 @@ void RP_ShellPropSheetExt_Private::buildCboLanguageImageList(void)
 	assert(himglFlags != nullptr);
 	if (!himglFlags) {
 		// Unable to create the ImageList.
-		DeleteBitmap(hbmFlagsSheet);
 		return;
 	}
 
 	const BITMAPINFOHEADER bmihDIBSection = {
 		sizeof(BITMAPINFOHEADER),	// biSize
 		iconSize,			// biWidth
-		iconSize,			// biHeight
+		-(int)iconSize,			// biHeight (negative for right-side up)
 		1,				// biPlanes
 		32,				// biBitCount
 		BI_RGB,				// biCompression
@@ -1787,19 +1836,15 @@ void RP_ShellPropSheetExt_Private::buildCboLanguageImageList(void)
 		GdiFlush();	// TODO: Not sure if needed here...
 		assert(hbmIcon != nullptr);
 		if (hbmIcon) {
-			// Blit the icon from the sprite sheet.
-			// NOTE: BitBlt doesn't handle alpha properly, so we'll
-			// have to do this manually.
-			// NOTE: Bitmap is upside-down!
+			// Copy the icon from the sprite sheet.
 			const size_t rowBytes = iconSize * sizeof(uint32_t);
-			const uint32_t *pSrc = static_cast<const uint32_t*>(bmFlagsSheet.bmBits);
-			pSrc += ((SystemRegion::FLAGS_SPRITE_SHEET_ROWS - 1 - row) * iconSize * lFlagStride);
+			const uint32_t *pSrc = static_cast<const uint32_t*>(imgFlagsSheet->scanLine(row * iconSize));
 			pSrc += (col * iconSize);
 			uint32_t *pDest = static_cast<uint32_t*>(pvBits);
 			for (UINT bmRow = iconSize; bmRow > 0; bmRow--) {
 				memcpy(pDest, pSrc, rowBytes);
 				pDest += iconSize;
-				pSrc += lFlagStride;
+				pSrc += flagStride;
 			}
 
 			// Add the icon to the ImageList.
@@ -1809,7 +1854,6 @@ void RP_ShellPropSheetExt_Private::buildCboLanguageImageList(void)
 	}
 
 	ReleaseDC(nullptr, hdcIcon);
-	DeleteBitmap(hbmFlagsSheet);
 
 	if (cboLanguage) {
 		// Set the new ImageList.
