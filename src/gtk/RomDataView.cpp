@@ -1306,7 +1306,8 @@ rom_data_view_update_cboLanguage_images(RomDataView *page)
 		gtk_tree_model_get(GTK_TREE_MODEL(page->lstoreLanguage), &gtiter, SM_COL_LC, &lc, -1);
 		if (!SystemRegion::getFlagPosition(lc, &col, &row)) {
 			// Found a matching icon.
-			PIMGTYPE icon = PIMGTYPE_get_subsurface(flags_spriteSheet, col*iconSize, row*iconSize, iconSize, iconSize);
+			PIMGTYPE icon = PIMGTYPE_get_subsurface(flags_spriteSheet,
+				col*iconSize, row*iconSize, iconSize, iconSize);
 			gtk_list_store_set(page->lstoreLanguage, &gtiter, SM_COL_ICON, icon, -1);
 			PIMGTYPE_destroy(icon);
 		}

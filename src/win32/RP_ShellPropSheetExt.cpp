@@ -2411,27 +2411,24 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 		// Create the value widget.
 		int field_cy = descSize.cy;	// Default row size.
 		const POINT pt_start = {tab.curPt.x + descSize.cx, tab.curPt.y};
+		SIZE size = {dlg_value_width, field_cy};
 		switch (field->type) {
 			case RomFields::RFT_INVALID:
 				// No data here.
 				field_cy = 0;
 				break;
 
-			case RomFields::RFT_STRING: {
+			case RomFields::RFT_STRING:
 				// String data.
-				const SIZE size = {dlg_value_width, field_cy};
 				field_cy = initString(hDlg, tab.hDlg, pt_start, idx, size, field, nullptr);
 				break;
-			}
-
 			case RomFields::RFT_BITFIELD:
 				// Create checkboxes starting at the current point.
 				field_cy = initBitfield(hDlg, tab.hDlg, pt_start, idx, field);
 				break;
-
 			case RomFields::RFT_LISTDATA: {
 				// Create a ListView control.
-				SIZE size = {dlg_value_width, field_cy*6};
+				size.cy *= 6;	// TODO: Is this needed?
 				POINT pt_ListData = pt_start;
 
 				// Should the RFT_LISTDATA be placed on its own row?
@@ -2491,33 +2488,22 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 				break;
 			}
 
-			case RomFields::RFT_DATETIME: {
+			case RomFields::RFT_DATETIME:
 				// Date/Time in Unix format.
-				const SIZE size = {dlg_value_width, field_cy};
 				field_cy = initDateTime(hDlg, tab.hDlg, pt_start, idx, size, field);
 				break;
-			}
-
-			case RomFields::RFT_AGE_RATINGS: {
+			case RomFields::RFT_AGE_RATINGS:
 				// Age Ratings field.
-				const SIZE size = {dlg_value_width, field_cy};
 				field_cy = initAgeRatings(hDlg, tab.hDlg, pt_start, idx, size, field);
 				break;
-			}
-
-			case RomFields::RFT_DIMENSIONS: {
+			case RomFields::RFT_DIMENSIONS:
 				// Dimensions field.
-				const SIZE size = {dlg_value_width, field_cy};
 				field_cy = initDimensions(hDlg, tab.hDlg, pt_start, idx, size, field);
 				break;
-			}
-
-			case RomFields::RFT_STRING_MULTI: {
+			case RomFields::RFT_STRING_MULTI:
 				// Multi-language string field.
-				const SIZE size = {dlg_value_width, field_cy};
 				field_cy = initStringMulti(hDlg, tab.hDlg, pt_start, idx, size, field);
 				break;
-			}
 
 			default:
 				// Unsupported data type.
@@ -3195,17 +3181,31 @@ INT_PTR CALLBACK RP_ShellPropSheetExt_Private::DlgProc(HWND hDlg, UINT uMsg, WPA
 				return false;
 			}
 
-			// Reload images in case the background color changed.
-			d->loadImages();
-			// Reinitialize the alternate row color.
-			d->colorAltRow = LibWin32Common::getAltRowColor();
-			// Invalidate the banner and icon rectangles.
-			if (d->lblBanner) {
-				d->lblBanner->invalidateRect();
+			// Did the background color change?
+			// NOTE: Assuming the main background color changed if
+			// the alternate row color changed.
+			COLORREF colorAltRow = LibWin32Common::getAltRowColor();
+			if (colorAltRow != d->colorAltRow) {
+				// Alternate row color changed.
+				d->colorAltRow = colorAltRow;
+
+				// Reload images with the new row color.
+				d->loadImages();
+
+				// Invalidate the banner and icon rectangles.
+				if (d->lblBanner) {
+					d->lblBanner->invalidateRect();
+				}
+				if (d->lblIcon) {
+					d->lblIcon->invalidateRect();
+				}
+
+				// TODO: Check for RFT_LISTDATA with icons and reinitialize
+				// the icons if the background color changed.
+				// Alternatively, maybe store them as ARGB32 bitmaps?
+				// That method works for ComboBoxEx...
 			}
-			if (d->lblIcon) {
-				d->lblIcon->invalidateRect();
-			}
+
 			break;
 		}
 
