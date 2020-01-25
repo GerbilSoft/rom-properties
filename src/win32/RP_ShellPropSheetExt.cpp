@@ -1281,8 +1281,7 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 
 		// Icons.
 		if (hasIcons) {
-			// TODO: Ideal icon size?
-			// Using 32x32 for now.
+			// Icon size is 32x32, adjusted for DPI. (TODO: WM_DPICHANGED)
 			// ImageList will resize the original icons to 32x32.
 
 			// NOTE: LVS_REPORT doesn't allow variable row sizes,
@@ -1292,18 +1291,19 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 			// 16 pixels.
 			// TODO: Handle this better.
 			// FIXME: This only works if the RFT_LISTDATA has icons.
-			SIZE szLstIcon = {32, 32};
+			const int px = rp_AdjustSizeForDpi(32, rp_GetDpiForWindow(hDlg));
+			SIZE sizeListIcon = {px, px};
 			bool resizeNeeded = false;
 			float factor = 1.0f;
 			if (nl_max >= 2) {
 				// Two or more newlines.
-				// Add 16px per newline over 1.
-				szLstIcon.cy += (16 * (nl_max - 1));
+				// Add half of the icon size per newline over 1.
+				sizeListIcon.cy += ((px/2) * (nl_max - 1));
 				resizeNeeded = true;
-				factor = (float)szLstIcon.cy / 32.0f;
+				factor = (float)sizeListIcon.cy / (float)sizeListIcon.cy;
 			}
 
-			HIMAGELIST himl = ImageList_Create(szLstIcon.cx, szLstIcon.cy,
+			HIMAGELIST himl = ImageList_Create(sizeListIcon.cx, sizeListIcon.cy,
 				ILC_COLOR32, static_cast<int>(list_data->size()), 0);
 			assert(himl != nullptr);
 			if (himl) {
