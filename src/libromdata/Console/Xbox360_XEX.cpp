@@ -1242,7 +1242,6 @@ const Xbox360_XDBF *Xbox360_XEX_Private::initXDBF(void)
 				}
 			}
 		}
-		printf("Expected XDBF: physaddr == %08X, size == %08X\n", xdbf_physaddr, pResInfo->size);
 		peFile_tmp = new PartitionFile(peReader, xdbf_physaddr, pResInfo->size);
 	}
 	if (peFile_tmp->isOpen()) {
