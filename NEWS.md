@@ -106,6 +106,8 @@
   * EXE: VS_VERSION_INFO resources in 16-bit Windows executables are now
     displayed correctly if they're encoded using a code page other than
     Windows-1252.
+  * Fixed GameTDB downloads for CHN and TWN region games. (Nintendo DS,
+    Nintendo 3DS, GameCube, Wii)
 
 * Other changes:
   * Removed the internal copy of libjpeg-turbo. On Windows, gdiplus is now

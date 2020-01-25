@@ -211,7 +211,8 @@ vector<const char*> GameCubeRegions::gcnRegionToGameTDB(unsigned int gcnRegion, 
 					break;
 
 				case 'W':	// Taiwan
-					ret.push_back("ZHTW");
+					// NOTE: GameTDB only has "ZH" for boxart, not "ZHCN" or "ZHTW".
+					ret.push_back("ZH");
 					break;
 				case 'K':
 				case 'T':	// South Korea with Japanese language
@@ -219,7 +220,8 @@ vector<const char*> GameCubeRegions::gcnRegionToGameTDB(unsigned int gcnRegion, 
 					ret.push_back("KO");
 					break;
 				case 'C':	// China (unofficial?)
-					ret.push_back("ZHCN");
+					// NOTE: GameTDB only has "ZH" for boxart, not "ZHCN" or "ZHTW".
+					ret.push_back("ZH");
 					break;
 
 				// Wrong region, but handle it anyway.
@@ -315,13 +317,15 @@ vector<const char*> GameCubeRegions::gcnRegionToGameTDB(unsigned int gcnRegion, 
 		case GCN_REGION_CHN:
 			// Possible game ID regions:
 			// - C: China
-			ret.push_back("ZHCN");
+			// NOTE: GameTDB only has "ZH" for boxart, not "ZHCN" or "ZHTW".
+			ret.push_back("ZH");
 			break;
 
 		case GCN_REGION_TWN:
 			// Possible game ID regions:
 			// - W: Taiwan
-			ret.push_back("ZHTW");
+			// NOTE: GameTDB only has "ZH" for boxart, not "ZHCN" or "ZHTW".
+			ret.push_back("ZH");
 			break;
 
 		case GCN_REGION_ALL:
@@ -341,7 +345,8 @@ vector<const char*> GameCubeRegions::gcnRegionToGameTDB(unsigned int gcnRegion, 
 					ret.push_back("JA");
 					break;
 				case 'W':	// Taiwan
-					ret.push_back("ZHTW");
+					// NOTE: GameTDB only has "ZH" for boxart, not "ZHCN" or "ZHTW".
+					ret.push_back("ZH");
 					break;
 				case 'K':	// South Korea
 				case 'T':	// South Korea with Japanese language
@@ -349,7 +354,8 @@ vector<const char*> GameCubeRegions::gcnRegionToGameTDB(unsigned int gcnRegion, 
 					ret.push_back("KO");
 					break;
 				case 'C':	// China (unofficial?)
-					ret.push_back("ZHCN");
+					// NOTE: GameTDB only has "ZH" for boxart, not "ZHCN" or "ZHTW".
+					ret.push_back("ZH");
 					break;
 
 				/** PAL regions **/

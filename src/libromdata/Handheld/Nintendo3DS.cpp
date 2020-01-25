@@ -1076,7 +1076,8 @@ vector<const char*> Nintendo3DSPrivate::n3dsRegionToGameTDB(
 			fallback_region = 2;
 			break;
 		case N3DS_REGION_CHINA:
-			ret.push_back("ZHCN");
+			// NOTE: GameTDB only has "ZH" for boxart, not "ZHCN" or "ZHTW".
+			ret.push_back("ZH");
 			ret.push_back("JA");
 			ret.push_back("EN");
 			return ret;
@@ -1086,7 +1087,8 @@ vector<const char*> Nintendo3DSPrivate::n3dsRegionToGameTDB(
 			ret.push_back("EN");
 			return ret;
 		case N3DS_REGION_TAIWAN:
-			ret.push_back("ZHTW");
+			// NOTE: GameTDB only has "ZH" for boxart, not "ZHCN" or "ZHTW".
+			ret.push_back("ZH");
 			ret.push_back("JA");
 			ret.push_back("EN");
 			return ret;

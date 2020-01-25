@@ -580,7 +580,8 @@ vector<const char*> NintendoDSPrivate::ndsRegionToGameTDB(
 			fallback_region = 2;
 			break;
 		case DSi_REGION_CHINA:
-			ret.push_back("ZHCN");
+			// NOTE: GameTDB only has "ZH" for boxart, not "ZHCN" or "ZHTW".
+			ret.push_back("ZH");
 			ret.push_back("JA");
 			ret.push_back("EN");
 			return ret;
@@ -600,7 +601,8 @@ vector<const char*> NintendoDSPrivate::ndsRegionToGameTDB(
 
 	// Check for China/Korea.
 	if (ndsRegion & NDS_REGION_CHINA) {
-		ret.push_back("ZHCN");
+		// NOTE: GameTDB only has "ZH" for boxart, not "ZHCN" or "ZHTW".
+		ret.push_back("ZH");
 		ret.push_back("JA");
 		ret.push_back("EN");
 		return ret;
