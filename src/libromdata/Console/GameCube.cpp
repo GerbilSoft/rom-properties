@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * GameCube.cpp: Nintendo GameCube and Wii disc image reader.              *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -19,6 +19,7 @@
 #include "GameCubeRegions.hpp"
 
 // librpbase, librptexture
+#include "librpbase/SystemRegion.hpp"
 using namespace LibRpBase;
 using LibRpTexture::rp_image;
 
@@ -1184,7 +1185,6 @@ int GameCube::isRomSupported_static(const DetectInfo *info)
 
 		// Check the GameCube/Wii magic.
 		// TODO: WIA struct when full WIA support is added.
-		// FIXME BEFORE COMMIT: TEST THIS
 		gcn_header = reinterpret_cast<const GCN_DiscHeader*>(&info->header.pData[0x58]);
 		if (gcn_header->magic_wii == cpu_to_be32(WII_MAGIC)) {
 			// Wii disc image. (WIA format)
@@ -1244,12 +1244,26 @@ const char *GameCube::systemName(unsigned int type) const
 	// Bits 2-3: DISC_SYSTEM_MASK (GCN, Wii, Triforce)
 
 	static const char *const sysNames[4][4] = {
-		// FIXME: "NGC" in Japan?
 		{"Nintendo GameCube", "GameCube", "GCN", nullptr},
 		{"Nintendo/Sega/Namco Triforce", "Triforce", "TF", nullptr},
 		{"Nintendo Wii", "Wii", "Wii", nullptr},
 		{nullptr, nullptr, nullptr, nullptr},
 	};
+
+	// Special check for GCN abbreviation in Japan.
+	if ((type & SYSNAME_REGION_MASK) == SYSNAME_REGION_ROM_LOCAL) {
+		// Localized system name.
+		if (((d->discType & 3) == GameCubePrivate::DISC_SYSTEM_GCN) &&
+		    ((type & SYSNAME_TYPE_MASK) == SYSNAME_TYPE_ABBREVIATION))
+		{
+			// GameCube abbreviation.
+			// If this is Japan or South Korea, use "NGC".
+			const uint32_t cc = SystemRegion::getCountryCode();
+			if (cc == 'JP' || cc == 'KR') {
+				return "NGC";
+			}
+		}
+	}
 
 	return sysNames[d->discType & 3][type & SYSNAME_TYPE_MASK];
 }

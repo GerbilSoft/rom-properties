@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * GameCubeSave.hpp: Nintendo GameCube save file reader.                   *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -12,6 +12,7 @@
 #include "gcn_card.h"
 
 // librpbase, librptexture
+#include "librpbase/SystemRegion.hpp"
 using namespace LibRpBase;
 using namespace LibRpTexture;
 
@@ -687,9 +688,21 @@ const char *GameCubeSave::systemName(unsigned int type) const
 
 	// Bits 0-1: Type. (long, short, abbreviation)
 	static const char *const sysNames[4] = {
-		// FIXME: "NGC" in Japan?
 		"Nintendo GameCube", "GameCube", "GCN", nullptr
 	};
+
+	// Special check for GCN abbreviation in Japan.
+	if ((type & SYSNAME_REGION_MASK) == SYSNAME_REGION_ROM_LOCAL) {
+		// Localized system name.
+		if ((type & SYSNAME_TYPE_MASK) == SYSNAME_TYPE_ABBREVIATION) {
+			// GameCube abbreviation.
+			// If this is Japan or South Korea, use "NGC".
+			const uint32_t cc = SystemRegion::getCountryCode();
+			if (cc == 'JP' || cc == 'KR') {
+				return "NGC";
+			}
+		}
+	}
 
 	return sysNames[type & SYSNAME_TYPE_MASK];
 }
