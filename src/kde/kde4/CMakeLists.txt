@@ -30,10 +30,12 @@ STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-kde4_UIS "${rom-propertie
 STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-kde4_RCC_SRCS "${rom-properties-kde_RCC_SRCS}")
 
 # Sources and headers. (KDE4-specific)
-QT4_ADD_RESOURCES(
-	rom-properties-kde4_RCC_O ${rom-properties-kde4_RCC_SRCS}
-	OPTIONS -no-compress
-	)
+IF(QT4_FOUND)
+	QT4_ADD_RESOURCES(
+		rom-properties-kde4_RCC_O ${rom-properties-kde4_RCC_SRCS}
+		OPTIONS -no-compress
+		)
+ENDIF(QT4_FOUND)
 SET(rom-properties-kde4_SRCS
 	${rom-properties-kde4_SRCS}
 	${rom-properties-kde4_RCC_O}
