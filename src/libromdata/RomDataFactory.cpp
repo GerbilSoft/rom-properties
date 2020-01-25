@@ -599,6 +599,7 @@ RomData *RomDataFactory::create(IRpFile *file, unsigned int attrs)
 	// Check other RomData subclasses that take a header,
 	// but don't have a simple 32-bit magic number check.
 	fns = &RomDataFactoryPrivate::romDataFns_header[0];
+	bool checked_exts = false;
 	for (; fns->supportedFileExtensions != nullptr; fns++) {
 		if ((fns->attrs & attrs) != attrs) {
 			// This RomData subclass doesn't have the
@@ -610,38 +611,42 @@ RomData *RomDataFactory::create(IRpFile *file, unsigned int attrs)
 		    fns->size > info.header.size)
 		{
 			// Header address has changed.
+			if (!checked_exts) {
+				// Check the file extension to reduce overhead
+				// for file types that don't use this.
+				// TODO: Don't hard-code this.
+				// Use a pointer to supportedFileExtensions_static() instead?
+				static const char *const exts[] = {
+					".bin",		/* generic .bin */
+					".sms",		/* Sega Master System */
+					".gg",		/* Game Gear */
+					".tgc",		/* game.com */
+					".iso",		/* ISO-9660 */
+					".xiso",	/* Xbox disc image */
+					".min",		/* Pokémon Mini */
+					nullptr
+				};
 
-			// Check the file extension to reduce overhead
-			// for file types that don't use this.
-			// TODO: Don't hard-code this.
-			// Use a pointer to supportedFileExtensions_static() instead?
-			static const char *const exts[] = {
-				".bin",		/* generic .bin */
-				".sms",		/* Sega Master System */
-				".gg",		/* Game Gear */
-				".tgc",		/* game.com */
-				".iso",		/* ISO-9660 */
-				".xiso",	/* Xbox disc image */
-				".min",		/* Pokémon Mini */
-				nullptr
-			};
-
-			if (info.ext == nullptr) {
-				// No file extension...
-				break;
-			}
-
-			// Check for a matching extension.
-			bool found = false;
-			for (const char *const *ext = exts; *ext != nullptr; ext++) {
-				if (!strcasecmp(info.ext, *ext)) {
-					// Found a match!
-					found = true;
+				if (info.ext == nullptr) {
+					// No file extension...
+					break;
 				}
-			}
-			if (!found) {
-				// No match.
-				break;
+
+				// Check for a matching extension.
+				bool found = false;
+				for (const char *const *ext = exts; *ext != nullptr; ext++) {
+					if (!strcasecmp(info.ext, *ext)) {
+						// Found a match!
+						found = true;
+					}
+				}
+				if (!found) {
+					// No match.
+					break;
+				}
+
+				// File extensions have been checked.
+				checked_exts = true;
 			}
 
 			// Read the new header data.
