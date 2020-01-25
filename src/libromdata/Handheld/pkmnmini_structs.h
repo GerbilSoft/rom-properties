@@ -32,8 +32,7 @@ extern "C" {
  * NOTE: Strings are NOT null-terminated!
  */
 #define POKEMONMINI_HEADER_ADDRESS 0x2100
-#define POKEMONMINI_PM_MAGIC 'PM'	// Documents say it has 'PM',
-#define POKEMONMINI_MN_MAGIC 'MN'	// but my test images have 'MN'...
+#define POKEMONMINI_MN_MAGIC 'MN'
 #define POKEMONMINI_2P_MAGIC '2P'
 typedef struct PACKED _PokemonMini_RomHeader {
 	uint16_t pm_magic;	// [0x000] 'PM' or 'MN'
