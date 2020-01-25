@@ -44,6 +44,7 @@ static const HttpStatusMsg_t httpStatusMsgs[] = {
 	{206,	_T("Partial Content")},
 	{207,	_T("Multi-Status")},
 	{208,	_T("Already Reported")},
+	{218,	_T("This is fine")},		// Apache Web Server
 	{226,	_T("IM Used")},
 
 	// 3xx: Redirection
@@ -76,7 +77,9 @@ static const HttpStatusMsg_t httpStatusMsgs[] = {
 	{415,	_T("Unsupported Media Type")},
 	{416,	_T("Range Not Satisfiable")},
 	{417,	_T("Expectation Failed")},
-	{418,	_T("I'm a teapot")},	// lol
+	{418,	_T("I'm a teapot")},		// lol
+	{419,	_T("Page Expired")},		// Laravel Framework
+	{420,	_T("Enhance Your Calm")},	// Twitter
 	{421,	_T("Misdirected Request")},
 	{422,	_T("Unprocessable Entity")},
 	{423,	_T("Locked")},
@@ -85,8 +88,12 @@ static const HttpStatusMsg_t httpStatusMsgs[] = {
 	{426,	_T("Upgrade Required")},
 	{428,	_T("Precondition Required")},
 	{429,	_T("Too Many Requests")},
+	{430,	_T("Request Header Fields Too Large")},		// Shopify
 	{431,	_T("Request Header Fields Too Large")},
+	{450,	_T("Blocked by Windows Parental Controls")},	// Microsoft Windows
 	{451,	_T("Unavailable For Legal Reasons")},
+	{498,	_T("Invalid Token")},		// Esri
+	{499,	_T("Token Required")},		// Esri
 
 	// 5xx: Server errors
 	{500,	_T("Internal Server Error")},
@@ -98,8 +105,15 @@ static const HttpStatusMsg_t httpStatusMsgs[] = {
 	{506,	_T("Variant Also Negotiates")},
 	{507,	_T("Insufficient Storage")},
 	{508,	_T("Loop Detected")},
+	{509,	_T("Bandwidth Limit Exceeded")},	// Apache Web Server / cPanel
 	{510,	_T("Not Extended")},
 	{511,	_T("Network Authentication Required")},
+	{526,	_T("Invalid SSL Certificate")},		// Cloudflare / Cloud Foundry
+	{529,	_T("Site is overloaded")},		// Qualys
+	{530,	_T("Site is frozen")},			// Pantheon
+	{598,	_T("Network read timeout error")},	// Used by some HTTP proxies
+
+	{0, NULL}
 };
 
 /**
@@ -129,7 +143,7 @@ const TCHAR *http_status_string(int code)
 	const HttpStatusMsg_t *res =
 		(const HttpStatusMsg_t*)bsearch(&key,
 			httpStatusMsgs,
-			sizeof(httpStatusMsgs)/sizeof(httpStatusMsgs[0]),
+			(sizeof(httpStatusMsgs)/sizeof(httpStatusMsgs[0]))-1,
 			sizeof(HttpStatusMsg_t),
 			HttpStatusMsg_t_compar);
 	return (res ? res->msg : NULL);
