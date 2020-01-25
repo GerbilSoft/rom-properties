@@ -580,28 +580,6 @@ int GameCubePrivate::wii_addBannerName(void) const
 		}
 	}
 
-#if 0
-	// Get the system language.
-	// TODO: Verify against the region code somehow?
-	int lang = NintendoLanguage::getWiiLanguage();
-
-	// If the language-specific name is empty,
-	// revert to English.
-	if (opening_bnr.wii.imet->names[lang][0][0] == 0) {
-		// Revert to English.
-		lang = WII_LANG_ENGLISH;
-	}
-
-	// NOTE: The banner may have two lines.
-	// Each line is a maximum of 21 characters.
-	// Convert from UTF-16 BE and split into two lines at the same time.
-	string info = utf16be_to_utf8(opening_bnr.wii.imet->names[lang][0], 21);
-	if (opening_bnr.wii.imet->names[lang][1][0] != 0) {
-		info += '\n';
-		info += utf16be_to_utf8(opening_bnr.wii.imet->names[lang][1], 21);
-	}
-#endif
-
 	// Check if English is valid.
 	// If it is, we'll de-duplicate fields.
 	bool dedupe_titles = (opening_bnr.wii.imet->names[WII_LANG_ENGLISH][0][0] != cpu_to_be16('\0'));
@@ -630,10 +608,21 @@ int GameCubePrivate::wii_addBannerName(void) const
 			}
 		}
 
-		const uint32_t lc = NintendoLanguage::getWiiLanguageCode(langID);
-		assert(lc != 0);
-		if (lc == 0)
-			continue;
+		uint32_t lc;
+		if (gcnRegion == GCN_REGION_JPN && discHeader.id4[3] == 'W' &&
+		    langID == WII_LANG_JAPANESE)
+		{
+			// Special case: RVL-001(TWN) has a JPN region code.
+			// Game discs with disc ID region 'W' are localized
+			// for Taiwan and use Traditional Chinese in the
+			// Japanese language slot.
+			lc = 'hant';
+		} else {
+			lc = NintendoLanguage::getWiiLanguageCode(langID);
+			assert(lc != 0);
+			if (lc == 0)
+				continue;
+		}
 
 		if (opening_bnr.wii.imet->names[langID][0][0] != cpu_to_be16('\0')) {
 			// NOTE: The banner may have two lines.
