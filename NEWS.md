@@ -101,6 +101,8 @@
   * Linux: Added the "application/x-cso" MIME type for GameCube .ciso
     format on Linux. (Note that this technically refers to a different
     format, but GameCube .ciso is incorrectly identified as this.)
+  * GameCube: Calculate the used partition size correctly for unencrypted
+    Wii RVT-H Reader disc images.
 
 * Other changes:
   * Removed the internal copy of libjpeg-turbo. On Windows, gdiplus is now

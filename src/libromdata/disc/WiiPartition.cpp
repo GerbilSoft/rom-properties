@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * WiiPartition.hpp: Wii partition reader.                                 *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -735,6 +735,36 @@ int64_t WiiPartition::tell(void)
 	}
 
 	return d->pos_7C00;
+}
+
+/**
+ * Get the used partition size.
+ * This size includes the partition header and hashes,
+ * but does not include "empty" sectors.
+ * @return Used partition size, or -1 on error.
+ */
+int64_t WiiPartition::partition_size_used(void) const
+{
+	// Get the FST used size from GcnPartition.
+	int64_t size = super::partition_size_used();
+	if (size <= 0) {
+		// Error retrieving the FST used size.
+		return size;
+	}
+
+	// Add the data offset from the partition header.
+	RP_D(const WiiPartition);
+	size += (static_cast<int64_t>(be32_to_cpu(d->partitionHeader.data_offset)) << 2);
+
+	// Are sectors hashed?
+	if ((d->cryptoMethod & WiiPartition::CM_MASK_SECTOR) == CM_1K_31K) {
+		// Partition has hashed sectors.
+		// Multiply the FST used size by 32/31 to adjust for the difference.
+		size = (size * 32) / 31;
+	}
+
+	// We're done here.
+	return size;
 }
 
 /** WiiPartition **/

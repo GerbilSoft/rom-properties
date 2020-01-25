@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * GcnPartition.cpp: GameCube partition reader.                            *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -168,23 +168,25 @@ int64_t GcnPartition::partition_size_used(void) const
 		}
 	}
 
-	// FST offset and size.
-	int64_t size = static_cast<int64_t>(d->bootBlock.fst_offset) +
-				   static_cast<int64_t>(d->bootBlock.fst_size);
+	// FST/DOL offset and size.
+	int64_t size;
 	size <<= d->offsetShift;
-	
+	if (d->bootBlock.dol_offset > d->bootBlock.fst_offset) {
+		// DOL is after the FST.
+		// TODO: Get the DOL size. (This case is unlikely, though...)
+		size = static_cast<int64_t>(d->bootBlock.dol_offset);
+	} else {
+		// FST is after the DOL.
+		size = static_cast<int64_t>(d->bootBlock.fst_offset) +
+		       static_cast<int64_t>(d->bootBlock.fst_size);
+	}
+	size <<= d->offsetShift;
+
 	// Get the FST used size.
 	size += d->fst->totalUsedSize();
 
 	// Add the difference between partition and data sizes.
 	size += (d->partition_size - d->data_size);
-
-	// FIXME: Handle the hashes size correctly on Wii. For now, use a
-	// quick and dirty hack.
-	if (d->offsetShift == 2) {
-		// Multiply the size by 31/32.
-		size = (size * 32) / 31;
-	}
 
 	// We're done here.
 	return size;

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * WiiPartition.hpp: Wii partition reader.                                 *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -85,6 +85,16 @@ class WiiPartition : public GcnPartition
 		 */
 		int64_t tell(void) final;
 
+	public:
+		/**
+		 * Get the used partition size.
+		 * This size includes the partition header and hashes,
+		 * but does not include "empty" sectors.
+		 * @return Used partition size, or -1 on error.
+		 */
+		int64_t partition_size_used(void) const final;
+
+	public:
 		/** WiiPartition **/
 
 		/**
