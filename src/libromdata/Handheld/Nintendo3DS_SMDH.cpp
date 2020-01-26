@@ -166,14 +166,14 @@ N3DS_Language_ID Nintendo3DS_SMDH_Private::getLanguageID(void) const
 	}
 
 	// Check the header fields to determine if the language string is valid.
-	if (smdh.header.titles[langID].desc_short[0] == cpu_to_le16(0)) {
+	if (smdh.header.titles[langID].desc_short[0] == cpu_to_le16('\0')) {
 		// Not valid. Check English.
-		if (smdh.header.titles[N3DS_LANG_ENGLISH].desc_short[0] != cpu_to_le16(0)) {
+		if (smdh.header.titles[N3DS_LANG_ENGLISH].desc_short[0] != cpu_to_le16('\0')) {
 			// English is valid.
 			langID = N3DS_LANG_ENGLISH;
 		} else {
 			// Not valid. Check Japanese.
-			if (smdh.header.titles[N3DS_LANG_JAPANESE].desc_short[0] != cpu_to_le16(0)) {
+			if (smdh.header.titles[N3DS_LANG_JAPANESE].desc_short[0] != cpu_to_le16('\0')) {
 				// Japanese is valid.
 				langID = N3DS_LANG_JAPANESE;
 			} else {

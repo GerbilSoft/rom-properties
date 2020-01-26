@@ -400,14 +400,14 @@ NDS_Language_ID NintendoDSPrivate::getLanguageID(void) const
 	NDS_Language_ID langID = (NDS_Language_ID)NintendoLanguage::getNDSLanguage(version);
 
 	// Check that the field is valid.
-	if (nds_icon_title.title[langID][0] == cpu_to_le16(0)) {
+	if (nds_icon_title.title[langID][0] == cpu_to_le16('\0')) {
 		// Not valid. Check English.
-		if (nds_icon_title.title[NDS_LANG_ENGLISH][0] != cpu_to_le16(0)) {
+		if (nds_icon_title.title[NDS_LANG_ENGLISH][0] != cpu_to_le16('\0')) {
 			// English is valid.
 			langID = NDS_LANG_ENGLISH;
 		} else {
 			// Not valid. Check Japanese.
-			if (nds_icon_title.title[NDS_LANG_JAPANESE][0] != cpu_to_le16(0)) {
+			if (nds_icon_title.title[NDS_LANG_JAPANESE][0] != cpu_to_le16('\0')) {
 				// Japanese is valid.
 				langID = NDS_LANG_JAPANESE;
 			} else {
