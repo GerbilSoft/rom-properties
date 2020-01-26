@@ -1017,63 +1017,61 @@ rom_data_view_init_listdata(G_GNUC_UNUSED RomDataView *page, const RomFields::Fi
 	}
 
 	// Add the row data.
-	if (list_data) {
-		uint32_t checkboxes = 0;
-		if (hasCheckboxes) {
-			checkboxes = field->data.list_data.mxd.checkboxes;
+	uint32_t checkboxes = 0;
+	if (hasCheckboxes) {
+		checkboxes = field->data.list_data.mxd.checkboxes;
+	}
+	unsigned int row = 0;	// for icons [TODO: Use iterator?]
+	for (auto iter = list_data->cbegin(); iter != list_data->cend(); ++iter, row++) {
+		const vector<string> &data_row = *iter;
+		// FIXME: Skip even if we don't have checkboxes?
+		// (also check other UI frontends)
+		if (hasCheckboxes && data_row.empty()) {
+			// Skip this row.
+			checkboxes >>= 1;
+			continue;
 		}
-		unsigned int row = 0;	// for icons [TODO: Use iterator?]
-		for (auto iter = list_data->cbegin(); iter != list_data->cend(); ++iter, row++) {
-			const vector<string> &data_row = *iter;
-			// FIXME: Skip even if we don't have checkboxes?
-			// (also check other UI frontends)
-			if (hasCheckboxes && data_row.empty()) {
-				// Skip this row.
-				checkboxes >>= 1;
-				continue;
-			}
 
-			GtkTreeIter treeIter;
-			gtk_list_store_append(listStore, &treeIter);
-			if (hasCheckboxes) {
-				// Checkbox column.
-				gtk_list_store_set(listStore, &treeIter,
-					0, (checkboxes & 1), -1);
-				checkboxes >>= 1;
-			} else if (hasIcons) {
-				// Icon column.
-				const rp_image *const icon = field->data.list_data.mxd.icons->at(row);
-				assert(icon != nullptr);
-				if (icon) {
-					PIMGTYPE pixbuf = rp_image_to_PIMGTYPE(
-						field->data.list_data.mxd.icons->at(row));
-					if (pixbuf) {
-						// TODO: Ideal icon size?
-						// Using 32x32 for now.
-						static const int icon_sz = 32;
-						// NOTE: GtkCellRendererPixbuf can't scale the
-						// pixbuf itself...
-						if (!PIMGTYPE_size_check(pixbuf, icon_sz, icon_sz)) {
-							// TODO: Use nearest-neighbor if upscaling.
-							// Also, preserve the aspect ratio.
-							PIMGTYPE scaled = PIMGTYPE_scale(pixbuf, icon_sz, icon_sz, true);
-							if (scaled) {
-								PIMGTYPE_destroy(pixbuf);
-								pixbuf = scaled;
-							}
+		GtkTreeIter treeIter;
+		gtk_list_store_append(listStore, &treeIter);
+		if (hasCheckboxes) {
+			// Checkbox column.
+			gtk_list_store_set(listStore, &treeIter,
+				0, (checkboxes & 1), -1);
+			checkboxes >>= 1;
+		} else if (hasIcons) {
+			// Icon column.
+			const rp_image *const icon = field->data.list_data.mxd.icons->at(row);
+			assert(icon != nullptr);
+			if (icon) {
+				PIMGTYPE pixbuf = rp_image_to_PIMGTYPE(
+					field->data.list_data.mxd.icons->at(row));
+				if (pixbuf) {
+					// TODO: Ideal icon size?
+					// Using 32x32 for now.
+					static const int icon_sz = 32;
+					// NOTE: GtkCellRendererPixbuf can't scale the
+					// pixbuf itself...
+					if (!PIMGTYPE_size_check(pixbuf, icon_sz, icon_sz)) {
+						// TODO: Use nearest-neighbor if upscaling.
+						// Also, preserve the aspect ratio.
+						PIMGTYPE scaled = PIMGTYPE_scale(pixbuf, icon_sz, icon_sz, true);
+						if (scaled) {
+							PIMGTYPE_destroy(pixbuf);
+							pixbuf = scaled;
 						}
-						gtk_list_store_set(listStore, &treeIter,
-							0, pixbuf, -1);
-						PIMGTYPE_destroy(pixbuf);
 					}
+					gtk_list_store_set(listStore, &treeIter,
+						0, pixbuf, -1);
+					PIMGTYPE_destroy(pixbuf);
 				}
 			}
+		}
 
-			if (!isMulti) {
-				int col = col_start;
-				for (auto iter = data_row.cbegin(); iter != data_row.cend(); ++iter, col++) {
-					gtk_list_store_set(listStore, &treeIter, col, iter->c_str(), -1);
-				}
+		if (!isMulti) {
+			int col = col_start;
+			for (auto iter = data_row.cbegin(); iter != data_row.cend(); ++iter, col++) {
+				gtk_list_store_set(listStore, &treeIter, col, iter->c_str(), -1);
 			}
 		}
 	}
