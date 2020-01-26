@@ -975,46 +975,44 @@ rom_data_view_init_listdata(G_GNUC_UNUSED RomDataView *page, const RomFields::Fi
 		}
 	}
 
-	int col_count = 1;
+	int colCount = 1;
 	if (listDataDesc.names) {
-		col_count = (int)listDataDesc.names->size();
+		colCount = (int)listDataDesc.names->size();
 	} else {
 		// No column headers.
 		// Use the first row.
-		if (list_data && !list_data->empty()) {
-			col_count = (int)list_data->at(0).size();
-		}
+		colCount = (int)list_data->at(0).size();
 	}
 
 	GtkListStore *listStore;
 	int col_start = 0;
 	if (hasCheckboxes) {
 		// Prepend an extra column for checkboxes.
-		GType *types = new GType[col_count+1];
+		GType *types = new GType[colCount+1];
 		types[0] = G_TYPE_BOOLEAN;
-		for (int i = col_count; i > 0; i--) {
+		for (int i = colCount; i > 0; i--) {
 			types[i] = G_TYPE_STRING;
 		}
-		listStore = gtk_list_store_newv(col_count+1, types);
+		listStore = gtk_list_store_newv(colCount+1, types);
 		delete[] types;
 		col_start = 1;	// Skip the checkbox column for strings.
 	} else if (hasIcons) {
 		// Prepend an extra column for icons.
-		GType *types = new GType[col_count+1];
+		GType *types = new GType[colCount+1];
 		types[0] = PIMGTYPE_GOBJECT_TYPE;
-		for (int i = col_count; i > 0; i--) {
+		for (int i = colCount; i > 0; i--) {
 			types[i] = G_TYPE_STRING;
 		}
-		listStore = gtk_list_store_newv(col_count+1, types);
+		listStore = gtk_list_store_newv(colCount+1, types);
 		delete[] types;
 		col_start = 1;	// Skip the icon column for strings.
 	} else {
 		// All strings.
-		GType *types = new GType[col_count];
-		for (int i = col_count-1; i >= 0; i--) {
+		GType *types = new GType[colCount];
+		for (int i = colCount-1; i >= 0; i--) {
 			types[i] = G_TYPE_STRING;
 		}
-		listStore = gtk_list_store_newv(col_count, types);
+		listStore = gtk_list_store_newv(colCount, types);
 		delete[] types;
 	}
 
@@ -1136,7 +1134,7 @@ rom_data_view_init_listdata(G_GNUC_UNUSED RomDataView *page, const RomFields::Fi
 	// Set up the column names.
 	uint32_t align_headers = listDataDesc.alignment.headers;
 	uint32_t align_data = listDataDesc.alignment.data;
-	for (int i = 0; i < col_count; i++, align_headers >>= 2, align_data >>= 2) {
+	for (int i = 0; i < colCount; i++, align_headers >>= 2, align_data >>= 2) {
 		// NOTE: Not skipping empty column names.
 		// TODO: Hide them.
 		GtkCellRenderer *const renderer = gtk_cell_renderer_text_new();

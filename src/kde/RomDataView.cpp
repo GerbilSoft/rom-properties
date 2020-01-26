@@ -604,27 +604,7 @@ void RomDataViewPrivate::initListData(QLabel *lblDesc, const RomFields::Field *f
 	} else {
 		// No column headers.
 		// Use the first row.
-		if (listDataDesc.flags & RomFields::RFT_LISTDATA_MULTI) {
-			// Multi-language. Use the first one.
-			const auto *const multi = field->data.list_data.data.multi;
-			assert(multi != nullptr);
-			assert(!multi->empty());
-			if (multi && !multi->empty()) {
-				const auto &single = multi->begin()->second;
-				assert(!single.empty());
-				if (!single.empty()) {
-					colCount = static_cast<int>(single.at(0).size());
-				}
-			}
-		} else {
-			// Single language.
-			const auto *const single = field->data.list_data.data.single;
-			assert(single != nullptr);
-			assert(!single->empty());
-			if (single && !single->empty()) {
-				colCount = static_cast<int>(list_data->at(0).size());
-			}
-		}
+		colCount = static_cast<int>(list_data->at(0).size());
 	}
 
 	Q_Q(RomDataView);
