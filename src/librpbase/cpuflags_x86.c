@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * cpuflags_x86.h: x86 CPU flags detection.                                *
  *                                                                         *
- * Copyright (c) 2017-2019 by David Korth.                                 *
+ * Copyright (c) 2017-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -203,7 +203,9 @@ static void RP_CPU_InitCPUFlags_int(void)
 {
 	unsigned int regs[4];	// %eax, %ebx, %ecx, %edx
 	unsigned int maxFunc;
+#if defined(__i386__) || defined(_M_IX86)
 	uint8_t can_FXSAVE = 0;
+#endif /* defined(__i386__) || defined(_M_IX86) */
 
 	// Make sure the CPU flags variable is empty.
 	RP_CPU_Flags = 0;
@@ -297,7 +299,6 @@ static void RP_CPU_InitCPUFlags_int(void)
 		}
 #else /* !(defined(__i386__) || defined(_M_IX86)) */
 		// AMD64: SSE2 and lower are always supported.
-		can_FXSAVE = 1;
 		RP_CPU_Flags |= (RP_CPUFLAG_X86_SSE | RP_CPUFLAG_X86_SSE2);
 
 		// Check for other SSE instruction sets.
