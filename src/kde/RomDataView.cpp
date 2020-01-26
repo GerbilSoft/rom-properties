@@ -83,11 +83,17 @@ class RomDataViewPrivate
 		};
 		vector<tab> tabs;
 
+		// Multi-language functionality.
+		uint32_t def_lc;
+		QComboBox *cboLanguage;
+
 		// RFT_STRING_MULTI value labels.
 		typedef QPair<QLabel*, const RomFields::Field*> Data_StringMulti_t;
 		QVector<Data_StringMulti_t> vecStringMulti;
-		uint32_t def_lc;	// Default language code from RomFields.
-		QComboBox *cboLanguage;
+
+		// RFT_LISTDATA_MULTI value QTreeWidgets.
+		typedef QPair<QTreeWidget*, const RomFields::Field*> Data_ListDataMulti_t;
+		QVector<Data_ListDataMulti_t> vecListDataMulti;
 
 		// RomData object.
 		RomData *romData;
@@ -173,10 +179,10 @@ class RomDataViewPrivate
 		void initStringMulti(QLabel *lblDesc, const RomFields::Field *field);
 
 		/**
-		 * Update all multi-language string fields.
+		 * Update all multi-language fields.
 		 * @param user_lc User-specified language code.
 		 */
-		void updateStringMulti(uint32_t user_lc);
+		void updateMulti(uint32_t user_lc);
 
 		/**
 		 * Initialize the display widgets.
@@ -545,8 +551,34 @@ void RomDataViewPrivate::initListData(QLabel *lblDesc, const RomFields::Field *f
 	// NOTE: listDataDesc.names can be nullptr,
 	// which means we don't have any column headers.
 
-	const auto list_data = field->data.list_data.data;
+	// Single language ListData_t.
+	// For RFT_LISTDATA_MULTI, this is only used for row and column count.
+	const RomFields::ListData_t *list_data;
+	const bool isMulti = !!(listDataDesc.flags & RomFields::RFT_LISTDATA_MULTI);
+	if (isMulti) {
+		// Multiple languages.
+		const auto *const multi = field->data.list_data.data.multi;
+		assert(multi != nullptr);
+		assert(!multi->empty());
+		if (!multi || multi->empty()) {
+			// No data...
+			delete lblDesc;
+			return;
+		}
+
+		list_data = &multi->cbegin()->second;
+	} else {
+		// Single language.
+		list_data = field->data.list_data.data.single;
+	}
+
 	assert(list_data != nullptr);
+	assert(!list_data->empty());
+	if (!list_data || list_data->empty()) {
+		// No data...
+		delete lblDesc;
+		return;
+	}
 
 	// Validate flags.
 	// Cannot have both checkboxes and icons.
@@ -566,15 +598,13 @@ void RomDataViewPrivate::initListData(QLabel *lblDesc, const RomFields::Field *f
 		}
 	}
 
-	unsigned int col_count = 1;
+	int colCount = 1;
 	if (listDataDesc.names) {
-		col_count = static_cast<unsigned int>(listDataDesc.names->size());
+		colCount = static_cast<int>(listDataDesc.names->size());
 	} else {
 		// No column headers.
 		// Use the first row.
-		if (list_data && !list_data->empty()) {
-			col_count = static_cast<unsigned int>(list_data->at(0).size());
-		}
+		colCount = static_cast<int>(list_data->at(0).size());
 	}
 
 	Q_Q(RomDataView);
@@ -614,14 +644,14 @@ void RomDataViewPrivate::initListData(QLabel *lblDesc, const RomFields::Field *f
 	};
 
 	// Set up the column names.
-	treeWidget->setColumnCount(col_count);
+	treeWidget->setColumnCount(colCount);
 	if (listDataDesc.names) {
 		QStringList columnNames;
-		columnNames.reserve(col_count);
+		columnNames.reserve(colCount);
 		QTreeWidgetItem *const header = treeWidget->headerItem();
 		uint32_t align = listDataDesc.alignment.headers;
 		auto iter = listDataDesc.names->cbegin();
-		for (int col = 0; col < (int)col_count; col++, ++iter, align >>= 2) {
+		for (int col = 0; col < colCount; col++, ++iter, align >>= 2) {
 			header->setTextAlignment(col, align_tbl[align & 3]);
 
 			const string &name = *iter;
@@ -646,60 +676,61 @@ void RomDataViewPrivate::initListData(QLabel *lblDesc, const RomFields::Field *f
 	}
 
 	// Add the row data.
-	if (list_data) {
-		uint32_t checkboxes = 0;
+	// NOTE: For RFT_STRING_MULTI, we're only adding placeholder rows.
+	uint32_t checkboxes = 0;
+	if (hasCheckboxes) {
+		checkboxes = field->data.list_data.mxd.checkboxes;
+	}
+
+	unsigned int row = 0;	// for icons [TODO: Use iterator?]
+	for (auto iter = list_data->cbegin(); iter != list_data->cend(); ++iter, row++) {
+		const vector<string> &data_row = *iter;
+		// FIXME: Skip even if we don't have checkboxes?
+		// (also check other UI frontends)
+		if (hasCheckboxes && data_row.empty()) {
+			// Skip this row.
+			checkboxes >>= 1;
+			continue;
+		}
+
+		QTreeWidgetItem *const treeWidgetItem = new QTreeWidgetItem(treeWidget);
 		if (hasCheckboxes) {
-			checkboxes = field->data.list_data.mxd.checkboxes;
+			// The checkbox will only show up if setCheckState()
+			// is called at least once, regardless of value.
+			treeWidgetItem->setCheckState(0, (checkboxes & 1) ? Qt::Checked : Qt::Unchecked);
+			checkboxes >>= 1;
+		} else if (hasIcons) {
+			const rp_image *const icon = field->data.list_data.mxd.icons->at(row);
+			if (icon) {
+				treeWidgetItem->setIcon(0, QIcon(
+					QPixmap::fromImage(rpToQImage(icon))));
+				treeWidgetItem->setData(0, DragImageTreeWidget::RpImageRole,
+					QVariant::fromValue((void*)icon));
+			}
 		}
 
-		unsigned int row = 0;	// for icons [TODO: Use iterator?]
-		for (auto iter = list_data->cbegin(); iter != list_data->cend(); ++iter, row++) {
-			const vector<string> &data_row = *iter;
-			// FIXME: Skip even if we don't have checkboxes?
-			// (also check other UI frontends)
-			if (hasCheckboxes && data_row.empty()) {
-				// Skip this row.
-				checkboxes >>= 1;
-				continue;
+		// Set item flags.
+		treeWidgetItem->setFlags(itemFlags);
+
+		int col = 0;
+		uint32_t align = listDataDesc.alignment.data;
+		for (auto iter = data_row.cbegin(); iter != data_row.cend(); ++iter) {
+			if (!isMulti) {
+				treeWidgetItem->setData(col, Qt::DisplayRole, U82Q(*iter));
 			}
-
-			QTreeWidgetItem *const treeWidgetItem = new QTreeWidgetItem(treeWidget);
-			if (hasCheckboxes) {
-				// The checkbox will only show up if setCheckState()
-				// is called at least once, regardless of value.
-				treeWidgetItem->setCheckState(0, (checkboxes & 1) ? Qt::Checked : Qt::Unchecked);
-				checkboxes >>= 1;
-			} else if (hasIcons) {
-				const rp_image *const icon = field->data.list_data.mxd.icons->at(row);
-				if (icon) {
-					treeWidgetItem->setIcon(0, QIcon(
-						QPixmap::fromImage(rpToQImage(icon))));
-					treeWidgetItem->setData(0, DragImageTreeWidget::RpImageRole,
-						QVariant::fromValue((void*)icon));
-				}
-			}
-
-			// Set item flags.
-			treeWidgetItem->setFlags(itemFlags);
-
-			int col = 0;
-			uint32_t align = listDataDesc.alignment.data;
-			std::for_each(data_row.cbegin(), data_row.cend(),
-				[treeWidgetItem, &col, &align](const string &str) {
-					treeWidgetItem->setData(col, Qt::DisplayRole, U82Q(str));
-					treeWidgetItem->setTextAlignment(col, align_tbl[align & 3]);
-					col++;
-					align >>= 2;
-				}
-			);
+			treeWidgetItem->setTextAlignment(col, align_tbl[align & 3]);
+			col++;
+			align >>= 2;
 		}
 	}
 
-	// Resize the columns to fit the contents.
-	for (unsigned int i = 0; i < col_count; i++) {
-		treeWidget->resizeColumnToContents(static_cast<int>(i));
+	if (!isMulti) {
+		// Resize the columns to fit the contents.
+		for (int i = 0; i < colCount; i++) {
+			treeWidget->resizeColumnToContents(i);
+		}
+		treeWidget->resizeColumnToContents(colCount);
 	}
-	treeWidget->resizeColumnToContents(col_count);
 
 	if (listDataDesc.flags & RomFields::RFT_LISTDATA_SEPARATE_ROW) {
 		// Separate rows.
@@ -718,6 +749,10 @@ void RomDataViewPrivate::initListData(QLabel *lblDesc, const RomFields::Field *f
 
 	// Install the event filter.
 	treeWidget->installEventFilter(q);
+
+	if (isMulti) {
+		vecListDataMulti.append(Data_ListDataMulti_t(treeWidget, field));
+	}
 }
 
 /**
@@ -917,15 +952,16 @@ void RomDataViewPrivate::initStringMulti(QLabel *lblDesc, const RomFields::Field
 }
 
 /**
- * Update all multi-language string fields.
+ * Update all multi-language fields.
  * @param user_lc User-specified language code.
  */
-void RomDataViewPrivate::updateStringMulti(uint32_t user_lc)
+void RomDataViewPrivate::updateMulti(uint32_t user_lc)
 {
 	// Set of supported language codes.
 	// NOTE: Using std::set instead of QSet for sorting.
 	set<uint32_t> set_lc;
 
+	// RFT_STRING_MULTI
 	foreach(const Data_StringMulti_t &data, vecStringMulti) {
 		QLabel *const lblString = data.first;
 		const RomFields::Field *const field = data.second;
@@ -966,6 +1002,72 @@ void RomDataViewPrivate::updateStringMulti(uint32_t user_lc)
 
 		// Update the text.
 		lblString->setText(U82Q(iter_sm->second.c_str()));
+	}
+
+	// RFT_LISTDATA_MULTI
+	foreach(const Data_ListDataMulti_t &data, vecListDataMulti) {
+		QTreeWidget *const treeWidget = data.first;
+		const RomFields::Field *const field = data.second;
+		const auto *const pListData_multi = field->data.list_data.data.multi;
+		assert(pListData_multi != nullptr);
+		assert(!pListData_multi->empty());
+		if (!pListData_multi || pListData_multi->empty()) {
+			// Invalid RFT_LISTDATA_MULTI...
+			continue;
+		}
+
+		if (!cboLanguage) {
+			// Need to add all supported languages.
+			// TODO: Do we need to do this for all of them, or just one?
+			for (auto iter_sm = pListData_multi->cbegin();
+			     iter_sm != pListData_multi->cend(); ++iter_sm)
+			{
+				set_lc.insert(iter_sm->first);
+			}
+		}
+
+		// Try the user-specified language code first.
+		// TODO: Consolidate ->end() calls?
+		auto iter_ldm = pListData_multi->end();
+		if (user_lc != 0) {
+			iter_ldm = pListData_multi->find(user_lc);
+		}
+		if (iter_ldm == pListData_multi->end()) {
+			// Not found. Try the ROM-default language code.
+			if (def_lc != user_lc) {
+				iter_ldm = pListData_multi->find(def_lc);
+				if (iter_ldm == pListData_multi->end()) {
+					// Still not found. Use the first string.
+					iter_ldm = pListData_multi->begin();
+				}
+			}
+		}
+
+		const RomFields::ListData_t *const list_data = &(iter_ldm->second);
+
+		// Update the list.
+		const int rowCount = treeWidget->topLevelItemCount();
+		auto iter_listData = list_data->cbegin();
+		for (int row = 0; row < rowCount && iter_listData != list_data->cend(); row++, ++iter_listData) {
+			QTreeWidgetItem *const treeWidgetItem = treeWidget->topLevelItem(row);
+
+			int col = 0;
+			for (auto iter_row = iter_listData->cbegin();
+			     iter_row != iter_listData->cend(); ++iter_row, col++)
+			{
+				treeWidgetItem->setData(col, Qt::DisplayRole, U82Q(*iter_row));
+			}
+		}
+
+		// Resize the columns to fit the contents.
+		// NOTE: Only done on first load.
+		if (!cboLanguage) {
+			const int colCount = treeWidget->columnCount();
+			for (int i = 0; i < colCount; i++) {
+				treeWidget->resizeColumnToContents(i);
+			}
+			treeWidget->resizeColumnToContents(colCount);
+		}
 	}
 
 	if (!cboLanguage && set_lc.size() > 1) {
@@ -1198,10 +1300,10 @@ void RomDataViewPrivate::initDisplayWidgets(void)
 		}
 	}
 
-	// Initial update of RFT_MULTI_STRING fields.
-	if (!vecStringMulti.isEmpty()) {
+	// Initial update of RFT_STRING_MULTI and RFT_LISTDATA_MULTI fields.
+	if (!vecStringMulti.isEmpty() || !vecListDataMulti.isEmpty()) {
 		def_lc = fields->defaultLanguageCode();
-		updateStringMulti(0);
+		updateMulti(0);
 	}
 
 	// Check if the last field in the last tab
@@ -1317,14 +1419,14 @@ bool RomDataView::eventFilter(QObject *object, QEvent *event)
 	return false;
 
 	// Get the height of the first item.
-	QTreeWidgetItem *const item = treeWidget->topLevelItem(0);
-	assert(item != 0);
-	if (!item) {
+	QTreeWidgetItem *const treeWidgetItem = treeWidget->topLevelItem(0);
+	assert(treeWidgetItem != nullptr);
+	if (!treeWidgetItem) {
 		// No items...
 		return false;
 	}
 
-	QRect rect = treeWidget->visualItemRect(item);
+	QRect rect = treeWidget->visualItemRect(treeWidgetItem);
 	if (rect.height() <= 0) {
 		// Item has no height?!
 		return false;
@@ -1379,7 +1481,7 @@ void RomDataView::cboLanguage_currentIndexChanged_slot(int index)
 	}
 
 	const uint32_t lc = d->cboLanguage->itemData(index).value<uint32_t>();
-	d->updateStringMulti(lc);
+	d->updateMulti(lc);
 }
 
 /** Properties. **/

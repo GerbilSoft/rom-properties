@@ -3,7 +3,7 @@
  * properties.cpp: Properties output.                                      *
  *                                                                         *
  * Copyright (c) 2016-2018 by Egor.                                        *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -222,8 +222,11 @@ public:
 class ListDataField {
 	size_t width;
 	const RomFields::Field *romField;
+	uint32_t def_lc;	// ROM-default language code.
+	uint32_t user_lc;	// User-specified language code.
 public:
-	ListDataField(size_t width, const RomFields::Field *romField) :width(width), romField(romField) {}
+	ListDataField(size_t width, const RomFields::Field *romField, uint32_t def_lc, uint32_t user_lc)
+		:width(width), romField(romField), def_lc(def_lc), user_lc(user_lc) { }
 	friend ostream& operator<<(ostream& os, const ListDataField& field) {
 		auto romField = field.romField;
 
@@ -231,7 +234,40 @@ public:
 		// NOTE: listDataDesc.names can be nullptr,
 		// which means we don't have any column headers.
 
-		const auto list_data = romField->data.list_data.data;
+		// Get the ListData_t container.
+		const RomFields::ListData_t *list_data = nullptr;
+		if (listDataDesc.flags & RomFields::RFT_LISTDATA_MULTI) {
+			// ROM must have set a default language code.
+			assert(field.def_lc != 0);
+
+			// Determine the language to use.
+			const auto *const pListDataMulti = romField->data.list_data.data.multi;
+			assert(pListDataMulti != nullptr);
+			assert(!pListDataMulti->empty());
+			if (pListDataMulti && !pListDataMulti->empty()) {
+				// Try the user-specified language code first.
+				// TODO: Consolidate ->end() calls?
+				auto iter = pListDataMulti->end();
+				if (field.user_lc != 0) {
+					iter = pListDataMulti->find(field.user_lc);
+				}
+				if (iter == pListDataMulti->end()) {
+					// Not found. Try the ROM-default language code.
+					if (field.def_lc != field.user_lc) {
+						iter = pListDataMulti->find(field.def_lc);
+						if (iter == pListDataMulti->end()) {
+							// Still not found. Use the first string.
+							iter = pListDataMulti->begin();
+						}
+					}
+				}
+				list_data = &iter->second;
+			}
+		} else {
+			// Single language.
+			list_data = romField->data.list_data.data.single;
+		}
+
 		assert(list_data != nullptr);
 		if (!list_data) {
 			return os << "[ERROR: No list data.]";
@@ -673,7 +709,7 @@ public:
 				break;
 			}
 			case RomFields::RFT_LISTDATA: {
-				os << ListDataField(maxWidth, romField);
+				os << ListDataField(maxWidth, romField, def_lc, user_lc);
 				break;
 			}
 			case RomFields::RFT_DATETIME: {
@@ -725,7 +761,7 @@ public:
 					os << "\\\\";
 					break;
 				case '"':
-					os << "\\";
+					os << "\\\"";
 					break;
 				case '\b':
 					os << "\\b";
@@ -815,6 +851,7 @@ public:
 			case RomFields::RFT_LISTDATA: {
 				const auto &listDataDesc = romField->desc.list_data;
 				os << "{\"type\":\"LISTDATA\",\"desc\":{\"name\":" << JSONString(romField->name.c_str());
+
 				if (listDataDesc.names) {
 					os << ",\"names\":[";
 					const unsigned int col_count = static_cast<unsigned int>(listDataDesc.names->size());
@@ -830,30 +867,90 @@ public:
 				} else {
 					os << ",\"names\":[]";
 				}
-				os << "},\"data\":[";
-				const auto list_data = romField->data.list_data.data;
-				assert(list_data != nullptr);
-				if (list_data) {
-					uint32_t checkboxes = romField->data.list_data.mxd.checkboxes;
-					for (auto it = list_data->cbegin(); it != list_data->cend(); ++it) {
-						if (it != list_data->cbegin()) os << ',';
-						os << '[';
-						if (listDataDesc.flags & RomFields::RFT_LISTDATA_CHECKBOXES) {
-							// TODO: Better JSON schema for RFT_LISTDATA_CHECKBOXES?
-							os << ((checkboxes & 1) ? "true" : "false") << ',';
-							checkboxes >>= 1;
-						}
 
-						bool did_one = false;
-						for (auto jt = it->cbegin(); jt != it->cend(); ++jt) {
-							if (did_one) os << ',';
-							did_one = true;
-							os << JSONString(jt->c_str());
+				os << "},\"data\":";
+				if (!(listDataDesc.flags & RomFields::RFT_LISTDATA_MULTI)) {
+					// Single-language ListData.
+					os << "[\n";
+					const auto list_data = romField->data.list_data.data.single;
+					assert(list_data != nullptr);
+					if (list_data) {
+						uint32_t checkboxes = romField->data.list_data.mxd.checkboxes;
+						for (auto it = list_data->cbegin(); it != list_data->cend(); ++it) {
+							if (it != list_data->cbegin()) os << ",\n";
+							os << "\t[";
+							if (listDataDesc.flags & RomFields::RFT_LISTDATA_CHECKBOXES) {
+								// TODO: Better JSON schema for RFT_LISTDATA_CHECKBOXES?
+								os << ((checkboxes & 1) ? "true" : "false") << ',';
+								checkboxes >>= 1;
+							}
+
+							bool did_one = false;
+							for (auto jt = it->cbegin(); jt != it->cend(); ++jt) {
+								if (did_one) os << ',';
+								did_one = true;
+								os << JSONString(jt->c_str());
+							}
+							os << ']';
 						}
-						os << ']';
+						if (!list_data->empty()) {
+							os << '\n';
+						}
 					}
+					os << "]";
+				} else {
+					// Multi-language ListData.
+					os << "{\n";
+					const auto *const list_data = romField->data.list_data.data.multi;
+					assert(list_data != nullptr);
+					if (list_data) {
+						for (auto mapIter = list_data->cbegin(); mapIter != list_data->cend(); ++mapIter) {
+							// Key: Language code
+							// Value: Vector of string data
+							if (mapIter != list_data->cbegin()) os << ",\n";
+							os << "\t\"";
+							for (uint32_t lc = mapIter->first; lc != 0; lc <<= 8) {
+								char chr = (char)(lc >> 24);
+								if (chr != 0) {
+									os << chr;
+								}
+							}
+							os << "\":[";
+							// TODO: Consolidate single/multi here?
+							const auto &lc_data = mapIter->second;
+							if (!lc_data.empty()) {
+								os << '\n';
+								uint32_t checkboxes = romField->data.list_data.mxd.checkboxes;
+								for (auto lcIter = lc_data.cbegin(); lcIter != lc_data.cend(); ++lcIter) {
+									if (lcIter != lc_data.cbegin()) os << ",\n";
+									os << "\t\t[";
+									if (listDataDesc.flags & RomFields::RFT_LISTDATA_CHECKBOXES) {
+										// TODO: Better JSON schema for RFT_LISTDATA_CHECKBOXES?
+										os << ((checkboxes & 1) ? "true" : "false") << ',';
+										checkboxes >>= 1;
+									}
+
+									bool did_one = false;
+									for (auto jt = lcIter->cbegin(); jt != lcIter->cend(); ++jt) {
+										if (did_one) os << ',';
+										did_one = true;
+										os << JSONString(jt->c_str());
+									}
+									os << ']';
+								}
+								if (!lc_data.empty()) {
+									os << '\n';
+								}
+							}
+							os << "\t]";
+						}
+						if (!list_data->empty()) {
+							os << '\n';
+						}
+					}
+					os << '}';
 				}
-				os << "]}";
+				os << '}';
 				break;
 			}
 

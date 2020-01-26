@@ -89,12 +89,12 @@ STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-kio5_SRCS "${rom-properti
 STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-kio5_H    "${rom-properties-kio_H}")
 
 # Sources and headers. (KF5-specific)
-IF(QT5_FOUND)
+IF(Qt5Core_FOUND)
 	QT5_ADD_RESOURCES(
 		rom-properties-kf5_RCC_O ${rom-properties-kf5_RCC_SRCS}
 		OPTIONS -no-compress
 		)
-ENDIF(QT5_FOUND)
+ENDIF(Qt5Core_FOUND)
 SET(rom-properties-kf5_SRCS
 	${rom-properties-kf5_SRCS}
 	${rom-properties-kio5_SRCS}

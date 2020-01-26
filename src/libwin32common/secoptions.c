@@ -238,6 +238,10 @@ int rp_secoptions_init(BOOL bHighSec)
 		return GetLastError();
 	}
 
+#ifdef _MSC_VER
+# pragma warning(push)
+# pragma warning(disable: 4996)
+#endif /* _MSC_VER */
 	// GetVersionEx() should never fail...
 	osvi.dwOSVersionInfoSize = sizeof(osvi);
 	bRet = GetVersionEx(&osvi);
@@ -249,6 +253,9 @@ int rp_secoptions_init(BOOL bHighSec)
 		osvi.dwMinorVersion = 1;
 		osvi.dwBuildNumber = 2600;
 	}
+#ifdef _MSC_VER
+# pragma warning(pop)
+#endif /* _MSC_VER */
 
 	/** BEGIN: Windows XP/2003 **/
 	// Remove the current directory from the DLL search path.

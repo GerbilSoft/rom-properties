@@ -973,13 +973,13 @@ int KhronosKTX::getFields(LibRpBase::RomFields *fields) const
 		};
 
 		// NOTE: Making a copy.
-		vector<vector<string> > *const p_kv_data = new vector<vector<string> >(d->kv_data);
+		RomFields::ListData_t *const p_kv_data = new RomFields::ListData_t(d->kv_data);
 		vector<string> *const v_kv_field_names = RomFields::strArrayToVector_i18n(
 			"KhronosKTX|KeyValue", kv_field_names, ARRAY_SIZE(kv_field_names));
 
 		RomFields::AFLD_PARAMS params;
 		params.headers = v_kv_field_names;
-		params.list_data = p_kv_data;
+		params.data.single = p_kv_data;
 		fields->addField_listData(C_("KhronosKTX", "Key/Value Data"), &params);
 	}
 

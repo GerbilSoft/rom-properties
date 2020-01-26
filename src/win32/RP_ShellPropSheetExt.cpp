@@ -129,15 +129,15 @@ class RP_ShellPropSheetExt_Private
 		bool isFullyInit;		// True if the window is fully initialized.
 
 		// ListView string data.
-		// - Key: ListView dialog ID (TODO: Use uint16_t instead?)
+		// - Key: ListView dialog ID
 		// - Value: Double-vector of tstrings.
-		unordered_map<unsigned int, vector<vector<tstring> > > map_lvStringData;
+		unordered_map<uint16_t, vector<vector<tstring> > > map_lvStringData;
 
 		// ListView checkboxes.
-		unordered_map<unsigned int, uint32_t> map_lvCheckboxes;
+		unordered_map<uint16_t, uint32_t> map_lvCheckboxes;
 
 		// ListView ImageList indexes.
-		unordered_map<unsigned int, vector<int> > map_lvImageList;
+		unordered_map<uint16_t, vector<int> > map_lvImageList;
 
 		/**
 		 * ListView GetDispInfo function.
@@ -166,14 +166,31 @@ class RP_ShellPropSheetExt_Private
 		vector<tab> tabs;
 		int curTabIndex;
 
+		// Multi-language functionality.
+		uint32_t def_lc;	// Default language code from RomFields.
+		set<uint32_t> set_lc;	// Set of supported language codes.
+		HWND cboLanguage;
+		HIMAGELIST himglFlags;
+
 		// RFT_STRING_MULTI value labels.
 		typedef std::pair<HWND, const RomFields::Field*> Data_StringMulti_t;
 		vector<Data_StringMulti_t> vecStringMulti;
-		set<uint32_t> set_lc;	// Set of language codes from vecStringMulti.
-		uint32_t def_lc;	// Default language code from RomFields.
-		static const UINT iconSize = 16;	// TODO: Hi-DPI
-		HWND cboLanguage;
-		HIMAGELIST himglFlags;
+
+		// RFT_LISTDATA_MULTI value ListViews.
+		struct Data_ListDataMulti_t {
+			HWND hListView;
+			const RomFields::Field *field;
+			uint16_t dlgID;
+
+			Data_ListDataMulti_t(
+				HWND hListView,
+				const RomFields::Field *field,
+				uint16_t dlgID)
+				: hListView(hListView)
+				, field(field)
+				, dlgID(dlgID) { }
+		};
+		vector<Data_ListDataMulti_t> vecListDataMulti;
 
 	public:
 		/**
@@ -234,6 +251,16 @@ class RP_ShellPropSheetExt_Private
 		int initBitfield(HWND hDlg, HWND hWndTab,
 			const POINT &pt_start, int idx,
 			const RomFields::Field *field);
+
+		/**
+		 * Measure the width of a ListData string.
+		 * This function handles newlines.
+		 * @param hDC           [in] HDC for text measurement.
+		 * @param tstr          [in] String to measure.
+		 * @param pNlCount      [out,opt] Newline count.
+		 * @return Width.
+		 */
+		static int measureListDataString(HDC hDC, const tstring &tstr, int *pNlCount = nullptr);
 
 		/**
 		 * Initialize a ListData field.
@@ -323,10 +350,10 @@ class RP_ShellPropSheetExt_Private
 		void buildCboLanguageImageList(void);
 
 		/**
-		 * Update all multi-language string fields.
+		 * Update all multi-language fields.
 		 * @param user_lc User-specified language code.
 		 */
-		void updateStringMulti(uint32_t user_lc);
+		void updateMulti(uint32_t user_lc);
 
 		/**
 		 * Initialize the bold font.
@@ -1047,6 +1074,64 @@ int RP_ShellPropSheetExt_Private::initBitfield(HWND hDlg, HWND hWndTab,
 }
 
 /**
+ * Measure the width of a ListData string.
+ * This function handles newlines.
+ * @param hDC          [in] HDC for text measurement.
+ * @param tstr         [in] String to measure.
+ * @param pNlCount     [out,opt] Newline count.
+ * @return Width.
+ */
+int RP_ShellPropSheetExt_Private::measureListDataString(HDC hDC, const tstring &tstr, int *pNlCount)
+{
+	// TODO: Actual padding value?
+	static const int COL_WIDTH_PADDING = 8*2;
+
+	// Measured width.
+	int width = 0;
+
+	// Count newlines.
+	size_t prev_nl_pos = 0;
+	size_t cur_nl_pos;
+	int nl = 0;
+	while ((cur_nl_pos = tstr.find(_T('\n'), prev_nl_pos)) != tstring::npos) {
+		// Measure the width, plus padding on both sides.
+		//
+		// LVSCW_AUTOSIZE_USEHEADER doesn't work for entries with newlines.
+		// This allows us to set a good initial size, but it won't help if
+		// someone double-clicks the column splitter, triggering an automatic
+		// resize.
+		//
+		// TODO: Use ownerdraw instead? (WM_MEASUREITEM / WM_DRAWITEM)
+		// NOTE: Not using LibWin32Common::measureTextSize()
+		// because that does its own newline checks.
+		// TODO: Verify the values here.
+		SIZE textSize;
+		GetTextExtentPoint32(hDC, &tstr[prev_nl_pos], (int)(cur_nl_pos - prev_nl_pos), &textSize);
+		width = std::max<int>(width, textSize.cx + COL_WIDTH_PADDING);
+
+		nl++;
+		prev_nl_pos = cur_nl_pos + 1;
+	}
+
+	if (nl > 0) {
+		// Measure the last line.
+		// TODO: Verify the values here.
+		SIZE textSize;
+		GetTextExtentPoint32(hDC, &tstr[prev_nl_pos], (int)(tstr.size() - prev_nl_pos), &textSize);
+		width = std::max<int>(width, textSize.cx + COL_WIDTH_PADDING);
+	}
+
+	if (pNlCount) {
+		*pNlCount = nl;
+	}
+
+	// FIXME: Don't use LVSCW_AUTOSIZE_USEHEADER.
+	// LVS_OWNERDATA doesn't handle this properly. (only gets what's onscreen)
+	// TODO: Figure out the correct padding so the columns aren't truncated.
+	return (nl > 0 ? width : LVSCW_AUTOSIZE_USEHEADER);
+}
+
+/**
  * Initialize a ListData field.
  * @param hDlg		[in] Parent dialog window. (for dialog unit mapping)
  * @param hWndTab	[in] Tab window. (for the actual control)
@@ -1074,8 +1159,32 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 	// NOTE: listDataDesc.names can be nullptr,
 	// which means we don't have any column headers.
 
-	const auto list_data = field->data.list_data.data;
+	// Single language ListData_t.
+	// For RFT_LISTDATA_MULTI, this is only used for row and column count.
+	const RomFields::ListData_t *list_data;
+	const bool isMulti = !!(listDataDesc.flags & RomFields::RFT_LISTDATA_MULTI);
+	if (isMulti) {
+		// Multiple languages.
+		const auto *const multi = field->data.list_data.data.multi;
+		assert(multi != nullptr);
+		assert(!multi->empty());
+		if (!multi || multi->empty()) {
+			// No data...
+			return 0;
+		}
+
+		list_data = &multi->cbegin()->second;
+	} else {
+		// Single language.
+		list_data = field->data.list_data.data.single;
+	}
+
 	assert(list_data != nullptr);
+	assert(!list_data->empty());
+	if (!list_data || list_data->empty()) {
+		// No list data...
+		return 0;
+	}
 
 	// Validate flags.
 	// Cannot have both checkboxes and icons.
@@ -1104,15 +1213,15 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 	if (!listDataDesc.names) {
 		lvsStyle |= LVS_NOCOLUMNHEADER;
 	}
-	const unsigned int dlgId = IDC_RFT_LISTDATA(idx);
-	HWND hDlgItem = CreateWindowEx(WS_EX_NOPARENTNOTIFY | WS_EX_CLIENTEDGE,
+	const uint16_t dlgID = IDC_RFT_LISTDATA(idx);
+	HWND hListView = CreateWindowEx(WS_EX_NOPARENTNOTIFY | WS_EX_CLIENTEDGE,
 		WC_LISTVIEW, nullptr, lvsStyle,
 		pt_start.x, pt_start.y,
 		size.cx, size.cy,
-		hWndTab, (HMENU)(INT_PTR)(dlgId),
+		hWndTab, (HMENU)(INT_PTR)(dlgID),
 		nullptr, nullptr);
-	SetWindowFont(hDlgItem, hFontDlg, false);
-	hwndListViewControls.push_back(hDlgItem);
+	SetWindowFont(hListView, hFontDlg, false);
+	hwndListViewControls.push_back(hListView);
 
 	// Set extended ListView styles.
 	DWORD lvsExStyle = LVS_EX_FULLROWSELECT;
@@ -1123,24 +1232,22 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 	if (hasCheckboxes) {
 		lvsExStyle |= LVS_EX_CHECKBOXES;
 	}
-	ListView_SetExtendedListViewStyle(hDlgItem, lvsExStyle);
+	ListView_SetExtendedListViewStyle(hListView, lvsExStyle);
 
 	// Insert columns.
-	int col_count = 1;
+	int colCount = 1;
 	if (listDataDesc.names) {
-		col_count = (int)listDataDesc.names->size();
+		colCount = (int)listDataDesc.names->size();
 	} else {
 		// No column headers.
 		// Use the first row.
-		if (list_data && !list_data->empty()) {
-			col_count = (int)list_data->at(0).size();
-		}
+		colCount = (int)list_data->at(0).size();
 	}
 
 	// Column widths.
 	// LVSCW_AUTOSIZE_USEHEADER doesn't work for entries with newlines.
 	// TODO: Use ownerdraw instead? (WM_MEASUREITEM / WM_DRAWITEM)
-	unique_ptr<int[]> col_width(new int[col_count]);
+	unique_ptr<int[]> col_width(new int[colCount]);
 
 	LVCOLUMN lvColumn;
 	if (listDataDesc.names) {
@@ -1155,7 +1262,7 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 		// We'll prefer the data alignment value.
 		uint32_t align = listDataDesc.alignment.data;
 		auto iter = listDataDesc.names->cbegin();
-		for (int i = 0; i < col_count; ++iter, i++, align >>= 2) {
+		for (int i = 0; i < colCount; ++iter, i++, align >>= 2) {
 			lvColumn.mask = LVCF_TEXT | LVCF_FMT;
 			lvColumn.fmt = align_tbl[align & 3];
 
@@ -1164,250 +1271,247 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 				// NOTE: pszText is LPTSTR, not LPCTSTR...
 				const tstring tstr = U82T_s(str);
 				lvColumn.pszText = const_cast<LPTSTR>(tstr.c_str());
-				ListView_InsertColumn(hDlgItem, i, &lvColumn);
+				ListView_InsertColumn(hListView, i, &lvColumn);
 			} else {
 				// Don't show this column.
 				// FIXME: Zero-width column is a bad hack...
 				lvColumn.pszText = _T("");
 				lvColumn.mask |= LVCF_WIDTH;
 				lvColumn.cx = 0;
-				ListView_InsertColumn(hDlgItem, i, &lvColumn);
+				ListView_InsertColumn(hListView, i, &lvColumn);
 			}
 			col_width[i] = LVSCW_AUTOSIZE_USEHEADER;
 		}
 	} else {
 		lvColumn.mask = LVCF_FMT;
 		lvColumn.fmt = LVCFMT_LEFT;
-		for (int i = 0; i < col_count; i++) {
-			ListView_InsertColumn(hDlgItem, i, &lvColumn);
+		for (int i = 0; i < colCount; i++) {
+			ListView_InsertColumn(hListView, i, &lvColumn);
 			col_width[i] = LVSCW_AUTOSIZE_USEHEADER;
 		}
 	}
 
 	// Dialog font and device context.
 	// NOTE: Using the parent dialog's font.
-	AutoGetDC hDC(hWndTab, hFontDlg);
+	AutoGetDC hDC(hListView, hFontDlg);
 
 	// Add the row data.
-	if (list_data) {
-		uint32_t checkboxes = 0, adj_checkboxes = 0;
+	uint32_t checkboxes = 0, adj_checkboxes = 0;
+	if (hasCheckboxes) {
+		checkboxes = field->data.list_data.mxd.checkboxes;
+	}
+
+	// NOTE: We're converting the strings for use with
+	// LVS_OWNERDATA.
+	vector<vector<tstring> > lvStringData;
+	lvStringData.reserve(list_data->size());
+
+	vector<int> lvImageList;
+	if (hasIcons) {
+		lvImageList.reserve(list_data->size());
+	}
+
+	int lv_row_num = 0, data_row_num = 0;
+	int nl_max = 0;	// Highest number of newlines in any string.
+	for (auto iter = list_data->cbegin(); iter != list_data->cend(); ++iter, data_row_num++) {
+		const vector<string> &data_row = *iter;
+		// FIXME: Skip even if we don't have checkboxes?
+		// (also check other UI frontends)
 		if (hasCheckboxes) {
-			checkboxes = field->data.list_data.mxd.checkboxes;
+			if (data_row.empty()) {
+				// Skip this row.
+				checkboxes >>= 1;
+				continue;
+			} else {
+				// Store the checkbox value for this row.
+				if (checkboxes & 1) {
+					adj_checkboxes |= (1 << lv_row_num);
+				}
+				checkboxes >>= 1;
+			}
 		}
 
-		// NOTE: We're converting the strings for use with
-		// LVS_OWNERDATA.
-		vector<vector<tstring> > lvStringData;
-		lvStringData.reserve(list_data->size());
+		// Destination row.
+		lvStringData.resize(lvStringData.size()+1);
+		auto &lv_row_data = lvStringData.at(lvStringData.size()-1);
+		lv_row_data.reserve(data_row.size());
 
-		vector<int> lvImageList;
-		if (hasIcons) {
-			lvImageList.reserve(list_data->size());
-		}
+		// String data.
+		if (isMulti) {
+			// RFT_LISTDATA_MULTI. Allocate space for the strings,
+			// but don't initialize them here.
+			lv_row_data.resize(data_row.size());
 
-		int lv_row_num = 0, data_row_num = 0;
-		int nl_max = 0;	// Highest number of newlines in any string.
-		for (auto iter = list_data->cbegin(); iter != list_data->cend(); ++iter, data_row_num++) {
-			const vector<string> &data_row = *iter;
-			// FIXME: Skip even if we don't have checkboxes?
-			// (also check other UI frontends)
-			if (hasCheckboxes) {
-				if (data_row.empty()) {
-					// Skip this row.
-					checkboxes >>= 1;
-					continue;
-				} else {
-					// Store the checkbox value for this row.
-					if (checkboxes & 1) {
-						adj_checkboxes |= (1 << lv_row_num);
+			// Check newline counts in all strings to find nl_max.
+			const auto *const multi = field->data.list_data.data.multi;
+			for (auto iter_m = multi->cbegin(); iter_m != multi->cend(); ++iter_m) {
+				const RomFields::ListData_t &ld = iter_m->second;
+				for (auto iter_row = ld.cbegin(); iter_row != ld.cend(); ++iter_row) {
+					const auto &data_row = *iter_row;
+					for (auto iter_col = data_row.cbegin(); iter_col != data_row.cend(); ++iter_col) {
+						size_t prev_nl_pos = 0;
+						size_t cur_nl_pos;
+						int nl = 0;
+						while ((cur_nl_pos = iter_col->find('\n', prev_nl_pos)) != tstring::npos) {
+							nl++;
+							prev_nl_pos = cur_nl_pos + 1;
+						}
+						nl_max = std::max(nl_max, nl);
 					}
-					checkboxes >>= 1;
 				}
 			}
-
-			// Destination row.
-			lvStringData.resize(lvStringData.size()+1);
-			auto &lv_row_data = lvStringData.at(lvStringData.size()-1);
-			lv_row_data.reserve(data_row.size());
-
-			// String data.
+		} else {
+			// Single language.
 			int col = 0;
 			for (auto iter = data_row.cbegin(); iter != data_row.cend(); ++iter, col++) {
 				tstring tstr = U82T_s(*iter);
 
-				// Count newlines.
-				size_t prev_nl_pos = 0;
-				size_t cur_nl_pos;
-				int nl = 0;
-				// TODO: Actual padding value?
-				static const int COL_WIDTH_PADDING = 8*2;
-				while ((cur_nl_pos = tstr.find(_T('\n'), prev_nl_pos)) != tstring::npos) {
-					// Measure the width, plus padding on both sides.
-					//
-					// LVSCW_AUTOSIZE_USEHEADER doesn't work for entries with newlines.
-					// This allows us to set a good initial size, but it won't help if
-					// someone double-clicks the column splitter, triggering an automatic
-					// resize.
-					//
-					// TODO: Use ownerdraw instead? (WM_MEASUREITEM / WM_DRAWITEM)
-					// NOTE: Not using LibWin32Common::measureTextSize()
-					// because that does its own newline checks.
-					// TODO: Verify the values here.
-					if (col < col_count) {
-						SIZE textSize;
-						GetTextExtentPoint32(hDC, &tstr[prev_nl_pos], (int)(cur_nl_pos - prev_nl_pos), &textSize);
-						col_width[col] = std::max<int>(col_width[col], textSize.cx + COL_WIDTH_PADDING);
-					}
-
-					nl++;
-					prev_nl_pos = cur_nl_pos + 1;
+				int nl_count;
+				int width = measureListDataString(hDC, tstr, &nl_count);
+				if (col < colCount) {
+					col_width[col] = std::max(col_width[col], width);
 				}
-				if (nl > 0 && col < col_count) {
-					// Measure the last line.
-					// TODO: Verify the values here.
-					SIZE textSize;
-					GetTextExtentPoint32(hDC, &tstr[prev_nl_pos], (int)(tstr.size() - prev_nl_pos), &textSize);
-					col_width[col] = std::max<int>(col_width[col], textSize.cx + COL_WIDTH_PADDING);
-				}
-				nl_max = std::max(nl_max, nl);
+				nl_max = std::max(nl_max, nl_count);
 
 				// TODO: Store the icon index if necessary.
 				lv_row_data.push_back(std::move(tstr));
 			}
-
-			// Next row.
-			lv_row_num++;
 		}
 
-		// Icons.
-		if (hasIcons) {
-			// Icon size is 32x32, adjusted for DPI. (TODO: WM_DPICHANGED)
-			// ImageList will resize the original icons to 32x32.
-
-			// NOTE: LVS_REPORT doesn't allow variable row sizes,
-			// at least not without using ownerdraw. Hence, we'll
-			// use a hackish workaround: If any entry has more than
-			// two newlines, increase the Imagelist icon size by
-			// 16 pixels.
-			// TODO: Handle this better.
-			// FIXME: This only works if the RFT_LISTDATA has icons.
-			const int px = rp_AdjustSizeForDpi(32, rp_GetDpiForWindow(hDlg));
-			SIZE sizeListIcon = {px, px};
-			bool resizeNeeded = false;
-			float factor = 1.0f;
-			if (nl_max >= 2) {
-				// Two or more newlines.
-				// Add half of the icon size per newline over 1.
-				sizeListIcon.cy += ((px/2) * (nl_max - 1));
-				resizeNeeded = true;
-				factor = (float)sizeListIcon.cy / (float)sizeListIcon.cy;
-			}
-
-			HIMAGELIST himl = ImageList_Create(sizeListIcon.cx, sizeListIcon.cy,
-				ILC_COLOR32, static_cast<int>(list_data->size()), 0);
-			assert(himl != nullptr);
-			if (himl) {
-				// NOTE: ListView uses LVSIL_SMALL for LVS_REPORT.
-				// TODO: The row highlight doesn't surround the empty area
-				// of the icon. LVS_OWNERDRAW is probably needed for that.
-				ListView_SetImageList(hDlgItem, himl, LVSIL_SMALL);
-				uint32_t lvBgColor[2];
-				lvBgColor[0] = LibWin32Common::GetSysColor_ARGB32(COLOR_WINDOW);
-				lvBgColor[1] = LibWin32Common::getAltRowColor_ARGB32();
-
-				// Add icons.
-				const auto &icons = field->data.list_data.mxd.icons;
-				uint8_t rowColorIdx = 0;
-				for (auto iter = icons->cbegin(); iter != icons->cend();
-				     ++iter, rowColorIdx = !rowColorIdx)
-				{
-					int iImage = -1;
-					const rp_image *const icon = *iter;
-					if (!icon) {
-						// No icon for this row.
-						lvImageList.push_back(iImage);
-						continue;
-					}
-
-					// Resize the icon, if necessary.
-					rp_image *icon_resized = nullptr;
-					if (resizeNeeded) {
-						SIZE szResize = {icon->width(), icon->height()};
-						szResize.cy = static_cast<LONG>(szResize.cy * factor);
-
-						// If the original icon is CI8, it needs to be
-						// converted to ARGB32 first. Otherwise, the
-						// "empty" background area will be black.
-						// NOTE: We still need to specify a background color,
-						// since the ListView highlight won't show up on
-						// alpha-transparent pixels.
-						// TODO: Handle this in rp_image::resized()?
-						// TODO: Handle theme changes?
-						// TODO: Error handling.
-						if (icon->format() != rp_image::FORMAT_ARGB32) {
-							rp_image *const icon32 = icon->dup_ARGB32();
-							if (icon32) {
-								icon_resized = icon32->resized(szResize.cx, szResize.cy,
-									rp_image::AlignVCenter, lvBgColor[rowColorIdx]);
-								delete icon32;
-							}
-						}
-
-						// If the icon wasn't in ARGB32 format, it was resized above.
-						// If it was already in ARGB32 format, it will be resized here.
-						if (!icon_resized) {
-							icon_resized = icon->resized(szResize.cx, szResize.cy,
-								rp_image::AlignVCenter, lvBgColor[rowColorIdx]);
-						}
-					}
-
-					HICON hIcon;
-					if (icon_resized) {
-						hIcon = RpImageWin32::toHICON(icon_resized);
-						delete icon_resized;
-					} else {
-						hIcon = RpImageWin32::toHICON(icon);
-					}
-
-					if (hIcon) {
-						int idx = ImageList_AddIcon(himl, hIcon);
-						if (idx >= 0) {
-							// Icon added.
-							iImage = idx;
-						}
-						// ImageList makes a copy of the icon.
-						DestroyIcon(hIcon);
-					}
-
-					// Save the ImageList index for later.
-					lvImageList.push_back(iImage);
-				}
-			}
-		}
-
-		// Adjusted checkboxes value.
-		if (hasCheckboxes) {
-			map_lvCheckboxes.insert(std::make_pair(dlgId, adj_checkboxes));
-		}
-		// ImageList indexes.
-		if (hasIcons) {
-			map_lvImageList.insert(std::make_pair(dlgId, std::move(lvImageList)));
-		}
-
-		// Set the virtual list item count.
-		ListView_SetItemCountEx(hDlgItem, lv_row_num,
-			LVSICF_NOINVALIDATEALL | LVSICF_NOSCROLL);
-
-		// Save the double-vector for later.
-		map_lvStringData.insert(std::make_pair(dlgId, std::move(lvStringData)));
+		// Next row.
+		lv_row_num++;
 	}
 
-	// Resize all of the columns.
-	// TODO: Do this on system theme change?
-	// TODO: Add a flag for 'main data column' and adjust it to
-	// not exceed the viewport.
-	for (int i = 0; i < col_count; i++) {
-		ListView_SetColumnWidth(hDlgItem, i, col_width[i]);
+	// Icons.
+	if (hasIcons) {
+		// Icon size is 32x32, adjusted for DPI. (TODO: WM_DPICHANGED)
+		// ImageList will resize the original icons to 32x32.
+
+		// NOTE: LVS_REPORT doesn't allow variable row sizes,
+		// at least not without using ownerdraw. Hence, we'll
+		// use a hackish workaround: If any entry has more than
+		// two newlines, increase the Imagelist icon size by
+		// 16 pixels.
+		// TODO: Handle this better.
+		// FIXME: This only works if the RFT_LISTDATA has icons.
+		const int px = rp_AdjustSizeForDpi(32, rp_GetDpiForWindow(hDlg));
+		SIZE sizeListIcon = {px, px};
+		bool resizeNeeded = false;
+		float factor = 1.0f;
+		if (nl_max >= 2) {
+			// Two or more newlines.
+			// Add half of the icon size per newline over 1.
+			sizeListIcon.cy += ((px/2) * (nl_max - 1));
+			resizeNeeded = true;
+			factor = (float)sizeListIcon.cy / (float)px;
+		}
+
+		HIMAGELIST himl = ImageList_Create(sizeListIcon.cx, sizeListIcon.cy,
+			ILC_COLOR32, static_cast<int>(list_data->size()), 0);
+		assert(himl != nullptr);
+		if (himl) {
+			// NOTE: ListView uses LVSIL_SMALL for LVS_REPORT.
+			// TODO: The row highlight doesn't surround the empty area
+			// of the icon. LVS_OWNERDRAW is probably needed for that.
+			ListView_SetImageList(hListView, himl, LVSIL_SMALL);
+			uint32_t lvBgColor[2];
+			lvBgColor[0] = LibWin32Common::GetSysColor_ARGB32(COLOR_WINDOW);
+			lvBgColor[1] = LibWin32Common::getAltRowColor_ARGB32();
+
+			// Add icons.
+			const auto &icons = field->data.list_data.mxd.icons;
+			uint8_t rowColorIdx = 0;
+			for (auto iter = icons->cbegin(); iter != icons->cend();
+				++iter, rowColorIdx = !rowColorIdx)
+			{
+				int iImage = -1;
+				const rp_image *const icon = *iter;
+				if (!icon) {
+					// No icon for this row.
+					lvImageList.push_back(iImage);
+					continue;
+				}
+
+				// Resize the icon, if necessary.
+				rp_image *icon_resized = nullptr;
+				if (resizeNeeded) {
+					SIZE szResize = {icon->width(), icon->height()};
+					szResize.cy = static_cast<LONG>(szResize.cy * factor);
+
+					// If the original icon is CI8, it needs to be
+					// converted to ARGB32 first. Otherwise, the
+					// "empty" background area will be black.
+					// NOTE: We still need to specify a background color,
+					// since the ListView highlight won't show up on
+					// alpha-transparent pixels.
+					// TODO: Handle this in rp_image::resized()?
+					// TODO: Handle theme changes?
+					// TODO: Error handling.
+					if (icon->format() != rp_image::FORMAT_ARGB32) {
+						rp_image *const icon32 = icon->dup_ARGB32();
+						if (icon32) {
+							icon_resized = icon32->resized(szResize.cx, szResize.cy,
+								rp_image::AlignVCenter, lvBgColor[rowColorIdx]);
+							delete icon32;
+						}
+					}
+
+					// If the icon wasn't in ARGB32 format, it was resized above.
+					// If it was already in ARGB32 format, it will be resized here.
+					if (!icon_resized) {
+						icon_resized = icon->resized(szResize.cx, szResize.cy,
+							rp_image::AlignVCenter, lvBgColor[rowColorIdx]);
+					}
+				}
+
+				HICON hIcon;
+				if (icon_resized) {
+					hIcon = RpImageWin32::toHICON(icon_resized);
+					delete icon_resized;
+				} else {
+					hIcon = RpImageWin32::toHICON(icon);
+				}
+
+				if (hIcon) {
+					int idx = ImageList_AddIcon(himl, hIcon);
+					if (idx >= 0) {
+						// Icon added.
+						iImage = idx;
+					}
+					// ImageList makes a copy of the icon.
+					DestroyIcon(hIcon);
+				}
+
+				// Save the ImageList index for later.
+				lvImageList.push_back(iImage);
+			}
+		}
+	}
+
+	// Adjusted checkboxes value.
+	if (hasCheckboxes) {
+		map_lvCheckboxes.insert(std::make_pair(dlgID, adj_checkboxes));
+	}
+	// ImageList indexes.
+	if (hasIcons) {
+		map_lvImageList.insert(std::make_pair(dlgID, std::move(lvImageList)));
+	}
+
+	// Set the virtual list item count.
+	ListView_SetItemCountEx(hListView, lv_row_num,
+		LVSICF_NOINVALIDATEALL | LVSICF_NOSCROLL);
+
+	// Save the double-vector for later.
+	map_lvStringData.insert(std::make_pair(dlgID, std::move(lvStringData)));
+
+	if (!isMulti) {
+		// Resize all of the columns.
+		// TODO: Do this on system theme change?
+		// TODO: Add a flag for 'main data column' and adjust it to
+		// not exceed the viewport.
+		for (int i = 0; i < colCount; i++) {
+			ListView_SetColumnWidth(hListView, i, col_width[i]);
+		}
 	}
 
 	// Get the dialog margin.
@@ -1420,10 +1524,10 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 	// Default: 5 rows, plus the header.
 	// FIXME: Might not work for LVS_OWNERDATA.
 	int cy = 0;
-	if (doResize && ListView_GetItemCount(hDlgItem) > 0) {
+	if (doResize && ListView_GetItemCount(hListView) > 0) {
 		if (listDataDesc.names) {
 			// Get the header rect.
-			HWND hHeader = ListView_GetHeader(hDlgItem);
+			HWND hHeader = ListView_GetHeader(hListView);
 			assert(hHeader != nullptr);
 			if (hHeader) {
 				RECT rectHeader;
@@ -1434,7 +1538,7 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 
 		// Get an item rect.
 		RECT rectItem;
-		ListView_GetItemRect(hDlgItem, 0, &rectItem, LVIR_BOUNDS);
+		ListView_GetItemRect(hListView, 0, &rectItem, LVIR_BOUNDS);
 		const int item_cy = (rectItem.bottom - rectItem.top);
 		if (item_cy > 0) {
 			// Multiply by the requested number of visible rows.
@@ -1455,8 +1559,12 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 		cy = size.cy;
 	}
 
+	if (isMulti) {
+		vecListDataMulti.emplace_back(Data_ListDataMulti_t(hListView, field, dlgID));
+	}
+
 	// TODO: Skip this if cy == size.cy?
-	SetWindowPos(hDlgItem, nullptr, 0, 0, size.cx, cy,
+	SetWindowPos(hListView, nullptr, 0, 0, size.cx, cy,
 		SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_NOMOVE);
 	return cy;
 }
@@ -1801,14 +1909,14 @@ void RP_ShellPropSheetExt_Private::buildCboLanguageImageList(void)
 
 	const BITMAPINFOHEADER bmihDIBSection = {
 		sizeof(BITMAPINFOHEADER),	// biSize
-		iconSize,			// biWidth
-		-(int)iconSize,			// biHeight (negative for right-side up)
+		(LONG)iconSize,			// biWidth
+		-(LONG)iconSize,		// biHeight (negative for right-side up)
 		1,				// biPlanes
 		32,				// biBitCount
 		BI_RGB,				// biCompression
 		0,				// biSizeImage
-		dpi,				// biXPelsPerMeter
-		dpi,				// biYPelsPerMeter
+		(LONG)dpi,			// biXPelsPerMeter
+		(LONG)dpi,			// biYPelsPerMeter
 		0,				// biClrUsed
 		0,				// biClrImportant
 	};
@@ -1862,11 +1970,12 @@ void RP_ShellPropSheetExt_Private::buildCboLanguageImageList(void)
 }
 
 /**
- * Update all multi-language string fields.
+ * Update all multi-language fields.
  * @param user_lc User-specified language code.
  */
-void RP_ShellPropSheetExt_Private::updateStringMulti(uint32_t user_lc)
+void RP_ShellPropSheetExt_Private::updateMulti(uint32_t user_lc)
 {
+	// RFT_STRING_MULTI
 	for (auto iter = vecStringMulti.cbegin();
 	     iter != vecStringMulti.cend(); ++iter)
 	{
@@ -1909,6 +2018,121 @@ void RP_ShellPropSheetExt_Private::updateStringMulti(uint32_t user_lc)
 
 		// Update the text.
 		SetWindowText(lblString, U82T_s(iter_sm->second));
+	}
+
+	// RFT_LISTDATA_MULTI
+	for (auto iter = vecListDataMulti.cbegin();
+	     iter != vecListDataMulti.cend(); ++iter)
+	{
+		const HWND hListView = iter->hListView;
+		const RomFields::Field *const field = iter->field;
+		const auto *const pListData_multi = field->data.list_data.data.multi;
+		assert(pListData_multi != nullptr);
+		assert(!pListData_multi->empty());
+		if (!pListData_multi || pListData_multi->empty()) {
+			// Invalid RFT_LISTDATA_MULTI...
+			continue;
+		}
+
+		if (!cboLanguage) {
+			// Need to add all supported languages.
+			// TODO: Do we need to do this for all of them, or just one?
+			for (auto iter_sm = pListData_multi->cbegin();
+			     iter_sm != pListData_multi->cend(); ++iter_sm)
+			{
+				set_lc.insert(iter_sm->first);
+			}
+		}
+
+		// Try the user-specified language code first.
+		// TODO: Consolidate ->end() calls?
+		auto iter_ldm = pListData_multi->end();
+		if (user_lc != 0) {
+			iter_ldm = pListData_multi->find(user_lc);
+		}
+		if (iter_ldm == pListData_multi->end()) {
+			// Not found. Try the ROM-default language code.
+			if (def_lc != user_lc) {
+				iter_ldm = pListData_multi->find(def_lc);
+				if (iter_ldm == pListData_multi->end()) {
+					// Still not found. Use the first string.
+					iter_ldm = pListData_multi->begin();
+				}
+			}
+		}
+
+		const RomFields::ListData_t *const list_data = &(iter_ldm->second);
+
+		// Column count.
+		const auto &listDataDesc = field->desc.list_data;
+		int colCount = 1;
+		if (listDataDesc.names) {
+			colCount = (int)listDataDesc.names->size();
+		} else {
+			// No column headers.
+			// Use the first row.
+			assert(!list_data->empty());
+			if (!list_data->empty()) {
+				colCount = (int)list_data->at(0).size();
+			}
+		}
+
+		// Column widths.
+		// LVSCW_AUTOSIZE_USEHEADER doesn't work for entries with newlines.
+		// TODO: Use ownerdraw instead? (WM_MEASUREITEM / WM_DRAWITEM)
+		unique_ptr<int[]> col_width(new int[colCount]);
+		for (int i = 0; i < colCount; i++) {
+			col_width[i] = LVSCW_AUTOSIZE_USEHEADER;
+		}
+
+		// Dialog font and device context.
+		// NOTE: Using the parent dialog's font.
+		AutoGetDC hDC(hListView, hFontDlg);
+
+		// Get the ListView data vector for LVS_OWNERDATA.
+		auto iter_lvSD = map_lvStringData.find(iter->dlgID);
+		assert(iter_lvSD != map_lvStringData.end());
+		if (iter_lvSD != map_lvStringData.end()) {
+			vector<vector<tstring> > &lvStringData = iter_lvSD->second;
+
+			auto iter_ld_row = list_data->cbegin();
+			auto iter_lvSD_row = lvStringData.begin();
+			for (; iter_ld_row != list_data->cend() && iter_lvSD_row != lvStringData.end();
+			     ++iter_ld_row, ++iter_lvSD_row)
+			{
+				const vector<string> &src_data_row = *iter_ld_row;
+				vector<tstring> &dest_data_row = *iter_lvSD_row;
+
+				auto iter_sdr = src_data_row.cbegin();
+				auto iter_ddr = dest_data_row.begin();
+				int col = 0;
+				for (; iter_sdr != src_data_row.cend() && iter_ddr != dest_data_row.end();
+				     ++iter_sdr, ++iter_ddr, col++)
+				{
+					tstring tstr = U82T_s(*iter_sdr);
+					int width = measureListDataString(hDC, tstr);
+					if (col < colCount) {
+						col_width[col] = std::max(col_width[col], width);
+					}
+					*iter_ddr = std::move(tstr);
+				}
+			}
+
+			// Resize the columns to fit the contents.
+			// NOTE: Only done on first load.
+			// TODO: Need to measure text...
+			if (!cboLanguage) {
+				// TODO: Do this on system theme change?
+				// TODO: Add a flag for 'main data column' and adjust it to
+				// not exceed the viewport.
+				for (int i = 0; i < colCount; i++) {
+					ListView_SetColumnWidth(hListView, i, col_width[i]);
+				}
+			}
+
+			// Redraw all items.
+			ListView_RedrawItems(hListView, 0, static_cast<int>(lvStringData.size()));
+		}
 	}
 
 	if (!cboLanguage && set_lc.size() > 1) {
@@ -2015,11 +2239,11 @@ void RP_ShellPropSheetExt_Private::updateStringMulti(uint32_t user_lc)
 			// - English if it's not available.
 			if (lc == def_lc) {
 				// Select this item.
-				sel_idx = cbItem.iItem;
+				sel_idx = static_cast<int>(cbItem.iItem);
 			} else if (lc == 'en') {
 				// English. Select this item if def_lc hasn't been found yet.
 				if (sel_idx < 0) {
-					sel_idx = cbItem.iItem;
+					sel_idx = static_cast<int>(cbItem.iItem);
 				}
 			}
 		}
@@ -2525,7 +2749,7 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 	// Initial update of RFT_MULTI_STRING fields.
 	if (!vecStringMulti.empty()) {
 		def_lc = fields->defaultLanguageCode();
-		updateStringMulti(0);
+		updateMulti(0);
 	}
 
 	// Register for WTS session notifications. (Remote Desktop)
@@ -2556,14 +2780,18 @@ RP_ShellPropSheetExt::~RP_ShellPropSheetExt()
 
 IFACEMETHODIMP RP_ShellPropSheetExt::QueryInterface(REFIID riid, LPVOID *ppvObj)
 {
-#pragma warning(push)
-#pragma warning(disable: 4365 4838)
+#ifdef _MSC_VER
+# pragma warning(push)
+# pragma warning(disable: 4365 4838)
+#endif /* _MSC_VER */
 	static const QITAB rgqit[] = {
 		QITABENT(RP_ShellPropSheetExt, IShellExtInit),
 		QITABENT(RP_ShellPropSheetExt, IShellPropSheetExt),
 		{ 0 }
 	};
-#pragma warning(pop)
+#ifdef _MSC_VER
+# pragma warning(pop)
+#endif /* _MSC_VER */
 	return LibWin32Common::pfnQISearch(this, rgqit, riid, ppvObj);
 }
 
@@ -2987,7 +3215,7 @@ INT_PTR RP_ShellPropSheetExt_Private::DlgProc_WM_COMMAND(HWND hDlg, WPARAM wPara
 			const int sel_idx = ComboBox_GetCurSel(cboLanguage);
 			if (sel_idx >= 0) {
 				const uint32_t lc = static_cast<uint32_t>(ComboBox_GetItemData(cboLanguage, sel_idx));
-				updateStringMulti(lc);
+				updateMulti(lc);
 			}
 			break;
 		}

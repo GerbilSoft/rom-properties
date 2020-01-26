@@ -255,7 +255,7 @@ size_t RpFilePrivate::readUsingBlocks(void *ptr, size_t size)
 		}
 
 		DWORD bytesRead;
-		bRet = ReadFile(file, ptr8, contig_size, &bytesRead, nullptr);
+		bRet = ReadFile(file, ptr8, static_cast<DWORD>(contig_size), &bytesRead, nullptr);
 		if (bRet == 0 || bytesRead != contig_size) {
 			// Read error.
 			q->m_lastError = w32err_to_posix(GetLastError());

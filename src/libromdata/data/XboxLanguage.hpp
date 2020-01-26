@@ -30,6 +30,13 @@ class XboxLanguage
 		 * @return XDBF_Language_e. (If unknown, returns XDBF_LANGUAGE_UNKNOWN.)
 		 */
 		static int getXbox360Language(void);
+
+		/**
+		 * Convert an Xbox 360 language ID to a language code.
+		 * @param langID Xbox 360 language ID.
+		 * @return Language code, or 0 on error.
+		 */
+		static uint32_t getXbox360LanguageCode(int langID);
 };
 
 }

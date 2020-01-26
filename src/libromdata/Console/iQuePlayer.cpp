@@ -170,7 +170,7 @@ int iQuePlayerPrivate::getTitleAndISBN(string &title, string &isbn)
 	if (p_end && p_end > p) {
 		// Found the UTF-8 BOM.
 		// Convert from GB2312 to UTF-8.
-		title = cpN_to_utf8(CP_GB2312, p, p_end - p);
+		title = cpN_to_utf8(CP_GB2312, p, static_cast<int>(p_end - p));
 
 		// Adjust p to point to the next string.
 		p = p_end + 3;
@@ -179,7 +179,7 @@ int iQuePlayerPrivate::getTitleAndISBN(string &title, string &isbn)
 		p_end = static_cast<const char*>(memchr(p, '\0', title_buf_sz));
 		if (p_end && p_end > p) {
 			// Convert from GB2312 to UTF-8.
-			title = cpN_to_utf8(CP_GB2312, p, p_end - p);
+			title = cpN_to_utf8(CP_GB2312, p, static_cast<int>(p_end - p));
 
 			// Adjust p to point to the next string.
 			p = p_end + 1;
@@ -198,7 +198,7 @@ int iQuePlayerPrivate::getTitleAndISBN(string &title, string &isbn)
 	p_end = static_cast<const char*>(memchr(p, '\0', isbn_buf_sz));
 	if (p_end && p_end > p) {
 		// Convert from ASCII (well, Latin-1) to UTF-8.
-		isbn = latin1_to_utf8(p, p_end - p);
+		isbn = latin1_to_utf8(p, static_cast<int>(p_end - p));
 	}
 
 	// TODO: There might be other fields with NULL or UTF-8 BOM separators.
@@ -265,7 +265,7 @@ rp_image *iQuePlayerPrivate::loadImage(int64_t address, size_t z_size, size_t un
 	strm.avail_in = static_cast<uInt>(z_size);
 	strm.next_in = z_buf.get();
 
-	strm.avail_out = unz_size;
+	strm.avail_out = static_cast<uInt>(unz_size);
 	strm.next_out = reinterpret_cast<Bytef*>(img_buf.get());
 
 	ret = inflate(&strm, Z_FINISH);
@@ -285,7 +285,7 @@ rp_image *iQuePlayerPrivate::loadImage(int64_t address, size_t z_size, size_t un
 
 	// Convert the image.
 	return ImageDecoder::fromLinear16(px_format,
-		w, h, img_buf.get(), unz_size);
+		w, h, img_buf.get(), static_cast<int>(unz_size));
 }
 
 /**

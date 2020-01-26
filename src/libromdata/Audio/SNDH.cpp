@@ -897,7 +897,7 @@ int SNDH::loadFieldData(void)
 		uint64_t duration_total = 0;
 
 		const size_t count = std::max(tags.subtune_names.size(), tags.subtune_lengths.size());
-		auto vv_subtune_list = new vector<vector<string> >(count);
+		auto vv_subtune_list = new RomFields::ListData_t(count);
 		auto dest_iter = vv_subtune_list->begin();
 		unsigned int idx = 0;
 		for (; dest_iter != vv_subtune_list->end(); ++dest_iter, idx++) {
@@ -953,7 +953,7 @@ int SNDH::loadFieldData(void)
 
 			RomFields::AFLD_PARAMS params;
 			params.headers = v_subtune_list_hdr;
-			params.list_data = vv_subtune_list;
+			params.data.single = vv_subtune_list;
 			d->fields->addField_listData(C_("SNDH", "Subtune List"), &params);
 		}
 	} else if (tags.subtune_names.empty() && tags.subtune_lengths.size() == 1) {
