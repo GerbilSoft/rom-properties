@@ -231,7 +231,12 @@ public:
 		// NOTE: listDataDesc.names can be nullptr,
 		// which means we don't have any column headers.
 
-		const auto list_data = romField->data.list_data.data;
+		// TODO: Support for RFT_LISTDATA_MULTI.
+		assert(!(listDataDesc.flags & RomFields::RFT_LISTDATA_MULTI));
+		if (listDataDesc.flags & RomFields::RFT_LISTDATA_MULTI)
+			return os << "[ERROR: RFT_LISTDATA_MULTI is not supported yet.]";
+
+		const auto list_data = romField->data.list_data.data.single;
 		assert(list_data != nullptr);
 		if (!list_data) {
 			return os << "[ERROR: No list data.]";
@@ -815,6 +820,13 @@ public:
 			case RomFields::RFT_LISTDATA: {
 				const auto &listDataDesc = romField->desc.list_data;
 				os << "{\"type\":\"LISTDATA\",\"desc\":{\"name\":" << JSONString(romField->name.c_str());
+				// TODO: Support for RFT_LISTDATA_MULTI.
+				assert(!(listDataDesc.flags & RomFields::RFT_LISTDATA_MULTI));
+				if (listDataDesc.flags & RomFields::RFT_LISTDATA_MULTI) {
+					os << ",\"error\":\"RFT_LISTDATA_MULTI is not supported yet.\"}";
+					break;
+				}
+
 				if (listDataDesc.names) {
 					os << ",\"names\":[";
 					const unsigned int col_count = static_cast<unsigned int>(listDataDesc.names->size());
@@ -831,7 +843,7 @@ public:
 					os << ",\"names\":[]";
 				}
 				os << "},\"data\":[";
-				const auto list_data = romField->data.list_data.data;
+				const auto list_data = romField->data.list_data.data.single;
 				assert(list_data != nullptr);
 				if (list_data) {
 					uint32_t checkboxes = romField->data.list_data.mxd.checkboxes;

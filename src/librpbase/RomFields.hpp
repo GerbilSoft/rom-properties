@@ -106,6 +106,11 @@ class RomFields
 			// Enable icons.
 			// NOTE: Mutually exclusive with checkboxes.
 			RFT_LISTDATA_ICONS	= (1 << 2),
+
+			// String data is multi-lingual.
+			// NOTE: This changes the structure of the
+			// data field!
+			RFT_LISTDATA_MULTI	= (1 << 3),
 		};
 
 		// Display flags for RFT_DATETIME.
@@ -167,8 +172,11 @@ class RomFields
 			TXA_RIGHT	= 3,
 		};
 
-		// Multi-language string map type.
+		// Typedefs for various containers.
 		typedef std::map<uint32_t, std::string> StringMultiMap_t;
+		typedef std::vector<std::vector<std::string> > ListData_t;
+		typedef std::map<uint32_t, ListData_t> ListDataMultiMap_t;
+		typedef std::vector<const LibRpTexture::rp_image*> ListDataIcons_t;
 
 		// ROM field struct.
 		// Dynamically allocated.
@@ -229,7 +237,16 @@ class RomFields
 
 				// RFT_LISTDATA
 				struct {
-					const std::vector<std::vector<std::string> > *data;
+					union {
+						// Standard RFT_LISTDATA
+						const ListData_t *single;
+
+						// RFT_LISTDATA_MULTI
+						// - Key: Language code
+						// - Value: Vector of rows.
+						const ListDataMultiMap_t *multi;
+					} data;
+
 					union {
 						// Checkbox bitfield.
 						// Requires RFT_LISTDATA_CHECKBOXES.
@@ -237,7 +254,7 @@ class RomFields
 
 						// Icons vector.
 						// Requires RFT_LISTDATA_ICONS.
-						const std::vector<const LibRpTexture::rp_image*> *icons;
+						const ListDataIcons_t *icons;
 					} mxd;
 				} list_data;
 
@@ -518,18 +535,20 @@ class RomFields
 		struct AFLD_PARAMS {
 			AFLD_PARAMS()
 				: flags(0), rows_visible(0)
-				, headers(nullptr), list_data(nullptr)
+				, headers(nullptr)
 			{
 				alignment.headers = 0;
 				alignment.data = 0;
+				data.single = nullptr;
 				mxd.icons = nullptr;
 			}
 			AFLD_PARAMS(unsigned int flags, int rows_visible)
 				: flags(flags), rows_visible(rows_visible)
-				, headers(nullptr), list_data(nullptr)
+				, headers(nullptr)
 			{
 				alignment.headers = 0;
 				alignment.data = 0;
+				data.single = nullptr;
 				mxd.icons = nullptr;
 			}
 
@@ -550,7 +569,10 @@ class RomFields
 
 			// Data
 			const std::vector<std::string> *headers;
-			const std::vector<std::vector<std::string> > *list_data;
+			union {
+				const ListData_t *single;
+				const ListDataMultiMap_t *multi;
+			} data;
 
 			// Mutually-exclusive data.
 			union {

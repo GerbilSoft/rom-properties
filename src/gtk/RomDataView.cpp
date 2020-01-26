@@ -907,7 +907,12 @@ rom_data_view_init_listdata(G_GNUC_UNUSED RomDataView *page, const RomFields::Fi
 	// NOTE: listDataDesc.names can be nullptr,
 	// which means we don't have any column headers.
 
-	const auto list_data = field->data.list_data.data;
+	// TODO: Support for RFT_LISTDATA_MULTI.
+	assert(!(listDataDesc.flags & RomFields::RFT_LISTDATA_MULTI));
+	if (listDataDesc.flags & RomFields::RFT_LISTDATA_MULTI)
+		return nullptr;
+
+	const auto *const list_data = field->data.list_data.data.single;
 	assert(list_data != nullptr);
 
 	// Validate flags.

@@ -1319,7 +1319,7 @@ int Nintendo3DSPrivate::addFields_permissions(void)
 	};
 
 	// Convert to vector<vector<string> > for RFT_LISTDATA.
-	auto vv_fs = new vector<vector<string> >(ARRAY_SIZE(perm_fs_access));
+	auto vv_fs = new RomFields::ListData_t(ARRAY_SIZE(perm_fs_access));
 	for (int i = ARRAY_SIZE(perm_fs_access)-1; i >= 0; i--) {
 		auto &data_row = vv_fs->at(i);
 		data_row.push_back(perm_fs_access[i]);
@@ -1327,7 +1327,7 @@ int Nintendo3DSPrivate::addFields_permissions(void)
 
 	RomFields::AFLD_PARAMS params(RomFields::RFT_LISTDATA_CHECKBOXES, rows_visible);
 	params.headers = nullptr;
-	params.list_data = vv_fs;
+	params.data.single = vv_fs;
 	params.mxd.checkboxes = perm.fsAccess;
 	fields->addField_listData(C_("Nintendo3DS", "FS Access"), &params);
 
@@ -1352,14 +1352,14 @@ int Nintendo3DSPrivate::addFields_permissions(void)
 	if (perm.ioAccessVersion == 2 ||
 	    perm.ioAccessVersion == 3)
 	{
-		// Convert to vector<vector<string> > for RFT_LISTDATA.
-		auto vv_arm9 = new vector<vector<string> >(ARRAY_SIZE(perm_arm9_access));
+		// Convert to RomFields::ListData_t for RFT_LISTDATA.
+		auto vv_arm9 = new RomFields::ListData_t(ARRAY_SIZE(perm_arm9_access));
 		for (int i = ARRAY_SIZE(perm_arm9_access)-1; i >= 0; i--) {
 			auto &data_row = vv_arm9->at(i);
 			data_row.push_back(perm_arm9_access[i]);
 		}
 
-		params.list_data = vv_arm9;
+		params.data.single = vv_arm9;
 		params.mxd.checkboxes = perm.ioAccess;
 		fields->addField_listData(C_("Nintendo3DS", "ARM9 Access"), &params);
 	}
@@ -1368,7 +1368,7 @@ int Nintendo3DSPrivate::addFields_permissions(void)
 	// The field is NULL-padded, though if the service name
 	// is 8 characters long, there won't be any NULLs.
 	// TODO: How to determine 32 or 34? (descriptor version?)
-	auto vv_svc = new vector<vector<string> >();
+	auto vv_svc = new RomFields::ListData_t();
 	vv_svc->reserve(N3DS_SERVICE_MAX);
 	const char *svc = perm.services[0];
 	for (int i = 0; i < N3DS_SERVICE_MAX; i++, svc += N3DS_SERVICE_LEN) {
@@ -1386,7 +1386,7 @@ int Nintendo3DSPrivate::addFields_permissions(void)
 
 	if (likely(!vv_svc->empty())) {
 		params.flags = 0;
-		params.list_data = vv_svc;
+		params.data.single = vv_svc;
 		fields->addField_listData(C_("Nintendo3DS", "Services"), &params);
 	} else {
 		// No services.
@@ -2197,7 +2197,7 @@ int Nintendo3DS::loadFieldData(void)
 		}
 
 		// Partition table.
-		auto vv_partitions = new vector<vector<string> >();
+		auto vv_partitions = new RomFields::ListData_t();
 		vv_partitions->reserve(8);
 
 		// Process the partition table.
@@ -2291,7 +2291,7 @@ int Nintendo3DS::loadFieldData(void)
 		// Add the partitions list data.
 		RomFields::AFLD_PARAMS params(RomFields::RFT_LISTDATA_SEPARATE_ROW, 0);
 		params.headers = v_partitions_names;
-		params.list_data = vv_partitions;
+		params.data.single = vv_partitions;
 		d->fields->addField_listData(C_("Nintendo3DS", "Partitions"), &params);
 	}
 
@@ -2357,7 +2357,7 @@ int Nintendo3DS::loadFieldData(void)
 			RomFields::STRF_MONOSPACE);
 
 		// Contents table.
-		auto vv_contents = new vector<vector<string> >();
+		auto vv_contents = new RomFields::ListData_t();
 		vv_contents->reserve(d->content_count);
 
 		// Process the contents.
@@ -2490,7 +2490,7 @@ int Nintendo3DS::loadFieldData(void)
 
 		RomFields::AFLD_PARAMS params(RomFields::RFT_LISTDATA_SEPARATE_ROW, 0);
 		params.headers = v_contents_names;
-		params.list_data = vv_contents;
+		params.data.single = vv_contents;
 		d->fields->addField_listData(C_("Nintendo3DS", "Contents"), &params);
 	}
 

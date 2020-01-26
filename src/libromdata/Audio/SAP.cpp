@@ -687,7 +687,7 @@ int SAP::loadFieldData(void)
 
 	// Song list.
 	if (!tags.durations.empty()) {
-		auto song_list = new vector<vector<string> >(tags.durations.size());
+		auto song_list = new RomFields::ListData_t(tags.durations.size());
 		auto src_iter = tags.durations.cbegin();
 		auto dest_iter = song_list->begin();
 		unsigned int song_num = 0;
@@ -718,7 +718,7 @@ int SAP::loadFieldData(void)
 
 		RomFields::AFLD_PARAMS params;
 		params.headers = v_song_list_hdr;
-		params.list_data = song_list;
+		params.data.single = song_list;
 		d->fields->addField_listData(C_("SAP", "Song List"), &params);
 	}
 

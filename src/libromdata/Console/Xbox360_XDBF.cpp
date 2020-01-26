@@ -687,8 +687,8 @@ int Xbox360_XDBF_Private::addFields_achievements(void)
 		"Xbox360_XDBF|Achievements", xach_col_names, ARRAY_SIZE(xach_col_names));
 
 	// Vectors.
-	auto vv_xach = new vector<vector<string> >(xach_count);
-	auto vv_icons = new vector<const rp_image*>(xach_count);
+	auto vv_xach = new RomFields::ListData_t(xach_count);
+	auto vv_icons = new RomFields::ListDataIcons_t(xach_count);
 	auto xach_iter = vv_xach->begin();
 	auto icon_iter = vv_icons->begin();
 	for (; p < p_end && xach_iter != vv_xach->end(); p++, ++xach_iter, ++icon_iter) {
@@ -742,9 +742,9 @@ int Xbox360_XDBF_Private::addFields_achievements(void)
 
 	// Add the list data.
 	RomFields::AFLD_PARAMS params(RomFields::RFT_LISTDATA_SEPARATE_ROW |
-				      RomFields::RFT_LISTDATA_ICONS, 0);
+	                              RomFields::RFT_LISTDATA_ICONS, 0);
 	params.headers = v_xach_col_names;
-	params.list_data = vv_xach;
+	params.data.single = vv_xach;	// TODO: Multi
 	// TODO: Header alignment?
 	params.alignment.headers = 0;
 	params.alignment.data = AFLD_ALIGN3(TXA_L, TXA_L, TXA_C);
@@ -851,8 +851,8 @@ int Xbox360_XDBF_Private::addFields_avatarAwards(void)
 		"Xbox360_XDBF|AvatarAwards", xgaa_col_names, ARRAY_SIZE(xgaa_col_names));
 
 	// Vectors.
-	auto vv_xgaa = new vector<vector<string> >(xgaa_count);
-	auto vv_icons = new vector<const rp_image*>(xgaa_count);
+	auto vv_xgaa = new RomFields::ListData_t(xgaa_count);
+	auto vv_icons = new RomFields::ListDataIcons_t(xgaa_count);
 	auto xgaa_iter = vv_xgaa->begin();
 	auto icon_iter = vv_icons->begin();
 	for (; p < p_end && xgaa_iter != vv_xgaa->end(); p++, ++xgaa_iter, ++icon_iter) {
@@ -905,9 +905,9 @@ int Xbox360_XDBF_Private::addFields_avatarAwards(void)
 	// TODO: Improve the display? On KDE, it seems to be limited to
 	// one row due to achievements taking up all the space.
 	RomFields::AFLD_PARAMS params(RomFields::RFT_LISTDATA_SEPARATE_ROW |
-				      RomFields::RFT_LISTDATA_ICONS, 2);
+	                              RomFields::RFT_LISTDATA_ICONS, 2);
 	params.headers = v_xgaa_col_names;
-	params.list_data = vv_xgaa;
+	params.data.single = vv_xgaa;	// TODO: Multi
 	params.mxd.icons = vv_icons;
 	fields->addField_listData(C_("Xbox360_XDBF", "Avatar Awards"), &params);
 	return 0;

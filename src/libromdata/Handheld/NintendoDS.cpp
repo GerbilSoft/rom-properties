@@ -148,7 +148,7 @@ class NintendoDSPrivate : public RomDataPrivate
 		 * Get the DSi flags string vector.
 		 * @return DSi flags string vector.
 		 */
-		static vector<vector<string> > *getDSiFlagsStringVector(void);
+		static RomFields::ListData_t *getDSiFlagsStringVector(void);
 
 		/**
 		 * Get the maximum supported language for an icon/title version.
@@ -690,7 +690,7 @@ vector<const char*> NintendoDSPrivate::ndsRegionToGameTDB(
  * Get the DSi flags string vector.
  * @return DSi flags string vector.
  */
-vector<vector<string> > *NintendoDSPrivate::getDSiFlagsStringVector(void)
+RomFields::ListData_t *NintendoDSPrivate::getDSiFlagsStringVector(void)
 {
 	static const char *const dsi_flags_bitfield_names[] = {
 		// tr: Uses the DSi-specific touchscreen protocol.
@@ -707,8 +707,8 @@ vector<vector<string> > *NintendoDSPrivate::getDSiFlagsStringVector(void)
 		NOP_C_("NintendoDS|DSi_Flags", "Developer"),
 	};
 
-	// Convert to vector<vector<string> > for RFT_LISTDATA.
-	auto vv_dsi_flags = new vector<vector<string> >(ARRAY_SIZE(dsi_flags_bitfield_names));
+	// Convert to RomFields::ListData_t for RFT_LISTDATA.
+	auto vv_dsi_flags = new RomFields::ListData_t(ARRAY_SIZE(dsi_flags_bitfield_names));
 	for (int i = ARRAY_SIZE(dsi_flags_bitfield_names)-1; i >= 0; i--) {
 		auto &data_row = vv_dsi_flags->at(i);
 		data_row.push_back(
@@ -1268,7 +1268,7 @@ int NintendoDS::loadFieldData(void)
 			auto vv_dsi_flags = d->getDSiFlagsStringVector();
 			RomFields::AFLD_PARAMS params(RomFields::RFT_LISTDATA_CHECKBOXES, 8);
 			params.headers = nullptr;
-			params.list_data = vv_dsi_flags;
+			params.data.single = vv_dsi_flags;
 			params.mxd.checkboxes = romHeader->dsi.flags;
 			d->fields->addField_listData(C_("NintendoDS", "Flags"), &params);
 		}
@@ -1434,8 +1434,8 @@ int NintendoDS::loadFieldData(void)
 		*/
 	};
 
-	// Convert to vector<vector<string> > for RFT_LISTDATA.
-	auto vv_dsi_perm = new vector<vector<string> >(ARRAY_SIZE(dsi_permissions_bitfield_names));
+	// Convert to RomFields::ListData_t for RFT_LISTDATA.
+	auto vv_dsi_perm = new RomFields::ListData_t(ARRAY_SIZE(dsi_permissions_bitfield_names));
 	for (int i = ARRAY_SIZE(dsi_permissions_bitfield_names)-1; i >= 0; i--) {
 		auto &data_row = vv_dsi_perm->at(i);
 		data_row.push_back(
@@ -1445,14 +1445,14 @@ int NintendoDS::loadFieldData(void)
 
 	RomFields::AFLD_PARAMS params(RomFields::RFT_LISTDATA_CHECKBOXES, rows_visible);
 	params.headers = nullptr;
-	params.list_data = vv_dsi_perm;
+	params.data.single = vv_dsi_perm;
 	params.mxd.checkboxes = le32_to_cpu(romHeader->dsi.access_control);
 	d->fields->addField_listData(C_("NintendoDS", "Permissions"), &params);
 
 	// DSi flags.
 	auto vv_dsi_flags = d->getDSiFlagsStringVector();
 	params.headers = nullptr;
-	params.list_data = vv_dsi_flags;
+	params.data.single = vv_dsi_flags;
 	params.mxd.checkboxes = romHeader->dsi.flags;
 	d->fields->addField_listData(C_("NintendoDS", "Flags"), &params);
 

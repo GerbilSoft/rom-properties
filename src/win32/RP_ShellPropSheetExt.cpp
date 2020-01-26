@@ -1074,8 +1074,17 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 	// NOTE: listDataDesc.names can be nullptr,
 	// which means we don't have any column headers.
 
-	const auto list_data = field->data.list_data.data;
+	// TODO: Support for RFT_LISTDATA_MULTI.
+	assert(!(listDataDesc.flags & RomFields::RFT_LISTDATA_MULTI));
+	if (listDataDesc.flags & RomFields::RFT_LISTDATA_MULTI)
+		return 0;
+
+	const auto *const list_data = field->data.list_data.data.single;
 	assert(list_data != nullptr);
+	if (!list_data) {
+		// No list data...
+		return 0;
+	}
 
 	// Validate flags.
 	// Cannot have both checkboxes and icons.

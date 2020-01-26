@@ -15,9 +15,9 @@
 #include "librpthreads/Atomics.h"
 
 // C++ STL classes.
+using std::map;
 using std::string;
 using std::unique_ptr;
-using std::unordered_map;
 using std::vector;
 
 using LibRpTexture::rp_image;
@@ -94,9 +94,13 @@ void RomFieldsPrivate::delete_data(void)
 					break;
 				case RomFields::RFT_LISTDATA:
 					delete const_cast<vector<string>*>(field.desc.list_data.names);
-					delete const_cast<vector<vector<string> >*>(field.data.list_data.data);
+					if (field.desc.list_data.flags & RomFields::RFT_LISTDATA_MULTI) {
+						delete const_cast<RomFields::ListDataMultiMap_t*>(field.data.list_data.data.multi);
+					} else {
+						delete const_cast<RomFields::ListData_t*>(field.data.list_data.data.single);
+					}
 					if (field.desc.list_data.flags & RomFields::RFT_LISTDATA_ICONS) {
-						delete const_cast<vector<const rp_image*>*>(field.data.list_data.mxd.icons);
+						delete const_cast<RomFields::ListDataIcons_t*>(field.data.list_data.mxd.icons);
 					}
 					break;
 				case RomFields::RFT_AGE_RATINGS:
@@ -660,13 +664,19 @@ int RomFields::addFields_romFields(const RomFields *other, int tabOffset)
 					field_src.desc.list_data.alignment.headers;
 				field_dest.desc.list_data.alignment.data =
 					field_src.desc.list_data.alignment.data;
-				field_dest.data.list_data.data = (field_src.data.list_data.data
-						? new vector<vector<string> >(*(field_src.data.list_data.data))
+				if (field_src.desc.list_data.flags & RFT_LISTDATA_MULTI) {
+					field_dest.data.list_data.data.multi = (field_src.data.list_data.data.multi
+						? new ListDataMultiMap_t(*(field_src.data.list_data.data.multi))
 						: nullptr);
+				} else {
+					field_dest.data.list_data.data.single = (field_src.data.list_data.data.single
+						? new ListData_t(*(field_src.data.list_data.data.single))
+						: nullptr);
+				}
 				if (field_src.desc.list_data.flags & RFT_LISTDATA_ICONS) {
 					// Icons: Copy the icon vector if set.
 					field_dest.data.list_data.mxd.icons = (field_src.data.list_data.mxd.icons
-						? new vector<const rp_image*>(*(field_src.data.list_data.mxd.icons))
+						? new ListDataIcons_t(*(field_src.data.list_data.mxd.icons))
 						: nullptr);
 				} else {
 					// No icons. Copy checkboxes.
@@ -983,7 +993,12 @@ int RomFields::addField_listData(const char *name, const AFLD_PARAMS *params)
 	field.desc.list_data.alignment.headers = params->alignment.headers;
 	field.desc.list_data.alignment.data = params->alignment.data;
 
-	field.data.list_data.data = params->list_data;
+	if (flags & RFT_LISTDATA_MULTI) {
+		field.data.list_data.data.multi = params->data.multi;
+	} else {
+		field.data.list_data.data.single = params->data.single;
+	}
+
 	if (flags & RFT_LISTDATA_CHECKBOXES) {
 		field.data.list_data.mxd.checkboxes = params->mxd.checkboxes;
 	} else if (flags & RFT_LISTDATA_ICONS) {

@@ -943,8 +943,8 @@ int ValveVTF::getFields(LibRpBase::RomFields *fields) const
 		NOP_C_("ValveVTF|Flags", "Border"),
 	};
 
-	// Convert to vector<vector<string> > for RFT_LISTDATA.
-	auto vv_flags = new vector<vector<string> >();
+	// Convert to ListData_t for RFT_LISTDATA.
+	auto vv_flags = new RomFields::ListData_t();
 	vv_flags->reserve(ARRAY_SIZE(flags_names));
 	for (size_t i = 0; i < ARRAY_SIZE(flags_names); i++) {
 		if (flags_names[i]) {
@@ -959,7 +959,7 @@ int ValveVTF::getFields(LibRpBase::RomFields *fields) const
 
 	RomFields::AFLD_PARAMS params(RomFields::RFT_LISTDATA_CHECKBOXES, rows_visible);
 	params.headers = nullptr;
-	params.list_data = vv_flags;
+	params.data.single = vv_flags;
 	params.mxd.checkboxes = vtfHeader->flags;
 	fields->addField_listData(C_("ValveVTF", "Flags"), &params);
 

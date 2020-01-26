@@ -1724,7 +1724,7 @@ int GameCube::loadFieldData(void)
 		}
 
 		// Partition table.
-		auto vv_partitions = new vector<vector<string> >();
+		auto vv_partitions = new RomFields::ListData_t();
 		vv_partitions->resize(d->wiiPtbl.size());
 
 		auto src_iter = d->wiiPtbl.cbegin();
@@ -1842,7 +1842,7 @@ int GameCube::loadFieldData(void)
 
 		RomFields::AFLD_PARAMS params;
 		params.headers = v_partitions_names;
-		params.list_data = vv_partitions;
+		params.data.single = vv_partitions;
 		d->fields->addField_listData(C_("GameCube", "Partitions"), &params);
 	} else {
 		// Could not load partition tables.
