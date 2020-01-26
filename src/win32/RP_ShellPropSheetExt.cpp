@@ -1199,218 +1199,216 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 	AutoGetDC hDC(hWndTab, hFontDlg);
 
 	// Add the row data.
-	if (list_data) {
-		uint32_t checkboxes = 0, adj_checkboxes = 0;
+	uint32_t checkboxes = 0, adj_checkboxes = 0;
+	if (hasCheckboxes) {
+		checkboxes = field->data.list_data.mxd.checkboxes;
+	}
+
+	// NOTE: We're converting the strings for use with
+	// LVS_OWNERDATA.
+	vector<vector<tstring> > lvStringData;
+	lvStringData.reserve(list_data->size());
+
+	vector<int> lvImageList;
+	if (hasIcons) {
+		lvImageList.reserve(list_data->size());
+	}
+
+	int lv_row_num = 0, data_row_num = 0;
+	int nl_max = 0;	// Highest number of newlines in any string.
+	for (auto iter = list_data->cbegin(); iter != list_data->cend(); ++iter, data_row_num++) {
+		const vector<string> &data_row = *iter;
+		// FIXME: Skip even if we don't have checkboxes?
+		// (also check other UI frontends)
 		if (hasCheckboxes) {
-			checkboxes = field->data.list_data.mxd.checkboxes;
-		}
-
-		// NOTE: We're converting the strings for use with
-		// LVS_OWNERDATA.
-		vector<vector<tstring> > lvStringData;
-		lvStringData.reserve(list_data->size());
-
-		vector<int> lvImageList;
-		if (hasIcons) {
-			lvImageList.reserve(list_data->size());
-		}
-
-		int lv_row_num = 0, data_row_num = 0;
-		int nl_max = 0;	// Highest number of newlines in any string.
-		for (auto iter = list_data->cbegin(); iter != list_data->cend(); ++iter, data_row_num++) {
-			const vector<string> &data_row = *iter;
-			// FIXME: Skip even if we don't have checkboxes?
-			// (also check other UI frontends)
-			if (hasCheckboxes) {
-				if (data_row.empty()) {
-					// Skip this row.
-					checkboxes >>= 1;
-					continue;
-				} else {
-					// Store the checkbox value for this row.
-					if (checkboxes & 1) {
-						adj_checkboxes |= (1 << lv_row_num);
-					}
-					checkboxes >>= 1;
+			if (data_row.empty()) {
+				// Skip this row.
+				checkboxes >>= 1;
+				continue;
+			} else {
+				// Store the checkbox value for this row.
+				if (checkboxes & 1) {
+					adj_checkboxes |= (1 << lv_row_num);
 				}
+				checkboxes >>= 1;
 			}
+		}
 
-			// Destination row.
-			lvStringData.resize(lvStringData.size()+1);
-			auto &lv_row_data = lvStringData.at(lvStringData.size()-1);
-			lv_row_data.reserve(data_row.size());
+		// Destination row.
+		lvStringData.resize(lvStringData.size()+1);
+		auto &lv_row_data = lvStringData.at(lvStringData.size()-1);
+		lv_row_data.reserve(data_row.size());
 
-			// String data.
-			int col = 0;
-			for (auto iter = data_row.cbegin(); iter != data_row.cend(); ++iter, col++) {
-				tstring tstr = U82T_s(*iter);
+		// String data.
+		int col = 0;
+		for (auto iter = data_row.cbegin(); iter != data_row.cend(); ++iter, col++) {
+			tstring tstr = U82T_s(*iter);
 
-				// Count newlines.
-				size_t prev_nl_pos = 0;
-				size_t cur_nl_pos;
-				int nl = 0;
-				// TODO: Actual padding value?
-				static const int COL_WIDTH_PADDING = 8*2;
-				while ((cur_nl_pos = tstr.find(_T('\n'), prev_nl_pos)) != tstring::npos) {
-					// Measure the width, plus padding on both sides.
-					//
-					// LVSCW_AUTOSIZE_USEHEADER doesn't work for entries with newlines.
-					// This allows us to set a good initial size, but it won't help if
-					// someone double-clicks the column splitter, triggering an automatic
-					// resize.
-					//
-					// TODO: Use ownerdraw instead? (WM_MEASUREITEM / WM_DRAWITEM)
-					// NOTE: Not using LibWin32Common::measureTextSize()
-					// because that does its own newline checks.
-					// TODO: Verify the values here.
-					if (col < col_count) {
-						SIZE textSize;
-						GetTextExtentPoint32(hDC, &tstr[prev_nl_pos], (int)(cur_nl_pos - prev_nl_pos), &textSize);
-						col_width[col] = std::max<int>(col_width[col], textSize.cx + COL_WIDTH_PADDING);
-					}
-
-					nl++;
-					prev_nl_pos = cur_nl_pos + 1;
-				}
-				if (nl > 0 && col < col_count) {
-					// Measure the last line.
-					// TODO: Verify the values here.
+			// Count newlines.
+			size_t prev_nl_pos = 0;
+			size_t cur_nl_pos;
+			int nl = 0;
+			// TODO: Actual padding value?
+			static const int COL_WIDTH_PADDING = 8*2;
+			while ((cur_nl_pos = tstr.find(_T('\n'), prev_nl_pos)) != tstring::npos) {
+				// Measure the width, plus padding on both sides.
+				//
+				// LVSCW_AUTOSIZE_USEHEADER doesn't work for entries with newlines.
+				// This allows us to set a good initial size, but it won't help if
+				// someone double-clicks the column splitter, triggering an automatic
+				// resize.
+				//
+				// TODO: Use ownerdraw instead? (WM_MEASUREITEM / WM_DRAWITEM)
+				// NOTE: Not using LibWin32Common::measureTextSize()
+				// because that does its own newline checks.
+				// TODO: Verify the values here.
+				if (col < col_count) {
 					SIZE textSize;
-					GetTextExtentPoint32(hDC, &tstr[prev_nl_pos], (int)(tstr.size() - prev_nl_pos), &textSize);
+					GetTextExtentPoint32(hDC, &tstr[prev_nl_pos], (int)(cur_nl_pos - prev_nl_pos), &textSize);
 					col_width[col] = std::max<int>(col_width[col], textSize.cx + COL_WIDTH_PADDING);
 				}
-				nl_max = std::max(nl_max, nl);
 
-				// TODO: Store the icon index if necessary.
-				lv_row_data.push_back(std::move(tstr));
+				nl++;
+				prev_nl_pos = cur_nl_pos + 1;
 			}
-
-			// Next row.
-			lv_row_num++;
-		}
-
-		// Icons.
-		if (hasIcons) {
-			// Icon size is 32x32, adjusted for DPI. (TODO: WM_DPICHANGED)
-			// ImageList will resize the original icons to 32x32.
-
-			// NOTE: LVS_REPORT doesn't allow variable row sizes,
-			// at least not without using ownerdraw. Hence, we'll
-			// use a hackish workaround: If any entry has more than
-			// two newlines, increase the Imagelist icon size by
-			// 16 pixels.
-			// TODO: Handle this better.
-			// FIXME: This only works if the RFT_LISTDATA has icons.
-			const int px = rp_AdjustSizeForDpi(32, rp_GetDpiForWindow(hDlg));
-			SIZE sizeListIcon = {px, px};
-			bool resizeNeeded = false;
-			float factor = 1.0f;
-			if (nl_max >= 2) {
-				// Two or more newlines.
-				// Add half of the icon size per newline over 1.
-				sizeListIcon.cy += ((px/2) * (nl_max - 1));
-				resizeNeeded = true;
-				factor = (float)sizeListIcon.cy / (float)sizeListIcon.cy;
+			if (nl > 0 && col < col_count) {
+				// Measure the last line.
+				// TODO: Verify the values here.
+				SIZE textSize;
+				GetTextExtentPoint32(hDC, &tstr[prev_nl_pos], (int)(tstr.size() - prev_nl_pos), &textSize);
+				col_width[col] = std::max<int>(col_width[col], textSize.cx + COL_WIDTH_PADDING);
 			}
+			nl_max = std::max(nl_max, nl);
 
-			HIMAGELIST himl = ImageList_Create(sizeListIcon.cx, sizeListIcon.cy,
-				ILC_COLOR32, static_cast<int>(list_data->size()), 0);
-			assert(himl != nullptr);
-			if (himl) {
-				// NOTE: ListView uses LVSIL_SMALL for LVS_REPORT.
-				// TODO: The row highlight doesn't surround the empty area
-				// of the icon. LVS_OWNERDRAW is probably needed for that.
-				ListView_SetImageList(hDlgItem, himl, LVSIL_SMALL);
-				uint32_t lvBgColor[2];
-				lvBgColor[0] = LibWin32Common::GetSysColor_ARGB32(COLOR_WINDOW);
-				lvBgColor[1] = LibWin32Common::getAltRowColor_ARGB32();
-
-				// Add icons.
-				const auto &icons = field->data.list_data.mxd.icons;
-				uint8_t rowColorIdx = 0;
-				for (auto iter = icons->cbegin(); iter != icons->cend();
-				     ++iter, rowColorIdx = !rowColorIdx)
-				{
-					int iImage = -1;
-					const rp_image *const icon = *iter;
-					if (!icon) {
-						// No icon for this row.
-						lvImageList.push_back(iImage);
-						continue;
-					}
-
-					// Resize the icon, if necessary.
-					rp_image *icon_resized = nullptr;
-					if (resizeNeeded) {
-						SIZE szResize = {icon->width(), icon->height()};
-						szResize.cy = static_cast<LONG>(szResize.cy * factor);
-
-						// If the original icon is CI8, it needs to be
-						// converted to ARGB32 first. Otherwise, the
-						// "empty" background area will be black.
-						// NOTE: We still need to specify a background color,
-						// since the ListView highlight won't show up on
-						// alpha-transparent pixels.
-						// TODO: Handle this in rp_image::resized()?
-						// TODO: Handle theme changes?
-						// TODO: Error handling.
-						if (icon->format() != rp_image::FORMAT_ARGB32) {
-							rp_image *const icon32 = icon->dup_ARGB32();
-							if (icon32) {
-								icon_resized = icon32->resized(szResize.cx, szResize.cy,
-									rp_image::AlignVCenter, lvBgColor[rowColorIdx]);
-								delete icon32;
-							}
-						}
-
-						// If the icon wasn't in ARGB32 format, it was resized above.
-						// If it was already in ARGB32 format, it will be resized here.
-						if (!icon_resized) {
-							icon_resized = icon->resized(szResize.cx, szResize.cy,
-								rp_image::AlignVCenter, lvBgColor[rowColorIdx]);
-						}
-					}
-
-					HICON hIcon;
-					if (icon_resized) {
-						hIcon = RpImageWin32::toHICON(icon_resized);
-						delete icon_resized;
-					} else {
-						hIcon = RpImageWin32::toHICON(icon);
-					}
-
-					if (hIcon) {
-						int idx = ImageList_AddIcon(himl, hIcon);
-						if (idx >= 0) {
-							// Icon added.
-							iImage = idx;
-						}
-						// ImageList makes a copy of the icon.
-						DestroyIcon(hIcon);
-					}
-
-					// Save the ImageList index for later.
-					lvImageList.push_back(iImage);
-				}
-			}
+			// TODO: Store the icon index if necessary.
+			lv_row_data.push_back(std::move(tstr));
 		}
 
-		// Adjusted checkboxes value.
-		if (hasCheckboxes) {
-			map_lvCheckboxes.insert(std::make_pair(dlgId, adj_checkboxes));
-		}
-		// ImageList indexes.
-		if (hasIcons) {
-			map_lvImageList.insert(std::make_pair(dlgId, std::move(lvImageList)));
-		}
-
-		// Set the virtual list item count.
-		ListView_SetItemCountEx(hDlgItem, lv_row_num,
-			LVSICF_NOINVALIDATEALL | LVSICF_NOSCROLL);
-
-		// Save the double-vector for later.
-		map_lvStringData.insert(std::make_pair(dlgId, std::move(lvStringData)));
+		// Next row.
+		lv_row_num++;
 	}
+
+	// Icons.
+	if (hasIcons) {
+		// Icon size is 32x32, adjusted for DPI. (TODO: WM_DPICHANGED)
+		// ImageList will resize the original icons to 32x32.
+
+		// NOTE: LVS_REPORT doesn't allow variable row sizes,
+		// at least not without using ownerdraw. Hence, we'll
+		// use a hackish workaround: If any entry has more than
+		// two newlines, increase the Imagelist icon size by
+		// 16 pixels.
+		// TODO: Handle this better.
+		// FIXME: This only works if the RFT_LISTDATA has icons.
+		const int px = rp_AdjustSizeForDpi(32, rp_GetDpiForWindow(hDlg));
+		SIZE sizeListIcon = {px, px};
+		bool resizeNeeded = false;
+		float factor = 1.0f;
+		if (nl_max >= 2) {
+			// Two or more newlines.
+			// Add half of the icon size per newline over 1.
+			sizeListIcon.cy += ((px/2) * (nl_max - 1));
+			resizeNeeded = true;
+			factor = (float)sizeListIcon.cy / (float)sizeListIcon.cy;
+		}
+
+		HIMAGELIST himl = ImageList_Create(sizeListIcon.cx, sizeListIcon.cy,
+			ILC_COLOR32, static_cast<int>(list_data->size()), 0);
+		assert(himl != nullptr);
+		if (himl) {
+			// NOTE: ListView uses LVSIL_SMALL for LVS_REPORT.
+			// TODO: The row highlight doesn't surround the empty area
+			// of the icon. LVS_OWNERDRAW is probably needed for that.
+			ListView_SetImageList(hDlgItem, himl, LVSIL_SMALL);
+			uint32_t lvBgColor[2];
+			lvBgColor[0] = LibWin32Common::GetSysColor_ARGB32(COLOR_WINDOW);
+			lvBgColor[1] = LibWin32Common::getAltRowColor_ARGB32();
+
+			// Add icons.
+			const auto &icons = field->data.list_data.mxd.icons;
+			uint8_t rowColorIdx = 0;
+			for (auto iter = icons->cbegin(); iter != icons->cend();
+				++iter, rowColorIdx = !rowColorIdx)
+			{
+				int iImage = -1;
+				const rp_image *const icon = *iter;
+				if (!icon) {
+					// No icon for this row.
+					lvImageList.push_back(iImage);
+					continue;
+				}
+
+				// Resize the icon, if necessary.
+				rp_image *icon_resized = nullptr;
+				if (resizeNeeded) {
+					SIZE szResize = {icon->width(), icon->height()};
+					szResize.cy = static_cast<LONG>(szResize.cy * factor);
+
+					// If the original icon is CI8, it needs to be
+					// converted to ARGB32 first. Otherwise, the
+					// "empty" background area will be black.
+					// NOTE: We still need to specify a background color,
+					// since the ListView highlight won't show up on
+					// alpha-transparent pixels.
+					// TODO: Handle this in rp_image::resized()?
+					// TODO: Handle theme changes?
+					// TODO: Error handling.
+					if (icon->format() != rp_image::FORMAT_ARGB32) {
+						rp_image *const icon32 = icon->dup_ARGB32();
+						if (icon32) {
+							icon_resized = icon32->resized(szResize.cx, szResize.cy,
+								rp_image::AlignVCenter, lvBgColor[rowColorIdx]);
+							delete icon32;
+						}
+					}
+
+					// If the icon wasn't in ARGB32 format, it was resized above.
+					// If it was already in ARGB32 format, it will be resized here.
+					if (!icon_resized) {
+						icon_resized = icon->resized(szResize.cx, szResize.cy,
+							rp_image::AlignVCenter, lvBgColor[rowColorIdx]);
+					}
+				}
+
+				HICON hIcon;
+				if (icon_resized) {
+					hIcon = RpImageWin32::toHICON(icon_resized);
+					delete icon_resized;
+				} else {
+					hIcon = RpImageWin32::toHICON(icon);
+				}
+
+				if (hIcon) {
+					int idx = ImageList_AddIcon(himl, hIcon);
+					if (idx >= 0) {
+						// Icon added.
+						iImage = idx;
+					}
+					// ImageList makes a copy of the icon.
+					DestroyIcon(hIcon);
+				}
+
+				// Save the ImageList index for later.
+				lvImageList.push_back(iImage);
+			}
+		}
+	}
+
+	// Adjusted checkboxes value.
+	if (hasCheckboxes) {
+		map_lvCheckboxes.insert(std::make_pair(dlgId, adj_checkboxes));
+	}
+	// ImageList indexes.
+	if (hasIcons) {
+		map_lvImageList.insert(std::make_pair(dlgId, std::move(lvImageList)));
+	}
+
+	// Set the virtual list item count.
+	ListView_SetItemCountEx(hDlgItem, lv_row_num,
+		LVSICF_NOINVALIDATEALL | LVSICF_NOSCROLL);
+
+	// Save the double-vector for later.
+	map_lvStringData.insert(std::make_pair(dlgId, std::move(lvStringData)));
 
 	// Resize all of the columns.
 	// TODO: Do this on system theme change?
