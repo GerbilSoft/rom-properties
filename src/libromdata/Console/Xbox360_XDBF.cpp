@@ -86,7 +86,7 @@ class Xbox360_XDBF_Private : public RomDataPrivate
 
 		// String tables.
 		// NOTE: These are *pointers* to ao::uvector<>.
-		ao::uvector<char> *strTbl[XDBF_LANGUAGE_MAX];
+		array<ao::uvector<char>*, XDBF_LANGUAGE_MAX> strTbls;
 
 		/**
 		 * Find a resource in the entry table.
@@ -177,14 +177,14 @@ Xbox360_XDBF_Private::Xbox360_XDBF_Private(Xbox360_XDBF *q, IRpFile *file, bool 
 	memset(&xdbfHeader, 0, sizeof(xdbfHeader));
 
 	// Clear the string table pointers.
-	memset(strTbl, 0, sizeof(strTbl));
+	strTbls.fill(nullptr);
 }
 
 Xbox360_XDBF_Private::~Xbox360_XDBF_Private()
 {
 	// Delete any allocated string tables.
-	for (int i = ARRAY_SIZE(strTbl)-1; i >= 0; i--) {
-		delete strTbl[i];
+	for (auto iter = strTbls.begin(); iter < strTbls.end(); ++iter) {
+		delete *iter;
 	}
 
 	// Delete any loaded images.
@@ -280,8 +280,8 @@ const ao::uvector<char> *Xbox360_XDBF_Private::loadStringTable(XDBF_Language_e l
 		return nullptr;
 
 	// Is the string table already loaded?
-	if (this->strTbl[language_id]) {
-		return this->strTbl[language_id];
+	if (this->strTbls[language_id]) {
+		return this->strTbls[language_id];
 	}
 
 	// Can we load the string table?
@@ -335,7 +335,7 @@ const ao::uvector<char> *Xbox360_XDBF_Private::loadStringTable(XDBF_Language_e l
 	}
 
 	// String table loaded successfully.
-	this->strTbl[language_id] = vec;
+	this->strTbls[language_id] = vec;
 	return vec;
 }
 
@@ -355,7 +355,7 @@ string Xbox360_XDBF_Private::loadString(XDBF_Language_e language_id, uint16_t st
 		return ret;
 
 	// Get the string table.
-	const ao::uvector<char> *vec = strTbl[language_id];
+	const ao::uvector<char> *vec = strTbls[language_id];
 	if (!vec) {
 		vec = loadStringTable(language_id);
 		if (!vec) {
