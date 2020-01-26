@@ -3,7 +3,7 @@
  * Xbox360_XDBF.cpp: Microsoft Xbox 360 game resource reader.              *
  * Handles XDBF files and sections.                                        *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -802,9 +802,6 @@ int Xbox360_XDBF_Private::addFields_achievements(void)
 	// Icons don't have their own column name; they're considered
 	// a virtual column, much like checkboxes.
 
-	// Language ID
-	const XDBF_Language_e langID = getLanguageID();
-
 	// Columns
 	static const char *const xach_col_names[] = {
 		NOP_C_("Xbox360_XDBF|Achievements", "ID"),
@@ -815,34 +812,62 @@ int Xbox360_XDBF_Private::addFields_achievements(void)
 		"Xbox360_XDBF|Achievements", xach_col_names, ARRAY_SIZE(xach_col_names));
 
 	// Vectors.
-	auto vv_xach = new RomFields::ListData_t(xach_count);
+	array<RomFields::ListData_t*, XDBF_LANGUAGE_MAX> pvv_xach;
+	pvv_xach[XDBF_LANGUAGE_UNKNOWN] = nullptr;
+	for (int langID = XDBF_LANGUAGE_ENGLISH; langID < XDBF_LANGUAGE_MAX; langID++) {
+		pvv_xach[langID] = (strTblIndexes[langID] >= 0)
+			? new RomFields::ListData_t(xach_count)
+			: nullptr;
+	}
 	auto vv_icons = new RomFields::ListDataIcons_t(xach_count);
-	auto xach_iter = vv_xach->begin();
 	auto icon_iter = vv_icons->begin();
-	for (; p < p_end && xach_iter != vv_xach->end(); p++, ++xach_iter, ++icon_iter) {
-		// String data row
-		auto &data_row = *xach_iter;
-
+	for (unsigned int i = 0; p < p_end && i < xach_count; p++, i++, ++icon_iter) {
 		// Icon
 		*icon_iter = loadImage(be32_to_cpu(p->image_id));
 
-		// Achievement ID
-		data_row.push_back(rp_sprintf("%u", be16_to_cpu(p->achievement_id)));
+		// Achievement IDs.
+		const uint16_t name_id = be16_to_cpu(p->name_id);
+		const uint16_t locked_desc_id = be16_to_cpu(p->locked_desc_id);
+		const uint16_t unlocked_desc_id = be16_to_cpu(p->unlocked_desc_id);
 
-		// Title and locked description
-		// TODO: Unlocked description?
-		if (langID != XDBF_LANGUAGE_UNKNOWN) {
-			string desc = loadString(langID, be16_to_cpu(p->name_id));
+		// TODO: Localized numeric formatting?
+		char s_achievement_id[16];
+		snprintf(s_achievement_id, sizeof(s_achievement_id), "%u", be16_to_cpu(p->achievement_id));
+		char s_gamerscore[16];
+		snprintf(s_gamerscore, sizeof(s_gamerscore), "%u", be16_to_cpu(p->gamerscore));
 
-			uint16_t desc_id = be16_to_cpu(p->locked_desc_id);
-			if (desc_id == 0xFFFF) {
-				// No locked description.
-				// Use the unlocked description.
-				// (May be a hidden achievement? TODO)
-				desc_id = be16_to_cpu(p->unlocked_desc_id);
+		for (int langID = XDBF_LANGUAGE_ENGLISH; langID < XDBF_LANGUAGE_MAX; langID++) {
+			if (!pvv_xach[langID]) {
+				// No strings for this language.
+				continue;
+			}
+			auto &data_row = pvv_xach[langID]->at(i);
+			data_row.reserve(3);
+
+			// Achievement ID
+			data_row.emplace_back(s_achievement_id);
+
+			// Title and locked description
+			// TODO: Unlocked description?
+			string desc = loadString((XDBF_Language_e)langID, name_id);
+			if (desc.empty() && langID != XDBF_LANGUAGE_ENGLISH) {
+				// String not found in this language. Try English.
+				desc = loadString(XDBF_LANGUAGE_ENGLISH, name_id);
 			}
 
-			string lck_desc = loadString(langID, desc_id);
+			// Description ID.
+			// If we don't have a locked ID, use the unlocked ID.
+			// (TODO: This may be a hidden achievement.)
+			const uint16_t desc_id = (locked_desc_id != 0xFFFF)
+							? locked_desc_id
+							: unlocked_desc_id;
+
+			string lck_desc = loadString((XDBF_Language_e)langID, desc_id);
+			if (lck_desc.empty() && langID != XDBF_LANGUAGE_ENGLISH) {
+				// String not found in this language. Try English.
+				lck_desc = loadString(XDBF_LANGUAGE_ENGLISH, desc_id);
+			}
+
 			if (!lck_desc.empty()) {
 				if (!desc.empty()) {
 					desc += '\n';
@@ -853,26 +878,37 @@ int Xbox360_XDBF_Private::addFields_achievements(void)
 			}
 
 			// TODO: Formatting value indicating that the first line should be bold.
-			data_row.push_back(std::move(desc));
-		} else {
-			// Unknown language ID.
-			// Show the string table IDs instead.
-			data_row.push_back(rp_sprintf(
-				C_("Xbox360_XDBF|Achievements", "Name: 0x%04X | Locked: 0x%04X | Unlocked: 0x%04X"),
-					be16_to_cpu(p->name_id),
-					be16_to_cpu(p->locked_desc_id),
-					be16_to_cpu(p->unlocked_desc_id)));
+			data_row.emplace_back(std::move(desc));
+
+			// Gamerscore
+			data_row.emplace_back(s_gamerscore);
+		}
+	}
+
+	// Add the vectors to a map.
+	RomFields::ListDataMultiMap_t *const mvv_xach = new RomFields::ListDataMultiMap_t();
+	for (int langID = XDBF_LANGUAGE_ENGLISH; langID < XDBF_LANGUAGE_MAX; langID++) {
+		if (!pvv_xach[langID])
+			continue;
+
+		const uint32_t lc = XboxLanguage::getXbox360LanguageCode(langID);
+		assert(lc != 0);
+		if (lc == 0) {
+			// Invalid language code.
+			delete pvv_xach[langID];
+			continue;
 		}
 
-		// Gamerscore
-		data_row.push_back(rp_sprintf("%u", be16_to_cpu(p->gamerscore)));
+		mvv_xach->insert(std::make_pair(lc, std::move(*pvv_xach[langID])));
+		delete pvv_xach[langID];
 	}
 
 	// Add the list data.
 	RomFields::AFLD_PARAMS params(RomFields::RFT_LISTDATA_SEPARATE_ROW |
-	                              RomFields::RFT_LISTDATA_ICONS, 0);
+	                              RomFields::RFT_LISTDATA_ICONS |
+				      RomFields::RFT_LISTDATA_MULTI, 0);
 	params.headers = v_xach_col_names;
-	params.data.single = vv_xach;	// TODO: Multi
+	params.data.multi = mvv_xach;
 	// TODO: Header alignment?
 	params.alignment.headers = 0;
 	params.alignment.data = AFLD_ALIGN3(TXA_L, TXA_L, TXA_C);

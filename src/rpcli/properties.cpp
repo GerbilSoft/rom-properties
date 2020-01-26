@@ -820,12 +820,6 @@ public:
 			case RomFields::RFT_LISTDATA: {
 				const auto &listDataDesc = romField->desc.list_data;
 				os << "{\"type\":\"LISTDATA\",\"desc\":{\"name\":" << JSONString(romField->name.c_str());
-				// TODO: Support for RFT_LISTDATA_MULTI.
-				assert(!(listDataDesc.flags & RomFields::RFT_LISTDATA_MULTI));
-				if (listDataDesc.flags & RomFields::RFT_LISTDATA_MULTI) {
-					os << ",\"error\":\"RFT_LISTDATA_MULTI is not supported yet.\"}";
-					break;
-				}
 
 				if (listDataDesc.names) {
 					os << ",\"names\":[";
@@ -842,30 +836,90 @@ public:
 				} else {
 					os << ",\"names\":[]";
 				}
-				os << "},\"data\":[";
-				const auto list_data = romField->data.list_data.data.single;
-				assert(list_data != nullptr);
-				if (list_data) {
-					uint32_t checkboxes = romField->data.list_data.mxd.checkboxes;
-					for (auto it = list_data->cbegin(); it != list_data->cend(); ++it) {
-						if (it != list_data->cbegin()) os << ',';
-						os << '[';
-						if (listDataDesc.flags & RomFields::RFT_LISTDATA_CHECKBOXES) {
-							// TODO: Better JSON schema for RFT_LISTDATA_CHECKBOXES?
-							os << ((checkboxes & 1) ? "true" : "false") << ',';
-							checkboxes >>= 1;
-						}
 
-						bool did_one = false;
-						for (auto jt = it->cbegin(); jt != it->cend(); ++jt) {
-							if (did_one) os << ',';
-							did_one = true;
-							os << JSONString(jt->c_str());
+				os << "},\"data\":";
+				if (!(listDataDesc.flags & RomFields::RFT_LISTDATA_MULTI)) {
+					// Single-language ListData.
+					os << "[\n";
+					const auto list_data = romField->data.list_data.data.single;
+					assert(list_data != nullptr);
+					if (list_data) {
+						uint32_t checkboxes = romField->data.list_data.mxd.checkboxes;
+						for (auto it = list_data->cbegin(); it != list_data->cend(); ++it) {
+							if (it != list_data->cbegin()) os << ",\n";
+							os << "\t[";
+							if (listDataDesc.flags & RomFields::RFT_LISTDATA_CHECKBOXES) {
+								// TODO: Better JSON schema for RFT_LISTDATA_CHECKBOXES?
+								os << ((checkboxes & 1) ? "true" : "false") << ',';
+								checkboxes >>= 1;
+							}
+
+							bool did_one = false;
+							for (auto jt = it->cbegin(); jt != it->cend(); ++jt) {
+								if (did_one) os << ',';
+								did_one = true;
+								os << JSONString(jt->c_str());
+							}
+							os << ']';
 						}
-						os << ']';
+						if (!list_data->empty()) {
+							os << '\n';
+						}
 					}
+					os << "]";
+				} else {
+					// Multi-language ListData.
+					os << "{\n";
+					const auto *const list_data = romField->data.list_data.data.multi;
+					assert(list_data != nullptr);
+					if (list_data) {
+						for (auto mapIter = list_data->cbegin(); mapIter != list_data->cend(); ++mapIter) {
+							// Key: Language code
+							// Value: Vector of string data
+							if (mapIter != list_data->cbegin()) os << ",\n";
+							os << "\t\"";
+							for (uint32_t lc = mapIter->first; lc != 0; lc <<= 8) {
+								char chr = (char)(lc >> 24);
+								if (chr != 0) {
+									os << chr;
+								}
+							}
+							os << "\":[";
+							// TODO: Consolidate single/multi here?
+							const auto &lc_data = mapIter->second;
+							if (!lc_data.empty()) {
+								os << '\n';
+								uint32_t checkboxes = romField->data.list_data.mxd.checkboxes;
+								for (auto lcIter = lc_data.cbegin(); lcIter != lc_data.cend(); ++lcIter) {
+									if (lcIter != lc_data.cbegin()) os << ",\n";
+									os << "\t\t[";
+									if (listDataDesc.flags & RomFields::RFT_LISTDATA_CHECKBOXES) {
+										// TODO: Better JSON schema for RFT_LISTDATA_CHECKBOXES?
+										os << ((checkboxes & 1) ? "true" : "false") << ',';
+										checkboxes >>= 1;
+									}
+
+									bool did_one = false;
+									for (auto jt = lcIter->cbegin(); jt != lcIter->cend(); ++jt) {
+										if (did_one) os << ',';
+										did_one = true;
+										os << JSONString(jt->c_str());
+									}
+									os << ']';
+								}
+								if (!lc_data.empty()) {
+									os << '\n';
+								}
+							}
+							os << "\t]";
+						}
+						if (!list_data->empty()) {
+							os << '\n';
+						}
+					}
+					os << '}';
 				}
-				os << "]}";
+				os << '}';
 				break;
 			}
 
