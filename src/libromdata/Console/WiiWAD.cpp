@@ -928,15 +928,12 @@ int WiiWAD::loadFieldData(void)
 		// Get the string map.
 		RomFields::StringMultiMap_t *const pMap_bannerName = WiiCommon::getWiiBannerStrings(
 			&d->imet, gcnRegion, id4_region);
-		if (!pMap_bannerName) {
-			// Error getting the map...
-			return -EIO;
+		if (pMap_bannerName) {
+			// Add the field.
+			const uint32_t def_lc = NintendoLanguage::getWiiLanguageCode(
+				NintendoLanguage::getWiiLanguage());
+			d->fields->addField_string_multi(C_("WiiWAD", "Game Info"), pMap_bannerName, def_lc);
 		}
-
-		// Add the field.
-		const uint32_t def_lc = NintendoLanguage::getWiiLanguageCode(
-			NintendoLanguage::getWiiLanguage());
-		d->fields->addField_string_multi(C_("WiiWAD", "Game Info"), pMap_bannerName, def_lc);
 #endif /* ENABLE_DECRYPTION */
 	}
 
