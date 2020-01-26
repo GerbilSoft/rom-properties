@@ -21,6 +21,7 @@ using namespace LibRpBase;
 using LibRpTexture::rp_image;
 
 // C++ STL classes.
+using std::array;
 using std::string;
 using std::unique_ptr;
 using std::unordered_map;
@@ -74,6 +75,15 @@ class Xbox360_XDBF_Private : public RomDataPrivate
 		// Some fields shouldn't be displayed.
 		bool xex;
 
+		// String table indexes.
+		// These are indexes into entryTable that indicate
+		// where a language table entry is located.
+		// If -1, the string table is not present.
+		// Note that we're using 16-bit indexes instead of pointers
+		// in order to save memory. Also, there shouldn't be more
+		// than 32,767 entries in the table.
+		array<int16_t, XDBF_LANGUAGE_MAX> strTblIndexes;
+
 		// String tables.
 		// NOTE: These are *pointers* to ao::uvector<>.
 		ao::uvector<char> *strTbl[XDBF_LANGUAGE_MAX];
@@ -85,6 +95,13 @@ class Xbox360_XDBF_Private : public RomDataPrivate
 		 * @return XDBF_Entry*, or nullptr if not found.
 		 */
 		const XDBF_Entry *findResource(uint16_t namespace_id, uint64_t resource_id) const;
+
+		/**
+		 * Determine what languages are available.
+		 * This initializes the strTblIndexes array.
+		 * @return 0 on success; negative POSIX error code on error.
+		 */
+		int initStrTblIndexes(void);
 
 		/**
 		 * Load a string table.
@@ -208,6 +225,48 @@ const XDBF_Entry *Xbox360_XDBF_Private::findResource(uint16_t namespace_id, uint
 }
 
 /**
+ * Determine what languages are available.
+ * This initializes the strTblIndexes array.
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int Xbox360_XDBF_Private::initStrTblIndexes(void)
+{
+	// Clear the array first.
+	strTblIndexes.fill(-1);
+
+	if (entryTable.empty()) {
+		// Entry table isn't loaded...
+		return -EIO;
+	}
+
+	// Go through the entry table.
+	unsigned int total = 0;
+	int16_t idx = 0;
+	for (auto iter = entryTable.cbegin();
+	     iter != entryTable.cend() && total < XDBF_LANGUAGE_MAX; ++iter, idx++)
+	{
+		if (iter->namespace_id != cpu_to_be16(XDBF_SPA_NAMESPACE_STRING_TABLE))
+			continue;
+
+		// Found a string table.
+		const uint64_t language_id = be64_to_cpu(iter->resource_id);
+		assert(language_id < XDBF_LANGUAGE_MAX);
+		if (language_id >= XDBF_LANGUAGE_MAX)
+			continue;
+
+		assert(strTblIndexes[language_id] < 0);
+		if (strTblIndexes[language_id] < 0) {
+			// First instance of this language.
+			// TODO: What if multiple string tables exist for the same language?
+			strTblIndexes[language_id] = idx;
+			total++;
+		}
+	}
+
+	return (total > 0 ? 0 : -ENOENT);
+}
+
+/**
  * Load a string table.
  * @param language_id Language ID.
  * @return Pointer to string table on success; nullptr on error.
@@ -231,13 +290,16 @@ const ao::uvector<char> *Xbox360_XDBF_Private::loadStringTable(XDBF_Language_e l
 		return nullptr;
 	}
 
-	// Find the string table entry.
-	const XDBF_Entry *const entry = findResource(
-		XDBF_SPA_NAMESPACE_STRING_TABLE, static_cast<uint64_t>(language_id));
-	if (!entry) {
-		// Not found.
+	// String table index should already be loaded.
+	int16_t idx = strTblIndexes[language_id];
+	assert(idx >= 0);
+	assert(idx < (uint16_t)entryTable.size());
+	if (idx < 0 || idx >= (uint16_t)entryTable.size()) {
+		// Out of range...
 		return nullptr;
 	}
+
+	const XDBF_Entry *const entry = &entryTable[idx];
 
 	// Allocate memory and load the string table.
 	const unsigned int str_tbl_sz = be32_to_cpu(entry->length);
@@ -1044,7 +1106,11 @@ void Xbox360_XDBF::init(void)
 		d->file->unref();
 		d->file = nullptr;
 		d->isValid = false;
+		return;
 	}
+
+	// Initialize the string table indexes.
+	d->initStrTblIndexes();
 }
 
 /** ROM detection functions. **/
