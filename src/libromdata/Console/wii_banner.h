@@ -19,8 +19,6 @@
 extern "C" {
 #endif
 
-#pragma pack(1)
-
 /**
  * WIBN (Wii Banner)
  * Reference: https://wiibrew.org/wiki/Savegame_Files
@@ -60,7 +58,7 @@ extern "C" {
  * All fields are in big-endian.
  */
 #define WII_WIBN_MAGIC 'WIBN'
-typedef struct PACKED _Wii_WIBN_Header_t {
+typedef struct _Wii_WIBN_Header_t {
 	uint32_t magic;			// [0x000] 'WIBN'
 	uint32_t flags;			// [0x004] Flags. (See Wii_WIBN_Flags_e.)
 	uint16_t iconspeed;		// [0x008] Similar to GCN.
@@ -130,7 +128,7 @@ typedef enum {
  *
  * All fields are in big-endian.
  */
-typedef struct PACKED _Wii_SaveGame_Header_t {
+typedef struct _Wii_SaveGame_Header_t {
 	RVL_TitleID_t savegame_id;	// [0x000] Savegame ID (title ID)
 	uint32_t banner_size;		// [0x008] Size of banner+icons, with header. (max 0xF0A0)
 	uint8_t permissions;		// [0x00C] Permissions (???)
@@ -150,7 +148,7 @@ ASSERT_STRUCT(Wii_SaveGame_Header_t, 32);
 #define WII_BK_SIZE 0x70
 #define WII_BK_MAGIC 'Bk'
 #define WII_BK_VERSION 0x0001
-typedef struct PACKED _Wii_Bk_Header_t {
+typedef struct _Wii_Bk_Header_t {
 	union {
 		struct {
 			uint32_t size;		// [0x000] Size of the header. (0x070)
@@ -180,7 +178,7 @@ ASSERT_STRUCT(Wii_Bk_Header_t, 0x70+0x10);
  * All fields are in big-endian.
  */
 #define WII_SAVEGAME_FILEHEADER_MAGIC 0x03ADF17E
-typedef struct PACKED _Wii_SaveGame_FileHeader_t {
+typedef struct _Wii_SaveGame_FileHeader_t {
 	uint32_t magic;		// [0x000] Magic. (0x03ADF17E)
 	uint32_t size;		// [0x004] Size of file.
 	uint8_t permissions;	// [0x008] Permissions. (???)
@@ -191,8 +189,6 @@ typedef struct PACKED _Wii_SaveGame_FileHeader_t {
 	uint8_t unknown[0x20];	// [0x060]
 } Wii_SaveGame_FileHeader_t;
 ASSERT_STRUCT(Wii_SaveGame_FileHeader_t, 0x80);
-
-#pragma pack()
 
 #ifdef __cplusplus
 }
