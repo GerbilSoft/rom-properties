@@ -191,15 +191,19 @@ RP_PropertyStore::~RP_PropertyStore()
 
 IFACEMETHODIMP RP_PropertyStore::QueryInterface(REFIID riid, LPVOID *ppvObj)
 {
-#pragma warning(push)
-#pragma warning(disable: 4365 4838)
+#ifdef _MSC_VER
+# pragma warning(push)
+# pragma warning(disable: 4365 4838)
+#endif /* _MSC_VER */
 	static const QITAB rgqit[] = {
 		QITABENT(RP_PropertyStore, IInitializeWithStream),
 		QITABENT(RP_PropertyStore, IPropertyStore),
 		QITABENT(RP_PropertyStore, IPropertyStoreCapabilities),
 		{ 0, 0 }
 	};
-#pragma warning(pop)
+#ifdef _MSC_VER
+# pragma warning(pop)
+#endif /* _MSC_VER */
 	return LibWin32Common::pfnQISearch(this, rgqit, riid, ppvObj);
 }
 

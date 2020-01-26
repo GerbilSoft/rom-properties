@@ -56,8 +56,10 @@ RP_ExtractIcon::~RP_ExtractIcon()
 
 IFACEMETHODIMP RP_ExtractIcon::QueryInterface(REFIID riid, LPVOID *ppvObj)
 {
-#pragma warning(push)
-#pragma warning(disable: 4365 4838)
+#ifdef _MSC_VER
+# pragma warning(push)
+# pragma warning(disable: 4365 4838)
+#endif /* _MSC_VER */
 	static const QITAB rgqit[] = {
 		QITABENT(RP_ExtractIcon, IPersist),
 		QITABENT(RP_ExtractIcon, IPersistFile),
@@ -65,7 +67,9 @@ IFACEMETHODIMP RP_ExtractIcon::QueryInterface(REFIID riid, LPVOID *ppvObj)
 		QITABENT(RP_ExtractIcon, IExtractIconA),
 		{ 0, 0 }
 	};
-#pragma warning(pop)
+#ifdef _MSC_VER
+# pragma warning(pop)
+#endif /* _MSC_VER */
 	return LibWin32Common::pfnQISearch(this, rgqit, riid, ppvObj);
 }
 

@@ -5,8 +5,8 @@
 #define LIBWBFS_H
 
 #ifdef _MSC_VER
-#pragma warning(push)
-#pragma warning(disable:4200)
+# (push)
+# pragma warning(disable:4200)
 #endif
 
 #include "librpbase/common.h"
@@ -106,7 +106,7 @@ typedef struct wbfs_disc_s
 #endif /* __cplusplus */
 
 #ifdef _MSC_VER
-#pragma warning(pop)
+# pragma warning(pop)
 #endif
 
 #endif

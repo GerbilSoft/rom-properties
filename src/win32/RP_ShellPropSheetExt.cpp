@@ -2780,14 +2780,18 @@ RP_ShellPropSheetExt::~RP_ShellPropSheetExt()
 
 IFACEMETHODIMP RP_ShellPropSheetExt::QueryInterface(REFIID riid, LPVOID *ppvObj)
 {
-#pragma warning(push)
-#pragma warning(disable: 4365 4838)
+#ifdef _MSC_VER
+# pragma warning(push)
+# pragma warning(disable: 4365 4838)
+#endif /* _MSC_VER */
 	static const QITAB rgqit[] = {
 		QITABENT(RP_ShellPropSheetExt, IShellExtInit),
 		QITABENT(RP_ShellPropSheetExt, IShellPropSheetExt),
 		{ 0 }
 	};
-#pragma warning(pop)
+#ifdef _MSC_VER
+# pragma warning(pop)
+#endif /* _MSC_VER */
 	return LibWin32Common::pfnQISearch(this, rgqit, riid, ppvObj);
 }
 
