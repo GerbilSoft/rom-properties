@@ -260,7 +260,7 @@ class RP_ShellPropSheetExt_Private
 		 * @param pNlCount      [out,opt] Newline count.
 		 * @return Width.
 		 */
-		static int measureListDataString(HDC hDC, const tstring &tstr, int *pNlCount);
+		static int measureListDataString(HDC hDC, const tstring &tstr, int *pNlCount = nullptr);
 
 		/**
 		 * Initialize a ListData field.
@@ -1289,7 +1289,7 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 
 	// Dialog font and device context.
 	// NOTE: Using the parent dialog's font.
-	AutoGetDC hDC(hWndTab, hFontDlg);
+	AutoGetDC hDC(hListView, hFontDlg);
 
 	// Add the row data.
 	uint32_t checkboxes = 0, adj_checkboxes = 0;
@@ -1337,6 +1337,8 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 			// RFT_LISTDATA_MULTI. Allocate space for the strings,
 			// but don't initialize them here.
 			lv_row_data.resize(data_row.size());
+
+			// TODO: Check newline counts in all strings to find nl_max.
 		} else {
 			// Single language.
 			int col = 0;
@@ -2054,24 +2056,61 @@ void RP_ShellPropSheetExt_Private::updateMulti(uint32_t user_lc)
 			}
 		}
 
+		// Column widths.
+		// LVSCW_AUTOSIZE_USEHEADER doesn't work for entries with newlines.
+		// TODO: Use ownerdraw instead? (WM_MEASUREITEM / WM_DRAWITEM)
+		unique_ptr<int[]> col_width(new int[colCount]);
+		for (int i = 0; i < colCount; i++) {
+			col_width[i] = LVSCW_AUTOSIZE_USEHEADER;
+		}
+
+		// Dialog font and device context.
+		// NOTE: Using the parent dialog's font.
+		AutoGetDC hDC(hListView, hFontDlg);
+
 		// Get the ListView data vector for LVS_OWNERDATA.
 		auto iter_lvSD = map_lvStringData.find(iter->dlgID);
 		assert(iter_lvSD != map_lvStringData.end());
 		if (iter_lvSD != map_lvStringData.end()) {
 			vector<vector<tstring> > &lvStringData = iter_lvSD->second;
-			// TODO: Update!
-		}
 
-		// Resize the columns to fit the contents.
-		// NOTE: Only done on first load.
-		// TODO: Need to measure text...
-		if (!cboLanguage) {
-			// TODO: Do this on system theme change?
-			// TODO: Add a flag for 'main data column' and adjust it to
-			// not exceed the viewport.
-			for (int i = 0; i < colCount; i++) {
-				ListView_SetColumnWidth(hListView, i, LVSCW_AUTOSIZE_USEHEADER /*col_width[i]*/);
+			auto iter_ld_row = list_data->cbegin();
+			auto iter_lvSD_row = lvStringData.begin();
+			for (; iter_ld_row != list_data->cend() && iter_lvSD_row != lvStringData.end();
+			     ++iter_ld_row, ++iter_lvSD_row)
+			{
+				const vector<string> &src_data_row = *iter_ld_row;
+				vector<tstring> &dest_data_row = *iter_lvSD_row;
+
+				auto iter_sdr = src_data_row.cbegin();
+				auto iter_ddr = dest_data_row.begin();
+				int col = 0;
+				for (; iter_sdr != src_data_row.cend() && iter_ddr != dest_data_row.end();
+				     ++iter_sdr, ++iter_ddr, col++)
+				{
+					tstring tstr = U82T_s(*iter_sdr);
+					int width = measureListDataString(hDC, tstr);
+					if (col < colCount) {
+						col_width[col] = std::max(col_width[col], width);
+					}
+					*iter_ddr = std::move(tstr);
+				}
 			}
+
+			// Resize the columns to fit the contents.
+			// NOTE: Only done on first load.
+			// TODO: Need to measure text...
+			if (!cboLanguage) {
+				// TODO: Do this on system theme change?
+				// TODO: Add a flag for 'main data column' and adjust it to
+				// not exceed the viewport.
+				for (int i = 0; i < colCount; i++) {
+					ListView_SetColumnWidth(hListView, i, col_width[i]);
+				}
+			}
+
+			// Redraw all items.
+			ListView_RedrawItems(hListView, 0, static_cast<int>(lvStringData.size()));
 		}
 	}
 
