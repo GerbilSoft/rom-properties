@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (rp-stub)                          *
  * rp-stub.c: Stub program to invoke the rom-properties library.           *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -57,7 +57,7 @@ static void show_version(void)
 	puts(RP_DESCRIPTION);
 	puts(C_("rp_stub",
 		"Shared library stub program.\n"
-		"Copyright (c) 2016-2017 by David Korth."));
+		"Copyright (c) 2016-2020 by David Korth."));
 	putchar('\n');
 	printf(C_("rp-stub", "rom-properties version: %s"), RP_VERSION_STRING);
 	putchar('\n');
@@ -70,7 +70,7 @@ static void show_version(void)
 	putchar('\n');
 	puts(C_("rp-stub",
 		"This program is licensed under the GNU GPL v2.\n"
-		"See http://www.gnu.org/licenses/gpl-2.0.html for more information."));
+		"See https://www.gnu.org/licenses/old-licenses/gpl-2.0.html for more information."));
 }
 
 static void show_help(const char *argv0)
@@ -171,6 +171,9 @@ int main(int argc, char *argv[])
 		{NULL, 0, NULL, 0}
 	};
 
+	// "More Information" string.
+	const char *const str_help_more_info = C_("rp-stub", "Try '%s --help' for more information.");
+
 	// Default to 256x256.
 	uint8_t config = is_rp_config;
 	int maximum_size = 256;
@@ -186,7 +189,7 @@ int main(int argc, char *argv[])
 					fprintf_p(stderr, C_("rp-stub", "%1$s: invalid size '%2$s'"), argv[0], optarg);
 					putc('\n', stderr);
 					// tr: %s == program name
-					fprintf(stderr, C_("rp-stub", "Try '%s --help' for more information."), argv[0]);
+					fprintf(stderr, str_help_more_info, argv[0]);
 					putc('\n', stderr);
 					return EXIT_FAILURE;
 				} else if (lTmp <= 0 || lTmp > 32768) {
@@ -194,7 +197,7 @@ int main(int argc, char *argv[])
 					fprintf_p(stderr, C_("rp-stub", "%1$s: size '%2$s' is out of range"), argv[0], optarg);
 					putc('\n', stderr);
 					// tr: %s == program name
-					fprintf(stderr, C_("rp-stub", "Try '%s --help' for more information."), argv[0]);
+					fprintf(stderr, str_help_more_info, argv[0]);
 					putc('\n', stderr);
 					return EXIT_FAILURE;
 				}
@@ -223,7 +226,7 @@ int main(int argc, char *argv[])
 			case '?':
 			default:
 				// Unrecognized option.
-				fprintf(stderr, C_("rp-stub", "Try '%s --help' for more information."), argv[0]);
+				fprintf(stderr, str_help_more_info, argv[0]);
 				putc('\n', stderr);
 				return EXIT_FAILURE;
 		}
@@ -236,7 +239,7 @@ int main(int argc, char *argv[])
 			fprintf(stderr, C_("rp-stub", "%s: missing source and output file parameters"), argv[0]);
 			putc('\n', stderr);
 			// tr: %s == program name
-			fprintf(stderr, C_("rp-stub", "Try '%s --help' for more information."), argv[0]);
+			fprintf(stderr, str_help_more_info, argv[0]);
 			putc('\n', stderr);
 			return EXIT_FAILURE;
 		} else if (optind+1 == argc) {
@@ -244,7 +247,7 @@ int main(int argc, char *argv[])
 			fprintf(stderr, C_("rp-stub", "%s: missing output file parameter"), argv[0]);
 			putc('\n', stderr);
 			// tr: %s == program name
-			fprintf(stderr, C_("rp-stub", "Try '%s --help' for more information."), argv[0]);
+			fprintf(stderr, str_help_more_info, argv[0]);
 			putc('\n', stderr);
 			return EXIT_FAILURE;
 		} else if (optind+3 < argc) {
@@ -252,7 +255,7 @@ int main(int argc, char *argv[])
 			fprintf(stderr, C_("rp-stub", "%s: too many parameters specified"), argv[0]);
 			putc('\n', stderr);
 			// tr: %s == program name
-			fprintf(stderr, C_("rp-stub", "Try '%s --help' for more information."), argv[0]);
+			fprintf(stderr, str_help_more_info, argv[0]);
 			putc('\n', stderr);
 			return EXIT_FAILURE;
 		}
