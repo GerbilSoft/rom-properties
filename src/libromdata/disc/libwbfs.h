@@ -5,7 +5,7 @@
 #define LIBWBFS_H
 
 #ifdef _MSC_VER
-# (push)
+# pragma warning(push)
 # pragma warning(disable:4200)
 #endif
 
