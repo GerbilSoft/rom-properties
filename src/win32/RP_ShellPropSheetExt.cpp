@@ -1403,7 +1403,7 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 			// Add half of the icon size per newline over 1.
 			sizeListIcon.cy += ((px/2) * (nl_max - 1));
 			resizeNeeded = true;
-			factor = (float)sizeListIcon.cy / (float)sizeListIcon.cy;
+			factor = (float)sizeListIcon.cy / (float)px;
 		}
 
 		HIMAGELIST himl = ImageList_Create(sizeListIcon.cx, sizeListIcon.cy,
