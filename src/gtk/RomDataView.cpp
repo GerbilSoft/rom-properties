@@ -977,11 +977,11 @@ rom_data_view_init_listdata(G_GNUC_UNUSED RomDataView *page, const RomFields::Fi
 
 	int colCount = 1;
 	if (listDataDesc.names) {
-		colCount = (int)listDataDesc.names->size();
+		colCount = static_cast<int>(listDataDesc.names->size());
 	} else {
 		// No column headers.
 		// Use the first row.
-		colCount = (int)list_data->at(0).size();
+		colCount = static_cast<int>(list_data->at(0).size());
 	}
 
 	GtkListStore *listStore;
