@@ -166,14 +166,15 @@ class RP_ShellPropSheetExt_Private
 		vector<tab> tabs;
 		int curTabIndex;
 
+		// Multi-language functionality.
+		uint32_t def_lc;	// Default language code from RomFields.
+		set<uint32_t> set_lc;	// Set of language codes from vecStringMulti.
+		HWND cboLanguage;
+		HIMAGELIST himglFlags;
+
 		// RFT_STRING_MULTI value labels.
 		typedef std::pair<HWND, const RomFields::Field*> Data_StringMulti_t;
 		vector<Data_StringMulti_t> vecStringMulti;
-		set<uint32_t> set_lc;	// Set of language codes from vecStringMulti.
-		uint32_t def_lc;	// Default language code from RomFields.
-		static const UINT iconSize = 16;	// TODO: Hi-DPI
-		HWND cboLanguage;
-		HIMAGELIST himglFlags;
 
 	public:
 		/**
