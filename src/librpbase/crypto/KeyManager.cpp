@@ -173,8 +173,8 @@ int KeyManagerPrivate::processConfigLine(const char *section, const char *name, 
 	uint8_t len = static_cast<uint8_t>(value_len / 2);
 
 	// Parse the value.
-	const size_t vKeys_start_pos = vKeys.size();
-	size_t vKeys_pos = vKeys_start_pos;
+	const uint32_t vKeys_start_pos = static_cast<uint32_t>(vKeys.size());
+	uint32_t vKeys_pos = vKeys_start_pos;
 	// Reserve space for half of the key string.
 	// Key string is ASCII hex, so two characters make up one byte.
 	vKeys.resize(vKeys.size() + len);

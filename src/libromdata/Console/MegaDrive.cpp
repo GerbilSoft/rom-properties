@@ -512,7 +512,7 @@ MegaDrive::MegaDrive(IRpFile *file)
 	// Check if this ROM is supported.
 	DetectInfo info;
 	info.header.addr = 0;
-	info.header.size = size;
+	info.header.size = static_cast<uint32_t>(size);
 	info.header.pData = header;
 	info.ext = nullptr;	// Not needed for MD.
 	info.szFile = 0;	// Not needed for MD.

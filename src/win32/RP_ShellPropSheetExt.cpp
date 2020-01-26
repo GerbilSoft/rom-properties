@@ -1909,14 +1909,14 @@ void RP_ShellPropSheetExt_Private::buildCboLanguageImageList(void)
 
 	const BITMAPINFOHEADER bmihDIBSection = {
 		sizeof(BITMAPINFOHEADER),	// biSize
-		iconSize,			// biWidth
-		-(int)iconSize,			// biHeight (negative for right-side up)
+		(LONG)iconSize,			// biWidth
+		-(LONG)iconSize,		// biHeight (negative for right-side up)
 		1,				// biPlanes
 		32,				// biBitCount
 		BI_RGB,				// biCompression
 		0,				// biSizeImage
-		dpi,				// biXPelsPerMeter
-		dpi,				// biYPelsPerMeter
+		(LONG)dpi,			// biXPelsPerMeter
+		(LONG)dpi,			// biYPelsPerMeter
 		0,				// biClrUsed
 		0,				// biClrImportant
 	};
@@ -2239,11 +2239,11 @@ void RP_ShellPropSheetExt_Private::updateMulti(uint32_t user_lc)
 			// - English if it's not available.
 			if (lc == def_lc) {
 				// Select this item.
-				sel_idx = cbItem.iItem;
+				sel_idx = static_cast<int>(cbItem.iItem);
 			} else if (lc == 'en') {
 				// English. Select this item if def_lc hasn't been found yet.
 				if (sel_idx < 0) {
-					sel_idx = cbItem.iItem;
+					sel_idx = static_cast<int>(cbItem.iItem);
 				}
 			}
 		}

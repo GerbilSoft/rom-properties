@@ -289,14 +289,14 @@ int EXEPrivate::findPERuntimeDLL(string &refDesc, string &refLink)
 	// NOTE: Since the DLL names are NULL-terminated, we'll have to guess
 	// with the last one. It's unlikely that it'll be at EOF, but we'll
 	// allow for 'short reads'.
-	const size_t dll_size_min = dll_vaddr_high - dll_vaddr_low + 1;
+	const uint32_t dll_size_min = dll_vaddr_high - dll_vaddr_low + 1;
 	uint32_t dll_paddr = pe_vaddr_to_paddr(dll_vaddr_low, dll_size_min);
 	if (dll_paddr == 0) {
 		// Invalid VAs...
 		return -ENOENT;
 	}
 
-	const size_t dll_size_max = dll_size_min + 260;	// MAX_PATH
+	const uint32_t dll_size_max = dll_size_min + 260;	// MAX_PATH
 	unique_ptr<char[]> dll_name_data(new char[dll_size_max]);
 	size_t dll_size_read = file->seekAndRead(dll_paddr, reinterpret_cast<uint8_t*>(dll_name_data.get()), dll_size_max);
 	if (dll_size_read < dll_size_min || dll_size_read > dll_size_max) {

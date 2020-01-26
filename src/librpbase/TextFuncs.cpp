@@ -423,7 +423,7 @@ std::string dos2unix(const char *str_dos, int len, int *lf_count)
 	// TODO: Optimize this!
 	string str_unix;
 	if (len < 0) {
-		len = strlen(str_dos);
+		len = static_cast<int>(strlen(str_dos));
 	}
 	str_unix.reserve(len);
 
