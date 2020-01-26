@@ -1124,6 +1124,10 @@ int RP_ShellPropSheetExt_Private::measureListDataString(HDC hDC, const tstring &
 	if (pNlCount) {
 		*pNlCount = nl;
 	}
+
+	// FIXME: Don't use LVSCW_AUTOSIZE_USEHEADER.
+	// LVS_OWNERDATA doesn't handle this properly. (only gets what's onscreen)
+	// TODO: Figure out the correct padding so the columns aren't truncated.
 	return (nl > 0 ? width : LVSCW_AUTOSIZE_USEHEADER);
 }
 
@@ -1338,7 +1342,24 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 			// but don't initialize them here.
 			lv_row_data.resize(data_row.size());
 
-			// TODO: Check newline counts in all strings to find nl_max.
+			// Check newline counts in all strings to find nl_max.
+			const auto *const multi = field->data.list_data.data.multi;
+			for (auto iter_m = multi->cbegin(); iter_m != multi->cend(); ++iter_m) {
+				const RomFields::ListData_t &ld = iter_m->second;
+				for (auto iter_row = ld.cbegin(); iter_row != ld.cend(); ++iter_row) {
+					const auto &data_row = *iter_row;
+					for (auto iter_col = data_row.cbegin(); iter_col != data_row.cend(); ++iter_col) {
+						size_t prev_nl_pos = 0;
+						size_t cur_nl_pos;
+						int nl = 0;
+						while ((cur_nl_pos = iter_col->find('\n', prev_nl_pos)) != tstring::npos) {
+							nl++;
+							prev_nl_pos = cur_nl_pos + 1;
+						}
+						nl_max = std::max(nl_max, nl);
+					}
+				}
+			}
 		} else {
 			// Single language.
 			int col = 0;
