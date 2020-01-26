@@ -129,15 +129,15 @@ class RP_ShellPropSheetExt_Private
 		bool isFullyInit;		// True if the window is fully initialized.
 
 		// ListView string data.
-		// - Key: ListView dialog ID (TODO: Use uint16_t instead?)
+		// - Key: ListView dialog ID
 		// - Value: Double-vector of tstrings.
-		unordered_map<unsigned int, vector<vector<tstring> > > map_lvStringData;
+		unordered_map<uint16_t, vector<vector<tstring> > > map_lvStringData;
 
 		// ListView checkboxes.
-		unordered_map<unsigned int, uint32_t> map_lvCheckboxes;
+		unordered_map<uint16_t, uint32_t> map_lvCheckboxes;
 
 		// ListView ImageList indexes.
-		unordered_map<unsigned int, vector<int> > map_lvImageList;
+		unordered_map<uint16_t, vector<int> > map_lvImageList;
 
 		/**
 		 * ListView GetDispInfo function.
@@ -168,13 +168,29 @@ class RP_ShellPropSheetExt_Private
 
 		// Multi-language functionality.
 		uint32_t def_lc;	// Default language code from RomFields.
-		set<uint32_t> set_lc;	// Set of language codes from vecStringMulti.
+		set<uint32_t> set_lc;	// Set of supported language codes.
 		HWND cboLanguage;
 		HIMAGELIST himglFlags;
 
 		// RFT_STRING_MULTI value labels.
 		typedef std::pair<HWND, const RomFields::Field*> Data_StringMulti_t;
 		vector<Data_StringMulti_t> vecStringMulti;
+
+		// RFT_LISTDATA_MULTI value ListViews.
+		struct Data_ListDataMulti_t {
+			HWND hListView;
+			const RomFields::Field *field;
+			uint16_t dlgID;
+
+			Data_ListDataMulti_t(
+				HWND hListView,
+				const RomFields::Field *field,
+				uint16_t dlgID)
+				: hListView(hListView)
+				, field(field)
+				, dlgID(dlgID) { }
+		};
+		vector<Data_ListDataMulti_t> vecListDataMulti;
 
 	public:
 		/**
@@ -334,10 +350,10 @@ class RP_ShellPropSheetExt_Private
 		void buildCboLanguageImageList(void);
 
 		/**
-		 * Update all multi-language string fields.
+		 * Update all multi-language fields.
 		 * @param user_lc User-specified language code.
 		 */
-		void updateStringMulti(uint32_t user_lc);
+		void updateMulti(uint32_t user_lc);
 
 		/**
 		 * Initialize the bold font.
@@ -1139,14 +1155,29 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 	// NOTE: listDataDesc.names can be nullptr,
 	// which means we don't have any column headers.
 
-	// TODO: Support for RFT_LISTDATA_MULTI.
-	assert(!(listDataDesc.flags & RomFields::RFT_LISTDATA_MULTI));
-	if (listDataDesc.flags & RomFields::RFT_LISTDATA_MULTI)
-		return 0;
+	// Single language ListData_t.
+	// For RFT_LISTDATA_MULTI, this is only used for row and column count.
+	const RomFields::ListData_t *list_data;
+	const bool isMulti = !!(listDataDesc.flags & RomFields::RFT_LISTDATA_MULTI);
+	if (isMulti) {
+		// Multiple languages.
+		const auto *const multi = field->data.list_data.data.multi;
+		assert(multi != nullptr);
+		assert(!multi->empty());
+		if (!multi || multi->empty()) {
+			// No data...
+			return 0;
+		}
 
-	const auto *const list_data = field->data.list_data.data.single;
+		list_data = &multi->cbegin()->second;
+	} else {
+		// Single language.
+		list_data = field->data.list_data.data.single;
+	}
+
 	assert(list_data != nullptr);
-	if (!list_data) {
+	assert(!list_data->empty());
+	if (!list_data || list_data->empty()) {
 		// No list data...
 		return 0;
 	}
@@ -1178,15 +1209,15 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 	if (!listDataDesc.names) {
 		lvsStyle |= LVS_NOCOLUMNHEADER;
 	}
-	const unsigned int dlgId = IDC_RFT_LISTDATA(idx);
-	HWND hDlgItem = CreateWindowEx(WS_EX_NOPARENTNOTIFY | WS_EX_CLIENTEDGE,
+	const uint16_t dlgID = IDC_RFT_LISTDATA(idx);
+	HWND hListView = CreateWindowEx(WS_EX_NOPARENTNOTIFY | WS_EX_CLIENTEDGE,
 		WC_LISTVIEW, nullptr, lvsStyle,
 		pt_start.x, pt_start.y,
 		size.cx, size.cy,
-		hWndTab, (HMENU)(INT_PTR)(dlgId),
+		hWndTab, (HMENU)(INT_PTR)(dlgID),
 		nullptr, nullptr);
-	SetWindowFont(hDlgItem, hFontDlg, false);
-	hwndListViewControls.push_back(hDlgItem);
+	SetWindowFont(hListView, hFontDlg, false);
+	hwndListViewControls.push_back(hListView);
 
 	// Set extended ListView styles.
 	DWORD lvsExStyle = LVS_EX_FULLROWSELECT;
@@ -1197,7 +1228,7 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 	if (hasCheckboxes) {
 		lvsExStyle |= LVS_EX_CHECKBOXES;
 	}
-	ListView_SetExtendedListViewStyle(hDlgItem, lvsExStyle);
+	ListView_SetExtendedListViewStyle(hListView, lvsExStyle);
 
 	// Insert columns.
 	int colCount = 1;
@@ -1206,9 +1237,7 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 	} else {
 		// No column headers.
 		// Use the first row.
-		if (list_data && !list_data->empty()) {
-			colCount = (int)list_data->at(0).size();
-		}
+		colCount = (int)list_data->at(0).size();
 	}
 
 	// Column widths.
@@ -1238,14 +1267,14 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 				// NOTE: pszText is LPTSTR, not LPCTSTR...
 				const tstring tstr = U82T_s(str);
 				lvColumn.pszText = const_cast<LPTSTR>(tstr.c_str());
-				ListView_InsertColumn(hDlgItem, i, &lvColumn);
+				ListView_InsertColumn(hListView, i, &lvColumn);
 			} else {
 				// Don't show this column.
 				// FIXME: Zero-width column is a bad hack...
 				lvColumn.pszText = _T("");
 				lvColumn.mask |= LVCF_WIDTH;
 				lvColumn.cx = 0;
-				ListView_InsertColumn(hDlgItem, i, &lvColumn);
+				ListView_InsertColumn(hListView, i, &lvColumn);
 			}
 			col_width[i] = LVSCW_AUTOSIZE_USEHEADER;
 		}
@@ -1253,7 +1282,7 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 		lvColumn.mask = LVCF_FMT;
 		lvColumn.fmt = LVCFMT_LEFT;
 		for (int i = 0; i < colCount; i++) {
-			ListView_InsertColumn(hDlgItem, i, &lvColumn);
+			ListView_InsertColumn(hListView, i, &lvColumn);
 			col_width[i] = LVSCW_AUTOSIZE_USEHEADER;
 		}
 	}
@@ -1304,19 +1333,26 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 		lv_row_data.reserve(data_row.size());
 
 		// String data.
-		int col = 0;
-		for (auto iter = data_row.cbegin(); iter != data_row.cend(); ++iter, col++) {
-			tstring tstr = U82T_s(*iter);
+		if (isMulti) {
+			// RFT_LISTDATA_MULTI. Allocate space for the strings,
+			// but don't initialize them here.
+			lv_row_data.resize(data_row.size());
+		} else {
+			// Single language.
+			int col = 0;
+			for (auto iter = data_row.cbegin(); iter != data_row.cend(); ++iter, col++) {
+				tstring tstr = U82T_s(*iter);
 
-			int nl_count;
-			int width = measureListDataString(hDC, tstr, &nl_count);
-			if (col < colCount) {
-				col_width[col] = std::max(col_width[col], width);
+				int nl_count;
+				int width = measureListDataString(hDC, tstr, &nl_count);
+				if (col < colCount) {
+					col_width[col] = std::max(col_width[col], width);
+				}
+				nl_max = std::max(nl_max, nl_count);
+
+				// TODO: Store the icon index if necessary.
+				lv_row_data.push_back(std::move(tstr));
 			}
-			nl_max = std::max(nl_max, nl_count);
-
-			// TODO: Store the icon index if necessary.
-			lv_row_data.push_back(std::move(tstr));
 		}
 
 		// Next row.
@@ -1354,7 +1390,7 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 			// NOTE: ListView uses LVSIL_SMALL for LVS_REPORT.
 			// TODO: The row highlight doesn't surround the empty area
 			// of the icon. LVS_OWNERDRAW is probably needed for that.
-			ListView_SetImageList(hDlgItem, himl, LVSIL_SMALL);
+			ListView_SetImageList(hListView, himl, LVSIL_SMALL);
 			uint32_t lvBgColor[2];
 			lvBgColor[0] = LibWin32Common::GetSysColor_ARGB32(COLOR_WINDOW);
 			lvBgColor[1] = LibWin32Common::getAltRowColor_ARGB32();
@@ -1431,26 +1467,28 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 
 	// Adjusted checkboxes value.
 	if (hasCheckboxes) {
-		map_lvCheckboxes.insert(std::make_pair(dlgId, adj_checkboxes));
+		map_lvCheckboxes.insert(std::make_pair(dlgID, adj_checkboxes));
 	}
 	// ImageList indexes.
 	if (hasIcons) {
-		map_lvImageList.insert(std::make_pair(dlgId, std::move(lvImageList)));
+		map_lvImageList.insert(std::make_pair(dlgID, std::move(lvImageList)));
 	}
 
 	// Set the virtual list item count.
-	ListView_SetItemCountEx(hDlgItem, lv_row_num,
+	ListView_SetItemCountEx(hListView, lv_row_num,
 		LVSICF_NOINVALIDATEALL | LVSICF_NOSCROLL);
 
 	// Save the double-vector for later.
-	map_lvStringData.insert(std::make_pair(dlgId, std::move(lvStringData)));
+	map_lvStringData.insert(std::make_pair(dlgID, std::move(lvStringData)));
 
-	// Resize all of the columns.
-	// TODO: Do this on system theme change?
-	// TODO: Add a flag for 'main data column' and adjust it to
-	// not exceed the viewport.
-	for (int i = 0; i < colCount; i++) {
-		ListView_SetColumnWidth(hDlgItem, i, col_width[i]);
+	if (!isMulti) {
+		// Resize all of the columns.
+		// TODO: Do this on system theme change?
+		// TODO: Add a flag for 'main data column' and adjust it to
+		// not exceed the viewport.
+		for (int i = 0; i < colCount; i++) {
+			ListView_SetColumnWidth(hListView, i, col_width[i]);
+		}
 	}
 
 	// Get the dialog margin.
@@ -1463,10 +1501,10 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 	// Default: 5 rows, plus the header.
 	// FIXME: Might not work for LVS_OWNERDATA.
 	int cy = 0;
-	if (doResize && ListView_GetItemCount(hDlgItem) > 0) {
+	if (doResize && ListView_GetItemCount(hListView) > 0) {
 		if (listDataDesc.names) {
 			// Get the header rect.
-			HWND hHeader = ListView_GetHeader(hDlgItem);
+			HWND hHeader = ListView_GetHeader(hListView);
 			assert(hHeader != nullptr);
 			if (hHeader) {
 				RECT rectHeader;
@@ -1477,7 +1515,7 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 
 		// Get an item rect.
 		RECT rectItem;
-		ListView_GetItemRect(hDlgItem, 0, &rectItem, LVIR_BOUNDS);
+		ListView_GetItemRect(hListView, 0, &rectItem, LVIR_BOUNDS);
 		const int item_cy = (rectItem.bottom - rectItem.top);
 		if (item_cy > 0) {
 			// Multiply by the requested number of visible rows.
@@ -1498,8 +1536,12 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 		cy = size.cy;
 	}
 
+	if (isMulti) {
+		vecListDataMulti.emplace_back(Data_ListDataMulti_t(hListView, field, dlgID));
+	}
+
 	// TODO: Skip this if cy == size.cy?
-	SetWindowPos(hDlgItem, nullptr, 0, 0, size.cx, cy,
+	SetWindowPos(hListView, nullptr, 0, 0, size.cx, cy,
 		SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_NOMOVE);
 	return cy;
 }
@@ -1905,11 +1947,12 @@ void RP_ShellPropSheetExt_Private::buildCboLanguageImageList(void)
 }
 
 /**
- * Update all multi-language string fields.
+ * Update all multi-language fields.
  * @param user_lc User-specified language code.
  */
-void RP_ShellPropSheetExt_Private::updateStringMulti(uint32_t user_lc)
+void RP_ShellPropSheetExt_Private::updateMulti(uint32_t user_lc)
 {
+	// RFT_STRING_MULTI
 	for (auto iter = vecStringMulti.cbegin();
 	     iter != vecStringMulti.cend(); ++iter)
 	{
@@ -1952,6 +1995,84 @@ void RP_ShellPropSheetExt_Private::updateStringMulti(uint32_t user_lc)
 
 		// Update the text.
 		SetWindowText(lblString, U82T_s(iter_sm->second));
+	}
+
+	// RFT_LISTDATA_MULTI
+	for (auto iter = vecListDataMulti.cbegin();
+	     iter != vecListDataMulti.cend(); ++iter)
+	{
+		const HWND hListView = iter->hListView;
+		const RomFields::Field *const field = iter->field;
+		const auto *const pListData_multi = field->data.list_data.data.multi;
+		assert(pListData_multi != nullptr);
+		assert(!pListData_multi->empty());
+		if (!pListData_multi || pListData_multi->empty()) {
+			// Invalid RFT_LISTDATA_MULTI...
+			continue;
+		}
+
+		if (!cboLanguage) {
+			// Need to add all supported languages.
+			// TODO: Do we need to do this for all of them, or just one?
+			for (auto iter_sm = pListData_multi->cbegin();
+			     iter_sm != pListData_multi->cend(); ++iter_sm)
+			{
+				set_lc.insert(iter_sm->first);
+			}
+		}
+
+		// Try the user-specified language code first.
+		// TODO: Consolidate ->end() calls?
+		auto iter_ldm = pListData_multi->end();
+		if (user_lc != 0) {
+			iter_ldm = pListData_multi->find(user_lc);
+		}
+		if (iter_ldm == pListData_multi->end()) {
+			// Not found. Try the ROM-default language code.
+			if (def_lc != user_lc) {
+				iter_ldm = pListData_multi->find(def_lc);
+				if (iter_ldm == pListData_multi->end()) {
+					// Still not found. Use the first string.
+					iter_ldm = pListData_multi->begin();
+				}
+			}
+		}
+
+		const RomFields::ListData_t *const list_data = &(iter_ldm->second);
+
+		// Column count.
+		const auto &listDataDesc = field->desc.list_data;
+		int colCount = 1;
+		if (listDataDesc.names) {
+			colCount = (int)listDataDesc.names->size();
+		} else {
+			// No column headers.
+			// Use the first row.
+			assert(!list_data->empty());
+			if (!list_data->empty()) {
+				colCount = (int)list_data->at(0).size();
+			}
+		}
+
+		// Get the ListView data vector for LVS_OWNERDATA.
+		auto iter_lvSD = map_lvStringData.find(iter->dlgID);
+		assert(iter_lvSD != map_lvStringData.end());
+		if (iter_lvSD != map_lvStringData.end()) {
+			vector<vector<tstring> > &lvStringData = iter_lvSD->second;
+			// TODO: Update!
+		}
+
+		// Resize the columns to fit the contents.
+		// NOTE: Only done on first load.
+		// TODO: Need to measure text...
+		if (!cboLanguage) {
+			// TODO: Do this on system theme change?
+			// TODO: Add a flag for 'main data column' and adjust it to
+			// not exceed the viewport.
+			for (int i = 0; i < colCount; i++) {
+				ListView_SetColumnWidth(hListView, i, LVSCW_AUTOSIZE_USEHEADER /*col_width[i]*/);
+			}
+		}
 	}
 
 	if (!cboLanguage && set_lc.size() > 1) {
@@ -2568,7 +2689,7 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 	// Initial update of RFT_MULTI_STRING fields.
 	if (!vecStringMulti.empty()) {
 		def_lc = fields->defaultLanguageCode();
-		updateStringMulti(0);
+		updateMulti(0);
 	}
 
 	// Register for WTS session notifications. (Remote Desktop)
@@ -3030,7 +3151,7 @@ INT_PTR RP_ShellPropSheetExt_Private::DlgProc_WM_COMMAND(HWND hDlg, WPARAM wPara
 			const int sel_idx = ComboBox_GetCurSel(cboLanguage);
 			if (sel_idx >= 0) {
 				const uint32_t lc = static_cast<uint32_t>(ComboBox_GetItemData(cboLanguage, sel_idx));
-				updateStringMulti(lc);
+				updateMulti(lc);
 			}
 			break;
 		}
