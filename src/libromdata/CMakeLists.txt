@@ -23,6 +23,7 @@ SET(libromdata_SRCS
 	Console/SegaSaturn.cpp
 	Console/SNES.cpp
 	Console/PlayStationSave.cpp
+	Console/WiiCommon.cpp
 	Console/WiiSave.cpp
 	Console/WiiU.cpp
 	Console/WiiWAD.cpp
@@ -127,6 +128,7 @@ SET(libromdata_H
 	Console/Sega8Bit.hpp
 	Console/SegaSaturn.hpp
 	Console/SNES.hpp
+	Console/WiiCommon.hpp
 	Console/WiiSave.hpp
 	Console/WiiU.hpp
 	Console/WiiWAD.hpp

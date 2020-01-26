@@ -17,6 +17,7 @@
 #include "data/WiiSystemMenuVersion.hpp"
 #include "data/NintendoLanguage.hpp"
 #include "GameCubeRegions.hpp"
+#include "WiiCommon.hpp"
 
 // librpbase, librptexture
 #include "librpbase/SystemRegion.hpp"
@@ -580,64 +581,12 @@ int GameCubePrivate::wii_addBannerName(void) const
 		}
 	}
 
-	// Check if English is valid.
-	// If it is, we'll de-duplicate fields.
-	bool dedupe_titles = (opening_bnr.wii.imet->names[WII_LANG_ENGLISH][0][0] != cpu_to_be16('\0'));
-
-	RomFields::StringMultiMap_t *const pMap_bannerName = new RomFields::StringMultiMap_t();
-	for (int langID = 0; langID < WII_LANG_MAX; langID++) {
-		if (langID == 7 || langID == 8) {
-			// Unknown languages. Skip them. (Maybe these were Chinese?)
-			// TODO: Just skip if NintendoLanguage::getWiiLanguageCode() returns 0?
-			continue;
-		}
-
-		if (dedupe_titles && langID != WII_LANG_ENGLISH) {
-			// Check if the comments match English.
-			// NOTE: Not converting to host-endian first, since
-			// u16_strncmp() checks for equality and for 0.
-			if (!u16_strncmp(opening_bnr.wii.imet->names[langID][0],
-			                 opening_bnr.wii.imet->names[WII_LANG_ENGLISH][0],
-			                 ARRAY_SIZE(opening_bnr.wii.imet->names[WII_LANG_ENGLISH][0])) &&
-			    !u16_strncmp(opening_bnr.wii.imet->names[langID][1],
-			                 opening_bnr.wii.imet->names[WII_LANG_ENGLISH][1],
-			                 ARRAY_SIZE(opening_bnr.wii.imet->names[WII_LANG_ENGLISH][1])))
-			{
-				// All fields match English.
-				continue;
-			}
-		}
-
-		uint32_t lc;
-		if (gcnRegion == GCN_REGION_JPN && discHeader.id4[3] == 'W' &&
-		    langID == WII_LANG_JAPANESE)
-		{
-			// Special case: RVL-001(TWN) has a JPN region code.
-			// Game discs with disc ID region 'W' are localized
-			// for Taiwan and use Traditional Chinese in the
-			// Japanese language slot.
-			lc = 'hant';
-		} else {
-			lc = NintendoLanguage::getWiiLanguageCode(langID);
-			assert(lc != 0);
-			if (lc == 0)
-				continue;
-		}
-
-		if (opening_bnr.wii.imet->names[langID][0][0] != cpu_to_be16('\0')) {
-			// NOTE: The banner may have two lines.
-			// Each line is a maximum of 21 characters.
-			// Convert from UTF-16 BE and split into two lines at the same time.
-			string info = utf16be_to_utf8(opening_bnr.wii.imet->names[langID][0],
-			                              ARRAY_SIZE(opening_bnr.wii.imet->names[langID][0]));
-			if (opening_bnr.wii.imet->names[langID][1][0] != cpu_to_be16('\0')) {
-				info += '\n';
-				info += utf16be_to_utf8(opening_bnr.wii.imet->names[langID][1],
-				        ARRAY_SIZE(opening_bnr.wii.imet->names[langID][1]));
-			}
-
-			pMap_bannerName->insert(std::make_pair(lc, std::move(info)));
-		}
+	// Get the string map.
+	RomFields::StringMultiMap_t *const pMap_bannerName = WiiCommon::getWiiBannerStrings(
+		opening_bnr.wii.imet, gcnRegion, discHeader.id4[3]);
+	if (!pMap_bannerName) {
+		// Error getting the map...
+		return -EIO;
 	}
 
 	// Add the field.

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * WiiWAD.cpp: Nintendo Wii WAD file reader.                               *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -17,6 +17,7 @@
 #include "data/NintendoLanguage.hpp"
 #include "data/WiiSystemMenuVersion.hpp"
 #include "GameCubeRegions.hpp"
+#include "WiiCommon.hpp"
 
 // librpbase, librptexture
 using namespace LibRpBase;
@@ -923,10 +924,20 @@ int WiiWAD::loadFieldData(void)
 	{
 		// No WIBN data.
 		// Get the IMET data if it's available.
-		string gameInfo = d->getGameInfo();
-		if (!gameInfo.empty()) {
-			d->fields->addField_string(C_("WiiWAD", "Game Info"), gameInfo);
+#ifdef ENABLE_DECRYPTION
+		// Get the string map.
+		RomFields::StringMultiMap_t *const pMap_bannerName = WiiCommon::getWiiBannerStrings(
+			&d->imet, gcnRegion, id4_region);
+		if (!pMap_bannerName) {
+			// Error getting the map...
+			return -EIO;
 		}
+
+		// Add the field.
+		const uint32_t def_lc = NintendoLanguage::getWiiLanguageCode(
+			NintendoLanguage::getWiiLanguage());
+		d->fields->addField_string_multi(C_("WiiWAD", "Game Info"), pMap_bannerName, def_lc);
+#endif /* ENABLE_DECRYPTION */
 	}
 
 	// Console ID.
@@ -964,6 +975,7 @@ int WiiWAD::loadMetaData(void)
 
 	// NOTE: We can only get the title if the encryption key is valid.
 	// If we can't get the title, don't bother creating RomMetaData.
+	// TODO: Use WiiCommon for multi-language strings?
 	string gameInfo = d->getGameInfo();
 	if (gameInfo.empty()) {
 		return -EIO;
