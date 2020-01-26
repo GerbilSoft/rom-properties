@@ -200,7 +200,7 @@ struct _RomDataView {
 
 	// Multi-language functionality.
 	uint32_t	def_lc;
-	set<uint32_t>	*set_lc;	// Set of language codes.
+	set<uint32_t>	*set_lc;	// Set of supported language codes.
 	GtkWidget	*cboLanguage;
 	GtkListStore	*lstoreLanguage;
 
