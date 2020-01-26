@@ -91,7 +91,7 @@ class RomDataViewPrivate
 		typedef QPair<QLabel*, const RomFields::Field*> Data_StringMulti_t;
 		QVector<Data_StringMulti_t> vecStringMulti;
 
-		// RFT_LISTDATA_MULTI value QTreeWidget.
+		// RFT_LISTDATA_MULTI value QTreeWidgets.
 		typedef QPair<QTreeWidget*, const RomFields::Field*> Data_ListDataMulti_t;
 		QVector<Data_ListDataMulti_t> vecListDataMulti;
 

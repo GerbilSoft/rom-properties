@@ -207,7 +207,7 @@ struct _RomDataView {
 	// RFT_STRING_MULTI value labels.
 	vector<Data_StringMulti_t> *vecStringMulti;
 
-	// RFT_LISTDATA_MULTI value GtkListStore.
+	// RFT_LISTDATA_MULTI value GtkListStores.
 	vector<Data_ListDataMulti_t> *vecListDataMulti;
 };
 
