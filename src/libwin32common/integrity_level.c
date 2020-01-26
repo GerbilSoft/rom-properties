@@ -39,10 +39,17 @@ static bool isVista = false;
  */
 static void initIsVista(void)
 {
+#ifdef _MSC_VER
+# pragma warning(push)
+# pragma warning(disable: 4996)
+#endif /* _MSC_VER */
 	// TODO: Use versionhelpers.h.
 	OSVERSIONINFO osvi;
 	osvi.dwOSVersionInfoSize = sizeof(osvi);
 	isVista = (GetVersionEx(&osvi) && osvi.dwMajorVersion >= 6);
+#ifdef _MSC_VER
+# pragma warning(pop)
+#endif /* _MSC_VER */
 }
 
 /**
@@ -153,6 +160,10 @@ IntegrityLevel GetIntegrityLevel(void)
 	PDWORD pdwIntegrityLevel;
 	DWORD dwLengthNeeded;
 
+#ifdef _MSC_VER
+# pragma warning(push)
+# pragma warning(disable: 4996)
+#endif /* _MSC_VER */
 	// Process integrity levels are supported starting with Windows Vista.
 	// TODO: Use versionhelpers.h.
 	OSVERSIONINFO osvi;
@@ -163,6 +174,9 @@ IntegrityLevel GetIntegrityLevel(void)
 		// Assuming integrity levels are not supported.
 		return ret;
 	}
+#ifdef _MSC_VER
+# pragma warning(pop)
+#endif /* _MSC_VER */
 
 	if (!OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY | TOKEN_QUERY_SOURCE, &hToken)) {
 		// Failed to open the process token.
