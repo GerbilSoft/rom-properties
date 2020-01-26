@@ -138,9 +138,23 @@ struct _RomDataViewClass {
 	superclass __parent__;
 };
 
-// RFT_STRING_MULTI widget and RomField.
-typedef std::pair<GtkWidget*, const RomFields::Field*> Data_StringMulti_t;
+// Multi-language stuff.
 typedef enum _StringMultiColumns { SM_COL_ICON, SM_COL_TEXT, SM_COL_LC } StringMultiColumns;
+typedef std::pair<GtkWidget*, const RomFields::Field*> Data_StringMulti_t;
+
+struct Data_ListDataMulti_t {
+	GtkListStore *listStore;
+	GtkTreeView *treeView;
+	const RomFields::Field *field;
+
+	Data_ListDataMulti_t(
+		GtkListStore *listStore,
+		GtkTreeView *treeView,
+		const RomFields::Field *field)
+		: listStore(listStore)
+		, treeView(treeView)
+		, field(field) { }
+};
 
 // GTK+ property page.
 struct _RomDataView {
@@ -184,12 +198,17 @@ struct _RomDataView {
 	RpDescFormatType	desc_format_type;
 	vector<GtkWidget*>	*vecDescLabels;
 
-	// RFT_STRING_MULTI value labels.
-	vector<Data_StringMulti_t> *vecStringMulti;
-	set<uint32_t>	*set_lc;	// Set of language codes from vecStringMulti.
-	uint32_t	def_lc;		// Default language code from RomFields.
+	// Multi-language functionality.
+	uint32_t	def_lc;
+	set<uint32_t>	*set_lc;	// Set of language codes.
 	GtkWidget	*cboLanguage;
 	GtkListStore	*lstoreLanguage;
+
+	// RFT_STRING_MULTI value labels.
+	vector<Data_StringMulti_t> *vecStringMulti;
+
+	// RFT_LISTDATA_MULTI value GtkListStore.
+	vector<Data_ListDataMulti_t> *vecListDataMulti;
 };
 
 // NOTE: G_DEFINE_TYPE() doesn't work in C++ mode with gcc-6.2
@@ -321,12 +340,14 @@ rom_data_view_init(RomDataView *page)
 	page->tabs = new vector<RomDataView::tab>();
 
 	page->desc_format_type = RP_DFT_XFCE;
-	page->vecDescLabels = new vector<GtkWidget*>();
-	page->vecStringMulti = new vector<Data_StringMulti_t>();
-	page->set_lc = new set<uint32_t>();
+
 	page->def_lc = 0;
+	page->set_lc = new set<uint32_t>();
 	page->cboLanguage = nullptr;
 	page->lstoreLanguage = nullptr;
+	page->vecDescLabels = new vector<GtkWidget*>();
+	page->vecStringMulti = new vector<Data_StringMulti_t>();
+	page->vecListDataMulti = new vector<Data_ListDataMulti_t>();
 
 	// Animation timer.
 	page->tmrIconAnim = 0;
@@ -439,8 +460,10 @@ rom_data_view_finalize(GObject *object)
 	delete page->iconAnimHelper;
 	delete page->tabs;
 	delete page->vecDescLabels;
-	delete page->vecStringMulti;
+
 	delete page->set_lc;
+	delete page->vecStringMulti;
+	delete page->vecListDataMulti;
 
 	// Unreference romData.
 	if (page->romData) {
@@ -907,13 +930,32 @@ rom_data_view_init_listdata(G_GNUC_UNUSED RomDataView *page, const RomFields::Fi
 	// NOTE: listDataDesc.names can be nullptr,
 	// which means we don't have any column headers.
 
-	// TODO: Support for RFT_LISTDATA_MULTI.
-	assert(!(listDataDesc.flags & RomFields::RFT_LISTDATA_MULTI));
-	if (listDataDesc.flags & RomFields::RFT_LISTDATA_MULTI)
-		return nullptr;
+	// Single language ListData_t.
+	// For RFT_LISTDATA_MULTI, this is only used for row and column count.
+	const RomFields::ListData_t *list_data;
+	const bool isMulti = !!(listDataDesc.flags & RomFields::RFT_LISTDATA_MULTI);
+	if (isMulti) {
+		// Multiple languages.
+		const auto *const multi = field->data.list_data.data.multi;
+		assert(multi != nullptr);
+		assert(!multi->empty());
+		if (!multi || multi->empty()) {
+			// No data...
+			return nullptr;
+		}
 
-	const auto *const list_data = field->data.list_data.data.single;
+		list_data = &multi->cbegin()->second;
+	} else {
+		// Single language.
+		list_data = field->data.list_data.data.single;
+	}
+
 	assert(list_data != nullptr);
+	assert(!list_data->empty());
+	if (!list_data || list_data->empty()) {
+		// No data...
+		return nullptr;
+	}
 
 	// Validate flags.
 	// Cannot have both checkboxes and icons.
@@ -994,7 +1036,7 @@ rom_data_view_init_listdata(G_GNUC_UNUSED RomDataView *page, const RomFields::Fi
 			}
 
 			GtkTreeIter treeIter;
-			gtk_list_store_insert_before(listStore, &treeIter, nullptr);
+			gtk_list_store_append(listStore, &treeIter);
 			if (hasCheckboxes) {
 				// Checkbox column.
 				gtk_list_store_set(listStore, &treeIter,
@@ -1029,14 +1071,12 @@ rom_data_view_init_listdata(G_GNUC_UNUSED RomDataView *page, const RomFields::Fi
 				}
 			}
 
-			int col = col_start;
-			std::for_each(data_row.cbegin(), data_row.cend(),
-				[listStore, &treeIter, &col](const string &str) {
-					gtk_list_store_set(listStore, &treeIter,
-						col, str.c_str(), -1);
-					col++;
+			if (!isMulti) {
+				int col = col_start;
+				for (auto iter = data_row.cbegin(); iter != data_row.cend(); ++iter, col++) {
+					gtk_list_store_set(listStore, &treeIter, col, iter->c_str(), -1);
 				}
-			);
+			}
 		}
 	}
 
@@ -1124,8 +1164,10 @@ rom_data_view_init_listdata(G_GNUC_UNUSED RomDataView *page, const RomFields::Fi
 	// TODO: Force maximum horizontal width somehow?
 	gtk_widget_set_size_request(widget, -1, 128);
 
-	// Resize the columns to fit the contents.
-	gtk_tree_view_columns_autosize(GTK_TREE_VIEW(treeView));
+	if (isMulti) {
+		// Resize the columns to fit the contents.
+		gtk_tree_view_columns_autosize(GTK_TREE_VIEW(treeView));
+	}
 
 	// Row height is recalculated when the window is first visible
 	// and/or the system theme is changed.
@@ -1136,6 +1178,11 @@ rom_data_view_init_listdata(G_GNUC_UNUSED RomDataView *page, const RomFields::Fi
 	if (listDataDesc.rows_visible > 0) {
 		g_signal_connect(treeView, "realize",
 			reinterpret_cast<GCallback>(tree_view_realize_signal_handler), page);
+	}
+
+	if (isMulti) {
+		page->vecListDataMulti->emplace_back(
+			Data_ListDataMulti_t(listStore, GTK_TREE_VIEW(treeView), field));
 	}
 
 	return widget;
@@ -1301,22 +1348,22 @@ rom_data_view_update_cboLanguage_images(RomDataView *page)
 		return;
 	}
 
-	GtkTreeIter gtiter;
-	gboolean ok = gtk_tree_model_get_iter_first(GTK_TREE_MODEL(page->lstoreLanguage), &gtiter);
+	GtkTreeIter treeIter;
+	gboolean ok = gtk_tree_model_get_iter_first(GTK_TREE_MODEL(page->lstoreLanguage), &treeIter);
 	while (ok) {
 		uint32_t lc = 0;
 		int col, row;
 
-		gtk_tree_model_get(GTK_TREE_MODEL(page->lstoreLanguage), &gtiter, SM_COL_LC, &lc, -1);
+		gtk_tree_model_get(GTK_TREE_MODEL(page->lstoreLanguage), &treeIter, SM_COL_LC, &lc, -1);
 		if (!SystemRegion::getFlagPosition(lc, &col, &row)) {
 			// Found a matching icon.
 			PIMGTYPE icon = PIMGTYPE_get_subsurface(flags_spriteSheet,
 				col*iconSize, row*iconSize, iconSize, iconSize);
-			gtk_list_store_set(page->lstoreLanguage, &gtiter, SM_COL_ICON, icon, -1);
+			gtk_list_store_set(page->lstoreLanguage, &treeIter, SM_COL_ICON, icon, -1);
 			PIMGTYPE_destroy(icon);
 		}
 
-		ok = gtk_tree_model_iter_next(GTK_TREE_MODEL(page->lstoreLanguage), &gtiter);
+		ok = gtk_tree_model_iter_next(GTK_TREE_MODEL(page->lstoreLanguage), &treeIter);
 	};
 
 	// We're done using the flags sprite sheets,
@@ -1325,13 +1372,14 @@ rom_data_view_update_cboLanguage_images(RomDataView *page)
 }
 
 /**
- * Update all multi-language string fields.
+ * Update all multi-language fields.
  * @param page		[in] RomDataView object.
  * @param user_lc	[in] User-specified language code.
  */
 static void
-rom_data_view_update_string_multi(RomDataView *page, uint32_t user_lc)
+rom_data_view_update_multi(RomDataView *page, uint32_t user_lc)
 {
+	// RFT_STRING_MULTI
 	for (auto iter = page->vecStringMulti->cbegin();
 	     iter != page->vecStringMulti->cend(); ++iter)
 	{
@@ -1376,6 +1424,85 @@ rom_data_view_update_string_multi(RomDataView *page, uint32_t user_lc)
 		gtk_label_set_text(GTK_LABEL(lblString), iter_sm->second.c_str());
 	}
 
+	// RFT_LISTDATA_MULTI
+	for (auto iter = page->vecListDataMulti->cbegin();
+	     iter != page->vecListDataMulti->cend(); ++iter)
+	{
+		GtkListStore *const listStore = iter->listStore;
+		const RomFields::Field *const field = iter->field;
+		const auto *const pListData_multi = field->data.list_data.data.multi;
+		assert(pListData_multi != nullptr);
+		assert(!pListData_multi->empty());
+		if (!pListData_multi || pListData_multi->empty()) {
+			// Invalid RFT_LISTDATA_MULTI...
+			continue;
+		}
+
+		if (!page->cboLanguage) {
+			// Need to add all supported languages.
+			// TODO: Do we need to do this for all of them, or just one?
+			for (auto iter_sm = pListData_multi->cbegin();
+			     iter_sm != pListData_multi->cend(); ++iter_sm)
+			{
+				page->set_lc->insert(iter_sm->first);
+			}
+		}
+
+		// Try the user-specified language code first.
+		// TODO: Consolidate ->end() calls?
+		auto iter_ldm = pListData_multi->end();
+		if (user_lc != 0) {
+			iter_ldm = pListData_multi->find(user_lc);
+		}
+		if (iter_ldm == pListData_multi->end()) {
+			// Not found. Try the ROM-default language code.
+			if (page->def_lc != user_lc) {
+				iter_ldm = pListData_multi->find(page->def_lc);
+				if (iter_ldm == pListData_multi->end()) {
+					// Still not found. Use the first string.
+					iter_ldm = pListData_multi->begin();
+				}
+			}
+		}
+
+		const auto &listDataDesc = field->desc.list_data;
+		const RomFields::ListData_t *const list_data = &(iter_ldm->second);
+
+		// If we have checkboxes or icons, start at column 1.
+		// Otherwise, start at column 0.
+		int col_start;
+		if (listDataDesc.flags & (RomFields::RFT_LISTDATA_CHECKBOXES | RomFields::RFT_LISTDATA_ICONS)) {
+			// Checkboxes and/or icons are present.
+			col_start = 1;
+		} else {
+			col_start = 0;
+		}
+
+		// Update the list.
+		GtkTreeIter treeIter;
+		gboolean ok = gtk_tree_model_get_iter_first(GTK_TREE_MODEL(listStore), &treeIter);
+		auto iter_listData = list_data->cbegin();
+		while (ok && iter_listData != list_data->cend()) {
+			// TODO: Verify GtkListStore column count?
+			int col = col_start;
+			for (auto iter_row = iter_listData->cbegin();
+			     iter_row != iter_listData->cend(); ++iter_row, col++)
+			{
+				gtk_list_store_set(listStore, &treeIter, col, iter_row->c_str(), -1);
+			}
+
+			// Next row.
+			++iter_listData;
+			ok = gtk_tree_model_iter_next(GTK_TREE_MODEL(listStore), &treeIter);
+		}
+
+		// Resize the columns to fit the contents.
+		// NOTE: Only done on first load.
+		if (!page->cboLanguage) {
+			gtk_tree_view_columns_autosize(GTK_TREE_VIEW(iter->treeView));
+		}
+	}
+
 	if (!page->cboLanguage && page->set_lc->size() > 1) {
 		// Create the language combobox.
 		// TODO: G_TYPE_PIXBUF
@@ -1390,11 +1517,11 @@ rom_data_view_update_string_multi(RomDataView *page, uint32_t user_lc)
 			const uint32_t lc = *iter;
 			const char *const name = SystemRegion::getLocalizedLanguageName(lc);
 
-			GtkTreeIter gtiter;
-			gtk_list_store_append(page->lstoreLanguage, &gtiter);
-			gtk_list_store_set(page->lstoreLanguage, &gtiter, SM_COL_ICON, nullptr, SM_COL_LC, lc, -1);
+			GtkTreeIter treeIter;
+			gtk_list_store_append(page->lstoreLanguage, &treeIter);
+			gtk_list_store_set(page->lstoreLanguage, &treeIter, SM_COL_ICON, nullptr, SM_COL_LC, lc, -1);
 			if (name) {
-				gtk_list_store_set(page->lstoreLanguage, &gtiter, SM_COL_TEXT, name, -1);
+				gtk_list_store_set(page->lstoreLanguage, &treeIter, SM_COL_TEXT, name, -1);
 			} else {
 				string s_lc;
 				s_lc.reserve(4);
@@ -1404,7 +1531,7 @@ rom_data_view_update_string_multi(RomDataView *page, uint32_t user_lc)
 						s_lc += chr;
 					}
 				}
-				gtk_list_store_set(page->lstoreLanguage, &gtiter, SM_COL_TEXT, s_lc.c_str(), -1);
+				gtk_list_store_set(page->lstoreLanguage, &treeIter, SM_COL_TEXT, s_lc.c_str(), -1);
 			}
 			int cur_idx = gtk_tree_model_iter_n_children(GTK_TREE_MODEL(page->lstoreLanguage), nullptr)-1;
 
@@ -1760,10 +1887,10 @@ rom_data_view_update_display(RomDataView *page)
 		}
 	}
 
-	// Initial update of RFT_MULTI_STRING fields.
-	if (!page->vecStringMulti->empty()) {
+	// Initial update of RFT_STRING_MULTI and RFT_LISTDATA_MULTI fields.
+	if (!page->vecStringMulti->empty() || !page->vecListDataMulti->empty()) {
 		page->def_lc = fields->defaultLanguageCode();
-		rom_data_view_update_string_multi(page, 0);
+		rom_data_view_update_multi(page, 0);
 	}
 }
 
@@ -1828,6 +1955,7 @@ rom_data_view_delete_tabs(RomDataView *page)
 	assert(page->tabs != nullptr);
 	assert(page->vecDescLabels != nullptr);
 	assert(page->vecStringMulti != nullptr);
+	assert(page->vecListDataMulti != nullptr);
 
 	// Delete the tab contents.
 	std::for_each(page->tabs->begin(), page->tabs->end(),
@@ -1853,8 +1981,9 @@ rom_data_view_delete_tabs(RomDataView *page)
 
 	// Clear the various widget references.
 	page->vecDescLabels->clear();
-	page->vecStringMulti->clear();
 	page->set_lc->clear();
+	page->vecStringMulti->clear();
+	page->vecListDataMulti->clear();
 
 	// Delete the icon frames.
 	for (int i = page->iconFrames.size()-1; i >= 0; i--) {
@@ -2024,7 +2153,7 @@ cboLanguage_changed_signal_handler(GtkComboBox	*widget,
 
 	uint32_t lc = 0;
 	gtk_tree_model_get(GTK_TREE_MODEL(page->lstoreLanguage), &iter, SM_COL_LC, &lc, -1);
-	rom_data_view_update_string_multi(page, lc);
+	rom_data_view_update_multi(page, lc);
 }
 
 /** Icon animation timer. **/
