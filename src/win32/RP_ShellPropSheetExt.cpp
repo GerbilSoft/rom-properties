@@ -237,6 +237,16 @@ class RP_ShellPropSheetExt_Private
 			const RomFields::Field *field);
 
 		/**
+		 * Measure the width of a ListData string.
+		 * This function handles newlines.
+		 * @param hDC           [in] HDC for text measurement.
+		 * @param tstr          [in] String to measure.
+		 * @param pNlCount      [out,opt] Newline count.
+		 * @return Width.
+		 */
+		static int measureListDataString(HDC hDC, const tstring &tstr, int *pNlCount);
+
+		/**
 		 * Initialize a ListData field.
 		 * @param hDlg		[in] Parent dialog window. (for dialog unit mapping)
 		 * @param hWndTab	[in] Tab window. (for the actual control)
@@ -1048,6 +1058,60 @@ int RP_ShellPropSheetExt_Private::initBitfield(HWND hDlg, HWND hWndTab,
 }
 
 /**
+ * Measure the width of a ListData string.
+ * This function handles newlines.
+ * @param hDC          [in] HDC for text measurement.
+ * @param tstr         [in] String to measure.
+ * @param pNlCount     [out,opt] Newline count.
+ * @return Width.
+ */
+int RP_ShellPropSheetExt_Private::measureListDataString(HDC hDC, const tstring &tstr, int *pNlCount)
+{
+	// TODO: Actual padding value?
+	static const int COL_WIDTH_PADDING = 8*2;
+
+	// Measured width.
+	int width = 0;
+
+	// Count newlines.
+	size_t prev_nl_pos = 0;
+	size_t cur_nl_pos;
+	int nl = 0;
+	while ((cur_nl_pos = tstr.find(_T('\n'), prev_nl_pos)) != tstring::npos) {
+		// Measure the width, plus padding on both sides.
+		//
+		// LVSCW_AUTOSIZE_USEHEADER doesn't work for entries with newlines.
+		// This allows us to set a good initial size, but it won't help if
+		// someone double-clicks the column splitter, triggering an automatic
+		// resize.
+		//
+		// TODO: Use ownerdraw instead? (WM_MEASUREITEM / WM_DRAWITEM)
+		// NOTE: Not using LibWin32Common::measureTextSize()
+		// because that does its own newline checks.
+		// TODO: Verify the values here.
+		SIZE textSize;
+		GetTextExtentPoint32(hDC, &tstr[prev_nl_pos], (int)(cur_nl_pos - prev_nl_pos), &textSize);
+		width = std::max<int>(width, textSize.cx + COL_WIDTH_PADDING);
+
+		nl++;
+		prev_nl_pos = cur_nl_pos + 1;
+	}
+
+	if (nl > 0) {
+		// Measure the last line.
+		// TODO: Verify the values here.
+		SIZE textSize;
+		GetTextExtentPoint32(hDC, &tstr[prev_nl_pos], (int)(tstr.size() - prev_nl_pos), &textSize);
+		width = std::max<int>(width, textSize.cx + COL_WIDTH_PADDING);
+	}
+
+	if (pNlCount) {
+		*pNlCount = nl;
+	}
+	return (nl > 0 ? width : LVSCW_AUTOSIZE_USEHEADER);
+}
+
+/**
  * Initialize a ListData field.
  * @param hDlg		[in] Parent dialog window. (for dialog unit mapping)
  * @param hWndTab	[in] Tab window. (for the actual control)
@@ -1136,21 +1200,21 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 	ListView_SetExtendedListViewStyle(hDlgItem, lvsExStyle);
 
 	// Insert columns.
-	int col_count = 1;
+	int colCount = 1;
 	if (listDataDesc.names) {
-		col_count = (int)listDataDesc.names->size();
+		colCount = (int)listDataDesc.names->size();
 	} else {
 		// No column headers.
 		// Use the first row.
 		if (list_data && !list_data->empty()) {
-			col_count = (int)list_data->at(0).size();
+			colCount = (int)list_data->at(0).size();
 		}
 	}
 
 	// Column widths.
 	// LVSCW_AUTOSIZE_USEHEADER doesn't work for entries with newlines.
 	// TODO: Use ownerdraw instead? (WM_MEASUREITEM / WM_DRAWITEM)
-	unique_ptr<int[]> col_width(new int[col_count]);
+	unique_ptr<int[]> col_width(new int[colCount]);
 
 	LVCOLUMN lvColumn;
 	if (listDataDesc.names) {
@@ -1165,7 +1229,7 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 		// We'll prefer the data alignment value.
 		uint32_t align = listDataDesc.alignment.data;
 		auto iter = listDataDesc.names->cbegin();
-		for (int i = 0; i < col_count; ++iter, i++, align >>= 2) {
+		for (int i = 0; i < colCount; ++iter, i++, align >>= 2) {
 			lvColumn.mask = LVCF_TEXT | LVCF_FMT;
 			lvColumn.fmt = align_tbl[align & 3];
 
@@ -1188,7 +1252,7 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 	} else {
 		lvColumn.mask = LVCF_FMT;
 		lvColumn.fmt = LVCFMT_LEFT;
-		for (int i = 0; i < col_count; i++) {
+		for (int i = 0; i < colCount; i++) {
 			ListView_InsertColumn(hDlgItem, i, &lvColumn);
 			col_width[i] = LVSCW_AUTOSIZE_USEHEADER;
 		}
@@ -1244,41 +1308,12 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 		for (auto iter = data_row.cbegin(); iter != data_row.cend(); ++iter, col++) {
 			tstring tstr = U82T_s(*iter);
 
-			// Count newlines.
-			size_t prev_nl_pos = 0;
-			size_t cur_nl_pos;
-			int nl = 0;
-			// TODO: Actual padding value?
-			static const int COL_WIDTH_PADDING = 8*2;
-			while ((cur_nl_pos = tstr.find(_T('\n'), prev_nl_pos)) != tstring::npos) {
-				// Measure the width, plus padding on both sides.
-				//
-				// LVSCW_AUTOSIZE_USEHEADER doesn't work for entries with newlines.
-				// This allows us to set a good initial size, but it won't help if
-				// someone double-clicks the column splitter, triggering an automatic
-				// resize.
-				//
-				// TODO: Use ownerdraw instead? (WM_MEASUREITEM / WM_DRAWITEM)
-				// NOTE: Not using LibWin32Common::measureTextSize()
-				// because that does its own newline checks.
-				// TODO: Verify the values here.
-				if (col < col_count) {
-					SIZE textSize;
-					GetTextExtentPoint32(hDC, &tstr[prev_nl_pos], (int)(cur_nl_pos - prev_nl_pos), &textSize);
-					col_width[col] = std::max<int>(col_width[col], textSize.cx + COL_WIDTH_PADDING);
-				}
-
-				nl++;
-				prev_nl_pos = cur_nl_pos + 1;
+			int nl_count;
+			int width = measureListDataString(hDC, tstr, &nl_count);
+			if (col < colCount) {
+				col_width[col] = std::max(col_width[col], width);
 			}
-			if (nl > 0 && col < col_count) {
-				// Measure the last line.
-				// TODO: Verify the values here.
-				SIZE textSize;
-				GetTextExtentPoint32(hDC, &tstr[prev_nl_pos], (int)(tstr.size() - prev_nl_pos), &textSize);
-				col_width[col] = std::max<int>(col_width[col], textSize.cx + COL_WIDTH_PADDING);
-			}
-			nl_max = std::max(nl_max, nl);
+			nl_max = std::max(nl_max, nl_count);
 
 			// TODO: Store the icon index if necessary.
 			lv_row_data.push_back(std::move(tstr));
@@ -1414,7 +1449,7 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 	// TODO: Do this on system theme change?
 	// TODO: Add a flag for 'main data column' and adjust it to
 	// not exceed the viewport.
-	for (int i = 0; i < col_count; i++) {
+	for (int i = 0; i < colCount; i++) {
 		ListView_SetColumnWidth(hDlgItem, i, col_width[i]);
 	}
 
