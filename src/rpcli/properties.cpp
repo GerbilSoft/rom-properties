@@ -3,7 +3,7 @@
  * properties.cpp: Properties output.                                      *
  *                                                                         *
  * Copyright (c) 2016-2018 by Egor.                                        *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -222,8 +222,11 @@ public:
 class ListDataField {
 	size_t width;
 	const RomFields::Field *romField;
+	uint32_t def_lc;	// ROM-default language code.
+	uint32_t user_lc;	// User-specified language code.
 public:
-	ListDataField(size_t width, const RomFields::Field *romField) :width(width), romField(romField) {}
+	ListDataField(size_t width, const RomFields::Field *romField, uint32_t def_lc, uint32_t user_lc)
+		:width(width), romField(romField), def_lc(def_lc), user_lc(user_lc) { }
 	friend ostream& operator<<(ostream& os, const ListDataField& field) {
 		auto romField = field.romField;
 
@@ -231,12 +234,40 @@ public:
 		// NOTE: listDataDesc.names can be nullptr,
 		// which means we don't have any column headers.
 
-		// TODO: Support for RFT_LISTDATA_MULTI.
-		assert(!(listDataDesc.flags & RomFields::RFT_LISTDATA_MULTI));
-		if (listDataDesc.flags & RomFields::RFT_LISTDATA_MULTI)
-			return os << "[ERROR: RFT_LISTDATA_MULTI is not supported yet.]";
+		// Get the ListData_t container.
+		const RomFields::ListData_t *list_data = nullptr;
+		if (listDataDesc.flags & RomFields::RFT_LISTDATA_MULTI) {
+			// ROM must have set a default language code.
+			assert(field.def_lc != 0);
 
-		const auto list_data = romField->data.list_data.data.single;
+			// Determine the language to use.
+			const auto *const pListDataMulti = romField->data.list_data.data.multi;
+			assert(pListDataMulti != nullptr);
+			assert(!pListDataMulti->empty());
+			if (pListDataMulti && !pListDataMulti->empty()) {
+				// Try the user-specified language code first.
+				// TODO: Consolidate ->end() calls?
+				auto iter = pListDataMulti->end();
+				if (field.user_lc != 0) {
+					iter = pListDataMulti->find(field.user_lc);
+				}
+				if (iter == pListDataMulti->end()) {
+					// Not found. Try the ROM-default language code.
+					if (field.def_lc != field.user_lc) {
+						iter = pListDataMulti->find(field.def_lc);
+						if (iter == pListDataMulti->end()) {
+							// Still not found. Use the first string.
+							iter = pListDataMulti->begin();
+						}
+					}
+				}
+				list_data = &iter->second;
+			}
+		} else {
+			// Single language.
+			list_data = romField->data.list_data.data.single;
+		}
+
 		assert(list_data != nullptr);
 		if (!list_data) {
 			return os << "[ERROR: No list data.]";
@@ -678,7 +709,7 @@ public:
 				break;
 			}
 			case RomFields::RFT_LISTDATA: {
-				os << ListDataField(maxWidth, romField);
+				os << ListDataField(maxWidth, romField, def_lc, user_lc);
 				break;
 			}
 			case RomFields::RFT_DATETIME: {

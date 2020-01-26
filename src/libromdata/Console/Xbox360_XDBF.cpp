@@ -909,6 +909,7 @@ int Xbox360_XDBF_Private::addFields_achievements(void)
 				      RomFields::RFT_LISTDATA_MULTI, 0);
 	params.headers = v_xach_col_names;
 	params.data.multi = mvv_xach;
+	params.def_lc = getDefaultLC();
 	// TODO: Header alignment?
 	params.alignment.headers = 0;
 	params.alignment.data = AFLD_ALIGN3(TXA_L, TXA_L, TXA_C);

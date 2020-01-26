@@ -388,7 +388,7 @@ class RomFields
 		const char *tabName(int tabIdx) const;
 
 		/**
-		 * Get the default language code for RFT_STRING_MULTI.
+		 * Get the default language code for RFT_STRING_MULTI and RFT_LISTDATA_MULTI.
 		 * @return Default language code, or 0 if not set.
 		 */
 		uint32_t defaultLanguageCode(void) const;
@@ -535,7 +535,7 @@ class RomFields
 		struct AFLD_PARAMS {
 			AFLD_PARAMS()
 				: flags(0), rows_visible(0)
-				, headers(nullptr)
+				, def_lc(0), headers(nullptr)
 			{
 				alignment.headers = 0;
 				alignment.data = 0;
@@ -544,7 +544,7 @@ class RomFields
 			}
 			AFLD_PARAMS(unsigned int flags, int rows_visible)
 				: flags(flags), rows_visible(rows_visible)
-				, headers(nullptr)
+				, def_lc(0), headers(nullptr)
 			{
 				alignment.headers = 0;
 				alignment.data = 0;
@@ -566,6 +566,9 @@ class RomFields
 				uint32_t headers;	// Header alignment
 				uint32_t data;		// Data alignment
 			} alignment;
+
+			// Default language code. (RFT_LISTDATA_MULTI)
+			uint32_t def_lc;
 
 			// Data
 			const std::vector<std::string> *headers;
@@ -632,12 +635,12 @@ class RomFields
 		 * NOTE: This object takes ownership of the map.
 		 * @param name Field name.
 		 * @param str_multi Map of strings with language codes.
-		 * @param defaultLanguageCode Default language code.
+		 * @param def_lc Default language code.
 		 * @param flags Formatting flags.
 		 * @return Field index, or -1 on error.
 		 */
 		int addField_string_multi(const char *name, const StringMultiMap_t *str_multi,
-			uint32_t defaultLanguageCode = 'en', unsigned int flags = 0);
+			uint32_t def_lc = 'en', unsigned int flags = 0);
 };
 
 }

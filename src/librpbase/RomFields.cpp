@@ -43,8 +43,9 @@ class RomFieldsPrivate
 		vector<string> tabNames;
 
 		// Default language code.
-		// Set by the first call to addField_string_multi().
-		uint32_t defaultLanguageCode;
+		// Set by the first call to addField_string_multi()
+		// and/or addField_listData with RFT_LISTDATA_MULTI.
+		uint32_t def_lc;
 
 		/**
 		 * Delete allocated objects in this->fields.
@@ -57,7 +58,7 @@ class RomFieldsPrivate
 
 RomFieldsPrivate::RomFieldsPrivate()
 	: tabIdx(0)
-	, defaultLanguageCode(0)
+	, def_lc(0)
 { }
 
 RomFieldsPrivate::~RomFieldsPrivate()
@@ -488,13 +489,13 @@ const char *RomFields::tabName(int tabIdx) const
 }
 
 /**
- * Get the default language code for RFT_STRING_MULTI.
+ * Get the default language code for RFT_STRING_MULTI and RFT_LISTDATA_MULTI.
  * @return Default language code, or 0 if not set.
  */
 uint32_t RomFields::defaultLanguageCode(void) const
 {
 	RP_D(const RomFields);
-	return d->defaultLanguageCode;
+	return d->def_lc;
 }
 
 /** Fields **/
@@ -619,8 +620,8 @@ int RomFields::addFields_romFields(const RomFields *other, int tabOffset)
 	}
 
 	// Copy the default language code if it hasn't been set yet.
-	if (d->defaultLanguageCode == 0) {
-		d->defaultLanguageCode = other->d_ptr->defaultLanguageCode;
+	if (d->def_lc == 0) {
+		d->def_lc = other->d_ptr->def_lc;
 	}
 
 	for (auto old_iter = other->d_ptr->fields.cbegin();
@@ -995,6 +996,10 @@ int RomFields::addField_listData(const char *name, const AFLD_PARAMS *params)
 
 	if (flags & RFT_LISTDATA_MULTI) {
 		field.data.list_data.data.multi = params->data.multi;
+		// Copy the default language code if it hasn't been set yet.
+		if (d->def_lc == 0) {
+			d->def_lc = params->def_lc;
+		}
 	} else {
 		field.data.list_data.data.single = params->data.single;
 	}
@@ -1105,11 +1110,11 @@ int RomFields::addField_dimensions(const char *name, int dimX, int dimY, int dim
  * NOTE: This object takes ownership of the map.
  * @param name Field name.
  * @param str_multi Map of strings with language codes.
- * @param defaultLanguageCode Default language code if no languages match.
+ * @param def_lc Default language code if no languages match.
  * @param flags Formatting flags.
  * @return Field index, or -1 on error.
  */
-int RomFields::addField_string_multi(const char *name, const StringMultiMap_t *str_multi, uint32_t defaultLanguageCode, unsigned int flags)
+int RomFields::addField_string_multi(const char *name, const StringMultiMap_t *str_multi, uint32_t def_lc, unsigned int flags)
 {
 	assert(name != nullptr);
 	if (!name)
@@ -1121,8 +1126,8 @@ int RomFields::addField_string_multi(const char *name, const StringMultiMap_t *s
 	d->fields.resize(idx+1);
 	Field &field = d->fields.at(idx);
 
-	if (d->defaultLanguageCode == 0) {
-		d->defaultLanguageCode = defaultLanguageCode;
+	if (d->def_lc == 0) {
+		d->def_lc = def_lc;
 	}
 
 	field.name = name;
