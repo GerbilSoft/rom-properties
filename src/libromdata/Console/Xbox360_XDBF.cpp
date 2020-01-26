@@ -122,7 +122,13 @@ class Xbox360_XDBF_Private : public RomDataPrivate
 		 * Get the language ID to use for the title fields.
 		 * @return XDBF language ID.
 		 */
-		XDBF_Language_e getLangID(void) const;
+		XDBF_Language_e getLanguageID(void) const;
+
+		/**
+		 * Get the default language code for the multi-string fields.
+		 * @return Language code, e.g. 'en' or 'es'.
+		 */
+		inline uint32_t getDefaultLC(void) const;
 
 		/**
 		 * Load an image resource.
@@ -407,7 +413,7 @@ string Xbox360_XDBF_Private::loadString(XDBF_Language_e language_id, uint16_t st
  * Get the language ID to use for the title fields.
  * @return XDBF language ID.
  */
-XDBF_Language_e Xbox360_XDBF_Private::getLangID(void) const
+XDBF_Language_e Xbox360_XDBF_Private::getLanguageID(void) const
 {
 	// TODO: Show the default language (XSTC) in a field?
 	// (for both Xbox360_XDBF and Xbox360_XEX)
@@ -491,6 +497,24 @@ XDBF_Language_e Xbox360_XDBF_Private::getLangID(void) const
 
 	// No languages are available...
 	return XDBF_LANGUAGE_UNKNOWN;
+}
+
+/**
+ * Get the default language code for the multi-string fields.
+ * @return Language code, e.g. 'en' or 'es'.
+ */
+inline uint32_t Xbox360_XDBF_Private::getDefaultLC(void) const
+{
+	// Get the system language.
+	// TODO: Verify against the game's region code?
+	XDBF_Language_e langID = getLanguageID();
+	uint32_t lc = XboxLanguage::getXbox360LanguageCode(langID);
+	if (lc == 0) {
+		// Invalid language code...
+		// Default to English.
+		lc = 'en';
+	}
+	return lc;
 }
 
 /**
@@ -638,13 +662,55 @@ const char *Xbox360_XDBF_Private::getTitleType(void) const
  */
 int Xbox360_XDBF_Private::addFields_strings(RomFields *fields) const
 {
-	// Language ID
-	const XDBF_Language_e langID = getLangID();
+	// Title: Check if English is valid.
+	// If it is, we'll de-duplicate the fields.
+	// NOTE: English is language 1, so we can start the loop at 2 (Japanese).
+	string title_en;
+	if (strTblIndexes[XDBF_LANGUAGE_ENGLISH] >= 0) {
+		title_en = const_cast<Xbox360_XDBF_Private*>(this)->loadString(
+			XDBF_LANGUAGE_ENGLISH, XDBF_ID_TITLE);
+	}
+	bool dedupe_titles = !title_en.empty();
 
-	// Game title
-	string title = const_cast<Xbox360_XDBF_Private*>(this)->loadString(langID, XDBF_ID_TITLE);
-	fields->addField_string(C_("RomData", "Title"),
-		!title.empty() ? title : C_("RomData", "Unknown"));
+	// Title fields.
+	RomFields::StringMultiMap_t *const pMap_title = new RomFields::StringMultiMap_t();
+	if (!title_en.empty()) {
+		pMap_title->insert(std::make_pair('en', title_en));
+	}
+	for (int langID = XDBF_LANGUAGE_JAPANESE; langID < XDBF_LANGUAGE_MAX; langID++) {
+		if (strTblIndexes[langID] < 0) {
+			// This language is not available.
+			continue;
+		}
+
+		string title_lang = const_cast<Xbox360_XDBF_Private*>(this)->loadString(
+			(XDBF_Language_e)langID, XDBF_ID_TITLE);
+		if (dedupe_titles) {
+			// Is the title the same as the English title?
+			// TODO: Avoid converting the string before this check?
+			if (title_lang == title_en) {
+				// Same title. Skip it.
+				continue;
+			}
+		}
+
+		const uint32_t lc = XboxLanguage::getXbox360LanguageCode(langID);
+		assert(lc != 0);
+		if (lc == 0)
+			continue;
+
+		pMap_title->insert(std::make_pair(lc, std::move(title_lang)));
+	}
+
+	const char *const title_title = C_("RomData", "Title");
+	if (!pMap_title->empty()) {
+		const uint32_t def_lc = getDefaultLC();
+		fields->addField_string_multi(title_title, pMap_title, def_lc);
+	} else {
+		// Title map is empty...
+		delete pMap_title;
+		fields->addField_string(title_title, C_("RomData", "Unknown"));
+	}
 
 	// Title type
 	const char *const title_type = getTitleType();
@@ -737,7 +803,7 @@ int Xbox360_XDBF_Private::addFields_achievements(void)
 	// a virtual column, much like checkboxes.
 
 	// Language ID
-	const XDBF_Language_e langID = getLangID();
+	const XDBF_Language_e langID = getLanguageID();
 
 	// Columns
 	static const char *const xach_col_names[] = {
@@ -902,7 +968,7 @@ int Xbox360_XDBF_Private::addFields_avatarAwards(void)
 	// a virtual column, much like checkboxes.
 
 	// Language ID
-	const XDBF_Language_e langID = getLangID();
+	const XDBF_Language_e langID = getLanguageID();
 
 	// Columns
 	static const char *const xgaa_col_names[] = {
@@ -1405,7 +1471,7 @@ string Xbox360_XDBF::getString(LibRpBase::Property::Property property) const
 
 	RP_D(const Xbox360_XDBF);
 	return const_cast<Xbox360_XDBF_Private*>(d)->loadString(
-		d->getLangID(), string_id);
+		d->getLanguageID(), string_id);
 }
 
 }
