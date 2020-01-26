@@ -730,7 +730,7 @@ public:
 					os << "\\\\";
 					break;
 				case '"':
-					os << "\\";
+					os << "\\\"";
 					break;
 				case '\b':
 					os << "\\b";

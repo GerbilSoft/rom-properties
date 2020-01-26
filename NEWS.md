@@ -97,7 +97,7 @@
     match the program ID. This seems to show up in Traditional Chinese
     releases that use a Japanese region code instead of Taiwan.
   * rpcli JSON output: Fixed RFT_LISTDATA commas, RFT_DIMENSIONS format,
-    and external image URLs format.
+    and external image URLs format. Also escaped double-quotes properly.
   * Linux: Added the "application/x-cso" MIME type for GameCube .ciso
     format on Linux. (Note that this technically refers to a different
     format, but GameCube .ciso is incorrectly identified as this.)
