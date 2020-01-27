@@ -130,6 +130,9 @@ static inline ULONG InterlockedDecrement(ULONG volatile *Addend)
 #ifndef _Outptr_result_nullonfailure_
 # define _Outptr_result_nullonfailure_
 #endif
+#ifndef _Outptr_opt_
+# define _Outptr_opt_
+#endif
 
 // FIXME: _Check_return_ on MSYS2/MinGW-w64 (gcc-9.2.0-2, MinGW-w64 7.0.0.5524.2346384e-1) fails:
 // "error: expected unqualified-id before string constant"
