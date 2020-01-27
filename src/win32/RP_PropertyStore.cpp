@@ -300,8 +300,8 @@ IFACEMETHODIMP RP_PropertyStore::Initialize(IStream *pstream, DWORD grfMode)
 					// Use the value as-is.
 					InitPropVariantFromUInt64(static_cast<uint64_t>(prop->data.uvalue), &prop_var);
 				}
-				d->prop_key.push_back(conv.pkey);
-				d->prop_val.push_back(prop_var);
+				d->prop_key.emplace_back(conv.pkey);
+				d->prop_val.emplace_back(prop_var);
 				break;
 			}
 			case VT_UI4:
@@ -310,8 +310,8 @@ IFACEMETHODIMP RP_PropertyStore::Initialize(IStream *pstream, DWORD grfMode)
 					continue;
 
 				InitPropVariantFromUInt32(static_cast<uint32_t>(prop->data.uvalue), &prop_var);
-				d->prop_key.push_back(conv.pkey);
-				d->prop_val.push_back(prop_var);
+				d->prop_key.emplace_back(conv.pkey);
+				d->prop_val.emplace_back(prop_var);
 
 				// Special handling for image dimensions.
 				switch (prop->name) {
@@ -333,8 +333,8 @@ IFACEMETHODIMP RP_PropertyStore::Initialize(IStream *pstream, DWORD grfMode)
 					continue;
 
 				InitPropVariantFromUInt16(static_cast<uint16_t>(prop->data.uvalue), &prop_var);
-				d->prop_key.push_back(conv.pkey);
-				d->prop_val.push_back(prop_var);
+				d->prop_key.emplace_back(conv.pkey);
+				d->prop_val.emplace_back(prop_var);
 				break;
 			case VT_UI1:
 				assert(prop->type == PropertyType::Integer || prop->type == PropertyType::UnsignedInteger);
@@ -342,8 +342,8 @@ IFACEMETHODIMP RP_PropertyStore::Initialize(IStream *pstream, DWORD grfMode)
 					continue;
 
 				InitPropVariantFromUInt8(static_cast<uint8_t>(prop->data.uvalue), &prop_var);
-				d->prop_key.push_back(conv.pkey);
-				d->prop_val.push_back(prop_var);
+				d->prop_key.emplace_back(conv.pkey);
+				d->prop_val.emplace_back(prop_var);
 				break;
 
 			case VT_I8: {
@@ -353,8 +353,8 @@ IFACEMETHODIMP RP_PropertyStore::Initialize(IStream *pstream, DWORD grfMode)
 					continue;
 
 				InitPropVariantFromInt64(static_cast<int64_t>(prop->data.ivalue), &prop_var);
-				d->prop_key.push_back(conv.pkey);
-				d->prop_val.push_back(prop_var);
+				d->prop_key.emplace_back(conv.pkey);
+				d->prop_val.emplace_back(prop_var);
 				break;
 			}
 			case VT_I4:
@@ -363,8 +363,8 @@ IFACEMETHODIMP RP_PropertyStore::Initialize(IStream *pstream, DWORD grfMode)
 					continue;
 
 				InitPropVariantFromInt32(static_cast<int32_t>(prop->data.ivalue), &prop_var);
-				d->prop_key.push_back(conv.pkey);
-				d->prop_val.push_back(prop_var);
+				d->prop_key.emplace_back(conv.pkey);
+				d->prop_val.emplace_back(prop_var);
 				break;
 			case VT_I2:
 				assert(prop->type == PropertyType::Integer || prop->type == PropertyType::UnsignedInteger);
@@ -372,8 +372,8 @@ IFACEMETHODIMP RP_PropertyStore::Initialize(IStream *pstream, DWORD grfMode)
 					continue;
 
 				InitPropVariantFromInt16(static_cast<int16_t>(prop->data.ivalue), &prop_var);
-				d->prop_key.push_back(conv.pkey);
-				d->prop_val.push_back(prop_var);
+				d->prop_key.emplace_back(conv.pkey);
+				d->prop_val.emplace_back(prop_var);
 				break;
 			case VT_I1:
 				assert(prop->type == PropertyType::Integer || prop->type == PropertyType::UnsignedInteger);
@@ -381,8 +381,8 @@ IFACEMETHODIMP RP_PropertyStore::Initialize(IStream *pstream, DWORD grfMode)
 					continue;
 
 				InitPropVariantFromInt8(static_cast<int8_t>(prop->data.ivalue), &prop_var);
-				d->prop_key.push_back(conv.pkey);
-				d->prop_val.push_back(prop_var);
+				d->prop_key.emplace_back(conv.pkey);
+				d->prop_val.emplace_back(prop_var);
 				break;
 
 			case VT_BSTR:
@@ -391,8 +391,8 @@ IFACEMETHODIMP RP_PropertyStore::Initialize(IStream *pstream, DWORD grfMode)
 					continue;
 				if (prop->data.str) {
 					InitPropVariantFromString(U82W_s(*prop->data.str), &prop_var);
-					d->prop_key.push_back(conv.pkey);
-					d->prop_val.push_back(prop_var);
+					d->prop_key.emplace_back(conv.pkey);
+					d->prop_val.emplace_back(prop_var);
 				}
 				break;
 
@@ -405,8 +405,8 @@ IFACEMETHODIMP RP_PropertyStore::Initialize(IStream *pstream, DWORD grfMode)
 				const wstring wstr = (prop->data.str ? U82W_s(*prop->data.str) : L"");
 				const wchar_t *vstr[] = {wstr.c_str()};
 				InitPropVariantFromStringVector(vstr, 1, &prop_var);
-				d->prop_key.push_back(conv.pkey);
-				d->prop_val.push_back(prop_var);
+				d->prop_key.emplace_back(conv.pkey);
+				d->prop_val.emplace_back(prop_var);
 				break;
 			}
 
@@ -421,8 +421,8 @@ IFACEMETHODIMP RP_PropertyStore::Initialize(IStream *pstream, DWORD grfMode)
 				FILETIME ft;
 				UnixTimeToFileTime(prop->data.timestamp, &ft);
 				InitPropVariantFromFileTime(&ft, &prop_var);
-				d->prop_key.push_back(conv.pkey);
-				d->prop_val.push_back(prop_var);
+				d->prop_key.emplace_back(conv.pkey);
+				d->prop_val.emplace_back(prop_var);
 				break;
 			}
 
@@ -441,8 +441,8 @@ IFACEMETHODIMP RP_PropertyStore::Initialize(IStream *pstream, DWORD grfMode)
 
 		PROPVARIANT prop_var;
 		InitPropVariantFromString(buf, &prop_var);
-		d->prop_key.push_back(&PKEY_Image_Dimensions);
-		d->prop_val.push_back(prop_var);
+		d->prop_key.emplace_back(&PKEY_Image_Dimensions);
+		d->prop_val.emplace_back(prop_var);
 	}
 
 	return S_OK;

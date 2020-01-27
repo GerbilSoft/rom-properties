@@ -153,7 +153,7 @@ vector<uint16_t> RpFile::getKreonFeatureList(void)
 		const uint16_t feature = (feature_buf[i] << 8) | feature_buf[i+1];
 		if (feature == 0)
 			break;
-		vec.push_back(feature);
+		vec.emplace_back(feature);
 	}
 
 	if (vec.size() < 2 || vec[0] != KREON_FEATURE_HEADER_0 ||

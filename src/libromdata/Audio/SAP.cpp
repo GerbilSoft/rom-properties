@@ -398,7 +398,7 @@ SAPPrivate::TagData SAPPrivate::parseTags(void)
 					bool loop_flag;
 					if (!durationToMsLoop(params, &duration, &loop_flag)) {
 						// Parsed successfully.
-						tags.durations.push_back(std::make_pair(duration, loop_flag));
+						tags.durations.emplace_back(duration, loop_flag);
 					}
 					break;
 				}
@@ -701,9 +701,9 @@ int SAP::loadFieldData(void)
 			const uint32_t min = (duration / 1000) / 60;
 			const uint32_t sec = (duration / 1000) % 60;
 			const uint32_t ms =  (duration % 1000);
-			data_row.push_back(rp_sprintf("%u", song_num));
-			data_row.push_back(rp_sprintf("%u:%02u.%03u", min, sec, ms));
-			data_row.push_back(src_iter->second
+			data_row.emplace_back(rp_sprintf("%u", song_num));
+			data_row.emplace_back(rp_sprintf("%u:%02u.%03u", min, sec, ms));
+			data_row.emplace_back(src_iter->second
 				? C_("SAP|SongList|Looping", "Yes")
 				: C_("SAP|SongList|Looping", "No"));
 		}

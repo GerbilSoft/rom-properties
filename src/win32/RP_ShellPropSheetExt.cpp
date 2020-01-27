@@ -878,7 +878,7 @@ int RP_ShellPropSheetExt_Private::initString(_In_ HWND hDlg, _In_ HWND hWndTab,
 		hwndWarningControls.insert(hDlgItem);
 	}
 	if (isMonospace) {
-		hwndMonoControls.push_back(hDlgItem);
+		hwndMonoControls.emplace_back(hDlgItem);
 	}
 
 	// Return the HWND if requested.
@@ -940,9 +940,9 @@ int RP_ShellPropSheetExt_Private::initBitfield(HWND hDlg, HWND hWndTab,
 		[&tnames](const string &name) {
 			if (name.empty()) {
 				// Skip U82T_s() for empty strings.
-				tnames.push_back(tstring());
+				tnames.emplace_back(tstring());
 			} else {
-				tnames.push_back(U82T_s(name));
+				tnames.emplace_back(U82T_s(name));
 			}
 		}
 	);
@@ -955,7 +955,7 @@ int RP_ShellPropSheetExt_Private::initBitfield(HWND hDlg, HWND hWndTab,
 	if (elemsPerRow == 1) {
 		// Optimization: Use the entire width of the dialog.
 		// TODO: Testing; right margin.
-		col_widths.push_back(max_width);
+		col_widths.emplace_back(max_width);
 	} else if (elemsPerRow > 1) {
 		// Determine the widest entry in each column.
 		// If the columns are wider than the available area,
@@ -1221,7 +1221,7 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 		hWndTab, (HMENU)(INT_PTR)(dlgID),
 		nullptr, nullptr);
 	SetWindowFont(hListView, hFontDlg, false);
-	hwndListViewControls.push_back(hListView);
+	hwndListViewControls.emplace_back(hListView);
 
 	// Set extended ListView styles.
 	DWORD lvsExStyle = LVS_EX_FULLROWSELECT;
@@ -1374,7 +1374,7 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 				nl_max = std::max(nl_max, nl_count);
 
 				// TODO: Store the icon index if necessary.
-				lv_row_data.push_back(std::move(tstr));
+				lv_row_data.emplace_back(std::move(tstr));
 			}
 		}
 
@@ -1428,7 +1428,7 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 				const rp_image *const icon = *iter;
 				if (!icon) {
 					// No icon for this row.
-					lvImageList.push_back(iImage);
+					lvImageList.emplace_back(iImage);
 					continue;
 				}
 
@@ -1483,7 +1483,7 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 				}
 
 				// Save the ImageList index for later.
-				lvImageList.push_back(iImage);
+				lvImageList.emplace_back(iImage);
 			}
 		}
 	}
@@ -1785,7 +1785,7 @@ int RP_ShellPropSheetExt_Private::initStringMulti(HWND hDlg, HWND hWndTab,
 	int field_cy = initString(hDlg, hWndTab, pt_start, idx, size, field,
 		_T(""), &lblStringMulti);
 	if (lblStringMulti) {
-		vecStringMulti.push_back(std::make_pair(lblStringMulti, field));
+		vecStringMulti.emplace_back(lblStringMulti, field);
 	}
 	return field_cy;
 }
@@ -2430,10 +2430,10 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 		const RomFields::Field *field = fields->field(i);
 		assert(field != nullptr);
 		if (!field || !field->isValid) {
-			t_desc_text.push_back(tstring());
+			t_desc_text.emplace_back(tstring());
 			continue;
 		} else if (field->name.empty()) {
-			t_desc_text.push_back(tstring());
+			t_desc_text.emplace_back(tstring());
 			continue;
 		}
 
@@ -2459,7 +2459,7 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 		}
 
 		// Save for later.
-		t_desc_text.push_back(std::move(desc_text));
+		t_desc_text.emplace_back(std::move(desc_text));
 	}
 
 	// Add additional spacing between the ':' and the field.

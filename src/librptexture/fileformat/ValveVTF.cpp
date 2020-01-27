@@ -952,8 +952,8 @@ int ValveVTF::getFields(LibRpBase::RomFields *fields) const
 			vv_flags->resize(j);
 			auto &data_row = vv_flags->at(j-1);
 			// TODO: Localization.
-			//data_row.push_back(dpgettext_expr(RP_I18N_DOMAIN, "ValveVTF|Flags", flags_names[i]));
-			data_row.push_back(flags_names[i]);
+			//data_row.emplace_back(dpgettext_expr(RP_I18N_DOMAIN, "ValveVTF|Flags", flags_names[i]));
+			data_row.emplace_back(flags_names[i]);
 		}
 	}
 

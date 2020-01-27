@@ -144,7 +144,7 @@ class SPCPrivate : public RomDataPrivate
 			{
 				val_t val((unsigned int)strs.size());
 				val.isStrIdx = true;
-				strs.push_back(str);
+				strs.emplace_back(str);
 				map.insert(std::make_pair(key, val));
 			}
 

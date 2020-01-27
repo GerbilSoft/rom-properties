@@ -206,7 +206,7 @@ vector<const char*> FileFormatFactory::supportedFileExtensions(void)
 			auto iter = set_exts.find(*sys_exts);
 			if (iter == set_exts.end()) {
 				set_exts.insert(*sys_exts);
-				vec_exts.push_back(*sys_exts);
+				vec_exts.emplace_back(*sys_exts);
 			}
 		}
 	}
@@ -248,7 +248,7 @@ vector<const char*> FileFormatFactory::supportedMimeTypes(void)
 			auto iter = set_mimeTypes.find(*sys_mimeTypes);
 			if (iter == set_mimeTypes.end()) {
 				set_mimeTypes.insert(*sys_mimeTypes);
-				vec_mimeTypes.push_back(*sys_mimeTypes);
+				vec_mimeTypes.emplace_back(*sys_mimeTypes);
 			}
 		}
 	}

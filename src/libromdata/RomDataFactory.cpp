@@ -796,7 +796,7 @@ void RomDataFactoryPrivate::init_supportedFileExtensions(void)
 				} else {
 					// First time encountering this extension.
 					map_exts[*sys_exts] = fns->attrs;
-					vec_exts.push_back(RomDataFactory::ExtInfo(
+					vec_exts.emplace_back(RomDataFactory::ExtInfo(
 						*sys_exts, fns->attrs));
 				}
 			}
@@ -816,7 +816,7 @@ void RomDataFactoryPrivate::init_supportedFileExtensions(void)
 			} else {
 				// First time encountering this extension.
 				map_exts[ext] = FFF_ATTRS;
-				vec_exts.push_back(RomDataFactory::ExtInfo(ext, FFF_ATTRS));
+				vec_exts.emplace_back(RomDataFactory::ExtInfo(ext, FFF_ATTRS));
 			}
 		}
 	);
@@ -881,7 +881,7 @@ void RomDataFactoryPrivate::init_supportedMimeTypes(void)
 				auto iter = set_mimeTypes.find(*sys_mimeTypes);
 				if (iter == set_mimeTypes.end()) {
 					set_mimeTypes.insert(*sys_mimeTypes);
-					vec_mimeTypes.push_back(*sys_mimeTypes);
+					vec_mimeTypes.emplace_back(*sys_mimeTypes);
 				}
 			}
 		}
@@ -894,7 +894,7 @@ void RomDataFactoryPrivate::init_supportedMimeTypes(void)
 			auto iter = set_mimeTypes.find(mimeType);
 			if (iter == set_mimeTypes.end()) {
 				set_mimeTypes.insert(mimeType);
-				vec_mimeTypes.push_back(mimeType);
+				vec_mimeTypes.emplace_back(mimeType);
 			}
 		}
 	);

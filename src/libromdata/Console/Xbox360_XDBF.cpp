@@ -1028,7 +1028,7 @@ int Xbox360_XDBF_Private::addFields_avatarAwards(void)
 		*icon_iter = loadImage(be32_to_cpu(p->image_id));
 
 		// Avatar award ID
-		data_row.push_back(rp_sprintf("%04X", be16_to_cpu(p->avatar_award_id)));
+		data_row.emplace_back(rp_sprintf("%04X", be16_to_cpu(p->avatar_award_id)));
 
 		// Title and locked description
 		// TODO: Unlocked description?
@@ -1054,11 +1054,11 @@ int Xbox360_XDBF_Private::addFields_avatarAwards(void)
 			}
 
 			// TODO: Formatting value indicating that the first line should be bold.
-			data_row.push_back(std::move(desc));
+			data_row.emplace_back(std::move(desc));
 		} else {
 			// Unknown language ID.
 			// Show the string table IDs instead.
-			data_row.push_back(rp_sprintf(
+			data_row.emplace_back(rp_sprintf(
 				C_("Xbox360_XDBF|AvatarAwards", "Name: 0x%04X | Locked: 0x%04X | Unlocked: 0x%04X"),
 					be16_to_cpu(p->name_id),
 					be16_to_cpu(p->locked_desc_id),

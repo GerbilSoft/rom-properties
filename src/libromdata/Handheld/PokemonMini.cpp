@@ -309,38 +309,38 @@ int PokemonMini::loadFieldData(void)
 		data_row.reserve(3);
 
 		// # (decimal)
-		data_row.push_back(rp_sprintf("%u", i));
+		data_row.emplace_back(rp_sprintf("%u", i));
 
 		// Vector name
-		data_row.push_back(vectors_names[i]);
+		data_row.emplace_back(vectors_names[i]);
 
 		// Address
-		string address;
+		string s_address;
 		if (!memcmp(&romHeader->irqs[i][0], vec_prefix, sizeof(vec_prefix))) {
 			// Standard vector jump opcode.
 			uint32_t offset = (romHeader->irqs[i][5] << 8) | romHeader->irqs[i][4];
 			offset += pc + 3 + 3 - 1;
-			address = rp_sprintf("0x%04X", offset);
+			s_address = rp_sprintf("0x%04X", offset);
 		} else if (romHeader->irqs[i][0] == 0xF3) {
 			// JMPW without MOV U.
 			// Seen in some homebrew.
 			uint32_t offset = (romHeader->irqs[i][2] << 8) | romHeader->irqs[i][1];
 			offset += pc + 3 - 1;
-			address = rp_sprintf("0x%04X", offset);
+			s_address = rp_sprintf("0x%04X", offset);
 		} else if (!memcmp(&romHeader->irqs[i][0], vec_empty_ff, sizeof(vec_empty_ff)) ||
 			   !memcmp(&romHeader->irqs[i][0], vec_empty_00, sizeof(vec_empty_00))) {
 			// Empty vector.
-			address = C_("PokemonMini|VectorTable", "None");
+			s_address = C_("PokemonMini|VectorTable", "None");
 		} else {
 			// Not a standard jump opcode.
 			// Show the hexdump.
 			// TODO: Use something other than rp_sprintf()?
-			address = rp_sprintf("%02X %02X %02X %02X %02X %02X",
+			s_address = rp_sprintf("%02X %02X %02X %02X %02X %02X",
 				romHeader->irqs[i][0], romHeader->irqs[i][1],
 				romHeader->irqs[i][2], romHeader->irqs[i][3],
 				romHeader->irqs[i][4], romHeader->irqs[i][5]);
 		}
-		data_row.push_back(address);
+		data_row.emplace_back(std::move(s_address));
 	}
 
 	static const char *const vectors_headers[] = {

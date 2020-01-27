@@ -565,10 +565,10 @@ vector<const char*> NintendoDSPrivate::ndsRegionToGameTDB(
 	int fallback_region = 0;
 	switch (dsiRegion) {
 		case DSi_REGION_JAPAN:
-			ret.push_back("JA");
+			ret.emplace_back("JA");
 			return ret;
 		case DSi_REGION_USA:
-			ret.push_back("US");
+			ret.emplace_back("US");
 			return ret;
 		case DSi_REGION_EUROPE:
 		case DSi_REGION_EUROPE | DSi_REGION_AUSTRALIA:
@@ -581,14 +581,14 @@ vector<const char*> NintendoDSPrivate::ndsRegionToGameTDB(
 			break;
 		case DSi_REGION_CHINA:
 			// NOTE: GameTDB only has "ZH" for boxart, not "ZHCN" or "ZHTW".
-			ret.push_back("ZH");
-			ret.push_back("JA");
-			ret.push_back("EN");
+			ret.emplace_back("ZH");
+			ret.emplace_back("JA");
+			ret.emplace_back("EN");
 			return ret;
 		case DSi_REGION_SKOREA:
-			ret.push_back("KO");
-			ret.push_back("JA");
-			ret.push_back("EN");
+			ret.emplace_back("KO");
+			ret.emplace_back("JA");
+			ret.emplace_back("EN");
 			return ret;
 		case 0:
 		default:
@@ -602,30 +602,30 @@ vector<const char*> NintendoDSPrivate::ndsRegionToGameTDB(
 	// Check for China/Korea.
 	if (ndsRegion & NDS_REGION_CHINA) {
 		// NOTE: GameTDB only has "ZH" for boxart, not "ZHCN" or "ZHTW".
-		ret.push_back("ZH");
-		ret.push_back("JA");
-		ret.push_back("EN");
+		ret.emplace_back("ZH");
+		ret.emplace_back("JA");
+		ret.emplace_back("EN");
 		return ret;
 	} else if (ndsRegion & NDS_REGION_SKOREA) {
-		ret.push_back("KO");
-		ret.push_back("JA");
-		ret.push_back("EN");
+		ret.emplace_back("KO");
+		ret.emplace_back("JA");
+		ret.emplace_back("EN");
 		return ret;
 	}
 
 	// Check for region-specific game IDs.
 	switch (idRegion) {
 		case 'E':	// USA
-			ret.push_back("US");
+			ret.emplace_back("US");
 			break;
 		case 'J':	// Japan
-			ret.push_back("JA");
+			ret.emplace_back("JA");
 			break;
 		case 'O':
 			// TODO: US/EU.
 			// Compare to host system region.
 			// For now, assuming US.
-			ret.push_back("US");
+			ret.emplace_back("US");
 			break;
 		case 'P':	// PAL
 		case 'X':	// Multi-language release
@@ -641,22 +641,22 @@ vector<const char*> NintendoDSPrivate::ndsRegionToGameTDB(
 
 		// European regions.
 		case 'D':	// Germany
-			ret.push_back("DE");
+			ret.emplace_back("DE");
 			break;
 		case 'F':	// France
-			ret.push_back("FR");
+			ret.emplace_back("FR");
 			break;
 		case 'H':	// Netherlands
-			ret.push_back("NL");
+			ret.emplace_back("NL");
 			break;
 		case 'I':	// Italy
-			ret.push_back("NL");
+			ret.emplace_back("NL");
 			break;
 		case 'R':	// Russia
-			ret.push_back("RU");
+			ret.emplace_back("RU");
 			break;
 		case 'S':	// Spain
-			ret.push_back("ES");
+			ret.emplace_back("ES");
 			break;
 		case 'U':	// Australia
 			if (fallback_region == 0) {
@@ -670,12 +670,12 @@ vector<const char*> NintendoDSPrivate::ndsRegionToGameTDB(
 	switch (fallback_region) {
 		case 1:
 			// Europe
-			ret.push_back("EN");
+			ret.emplace_back("EN");
 			break;
 		case 2:
 			// Australia
-			ret.push_back("AU");
-			ret.push_back("EN");
+			ret.emplace_back("AU");
+			ret.emplace_back("EN");
 			break;
 
 		case 0:	// None
@@ -711,7 +711,7 @@ RomFields::ListData_t *NintendoDSPrivate::getDSiFlagsStringVector(void)
 	auto vv_dsi_flags = new RomFields::ListData_t(ARRAY_SIZE(dsi_flags_bitfield_names));
 	for (int i = ARRAY_SIZE(dsi_flags_bitfield_names)-1; i >= 0; i--) {
 		auto &data_row = vv_dsi_flags->at(i);
-		data_row.push_back(
+		data_row.emplace_back(
 			dpgettext_expr(RP_I18N_DOMAIN, "NintendoDS|DSi_Flags",
 				dsi_flags_bitfield_names[i]));
 	}
@@ -1438,7 +1438,7 @@ int NintendoDS::loadFieldData(void)
 	auto vv_dsi_perm = new RomFields::ListData_t(ARRAY_SIZE(dsi_permissions_bitfield_names));
 	for (int i = ARRAY_SIZE(dsi_permissions_bitfield_names)-1; i >= 0; i--) {
 		auto &data_row = vv_dsi_perm->at(i);
-		data_row.push_back(
+		data_row.emplace_back(
 			dpgettext_expr(RP_I18N_DOMAIN, "NintendoDS|DSi_Permissions",
 				dsi_permissions_bitfield_names[i]));
 	}

@@ -261,7 +261,7 @@ int ConfigPrivate::processConfigLine(const char *section, const char *name, cons
 			// for this system are disabled.
 			if (count == 0 && len == 2 && !strncasecmp(pos, "no", 2)) {
 				// Thumbnails are disabled.
-				vImgTypePrio.push_back((uint8_t)RomData::IMG_DISABLED);
+				vImgTypePrio.emplace_back((uint8_t)RomData::IMG_DISABLED);
 				count = 1;
 				break;
 			}
@@ -347,7 +347,7 @@ int ConfigPrivate::processConfigLine(const char *section, const char *name, cons
 				// Too many image types...
 				break;
 			}
-			vImgTypePrio.push_back(static_cast<uint8_t>(imgType));
+			vImgTypePrio.emplace_back(static_cast<uint8_t>(imgType));
 			count++;
 
 			if (!comma)

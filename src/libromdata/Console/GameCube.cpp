@@ -1512,8 +1512,8 @@ int GameCube::loadFieldData(void)
 			// Access rights.
 			vector<string> *const v_access_rights_hdr = new vector<string>();
 			v_access_rights_hdr->reserve(2);
-			v_access_rights_hdr->push_back("AHBPROT");
-			v_access_rights_hdr->push_back(C_("GameCube", "DVD Video"));
+			v_access_rights_hdr->emplace_back("AHBPROT");
+			v_access_rights_hdr->emplace_back(C_("GameCube", "DVD Video"));
 			d->fields->addField_bitfield(C_("GameCube", "Access Rights"),
 				v_access_rights_hdr, 0, be32_to_cpu(tmdHeader->access_rights));
 		}
@@ -1686,10 +1686,10 @@ int GameCube::loadFieldData(void)
 			const GameCubePrivate::WiiPartEntry &entry = *src_iter;
 
 			// Partition number.
-			data_row.push_back(rp_sprintf("%dp%d", entry.vg, entry.pt));
+			data_row.emplace_back(rp_sprintf("%dp%d", entry.vg, entry.pt));
 
 			// Partition type.
-			string str;
+			string s_ptype;
 			static const char *const part_type_tbl[3] = {
 				// tr: GameCubePrivate::PARTITION_GAME
 				NOP_C_("GameCube|Partition", "Game"),
@@ -1699,7 +1699,7 @@ int GameCube::loadFieldData(void)
 				NOP_C_("GameCube|Partition", "Channel"),
 			};
 			if (entry.type <= GameCubePrivate::PARTITION_CHANNEL) {
-				str = dpgettext_expr(RP_I18N_DOMAIN, "GameCube|Partition", part_type_tbl[entry.type]);
+				s_ptype = dpgettext_expr(RP_I18N_DOMAIN, "GameCube|Partition", part_type_tbl[entry.type]);
 			} else {
 				// If all four bytes are ASCII letters and/or numbers,
 				// print it as-is. (SSBB demo channel)
@@ -1714,13 +1714,13 @@ int GameCube::loadFieldData(void)
 				    ISALNUM(part_type.chr[2]) && ISALNUM(part_type.chr[3]))
 				{
 					// All four bytes are ASCII letters and/or numbers.
-					str = latin1_to_utf8(part_type.chr, sizeof(part_type.chr));
+					s_ptype = latin1_to_utf8(part_type.chr, sizeof(part_type.chr));
 				} else {
 					// Non-ASCII data. Print the hex values instead.
-					str = rp_sprintf("%08X", entry.type);
+					s_ptype = rp_sprintf("%08X", entry.type);
 				}
 			}
-			data_row.push_back(str);
+			data_row.emplace_back(std::move(s_ptype));
 
 			// Encryption key.
 			// TODO: Use a string table?
@@ -1758,19 +1758,19 @@ int GameCube::loadFieldData(void)
 				// WiiPartition::ENCKEY_UNKNOWN
 				s_key_name = C_("RomData", "Unknown");
 			}
-			data_row.push_back(s_key_name);
+			data_row.emplace_back(s_key_name);
 
 			// Used size.
 			const int64_t used_size = entry.partition->partition_size_used();
 			if (used_size >= 0) {
-				data_row.push_back(LibRpBase::formatFileSize(used_size));
+				data_row.emplace_back(LibRpBase::formatFileSize(used_size));
 			} else {
 				// tr: Unknown used size.
-				data_row.push_back(C_("GameCube|Partition", "Unknown"));
+				data_row.emplace_back(C_("GameCube|Partition", "Unknown"));
 			}
 
 			// Partition size.
-			data_row.push_back(LibRpBase::formatFileSize(entry.partition->partition_size()));
+			data_row.emplace_back(LibRpBase::formatFileSize(entry.partition->partition_size()));
 		}
 
 		// Fields.

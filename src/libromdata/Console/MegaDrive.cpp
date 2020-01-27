@@ -448,13 +448,13 @@ void MegaDrivePrivate::addFields_vectorTable(const M68K_VectorTable *pVectors)
 
 		// #
 		// NOTE: This is the byte address in the vector table.
-		data_row.push_back(rp_sprintf("$%02X", vector_index*4));
+		data_row.emplace_back(rp_sprintf("$%02X", vector_index*4));
 
 		// Vector name
-		data_row.push_back(vectors_names[i]);
+		data_row.emplace_back(vectors_names[i]);
 
 		// Address
-		data_row.push_back(rp_sprintf("$%08X", be32_to_cpu(pVectors->vectors[vector_index])));
+		data_row.emplace_back(rp_sprintf("$%08X", be32_to_cpu(pVectors->vectors[vector_index])));
 	}
 
 	static const char *const vectors_headers[] = {

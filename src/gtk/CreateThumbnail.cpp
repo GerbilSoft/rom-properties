@@ -411,7 +411,7 @@ G_MODULE_EXPORT int rp_create_thumbnail(const char *source_file, const char *out
 	kv.reserve(5);
 
 	// Software.
-	kv.push_back(std::make_pair("Software", "ROM Properties Page shell extension (GTK" GTK_MAJOR_STR ")"));
+	kv.emplace_back("Software", "ROM Properties Page shell extension (GTK" GTK_MAJOR_STR ")");
 
 	// Modification time and file size.
 	mtime_str[0] = 0;
@@ -444,7 +444,7 @@ G_MODULE_EXPORT int rp_create_thumbnail(const char *source_file, const char *out
 
 	// Modification time.
 	if (mtime_str[0] != 0) {
-		kv.push_back(std::make_pair("Thumb::MTime", mtime_str));
+		kv.emplace_back("Thumb::MTime", mtime_str);
 	}
 
 	// MIME type.
@@ -455,7 +455,7 @@ G_MODULE_EXPORT int rp_create_thumbnail(const char *source_file, const char *out
 	if (content_type) {
 		gchar *const mime_type = g_content_type_get_mime_type(content_type);
 		if (mime_type) {
-			kv.push_back(std::make_pair("Thumb::Mimetype", mime_type));
+			kv.emplace_back("Thumb::Mimetype", mime_type);
 			g_free(mime_type);
 		}
 		g_free(content_type);
@@ -463,7 +463,7 @@ G_MODULE_EXPORT int rp_create_thumbnail(const char *source_file, const char *out
 
 	// File size.
 	if (szFile_str[0] != 0) {
-		kv.push_back(std::make_pair("Thumb::Size", szFile_str));
+		kv.emplace_back("Thumb::Size", szFile_str);
 	}
 
 	// URI.
@@ -474,7 +474,7 @@ G_MODULE_EXPORT int rp_create_thumbnail(const char *source_file, const char *out
 	// References:
 	// - https://bugs.kde.org/show_bug.cgi?id=393015
 	// - https://specifications.freedesktop.org/thumbnail-spec/thumbnail-spec-latest.html
-	kv.push_back(std::make_pair("Thumb::URI", source_uri));
+	kv.emplace_back("Thumb::URI", source_uri);
 
 	// Write the tEXt chunks.
 	pngWriter->write_tEXt(kv);

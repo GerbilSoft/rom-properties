@@ -75,6 +75,9 @@ DELAYLOAD_TEST_FUNCTION_IMPL1(textdomain, nullptr);
 struct ExtractParam {
 	const char* filename;	// Target filename. Can be null due to argv[argc]
 	int image_type;		// Image Type. -1 = iconAnimData, MUST be between -1 and IMG_INT_MAX
+
+	ExtractParam(const char *filename, int image_type)
+		: filename(filename), image_type(image_type) { }
 };
 
 /**
@@ -406,22 +409,16 @@ int RP_C_API main(int argc, char *argv[])
 				break;
 			}
 			case 'x': {
-				ExtractParam ep;
 				long num = atol(argv[i] + 2);
 				if (num<RomData::IMG_INT_MIN || num>RomData::IMG_INT_MAX) {
 					cerr << rp_sprintf(C_("rpcli", "Warning: skipping unknown image type %ld"), num) << endl;
 					i++; continue;
 				}
-				ep.filename = argv[++i];
-				ep.image_type = num;
-				extract.push_back(ep);
+				extract.emplace_back(argv[++i], num);
 				break;
 			}
 			case 'a': {
-				ExtractParam ep;
-				ep.filename = argv[++i];
-				ep.image_type = -1;
-				extract.push_back(ep);
+				extract.emplace_back(argv[++i], -1);
 				break;
 			}
 			case 'j': // do nothing

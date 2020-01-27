@@ -1061,10 +1061,10 @@ vector<const char*> Nintendo3DSPrivate::n3dsRegionToGameTDB(
 	int fallback_region = 0;
 	switch (smdhRegion) {
 		case N3DS_REGION_JAPAN:
-			ret.push_back("JA");
+			ret.emplace_back("JA");
 			return ret;
 		case N3DS_REGION_USA:
-			ret.push_back("US");
+			ret.emplace_back("US");
 			return ret;
 		case N3DS_REGION_EUROPE:
 		case N3DS_REGION_EUROPE | N3DS_REGION_AUSTRALIA:
@@ -1077,20 +1077,20 @@ vector<const char*> Nintendo3DSPrivate::n3dsRegionToGameTDB(
 			break;
 		case N3DS_REGION_CHINA:
 			// NOTE: GameTDB only has "ZH" for boxart, not "ZHCN" or "ZHTW".
-			ret.push_back("ZH");
-			ret.push_back("JA");
-			ret.push_back("EN");
+			ret.emplace_back("ZH");
+			ret.emplace_back("JA");
+			ret.emplace_back("EN");
 			return ret;
 		case N3DS_REGION_SOUTH_KOREA:
-			ret.push_back("KO");
-			ret.push_back("JA");
-			ret.push_back("EN");
+			ret.emplace_back("KO");
+			ret.emplace_back("JA");
+			ret.emplace_back("EN");
 			return ret;
 		case N3DS_REGION_TAIWAN:
 			// NOTE: GameTDB only has "ZH" for boxart, not "ZHCN" or "ZHTW".
-			ret.push_back("ZH");
-			ret.push_back("JA");
-			ret.push_back("EN");
+			ret.emplace_back("ZH");
+			ret.emplace_back("JA");
+			ret.emplace_back("EN");
 			return ret;
 		case 0:
 		default:
@@ -1108,10 +1108,10 @@ vector<const char*> Nintendo3DSPrivate::n3dsRegionToGameTDB(
 			fallback_region = 3;
 			break;
 		case 'E':	// USA
-			ret.push_back("US");
+			ret.emplace_back("US");
 			break;
 		case 'J':	// Japan
-			ret.push_back("JA");
+			ret.emplace_back("JA");
 			break;
 		case 'P':	// PAL
 		case 'X':	// Multi-language release
@@ -1127,22 +1127,22 @@ vector<const char*> Nintendo3DSPrivate::n3dsRegionToGameTDB(
 
 		// European regions.
 		case 'D':	// Germany
-			ret.push_back("DE");
+			ret.emplace_back("DE");
 			break;
 		case 'F':	// France
-			ret.push_back("FR");
+			ret.emplace_back("FR");
 			break;
 		case 'H':	// Netherlands
-			ret.push_back("NL");
+			ret.emplace_back("NL");
 			break;
 		case 'I':	// Italy
-			ret.push_back("NL");
+			ret.emplace_back("NL");
 			break;
 		case 'R':	// Russia
-			ret.push_back("RU");
+			ret.emplace_back("RU");
 			break;
 		case 'S':	// Spain
-			ret.push_back("ES");
+			ret.emplace_back("ES");
 			break;
 		case 'U':	// Australia
 			if (fallback_region == 0) {
@@ -1156,18 +1156,18 @@ vector<const char*> Nintendo3DSPrivate::n3dsRegionToGameTDB(
 	switch (fallback_region) {
 		case 1:
 			// Europe
-			ret.push_back("EN");
+			ret.emplace_back("EN");
 			break;
 		case 2:
 			// Australia
-			ret.push_back("AU");
-			ret.push_back("EN");
+			ret.emplace_back("AU");
+			ret.emplace_back("EN");
 			break;
 
 		case 3:
 			// TODO: Check the host system region.
 			// For now, assuming US.
-			ret.push_back("US");
+			ret.emplace_back("US");
 			break;
 
 		case 0:	// None
@@ -1322,7 +1322,7 @@ int Nintendo3DSPrivate::addFields_permissions(void)
 	auto vv_fs = new RomFields::ListData_t(ARRAY_SIZE(perm_fs_access));
 	for (int i = ARRAY_SIZE(perm_fs_access)-1; i >= 0; i--) {
 		auto &data_row = vv_fs->at(i);
-		data_row.push_back(perm_fs_access[i]);
+		data_row.emplace_back(perm_fs_access[i]);
 	}
 
 	RomFields::AFLD_PARAMS params(RomFields::RFT_LISTDATA_CHECKBOXES, rows_visible);
@@ -1356,7 +1356,7 @@ int Nintendo3DSPrivate::addFields_permissions(void)
 		auto vv_arm9 = new RomFields::ListData_t(ARRAY_SIZE(perm_arm9_access));
 		for (int i = ARRAY_SIZE(perm_arm9_access)-1; i >= 0; i--) {
 			auto &data_row = vv_arm9->at(i);
-			data_row.push_back(perm_arm9_access[i]);
+			data_row.emplace_back(perm_arm9_access[i]);
 		}
 
 		params.data.single = vv_arm9;
@@ -1381,7 +1381,7 @@ int Nintendo3DSPrivate::addFields_permissions(void)
 		// TODO: Service descriptions?
 		vv_svc->resize(vv_svc->size()+1);
 		auto &data_row = vv_svc->at(vv_svc->size()-1);
-		data_row.push_back(latin1_to_utf8(svc, N3DS_SERVICE_LEN));
+		data_row.emplace_back(latin1_to_utf8(svc, N3DS_SERVICE_LEN));
 	}
 
 	if (likely(!vv_svc->empty())) {
@@ -2218,12 +2218,12 @@ int Nintendo3DS::loadFieldData(void)
 			data_row.reserve(5);
 
 			// Partition number.
-			data_row.push_back(rp_sprintf("%u", i));
+			data_row.emplace_back(rp_sprintf("%u", i));
 
 			// Partition type.
 			// TODO: Use the partition ID to determine the type?
-			const char *type = (pt_types[i] ? pt_types[i] : s_unknown);
-			data_row.push_back(type);
+			const char *const s_ptype = (pt_types[i] ? pt_types[i] : s_unknown);
+			data_row.emplace_back(s_ptype);
 
 			if (d->romType != Nintendo3DSPrivate::ROM_TYPE_eMMC) {
 				const N3DS_NCCH_Header_NoSig_t *const part_ncch_header =
@@ -2235,12 +2235,12 @@ int Nintendo3DS::loadFieldData(void)
 					if (ret != 0 || !cryptoType.encrypted || cryptoType.keyslot >= 0x40) {
 						// Not encrypted, or not using a predefined keyslot.
 						if (cryptoType.name) {
-							data_row.push_back(latin1_to_utf8(cryptoType.name, -1));
+							data_row.emplace_back(latin1_to_utf8(cryptoType.name, -1));
 						} else {
-							data_row.push_back(s_unknown);
+							data_row.emplace_back(s_unknown);
 						}
 					} else {
-						data_row.push_back(rp_sprintf("%s%s (0x%02X)",
+						data_row.emplace_back(rp_sprintf("%s%s (0x%02X)",
 							(cryptoType.name ? cryptoType.name : s_unknown),
 							(cryptoType.seed ? "+Seed" : ""),
 							cryptoType.keyslot));
@@ -2265,25 +2265,25 @@ int Nintendo3DS::loadFieldData(void)
 					if (isUpdate && version == 0x8000) {
 						// Early titles have a system update with version 0x8000 (32.0.0).
 						// This is usually 1.1.0, though some might be 1.0.0.
-						data_row.push_back("1.x.x");
+						data_row.emplace_back("1.x.x");
 					} else {
-						data_row.push_back(d->n3dsVersionToString(version));
+						data_row.emplace_back(d->n3dsVersionToString(version));
 					}
 				} else {
 					// Unable to load the NCCH header.
-					data_row.push_back(s_unknown);	// Encryption
-					data_row.push_back(s_unknown);	// Version
+					data_row.emplace_back(s_unknown);	// Encryption
+					data_row.emplace_back(s_unknown);	// Version
 				}
 			}
 
 			if (keyslots) {
 				// Keyslot.
-				data_row.push_back(rp_sprintf("0x%02X", keyslots[i]));
+				data_row.emplace_back(rp_sprintf("0x%02X", keyslots[i]));
 			}
 
 			// Partition size.
 			const int64_t length_bytes = static_cast<int64_t>(length) << d->media_unit_shift;
-			data_row.push_back(LibRpBase::formatFileSize(length_bytes));
+			data_row.emplace_back(LibRpBase::formatFileSize(length_bytes));
 
 			delete pNcch;
 		}
@@ -2376,7 +2376,7 @@ int Nintendo3DS::loadFieldData(void)
 			data_row.reserve(5);
 
 			// Content index.
-			data_row.push_back(rp_sprintf("%u", i));
+			data_row.emplace_back(rp_sprintf("%u", i));
 
 			// TODO: Use content_chunk->index?
 			const N3DS_NCCH_Header_NoSig_t *content_ncch_header = nullptr;
@@ -2415,25 +2415,25 @@ int Nintendo3DS::loadFieldData(void)
 						content_type = s_unknown;
 					}
 				}
-				data_row.push_back(content_type);
+				data_row.emplace_back(content_type);
 
 				// Encryption.
-				data_row.push_back(crypto ? crypto : s_unknown);
+				data_row.emplace_back(crypto ? crypto : s_unknown);
 				// Version.
-				data_row.push_back(string());
+				data_row.emplace_back(string());
 
 				// Content size.
 				if (i < d->content_count) {
-					data_row.push_back(LibRpBase::formatFileSize(be64_to_cpu(content_chunk->size)));
+					data_row.emplace_back(LibRpBase::formatFileSize(be64_to_cpu(content_chunk->size)));
 				} else {
-					data_row.push_back(string());
+					data_row.emplace_back(string());
 				}
 				delete pNcch;
 				continue;
 			}
 
 			// Content type.
-			data_row.push_back(content_type ? content_type : s_unknown);
+			data_row.emplace_back(content_type ? content_type : s_unknown);
 
 			// Encryption.
 			NCCHReader::CryptoType cryptoType;
@@ -2454,13 +2454,13 @@ int Nintendo3DS::loadFieldData(void)
 			if (!cryptoType.encrypted || cryptoType.keyslot >= 0x40) {
 				// Not encrypted, or not using a predefined keyslot.
 				if (cryptoType.name) {
-					data_row.push_back(latin1_to_utf8(cryptoType.name, -1));
+					data_row.emplace_back(latin1_to_utf8(cryptoType.name, -1));
 				} else {
-					data_row.push_back(s_unknown);
+					data_row.emplace_back(s_unknown);
 				}
 			} else {
 				// Encrypted.
-				data_row.push_back(rp_sprintf("%s%s%s (0x%02X)",
+				data_row.emplace_back(rp_sprintf("%s%s%s (0x%02X)",
 					(isCIAcrypto ? "CIA+" : ""),
 					(cryptoType.name ? cryptoType.name : s_unknown),
 					(cryptoType.seed ? "+Seed" : ""),
@@ -2468,11 +2468,11 @@ int Nintendo3DS::loadFieldData(void)
 			}
 
 			// Version. [FIXME: Might not be right...]
-			data_row.push_back(d->n3dsVersionToString(
+			data_row.emplace_back(d->n3dsVersionToString(
 				le16_to_cpu(content_ncch_header->version)));
 
 			// Content size.
-			data_row.push_back(LibRpBase::formatFileSize(pNcch->partition_size()));
+			data_row.emplace_back(LibRpBase::formatFileSize(pNcch->partition_size()));
 
 			delete pNcch;
 		}

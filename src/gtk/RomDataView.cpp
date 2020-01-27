@@ -1299,7 +1299,7 @@ rom_data_view_init_string_multi(G_GNUC_UNUSED RomDataView *page, const RomFields
 	// be able to change the displayed language.
 	GtkWidget *const lblStringMulti = rom_data_view_init_string(page, field, "");
 	if (lblStringMulti) {
-		page->vecStringMulti->push_back(std::make_pair(lblStringMulti, field));
+		page->vecStringMulti->emplace_back(lblStringMulti, field);
 	}
 	return lblStringMulti;
 }
@@ -1764,7 +1764,7 @@ rom_data_view_update_display(RomDataView *page)
 			gtk_label_set_use_underline(GTK_LABEL(lblDesc), false);
 			gtk_widget_show(lblDesc);
 			gtk_size_group_add_widget(size_group, lblDesc);
-			page->vecDescLabels->push_back(lblDesc);
+			page->vecDescLabels->emplace_back(lblDesc);
 
 			// Check if this is an RFT_STRING with warning set.
 			// If it is, set the "RFT_STRING_warning" flag.

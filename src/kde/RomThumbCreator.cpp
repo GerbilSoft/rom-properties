@@ -507,12 +507,12 @@ Q_DECL_EXPORT int rp_create_thumbnail(const char *source_file, const char *outpu
 
 	// Software.
 	static const char sw[] = "ROM Properties Page shell extension (" RP_KDE_UPPER QT_MAJOR_STR ")";
-	kv.push_back(std::make_pair("Software", sw));
+	kv.emplace_back("Software", sw);
 
 	// Modification time.
 	int64_t mtime = fi_src.lastModified().toMSecsSinceEpoch() / 1000;
 	if (mtime > 0) {
-		kv.push_back(std::make_pair("Thumb::Size", rp_sprintf("%" PRId64, mtime)));
+		kv.emplace_back("Thumb::Size", rp_sprintf("%" PRId64, mtime));
 	}
 
 	// MIME type.
@@ -522,15 +522,13 @@ Q_DECL_EXPORT int rp_create_thumbnail(const char *source_file, const char *outpu
 	// TODO: Verify if KIO works.
 	QMimeDatabase mimeDatabase;
 	QMimeType mimeType = mimeDatabase.mimeTypeForUrl(url);
-	kv.push_back(std::make_pair("Thumb::Mimetype",
-		string(mimeType.name().toUtf8().constData())));
+	kv.emplace_back("Thumb::Mimetype", mimeType.name().toUtf8().constData());
 #else /* QT_VERSION < QT_VERSION_CHECK(5,0,0) */
 	// Use KMimeType for Qt4.
 	if (!qs_source_filename.isEmpty()) {
 		KMimeType::Ptr mimeType = KMimeType::findByPath(qs_source_filename, 0, true);
 		if (mimeType) {
-			kv.push_back(std::make_pair("Thumb::Mimetype",
-				string(mimeType->name().toUtf8().constData())));
+			kv.emplace_back("Thumb::Mimetype", mimeType->name().toUtf8().constData());
 		}
 	}
 #endif
@@ -538,14 +536,13 @@ Q_DECL_EXPORT int rp_create_thumbnail(const char *source_file, const char *outpu
 	// File size.
 	int64_t szFile = fi_src.size();
 	if (szFile > 0) {
-		kv.push_back(std::make_pair("Thumb::Size", rp_sprintf("%" PRId64, szFile)));
+		kv.emplace_back("Thumb::Size", rp_sprintf("%" PRId64, szFile));
 	}
 
 	// URI.
 	// NOTE: KDE desktops don't urlencode spaces or non-ASCII characters.
 	// GTK+ desktops *do* urlencode spaces and non-ASCII characters.
-	kv.push_back(std::make_pair("Thumb::URI",
-		string(url.toString().toUtf8().constData())));
+	kv.emplace_back("Thumb::URI", url.toString().toUtf8().constData());
 
 	// Write the tEXt chunks.
 	pngWriter->write_tEXt(kv);

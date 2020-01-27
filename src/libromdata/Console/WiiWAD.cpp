@@ -846,8 +846,8 @@ int WiiWAD::loadFieldData(void)
 	// Access rights.
 	vector<string> *const v_access_rights_hdr = new vector<string>();
 	v_access_rights_hdr->reserve(2);
-	v_access_rights_hdr->push_back("AHBPROT");
-	v_access_rights_hdr->push_back(C_("WiiWAD", "DVD Video"));
+	v_access_rights_hdr->emplace_back("AHBPROT");
+	v_access_rights_hdr->emplace_back(C_("WiiWAD", "DVD Video"));
 	d->fields->addField_bitfield(C_("WiiWAD", "Access Rights"),
 		v_access_rights_hdr, 0, be32_to_cpu(tmdHeader->access_rights));
 
