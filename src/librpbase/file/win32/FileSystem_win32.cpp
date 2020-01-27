@@ -202,22 +202,31 @@ int access(const string &pathname, int mode)
 int64_t filesize(const string &filename)
 {
 	const tstring tfilename = makeWinPath(filename);
-	struct _stati64 sb;
-	int ret = ::_tstati64(tfilename.c_str(), &sb);
 
-	if (ret != 0) {
-		// stat() failed.
-		ret = -errno;
-		if (ret == 0) {
-			// Something happened...
-			ret = -EIO;
-		}
+	// TODO: Add a static_warning() macro?
+	// - http://stackoverflow.com/questions/8936063/does-there-exist-a-static-warning
+#if _USE_32BIT_TIME_T
+# error 32-bit time_t is not supported. Get a newer compiler.
+#endif
+	// Use GetFileSize() instead of _stati64().
+	HANDLE hFile = CreateFile(tfilename.c_str(),
+		GENERIC_READ, FILE_SHARE_READ, NULL,
+		OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+	if (!hFile) {
+		// Error opening the file.
+		return -w32err_to_posix(GetLastError());
+	}
 
-		return ret;
+	LARGE_INTEGER liFileSize;
+	BOOL bRet = GetFileSizeEx(hFile, &liFileSize);
+	CloseHandle(hFile);
+	if (!bRet) {
+		// Error getting the file size.
+		return -w32err_to_posix(GetLastError());
 	}
 
 	// Return the file size.
-	return sb.st_size;
+	return liFileSize.QuadPart;
 }
 
 /**
@@ -251,9 +260,11 @@ int set_mtime(const string &filename, time_t mtime)
  */
 int get_mtime(const string &filename, time_t *pMtime)
 {
+	assert(pMtime != nullptr);
 	if (!pMtime) {
 		return -EINVAL;
 	}
+
 	const tstring tfilename = makeWinPath(filename);
 
 	// TODO: Add a static_warning() macro?
@@ -290,13 +301,14 @@ int get_mtime(const string &filename, time_t *pMtime)
  */
 int delete_file(const char *filename)
 {
-	if (unlikely(!filename || filename[0] == 0))
+	assert(filename != nullptr);
+	if (unlikely(!filename || filename[0] == 0)) {
 		return -EINVAL;
+	}
+
 	int ret = 0;
 	const tstring tfilename = makeWinPath(filename);
-
-	BOOL bRet = DeleteFile(tfilename.c_str());
-	if (!bRet) {
+	if (!DeleteFile(tfilename.c_str())) {
 		// Error deleting file.
 		ret = -w32err_to_posix(GetLastError());
 	}
@@ -451,6 +463,58 @@ bool isOnBadFS(const char *filename, bool netFS)
 
 	// Not on a network share.
 	return false;
+}
+
+/**
+ * Get a file's size and mtime.
+ * @param filename	[in] Filename.
+ * @param pFileSize	[out] File size.
+ * @param pMtime	[out] Modification time.
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int get_file_size_and_mtime(const string &filename, int64_t *pFileSize, time_t *pMtime)
+{
+	const tstring tfilename = makeWinPath(filename);
+
+	// TODO: Add a static_warning() macro?
+	// - http://stackoverflow.com/questions/8936063/does-there-exist-a-static-warning
+#if _USE_32BIT_TIME_T
+# error 32-bit time_t is not supported. Get a newer compiler.
+#endif
+	// TODO: Verify that this is a file and not a directory.
+	HANDLE hFile = CreateFile(tfilename.c_str(),
+		GENERIC_READ, FILE_SHARE_READ, NULL,
+		OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+	if (!hFile) {
+		// Error opening the file.
+		return -w32err_to_posix(GetLastError());
+	}
+
+	// Use GetFileSizeEx() instead of _stati64().
+	LARGE_INTEGER liFileSize;
+	if (!GetFileSizeEx(hFile, &liFileSize)) {
+		// Error getting the file size.
+		CloseHandle(hFile);
+		return -w32err_to_posix(GetLastError());
+	}
+
+	// Use GetFileTime() instead of _stati64().
+	FILETIME mtime;
+	BOOL bRet = GetFileTime(hFile, nullptr, nullptr, &mtime);
+	CloseHandle(hFile);
+	if (!bRet) {
+		// Error getting the file time.
+		return -w32err_to_posix(GetLastError());
+	}
+
+	// Save the file size.
+	*pFileSize = liFileSize.QuadPart;
+	// Convert to Unix timestamp.
+	*pMtime = FileTimeToUnixTime(&mtime);
+
+	// We're done here.
+	return 0;
+
 }
 
 } }

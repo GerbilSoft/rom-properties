@@ -159,8 +159,10 @@ int set_mtime(const string &filename, time_t mtime)
  */
 int get_mtime(const string &filename, time_t *pMtime)
 {
-	if (!pMtime)
+	assert(pMtime != nullptr);
+	if (!pMtime) {
 		return -EINVAL;
+	}
 
 	// FIXME: time_t is 32-bit on 32-bit Linux.
 	// TODO: Add a static_warning() macro?
@@ -307,6 +309,44 @@ bool isOnBadFS(const char *filename, bool netFS)
 #endif
 
 	return bRet;
+}
+
+/**
+ * Get a file's size and time.
+ * @param filename	[in] Filename.
+ * @param pFileSize	[out] File size.
+ * @param pMtime	[out] Modification time.
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int get_file_size_and_mtime(const string &filename, int64_t *pFileSize, time_t *pMtime)
+{
+	assert(pFileSize != nullptr);
+	assert(pMtime != nullptr);
+
+	// FIXME: time_t is 32-bit on 32-bit Linux.
+	// TODO: Add a static_warning() macro?
+	// - http://stackoverflow.com/questions/8936063/does-there-exist-a-static-warning
+	struct stat sb;
+	if (stat(filename.c_str(), &sb) != 0) {
+		// An error occurred.
+		int ret = -errno;
+		if (ret == 0) {
+			// No error?
+			ret = -EIO;
+		}
+		return ret;
+	}
+
+	// Make sure this is not a directory.
+	if (S_ISDIR(sb.st_mode)) {
+		// It's a directory.
+		return -EISDIR;
+	}
+
+	// Return the file size and mtime.
+	*pFileSize = sb.st_size;
+	*pMtime = sb.st_mtime;
+	return 0;
 }
 
 } }

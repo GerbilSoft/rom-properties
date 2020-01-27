@@ -166,6 +166,15 @@ std::string resolve_symlink(const char *filename);
  */
 bool isOnBadFS(const char *filename, bool netFS = false);
 
+/**
+ * Get a file's size and time.
+ * @param filename	[in] Filename.
+ * @param pFileSize	[out] File size.
+ * @param pMtime	[out] Modification time.
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int get_file_size_and_mtime(const std::string &filename, int64_t *pFileSize, time_t *pMtime);
+
 } }
 
 #endif /* __ROMPROPERTIES_LIBRPBASE_FILESYSTEM_HPP__ */

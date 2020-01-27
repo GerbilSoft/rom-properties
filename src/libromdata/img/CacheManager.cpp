@@ -120,35 +120,37 @@ string CacheManager::download(const string &cache_key)
 	SemaphoreLocker locker(m_dlsem);
 
 	// Check if the file already exists.
-	if (!access(cache_filename, R_OK)) {
-		// File exists.
-		// Is it larger than 0 bytes?
-		int64_t sz = filesize(cache_filename);
-		if (sz == 0) {
+	int64_t filesize;
+	time_t filemtime;
+	int ret = get_file_size_and_mtime(cache_filename.c_str(), &filesize, &filemtime);
+	if (ret == 0) {
+		// Check if the file is 0 bytes.
+		// TODO: How should we handle errors?
+		if (filesize == 0) {
 			// File is 0 bytes, which indicates it didn't exist
 			// on the server. If the file is older than a week,
 			// try to redownload it.
 			// TODO: Configurable time.
-			// TODO: How should we handle errors?
-			time_t filetime;
-			if (get_mtime(cache_filename, &filetime) != 0)
-				return string();
-
 			const time_t systime = time(nullptr);
-			if ((systime - filetime) < (86400*7)) {
+			if ((systime - filemtime) < (86400*7)) {
 				// Less than a week old.
 				return string();
 			}
 
 			// More than a week old.
-			// Delete the cache file and redownload it.
-			if (delete_file(cache_filename) != 0)
+			// Delete the cache file and try to download it again.
+			if (delete_file(cache_filename) != 0) {
+				// Unable to delete the cache file.
 				return string();
-		} else if (sz > 0) {
+			}
+		} else if (filesize > 0) {
 			// File is larger than 0 bytes, which indicates
 			// it was cached successfully.
 			return cache_filename;
 		}
+	} else if (ret != -ENOENT) {
+		// Some error other than "file not found" occurred.
+		return string();
 	}
 
 	// TODO: Add an option for "offline only".
@@ -163,7 +165,7 @@ string CacheManager::download(const string &cache_key)
 	// NOTE: Using the unfiltered cache key, since filtering it
 	// results in slashes being changed to backslashes on Windows.
 	// rp-download will filter the key itself.
-	int ret = execRpDownload(cache_key);
+	ret = execRpDownload(cache_key);
 	if (ret != 0) {
 		// rp-download failed for some reason.
 		return string();

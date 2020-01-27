@@ -117,7 +117,7 @@ show_error(const TCHAR *format, ...)
  * @param pMtime	[out] Modification time.
  * @return 0 on success; negative POSIX error code on error.
  */
-static int get_file_info(const TCHAR *filename, int64_t *pFileSize, time_t *pMtime)
+static int get_file_size_and_mtime(const TCHAR *filename, int64_t *pFileSize, time_t *pMtime)
 {
 	assert(pFileSize != nullptr);
 	assert(pMtime != nullptr);
@@ -385,7 +385,7 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 	// Get the cache file information.
 	int64_t filesize;
 	time_t filemtime;
-	int ret = get_file_info(cache_filename.c_str(), &filesize, &filemtime);
+	int ret = get_file_size_and_mtime(cache_filename.c_str(), &filesize, &filemtime);
 	if (ret == 0) {
 		// Check if the file is 0 bytes.
 		// TODO: How should we handle errors?
@@ -404,8 +404,7 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 			}
 
 			// More than a week old.
-			// Delete the cache file and redownload it.
-			// Delete the file and try to download it again.
+			// Delete the cache file and try to download it again.
 			if (_tremove(cache_filename.c_str()) != 0) {
 				if (verbose) {
 					show_error(_T("Error deleting negative cache file for '%s': %s"), cache_key, _tcserror(errno));
