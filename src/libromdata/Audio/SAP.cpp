@@ -398,7 +398,7 @@ SAPPrivate::TagData SAPPrivate::parseTags(void)
 					bool loop_flag;
 					if (!durationToMsLoop(params, &duration, &loop_flag)) {
 						// Parsed successfully.
-						tags.durations.emplace_back(duration, loop_flag);
+						tags.durations.emplace_back(std::make_pair(duration, loop_flag));
 					}
 					break;
 				}

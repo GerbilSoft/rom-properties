@@ -599,8 +599,8 @@ void KhronosKTXPrivate::loadKeyValueData(void)
 
 		vector<string> data_row;
 		data_row.reserve(2);
-		data_row.emplace_back(p, k_end - p);
-		data_row.emplace_back(k_end + 1, kv_end - k_end - 2);
+		data_row.emplace_back(string(p, k_end - p));
+		data_row.emplace_back(string(k_end + 1, kv_end - k_end - 2));
 		kv_data.emplace_back(data_row);
 
 		// Check if this is KTXorientation.

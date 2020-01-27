@@ -1785,7 +1785,7 @@ int RP_ShellPropSheetExt_Private::initStringMulti(HWND hDlg, HWND hWndTab,
 	int field_cy = initString(hDlg, hWndTab, pt_start, idx, size, field,
 		_T(""), &lblStringMulti);
 	if (lblStringMulti) {
-		vecStringMulti.emplace_back(lblStringMulti, field);
+		vecStringMulti.emplace_back(std::make_pair(lblStringMulti, field));
 	}
 	return field_cy;
 }

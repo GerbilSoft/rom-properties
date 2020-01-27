@@ -628,7 +628,7 @@ int CacheTabPrivate::recursiveScan(const TCHAR *path, vector<pair<tstring, DWORD
 
 		// Add the filename and attributes.
 		// FIXME: Test emplace_back on MSVC 2010.
-		rvec.emplace_back(std::move(fullFileName), findFileData.dwFileAttributes);
+		rvec.emplace_back(std::make_pair(std::move(fullFileName), findFileData.dwFileAttributes));
 	} while (FindNextFile(hFindFile, &findFileData));
 	FindClose(hFindFile);
 

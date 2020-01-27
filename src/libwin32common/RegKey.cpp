@@ -505,7 +505,7 @@ LONG RegKey::enumSubKeys(list<tstring> &lstSubKeys)
 		// Add the subkey name to the return vector.
 		// cchName contains the number of characters in the
 		// subkey name, NOT including the NULL terminator.
-		lstSubKeys.emplace_back(szName.get(), cchName);
+		lstSubKeys.emplace_back(tstring(szName.get(), cchName));
 	}
 
 	return ERROR_SUCCESS;
