@@ -17,6 +17,7 @@
 #include "res/resource.h"
 
 #include "DragImageLabel.hpp"
+#include "FontHandler.hpp"
 
 // libwin32common
 #include "libwin32common/AutoGetDC.hpp"
@@ -99,12 +100,7 @@ class RP_ShellPropSheetExt_Private
 		// Fonts.
 		HFONT hFontDlg;		// Main dialog font.
 		HFONT hFontBold;	// Bold font.
-		HFONT hFontMono;	// Monospaced font.
-
-		// Monospaced font details.
-		LOGFONT lfFontMono;
-		vector<HWND> hwndMonoControls;			// Controls using the monospaced font.
-		bool bPrevIsClearType;	// Previous ClearType setting.
+		FontHandler fontHandler;
 
 		// Controls that need to be drawn using red text.
 		unordered_set<HWND> hwndWarningControls;	// Controls using the "Warning" font.
@@ -363,12 +359,6 @@ class RP_ShellPropSheetExt_Private
 
 	public:
 		/**
-		 * Initialize the monospaced font.
-		 * @param hFont Base font.
-		 */
-		void initMonospacedFont(HFONT hFont);
-
-		/**
 		 * Initialize the dialog.
 		 * Called by WM_INITDIALOG.
 		 * @param hDlg Dialog window.
@@ -408,8 +398,7 @@ RP_ShellPropSheetExt_Private::RP_ShellPropSheetExt_Private(RP_ShellPropSheetExt 
 	, hDlgSheet(nullptr)
 	, hFontDlg(nullptr)
 	, hFontBold(nullptr)
-	, hFontMono(nullptr)
-	, bPrevIsClearType(nullptr)
+	, fontHandler(nullptr)
 	, lblSysInfo(nullptr)
 	, colorAltRow(0)
 	, isFullyInit(false)
@@ -421,8 +410,6 @@ RP_ShellPropSheetExt_Private::RP_ShellPropSheetExt_Private(RP_ShellPropSheetExt 
 	, cboLanguage(nullptr)
 	, himglFlags(nullptr)
 {
-	memset(&lfFontMono, 0, sizeof(lfFontMono));
-
 	// Initialize the alternate row color.
 	colorAltRow = LibWin32Common::getAltRowColor();
 }
@@ -449,9 +436,6 @@ RP_ShellPropSheetExt_Private::~RP_ShellPropSheetExt_Private()
 	// Delete the fonts.
 	if (hFontBold) {
 		DeleteFont(hFontBold);
-	}
-	if (hFontMono) {
-		DeleteFont(hFontMono);
 	}
 }
 
@@ -771,10 +755,7 @@ int RP_ShellPropSheetExt_Private::initString(_In_ HWND hDlg, _In_ HWND hWndTab,
 			}
 		} else if (field->desc.flags & RomFields::STRF_MONOSPACE) {
 			// Monospaced font.
-			if (hFontMono) {
-				hFont = hFontMono;
-				isMonospace = true;
-			}
+			isMonospace = true;
 		}
 	}
 
@@ -878,7 +859,7 @@ int RP_ShellPropSheetExt_Private::initString(_In_ HWND hDlg, _In_ HWND hWndTab,
 		hwndWarningControls.insert(hDlgItem);
 	}
 	if (isMonospace) {
-		hwndMonoControls.emplace_back(hDlgItem);
+		fontHandler.addMonoControl(hDlgItem);
 	}
 
 	// Return the HWND if requested.
@@ -2303,75 +2284,6 @@ void RP_ShellPropSheetExt_Private::initBoldFont(HFONT hFont)
 }
 
 /**
- * Initialize the monospaced font.
- * @param hFont Base font.
- */
-void RP_ShellPropSheetExt_Private::initMonospacedFont(HFONT hFont)
-{
-	assert(hFont != nullptr);
-	if (!hFont) {
-		// No base font...
-		return;
-	}
-
-	// Get the current ClearType setting.
-	bool bIsClearType = false;
-	BOOL bFontSmoothing;
-	BOOL bRet = SystemParametersInfo(SPI_GETFONTSMOOTHING, 0, &bFontSmoothing, 0);
-	if (bRet) {
-		UINT uiFontSmoothingType;
-		bRet = SystemParametersInfo(SPI_GETFONTSMOOTHINGTYPE, 0, &uiFontSmoothingType, 0);
-		if (bRet) {
-			bIsClearType = (bFontSmoothing && (uiFontSmoothingType == FE_FONTSMOOTHINGCLEARTYPE));
-		}
-	}
-
-	if (hFontMono) {
-		// Font exists. Only re-create it if the ClearType setting has changed.
-		if (bIsClearType == bPrevIsClearType) {
-			// ClearType setting has not changed.
-			return;
-		}
-	} else {
-		// Font hasn't been created yet.
-		if (GetObject(hFont, sizeof(lfFontMono), &lfFontMono) == 0) {
-			// Unable to obtain the LOGFONT.
-			return;
-		}
-
-		// Find a monospaced font.
-		int ret = LibWin32Common::findMonospacedFont(&lfFontMono);
-		if (ret != 0) {
-			// Monospaced font not found.
-			return;
-		}
-	}
-
-	// Create the monospaced font.
-	// If ClearType is enabled, use DEFAULT_QUALITY;
-	// otherwise, use NONANTIALIASED_QUALITY.
-	lfFontMono.lfQuality = (bIsClearType ? DEFAULT_QUALITY : NONANTIALIASED_QUALITY);
-	HFONT hFontMonoNew = CreateFontIndirect(&lfFontMono);
-	if (!hFontMonoNew) {
-		// Unable to create new font.
-		return;
-	}
-
-	// Update all existing monospaced controls.
-	std::for_each(hwndMonoControls.cbegin(), hwndMonoControls.cend(),
-		[hFontMonoNew](HWND hWnd) { SetWindowFont(hWnd, hFontMonoNew, false); }
-	);
-
-	// Delete the old font and save the new one.
-	HFONT hFontMonoOld = hFontMono;
-	hFontMono = hFontMonoNew;
-	if (hFontMonoOld) {
-		DeleteFont(hFontMonoOld);
-	}
-	bPrevIsClearType = bIsClearType;
-}
-
-/**
  * Initialize the dialog.
  * Called by WM_INITDIALOG.
  * @param hDlg Dialog window.
@@ -2410,9 +2322,9 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 	}
 	AutoGetDC hDC(hDlg, hFontDlg);
 
-	// Initialize the bold and monospaced fonts.
+	// Initialize the fonts.
 	initBoldFont(hFontDlg);
-	initMonospacedFont(hFontDlg);
+	fontHandler.setWindow(hDlg);
 
 	// Convert the bitfield description names to the
 	// native Windows encoding once.
@@ -3283,7 +3195,7 @@ INT_PTR CALLBACK RP_ShellPropSheetExt_Private::DlgProc(HWND hDlg, UINT uMsg, WPA
 			RP_ShellPropSheetExt_Private *const d = pExt->d_ptr;
 
 			// Store the D object pointer with this particular page dialog.
-			SetProp(hDlg, RP_ShellPropSheetExt_Private::D_PTR_PROP, static_cast<HANDLE>(d));
+			SetProp(hDlg, D_PTR_PROP, static_cast<HANDLE>(d));
 			// Save handles for later.
 			d->hDlgSheet = hDlg;
 
@@ -3301,7 +3213,7 @@ INT_PTR CALLBACK RP_ShellPropSheetExt_Private::DlgProc(HWND hDlg, UINT uMsg, WPA
 		// if we don't adjust for WM_SHOWWINDOW.
 		case WM_SHOWWINDOW: {
 			RP_ShellPropSheetExt_Private *const d = static_cast<RP_ShellPropSheetExt_Private*>(
-				GetProp(hDlg, RP_ShellPropSheetExt_Private::D_PTR_PROP));
+				GetProp(hDlg, D_PTR_PROP));
 			if (!d) {
 				// No RP_ShellPropSheetExt_Private. Can't do anything...
 				return false;
@@ -3350,7 +3262,7 @@ INT_PTR CALLBACK RP_ShellPropSheetExt_Private::DlgProc(HWND hDlg, UINT uMsg, WPA
 
 		case WM_DESTROY: {
 			RP_ShellPropSheetExt_Private *const d = static_cast<RP_ShellPropSheetExt_Private*>(
-				GetProp(hDlg, RP_ShellPropSheetExt_Private::D_PTR_PROP));
+				GetProp(hDlg, D_PTR_PROP));
 			if (d && d->lblIcon) {
 				// Stop the animation timer.
 				d->lblIcon->stopAnimTimer();
@@ -3369,7 +3281,7 @@ INT_PTR CALLBACK RP_ShellPropSheetExt_Private::DlgProc(HWND hDlg, UINT uMsg, WPA
 
 		case WM_NOTIFY: {
 			RP_ShellPropSheetExt_Private *const d = static_cast<RP_ShellPropSheetExt_Private*>(
-				GetProp(hDlg, RP_ShellPropSheetExt_Private::D_PTR_PROP));
+				GetProp(hDlg, D_PTR_PROP));
 			if (!d) {
 				// No RP_ShellPropSheetExt_Private. Can't do anything...
 				return false;
@@ -3380,7 +3292,7 @@ INT_PTR CALLBACK RP_ShellPropSheetExt_Private::DlgProc(HWND hDlg, UINT uMsg, WPA
 
 		case WM_COMMAND: {
 			RP_ShellPropSheetExt_Private *const d = static_cast<RP_ShellPropSheetExt_Private*>(
-				GetProp(hDlg, RP_ShellPropSheetExt_Private::D_PTR_PROP));
+				GetProp(hDlg, D_PTR_PROP));
 			if (!d) {
 				// No RP_ShellPropSheetExt_Private. Can't do anything...
 				return false;
@@ -3391,7 +3303,7 @@ INT_PTR CALLBACK RP_ShellPropSheetExt_Private::DlgProc(HWND hDlg, UINT uMsg, WPA
 
 		case WM_PAINT: {
 			RP_ShellPropSheetExt_Private *const d = static_cast<RP_ShellPropSheetExt_Private*>(
-				GetProp(hDlg, RP_ShellPropSheetExt_Private::D_PTR_PROP));
+				GetProp(hDlg, D_PTR_PROP));
 			if (!d) {
 				// No RP_ShellPropSheetExt_Private. Can't do anything...
 				return false;
@@ -3403,7 +3315,7 @@ INT_PTR CALLBACK RP_ShellPropSheetExt_Private::DlgProc(HWND hDlg, UINT uMsg, WPA
 		case WM_THEMECHANGED: {
 			// Reload the images.
 			RP_ShellPropSheetExt_Private *const d = static_cast<RP_ShellPropSheetExt_Private*>(
-				GetProp(hDlg, RP_ShellPropSheetExt_Private::D_PTR_PROP));
+				GetProp(hDlg, D_PTR_PROP));
 			if (!d) {
 				// No RP_ShellPropSheetExt_Private. Can't do anything...
 				return false;
@@ -3434,26 +3346,29 @@ INT_PTR CALLBACK RP_ShellPropSheetExt_Private::DlgProc(HWND hDlg, UINT uMsg, WPA
 				// That method works for ComboBoxEx...
 			}
 
+			// Update the fonts.
+			d->fontHandler.updateFonts();
 			break;
 		}
 
 		case WM_NCPAINT: {
 			// Update the monospaced font.
+			// NOTE: This should be WM_SETTINGCHANGE with
+			// SPI_GETFONTSMOOTHING or SPI_GETFONTSMOOTHINGTYPE,
+			// but that message isn't sent when previewing changes
+			// for ClearType. (It's sent when applying the changes.)
 			RP_ShellPropSheetExt_Private *const d = static_cast<RP_ShellPropSheetExt_Private*>(
-				GetProp(hDlg, RP_ShellPropSheetExt_Private::D_PTR_PROP));
+				GetProp(hDlg, D_PTR_PROP));
 			if (d) {
-				if (!d->hFontDlg) {
-					// Dialog font hasn't been obtained yet.
-					d->hFontDlg = GetWindowFont(hDlg);
-				}
-				d->initMonospacedFont(d->hFontDlg);
+				// Update the fonts.
+				d->fontHandler.updateFonts();
 			}
 			break;
 		}
 
 		case WM_CTLCOLORSTATIC: {
 			RP_ShellPropSheetExt_Private *const d = static_cast<RP_ShellPropSheetExt_Private*>(
-				GetProp(hDlg, RP_ShellPropSheetExt_Private::D_PTR_PROP));
+				GetProp(hDlg, D_PTR_PROP));
 			if (!d) {
 				// No RP_ShellPropSheetExt_Private. Can't do anything...
 				return false;

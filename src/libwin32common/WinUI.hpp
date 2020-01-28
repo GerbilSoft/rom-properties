@@ -76,13 +76,6 @@ static inline int measureTextSizeLink(HWND hWnd, HFONT hFont, const std::tstring
 }
 
 /**
- * Determine the monospaced font to use.
- * @param plfFontMono Pointer to LOGFONT to store the font name in.
- * @return 0 on success; negative POSIX error code on error.
- */
-int findMonospacedFont(LOGFONT *plfFontMono);
-
-/**
  * Get the alternate row color for ListViews.
  *
  * This function should be called on ListView creation

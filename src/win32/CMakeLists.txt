@@ -40,8 +40,9 @@ SET(rom-properties-win32_SRCS
 	RP_ThumbnailProvider_Fallback.cpp
 	RP_ShellIconOverlayIdentifier.cpp
 	RP_ShellIconOverlayIdentifier_Register.cpp
-	DragImageLabel.cpp
 	CreateThumbnail.cpp
+	DragImageLabel.cpp
+	FontHandler.cpp
 	config/ConfigDialog.cpp
 	config/PropSheetIcon.cpp
 	config/RP_EmptyVolumeCacheCallback.cpp
@@ -67,6 +68,7 @@ SET(rom-properties-win32_H
 	RP_ShellIconOverlayIdentifier_p.hpp
 	CreateThumbnail.hpp
 	DragImageLabel.hpp
+	FontHandler.hpp
 	config/ConfigDialog.hpp
 	config/PropSheetIcon.hpp
 	config/RP_EmptyVolumeCacheCallback.hpp
