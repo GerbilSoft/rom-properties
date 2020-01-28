@@ -416,10 +416,8 @@ rom_data_view_init(RomDataView *page)
 
 	// Connect the "map" and "unmap" signals.
 	// These are needed in order to start and stop the animation.
-	g_signal_connect(page, "map",
-		reinterpret_cast<GCallback>(rom_data_view_map_signal_handler), nullptr);
-	g_signal_connect(page, "unmap",
-		reinterpret_cast<GCallback>(rom_data_view_unmap_signal_handler), nullptr);
+	g_signal_connect(page, "map", G_CALLBACK(rom_data_view_map_signal_handler), nullptr);
+	g_signal_connect(page, "unmap", G_CALLBACK(rom_data_view_unmap_signal_handler), nullptr);
 
 	// Table layout is created in rom_data_view_update_display().
 }
@@ -895,9 +893,7 @@ rom_data_view_init_bitfield(RomDataView *page, const RomFields::Field *field)
 		// NOTE: Unlike Qt, both the "clicked" and "toggled" signals are
 		// emitted for both user and program modifications, so we have to
 		// connect this signal *after* setting the initial value.
-		g_signal_connect(checkBox, "toggled",
-			reinterpret_cast<GCallback>(checkbox_no_toggle_signal_handler),
-			page);
+		g_signal_connect(checkBox, "toggled", G_CALLBACK(checkbox_no_toggle_signal_handler), page);
 
 #if GTK_CHECK_VERSION(3,0,0)
 		// TODO: GTK_FILL
@@ -1172,8 +1168,7 @@ rom_data_view_init_listdata(G_GNUC_UNUSED RomDataView *page, const RomFields::Fi
 	g_object_set_data(G_OBJECT(treeView), "RFT_LISTDATA_rows_visible",
 		GINT_TO_POINTER(listDataDesc.rows_visible));
 	if (listDataDesc.rows_visible > 0) {
-		g_signal_connect(treeView, "realize",
-			reinterpret_cast<GCallback>(tree_view_realize_signal_handler), page);
+		g_signal_connect(treeView, "realize", G_CALLBACK(tree_view_realize_signal_handler), page);
 	}
 
 	if (isMulti) {
@@ -1584,9 +1579,7 @@ rom_data_view_update_multi(RomDataView *page, uint32_t user_lc)
 			renderer, "text", SM_COL_TEXT, NULL);
 
 		// Connect the "changed" signal.
-		g_signal_connect(page->cboLanguage, "changed",
-			reinterpret_cast<GCallback>(cboLanguage_changed_signal_handler),
-			page);
+		g_signal_connect(page->cboLanguage, "changed", G_CALLBACK(cboLanguage_changed_signal_handler), page);
 	}
 }
 
