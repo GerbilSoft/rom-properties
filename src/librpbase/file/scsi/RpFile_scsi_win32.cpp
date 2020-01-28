@@ -50,7 +50,7 @@ int RpFile::rereadDeviceSizeOS(int64_t *pDeviceSize, uint32_t *pSectorSize)
 	// FIXME: What if filename is empty?
 	RP_D(RpFile);
 	const TCHAR drive_name[4] = {static_cast<TCHAR>(d->filename[0]), _T(':'), _T('\\'), 0};
-	BOOL bRet = GetDiskFreeSpaceW(drive_name,
+	BOOL bRet = GetDiskFreeSpace(drive_name,
 		&dwSectorsPerCluster, &dwBytesPerSector,
 		&dwNumberOfFreeClusters, &dwTotalNumberOfClusters);
 	if (bRet && dwBytesPerSector >= 512 && dwTotalNumberOfClusters > 0) {

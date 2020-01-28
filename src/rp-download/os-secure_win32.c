@@ -8,6 +8,10 @@
 
 #include "os-secure.h"
 
+// C includes.
+#include <stdio.h>
+#include "tcharx.h"
+
 // libwin32common
 #include "libwin32common/RpWin32_sdk.h"
 #include "libwin32common/secoptions.h"

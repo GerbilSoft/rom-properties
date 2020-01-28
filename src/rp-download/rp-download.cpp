@@ -53,13 +53,13 @@ using std::unique_ptr;
 
 // tcharx
 #include "tcharx.h"
+using std::tstring;
 
 #ifdef _WIN32
+# include <direct.h>
 # define _TMKDIR(dirname) _tmkdir(dirname)
-using std::wstring;
 #else /* !_WIN32 */
 # define _TMKDIR(dirname) _tmkdir((dirname), 0777)
-using std::string;
 #endif /* _WIN32 */
 
 #ifndef _countof
