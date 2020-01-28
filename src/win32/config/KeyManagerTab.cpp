@@ -127,8 +127,7 @@ class KeyManagerTabPrivate
 		KeyStoreWin32 *keyStore;
 		KeyStore_OwnerDataCallback *keyStore_ownerDataCallback;
 
-		// Fonts.
-		HFONT hFontDlg;		// Main dialog font.
+		// Font Handler.
 		FontHandler fontHandler;
 
 		// EDIT box for ListView.
@@ -227,7 +226,6 @@ KeyManagerTabPrivate::KeyManagerTabPrivate()
 	, hMenuImport(nullptr)
 	, keyStore(new KeyStoreWin32(nullptr))
 	, keyStore_ownerDataCallback(nullptr)
-	, hFontDlg(nullptr)
 	, fontHandler(nullptr)
 	, hEditBox(nullptr)
 	, iEditItem(-1)
@@ -308,7 +306,6 @@ void KeyManagerTabPrivate::initUI(void)
 		return;
 
 	// Initialize the fonts.
-	hFontDlg = GetWindowFont(hWndPropSheet);
 	fontHandler.setWindow(hWndPropSheet);
 
 	// Get the required controls.
@@ -484,7 +481,7 @@ void KeyManagerTabPrivate::initUI(void)
 		WS_CHILDWINDOW | WS_BORDER | ES_LEFT | ES_AUTOHSCROLL | ES_UPPERCASE | ES_WANTRETURN,
 		0, 0, 0, 0,
 		hListView, (HMENU)IDC_KEYMANAGER_EDIT, nullptr, nullptr);
-	SetWindowFont(hEditBox, hFontMono ? hFontMono : hFontDlg, false);
+	fontHandler.addMonoControl(hEditBox);
 	SetWindowSubclass(hEditBox, ListViewEditSubclassProc,
 		IDC_KEYMANAGER_EDIT, reinterpret_cast<DWORD_PTR>(this));
 
