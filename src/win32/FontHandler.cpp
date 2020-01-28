@@ -72,9 +72,10 @@ class FontHandlerPrivate
 	public:
 		/**
 		 * Update fonts.
+		 * @param force Force update. (Use for WM_THEMECHANGED.)
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
-		int updateFonts(void);
+		int updateFonts(bool force = false);
 };
 
 /** FontHandlerPrivate **/
@@ -86,7 +87,7 @@ FontHandlerPrivate::FontHandlerPrivate(HWND hWnd)
 {
 	memset(&lfFontMono, 0, sizeof(lfFontMono));
 	if (hWnd) {
-		updateFonts();
+		updateFonts(true);
 	}
 }
 
@@ -210,9 +211,10 @@ bool FontHandlerPrivate::isClearTypeEnabled(void)
 
 /**
  * Update fonts.
+ * @param force Force update. (Use for WM_THEMECHANGED.)
  * @return 0 on success; negative POSIX error code on error.
  */
-int FontHandlerPrivate::updateFonts(void)
+int FontHandlerPrivate::updateFonts(bool force)
 {
 	if (!hWnd) {
 		// No window. Delete the fonts.
@@ -229,7 +231,7 @@ int FontHandlerPrivate::updateFonts(void)
 	// - The fonts aren't created yet.
 	// - The ClearType state was changed.
 	bool bIsClearType = isClearTypeEnabled();
-	bool bCreateFonts = (bIsClearType != bPrevIsClearType) || !hFontMono;
+	bool bCreateFonts = force || (bIsClearType != bPrevIsClearType) || !hFontMono;
 	if (!bCreateFonts) {
 		// Nothing to do here.
 		return 0;
@@ -349,12 +351,14 @@ void FontHandler::addMonoControl(HWND hWnd)
  * for SPI_GETFONTSMOOTHING or SPI_GETFONTSMOOTHINGTYPE, but that
  * isn't sent when previewing ClearType changes, only when applying.
  * WM_NCPAINT *is* called, though.
+ *
+ * @param force Force update. (Use for WM_THEMECHANGED.)
  */
-void FontHandler::updateFonts(void)
+void FontHandler::updateFonts(bool force)
 {
 	RP_D(FontHandler);
 	assert(d->hWnd != nullptr);
 	if (d->hWnd) {
-		d->updateFonts();
+		d->updateFonts(force);
 	}
 }

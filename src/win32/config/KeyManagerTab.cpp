@@ -715,7 +715,7 @@ INT_PTR CALLBACK KeyManagerTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 				d->hbrAltRow = CreateSolidBrush(d->colorAltRow);
 
 				// Update the fonts.
-				d->fontHandler.updateFonts();
+				d->fontHandler.updateFonts(true);
 			}
 			break;
 		}

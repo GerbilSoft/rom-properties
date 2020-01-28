@@ -62,8 +62,10 @@ class FontHandler
 		 * for SPI_GETFONTSMOOTHING or SPI_GETFONTSMOOTHINGTYPE, but that
 		 * isn't sent when previewing ClearType changes, only when applying.
 		 * WM_NCPAINT *is* called, though.
+		 *
+		 * @param force Force update. (Use for WM_THEMECHANGED.)
 		 */
-		void updateFonts(void);
+		void updateFonts(bool force = false);
 };
 
 #endif /* __ROMPROPERTIES_WIN32_FONTHANDLER_HPP__ */

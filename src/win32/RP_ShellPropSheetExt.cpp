@@ -3347,7 +3347,7 @@ INT_PTR CALLBACK RP_ShellPropSheetExt_Private::DlgProc(HWND hDlg, UINT uMsg, WPA
 			}
 
 			// Update the fonts.
-			d->fontHandler.updateFonts();
+			d->fontHandler.updateFonts(true);
 			break;
 		}
 
