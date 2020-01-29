@@ -30,7 +30,7 @@ using LibWin32Common::WTSSessionNotification;
 // librpbase, librptexture, libromdata
 #include "librpbase/RomFields.hpp"
 #include "librpbase/SystemRegion.hpp"
-#include "librpbase/file/RpMemFile.hpp"
+#include "librpbase/file/win32/RpFile_windres.hpp"
 #include "librpbase/img/RpPng.hpp"
 using namespace LibRpBase;
 using LibRpTexture::rp_image;
@@ -331,14 +331,6 @@ class RP_ShellPropSheetExt_Private
 		int initStringMulti(HWND hDlg, HWND hWndTab,
 			const POINT &pt_start, int idx, const SIZE &size,
 			const RomFields::Field *field);
-
-		/**
-		 * Load a PNG image from a Windows resource.
-		 * TODO: Move somewhere else.
-		 * @param lpName Windows resource.
-		 * @return PNG image, or nullptr on error.
-		 */
-		static rp_image *loadPngFromResource(LPCTSTR lpName);
 
 		/**
 		 * Build the cboLanguage image list.
@@ -1773,52 +1765,6 @@ int RP_ShellPropSheetExt_Private::initStringMulti(HWND hDlg, HWND hWndTab,
 }
 
 /**
- * Load a PNG image from a Windows resource.
- * TODO: Move somewhere else.
- * @param lpName Windows resource.
- * @return PNG image, or nullptr on error.
- */
-rp_image *RP_ShellPropSheetExt_Private::loadPngFromResource(LPCTSTR lpName)
-{
-	HRSRC hRsrc = FindResource(HINST_THISCOMPONENT, lpName, MAKEINTRESOURCE(RT_PNG));
-	if (!hRsrc)
-		return nullptr;
-
-	DWORD dwSize = SizeofResource(HINST_THISCOMPONENT, hRsrc);
-	if (dwSize == 0) {
-		// Unable to get the resource size.
-		return nullptr;
-	}
-
-	HGLOBAL hGlobal = LoadResource(HINST_THISCOMPONENT, hRsrc);
-	if (!hGlobal) {
-		// Unable to load the resource.
-		return nullptr;
-	}
-
-	void *lpData = LockResource(hGlobal);
-	if (!lpData) {
-		// Failed to lock the resource.
-		FreeResource(hGlobal);
-		return nullptr;
-	}
-
-	// Create an RpMemFile wrapper.
-	// TODO: RpResourceFile?
-	RpMemFile *const memFile = new RpMemFile(lpData, dwSize);
-
-	// Load the PNG image.
-	rp_image *const img = RpPng::loadUnchecked(memFile);
-
-	// Clean up.
-	memFile->unref();
-	UnlockResource(lpData);
-	FreeResource(hGlobal);
-
-	return img;
-}
-
-/**
  * Build the cboLanguage image list.
  */
 void RP_ShellPropSheetExt_Private::buildCboLanguageImageList(void)
@@ -1863,7 +1809,16 @@ void RP_ShellPropSheetExt_Private::buildCboLanguageImageList(void)
 	// Load the flags sprite sheet.
 	// TODO: Is premultiplied alpha needed?
 	// Reference: https://stackoverflow.com/questions/307348/how-to-draw-32-bit-alpha-channel-bitmaps
-	unique_ptr<rp_image> imgFlagsSheet(loadPngFromResource(MAKEINTRESOURCE(flagResource)));
+	RpFile_windres *const f_res = new RpFile_windres(HINST_THISCOMPONENT, MAKEINTRESOURCE(flagResource), MAKEINTRESOURCE(RT_PNG));
+	if (!f_res || !f_res->isOpen()) {
+		// Unable to open the resource.
+		if (f_res) {
+			f_res->unref();
+		}
+		return;
+	}
+	unique_ptr<rp_image> imgFlagsSheet(RpPng::loadUnchecked(f_res));
+	f_res->unref();
 	if (!imgFlagsSheet) {
 		// Unable to load the flags sprite sheet.
 		return;

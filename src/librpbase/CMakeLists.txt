@@ -223,10 +223,12 @@ IF(WIN32)
 		file/win32/FileSystem_win32.cpp
 		file/win32/RpFile_win32.cpp
 		file/win32/IStreamWrapper.cpp
+		file/Win32/RpFile_windres.cpp
 		)
 	SET(librpbase_OS_H
 		TextFuncs_wchar.hpp
 		file/win32/IStreamWrapper.hpp
+		file/Win32/RpFile_windres.hpp
 		)
 ELSE(WIN32)
 	SET(librpbase_OS_SRCS
