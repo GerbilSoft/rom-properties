@@ -119,8 +119,9 @@ class MegaDrivePrivate : public RomDataPrivate
 		 * before calling this function.
 		 *
 		 * @param pRomHeader ROM header.
+		 * @param bRedetectRegion If true, re-detect the MD region. (i.e. don't use the one parsed in the constructor)
 		 */
-		void addFields_romHeader(const MD_RomHeader *pRomHeader);
+		void addFields_romHeader(const MD_RomHeader *pRomHeader, bool bRedetectRegion = false);
 
 		/**
 		 * Add fields for the vector table.
@@ -209,8 +210,9 @@ uint32_t MegaDrivePrivate::parseIOSupport(const char *io_support, int size)
  * before calling this function.
  *
  * @param pRomHeader ROM header.
+ * @param bRedetectRegion If true, re-detect the MD region. (i.e. don't use the one parsed in the constructor)
  */
-void MegaDrivePrivate::addFields_romHeader(const MD_RomHeader *pRomHeader)
+void MegaDrivePrivate::addFields_romHeader(const MD_RomHeader *pRomHeader, bool bRedetectRegion)
 {
 	// Read the strings from the header.
 	fields->addField_string(C_("MegaDrive", "System"),
@@ -370,6 +372,14 @@ void MegaDrivePrivate::addFields_romHeader(const MD_RomHeader *pRomHeader)
 
 	// Region code.
 	// TODO: Validate the Mega CD security program?
+	uint32_t md_region_check;
+	if (unlikely(bRedetectRegion)) {
+		md_region_check = MegaDriveRegions::parseRegionCodes(
+			pRomHeader->region_codes, sizeof(pRomHeader->region_codes));
+	} else {
+		md_region_check = this->md_region;
+	}
+
 	static const char *const region_code_bitfield_names[] = {
 		NOP_C_("Region", "Japan"),
 		NOP_C_("Region", "Asia"),
@@ -379,7 +389,7 @@ void MegaDrivePrivate::addFields_romHeader(const MD_RomHeader *pRomHeader)
 	vector<string> *const v_region_code_bitfield_names = RomFields::strArrayToVector_i18n(
 		"Region", region_code_bitfield_names, ARRAY_SIZE(region_code_bitfield_names));
 	fields->addField_bitfield(C_("RomData", "Region Code"),
-		v_region_code_bitfield_names, 0, md_region);
+		v_region_code_bitfield_names, 0, md_region_check);
 }
 
 /**
@@ -966,7 +976,7 @@ int MegaDrive::loadFieldData(void)
 				const MD_RomHeader *const lockon_header =
 					reinterpret_cast<const MD_RomHeader*>(&header[0x100]);
 				d->fields->addTab(C_("MegaDrive", "Locked-On ROM Header"));
-				d->addFields_romHeader(lockon_header);
+				d->addFields_romHeader(lockon_header, true);
 			}
 		}
 	}

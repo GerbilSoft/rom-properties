@@ -108,6 +108,8 @@
     Windows-1252.
   * Fixed GameTDB downloads for CHN and TWN region games. (Nintendo DS,
     Nintendo 3DS, GameCube, Wii)
+  * MegaDrive: Fixed region code detection for locked-on ROMs. Previously,
+    it would use the base ROM region code for both.
 
 * Other changes:
   * Removed the internal copy of libjpeg-turbo. On Windows, gdiplus is now
