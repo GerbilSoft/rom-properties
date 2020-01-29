@@ -180,8 +180,9 @@ public:
 
 		// Determine the column widths.
 		unsigned int col = 0;
-		for (unsigned int bit = 0; bit < count; bit++) {
-			const string &name = bitfieldDesc.names->at(bit);
+		const auto iter_end = bitfieldDesc.names->cend();
+		for (auto iter = bitfieldDesc.names->cbegin(); iter != iter_end; ++iter) {
+			const string &name = *iter;
 			if (name.empty())
 				continue;
 
@@ -197,8 +198,9 @@ public:
 		StreamStateSaver state(os);
 		os << left;
 		col = 0;
-		for (unsigned int bit = 0; bit < count; bit++) {
-			const string &name = bitfieldDesc.names->at(bit);
+		uint32_t bitfield = romField->data.bitfield;
+		for (auto iter = bitfieldDesc.names->cbegin(); iter != iter_end; ++iter, bitfield >>= 1) {
+			const string &name = *iter;
 			if (name.empty())
 				continue;
 
@@ -211,7 +213,7 @@ public:
 				col = 0;
 			}
 
-			os << " [" << ((romField->data.bitfield & (1 << bit)) ? '*' : ' ') << "] " <<
+			os << " [" << ((bitfield & 1) ? '*' : ' ') << "] " <<
 				setw(colSize[col]) << name;
 			col++;
 		}
@@ -831,8 +833,9 @@ public:
 					if (count > 32)
 						count = 32;
 					bool printedOne = false;
-					for (unsigned int bit = 0; bit < count; bit++) {
-						const string &name = bitfieldDesc.names->at(bit);
+					const auto iter_end = bitfieldDesc.names->cend();
+					for (auto iter = bitfieldDesc.names->cbegin(); iter != iter_end; ++iter) {
+						const string &name = *iter;
 						if (name.empty())
 							continue;
 

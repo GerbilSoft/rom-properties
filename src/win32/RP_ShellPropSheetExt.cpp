@@ -1004,7 +1004,8 @@ int RP_ShellPropSheetExt_Private::initBitfield(HWND hDlg, HWND hWndTab,
 
 	row = 0; col = 0;
 	auto iter = tnames.cbegin();
-	for (int j = 0; j < count; ++iter, j++) {
+	uint32_t bitfield = field->data.bitfield;
+	for (int bit = 0; bit < count; ++iter, bit++, bitfield >>= 1) {
 		const tstring &tname = *iter;
 		if (tname.empty())
 			continue;
@@ -1035,12 +1036,12 @@ int RP_ShellPropSheetExt_Private::initBitfield(HWND hDlg, HWND hWndTab,
 			WC_BUTTON, tname.c_str(),
 			WS_CHILD | WS_TABSTOP | WS_VISIBLE | BS_CHECKBOX,
 			pt.x, pt.y, chk_w, rect_chkbox.bottom,
-			hWndTab, (HMENU)(INT_PTR)(IDC_RFT_BITFIELD(idx, j)),
+			hWndTab, (HMENU)(INT_PTR)(IDC_RFT_BITFIELD(idx, bit)),
 			nullptr, nullptr);
 		SetWindowFont(hCheckBox, hFontDlg, false);
 
 		// Set the checkbox state.
-		Button_SetCheck(hCheckBox, (field->data.bitfield & (1 << j)) ? BST_CHECKED : BST_UNCHECKED);
+		Button_SetCheck(hCheckBox, (bitfield & 1) ? BST_CHECKED : BST_UNCHECKED);
 
 		// Next column.
 		pt.x += chk_w;

@@ -508,8 +508,9 @@ void RomDataViewPrivate::initBitfield(QLabel *lblDesc, const RomFields::Field *f
 
 	QGridLayout *gridLayout = new QGridLayout();
 	int row = 0, col = 0;
-	auto iter = bitfieldDesc.names->cbegin();
-	for (int bit = 0; bit < count; bit++, ++iter) {
+	uint32_t bitfield = field->data.bitfield;
+	const auto iter_end = bitfieldDesc.names->cend();
+	for (auto iter = bitfieldDesc.names->cbegin(); iter != iter_end; ++iter, bitfield >>= 1) {
 		const string &name = *iter;
 		if (name.empty())
 			continue;
@@ -517,7 +518,7 @@ void RomDataViewPrivate::initBitfield(QLabel *lblDesc, const RomFields::Field *f
 		// TODO: Disable KDE's automatic mnemonic.
 		QCheckBox *checkBox = new QCheckBox(q);
 		checkBox->setText(U82Q(name));
-		bool value = !!(field->data.bitfield & (1 << bit));
+		bool value = (bitfield & 1);
 		checkBox->setChecked(value);
 
 		// Save the bitfield checkbox's value in the QObject.

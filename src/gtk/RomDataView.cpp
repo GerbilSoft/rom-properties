@@ -875,15 +875,16 @@ rom_data_view_init_bitfield(RomDataView *page, const RomFields::Field *field)
 	gtk_widget_show(widget);
 
 	int row = 0, col = 0;
-	auto iter = bitfieldDesc.names->cbegin();
-	for (int bit = 0; bit < count; bit++, ++iter) {
+	uint32_t bitfield = field->data.bitfield;
+	const auto iter_end = bitfieldDesc.names->cend();
+	for (auto iter = bitfieldDesc.names->cbegin(); iter != iter_end; ++iter, bitfield >>= 1) {
 		const string &name = *iter;
 		if (name.empty())
 			continue;
 
 		GtkWidget *checkBox = gtk_check_button_new_with_label(name.c_str());
 		gtk_widget_show(checkBox);
-		gboolean value = !!(field->data.bitfield & (1 << bit));
+		gboolean value = (bitfield & 1);
 		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(checkBox), value);
 
 		// Save the bitfield checkbox's value in the GObject.
