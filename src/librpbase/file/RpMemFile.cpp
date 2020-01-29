@@ -30,7 +30,9 @@ RpMemFile::RpMemFile(const void *buf, size_t size)
 	, m_size(static_cast<int64_t>(size))
 	, m_pos(0)
 {
-	if (!buf) {
+	assert(buf != nullptr);
+	assert(size != 0);
+	if (!buf || size == 0) {
 		// No buffer specified.
 		m_lastError = EBADF;
 	}
@@ -139,7 +141,7 @@ int64_t RpMemFile::tell(void)
 		return 0;
 	}
 
-	return (int64_t)m_pos;
+	return static_cast<int64_t>(m_pos);
 }
 
 /**
@@ -170,7 +172,7 @@ int64_t RpMemFile::size(void)
 		return -1;
 	}
 
-	return m_size;
+	return static_cast<int64_t>(m_size);
 }
 
 /**
