@@ -28,6 +28,12 @@ class RpMemFile : public IRpFile
 		 */
 		RpMemFile(const void *buf, size_t size);
 	protected:
+		/**
+		 * Internal constructor for use by subclasses.
+		 * This initializes everything to nullptr.
+		 */
+		RpMemFile();
+	protected:
 		virtual ~RpMemFile() { }	// call unref() instead
 
 	private:
@@ -45,7 +51,7 @@ class RpMemFile : public IRpFile
 		/**
 		 * Close the file.
 		 */
-		void close(void) final;
+		void close(void) override;
 
 		/**
 		 * Read data from the file.

@@ -39,6 +39,17 @@ RpMemFile::RpMemFile(const void *buf, size_t size)
 }
 
 /**
+ * Internal constructor for use by subclasses.
+ * This initializes everything to nullptr.
+ */
+RpMemFile::RpMemFile()
+	: super()
+	, m_buf(nullptr)
+	, m_size(0)
+	, m_pos(0)
+{ }
+
+/**
  * Is the file open?
  * This usually only returns false if an error occurred.
  * @return True if the file is open; false if it isn't.
@@ -54,6 +65,8 @@ bool RpMemFile::isOpen(void) const
 void RpMemFile::close(void)
 {
 	m_buf = nullptr;
+	m_size = 0;
+	m_pos = 0;
 }
 
 /**
