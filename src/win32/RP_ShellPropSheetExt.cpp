@@ -2294,23 +2294,24 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 
 	// tr: Field description label.
 	const char *const desc_label_fmt = C_("RomDataView", "%s:");
-	for (int i = 0; i < count; i++) {
-		const RomFields::Field *field = fields->field(i);
-		assert(field != nullptr);
-		if (!field || !field->isValid) {
+	const auto iter_end = fields->cend();
+	int idx = 0;	// needed for control IDs
+	for (auto iter = fields->cbegin(); iter != iter_end; ++iter, idx++) {
+		const RomFields::Field &field = *iter;
+		if (!field.isValid) {
 			t_desc_text.emplace_back(tstring());
 			continue;
-		} else if (field->name.empty()) {
+		} else if (field.name.empty()) {
 			t_desc_text.emplace_back(tstring());
 			continue;
 		}
 
 		const tstring desc_text = U82T_s(rp_sprintf(
-			desc_label_fmt, field->name.c_str()));
+			desc_label_fmt, field.name.c_str()));
 
 		// Get the width of this specific entry.
 		// TODO: Use measureTextSize()?
-		if (field->desc.flags & RomFields::STRF_WARNING) {
+		if (field.desc.flags & RomFields::STRF_WARNING) {
 			// Label is bold. Use hFontBold.
 			HFONT hFontOrig = SelectFont(hDC, hFontBold);
 			GetTextExtentPoint32(hDC, desc_text.data(),
@@ -2420,7 +2421,7 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 			const tstring tstr = U82T_c(name);
 			tcItem.pszText = const_cast<LPTSTR>(tstr.c_str());
 			// FIXME: Does the index work correctly if a tab is skipped?
-			TabCtrl_InsertItem(tabWidget, i, &tcItem);
+			TabCtrl_InsertItem(tabWidget, idx, &tcItem);
 		}
 
 		// Adjust the dialog size for subtabs.
@@ -2471,14 +2472,16 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 		tab.curPt = headerPt;
 	}
 
-	for (int idx = 0; idx < count; idx++) {
-		const RomFields::Field *const field = fields->field(idx);
-		assert(field != nullptr);
-		if (!field || !field->isValid)
+	idx = 0;	// needed for control IDs
+	auto iter_desc = t_desc_text.cbegin();
+	for (auto iter = fields->cbegin(); iter != iter_end; ++iter, ++iter_desc, idx++) {
+		assert(iter_desc != t_desc_text.cend());
+		const RomFields::Field &field = *iter;
+		if (!field.isValid)
 			continue;
 
 		// Verify the tab index.
-		const int tabIdx = field->tabIdx;
+		const int tabIdx = field.tabIdx;
 		assert(tabIdx >= 0 && tabIdx < (int)tabs.size());
 		if (tabIdx < 0 || tabIdx >= (int)tabs.size()) {
 			// Tab index is out of bounds.
@@ -2493,7 +2496,7 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 
 		// Create the static text widget. (FIXME: Disable mnemonics?)
 		HWND hStatic = CreateWindowEx(WS_EX_NOPARENTNOTIFY | WS_EX_TRANSPARENT,
-			WC_STATIC, t_desc_text.at(idx).c_str(),
+			WC_STATIC, iter_desc->c_str(),
 			WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | SS_LEFT,
 			tab.curPt.x, tab.curPt.y, descSize.cx, descSize.cy,
 			tab.hDlg, (HMENU)(INT_PTR)(IDC_STATIC_DESC(idx)),
@@ -2504,7 +2507,7 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 		int field_cy = descSize.cy;	// Default row size.
 		const POINT pt_start = {tab.curPt.x + descSize.cx, tab.curPt.y};
 		SIZE size = {dlg_value_width, field_cy};
-		switch (field->type) {
+		switch (field.type) {
 			case RomFields::RFT_INVALID:
 				// No data here.
 				field_cy = 0;
@@ -2512,11 +2515,11 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 
 			case RomFields::RFT_STRING:
 				// String data.
-				field_cy = initString(hDlg, tab.hDlg, pt_start, idx, size, field, nullptr);
+				field_cy = initString(hDlg, tab.hDlg, pt_start, idx, size, &field, nullptr);
 				break;
 			case RomFields::RFT_BITFIELD:
 				// Create checkboxes starting at the current point.
-				field_cy = initBitfield(hDlg, tab.hDlg, pt_start, idx, field);
+				field_cy = initBitfield(hDlg, tab.hDlg, pt_start, idx, &field);
 				break;
 			case RomFields::RFT_LISTDATA: {
 				// Create a ListView control.
@@ -2525,7 +2528,7 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 
 				// Should the RFT_LISTDATA be placed on its own row?
 				bool doVBox = false;
-				if (field->desc.list_data.flags & RomFields::RFT_LISTDATA_SEPARATE_ROW) {
+				if (field.desc.list_data.flags & RomFields::RFT_LISTDATA_SEPARATE_ROW) {
 					// Separate row.
 					size.cx = dlgSize.cx - 1;
 					// NOTE: This varies depending on if we have subtabs.
@@ -2546,8 +2549,9 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 						doVBox = true;
 					} else {
 						// Check if the next field is on the next tab.
-						const RomFields::Field *nextField = fields->field(idx+1);
-						if (nextField && nextField->tabIdx != tabIdx) {
+						RomFields::const_iterator nextIter = iter;
+						++nextIter;
+						if (nextIter != iter_end && nextIter->tabIdx != tabIdx) {
 							// Next field is on the next tab.
 							doVBox = true;
 						}
@@ -2566,10 +2570,10 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 					}
 				}
 
-				field_cy = initListData(hDlg, tab.hDlg, pt_ListData, idx, size, !doVBox, field);
+				field_cy = initListData(hDlg, tab.hDlg, pt_ListData, idx, size, !doVBox, &field);
 				if (field_cy > 0) {
 					// Add the extra row if necessary.
-					if (field->desc.list_data.flags & RomFields::RFT_LISTDATA_SEPARATE_ROW) {
+					if (field.desc.list_data.flags & RomFields::RFT_LISTDATA_SEPARATE_ROW) {
 						const int szAdj = descSize.cy - (dlgMargin.top/3);
 						field_cy += szAdj;
 						// Reduce the hStatic size slightly.
@@ -2582,19 +2586,19 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 
 			case RomFields::RFT_DATETIME:
 				// Date/Time in Unix format.
-				field_cy = initDateTime(hDlg, tab.hDlg, pt_start, idx, size, field);
+				field_cy = initDateTime(hDlg, tab.hDlg, pt_start, idx, size, &field);
 				break;
 			case RomFields::RFT_AGE_RATINGS:
 				// Age Ratings field.
-				field_cy = initAgeRatings(hDlg, tab.hDlg, pt_start, idx, size, field);
+				field_cy = initAgeRatings(hDlg, tab.hDlg, pt_start, idx, size, &field);
 				break;
 			case RomFields::RFT_DIMENSIONS:
 				// Dimensions field.
-				field_cy = initDimensions(hDlg, tab.hDlg, pt_start, idx, size, field);
+				field_cy = initDimensions(hDlg, tab.hDlg, pt_start, idx, size, &field);
 				break;
 			case RomFields::RFT_STRING_MULTI:
 				// Multi-language string field.
-				field_cy = initStringMulti(hDlg, tab.hDlg, pt_start, idx, size, field);
+				field_cy = initStringMulti(hDlg, tab.hDlg, pt_start, idx, size, &field);
 				break;
 
 			default:

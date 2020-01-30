@@ -1180,7 +1180,6 @@ void RomDataViewPrivate::initDisplayWidgets(void)
 		// TODO: Show an error?
 		return;
 	}
-	const int count = fields->count();
 
 	// Create the QTabWidget.
 	Q_Q(RomDataView);
@@ -1234,14 +1233,14 @@ void RomDataViewPrivate::initDisplayWidgets(void)
 
 	// Create the data widgets.
 	int prevTabIdx = 0;
-	for (int i = 0; i < count; i++) {
-		const RomFields::Field *const field = fields->field(i);
-		assert(field != nullptr);
-		if (!field || !field->isValid)
+	const auto iter_end = fields->cend();
+	for (auto iter = fields->cbegin(); iter != iter_end; ++iter) {
+		const RomFields::Field &field = *iter;
+		if (!field.isValid)
 			continue;
 
 		// Verify the tab index.
-		const int tabIdx = field->tabIdx;
+		const int tabIdx = field.tabIdx;
 		assert(tabIdx >= 0 && tabIdx < (int)tabs.size());
 		if (tabIdx < 0 || tabIdx >= (int)tabs.size()) {
 			// Tab index is out of bounds.
@@ -1261,12 +1260,12 @@ void RomDataViewPrivate::initDisplayWidgets(void)
 		}
 
 		// tr: Field description label.
-		string txt = rp_sprintf(desc_label_fmt, field->name.c_str());
+		string txt = rp_sprintf(desc_label_fmt, field.name.c_str());
 		QLabel *lblDesc = new QLabel(U82Q(txt.c_str()), q);
 		lblDesc->setAlignment(Qt::AlignLeft | Qt::AlignTop);
 		lblDesc->setTextFormat(Qt::PlainText);
 
-		switch (field->type) {
+		switch (field.type) {
 			case RomFields::RFT_INVALID:
 				// No data here.
 				delete lblDesc;
@@ -1278,25 +1277,25 @@ void RomDataViewPrivate::initDisplayWidgets(void)
 				break;
 
 			case RomFields::RFT_STRING:
-				initString(lblDesc, field);
+				initString(lblDesc, &field);
 				break;
 			case RomFields::RFT_BITFIELD:
-				initBitfield(lblDesc, field);
+				initBitfield(lblDesc, &field);
 				break;
 			case RomFields::RFT_LISTDATA:
-				initListData(lblDesc, field);
+				initListData(lblDesc, &field);
 				break;
 			case RomFields::RFT_DATETIME:
-				initDateTime(lblDesc, field);
+				initDateTime(lblDesc, &field);
 				break;
 			case RomFields::RFT_AGE_RATINGS:
-				initAgeRatings(lblDesc, field);
+				initAgeRatings(lblDesc, &field);
 				break;
 			case RomFields::RFT_DIMENSIONS:
-				initDimensions(lblDesc, field);
+				initDimensions(lblDesc, &field);
 				break;
 			case RomFields::RFT_STRING_MULTI:
-				initStringMulti(lblDesc, field);
+				initStringMulti(lblDesc, &field);
 				break;
 		}
 	}

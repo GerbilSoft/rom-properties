@@ -365,11 +365,21 @@ int RomFields::count(void) const
 }
 
 /**
+ * Is this RomFields empty?
+ * @return True if empty; false if not.
+ */
+bool RomFields::empty(void) const
+{
+	RP_D(const RomFields);
+	return d->fields.empty();
+}
+
+/**
  * Get a ROM field.
  * @param idx Field index.
  * @return ROM field, or nullptr if the index is invalid.
  */
-const RomFields::Field *RomFields::field(int idx) const
+const RomFields::Field *RomFields::at(int idx) const
 {
 	RP_D(const RomFields);
 	if (idx < 0 || idx >= static_cast<int>(d->fields.size()))
@@ -378,13 +388,23 @@ const RomFields::Field *RomFields::field(int idx) const
 }
 
 /**
- * Is this RomFields empty?
- * @return True if empty; false if not.
+ * Get a const iterator pointing to the beginning of the RomFields.
+ * @return Const iterator.
  */
-bool RomFields::empty(void) const
+RomFields::const_iterator RomFields::cbegin(void) const
 {
 	RP_D(const RomFields);
-	return d->fields.empty();
+	return d->fields.cbegin();
+}
+
+/**
+ * Get a const iterator pointing to the end of the RomFields.
+ * @return Const iterator.
+ */
+RomFields::const_iterator RomFields::cend(void) const
+{
+	RP_D(const RomFields);
+	return d->fields.cend();
 }
 
 /** Convenience functions for RomData subclasses. **/

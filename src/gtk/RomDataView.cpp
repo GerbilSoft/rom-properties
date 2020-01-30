@@ -1696,14 +1696,14 @@ rom_data_view_update_display(RomDataView *page)
 	const char *const desc_label_fmt = C_("RomDataView", "%s:");
 
 	// Create the data widgets.
-	for (int i = 0; i < count; i++) {
-		const RomFields::Field *const field = fields->field(i);
-		assert(field != nullptr);
-		if (!field || !field->isValid)
+	const auto iter_end = fields->cend();
+	for (auto iter = fields->cbegin(); iter != iter_end; ++iter) {
+		const RomFields::Field &field = *iter;
+		if (!field.isValid)
 			continue;
 
 		// Verify the tab index.
-		const int tabIdx = field->tabIdx;
+		const int tabIdx = field.tabIdx;
 		assert(tabIdx >= 0 && tabIdx < (int)page->tabs->size());
 		if (tabIdx < 0 || tabIdx >= (int)page->tabs->size()) {
 			// Tab index is out of bounds.
@@ -1715,7 +1715,7 @@ rom_data_view_update_display(RomDataView *page)
 
 		GtkWidget *widget = nullptr;
 		bool separate_rows = false;
-		switch (field->type) {
+		switch (field.type) {
 			case RomFields::RFT_INVALID:
 				// No data here.
 				break;
@@ -1725,26 +1725,26 @@ rom_data_view_update_display(RomDataView *page)
 				break;
 
 			case RomFields::RFT_STRING:
-				widget = rom_data_view_init_string(page, field);
+				widget = rom_data_view_init_string(page, &field);
 				break;
 			case RomFields::RFT_BITFIELD:
-				widget = rom_data_view_init_bitfield(page, field);
+				widget = rom_data_view_init_bitfield(page, &field);
 				break;
 			case RomFields::RFT_LISTDATA:
-				separate_rows = !!(field->desc.list_data.flags & RomFields::RFT_LISTDATA_SEPARATE_ROW);
-				widget = rom_data_view_init_listdata(page, field);
+				separate_rows = !!(field.desc.list_data.flags & RomFields::RFT_LISTDATA_SEPARATE_ROW);
+				widget = rom_data_view_init_listdata(page, &field);
 				break;
 			case RomFields::RFT_DATETIME:
-				widget = rom_data_view_init_datetime(page, field);
+				widget = rom_data_view_init_datetime(page, &field);
 				break;
 			case RomFields::RFT_AGE_RATINGS:
-				widget = rom_data_view_init_age_ratings(page, field);
+				widget = rom_data_view_init_age_ratings(page, &field);
 				break;
 			case RomFields::RFT_DIMENSIONS:
-				widget = rom_data_view_init_dimensions(page, field);
+				widget = rom_data_view_init_dimensions(page, &field);
 				break;
 			case RomFields::RFT_STRING_MULTI:
-				widget = rom_data_view_init_string_multi(page, field);
+				widget = rom_data_view_init_string_multi(page, &field);
 				break;
 		}
 
@@ -1753,7 +1753,7 @@ rom_data_view_update_display(RomDataView *page)
 			auto &tab = page->tabs->at(tabIdx);
 
 			// tr: Field description label.
-			const string txt = rp_sprintf(desc_label_fmt, field->name.c_str());
+			const string txt = rp_sprintf(desc_label_fmt, field.name.c_str());
 			GtkWidget *lblDesc = gtk_label_new(txt.c_str());
 			gtk_label_set_use_underline(GTK_LABEL(lblDesc), false);
 			gtk_widget_show(lblDesc);
@@ -1762,8 +1762,8 @@ rom_data_view_update_display(RomDataView *page)
 
 			// Check if this is an RFT_STRING with warning set.
 			// If it is, set the "RFT_STRING_warning" flag.
-			const gboolean is_warning = (field->type == RomFields::RFT_STRING &&
-						     field->desc.flags & RomFields::STRF_WARNING);
+			const gboolean is_warning = (field.type == RomFields::RFT_STRING &&
+						     field.desc.flags & RomFields::STRF_WARNING);
 			g_object_set_data(G_OBJECT(lblDesc), "RFT_STRING_warning", GUINT_TO_POINTER((guint)is_warning));
 
 			// Set the label format type.
@@ -1793,13 +1793,15 @@ rom_data_view_update_display(RomDataView *page)
 				// If this is the last field in the tab,
 				// put the RFT_LISTDATA in the GtkGrid instead.
 				bool doVBox = false;
-				if (tabIdx + 1 == tabCount && i == count-1) {
+				RomFields::const_iterator nextIter = iter;
+				++nextIter;
+				if (tabIdx + 1 == tabCount && (nextIter == iter_end)) {
 					// Last tab, and last field.
 					doVBox = true;
 				} else {
 					// Check if the next field is on the next tab.
-					const RomFields::Field *nextField = fields->field(i+1);
-					if (nextField && nextField->tabIdx != tabIdx) {
+					const RomFields::Field &nextField = *nextIter;
+					if (nextField.tabIdx != tabIdx) {
 						// Next field is on the next tab.
 						doVBox = true;
 					}

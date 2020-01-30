@@ -653,11 +653,9 @@ public:
 		: fields(fields), lc(lc) { }
 	friend std::ostream& operator<<(std::ostream& os, const FieldsOutput& fo) {
 		size_t maxWidth = 0;
-		for (int i = 0; i < fo.fields.count(); i++) {
-			const RomFields::Field *const field = fo.fields.field(i);
-			if (likely(field != nullptr)) {
-				maxWidth = max(maxWidth, field->name.size());
-			}
+		const auto iter_end = fo.fields.cend();
+		for (auto iter = fo.fields.cbegin(); iter != iter_end; ++iter) {
+			maxWidth = max(maxWidth, iter->name.size());
 		}
 		maxWidth += 2;
 
@@ -669,20 +667,19 @@ public:
 		const uint32_t user_lc = (fo.lc != 0 ? fo.lc : def_lc);
 
 		bool printed_first = false;
-		for (int i = 0; i < fo.fields.count(); i++) {
-			auto romField = fo.fields.field(i);
-			assert(romField != nullptr);
-			if (!romField || !romField->isValid)
+		for (auto iter = fo.fields.cbegin(); iter != iter_end; ++iter) {
+			const auto &romField = *iter;
+			if (!romField.isValid)
 				continue;
 
 			if (printed_first)
 				os << endl;
 
 			// New tab?
-			if (tabCount > 1 && tabIdx != romField->tabIdx) {
+			if (tabCount > 1 && tabIdx != romField.tabIdx) {
 				// Tab indexes must be consecutive.
-				assert(tabIdx + 1 == romField->tabIdx);
-				tabIdx = romField->tabIdx;
+				assert(tabIdx + 1 == romField.tabIdx);
+				tabIdx = romField.tabIdx;
 
 				// TODO: Better formatting?
 				const char *name = fo.fields.tabName(tabIdx);
@@ -696,43 +693,43 @@ public:
 				os << " -----" << endl;
 			}
 
-			switch (romField->type) {
+			switch (romField.type) {
 			case RomFields::RFT_INVALID: {
 				assert(!"INVALID field type");
-				os << ColonPad(maxWidth, romField->name.c_str()) << "INVALID";
+				os << ColonPad(maxWidth, romField.name.c_str()) << "INVALID";
 				break;
 			}
 			case RomFields::RFT_STRING: {
-				os << StringField(maxWidth, romField);
+				os << StringField(maxWidth, &romField);
 				break;
 			}
 			case RomFields::RFT_BITFIELD: {
-				os << BitfieldField(maxWidth, romField);
+				os << BitfieldField(maxWidth, &romField);
 				break;
 			}
 			case RomFields::RFT_LISTDATA: {
-				os << ListDataField(maxWidth, romField, def_lc, user_lc);
+				os << ListDataField(maxWidth, &romField, def_lc, user_lc);
 				break;
 			}
 			case RomFields::RFT_DATETIME: {
-				os << DateTimeField(maxWidth, romField);
+				os << DateTimeField(maxWidth, &romField);
 				break;
 			}
 			case RomFields::RFT_AGE_RATINGS: {
-				os << AgeRatingsField(maxWidth, romField);
+				os << AgeRatingsField(maxWidth, &romField);
 				break;
 			}
 			case RomFields::RFT_DIMENSIONS: {
-				os << DimensionsField(maxWidth, romField);
+				os << DimensionsField(maxWidth, &romField);
 				break;
 			}
 			case RomFields::RFT_STRING_MULTI: {
-				os << StringMultiField(maxWidth, romField, def_lc, user_lc);
+				os << StringMultiField(maxWidth, &romField, def_lc, user_lc);
 				break;
 			}
 			default: {
 				assert(!"Unknown RomFieldType");
-				os << ColonPad(maxWidth, romField->name.c_str()) << "NYI";
+				os << ColonPad(maxWidth, romField.name.c_str()) << "NYI";
 				break;
 			}
 			}
@@ -797,16 +794,16 @@ public:
 	friend std::ostream& operator<<(std::ostream& os, const JSONFieldsOutput& fo) {
 		os << "[\n";
 		bool printed_first = false;
-		for (int i = 0; i < fo.fields.count(); i++) {
-			auto romField = fo.fields.field(i);
-			assert(romField != nullptr);
-			if (!romField || !romField->isValid)
+		const auto iter_end = fo.fields.cend();
+		for (auto iter = fo.fields.cbegin(); iter != iter_end; ++iter) {
+			const auto &romField = *iter;
+			if (!romField.isValid)
 				continue;
 
 			if (printed_first)
 				os << ',' << endl;
 
-			switch (romField->type) {
+			switch (romField.type) {
 			case RomFields::RFT_INVALID: {
 				assert(!"INVALID field type");
 				os << "{\"type\":\"INVALID\"}";
@@ -814,15 +811,15 @@ public:
 			}
 
 			case RomFields::RFT_STRING: {
-				os << "{\"type\":\"STRING\",\"desc\":{\"name\":" << JSONString(romField->name.c_str())
-				   << ",\"format\":" << romField->desc.flags
-				   << "},\"data\":" << JSONString(romField->data.str->c_str()) << '}';
+				os << "{\"type\":\"STRING\",\"desc\":{\"name\":" << JSONString(romField.name.c_str())
+				   << ",\"format\":" << romField.desc.flags
+				   << "},\"data\":" << JSONString(romField.data.str->c_str()) << '}';
 				break;
 			}
 
 			case RomFields::RFT_BITFIELD: {
-				const auto &bitfieldDesc = romField->desc.bitfield;
-				os << "{\"type\":\"BITFIELD\",\"desc\":{\"name\":" << JSONString(romField->name.c_str())
+				const auto &bitfieldDesc = romField.desc.bitfield;
+				os << "{\"type\":\"BITFIELD\",\"desc\":{\"name\":" << JSONString(romField.name.c_str())
 				   << ",\"elementsPerRow\":" << bitfieldDesc.elemsPerRow
 				   << ",\"names\":";
 				assert(bitfieldDesc.names != nullptr);
@@ -847,13 +844,13 @@ public:
 				} else {
 					os << "\"ERROR\"";
 				}
-				os << "},\"data\":" << romField->data.bitfield << '}';
+				os << "},\"data\":" << romField.data.bitfield << '}';
 				break;
 			}
 
 			case RomFields::RFT_LISTDATA: {
-				const auto &listDataDesc = romField->desc.list_data;
-				os << "{\"type\":\"LISTDATA\",\"desc\":{\"name\":" << JSONString(romField->name.c_str());
+				const auto &listDataDesc = romField.desc.list_data;
+				os << "{\"type\":\"LISTDATA\",\"desc\":{\"name\":" << JSONString(romField.name.c_str());
 
 				if (listDataDesc.names) {
 					os << ",\"names\":[";
@@ -875,10 +872,10 @@ public:
 				if (!(listDataDesc.flags & RomFields::RFT_LISTDATA_MULTI)) {
 					// Single-language ListData.
 					os << "[\n";
-					const auto list_data = romField->data.list_data.data.single;
+					const auto list_data = romField.data.list_data.data.single;
 					assert(list_data != nullptr);
 					if (list_data) {
-						uint32_t checkboxes = romField->data.list_data.mxd.checkboxes;
+						uint32_t checkboxes = romField.data.list_data.mxd.checkboxes;
 						for (auto it = list_data->cbegin(); it != list_data->cend(); ++it) {
 							if (it != list_data->cbegin()) os << ",\n";
 							os << "\t[";
@@ -904,7 +901,7 @@ public:
 				} else {
 					// Multi-language ListData.
 					os << "{\n";
-					const auto *const list_data = romField->data.list_data.data.multi;
+					const auto *const list_data = romField.data.list_data.data.multi;
 					assert(list_data != nullptr);
 					if (list_data) {
 						for (auto mapIter = list_data->cbegin(); mapIter != list_data->cend(); ++mapIter) {
@@ -923,7 +920,7 @@ public:
 							const auto &lc_data = mapIter->second;
 							if (!lc_data.empty()) {
 								os << '\n';
-								uint32_t checkboxes = romField->data.list_data.mxd.checkboxes;
+								uint32_t checkboxes = romField.data.list_data.mxd.checkboxes;
 								for (auto lcIter = lc_data.cbegin(); lcIter != lc_data.cend(); ++lcIter) {
 									if (lcIter != lc_data.cbegin()) os << ",\n";
 									os << "\t\t[";
@@ -958,18 +955,18 @@ public:
 			}
 
 			case RomFields::RFT_DATETIME: {
-				os << "{\"type\":\"DATETIME\",\"desc\":{\"name\":" << JSONString(romField->name.c_str())
-				   << ",\"flags\":" << romField->desc.flags
-				   << "},\"data\":" << romField->data.date_time
+				os << "{\"type\":\"DATETIME\",\"desc\":{\"name\":" << JSONString(romField.name.c_str())
+				   << ",\"flags\":" << romField.desc.flags
+				   << "},\"data\":" << romField.data.date_time
 				   << '}';
 				break;
 			}
 
 			case RomFields::RFT_AGE_RATINGS: {
-				os << "{\"type\":\"AGE_RATINGS\",\"desc\":{\"name\":" << JSONString(romField->name.c_str())
+				os << "{\"type\":\"AGE_RATINGS\",\"desc\":{\"name\":" << JSONString(romField.name.c_str())
 				   << "},\"data\":";
 
-				const RomFields::age_ratings_t *age_ratings = romField->data.age_ratings;
+				const RomFields::age_ratings_t *age_ratings = romField.data.age_ratings;
 				assert(age_ratings != nullptr);
 				if (!age_ratings) {
 					os << "\"ERROR\"}";
@@ -1008,10 +1005,10 @@ public:
 			}
 
 			case RomFields::RFT_DIMENSIONS: {
-				os << "{\"type\":\"DIMENSIONS\",\"desc\":{\"name\":" << JSONString(romField->name.c_str())
+				os << "{\"type\":\"DIMENSIONS\",\"desc\":{\"name\":" << JSONString(romField.name.c_str())
 				   << "},\"data\":";
 
-				const int *const dimensions = romField->data.dimensions;
+				const int *const dimensions = romField.data.dimensions;
 				os << "{\"w\":" << dimensions[0];
 				if (dimensions[1] > 0) {
 					os << ",\"h\":" << dimensions[1];
@@ -1025,10 +1022,10 @@ public:
 
 			case RomFields::RFT_STRING_MULTI: {
 				// TODO: Act like RFT_STRING if there's only one language?
-				os << "{\"type\":\"STRING_MULTI\",\"desc\":{\"name\":" << JSONString(romField->name.c_str())
-				   << ",\"format\":" << romField->desc.flags
+				os << "{\"type\":\"STRING_MULTI\",\"desc\":{\"name\":" << JSONString(romField.name.c_str())
+				   << ",\"format\":" << romField.desc.flags
 				   << "},\"data\":{\n";
-				const auto *const pStr_multi = romField->data.str_multi;
+				const auto *const pStr_multi = romField.data.str_multi;
 				bool didFirst = false;
 				for (auto iter = pStr_multi->cbegin(); iter != pStr_multi->cend(); ++iter) {
 					// Convert the language code to ASCII.
@@ -1051,7 +1048,7 @@ public:
 
 			default: {
 				assert(!"Unknown RomFieldType");
-				os << "{\"type\":\"NYI\",\"desc\":{\"name\":" << JSONString(romField->name.c_str()) << "}}";
+				os << "{\"type\":\"NYI\",\"desc\":{\"name\":" << JSONString(romField.name.c_str()) << "}}";
 				break;
 			}
 			}

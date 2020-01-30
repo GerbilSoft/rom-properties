@@ -293,6 +293,10 @@ class RomFields
 		RomFieldsPrivate *const d_ptr;
 
 	public:
+		/** Field iterator types. **/
+		typedef std::vector<Field>::const_iterator const_iterator;
+
+	public:
 		/** Field accessors. **/
 
 		/**
@@ -302,17 +306,29 @@ class RomFields
 		int count(void) const;
 
 		/**
-		 * Get a ROM field.
-		 * @param idx Field index.
-		 * @return ROM field, or nullptr if the index is invalid.
-		 */
-		const Field *field(int idx) const;
-
-		/**
 		 * Is this RomFields empty?
 		 * @return True if empty; false if not.
 		 */
 		bool empty(void) const;
+
+		/**
+		 * Get a ROM field.
+		 * @param idx Field index.
+		 * @return ROM field, or nullptr if the index is invalid.
+		 */
+		const Field *at(int idx) const;
+
+		/**
+		 * Get a const iterator pointing to the beginning of the RomFields.
+		 * @return Const iterator.
+		 */
+		const_iterator cbegin(void) const;
+
+		/**
+		 * Get a const iterator pointing to the end of the RomFields.
+		 * @return Const iterator.
+		 */
+		const_iterator cend(void) const;
 
 	public:
 		/**
