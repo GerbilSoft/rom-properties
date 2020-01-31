@@ -446,7 +446,9 @@ void RP_ShellPropSheetExt_Private::loadImages(void)
 	// Banner.
 	if (imgbf & RomData::IMGBF_INT_BANNER) {
 		// Get the banner.
-		const rp_image *banner = romData->image(RomData::IMG_INT_BANNER);
+		const rp_image *const banner = romData->image(RomData::IMG_INT_BANNER);
+		assert(banner != nullptr);
+		assert(banner->isValid());
 		if (banner && banner->isValid()) {
 			if (!lblBanner) {
 				lblBanner = new DragImageLabel(hDlgSheet);
@@ -474,7 +476,9 @@ void RP_ShellPropSheetExt_Private::loadImages(void)
 	// Icon.
 	if (imgbf & RomData::IMGBF_INT_ICON) {
 		// Get the icon.
-		const rp_image *icon = romData->image(RomData::IMG_INT_ICON);
+		const rp_image *const icon = romData->image(RomData::IMG_INT_ICON);
+		assert(icon != nullptr);
+		assert(icon->isValid());
 		if (icon && icon->isValid()) {
 			if (!lblIcon) {
 				lblIcon = new DragImageLabel(hDlgSheet);
@@ -1224,18 +1228,19 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 	// TODO: Use ownerdraw instead? (WM_MEASUREITEM / WM_DRAWITEM)
 	unique_ptr<int[]> col_width(new int[colCount]);
 
+	// Format table.
+	// All values are known to fit in uint8_t.
+	static const uint8_t align_tbl[4] = {
+		// Order: TXA_D, TXA_L, TXA_C, TXA_R
+		LVCFMT_LEFT, LVCFMT_LEFT, LVCFMT_CENTER, LVCFMT_RIGHT
+	};
+
+	// NOTE: ListView header alignment matches data alignment.
+	// We'll prefer the data alignment value.
+	uint32_t align = listDataDesc.alignment.data;
+
 	LVCOLUMN lvColumn;
 	if (listDataDesc.names) {
-		// Format table.
-		// All values are known to fit in uint8_t.
-		static const uint8_t align_tbl[4] = {
-			// Order: TXA_D, TXA_L, TXA_C, TXA_R
-			LVCFMT_LEFT, LVCFMT_LEFT, LVCFMT_CENTER, LVCFMT_RIGHT
-		};
-
-		// NOTE: ListView header alignment matches data alignment.
-		// We'll prefer the data alignment value.
-		uint32_t align = listDataDesc.alignment.data;
 		auto iter = listDataDesc.names->cbegin();
 		for (int i = 0; i < colCount; ++iter, i++, align >>= 2) {
 			lvColumn.mask = LVCF_TEXT | LVCF_FMT;
@@ -1259,8 +1264,8 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 		}
 	} else {
 		lvColumn.mask = LVCF_FMT;
-		lvColumn.fmt = LVCFMT_LEFT;
-		for (int i = 0; i < colCount; i++) {
+		for (int i = 0; i < colCount; i++, align >>= 2) {
+			lvColumn.fmt = align_tbl[align & 3];
 			ListView_InsertColumn(hListView, i, &lvColumn);
 			col_width[i] = LVSCW_AUTOSIZE_USEHEADER;
 		}
