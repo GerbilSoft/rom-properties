@@ -2764,7 +2764,7 @@ IFACEMETHODIMP RP_ShellPropSheetExt::Initialize(
 	if (!d_ptr) {
 		d_ptr = new RP_ShellPropSheetExt_Private(this);
 	}
-	d_ptr->filename = T2U8(tfilename, cchFilename);
+	d_ptr->filename = std::move(u8filename);
 
 	hr = S_OK;
 
@@ -3396,7 +3396,7 @@ UINT CALLBACK RP_ShellPropSheetExt_Private::CallbackProc(HWND hWnd, UINT uMsg, L
 
 			// Release the property sheet extension object. This is called even 
 			// if the property page was never actually displayed.
-			RP_ShellPropSheetExt *pExt = reinterpret_cast<RP_ShellPropSheetExt*>(ppsp->lParam);
+			RP_ShellPropSheetExt *const pExt = reinterpret_cast<RP_ShellPropSheetExt*>(ppsp->lParam);
 			if (pExt) {
 				pExt->Release();
 			}
