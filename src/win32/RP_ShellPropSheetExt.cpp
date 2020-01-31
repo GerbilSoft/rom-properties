@@ -135,7 +135,13 @@ class RP_ShellPropSheetExt_Private
 			uint32_t checkboxes;		// Checkboxes.
 			bool hasCheckboxes;		// True if checkboxes are valid.
 
-			LvData_t() : checkboxes(0), hasCheckboxes(false) { }
+			// For RFT_LISTDATA_MULTI only!
+			HWND hListView;
+			const RomFields::Field *pField;
+
+			LvData_t()
+				: checkboxes(0), hasCheckboxes(false)
+				, hListView(nullptr), pField(nullptr) { }
 		};
 
 		// ListView data.
@@ -179,22 +185,6 @@ class RP_ShellPropSheetExt_Private
 		// RFT_STRING_MULTI value labels.
 		typedef std::pair<HWND, const RomFields::Field*> Data_StringMulti_t;
 		vector<Data_StringMulti_t> vecStringMulti;
-
-		// RFT_LISTDATA_MULTI value ListViews.
-		struct Data_ListDataMulti_t {
-			HWND hListView;
-			const RomFields::Field *field;
-			uint16_t dlgID;
-
-			Data_ListDataMulti_t(
-				HWND hListView,
-				const RomFields::Field *field,
-				uint16_t dlgID)
-				: hListView(hListView)
-				, field(field)
-				, dlgID(dlgID) { }
-		};
-		vector<Data_ListDataMulti_t> vecListDataMulti;
 
 	public:
 		/**
@@ -1474,6 +1464,11 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 		}
 	}
 
+	if (isMulti) {
+		lvData.hListView = hListView;
+		lvData.pField = &field;
+	}
+
 	// Save the LvData_t.
 	// TODO: Verify that std::move() works here.
 	map_lvData.insert(std::make_pair(dlgID, std::move(lvData)));
@@ -1535,10 +1530,6 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 	} else {
 		// TODO: Can't handle this if no items are present.
 		cy = size.cy;
-	}
-
-	if (isMulti) {
-		vecListDataMulti.emplace_back(Data_ListDataMulti_t(hListView, &field, dlgID));
 	}
 
 	// TODO: Skip this if cy == size.cy?
@@ -1959,11 +1950,15 @@ void RP_ShellPropSheetExt_Private::updateMulti(uint32_t user_lc)
 	}
 
 	// RFT_LISTDATA_MULTI
-	for (auto iter = vecListDataMulti.cbegin();
-	     iter != vecListDataMulti.cend(); ++iter)
-	{
-		const HWND hListView = iter->hListView;
-		const RomFields::Field *const pField = iter->field;
+	for (auto iter = map_lvData.begin(); iter != map_lvData.end(); ++iter) {
+		LvData_t &lvData = iter->second;
+		if (!lvData.hListView) {
+			// Not an RFT_LISTDATA_MULTI.
+			continue;
+		}
+
+		const HWND hListView = lvData.hListView;
+		const RomFields::Field *const pField = lvData.pField;
 		const auto *const pListData_multi = pField->data.list_data.data.multi;
 		assert(pListData_multi != nullptr);
 		assert(!pListData_multi->empty());
@@ -2028,49 +2023,45 @@ void RP_ShellPropSheetExt_Private::updateMulti(uint32_t user_lc)
 		AutoGetDC hDC(hListView, hFontDlg);
 
 		// Get the ListView data vector for LVS_OWNERDATA.
-		auto iter_lvData = map_lvData.find(iter->dlgID);
-		assert(iter_lvData != map_lvData.end());
-		if (iter_lvData != map_lvData.end()) {
-			vector<vector<tstring> > &vvStr = iter_lvData->second.vvStr;
+		vector<vector<tstring> > &vvStr = lvData.vvStr;
 
-			auto iter_ld_row = list_data->cbegin();
-			auto iter_vvStr_row = vvStr.begin();
-			for (; iter_ld_row != list_data->cend() && iter_vvStr_row != vvStr.end();
-			     ++iter_ld_row, ++iter_vvStr_row)
+		auto iter_ld_row = list_data->cbegin();
+		auto iter_vvStr_row = vvStr.begin();
+		for (; iter_ld_row != list_data->cend() && iter_vvStr_row != vvStr.end();
+		     ++iter_ld_row, ++iter_vvStr_row)
+		{
+			const vector<string> &src_data_row = *iter_ld_row;
+			vector<tstring> &dest_data_row = *iter_vvStr_row;
+
+			auto iter_sdr = src_data_row.cbegin();
+			auto iter_ddr = dest_data_row.begin();
+			int col = 0;
+			for (; iter_sdr != src_data_row.cend() && iter_ddr != dest_data_row.end();
+			     ++iter_sdr, ++iter_ddr, col++)
 			{
-				const vector<string> &src_data_row = *iter_ld_row;
-				vector<tstring> &dest_data_row = *iter_vvStr_row;
-
-				auto iter_sdr = src_data_row.cbegin();
-				auto iter_ddr = dest_data_row.begin();
-				int col = 0;
-				for (; iter_sdr != src_data_row.cend() && iter_ddr != dest_data_row.end();
-				     ++iter_sdr, ++iter_ddr, col++)
-				{
-					tstring tstr = U82T_s(*iter_sdr);
-					int width = measureListDataString(hDC, tstr);
-					if (col < colCount) {
-						col_width[col] = std::max(col_width[col], width);
-					}
-					*iter_ddr = std::move(tstr);
+				tstring tstr = U82T_s(*iter_sdr);
+				int width = measureListDataString(hDC, tstr);
+				if (col < colCount) {
+					col_width[col] = std::max(col_width[col], width);
 				}
+				*iter_ddr = std::move(tstr);
 			}
-
-			// Resize the columns to fit the contents.
-			// NOTE: Only done on first load.
-			// TODO: Need to measure text...
-			if (!cboLanguage) {
-				// TODO: Do this on system theme change?
-				// TODO: Add a flag for 'main data column' and adjust it to
-				// not exceed the viewport.
-				for (int i = 0; i < colCount; i++) {
-					ListView_SetColumnWidth(hListView, i, col_width[i]);
-				}
-			}
-
-			// Redraw all items.
-			ListView_RedrawItems(hListView, 0, static_cast<int>(vvStr.size()));
 		}
+
+		// Resize the columns to fit the contents.
+		// NOTE: Only done on first load.
+		// TODO: Need to measure text...
+		if (!cboLanguage) {
+			// TODO: Do this on system theme change?
+			// TODO: Add a flag for 'main data column' and adjust it to
+			// not exceed the viewport.
+			for (int i = 0; i < colCount; i++) {
+				ListView_SetColumnWidth(hListView, i, col_width[i]);
+			}
+		}
+
+		// Redraw all items.
+		ListView_RedrawItems(hListView, 0, static_cast<int>(vvStr.size()));
 	}
 
 	if (!cboLanguage && set_lc.size() > 1) {
