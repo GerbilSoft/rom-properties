@@ -140,15 +140,16 @@ public:
 
 class StringField {
 	size_t width;
-	const RomFields::Field *romField;
+	const RomFields::Field &romField;
 public:
-	StringField(size_t width, const RomFields::Field *romField) :width(width), romField(romField) {}
+	StringField(size_t width, const RomFields::Field &romField)
+		: width(width), romField(romField) { }
 	friend ostream& operator<<(ostream& os, const StringField& field) {
 		// NOTE: nullptr string is an empty string, not an error.
 		auto romField = field.romField;
-		os << ColonPad(field.width, romField->name.c_str());
-		if (romField->data.str) {
-			os << SafeString(romField->data.str, true, field.width);
+		os << ColonPad(field.width, romField.name.c_str());
+		if (romField.data.str) {
+			os << SafeString(romField.data.str, true, field.width);
 		} else {
 			// Empty string.
 			os << "''";
@@ -159,12 +160,13 @@ public:
 
 class BitfieldField {
 	size_t width;
-	const RomFields::Field *romField;
+	const RomFields::Field &romField;
 public:
-	BitfieldField(size_t width, const RomFields::Field *romField) :width(width), romField(romField) {}
+	BitfieldField(size_t width, const RomFields::Field &romField)
+		: width(width), romField(romField) { }
 	friend ostream& operator<<(ostream& os, const BitfieldField& field) {
 		auto romField = field.romField;
-		const auto &bitfieldDesc = romField->desc.bitfield;
+		const auto &bitfieldDesc = romField.desc.bitfield;
 		assert(bitfieldDesc.names != nullptr);
 		if (!bitfieldDesc.names) {
 			return os << "[ERROR: No bitfield names.]";
@@ -194,11 +196,11 @@ public:
 		}
 
 		// Print the bits.
-		os << ColonPad(field.width, romField->name.c_str());
+		os << ColonPad(field.width, romField.name.c_str());
 		StreamStateSaver state(os);
 		os << left;
 		col = 0;
-		uint32_t bitfield = romField->data.bitfield;
+		uint32_t bitfield = romField.data.bitfield;
 		for (auto iter = bitfieldDesc.names->cbegin(); iter != iter_end; ++iter, bitfield >>= 1) {
 			const string &name = *iter;
 			if (name.empty())
@@ -223,16 +225,16 @@ public:
 
 class ListDataField {
 	size_t width;
-	const RomFields::Field *romField;
+	const RomFields::Field &romField;
 	uint32_t def_lc;	// ROM-default language code.
 	uint32_t user_lc;	// User-specified language code.
 public:
-	ListDataField(size_t width, const RomFields::Field *romField, uint32_t def_lc, uint32_t user_lc)
-		:width(width), romField(romField), def_lc(def_lc), user_lc(user_lc) { }
+	ListDataField(size_t width, const RomFields::Field &romField, uint32_t def_lc, uint32_t user_lc)
+		: width(width), romField(romField), def_lc(def_lc), user_lc(user_lc) { }
 	friend ostream& operator<<(ostream& os, const ListDataField& field) {
 		auto romField = field.romField;
 
-		const auto &listDataDesc = romField->desc.list_data;
+		const auto &listDataDesc = romField.desc.list_data;
 		// NOTE: listDataDesc.names can be nullptr,
 		// which means we don't have any column headers.
 
@@ -243,7 +245,7 @@ public:
 			assert(field.def_lc != 0);
 
 			// Determine the language to use.
-			const auto *const pListDataMulti = romField->data.list_data.data.multi;
+			const auto *const pListDataMulti = romField.data.list_data.data.multi;
 			assert(pListDataMulti != nullptr);
 			assert(!pListDataMulti->empty());
 			if (pListDataMulti && !pListDataMulti->empty()) {
@@ -267,7 +269,7 @@ public:
 			}
 		} else {
 			// Single language.
-			list_data = romField->data.list_data.data.single;
+			list_data = romField.data.list_data.data.single;
 		}
 
 		assert(list_data != nullptr);
@@ -342,7 +344,7 @@ public:
 
 		/** Print the list data. **/
 
-		os << ColonPad(field.width, romField->name.c_str());
+		os << ColonPad(field.width, romField.name.c_str());
 		StreamStateSaver state(os);
 
 		// Print the list on a separate row from the field name?
@@ -405,7 +407,7 @@ public:
 			skipFirstNL = false;
 		}
 
-		uint32_t checkboxes = romField->data.list_data.mxd.checkboxes;
+		uint32_t checkboxes = romField.data.list_data.mxd.checkboxes;
 		if (listDataDesc.flags & RomFields::RFT_LISTDATA_CHECKBOXES) {
 			// Remove the 4 spaces in column 0.
 			// Those spaces will not be used in the text area.
@@ -505,17 +507,18 @@ public:
 
 class DateTimeField {
 	size_t width;
-	const RomFields::Field *romField;
+	const RomFields::Field &romField;
 public:
-	DateTimeField(size_t width, const RomFields::Field *romField) :width(width), romField(romField) {}
+	DateTimeField(size_t width, const RomFields::Field &romField)
+		: width(width), romField(romField) { }
 	friend ostream& operator<<(ostream& os, const DateTimeField& field) {
 		auto romField = field.romField;
-		auto flags = romField->desc.flags;
+		auto flags = romField.desc.flags;
 
-		os << ColonPad(field.width, romField->name.c_str());
+		os << ColonPad(field.width, romField.name.c_str());
 		StreamStateSaver state(os);
 
-		if (romField->data.date_time == -1) {
+		if (romField.data.date_time == -1) {
 			// Invalid date/time.
 			os << "Unknown";
 			return os;
@@ -524,7 +527,7 @@ public:
 		// FIXME: This may result in truncated times on 32-bit Linux.
 		struct tm timestamp;
 		struct tm *ret;
-		time_t date_time = (time_t)romField->data.date_time;
+		time_t date_time = (time_t)romField.data.date_time;
 		if (flags & RomFields::RFT_DATETIME_IS_UTC) {
 			ret = gmtime_r(&date_time, &timestamp);
 		}
@@ -560,17 +563,18 @@ public:
 
 class AgeRatingsField {
 	size_t width;
-	const RomFields::Field *romField;
+	const RomFields::Field &romField;
 public:
-	AgeRatingsField(size_t width, const RomFields::Field *romField) :width(width), romField(romField) {}
+	AgeRatingsField(size_t width, const RomFields::Field &romField)
+		: width(width), romField(romField) { }
 	friend ostream& operator<<(ostream& os, const AgeRatingsField& field) {
 		auto romField = field.romField;
 
-		os << ColonPad(field.width, romField->name.c_str());
+		os << ColonPad(field.width, romField.name.c_str());
 		StreamStateSaver state(os);
 
 		// Convert the age ratings field to a string.
-		const RomFields::age_ratings_t *age_ratings = romField->data.age_ratings;
+		const RomFields::age_ratings_t *age_ratings = romField.data.age_ratings;
 		os << RomFields::ageRatingsDecode(age_ratings, false);
 		return os;
 	}
@@ -578,17 +582,18 @@ public:
 
 class DimensionsField {
 	size_t width;
-	const RomFields::Field *romField;
+	const RomFields::Field &romField;
 public:
-	DimensionsField(size_t width, const RomFields::Field *romField) :width(width), romField(romField) {}
+	DimensionsField(size_t width, const RomFields::Field &romField)
+		: width(width), romField(romField) { }
 	friend ostream& operator<<(ostream& os, const DimensionsField& field) {
 		auto romField = field.romField;
 
-		os << ColonPad(field.width, romField->name.c_str());
+		os << ColonPad(field.width, romField.name.c_str());
 		StreamStateSaver state(os);
 
 		// Convert the dimensions field to a string.
-		const int *const dimensions = romField->data.dimensions;
+		const int *const dimensions = romField.data.dimensions;
 		os << dimensions[0];
 		if (dimensions[1] > 0) {
 			os << 'x' << dimensions[1];
@@ -602,21 +607,21 @@ public:
 
 class StringMultiField {
 	size_t width;
-	const RomFields::Field *romField;
+	const RomFields::Field &romField;
 	uint32_t def_lc;	// ROM-default language code.
 	uint32_t user_lc;	// User-specified language code.
 public:
-	StringMultiField(size_t width, const RomFields::Field *romField, uint32_t def_lc, uint32_t user_lc)
-		:width(width), romField(romField), def_lc(def_lc), user_lc(user_lc)
+	StringMultiField(size_t width, const RomFields::Field &romField, uint32_t def_lc, uint32_t user_lc)
+		: width(width), romField(romField), def_lc(def_lc), user_lc(user_lc)
 	{
 		assert(this->def_lc != 0);
 	}
 	friend ostream& operator<<(ostream& os, const StringMultiField& field) {
 		// NOTE: nullptr string is an empty string, not an error.
 		auto romField = field.romField;
-		os << ColonPad(field.width, romField->name.c_str());
+		os << ColonPad(field.width, romField.name.c_str());
 
-		const auto *const pStr_multi = romField->data.str_multi;
+		const auto *const pStr_multi = romField.data.str_multi;
 		assert(pStr_multi != nullptr);
 		assert(!pStr_multi->empty());
 		if (pStr_multi && !pStr_multi->empty()) {
@@ -700,31 +705,31 @@ public:
 				break;
 			}
 			case RomFields::RFT_STRING: {
-				os << StringField(maxWidth, &romField);
+				os << StringField(maxWidth, romField);
 				break;
 			}
 			case RomFields::RFT_BITFIELD: {
-				os << BitfieldField(maxWidth, &romField);
+				os << BitfieldField(maxWidth, romField);
 				break;
 			}
 			case RomFields::RFT_LISTDATA: {
-				os << ListDataField(maxWidth, &romField, def_lc, user_lc);
+				os << ListDataField(maxWidth, romField, def_lc, user_lc);
 				break;
 			}
 			case RomFields::RFT_DATETIME: {
-				os << DateTimeField(maxWidth, &romField);
+				os << DateTimeField(maxWidth, romField);
 				break;
 			}
 			case RomFields::RFT_AGE_RATINGS: {
-				os << AgeRatingsField(maxWidth, &romField);
+				os << AgeRatingsField(maxWidth, romField);
 				break;
 			}
 			case RomFields::RFT_DIMENSIONS: {
-				os << DimensionsField(maxWidth, &romField);
+				os << DimensionsField(maxWidth, romField);
 				break;
 			}
 			case RomFields::RFT_STRING_MULTI: {
-				os << StringMultiField(maxWidth, &romField, def_lc, user_lc);
+				os << StringMultiField(maxWidth, romField, def_lc, user_lc);
 				break;
 			}
 			default: {

@@ -758,19 +758,19 @@ rom_data_view_init_header_row(RomDataView *page)
  * @return Display widget, or nullptr on error.
  */
 static GtkWidget*
-rom_data_view_init_string(RomDataView *page, const RomFields::Field *field, const char *str = nullptr)
+rom_data_view_init_string(RomDataView *page, const RomFields::Field &field, const char *str = nullptr)
 {
 	// String type.
 	GtkWidget *widget = gtk_label_new(nullptr);
 	gtk_label_set_use_underline(GTK_LABEL(widget), false);
 	gtk_widget_show(widget);
 
-	if (!str && field->data.str) {
-		str = field->data.str->c_str();
+	if (!str && field.data.str) {
+		str = field.data.str->c_str();
 	}
 
-	if (field->type == RomFields::RFT_STRING &&
-	    (field->desc.flags & RomFields::STRF_CREDITS))
+	if (field.type == RomFields::RFT_STRING &&
+	    (field.desc.flags & RomFields::STRF_CREDITS))
 	{
 		// Credits text. Enable formatting and center alignment.
 		gtk_label_set_justify(GTK_LABEL(widget), GTK_JUSTIFY_CENTER);
@@ -791,17 +791,17 @@ rom_data_view_init_string(RomDataView *page, const RomFields::Field *field, cons
 	}
 
 	// Check for any formatting options. (RFT_STRING only)
-	if (field->type == RomFields::RFT_STRING && field->desc.flags != 0) {
+	if (field.type == RomFields::RFT_STRING && field.desc.flags != 0) {
 		PangoAttrList *const attr_lst = pango_attr_list_new();
 
 		// Monospace font?
-		if (field->desc.flags & RomFields::STRF_MONOSPACE) {
+		if (field.desc.flags & RomFields::STRF_MONOSPACE) {
 			pango_attr_list_insert(attr_lst,
 				pango_attr_family_new("monospace"));
 		}
 
 		// "Warning" font?
-		if (field->desc.flags & RomFields::STRF_WARNING) {
+		if (field.desc.flags & RomFields::STRF_WARNING) {
 			pango_attr_list_insert(attr_lst,
 				pango_attr_weight_new(PANGO_WEIGHT_BOLD));
 			pango_attr_list_insert(attr_lst,
@@ -811,10 +811,10 @@ rom_data_view_init_string(RomDataView *page, const RomFields::Field *field, cons
 		gtk_label_set_attributes(GTK_LABEL(widget), attr_lst);
 		pango_attr_list_unref(attr_lst);
 
-		if (field->desc.flags & RomFields::STRF_CREDITS) {
+		if (field.desc.flags & RomFields::STRF_CREDITS) {
 			// Credits row goes at the end.
 			// There should be a maximum of one STRF_CREDITS per tab.
-			auto &tab = page->tabs->at(field->tabIdx);
+			auto &tab = page->tabs->at(field.tabIdx);
 			assert(tab.lblCredits == nullptr);
 
 			// Credits row.
@@ -837,11 +837,11 @@ rom_data_view_init_string(RomDataView *page, const RomFields::Field *field, cons
  * @return Display widget, or nullptr on error.
  */
 static GtkWidget*
-rom_data_view_init_bitfield(RomDataView *page, const RomFields::Field *field)
+rom_data_view_init_bitfield(RomDataView *page, const RomFields::Field &field)
 {
 	// Bitfield type. Create a grid of checkboxes.
 	// TODO: Description label needs some padding on the top...
-	const auto &bitfieldDesc = field->desc.bitfield;
+	const auto &bitfieldDesc = field.desc.bitfield;
 
 	int count = (int)bitfieldDesc.names->size();
 	assert(count <= 32);
@@ -875,7 +875,7 @@ rom_data_view_init_bitfield(RomDataView *page, const RomFields::Field *field)
 	gtk_widget_show(widget);
 
 	int row = 0, col = 0;
-	uint32_t bitfield = field->data.bitfield;
+	uint32_t bitfield = field.data.bitfield;
 	const auto iter_end = bitfieldDesc.names->cend();
 	for (auto iter = bitfieldDesc.names->cbegin(); iter != iter_end; ++iter, bitfield >>= 1) {
 		const string &name = *iter;
@@ -920,10 +920,10 @@ rom_data_view_init_bitfield(RomDataView *page, const RomFields::Field *field)
  * @return Display widget, or nullptr on error.
  */
 static GtkWidget*
-rom_data_view_init_listdata(G_GNUC_UNUSED RomDataView *page, const RomFields::Field *field)
+rom_data_view_init_listdata(G_GNUC_UNUSED RomDataView *page, const RomFields::Field &field)
 {
 	// ListData type. Create a GtkListStore for the data.
-	const auto &listDataDesc = field->desc.list_data;
+	const auto &listDataDesc = field.desc.list_data;
 	// NOTE: listDataDesc.names can be nullptr,
 	// which means we don't have any column headers.
 
@@ -933,7 +933,7 @@ rom_data_view_init_listdata(G_GNUC_UNUSED RomDataView *page, const RomFields::Fi
 	const bool isMulti = !!(listDataDesc.flags & RomFields::RFT_LISTDATA_MULTI);
 	if (isMulti) {
 		// Multiple languages.
-		const auto *const multi = field->data.list_data.data.multi;
+		const auto *const multi = field.data.list_data.data.multi;
 		assert(multi != nullptr);
 		assert(!multi->empty());
 		if (!multi || multi->empty()) {
@@ -944,7 +944,7 @@ rom_data_view_init_listdata(G_GNUC_UNUSED RomDataView *page, const RomFields::Fi
 		list_data = &multi->cbegin()->second;
 	} else {
 		// Single language.
-		list_data = field->data.list_data.data.single;
+		list_data = field.data.list_data.data.single;
 	}
 
 	assert(list_data != nullptr);
@@ -965,8 +965,8 @@ rom_data_view_init_listdata(G_GNUC_UNUSED RomDataView *page, const RomFields::Fi
 	}
 
 	if (hasIcons) {
-		assert(field->data.list_data.mxd.icons != nullptr);
-		if (!field->data.list_data.mxd.icons) {
+		assert(field.data.list_data.mxd.icons != nullptr);
+		if (!field.data.list_data.mxd.icons) {
 			// No icons vector...
 			return nullptr;
 		}
@@ -1016,7 +1016,7 @@ rom_data_view_init_listdata(G_GNUC_UNUSED RomDataView *page, const RomFields::Fi
 	// Add the row data.
 	uint32_t checkboxes = 0;
 	if (hasCheckboxes) {
-		checkboxes = field->data.list_data.mxd.checkboxes;
+		checkboxes = field.data.list_data.mxd.checkboxes;
 	}
 	unsigned int row = 0;	// for icons [TODO: Use iterator?]
 	for (auto iter = list_data->cbegin(); iter != list_data->cend(); ++iter, row++) {
@@ -1038,11 +1038,11 @@ rom_data_view_init_listdata(G_GNUC_UNUSED RomDataView *page, const RomFields::Fi
 			checkboxes >>= 1;
 		} else if (hasIcons) {
 			// Icon column.
-			const rp_image *const icon = field->data.list_data.mxd.icons->at(row);
+			const rp_image *const icon = field.data.list_data.mxd.icons->at(row);
 			assert(icon != nullptr);
 			if (icon) {
 				PIMGTYPE pixbuf = rp_image_to_PIMGTYPE(
-					field->data.list_data.mxd.icons->at(row));
+					field.data.list_data.mxd.icons->at(row));
 				if (pixbuf) {
 					// TODO: Ideal icon size?
 					// Using 32x32 for now.
@@ -1174,7 +1174,7 @@ rom_data_view_init_listdata(G_GNUC_UNUSED RomDataView *page, const RomFields::Fi
 
 	if (isMulti) {
 		page->vecListDataMulti->emplace_back(
-			Data_ListDataMulti_t(listStore, GTK_TREE_VIEW(treeView), field));
+			Data_ListDataMulti_t(listStore, GTK_TREE_VIEW(treeView), &field));
 	}
 
 	return widget;
@@ -1187,19 +1187,19 @@ rom_data_view_init_listdata(G_GNUC_UNUSED RomDataView *page, const RomFields::Fi
  * @return Display widget, or nullptr on error.
  */
 static GtkWidget*
-rom_data_view_init_datetime(G_GNUC_UNUSED RomDataView *page, const RomFields::Field *field)
+rom_data_view_init_datetime(G_GNUC_UNUSED RomDataView *page, const RomFields::Field &field)
 {
 	// Date/Time.
-	if (field->data.date_time == -1) {
+	if (field.data.date_time == -1) {
 		// tr: Invalid date/time.
 		return rom_data_view_init_string(page, field, C_("RomDataView", "Unknown"));
 	}
 
 	GDateTime *dateTime;
-	if (field->desc.flags & RomFields::RFT_DATETIME_IS_UTC) {
-		dateTime = g_date_time_new_from_unix_utc(field->data.date_time);
+	if (field.desc.flags & RomFields::RFT_DATETIME_IS_UTC) {
+		dateTime = g_date_time_new_from_unix_utc(field.data.date_time);
 	} else {
-		dateTime = g_date_time_new_from_unix_local(field->data.date_time);
+		dateTime = g_date_time_new_from_unix_local(field.data.date_time);
 	}
 
 	static const char *const formats[8] = {
@@ -1215,7 +1215,7 @@ rom_data_view_init_datetime(G_GNUC_UNUSED RomDataView *page, const RomFields::Fi
 		"%b %d %X",	// Date Time (no year)
 	};
 
-	const char *const format = formats[field->desc.flags & RomFields::RFT_DATETIME_HAS_DATETIME_NO_YEAR_MASK];
+	const char *const format = formats[field.desc.flags & RomFields::RFT_DATETIME_HAS_DATETIME_NO_YEAR_MASK];
 	assert(format != nullptr);
 	GtkWidget *widget = nullptr;
 	if (format) {
@@ -1237,10 +1237,10 @@ rom_data_view_init_datetime(G_GNUC_UNUSED RomDataView *page, const RomFields::Fi
  * @return Display widget, or nullptr on error.
  */
 static GtkWidget*
-rom_data_view_init_age_ratings(G_GNUC_UNUSED RomDataView *page, const RomFields::Field *field)
+rom_data_view_init_age_ratings(G_GNUC_UNUSED RomDataView *page, const RomFields::Field &field)
 {
 	// Age ratings.
-	const RomFields::age_ratings_t *const age_ratings = field->data.age_ratings;
+	const RomFields::age_ratings_t *const age_ratings = field.data.age_ratings;
 	assert(age_ratings != nullptr);
 	if (!age_ratings) {
 		// tr: No age ratings data.
@@ -1259,11 +1259,11 @@ rom_data_view_init_age_ratings(G_GNUC_UNUSED RomDataView *page, const RomFields:
  * @return Display widget, or nullptr on error.
  */
 static GtkWidget*
-rom_data_view_init_dimensions(G_GNUC_UNUSED RomDataView *page, const RomFields::Field *field)
+rom_data_view_init_dimensions(G_GNUC_UNUSED RomDataView *page, const RomFields::Field &field)
 {
 	// Dimensions.
 	// TODO: 'x' or '×'? Using 'x' for now.
-	const int *const dimensions = field->data.dimensions;
+	const int *const dimensions = field.data.dimensions;
 	char buf[64];
 	if (dimensions[1] > 0) {
 		if (dimensions[2] > 0) {
@@ -1287,7 +1287,7 @@ rom_data_view_init_dimensions(G_GNUC_UNUSED RomDataView *page, const RomFields::
  * @return Display widget, or nullptr on error.
  */
 static GtkWidget*
-rom_data_view_init_string_multi(G_GNUC_UNUSED RomDataView *page, const RomFields::Field *field)
+rom_data_view_init_string_multi(G_GNUC_UNUSED RomDataView *page, const RomFields::Field &field)
 {
 	// Mutli-language string.
 	// NOTE: The string contents won't be initialized here.
@@ -1295,7 +1295,7 @@ rom_data_view_init_string_multi(G_GNUC_UNUSED RomDataView *page, const RomFields
 	// be able to change the displayed language.
 	GtkWidget *const lblStringMulti = rom_data_view_init_string(page, field, "");
 	if (lblStringMulti) {
-		page->vecStringMulti->emplace_back(lblStringMulti, field);
+		page->vecStringMulti->emplace_back(lblStringMulti, &field);
 	}
 	return lblStringMulti;
 }
@@ -1376,8 +1376,8 @@ rom_data_view_update_multi(RomDataView *page, uint32_t user_lc)
 	     iter != page->vecStringMulti->cend(); ++iter)
 	{
 		GtkWidget *const lblString = iter->first;
-		const RomFields::Field *const field = iter->second;
-		const auto *const pStr_multi = field->data.str_multi;
+		const RomFields::Field *const pField = iter->second;
+		const auto *const pStr_multi = pField->data.str_multi;
 		assert(pStr_multi != nullptr);
 		assert(!pStr_multi->empty());
 		if (!pStr_multi || pStr_multi->empty()) {
@@ -1421,8 +1421,8 @@ rom_data_view_update_multi(RomDataView *page, uint32_t user_lc)
 	     iter != page->vecListDataMulti->cend(); ++iter)
 	{
 		GtkListStore *const listStore = iter->listStore;
-		const RomFields::Field *const field = iter->field;
-		const auto *const pListData_multi = field->data.list_data.data.multi;
+		const RomFields::Field *const pField = iter->field;
+		const auto *const pListData_multi = pField->data.list_data.data.multi;
 		assert(pListData_multi != nullptr);
 		assert(!pListData_multi->empty());
 		if (!pListData_multi || pListData_multi->empty()) {
@@ -1457,7 +1457,7 @@ rom_data_view_update_multi(RomDataView *page, uint32_t user_lc)
 			}
 		}
 
-		const auto &listDataDesc = field->desc.list_data;
+		const auto &listDataDesc = pField->desc.list_data;
 		const RomFields::ListData_t *const list_data = &(iter_ldm->second);
 
 		// If we have checkboxes or icons, start at column 1.
@@ -1601,19 +1601,19 @@ rom_data_view_update_display(RomDataView *page)
 	}
 
 	// Get the fields.
-	const RomFields *const fields = page->romData->fields();
-	if (!fields) {
+	const RomFields *const pFields = page->romData->fields();
+	if (!pFields) {
 		// No fields.
 		// TODO: Show an error?
 		return;
 	}
-	const int count = fields->count();
+	const int count = pFields->count();
 #if !GTK_CHECK_VERSION(3,0,0)
 	int rowCount = count;
 #endif
 
 	// Create the GtkNotebook.
-	int tabCount = fields->tabCount();
+	int tabCount = pFields->tabCount();
 	if (tabCount > 1) {
 		page->tabs->resize(tabCount);
 		page->tabWidget = gtk_notebook_new();
@@ -1624,7 +1624,7 @@ rom_data_view_update_display(RomDataView *page)
 		auto tabIter = page->tabs->begin();
 		for (int i = 0; i < tabCount; i++, ++tabIter) {
 			// Create a tab.
-			const char *name = fields->tabName(i);
+			const char *name = pFields->tabName(i);
 			if (!name) {
 				// Skip this tab.
 				continue;
@@ -1696,8 +1696,8 @@ rom_data_view_update_display(RomDataView *page)
 	const char *const desc_label_fmt = C_("RomDataView", "%s:");
 
 	// Create the data widgets.
-	const auto iter_end = fields->cend();
-	for (auto iter = fields->cbegin(); iter != iter_end; ++iter) {
+	const auto iter_end = pFields->cend();
+	for (auto iter = pFields->cbegin(); iter != iter_end; ++iter) {
 		const RomFields::Field &field = *iter;
 		if (!field.isValid)
 			continue;
@@ -1725,26 +1725,26 @@ rom_data_view_update_display(RomDataView *page)
 				break;
 
 			case RomFields::RFT_STRING:
-				widget = rom_data_view_init_string(page, &field);
+				widget = rom_data_view_init_string(page, field);
 				break;
 			case RomFields::RFT_BITFIELD:
-				widget = rom_data_view_init_bitfield(page, &field);
+				widget = rom_data_view_init_bitfield(page, field);
 				break;
 			case RomFields::RFT_LISTDATA:
 				separate_rows = !!(field.desc.list_data.flags & RomFields::RFT_LISTDATA_SEPARATE_ROW);
-				widget = rom_data_view_init_listdata(page, &field);
+				widget = rom_data_view_init_listdata(page, field);
 				break;
 			case RomFields::RFT_DATETIME:
-				widget = rom_data_view_init_datetime(page, &field);
+				widget = rom_data_view_init_datetime(page, field);
 				break;
 			case RomFields::RFT_AGE_RATINGS:
-				widget = rom_data_view_init_age_ratings(page, &field);
+				widget = rom_data_view_init_age_ratings(page, field);
 				break;
 			case RomFields::RFT_DIMENSIONS:
-				widget = rom_data_view_init_dimensions(page, &field);
+				widget = rom_data_view_init_dimensions(page, field);
 				break;
 			case RomFields::RFT_STRING_MULTI:
-				widget = rom_data_view_init_string_multi(page, &field);
+				widget = rom_data_view_init_string_multi(page, field);
 				break;
 		}
 
@@ -1881,7 +1881,7 @@ rom_data_view_update_display(RomDataView *page)
 
 	// Initial update of RFT_STRING_MULTI and RFT_LISTDATA_MULTI fields.
 	if (!page->vecStringMulti->empty() || !page->vecListDataMulti->empty()) {
-		page->def_lc = fields->defaultLanguageCode();
+		page->def_lc = pFields->defaultLanguageCode();
 		rom_data_view_update_multi(page, 0);
 	}
 }
