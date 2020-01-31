@@ -126,16 +126,22 @@ class RP_ShellPropSheetExt_Private
 		COLORREF colorAltRow;
 		bool isFullyInit;		// True if the window is fully initialized.
 
-		// ListView string data.
+		// ListView data struct.
+		// NOTE: Not making vImageList a pointer, since that adds
+		// significantly more complexity.
+		struct LvData_t {
+			vector<vector<tstring> > vvStr;	// String data.
+			vector<int> vImageList;		// ImageList indexes.
+			uint32_t checkboxes;		// Checkboxes.
+			bool hasCheckboxes;		// True if checkboxes are valid.
+
+			LvData_t() : checkboxes(0), hasCheckboxes(false) { }
+		};
+
+		// ListView data.
 		// - Key: ListView dialog ID
-		// - Value: Double-vector of tstrings.
-		unordered_map<uint16_t, vector<vector<tstring> > > map_lvStringData;
-
-		// ListView checkboxes.
-		unordered_map<uint16_t, uint32_t> map_lvCheckboxes;
-
-		// ListView ImageList indexes.
-		unordered_map<uint16_t, vector<int> > map_lvImageList;
+		// - Value: LvData_t.
+		unordered_map<uint16_t, LvData_t> map_lvData;
 
 		/**
 		 * ListView GetDispInfo function.
@@ -1275,7 +1281,7 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 	AutoGetDC hDC(hListView, hFontDlg);
 
 	// Add the row data.
-	uint32_t checkboxes = 0, adj_checkboxes = 0;
+	uint32_t checkboxes = 0;
 	if (hasCheckboxes) {
 		checkboxes = field.data.list_data.mxd.checkboxes;
 	}
@@ -1284,10 +1290,11 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 	// LVS_OWNERDATA.
 	vector<vector<tstring> > lvStringData;
 	lvStringData.reserve(list_data->size());
-
-	vector<int> lvImageList;
+	LvData_t lvData;
+	lvData.vvStr.reserve(list_data->size());
+	lvData.hasCheckboxes = hasCheckboxes;
 	if (hasIcons) {
-		lvImageList.reserve(list_data->size());
+		lvData.vImageList.reserve(list_data->size());
 	}
 
 	int lv_row_num = 0, data_row_num = 0;
@@ -1304,15 +1311,15 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 			} else {
 				// Store the checkbox value for this row.
 				if (checkboxes & 1) {
-					adj_checkboxes |= (1 << lv_row_num);
+					lvData.checkboxes |= (1 << lv_row_num);
 				}
 				checkboxes >>= 1;
 			}
 		}
 
 		// Destination row.
-		lvStringData.resize(lvStringData.size()+1);
-		auto &lv_row_data = lvStringData.at(lvStringData.size()-1);
+		lvData.vvStr.resize(lvData.vvStr.size()+1);
+		auto &lv_row_data = lvData.vvStr.at(lvData.vvStr.size()-1);
 		lv_row_data.reserve(data_row.size());
 
 		// String data.
@@ -1407,7 +1414,7 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 				const rp_image *const icon = *iter;
 				if (!icon) {
 					// No icon for this row.
-					lvImageList.emplace_back(iImage);
+					lvData.vImageList.emplace_back(iImage);
 					continue;
 				}
 
@@ -1462,26 +1469,18 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 				}
 
 				// Save the ImageList index for later.
-				lvImageList.emplace_back(iImage);
+				lvData.vImageList.emplace_back(iImage);
 			}
 		}
 	}
 
-	// Adjusted checkboxes value.
-	if (hasCheckboxes) {
-		map_lvCheckboxes.insert(std::make_pair(dlgID, adj_checkboxes));
-	}
-	// ImageList indexes.
-	if (hasIcons) {
-		map_lvImageList.insert(std::make_pair(dlgID, std::move(lvImageList)));
-	}
+	// Save the LvData_t.
+	// TODO: Verify that std::move() works here.
+	map_lvData.insert(std::make_pair(dlgID, std::move(lvData)));
 
 	// Set the virtual list item count.
 	ListView_SetItemCountEx(hListView, lv_row_num,
 		LVSICF_NOINVALIDATEALL | LVSICF_NOSCROLL);
-
-	// Save the double-vector for later.
-	map_lvStringData.insert(std::make_pair(dlgID, std::move(lvStringData)));
 
 	if (!isMulti) {
 		// Resize all of the columns.
@@ -2029,18 +2028,18 @@ void RP_ShellPropSheetExt_Private::updateMulti(uint32_t user_lc)
 		AutoGetDC hDC(hListView, hFontDlg);
 
 		// Get the ListView data vector for LVS_OWNERDATA.
-		auto iter_lvSD = map_lvStringData.find(iter->dlgID);
-		assert(iter_lvSD != map_lvStringData.end());
-		if (iter_lvSD != map_lvStringData.end()) {
-			vector<vector<tstring> > &lvStringData = iter_lvSD->second;
+		auto iter_lvData = map_lvData.find(iter->dlgID);
+		assert(iter_lvData != map_lvData.end());
+		if (iter_lvData != map_lvData.end()) {
+			vector<vector<tstring> > &vvStr = iter_lvData->second.vvStr;
 
 			auto iter_ld_row = list_data->cbegin();
-			auto iter_lvSD_row = lvStringData.begin();
-			for (; iter_ld_row != list_data->cend() && iter_lvSD_row != lvStringData.end();
-			     ++iter_ld_row, ++iter_lvSD_row)
+			auto iter_vvStr_row = vvStr.begin();
+			for (; iter_ld_row != list_data->cend() && iter_vvStr_row != vvStr.end();
+			     ++iter_ld_row, ++iter_vvStr_row)
 			{
 				const vector<string> &src_data_row = *iter_ld_row;
-				vector<tstring> &dest_data_row = *iter_lvSD_row;
+				vector<tstring> &dest_data_row = *iter_vvStr_row;
 
 				auto iter_sdr = src_data_row.cbegin();
 				auto iter_ddr = dest_data_row.begin();
@@ -2070,7 +2069,7 @@ void RP_ShellPropSheetExt_Private::updateMulti(uint32_t user_lc)
 			}
 
 			// Redraw all items.
-			ListView_RedrawItems(hListView, 0, static_cast<int>(lvStringData.size()));
+			ListView_RedrawItems(hListView, 0, static_cast<int>(vvStr.size()));
 		}
 	}
 
@@ -2086,6 +2085,7 @@ void RP_ShellPropSheetExt_Private::updateMulti(uint32_t user_lc)
 			const uint32_t lc = *iter;
 			const char *lc_str = SystemRegion::getLocalizedLanguageName(lc);
 			if (lc_str) {
+				// FIXME: std::move might be redundant here...
 				vec_lc_str.emplace_back(std::move(U82T_c(lc_str)));
 			} else {
 				// Invalid language code.
@@ -2867,25 +2867,27 @@ inline BOOL RP_ShellPropSheetExtPrivate::ListView_GetDispInfo(NMLVDISPINFO *plvd
 	const unsigned int idFrom = static_cast<unsigned int>(plvdi->hdr.idFrom);
 	bool ret = false;
 
+	auto iter_lvData = map_lvData.find(idFrom);
+	if (iter_lvData == map_lvData.end()) {
+		// ListView data not found...
+		return ret;
+	}
+	const LvData_t &lvData = iter_lvData->second;
+
 	if (plvItem->mask & LVIF_TEXT) {
 		// Fill in text.
+		const auto &vvStr = lvData.vvStr;
 
-		// Get the double-vector of strings for this ListView.
-		auto lvIdIter = map_lvStringData.find(idFrom);
-		if (lvIdIter != map_lvStringData.end()) {
-			const auto &vv_str = lvIdIter->second;
+		// Is this row in range?
+		if (plvItem->iItem >= 0 && plvItem->iItem < static_cast<int>(vvStr.size())) {
+			// Get the row data.
+			const auto &row_data = vvStr.at(plvItem->iItem);
 
-			// Is this row in range?
-			if (plvItem->iItem >= 0 && plvItem->iItem < static_cast<int>(vv_str.size())) {
-				// Get the row data.
-				const auto &row_data = vv_str.at(plvItem->iItem);
-
-				// Is the column in range?
-				if (plvItem->iSubItem >= 0 && plvItem->iSubItem < static_cast<int>(row_data.size())) {
-					// Return the string data.
-					_tcscpy_s(plvItem->pszText, plvItem->cchTextMax, row_data[plvItem->iSubItem].c_str());
-					ret = true;
-				}
+			// Is the column in range?
+			if (plvItem->iSubItem >= 0 && plvItem->iSubItem < static_cast<int>(row_data.size())) {
+				// Return the string data.
+				_tcscpy_s(plvItem->pszText, plvItem->cchTextMax, row_data[plvItem->iSubItem].c_str());
+				ret = true;
 			}
 		}
 	}
@@ -2894,35 +2896,26 @@ inline BOOL RP_ShellPropSheetExtPrivate::ListView_GetDispInfo(NMLVDISPINFO *plvd
 		// Fill in the ImageList index.
 		// NOTE: Only valid for the base item.
 		if (plvItem->iSubItem == 0) {
-			// Check for checkboxes first.
 			// LVS_OWNERDATA prevents LVS_EX_CHECKBOXES from working correctly,
 			// so we have to implement it here.
 			// Reference: https://www.codeproject.com/Articles/29064/CGridListCtrlEx-Grid-Control-Based-on-CListCtrl
-			auto lvChkIdIter = map_lvCheckboxes.find(idFrom);
-			if (lvChkIdIter != map_lvCheckboxes.end()) {
-				// Found checkboxes.
-				const uint32_t checkboxes = lvChkIdIter->second;
-
+			if (lvData.hasCheckboxes) {
+				// We have checkboxes.
 				// Enable state handling.
 				plvItem->mask |= LVIF_STATE;
 				plvItem->stateMask = LVIS_STATEIMAGEMASK;
 				plvItem->state = INDEXTOSTATEIMAGEMASK(
-					((checkboxes & (1 << plvItem->iItem)) ? 2 : 1));
+					((lvData.checkboxes & (1 << plvItem->iItem)) ? 2 : 1));
 				ret = true;
-			} else {
-				// No checkboxes. Check for ImageList.
-				auto lvImgIdIter = map_lvImageList.find(idFrom);
-				if (lvImgIdIter != map_lvImageList.end()) {
-					const auto &lvImageList = lvImgIdIter->second;
-
-					// Is this row in range?
-					if (plvItem->iItem >= 0 && plvItem->iItem < static_cast<int>(lvImageList.size())) {
-						const int iImage = lvImageList[plvItem->iItem];
-						if (iImage >= 0) {
-							// Set the ImageList index.
-							plvItem->iImage = iImage;
-							ret = true;
-						}
+			} else if (!lvData.vImageList.empty()) {
+				// We have an ImageList.
+				// Is this row in range?
+				if (plvItem->iItem >= 0 && plvItem->iItem < static_cast<int>(lvData.vImageList.size())) {
+					const int iImage = lvData.vImageList.at(plvItem->iItem);
+					if (iImage >= 0) {
+						// Set the ImageList index.
+						plvItem->iImage = iImage;
+						ret = true;
 					}
 				}
 			}
