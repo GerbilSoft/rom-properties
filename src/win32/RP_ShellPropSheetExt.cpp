@@ -42,7 +42,6 @@ using std::set;
 using std::string;
 using std::unique_ptr;
 using std::unordered_map;
-using std::unordered_set;
 using std::wstring;
 using std::vector;
 
@@ -102,10 +101,13 @@ class RP_ShellPropSheetExt_Private
 		HFONT hFontBold;	// Bold font.
 		FontHandler fontHandler;
 
-		// Controls that need to be drawn using red text.
-		unordered_set<HWND> hwndWarningControls;	// Controls using the "Warning" font.
-		// SysLink controls.
-		unordered_set<HWND> hwndSysLinkControls;
+		// Controls with special formatting or handling.
+		enum LabelFormat {
+			LF_WARNING	= (1 << 0),	// Controls using the "Warning" font.
+			LF_SYSLINK	= (1 << 1),	// SysLink controls.
+		};
+		unordered_map<HWND, uint8_t> mapFormatControls;
+
 		// ListView controls. (for toggling LVS_EX_DOUBLEBUFFER)
 		vector<HWND> hwndListViewControls;
 
@@ -741,7 +743,7 @@ int RP_ShellPropSheetExt_Private::initString(_In_ HWND hDlg, _In_ HWND hWndTab,
 				HWND hStatic = GetDlgItem(hWndTab, IDC_STATIC_DESC(idx));
 				if (hStatic) {
 					SetWindowFont(hStatic, hFont, false);
-					hwndWarningControls.insert(hStatic);
+					mapFormatControls.insert(std::make_pair(hStatic, LF_WARNING));
 				}
 			}
 		} else if (field.desc.flags & RomFields::STRF_MONOSPACE) {
@@ -782,9 +784,15 @@ int RP_ShellPropSheetExt_Private::initString(_In_ HWND hDlg, _In_ HWND hWndTab,
 			WS_CHILD | WS_TABSTOP | WS_VISIBLE,
 			0, 0, 0, 0,	// will be adjusted afterwards
 			hWndTab, cId, nullptr, nullptr);
+#ifndef NDEBUG
 		// There should be a maximum of one STRF_CREDITS per RomData subclass.
-		assert(hwndSysLinkControls.empty());
-		hwndSysLinkControls.insert(hDlgItem);
+		std::for_each(mapFormatControls.cbegin(), mapFormatControls.cend(),
+			[](const unordered_map<HWND, uint8_t>::value_type &p) {
+				assert(!(p.second & LF_SYSLINK));
+			}
+		);
+#endif /* !NDEBUG */
+		mapFormatControls.insert(std::make_pair(hDlgItem, LF_SYSLINK));
 		SetWindowFont(hDlgItem, hFont, false);
 
 		// NOTE: We can't use LibWin32Common::measureTextSize() because
@@ -845,9 +853,9 @@ int RP_ShellPropSheetExt_Private::initString(_In_ HWND hDlg, _In_ HWND hWndTab,
 			reinterpret_cast<DWORD_PTR>(GetParent(hDlgSheet)));
 	}
 
-	// Save the control in the appropriate set, if necessary.
+	// Save the control in the appropriate container, if necessary.
 	if (isWarning) {
-		hwndWarningControls.insert(hDlgItem);
+		mapFormatControls.insert(std::make_pair(hDlgItem, LF_WARNING));
 	}
 	if (isMonospace) {
 		fontHandler.addMonoControl(hDlgItem);
@@ -2986,9 +2994,8 @@ INT_PTR RP_ShellPropSheetExt_Private::DlgProc_WM_NOTIFY(HWND hDlg, NMHDR *pHdr)
 		case NM_RETURN: {
 			// Check if this is a SysLink control.
 			// NOTE: SysLink control only supports Unicode.
-			if (hwndSysLinkControls.find(pHdr->hwndFrom) !=
-			    hwndSysLinkControls.end())
-			{
+			auto iter = mapFormatControls.find(pHdr->hwndFrom);
+			if (iter != mapFormatControls.end() && (iter->second & LF_SYSLINK)) {
 				// It's a SysLink control.
 				// Open the URL.
 				PNMLINK pNMLink = reinterpret_cast<PNMLINK>(pHdr);
@@ -3328,9 +3335,8 @@ INT_PTR CALLBACK RP_ShellPropSheetExt_Private::DlgProc(HWND hDlg, UINT uMsg, WPA
 				return false;
 			}
 
-			if (d->hwndWarningControls.find(reinterpret_cast<HWND>(lParam)) !=
-			    d->hwndWarningControls.end())
-			{
+			auto iter = d->mapFormatControls.find(reinterpret_cast<HWND>(lParam));
+			if (iter != d->mapFormatControls.end() && (iter->second & LF_WARNING)) {
 				// Set the "Warning" color.
 				HDC hdc = reinterpret_cast<HDC>(wParam);
 				SetTextColor(hdc, RGB(255, 0, 0));
