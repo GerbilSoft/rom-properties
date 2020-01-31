@@ -89,7 +89,6 @@ static void show_usage(void)
 	_ftprintf(stderr, _T("Syntax: %s [-v] cache_key\n"), argv0);
 }
 
-// TODO: SHOW_ERROR() macro that checks for verbose before calling show_error().
 /**
  * Show an error message.
  * @param format printf() format string.
@@ -109,6 +108,8 @@ show_error(const TCHAR *format, ...)
 	va_end(ap);
 	_fputtc(_T('\n'), stderr);
 }
+
+#define SHOW_ERROR(...) if (verbose) show_error(__VA_ARGS__)
 
 /**
  * Get a file's size and time.
@@ -277,32 +278,24 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 	const TCHAR *slash_pos = _tcschr(cache_key, _T('/'));
 	if (slash_pos == nullptr) {
 		// No slash. Not a valid cache key.
-		if (verbose) {
-			show_error(_T("Cache key '%s' is invalid."), cache_key);
-		}
+		SHOW_ERROR(_T("Cache key '%s' is invalid."), cache_key);
 		return EXIT_FAILURE;
 	} else if (slash_pos[1] == '\0') {
 		// Slash is the last character.
 		// Not a valid cache key.
-		if (verbose) {
-			show_error(_T("Cache key '%s' is invalid."), cache_key);
-		}
+		SHOW_ERROR(_T("Cache key '%s' is invalid."), cache_key);
 		return EXIT_FAILURE;
 	} else if (slash_pos == cache_key) {
 		// Slash is the first character.
 		// Not a valid cache key.
-		if (verbose) {
-			show_error(_T("Cache key '%s' is invalid."), cache_key);
-		}
+		SHOW_ERROR(_T("Cache key '%s' is invalid."), cache_key);
 		return EXIT_FAILURE;
 	}
 
 	const ptrdiff_t prefix_len = (slash_pos - cache_key);
 	if (prefix_len <= 0) {
 		// Empty prefix.
-		if (verbose) {
-			show_error(_T("Cache key '%s' is invalid."), cache_key);
-		}
+		SHOW_ERROR(_T("Cache key '%s' is invalid."), cache_key);
 		return EXIT_FAILURE;
 	}
 
@@ -310,18 +303,14 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 	const TCHAR *const lastdot = _tcsrchr(cache_key, _T('.'));
 	if (!lastdot) {
 		// No dot...
-		if (verbose) {
-			show_error(_T("Cache key '%s' is invalid."), cache_key);
-		}
+		SHOW_ERROR(_T("Cache key '%s' is invalid."), cache_key);
 		return EXIT_FAILURE;
 	}
 	if (_tcscmp(lastdot, _T(".png")) != 0 &&
 	    _tcscmp(lastdot, _T(".jpg")) != 0)
 	{
 		// Not a supported file extension.
-		if (verbose) {
-			show_error(_T("Cache key '%s' is invalid."), cache_key);
-		}
+		SHOW_ERROR(_T("Cache key '%s' is invalid."), cache_key);
 		return EXIT_FAILURE;
 	}
 
@@ -341,9 +330,7 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 		size_t filename_len = _tcslen(slash_pos+1);
 		if (filename_len <= 4) {
 			// Can't remove the extension...
-			if (verbose) {
-				show_error(_T("Cache key '%s' is invalid."), cache_key);
-			}
+			SHOW_ERROR(_T("Cache key '%s' is invalid."), cache_key);
 			return EXIT_FAILURE;
 		}
 		filename_len -= 4;
@@ -353,9 +340,7 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 			static_cast<int>(filename_len), slash_pos+1);
 	} else {
 		// Prefix is not supported.
-		if (verbose) {
-			show_error(_T("Cache key '%s' has an unsupported prefix."), cache_key);
-		}
+		SHOW_ERROR(_T("Cache key '%s' has an unsupported prefix."), cache_key);
 		return EXIT_FAILURE;
 	}
 
@@ -367,9 +352,7 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 	tstring cache_filename = LibCacheCommon::getCacheFilename(cache_key);
 	if (cache_filename.empty()) {
 		// Invalid cache filename.
-		if (verbose) {
-			show_error(_T("Cache key '%s' is invalid."), cache_key);
-		}
+		SHOW_ERROR(_T("Cache key '%s' is invalid."), cache_key);
 		return EXIT_FAILURE;
 	}
 	if (verbose) {
@@ -397,26 +380,20 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 			const time_t systime = time(nullptr);
 			if ((systime - filemtime) < (86400*7)) {
 				// Less than a week old.
-				if (verbose) {
-					show_error(_T("Negative cache file for '%s' has not expired; not redownloading."), cache_key);
-				}
+				SHOW_ERROR(_T("Negative cache file for '%s' has not expired; not redownloading."), cache_key);
 				return EXIT_FAILURE;
 			}
 
 			// More than a week old.
 			// Delete the cache file and try to download it again.
 			if (_tremove(cache_filename.c_str()) != 0) {
-				if (verbose) {
-					show_error(_T("Error deleting negative cache file for '%s': %s"), cache_key, _tcserror(errno));
-				}
+				SHOW_ERROR(_T("Error deleting negative cache file for '%s': %s"), cache_key, _tcserror(errno));
 				return EXIT_FAILURE;
 			}
 		} else if (filesize > 0) {
 			// File is larger than 0 bytes, which indicates
 			// it was previously cached successfully
-			if (verbose) {
-				show_error(_T("Cache file for '%s' is already downloaded."), cache_key);
-			}
+			SHOW_ERROR(_T("Cache file for '%s' is already downloaded."), cache_key);
 			return EXIT_SUCCESS;
 		}
 	} else if (ret == -ENOENT) {
@@ -424,16 +401,12 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 		// Make sure the path structure exists.
 		int ret = rmkdir(cache_filename.c_str());
 		if (ret != 0) {
-			if (verbose) {
-				show_error(_T("Error creating directory structure: %s"), _tcserror(-ret));
-			}
+			SHOW_ERROR(_T("Error creating directory structure: %s"), _tcserror(-ret));
 			return EXIT_FAILURE;
 		}
 	} else {
 		// Other error.
-		if (verbose) {
-			show_error(_T("Error checking cache file for '%s': %s"), cache_key, _tcserror(-ret));
-		}
+		SHOW_ERROR(_T("Error checking cache file for '%s': %s"), cache_key, _tcserror(-ret));
 		return EXIT_FAILURE;
 	}
 
@@ -450,9 +423,7 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 	FILE *f_out = _tfopen(cache_filename.c_str(), _T("wb"));
 	if (!f_out) {
 		// Error opening the cache file.
-		if (verbose) {
-			show_error(_T("Error writing to cache file: %s"), _tcserror(errno));
-		}
+		SHOW_ERROR(_T("Error writing to cache file: %s"), _tcserror(errno));
 		return EXIT_FAILURE;
 	}
 
@@ -483,9 +454,7 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 
 	if (m_downloader->dataSize() <= 0) {
 		// No data downloaded...
-		if (verbose) {
-			show_error(_T("Error downloading file: 0 bytes received"));
-		}
+		SHOW_ERROR(_T("Error downloading file: 0 bytes received"));
 		fclose(f_out);
 		return EXIT_FAILURE;
 	}
