@@ -276,18 +276,12 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 	// - ds:     https://art.gametdb.com/3ds/[key]
 	// - amiibo: https://amiibo.life/[key]/image
 	const TCHAR *slash_pos = _tcschr(cache_key, _T('/'));
-	if (slash_pos == nullptr) {
-		// No slash. Not a valid cache key.
-		SHOW_ERROR(_T("Cache key '%s' is invalid."), cache_key);
-		return EXIT_FAILURE;
-	} else if (slash_pos[1] == '\0') {
-		// Slash is the last character.
-		// Not a valid cache key.
-		SHOW_ERROR(_T("Cache key '%s' is invalid."), cache_key);
-		return EXIT_FAILURE;
-	} else if (slash_pos == cache_key) {
-		// Slash is the first character.
-		// Not a valid cache key.
+	if (slash_pos == nullptr || slash_pos == cache_key ||
+		slash_pos[1] == '\0')
+	{
+		// Invalid cache key:
+		// - Does not contain any slashes.
+		// - First slash is either the first or the last character.
 		SHOW_ERROR(_T("Cache key '%s' is invalid."), cache_key);
 		return EXIT_FAILURE;
 	}
@@ -359,11 +353,13 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 		_ftprintf(stderr, _T("Cache Filename: %s\n"), cache_filename.c_str());
 	}
 
+#if defined(_WIN32) && defined(_UNICODE)
 	// If the cache_filename is >= 240 characters, prepend "\\\\?\\".
 	if (cache_filename.size() >= 240) {
 		cache_filename.reserve(cache_filename.size() + 8);
 		cache_filename.insert(0, _T("\\\\?\\"));
 	}
+#endif /* _WIN32 && _UNICODE */
 
 	// Get the cache file information.
 	int64_t filesize;
