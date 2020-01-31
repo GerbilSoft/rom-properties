@@ -48,6 +48,11 @@ using std::vector;
 // GDI+ scoped token.
 #include "librptexture/img/GdiplusHelper.hpp"
 
+// Windows 10 and later
+#ifndef DATE_MONTHDAY
+# define DATE_MONTHDAY 0x00000080
+#endif /* DATE_MONTHDAY */
+
 // CLSID
 const CLSID CLSID_RP_ShellPropSheetExt =
 	{0x2443C158, 0xDF7C, 0x4352, {0xB4, 0x35, 0xBC, 0x9F, 0x88, 0x5F, 0xFD, 0x52}};
@@ -1599,11 +1604,19 @@ int RP_ShellPropSheetExt_Private::initDateTime(HWND hDlg, HWND hWndTab,
 		// Format the date.
 		int ret;
 		if (field.desc.flags & RomFields::RFT_DATETIME_NO_YEAR) {
-			// TODO: Localize this.
-			// TODO: Windows 10 has DATE_MONTHDAY.
+			// Try Windows 10's DATE_MONTHDAY first.
 			ret = GetDateFormat(
 				MAKELCID(LOCALE_USER_DEFAULT, SORT_DEFAULT),
-				0, &st, _T("MMM d"), &dateTimeStr[start_pos], cchBuf);
+				DATE_MONTHDAY,
+				&st, nullptr, &dateTimeStr[start_pos], cchBuf);
+			if (ret == 0) {
+				// DATE_MONTHDAY failed.
+				// Fall back to a hard-coded format string.
+				// TODO: Localization.
+				ret = GetDateFormat(
+					MAKELCID(LOCALE_USER_DEFAULT, SORT_DEFAULT),
+					0, &st, _T("MMM d"), &dateTimeStr[start_pos], cchBuf);
+			}
 		} else {
 			ret = GetDateFormat(
 				MAKELCID(LOCALE_USER_DEFAULT, SORT_DEFAULT),
