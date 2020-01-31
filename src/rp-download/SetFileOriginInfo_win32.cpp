@@ -17,17 +17,14 @@
 //#include "../config/Config.hpp"
 
 // libwin32common
-#include "libwin32common/RpWin32_sdk.h"
 #include "libwin32common/userdirs.hpp"
 #include "libwin32common/w32err.h"
 #include "libwin32common/w32time.h"
 
 // C includes.
 #include <sys/utime.h>
-#include "tcharx.h"
 
-// C++ includes.
-#include <string>
+// C++ STL classes.
 using std::string;
 using std::tstring;
 

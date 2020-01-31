@@ -14,14 +14,7 @@
 #include "libwin32common/w32err.h"
 #include "libwin32common/w32time.h"
 
-// librpbase
-#include "librpbase/common.h"
-
-// C includes. (C++ namespace)
-#include <cstring>
-
-// C++ includes.
-#include <string>
+// C++ STL classes.
 using std::string;
 using std::wstring;
 

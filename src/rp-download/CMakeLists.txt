@@ -52,6 +52,15 @@ ELSE(WIN32)
 		)
 ENDIF(WIN32)
 
+IF(ENABLE_PCH)
+	# Precompiled headers.
+	INCLUDE(PrecompiledHeader)
+	SET(rp-download_PCH_C stdafx.c)
+	SET(rp-download_PCH_CXX stdafx.cpp)
+	SET(rp-download_PCH_SRC ${rp-download_PCH_C} ${rp-download_PCH_CXX})
+	SET(rp-download_PCH_H stdafx.h)
+ENDIF(ENABLE_PCH)
+
 #########################
 # Build the executable. #
 #########################
@@ -60,9 +69,16 @@ INCLUDE(SetMSVCDebugPath)
 
 # rp-download: Cache downloader program. (Can be sandboxed.)
 ADD_EXECUTABLE(rp-download
+	${rp-download_PCH_SRC} ${rp-download_PCH_H}
 	${rp-download_SRCS} ${rp-download_H}
 	${rp-download_OS_SRCS} ${rp-download_OS_H}
 	)
+IF(ENABLE_PCH)
+	ADD_PRECOMPILED_HEADER(rp-download ${rp-download_PCH_H}
+		SOURCE_C ${rp-download_PCH_C}
+		SOURCE_CXX ${rp-download_PCH_CXX}
+		)
+ENDIF(ENABLE_PCH)
 SET_TARGET_PROPERTIES(rp-download PROPERTIES PREFIX "")
 DO_SPLIT_DEBUG(rp-download)
 SET_WINDOWS_SUBSYSTEM(rp-download CONSOLE)

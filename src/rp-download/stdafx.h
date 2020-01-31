@@ -18,4 +18,35 @@
 #include <tchar.h>
 #endif /* _WIN32 */
 
+#ifdef __cplusplus
+/** C++ **/
+
+// C includes.
+#include <stdint.h>
+#include <stdlib.h>
+
+// C includes. (C++ namespace)
+#include <cassert>
+#include <cstring>
+
+// C++ includes.
+#include <string>
+
+#else /* !__cplusplus */
+/** C **/
+
+// C includes.
+#include <assert.h>
+#include <stdint.h>
+#include <string.h>
+#include <stdlib.h>
+
+#endif /* __cplusplus */
+
+#include "tcharx.h"
+
+// librpbase common headers
+#include "librpbase/common.h"
+#include "librpbase/ctypex.h"
+
 #endif /* __ROMPROPERTIES_RP_DOWNLOAD_STDAFX_H__ */

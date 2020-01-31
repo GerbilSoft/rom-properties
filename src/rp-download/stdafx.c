@@ -1,20 +1,13 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (rp-download)                      *
- * os-secure_posix.c: OS security functions. (POSIX)                       *
+ * stdafx.c: Common definitions and includes.                              *
  *                                                                         *
  * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
-#include "os-secure.h"
+// stdafx.c : source file that includes just the standard includes
+// hidecon.pch will be the pre-compiled header
+// stdafx.obj will contain the pre-compiled type information
 
-/**
- * Enable OS-specific security functionality.
- * @return 0 on success; negative POSIX error code on error.
- */
-int rp_download_os_secure(void)
-{
-	// TODO: Do something!
-	return 0;
-}
+#include "stdafx.h"

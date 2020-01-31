@@ -6,17 +6,10 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+#include "stdafx.h"
 #include "CurlDownloader.hpp"
 
-// C includes.
-#include <stdlib.h>
-
-// C includes. (C++ namespace)
-#include "librpbase/ctypex.h"
-#include <cstring>
-
-// C++ includes.
-#include <string>
+// C++ STL classes.
 using std::string;
 
 // cURL for network access.

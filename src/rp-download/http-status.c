@@ -6,12 +6,8 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+#include "stdafx.h"
 #include "http-status.h"
-
-// C includes.
-#include <assert.h>
-#include <stdint.h>
-#include <stdlib.h>
 
 // C API declaration for MSVC.
 // Required when using stdcall as the default calling convention.
@@ -240,7 +236,6 @@ static int RP_C_API HttpStatusMsg_t_compar(const void *a, const void *b)
  * @param code HTTP status code.
  * @return String representation, or nullptr if not found.
  */
-#include <stdio.h>
 const TCHAR *http_status_string(int code)
 {
 	// Do a binary search.

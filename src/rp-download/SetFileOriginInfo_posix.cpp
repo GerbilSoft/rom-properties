@@ -24,11 +24,7 @@
 #include <sys/time.h>
 #include <sys/types.h>
 
-// C includes. (C++ namespace)
-#include <cstring>
-
-// C++ includes.
-#include <string>
+// C++ STL classes.
 using std::string;
 
 // xattrs

@@ -12,7 +12,6 @@
 #include "os-secure.h"
 
 // C includes.
-#include <stdlib.h>
 #include <sys/stat.h>
 #ifndef _WIN32
 # include <unistd.h>
@@ -29,15 +28,13 @@
 #endif /* !S_ISTYPE */
 
 // C includes. (C++ namespace)
-#include <cassert>
 #include <cerrno>
 #include <cstdarg>
 #include <cstdio>
-#include <cstring>
 
 // C++ includes.
 #include <memory>
-#include <string>
+using std::tstring;
 using std::unique_ptr;
 
 #ifdef _WIN32
@@ -47,13 +44,6 @@ using std::unique_ptr;
 
 // libcachecommon
 #include "libcachecommon/CacheKeys.hpp"
-
-// librpbase
-#include "librpbase/common.h"
-
-// tcharx
-#include "tcharx.h"
-using std::tstring;
 
 #ifdef _WIN32
 # include <direct.h>
