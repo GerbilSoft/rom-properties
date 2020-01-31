@@ -202,7 +202,7 @@ int setFileOriginInfo(FILE *file, const TCHAR *url, time_t mtime)
 		// Set the times.
 		errno = 0;
 		ret = futimes(fd, tv);
-		if (ret != 0 && err != 0) {
+		if (ret != 0 && err == 0) {
 			// Error setting the times.
 			err = errno;
 			if (err == 0) {

@@ -188,7 +188,7 @@ int setFileOriginInfo(FILE *file, const TCHAR *filename, const TCHAR *url, time_
 			BOOL bRet = WriteFile(hAds, s_zoneID.data(),
 				static_cast<DWORD>(s_zoneID.size()),
 				&dwBytesWritten, nullptr);
-			if ((!bRet || dwBytesWritten != static_cast<DWORD>(s_zoneID.size())) && err != 0) {
+			if ((!bRet || dwBytesWritten != static_cast<DWORD>(s_zoneID.size())) && err == 0) {
 				// Some error occurred...
 				err = w32err_to_posix(GetLastError());
 				if (err == 0) {
@@ -198,7 +198,7 @@ int setFileOriginInfo(FILE *file, const TCHAR *filename, const TCHAR *url, time_
 			CloseHandle(hAds);
 		} else {
 			// Error opening the ADS.
-			if (err != 0) {
+			if (err == 0) {
 				err = w32err_to_posix(GetLastError());
 				if (err == 0) {
 					err = EIO;
