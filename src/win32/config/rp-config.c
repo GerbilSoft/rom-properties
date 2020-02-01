@@ -46,6 +46,13 @@ typedef int (CALLBACK *PFNRPSHOWCONFIGDIALOG)(HWND hWnd, HINSTANCE hInstance, LP
 static const TCHAR rp_subdir[] = _T("i386\\");
 #elif defined(__amd64__) || defined(_M_X64)
 static const TCHAR rp_subdir[] = _T("amd64\\");
+#elif defined(__ia64__) || defined(_M_IA64)
+static const TCHAR rp_subdir[] = _T("ia64\\");
+#elif defined(__aarch64__) || defined(_M_ARM64)
+static const TCHAR rp_subdir[] = _T("arm64\\");
+#elif defined(__arm__) || defined(__thumb__) || \
+      defined(_M_ARM) || defined(_M_ARMT)
+static const TCHAR rp_subdir[] = _T("arm\\");
 #else
 # error Unsupported CPU architecture.
 #endif

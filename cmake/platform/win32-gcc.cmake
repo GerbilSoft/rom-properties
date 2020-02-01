@@ -5,21 +5,40 @@
 SET(RP_C_FLAGS_WIN32 "${RP_C_FLAGS_WIN32} -DMINGW_HAS_SECURE_API")
 
 # Subsystem and minimum Windows version:
-# - If 32-bit: 5.01
-# - If 64-bit: 5.02
+# - If i386: 5.01
+# - If amd64: 5.02
+# - If arm or arm64: 6.02
 # NOTE: MS_ENH_RSA_AES_PROV is only available starting with
 # Windows XP. Because we're actually using some XP-specific
 # functionality now, the minimum version is now Windows XP.
-IF(CMAKE_SIZEOF_VOID_P EQUAL 8)
-	# 64-bit, Unicode Windows only.
-	# (There is no 64-bit ANSI Windows.)
-	SET(CMAKE_CREATE_WIN32_EXE "-Wl,--subsystem,windows:5.02")
-	SET(CMAKE_CREATE_CONSOLE_EXE "-Wl,--subsystem,console:5.02")
-ELSE()
+IF(CPU_amd64)
+	# amd64 (64-bit), Unicode Windows only.
+	# (There is no amd64 ANSI Windows.)
+	# Minimum target version is Windows Server 2003 / XP 64-bit.
+	SET(RP_WIN32_SUBSYSTEM_VERSION "5.02")
+ELSEIF(CPU_arm OR CPU_arm64)
+	# ARM (32-bit or 64-bit), Unicode windows only. (MSVC)
+	# (There is no ARM ANSI Windows.)
+	# Minimum target version is Windows 8.
+	SET(RP_WIN32_SUBSYSTEM_VERSION "6.02")
+ELSEIF(CPU_i386)
 	# 32-bit, Unicode Windows only.
-	SET(CMAKE_CREATE_WIN32_EXE "-Wl,--subsystem,windows:5.01")
-	SET(CMAKE_CREATE_CONSOLE_EXE "-Wl,--subsystem,console:5.01")
+	# Minimum target version is Windows XP,
+	# unless ENABLE_OLDWINCOMPAT is set.
+	# NOTE: Newer gcc might not support pre-XP Windows.
+	# TODO: Win9x support.
+	IF(ENABLE_OLDWINCOMPAT)
+		SET(RP_WIN32_SUBSYSTEM_VERSION "5.00")
+	ELSE(ENABLE_OLDWINCOMPAT)
+		SET(RP_WIN32_SUBSYSTEM_VERSION "5.01")
+	ENDIF(ENABLE_OLDWINCOMPAT)
+ELSE()
+	MESSAGE(FATAL_ERROR "Unsupported CPU.")
 ENDIF()
+# FIXME: Maybe we should use RP_LINKER_FLAGS_WIN32_EXE and RP_LINKER_FLAGS_CONSOLE_EXE.
+# This is what's used in win32-msvc.cmake.
+SET(CMAKE_CREATE_WIN32_EXE "-Wl,--subsystem,windows:${RP_WIN32_SUBSYSTEM_VERSION}")
+SET(CMAKE_CREATE_CONSOLE_EXE "-Wl,--subsystem,console:${RP_WIN32_SUBSYSTEM_VERSION}")
 
 SET(RP_EXE_LINKER_FLAGS_WIN32 "")
 SET(RP_SHARED_LINKER_FLAGS_WIN32 "")

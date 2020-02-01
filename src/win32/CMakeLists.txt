@@ -178,7 +178,7 @@ TARGET_LINK_LIBRARIES(rom-properties PRIVATE romdata rpbase rpthreads win32commo
 IF(ENABLE_NLS)
 	TARGET_LINK_LIBRARIES(rom-properties PRIVATE i18n)
 ENDIF(ENABLE_NLS)
-TARGET_LINK_LIBRARIES(rom-properties PRIVATE comctl32 advapi32 shell32)
+TARGET_LINK_LIBRARIES(rom-properties PRIVATE comctl32 advapi32 shell32 gdi32)
 IF(HAVE_RP_PROPERTYSTORE_DEPS)
 	TARGET_LINK_LIBRARIES(rom-properties PRIVATE propsys)
 	# Required by InitPropVariantFromString().
