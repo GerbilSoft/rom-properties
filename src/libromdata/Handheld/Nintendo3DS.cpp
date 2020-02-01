@@ -898,7 +898,7 @@ void Nintendo3DSPrivate::addTitleIdAndProductCodeFields(bool showContentType)
 		fields->addField_string(tid_desc, rp_sprintf("%08X-%08X", tid_hi, tid_lo));
 	}
 
-	if (!ncch || !ncch->isOpen()) {
+	if (!ncch_header) {
 		// Unable to open the NCCH header.
 		return;
 	}
@@ -912,10 +912,8 @@ void Nintendo3DSPrivate::addTitleIdAndProductCodeFields(bool showContentType)
 	}
 
 	// Product code.
-	if (ncch_header) {
-		fields->addField_string(C_("Nintendo3DS", "Product Code"),
-			latin1_to_utf8(ncch_header->product_code, sizeof(ncch_header->product_code)));
-	}
+	fields->addField_string(C_("Nintendo3DS", "Product Code"),
+		latin1_to_utf8(ncch_header->product_code, sizeof(ncch_header->product_code)));
 
 	// Content type.
 	// This is normally shown in the CIA content table.
@@ -926,33 +924,30 @@ void Nintendo3DSPrivate::addTitleIdAndProductCodeFields(bool showContentType)
 			(content_type ? content_type : C_("RomData", "Unknown")));
 
 		// Also show encryption type.
-		const N3DS_NCCH_Header_NoSig_t *const part_ncch_header = ncch->ncchHeader();
-		if (part_ncch_header) {
 #ifdef ENABLE_DECRYPTION
-			fields->addField_string(C_("Nintendo3DS", "Issuer"),
-				ncch->isDebug()
-					? C_("Nintendo3DS", "Debug")
-					: C_("Nintendo3DS", "Retail"));
+		fields->addField_string(C_("Nintendo3DS", "Issuer"),
+			ncch->isDebug()
+				? C_("Nintendo3DS", "Debug")
+				: C_("Nintendo3DS", "Retail"));
 #endif /* ENABLE_DECRYPTION */
 
-			// Encryption.
-			const char *const s_encryption = C_("Nintendo3DS", "Encryption");
-			const char *const s_unknown = C_("RomData", "Unknown");
-			NCCHReader::CryptoType cryptoType = {nullptr, false, 0, false};
-			int ret = NCCHReader::cryptoType_static(&cryptoType, part_ncch_header);
-			if (ret != 0 || !cryptoType.encrypted || cryptoType.keyslot >= 0x40) {
-				// Not encrypted, or not using a predefined keyslot.
-				fields->addField_string(s_encryption,
-					cryptoType.name
-						? latin1_to_utf8(cryptoType.name, -1)
-						: s_unknown);
-			} else {
-				fields->addField_string(s_encryption,
-					rp_sprintf("%s%s (0x%02X)",
-						(cryptoType.name ? cryptoType.name : s_unknown),
-						(cryptoType.seed ? "+Seed" : ""),
-						cryptoType.keyslot));
-			}
+		// Encryption.
+		const char *const s_encryption = C_("Nintendo3DS", "Encryption");
+		const char *const s_unknown = C_("RomData", "Unknown");
+		NCCHReader::CryptoType cryptoType = {nullptr, false, 0, false};
+		int ret = NCCHReader::cryptoType_static(&cryptoType, ncch_header);
+		if (ret != 0 || !cryptoType.encrypted || cryptoType.keyslot >= 0x40) {
+			// Not encrypted, or not using a predefined keyslot.
+			fields->addField_string(s_encryption,
+				cryptoType.name
+					? latin1_to_utf8(cryptoType.name, -1)
+					: s_unknown);
+		} else {
+			fields->addField_string(s_encryption,
+				rp_sprintf("%s%s (0x%02X)",
+					(cryptoType.name ? cryptoType.name : s_unknown),
+					(cryptoType.seed ? "+Seed" : ""),
+					cryptoType.keyslot));
 		}
 	}
 
