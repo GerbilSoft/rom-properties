@@ -357,6 +357,10 @@ static inline wstring U82W(const string &mbs)
 	}
 
 	wchar_t *wcs = static_cast<wchar_t*>(malloc(cchWcs * sizeof(wchar_t)));
+	assert(wcs != nullptr);
+	if (!wcs) {
+		return ws_ret;
+	}
 	MultiByteToWideChar(CP_UTF8, 0, mbs.c_str(), static_cast<int>(mbs.size()), wcs, cchWcs);
 	ws_ret.assign(wcs, cchWcs);
 	free(wcs);

@@ -13,9 +13,6 @@
 # error SetFileOriginInfo_posix.cpp is for Windows systems, not POSIX.
 #endif /* !_WIN32 */
 
-// TODO: Read rom-properties.conf for storeFileOriginInfo.
-//#include "../config/Config.hpp"
-
 // libwin32common
 #include "libwin32common/userdirs.hpp"
 #include "libwin32common/w32err.h"
@@ -48,6 +45,10 @@ static inline string T2U8(const TCHAR *wcs)
 	cbMbs--;
  
 	char *mbs = static_cast<char*>(malloc(cbMbs * sizeof(char)));
+	assert(mbs != nullptr);
+	if (!mbs) {
+		return s_ret;
+	}
 	WideCharToMultiByte(CP_UTF8, 0, wcs, -1, mbs, cbMbs, nullptr, nullptr);
 	s_ret.assign(mbs, cbMbs);
 	free(mbs);
@@ -76,6 +77,10 @@ static inline tstring U82T(const char *mbs)
 	cchWcs--;
  
 	wchar_t *wcs = static_cast<wchar_t*>(malloc(cchWcs * sizeof(wchar_t)));
+	assert(wcs != nullptr);
+	if (!wcs) {
+		return ts_ret;
+	}
 	MultiByteToWideChar(CP_UTF8, 0, mbs, -1, wcs, cchWcs);
 	ts_ret.assign(wcs, cchWcs);
 	free(wcs);

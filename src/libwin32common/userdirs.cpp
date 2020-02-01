@@ -41,6 +41,10 @@ static inline string W2U8(const WCHAR *wcs)
 	cbMbs--;
  
 	char *mbs = static_cast<char*>(malloc(cbMbs));
+	assert(mbs != nullptr);
+	if (!mbs) {
+		return s_ret;
+	}
 	WideCharToMultiByte(CP_UTF8, 0, wcs, -1, mbs, cbMbs, nullptr, nullptr);
 	s_ret.assign(mbs, cbMbs);
 	free(mbs);
