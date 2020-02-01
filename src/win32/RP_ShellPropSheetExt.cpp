@@ -793,7 +793,7 @@ int RP_ShellPropSheetExt_Private::initString(_In_ HWND hDlg, _In_ HWND hWndTab,
 		// There should be a maximum of one STRF_CREDITS per RomData subclass.
 		std::for_each(mapFormatControls.cbegin(), mapFormatControls.cend(),
 			[](const unordered_map<HWND, uint8_t>::value_type &p) {
-				assert(!(p.second & LF_SYSLINK));
+				assert(!(p.second & RP_ShellPropSheetExtPrivate::LF_SYSLINK));
 			}
 		);
 #endif /* !NDEBUG */
