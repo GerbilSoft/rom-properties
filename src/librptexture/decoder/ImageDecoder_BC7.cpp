@@ -297,7 +297,9 @@ rp_image *fromBC7(int width, int height,
 	// Anchor indexes.
 	// Subset 0 is always anchored at 0.
 	// Other subsets depend on subset count and partition number.
-	uint8_t anchor_index[3];
+	// NOTE: Index 3 is invalid. It's present here for alignment
+	// and because the subset index is 2-bit.
+	uint8_t anchor_index[4];
 	anchor_index[0] = 0;
 
 	for (unsigned int y = 0; y < tilesY; y++) {
@@ -305,12 +307,13 @@ rp_image *fromBC7(int width, int height,
 		/** BEGIN: Temporary values. **/
 
 		// Endpoints.
-		// - [6]: Individual endpoints.
+		// - [8]: Individual endpoints.
 		// - [4]: RGBx components. (idx3 is unused)
-		// TODO: Align to 32-bit.
+		// NOTE: Endpoints 6 and 7 are never used.
+		// They're kept here because the subset index is 2-bit.
 		union {
-			uint8_t   u8[6][4];
-			uint32_t u32[6];
+			uint8_t   u8[8][4];
+			uint32_t u32[8];
 		} endpoints;
 
 		// Alpha components.
@@ -556,6 +559,7 @@ rp_image *fromBC7(int width, int height,
 		uint32_t subsetData = subset;
 		for (unsigned int i = 0; i < 16; i++, subsetData >>= 2) {
 			const uint8_t subset_idx = subsetData & 3;
+			assert(subset_idx != 3);
 			uint8_t data_idx;
 			if (i == anchor_index[subset_idx]) {
 				// This is an anchor index.
