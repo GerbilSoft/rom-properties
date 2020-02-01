@@ -1,4 +1,4 @@
-PROJECT(rom-properties-rpcli)
+PROJECT(rpcli)
 
 # Check for reentrant functions.
 # NOTE: May be _gmtime32_s() or _gmtime64_s() on MSVC 2005+.
@@ -20,38 +20,38 @@ CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/rpcli.exe.manifest.in" "${CMAKE_CURR
 CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/config.rpcli.h.in" "${CMAKE_CURRENT_BINARY_DIR}/config.rpcli.h")
 
 # Sources and headers.
-SET(rom-properties-rpcli_SRCS
+SET(rpcli_SRCS
 	rpcli.cpp
 	properties.cpp
 	device.cpp
 	)
-SET(rom-properties-rpcli_H
+SET(rpcli_H
 	properties.hpp
 	device.hpp
 	)
 
 IF(WIN32)
-	SET(rom-properties-rpcli_RC resource.rc)
+	SET(rpcli_RC resource.rc)
 ENDIF(WIN32)
 
 IF(ENABLE_DECRYPTION)
-	SET(rom-properties-rpcli_CRYPTO_SRCS verifykeys.cpp)
-	SET(rom-properties-rpcli_CRYPTO_H verifykeys.hpp)
+	SET(rpcli_CRYPTO_SRCS verifykeys.cpp)
+	SET(rpcli_CRYPTO_H verifykeys.hpp)
 ENDIF(ENABLE_DECRYPTION)
 
 IF(ENABLE_PCH)
 	# Precompiled headers.
 	INCLUDE(PrecompiledHeader)
-	SET(rom-properties-rpcli_PCH_C stdafx.c)
-	SET(rom-properties-rpcli_PCH_CXX stdafx.cpp)
-	SET(rom-properties-rpcli_PCH_SRC ${rom-properties-rpcli_PCH_C} ${rom-properties-rpcli_PCH_CXX})
-	SET(rom-properties-rpcli_PCH_H stdafx.h)
+	SET(rpcli_PCH_C stdafx.c)
+	SET(rpcli_PCH_CXX stdafx.cpp)
+	SET(rpcli_PCH_SRC ${rpcli_PCH_C} ${rpcli_PCH_CXX})
+	SET(rpcli_PCH_H stdafx.h)
 ENDIF(ENABLE_PCH)
 
 IF(MSVC)
 	# Delay-load sources.
-	SET(rom-properties-rpcli-DELAYLOAD_SRC ../libwin32common/DelayLoadHelper.c)
-	SET(rom-properties-rpcli-DELAYLOAD_H ../libwin32common/DelayLoadHelper.h)
+	SET(rpcli-DELAYLOAD_SRC ../libwin32common/DelayLoadHelper.c)
+	SET(rpcli-DELAYLOAD_H ../libwin32common/DelayLoadHelper.h)
 ENDIF(MSVC)
 
 #########################
@@ -63,16 +63,16 @@ INCLUDE(../libwin32common/DelayLoadHelper.cmake)
 SET_DELAYLOAD_EXTLIB_FLAGS()
 
 ADD_EXECUTABLE(rpcli
-	${rom-properties-rpcli_PCH_SRC} ${rom-properties-rpcli_PCH_H}
-	${rom-properties-rpcli-DELAYLOAD_SRC} ${rom-properties-rpcli-DELAYLOAD_H}
-	${rom-properties-rpcli_SRCS} ${rom-properties-rpcli_H}
-	${rom-properties-rpcli_CRYPTO_SRCS} ${rom-properties-rpcli_CRYPTO_H}
-	${rom-properties-rpcli_RC}
+	${rpcli_PCH_SRC} ${rpcli_PCH_H}
+	${rpcli-DELAYLOAD_SRC} ${rpcli-DELAYLOAD_H}
+	${rpcli_SRCS} ${rpcli_H}
+	${rpcli_CRYPTO_SRCS} ${rpcli_CRYPTO_H}
+	${rpcli_RC}
 	)
 IF(ENABLE_PCH)
-	ADD_PRECOMPILED_HEADER(rpcli ${rom-properties-rpcli_PCH_H}
-		SOURCE_C ${rom-properties-rpcli_PCH_C}
-		SOURCE_CXX ${rom-properties-rpcli_PCH_CXX}
+	ADD_PRECOMPILED_HEADER(rpcli ${rpcli_PCH_H}
+		SOURCE_C ${rpcli_PCH_C}
+		SOURCE_CXX ${rpcli_PCH_CXX}
 		)
 ENDIF(ENABLE_PCH)
 SET_TARGET_PROPERTIES(rpcli PROPERTIES PREFIX "")
