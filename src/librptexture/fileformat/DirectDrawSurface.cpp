@@ -1084,58 +1084,59 @@ const char *DirectDrawSurface::pixelFormat(void) const
 		return d->pixel_format;
 	}
 
-	char *const pixel_format = const_cast<char*>(d->pixel_format);
-
 	// Pixel format.
+	DirectDrawSurfacePrivate *const d_nc = const_cast<DirectDrawSurfacePrivate*>(d);
 	const DDS_PIXELFORMAT &ddspf = d->ddsHeader.ddspf;
 	if (ddspf.dwFlags & DDPF_FOURCC) {
 		// Compressed RGB data.
-		pixel_format[0] = (ddspf.dwFourCC >> 24) & 0xFF;
-		pixel_format[1] = (ddspf.dwFourCC >> 16) & 0xFF;
-		pixel_format[2] = (ddspf.dwFourCC >>  8) & 0xFF;
-		pixel_format[3] =  ddspf.dwFourCC        & 0xFF;
-		pixel_format[4] = '\0';
+		d_nc->pixel_format[0] = (ddspf.dwFourCC >> 24) & 0xFF;
+		d_nc->pixel_format[1] = (ddspf.dwFourCC >> 16) & 0xFF;
+		d_nc->pixel_format[2] = (ddspf.dwFourCC >>  8) & 0xFF;
+		d_nc->pixel_format[3] =  ddspf.dwFourCC        & 0xFF;
+		d_nc->pixel_format[4] = '\0';
 	} else if (ddspf.dwFlags & DDPF_RGB) {
 		// Uncompressed RGB data.
 		const char *const pxfmt = d->getPixelFormatName(ddspf);
 		if (pxfmt) {
-			snprintf(pixel_format, sizeof(d->pixel_format), "%s", pxfmt);
+			strcpy(d_nc->pixel_format, pxfmt);
 		} else {
-			snprintf(pixel_format, sizeof(d->pixel_format),
+			snprintf(d_nc->pixel_format, sizeof(d_nc->pixel_format),
 				 "RGB (%u-bit)", ddspf.dwRGBBitCount);
 		}
 	} else if (ddspf.dwFlags & DDPF_ALPHA) {
 		// Alpha channel.
 		const char *const pxfmt = d->getPixelFormatName(ddspf);
 		if (pxfmt) {
-			snprintf(pixel_format, sizeof(d->pixel_format), "%s", pxfmt);
+			strcpy(d_nc->pixel_format, pxfmt);
 		} else {
-			snprintf(pixel_format, sizeof(d->pixel_format),
+			snprintf(d_nc->pixel_format, sizeof(d_nc->pixel_format),
 				C_("DirectDrawSurface", "Alpha (%u-bit)"), ddspf.dwRGBBitCount);
 		}
 	} else if (ddspf.dwFlags & DDPF_YUV) {
 		// YUV. (TODO: Determine the format.)
-		snprintf(pixel_format, sizeof(d->pixel_format),
+		snprintf(d_nc->pixel_format, sizeof(d_nc->pixel_format),
 			C_("DirectDrawSurface", "YUV (%u-bit)"), ddspf.dwRGBBitCount);
 	} else if (ddspf.dwFlags & DDPF_LUMINANCE) {
 		// Luminance.
 		const char *const pxfmt = d->getPixelFormatName(ddspf);
 		if (pxfmt) {
-			snprintf(pixel_format, sizeof(d->pixel_format), "%s", pxfmt);
+			strcpy(d_nc->pixel_format, pxfmt);
 		} else {
 			if (ddspf.dwFlags & DDPF_ALPHAPIXELS) {
-				snprintf(pixel_format, sizeof(d->pixel_format),
+				snprintf(d_nc->pixel_format, sizeof(d_nc->pixel_format),
 					C_("DirectDrawSurface", "Luminance + Alpha (%u-bit)"),
 					ddspf.dwRGBBitCount);
 			} else {
-				snprintf(pixel_format, sizeof(d->pixel_format),
+				snprintf(d_nc->pixel_format, sizeof(d_nc->pixel_format),
 					C_("DirectDrawSurface", "Luminance (%u-bit)"),
 					ddspf.dwRGBBitCount);
 			}
 		}
 	} else {
 		// Unknown pixel format.
-		snprintf(pixel_format, sizeof(d->pixel_format), C_("FileFormat", "Unknown"));
+		strncpy(d_nc->pixel_format,
+			C_("FileFormat", "Unknown"), sizeof(d_nc->pixel_format));
+		d_nc->pixel_format[sizeof(d_nc->pixel_format)-1] = '\0';
 	}
 
 	return d->pixel_format;
