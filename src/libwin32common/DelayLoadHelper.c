@@ -50,7 +50,6 @@ static HMODULE WINAPI rp_loadLibrary(LPCSTR pszModuleName)
 	static const char prefix_whitelist[][16] = {
 		"\x05" "zlib1",
 		"\x06" "libpng",
-		"\x04" "jpeg",
 		"\x08" "tinyxml2",
 		"\x0C" "libgnuintl-8",
 	};
