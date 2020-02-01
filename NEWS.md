@@ -110,6 +110,7 @@
     Nintendo 3DS, GameCube, Wii)
   * MegaDrive: Fixed region code detection for locked-on ROMs. Previously,
     it would use the base ROM region code for both.
+  * MachO: Fixed CPU subtype detection for 486SX.
 
 * Other changes:
   * Removed the internal copy of libjpeg-turbo. On Windows, gdiplus is now

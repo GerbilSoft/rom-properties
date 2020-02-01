@@ -98,10 +98,7 @@ const char *MachOData::lookup_cpu_subtype(uint32_t cputype, uint32_t cpusubtype)
 						s_cpu_subtype = "i386";
 						break;
 					case CPU_SUBTYPE_486:
-						s_cpu_subtype = "i486";
-						break;
-					case CPU_SUBTYPE_486SX:
-						s_cpu_subtype = "i486SX";
+						s_cpu_subtype = (cpusubtype == CPU_SUBTYPE_486SX ? "i486SX" : "i486");
 						break;
 					case CPU_SUBTYPE_PENT:
 						s_cpu_subtype = "Pentium";
