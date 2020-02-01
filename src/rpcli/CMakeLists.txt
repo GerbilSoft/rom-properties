@@ -39,15 +39,16 @@ IF(ENABLE_DECRYPTION)
 	SET(rom-properties-rpcli_CRYPTO_H verifykeys.hpp)
 ENDIF(ENABLE_DECRYPTION)
 
-IF(MSVC)
+IF(ENABLE_PCH)
 	# Precompiled headers.
-	# NOTE: Only enabling PCH for MSVC builds.
 	INCLUDE(PrecompiledHeader)
 	SET(rom-properties-rpcli_PCH_C stdafx.c)
 	SET(rom-properties-rpcli_PCH_CXX stdafx.cpp)
 	SET(rom-properties-rpcli_PCH_SRC ${rom-properties-rpcli_PCH_C} ${rom-properties-rpcli_PCH_CXX})
 	SET(rom-properties-rpcli_PCH_H stdafx.h)
+ENDIF(ENABLE_PCH)
 
+IF(MSVC)
 	# Delay-load sources.
 	SET(rom-properties-rpcli-DELAYLOAD_SRC ../libwin32common/DelayLoadHelper.c)
 	SET(rom-properties-rpcli-DELAYLOAD_H ../libwin32common/DelayLoadHelper.h)
@@ -62,23 +63,18 @@ INCLUDE(../libwin32common/DelayLoadHelper.cmake)
 SET_DELAYLOAD_EXTLIB_FLAGS()
 
 ADD_EXECUTABLE(rpcli
-	${rom-properties-rpcli_PCH_SRC}
-	${rom-properties-rpcli_PCH_H}
-	${rom-properties-rpcli-DELAYLOAD_SRC}
-	${rom-properties-rpcli-DELAYLOAD_H}
-	${rom-properties-rpcli_SRCS}
-	${rom-properties-rpcli_H}
+	${rom-properties-rpcli_PCH_SRC} ${rom-properties-rpcli_PCH_H}
+	${rom-properties-rpcli-DELAYLOAD_SRC} ${rom-properties-rpcli-DELAYLOAD_H}
+	${rom-properties-rpcli_SRCS} ${rom-properties-rpcli_H}
+	${rom-properties-rpcli_CRYPTO_SRCS} ${rom-properties-rpcli_CRYPTO_H}
 	${rom-properties-rpcli_RC}
-	${rom-properties-rpcli_CRYPTO_SRCS}
-	${rom-properties-rpcli_CRYPTO_H}
 	)
-# NOTE: Only enabling PCH for MSVC.
-IF(MSVC)
+IF(ENABLE_PCH)
 	ADD_PRECOMPILED_HEADER(rpcli ${rom-properties-rpcli_PCH_H}
 		SOURCE_C ${rom-properties-rpcli_PCH_C}
 		SOURCE_CXX ${rom-properties-rpcli_PCH_CXX}
 		)
-ENDIF(MSVC)
+ENDIF(ENABLE_PCH)
 SET_TARGET_PROPERTIES(rpcli PROPERTIES PREFIX "")
 DO_SPLIT_DEBUG(rpcli)
 SET_WINDOWS_SUBSYSTEM(rpcli CONSOLE)
