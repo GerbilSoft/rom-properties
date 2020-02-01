@@ -211,7 +211,6 @@ IF(WIN32)
 		UNSET(UNICODE_FLAG)
 	ELSE(MSVC)
 		# MinGW does not automatically prepend an underscore.
-		# TODO: Does ARM Windows have a leading underscore?
 		# TODO: _setargv for MinGW.
 
 		# NOTE: MinGW uses separate crt*.o files for Unicode
@@ -221,15 +220,11 @@ IF(WIN32)
 			STRING(SUBSTRING "${_entrypoint}" 1 -1 _entrypoint)
 		ENDIF()
 
-		IF(CPU_i386 OR CPU_amd64)
-			IF(CMAKE_SIZEOF_VOID_P EQUAL 4)
-				SET(ENTRY_POINT "_${_entrypoint}CRTStartup")
-			ELSE()
-				SET(ENTRY_POINT "${_entrypoint}CRTStartup")
-			ENDIF()
-		ELSE()
+		IF(CPU_i386)
+			SET(ENTRY_POINT "_${_entrypoint}CRTStartup")
+		ELSE(CPU_i386)
 			SET(ENTRY_POINT "${_entrypoint}CRTStartup")
-		ENDIF(CPU_i386 OR CPU_amd64)
+		ENDIF(CPU_i386)
 		SET(ENTRY_POINT_FLAG "-Wl,-e,${ENTRY_POINT}")
 		UNSET(SETARGV_FLAG)
 	ENDIF(MSVC)
