@@ -127,7 +127,6 @@ STDAPI DllCanUnloadNow(void)
 {
 	if (!LibWin32Common::ComBase_isReferenced()) {
 		// Not referenced anywhere.
-		rp_DpiUnloadModules();	// FIXME: May need to be done elsewhere.
 		return S_OK;
 	}
 

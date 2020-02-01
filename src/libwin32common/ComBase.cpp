@@ -8,6 +8,7 @@
 
 // Reference: http://www.codeproject.com/Articles/338268/COM-in-C
 #include "ComBase.hpp"
+#include "HiDPI.h"
 
 // C includes. (C++ namespace)
 #include <cassert>
@@ -89,6 +90,9 @@ void decRpGlobalRefCount(void)
 		FreeLibrary(hUxTheme_dll);
 		hUxTheme_dll = nullptr;
 	}
+
+	// Unload modules needed for High-DPI, if necessary.
+	rp_DpiUnloadModules();
 
 	// Finished unloading function pointers.
 	once_control = PTHREAD_ONCE_INIT;
