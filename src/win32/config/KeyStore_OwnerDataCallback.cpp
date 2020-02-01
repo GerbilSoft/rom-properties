@@ -31,7 +31,7 @@ IFACEMETHODIMP KeyStore_OwnerDataCallback::QueryInterface(REFIID riid, LPVOID *p
 #ifdef _MSC_VER
 # pragma warning(pop)
 #endif /* _MSC_VER */
-	return LibWin32Common::pfnQISearch(this, rgqit, riid, ppvObj);
+	return LibWin32Common::rp_QISearch(this, rgqit, riid, ppvObj);
 }
 
 /** KeyStore_OwnerDataCallback **/

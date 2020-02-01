@@ -70,7 +70,7 @@ IFACEMETHODIMP RP_ExtractIcon::QueryInterface(REFIID riid, LPVOID *ppvObj)
 #ifdef _MSC_VER
 # pragma warning(pop)
 #endif /* _MSC_VER */
-	return LibWin32Common::pfnQISearch(this, rgqit, riid, ppvObj);
+	return LibWin32Common::rp_QISearch(this, rgqit, riid, ppvObj);
 }
 
 /** IPersistFile **/
