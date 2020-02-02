@@ -181,9 +181,6 @@ ENDIF(ENABLE_NLS)
 TARGET_LINK_LIBRARIES(rom-properties PRIVATE comctl32 advapi32 shell32 gdi32)
 IF(HAVE_RP_PROPERTYSTORE_DEPS)
 	TARGET_LINK_LIBRARIES(rom-properties PRIVATE propsys)
-	# Required by InitPropVariantFromString().
-	# TODO: Write our own version that doesn't use SHStrDupW()?
-	TARGET_LINK_LIBRARIES(rom-properties PRIVATE shlwapi)
 ENDIF(HAVE_RP_PROPERTYSTORE_DEPS)
 
 # Add zlib, png, and tinyxml2 directories for the About tab.
