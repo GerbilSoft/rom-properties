@@ -465,7 +465,7 @@ HICON RpImageWin32::toHICON(HBITMAP hBitmap)
 	// Temporarily convert the HBITMAP to rp_image
 	// in order to create an icon mask.
 	// NOTE: Windows doesn't seem to have any way to get
-	// direct access to the HBITAMP's pixels, so this step
+	// direct access to the HBITMAP's pixels, so this step
 	// step is required. (GetDIBits() copies the pixels.)
 	unique_ptr<rp_image> img(fromHBITMAP(hBitmap));
 	if (!img) {
