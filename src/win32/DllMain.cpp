@@ -161,27 +161,28 @@ _Check_return_ STDAPI DllGetClassObject(_In_ REFCLSID rclsid, _In_ REFIID riid, 
 #endif /* defined(_MSC_VER) && defined(ENABLE_NLS) */
 
 	// Check for supported classes.
-	HRESULT hr = E_FAIL;
+	HRESULT hr = CLASS_E_CLASSNOTAVAILABLE;
+	try {
 #define CHECK_INTERFACE(Interface) \
-	if (IsEqualIID(rclsid, CLSID_##Interface)) { \
-		/* Create a new class factory for this Interface. */ \
-		RP_ClassFactory<Interface> *pCF = new RP_ClassFactory<Interface>(); \
-		hr = pCF->QueryInterface(riid, ppv); \
-		pCF->Release(); \
-	}
-	CHECK_INTERFACE(RP_ExtractIcon)
-	else CHECK_INTERFACE(RP_ExtractImage)
-	else CHECK_INTERFACE(RP_ShellPropSheetExt)
-	else CHECK_INTERFACE(RP_ThumbnailProvider)
+		if (IsEqualIID(rclsid, CLSID_##Interface)) { \
+			/* Create a new class factory for this Interface. */ \
+			RP_ClassFactory<Interface> *pCF = new RP_ClassFactory<Interface>(); \
+			hr = pCF->QueryInterface(riid, ppv); \
+			pCF->Release(); \
+		}
+
+		CHECK_INTERFACE(RP_ExtractIcon)
+		else CHECK_INTERFACE(RP_ExtractImage)
+		else CHECK_INTERFACE(RP_ShellPropSheetExt)
+		else CHECK_INTERFACE(RP_ThumbnailProvider)
 #ifdef HAVE_RP_PROPERTYSTORE_DEPS
-	else CHECK_INTERFACE(RP_PropertyStore)
+		else CHECK_INTERFACE(RP_PropertyStore)
 #endif /* HAVE_RP_PROPERTYSTORE_DEPS */
 #ifdef ENABLE_OVERLAY_ICON_HANDLER
-	else CHECK_INTERFACE(RP_ShellIconOverlayIdentifier)
+		else CHECK_INTERFACE(RP_ShellIconOverlayIdentifier)
 #endif /* ENABLE_OVERLAY_ICON_HANDLER */
-	else {
-		// Class not available.
-		hr = CLASS_E_CLASSNOTAVAILABLE;
+	} catch (const std::bad_alloc&) {
+		hr = E_OUTOFMEMORY;
 	}
 
 	if (hr != S_OK) {
