@@ -31,9 +31,9 @@ __CRT_UUID_DECL(IEmptyVolumeCache, __MSABI_LONG(0x8fce5227), 0x04da, 0x11d1, 0xa
 #endif
 
 // C++ STL classes.
+using std::list;
 using std::pair;
 using std::string;
-using std::vector;
 using std::wstring;
 
 // Timer ID for the XP drive update procedure.
@@ -79,10 +79,10 @@ class CacheTabPrivate
 		/**
 		 * Recursively scan a directory for files.
 		 * @param path	[in] Path to scan.
-		 * @param rvec	[in/out] Return vector for filenames and attributes.
+		 * @param rlist	[in/out] Return list for filenames and attributes.
 		 * @return 0 on success; non-zero on error.
 		 */
-		int recursiveScan(const TCHAR *path, vector<pair<tstring, DWORD> > &rvec);
+		int recursiveScan(const TCHAR *path, list<pair<tstring, DWORD> > &rlist);
 
 		/**
 		 * Clear the rom-properties cache.
@@ -562,10 +562,10 @@ int CacheTabPrivate::clearThumbnailCacheVista(void)
 /**
  * Recursively scan a directory for image files.
  * @param path	[in] Path to scan.
- * @param rvec	[in/out] Return vector for filenames and attributes.
+ * @param rlist	[in/out] Return list for filenames and attributes.
  * @return 0 on success; non-zero on error.
  */
-int CacheTabPrivate::recursiveScan(const TCHAR *path, vector<pair<tstring, DWORD> > &rvec)
+int CacheTabPrivate::recursiveScan(const TCHAR *path, list<pair<tstring, DWORD> > &rlist)
 {
 	tstring findFilter(path);
 	findFilter += _T("\\*");
@@ -623,12 +623,12 @@ int CacheTabPrivate::recursiveScan(const TCHAR *path, vector<pair<tstring, DWORD
 		// If this is a directory, recursively scan it, then add it.
 		if (findFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
 			// Recursively scan it.
-			recursiveScan(fullFileName.c_str(), rvec);
+			recursiveScan(fullFileName.c_str(), rlist);
 		}
 
 		// Add the filename and attributes.
 		// FIXME: Test emplace_back on MSVC 2010.
-		rvec.emplace_back(std::make_pair(std::move(fullFileName), findFileData.dwFileAttributes));
+		rlist.emplace_back(std::make_pair(std::move(fullFileName), findFileData.dwFileAttributes));
 	} while (FindNextFile(hFindFile, &findFileData));
 	FindClose(hFindFile);
 
@@ -694,10 +694,10 @@ int CacheTabPrivate::clearRomPropertiesCache(void)
 	SendMessage(hProgressBar, PBM_SETPOS, 0, 0);
 
 	// Recursively scan the cache directory.
-	// TODO: Do we really want to store everything in a vector? (Wastes memory.)
+	// TODO: Do we really want to store everything in a list? (Wastes memory.)
 	// Maybe do a simple counting scan first, then delete.
-	vector<pair<tstring, DWORD> > rvec;
-	int ret = recursiveScan(cacheDirT.c_str(), rvec);
+	list<pair<tstring, DWORD> > rlist;
+	int ret = recursiveScan(cacheDirT.c_str(), rlist);
 	if (ret != 0) {
 		// Non-image file found.
 		SetWindowText(hStatusLabel, U82T_c(C_("CacheTab", "ERROR: rom-properties cache has unexpected files. Not clearing it.")));
@@ -710,7 +710,7 @@ int CacheTabPrivate::clearRomPropertiesCache(void)
 		SendMessage(hProgressBar, PBM_SETSTATE, PBST_ERROR, 0);
 		MessageBeep(MB_ICONERROR);
 		return 0;
-	} else if (rvec.empty()) {
+	} else if (rlist.empty()) {
 		// Nothing to do!
 		SetWindowText(hStatusLabel, U82T_c(C_("CacheTab", "rom-properties cache is empty. Nothing to do.")));
 		SendMessage(hProgressBar, PBM_SETRANGE, 0, MAKELONG(0, 1));
@@ -723,11 +723,11 @@ int CacheTabPrivate::clearRomPropertiesCache(void)
 	}
 
 	// Delete all of the files and subdirectories.
-	SendMessage(hProgressBar, PBM_SETRANGE32, 0, rvec.size());
+	SendMessage(hProgressBar, PBM_SETRANGE32, 0, rlist.size());
 	SendMessage(hProgressBar, PBM_SETPOS, 2, 0);
 	unsigned int count = 0;
 	unsigned int dirErrs = 0, fileErrs = 0;
-	for (auto iter = rvec.cbegin(); iter != rvec.cend(); ++iter) {
+	for (auto iter = rlist.cbegin(); iter != rlist.cend(); ++iter) {
 		if (iter->second & FILE_ATTRIBUTE_DIRECTORY) {
 			// Remove the directory.
 			BOOL bRet = RemoveDirectory(iter->first.c_str());
