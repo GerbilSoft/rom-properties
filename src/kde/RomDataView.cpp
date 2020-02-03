@@ -59,6 +59,13 @@ using std::vector;
 // Custom Qt widgets.
 #include "DragImageTreeWidget.hpp"
 
+// KAcceleratorManager
+#if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
+# include <KAcceleratorManager>
+#else /* !QT_VERSION >= QT_VERSION_CHECK(5,0,0) */
+# include <kacceleratormanager.h>
+#endif /* QT_VERSION >= QT_VERSION_CHECK(5,0,0) */
+
 #include "ui_RomDataView.h"
 class RomDataViewPrivate
 {
@@ -515,10 +522,14 @@ void RomDataViewPrivate::initBitfield(QLabel *lblDesc, const RomFields::Field &f
 		if (name.empty())
 			continue;
 
-		// TODO: Disable KDE's automatic mnemonic.
-		QCheckBox *checkBox = new QCheckBox(q);
+		QCheckBox *const checkBox = new QCheckBox(q);
+
+		// Disable automatic mnemonics.
+		KAcceleratorManager::setNoAccel(checkBox);
+
+		// Set the name and value.
+		const bool value = (bitfield & 1);
 		checkBox->setText(U82Q(name));
-		bool value = (bitfield & 1);
 		checkBox->setChecked(value);
 
 		// Save the bitfield checkbox's value in the QObject.
