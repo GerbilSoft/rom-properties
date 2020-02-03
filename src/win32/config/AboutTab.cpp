@@ -615,7 +615,7 @@ void AboutTabPrivate::initCreditsTab(void)
 	// FIXME: Figure out how to get links to work without
 	// resorting to manually adding CFE_LINK data...
 	// NOTE: Copyright is NOT localized.
-	sCredits += "Copyright (c) 2016-2019 by David Korth." RTF_BR;
+	sCredits += "Copyright (c) 2016-2020 by David Korth." RTF_BR;
 	sCredits += RTF_BR;
 	sCredits += rp_sprintf(
 		// tr: %s is the name of the license.
