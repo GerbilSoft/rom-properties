@@ -37,10 +37,8 @@ extern "C" {
  */
 static inline HRESULT InitPropVariantFromFileTime_xp(_In_ const FILETIME *pftIn, _Out_ PROPVARIANT *pPropVar)
 {
-	// TODO: FILETIME doesn't have a 64-bit accessor.
 	pPropVar->vt = VT_FILETIME;
-	pPropVar->uhVal.LowPart = pftIn->dwLowDateTime;
-	pPropVar->uhVal.HighPart = pftIn->dwHighDateTime;
+	pPropVar->filetime = *pftIn;
 	return S_OK;
 }
 
