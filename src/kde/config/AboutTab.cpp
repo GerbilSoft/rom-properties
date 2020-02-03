@@ -299,7 +299,7 @@ void AboutTabPrivate::initLibrariesTab(void)
 	sLibraries += rp_sprintf(sCompiledWith, "KDE Libraries " KDE_VERSION_STRING);
 	sLibraries += br;
 	sLibraries += rp_sprintf(sUsingDll, kdeVersion.c_str());
-	sLibraries += BR;
+	sLibraries += BR
 		"Copyright (C) 1996-2017 KDE contributors." BR;
 	sLibraries += rp_sprintf(sLicense, "GNU LGPL v2.1+");
 #endif /* QT_VERSION >= QT_VERSION_CHECK(5,0,0) */
