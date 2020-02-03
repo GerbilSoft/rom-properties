@@ -83,6 +83,16 @@
 # endif /* _UNICODE */
 #endif /* defined(__cplusplus) && !defined(tstring) */
 
+#ifndef WM_DPICHANGED
+# define WM_DPICHANGED 0x2E0
+#endif
+#ifndef WM_DPICHANGED_BEFOREPARENT
+# define WM_DPICHANGED_BEFOREPARENT 0x2E2
+#endif
+#ifndef WM_DPICHANGED_AFTERPARENT
+# define WM_DPICHANGED_AFTERPARENT 0x2E3
+#endif
+
 #if defined(__GNUC__) && defined(__MINGW32__) && _WIN32_WINNT < 0x0502 && defined(__cplusplus)
 /**
  * MinGW-w64 only defines ULONG overloads for the various atomic functions

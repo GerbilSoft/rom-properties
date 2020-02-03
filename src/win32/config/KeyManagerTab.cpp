@@ -145,8 +145,7 @@ class KeyManagerTabPrivate
 		// Icons for the "Valid?" column.
 		// NOTE: "?" and "X" are copies from User32.
 		// Checkmark is a PNG image loaded from a resource.
-		// FIXME: Assuming 16x16 icons. May need larger for HiDPI.
-		static const SIZE szIcon;
+		int iconSize;		// NOTE: Needs to be SIGNED to prevent issues with negative coordinates.
 		HICON hIconUnknown;	// "?" (USER32.dll,-102)
 		HICON hIconInvalid;	// "X" (USER32.dll,-103)
 		HICON hIconGood;	// Checkmark
@@ -217,9 +216,6 @@ class KeyManagerTabPrivate
 
 /** KeyManagerTabPrivate **/
 
-// FIXME: Assuming 16x16 icons. May need larger for HiDPI.
-const SIZE KeyManagerTabPrivate::szIcon = {16, 16};
-
 KeyManagerTabPrivate::KeyManagerTabPrivate()
 	: hPropSheetPage(nullptr)
 	, hWndPropSheet(nullptr)
@@ -232,6 +228,7 @@ KeyManagerTabPrivate::KeyManagerTabPrivate()
 	, bCancelEdit(false)
 	, bAllowKanji(false)
 	, isComCtl32_610(false)
+	, iconSize(0)
 	, hIconUnknown(nullptr)
 	, hIconInvalid(nullptr)
 	, hIconGood(nullptr)
@@ -809,6 +806,19 @@ INT_PTR CALLBACK KeyManagerTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 			break;
 		}
 
+		case WM_DPICHANGED: {
+			KeyManagerTabPrivate *const d = static_cast<KeyManagerTabPrivate*>(
+				GetProp(hDlg, D_PTR_PROP));
+			if (!d) {
+				// No KeyManagerTabPrivate. Can't do anything...
+				return false;
+			}
+
+			// TODO: Verify that this works. (Might be top-level only?)
+			d->loadImages();
+			break;
+		}
+
 		default:
 			break;
 	}
@@ -1317,11 +1327,11 @@ inline int KeyManagerTabPrivate::ListView_CustomDraw(NMLVCUSTOMDRAW *plvcd)
 					}
 					FillRect(plvcd->nmcd.hdc, pRcSubItem, hbr);
 
-					const int x = pRcSubItem->left + (((pRcSubItem->right - pRcSubItem->left) - szIcon.cx) / 2);
-					const int y = pRcSubItem->top + (((pRcSubItem->bottom - pRcSubItem->top) - szIcon.cy) / 2);
+					const int x = pRcSubItem->left + (((pRcSubItem->right - pRcSubItem->left) - iconSize) / 2);
+					const int y = pRcSubItem->top + (((pRcSubItem->bottom - pRcSubItem->top) - iconSize) / 2);
 
 					DrawIconEx(plvcd->nmcd.hdc, x, y, hDrawIcon,
-						szIcon.cx, szIcon.cy, 0, nullptr, DI_NORMAL);
+						iconSize, iconSize, 0, nullptr, DI_NORMAL);
 					break;
 				}
 
@@ -1342,9 +1352,41 @@ inline int KeyManagerTabPrivate::ListView_CustomDraw(NMLVCUSTOMDRAW *plvcd)
  */
 void KeyManagerTabPrivate::loadImages(void)
 {
-	if (hIconInvalid) {
-		// Images are already loaded.
+	// Get the current DPI.
+	const UINT dpi = rp_GetDpiForWindow(hWndPropSheet);
+	unsigned int iconSize_new;
+	if (dpi < 120) {
+		// [96,120) dpi: Use 16x16.
+		iconSize_new = 16;
+	} else if (dpi <= 144) {
+		// [120,144] dpi: Use 24x24.
+		// TODO: Maybe needs to be slightly higher?
+		iconSize_new = 24;
+	} else {
+		// >144dpi: Use 32x32.
+		iconSize_new = 32;
+	}
+
+	if (iconSize == iconSize_new) {
+		// Icons are already loaded.
 		return;
+	}
+
+	// Save the new icon size.
+	iconSize = iconSize_new;
+
+	// Free the icons if they were already loaded.
+	if (hIconUnknown) {
+		DestroyIcon(hIconUnknown);
+		hIconUnknown = nullptr;
+	}
+	if (hIconInvalid) {
+		DestroyIcon(hIconInvalid);
+		hIconInvalid = nullptr;
+	}
+	if (hIconGood) {
+		DestroyIcon(hIconGood);
+		hIconGood = nullptr;
 	}
 
 	// Load the icons.
@@ -1355,17 +1397,17 @@ void KeyManagerTabPrivate::loadImages(void)
 	if (hUser32) {
 		hIconUnknown = (HICON)LoadImage(hUser32,
 			MAKEINTRESOURCE(102), IMAGE_ICON,
-			szIcon.cx, szIcon.cy, 0);
+			iconSize_new, iconSize_new, 0);
 		hIconInvalid = (HICON)LoadImage(hUser32,
 			MAKEINTRESOURCE(103), IMAGE_ICON,
-			szIcon.cx, szIcon.cy, 0);
+			iconSize_new, iconSize_new, 0);
 	}
 
 	// Load hIconGood from our own resource section.
 	// Based on KDE Oxygen 5.35.0's base/16x16/actions/dialog-ok-apply.png
 	hIconGood = (HICON)LoadImage(HINST_THISCOMPONENT,
 		MAKEINTRESOURCE(IDI_KEY_VALID), IMAGE_ICON,
-		szIcon.cx, szIcon.cy, 0);
+		iconSize_new, iconSize_new, 0);
 }
 
 /** "Import" menu actions. **/
