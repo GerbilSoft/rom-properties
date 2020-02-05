@@ -468,17 +468,17 @@ void MegaDrivePrivate::addFields_vectorTable(const M68K_VectorTable *pVectors)
 	}
 
 	static const char *const vectors_headers[] = {
-		NOP_C_("MegaDrive|VectorTable", "#"),
-		NOP_C_("MegaDrive|VectorTable", "Vector"),
-		NOP_C_("MegaDrive|VectorTable", "Address"),
+		NOP_C_("RomData|VectorTable", "#"),
+		NOP_C_("RomData|VectorTable", "Vector"),
+		NOP_C_("RomData|VectorTable", "Address"),
 	};
 	vector<string> *const v_vectors_headers = RomFields::strArrayToVector_i18n(
-		"MegaDrive|VectorTable", vectors_headers, ARRAY_SIZE(vectors_headers));
+		"RomData|VectorTable", vectors_headers, ARRAY_SIZE(vectors_headers));
 
 	RomFields::AFLD_PARAMS params(RomFields::RFT_LISTDATA_SEPARATE_ROW, 8);
 	params.headers = v_vectors_headers;
 	params.data.single = vv_vectors;
-	fields->addField_listData(C_("MegaDrive", "Vector Table"), &params);
+	fields->addField_listData(C_("RomData", "Vector Table"), &params);
 }
 
 /** MegaDrive **/

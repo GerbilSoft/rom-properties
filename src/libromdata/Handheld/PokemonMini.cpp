@@ -330,7 +330,7 @@ int PokemonMini::loadFieldData(void)
 		} else if (!memcmp(&romHeader->irqs[i][0], vec_empty_ff, sizeof(vec_empty_ff)) ||
 			   !memcmp(&romHeader->irqs[i][0], vec_empty_00, sizeof(vec_empty_00))) {
 			// Empty vector.
-			s_address = C_("PokemonMini|VectorTable", "None");
+			s_address = C_("RomData|VectorTable", "None");
 		} else {
 			// Not a standard jump opcode.
 			// Show the hexdump.
@@ -344,17 +344,17 @@ int PokemonMini::loadFieldData(void)
 	}
 
 	static const char *const vectors_headers[] = {
-		NOP_C_("PokemonMini|VectorTable", "#"),
-		NOP_C_("PokemonMini|VectorTable", "Vector"),
-		NOP_C_("PokemonMini|VectorTable", "Address"),
+		NOP_C_("RomData|VectorTable", "#"),
+		NOP_C_("RomData|VectorTable", "Vector"),
+		NOP_C_("RomData|VectorTable", "Address"),
 	};
 	vector<string> *const v_vectors_headers = RomFields::strArrayToVector_i18n(
-		"PokemonMini|VectorTable", vectors_headers, ARRAY_SIZE(vectors_headers));
+		"RomData|VectorTable", vectors_headers, ARRAY_SIZE(vectors_headers));
 
 	RomFields::AFLD_PARAMS params(RomFields::RFT_LISTDATA_SEPARATE_ROW, 8);
 	params.headers = v_vectors_headers;
 	params.data.single = vv_vectors;
-	d->fields->addField_listData(C_("PokemonMini", "Vector Table"), &params);
+	d->fields->addField_listData(C_("RomData", "Vector Table"), &params);
 
 	// Finished reading the field data.
 	return static_cast<int>(d->fields->count());
