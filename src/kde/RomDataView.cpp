@@ -1272,7 +1272,7 @@ void RomDataViewPrivate::initDisplayWidgets(void)
 
 		// tr: Field description label.
 		string txt = rp_sprintf(desc_label_fmt, field.name.c_str());
-		QLabel *lblDesc = new QLabel(U82Q(txt.c_str()), q);
+		QLabel *lblDesc = new QLabel(U82Q(txt), q);
 		lblDesc->setAlignment(Qt::AlignLeft | Qt::AlignTop);
 		lblDesc->setTextFormat(Qt::PlainText);
 

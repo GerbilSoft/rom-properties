@@ -107,6 +107,8 @@ class RP_ShellPropSheetExt_Private
 		FontHandler fontHandler;
 
 		// Controls with special formatting or handling.
+		// FIXME: Move lblCredits to the tab object and change this back to unordered_set.
+		// (See KDE RomDataView.)
 		enum LabelFormat {
 			LF_WARNING	= (1 << 0),	// Controls using the "Warning" font.
 			LF_SYSLINK	= (1 << 1),	// SysLink controls.

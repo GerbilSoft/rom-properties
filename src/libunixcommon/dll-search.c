@@ -103,7 +103,7 @@ static RP_Frontend walk_proc_tree(void)
 	pid_t ppid = getppid();
 	while (ppid > 1) {
 		// Open the /proc/$PID/status file.
-		char buf[128];
+		char buf[32];
 		snprintf(buf, sizeof(buf), "/proc/%d/status", ppid);
 		FILE *f = fopen(buf, "r");
 		if (!f) {
