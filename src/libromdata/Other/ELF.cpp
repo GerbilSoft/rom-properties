@@ -1189,17 +1189,10 @@ int ELF::loadFieldData(void)
 			d->fields->addField_string(C_("ELF", "Memory Ordering"),
 				dpgettext_expr(RP_I18N_DOMAIN, "ELF|SPARC_MM", sparc_mm[e_flags & 3]));
 
-			// SPARC CPU flags.
+			// SPARC CPU flags. (rshifted by 8)
 			static const char *const sparc_flags_names[] = {
-				// 0x1-0x8
-				nullptr, nullptr, nullptr, nullptr,
-				// 0x10-0x80
-				nullptr, nullptr, nullptr, nullptr,
 				// 0x100-0x800
-				NOP_C_("ELF|SPSuperHFlags", "SPARC V8+"),
-				NOP_C_("ELF|SPSuperHFlags", "UltraSPARC I"),
-				NOP_C_("ELF|SPSuperHFlags", "HaL R1"),
-				NOP_C_("ELF|SPSuperHFlags", "UltraSPARC III"),
+				"SPARC V8+", "UltraSPARC I", "HaL R1", "UltraSPARC III",
 				// 0x1000-0x8000
 				nullptr, nullptr, nullptr, nullptr,
 				// 0x10000-0x80000
@@ -1212,7 +1205,7 @@ int ELF::loadFieldData(void)
 			vector<string> *const v_sparc_flags_names = RomFields::strArrayToVector_i18n(
 				"ELF|SPSuperHFlags", sparc_flags_names, ARRAY_SIZE(sparc_flags_names));
 			d->fields->addField_bitfield(C_("ELF", "CPU Flags"),
-				v_sparc_flags_names, 4, e_flags);
+				v_sparc_flags_names, 4, (e_flags >> 8));
 			break;
 		}
 
@@ -1245,24 +1238,15 @@ int ELF::loadFieldData(void)
 			static const char *const mips_flags_names[] = {
 				// 0x1-0x8
 				NOP_C_("ELF|MIPSFlags", "No Reorder"),
-				NOP_C_("ELF|MIPSFlags", "PIC"),
-				NOP_C_("ELF|MIPSFlags", "CPIC"),
-				NOP_C_("ELF|MIPSFlags", "XGOT"),
+				"PIC", "CPIC", "XGOT",
 				// 0x10-0x80
-				NOP_C_("ELF|MIPSFlags", "UCODE"),
-				NOP_C_("ELF|MIPSFlags", "ABI2"),
-				NOP_C_("ELF|MIPSFlags", "ABI ON32"),
+				"UCODE", "ABI2", "ABI ON32",
 				NOP_C_("ELF|MIPSFlags", "Options First"),
 				// 0x100-0x400
-				NOP_C_("ELF|MIPSFlags", "32-bit"),
-				NOP_C_("ELF|MIPSFlags", "FP64"),
-				NOP_C_("ELF|MIPSFlags", "NaN 2008"),
+				"32-bit", "FP64", "NaN 2008",
 				nullptr,
 				// 0x1000-0x8000 (shifted from 0x01000000-0x08000000)
-				nullptr,
-				NOP_C_("ELF|MIPSFlags", "MicroMIPS"),
-				NOP_C_("ELF|MIPSFlags", "MIPS-16"),
-				NOP_C_("ELF|MIPSFlags", "MDMX"),
+				nullptr, "MicroMIPS", "MIPS-16", "MDMX",
 			};
 			vector<string> *const v_mips_flags_names = RomFields::strArrayToVector_i18n(
 				"ELF|MIPSFlags", mips_flags_names, ARRAY_SIZE(mips_flags_names));
@@ -1298,8 +1282,7 @@ int ELF::loadFieldData(void)
 			static const char *const parisc_flags_names[] = {
 				// 0x1-0x8
 				NOP_C_("ELF|PARISCFlags", "Trap NULL"),
-				NOP_C_("ELF|PARISCFlags", "EXT"),
-				NOP_C_("ELF|PARISCFlags", "LSB"),
+				"EXT", "LSB",
 				NOP_C_("ELF|PARISCFlags", "Wide"),
 				// 0x10-0x40
 				NOP_C_("ELF|PARISCFlags", "No KABP"),
@@ -1333,13 +1316,10 @@ int ELF::loadFieldData(void)
 			// NOTE: Most of these are deprecated. (pre-EABI)
 			static const char *const arm_flags_names[] = {
 				// 0x1-0x8
-				NOP_C_("ELF|ARMFlags", "RelExec"),
-				nullptr,
-				NOP_C_("ELF|ARMFlags", "Interwork"),
-				NOP_C_("ELF|ARMFlags", "APCS 26"),
+				"RelExec", nullptr, "Interwork", "APCS 26",
 				// 0x10-0x80
 				NOP_C_("ELF|ARMFlags", "APCS Float"),
-				NOP_C_("ELF|ARMFlags", "PIC"),
+				"PIC",
 				NOP_C_("ELF|ARMFlags", "Align8"),
 				NOP_C_("ELF|ARMFlags", "New ABI"),
 				// 0x100-0x800
@@ -1437,20 +1417,15 @@ int ELF::loadFieldData(void)
 					rp_sprintf("ARC Linux OSABI v%u", arc_linux_osabi));
 			}
 
-			// ARC CPU flags.
+			// ARC CPU flags. (rshifted by 8)
 			static const char *const arc_flags_names[] = {
-				// 0x1-0x8
-				nullptr, nullptr, nullptr, nullptr,
-				// 0x10-0x80
-				nullptr, nullptr, nullptr, nullptr,
-
 				// 0x100
-				NOP_C_("ELF|ARCFlags", "PIC"),
+				"PIC",
 			};
-			vector<string> *const v_arc_flags_names = RomFields::strArrayToVector_i18n(
-				"ELF|ARCFlags", arc_flags_names, ARRAY_SIZE(arc_flags_names));
+			vector<string> *const v_arc_flags_names = RomFields::strArrayToVector(
+				arc_flags_names, ARRAY_SIZE(arc_flags_names));
 			d->fields->addField_bitfield(C_("ELF", "CPU Flags"),
-				v_arc_flags_names, 1, (e_flags & 0x00000100));
+				v_arc_flags_names, 1, ((e_flags >> 8) & 1));
 			break;
 		}
 
