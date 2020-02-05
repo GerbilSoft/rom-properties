@@ -68,7 +68,7 @@ const Xbox360_STFS_ContentTypePrivate::ContentTypeEntry Xbox360_STFS_ContentType
 	{STFS_CONTENT_TYPE_INSTALLER,		NOP_C_("Xbox360_STFS|ContentType", "Installer")},
 	{STFS_CONTENT_TYPE_GAME_TRAILER,	NOP_C_("Xbox360_STFS|ContentType", "Game Trailer")},
 	{STFS_CONTENT_TYPE_ARCADE_TITLE,	NOP_C_("Xbox360_STFS|ContentType", "Arcade Game")},
-	{STFS_CONTENT_TYPE_XNA,			NOP_C_("Xbox360_STFS|ContentType", "XNA")},
+	{STFS_CONTENT_TYPE_XNA,			"XNA"},	// NOT localizable!
 	{STFS_CONTENT_TYPE_LICENSE_STORE,	NOP_C_("Xbox360_STFS|ContentType", "License Store")},
 	{STFS_CONTENT_TYPE_MOVIE,		NOP_C_("Xbox360_STFS|ContentType", "Movie")},
 	{STFS_CONTENT_TYPE_TV,			NOP_C_("Xbox360_STFS|ContentType", "TV")},

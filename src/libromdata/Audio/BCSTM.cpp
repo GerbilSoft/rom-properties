@@ -491,8 +491,7 @@ int BCSTM::loadFieldData(void)
 	static const char *const codec_tbl[] = {
 		NOP_C_("BCSTM|Codec", "Signed 8-bit PCM"),
 		NOP_C_("BCSTM|Codec", "Signed 16-bit PCM"),
-		NOP_C_("BCSTM|Codec", "DSP ADPCM"),
-		NOP_C_("BCSTM|Codec", "IMA ADPCM"),
+		"DSP ADPCM", "IMA ADPCM",
 	};
 	if (codec < ARRAY_SIZE(codec_tbl)) {
 		d->fields->addField_string(C_("BCSTM", "Codec"),

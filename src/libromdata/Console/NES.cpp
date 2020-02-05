@@ -814,8 +814,7 @@ int NES::loadFieldData(void)
 	// TV mode
 	// NOTE: Dendy PAL isn't supported in any headers at the moment.
 	static const char *const tv_mode_tbl[] = {
-		NOP_C_("NES|TVMode", "NTSC"),
-		NOP_C_("NES|TVMode", "PAL"),
+		"NTSC", "PAL",
 		NOP_C_("NES|TVMode", "Dual (NTSC/PAL)"),
 		NOP_C_("NES|TVMode", "Dual (NTSC/PAL)"),
 	};

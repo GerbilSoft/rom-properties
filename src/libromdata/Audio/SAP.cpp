@@ -622,7 +622,7 @@ int SAP::loadFieldData(void)
 	// Flags: NTSC/PAL, Stereo
 	static const char *const flags_names[] = {
 		// tr: PAL is default; if set, the file is for NTSC.
-		NOP_C_("SAP|Flags", "NTSC"),
+		"NTSC",
 		NOP_C_("SAP|Flags", "Stereo"),
 	};
 	vector<string> *const v_flags_names = RomFields::strArrayToVector_i18n(
