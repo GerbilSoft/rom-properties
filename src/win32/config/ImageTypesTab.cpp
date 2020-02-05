@@ -371,29 +371,14 @@ void ImageTypesTabPrivate::addComboBoxStrings(unsigned int cbid, int max_prio)
 	if (!cboImageType)
 		return;
 
-	// Dropdown strings.
-	// NOTE: One more string than the total number of image types,
-	// since we have a string for "No".
-	static const char s_values[][4] = {
-		NOP_C_("ImageTypesTab|Values", "No"),
-		NOP_C_("ImageTypesTab|Values", "1"),
-		NOP_C_("ImageTypesTab|Values", "2"),
-		NOP_C_("ImageTypesTab|Values", "3"),
-		NOP_C_("ImageTypesTab|Values", "4"),
-		NOP_C_("ImageTypesTab|Values", "5"),
-		NOP_C_("ImageTypesTab|Values", "6"),
-		NOP_C_("ImageTypesTab|Values", "7"),
-		NOP_C_("ImageTypesTab|Values", "8"),
-		NOP_C_("ImageTypesTab|Values", "9"),
-		NOP_C_("ImageTypesTab|Values", "10"),
-	};
-	static_assert(ARRAY_SIZE(s_values) == IMG_TYPE_COUNT+1, "s_values[] is the wrong size.");
-
 	// NOTE: Need to add one more than the total number,
 	// since "No" counts as an entry.
-	for (int i = 0; i <= max_prio; i++) {
-		ComboBox_AddString(cboImageType, U82T_c(
-			dpgettext_expr(RP_I18N_DOMAIN, "ImageTypesTab|Values", s_values[i])));
+	assert(max_prio <= IMG_TYPE_COUNT);
+	ComboBox_AddString(cboImageType, U82T_c(C_("ImageTypesTab|Values", "No")));
+	for (int i = 1; i <= max_prio; i++) {
+		TCHAR buf[16];
+		_sntprintf(buf, _countof(buf), _T("%d"), i);
+		ComboBox_AddString(cboImageType, buf);
 	}
 	ComboBox_SetCurSel(cboImageType, 0);
 }
