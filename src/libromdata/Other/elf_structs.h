@@ -153,6 +153,7 @@ typedef enum {
 	EM_MIPS		= 8,	/* MIPS R3000 big-endian */
 	EM_S370		= 9,	/* IBM System/370 */
 	EM_MIPS_RS3_LE	= 10,	/* MIPS R3000 little-endian */
+	EM_OLD_SPARCV9	= 11,	/* SPARC v9 (deprecated) */
 				/* reserved 11-14 */
 	EM_PARISC	= 15,	/* HPPA */
 				/* reserved 16 */
@@ -166,11 +167,28 @@ typedef enum {
 	EM_V800		= 36,	/* NEC V800 series */
 	EM_FR20		= 37,	/* Fujitsu FR20 */
 	EM_RH32		= 38,	/* TRW RH-32 */
-	EM_RCE		= 39,	/* Motorola RCE */
+	EM_MCORE	= 39,	/* Motorola M*Core */
+	EM_RCE		= 39,	/* old name for M*Core */
 	EM_ARM		= 40,	/* ARM */
-	EM_FAKE_ALPHA	= 41,	/* Digital Alpha */
+	EM_OLD_ALPHA	= 41,	/* DEC Alpha */
 	EM_SH		= 42,	/* Hitachi SH */
 	EM_SPARCV9	= 43,	/* SPARC v9 64-bit */
+
+	EM_ARC		= 45,	/* ARC cores */
+	EM_COLDFIRE	= 52,	/* Motorola Coldfire */
+	EM_AVR		= 83,	/* Atmel AVR 8-bit microcontroller */
+	EM_M32R		= 88,	/* Renesas M32R (formerly Mitsubishi M32R) */
+	EM_MSP430	= 105,	/* TI msp430 micro controller */
+	EM_BLACKFIN	= 106,	/* ADI Blackfin */
+	EM_M16C		= 117,	/* Renesas M16C */
+	EM_M32C		= 120,	/* Renesas M32C */
+	EM_Z80		= 220,	/* Zilog Z80 */
+	EM_RISCV	= 243,	/* RISC-V */
+
+	EM_AVR_OLD	= 0x1057,	/* Atmel AVR 8-bit microcontroller (unofficial) */
+	EM_ALPHA	= 0x9026,	/* DEC Alpha (unofficial) */
+	EM_CYGNUS_M32R	= 0x9041,	/* Renesas M32R (unofficial) (formerly Mitsubishi M32R) */
+	EM_M32C_OLD	= 0xFEB0,	/* Renesas M32C and M16C (unofficial) */
 } Elf_Machine;
 
 /**
