@@ -1200,10 +1200,10 @@ int ELF::loadFieldData(void)
 				// 0x100000-0x800000
 				nullptr, nullptr, nullptr,
 				// tr: Little-Endian Data
-				NOP_C_("ELF|SPSuperHFlags", "LE Data")
+				NOP_C_("ELF|SPARCFlags", "LE Data")
 			};
 			vector<string> *const v_sparc_flags_names = RomFields::strArrayToVector_i18n(
-				"ELF|SPSuperHFlags", sparc_flags_names, ARRAY_SIZE(sparc_flags_names));
+				"ELF|SPARCFlags", sparc_flags_names, ARRAY_SIZE(sparc_flags_names));
 			d->fields->addField_bitfield(C_("ELF", "CPU Flags"),
 				v_sparc_flags_names, 4, (e_flags >> 8));
 			break;
