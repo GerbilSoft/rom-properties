@@ -197,23 +197,6 @@ class RomDataViewPrivate
 		 * be deleted and recreated.
 		 */
 		void initDisplayWidgets(void);
-
-		/**
-		 * Convert a QImage to QPixmap.
-		 * Automatically resizes the QImage if it's smaller
-		 * than the minimum size.
-		 * @param img QImage.
-		 * @return QPixmap.
-		 */
-		QPixmap imgToPixmap(const QImage &img);
-
-		/**
-		 * Set the label's pixmap using an rp_image source.
-		 * @param label QLabel.
-		 * @param img rp_image. (If nullptr, returns an error; use clear() to clear it.)
-		 * @return True on success; false on error.
-		 */
-		bool setPixmapFromRpImage(QLabel *label, const rp_image *img);
 };
 
 /** RomDataViewPrivate **/
@@ -236,67 +219,6 @@ RomDataViewPrivate::~RomDataViewPrivate()
 	if (romData) {
 		romData->unref();
 	}
-}
-
-/**
- * Convert a QImage to QPixmap.
- * Automatically resizes the QImage if it's smaller
- * than the minimum size.
- * @param img QImage.
- * @return QPixmap.
- */
-QPixmap RomDataViewPrivate::imgToPixmap(const QImage &img)
-{
-	// Minimum image size.
-	// If images are smaller, they will be resized.
-	// TODO: Adjust minimum size for DPI.
-	const QSize min_img_size(32, 32);
-
-	if (img.width() >= min_img_size.width() &&
-	    img.height() >= min_img_size.height())
-	{
-		// No resize necessary.
-		return QPixmap::fromImage(img);
-	}
-
-	// Resize the image.
-	QSize img_size = img.size();
-	do {
-		// Increase by integer multiples until
-		// the icon is at least 32x32.
-		// TODO: Constrain to 32x32?
-		img_size.setWidth(img_size.width() + img.width());
-		img_size.setHeight(img_size.height() + img.height());
-	} while (img_size.width() < min_img_size.width() &&
-		 img_size.height() < min_img_size.height());
-
-	return QPixmap::fromImage(img.scaled(img_size, Qt::KeepAspectRatio, Qt::FastTransformation));
-}
-
-/**
- * Set the label's pixmap using an rp_image source.
- * @param label QLabel.
- * @param img rp_image. (If nullptr, returns an error; use clear() to clear it.)
- * @return True on success; false on error.
- */
-bool RomDataViewPrivate::setPixmapFromRpImage(QLabel *label, const rp_image *img)
-{
-	assert(img != nullptr);
-	if (!img || !img->isValid()) {
-		// No image, or image is not valid.
-		return false;
-	}
-
-	// Convert the rp_image to a QImage.
-	QImage qImg = rpToQImage(img);
-	if (qImg.isNull()) {
-		// Unable to convert the image.
-		return false;
-	}
-
-	// Image converted successfully.
-	label->setPixmap(imgToPixmap(qImg));
-	return true;
 }
 
 /**
