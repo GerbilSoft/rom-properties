@@ -1264,12 +1264,8 @@ int DirectDrawSurface::getFields(RomFields *fields) const
 	fields->addField_bitfield(C_("DirectDrawSurface", "Caps"),
 		v_dwCaps_names, 3, ddsHeader->dwCaps);
 
-	// dwCaps2
+	// dwCaps2 (rshifted by 8)
 	static const char *const dwCaps2_names[] = {
-		// 0x1-0x8
-		nullptr, nullptr, nullptr, nullptr,
-		// 0x10-0x80
-		nullptr, nullptr, nullptr, nullptr,
 		// 0x100-0x800
 		nullptr,
 		NOP_C_("DirectDrawSurface|dwCaps2", "Cubemap"),
@@ -1289,7 +1285,7 @@ int DirectDrawSurface::getFields(RomFields *fields) const
 	vector<string> *const v_dwCaps2_names = RomFields::strArrayToVector_i18n(
 		"DirectDrawSurface|dwCaps2", dwCaps2_names, ARRAY_SIZE(dwCaps2_names));
 	fields->addField_bitfield(C_("DirectDrawSurface", "Caps2"),
-		v_dwCaps2_names, 4, ddsHeader->dwCaps2);
+		v_dwCaps2_names, 4, (ddsHeader->dwCaps2 >> 8));
 
 	if (ddsHeader->ddspf.dwFourCC == DDPF_FOURCC_XBOX) {
 		// Xbox One texture.
