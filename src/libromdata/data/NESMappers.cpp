@@ -53,7 +53,10 @@ class NESMappersPrivate
 		static const struct SubmapperInfo sunsoft4_submappers[];
 		static const struct SubmapperInfo codemasters_submappers[];
 		static const struct SubmapperInfo mapper078_submappers[];
+		static const struct SubmapperInfo mapper114_submappers[];
+		static const struct SubmapperInfo mapper197_submappers[];
 		static const struct SubmapperInfo namcot_175_340_submappers[];
+		static const struct SubmapperInfo sugar_softec_submappers[];
 		static const struct SubmapperInfo quattro_submappers[];
 
 		/**
@@ -95,6 +98,8 @@ class NESMappersPrivate
  * - Extra VRAM for 4 screens
  */
 const NESMappersPrivate::MapperEntry NESMappersPrivate::mappers[] = {
+	/** NES 2.0 Plane 0 [0-255] (iNES 1.0) **/
+
 	// Mappers 0-9
 	{"NROM"},
 	{"SxROM (MMC1)"},
@@ -128,12 +133,12 @@ const NESMappersPrivate::MapperEntry NESMappersPrivate::mappers[] = {
 	{"VRC4b, VRC4d"},
 	{"VRC6b"},
 	{"VRC4 variant"}, //investigate
-	{"Multicart/Homebrew"},
-	{"Homebrew"},
+	{"Action 53 (homebrew)"},
+	{"Sealie Computing RET-CUFROM (homeberw)"},
 
 	// Mappers 30-39
-	{"UNROM 512 (Homebrew)"},
-	{"NSF (Homebrew)"},
+	{"UNROM 512 (homebrew)"},
+	{"NSF (homebrew)"},
 	{"Irem G-101"},
 	{"Taito TC0190"},
 	{"BNROM, NINA-001"},
@@ -160,18 +165,18 @@ const NESMappersPrivate::MapperEntry NESMappersPrivate::mappers[] = {
 	{nullptr},
 	{"MMC3 clone"},
 	{nullptr},
-	{"Novel Diamond"},	// conflicting information
-	{nullptr},
-	{nullptr},
+	{"Novel Diamond"},			// conflicting information
+	{"BTL-MARIO1-MALEE2 (unlicensed)"},	// From UNIF
+	{"KS202 (unlicensed SMB3 reproduction)"},	// Some SMB3 unlicensed reproduction
 	{"Multicart (unlicensed)"},
 	{"Multicart (unlicensed)"},
-	{nullptr},
+	{"BMC-T3H53/BMC-D1038"},		// From UNIF
 
 	// Mappers 60-69
+	{"Reset-Based NROM-128 4-in-1 Multicart (unlicensed)"},
 	{"Multicart (unlicensed)"},
 	{"Multicart (unlicensed)"},
-	{"Multicart (unlicensed)"},
-	{nullptr},
+	{"Powerful 250-in-1 Multicart (unlicensed)"},
 	{"Tengen RAMBO-1"},
 	{"Irem H3001"},
 	{"GxROM, MHROM"},
@@ -187,26 +192,26 @@ const NESMappersPrivate::MapperEntry NESMappersPrivate::mappers[] = {
 	{"MMC3 clone"},
 	{"Konami VRC1"},
 	{"Namcot 108 variant"},
-	{nullptr},
+	{"Napoleon Senki"},
 	{"Holy Diver; Uchuusen - Cosmo Carrier"},
 	{"NINA-03, NINA-06"},
 
 	// Mappers 80-89
 	{"Taito X1-005"},
-	{nullptr},
+	{"Super Gun (NTDEC)"},
 	{"Taito X1-017"},
 	{"Cony Soft"},
 	{"PC-SMB2J"},
 	{"Konami VRC7"},
 	{"Jaleco JF-13"},
-	{nullptr},
+	{"CNROM variant"},
 	{"Namcot 118 variant"},
 	{"Sunsoft-2 (Sunsoft-3 board)"},	
 
 	// Mappers 90-99
 	{"JY Company (simple nametable control)"},
-	{nullptr},
-	{nullptr},
+	{"JY Company (Super Fighter III)"},
+	{"Moero!! Pro"},
 	{"Sunsoft-2 (Sunsoft-3R board)"},
 	{"HVC-UN1ROM"},
 	{"NAMCOT-3425"},
@@ -219,10 +224,10 @@ const NESMappersPrivate::MapperEntry NESMappersPrivate::mappers[] = {
 	{"MMC3 variant (hacked ROMs)"},	// Also used for UNIF
 	{"Jaleco JF-10 (misdump)"},
 	{nullptr},
-	{nullptr},
-	{nullptr},
+	{"Doki Doki Panic (unlicensed conversion)"},
+	{"PEGASUS 5 IN 1"},
 	{"NES-EVENT (Nintendo World Championships 1990)"},
-	{nullptr},
+	{"Super Mario Bros. 3 (bootleg)"},
 	{"Magic Dragon"},
 	{nullptr},
 	{nullptr},
@@ -232,8 +237,8 @@ const NESMappersPrivate::MapperEntry NESMappersPrivate::mappers[] = {
 	{"Cheapocabra GT-ROM 512k flash board"},	// Membler Industries
 	{"Namcot 118 variant"},
 	{"NINA-03/06 multicart"},
-	{nullptr},
-	{"MMC3 clone (Carson)"},
+	{"MMC3 clone (scrambled registers)"},
+	{"Kǎshèng SFC-02B/-03/-004 (MMC3 clone)"},
 	{"Copy-protected bootleg mapper"},
 	{nullptr},
 	{"TxSROM"},
@@ -241,10 +246,10 @@ const NESMappersPrivate::MapperEntry NESMappersPrivate::mappers[] = {
 
 	// Mappers 120-129
 	{nullptr},
+	{"Kǎshèng A9711 and A9713 (MMC3 clone)"},
 	{nullptr},
-	{nullptr},
-	{nullptr},
-	{nullptr},
+	{"Kǎshèng H2288 (MMC3 clone)"},
+	{"Monty no Doki Doki Daisassō (FDS conversion)"},
 	{nullptr},
 	{nullptr},
 	{nullptr},
@@ -254,11 +259,11 @@ const NESMappersPrivate::MapperEntry NESMappersPrivate::mappers[] = {
 	// Mappers 130-139
 	{nullptr},
 	{nullptr},
-	{nullptr},
+	{"TXC Corporation 05-00002-010 ASIC"},
 	{"Sachen Jovial Race"},
+	{"T4A54A, WX-KB4K, BS-5652 (MMC3 clone)"},
 	{nullptr},
-	{nullptr},
-	{nullptr},
+	{"Sachen 3011"},
 	{"Sachen 8259D"},
 	{"Sachen 8259B"},
 	{"Sachen 8259C"},
@@ -278,7 +283,7 @@ const NESMappersPrivate::MapperEntry NESMappersPrivate::mappers[] = {
 	// Mappers 150-159
 	{"Sachen 74LS374N (corrected)"},
 	{"VRC1 (Vs. System)"},
-	{nullptr},
+	{"Kaiser KS202 (unlicensed FDS conversions)"},
 	{"Bandai LZ93D50 with SRAM"},
 	{"NAMCOT-3453"},
 	{"MMC1A"},
@@ -293,7 +298,7 @@ const NESMappersPrivate::MapperEntry NESMappersPrivate::mappers[] = {
 	{nullptr},
 	{"Nanjing"},
 	{nullptr},
-	{nullptr},
+	{"Fire Emblem (unlicensed) (MMC2+MMC3 hybrid)"},
 	{"SUBOR"},
 	{"SUBOR"},
 	{"Racermate Challenge 2"},
@@ -301,39 +306,39 @@ const NESMappersPrivate::MapperEntry NESMappersPrivate::mappers[] = {
 
 	// Mappers 170-179
 	{nullptr},
-	{nullptr},
-	{nullptr},
-	{nullptr},
+	{"Kaiser KS-7058"},
+	{"Super Mega P-4040"},
+	{"Idea-Tek ET-xx"},
 	{"Multicart (unlicensed)"},
 	{nullptr},
-	{"WaiXing (BMCFK23C?)"},
-	{nullptr},
-	{"Education / WaiXing / HengGe"},
+	{"Waixing (BMCFK23C?) (MMC3 clone)"},
+	{"Hénggé Diànzǐ (BNROM variant)"},
+	{"Waixing / Nanjing / Jncota / Henge Dianzi / GameStar"},
 	{nullptr},
 
 	// Mappers 180-189
 	{"Crazy Climber (UNROM clone)"},
-	{nullptr},
-	{"MMC3 variant"},
+	{"Seicross v2 (FCEUX hack)"},
+	{"MMC3 clone (scrambled registers) (same as 114)"},
 	{"Suikan Pipe (VRC4e clone)"},
 	{"Sunsoft-1"},
 	{"CNROM with weak copy protection"},
 	{"Study Box"},
-	{nullptr},
+	{"Kǎshèng A98402 (MMC3 clone)"},
 	{"Bandai Karaoke Studio"},
 	{"Thunder Warrior (MMC3 clone)"},
 
 	// Mappers 190-199
-	{nullptr},
+	{"Magic Kid GooGoo"},
 	{"MMC3 clone"},
 	{"MMC3 clone"},
 	{"NTDEC TC-112"},
-	{"MMC3 clone"},	// same as 195 on NES 2.0
-	{"MMC3 clone"},	// same as 194 on NES 2.0
 	{"MMC3 clone"},
-	{nullptr},
-	{nullptr},
-	{nullptr},
+	{"Waixing FS303 (MMC3 clone)"},
+	{"Mario bootleg (MMC3 clone)"},
+	{"Kǎshèng (MMC3 clone)"},
+	{"Tūnshí Tiāndì - Sānguó Wàizhuàn"},
+	{"Waixing (clone of either Mapper 004 or 176)"},
 
 	// Mappers 200-209
 	{"Multicart (unlicensed)"},
@@ -344,16 +349,16 @@ const NESMappersPrivate::MapperEntry NESMappersPrivate::mappers[] = {
 	{"MMC3 multicart (unlicensed)"},
 	{"DxROM (Tengen MIMIC-1, Namcot 118)"},
 	{"Fudou Myouou Den"},
-	{nullptr},
+	{"Street Fighter IV (unlicensed) (MMC3 clone)"},
 	{"JY Company (MMC2/MMC4 clone)"},
 
 	// Mappers 210-219
 	{"Namcot 175, 340"},
 	{"JY Company (extended nametable control)"},
+	{"BMC Super HiK 300-in-1"},
+	{"Multicart (unlicensed) (same as 058)"},
 	{nullptr},
-	{nullptr},
-	{nullptr},
-	{"MMC3 clone"},
+	{"Sugar Softec (MMC3 clone)"},
 	{nullptr},
 	{nullptr},
 	{"Magic Floor (homebrew)"},
@@ -361,10 +366,10 @@ const NESMappersPrivate::MapperEntry NESMappersPrivate::mappers[] = {
 
 	// Mappers 220-229
 	{"Summer Carnival '92 - Recca"},
-	{nullptr},
+	{"NTDEC N625092"},
 	{"CTC-31 (VRC2 + 74xx)"},
 	{nullptr},
-	{nullptr},
+	{"Jncota KT-008"},
 	{"Multicart (unlicensed)"},
 	{"Multicart (unlicensed)"},
 	{"Multicart (unlicensed)"},
@@ -377,8 +382,8 @@ const NESMappersPrivate::MapperEntry NESMappersPrivate::mappers[] = {
 	{"Codemasters Quattro"},
 	{"Multicart (unlicensed)"},
 	{"Maxi 15 multicart"},
-	{nullptr},
-	{nullptr},
+	{"Golden Game 150-in-1 multicart"},
+	{"Realtec 8155"},
 	{"Teletubbies 420-in-1 multicart"},
 	{nullptr},
 	{nullptr},
@@ -398,10 +403,10 @@ const NESMappersPrivate::MapperEntry NESMappersPrivate::mappers[] = {
 	// Mappers 250-255
 	{"Nitra (MMC3 clone)"},
 	{nullptr},
-	{"WaiXing - Sangokushi"},
-	{nullptr},
+	{"Waixing - Sangokushi"},
+	{"Dragon Ball Z: Kyōshū! Saiya-jin (Waixing) (VRC4 clone)"},
 	{"Pikachu Y2K of crypted ROMs"},
-	{nullptr},
+	{"110-in-1 multicart"},
 };
 
 /** Submappers. **/
@@ -459,10 +464,29 @@ const struct NESMappersPrivate::SubmapperInfo NESMappersPrivate::mapper078_subma
 	{3, false, "Programmable H/V mirroring (Holy Diver)"},
 };
 
+const struct NESMappersPrivate::SubmapperInfo NESMappersPrivate::mapper114_submappers[] = {
+	{0, false, "MMC3 registers: 0,3,1,5,6,7,2,4"},
+	{1, false, "MMC3 registers: 0,2,5,3,6,1,7,4"},
+};
+
+// Kǎshèng (MMC3 clone)
+const struct NESMappersPrivate::SubmapperInfo NESMappersPrivate::mapper197_submappers[] = {
+	{0, false, "Super Fighter III (PRG-ROM CRC32 0xC333F621)"},
+	{1, false, "Super Fighter III (PRG-ROM CRC32 0x2091BEB2)"},
+	{2, false, "Mortal Kombat III Special"},
+	{3, false, "1995 Super 2-in-1"},
+};
+
 // Namcot 175, 340
 const struct NESMappersPrivate::SubmapperInfo NESMappersPrivate::namcot_175_340_submappers[] = {
 	{1, false, "Namcot 175 (fixed mirroring)"},
 	{2, false, "Namcot 340 (programmable mirroring)"},
+};
+
+// Sugar Softec
+const struct NESMappersPrivate::SubmapperInfo NESMappersPrivate::sugar_softec_submappers[] = {
+	{0, false, "UNL-8237"},
+	{1, false, "UNL-8237A"},
 };
 
 // Codemasters Quattro
@@ -489,7 +513,10 @@ const NESMappersPrivate::SubmapperEntry NESMappersPrivate::submappers[] = {
 	NES2_SUBMAPPER( 68, sunsoft4_submappers),		// Sunsoft-4
 	NES2_SUBMAPPER( 71, codemasters_submappers),		// Codemasters
 	NES2_SUBMAPPER( 78, mapper078_submappers),
+	NES2_SUBMAPPER(114, mapper114_submappers),
+	NES2_SUBMAPPER(197, mapper197_submappers),		// Kǎshèng (MMC3 clone)
 	NES2_SUBMAPPER(210, namcot_175_340_submappers),		// Namcot 175, 340
+	NES2_SUBMAPPER(215, sugar_softec_submappers),		// Sugar Softec (MMC3 clone)
 	NES2_SUBMAPPER(232, quattro_submappers),		// Codemasters Quattro
 
 	{0, 0, nullptr}
