@@ -365,7 +365,7 @@ void ConfigDialog::loadDefaults(void)
  */
 void ConfigDialog::tabModified(void)
 {
-	// Enable the "Apply" and "Reset" buttons.
+	// Disable the "Apply" and "Reset" buttons.
 	Q_D(ConfigDialog);
 	d->btnApply->setEnabled(true);
 	d->btnReset->setEnabled(true);
