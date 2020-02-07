@@ -113,6 +113,10 @@
   * MachO: Fixed CPU subtype detection for 486SX.
   * KDE frontends: Disabled automatic mnemonics on checkboxes used to show
     bitfield values, e.g. region codes and hardware support.
+  * S3TC, BC7: Images with sizes that aren't a multiple of the 4x4 tile size
+    can now be decoded. It is assumed that an extra tile is present, and this
+    tile will be truncated to match the specified dimensions.
+    This bug was reported by @HyperPolygon64.
 
 * Other changes:
   * Removed the internal copy of libjpeg-turbo. On Windows, gdiplus is now
