@@ -313,6 +313,43 @@ int RpGdiplusBackend::palette_len(void) const
 }
 
 /**
+ * Shrink image dimensions.
+ * @param width New width.
+ * @param height New height.
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int RpGdiplusBackend::shrink(int width, int height)
+{
+	assert(width > 0);
+	assert(height > 0);
+	assert(this->width > 0);
+	assert(this->height > 0);
+	assert(width <= this->width);
+	assert(height <= this->height);
+	if (width <= 0 || height <= 0 ||
+	    this->width <= 0 || this->height <= 0 ||
+	    width > this->width || height > this->height)
+	{
+		return -EINVAL;
+	}
+return 0;
+	// TODO: Is there a way to resize the Gdiplus::Bitmap in place?
+	// NOTE: Lock() locks a region, so maybe we could use that, but
+	// Gdiplus::Bitmap to HBITMAP conversion uses the whole image...
+	Gdiplus::Status status = this->unlock();
+	if (status != Gdiplus::Status::Ok) {
+		return -EIO;
+	}
+
+	Gdiplus::Bitmap *const pGdipBmp_old = m_pGdipBmp;
+	m_pGdipBmp = pGdipBmp_old->Clone(0, 0, width, height, m_gdipFmt);
+	delete pGdipBmp_old;
+
+	status = this->lock();
+	return (status == Gdiplus::Status::Ok ? 0 : -EIO);
+}
+
+/**
  * Lock the GDI+ bitmap.
  *
  * WARNING: This *may* invalidate pointers

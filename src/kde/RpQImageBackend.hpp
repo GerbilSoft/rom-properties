@@ -47,6 +47,15 @@ class RpQImageBackend : public LibRpTexture::rp_image_backend
 
 	public:
 		/**
+		 * Shrink image dimensions.
+		 * @param width New width.
+		 * @param height New height.
+		 * @return 0 on success; negative POSIX error code on error.
+		 */
+		int shrink(int width, int height) final;
+
+	public:
+		/**
 		 * Get the underlying QImage.
 		 *
 		 * NOTE: On Qt4, you *must* detach the image if it

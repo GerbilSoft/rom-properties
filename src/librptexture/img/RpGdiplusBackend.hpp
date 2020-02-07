@@ -87,6 +87,15 @@ class RpGdiplusBackend : public rp_image_backend
 		const uint32_t *palette(void) const final;
 		int palette_len(void) const final;
 
+	public:
+		/**
+		 * Shrink image dimensions.
+		 * @param width New width.
+		 * @param height New height.
+		 * @return 0 on success; negative POSIX error code on error.
+		 */
+		int shrink(int width, int height) final;
+
 	protected:
 		/**
 		 * Lock the GDI+ bitmap.

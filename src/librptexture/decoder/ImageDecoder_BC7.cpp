@@ -681,6 +681,11 @@ rp_image *fromBC7(int width, int height,
 			reinterpret_cast<const uint32_t*>(&tileBuf[0]), x, y);
 	} }
 
+	if (width < physWidth || height < physHeight) {
+		// Shrink the image.
+		img->shrink(width, height);
+	}
+
 	// Set the sBIT metadata.
 	img->set_sBIT(&sBIT);
 

@@ -458,6 +458,14 @@ class rp_image
 		 * @return Vertically-flipped image, or nullptr on error.
 		 */
 		rp_image *vflip(void) const;
+
+		/**
+		 * Shrink image dimensions.
+		 * @param width New width.
+		 * @param height New height.
+		 * @return 0 on success; negative POSIX error code on error.
+		 */
+		int shrink(int width, int height);
 };
 
 /**

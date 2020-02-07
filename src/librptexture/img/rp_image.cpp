@@ -59,6 +59,15 @@ class rp_image_backend_default : public rp_image_backend
 			return m_palette_len;
 		}
 
+	public:
+		/**
+		 * Shrink image dimensions.
+		 * @param width New width.
+		 * @param height New height.
+		 * @return 0 on success; negative POSIX error code on error.
+		 */
+		int shrink(int width, int height) final;
+
 	private:
 		void *m_data;
 		size_t m_data_len;
@@ -125,6 +134,35 @@ rp_image_backend_default::~rp_image_backend_default()
 {
 	aligned_free(m_data);
 	aligned_free(m_palette);
+}
+
+/**
+ * Shrink image dimensions.
+ * @param width New width.
+ * @param height New height.
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int rp_image_backend_default::shrink(int width, int height)
+{
+	assert(width > 0);
+	assert(height > 0);
+	assert(this->width > 0);
+	assert(this->height > 0);
+	assert(width <= this->width);
+	assert(height <= this->height);
+	if (width <= 0 || height <= 0 ||
+	    this->width <= 0 || this->height <= 0 ||
+	    width > this->width || height > this->height)
+	{
+		return -EINVAL;
+	}
+
+	// We can simply reduce width/height without actually
+	// adjusting the image data.
+	this->width = width;
+	this->height = height;
+	m_data_len = height * stride;
+	return 0;
 }
 
 /** rp_image_private **/

@@ -331,6 +331,11 @@ static rp_image *T_fromDXT1(int width, int height,
 		ImageDecoderPrivate::BlitTile<uint32_t, 4, 4>(img, tileBuf, x, y);
 	} }
 
+	if (width < physWidth || height < physHeight) {
+		// Shrink the image.
+		img->shrink(width, height);
+	}
+
 	// Set the sBIT metadata.
 	static const rp_image::sBIT_t sBIT = {8,8,8,0,1};
 	img->set_sBIT(&sBIT);
@@ -475,6 +480,11 @@ rp_image *fromDXT3(int width, int height,
 		ImageDecoderPrivate::BlitTile<uint32_t, 4, 4>(img, tileBuf, x, y);
 	} }
 
+	if (width < physWidth || height < physHeight) {
+		// Shrink the image.
+		img->shrink(width, height);
+	}
+
 	// Set the sBIT metadata.
 	static const rp_image::sBIT_t sBIT = {8,8,8,0,4};
 	img->set_sBIT(&sBIT);
@@ -586,6 +596,11 @@ rp_image *fromDXT5(int width, int height,
 		ImageDecoderPrivate::BlitTile<uint32_t, 4, 4>(img, tileBuf, x, y);
 	} }
 
+	if (width < physWidth || height < physHeight) {
+		// Shrink the image.
+		img->shrink(width, height);
+	}
+
 	// Set the sBIT metadata.
 	static const rp_image::sBIT_t sBIT = {8,8,8,0,8};
 	img->set_sBIT(&sBIT);
@@ -666,6 +681,11 @@ rp_image *fromBC4(int width, int height,
 		// Blit the tile to the main image buffer.
 		ImageDecoderPrivate::BlitTile<uint32_t, 4, 4>(img, tileBuf, x, y);
 	} }
+
+	if (width < physWidth || height < physHeight) {
+		// Shrink the image.
+		img->shrink(width, height);
+	}
 
 	// Set the sBIT metadata.
 	// NOTE: We have to set '1' for the empty Green and Blue channels,
@@ -751,6 +771,11 @@ rp_image *fromBC5(int width, int height,
 		// Blit the tile to the main image buffer.
 		ImageDecoderPrivate::BlitTile<uint32_t, 4, 4>(img, tileBuf, x, y);
 	} }
+
+	if (width < physWidth || height < physHeight) {
+		// Shrink the image.
+		img->shrink(width, height);
+	}
 
 	// Set the sBIT metadata.
 	// NOTE: We have to set '1' for the empty Blue channel,

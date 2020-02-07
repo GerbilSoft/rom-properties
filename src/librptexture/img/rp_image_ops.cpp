@@ -590,4 +590,16 @@ rp_image *rp_image::vflip(void) const
 	return flipimg;
 }
 
+/**
+ * Shrink image dimensions.
+ * @param width New width.
+ * @param height New height.
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int rp_image::shrink(int width, int height)
+{
+	RP_D(rp_image);
+	return d->backend->shrink(width, height);
+}
+
 }

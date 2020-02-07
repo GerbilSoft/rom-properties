@@ -151,6 +151,32 @@ int RpQImageBackend::palette_len(void) const
 }
 
 /**
+ * Shrink image dimensions.
+ * @param width New width.
+ * @param height New height.
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int RpQImageBackend::shrink(int width, int height)
+{
+	assert(width > 0);
+	assert(height > 0);
+	assert(this->width > 0);
+	assert(this->height > 0);
+	assert(width <= this->width);
+	assert(height <= this->height);
+	if (width <= 0 || height <= 0 ||
+	    this->width <= 0 || this->height <= 0 ||
+	    width > this->width || height > this->height)
+	{
+		return -EINVAL;
+	}
+
+	// TODO: Is there a way to resize the QImage in place?
+	m_qImage = m_qImage.copy(0, 0, width, height);
+	return 0;
+}
+
+/**
  * Get the underlying QImage.
  *
  * NOTE: On Qt4, you *must* detach the image if it
