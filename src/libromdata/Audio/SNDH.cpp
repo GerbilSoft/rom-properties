@@ -133,10 +133,9 @@ string SNDHPrivate::readStrFromBuffer(const uint8_t **p, const uint8_t *p_end, b
 		// It's ASCII-compatible, but control characters and high-bit characters
 		// are different compared to Latin-1 and other code pages.
 		// Reference: https://en.wikipedia.org/wiki/Atari_ST_character_set
-		string ret = atariST_to_utf8(reinterpret_cast<const char*>(*p), (int)(s_end-*p));
-		// Skip the string, then add one for the NULL terminator.
+		const uint8_t *const p_old = *p;
 		*p = s_end + 1;
-		return ret;
+		return atariST_to_utf8(reinterpret_cast<const char*>(p_old), (int)(s_end-p_old));
 	}
 
 	// Empty string.
@@ -909,7 +908,7 @@ int SNDH::loadFieldData(void)
 				if (idx < tags.subtune_names.size()) {
 					data_row.emplace_back(tags.subtune_names.at(idx));
 				} else {
-					data_row.emplace_back(string());
+					data_row.emplace_back("");
 				}
 			}
 
@@ -923,7 +922,7 @@ int SNDH::loadFieldData(void)
 					const unsigned int sec = duration % 60;
 					data_row.emplace_back(rp_sprintf("%u:%02u", min, sec));
 				} else {
-					data_row.emplace_back(string());
+					data_row.emplace_back("");
 				}
 			}
 		}

@@ -220,8 +220,13 @@ string rp_sprintf(const char *fmt, ...)
 	va_start(ap, fmt);
 	int len2 = vsnprintf(buf.get(), len+1, fmt, ap);
 	va_end(ap);
+
+	string s_ret;
 	assert(len == len2);
-	return (len == len2 ? string(buf.get(), len) : string());
+	if (len == len2) {
+		s_ret.assign(buf.get(), len);
+	}
+	return s_ret;
 }
 
 #if defined(_MSC_VER) || defined(__MINGW32__)

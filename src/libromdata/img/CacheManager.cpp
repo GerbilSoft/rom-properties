@@ -190,7 +190,11 @@ string CacheManager::findInCache(const string &cache_key)
 	}
 
 	// Return the filename if the file exists.
-	return (!access(cache_filename, R_OK) ? cache_filename : string());
+	if (access(cache_filename, R_OK) != 0) {
+		// Unable to read the cache file.
+		cache_filename.clear();
+	}
+	return cache_filename;
 }
 
 }

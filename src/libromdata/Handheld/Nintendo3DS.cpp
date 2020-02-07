@@ -2415,13 +2415,13 @@ int Nintendo3DS::loadFieldData(void)
 				// Encryption.
 				data_row.emplace_back(crypto ? crypto : s_unknown);
 				// Version.
-				data_row.emplace_back(string());
+				data_row.emplace_back("");
 
 				// Content size.
 				if (i < d->content_count) {
 					data_row.emplace_back(LibRpBase::formatFileSize(be64_to_cpu(content_chunk->size)));
 				} else {
-					data_row.emplace_back(string());
+					data_row.emplace_back("");
 				}
 				delete pNcch;
 				continue;

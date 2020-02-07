@@ -219,7 +219,10 @@ string CreateThumbnailPrivate::proxyForUrl(const string &url) const
 		}
 	}
 
-	string ret = (proxy ? string(proxy, -1) : string());
+	string ret;
+	if (proxy) {
+		ret.assign(proxy);
+	}
 	g_strfreev(proxies);
 	return ret;
 }
