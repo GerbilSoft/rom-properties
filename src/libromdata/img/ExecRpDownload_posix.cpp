@@ -11,6 +11,7 @@
 #include "CacheManager.hpp"
 
 // OS-specific includes.
+#include <signal.h>
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <unistd.h>
@@ -31,7 +32,8 @@ namespace LibRomData {
  */
 int CacheManager::execRpDownload(const string &filteredCacheKey)
 {
-	static const char rp_download_exe[] = DIR_INSTALL_LIBEXEC "/rp-download";
+	// TODO: Mac OS X path. (bundle?)
+ 	static const char rp_download_exe[] = DIR_INSTALL_LIBEXEC "/rp-download";
 
 	// Parameters.
 	const char *const argv[3] = {
