@@ -332,7 +332,7 @@ int RpGdiplusBackend::shrink(int width, int height)
 	{
 		return -EINVAL;
 	}
-return 0;
+
 	// TODO: Is there a way to resize the Gdiplus::Bitmap in place?
 	// NOTE: Lock() locks a region, so maybe we could use that, but
 	// Gdiplus::Bitmap to HBITMAP conversion uses the whole image...
