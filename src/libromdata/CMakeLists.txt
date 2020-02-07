@@ -288,7 +288,7 @@ ENDIF(ENABLE_DECRYPTION)
 # OS-specific sources.
 IF(WIN32)
 	SET(libromdata_OS_SRCS img/ExecRpDownload_win32.cpp)
-ELSEIF(UNIX AND NOT APPLE)
+ELSEIF(UNIX)
 	SET(libromdata_OS_SRCS img/ExecRpDownload_posix.cpp)
 ELSE()
 	# Dummy implementation for unsupported systems.
