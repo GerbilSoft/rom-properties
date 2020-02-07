@@ -106,6 +106,7 @@ namespace std {
 typedef __int64 off64_t;
 #elif defined(__APPLE__)
 // Mac OS X doesn't have off64_t, but off_t is always 64-bit.
+#include <unistd.h>
 typedef off_t off64_t;
 #endif
 
