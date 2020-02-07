@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * FileFormat.hpp: Texture file format base class.                         *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -76,6 +76,21 @@ class FileFormat
 		 * Close the opened file.
 		 */
 		virtual void close(void);
+
+	public:
+		/**
+		 * ROM detection information.
+		 * Used for isRomSupported() functions.
+		 */
+		struct DetectInfo {
+			struct {
+				uint32_t addr;		// Start address in the ROM.
+				uint32_t size;		// Length.
+				const uint8_t *pData;	// Data.
+			} header;		// ROM header.
+			const char *ext;	// File extension, including leading '.'
+			int64_t szFile;		// File size. (Required for certain types.)
+		};
 
 	public:
 		/** Class-specific functions that can be used even if isValid() is false. **/
