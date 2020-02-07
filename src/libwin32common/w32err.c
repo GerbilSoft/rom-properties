@@ -43,13 +43,14 @@ static const errmap w32_to_posix[] = {
 	{ERROR_READ_FAULT,		EIO       },  // 30
 	{ERROR_GEN_FAILURE,		EIO       },  // 31
 #ifdef ETXTBSY
-	// ETXTBSY is not defined in MinGW-w64 4.0.6.
+	// MinGW-w64 4.0.6 doesn't have ETXTBSY.
 	{ERROR_SHARING_VIOLATION,	ETXTBSY   },  // 32 (TODO)
 #endif
-	{ERROR_LOCK_VIOLATION,		EACCES    },  // BAD33
+	{ERROR_LOCK_VIOLATION,		EACCES    },  // 33
 	{ERROR_HANDLE_DISK_FULL,	ENOSPC    },  // 39
 	{ERROR_NOT_SUPPORTED,		ENOTSUP   },  // 50
-#ifdef ENOTUNIQ /* MSVC 2015 doesn't have ENOTUNIQ. */
+#ifdef ENOTUNIQ
+	// MSVC 2015 doesn't have ENOTUNIQ.
 	{ERROR_DUP_NAME,		ENOTUNIQ  },  // 52
 #endif
 	{ERROR_BAD_NETPATH,		ENOENT    },  // 53
@@ -92,6 +93,7 @@ static const errmap w32_to_posix[] = {
 	{ERROR_DISK_RESOURCES_EXHAUSTED, ENOSPC   },  // 314
 #endif
 	{ERROR_INVALID_ADDRESS,		EFAULT    },  // 487
+	{ERROR_NO_UNICODE_TRANSLATION,	EILSEQ    },  // 1113
 	{ERROR_IO_DEVICE,		EIO       },  // 1117
 	{ERROR_NOT_ENOUGH_QUOTA,	ENOMEM    }   // 1816
 };
