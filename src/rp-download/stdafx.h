@@ -27,6 +27,7 @@
 
 // C includes. (C++ namespace)
 #include <cassert>
+#include <cerrno>
 #include <cstring>
 
 // C++ includes.
@@ -37,6 +38,7 @@
 
 // C includes.
 #include <assert.h>
+#include <errno.h>
 #include <stdint.h>
 #include <string.h>
 #include <stdlib.h>
