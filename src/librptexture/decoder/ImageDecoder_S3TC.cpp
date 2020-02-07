@@ -213,7 +213,7 @@ rp_image *fromDXT1_GCN(int width, int height,
 		return nullptr;
 
 	// Create an rp_image.
-	rp_image *img = new rp_image(width, height, rp_image::FORMAT_ARGB32);
+	rp_image *const img = new rp_image(width, height, rp_image::FORMAT_ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
 		delete img;
@@ -284,21 +284,22 @@ static rp_image *T_fromDXT1(int width, int height,
 	assert(img_buf != nullptr);
 	assert(width > 0);
 	assert(height > 0);
+
+	// DXT1 uses 4x4 tiles, but some container formats allow
+	// the last tile to be cut off, so round up for the
+	// physical tile size.
+	const int physWidth = ALIGN_BYTES(4, width);
+	const int physHeight = ALIGN_BYTES(4, height);
+
 	assert(img_siz >= ((width * height) / 2));
 	if (!img_buf || width <= 0 || height <= 0 ||
-	    img_siz < ((width * height) / 2))
+	    img_siz < ((physWidth * physHeight) / 2))
 	{
 		return nullptr;
 	}
 
-	// DXT1 uses 4x4 tiles.
-	assert(width % 4 == 0);
-	assert(height % 4 == 0);
-	if (width % 4 != 0 || height % 4 != 0)
-		return nullptr;
-
 	// Create an rp_image.
-	rp_image *img = new rp_image(width, height, rp_image::FORMAT_ARGB32);
+	rp_image *const img = new rp_image(physWidth, physHeight, rp_image::FORMAT_ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
 		delete img;
@@ -308,8 +309,8 @@ static rp_image *T_fromDXT1(int width, int height,
 	const dxt1_block *dxt1_src = reinterpret_cast<const dxt1_block*>(img_buf);
 
 	// Calculate the total number of tiles.
-	const unsigned int tilesX = static_cast<unsigned int>(width / 4);
-	const unsigned int tilesY = static_cast<unsigned int>(height / 4);
+	const unsigned int tilesX = static_cast<unsigned int>(physWidth / 4);
+	const unsigned int tilesY = static_cast<unsigned int>(physHeight / 4);
 
 	// Temporary tile buffer.
 	uint32_t tileBuf[4*4];
@@ -374,7 +375,7 @@ rp_image *fromDXT1_A1(int width, int height,
  * Convert a DXT2 image to rp_image.
  * @param width Image width.
  * @param height Image height.
- * @param img_buf DXT5 image buffer.
+ * @param img_buf DXT2 image buffer.
  * @param img_siz Size of image data. [must be >= (w*h)]
  * @return rp_image, or nullptr on error.
  */
@@ -403,7 +404,7 @@ rp_image *fromDXT2(int width, int height,
  * Convert a DXT3 image to rp_image.
  * @param width Image width.
  * @param height Image height.
- * @param img_buf DXT5 image buffer.
+ * @param img_buf DXT3 image buffer.
  * @param img_siz Size of image data. [must be >= (w*h)]
  * @return rp_image, or nullptr on error.
  */
@@ -414,21 +415,22 @@ rp_image *fromDXT3(int width, int height,
 	assert(img_buf != nullptr);
 	assert(width > 0);
 	assert(height > 0);
-	assert(img_siz >= (width * height));
+
+	// DXT3 uses 4x4 tiles, but some container formats allow
+	// the last tile to be cut off, so round up for the
+	// physical tile size.
+	const int physWidth = ALIGN_BYTES(4, width);
+	const int physHeight = ALIGN_BYTES(4, height);
+
+	assert(img_siz >= (physWidth * physHeight));
 	if (!img_buf || width <= 0 || height <= 0 ||
-	    img_siz < (width * height))
+	    img_siz < (physWidth * physHeight))
 	{
 		return nullptr;
 	}
 
-	// DXT3 uses 4x4 tiles.
-	assert(width % 4 == 0);
-	assert(height % 4 == 0);
-	if (width % 4 != 0 || height % 4 != 0)
-		return nullptr;
-
 	// Create an rp_image.
-	rp_image *img = new rp_image(width, height, rp_image::FORMAT_ARGB32);
+	rp_image *const img = new rp_image(physWidth, physHeight, rp_image::FORMAT_ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
 		delete img;
@@ -444,8 +446,8 @@ rp_image *fromDXT3(int width, int height,
 	const dxt3_block *dxt3_src = reinterpret_cast<const dxt3_block*>(img_buf);
 
 	// Calculate the total number of tiles.
-	const unsigned int tilesX = static_cast<unsigned int>(width / 4);
-	const unsigned int tilesY = static_cast<unsigned int>(height / 4);
+	const unsigned int tilesX = static_cast<unsigned int>(physWidth / 4);
+	const unsigned int tilesY = static_cast<unsigned int>(physHeight / 4);
 
 	// Temporary tile buffer.
 	uint32_t tileBuf[4*4];
@@ -485,7 +487,7 @@ rp_image *fromDXT3(int width, int height,
  * Convert a DXT4 image to rp_image.
  * @param width Image width.
  * @param height Image height.
- * @param img_buf DXT5 image buffer.
+ * @param img_buf DXT4 image buffer.
  * @param img_siz Size of image data. [must be >= (w*h)]
  * @return rp_image, or nullptr on error.
  */
@@ -525,21 +527,22 @@ rp_image *fromDXT5(int width, int height,
 	assert(img_buf != nullptr);
 	assert(width > 0);
 	assert(height > 0);
-	assert(img_siz >= (width * height));
+
+	// DXT5 uses 4x4 tiles, but some container formats allow
+	// the last tile to be cut off, so round up for the
+	// physical tile size.
+	const int physWidth = ALIGN_BYTES(4, width);
+	const int physHeight = ALIGN_BYTES(4, height);
+
+	assert(img_siz >= (physWidth * physHeight));
 	if (!img_buf || width <= 0 || height <= 0 ||
-	    img_siz < (width * height))
+	    img_siz < (physWidth * physHeight))
 	{
 		return nullptr;
 	}
 
-	// DXT5 uses 4x4 tiles.
-	assert(width % 4 == 0);
-	assert(height % 4 == 0);
-	if (width % 4 != 0 || height % 4 != 0)
-		return nullptr;
-
 	// Create an rp_image.
-	rp_image *img = new rp_image(width, height, rp_image::FORMAT_ARGB32);
+	rp_image *const img = new rp_image(physWidth, physHeight, rp_image::FORMAT_ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
 		delete img;
@@ -555,8 +558,8 @@ rp_image *fromDXT5(int width, int height,
 	const dxt5_block *dxt5_src = reinterpret_cast<const dxt5_block*>(img_buf);
 
 	// Calculate the total number of tiles.
-	const unsigned int tilesX = static_cast<unsigned int>(width / 4);
-	const unsigned int tilesY = static_cast<unsigned int>(height / 4);
+	const unsigned int tilesX = static_cast<unsigned int>(physWidth / 4);
+	const unsigned int tilesY = static_cast<unsigned int>(physHeight / 4);
 
 	// Temporary tile buffer.
 	uint32_t tileBuf[4*4];
@@ -606,21 +609,22 @@ rp_image *fromBC4(int width, int height,
 	assert(img_buf != nullptr);
 	assert(width > 0);
 	assert(height > 0);
+
+	// BC4 uses 4x4 tiles, but some container formats allow
+	// the last tile to be cut off, so round up for the
+	// physical tile size.
+	const int physWidth = ALIGN_BYTES(4, width);
+	const int physHeight = ALIGN_BYTES(4, height);
+
 	assert(img_siz >= ((width * height) / 2));
 	if (!img_buf || width <= 0 || height <= 0 ||
-	    img_siz < ((width * height) / 2))
+	    img_siz < ((physWidth * physHeight) / 2))
 	{
 		return nullptr;
 	}
 
-	// BC4 uses 4x4 tiles.
-	assert(width % 4 == 0);
-	assert(height % 4 == 0);
-	if (width % 4 != 0 || height % 4 != 0)
-		return nullptr;
-
 	// Create an rp_image.
-	rp_image *img = new rp_image(width, height, rp_image::FORMAT_ARGB32);
+	rp_image *const img = new rp_image(physWidth, physHeight, rp_image::FORMAT_ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
 		delete img;
@@ -635,8 +639,8 @@ rp_image *fromBC4(int width, int height,
 	const bc4_block *bc4_src = reinterpret_cast<const bc4_block*>(img_buf);
 
 	// Calculate the total number of tiles.
-	const unsigned int tilesX = static_cast<unsigned int>(width / 4);
-	const unsigned int tilesY = static_cast<unsigned int>(height / 4);
+	const unsigned int tilesX = static_cast<unsigned int>(physWidth / 4);
+	const unsigned int tilesY = static_cast<unsigned int>(physHeight / 4);
 
 	// Temporary tile buffer.
 	uint32_t tileBuf[4*4];
@@ -688,21 +692,22 @@ rp_image *fromBC5(int width, int height,
 	assert(img_buf != nullptr);
 	assert(width > 0);
 	assert(height > 0);
+
+	// BC5 uses 4x4 tiles, but some container formats allow
+	// the last tile to be cut off, so round up for the
+	// physical tile size.
+	const int physWidth = ALIGN_BYTES(4, width);
+	const int physHeight = ALIGN_BYTES(4, height);
+
 	assert(img_siz >= (width * height));
 	if (!img_buf || width <= 0 || height <= 0 ||
-	    img_siz < (width * height))
+	    img_siz < (physWidth * physHeight))
 	{
 		return nullptr;
 	}
 
-	// BC4 uses 4x4 tiles.
-	assert(width % 4 == 0);
-	assert(height % 4 == 0);
-	if (width % 4 != 0 || height % 4 != 0)
-		return nullptr;
-
 	// Create an rp_image.
-	rp_image *img = new rp_image(width, height, rp_image::FORMAT_ARGB32);
+	rp_image *const img = new rp_image(physWidth, physHeight, rp_image::FORMAT_ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
 		delete img;

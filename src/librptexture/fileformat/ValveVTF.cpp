@@ -183,8 +183,6 @@ ValveVTFPrivate::~ValveVTFPrivate()
  */
 unsigned int ValveVTFPrivate::calcImageSize(VTF_IMAGE_FORMAT format, unsigned int width, unsigned int height)
 {
-	unsigned int expected_size = width * height;
-
 	enum OpCode {
 		OP_UNKNOWN	= 0,
 		OP_NONE,
@@ -194,7 +192,11 @@ unsigned int ValveVTFPrivate::calcImageSize(VTF_IMAGE_FORMAT format, unsigned in
 		OP_MULTIPLY_8,
 		OP_DIVIDE_2,
 
-		OP_MAX		= 7
+		// DXTn requires aligned blocks.
+		OP_ALIGN_4_DIVIDE_2,
+		OP_ALIGN_4,
+
+		OP_MAX
 	};
 
 	static const uint8_t mul_tbl[] = {
@@ -211,14 +213,14 @@ unsigned int ValveVTFPrivate::calcImageSize(VTF_IMAGE_FORMAT format, unsigned in
 		OP_MULTIPLY_3,	// VTF_IMAGE_FORMAT_BGR888_BLUESCREEN
 		OP_MULTIPLY_4,	// VTF_IMAGE_FORMAT_ARGB8888
 		OP_MULTIPLY_4,	// VTF_IMAGE_FORMAT_BGRA8888
-		OP_DIVIDE_2,	// VTF_IMAGE_FORMAT_DXT1
-		OP_NONE,	// VTF_IMAGE_FORMAT_DXT3
-		OP_NONE,	// VTF_IMAGE_FORMAT_DXT5
+		OP_ALIGN_4_DIVIDE_2,	// VTF_IMAGE_FORMAT_DXT1
+		OP_ALIGN_4,	// VTF_IMAGE_FORMAT_DXT3
+		OP_ALIGN_4,	// VTF_IMAGE_FORMAT_DXT5
 		OP_MULTIPLY_4,	// VTF_IMAGE_FORMAT_BGRx8888
 		OP_MULTIPLY_2,	// VTF_IMAGE_FORMAT_BGR565
 		OP_MULTIPLY_2,	// VTF_IMAGE_FORMAT_BGRx5551
 		OP_MULTIPLY_2,	// VTF_IMAGE_FORMAT_BGRA4444
-		OP_DIVIDE_2,	// VTF_IMAGE_FORMAT_DXT1_ONEBITALPHA
+		OP_ALIGN_4_DIVIDE_2,	// VTF_IMAGE_FORMAT_DXT1_ONEBITALPHA
 		OP_MULTIPLY_2,	// VTF_IMAGE_FORMAT_BGRA5551
 		OP_MULTIPLY_2,	// VTF_IMAGE_FORMAT_UV88
 		OP_MULTIPLY_4,	// VTF_IMAGE_FORMAT_UVWQ8888
@@ -235,6 +237,11 @@ unsigned int ValveVTFPrivate::calcImageSize(VTF_IMAGE_FORMAT format, unsigned in
 		return 0;
 	}
 
+	unsigned int expected_size = 0;
+	if (mul_tbl[format] < OP_ALIGN_4_DIVIDE_2) {
+		expected_size = width * height;
+	}
+
 	switch (mul_tbl[format]) {
 		default:
 		case OP_UNKNOWN:
@@ -247,6 +254,14 @@ unsigned int ValveVTFPrivate::calcImageSize(VTF_IMAGE_FORMAT format, unsigned in
 		case OP_MULTIPLY_4:	expected_size *= 4;	break;
 		case OP_MULTIPLY_8:	expected_size *= 8;	break;
 		case OP_DIVIDE_2:	expected_size /= 2;	break;
+
+		case OP_ALIGN_4_DIVIDE_2:
+			expected_size = ALIGN_BYTES(4, width) * ALIGN_BYTES(4, height) / 2;
+			break;
+
+		case OP_ALIGN_4:
+			expected_size = ALIGN_BYTES(4, width) * ALIGN_BYTES(4, height);
+			break;
 	}
 
 	return expected_size;

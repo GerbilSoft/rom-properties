@@ -208,6 +208,13 @@ const rp_image *KhronosKTXPrivate::loadImage(void)
 					// 32 pixels compressed into 64 bits. (2bpp)
 					expected_size = (ktxHeader.pixelWidth * height) / 4;
 					break;
+
+				case GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG:
+				case GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG:
+				case GL_COMPRESSED_RGBA_PVRTC_4BPPV2_IMG:
+					// 16 pixels compressed into 64 bits. (4bpp)
+					expected_size = (ktxHeader.pixelWidth * height) / 2;
+					break;
 #endif /* ENABLE_PVRTC */
 
 				case GL_RGB_S3TC:
@@ -225,13 +232,10 @@ const rp_image *KhronosKTXPrivate::loadImage(void)
 				case GL_COMPRESSED_SIGNED_RED_RGTC1:
 				case GL_COMPRESSED_LUMINANCE_LATC1_EXT:
 				case GL_COMPRESSED_SIGNED_LUMINANCE_LATC1_EXT:
-#ifdef ENABLE_PVRTC
-				case GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG:
-				case GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG:
-				case GL_COMPRESSED_RGBA_PVRTC_4BPPV2_IMG:
-#endif /* ENABLE_PVRTC */
 					// 16 pixels compressed into 64 bits. (4bpp)
-					expected_size = (ktxHeader.pixelWidth * height) / 2;
+					// NOTE: Width and height must be rounded to the nearest tile. (4x4)
+					expected_size = ALIGN_BYTES(4, ktxHeader.pixelWidth) *
+					                ALIGN_BYTES(4, (int)height) / 2;
 					break;
 
 				//case GL_RGBA_S3TC:	// TODO
@@ -251,7 +255,9 @@ const rp_image *KhronosKTXPrivate::loadImage(void)
 				case GL_COMPRESSED_RGBA_BPTC_UNORM:
 				case GL_COMPRESSED_SRGB_ALPHA_BPTC_UNORM:
 					// 16 pixels compressed into 128 bits. (8bpp)
-					expected_size = ktxHeader.pixelWidth * height;
+					// NOTE: Width and height must be rounded to the nearest tile. (4x4)
+					expected_size = ALIGN_BYTES(4, ktxHeader.pixelWidth) *
+					                ALIGN_BYTES(4, (int)height);
 					break;
 
 				case GL_RGB9_E5:
