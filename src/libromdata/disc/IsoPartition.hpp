@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * IsoPartition.hpp: ISO-9660 partition reader.                            *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -32,7 +32,7 @@ class IsoPartition : public LibRpBase::IPartition
 		 * @param partition_offset Partition start offset.
 		 * @param iso_start_offset ISO start offset, in blocks. (If -1, uses heuristics.)
 		 */
-		IsoPartition(IDiscReader *discReader, int64_t partition_offset, int iso_start_offset = -1);
+		IsoPartition(IDiscReader *discReader, off64_t partition_offset, int iso_start_offset = -1);
 		virtual ~IsoPartition();
 
 	private:
@@ -59,13 +59,13 @@ class IsoPartition : public LibRpBase::IPartition
 		 * @param pos Partition position.
 		 * @return 0 on success; -1 on error.
 		 */
-		int seek(int64_t pos) override;
+		int seek(off64_t pos) override;
 
 		/**
 		 * Get the partition position.
 		 * @return Partition position on success; -1 on error.
 		 */
-		int64_t tell(void) override;
+		off64_t tell(void) override;
 
 		/**
 		 * Get the data size.
@@ -73,7 +73,7 @@ class IsoPartition : public LibRpBase::IPartition
 		 * and it's adjusted to exclude hashes.
 		 * @return Data size, or -1 on error.
 		 */
-		int64_t size(void) final;
+		off64_t size(void) final;
 
 	public:
 		/** IPartition **/
@@ -83,7 +83,7 @@ class IsoPartition : public LibRpBase::IPartition
 		 * This size includes the partition header and hashes.
 		 * @return Partition size, or -1 on error.
 		 */
-		int64_t partition_size(void) const final;
+		off64_t partition_size(void) const final;
 
 		/**
 		 * Get the used partition size.
@@ -91,7 +91,7 @@ class IsoPartition : public LibRpBase::IPartition
 		 * but does not include "empty" sectors.
 		 * @return Used partition size, or -1 on error.
 		 */
-		int64_t partition_size_used(void) const final;
+		off64_t partition_size_used(void) const final;
 
 	public:
 		/** IFst wrapper functions. **/

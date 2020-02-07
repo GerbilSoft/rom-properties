@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * RpFile.hpp: Standard file object.                                       *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -100,20 +100,20 @@ class RpFile : public IRpFile
 		 * @param pos File position.
 		 * @return 0 on success; -1 on error.
 		 */
-		int seek(int64_t pos) final;
+		int seek(off64_t pos) final;
 
 		/**
 		 * Get the file position.
 		 * @return File position, or -1 on error.
 		 */
-		int64_t tell(void) final;
+		off64_t tell(void) final;
 
 		/**
 		 * Truncate the file.
 		 * @param size New size. (default is 0)
 		 * @return 0 on success; -1 on error.
 		 */
-		int truncate(int64_t size = 0) final;
+		int truncate(off64_t size = 0) final;
 
 	public:
 		/** File properties **/
@@ -122,7 +122,7 @@ class RpFile : public IRpFile
 		 * Get the file size.
 		 * @return File size, or negative on error.
 		 */
-		int64_t size(void) final;
+		off64_t size(void) final;
 
 		/**
 		 * Get the filename.
@@ -145,7 +145,7 @@ class RpFile : public IRpFile
 		 * @param pSectorSize	[out,opt] If not NULL, retrieves the sector size, in bytes.
 		 * @return 0 on success, negative for POSIX error code.
 		 */
-		int rereadDeviceSizeOS(int64_t *pDeviceSize = nullptr, uint32_t *pSectorSize = nullptr);
+		int rereadDeviceSizeOS(off64_t *pDeviceSize = nullptr, uint32_t *pSectorSize = nullptr);
 
 		/**
 		 * Re-read device size using SCSI commands.
@@ -154,7 +154,7 @@ class RpFile : public IRpFile
 		 * @param pSectorSize	[out,opt] If not NULL, retrieves the sector size, in bytes.
 		 * @return 0 on success, positive for SCSI sense key, negative for POSIX error code.
 		 */
-		int rereadDeviceSizeScsi(int64_t *pDeviceSize = nullptr, uint32_t *pSectorSize = nullptr);
+		int rereadDeviceSizeScsi(off64_t *pDeviceSize = nullptr, uint32_t *pSectorSize = nullptr);
 
 	public:
 		/** Public SCSI command wrapper functions **/

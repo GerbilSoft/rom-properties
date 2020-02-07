@@ -45,7 +45,7 @@ RpFile_windres::RpFile_windres(HMODULE hModule, LPCTSTR lpName, LPCTSTR lpType)
 	}
 
 	// Get the resource size.
-	m_size = static_cast<int64_t>(SizeofResource(hModule, hRsrc));
+	m_size = static_cast<off64_t>(SizeofResource(hModule, hRsrc));
 	if (m_size <= 0) {
 		// Unable to get the resource size.
 		m_lastError = w32err_to_posix(GetLastError());

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * CBCReader.hpp: AES-128-CBC data reader class.                           *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -23,7 +23,7 @@ namespace LibRpBase {
 class CBCReaderPrivate
 {
 	public:
-		CBCReaderPrivate(CBCReader *q, int64_t offset, int64_t length,
+		CBCReaderPrivate(CBCReader *q, off64_t offset, off64_t length,
 			const uint8_t *key, const uint8_t *iv);
 		~CBCReaderPrivate();
 
@@ -33,12 +33,12 @@ class CBCReaderPrivate
 		CBCReader *const q_ptr;
 
 	public:
-		const int64_t offset;		// Encrypted data start offset, in bytes.
-		const int64_t length;		// Encrypted data length, in bytes.
+		const off64_t offset;		// Encrypted data start offset, in bytes.
+		const off64_t length;		// Encrypted data length, in bytes.
 
 		// Current read position within the encrypted data.
 		// pos = 0 indicates the beginning of the content.
-		int64_t pos;
+		off64_t pos;
 
 #ifdef ENABLE_DECRYPTION
 		// Encryption cipher.
@@ -51,7 +51,7 @@ class CBCReaderPrivate
 /** CBCReaderPrivate **/
 
 CBCReaderPrivate::CBCReaderPrivate(CBCReader *q,
-	int64_t offset, int64_t length,
+	off64_t offset, off64_t length,
 	const uint8_t *key, const uint8_t *iv)
 	: q_ptr(q)
 	, offset(offset)
@@ -131,7 +131,7 @@ CBCReaderPrivate::~CBCReaderPrivate()
  * @param key		[in] Encryption key. (Must be 128-bit) [If NULL, acts like no encryption.]
  * @param iv		[in] Initialization vector. (Must be 128-bit) [If NULL, uses ECB instead of CBC.]
  */
-CBCReader::CBCReader(LibRpBase::IRpFile *file, int64_t offset, int64_t length,
+CBCReader::CBCReader(LibRpBase::IRpFile *file, off64_t offset, off64_t length,
 		const uint8_t *key, const uint8_t *iv)
 	: super(file)
 	, d_ptr(new CBCReaderPrivate(this, offset, length, key, iv))
@@ -173,7 +173,7 @@ size_t CBCReader::read(void *ptr, size_t size)
 
 	// Make sure d->pos + size <= d->length.
 	// If it isn't, we'll do a short read.
-	if (d->pos + (int64_t)size >= d->length) {
+	if (d->pos + (off64_t)size >= d->length) {
 		size = (size_t)(d->length - d->pos);
 	}
 
@@ -201,7 +201,7 @@ size_t CBCReader::read(void *ptr, size_t size)
 	uint8_t *ptr8 = static_cast<uint8_t*>(ptr);
 
 	// TODO: Check for overflow.
-	if (d->pos + (int64_t)size > d->length) {
+	if (d->pos + (off64_t)size > d->length) {
 		// Reduce size so it doesn't go out of bounds.
 		size = d->length - d->pos;
 	}
@@ -210,7 +210,7 @@ size_t CBCReader::read(void *ptr, size_t size)
 
 	// Read the first block.
 	// NOTE: If we're in the middle of a block, round it down.
-	const int64_t pos_block = d->pos & ~15LL;
+	const off64_t pos_block = d->pos & ~15LL;
 
 	// Total number of bytes read.
 	size_t total_sz_read = 0;
@@ -346,7 +346,7 @@ size_t CBCReader::read(void *ptr, size_t size)
  * @param pos Partition position.
  * @return 0 on success; -1 on error.
  */
-int CBCReader::seek(int64_t pos)
+int CBCReader::seek(off64_t pos)
 {
 	RP_D(CBCReader);
 	assert(m_file != nullptr);
@@ -373,7 +373,7 @@ int CBCReader::seek(int64_t pos)
  * Get the partition position.
  * @return Partition position on success; -1 on error.
  */
-int64_t CBCReader::tell(void)
+off64_t CBCReader::tell(void)
 {
 	RP_D(CBCReader);
 	assert(m_file != nullptr);
@@ -392,7 +392,7 @@ int64_t CBCReader::tell(void)
  * and it's adjusted to exclude hashes.
  * @return Data size, or -1 on error.
  */
-int64_t CBCReader::size(void)
+off64_t CBCReader::size(void)
 {
 	RP_D(const CBCReader);
 	return d->length;
@@ -405,7 +405,7 @@ int64_t CBCReader::size(void)
  * This size includes the partition header and hashes.
  * @return Partition size, or -1 on error.
  */
-int64_t CBCReader::partition_size(void) const
+off64_t CBCReader::partition_size(void) const
 {
 	// TODO: Errors?
 	RP_D(const CBCReader);
@@ -418,7 +418,7 @@ int64_t CBCReader::partition_size(void) const
  * but does not include "empty" sectors.
  * @return Used partition size, or -1 on error.
  */
-int64_t CBCReader::partition_size_used(void) const
+off64_t CBCReader::partition_size_used(void) const
 {
 	// TODO: Errors?
 	// NOTE: For CBCReader, this is the same as partition_size().

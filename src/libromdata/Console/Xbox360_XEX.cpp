@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * Xbox360_XEX.cpp: Microsoft Xbox 360 executable reader.                  *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -744,7 +744,7 @@ CBCReader *Xbox360_XEX_Private::initPeReader(void)
 			// save the relevant portions, then free it.
 			// FIXME: It *might* be possible to randomly seek...
 			// Need to analyze the format more.
-			const int64_t fileSize = file->size();
+			const off64_t fileSize = file->size();
 			if (fileSize > 64*1024*1024 || image_size > 64*1024*1024) {
 				// 64 MB is our compressed and uncompressed limit.
 				delete reader[0];

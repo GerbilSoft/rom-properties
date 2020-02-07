@@ -120,7 +120,7 @@ string CacheManager::download(const string &cache_key)
 	SemaphoreLocker locker(m_dlsem);
 
 	// Check if the file already exists.
-	int64_t filesize;
+	off64_t filesize;
 	time_t filemtime;
 	int ret = get_file_size_and_mtime(cache_filename.c_str(), &filesize, &filemtime);
 	if (ret == 0) {

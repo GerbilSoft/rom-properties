@@ -32,7 +32,7 @@ namespace LibRomData {
  * @param discReader IDiscReader.
  * @param partition_offset Partition start offset.
  */
-GcnPartition::GcnPartition(IDiscReader *discReader, int64_t partition_offset)
+GcnPartition::GcnPartition(IDiscReader *discReader, off64_t partition_offset)
 	: super(discReader)
 	, d_ptr(new GcnPartitionPrivate(this, partition_offset, discReader->size()))
 { }
@@ -79,7 +79,7 @@ size_t GcnPartition::read(void *ptr, size_t size)
  * @param pos Partition position.
  * @return 0 on success; -1 on error.
  */
-int GcnPartition::seek(int64_t pos)
+int GcnPartition::seek(off64_t pos)
 {
 	RP_D(GcnPartition);
 	assert(m_discReader != nullptr);
@@ -101,7 +101,7 @@ int GcnPartition::seek(int64_t pos)
  * Get the partition position.
  * @return Partition position on success; -1 on error.
  */
-int64_t GcnPartition::tell(void)
+off64_t GcnPartition::tell(void)
 {
 	assert(m_discReader != nullptr);
 	assert(m_discReader->isOpen());
@@ -111,7 +111,7 @@ int64_t GcnPartition::tell(void)
 	}
 
 	// Use the IDiscReader directly for GCN partitions.
-	int64_t ret = m_discReader->tell();
+	off64_t ret = m_discReader->tell();
 	if (ret < 0) {
 		m_lastError = m_discReader->lastError();
 	}
@@ -124,7 +124,7 @@ int64_t GcnPartition::tell(void)
  * and it's adjusted to exclude hashes.
  * @return Data size, or -1 on error.
  */
-int64_t GcnPartition::size(void)
+off64_t GcnPartition::size(void)
 {
 	// TODO: Errors?
 	RP_D(const GcnPartition);
@@ -138,7 +138,7 @@ int64_t GcnPartition::size(void)
  * This size includes the partition header and hashes.
  * @return Partition size, or -1 on error.
  */
-int64_t GcnPartition::partition_size(void) const
+off64_t GcnPartition::partition_size(void) const
 {
 	// TODO: Errors?
 	RP_D(const GcnPartition);
@@ -151,7 +151,7 @@ int64_t GcnPartition::partition_size(void) const
  * but does not include "empty" sectors.
  * @return Used partition size, or -1 on error.
  */
-int64_t GcnPartition::partition_size_used(void) const
+off64_t GcnPartition::partition_size_used(void) const
 {
 	RP_D(const GcnPartition);
 	int ret = const_cast<GcnPartitionPrivate*>(d)->loadBootBlockAndInfo();
@@ -169,15 +169,15 @@ int64_t GcnPartition::partition_size_used(void) const
 	}
 
 	// FST/DOL offset and size.
-	int64_t size;
+	off64_t size;
 	if (d->bootBlock.dol_offset > d->bootBlock.fst_offset) {
 		// DOL is after the FST.
 		// TODO: Get the DOL size. (This case is unlikely, though...)
-		size = static_cast<int64_t>(d->bootBlock.dol_offset);
+		size = static_cast<off64_t>(d->bootBlock.dol_offset);
 	} else {
 		// FST is after the DOL.
-		size = static_cast<int64_t>(d->bootBlock.fst_offset) +
-		       static_cast<int64_t>(d->bootBlock.fst_size);
+		size = static_cast<off64_t>(d->bootBlock.fst_offset) +
+		       static_cast<off64_t>(d->bootBlock.fst_size);
 	}
 	size <<= d->offsetShift;
 

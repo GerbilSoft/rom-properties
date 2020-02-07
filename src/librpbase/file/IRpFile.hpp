@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * IRpFile.hpp: File wrapper interface.                                    *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -96,7 +96,7 @@ class IRpFile
 		 * @param pos File position.
 		 * @return 0 on success; -1 on error.
 		 */
-		virtual int seek(int64_t pos) = 0;
+		virtual int seek(off64_t pos) = 0;
 
 		/**
 		 * Seek to the beginning of the file.
@@ -110,14 +110,14 @@ class IRpFile
 		 * Get the file position.
 		 * @return File position, or -1 on error.
 		 */
-		virtual int64_t tell(void) = 0;
+		virtual off64_t tell(void) = 0;
 
 		/**
 		 * Truncate the file.
 		 * @param size New size. (default is 0)
 		 * @return 0 on success; -1 on error.
 		 */
-		virtual int truncate(int64_t size = 0) = 0;
+		virtual int truncate(off64_t size = 0) = 0;
 
 	public:
 		/** File properties **/
@@ -126,7 +126,7 @@ class IRpFile
 		 * Get the file size.
 		 * @return File size, or negative on error.
 		 */
-		virtual int64_t size(void) = 0;
+		virtual off64_t size(void) = 0;
 
 		/**
 		 * Get the filename.
@@ -175,7 +175,7 @@ class IRpFile
 		 * @param size	[in] Amount of data to read, in bytes.
 		 * @return Number of bytes read on success; 0 on seek or read error.
 		 */
-		size_t seekAndRead(int64_t pos, void *ptr, size_t size);
+		size_t seekAndRead(off64_t pos, void *ptr, size_t size);
 
 	protected:
 		int m_lastError;

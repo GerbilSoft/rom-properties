@@ -3,7 +3,7 @@
  * Nintendo3DS.hpp: Nintendo 3DS ROM reader.                               *
  * Handles CCI/3DS, CIA, and SMDH files.                                   *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -406,7 +406,7 @@ int Nintendo3DSPrivate::loadSMDH(void)
 			if (!ncch_f_icon) {
 				// Failed to open "icon".
 				return -7;
-			} else if (ncch_f_icon->size() < (int64_t)N3DS_SMDH_Section_Size) {
+			} else if (ncch_f_icon->size() < (off64_t)N3DS_SMDH_Section_Size) {
 				// Icon is too small.
 				return -8;
 			}
@@ -471,7 +471,7 @@ int Nintendo3DSPrivate::loadNCCH(int idx, NCCHReader **pOutNcchReader)
 	if (!pOutNcchReader)
 		return -EINVAL;
 
-	int64_t offset = 0;
+	off64_t offset = 0;
 	uint32_t length = 0;
 	switch (romType) {
 		case ROM_TYPE_CIA: {
@@ -528,7 +528,7 @@ int Nintendo3DSPrivate::loadNCCH(int idx, NCCHReader **pOutNcchReader)
 			}
 
 			// Get the partition offset and length.
-			offset = static_cast<int64_t>(le32_to_cpu(mxh.ncsd_header.partitions[idx].offset)) << media_unit_shift;
+			offset = static_cast<off64_t>(le32_to_cpu(mxh.ncsd_header.partitions[idx].offset)) << media_unit_shift;
 			length = le32_to_cpu(mxh.ncsd_header.partitions[idx].length) << media_unit_shift;
 			// TODO: Validate length.
 			// Make sure the partition starts after the card info header.
@@ -781,7 +781,7 @@ int Nintendo3DSPrivate::loadTicketAndTMD(void)
 	// NOTE: "WarioWare Touched!" has a manual, but no other
 	// DSiWare titles that I've seen do.
 	if (content_count <= 2 && !(headers_loaded & HEADER_SMDH) && !this->sbptr.srl.data) {
-		const int64_t offset = mxh.content_start_addr;
+		const off64_t offset = mxh.content_start_addr;
 		const uint32_t length = static_cast<uint32_t>(be64_to_cpu(content_chunks[0].size));
 		if (length >= 0x8000) {
 			// Attempt to open the SRL as if it's a new file.
@@ -957,7 +957,7 @@ void Nintendo3DSPrivate::addTitleIdAndProductCodeFields(bool showContentType)
 	uint32_t crc = 0;
 	IRpFile *const f_logo = ncch->openLogo();
 	if (f_logo) {
-		const int64_t szFile = f_logo->size();
+		const off64_t szFile = f_logo->size();
 		if (szFile == 8192) {
 			// Calculate the CRC32.
 			unique_ptr<uint8_t[]> buf(new uint8_t[static_cast<unsigned int>(szFile)]);
@@ -2277,7 +2277,7 @@ int Nintendo3DS::loadFieldData(void)
 			}
 
 			// Partition size.
-			const int64_t length_bytes = static_cast<int64_t>(length) << d->media_unit_shift;
+			const off64_t length_bytes = static_cast<off64_t>(length) << d->media_unit_shift;
 			data_row.emplace_back(LibRpBase::formatFileSize(length_bytes));
 
 			delete pNcch;

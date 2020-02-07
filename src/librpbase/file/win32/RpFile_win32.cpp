@@ -348,7 +348,7 @@ void RpFile::init(void)
 						// NOTE: Uncompressed size might be smaller than the real filesize
 						// in cases where gzip doesn't help much.
 						// TODO: Add better verification heuristics?
-						d->gzsz = (int64_t)uncomp_sz;
+						d->gzsz = (off64_t)uncomp_sz;
 
 						liSeekPos.QuadPart = 0;
 						SetFilePointerEx(d->file, liSeekPos, nullptr, FILE_BEGIN);
@@ -524,7 +524,7 @@ size_t RpFile::write(const void *ptr, size_t size)
  * @param pos File position.
  * @return 0 on success; -1 on error.
  */
-int RpFile::seek(int64_t pos)
+int RpFile::seek(off64_t pos)
 {
 	RP_D(RpFile);
 	if (!d->file || d->file == INVALID_HANDLE_VALUE) {
@@ -576,7 +576,7 @@ int RpFile::seek(int64_t pos)
  * Get the file position.
  * @return File position, or -1 on error.
  */
-int64_t RpFile::tell(void)
+off64_t RpFile::tell(void)
 {
 	RP_D(RpFile);
 	if (!d->file || d->file == INVALID_HANDLE_VALUE) {
@@ -592,7 +592,7 @@ int64_t RpFile::tell(void)
 	}
 
 	if (d->gzfd) {
-		return (int64_t)gztell(d->gzfd);
+		return (off64_t)gztell(d->gzfd);
 	}
 
 	LARGE_INTEGER liSeekPos, liSeekRet;
@@ -611,7 +611,7 @@ int64_t RpFile::tell(void)
  * @param size New size. (default is 0)
  * @return 0 on success; -1 on error.
  */
-int RpFile::truncate(int64_t size)
+int RpFile::truncate(off64_t size)
 {
 	RP_D(RpFile);
 	if (!d->file || d->file == INVALID_HANDLE_VALUE || !(d->mode & FM_WRITE)) {
@@ -667,7 +667,7 @@ int RpFile::truncate(int64_t size)
  * Get the file size.
  * @return File size, or negative on error.
  */
-int64_t RpFile::size(void)
+off64_t RpFile::size(void)
 {
 	RP_D(RpFile);
 	if (!d->file || d->file == INVALID_HANDLE_VALUE) {

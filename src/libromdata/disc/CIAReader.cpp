@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * CIAReader.cpp: Nintendo 3DS CIA reader.                                 *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -26,7 +26,7 @@ class CIAReaderPrivate
 {
 	public:
 		CIAReaderPrivate(CIAReader *q,
-			int64_t content_offset, uint32_t content_length,
+			off64_t content_offset, uint32_t content_length,
 			const N3DS_Ticket_t *ticket,
 			uint16_t tmd_content_index);
 		~CIAReaderPrivate();
@@ -50,7 +50,7 @@ class CIAReaderPrivate
 /** CIAReaderPrivate **/
 
 CIAReaderPrivate::CIAReaderPrivate(CIAReader *q,
-	int64_t content_offset, uint32_t content_length,
+	off64_t content_offset, uint32_t content_length,
 	const N3DS_Ticket_t *ticket, uint16_t tmd_content_index)
 	: q_ptr(q)
 	, cbcReader(nullptr)
@@ -197,7 +197,7 @@ CIAReaderPrivate::~CIAReaderPrivate()
  * @param tmd_content_index	[in,opt] TMD content index for decryption.
  */
 CIAReader::CIAReader(IRpFile *file,
-		int64_t content_offset, uint32_t content_length,
+		off64_t content_offset, uint32_t content_length,
 		const N3DS_Ticket_t *ticket,
 		uint16_t tmd_content_index)
 	: super(file)
@@ -245,7 +245,7 @@ size_t CIAReader::read(void *ptr, size_t size)
  * @param pos Partition position.
  * @return 0 on success; -1 on error.
  */
-int CIAReader::seek(int64_t pos)
+int CIAReader::seek(off64_t pos)
 {
 	RP_D(CIAReader);
 	assert(m_file != nullptr);
@@ -267,7 +267,7 @@ int CIAReader::seek(int64_t pos)
  * Get the partition position.
  * @return Partition position on success; -1 on error.
  */
-int64_t CIAReader::tell(void)
+off64_t CIAReader::tell(void)
 {
 	RP_D(const CIAReader);
 	assert(m_file != nullptr);
@@ -277,7 +277,7 @@ int64_t CIAReader::tell(void)
 		return -1;
 	}
 
-	int64_t ret = d->cbcReader->tell();
+	off64_t ret = d->cbcReader->tell();
 	m_lastError = d->cbcReader->lastError();
 	return ret;
 }
@@ -288,7 +288,7 @@ int64_t CIAReader::tell(void)
  * and it's adjusted to exclude hashes.
  * @return Data size, or -1 on error.
  */
-int64_t CIAReader::size(void)
+off64_t CIAReader::size(void)
 {
 	RP_D(const CIAReader);
 	assert(m_file != nullptr);
@@ -299,7 +299,7 @@ int64_t CIAReader::size(void)
 		return -1;
 	}
 
-	int64_t ret = d->cbcReader->size();
+	off64_t ret = d->cbcReader->size();
 	m_lastError = d->cbcReader->lastError();
 	return ret;
 }
@@ -311,7 +311,7 @@ int64_t CIAReader::size(void)
  * This size includes the partition header and hashes.
  * @return Partition size, or -1 on error.
  */
-int64_t CIAReader::partition_size(void) const
+off64_t CIAReader::partition_size(void) const
 {
 	// TODO: Handle errors.
 	RP_D(const CIAReader);
@@ -324,7 +324,7 @@ int64_t CIAReader::partition_size(void) const
  * but does not include "empty" sectors.
  * @return Used partition size, or -1 on error.
  */
-int64_t CIAReader::partition_size_used(void) const
+off64_t CIAReader::partition_size_used(void) const
 {
 	// NOTE: For CIAReader, this is the same as partition_size().
 	// TODO: Handle errors.

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * IPartition.hpp: Partition reader interface.                             *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -48,7 +48,7 @@ class IPartition : public IDiscReader
 		 * metadata, e.g. Wii sector hashes, if present.
 		 * @return Partition size, or -1 on error.
 		 */
-		virtual int64_t partition_size(void) const = 0;
+		virtual off64_t partition_size(void) const = 0;
 
 		/**
 		 * Get the used partition size.
@@ -57,7 +57,7 @@ class IPartition : public IDiscReader
 		 * It does *not* include "empty" sectors.
 		 * @return Used partition size, or -1 on error.
 		 */
-		virtual int64_t partition_size_used(void) const = 0;
+		virtual off64_t partition_size_used(void) const = 0;
 };
 
 /**

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * DMG.hpp: Game Boy (DMG/CGB/SGB) ROM reader.                             *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * Copyright (c) 2016-2018 by Egor.                                        *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
@@ -489,8 +489,8 @@ DMG::DMG(IRpFile *file)
 	}
 
 	// Attempt to read the GBX footer.
-	int64_t addr = file->size() - sizeof(GBX_Footer);
-	if (addr >= (int64_t)sizeof(GBX_Footer)) {
+	off64_t addr = file->size() - sizeof(GBX_Footer);
+	if (addr >= (off64_t)sizeof(GBX_Footer)) {
 		size = file->seekAndRead(addr, &d->gbxFooter, sizeof(d->gbxFooter));
 		if (size != sizeof(d->gbxFooter)) {
 			// Unable to read the footer.
@@ -972,11 +972,11 @@ int DMG::loadFieldData(void)
 			if (size == sizeof(gbs_magic) && gbs_magic == cpu_to_be32(GBS_MAGIC)) {
 				// Found the GBS magic number.
 				// Open the GBS.
-				const int64_t fileSize = d->file->size();
+				const off64_t fileSize = d->file->size();
 				DiscReader *const reader = new DiscReader(d->file, 0, fileSize);
 				if (reader->isOpen()) {
 					// Create a PartitionFile.
-					const int64_t length = fileSize - jp_addr;
+					const off64_t length = fileSize - jp_addr;
 					PartitionFile *const ptFile = new PartitionFile(reader, jp_addr, length);
 					if (ptFile->isOpen()) {
 						// Open the GBS.

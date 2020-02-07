@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * IRpFile.cpp: File wrapper interface.                                    *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -21,6 +21,8 @@ IRpFile::IRpFile()
 	: m_lastError(0)
 	, m_refCnt(1)
 {
+	static_assert(sizeof(off64_t) == 8, "off64_t is not 64-bit!");
+
 	// Increment the total reference count.
 	ATOMIC_INC_FETCH(&ms_refCntTotal);
 }
@@ -77,7 +79,7 @@ int IRpFile::ungetc(int c)
 	RP_UNUSED(c);	// TODO: Don't ignore this?
 
 	// TODO: seek() overload that supports SEEK_CUR?
-	int64_t pos = tell();
+	off64_t pos = tell();
 	if (pos <= 0) {
 		// Cannot ungetc().
 		return -1;
@@ -93,7 +95,7 @@ int IRpFile::ungetc(int c)
  * @param size	[in] Amount of data to read, in bytes.
  * @return Number of bytes read on success; 0 on seek or read error.
  */
-size_t IRpFile::seekAndRead(int64_t pos, void *ptr, size_t size)
+size_t IRpFile::seekAndRead(off64_t pos, void *ptr, size_t size)
 {
 	int ret = this->seek(pos);
 	if (ret != 0) {

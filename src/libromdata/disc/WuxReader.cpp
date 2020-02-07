@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * WuxReader.cpp: Wii U .wux disc image reader.                            *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -40,7 +40,7 @@ class WuxReaderPrivate : public SparseDiscReaderPrivate {
 
 		// Data start position.
 		// Starts immediately after the index table.
-		int64_t dataOffset;
+		off64_t dataOffset;
 };
 
 /** WuxReaderPrivate **/
@@ -101,7 +101,7 @@ WuxReader::WuxReader(IRpFile *file)
 	}
 
 	// Read the index table.
-	d->disc_size = static_cast<int64_t>(le64_to_cpu(d->wuxHeader.uncompressedSize));
+	d->disc_size = static_cast<off64_t>(le64_to_cpu(d->wuxHeader.uncompressedSize));
 	if (d->disc_size < 0 || d->disc_size > 50LL*1024*1024*1024) {
 		// Disc size is out of range.
 		m_file->unref();
@@ -190,7 +190,7 @@ int WuxReader::isDiscSupported(const uint8_t *pHeader, size_t szHeader) const
  * @param blockIdx	[in] Block index.
  * @return Physical address. (0 == empty block; -1 == invalid block index)
  */
-int64_t WuxReader::getPhysBlockAddr(uint32_t blockIdx) const
+off64_t WuxReader::getPhysBlockAddr(uint32_t blockIdx) const
 {
 	// Make sure the block index is in range.
 	RP_D(WuxReader);
@@ -206,7 +206,7 @@ int64_t WuxReader::getPhysBlockAddr(uint32_t blockIdx) const
 	const uint32_t physBlockIdx = le32_to_cpu(d->idxTbl[blockIdx]);
 
 	// Convert to a physical block address and return.
-	return d->dataOffset + (static_cast<int64_t>(physBlockIdx) * d->block_size);
+	return d->dataOffset + (static_cast<off64_t>(physBlockIdx) * d->block_size);
 }
 
 }

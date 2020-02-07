@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * PSF.hpp: PSF audio reader.                                              *
  *                                                                         *
- * Copyright (c) 2018-2019 by David Korth.                                 *
+ * Copyright (c) 2018-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -42,7 +42,7 @@ class PSFPrivate : public RomDataPrivate
 		 * @param tag_addr Tag section starting address.
 		 * @return Map containing key/value entries.
 		 */
-		unordered_map<string, string> parseTags(int64_t tag_addr);
+		unordered_map<string, string> parseTags(off64_t tag_addr);
 
 		/**
 		 * Get the "ripped by" tag name for the specified PSF version.
@@ -73,7 +73,7 @@ PSFPrivate::PSFPrivate(PSF *q, IRpFile *file)
  * @param tag_addr Tag section starting address.
  * @return Map containing key/value entries.
  */
-unordered_map<string, string> PSFPrivate::parseTags(int64_t tag_addr)
+unordered_map<string, string> PSFPrivate::parseTags(off64_t tag_addr)
 {
 	unordered_map<string, string> kv;
 
@@ -87,7 +87,7 @@ unordered_map<string, string> PSFPrivate::parseTags(int64_t tag_addr)
 
 	// Read the rest of the file.
 	// NOTE: Maximum of 16 KB.
-	int64_t data_len = file->size() - tag_addr - sizeof(tag_magic);
+	off64_t data_len = file->size() - tag_addr - sizeof(tag_magic);
 	if (data_len <= 0) {
 		// Not enough data...
 		return kv;
@@ -559,7 +559,7 @@ int PSF::loadFieldData(void)
 	}
 
 	// Parse the tags.
-	const int64_t tag_addr = (int64_t)sizeof(*psfHeader) +
+	const off64_t tag_addr = (off64_t)sizeof(*psfHeader) +
 		le32_to_cpu(psfHeader->reserved_size) +
 		le32_to_cpu(psfHeader->compressed_prg_length);
 	unordered_map<string, string> tags = d->parseTags(tag_addr);
@@ -678,7 +678,7 @@ int PSF::loadMetaData(void)
 	const PSF_Header *const psfHeader = &d->psfHeader;
 
 	// Attempt to parse the tags before doing anything else.
-	const int64_t tag_addr = (int64_t)sizeof(*psfHeader) +
+	const off64_t tag_addr = (off64_t)sizeof(*psfHeader) +
 		le32_to_cpu(psfHeader->reserved_size) +
 		le32_to_cpu(psfHeader->compressed_prg_length);
 	unordered_map<string, string> tags = d->parseTags(tag_addr);

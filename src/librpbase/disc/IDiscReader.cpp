@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * IDiscReader.cpp: Disc reader interface.                                 *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -60,7 +60,7 @@ bool IDiscReader::isOpen(void) const
  * @param size	[in] Amount of data to read, in bytes.
  * @return Number of bytes read on success; 0 on seek or read error.
  */
-size_t IDiscReader::seekAndRead(int64_t pos, void *ptr, size_t size)
+size_t IDiscReader::seekAndRead(off64_t pos, void *ptr, size_t size)
 {
 	int ret = this->seek(pos);
 	if (ret != 0) {

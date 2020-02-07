@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * Cdrom2352Reader.hpp: CD-ROM reader for 2352-byte sector images.         *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -64,7 +64,7 @@ Cdrom2352Reader::Cdrom2352Reader(IRpFile *file)
 
 	// Check the disc size.
 	// Should be a multiple of 2352.
-	int64_t fileSize = m_file->size();
+	const off64_t fileSize = m_file->size();
 	if (fileSize <= 0 || fileSize % 2352 != 0) {
 		// Invalid disc size.
 		m_file->unref();
@@ -128,7 +128,7 @@ int Cdrom2352Reader::isDiscSupported(const uint8_t *pHeader, size_t szHeader) co
  * @param blockIdx	[in] Block index.
  * @return Physical address. (0 == empty block; -1 == invalid block index)
  */
-int64_t Cdrom2352Reader::getPhysBlockAddr(uint32_t blockIdx) const
+off64_t Cdrom2352Reader::getPhysBlockAddr(uint32_t blockIdx) const
 {
 	// Make sure the block index is in range.
 	RP_D(Cdrom2352Reader);
@@ -141,7 +141,7 @@ int64_t Cdrom2352Reader::getPhysBlockAddr(uint32_t blockIdx) const
 	// Convert to a physical block address and return.
 	// FIXME: Currently only supports Mode 1.
 	// Check for Mode 2 and handle it correctly.
-	return (static_cast<int64_t>(blockIdx) * d->physBlockSize) + 16;
+	return (static_cast<off64_t>(blockIdx) * d->physBlockSize) + 16;
 }
 
 }

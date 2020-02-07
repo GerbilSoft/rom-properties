@@ -108,7 +108,7 @@ show_error(const TCHAR *format, ...)
  * @param pMtime	[out] Modification time.
  * @return 0 on success; negative POSIX error code on error.
  */
-static int get_file_size_and_mtime(const TCHAR *filename, int64_t *pFileSize, time_t *pMtime)
+static int get_file_size_and_mtime(const TCHAR *filename, off64_t *pFileSize, time_t *pMtime)
 {
 	assert(pFileSize != nullptr);
 	assert(pMtime != nullptr);
@@ -352,7 +352,7 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 #endif /* _WIN32 && _UNICODE */
 
 	// Get the cache file information.
-	int64_t filesize;
+	off64_t filesize;
 	time_t filemtime;
 	int ret = get_file_size_and_mtime(cache_filename.c_str(), &filesize, &filemtime);
 	if (ret == 0) {

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * GcnPartitionPrivate.cpp: GameCube partition private class.              *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -18,7 +18,7 @@ using LibRpBase::IDiscReader;
 namespace LibRomData {
 
 GcnPartitionPrivate::GcnPartitionPrivate(GcnPartition *q,
-	int64_t partition_offset, int64_t data_size, uint8_t offsetShift)
+	off64_t partition_offset, off64_t data_size, uint8_t offsetShift)
 	: q_ptr(q)
 	, partition_offset(partition_offset)
 	, data_offset(-1)	// -1 == invalid
@@ -144,7 +144,7 @@ int GcnPartitionPrivate::loadFst(void)
 	}
 
 	// Seek to the beginning of the FST.
-	ret = q->seek(static_cast<int64_t>(bootBlock.fst_offset) << offsetShift);
+	ret = q->seek(static_cast<off64_t>(bootBlock.fst_offset) << offsetShift);
 	if (ret != 0) {
 		// Seek failed.
 		return -q->m_lastError;

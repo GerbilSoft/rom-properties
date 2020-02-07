@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * IDiscReader.hpp: Disc reader interface.                                 *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -81,7 +81,7 @@ class IDiscReader
 		 * @param pos disc image position.
 		 * @return 0 on success; -1 on error.
 		 */
-		virtual int seek(int64_t pos) = 0;
+		virtual int seek(off64_t pos) = 0;
 
 		/**
 		 * Seek to the beginning of the file.
@@ -95,13 +95,13 @@ class IDiscReader
 		 * Get the disc image position.
 		 * @return Disc image position on success; -1 on error.
 		 */
-		virtual int64_t tell(void) = 0;
+		virtual off64_t tell(void) = 0;
 
 		/**
 		 * Get the disc image size.
 		 * @return Disc image size, or -1 on error.
 		 */
-		virtual int64_t size(void) = 0;
+		virtual off64_t size(void) = 0;
 
 	public:
 		/** Convenience functions implemented for all IRpFile classes. **/
@@ -113,7 +113,7 @@ class IDiscReader
 		 * @param size	[in] Amount of data to read, in bytes.
 		 * @return Number of bytes read on success; 0 on seek or read error.
 		 */
-		size_t seekAndRead(int64_t pos, void *ptr, size_t size);
+		size_t seekAndRead(off64_t pos, void *ptr, size_t size);
 
 	public:
 		/** Device file functions **/

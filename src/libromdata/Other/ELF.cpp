@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * ELF.cpp: Executable and Linkable Format reader.                         *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -90,7 +90,7 @@ class ELFPrivate : public LibRpBase::RomDataPrivate
 
 		// Header location and size.
 		struct hdr_info_t {
-			int64_t addr;
+			off64_t addr;
 			uint64_t size;
 		};
 
@@ -227,17 +227,17 @@ int ELFPrivate::checkProgramHeaders(void)
 	// PIE executables have a PT_INTERP header.
 	// Shared libraries do not.
 	// (NOTE: glibc's libc.so.6 *does* have PT_INTERP...)
-	int64_t e_phoff;
+	off64_t e_phoff;
 	unsigned int e_phnum;
 	unsigned int phsize;
 	uint8_t phbuf[sizeof(Elf64_Phdr)];
 
 	if (Elf_Header.primary.e_class == ELFCLASS64) {
-		e_phoff = static_cast<int64_t>(Elf_Header.elf64.e_phoff);
+		e_phoff = static_cast<off64_t>(Elf_Header.elf64.e_phoff);
 		e_phnum = Elf_Header.elf64.e_phnum;
 		phsize = sizeof(Elf64_Phdr);
 	} else {
-		e_phoff = static_cast<int64_t>(Elf_Header.elf32.e_phoff);
+		e_phoff = static_cast<off64_t>(Elf_Header.elf32.e_phoff);
 		e_phnum = Elf_Header.elf32.e_phnum;
 		phsize = sizeof(Elf32_Phdr);
 	}
@@ -281,7 +281,7 @@ int ELFPrivate::checkProgramHeaders(void)
 				// NOTE: Interpreter should be NULL-terminated.
 				if (info.size <= 256) {
 					char buf[256];
-					const int64_t prevoff = file->tell();
+					const off64_t prevoff = file->tell();
 					size = file->seekAndRead(info.addr, buf, info.size);
 					if (size != info.size) {
 						// Seek and/or read error.
@@ -336,17 +336,17 @@ int ELFPrivate::checkSectionHeaders(void)
 	hasCheckedSH = true;
 
 	// Read the section headers.
-	int64_t e_shoff;
+	off64_t e_shoff;
 	unsigned int e_shnum;
 	unsigned int shsize;
 	uint8_t shbuf[sizeof(Elf64_Shdr)];
 
 	if (Elf_Header.primary.e_class == ELFCLASS64) {
-		e_shoff = static_cast<int64_t>(Elf_Header.elf64.e_shoff);
+		e_shoff = static_cast<off64_t>(Elf_Header.elf64.e_shoff);
 		e_shnum = Elf_Header.elf64.e_shnum;
 		shsize = sizeof(Elf64_Shdr);
 	} else {
-		e_shoff = static_cast<int64_t>(Elf_Header.elf32.e_shoff);
+		e_shoff = static_cast<off64_t>(Elf_Header.elf32.e_shoff);
 		e_shnum = Elf_Header.elf32.e_shnum;
 		shsize = sizeof(Elf32_Shdr);
 	}
@@ -383,7 +383,7 @@ int ELFPrivate::checkSectionHeaders(void)
 			continue;
 
 		// Get the note address and size.
-		int64_t int_addr;
+		off64_t int_addr;
 		uint64_t int_size;
 		if (Elf_Header.primary.e_class == ELFCLASS64) {
 			const Elf64_Shdr *const shdr = reinterpret_cast<const Elf64_Shdr*>(shbuf);
@@ -414,7 +414,7 @@ int ELFPrivate::checkSectionHeaders(void)
 		}
 
 		uint8_t buf[256];
-		const int64_t prevoff = file->tell();
+		const off64_t prevoff = file->tell();
 		size = file->seekAndRead(int_addr, buf, int_size);
 		if (size != int_size) {
 			// Seek and/or read error.

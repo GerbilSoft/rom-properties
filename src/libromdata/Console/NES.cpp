@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * NES.cpp: Nintendo Entertainment System/Famicom ROM reader.              *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * Copyright (c) 2016-2018 by Egor.                                        *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
@@ -329,7 +329,7 @@ int NES::isRomSupported_static(const DetectInfo *info)
 		if ((inesHeader->mapper_hi & 0x0C) == 0x08) {
 			// May be NES 2.0
 			// Verify the ROM size.
-			int64_t size = sizeof(INES_RomHeader) +
+			const off64_t size = sizeof(INES_RomHeader) +
 				(inesHeader->prg_banks * INES_PRG_BANK_SIZE) +
 				(inesHeader->chr_banks * INES_CHR_BANK_SIZE) +
 				((inesHeader->nes2.prg_banks_hi << 8) * INES_PRG_BANK_SIZE);

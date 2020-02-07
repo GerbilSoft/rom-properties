@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * RpMemFile.cpp: IRpFile implementation using a memory buffer.            *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -27,7 +27,7 @@ namespace LibRpBase {
 RpMemFile::RpMemFile(const void *buf, size_t size)
 	: super()
 	, m_buf(buf)
-	, m_size(static_cast<int64_t>(size))
+	, m_size(static_cast<off64_t>(size))
 	, m_pos(0)
 {
 	assert(buf != nullptr);
@@ -89,7 +89,7 @@ size_t RpMemFile::read(void *ptr, size_t size)
 
 	// Check if size is in bounds.
 	// NOTE: Need to use a signed comparison here.
-	if (static_cast<int64_t>(m_pos) > (static_cast<int64_t>(m_size) - static_cast<int64_t>(size))) {
+	if (static_cast<off64_t>(m_pos) > (static_cast<off64_t>(m_size) - static_cast<off64_t>(size))) {
 		// Not enough data.
 		// Copy whatever's left in the buffer.
 		size = m_size - m_pos;
@@ -123,7 +123,7 @@ size_t RpMemFile::write(const void *ptr, size_t size)
  * @param pos File position.
  * @return 0 on success; -1 on error.
  */
-int RpMemFile::seek(int64_t pos)
+int RpMemFile::seek(off64_t pos)
 {
 	if (!m_buf) {
 		m_lastError = EBADF;
@@ -147,14 +147,14 @@ int RpMemFile::seek(int64_t pos)
  * Get the file position.
  * @return File position, or -1 on error.
  */
-int64_t RpMemFile::tell(void)
+off64_t RpMemFile::tell(void)
 {
 	if (!m_buf) {
 		m_lastError = EBADF;
 		return 0;
 	}
 
-	return static_cast<int64_t>(m_pos);
+	return static_cast<off64_t>(m_pos);
 }
 
 /**
@@ -163,7 +163,7 @@ int64_t RpMemFile::tell(void)
  * @param size New size. (default is 0)
  * @return 0 on success; -1 on error.
  */
-int RpMemFile::truncate(int64_t size)
+int RpMemFile::truncate(off64_t size)
 {
 	// Not supported.
 	// TODO: Writable RpMemFile?
@@ -178,14 +178,14 @@ int RpMemFile::truncate(int64_t size)
  * Get the file size.
  * @return File size, or negative on error.
  */
-int64_t RpMemFile::size(void)
+off64_t RpMemFile::size(void)
 {
 	if (!m_buf) {
 		m_lastError = EBADF;
 		return -1;
 	}
 
-	return static_cast<int64_t>(m_size);
+	return static_cast<off64_t>(m_size);
 }
 
 /**

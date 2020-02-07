@@ -120,8 +120,8 @@ class GameCubePrivate : public RomDataPrivate
 		 * Decoded from the actual on-disc tables.
 		 */
 		struct WiiPartEntry {
-			int64_t start;		// Starting address, in bytes.
-			int64_t size;		// Estimated partition size, in bytes.
+			off64_t start;		// Starting address, in bytes.
+			off64_t size;		// Estimated partition size, in bytes.
 
 			WiiPartition *partition;	// Partition object.
 			uint32_t type;		// Partition type. (See WiiPartitionType.)
@@ -294,7 +294,7 @@ int GameCubePrivate::loadWiiPartitionTables(void)
 	}
 
 	// Get the size of the disc image.
-	int64_t discSize = discReader->size();
+	const off64_t discSize = discReader->size();
 	if (discSize < 0) {
 		// Error getting the size of the disc image.
 		return -errno;
@@ -322,7 +322,7 @@ int GameCubePrivate::loadWiiPartitionTables(void)
 		}
 
 		// Read the partition table entries.
-		int64_t pt_addr = static_cast<int64_t>(be32_to_cpu(vgtbl.vg[i].addr)) << 2;
+		off64_t pt_addr = static_cast<off64_t>(be32_to_cpu(vgtbl.vg[i].addr)) << 2;
 		const size_t ptSize = sizeof(RVL_PartitionTableEntry) * count;
 		size = discReader->seekAndRead(pt_addr, pt, ptSize);
 		if (size != ptSize) {
@@ -338,7 +338,7 @@ int GameCubePrivate::loadWiiPartitionTables(void)
 
 			entry.vg = static_cast<uint8_t>(i);
 			entry.pt = static_cast<uint8_t>(j);
-			entry.start = static_cast<int64_t>(be32_to_cpu(pt[j].addr)) << 2;
+			entry.start = static_cast<off64_t>(be32_to_cpu(pt[j].addr)) << 2;
 			entry.type = be32_to_cpu(pt[j].type);
 		}
 	}
@@ -1761,7 +1761,7 @@ int GameCube::loadFieldData(void)
 			data_row.emplace_back(s_key_name);
 
 			// Used size.
-			const int64_t used_size = entry.partition->partition_size_used();
+			const off64_t used_size = entry.partition->partition_size_used();
 			if (used_size >= 0) {
 				data_row.emplace_back(LibRpBase::formatFileSize(used_size));
 			} else {

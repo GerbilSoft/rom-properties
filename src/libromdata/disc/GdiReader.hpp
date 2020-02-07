@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * GdiReader.hpp: GD-ROM reader for Dreamcast GDI images.                  *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -68,7 +68,7 @@ class GdiReader : public LibRpBase::SparseDiscReader
 		 * @param blockIdx	[in] Block index.
 		 * @return Physical block address. (-1 due to not being implemented)
 		 */
-		int64_t getPhysBlockAddr(uint32_t blockIdx) const final;
+		off64_t getPhysBlockAddr(uint32_t blockIdx) const final;
 
 		/**
 		 * Read the specified block.

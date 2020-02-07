@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * KeyStoreUI.cpp: Key store UI base class.                                *
  *                                                                         *
- * Copyright (c) 2012-2019 by David Korth.                                 *
+ * Copyright (c) 2012-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -1221,7 +1221,7 @@ KeyStoreUI::ImportReturn KeyStoreUI::import3DSboot9bin(const char *filename)
 	// File may be:
 	// - 65,536 bytes: Unprotected + Protected boot9
 	// - 32,768 bytes: Protected boot9
-	const int64_t fileSize = file->size();
+	const off64_t fileSize = file->size();
 	if (fileSize != 65536 && fileSize != 32768) {
 		iret.status = Import_InvalidFile;
 		return iret;
@@ -1291,7 +1291,7 @@ KeyStoreUI::ImportReturn KeyStoreUI::import3DSaeskeydb(const char *filename)
 	}
 
 	// File must be <= 64 KB and a multiple of 32 bytes.
-	const int64_t fileSize = file->size();
+	const off64_t fileSize = file->size();
 	if (fileSize == 0 || fileSize > 65536 || (fileSize % 32 != 0)) {
 		iret.status = Import_InvalidFile;
 		return iret;

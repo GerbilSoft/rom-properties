@@ -33,8 +33,8 @@ namespace LibRomData {
 class WiiPartitionPrivate : public GcnPartitionPrivate
 {
 	public:
-		WiiPartitionPrivate(WiiPartition *q, int64_t data_size,
-			int64_t partition_offset, WiiPartition::CryptoMethod cryptoMethod);
+		WiiPartitionPrivate(WiiPartition *q, off64_t data_size,
+			off64_t partition_offset, WiiPartition::CryptoMethod cryptoMethod);
 		virtual ~WiiPartitionPrivate();
 
 	private:
@@ -66,7 +66,7 @@ class WiiPartitionPrivate : public GcnPartitionPrivate
 	public:
 		// Decrypted read position. (0x7C00 bytes out of 0x8000)
 		// NOTE: Actual read position if ((cryptoMethod & CM_MASK_SECTOR) == CM_32K).
-		int64_t pos_7C00;
+		off64_t pos_7C00;
 
 		// Decrypted sector cache.
 		// NOTE: Actual data starts at 0x400.
@@ -154,7 +154,7 @@ const uint8_t WiiPartitionPrivate::EncryptionKeyVerifyData[WiiPartition::Key_Max
 #endif /* ENABLE_DECRYPTION */
 
 WiiPartitionPrivate::WiiPartitionPrivate(WiiPartition *q,
-		int64_t data_size, int64_t partition_offset,
+		off64_t data_size, off64_t partition_offset,
 		WiiPartition::CryptoMethod cryptoMethod)
 	: super(q, partition_offset, data_size, 2)
 #ifdef ENABLE_DECRYPTION
@@ -408,8 +408,8 @@ int WiiPartitionPrivate::readSector(uint32_t sector_num)
 	// NOTE: This function doesn't check verifyResult,
 	// since it's called by initDecryption() before
 	// verifyResult is set.
-	int64_t sector_addr = partition_offset + data_offset;
-	sector_addr += (static_cast<int64_t>(sector_num) * SECTOR_SIZE_ENCRYPTED);
+	off64_t sector_addr = partition_offset + data_offset;
+	sector_addr += (static_cast<off64_t>(sector_num) * SECTOR_SIZE_ENCRYPTED);
 
 	int ret = q->m_discReader->seek(sector_addr);
 	if (ret != 0) {
@@ -457,8 +457,8 @@ int WiiPartitionPrivate::readSector(uint32_t sector_num)
  * @param partition_size	[in] Calculated partition size. Used if the size in the header is 0.
  * @param cryptoMethod		[in] Crypto method.
  */
-WiiPartition::WiiPartition(IDiscReader *discReader, int64_t partition_offset,
-		int64_t partition_size, CryptoMethod cryptoMethod)
+WiiPartition::WiiPartition(IDiscReader *discReader, off64_t partition_offset,
+		off64_t partition_size, CryptoMethod cryptoMethod)
 	: super(new WiiPartitionPrivate(this, discReader->size(),
 		partition_offset, cryptoMethod), discReader)
 {
@@ -491,8 +491,8 @@ WiiPartition::WiiPartition(IDiscReader *discReader, int64_t partition_offset,
 	}
 
 	// Save important data.
-	d->data_offset = static_cast<int64_t>(be32_to_cpu(d->partitionHeader.data_offset)) << 2;
-	d->data_size   = static_cast<int64_t>(be32_to_cpu(d->partitionHeader.data_size)) << 2;
+	d->data_offset = static_cast<off64_t>(be32_to_cpu(d->partitionHeader.data_offset)) << 2;
+	d->data_size   = static_cast<off64_t>(be32_to_cpu(d->partitionHeader.data_size)) << 2;
 	if (d->data_size == 0) {
 		// NoCrypto RVT-H images sometimes have this set to 0.
 		// Use the calculated partition size.
@@ -539,7 +539,7 @@ size_t WiiPartition::read(void *ptr, size_t size)
 
 	// Make sure d->pos_7C00 + size <= d->data_size.
 	// If it isn't, we'll do a short read.
-	if (d->pos_7C00 + static_cast<int64_t>(size) >= d->data_size) {
+	if (d->pos_7C00 + static_cast<off64_t>(size) >= d->data_size) {
 		size = static_cast<size_t>(d->data_size - d->pos_7C00);
 	}
 
@@ -697,7 +697,7 @@ size_t WiiPartition::read(void *ptr, size_t size)
  * @param pos Partition position.
  * @return 0 on success; -1 on error.
  */
-int WiiPartition::seek(int64_t pos)
+int WiiPartition::seek(off64_t pos)
 {
 	RP_D(WiiPartition);
 	assert(m_discReader != nullptr);
@@ -724,7 +724,7 @@ int WiiPartition::seek(int64_t pos)
  * Get the partition position.
  * @return Partition position on success; -1 on error.
  */
-int64_t WiiPartition::tell(void)
+off64_t WiiPartition::tell(void)
 {
 	RP_D(const WiiPartition);
 	assert(m_discReader != nullptr);
@@ -743,10 +743,10 @@ int64_t WiiPartition::tell(void)
  * but does not include "empty" sectors.
  * @return Used partition size, or -1 on error.
  */
-int64_t WiiPartition::partition_size_used(void) const
+off64_t WiiPartition::partition_size_used(void) const
 {
 	// Get the FST used size from GcnPartition.
-	int64_t size = super::partition_size_used();
+	off64_t size = super::partition_size_used();
 	if (size <= 0) {
 		// Error retrieving the FST used size.
 		return size;
@@ -754,7 +754,7 @@ int64_t WiiPartition::partition_size_used(void) const
 
 	// Add the data offset from the partition header.
 	RP_D(const WiiPartition);
-	size += (static_cast<int64_t>(be32_to_cpu(d->partitionHeader.data_offset)) << 2);
+	size += (static_cast<off64_t>(be32_to_cpu(d->partitionHeader.data_offset)) << 2);
 
 	// Are sectors hashed?
 	if ((d->cryptoMethod & WiiPartition::CM_MASK_SECTOR) == CM_1K_31K) {

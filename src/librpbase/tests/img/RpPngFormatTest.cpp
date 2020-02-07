@@ -142,8 +142,8 @@ struct RpPngFormatTest_mode
 };
 
 // Maximum file size for images.
-static const int64_t MAX_PNG_IMAGE_FILESIZE =    512*1024;
-static const int64_t MAX_BMP_IMAGE_FILESIZE = 2*1024*1024;
+static const off64_t MAX_PNG_IMAGE_FILESIZE =    512*1024;
+static const off64_t MAX_BMP_IMAGE_FILESIZE = 2*1024*1024;
 
 class RpPngFormatTest : public ::testing::TestWithParam<RpPngFormatTest_mode>
 {

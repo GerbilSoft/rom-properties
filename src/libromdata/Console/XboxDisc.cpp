@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * XboxDisc.cpp: Microsoft Xbox disc image parser.                         *
  *                                                                         *
- * Copyright (c) 2019 by David Korth.                                      *
+ * Copyright (c) 2019-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -58,7 +58,7 @@ class XboxDiscPrivate : public LibRpBase::RomDataPrivate
 		uint8_t wave;
 
 		// XDVDFS starting address.
-		int64_t xdvdfs_addr;
+		off64_t xdvdfs_addr;
 
 		// XDVDFSPartition
 		DiscReader *discReader;

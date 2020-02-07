@@ -33,7 +33,7 @@ class GcnPartition : public LibRpBase::IPartition
 		 * @param discReader IDiscReader.
 		 * @param partition_offset Partition start offset.
 		 */
-		explicit GcnPartition(IDiscReader *discReader, int64_t partition_offset);
+		explicit GcnPartition(IDiscReader *discReader, off64_t partition_offset);
 		virtual ~GcnPartition();
 	protected:
 		explicit GcnPartition(GcnPartitionPrivate *d, IDiscReader *discReader);
@@ -62,13 +62,13 @@ class GcnPartition : public LibRpBase::IPartition
 		 * @param pos Partition position.
 		 * @return 0 on success; -1 on error.
 		 */
-		int seek(int64_t pos) override;
+		int seek(off64_t pos) override;
 
 		/**
 		 * Get the partition position.
 		 * @return Partition position on success; -1 on error.
 		 */
-		int64_t tell(void) override;
+		off64_t tell(void) override;
 
 		/**
 		 * Get the data size.
@@ -76,7 +76,7 @@ class GcnPartition : public LibRpBase::IPartition
 		 * and it's adjusted to exclude hashes.
 		 * @return Data size, or -1 on error.
 		 */
-		int64_t size(void) final;
+		off64_t size(void) final;
 
 	public:
 		/** IPartition **/
@@ -86,7 +86,7 @@ class GcnPartition : public LibRpBase::IPartition
 		 * This size includes the partition header and hashes.
 		 * @return Partition size, or -1 on error.
 		 */
-		int64_t partition_size(void) const final;
+		off64_t partition_size(void) const final;
 
 		/**
 		 * Get the used partition size.
@@ -94,7 +94,7 @@ class GcnPartition : public LibRpBase::IPartition
 		 * but does not include "empty" sectors.
 		 * @return Used partition size, or -1 on error.
 		 */
-		int64_t partition_size_used(void) const override;
+		off64_t partition_size_used(void) const override;
 
 	public:
 		/** IFst wrapper functions. **/

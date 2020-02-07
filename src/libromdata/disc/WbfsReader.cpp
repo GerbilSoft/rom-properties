@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * WbfsReader.cpp: WBFS disc image reader.                                 *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -73,7 +73,7 @@ class WbfsReaderPrivate : public SparseDiscReaderPrivate {
 		 * @param disc wbfs_disc_t struct.
 		 * @return Non-sparse size, in bytes.
 		 */
-		int64_t getWbfsDiscSize(const wbfs_disc_t *disc) const;
+		off64_t getWbfsDiscSize(const wbfs_disc_t *disc) const;
 };
 
 /** WbfsReaderPrivate **/
@@ -320,7 +320,7 @@ void WbfsReaderPrivate::closeWbfsDisc(wbfs_disc_t *disc)
  * @param disc wbfs_disc_t struct.
  * @return Non-sparse size, in bytes.
  */
-int64_t WbfsReaderPrivate::getWbfsDiscSize(const wbfs_disc_t *disc) const
+off64_t WbfsReaderPrivate::getWbfsDiscSize(const wbfs_disc_t *disc) const
 {
 	// Find the last block that's used on the disc.
 	// NOTE: This is in WBFS blocks, not Wii blocks.
@@ -332,7 +332,7 @@ int64_t WbfsReaderPrivate::getWbfsDiscSize(const wbfs_disc_t *disc) const
 	}
 
 	// lastBlock+1 * WBFS block size == filesize.
-	return (static_cast<int64_t>(lastBlock) + 1) * static_cast<int64_t>(p->wbfs_sec_sz);
+	return (static_cast<off64_t>(lastBlock) + 1) * static_cast<off64_t>(p->wbfs_sec_sz);
 }
 
 /** WbfsReader **/
@@ -425,7 +425,7 @@ int WbfsReader::isDiscSupported(const uint8_t *pHeader, size_t szHeader) const
  * @param blockIdx	[in] Block index.
  * @return Physical address. (0 == empty block; -1 == invalid block index)
  */
-int64_t WbfsReader::getPhysBlockAddr(uint32_t blockIdx) const
+off64_t WbfsReader::getPhysBlockAddr(uint32_t blockIdx) const
 {
 	// Make sure the block index is in range.
 	RP_D(WbfsReader);
@@ -443,7 +443,7 @@ int64_t WbfsReader::getPhysBlockAddr(uint32_t blockIdx) const
 	}
 
 	// Convert to a physical block address and return.
-	return (static_cast<int64_t>(physBlockIdx) * d->block_size);
+	return (static_cast<off64_t>(physBlockIdx) * d->block_size);
 }
 
 }

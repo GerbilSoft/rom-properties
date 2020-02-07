@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * DidjTex.hpp: Leapster Didj .tex reader.                                 *
  *                                                                         *
- * Copyright (c) 2019 by David Korth.                                      *
+ * Copyright (c) 2019-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -351,14 +351,14 @@ DidjTex::DidjTex(IRpFile *file)
 	// NOTE: If this is a .texs, then multiple textures are present,
 	// stored as concatenated .tex files.
 	// We're only reading the first texture right now.
-	const int64_t filesize = d->file->size();
+	const off64_t filesize = d->file->size();
 	const string filename = file->filename();
 	const char *pExt = nullptr;
 	if (!filename.empty()) {
 		pExt = LibRpBase::FileSystem::file_ext(filename);
 	}
 
-	const int64_t our_size = static_cast<int64_t>(le32_to_cpu(d->texHeader.compr_size) + sizeof(d->texHeader));
+	const off64_t our_size = static_cast<off64_t>(le32_to_cpu(d->texHeader.compr_size) + sizeof(d->texHeader));
 	if (pExt && !strcasecmp(pExt, ".texs")) {
 		// .texs - allow the total filesize to be larger than the compressed size.
 		if (our_size > filesize) {

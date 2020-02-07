@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * NCCHReader.cpp: Nintendo 3DS NCCH reader.                               *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -28,7 +28,7 @@ namespace LibRomData {
 
 NCCHReaderPrivate::NCCHReaderPrivate(NCCHReader *q,
 	uint8_t media_unit_shift,
-	int64_t ncch_offset, uint32_t ncch_length)
+	off64_t ncch_offset, uint32_t ncch_length)
 	: q_ptr(q)
 	, ncch_offset(ncch_offset)
 	, ncch_length(ncch_length)
@@ -374,7 +374,7 @@ size_t NCCHReaderPrivate::readFromROM(uint32_t offset, void *ptr, size_t size)
 	}
 
 	// Seek to the start of the data and read it.
-	const int64_t phys_addr = ncch_offset + offset;
+	const off64_t phys_addr = ncch_offset + offset;
 	size_t sz_read;
 	if (q->m_hasDiscReader) {
 		sz_read = q->m_discReader->seekAndRead(phys_addr, ptr, size);
@@ -436,7 +436,7 @@ int NCCHReaderPrivate::loadExHeader(void)
 
 	// Load the ExHeader.
 	// ExHeader is stored immediately after the main header.
-	int64_t prev_pos = q->tell();
+	const off64_t prev_pos = q->tell();
 	q->m_lastError = 0;
 	size_t size = q->seekAndRead(sizeof(N3DS_NCCH_Header_t),
 				     &ncch_exheader, exheader_length);
@@ -498,7 +498,7 @@ int NCCHReaderPrivate::loadExHeader(void)
  * @param ncch_length		[in] NCCH length, in bytes.
  */
 NCCHReader::NCCHReader(IRpFile *file, uint8_t media_unit_shift,
-		int64_t ncch_offset, uint32_t ncch_length)
+		off64_t ncch_offset, uint32_t ncch_length)
 	: super(file)
 	, d_ptr(new NCCHReaderPrivate(this, media_unit_shift, ncch_offset, ncch_length))
 { }
@@ -518,7 +518,7 @@ NCCHReader::NCCHReader(IRpFile *file, uint8_t media_unit_shift,
  * @param tmd_content_index	[in,opt] TMD content index for CIA decryption.
  */
 NCCHReader::NCCHReader(CIAReader *ciaReader, uint8_t media_unit_shift,
-		int64_t ncch_offset, uint32_t ncch_length)
+		off64_t ncch_offset, uint32_t ncch_length)
 	: super(ciaReader)
 	, d_ptr(new NCCHReaderPrivate(this, media_unit_shift, ncch_offset, ncch_length))
 { }
@@ -565,7 +565,7 @@ size_t NCCHReader::read(void *ptr, size_t size)
 
 	// Make sure d->pos + size <= d->ncch_length.
 	// If it isn't, we'll do a short read.
-	if (d->pos + static_cast<int64_t>(size) >= d->ncch_length) {
+	if (d->pos + static_cast<off64_t>(size) >= d->ncch_length) {
 		size = static_cast<size_t>(d->ncch_length - d->pos);
 	}
 
@@ -657,7 +657,7 @@ size_t NCCHReader::read(void *ptr, size_t size)
  * @param pos Partition position.
  * @return 0 on success; -1 on error.
  */
-int NCCHReader::seek(int64_t pos)
+int NCCHReader::seek(off64_t pos)
 {
 	RP_D(NCCHReader);
 	assert(isOpen());
@@ -683,7 +683,7 @@ int NCCHReader::seek(int64_t pos)
  * Get the partition position.
  * @return Partition position on success; -1 on error.
  */
-int64_t NCCHReader::tell(void)
+off64_t NCCHReader::tell(void)
 {
 	RP_D(const NCCHReader);
 	assert(isOpen());
@@ -701,11 +701,11 @@ int64_t NCCHReader::tell(void)
  * and it's adjusted to exclude hashes.
  * @return Data size, or -1 on error.
  */
-int64_t NCCHReader::size(void)
+off64_t NCCHReader::size(void)
 {
 	// TODO: Errors?
 	RP_D(const NCCHReader);
-	const int64_t ret = d->ncch_length - sizeof(N3DS_NCCH_Header_t);
+	const off64_t ret = d->ncch_length - sizeof(N3DS_NCCH_Header_t);
 	return (ret >= 0 ? ret : 0);
 }
 
@@ -716,7 +716,7 @@ int64_t NCCHReader::size(void)
  * This size includes the partition header and hashes.
  * @return Partition size, or -1 on error.
  */
-int64_t NCCHReader::partition_size(void) const
+off64_t NCCHReader::partition_size(void) const
 {
 	// TODO: Errors?
 	RP_D(const NCCHReader);
@@ -729,7 +729,7 @@ int64_t NCCHReader::partition_size(void) const
  * but does not include "empty" sectors.
  * @return Used partition size, or -1 on error.
  */
-int64_t NCCHReader::partition_size_used(void) const
+off64_t NCCHReader::partition_size_used(void) const
 {
 	// TODO: Errors?
 	// NOTE: For NCCHReader, this is the same as partition_size().
@@ -1028,7 +1028,7 @@ IRpFile *NCCHReader::open(int section, const char *filename)
 		le32_to_cpu(file_header->offset);
 	const uint32_t size = le32_to_cpu(file_header->size);
 	if (offset >= d->ncch_length ||
-	    (static_cast<int64_t>(offset) + size) > d->ncch_length)
+	    (static_cast<off64_t>(offset) + size) > d->ncch_length)
 	{
 		// File offset/size is out of bounds.
 		m_lastError = EIO;	// TODO: Better error code?

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * FileSystem_win32.cpp: File system functions. (Win32 implementation)     *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -199,7 +199,7 @@ int access(const string &pathname, int mode)
  * @param filename Filename.
  * @return Size on success; -1 on error.
  */
-int64_t filesize(const string &filename)
+off64_t filesize(const string &filename)
 {
 	const tstring tfilename = makeWinPath(filename);
 
@@ -472,7 +472,7 @@ bool isOnBadFS(const char *filename, bool netFS)
  * @param pMtime	[out] Modification time.
  * @return 0 on success; negative POSIX error code on error.
  */
-int get_file_size_and_mtime(const string &filename, int64_t *pFileSize, time_t *pMtime)
+int get_file_size_and_mtime(const string &filename, off64_t *pFileSize, time_t *pMtime)
 {
 	const tstring tfilename = makeWinPath(filename);
 

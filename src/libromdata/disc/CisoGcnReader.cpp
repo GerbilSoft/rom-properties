@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * CisoGcnReader.hpp: GameCube/Wii CISO disc image reader.                 *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -129,7 +129,7 @@ CisoGcnReader::CisoGcnReader(IRpFile *file)
 	}
 
 	// Calculate the disc size based on the highest logical block index.
-	d->disc_size = (static_cast<int64_t>(d->maxLogicalBlockUsed) + 1) * static_cast<int64_t>(d->block_size);
+	d->disc_size = (static_cast<off64_t>(d->maxLogicalBlockUsed) + 1) * static_cast<off64_t>(d->block_size);
 
 	// Reset the disc position.
 	d->pos = 0;
@@ -192,7 +192,7 @@ int CisoGcnReader::isDiscSupported(const uint8_t *pHeader, size_t szHeader) cons
  * @param blockIdx	[in] Block index.
  * @return Physical address. (0 == empty block; -1 == invalid block index)
  */
-int64_t CisoGcnReader::getPhysBlockAddr(uint32_t blockIdx) const
+off64_t CisoGcnReader::getPhysBlockAddr(uint32_t blockIdx) const
 {
 	// Make sure the block index is in range.
 	// TODO: Check against maxLogicalBlockUsed?
@@ -211,8 +211,8 @@ int64_t CisoGcnReader::getPhysBlockAddr(uint32_t blockIdx) const
 	}
 
 	// Convert to a physical block address and return.
-	return static_cast<int64_t>(sizeof(d->cisoHeader)) +
-		(static_cast<int64_t>(physBlockIdx) * d->block_size);
+	return static_cast<off64_t>(sizeof(d->cisoHeader)) +
+	      (static_cast<off64_t>(physBlockIdx) * d->block_size);
 }
 
 }

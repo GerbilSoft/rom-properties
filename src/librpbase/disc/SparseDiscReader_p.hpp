@@ -4,7 +4,7 @@
  * that use sparse and/or compressed blocks, e.g. CISO, WBFS, GCZ.         *
  * (PRIVATE CLASS)                                                         *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -33,8 +33,8 @@ class SparseDiscReaderPrivate
 		SparseDiscReader *const q_ptr;
 
 	public:
-		int64_t disc_size;	// Virtual disc image size.
-		int64_t pos;		// Read position.
+		off64_t disc_size;		// Virtual disc image size.
+		off64_t pos;			// Read position.
 		unsigned int block_size;	// Block size.
 };
 

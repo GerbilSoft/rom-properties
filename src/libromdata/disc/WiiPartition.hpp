@@ -48,8 +48,8 @@ class WiiPartition : public GcnPartition
 		 * @param partition_size	[in] Calculated partition size. Used if the size in the header is 0.
 		 * @param cryptoMethod		[in] Crypto method.
 		 */
-		WiiPartition(IDiscReader *discReader, int64_t partition_offset,
-			int64_t partition_size, CryptoMethod crypto = CM_STANDARD);
+		WiiPartition(IDiscReader *discReader, off64_t partition_offset,
+			off64_t partition_size, CryptoMethod crypto = CM_STANDARD);
 		~WiiPartition();
 
 	private:
@@ -77,13 +77,13 @@ class WiiPartition : public GcnPartition
 		 * @param pos Partition position.
 		 * @return 0 on success; -1 on error.
 		 */
-		int seek(int64_t pos) final;
+		int seek(off64_t pos) final;
 
 		/**
 		 * Get the partition position.
 		 * @return Partition position on success; -1 on error.
 		 */
-		int64_t tell(void) final;
+		off64_t tell(void) final;
 
 	public:
 		/**
@@ -92,7 +92,7 @@ class WiiPartition : public GcnPartition
 		 * but does not include "empty" sectors.
 		 * @return Used partition size, or -1 on error.
 		 */
-		int64_t partition_size_used(void) const final;
+		off64_t partition_size_used(void) const final;
 
 	public:
 		/** WiiPartition **/

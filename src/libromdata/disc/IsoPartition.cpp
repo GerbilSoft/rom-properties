@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * IsoPartition.cpp: ISO-9660 partition reader.                            *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -22,7 +22,7 @@ class IsoPartitionPrivate
 {
 	public:
 		IsoPartitionPrivate(IsoPartition *q,
-			int64_t partition_offset, int iso_start_offset);
+			off64_t partition_offset, int iso_start_offset);
 		~IsoPartitionPrivate();
 
 	private:
@@ -32,8 +32,8 @@ class IsoPartitionPrivate
 
 	public:
 		// Partition start offset. (in bytes)
-		int64_t partition_offset;
-		int64_t partition_size;		// Calculated partition size.
+		off64_t partition_offset;
+		off64_t partition_size;		// Calculated partition size.
 
 		// ISO start offset. (in blocks)
 		// -1 == unknown
@@ -57,7 +57,7 @@ class IsoPartitionPrivate
 /** IsoPartitionPrivate **/
 
 IsoPartitionPrivate::IsoPartitionPrivate(IsoPartition *q,
-	int64_t partition_offset, int iso_start_offset)
+	off64_t partition_offset, int iso_start_offset)
 	: q_ptr(q)
 	, partition_offset(partition_offset)
 	, partition_size(0)
@@ -165,8 +165,8 @@ int IsoPartitionPrivate::loadRootDirectory(void)
 	// NOTE: Due to variable-length entries, we need to load
 	// the entire root directory all at once.
 	rootDir_data.resize(rootdir->size.he);
-	const int64_t rootDir_addr = partition_offset +
-		static_cast<int64_t>(rootdir->block.he - iso_start_offset) * block_size;
+	const off64_t rootDir_addr = partition_offset +
+		static_cast<off64_t>(rootdir->block.he - iso_start_offset) * block_size;
 	size_t size = q->m_discReader->seekAndRead(rootDir_addr, rootDir_data.data(), rootDir_data.size());
 	if (size != rootDir_data.size()) {
 		// Seek and/or read error.
@@ -194,7 +194,7 @@ int IsoPartitionPrivate::loadRootDirectory(void)
  * @param partition_offset Partition start offset.
  * @param iso_start_offset ISO start offset, in blocks. (If -1, uses heuristics.)
  */
-IsoPartition::IsoPartition(IDiscReader *discReader, int64_t partition_offset, int iso_start_offset)
+IsoPartition::IsoPartition(IDiscReader *discReader, off64_t partition_offset, int iso_start_offset)
 	: super(discReader)
 	, d_ptr(new IsoPartitionPrivate(this, partition_offset, iso_start_offset))
 { }
@@ -231,7 +231,7 @@ size_t IsoPartition::read(void *ptr, size_t size)
  * @param pos Partition position.
  * @return 0 on success; -1 on error.
  */
-int IsoPartition::seek(int64_t pos)
+int IsoPartition::seek(off64_t pos)
 {
 	RP_D(IsoPartition);
 	assert(m_discReader != nullptr);
@@ -252,7 +252,7 @@ int IsoPartition::seek(int64_t pos)
  * Get the partition position.
  * @return Partition position on success; -1 on error.
  */
-int64_t IsoPartition::tell(void)
+off64_t IsoPartition::tell(void)
 {
 	RP_D(IsoPartition);
 	assert(m_discReader != nullptr);
@@ -262,7 +262,7 @@ int64_t IsoPartition::tell(void)
 		return -1;
 	}
 
-	int64_t ret = m_discReader->tell() - d->partition_offset;
+	off64_t ret = m_discReader->tell() - d->partition_offset;
 	if (ret < 0) {
 		m_lastError = m_discReader->lastError();
 	}
@@ -275,7 +275,7 @@ int64_t IsoPartition::tell(void)
  * and it's adjusted to exclude hashes.
  * @return Data size, or -1 on error.
  */
-int64_t IsoPartition::size(void)
+off64_t IsoPartition::size(void)
 {
 	// TODO: Restrict partition size?
 	RP_D(const IsoPartition);
@@ -293,7 +293,7 @@ int64_t IsoPartition::size(void)
  * This size includes the partition header and hashes.
  * @return Partition size, or -1 on error.
  */
-int64_t IsoPartition::partition_size(void) const
+off64_t IsoPartition::partition_size(void) const
 {
 	// TODO: Restrict partition size?
 	RP_D(const IsoPartition);
@@ -308,7 +308,7 @@ int64_t IsoPartition::partition_size(void) const
  * but does not include "empty" sectors.
  * @return Used partition size, or -1 on error.
  */
-int64_t IsoPartition::partition_size_used(void) const
+off64_t IsoPartition::partition_size_used(void) const
 {
 	// TODO: Implement for ISO?
 	// For now, just use partition_size().
@@ -491,7 +491,7 @@ IRpFile *IsoPartition::open(const char *filename)
 	const unsigned int block_size = d->pvd.logical_block_size.he;
 
 	// Make sure the file is in bounds.
-	const int64_t file_addr = (static_cast<int64_t>(dirEntry_found->block.he) - d->iso_start_offset) * block_size;
+	const off64_t file_addr = (static_cast<off64_t>(dirEntry_found->block.he) - d->iso_start_offset) * block_size;
 	if (file_addr >= d->partition_size + d->partition_offset ||
 	    file_addr > d->partition_size + d->partition_offset - dirEntry_found->size.he)
 	{

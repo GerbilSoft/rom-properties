@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata/tests)                 *
  * GcnFstPrint.cpp: GameCube/Wii FST printer.                              *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -84,7 +84,7 @@ int RP_C_API main(int argc, char *argv[])
 
 	// Make sure the FST is less than 16 MB.
 	fseeko(f, 0, SEEK_END);
-	int64_t filesize = ftello(f);
+	off64_t filesize = ftello(f);
 	if (filesize > (16*1024*1024)) {
 		puts(C_("GcnFstPrint", "ERROR: FST is too big. (Maximum of 16 MB.)"));
 		fclose(f);

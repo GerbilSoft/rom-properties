@@ -89,7 +89,7 @@ class FileFormat
 				const uint8_t *pData;	// Data.
 			} header;		// ROM header.
 			const char *ext;	// File extension, including leading '.'
-			int64_t szFile;		// File size. (Required for certain types.)
+			off64_t szFile;		// File size. (Required for certain types.)
 		};
 
 	public:

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * GcnFst.cpp: GameCube/Wii FST parser.                                    *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -516,7 +516,7 @@ IFst::DirEnt *GcnFst::readdir(IFst::Dir *dirp)
 		dirp->entry.size = 0;
 	} else {
 		// Save the offset and size.
-		dirp->entry.offset = static_cast<int64_t>(be32_to_cpu(fst_entry->file.offset)) << d->offsetShift;
+		dirp->entry.offset = static_cast<off64_t>(be32_to_cpu(fst_entry->file.offset)) << d->offsetShift;
 		dirp->entry.size = be32_to_cpu(fst_entry->file.size);
 	}
 
@@ -577,7 +577,7 @@ int GcnFst::find_file(const char *filename, DirEnt *dirent)
 		dirent->size = 0;
 	} else {
 		// Save the offset and size.
-		dirent->offset = static_cast<int64_t>(be32_to_cpu(fst_entry->file.offset)) << d->offsetShift;
+		dirent->offset = static_cast<off64_t>(be32_to_cpu(fst_entry->file.offset)) << d->offsetShift;
 		dirent->size = be32_to_cpu(fst_entry->file.size);
 	}
 
@@ -592,14 +592,14 @@ int GcnFst::find_file(const char *filename, DirEnt *dirent)
  *
  * @return Size of all files, in bytes. (-1 on error)
  */
-int64_t GcnFst::totalUsedSize(void) const
+off64_t GcnFst::totalUsedSize(void) const
 {
 	if (!d->fstData) {
 		// No FST...
 		return -1;
 	}
 
-	int64_t total_size = 0;
+	off64_t total_size = 0;
 	const GCN_FST_Entry *entry = d->fstData;
 	uint32_t file_count = be32_to_cpu(entry->root_dir.file_count);
 	entry++;
@@ -609,7 +609,7 @@ int64_t GcnFst::totalUsedSize(void) const
 	for (; file_count > 1; file_count--, entry++) {
 		if (d->is_dir(entry))
 			continue;
-		total_size += static_cast<int64_t>(be32_to_cpu(entry->file.size));
+		total_size += static_cast<off64_t>(be32_to_cpu(entry->file.size));
 	}
 	return total_size;
 }

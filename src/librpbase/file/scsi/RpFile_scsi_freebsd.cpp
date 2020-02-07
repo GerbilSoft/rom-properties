@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * RpFile_scsi_freebsd.cpp: Standard file object. (FreeBSD SCSI)           *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -37,12 +37,12 @@ namespace LibRpBase {
  * @param pSectorSize	[out,opt] If not NULL, retrieves the sector size, in bytes.
  * @return 0 on success, negative for POSIX error code.
  */
-int RpFile::rereadDeviceSizeOS(int64_t *pDeviceSize, uint32_t *pSectorSize)
+int RpFile::rereadDeviceSizeOS(off64_t *pDeviceSize, uint32_t *pSectorSize)
 {
 	RP_D(RpFile);
 	const int fd = fileno(d->file);
 
-	// NOTE: DIOCGMEDIASIZE uses off_t, not int64_t.
+	// NOTE: DIOCGMEDIASIZE uses off_t, not off64_t.
 	off_t device_size = 0;
 
 	if (ioctl(fd, DIOCGMEDIASIZE, &device_size) < 0) {
@@ -50,7 +50,7 @@ int RpFile::rereadDeviceSizeOS(int64_t *pDeviceSize, uint32_t *pSectorSize)
 		d->devInfo->sector_size = 0;
 		return -errno;
 	}
-	d->devInfo->device_size = static_cast<int64_t>(device_size);
+	d->devInfo->device_size = static_cast<off64_t>(device_size);
 
 	if (ioctl(fd, DIOCGSECTORSIZE, &d->devInfo->sector_size) < 0) {
 		d->devInfo->device_size = 0;

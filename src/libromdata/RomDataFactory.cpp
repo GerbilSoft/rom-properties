@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * RomDataFactory.cpp: RomData factory class.                              *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -362,7 +362,7 @@ RomData *RomDataFactoryPrivate::openDreamcastVMSandVMI(IRpFile *file)
 	// VMS files are always a multiple of 512 bytes,
 	// or 160 bytes for some monochrome ICONDATA_VMS.
 	// VMI files are always 108 bytes;
-	int64_t filesize = file->size();
+	off64_t filesize = file->size();
 	bool has_dc_vms = (filesize % DC_VMS_BLOCK_SIZE == 0) ||
 			  (filesize == DC_VMS_ICONDATA_MONO_MINSIZE);
 	bool has_dc_vmi = (filesize == DC_VMI_Header_SIZE);
@@ -661,7 +661,7 @@ RomData *RomDataFactory::create(IRpFile *file, unsigned int attrs)
 
 			// Make sure the file is big enough to
 			// have this header.
-			if ((static_cast<int64_t>(fns->address) + fns->size) > info.szFile)
+			if ((static_cast<off64_t>(fns->address) + fns->size) > info.szFile)
 				continue;
 
 			// Read the header data.

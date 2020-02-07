@@ -105,9 +105,9 @@ size_t CurlDownloader::parse_header(char *ptr, size_t size, size_t nitems, void 
 		memcpy(s_val, ptr+sizeof(http_content_length)-1, val_len);
 		s_val[val_len] = 0;
 
-		// Convert the Content-Length to an int64_t.
+		// Convert the Content-Length to an off64_t.
 		char *endptr = nullptr;
-		int64_t fileSize = strtoll(s_val, &endptr, 10);
+		off64_t fileSize = strtoll(s_val, &endptr, 10);
 
 		// *endptr should be \0 or a whitespace character.
 		if (*endptr != '\0' && !ISSPACE(*endptr)) {
@@ -117,7 +117,7 @@ size_t CurlDownloader::parse_header(char *ptr, size_t size, size_t nitems, void 
 			// Content-Length is too small.
 			return 0;
 		} else if (curlDL->m_maxSize > 0 &&
-			   fileSize > (int64_t)curlDL->m_maxSize)
+			   fileSize > (off64_t)curlDL->m_maxSize)
 		{
 			// Content-Length is too big.
 			return 0;

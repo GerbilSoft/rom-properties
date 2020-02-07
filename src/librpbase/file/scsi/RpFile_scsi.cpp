@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * RpFile_scsi.cpp: General SCSI functions.                                *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -45,7 +45,7 @@ int RpFilePrivate::readOneLBA(uint32_t lba)
 		// TODO: Special case for ~0U?
 		if (!devInfo->isKreonUnlocked) {
 			// OSAPI: Seek to the next sector.
-			const int64_t seek_pos = (lba+1) * devInfo->sector_size;
+			const off64_t seek_pos = (lba+1) * devInfo->sector_size;
 #ifdef _WIN32
 			LARGE_INTEGER liSeekPos;
 			liSeekPos.QuadPart = seek_pos;
@@ -80,7 +80,7 @@ int RpFilePrivate::readOneLBA(uint32_t lba)
 		}
 	} else {
 		// Not a Kreon drive. Use the OS API.
-		const int64_t seek_pos = lba * devInfo->sector_size;
+		const off64_t seek_pos = lba * devInfo->sector_size;
 #ifdef _WIN32
 		LARGE_INTEGER liSeekPos;
 		liSeekPos.QuadPart = seek_pos;
@@ -160,7 +160,7 @@ size_t RpFilePrivate::readUsingBlocks(void *ptr, size_t size)
 
 	// Make sure device_pos + size <= d->device_size.
 	// If it isn't, we'll do a short read.
-	if (devInfo->device_pos + static_cast<int64_t>(size) >= devInfo->device_size) {
+	if (devInfo->device_pos + static_cast<off64_t>(size) >= devInfo->device_size) {
 		size = static_cast<size_t>(devInfo->device_size - devInfo->device_pos);
 	}
 
@@ -211,7 +211,7 @@ size_t RpFilePrivate::readUsingBlocks(void *ptr, size_t size)
 
 	// Read contiguous blocks.
 	uint32_t lba_count = static_cast<uint32_t>(size / devInfo->sector_size);
-	size_t contig_size = static_cast<int64_t>(lba_count) * devInfo->sector_size;
+	size_t contig_size = static_cast<off64_t>(lba_count) * devInfo->sector_size;
 	if (devInfo->isKreonUnlocked) {
 		// Kreon drive. Use SCSI commands.
 		// NOTE: Reading up to 65535 LBAs at a time due to READ(10) limitations.
@@ -243,7 +243,7 @@ size_t RpFilePrivate::readUsingBlocks(void *ptr, size_t size)
 		// Make sure we're at the correct address. The initial seek may
 		// have been skipped if we started at the beginning of a block
 		// or if the partial block was cached.
-		const int64_t seek_pos = lba_cur * devInfo->sector_size;
+		const off64_t seek_pos = lba_cur * devInfo->sector_size;
 #ifdef _WIN32
 		LARGE_INTEGER liSeekPos;
 		liSeekPos.QuadPart = seek_pos;
@@ -317,7 +317,7 @@ size_t RpFilePrivate::readUsingBlocks(void *ptr, size_t size)
  * @param pSectorSize	[out,opt] If not NULL, retrieves the sector size, in bytes.
  * @return 0 on success, positive for SCSI sense key, negative for POSIX error code.
  */
-int RpFilePrivate::scsi_read_capacity(int64_t *pDeviceSize, uint32_t *pSectorSize)
+int RpFilePrivate::scsi_read_capacity(off64_t *pDeviceSize, uint32_t *pSectorSize)
 {
 	assert(pDeviceSize != nullptr);
 	if (!pDeviceSize)
@@ -369,8 +369,8 @@ int RpFilePrivate::scsi_read_capacity(int64_t *pDeviceSize, uint32_t *pSectorSiz
 		if (pSectorSize) {
 			*pSectorSize = sector_size;
 		}
-		*pDeviceSize = (static_cast<int64_t>(be32_to_cpu(resp10.LBA)) + 1) *
-				static_cast<int64_t>(sector_size);
+		*pDeviceSize = (static_cast<off64_t>(be32_to_cpu(resp10.LBA)) + 1) *
+				static_cast<off64_t>(sector_size);
 		return 0;
 	}
 
@@ -394,8 +394,8 @@ int RpFilePrivate::scsi_read_capacity(int64_t *pDeviceSize, uint32_t *pSectorSiz
 	if (pSectorSize) {
 		*pSectorSize = sector_size;
 	}
-	*pDeviceSize = (static_cast<int64_t>(be64_to_cpu(resp16.LBA)) + 1) *
-			static_cast<int64_t>(sector_size);
+	*pDeviceSize = (static_cast<off64_t>(be64_to_cpu(resp16.LBA)) + 1) *
+			static_cast<off64_t>(sector_size);
 	return 0;
 #else /* !RP_OS_SCSI_SUPPORTED */
 	// No SCSI implementation for this OS.
@@ -425,7 +425,7 @@ int RpFilePrivate::scsi_read(uint32_t lbaStart, uint16_t lbaCount, uint8_t *pBuf
 
 #ifdef RP_OS_SCSI_SUPPORTED
 	const size_t req_buf_size = static_cast<size_t>(
-		static_cast<int64_t>(lbaCount) * static_cast<int64_t>(devInfo->sector_size));
+		static_cast<off64_t>(lbaCount) * static_cast<off64_t>(devInfo->sector_size));
 	assert(bufLen >= req_buf_size);
 	if (bufLen < req_buf_size) {
 		// TODO: Better error code?
@@ -466,7 +466,7 @@ int RpFilePrivate::scsi_read(uint32_t lbaStart, uint16_t lbaCount, uint8_t *pBuf
  * @param pSectorSize	[out,opt] If not NULL, retrieves the sector size, in bytes.
  * @return 0 on success, positive for SCSI sense key, negative for POSIX error code.
  */
-int RpFile::rereadDeviceSizeScsi(int64_t *pDeviceSize, uint32_t *pSectorSize)
+int RpFile::rereadDeviceSizeScsi(off64_t *pDeviceSize, uint32_t *pSectorSize)
 {
 	RP_D(RpFile);
 	if (!d->devInfo) {
@@ -475,7 +475,7 @@ int RpFile::rereadDeviceSizeScsi(int64_t *pDeviceSize, uint32_t *pSectorSize)
 	}
 
 #ifdef RP_OS_SCSI_SUPPORTED
-	int64_t device_size;
+	off64_t device_size;
 	uint32_t sector_size;
 	int ret = d->scsi_read_capacity(&device_size, &sector_size);
 	if (ret != 0) {

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * GdiReader.hpp: GD-ROM reader for Dreamcast GDI images.                  *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -285,7 +285,7 @@ int GdiReaderPrivate::openTrack(int trackNumber)
 	}
 
 	// File opened. Get its size and calculate the end block.
-	const int64_t fileSize = file->size();
+	const off64_t fileSize = file->size();
 	if (fileSize <= 0) {
 		// Empty or invalid file...
 		file->unref();
@@ -320,7 +320,7 @@ GdiReader::GdiReader(IRpFile *file)
 	d->filename = m_file->filename();
 
 	// GDI file should be 4k or less.
-	int64_t fileSize = m_file->size();
+	const off64_t fileSize = m_file->size();
 	if (fileSize <= 0 || fileSize > 4096) {
 		// Invalid GDI file size.
 		m_file->unref();
@@ -467,7 +467,7 @@ int GdiReader::isDiscSupported(const uint8_t *pHeader, size_t szHeader) const
  * @param blockIdx	[in] Block index.
  * @return Physical block address. (-1 due to not being implemented)
  */
-int64_t GdiReader::getPhysBlockAddr(uint32_t blockIdx) const
+off64_t GdiReader::getPhysBlockAddr(uint32_t blockIdx) const
 {
 	RP_UNUSED(blockIdx);
 	assert(!"GdiReader::getPhysBlockAddr() is not implemented.");
@@ -496,10 +496,10 @@ int GdiReader::readBlock(uint32_t blockIdx, void *ptr, int pos, size_t size)
 	assert(size <= d->block_size);
 	assert(blockIdx < d->blockCount);
 	// TODO: Make sure overflow doesn't occur.
-	assert((int64_t)(pos + size) <= (int64_t)d->block_size);
+	assert((off64_t)(pos + size) <= (off64_t)d->block_size);
 	if (pos < 0 || pos >= static_cast<int>(d->block_size) ||
 		size > d->block_size ||
-		static_cast<int64_t>(pos + size) > static_cast<int64_t>(d->block_size) ||
+		static_cast<off64_t>(pos + size) > static_cast<off64_t>(d->block_size) ||
 	    blockIdx >= d->blockCount)
 	{
 		// pos+size is out of range.
@@ -553,7 +553,7 @@ int GdiReader::readBlock(uint32_t blockIdx, void *ptr, int pos, size_t size)
 	}
 
 	// Go to the block.
-	int64_t phys_pos = (static_cast<int64_t>(blockIdx - blockRange->blockStart) * blockRange->sectorSize) + pos;
+	off64_t phys_pos = (static_cast<off64_t>(blockIdx - blockRange->blockStart) * blockRange->sectorSize) + pos;
 	if (blockRange->sectorSize == 2352) {
 		// FIXME: Read the whole block so we can determine if this is Mode 1 or Mode 2.
 		// Mode 1 data starts at byte 16; Mode 2 data starts at byte 24.
@@ -642,8 +642,8 @@ ISO *GdiReader::openIsoRomData(int trackNumber)
 	ISO *isoData = nullptr;
 
 	PartitionFile *const isoFile = new PartitionFile(this,
-		static_cast<int64_t>(lba_start) * 2048,
-		static_cast<int64_t>(lba_size) * 2048);
+		static_cast<off64_t>(lba_start) * 2048,
+		static_cast<off64_t>(lba_size) * 2048);
 	if (isoFile->isOpen()) {
 		isoData = new ISO(isoFile);
 		if (!isoData->isOpen()) {

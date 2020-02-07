@@ -1,7 +1,7 @@
 /***************************************************************************
  * c++11-compat.h: C++ 2011 compatibility header.                          *
  *                                                                         *
- * Copyright (c) 2011-2018 by David Korth.                                 *
+ * Copyright (c) 2011-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -99,6 +99,14 @@ namespace std {
 # else
 #  define __func__ "<unknown>"
 # endif
+#endif
+
+#if defined(_MSC_VER)
+// MSVC doesn't have off64_t.
+typedef __int64 off64_t;
+#elif defined(__APPLE__)
+// Mac OS X doesn't have off64_t, but off_t is always 64-bit.
+typedef off_t off64_t;
 #endif
 
 /**

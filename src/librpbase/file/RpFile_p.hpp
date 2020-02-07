@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * RpFile_p.hpp: Standard file object. (PRIVATE CLASS)                     *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -91,14 +91,14 @@ class RpFilePrivate
 		RpFile::FileMode mode;	// File mode.
 
 		gzFile gzfd;		// Used for transparent gzip decompression.
-		int64_t gzsz;		// Uncompressed file size.
+		off64_t gzsz;		// Uncompressed file size.
 
 		// Device information struct.
 		// Only used if the underlying file
 		// is a device node.
 		struct DeviceInfo {
-			int64_t device_pos;	// Device position.
-			int64_t device_size;	// Device size.
+			off64_t device_pos;	// Device position.
+			off64_t device_size;	// Device size.
 			uint32_t sector_size;	// Sector size. (bytes per sector)
 			bool isKreonUnlocked;	// Is Kreon mode unlocked?
 
@@ -246,7 +246,7 @@ class RpFilePrivate
 		 * @param pSectorSize	[out,opt] If not NULL, retrieves the sector size, in bytes.
 		 * @return 0 on success, positive for SCSI sense key, negative for POSIX error code.
 		 */
-		int scsi_read_capacity(int64_t *pDeviceSize, uint32_t *pSectorSize = nullptr);
+		int scsi_read_capacity(off64_t *pDeviceSize, uint32_t *pSectorSize = nullptr);
 
 		/**
 		 * Read data from a device using SCSI commands.

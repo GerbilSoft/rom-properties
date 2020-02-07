@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * RpFile_gio.cpp: IRpFile implementation using GIO/GVfs.                  *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -212,7 +212,7 @@ size_t RpFileGio::write(const void *ptr, size_t size)
  * @param pos File position.
  * @return 0 on success; -1 on error.
  */
-int RpFileGio::seek(int64_t pos)
+int RpFileGio::seek(off64_t pos)
 {
 	RP_D(RpFileGio);
 	if (!d->stream) {
@@ -244,7 +244,7 @@ int RpFileGio::seek(int64_t pos)
  * Get the file position.
  * @return File position, or -1 on error.
  */
-int64_t RpFileGio::tell(void)
+off64_t RpFileGio::tell(void)
 {
 	RP_D(RpFileGio);
 	if (!d->stream) {
@@ -260,7 +260,7 @@ int64_t RpFileGio::tell(void)
  * @param size New size. (default is 0)
  * @return 0 on success; -1 on error.
  */
-int RpFileGio::truncate(int64_t size)
+int RpFileGio::truncate(off64_t size)
 {
 	// Not supported.
 	// TODO: Writable RpFileGio?
@@ -275,7 +275,7 @@ int RpFileGio::truncate(int64_t size)
  * Get the file size.
  * @return File size, or negative on error.
  */
-int64_t RpFileGio::size(void)
+off64_t RpFileGio::size(void)
 {
 	RP_D(RpFileGio);
 	if (!d->stream) {

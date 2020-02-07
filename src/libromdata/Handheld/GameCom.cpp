@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * GameCom.hpp: Tiger game.com ROM reader.                                 *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -86,7 +86,7 @@ const rp_image *GameComPrivate::loadIcon(void)
 		return nullptr;
 	}
 
-	const int64_t fileSize = this->file->size();
+	const off64_t fileSize = this->file->size();
 	uint8_t bank_number = romHeader.icon.bank;
 	unsigned int bank_offset = bank_number * GCOM_ICON_BANK_SIZE;
 	unsigned int bank_adj = 0;

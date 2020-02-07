@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * FileSystem.hpp: File system functions.                                  *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -73,7 +73,7 @@ int access(const std::string &pathname, int mode);
  * @param filename Filename.
  * @return Size on success; -1 on error.
  */
-int64_t filesize(const std::string &filename);
+off64_t filesize(const std::string &filename);
 
 /**
  * Get the user's cache directory.
@@ -173,7 +173,7 @@ bool isOnBadFS(const char *filename, bool netFS = false);
  * @param pMtime	[out] Modification time.
  * @return 0 on success; negative POSIX error code on error.
  */
-int get_file_size_and_mtime(const std::string &filename, int64_t *pFileSize, time_t *pMtime);
+int get_file_size_and_mtime(const std::string &filename, off64_t *pFileSize, time_t *pMtime);
 
 } }
 

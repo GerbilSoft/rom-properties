@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * TextFuncs.cpp: Text encoding functions.                                 *
  *                                                                         *
- * Copyright (c) 2009-2019 by David Korth.                                 *
+ * Copyright (c) 2009-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -276,7 +276,7 @@ std::string rp_sprintf_p(const char *fmt, ...)
 
 /** Other useful text functions **/
 
-static inline int calc_frac_part(int64_t size, int64_t mask)
+static inline int calc_frac_part(off64_t size, off64_t mask)
 {
 	float f = static_cast<float>(size & (mask - 1)) / static_cast<float>(mask);
 	int frac_part = static_cast<int>(f * 1000.0f);
@@ -294,7 +294,7 @@ static inline int calc_frac_part(int64_t size, int64_t mask)
  * @param size File size.
  * @return Formatted file size.
  */
-string formatFileSize(int64_t size)
+string formatFileSize(off64_t size)
 {
 	const char *suffix;
 	// frac_part is always 0 to 100.

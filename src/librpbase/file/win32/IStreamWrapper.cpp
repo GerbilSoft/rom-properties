@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * IStreamWrapper.cpp: IStream wrapper for IRpFile. (Win32)                *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -133,7 +133,7 @@ IFACEMETHODIMP IStreamWrapper::Seek(LARGE_INTEGER dlibMove, DWORD dwOrigin, ULAR
 		return E_HANDLE;
 	}
 
-	int64_t pos;
+	off64_t pos;
 	switch (dwOrigin) {
 		case STREAM_SEEK_SET:
 			m_file->seek(dlibMove.QuadPart);
@@ -165,13 +165,13 @@ IFACEMETHODIMP IStreamWrapper::SetSize(ULARGE_INTEGER libNewSize)
 		return E_HANDLE;
 	}
 
-	int64_t size = static_cast<int64_t>(libNewSize.QuadPart);
-	if (size < 0) {
+	const off64_t fileSize = static_cast<off64_t>(libNewSize.QuadPart);
+	if (fileSize < 0) {
 		// Out of bounds.
 		return STG_E_INVALIDFUNCTION;
 	}
 
-	int ret = m_file->truncate(size);
+	int ret = m_file->truncate(fileSize);
 	HRESULT hr = S_OK;
 	if (ret != 0) {
 		switch (m_file->lastError()) {
@@ -313,7 +313,7 @@ IFACEMETHODIMP IStreamWrapper::Stat(STATSTG *pstatstg, DWORD grfStatFlag)
 
 	pstatstg->type = STGTY_STREAM;	// TODO: or STGTY_STORAGE?
 
-	const int64_t fileSize = m_file->size();
+	const off64_t fileSize = m_file->size();
 	pstatstg->cbSize.QuadPart = (fileSize > 0 ? fileSize : 0);
 
 	// No timestamps are available...

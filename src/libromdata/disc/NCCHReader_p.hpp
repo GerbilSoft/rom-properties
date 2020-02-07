@@ -3,7 +3,7 @@
  * NCCHReader_p.hpp: Nintendo 3DS NCCH reader.                             *
  * Private class declaration.                                              *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -39,7 +39,7 @@ class NCCHReaderPrivate
 {
 	public:
 		NCCHReaderPrivate(NCCHReader *q, uint8_t media_unit_shift,
-			int64_t ncch_offset, uint32_t ncch_length);
+			off64_t ncch_offset, uint32_t ncch_length);
 		~NCCHReaderPrivate();
 
 	private:
@@ -49,7 +49,7 @@ class NCCHReaderPrivate
 
 	public:
 		// NCCH offsets.
-		const int64_t ncch_offset;	// NCCH start offset, in bytes.
+		const off64_t ncch_offset;	// NCCH start offset, in bytes.
 		const uint32_t ncch_length;	// NCCH length, in bytes.
 		const uint8_t media_unit_shift;
 

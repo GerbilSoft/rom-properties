@@ -403,7 +403,7 @@ size_t RpFile_IStream::write(const void *ptr, size_t size)
  * @param pos File position.
  * @return 0 on success; -1 on error.
  */
-int RpFile_IStream::seek(int64_t pos)
+int RpFile_IStream::seek(off64_t pos)
 {
 	LARGE_INTEGER dlibMove;
 	HRESULT hr;
@@ -519,7 +519,7 @@ int RpFile_IStream::seek(int64_t pos)
  * Get the file position.
  * @return File position, or -1 on error.
  */
-int64_t RpFile_IStream::tell(void)
+off64_t RpFile_IStream::tell(void)
 {
 	if (!m_pStream) {
 		m_lastError = EBADF;
@@ -528,7 +528,7 @@ int64_t RpFile_IStream::tell(void)
 
 	if (m_pZstm) {
 		// zlib-compressed file.
-		return static_cast<int64_t>(m_z_filepos);
+		return static_cast<off64_t>(m_z_filepos);
 	}
 
 	LARGE_INTEGER dlibMove;
@@ -541,7 +541,7 @@ int64_t RpFile_IStream::tell(void)
 		return -1;
 	}
 
-	return (int64_t)ulibNewPosition.QuadPart;
+	return static_cast<off64_t>(ulibNewPosition.QuadPart);
 }
 
 /**
@@ -549,7 +549,7 @@ int64_t RpFile_IStream::tell(void)
  * @param size New size. (default is 0)
  * @return 0 on success; -1 on error.
  */
-int RpFile_IStream::truncate(int64_t size)
+int RpFile_IStream::truncate(off64_t size)
 {
 	// TODO: Needs testing.
 	if (!m_pStream) {
@@ -577,7 +577,7 @@ int RpFile_IStream::truncate(int64_t size)
 
 	// Truncate the stream.
 	ULARGE_INTEGER ulibNewSize;
-	ulibNewSize.QuadPart = (uint64_t)size;
+	ulibNewSize.QuadPart = static_cast<ULONGLONG>(size);
 	hr = m_pStream->SetSize(ulibNewSize);
 	if (FAILED(hr)) {
 		// TODO: Convert HRESULT to POSIX?
@@ -607,7 +607,7 @@ int RpFile_IStream::truncate(int64_t size)
  * Get the file size.
  * @return File size, or negative on error.
  */
-int64_t RpFile_IStream::size(void)
+off64_t RpFile_IStream::size(void)
 {
 	if (!m_pStream) {
 		m_lastError = EBADF;
@@ -616,7 +616,7 @@ int64_t RpFile_IStream::size(void)
 
 	if (m_pZstm) {
 		// zlib-compressed file.
-		return static_cast<int64_t>(m_z_uncomp_sz);
+		return static_cast<off64_t>(m_z_uncomp_sz);
 	}
 
 	// Use Stat() instead of Seek().
@@ -630,7 +630,7 @@ int64_t RpFile_IStream::size(void)
 	}
 
 	// TODO: Make sure cbSize is valid?
-	return (int64_t)statstg.cbSize.QuadPart;
+	return static_cast<off64_t>(statstg.cbSize.QuadPart);
 }
 
 /**

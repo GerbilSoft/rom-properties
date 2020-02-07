@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * RpFile_IStream.hpp: IRpFile using an IStream*.                          *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -65,20 +65,20 @@ class RpFile_IStream : public LibRpBase::IRpFile
 		 * @param pos File position.
 		 * @return 0 on success; -1 on error.
 		 */
-		int seek(int64_t pos) final;
+		int seek(off64_t pos) final;
 
 		/**
 		 * Get the file position.
 		 * @return File position, or -1 on error.
 		 */
-		int64_t tell(void) final;
+		off64_t tell(void) final;
 
 		/**
 		 * Truncate the file.
 		 * @param size New size. (default is 0)
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
-		int truncate(int64_t size = 0) final;
+		int truncate(off64_t size = 0) final;
 
 	public:
 		/** File properties. **/
@@ -87,7 +87,7 @@ class RpFile_IStream : public LibRpBase::IRpFile
 		 * Get the file size.
 		 * @return File size, or negative on error.
 		 */
-		int64_t size(void) final;
+		off64_t size(void) final;
 
 		/**
 		 * Get the filename.
@@ -102,7 +102,7 @@ class RpFile_IStream : public LibRpBase::IRpFile
 		// zlib
 		unsigned int m_z_uncomp_sz;
 		unsigned int m_z_filepos;	// position in compressed file
-		int64_t m_z_realpos;		// position in real file
+		off64_t m_z_realpos;		// position in real file
 		struct z_stream_s *m_pZstm;
 		// zlib buffer
 		uint8_t *m_pZbuf;

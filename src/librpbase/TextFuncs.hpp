@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * TextFuncs.hpp: Text encoding functions.                                 *
  *                                                                         *
- * Copyright (c) 2009-2019 by David Korth.                                 *
+ * Copyright (c) 2009-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -621,7 +621,7 @@ std::string rp_sprintf_p(const char *fmt, ...) ATTR_PRINTF(1, 2);
  * @param fileSize File size.
  * @return Formatted file size.
  */
-std::string formatFileSize(int64_t fileSize);
+std::string formatFileSize(off64_t fileSize);
 
 /**
  * Remove trailing spaces from a string.

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * NEResourceReader.cpp: New Executable resource reader.                   *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -110,8 +110,8 @@ NEResourceReaderPrivate::NEResourceReaderPrivate(
 	static const uint32_t fileSize_MAX = 16U*1024*1024;
 
 	// Validate the starting address and size.
-	const int64_t fileSize_i64 = q->m_file->size();
-	if (fileSize_i64 > fileSize_MAX) {
+	const off64_t fileSize_o64 = q->m_file->size();
+	if (fileSize_o64 > fileSize_MAX) {
 		// A Win16 executable larger than 16 MB doesn't make any sense.
 		q->m_file->unref();
 		q->m_file = nullptr;
@@ -119,7 +119,7 @@ NEResourceReaderPrivate::NEResourceReaderPrivate(
 		return;
 	}
 
-	const uint32_t fileSize = static_cast<uint32_t>(fileSize_i64);
+	const uint32_t fileSize = static_cast<uint32_t>(fileSize_o64);
 	if (rsrc_tbl_addr >= fileSize ||
 	    rsrc_tbl_size >= fileSize_MAX ||
 	    ((rsrc_tbl_addr + rsrc_tbl_size) > fileSize))
@@ -340,7 +340,7 @@ int NEResourceReaderPrivate::load_StringTable(IRpFile *file, IResourceReader::St
 	// Reference: https://blogs.msdn.microsoft.com/oldnewthing/20061220-15/?p=28653
 
 	// Read fields.
-	const int64_t pos_start = file->tell();
+	const off64_t pos_start = file->tell();
 	uint16_t fields[2];	// wLength, wValueLength
 	size_t size = file->read(fields, sizeof(fields));
 	if (size != sizeof(fields)) {
@@ -387,7 +387,7 @@ int NEResourceReaderPrivate::load_StringTable(IRpFile *file, IResourceReader::St
 	IResourceReader::alignFileDWORD(file);
 
 	// Total string table size (in bytes) is wLength - (pos_strings - pos_start).
-	const int64_t pos_strings = file->tell();
+	const off64_t pos_strings = file->tell();
 	int strTblData_len = static_cast<int>(fields[0]) - static_cast<int>(pos_strings - pos_start);
 	if (strTblData_len <= 0) {
 		// Error...
@@ -535,7 +535,7 @@ size_t NEResourceReader::read(void *ptr, size_t size)
  * @param pos Partition position.
  * @return 0 on success; -1 on error.
  */
-int NEResourceReader::seek(int64_t pos)
+int NEResourceReader::seek(off64_t pos)
 {
 	assert(m_file != nullptr);
 	assert(m_file->isOpen());
@@ -554,7 +554,7 @@ int NEResourceReader::seek(int64_t pos)
  * Get the partition position.
  * @return Partition position on success; -1 on error.
  */
-int64_t NEResourceReader::tell(void)
+off64_t NEResourceReader::tell(void)
 {
 	assert(m_file != nullptr);
 	assert(m_file->isOpen());
@@ -575,7 +575,7 @@ int64_t NEResourceReader::tell(void)
  * and it's adjusted to exclude hashes.
  * @return Data size, or -1 on error.
  */
-int64_t NEResourceReader::size(void)
+off64_t NEResourceReader::size(void)
 {
 	// TODO: Errors?
 	assert(m_file != nullptr);
@@ -588,7 +588,7 @@ int64_t NEResourceReader::size(void)
 	// There isn't a separate resource "section" in
 	// NE executables, so forward all read requests
 	// to the underlying file.
-	return static_cast<int64_t>(m_file->size());
+	return static_cast<off64_t>(m_file->size());
 }
 
 /** IPartition **/
@@ -598,14 +598,14 @@ int64_t NEResourceReader::size(void)
  * This size includes the partition header and hashes.
  * @return Partition size, or -1 on error.
  */
-int64_t NEResourceReader::partition_size(void) const
+off64_t NEResourceReader::partition_size(void) const
 {
 	// TODO: Errors?
 
 	// There isn't a separate resource "section" in
 	// NE executables, so forward all read requests
 	// to the underlying file.
-	return static_cast<int64_t>(m_file->size());
+	return static_cast<off64_t>(m_file->size());
 }
 
 /**
@@ -614,14 +614,14 @@ int64_t NEResourceReader::partition_size(void) const
  * but does not include "empty" sectors.
  * @return Used partition size, or -1 on error.
  */
-int64_t NEResourceReader::partition_size_used(void) const
+off64_t NEResourceReader::partition_size_used(void) const
 {
 	// TODO: Errors?
 
 	// There isn't a separate resource "section" in
 	// NE executables, so forward all read requests
 	// to the underlying file.
-	return static_cast<int64_t>(m_file->size());
+	return static_cast<off64_t>(m_file->size());
 }
 
 /** Resource access functions. **/

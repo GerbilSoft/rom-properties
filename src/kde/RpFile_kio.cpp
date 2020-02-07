@@ -45,7 +45,7 @@ class RpFileKioPrivate
 		// Current file position.
 		// There doesn't seem to be an easy way to
 		// retrieve this from KIO::FileJob...
-		int64_t pos;
+		off64_t pos;
 
 		/**
 		 * Enter a QEventLoop while waiting for a KJob to complete.
@@ -285,7 +285,7 @@ size_t RpFileKio::write(const void *ptr, size_t size)
  * @param pos File position.
  * @return 0 on success; -1 on error.
  */
-int RpFileKio::seek(int64_t pos)
+int RpFileKio::seek(off64_t pos)
 {
 	RP_D(RpFileKio);
 	if (!d->fileJob) {
@@ -303,7 +303,7 @@ int RpFileKio::seek(int64_t pos)
  * Get the file position.
  * @return File position, or -1 on error.
  */
-int64_t RpFileKio::tell(void)
+off64_t RpFileKio::tell(void)
 {
 	RP_D(const RpFileKio);
 	if (!d->fileJob) {
@@ -319,7 +319,7 @@ int64_t RpFileKio::tell(void)
  * @param size New size. (default is 0)
  * @return 0 on success; -1 on error.
  */
-int RpFileKio::truncate(int64_t size)
+int RpFileKio::truncate(off64_t size)
 {
 	// Not supported.
 	// TODO: Writable RpFileKio?
@@ -334,7 +334,7 @@ int RpFileKio::truncate(int64_t size)
  * Get the file size.
  * @return File size, or negative on error.
  */
-int64_t RpFileKio::size(void)
+off64_t RpFileKio::size(void)
 {
 	RP_D(RpFileKio);
 	if (!d->fileJob) {

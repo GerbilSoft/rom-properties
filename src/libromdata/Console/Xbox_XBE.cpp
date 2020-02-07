@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * Xbox_XBE.cpp: Microsoft Xbox executable reader.                         *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -325,7 +325,7 @@ const EXE *Xbox_XBE_Private::initEXE(void)
 	}
 
 	// EXE is located at (pe_base_address - base_address).
-	const int64_t fileSize = file->size();
+	const off64_t fileSize = file->size();
 	const uint32_t exe_address =
 		le32_to_cpu(xbeHeader.pe_base_address) -
 		le32_to_cpu(xbeHeader.base_address);

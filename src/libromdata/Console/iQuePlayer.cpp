@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * iQuePlayer.cpp: iQue Player .cmd reader.                                *
  *                                                                         *
- * Copyright (c) 2019 by David Korth.                                      *
+ * Copyright (c) 2019-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -89,7 +89,7 @@ class iQuePlayerPrivate : public RomDataPrivate
 		 * @param byteswap	[in] If true, byteswap before decoding if needed.
 		 * @return Image, or nullptr on error.
 		 */
-		rp_image *loadImage(int64_t address, size_t z_size, size_t unz_size,
+		rp_image *loadImage(off64_t address, size_t z_size, size_t unz_size,
 			ImageDecoder::PixelFormat px_format, int w, int h, bool byteswap);
 
 	public:
@@ -140,10 +140,10 @@ int iQuePlayerPrivate::getTitleAndISBN(string &title, string &isbn)
 	static const size_t title_buf_sz = IQUE_PLAYER_BBCONTENTMETADATAHEAD_ADDRESS - sizeof(contentDesc);
 	std::unique_ptr<char[]> title_buf(new char[title_buf_sz]);
 
-	const int64_t title_addr = sizeof(contentDesc) +
+	const off64_t title_addr = sizeof(contentDesc) +
 		be16_to_cpu(contentDesc.thumb_image_size) +
 		be16_to_cpu(contentDesc.title_image_size);
-	if (title_addr >= (int64_t)title_buf_sz) {
+	if (title_addr >= (off64_t)title_buf_sz) {
 		// Out of range.
 		return 1;
 	}
@@ -217,10 +217,10 @@ int iQuePlayerPrivate::getTitleAndISBN(string &title, string &isbn)
  * @param byteswap	[in] If true, byteswap before decoding if needed.
  * @return Image, or nullptr on error.
  */
-rp_image *iQuePlayerPrivate::loadImage(int64_t address, size_t z_size, size_t unz_size,
+rp_image *iQuePlayerPrivate::loadImage(off64_t address, size_t z_size, size_t unz_size,
 	ImageDecoder::PixelFormat px_format, int w, int h, bool byteswap)
 {
-	assert(address >= static_cast<int64_t>(sizeof(contentDesc)));
+	assert(address >= static_cast<off64_t>(sizeof(contentDesc)));
 	assert(z_size != 0);
 	assert(unz_size > z_size);
 	assert(unz_size == static_cast<size_t>(w * h * 2));
@@ -303,7 +303,7 @@ const rp_image *iQuePlayerPrivate::loadThumbnailImage(void)
 	}
 
 	// Get the thumbnail address and size.
-	static const int64_t thumb_addr = sizeof(contentDesc);
+	static const off64_t thumb_addr = sizeof(contentDesc);
 	const size_t z_thumb_size = be16_to_cpu(contentDesc.thumb_image_size);
 	if (z_thumb_size > 0x4000) {
 		// Out of range.
@@ -332,7 +332,7 @@ const rp_image *iQuePlayerPrivate::loadTitleImage(void)
 	}
 
 	// Get the thumbnail address and size.
-	const int64_t title_addr = sizeof(contentDesc) + be16_to_cpu(contentDesc.thumb_image_size);
+	const off64_t title_addr = sizeof(contentDesc) + be16_to_cpu(contentDesc.thumb_image_size);
 	const size_t z_title_size = be16_to_cpu(contentDesc.title_image_size);
 	if (z_title_size > 0x10000) {
 		// Out of range.
@@ -381,7 +381,7 @@ iQuePlayer::iQuePlayer(IRpFile *file)
 
 	// Check the filesize.
 	// TODO: Identify CMD vs. Ticket and display ticket-specific information?
-	const int64_t filesize = file->size();
+	const off64_t filesize = file->size();
 	if (filesize != IQUE_PLAYER_CMD_FILESIZE &&
 	    filesize != IQUE_PLAYER_DAT_FILESIZE)
 	{

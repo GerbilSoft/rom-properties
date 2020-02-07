@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * NASOSReader.hpp: GameCube/Wii NASOS (.iso.dec) disc image reader.       *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -131,7 +131,7 @@ NASOSReader::NASOSReader(IRpFile *file)
 	}
 
 	// Disc size is based on the block map size.
-	d->disc_size = static_cast<int64_t>(d->blockMap.size()) * d->block_size;
+	d->disc_size = static_cast<off64_t>(d->blockMap.size()) * d->block_size;
 
 	// Reset the disc position.
 	d->pos = 0;
@@ -186,7 +186,7 @@ int NASOSReader::isDiscSupported(const uint8_t *pHeader, size_t szHeader) const
  * @param blockIdx	[in] Block index.
  * @return Physical address. (0 == empty block; -1 == invalid block index)
  */
-int64_t NASOSReader::getPhysBlockAddr(uint32_t blockIdx) const
+off64_t NASOSReader::getPhysBlockAddr(uint32_t blockIdx) const
 {
 	// Make sure the block index is in range.
 	RP_D(NASOSReader);
@@ -204,7 +204,7 @@ int64_t NASOSReader::getPhysBlockAddr(uint32_t blockIdx) const
 	}
 
 	// Adjust to bytes and return.
-	return static_cast<int64_t>(physBlockAddr) << d->blockMapShift;
+	return static_cast<off64_t>(physBlockAddr) << d->blockMapShift;
 }
 
 }

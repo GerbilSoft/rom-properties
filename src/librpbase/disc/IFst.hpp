@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * IFst.hpp: File System Table interface.                                  *
  *                                                                         *
- * Copyright (c) 2016 by David Korth.                                      *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -53,8 +53,8 @@ class IFst
 		/** opendir() interface. **/
 
 		struct DirEnt {
-			int64_t offset;		// Starting address.
-			int64_t size;		// File size.
+			off64_t offset;		// Starting address.
+			off64_t size;		// File size.
 			const char *name;	// Filename.
 
 			// TODO: Additional placeholders?

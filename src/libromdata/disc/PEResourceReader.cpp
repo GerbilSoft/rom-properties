@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * PEResourceReader.cpp: Portable Executable resource reader.              *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -42,7 +42,7 @@ class PEResourceReaderPrivate
 		uint32_t rsrc_va;
 
 		// Read position.
-		int64_t pos;
+		off64_t pos;
 
 		// Resource directory entry.
 		struct ResDirEntry {
@@ -141,8 +141,8 @@ PEResourceReaderPrivate::PEResourceReaderPrivate(
 
 	// Validate the starting address and size.
 	static const uint32_t fileSize_MAX = 2U*1024*1024*1024;
-	const int64_t fileSize_i64 = q->m_file->size();
-	if (fileSize_i64 > fileSize_MAX) {
+	const off64_t fileSize_o64 = q->m_file->size();
+	if (fileSize_o64 > fileSize_MAX) {
 		// A Win32/Win64 executable larger than 2 GB doesn't make any sense.
 		q->m_file->unref();
 		q->m_file = nullptr;
@@ -150,7 +150,7 @@ PEResourceReaderPrivate::PEResourceReaderPrivate(
 		return;
 	}
 
-	const uint32_t fileSize = static_cast<uint32_t>(fileSize_i64);
+	const uint32_t fileSize = static_cast<uint32_t>(fileSize_o64);
 	if (rsrc_addr >= fileSize ||
 	    rsrc_size >= fileSize_MAX ||
 	    ((rsrc_addr + rsrc_size) > fileSize))
@@ -415,7 +415,7 @@ int PEResourceReaderPrivate::load_StringTable(IRpFile *file, IResourceReader::St
 	// - StringTable: https://msdn.microsoft.com/en-us/library/windows/desktop/ms646992(v=vs.85).aspx
 
 	// Read fields.
-	const int64_t pos_start = file->tell();
+	const off64_t pos_start = file->tell();
 	uint16_t fields[3];	// wLength, wValueLength, wType
 	size_t size = file->read(fields, sizeof(fields));
 	if (size != sizeof(fields)) {
@@ -455,7 +455,7 @@ int PEResourceReaderPrivate::load_StringTable(IRpFile *file, IResourceReader::St
 	IResourceReader::alignFileDWORD(file);
 
 	// Total string table size (in bytes) is wLength - (pos_strings - pos_start).
-	const int64_t pos_strings = file->tell();
+	const off64_t pos_strings = file->tell();
 	int strTblData_len = static_cast<int>(fields[0]) - static_cast<int>(pos_strings - pos_start);
 	if (strTblData_len <= 0) {
 		// Error...
@@ -584,19 +584,19 @@ size_t PEResourceReader::read(void *ptr, size_t size)
 	}
 
 	// Are we already at the end of the .rsrc section?
-	if (d->pos >= static_cast<int64_t>(d->rsrc_size)) {
+	if (d->pos >= static_cast<off64_t>(d->rsrc_size)) {
 		// End of the .rsrc section.
 		return 0;
 	}
 
 	// Make sure d->pos + size <= d->rsrc_size.
 	// If it isn't, we'll do a short read.
-	if (d->pos + static_cast<int64_t>(size) >= static_cast<int64_t>(d->rsrc_size)) {
-		size = static_cast<size_t>(static_cast<int64_t>(d->rsrc_size) - d->pos);
+	if (d->pos + static_cast<off64_t>(size) >= static_cast<off64_t>(d->rsrc_size)) {
+		size = static_cast<size_t>(static_cast<off64_t>(d->rsrc_size) - d->pos);
 	}
 
 	// Read the data.
-	size_t read = m_file->seekAndRead(static_cast<int64_t>(d->rsrc_addr) + static_cast<int64_t>(d->pos), ptr, size);
+	size_t read = m_file->seekAndRead(static_cast<off64_t>(d->rsrc_addr) + static_cast<off64_t>(d->pos), ptr, size);
 	if (read != size) {
 		// Seek and/or read error.
 		m_lastError = m_file->lastError();
@@ -610,7 +610,7 @@ size_t PEResourceReader::read(void *ptr, size_t size)
  * @param pos Partition position.
  * @return 0 on success; -1 on error.
  */
-int PEResourceReader::seek(int64_t pos)
+int PEResourceReader::seek(off64_t pos)
 {
 	RP_D(PEResourceReader);
 	assert(m_file != nullptr);
@@ -625,8 +625,8 @@ int PEResourceReader::seek(int64_t pos)
 		// Negative is invalid.
 		m_lastError = EINVAL;
 		return -1;
-	} else if (pos >= static_cast<int64_t>(d->rsrc_size)) {
-		d->pos = static_cast<int64_t>(d->rsrc_size);
+	} else if (pos >= static_cast<off64_t>(d->rsrc_size)) {
+		d->pos = static_cast<off64_t>(d->rsrc_size);
 	} else {
 		d->pos = pos;
 	}
@@ -637,7 +637,7 @@ int PEResourceReader::seek(int64_t pos)
  * Get the partition position.
  * @return Partition position on success; -1 on error.
  */
-int64_t PEResourceReader::tell(void)
+off64_t PEResourceReader::tell(void)
 {
 	RP_D(const PEResourceReader);
 	assert(m_file != nullptr);
@@ -656,11 +656,11 @@ int64_t PEResourceReader::tell(void)
  * and it's adjusted to exclude hashes.
  * @return Data size, or -1 on error.
  */
-int64_t PEResourceReader::size(void)
+off64_t PEResourceReader::size(void)
 {
 	// TODO: Errors?
 	RP_D(const PEResourceReader);
-	return static_cast<int64_t>(d->rsrc_size);
+	return static_cast<off64_t>(d->rsrc_size);
 }
 
 /** IPartition **/
@@ -670,11 +670,11 @@ int64_t PEResourceReader::size(void)
  * This size includes the partition header and hashes.
  * @return Partition size, or -1 on error.
  */
-int64_t PEResourceReader::partition_size(void) const
+off64_t PEResourceReader::partition_size(void) const
 {
 	// TODO: Errors?
 	RP_D(const PEResourceReader);
-	return static_cast<int64_t>(d->rsrc_size);
+	return static_cast<off64_t>(d->rsrc_size);
 }
 
 /**
@@ -683,10 +683,10 @@ int64_t PEResourceReader::partition_size(void) const
  * but does not include "empty" sectors.
  * @return Used partition size, or -1 on error.
  */
-int64_t PEResourceReader::partition_size_used(void) const
+off64_t PEResourceReader::partition_size_used(void) const
 {
 	RP_D(const PEResourceReader);
-	return static_cast<int64_t>(d->rsrc_size);
+	return static_cast<off64_t>(d->rsrc_size);
 }
 
 /** Resource access functions. **/

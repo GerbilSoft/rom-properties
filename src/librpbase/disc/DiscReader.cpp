@@ -4,7 +4,7 @@
  * This class is a "null" interface that simply passes calls down to       *
  * libc's stdio functions.                                                 *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -44,7 +44,7 @@ DiscReader::DiscReader(IRpFile *file)
  * @param offset Starting offset.
  * @param length Disc length. (-1 for "until end of file")
  */
-DiscReader::DiscReader(IRpFile *file, int64_t offset, int64_t length)
+DiscReader::DiscReader(IRpFile *file, off64_t offset, off64_t length)
 	: super(file)
 	, m_offset(0)
 	, m_length(0)
@@ -56,7 +56,7 @@ DiscReader::DiscReader(IRpFile *file, int64_t offset, int64_t length)
 
 	// TODO: Propagate errors.
 	// Validate offset and filesize.
-	const int64_t filesize = m_file->size();
+	const off64_t filesize = m_file->size();
 	if (offset > filesize) {
 		offset = filesize;
 	}
@@ -111,8 +111,8 @@ size_t DiscReader::read(void *ptr, size_t size)
 	}
 
 	// Constrain size based on offset and length.
-	int64_t pos = m_file->tell();
-	if (pos + static_cast<int64_t>(size) > m_offset + m_length) {
+	off64_t pos = m_file->tell();
+	if (pos + static_cast<off64_t>(size) > m_offset + m_length) {
 		size = static_cast<size_t>(m_offset + m_length - pos);
 	}
 
@@ -126,7 +126,7 @@ size_t DiscReader::read(void *ptr, size_t size)
  * @param pos Disc image position.
  * @return 0 on success; -1 on error.
  */
-int DiscReader::seek(int64_t pos)
+int DiscReader::seek(off64_t pos)
 {
 	assert(m_file != nullptr);
 	if (!m_file) {
@@ -145,7 +145,7 @@ int DiscReader::seek(int64_t pos)
  * Get the disc image position.
  * @return Partition position on success; -1 on error.
  */
-int64_t DiscReader::tell(void)
+off64_t DiscReader::tell(void)
 {
 	assert(m_file != nullptr);
 	if (!m_file) {
@@ -153,7 +153,7 @@ int64_t DiscReader::tell(void)
 		return -1;
 	}
 
-	int64_t ret = m_file->tell();
+	off64_t ret = m_file->tell();
 	if (ret < 0) {
 		m_lastError = m_file->lastError();
 	}
@@ -164,7 +164,7 @@ int64_t DiscReader::tell(void)
  * Get the disc image size.
  * @return Disc image size, or -1 on error.
  */
-int64_t DiscReader::size(void)
+off64_t DiscReader::size(void)
 {
 	assert(m_file != nullptr);
 	if (!m_file) {

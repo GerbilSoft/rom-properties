@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * CisoGcnReader.hpp: GameCube/Wii CISO disc image reader.                 *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -63,7 +63,7 @@ class CisoGcnReader : public LibRpBase::SparseDiscReader
 		 * @param blockIdx	[in] Block index.
 		 * @return Physical address. (0 == empty block; -1 == invalid block index)
 		 */
-		int64_t getPhysBlockAddr(uint32_t blockIdx) const final;
+		off64_t getPhysBlockAddr(uint32_t blockIdx) const final;
 };
 
 }

@@ -4,7 +4,7 @@
  * This class is a "null" interface that simply passes calls down to       *
  * libc's stdio functions.                                                 *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -35,7 +35,7 @@ class DiscReader : public IDiscReader
 		 * @param offset Starting offset.
 		 * @param length Disc length. (-1 for "until end of file")
 		 */
-		DiscReader(IRpFile *file, int64_t offset, int64_t length);
+		DiscReader(IRpFile *file, off64_t offset, off64_t length);
 
 	private:
 		typedef IDiscReader super;
@@ -74,24 +74,24 @@ class DiscReader : public IDiscReader
 		 * @param pos Disc image position.
 		 * @return 0 on success; -1 on error.
 		 */
-		int seek(int64_t pos) override;
+		int seek(off64_t pos) override;
 
 		/**
 		 * Get the disc image position.
 		 * @return Disc image position on success; -1 on error.
 		 */
-		int64_t tell(void) final;
+		off64_t tell(void) final;
 
 		/**
 		 * Get the disc image size.
 		 * @return Disc image size, or -1 on error.
 		 */
-		int64_t size(void) override;
+		off64_t size(void) override;
 
 	protected:
 		// Offset/length. Useful for e.g. GameCube TGC.
-		int64_t m_offset;
-		int64_t m_length;
+		off64_t m_offset;
+		off64_t m_length;
 };
 
 }

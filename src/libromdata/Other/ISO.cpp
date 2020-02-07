@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * ISO.cpp: ISO-9660 disc image parser.                                    *
  *                                                                         *
- * Copyright (c) 2019 by David Korth.                                      *
+ * Copyright (c) 2019-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -100,8 +100,8 @@ void ISOPrivate::checkVolumeDescriptors(void)
 	// TODO: Boot record?
 
 	// Starting address.
-	int64_t addr = (ISO_PVD_LBA * sector_size) + sector_offset;
-	const int64_t maxaddr = 0x100 * sector_size;
+	off64_t addr = (ISO_PVD_LBA * sector_size) + sector_offset;
+	const off64_t maxaddr = 0x100 * sector_size;
 
 	ISO_Volume_Descriptor_Header deschdr;
 	bool foundVDT = false;
@@ -404,8 +404,8 @@ int ISO::loadFieldData(void)
 	// Size of volume
 	d->fields->addField_string(C_("ISO", "Volume Size"),
 		formatFileSize(
-			static_cast<int64_t>(pvd->volume_space_size.he) *
-			static_cast<int64_t>(pvd->logical_block_size.he)));
+			static_cast<off64_t>(pvd->volume_space_size.he) *
+			static_cast<off64_t>(pvd->logical_block_size.he)));
 
 	// TODO: Show block size?
 

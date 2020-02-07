@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * XDVDFSPartition.cpp: Microsoft Xbox XDVDFS partition reader.            *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -23,7 +23,7 @@ class XDVDFSPartitionPrivate
 {
 	public:
 		XDVDFSPartitionPrivate(XDVDFSPartition *q,
-			int64_t partition_offset, int64_t partition_size);
+			off64_t partition_offset, off64_t partition_size);
 		~XDVDFSPartitionPrivate();
 
 	private:
@@ -33,8 +33,8 @@ class XDVDFSPartitionPrivate
 
 	public:
 		// Partition start offset. (in bytes)
-		int64_t partition_offset;
-		int64_t partition_size;		// Calculated partition size.
+		off64_t partition_offset;
+		off64_t partition_size;		// Calculated partition size.
 
 		// XDVDFS header.
 		// All fields are byteswapped in the constructor.
@@ -76,7 +76,7 @@ class XDVDFSPartitionPrivate
 /** XDVDFSPartitionPrivate **/
 
 XDVDFSPartitionPrivate::XDVDFSPartitionPrivate(XDVDFSPartition *q,
-	int64_t partition_offset, int64_t partition_size)
+	off64_t partition_offset, off64_t partition_size)
 	: q_ptr(q)
 	, partition_offset(partition_offset)
 	, partition_size(partition_size)
@@ -226,7 +226,7 @@ const XDVDFS_DirEntry *XDVDFSPartitionPrivate::getDirEntry(const ao::uvector<uin
 
 	// Make sure the file is in bounds.
 	const uint32_t file_size = le32_to_cpu(dirEntry_found->file_size);
-	const int64_t file_addr = static_cast<int64_t>(
+	const off64_t file_addr = static_cast<off64_t>(
 		le32_to_cpu(dirEntry_found->start_sector)) * XDVDFS_BLOCK_SIZE;
 	if (file_addr >= (this->partition_size + this->partition_offset) ||
 	    file_addr > (this->partition_size + this->partition_offset - file_size))
@@ -277,7 +277,7 @@ const ao::uvector<uint8_t> *XDVDFSPartitionPrivate::getDirectory(const char *pat
 	}
 
 	// Directory table address and size.
-	int64_t dir_addr = 0;
+	off64_t dir_addr = 0;
 	uint32_t dir_size = 0;
 
 	if (!strcmp(path, "/")) {
@@ -292,7 +292,7 @@ const ao::uvector<uint8_t> *XDVDFSPartitionPrivate::getDirectory(const char *pat
 
 		// Root directory offsets.
 		dir_addr = partition_offset + (
-			static_cast<int64_t>(xdvdfsHeader.root_dir_sector) * XDVDFS_BLOCK_SIZE);
+			static_cast<off64_t>(xdvdfsHeader.root_dir_sector) * XDVDFS_BLOCK_SIZE);
 		dir_size = xdvdfsHeader.root_dir_size;
 	} else {
 		// Get the parent directory.
@@ -331,7 +331,7 @@ const ao::uvector<uint8_t> *XDVDFSPartitionPrivate::getDirectory(const char *pat
  * @param partition_offset Partition start offset.
  * @param partition_size Partition size.
  */
-XDVDFSPartition::XDVDFSPartition(IDiscReader *discReader, int64_t partition_offset, int64_t partition_size)
+XDVDFSPartition::XDVDFSPartition(IDiscReader *discReader, off64_t partition_offset, off64_t partition_size)
 	: super(discReader)
 	, d_ptr(new XDVDFSPartitionPrivate(this, partition_offset, partition_size))
 { }
@@ -368,7 +368,7 @@ size_t XDVDFSPartition::read(void *ptr, size_t size)
  * @param pos Partition position.
  * @return 0 on success; -1 on error.
  */
-int XDVDFSPartition::seek(int64_t pos)
+int XDVDFSPartition::seek(off64_t pos)
 {
 	RP_D(XDVDFSPartition);
 	assert(m_discReader != nullptr);
@@ -389,7 +389,7 @@ int XDVDFSPartition::seek(int64_t pos)
  * Get the partition position.
  * @return Partition position on success; -1 on error.
  */
-int64_t XDVDFSPartition::tell(void)
+off64_t XDVDFSPartition::tell(void)
 {
 	RP_D(XDVDFSPartition);
 	assert(m_discReader != nullptr);
@@ -399,7 +399,7 @@ int64_t XDVDFSPartition::tell(void)
 		return -1;
 	}
 
-	int64_t ret = m_discReader->tell() - d->partition_offset;
+	off64_t ret = m_discReader->tell() - d->partition_offset;
 	if (ret < 0) {
 		m_lastError = m_discReader->lastError();
 	}
@@ -412,7 +412,7 @@ int64_t XDVDFSPartition::tell(void)
  * and it's adjusted to exclude hashes.
  * @return Data size, or -1 on error.
  */
-int64_t XDVDFSPartition::size(void)
+off64_t XDVDFSPartition::size(void)
 {
 	// TODO: Restrict partition size?
 	RP_D(const XDVDFSPartition);
@@ -428,7 +428,7 @@ int64_t XDVDFSPartition::size(void)
  * This size includes the partition header and hashes.
  * @return Partition size, or -1 on error.
  */
-int64_t XDVDFSPartition::partition_size(void) const
+off64_t XDVDFSPartition::partition_size(void) const
 {
 	// TODO: Restrict partition size?
 	RP_D(const XDVDFSPartition);
@@ -443,7 +443,7 @@ int64_t XDVDFSPartition::partition_size(void) const
  * but does not include "empty" sectors.
  * @return Used partition size, or -1 on error.
  */
-int64_t XDVDFSPartition::partition_size_used(void) const
+off64_t XDVDFSPartition::partition_size_used(void) const
 {
 	// TODO: Implement for ISO?
 	// For now, just use partition_size().
@@ -568,7 +568,7 @@ IRpFile *XDVDFSPartition::open(const char *filename)
 	}
 
 	const uint32_t file_size = le32_to_cpu(dirEntry->file_size);
-	const int64_t file_addr = static_cast<int64_t>(le32_to_cpu(dirEntry->start_sector)) * XDVDFS_BLOCK_SIZE;
+	const off64_t file_addr = static_cast<off64_t>(le32_to_cpu(dirEntry->start_sector)) * XDVDFS_BLOCK_SIZE;
 
 	// Create the PartitionFile.
 	// This is an IRpFile implementation that uses an

@@ -236,7 +236,7 @@ void RpFile::init(void)
 			// This is a gzipped file.
 			// Get the uncompressed size at the end of the file.
 			fseeko(d->file, 0, SEEK_END);
-			int64_t real_sz = ftello(d->file);
+			off64_t real_sz = ftello(d->file);
 			if (real_sz > 10+8) {
 				int ret = fseeko(d->file, real_sz-4, SEEK_SET);
 				if (!ret) {
@@ -247,7 +247,7 @@ void RpFile::init(void)
 						// NOTE: Uncompressed size might be smaller than the real filesize
 						// in cases where gzip doesn't help much.
 						// TODO: Add better verification heuristics?
-						d->gzsz = (int64_t)uncomp_sz;
+						d->gzsz = (off64_t)uncomp_sz;
 
 						// Make sure the CRC32 table is initialized.
 						get_crc_table();
@@ -387,7 +387,7 @@ size_t RpFile::write(const void *ptr, size_t size)
  * @param pos File position.
  * @return 0 on success; -1 on error.
  */
-int RpFile::seek(int64_t pos)
+int RpFile::seek(off64_t pos)
 {
 	RP_D(RpFile);
 	if (!d->file) {
@@ -433,7 +433,7 @@ int RpFile::seek(int64_t pos)
  * Get the file position.
  * @return File position, or -1 on error.
  */
-int64_t RpFile::tell(void)
+off64_t RpFile::tell(void)
 {
 	RP_D(RpFile);
 	if (!d->file) {
@@ -442,7 +442,7 @@ int64_t RpFile::tell(void)
 	}
 
 	if (d->gzfd) {
-		return (int64_t)gztell(d->gzfd);
+		return (off64_t)gztell(d->gzfd);
 	}
 	return ftello(d->file);
 }
@@ -452,7 +452,7 @@ int64_t RpFile::tell(void)
  * @param size New size. (default is 0)
  * @return 0 on success; -1 on error.
  */
-int RpFile::truncate(int64_t size)
+int RpFile::truncate(off64_t size)
 {
 	RP_D(RpFile);
 	if (!d->file || !(d->mode & FM_WRITE)) {
@@ -466,7 +466,7 @@ int RpFile::truncate(int64_t size)
 	}
 
 	// Get the current position.
-	int64_t pos = ftello(d->file);
+	off64_t pos = ftello(d->file);
 	if (pos < 0) {
 		m_lastError = errno;
 		return -1;
@@ -500,7 +500,7 @@ int RpFile::truncate(int64_t size)
  * Get the file size.
  * @return File size, or negative on error.
  */
-int64_t RpFile::size(void)
+off64_t RpFile::size(void)
 {
 	RP_D(RpFile);
 	if (!d->file) {
@@ -520,11 +520,11 @@ int64_t RpFile::size(void)
 	}
 
 	// Save the current position.
-	int64_t cur_pos = ftello(d->file);
+	off64_t cur_pos = ftello(d->file);
 
 	// Seek to the end of the file and record its position.
 	fseeko(d->file, 0, SEEK_END);
-	int64_t end_pos = ftello(d->file);
+	off64_t end_pos = ftello(d->file);
 
 	// Go back to the previous position.
 	fseeko(d->file, cur_pos, SEEK_SET);

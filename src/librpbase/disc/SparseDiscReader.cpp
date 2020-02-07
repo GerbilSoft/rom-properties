@@ -3,7 +3,7 @@
  * SparseDiscReader.cpp: Disc reader base class for disc image formats     *
  * that use sparse and/or compressed blocks, e.g. CISO, WBFS, GCZ.         *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -71,7 +71,7 @@ size_t SparseDiscReader::read(void *ptr, size_t size)
 
 	// Make sure d->pos + size <= d->disc_size.
 	// If it isn't, we'll do a short read.
-	if (d->pos + static_cast<int64_t>(size) >= d->disc_size) {
+	if (d->pos + static_cast<off64_t>(size) >= d->disc_size) {
 		size = static_cast<size_t>(d->disc_size - d->pos);
 	}
 
@@ -140,7 +140,7 @@ size_t SparseDiscReader::read(void *ptr, size_t size)
  * @param pos disc image position.
  * @return 0 on success; -1 on error.
  */
-int SparseDiscReader::seek(int64_t pos)
+int SparseDiscReader::seek(off64_t pos)
 {
 	RP_D(SparseDiscReader);
 	assert(m_file != nullptr);
@@ -170,7 +170,7 @@ int SparseDiscReader::seek(int64_t pos)
  * Get the disc image position.
  * @return Disc image position on success; -1 on error.
  */
-int64_t SparseDiscReader::tell(void)
+off64_t SparseDiscReader::tell(void)
 {
 	RP_D(const SparseDiscReader);
 	assert(m_file != nullptr);
@@ -190,7 +190,7 @@ int64_t SparseDiscReader::tell(void)
  * Get the disc image size.
  * @return Disc image size, or -1 on error.
  */
-int64_t SparseDiscReader::size(void)
+off64_t SparseDiscReader::size(void)
 {
 	RP_D(const SparseDiscReader);
 	assert(m_file != nullptr);
@@ -229,8 +229,8 @@ int SparseDiscReader::readBlock(uint32_t blockIdx, void *ptr, int pos, size_t si
 	assert(pos >= 0 && pos < (int)d->block_size);
 	assert(size <= d->block_size);
 	// TODO: Make sure overflow doesn't occur.
-	assert(static_cast<int64_t>(pos + size) <= static_cast<int64_t>(d->block_size));
-	if (pos < 0 || static_cast<int64_t>(pos + size) > static_cast<int64_t>(d->block_size)) {
+	assert(static_cast<off64_t>(pos + size) <= static_cast<off64_t>(d->block_size));
+	if (pos < 0 || static_cast<off64_t>(pos + size) > static_cast<off64_t>(d->block_size)) {
 		// pos+size is out of range.
 		return -1;
 	}
@@ -241,7 +241,7 @@ int SparseDiscReader::readBlock(uint32_t blockIdx, void *ptr, int pos, size_t si
 	}
 
 	// Get the physical address first.
-	const int64_t physBlockAddr = getPhysBlockAddr(blockIdx);
+	const off64_t physBlockAddr = getPhysBlockAddr(blockIdx);
 	assert(physBlockAddr >= 0);
 	if (physBlockAddr < 0) {
 		// Out of range.

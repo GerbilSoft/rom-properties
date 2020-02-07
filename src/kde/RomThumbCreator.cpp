@@ -534,7 +534,7 @@ Q_DECL_EXPORT int rp_create_thumbnail(const char *source_file, const char *outpu
 #endif
 
 	// File size.
-	int64_t szFile = fi_src.size();
+	off64_t szFile = fi_src.size();
 	if (szFile > 0) {
 		kv.emplace_back("Thumb::Size", rp_sprintf("%" PRId64, szFile));
 	}
