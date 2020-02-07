@@ -13,8 +13,8 @@
 #include <stdlib.h>
 
 typedef struct _errmap {
-        DWORD w32;	// Win32 error code.
-        int posix;	// POSIX error code.
+        uint16_t w32;	// Win32 error code.
+        uint16_t posix;	// POSIX error code.
 } errmap;
 
 static const errmap w32_to_posix[] = {
@@ -122,8 +122,8 @@ static const errmap w32_to_posix[] = {
  */
 static int RP_C_API errmap_compar(const void *a, const void *b)
 {
-	const DWORD err1 = ((const errmap*)a)->w32;
-	const DWORD err2 = ((const errmap*)b)->w32;
+	const uint16_t err1 = ((const errmap*)a)->w32;
+	const uint16_t err2 = ((const errmap*)b)->w32;
 	if (err1 < err2) return -1;
 	if (err1 > err2) return 1;
 	return 0;
@@ -136,12 +136,20 @@ static int RP_C_API errmap_compar(const void *a, const void *b)
  */
 int w32err_to_posix(DWORD w32err)
 {
+	errmap key;
+	const errmap *entry;
+
+	if (w32err > UINT16_MAX) {
+		// Error code table is limited to uint16_t.
+		return EINVAL;
+	}
+
 	// Check the error code table.
-	const errmap key = {w32err, 0};
-	const errmap *const entry = (const errmap*)(bsearch(&key,
-			w32_to_posix,
-			sizeof(w32_to_posix)/sizeof(w32_to_posix[0]),
-			sizeof(errmap), errmap_compar));
+	key.w32 = (uint16_t)w32err;
+	key.posix = 0;
+	entry = (const errmap*)(bsearch(&key,
+		w32_to_posix, _countof(w32_to_posix),
+		sizeof(errmap), errmap_compar));
 	if (entry) {
 		// Found an error code.
 		return entry->posix;
