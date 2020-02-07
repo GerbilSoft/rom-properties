@@ -349,15 +349,7 @@ CHECK_SYMBOL_EXISTS(_aligned_malloc	"malloc.h"		HAVE_MSVC_ALIGNED_MALLOC)
 CHECK_SYMBOL_EXISTS(posix_memalign	"stdlib.h"		HAVE_POSIX_MEMALIGN)
 CHECK_SYMBOL_EXISTS(memalign		"stdlib.h;malloc.h"	HAVE_MEMALIGN)
 IF(NOT HAVE_MSVC_ALIGNED_MALLOC AND NOT HAVE_ALIGNED_ALLOC AND NOT HAVE_POSIX_MEMALIGN AND NOT HAVE_MEMALIGN)
-	IF(APPLE)
-		# TODO: This test is failing on travis-ci occasionally.
-		# posix_memalign is not present on OS X 10.5, but alignment should be
-		# guaranteed at 16 bytes...
-		MESSAGE(WARNING "posix_memalign test failed, but it should be present on Mac OS X 10.6.")
-		SET(HAVE_POSIX_MEMALIGN 1 CACHE INTERNAL "Forcing posix_memalign on Mac OS X" FORCE)
-	ELSE(APPLE)
-		MESSAGE(FATAL_ERROR "System does not have an aligned malloc() function.")
-	ENDIF(APPLE)
+	MESSAGE(FATAL_ERROR "System does not have an aligned malloc() function.")
 ENDIF()
 
 # gcc byteswapping intrinsics.
