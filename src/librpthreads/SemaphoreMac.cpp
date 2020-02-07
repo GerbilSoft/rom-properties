@@ -73,7 +73,9 @@ inline Semaphore::Semaphore(int count)
 	kern_return_t ret = semaphore_create(mach_task_self(), &m_sem, SYNC_POLICY_FIFO, count);
 	assert(ret == KERN_SUCCESS);
 	assert(m_sem != 0);
+
 	// FIXME: Do something if an error occurred here...
+	((void)ret);
 }
 
 /**
