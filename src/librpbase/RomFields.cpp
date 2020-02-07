@@ -537,23 +537,24 @@ void RomFields::reserve(int n)
  * Convert an array of char strings to a vector of std::string.
  * This can be used for addField_bitfield() and addField_listData().
  * @param strArray Array of strings.
- * @param count Number of strings, or -1 for a NULL-terminated array.
- * NOTE: The array will be terminated at NULL regardless of count,
- * so a -1 count is only useful if the size isn't known.
+ * @param count Number of strings. (nullptrs will be handled as empty strings)
  * @return Allocated std::vector<std::string>.
  */
-vector<string> *RomFields::strArrayToVector(const char *const *strArray, int count)
+vector<string> *RomFields::strArrayToVector(const char *const *strArray, size_t count)
 {
 	vector<string> *pVec = new vector<string>();
-	if (count < 0) {
-		count = std::numeric_limits<int>::max();
-	} else {
-		pVec->reserve(count);
+	assert(count > 0);
+	if (count == 0) {
+		return pVec;
 	}
 
-	for (; strArray != nullptr && count > 0; strArray++, count--) {
+	for (; count > 0; strArray++, count--) {
 		// nullptr will be handled as empty strings.
-		pVec->emplace_back(*strArray ? *strArray : string());
+		if (*strArray) {
+			pVec->emplace_back(*strArray);
+		} else {
+			pVec->emplace_back("");
+		}
 	}
 
 	return pVec;
@@ -564,12 +565,10 @@ vector<string> *RomFields::strArrayToVector(const char *const *strArray, int cou
  * This can be used for addField_bitfield() and addField_listData().
  * @param msgctxt i18n context.
  * @param strArray Array of strings.
- * @param count Number of strings, or -1 for a NULL-terminated array.
- * NOTE: The array will be terminated at NULL regardless of count,
- * so a -1 count is only useful if the size isn't known.
+ * @param count Number of strings. (nullptrs will be handled as empty strings)
  * @return Allocated std::vector<std::string>.
  */
-vector<string> *RomFields::strArrayToVector_i18n(const char *msgctxt, const char *const *strArray, int count)
+vector<string> *RomFields::strArrayToVector_i18n(const char *msgctxt, const char *const *strArray, size_t count)
 {
 #ifndef ENABLE_NLS
 	// Mark msgctxt as unused here.
@@ -577,18 +576,17 @@ vector<string> *RomFields::strArrayToVector_i18n(const char *msgctxt, const char
 #endif /* ENABLE_NLS */
 
 	vector<string> *pVec = new vector<string>();
-	if (count < 0) {
-		count = std::numeric_limits<int>::max();
-	} else {
-		pVec->reserve(count);
+	assert(count > 0);
+	if (count == 0) {
+		return pVec;
 	}
 
-	for (; strArray != nullptr && count > 0; strArray++, count--) {
+	for (; count > 0; strArray++, count--) {
 		// nullptr will be handled as empty strings.
 		if (*strArray) {
 			pVec->emplace_back(dpgettext_expr(RP_I18N_DOMAIN, msgctxt, *strArray));
 		} else {
-			pVec->emplace_back(string());
+			pVec->emplace_back("");
 		}
 	}
 
