@@ -28,6 +28,16 @@
 	((int)(((sizeof(x) / sizeof(x[0]))) / \
 		(size_t)(!(sizeof(x) % sizeof(x[0])))))
 
+// Some compilers don't seem to provide the static_assert() macro,
+// even though they default to C11.
+// OpenBSD 6.6: clang-8.0.1
+// TODO: Move to c++11-compat.h?
+#ifndef _MSC_VER
+# ifndef static_assert
+#  define static_assert _Static_assert
+# endif /* !static_assert */
+#endif /* !_MSC_VER */
+
 // HTTP status code messages.
 // Reference: https://en.wikipedia.org/wiki/List_of_HTTP_status_codes
 
