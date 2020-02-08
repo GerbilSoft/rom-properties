@@ -31,7 +31,7 @@ MACRO(CHECK_C11_C99_COMPILER_FLAG _RESULT)
 #endif
 
 int main() { return 0; }" CHECK_C11_ENABLED_DEFAULT)
-	IF (${CHECK_C11_ENABLED_DEFAULT})
+	IF (CHECK_C11_ENABLED_DEFAULT)
 		UNSET(${_RESULT})
 		MESSAGE(STATUS "Checking if C11 is enabled by default: yes")
 	ELSE()
@@ -65,7 +65,7 @@ int main() { return 0; }" CHECK_C11_ENABLED_DEFAULT)
 	#endif
 
 	int main() { return 0; }" CHECK_C99_ENABLED_DEFAULT)
-		IF (${CHECK_C99_ENABLED_DEFAULT})
+		IF (CHECK_C99_ENABLED_DEFAULT)
 			UNSET(${_RESULT})
 			MESSAGE(STATUS "Checking if C99 is enabled by default: yes")
 		ELSE()
