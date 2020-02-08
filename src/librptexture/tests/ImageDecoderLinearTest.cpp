@@ -2,12 +2,13 @@
  * ROM Properties Page shell extension. (librptexture/tests)               *
  * ImageDecoderLinearTest.cpp: Linear image decoding tests with SSSE3.     *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 // Google Test
 #include "gtest/gtest.h"
+#include "tcharx.h"
 
 // librpbase
 #include "librpbase/common.h"
@@ -1200,7 +1201,7 @@ INSTANTIATE_TEST_CASE_P(fromLinear16_384, ImageDecoderLinearTest,
  * Test suite main function.
  * Called by gtest_init.cpp.
  */
-extern "C" int gtest_main(int argc, char *argv[])
+extern "C" int gtest_main(int argc, TCHAR *argv[])
 {
 	fprintf(stderr, "LibRpTexture test suite: ImageDecoder::fromLinear*() tests.\n\n");
 	fprintf(stderr, "Benchmark iterations: %u\n",

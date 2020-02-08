@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata/tests)                 *
  * GcnFstTest.cpp: GameCube/Wii FST test.                                  *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -11,6 +11,7 @@
 
 // Google Test
 #include "gtest/gtest.h"
+#include "tcharx.h"
 
 // MiniZip
 #include <zlib.h>
@@ -590,7 +591,7 @@ INSTANTIATE_TEST_CASE_P(Wii, GcnFstTest,
 
 } }
 
-extern "C" int gtest_main(int argc, char *argv[])
+extern "C" int gtest_main(int argc, TCHAR *argv[])
 {
 	fprintf(stderr, "LibRomData test suite: GcnFst tests.\n\n");
 	fflush(nullptr);

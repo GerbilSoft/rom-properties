@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase/tests)                  *
  * gtest_init.c: Google Test initialization.                               *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -16,6 +16,7 @@
 using std::locale;
 
 #include "librpbase/common.h"
+#include "tcharx.h"
 
 #ifdef _WIN32
 #include "libwin32common/secoptions.h"
@@ -27,9 +28,9 @@ using LibRpTexture::RpGdiplusBackend;
 using LibRpTexture::rp_image;
 #endif /* _WIN32 */
 
-extern "C" int gtest_main(int argc, char *argv[]);
+extern "C" int gtest_main(int argc, TCHAR *argv[]);
 
-int RP_C_API main(int argc, char *argv[])
+int RP_C_API _tmain(int argc, TCHAR *argv[])
 {
 #ifdef _WIN32
 	// Set Win32 security options.

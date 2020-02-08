@@ -2,12 +2,13 @@
  * ROM Properties Page shell extension. (librptexture/tests)               *
  * UnPremutiplyTest.cpp: Test un_premultiply().                            *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 // Google Test
 #include "gtest/gtest.h"
+#include "tcharx.h"
 
 // librpbase
 #include "librpbase/common.h"
@@ -118,7 +119,7 @@ TEST_F(UnPremultiplyTest, premultiply_cpp)
  * Test suite main function.
  * Called by gtest_init.cpp.
  */
-extern "C" int gtest_main(int argc, char *argv[])
+extern "C" int gtest_main(int argc, TCHAR *argv[])
 {
 	fprintf(stderr, "LibRpTexture test suite: rp_image::un_premultiply() tests.\n\n");
 	fprintf(stderr, "Benchmark iterations: %u\n",

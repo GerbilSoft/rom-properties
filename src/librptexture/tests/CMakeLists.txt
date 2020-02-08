@@ -24,6 +24,7 @@ IF(PNG_LIBRARY)
 ENDIF(PNG_LIBRARY)
 DO_SPLIT_DEBUG(ImageDecoderLinearTest)
 SET_WINDOWS_SUBSYSTEM(ImageDecoderLinearTest CONSOLE)
+SET_WINDOWS_ENTRYPOINT(ImageDecoderLinearTest wmain OFF)
 ADD_TEST(NAME ImageDecoderLinearTest COMMAND ImageDecoderLinearTest "--gtest_filter=-*benchmark*")
 
 # UnPremultiplyTest
@@ -38,4 +39,5 @@ TARGET_LINK_LIBRARIES(UnPremultiplyTest PRIVATE rptexture rpbase)
 TARGET_LINK_LIBRARIES(UnPremultiplyTest PRIVATE gtest)
 DO_SPLIT_DEBUG(UnPremultiplyTest)
 SET_WINDOWS_SUBSYSTEM(UnPremultiplyTest CONSOLE)
+SET_WINDOWS_ENTRYPOINT(UnPremultiplyTest wmain OFF)
 ADD_TEST(NAME UnPremultiplyTest COMMAND UnPremultiplyTest "--gtest_filter=-*benchmark*")

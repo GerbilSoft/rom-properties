@@ -2,12 +2,13 @@
  * ROM Properties Page shell extension. (librpbase/tests)                  *
  * ByteswapTest.cpp: Byteswap functions test.                              *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 // Google Test
 #include "gtest/gtest.h"
+#include "tcharx.h"
 
 // Byteswap functions.
 #include "librpbase/byteswap.h"
@@ -387,7 +388,7 @@ DO_ARRAY_32_unQWORD_BENCHMARK	(dispatch, true, "")
 /**
  * Test suite main function.
  */
-extern "C" int gtest_main(int argc, char *argv[])
+extern "C" int gtest_main(int argc, TCHAR *argv[])
 {
 	fprintf(stderr, "LibRomData test suite: Byteswap tests.\n\n");
 	fprintf(stderr, "Benchmark iterations: %u\n", LibRomData::Tests::ByteswapTest::BENCHMARK_ITERATIONS);

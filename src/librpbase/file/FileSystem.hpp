@@ -20,6 +20,7 @@
 #endif
 
 // Windows doesn't define X_OK, W_OK, or R_OK.
+// NOTE: F_OK doesn't work properly on Windows.
 #ifndef F_OK
 #define F_OK 0
 #endif
@@ -34,11 +35,7 @@
 #endif
 
 // Directory separator characters.
-#ifdef _WIN32
-#define DIR_SEP_CHR '\\'
-#else
-#define DIR_SEP_CHR '/'
-#endif
+#include "tcharx.h"
 
 // C++ includes.
 #include <string>

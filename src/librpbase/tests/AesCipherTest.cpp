@@ -8,6 +8,7 @@
 
 // Google Test
 #include "gtest/gtest.h"
+#include "tcharx.h"
 
 // AesCipher
 #include "../crypto/IAesCipher.hpp"
@@ -577,7 +578,7 @@ AesDecryptTestSet(Nettle, true)
 /**
  * Test suite main function.
  */
-extern "C" int gtest_main(int argc, char *argv[])
+extern "C" int gtest_main(int argc, TCHAR *argv[])
 {
 	fprintf(stderr, "LibRpBase test suite: AesCipher tests.\n\n");
 	fflush(nullptr);

@@ -97,6 +97,9 @@ TARGET_LINK_LIBRARIES(rpcli PRIVATE romdata rpbase)
 IF(ENABLE_NLS)
 	TARGET_LINK_LIBRARIES(rpcli PRIVATE i18n)
 ENDIF(ENABLE_NLS)
+IF(WIN32)
+	TARGET_LINK_LIBRARIES(rpcli PRIVATE wmain)
+ENDIF(WIN32)
 
 # Make sure git_version.h is created before compiling this target.
 IF(TARGET git_version)

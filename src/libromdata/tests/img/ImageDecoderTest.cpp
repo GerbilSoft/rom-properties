@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata/tests)                 *
  * ImageDecoderTest.cpp: ImageDecoder class test.                          *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -11,6 +11,7 @@
 
 // Google Test
 #include "gtest/gtest.h"
+#include "tcharx.h"
 
 // zlib and libpng
 #include <zlib.h>
@@ -1535,7 +1536,7 @@ INSTANTIATE_TEST_CASE_P(PowerVR3, ImageDecoderTest,
  * Test suite main function.
  * Called by gtest_init.cpp.
  */
-extern "C" int gtest_main(int argc, char *argv[])
+extern "C" int gtest_main(int argc, TCHAR *argv[])
 {
 	fprintf(stderr, "LibRomData test suite: ImageDecoder tests.\n\n");
 	fprintf(stderr, "Benchmark iterations: %u (%u for BC7)\n",

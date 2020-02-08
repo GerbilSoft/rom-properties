@@ -8,6 +8,7 @@
 
 // Google Test
 #include "gtest/gtest.h"
+#include "tcharx.h"
 
 // libromdata
 #include "librpbase/TextFuncs.hpp"
@@ -164,7 +165,7 @@ INSTANTIATE_TEST_CASE_P(CacheManagerTest, FilterCacheKeyTest,
 /**
  * Test suite main function.
  */
-extern "C" int gtest_main(int argc, char *argv[])
+extern "C" int gtest_main(int argc, TCHAR *argv[])
 {
 	fprintf(stderr, "LibCacheCommon test suite: LibCacheCommon::filterCacheKey() tests.\n\n");
 	fflush(nullptr);

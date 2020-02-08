@@ -26,7 +26,6 @@ CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/config.libwin32common.h.in" "${CMAKE
 # Sources and headers.
 SET(libwin32common_SRCS
 	secoptions.c
-	wmain.c
 	DialogBuilder.cpp
 	RegKey.cpp
 	WinUI.cpp
@@ -84,3 +83,11 @@ TARGET_INCLUDE_DIRECTORIES(win32common
 	PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>	# src
 		$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/..>	# src
 	)
+
+###################
+# wmain.c library #
+###################
+ADD_LIBRARY(wmain STATIC wmain.c)
+SET_MSVC_DEBUG_PATH(wmain)
+# Exclude from ALL builds.
+SET_TARGET_PROPERTIES(wmain PROPERTIES EXCLUDE_FROM_ALL TRUE)

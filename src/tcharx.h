@@ -1,13 +1,13 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (rp-download)                      *
+ * ROM Properties Page shell extension.                                    *
  * tcharx.h: TCHAR support for Windows and Linux.                          *
  *                                                                         *
  * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_RP_DOWNLOAD_TCHAR_H__
-#define __ROMPROPERTIES_RP_DOWNLOAD_TCHAR_H__
+#ifndef __ROMPROPERTIES_TCHAR_H__
+#define __ROMPROPERTIES_TCHAR_H__
 
 #ifdef _WIN32
 
@@ -71,4 +71,4 @@ typedef char TCHAR;
 # define DIR_SEP_CHR _T('/')
 #endif /* _WIN32 */
 
-#endif /* __ROMPROPERTIES_RP_DOWNLOAD_TCHAR_H__ */
+#endif /* __ROMPROPERTIES_TCHAR_H__ */

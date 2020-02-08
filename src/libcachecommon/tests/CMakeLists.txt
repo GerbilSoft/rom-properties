@@ -16,6 +16,7 @@ TARGET_LINK_LIBRARIES(FilterCacheKeyTest PRIVATE rpbase cachecommon)
 TARGET_LINK_LIBRARIES(FilterCacheKeyTest PRIVATE gtest)
 DO_SPLIT_DEBUG(FilterCacheKeyTest)
 SET_WINDOWS_SUBSYSTEM(FilterCacheKeyTest CONSOLE)
+SET_WINDOWS_ENTRYPOINT(FilterCacheKeyTest wmain OFF)
 ADD_TEST(NAME FilterCacheKeyTest COMMAND FilterCacheKeyTest)
 
 # Delay-load shell32.dll to prevent a performance penalty due to gdi32.dll.

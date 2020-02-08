@@ -27,8 +27,12 @@ TARGET_LINK_LIBRARIES(GcnFstPrint PRIVATE romdata rpbase)
 IF(ENABLE_NLS)
 	TARGET_LINK_LIBRARIES(GcnFstPrint PRIVATE i18n)
 ENDIF(ENABLE_NLS)
+IF(WIN32)
+	TARGET_LINK_LIBRARIES(GcnFstPrint PRIVATE wmain)
+ENDIF(WIN32)
 DO_SPLIT_DEBUG(GcnFstPrint)
 SET_WINDOWS_SUBSYSTEM(GcnFstPrint CONSOLE)
+SET_WINDOWS_ENTRYPOINT(GcnFstPrint wmain OFF)
 
 # GcnFstTest.
 # NOTE: We can't disable NLS here due to its usage
@@ -47,6 +51,7 @@ TARGET_LINK_LIBRARIES(GcnFstTest PRIVATE gtest)
 TARGET_LINK_LIBRARIES(GcnFstTest PRIVATE minizip ${ZLIB_LIBRARY})
 DO_SPLIT_DEBUG(GcnFstTest)
 SET_WINDOWS_SUBSYSTEM(GcnFstTest CONSOLE)
+SET_WINDOWS_ENTRYPOINT(GcnFstTest wmain OFF)
 ADD_TEST(NAME GcnFstTest COMMAND GcnFstTest)
 
 # Copy the reference FSTs to:
@@ -90,6 +95,7 @@ IF(PNG_LIBRARY)
 ENDIF(PNG_LIBRARY)
 DO_SPLIT_DEBUG(ImageDecoderTest)
 SET_WINDOWS_SUBSYSTEM(ImageDecoderTest CONSOLE)
+SET_WINDOWS_ENTRYPOINT(ImageDecoderTest wmain OFF)
 ADD_TEST(NAME ImageDecoderTest COMMAND ImageDecoderTest "--gtest_filter=-*Benchmark*")
 
 # Copy the reference images to:
@@ -145,4 +151,5 @@ TARGET_INCLUDE_DIRECTORIES(SuperMagicDriveTest PRIVATE ${ZLIB_INCLUDE_DIRS})
 TARGET_COMPILE_DEFINITIONS(SuperMagicDriveTest PRIVATE ${ZLIB_DEFINITIONS})
 DO_SPLIT_DEBUG(SuperMagicDriveTest)
 SET_WINDOWS_SUBSYSTEM(SuperMagicDriveTest CONSOLE)
+SET_WINDOWS_ENTRYPOINT(SuperMagicDriveTest wmain OFF)
 ADD_TEST(NAME SuperMagicDriveTest COMMAND SuperMagicDriveTest "--gtest_filter=-*benchmark*")

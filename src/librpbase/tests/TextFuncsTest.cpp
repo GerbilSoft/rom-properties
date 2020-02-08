@@ -2,12 +2,13 @@
  * ROM Properties Page shell extension. (librpbase/tests)                  *
  * TextFuncsTest.cpp: TextFuncs class test.                                *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 // Google Test
 #include "gtest/gtest.h"
+#include "tcharx.h"
 
 // TextFuncs
 #include "../TextFuncs.hpp"
@@ -921,7 +922,7 @@ TEST_F(TextFuncsTest, atascii_to_utf8)
 /**
  * Test suite main function.
  */
-extern "C" int gtest_main(int argc, char *argv[])
+extern "C" int gtest_main(int argc, TCHAR *argv[])
 {
 	fprintf(stderr, "LibRpBase test suite: TextFuncs tests.\n\n");
 	fflush(nullptr);
