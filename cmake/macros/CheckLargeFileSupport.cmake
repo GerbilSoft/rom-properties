@@ -26,7 +26,7 @@
 # the use of wrapper functions?
 
 FUNCTION(CHECK_LARGE_FILE_SUPPORT)
-	IF(NOT DEFINED LFS_FOUND)
+	IF(NOT DEFINED LFS_FOUND OR NOT DEFINED CHECKED_OFF_T)
 		# NOTE: ${CMAKE_MODULE_PATH} has two directories, macros/ and libs/,
 		# so we have to configure this manually.
 		SET(LFS_SOURCE_PATH "${CMAKE_SOURCE_DIR}/cmake/macros")
@@ -86,6 +86,7 @@ FUNCTION(CHECK_LARGE_FILE_SUPPORT)
 		IF(HAVE_OFF64_T)
 			SET(TMP_LFS_DEFINITIONS "${CMAKE_REQUIRED_DEFINITIONS}")
 		ENDIF(HAVE_OFF64_T)
+		SET(CHECKED_OFF_T "1" CACHE INTERNAL "off_t/off64_t were checked")
 
 		# NOTE: COMPILE_DEFINITIONS requires a semicolon-separated list;
 		# CFLAGS reqiures space-separated.
