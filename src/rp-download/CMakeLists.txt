@@ -30,7 +30,6 @@ SET(rp-download_H
 IF(WIN32)
 	# Windows: Use WinInet.
 	SET(rp-download_OS_SRCS
-		os-secure_win32.c
 		WinInetDownloader.cpp
 		SetFileOriginInfo_win32.cpp
 		resource.rc
@@ -38,18 +37,27 @@ IF(WIN32)
 	SET(rp-download_OS_H
 		WinInetDownloader.hpp
 		)
+	SET(rp-download-OS_SECURE_SRCS os-secure_win32.c)
 ELSE(WIN32)
 	# Non-Windows platforms: Use cURL.
 	FIND_PACKAGE(CURL REQUIRED)
 	INCLUDE_DIRECTORIES(${CURL_INCLUDE_DIRS})
 	SET(rp-download_OS_SRCS
-		os-secure_posix.c
 		CurlDownloader.cpp
 		SetFileOriginInfo_posix.cpp
 		)
 	SET(rp-download_OS_H
 		CurlDownloader.hpp
 		)
+
+	# Check for system security functionality.
+	CHECK_SYMBOL_EXISTS(pledge "unistd.h" HAVE_PLEDGE)	# OpenBSD
+	IF(HAVE_PLEDGE)
+		SET(rp-download-OS_SECURE_SRCS os-secure_openbsd.c)
+	ELSE()
+		# TODO: Add support for other systems.
+		SET(rp-download-OS_SECURE_SRCS os-secure_dummy.c)
+	ENDIF()
 ENDIF(WIN32)
 
 IF(ENABLE_PCH)
@@ -72,6 +80,7 @@ ADD_EXECUTABLE(rp-download
 	${rp-download_PCH_SRC} ${rp-download_PCH_H}
 	${rp-download_SRCS} ${rp-download_H}
 	${rp-download_OS_SRCS} ${rp-download_OS_H}
+	${rp-download-OS_SECURE_SRCS}
 	)
 IF(ENABLE_PCH)
 	ADD_PRECOMPILED_HEADER(rp-download ${rp-download_PCH_H}
