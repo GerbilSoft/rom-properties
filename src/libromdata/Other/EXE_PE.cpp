@@ -421,6 +421,7 @@ int EXEPrivate::findPERuntimeDLL(string &refDesc, string &refLink)
 		}
 
 		// Check for MSVCRT.DLL.
+		// FIXME: This is used by both 5.0 and 6.0.
 		if (!strcmp(dll_name, "msvcrt.dll")) {
 			// NOTE: Conflict between MSVC 6.0 and the "system" MSVCRT.
 			// TODO: Other heuristics to figure this out. (Check for msvcp60.dll?)
