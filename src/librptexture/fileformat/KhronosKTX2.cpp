@@ -516,32 +516,34 @@ const rp_image *KhronosKTX2Private::loadImage(int mip)
  */
 void KhronosKTX2Private::loadKeyValueData(void)
 {
-#if 0
 	if (!kv_data.empty()) {
 		// Key/value data is already loaded.
 		return;
-	} else if (ktx2Header.bytesOfKeyValueData == 0) {
+	} else if (ktx2Header.kvdByteOffset <= sizeof(ktx2Header)) {
+		// Offset is within the KTX2 header.
+		return;
+	} else if (ktx2Header.kvdByteLength == 0) {
 		// No key/value data is present.
 		return;
-	} else if (ktx2Header.bytesOfKeyValueData > 512*1024) {
+	} else if (ktx2Header.kvdByteLength > 512*1024) {
 		// Sanity check: More than 512 KB is usually wrong.
 		return;
 	}
 
 	// Load the data.
-	unique_ptr<char[]> buf(new char[ktx2Header.bytesOfKeyValueData]);
-	size_t size = file->seekAndRead(sizeof(ktx2Header), buf.get(), ktx2Header.bytesOfKeyValueData);
-	if (size != ktx2Header.bytesOfKeyValueData) {
+	unique_ptr<char[]> buf(new char[ktx2Header.kvdByteLength]);
+	size_t size = file->seekAndRead(ktx2Header.kvdByteOffset, buf.get(), ktx2Header.kvdByteLength);
+	if (size != ktx2Header.kvdByteLength) {
 		// Seek and/or read error.
 		return;
 	}
 
 	// Key/value data format:
-	// - uint32_t: keyAndValueByteSize
-	// - Byte: keyAndValue[keyAndValueByteSize] (UTF-8)
+	// - uint32_t: keyAndValueByteLength
+	// - Byte: keyAndValue[keyAndValueByteLength] (UTF-8)
 	// - Byte: valuePadding (4-byte alignment)
 	const char *p = buf.get();
-	const char *const p_end = p + ktx2Header.bytesOfKeyValueData;
+	const char *const p_end = p + ktx2Header.kvdByteLength;
 	bool hasKTXorientation = false;
 
 	while (p < p_end) {
@@ -591,36 +593,24 @@ void KhronosKTX2Private::loadKeyValueData(void)
 		// have "KTXOrientation", so use a case-insensitive comparison.
 		if (!hasKTXorientation && !strcasecmp(p, "KTXorientation")) {
 			hasKTXorientation = true;
-			// Check for known values.
-			// NOTE: Ignoring the R component.
-			// NOTE: str[7] does NOT have a NULL terminator.
+			// For KTX2, this field has one character per dimension.
+			// - X: rl
+			// - Y: du
+			// - Z: oi
 			const char *const v = k_end + 1;
+			isFlipNeeded = FLIP_NONE;
 
-			static const struct {
-				char str[7];
-				uint8_t flip;
-			} orientation_lkup_tbl[] = {
-				{{'S','=','r',',','T','=','d'}, FLIP_NONE},
-				{{'S','=','r',',','T','=','u'}, FLIP_V},
-				{{'S','=','l',',','T','=','d'}, FLIP_H},
-				{{'S','=','l',',','T','=','u'}, FLIP_HV},
-
-				{"", 0}
-			};
-
-			for (const auto *p = orientation_lkup_tbl; p->str[0] != '\0'; p++) {
-				if (!strncmp(v, p->str, 7)) {
-					// Found a match.
-					isFlipNeeded = p->flip;
-					break;
-				}
+			if (v[0] == 'l') {
+				isFlipNeeded = FLIP_H;
+			}
+			if (v[0] != '\0' && v[1] == 'u') {
+				isFlipNeeded |= FLIP_V;
 			}
 		}
 
 		// Next key/value pair.
 		p += ALIGN_BYTES(4, sz);
 	}
-#endif
 }
 
 /** KhronosKTX2 **/
