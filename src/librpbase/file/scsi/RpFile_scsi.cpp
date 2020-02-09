@@ -45,7 +45,7 @@ int RpFilePrivate::readOneLBA(uint32_t lba)
 		// TODO: Special case for ~0U?
 		if (!devInfo->isKreonUnlocked) {
 			// OSAPI: Seek to the next sector.
-			const off64_t seek_pos = (lba+1) * devInfo->sector_size;
+			const off64_t seek_pos = (static_cast<off64_t>(lba) + 1) * devInfo->sector_size;
 #ifdef _WIN32
 			LARGE_INTEGER liSeekPos;
 			liSeekPos.QuadPart = seek_pos;
@@ -80,7 +80,7 @@ int RpFilePrivate::readOneLBA(uint32_t lba)
 		}
 	} else {
 		// Not a Kreon drive. Use the OS API.
-		const off64_t seek_pos = lba * devInfo->sector_size;
+		const off64_t seek_pos = static_cast<off64_t>(lba) * devInfo->sector_size;
 #ifdef _WIN32
 		LARGE_INTEGER liSeekPos;
 		liSeekPos.QuadPart = seek_pos;
@@ -243,7 +243,7 @@ size_t RpFilePrivate::readUsingBlocks(void *ptr, size_t size)
 		// Make sure we're at the correct address. The initial seek may
 		// have been skipped if we started at the beginning of a block
 		// or if the partial block was cached.
-		const off64_t seek_pos = lba_cur * devInfo->sector_size;
+		const off64_t seek_pos = static_cast<off64_t>(lba_cur) * devInfo->sector_size;
 #ifdef _WIN32
 		LARGE_INTEGER liSeekPos;
 		liSeekPos.QuadPart = seek_pos;
