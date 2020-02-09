@@ -31,12 +31,13 @@ int rp_download_os_secure(void)
 	// - inet: Internet access.
 	// - fattr: Modify file attributes, e.g. mtime.
 	// - dns: Resolve hostnames.
+	// - getpw: Get user's home directory if HOME is empty.
 #ifdef HAVE_PLEDGE_EXECPROMISES
 	// OpenBSD 6.3+: Second parameter is `const char *execpromises`.
-	ret = pledge("stdio rpath wpath cpath inet fattr dns", "");
+	ret = pledge("stdio rpath wpath cpath inet fattr dns getpw", "");
 #else /* !HAVE_PLEDGE_EXECPROMISES */
 	// OpenBSD 5.9-6.2: Second parameter is `const char *paths[]`.
-	ret = pledge("stdio rpath wpath cpath inet fattr dns", NULL);
+	ret = pledge("stdio rpath wpath cpath inet fattr dns getpw", NULL);
 #endif /* HAVE_PLEDGE_EXECPROMISES */
 
 	return (ret == 0 ? 0 : -errno);
