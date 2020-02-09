@@ -8,3 +8,8 @@ path_classifiers:
 
 queries:
   - exclude: cpp/fixme-comment
+
+extraction:
+  cpp:
+    configure:
+      command: cmake -DCMAKE_BUILD_TYPE=Debug -DBUILD_TEST=ON
