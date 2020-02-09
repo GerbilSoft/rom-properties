@@ -613,7 +613,7 @@ void KhronosKTX2Private::loadKeyValueData(void)
 		}
 
 		// Next key/value pair.
-		p += ALIGN_BYTES(4, sz);
+		p += ALIGN_BYTES(4, (uint32_t)sz);
 	}
 }
 
