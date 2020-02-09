@@ -71,8 +71,9 @@ class KhronosKTX2Private : public FileFormatPrivate
 		// Mipmap offsets.
 		ao::uvector<KTX2_Mipmap_Index> mipmap_data;
 
-		// Decoded image.
-		rp_image *img;
+		// Decoded mipmaps.
+		// Mipmap 0 is the full image.
+		vector<rp_image*> mipmaps;
 
 		// Invalid pixel format message.
 		char invalid_pixel_format[24];
@@ -85,9 +86,10 @@ class KhronosKTX2Private : public FileFormatPrivate
 
 		/**
 		 * Load the image.
+		 * @param mip Mipmap number. (0 == full image)
 		 * @return Image, or nullptr on error.
 		 */
-		const rp_image *loadImage(void);
+		const rp_image *loadImage(int mip);
 
 		/**
 		 * Load key/value data.
@@ -100,7 +102,6 @@ class KhronosKTX2Private : public FileFormatPrivate
 KhronosKTX2Private::KhronosKTX2Private(KhronosKTX2 *q, IRpFile *file)
 	: super(q, file)
 	, isFlipNeeded(FLIP_V)
-	, img(nullptr)
 {
 	// Clear the KTX2 header struct.
 	memset(&ktx2Header, 0, sizeof(ktx2Header));
@@ -109,18 +110,32 @@ KhronosKTX2Private::KhronosKTX2Private(KhronosKTX2 *q, IRpFile *file)
 
 KhronosKTX2Private::~KhronosKTX2Private()
 {
-	delete img;
+	std::for_each(mipmaps.begin(), mipmaps.end(), [](rp_image *img) { delete img; });
 }
 
 /**
  * Load the image.
+ * @param mip Mipmap number. (0 == full image)
  * @return Image, or nullptr on error.
  */
-const rp_image *KhronosKTX2Private::loadImage(void)
+const rp_image *KhronosKTX2Private::loadImage(int mip)
 {
-	if (img) {
+	int mipmapCount = ktx2Header.levelCount;
+	if (mipmapCount <= 0) {
+		// No mipmaps == one image.
+		mipmapCount = 1;
+	}
+
+	assert(mip >= 0);
+	assert(mip < mipmapCount);
+	if (mip < 0 || mip >= mipmapCount) {
+		// Invalid mipmap number.
+		return nullptr;
+	}
+
+	if (!mipmaps.empty() && mipmaps[mip] != nullptr) {
 		// Image has already been loaded.
-		return img;
+		return mipmaps[mip];
 	} else if (!this->file || !this->isValid) {
 		// Can't load the image.
 		return nullptr;
@@ -143,14 +158,27 @@ const rp_image *KhronosKTX2Private::loadImage(void)
 		return nullptr;
 	}
 
-	// TODO: Support multiple mipmap levels.
-	// For now, only using mipmap level 0.
-	assert(!mipmap_data.empty());
-	if (mipmap_data.empty()) {
-		// No mipmap data loaded...
+	// Get the mipmap info.
+	assert(mip < (int)mipmap_data.size());
+	if (mip >= (int)mipmap_data.size()) {
+		// Not enough mipmap data loaded...
 		return nullptr;
 	}
-	const auto &mipinfo = mipmap_data.at(0);
+	const auto &mipinfo = mipmap_data.at(mip);
+
+	// Adjust width/height for the mipmap level.
+	int width = ktx2Header.pixelWidth;
+	int height = ktx2Header.pixelHeight;
+	if (mip > 0) {
+		width >>= mip;
+		height >>= mip;
+	}
+
+	// NOTE: If this is a 1D texture, height might be 0.
+	// This might also happen on certain mipmap levels.
+	// TODO: Make sure we have the correct minimum block size.
+	if (width <= 0) width = 1;
+	if (height <= 0) height = 1;
 
 	// Texture cannot start inside of the KTX2 header.
 	assert(mipinfo.byteOffset >= sizeof(ktx2Header));
@@ -172,13 +200,6 @@ const rp_image *KhronosKTX2Private::loadImage(void)
 		return nullptr;
 	}
 
-	// NOTE: Mipmaps are stored *after* the main image.
-	// Hence, no mipmap processing is necessary.
-
-	// Handle a 1D texture as a "width x 1" 2D texture.
-	// NOTE: Handling a 3D texture as a single 2D texture.
-	const int height = (ktx2Header.pixelHeight > 0 ? ktx2Header.pixelHeight : 1);
-
 	// Calculate the expected size.
 	// NOTE: Scanlines are 4-byte aligned.
 	// TODO: Differences between UNORM, UINT, SRGB; handle SNORM, SINT.
@@ -192,7 +213,7 @@ const rp_image *KhronosKTX2Private::loadImage(void)
 		case VK_FORMAT_B8G8R8_UINT:
 		case VK_FORMAT_B8G8R8_SRGB:
 			// 24-bit RGB.
-			stride = ALIGN_BYTES(4, ktx2Header.pixelWidth * 3);
+			stride = ALIGN_BYTES(4, width * 3);
 			expected_size = static_cast<unsigned int>(stride * height);
 			break;
 
@@ -203,7 +224,7 @@ const rp_image *KhronosKTX2Private::loadImage(void)
 		case VK_FORMAT_B8G8R8A8_UINT:
 		case VK_FORMAT_B8G8R8A8_SRGB:
 			// 32-bit RGBA.
-			stride = ktx2Header.pixelWidth * 4;
+			stride = width * 4;
 			expected_size = static_cast<unsigned int>(stride * height);
 			break;
 
@@ -211,13 +232,13 @@ const rp_image *KhronosKTX2Private::loadImage(void)
 		case VK_FORMAT_R8_UINT:
 		case VK_FORMAT_R8_SRGB:
 			// 8-bit. (red)
-			stride = ALIGN_BYTES(4, ktx2Header.pixelWidth);
+			stride = ALIGN_BYTES(4, width);
 			expected_size = static_cast<unsigned int>(stride * height);
 			break;
 
 		case VK_FORMAT_E5B9G9R9_UFLOAT_PACK32:
 			// Uncompressed "special" 32bpp formats.
-			stride = ktx2Header.pixelWidth * 4;
+			stride = width * 4;
 			expected_size = static_cast<unsigned int>(stride * height);
 			break;
 
@@ -231,7 +252,7 @@ const rp_image *KhronosKTX2Private::loadImage(void)
 		case VK_FORMAT_PVRTC1_2BPP_SRGB_BLOCK_IMG:
 		case VK_FORMAT_PVRTC2_2BPP_SRGB_BLOCK_IMG:
 			// 32 pixels compressed into 64 bits. (2bpp)
-			expected_size = (ktx2Header.pixelWidth * height) / 4;
+			expected_size = (width * height) / 4;
 			break;
 
 		case VK_FORMAT_PVRTC1_4BPP_UNORM_BLOCK_IMG:
@@ -239,7 +260,7 @@ const rp_image *KhronosKTX2Private::loadImage(void)
 		case VK_FORMAT_PVRTC1_4BPP_SRGB_BLOCK_IMG:
 		case VK_FORMAT_PVRTC2_4BPP_SRGB_BLOCK_IMG:
 			// 16 pixels compressed into 64 bits. (4bpp)
-			expected_size = (ktx2Header.pixelWidth * height) / 2;
+			expected_size = (width * height) / 2;
 			break;
 #endif /* ENABLE_PVRTC */
 
@@ -255,7 +276,7 @@ const rp_image *KhronosKTX2Private::loadImage(void)
 		case VK_FORMAT_EAC_R11_SNORM_BLOCK:
 			// 16 pixels compressed into 64 bits. (4bpp)
 			// NOTE: Width and height must be rounded to the nearest tile. (4x4)
-			expected_size = ALIGN_BYTES(4, ktx2Header.pixelWidth) *
+			expected_size = ALIGN_BYTES(4, width) *
 					ALIGN_BYTES(4, (int)height) / 2;
 			break;
 
@@ -271,7 +292,7 @@ const rp_image *KhronosKTX2Private::loadImage(void)
 		case VK_FORMAT_EAC_R11G11_SNORM_BLOCK:
 			// 16 pixels compressed into 128 bits. (8bpp)
 			// NOTE: Width and height must be rounded to the nearest tile. (4x4)
-			expected_size = ALIGN_BYTES(4, ktx2Header.pixelWidth) *
+			expected_size = ALIGN_BYTES(4, width) *
 					ALIGN_BYTES(4, (int)height);
 			break;
 
@@ -302,13 +323,14 @@ const rp_image *KhronosKTX2Private::loadImage(void)
 	}
 
 	// TODO: Handle sRGB post-processing? (for e.g. GL_SRGB8)
+	rp_image *img = nullptr;
 	switch (ktx2Header.vkFormat) {
 		case VK_FORMAT_R8G8B8_UNORM:
 		case VK_FORMAT_R8G8B8_UINT:
 		case VK_FORMAT_R8G8B8_SRGB:
 			// 24-bit RGB.
 			img = ImageDecoder::fromLinear24(ImageDecoder::PXF_BGR888,
-				ktx2Header.pixelWidth, height,
+				width, height,
 				buf.get(), expected_size, stride);
 			break;
 
@@ -317,7 +339,7 @@ const rp_image *KhronosKTX2Private::loadImage(void)
 		case VK_FORMAT_B8G8R8_SRGB:
 			// 24-bit RGB. (R/B swapped)
 			img = ImageDecoder::fromLinear24(ImageDecoder::PXF_RGB888,
-				ktx2Header.pixelWidth, height,
+				width, height,
 				buf.get(), expected_size, stride);
 			break;
 
@@ -326,7 +348,7 @@ const rp_image *KhronosKTX2Private::loadImage(void)
 		case VK_FORMAT_R8G8B8A8_SRGB:
 			// 32-bit RGBA.
 			img = ImageDecoder::fromLinear32(ImageDecoder::PXF_ABGR8888,
-				ktx2Header.pixelWidth, height,
+				width, height,
 				reinterpret_cast<const uint32_t*>(buf.get()), expected_size, stride);
 			break;
 
@@ -335,7 +357,7 @@ const rp_image *KhronosKTX2Private::loadImage(void)
 		case VK_FORMAT_B8G8R8A8_SRGB:
 			// 32-bit RGBA. (R/B swapped)
 			img = ImageDecoder::fromLinear32(ImageDecoder::PXF_ARGB8888,
-				ktx2Header.pixelWidth, height,
+				width, height,
 				reinterpret_cast<const uint32_t*>(buf.get()), expected_size, stride);
 			break;
 
@@ -345,14 +367,14 @@ const rp_image *KhronosKTX2Private::loadImage(void)
 			// 8-bit (red).
 			// FIXME: Decode as red, not as L8.
 			img = ImageDecoder::fromLinear8(ImageDecoder::PXF_L8,
-				ktx2Header.pixelWidth, height,
+				width, height,
 				buf.get(), expected_size, stride);
 			break;
 
 		case VK_FORMAT_E5B9G9R9_UFLOAT_PACK32:
 			// Uncompressed "special" 32bpp formats.
 			img = ImageDecoder::fromLinear32(ImageDecoder::PXF_RGB9_E5,
-				ktx2Header.pixelWidth, height,
+				width, height,
 				reinterpret_cast<const uint32_t*>(buf.get()), expected_size, stride);
 			break;
 
@@ -364,7 +386,7 @@ const rp_image *KhronosKTX2Private::loadImage(void)
 		case VK_FORMAT_BC1_RGB_SRGB_BLOCK:
 			// DXT1-compressed texture.
 			img = ImageDecoder::fromDXT1(
-				ktx2Header.pixelWidth, height,
+				width, height,
 				buf.get(), expected_size);
 			break;
 
@@ -372,7 +394,7 @@ const rp_image *KhronosKTX2Private::loadImage(void)
 		case VK_FORMAT_BC1_RGBA_SRGB_BLOCK:
 			// DXT1-compressed texture with 1-bit alpha.
 			img = ImageDecoder::fromDXT1_A1(
-				ktx2Header.pixelWidth, height,
+				width, height,
 				buf.get(), expected_size);
 			break;
 
@@ -380,7 +402,7 @@ const rp_image *KhronosKTX2Private::loadImage(void)
 		case VK_FORMAT_BC2_SRGB_BLOCK:
 			// DXT3-compressed texture.
 			img = ImageDecoder::fromDXT3(
-				ktx2Header.pixelWidth, height,
+				width, height,
 				buf.get(), expected_size);
 			break;
 
@@ -388,7 +410,7 @@ const rp_image *KhronosKTX2Private::loadImage(void)
 		case VK_FORMAT_BC3_SRGB_BLOCK:
 			// DXT5-compressed texture.
 			img = ImageDecoder::fromDXT5(
-				ktx2Header.pixelWidth, height,
+				width, height,
 				buf.get(), expected_size);
 			break;
 
@@ -397,7 +419,7 @@ const rp_image *KhronosKTX2Private::loadImage(void)
 			// ETC2-compressed RGB texture.
 			// TODO: Handle sRGB.
 			img = ImageDecoder::fromETC2_RGB(
-				ktx2Header.pixelWidth, height,
+				width, height,
 				buf.get(), expected_size);
 			break;
 
@@ -407,7 +429,7 @@ const rp_image *KhronosKTX2Private::loadImage(void)
 			// with punchthrough alpha.
 			// TODO: Handle sRGB.
 			img = ImageDecoder::fromETC2_RGB_A1(
-				ktx2Header.pixelWidth, height,
+				width, height,
 				buf.get(), expected_size);
 			break;
 
@@ -417,7 +439,7 @@ const rp_image *KhronosKTX2Private::loadImage(void)
 			// with EAC-compressed alpha channel.
 			// TODO: Handle sRGB.
 			img = ImageDecoder::fromETC2_RGBA(
-				ktx2Header.pixelWidth, height,
+				width, height,
 				buf.get(), expected_size);
 			break;
 
@@ -425,7 +447,7 @@ const rp_image *KhronosKTX2Private::loadImage(void)
 		case VK_FORMAT_BC7_SRGB_BLOCK:
 			// BPTC-compressed RGBA texture. (BC7)
 			img = ImageDecoder::fromBC7(
-				ktx2Header.pixelWidth, height,
+				width, height,
 				buf.get(), expected_size);
 			break;
 
@@ -436,7 +458,7 @@ const rp_image *KhronosKTX2Private::loadImage(void)
 		case VK_FORMAT_PVRTC1_2BPP_UNORM_BLOCK_IMG:
 		case VK_FORMAT_PVRTC1_2BPP_SRGB_BLOCK_IMG:
 			// PVRTC, 2bpp.
-			img = ImageDecoder::fromPVRTC(ktx2Header.pixelWidth, height,
+			img = ImageDecoder::fromPVRTC(width, height,
 				buf.get(), expected_size,
 				ImageDecoder::PVRTC_2BPP | ImageDecoder::PVRTC_ALPHA_YES);
 			break;
@@ -444,7 +466,7 @@ const rp_image *KhronosKTX2Private::loadImage(void)
 		case VK_FORMAT_PVRTC1_4BPP_UNORM_BLOCK_IMG:
 		case VK_FORMAT_PVRTC1_4BPP_SRGB_BLOCK_IMG:
 			// PVRTC, 4bpp.
-			img = ImageDecoder::fromPVRTC(ktx2Header.pixelWidth, height,
+			img = ImageDecoder::fromPVRTC(width, height,
 				buf.get(), expected_size,
 				ImageDecoder::PVRTC_4BPP | ImageDecoder::PVRTC_ALPHA_YES);
 			break;
@@ -452,7 +474,7 @@ const rp_image *KhronosKTX2Private::loadImage(void)
 		case VK_FORMAT_PVRTC2_2BPP_UNORM_BLOCK_IMG:
 		case VK_FORMAT_PVRTC2_2BPP_SRGB_BLOCK_IMG:
 			// PVRTC-II, 2bpp.
-			img = ImageDecoder::fromPVRTCII(ktx2Header.pixelWidth, height,
+			img = ImageDecoder::fromPVRTCII(width, height,
 				buf.get(), expected_size,
 				ImageDecoder::PVRTC_2BPP | ImageDecoder::PVRTC_ALPHA_YES);
 			break;
@@ -461,7 +483,7 @@ const rp_image *KhronosKTX2Private::loadImage(void)
 		case VK_FORMAT_PVRTC2_4BPP_SRGB_BLOCK_IMG:
 			// PVRTC-II, 4bpp.
 			// NOTE: Assuming this has alpha.
-			img = ImageDecoder::fromPVRTCII(ktx2Header.pixelWidth, height,
+			img = ImageDecoder::fromPVRTCII(width, height,
 				buf.get(), expected_size,
 				ImageDecoder::PVRTC_4BPP | ImageDecoder::PVRTC_ALPHA_YES);
 			break;
@@ -485,6 +507,7 @@ const rp_image *KhronosKTX2Private::loadImage(void)
 		}
 	}
 
+	mipmaps[mip] = img;
 	return img;
 }
 
@@ -670,12 +693,14 @@ KhronosKTX2::KhronosKTX2(IRpFile *file)
 #endif /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
 
 	// Read the mipmap info.
-	int mips = d->ktx2Header.levelCount;
-	if (mips <= 0) {
-		mips = 1;
+	int mipmapCount = d->ktx2Header.levelCount;
+	if (mipmapCount <= 0) {
+		// No mipmaps == one image.
+		mipmapCount = 1;
 	}
-	d->mipmap_data.resize(mips);
-	const size_t mipdata_size = mips * sizeof(KTX2_Mipmap_Index);
+	d->mipmaps.resize(mipmapCount);
+	d->mipmap_data.resize(mipmapCount);
+	const size_t mipdata_size = mipmapCount * sizeof(KTX2_Mipmap_Index);
 	size = d->file->read(d->mipmap_data.data(), mipdata_size);
 	if (size != mipdata_size) {
 		d->file->unref();
@@ -953,11 +978,8 @@ const rp_image *KhronosKTX2::mipmap(int mip) const
 		return nullptr;
 	}
 
-	// FIXME: Support decoding mipmaps.
-	if (mip == 0) {
-		return const_cast<KhronosKTX2Private*>(d)->loadImage();
-	}
-	return nullptr;
+	// Load the image.
+	return const_cast<KhronosKTX2Private*>(d)->loadImage(mip);
 }
 
 }
