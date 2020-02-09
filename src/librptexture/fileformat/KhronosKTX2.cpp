@@ -162,8 +162,8 @@ const rp_image *KhronosKTX2Private::loadImage(int mip)
 		return nullptr;
 	}
 
-	// TODO: For VK_UNDEFINED, parse the DFD.
-	if (ktx2Header.vkFormat == VK_UNDEFINED) {
+	// TODO: For VK_FORMAT_UNDEFINED, parse the DFD.
+	if (ktx2Header.vkFormat == VK_FORMAT_UNDEFINED) {
 		return nullptr;
 	}
 
