@@ -24,6 +24,7 @@ using std::vector;
 #include "fileformat/DidjTex.hpp"
 #include "fileformat/DirectDrawSurface.hpp"
 #include "fileformat/KhronosKTX.hpp"
+#include "fileformat/KhronosKTX2.hpp"
 #include "fileformat/PowerVR3.hpp"
 #include "fileformat/SegaPVR.hpp"
 #include "fileformat/ValveVTF.hpp"
@@ -88,7 +89,6 @@ class FileFormatFactoryPrivate
 // TODO: Add support for multiple magic numbers per class.
 const FileFormatFactoryPrivate::FileFormatFns FileFormatFactoryPrivate::FileFormatFns_magic[] = {
 	GetFileFormatFns(DirectDrawSurface, 'DDS '),
-	GetFileFormatFns(KhronosKTX, (uint32_t)'\xABKTX'),
 	GetFileFormatFns(PowerVR3, 'PVR\x03'),
 	GetFileFormatFns(PowerVR3, '\x03RVP'),
 	GetFileFormatFns(SegaPVR, 'PVRT'),
@@ -134,7 +134,7 @@ FileFormat *FileFormatFactory::create(IRpFile *file)
 
 	// Read the file's magic number.
 	// TODO: Special case for TGA?
-	uint32_t magic;
+	uint32_t magic[2];
 	file->rewind();
 	size_t size = file->read(&magic, sizeof(magic));
 	if (size != sizeof(magic)) {
@@ -144,8 +144,32 @@ FileFormat *FileFormatFactory::create(IRpFile *file)
 
 #if SYS_BYTEORDER == SYS_LIL_ENDIAN
 	// Magic number needs to be in host-endian.
-	magic = be32_to_cpu(magic);
+	magic[0] = be32_to_cpu(magic[0]);
+	magic[1] = be32_to_cpu(magic[1]);
 #endif /* SYS_BYTEORDER == SYS_LIL_ENDIAN */
+
+	// Special check for Khronos KTX, which has the same
+	// 32-bit magic number for two completely different versions.
+	if (magic[0] == (uint32_t)'\xABKTX') {
+		FileFormat *fileFormat = nullptr;
+		if (magic[1] == ' 11\xBB') {
+			// KTX 1.1
+			fileFormat = new KhronosKTX(file);
+		} else if (magic[1] == ' 20\xBB') {
+			// KTX 2.0
+			fileFormat = new KhronosKTX2(file);
+		}
+
+		if (fileFormat) {
+			if (fileFormat->isValid()) {
+				// FileFormat subclass obtained.
+				return fileFormat;
+			}
+
+			// Not actually supported.
+			fileFormat->unref();
+		}
+	}
 
 	// Check FileFormat subclasses that take a header at 0
 	// and definitely have a 32-bit magic number at address 0.
@@ -153,7 +177,7 @@ FileFormat *FileFormatFactory::create(IRpFile *file)
 		&FileFormatFactoryPrivate::FileFormatFns_magic[0];
 	for (; fns->supportedFileExtensions != nullptr; fns++) {
 		// Check the magic number.
-		if (magic == fns->magic) {
+		if (magic[0] == fns->magic) {
 			// Found a matching magic number.
 			// TODO: Implement fns->isTextureSupported.
 			/*if (fns->isTextureSupported(&info) >= 0)*/ {

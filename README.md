@@ -128,6 +128,7 @@ button.
 |:-----------------------------:|:--------------:|:--------:|:---------------:|:--------------:|
 | Leapster Didj .tex textures   |       Yes      |    Yes   |      Image      |       N/A      |
 | Khronos KTX Textures          |       Yes      |    Yes   |      Image      |       N/A      |
+| Khronos KTX2 Textures         |       Yes      |    Yes   |      Image      |       N/A      |
 | Microsoft DirectDraw Surface  |       Yes      |    Yes   |      Image      |       N/A      |
 | Microsoft Xbox XPR Textures   |       Yes      |    Yes   |      Image      |       N/A      |
 | PowerVR 3.0.0 Textures        |       Yes      |    Yes   |      Image      |       N/A      |
@@ -145,11 +146,11 @@ button.
 * Nintendo 3DS: Tiled and twiddled RGB565
 * GameCube: Tiled RGB5A3 and CI8 with RGB5A3 palette
 * S3TC: DXT1, DXT2, DXT3, DXT4, DXT5, BC4, and BC5 codecs.
-  * Supported file formats: DDS, KTX, VTF, VTF3, XPR
+  * Supported file formats: DDS, KTX, KTX2, VTF, VTF3, XPR
   * GameCube 2x2-tiled DXT1 is supported in GVR texture files.
-* BC7: Supported in DDS, KTX, and PowerVR 3.0.0 texture files.
+* BC7: Supported in DDS, KTX, KTX2, and PowerVR 3.0.0 texture files.
   * The implementation is somewhat slow. (Contributions welcome.)
-* PVRTC: Supported in DDS, KTX, and PowerVR 3.0.0 texture files.
+* PVRTC: Supported in DDS, KTX, KTX2, and PowerVR 3.0.0 texture files.
   * PVRTC-II: Partially supported. The hard transition flag and images
     that aren't a multiple of the tile size are not supported.
 
@@ -313,6 +314,8 @@ https://github.com/GerbilSoft/rom-properties/issues
   Information on Atari Lynx cartridge format.
 * [Khronos KTX File Format Specification](https://www.khronos.org/opengles/sdk/tools/KTX/file_format_spec/):
   Information on the Khornos KTX texture file format.
+* [Khronos KTX 2.0 File Format Specification](http://github.khronos.org/KTX-Specification/):
+  Information on the Khornos KTX 2.0 texture file format.
 * [Valve Texture Format](https://developer.valvesoftware.com/wiki/Valve_Texture_Format):
   Information on the Valve VTF texture file format.
 * [nocash SNES hardware specifications](http://problemkaputt.de/fullsnes.htm):

@@ -46,6 +46,7 @@
   * PowerVR3: PowerVR 3.0.0 textures. Used mainly by iOS applications. Not
     related to Sega Dreamcast PVR format.
   * PokemonMini: Pokémon Mini ROM images.
+  * KhronosKTX2: Khronos KTX 2.0 texture format. (based on draft18)
 
 * New parser features:
   * WiiWAD, iQuePlayer: Display the console IDs from tickets. This is usually

@@ -23,6 +23,7 @@ SET(librptexture_SRCS
 	fileformat/DidjTex.cpp
 	fileformat/DirectDrawSurface.cpp
 	fileformat/KhronosKTX.cpp
+	fileformat/KhronosKTX2.cpp
 	fileformat/PowerVR3.cpp
 	fileformat/SegaPVR.cpp
 	fileformat/ValveVTF.cpp
@@ -31,6 +32,7 @@ SET(librptexture_SRCS
 
 	data/DX10Formats.cpp
 	data/GLenumStrings.cpp
+	data/VkEnumStrings.cpp
 	)
 # Headers.
 SET(librptexture_H
@@ -50,6 +52,7 @@ SET(librptexture_H
 	fileformat/DidjTex.hpp
 	fileformat/DirectDrawSurface.hpp
 	fileformat/KhronosKTX.hpp
+	fileformat/KhronosKTX2.hpp
 	fileformat/PowerVR3.hpp
 	fileformat/SegaPVR.hpp
 	fileformat/ValveVTF.hpp
@@ -59,6 +62,7 @@ SET(librptexture_H
 	fileformat/dds_structs.h
 	fileformat/didj_tex_structs.h
 	fileformat/ktx_structs.h
+	fileformat/ktx_structs.h
 	fileformat/pvr_structs.h
 	fileformat/pvr3_structs.h
 	fileformat/vtf_structs.h
@@ -66,9 +70,11 @@ SET(librptexture_H
 	fileformat/xbox_xpr_structs.h
 
 	fileformat/gl_defs.h
+	fileformat/vk_defs.h
 
 	data/DX10Formats.hpp
 	data/GLenumStrings.hpp
+	data/VkEnumStrings.hpp
 	)
 
 IF(WIN32)
