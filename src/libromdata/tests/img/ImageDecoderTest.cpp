@@ -109,8 +109,8 @@ struct ImageDecoderTest_mode
 };
 
 // Maximum file size for images.
-static const size_t MAX_DDS_IMAGE_FILESIZE = 4*1024*1024;
-static const size_t MAX_PNG_IMAGE_FILESIZE = 2*1024*1024;
+static const size_t MAX_DDS_IMAGE_FILESIZE = 12*1024*1024;
+static const size_t MAX_PNG_IMAGE_FILESIZE =  2*1024*1024;
 
 class ImageDecoderTest : public ::testing::TestWithParam<ImageDecoderTest_mode>
 {
@@ -429,6 +429,12 @@ void ImageDecoderTest::decodeTest_internal(void)
 		// NOTE: Using RpTextureWrapper.
 		filetype = "KTX";
 		m_romData = new RpTextureWrapper(m_f_dds);
+	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-8, 8, ".ktx2.gz")) {
+		// Khronos KTX2 image
+		// TODO: Use .zktx2 format instead of .ktx2.gz.
+		// NOTE: Using RpTextureWrapper.
+		filetype = "KTX2";
+		m_romData = new RpTextureWrapper(m_f_dds);
 	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-11, 11, ".ps3.vtf.gz")) {
 		// Valve Texture File (PS3)
 		// NOTE: Using RpTextureWrapper.
@@ -539,12 +545,17 @@ void ImageDecoderTest::decodeBenchmark_internal(void)
 		   !mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".svr.gz")) {
 		// PVR/GVR/SVR image
 		// NOTE: Using RpTextureWrapper.
+		// NOTE: May be PowerVR3.
 		fn_ctor = [](IRpFile *file) { return new RpTextureWrapper(file); };
 	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".ktx.gz")) {
 		// Khronos KTX image
 		// TODO: Use .zktx format instead of .ktx.gz?
 		// NOTE: Using RpTextureWrapper.
-		// NOTE: May be PowerVR3.
+		fn_ctor = [](IRpFile *file) { return new RpTextureWrapper(file); };
+	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-8, 8, ".ktx2.gz")) {
+		// Khronos KTX image
+		// TODO: Use .zktx2 format instead of .ktx2.gz?
+		// NOTE: Using RpTextureWrapper.
 		fn_ctor = [](IRpFile *file) { return new RpTextureWrapper(file); };
 	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-11, 11, ".ps3.vtf.gz")) {
 		// Valve Texture File (PS3)
@@ -853,6 +864,9 @@ INSTANTIATE_TEST_CASE_P(GVR_DXT1_S3TC, ImageDecoderTest,
 	, ImageDecoderTest::test_case_suffix_generator);
 
 // KTX tests.
+#define KTX_IMAGE_TEST(file) ImageDecoderTest_mode( \
+			"KTX/" file ".ktx.gz", \
+			"KTX/" file ".png")
 INSTANTIATE_TEST_CASE_P(KTX, ImageDecoderTest,
 	::testing::Values(
 		// RGB reference image.
@@ -882,34 +896,38 @@ INSTANTIATE_TEST_CASE_P(KTX, ImageDecoderTest,
 			"KTX/luminance.png"),
 
 		// ETC1
-		ImageDecoderTest_mode(
-			"KTX/etc1.ktx.gz",
-			"KTX/etc1.png"),
-
+		KTX_IMAGE_TEST("etc1"),
 		// ETC2
-		ImageDecoderTest_mode(
-			"KTX/etc2-rgb.ktx.gz",
-			"KTX/etc2-rgb.png"),
-		ImageDecoderTest_mode(
-			"KTX/etc2-rgba1.ktx.gz",
-			"KTX/etc2-rgba1.png"),
-		ImageDecoderTest_mode(
-			"KTX/etc2-rgba8.ktx.gz",
-			"KTX/etc2-rgba8.png"),
+		KTX_IMAGE_TEST("etc2-rgb"),
+		KTX_IMAGE_TEST("etc2-rgba1"),
+		KTX_IMAGE_TEST("etc2-rgba8"),
 
 		// BGR888 (Hi Corp)
-		ImageDecoderTest_mode(
-			"KTX/hi_mark.ktx.gz",
-			"KTX/hi_mark.png"),
-		ImageDecoderTest_mode(
-			"KTX/hi_mark_sq.ktx.gz",
-			"KTX/hi_mark_sq.png"),
+		KTX_IMAGE_TEST("hi_mark"),
+		KTX_IMAGE_TEST("hi_mark_sq"),
 
 		// RGBA reference image.
 		ImageDecoderTest_mode(
 			"KTX/rgba-reference.ktx.gz",
 			"KTX/rgba.png"))
 
+	, ImageDecoderTest::test_case_suffix_generator);
+
+// KTX2 tests.
+#define KTX2_IMAGE_TEST(file) ImageDecoderTest_mode( \
+			"KTX2/" file ".ktx2.gz", \
+			"KTX2/" file ".png")
+INSTANTIATE_TEST_CASE_P(KTX2, ImageDecoderTest,
+	::testing::Values(
+		KTX2_IMAGE_TEST("cubemap_yokohama_bc3_unorm"),
+		KTX2_IMAGE_TEST("cubemap_yokohama_etc2_unorm"),
+		KTX2_IMAGE_TEST("orient-down-metadata-u"),
+		KTX2_IMAGE_TEST("orient-up-metadata-u"),
+		KTX2_IMAGE_TEST("pattern_02_bc2"),
+		KTX2_IMAGE_TEST("rgba-reference-u"),
+		KTX2_IMAGE_TEST("rgb-mipmap-reference-u"),
+		KTX2_IMAGE_TEST("texturearray_bc3_unorm"),
+		KTX2_IMAGE_TEST("texturearray_etc2_unorm"))
 	, ImageDecoderTest::test_case_suffix_generator);
 
 // Valve VTF tests. (all formats)
