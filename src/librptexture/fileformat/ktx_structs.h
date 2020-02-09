@@ -23,8 +23,6 @@ extern "C" {
  * - https://www.khronos.org/opengles/sdk/tools/KTX/file_format_spec/
  */
 
-#include "gl_defs.h"
-
 /**
  * Khronos KTX: File header.
  * Reference: https://www.khronos.org/opengles/sdk/tools/KTX/file_format_spec/

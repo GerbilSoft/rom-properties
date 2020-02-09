@@ -18,6 +18,7 @@
 #include "FileFormat_p.hpp"
 
 #include "ktx_structs.h"
+#include "gl_defs.h"
 #include "data/GLenumStrings.hpp"
 
 // librpbase
@@ -843,7 +844,7 @@ const char *KhronosKTX::pixelFormat(void) const
 		return nullptr;
 
 	// Using glInternalFormat.
-	const char *glInternalFormat_str = GLenumStrings::lookup_glEnum(d->ktxHeader.glInternalFormat);
+	const char *const glInternalFormat_str = GLenumStrings::lookup_glEnum(d->ktxHeader.glInternalFormat);
 	if (glInternalFormat_str) {
 		return glInternalFormat_str;
 	}
@@ -922,7 +923,7 @@ int KhronosKTX::getFields(LibRpBase::RomFields *fields) const
 	// NOTE: GL field names should not be localized.
 
 	// glType
-	const char *glType_str = GLenumStrings::lookup_glEnum(ktxHeader->glType);
+	const char *const glType_str = GLenumStrings::lookup_glEnum(ktxHeader->glType);
 	if (glType_str) {
 		fields->addField_string("glType", glType_str);
 	} else {
@@ -930,7 +931,7 @@ int KhronosKTX::getFields(LibRpBase::RomFields *fields) const
 	}
 
 	// glFormat
-	const char *glFormat_str = GLenumStrings::lookup_glEnum(ktxHeader->glFormat);
+	const char *const glFormat_str = GLenumStrings::lookup_glEnum(ktxHeader->glFormat);
 	if (glFormat_str) {
 		fields->addField_string("glFormat", glFormat_str);
 	} else {
@@ -938,7 +939,7 @@ int KhronosKTX::getFields(LibRpBase::RomFields *fields) const
 	}
 
 	// glInternalFormat
-	const char *glInternalFormat_str = GLenumStrings::lookup_glEnum(ktxHeader->glInternalFormat);
+	const char *const glInternalFormat_str = GLenumStrings::lookup_glEnum(ktxHeader->glInternalFormat);
 	if (glInternalFormat_str) {
 		fields->addField_string("glInternalFormat", glInternalFormat_str);
 	} else {
@@ -948,7 +949,7 @@ int KhronosKTX::getFields(LibRpBase::RomFields *fields) const
 
 	// glBaseInternalFormat (only if != glFormat)
 	if (ktxHeader->glBaseInternalFormat != ktxHeader->glFormat) {
-		const char *glBaseInternalFormat_str =
+		const char *const glBaseInternalFormat_str =
 			GLenumStrings::lookup_glEnum(ktxHeader->glBaseInternalFormat);
 		if (glBaseInternalFormat_str) {
 			fields->addField_string("glBaseInternalFormat", glBaseInternalFormat_str);
