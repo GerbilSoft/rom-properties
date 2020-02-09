@@ -171,9 +171,8 @@ const char *MachOData::lookup_cpu_subtype(uint32_t cputype, uint32_t cpusubtype)
 						break;
 
 					case CPU_SUBTYPE_XEON:
-						if (cpusubtype != CPU_SUBTYPE_XEON_MP) {
+						if (cpusubtype == CPU_SUBTYPE_XEON_MP) {
 							s_cpu_subtype = "Xeon MP";
-						} else {
 						}
 						break;
 				}
