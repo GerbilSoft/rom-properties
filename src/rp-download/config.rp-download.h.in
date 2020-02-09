@@ -18,4 +18,10 @@
 /* Define to 1 if you have the FreeBSD `extattr_set_fd` function. */
 #cmakedefine HAVE_EXTATTR_SET_FD 1
 
+/* Define to 1 if you have the OpenBSD `pledge` function. */
+#cmakedefine HAVE_PLEDGE 1
+
+/* Define to 1 if you have the OpenBSD 6.3+ `pledge` function with `execpromises`. */
+#cmakedefine HAVE_PLEDGE_EXECPROMISES 1
+
 #endif /* __ROMPROPERTIES_RP_DOWNLOAD_CONFIG_H__ */
