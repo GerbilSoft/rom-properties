@@ -697,6 +697,7 @@ KhronosKTX2::KhronosKTX2(IRpFile *file)
 	const size_t mipdata_size = mipmapCount * sizeof(KTX2_Mipmap_Index);
 	size = d->file->read(d->mipmap_data.data(), mipdata_size);
 	if (size != mipdata_size) {
+		d->isValid = false;
 		d->file->unref();
 		d->file = nullptr;
 		return;
