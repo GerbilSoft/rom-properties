@@ -572,7 +572,12 @@ void KhronosKTXPrivate::loadKeyValueData(void)
 		if (isByteswapNeeded) {
 			sz = __swab32(sz);
 		}
-		if (p + 4 + sz > p_end) {
+
+		if (sz < 2) {
+			// Must be at least 2 bytes for an empty key and its NULL terminator.
+			// TODO: Show an error?
+			break;
+		} else if (p + 4 + sz > p_end) {
 			// Out of range.
 			// TODO: Show an error?
 			break;

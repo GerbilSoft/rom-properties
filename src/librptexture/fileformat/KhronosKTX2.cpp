@@ -548,8 +548,12 @@ void KhronosKTX2Private::loadKeyValueData(void)
 
 	while (p < p_end) {
 		// Check the next key/value size.
-		uint32_t sz = le32_to_cpu(*((const uint32_t*)p));
-		if (p + 4 + sz > p_end) {
+		const uint32_t sz = le32_to_cpu(*((const uint32_t*)p));
+		if (sz < 2) {
+			// Must be at least 2 bytes for an empty key and its NULL terminator.
+			// TODO: Show an error?
+			break;
+		} else if (p + 4 + sz > p_end) {
 			// Out of range.
 			// TODO: Show an error?
 			break;
