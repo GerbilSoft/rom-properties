@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * VkEnumStrings.hpp: Vulkan string tables.                                *
  *                                                                         *
- * Copyright (c) 2019 by David Korth.                                      *
+ * Copyright (c) 2019-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
