@@ -452,16 +452,15 @@ int NEResourceReaderPrivate::load_StringTable(IRpFile *file, IResourceReader::St
 			return -EIO;
 		}
 
-		string key_utf8, value_utf8;
-		if (key_len > 0) {
-			key_utf8 = cpN_to_utf8(codepage, key, key_len);
-			assert(!key_utf8.empty());
-			if (key_utf8.empty()) {
-				// Code page conversion failed.
-				// Default to 1252.
-				key_utf8 = cp1252_to_utf8(key, key_len);
-			}
+		const string key_utf8 = cpN_to_utf8(codepage, key, key_len);
+		assert(!key_utf8.empty());
+		if (key_utf8.empty()) {
+			// Code page conversion failed.
+			// Default to 1252.
+			key_utf8 = cp1252_to_utf8(key, key_len);
 		}
+
+		string value_utf8;
 		if (value_len > 0) {
 			value_utf8 = cpN_to_utf8(codepage, value, value_len);
 			assert(!value_utf8.empty());
