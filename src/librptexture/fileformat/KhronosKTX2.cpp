@@ -620,7 +620,7 @@ void KhronosKTX2Private::loadKeyValueData(void)
 /** KhronosKTX2 **/
 
 /**
- * Read a Khronos KTX image file.
+ * Read a Khronos KTX2 image file.
  *
  * A ROM image must be opened by the caller. The file handle
  * will be ref()'d and must be kept open in order to load
@@ -771,7 +771,8 @@ int KhronosKTX2::isRomSupported_static(const DetectInfo *info)
 const char *const *KhronosKTX2::supportedFileExtensions_static(void)
 {
 	static const char *const exts[] = {
-		".ktx",
+		// TODO: Include ".ktx" too?
+		".ktx2",
 		nullptr
 	};
 	return exts;
@@ -791,7 +792,8 @@ const char *const *KhronosKTX2::supportedMimeTypes_static(void)
 {
 	static const char *const mimeTypes[] = {
 		// Official MIME types.
-		"image/ktx",
+		// FIXME: KTX2 is to be determined.
+		"image/ktx2",
 
 		nullptr
 	};
@@ -810,7 +812,7 @@ const char *KhronosKTX2::textureFormatName(void) const
 	if (!d->isValid)
 		return nullptr;
 
-	return "Khronos KTX";
+	return "Khronos KTX2";
 }
 
 /**
