@@ -6,7 +6,9 @@ video game ROM and disc images.
 [![License: GPL v2](https://img.shields.io/badge/License-GPL%20v2-blue.svg)](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html)<br>
 [![Travis Build Status](https://travis-ci.org/GerbilSoft/rom-properties.svg?branch=master)](https://travis-ci.org/GerbilSoft/rom-properties)
 [![AppVeyor Build status](https://ci.appveyor.com/api/projects/status/5lk15ct43jtmhejs/branch/master?svg=true)](https://ci.appveyor.com/project/GerbilSoft/rom-properties/branch/master)
-[![Coverity Scan Build Status](https://scan.coverity.com/projects/10146/badge.svg)](https://scan.coverity.com/projects/10146)
+[![Coverity Scan Build Status](https://scan.coverity.com/projects/10146/badge.svg)](https://scan.coverity.com/projects/10146)<br>
+[![Total alerts](https://img.shields.io/lgtm/alerts/g/GerbilSoft/rom-properties.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/GerbilSoft/rom-properties/alerts/)
+[![Language grade: C/C++](https://img.shields.io/lgtm/grade/cpp/g/GerbilSoft/rom-properties.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/GerbilSoft/rom-properties/context:cpp)
 
 ## v1.4 - The Metadata and Xbox release
 
