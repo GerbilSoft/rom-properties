@@ -18,7 +18,10 @@
 /* Define to 1 if you have the FreeBSD `extattr_set_fd` function. */
 #cmakedefine HAVE_EXTATTR_SET_FD 1
 
-/* Define to 1 if you have the OpenBSD `pledge` function. */
+/* Define to 1 if you have the OpenBSD 5.8 `tame` function. */
+#cmakedefine HAVE_TAME 1
+
+/* Define to 1 if you have the OpenBSD 5.9+ `pledge` function. */
 #cmakedefine HAVE_PLEDGE 1
 
 /* Define to 1 if you have the OpenBSD 6.3+ `pledge` function with `execpromises`. */

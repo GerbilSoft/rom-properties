@@ -52,6 +52,9 @@ ELSE(WIN32)
 
 	# Check for system security functionality.
 	CHECK_SYMBOL_EXISTS(pledge "unistd.h" HAVE_PLEDGE)	# OpenBSD
+	IF(NOT HAVE_PLEDGE)
+		CHECK_SYMBOL_EXISTS(pledge "sys/tame.h" HAVE_TAME)	# OpenBSD 5.8
+	ENDIF(NOT HAVE_PLEDGE)
 	IF(HAVE_PLEDGE)
 		# pledge() has a different syntax in OpenBSD 6.3 and later:
 		# - 5.9-6.2:  pledge(const char *promises, const char *paths[])
@@ -62,6 +65,9 @@ int main(void)
 {
 	pledge(\"\", \"\");
 }" HAVE_PLEDGE_EXECPROMISES)
+	ENDIF(HAVE_PLEDGE)
+
+	IF(HAVE_PLEDGE OR HAVE_TAME)
 		SET(rp-download-OS_SECURE_SRCS os-secure_openbsd.c)
 	ELSE()
 		# TODO: Add support for other systems.
