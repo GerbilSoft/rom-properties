@@ -1610,7 +1610,7 @@ int ELF::loadFieldData(void)
 			e_flags &= 0xFF;
 			if (e_flags < ARRAY_SIZE(z80_insn_set_tbl)) {
 				z80_insn_set = z80_insn_set_tbl[e_flags];
-			} else if (e_flags == 0x05) {
+			} else if (e_flags == 0x84) {
 				z80_insn_set = "eZ80 (ADL mode)";
 			}
 			if (z80_insn_set) {
