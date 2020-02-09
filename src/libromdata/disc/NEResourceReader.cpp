@@ -452,7 +452,7 @@ int NEResourceReaderPrivate::load_StringTable(IRpFile *file, IResourceReader::St
 			return -EIO;
 		}
 
-		const string key_utf8 = cpN_to_utf8(codepage, key, key_len);
+		string key_utf8 = cpN_to_utf8(codepage, key, key_len);
 		assert(!key_utf8.empty());
 		if (key_utf8.empty()) {
 			// Code page conversion failed.
