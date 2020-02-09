@@ -8,7 +8,11 @@
 
 /**
  * References:
- * - http://github.khronos.org/KTX-Specification/
+ * - https://github.khronos.org/KTX-Specification/
+ *
+ * WARNING: The specification is still in draft stages.
+ * (2.0.draft18 as of 2020/02/08) It is subject to change
+ * prior to finalization.
  */
 
 #include "stdafx.h"
@@ -155,6 +159,11 @@ const rp_image *KhronosKTX2Private::loadImage(int mip)
 
 	// TODO: Support supercompression.
 	if (ktx2Header.supercompressionScheme != 0) {
+		return nullptr;
+	}
+
+	// TODO: For VK_UNDEFINED, parse the DFD.
+	if (ktx2Header.vkFormat == VK_UNDEFINED) {
 		return nullptr;
 	}
 

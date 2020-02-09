@@ -23,7 +23,7 @@ extern "C" {
  * - https://github.khronos.org/KTX-Specification/
  *
  * WARNING: The specification is still in draft stages.
- * (2.0.draft15 as of 2019/12/10) It is subject to change
+ * (2.0.draft18 as of 2020/02/08) It is subject to change
  * prior to finalization.
  */
 
