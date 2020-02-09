@@ -14,7 +14,6 @@
 #include "librpbase/common.h"
 #include "librpbase/byteswap.h"
 #include "librpbase/TextFuncs.hpp"
-//#include "librpbase/uvector.h"
 #include "librpbase/aligned_malloc.h"
 
 // librptexture
