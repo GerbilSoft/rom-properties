@@ -226,8 +226,8 @@ size_t CBCReader::read(void *ptr, size_t size)
 		// Read the IV from the previous 16 bytes.
 		// TODO: Cache it!
 		m_file->seek(d->offset + pos_block - 16);
-		size_t size = m_file->read(iv, sizeof(iv));
-		if (size != sizeof(iv)) {
+		size_t sz_read = m_file->read(iv, sizeof(iv));
+		if (sz_read != sizeof(iv)) {
 			// Read error.
 			m_lastError = m_file->lastError();
 			if (m_lastError == 0) {
