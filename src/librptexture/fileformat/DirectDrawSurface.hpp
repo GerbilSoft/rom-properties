@@ -10,7 +10,6 @@
 #define __ROMPROPERTIES_LIBRPTEXTURE_FILEFORMAT_DIRECTDRAWSURFACE_HPP__
 
 #include "FileFormat.hpp"
-#include <stdint.h>
 
 namespace LibRpTexture {
 

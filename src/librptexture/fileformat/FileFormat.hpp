@@ -23,6 +23,9 @@ namespace LibRpBase {
 }
 #endif /* ENABLE_LIBRPBASE_ROMFIELDS */
 
+// C includes.
+#include <stdint.h>
+
 namespace LibRpTexture {
 
 class rp_image;
