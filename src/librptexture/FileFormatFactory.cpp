@@ -142,20 +142,14 @@ FileFormat *FileFormatFactory::create(IRpFile *file)
 		return nullptr;
 	}
 
-#if SYS_BYTEORDER == SYS_LIL_ENDIAN
-	// Magic number needs to be in host-endian.
-	magic[0] = be32_to_cpu(magic[0]);
-	magic[1] = be32_to_cpu(magic[1]);
-#endif /* SYS_BYTEORDER == SYS_LIL_ENDIAN */
-
 	// Special check for Khronos KTX, which has the same
 	// 32-bit magic number for two completely different versions.
-	if (magic[0] == (uint32_t)'\xABKTX') {
+	if (magic[0] == cpu_to_be32('\xABKTX')) {
 		FileFormat *fileFormat = nullptr;
-		if (magic[1] == ' 11\xBB') {
+		if (magic[1] == cpu_to_be32(' 11\xBB')) {
 			// KTX 1.1
 			fileFormat = new KhronosKTX(file);
-		} else if (magic[1] == ' 20\xBB') {
+		} else if (magic[1] == cpu_to_be32(' 20\xBB')) {
 			// KTX 2.0
 			fileFormat = new KhronosKTX2(file);
 		}
@@ -170,6 +164,11 @@ FileFormat *FileFormatFactory::create(IRpFile *file)
 			fileFormat->unref();
 		}
 	}
+
+#if SYS_BYTEORDER == SYS_LIL_ENDIAN
+	// Magic number needs to be in host-endian.
+	magic[0] = be32_to_cpu(magic[0]);
+#endif /* SYS_BYTEORDER == SYS_LIL_ENDIAN */
 
 	// Check FileFormat subclasses that take a header at 0
 	// and definitely have a 32-bit magic number at address 0.
