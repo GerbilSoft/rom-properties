@@ -171,6 +171,10 @@ static inline void codePageToEncName(char *enc_name, size_t len, unsigned int cp
 	// Check for "special" code pages.
 	switch (cp) {
 		case CP_ACP:
+			// TODO: Get the system code page.
+			// Assuming cp1252 for now.
+			snprintf(enc_name, len, "CP1252");
+			break;
 		case CP_LATIN1:
 			// NOTE: Handling "ANSI" as Latin-1 for now.
 			snprintf(enc_name, len, "LATIN1");
