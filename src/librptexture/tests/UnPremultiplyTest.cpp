@@ -54,7 +54,7 @@ class UnPremultiplyTest : public ::testing::Test
 
 	public:
 		// Number of iterations for benchmarks.
-		static const unsigned int BENCHMARK_ITERATIONS = 10000;
+		static const unsigned int BENCHMARK_ITERATIONS = 1000;
 
 		// Image.
 		rp_image *m_img;
