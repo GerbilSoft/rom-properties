@@ -476,10 +476,11 @@ string formatSampleAsTime(unsigned int sample, unsigned int rate)
 		return "#DIV/0!";
 	}
 
+	assert(rate < 21474836);	// debug assert on overflow
 	const unsigned int cs_frames = (sample % rate);
 	if (cs_frames != 0) {
 		// Calculate centiseconds.
-		cs = static_cast<unsigned int>(((float)cs_frames / (float)rate) * 100);
+		cs = (cs_frames * 100) / rate;
 	} else {
 		// No centiseconds.
 		cs = 0;
@@ -503,11 +504,13 @@ string formatSampleAsTime(unsigned int sample, unsigned int rate)
  */
 unsigned int convSampleToMs(unsigned int sample, unsigned int rate)
 {
-	const unsigned int ms_frames = (sample % rate);
 	unsigned int sec, ms;
+
+	assert(rate < 2147483);		// debug assert on overflow
+	const unsigned int ms_frames = (sample % rate);
 	if (ms_frames != 0) {
 		// Calculate milliseconds.
-		ms = static_cast<unsigned int>(((float)ms_frames / (float)rate) * 1000);
+		ms = (ms_frames * 1000) / rate;
 	} else {
 		// No milliseconds.
 		ms = 0;
