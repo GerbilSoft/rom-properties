@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * KhronosKTX.cpp: Khronos KTX image reader.                               *
  *                                                                         *
- * Copyright (c) 2017-2019 by David Korth.                                 *
+ * Copyright (c) 2017-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -205,16 +205,27 @@ const rp_image *KhronosKTXPrivate::loadImage(void)
 #ifdef ENABLE_PVRTC
 				case GL_COMPRESSED_RGB_PVRTC_2BPPV1_IMG:
 				case GL_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG:
-				case GL_COMPRESSED_RGBA_PVRTC_2BPPV2_IMG:
 					// 32 pixels compressed into 64 bits. (2bpp)
 					expected_size = (ktxHeader.pixelWidth * height) / 4;
 					break;
 
+				case GL_COMPRESSED_RGBA_PVRTC_2BPPV2_IMG:
+					// 32 pixels compressed into 64 bits. (2bpp)
+					// NOTE: Width and height must be rounded to the nearest tile. (8x4)
+					expected_size = ALIGN_BYTES(8, ktxHeader.pixelWidth) *
+					                ALIGN_BYTES(4, (int)height) / 4;
+					break;
+
 				case GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG:
 				case GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG:
-				case GL_COMPRESSED_RGBA_PVRTC_4BPPV2_IMG:
 					// 16 pixels compressed into 64 bits. (4bpp)
 					expected_size = (ktxHeader.pixelWidth * height) / 2;
+					break;
+
+				case GL_COMPRESSED_RGBA_PVRTC_4BPPV2_IMG:
+					// NOTE: Width and height must be rounded to the nearest tile. (4x4)
+					expected_size = ALIGN_BYTES(4, ktxHeader.pixelWidth) *
+					                ALIGN_BYTES(4, (int)height) / 2;
 					break;
 #endif /* ENABLE_PVRTC */
 

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * PowerVR3.cpp: PowerVR 3.0.0 texture image reader.                       *
  *                                                                         *
- * Copyright (c) 2019 by David Korth.                                      *
+ * Copyright (c) 2019-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -324,16 +324,28 @@ const rp_image *PowerVR3Private::loadImage(int mip)
 #ifdef ENABLE_PVRTC
 			case PVR3_PXF_PVRTC_2bpp_RGB:
 			case PVR3_PXF_PVRTC_2bpp_RGBA:
-			case PVR3_PXF_PVRTCII_2bpp:
 				// 2bpp formats (PVRTC)
 				expected_size = width * height / 4;
 				break;
 
+			case PVR3_PXF_PVRTCII_2bpp:
+				// 2bpp formats (PVRTC-II)
+				// NOTE: Width and height must be rounded to the nearest tile. (8x4)
+				expected_size = ALIGN_BYTES(8, width) *
+				                ALIGN_BYTES(4, height) / 4;
+				break;
+
 			case PVR3_PXF_PVRTC_4bpp_RGB:
 			case PVR3_PXF_PVRTC_4bpp_RGBA:
-			case PVR3_PXF_PVRTCII_4bpp:
 				// 4bpp formats (PVRTC)
 				expected_size = width * height / 2;
+				break;
+
+			case PVR3_PXF_PVRTCII_4bpp:
+				// 4bpp formats (PVRTC-II)
+				// NOTE: Width and height must be rounded to the nearest tile. (4x4)
+				expected_size = ALIGN_BYTES(4, width) *
+				                ALIGN_BYTES(4, height) / 2;
 				break;
 #endif /* ENABLE_PVRTC */
 
