@@ -104,6 +104,7 @@ const SystemRegionPrivate::LangName_t SystemRegionPrivate::langNames[] = {
 	{'ja',	"日本語"},
 	{'ko',	"한국어"},	// South Korea
 	{'nl',	"Nederlands"},
+	{'pl',	"Polski"},
 	{'pt',	"Português"},
 	{'ru',	"Русский"},
 	{'hans', "简体中文"},
@@ -438,6 +439,7 @@ int SystemRegion::getFlagPosition(uint32_t lc, int *pCol, int *pRow)
 		{'ja',		2, 1},
 		{'ko',		3, 1},
 		{'nl',		0, 2},
+		{'pl',		0, 3},
 		{'pt',		1, 2},
 		{'ru',		2, 2},
 		//{'us',		3, 0},
