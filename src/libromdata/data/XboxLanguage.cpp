@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * XboxLanguage.cpp: Get the system language for Microsoft Xbox systems.   *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -43,9 +43,17 @@ int XboxLanguage::getXbox360Language(void)
 			return XDBF_LANGUAGE_ITALIAN;
 		case 'ko':
 			return XDBF_LANGUAGE_KOREAN;
-		case 'zh':
+		case 'zh':	// FIXME: Traditional or Simplified?
 		case 'hant':
 			return XDBF_LANGUAGE_CHINESE_TRAD;
+		case 'pt':
+			return XDBF_LANGUAGE_PORTUGUESE;
+		case 'hans':
+			return XDBF_LANGUAGE_CHINESE_SIMP;
+		case 'pl':
+			return XDBF_LANGUAGE_POLISH;
+		case 'ru':
+			return XDBF_LANGUAGE_RUSSIAN;
 	}
 
 	// Should not get here...
@@ -71,6 +79,10 @@ uint32_t XboxLanguage::getXbox360LanguageCode(int langID)
 		'it',	// XDBF_LANGUAGE_ITALIAN
 		'ko',	// XDBF_LANGUAGE_KOREAN
 		'hant',	// XDBF_LANGUAGE_CHINESE_TRAD
+		'pt',	// XDBF_LANGUAGE_PORTUGUESE
+		'hans',	// XDBF_LANGUAGE_CHINESE_SIMP
+		'pl',	// XDBF_LANGUAGE_POLISH
+		'ru',	// XDBF_LANGUAGE_RUSSIAN
 	};
 
 	assert(langID >= 0);
