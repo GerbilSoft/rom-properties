@@ -217,6 +217,7 @@ int CurlDownloader::download(void)
 		curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &response_code);
 		if (response_code <= 0) {
 			// No HTTP response code.
+			// TODO: Return a cURL error code and/or message...
 			return -EIO;
 		}
 		return (int)response_code;
