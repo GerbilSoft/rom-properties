@@ -103,7 +103,7 @@ ENDIF(WIN32)
 
 # Make sure git_version.h is created before compiling this target.
 IF(TARGET git_version)
-	ADD_DEPENDENCIES(rpbase git_version)
+	ADD_DEPENDENCIES(rpcli git_version)
 ENDIF(TARGET git_version)
 
 # CMake-3.7.2 doesn't add include paths to windres.
