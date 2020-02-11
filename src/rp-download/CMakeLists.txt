@@ -47,17 +47,28 @@ ELSE(WIN32)
 	SET(rp-download_OS_H
 		CurlDownloader.hpp
 		)
+ENDIF()
 
+IF(UNIX)
 	# Check for system security functionality.
-	INCLUDE(CheckOpenBSDPledge)
-	CHECK_OPENBSD_PLEDGE()
-	IF(HAVE_PLEDGE OR HAVE_TAME)
-		SET(rp-download-OS_SECURE_SRCS os-secure_openbsd.c)
+	IF(USE_SECCOMP)
+		# Linux: Use seccomp().
+		FIND_PACKAGE(Seccomp REQUIRED)
+		SET(rp-download-OS_SECURE_SRCS os-secure_linux.c)
 	ELSE()
-		# TODO: Add support for other systems.
-		SET(rp-download-OS_SECURE_SRCS os-secure_dummy.c)
+		# OpenBSD: Use pledge()/tame().
+		INCLUDE(CheckOpenBSDPledge)
+		CHECK_OPENBSD_PLEDGE()
+		IF(HAVE_PLEDGE OR HAVE_TAME)
+			SET(rp-download-OS_SECURE_SRCS os-secure_openbsd.c)
+		ENDIF()
 	ENDIF()
-ENDIF(WIN32)
+ENDIF(UNIX)
+
+IF(NOT rp-download-OS_SECURE_SRCS)
+	# TODO: Add support for other systems.
+	SET(rp-download-OS_SECURE_SRCS os-secure_dummy.c)
+ENDIF(NOT rp-download-OS_SECURE_SRCS)
 
 IF(ENABLE_PCH)
 	# Precompiled headers.
@@ -114,6 +125,10 @@ IF(WIN32)
 ELSE(WIN32)
 	TARGET_LINK_LIBRARIES(rp-download PRIVATE unixcommon inih)
 	TARGET_LINK_LIBRARIES(rp-download PRIVATE ${CURL_LIBRARIES})
+
+	IF(USE_SECCOMP AND SECCOMP_FOUND)
+		TARGET_LINK_LIBRARIES(rp-download PRIVATE Seccomp::seccomp)
+	ENDIF(USE_SECCOMP AND SECCOMP_FOUND)
 ENDIF(WIN32)
 
 # Make sure git_version.h is created before compiling this target.
