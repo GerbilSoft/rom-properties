@@ -1413,7 +1413,9 @@ rom_data_view_update_multi(RomDataView *page, uint32_t user_lc)
 		}
 
 		// Update the text.
-		gtk_label_set_text(GTK_LABEL(lblString), iter_sm->second.c_str());
+		assert(iter_sm != pStr_multi->end());
+		const char *const str = (iter_sm != pStr_multi->end() ? iter_sm->second.c_str() : "");
+		gtk_label_set_text(GTK_LABEL(lblString), str);
 	}
 
 	// RFT_LISTDATA_MULTI
@@ -1457,41 +1459,44 @@ rom_data_view_update_multi(RomDataView *page, uint32_t user_lc)
 			}
 		}
 
-		const auto &listDataDesc = pField->desc.list_data;
-		const RomFields::ListData_t *const list_data = &(iter_ldm->second);
+		assert(iter_ldm != pListData_multi->end());
+		if (iter_ldm != pListData_multi->end()) {
+			const auto &listDataDesc = pField->desc.list_data;
+			const RomFields::ListData_t *const list_data = &(iter_ldm->second);
 
-		// If we have checkboxes or icons, start at column 1.
-		// Otherwise, start at column 0.
-		int col_start;
-		if (listDataDesc.flags & (RomFields::RFT_LISTDATA_CHECKBOXES | RomFields::RFT_LISTDATA_ICONS)) {
-			// Checkboxes and/or icons are present.
-			col_start = 1;
-		} else {
-			col_start = 0;
-		}
-
-		// Update the list.
-		GtkTreeIter treeIter;
-		gboolean ok = gtk_tree_model_get_iter_first(GTK_TREE_MODEL(listStore), &treeIter);
-		auto iter_listData = list_data->cbegin();
-		while (ok && iter_listData != list_data->cend()) {
-			// TODO: Verify GtkListStore column count?
-			int col = col_start;
-			for (auto iter_row = iter_listData->cbegin();
-			     iter_row != iter_listData->cend(); ++iter_row, col++)
-			{
-				gtk_list_store_set(listStore, &treeIter, col, iter_row->c_str(), -1);
+			// If we have checkboxes or icons, start at column 1.
+			// Otherwise, start at column 0.
+			int col_start;
+			if (listDataDesc.flags & (RomFields::RFT_LISTDATA_CHECKBOXES | RomFields::RFT_LISTDATA_ICONS)) {
+				// Checkboxes and/or icons are present.
+				col_start = 1;
+			} else {
+				col_start = 0;
 			}
 
-			// Next row.
-			++iter_listData;
-			ok = gtk_tree_model_iter_next(GTK_TREE_MODEL(listStore), &treeIter);
-		}
+			// Update the list.
+			GtkTreeIter treeIter;
+			gboolean ok = gtk_tree_model_get_iter_first(GTK_TREE_MODEL(listStore), &treeIter);
+			auto iter_listData = list_data->cbegin();
+			while (ok && iter_listData != list_data->cend()) {
+				// TODO: Verify GtkListStore column count?
+				int col = col_start;
+				for (auto iter_row = iter_listData->cbegin();
+				iter_row != iter_listData->cend(); ++iter_row, col++)
+				{
+					gtk_list_store_set(listStore, &treeIter, col, iter_row->c_str(), -1);
+				}
 
-		// Resize the columns to fit the contents.
-		// NOTE: Only done on first load.
-		if (!page->cboLanguage) {
-			gtk_tree_view_columns_autosize(GTK_TREE_VIEW(iter->treeView));
+				// Next row.
+				++iter_listData;
+				ok = gtk_tree_model_iter_next(GTK_TREE_MODEL(listStore), &treeIter);
+			}
+
+			// Resize the columns to fit the contents.
+			// NOTE: Only done on first load.
+			if (!page->cboLanguage) {
+				gtk_tree_view_columns_autosize(GTK_TREE_VIEW(iter->treeView));
+			}
 		}
 	}
 

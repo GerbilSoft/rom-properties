@@ -98,6 +98,12 @@ private:
 		// the caller might be using setw() for field padding.
 		// TODO: Try optimizing it out while preserving setw().
 
+		assert(cp.str != nullptr);
+		if (!cp.str) {
+			// nullptr string...
+			return "''";
+		}
+
 		string escaped;
 		escaped.reserve(strlen(cp.str) + (cp.quotes ? 2 : 0));
 		if (cp.quotes) {
@@ -265,7 +271,11 @@ public:
 						}
 					}
 				}
-				list_data = &iter->second;
+
+				assert(iter != pListDataMulti->end());
+				if (iter != pListDataMulti->end()) {
+					list_data = &iter->second;
+				}
 			}
 		} else {
 			// Single language.
@@ -641,7 +651,10 @@ public:
 					}
 				}
 			}
-			os << SafeString(&iter->second, true, field.width);
+
+			assert(iter != pStr_multi->end());
+			const char *const str = (iter != pStr_multi->end() ? iter->second.c_str() : "");
+			os << SafeString(str, true, field.width);
 		} else {
 			// Empty string.
 			os << "''";

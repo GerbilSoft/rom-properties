@@ -935,7 +935,12 @@ void RomDataViewPrivate::updateMulti(uint32_t user_lc)
 		}
 
 		// Update the text.
-		lblString->setText(U82Q(iter_sm->second.c_str()));
+		assert(iter_sm != pStr_multi->end());
+		if (iter_sm != pStr_multi->end()) {
+			lblString->setText(U82Q(iter_sm->second.c_str()));
+		} else {
+			lblString->setText(QString());
+		}
 	}
 
 	// RFT_LISTDATA_MULTI
@@ -977,30 +982,33 @@ void RomDataViewPrivate::updateMulti(uint32_t user_lc)
 			}
 		}
 
-		const RomFields::ListData_t *const list_data = &(iter_ldm->second);
+		assert(iter_ldm != pListData_multi->end());
+		if (iter_ldm != pListData_multi->end()) {
+			const RomFields::ListData_t *const list_data = &(iter_ldm->second);
 
-		// Update the list.
-		const int rowCount = treeWidget->topLevelItemCount();
-		auto iter_listData = list_data->cbegin();
-		for (int row = 0; row < rowCount && iter_listData != list_data->cend(); row++, ++iter_listData) {
-			QTreeWidgetItem *const treeWidgetItem = treeWidget->topLevelItem(row);
+			// Update the list.
+			const int rowCount = treeWidget->topLevelItemCount();
+			auto iter_listData = list_data->cbegin();
+			for (int row = 0; row < rowCount && iter_listData != list_data->cend(); row++, ++iter_listData) {
+				QTreeWidgetItem *const treeWidgetItem = treeWidget->topLevelItem(row);
 
-			int col = 0;
-			for (auto iter_row = iter_listData->cbegin();
-			     iter_row != iter_listData->cend(); ++iter_row, col++)
-			{
-				treeWidgetItem->setData(col, Qt::DisplayRole, U82Q(*iter_row));
+				int col = 0;
+				for (auto iter_row = iter_listData->cbegin();
+				iter_row != iter_listData->cend(); ++iter_row, col++)
+				{
+					treeWidgetItem->setData(col, Qt::DisplayRole, U82Q(*iter_row));
+				}
 			}
-		}
 
-		// Resize the columns to fit the contents.
-		// NOTE: Only done on first load.
-		if (!cboLanguage) {
-			const int colCount = treeWidget->columnCount();
-			for (int i = 0; i < colCount; i++) {
-				treeWidget->resizeColumnToContents(i);
+			// Resize the columns to fit the contents.
+			// NOTE: Only done on first load.
+			if (!cboLanguage) {
+				const int colCount = treeWidget->columnCount();
+				for (int i = 0; i < colCount; i++) {
+					treeWidget->resizeColumnToContents(i);
+				}
+				treeWidget->resizeColumnToContents(colCount);
 			}
-			treeWidget->resizeColumnToContents(colCount);
 		}
 	}
 
