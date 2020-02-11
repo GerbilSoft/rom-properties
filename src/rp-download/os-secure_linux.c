@@ -7,8 +7,6 @@
  ***************************************************************************/
 
 #include "stdafx.h"
-
-#include "config.rp-download.h"
 #include "os-secure.h"
 
 // C includes.
