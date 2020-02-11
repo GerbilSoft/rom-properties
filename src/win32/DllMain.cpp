@@ -591,11 +591,27 @@ static inline bool process_HKU_subkey(const tstring& subKey)
 }
 
 /**
+ * Check if the DLL is located in %SystemRoot%.
+ * @return True if it is; false if it isn't.
+ */
+static inline bool checkDirectory(void)
+{
+	TCHAR szWinPath[MAX_PATH];
+	UINT len = GetWindowsDirectory(szWinPath, _countof(szWinPath));
+	return !_tcsnicmp(szWinPath, dll_filename, len);
+}
+
+/**
  * Register the DLL.
  */
 STDAPI DllRegisterServer(void)
 {
 	LONG lResult;
+
+	if (checkDirectory()) {
+		// DLL is in %SystemRoot%. This isn't allowed.
+		return E_FAIL;
+	}
 
 	// Register the COM objects.
 	lResult = RP_ExtractIcon::RegisterCLSID();
