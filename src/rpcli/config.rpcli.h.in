@@ -24,4 +24,13 @@
 /* Define to 1 if decryption should be enabled. */
 #cmakedefine ENABLE_DECRYPTION 1
 
+/* Define to 1 if you have the OpenBSD 5.8 `tame` function. */
+#cmakedefine HAVE_TAME 1
+
+/* Define to 1 if you have the OpenBSD 5.9+ `pledge` function. */
+#cmakedefine HAVE_PLEDGE 1
+
+/* Define to 1 if you have the OpenBSD 6.3+ `pledge` function with `execpromises`. */
+#cmakedefine HAVE_PLEDGE_EXECPROMISES 1
+
 #endif /* __ROMPROPERTIES_RPCLI_CONFIG_H__ */

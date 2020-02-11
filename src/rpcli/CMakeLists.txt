@@ -13,9 +13,6 @@ IF(NOT HAVE_LOCALTIME_R)
 	CHECK_SYMBOL_EXISTS_OR_INLINE(localtime_s "time.h" "time_t tm; localtime_s(NULL, &tm);" HAVE_LOCALTIME_S)
 ENDIF(NOT HAVE_LOCALTIME_R)
 
-# Write the config.h file.
-CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/config.rpcli.h.in" "${CMAKE_CURRENT_BINARY_DIR}/config.rpcli.h")
-
 # Sources and headers.
 SET(rpcli_SRCS
 	rpcli.cpp
@@ -25,13 +22,25 @@ SET(rpcli_SRCS
 SET(rpcli_H
 	properties.hpp
 	device.hpp
+	os-secure.h
 	)
 
+# Check for system security functionality.
 IF(WIN32)
 	SET(rpcli_RC resource.rc)
+	SET(rpcli-OS_SECURE_SRCS os-secure_win32.c)
 
 	# Create the manifest file.
 	CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/rpcli.exe.manifest.in" "${CMAKE_CURRENT_BINARY_DIR}/rpcli.exe.manifest" @ONLY)
+ELSE(WIN32)
+	INCLUDE(CheckOpenBSDPledge)
+	CHECK_OPENBSD_PLEDGE()
+	IF(HAVE_PLEDGE OR HAVE_TAME)
+		SET(rpcli-OS_SECURE_SRCS os-secure_openbsd.c)
+	ELSE()
+		# TODO: Add support for other systems.
+		SET(rpcli-OS_SECURE_SRCS os-secure_dummy.c)
+	ENDIF()
 ENDIF(WIN32)
 
 IF(ENABLE_DECRYPTION)
@@ -54,6 +63,9 @@ IF(MSVC)
 	SET(rpcli-DELAYLOAD_H ../libwin32common/DelayLoadHelper.h)
 ENDIF(MSVC)
 
+# Write the config.h file.
+CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/config.rpcli.h.in" "${CMAKE_CURRENT_BINARY_DIR}/config.rpcli.h")
+
 #########################
 # Build the executable. #
 #########################
@@ -66,6 +78,7 @@ ADD_EXECUTABLE(rpcli
 	${rpcli_PCH_SRC} ${rpcli_PCH_H}
 	${rpcli-DELAYLOAD_SRC} ${rpcli-DELAYLOAD_H}
 	${rpcli_SRCS} ${rpcli_H}
+	${rpcli-OS_SECURE_SRCS}
 	${rpcli_CRYPTO_SRCS} ${rpcli_CRYPTO_H}
 	${rpcli_RC}
 	)

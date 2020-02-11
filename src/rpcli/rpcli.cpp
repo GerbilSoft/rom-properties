@@ -10,6 +10,9 @@
 #include "stdafx.h"
 #include "config.rpcli.h"
 
+// OS-specific security options.
+#include "os-secure.h"
+
 // librpbase
 #include "librpbase/config.librpbase.h"
 #include "librpbase/byteswap.h"
@@ -33,7 +36,6 @@ using LibRpTexture::rp_image;
 #ifdef _WIN32
 // libwin32common
 # include "libwin32common/RpWin32_sdk.h"
-# include "libwin32common/secoptions.h"
 #endif /* _WIN32 */
 
 #include "properties.hpp"
@@ -284,10 +286,8 @@ static void DoAtaIdentifyDevice(const char *filename, bool json)
 
 int RP_C_API main(int argc, char *argv[])
 {
-#ifdef _WIN32
-	// Set Win32 security options.
-	rp_secoptions_init(FALSE);
-#endif /* _WIN32 */
+	// Set OS-specific security options.
+	rpcli_os_secure();
 
 	// Set the C and C++ locales.
 	locale::global(locale(""));

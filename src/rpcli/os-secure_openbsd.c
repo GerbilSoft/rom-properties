@@ -1,5 +1,5 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (rp-download)                      *
+ * ROM Properties Page shell extension. (rpcli)                            *
  * os-secure_posix.c: OS security functions. (OpenBSD)                     *
  *                                                                         *
  * Copyright (c) 2016-2020 by David Korth.                                 *
@@ -8,7 +8,7 @@
 
 #include "stdafx.h"
 
-#include "config.rp-download.h"
+#include "config.rpcli.h"
 #include "os-secure.h"
 
 // C includes.
@@ -22,26 +22,24 @@
  * Enable OS-specific security functionality.
  * @return 0 on success; negative POSIX error code on error.
  */
-int rp_download_os_secure(void)
+int rpcli_os_secure(void)
 {
 	int ret;
 
 #if defined(HAVE_PLEDGE)
 	// Promises:
 	// - stdio: General stdio functionality.
-	// - rpath: Read from ~/.config/rom-properties/ and ~/.cache/rom-properties/
-	// - wpath: Write to ~/.cache/rom-properties/
-	// - cpath: Create ~/.cache/rom-properties/ if it doesn't exist.
-	// - inet: Internet access.
-	// - fattr: Modify file attributes, e.g. mtime.
-	// - dns: Resolve hostnames.
+	// - rpath: Read from anywhere.
+	// - wpath: Write to anywhere for e.g. image extraction.
+	// - cpath: Create new files.
+	// - [FIXME: not needed?] fattr: Modify file attributes, e.g. mtime.
 	// - getpw: Get user's home directory if HOME is empty.
 # ifdef HAVE_PLEDGE_EXECPROMISES
 	// OpenBSD 6.3+: Second parameter is `const char *execpromises`.
-	ret = pledge("stdio rpath wpath cpath inet fattr dns getpw", "");
+	ret = pledge("stdio rpath wpath cpath getpw", "");
 # else /* !HAVE_PLEDGE_EXECPROMISES */
 	// OpenBSD 5.9-6.2: Second parameter is `const char *paths[]`.
-	ret = pledge("stdio rpath wpath cpath inet fattr dns getpw", NULL);
+	ret = pledge("stdio rpath wpath cpath getpw", NULL);
 # endif /* HAVE_PLEDGE_EXECPROMISES */
 
 #elif defined(HAVE_TAME)
@@ -49,8 +47,7 @@ int rp_download_os_secure(void)
 	// Similar to pledge(), but it takes a bitfield instead of
 	// a string of pledges.
 	// NOTE: stdio includes fattr, e.g. utimes().
-	tame(TAME_STDIO | TAME_RPATH | TAME_WPATH | TAME_CPATH |
-	     TAME_INET | TAME_DNS | TAME_GETPW);
+	tame(TAME_STDIO | TAME_RPATH | TAME_WPATH | TAME_CPATH | TAME_GETPW);
 #else
 # error Cannot compile os-secure_openbsd.c with no implementation.
 #endif

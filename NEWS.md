@@ -32,9 +32,10 @@
         * Have rp-download drop privileges if run directly.
         * If rp-download.exe isn't in the current directory, check the
           architecture-specific subdirectory.
-    * Linux: Added AppArmor profiles for rp-download and rpcli.
-      * rp-stub AppArmor profiles will be added in a future release.
-      * libseccomp support will be added in a future release.
+    * Added other security functionality for rp-download and rpcli:
+      * Linux: AppArmor profiles, libseccomp
+      * OpenBSD: pledge() [and tame() for old versions]
+    * AppArmor profiles for rp-stub will be added in a future release.
   * Windows: The online database code has been rewritten to use WinInet
     directly instead of urlmon, which reduces overhead.
   * The UI frontends now show a dropdown box to select the language if the
