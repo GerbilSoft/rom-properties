@@ -11,7 +11,8 @@
 
 // librpbase
 #include "librpbase/config/Config.hpp"
-using LibRpBase::Config;
+#include "librpbase/file/FileSystem.hpp"
+using namespace LibRpBase;
 
 // libi18n
 #include "libi18n/i18n.h"
@@ -189,7 +190,7 @@ ConfigDialog::ConfigDialog(QWidget *parent)
 }
 
 /**
- * Shut down the save file editor.
+ * Shut down the configuration dialog.
  */
 ConfigDialog::~ConfigDialog()
 {
@@ -279,6 +280,15 @@ void ConfigDialog::apply(void)
 	assert(filename != nullptr);
 	if (!filename) {
 		// No configuration filename...
+		return;
+	}
+
+	// Make sure the configuration directory exists.
+	// NOTE: The filename portion MUST be kept in config_path,
+	// since the last component is ignored by rmkdir().
+	int ret = FileSystem::rmkdir(filename);
+	if (ret != 0) {
+		// rmkdir() failed.
 		return;
 	}
 

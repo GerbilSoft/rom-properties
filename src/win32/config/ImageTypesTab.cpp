@@ -424,6 +424,15 @@ int ImageTypesTabPrivate::saveStart(void)
 		return -ENOENT;
 	}
 
+	// Make sure the configuration directory exists.
+	// NOTE: The filename portion MUST be kept in config_path,
+	// since the last component is ignored by rmkdir().
+	int ret = FileSystem::rmkdir(filename);
+	if (ret != 0) {
+		// rmkdir() failed.
+		return;
+	}
+
 	// Store the configuration filename.
 	assert(tmp_conf_filename.empty());
 	tmp_conf_filename = U82T_s(filename);

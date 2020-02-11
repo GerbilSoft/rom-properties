@@ -523,6 +523,15 @@ void KeyManagerTabPrivate::save(void)
 		return;
 	}
 
+	// Make sure the configuration directory exists.
+	// NOTE: The filename portion MUST be kept in config_path,
+	// since the last component is ignored by rmkdir().
+	int ret = FileSystem::rmkdir(filename);
+	if (ret != 0) {
+		// rmkdir() failed.
+		return;
+	}
+
 	// Save the keys.
 	const tstring tfilename = U82T_c(filename);
 	const int totalKeyCount = keyStore->totalKeyCount();

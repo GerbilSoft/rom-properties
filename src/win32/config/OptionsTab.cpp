@@ -212,23 +212,34 @@ void OptionsTabPrivate::save(void)
 		return;
 	}
 
+	// Make sure the configuration directory exists.
+	// NOTE: The filename portion MUST be kept in config_path,
+	// since the last component is ignored by rmkdir().
+	int ret = FileSystem::rmkdir(filename);
+	if (ret != 0) {
+		// rmkdir() failed.
+		return;
+	}
+
+	const tstring tfilename = U82T_c(filename);
+
 	const TCHAR *btstr = bstCheckedToBoolString(IsDlgButtonChecked(hWndPropSheet, IDC_EXTIMGDL));
-	WritePrivateProfileString(_T("Downloads"), _T("ExtImageDownload"), btstr, U82T_c(filename));
+	WritePrivateProfileString(_T("Downloads"), _T("ExtImageDownload"), btstr, tfilename.c_str());
 
 	btstr = bstCheckedToBoolString(IsDlgButtonChecked(hWndPropSheet, IDC_INTICONSMALL));
-	WritePrivateProfileString(_T("Downloads"), _T("UseIntIconForSmallSizes"), btstr, U82T_c(filename));
+	WritePrivateProfileString(_T("Downloads"), _T("UseIntIconForSmallSizes"), btstr, tfilename.c_str());
 
 	btstr = bstCheckedToBoolString(IsDlgButtonChecked(hWndPropSheet, IDC_HIGHRESDL));
-	WritePrivateProfileString(_T("Downloads"), _T("DownloadHighResScans"), btstr, U82T_c(filename));
+	WritePrivateProfileString(_T("Downloads"), _T("DownloadHighResScans"), btstr, tfilename.c_str());
 
 	btstr = bstCheckedToBoolString(IsDlgButtonChecked(hWndPropSheet, IDC_STOREFILEORIGININFO));
-	WritePrivateProfileString(_T("Downloads"), _T("StoreFileOriginInfo"), btstr, U82T_c(filename));
+	WritePrivateProfileString(_T("Downloads"), _T("StoreFileOriginInfo"), btstr, tfilename.c_str());
 
 	btstr = bstCheckedToBoolString(IsDlgButtonChecked(hWndPropSheet, IDC_DANGEROUSPERMISSIONS));
-	WritePrivateProfileString(_T("Options"), _T("ShowDangerousPermissionsOverlayIcon"), btstr, U82T_c(filename));
+	WritePrivateProfileString(_T("Options"), _T("ShowDangerousPermissionsOverlayIcon"), btstr, tfilename.c_str());
 
 	btstr = bstCheckedToBoolString(IsDlgButtonChecked(hWndPropSheet, IDC_ENABLETHUMBNAILONNETWORKFS));
-	WritePrivateProfileString(_T("Options"), _T("EnableThumbnailOnNetworkFS"), btstr, U82T_c(filename));
+	WritePrivateProfileString(_T("Options"), _T("EnableThumbnailOnNetworkFS"), btstr, tfilename.c_str());
 
 	// No longer changed.
 	changed = false;
