@@ -11,11 +11,6 @@ ENDIF()
 # Write the config.h file.
 CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/config.rp-download.h.in" "${CMAKE_CURRENT_BINARY_DIR}/config.rp-download.h")
 
-IF(WIN32)
-	# Create the manifest file.
-	CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/rp-download.exe.manifest.in" "${CMAKE_CURRENT_BINARY_DIR}/rp-download.exe.manifest" @ONLY)
-ENDIF(WIN32)
-
 SET(rp-download_SRCS
 	rp-download.cpp
 	IDownloader.cpp
@@ -38,6 +33,9 @@ IF(WIN32)
 		WinInetDownloader.hpp
 		)
 	SET(rp-download-OS_SECURE_SRCS os-secure_win32.c)
+
+	# Create the manifest file.
+	CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/rp-download.exe.manifest.in" "${CMAKE_CURRENT_BINARY_DIR}/rp-download.exe.manifest" @ONLY)
 ELSE(WIN32)
 	# Non-Windows platforms: Use cURL.
 	FIND_PACKAGE(CURL REQUIRED)
@@ -131,6 +129,11 @@ ELSE(WIN32)
 	TARGET_LINK_LIBRARIES(rp-download PRIVATE unixcommon inih)
 	TARGET_LINK_LIBRARIES(rp-download PRIVATE ${CURL_LIBRARIES})
 ENDIF(WIN32)
+
+# Make sure git_version.h is created before compiling this target.
+IF(TARGET git_version)
+	ADD_DEPENDENCIES(rp-download git_version)
+ENDIF(TARGET git_version)
 
 # CMake-3.7.2 doesn't add include paths to windres.
 IF(MINGW)

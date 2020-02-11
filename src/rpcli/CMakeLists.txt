@@ -13,9 +13,6 @@ IF(NOT HAVE_LOCALTIME_R)
 	CHECK_SYMBOL_EXISTS_OR_INLINE(localtime_s "time.h" "time_t tm; localtime_s(NULL, &tm);" HAVE_LOCALTIME_S)
 ENDIF(NOT HAVE_LOCALTIME_R)
 
-# Create the manifest file.
-CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/rpcli.exe.manifest.in" "${CMAKE_CURRENT_BINARY_DIR}/rpcli.exe.manifest" @ONLY)
-
 # Write the config.h file.
 CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/config.rpcli.h.in" "${CMAKE_CURRENT_BINARY_DIR}/config.rpcli.h")
 
@@ -32,6 +29,9 @@ SET(rpcli_H
 
 IF(WIN32)
 	SET(rpcli_RC resource.rc)
+
+	# Create the manifest file.
+	CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/rpcli.exe.manifest.in" "${CMAKE_CURRENT_BINARY_DIR}/rpcli.exe.manifest" @ONLY)
 ENDIF(WIN32)
 
 IF(ENABLE_DECRYPTION)
