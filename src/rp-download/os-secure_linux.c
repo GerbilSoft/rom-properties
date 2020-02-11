@@ -18,7 +18,7 @@
 #include <sys/prctl.h>
 
 // Uncomment this to enable seccomp debugging.
-#define SECCOMP_DEBUG 1
+//#define SECCOMP_DEBUG 1
 
 #ifdef SECCOMP_DEBUG
 # include <signal.h>
