@@ -847,15 +847,14 @@ int Xbox360_XDBF_Private::addFields_achievements(void)
 			// Achievement ID
 			data_row.emplace_back(s_achievement_id);
 
-			// Title and locked description
-			// TODO: Unlocked description?
+			// Title.
 			string desc = loadString((XDBF_Language_e)langID, name_id);
 			if (desc.empty() && langID != XDBF_LANGUAGE_ENGLISH) {
 				// String not found in this language. Try English.
 				desc = loadString(XDBF_LANGUAGE_ENGLISH, name_id);
 			}
 
-			// Description ID.
+			// Description.
 			// If we don't have a locked ID, use the unlocked ID.
 			// (TODO: This may be a hidden achievement.)
 			const uint16_t desc_id = (locked_desc_id != 0xFFFF)
@@ -1004,9 +1003,6 @@ int Xbox360_XDBF_Private::addFields_avatarAwards(void)
 	// Icons don't have their own column name; they're considered
 	// a virtual column, much like checkboxes.
 
-	// Language ID
-	const XDBF_Language_e langID = getLanguageID();
-
 	// Columns
 	static const char *const xgaa_col_names[] = {
 		NOP_C_("Xbox360_XDBF|AvatarAwards", "ID"),
@@ -1016,34 +1012,59 @@ int Xbox360_XDBF_Private::addFields_avatarAwards(void)
 		"Xbox360_XDBF|AvatarAwards", xgaa_col_names, ARRAY_SIZE(xgaa_col_names));
 
 	// Vectors.
-	auto vv_xgaa = new RomFields::ListData_t(xgaa_count);
+	array<RomFields::ListData_t*, XDBF_LANGUAGE_MAX> pvv_xgaa;
+	pvv_xgaa[XDBF_LANGUAGE_UNKNOWN] = nullptr;
+	for (int langID = XDBF_LANGUAGE_ENGLISH; langID < XDBF_LANGUAGE_MAX; langID++) {
+		pvv_xgaa[langID] = (strTblIndexes[langID] >= 0)
+			? new RomFields::ListData_t(xgaa_count)
+			: nullptr;
+	}
 	auto vv_icons = new RomFields::ListDataIcons_t(xgaa_count);
-	auto xgaa_iter = vv_xgaa->begin();
 	auto icon_iter = vv_icons->begin();
-	for (; p < p_end && xgaa_iter != vv_xgaa->end(); p++, ++xgaa_iter, ++icon_iter) {
-		// String data row
-		auto &data_row = *xgaa_iter;
-
+	for (unsigned int i = 0; p < p_end && i < xgaa_count; p++, i++, ++icon_iter) {
 		// Icon
 		*icon_iter = loadImage(be32_to_cpu(p->image_id));
 
-		// Avatar award ID
-		data_row.emplace_back(rp_sprintf("%04X", be16_to_cpu(p->avatar_award_id)));
+		// Avatar award IDs.
+		const uint16_t name_id = be16_to_cpu(p->name_id);
+		const uint16_t locked_desc_id = be16_to_cpu(p->locked_desc_id);
+		const uint16_t unlocked_desc_id = be16_to_cpu(p->unlocked_desc_id);
 
-		// Title and locked description
-		// TODO: Unlocked description?
-		if (langID != XDBF_LANGUAGE_UNKNOWN) {
-			string desc = loadString(langID, be16_to_cpu(p->name_id));
+		// TODO: Localized numeric formatting?
+		char s_avatar_award_id[16];
+		snprintf(s_avatar_award_id, sizeof(s_avatar_award_id), "%04X", be16_to_cpu(p->avatar_award_id));
 
-			uint16_t desc_id = be16_to_cpu(p->locked_desc_id);
-			if (desc_id == 0xFFFF) {
-				// No locked description.
-				// Use the unlocked description.
-				// (May be a hidden avatar award? TODO)
-				desc_id = be16_to_cpu(p->unlocked_desc_id);
+		for (int langID = XDBF_LANGUAGE_ENGLISH; langID < XDBF_LANGUAGE_MAX; langID++) {
+			if (!pvv_xgaa[langID]) {
+				// No strings for this language.
+				continue;
+			}
+			auto &data_row = pvv_xgaa[langID]->at(i);
+			data_row.reserve(2);
+
+			// Avatar award ID
+			data_row.emplace_back(s_avatar_award_id);
+
+			// Title.
+			string desc = loadString((XDBF_Language_e)langID, name_id);
+			if (desc.empty() && langID != XDBF_LANGUAGE_ENGLISH) {
+				// String not found in this language. Try English.
+				desc = loadString(XDBF_LANGUAGE_ENGLISH, name_id);
 			}
 
-			string lck_desc = loadString(langID, desc_id);
+			// Description.
+			// If we don't have a locked ID, use the unlocked ID.
+			// (TODO: This may be a hidden achievement.)
+			const uint16_t desc_id = (locked_desc_id != 0xFFFF)
+							? locked_desc_id
+							: unlocked_desc_id;
+
+			string lck_desc = loadString((XDBF_Language_e)langID, desc_id);
+			if (lck_desc.empty() && langID != XDBF_LANGUAGE_ENGLISH) {
+				// String not found in this language. Try English.
+				lck_desc = loadString(XDBF_LANGUAGE_ENGLISH, desc_id);
+			}
+
 			if (!lck_desc.empty()) {
 				if (!desc.empty()) {
 					desc += '\n';
@@ -1055,24 +1076,35 @@ int Xbox360_XDBF_Private::addFields_avatarAwards(void)
 
 			// TODO: Formatting value indicating that the first line should be bold.
 			data_row.emplace_back(std::move(desc));
-		} else {
-			// Unknown language ID.
-			// Show the string table IDs instead.
-			data_row.emplace_back(rp_sprintf(
-				C_("Xbox360_XDBF|AvatarAwards", "Name: 0x%04X | Locked: 0x%04X | Unlocked: 0x%04X"),
-					be16_to_cpu(p->name_id),
-					be16_to_cpu(p->locked_desc_id),
-					be16_to_cpu(p->unlocked_desc_id)));
 		}
+	}
+
+	// Add the vectors to a map.
+	RomFields::ListDataMultiMap_t *const mvv_xgaa = new RomFields::ListDataMultiMap_t();
+	for (int langID = XDBF_LANGUAGE_ENGLISH; langID < XDBF_LANGUAGE_MAX; langID++) {
+		if (!pvv_xgaa[langID])
+			continue;
+
+		const uint32_t lc = XboxLanguage::getXbox360LanguageCode(langID);
+		assert(lc != 0);
+		if (lc == 0) {
+			// Invalid language code.
+			delete pvv_xgaa[langID];
+			continue;
+		}
+
+		mvv_xgaa->insert(std::make_pair(lc, std::move(*pvv_xgaa[langID])));
+		delete pvv_xgaa[langID];
 	}
 
 	// Add the list data.
 	// TODO: Improve the display? On KDE, it seems to be limited to
 	// one row due to achievements taking up all the space.
 	RomFields::AFLD_PARAMS params(RomFields::RFT_LISTDATA_SEPARATE_ROW |
-	                              RomFields::RFT_LISTDATA_ICONS, 2);
+	                              RomFields::RFT_LISTDATA_ICONS |
+				      RomFields::RFT_LISTDATA_MULTI, 2);
 	params.headers = v_xgaa_col_names;
-	params.data.single = vv_xgaa;	// TODO: Multi
+	params.data.multi = mvv_xgaa;
 	params.mxd.icons = vv_icons;
 	fields->addField_listData(C_("Xbox360_XDBF", "Avatar Awards"), &params);
 	return 0;
