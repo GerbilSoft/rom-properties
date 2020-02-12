@@ -931,6 +931,9 @@ void RomDataViewPrivate::updateMulti(uint32_t user_lc)
 					// Still not found. Use the first string.
 					iter_sm = pStr_multi->begin();
 				}
+			} else {
+				// No lc change. Use the first string.
+				iter_sm = pStr_multi->begin();
 			}
 		}
 
@@ -976,9 +979,12 @@ void RomDataViewPrivate::updateMulti(uint32_t user_lc)
 			if (def_lc != user_lc) {
 				iter_ldm = pListData_multi->find(def_lc);
 				if (iter_ldm == pListData_multi->end()) {
-					// Still not found. Use the first string.
+					// Still not found. Use the first ListData.
 					iter_ldm = pListData_multi->begin();
 				}
+			} else {
+				// No lc change. Use the first ListData.
+				iter_ldm = pListData_multi->begin();
 			}
 		}
 

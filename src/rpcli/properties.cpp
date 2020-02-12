@@ -257,24 +257,27 @@ public:
 			if (pListDataMulti && !pListDataMulti->empty()) {
 				// Try the user-specified language code first.
 				// TODO: Consolidate ->end() calls?
-				auto iter = pListDataMulti->end();
+				auto iter_ldm = pListDataMulti->end();
 				if (field.user_lc != 0) {
-					iter = pListDataMulti->find(field.user_lc);
+					iter_ldm = pListDataMulti->find(field.user_lc);
 				}
-				if (iter == pListDataMulti->end()) {
+				if (iter_ldm == pListDataMulti->end()) {
 					// Not found. Try the ROM-default language code.
 					if (field.def_lc != field.user_lc) {
-						iter = pListDataMulti->find(field.def_lc);
-						if (iter == pListDataMulti->end()) {
-							// Still not found. Use the first string.
-							iter = pListDataMulti->begin();
+						iter_ldm = pListDataMulti->find(field.def_lc);
+						if (iter_ldm == pListDataMulti->end()) {
+							// Still not found. Use the first ListData.
+							iter_ldm = pListDataMulti->begin();
 						}
+					} else {
+						// No lc change. Use the first ListData.
+						iter_ldm = pListDataMulti->begin();
 					}
 				}
 
-				assert(iter != pListDataMulti->end());
-				if (iter != pListDataMulti->end()) {
-					list_data = &iter->second;
+				assert(iter_ldm != pListDataMulti->end());
+				if (iter_ldm != pListDataMulti->end()) {
+					list_data = &iter_ldm->second;
 				}
 			}
 		} else {
@@ -637,23 +640,26 @@ public:
 		if (pStr_multi && !pStr_multi->empty()) {
 			// Try the user-specified language code first.
 			// TODO: Consolidate ->end() calls?
-			auto iter = pStr_multi->end();
+			auto iter_sm = pStr_multi->end();
 			if (field.user_lc != 0) {
-				iter = pStr_multi->find(field.user_lc);
+				iter_sm = pStr_multi->find(field.user_lc);
 			}
-			if (iter == pStr_multi->end()) {
+			if (iter_sm == pStr_multi->end()) {
 				// Not found. Try the ROM-default language code.
 				if (field.def_lc != field.user_lc) {
-					iter = pStr_multi->find(field.def_lc);
-					if (iter == pStr_multi->end()) {
+					iter_sm = pStr_multi->find(field.def_lc);
+					if (iter_sm == pStr_multi->end()) {
 						// Still not found. Use the first string.
-						iter = pStr_multi->begin();
+						iter_sm = pStr_multi->begin();
 					}
+				} else {
+					// No lc change. Use the first string.
+					iter_sm = pStr_multi->begin();
 				}
 			}
 
-			assert(iter != pStr_multi->end());
-			const char *const str = (iter != pStr_multi->end() ? iter->second.c_str() : "");
+			assert(iter_sm != pStr_multi->end());
+			const char *const str = (iter_sm != pStr_multi->end() ? iter_sm->second.c_str() : "");
 			os << SafeString(str, true, field.width);
 		} else {
 			// Empty string.
