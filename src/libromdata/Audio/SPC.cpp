@@ -184,8 +184,6 @@ SPCPrivate::SPCPrivate(SPC *q, IRpFile *file)
 SPCPrivate::TagData SPCPrivate::parseTags(void)
 {
 	TagData kv;
-	// TODO: BEFORE REAL COMMIT, reserve space
-	// also for other parseTags e.g. in PSF
 
 	if (spcHeader.has_id666 != 26) {
 		// No ID666 tags.

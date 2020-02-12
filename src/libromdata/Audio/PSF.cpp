@@ -7,6 +7,8 @@
  ***************************************************************************/
 
 #include "stdafx.h"
+#include "config.librpbase.h"
+
 #include "PSF.hpp"
 #include "psf_structs.h"
 
@@ -84,6 +86,10 @@ unordered_map<string, string> PSFPrivate::parseTags(off64_t tag_addr)
 		// Seek and/or read error.
 		return kv;
 	}
+
+#ifdef HAVE_UNORDERED_MAP_RESERVE
+	kv.reserve(11);
+#endif /* HAVE_UNORDERED_MAP_RESERVE */
 
 	// Read the rest of the file.
 	// NOTE: Maximum of 16 KB.
