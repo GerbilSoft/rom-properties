@@ -32,16 +32,28 @@ IF(WIN32)
 
 	# Create the manifest file.
 	CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/rpcli.exe.manifest.in" "${CMAKE_CURRENT_BINARY_DIR}/rpcli.exe.manifest" @ONLY)
-ELSE(WIN32)
-	INCLUDE(CheckOpenBSDPledge)
-	CHECK_OPENBSD_PLEDGE()
-	IF(HAVE_PLEDGE OR HAVE_TAME)
-		SET(rpcli-OS_SECURE_SRCS os-secure_openbsd.c)
-	ELSE()
-		# TODO: Add support for other systems.
-		SET(rpcli-OS_SECURE_SRCS os-secure_dummy.c)
-	ENDIF()
 ENDIF(WIN32)
+
+IF(UNIX)
+	# Check for system security functionality.
+	IF(USE_SECCOMP)
+		# Linux: Use seccomp().
+		FIND_PACKAGE(Seccomp REQUIRED)
+		SET(rpcli-OS_SECURE_SRCS os-secure_linux.c)
+	ELSE()
+		# OpenBSD: Use pledge()/tame().
+		INCLUDE(CheckOpenBSDPledge)
+		CHECK_OPENBSD_PLEDGE()
+		IF(HAVE_PLEDGE OR HAVE_TAME)
+			SET(rpcli-OS_SECURE_SRCS os-secure_openbsd.c)
+		ENDIF()
+	ENDIF()
+ENDIF(UNIX)
+
+IF(NOT rpcli-OS_SECURE_SRCS)
+	# TODO: Add support for other systems.
+	SET(rpcli-OS_SECURE_SRCS os-secure_dummy.c)
+ENDIF(NOT rpcli-OS_SECURE_SRCS)
 
 IF(ENABLE_DECRYPTION)
 	SET(rpcli_CRYPTO_SRCS verifykeys.cpp)
@@ -113,6 +125,9 @@ ENDIF(ENABLE_NLS)
 IF(WIN32)
 	TARGET_LINK_LIBRARIES(rpcli PRIVATE wmain)
 ENDIF(WIN32)
+IF(USE_SECCOMP AND SECCOMP_FOUND)
+	TARGET_LINK_LIBRARIES(rpcli PRIVATE Seccomp::seccomp)
+ENDIF(USE_SECCOMP AND SECCOMP_FOUND)
 
 # Make sure git_version.h is created before compiling this target.
 IF(TARGET git_version)
