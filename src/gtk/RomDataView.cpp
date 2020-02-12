@@ -1043,8 +1043,7 @@ rom_data_view_init_listdata(G_GNUC_UNUSED RomDataView *page, const RomFields::Fi
 			const rp_image *const icon = field.data.list_data.mxd.icons->at(row);
 			assert(icon != nullptr);
 			if (icon) {
-				PIMGTYPE pixbuf = rp_image_to_PIMGTYPE(
-					field.data.list_data.mxd.icons->at(row));
+				PIMGTYPE pixbuf = rp_image_to_PIMGTYPE(icon);
 				if (pixbuf) {
 					// TODO: Ideal icon size?
 					// Using 32x32 for now.
