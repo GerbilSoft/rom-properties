@@ -191,6 +191,8 @@ struct _RomDataView {
 		GtkWidget	*vbox;		// Either page or a GtkVBox/GtkBox.
 		GtkWidget	*table;		// GtkTable (2.x); GtkGrid (3.x)
 		GtkWidget	*lblCredits;
+
+		tab() : vbox(nullptr), table(nullptr), lblCredits(nullptr) { }
 	};
 	vector<tab>	*tabs;
 

@@ -84,9 +84,11 @@ class RomDataViewPrivate
 
 		// Tab contents.
 		struct tab {
-			QVBoxLayout *vboxLayout;
-			QFormLayout *formLayout;
+			QVBoxLayout *vbox;
+			QFormLayout *form;
 			QLabel *lblCredits;
+
+			tab() : vbox(nullptr), form(nullptr), lblCredits(nullptr) { }
 		};
 		vector<tab> tabs;
 
@@ -397,13 +399,13 @@ QLabel *RomDataViewPrivate::initString(QLabel *lblDesc, const RomFields::Field &
 			// Save this as the credits label.
 			tab.lblCredits = lblString;
 			// Add the credits label to the end of the QVBoxLayout.
-			tab.vboxLayout->addWidget(lblString, 0, Qt::AlignHCenter | Qt::AlignBottom);
+			tab.vbox->addWidget(lblString, 0, Qt::AlignHCenter | Qt::AlignBottom);
 
 			// Set the bottom margin to match the QFormLayout.
 			// TODO: Use a QHBoxLayout whose margins match the QFormLayout?
 			// TODO: Verify this.
-			QMargins margins = tab.formLayout->contentsMargins();
-			tab.vboxLayout->setContentsMargins(margins);
+			QMargins margins = tab.form->contentsMargins();
+			tab.vbox->setContentsMargins(margins);
 		} else {
 			// Duplicate credits label.
 			delete lblString;
@@ -414,7 +416,7 @@ QLabel *RomDataViewPrivate::initString(QLabel *lblDesc, const RomFields::Field &
 		delete lblDesc;
 	} else {
 		// Standard string row.
-		tab.formLayout->addRow(lblDesc, lblString);
+		tab.form->addRow(lblDesc, lblString);
 	}
 
 	return lblString;
@@ -470,7 +472,7 @@ void RomDataViewPrivate::initBitfield(QLabel *lblDesc, const RomFields::Field &f
 			col = 0;
 		}
 	}
-	tabs[field.tabIdx].formLayout->addRow(lblDesc, gridLayout);
+	tabs[field.tabIdx].form->addRow(lblDesc, gridLayout);
 }
 
 /**
@@ -668,11 +670,11 @@ void RomDataViewPrivate::initListData(QLabel *lblDesc, const RomFields::Field &f
 
 	if (listDataDesc.flags & RomFields::RFT_LISTDATA_SEPARATE_ROW) {
 		// Separate rows.
-		tabs[field.tabIdx].formLayout->addRow(lblDesc);
-		tabs[field.tabIdx].formLayout->addRow(treeWidget);
+		tabs[field.tabIdx].form->addRow(lblDesc);
+		tabs[field.tabIdx].form->addRow(treeWidget);
 	} else {
 		// Single row.
-		tabs[field.tabIdx].formLayout->addRow(lblDesc, treeWidget);
+		tabs[field.tabIdx].form->addRow(lblDesc, treeWidget);
 	}
 
 	// Row height is recalculated when the window is first visible
@@ -696,16 +698,16 @@ void RomDataViewPrivate::initListData(QLabel *lblDesc, const RomFields::Field &f
 void RomDataViewPrivate::adjustListData(int tabIdx)
 {
 	auto &tab = tabs[tabIdx];
-	assert(tab.formLayout != nullptr);
-	if (!tab.formLayout)
+	assert(tab.form != nullptr);
+	if (!tab.form)
 		return;
-	int row = tab.formLayout->rowCount();
+	int row = tab.form->rowCount();
 	if (row <= 0)
 		return;
 	row--;
 
-	QLayoutItem *const liLabel = tab.formLayout->itemAt(row, QFormLayout::LabelRole);
-	QLayoutItem *const liField = tab.formLayout->itemAt(row, QFormLayout::FieldRole);
+	QLayoutItem *const liLabel = tab.form->itemAt(row, QFormLayout::LabelRole);
+	QLayoutItem *const liField = tab.form->itemAt(row, QFormLayout::FieldRole);
 	if (liLabel || !liField) {
 		// Either we have a label, or we don't have a field.
 		// This is not RFT_LISTDATA_SEPARATE_ROW.
@@ -715,13 +717,13 @@ void RomDataViewPrivate::adjustListData(int tabIdx)
 	QTreeWidget *const treeWidget = qobject_cast<QTreeWidget*>(liField->widget());
 	if (treeWidget) {
 		// Move the treeWidget to the QVBoxLayout.
-		int newRow = tab.vboxLayout->count();
+		int newRow = tab.vbox->count();
 		if (tab.lblCredits) {
 			newRow--;
 		}
 		assert(newRow >= 0);
-		tab.formLayout->removeItem(liField);
-		tab.vboxLayout->insertWidget(newRow, treeWidget, 999, 0);
+		tab.form->removeItem(liField);
+		tab.vbox->insertWidget(newRow, treeWidget, 999, 0);
 		delete liField;
 
 		// Unset this property to prevent the event filter from
@@ -821,14 +823,14 @@ void RomDataViewPrivate::initAgeRatings(QLabel *lblDesc, const RomFields::Field 
 	if (!age_ratings) {
 		// tr: No age ratings data.
 		lblAgeRatings->setText(U82Q(C_("RomDataView", "ERROR")));
-		tabs[field.tabIdx].formLayout->addRow(lblDesc, lblAgeRatings);
+		tabs[field.tabIdx].form->addRow(lblDesc, lblAgeRatings);
 		return;
 	}
 
 	// Convert the age ratings field to a string.
 	QString str = U82Q(RomFields::ageRatingsDecode(age_ratings));
 	lblAgeRatings->setText(str);
-	tabs[field.tabIdx].formLayout->addRow(lblDesc, lblAgeRatings);
+	tabs[field.tabIdx].form->addRow(lblDesc, lblAgeRatings);
 }
 
 /**
@@ -863,7 +865,7 @@ void RomDataViewPrivate::initDimensions(QLabel *lblDesc, const RomFields::Field 
 	}
 
 	lblDimensions->setText(QLatin1String(buf));
-	tabs[field.tabIdx].formLayout->addRow(lblDesc, lblDimensions);
+	tabs[field.tabIdx].form->addRow(lblDesc, lblDimensions);
 }
 
 /**
@@ -1059,13 +1061,13 @@ void RomDataViewPrivate::initDisplayWidgets(void)
 			// Delete the credits label if it's present.
 			delete tab.lblCredits;
 			// Delete the QFormLayout if it's present.
-			if (tab.formLayout) {
-				clearLayout(tab.formLayout);
-				delete tab.formLayout;
+			if (tab.form) {
+				clearLayout(tab.form);
+				delete tab.form;
 			}
 			// Delete the QVBoxLayout.
-			if (tab.vboxLayout != ui.vboxLayout) {
-				delete tab.vboxLayout;
+			if (tab.vbox != ui.vboxLayout) {
+				delete tab.vbox;
 			}
 		}
 	);
@@ -1109,9 +1111,9 @@ void RomDataViewPrivate::initDisplayWidgets(void)
 			// Layouts.
 			// NOTE: We shouldn't zero out the QVBoxLayout margins here.
 			// Otherwise, we end up with no margins.
-			tab.vboxLayout = new QVBoxLayout(widget);
-			tab.formLayout = new QFormLayout();
-			tab.vboxLayout->addLayout(tab.formLayout, 1);
+			tab.vbox = new QVBoxLayout(widget);
+			tab.form = new QFormLayout();
+			tab.vbox->addLayout(tab.form, 1);
 
 			// Add the tab.
 			ui.tabWidget->addTab(widget, (name ? U82Q(name) : QString()));
@@ -1126,11 +1128,11 @@ void RomDataViewPrivate::initDisplayWidgets(void)
 		// QVBoxLayout
 		// NOTE: Using ui.vboxLayout. We must ensure that
 		// this isn't deleted.
-		tab.vboxLayout = ui.vboxLayout;
+		tab.vbox = ui.vboxLayout;
 
 		// QFormLayout
-		tab.formLayout = new QFormLayout();
-		tab.vboxLayout->addLayout(tab.formLayout, 1);
+		tab.form = new QFormLayout();
+		tab.vbox->addLayout(tab.form, 1);
 	}
 
 	// TODO: Ensure the description column has the
@@ -1153,7 +1155,7 @@ void RomDataViewPrivate::initDisplayWidgets(void)
 		if (tabIdx < 0 || tabIdx >= (int)tabs.size()) {
 			// Tab index is out of bounds.
 			continue;
-		} else if (!tabs[tabIdx].formLayout) {
+		} else if (!tabs[tabIdx].form) {
 			// Tab name is empty. Tab is hidden.
 			continue;
 		}
