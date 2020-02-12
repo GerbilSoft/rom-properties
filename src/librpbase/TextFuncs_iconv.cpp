@@ -176,7 +176,6 @@ static inline void codePageToEncName(char *enc_name, size_t len, unsigned int cp
 			snprintf(enc_name, len, "CP1252");
 			break;
 		case CP_LATIN1:
-			// NOTE: Handling "ANSI" as Latin-1 for now.
 			snprintf(enc_name, len, "LATIN1");
 			break;
 		case CP_UTF8:
