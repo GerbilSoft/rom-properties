@@ -11,7 +11,7 @@
 #include "res/resource.h"
 
 // librpbase
-using LibRpBase::Config;
+using namespace LibRpBase;
 
 // C++ STL classes.
 using std::tstring;

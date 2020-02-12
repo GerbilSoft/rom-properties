@@ -430,7 +430,7 @@ int ImageTypesTabPrivate::saveStart(void)
 	int ret = FileSystem::rmkdir(filename);
 	if (ret != 0) {
 		// rmkdir() failed.
-		return;
+		return -EIO;
 	}
 
 	// Store the configuration filename.
