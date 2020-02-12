@@ -367,9 +367,9 @@ rom_data_view_init(RomDataView *page)
 	gtk_orientable_set_orientation(GTK_ORIENTABLE(page), GTK_ORIENTATION_VERTICAL);
 
 	// Header row. (outer box)
+	// NOTE: Not visible initially.
 	page->hboxHeaderRow_outer = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 	gtk_box_pack_start(GTK_BOX(page), page->hboxHeaderRow_outer, false, false, 0);
-	gtk_widget_show(page->hboxHeaderRow_outer);
 
 	// Header row. (inner box)
 	page->hboxHeaderRow = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 8);
@@ -378,9 +378,9 @@ rom_data_view_init(RomDataView *page)
 	gtk_widget_show(page->hboxHeaderRow);
 #else /* !GTK_CHECK_VERSION(3,0,0) */
 	// Header row. (outer box)
+	// NOTE: Not visible initially.
 	page->hboxHeaderRow_outer = gtk_hbox_new(false, 0);
 	gtk_box_pack_start(GTK_BOX(page), page->hboxHeaderRow_outer, false, false, 0);
-	gtk_widget_show(page->hboxHeaderRow_outer);
 
 	// Center-align the header row.
 	GtkWidget *centerAlign = gtk_alignment_new(0.5f, 0.0f, 1.0f, 0.0f);
@@ -579,9 +579,9 @@ rom_data_view_set_uri(RomDataView	*page,
 	if (G_LIKELY(page->uri != nullptr)) {
 		rom_data_view_uri_changed(page->uri, page);
 	} else {
-		// Hide the header row
-		if (page->hboxHeaderRow) {
-			gtk_widget_hide(page->hboxHeaderRow);
+		// Hide the header row. (outerbox)
+		if (page->hboxHeaderRow_outer) {
+			gtk_widget_hide(page->hboxHeaderRow_outer);
 		}
 	}
 
@@ -736,8 +736,8 @@ rom_data_view_init_header_row(RomDataView *page)
 		}
 	}
 
-	// Show the header row.
-	gtk_widget_show(page->hboxHeaderRow);
+	// Show the header row. (outer box)
+	gtk_widget_show(page->hboxHeaderRow_outer);
 }
 
 #if GTK_CHECK_VERSION(3,0,0)
@@ -1974,6 +1974,15 @@ rom_data_view_delete_tabs(RomDataView *page)
 		// Delete the tab widget.
 		gtk_widget_destroy(page->tabWidget);
 		page->tabWidget = nullptr;
+	}
+
+	// Delete the language dropdown and related.
+	// NOTE: We released our reference to lstoreLanguage,
+	// so destroying cboLanguage will destroy lstoreLanguage.
+	if (page->cboLanguage) {
+		gtk_widget_destroy(page->cboLanguage);
+		page->cboLanguage = nullptr;
+		page->lstoreLanguage = nullptr;
 	}
 
 	// Clear the various widget references.
