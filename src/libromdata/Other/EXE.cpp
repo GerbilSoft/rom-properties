@@ -454,7 +454,7 @@ EXE::EXE(IRpFile *file)
 	}
 
 	// Check the signature.
-	// FIXME: MSVC handles 'PE\0\0' as 0x00504500,
+	// NOTE: MSVC handles 'PE\0\0' as 0x00504500,
 	// probably due to the embedded NULL bytes.
 	if (d->hdr.pe.Signature == cpu_to_be32(0x50450000) /*'PE\0\0'*/) {
 		// This is a PE executable.

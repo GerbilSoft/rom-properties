@@ -168,8 +168,6 @@ inline bool GcnFstPrivate::is_dir(const GCN_FST_Entry *fst_entry)
  */
 inline const char *GcnFstPrivate::entry_name(const GCN_FST_Entry *fst_entry) const
 {
-	// FIXME: Is returning c_str from the iterator valid?
-
 	// Get the name entry from the string table.
 	uint32_t offset = be32_to_cpu(fst_entry->file_type_name_offset) & 0xFFFFFF;
 	if (offset >= string_table_sz) {

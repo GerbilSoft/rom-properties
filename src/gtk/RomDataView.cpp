@@ -1470,7 +1470,6 @@ rom_data_view_update_multi(RomDataView *page, uint32_t user_lc)
 
 	if (!page->cboLanguage && page->set_lc->size() > 1) {
 		// Create the language combobox.
-		// TODO: G_TYPE_PIXBUF
 		// Columns:
 		// - 0: Icon
 		// - 1: Display text
@@ -1540,7 +1539,7 @@ rom_data_view_update_multi(RomDataView *page, uint32_t user_lc)
 		gtk_combo_box_set_active(GTK_COMBO_BOX(page->cboLanguage), sel_idx);
 		gtk_widget_show(page->cboLanguage);
 
-		// cboLanguage: Icon renderer (TODO)
+		// cboLanguage: Icon renderer
 		GtkCellRenderer *renderer = gtk_cell_renderer_pixbuf_new();
 		gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(page->cboLanguage), renderer, false);
 		gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(page->cboLanguage),

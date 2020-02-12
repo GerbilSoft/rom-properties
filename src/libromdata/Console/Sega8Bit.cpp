@@ -458,7 +458,6 @@ int Sega8Bit::loadFieldData(void)
 		// NOTE: CreationDate is currently handled as QDate on KDE.
 		time_t ctime = d->codemasters_timestamp_to_unix_time(&codemasters->timestamp);
 
-		// TODO: Interpret dateTime of -1 as "error"?
 		d->fields->addField_dateTime(C_("Sega8Bit", "Build Time"), ctime,
 			RomFields::RFT_DATETIME_HAS_DATE |
 			RomFields::RFT_DATETIME_HAS_TIME |
@@ -495,7 +494,6 @@ int Sega8Bit::loadFieldData(void)
 		// Build date.
 		time_t ctime = d->sdsc_date_to_unix_time(&sdsc->date);
 
-		// TODO: Interpret dateTime of -1 as "error"?
 		d->fields->addField_dateTime(C_("Sega8Bit", "Build Date"), ctime,
 			RomFields::RFT_DATETIME_HAS_DATE |
 			RomFields::RFT_DATETIME_IS_UTC  // No timezone information here.

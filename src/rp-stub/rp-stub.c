@@ -288,7 +288,7 @@ int main(int argc, char *argv[])
 			fprintf(stderr, C_("rp-stub", "Calling function: %s();"), symname);
 			putc('\n', stderr);
 		}
-		// FIXME: argc/argv may be manipulated by getopt().
+		// NOTE: argc/argv may be manipulated by getopt().
 		ret = ((PFN_RP_SHOW_CONFIG_DIALOG)pfn)(argc, argv);
 	}
 

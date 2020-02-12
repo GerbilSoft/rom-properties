@@ -424,12 +424,19 @@ const rp_image *SegaPVRPrivate::loadPvrImage(void)
 					return nullptr;
 			}
 
-			// Get the log2 of the texture width.
-			// FIXME: Make sure it's a power of two.
+			// Make sure this is in fact a square textuer.
 			assert(pvrHeader.width == pvrHeader.height);
-			if (pvrHeader.width != pvrHeader.height)
+			if (pvrHeader.width != pvrHeader.height) {
 				return nullptr;
+			}
 
+			// Make sure the texture width is a power of two.
+			assert(isPow2(pvrHeader.width));
+			if (!isPow2(pvrHeader.width)) {
+				return nullptr;
+			}
+
+			// Get the log2 of the texture width.
 			unsigned int len = uilog2(pvrHeader.width);
 			for (unsigned int size = 1; len > 0; len--, size <<= 1) {
 				mipmap_size += std::max((size*size*bpp)>>3, 1U);

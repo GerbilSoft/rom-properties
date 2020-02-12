@@ -566,7 +566,6 @@ RomData *RomDataFactory::create(IRpFile *file, unsigned int attrs)
 		// TODO: Verify alignment restrictions.
 		assert(fns->address % 4 == 0);
 		assert(fns->address + sizeof(uint32_t) <= sizeof(header.u32));
-		// FIXME: Fix strict aliasing warnings on Ubuntu 14.04.
 		uint32_t magic = header.u32[fns->address/4];
 		if (be32_to_cpu(magic) == fns->size) {
 			// Found a matching magic number.

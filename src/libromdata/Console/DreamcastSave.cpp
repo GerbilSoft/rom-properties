@@ -1365,7 +1365,6 @@ int DreamcastSave::loadFieldData(void)
 			latin1_to_utf8(d->vms_dirent.filename, sizeof(d->vms_dirent.filename)));
 
 		// Creation time.
-		// TODO: Interpret dateTime of -1 as "error"?
 		d->fields->addField_dateTime(C_("DreamcastSave", "Creation Time"), d->ctime,
 			RomFields::RFT_DATETIME_HAS_DATE |
 			RomFields::RFT_DATETIME_HAS_TIME |
