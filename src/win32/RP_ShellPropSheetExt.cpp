@@ -770,14 +770,6 @@ int RP_ShellPropSheetExt_Private::initString(_In_ HWND hDlg, _In_ HWND hWndTab,
 		RECT winRect;
 		GetClientRect(hWndTab, &winRect);
 
-		// FIXME: SysLink does not support ANSI.
-		// Remove links from the text if this is an ANSI build.
-#ifdef UNICODE
-# define SYSLINK_CONTROL WC_LINK
-#else /* !UNICODE */
-# define SYSLINK_CONTROL WC_STATIC
-#endif /* UNICODE */
-
 		// There should be a maximum of one STRF_CREDITS per tab.
 		auto &tab = tabs[field.tabIdx];
 		assert(tab.lblCredits == nullptr);
@@ -794,11 +786,52 @@ int RP_ShellPropSheetExt_Private::initString(_In_ HWND hDlg, _In_ HWND hWndTab,
 		// TODO: With subtabs:
 		// - Verify behavior of LWS_TRANSPARENT.
 		// - Show below subtabs.
+#ifdef UNICODE
 		hDlgItem = CreateWindowEx(WS_EX_NOPARENTNOTIFY | WS_EX_TRANSPARENT,
-			SYSLINK_CONTROL, str_nl.c_str(),
+			WC_LINK, str_nl.c_str(),
 			WS_CHILD | WS_TABSTOP | WS_VISIBLE,
 			0, 0, 0, 0,	// will be adjusted afterwards
 			hWndTab, cId, nullptr, nullptr);
+		if (!hDlgItem)
+#endif /* UNICODE */
+		{
+			// Unable to create a SysLink control
+			// This might happen if this is an ANSI build
+			// or if we're running on Windows 2000.
+
+			// FIXME: Remove links from the text before creating
+			// a plain-old WC_EDIT control.
+
+			// Create a read-only EDIT control.
+			// The STATIC control doesn't allow the user
+			// to highlight and copy data.
+			DWORD dwStyle;
+			if (lf_count > 0) {
+				// Multiple lines.
+				dwStyle = WS_CHILD | WS_TABSTOP | WS_VISIBLE | WS_CLIPSIBLINGS | ES_READONLY | ES_AUTOHSCROLL | ES_MULTILINE;
+			} else {
+				// Single line.
+				dwStyle = WS_CHILD | WS_TABSTOP | WS_VISIBLE | WS_CLIPSIBLINGS | ES_READONLY | ES_AUTOHSCROLL;
+			}
+
+			hDlgItem = CreateWindowEx(WS_EX_NOPARENTNOTIFY | WS_EX_TRANSPARENT,
+				WC_EDIT, str_nl.c_str(), dwStyle,
+				0, 0, 0, 0,	// will be adjusted afterwards
+				hWndTab, cId, nullptr, nullptr);
+
+			// Subclass multi-line EDIT controls to work around Enter/Escape issues.
+			// We're also subclassing single-line EDIT controls to disable the
+			// initial selection. (DLGC_HASSETSEL)
+			// Reference:  http://blogs.msdn.com/b/oldnewthing/archive/2007/08/20/4470527.aspx
+			// TODO: Error handling?
+			SUBCLASSPROC proc = (dwStyle & ES_MULTILINE)
+				? LibWin32Common::MultiLineEditProc
+				: LibWin32Common::SingleLineEditProc;
+			SetWindowSubclass(hDlgItem, proc,
+				reinterpret_cast<UINT_PTR>(cId),
+				reinterpret_cast<DWORD_PTR>(GetParent(hDlgSheet)));
+		}
+
 		tab.lblCredits = hDlgItem;
 		SetWindowFont(hDlgItem, hFont, false);
 
@@ -820,7 +853,7 @@ int RP_ShellPropSheetExt_Private::initString(_In_ HWND hDlg, _In_ HWND hWndTab,
 		// and the "normal" area will be empty.
 		field_cy = 0;
 	} else {
-		// Create a read-only EDIT widget.
+		// Create a read-only EDIT control.
 		// The STATIC control doesn't allow the user
 		// to highlight and copy data.
 		DWORD dwStyle;
