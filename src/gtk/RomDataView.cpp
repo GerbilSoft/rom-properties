@@ -1395,30 +1395,10 @@ rom_data_view_update_multi(RomDataView *page, uint32_t user_lc)
 			}
 		}
 
-		// Try the user-specified language code first.
-		// TODO: Consolidate ->end() calls?
-		auto iter_sm = pStr_multi->end();
-		if (user_lc != 0) {
-			iter_sm = pStr_multi->find(user_lc);
-		}
-		if (iter_sm == pStr_multi->end()) {
-			// Not found. Try the ROM-default language code.
-			if (page->def_lc != user_lc) {
-				iter_sm = pStr_multi->find(page->def_lc);
-				if (iter_sm == pStr_multi->end()) {
-					// Still not found. Use the first string.
-					iter_sm = pStr_multi->begin();
-				}
-			} else {
-				// No lc change. Use the first string.
-				iter_sm = pStr_multi->begin();
-			}
-		}
-
-		// Update the text.
-		assert(iter_sm != pStr_multi->end());
-		const char *const str = (iter_sm != pStr_multi->end() ? iter_sm->second.c_str() : "");
-		gtk_label_set_text(GTK_LABEL(lblString), str);
+		// Get the string and update the text.
+		const string *const pStr = RomFields::getFromStringMulti(pStr_multi, page->def_lc, user_lc);
+		assert(pStr != nullptr);
+		gtk_label_set_text(GTK_LABEL(lblString), (pStr ? pStr->c_str() : ""));
 	}
 
 	// RFT_LISTDATA_MULTI
@@ -1445,30 +1425,11 @@ rom_data_view_update_multi(RomDataView *page, uint32_t user_lc)
 			}
 		}
 
-		// Try the user-specified language code first.
-		// TODO: Consolidate ->end() calls?
-		auto iter_ldm = pListData_multi->end();
-		if (user_lc != 0) {
-			iter_ldm = pListData_multi->find(user_lc);
-		}
-		if (iter_ldm == pListData_multi->end()) {
-			// Not found. Try the ROM-default language code.
-			if (page->def_lc != user_lc) {
-				iter_ldm = pListData_multi->find(page->def_lc);
-				if (iter_ldm == pListData_multi->end()) {
-					// Still not found. Use the first ListData.
-					iter_ldm = pListData_multi->begin();
-				}
-			} else {
-				// No lc change. Use the first ListData.
-				iter_ldm = pListData_multi->begin();
-			}
-		}
-
-		assert(iter_ldm != pListData_multi->end());
-		if (iter_ldm != pListData_multi->end()) {
+		// Get the ListData_t.
+		const auto *const pListData = RomFields::getFromListDataMulti(pListData_multi, page->def_lc, user_lc);
+		assert(pListData != nullptr);
+		if (pListData != nullptr) {
 			const auto &listDataDesc = pField->desc.list_data;
-			const RomFields::ListData_t *const list_data = &(iter_ldm->second);
 
 			// If we have checkboxes or icons, start at column 1.
 			// Otherwise, start at column 0.
@@ -1483,8 +1444,8 @@ rom_data_view_update_multi(RomDataView *page, uint32_t user_lc)
 			// Update the list.
 			GtkTreeIter treeIter;
 			gboolean ok = gtk_tree_model_get_iter_first(GTK_TREE_MODEL(listStore), &treeIter);
-			auto iter_listData = list_data->cbegin();
-			while (ok && iter_listData != list_data->cend()) {
+			auto iter_listData = pListData->cbegin();
+			while (ok && iter_listData != pListData->cend()) {
 				// TODO: Verify GtkListStore column count?
 				int col = col_start;
 				for (auto iter_row = iter_listData->cbegin();

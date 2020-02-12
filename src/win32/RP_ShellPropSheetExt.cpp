@@ -1948,30 +1948,11 @@ void RP_ShellPropSheetExt_Private::updateMulti(uint32_t user_lc)
 			}
 		}
 
-		// Try the user-specified language code first.
-		// TODO: Consolidate ->end() calls?
-		auto iter_sm = pStr_multi->end();
-		if (user_lc != 0) {
-			iter_sm = pStr_multi->find(user_lc);
-		}
-		if (iter_sm == pStr_multi->end()) {
-			// Not found. Try the ROM-default language code.
-			if (def_lc != user_lc) {
-				iter_sm = pStr_multi->find(def_lc);
-				if (iter_sm == pStr_multi->end()) {
-					// Still not found. Use the first string.
-					iter_sm = pStr_multi->begin();
-				}
-			} else {
-				// No lc change. Use the first string.
-				iter_sm = pStr_multi->begin();
-			}
-		}
-
-		// Update the text.
-		assert(iter_sm != pStr_multi->end());
-		if (iter_sm != pStr_multi->end()) {
-			SetWindowText(lblString, U82T_s(iter_sm->second));
+		// Get the string and update the text.
+		const string *const pStr = RomFields::getFromStringMulti(pStr_multi, def_lc, user_lc);
+		assert(pStr != nullptr);
+		if (pStr != nullptr) {
+			SetWindowText(lblString, U82T_s(*pStr));
 		} else {
 			SetWindowText(lblString, _T(""));
 		}
@@ -2005,30 +1986,10 @@ void RP_ShellPropSheetExt_Private::updateMulti(uint32_t user_lc)
 			}
 		}
 
-		// Try the user-specified language code first.
-		// TODO: Consolidate ->end() calls?
-		auto iter_ldm = pListData_multi->end();
-		if (user_lc != 0) {
-			iter_ldm = pListData_multi->find(user_lc);
-		}
-		if (iter_ldm == pListData_multi->end()) {
-			// Not found. Try the ROM-default language code.
-			if (def_lc != user_lc) {
-				iter_ldm = pListData_multi->find(def_lc);
-				if (iter_ldm == pListData_multi->end()) {
-					// Still not found. Use the first ListData.
-					iter_ldm = pListData_multi->begin();
-				}
-			} else {
-				// No lc change. Use the first ListData.
-				iter_ldm = pListData_multi->begin();
-			}
-		}
-
-		assert(iter_ldm != pListData_multi->end());
-		if (iter_ldm != pListData_multi->end()) {
-			const RomFields::ListData_t *const list_data = &(iter_ldm->second);
-
+		// Get the ListData_t.
+		const auto *const pListData = RomFields::getFromListDataMulti(pListData_multi, def_lc, user_lc);
+		assert(pListData != nullptr);
+		if (pListData != nullptr) {
 			// Column count.
 			const auto &listDataDesc = pField->desc.list_data;
 			int colCount = 1;
@@ -2037,9 +1998,9 @@ void RP_ShellPropSheetExt_Private::updateMulti(uint32_t user_lc)
 			} else {
 				// No column headers.
 				// Use the first row.
-				assert(!list_data->empty());
-				if (!list_data->empty()) {
-					colCount = (int)list_data->at(0).size();
+				assert(!pListData->empty());
+				if (!pListData->empty()) {
+					colCount = (int)pListData->at(0).size();
 				}
 			}
 
@@ -2058,9 +2019,9 @@ void RP_ShellPropSheetExt_Private::updateMulti(uint32_t user_lc)
 			// Get the ListView data vector for LVS_OWNERDATA.
 			vector<vector<tstring> > &vvStr = lvData.vvStr;
 
-			auto iter_ld_row = list_data->cbegin();
+			auto iter_ld_row = pListData->cbegin();
 			auto iter_vvStr_row = vvStr.begin();
-			for (; iter_ld_row != list_data->cend() && iter_vvStr_row != vvStr.end();
+			for (; iter_ld_row != pListData->cend() && iter_vvStr_row != vvStr.end();
 			++iter_ld_row, ++iter_vvStr_row)
 			{
 				const vector<string> &src_data_row = *iter_ld_row;

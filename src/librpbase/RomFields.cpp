@@ -352,6 +352,83 @@ string RomFields::ageRatingsDecode(const age_ratings_t *age_ratings, bool newlin
 	return str;
 }
 
+/** Multi-language convenience functions. **/
+
+/**
+ * Get a string from an RFT_STRING_MULTI field.
+ * @param pStr_multi StringMultiMap_t*
+ * @param def_lc Default language code.
+ * @param user_lc User-specified language code.
+ * @return Pointer to string, or nullptr if not found.
+ */
+const string *RomFields::getFromStringMulti(const StringMultiMap_t *pStr_multi, uint32_t def_lc, uint32_t user_lc)
+{
+	assert(pStr_multi != nullptr);
+	assert(!pStr_multi->empty());
+	if (pStr_multi->empty()) {
+		return nullptr;
+	}
+
+	if (user_lc != 0) {
+		// Search for the user-specified lc first.
+		auto iter_sm = pStr_multi->find(user_lc);
+		if (iter_sm != pStr_multi->end()) {
+			// Found the user-specified lc.
+			return &(iter_sm->second);
+		}
+	}
+
+	if (def_lc != user_lc) {
+		// Search for the ROM-default lc.
+		auto iter_sm = pStr_multi->find(def_lc);
+		if (iter_sm != pStr_multi->end()) {
+			// Found the ROM-default lc.
+			return &(iter_sm->second);
+		}
+	}
+
+	// Not found. Return the first entry.
+	return &(pStr_multi->cbegin()->second);
+}
+
+/**
+ * Get ListData_t from an RFT_LISTDATA_MULTI field.
+ * @param pListData_multi ListDataMultiMap_t*
+ * @param def_lc Default language code.
+ * @param user_lc User-specified language code.
+ * @return Pointer to ListData_t, or nullptr if not found.
+ */
+const RomFields::ListData_t *RomFields::getFromListDataMulti(const ListDataMultiMap_t *pListData_multi, uint32_t def_lc, uint32_t user_lc)
+{
+	assert(pListData_multi != nullptr);
+	assert(!pListData_multi->empty());
+	if (pListData_multi->empty()) {
+		return nullptr;
+	}
+
+	if (user_lc != 0) {
+		// Search for the user-specified lc first.
+		auto iter_ldm = pListData_multi->find(user_lc);
+		if (iter_ldm != pListData_multi->end()) {
+			// Found the user-specified lc.
+			return &(iter_ldm->second);
+		}
+	}
+
+	if (def_lc != user_lc) {
+		// Search for the ROM-default lc.
+		auto iter_ldm = pListData_multi->find(def_lc);
+		if (iter_ldm != pListData_multi->end()) {
+			// Found the ROM-default lc.
+			return &(iter_ldm->second);
+		}
+	}
+
+	// Not found. Return the first entry.
+	return &(pListData_multi->cbegin()->second);
+}
+
+
 /** Field accessors. **/
 
 /**

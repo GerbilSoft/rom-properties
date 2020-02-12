@@ -917,30 +917,11 @@ void RomDataViewPrivate::updateMulti(uint32_t user_lc)
 			}
 		}
 
-		// Try the user-specified language code first.
-		// TODO: Consolidate ->end() calls?
-		auto iter_sm = pStr_multi->end();
-		if (user_lc != 0) {
-			iter_sm = pStr_multi->find(user_lc);
-		}
-		if (iter_sm == pStr_multi->end()) {
-			// Not found. Try the ROM-default language code.
-			if (def_lc != user_lc) {
-				iter_sm = pStr_multi->find(def_lc);
-				if (iter_sm == pStr_multi->end()) {
-					// Still not found. Use the first string.
-					iter_sm = pStr_multi->begin();
-				}
-			} else {
-				// No lc change. Use the first string.
-				iter_sm = pStr_multi->begin();
-			}
-		}
-
-		// Update the text.
-		assert(iter_sm != pStr_multi->end());
-		if (iter_sm != pStr_multi->end()) {
-			lblString->setText(U82Q(iter_sm->second.c_str()));
+		// Get the string and update the text.
+		const string *const pStr = RomFields::getFromStringMulti(pStr_multi, def_lc, user_lc);
+		assert(pStr != nullptr);
+		if (pStr) {
+			lblString->setText(U82Q(*pStr));
 		} else {
 			lblString->setText(QString());
 		}
@@ -968,34 +949,14 @@ void RomDataViewPrivate::updateMulti(uint32_t user_lc)
 			}
 		}
 
-		// Try the user-specified language code first.
-		// TODO: Consolidate ->end() calls?
-		auto iter_ldm = pListData_multi->end();
-		if (user_lc != 0) {
-			iter_ldm = pListData_multi->find(user_lc);
-		}
-		if (iter_ldm == pListData_multi->end()) {
-			// Not found. Try the ROM-default language code.
-			if (def_lc != user_lc) {
-				iter_ldm = pListData_multi->find(def_lc);
-				if (iter_ldm == pListData_multi->end()) {
-					// Still not found. Use the first ListData.
-					iter_ldm = pListData_multi->begin();
-				}
-			} else {
-				// No lc change. Use the first ListData.
-				iter_ldm = pListData_multi->begin();
-			}
-		}
-
-		assert(iter_ldm != pListData_multi->end());
-		if (iter_ldm != pListData_multi->end()) {
-			const RomFields::ListData_t *const list_data = &(iter_ldm->second);
-
+		// Get the ListData_t.
+		const auto *const pListData = RomFields::getFromListDataMulti(pListData_multi, def_lc, user_lc);
+		assert(pListData != nullptr);
+		if (pListData != nullptr) {
 			// Update the list.
 			const int rowCount = treeWidget->topLevelItemCount();
-			auto iter_listData = list_data->cbegin();
-			for (int row = 0; row < rowCount && iter_listData != list_data->cend(); row++, ++iter_listData) {
+			auto iter_listData = pListData->cbegin();
+			for (int row = 0; row < rowCount && iter_listData != pListData->cend(); row++, ++iter_listData) {
 				QTreeWidgetItem *const treeWidgetItem = treeWidget->topLevelItem(row);
 
 				int col = 0;

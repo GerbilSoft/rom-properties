@@ -359,6 +359,27 @@ class RomFields
 		static std::string ageRatingsDecode(const age_ratings_t *age_ratings, bool newlines = true);
 
 	public:
+		/** Multi-language convenience functions. **/
+
+		/**
+		 * Get a string from an RFT_STRING_MULTI field.
+		 * @param pStr_multi StringMultiMap_t*
+		 * @param def_lc Default language code.
+		 * @param user_lc User-specified language code.
+		 * @return Pointer to string, or nullptr if not found.
+		 */
+		static const std::string *getFromStringMulti(const StringMultiMap_t *pStr_multi, uint32_t def_lc, uint32_t user_lc);
+
+		/**
+		 * Get ListData_t from an RFT_LISTDATA_MULTI field.
+		 * @param pListData_multi ListDataMultiMap_t*
+		 * @param def_lc Default language code.
+		 * @param user_lc User-specified language code.
+		 * @return Pointer to ListData_t, or nullptr if not found.
+		 */
+		static const ListData_t *getFromListDataMulti(const ListDataMultiMap_t *pListData_multi, uint32_t def_lc, uint32_t user_lc);
+
+	public:
 		/** Convenience functions for RomData subclasses. **/
 
 		/** Tabs **/

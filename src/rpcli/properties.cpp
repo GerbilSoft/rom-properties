@@ -245,48 +245,26 @@ public:
 		// which means we don't have any column headers.
 
 		// Get the ListData_t container.
-		const RomFields::ListData_t *list_data = nullptr;
+		const RomFields::ListData_t *pListData = nullptr;
 		if (listDataDesc.flags & RomFields::RFT_LISTDATA_MULTI) {
 			// ROM must have set a default language code.
 			assert(field.def_lc != 0);
 
 			// Determine the language to use.
-			const auto *const pListDataMulti = romField.data.list_data.data.multi;
-			assert(pListDataMulti != nullptr);
-			assert(!pListDataMulti->empty());
-			if (pListDataMulti && !pListDataMulti->empty()) {
-				// Try the user-specified language code first.
-				// TODO: Consolidate ->end() calls?
-				auto iter_ldm = pListDataMulti->end();
-				if (field.user_lc != 0) {
-					iter_ldm = pListDataMulti->find(field.user_lc);
-				}
-				if (iter_ldm == pListDataMulti->end()) {
-					// Not found. Try the ROM-default language code.
-					if (field.def_lc != field.user_lc) {
-						iter_ldm = pListDataMulti->find(field.def_lc);
-						if (iter_ldm == pListDataMulti->end()) {
-							// Still not found. Use the first ListData.
-							iter_ldm = pListDataMulti->begin();
-						}
-					} else {
-						// No lc change. Use the first ListData.
-						iter_ldm = pListDataMulti->begin();
-					}
-				}
-
-				assert(iter_ldm != pListDataMulti->end());
-				if (iter_ldm != pListDataMulti->end()) {
-					list_data = &iter_ldm->second;
-				}
+			const auto *const pListData_multi = romField.data.list_data.data.multi;
+			assert(pListData_multi != nullptr);
+			assert(!pListData_multi->empty());
+			if (pListData_multi && !pListData_multi->empty()) {
+				// Get the ListData_t.
+				pListData = RomFields::getFromListDataMulti(pListData_multi, field.def_lc, field.user_lc);
 			}
 		} else {
 			// Single language.
-			list_data = romField.data.list_data.data.single;
+			pListData = romField.data.list_data.data.single;
 		}
 
-		assert(list_data != nullptr);
-		if (!list_data) {
+		assert(pListData != nullptr);
+		if (!pListData) {
 			return os << "[ERROR: No list data.]";
 		}
 
@@ -296,8 +274,8 @@ public:
 		} else {
 			// No column headers.
 			// Use the first row.
-			if (list_data && !list_data->empty()) {
-				col_count = static_cast<unsigned int>(list_data->at(0).size());
+			if (pListData && !pListData->empty()) {
+				col_count = static_cast<unsigned int>(pListData->at(0).size());
 			}
 		}
 		assert(col_count > 0);
@@ -318,9 +296,9 @@ public:
 		}
 
 		// Row data
-		unique_ptr<unsigned int[]> nl_count(new unsigned int[list_data->size()]());
+		unique_ptr<unsigned int[]> nl_count(new unsigned int[pListData->size()]());
 		unsigned int row = 0;
-		for (auto it = list_data->cbegin(); it != list_data->cend(); ++it, row++) {
+		for (auto it = pListData->cbegin(); it != pListData->cend(); ++it, row++) {
 			unsigned int col = 0;
 			for (auto jt = it->cbegin(); jt != it->cend(); ++jt, col++) {
 				// Check for newlines.
@@ -432,7 +410,7 @@ public:
 		unique_ptr<unsigned int[]> linePos(new unsigned int[col_count]);
 
 		row = 0;
-		for (auto it = list_data->cbegin(); it != list_data->cend(); ++it, row++) {
+		for (auto it = pListData->cbegin(); it != pListData->cend(); ++it, row++) {
 			// Print one line at a time for multi-line entries.
 			// TODO: Better formatting for multi-line?
 			// Right now we're assuming that at least one column is a single line.
@@ -638,29 +616,10 @@ public:
 		assert(pStr_multi != nullptr);
 		assert(!pStr_multi->empty());
 		if (pStr_multi && !pStr_multi->empty()) {
-			// Try the user-specified language code first.
-			// TODO: Consolidate ->end() calls?
-			auto iter_sm = pStr_multi->end();
-			if (field.user_lc != 0) {
-				iter_sm = pStr_multi->find(field.user_lc);
-			}
-			if (iter_sm == pStr_multi->end()) {
-				// Not found. Try the ROM-default language code.
-				if (field.def_lc != field.user_lc) {
-					iter_sm = pStr_multi->find(field.def_lc);
-					if (iter_sm == pStr_multi->end()) {
-						// Still not found. Use the first string.
-						iter_sm = pStr_multi->begin();
-					}
-				} else {
-					// No lc change. Use the first string.
-					iter_sm = pStr_multi->begin();
-				}
-			}
-
-			assert(iter_sm != pStr_multi->end());
-			const char *const str = (iter_sm != pStr_multi->end() ? iter_sm->second.c_str() : "");
-			os << SafeString(str, true, field.width);
+			// Get the string and update the text.
+			const string *const pStr = RomFields::getFromStringMulti(pStr_multi, field.def_lc, field.user_lc);
+			assert(pStr != nullptr);
+			os << SafeString((pStr ? pStr->c_str() : ""), true, field.width);
 		} else {
 			// Empty string.
 			os << "''";
