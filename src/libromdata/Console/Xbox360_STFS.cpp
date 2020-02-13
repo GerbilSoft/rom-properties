@@ -25,6 +25,7 @@ using namespace LibRpTexture;
 using std::string;
 using std::vector;
 
+
 namespace LibRomData {
 
 ROMDATA_IMPL(Xbox360_STFS)
@@ -387,9 +388,15 @@ int Xbox360_STFS::isRomSupported_static(const DetectInfo *info)
 					return Xbox360_STFS_Private::STFS_TYPE_UNKNOWN;
 			}
 
-			// TODO: Check that the datestamp field is all ASCII.
+			// Datestamp field format: "MM-DD-YY" (assuming 20xx for year)
 			// On Nintendo DS, this field is the ARM9 ROM offset and entry address.
-			// Need to verify this on an actual STFS package first.
+			// TODO: Check the numeric values. Only checking dashes for now.
+			if (stfsHeader->console.datestamp[2] != '-' ||
+			    stfsHeader->console.datestamp[5] != '-')
+			{
+				// Not dashes. This isn't an Xbox 360 package.
+				return Xbox360_STFS_Private::STFS_TYPE_UNKNOWN;
+			}
 			break;
 
 		case Xbox360_STFS_Private::STFS_TYPE_PIRS:
@@ -572,10 +579,13 @@ int Xbox360_STFS::loadFieldData(void)
 
 	// Parse the STFS file.
 	// NOTE: The STFS headers are **NOT** byteswapped.
+	const STFS_Package_Header *const stfsHeader = &d->stfsHeader;
 	const STFS_Package_Metadata *const stfsMetadata = &d->stfsMetadata;
 
-	// Maximum of 10 fields.
-	d->fields->reserve(10);
+	// Maximum of 14 fields.
+	// - 10: Normal
+	// -  3: Console-specific
+	d->fields->reserve(13);
 	d->fields->setTabName(0, "STFS");
 
 	// Title fields.
@@ -742,6 +752,43 @@ int Xbox360_STFS::loadFieldData(void)
 	d->fields->addField_string(C_("Xbox360_XEX", "Base Version"),
 		rp_sprintf("%u.%u.%u.%u",
 			basever.major, basever.minor, basever.build, basever.qfe));
+
+	// Console-specific packages.
+	if (stfsHeader->magic == cpu_to_be32(STFS_MAGIC_CON)) {
+		// NOTE: addField_string_numeric() is limited to 32-bit.
+		// Print the console ID as a hexdump instead.
+		d->fields->addField_string_hexdump(C_("Xbox360_XEX", "Console ID"),
+			stfsHeader->console.console_id,
+			sizeof(stfsHeader->console.console_id),
+			RomFields::STRF_MONOSPACE | RomFields::STRF_HEXDUMP_NO_SPACES);
+
+		// Part number.
+		// Not entirely sure what this is referring to...
+		d->fields->addField_string(C_("Xbox360_XEX", "Part Number"),
+			latin1_to_utf8(stfsHeader->console.part_number,
+				sizeof(stfsHeader->console.part_number)));
+
+		// Console type.
+		const char *s_console_type;
+		switch (stfsHeader->console.console_type) {
+			case STFS_CONSOLE_TYPE_DEBUG:
+				s_console_type = C_("Xbox360_XEX|ConsoleType", "Debug");
+				break;
+			case STFS_CONSOLE_TYPE_RETAIL:
+				s_console_type = C_("Xbox360_XEX|ConsoleType", "Retail");
+				break;
+			default:
+				s_console_type = nullptr;
+				break;
+		}
+		const char *const s_console_type_title = C_("Xbox360_XEX", "Console Type");
+		if (s_console_type) {
+			d->fields->addField_string(s_console_type_title, s_console_type);
+		} else {
+			d->fields->addField_string(s_console_type_title,
+				rp_sprintf(C_("RomData", "Unknown (%u)"), stfsHeader->console.console_type));
+		}
+	}
 
 	// Finished reading the field data.
 	return static_cast<int>(d->fields->count());

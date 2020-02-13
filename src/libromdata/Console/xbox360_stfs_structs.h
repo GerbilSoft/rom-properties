@@ -35,7 +35,7 @@ typedef struct PACKED _STFS_Package_Header {
 			uint16_t pubkey_cert_size;	// [0x004] Public key certificate size
 			uint8_t console_id[5];		// [0x006] Certificate owner Console ID
 			char part_number[20];		// [0x00B] Certificate owner Part Number
-			uint8_t console_type;		// [0x01F] Certificate owner Console Type (1 for devkit, 2 for retail) [TODO enum]
+			uint8_t console_type;		// [0x01F] Certificate owner Console Type (see STFS_Console_Type_e)
 			char datestamp[8];		// [0x020] Certificate date of generation
 			uint32_t pub_exponent;		// [0x028] Public exponent
 			uint8_t pub_modulus[0x80];	// [0x02C] Public modulus
@@ -50,6 +50,14 @@ typedef struct PACKED _STFS_Package_Header {
 	};
 } STFS_Package_Header;
 ASSERT_STRUCT(STFS_Package_Header, 0x22C);
+
+/**
+ * Console type.
+ */
+typedef enum {
+	STFS_CONSOLE_TYPE_DEBUG		= 1,
+	STFS_CONSOLE_TYPE_RETAIL	= 2,
+} STFS_Console_Type_e;
 
 /**
  * STFS: License entry.
