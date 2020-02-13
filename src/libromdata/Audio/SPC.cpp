@@ -265,27 +265,22 @@ SPCPrivate::TagData SPCPrivate::parseTags(void)
 		// Text version.
 
 		// Dump date. (MM/DD/YYYY; also allowing MM-DD-YYYY)
+		// Convert to UNIX time.
 		// NOTE: Might not be NULL-terminated...
 		// TODO: Untested.
 		char dump_date[11];
 		memcpy(dump_date, id666->text.dump_date, sizeof(dump_date));
 		dump_date[sizeof(dump_date)-1] = '\0';
 
-		unsigned int month, day, year;
-		int s = sscanf("%02u/%02u/%04u", dump_date, &month, &day, &year);
+		struct tm ymdtime;
+		char chr;
+		int s = sscanf("%02u/%02u/%04u%c", dump_date, &ymdtime.tm_mon, &ymdtime.tm_mday, &ymdtime.tm_year, &chr);
 		if (s != 3) {
-			s = sscanf("%02u-%02u-%04u", dump_date, &month, &day, &year);
+			s = sscanf("%02u-%02u-%04u%c", dump_date, &ymdtime.tm_mon, &ymdtime.tm_mday, &ymdtime.tm_year, &chr);
 		}
 		if (s == 3) {
-			// Convert to Unix time.
-			// NOTE: struct tm has some oddities:
-			// - tm_year: year - 1900
-			// - tm_mon: 0 == January
-			struct tm ymdtime;
-
-			ymdtime.tm_year = year - 1900;
-			ymdtime.tm_mon  = month - 1;
-			ymdtime.tm_mday = day;
+			ymdtime.tm_year -= 1900;	// year - 1900
+			ymdtime.tm_mon--;		// 0 == January
 
 			// Time portion is empty.
 			ymdtime.tm_hour = 0;

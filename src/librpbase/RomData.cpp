@@ -338,9 +338,11 @@ time_t RomDataPrivate::pvd_time_to_unix_time(const char pvd_time[16], int8_t tz_
 
 	struct tm pvdtime;
 	int csec;
-	int ret = sscanf(buf, "%04d%02d%02d%02d%02d%02d%02d",
+	char chr;
+	int ret = sscanf(buf, "%04d%02d%02d%02d%02d%02d%02d%c",
 		&pvdtime.tm_year, &pvdtime.tm_mon, &pvdtime.tm_mday,
-		&pvdtime.tm_hour, &pvdtime.tm_min, &pvdtime.tm_sec, &csec);
+		&pvdtime.tm_hour, &pvdtime.tm_min, &pvdtime.tm_sec, &csec,
+		&chr);
 	if (ret != 7) {
 		// Some argument wasn't parsed correctly.
 		return -1;
@@ -352,8 +354,8 @@ time_t RomDataPrivate::pvd_time_to_unix_time(const char pvd_time[16], int8_t tz_
 	}
 
 	// Adjust values for struct tm.
-	pvdtime.tm_year -= 1900;	// struct tm: year - 1900
-	pvdtime.tm_mon--;		// struct tm: 0-11
+	pvdtime.tm_year -= 1900;	// year - 1900
+	pvdtime.tm_mon--;		// 0 == January
 
 	// tm_wday and tm_yday are output variables.
 	pvdtime.tm_wday = 0;
