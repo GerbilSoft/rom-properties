@@ -108,7 +108,7 @@ const rp_image *Xbox360_STFS_Private::loadIcon(void)
 	if (img_icon) {
 		// Icon has already been loaded.
 		return img_icon;
-	} else if (!this->file || !this->isValid || this->stfsType < 0) {
+	} else if (!this->isValid || this->stfsType < 0) {
 		// Can't load the icon.
 		return nullptr;
 	}
@@ -116,29 +116,24 @@ const rp_image *Xbox360_STFS_Private::loadIcon(void)
 	// NOTE: Loading title thumbnail only.
 	// TODO: Load regular thumbnail if title thumbnail fails?
 
-	// Check the metadata version to determine icon position
-	// and maximum length.
-	ao::uvector<uint8_t> icon_data;
-	const uint32_t icon_address = 0x571A;	// title thumbnail
+	// TODO: Load thumbnails on demand.
+	const uint8_t *pIconData;
+	size_t iconSize;
 
 	const uint32_t metadata_version = be32_to_cpu(stfsMetadata.metadata_version);
 	if (metadata_version < 2) {
 		// version 0 or 1
-		icon_data.resize(0x4000);
+		pIconData = stfsThumbnails.mdv0.title_thumbnail_image;
+		iconSize = sizeof(stfsThumbnails.mdv0.title_thumbnail_image);
 	} else {
 		// version 2 or later
-		icon_data.resize(0x3D00);
-	}
-
-	size_t size = file->seekAndRead(icon_address, icon_data.data(), icon_data.size());
-	if (size != icon_data.size()) {
-		// Seek and/or read error.
-		return nullptr;
+		pIconData = stfsThumbnails.mdv2.title_thumbnail_image;
+		iconSize = sizeof(stfsThumbnails.mdv2.title_thumbnail_image);
 	}
 
 	// Create an RpMemFile and decode the image.
 	// TODO: For rpcli, shortcut to extract the PNG directly.
-	RpMemFile *const f_mem = new RpMemFile(icon_data.data(), icon_data.size());
+	RpMemFile *const f_mem = new RpMemFile(pIconData, iconSize);
 	rp_image *const img = RpPng::load(f_mem);
 	f_mem->unref();
 
