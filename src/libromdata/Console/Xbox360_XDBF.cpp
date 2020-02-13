@@ -105,18 +105,18 @@ class Xbox360_XDBF_Private : public RomDataPrivate
 
 		/**
 		 * Load a string table.
-		 * @param language_id Language ID.
+		 * @param langID Language ID.
 		 * @return Pointer to string table on success; nullptr on error.
 		 */
-		const ao::uvector<char> *loadStringTable(XDBF_Language_e language_id);
+		const ao::uvector<char> *loadStringTable(XDBF_Language_e langID);
 
 		/**
 		 * Get a string from a string table.
-		 * @param language_id Language ID.
+		 * @param langID Language ID.
 		 * @param string_id String ID.
 		 * @return String, or empty string on error.
 		 */
-		string loadString(XDBF_Language_e language_id, uint16_t string_id);
+		string loadString(XDBF_Language_e langID, uint16_t string_id);
 
 		/**
 		 * Get the language ID to use for the title fields.
@@ -255,16 +255,16 @@ int Xbox360_XDBF_Private::initStrTblIndexes(void)
 			continue;
 
 		// Found a string table.
-		const uint64_t language_id = be64_to_cpu(iter->resource_id);
-		assert(language_id < XDBF_LANGUAGE_MAX);
-		if (language_id >= XDBF_LANGUAGE_MAX)
+		const uint64_t langID = be64_to_cpu(iter->resource_id);
+		assert(langID < XDBF_LANGUAGE_MAX);
+		if (langID >= XDBF_LANGUAGE_MAX)
 			continue;
 
-		assert(strTblIndexes[language_id] < 0);
-		if (strTblIndexes[language_id] < 0) {
+		assert(strTblIndexes[langID] < 0);
+		if (strTblIndexes[langID] < 0) {
 			// First instance of this language.
 			// TODO: What if multiple string tables exist for the same language?
-			strTblIndexes[language_id] = idx;
+			strTblIndexes[langID] = idx;
 			total++;
 		}
 	}
@@ -274,20 +274,20 @@ int Xbox360_XDBF_Private::initStrTblIndexes(void)
 
 /**
  * Load a string table.
- * @param language_id Language ID.
+ * @param langID Language ID.
  * @return Pointer to string table on success; nullptr on error.
  */
-const ao::uvector<char> *Xbox360_XDBF_Private::loadStringTable(XDBF_Language_e language_id)
+const ao::uvector<char> *Xbox360_XDBF_Private::loadStringTable(XDBF_Language_e langID)
 {
-	assert(language_id >= 0);
-	assert(language_id < XDBF_LANGUAGE_MAX);
+	assert(langID >= 0);
+	assert(langID < XDBF_LANGUAGE_MAX);
 	// TODO: Do any games have string tables with language ID XDBF_LANGUAGE_UNKNOWN?
-	if (language_id <= XDBF_LANGUAGE_UNKNOWN || language_id >= XDBF_LANGUAGE_MAX)
+	if (langID <= XDBF_LANGUAGE_UNKNOWN || langID >= XDBF_LANGUAGE_MAX)
 		return nullptr;
 
 	// Is the string table already loaded?
-	if (this->strTbls[language_id]) {
-		return this->strTbls[language_id];
+	if (this->strTbls[langID]) {
+		return this->strTbls[langID];
 	}
 
 	// Can we load the string table?
@@ -297,7 +297,7 @@ const ao::uvector<char> *Xbox360_XDBF_Private::loadStringTable(XDBF_Language_e l
 	}
 
 	// String table index should already be loaded.
-	int16_t idx = strTblIndexes[language_id];
+	int16_t idx = strTblIndexes[langID];
 	assert(idx >= 0);
 	assert(idx < (uint16_t)entryTable.size());
 	if (idx < 0 || idx >= (uint16_t)entryTable.size()) {
@@ -341,29 +341,29 @@ const ao::uvector<char> *Xbox360_XDBF_Private::loadStringTable(XDBF_Language_e l
 	}
 
 	// String table loaded successfully.
-	this->strTbls[language_id] = vec;
+	this->strTbls[langID] = vec;
 	return vec;
 }
 
 /**
  * Get a string from a string table.
- * @param language_id Language ID.
+ * @param langID Language ID.
  * @param string_id String ID.
  * @return String, or empty string on error.
  */
-string Xbox360_XDBF_Private::loadString(XDBF_Language_e language_id, uint16_t string_id)
+string Xbox360_XDBF_Private::loadString(XDBF_Language_e langID, uint16_t string_id)
 {
 	string ret;
 
-	assert(language_id >= 0);
-	assert(language_id < XDBF_LANGUAGE_MAX);
-	if (language_id < 0 || language_id >= XDBF_LANGUAGE_MAX)
+	assert(langID >= 0);
+	assert(langID < XDBF_LANGUAGE_MAX);
+	if (langID < 0 || langID >= XDBF_LANGUAGE_MAX)
 		return ret;
 
 	// Get the string table.
-	const ao::uvector<char> *vec = strTbls[language_id];
+	const ao::uvector<char> *vec = strTbls[langID];
 	if (!vec) {
-		vec = loadStringTable(language_id);
+		vec = loadStringTable(langID);
 		if (!vec) {
 			// Unable to load the string table.
 			return ret;
