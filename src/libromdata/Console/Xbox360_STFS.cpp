@@ -11,6 +11,10 @@
 #include "xbox360_stfs_structs.h"
 #include "data/Xbox360_STFS_ContentType.hpp"
 
+// for language codes
+#include "xbox360_xdbf_structs.h"
+#include "data/XboxLanguage.hpp"
+
 // librpbase, librptexture
 #include "librpbase/file/RpMemFile.hpp"
 #include "librpbase/img/RpPng.hpp"
@@ -63,11 +67,19 @@ class Xbox360_STFS_Private : public RomDataPrivate
 		 */
 		const rp_image *loadIcon(void);
 
+		/**
+		 * Get the default language code for the multi-string fields.
+		 * @return Language code, e.g. 'en' or 'es'.
+		 */
+		inline uint32_t getDefaultLC(void) const;
+
 	public:
 		// STFS headers.
 		// NOTE: These are **NOT** byteswapped!
 		STFS_Package_Header stfsHeader;
+		// TODO: Load on demand?
 		STFS_Package_Metadata stfsMetadata;
+		STFS_Package_Thumbnails stfsThumbnails;
 };
 
 /** Xbox360_STFS_Private **/
@@ -134,6 +146,32 @@ const rp_image *Xbox360_STFS_Private::loadIcon(void)
 	return img;
 }
 
+/**
+ * Get the default language code for the multi-string fields.
+ * @return Language code, e.g. 'en' or 'es'.
+ */
+inline uint32_t Xbox360_STFS_Private::getDefaultLC(void) const
+{
+	// Get the system language.
+	// TODO: Does STFS have a default language field?
+	const XDBF_Language_e langID = static_cast<XDBF_Language_e>(XboxLanguage::getXbox360Language());
+	assert(langID > XDBF_LANGUAGE_UNKNOWN);
+	assert(langID < XDBF_LANGUAGE_MAX);
+	if (langID <= XDBF_LANGUAGE_UNKNOWN || langID >= XDBF_LANGUAGE_MAX) {
+		// Invalid language ID.
+		// Default to English.
+		return 'en';
+	}
+
+	uint32_t lc = XboxLanguage::getXbox360LanguageCode(langID);
+	if (lc == 0) {
+		// Invalid language code...
+		// Default to English.
+		lc = 'en';
+	}
+	return lc;
+}
+
 /** Xbox360_STFS **/
 
 /**
@@ -189,10 +227,17 @@ Xbox360_STFS::Xbox360_STFS(IRpFile *file)
 		return;
 	}
 
-	// Read the package metadata.
-	// TODO: Only read on demand?
+	// Read the package metadata and thumbnails.
+	// TODO: Load on demand?
 	size = d->file->read(&d->stfsMetadata, sizeof(d->stfsMetadata));
 	if (size != sizeof(d->stfsMetadata)) {
+		// Read error.
+		d->file->unref();
+		d->file = nullptr;
+		return;
+	}
+	size = d->file->read(&d->stfsThumbnails, sizeof(d->stfsThumbnails));
+	if (size != sizeof(d->stfsThumbnails)) {
 		// Read error.
 		d->file->unref();
 		d->file = nullptr;
@@ -449,20 +494,71 @@ int Xbox360_STFS::loadFieldData(void)
 	d->fields->reserve(10);
 	d->fields->setTabName(0, "STFS");
 
-	// Display name
-	// TODO: Language ID?
-	if (stfsMetadata->display_name[0][0] != 0) {
-		d->fields->addField_string(C_("RomData", "Name"),
-			utf16be_to_utf8(stfsMetadata->display_name[0],
-				ARRAY_SIZE(stfsMetadata->display_name[0])));
+	// Title fields.
+	// Includes display name and description.
+
+	// Check if English is valid.
+	// If it is, we'll de-duplicate the fields.
+	bool dedupe_titles = (stfsMetadata->display_name[0][0] != 0);
+
+	// NOTE: The main section in the metadata has 18 languages.
+	// Metadata version 2 adds an additional 6 languages, but we only
+	// have up to 12 languages defined...
+
+	// RFT_STRING_MULTI maps.
+	RomFields::StringMultiMap_t *const pMap_name = new RomFields::StringMultiMap_t();
+	RomFields::StringMultiMap_t *const pMap_desc = new RomFields::StringMultiMap_t();
+	static_assert(XDBF_LANGUAGE_MAX-1 <= 18, "Too many languages for metadata v0!");
+	for (int langID = XDBF_LANGUAGE_ENGLISH; langID < XDBF_LANGUAGE_MAX; langID++) {
+		const int langID_off = langID - XDBF_LANGUAGE_ENGLISH;
+		if (dedupe_titles && langID != XDBF_LANGUAGE_ENGLISH) {
+			// Check if the title matches English.
+			// NOTE: Not converting to host-endian first, since
+			// u16_strncmp() checks for equality and for 0.
+			if (!u16_strncmp(stfsMetadata->display_name[langID_off],
+			                 stfsMetadata->display_name[XDBF_LANGUAGE_ENGLISH],
+					 ARRAY_SIZE(stfsMetadata->display_name[langID_off])) &&
+			    !u16_strncmp(stfsMetadata->display_description[langID_off],
+			                 stfsMetadata->display_description[XDBF_LANGUAGE_ENGLISH],
+					 ARRAY_SIZE(stfsMetadata->display_description[langID_off])))
+			{
+				// Both fields match English.
+				continue;
+			}
+		}
+
+		const uint32_t lc = XboxLanguage::getXbox360LanguageCode(langID);
+		assert(lc != 0);
+		if (lc == 0)
+			continue;
+
+		// Display name
+		if (stfsMetadata->display_name[langID_off][0] != 0) {
+			pMap_name->insert(std::make_pair(lc,
+				utf16be_to_utf8(stfsMetadata->display_name[langID_off],
+					ARRAY_SIZE(stfsMetadata->display_name[langID_off]))));
+		}
+
+		// Description
+		if (stfsMetadata->display_description[langID_off][0] != 0) {
+			pMap_name->insert(std::make_pair(lc,
+				utf16be_to_utf8(stfsMetadata->display_description[langID_off],
+					ARRAY_SIZE(stfsMetadata->display_description[langID_off]))));
+		}
 	}
 
-	// Description
-	// TODO: Language ID?
-	if (stfsMetadata->display_description[0][0] != 0) {
-		d->fields->addField_string(C_("RomData", "Description"),
-			utf16be_to_utf8(stfsMetadata->display_description[0],
-				ARRAY_SIZE(stfsMetadata->display_description[0])));
+	const uint32_t def_lc = d->getDefaultLC();
+	const char *const s_name_title = C_("RomData", "Name");
+	if (!pMap_name->empty()) {
+		d->fields->addField_string_multi(s_name_title, pMap_name, def_lc);
+	} else {
+		delete pMap_name;
+		d->fields->addField_string(s_name_title, C_("RomData", "Unknown"));
+	}
+	if (!pMap_desc->empty()) {
+		d->fields->addField_string_multi(C_("RomData", "Description"), pMap_desc, def_lc);
+	} else {
+		delete pMap_desc;
 	}
 
 	// Publisher

@@ -170,14 +170,14 @@ typedef struct PACKED _STFS_Package_Thumbnails {
 			// Metadata v0
 			uint8_t thumbnail_image[0x4000];		// [0x171A] Thumbnail image
 			uint8_t title_thumbnail_image[0x4000];		// [0x571A] Title thumbnail image
-		} mdv0_thumbnail;
+		} mdv0;
 		struct {
 			// Metadata v2
 			uint8_t thumbnail_image[0x3D00];		// [0x171A] Thumbnail image
 			char16_t display_name_extra[6][0x40];		// [0x541A] Additional display names
 			uint8_t title_thumbnail_image[0x3D00];		// [0x571A] Title thumbnail image
 			char16_t display_description_extra[6][0x40];	// [0x941A] Additional display descriptions
-		} mdv2_thumbnail;
+		} mdv2;
 	};
 } STFS_Package_Thumbnails;
 ASSERT_STRUCT(STFS_Package_Thumbnails, 0x971A-0x1712);
