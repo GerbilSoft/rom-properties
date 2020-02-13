@@ -428,9 +428,9 @@ vector<RomData::ImageSizeDef> Xbox360_STFS::supportedImageSizes(ImageType imageT
 	}
 
 	// TODO: Actually check the title thumbnail.
-	// Assuming 128x128 for now.
+	// Assuming 64x64 for now.
 	static const ImageSizeDef sz_INT_ICON[] = {
-		{nullptr, 128, 128, 0},
+		{nullptr, 64, 64, 0},
 	};
 	return vector<ImageSizeDef>(sz_INT_ICON,
 		sz_INT_ICON + ARRAY_SIZE(sz_INT_ICON));
@@ -454,9 +454,9 @@ vector<RomData::ImageSizeDef> Xbox360_STFS::supportedImageSizes_static(ImageType
 		return vector<ImageSizeDef>();
 	}
 
-	// NOTE: Assuming the title thumbnail is 128x128.
+	// NOTE: Assuming the title thumbnail is 64x64.
 	static const ImageSizeDef sz_INT_ICON[] = {
-		{nullptr, 128, 128, 0},
+		{nullptr, 64, 64, 0},
 	};
 	return vector<ImageSizeDef>(sz_INT_ICON,
 		sz_INT_ICON + ARRAY_SIZE(sz_INT_ICON));
