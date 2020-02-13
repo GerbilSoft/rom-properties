@@ -685,6 +685,11 @@ int Xbox360_XDBF_Private::addFields_strings(RomFields *fields) const
 
 		string title_lang = const_cast<Xbox360_XDBF_Private*>(this)->loadString(
 			(XDBF_Language_e)langID, XDBF_ID_TITLE);
+		if (title_lang.empty()) {
+			// Title is not available for this language.
+			continue;
+		}
+
 		if (dedupe_titles) {
 			// Is the title the same as the English title?
 			// TODO: Avoid converting the string before this check?
@@ -702,14 +707,13 @@ int Xbox360_XDBF_Private::addFields_strings(RomFields *fields) const
 		pMap_title->insert(std::make_pair(lc, std::move(title_lang)));
 	}
 
-	const char *const title_title = C_("RomData", "Title");
+	const char *const s_title_title = C_("RomData", "Title");
 	if (!pMap_title->empty()) {
 		const uint32_t def_lc = getDefaultLC();
-		fields->addField_string_multi(title_title, pMap_title, def_lc);
+		fields->addField_string_multi(s_title_title, pMap_title, def_lc);
 	} else {
-		// Title map is empty...
 		delete pMap_title;
-		fields->addField_string(title_title, C_("RomData", "Unknown"));
+		fields->addField_string(s_title_title, C_("RomData", "Unknown"));
 	}
 
 	// Title type
@@ -822,6 +826,8 @@ int Xbox360_XDBF_Private::addFields_achievements(void)
 	auto vv_icons = new RomFields::ListDataIcons_t(xach_count);
 	auto icon_iter = vv_icons->begin();
 	for (unsigned int i = 0; p < p_end && i < xach_count; p++, i++, ++icon_iter) {
+		// NOTE: Not deduplicating strings here.
+
 		// Icon
 		*icon_iter = loadImage(be32_to_cpu(p->image_id));
 
@@ -1022,6 +1028,8 @@ int Xbox360_XDBF_Private::addFields_avatarAwards(void)
 	auto vv_icons = new RomFields::ListDataIcons_t(xgaa_count);
 	auto icon_iter = vv_icons->begin();
 	for (unsigned int i = 0; p < p_end && i < xgaa_count; p++, i++, ++icon_iter) {
+		// NOTE: Not deduplicating strings here.
+
 		// Icon
 		*icon_iter = loadImage(be32_to_cpu(p->image_id));
 

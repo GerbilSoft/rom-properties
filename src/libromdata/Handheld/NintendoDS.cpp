@@ -1162,6 +1162,12 @@ int NintendoDS::loadFieldData(void)
 		const NDS_Language_ID maxID = d->getMaxSupportedLanguage(
 			le16_to_cpu(d->nds_icon_title.version));
 		for (int langID = 0; langID <= maxID; langID++) {
+			// Check for empty strings first.
+			if (d->nds_icon_title.title[langID][0] == 0) {
+				// Strings are empty.
+				continue;
+			}
+
 			if (dedupe_titles && langID != NDS_LANG_ENGLISH) {
 				// Check if the title matches English.
 				// NOTE: Not converting to host-endian first, since
@@ -1188,8 +1194,12 @@ int NintendoDS::loadFieldData(void)
 			}
 		}
 
-		const uint32_t def_lc = d->getDefaultLC();
-		d->fields->addField_string_multi(C_("NintendoDS", "Full Title"), pMap_full_title, def_lc);
+		if (!pMap_full_title->empty()) {
+			const uint32_t def_lc = d->getDefaultLC();
+			d->fields->addField_string_multi(C_("NintendoDS", "Full Title"), pMap_full_title, def_lc);
+		} else {
+			delete pMap_full_title;
+		}
 	}
 
 	// Game ID.

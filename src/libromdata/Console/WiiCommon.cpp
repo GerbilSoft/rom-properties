@@ -53,6 +53,14 @@ RomFields::StringMultiMap_t *WiiCommon::getWiiBannerStrings(
 			continue;
 		}
 
+		// Check for empty strings first.
+		if (pImet->names[langID][0][0] == 0 &&
+		    pImet->names[langID][1][0] == 0)
+		{
+			// Strings are empty.
+			continue;
+		}
+
 		if (dedupe_titles && langID != WII_LANG_ENGLISH) {
 			// Check if the comments match English.
 			// NOTE: Not converting to host-endian first, since
@@ -93,6 +101,12 @@ RomFields::StringMultiMap_t *WiiCommon::getWiiBannerStrings(
 
 			pMap_bannerName->insert(std::make_pair(lc, std::move(info)));
 		}
+	}
+
+	if (pMap_bannerName->empty()) {
+		// No strings...
+		delete pMap_bannerName;
+		return nullptr;
 	}
 
 	// Map is done.

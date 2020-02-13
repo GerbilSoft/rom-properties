@@ -473,6 +473,15 @@ int Nintendo3DS_SMDH::loadFieldData(void)
 	RomFields::StringMultiMap_t *const pMap_desc_long = new RomFields::StringMultiMap_t();
 	RomFields::StringMultiMap_t *const pMap_publisher = new RomFields::StringMultiMap_t();
 	for (int langID = 0; langID < N3DS_LANG_MAX; langID++) {
+		// Check for empty strings first.
+		if (smdhHeader->titles[langID].desc_short == 0 &&
+		    smdhHeader->titles[langID].desc_long == 0 &&
+		    smdhHeader->titles[langID].publisher == 0)
+		{
+			// Strings are empty.
+			continue;
+		}
+
 		if (dedupe_titles && langID != N3DS_LANG_ENGLISH) {
 			// Check if the title matches English.
 			// NOTE: Not converting to host-endian first, since
@@ -517,10 +526,30 @@ int Nintendo3DS_SMDH::loadFieldData(void)
 		}
 	}
 
+	const char *const s_title_title = C_("Nintendo3DS", "Title");
+	const char *const s_full_title_title = C_("Nintendo3DS", "Full Title");
+	const char *const s_publisher_title = C_("Nintendo3DS", "Publisher");
+	const char *const s_unknown = C_("RomData", "Unknown");
+
 	const uint32_t def_lc = d->getDefaultLC();
-	d->fields->addField_string_multi(C_("Nintendo3DS", "Title"), pMap_desc_short, def_lc);
-	d->fields->addField_string_multi(C_("Nintendo3DS", "Full Title"), pMap_desc_long, def_lc);
-	d->fields->addField_string_multi(C_("Nintendo3DS", "Publisher"), pMap_publisher, def_lc);
+	if (!pMap_desc_short->empty()) {
+		d->fields->addField_string_multi(s_title_title, pMap_desc_short, def_lc);
+	} else {
+		delete pMap_desc_short;
+		d->fields->addField_string(s_title_title, s_unknown);
+	}
+	if (!pMap_desc_long->empty()) {
+		d->fields->addField_string_multi(s_full_title_title, pMap_desc_long, def_lc);
+	} else {
+		delete pMap_desc_long;
+		d->fields->addField_string(s_full_title_title, s_unknown);
+	}
+	if (!pMap_publisher->empty()) {
+		d->fields->addField_string_multi(s_publisher_title, pMap_publisher, def_lc);
+	} else {
+		delete pMap_publisher;
+		d->fields->addField_string(s_publisher_title, s_unknown);
+	}
 
 	// Region code.
 	// Maps directly to the SMDH field.

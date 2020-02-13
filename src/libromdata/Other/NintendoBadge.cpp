@@ -649,12 +649,12 @@ int NintendoBadge::loadFieldData(void)
 	int lang = NintendoLanguage::getN3DSLanguage();
 
 	// Type.
-	const char *const type_title = C_("NintendoBadge", "Type");
-	const char *const name_title = C_("NintendoBadge", "Name");
-	const char *const set_name_title = C_("NintendoBadge", "Set Name");
+	const char *const s_type_title = C_("NintendoBadge", "Type");
+	const char *const s_name_title = C_("NintendoBadge", "Name");
+	const char *const s_set_name_title = C_("NintendoBadge", "Set Name");
 	switch (d->badgeType) {
 		case NintendoBadgePrivate::BADGE_TYPE_PRBS: {
-			d->fields->addField_string(type_title,
+			d->fields->addField_string(s_type_title,
 				d->megaBadge ? C_("NintendoBadge|Type", "Mega Badge")
 				             : C_("NintendoBadge|Type", "Individual Badge"));
 
@@ -669,6 +669,12 @@ int NintendoBadge::loadFieldData(void)
 			// NOTE: There are 16 entries for names, but only 12 Nintendo 3DS langauges...
 			RomFields::StringMultiMap_t *const pMap_name = new RomFields::StringMultiMap_t();
 			for (int langID = 0; langID < N3DS_LANG_MAX; langID++) {
+				// Check for empty strings first.
+				if (prbs->name[langID][0] == 0) {
+					// Strings are empty.
+					continue;
+				}
+
 				if (dedupe_titles && langID != N3DS_LANG_ENGLISH) {
 					// Check if the name matches English.
 					// NOTE: Not converting to host-endian first, since
@@ -692,8 +698,12 @@ int NintendoBadge::loadFieldData(void)
 				}
 			}
 
-			const uint32_t def_lc = d->getDefaultLC();
-			d->fields->addField_string_multi(name_title, pMap_name, def_lc);
+			if (!pMap_name->empty()) {
+				const uint32_t def_lc = d->getDefaultLC();
+				d->fields->addField_string_multi(s_name_title, pMap_name, def_lc);
+			} else {
+				d->fields->addField_string(s_name_title, C_("RomData", "Unknown"));
+			}
 
 			// Badge ID.
 			d->fields->addField_string_numeric(C_("NintendoBadge", "Badge ID"),
@@ -704,7 +714,7 @@ int NintendoBadge::loadFieldData(void)
 				latin1_to_utf8(prbs->filename, sizeof(prbs->filename)));
 
 			// Set name.
-			d->fields->addField_string(set_name_title,
+			d->fields->addField_string(s_set_name_title,
 				latin1_to_utf8(prbs->setname, sizeof(prbs->setname)));
 
 			// Mega badge size.
@@ -759,7 +769,7 @@ int NintendoBadge::loadFieldData(void)
 		}
 
 		case NintendoBadgePrivate::BADGE_TYPE_CABS: {
-			d->fields->addField_string(type_title, C_("NintendoBadge", "Badge Set"));
+			d->fields->addField_string(s_type_title, C_("NintendoBadge", "Badge Set"));
 
 			// CABS-specific fields.
 			const Badge_CABS_Header *const cabs = &d->badgeHeader.cabs;
@@ -785,7 +795,7 @@ int NintendoBadge::loadFieldData(void)
 			}
 			// NOTE: There aer 16 name entries, but only 12 languages...
 			if (lang >= 0 && lang < ARRAY_SIZE(cabs->name)) {
-				d->fields->addField_string(name_title,
+				d->fields->addField_string(s_name_title,
 					utf16le_to_utf8(cabs->name[lang], sizeof(cabs->name[lang])));
 			}
 
@@ -793,7 +803,7 @@ int NintendoBadge::loadFieldData(void)
 			d->fields->addField_string_numeric(C_("NintendoBadge", "Set ID"), le32_to_cpu(cabs->set_id));
 
 			// Set name.
-			d->fields->addField_string(set_name_title,
+			d->fields->addField_string(s_set_name_title,
 				latin1_to_utf8(cabs->setname, sizeof(cabs->setname)));
 			break;
 		}
@@ -801,8 +811,7 @@ int NintendoBadge::loadFieldData(void)
 		default:
 			// Unknown.
 			assert(!"Unknown badge type. (Should not get here!)");
-			d->fields->addField_string(type_title,
-				C_("RomData", "Unknown"));
+			d->fields->addField_string(s_type_title, C_("RomData", "Unknown"));
 			break;
 	}
 

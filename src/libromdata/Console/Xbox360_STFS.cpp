@@ -506,6 +506,15 @@ int Xbox360_STFS::loadFieldData(void)
 	static_assert(XDBF_LANGUAGE_MAX-1 <= 18, "Too many languages for metadata v0!");
 	for (int langID = XDBF_LANGUAGE_ENGLISH; langID < XDBF_LANGUAGE_MAX; langID++) {
 		const int langID_off = langID - XDBF_LANGUAGE_ENGLISH;
+
+		// Check for empty strings first.
+		if (stfsMetadata->display_name[langID_off][0] == 0 &&
+		    stfsMetadata->display_description[langID_off][0] == 0)
+		{
+			// Strings are empty.
+			continue;
+		}
+
 		if (dedupe_titles && langID != XDBF_LANGUAGE_ENGLISH) {
 			// Check if the title matches English.
 			// NOTE: Not converting to host-endian first, since

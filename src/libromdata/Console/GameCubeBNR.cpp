@@ -482,9 +482,9 @@ int GameCubeBNR::loadFieldData(void)
 
 	// TODO: Show both full and normal?
 	// Currently showing full if it's there; otherwise, normal.
-	const char *const game_name_title = C_("GameCubeBNR", "Game Name");
-	const char *const company_title = C_("GameCubeBNR", "Company");
-	const char *const description_title = C_("GameCubeBNR", "Description");
+	const char *const s_game_name_title = C_("GameCubeBNR", "Game Name");
+	const char *const s_company_title = C_("GameCubeBNR", "Company");
+	const char *const s_description_title = C_("GameCubeBNR", "Description");
 
 	if (d->bannerType == GameCubeBNRPrivate::BANNER_BNR1) {
 		// BNR1: Assuming Shift-JIS with cp1252 fallback.
@@ -499,25 +499,25 @@ int GameCubeBNR::loadFieldData(void)
 
 		// Game name.
 		if (comment->gamename_full[0] != '\0') {
-			d->fields->addField_string(game_name_title,
+			d->fields->addField_string(s_game_name_title,
 				cp1252_sjis_to_utf8(comment->gamename_full, sizeof(comment->gamename_full)));
 		} else if (comment->gamename[0] != '\0') {
-			d->fields->addField_string(game_name_title,
+			d->fields->addField_string(s_game_name_title,
 				cp1252_sjis_to_utf8(comment->gamename, sizeof(comment->gamename)));
 		}
 
 		// Company.
 		if (comment->company_full[0] != '\0') {
-			d->fields->addField_string(company_title,
+			d->fields->addField_string(s_company_title,
 				cp1252_sjis_to_utf8(comment->company_full, sizeof(comment->company_full)));
 		} else if (comment->company[0] != '\0') {
-			d->fields->addField_string(company_title,
+			d->fields->addField_string(s_company_title,
 				cp1252_sjis_to_utf8(comment->company, sizeof(comment->company)));
 		}
 
 		// Game description.
 		if (comment->gamedesc[0] != '\0') {
-			d->fields->addField_string(description_title,
+			d->fields->addField_string(s_description_title,
 				cp1252_sjis_to_utf8(comment->gamedesc, sizeof(comment->gamedesc)));
 		}
 	} else {
@@ -537,6 +537,18 @@ int GameCubeBNR::loadFieldData(void)
 		RomFields::StringMultiMap_t *const pMap_gamedesc = new RomFields::StringMultiMap_t();
 		for (int langID = 0; langID < GCN_PAL_LANG_MAX; langID++) {
 			const gcn_banner_comment_t *const comment = &d->comments[langID];
+
+			// Check for empty strings first.
+			if (comment->gamename_full[0] == '\0' &&
+			    comment->gamename[0] == '\0' &&
+			    comment->company_full[0] == '\0' &&
+			    comment->company[0] == '\0' &&
+			    comment->gamedesc[0] == '\0')
+			{
+				// Strings are empty.
+				continue;
+			}
+
 			if (dedupe_titles && langID != GCN_PAL_LANG_ENGLISH) {
 				// Check if the comments match English.
 				if (!strncmp(comment->gamename_full,
@@ -597,9 +609,21 @@ int GameCubeBNR::loadFieldData(void)
 
 		const uint32_t def_lc = NintendoLanguage::getGcnPalLanguageCode(
 			NintendoLanguage::getGcnPalLanguage());
-		d->fields->addField_string_multi(game_name_title, pMap_gamename, def_lc);
-		d->fields->addField_string_multi(company_title, pMap_company, def_lc);
-		d->fields->addField_string_multi(description_title, pMap_gamedesc, def_lc);
+		if (!pMap_gamename->empty()) {
+			d->fields->addField_string_multi(s_game_name_title, pMap_gamename, def_lc);
+		} else {
+			delete pMap_gamename;
+		}
+		if (!pMap_company->empty()) {
+			d->fields->addField_string_multi(s_company_title, pMap_company, def_lc);
+		} else {
+			delete pMap_company;
+		}
+		if (!pMap_gamedesc->empty()) {
+			d->fields->addField_string_multi(s_description_title, pMap_gamedesc, def_lc);
+		} else {
+			delete pMap_gamedesc;
+		}
 	}
 
 	// Finished reading the field data.
