@@ -578,8 +578,11 @@ vector<RomData::ImageSizeDef> Dreamcast::supportedImageSizes(ImageType imageType
 
 	// TODO: Actually check the PVR.
 	// Assuming 256x256 for now.
-	static const ImageSizeDef sz_INT_MEDIA[] = {{nullptr, 256, 256, 0}};
-	return vector<ImageSizeDef>(sz_INT_MEDIA, sz_INT_MEDIA + 1);
+	static const ImageSizeDef sz_INT_MEDIA[] = {
+		{nullptr, 256, 256, 0}
+	};
+	return vector<ImageSizeDef>(sz_INT_MEDIA,
+		sz_INT_MEDIA + ARRAY_SIZE(sz_INT_MEDIA));
 }
 
 /**
@@ -597,8 +600,11 @@ vector<RomData::ImageSizeDef> Dreamcast::supportedImageSizes_static(ImageType im
 	}
 
 	// NOTE: Assuming the PVR is 256x256.
-	static const ImageSizeDef sz_INT_MEDIA[] = {{nullptr, 256, 256, 0}};
-	return vector<ImageSizeDef>(sz_INT_MEDIA, sz_INT_MEDIA + 1);
+	static const ImageSizeDef sz_INT_MEDIA[] = {
+		{nullptr, 256, 256, 0}
+	};
+	return vector<ImageSizeDef>(sz_INT_MEDIA,
+		sz_INT_MEDIA + ARRAY_SIZE(sz_INT_MEDIA));
 }
 
 /**
