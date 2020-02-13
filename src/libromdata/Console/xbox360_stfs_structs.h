@@ -164,6 +164,7 @@ typedef struct PACKED _STFS_Package_Thumbnails {
 	uint32_t thumbnail_image_size;			// [0x1712] Thumbnail image size
 	uint32_t title_thumbnail_image_size;		// [0x1716] Title thumbnail image size
 
+	// Thumbnail image format is PNG.
 	union {
 		struct {
 			// Metadata v0
@@ -178,7 +179,6 @@ typedef struct PACKED _STFS_Package_Thumbnails {
 			char16_t display_description_extra[6][0x40];	// [0x941A] Additional display descriptions
 		} mdv2_thumbnail;
 	};
-	// TODO: Figure out the thumbnail image format.
 } STFS_Package_Thumbnails;
 ASSERT_STRUCT(STFS_Package_Thumbnails, 0x971A-0x1712);
 

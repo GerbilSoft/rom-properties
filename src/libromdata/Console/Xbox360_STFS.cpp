@@ -11,15 +11,20 @@
 #include "xbox360_stfs_structs.h"
 #include "data/Xbox360_STFS_ContentType.hpp"
 
-// librpbase
+// librpbase, librptexture
+#include "librpbase/file/RpMemFile.hpp"
+#include "librpbase/img/RpPng.hpp"
 using namespace LibRpBase;
+using namespace LibRpTexture;
 
 // C++ STL classes.
 using std::string;
+using std::vector;
 
 namespace LibRomData {
 
 ROMDATA_IMPL(Xbox360_STFS)
+ROMDATA_IMPL_IMG_TYPES(Xbox360_STFS)
 
 // Workaround for RP_D() expecting the no-underscore naming convention.
 #define Xbox360_STFSPrivate Xbox360_STFS_Private
@@ -28,6 +33,7 @@ class Xbox360_STFS_Private : public RomDataPrivate
 {
 	public:
 		Xbox360_STFS_Private(Xbox360_STFS *q, IRpFile *file);
+		~Xbox360_STFS_Private();
 
 	private:
 		typedef RomDataPrivate super;
@@ -46,6 +52,17 @@ class Xbox360_STFS_Private : public RomDataPrivate
 		};
 		int stfsType;
 
+		// Icon.
+		// NOTE: Currently using Title Thumbnail.
+		// Should we make regular Thumbnail available too?
+		rp_image *img_icon;
+
+		/**
+		 * Load the icon.
+		 * @return Icon, or nullptr on error.
+		 */
+		const rp_image *loadIcon(void);
+
 	public:
 		// STFS headers.
 		// NOTE: These are **NOT** byteswapped!
@@ -58,10 +75,63 @@ class Xbox360_STFS_Private : public RomDataPrivate
 Xbox360_STFS_Private::Xbox360_STFS_Private(Xbox360_STFS *q, IRpFile *file)
 	: super(q, file)
 	, stfsType(STFS_TYPE_UNKNOWN)
+	, img_icon(nullptr)
 {
 	// Clear the headers.
 	memset(&stfsHeader, 0, sizeof(stfsHeader));
 	memset(&stfsMetadata, 0, sizeof(stfsMetadata));
+}
+
+Xbox360_STFS_Private::~Xbox360_STFS_Private()
+{
+	delete img_icon;
+}
+
+/**
+ * Load the icon.
+ * @return Icon, or nullptr on error.
+ */
+const rp_image *Xbox360_STFS_Private::loadIcon(void)
+{
+	if (img_icon) {
+		// Icon has already been loaded.
+		return img_icon;
+	} else if (!this->file || !this->isValid || this->stfsType < 0) {
+		// Can't load the icon.
+		return nullptr;
+	}
+
+	// NOTE: Loading title thumbnail only.
+	// TODO: Load regular thumbnail if title thumbnail fails?
+
+	// Check the metadata version to determine icon position
+	// and maximum length.
+	ao::uvector<uint8_t> icon_data;
+	const uint32_t icon_address = 0x571A;	// title thumbnail
+
+	const uint32_t metadata_version = be32_to_cpu(stfsMetadata.metadata_version);
+	if (metadata_version < 2) {
+		// version 0 or 1
+		icon_data.resize(0x4000);
+	} else {
+		// version 2 or later
+		icon_data.resize(0x3D00);
+	}
+
+	size_t size = file->seekAndRead(icon_address, icon_data.data(), icon_data.size());
+	if (size != icon_data.size()) {
+		// Seek and/or read error.
+		return nullptr;
+	}
+
+	// Create an RpMemFile and decode the image.
+	// TODO: For rpcli, shortcut to extract the PNG directly.
+	RpMemFile *const f_mem = new RpMemFile(icon_data.data(), icon_data.size());
+	rp_image *const img = RpPng::load(f_mem);
+	f_mem->unref();
+
+	this->img_icon = img;
+	return img;
 }
 
 /** Xbox360_STFS **/
@@ -294,6 +364,65 @@ const char *const *Xbox360_STFS::supportedMimeTypes_static(void)
 }
 
 /**
+ * Get a bitfield of image types this class can retrieve.
+ * @return Bitfield of supported image types. (ImageTypesBF)
+ */
+uint32_t Xbox360_STFS::supportedImageTypes_static(void)
+{
+	return IMGBF_INT_ICON;
+}
+
+/**
+ * Get a list of all available image sizes for the specified image type.
+ * @param imageType Image type.
+ * @return Vector of available image sizes, or empty vector if no images are available.
+ */
+vector<RomData::ImageSizeDef> Xbox360_STFS::supportedImageSizes(ImageType imageType) const
+{
+	ASSERT_supportedImageSizes(imageType);
+
+	RP_D(const Xbox360_STFS);
+	if (!d->isValid || imageType != IMG_INT_MEDIA) {
+		// Only IMG_INT_MEDIA is supported.
+		return vector<ImageSizeDef>();
+	}
+
+	// TODO: Actually check the title thumbnail.
+	// Assuming 128x128 for now.
+	static const ImageSizeDef sz_INT_ICON[] = {
+		{nullptr, 128, 128, 0},
+	};
+	return vector<ImageSizeDef>(sz_INT_ICON,
+		sz_INT_ICON + ARRAY_SIZE(sz_INT_ICON));
+}
+
+/**
+ * Get a list of all available image sizes for the specified image type.
+ *
+ * The first item in the returned vector is the "default" size.
+ * If the width/height is 0, then an image exists, but the size is unknown.
+ *
+ * @param imageType Image type.
+ * @return Vector of available image sizes, or empty vector if no images are available.
+ */
+vector<RomData::ImageSizeDef> Xbox360_STFS::supportedImageSizes_static(ImageType imageType)
+{
+	ASSERT_supportedImageSizes(imageType);
+
+	if (imageType != IMG_INT_ICON) {
+		// Only icons are supported.
+		return vector<ImageSizeDef>();
+	}
+
+	// NOTE: Assuming the title thumbnail is 128x128.
+	static const ImageSizeDef sz_INT_ICON[] = {
+		{nullptr, 128, 128, 0},
+	};
+	return vector<ImageSizeDef>(sz_INT_ICON,
+		sz_INT_ICON + ARRAY_SIZE(sz_INT_ICON));
+}
+
+/**
  * Load field data.
  * Called by RomData::fields() if the field data hasn't been loaded yet.
  * @return Number of fields read on success; negative POSIX error code on error.
@@ -476,6 +605,44 @@ int Xbox360_STFS::loadMetaData(void)
 
 	// Finished reading the metadata.
 	return static_cast<int>(d->metaData->count());
+}
+
+/**
+ * Load an internal image.
+ * Called by RomData::image().
+ * @param imageType	[in] Image type to load.
+ * @param pImage	[out] Pointer to const rp_image* to store the image in.
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int Xbox360_STFS::loadInternalImage(ImageType imageType, const rp_image **pImage)
+{
+	ASSERT_loadInternalImage(imageType, pImage);
+
+	if (imageType != IMG_INT_ICON) {
+		// Only IMG_INT_ICON is supported by Xbox360_STFS.
+		*pImage = nullptr;
+		return -ENOENT;
+	}
+
+	RP_D(Xbox360_STFS);
+	if (d->img_icon) {
+		// Icon is loaded.
+		*pImage = d->img_icon;
+		return 0;
+	}
+
+	if (!d->file) {
+		// File isn't open.
+		return -EBADF;
+	} else if (!d->isValid || d->stfsType < 0) {
+		// STFS file isn't valid.
+		return -EIO;
+	}
+
+	// Load the image.
+	// TODO: -ENOENT if the file doesn't actually have an icon/banner.
+	*pImage = d->loadIcon();
+	return (*pImage != nullptr ? 0 : -EIO);
 }
 
 }
