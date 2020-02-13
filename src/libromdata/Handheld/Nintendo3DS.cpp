@@ -49,11 +49,6 @@ class Nintendo3DSPrivate : public RomDataPrivate
 		RP_DISABLE_COPY(Nintendo3DSPrivate)
 
 	public:
-		// Internal images.
-		// 0 == 24x24; 1 == 48x48
-		rp_image *img_icon[2];
-
-	public:
 		// ROM type.
 		enum RomType {
 			ROM_TYPE_UNKNOWN = -1,	// Unknown ROM type.
@@ -269,10 +264,6 @@ Nintendo3DSPrivate::Nintendo3DSPrivate(Nintendo3DS *q, IRpFile *file)
 	, content_count(0)
 	, ncch_reader(nullptr)
 {
-	// Clear img_icon.
-	img_icon[0] = nullptr;
-	img_icon[1] = nullptr;
-
 	// Clear the various structs.
 	memset(&mxh, 0, sizeof(mxh));
 	memset(&perm, 0, sizeof(perm));
@@ -281,9 +272,6 @@ Nintendo3DSPrivate::Nintendo3DSPrivate(Nintendo3DS *q, IRpFile *file)
 
 Nintendo3DSPrivate::~Nintendo3DSPrivate()
 {
-	delete img_icon[0];
-	delete img_icon[1];
-
 	if (headers_loaded & HEADER_SMDH) {
 		// SMDH header is loaded.
 		if (sbptr.smdh.data) {
