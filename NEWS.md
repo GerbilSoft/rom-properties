@@ -55,6 +55,7 @@
   * KhronosKTX: Added support for BPTC (BC7) texture compression.
   * amiibo: Updated the internal database to be current as of 2020/01/11.
     Added some missing entries and fixed a few incorrect entries.
+  * Xbox360_STFS: Title thumbnail images are now displayed as internal icons.
 
 * New compressed texture formats:
   * PowerVR Texture Compression. Supports PVRTC-I 2bpp and 4bpp in PowerVR

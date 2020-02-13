@@ -88,7 +88,7 @@ button.
 | Super NES                 |       Yes      |    No    |       N/A       |       No       |
 | Microsoft Xbox (XBE)      |       Yes      |    Yes   |       Icon      |       No       |
 | Microsoft Xbox 360 (XEX)  |       Yes      |    Yes   |       Icon      |       No       |
-| Microsoft Xbox 360 (STFS) |       Yes      |    Yes   |        No       |       No       |
+| Microsoft Xbox 360 (STFS) |       Yes      |    Yes   |       Icon      |       No       |
 | Microsoft Xbox Game Discs |       Yes      |    Yes   |       Icon      |       No       |
 | Nintendo 64               |       Yes      |    Yes   |       N/A       |       No       |
 | iQue Player ticket files  |       Yes      |    Yes   |   Icon, Banner  |       No       |
