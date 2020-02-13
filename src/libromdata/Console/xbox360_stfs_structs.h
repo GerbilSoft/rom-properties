@@ -103,6 +103,7 @@ ASSERT_STRUCT(SVOD_Volume_Descriptor, 0x24);
  *
  * All fields are in big-endian.
  */
+#define STFS_METADATA_ADDRESS 0x22C
 typedef struct PACKED _STFS_Package_Metadata {
 	STFS_License_Entry license_entries[16];	// [0x22C] License entries
 	uint8_t header_sha1[0x14];		// [0x32C] Header SHA1 (from 0x344 to first hash table)
@@ -159,6 +160,7 @@ ASSERT_STRUCT(STFS_Package_Metadata, 0x1712-0x22C);
  *
  * All fields are in big-endian.
  */
+#define STFS_THUMBNAILS_ADDRESS 0x1712
 typedef struct PACKED _STFS_Package_Thumbnails {
 	// Thumbnail sizes are 0x4000 for v0, 0x3D00 for v2.
 	uint32_t thumbnail_image_size;			// [0x1712] Thumbnail image size

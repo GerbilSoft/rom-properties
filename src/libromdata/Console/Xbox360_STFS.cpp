@@ -77,9 +77,24 @@ class Xbox360_STFS_Private : public RomDataPrivate
 		// STFS headers.
 		// NOTE: These are **NOT** byteswapped!
 		STFS_Package_Header stfsHeader;
-		// TODO: Load on demand?
+
+		// Load-on-demand headers.
 		STFS_Package_Metadata stfsMetadata;
 		STFS_Package_Thumbnails stfsThumbnails;
+
+		enum StfsPresent_e {
+			STFS_PRESENT_HEADER	= (1 << 0),
+			STFS_PRESENT_METADATA	= (1 << 1),
+			STFS_PRESENT_THUMBNAILS	= (1 << 2),
+		};
+		uint32_t headers_loaded;	// StfsPresent_e
+
+		/**
+		 * Ensure the specified header is loaded.
+		 * @param header Header ID. (See StfsPresent_e.)
+		 * @return 0 on success; negative POSIX error code on error.
+		 */
+		int loadHeader(unsigned int header);
 };
 
 /** Xbox360_STFS_Private **/
@@ -88,10 +103,12 @@ Xbox360_STFS_Private::Xbox360_STFS_Private(Xbox360_STFS *q, IRpFile *file)
 	: super(q, file)
 	, stfsType(STFS_TYPE_UNKNOWN)
 	, img_icon(nullptr)
+	, headers_loaded(0)
 {
 	// Clear the headers.
 	memset(&stfsHeader, 0, sizeof(stfsHeader));
 	memset(&stfsMetadata, 0, sizeof(stfsMetadata));
+	memset(&stfsThumbnails, 0, sizeof(stfsThumbnails));
 }
 
 Xbox360_STFS_Private::~Xbox360_STFS_Private()
@@ -113,10 +130,20 @@ const rp_image *Xbox360_STFS_Private::loadIcon(void)
 		return nullptr;
 	}
 
+	// Make sure the STFS metadata and thumbnails are loaded.
+	int ret = loadHeader(STFS_PRESENT_METADATA);
+	if (ret != 0) {
+		// Not loaded and unable to load.
+		return nullptr;
+	}
+	ret = loadHeader(STFS_PRESENT_THUMBNAILS);
+	if (ret != 0) {
+		// Not loaded and unable to load.
+		return nullptr;
+	}
+
 	// NOTE: Loading title thumbnail only.
 	// TODO: Load regular thumbnail if title thumbnail fails?
-
-	// TODO: Load thumbnails on demand.
 	const uint8_t *pIconData;
 	size_t iconSize;
 
@@ -165,6 +192,59 @@ inline uint32_t Xbox360_STFS_Private::getDefaultLC(void) const
 		lc = 'en';
 	}
 	return lc;
+}
+
+/**
+ * Ensure the specified header is loaded.
+ * @param header Header ID. (See StfsPresent_e.)
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int Xbox360_STFS_Private::loadHeader(unsigned int header)
+{
+	// TODO: Ensure that only a single bit is set.
+	assert(header != 0);
+	if (headers_loaded & header) {
+		// Header is already loaded.
+		return 0;
+	}
+
+	if (!this->file) {
+		// File isn't open.
+		return -EBADF;
+	} else if (!this->isValid || this->stfsType < 0) {
+		// STFS file isn't valid.
+		return -EIO;
+	}
+
+	// STFS_PRESENT_HEADER must have been loaded in the constructor.
+	assert(header != STFS_PRESENT_HEADER);
+
+	size_t size = 0;
+	size_t size_expected;
+	switch (header) {
+		case STFS_PRESENT_METADATA:
+			size_expected = sizeof(stfsMetadata);
+			size = file->seekAndRead(STFS_METADATA_ADDRESS, &stfsMetadata, sizeof(stfsMetadata));
+			break;
+		case STFS_PRESENT_THUMBNAILS:
+			size_expected = sizeof(stfsThumbnails);
+			size = file->seekAndRead(STFS_THUMBNAILS_ADDRESS, &stfsThumbnails, sizeof(stfsThumbnails));
+			break;
+		default:
+			assert(!"Invalid header value.");
+			return -EINVAL;
+	}
+
+	int ret = 0;
+	if (size != size_expected) {
+		// Read error.
+		ret = -file->lastError();
+		if (ret == 0) {
+			ret = -EIO;
+		}
+	}
+
+	return ret;
 }
 
 /** Xbox360_STFS **/
@@ -219,25 +299,9 @@ Xbox360_STFS::Xbox360_STFS(IRpFile *file)
 	if (!d->isValid) {
 		d->file->unref();
 		d->file = nullptr;
-		return;
 	}
 
-	// Read the package metadata and thumbnails.
-	// TODO: Load on demand?
-	size = d->file->read(&d->stfsMetadata, sizeof(d->stfsMetadata));
-	if (size != sizeof(d->stfsMetadata)) {
-		// Read error.
-		d->file->unref();
-		d->file = nullptr;
-		return;
-	}
-	size = d->file->read(&d->stfsThumbnails, sizeof(d->stfsThumbnails));
-	if (size != sizeof(d->stfsThumbnails)) {
-		// Read error.
-		d->file->unref();
-		d->file = nullptr;
-		return;
-	}
+	// Package metadata and thumbnails are loaded on demand.
 }
 
 /** ROM detection functions. **/
@@ -481,6 +545,13 @@ int Xbox360_STFS::loadFieldData(void)
 		return -EIO;
 	}
 
+	// Make sure the STFS metadata is loaded.
+	int ret = d->loadHeader(Xbox360_STFS_Private::STFS_PRESENT_METADATA);
+	if (ret != 0) {
+		// Not loaded and unable to load.
+		return ret;
+	}
+
 	// Parse the STFS file.
 	// NOTE: The STFS headers are **NOT** byteswapped.
 	const STFS_Package_Metadata *const stfsMetadata = &d->stfsMetadata;
@@ -675,6 +746,13 @@ int Xbox360_STFS::loadMetaData(void)
 	} else if (!d->isValid || d->stfsType < 0) {
 		// STFS file isn't valid.
 		return -EIO;
+	}
+
+	// Make sure the STFS metadata is loaded.
+	int ret = d->loadHeader(Xbox360_STFS_Private::STFS_PRESENT_METADATA);
+	if (ret != 0) {
+		// Not loaded and unable to load.
+		return ret;
 	}
 
 	// Create the metadata object.
