@@ -142,12 +142,12 @@ const rp_image *Xbox360_STFS_Private::loadIcon(void)
 		return nullptr;
 	}
 
-	// NOTE: Loading title thumbnail only.
-	// TODO: Load regular thumbnail if title thumbnail fails?
+	// TODO: Option to select title or regular thumbnail.
+	const uint32_t metadata_version = be32_to_cpu(stfsMetadata.metadata_version);
 	const uint8_t *pIconData;
 	size_t iconSize;
 
-	const uint32_t metadata_version = be32_to_cpu(stfsMetadata.metadata_version);
+	// Try the title thumbnail image first.
 	if (metadata_version < 2) {
 		// version 0 or 1
 		pIconData = stfsThumbnails.mdv0.title_thumbnail_image;
@@ -160,9 +160,27 @@ const rp_image *Xbox360_STFS_Private::loadIcon(void)
 
 	// Create an RpMemFile and decode the image.
 	// TODO: For rpcli, shortcut to extract the PNG directly.
-	RpMemFile *const f_mem = new RpMemFile(pIconData, iconSize);
-	rp_image *const img = RpPng::load(f_mem);
+	RpMemFile *f_mem = new RpMemFile(pIconData, iconSize);
+	rp_image *img = RpPng::load(f_mem);
 	f_mem->unref();
+
+	if (!img) {
+		// Unable to load the title thumbnail image.
+		// Try the regular thumbnail image.
+		if (metadata_version < 2) {
+			// version 0 or 1
+			pIconData = stfsThumbnails.mdv0.thumbnail_image;
+			iconSize = sizeof(stfsThumbnails.mdv0.thumbnail_image);
+		} else {
+			// version 2 or later
+			pIconData = stfsThumbnails.mdv2.thumbnail_image;
+			iconSize = sizeof(stfsThumbnails.mdv2.thumbnail_image);
+		}
+
+		f_mem = new RpMemFile(pIconData, iconSize);
+		img = RpPng::load(f_mem);
+		f_mem->unref();
+	}
 
 	this->img_icon = img;
 	return img;
