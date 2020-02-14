@@ -15,6 +15,10 @@
 #include <cassert>
 #include <cstring>
 
+// C++ includes.
+#include <array>
+using std::array;
+
 // librptexture
 #include "librptexture/img/rp_image.hpp"
 using LibRpTexture::rp_image;
@@ -86,7 +90,7 @@ GdkPixbuf *GdkImageConv::rp_image_to_GdkPixbuf_cpp(const rp_image *img)
 				break;
 
 			// Get the palette.
-			uint32_t palette[256];
+			array<uint32_t, 256> palette;
 			int i;
 			for (i = 0; i < src_pal_len; i += 2, src_pal += 2) {
 				// Swap the R and B channels in the palette.
@@ -106,8 +110,8 @@ GdkPixbuf *GdkImageConv::rp_image_to_GdkPixbuf_cpp(const rp_image *img)
 
 			// Zero out the rest of the palette if the new
 			// palette is larger than the old palette.
-			if (src_pal_len < ARRAY_SIZE(palette)) {
-				memset(&palette[src_pal_len], 0, (ARRAY_SIZE(palette) - src_pal_len) * sizeof(uint32_t));
+			if (src_pal_len < (int)palette.size()) {
+				memset(&palette[src_pal_len], 0, (palette.size() - src_pal_len) * sizeof(uint32_t));
 			}
 
 			// Copy the image data.

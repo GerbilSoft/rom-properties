@@ -38,6 +38,7 @@ using LibRpTexture::rp_image;
 #include "librpbase/TextFuncs_libc.h"
 
 // C++ STL classes.
+using std::array;
 using std::string;
 using std::unique_ptr;
 using std::vector;
@@ -280,7 +281,7 @@ int GameCubePrivate::loadWiiPartitionTables(void)
 	// Assuming a maximum of 128 partitions per table.
 	// (This is a rather high estimate.)
 	RVL_VolumeGroupTable vgtbl;
-	RVL_PartitionTableEntry pt[1024];
+	array<RVL_PartitionTableEntry, 1024> pt;
 
 	// Read the volume group table.
 	// References:
@@ -317,15 +318,15 @@ int GameCubePrivate::loadWiiPartitionTables(void)
 		unsigned int count = be32_to_cpu(vgtbl.vg[i].count);
 		if (count == 0) {
 			continue;
-		} else if (count > ARRAY_SIZE(pt)) {
-			count = ARRAY_SIZE(pt);
+		} else if (count > pt.size()) {
+			count = pt.size();
 		}
 
 		// Read the partition table entries.
 		off64_t pt_addr = static_cast<off64_t>(be32_to_cpu(vgtbl.vg[i].addr)) << 2;
-		const size_t ptSize = sizeof(RVL_PartitionTableEntry) * count;
-		size = discReader->seekAndRead(pt_addr, pt, ptSize);
-		if (size != ptSize) {
+		static constexpr size_t pt_size = pt.size() * sizeof(pt[0]);
+		size = discReader->seekAndRead(pt_addr, pt.data(), pt_size);
+		if (size != pt_size) {
 			// Error reading the partition table entries.
 			return -EIO;
 		}

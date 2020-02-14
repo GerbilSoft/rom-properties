@@ -18,6 +18,7 @@ using namespace LibRpBase;
 using namespace LibRpTexture;
 
 // C++ STL classes.
+using std::array;
 using std::string;
 using std::vector;
 
@@ -66,7 +67,7 @@ class NintendoBadgePrivate : public RomDataPrivate
 		} badgeHeader;
 
 		// Decoded images.
-		rp_image *img[PRBS_MAX];
+		array<rp_image*, PRBS_MAX> img;
 
 		/**
 		 * Load the badge image.
@@ -99,16 +100,15 @@ NintendoBadgePrivate::NintendoBadgePrivate(NintendoBadge *q, IRpFile *file)
 	memset(&badgeHeader, 0, sizeof(badgeHeader));
 
 	// Clear the decoded images.
-	memset(img, 0, sizeof(img));
+	// FIXME: This may be slower than memset()...
+	img.fill(nullptr);
 }
 
 NintendoBadgePrivate::~NintendoBadgePrivate()
 {
 	static_assert(PRBS_MAX == 4, "PRBS_MAX != 4");
 	static_assert(PRBS_MAX == ARRAY_SIZE(img), "PRBS_MAX != ARRAY_SIZE(img)");
-	for (int i = ARRAY_SIZE(img)-1; i >= 0; i--) {
-		delete img[i];
-	}
+	std::for_each(img.begin(), img.end(), [](rp_image *pImg) { delete pImg; });
 }
 
 /**
@@ -118,8 +118,8 @@ NintendoBadgePrivate::~NintendoBadgePrivate()
  */
 const rp_image *NintendoBadgePrivate::loadImage(int idx)
 {
-	assert(idx >= 0 || idx < ARRAY_SIZE(img));
-	if (idx < 0 || idx >= ARRAY_SIZE(img)) {
+	assert(idx >= 0 || idx < (int)img.size());
+	if (idx < 0 || idx >= (int)img.size()) {
 		// Invalid image index.
 		return nullptr;
 	}

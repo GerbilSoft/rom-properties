@@ -18,6 +18,7 @@ using namespace LibRpBase;
 using namespace LibRpTexture;
 
 // C++ STL classes.
+using std::array;
 using std::string;
 using std::vector;
 
@@ -43,7 +44,7 @@ class Nintendo3DS_SMDH_Private : public RomDataPrivate
 	public:
 		// Internal images.
 		// 0 == 24x24; 1 == 48x48
-		rp_image *img_icon[2];
+		array<rp_image*, 2> img_icon;
 
 	public:
 		// SMDH headers.
@@ -79,8 +80,7 @@ Nintendo3DS_SMDH_Private::Nintendo3DS_SMDH_Private(Nintendo3DS_SMDH *q, IRpFile 
 	: super(q, file)
 {
 	// Clear img_icon.
-	img_icon[0] = nullptr;
-	img_icon[1] = nullptr;
+	img_icon.fill(nullptr);
 
 	// Clear the SMDH headers.
 	memset(&smdh, 0, sizeof(smdh));
@@ -88,8 +88,8 @@ Nintendo3DS_SMDH_Private::Nintendo3DS_SMDH_Private(Nintendo3DS_SMDH *q, IRpFile 
 
 Nintendo3DS_SMDH_Private::~Nintendo3DS_SMDH_Private()
 {
-	delete img_icon[0];
-	delete img_icon[1];
+	// Delete any loaded icons.
+	std::for_each(img_icon.begin(), img_icon.end(), [](rp_image *pImg) { delete pImg; });
 }
 
 /**

@@ -13,6 +13,10 @@
 // libi18n
 #include "libi18n/i18n.h"
 
+// C++ includes.
+#include <array>
+using std::array;
+
 // Qt includes.
 #include <QtGui/QFont>
 #include <QtGui/QFontMetrics>
@@ -68,7 +72,7 @@ class KeyStoreModelPrivate
 		int sectCount;
 
 		// Translated column names.
-		QString columnNames[3];
+		array<QString, 3> columnNames;
 };
 
 // Windows-style LOWORD()/HIWORD()/MAKELONG() functions.
@@ -416,12 +420,13 @@ QVariant KeyStoreModel::headerData(int section, Qt::Orientation orientation, int
 	Q_UNUSED(orientation);
 
 	switch (role) {
-		case Qt::DisplayRole:
-			if (section >= 0 && section <= 2) {
-				RP_D(const KeyStoreModel);
+		case Qt::DisplayRole: {
+			RP_D(const KeyStoreModel);
+			if (section >= 0 && section < (int)d->columnNames.size()) {
 				return d->columnNames[section];
 			}
 			break;
+		}
 
 		case Qt::TextAlignmentRole:
 			// Center-align the text.

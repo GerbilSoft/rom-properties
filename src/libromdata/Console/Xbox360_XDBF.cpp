@@ -189,9 +189,7 @@ Xbox360_XDBF_Private::Xbox360_XDBF_Private(Xbox360_XDBF *q, IRpFile *file, bool 
 Xbox360_XDBF_Private::~Xbox360_XDBF_Private()
 {
 	// Delete any allocated string tables.
-	for (auto iter = strTbls.begin(); iter < strTbls.end(); ++iter) {
-		delete *iter;
-	}
+	std::for_each(strTbls.begin(), strTbls.end(), [](ao::uvector<char>* pStrTbl) { delete pStrTbl; });
 
 	// Delete any loaded images.
 	std::for_each(map_images.begin(), map_images.end(),

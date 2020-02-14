@@ -16,7 +16,9 @@
 #include <cstring>
 
 // C++ includes.
+#include <array>
 #include <memory>
+using std::array;
 using std::unique_ptr;
 
 // librptexture
@@ -98,13 +100,13 @@ cairo_surface_t *CairoImageConv::rp_image_to_cairo_surface_t(const rp_image *img
 				break;
 
 			// Premultiply the palette.
-			uint32_t pal_prex[256];
+			std::array<uint32_t, 256> pal_prex;
 			for (int i = 0; i < palette_len; i++) {
 				pal_prex[i] = rp_image::premultiply_pixel(palette[i]);
 			}
-			if (palette_len < 256) {
+			if (palette_len < (int)pal_prex.size()) {
 				// Clear the rest of the palette.
-				memset(&pal_prex[palette_len], 0, (256-palette_len)*sizeof(uint32_t));
+				memset(&pal_prex[palette_len], 0, (pal_prex.size() - palette_len) * sizeof(uint32_t));
 			}
 
 			// Copy the image data.

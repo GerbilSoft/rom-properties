@@ -14,6 +14,7 @@
 using namespace LibRpBase;
 
 // C++ STL classes.
+using std::array;
 using std::tstring;
 
 // TImageTypesConfig is a templated class,
@@ -208,7 +209,7 @@ void ImageTypesTabPrivate::createGridLabels(void)
 	// Determine the size of the largest image type label.
 	// NOTE: Keeping heights of each label in order to
 	// vertically-align labels on the bottom.
-	int h_lbl[IMG_TYPE_COUNT];
+	array<int, IMG_TYPE_COUNT> h_lbl;
 	SIZE sz_lblImageType = {0, 0};
 	for (int i = IMG_TYPE_COUNT-1; i >= 0; i--) {
 		if (i == RomData::IMG_INT_MEDIA) {

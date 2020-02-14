@@ -19,6 +19,7 @@ using namespace LibRpBase;
 #include "PropSheetIcon.hpp"
 
 // C++ STL classes.
+using std::array;
 using std::tstring;
 
 #include "libi18n/config.libi18n.h"
@@ -59,8 +60,8 @@ class ConfigDialogPrivate
 #else
 		static const unsigned int TAB_COUNT = 4;
 #endif
-		ITab *tabs[TAB_COUNT];
-		HPROPSHEETPAGE hpsp[TAB_COUNT];
+		array<ITab*, TAB_COUNT> tabs;
+		array<HPROPSHEETPAGE, TAB_COUNT> hpsp;
 		PROPSHEETHEADER psh;
 
 		// Property Sheet callback.
@@ -125,9 +126,9 @@ ConfigDialogPrivate::ConfigDialogPrivate()
 	psh.hInstance = HINST_THISCOMPONENT;
 	psh.hIcon = PropSheetIcon::getSmallIcon();	// Small icon only!
 	psh.pszCaption = nullptr;			// will be set in WM_SHOWWINDOW
-	psh.nPages = ARRAY_SIZE(hpsp);
+	psh.nPages = hpsp.size();
 	psh.nStartPage = 0;
-	psh.phpage = hpsp;
+	psh.phpage = hpsp.data();
 	psh.pfnCallback = this->callbackProc;
 	psh.hbmWatermark = nullptr;
 	psh.hplWatermark = nullptr;
@@ -138,9 +139,8 @@ ConfigDialogPrivate::ConfigDialogPrivate()
 
 ConfigDialogPrivate::~ConfigDialogPrivate()
 {
-	for (int i = ARRAY_SIZE(tabs)-1; i >= 0; i--) {
-		delete tabs[i];
-	}
+	// Delete the tabs.
+	std::for_each(tabs.begin(), tabs.end(), [](ITab *pTab) { delete pTab; });
 }
 
 /**

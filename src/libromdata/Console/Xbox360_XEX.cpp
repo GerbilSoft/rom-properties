@@ -35,6 +35,7 @@ using LibRpTexture::rp_image;
 #endif /* ENABLE_LIBMSPACK */
 
 // C++ STL classes.
+using std::array;
 using std::ostringstream;
 using std::string;
 using std::unique_ptr;
@@ -562,7 +563,8 @@ CBCReader *Xbox360_XEX_Private::initPeReader(void)
 	//
 	// We need to decrypt before we decompress, so we can't check
 	// if the decryption key works until decompression is done.
-	CBCReader *reader[2] = {nullptr, nullptr};
+	array<CBCReader*, 2> reader;
+	reader.fill(nullptr);
 
 	// Create the CBCReader for decryption.
 	const size_t pe_length = (size_t)file->size() - xex2Header.pe_offset;

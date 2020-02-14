@@ -72,6 +72,7 @@ using LibRpTexture::argb32_t;
 #include <csetjmp>
 
 // C++ STL classes.
+using std::array;
 using std::string;
 using std::unique_ptr;
 using std::vector;
@@ -681,14 +682,14 @@ int RpPngWriterPrivate::write_CI8_palette(void)
 		return -EINVAL;
 
 	// Maximum size.
-	png_color png_pal[256];
-	uint8_t png_tRNS[256];
+	array<png_color, 256> png_pal;
+	array<uint8_t, 256> png_tRNS;
 	bool has_tRNS = false;
 
 	// Convert the palette.
 	const argb32_t *p_img_pal = reinterpret_cast<const argb32_t*>(cache.palette);
-	png_color *p_png_pal = png_pal;
-	uint8_t *p_png_tRNS = png_tRNS;
+	png_color *p_png_pal = png_pal.data();
+	uint8_t *p_png_tRNS = png_tRNS.data();
 	for (int i = cache.palette_len; i > 0; i--, p_img_pal++, p_png_pal++, p_png_tRNS++) {
 		// NOTE: Shifting method is actually more
 		// efficient on gcc, but MSVC handles both
@@ -701,13 +702,13 @@ int RpPngWriterPrivate::write_CI8_palette(void)
 	}
 
 	// Write the PLTE and tRNS chunks.
-	png_set_PLTE(png_ptr, info_ptr, png_pal, cache.palette_len);
+	png_set_PLTE(png_ptr, info_ptr, png_pal.data(), cache.palette_len);
 	if (has_tRNS) {
 		// Palette has transparency.
 		// Write the tRNS chunk.
 		// NOTE: Ignoring skip_alpha here, since it doesn't make
 		// sense to skip for paletted images.
-		png_set_tRNS(png_ptr, info_ptr, png_tRNS, cache.palette_len, nullptr);
+		png_set_tRNS(png_ptr, info_ptr, png_tRNS.data(), cache.palette_len, nullptr);
 	}
 	return 0;
 }
