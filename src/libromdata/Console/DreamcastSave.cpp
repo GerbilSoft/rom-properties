@@ -778,7 +778,8 @@ DreamcastSave::DreamcastSave(IRpFile *file)
 		size_t size = d->file->read(&d->vms_dirent, sizeof(d->vms_dirent));
 		if (size != sizeof(d->vms_dirent)) {
 			// Read error.
-			d->file->close();
+			d->file->unref();
+			d->file = nullptr;
 			return;
 		}
 
