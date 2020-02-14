@@ -726,7 +726,6 @@ GameCube::GameCube(IRpFile *file)
 
 			case GameCubePrivate::DISC_FORMAT_UNKNOWN:
 			default:
-				d->fileType = FTYPE_UNKNOWN;
 				d->discType = GameCubePrivate::DISC_UNKNOWN;
 				break;
 		}
@@ -748,10 +747,7 @@ GameCube::GameCube(IRpFile *file)
 			memcpy(&d->discHeader, &header[0x58], sizeof(d->discHeader));
 		} else {
 			// Non-WIA formats must have a valid DiscReader.
-			d->discType = GameCubePrivate::DISC_UNKNOWN;
-			d->isValid = false;
-			d->file->unref();
-			d->file = nullptr;
+			goto notSupported;
 		}
 		return;
  	}
@@ -763,18 +759,14 @@ GameCube::GameCube(IRpFile *file)
 		size = d->discReader->read(&d->discHeader, sizeof(d->discHeader));
 		if (size != sizeof(d->discHeader)) {
 			// Error reading the disc header.
-			delete d->discReader;
-			d->file->unref();
-			d->discReader = nullptr;
-			d->file = nullptr;
-			d->discType = GameCubePrivate::DISC_UNKNOWN;
-			d->isValid = false;
-			return;
+			goto notSupported;
 		}
 		d->hasRegionCode = true;
 	} else {
 		// Standalone partition.
 		d->fileType = FTYPE_PARTITION;
+		d->wiiPtbl.resize(1);
+		GameCubePrivate::WiiPartEntry &pt = d->wiiPtbl[0];
 
 		// Determine the partition type.
 		// If title ID low is '\0UPD' or '\0UPE', assume it's an update partition.
@@ -784,23 +776,17 @@ GameCube::GameCube(IRpFile *file)
 		size = d->file->seekAndRead(offsetof(RVL_Ticket, title_id), &title_id, sizeof(title_id));
 		if (size != sizeof(title_id)) {
 			// Error reading the title ID.
-			delete d->discReader;
-			d->file->unref();
-			d->discReader = nullptr;
-			d->file = nullptr;
-			d->discType = GameCubePrivate::DISC_UNKNOWN;
-			d->isValid = false;
-			return;
+			d->wiiPtbl.clear();
+			goto notSupported;
 		}
 
-		d->wiiPtbl.resize(1);
-		GameCubePrivate::WiiPartEntry &pt = d->wiiPtbl[0];
 		pt.start = 0;
 		pt.size = d->file->size();
 		pt.vg = 0;
 		pt.pt = 0;
 		pt.partition = new WiiPartition(d->discReader, pt.start, pt.size);
 
+		// TODO: Super Smash Bros. Brawl "Masterpieces" partitions.
 		if (title_id.lo == be32_to_cpu('UPD') || title_id.lo == be32_to_cpu('UPE')) {
 			// Update partition.
 			pt.type = RVL_PT_UPDATE;
@@ -810,6 +796,7 @@ GameCube::GameCube(IRpFile *file)
 			pt.type = RVL_PT_CHANNEL;
 		} else {
 			// Game partition.
+			// TODO: Extract partitions from Brawl and check.
 			pt.type = RVL_PT_GAME;
 			d->gamePartition = pt.partition;
 		}
@@ -820,17 +807,11 @@ GameCube::GameCube(IRpFile *file)
 			// Error reading the partition header.
 			delete pt.partition;
 			d->wiiPtbl.clear();
-
-			delete d->discReader;
-			d->file->unref();
-			d->discReader = nullptr;
-			d->file = nullptr;
-			d->discType = GameCubePrivate::DISC_UNKNOWN;
-			d->isValid = false;
-			return;
+			goto notSupported;
 		}
 
 		// Need to change encryption bytes to 00.
+		// TODO: Only if actually encrypted?
 		d->discHeader.hash_verify = 0;
 		d->discHeader.disc_noCrypto = 0;
 		d->wiiPtblLoaded = true;
@@ -876,14 +857,7 @@ GameCube::GameCube(IRpFile *file)
 		}
 
 		if (!isOK) {
-			// Incorrect image format.
-			delete d->discReader;
-			d->file->unref();
-			d->discReader = nullptr;
-			d->file = nullptr;
-			d->discType = GameCubePrivate::DISC_UNKNOWN;
-			d->isValid = false;
-			return;
+			goto notSupported;
 		}
 	}
 
@@ -914,13 +888,7 @@ GameCube::GameCube(IRpFile *file)
 			d->discType |=  GameCubePrivate::DISC_SYSTEM_GCN;
 		} else {
 			// Unknown system type.
-			delete d->discReader;
-			d->file->unref();
-			d->discReader = nullptr;
-			d->file = nullptr;
-			d->discType = GameCubePrivate::DISC_UNKNOWN;
-			d->isValid = false;
-			return;
+			goto notSupported;
 		}
 	}
 
@@ -932,13 +900,7 @@ GameCube::GameCube(IRpFile *file)
 			size = d->discReader->seekAndRead(GCN_Boot_Info_ADDRESS, &bootInfo, sizeof(bootInfo));
 			if (size != sizeof(bootInfo)) {
 				// Cannot read bi2.bin.
-				delete d->discReader;
-				d->file->unref();
-				d->discReader = nullptr;
-				d->file = nullptr;
-				d->discType = GameCubePrivate::DISC_UNKNOWN;
-				d->isValid = false;
-				return;
+				goto notSupported;
 			}
 
 			d->gcnRegion = be32_to_cpu(bootInfo.region_code);
@@ -952,13 +914,7 @@ GameCube::GameCube(IRpFile *file)
 				size = d->discReader->seekAndRead(RVL_RegionSetting_ADDRESS, &d->regionSetting, sizeof(d->regionSetting));
 				if (size != sizeof(d->regionSetting)) {
 					// Cannot read RVL_RegionSetting.
-					delete d->discReader;
-					d->file->unref();
-					d->discReader = nullptr;
-					d->file = nullptr;
-					d->discType = GameCubePrivate::DISC_UNKNOWN;
-					d->isValid = false;
-					return;
+					goto notSupported;
 				}
 
 				d->gcnRegion = be32_to_cpu(d->regionSetting.region_code);
@@ -967,14 +923,20 @@ GameCube::GameCube(IRpFile *file)
 
 		default:
 			// Unknown system.
-			delete d->discReader;
-			d->file->unref();
-			d->discReader = nullptr;
-			d->file = nullptr;
-			d->discType = GameCubePrivate::DISC_UNKNOWN;
-			d->isValid = false;
-			return;
+			goto notSupported;
 	}
+
+	// Disc image loaded successfully.
+	return;
+
+notSupported:
+	// This disc image is not supported.
+	delete d->discReader;
+	d->discReader = nullptr;
+	d->file->unref();
+	d->file = nullptr;
+	d->discType = GameCubePrivate::DISC_UNKNOWN;
+	d->isValid = false;
 }
 
 /**
