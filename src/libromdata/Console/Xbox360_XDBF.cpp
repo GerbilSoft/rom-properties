@@ -891,8 +891,14 @@ int Xbox360_XDBF_Private::addFields_achievements(void)
 	// Add the vectors to a map.
 	RomFields::ListDataMultiMap_t *const mvv_xach = new RomFields::ListDataMultiMap_t();
 	for (int langID = XDBF_LANGUAGE_ENGLISH; langID < XDBF_LANGUAGE_MAX; langID++) {
-		if (!pvv_xach[langID])
+		if (!pvv_xach[langID]) {
+			// No vector for this language.
 			continue;
+		} else if (pvv_xach[langID]->empty()) {
+			// No string data.
+			delete pvv_xach[langID];
+			continue;
+		}
 
 		const uint32_t lc = XboxLanguage::getXbox360LanguageCode(langID);
 		assert(lc != 0);
@@ -1088,8 +1094,14 @@ int Xbox360_XDBF_Private::addFields_avatarAwards(void)
 	// Add the vectors to a map.
 	RomFields::ListDataMultiMap_t *const mvv_xgaa = new RomFields::ListDataMultiMap_t();
 	for (int langID = XDBF_LANGUAGE_ENGLISH; langID < XDBF_LANGUAGE_MAX; langID++) {
-		if (!pvv_xgaa[langID])
+		if (!pvv_xgaa[langID]) {
+			// No vector for this language.
 			continue;
+		} else if (pvv_xgaa[langID]->empty()) {
+			// No string data.
+			delete pvv_xgaa[langID];
+			continue;
+		}
 
 		const uint32_t lc = XboxLanguage::getXbox360LanguageCode(langID);
 		assert(lc != 0);
