@@ -369,7 +369,7 @@ static inline wstring U82W(const string &mbs)
 
 /**
  * Combine a cache key with the cache directory to get a cache filename.
- * @param cacheKey Cache key. (Must be UTF-8.) (Will be filtered using filterCacheKey().)
+ * @param cacheKey Cache key. (Must be UTF-16.) (Will be filtered using filterCacheKey().)
  * @return Cache filename, or empty string on error.
  */
 wstring getCacheFilename(const wchar_t *pCacheKey)

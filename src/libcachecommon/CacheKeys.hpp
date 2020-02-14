@@ -47,7 +47,7 @@ int filterCacheKey(wchar_t *pCacheKey);
 /**
  * Filter invalid characters from a cache key.
  * This updates the cache key in place.
- * @param cacheKey Cache key. (Must be UTF-8.)
+ * @param cacheKey Cache key. (Must be UTF-16.)
  * @return 0 on success; negative POSIX error code on error.
  */
 static inline int filterCacheKey(std::wstring &cacheKey)
