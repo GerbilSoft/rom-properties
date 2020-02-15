@@ -1548,9 +1548,9 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 			HWND hHeader = ListView_GetHeader(hListView);
 			assert(hHeader != nullptr);
 			if (hHeader) {
-				RECT rectHeader;
-				GetClientRect(hHeader, &rectHeader);
-				cy = rectHeader.bottom;
+				RECT rectListViewHeader;
+				GetClientRect(hHeader, &rectListViewHeader);
+				cy = rectListViewHeader.bottom;
 			}
 		}
 
