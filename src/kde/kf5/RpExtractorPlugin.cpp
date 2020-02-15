@@ -21,9 +21,6 @@
 #include "librpbase/config/Config.hpp"
 using namespace LibRpBase;
 
-// RpFileKio
-#include "../RpFile_kio.hpp"
-
 // libromdata
 #include "libromdata/RomDataFactory.hpp"
 using LibRomData::RomDataFactory;
@@ -95,62 +92,9 @@ QStringList RpExtractorPlugin::mimetypes(void) const
 
 void RpExtractorPlugin::extract(ExtractionResult *result)
 {
-	// Check if the source filename is a URI.
-	const QString source_file = result->inputUrl();
-	QUrl url(source_file);
-	QFileInfo fi_src;
-	QString qs_source_filename;
-	if (url.scheme().isEmpty()) {
-		// No scheme. This is a plain old filename.
-		fi_src = QFileInfo(source_file);
-		qs_source_filename = fi_src.absoluteFilePath();
-		url = QUrl::fromLocalFile(qs_source_filename);
-	} else if (url.isLocalFile()) {
-		// "file://" scheme. This is a local file.
-		qs_source_filename = url.toLocalFile();
-		fi_src = QFileInfo(qs_source_filename);
-		url = QUrl::fromLocalFile(fi_src.absoluteFilePath());
-	} else if (url.scheme() == QLatin1String("desktop")) {
-		// Desktop folder.
-		// KFileItem::localPath() isn't working for "desktop:/" here,
-		// so handle it manually.
-		// TODO: Also handle "trash:/"?
-		qs_source_filename = QStandardPaths::locate(QStandardPaths::DesktopLocation, url.path());
-	} else {
-		// Has a scheme that isn't "file://".
-		// This is probably a remote file.
-	}
-
-	if (!url.isValid() || url.isEmpty()) {
-		// Invalid or empty URL.
-		return;
-	}
-
-	if (!qs_source_filename.isEmpty()) {
-		// Check for "bad" file systems.
-		const Config *const config = Config::instance();
-		if (FileSystem::isOnBadFS(qs_source_filename.toUtf8().constData(), config->enableThumbnailOnNetworkFS())) {
-			// This file is on a "bad" file system.
-			return;
-		}
-	}
-
 	// Attempt to open the ROM file.
-	IRpFile *file = nullptr;
-	if (!qs_source_filename.isEmpty()) {
-		// Local file. Use RpFile.
-		file = new RpFile(qs_source_filename.toUtf8().constData(), RpFile::FM_OPEN_READ_GZ);
-	} else {
-#ifdef HAVE_RPFILE_KIO
-		// Not a local file. Use RpFileKio.
-		file = new RpFileKio(url);
-#else /* !HAVE_RPFILE_KIO */
-		// RpFileKio is not available.
-		return;
-#endif /* HAVE_RPFILE_KIO */
-	}
-
-	if (!file->isOpen()) {
+	IRpFile *const file = openQUrl(QUrl(result->inputUrl()), false);
+	if (!file) {
 		// Could not open the file.
 		return;
 	}

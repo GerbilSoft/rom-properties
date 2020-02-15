@@ -20,9 +20,6 @@
 #include "librpbase/config/Config.hpp"
 using namespace LibRpBase;
 
-// RpFileKio
-#include "../RpFile_kio.hpp"
-
 // libromdata
 #include "libromdata/RomDataFactory.hpp"
 using LibRomData::RomDataFactory;
@@ -87,51 +84,9 @@ QStringList RpOverlayIconPlugin::getOverlays(const QUrl &item)
 		return sl;
 	}
 
-	// Check if the source URL is a local file.
-	QString qs_source_filename;
-	if (item.isLocalFile()) {
-		// "file://" scheme. This is a local file.
-		qs_source_filename = item.toLocalFile();
-	} else if (item.scheme() == QLatin1String("desktop")) {
-		// Desktop folder.
-		// KFileItem::localPath() isn't working for "desktop:/" here,
-		// so handle it manually.
-		// TODO: Also handle "trash:/"?
-		qs_source_filename = QStandardPaths::locate(QStandardPaths::DesktopLocation, item.path());
-	} else {
-		// Has a scheme that isn't "file://".
-		// This is probably a remote file.
-	}
-
-	if (!item.isValid() || item.isEmpty()) {
-		// Invalid or empty URL.
-		return sl;
-	}
-
-	if (!qs_source_filename.isEmpty()) {
-		// Check for "bad" file systems.
-		if (FileSystem::isOnBadFS(qs_source_filename.toUtf8().constData(), config->enableThumbnailOnNetworkFS())) {
-			// This file is on a "bad" file system.
-			return sl;
-		}
-	}
-
 	// Attempt to open the ROM file.
-	IRpFile *file = nullptr;
-	if (!qs_source_filename.isEmpty()) {
-		// Local file. Use RpFile.
-		file = new RpFile(qs_source_filename.toUtf8().constData(), RpFile::FM_OPEN_READ_GZ);
-	} else {
-#ifdef HAVE_RPFILE_KIO
-		// Not a local file. Use RpFileKio.
-		file = new RpFileKio(item);
-#else /* !HAVE_RPFILE_KIO */
-		// RpFileKio is not available.
-		return sl;
-#endif /* HAVE_RPFILE_KIO */
-	}
-
-	if (!file->isOpen()) {
+	IRpFile *const file = openQUrl(item, true);
+	if (!file) {
 		// Could not open the file.
 		return sl;
 	}

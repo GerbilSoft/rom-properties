@@ -20,13 +20,9 @@
 
 // librpbase
 #include "librpbase/RomData.hpp"
-#include "librpbase/file/RpFile.hpp"
+#include "librpbase/file/IRpFile.hpp"
 using LibRpBase::RomData;
 using LibRpBase::IRpFile;
-using LibRpBase::RpFile;
-
-// RpFileKio
-#include "RpFile_kio.hpp"
 
 // libi18n
 #include "libi18n/i18n.h"
@@ -56,31 +52,9 @@ RomPropertiesDialogPlugin::RomPropertiesDialogPlugin(KPropertiesDialog *props, c
 		return;
 	}
 
-	// Get the local path if it's available. This is needed in order to
-	// support files on the local file system that don't have a file:/
-	// URL, e.g. desktop:/.
-	// References:
-	// - https://bugs.kde.org/show_bug.cgi?id=392100
-	// - https://cgit.kde.org/kio.git/commit/?id=7d6e4965dfcd7fc12e8cba7b1506dde22de5d2dd
-	// TODO: https://cgit.kde.org/kdenetwork-filesharing.git/commit/?id=abf945afd4f08d80cdc53c650d80d300f245a73d
-	// (and other uses) [use mostLocalPath()]
-	IRpFile *file = nullptr;
-	const KFileItem &fileItem = items.at(0);
-	const QString filename = fileItem.localPath();
-	if (!filename.isEmpty()) {
-		// Got a local path. Use RpFile.
-		file = new RpFile(Q2U8(filename), RpFile::FM_OPEN_READ_GZ);
-	} else {
-#ifdef HAVE_RPFILE_KIO
-		// Not a local file. Use RpFileKio.
-		file = new RpFileKio(fileItem.url());
-#else /* !HAVE_RPFILE_KIO */
-		// RpFileKio is not available.
-		return;
-#endif /* HAVE_RPFILE_KIO */
-	}
-
-	if (!file->isOpen()) {
+	// Attempt to open the ROM file.
+	IRpFile *const file = openQUrl(items.at(0).url(), false);
+	if (!file) {
 		// Unable to open the file.
 		file->unref();
 		return;

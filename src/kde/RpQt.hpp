@@ -9,6 +9,10 @@
 #ifndef __ROMPROPERTIES_KDE_RPQT_HPP__
 #define __ROMPROPERTIES_KDE_RPQT_HPP__
 
+namespace LibRpBase {
+	class IRpFile;
+}
+
 namespace LibRpTexture {
 	class rp_image;
 }
@@ -18,6 +22,7 @@ namespace LibRpTexture {
 
 // Qt includes.
 #include <QtCore/QString>
+#include <QtCore/QUrl>
 #include <QtGui/QImage>
 
 // KDE Frameworks prefix. (KDE4/KF5)
@@ -75,5 +80,25 @@ static inline QString U82Q(const char *str, int len = -1)
  * @return QImage.
  */
 QImage rpToQImage(const LibRpTexture::rp_image *image);
+
+/**
+ * Localize a QUrl.
+ * This function automatically converts certain URL schemes, e.g. desktop:/, to local paths.
+ *
+ * @param qUrl QUrl.
+ * @return Localize QUrl, or empty QUrl on error.
+ */
+QUrl localizeQUrl(const QUrl &url);
+
+/**
+ * Open a QUrl as an IRpFile. (read-only)
+ * This function automatically converts certain URL schemes, e.g. desktop:/, to local paths.
+ *
+ * @param qUrl QUrl.
+ * @param isThumbnail If true, this file is being used for thumbnailing. Handle "bad FS" checking.
+ *
+ * @return IRpFile, or nullptr on error.
+ */
+LibRpBase::IRpFile *openQUrl(const QUrl &url, bool isThumbnail = false);
 
 #endif /* __ROMPROPERTIES_KDE_RPQT_HPP__ */
