@@ -437,7 +437,7 @@ IFACEMETHODIMP RP_PropertyStore::Initialize(IStream *pstream, DWORD grfMode)
 	// Special handling for System.Image.Dimensions.
 	if (dimensions.cx != 0 && dimensions.cy != 0) {
 		wchar_t buf[64];
-		swprintf(buf, ARRAY_SIZE(buf), L"%ldx%ld", dimensions.cx, dimensions.cy);
+		swprintf(buf, _countof(buf), L"%ldx%ld", dimensions.cx, dimensions.cy);
 
 		PROPVARIANT prop_var;
 		InitPropVariantFromString(buf, &prop_var);

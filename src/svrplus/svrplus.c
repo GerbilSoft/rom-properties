@@ -3,7 +3,7 @@
  * svrplus.c: Win32 installer for rom-properties.                          *
  *                                                                         *
  * Copyright (c) 2017-2018 by Egor.                                        *
- * Copyright (c) 2017-2019 by David Korth.                                 *
+ * Copyright (c) 2017-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -40,18 +40,6 @@
 #ifndef _MAX_ULTOSTR_BASE10_COUNT
 #define _MAX_ULTOSTR_BASE10_COUNT  (10 + 1)
 #endif
-
-/**
- * Number of elements in an array.
- * (from librpbase/common.h)
- *
- * Includes a static check for pointers to make sure
- * a dynamically-allocated array wasn't specified.
- * Reference: http://stackoverflow.com/questions/8018843/macro-definition-array-size
- */
-#define ARRAY_SIZE(x) \
-	(((sizeof(x) / sizeof(x[0]))) / \
-		(size_t)(!(sizeof(x) % sizeof(x[0]))))
 
 // File paths
 static const TCHAR str_rp32path[] = _T("i386\\rom-properties.dll");
@@ -236,7 +224,7 @@ static bool CheckMsvc(bool is64)
 {
 	// Determine the MSVCRT DLL name.
 	TCHAR msvcrt_path[MAX_PATH];
-	int ret = GetSystemDirFilePath(msvcrt_path, ARRAY_SIZE(msvcrt_path), _T("msvcp140.dll"), is64);
+	int ret = GetSystemDirFilePath(msvcrt_path, _countof(msvcrt_path), _T("msvcp140.dll"), is64);
 	if (ret <= 0) {
 		// Unable to get the path.
 		// Assume the file exists.
@@ -279,7 +267,7 @@ typedef enum {
 static InstallServerResult InstallServer(bool isUninstall, bool is64, DWORD *pErrorCode)
 {
 	TCHAR regsvr32_path[MAX_PATH];
-	TCHAR args[14 + MAX_PATH + 4 + 3 + ARRAY_SIZE(str_rp64path)] = _T("regsvr32.exe \"");
+	TCHAR args[14 + MAX_PATH + 4 + 3 + _countof(str_rp64path)] = _T("regsvr32.exe \"");
 	DWORD szModuleFn;
 	TCHAR *bs;
 
@@ -289,7 +277,7 @@ static InstallServerResult InstallServer(bool isUninstall, bool is64, DWORD *pEr
 	BOOL bRet;
 
 	// Determine the REGSVR32 path.
-	int ret = GetSystemDirFilePath(regsvr32_path, ARRAY_SIZE(regsvr32_path), _T("regsvr32.exe"), is64);
+	int ret = GetSystemDirFilePath(regsvr32_path, _countof(regsvr32_path), _T("regsvr32.exe"), is64);
 	if (ret <= 0) {
 		// Unable to get the path.
 		return ISR_FATAL_ERROR;
@@ -314,14 +302,14 @@ static InstallServerResult InstallServer(bool isUninstall, bool is64, DWORD *pEr
 
 	// Remove the EXE filename, then append the DLL relative path.
 	bs[1] = 0;
-	_tcscat_s(args, ARRAY_SIZE(args), is64 ? str_rp64path : str_rp32path);
+	_tcscat_s(args, _countof(args), is64 ? str_rp64path : str_rp32path);
 	if (!fileExists(&args[14])) {
 		// File not found.
 		return ISR_FILE_NOT_FOUND;
 	}
 
 	// Append /s (silent) key, and optionally append /u (uninstall) key.
-	_tcscat_s(args, ARRAY_SIZE(args), isUninstall ? _T("\" /s /u") : _T("\" /s"));
+	_tcscat_s(args, _countof(args), isUninstall ? _T("\" /s /u") : _T("\" /s"));
 
 	memset(&si, 0, sizeof(si));
 	memset(&pi, 0, sizeof(pi));
@@ -426,7 +414,7 @@ static InstallServerResult TryInstallServer(HWND hWnd,
 			_tcscat_s(sErrBuf, cchErrBuf, _T(" is missing."));
 			break;
 		case ISR_CREATEPROCESS_FAILED:
-			_ultot_s(errorCode, ultot_buf, ARRAY_SIZE(ultot_buf), 10);
+			_ultot_s(errorCode, ultot_buf, _countof(ultot_buf), 10);
 			_tcscpy_s(sErrBuf, cchErrBuf, _T("Could not start REGSVR32.exe. (Err:"));
 			_tcscat_s(sErrBuf, cchErrBuf, ultot_buf);
 			_tcscat_s(sErrBuf, cchErrBuf, _T(")"));
@@ -460,7 +448,7 @@ static InstallServerResult TryInstallServer(HWND hWnd,
 					_tcscat_s(sErrBuf, cchErrBuf, _T("() returned an error."));
 					break;
 				default:
-					_ultot_s(errorCode, ultot_buf, ARRAY_SIZE(ultot_buf), 10);
+					_ultot_s(errorCode, ultot_buf, _countof(ultot_buf), 10);
 					_tcscpy_s(sErrBuf, cchErrBuf, _T("REGSVR32 failed: Unknown exit code: "));
 					_tcscat_s(sErrBuf, cchErrBuf, ultot_buf);
 					break;
@@ -494,11 +482,11 @@ static unsigned int WINAPI ThreadProc(LPVOID lpParameter)
 
 	// Try to (un)install the 64-bit version.
 	if (g_is64bit) {
-		res64 = TryInstallServer(params->hWnd, params->isUninstall, true, msg64, ARRAY_SIZE(msg64));
+		res64 = TryInstallServer(params->hWnd, params->isUninstall, true, msg64, _countof(msg64));
 	}
 
 	// Try to (un)install the 32-bit version.
-	res32 = TryInstallServer(params->hWnd, params->isUninstall, false, msg32, ARRAY_SIZE(msg32));
+	res32 = TryInstallServer(params->hWnd, params->isUninstall, false, msg32, _countof(msg32));
 
 	if (res32 == ISR_OK && res64 == ISR_OK) {
 		// DLL(s) registered successfully.
@@ -532,16 +520,16 @@ static unsigned int WINAPI ThreadProc(LPVOID lpParameter)
 
 		if (res32 != ISR_OK) {
 			if (g_is64bit) {
-				_tcscpy_s(msg2, ARRAY_SIZE(msg2), BULLET _T(" 32-bit: "));
+				_tcscpy_s(msg2, _countof(msg2), BULLET _T(" 32-bit: "));
 			}
-			_tcscat_s(msg2, ARRAY_SIZE(msg2), msg32);
+			_tcscat_s(msg2, _countof(msg2), msg32);
 		}
 		if (res64 != ISR_OK) {
 			if (msg2[0] != _T('\0')) {
-				_tcscat_s(msg2, ARRAY_SIZE(msg2), _T("\n"));
+				_tcscat_s(msg2, _countof(msg2), _T("\n"));
 			}
-			_tcscat_s(msg2, ARRAY_SIZE(msg2), BULLET _T(" 64-bit: "));
-			_tcscat_s(msg2, ARRAY_SIZE(msg2), msg64);
+			_tcscat_s(msg2, _countof(msg2), BULLET _T(" 64-bit: "));
+			_tcscat_s(msg2, _countof(msg2), msg64);
 		}
 
 		ShowStatusMessage(params->hWnd, msg1, msg2, MB_ICONSTOP);
@@ -727,9 +715,9 @@ static void HandleInstallUninstall(HWND hDlg, bool isUninstall)
 		TCHAR ultot_buf[_MAX_ULTOSTR_BASE10_COUNT];
 
 		const DWORD lastError = GetLastError();
-		_ultot_s(lastError, ultot_buf, ARRAY_SIZE(ultot_buf), 10);
-		_tcscpy_s(threadErr, ARRAY_SIZE(threadErr), BULLET _T(" Win32 error code: "));
-		_tcscat_s(threadErr, ARRAY_SIZE(threadErr), ultot_buf);
+		_ultot_s(lastError, ultot_buf, _countof(ultot_buf), 10);
+		_tcscpy_s(threadErr, _countof(threadErr), BULLET _T(" Win32 error code: "));
+		_tcscat_s(threadErr, _countof(threadErr), ultot_buf);
 
 		ShowStatusMessage(hDlg, _T("An error occurred while starting the worker thread."), threadErr, MB_ICONSTOP);
 		MessageBeep(MB_ICONSTOP);
@@ -820,11 +808,11 @@ static INT_PTR CALLBACK DialogProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM l
 						// ShellExecute() failed.
 						TCHAR err[128];
 						TCHAR itot_buf[_MAX_ITOSTR_BASE10_COUNT];
-						_itot_s((int)ret, itot_buf, ARRAY_SIZE(itot_buf), 10);
-						_tcscpy_s(err, ARRAY_SIZE(err),
+						_itot_s((int)ret, itot_buf, _countof(itot_buf), 10);
+						_tcscpy_s(err, _countof(err),
 							_T("Could not open the URL.\n\n")
 							_T("Win32 error code: "));
-						_tcscat_s(err, ARRAY_SIZE(err), itot_buf);
+						_tcscat_s(err, _countof(err), itot_buf);
 						MessageBox(hDlg, err, _T("Could not open URL"), MB_ICONERROR);
 					}
 					return TRUE;

@@ -1615,7 +1615,7 @@ int RP_ShellPropSheetExt_Private::initDateTime(HWND hDlg, HWND hWndTab,
 	// Format the date/time using the system locale.
 	TCHAR dateTimeStr[256];
 	int start_pos = 0;
-	int cchBuf = ARRAY_SIZE(dateTimeStr);
+	int cchBuf = _countof(dateTimeStr);
 
 	// Convert from Unix time to Win32 SYSTEMTIME.
 	SYSTEMTIME st;
@@ -1768,14 +1768,14 @@ int RP_ShellPropSheetExt_Private::initDimensions(HWND hDlg, HWND hWndTab,
 	TCHAR tbuf[64];
 	if (dimensions[1] > 0) {
 		if (dimensions[2] > 0) {
-			_sntprintf(tbuf, ARRAY_SIZE(tbuf), _T("%dx%dx%d"),
+			_sntprintf(tbuf, _countof(tbuf), _T("%dx%dx%d"),
 				dimensions[0], dimensions[1], dimensions[2]);
 		} else {
-			_sntprintf(tbuf, ARRAY_SIZE(tbuf), _T("%dx%d"),
+			_sntprintf(tbuf, _countof(tbuf), _T("%dx%d"),
 				dimensions[0], dimensions[1]);
 		}
 	} else {
-		_sntprintf(tbuf, ARRAY_SIZE(tbuf), _T("%d"), dimensions[0]);
+		_sntprintf(tbuf, _countof(tbuf), _T("%d"), dimensions[0]);
 	}
 
 	// Initialize the string field.

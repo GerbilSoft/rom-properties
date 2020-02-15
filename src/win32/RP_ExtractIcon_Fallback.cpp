@@ -57,7 +57,7 @@ LONG RP_ExtractIcon_Private::DoExtractIconW(IExtractIconW *pExtractIconW,
 	int nIconIndex;
 	UINT wFlags;
 	// TODO: Handle S_FALSE with GIL_DEFAULTICON?
-	hr = pExtractIconW->GetIconLocation(0, szIconFileW, ARRAY_SIZE(szIconFileW), &nIconIndex, &wFlags);
+	hr = pExtractIconW->GetIconLocation(0, szIconFileW, _countof(szIconFileW), &nIconIndex, &wFlags);
 	if (FAILED(hr)) {
 		// GetIconLocation() failed.
 		return ERROR_FILE_NOT_FOUND;
@@ -129,7 +129,7 @@ LONG RP_ExtractIcon_Private::DoExtractIconA(IExtractIconA *pExtractIconA,
 	int nIconIndex;
 	UINT wFlags;
 	// TODO: Handle S_FALSE with GIL_DEFAULTICON?
-	hr = pExtractIconA->GetIconLocation(0, szIconFileA, ARRAY_SIZE(szIconFileA), &nIconIndex, &wFlags);
+	hr = pExtractIconA->GetIconLocation(0, szIconFileA, _countof(szIconFileA), &nIconIndex, &wFlags);
 	if (FAILED(hr)) {
 		// GetIconLocation() failed.
 		return ERROR_FILE_NOT_FOUND;

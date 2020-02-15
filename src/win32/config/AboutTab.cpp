@@ -291,7 +291,7 @@ INT_PTR CALLBACK AboutTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, L
 					ENLINK *pENLink = reinterpret_cast<ENLINK*>(pHdr);
 					if (pENLink->msg == WM_LBUTTONUP) {
 						TCHAR urlbuf[256];
-						if ((pENLink->chrg.cpMax - pENLink->chrg.cpMin) >= ARRAY_SIZE(urlbuf)) {
+						if ((pENLink->chrg.cpMax - pENLink->chrg.cpMin) >= _countof(urlbuf)) {
 							// URL is too big.
 							break;
 						}
@@ -299,7 +299,7 @@ INT_PTR CALLBACK AboutTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, L
 						range.chrg = pENLink->chrg;
 						range.lpstrText = urlbuf;
 						LRESULT lResult = SendMessage(pHdr->hwndFrom, EM_GETTEXTRANGE, 0, (LPARAM)&range);
-						if (lResult > 0 && lResult < ARRAY_SIZE(urlbuf)) {
+						if (lResult > 0 && lResult < _countof(urlbuf)) {
 							ShellExecute(nullptr, _T("open"), urlbuf, nullptr, nullptr, SW_SHOW);
 						}
 					}

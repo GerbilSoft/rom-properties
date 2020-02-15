@@ -280,7 +280,7 @@ IFACEMETHODIMP RP_ExtractIcon::GetIconLocation(UINT uFlags,
 		return E_INVALIDARG;
 	}
 	wchar_t buf[16];
-	HRESULT hr = GetIconLocation(uFlags, buf, ARRAY_SIZE(buf), piIndex, pwFlags);
+	HRESULT hr = GetIconLocation(uFlags, buf, _countof(buf), piIndex, pwFlags);
 	pszIconFile[0] = 0;	// Blank it out.
 	return hr;
 }

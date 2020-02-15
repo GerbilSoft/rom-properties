@@ -921,7 +921,7 @@ LRESULT CALLBACK KeyManagerTabPrivate::ListViewSubclassProc(
 
 			// Copy the text from the ListView to the EDIT control.
 			TCHAR szItemText[128];
-			ListView_GetItemText(hWnd, iItem, lvhti.iSubItem, szItemText, ARRAY_SIZE(szItemText));
+			ListView_GetItemText(hWnd, iItem, lvhti.iSubItem, szItemText, _countof(szItemText));
 			SetWindowText(d->hEditBox, szItemText);
 			// FIXME: ES_AUTOHSCROLL causes some initial scrolling weirdness here,
 			// but disabling it prevents entering more text than fits onscreen...
@@ -997,7 +997,7 @@ LRESULT CALLBACK KeyManagerTabPrivate::ListViewEditSubclassProc(
 			// Save the key.
 			TCHAR tbuf[128];
 			tbuf[0] = 0;
-			GetWindowText(hWnd, tbuf, ARRAY_SIZE(tbuf));
+			GetWindowText(hWnd, tbuf, _countof(tbuf));
 			d->keyStore->setKey(d->iEditItem, T2U8(tbuf));
 
 			// Item is no longer being edited.
@@ -1471,7 +1471,7 @@ string KeyManagerTabPrivate::getOpenFileName(const TCHAR *dlgTitle, const TCHAR 
 		ofn.lpstrFilter = ts_filterSpec.c_str();
 		ofn.lpstrCustomFilter = nullptr;
 		ofn.lpstrFile = filename;
-		ofn.nMaxFile = ARRAY_SIZE(filename);
+		ofn.nMaxFile = _countof(filename);
 		ofn.lpstrInitialDir = tsKeyFileDir.c_str();
 		ofn.lpstrTitle = dlgTitle;
 		ofn.Flags = OFN_DONTADDTORECENT | OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST | OFN_HIDEREADONLY;

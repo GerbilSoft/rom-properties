@@ -97,7 +97,7 @@ LONG RP_PropertyStore::RegisterCLSID(void)
 
 	// Get the default "PreviewDetails" and append them
 	// to the custom "FullDetails".
-	tstring s_previewDetails(PreviewDetails, ARRAY_SIZE(PreviewDetails)-1);
+	tstring s_previewDetails(PreviewDetails, _countof(PreviewDetails)-1);
 	s_reg = hkcr_All.read(_T("PreviewDetails"));
 	if (s_reg.size() > 5) {
 		// First 5 characters should be "prop:".
@@ -123,7 +123,7 @@ LONG RP_PropertyStore::RegisterCLSID(void)
 		// Prepend with "prop:".
 		s_infoTip = _T("prop:");
 	}
-	s_infoTip.append(InfoTip, ARRAY_SIZE(InfoTip)-1);
+	s_infoTip.append(InfoTip, _countof(InfoTip)-1);
 
 	// Write the registry keys.
 	RegKey hkey_ProgID(HKEY_CLASSES_ROOT, RP_ProgID, KEY_READ|KEY_WRITE, true);

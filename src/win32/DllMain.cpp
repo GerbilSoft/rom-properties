@@ -84,7 +84,7 @@ BOOL WINAPI DllMain(HINSTANCE hInstance, DWORD dwReason, LPVOID /*lpReserved*/)
 			// Get the DLL filename.
 			SetLastError(ERROR_SUCCESS);
 			DWORD dwResult = GetModuleFileName(hInstance,
-				dll_filename, ARRAY_SIZE(dll_filename));
+				dll_filename, _countof(dll_filename));
 			if (dwResult == 0 || GetLastError() != ERROR_SUCCESS) {
 				// Cannot get the DLL filename.
 				// TODO: Windows XP doesn't SetLastError() if the
@@ -401,10 +401,10 @@ static tstring GetUserFileAssoc(const tstring &sid, const char *ext)
 	// - UserChoice: 11 characters
 	// - Extra: 16 characters
 	TCHAR regPath[288];
-	int len = _sntprintf_s(regPath, ARRAY_SIZE(regPath),
+	int len = _sntprintf_s(regPath, _countof(regPath),
 		_T("%s\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\FileExts\\%s\\UserChoice"),
 		sid.c_str(), U82T_c(ext));
-	if (len <= 0 || len >= ARRAY_SIZE(regPath)) {
+	if (len <= 0 || len >= _countof(regPath)) {
 		// Buffer isn't large enough...
 		return tstring();
 	}
@@ -685,10 +685,10 @@ STDAPI DllRegisterServer(void)
 	hkcr.deleteSubKey(_T("*.vxd"));
 	for (auto sid_iter = user_SIDs.cbegin(); sid_iter != user_SIDs.cend(); ++sid_iter) {
 		TCHAR regPath[288];
-		int len = _sntprintf_s(regPath, ARRAY_SIZE(regPath),
+		int len = _sntprintf_s(regPath, _countof(regPath),
 			_T("%s\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\FileExts"),
 			sid_iter->c_str());
-		if (len <= 0 || len >= ARRAY_SIZE(regPath)) {
+		if (len <= 0 || len >= _countof(regPath)) {
 			// Buffer isn't large enough...
 			continue;
 		}
@@ -785,10 +785,10 @@ STDAPI DllUnregisterServer(void)
 	hkcr.deleteSubKey(_T("*.vxd"));
 	for (auto sid_iter = user_SIDs.cbegin(); sid_iter != user_SIDs.cend(); ++sid_iter) {
 		TCHAR regPath[288];
-		int len = _sntprintf_s(regPath, ARRAY_SIZE(regPath),
+		int len = _sntprintf_s(regPath, _countof(regPath),
 			_T("%s\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\FileExts"),
 			sid_iter->c_str());
-		if (len <= 0 || len >= ARRAY_SIZE(regPath)) {
+		if (len <= 0 || len >= _countof(regPath)) {
 			// Buffer isn't large enough...
 			continue;
 		}
