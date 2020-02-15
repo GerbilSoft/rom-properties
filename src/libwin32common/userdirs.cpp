@@ -58,6 +58,30 @@ static inline string W2U8(const WCHAR *wcs)
 #endif /* UNICODE */
 
 /**
+ * Get a CSIDL path using SHGetFolderPath().
+ * @param csidl CSIDL.
+ * @return Path (without trailing slash), or empty string on error.
+ */
+static string getCSIDLPath(int csidl)
+{
+	string s_path;
+	TCHAR path[MAX_PATH];
+
+	HRESULT hr = SHGetFolderPath(nullptr, csidl, nullptr, SHGFP_TYPE_CURRENT, path);
+	if (SUCCEEDED(hr)) {
+		s_path = T2U8(path);
+		if (!s_path.empty()) {
+			// Remove the trailing backslash if necessary.
+			if (s_path.at(s_path.size()-1) == '\\') {
+				s_path.resize(s_path.size()-1);
+			}
+		}
+	}
+
+	return s_path;
+}
+
+/**
  * Get the user's home directory.
  *
  * NOTE: This function does NOT cache the directory name.
@@ -67,26 +91,7 @@ static inline string W2U8(const WCHAR *wcs)
  */
 string getHomeDirectory(void)
 {
-	string home_dir;
-	TCHAR path[MAX_PATH];
-	HRESULT hr;
-
-	// Windows: Get CSIDL_PROFILE.
-	// - Windows XP: C:\Documents and Settings\username
-	// - Windows Vista: C:\Users\username
-	hr = SHGetFolderPath(nullptr, CSIDL_PROFILE,
-		nullptr, SHGFP_TYPE_CURRENT, path);
-	if (hr == S_OK) {
-		home_dir = T2U8(path);
-		if (!home_dir.empty()) {
-			// Add a trailing backslash if necessary.
-			if (home_dir.at(home_dir.size()-1) != '\\') {
-				home_dir += '\\';
-			}
-		}
-	}
-
-	return home_dir;
+	return getCSIDLPath(CSIDL_PROFILE);
 }
 
 /**
@@ -174,9 +179,9 @@ string getCacheDirectory(void)
 
 	// We're done trying to obtain the cache directory.
 	if (!cache_dir.empty()) {
-		// Add a trailing backslash if necessary.
-		if (cache_dir.at(cache_dir.size()-1) != '\\') {
-			cache_dir += '\\';
+		// Remove the trailing backslash if necessary.
+		if (cache_dir.at(cache_dir.size()-1) == '\\') {
+			cache_dir.resize(cache_dir.size()-1);
 		}
 	}
 
@@ -193,26 +198,7 @@ string getCacheDirectory(void)
  */
 string getConfigDirectory(void)
 {
-	string config_dir;
-	TCHAR path[MAX_PATH];
-	HRESULT hr;
-
-	// Windows: Get CSIDL_APPDATA.
-	// - Windows XP: C:\Documents and Settings\username\Application Data
-	// - Windows Vista: C:\Users\username\AppData\Roaming
-	hr = SHGetFolderPath(nullptr, CSIDL_APPDATA,
-		nullptr, SHGFP_TYPE_CURRENT, path);
-	if (hr == S_OK) {
-		config_dir = T2U8(path);
-		if (!config_dir.empty()) {
-			// Add a trailing backslash if necessary.
-			if (config_dir.at(config_dir.size()-1) != '\\') {
-				config_dir += '\\';
-			}
-		}
-	}
-
-	return config_dir;
+	return getCSIDLPath(CSIDL_APPDATA);
 }
 
 }

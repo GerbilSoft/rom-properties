@@ -18,6 +18,9 @@
 #include <stdlib.h>
 #include <unistd.h>
 
+// C includes. (C++ namespace)
+#include <cassert>
+
 // C++ includes.
 #include <string>
 using std::string;
@@ -134,6 +137,53 @@ string getHomeDirectory(void)
 }
 
 /**
+ * Get an XDG directory.
+ *
+ * NOTE: This function does NOT cache the directory name.
+ * Callers should cache it locally.
+ *
+ * @param xdgvar XDG variable name.
+ * @param relpath Default path relative to the user's home directory (without leading slash).
+ *
+ * @return XDG directory (without trailing slash), or empty string on error.
+ */
+static string getXDGDirectory(const char *xdgvar, const char *relpath)
+{
+	assert(xdgvar != nullptr);
+	assert(relpath != nullptr);
+	assert(relpath[0] != '/');
+
+	string xdg_dir;
+
+	// Check the XDG variable first.
+	const char *const xdg_env = getenv(xdgvar);
+	if (xdg_env && xdg_env[0] == '/') {
+		// Make sure this is a writable directory.
+		if (isWritableDirectory(xdg_env)) {
+			// This is a writable directory.
+			xdg_dir = xdg_env;
+			// Remove trailing slashes.
+			removeTrailingSlashes(xdg_dir);
+			// If the path was "/", this will result in an empty directory.
+			if (!xdg_dir.empty()) {
+				return xdg_dir;
+			}
+		}
+	}
+
+	// Get the user's home directory.
+	xdg_dir = getHomeDirectory();
+	if (xdg_dir.empty()) {
+		// No home directory...
+		return string();
+	}
+
+	xdg_dir += '/';
+	xdg_dir += relpath;
+	return xdg_dir;
+}
+
+/**
  * Get the user's cache directory.
  *
  * NOTE: This function does NOT cache the directory name.
@@ -143,33 +193,7 @@ string getHomeDirectory(void)
  */
 string getCacheDirectory(void)
 {
-	string cache_dir;
-
-	// Check $XDG_CACHE_HOME first.
-	const char *const xdg_cache_home_env = getenv("XDG_CACHE_HOME");
-	if (xdg_cache_home_env && xdg_cache_home_env[0] == '/') {
-		// Make sure this is a writable directory.
-		if (isWritableDirectory(xdg_cache_home_env)) {
-			// $XDG_CACHE_HOME is a writable directory.
-			cache_dir = xdg_cache_home_env;
-			// Remove trailing slashes.
-			removeTrailingSlashes(cache_dir);
-			// If the path was "/", this will result in an empty directory.
-			if (!cache_dir.empty()) {
-				return cache_dir;
-			}
-		}
-	}
-
-	// Get the user's home directory.
-	cache_dir = getHomeDirectory();
-	if (cache_dir.empty()) {
-		// No home directory...
-		return string();
-	}
-
-	cache_dir += "/.cache";
-	return cache_dir;
+	return getXDGDirectory("XDG_CACHE_HOME", ".cache");
 }
 
 /**
@@ -182,33 +206,7 @@ string getCacheDirectory(void)
  */
 string getConfigDirectory(void)
 {
-	string config_dir;
-
-	// Check $XDG_CONFIG_HOME first.
-	const char *const xdg_config_home_env = getenv("XDG_CONFIG_HOME");
-	if (xdg_config_home_env && xdg_config_home_env[0] == '/') {
-		// Make sure this is a writable directory.
-		if (isWritableDirectory(xdg_config_home_env)) {
-			// $XDG_CACHE_HOME is a writable directory.
-			config_dir = xdg_config_home_env;
-			// Remove trailing slashes.
-			removeTrailingSlashes(config_dir);
-			// If the path was "/", this will result in an empty directory.
-			if (!config_dir.empty()) {
-				return config_dir;
-			}
-		}
-	}
-
-	// Get the user's home directory.
-	config_dir = getHomeDirectory();
-	if (config_dir.empty()) {
-		// No home directory...
-		return string();
-	}
-
-	config_dir += "/.config";
-	return config_dir;
+	return getXDGDirectory("XDG_CONFIG_HOME", ".config");
 }
 
 }
