@@ -1869,7 +1869,6 @@ void RP_ShellPropSheetExt_Private::buildCboLanguageImageList(void)
 		return;
 	}
 	const int flagStride = imgFlagsSheet->stride() / sizeof(uint32_t);
-	HDC hdcIcon = GetDC(nullptr);
 
 	// Make sure the bitmap has the expected size.
 	assert(imgFlagsSheet->width() == (iconSize * SystemRegion::FLAGS_SPRITE_SHEET_COLS));
@@ -1903,6 +1902,7 @@ void RP_ShellPropSheetExt_Private::buildCboLanguageImageList(void)
 		0,				// biClrImportant
 	};
 
+	HDC hdcIcon = GetDC(nullptr);
 	for (auto iter = set_lc.cbegin(); iter != set_lc.end(); ++iter) {
 		int col, row;
 		int ret = SystemRegion::getFlagPosition(*iter, &col, &row);
@@ -1942,7 +1942,6 @@ void RP_ShellPropSheetExt_Private::buildCboLanguageImageList(void)
 			ImageList_Add(himglFlags, hbmIcon, nullptr);
 		}
 	}
-
 	ReleaseDC(nullptr, hdcIcon);
 
 	if (cboLanguage) {
