@@ -18,6 +18,7 @@
 #include "librpbase/byteswap.h"
 #include "librpbase/RomData.hpp"
 #include "librpbase/SystemRegion.hpp"
+#include "librpbase/file/FileSystem.hpp"
 #include "libi18n/i18n.h"
 using namespace LibRpBase;
 
@@ -43,6 +44,16 @@ using LibRpTexture::rp_image;
 # include "verifykeys.hpp"
 #endif /* ENABLE_DECRYPTION */
 #include "device.hpp"
+
+// OS-specific userdirs
+#ifdef _WIN32
+# include "libwin32common/userdirs.hpp"
+# define OS_NAMESPACE LibWin32Common
+#else
+# include "libunixcommon/userdirs.hpp"
+# define OS_NAMESPACE LibUnixCommon
+#endif
+#include "tcharx.h"
 
 // C includes.
 #include <stdlib.h>
@@ -222,6 +233,22 @@ static void PrintSystemRegion(void)
 	cout << endl;
 }
 
+/**
+ * Print pathname information.
+ */
+static void PrintPathnames(void)
+{
+	cout << rp_sprintf("User's home directory:   ") << OS_NAMESPACE::getHomeDirectory() << endl;
+	cout << rp_sprintf("User's cache directory:  ") << OS_NAMESPACE::getCacheDirectory() << endl;
+	cout << rp_sprintf("User's config directory: ") << OS_NAMESPACE::getConfigDirectory() << endl;
+	cout << endl;
+	cout << rp_sprintf("RP cache directory:      ") << FileSystem::getCacheDirectory() << endl;
+	cout << rp_sprintf("RP config directory:     ") << FileSystem::getConfigDirectory() << endl;
+
+	// Extra line. (TODO: Only if multiple commands are specified.)
+	cout << endl;
+}
+
 #ifdef RP_OS_SCSI_SUPPORTED
 /**
  * Run a SCSI INQUIRY command on a device.
@@ -313,12 +340,13 @@ int RP_C_API main(int argc, char *argv[])
 
 	if(argc < 2){
 #ifdef ENABLE_DECRYPTION
-		cerr << C_("rpcli", "Usage: rpcli [-k] [-c] [-j] [-l lang] [[-x[b]N outfile]... [-a apngoutfile] filename]...") << endl;
+		cerr << C_("rpcli", "Usage: rpcli [-k] [-c] [-p] [-j] [-l lang] [[-x[b]N outfile]... [-a apngoutfile] filename]...") << endl;
 		cerr << "  -k:   " << C_("rpcli", "Verify encryption keys in keys.conf.") << endl;
 #else /* !ENABLE_DECRYPTION */
-		cerr << C_("rpcli", "Usage: rpcli [-c] [-j] [-l lang] [[-x[b]N outfile]... [-a apngoutfile] filename]...") << endl;
+		cerr << C_("rpcli", "Usage: rpcli [-c] [-p] [-j] [-l lang] [[-x[b]N outfile]... [-a apngoutfile] filename]...") << endl;
 #endif /* ENABLE_DECRYPTION */
 		cerr << "  -c:   " << C_("rpcli", "Print system region information.") << endl;
+		cerr << "  -p:   " << C_("rpcli", "Print system path information.") << endl;
 		cerr << "  -j:   " << C_("rpcli", "Use JSON output format.") << endl;
 		cerr << "  -l:   " << C_("rpcli", "Retrieve the specified language from the ROM image.") << endl;
 		cerr << "  -xN:  " << C_("rpcli", "Extract image N to outfile in PNG format.") << endl;
@@ -370,11 +398,14 @@ int RP_C_API main(int argc, char *argv[])
 				break;
 			}
 #endif /* ENABLE_DECRYPTION */
-			case 'c': {
+			case 'c':
 				// Print the system region information.
 				PrintSystemRegion();
 				break;
-			}
+			case 'p':
+				// Print pathnames.
+				PrintPathnames();
+				break;
 			case 'l': {
 				// Language code.
 				// NOTE: Actual language may be immediately after 'l',
@@ -417,10 +448,9 @@ int RP_C_API main(int argc, char *argv[])
 				extract.emplace_back(ExtractParam(argv[++i], num));
 				break;
 			}
-			case 'a': {
+			case 'a':
 				extract.emplace_back(ExtractParam(argv[++i], -1));
 				break;
-			}
 			case 'j': // do nothing
 				break;
 #ifdef RP_OS_SCSI_SUPPORTED
