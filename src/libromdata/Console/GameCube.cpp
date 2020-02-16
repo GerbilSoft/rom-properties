@@ -1384,16 +1384,15 @@ int GameCube::loadFieldData(void)
 	}
 
 	// Game ID.
-	// The ID6 cannot have non-printable characters.
-	// (NDDEMO has ID6 "00\0E01".)
-	for (int i = ARRAY_SIZE(discHeader->id6)-1; i >= 0; i--) {
-		if (!ISPRINT(discHeader->id6[i])) {
-			// Non-printable character found.
-			return -ENOENT;
-		}
+	// Replace any non-printable characters with underscores.
+	// (GameCube NDDEMO has ID6 "00\0E01".)
+	char id6[7]; 
+	for (int i = 0; i < 6; i++) {
+		id6[i] = (ISPRINT(d->discHeader.id6[i])
+			? d->discHeader.id6[i]
+			: '_');
 	}
-	d->fields->addField_string(C_("GameCube", "Game ID"),
-		latin1_to_utf8(discHeader->id6, ARRAY_SIZE(discHeader->id6)));
+	d->fields->addField_string(C_("GameCube", "Game ID"), latin1_to_utf8(id6, 6));
 
 	// Publisher.
 	d->fields->addField_string(C_("RomData", "Publisher"), d->getPublisher());

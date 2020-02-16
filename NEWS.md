@@ -120,6 +120,8 @@
     can now be decoded. It is assumed that an extra tile is present, and this
     tile will be truncated to match the specified dimensions.
     This bug was reported by @HyperPolygon64.
+  * GameCube: Fixed handling of NDDEMO's game ID. Instead of reporting no
+    fields due to the NULL byte, change it to an underscore.
 
 * Other changes:
   * Removed the internal copy of libjpeg-turbo. On Windows, gdiplus is now
