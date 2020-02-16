@@ -147,6 +147,9 @@ string GameCubeBNRPrivate::getGameInfoString(const gcn_banner_comment_t *comment
 	}
 
 	// Company.
+	// NOTE: This usually has an extra newline at the end,
+	// which causes it to show an extra line between the
+	// company name and the game description.
 	if (comment->company_full[0] != '\0') {
 		size_t field_len = strnlen(comment->company_full, sizeof(comment->company_full));
 		s_gameInfo.append(comment->company_full, field_len);
@@ -805,7 +808,7 @@ int GameCubeBNR::addField_gameInfo(LibRpBase::RomFields *fields, uint32_t gcnReg
 {
 	RP_D(const GameCubeBNR);
 	assert(!d->comments.empty());
-	if (!d->comments.empty()) {
+	if (d->comments.empty()) {
 		// No comments available...
 		return -ENOENT;
 	}
