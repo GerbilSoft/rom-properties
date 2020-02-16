@@ -345,7 +345,7 @@ int NES::isRomSupported_static(const DetectInfo *info)
 							   NESPrivate::ROM_SYSTEM_PC10;
 						break;
 					default:
-						// TODO: What if both are set?
+						// TODO: Handle Extended Console Type?
 						romType |= NESPrivate::ROM_FORMAT_NES2 |
 							   NESPrivate::ROM_SYSTEM_NES;
 						break;
@@ -605,8 +605,9 @@ int NES::loadFieldData(void)
 
 	// NES ROM header:
 	// - 15 regular fields. (iNES, NES 2.0, FDS)
+	// - 4 more fields for NES 2.0.
 	// - 8 fields for the internal NES header.
-	d->fields->reserve(15+8);
+	d->fields->reserve(15+4+8);
 
 	// Reserve at least 2 tabs:
 	// iNES, Internal Footer
@@ -812,11 +813,11 @@ int NES::loadFieldData(void)
 	}
 
 	// TV mode
-	// NOTE: Dendy PAL isn't supported in any headers at the moment.
 	static const char *const tv_mode_tbl[] = {
-		"NTSC", "PAL",
+		"NTSC (RP2C02)",
+		"PAL (RP2C07)",
 		NOP_C_("NES|TVMode", "Dual (NTSC/PAL)"),
-		NOP_C_("NES|TVMode", "Dual (NTSC/PAL)"),
+		"Dendy (UMC 6527P)",
 	};
 	if (tv_mode < ARRAY_SIZE(tv_mode_tbl)) {
 		d->fields->addField_string(C_("NES", "TV Mode"),
@@ -902,6 +903,10 @@ int NES::loadFieldData(void)
 		// Add non-FDS fields.
 		const char *s_mirroring = nullptr;
 		const char *s_vs_ppu = nullptr;
+		const char *s_vs_hw = nullptr;
+		const char *s_extd_ct = nullptr;
+		const char *s_exp_hw = nullptr;
+		unsigned int misc_roms = 0;
 		switch (d->romType & NESPrivate::ROM_FORMAT_MASK) {
 			case NESPrivate::ROM_FORMAT_OLD_INES:
 			case NESPrivate::ROM_FORMAT_INES:
@@ -921,12 +926,13 @@ int NES::loadFieldData(void)
 					}
 				}
 
-				if ((d->romType & (NESPrivate::ROM_FORMAT_MASK | NESPrivate::ROM_SYSTEM_MASK)) ==
+				// Check for NES 2.0 extended console types, including VS hardware.
+				if ((d->romType & (NESPrivate::ROM_SYSTEM_MASK | NESPrivate::ROM_FORMAT_MASK)) ==
 				    (NESPrivate::ROM_FORMAT_NES2 | NESPrivate::ROM_SYSTEM_VS))
 				{
-					// Check the VS. PPU type.
+					// Check the Vs. PPU type.
 					// NOTE: Not translatable!
-					static const char vs_ppu_types[13][12] = {
+					static const char vs_ppu_types[][12] = {
 						"RP2C03B",     "RP2C03G",
 						"RP2C04-0001", "RP2C04-0002",
 						"RP2C04-0003", "RP2C04-0004",
@@ -940,7 +946,112 @@ int NES::loadFieldData(void)
 						s_vs_ppu = vs_ppu_types[vs_ppu];
 					}
 
-					// TODO: VS. copy-protection hardware?
+					// Check the Vs. hardware type.
+					// NOTE: Not translatable!
+					static const char *const vs_hw_types[] = {
+						"Vs. Unisystem",
+						"Vs. Unisystem (RBI Baseball)",
+						"Vs. Unisystem (TKO Boxing)",
+						"Vs. Unisystem (Super Xevious)",
+						"Vs. Unisystem (Vs. Ice Climber Japan)",
+						"Vs. Dualsystem",
+						"Vs. Dualsystem (Raid on Bungeling Bay)",
+					};
+					const unsigned int vs_hw = (d->header.ines.nes2.vs_hw >> 4);
+					if (vs_hw < ARRAY_SIZE(vs_hw_types)) {
+						s_vs_hw = vs_hw_types[vs_hw];
+					}
+				}
+
+				// Other NES 2.0 fields.
+				if ((d->romType & NESPrivate::ROM_FORMAT_MASK) == NESPrivate::ROM_FORMAT_NES2) {
+					if ((d->header.ines.mapper_hi & INES_F7_SYSTEM_MASK) == INES_F7_SYSTEM_EXTD) {
+						// NES 2.0 Extended Console Type
+						static const char *const ext_hw_types[] = {
+							"NES/Famicom/Dendy",	// Not normally used.
+							"Nintendo Vs. System",	// Not normally used.
+							"PlayChoice-10",	// Not normally used.
+							"Famiclone with BCD support",
+							"V.R. Technology VT01 with monochrome palette",
+							"V.R. Technology VT01 with red/cyan STN palette",
+							"V.R. Technology VT02",
+							"V.R. Technology VT03",
+							"V.R. Technology VT09",
+							"V.R. Technology VT32",
+							"V.R. Technology VT369",
+							"UMC UM6578",
+						};
+
+						const unsigned int extd_ct = (d->header.ines.nes2.vs_hw & 0x0F);
+						if (extd_ct < ARRAY_SIZE(ext_hw_types)) {
+							s_extd_ct = ext_hw_types[extd_ct];
+						}
+					}
+
+					// Miscellaneous ROM count.
+					misc_roms = d->header.ines.nes2.misc_roms & 3;
+
+					// Default expansion hardware.
+					static const char *const exp_hw_tbl[] = {
+						// 0x00
+						C_("NES|Expansion", "Unspecified"),
+						C_("NES|Expansion", "NES/Famicom Controllers"),
+						C_("NES|Expansion", "NES Four Score / Satellite"),
+						C_("NES|Expansion", "Famicom Four Players Adapter"),
+						C_("NES|Expansion", "Vs. System"),
+						C_("NES|Expansion", "Vs. System (reversed inputs)"),
+						C_("NES|Expansion", "Vs. Pinball (Japan)"),
+						C_("NES|Expansion", "Vs. Zapper"),
+						C_("NES|Expansion", "Zapper"),
+						C_("NES|Expansion", "Two Zappers"),
+						C_("NES|Expansion", "Bandai Hyper Shot"),
+						C_("NES|Expansion", "Power Pad (Side A)"),
+						C_("NES|Expansion", "Power Pad (Side B)"),
+						C_("NES|Expansion", "Family Trainer (Side A)"),
+						C_("NES|Expansion", "Family Trainer (Side B)"),
+						C_("NES|Expansion", "Arkanoid Vaus Controller (NES)"),
+
+						// 0x10
+						C_("NES|Expansion", "Arkanoid Vaus Controller (Famicom)"),
+						C_("NES|Expansion", "Two Vaus Controllers plus Famicom Data Recorder"),
+						C_("NES|Expansion", "Konami Hyper Shot"),
+						C_("NES|Expansion", "Coconuts Pachinko Controller"),
+						C_("NES|Expansion", "Exciting Boxing Punching Bag"),
+						C_("NES|Expansion", "Jissen Mahjong Controller"),
+						C_("NES|Expansion", "Party Tap"),
+						C_("NES|Expansion", "Oeka Kids Tablet"),
+						C_("NES|Expansion", "Sunsoft Barcode Battler"),
+						C_("NES|Expansion", "Miracle Piano Keyboard"),
+						C_("NES|Expansion", "Pokkun Moguraa"),
+						C_("NES|Expansion", "Top Rider"),
+						C_("NES|Expansion", "Double-Fisted"),
+						C_("NES|Expansion", "Famicom 3D System"),
+						C_("NES|Expansion", "Doremikko Keyboard"),
+						C_("NES|Expansion", "R.O.B. Gyro Set"),
+
+						// 0x20
+						C_("NES|Expansion", "Famicom Data Recorder (no keyboard)"),
+						C_("NES|Expansion", "ASCII Turbo File"),
+						C_("NES|Expansion", "IGS Storage Battle Box"),
+						C_("NES|Expansion", "Family BASIC Keyboard plus Famicom Data Recorder"),
+						C_("NES|Expansion", "Dongda PEC-586 Keyboard"),
+						C_("NES|Expansion", "Bit Corp. Bit-79 Keyboard"),
+						C_("NES|Expansion", "Subor Keyboard"),
+						C_("NES|Expansion", "Subor Keyboard plus mouse (3x8-bit protocol)"),
+						C_("NES|Expansion", "Subor Keyboard plus mouse (24-bit protocol)"),
+						C_("NES|Expansion", "SNES Mouse"),
+						C_("NES|Expansion", "Multicart"),
+						C_("NES|Expansion", "SNES Controllers"),
+						C_("NES|Expansion", "RacerMate Bicycle"),
+						C_("NES|Expansion", "U-Force"),
+						C_("NES|Expansion", "R.O.B. Stack-Up"),
+						C_("NES|Expansion", "City Patrolman Lightgun"),
+					};
+
+					const unsigned int exp_hw = (d->header.ines.nes2.expansion & 0x3F);
+					if (exp_hw < ARRAY_SIZE(exp_hw_tbl)) {
+						s_exp_hw = exp_hw_tbl[exp_hw];
+					}
 				}
 				break;
 
@@ -977,7 +1088,23 @@ int NES::loadFieldData(void)
 			d->fields->addField_string(mirroring_title, s_mirroring);
 		}
 		if (s_vs_ppu) {
-			d->fields->addField_string(C_("NES", "VS. PPU"), s_vs_ppu);
+			d->fields->addField_string(C_("NES", "Vs. PPU"), s_vs_ppu);
+		}
+		if (s_vs_hw) {
+			// TODO: Increase the reserved field count?
+			d->fields->addField_string(C_("NES", "Vs. Hardware"), s_vs_hw);
+		}
+		if (s_extd_ct) {
+			// TODO: Increase the reserved field count?
+			d->fields->addField_string(C_("NES", "Console Type"), s_extd_ct);
+		}
+		if (misc_roms > 0) {
+			// TODO: Increase the reserved field count?
+			d->fields->addField_string_numeric(C_("NES", "Misc. ROM Count"), misc_roms);
+		}
+		if (s_exp_hw) {
+			// TODO: Increase the reserved field count?
+			d->fields->addField_string(C_("NES", "Default Expansion"), s_exp_hw);
 		}
 
 		// Check for the internal NES footer.
