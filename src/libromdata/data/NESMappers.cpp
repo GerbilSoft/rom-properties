@@ -34,6 +34,7 @@ class NESMappersPrivate
 		};
 		static const MapperEntry mappers_plane0[];
 		static const MapperEntry mappers_plane1[];
+		static const MapperEntry mappers_plane2[];
 
 		/**
 		 * NES 2.0 submapper information.
@@ -217,7 +218,7 @@ const NESMappersPrivate::MapperEntry NESMappersPrivate::mappers_plane0[] = {
 	// Mappers 080-089
 	{"Taito X1-005",		"Taito"},
 	{"Super Gun",			"NTDEC"},
-	{"Taito X1-017",		"Taito"},
+	{"Taito X1-017 (incorrect PRG ROM bank ordering)", "Taito"},
 	{"Cony/Yoko",			"Cony/Yoko"},
 	{"PC-SMB2J",			nullptr},
 	{"VRC7",			"Konami"},
@@ -413,7 +414,7 @@ const NESMappersPrivate::MapperEntry NESMappersPrivate::mappers_plane0[] = {
 	{"Sachen SA-020A",		"Sachen"},
 	{nullptr,			nullptr},
 	{"MMC3 clone",			nullptr},
-	{"Feng Shen Bang - Zhu Lu Zhi Zhan", nullptr},
+	{"Fēngshénbǎng: Fúmó Sān Tàizǐ (C&E)", "C&E"},
 	{nullptr,			nullptr},
 	{"Kǎshèng SFC-02B/-03/-004 (MMC3 clone) (incorrect assignment; should be 115)", "Kǎshèng"},
 	{nullptr,			nullptr},
@@ -598,6 +599,65 @@ const NESMappersPrivate::MapperEntry NESMappersPrivate::mappers_plane1[] = {
 	// Mappers 390-391
 	{"Realtec 8031",		"Realtec"},
 	{"NC7000M (MMC3 clone)",	nullptr},
+};
+
+/**
+ * Mappers: NES 2.0 Plane 2 [512-767]
+ * TODO: Add more fields:
+ * - Programmable mirroring
+ * - Extra VRAM for 4 screens
+ */
+const NESMappersPrivate::MapperEntry NESMappersPrivate::mappers_plane2[] = {
+	// Mappers 512-519
+	{"Zhōngguó Dàhēng",		"Sachen"},
+	{"Měi Shàonǚ Mèng Gōngchǎng III", "Sachen"},
+	{"Subor Karaoke",		"Subor"},
+	{"Family Noraebang",		nullptr},
+	{"Brilliant Com Cocoma Pack",	"EduBank"},
+	{"Kkachi-wa Nolae Chingu",	nullptr},
+	{"Subor multicart",		"Subor"},
+	{"UNL-EH8813A",			nullptr},
+
+	// Mappers 520-529
+	{"2-in-1 Datach multicart (VRC4e clone)", nullptr},
+	{"Korean Igo",			nullptr},
+	{"Fūun Shōrinken (FDS conversion)", "Whirlwind Manu"},
+	{"Fēngshénbǎng: Fúmó Sān Tàizǐ (Jncota)", "Jncota"},
+	{"The Lord of King (Jaleco) (bootleg)", nullptr},
+	{"UNL-KS7021A (VRC2b clone)",	"Kaiser"},
+	{"Sangokushi: Chūgen no Hasha (bootleg)", nullptr},
+	{"Fudō Myōō Den (bootleg) (VRC2b clone)", nullptr},
+	{"1995 New Series Super 2-in-1 multicart", nullptr},
+	{"Datach Dragon Ball Z (bootleg) (VRC4e clone)", nullptr},
+
+	// Mappers 530-539
+	{"Super Mario Bros. Pocker Mali (VRC4f clone)", nullptr},
+	{nullptr,			nullptr},
+	{nullptr,			nullptr},
+	{"Sachen 3014",			"Sachen"},
+	{"2-in-1 Sudoku/Gomoku (NJ064) (MMC3 clone)", nullptr},
+	{"Nazo no Murasamejō (FDS conversion)", "Whirlwind Manu"},
+	{"Waixing FS303 (MMC3 clone) (same as 195)",	"Waixing"},
+	{"Waixing FS303 (MMC3 clone) (same as 195)",	"Waixing"},
+	{"60-1064-16L",			nullptr},
+	{"Kid Icarus (FDS conversion)",	nullptr},
+
+	// Mappers 540-549
+	{"Master Fighter VI' hack (variant of 359)", nullptr},
+	{"LittleCom 160-in-1 multicart", nullptr},	// Is LittleCom the company name?
+	{"World Hero hack (VRC4 clone)", nullptr},
+	{"5-in-1 (CH-501) multicart (MMC1 clone)", nullptr},
+	{"Waixing FS306",		"Waixing"},
+	{nullptr,			nullptr},
+	{nullptr,			nullptr},
+	{"Konami QTa adapter (VRC5)",	"Konami"},
+	{"CTC-15",			"Co Tung Co."},
+	{nullptr,			nullptr},
+
+	// Mappers 550-552
+	{nullptr,			nullptr},
+	{"Jncota RPG re-release (variant of 178)", "Jncota"},
+	{"Taito X1-017 (correct PRG ROM bank ordering)", "Taito"},
 };
 
 /** Submappers. **/
@@ -856,6 +916,14 @@ const char *NESMappers::lookup_ines(int mapper)
 			return nullptr;
 		}
 		return NESMappersPrivate::mappers_plane1[mapper].name;
+	} else if (mapper < 768) {
+		// NES 2.0 Plane 2 [512-767]
+		mapper -= 512;
+		if (mapper >= ARRAY_SIZE(NESMappersPrivate::mappers_plane2)) {
+			// Mapper number is out of range for plane 2.
+			return nullptr;
+		}
+		return NESMappersPrivate::mappers_plane2[mapper].name;
 	}
 
 	// Invalid mapper number.
