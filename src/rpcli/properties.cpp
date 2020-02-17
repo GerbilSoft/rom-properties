@@ -738,7 +738,8 @@ public:
 		const char *str = js.str;
 		os << '"';
 		for (; *str != 0; str++) {
-			switch (*str) {
+			const char chr = *str;
+			switch (chr) {
 				case '\\':
 					os << "\\\\";
 					break;
@@ -761,7 +762,14 @@ public:
 					os << "\\r";
 					break;
 				default:
-					os << *str;
+					if ((uint8_t)chr < 0x20) {
+						// Control character must be escaped.
+						StreamStateSaver state(os);
+						os << "\\u" << std::setw(4) << std::setfill('0') <<
+							std::hex << std::uppercase << (unsigned int)chr;
+					} else {
+						os << chr;
+					}
 					break;
 			}
 		}
