@@ -32,7 +32,8 @@ class NESMappersPrivate
 			const char *name;		// Name of the board. (If unknown, nullptr.)
 			const char *manufacturer;	// Manufacturer. (If unknown, nullptr.)
 		};
-		static const MapperEntry mappers[];
+		static const MapperEntry mappers_plane0[];
+		static const MapperEntry mappers_plane1[];
 
 		/**
 		 * NES 2.0 submapper information.
@@ -73,6 +74,9 @@ class NESMappersPrivate
 		static const struct SubmapperInfo namcot_175_340_submappers[];	// 210
 		static const struct SubmapperInfo sugar_softec_submappers[];	// 215
 		static const struct SubmapperInfo quattro_submappers[];		// 232
+		static const struct SubmapperInfo onebus_submappers[];		// 256
+		static const struct SubmapperInfo smd132_smd133_submappers[];	// 268
+		static const struct SubmapperInfo mapper313_submappers[];	// 313
 
 		/**
 		 * NES 2.0 submapper list.
@@ -106,13 +110,12 @@ class NESMappersPrivate
 };
 
 /**
- * iNES mapper list.
+ * Mappers: NES 2.0 Plane 0 [000-255] (iNES 1.0)
  * TODO: Add more fields:
- * - Publisher name (separate from mapper)
  * - Programmable mirroring
  * - Extra VRAM for 4 screens
  */
-const NESMappersPrivate::MapperEntry NESMappersPrivate::mappers[] = {
+const NESMappersPrivate::MapperEntry NESMappersPrivate::mappers_plane0[] = {
 	/** NES 2.0 Plane 0 [0-255] (iNES 1.0) **/
 
 	// Mappers 000-009
@@ -188,7 +191,7 @@ const NESMappersPrivate::MapperEntry NESMappersPrivate::mappers[] = {
 	{"BMC-T3H53/BMC-D1038 multicart", nullptr},	// From UNIF
 
 	// Mappers 060-069
-	{"Reset-Based NROM-128 4-in-1 multicart", nullptr},
+	{"Reset-based NROM-128 4-in-1 multicart", nullptr},
 	{"20-in-1 multicart",		nullptr},
 	{"Super 700-in-1 multicart",	nullptr},
 	{"Powerful 250-in-1 multicart",	"NTDEC"},
@@ -286,7 +289,7 @@ const NESMappersPrivate::MapperEntry NESMappersPrivate::mappers[] = {
 	// Mappers 140-149
 	{"Jaleco JF-11, JF-14 (GNROM variant)", "Jaleco"},
 	{"Sachen 8259A",		"Sachen"},
-	{"Kaiser KS202 (unlicensed FDS conversions)", "Kaiser"},
+	{"Kaiser KS202 (FDS conversions)", "Kaiser"},
 	{"Copy-protected NROM",		nullptr},
 	{"Death Race (Color Dreams variant)", "American Game Cartridges"},
 	{"Sidewinder (CNROM clone)",	"Sachen"},
@@ -298,7 +301,7 @@ const NESMappersPrivate::MapperEntry NESMappersPrivate::mappers[] = {
 	// Mappers 150-159
 	{"Sachen SA-015, SA-630",	"Sachen"},
 	{"VRC1 (Vs. System)",		"Konami"},
-	{"Kaiser KS202 (unlicensed FDS conversions)", "Kaiser"},
+	{"Kaiser KS202 (FDS conversion)", "Kaiser"},
 	{"Bandai FCG: LZ93D50 with SRAM", "Bandai"},
 	{"NAMCOT-3453",			"Namco"},
 	{"MMC1A",			"Nintendo"},
@@ -422,6 +425,179 @@ const NESMappersPrivate::MapperEntry NESMappersPrivate::mappers[] = {
 	{"Dragon Ball Z: Kyōshū! Saiya-jin (VRC4 clone)", "Waixing"},
 	{"Pikachu Y2K of crypted ROMs",	nullptr},
 	{"110-in-1 multicart (same as 225)",		nullptr},
+};
+
+/**
+ * Mappers: NES 2.0 Plane 1 [256-511]
+ * TODO: Add more fields:
+ * - Programmable mirroring
+ * - Extra VRAM for 4 screens
+ */
+const NESMappersPrivate::MapperEntry NESMappersPrivate::mappers_plane1[] = {
+	// Mappers 256-259
+	{"OneBus Famiclone",		nullptr},
+	{"UNIF PEC-586",		nullptr},	// From UNIF; reserved by FCEUX developers
+	{"UNIF 158B",			nullptr},	// From UNIF; reserved by FCEUX developers
+	{"UNIF F-15 (MMC3 multicart)",	nullptr},	// From UNIF; reserved by FCEUX developers
+
+	// Mappers 260-269
+	{"HP10xx/HP20xx multicart",	nullptr},
+	{"200-in-1 Elfland multicart",	nullptr},
+	{"Street Heroes (MMC3 clone)",	"Sachen"},
+	{"King of Fighters '97 (MMC3 clone)", nullptr},
+	{"Cony/Yoko Fighting Games",	"Cony/Yoko"},
+	{"T-262 multicart",		nullptr},
+	{"City Fighter IV",		nullptr},	// Hack of Master Fighter II
+	{"8-in-1 JY-119 multicart (MMC3 clone)", "J.Y. Company"},
+	{"SMD132/SMD133 (MMC3 clone)",	nullptr},
+	{"Multicart (MMC3 clone)",	nullptr},
+
+	// Mappers 270-279
+	{"Game Prince RS-16",		nullptr},
+	{"TXC 4-in-1 multicart (MGC-026)", "TXC"},
+	{"Akumajō Special: Boku Dracula-kun (bootleg)", nullptr},
+	{"Gremlins 2 (bootleg)",	nullptr},
+	{"Cartridge Story multicart",	"RCM Group"},
+	{nullptr,			nullptr},
+	{nullptr,			nullptr},
+	{nullptr,			nullptr},
+	{nullptr,			nullptr},
+	{nullptr,			nullptr},
+
+	// Mappers 280-289
+	{nullptr,			nullptr},
+	{"J.Y. Company Super HiK 3/4/5-in-1 multicart", "J.Y. Company"},
+	{"J.Y. Company multicart",	"J.Y. Company"},
+	{"Block Family 6-in-1/7-in-1 multicart", nullptr},
+	{"Drip",			"Homebrew"},
+	{"A65AS multicart",		nullptr},
+	{"Benshieng multicart",		"Benshieng"},
+	{"4-in-1 multicart (411120-C, 811120-C)", nullptr},
+	{"GKCX1 21-in-1 multicart",	nullptr},	// GoodNES 3.23b sets this to Mapper 133, which is wrong.
+	{"BMC-60311C",			nullptr},	// From UNIF
+
+	// Mappers 290-299
+	{"Asder 20-in-1 multicart",	"Asder"},
+	{"Kǎshèng 2-in-1 multicart (MK6)", "Kǎshèng"},
+	{"Dragon Fighter (unlicensed)",	nullptr},
+	{"NewStar 12-in-1/76-in-1 multicart", nullptr},
+	{"T4A54A, WX-KB4K, BS-5652 (MMC3 clone) (same as 134)", nullptr},
+	{"J.Y. Company 13-in-1 multicart", "J.Y. Company"},
+	{"FC Pocket RS-20 / dreamGEAR My Arcade Gamer V", nullptr},
+	{"TXC 01-22110-000 multicart",	"TXC"},
+	{"Lethal Weapon (unlicensed) (VRC4 clone)", nullptr},
+	{"TXC 6-in-1 multicart (MGC-023)", "TXC"},
+
+	// Mappers 300-309
+	{"Golden 190-in-1 multicart",	nullptr},
+	{"GG1 multicart",		nullptr},
+	{"Gyruss (FDS conversion)",	"Kaiser"},
+	{"Almana no Kiseki (FDS conversion)", "Kaiser"},
+	{"FDS conversion",		"Whirlwind Manu"},
+	{"Dracula II: Noroi no Fūin (FDS conversion)", "Kaiser"},
+	{"Exciting Basket (FDS conversion)", "Kaiser"},
+	{"Metroid (FDS conversion)",	"Kaiser"},
+	{"Batman (Sunsoft) (bootleg) (VRC2 clone)", nullptr},
+	{"Ai Senshi Nicol (FDS conversion)", "Whirlwind Manu"},
+
+	// Mappers 310-319
+	{"Monty no Doki Doki Daisassō (FDS conversion) (same as 125)", "Whirlwind Manu"},
+	{nullptr,			nullptr},
+	{"Highway Star (bootleg)",	"Kaiser"},
+	{"Reset-based multicart (MMC3)", nullptr},
+	{"Y2K multicart",		nullptr},
+	{"820732C- or 830134C- multicart", nullptr},
+	{nullptr,			nullptr},
+	{nullptr,			nullptr},
+	{nullptr,			nullptr},
+	{"HP-898F, KD-7/9-E multicart",	nullptr},
+
+	// Mappers 320-329
+	{"Super HiK 6-in-1 A-030 multicart", nullptr},
+	{nullptr,			nullptr},
+	{"35-in-1 (K-3033) multicart",	nullptr},
+	{"Farid's homebrew 8-in-1 SLROM multicart", nullptr},	// Homebrew
+	{"Farid's homebrew 8-in-1 UNROM multicart", nullptr},	// Homebrew
+	{"Super Mali Splash Bomb (bootleg)", nullptr},
+	{"Contra/Gryzor (bootleg)",	nullptr},
+	{"6-in-1 multicart",		nullptr},
+	{"Test Ver. 1.01 Dlya Proverki TV Pristavok test cartridge", nullptr},
+	{"Education Computer 2000",	nullptr},
+
+	// Mappers 330-339
+	{"Sangokushi II: Haō no Tairiku (bootleg)", nullptr},
+	{"7-in-1 (NS03) multicart",	nullptr},
+	{"Super 40-in-1 multicart",	nullptr},
+	{"New Star Super 8-in-1 multicart", "New Star"},
+	{"5/20-in-1 1993 Copyright multicart", nullptr},
+	{"10-in-1 multicart",		nullptr},
+	{"11-in-1 multicart",		nullptr},
+	{"12-in-1 Game Card multicart",	nullptr},
+	{"16-in-1, 200/300/600/1000-in-1 multicart", nullptr},
+	{"21-in-1 multicart",		nullptr},
+
+	// Mappers 340-349
+	{"35-in-1 multicart",		nullptr},
+	{"Simple 4-in-1 multicart",	nullptr},
+	{"COOLGIRL multicart (Homebrew)", "Homebrew"},	// Homebrew
+	{nullptr,			nullptr},
+	{"Kuai Da Jin Ka Zhong Ji Tiao Zhan 3-in-1 multicart", nullptr},
+	{"New Star 6-in-1 Game Cartridge multicart", "New Star"},
+	{"Zanac (FDS conversion)",	"Kaiser"},
+	{"Yume Koujou: Doki Doki Panic (FDS conversion)", "Kaiser"},
+	{"830118C",			nullptr},
+	{"1994 Super HIK 14-in-1 (G-136) multicart", nullptr},
+
+	// Mappers 350-359
+	{"Super 15-in-1 Game Card multicart", nullptr},
+	{"9-in-1 multicart",		"J.Y. Company / Techline"},
+	{nullptr,			nullptr},
+	{"92 Super Mario Family multicart", nullptr},
+	{"250-in-1 multicart",		nullptr},
+	{"黃信維 3D-BLOCK",		nullptr},
+	{"7-in-1 Rockman (JY-208)",	"J.Y. Company"},
+	{"4-in-1 (4602) multicart",	"Bit Corp."},
+	{"J.Y. Company multicart",	"J.Y. Company"},
+	{"SB-5013 / GCL8050 / 841242C multicart", nullptr},
+
+	// Mappers 360-369
+	{"31-in-1 (3150) multicart",	"Bit Corp."},
+	{"YY841101C multicart (MMC3 clone)", "J.Y. Company"},
+	{"830506C multicart (VRC4f clone)", "J.Y. Company"},
+	{"J.Y. Company multicart",	"J.Y. Company"},
+	{"JY830832C multicart",		"J.Y. Company"},
+	{"Asder PC-95 educational computer", "Asder"},
+	{"GN-45 multicart (MMC3 clone)", nullptr},
+	{"7-in-1 multicart",		nullptr},
+	{"Super Mario Bros. 2 (J) (FDS conversion)", "YUNG-08"},
+	{"N49C-300",			nullptr},
+
+	// Mappers 370-379
+	{"F600",			nullptr},
+	{"Spanish PEC-586 home computer cartridge", "Dongda"},
+	{"Rockman 1-6 (SFC-12) multicart", nullptr},
+	{"Super 4-in-1 (SFC-13) multicart", nullptr},
+	{"Reset-based MMC1 multicart",	nullptr},
+	{"135-in-1 (U)NROM multicart",	nullptr},
+	{"YY841155C multicart",		"J.Y. Company"},
+	{"8-in-1 AxROM/UNROM multicart", nullptr},
+	{"35-in-1 NROM multicart",	nullptr},
+
+	// Mappers 380-389
+	{"970630C",			nullptr},
+	{"KN-42",			nullptr},
+	{"830928C",			nullptr},
+	{"YY840708C (MMC3 clone)",	"J.Y. Company"},
+	{"L1A16 (VRC4e clone)",		nullptr},
+	{"NTDEC 2779",			"NTDEC"},
+	{"YY860729C",			"J.Y. Company"},
+	{"YY850735C / YY850817C",	"J.Y. Company"},
+	{"YY841145C / YY850835C",	"J.Y. Company"},
+	{"Caltron 9-in-1 multicart",	"Caltron"},
+
+	// Mappers 390-391
+	{"Realtec 8031",		"Realtec"},
+	{"NC7000M (MMC3 clone)",	nullptr},
 };
 
 /** Submappers. **/
@@ -559,6 +735,32 @@ const struct NESMappersPrivate::SubmapperInfo NESMappersPrivate::quattro_submapp
 	{1, 0,   0, "Aladdin Deck Enhancer"},
 };
 
+// Mapper 256: OneBus Famiclones
+const struct NESMappersPrivate::SubmapperInfo NESMappersPrivate::onebus_submappers[] = {
+	{ 1, 0,   0, "Waixing VT03"},
+	{ 2, 0,   0, "Power Joy Supermax"},
+	{ 3, 0,   0, "Zechess/Hummer Team"},
+	{ 4, 0,   0, "Sports Game 69-in-1"},
+	{ 5, 0,   0, "Waixing VT02"},
+	{14, 0,   0, "Karaoto"},
+	{15, 0,   0, "Jungletac"},
+};
+
+// Mapper 268: SMD132/SMD133
+const struct NESMappersPrivate::SubmapperInfo NESMappersPrivate::smd132_smd133_submappers[] = {
+	{0, 0,   0, "COOLBOY ($6000-$7FFF)"},
+	{1, 0,   0, "MINDKIDS ($5000-$5FFF)"},
+};
+
+// Mapper 313: Reset-based multicart (MMC3)
+const struct NESMappersPrivate::SubmapperInfo NESMappersPrivate::mapper313_submappers[] = {
+	{0, 0,   0, "Game size: 128 KiB PRG, 128 KiB CHR"},
+	{1, 0,   0, "Game size: 256 KiB PRG, 128 KiB CHR"},
+	{2, 0,   0, "Game size: 128 KiB PRG, 256 KiB CHR"},
+	{3, 0,   0, "Game size: 256 KiB PRG, 256 KiB CHR"},
+	{4, 0,   0, "Game size: 256 KiB PRG (first game); 128 KiB PRG (other games); 128 KiB CHR"},
+};
+
 /**
  * NES 2.0 submapper list.
  *
@@ -589,6 +791,9 @@ const NESMappersPrivate::SubmapperEntry NESMappersPrivate::submappers[] = {
 	NES2_SUBMAPPER(210, namcot_175_340_submappers),		// Namcot 175, 340
 	NES2_SUBMAPPER(215, sugar_softec_submappers),		// Sugar Softec (MMC3 clone)
 	NES2_SUBMAPPER(232, quattro_submappers),		// Codemasters Quattro
+	NES2_SUBMAPPER(256, onebus_submappers),			// OneBus Famiclones
+	NES2_SUBMAPPER(268, smd132_smd133_submappers),		// SMD132/SMD133
+	NES2_SUBMAPPER(313, mapper313_submappers),		// Reset-based multicart (MMC3)
 
 	{0, 0, nullptr}
 };
@@ -632,16 +837,29 @@ int RP_C_API NESMappersPrivate::SubmapperEntry_compar(const void *a, const void 
  */
 const char *NESMappers::lookup_ines(int mapper)
 {
-	static_assert(sizeof(NESMappersPrivate::mappers) == (256 * sizeof(NESMappersPrivate::MapperEntry)),
-		"NESMappersPrivate::mappers[] doesn't have 256 entries.");
 	assert(mapper >= 0);
-	assert(mapper < ARRAY_SIZE(NESMappersPrivate::mappers));
-	if (mapper < 0 || mapper >= ARRAY_SIZE(NESMappersPrivate::mappers)) {
+	if (mapper < 0) {
 		// Mapper number is out of range.
 		return nullptr;
 	}
 
-	return NESMappersPrivate::mappers[mapper].name;
+	if (mapper < 256) {
+		// NES 2.0 Plane 0 [000-255] (iNES 1.0)
+		static_assert(sizeof(NESMappersPrivate::mappers_plane0) == (256 * sizeof(NESMappersPrivate::MapperEntry)),
+			"NESMappersPrivate::mappers_plane0[] doesn't have 256 entries.");
+		return NESMappersPrivate::mappers_plane0[mapper].name;
+	} else if (mapper < 512) {
+		// NES 2.0 Plane 1 [256-511]
+		mapper -= 256;
+		if (mapper >= ARRAY_SIZE(NESMappersPrivate::mappers_plane1)) {
+			// Mapper number is out of range for plane 1.
+			return nullptr;
+		}
+		return NESMappersPrivate::mappers_plane1[mapper].name;
+	}
+
+	// Invalid mapper number.
+	return nullptr;
 }
 
 /**
@@ -682,12 +900,10 @@ int NESMappers::tnesMapperToInesMapper(int tnes_mapper)
 const char *NESMappers::lookup_nes2_submapper(int mapper, int submapper)
 {
 	assert(mapper >= 0);
-	assert(mapper < ARRAY_SIZE(NESMappersPrivate::mappers));
 	assert(submapper >= 0);
 	assert(submapper < 256);
-	if (mapper < 0 || mapper >= ARRAY_SIZE(NESMappersPrivate::mappers) ||
-	    submapper < 0 || submapper >= 256)
-	{
+	if (mapper < 0 || submapper < 0 || submapper >= 256) {
+		// Mapper or submapper number is out of range.
 		return nullptr;
 	}
 
