@@ -1,5 +1,5 @@
 #***************************************************************************
-# Copyright (C) 2017-2019 Nathan Moinvaziri
+# Copyright (C) 2017-2020 Nathan Moinvaziri
 #                         https://github.com/nmoinvaz/minizip
 # Copyright (C)      2016 Matthias Schmieder
 #                         schmieder.matthias@gmail.com
@@ -43,7 +43,7 @@ endif()
 enable_language(C)
 
 # Minizip library version
-set(VERSION "2.9.1")
+set(VERSION "2.9.2")
 
 # Minizip api version
 set(SOVERSION "2.5")
@@ -187,7 +187,7 @@ if(NOT HAVE_FSEEKO)
 endif()
 
 # Enable compiler warnings
-if(CMAKE_C_COMPILER_ID MATCHES "MSVC")
+if(MSVC)
     add_compile_options(/W3)
 else()
     add_compile_options(-W -Wall)
@@ -222,7 +222,7 @@ if(MZ_CODE_COVERAGE)
         set(MZ_CODE_COVERAGE OFF)
     endif()
 else()
-    if(CMAKE_C_COMPILER_ID MATCHES "MSVC")
+    if(MSVC)
         add_compile_options(
             $<$<CONFIG:Debug>:/Zi>
             $<$<CONFIG:Debug>:/Od>
@@ -722,7 +722,6 @@ if(MZ_BUILD_TEST)
     if(MZ_ZLIB AND NOT MZ_LIBCOMP)
         add_executable(minigzip_cmd "minigzip.c")
         mz_configure_target(minigzip_cmd)
-        set_target_properties(minigzip_cmd PROPERTIES OUTPUT_NAME minigzip)
         target_compile_definitions(minigzip_cmd PRIVATE ${MINIZIP_DEF})
         target_link_libraries(minigzip_cmd ${PROJECT_NAME})
 
@@ -733,7 +732,6 @@ if(MZ_BUILD_TEST)
 
     add_executable(minizip_cmd "minizip.c")
     mz_configure_target(minizip_cmd)
-    set_target_properties(minizip_cmd PROPERTIES OUTPUT_NAME ${PROJECT_NAME})
     target_compile_definitions(minizip_cmd PRIVATE ${MINIZIP_DEF})
     target_link_libraries(minizip_cmd ${PROJECT_NAME})
 

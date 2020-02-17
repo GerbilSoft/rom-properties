@@ -1,8 +1,8 @@
 /* mz_os_win32.c -- System functions for Windows
-   Version 2.9.1, November 15, 2019
+   Version 2.9.2, February 12, 2020
    part of the MiniZip project
 
-   Copyright (C) 2010-2019 Nathan Moinvaziri
+   Copyright (C) 2010-2020 Nathan Moinvaziri
      https://github.com/nmoinvaz/minizip
 
    This program is distributed under the terms of the same license as zlib.
@@ -531,10 +531,9 @@ int32_t mz_os_make_symlink(const char *path, const char *target_path)
 {
     typedef BOOLEAN (WINAPI *LPCREATESYMBOLICLINKW)(LPCWSTR, LPCWSTR, DWORD);
     LPCREATESYMBOLICLINKW create_symbolic_link_w = NULL;
-    HMODULE kernel32_mod = 0;
+    HMODULE kernel32_mod = NULL;
     wchar_t *path_wide = NULL;
     wchar_t *target_path_wide = NULL;
-    wchar_t kernel32_path[320];
     uint32_t attribs = 0;
     int32_t target_path_len = 0;
     int32_t err = MZ_OK;
@@ -543,24 +542,19 @@ int32_t mz_os_make_symlink(const char *path, const char *target_path)
     if (path == NULL)
         return MZ_PARAM_ERROR;
 
-    if (GetSystemDirectoryW(kernel32_path, sizeof(kernel32_path)) == 0)
-        return MZ_SUPPORT_ERROR;
-    wcsncat(kernel32_path, L"\\kernel32.dll", sizeof(kernel32_path));
-    kernel32_mod = LoadLibraryW(kernel32_path);
+    kernel32_mod = GetModuleHandleW(L"kernel32.dll");
     if (kernel32_mod == NULL)
         return MZ_SUPPORT_ERROR;
 
     create_symbolic_link_w = (LPCREATESYMBOLICLINKW)GetProcAddress(kernel32_mod, "CreateSymbolicLinkW");
     if (create_symbolic_link_w == NULL)
     {
-        FreeLibrary(kernel32_mod);
         return MZ_SUPPORT_ERROR;
     }
 
     path_wide = mz_os_unicode_string_create(path, MZ_ENCODING_UTF8);
     if (path_wide == NULL)
     {
-        FreeLibrary(kernel32_mod);
         return MZ_PARAM_ERROR;
     }
 
@@ -581,7 +575,6 @@ int32_t mz_os_make_symlink(const char *path, const char *target_path)
     }
 
     mz_os_unicode_string_delete(&path_wide);
-    FreeLibrary(kernel32_mod);
 
     return err;
 }
