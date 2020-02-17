@@ -738,39 +738,35 @@ public:
 		const char *str = js.str;
 		os << '"';
 		for (; *str != 0; str++) {
-			const char chr = *str;
-			switch (chr) {
-				case '\\':
+			const uint8_t chr = static_cast<uint8_t>(*str);
+			if (chr < 0x20) { 
+				// Control characters need to be escaped.
+				static const char ctrl_escape_letters[0x20] = {
+					  0,   0,   0,   0,   0,   0,   0,   0,	// 0x00-0x07
+					'b', 't', 'n',   0, 'f', 'r',   0,   0,	// 0x08-0x0F
+					  0,   0,   0,   0,   0,   0,   0,   0,	// 0x10-0x17
+					  0,   0,   0,   0,   0,   0,   0,   0,	// 0x18-0x1F
+				};
+				const char letter = ctrl_escape_letters[chr];
+				if (letter != 0) {
+					// Escape character is available.
+					os << '\\' << letter;
+				} else {
+					// No escape character. Use a Unicode escape.
+					StreamStateSaver state(os);
+					os << "\\u" << std::setw(4) << std::setfill('0') <<
+						std::hex << std::uppercase << (unsigned int)chr;
+				}
+			} else {
+				// Check for backslash and double-quotes.
+				if (chr == '\\') {
 					os << "\\\\";
-					break;
-				case '"':
+				} else if (chr == '"') {
 					os << "\\\"";
-					break;
-				case '\b':
-					os << "\\b";
-					break;
-				case '\f':
-					os << "\\f";
-					break;
-				case '\t':
-					os << "\\t";
-					break;
-				case '\n':
-					os << "\\n";
-					break;
-				case '\r':
-					os << "\\r";
-					break;
-				default:
-					if ((uint8_t)chr < 0x20) {
-						// Control character must be escaped.
-						StreamStateSaver state(os);
-						os << "\\u" << std::setw(4) << std::setfill('0') <<
-							std::hex << std::uppercase << (unsigned int)chr;
-					} else {
-						os << chr;
-					}
-					break;
+				} else {
+					// Normal character.
+					os << static_cast<char>(chr);
+				}
 			}
 		}
 
