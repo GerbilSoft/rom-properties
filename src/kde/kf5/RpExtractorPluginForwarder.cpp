@@ -75,8 +75,8 @@ RpExtractorPluginForwarder::RpExtractorPluginForwarder(QObject *parent)
 	// Make sure we know if the ExtractorPlugin gets deleted.
 	// This *shouldn't* happen, but it's possible that our parent
 	// object enumerates child objects and does weird things.
-	connect(fwd_plugin, SIGNAL(destroyed(QObject*)),
-		this, SLOT(fwd_plugin_destroyed(QObject*)));
+	connect(fwd_plugin, &QObject::destroyed,
+		this, &RpExtractorPluginForwarder::fwd_plugin_destroyed);
 }
 
 RpExtractorPluginForwarder::~RpExtractorPluginForwarder()
