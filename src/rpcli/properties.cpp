@@ -753,9 +753,9 @@ public:
 					os << '\\' << letter;
 				} else {
 					// No escape character. Use a Unicode escape.
-					StreamStateSaver state(os);
-					os << "\\u" << std::setw(4) << std::setfill('0') <<
-						std::hex << std::uppercase << (unsigned int)chr;
+					char buf[16];
+					snprintf(buf, sizeof(buf), "\\u%04X", chr);
+					os << buf;
 				}
 			} else {
 				// Check for backslash and double-quotes.
