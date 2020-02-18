@@ -25,9 +25,6 @@ using std::string;
 // Shutdown request.
 static bool stop_main_loop = false;
 
-// rp_create_thumbnail() function pointer.
-static PFN_RP_CREATE_THUMBNAIL pfn_rp_create_thumbnail = nullptr;
-
 // Cache directory.
 static string cache_dir;
 
@@ -142,7 +139,8 @@ int main(int argc, char *argv[])
 	}
 
 	// Attempt to open a ROM Properties Page library.
-	void *pDll = NULL;
+	void *pDll = nullptr;
+	PFN_RP_CREATE_THUMBNAIL pfn_rp_create_thumbnail = nullptr;
 	int ret = rp_dll_search("rp_create_thumbnail", &pDll, (void**)&pfn_rp_create_thumbnail, fnDebug);
 	if (ret != 0) {
 		return EXIT_FAILURE;
