@@ -396,6 +396,8 @@ int rp_secoptions_init(BOOL bHighSec)
 	}
 
 	// Set image load policy.
+	// FIXME: Breaks if running from a network share. (unable to load libgnuintl-8.dll)
+#if 0
 	{
 		PROCESS_MITIGATION_IMAGE_LOAD_POLICY image_load = { 0 };
 		image_load.NoRemoteImages = FALSE;	// TODO
@@ -404,6 +406,7 @@ int rp_secoptions_init(BOOL bHighSec)
 		pfnSetProcessMitigationPolicy(ProcessImageLoadPolicy,
 			&image_load, sizeof(image_load));
 	}
+#endif /* 0 */
 
 #if defined(_MSC_VER) && _MSC_VER >= 1900 && defined(_CONTROL_FLOW_GUARD)
 	// Set control flow guard policy.
@@ -423,6 +426,15 @@ int rp_secoptions_init(BOOL bHighSec)
 	}
 #endif /* defined(_MSC_VER) && _MSC_VER >= 1900 && defined(_CONTROL_FLOW_GUARD) */
 
+	// Disable loading non-system fonts.
+	{
+		PROCESS_MITIGATION_FONT_DISABLE_POLICY font_disable = { 0 };
+		font_disable.DisableNonSystemFonts = TRUE;
+		font_disable.AuditNonSystemFontLoading = FALSE;
+		pfnSetProcessMitigationPolicy(ProcessFontDisablePolicy,
+			&font_disable, sizeof(font_disable));
+	}
+
 	if (bHighSec) {
 		// High-security options that are useful for
 		// non-GUI applications, e.g. rp-download.
@@ -430,22 +442,24 @@ int rp_secoptions_init(BOOL bHighSec)
 		// Disable direct Win32k system call access.
 		// This prevents direct access to NTUser/GDI system calls.
 		// This is NOT usable in GUI applications.
-		// FIXME: On Win10 LTSC 1809, this is failing with ERROR_WRITE_PROTECT...
 		{
 			PROCESS_MITIGATION_SYSTEM_CALL_DISABLE_POLICY system_call_disable = { 0 };
 			system_call_disable.DisallowWin32kSystemCalls = TRUE;
 			//system_call_disable.AuditDisallowWin32kSystemCalls = FALSE;
-			pfnSetProcessMitigationPolicy(ProcessSystemCallDisablePolicy,
+			bRet = pfnSetProcessMitigationPolicy(ProcessSystemCallDisablePolicy,
 				&system_call_disable, sizeof(system_call_disable));
-		}
-
-		// Disable loading non-system fonts.
-		{
-			PROCESS_MITIGATION_FONT_DISABLE_POLICY font_disable = { 0 };
-			font_disable.DisableNonSystemFonts = TRUE;
-			font_disable.AuditNonSystemFontLoading = FALSE;
-			pfnSetProcessMitigationPolicy(ProcessFontDisablePolicy,
-				&font_disable, sizeof(font_disable));
+#ifndef NDEBUG
+			if (bRet) {
+				OutputDebugStringA("Win32k system calls disabled!\n");
+			} else {
+				char buf[16];
+				DWORD dwLastError = GetLastError();
+				_itoa_s(dwLastError, buf, sizeof(buf), 10);
+				OutputDebugStringA("Win32k system calls NOT disabled: error ");
+				OutputDebugStringA(buf);
+				OutputDebugStringA(" \n");
+			}
+#endif /* NDEBUG */
 		}
 	}
 	/** END: Windows 8/8.1/10 **/

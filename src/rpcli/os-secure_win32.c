@@ -24,8 +24,9 @@
  */
 int rpcli_os_secure(void)
 {
-	// Set Win32 security options.
-	rp_secoptions_init(TRUE);
+	// FIXME: Enabling high-security (Win32k syscall disable) requires
+	// eliminating anything that links to GDI, e.g. ole32.dll and shell32.dll.
+	rp_secoptions_init(FALSE);
 
 	// NOTE: We're not reducing the process integrity level here,
 	// since rpcli might be used to extract images to somewhere

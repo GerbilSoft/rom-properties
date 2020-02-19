@@ -27,7 +27,9 @@ int rp_download_os_secure(void)
 	IntegrityLevel level;
 
 	// Set Win32 security options.
-	rp_secoptions_init(TRUE);
+	// FIXME: Enabling high-security (Win32k syscall disable) requires
+	// eliminating anything that links to GDI, e.g. ole32.dll and shell32.dll.
+	rp_secoptions_init(FALSE);
 
 	// Check the process integrity level.
 	// TODO: If it's higher than low, relaunch the program with low integrity if supported.
