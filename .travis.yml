@@ -12,7 +12,7 @@ matrix:
 
 # Build dependencies. (Linux)
 # NOTE: KF5 and MATE (GTK3) are not available on Ubuntu 14.04,
-# so we can't build the KDE5 or MATE plugins.
+# so we can't build the KF5 or MATE plugins.
 addons:
   apt:
     packages:
