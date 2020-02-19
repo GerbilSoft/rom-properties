@@ -12,4 +12,4 @@ queries:
 extraction:
   cpp:
     configure:
-      command: cmake -DCMAKE_BUILD_TYPE=Debug -DBUILD_TEST=ON
+      command: cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_TEST=ON

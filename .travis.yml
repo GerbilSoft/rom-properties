@@ -30,6 +30,8 @@ addons:
       - libnautilus-extension-dev
       - libbsd-dev
       - gettext
+      - libnemo-extension-dev
+      - libseccomp-dev
 
 # Run the build script.
 script: ./travis.sh
