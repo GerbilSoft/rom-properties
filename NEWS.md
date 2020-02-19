@@ -122,6 +122,9 @@
     This bug was reported by @HyperPolygon64.
   * GameCube: Fixed handling of NDDEMO's game ID. Instead of reporting no
     fields due to the NULL byte, change it to an underscore.
+  * Linux: Fixed an off-by-one in the shared library search function that
+    could cause rp-config to fail if e.g. using a GTK+ (either 2.x or 3.x)
+    desktop environment with only the KDE4 UI frontend installed.
 
 * Other changes:
   * Removed the internal copy of libjpeg-turbo. On Windows, gdiplus is now

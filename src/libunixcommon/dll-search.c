@@ -339,12 +339,12 @@ int rp_dll_search(const char *symname, void **ppDll, void **ppfn, PFN_RP_DLL_DEB
 		cur_desktop = RP_FE_GNOME;
 	}
 
-	const uint8_t *prio = &plugin_prio[cur_desktop][0];
+	const uint8_t *const prio = &plugin_prio[cur_desktop][0];
 	*ppDll = NULL;
 	*ppfn = NULL;
-	for (unsigned int i = RP_FE_MAX-1; i > 0; i--, prio++) {
+	for (unsigned int i = 0; i < RP_FE_MAX; i++) {
 		// Attempt to open this plugin.
-		const char *const plugin_path = RP_Extension_Path[*prio];
+		const char *const plugin_path = RP_Extension_Path[prio[i]];
 		if (!plugin_path)
 			continue;
 
