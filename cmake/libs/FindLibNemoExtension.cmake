@@ -26,5 +26,5 @@ FIND_LIBRARY_PKG_CONFIG(LibNemoExtension
 IF(LibNemoExtension_FOUND AND NOT LibNemoExtension_EXTENSION_DIR)
 	MESSAGE(WARNING "LibNemoExtension_EXTENSION_DIR is not set; using defaults.")
 	INCLUDE(DirInstallPaths)
-	SET(LibNemoExtension_EXTENSION_DIR "${DIR_INSTALL_LIB}/nemo/extensions-3.0" CACHE INTERNAL "LibNemoExtension_EXTENSION_DIR")
+	SET(LibNemoExtension_EXTENSION_DIR "${CMAKE_INSTALL_PREFIX}/${DIR_INSTALL_LIB}/nemo/extensions-3.0" CACHE INTERNAL "LibNemoExtension_EXTENSION_DIR")
 ENDIF(LibNemoExtension_FOUND AND NOT LibNemoExtension_EXTENSION_DIR)
