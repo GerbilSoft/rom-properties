@@ -26,7 +26,7 @@ UNSET(TMP_BUILD_TYPE)
 
 # Put all the binaries and libraries into a single directory.
 # NOTE: CACHE INTERNAL is required in order to get this to work
-# for KDE5 for some reason. (and maybe that's why KDE4 did this
+# for KF5 for some reason. (and maybe that's why KDE4 did this
 # layout by default?)
 SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin" CACHE INTERNAL "Put all binaries in a single directory.")
 SET(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib" CACHE INTERNAL "Put all libraries in a single directory.")
@@ -145,9 +145,9 @@ UNSET(UI_FRONTENDS)
 IF(BUILD_KDE4)
 	SET(UI_FRONTENDS "${UI_FRONTENDS} KDE4")
 ENDIF(BUILD_KDE4)
-IF(BUILD_KDE5)
-	SET(UI_FRONTENDS "${UI_FRONTENDS} KDE5")
-ENDIF(BUILD_KDE5)
+IF(BUILD_KF5)
+	SET(UI_FRONTENDS "${UI_FRONTENDS} KF5")
+ENDIF(BUILD_KF5)
 IF(BUILD_XFCE)
 	SET(UI_FRONTENDS "${UI_FRONTENDS} XFCE")
 ENDIF(BUILD_XFCE)
