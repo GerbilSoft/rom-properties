@@ -125,6 +125,8 @@
   * Linux: Fixed an off-by-one in the shared library search function that
     could cause rp-config to fail if e.g. using a GTK+ (either 2.x or 3.x)
     desktop environment with only the KDE4 UI frontend installed.
+  * GameCube: Region ID 'I' is Italy ("IT"), not Netherlands ("NL"). This may
+    have affected GameTDB downloads.
 
 * Other changes:
   * Removed the internal copy of libjpeg-turbo. On Windows, gdiplus is now

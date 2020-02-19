@@ -1119,7 +1119,7 @@ vector<const char*> Nintendo3DSPrivate::n3dsRegionToGameTDB(
 			ret.emplace_back("NL");
 			break;
 		case 'I':	// Italy
-			ret.emplace_back("NL");
+			ret.emplace_back("IT");
 			break;
 		case 'R':	// Russia
 			ret.emplace_back("RU");
