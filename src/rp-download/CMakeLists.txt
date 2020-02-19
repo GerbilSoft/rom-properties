@@ -54,7 +54,9 @@ IF(UNIX)
 	IF(USE_SECCOMP)
 		# Linux: Use seccomp().
 		FIND_PACKAGE(Seccomp REQUIRED)
-		SET(rp-download-OS_SECURE_SRCS os-secure_linux.c)
+		IF(SECCOMP_FOUND)
+			SET(rpcli-OS_SECURE_SRCS os-secure_linux.c)
+		ENDIF(SECCOMP_FOUND)
 	ELSE()
 		# OpenBSD: Use pledge()/tame().
 		INCLUDE(CheckOpenBSDPledge)
