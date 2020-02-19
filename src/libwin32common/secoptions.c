@@ -369,8 +369,8 @@ int rp_secoptions_init(BOOL bHighSec)
 #if 0
 		// Added in Windows 10.0.14393 (v1607)
 		// TODO: Figure out how to detect the SDK build version.
-		dynamic_code.AllowThreadOptOut = 0;	// Win10
-		dynamic_code.AllowRemoteDowngrade = 0;	// Win10
+		dynamic_code.AllowThreadOptOut = FALSE;		// Win10
+		dynamic_code.AllowRemoteDowngrade = FALSE;	// Win10
 #endif
 		pfnSetProcessMitigationPolicy(ProcessDynamicCodePolicy,
 			&dynamic_code, sizeof(dynamic_code));
@@ -398,9 +398,9 @@ int rp_secoptions_init(BOOL bHighSec)
 	// Set image load policy.
 	{
 		PROCESS_MITIGATION_IMAGE_LOAD_POLICY image_load = { 0 };
-		image_load.NoRemoteImages = 0;	// TODO
-		image_load.NoLowMandatoryLabelImages = 1;
-		image_load.PreferSystem32Images = 1;
+		image_load.NoRemoteImages = FALSE;	// TODO
+		image_load.NoLowMandatoryLabelImages = TRUE;
+		image_load.PreferSystem32Images = TRUE;
 		pfnSetProcessMitigationPolicy(ProcessImageLoadPolicy,
 			&image_load, sizeof(image_load));
 	}
