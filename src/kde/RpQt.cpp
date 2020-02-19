@@ -110,7 +110,7 @@ QUrl localizeQUrl(const QUrl &url)
 		QString qs_local_filename = QStandardPaths::locate(QStandardPaths::DesktopLocation, url_path);
 #else /* QT_VERSION < QT_VERSION_CHECK(5,0,0) */
 		QString qs_local_filename = QDesktopServices::storageLocation(QDesktopServices::DesktopLocation);
-		if (!qs_local_filename.empty()) {
+		if (!qs_local_filename.isEmpty()) {
 			if (qs_local_filename.at(qs_local_filename.size()-1) != QChar(L'/')) {
 				qs_local_filename += QChar(L'/');
 			}
