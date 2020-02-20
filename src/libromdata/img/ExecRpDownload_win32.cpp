@@ -61,7 +61,7 @@ int CacheManager::execRpDownload(const string &filteredCacheKey)
 	si.cb = sizeof(si);
 
 	// Attempt to create a low-integrity token.
-	HANDLE hLowToken = CreateLowIntegrityToken();
+	HANDLE hLowToken = CreateIntegrityLevelToken(SECURITY_MANDATORY_LOW_RID);
 	if (hLowToken) {
 		// Low-integrity token created. Create the process using this token.
 		bRet = CreateProcessAsUser(
