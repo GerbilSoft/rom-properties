@@ -53,6 +53,67 @@ static void initIsVista(void)
 }
 
 /**
+ * Adjust a token's integrity level.
+ * @param hToken Token.
+ * @param level Integrity level.
+ * @return 0 on success; GetLastError() on error.
+ */
+static DWORD adjustTokenIntegrityLevel(HANDLE hToken, IntegrityLevel level)
+{
+	LPCTSTR lpszIntegritySid;
+	PSID pIntegritySid = NULL;
+	TOKEN_MANDATORY_LABEL tml;
+	DWORD dwLastError;
+
+	// TODO: Add Untrusted, Below Low, Medium Low, and System?
+	switch (level) {
+		case INTEGRITY_LOW:
+			lpszIntegritySid = _T("S-1-16-4096");
+			break;
+		case INTEGRITY_MEDIUM:
+			lpszIntegritySid = _T("S-1-16-8192");
+			break;
+		case INTEGRITY_HIGH:
+			lpszIntegritySid = _T("S-1-16-12288");
+			break;
+		default:
+			return ERROR_INVALID_PARAMETER;
+	}
+
+	// Based on Chromium's SetTokenIntegrityLevel().
+	if (!ConvertStringSidToSid(lpszIntegritySid, &pIntegritySid)) {
+		// Failed to convert the SID.
+		goto out;
+	}
+
+	tml.Label.Attributes = SE_GROUP_INTEGRITY;
+	tml.Label.Sid = pIntegritySid;
+
+	// Set the process integrity level.
+	SetLastError(ERROR_INVALID_PARAMETER);
+	if (!SetTokenInformation(
+		hToken,				// TokenHandle
+		TokenIntegrityLevel,		// TokenInformationClass
+		&tml,				// TokenInformation
+		sizeof(TOKEN_MANDATORY_LABEL) +
+		GetLengthSid(pIntegritySid)));	// TokenInformationLength
+	{
+		// Failed to set the process integrity level.
+		// NOTE: It may have succeeded anyway, in which case,
+		// GetLastError() will return 0.
+		dwLastError = GetLastError();
+		goto out;
+	}
+
+	// Success!
+	dwLastError = 0;
+
+out:
+	LocalFree(pIntegritySid);
+	return dwLastError;
+}
+
+/**
  * Create a low-integrity token.
  * This requires Windows Vista or later.
  *
@@ -62,12 +123,9 @@ static void initIsVista(void)
  */
 HANDLE CreateLowIntegrityToken(void)
 {
-	static const TCHAR szIntegritySid[] = _T("S-1-16-4096");
-	PSID pIntegritySid = NULL;
 	HANDLE hToken = NULL;
 	HANDLE hNewToken = NULL;
-	TOKEN_MANDATORY_LABEL tml;
-	BOOL bRet;
+	DWORD dwRet;
 
 	// Are we running Windows Vista or later?
 	pthread_once(&once_control, initIsVista);
@@ -77,66 +135,42 @@ HANDLE CreateLowIntegrityToken(void)
 		return NULL;
 	}
 
-	// Reference: https://docs.microsoft.com/en-us/previous-versions/dotnet/articles/bb625960(v=msdn.10)?redirectedfrom=MSDN
-
-	// Low-integrity SID
-	// NOTE: The MSDN example has an incorrect integrity value.
-	// References:
-	// - https://stackoverflow.com/questions/3139938/windows-7-x64-low-il-process-msdn-example-does-not-work
-	// - https://stackoverflow.com/a/3842990
-	bRet = OpenProcessToken(
+	// Get the current process's token.
+	if (!OpenProcessToken(
 		GetCurrentProcess(),	// ProcessHandle
 		TOKEN_DUPLICATE |
 		TOKEN_ADJUST_DEFAULT |
 		TOKEN_QUERY |
 		TOKEN_ASSIGN_PRIMARY,	// DesiredAccess
-		&hToken);		// TokenHandle
-	if (!bRet) {
+		&hToken))		// TokenHandle
+	{
 		// Unable to open the process token.
 		goto out;
 	}
 
 	// Duplicate the token.
-	bRet = DuplicateTokenEx(
+	if (!DuplicateTokenEx(
 		hToken,			// hExistingToken
 		0,			// dwDesiredAccess
 		NULL,			// lpTokenAttributes
 		SecurityImpersonation,	// ImpersonationLevel
 		TokenPrimary,		// TokenType
-		&hNewToken);		// phNewToken
-	if (!bRet) {
+		&hNewToken))		// phNewToken
+	{
 		// Unable to duplicate the token.
 		goto out;
 	}
 
-	// Convert the string SID to a real SID.
-	if (!ConvertStringSidToSid(szIntegritySid, &pIntegritySid)) {
-		// Failed to convert the SID.
-		CloseHandle(hNewToken);
-		hNewToken = NULL;
-		goto out;
-	}
-
-	// Token settings.
-	tml.Label.Attributes = SE_GROUP_INTEGRITY;
-	tml.Label.Sid = pIntegritySid;
-
-	// Set the process integrity level.
-	bRet = SetTokenInformation(
-		hNewToken,			// TokenHandle
-		TokenIntegrityLevel,		// TokenInformationClass
-		&tml,				// TokenInformation
-		sizeof(TOKEN_MANDATORY_LABEL) +
-		GetLengthSid(pIntegritySid));	// TokenInformationLength
-	if (!bRet) {
-		// Failed to set the process integrity level.
+	// Adjust the token's integrity level.
+	dwRet = adjustTokenIntegrityLevel(hNewToken, INTEGRITY_LOW);
+	if (dwRet != 0) {
+		// Adjusting the token's integrity level failed.
 		CloseHandle(hNewToken);
 		hNewToken = NULL;
 		goto out;
 	}
 
 out:
-	LocalFree(pIntegritySid);
 	if (hToken) {
 		CloseHandle(hToken);
 	}
@@ -148,7 +182,7 @@ out:
  * Get the current process's integrity level.
  * @return IntegrityLevel.
  */
-IntegrityLevel GetIntegrityLevel(void)
+IntegrityLevel GetProcessIntegrityLevel(void)
 {
 	// Reference: https://kb.digital-detective.net/display/BF/Understanding+and+Working+in+Protected+Mode+Internet+Explorer
 	IntegrityLevel ret = INTEGRITY_NOT_SUPPORTED;
@@ -168,11 +202,16 @@ IntegrityLevel GetIntegrityLevel(void)
 		return ret;
 	}
 
-	if (!OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY | TOKEN_QUERY_SOURCE, &hToken)) {
+	if (!OpenProcessToken(
+		GetCurrentProcess(),	// ProcessHandle
+		TOKEN_QUERY |
+		TOKEN_QUERY_SOURCE,	// DesiredAccess
+		&hToken))		// TokenHandle
+	{
 		// Failed to open the process token.
 		// Assume low integrity is not supported.
 		// TODO: Check GetLastError()?
-		goto out;
+		return ret;
 	}
 
 	// Get the integrity level.
@@ -239,13 +278,10 @@ out:
  * @param level IntegrityLevel.
  * @return 0 on success; GetLastError() on error.
  */
-DWORD SetIntegrityLevel(IntegrityLevel level)
+DWORD SetProcessIntegrityLevel(IntegrityLevel level)
 {
 	HANDLE hToken;
-	LPCTSTR lpszIntegritySid;
-	PSID pIntegritySid = NULL;
-	TOKEN_MANDATORY_LABEL tml;
-	DWORD dwLastError;
+	DWORD dwRet;
 
 	// Are we running Windows Vista or later?
 	pthread_once(&once_control, initIsVista);
@@ -253,21 +289,6 @@ DWORD SetIntegrityLevel(IntegrityLevel level)
 		// Not running Windows Vista or later.
 		// Can't set the process integrity level.
 		return INTEGRITY_NOT_SUPPORTED;
-	}
-
-	// TODO: Add Untrusted, Below Low, Medium Low, and System?
-	switch (level) {
-		case INTEGRITY_LOW:
-			lpszIntegritySid = _T("S-1-16-4096");
-			break;
-		case INTEGRITY_MEDIUM:
-			lpszIntegritySid = _T("S-1-16-8192");
-			break;
-		case INTEGRITY_HIGH:
-			lpszIntegritySid = _T("S-1-16-12288");
-			break;
-		default:
-			return ERROR_INVALID_PARAMETER;
 	}
 
 	if (!OpenProcessToken(
@@ -279,36 +300,8 @@ DWORD SetIntegrityLevel(IntegrityLevel level)
 		return GetLastError();
 	}
 
-	// Based on Chromium's SetTokenIntegrityLevel().
-	if (!ConvertStringSidToSid(lpszIntegritySid, &pIntegritySid)) {
-		// Failed to convert the SID.
-		goto out;
-	}
-
-	tml.Label.Attributes = SE_GROUP_INTEGRITY;
-	tml.Label.Sid = pIntegritySid;
-
-	// Set the process integrity level.
-	SetLastError(ERROR_INVALID_PARAMETER);
-	if (!SetTokenInformation(
-		hToken,				// TokenHandle
-		TokenIntegrityLevel,		// TokenInformationClass
-		&tml,				// TokenInformation
-		sizeof(TOKEN_MANDATORY_LABEL) +
-		GetLengthSid(pIntegritySid)));	// TokenInformationLength
-	{
-		// Failed to set the process integrity level.
-		// NOTE: It may have succeeded anyway, in which case,
-		// GetLastError() will return 0.
-		dwLastError = GetLastError();
-		goto out;
-	}
-
-	// Success!
-	dwLastError = 0;
-
-out:
-	LocalFree(pIntegritySid);
+	// Adjust the token's integrity level.
+	dwRet = adjustTokenIntegrityLevel(hToken, level);
 	CloseHandle(hToken);
-	return dwLastError;
+	return dwRet;
 }

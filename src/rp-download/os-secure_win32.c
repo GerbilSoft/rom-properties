@@ -29,24 +29,30 @@ int rp_download_os_secure(void)
 	// Check the process integrity level.
 	// If it's not low, adjust it.
 	// TODO: Just adjust it without checking?
-	level = GetIntegrityLevel();
+	level = GetProcessIntegrityLevel();
 	if (level > INTEGRITY_LOW) {
+		DWORD dwRet;
 #ifndef NDEBUG
-		_ftprintf(stderr, _T("*** Integrity level is %u (NOT LOW). Adjusting to low...\n"), level);
+		_ftprintf(stderr, _T("*** DEBUG: Integrity level is %u (NOT LOW). Adjusting to low...\n"), level);
 #endif /* NDEBUG */
-		SetIntegrityLevel(INTEGRITY_LOW);
-		// NOTE: GetIntegrityLevel() fails attempting to open the process token.
-		// This might be a side effect of switching to low integrity...
-		// TODO: Verify with procexp.
-		// TODO: Consolidate the token adjustment code in integrity_level.c.
-		level = GetIntegrityLevel();
+		dwRet = SetProcessIntegrityLevel(INTEGRITY_LOW);
+		if (dwRet == 0) {
+			// Verify that it succeeded.
+			// TODO: Return an error code if it fails?
+			level = GetProcessIntegrityLevel();
 #ifndef NDEBUG
-		if (level <= INTEGRITY_LOW) {
-			_ftprintf(stderr, _T("*** Integrity level reduced to: %u\n"), level);
-		} else {
-			_ftprintf(stderr, _T("*** Integrity level NOT reduced: %u\n"), level);
-		}
+			if (level <= INTEGRITY_LOW) {
+				_ftprintf(stderr, _T("*** DEBUG: Integrity level reduced to: %u\n"), level);
+			} else {
+				_ftprintf(stderr, _T("*** DEBUG: Integrity level NOT reduced: %u\n"), level);
+			}
 #endif /* !NDEBUG */
+		} else {
+			// TODO: Return an error code?
+#ifdef NDEBUG
+			_ftprintf(stderr, _T("*** DEBUG: SetProcessIntegrityLevel() failed: %u\n", dwRet);
+#endif /* !NDEBUG */
+		}
 	}
 
 	// Set Win32 security options.

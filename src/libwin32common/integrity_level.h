@@ -37,7 +37,7 @@ HANDLE CreateLowIntegrityToken(void);
  * Get the current process's integrity level.
  * @return IntegrityLevel.
  */
-IntegrityLevel GetIntegrityLevel(void);
+IntegrityLevel GetProcessIntegrityLevel(void);
 
 /**
  * Adjust the current process's integrity level.
@@ -49,7 +49,7 @@ IntegrityLevel GetIntegrityLevel(void);
  * @param level IntegrityLevel.
  * @return 0 on success; GetLastError() on error.
  */
-DWORD SetIntegrityLevel(IntegrityLevel level);
+DWORD SetProcessIntegrityLevel(IntegrityLevel level);
 
 #ifdef __cplusplus
 }
