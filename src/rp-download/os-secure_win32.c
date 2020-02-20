@@ -49,8 +49,8 @@ int rp_download_os_secure(void)
 #endif /* !NDEBUG */
 		} else {
 			// TODO: Return an error code?
-#ifdef NDEBUG
-			_ftprintf(stderr, _T("*** DEBUG: SetProcessIntegrityLevel() failed: %u\n", dwRet);
+#ifndef NDEBUG
+			_ftprintf(stderr, _T("*** DEBUG: SetProcessIntegrityLevel() failed: %u\n"), dwRet);
 #endif /* !NDEBUG */
 		}
 	}
