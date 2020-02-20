@@ -160,23 +160,13 @@ IntegrityLevel GetIntegrityLevel(void)
 	PDWORD pdwIntegrityLevel;
 	DWORD dwLengthNeeded;
 
-#ifdef _MSC_VER
-# pragma warning(push)
-# pragma warning(disable: 4996)
-#endif /* _MSC_VER */
-	// Process integrity levels are supported starting with Windows Vista.
-	// TODO: Use versionhelpers.h.
-	OSVERSIONINFO osvi;
-	osvi.dwOSVersionInfoSize = sizeof(osvi);
-	if (!GetVersionEx(&osvi) || osvi.dwMajorVersion < 6) {
-		// Either we failed to get the OS version information,
-		// or the OS is earlier than Windows Vista.
-		// Assuming integrity levels are not supported.
+	// Are we running Windows Vista or later?
+	pthread_once(&once_control, initIsVista);
+	if (!isVista) {
+		// Not running Windows Vista or later.
+		// Can't get the integrity level.
 		return ret;
 	}
-#ifdef _MSC_VER
-# pragma warning(pop)
-#endif /* _MSC_VER */
 
 	if (!OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY | TOKEN_QUERY_SOURCE, &hToken)) {
 		// Failed to open the process token.
