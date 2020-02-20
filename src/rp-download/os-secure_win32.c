@@ -24,27 +24,27 @@
  */
 int rp_download_os_secure(void)
 {
-	IntegrityLevel level;
+	int level;
 
 	// Check the process integrity level.
 	// If it's not low, adjust it.
 	// TODO: Just adjust it without checking?
 	level = GetProcessIntegrityLevel();
-	if (level > INTEGRITY_LOW) {
+	if (level > SECURITY_MANDATORY_LOW_RID) {
 		DWORD dwRet;
 #ifndef NDEBUG
-		_ftprintf(stderr, _T("*** DEBUG: Integrity level is %u (NOT LOW). Adjusting to low...\n"), level);
+		_ftprintf(stderr, _T("*** DEBUG: Integrity level is %d (NOT LOW). Adjusting to low...\n"), level);
 #endif /* NDEBUG */
-		dwRet = SetProcessIntegrityLevel(INTEGRITY_LOW);
+		dwRet = SetProcessIntegrityLevel(SECURITY_MANDATORY_LOW_RID);
 		if (dwRet == 0) {
 			// Verify that it succeeded.
 			// TODO: Return an error code if it fails?
 			level = GetProcessIntegrityLevel();
 #ifndef NDEBUG
-			if (level <= INTEGRITY_LOW) {
-				_ftprintf(stderr, _T("*** DEBUG: Integrity level reduced to: %u\n"), level);
+			if (level <= SECURITY_MANDATORY_LOW_RID) {
+				_ftprintf(stderr, _T("*** DEBUG: Integrity level reduced to: %d\n"), level);
 			} else {
-				_ftprintf(stderr, _T("*** DEBUG: Integrity level NOT reduced: %u\n"), level);
+				_ftprintf(stderr, _T("*** DEBUG: Integrity level NOT reduced: %d\n"), level);
 			}
 #endif /* !NDEBUG */
 		} else {

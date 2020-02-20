@@ -15,29 +15,22 @@
 extern "C" {
 #endif
 
-// Simplified mapping of integrity levels.
-typedef enum {
-	INTEGRITY_NOT_SUPPORTED	= -1,
-	INTEGRITY_LOW		= 0,
-	INTEGRITY_MEDIUM	= 1,
-	INTEGRITY_HIGH		= 2,
-} IntegrityLevel;
-
 /**
- * Create a low-integrity token.
+ * Create a token with the specified integrity level.
  * This requires Windows Vista or later.
  *
  * Caller must call CloseHandle() on the token when done using it.
  *
- * @return Low-integrity token, or NULL on error.
+ * @param level Integrity level. (SECURITY_MANDATORY_*_RID)
+ * @return New token, or NULL on error.
  */
-HANDLE CreateLowIntegrityToken(void);
+HANDLE CreateIntegrityLevelToken(int level);
 
 /**
  * Get the current process's integrity level.
- * @return IntegrityLevel.
+ * @return Integrity level (SECURITY_MANDATORY_*_RID), or -1 on error.
  */
-IntegrityLevel GetProcessIntegrityLevel(void);
+int GetProcessIntegrityLevel(void);
 
 /**
  * Adjust the current process's integrity level.
@@ -46,10 +39,10 @@ IntegrityLevel GetProcessIntegrityLevel(void);
  * - https://github.com/chromium/chromium/blob/4e88a3c4fa53bf4d3622d07fd13f3812d835e40f/sandbox/win/src/restricted_token_utils.cc
  * - https://github.com/chromium/chromium/blob/master/sandbox/win/src/restricted_token_utils.cc
  *
- * @param level IntegrityLevel.
+ * @param level Integrity level. (SECURITY_MANDATORY_*_RID)
  * @return 0 on success; GetLastError() on error.
  */
-DWORD SetProcessIntegrityLevel(IntegrityLevel level);
+DWORD SetProcessIntegrityLevel(int level);
 
 #ifdef __cplusplus
 }

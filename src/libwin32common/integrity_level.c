@@ -55,33 +55,24 @@ static void initIsVista(void)
 /**
  * Adjust a token's integrity level.
  * @param hToken Token.
- * @param level Integrity level.
+ * @param level Integrity level. (SECURITY_MANDATORY_*_RID)
  * @return 0 on success; GetLastError() on error.
  */
-static DWORD adjustTokenIntegrityLevel(HANDLE hToken, IntegrityLevel level)
+static DWORD adjustTokenIntegrityLevel(HANDLE hToken, int level)
 {
-	LPCTSTR lpszIntegritySid;
 	PSID pIntegritySid = NULL;
 	TOKEN_MANDATORY_LABEL tml;
 	DWORD dwLastError;
+	TCHAR szIntegritySid[20];
 
-	// TODO: Add Untrusted, Below Low, Medium Low, and System?
-	switch (level) {
-		case INTEGRITY_LOW:
-			lpszIntegritySid = _T("S-1-16-4096");
-			break;
-		case INTEGRITY_MEDIUM:
-			lpszIntegritySid = _T("S-1-16-8192");
-			break;
-		case INTEGRITY_HIGH:
-			lpszIntegritySid = _T("S-1-16-12288");
-			break;
-		default:
-			return ERROR_INVALID_PARAMETER;
+	// TODO: Verify the integrity level value?
+	if (level < 0) {
+		return ERROR_INVALID_PARAMETER;
 	}
+	_sntprintf(szIntegritySid, _countof(szIntegritySid), _T("S-1-16-%d"), level);
 
 	// Based on Chromium's SetTokenIntegrityLevel().
-	if (!ConvertStringSidToSid(lpszIntegritySid, &pIntegritySid)) {
+	if (!ConvertStringSidToSid(szIntegritySid, &pIntegritySid)) {
 		// Failed to convert the SID.
 		goto out;
 	}
@@ -114,14 +105,15 @@ out:
 }
 
 /**
- * Create a low-integrity token.
+ * Create a token with the specified integrity level.
  * This requires Windows Vista or later.
  *
  * Caller must call CloseHandle() on the token when done using it.
  *
- * @return Low-integrity token, or NULL on error.
+ * @param level Integrity level. (SECURITY_MANDATORY_*_RID)
+ * @return New token, or NULL on error.
  */
-HANDLE CreateLowIntegrityToken(void)
+HANDLE CreateIntegrityLevelToken(int level)
 {
 	HANDLE hToken = NULL;
 	HANDLE hNewToken = NULL;
@@ -162,7 +154,7 @@ HANDLE CreateLowIntegrityToken(void)
 	}
 
 	// Adjust the token's integrity level.
-	dwRet = adjustTokenIntegrityLevel(hNewToken, INTEGRITY_LOW);
+	dwRet = adjustTokenIntegrityLevel(hNewToken, level);
 	if (dwRet != 0) {
 		// Adjusting the token's integrity level failed.
 		CloseHandle(hNewToken);
@@ -180,12 +172,12 @@ out:
 
 /**
  * Get the current process's integrity level.
- * @return IntegrityLevel.
+ * @return Integrity level (SECURITY_MANDATORY_*_RID), or -1 on error.
  */
-IntegrityLevel GetProcessIntegrityLevel(void)
+int GetProcessIntegrityLevel(void)
 {
 	// Reference: https://kb.digital-detective.net/display/BF/Understanding+and+Working+in+Protected+Mode+Internet+Explorer
-	IntegrityLevel ret = INTEGRITY_NOT_SUPPORTED;
+	int ret = -1;
 	BOOL bRet;
 
 	HANDLE hToken = NULL;
@@ -248,17 +240,8 @@ IntegrityLevel GetProcessIntegrityLevel(void)
 		goto out;
 	}
 
-	// Check the level.
-	if (*pdwIntegrityLevel < SECURITY_MANDATORY_MEDIUM_RID) {
-		// Low integrity.
-		ret = INTEGRITY_LOW;
-	} else if (*pdwIntegrityLevel < SECURITY_MANDATORY_HIGH_RID) {
-		// Medium integrity.
-		ret = INTEGRITY_MEDIUM;
-	} else /*if (*pdwIntegrityLevel >= SECURITY_MANDATORY_HIGH_RID)*/ {
-		// High integrity.
-		ret = INTEGRITY_HIGH;
-	}
+	// Return the integrity level directly.
+	ret = (int)*pdwIntegrityLevel;
 
 out:
 	LocalFree(pTML);
@@ -275,10 +258,10 @@ out:
  * - https://github.com/chromium/chromium/blob/4e88a3c4fa53bf4d3622d07fd13f3812d835e40f/sandbox/win/src/restricted_token_utils.cc
  * - https://github.com/chromium/chromium/blob/master/sandbox/win/src/restricted_token_utils.cc
  *
- * @param level IntegrityLevel.
+ * @param level Integrity level. (SECURITY_MANDATORY_*_RID)
  * @return 0 on success; GetLastError() on error.
  */
-DWORD SetProcessIntegrityLevel(IntegrityLevel level)
+DWORD SetProcessIntegrityLevel(int level)
 {
 	HANDLE hToken;
 	DWORD dwRet;
@@ -288,7 +271,8 @@ DWORD SetProcessIntegrityLevel(IntegrityLevel level)
 	if (!isVista) {
 		// Not running Windows Vista or later.
 		// Can't set the process integrity level.
-		return INTEGRITY_NOT_SUPPORTED;
+		// We'll pretend everything "just works" anyway.
+		return ERROR_SUCCESS;
 	}
 
 	if (!OpenProcessToken(
