@@ -39,6 +39,18 @@ HANDLE CreateLowIntegrityToken(void);
  */
 IntegrityLevel GetIntegrityLevel(void);
 
+/**
+ * Adjust the current process's integrity level.
+ *
+ * References:
+ * - https://github.com/chromium/chromium/blob/4e88a3c4fa53bf4d3622d07fd13f3812d835e40f/sandbox/win/src/restricted_token_utils.cc
+ * - https://github.com/chromium/chromium/blob/master/sandbox/win/src/restricted_token_utils.cc
+ *
+ * @param level IntegrityLevel.
+ * @return 0 on success; GetLastError() on error.
+ */
+DWORD SetIntegrityLevel(IntegrityLevel level);
+
 #ifdef __cplusplus
 }
 #endif

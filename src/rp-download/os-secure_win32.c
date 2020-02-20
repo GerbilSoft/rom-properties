@@ -26,17 +26,34 @@ int rp_download_os_secure(void)
 {
 	IntegrityLevel level;
 
+	// Check the process integrity level.
+	// If it's not low, adjust it.
+	// TODO: Just adjust it without checking?
+	level = GetIntegrityLevel();
+	if (level > INTEGRITY_LOW) {
+#ifndef NDEBUG
+		_ftprintf(stderr, _T("*** Integrity level is %u (NOT LOW). Adjusting to low...\n"), level);
+#endif /* NDEBUG */
+		SetIntegrityLevel(INTEGRITY_LOW);
+		// NOTE: GetIntegrityLevel() fails attempting to open the process token.
+		// This might be a side effect of switching to low integrity...
+		// TODO: Verify with procexp.
+		// TODO: Consolidate the token adjustment code in integrity_level.c.
+		level = GetIntegrityLevel();
+#ifndef NDEBUG
+		if (level <= INTEGRITY_LOW) {
+			_ftprintf(stderr, _T("*** Integrity level reduced to: %u\n"), level);
+		} else {
+			_ftprintf(stderr, _T("*** Integrity level NOT reduced: %u\n"), level);
+		}
+#endif /* !NDEBUG */
+	}
+
 	// Set Win32 security options.
+	// NOTE: Must be done *after* reducing the process integrity level.
 	// FIXME: Enabling high-security (Win32k syscall disable) requires
 	// eliminating anything that links to GDI, e.g. ole32.dll and shell32.dll.
 	rp_secoptions_init(FALSE);
-
-	// Check the process integrity level.
-	// TODO: If it's higher than low, relaunch the program with low integrity if supported.
-	level = GetIntegrityLevel();
-	if (level > INTEGRITY_LOW) {
-		_ftprintf(stderr, _T("WARNING: Not running as low integrity!!!\n"));
-	}
 
 	return 0;
 }

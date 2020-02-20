@@ -66,7 +66,7 @@ HANDLE CreateLowIntegrityToken(void)
 	PSID pIntegritySid = NULL;
 	HANDLE hToken = NULL;
 	HANDLE hNewToken = NULL;
-	TOKEN_MANDATORY_LABEL til;
+	TOKEN_MANDATORY_LABEL tml;
 	BOOL bRet;
 
 	// Are we running Windows Vista or later?
@@ -118,14 +118,14 @@ HANDLE CreateLowIntegrityToken(void)
 	}
 
 	// Token settings.
-	til.Label.Attributes = SE_GROUP_INTEGRITY;
-	til.Label.Sid = pIntegritySid;
+	tml.Label.Attributes = SE_GROUP_INTEGRITY;
+	tml.Label.Sid = pIntegritySid;
 
 	// Set the process integrity level.
 	bRet = SetTokenInformation(
 		hNewToken,			// TokenHandle
 		TokenIntegrityLevel,		// TokenInformationClass
-		&til,				// TokenInformation
+		&tml,				// TokenInformation
 		sizeof(TOKEN_MANDATORY_LABEL) +
 		GetLengthSid(pIntegritySid));	// TokenInformationLength
 	if (!bRet) {
@@ -155,7 +155,7 @@ IntegrityLevel GetIntegrityLevel(void)
 	BOOL bRet;
 
 	HANDLE hToken = NULL;
-	PTOKEN_MANDATORY_LABEL pTIL = NULL;
+	PTOKEN_MANDATORY_LABEL pTML = NULL;
 	PUCHAR pucSidSubAuthorityCount;
 	PDWORD pdwIntegrityLevel;
 	DWORD dwLengthNeeded;
@@ -184,26 +184,26 @@ IntegrityLevel GetIntegrityLevel(void)
 		goto out;
 	}
 
-	pTIL = LocalAlloc(LMEM_FIXED, dwLengthNeeded);
-	assert(pTIL != NULL);
-	if (!pTIL) {
+	pTML = LocalAlloc(LMEM_FIXED, dwLengthNeeded);
+	assert(pTML != NULL);
+	if (!pTML) {
 		// malloc() failed.
 		goto out;
 	}
 
-	if (!GetTokenInformation(hToken, TokenIntegrityLevel, pTIL, dwLengthNeeded, &dwLengthNeeded)) {
+	if (!GetTokenInformation(hToken, TokenIntegrityLevel, pTML, dwLengthNeeded, &dwLengthNeeded)) {
 		// GetTokenInformation() failed.
 		goto out;
 	}
 
 	// Get the SID sub-authority value.
 	// This is equivalent to the integrity level.
-	pucSidSubAuthorityCount = GetSidSubAuthorityCount(pTIL->Label.Sid);
+	pucSidSubAuthorityCount = GetSidSubAuthorityCount(pTML->Label.Sid);
 	if (!pucSidSubAuthorityCount) {
 		// SID is invalid.
 		goto out;
 	}
-	pdwIntegrityLevel = GetSidSubAuthority(pTIL->Label.Sid, *pucSidSubAuthorityCount - 1);
+	pdwIntegrityLevel = GetSidSubAuthority(pTML->Label.Sid, *pucSidSubAuthorityCount - 1);
 	if (!pdwIntegrityLevel) {
 		// SID is invalid.
 		goto out;
@@ -222,9 +222,93 @@ IntegrityLevel GetIntegrityLevel(void)
 	}
 
 out:
-	LocalFree(pTIL);
+	LocalFree(pTML);
 	if (hToken) {
 		CloseHandle(hToken);
 	}
 	return ret;
+}
+
+/**
+ * Adjust the current process's integrity level.
+ *
+ * References:
+ * - https://github.com/chromium/chromium/blob/4e88a3c4fa53bf4d3622d07fd13f3812d835e40f/sandbox/win/src/restricted_token_utils.cc
+ * - https://github.com/chromium/chromium/blob/master/sandbox/win/src/restricted_token_utils.cc
+ *
+ * @param level IntegrityLevel.
+ * @return 0 on success; GetLastError() on error.
+ */
+DWORD SetIntegrityLevel(IntegrityLevel level)
+{
+	HANDLE hToken;
+	LPCTSTR lpszIntegritySid;
+	PSID pIntegritySid = NULL;
+	TOKEN_MANDATORY_LABEL tml;
+	DWORD dwLastError;
+
+	// Are we running Windows Vista or later?
+	pthread_once(&once_control, initIsVista);
+	if (!isVista) {
+		// Not running Windows Vista or later.
+		// Can't set the process integrity level.
+		return INTEGRITY_NOT_SUPPORTED;
+	}
+
+	// TODO: Add Untrusted, Below Low, Medium Low, and System?
+	switch (level) {
+		case INTEGRITY_LOW:
+			lpszIntegritySid = _T("S-1-16-4096");
+			break;
+		case INTEGRITY_MEDIUM:
+			lpszIntegritySid = _T("S-1-16-8192");
+			break;
+		case INTEGRITY_HIGH:
+			lpszIntegritySid = _T("S-1-16-12288");
+			break;
+		default:
+			return ERROR_INVALID_PARAMETER;
+	}
+
+	if (!OpenProcessToken(
+		GetCurrentProcess(),	// ProcessHandle
+		TOKEN_ADJUST_DEFAULT,	// DesiredAccess
+		&hToken))		// TokenHandle
+	{
+		// OpenProcessToken() failed.
+		return GetLastError();
+	}
+
+	// Based on Chromium's SetTokenIntegrityLevel().
+	if (!ConvertStringSidToSid(lpszIntegritySid, &pIntegritySid)) {
+		// Failed to convert the SID.
+		goto out;
+	}
+
+	tml.Label.Attributes = SE_GROUP_INTEGRITY;
+	tml.Label.Sid = pIntegritySid;
+
+	// Set the process integrity level.
+	SetLastError(ERROR_INVALID_PARAMETER);
+	if (!SetTokenInformation(
+		hToken,				// TokenHandle
+		TokenIntegrityLevel,		// TokenInformationClass
+		&tml,				// TokenInformation
+		sizeof(TOKEN_MANDATORY_LABEL) +
+		GetLengthSid(pIntegritySid)));	// TokenInformationLength
+	{
+		// Failed to set the process integrity level.
+		// NOTE: It may have succeeded anyway, in which case,
+		// GetLastError() will return 0.
+		dwLastError = GetLastError();
+		goto out;
+	}
+
+	// Success!
+	dwLastError = 0;
+
+out:
+	LocalFree(pIntegritySid);
+	CloseHandle(hToken);
+	return dwLastError;
 }
