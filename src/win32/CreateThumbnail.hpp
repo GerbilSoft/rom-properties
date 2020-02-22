@@ -40,19 +40,28 @@ class CreateThumbnail : public LibRomData::TCreateThumbnail<HBITMAP>
 		 * @param imgClass ImgClass
 		 * @return True if valid; false if not.
 		 */
-		bool isImgClassValid(const HBITMAP &imgClass) const final;
+		inline bool isImgClassValid(const HBITMAP &imgClass) const final
+		{
+			return (imgClass != nullptr);
+		}
 
 		/**
 		 * Wrapper function to get a "null" ImgClass.
 		 * @return "Null" ImgClass.
 		 */
-		HBITMAP getNullImgClass(void) const final;
+		inline HBITMAP getNullImgClass(void) const final
+		{
+			return nullptr;
+		}
 
 		/**
 		 * Free an ImgClass object.
 		 * @param imgClass ImgClass object.
 		 */
-		void freeImgClass(HBITMAP &imgClass) const final;
+		inline void freeImgClass(HBITMAP &imgClass) const final
+		{
+			DeleteBitmap(imgClass);
+		}
 
 		/**
 		 * Rescale an ImgClass using nearest-neighbor scaling.
@@ -74,7 +83,12 @@ class CreateThumbnail : public LibRomData::TCreateThumbnail<HBITMAP>
 		 * Get the proxy for the specified URL.
 		 * @return Proxy, or empty string if no proxy is needed.
 		 */
-		std::string proxyForUrl(const std::string &url) const final;
+		inline std::string proxyForUrl(const std::string &url) const final
+		{
+			// rp-download uses WinInet on Windows, which
+			// always uses the system proxy.
+			return std::string();
+		}
 };
 
 /**

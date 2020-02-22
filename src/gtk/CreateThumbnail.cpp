@@ -83,26 +83,38 @@ class CreateThumbnailPrivate : public TCreateThumbnail<PIMGTYPE>
 		 * @param img rp_image
 		 * @return ImgClass
 		 */
-		PIMGTYPE rpImageToImgClass(const rp_image *img) const final;
+		inline PIMGTYPE rpImageToImgClass(const rp_image *img) const final
+		{
+			return rp_image_to_PIMGTYPE(img);
+		}
 
 		/**
 		 * Wrapper function to check if an ImgClass is valid.
 		 * @param imgClass ImgClass
 		 * @return True if valid; false if not.
 		 */
-		bool isImgClassValid(const PIMGTYPE &imgClass) const final;
+		bool isImgClassValid(const PIMGTYPE &imgClass) const final
+		{
+			return (imgClass != nullptr);
+		}
 
 		/**
 		 * Wrapper function to get a "null" ImgClass.
 		 * @return "Null" ImgClass.
 		 */
-		PIMGTYPE getNullImgClass(void) const final;
+		inline PIMGTYPE getNullImgClass(void) const final
+		{
+			return nullptr;
+		}
 
 		/**
 		 * Free an ImgClass object.
 		 * @param imgClass ImgClass object.
 		 */
-		void freeImgClass(PIMGTYPE &imgClass) const final;
+		inline void freeImgClass(PIMGTYPE &imgClass) const final
+		{
+			PIMGTYPE_destroy(imgClass);
+		}
 
 		/**
 		 * Rescale an ImgClass using nearest-neighbor scaling.
@@ -110,7 +122,11 @@ class CreateThumbnailPrivate : public TCreateThumbnail<PIMGTYPE>
 		 * @param sz New size.
 		 * @return Rescaled ImgClass.
 		 */
-		PIMGTYPE rescaleImgClass(const PIMGTYPE &imgClass, const ImgSize &sz) const final;
+		inline PIMGTYPE rescaleImgClass(const PIMGTYPE &imgClass, const ImgSize &sz) const final
+		{
+			// TODO: Interpolation option?
+			return PIMGTYPE_scale(imgClass, sz.width, sz.height, false);
+		}
 
 		/**
 		 * Get the size of the specified ImgClass.
@@ -130,56 +146,6 @@ class CreateThumbnailPrivate : public TCreateThumbnail<PIMGTYPE>
 CreateThumbnailPrivate::CreateThumbnailPrivate()
 	: proxy_resolver(g_proxy_resolver_get_default())
 { }
-
-/**
- * Wrapper function to convert rp_image* to ImgClass.
- * @param img rp_image
- * @return ImgClass.
- */
-PIMGTYPE CreateThumbnailPrivate::rpImageToImgClass(const rp_image *img) const
-{
-	return rp_image_to_PIMGTYPE(img);
-}
-
-/**
- * Wrapper function to check if an ImgClass is valid.
- * @param imgClass ImgClass
- * @return True if valid; false if not.
- */
-bool CreateThumbnailPrivate::isImgClassValid(const PIMGTYPE &imgClass) const
-{
-	return (imgClass != nullptr);
-}
-
-/**
- * Wrapper function to get a "null" ImgClass.
- * @return "Null" ImgClass.
- */
-PIMGTYPE CreateThumbnailPrivate::getNullImgClass(void) const
-{
-	return nullptr;
-}
-
-/**
- * Free an ImgClass object.
- * @param imgClass ImgClass object.
- */
-void CreateThumbnailPrivate::freeImgClass(PIMGTYPE &imgClass) const
-{
-	PIMGTYPE_destroy(imgClass);
-}
-
-/**
- * Rescale an ImgClass using nearest-neighbor scaling.
- * @param imgClass ImgClass object.
- * @param sz New size.
- * @return Rescaled ImgClass.
- */
-PIMGTYPE CreateThumbnailPrivate::rescaleImgClass(const PIMGTYPE &imgClass, const ImgSize &sz) const
-{
-	// TODO: Interpolation option?
-	return PIMGTYPE_scale(imgClass, sz.width, sz.height, false);
-}
 
 /**
  * Get the size of the specified ImgClass.

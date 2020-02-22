@@ -108,26 +108,39 @@ class RomThumbCreatorPrivate : public TCreateThumbnail<QImage>
 		 * @param img rp_image
 		 * @return ImgClass
 		 */
-		QImage rpImageToImgClass(const rp_image *img) const final;
+		inline QImage rpImageToImgClass(const rp_image *img) const final
+		{
+			return rpToQImage(img);
+		}
 
 		/**
 		 * Wrapper function to check if an ImgClass is valid.
 		 * @param imgClass ImgClass
 		 * @return True if valid; false if not.
 		 */
-		bool isImgClassValid(const QImage &imgClass) const final;
+		inline bool isImgClassValid(const QImage &imgClass) const final
+		{
+			return !imgClass.isNull();
+		}
 
 		/**
 		 * Wrapper function to get a "null" ImgClass.
 		 * @return "Null" ImgClass.
 		 */
-		QImage getNullImgClass(void) const final;
+		inline QImage getNullImgClass(void) const final
+		{
+			return QImage();
+		}
 
 		/**
 		 * Free an ImgClass object.
 		 * @param imgClass ImgClass object.
 		 */
-		void freeImgClass(QImage &imgClass) const final;
+		inline void freeImgClass(QImage &imgClass) const final
+		{
+			// Nothing to do here...
+			Q_UNUSED(imgClass)
+		}
 
 		/**
 		 * Rescale an ImgClass using nearest-neighbor scaling.
@@ -135,7 +148,11 @@ class RomThumbCreatorPrivate : public TCreateThumbnail<QImage>
 		 * @param sz New size.
 		 * @return Rescaled ImgClass.
 		 */
-		QImage rescaleImgClass(const QImage &imgClass, const ImgSize &sz) const final;
+		inline QImage rescaleImgClass(const QImage &imgClass, const ImgSize &sz) const final
+		{
+			return imgClass.scaled(sz.width, sz.height,
+				Qt::KeepAspectRatio, Qt::FastTransformation);
+		}
 
 		/**
 		 * Get the size of the specified ImgClass.
@@ -143,7 +160,12 @@ class RomThumbCreatorPrivate : public TCreateThumbnail<QImage>
 		 * @param pOutSize	[out] Pointer to ImgSize to store the image size.
 		 * @return 0 on success; non-zero on error.
 		 */
-		int getImgClassSize(const QImage &imgClass, ImgSize *pOutSize) const final;
+		int getImgClassSize(const QImage &imgClass, ImgSize *pOutSize) const final
+		{
+			pOutSize->width = imgClass.width();
+			pOutSize->height = imgClass.height();
+			return 0;
+		}
 
 		/**
 		 * Get the proxy for the specified URL.
@@ -153,70 +175,6 @@ class RomThumbCreatorPrivate : public TCreateThumbnail<QImage>
 };
 
 /** RomThumbCreatorPrivate **/
-
-/**
- * Wrapper function to convert rp_image* to ImgClass.
- * @param img rp_image
- * @return ImgClass.
- */
-QImage RomThumbCreatorPrivate::rpImageToImgClass(const rp_image *img) const
-{
-	return rpToQImage(img);
-}
-
-/**
- * Wrapper function to check if an ImgClass is valid.
- * @param imgClass ImgClass
- * @return True if valid; false if not.
- */
-bool RomThumbCreatorPrivate::isImgClassValid(const QImage &imgClass) const
-{
-	return !imgClass.isNull();
-}
-
-/**
- * Wrapper function to get a "null" ImgClass.
- * @return "Null" ImgClass.
- */
-QImage RomThumbCreatorPrivate::getNullImgClass(void) const
-{
-	return QImage();
-}
-
-/**
- * Free an ImgClass object.
- * @param imgClass ImgClass object.
- */
-void RomThumbCreatorPrivate::freeImgClass(QImage &imgClass) const
-{
-	// Nothing to do here...
-	Q_UNUSED(imgClass)
-}
-
-/**
- * Rescale an ImgClass using nearest-neighbor scaling.
- * @param imgClass ImgClass object.
- * @param sz New size.
- * @return Rescaled ImgClass.
- */
-QImage RomThumbCreatorPrivate::rescaleImgClass(const QImage &imgClass, const ImgSize &sz) const
-{
-	return imgClass.scaled(sz.width, sz.height,
-		Qt::KeepAspectRatio, Qt::FastTransformation);
-}
-
-/**
- * Get the size of the specified ImgClass.
- * @param imgClass	[in] ImgClass object.
- * @param pOutSize	[out] Pointer to ImgSize to store the image size.
- * @return 0 on success; non-zero on error.
- */
-int RomThumbCreatorPrivate::getImgClassSize(const QImage &imgClass, ImgSize *pOutSize) const
-{
-	pOutSize->width = imgClass.width();
-	pOutSize->height = imgClass.height();
-	return 0;
-}
 
 /**
  * Get the proxy for the specified URL.

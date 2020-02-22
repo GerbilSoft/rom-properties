@@ -72,34 +72,6 @@ HBITMAP CreateThumbnail::rpImageToImgClass(const rp_image *img) const
 }
 
 /**
- * Wrapper function to check if an ImgClass is valid.
- * @param imgClass ImgClass
- * @return True if valid; false if not.
- */
-bool CreateThumbnail::isImgClassValid(const HBITMAP &imgClass) const
-{
-	return (imgClass != nullptr);
-}
-
-/**
- * Wrapper function to get a "null" ImgClass.
- * @return "Null" ImgClass.
- */
-HBITMAP CreateThumbnail::getNullImgClass(void) const
-{
-	return nullptr;
-}
-
-/**
- * Free an ImgClass object.
- * @param imgClass ImgClass object.
- */
-void CreateThumbnail::freeImgClass(HBITMAP &imgClass) const
-{
-	DeleteBitmap(imgClass);
-}
-
-/**
  * Rescale an ImgClass using nearest-neighbor scaling.
  * @param imgClass ImgClass object.
  * @param sz New size.
@@ -141,17 +113,6 @@ int CreateThumbnail::getImgClassSize(const HBITMAP &imgClass, ImgSize *pOutSize)
 		return 0;
 	}
 	return -1;
-}
-
-/**
- * Get the proxy for the specified URL.
- * @return Proxy, or empty string if no proxy is needed.
- */
-string CreateThumbnail::proxyForUrl(const string &url) const
-{
-	// rp-download uses WinInet on Windows, which
-	// always uses the system proxy.
-	return string();
 }
 
 /** CreateThumbnailNoAlpha **/
