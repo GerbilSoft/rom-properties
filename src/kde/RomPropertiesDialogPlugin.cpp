@@ -82,6 +82,3 @@ RomPropertiesDialogPlugin::RomPropertiesDialogPlugin(KPropertiesDialog *props, c
 	// We don't need to hold on to it.
 	romData->unref();
 }
-
-RomPropertiesDialogPlugin::~RomPropertiesDialogPlugin()
-{ }

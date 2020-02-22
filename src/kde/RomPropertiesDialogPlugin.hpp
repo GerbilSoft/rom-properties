@@ -17,7 +17,6 @@ class Q_DECL_EXPORT RomPropertiesDialogPlugin : public KPropertiesDialogPlugin
 
 	public:
 		explicit RomPropertiesDialogPlugin(KPropertiesDialog *props, const QVariantList & = QVariantList());
-		virtual ~RomPropertiesDialogPlugin();
 
 	private:
 		typedef KPropertiesDialogPlugin super;
