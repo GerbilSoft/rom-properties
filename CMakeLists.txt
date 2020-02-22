@@ -14,13 +14,12 @@ IF(UNIX AND NOT APPLE)
 		)
 ENDIF(UNIX AND NOT APPLE)
 
-# If no build type is set, default to "Debug".
-# TODO: Default to "Release"?
+# If no build type is set, default to "Release".
 STRING(TOLOWER "${CMAKE_BUILD_TYPE}" TMP_BUILD_TYPE)
 IF(TMP_BUILD_TYPE STREQUAL "")
-	SET(CMAKE_BUILD_TYPE "Release")
+	SET(CMAKE_BUILD_TYPE "Release" CACHE STRING "" FORCE)
 ELSEIF(TMP_BUILD_TYPE MATCHES "none")
-	SET(CMAKE_BUILD_TYPE "Release")
+	SET(CMAKE_BUILD_TYPE "Release" CACHE STRING "" FORCE)
 ENDIF()
 UNSET(TMP_BUILD_TYPE)
 
