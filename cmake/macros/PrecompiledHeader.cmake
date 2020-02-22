@@ -88,6 +88,12 @@ function(export_all_flags _filename)
   file(GENERATE OUTPUT "${_filename}" CONTENT "${_compile_definitions}${_include_directories}${_compile_flags}${_compile_options}\n")
 endfunction()
 
+# rom-properties: We need the matching C11/C99 and C++11 compiler flags.
+INCLUDE(CheckC11C99CompilerFlag)
+CHECK_C11_C99_COMPILER_FLAG(PCH_C11_CFLAG)
+INCLUDE(CheckCXX11CompilerFlag)
+CHECK_CXX11_COMPILER_FLAG(PCH_CXX11_CXXFLAG)
+
 function(add_precompiled_header _target _input)
   cmake_parse_arguments(_PCH "FORCEINCLUDE" "SOURCE_CXX;SOURCE_C" "" ${ARGN})
 
@@ -188,12 +194,12 @@ function(add_precompiled_header _target _input)
       COMMENT "Updating ${_name}")
     add_custom_command(
       OUTPUT "${_output_cxx}"
-      COMMAND "${CMAKE_CXX_COMPILER}" ${_compiler_FLAGS} -x c++-header -o "${_output_cxx}" "${_pchfile}"
+      COMMAND "${CMAKE_CXX_COMPILER}" ${PCH_CXX11_CXXFLAG} ${_compiler_FLAGS} -x c++-header -o "${_output_cxx}" "${_pchfile}"
       DEPENDS "${_pchfile}" "${_pch_flags_file}"
       COMMENT "Precompiling ${_name} for ${_target} (C++)")
     add_custom_command(
       OUTPUT "${_output_c}"
-      COMMAND "${CMAKE_C_COMPILER}" ${_compiler_FLAGS} -x c-header -o "${_output_c}" "${_pchfile}"
+      COMMAND "${CMAKE_C_COMPILER}" ${PCH_C11_CFLAG} ${_compiler_FLAGS} -x c-header -o "${_output_c}" "${_pchfile}"
       DEPENDS "${_pchfile}" "${_pch_flags_file}"
       COMMENT "Precompiling ${_name} for ${_target} (C)")
 
