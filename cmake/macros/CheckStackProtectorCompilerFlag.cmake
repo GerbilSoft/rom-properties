@@ -17,21 +17,24 @@
 
 INCLUDE(CheckCSourceCompiles)
 
-MACRO(CHECK_STACK_PROTECTOR_COMPILER_FLAG _RESULT)
-	UNSET(${_RESULT})
-	
+FUNCTION(CHECK_STACK_PROTECTOR_COMPILER_FLAG _result)
+	UNSET(${_result} PARENT_SCOPE)
+
+	IF(NOT DEFINED _SYS_STACK_PROTECTOR_COMPILER_FLAG)
 	IF(MSVC)
 		# MSVC 2002 introduced the /GS option.
 		# MSVC 2005+ enables it by default.
 		IF(MSVC_VERSION GREATER 1399)
 			# MSVC 2005+.
-			MESSAGE(STATUS "Checking what CFLAG is required for stack smashing protection: none")
+			SET(_SYS_STACK_PROTECTOR_COMPILER_FLAG "" CACHE INTERNAL "CFLAG required for stack smashing protection.")
+			MESSAGE(STATUS "Checking what CFLAG is required for stack smashing protection: none, enabled by default")
 		ELSEIF(MSVC_VERSION GREATER 1299)
 			# MSVC 2002 or 2003.
-			SET(${_RESULT} "/GS")
-			MESSAGE(STATUS "Checking what CFLAG is required for stack smashing protection: ${${_RESULT}}")
+			SET(_SYS_STACK_PROTECTOR_COMPILER_FLAG "/GS" CACHE INTERNAL "CFLAG required for stack smashing protection.")
+			MESSAGE(STATUS "Checking what CFLAG is required for stack smashing protection: ${_SYS_STACK_PROTECTOR_COMPILER_FLAG}")
 		ELSE()
 			# MSVC 2002 or earlier.
+			SET(_SYS_STACK_PROTECTOR_COMPILER_FLAG "" CACHE INTERNAL "CFLAG required for stack smashing protection.")
 			MESSAGE(STATUS "Checking what CFLAG is required for stack smashing protection: not available")
 		ENDIF()
 	ELSE(MSVC)
@@ -96,21 +99,19 @@ int main(int argc, char *argv[])
 			SET(CMAKE_REQUIRED_LIBRARIES "${SAFE_CMAKE_REQUIRED_LIBRARIES}")
 
 			IF(${${CHECK_STACK_CFLAG_VARNAME}})
-				SET(${_RESULT} ${CHECK_STACK_CFLAG})
-				UNSET(${CHECK_STACK_CFLAG_VARNAME})
-				UNSET(CHECK_STACK_CFLAG_VARNAME)
+				SET(_SYS_STACK_PROTECTOR_COMPILER_FLAG "${CHECK_STACK_CFLAG}" CACHE INTERNAL "CFLAG required for stack smashing protection.")
 				BREAK()
 			ENDIF(${${CHECK_STACK_CFLAG_VARNAME}})
-			UNSET(${CHECK_STACK_CFLAG_VARNAME})
-			UNSET(CHECK_STACK_CFLAG_VARNAME)
-			UNSET(SAFE_CMAKE_REQUIRED_DEFINITIONS)
-			UNSET(SAFE_CMAKE_REQUIRED_LIBRARIES)
 		ENDFOREACH()
-		IF(${_RESULT})
-			MESSAGE(STATUS "Checking what CFLAG is required for stack smashing protection: ${${_RESULT}}")
-		ELSE(${_RESULT})
+		IF(_SYS_STACK_PROTECTOR_COMPILER_FLAG)
+			MESSAGE(STATUS "Checking what CFLAG is required for stack smashing protection: ${_SYS_STACK_PROTECTOR_COMPILER_FLAG}")
+		ELSE(_SYS_STACK_PROTECTOR_COMPILER_FLAG)
+			SET(_SYS_STACK_PROTECTOR_COMPILER_FLAG "" CACHE INTERNAL "CFLAG required for stack smashing protection.")
 			MESSAGE(STATUS "Checking what CFLAG is required for stack smashing protection: not available")
 			MESSAGE(WARNING "Stack smashing protection is not available.\nPlease check your toolchain installation.")
-		ENDIF(${_RESULT})
+		ENDIF(_SYS_STACK_PROTECTOR_COMPILER_FLAG)
 	ENDIF(MSVC)
-ENDMACRO(CHECK_STACK_PROTECTOR_COMPILER_FLAG)
+	ENDIF(NOT DEFINED _SYS_STACK_PROTECTOR_COMPILER_FLAG)
+
+	SET(${_result} "${_SYS_STACK_PROTECTOR_COMPILER_FLAG}" PARENT_SCOPE)
+ENDFUNCTION(CHECK_STACK_PROTECTOR_COMPILER_FLAG)
