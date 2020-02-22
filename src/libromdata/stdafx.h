@@ -47,18 +47,6 @@
 
 #endif /* __cplusplus */
 
-#if 0
-// MSVC intrinsics
-#if defined(_MSC_VER) && _MSC_VER >= 1400
-# include <intrin.h>
-#endif
-
-// libwin32common
-#ifdef _WIN32
-# include "libwin32common/RpWin32_sdk.h"
-#endif /* _WIN32 */
-#endif
-
 // libi18n
 #include "libi18n/i18n.h"
 
