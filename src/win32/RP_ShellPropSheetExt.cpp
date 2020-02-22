@@ -610,9 +610,6 @@ int RP_ShellPropSheetExt_Private::createHeaderRow(HWND hDlg, const POINT &pt_sta
 		}
 	}
 
-	// Supported image types.
-	const uint32_t imgbf = romData->supportedImageTypes();
-
 	// Add the banner and icon widths.
 
 	// Banner.
