@@ -9,22 +9,13 @@
 // References:
 // - https://doc.qt.io/qt-5/dnd.html
 // - https://wiki.qt.io/QList_Drag_and_Drop_Example
-
+#include "stdafx.h"
 #include "DragImageTreeWidget.hpp"
-#include "RpQt.hpp"
 #include "RpQByteArrayFile.hpp"
 
-// librpbase
-#include "librpbase/img/RpPngWriter.hpp"
+// librpbase, librptexture
 using LibRpBase::RpPngWriter;
-
-// librptexture
-#include "librptexture/img/rp_image.hpp"
 using LibRpTexture::rp_image;
-
-// Qt includes.
-#include <QDrag>
-#include <QMimeData>
 
 void DragImageTreeWidget::startDrag(Qt::DropActions supportedActions)
 {

@@ -6,31 +6,20 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+#include "stdafx.h"
 #include "RpQt.hpp"
 #include "RpQImageBackend.hpp"
 
-// librpbase
+// librpbase, librptexture
 #include "librpbase/config/Config.hpp"
-#include "librpbase/file/FileSystem.hpp"
-#include "librpbase/file/RpFile.hpp"
 using namespace LibRpBase;
-
-// librptexture
-#include "librptexture/img/rp_image.hpp"
 using LibRpTexture::rp_image;
 
 // RpFileKio
 #include "RpFile_kio.hpp"
 
-// C includes. (C++ namespace)
-#include <cassert>
-
-// C++ includes.
-#include <string>
+// C++ STL classes.
 using std::string;
-
-// Qt includes.
-#include <QtCore/QFileInfo>
 
 #if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
 # include <QtCore/QStandardPaths>

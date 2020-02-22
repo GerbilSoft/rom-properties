@@ -23,7 +23,6 @@ class KeyStoreQt : public QObject, public LibRomData::KeyStoreUI
 
 	public:
 		explicit KeyStoreQt(QObject *parent = 0);
-		virtual ~KeyStoreQt();
 
 	private:
 		typedef QObject super;

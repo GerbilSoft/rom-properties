@@ -6,25 +6,15 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+#include "stdafx.h"
 #include "config.librpbase.h"
-
 #include "AboutTab.hpp"
-#include "RpQt.hpp"
 
 // librpbase
 #include "librpbase/config/AboutTabText.hpp"
-#include "librpbase/TextFuncs.hpp"
 using namespace LibRpBase;
 
-// libi18n
-#include "libi18n/i18n.h"
-
-// C includes. (C++ namespace)
-#include "librpbase/ctypex.h"
-#include <cassert>
-
-// C++ includes.
-#include <string>
+// C++ STL classes.
 using std::string;
 
 #if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
@@ -46,11 +36,11 @@ using std::string;
 #endif
 #ifdef ENABLE_DECRYPTION
 # ifdef HAVE_NETTLE_VERSION_H
-#  include "nettle/version.h"
+#  include <nettle/version.h>
 # endif
 #endif
 #ifdef ENABLE_XML
-# include "tinyxml2.h"
+# include <tinyxml2.h>
 #endif
 
 #include "ui_AboutTab.h"

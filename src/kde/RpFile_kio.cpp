@@ -6,12 +6,11 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+#include "stdafx.h"
 #include "RpFile_kio.hpp"
 
 // Qt includes.
 #include <QtCore/QEventLoop>
-#include <QtCore/QFileInfo>
-#include <QtCore/QUrl>
 
 // KDE includes.
 #include <KIO/FileJob>

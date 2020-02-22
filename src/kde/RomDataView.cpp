@@ -6,55 +6,22 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+#include "stdafx.h"
 #include "RomDataView.hpp"
-#include "RpQt.hpp"
 #include "RpQImageBackend.hpp"
 
-// librpbase
-#include "librpbase/RomData.hpp"
-#include "librpbase/RomFields.hpp"
-#include "librpbase/SystemRegion.hpp"
-#include "librpbase/TextFuncs.hpp"
+// librpbase, librptexture
 using namespace LibRpBase;
+using LibRpTexture::rp_image;
 
 // libi18n
 #include "libi18n/i18n.h"
 
-// librptexture
-#include "librptexture/img/rp_image.hpp"
-using LibRpTexture::rp_image;
-
-// C includes. (C++ namespace)
-#include <cassert>
-
-// C++ includes.
-#include <algorithm>
-#include <array>
-#include <set>
-#include <string>
-#include <vector>
+// C++ STL classes.
 using std::array;
 using std::set;
 using std::string;
 using std::vector;
-
-// Qt includes.
-#include <QtCore/QDateTime>
-#include <QtCore/QEvent>
-#include <QtCore/QSignalMapper>
-#include <QtCore/QTimer>
-#include <QtCore/QVector>
-
-#include <QCheckBox>
-#include <QComboBox>
-#include <QHeaderView>
-#include <QLabel>
-#include <QSpacerItem>
-#include <QTreeWidget>
-
-#include <QFormLayout>
-#include <QGridLayout>
-#include <QHBoxLayout>
 
 // Custom Qt widgets.
 #include "DragImageTreeWidget.hpp"

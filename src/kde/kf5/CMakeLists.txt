@@ -116,6 +116,14 @@ IF(COMMAND QT5_WRAP_UI)
 	ADD_CUSTOM_TARGET(kf5_generate_ui_h DEPENDS ${rom-properties-kf5_UIS_H})
 ENDIF(COMMAND QT5_WRAP_UI)
 
+IF(ENABLE_PCH)
+	# Precompiled headers.
+	INCLUDE(PrecompiledHeader)
+	SET(rom-properties-kf5_PCH_CXX ../stdafx.cpp)
+	SET(rom-properties-kf5_PCH_SRC ${rom-properties-kde4_PCH_CXX})
+	SET(rom-properties-kf5_PCH_H ../stdafx.h)
+ENDIF(ENABLE_PCH)
+
 #####################
 # Build the plugin. #
 #####################
@@ -123,10 +131,16 @@ ENDIF(COMMAND QT5_WRAP_UI)
 IF(BUILD_KF5)
 	# Reference: https://community.kde.org/Frameworks/Porting_Notes
 	ADD_LIBRARY(rom-properties-kf5 MODULE
+		${rom-properties-kf5_PCH_SRC} ${rom-properties-kf5_PCH_H}
 		${rom-properties-kf5_SRCS}
 		${rom-properties-kf5_H}
 		${rom-properties-kf5_UIS_H}
 		)
+	IF(ENABLE_PCH)
+		ADD_PRECOMPILED_HEADER(rom-properties-kf5 ${rom-properties-kf5_PCH_H}
+			SOURCE_CXX ${rom-properties-kf5_PCH_CXX}
+			)
+	ENDIF(ENABLE_PCH)
 	SET_TARGET_PROPERTIES(rom-properties-kf5 PROPERTIES PREFIX "")
 	DO_SPLIT_DEBUG(rom-properties-kf5)
 	TARGET_INCLUDE_DIRECTORIES(rom-properties-kf5

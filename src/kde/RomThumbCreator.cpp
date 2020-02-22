@@ -6,23 +6,16 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+#include "stdafx.h"
 #include "RomThumbCreator.hpp"
 #include "RpQImageBackend.hpp"
-#include "RpQt.hpp"
 
-// librpbase
-#include "librpbase/RomData.hpp"
-#include "librpbase/TextFuncs.hpp"
-#include "librpbase/file/FileSystem.hpp"
-#include "librpbase/img/RpPngWriter.hpp"
+// librpbase, librptexture
 using namespace LibRpBase;
+using LibRpTexture::rp_image;
 
 // RpFileKio
 #include "RpFile_kio.hpp"
-
-// librptexture
-#include "librptexture/img/rp_image.hpp"
-using LibRpTexture::rp_image;
 
 // libromdata
 #include "libromdata/RomDataFactory.hpp"
@@ -33,25 +26,9 @@ using LibRomData::RomDataFactory;
 #include "libromdata/img/TCreateThumbnail.cpp"
 using LibRomData::TCreateThumbnail;
 
-// C includes.
-#include <unistd.h>
-
-// C includes. (C++ namespace)
-#include <cassert>
-#include <cinttypes>
-
-// C++ includes.
-#include <memory>
-#include <string>
+// C++ STL classes.
 using std::string;
 using std::unique_ptr;
-
-// Qt includes.
-#include <QtCore/QDateTime>
-#include <QtCore/QDir>
-#include <QtCore/QFileInfo>
-#include <QtCore/QUrl>
-#include <QtGui/QImage>
 
 #if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
 # include <QtCore/QMimeDatabase>

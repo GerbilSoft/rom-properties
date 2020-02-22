@@ -2,23 +2,13 @@
  * ROM Properties Page shell extension. (KDE)                              *
  * ImageTypesTab.cpp: Image Types tab for rp-config.                       *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+#include "stdafx.h"
 #include "ImageTypesTab.hpp"
 #include "RpQt.hpp"
-
-// Qt includes.
-#include <QComboBox>
-#include <QLabel>
-#if QT_VERSION < QT_VERSION_CHECK(5,0,0)
-# include <QSignalMapper>
-#endif
-
-// C includes. (C++ namespace)
-#include <cassert>
-#include <cerrno>
 
 // TImageTypesConfig is a templated class,
 // so we have to #include the .cpp file here.

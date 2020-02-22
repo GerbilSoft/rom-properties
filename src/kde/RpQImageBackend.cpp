@@ -6,6 +6,7 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+#include "stdafx.h"
 #include "RpQImageBackend.hpp"
 
 #if QT_VERSION >= QT_VERSION_CHECK(4,0,0) && QT_VERSION < QT_VERSION_CHECK(5,0,0)
@@ -14,14 +15,8 @@
 # error Unsupported Qt version.
 #endif
 
-// C includes. (C++ namespace)
-#include <cassert>
-
-// librpbase
+// librpbase, librptexture
 #include "librpbase/aligned_malloc.h"
-
-// librptexture
-#include "librptexture/img/rp_image.hpp"
 using LibRpTexture::rp_image;
 using LibRpTexture::rp_image_backend;
 

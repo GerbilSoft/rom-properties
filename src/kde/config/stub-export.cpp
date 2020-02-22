@@ -6,18 +6,10 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+#include "stdafx.h"
 #include "ConfigDialog.hpp"
-#include "../RpQt.hpp"
-
-// C includes.
-#include <stdlib.h>
-#include <unistd.h>
-
-// Qt includes.
-#include <QApplication>
 
 // i18n
-#include "libi18n/i18n.h"
 #ifdef ENABLE_NLS
 # include "../GettextTranslator.hpp"
 #endif
@@ -47,7 +39,7 @@ Q_DECL_EXPORT int rp_show_config_dialog(int argc, char *argv[])
 #else
 		// Hardcode the value in case the user upgrades to Qt 5.6 later.
 		// http://doc.qt.io/qt-5/qt.html#ApplicationAttribute-enum
-		QApplication::setAttribute((Qt::ApplicationAttribute)13, true);
+		QApplication::setAttribute(static_cast<Qt::ApplicationAttribute>(13), true);
 #endif /* QT_VERSION >= 0x050600 */
 #endif /* QT_VERSION >= 0x050000 */
 		// Create the QApplication.

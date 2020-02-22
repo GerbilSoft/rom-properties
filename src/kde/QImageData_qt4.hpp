@@ -61,12 +61,12 @@
 //  aside from additional non-virtual member functions. Therefore, it should
 //  be usable for all supported Qt4 environments.)
 
-#include <qglobal.h>
+#include <QtCore/qglobal.h>
 #if QT_VERSION >= QT_VERSION_CHECK(4,0,0) && QT_VERSION < QT_VERSION_CHECK(5,0,0)
 
-#include <QImage>
-#include <QMap>
-#include <QString>
+#include <QtGui/QImage>
+#include <QtCore/QMap>
+#include <QtCore/QString>
 class QImageWriter;
 
 struct Q_GUI_EXPORT QImageData {        // internal image data

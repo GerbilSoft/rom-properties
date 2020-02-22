@@ -2,14 +2,14 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * GettextTranslator.hpp: QTranslator class using GNU Gettext.             *
  *                                                                         *
- * Copyright (c) 2017-2018 by David Korth.                                 *
+ * Copyright (c) 2017-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #ifndef __ROMPROPERTIES_KDE_GETTEXTTRANSLATOR_HPP__
 #define __ROMPROPERTIES_KDE_GETTEXTTRANSLATOR_HPP__
 
-#include <QTranslator>
+#include <QtCore/QTranslator>
 
 class GettextTranslator : public QTranslator
 {

@@ -7,31 +7,17 @@
  ***************************************************************************/
 
 // Reference: https://doc.qt.io/qt-5/dnd.html
-
+#include "stdafx.h"
 #include "DragImageLabel.hpp"
-#include "RpQt.hpp"
 #include "RpQByteArrayFile.hpp"
 
-// librpbase
+// librpbase, librptexture
 #include "librpbase/img/IconAnimData.hpp"
 #include "librpbase/img/IconAnimHelper.hpp"
-#include "librpbase/img/RpPngWriter.hpp"
 using LibRpBase::IconAnimData;
 using LibRpBase::IconAnimHelper;
 using LibRpBase::RpPngWriter;
-
-// librptexture
-#include "librptexture/img/rp_image.hpp"
 using LibRpTexture::rp_image;
-
-// C includes. (C++ namespace)
-#include <cassert>
-
-// Qt includes.
-#include <QApplication>
-#include <QDrag>
-#include <QMimeData>
-#include <QMouseEvent>
 
 DragImageLabel::DragImageLabel(const QString &text, QWidget *parent, Qt::WindowFlags f)
 	: super(text, parent, f)

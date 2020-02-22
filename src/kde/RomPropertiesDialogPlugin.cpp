@@ -14,28 +14,17 @@
  * - https://github.com/KDE/calligra-history/blob/5e323f11f11ec487e1ef801d61bb322944f454a5/libs/main/kodocinfopropspage.desktop
  */
 
+#include "stdafx.h"
 #include "RomPropertiesDialogPlugin.hpp"
 #include "RomDataView.hpp"
-#include "RpQt.hpp"
 
 // librpbase
-#include "librpbase/RomData.hpp"
-#include "librpbase/file/IRpFile.hpp"
 using LibRpBase::RomData;
 using LibRpBase::IRpFile;
-
-// libi18n
-#include "libi18n/i18n.h"
 
 // libromdata
 #include "libromdata/RomDataFactory.hpp"
 using LibRomData::RomDataFactory;
-
-// C includes.
-#include <unistd.h>
-
-// Qt includes.
-#include <QtCore/QFileInfo>
 
 RomPropertiesDialogPlugin::RomPropertiesDialogPlugin(KPropertiesDialog *props, const QVariantList&)
 	: super(props)

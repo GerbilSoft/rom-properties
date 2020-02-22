@@ -1,20 +1,13 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (KDE)                              *
- * ITab.cpp: Configuration tab interface.                                  *
+ * ROM Properties Page shell extension. (KDE4/KF5)                         *
+ * stdafx.cpp: Common definitions and includes.                            *
  *                                                                         *
  * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-// NOTE: We need a .cpp file here in order for
-// automoc to generate a moc file.
+// stdafx.cpp : source file that includes just the standard includes
+// hidecon.pch will be the pre-compiled header
+// stdafx.obj will contain the pre-compiled type information
 
 #include "stdafx.h"
-#include "ITab.hpp"
-
-ITab::ITab(QWidget *parent)
-	: super(parent)
-{ }
-
-ITab::~ITab()
-{ }

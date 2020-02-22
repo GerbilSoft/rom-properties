@@ -10,33 +10,21 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+#include "stdafx.h"
 #include "RpOverlayIconPlugin.hpp"
-#include "RpQt.hpp"
 
 // librpbase
-#include "librpbase/RomData.hpp"
-#include "librpbase/file/FileSystem.hpp"
-#include "librpbase/file/RpFile.hpp"
-#include "librpbase/config/Config.hpp"
 using namespace LibRpBase;
 
 // libromdata
 #include "libromdata/RomDataFactory.hpp"
 using LibRomData::RomDataFactory;
 
-// C includes. (C++ namespace)
-#include <cassert>
-
-// C++ includes.
-#include <string>
-#include <vector>
+// C++ STL classes.
 using std::string;
 using std::vector;
 
 // Qt includes.
-#include <QtCore/QDateTime>
-#include <QtCore/QDir>
-#include <QtCore/QFileInfo>
 #include <QtCore/QStandardPaths>
 
 // KDE includes.

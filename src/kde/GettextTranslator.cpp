@@ -2,12 +2,12 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * GettextTranslator.cpp: QTranslator class using GNU Gettext.             *
  *                                                                         *
- * Copyright (c) 2017 by David Korth.                                      *
+ * Copyright (c) 2017-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+#include "stdafx.h"
 #include "GettextTranslator.hpp"
-#include "libi18n/i18n.h"
 
 GettextTranslator::GettextTranslator(QObject *parent)
 	: super(parent)

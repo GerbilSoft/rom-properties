@@ -23,8 +23,8 @@ namespace LibRpTexture {
 #include <array>
 
 // Qt includes.
+#include <QtCore/QTimer>
 #include <QLabel>
-#include <QTimer>
 
 class DragImageLabel : public QLabel
 {

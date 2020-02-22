@@ -2,34 +2,20 @@
  * ROM Properties Page shell extension. (KDE)                              *
  * ConfigDialog.cpp: Configuration dialog.                                 *
  *                                                                         *
- * Copyright (c) 2016-2017 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+#include "stdafx.h"
 #include "librpbase/config.librpbase.h"
 #include "ConfigDialog.hpp"
 
 // librpbase
-#include "librpbase/config/Config.hpp"
-#include "librpbase/file/FileSystem.hpp"
 using namespace LibRpBase;
 
-// libi18n
-#include "libi18n/i18n.h"
-
-// U82Q()
-#include "RpQt.hpp"
-
-// C includes. (C++ namespace)
-#include <cassert>
-
-// Qt includes.
-#include <QPushButton>
-#include <QSettings>
-
 #ifdef ENABLE_DECRYPTION
-#include "KeyManagerTab.hpp"
-#include "librpbase/crypto/KeyManager.hpp"
+# include "KeyManagerTab.hpp"
+# include "librpbase/crypto/KeyManager.hpp"
 using LibRpBase::KeyManager;
 #endif
 

@@ -48,16 +48,30 @@ IF(COMMAND QT4_WRAP_UI)
 	ADD_CUSTOM_TARGET(kde4_generate_ui_h DEPENDS ${rom-properties-kde4_UIS_H})
 ENDIF(COMMAND QT4_WRAP_UI)
 
+IF(ENABLE_PCH)
+	# Precompiled headers.
+	INCLUDE(PrecompiledHeader)
+	SET(rom-properties-kde4_PCH_CXX ../stdafx.cpp)
+	SET(rom-properties-kde4_PCH_SRC ${rom-properties-kde4_PCH_CXX})
+	SET(rom-properties-kde4_PCH_H ../stdafx.h)
+ENDIF(ENABLE_PCH)
+
 #####################
 # Build the plugin. #
 #####################
 
 IF(BUILD_KDE4)
 	KDE4_ADD_PLUGIN(rom-properties-kde4
+		${rom-properties-kde4_PCH_SRC} ${rom-properties-kde4_PCH_H}
 		${rom-properties-kde4_SRCS}
 		${rom-properties-kde4_H}
 		${rom-properties-kde4_UIS_H}
 		)
+	IF(ENABLE_PCH)
+		ADD_PRECOMPILED_HEADER(rom-properties-kde4 ${rom-properties-kde4_PCH_H}
+			SOURCE_CXX ${rom-properties-kde4_PCH_CXX}
+			)
+	ENDIF(ENABLE_PCH)
 	DO_SPLIT_DEBUG(rom-properties-kde4)
 	TARGET_INCLUDE_DIRECTORIES(rom-properties-kde4
 		PUBLIC	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>		# kde4

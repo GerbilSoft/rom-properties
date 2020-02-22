@@ -14,6 +14,7 @@
  * - https://github.com/KDE/calligra-history/blob/5e323f11f11ec487e1ef801d61bb322944f454a5/libs/main/kodocinfopropspage.desktop
  */
 
+#include "stdafx.h"
 #include "RomPropertiesDialogPlugin.hpp"
 #include <kpluginfactory.h>
 
