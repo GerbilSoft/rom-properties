@@ -34,9 +34,6 @@ class WbfsReaderPrivate : public SparseDiscReaderPrivate {
 
 		/** WBFS functions. **/
 
-		// WBFS magic number.
-		static const uint8_t WBFS_MAGIC[4];
-
 		/**
 		 * Read the WBFS header.
 		 * @return Allocated wbfs_t on success; nullptr on error.
@@ -77,9 +74,6 @@ class WbfsReaderPrivate : public SparseDiscReaderPrivate {
 };
 
 /** WbfsReaderPrivate **/
-
-// WBFS magic number.
-const uint8_t WbfsReaderPrivate::WBFS_MAGIC[4] = {'W','B','F','S'};
 
 WbfsReaderPrivate::WbfsReaderPrivate(WbfsReader *q)
 	: super(q)
@@ -137,7 +131,7 @@ wbfs_t *WbfsReaderPrivate::readWbfsHeader(void)
 	}
 
 	// Check the WBFS magic.
-	if (memcmp(&head->magic, WBFS_MAGIC, sizeof(WBFS_MAGIC)) != 0) {
+	if (head->magic != cpu_to_be32(WBFS_MAGIC)) {
 		// Invalid WBFS magic.
 		// TODO: Better error code?
 		free(head);
@@ -389,7 +383,7 @@ int WbfsReader::isDiscSupported_static(const uint8_t *pHeader, size_t szHeader)
 		return -1;
 
 	const wbfs_head_t *head = reinterpret_cast<const wbfs_head_t*>(pHeader);
-	if (memcmp(&head->magic, WbfsReaderPrivate::WBFS_MAGIC, sizeof(WbfsReaderPrivate::WBFS_MAGIC)) != 0) {
+	if (head->magic != cpu_to_be32(WBFS_MAGIC)) {
 		// Incorrect magic number.
 		return -1;
 	}

@@ -98,8 +98,7 @@ typedef struct wbfs_disc_s
         int i;		  		  // disc index in the wbfs header (disc_table)
 } wbfs_disc_t;
 
-// Not used here.
-//#define WBFS_MAGIC (('W'<<24)|('B'<<16)|('F'<<8)|('S'))
+#define WBFS_MAGIC (('W'<<24)|('B'<<16)|('F'<<8)|('S'))
 
 #ifdef __cplusplus
    }
