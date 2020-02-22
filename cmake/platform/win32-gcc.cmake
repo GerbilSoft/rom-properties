@@ -2,7 +2,7 @@
 # For MinGW compilers.
 
 # Enable "secure" API functions: *_s()
-SET(RP_C_FLAGS_WIN32 "${RP_C_FLAGS_WIN32} -DMINGW_HAS_SECURE_API")
+ADD_DEFINITIONS(-DMINGW_HAS_SECURE_API)
 
 # Subsystem and minimum Windows version:
 # - If i386: 5.01
