@@ -66,10 +66,26 @@ SET(rom-properties-mate_H
 	../gnome/rom-properties-provider.hpp
 	)
 
+IF(ENABLE_PCH)
+	# Precompiled headers.
+	INCLUDE(PrecompiledHeader)
+	SET(rom-properties-mate_PCH_C ../stdafx.c)
+	SET(rom-properties-mate_PCH_CXX ../stdafx.cpp)
+	SET(rom-properties-mate_PCH_SRC ${rom-properties-mate_PCH_C} ${rom-properties-mate_PCH_CXX})
+	SET(rom-properties-mate_PCH_H ../stdafx.h)
+ENDIF(ENABLE_PCH)
+
 IF(BUILD_MATE)
 	ADD_LIBRARY(rom-properties-mate MODULE
+		${rom-properties-mate_PCH_SRC} ${rom-properties-mate_PCH_H}
 		${rom-properties-mate_SRCS}
 		)
+	IF(ENABLE_PCH)
+		ADD_PRECOMPILED_HEADER(rom-properties-mate ${rom-properties-mate_PCH_H}
+			SOURCE_C ${rom-properties-mate_PCH_C}
+			SOURCE_CXX ${rom-properties-mate_PCH_CXX}
+			)
+	ENDIF(ENABLE_PCH)
 	SET_TARGET_PROPERTIES(rom-properties-mate PROPERTIES PREFIX "")
 	DO_SPLIT_DEBUG(rom-properties-mate)
 	TARGET_INCLUDE_DIRECTORIES(rom-properties-mate

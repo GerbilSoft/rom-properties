@@ -66,10 +66,26 @@ SET(rom-properties-cinnamon_H
 	../gnome/rom-properties-provider.hpp
 	)
 
+IF(ENABLE_PCH)
+	# Precompiled headers.
+	INCLUDE(PrecompiledHeader)
+	SET(rom-properties-cinnamon_PCH_C ../stdafx.c)
+	SET(rom-properties-cinnamon_PCH_CXX ../stdafx.cpp)
+	SET(rom-properties-cinnamon_PCH_SRC ${rom-properties-cinnamon_PCH_C} ${rom-properties-cinnamon_PCH_CXX})
+	SET(rom-properties-cinnamon_PCH_H ../stdafx.h)
+ENDIF(ENABLE_PCH)
+
 IF(BUILD_CINNAMON)
 	ADD_LIBRARY(rom-properties-cinnamon MODULE
+		${rom-properties-cinnamon_PCH_SRC} ${rom-properties-cinnamon_PCH_H}
 		${rom-properties-cinnamon_SRCS}
 		)
+	IF(ENABLE_PCH)
+		ADD_PRECOMPILED_HEADER(rom-properties-cinnamon ${rom-properties-cinnamon_PCH_H}
+			SOURCE_C ${rom-properties-cinnamon_PCH_C}
+			SOURCE_CXX ${rom-properties-cinnamon_PCH_CXX}
+			)
+	ENDIF(ENABLE_PCH)
 	SET_TARGET_PROPERTIES(rom-properties-cinnamon PROPERTIES PREFIX "")
 	DO_SPLIT_DEBUG(rom-properties-cinnamon)
 	TARGET_INCLUDE_DIRECTORIES(rom-properties-cinnamon

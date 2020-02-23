@@ -10,9 +10,7 @@
 #define __ROMPROPERTIES_GTK_PIMGTYPE_HPP__
 
 #include <gtk/gtk.h>
-
-// librptexture
-#include "librptexture/img/rp_image.hpp"
+#include "stdboolx.h"
 
 // NOTE: GTK+ 3.x earlier than 3.10 is not supported.
 #if GTK_CHECK_VERSION(3,0,0) && !GTK_CHECK_VERSION(3,10,0)
@@ -21,25 +19,30 @@
 
 #if GTK_CHECK_VERSION(3,10,0)
 # define RP_GTK_USE_CAIRO 1
-# include "CairoImageConv.hpp"
+# ifdef __cplusplus
+#  include "CairoImageConv.hpp"
+# endif /* __cplusplus */
 # include <cairo-gobject.h>
 # define PIMGTYPE_GOBJECT_TYPE CAIRO_GOBJECT_TYPE_SURFACE
 # define GTK_CELL_RENDERER_PIXBUF_PROPERTY "surface"
-# ifdef __cplusplus
-extern "C"
-# endif
+G_BEGIN_DECLS
 typedef cairo_surface_t *PIMGTYPE;
+G_END_DECLS
 #else
-# include "GdkImageConv.hpp"
+# ifdef __cplusplus
+#  include "GdkImageConv.hpp"
+# endif /* __cplusplus */
 # define PIMGTYPE_GOBJECT_TYPE GDK_TYPE_PIXBUF
 # define GTK_CELL_RENDERER_PIXBUF_PROPERTY "pixbuf"
-# ifdef __cplusplus
-extern "C"
-# endif
+G_BEGIN_DECLS
 typedef GdkPixbuf *PIMGTYPE;
+G_END_DECLS
 #endif
 
 #ifdef __cplusplus
+// librptexture
+#include "librptexture/img/rp_image.hpp"
+
 // rp_image_to_PIMGTYPE wrapper function.
 static inline PIMGTYPE rp_image_to_PIMGTYPE(const LibRpTexture::rp_image *img)
 {

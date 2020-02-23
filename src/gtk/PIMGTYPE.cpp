@@ -6,6 +6,7 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+#include "stdafx.h"
 #include "PIMGTYPE.hpp"
 
 // glib resources
@@ -13,14 +14,6 @@
 G_BEGIN_DECLS
 #include "glibresources.h"
 G_END_DECLS
-
-// C includes. (C++ namespace)
-#include <cassert>
-#include <cstring>
-
-// C++ STL classes.
-#include <unordered_map>
-using std::unordered_map;
 
 #ifdef RP_GTK_USE_CAIRO
 /**
@@ -102,7 +95,7 @@ static cairo_status_t PIMGTYPE_CairoReadFunc(void *closure, unsigned char *data,
 }
 #else /* !RP_GTK_USE_CAIRO */
 // Mapping of data pointers to GBytes* objects for unreference.
-static unordered_map<const void*, GBytes*> map_gbytes_unref;
+static std::unordered_map<const void*, GBytes*> map_gbytes_unref;
 
 /**
  * GDestroyNotify for g_memory_input_stream_new_from_data().

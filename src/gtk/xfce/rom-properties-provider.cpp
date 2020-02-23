@@ -2,20 +2,16 @@
  * ROM Properties Page shell extension. (XFCE)                             *
  * rom-properties-provider.cpp: ThunarX Provider Definition.               *
  *                                                                         *
- * Copyright (c) 2017-2019 by David Korth.                                 *
+ * Copyright (c) 2017-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+#include "stdafx.h"
 #include "rom-properties-provider.hpp"
 #include "rom-properties-page.hpp"
 
 // librpbase
-#include "librpbase/file/RpFile.hpp"
-#include "librpbase/RomData.hpp"
 using namespace LibRpBase;
-
-// RpFileGio
-#include "RpFile_gio.hpp"
 
 // libromdata
 #include "libromdata/RomDataFactory.hpp"

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (XFCE)                             *
  * rom-properties-provider.hpp: ThunarX Provider Definition.               *
  *                                                                         *
- * Copyright (c) 2017 by David Korth.                                      *
+ * Copyright (c) 2017-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -12,7 +12,7 @@
 #include <glib.h>
 
 // NOTE: thunarx.h doesn't have extern "C" set up properly everywhere.
-G_BEGIN_DECLS;
+G_BEGIN_DECLS
 
 // NOTE: Thunar-1.8.0's thunarx-renamer.h depends on GtkVBox,
 // which is deprecated in GTK+ 3.x.
@@ -36,6 +36,6 @@ void		rom_properties_provider_register_type	(ThunarxProviderPlugin *plugin) G_GN
 
 gboolean	rom_properties_get_file_supported	(ThunarxFileInfo *info) G_GNUC_INTERNAL;
 
-G_END_DECLS;
+G_END_DECLS
 
 #endif /* !__ROMPROPERTIES_XFCE_ROM_PROPERTIES_PROVIDER_HPP__ */

@@ -30,7 +30,7 @@ typedef NemoFileInfo NautilusFileInfo;
 # error GTK3 desktop environment not set and/or supported.
 #endif
 
-G_BEGIN_DECLS;
+G_BEGIN_DECLS
 
 typedef struct _RomPropertiesProviderClass	RomPropertiesProviderClass;
 typedef struct _RomPropertiesProvider		RomPropertiesProvider;
@@ -49,6 +49,6 @@ void		rom_properties_provider_register_type_ext(GTypeModule *module) G_GNUC_INTE
 
 gboolean	rom_properties_get_file_supported	(NautilusFileInfo *info) G_GNUC_INTERNAL;
 
-G_END_DECLS;
+G_END_DECLS
 
 #endif /* !__ROMPROPERTIES_GNOME_ROM_PROPERTIES_PROVIDER_HPP__ */

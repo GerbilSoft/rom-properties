@@ -6,23 +6,14 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+#include "stdafx.h"
 #include "CairoImageConv.hpp"
 
-// C includes.
-#include <stdint.h>
-
-// C includes. (C++ namespace)
-#include <cassert>
-#include <cstring>
-
-// C++ includes.
-#include <array>
-#include <memory>
+// C++ STL classes.
 using std::array;
 using std::unique_ptr;
 
 // librptexture
-#include "librptexture/img/rp_image.hpp"
 using LibRpTexture::rp_image;
 
 /**

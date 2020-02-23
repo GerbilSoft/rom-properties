@@ -2,25 +2,17 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * GdkImageConv.cpp: Helper functions to convert from rp_image to GDK.     *
  *                                                                         *
- * Copyright (c) 2017-2019 by David Korth.                                 *
+ * Copyright (c) 2017-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+#include "stdafx.h"
 #include "GdkImageConv.hpp"
 
-// C includes.
-#include <stdint.h>
-
-// C includes. (C++ namespace)
-#include <cassert>
-#include <cstring>
-
-// C++ includes.
-#include <array>
+// C++ STL classes.
 using std::array;
 
 // librptexture
-#include "librptexture/img/rp_image.hpp"
 using LibRpTexture::rp_image;
 
 /**

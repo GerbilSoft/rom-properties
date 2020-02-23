@@ -6,50 +6,25 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+#include "stdafx.h"
 #include "RomDataView.hpp"
 #include "rp-gtk-enums.h"
 
-// librpbase
-#include "librpbase/common.h"
-#include "librpbase/TextFuncs.hpp"
-#include "librpbase/RomData.hpp"
-#include "librpbase/RomFields.hpp"
-#include "librpbase/SystemRegion.hpp"
-#include "librpbase/file/RpFile.hpp"
+// librpbase, librptexture
 #include "librpbase/img/IconAnimData.hpp"
 #include "librpbase/img/IconAnimHelper.hpp"
 using namespace LibRpBase;
-
-// RpFileGio
-#include "RpFile_gio.hpp"
-
-// libi18n
-#include "libi18n/i18n.h"
-
-// librptexture
-#include "librptexture/img/rp_image.hpp"
 using LibRpTexture::rp_image;
 
 // libromdata
 #include "libromdata/RomDataFactory.hpp"
 using LibRomData::RomDataFactory;
 
-// C includes. (C++ namespace)
-#include <cassert>
-
 // C++ includes.
-#include <algorithm>
-#include <array>
-#include <set>
-#include <string>
-#include <vector>
 using std::array;
 using std::set;
 using std::string;
 using std::vector;
-
-// PIMGTYPE
-#include "PIMGTYPE.hpp"
 
 // GTK+ 2.x compatibility macros.
 // Reference: https://github.com/kynesim/wireshark/blob/master/ui/gtk/old-gtk-compat.h

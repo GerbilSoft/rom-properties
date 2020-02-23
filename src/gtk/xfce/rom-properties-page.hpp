@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (XFCE)                             *
  * rom-properties-page.hpp: ThunarX Properties Page.                       *
  *                                                                         *
- * Copyright (c) 2017-2018 by David Korth.                                 *
+ * Copyright (c) 2017-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -12,7 +12,7 @@
 #include <glib.h>
 
 // NOTE: thunarx.h doesn't have extern "C" set up properly everywhere.
-G_BEGIN_DECLS;
+G_BEGIN_DECLS
 
 // NOTE: Thunar-1.8.0's thunarx-renamer.h depends on GtkVBox,
 // which is deprecated in GTK+ 3.x.
@@ -41,6 +41,6 @@ ThunarxFileInfo		*rom_properties_page_get_file		(RomPropertiesPage	*page) G_GNUC
 void			rom_properties_page_set_file		(RomPropertiesPage	*page,
 								 ThunarxFileInfo	*file) G_GNUC_INTERNAL;
 
-G_END_DECLS;
+G_END_DECLS
 
 #endif /* __ROMPROPERTIES_XFCE_ROM_PROPERTIES_PAGE_HPP__ */

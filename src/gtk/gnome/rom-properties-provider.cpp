@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (GNOME)                            *
  * rom-properties-provider.cpp: Nautilus Provider Definition.              *
  *                                                                         *
- * Copyright (c) 2017-2019 by David Korth.                                 *
+ * Copyright (c) 2017-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -15,18 +15,11 @@
  * - https://github.com/GNOME/nautilus/blob/bb433582165da10ab07337d707ea448703c3865f/src/nautilus-image-properties-page.c
  */
 
+#include "stdafx.h"
 #include "rom-properties-provider.hpp"
 
 // librpbase
-#include "librpbase/file/RpFile.hpp"
-#include "librpbase/RomData.hpp"
 using namespace LibRpBase;
-
-// RpFileGio
-#include "RpFile_gio.hpp"
-
-// libi18n
-#include "libi18n/i18n.h"
 
 // libromdata
 #include "libromdata/RomDataFactory.hpp"

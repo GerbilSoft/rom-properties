@@ -2,23 +2,14 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * CreateThumbnail.cpp: Thumbnail creator for wrapper programs.            *
  *                                                                         *
- * Copyright (c) 2017-2019 by David Korth.                                 *
+ * Copyright (c) 2017-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-// librpbase
-#include "librpbase/common.h"
-#include "librpbase/RomData.hpp"
-#include "librpbase/file/FileSystem.hpp"
-#include "librpbase/file/RpFile.hpp"
-#include "librpbase/img/RpPngWriter.hpp"
+#include "stdafx.h"
+
+// librpbase, librptexture
 using namespace LibRpBase;
-
-// RpFileGio
-#include "RpFile_gio.hpp"
-
-// librptexture
-#include "librptexture/img/rp_image.hpp"
 using LibRpTexture::rp_image;
 
 // libromdata
@@ -30,23 +21,9 @@ using LibRomData::RomDataFactory;
 #include "libromdata/img/TCreateThumbnail.cpp"
 using LibRomData::TCreateThumbnail;
 
-// C includes. (C++ namespace)
-#include <cinttypes>
-#include <cstdio>
-#include <cstring>
-
-// C++ includes.
-#include <memory>
-#include <string>
+// C++ STL classes.
 using std::string;
 using std::unique_ptr;
-
-// glib
-#include <glib.h>
-#include <glib-object.h>
-
-// PIMGTYPE
-#include "PIMGTYPE.hpp"
 
 // GTK+ major version.
 // We can't simply use GTK_MAJOR_VERSION because

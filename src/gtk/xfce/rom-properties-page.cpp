@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (XFCE)                             *
  * rom-properties-page.cpp: ThunarX Properties Page.                       *
  *                                                                         *
- * Copyright (c) 2017 by David Korth.                                      *
+ * Copyright (c) 2017-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -12,15 +12,11 @@
  * - http://api.xfce.m8t.in/xfce-4.10/thunarx-1.4.0/ThunarxPropertyPage.html
  */
 
+#include "stdafx.h"
 #include "rom-properties-page.hpp"
 #include "../RomDataView.hpp"
 
-// libi18n
-#include "libi18n/i18n.h"
-
-// C++ includes.
-#include <string>
-#include <vector>
+// C++ STL classes.
 using std::string;
 using std::vector;
 

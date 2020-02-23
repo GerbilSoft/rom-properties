@@ -75,10 +75,26 @@ SET(rom-properties-gnome_H
 	rom-properties-provider.hpp
 	)
 
+IF(ENABLE_PCH)
+	# Precompiled headers.
+	INCLUDE(PrecompiledHeader)
+	SET(rom-properties-gnome_PCH_C ../stdafx.c)
+	SET(rom-properties-gnome_PCH_CXX ../stdafx.cpp)
+	SET(rom-properties-gnome_PCH_SRC ${rom-properties-gnome_PCH_C} ${rom-properties-gnome_PCH_CXX})
+	SET(rom-properties-gnome_PCH_H ../stdafx.h)
+ENDIF(ENABLE_PCH)
+
 IF(BUILD_GNOME)
 	ADD_LIBRARY(rom-properties-gnome MODULE
+		${rom-properties-gnome_PCH_SRC} ${rom-properties-gnome_PCH_H}
 		${rom-properties-gnome_SRCS}
 		)
+	IF(ENABLE_PCH)
+		ADD_PRECOMPILED_HEADER(rom-properties-gnome ${rom-properties-gnome_PCH_H}
+			SOURCE_C ${rom-properties-gnome_PCH_C}
+			SOURCE_CXX ${rom-properties-gnome_PCH_CXX}
+			)
+	ENDIF(ENABLE_PCH)
 	SET_TARGET_PROPERTIES(rom-properties-gnome PROPERTIES PREFIX "")
 	DO_SPLIT_DEBUG(rom-properties-gnome)
 	TARGET_INCLUDE_DIRECTORIES(rom-properties-gnome

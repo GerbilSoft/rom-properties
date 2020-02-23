@@ -11,7 +11,7 @@
 
 #include <gtk/gtk.h>
 
-G_BEGIN_DECLS;
+G_BEGIN_DECLS
 
 typedef struct _RomDataViewClass	RomDataViewClass;
 typedef struct _RomDataView		RomDataView;
@@ -44,6 +44,6 @@ void		rom_data_view_set_uri		(RomDataView	*page,
 RpDescFormatType rom_data_view_get_desc_format_type(RomDataView *page) G_GNUC_INTERNAL;
 void		rom_data_view_set_desc_format_type(RomDataView *page, RpDescFormatType desc_format_type);
 
-G_END_DECLS;
+G_END_DECLS
 
 #endif /* __ROMPROPERTIES_GTK_ROMDATA_VIEW_HPP__ */

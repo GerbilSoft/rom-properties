@@ -6,16 +6,8 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+#include "stdafx.h"
 #include "rom-properties-provider.hpp"
-
-// GLib on non-Windows platforms defines G_MODULE_EXPORT to a no-op.
-// This doesn't work when we use symbol visibility settings.
-#if !defined(_WIN32) && (defined(__GNUC__) && __GNUC__ >= 4)
-#ifdef G_MODULE_EXPORT
-#undef G_MODULE_EXPORT
-#endif
-#define G_MODULE_EXPORT __attribute__ ((visibility ("default")))
-#endif /* !_WIN32 && __GNUC__ >= 4 */
 
 static GType type_list[1];
 

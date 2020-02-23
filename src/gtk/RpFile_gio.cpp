@@ -6,9 +6,10 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+#include "stdafx.h"
 #include "RpFile_gio.hpp"
 
-#include <glib.h>
+// gio
 #include <gio/gio.h>
 
 // C++ STL classes.

@@ -68,10 +68,26 @@ SET(rom-properties-xfce_H
 	rom-properties-page.hpp
 	)
 
+IF(ENABLE_PCH)
+	# Precompiled headers.
+	INCLUDE(PrecompiledHeader)
+	SET(rom-properties-xfce_PCH_C ../stdafx.c)
+	SET(rom-properties-xfce_PCH_CXX ../stdafx.cpp)
+	SET(rom-properties-xfce_PCH_SRC ${rom-properties-xfce_PCH_C} ${rom-properties-xfce_PCH_CXX})
+	SET(rom-properties-xfce_PCH_H ../stdafx.h)
+ENDIF(ENABLE_PCH)
+
 IF(BUILD_XFCE)
 	ADD_LIBRARY(rom-properties-xfce MODULE
+		${rom-properties-xfce_PCH_SRC} ${rom-properties-xfce_PCH_H}
 		${rom-properties-xfce_SRCS}
 		)
+	IF(ENABLE_PCH)
+		ADD_PRECOMPILED_HEADER(rom-properties-xfce ${rom-properties-xfce_PCH_H}
+			SOURCE_C ${rom-properties-xfce_PCH_C}
+			SOURCE_CXX ${rom-properties-xfce_PCH_CXX}
+			)
+	ENDIF(ENABLE_PCH)
 	SET_TARGET_PROPERTIES(rom-properties-xfce PROPERTIES PREFIX "")
 	DO_SPLIT_DEBUG(rom-properties-xfce)
 	TARGET_INCLUDE_DIRECTORIES(rom-properties-xfce
