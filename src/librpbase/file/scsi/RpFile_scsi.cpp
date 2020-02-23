@@ -363,7 +363,7 @@ int RpFilePrivate::scsi_read_capacity(off64_t *pDeviceSize, uint32_t *pSectorSiz
 		return ret;
 	}
 
-	if (resp10.LBA != 0xFFFFFFFF) {
+	if (resp10.LBA != be32_to_cpu(0xFFFFFFFF)) {
 		// READ CAPACITY(10) has the full capacity.
 		const uint32_t sector_size = be32_to_cpu(resp10.BlockLen);
 		if (pSectorSize) {
