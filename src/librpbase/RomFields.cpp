@@ -146,11 +146,10 @@ RomFields::~RomFields()
  */
 const char *RomFields::ageRatingAbbrev(int country)
 {
-	static const char abbrevs[16][8] = {
+	static const char abbrevs[][8] = {
 		"CERO", "ESRB", "",        "USK",
 		"PEGI", "MEKU", "PEGI-PT", "BBFC",
-		"ACB",  "GRB",  "CGSRR",   "",
-		"",     "",     "",        "",
+		"ACB",  "GRB",  "CGSRR",
 	};
 
 	assert(country >= 0 && country < ARRAY_SIZE(abbrevs));
