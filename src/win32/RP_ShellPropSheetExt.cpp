@@ -1937,6 +1937,7 @@ void RP_ShellPropSheetExt_Private::buildCboLanguageImageList(void)
 			// Add the icon to the ImageList.
 			GdiFlush();
 			ImageList_Add(himglFlags, hbmIcon, nullptr);
+			DeleteBitmap(hbmIcon);
 		}
 	}
 	ReleaseDC(nullptr, hdcIcon);
