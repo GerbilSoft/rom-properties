@@ -27,11 +27,6 @@
     DLL and into a separate executable. This will allow the downloading to be
     handled in a lower privilege environment.
     * Windows: On Vista and later, rp-download runs as a low-integrity process.
-      * TODO before release:
-        * Add more security options.
-        * Have rp-download drop privileges if run directly.
-        * If rp-download.exe isn't in the current directory, check the
-          architecture-specific subdirectory.
     * Added other security functionality for rp-download and rpcli:
       * Linux: AppArmor profiles, libseccomp
       * OpenBSD: pledge() [and tame() for old versions]
