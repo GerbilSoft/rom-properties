@@ -126,7 +126,7 @@ ConfigDialogPrivate::ConfigDialogPrivate()
 	psh.hInstance = HINST_THISCOMPONENT;
 	psh.hIcon = PropSheetIcon::getSmallIcon();	// Small icon only!
 	psh.pszCaption = nullptr;			// will be set in WM_SHOWWINDOW
-	psh.nPages = hpsp.size();
+	psh.nPages = static_cast<UINT>(hpsp.size());
 	psh.nStartPage = 0;
 	psh.phpage = hpsp.data();
 	psh.pfnCallback = this->callbackProc;

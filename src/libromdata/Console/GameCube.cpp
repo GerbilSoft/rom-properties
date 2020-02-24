@@ -319,7 +319,7 @@ int GameCubePrivate::loadWiiPartitionTables(void)
 		if (count == 0) {
 			continue;
 		} else if (count > pt.size()) {
-			count = pt.size();
+			count = static_cast<unsigned int>(pt.size());
 		}
 
 		// Read the partition table entries.
