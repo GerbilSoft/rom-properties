@@ -241,19 +241,25 @@ IF "%ZIP_PREFIX%" == "" (
 unzip ..\build.i386\*-win32.zip
 @IF ERRORLEVEL 1 EXIT /B %ERRORLEVEL%
 
-:: Move the 32-bit EXEs to the base directory.
+:: Move the 32-bit EXEs to the base directory,
+:: except for rp-download.exe.
 :: NOTE: Not moving the PDBs to the base directory,
 :: since those are stored in a separate ZIP file.
-MOVE i386\*.exe .
-
-:: Rename svrplus.exe to install.exe to make it
-:: more obvious that it's the installer.
-REN svrplus.exe install.exe
+MOVE i386\rpcli.exe .
+MOVE i386\rp-config.exe .
+MOVE i386\svrplus.exe install.exe
 
 :: Extract the 64-bit ZIP file.
 :: (Only the architecture-specific directory.)
 unzip ..\build.amd64\*-win64.zip amd64/*
 @IF ERRORLEVEL 1 EXIT /B %ERRORLEVEL%
+
+:: Remove the 64-bit EXEs, except for rp-download.exe.
+:: These aren't necessary. If someone really wants a
+:: 64-bit Windows build, they can build it themselves.
+DEL amd64\rpcli.exe
+DEL amd64\rp-config.exe
+DEL amd64\svrplus.exe
 
 :: Compress the debug files.
 DEL /q "..\..\%ZIP_PREFIX%-windows.debug.zip" >NUL 2>&1
