@@ -112,7 +112,7 @@ IF(BUILD_XFCE)
 	# (Requires removing the "-D" switches.)
 	ADD_DEFINITIONS(${GTK2_DEFINITIONS})
 	TARGET_COMPILE_DEFINITIONS(rom-properties-xfce
-		PRIVATE G_LOG_DOMAIN=\"rom-properties-xfce\"
+		PRIVATE RP_UI_GTK2_XFCE
 		)
 ENDIF(BUILD_XFCE)
 

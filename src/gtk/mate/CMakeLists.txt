@@ -105,8 +105,7 @@ IF(BUILD_MATE)
 	TARGET_LINK_LIBRARIES(rom-properties-mate PRIVATE Cairo::cairo)
 	TARGET_LINK_LIBRARIES(rom-properties-mate PUBLIC Gtk3::gtk3 GLib2::gio GLib2::gobject GLib2::glib)
 	TARGET_COMPILE_DEFINITIONS(rom-properties-mate
-		PRIVATE G_LOG_DOMAIN=\"rom-properties-mate\"
-			RP_UI_GTK3_MATE
+		PRIVATE RP_UI_GTK3_MATE
 		)
 ENDIF(BUILD_MATE)
 

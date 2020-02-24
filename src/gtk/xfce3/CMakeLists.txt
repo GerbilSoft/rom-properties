@@ -109,7 +109,7 @@ IF(BUILD_XFCE3)
 	TARGET_LINK_LIBRARIES(rom-properties-xfce3 PRIVATE Cairo::cairo)
 	TARGET_LINK_LIBRARIES(rom-properties-xfce3 PUBLIC Gtk3::gtk3 GLib2::gio GLib2::gobject GLib2::glib)
 	TARGET_COMPILE_DEFINITIONS(rom-properties-xfce3
-		PRIVATE G_LOG_DOMAIN=\"rom-properties-xfce3\"
+		PRIVATE RP_UI_GTK3_XFCE
 		)
 ENDIF(BUILD_XFCE3)
 

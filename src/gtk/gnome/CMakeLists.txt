@@ -114,8 +114,7 @@ IF(BUILD_GNOME)
 	TARGET_LINK_LIBRARIES(rom-properties-gnome PRIVATE Cairo::cairo)
 	TARGET_LINK_LIBRARIES(rom-properties-gnome PUBLIC Gtk3::gtk3 GLib2::gio GLib2::gobject GLib2::glib)
 	TARGET_COMPILE_DEFINITIONS(rom-properties-gnome
-		PRIVATE G_LOG_DOMAIN=\"rom-properties-gnome\"
-			RP_UI_GTK3_GNOME
+		PRIVATE RP_UI_GTK3_GNOME
 		)
 ENDIF(BUILD_GNOME)
 

@@ -105,8 +105,7 @@ IF(BUILD_CINNAMON)
 	TARGET_LINK_LIBRARIES(rom-properties-cinnamon PRIVATE Cairo::cairo)
 	TARGET_LINK_LIBRARIES(rom-properties-cinnamon PUBLIC Gtk3::gtk3 GLib2::gio GLib2::gobject GLib2::glib)
 	TARGET_COMPILE_DEFINITIONS(rom-properties-cinnamon
-		PRIVATE G_LOG_DOMAIN=\"rom-properties-cinnamon\"
-			RP_UI_GTK3_CINNAMON
+		PRIVATE RP_UI_GTK3_CINNAMON
 		)
 ENDIF(BUILD_CINNAMON)
 
