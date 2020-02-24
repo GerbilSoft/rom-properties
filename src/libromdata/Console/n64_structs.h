@@ -30,7 +30,7 @@ extern "C" {
 #define N64_V64_MAGIC   0x3780401200000F00ULL
 #define N64_SWAP2_MAGIC 0x12408037000F0000ULL
 #define N64_LE32_MAGIC  0x401237800F000000ULL
-typedef union PACKED _N64_RomHeader {
+typedef union _N64_RomHeader {
 	struct {
 		union {
 			// [0x000]
