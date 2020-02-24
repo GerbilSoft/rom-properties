@@ -245,6 +245,8 @@ unzip ..\build.i386\*-win32.zip
 :: except for rp-download.exe.
 :: NOTE: Not moving the PDBs to the base directory,
 :: since those are stored in a separate ZIP file.
+:: NOTE 2: svrplus.exe is renamed to install.exe to make it
+:; more obvious that it's the installer.
 MOVE i386\rpcli.exe .
 MOVE i386\rp-config.exe .
 MOVE i386\svrplus.exe install.exe
