@@ -196,7 +196,6 @@ RomDataViewPrivate::~RomDataViewPrivate()
  */
 void RomDataViewPrivate::initHeaderRow(void)
 {
-	Q_Q(RomDataView);
 	if (!romData) {
 		// No ROM data.
 		ui.lblSysInfo->hide();
@@ -846,7 +845,6 @@ void RomDataViewPrivate::initStringMulti(QLabel *lblDesc, const RomFields::Field
 	// NOTE: The string contents won't be initialized here.
 	// They will be initialized separately, since the user will
 	// be able to change the displayed language.
-	Q_Q(RomDataView);
 	QString qs_empty;
 	QLabel *const lblStringMulti = initString(lblDesc, field, &qs_empty);
 	if (lblStringMulti) {
