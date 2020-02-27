@@ -170,9 +170,9 @@ ConfigDialog::ConfigDialog(QWidget *parent)
 	// This is needed in order to track focus in case
 	// the "Apply" button is clicked.
 	QList<QWidget*> widgets = this->findChildren<QWidget*>();
-	foreach (QWidget *widget, widgets) {
+	std::for_each(widgets.begin(), widgets.end(), [this](QWidget *widget) {
 		widget->installEventFilter(this);
-	}
+	});
 }
 
 /**

@@ -43,7 +43,7 @@ void DragImageTreeWidget::startDrag(Qt::DropActions supportedActions)
 	// Find rp_image* objects in the items.
 	QMimeData *const mimeData = new QMimeData;
 	bool hasOne = false;
-	//foreach (QTreeWidgetItem *item, items) {
+	//std::for_each(items.begin(), items.end(), [](QTreeWidgetItem *item) {
 	do {
 		const rp_image *const img = static_cast<const rp_image*>(item->data(0, RpImageRole).value<void*>());
 		if (!img)

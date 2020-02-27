@@ -863,9 +863,9 @@ void RomDataViewPrivate::updateMulti(uint32_t user_lc)
 	set<uint32_t> set_lc;
 
 	// RFT_STRING_MULTI
-	foreach(const Data_StringMulti_t &data, vecStringMulti) {
-		QLabel *const lblString = data.first;
-		const RomFields::Field *const pField = data.second;
+	for (auto iter = vecStringMulti.begin(); iter != vecStringMulti.end(); ++iter) {
+		QLabel *const lblString = iter->first;
+		const RomFields::Field *const pField = iter->second;
 		const auto *const pStr_multi = pField->data.str_multi;
 		assert(pStr_multi != nullptr);
 		assert(!pStr_multi->empty());
@@ -895,9 +895,9 @@ void RomDataViewPrivate::updateMulti(uint32_t user_lc)
 	}
 
 	// RFT_LISTDATA_MULTI
-	foreach(const Data_ListDataMulti_t &data, vecListDataMulti) {
-		QTreeWidget *const treeWidget = data.first;
-		const RomFields::Field *const pField = data.second;
+	for (auto iter = vecListDataMulti.begin(); iter != vecListDataMulti.end(); ++iter) {
+		QTreeWidget *const treeWidget = iter->first;
+		const RomFields::Field *const pField = iter->second;
 		const auto *const pListData_multi = pField->data.list_data.data.multi;
 		assert(pListData_multi != nullptr);
 		assert(!pListData_multi->empty());
