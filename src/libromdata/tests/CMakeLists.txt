@@ -6,11 +6,8 @@ INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR}/../..)
 
 IF(ENABLE_DECRYPTION)
 	# CtrKeyScrambler test.
-	ADD_EXECUTABLE(CtrKeyScramblerTest
-		../../librpbase/tests/gtest_init.cpp
-		CtrKeyScramblerTest.cpp
-		)
-	TARGET_LINK_LIBRARIES(CtrKeyScramblerTest PRIVATE rpsecure romdata rpbase)
+	ADD_EXECUTABLE(CtrKeyScramblerTest CtrKeyScramblerTest.cpp)
+	TARGET_LINK_LIBRARIES(CtrKeyScramblerTest PRIVATE rptest romdata rpbase)
 	TARGET_LINK_LIBRARIES(CtrKeyScramblerTest PRIVATE gtest)
 	DO_SPLIT_DEBUG(CtrKeyScramblerTest)
 	SET_WINDOWS_SUBSYSTEM(CtrKeyScramblerTest CONSOLE)
@@ -39,12 +36,11 @@ SET_WINDOWS_ENTRYPOINT(GcnFstPrint wmain OFF)
 # NOTE: We can't disable NLS here due to its usage
 # in FstPrint.cpp. gtest_init.cpp will set LC_ALL=C.
 ADD_EXECUTABLE(GcnFstTest
-	../../librpbase/tests/gtest_init.cpp
 	disc/FstPrint.cpp
 	disc/FstPrint.hpp
 	disc/GcnFstTest.cpp
 	)
-TARGET_LINK_LIBRARIES(GcnFstTest PRIVATE rpsecure romdata rpbase)
+TARGET_LINK_LIBRARIES(GcnFstTest PRIVATE rptest romdata rpbase)
 IF(ENABLE_NLS)
 	TARGET_LINK_LIBRARIES(GcnFstTest PRIVATE i18n)
 ENDIF(ENABLE_NLS)
@@ -78,11 +74,8 @@ FOREACH(test_fst ${test_fsts})
 ENDFOREACH(test_fst test_fsts)
 
 # ImageDecoder test.
-ADD_EXECUTABLE(ImageDecoderTest
-	../../librpbase/tests/gtest_init.cpp
-	img/ImageDecoderTest.cpp
-	)
-TARGET_LINK_LIBRARIES(ImageDecoderTest PRIVATE rpsecure romdata rpbase)
+ADD_EXECUTABLE(ImageDecoderTest img/ImageDecoderTest.cpp)
+TARGET_LINK_LIBRARIES(ImageDecoderTest PRIVATE rptest romdata rpbase)
 TARGET_LINK_LIBRARIES(ImageDecoderTest PRIVATE gtest ${ZLIB_LIBRARY})
 TARGET_INCLUDE_DIRECTORIES(ImageDecoderTest PRIVATE ${ZLIB_INCLUDE_DIRS})
 TARGET_COMPILE_DEFINITIONS(ImageDecoderTest PRIVATE ${ZLIB_DEFINITIONS})
@@ -138,11 +131,10 @@ ENDFOREACH(test_image ${ImageDecoderTest_images})
 
 # SuperMagicDrive test.
 ADD_EXECUTABLE(SuperMagicDriveTest
-	../../librpbase/tests/gtest_init.cpp
 	utils/SuperMagicDriveTest.cpp
 	utils/SuperMagicDriveTest_data.hpp
 	)
-TARGET_LINK_LIBRARIES(SuperMagicDriveTest PRIVATE rpsecure romdata rpbase)
+TARGET_LINK_LIBRARIES(SuperMagicDriveTest PRIVATE rptest romdata rpbase)
 TARGET_LINK_LIBRARIES(SuperMagicDriveTest PRIVATE gtest)
 TARGET_LINK_LIBRARIES(SuperMagicDriveTest PRIVATE ${ZLIB_LIBRARY})
 TARGET_INCLUDE_DIRECTORIES(SuperMagicDriveTest PRIVATE ${ZLIB_INCLUDE_DIRS})

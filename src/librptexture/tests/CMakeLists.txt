@@ -6,11 +6,8 @@ INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR}/../..)
 
 # ImageDecoderLinear test
 # TODO: Move to libromdata, or move libromdata stuff here?
-ADD_EXECUTABLE(ImageDecoderLinearTest
-	../../librpbase/tests/gtest_init.cpp
-	ImageDecoderLinearTest.cpp
-	)
-TARGET_LINK_LIBRARIES(ImageDecoderLinearTest PRIVATE rpsecure romdata rptexture)
+ADD_EXECUTABLE(ImageDecoderLinearTest ImageDecoderLinearTest.cpp)
+TARGET_LINK_LIBRARIES(ImageDecoderLinearTest PRIVATE rptest romdata rptexture)
 TARGET_LINK_LIBRARIES(ImageDecoderLinearTest PRIVATE gtest ${ZLIB_LIBRARY})
 TARGET_INCLUDE_DIRECTORIES(ImageDecoderLinearTest PRIVATE ${ZLIB_INCLUDE_DIRS})
 TARGET_COMPILE_DEFINITIONS(ImageDecoderLinearTest PRIVATE ${ZLIB_DEFINITIONS})
@@ -25,11 +22,8 @@ SET_WINDOWS_ENTRYPOINT(ImageDecoderLinearTest wmain OFF)
 ADD_TEST(NAME ImageDecoderLinearTest COMMAND ImageDecoderLinearTest "--gtest_filter=-*benchmark*")
 
 # UnPremultiplyTest
-ADD_EXECUTABLE(UnPremultiplyTest
-	../../librpbase/tests/gtest_init.cpp
-	UnPremultiplyTest.cpp
-	)
-TARGET_LINK_LIBRARIES(UnPremultiplyTest PRIVATE rpsecure rptexture rpbase)
+ADD_EXECUTABLE(UnPremultiplyTest UnPremultiplyTest.cpp)
+TARGET_LINK_LIBRARIES(UnPremultiplyTest PRIVATE rptest rptexture rpbase)
 TARGET_LINK_LIBRARIES(UnPremultiplyTest PRIVATE gtest)
 DO_SPLIT_DEBUG(UnPremultiplyTest)
 SET_WINDOWS_SUBSYSTEM(UnPremultiplyTest CONSOLE)

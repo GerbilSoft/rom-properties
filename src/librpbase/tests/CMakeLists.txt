@@ -12,13 +12,22 @@ IF(NOT WIN32)
 	ENDIF(ENABLE_DECRYPTION)
 ENDIF(NOT WIN32)
 
+# librptest library.
+ADD_LIBRARY(rptest STATIC gtest_init.cpp)
+TARGET_LINK_LIBRARIES(rptest PRIVATE rpsecure)
+IF(WIN32)
+	# rptexture is only used for GDI+ rp_image backend registration on Windows.
+	TARGET_LINK_LIBRARIES(rptest PRIVATE rptexture)
+ENDIF(WIN32)
+INCLUDE(SetMSVCDebugPath)
+SET_MSVC_DEBUG_PATH(rptest)
+
 # RpImageLoader test.
 ADD_EXECUTABLE(RpImageLoaderTest
-	gtest_init.cpp
 	img/RpImageLoaderTest.cpp
 	img/RpPngFormatTest.cpp
 	)
-TARGET_LINK_LIBRARIES(RpImageLoaderTest PRIVATE rpsecure rpbase)
+TARGET_LINK_LIBRARIES(RpImageLoaderTest PRIVATE rptest rpbase)
 TARGET_LINK_LIBRARIES(RpImageLoaderTest PRIVATE gtest ${ZLIB_LIBRARY})
 TARGET_INCLUDE_DIRECTORIES(RpImageLoaderTest PRIVATE ${ZLIB_INCLUDE_DIRS})
 TARGET_COMPILE_DEFINITIONS(RpImageLoaderTest PRIVATE ${ZLIB_DEFINITIONS})
@@ -56,11 +65,8 @@ ENDFOREACH(test_image ${RpImageLoaderTest_images})
 
 IF(ENABLE_DECRYPTION)
 	# AesCipher test.
-	ADD_EXECUTABLE(AesCipherTest
-		gtest_init.cpp
-		AesCipherTest.cpp
-		)
-	TARGET_LINK_LIBRARIES(AesCipherTest PRIVATE rpsecure rpbase)
+	ADD_EXECUTABLE(AesCipherTest AesCipherTest.cpp)
+	TARGET_LINK_LIBRARIES(AesCipherTest PRIVATE rptest rpbase)
 	TARGET_LINK_LIBRARIES(AesCipherTest PRIVATE gtest)
 	IF(WIN32)
 		TARGET_LINK_LIBRARIES(AesCipherTest PRIVATE advapi32)
@@ -77,11 +83,10 @@ ENDIF(ENABLE_DECRYPTION)
 
 # TextFuncsTest.
 ADD_EXECUTABLE(TextFuncsTest
-	gtest_init.cpp
 	TextFuncsTest.cpp
 	TextFuncsTest_data.hpp
 	)
-TARGET_LINK_LIBRARIES(TextFuncsTest PRIVATE rpsecure rpbase)
+TARGET_LINK_LIBRARIES(TextFuncsTest PRIVATE rptest rpbase)
 TARGET_LINK_LIBRARIES(TextFuncsTest PRIVATE gtest)
 DO_SPLIT_DEBUG(TextFuncsTest)
 SET_WINDOWS_SUBSYSTEM(TextFuncsTest CONSOLE)
@@ -90,11 +95,10 @@ ADD_TEST(NAME TextFuncsTest COMMAND TextFuncsTest)
 
 # ByteswapTest.
 ADD_EXECUTABLE(ByteswapTest
-	gtest_init.cpp
 	ByteswapTest.cpp
 	ByteswapTest_data.hpp
 	)
-TARGET_LINK_LIBRARIES(ByteswapTest PRIVATE rpsecure rpbase)
+TARGET_LINK_LIBRARIES(ByteswapTest PRIVATE rptest rpbase)
 TARGET_LINK_LIBRARIES(ByteswapTest PRIVATE gtest)
 DO_SPLIT_DEBUG(ByteswapTest)
 SET_WINDOWS_SUBSYSTEM(ByteswapTest CONSOLE)
