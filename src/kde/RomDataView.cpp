@@ -64,12 +64,12 @@ class RomDataViewPrivate
 		QComboBox *cboLanguage;
 
 		// RFT_STRING_MULTI value labels.
-		typedef QPair<QLabel*, const RomFields::Field*> Data_StringMulti_t;
-		QVector<Data_StringMulti_t> vecStringMulti;
+		typedef std::pair<QLabel*, const RomFields::Field*> Data_StringMulti_t;
+		vector<Data_StringMulti_t> vecStringMulti;
 
 		// RFT_LISTDATA_MULTI value QTreeWidgets.
-		typedef QPair<QTreeWidget*, const RomFields::Field*> Data_ListDataMulti_t;
-		QVector<Data_ListDataMulti_t> vecListDataMulti;
+		typedef std::pair<QTreeWidget*, const RomFields::Field*> Data_ListDataMulti_t;
+		vector<Data_ListDataMulti_t> vecListDataMulti;
 
 		// RomData object.
 		RomData *romData;
@@ -653,7 +653,7 @@ void RomDataViewPrivate::initListData(QLabel *lblDesc, const RomFields::Field &f
 	treeWidget->installEventFilter(q);
 
 	if (isMulti) {
-		vecListDataMulti.append(Data_ListDataMulti_t(treeWidget, &field));
+		vecListDataMulti.emplace_back(std::make_pair(treeWidget, &field));
 	}
 }
 
@@ -848,7 +848,7 @@ void RomDataViewPrivate::initStringMulti(QLabel *lblDesc, const RomFields::Field
 	QString qs_empty;
 	QLabel *const lblStringMulti = initString(lblDesc, field, &qs_empty);
 	if (lblStringMulti) {
-		vecStringMulti.append(Data_StringMulti_t(lblStringMulti, &field));
+		vecStringMulti.emplace_back(std::make_pair(lblStringMulti, &field));
 	}
 }
 
@@ -863,7 +863,7 @@ void RomDataViewPrivate::updateMulti(uint32_t user_lc)
 	set<uint32_t> set_lc;
 
 	// RFT_STRING_MULTI
-	for (auto iter = vecStringMulti.begin(); iter != vecStringMulti.end(); ++iter) {
+	for (auto iter = vecStringMulti.cbegin(); iter != vecStringMulti.cend(); ++iter) {
 		QLabel *const lblString = iter->first;
 		const RomFields::Field *const pField = iter->second;
 		const auto *const pStr_multi = pField->data.str_multi;
@@ -895,7 +895,7 @@ void RomDataViewPrivate::updateMulti(uint32_t user_lc)
 	}
 
 	// RFT_LISTDATA_MULTI
-	for (auto iter = vecListDataMulti.begin(); iter != vecListDataMulti.end(); ++iter) {
+	for (auto iter = vecListDataMulti.cbegin(); iter != vecListDataMulti.cend(); ++iter) {
 		QTreeWidget *const treeWidget = iter->first;
 		const RomFields::Field *const pField = iter->second;
 		const auto *const pListData_multi = pField->data.list_data.data.multi;
@@ -1176,7 +1176,7 @@ void RomDataViewPrivate::initDisplayWidgets(void)
 	}
 
 	// Initial update of RFT_STRING_MULTI and RFT_LISTDATA_MULTI fields.
-	if (!vecStringMulti.isEmpty() || !vecListDataMulti.isEmpty()) {
+	if (!vecStringMulti.empty() || !vecListDataMulti.empty()) {
 		def_lc = pFields->defaultLanguageCode();
 		updateMulti(0);
 	}
