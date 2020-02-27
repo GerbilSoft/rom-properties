@@ -244,9 +244,9 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 		// FIXME: glibc-2.31 uses 64-bit time syscalls that may not be
 		// defined in earlier versions, including Ubuntu 14.04.
 		SCMP_SYS(access), SCMP_SYS(clock_gettime),
-#ifdef __NR_clock_gettime64
+#ifdef __SNR_clock_gettime64
 		SCMP_SYS(clock_gettime64),
-#endif /* __NR_clock_gettime64 */
+#endif /* __SNR_clock_gettime64 */
 		SCMP_SYS(close), SCMP_SYS(fcntl), SCMP_SYS(fsetxattr),
 		SCMP_SYS(fstat), SCMP_SYS(futex), SCMP_SYS(getdents),
 		SCMP_SYS(getrusage), SCMP_SYS(getuid), SCMP_SYS(lseek),
@@ -254,9 +254,9 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 		SCMP_SYS(munmap),
 		SCMP_SYS(open),		// Ubuntu 16.04
 		SCMP_SYS(openat),	// glibc-2.31
-#ifdef __NR_openat2
+#ifdef __SNR_openat2
 		SCMP_SYS(openat2),	// Linux 5.6
-#endif /* __NR_openat2 */
+#endif /* __SNR_openat2 */
 		SCMP_SYS(poll), SCMP_SYS(select), SCMP_SYS(stat),
 		SCMP_SYS(utimensat),
 

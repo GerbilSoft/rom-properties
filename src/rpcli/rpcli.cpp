@@ -333,9 +333,9 @@ int RP_C_API main(int argc, char *argv[])
 		SCMP_SYS(munmap),
 		SCMP_SYS(open),		// Ubuntu 16.04
 		SCMP_SYS(openat),	// glibc-2.31
-#ifdef __NR_openat2
+#ifdef __SNR_openat2
 		SCMP_SYS(openat2),	// Linux 5.6
-#endif /* __NR_openat2 */
+#endif /* __SNR_openat2 */
 
 		// KeyManager (keys.conf)
 		SCMP_SYS(access),	// LibUnixCommon::isWritableDirectory()
