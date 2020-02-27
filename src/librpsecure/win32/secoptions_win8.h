@@ -1,15 +1,15 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (libwin32common)                   *
+ * ROM Properties Page shell extension. (librpsecure/win32)                *
  * secoptions_win8.h: Security options for executables. (Win8)             *
  *                                                                         *
- * Copyright (c) 2016-2017 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBWIN32COMMON_SECOPTIONS_WIN8_H__
-#define __ROMPROPERTIES_LIBWIN32COMMON_SECOPTIONS_WIN8_H__
+#ifndef __ROMPROPERTIES_LIBRPSECURE_WIN32_SECOPTIONS_WIN8_H__
+#define __ROMPROPERTIES_LIBRPSECURE_WIN32_SECOPTIONS_WIN8_H__
 
-#ifndef __ROMPROPERTIES_LIBWIN32COMMON_SECOPTIONS_H__
+#ifndef __ROMPROPERTIES_LIBRPSECURE_WIN32_SECOPTIONS_WIN8_H__
 #error secoptions_win8.h should not be included directly - include secoptions.h instead
 #endif
 
@@ -177,4 +177,4 @@ typedef struct _PROCESS_MITIGATION_IMAGE_LOAD_POLICY {
 } PROCESS_MITIGATION_IMAGE_LOAD_POLICY, *PPROCESS_MITIGATION_IMAGE_LOAD_POLICY;
 #endif /* !_WIN32_WINNT_WIN10 */
 
-#endif /* __ROMPROPERTIES_LIBWIN32COMMON_SECOPTIONS_WIN8_H__ */
+#endif /* __ROMPROPERTIES_LIBRPSECURE_WIN32_SECOPTIONS_WIN8_H__ */

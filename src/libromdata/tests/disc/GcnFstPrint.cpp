@@ -30,9 +30,11 @@ using std::ostream;
 using std::ostringstream;
 using std::string;
 
+// librpsecure
+#include "librpsecure/os-secure.h"
+
 #ifdef _WIN32
 # include "libwin32common/RpWin32_sdk.h"
-# include "libwin32common/secoptions.h"
 # include <io.h>
 # include "librpbase/TextFuncs.hpp"
 # include "librpbase/TextFuncs_wchar.hpp"
@@ -41,9 +43,12 @@ using std::u16string;
 
 int RP_C_API main(int argc, char *argv[])
 {
+	// Set OS-specific security options.
+	// TODO: Non-Windows syscall stuff.
 #ifdef _WIN32
-	// Set Win32 security options.
-	rp_secoptions_init(TRUE);
+	rp_secure_param_t param;
+	param.bHighSec = FALSE;
+	rp_secure_enable(param);
 #endif /* _WIN32 */
 
 	// Set the C and C++ locales.

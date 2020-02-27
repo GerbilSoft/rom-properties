@@ -1,5 +1,5 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (Win32)                            *
+ * ROM Properties Page shell extension. (librpsecure/win32)                *
  * integrity_level.c: Integrity level manipulation for process tokens.     *
  *                                                                         *
  * Copyright (c) 2020 by David Korth.                                      *
@@ -15,41 +15,45 @@
 #include <assert.h>
 #include <errno.h>
 #include <malloc.h>
+#include <stdio.h>
 #include <stdlib.h>
 
-// libwin32common
-#include "libwin32common/RpWin32_sdk.h"
 // Windows includes.
 #include <sddl.h>
-
-// librpthreads
-#include "librpthreads/pthread_once.h"
+#include <tchar.h>
 
 // stdboolx
 #include "stdboolx.h"
 
-// pthread_once() control variable.
-static pthread_once_t once_control = PTHREAD_ONCE_INIT;
-// Are we running Windows Vista or later?
-static bool isVista = false;
-
 /**
  * Check if we're running Windows Vista or later.
- * Called by pthread_once().
+ * @return True if running Vista; false if not.
  */
-static void initIsVista(void)
+static bool isRunningVista(void)
 {
+	// Are we running Windows Vista or later?
+	// NOTE: Technically not thread-safe, but the worst that will
+	// happen is two threads set isVista to the same value.
+	static bool isVista = false;
+	static bool hasCheckedVista = false;
+	OSVERSIONINFO osvi;
+
+	if (hasCheckedVista) {
+		return isVista;
+	}
+
 #ifdef _MSC_VER
 # pragma warning(push)
 # pragma warning(disable: 4996)
 #endif /* _MSC_VER */
 	// TODO: Use versionhelpers.h.
-	OSVERSIONINFO osvi;
 	osvi.dwOSVersionInfoSize = sizeof(osvi);
 	isVista = (GetVersionEx(&osvi) && osvi.dwMajorVersion >= 6);
 #ifdef _MSC_VER
 # pragma warning(pop)
 #endif /* _MSC_VER */
+
+	return isVista;
 }
 
 /**
@@ -120,8 +124,7 @@ HANDLE CreateIntegrityLevelToken(int level)
 	DWORD dwRet;
 
 	// Are we running Windows Vista or later?
-	pthread_once(&once_control, initIsVista);
-	if (!isVista) {
+	if (!isRunningVista()) {
 		// Not running Windows Vista or later.
 		// Can't create a low-integrity token.
 		return NULL;
@@ -187,8 +190,7 @@ int GetProcessIntegrityLevel(void)
 	DWORD dwLengthNeeded;
 
 	// Are we running Windows Vista or later?
-	pthread_once(&once_control, initIsVista);
-	if (!isVista) {
+	if (!isRunningVista()) {
 		// Not running Windows Vista or later.
 		// Can't get the integrity level.
 		return ret;
@@ -267,8 +269,7 @@ DWORD SetProcessIntegrityLevel(int level)
 	DWORD dwRet;
 
 	// Are we running Windows Vista or later?
-	pthread_once(&once_control, initIsVista);
-	if (!isVista) {
+	if (!isRunningVista()) {
 		// Not running Windows Vista or later.
 		// Can't set the process integrity level.
 		// We'll pretend everything "just works" anyway.

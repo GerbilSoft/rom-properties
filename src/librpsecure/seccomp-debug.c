@@ -1,13 +1,13 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (rp-download)                      *
- * seccomp-debug.h: Linux seccomp debug functionality.                     *
+ * ROM Properties Page shell extension. (librpsecure)                      *
+ * seccomp-debug.c: Linux seccomp debug functionality.                     *
  *                                                                         *
  * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_SECCOMP_DEBUG_H__
-#define __ROMPROPERTIES_SECCOMP_DEBUG_H__
+#include "seccomp-debug.h"
+#include <seccomp.h>
 
 #include <signal.h>
 #include <stdio.h>
@@ -124,7 +124,7 @@ static void seccomp_debug_sigsys_handler(int sig, siginfo_t *info, void *ucontex
  * Install the signal handler for SIGSYS.
  * This will print debugging information for trapped system calls.
  */
-static void seccomp_debug_install_sigsys(void)
+void seccomp_debug_install_sigsys(void)
 {
 	struct sigaction act;
 	act.sa_sigaction = seccomp_debug_sigsys_handler;
@@ -133,5 +133,3 @@ static void seccomp_debug_install_sigsys(void)
 
 	sigaction(SIGSYS, &act, NULL);
 }
-
-#endif /* __ROMPROPERTIES_SECCOMP_DEBUG_H__ */

@@ -1,15 +1,15 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (Win32)                            *
+ * ROM Properties Page shell extension. (librpsecure/win32)                *
  * integrity_level.c: Integrity level manipulation for process tokens.     *
  *                                                                         *
  * Copyright (c) 2029 by David Korth.                                      *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBWIN32COMMON_INTEGRITY_LEVEL_H__
-#define __ROMPROPERTIES_LIBWIN32COMMON_INTEGRITY_LEVEL_H__
+#ifndef __ROMPROPERTIES_LIBRPSECURE_WIN32_INTEGRITY_LEVEL_H__
+#define __ROMPROPERTIES_LIBRPSECURE_WIN32_INTEGRITY_LEVEL_H__
 
-#include "RpWin32_sdk.h"
+#include <windows.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -48,4 +48,4 @@ DWORD SetProcessIntegrityLevel(int level);
 }
 #endif
 
-#endif /* __ROMPROPERTIES_LIBWIN32COMMON_INTEGRITY_LEVEL_H__ */
+#endif /* __ROMPROPERTIES_LIBRPSECURE_WIN32_INTEGRITY_LEVEL_H__ */

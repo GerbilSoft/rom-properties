@@ -18,10 +18,7 @@ ADD_EXECUTABLE(RpImageLoaderTest
 	img/RpImageLoaderTest.cpp
 	img/RpPngFormatTest.cpp
 	)
-IF(WIN32)
-	TARGET_LINK_LIBRARIES(RpImageLoaderTest PRIVATE win32common)
-ENDIF(WIN32)
-TARGET_LINK_LIBRARIES(RpImageLoaderTest PRIVATE rpbase)
+TARGET_LINK_LIBRARIES(RpImageLoaderTest PRIVATE rpsecure rpbase)
 TARGET_LINK_LIBRARIES(RpImageLoaderTest PRIVATE gtest ${ZLIB_LIBRARY})
 TARGET_INCLUDE_DIRECTORIES(RpImageLoaderTest PRIVATE ${ZLIB_INCLUDE_DIRS})
 TARGET_COMPILE_DEFINITIONS(RpImageLoaderTest PRIVATE ${ZLIB_DEFINITIONS})
@@ -63,10 +60,9 @@ IF(ENABLE_DECRYPTION)
 		gtest_init.cpp
 		AesCipherTest.cpp
 		)
-	TARGET_LINK_LIBRARIES(AesCipherTest PRIVATE rpbase)
+	TARGET_LINK_LIBRARIES(AesCipherTest PRIVATE rpsecure rpbase)
 	TARGET_LINK_LIBRARIES(AesCipherTest PRIVATE gtest)
 	IF(WIN32)
-		TARGET_LINK_LIBRARIES(AesCipherTest PRIVATE win32common)
 		TARGET_LINK_LIBRARIES(AesCipherTest PRIVATE advapi32)
 	ENDIF(WIN32)
 	IF(NETTLE_LIBRARY)
@@ -85,10 +81,7 @@ ADD_EXECUTABLE(TextFuncsTest
 	TextFuncsTest.cpp
 	TextFuncsTest_data.hpp
 	)
-IF(WIN32)
-	TARGET_LINK_LIBRARIES(TextFuncsTest PRIVATE win32common)
-ENDIF(WIN32)
-TARGET_LINK_LIBRARIES(TextFuncsTest PRIVATE rpbase)
+TARGET_LINK_LIBRARIES(TextFuncsTest PRIVATE rpsecure rpbase)
 TARGET_LINK_LIBRARIES(TextFuncsTest PRIVATE gtest)
 DO_SPLIT_DEBUG(TextFuncsTest)
 SET_WINDOWS_SUBSYSTEM(TextFuncsTest CONSOLE)
@@ -101,10 +94,7 @@ ADD_EXECUTABLE(ByteswapTest
 	ByteswapTest.cpp
 	ByteswapTest_data.hpp
 	)
-IF(WIN32)
-	TARGET_LINK_LIBRARIES(ByteswapTest PRIVATE win32common)
-ENDIF(WIN32)
-TARGET_LINK_LIBRARIES(ByteswapTest PRIVATE rpbase)
+TARGET_LINK_LIBRARIES(ByteswapTest PRIVATE rpsecure rpbase)
 TARGET_LINK_LIBRARIES(ByteswapTest PRIVATE gtest)
 DO_SPLIT_DEBUG(ByteswapTest)
 SET_WINDOWS_SUBSYSTEM(ByteswapTest CONSOLE)

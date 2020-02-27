@@ -22,40 +22,15 @@ SET(rpcli_SRCS
 SET(rpcli_H
 	properties.hpp
 	device.hpp
-	os-secure.h
 	)
 
 # Check for system security functionality.
 IF(WIN32)
 	SET(rpcli_RC resource.rc)
-	SET(rpcli-OS_SECURE_SRCS os-secure_win32.c)
 
 	# Create the manifest file.
 	CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/rpcli.exe.manifest.in" "${CMAKE_CURRENT_BINARY_DIR}/rpcli.exe.manifest" @ONLY)
 ENDIF(WIN32)
-
-IF(UNIX)
-	# Check for system security functionality.
-	IF(USE_SECCOMP)
-		# Linux: Use seccomp().
-		FIND_PACKAGE(Seccomp REQUIRED)
-		IF(SECCOMP_FOUND)
-			SET(rpcli-OS_SECURE_SRCS os-secure_linux.c)
-		ENDIF(SECCOMP_FOUND)
-	ELSE()
-		# OpenBSD: Use pledge()/tame().
-		INCLUDE(CheckOpenBSDPledge)
-		CHECK_OPENBSD_PLEDGE()
-		IF(HAVE_PLEDGE OR HAVE_TAME)
-			SET(rpcli-OS_SECURE_SRCS os-secure_openbsd.c)
-		ENDIF()
-	ENDIF()
-ENDIF(UNIX)
-
-IF(NOT rpcli-OS_SECURE_SRCS)
-	# TODO: Add support for other systems.
-	SET(rpcli-OS_SECURE_SRCS os-secure_dummy.c)
-ENDIF(NOT rpcli-OS_SECURE_SRCS)
 
 IF(ENABLE_DECRYPTION)
 	SET(rpcli_CRYPTO_SRCS verifykeys.cpp)
@@ -92,7 +67,6 @@ ADD_EXECUTABLE(rpcli
 	${rpcli_PCH_SRC} ${rpcli_PCH_H}
 	${rpcli-DELAYLOAD_SRC} ${rpcli-DELAYLOAD_H}
 	${rpcli_SRCS} ${rpcli_H}
-	${rpcli-OS_SECURE_SRCS}
 	${rpcli_CRYPTO_SRCS} ${rpcli_CRYPTO_H}
 	${rpcli_RC}
 	)
@@ -114,22 +88,19 @@ SET_WINDOWS_ENTRYPOINT(rpcli wmain ON)
 # - Private: Parent source and binary directories,
 #            and top-level binary directory for git_version.h.
 TARGET_INCLUDE_DIRECTORIES(rpcli
-	PUBLIC	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
-		$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
-	PRIVATE	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>
-		$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/..>
+	PUBLIC	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>		# rpcli
+		$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>		# rpcli
+	PRIVATE	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>	# src
+		$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/..>	# src
 		$<BUILD_INTERFACE:${CMAKE_BINARY_DIR}>
 	)
-TARGET_LINK_LIBRARIES(rpcli PRIVATE romdata rpbase)
+TARGET_LINK_LIBRARIES(rpcli PRIVATE rpsecure romdata rpbase)
 IF(ENABLE_NLS)
 	TARGET_LINK_LIBRARIES(rpcli PRIVATE i18n)
 ENDIF(ENABLE_NLS)
 IF(WIN32)
 	TARGET_LINK_LIBRARIES(rpcli PRIVATE wmain)
 ENDIF(WIN32)
-IF(USE_SECCOMP AND SECCOMP_FOUND)
-	TARGET_LINK_LIBRARIES(rpcli PRIVATE Seccomp::seccomp)
-ENDIF(USE_SECCOMP AND SECCOMP_FOUND)
 
 # Make sure git_version.h is created before compiling this target.
 IF(TARGET git_version)

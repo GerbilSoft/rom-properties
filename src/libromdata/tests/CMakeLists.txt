@@ -10,7 +10,7 @@ IF(ENABLE_DECRYPTION)
 		../../librpbase/tests/gtest_init.cpp
 		CtrKeyScramblerTest.cpp
 		)
-	TARGET_LINK_LIBRARIES(CtrKeyScramblerTest PRIVATE romdata rpbase)
+	TARGET_LINK_LIBRARIES(CtrKeyScramblerTest PRIVATE rpsecure romdata rpbase)
 	TARGET_LINK_LIBRARIES(CtrKeyScramblerTest PRIVATE gtest)
 	DO_SPLIT_DEBUG(CtrKeyScramblerTest)
 	SET_WINDOWS_SUBSYSTEM(CtrKeyScramblerTest CONSOLE)
@@ -24,7 +24,7 @@ ADD_EXECUTABLE(GcnFstPrint
 	disc/FstPrint.hpp
 	disc/GcnFstPrint.cpp
 	)
-TARGET_LINK_LIBRARIES(GcnFstPrint PRIVATE romdata rpbase)
+TARGET_LINK_LIBRARIES(GcnFstPrint PRIVATE rpsecure romdata rpbase)
 IF(ENABLE_NLS)
 	TARGET_LINK_LIBRARIES(GcnFstPrint PRIVATE i18n)
 ENDIF(ENABLE_NLS)
@@ -44,7 +44,7 @@ ADD_EXECUTABLE(GcnFstTest
 	disc/FstPrint.hpp
 	disc/GcnFstTest.cpp
 	)
-TARGET_LINK_LIBRARIES(GcnFstTest PRIVATE romdata rpbase)
+TARGET_LINK_LIBRARIES(GcnFstTest PRIVATE rpsecure romdata rpbase)
 IF(ENABLE_NLS)
 	TARGET_LINK_LIBRARIES(GcnFstTest PRIVATE i18n)
 ENDIF(ENABLE_NLS)
@@ -82,10 +82,7 @@ ADD_EXECUTABLE(ImageDecoderTest
 	../../librpbase/tests/gtest_init.cpp
 	img/ImageDecoderTest.cpp
 	)
-IF(WIN32)
-	TARGET_LINK_LIBRARIES(ImageDecoderTest PRIVATE win32common)
-ENDIF(WIN32)
-TARGET_LINK_LIBRARIES(ImageDecoderTest PRIVATE romdata rpbase)
+TARGET_LINK_LIBRARIES(ImageDecoderTest PRIVATE rpsecure romdata rpbase)
 TARGET_LINK_LIBRARIES(ImageDecoderTest PRIVATE gtest ${ZLIB_LIBRARY})
 TARGET_INCLUDE_DIRECTORIES(ImageDecoderTest PRIVATE ${ZLIB_INCLUDE_DIRS})
 TARGET_COMPILE_DEFINITIONS(ImageDecoderTest PRIVATE ${ZLIB_DEFINITIONS})
@@ -145,7 +142,7 @@ ADD_EXECUTABLE(SuperMagicDriveTest
 	utils/SuperMagicDriveTest.cpp
 	utils/SuperMagicDriveTest_data.hpp
 	)
-TARGET_LINK_LIBRARIES(SuperMagicDriveTest PRIVATE romdata rpbase)
+TARGET_LINK_LIBRARIES(SuperMagicDriveTest PRIVATE rpsecure romdata rpbase)
 TARGET_LINK_LIBRARIES(SuperMagicDriveTest PRIVATE gtest)
 TARGET_LINK_LIBRARIES(SuperMagicDriveTest PRIVATE ${ZLIB_LIBRARY})
 TARGET_INCLUDE_DIRECTORIES(SuperMagicDriveTest PRIVATE ${ZLIB_INCLUDE_DIRS})

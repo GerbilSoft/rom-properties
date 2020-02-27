@@ -20,7 +20,9 @@
 
 // libwin32common
 #include "libwin32common/RpWin32_sdk.h"
-#include "libwin32common/secoptions.h"
+
+// librpsecure
+#include "librpsecure/os-secure.h"
 
 // C includes.
 #include <locale.h>
@@ -116,10 +118,13 @@ int CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 
 	static const TCHAR prg_title[] = _T("ROM Properties Page Configuration");
 
-	RP_UNUSED(hPrevInstance);
+	// Set OS-specific security options.
+	rp_secure_param_t param;
+	param.bHighSec = FALSE;
+	rp_secure_enable(param);
 
-	// Set Win32 security options.
-	rp_secoptions_init(TRUE);
+	// Unused parameters. (Win16 baggage)
+	RP_UNUSED(hPrevInstance);
 
 	// Check if another instance of rp-config is already running.
 	// References:

@@ -1,26 +1,21 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (rp-download)                      *
- * os-secure.h: OS security functions.                                     *
+ * ROM Properties Page shell extension. (librpsecure)                      *
+ * os-secure_dummy.c: OS security functions. (dummy implementation)        *
  *                                                                         *
  * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_RP_DOWNLOAD_OS_SECURE_H__
-#define __ROMPROPERTIES_RP_DOWNLOAD_OS_SECURE_H__
-
-#ifdef __cplusplus
-extern "C" {
-#endif
+#include "os-secure.h"
 
 /**
  * Enable OS-specific security functionality.
+ * @param param OS-specific parameter.
  * @return 0 on success; negative POSIX error code on error.
  */
-int rp_download_os_secure(void);
-
-#ifdef __cplusplus
+int rp_secure_enable(rp_secure_param_t param)
+{
+	// Dummy implementation does nothing.
+	((void)param);
+	return 0;
 }
-#endif
-
-#endif /* __ROMPROPERTIES_RP_DOWNLOAD_OS_SECURE_H__ */

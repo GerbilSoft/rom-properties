@@ -22,7 +22,9 @@
 
 // libwin32common
 #include "libwin32common/RpWin32_sdk.h"
-#include "libwin32common/secoptions.h"
+
+// librpsecure
+#include "librpsecure/os-secure.h"
 
 // Additional Windows headers.
 #include <windowsx.h>
@@ -849,10 +851,14 @@ int CALLBACK wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 	typedef BOOL (WINAPI *PFNISWOW64PROCESS)(HANDLE hProcess, PBOOL Wow64Process);
 	PFNISWOW64PROCESS pfnIsWow64Process;
 #endif /* !_WIN64 */
-	((void)hPrevInstance);
 
 	// Set Win32 security options.
-	rp_secoptions_init(FALSE);
+	rp_secure_param_t param;
+	param.bHighSec = FALSE;
+	rp_secure_enable(param);
+
+	// Unused parameters. (Win16 baggage)
+	((void)hPrevInstance);
 
 	// Check if another instance of svrplus is already running.
 	// References:

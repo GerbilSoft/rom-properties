@@ -2,11 +2,10 @@
  * ROM Properties Page shell extension. (libwin32common)                   *
  * wmain.c: UTF-16 to UTF-8 main() wrapper for command-line programs.      *
  *                                                                         *
- * Copyright (c) 2016-2017 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "secoptions.h"
 #include "RpWin32_sdk.h"
 
 // C includes.
@@ -28,10 +27,9 @@ int RP_C_API wmain(int argc, wchar_t *argv[])
 	char **u8argv;
 	int i, ret;
 
-	// Win32 security options will be set by main(), since
-	// some programs will want to enable high-security mode
-	// while others won't.
-	//rp_secoptions_init(FALSE);
+	// NOTE: We won't use librpsecure here. librpsecure functions can be
+	// called by main(), since some programs will want to enable high-security
+	// mode while others won't.
 
 	// Convert the UTF-16 arguments to UTF-8.
 	// NOTE: Using WideCharToMultiByte() directly in order to

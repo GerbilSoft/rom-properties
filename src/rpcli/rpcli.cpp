@@ -11,7 +11,7 @@
 #include "config.rpcli.h"
 
 // OS-specific security options.
-#include "os-secure.h"
+#include "librpsecure/os-secure.h"
 
 // librpbase
 #include "librpbase/config.librpbase.h"
@@ -314,7 +314,56 @@ static void DoAtaIdentifyDevice(const char *filename, bool json)
 int RP_C_API main(int argc, char *argv[])
 {
 	// Set OS-specific security options.
-	rpcli_os_secure();
+	rp_secure_param_t param;
+#if defined(_WIN32)
+	param.bHighSec = FALSE;
+#elif defined(HAVE_SECCOMP)
+	static const int syscall_wl[] = {
+		// Syscalls used by rp-download.
+		// TODO: Add more syscalls.
+		// FIXME: glibc-2.31 uses 64-bit time syscalls that may not be
+		// defined in earlier versions, including Ubuntu 14.04.
+		SCMP_SYS(close),
+		SCMP_SYS(dup),						// gzdopen()
+		SCMP_SYS(fstat), SCMP_SYS(futex),
+		SCMP_SYS(ioctl),					// for devices; also afl-fuzz
+		SCMP_SYS(lseek), SCMP_SYS(lstat), SCMP_SYS(mmap),
+		SCMP_SYS(mprotect),					// dlopen()
+		SCMP_SYS(munmap),
+		SCMP_SYS(open),						// Ubuntu 16.04
+		SCMP_SYS(openat),					// glibc-2.31
+#ifdef __NR_openat2
+		SCMP_SYS(openat2),					// Linux 5.6
+#endif /* __NR_openat2 */
+
+		// KeyManager (keys.conf)
+		SCMP_SYS(access),	// LibUnixCommon::isWritableDirectory()
+		SCMP_SYS(stat),		// LibUnixCommon::isWritableDirectory()
+		// NOTE: The following syscalls are only made if either access() or stat() can't be run.
+		// TODO: Can this happen in other situations?
+		//SCMP_SYS(connect),	// ???
+		//SCMP_SYS(getuid),
+		//SCMP_SYS(sendto),	// ???
+		//SCMP_SYS(socket),	// ???
+
+		-1	// End of whitelist
+	};
+	param.syscall_wl = syscall_wl;
+#elif defined(HAVE_PLEDGE)
+	// Promises:
+	// - stdio: General stdio functionality.
+	// - rpath: Read from ~/.config/rom-properties/ and ~/.cache/rom-properties/
+	// - wpath: Write to ~/.cache/rom-properties/
+	// - cpath: Create ~/.cache/rom-properties/ if it doesn't exist.
+	// - getpw: Get user's home directory if HOME is empty.
+	param.promises = "stdio rpath wpath cpath getpw";
+#elif defined(HAVE_TAME)
+	// NOTE: stdio includes fattr, e.g. utimes().
+	param.tame_flags = TAME_STDIO | TAME_RPATH | TAME_WPATH | TAME_CPATH | TAME_GETPW;
+#else
+	param.dummy = 0;
+#endif
+	rp_secure_enable(param);
 
 	// Set the C and C++ locales.
 	locale::global(locale(""));

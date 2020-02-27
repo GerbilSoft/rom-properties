@@ -17,7 +17,6 @@ SET(rp-download_SRCS
 	http-status.c
 	)
 SET(rp-download_H
-	os-secure.h
 	IDownloader.hpp
 	http-status.h
 	)
@@ -32,7 +31,6 @@ IF(WIN32)
 	SET(rp-download_OS_H
 		WinInetDownloader.hpp
 		)
-	SET(rp-download-OS_SECURE_SRCS os-secure_win32.c)
 
 	# Create the manifest file.
 	CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/rp-download.exe.manifest.in" "${CMAKE_CURRENT_BINARY_DIR}/rp-download.exe.manifest" @ONLY)
@@ -48,29 +46,6 @@ ELSE(WIN32)
 		CurlDownloader.hpp
 		)
 ENDIF()
-
-IF(UNIX)
-	# Check for system security functionality.
-	IF(USE_SECCOMP)
-		# Linux: Use seccomp().
-		FIND_PACKAGE(Seccomp REQUIRED)
-		IF(SECCOMP_FOUND)
-			SET(rp-download-OS_SECURE_SRCS os-secure_linux.c)
-		ENDIF(SECCOMP_FOUND)
-	ELSE()
-		# OpenBSD: Use pledge()/tame().
-		INCLUDE(CheckOpenBSDPledge)
-		CHECK_OPENBSD_PLEDGE()
-		IF(HAVE_PLEDGE OR HAVE_TAME)
-			SET(rp-download-OS_SECURE_SRCS os-secure_openbsd.c)
-		ENDIF()
-	ENDIF()
-ENDIF(UNIX)
-
-IF(NOT rp-download-OS_SECURE_SRCS)
-	# TODO: Add support for other systems.
-	SET(rp-download-OS_SECURE_SRCS os-secure_dummy.c)
-ENDIF(NOT rp-download-OS_SECURE_SRCS)
 
 IF(ENABLE_PCH)
 	# Precompiled headers.
@@ -92,7 +67,6 @@ ADD_EXECUTABLE(rp-download
 	${rp-download_PCH_SRC} ${rp-download_PCH_H}
 	${rp-download_SRCS} ${rp-download_H}
 	${rp-download_OS_SRCS} ${rp-download_OS_H}
-	${rp-download-OS_SECURE_SRCS}
 	)
 IF(ENABLE_PCH)
 	ADD_PRECOMPILED_HEADER(rp-download ${rp-download_PCH_H}
@@ -107,7 +81,7 @@ SET_WINDOWS_NO_MANIFEST(rp-download)
 SET_WINDOWS_ENTRYPOINT(rp-download wmain OFF)
 
 # FIXME: librpbase isn't actually needed; only the headers are.
-TARGET_LINK_LIBRARIES(rp-download PRIVATE rpbase cachecommon)
+TARGET_LINK_LIBRARIES(rp-download PRIVATE rpsecure rpbase cachecommon)
 TARGET_INCLUDE_DIRECTORIES(rp-download
 	PUBLIC	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>		# rp-download
 		$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>		# rp-download
@@ -128,10 +102,6 @@ IF(WIN32)
 ELSE(WIN32)
 	TARGET_LINK_LIBRARIES(rp-download PRIVATE unixcommon inih)
 	TARGET_LINK_LIBRARIES(rp-download PRIVATE ${CURL_LIBRARIES})
-
-	IF(USE_SECCOMP AND SECCOMP_FOUND)
-		TARGET_LINK_LIBRARIES(rp-download PRIVATE Seccomp::seccomp)
-	ENDIF(USE_SECCOMP AND SECCOMP_FOUND)
 ENDIF(WIN32)
 
 # Make sure git_version.h is created before compiling this target.

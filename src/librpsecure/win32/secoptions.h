@@ -1,15 +1,15 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (libwin32common)                   *
+ * ROM Properties Page shell extension. (librpsecure/win32)                *
  * secoptions.h: Security options for executables.                         *
  *                                                                         *
  * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBWIN32COMMON_SECOPTIONS_H__
-#define __ROMPROPERTIES_LIBWIN32COMMON_SECOPTIONS_H__
+#ifndef __ROMPROPERTIES_LIBRPSECURE_WIN32_SECOPTIONS_H__
+#define __ROMPROPERTIES_LIBRPSECURE_WIN32_SECOPTIONS_H__
 
-#include "RpWin32_sdk.h"
+#include <windows.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -21,10 +21,10 @@ extern "C" {
  * @param bHighSec If non-zero, enable high security for unprivileged processes.
  * @return 0 on success; negative POSIX error code on error.
  */
-int rp_secoptions_init(BOOL bHighSec);
+int rp_secure_win32_secoptions_init(BOOL bHighSec);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* __ROMPROPERTIES_LIBWIN32COMMON_SECOPTIONS_H__ */
+#endif /* __ROMPROPERTIES_LIBRPSECURE_WIN32_SECOPTIONS_H__ */

@@ -1,5 +1,5 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (libwin32common)                   *
+ * ROM Properties Page shell extension. (librpsecure/win32)                *
  * secoptions.c: Security options for executables.                         *
  *                                                                         *
  * Copyright (c) 2016-2020 by David Korth.                                 *
@@ -20,6 +20,7 @@
 // Windows includes.
 #include <sdkddkver.h>
 #include <winternl.h>
+#include <tchar.h>
 
 #ifndef _WIN64
 
@@ -209,7 +210,7 @@ out:
  * @param bHighSec If non-zero, enable high security for unprivileged processes.
  * @return 0 on success; negative POSIX error code on error.
  */
-int rp_secoptions_init(BOOL bHighSec)
+int rp_secure_win32_secoptions_init(BOOL bHighSec)
 {
 	OSVERSIONINFO osvi;
 	HMODULE hKernel32;

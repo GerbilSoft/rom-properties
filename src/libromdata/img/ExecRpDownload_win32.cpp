@@ -11,8 +11,10 @@
 
 // Windows includes.
 #include "libwin32common/RpWin32_sdk.h"
-#include "libwin32common/integrity_level.h"
 #include "librpbase/TextFuncs_wchar.hpp"
+
+// librpsecure
+#include "librpsecure/win32/integrity_level.h"
 
 // C++ includes.
 #include <string>

@@ -40,6 +40,7 @@ CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/config.version.h.in" "${CMAKE_CURREN
 CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/stdboolx.h.in" "${CMAKE_CURRENT_BINARY_DIR}/stdboolx.h")
 
 # Source Code subdirectories.
+ADD_SUBDIRECTORY(librpsecure)
 ADD_SUBDIRECTORY(libi18n)
 ADD_SUBDIRECTORY(librpthreads)
 ADD_SUBDIRECTORY(libcachecommon)

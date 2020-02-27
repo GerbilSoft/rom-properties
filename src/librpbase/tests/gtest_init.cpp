@@ -18,9 +18,10 @@ using std::locale;
 #include "librpbase/common.h"
 #include "tcharx.h"
 
-#ifdef _WIN32
-#include "libwin32common/secoptions.h"
+// librpsecure
+#include "librpsecure/os-secure.h"
 
+#ifdef _WIN32
 // rp_image backend registration.
 #include "librptexture/img/RpGdiplusBackend.hpp"
 #include "librptexture/img/rp_image.hpp"
@@ -32,14 +33,17 @@ extern "C" int gtest_main(int argc, TCHAR *argv[]);
 
 int RP_C_API _tmain(int argc, TCHAR *argv[])
 {
+	// Set OS-specific security options.
+	// TODO: Non-Windows syscall stuff.
 #ifdef _WIN32
-	// Set Win32 security options.
-	rp_secoptions_init(FALSE);
+	rp_secure_param_t param;
+	param.bHighSec = FALSE;
+	rp_secure_enable(param);
 
 	// Register RpGdiplusBackend.
 	// TODO: Static initializer somewhere?
 	rp_image::setBackendCreatorFn(RpGdiplusBackend::creator_fn);
-#endif
+#endif /* _WIN32 */
 
 	// TODO: setenv() wrapper in config.librpbase.h.in?
 #if defined(HAVE_SETENV)

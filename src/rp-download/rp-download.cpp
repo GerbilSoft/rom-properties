@@ -9,7 +9,7 @@
 #include "stdafx.h"
 
 // OS-specific security options.
-#include "os-secure.h"
+#include "librpsecure/os-secure.h"
 
 // C includes.
 #include <sys/stat.h>
@@ -230,8 +230,57 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 	// If http_proxy or https_proxy are set, they will be used
 	// by the downloader code if supported.
 
+	// Reduce process integrity, if available.
+	rp_secure_reduce_integrity();
+
 	// Set OS-specific security options.
-	rp_download_os_secure();
+	rp_secure_param_t param;
+#if defined(_WIN32)
+	param.bHighSec = FALSE;
+#elif defined(HAVE_SECCOMP)
+	static const int syscall_wl[] = {
+		// Syscalls used by rp-download.
+		// TODO: Add more syscalls.
+		// FIXME: glibc-2.31 uses 64-bit time syscalls that may not be
+		// defined in earlier versions, including Ubuntu 14.04.
+		SCMP_SYS(access), SCMP_SYS(clock_gettime),
+#ifdef __NR_clock_gettime64
+		SCMP_SYS(clock_gettime64),
+#endif /* __NR_clock_gettime64 */
+		SCMP_SYS(close), SCMP_SYS(fcntl), SCMP_SYS(fsetxattr),
+		SCMP_SYS(fstat), SCMP_SYS(futex), SCMP_SYS(getdents),
+		SCMP_SYS(getrusage), SCMP_SYS(getuid), SCMP_SYS(lseek),
+		SCMP_SYS(mkdir), SCMP_SYS(mmap), SCMP_SYS(munmap),
+		SCMP_SYS(open),						// Ubuntu 16.04
+		SCMP_SYS(openat),					// glibc-2.31
+#ifdef __NR_openat2
+		SCMP_SYS(openat2),					// Linux 5.6
+#endif /* __NR_openat2 */
+		SCMP_SYS(poll), SCMP_SYS(select), SCMP_SYS(stat),
+		SCMP_SYS(utimensat),
+
+		-1	// End of whitelist
+	};
+	param.syscall_wl = syscall_wl;
+#elif defined(HAVE_PLEDGE)
+	// Promises:
+	// - stdio: General stdio functionality.
+	// - rpath: Read from ~/.config/rom-properties/ and ~/.cache/rom-properties/
+	// - wpath: Write to ~/.cache/rom-properties/
+	// - cpath: Create ~/.cache/rom-properties/ if it doesn't exist.
+	// - inet: Internet access.
+	// - fattr: Modify file attributes, e.g. mtime.
+	// - dns: Resolve hostnames.
+	// - getpw: Get user's home directory if HOME is empty.
+	param.promises = "stdio rpath wpath cpath inet fattr dns getpw";
+#elif defined(HAVE_TAME)
+	// NOTE: stdio includes fattr, e.g. utimes().
+	param.tame_flags = TAME_STDIO | TAME_RPATH | TAME_WPATH | TAME_CPATH |
+	                   TAME_INET | TAME_DNS | TAME_GETPW;
+#else
+	param.dummy = 0;
+#endif
+	rp_secure_enable(param);
 
 	// Store argv[0] globally.
 	argv0 = argv[0];

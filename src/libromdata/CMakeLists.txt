@@ -395,6 +395,10 @@ TARGET_INCLUDE_DIRECTORIES(romdata
 		$<BUILD_INTERFACE:${CMAKE_BINARY_DIR}>			# top-level
 	)
 IF(WIN32)
+	# librpsecure: integrity_level.h
+	TARGET_LINK_LIBRARIES(romdata PRIVATE rpsecure)
+
+	# Windows SDK libraries.
 	TARGET_LINK_LIBRARIES(romdata PRIVATE advapi32)
 	IF(MSVC)
 		TARGET_LINK_LIBRARIES(romdata PRIVATE delayimp)
