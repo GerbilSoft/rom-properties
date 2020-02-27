@@ -324,16 +324,17 @@ int RP_C_API main(int argc, char *argv[])
 		// FIXME: glibc-2.31 uses 64-bit time syscalls that may not be
 		// defined in earlier versions, including Ubuntu 14.04.
 		SCMP_SYS(close),
-		SCMP_SYS(dup),						// gzdopen()
+		SCMP_SYS(dup),		// gzdopen()
 		SCMP_SYS(fstat), SCMP_SYS(futex),
-		SCMP_SYS(ioctl),					// for devices; also afl-fuzz
-		SCMP_SYS(lseek), SCMP_SYS(lstat), SCMP_SYS(mmap),
-		SCMP_SYS(mprotect),					// dlopen()
+		SCMP_SYS(ioctl),	// for devices; also afl-fuzz
+		SCMP_SYS(lseek), SCMP_SYS(lstat),
+		SCMP_SYS(mmap), SCMP_SYS(mmap2),
+		SCMP_SYS(mprotect),	// dlopen()
 		SCMP_SYS(munmap),
-		SCMP_SYS(open),						// Ubuntu 16.04
-		SCMP_SYS(openat),					// glibc-2.31
+		SCMP_SYS(open),		// Ubuntu 16.04
+		SCMP_SYS(openat),	// glibc-2.31
 #ifdef __NR_openat2
-		SCMP_SYS(openat2),					// Linux 5.6
+		SCMP_SYS(openat2),	// Linux 5.6
 #endif /* __NR_openat2 */
 
 		// KeyManager (keys.conf)
