@@ -32,7 +32,6 @@ int rpcli_os_secure(void)
 	// - rpath: Read from anywhere.
 	// - wpath: Write to anywhere for e.g. image extraction.
 	// - cpath: Create new files.
-	// - [FIXME: not needed?] fattr: Modify file attributes, e.g. mtime.
 	// - getpw: Get user's home directory if HOME is empty.
 # ifdef HAVE_PLEDGE_EXECPROMISES
 	// OpenBSD 6.3+: Second parameter is `const char *execpromises`.
