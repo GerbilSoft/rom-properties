@@ -43,8 +43,10 @@ int rp_secure_enable(rp_secure_param_t param)
 	// Ensure child processes will never be granted more
 	// privileges via setuid, capabilities, etc.
 	prctl(PR_SET_NO_NEW_PRIVS, 1);
+#ifndef ENABLE_SECCOMP_DEBUG
 	// Ensure ptrace() can't be used to escape the seccomp restrictions.
 	prctl(PR_SET_DUMPABLE, 0);
+#endif /* !ENABLE_SECCOMP_DEBUG */
 
 #ifdef ENABLE_SECCOMP_DEBUG
 	// Install the SIGSYS handler for libseccomp.
