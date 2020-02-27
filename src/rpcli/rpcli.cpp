@@ -358,7 +358,6 @@ int RP_C_API main(int argc, char *argv[])
 	// - getpw: Get user's home directory if HOME is empty.
 	param.promises = "stdio rpath wpath cpath getpw";
 #elif defined(HAVE_TAME)
-	// NOTE: stdio includes fattr, e.g. utimes().
 	param.tame_flags = TAME_STDIO | TAME_RPATH | TAME_WPATH | TAME_CPATH | TAME_GETPW;
 #else
 	param.dummy = 0;
