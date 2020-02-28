@@ -199,11 +199,11 @@ inline ::std::ostream& operator<<(::std::ostream& os, const ImageDecoderTest_mod
 inline void ImageDecoderTest::replace_slashes(string &path)
 {
 #ifdef _WIN32
-	for (auto iter = path.begin(); iter != path.end(); ++iter) {
-		if (*iter == '/') {
-			*iter = '\\';
+	std::for_each(path.begin(), path.end(), [](char &p) {
+		if (p == '/') {
+			p = '\\';
 		}
-	}
+	});
 #else
 	// Nothing to do here...
 	RP_UNUSED(path);

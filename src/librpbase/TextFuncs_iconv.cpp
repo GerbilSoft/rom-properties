@@ -304,12 +304,12 @@ u16string cpN_to_utf16(unsigned int cp, const char *str, int len, unsigned int f
 		if (cp == CP_SJIS) {
 			// libiconv's cp932 maps Shift-JIS 8160 to U+301C. This is expected
 			// behavior for Shift-JIS, but cp932 should map it to U+FF5E.
-			for (auto p = ret.begin(); p != ret.end(); ++p) {
-				if (*p == 0x301C) {
+			std::for_each(ret.begin(), ret.end(), [](char16_t &p) {
+				if (p == 0x301C) {
 					// Found a wave dash.
-					*p = (char16_t)0xFF5E;
+					p = (char16_t)0xFF5E;
 				}
-			}
+			});
 		}
 #endif /* HAVE_ICONV_LIBICONV */
 	}

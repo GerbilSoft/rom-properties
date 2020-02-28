@@ -652,22 +652,21 @@ IRpFile *NEResourceReader::open(uint16_t type, int id, int lang)
 	if (dir.empty())
 		return nullptr;
 	
-	NEResourceReaderPrivate::ResTblEntry *entry = nullptr;
+	const NEResourceReaderPrivate::ResTblEntry *entry = nullptr;
 	if (id == -1) {
 		// Get the first ID for this type.
 		entry = &dir[0];
 	} else {
 		// Search for the ID.
 		// TODO: unordered_map?
-		for (unsigned int i = 0; i < static_cast<unsigned int>(dir.size()); i++) {
-			if (dir[i].id == static_cast<uint16_t>(id)) {
-				// Found the ID.
-				entry = &dir[i];
-				break;
+		auto iter = std::find_if(dir.cbegin(), dir.cend(),
+			[id](const NEResourceReaderPrivate::ResTblEntry &entry) -> bool {
+				return (entry.id == static_cast<uint16_t>(id));
 			}
-		}
-
-		if (!entry) {
+		);
+		if (iter != dir.cend()) {
+			entry = &(*iter);
+		} else {
 			// ID not found.
 			return nullptr;
 		}

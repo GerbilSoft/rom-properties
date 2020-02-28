@@ -1455,11 +1455,11 @@ string KeyManagerTabPrivate::getOpenFileName(const TCHAR *dlgTitle, const TCHAR 
 		// NULL characters, but gettext doesn't support that because
 		// it uses C strings.
 		tstring ts_filterSpec(filterSpec);
-		for (auto iter = ts_filterSpec.begin(); iter != ts_filterSpec.end(); ++iter) {
-			if (*iter == _T('|')) {
-				*iter = _T('\0');
+		std::for_each(ts_filterSpec.begin(), ts_filterSpec.end(), [](TCHAR &p) {
+			if (p == _T('|')) {
+				p = _T('\0');
 			}
-		}
+		});
 
 		TCHAR filename[MAX_PATH];
 		filename[0] = 0;

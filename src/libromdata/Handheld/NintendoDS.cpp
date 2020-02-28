@@ -333,7 +333,7 @@ const rp_image *NintendoDSPrivate::loadIcon(void)
 		iconAnimData->seq_count = seq_idx;
 
 		// Convert the required bitmaps.
-		for (int i = 0; i < static_cast<int>(bmp_used.size()); i++) {
+		for (unsigned int i = 0; i < static_cast<unsigned int>(bmp_used.size()); i++) {
 			if (bmp_used[i]) {
 				iconAnimData->count = i + 1;
 
