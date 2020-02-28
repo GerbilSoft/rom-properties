@@ -1078,7 +1078,7 @@ rom_data_view_init_listdata(G_GNUC_UNUSED RomDataView *page, const RomFields::Fi
 	// TODO: Force maximum horizontal width somehow?
 	gtk_widget_set_size_request(widget, -1, 128);
 
-	if (isMulti) {
+	if (!isMulti) {
 		// Resize the columns to fit the contents.
 		gtk_tree_view_columns_autosize(GTK_TREE_VIEW(treeView));
 	}
