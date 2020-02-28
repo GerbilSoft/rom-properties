@@ -65,26 +65,26 @@ int rp_secure_enable(rp_secure_param_t param)
 	}
 
 	// Allow basic syscalls.
-	seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(brk), 0);
-	seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(exit), 0);
-	seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(exit_group), 0);
-	seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(read), 0);
-	seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(rt_sigreturn), 0);
-	seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(write), 0);
+	seccomp_rule_add_array(ctx, SCMP_ACT_ALLOW, SCMP_SYS(brk), 0, NULL);
+	seccomp_rule_add_array(ctx, SCMP_ACT_ALLOW, SCMP_SYS(exit), 0, NULL);
+	seccomp_rule_add_array(ctx, SCMP_ACT_ALLOW, SCMP_SYS(exit_group), 0, NULL);
+	seccomp_rule_add_array(ctx, SCMP_ACT_ALLOW, SCMP_SYS(read), 0, NULL);
+	seccomp_rule_add_array(ctx, SCMP_ACT_ALLOW, SCMP_SYS(rt_sigreturn), 0, NULL);
+	seccomp_rule_add_array(ctx, SCMP_ACT_ALLOW, SCMP_SYS(write), 0, NULL);
 
 #ifndef NDEBUG
 	// abort() [called by assert()]
-	seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(getpid), 0);
-	seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(gettid), 0);
-	seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(rt_sigaction), 0);
-	seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(rt_sigprocmask), 0);
-	seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(tgkill), 0);
+	seccomp_rule_add_array(ctx, SCMP_ACT_ALLOW, SCMP_SYS(getpid), 0, NULL);
+	seccomp_rule_add_array(ctx, SCMP_ACT_ALLOW, SCMP_SYS(gettid), 0, NULL);
+	seccomp_rule_add_array(ctx, SCMP_ACT_ALLOW, SCMP_SYS(rt_sigaction), 0, NULL);
+	seccomp_rule_add_array(ctx, SCMP_ACT_ALLOW, SCMP_SYS(rt_sigprocmask), 0, NULL);
+	seccomp_rule_add_array(ctx, SCMP_ACT_ALLOW, SCMP_SYS(tgkill), 0, NULL);
 #endif /* NDEBUG */
 
 	// Add syscalls from the whitelist.
 	// TODO: Syscall parameters?
 	for (const int *p = param.syscall_wl; *p != -1; p++) {
-		seccomp_rule_add(ctx, SCMP_ACT_ALLOW, *p, 0);
+		seccomp_rule_add_array(ctx, SCMP_ACT_ALLOW, *p, 0, NULL);
 	}
 
 	// Load the filter.
