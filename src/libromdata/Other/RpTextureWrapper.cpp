@@ -333,25 +333,14 @@ int RpTextureWrapper::loadMetaData(void)
 int RpTextureWrapper::loadInternalImage(ImageType imageType, const rp_image **pImage)
 {
 	ASSERT_loadInternalImage(imageType, pImage);
-
 	RP_D(RpTextureWrapper);
-	if (imageType != IMG_INT_IMAGE) {
-		// Only IMG_INT_IMAGE is supported by PVR.
-		*pImage = nullptr;
-		return -ENOENT;
-	} else if (!d->file) {
-		// File isn't open.
-		*pImage = nullptr;
-		return -EBADF;
-	} else if (!d->isValid) {
-		// Unknown file type.
-		*pImage = nullptr;
-		return -EIO;
-	}
-
-	// Load the image.
-	*pImage = d->texture->image();
-	return (*pImage != nullptr ? 0 : -EIO);
+	ROMDATA_loadInternalImage_single(
+		IMG_INT_IMAGE,		// ourImageType
+		d->file,		// file
+		d->isValid,		// isValid
+		0,			// romType
+		nullptr,		// imgCache
+		d->texture->image);	// func
 }
 
 }

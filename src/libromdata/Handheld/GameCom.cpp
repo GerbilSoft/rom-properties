@@ -39,7 +39,7 @@ class GameComPrivate : public RomDataPrivate
 		Gcom_RomHeader romHeader;
 
 		// Icon.
-		rp_image *icon;
+		rp_image *img_icon;
 
 		/**
 		 * Load the icon.
@@ -52,7 +52,7 @@ class GameComPrivate : public RomDataPrivate
 
 GameComPrivate::GameComPrivate(GameCom *q, IRpFile *file)
 	: super(q, file)
-	, icon(nullptr)
+	, img_icon(nullptr)
 {
 	// Clear the ROM header struct.
 	memset(&romHeader, 0, sizeof(romHeader));
@@ -60,7 +60,7 @@ GameComPrivate::GameComPrivate(GameCom *q, IRpFile *file)
 
 GameComPrivate::~GameComPrivate()
 {
-	delete icon;
+	delete img_icon;
 }
 
 /**
@@ -69,9 +69,9 @@ GameComPrivate::~GameComPrivate()
  */
 const rp_image *GameComPrivate::loadIcon(void)
 {
-	if (icon) {
+	if (img_icon) {
 		// Icon has already been loaded.
-		return icon;
+		return img_icon;
 	} else if (!this->file || !this->isValid) {
 		// Can't load the icon.
 		return nullptr;
@@ -232,8 +232,8 @@ const rp_image *GameComPrivate::loadIcon(void)
 	tmp_icon->set_sBIT(&sBIT);
 
 	// Save and return the icon.
-	this->icon = tmp_icon.release();
-	return this->icon;
+	this->img_icon = tmp_icon.release();
+	return this->img_icon;
 }
 
 /** GameCom **/
@@ -548,30 +548,14 @@ int GameCom::loadMetaData(void)
 int GameCom::loadInternalImage(ImageType imageType, const rp_image **pImage)
 {
 	ASSERT_loadInternalImage(imageType, pImage);
-
 	RP_D(GameCom);
-	if (imageType != IMG_INT_ICON) {
-		// Only IMG_INT_ICON is supported by PS1.
-		*pImage = nullptr;
-		return -ENOENT;
-	} else if (d->icon) {
-		// Image has already been loaded.
-		*pImage = d->icon;
-		return 0;
-	} else if (!d->file) {
-		// File isn't open.
-		*pImage = nullptr;
-		return -EBADF;
-	} else if (!d->isValid) {
-		// Save file isn't valid.
-		*pImage = nullptr;
-		return -EIO;
-	}
-
-	// Load the icon.
-	// TODO: -ENOENT if the file doesn't actually have an icon.
-	*pImage = d->loadIcon();
-	return (*pImage != nullptr ? 0 : -EIO);
+	ROMDATA_loadInternalImage_single(
+		IMG_INT_ICON,	// ourImageType
+		d->file,	// file
+		d->isValid,	// isValid
+		0,		// romType
+		d->img_icon,	// imgCache
+		d->loadIcon);	// func
 }
 
 }

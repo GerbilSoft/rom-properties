@@ -903,25 +903,14 @@ int Dreamcast::loadMetaData(void)
 int Dreamcast::loadInternalImage(ImageType imageType, const rp_image **pImage)
 {
 	ASSERT_loadInternalImage(imageType, pImage);
-
 	RP_D(Dreamcast);
-	if (imageType != IMG_INT_MEDIA) {
-		// Only IMG_INT_MEDIA is supported by Dreamcast.
-		*pImage = nullptr;
-		return -ENOENT;
-	} else if (!d->file) {
-		// File isn't open.
-		*pImage = nullptr;
-		return -EBADF;
-	} else if (!d->isValid || d->discType < 0) {
-		// PVR image isn't valid.
-		*pImage = nullptr;
-		return -EIO;
-	}
-
-	// Load the image.
-	*pImage = d->load0GDTEX();
-	return (*pImage != nullptr ? 0 : -EIO);
+	ROMDATA_loadInternalImage_single(
+		IMG_INT_MEDIA,	// ourImageType
+		d->file,	// file
+		d->isValid,	// isValid
+		d->discType,	// romType
+		nullptr,	// imgCache
+		d->load0GDTEX);	// func
 }
 
 }

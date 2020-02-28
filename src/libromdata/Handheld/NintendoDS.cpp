@@ -1524,29 +1524,14 @@ int NintendoDS::loadMetaData(void)
 int NintendoDS::loadInternalImage(ImageType imageType, const rp_image **pImage)
 {
 	ASSERT_loadInternalImage(imageType, pImage);
-
 	RP_D(NintendoDS);
-	if (imageType != IMG_INT_ICON) {
-		// Only IMG_INT_ICON is supported by DS.
-		*pImage = nullptr;
-		return -ENOENT;
-	} else if (d->icon_first_frame) {
-		// Image has already been loaded.
-		*pImage = d->icon_first_frame;
-		return 0;
-	} else if (!d->file) {
-		// File isn't open.
-		*pImage = nullptr;
-		return -EBADF;
-	} else if (!d->isValid || d->romType < 0) {
-		// ROM image isn't valid.
-		*pImage = nullptr;
-		return -EIO;
-	}
-
-	// Load the icon.
-	*pImage = d->loadIcon();
-	return (*pImage != nullptr ? 0 : -EIO);
+	ROMDATA_loadInternalImage_single(
+		IMG_INT_ICON,		// ourImageType
+		d->file,		// file
+		d->isValid,		// isValid
+		d->romType,		// romType
+		d->icon_first_frame,	// imgCache
+		d->loadIcon);		// func
 }
 
 /**

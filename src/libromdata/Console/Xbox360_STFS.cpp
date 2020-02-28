@@ -860,32 +860,14 @@ int Xbox360_STFS::loadMetaData(void)
 int Xbox360_STFS::loadInternalImage(ImageType imageType, const rp_image **pImage)
 {
 	ASSERT_loadInternalImage(imageType, pImage);
-
-	if (imageType != IMG_INT_ICON) {
-		// Only IMG_INT_ICON is supported by Xbox360_STFS.
-		*pImage = nullptr;
-		return -ENOENT;
-	}
-
 	RP_D(Xbox360_STFS);
-	if (d->img_icon) {
-		// Icon is loaded.
-		*pImage = d->img_icon;
-		return 0;
-	}
-
-	if (!d->file) {
-		// File isn't open.
-		return -EBADF;
-	} else if (!d->isValid || d->stfsType < 0) {
-		// STFS file isn't valid.
-		return -EIO;
-	}
-
-	// Load the image.
-	// TODO: -ENOENT if the file doesn't actually have an icon/banner.
-	*pImage = d->loadIcon();
-	return (*pImage != nullptr ? 0 : -EIO);
+	ROMDATA_loadInternalImage_single(
+		IMG_INT_ICON,	// ourImageType
+		d->file,	// file
+		d->isValid,	// isValid
+		d->stfsType,	// romType
+		d->img_icon,	// imgCache
+		d->loadIcon);	// func
 }
 
 }

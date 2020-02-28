@@ -764,32 +764,14 @@ int GameCubeBNR::loadMetaData(void)
 int GameCubeBNR::loadInternalImage(ImageType imageType, const rp_image **pImage)
 {
 	ASSERT_loadInternalImage(imageType, pImage);
-
-	if (imageType != IMG_INT_BANNER) {
-		// Only IMG_INT_BANNER is supported by GameCubeBNR.
-		*pImage = nullptr;
-		return -ENOENT;
-	}
-
 	RP_D(GameCubeBNR);
-	if (d->img_banner) {
-		// Banner is loaded.
-		*pImage = d->img_banner;
-		return 0;
-	}
-
-	if (!d->file) {
-		// File isn't open.
-		return -EBADF;
-	} else if (!d->isValid || d->bannerType < 0) {
-		// Banner file isn't valid.
-		return -EIO;
-	}
-
-	// Load the image.
-	// TODO: -ENOENT if the file doesn't actually have an icon/banner.
-	*pImage = d->loadBanner();
-	return (*pImage != nullptr ? 0 : -EIO);
+	ROMDATA_loadInternalImage_single(
+		IMG_INT_BANNER,	// ourImageType
+		d->file,	// file
+		d->isValid,	// isValid
+		d->bannerType,	// romType
+		d->img_banner,	// imgCache
+		d->loadBanner);	// func
 }
 
 /** GameCubeBNR accessors. **/

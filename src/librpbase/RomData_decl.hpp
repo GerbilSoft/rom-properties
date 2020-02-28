@@ -14,6 +14,9 @@
 # error RomData_decl.hpp should only be included by RomData.hpp
 #endif
 
+// for loadInternalImage() implementation macros
+#include <cerrno>
+
 /** Macros for RomData subclasses. **/
 
 /**
@@ -389,6 +392,36 @@ std::vector<RomData::ImageSizeDef> klass::supportedImageSizes(ImageType imageTyp
 		/* No vector. */ \
 		return -EINVAL; \
 	} \
+} while (0)
+
+/**
+ * loadInternalImage() implementation for RomData subclasses
+ * with only a single type of internal image.
+ *
+ * @param ourImageType	Internal image type.
+ * @param file		IRpFile pointer to check.
+ * @param isValid	isValid value to check. (must be true)
+ * @param romType	RomType value to check. (must be >= 0; specify 0 if N/A)
+ * @param imgCache	Cached image pointer to check. (Specify nullptr if N/A)
+ * @param func		Function to load the image.
+ */
+#define ROMDATA_loadInternalImage_single(ourImageType, file, isValid, romType, imgCache, func) do { \
+	if (imageType != (ourImageType)) { \
+		*pImage = nullptr; \
+		return -ENOENT; \
+	} else if ((imgCache) != nullptr) { \
+		*pImage = (imgCache); \
+		return 0; \
+	} else if (!(file)) { \
+		*pImage = nullptr; \
+		return -EBADF; \
+	} else if (!(isValid) || (romType) < 0) { \
+		*pImage = nullptr; \
+		return -EIO; \
+	} \
+	\
+	*pImage = (func)(); \
+	return (*pImage != nullptr ? 0 : -EIO); \
 } while (0)
 
 #endif /* __ROMPROPERTIES_LIBRPBASE_ROMDATA_DECL_HPP__ */
