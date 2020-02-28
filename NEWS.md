@@ -18,11 +18,16 @@
     file browser.
   * Cached files now contain origin information indicating the URL they were
     downloaded from. This can be disabled in rp-config if it isn't wanted.
-  * The GTK+ frontends now support GVfs for network transparency.
-  * KDE frontend: Icons can now be dragged and dropped from the property tab
-    to another file browser window to extract them. This includes the icon,
-    banner, and icons from ListView widgets.
-    * Drag & drop support for Win32 and GTK+ may be implemented before release.
+  * The GTK+ UI frontends now support GVfs for network transparency.
+  * KDE and GTK+ UI frontends: Icons can now be dragged and dropped from the
+    property tab to another file browser window to extract them. This includes
+    the icon, banner, and (KDE only) icons from ListView widgets.
+    * Drag & drop support for Windows will be implemented in a future release.
+    * Note that the dragged images don't have filenames yet, so either they
+      will be extracted with generic filenames, or you will be prompted to
+      enter a filename.
+    * Note that Thunar doesn't seem to be accepting the dropped image data.
+      This will be resolved in a future release.
   * Downloading functionality for online databases has been split out of the
     DLL and into a separate executable. This will allow the downloading to be
     handled in a lower privilege environment.

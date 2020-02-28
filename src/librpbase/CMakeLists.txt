@@ -106,6 +106,7 @@ SET(librpbase_SRCS
 	SystemRegion.cpp
 	file/IRpFile.cpp
 	file/RpMemFile.cpp
+	file/RpVectorFile.cpp
 	file/FileSystem_common.cpp
 	file/RelatedFile.cpp
 	file/scsi/RpFile_Kreon.cpp
@@ -147,6 +148,7 @@ SET(librpbase_H
 	file/RpFile.hpp
 	file/RpFile_p.hpp
 	file/RpMemFile.hpp
+	file/RpVectorFile.hpp
 	file/FileSystem.hpp
 	file/RelatedFile.hpp
 	file/scsi/ata_protocol.h

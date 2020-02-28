@@ -68,6 +68,28 @@ static inline void gtk_image_set_from_PIMGTYPE(GtkImage *image, PIMGTYPE pImgTyp
 #endif /* RP_GTK_USE_CAIRO */
 }
 
+// gtk_drag_set_icon_PIMGTYPE wrapper function.
+static inline void gtk_drag_set_icon_PIMGTYPE(GdkDragContext *context, PIMGTYPE pImgType)
+{
+	// TODO: Implement hotspot parameters? Requires using
+	// cairo_surface_set_device_offset() for Cairo.
+#ifdef RP_GTK_USE_CAIRO
+	gtk_drag_set_icon_surface(context, pImgType);
+#else /* !RP_GTK_USE_CAIRO */
+	gtk_drag_set_icon_pixbuf(context, pImgType, 0, 0);
+#endif /* RP_GTK_USE_CAIRO */
+}
+
+// PIMGTYPE ref() wrapper function.
+static inline PIMGTYPE PIMGTYPE_ref(PIMGTYPE pImgType)
+{
+#ifdef RP_GTK_USE_CAIRO
+	return cairo_surface_reference(pImgType);
+#else /* !RP_GTK_USE_CAIRO */
+	return (PIMGTYPE)g_object_ref(pImgType);
+#endif /* RP_GTK_USE_CAIRO */
+}
+
 // PIMGTYPE free() wrapper function.
 static inline void PIMGTYPE_destroy(PIMGTYPE pImgType)
 {

@@ -11,10 +11,14 @@
 #include "PIMGTYPE.hpp"
 
 // librpbase, librptexture
+#include "librpbase/file/RpVectorFile.hpp"
 #include "librpbase/img/IconAnimData.hpp"
 #include "librpbase/img/IconAnimHelper.hpp"
 using namespace LibRpBase;
 using LibRpTexture::rp_image;
+
+// C++ STL classes.
+using std::vector;
 
 // TODO: Adjust minimum image size based on DPI.
 #define DIL_MIN_IMAGE_SIZE 32
@@ -22,14 +26,23 @@ using LibRpTexture::rp_image;
 static void	drag_image_dispose	(GObject	*object);
 static void	drag_image_finalize	(GObject	*object);
 
+// Signal handlers
+static void	drag_image_drag_begin(DragImage *image, GdkDragContext *context, gpointer user_data);
+static void	drag_image_drag_data_get(DragImage *image, GdkDragContext *context, GtkSelectionData *data, guint info, guint time, gpointer user_data);
+
 // DragImage class.
 struct _DragImageClass {
-	GtkImageClass __parent__;
+	GtkEventBoxClass __parent__;
 };
 
 // DragImage instance.
 struct _DragImage {
-	GtkImage __parent__;
+	GtkEventBox __parent__;
+
+	// GtkImage child widget.
+	GtkImage *imageWidget;
+	// Current frame.
+	PIMGTYPE curFrame;
 
 	// Minimum image size.
 	struct {
@@ -74,7 +87,7 @@ struct _DragImage {
 // NOTE: G_DEFINE_TYPE() doesn't work in C++ mode with gcc-6.2
 // due to an implicit int to GTypeFlags conversion.
 G_DEFINE_TYPE_EXTENDED(DragImage, drag_image,
-	GTK_TYPE_IMAGE, static_cast<GTypeFlags>(0), {});
+	GTK_TYPE_EVENT_BOX, static_cast<GTypeFlags>(0), {});
 
 static void
 drag_image_class_init(DragImageClass *klass)
@@ -95,12 +108,28 @@ drag_image_init(DragImage *image)
 	image->minimumImageSize.height = DIL_MIN_IMAGE_SIZE;
 	image->img = nullptr;
 	image->anim = nullptr;
+
+	// Create the child GtkImage widget.
+	image->imageWidget = GTK_IMAGE(gtk_image_new());
+	gtk_widget_show(GTK_WIDGET(image->imageWidget));
+	gtk_container_add(GTK_CONTAINER(image), GTK_WIDGET(image->imageWidget));
+
+	g_signal_connect(G_OBJECT(image), "drag-begin",
+		G_CALLBACK(drag_image_drag_begin), (gpointer)0);
+	g_signal_connect(G_OBJECT(image), "drag-data-get",
+		G_CALLBACK(drag_image_drag_data_get), (gpointer)0);
 }
 
 static void
 drag_image_dispose(GObject *object)
 {
 	DragImage *const image = DRAG_IMAGE(object);
+
+	// Unreference the current frame if we still have it.
+	if (image->curFrame) {
+		PIMGTYPE_destroy(image->curFrame);
+		image->curFrame = nullptr;
+	}
 
 	// Delete the animation data if present.
 	// This will automatically unregister the timer.
@@ -137,7 +166,15 @@ static bool
 drag_image_update_pixmaps(DragImage *image)
 {
 	g_return_val_if_fail(IS_DRAG_IMAGE(image), false);
+	bool bRet = false;
 
+	if (image->curFrame) {
+		PIMGTYPE_destroy(image->curFrame);
+		image->curFrame = nullptr;
+	}
+
+	// FIXME: Transparency isn't working for e.g. GALE01.gci.
+	// (Super Smash Bros. Melee)
 	auto *const anim = image->anim;
 	if (anim && anim->iconAnimData) {
 		const IconAnimData *const iconAnimData = anim->iconAnimData;
@@ -167,23 +204,33 @@ drag_image_update_pixmaps(DragImage *image)
 		}
 
 		// Show the first frame.
-		gtk_image_set_from_PIMGTYPE(GTK_IMAGE(image),
-			anim->iconFrames[anim->iconAnimHelper.frameNumber()]);
-		return true;
-	}
-
-	if (image->img && image->img->isValid()) {
+		image->curFrame = PIMGTYPE_ref(anim->iconFrames[anim->iconAnimHelper.frameNumber()]);
+		gtk_image_set_from_PIMGTYPE(image->imageWidget, image->curFrame);
+		bRet = true;
+	} else if (image->img && image->img->isValid()) {
 		// Single image.
-		PIMGTYPE pImg = rp_image_to_PIMGTYPE(image->img);
-		gtk_image_set_from_PIMGTYPE(GTK_IMAGE(image), pImg);
-		if (pImg) {
-			PIMGTYPE_destroy(pImg);
-		}
-		return true;
+		image->curFrame = rp_image_to_PIMGTYPE(image->img);
+		gtk_image_set_from_PIMGTYPE(image->imageWidget, image->curFrame);
+		bRet = true;
 	}
 
-	// No image or animated icon data.
-	return false;
+	if (bRet) {
+		// Image or animated icon data was set.
+		// Set a drag source.
+		// TODO: Use text/uri-list and extract to a temporary directory?
+		// FIXME: application/octet-stream works on Nautilus, but not Thunar...
+		static const GtkTargetEntry targetEntry = {
+			const_cast<char*>("application/octet-stream"),	// target
+			GTK_TARGET_OTHER_APP,		// flags
+			1,				// info
+		};
+		gtk_drag_source_set(GTK_WIDGET(image), GDK_BUTTON1_MASK, &targetEntry, 1, GDK_ACTION_COPY);
+	} else {
+		// No image or animated icon data.
+		// Unset the drag source.
+		gtk_drag_source_unset(GTK_WIDGET(image));
+	}
+	return bRet;
 }
 
 void
@@ -231,7 +278,7 @@ drag_image_set_rp_image(DragImage *image, const LibRpTexture::rp_image *img)
 	if (!img) {
 		image->img = nullptr;
 		if (!image->anim || !image->anim->iconAnimData) {
-			gtk_image_clear(GTK_IMAGE(image));
+			gtk_image_clear(image->imageWidget);
 		} else {
 			return drag_image_update_pixmaps(image);
 		}
@@ -277,7 +324,7 @@ drag_image_set_icon_anim_data(DragImage *image, const LibRpBase::IconAnimData *i
 		anim->iconAnimData = nullptr;
 
 		if (!image->img) {
-			gtk_image_clear(GTK_IMAGE(image));
+			gtk_image_clear(image->imageWidget);
 		} else {
 			return drag_image_update_pixmaps(image);
 		}
@@ -311,7 +358,7 @@ drag_image_clear(DragImage *image)
 	}
 
 	image->img = nullptr;
-	gtk_image_clear(GTK_IMAGE(image));
+	gtk_image_clear(image->imageWidget);
 }
 
 /**
@@ -343,7 +390,7 @@ drag_image_anim_timer_func(DragImage *image)
 	if (frame != anim->last_frame_number) {
 		// New frame number.
 		// Update the icon.
-		gtk_image_set_from_PIMGTYPE(GTK_IMAGE(image), anim->iconFrames[frame]);
+		gtk_image_set_from_PIMGTYPE(image->imageWidget, anim->iconFrames[frame]);
 		anim->last_frame_number = frame;
 	}
 
@@ -437,4 +484,82 @@ drag_image_reset_anim_frame(DragImage *image)
 	if (anim) {
 		anim->last_frame_number = 0;
 	}
+}
+
+/** Signal handlers **/
+
+static void
+drag_image_drag_begin(DragImage *image, GdkDragContext *context, gpointer user_data)
+{
+	RP_UNUSED(user_data);
+	g_return_if_fail(IS_DRAG_IMAGE(image));
+
+	// Set the drag icon.
+	// NOTE: gtk_drag_set_icon_PIMGTYPE() takes its own reference to the PIMGTYPE.
+	// NOTE: Using gtk_drag_set_icon_PIMGTYPE() instead of gtk_drag_source_set_icon_pixbuf():
+	// - Setting source is done before dragging.
+	// - There's no source variant that takes a Cairo surface.
+	gtk_drag_set_icon_PIMGTYPE(context, image->curFrame);
+}
+
+static void
+drag_image_drag_data_get(DragImage *image, GdkDragContext *context, GtkSelectionData *data, guint info, guint time, gpointer user_data)
+{
+	RP_UNUSED(context);	// TODO
+	RP_UNUSED(info);
+	RP_UNUSED(time);
+	RP_UNUSED(user_data);
+	g_return_if_fail(IS_DRAG_IMAGE(image));
+
+	auto *const anim = image->anim;
+	const bool isAnimated = (anim && anim->iconAnimData && anim->iconAnimHelper.isAnimated());
+
+	RpVectorFile *const pngData = new RpVectorFile();
+	RpPngWriter *pngWriter;
+	if (isAnimated) {
+		// Animated icon.
+		pngWriter = new RpPngWriter(pngData, anim->iconAnimData);
+	} else if (image->img) {
+		// Standard icon.
+		// NOTE: Using the source image because we want the original
+		// size, not the resized version.
+		pngWriter = new RpPngWriter(pngData, image->img);
+	} else {
+		// No icon...
+		pngData->unref();
+		return;
+	}
+
+	if (!pngWriter->isOpen()) {
+		// Unable to open the PNG writer.
+		pngData->unref();
+		return;
+	}
+
+	// TODO: Add text fields indicating the source game.
+
+	int pwRet = pngWriter->write_IHDR();
+	if (pwRet != 0) {
+		// Error writing the PNG image...
+		pngData->unref();
+		return;
+	}
+	pwRet = pngWriter->write_IDAT();
+	if (pwRet != 0) {
+		// Error writing the PNG image...
+		pngData->unref();
+		return;
+	}
+
+	// RpPngWriter will finalize the PNG on delete.
+	delete pngWriter;
+
+	// Set the selection data.
+	// NOTE: gtk_selection_data_set() copies the data.
+	const vector<uint8_t> &pngVec = pngData->vector();
+	gtk_selection_data_set(data, gdk_atom_intern_static_string("image/png"), 8,
+		pngVec.data(), static_cast<gint>(pngVec.size()));
+
+	// We're done here.
+	pngData->unref();
 }
