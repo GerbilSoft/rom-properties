@@ -14,6 +14,7 @@
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
 
 // libseccomp
@@ -36,7 +37,7 @@ int rp_secure_enable(rp_secure_param_t param)
 {
 	assert(param.syscall_wl != NULL);
 	if (!param.syscall_wl) {
-		printf("*** ERROR: rp_secure_enable() called with NULL syscall whitelist.\n");
+		fprintf(stderr, "*** ERROR: rp_secure_enable() called with NULL syscall whitelist.\n");
 		abort();
 	}
 
@@ -57,6 +58,9 @@ int rp_secure_enable(rp_secure_param_t param)
 	scmp_filter_ctx ctx = seccomp_init(SCMP_ACTION);
 	if (!ctx) {
 		// Cannot initialize seccomp.
+#ifdef ENABLE_SECCOMP_DEBUG
+		fprintf(stderr, "*** ERROR: seccomp_init() failed.\n");
+#endif /* ENABLE_SECCOMP_DEBUG */
 		return -ENOSYS;
 	}
 
@@ -86,5 +90,10 @@ int rp_secure_enable(rp_secure_param_t param)
 	// Load the filter.
 	int ret = seccomp_load(ctx);
 	seccomp_release(ctx);
+#ifdef ENABLE_SECCOMP_DEBUG
+	if (ret != 0) {
+		fprintf(stderr, "*** ERROR: seccomp_load() failed: %s\n", strerror(-ret));
+	}
+#endif /* ENABLE_SECCOMP_DEBUG */
 	return ret;
 }
