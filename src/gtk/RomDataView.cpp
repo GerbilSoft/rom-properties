@@ -10,9 +10,10 @@
 #include "RomDataView.hpp"
 #include "rp-gtk-enums.h"
 
+// DragImage (GtkImage subclass)
+#include "DragImage.hpp"
+
 // librpbase, librptexture
-#include "librpbase/img/IconAnimData.hpp"
-#include "librpbase/img/IconAnimHelper.hpp"
 using namespace LibRpBase;
 using LibRpTexture::rp_image;
 
@@ -93,11 +94,6 @@ static void	tree_view_realize_signal_handler    (GtkTreeView	*treeView,
 static void	cboLanguage_changed_signal_handler  (GtkComboBox	*widget,
 						     gpointer	 	 user_data);
 
-/** Icon animation timer. **/
-static void	start_anim_timer(RomDataView *page);
-static void	stop_anim_timer (RomDataView *page);
-static gboolean	anim_timer_func (RomDataView *page);
-
 #if GTK_CHECK_VERSION(3,0,0)
 typedef GtkBoxClass superclass;
 typedef GtkBox super;
@@ -108,7 +104,7 @@ typedef GtkVBox super;
 #define GTK_TYPE_SUPER GTK_TYPE_VBOX
 #endif
 
-// XFCE property page class.
+// GTK+ property page class.
 struct _RomDataViewClass {
 	superclass __parent__;
 };
@@ -131,7 +127,7 @@ struct Data_ListDataMulti_t {
 		, field(field) { }
 };
 
-// GTK+ property page.
+// GTK+ property page instance.
 struct _RomDataView {
 	super __parent__;
 
@@ -150,15 +146,6 @@ struct _RomDataView {
 
 	// ROM data.
 	RomData		*romData;
-
-	// Animated icon data.
-	array<PIMGTYPE, IconAnimData::MAX_FRAMES> iconFrames;
-	IconAnimHelper	*iconAnimHelper;
-	int		last_frame_number;	// Last frame number.
-
-	// Icon animation timer.
-	guint		tmrIconAnim;
-	int		last_delay;		// Last delay value.
 
 	// Tab layout.
 	GtkWidget	*tabWidget;
@@ -311,8 +298,6 @@ rom_data_view_init(RomDataView *page)
 	// No ROM data initially.
 	page->uri = nullptr;
 	page->romData = nullptr;
-	page->last_frame_number = 0;
-	page->iconAnimHelper = new IconAnimHelper();
 	page->tabWidget = nullptr;
 	page->tabs = new vector<RomDataView::tab>();
 
@@ -325,10 +310,6 @@ rom_data_view_init(RomDataView *page)
 	page->vecDescLabels = new vector<GtkWidget*>();
 	page->vecStringMulti = new vector<Data_StringMulti_t>();
 	page->vecListDataMulti = new vector<Data_ListDataMulti_t>();
-
-	// Animation timer.
-	page->tmrIconAnim = 0;
-	page->last_delay = 0;
 
 	/**
 	 * Base class is:
@@ -377,11 +358,11 @@ rom_data_view_init(RomDataView *page)
 	gtk_widget_show(page->lblSysInfo);
 
 	// Banner.
-	page->imgBanner = gtk_image_new();
+	page->imgBanner = drag_image_new();
 	gtk_box_pack_start(GTK_BOX(page->hboxHeaderRow), page->imgBanner, false, false, 0);
 
 	// Icon.
-	page->imgIcon = gtk_image_new();
+	page->imgIcon = drag_image_new();
 	gtk_box_pack_start(GTK_BOX(page->hboxHeaderRow), page->imgIcon, false, false, 0);
 
 	// Make lblSysInfo bold.
@@ -402,18 +383,12 @@ rom_data_view_init(RomDataView *page)
 static void
 rom_data_view_dispose(GObject *object)
 {
-	RomDataView *page = ROM_DATA_VIEW(object);
+	RomDataView *const page = ROM_DATA_VIEW(object);
 
 	/* Unregister the changed_idle */
 	if (G_UNLIKELY(page->changed_idle > 0)) {
 		g_source_remove(page->changed_idle);
 		page->changed_idle = 0;
-	}
-
-	// Delete the animation timer.
-	if (page->tmrIconAnim > 0) {
-		g_source_remove(page->tmrIconAnim);
-		page->tmrIconAnim = 0;
 	}
 
 	// Delete the icon frames and tabs.
@@ -432,7 +407,6 @@ rom_data_view_finalize(GObject *object)
 	g_free(page->uri);
 
 	// Delete the C++ objects.
-	delete page->iconAnimHelper;
 	delete page->tabs;
 	delete page->vecDescLabels;
 
@@ -624,8 +598,9 @@ rom_data_view_init_header_row(RomDataView *page)
 	assert(page != nullptr);
 
 	// NOTE: romData might be nullptr in some cases.
-	//assert(page->romData != nullptr);
-	if (!page->romData) {
+	const RomData *const romData = page->romData;
+	//assert(romData != nullptr);
+	if (!romData) {
 		// No ROM data.
 		// Hide the widgets.
 		gtk_widget_hide(page->hboxHeaderRow);
@@ -634,9 +609,9 @@ rom_data_view_init_header_row(RomDataView *page)
 
 	// System name and file type.
 	// TODO: System logo and/or game title?
-	const char *systemName = page->romData->systemName(
+	const char *systemName = romData->systemName(
 		RomData::SYSNAME_TYPE_LONG | RomData::SYSNAME_REGION_ROM_LOCAL);
-	const char *fileType = page->romData->fileType_string();
+	const char *fileType = romData->fileType_string();
 	assert(systemName != nullptr);
 	assert(fileType != nullptr);
 	if (!systemName) {
@@ -652,20 +627,15 @@ rom_data_view_init_header_row(RomDataView *page)
 	gtk_label_set_text(GTK_LABEL(page->lblSysInfo), sysInfo.c_str());
 
 	// Supported image types.
-	const uint32_t imgbf = page->romData->supportedImageTypes();
+	const uint32_t imgbf = romData->supportedImageTypes();
 
 	// Banner.
 	gtk_widget_hide(page->imgBanner);
 	if (imgbf & RomData::IMGBF_INT_BANNER) {
 		// Get the banner.
-		const rp_image *banner = page->romData->image(RomData::IMG_INT_BANNER);
-		if (banner && banner->isValid()) {
-			PIMGTYPE pImgType = rp_image_to_PIMGTYPE(banner);
-			if (pImgType) {
-				gtk_image_set_from_PIMGTYPE(GTK_IMAGE(page->imgBanner), pImgType);
-				PIMGTYPE_destroy(pImgType);
-				gtk_widget_show(page->imgBanner);
-			}
+		bool ok = drag_image_set_rp_image(DRAG_IMAGE(page->imgBanner), romData->image(RomData::IMG_INT_BANNER));
+		if (ok) {
+			gtk_widget_show(page->imgBanner);
 		}
 	}
 
@@ -673,42 +643,17 @@ rom_data_view_init_header_row(RomDataView *page)
 	gtk_widget_hide(page->imgIcon);
 	if (imgbf & RomData::IMGBF_INT_ICON) {
 		// Get the icon.
-		const rp_image *icon = page->romData->image(RomData::IMG_INT_ICON);
+		const rp_image *const icon = romData->image(RomData::IMG_INT_ICON);
 		if (icon && icon->isValid()) {
 			// Is this an animated icon?
-			const IconAnimData *const iconAnimData = page->romData->iconAnimData();
-			if (iconAnimData) {
-				// Convert the icons to PIMGTYPE.
-				for (int i = iconAnimData->count-1; i >= 0; i--) {
-					const rp_image *const frame = iconAnimData->frames[i];
-					if (frame && frame->isValid()) {
-						PIMGTYPE pImgType = rp_image_to_PIMGTYPE(frame);
-						if (pImgType) {
-							page->iconFrames[i] = pImgType;
-						}
-					}
-				}
-
-				// Set up the IconAnimHelper.
-				page->iconAnimHelper->setIconAnimData(iconAnimData);
-				// Initialize the animation.
-				page->last_frame_number = page->iconAnimHelper->frameNumber();
-
-				// Show the first frame.
-				gtk_image_set_from_PIMGTYPE(GTK_IMAGE(page->imgIcon),
-					page->iconFrames[page->last_frame_number]);
+			bool ok = drag_image_set_icon_anim_data(DRAG_IMAGE(page->imgIcon), romData->iconAnimData());
+			if (!ok) {
+				// Not an animated icon, or invalid icon data.
+				// Set the static icon.
+				ok = drag_image_set_rp_image(DRAG_IMAGE(page->imgIcon), icon);
+			}
+			if (ok) {
 				gtk_widget_show(page->imgIcon);
-
-				// Icon animation timer is set in start_anim_timer().
-			} else {
-				// Not an animated icon.
-				page->last_frame_number = 0;
-				PIMGTYPE pImgType = rp_image_to_PIMGTYPE(icon);
-				if (pImgType) {
-					gtk_image_set_from_PIMGTYPE(GTK_IMAGE(page->imgIcon), pImgType);
-					page->iconFrames[0] = pImgType;
-					gtk_widget_show(page->imgIcon);
-				}
 			}
 		}
 	}
@@ -1932,14 +1877,6 @@ rom_data_view_delete_tabs(RomDataView *page)
 	page->set_lc->clear();
 	page->vecStringMulti->clear();
 	page->vecListDataMulti->clear();
-
-	// Delete the icon frames.
-	for (int i = page->iconFrames.size()-1; i >= 0; i--) {
-		if (page->iconFrames[i]) {
-			PIMGTYPE_destroy(page->iconFrames[i]);
-			page->iconFrames[i] = nullptr;
-		}
-	}
 }
 
 /** Signal handlers. **/
@@ -1973,7 +1910,7 @@ rom_data_view_map_signal_handler(RomDataView	*page,
 				 gpointer	 user_data)
 {
 	RP_UNUSED(user_data);
-	start_anim_timer(page);
+	drag_image_start_anim_timer(DRAG_IMAGE(page->imgIcon));
 }
 
 /**
@@ -1986,7 +1923,7 @@ rom_data_view_unmap_signal_handler(RomDataView	*page,
 				   gpointer	 user_data)
 {
 	RP_UNUSED(user_data);
-	stop_anim_timer(page);
+	drag_image_start_anim_timer(DRAG_IMAGE(page->imgIcon));
 }
 
 /**
@@ -2102,83 +2039,4 @@ cboLanguage_changed_signal_handler(GtkComboBox	*widget,
 	uint32_t lc = 0;
 	gtk_tree_model_get(GTK_TREE_MODEL(page->lstoreLanguage), &iter, SM_COL_LC, &lc, -1);
 	rom_data_view_update_multi(page, lc);
-}
-
-/** Icon animation timer. **/
-
-/**
- * Start the animation timer.
- */
-static void start_anim_timer(RomDataView *page)
-{
-	if (!page->iconAnimHelper->isAnimated()) {
-		// Not an animated icon.
-		return;
-	}
-
-	// Get the current frame information.
-	page->last_frame_number = page->iconAnimHelper->frameNumber();
-	const int delay = page->iconAnimHelper->frameDelay();
-	assert(delay > 0);
-	if (delay <= 0) {
-		// Invalid delay value.
-		return;
-	}
-
-	// Stop the animation timer.
-	stop_anim_timer(page);
-
-	// Set a timer for the current frame.
-	page->last_delay = delay;
-	page->tmrIconAnim = g_timeout_add(delay,
-		reinterpret_cast<GSourceFunc>(anim_timer_func), page);
-}
-
-/**
- * Stop the animation timer.
- */
-static void stop_anim_timer(RomDataView *page)
-{
-	if (page->tmrIconAnim > 0) {
-		g_source_remove(page->tmrIconAnim);
-		page->tmrIconAnim = 0;
-		page->last_delay = 0;
-	}
-}
-
-/**
- * Animated icon timer.
- */
-static gboolean anim_timer_func(RomDataView *page)
-{
-	if (page->tmrIconAnim == 0) {
-		// Shutting down...
-		return false;
-	}
-
-	// Next frame.
-	int delay = 0;
-	int frame = page->iconAnimHelper->nextFrame(&delay);
-	if (delay <= 0 || frame < 0) {
-		// Invalid frame...
-		page->tmrIconAnim = 0;
-		return false;
-	}
-
-	if (frame != page->last_frame_number) {
-		// New frame number.
-		// Update the icon.
-		gtk_image_set_from_PIMGTYPE(GTK_IMAGE(page->imgIcon), page->iconFrames[frame]);
-		page->last_frame_number = frame;
-	}
-
-	if (page->last_delay != delay) {
-		// Set a new timer and unset the current one.
-		page->last_delay = delay;
-		page->tmrIconAnim = g_timeout_add(delay,
-			reinterpret_cast<GSourceFunc>(anim_timer_func), page);
-		return false;
-	}
-	// Keep the current timer running.
-	return true;
 }
