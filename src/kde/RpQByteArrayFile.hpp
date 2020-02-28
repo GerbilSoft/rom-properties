@@ -6,8 +6,8 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBRPBASE_KDE_RPQBYTEARRAYFILE_HPP__
-#define __ROMPROPERTIES_LIBRPBASE_KDE_RPQBYTEARRAYFILE_HPP__
+#ifndef __ROMPROPERTIES_KDE_RPQBYTEARRAYFILE_HPP__
+#define __ROMPROPERTIES_KDE_RPQBYTEARRAYFILE_HPP__
 
 #include "librpbase/file/IRpFile.hpp"
 
@@ -110,4 +110,4 @@ class RpQByteArrayFile : public LibRpBase::IRpFile
 		size_t m_pos;		// Current position.
 };
 
-#endif /* __ROMPROPERTIES_LIBRPBASE_KDE_RPQBYTEARRAYFILE_HPP__ */
+#endif /* __ROMPROPERTIES_KDE_RPQBYTEARRAYFILE_HPP__ */
