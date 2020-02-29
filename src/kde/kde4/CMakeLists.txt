@@ -23,6 +23,9 @@ ELSE(QT4_FOUND)
 	SET(BUILD_KDE4 OFF CACHE INTERNAL "Build the KDE4 plugin." FORCE)
 ENDIF(QT4_FOUND)
 
+# Write the config.h file.
+CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/config.kde4.h.in" "${CMAKE_CURRENT_BINARY_DIR}/config.kde4.h")
+
 # Sources and headers. (common)
 STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-kde4_SRCS "${rom-properties-kde_SRCS}")
 STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-kde4_H "${rom-properties-kde_H}")
@@ -40,6 +43,11 @@ SET(rom-properties-kde4_SRCS
 	${rom-properties-kde4_SRCS}
 	${rom-properties-kde4_RCC_O}
 	RomPropertiesDialogPluginFactoryKDE4.cpp
+	MimeGlobsParser.cpp
+	)
+SET(rom-properties-kde4_H
+	${rom-properties-kde4_H}
+	MimeGlobsParser.hpp
 	)
 
 IF(COMMAND QT4_WRAP_UI)
