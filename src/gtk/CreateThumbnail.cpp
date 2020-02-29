@@ -339,7 +339,7 @@ G_MODULE_EXPORT int rp_create_thumbnail(const char *source_file, const char *out
 	char mtime_str[32];
 	char szFile_str[32];
 	GFile *f_src = nullptr;
-	gchar *content_type = nullptr;
+	const char *mimeType;
 
 	// gdk-pixbuf doesn't support CI8, so we'll assume all
 	// images are ARGB32. (Well, ABGR32, but close enough.)
@@ -398,17 +398,9 @@ G_MODULE_EXPORT int rp_create_thumbnail(const char *source_file, const char *out
 	}
 
 	// MIME type.
-	// source_uri is only used for the file extension.
-	// TODO: Get this directly from the D-Bus call or similar?
-	// TODO: Get the ~4K header data read from RomDataFactory and use it here?
-	content_type = g_content_type_guess(source_uri, nullptr, 0, nullptr);
-	if (content_type) {
-		gchar *const mime_type = g_content_type_get_mime_type(content_type);
-		if (mime_type) {
-			kv.emplace_back("Thumb::Mimetype", mime_type);
-			g_free(mime_type);
-		}
-		g_free(content_type);
+	mimeType = romData->mimeType();
+	if (mimeType) {
+		kv.emplace_back("Thumb::Mimetype", mimeType);
 	}
 
 	// File size.

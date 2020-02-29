@@ -181,6 +181,8 @@ int main(int argc, char *argv[])
 
 		// glib / D-Bus
 		SCMP_SYS(connect), SCMP_SYS(eventfd2), SCMP_SYS(fcntl),
+		SCMP_SYS(getdents),	// g_file_new_for_uri() [rp_create_thumbnail()]
+		SCMP_SYS(getdents64),	// g_file_new_for_uri() [rp_create_thumbnail()]
 		SCMP_SYS(getegid), SCMP_SYS(geteuid), SCMP_SYS(poll),
 		SCMP_SYS(recvfrom), SCMP_SYS(recvmsg), SCMP_SYS(set_robust_list),
 		SCMP_SYS(sendmsg), SCMP_SYS(sendto), SCMP_SYS(socket),
@@ -191,14 +193,6 @@ int main(int argc, char *argv[])
 
 		// TODO: Parameter filtering for prctl().
 		SCMP_SYS(prctl),	// pthread_setname_np() [g_thread_proxy(), start_thread()]
-
-		// TODO: Get rid of these?
-		SCMP_SYS(getdents),	// QMimeDatabase
-		SCMP_SYS(getdents64),	// QMimeDatabase
-#ifdef __SNR_pwrite
-		SCMP_SYS(pwrite),	// dconf
-#endif /* __SNR_pwrite */
-		SCMP_SYS(pwrite64),	// dconf
 
 		-1	// End of whitelist
 	};

@@ -30,12 +30,6 @@ using LibRomData::TCreateThumbnail;
 using std::string;
 using std::unique_ptr;
 
-#if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
-# include <QtCore/QMimeDatabase>
-#else /* QT_VERSION < QT_VERSION_CHECK(5,0,0) */
-# include "MimeGlobsParser.hpp"
-#endif /* QT_VERSION >= QT_VERSION_CHECK(5,0,0) */
-
 // KDE protocol manager.
 // Used to find the KDE proxy settings.
 #include <kprotocolmanager.h>
@@ -342,21 +336,10 @@ Q_DECL_EXPORT int rp_create_thumbnail(const char *source_file, const char *outpu
 	}
 
 	// MIME type.
-	// TODO: If using RpFileKio, use KIO::FileJob::mimetype().
-#if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
-	// Use QMimeDatabase for Qt5.
-	// TODO: Verify if KIO works.
-	QMimeDatabase mimeDatabase;
-	QMimeType mimeType = mimeDatabase.mimeTypeForUrl(localUrl);
-	kv.emplace_back("Thumb::Mimetype", mimeType.name().toUtf8().constData());
-#else /* QT_VERSION < QT_VERSION_CHECK(5,0,0) */
-	// Parse the shared-mime-info database manually.
-	// TODO: Cache the database instead of re-reading it?
-	string mimeType = MimeGlobsParser::getMimeTypeForFilename(qs_source_filename);
-	if (!mimeType.empty()) {
-		kv.emplace_back("Thumb::Mimetype", mimeType.c_str());
+	const char *const mimeType = romData->mimeType();
+	if (mimeType) {
+		kv.emplace_back("Thumb::Mimetype", mimeType);
 	}
-#endif
 
 	// File size.
 	off64_t szFile = fi_src.size();
