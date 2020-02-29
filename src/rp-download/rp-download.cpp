@@ -258,6 +258,9 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 		SCMP_SYS(openat2),	// Linux 5.6
 #endif /* __SNR_openat2 */
 		SCMP_SYS(poll), SCMP_SYS(select), SCMP_SYS(stat),
+#ifdef __SNR_statx
+		SCMP_SYS(statx),
+#endif /* __SNR_statx */
 		SCMP_SYS(utimensat),
 
 		-1	// End of whitelist
