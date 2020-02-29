@@ -76,7 +76,7 @@ class DragImageLabelPrivate
 					KillTimer(m_hwndParent, animTimerID);
 				}
 				std::for_each(iconFrames.cbegin(), iconFrames.cend(),
-					[](HBITMAP hbmp) { if (hbmp) { DeleteObject(hbmp); } }
+					[](HBITMAP hbmp) { if (hbmp) { DeleteBitmap(hbmp); } }
 				);
 			}
 		};
@@ -140,7 +140,7 @@ DragImageLabelPrivate::~DragImageLabelPrivate()
 {
 	delete anim;
 	if (hbmpImg) {
-		DeleteObject(hbmpImg);
+		DeleteBitmap(hbmpImg);
 	}
 }
 
@@ -255,7 +255,7 @@ bool DragImageLabelPrivate::updateBitmaps(void)
 		// Convert to HBITMAP using the window background color.
 		// TODO: Rescale the icon. (port rescaleImage())
 		if (hbmpImg) {
-			DeleteObject(hbmpImg);
+			DeleteBitmap(hbmpImg);
 		}
 
 		// Get the icon size and rescale it, if necessary.

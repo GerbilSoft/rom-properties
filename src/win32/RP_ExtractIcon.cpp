@@ -223,7 +223,7 @@ IFACEMETHODIMP RP_ExtractIcon::Extract(LPCWSTR pszFile, UINT nIconIndex,
 	if (ret != 0 || !hBmpImage) {
 		// Thumbnail not available. Use the fallback.
 		if (hBmpImage) {
-			DeleteObject(hBmpImage);
+			DeleteBitmap(hBmpImage);
 			hBmpImage = nullptr;
 		}
 		LONG lResult = d->Fallback(phiconLarge, phiconSmall, nIconSize);
@@ -233,6 +233,8 @@ IFACEMETHODIMP RP_ExtractIcon::Extract(LPCWSTR pszFile, UINT nIconIndex,
 
 	// Convert the HBITMAP to an HICON.
 	HICON hIcon = RpImageWin32::toHICON(hBmpImage);
+	DeleteBitmap(hBmpImage);
+	hBmpImage = nullptr;
 	if (hIcon != nullptr) {
 		// Icon converted.
 		bool iconWasSet = false;
@@ -249,13 +251,11 @@ IFACEMETHODIMP RP_ExtractIcon::Extract(LPCWSTR pszFile, UINT nIconIndex,
 		if (!iconWasSet) {
 			// Not returning the icon.
 			// Delete it to prevent a resource leak.
-			DeleteObject(hIcon);
+			DestroyIcon(hIcon);
 		}
 	} else {
 		// Error converting to HICON.
 		// Use the fallback.
-		DeleteObject(hBmpImage);
-		hBmpImage = nullptr;
 		LONG lResult = d->Fallback(phiconLarge, phiconSmall, nIconSize);
 		// NOTE: S_FALSE causes icon shenanigans.
 		return (lResult == ERROR_SUCCESS ? S_OK : E_FAIL);
