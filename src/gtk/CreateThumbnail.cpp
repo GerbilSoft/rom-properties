@@ -183,6 +183,109 @@ string CreateThumbnailPrivate::proxyForUrl(const string &url) const
 #endif
 
 /**
+ * Open a file from a filename or URI.
+ * @param source_file	[in] Source filename or URI.
+ * @param pp_file	[out] Opened file.
+ * @param s_uri		[out] Normalized URI. (file:/ for a filename, etc.)
+ * @return 0 on success; RPCT error code on error.
+ */
+static int openFromFilenameOrURI(const char *source_file, IRpFile **pp_file, string &s_uri)
+{
+	// NOTE: Not checking these in Release builds.
+	assert(source_file != nullptr);
+	assert(pp_file != nullptr);
+
+	*pp_file = nullptr;
+	s_uri.clear();
+	const bool enableThumbnailOnNetworkFS = Config::instance()->enableThumbnailOnNetworkFS();
+
+	IRpFile *file = nullptr;
+	char *const uri_scheme = g_uri_parse_scheme(source_file);
+	if (uri_scheme != nullptr) {
+		// This is a URI.
+		s_uri = source_file;
+		g_free(uri_scheme);
+		// Check if it's a local filename.
+		gchar *const source_filename = g_filename_from_uri(source_file, nullptr, nullptr);
+		if (source_filename) {
+			// It's a local filename.
+			// Check if it's on a "bad" filesystem.
+			if (FileSystem::isOnBadFS(source_filename, enableThumbnailOnNetworkFS)) {
+				// It's on a "bad" filesystem.
+				g_free(source_filename);
+				return RPCT_SOURCE_FILE_BAD_FS;
+			}
+
+			// Open the file using RpFile.
+			file = new RpFile(source_filename, RpFile::FM_OPEN_READ_GZ);
+			g_free(source_filename);
+		} else {
+			// Not a local filename.
+			if (!enableThumbnailOnNetworkFS) {
+				// Thumbnailing on network file systems is disabled.
+				return RPCT_SOURCE_FILE_BAD_FS;
+			}
+
+			// Open the file using RpFileGio.
+			file = new RpFileGio(source_file);
+		}
+	} else {
+		// This is a filename.
+		// Note that for everything except the URI, we can use relative paths
+		// as well as absolute paths, so the absolute path conversion is only
+		// needed to get the URI for the thumbnail.
+
+		// Check if it's on a "bad" filesystem.
+		if (FileSystem::isOnBadFS(source_file, enableThumbnailOnNetworkFS)) {
+			// It's on a "bad" filesystem.
+			return RPCT_SOURCE_FILE_BAD_FS;
+		}
+
+		// Check fi we have an absolute or relative path.
+		if (g_path_is_absolute(source_file)) {
+			// We have an absolute path.
+			gchar *const source_uri = g_filename_to_uri(source_file, nullptr, nullptr);
+			if (source_uri) {
+				s_uri = source_uri;
+				g_free(source_uri);
+			}
+		} else {
+			// We have a relative path.
+			// Convert the filename to an absolute path.
+			GFile *curdir = g_file_new_for_path(".");
+			if (curdir) {
+				GFile *abspath = g_file_resolve_relative_path(curdir, source_file);
+				if (abspath) {
+					gchar *const source_uri = g_file_get_uri(abspath);
+					if (source_uri) {
+						s_uri = source_uri;
+						g_free(source_uri);
+					}
+					g_object_unref(abspath);
+				}
+				g_object_unref(curdir);
+			}
+		}
+
+		// Open the file using RpFile.
+		file = new RpFile(source_file, RpFile::FM_OPEN_READ_GZ);
+	}
+
+	if (file && file->isOpen()) {
+		// File has been opened successfully.
+		*pp_file = file;
+		return 0;
+	}
+
+	// File was not opened.
+	// TODO: Actual error code?
+	if (file) {
+		file->unref();
+	}
+	return RPCT_SOURCE_FILE_ERROR;
+}
+
+/**
  * Thumbnail creator function for wrapper programs.
  * @param source_file Source file or URI. (UTF-8)
  * @param output_file Output file. (UTF-8)
@@ -210,97 +313,22 @@ G_MODULE_EXPORT int rp_create_thumbnail(const char *source_file, const char *out
 	// ROM file and getting RomData*, but we're doing it here
 	// in order to return better error codes.
 
-	// Is this a URI or a filename?
-	char *source_uri = nullptr;
-	char *source_filename = nullptr;
-	bool free_source_uri = false;
-	bool free_source_filename = false;
-
-	char *const uri_scheme = g_uri_parse_scheme(source_file);
-	if (uri_scheme != nullptr) {
-		// This is a URI.
-		source_uri = const_cast<char*>(source_file);
-		g_free(uri_scheme);
-		// Check if it's a local filename.
-		source_filename = g_filename_from_uri(source_file, nullptr, nullptr);
-		if (source_filename) {
-			// It's a local filename.
-			free_source_filename = true;
-		}
-	} else {
-		// This is a filename.
-		source_filename = const_cast<char*>(source_file);
-
-		// We might have a relative path.
-		// If so, it needs to be converted to an absolute path.
-		if (g_path_is_absolute(source_file)) {
-			// We have an absolute path.
-			source_uri = g_filename_to_uri(source_file, nullptr, nullptr);
-		} else {
-			// We have a relative path.
-			// Convert the filename to an absolute path.
-			GFile *curdir = g_file_new_for_path(".");
-			if (curdir) {
-				GFile *abspath = g_file_resolve_relative_path(curdir, source_file);
-				if (abspath) {
-					source_uri = g_file_get_uri(abspath);
-					g_object_unref(abspath);
-				}
-				g_object_unref(curdir);
-			}
-		}
-		free_source_uri = true;
-	}
-
-	// Check for "bad" file systems.
-	if (source_filename) {
-		const Config *const config = Config::instance();
-		if (FileSystem::isOnBadFS(source_filename, config->enableThumbnailOnNetworkFS())) {
-			// This file is on a "bad" file system.
-			if (free_source_uri) {
-				g_free(source_uri);
-			}
-			if (free_source_filename) {
-				g_free(source_filename);
-			}
-			return RPCT_SOURCE_FILE_BAD_FS;
-		}
-	}
-
 	// Attempt to open the ROM file.
-	IRpFile *file;
-	if (source_filename) {
-		// Local file. Use RpFile.
-		file = new RpFile(source_filename, RpFile::FM_OPEN_READ_GZ);
-	} else {
-		// Not a local file. Use RpFileGio.
-		file = new RpFileGio(source_uri);
+	IRpFile *file = nullptr;
+	string s_uri;
+	int ret = openFromFilenameOrURI(source_file, &file, s_uri);
+	if (ret != 0) {
+		// Error opening the file.
+		return ret;
 	}
-
-	if (!file->isOpen()) {
-		// Could not open the file.
-		file->unref();
-		if (free_source_uri) {
-			g_free(source_uri);
-		}
-		if (free_source_filename) {
-			g_free(source_filename);
-		}
-		return RPCT_SOURCE_FILE_ERROR;
-	}
+	assert(file != nullptr);
 
 	// Get the appropriate RomData class for this ROM.
 	// RomData class *must* support at least one image type.
-	RomData *romData = RomDataFactory::create(file, RomDataFactory::RDA_HAS_THUMBNAIL);
+	RomData *const romData = RomDataFactory::create(file, RomDataFactory::RDA_HAS_THUMBNAIL);
 	file->unref();	// file is ref()'d by RomData.
 	if (!romData) {
 		// ROM is not supported.
-		if (free_source_uri) {
-			g_free(source_uri);
-		}
-		if (free_source_filename) {
-			g_free(source_filename);
-		}
 		return RPCT_SOURCE_FILE_NOT_SUPPORTED;
 	}
 
@@ -308,19 +336,13 @@ G_MODULE_EXPORT int rp_create_thumbnail(const char *source_file, const char *out
 	// TODO: If image is larger than maximum_size, resize down.
 	unique_ptr<CreateThumbnailPrivate> d(new CreateThumbnailPrivate());
 	CreateThumbnailPrivate::GetThumbnailOutParams_t outParams;
-	int ret = d->getThumbnail(romData, maximum_size, &outParams);
+	ret = d->getThumbnail(romData, maximum_size, &outParams);
 	if (ret != 0 || !d->isImgClassValid(outParams.retImg)) {
 		// No image.
 		if (outParams.retImg) {
 			d->freeImgClass(outParams.retImg);
 		}
 		romData->unref();
-		if (free_source_uri) {
-			g_free(source_uri);
-		}
-		if (free_source_filename) {
-			g_free(source_filename);
-		}
 		return RPCT_SOURCE_FILE_NO_IMAGE;
 	}
 
@@ -363,7 +385,7 @@ G_MODULE_EXPORT int rp_create_thumbnail(const char *source_file, const char *out
 	// Modification time and file size.
 	mtime_str[0] = 0;
 	szFile_str[0] = 0;
-	f_src = g_file_new_for_uri(source_uri);
+	f_src = g_file_new_for_uri(s_uri.c_str());
 	if (f_src) {
 		GError *error = nullptr;
 		GFileInfo *const fi_src = g_file_query_info(f_src,
@@ -422,7 +444,7 @@ G_MODULE_EXPORT int rp_create_thumbnail(const char *source_file, const char *out
 	// References:
 	// - https://bugs.kde.org/show_bug.cgi?id=393015
 	// - https://specifications.freedesktop.org/thumbnail-spec/thumbnail-spec-latest.html
-	kv.emplace_back("Thumb::URI", source_uri);
+	kv.emplace_back("Thumb::URI", s_uri.c_str());
 
 	// Write the tEXt chunks.
 	pngWriter->write_tEXt(kv);
@@ -473,11 +495,5 @@ G_MODULE_EXPORT int rp_create_thumbnail(const char *source_file, const char *out
 cleanup:
 	d->freeImgClass(outParams.retImg);
 	romData->unref();
-	if (free_source_uri) {
-		g_free(source_uri);
-	}
-	if (free_source_filename) {
-		g_free(source_filename);
-	}
 	return ret;
 }
