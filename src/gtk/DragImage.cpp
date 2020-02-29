@@ -74,11 +74,11 @@ struct _DragImage {
 				g_source_remove(tmrIconAnim);
 			}
 
-			for (auto iter = iconFrames.begin(); iter != iconFrames.end(); ++iter) {
-				if (*iter) {
-					PIMGTYPE_destroy(*iter);
+			std::for_each(iconFrames.begin(), iconFrames.end(), [](PIMGTYPE frame) {
+				if (frame) {
+					PIMGTYPE_destroy(frame);
 				}
-			}
+			});
 		}
 	};
 	anim_vars *anim;
