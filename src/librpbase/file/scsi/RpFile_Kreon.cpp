@@ -15,6 +15,7 @@
 #include "scsi_protocol.h"
 
 // C++ STL classes.
+using std::array;
 using std::unique_ptr;
 using std::vector;
 
@@ -140,17 +141,17 @@ vector<uint16_t> RpFile::getKreonFeatureList(void)
 #ifdef RP_OS_SCSI_SUPPORTED
 	// Kreon "Get Feature List" command
 	// Reference: https://github.com/saramibreak/DiscImageCreator/blob/cb9267da4877d32ab68263c25187cbaab3435ad5/DiscImageCreator/execScsiCmdforDVD.cpp#L1223
-	uint8_t cdb[6] = {0xFF, 0x08, 0x01, 0x10, 0x00, 0x00};
-	uint8_t feature_buf[26];
-	int ret = d->scsi_send_cdb(cdb, sizeof(cdb), feature_buf, sizeof(feature_buf), RpFilePrivate::SCSI_DIR_IN);
+	static const uint8_t cdb[6] = {0xFF, 0x08, 0x01, 0x10, 0x00, 0x00};
+	array<uint16_t, 13> feature_buf;
+	int ret = d->scsi_send_cdb(cdb, sizeof(cdb), feature_buf.data(), sizeof(feature_buf), RpFilePrivate::SCSI_DIR_IN);
 	if (ret != 0) {
 		// SCSI command failed.
 		return vec;
 	}
 
-	vec.reserve(sizeof(feature_buf)/sizeof(uint16_t));
-	for (size_t i = 0; i < sizeof(feature_buf); i += 2) {
-		const uint16_t feature = (feature_buf[i] << 8) | feature_buf[i+1];
+	vec.reserve(feature_buf.size());
+	for (auto iter = feature_buf.begin(); iter != feature_buf.end(); ++iter) {
+		const uint16_t feature = be16_to_cpu(*iter);
 		if (feature == 0)
 			break;
 		vec.emplace_back(feature);
@@ -185,7 +186,7 @@ int RpFile::setKreonErrorSkipState(bool skip)
 #ifdef RP_OS_SCSI_SUPPORTED
 	// Kreon "Set Error Skip State" command
 	// Reference: https://github.com/saramibreak/DiscImageCreator/blob/cb9267da4877d32ab68263c25187cbaab3435ad5/DiscImageCreator/execScsiCmdforDVD.cpp#L1341
-	uint8_t cdb[6] = {0xFF, 0x08, 0x01, 0x15, (uint8_t)skip, 0x00};
+	const uint8_t cdb[6] = {0xFF, 0x08, 0x01, 0x15, (uint8_t)skip, 0x00};
 	return d->scsi_send_cdb(cdb, sizeof(cdb), nullptr, 0, RpFilePrivate::SCSI_DIR_IN);
 #else /* !RP_OS_SCSI_SUPPORTED */
 	// No SCSI implementation for this OS.
@@ -211,7 +212,7 @@ int RpFile::setKreonLockState(KreonLockState lockState)
 #ifdef RP_OS_SCSI_SUPPORTED
 	// Kreon "Set Lock State" command
 	// Reference: https://github.com/saramibreak/DiscImageCreator/blob/cb9267da4877d32ab68263c25187cbaab3435ad5/DiscImageCreator/execScsiCmdforDVD.cpp#L1309
-	uint8_t cdb[6] = {0xFF, 0x08, 0x01, 0x11, static_cast<uint8_t>(lockState), 0x00};
+	const uint8_t cdb[6] = {0xFF, 0x08, 0x01, 0x11, static_cast<uint8_t>(lockState), 0x00};
 	int ret = d->scsi_send_cdb(cdb, sizeof(cdb), nullptr, 0, RpFilePrivate::SCSI_DIR_IN);
 	if (ret == 0) {
 		d->devInfo->isKreonUnlocked = (lockState != KREON_STATE_LOCKED);

@@ -588,7 +588,7 @@ CBCReader *Xbox360_XEX_Private::initPeReader(void)
 		// Key data.
 		// - 0: retail
 		// - 1: debug (pseudo-keydata)
-		KeyManager::KeyData_t keyData[2];
+		array<KeyManager::KeyData_t, 2> keyData;
 		unsigned int idx0 = 0;
 
 		// Debug key
@@ -615,7 +615,7 @@ CBCReader *Xbox360_XEX_Private::initPeReader(void)
 		// IAesCipher instance.
 		unique_ptr<IAesCipher> cipher(AesCipherFactory::create());
 
-		for (unsigned int i = idx0; i < ARRAY_SIZE(keyData); i++) {
+		for (size_t i = idx0; i < keyData.size(); i++) {
 			// Load the common key. (CBC mode)
 			int ret = cipher->setKey(keyData[i].key, keyData[i].length);
 			ret |= cipher->setChainingMode(IAesCipher::CM_CBC);

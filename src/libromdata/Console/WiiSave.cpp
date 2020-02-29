@@ -26,6 +26,7 @@ using LibRpTexture::rp_image;
 #endif /* ENABLE_DECRYPTION */
 
 // C++ STL classes.
+using std::array;
 using std::string;
 using std::unique_ptr;
 using std::vector;
@@ -72,9 +73,9 @@ class WiiSavePrivate : public RomDataPrivate
 		WiiWIBN *wibnData;
 #endif /* ENABLE_DECRYPTION */
 		// Key indexes. (0 == AES, 1 == IV)
-		WiiPartition::EncryptionKeys key_idx[2];
+		std::array<WiiPartition::EncryptionKeys, 2> key_idx;
 		// Key status.
-		KeyManager::VerifyResult key_status[2];
+		std::array<KeyManager::VerifyResult, 2> key_status;
 };
 
 /** WiiSavePrivate **/
@@ -96,11 +97,8 @@ WiiSavePrivate::WiiSavePrivate(WiiSave *q, IRpFile *file)
 	memset(&svHeader, 0, sizeof(svHeader));
 	memset(&bkHeader, 0, sizeof(bkHeader));
 
-	key_idx[0] = WiiPartition::Key_Max;	// SD AES key
-	key_status[0] = KeyManager::VERIFY_UNKNOWN;
-
-	key_idx[1] = WiiPartition::Key_Max;	// SD IV
-	key_status[1] = KeyManager::VERIFY_UNKNOWN;
+	key_idx.fill(WiiPartition::Key_Max);
+	key_status.fill(KeyManager::VERIFY_UNKNOWN);
 }
 
 WiiSavePrivate::~WiiSavePrivate()
@@ -208,7 +206,7 @@ WiiSave::WiiSave(IRpFile *file)
 	// Key verification data.
 	// TODO: Move out of WiiPartition and into WiiVerifyKeys?
 	KeyManager::KeyData_t keyData[2];
-	for (unsigned int i = 0; i < ARRAY_SIZE(d->key_idx); i++) {
+	for (size_t i = 0; i < d->key_idx.size(); i++) {
 		const char *const keyName = WiiPartition::encryptionKeyName_static(d->key_idx[i]);
 		const uint8_t *const verifyData = WiiPartition::encryptionVerifyData_static(d->key_idx[i]);
 		assert(keyName != nullptr);

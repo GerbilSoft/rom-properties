@@ -24,6 +24,7 @@
 
 // C++ includes.
 #include <algorithm>
+#include <array>
 #include <iomanip>
 #include <limits>
 #include <memory>

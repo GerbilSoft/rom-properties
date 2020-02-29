@@ -537,7 +537,7 @@ void RpPngWriterPrivate::init(IRpFile *file, const IconAnimData *iconAnimData)
 	if (imageTag == IMGT_ICONANIMDATA) {
 		this->iconAnimData = iconAnimData;
 		// Cache the image parameters.
-		const rp_image *img0 = iconAnimData->frames[iconAnimData->seq_index[0]];
+		const rp_image *const img0 = iconAnimData->frames[iconAnimData->seq_index[0]];
 		assert(img0 != nullptr);
 		if (unlikely(!img0)) {
 			// Invalid animated image.
@@ -881,7 +881,7 @@ int RpPngWriterPrivate::write_IDAT_APNG(void)
 
 	// Write the images.
 	for (int i = 0; i < iconAnimData->seq_count; i++) {
-		const rp_image *img = iconAnimData->frames[iconAnimData->seq_index[i]];
+		const rp_image *const img = iconAnimData->frames[iconAnimData->seq_index[i]];
 		if (!img)
 			break;
 
