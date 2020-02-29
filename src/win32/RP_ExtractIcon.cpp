@@ -218,13 +218,13 @@ IFACEMETHODIMP RP_ExtractIcon::Extract(LPCWSTR pszFile, UINT nIconIndex,
 
 	// ROM is supported. Get the image.
 	// TODO: Small icon?
-	HBITMAP hBmpImage = nullptr;
-	int ret = d->thumbnailer.getThumbnail(d->romData, LOWORD(nIconSize), hBmpImage);
-	if (ret != 0 || !hBmpImage) {
+	CreateThumbnail::GetThumbnailOutParams_t outParams;
+	outParams.retImg = nullptr;
+	int ret = d->thumbnailer.getThumbnail(d->romData, LOWORD(nIconSize), &outParams);
+	if (ret != 0 || !outParams.retImg) {
 		// Thumbnail not available. Use the fallback.
-		if (hBmpImage) {
-			DeleteBitmap(hBmpImage);
-			hBmpImage = nullptr;
+		if (outParams.retImg) {
+			DeleteBitmap(outParams.retImg);
 		}
 		LONG lResult = d->Fallback(phiconLarge, phiconSmall, nIconSize);
 		// NOTE: S_FALSE causes icon shenanigans.
@@ -232,9 +232,8 @@ IFACEMETHODIMP RP_ExtractIcon::Extract(LPCWSTR pszFile, UINT nIconIndex,
 	}
 
 	// Convert the HBITMAP to an HICON.
-	HICON hIcon = RpImageWin32::toHICON(hBmpImage);
-	DeleteBitmap(hBmpImage);
-	hBmpImage = nullptr;
+	HICON hIcon = RpImageWin32::toHICON(outParams.retImg);
+	DeleteBitmap(outParams.retImg);
 	if (hIcon != nullptr) {
 		// Icon converted.
 		bool iconWasSet = false;

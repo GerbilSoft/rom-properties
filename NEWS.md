@@ -40,6 +40,9 @@
     directly instead of urlmon, which reduces overhead.
   * The UI frontends now show a dropdown box to select the language if the
     ROM image has multiple translations for e.g. the game title.
+  * Linux: Thumbnailers now write the "Thumb::Image::Width" and
+    "Thumb::Image::Height" properties where applicable. These represent the
+    size of the original image that was thumbnailed.
 
 * New parsers:
   * DidjTex: Leapster Didj .tex and .texs texture files. For .texs, currently

@@ -242,17 +242,31 @@ inline void TCreateThumbnail<ImgClass>::rescale_aspect(ImgSize &rs_size, const I
 /**
  * Create a thumbnail for the specified ROM file.
  * @param romData	[in] RomData object.
- * @param req_size	[in] Requested image size.
- * @param ret_img	[out] Return image.
- * @param sBIT		[out,opt] sBIT metadata.
+ * @param reqSize	[in] Requested image size. (single dimension; assuming square image)
+ * @param pOutParams	[out] Output parameters.
  * @return 0 on success; non-zero on error.
  */
 template<typename ImgClass>
-int TCreateThumbnail<ImgClass>::getThumbnail(const RomData *romData, int req_size, ImgClass &ret_img, rp_image::sBIT_t *sBIT)
+int TCreateThumbnail<ImgClass>::getThumbnail(const RomData *romData, int reqSize, GetThumbnailOutParams_t *pOutParams)
 {
+	assert(romData != nullptr);
+	assert(reqSize > 0);
+	assert(pOutParams != nullptr);
+	if (reqSize <= 0) {
+		// Invalid parameter...
+		return RPCT_INVALID_IMAGE_SIZE;
+	}
+
+	// Zero out the output parameters initially.
+	pOutParams->thumbSize.width = 0;
+	pOutParams->thumbSize.height = 0;
+	pOutParams->fullSize.width = 0;
+	pOutParams->fullSize.height = 0;
+	memset(&pOutParams->sBIT, 0, sizeof(pOutParams->sBIT));
+	pOutParams->retImg = getNullImgClass();
+
 	uint32_t imgbf = romData->supportedImageTypes();
 	uint32_t imgpf = 0;
-	ImgSize img_sz = {0, 0};
 
 	// Get the image priority.
 	const Config *const config = Config::instance();
@@ -275,15 +289,15 @@ int TCreateThumbnail<ImgClass>::getThumbnail(const RomData *romData, int req_siz
 			return RPCT_SOURCE_FILE_ERROR;
 	}
 
-	if (config->useIntIconForSmallSizes() && req_size <= 48) {
+	if (config->useIntIconForSmallSizes() && reqSize <= 48) {
 		// Check for an icon first.
 		// TODO: Define "small sizes" somewhere. (DPI independence?)
 		if (imgbf & RomData::IMGBF_INT_ICON) {
-			ret_img = getInternalImage(romData, RomData::IMG_INT_ICON, &img_sz, sBIT);
+			pOutParams->retImg = getInternalImage(romData, RomData::IMG_INT_ICON, &pOutParams->fullSize, &pOutParams->sBIT);
 			imgpf = romData->imgpf(RomData::IMG_INT_ICON);
 			imgbf &= ~RomData::IMGBF_INT_ICON;
 
-			if (isImgClassValid(ret_img)) {
+			if (isImgClassValid(pOutParams->retImg)) {
 				// Image retrieved.
 				// TODO: Better method than goto?
 				goto skip_image_check;
@@ -311,15 +325,15 @@ int TCreateThumbnail<ImgClass>::getThumbnail(const RomData *romData, int req_siz
 		// This image may be present.
 		if (imgType <= RomData::IMG_INT_MAX) {
 			// Internal image.
-			ret_img = getInternalImage(romData, imgType, &img_sz, sBIT);
+			pOutParams->retImg = getInternalImage(romData, imgType, &pOutParams->fullSize, &pOutParams->sBIT);
 			imgpf = romData->imgpf(imgType);
 		} else {
 			// External image.
-			ret_img = getExternalImage(romData, imgType, req_size, &img_sz, sBIT);
+			pOutParams->retImg = getExternalImage(romData, imgType, reqSize, &pOutParams->fullSize, &pOutParams->sBIT);
 			imgpf = romData->imgpf(imgType);
 		}
 
-		if (isImgClassValid(ret_img)) {
+		if (isImgClassValid(pOutParams->retImg)) {
 			// Image retrieved.
 			break;
 		}
@@ -330,15 +344,16 @@ int TCreateThumbnail<ImgClass>::getThumbnail(const RomData *romData, int req_siz
 		imgbf &= ~bf;
 	}
 
-	if (!isImgClassValid(ret_img)) {
+	if (!isImgClassValid(pOutParams->retImg)) {
 		// No image.
 		return RPCT_SOURCE_FILE_NO_IMAGE;
 	}
 
 skip_image_check:
-	if (img_sz.width <= 0 || img_sz.height <= 0) {
+	if (pOutParams->fullSize.width <= 0 || pOutParams->fullSize.height <= 0) {
 		// Image size is invalid.
-		freeImgClass(ret_img);
+		freeImgClass(pOutParams->retImg);
+		pOutParams->retImg = getNullImgClass();
 		return RPCT_SOURCE_FILE_ERROR;
 	}
 
@@ -359,39 +374,49 @@ skip_image_check:
 			default:
 				// Only resize images that are less than or equal to
 				// half requested thumbnail size.
-				needs_resize_up = (img_sz.width  <= (req_size/2)) ||
-						  (img_sz.height <= (req_size/2));
+				needs_resize_up = (pOutParams->fullSize.width  <= (reqSize/2)) ||
+						  (pOutParams->fullSize.height <= (reqSize/2));
 				break;
 
 			case RESIZE_UP_ALL:
 				// Resize all images that are smaller than the
 				// requested thumbnail size.
-				needs_resize_up = (img_sz.width  < req_size) ||
-						  (img_sz.height < req_size);
+				needs_resize_up = (pOutParams->fullSize.width  < reqSize) ||
+						  (pOutParams->fullSize.height < reqSize);
 				break;
 		}
 
 		if (needs_resize_up) {
 			// Need to upscale the image.
-			ImgSize int_sz = {req_size, req_size};
+			ImgSize int_sz = {reqSize, reqSize};
 			// Resize to the next highest integer multiple.
-			int_sz.width -= (int_sz.width % img_sz.width);
-			int_sz.height -= (int_sz.height % img_sz.height);
+			int_sz.width -= (int_sz.width % pOutParams->fullSize.width);
+			int_sz.height -= (int_sz.height % pOutParams->fullSize.height);
 
 			// Calculate the closest size while maintaining the aspect ratio.
 			// Based on Qt 4.8's QSize::scale().
-			ImgSize rescale_sz = img_sz;
+			ImgSize rescale_sz = pOutParams->fullSize;
 			rescale_aspect(rescale_sz, int_sz);
 
 			// FIXME: If the original image is 64x1024, the rescale
 			// may result in 0x0, which is no good. If this happens,
 			// skip the rescaling entirely.
 			if (rescale_sz.width > 0 && rescale_sz.height > 0) {
-				ImgClass scaled_img = rescaleImgClass(ret_img, rescale_sz);
-				freeImgClass(ret_img);
-				ret_img = scaled_img;
+				pOutParams->thumbSize = rescale_sz;
+				ImgClass scaled_img = rescaleImgClass(pOutParams->retImg, rescale_sz);
+				freeImgClass(pOutParams->retImg);
+				pOutParams->retImg = scaled_img;
+			} else {
+				// Unable to rescale. Use the full image size.
+				pOutParams->thumbSize = pOutParams->fullSize;
 			}
+		} else {
+			// Resize Up isn't needed. Use the full image size.
+			pOutParams->thumbSize = pOutParams->fullSize;
 		}
+	} else {
+		// Thumbnail size matches the full image size.
+		pOutParams->thumbSize = pOutParams->fullSize;
 	}
 
 	// Image retrieved successfully.
@@ -401,27 +426,31 @@ skip_image_check:
 /**
  * Create a thumbnail for the specified ROM file.
  * @param file		[in] Open IRpFile object.
- * @param req_size	[in] Requested image size.
- * @param ret_img	[out] Return image.
- * @param sBIT		[out,opt] sBIT metadata.
+ * @param reqSize	[in] Requested image size. (single dimension; assuming square image)
+ * @param pOutParams	[out] Output parameters.
  * @return 0 on success; non-zero on error.
  */
 template<typename ImgClass>
-int TCreateThumbnail<ImgClass>::getThumbnail(IRpFile *file, int req_size, ImgClass &ret_img, rp_image::sBIT_t *sBIT)
+int TCreateThumbnail<ImgClass>::getThumbnail(IRpFile *file, int reqSize, GetThumbnailOutParams_t *pOutParams)
 {
+	assert(file != nullptr);
+	assert(reqSize > 0);
+	assert(pOutParams != nullptr);
+	if (reqSize <= 0) {
+		// Invalid parameter...
+		return RPCT_INVALID_IMAGE_SIZE;
+	}
+
 	// Get the appropriate RomData class for this ROM.
 	// RomData class *must* support at least one image type.
 	RomData *romData = RomDataFactory::create(file, RomDataFactory::RDA_HAS_THUMBNAIL);
 	if (!romData) {
 		// ROM is not supported.
-		if (sBIT) {
-			memset(sBIT, 0, sizeof(*sBIT));
-		}
 		return RPCT_SOURCE_FILE_NOT_SUPPORTED;
 	}
 
 	// Call the actual function.
-	int ret = getThumbnail(romData, req_size, ret_img, sBIT);
+	int ret = getThumbnail(romData, reqSize, pOutParams);
 	romData->unref();
 	return ret;
 }
@@ -429,23 +458,27 @@ int TCreateThumbnail<ImgClass>::getThumbnail(IRpFile *file, int req_size, ImgCla
 /**
  * Create a thumbnail for the specified ROM file.
  * @param filename	[in] ROM file.
- * @param req_size	[in] Requested image size.
- * @param ret_img	[out] Return image.
- * @param sBIT		[out,opt] sBIT metadata.
+ * @param reqSize	[in] Requested image size. (single dimension; assuming square image)
+ * @param pOutParams	[out] Output parameters.
  * @return 0 on success; non-zero on error.
  */
 template<typename ImgClass>
-int TCreateThumbnail<ImgClass>::getThumbnail(const char *filename, int req_size, ImgClass &ret_img, rp_image::sBIT_t *sBIT)
+int TCreateThumbnail<ImgClass>::getThumbnail(const char *filename, int reqSize, GetThumbnailOutParams_t *pOutParams)
 {
+	assert(filename != nullptr);
+	assert(reqSize > 0);
+	assert(pOutParams != nullptr);
+	if (reqSize <= 0) {
+		// Invalid parameter...
+		return RPCT_INVALID_IMAGE_SIZE;
+	}
+
 	// Attempt to open the ROM file.
 	// TODO: OS-specific wrappers, e.g. RpQFile or RpGVfsFile.
 	// For now, using RpFile, which is an stdio wrapper.
 	RpFile *const file = new RpFile(filename, RpFile::FM_OPEN_READ_GZ);
 	if (!file->isOpen()) {
 		// Could not open the file.
-		if (sBIT) {
-			memset(sBIT, 0, sizeof(*sBIT));
-		}
 		file->unref();
 		return RPCT_SOURCE_FILE_ERROR;
 	}
@@ -456,14 +489,11 @@ int TCreateThumbnail<ImgClass>::getThumbnail(const char *filename, int req_size,
 	file->unref();	// file is ref()'d by RomData.
 	if (!romData) {
 		// ROM is not supported.
-		if (sBIT) {
-			memset(sBIT, 0, sizeof(*sBIT));
-		}
 		return RPCT_SOURCE_FILE_NOT_SUPPORTED;
 	}
 
 	// Call the actual function.
-	int ret = getThumbnail(romData, req_size, ret_img, sBIT);
+	int ret = getThumbnail(romData, reqSize, pOutParams);
 	romData->unref();
 	return ret;
 }

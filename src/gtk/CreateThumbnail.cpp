@@ -307,14 +307,12 @@ G_MODULE_EXPORT int rp_create_thumbnail(const char *source_file, const char *out
 	// Create the thumbnail.
 	// TODO: If image is larger than maximum_size, resize down.
 	unique_ptr<CreateThumbnailPrivate> d(new CreateThumbnailPrivate());
-	PIMGTYPE ret_img = nullptr;
-	rp_image::sBIT_t sBIT;
-	int ret = d->getThumbnail(romData, maximum_size, ret_img, &sBIT);
-
-	if (ret != 0 || !d->isImgClassValid(ret_img)) {
+	CreateThumbnailPrivate::GetThumbnailOutParams_t outParams;
+	int ret = d->getThumbnail(romData, maximum_size, &outParams);
+	if (ret != 0 || !d->isImgClassValid(outParams.retImg)) {
 		// No image.
-		if (ret_img) {
-			d->freeImgClass(ret_img);
+		if (outParams.retImg) {
+			d->freeImgClass(outParams.retImg);
 		}
 		romData->unref();
 		if (free_source_uri) {
@@ -327,8 +325,6 @@ G_MODULE_EXPORT int rp_create_thumbnail(const char *source_file, const char *out
 	}
 
 	// Save the image using RpPngWriter.
-	TCreateThumbnail<PIMGTYPE>::ImgSize imgSz;
-	d->getImgClassSize(ret_img, &imgSz);
 	unique_ptr<const uint8_t*[]> row_pointers;
 	guchar *pixels;
 	int rowstride;
@@ -345,7 +341,8 @@ G_MODULE_EXPORT int rp_create_thumbnail(const char *source_file, const char *out
 	// images are ARGB32. (Well, ABGR32, but close enough.)
 	// TODO: Verify channels, etc.?
 	unique_ptr<RpPngWriter> pngWriter(new RpPngWriter(output_file,
-		imgSz.width, imgSz.height, rp_image::FORMAT_ARGB32));
+		outParams.thumbSize.width, outParams.thumbSize.height,
+		rp_image::FORMAT_ARGB32));
 	if (!pngWriter->isOpen()) {
 		// Could not open the PNG writer.
 		ret = RPCT_OUTPUT_FILE_FAILED;
@@ -408,6 +405,15 @@ G_MODULE_EXPORT int rp_create_thumbnail(const char *source_file, const char *out
 		kv.emplace_back("Thumb::Size", szFile_str);
 	}
 
+	// Original image dimensions.
+	if (outParams.fullSize.width > 0 && outParams.fullSize.height > 0) {
+		char imgdim_str[16];
+		snprintf(imgdim_str, sizeof(imgdim_str), "%d", outParams.fullSize.width);
+		kv.emplace_back("Thumb::Image::Width", imgdim_str);
+		snprintf(imgdim_str, sizeof(imgdim_str), "%d", outParams.fullSize.height);
+		kv.emplace_back("Thumb::Image::Height", imgdim_str);
+	}
+
 	// URI.
 	// NOTE: The Thumbnail Management Standard specification says spaces
 	// must be urlencoded: ' ' -> "%20"
@@ -425,7 +431,7 @@ G_MODULE_EXPORT int rp_create_thumbnail(const char *source_file, const char *out
 
 	// If sBIT wasn't found, all fields will be 0.
 	// RpPngWriter will ignore sBIT in this case.
-	pwRet = pngWriter->write_IHDR(&sBIT);
+	pwRet = pngWriter->write_IHDR(&outParams.sBIT);
 	if (pwRet != 0) {
 		// Error writing IHDR.
 		// TODO: Unlink the PNG image.
@@ -436,15 +442,15 @@ G_MODULE_EXPORT int rp_create_thumbnail(const char *source_file, const char *out
 	/** IDAT chunk. **/
 
 	// Initialize the row pointers.
-	row_pointers.reset(new const uint8_t*[imgSz.height]);
+	row_pointers.reset(new const uint8_t*[outParams.thumbSize.height]);
 #ifdef RP_GTK_USE_CAIRO
-	pixels = cairo_image_surface_get_data(ret_img);
-	rowstride = cairo_image_surface_get_stride(ret_img);
+	pixels = cairo_image_surface_get_data(outParams.retImg);
+	rowstride = cairo_image_surface_get_stride(outParams.retImg);
 #else /* !RP_GTK_USE_CAIRO */
-	pixels = gdk_pixbuf_get_pixels(ret_img);
-	rowstride = gdk_pixbuf_get_rowstride(ret_img);
+	pixels = gdk_pixbuf_get_pixels(outParams.retImg);
+	rowstride = gdk_pixbuf_get_rowstride(outParams.retImg);
 #endif
-	for (int y = 0; y < imgSz.height; y++, pixels += rowstride) {
+	for (int y = 0; y < outParams.thumbSize.height; y++, pixels += rowstride) {
 		row_pointers[y] = pixels;
 	}
 
@@ -465,7 +471,7 @@ G_MODULE_EXPORT int rp_create_thumbnail(const char *source_file, const char *out
 	}
 
 cleanup:
-	d->freeImgClass(ret_img);
+	d->freeImgClass(outParams.retImg);
 	romData->unref();
 	if (free_source_uri) {
 		g_free(source_uri);

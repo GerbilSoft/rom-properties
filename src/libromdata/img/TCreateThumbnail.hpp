@@ -32,6 +32,7 @@ typedef enum {
 	RPCT_SOURCE_FILE_CLASS_DISABLED	= 6,	// User configuration has disabled thumbnails for this class.
 	RPCT_SOURCE_FILE_BAD_FS		= 7,	// Source file is located on a "bad" file system.
 	RPCT_RUNNING_AS_ROOT		= 8,	// Running as root is not supported.
+	RPCT_INVALID_IMAGE_SIZE		= 9,	// Invalid image size requested. (e.g. 0 or less)
 } RpCreateThumbnailError;
 
 /**
@@ -127,37 +128,41 @@ class TCreateThumbnail
 			LibRpTexture::rp_image::sBIT_t *sBIT = nullptr);
 
 		/**
+		 * getThumbnail() output parameters.
+		 */
+		struct GetThumbnailOutParams_t {
+			ImgSize thumbSize;			// [out] Thumbnail size.
+			ImgSize fullSize;			// [out] Full image size.
+			LibRpTexture::rp_image::sBIT_t sBIT;	// [out] sBIT metadata.
+			ImgClass retImg;			// [out] Returned image.
+		};
+
+		/**
 		 * Create a thumbnail for the specified ROM file.
 		 * @param romData	[in] RomData object.
-		 * @param req_size	[in] Requested image size.
-		 * @param ret_img	[out] Return image.
-		 * @param sBIT		[out,opt] sBIT metadata.
+		 * @param reqSize	[in] Requested image size. (single dimension; assuming square image)
+		 * @param pOutParams	[out] Output parameters.
 		 * @return 0 on success; non-zero on error.
 		 */
-		int getThumbnail(const LibRpBase::RomData *romData, int req_size, ImgClass &ret_img,
-			LibRpTexture::rp_image::sBIT_t *sBIT = nullptr);
+		int getThumbnail(const LibRpBase::RomData *romData, int reqSize, GetThumbnailOutParams_t *pOutParams);
 
 		/**
 		 * Create a thumbnail for the specified ROM file.
 		 * @param file		[in] Open IRpFile object.
-		 * @param req_size	[in] Requested image size.
-		 * @param ret_img	[out] Return image.
-		 * @param sBIT		[out,opt] sBIT metadata.
+		 * @param reqSize	[in] Requested image size. (single dimension; assuming square image)
+		 * @param pOutParams	[out] Output parameters.
 		 * @return 0 on success; non-zero on error.
 		 */
-		int getThumbnail(LibRpBase::IRpFile *file, int req_size, ImgClass &ret_img,
-			LibRpTexture::rp_image::sBIT_t *sBIT = nullptr);
+		int getThumbnail(LibRpBase::IRpFile *file, int reqSize, GetThumbnailOutParams_t *pOutParams);
 
 		/**
 		 * Create a thumbnail for the specified ROM file.
 		 * @param filename	[in] ROM file.
-		 * @param req_size	[in] Requested image size.
-		 * @param ret_img	[out] Return image.
-		 * @param sBIT		[out,opt] sBIT metadata.
+		 * @param reqSize	[in] Requested image size. (single dimension; assuming square image)
+		 * @param pOutParams	[out] Output parameters.
 		 * @return 0 on success; non-zero on error.
 		 */
-		int getThumbnail(const char *filename, int req_size, ImgClass &ret_img,
-			LibRpTexture::rp_image::sBIT_t *sBIT = nullptr);
+		int getThumbnail(const char *filename, int reqSize, GetThumbnailOutParams_t *pOutParams);
 
 	protected:
 		/**

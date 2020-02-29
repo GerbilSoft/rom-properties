@@ -205,7 +205,11 @@ bool RomThumbCreator::create(const QString &path, int width, int height, QImage 
 	// Assuming width and height are the same.
 	// TODO: What if they aren't?
 	Q_D(RomThumbCreator);
-	int ret = d->getThumbnail(file, width, img);
+	RomThumbCreatorPrivate::GetThumbnailOutParams_t outParams;
+	int ret = d->getThumbnail(file, width, &outParams);
+	if (ret == 0) {
+		img = outParams.retImg;
+	}
 	return (ret == 0);
 }
 
@@ -265,19 +269,18 @@ Q_DECL_EXPORT int rp_create_thumbnail(const char *source_file, const char *outpu
 	// Create the thumbnail.
 	// TODO: If image is larger than maximum_size, resize down.
 	RomThumbCreatorPrivate *const d = new RomThumbCreatorPrivate();
-	QImage ret_img;
-	rp_image::sBIT_t sBIT;
-	int ret = d->getThumbnail(romData, maximum_size, ret_img, &sBIT);
+	RomThumbCreatorPrivate::GetThumbnailOutParams_t outParams;
+	int ret = d->getThumbnail(romData, maximum_size, &outParams);
 	delete d;
 
-	if (ret != 0 || ret_img.isNull()) {
+	if (ret != 0 || outParams.retImg.isNull()) {
 		// No image.
 		romData->unref();
 		return RPCT_SOURCE_FILE_NO_IMAGE;
 	}
 
 	// Save the image using RpPngWriter.
-	const int height = ret_img.height();
+	const int height = outParams.retImg.height();
 
 	/** tEXt chunks. **/
 	// NOTE: These are written before IHDR in order to put the
@@ -292,7 +295,7 @@ Q_DECL_EXPORT int rp_create_thumbnail(const char *source_file, const char *outpu
 
 	// Determine the image format.
 	rp_image::Format format;
-	switch (ret_img.format()) {
+	switch (outParams.retImg.format()) {
 		case QImage::Format_Indexed8:
 			format = rp_image::FORMAT_CI8;
 			break;
@@ -307,7 +310,7 @@ Q_DECL_EXPORT int rp_create_thumbnail(const char *source_file, const char *outpu
 	}
 
 	RpPngWriter *pngWriter = new RpPngWriter(output_file,
-		ret_img.width(), height, format);
+		outParams.retImg.width(), height, format);
 	if (!pngWriter->isOpen()) {
 		// Could not open the PNG writer.
 		delete pngWriter;
@@ -347,6 +350,15 @@ Q_DECL_EXPORT int rp_create_thumbnail(const char *source_file, const char *outpu
 		kv.emplace_back("Thumb::Size", rp_sprintf("%" PRId64, szFile));
 	}
 
+	// Original image dimensions.
+	if (outParams.fullSize.width > 0 && outParams.fullSize.height > 0) {
+		char imgdim_str[16];
+		snprintf(imgdim_str, sizeof(imgdim_str), "%d", outParams.fullSize.width);
+		kv.emplace_back("Thumb::Image::Width", imgdim_str);
+		snprintf(imgdim_str, sizeof(imgdim_str), "%d", outParams.fullSize.height);
+		kv.emplace_back("Thumb::Image::Height", imgdim_str);
+	}
+
 	// URI.
 	// NOTE: KDE desktops don't urlencode spaces or non-ASCII characters.
 	// GTK+ desktops *do* urlencode spaces and non-ASCII characters.
@@ -361,11 +373,11 @@ Q_DECL_EXPORT int rp_create_thumbnail(const char *source_file, const char *outpu
 	// CI8 palette.
 	// This will be an empty vector if the image isn't CI8.
 	// RpPngWriter will ignore the palette arguments in that case.
-	QVector<QRgb> colorTable = ret_img.colorTable();
+	QVector<QRgb> colorTable = outParams.retImg.colorTable();
 
 	// If sBIT wasn't found, all fields will be 0.
 	// RpPngWriter will ignore sBIT in this case.
-	int pwRet = pngWriter->write_IHDR(&sBIT,
+	int pwRet = pngWriter->write_IHDR(&outParams.sBIT,
 		colorTable.constData(), colorTable.size());
 	if (pwRet != 0) {
 		// Error writing IHDR.
@@ -379,8 +391,8 @@ Q_DECL_EXPORT int rp_create_thumbnail(const char *source_file, const char *outpu
 
 	// Initialize the row pointers.
 	unique_ptr<const uint8_t*[]> row_pointers(new const uint8_t*[height]);
-	const uint8_t *bits = ret_img.bits();
-	const int bytesPerLine = ret_img.bytesPerLine();
+	const uint8_t *bits = outParams.retImg.bits();
+	const int bytesPerLine = outParams.retImg.bytesPerLine();
 	for (int y = 0; y < height; y++, bits += bytesPerLine) {
 		row_pointers[y] = bits;
 	}
