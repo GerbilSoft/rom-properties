@@ -37,6 +37,11 @@ may change by the time it hits the repositories, or it may stay the same
 if they decide not to allow both ThunarX2 and ThunarX3 to be installed
 side-by-side.
 
+NOTE 3: The KDE4 UI frontend requires shared-mime-info for some thumbnailing
+functionality. If this package is not installed, then thumbnails generated
+using the rp-thumbnail command line utility will not have the Thumb::MimeType
+field filled in.
+
 Clone the repository, then:
 ```
 $ cd rom-properties
