@@ -127,6 +127,9 @@
     desktop environment with only the KDE4 UI frontend installed.
   * GameCube: Region ID 'I' is Italy ("IT"), not Netherlands ("NL"). This may
     have affected GameTDB downloads.
+  * KDE thumbnails: Fixed an incorrect "Thumb::MTime" entry in some cases.
+    The entry was being saved as "Thumb::Size", which resulted in two
+    "Thumb::Size" entries.
 
 * Other changes:
   * Removed the internal copy of libjpeg-turbo. On Windows, gdiplus is now
