@@ -49,9 +49,6 @@ class CreateThumbnailPrivate : public TCreateThumbnail<PIMGTYPE>
 		typedef TCreateThumbnail<PIMGTYPE> super;
 		RP_DISABLE_COPY(CreateThumbnailPrivate)
 
-	private:
-		GProxyResolver *proxy_resolver;
-
 	public:
 		/** TCreateThumbnail functions. **/
 
@@ -121,7 +118,6 @@ class CreateThumbnailPrivate : public TCreateThumbnail<PIMGTYPE>
 };
 
 CreateThumbnailPrivate::CreateThumbnailPrivate()
-	: proxy_resolver(g_proxy_resolver_get_default())
 { }
 
 /**
@@ -151,6 +147,15 @@ string CreateThumbnailPrivate::proxyForUrl(const string &url) const
 {
 	// TODO: Optimizations.
 	// TODO: Support multiple proxies?
+	string ret;
+
+	GProxyResolver *const proxy_resolver = g_proxy_resolver_get_default();
+	assert(proxy_resolver != nullptr);
+	if (!proxy_resolver) {
+		// Default proxy resolver is not available...
+		return ret;
+	}
+
 	gchar **proxies = g_proxy_resolver_lookup(proxy_resolver,
 		url.c_str(), nullptr, nullptr);
 	gchar *proxy = nullptr;
@@ -162,7 +167,6 @@ string CreateThumbnailPrivate::proxyForUrl(const string &url) const
 		}
 	}
 
-	string ret;
 	if (proxy) {
 		ret.assign(proxy);
 	}
