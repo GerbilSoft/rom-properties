@@ -831,6 +831,7 @@ DirectDrawSurface::DirectDrawSurface(IRpFile *file)
 	: super(new DirectDrawSurfacePrivate(this, file))
 {
 	RP_D(DirectDrawSurface);
+	d->mimeType = "image/x-dds";	// unofficial
 
 	if (!d->file) {
 		// Could not ref() the file handle.

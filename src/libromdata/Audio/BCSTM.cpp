@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * BCSTM.cpp: Nintendo 3DS BCSTM and Nintendo Wii U BFSTM audio reader.    *
  *                                                                         *
- * Copyright (c) 2019 by David Korth.                                      *
+ * Copyright (c) 2019-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -43,6 +43,10 @@ class BCSTMPrivate : public RomDataPrivate
 		};
 		int audioFormat;
 
+		// MIME type table.
+		// Ordering matches AudioFormat.
+		static const char *const mimeType_tbl[];
+
 	public:
 		// BCSTM headers.
 		// NOTE: Uses the endianness specified by the byte-order mark.
@@ -77,6 +81,18 @@ class BCSTMPrivate : public RomDataPrivate
 };
 
 /** BCSTMPrivate **/
+
+// MIME type table.
+// Ordering matches AudioFormat.
+const char *const BCSTMPrivate::mimeType_tbl[] = {
+	// Unofficial MIME types.
+	// TODO: Get these upstreamed on FreeDesktop.org.
+	"audio/x-bcstm",
+	"audio/x-bfstm",
+	"audio/x-bcwav",
+
+	nullptr
+};
 
 BCSTMPrivate::BCSTMPrivate(BCSTM *q, IRpFile *file)
 	: super(q, file)
@@ -137,6 +153,8 @@ BCSTM::BCSTM(IRpFile *file)
 		d->file->unref();
 		d->file = nullptr;
 		return;
+	} else if (d->audioFormat < ARRAY_SIZE(d->mimeType_tbl)-1) {
+		d->mimeType = d->mimeType_tbl[d->audioFormat];
 	}
 
 	// Is byteswapping needed?
@@ -386,16 +404,7 @@ const char *const *BCSTM::supportedFileExtensions_static(void)
  */
 const char *const *BCSTM::supportedMimeTypes_static(void)
 {
-	static const char *const mimeTypes[] = {
-		// Unofficial MIME types.
-		// TODO: Get these upstreamed on FreeDesktop.org.
-		"audio/x-bcstm",
-		"audio/x-bfstm",
-		"audio/x-bcwav",
-
-		nullptr
-	};
-	return mimeTypes;
+	return BCSTMPrivate::mimeType_tbl;
 }
 
 /**

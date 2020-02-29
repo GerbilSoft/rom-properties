@@ -57,10 +57,11 @@ class RomDataPrivate
 		RomFields *const fields;	// ROM fields. (NOTE: allocated by the base class)
 		RomMetaData *metaData;		// ROM metadata. (NOTE: nullptr initially.)
 
-		// Class name for user configuration. (ASCII) (default is nullptr)
-		const char *className;
-		// File type. (default is FTYPE_ROM_IMAGE)
-		RomData::FileType fileType;
+	public:
+		/** These fields must be set by RomData subclasses in their constructors. **/
+		const char *className;		// Class name for user configuration. (ASCII) (default is nullptr)
+		const char *mimeType;		// MIME type. (ASCII) (default is nullptr)
+		RomData::FileType fileType;	// File type. (default is FTYPE_ROM_IMAGE)
 
 	public:
 		/** Convenience functions. **/

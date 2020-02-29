@@ -134,6 +134,12 @@ class FileFormat
 		 */
 		virtual const char *textureFormatName(void) const = 0;
 
+		/**
+		 * Get the file's MIME type.
+		 * @return MIME type, or nullptr if unknown.
+		 */
+		const char *mimeType(void) const;
+
 		// TODO: Supported file extensions and MIME types.
 
 		/**

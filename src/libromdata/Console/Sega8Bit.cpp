@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * Sega8Bit.cpp: Sega 8-bit (SMS/GG) ROM reader.                           *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -199,6 +199,7 @@ Sega8Bit::Sega8Bit(IRpFile *file)
 {
 	RP_D(Sega8Bit);
 	d->className = "Sega8Bit";
+	d->mimeType = "application/x-sms-rom";	// unofficial (TODO: SMS vs. GG)
 
 	if (!d->file) {
 		// Could not ref() the file handle.

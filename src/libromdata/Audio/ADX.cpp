@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * ADX.hpp: CRI ADX audio reader.                                          *
  *                                                                         *
- * Copyright (c) 2018-2019 by David Korth.                                 *
+ * Copyright (c) 2018-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -67,6 +67,7 @@ ADX::ADX(IRpFile *file)
 {
 	RP_D(ADX);
 	d->className = "ADX";
+	d->mimeType = "audio/x-adx";	// unofficial, not on fd.o
 	d->fileType = FTYPE_AUDIO_FILE;
 
 	if (!d->file) {

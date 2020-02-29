@@ -39,6 +39,7 @@ RomDataPrivate::RomDataPrivate(RomData *q, IRpFile *file)
 	, fields(new RomFields())
 	, metaData(nullptr)
 	, className(nullptr)
+	, mimeType(nullptr)
 	, fileType(RomData::FTYPE_ROM_IMAGE)
 {
 	// Initialize i18n.
@@ -571,6 +572,16 @@ const char *RomData::fileType_string(void) const
 		return dpgettext_expr(RP_I18N_DOMAIN, "RomData|FileType", fileType);
 	}
 	return nullptr;
+}
+
+/**
+ * Get the file's MIME type.
+ * @return MIME type, or nullptr if unknown.
+ */
+const char *RomData::mimeType(void) const
+{
+	RP_D(const RomData);
+	return d->mimeType;
 }
 
 /**

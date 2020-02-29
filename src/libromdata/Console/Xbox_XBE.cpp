@@ -387,6 +387,7 @@ Xbox_XBE::Xbox_XBE(IRpFile *file)
 	// This class handles executables.
 	RP_D(Xbox_XBE);
 	d->className = "Xbox_XBE";
+	d->mimeType = "application/x-xbox-executable";	// unofficial, not on fd.o
 	d->fileType = FTYPE_EXECUTABLE;
 
 	if (!d->file) {

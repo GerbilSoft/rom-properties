@@ -682,6 +682,7 @@ KhronosKTX::KhronosKTX(IRpFile *file)
 	: super(new KhronosKTXPrivate(this, file))
 {
 	RP_D(KhronosKTX);
+	d->mimeType = "image/ktx";	// official
 
 	if (!d->file) {
 		// Could not ref() the file handle.

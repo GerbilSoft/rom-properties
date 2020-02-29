@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * Xbox360_STFS.cpp: Microsoft Xbox 360 package reader.                    *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -288,6 +288,7 @@ Xbox360_STFS::Xbox360_STFS(IRpFile *file)
 	// TODO: Change to Save File if the content is a save file.
 	RP_D(Xbox360_STFS);
 	d->className = "Xbox360_STFS";
+	d->mimeType = "application/x-xbox360-stfs";	// unofficial, not on fd.o
 	d->fileType = FTYPE_APPLICATION_PACKAGE;
 
 	if (!d->file) {

@@ -390,6 +390,7 @@ EXE::EXE(IRpFile *file)
 	// d->fileType will be set later.
 	RP_D(EXE);
 	d->className = "EXE";
+	d->mimeType = "application/x-ms-dos-executable";	// unofficial (TODO: More types?)
 	d->fileType = FTYPE_UNKNOWN;
 
 	if (!d->file) {

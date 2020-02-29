@@ -265,24 +265,42 @@ MachO::MachO(IRpFile *file)
 		}
 	}
 
-	// Determine the file type.
+	// Determine the file and MIME types.
 	// NOTE: This assumes all architectures have the same file type.
 	static const uint8_t fileTypes_tbl[] = {
-		FTYPE_UNKNOWN,			// 0
-		FTYPE_RELOCATABLE_OBJECT,	// MH_OBJECT
-		FTYPE_EXECUTABLE,		// MH_EXECUTE
-		FTYPE_EXECUTABLE,		// MH_PRELOAD (TODO: Special FTYPE?)
-		FTYPE_SHARED_LIBRARY,		// MH_FVMLIB: "Fixed VM" library file. (TODO: Add a separate FTYPE?)
-		FTYPE_CORE_DUMP,		// MH_CORE
-		FTYPE_SHARED_LIBRARY,		// MH_DYLIB
-		FTYPE_UNKNOWN,			// MH_DYLINKER (TODO)
-		FTYPE_BUNDLE,			// MH_BUNDLE
+		FTYPE_UNKNOWN,				// 0
+		FTYPE_RELOCATABLE_OBJECT,		// MH_OBJECT
+		FTYPE_EXECUTABLE,			// MH_EXECUTE
+		FTYPE_SHARED_LIBRARY,			// MH_FVMLIB: "Fixed VM" library file. (TODO: Add a separate FTYPE?)
+		FTYPE_CORE_DUMP,			// MH_CORE
+		FTYPE_EXECUTABLE,			// MH_PRELOAD (TODO: Special FTYPE?)
+		FTYPE_SHARED_LIBRARY,			// MH_DYLIB
+		FTYPE_UNKNOWN,				// MH_DYLINKER (TODO)
+		FTYPE_BUNDLE,				// MH_BUNDLE
+		FTYPE_UNKNOWN,				// MH_DYLIB_STUB (TODO)
+		FTYPE_UNKNOWN,				// MH_DSYM (TODO)
+		FTYPE_UNKNOWN,				// MH_KEXT_BUNDLE (TODO)
+	};
+	static const char *const mimeTypes_tbl[] = {
+		nullptr,				// 0
+		"application/x-mach-object",		// MH_OBJECT
+		"application/x-mach-executable",	// MH_EXECUTE
+		"application/x-mach-sharedlib",		// MH_FVMLIB: "Fixed VM" library file. (TODO: Add a separate FTYPE?)
+		"application/x-mach-core",		// MH_CORE
+		"application/x-mach-executable",	// MH_PRELOAD (TODO: Special FTYPE?)
+		"application/x-mach-sharedlib",		// MH_DYLIB
+		nullptr,				// MH_DYLINKER (TODO)
+		"application/x-mach-bundle",		// MH_BUNDLE
+		nullptr,				// MH_DYLIB_STUB (TODO)
+		nullptr,				// MH_DSYM (TODO)
+		nullptr,				// MH_KEXT_BUNDLE (TODO)
 	};
 
 	// d->fileType is set to FTYPE_UNKNOWN above, so only set it
 	// if the filetype is known.
 	if (d->machHeaders[0].filetype < ARRAY_SIZE(fileTypes_tbl)) {
 		d->fileType = static_cast<RomData::FileType>(fileTypes_tbl[d->machHeaders[0].filetype]);
+		d->mimeType = mimeTypes_tbl[d->machHeaders[0].filetype];
 	}
 }
 
@@ -412,6 +430,7 @@ const char *const *MachO::supportedMimeTypes_static(void)
 
 		// TODO: Upstream the Mach-O definitions.
 
+		"application/x-mach-object",
 		"application/x-mach-executable",
 		"application/x-mach-sharedlib",
 		"application/x-mach-core",

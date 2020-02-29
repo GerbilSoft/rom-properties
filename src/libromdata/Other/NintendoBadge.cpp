@@ -60,6 +60,11 @@ class NintendoBadgePrivate : public RomDataPrivate
 		// Is this mega badge? (>1x1)
 		bool megaBadge;
 
+		// MIME type table.
+		// Ordering matches BadgeType.
+		static const char *const mimeType_tbl[];
+
+	public:
 		// Badge header.
 		union {
 			Badge_PRBS_Header prbs;
@@ -90,6 +95,17 @@ class NintendoBadgePrivate : public RomDataPrivate
 };
 
 /** NintendoBadgePrivate **/
+
+// MIME type table.
+// Ordering matches BadgeType.
+const char *const NintendoBadgePrivate::mimeType_tbl[] = {
+	// Unofficial MIME types.
+	// TODO: Get these upstreamed on FreeDesktop.org.
+	"application/x-nintendo-badge",
+	"application/x-nintendo-badge-set",
+
+	nullptr
+};
 
 NintendoBadgePrivate::NintendoBadgePrivate(NintendoBadge *q, IRpFile *file)
 	: super(q, file)
@@ -416,6 +432,11 @@ NintendoBadge::NintendoBadge(IRpFile *file)
 		// CABS is a set icon, so no mega badge here.
 		d->megaBadge = false;
 	}
+
+	// Set the MIME type.
+	if (d->badgeType < ARRAY_SIZE(d->mimeType_tbl)-1) {
+		d->mimeType = d->mimeType_tbl[d->badgeType];
+	}
 }
 
 /**
@@ -512,15 +533,7 @@ const char *const *NintendoBadge::supportedFileExtensions_static(void)
  */
 const char *const *NintendoBadge::supportedMimeTypes_static(void)
 {
-	static const char *const mimeTypes[] = {
-		// Unofficial MIME types.
-		// TODO: Get these upstreamed on FreeDesktop.org.
-		"application/x-nintendo-badge",
-		"application/x-nintendo-badge-set",
-
-		nullptr
-	};
-	return mimeTypes;
+	return NintendoBadgePrivate::mimeType_tbl;
 }
 
 /**

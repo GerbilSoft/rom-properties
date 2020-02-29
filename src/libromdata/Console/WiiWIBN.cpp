@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * WiiWIBN.hpp: Nintendo Wii save file banner reader.                      *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -235,6 +235,7 @@ WiiWIBN::WiiWIBN(IRpFile *file)
 	// settings as WiiSave.
 	RP_D(WiiWIBN);
 	d->className = "WiiSave";
+	d->mimeType = "application/x-wii-wibn";	// unofficial, not on fd.o
 	d->fileType = FTYPE_BANNER_FILE;
 
 	if (!d->file) {

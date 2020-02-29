@@ -230,12 +230,14 @@ NES::NES(IRpFile *file)
 		case NESPrivate::ROM_FORMAT_NES2:
 			// iNES-style ROM header.
 			d->fileType = FTYPE_ROM_IMAGE;
+			d->mimeType = "application/x-nes-rom";	// unofficial
 			memcpy(&d->header.ines, header, sizeof(d->header.ines));
 			break;
 
 		case NESPrivate::ROM_FORMAT_TNES:
 			// TNES ROM header.
 			d->fileType = FTYPE_ROM_IMAGE;
+			d->mimeType = "application/x-nes-rom";	// unofficial
 			memcpy(&d->header.tnes, header, sizeof(d->header.tnes));
 			break;
 
@@ -248,6 +250,7 @@ NES::NES(IRpFile *file)
 				return;
 			}
 			d->fileType = FTYPE_DISK_IMAGE;
+			d->mimeType = "application/x-fds-disk";	// unofficial
 			memcpy(&d->header.fds, header, sizeof(d->header.fds));
 			break;
 
@@ -260,6 +263,7 @@ NES::NES(IRpFile *file)
 				return;
 			}
 			d->fileType = FTYPE_DISK_IMAGE;
+			d->mimeType = "application/x-fds-disk";	// unofficial
 			memcpy(&d->header.fds_fwNES, header, sizeof(d->header.fds_fwNES));
 			memcpy(&d->header.fds, &header[16], sizeof(d->header.fds));
 			break;
@@ -275,8 +279,8 @@ NES::NES(IRpFile *file)
 				d->romType = NESPrivate::ROM_FORMAT_UNKNOWN;
 				return;
 			}
-
 			d->fileType = FTYPE_DISK_IMAGE;
+			d->mimeType = "application/x-fds-disk";	// unofficial
 			break;
 		}
 

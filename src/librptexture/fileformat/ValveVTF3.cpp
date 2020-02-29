@@ -193,6 +193,7 @@ ValveVTF3::ValveVTF3(IRpFile *file)
 	: super(new ValveVTF3Private(this, file))
 {
 	RP_D(ValveVTF3);
+	d->mimeType = "image/x-vtf3";	// unofficial, not on fd.o
 
 	if (!d->file) {
 		// Could not ref() the file handle.

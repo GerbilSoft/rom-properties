@@ -742,6 +742,7 @@ PowerVR3::PowerVR3(IRpFile *file)
 	: super(new PowerVR3Private(this, file))
 {
 	RP_D(PowerVR3);
+	d->mimeType = "image/x-pvr";	// unofficial, not on fd.o
 
 	if (!d->file) {
 		// Could not ref() the file handle.

@@ -43,6 +43,10 @@ class NGPCPrivate : public RomDataPrivate
 		};
 		int romType;
 
+		// MIME type table.
+		// Ordering matches NGPC_RomType.
+		static const char *const mimeType_tbl[];
+
 	public:
 		// ROM header.
 		NGPC_RomHeader romHeader;
@@ -50,7 +54,15 @@ class NGPCPrivate : public RomDataPrivate
 
 /** NGPCPrivate **/
 
-/** Internal ROM data. **/
+// MIME type table.
+// Ordering matches NGPC_RomType.
+const char *const NGPCPrivate::mimeType_tbl[] = {
+	// Unofficial MIME types from FreeDesktop.org.
+	"application/x-neo-geo-pocket-rom",
+	"application/x-neo-geo-pocket-color-rom",
+
+	nullptr
+};
 
 NGPCPrivate::NGPCPrivate(NGPC *q, IRpFile *file)
 	: super(q, file)
@@ -111,6 +123,11 @@ NGPC::NGPC(IRpFile *file)
 	if (!d->isValid) {
 		d->file->unref();
 		d->file = nullptr;
+	}
+
+	// Set the MIME type.
+	if (d->romType < ARRAY_SIZE(d->mimeType_tbl)-1) {
+		d->mimeType = d->mimeType_tbl[d->romType];
 	}
 }
 
@@ -223,14 +240,7 @@ const char *const *NGPC::supportedFileExtensions_static(void)
  */
 const char *const *NGPC::supportedMimeTypes_static(void)
 {
-	static const char *const mimeTypes[] = {
-		// Unofficial MIME types from FreeDesktop.org.
-		"application/x-neo-geo-pocket-rom",
-		"application/x-neo-geo-pocket-color-rom",
-
-		nullptr
-	};
-	return mimeTypes;
+	return NGPCPrivate::mimeType_tbl;
 }
 
 /**

@@ -116,7 +116,7 @@
   <!-- Dreamcast -->
   <mime-type type="application/x-dreamcast-rom">
     <comment>Dreamcast disc image</comment>
-    <sub-class-of type="application/x-raw-disk-image"/>
+    <sub-class-of type="application/x-cd-image"/>
     <generic-icon name="application-x-cd-image"/>
     <alias type="application/x-dreamcast-iso-image"/>
     <glob pattern="*.iso"/>
@@ -127,7 +127,7 @@
   </mime-type>
   <mime-type type="application/x-dreamcast-cuesheet">
     <comment>Dreamcast cuesheet</comment>
-    <sub-class-of type="application/x-raw-disk-image"/>
+    <sub-class-of type="application/x-cd-image"/>
     <generic-icon name="application-x-cd-image"/>
     <glob pattern="*.gdi"/>
   </mime-type>
@@ -158,7 +158,7 @@
   <!-- GameCube -->
   <mime-type type="application/x-gamecube-rom">
     <comment>GameCube disc image</comment>
-    <sub-class-of type="application/x-raw-disk-image"/>
+    <sub-class-of type="application/x-cd-image"/>
     <generic-icon name="application-x-cd-image"/>
     <alias type="application/x-gamecube-iso-image"/>
     <glob pattern="*.iso"/>
@@ -178,7 +178,7 @@
   <!--
   <mime-type type="application/x-gamecube-tgc">
     <comment>GameCube embedded disc image</comment>
-    <sub-class-of type="application/x-raw-disk-image"/>
+    <sub-class-of type="application/x-cd-image"/>
     <generic-icon name="application-x-cd-image"/>
     <glob pattern="*.tgc"/>
     <magic priority="50">
@@ -188,7 +188,7 @@
   -->
   <mime-type type="application/x-wii-rom">
     <comment>Wii disc image</comment>
-    <sub-class-of type="application/x-raw-disk-image"/>
+    <sub-class-of type="application/x-cd-image"/>
     <generic-icon name="application-x-cd-image"/>
     <alias type="application/x-wii-iso-image"/>
     <alias type="application/x-wbfs"/>
@@ -235,6 +235,26 @@
     <magic priority="90">
       <match value="DATELGC_SAVE" type="string" offset="0"/>
     </magic>
+  </mime-type>
+
+  <!-- MegaDrive -->
+  <mime-type type="application/x-sega-cd-rom">
+    <!-- Translate this to Mega-CD if the console was known as such in your locale
+         Should be Mega-CD in all but en_US, Mexico, Canada and Brazil: https://en.wikipedia.org/wiki/Sega_CD -->
+    <comment>Sega CD 32X disc image</comment>
+    <sub-class-of type="application/x-cd-image"/>
+    <generic-icon name="application-x-cd-image"/>
+    <!-- Also matches the application/x-genesis-rom magic values, hence the higher priority -->
+    <!-- FIXME: Verify the "SEGA 32X" header and priority values. -->
+    <magic priority="70">
+      <match type="string" value="SEGADISCSYSTEM" offset="0">
+        <match type="string" value="SEGA 32X" offset="256"/>
+      </match>
+      <match type="string" value="SEGADISCSYSTEM" offset="16">
+        <match type="string" value="SEGA 32X" offset="272"/>
+      </match>
+    </magic>
+    <glob pattern="*.iso"/>
   </mime-type>
 
   <!-- NES -->
@@ -288,7 +308,7 @@
   <!-- WiiU -->
   <mime-type type="application/x-wii-u-rom">
     <comment>Wii U disc image</comment>
-    <sub-class-of type="application/x-raw-disk-image"/>
+    <sub-class-of type="application/x-cd-image"/>
     <generic-icon name="application-x-cd-image"/>
     <alias type="application/x-wii-u-iso-image"/>
     <glob pattern="*.iso"/>
@@ -493,6 +513,25 @@
 
   <!-- Mach-O -->
   <!-- FIXME: Using the standard MIME types breaks KDE. -->
+  <mime-type type="application/x-mach-object">
+    <comment>Mach-O object file</comment>
+    <sub-class-of type="application/x-object"/>
+    <generic-icon name="x-office-document"/>
+    <magic priority="50">
+      <match value="0xFEEDFACE" type="big32" offset="0">
+        <match value="1" type="big32" offset="12"/>
+      </match>
+      <match value="0xFEEDFACF" type="big32" offset="0">
+        <match value="1" type="big32" offset="12"/>
+      </match>
+      <match value="0xFEEDFACE" type="little32" offset="0">
+        <match value="1" type="little32" offset="12"/>
+      </match>
+      <match value="0xFEEDFACF" type="little32" offset="0">
+        <match value="1" type="little32" offset="12"/>
+      </match>
+    </magic>
+  </mime-type>
   <mime-type type="application/x-mach-executable">
     <comment>Mach-O executable</comment>
     <sub-class-of type="application/x-executable"/>

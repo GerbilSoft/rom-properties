@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * PlayStationSave.hpp: Sony PlayStation save file reader.                 *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * Copyright (c) 2017-2018 by Egor.                                        *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
@@ -193,6 +193,7 @@ PlayStationSave::PlayStationSave(IRpFile *file)
 	// This class handles save files.
 	RP_D(PlayStationSave);
 	d->className = "PlayStationSave";
+	d->mimeType = "application/x-ps1-save";	// unofficial, not on fd.o
 	d->fileType = FTYPE_SAVE_FILE;
 
 	if (!d->file) {

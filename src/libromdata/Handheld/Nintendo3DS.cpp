@@ -50,18 +50,22 @@ class Nintendo3DSPrivate : public RomDataPrivate
 
 	public:
 		// ROM type.
-		enum RomType {
+		enum N3DS_RomType {
 			ROM_TYPE_UNKNOWN = -1,	// Unknown ROM type.
 
-			//ROM_TYPE_SMDH	= 0,	// SMDH (no longer supported; see Nintendo3DS_SMDH)
-			ROM_TYPE_3DSX	= 1,	// 3DSX (homebrew)
-			ROM_TYPE_CCI	= 2,	// CCI/3DS (cartridge dump)
-			ROM_TYPE_eMMC	= 3,	// eMMC dump
-			ROM_TYPE_CIA	= 4,	// CIA
-			ROM_TYPE_NCCH	= 5,	// NCCH
+			ROM_TYPE_3DSX	= 0,	// 3DSX (homebrew)
+			ROM_TYPE_CCI	= 1,	// CCI/3DS (cartridge dump)
+			ROM_TYPE_eMMC	= 2,	// eMMC dump
+			ROM_TYPE_CIA	= 3,	// CIA
+			ROM_TYPE_NCCH	= 4,	// NCCH
 		};
 		int romType;
 
+		// MIME type table.
+		// Ordering matches N3DS_RomType.
+		static const char *const mimeType_tbl[];
+
+	public:
 		// What stuff do we have?
 		enum HeadersPresent {
 			HEADER_NONE	= 0,
@@ -255,6 +259,20 @@ class Nintendo3DSPrivate : public RomDataPrivate
 };
 
 /** Nintendo3DSPrivate **/
+
+// MIME type table.
+// Ordering matches N3DS_RomType.
+const char *const Nintendo3DSPrivate::mimeType_tbl[] = {
+	// Unofficial MIME types.
+	// TODO: Get these upstreamed on FreeDesktop.org.
+	"application/x-nintendo-3ds-3dsx",
+	"application/x-nintendo-3ds-rom",
+	"application/x-nintendo-3ds-emmc",
+	"application/x-nintendo-3ds-cia",
+	"application/x-nintendo-3ds-ncch",
+
+	nullptr
+};
 
 Nintendo3DSPrivate::Nintendo3DSPrivate(Nintendo3DS *q, IRpFile *file)
 	: super(q, file)
@@ -1479,6 +1497,10 @@ Nintendo3DS::Nintendo3DS(IRpFile *file)
 			return;
 	}
 
+	// Set the MIME type.
+	d->mimeType = d->mimeType_tbl[d->romType];
+
+	// File is valid.
 	d->isValid = true;
 }
 
@@ -1723,18 +1745,7 @@ const char *const *Nintendo3DS::supportedFileExtensions_static(void)
  */
 const char *const *Nintendo3DS::supportedMimeTypes_static(void)
 {
-	static const char *const mimeTypes[] = {
-		// Unofficial MIME types.
-		// TODO: Get these upstreamed on FreeDesktop.org.
-		"application/x-nintendo-3ds-3dsx",
-		"application/x-nintendo-3ds-rom",
-		"application/x-nintendo-3ds-emmc",
-		"application/x-nintendo-3ds-cia",
-		"application/x-nintendo-3ds-ncch",
-
-		nullptr
-	};
-	return mimeTypes;
+	return Nintendo3DSPrivate::mimeType_tbl;
 }
 
 /**

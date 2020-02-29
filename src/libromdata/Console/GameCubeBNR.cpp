@@ -224,6 +224,7 @@ GameCubeBNR::GameCubeBNR(IRpFile *file)
 	// settings as GameCube.
 	RP_D(GameCubeBNR);
 	d->className = "GameCube";
+	d->mimeType = "application/x-gamecube-bnr";	// unofficial, not on fd.o
 	d->fileType = FTYPE_BANNER_FILE;
 
 	if (!d->file) {

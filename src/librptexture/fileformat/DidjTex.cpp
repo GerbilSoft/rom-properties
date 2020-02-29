@@ -320,6 +320,7 @@ DidjTex::DidjTex(IRpFile *file)
 	: super(new DidjTexPrivate(this, file))
 {
 	RP_D(DidjTex);
+	d->mimeType = "image/x-didj-texture";	// unofficial, not on fd.o [TODO: .texs?]
 
 	if (!d->file) {
 		// Could not ref() the file handle.

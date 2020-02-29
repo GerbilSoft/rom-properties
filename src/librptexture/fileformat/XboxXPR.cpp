@@ -550,6 +550,7 @@ XboxXPR::XboxXPR(IRpFile *file)
 	: super(new XboxXPRPrivate(this, file))
 {
 	RP_D(XboxXPR);
+	d->mimeType = "image/x-xbox-xpr0";	// unofficial, not on fd.o [TODO: xpr1/xpr2?]
 
 	if (!d->file) {
 		// Could not ref() the file handle.

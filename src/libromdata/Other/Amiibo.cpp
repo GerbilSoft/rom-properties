@@ -96,6 +96,7 @@ Amiibo::Amiibo(IRpFile *file)
 	// This class handles NFC dumps.
 	RP_D(Amiibo);
 	d->className = "Amiibo";
+	d->mimeType = "application/x-nintendo-amiibo";	// unofficial, not on fd.o
 	d->fileType = FTYPE_NFC_DUMP;
 
 	if (!d->file) {

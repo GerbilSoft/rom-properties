@@ -237,6 +237,12 @@ class RomData
 		 */
 		const char *fileType_string(void) const;
 
+		/**
+		 * Get the file's MIME type.
+		 * @return MIME type, or nullptr if unknown.
+		 */
+		const char *mimeType(void) const;
+
 		// TODO:
 		// - List of supported systems.
 		// - Get logo from current system and/or other system?

@@ -199,6 +199,7 @@ ISO::ISO(IRpFile *file)
 	// This class handles disc images.
 	RP_D(ISO);
 	d->className = "ISO";
+	d->mimeType = "application/x-cd-image";	// unofficial [TODO: Others?]
 	d->fileType = FTYPE_DISC_IMAGE;
 
 	if (!d->file) {
@@ -329,6 +330,7 @@ const char *const *ISO::supportedFileExtensions_static(void)
 {
 	static const char *const exts[] = {
 		".iso",		// ISO
+		".iso9660",	// ISO (listed in shared-mime-info)
 		".bin",		// BIN (2352-byte)
 		".xiso",	// Xbox ISO image
 		// TODO: More?
@@ -351,9 +353,9 @@ const char *const *ISO::supportedFileExtensions_static(void)
 const char *const *ISO::supportedMimeTypes_static(void)
 {
 	static const char *const mimeTypes[] = {
-		// Unofficial MIME types from FreeDesktop.org..
-		"application/x-iso9660-image",
+		// Unofficial MIME types from FreeDesktop.org.
 		"application/x-cd-image",
+		"application/x-iso9660-image",
 
 		// TODO: BIN (2352)?
 		nullptr

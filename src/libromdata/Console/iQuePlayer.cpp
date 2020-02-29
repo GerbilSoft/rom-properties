@@ -429,6 +429,7 @@ iQuePlayer::iQuePlayer(IRpFile *file)
 
 	// If this is a ticket, read the BBTicketHead.
 	if (d->fileType == iQuePlayerPrivate::FT_IQUE_DAT) {
+		d->mimeType = "application/x-ique-dat";		// unofficial, not on fd.o
 		size = d->file->seekAndRead(IQUE_PLAYER_BBTICKETHEAD_ADDRESS,
 			&d->bbTicketHead, sizeof(d->bbTicketHead));
 		if (size != sizeof(d->bbTicketHead)) {
@@ -436,6 +437,8 @@ iQuePlayer::iQuePlayer(IRpFile *file)
 			// Handle it as a content metadata file.
 			d->fileType = iQuePlayerPrivate::FT_IQUE_CMD;
 		}
+	} else {
+		d->mimeType = "application/x-ique-cmd";		// unofficial, not on fd.o
 	}
 }
 

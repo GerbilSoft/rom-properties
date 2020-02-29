@@ -336,6 +336,7 @@ Dreamcast::Dreamcast(IRpFile *file)
 		case DreamcastPrivate::DISC_ISO_2048:
 			// 2048-byte sectors.
 			// TODO: Determine session start address.
+			d->mimeType = "application/x-dreamcast-rom";	// unofficial, not on fd.o
 			memcpy(&d->discHeader, &sector, sizeof(d->discHeader));
 			d->iso_start_offset = -1;
 			d->discReader = new DiscReader(d->file);
@@ -349,6 +350,7 @@ Dreamcast::Dreamcast(IRpFile *file)
 		case DreamcastPrivate::DISC_ISO_2352:
 			// 2352-byte sectors.
 			// FIXME: Assuming Mode 1.
+			d->mimeType = "application/x-dreamcast-rom";	// unofficial, not on fd.o
 			memcpy(&d->discHeader, &sector.m1.data, sizeof(d->discHeader));
 			d->discReader = new Cdrom2352Reader(d->file);
 			d->iso_start_offset = static_cast<int>(cdrom_msf_to_lba(&sector.msf));
@@ -370,6 +372,7 @@ Dreamcast::Dreamcast(IRpFile *file)
 			}
 			// TODO: Don't hard-code 2048?
 			d->gdiReader->seekAndRead(lba_track03*2048, &d->discHeader, sizeof(d->discHeader));
+			d->mimeType = "application/x-dreamcast-cuesheet";	// unofficial, not on fd.o
 			break;
 		}
 

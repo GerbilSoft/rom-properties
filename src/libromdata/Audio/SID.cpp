@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * SID.hpp: SID audio reader.                                              *
  *                                                                         *
- * Copyright (c) 2018-2019 by David Korth.                                 *
+ * Copyright (c) 2018-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -65,6 +65,7 @@ SID::SID(IRpFile *file)
 {
 	RP_D(SID);
 	d->className = "SID";
+	d->mimeType = "audio/prs.sid";	// official
 	d->fileType = FTYPE_AUDIO_FILE;
 
 	if (!d->file) {

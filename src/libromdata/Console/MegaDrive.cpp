@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * MegaDrive.cpp: Sega Mega Drive ROM reader.                              *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -95,6 +95,10 @@ class MegaDrivePrivate : public RomDataPrivate
 			ROM_FORMAT_MASK = (0xFF << 8),
 		};
 
+		// MIME type table.
+		// Ordering matches MD_RomType's system IDs.
+		static const char *const mimeType_tbl[];
+
 		int romType;		// ROM type.
 		unsigned int md_region;	// MD hexadecimal region code.
 
@@ -143,6 +147,19 @@ class MegaDrivePrivate : public RomDataPrivate
 };
 
 /** MegaDrivePrivate **/
+
+// MIME type table.
+// Ordering matches MD_RomType's system IDs.
+const char *const MegaDrivePrivate::mimeType_tbl[] = {
+	// Unofficial MIME types from FreeDesktop.org.
+	"application/x-genesis-rom",
+	"application/x-sega-cd-rom",
+	"application/x-genesis-32x-rom",
+	"application/x-sega-cd-32x-rom",	// NOTE: Not on fd.o!
+	"application/x-sega-pico-rom",
+
+	nullptr
+};
 
 MegaDrivePrivate::MegaDrivePrivate(MegaDrive *q, IRpFile *file)
 	: super(q, file)
@@ -610,6 +627,12 @@ MegaDrive::MegaDrive(IRpFile *file)
 		d->file->unref();
 		d->file = nullptr;
 	}
+
+	// Determine the MIME type.
+	const uint8_t sysID = (d->romType & MegaDrivePrivate::ROM_SYSTEM_MASK);
+	if (sysID < ARRAY_SIZE(d->mimeType_tbl)-1) {
+		d->mimeType = d->mimeType_tbl[sysID];
+	}
 }
 
 /** ROM detection functions. **/
@@ -885,16 +908,7 @@ const char *const *MegaDrive::supportedFileExtensions_static(void)
  */
 const char *const *MegaDrive::supportedMimeTypes_static(void)
 {
-	static const char *const mimeTypes[] = {
-		// Unofficial MIME types from FreeDesktop.org.
-		"application/x-genesis-rom",
-		"application/x-sega-cd-rom",
-		"application/x-genesis-32x-rom",
-		"application/x-sega-pico-rom",
-
-		nullptr
-	};
-	return mimeTypes;
+	return MegaDrivePrivate::mimeType_tbl;
 }
 
 /**

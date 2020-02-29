@@ -255,6 +255,11 @@ typedef enum {
 	MH_DYLIB	= 0x6,	// dynamically bound shared library file
 	MH_DYLINKER	= 0x7,	// dynamic link editor
 	MH_BUNDLE	= 0x8,	// dynamically bound bundle file
+	MH_DYLIB_STUB	= 0x9,  // shared library stub for static
+				//  linking only, no section contents
+	MH_DSYM		= 0xa,	// companion file with only debug
+				//   sections
+	MH_KEXT_BUNDLE	= 0xb,	// x86_64 kexts
 } mh_filetype_t;
 
 // Flags field. (bitfield)

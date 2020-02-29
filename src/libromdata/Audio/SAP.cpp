@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * SAP.cpp: Atari 8-bit SAP audio reader.                                  *
  *                                                                         *
- * Copyright (c) 2018-2019 by David Korth.                                 *
+ * Copyright (c) 2018-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -434,6 +434,7 @@ SAP::SAP(IRpFile *file)
 {
 	RP_D(SAP);
 	d->className = "SAP";
+	d->mimeType = "audio/x-sap";	// unofficial
 	d->fileType = FTYPE_AUDIO_FILE;
 
 	if (!d->file) {

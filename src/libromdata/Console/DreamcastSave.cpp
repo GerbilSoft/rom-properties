@@ -47,11 +47,16 @@ class DreamcastSavePrivate : public RomDataPrivate
 			SAVE_TYPE_UNKNOWN = -1,	// Unknown save type.
 
 			SAVE_TYPE_VMS = 0,	// VMS file (also .VMI+.VMS)
-			SAVE_TYPE_DCI = 1,	// DCI (Nexus)
-			SAVE_TYPE_VMI = 2,	// VMI file (standalone)
+			SAVE_TYPE_VMI = 1,	// VMI file (standalone)
+			SAVE_TYPE_DCI = 2,	// DCI (Nexus)
 		};
 		int saveType;
 
+		// MIME type table.
+		// Ordering matches SaveType.
+		static const char *const mimeType_tbl[];
+
+	public:
 		// Which headers do we have loaded?
 		enum DC_LoadedHeaders {
 			DC_HAVE_UNKNOWN = 0,
@@ -170,6 +175,21 @@ class DreamcastSavePrivate : public RomDataPrivate
 };
 
 /** DreamcastSavePrivate **/
+
+// MIME type table.
+// Ordering matches AudioFormat.
+const char *const DreamcastSavePrivate::mimeType_tbl[] = {
+	// Unofficial MIME types used by Sega.
+	// TODO: Get these upstreamed on FreeDesktop.org.
+	"application/x-dreamcast-vms",		// .vms
+	"application/x-dreamcast-vms-info",	// .vmi
+
+	// Unofficial MIME types.
+	// TODO: Get these upstreamed on FreeDesktop.org.
+	"application/x-dreamcast-dci",
+
+	nullptr
+};
 
 // Graphic eyecatch sizes.
 const uint32_t DreamcastSavePrivate::eyecatch_sizes[4] = {
@@ -811,6 +831,7 @@ DreamcastSave::DreamcastSave(IRpFile *file)
 		}
 
 		// Nothing else to do here for standalone VMI files.
+		d->mimeType = d->mimeType_tbl[d->saveType];
 		d->isValid = true;
 		return;
 	} else {
@@ -820,6 +841,9 @@ DreamcastSave::DreamcastSave(IRpFile *file)
 		d->file = nullptr;
 		return;
 	}
+
+	// Set the MIME type.
+	d->mimeType = d->mimeType_tbl[d->saveType];
 
 	// TODO: Load both VMI and VMS timestamps?
 	// Currently, only the VMS timestamp is loaded.
@@ -1105,17 +1129,7 @@ const char *const *DreamcastSave::supportedFileExtensions_static(void)
  */
 const char *const *DreamcastSave::supportedMimeTypes_static(void)
 {
-	static const char *const mimeTypes[] = {
-		// Unofficial MIME types used by Sega.
-		"application/x-dreamcast-vms",		// .vms
-		"application/x-dreamcast-vms-info",	// .vmi
-
-		// Unofficial MIME types.
-		"application/x-dreamcast-dci",
-
-		nullptr
-	};
-	return mimeTypes;
+	return DreamcastSavePrivate::mimeType_tbl;
 }
 
 /**

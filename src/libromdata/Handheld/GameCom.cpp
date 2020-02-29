@@ -256,6 +256,7 @@ GameCom::GameCom(IRpFile *file)
 {
 	RP_D(GameCom);
 	d->className = "GameCom";
+	d->mimeType = "application/x-game-com-rom";	// unofficial, not on fd.o
 
 	if (!d->file) {
 		// Could not ref() the file handle.

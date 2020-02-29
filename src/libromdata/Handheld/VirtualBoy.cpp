@@ -123,6 +123,7 @@ VirtualBoy::VirtualBoy(IRpFile *file)
 {
 	RP_D(VirtualBoy);
 	d->className = "VirtualBoy";
+	d->mimeType = "application/x-virtual-boy-rom";	// unofficial
 
 	if (!d->file) {
 		// Could not ref() the file handle.

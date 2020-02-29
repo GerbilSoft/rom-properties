@@ -692,6 +692,7 @@ ValveVTF::ValveVTF(IRpFile *file)
 	: super(new ValveVTFPrivate(this, file))
 {
 	RP_D(ValveVTF);
+	d->mimeType = "image/vnd.valve.source.texture";	// vendor-specific, not on fd.o
 
 	if (!d->file) {
 		// Could not ref() the file handle.

@@ -31,6 +31,7 @@ FileFormatPrivate::FileFormatPrivate(FileFormat *q, IRpFile *file)
 	, ref_cnt(1)
 	, isValid(false)
 	, file(nullptr)
+	, mimeType(nullptr)
 {
 	// Clear the arrays.
 	memset(dimensions, 0, sizeof(dimensions));
@@ -119,6 +120,16 @@ void FileFormat::close(void)
 }
 
 /** Property accessors **/
+
+/**
+ * Get the file's MIME type.
+ * @return MIME type, or nullptr if unknown.
+ */
+const char *FileFormat::mimeType(void) const
+{
+	RP_D(const FileFormat);
+	return d->mimeType;
+}
 
 /**
  * Get the image width.

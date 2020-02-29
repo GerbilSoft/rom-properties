@@ -40,7 +40,9 @@ class FileFormatPrivate
 		bool isValid;			// Subclass must set this to true if the ROM is valid.
 		LibRpBase::IRpFile *file;	// Open file.
 
-		// Cached parameters.
+	public:
+		/** These fields must be set by FileFormat subclasses in their constructors. **/
+		const char *mimeType;		// MIME type. (ASCII) (default is nullptr)
 		int dimensions[3];		// Dimensions. (width, height, depth)
 						// 2D textures have depth=0.
 };

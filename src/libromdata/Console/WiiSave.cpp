@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * WiiSave.cpp: Nintendo Wii save game file reader.                        *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -132,6 +132,7 @@ WiiSave::WiiSave(IRpFile *file)
 	// This class handles application packages.
 	RP_D(WiiSave);
 	d->className = "WiiSave";
+	d->mimeType = "application/x-wii-save";	// unofficial, not on fd.o
 	d->fileType = FTYPE_SAVE_FILE;
 
 	if (!d->file) {

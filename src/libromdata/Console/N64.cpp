@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * N64.cpp: Nintendo 64 ROM image reader.                                  *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -78,6 +78,7 @@ N64::N64(IRpFile *file)
 {
 	RP_D(N64);
 	d->className = "N64";
+	d->mimeType = "application/x-n64-rom";	// unofficial
 
 	if (!d->file) {
 		// Could not ref() the file handle.

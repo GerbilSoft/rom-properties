@@ -498,6 +498,11 @@ DMG::DMG(IRpFile *file)
 			d->gbxFooter.magic = 0;
 		}
 	}
+
+	// Set the MIME type. (unofficial)
+	d->mimeType = (d->romType == DMGPrivate::DMG_SYSTEM_CGB)
+			? "application/x-gameboy-color-rom"
+			: "application/x-gameboy-rom";
 }
 
 /** ROM detection functions. **/

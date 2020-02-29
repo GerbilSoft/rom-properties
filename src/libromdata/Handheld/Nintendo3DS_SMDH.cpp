@@ -3,7 +3,7 @@
  * Nintendo3DS_SMDH.hpp: Nintendo 3DS SMDH reader.                         *
  * Handles SMDH files and SMDH sections.                                   *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -226,6 +226,7 @@ Nintendo3DS_SMDH::Nintendo3DS_SMDH(IRpFile *file)
 	// This class handles SMDH files and/or sections only.
 	RP_D(Nintendo3DS_SMDH);
 	d->className = "Nintendo3DS";	// Using the same image settings as Nintendo3DS.
+	d->mimeType = "application/x-nintendo-3ds-smdh";	// unofficial, not on fd.o
 	d->fileType = FTYPE_ICON_FILE;
 
 	if (!d->file) {

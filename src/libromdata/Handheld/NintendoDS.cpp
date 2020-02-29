@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * NintendoDS.hpp: Nintendo DS(i) ROM reader.                              *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -66,7 +66,7 @@ class NintendoDSPrivate : public RomDataPrivate
 
 	public:
 		// ROM type.
-		enum RomType {
+		enum NDS_RomType {
 			ROM_UNKNOWN	= -1,	// Unknown ROM type.
 			ROM_NDS		= 0,	// Nintendo DS ROM.
 			ROM_NDS_SLOT2	= 1,	// Nintendo DS ROM. (Slot-2)
@@ -806,6 +806,11 @@ void NintendoDS::init(void)
 		d->file->unref();
 		d->file = nullptr;
 	}
+
+	// Set the MIME type. (unofficial)
+	d->mimeType = (d->romType == NintendoDSPrivate::ROM_DSi_ONLY)
+			? "application/x-nintendo-dsi-rom"	// (not on fd.o)
+			: "application/x-nintendo-ds-rom";
 }
 
 /**

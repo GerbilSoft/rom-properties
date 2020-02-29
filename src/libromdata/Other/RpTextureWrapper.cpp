@@ -93,6 +93,7 @@ RpTextureWrapper::RpTextureWrapper(IRpFile *file)
 		return;
 	}
 
+	d->mimeType = d->texture->mimeType();
 	d->isValid = true;
 }
 

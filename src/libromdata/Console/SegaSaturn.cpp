@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * SegaSaturn.hpp: Sega Saturn disc image reader.                          *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -304,6 +304,7 @@ SegaSaturn::SegaSaturn(IRpFile *file)
 	// This class handles disc images.
 	RP_D(SegaSaturn);
 	d->className = "SegaSaturn";
+	d->mimeType = "application/x-saturn-rom";	// unofficial
 	d->fileType = FTYPE_DISC_IMAGE;
 
 	if (!d->file) {

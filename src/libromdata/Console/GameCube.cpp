@@ -690,6 +690,7 @@ GameCube::GameCube(IRpFile *file)
 	d->discType = isRomSupported_static(&info);
 
 	// TODO: DiscReaderFactory?
+	// TODO: More MIME types for e.g. Triforce, CISO, TGC, etc.
 	if (d->discType >= 0) {
 		switch (d->discType & GameCubePrivate::DISC_FORMAT_MASK) {
 			case GameCubePrivate::DISC_FORMAT_RAW:
@@ -710,17 +711,20 @@ GameCube::GameCube(IRpFile *file)
 				break;
 			}
 			case GameCubePrivate::DISC_FORMAT_WBFS:
+				d->mimeType = "application/x-wbfs";
 				d->discReader = new WbfsReader(d->file);
 				break;
 			case GameCubePrivate::DISC_FORMAT_CISO:
 				d->discReader = new CisoGcnReader(d->file);
 				break;
 			case GameCubePrivate::DISC_FORMAT_NASOS:
+				d->mimeType = "application/x-nasos-image";
 				d->discReader = new NASOSReader(d->file);
 				break;
 			case GameCubePrivate::DISC_FORMAT_WIA:
 				// TODO: Implement WiaReader.
 				// For now, only the header will be readable.
+				d->mimeType = "application/x-wia";
 				d->discReader = nullptr;
 				break;
 
@@ -737,6 +741,24 @@ GameCube::GameCube(IRpFile *file)
 		d->file->unref();
 		d->file = nullptr;
 		return;
+	}
+
+	if (!d->mimeType) {
+		// MIME type hasn't been set yet.
+		// Set it based on the system ID.
+		switch (d->discType & GameCubePrivate::DISC_SYSTEM_MASK) {
+			case GameCubePrivate::DISC_SYSTEM_GCN:
+			case GameCubePrivate::DISC_SYSTEM_TRIFORCE:
+				// TODO: Separate MIME type for Triforce.
+				d->mimeType = "application/x-gamecube-iso-image";
+				break;
+			case GameCubePrivate::DISC_SYSTEM_WII:
+				d->mimeType = "application/x-wii-iso-image";
+				break;
+			default:
+				assert(!"Invalid system ID...");
+				break;
+		}
 	}
 
 	if (!d->discReader) {

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * Nintendo3DSFirm.hpp: Nintendo 3DS firmware reader.                      *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -73,6 +73,7 @@ Nintendo3DSFirm::Nintendo3DSFirm(IRpFile *file)
 {
 	RP_D(Nintendo3DSFirm);
 	d->className = "Nintendo3DSFirm";
+	d->mimeType = "application/x-nintendo-3ds-firm";	// unofficial, not on fd.o
 	d->fileType = FTYPE_FIRMWARE_BINARY;
 
 	if (!d->file) {

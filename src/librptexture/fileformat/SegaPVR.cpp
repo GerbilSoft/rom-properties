@@ -53,6 +53,11 @@ class SegaPVRPrivate : public FileFormatPrivate
 		// PVR type.
 		int pvrType;
 
+		// MIME type table.
+		// Ordering matches PVRType.
+		static const char *const mimeType_tbl[];
+
+	public:
 		// PVR header.
 		PVR_Header pvrHeader;
 
@@ -124,6 +129,19 @@ class SegaPVRPrivate : public FileFormatPrivate
 };
 
 /** SegaPVRPrivate **/
+
+// MIME type table.
+// Ordering matches PVRType.
+const char *const SegaPVRPrivate::mimeType_tbl[] = {
+	// Unofficial MIME types.
+	// TODO: Get these upstreamed on FreeDesktop.org.
+	"image/x-sega-pvr",
+	"image/x-sega-gvr",
+	"image/x-sega-svr",
+	"image/x-sega-pvrx",
+
+	nullptr
+};
 
 SegaPVRPrivate::SegaPVRPrivate(SegaPVR *q, IRpFile *file)
 	: super(q, file)
@@ -1280,6 +1298,12 @@ SegaPVR::SegaPVR(IRpFile *file)
 	// Cache the dimensions for the FileFormat base class.
 	d->dimensions[0] = d->pvrHeader.width;
 	d->dimensions[1] = d->pvrHeader.height;
+
+	// Set the MIME type.
+	// Set the MIME type.
+	if (d->pvrType < ARRAY_SIZE(d->mimeType_tbl)-1) {
+		d->mimeType = d->mimeType_tbl[d->pvrType];
+	}
 }
 
 /**
@@ -1403,17 +1427,7 @@ const char *const *SegaPVR::supportedFileExtensions_static(void)
  */
 const char *const *SegaPVR::supportedMimeTypes_static(void)
 {
-	static const char *const mimeTypes[] = {
-		// Unofficial MIME types.
-		// TODO: Get these upstreamed on FreeDesktop.org.
-		"image/x-sega-pvr",
-		"image/x-sega-gvr",
-		"image/x-sega-pvrx",
-		"image/x-sega-svr",
-
-		nullptr
-	};
-	return mimeTypes;
+	return SegaPVRPrivate::mimeType_tbl;
 }
 
 /** Property accessors **/

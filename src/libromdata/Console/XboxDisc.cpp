@@ -293,6 +293,7 @@ XboxDisc::XboxDisc(IRpFile *file)
 	// This class handles disc images.
 	RP_D(XboxDisc);
 	d->className = "XboxDisc";
+	d->mimeType = "application/x-cd-image";	// unofficial
 	d->fileType = FTYPE_DISC_IMAGE;
 
 	if (!d->file) {
@@ -624,8 +625,8 @@ const char *const *XboxDisc::supportedMimeTypes_static(void)
 {
 	static const char *const mimeTypes[] = {
 		// Unofficial MIME types from FreeDesktop.org..
-		"application/x-iso9660-image",
 		"application/x-cd-image",
+		"application/x-iso9660-image",
 
 		// TODO: XDVDFS?
 		nullptr

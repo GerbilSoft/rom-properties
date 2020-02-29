@@ -1281,6 +1281,7 @@ Xbox360_XEX::Xbox360_XEX(IRpFile *file)
 	// This class handles executables.
 	RP_D(Xbox360_XEX);
 	d->className = "Xbox360_XEX";
+	d->mimeType = "application/x-xbox360-executable";	// unofficial, not on fd.o
 	d->fileType = FTYPE_EXECUTABLE;
 
 	if (!d->file) {

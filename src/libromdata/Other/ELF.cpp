@@ -867,6 +867,7 @@ ELF::ELF(IRpFile *file)
 			case 0xFE01:
 				// This matches some homebrew software.
 				d->fileType = FTYPE_EXECUTABLE;
+				d->mimeType = "application/x-executable";	// unofficial
 				break;
 		}
 	} else {
@@ -875,7 +876,9 @@ ELF::ELF(IRpFile *file)
 		d->checkProgramHeaders();
 		d->checkSectionHeaders();
 
-		// Determine the file type.
+		// Determine the file and MIME types.
+		// NOTE: All of these MIME types are present on FreeDesktop.org,
+		// but they're technically "unofficial".
 		switch (d->Elf_Header.primary.e_type) {
 			default:
 				// Should not happen...
@@ -883,17 +886,26 @@ ELF::ELF(IRpFile *file)
 				break;
 			case ET_REL:
 				d->fileType = FTYPE_RELOCATABLE_OBJECT;
+				d->mimeType = "application/x-object";
 				break;
 			case ET_EXEC:
 				d->fileType = FTYPE_EXECUTABLE;
+				d->mimeType = "application/x-executable";
 				break;
 			case ET_DYN:
 				// This may either be a shared library or a
 				// position-independent executable.
-				d->fileType = (d->isPie ? FTYPE_EXECUTABLE : FTYPE_SHARED_LIBRARY);
+				if (d->isPie) {
+					d->fileType = FTYPE_EXECUTABLE;
+					d->mimeType = "application/x-executable";
+				} else {
+					d->fileType = FTYPE_SHARED_LIBRARY;
+					d->mimeType = "application/x-sharedlib";
+				}
 				break;
 			case ET_CORE:
 				d->fileType = FTYPE_CORE_DUMP;
+				d->mimeType = "application/x-core";
 				break;
 		}
 	}
@@ -1054,6 +1066,7 @@ const char *const *ELF::supportedMimeTypes_static(void)
 {
 	static const char *const mimeTypes[] = {
 		// Unofficial MIME types from FreeDesktop.org.
+		"application/x-object",
 		"application/x-executable",
 		"application/x-sharedlib",
 		"application/x-core",
