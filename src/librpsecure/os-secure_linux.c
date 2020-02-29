@@ -20,6 +20,7 @@
 // libseccomp
 #include <seccomp.h>
 #include <sys/prctl.h>
+#include <linux/sched.h>	// CLONE_THREAD
 
 #ifdef ENABLE_SECCOMP_DEBUG
 # include "seccomp-debug.h"
@@ -72,6 +73,10 @@ int rp_secure_enable(rp_secure_param_t param)
 	seccomp_rule_add_array(ctx, SCMP_ACT_ALLOW, SCMP_SYS(rt_sigreturn), 0, NULL);
 	seccomp_rule_add_array(ctx, SCMP_ACT_ALLOW, SCMP_SYS(write), 0, NULL);
 
+	// restart_syscall() is called by glibc to restart
+	// certain syscalls if they're interrupted.
+	seccomp_rule_add_array(ctx, SCMP_ACT_ALLOW, SCMP_SYS(restart_syscall), 0, NULL);
+
 #ifndef NDEBUG
 	// abort() [called by assert()]
 	seccomp_rule_add_array(ctx, SCMP_ACT_ALLOW, SCMP_SYS(getpid), 0, NULL);
@@ -81,9 +86,24 @@ int rp_secure_enable(rp_secure_param_t param)
 	seccomp_rule_add_array(ctx, SCMP_ACT_ALLOW, SCMP_SYS(tgkill), 0, NULL);
 #endif /* NDEBUG */
 
+	// NOTE: If clone() is wanted, it should be the first syscall in the list.
+	const int *p = param.syscall_wl;
+	if (*p == SCMP_SYS(clone)) {
+		// clone() syscall. Only allow threads.
+		const struct scmp_arg_cmp clone_params[] = {
+			SCMP_A0(SCMP_CMP_MASKED_EQ, CLONE_THREAD, CLONE_THREAD),
+		};
+		seccomp_rule_add_array(ctx, SCMP_ACT_ALLOW, SCMP_SYS(clone),
+			(unsigned int)(sizeof(clone_params)/sizeof(clone_params[0])), clone_params);
+
+		// Skip clone() in the loop.
+		p++;
+	}
+
 	// Add syscalls from the whitelist.
-	// TODO: Syscall parameters?
-	for (const int *p = param.syscall_wl; *p != -1; p++) {
+	// TODO: More extensive syscall parameters?
+	for (; *p != -1; p++) {
+		assert(*p != SCMP_SYS(clone));
 		seccomp_rule_add_array(ctx, SCMP_ACT_ALLOW, *p, 0, NULL);
 	}
 

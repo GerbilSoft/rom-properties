@@ -11,6 +11,9 @@
 #include "libunixcommon/dll-search.h"
 #include "rp-thumbnailer-dbus.h"
 
+// OS-specific security options.
+#include "librpsecure/os-secure.h"
+
 // C includes. (C++ namespace)
 #include <cstdarg>
 #include <cstdio>
@@ -119,6 +122,102 @@ int main(int argc, char *argv[])
 		fprintf(stderr, "*** %s does not support running as root.", argv[0]);
 		return EXIT_FAILURE;
 	}
+
+	// Set OS-specific security options.
+	rp_secure_param_t param;
+#if defined(_WIN32)
+	param.bHighSec = FALSE;
+#elif defined(HAVE_SECCOMP)
+	static const int syscall_wl[] = {
+		// Syscalls used by rp-download.
+		// TODO: Add more syscalls.
+		// FIXME: glibc-2.31 uses 64-bit time syscalls that may not be
+		// defined in earlier versions, including Ubuntu 14.04.
+
+		// NOTE: Special case for clone(). If it's the first syscall
+		// in the list, it has a parameter restriction added that
+		// ensures it can only be used to create threads.
+		SCMP_SYS(clone),
+
+#if 0
+		SCMP_SYS(clock_gettime),
+#ifdef __SNR_clock_gettime64
+		SCMP_SYS(clock_gettime64),
+#endif /* __SNR_clock_gettime64 */
+		SCMP_SYS(close), SCMP_SYS(fcntl), SCMP_SYS(fsetxattr),
+		SCMP_SYS(fstat), SCMP_SYS(getdents),
+		SCMP_SYS(getrusage), SCMP_SYS(getuid), SCMP_SYS(lseek),
+		SCMP_SYS(mkdir), SCMP_SYS(mmap2),
+		SCMP_SYS(munmap),
+		SCMP_SYS(poll), SCMP_SYS(select),
+		SCMP_SYS(utimensat),
+#endif
+
+		SCMP_SYS(access),	// LibUnixCommon::isWritableDirectory()
+		SCMP_SYS(close),
+		SCMP_SYS(fstat),	// __GI___fxstat() [printf()]
+		SCMP_SYS(ftruncate),	// LibRpBase::RpFile::truncate() [from LibRpBase::RpPngWriterPrivate::init()]
+		SCMP_SYS(futex),	// iconv_open(), dlopen()
+		SCMP_SYS(getppid),	// dll-search.c: walk_proc_tree()
+		SCMP_SYS(getuid),	// TODO: Only use geteuid()?
+		SCMP_SYS(lseek),
+		SCMP_SYS(lstat),	// LibRpBase::FileSystem::is_symlink()
+		SCMP_SYS(mkdir),	// g_mkdir_with_parents() [rp_thumbnailer_process()]
+		SCMP_SYS(mmap),		// iconv_open(), dlopen()
+		SCMP_SYS(mmap2),	// iconv_open(), dlopen() [might only be needed on i386...]
+		SCMP_SYS(munmap),	// dlopen(), free() [in some cases]
+		SCMP_SYS(mprotect),	// iconv_open()
+		SCMP_SYS(mmap),		// iconv_open()
+		SCMP_SYS(open),		// Ubuntu 16.04
+		SCMP_SYS(openat),	// glibc-2.31
+#ifdef __SNR_openat2
+		SCMP_SYS(openat2),	// Linux 5.6
+#endif /* __SNR_openat2 */
+		SCMP_SYS(readlink),	// realpath() [LibRpBase::FileSystem::resolve_symlink()]
+		SCMP_SYS(stat),		// LibUnixCommon::isWritableDirectory()
+		SCMP_SYS(statx),	// unsure?
+		SCMP_SYS(statfs),	// LibRpBase::FileSystem::isOnBadFS()
+		SCMP_SYS(statfs64),	// LibRpBase::FileSystem::isOnBadFS()
+
+		// glib / D-Bus
+		SCMP_SYS(connect), SCMP_SYS(eventfd2), SCMP_SYS(fcntl),
+		SCMP_SYS(getegid), SCMP_SYS(geteuid), SCMP_SYS(poll),
+		SCMP_SYS(recvfrom), SCMP_SYS(recvmsg), SCMP_SYS(set_robust_list),
+		SCMP_SYS(sendmsg), SCMP_SYS(sendto), SCMP_SYS(socket),
+
+		// only if G_MESSAGES_DEBUG=all [on Gentoo, but not Ubuntu 14.04]
+		SCMP_SYS(getpeername),	// g_log_writer_is_journald() [g_log()]
+		SCMP_SYS(ioctl),	// isatty() [g_log()]
+
+		// TODO: Parameter filtering for prctl().
+		SCMP_SYS(prctl),	// pthread_setname_np() [g_thread_proxy(), start_thread()]
+
+		// TODO: Get rid of these?
+		SCMP_SYS(getdents),	// QMimeDatabase
+		SCMP_SYS(getdents64),	// QMimeDatabase
+#ifdef __SNR_pwrite
+		SCMP_SYS(pwrite),	// dconf
+#endif /* __SNR_pwrite */
+		SCMP_SYS(pwrite64),	// dconf
+
+		-1	// End of whitelist
+	};
+	param.syscall_wl = syscall_wl;
+#elif defined(HAVE_PLEDGE)
+	// Promises:
+	// - stdio: General stdio functionality.
+	// - rpath: Read from ~/.config/rom-properties/ and ~/.cache/rom-properties/
+	// - wpath: Write to ~/.cache/rom-properties/
+	// - cpath: Create ~/.cache/rom-properties/ if it doesn't exist.
+	// - getpw: Get user's home directory if HOME is empty.
+	param.promises = "stdio rpath wpath cpath getpw";
+#elif defined(HAVE_TAME)
+	// NOTE: stdio includes fattr, e.g. utimes().
+	param.tame_flags = TAME_STDIO | TAME_RPATH | TAME_WPATH | TAME_CPATH | TAME_GETPW;
+#else
+	param.dummy = 0;
+#endif
+	rp_secure_enable(param);
 
 #if !GLIB_CHECK_VERSION(2,36,0)
 	// g_type_init() is automatic as of glib-2.36.0

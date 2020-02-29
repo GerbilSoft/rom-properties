@@ -33,7 +33,8 @@ using std::unique_ptr;
 #if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
 # include <QtCore/QMimeDatabase>
 #else /* QT_VERSION < QT_VERSION_CHECK(5,0,0) */
-# include <kmimetype.h>
+// TODO: Parse the MIME database manually.
+//# include <kmimetype.h>
 #endif /* QT_VERSION >= QT_VERSION_CHECK(5,0,0) */
 
 // KDE protocol manager.
@@ -350,7 +351,11 @@ Q_DECL_EXPORT int rp_create_thumbnail(const char *source_file, const char *outpu
 	QMimeType mimeType = mimeDatabase.mimeTypeForUrl(localUrl);
 	kv.emplace_back("Thumb::Mimetype", mimeType.name().toUtf8().constData());
 #else /* QT_VERSION < QT_VERSION_CHECK(5,0,0) */
-	// Use KMimeType for Qt4.
+	// FIXME: Parse the MIME type database manually.
+	// KMimeType ends up loading a ton of KDE stuff, which doesn't
+	// work too well when using libseccomp. (We don't want to allow
+	// execve(), among other things.)
+# if 0
 	// FIXME: Verify if KIO works.
 	if (!qs_source_filename.isEmpty()) {
 		KMimeType::Ptr mimeType = KMimeType::findByPath(qs_source_filename, 0, true);
@@ -358,6 +363,7 @@ Q_DECL_EXPORT int rp_create_thumbnail(const char *source_file, const char *outpu
 			kv.emplace_back("Thumb::Mimetype", mimeType->name().toUtf8().constData());
 		}
 	}
+# endif
 #endif
 
 	// File size.

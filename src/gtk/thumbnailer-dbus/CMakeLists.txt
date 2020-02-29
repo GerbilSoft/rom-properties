@@ -63,7 +63,7 @@ IF(BUILD_THUMBNAILER_DBUS)
 			$<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src>
 			$<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/src>
 		)
-	TARGET_LINK_LIBRARIES(rp-thumbnailer-dbus unixcommon)
+	TARGET_LINK_LIBRARIES(rp-thumbnailer-dbus unixcommon rpsecure)
 	TARGET_LINK_LIBRARIES(rp-thumbnailer-dbus GLib2::gio-unix GLib2::gio GLib2::gobject GLib2::glib)
 	# Link in libdl if it's required for dlopen().
 	IF(CMAKE_DL_LIBS)
