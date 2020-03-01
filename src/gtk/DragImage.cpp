@@ -63,7 +63,8 @@ struct _DragImage {
 		int last_frame_number;	// Last frame number.
 
 		anim_vars()
-			: tmrIconAnim(0)
+			: iconAnimData(nullptr)
+			, tmrIconAnim(0)
 			, last_delay(0)
 			, last_frame_number(0)
 		{

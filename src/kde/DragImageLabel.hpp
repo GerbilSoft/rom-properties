@@ -169,7 +169,8 @@ class DragImageLabel : public QLabel
 			bool anim_running;		// Animation is running.
 
 			anim_vars()
-				: tmrIconAnim(nullptr)
+				: iconAnimData(nullptr)
+				, tmrIconAnim(nullptr)
 				, last_frame_number(0)
 				, anim_running(false) { }
 			~anim_vars() { delete tmrIconAnim; }
