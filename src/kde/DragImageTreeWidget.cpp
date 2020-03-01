@@ -50,6 +50,7 @@ void DragImageTreeWidget::startDrag(Qt::DropActions supportedActions)
 		RpPngWriter *const pngWriter = new RpPngWriter(pngData, img);
 		if (!pngWriter->isOpen()) {
 			// Unable to open the PNG writer.
+			delete pngWriter;
 			pngData->unref();
 			continue;
 		}
@@ -59,12 +60,14 @@ void DragImageTreeWidget::startDrag(Qt::DropActions supportedActions)
 		int pwRet = pngWriter->write_IHDR();
 		if (pwRet != 0) {
 			// Error writing the PNG image...
+			delete pngWriter;
 			pngData->unref();
 			continue;
 		}
 		pwRet = pngWriter->write_IDAT();
 		if (pwRet != 0) {
 			// Error writing the PNG image...
+			delete pngWriter;
 			pngData->unref();
 			continue;
 		}
