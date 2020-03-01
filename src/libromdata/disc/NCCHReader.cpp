@@ -36,6 +36,7 @@ NCCHReaderPrivate::NCCHReaderPrivate(NCCHReader *q,
 	, pos(0)
 	, headers_loaded(0)
 	, verifyResult(KeyManager::VERIFY_UNKNOWN)
+	, nonNcchContentType(NONCCH_UNKNOWN)
 #ifdef ENABLE_DECRYPTION
 	, tid_be(0)
 	, cipher(nullptr)
