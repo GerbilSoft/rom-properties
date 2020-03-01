@@ -342,6 +342,7 @@ const EXE *Xbox_XBE_Private::initEXE(void)
 			delete discReader_tmp;
 			return nullptr;
 		}
+		discReader = discReader_tmp;
 	}
 
 	// Open the EXE file.
