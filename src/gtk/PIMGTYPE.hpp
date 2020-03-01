@@ -44,11 +44,13 @@ G_END_DECLS
 #include "librptexture/img/rp_image.hpp"
 
 // rp_image_to_PIMGTYPE wrapper function.
-static inline PIMGTYPE rp_image_to_PIMGTYPE(const LibRpTexture::rp_image *img)
+// NOTE: premultiply is only used for Cairo.
+static inline PIMGTYPE rp_image_to_PIMGTYPE(const LibRpTexture::rp_image *img, bool premultiply = true)
 {
 #ifdef RP_GTK_USE_CAIRO
-	return CairoImageConv::rp_image_to_cairo_surface_t(img);
+	return CairoImageConv::rp_image_to_cairo_surface_t(img, premultiply);
 #else /* !RP_GTK_USE_CAIRO */
+	((void)premultiply);
 	return GdkImageConv::rp_image_to_GdkPixbuf(img);
 #endif /* RP_GTK_USE_CAIRO */
 }

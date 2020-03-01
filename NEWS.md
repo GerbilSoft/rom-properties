@@ -43,6 +43,8 @@
   * Linux: Thumbnailers now write the "Thumb::Image::Width" and
     "Thumb::Image::Height" properties where applicable. These represent the
     size of the original image that was thumbnailed.
+  * GTK+ 3.x: Don't premultiply the image before saving it as a PNG image.
+    Premultiplication is only needed when displaying the image using Cairo.
 
 * New parsers:
   * DidjTex: Leapster Didj .tex and .texs texture files. For .texs, currently
