@@ -679,10 +679,13 @@ STDAPI DllRegisterServer(void)
 		}
 	}
 
-	// NOTE: "*.vxd" was accidentally used in LibRomData::EXE.
-	// Manually deleting it here.
+	// NOTE: Some extensions were accidentally registered in previous versions:
+	// - LibRomData::EXE: "*.vxd"
+	// - LibRomData::MachO: ".dylib.bundle" [v1.4]
+	// These extensions will be explicitly deleted here.
 	// NOTE: Ignoring any errors to prevent `regsvr32` from failing.
 	hkcr.deleteSubKey(_T("*.vxd"));
+	hkcr.deleteSubKey(_T(".dylib.bundle"));
 	for (auto sid_iter = user_SIDs.cbegin(); sid_iter != user_SIDs.cend(); ++sid_iter) {
 		TCHAR regPath[288];
 		int len = _sntprintf_s(regPath, _countof(regPath),
@@ -697,6 +700,7 @@ STDAPI DllRegisterServer(void)
 		if (!hkuvxd.isOpen() || hkuvxd.lOpenRes() == ERROR_FILE_NOT_FOUND)
 			continue;
 		hkuvxd.deleteSubKey(_T("*.vxd"));
+		hkuvxd.deleteSubKey(_T(".dylib.bundle"));
 	}
 
 	// Register RP_ShellPropSheetExt for all file types.
@@ -779,10 +783,13 @@ STDAPI DllUnregisterServer(void)
 		}
 	}
 
-	// NOTE: "*.vxd" was accidentally used in LibRomData::EXE.
-	// Manually deleting it here.
+	// NOTE: Some extensions were accidentally registered in previous versions:
+	// - LibRomData::EXE: "*.vxd"
+	// - LibRomData::MachO: ".dylib.bundle" [v1.4]
+	// These extensions will be explicitly deleted here.
 	// NOTE: Ignoring any errors to prevent `regsvr32` from failing.
 	hkcr.deleteSubKey(_T("*.vxd"));
+	hkcr.deleteSubKey(_T(".dylib.bundle"));
 	for (auto sid_iter = user_SIDs.cbegin(); sid_iter != user_SIDs.cend(); ++sid_iter) {
 		TCHAR regPath[288];
 		int len = _sntprintf_s(regPath, _countof(regPath),
@@ -797,6 +804,7 @@ STDAPI DllUnregisterServer(void)
 		if (!hkuvxd.isOpen() || hkuvxd.lOpenRes() == ERROR_FILE_NOT_FOUND)
 			continue;
 		hkuvxd.deleteSubKey(_T("*.vxd"));
+		hkcr.deleteSubKey(_T(".dylib.bundle"));
 	}
 
 	// Unregister RP_ShellPropSheetExt for all file types.

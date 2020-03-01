@@ -45,6 +45,9 @@
     size of the original image that was thumbnailed.
   * GTK+ 3.x: Don't premultiply the image before saving it as a PNG image.
     Premultiplication is only needed when displaying the image using Cairo.
+  * Windows: Fixed incorrect file extension registration of Mach-O dylibs
+    and bundles. (".dylib.bundle" was registered instead of ".dylib" and
+    ".bundle" as separate extensions.)
 
 * New parsers:
   * DidjTex: Leapster Didj .tex and .texs texture files. For .texs, currently
