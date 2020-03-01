@@ -382,6 +382,7 @@ const rp_image *SegaPVRPrivate::loadPvrImage(void)
 		return img;
 	} else if (!file || !file->isOpen()) {
 		// File isn't open.
+		return nullptr;
 	} else if (pvrType != PVR_TYPE_PVR && pvrType != PVR_TYPE_SVR) {
 		// Wrong PVR type for this function.
 		return nullptr;
