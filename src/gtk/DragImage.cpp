@@ -533,6 +533,7 @@ drag_image_drag_data_get(DragImage *image, GdkDragContext *context, GtkSelection
 
 	if (!pngWriter->isOpen()) {
 		// Unable to open the PNG writer.
+		delete pngWriter;
 		pngData->unref();
 		return;
 	}
@@ -542,12 +543,14 @@ drag_image_drag_data_get(DragImage *image, GdkDragContext *context, GtkSelection
 	int pwRet = pngWriter->write_IHDR();
 	if (pwRet != 0) {
 		// Error writing the PNG image...
+		delete pngWriter;
 		pngData->unref();
 		return;
 	}
 	pwRet = pngWriter->write_IDAT();
 	if (pwRet != 0) {
 		// Error writing the PNG image...
+		delete pngWriter;
 		pngData->unref();
 		return;
 	}
