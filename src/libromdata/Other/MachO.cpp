@@ -398,7 +398,7 @@ const char *const *MachO::supportedFileExtensions_static(void)
 		//".",		// FIXME: Does this work for files with no extension?
 		".bin",
 		".so",		// Shared libraries. (TODO: Versioned .so files.)
-		".dylib"	// Dynamic libraries. (TODO: Versioned .dylib files.)
+		".dylib",	// Dynamic libraries. (TODO: Versioned .dylib files.)
 		".bundle",	// Bundles.
 		// TODO: More?
 
