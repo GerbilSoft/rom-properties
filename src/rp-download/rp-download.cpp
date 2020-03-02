@@ -259,7 +259,7 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 #endif /* __SNR_openat2 */
 		SCMP_SYS(poll), SCMP_SYS(select), SCMP_SYS(stat),
 #ifdef __SNR_statx
-		SCMP_SYS(statx),
+		SCMP_SYS(statx),	// maybe for future use
 #endif /* __SNR_statx */
 		SCMP_SYS(utimensat),
 

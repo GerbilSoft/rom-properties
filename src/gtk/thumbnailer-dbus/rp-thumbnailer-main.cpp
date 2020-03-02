@@ -175,7 +175,9 @@ int main(int argc, char *argv[])
 #endif /* __SNR_openat2 */
 		SCMP_SYS(readlink),	// realpath() [LibRpBase::FileSystem::resolve_symlink()]
 		SCMP_SYS(stat),		// LibUnixCommon::isWritableDirectory()
+#ifdef __SNR_statx
 		SCMP_SYS(statx),	// unsure?
+#endif /* __SNR_statx */
 		SCMP_SYS(statfs),	// LibRpBase::FileSystem::isOnBadFS()
 		SCMP_SYS(statfs64),	// LibRpBase::FileSystem::isOnBadFS()
 
