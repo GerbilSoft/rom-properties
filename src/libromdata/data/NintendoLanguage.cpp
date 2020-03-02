@@ -263,9 +263,9 @@ uint32_t NintendoLanguage::getNDSLanguageCode(int langID, int maxID)
 	};
 
 	assert(langID >= 0);
-	assert(maxID <= ARRAY_SIZE(langID_to_lc));
-	if (maxID > ARRAY_SIZE(langID_to_lc)) {
-		maxID = ARRAY_SIZE(langID_to_lc);
+	assert(maxID < ARRAY_SIZE(langID_to_lc));
+	if (maxID >= ARRAY_SIZE(langID_to_lc)) {
+		maxID = ARRAY_SIZE(langID_to_lc)-1;
 	}
 	if (langID < 0 || langID > maxID) {
 		// Out of range.

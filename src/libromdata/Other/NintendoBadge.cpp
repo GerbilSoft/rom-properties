@@ -359,7 +359,7 @@ inline uint32_t NintendoBadgePrivate::getDefaultLC(void) const
 	// Get the system language.
 	// TODO: Verify against the game's region code?
 	N3DS_Language_ID langID = getLanguageID();
-	uint32_t lc = NintendoLanguage::getNDSLanguageCode(langID, N3DS_LANG_MAX);
+	uint32_t lc = NintendoLanguage::getNDSLanguageCode(langID, N3DS_LANG_MAX-1);
 	if (lc == 0) {
 		// Invalid language code...
 		// Default to English.
@@ -700,7 +700,7 @@ int NintendoBadge::loadFieldData(void)
 					}
 				}
 
-				const uint32_t lc = NintendoLanguage::getNDSLanguageCode(langID, N3DS_LANG_MAX);
+				const uint32_t lc = NintendoLanguage::getNDSLanguageCode(langID, N3DS_LANG_MAX-1);
 				assert(lc != 0);
 				if (lc == 0)
 					continue;
