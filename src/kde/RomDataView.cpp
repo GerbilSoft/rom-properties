@@ -1291,7 +1291,6 @@ bool RomDataView::eventFilter(QObject *object, QEvent *event)
 		// Let Qt decide how to manage its layout.
 		return false;
 	}
-	return false;
 
 	// Get the height of the first item.
 	QTreeWidgetItem *const treeWidgetItem = treeWidget->topLevelItem(0);
