@@ -135,6 +135,11 @@
   * KDE thumbnails: Fixed an incorrect "Thumb::MTime" entry in some cases.
     The entry was being saved as "Thumb::Size", which resulted in two
     "Thumb::Size" entries.
+  * Windows: Fixed incorrect file extension registration of Mach-O dylibs
+    and bundles. (".dylib.bundle" was registered instead of ".dylib" and
+    ".bundle" as separate extensions.)
+  * KDE: Fixed vertical sizing of RFT_LISTDATA fields in some cases, e.g.
+    Nintendo3DS.
 
 * Other changes:
   * Removed the internal copy of libjpeg-turbo. On Windows, gdiplus is now

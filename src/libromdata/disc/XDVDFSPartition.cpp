@@ -93,6 +93,7 @@ XDVDFSPartitionPrivate::XDVDFSPartitionPrivate(XDVDFSPartition *q,
 			q->m_lastError = EIO;
 		}
 		q->m_discReader = nullptr;
+		return;
 	}
 
 	// Load the XDVDFS header.

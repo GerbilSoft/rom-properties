@@ -715,6 +715,7 @@ int NintendoBadge::loadFieldData(void)
 				const uint32_t def_lc = d->getDefaultLC();
 				d->fields->addField_string_multi(s_name_title, pMap_name, def_lc);
 			} else {
+				delete pMap_name;
 				d->fields->addField_string(s_name_title, C_("RomData", "Unknown"));
 			}
 

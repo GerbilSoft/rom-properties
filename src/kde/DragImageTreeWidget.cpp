@@ -24,27 +24,23 @@ void DragImageTreeWidget::startDrag(Qt::DropActions supportedActions)
 	// - May need to write images to a temp directory and use a URI list...
 	Q_UNUSED(supportedActions)
 
-	// Get the current item.
-	QTreeWidgetItem *const item = currentItem();
-	if (!item) {
-		// No item selected.
-		return;
-	}
-
-#if 0
-	// TODO
+	// Get the selected items.
 	QList<QTreeWidgetItem*> items = selectedItems();
 	if (items.isEmpty()) {
 		// No items selected.
 		return;
 	}
-#endif
+
+	// TODO: Handle more than one selected item.
+	items = items.mid(0, 1);
 
 	// Find rp_image* objects in the items.
 	QMimeData *const mimeData = new QMimeData;
+	QIcon dragIcon;
 	bool hasOne = false;
-	//std::for_each(items.begin(), items.end(), [](QTreeWidgetItem *item) {
-	do {
+	const auto iter_end = items.end();
+	for (auto iter = items.begin(); iter != iter_end; ++iter) {
+		const QTreeWidgetItem *const item = *iter;
 		const rp_image *const img = static_cast<const rp_image*>(item->data(0, RpImageRole).value<void*>());
 		if (!img)
 			continue;
@@ -54,6 +50,7 @@ void DragImageTreeWidget::startDrag(Qt::DropActions supportedActions)
 		RpPngWriter *const pngWriter = new RpPngWriter(pngData, img);
 		if (!pngWriter->isOpen()) {
 			// Unable to open the PNG writer.
+			delete pngWriter;
 			pngData->unref();
 			continue;
 		}
@@ -63,12 +60,14 @@ void DragImageTreeWidget::startDrag(Qt::DropActions supportedActions)
 		int pwRet = pngWriter->write_IHDR();
 		if (pwRet != 0) {
 			// Error writing the PNG image...
+			delete pngWriter;
 			pngData->unref();
 			continue;
 		}
 		pwRet = pngWriter->write_IDAT();
 		if (pwRet != 0) {
 			// Error writing the PNG image...
+			delete pngWriter;
 			pngData->unref();
 			continue;
 		}
@@ -80,8 +79,14 @@ void DragImageTreeWidget::startDrag(Qt::DropActions supportedActions)
 		QByteArray ba = pngData->qByteArray();
 		mimeData->setData(QLatin1String("image/png"), pngData->qByteArray());
 		pngData->unref();
+
+		// Save the icon.
+		if (!dragIcon.isNull()) {
+			dragIcon = item->icon(0);
+		}
+
 		hasOne = true;
-	} while (0);
+	}
 
 	if (!hasOne) {
 		// No rp_image* objects...
@@ -97,9 +102,8 @@ void DragImageTreeWidget::startDrag(Qt::DropActions supportedActions)
 	// TODO: Make the icon size accessible to the QTreeWidgetItem.
 	// It's currently set in the QTreeWidget in RomDataView.
 	QPixmap qpxm;
-	const QIcon icon = item->icon(0);
-	if (!icon.isNull()) {
-		qpxm = icon.pixmap(QSize(32, 32));
+	if (!dragIcon.isNull()) {
+		qpxm = dragIcon.pixmap(QSize(32, 32));
 	}
 	if (!qpxm.isNull()) {
 		drag->setPixmap(qpxm);

@@ -475,9 +475,9 @@ int Nintendo3DS_SMDH::loadFieldData(void)
 	RomFields::StringMultiMap_t *const pMap_publisher = new RomFields::StringMultiMap_t();
 	for (int langID = 0; langID < N3DS_LANG_MAX; langID++) {
 		// Check for empty strings first.
-		if (smdhHeader->titles[langID].desc_short == 0 &&
-		    smdhHeader->titles[langID].desc_long == 0 &&
-		    smdhHeader->titles[langID].publisher == 0)
+		if (smdhHeader->titles[langID].desc_short[0] == 0 &&
+		    smdhHeader->titles[langID].desc_long[0] == 0 &&
+		    smdhHeader->titles[langID].publisher[0] == 0)
 		{
 			// Strings are empty.
 			continue;

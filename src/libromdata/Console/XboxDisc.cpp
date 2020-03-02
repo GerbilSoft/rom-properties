@@ -527,19 +527,17 @@ int XboxDisc::isRomSupported_static(
 		static const char xgd3_pvd_times[][9+1] = {
 			"17000000\xE4",	// 17:00:00.00 -07:00
 			"16000000\xE0",	// 16:00:00.00 -08:00
-
-			"\0"
 		};
 
 		// TODO: Verify that this works correctly.
-		for (const char *pXgd = &xgd3_pvd_times[0][0]; pXgd[0] != '\0'; pXgd++) {
-			if (!memcmp(&pvd->btime.full[8], pXgd, 9)) {
-				// Found a match!
-				if (pWave) {
-					*pWave = 0;
-				}
-				return XboxDiscPrivate::DISC_TYPE_XGD3;
+		if (!memcmp(&pvd->btime.full[8], xgd3_pvd_times[0], 9) ||
+		     memcmp(&pvd->btime.full[8], xgd3_pvd_times[1], 9))
+		{
+			// Found a match!
+			if (pWave) {
+				*pWave = 0;
 			}
+			return XboxDiscPrivate::DISC_TYPE_XGD3;
 		}
 	}
 

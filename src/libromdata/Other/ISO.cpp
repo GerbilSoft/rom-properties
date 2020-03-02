@@ -100,8 +100,8 @@ void ISOPrivate::checkVolumeDescriptors(void)
 	// TODO: Boot record?
 
 	// Starting address.
-	off64_t addr = (ISO_PVD_LBA * sector_size) + sector_offset;
-	const off64_t maxaddr = 0x100 * sector_size;
+	off64_t addr = (ISO_PVD_LBA * static_cast<off64_t>(sector_size)) + sector_offset;
+	const off64_t maxaddr = 0x100 * static_cast<off64_t>(sector_size);
 
 	ISO_Volume_Descriptor_Header deschdr;
 	bool foundVDT = false;
