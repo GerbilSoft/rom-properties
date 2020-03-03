@@ -611,7 +611,7 @@ size_t WiiPartition::read(void *ptr, size_t size)
 						// Decryption could not be initialized.
 						// TODO: Better error?
 						m_lastError = EIO;
-						return -m_lastError;
+						return 0;
 					}
 					break;
 
@@ -623,7 +623,7 @@ size_t WiiPartition::read(void *ptr, size_t size)
 					// Decryption failed to initialize.
 					// TODO: Better error?
 					m_lastError = EIO;
-					return -m_lastError;
+					return 0;
 			}
 #else /* !ENABLE_DECRYPTION */
 			// Decryption is not enabled.
