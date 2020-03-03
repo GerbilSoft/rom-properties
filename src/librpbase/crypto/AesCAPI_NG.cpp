@@ -354,10 +354,8 @@ int AesCAPI_NG::setKey(const uint8_t *RESTRICT pKey, size_t size)
 		// Destroy the old key.
 		d->pBCryptDestroyKey(hOldKey);
 	}
-	if (pbOldKeyObject != nullptr) {
-		// Delete the old key blob.
-		free(pbOldKeyObject);
-	}
+	// Delete the old key blob.
+	free(pbOldKeyObject);
 
 	// Save the key data.
 	memcpy(d->key, pKey, size);
