@@ -526,7 +526,7 @@ IRpFile *XDVDFSPartition::open(const char *filename)
 
 	// Filename must be valid, and must start with a slash.
 	// Only absolute paths are supported.
-	if (!filename || filename[0] == 0 || filename[0] != '/') {
+	if (!filename || filename[0] != '/') {
 		// No filename and/or does not start with a slash.
 		// TODO: Prepend a slash like GcnFst, or remove slash prepending from GcnFst?
 		m_lastError = EINVAL;
