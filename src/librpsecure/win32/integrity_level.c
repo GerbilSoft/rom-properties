@@ -91,11 +91,9 @@ static DWORD adjustTokenIntegrityLevel(HANDLE hToken, int level)
 		TokenIntegrityLevel,		// TokenInformationClass
 		&tml,				// TokenInformation
 		sizeof(TOKEN_MANDATORY_LABEL) +
-		GetLengthSid(pIntegritySid)));	// TokenInformationLength
+		GetLengthSid(pIntegritySid)))	// TokenInformationLength
 	{
 		// Failed to set the process integrity level.
-		// NOTE: It may have succeeded anyway, in which case,
-		// GetLastError() will return 0.
 		dwLastError = GetLastError();
 		goto out;
 	}
