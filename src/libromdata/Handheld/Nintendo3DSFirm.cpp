@@ -341,9 +341,8 @@ int Nintendo3DSFirm::loadFieldData(void)
 			verstr += arm9VerStr[i].searchlen;
 			const char *end = (const char*)firmBuf.get() + szFile;
 			int count = 0;
-			while (verstr < end && verstr[count] != 0 &&
-			       !ISSPACE(verstr[count]) && verstr[count] != ')' &&
-			       count < 32)
+			while (verstr < end && count < 32 && verstr[count] != 0 &&
+			       !ISSPACE(verstr[count]) && verstr[count] != ')')
 			{
 				count++;
 			}
