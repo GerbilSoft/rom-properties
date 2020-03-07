@@ -12,6 +12,14 @@
 #include <errno.h>
 #include <stdlib.h>
 
+// Some errors aren't present in various SDKs.
+#ifndef ERROR_IMAGE_SUBSYSTEM_NOT_PRESENT	// not present in MinGW-w64 4.0.6
+# define ERROR_IMAGE_SUBSYSTEM_NOT_PRESENT 308
+#endif
+#ifndef ERROR_DISK_RESOURCES_EXHAUSTED		// not present in Windows 7 SDK
+# define ERROR_DISK_RESOURCES_EXHAUSTED 314
+#endif
+
 typedef struct _errmap {
         uint16_t w32;	// Win32 error code.
         uint16_t posix;	// POSIX error code.
@@ -84,14 +92,8 @@ static const errmap w32_to_posix[] = {
 	{ERROR_FILENAME_EXCED_RANGE,	ENOENT    },  // 206
 	{ERROR_NESTING_NOT_ALLOWED,	EAGAIN    },  // 215
 	{ERROR_EXE_MACHINE_TYPE_MISMATCH, ENOEXEC },  // 216
-#ifdef ERROR_IMAGE_SUBSYSTEM_NOT_PRESENT
-	// ERROR_IMAGE_SUBSYSTEM_NOT_PRESENT is not defined in MinGW-w64 4.0.6.
 	{ERROR_IMAGE_SUBSYSTEM_NOT_PRESENT, ENOEXEC}, // 308
-#endif
-#ifdef ERROR_DISK_RESOURCES_EXHAUSTED
-	// ERROR_DISK_RESOURCES_EXHAUSTED is not defined in the Windows 7 SDK.
 	{ERROR_DISK_RESOURCES_EXHAUSTED, ENOSPC   },  // 314
-#endif
 	{ERROR_INVALID_ADDRESS,		EFAULT    },  // 487
 	{ERROR_NO_UNICODE_TRANSLATION,	EILSEQ    },  // 1113
 	{ERROR_IO_DEVICE,		EIO       },  // 1117
