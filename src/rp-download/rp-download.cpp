@@ -87,9 +87,9 @@ static void show_usage(void)
  * @param ... printf() format parameters.
  */
 static void
-#ifndef _MSC_VER
+#if !defined(_MSC_VER) && !defined(_UNICODE)
 __attribute__ ((format (printf, 1, 2)))
-#endif /* _MSC_VER */
+#endif /* !_MSC_VER && !_UNICODE */
 show_error(const TCHAR *format, ...)
 {
 	va_list ap;
