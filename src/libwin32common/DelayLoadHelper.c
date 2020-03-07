@@ -47,9 +47,15 @@ static HMODULE WINAPI rp_loadLibrary(LPCSTR pszModuleName)
 	// We only want to handle DLLs included with rom-properties.
 	// System DLLs should be handled normally.
 	static const char *const dll_whitelist[] = {
+#ifdef NDEBUG
 		"zlib1.dll",
-		"libpng.dll",
+		"libpng16.dll",
 		"tinyxml2.dll",
+#else /* !NDEBUG */
+		"zlib1d.dll",
+		"libpng16d.dll",
+		"tinyxml2d.dll",
+#endif /* NDEBUG */
 		"libgnuintl-8.dll",
 	};
 
