@@ -918,7 +918,7 @@ HBITMAP RpGdiplusBackend::convBmpData_CI8(const Gdiplus::BitmapData *pBmpData)
 	// Copy the data from the GDI+ bitmap to the HBITMAP directly.
 	// HBITMAP stride is a multiple of 4.
 	const size_t row_bytes = pBmpData->Width;
-	const int hbmp_stride = ALIGN_BYTES(4, row_bytes);
+	const int hbmp_stride = ALIGN_BYTES(4, (size_t)row_bytes);
 	const int gdip_stride = pBmpData->Stride;
 	if (hbmp_stride == gdip_stride) {
 		// Copy the entire image all at once.
