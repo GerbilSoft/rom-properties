@@ -52,6 +52,7 @@ typedef char TCHAR;
 #define _tcsicmp(s1, s2)		strcasecmp((s1), (s2))
 #define _tcsnicmp(s1, s2)		strncasecmp((s1), (s2), (n))
 #define _tcstoul(nptr, endptr, base)	strtoul((nptr), (endptr), (base))
+#define _tputenv(envstring)		putenv(envstring)
 
 // string.h
 #define _tcschr(s, c)			strchr((s), (c))

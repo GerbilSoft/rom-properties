@@ -106,20 +106,6 @@
 /* Define to 1 if iconv() is defined in libiconv. */
 #cmakedefine HAVE_ICONV_LIBICONV 1
 
-/** putenv() and related **/
-
-/* Define to 1 if you have the `putenv` function. */
-#cmakedefine HAVE_PUTENV 1
-
-/* Define to 1 if you have the `setenv` function. */
-#cmakedefine HAVE_SETENV 1
-
-/* Define to 1 if you have the `_wputenv` function. */
-#cmakedefine HAVE__WPUTENV 1
-
-/* Define to 1 if you have the `_wputenv_s` function. */
-#cmakedefine HAVE__WPUTENV_S 1
-
 /** C++ standard library **/
 
 /* Define to 1 if you have the `unordered_map::reserve` function. */

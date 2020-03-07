@@ -86,20 +86,12 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 	rp_image::setBackendCreatorFn(RpGdiplusBackend::creator_fn);
 #endif /* _WIN32 */
 
-	// TODO: setenv() wrapper in config.librpbase.h.in?
-#if defined(HAVE_SETENV)
-	setenv("LC_ALL", "C", true);
-#elif defined(_UNICODE) && defined(HAVE__WPUTENV_S)
-	_wputenv_s(L"LC_ALL", L"C");
-#elif defined(_UNICODE) && defined(HAVE__WPUTENV)
-	_wputenv(L"LC_ALL=C");
-#elif defined(HAVE_PUTENV)
-	putenv("LC_ALL=C");
-#else
-# error Could not find a usable putenv() or setenv() function.
-#endif
-
 	// Set the C and C++ locales.
+	// NOTE: The variable needs to be static char[] because
+	// POSIX putenv() takes `char*` and the buffer becomes
+	// part of the environment.
+	static TCHAR lc_all_env[] = _T("LC_ALL=C");
+	_tputenv(lc_all_env);
 	locale::global(locale("C"));
 
 	// Call the actual main function.
