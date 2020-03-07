@@ -481,40 +481,36 @@ int get_file_size_and_mtime(const string &filename, off64_t *pFileSize, time_t *
 #if _USE_32BIT_TIME_T
 # error 32-bit time_t is not supported. Get a newer compiler.
 #endif
-	// TODO: Verify that this is a file and not a directory.
-	HANDLE hFile = CreateFile(tfilename.c_str(),
-		GENERIC_READ, FILE_SHARE_READ, NULL,
-		OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
-	if (!hFile) {
-		// Error opening the file.
-		return -w32err_to_posix(GetLastError());
+
+	// Use FindFirstFile() to get the file information.
+	WIN32_FIND_DATA ffd;
+	HANDLE hFind = FindFirstFile(tfilename.c_str(), &ffd);
+	if (!hFind || hFind == INVALID_HANDLE_VALUE) {
+		// An error occurred.
+		const int err = w32err_to_posix(GetLastError());
+		return (err != 0 ? -err : -EIO);
 	}
 
-	// Use GetFileSizeEx() instead of _stati64().
-	LARGE_INTEGER liFileSize;
-	if (!GetFileSizeEx(hFile, &liFileSize)) {
-		// Error getting the file size.
-		CloseHandle(hFile);
-		return -w32err_to_posix(GetLastError());
+	// We don't need the Find handle anymore.
+	FindClose(hFind);
+
+	// Make sure this is not a directory.
+	if (ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
+		// It's a directory.
+		return -EISDIR;
 	}
 
-	// Use GetFileTime() instead of _stati64().
-	FILETIME mtime;
-	BOOL bRet = GetFileTime(hFile, nullptr, nullptr, &mtime);
-	CloseHandle(hFile);
-	if (!bRet) {
-		// Error getting the file time.
-		return -w32err_to_posix(GetLastError());
-	}
+	// Convert the file size from two DWORDs to off64_t.
+	LARGE_INTEGER fileSize;
+	fileSize.LowPart = ffd.nFileSizeLow;
+	fileSize.HighPart = ffd.nFileSizeHigh;
+	*pFileSize = fileSize.QuadPart;
 
-	// Save the file size.
-	*pFileSize = liFileSize.QuadPart;
-	// Convert to Unix timestamp.
-	*pMtime = FileTimeToUnixTime(&mtime);
+	// Convert mtime from FILETIME.
+	*pMtime = FileTimeToUnixTime(&ffd.ftLastWriteTime);
 
 	// We're done here.
 	return 0;
-
 }
 
 } }

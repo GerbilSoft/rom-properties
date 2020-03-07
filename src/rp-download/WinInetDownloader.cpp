@@ -60,11 +60,8 @@ int WinInetDownloader::download(void)
 		0);				// dwFlags
 	if (!hConnection) {
 		// Error opening a WinInet instance.
-		int err = w32err_to_posix(GetLastError());
-		if (err == 0) {
-			err = EIO;
-		}
-		return -err;
+		const int err = w32err_to_posix(GetLastError());
+		return (err != 0 ? -err : -EIO);
 	}
 
 	// Request the URL.

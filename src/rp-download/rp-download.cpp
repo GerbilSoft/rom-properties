@@ -40,6 +40,8 @@ using std::unique_ptr;
 #ifdef _WIN32
 // libwin32common
 # include "libwin32common/RpWin32_sdk.h"
+# include "libwin32common/w32err.h"
+# include "libwin32common/w32time.h"
 #endif /* _WIN32 */
 
 // libcachecommon
@@ -114,21 +116,41 @@ static int get_file_size_and_mtime(const TCHAR *filename, off64_t *pFileSize, ti
 	assert(pMtime != nullptr);
 
 #ifdef _WIN32
-	struct _stati64 sb;
-	int ret = ::_tstati64(filename, &sb);
-#else /* _WIN32 */
+	// Windows: Use FindFirstFile(), since the stat() functions
+	// have to do a lot more processing.
+	WIN32_FIND_DATA ffd;
+	HANDLE hFind = FindFirstFile(filename, &ffd);
+	if (!hFind || hFind == INVALID_HANDLE_VALUE) {
+		// An error occurred.
+		const int err = w32err_to_posix(GetLastError());
+		return (err != 0 ? -err : -EIO);
+	}
+
+	// We don't need the Find handle anymore.
+	FindClose(hFind);
+
+	// Make sure this is not a directory.
+	if (ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
+		// It's a directory.
+		return -EISDIR;
+	}
+
+	// Convert the file size from two DWORDs to off64_t.
+	LARGE_INTEGER fileSize;
+	fileSize.LowPart = ffd.nFileSizeLow;
+	fileSize.HighPart = ffd.nFileSizeHigh;
+	*pFileSize = fileSize.QuadPart;
+
+	// Convert mtime from FILETIME.
+	*pMtime = FileTimeToUnixTime(&ffd.ftLastWriteTime);
+#else /* !_WIN32 */
+	// Linux or UNIX: Use stat().
 	struct stat sb;
 	int ret = stat(filename, &sb);
-#endif /* _WIN32 */
-
 	if (ret != 0) {
 		// An error occurred.
-		ret = -errno;
-		if (ret == 0) {
-			// No error?
-			ret = -EIO;
-		}
-		return ret;
+		const int err = errno;
+		return (err != 0 ? -err : -EIO);
 	}
 
 	// Make sure this is not a directory.
@@ -140,6 +162,8 @@ static int get_file_size_and_mtime(const TCHAR *filename, off64_t *pFileSize, ti
 	// Return the file size and mtime.
 	*pFileSize = sb.st_size;
 	*pMtime = sb.st_mtime;
+#endif /* _WIN32 */
+
 	return 0;
 }
 
