@@ -28,19 +28,19 @@
 #endif
 
 // bit_scan_forward
-#ifdef _MSC_VER
+#if defined(_MSC_VER) || defined(__MINGW32__)
 #include <intrin.h>
 static __inline unsigned char bit_scan_forward(uint32_t v, uint32_t* out_first_set_index) {
 	return _BitScanForward((unsigned long*)(out_first_set_index), v) != 0;
 }
-#else /* !_MSC_VER */
+#else /* !_MSC_VER && !__MINGW32__ */
 #include <strings.h>
 static inline unsigned char bit_scan_forward(uint32_t v, uint32_t* out_first_set_index) {
 	int i = ffs(v);
 	*out_first_set_index = i - 1;
 	return i != 0;
 }
-#endif /* _MSC_VER */
+#endif /* _MSC_VER && __MINGW32__ */
 
 typedef struct mspack_memory_file_t {
   struct mspack_system sys;
