@@ -1135,7 +1135,7 @@ int Xbox360_XDBF_Private::addFields_avatarAwards(void)
  *
  * A ROM image must be opened by the caller. The file handle
  * will be ref()'d and must be kept open in order to load
- * data from the disc image.
+ * data from the file.
  *
  * To close the file, either delete this object or call close().
  *
@@ -1165,7 +1165,7 @@ Xbox360_XDBF::Xbox360_XDBF(IRpFile *file)
  *
  * A ROM image must be opened by the caller. The file handle
  * will be ref()'d and must be kept open in order to load
- * data from the ROM image.
+ * data from the file.
  *
  * To close the file, either delete this object or call close().
  *
@@ -1175,11 +1175,12 @@ Xbox360_XDBF::Xbox360_XDBF(IRpFile *file)
  * @param xex If true, hide fields that are displayed separately in XEX executables.
  */
 Xbox360_XDBF::Xbox360_XDBF(IRpFile *file, bool xex)
-: super(new Xbox360_XDBF_Private(this, file, xex))
+	: super(new Xbox360_XDBF_Private(this, file, xex))
 {
 	// This class handles XDBF files and/or sections only.
 	RP_D(Xbox360_XDBF);
 	d->className = "Xbox360_XEX";	// Using the same image settings as Xbox360_XEX.
+	d->mimeType = "application/x-xbox360-xdbf";	// unofficial, not on fd.o
 	d->fileType = FTYPE_RESOURCE_FILE;
 
 	if (!d->file) {
@@ -1449,8 +1450,6 @@ int Xbox360_XDBF::loadFieldData(void)
 		// XDBF file isn't valid.
 		return -EIO;
 	}
-
-	// NOTE: Using "XEX" as the localization context.
 
 	// Parse the XDBF file.
 	// NOTE: The magic number is NOT byteswapped in the constructor.
