@@ -939,7 +939,7 @@ CBCReader *Xbox360_XEX_Private::initPeReader(void)
 #endif /* ENABLE_LIBMSPACK */
 	{
 		// Check the CBCReader objects.
-		for (unsigned int i = 0; i < ARRAY_SIZE(reader); i++) {
+		for (size_t i = 0; i < reader.size(); i++) {
 			if (!reader[i])
 				continue;
 			uint16_t mz;
@@ -950,7 +950,7 @@ CBCReader *Xbox360_XEX_Private::initPeReader(void)
 					// TODO: Other checks?
 					this->peReader = reader[i];
 					reader[i] = nullptr;
-					keyInUse = i;
+					keyInUse = static_cast<int>(i);
 					break;
 				}
 			}
