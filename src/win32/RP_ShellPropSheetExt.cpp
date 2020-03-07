@@ -80,7 +80,7 @@ const CLSID CLSID_RP_ShellPropSheetExt =
 class RP_ShellPropSheetExt_Private
 {
 	public:
-		explicit RP_ShellPropSheetExt_Private(RP_ShellPropSheetExt *q);
+		explicit RP_ShellPropSheetExt_Private(RP_ShellPropSheetExt *q, string &&filename);
 		~RP_ShellPropSheetExt_Private();
 
 	private:
@@ -389,8 +389,9 @@ class RP_ShellPropSheetExt_Private
 // This points to the ConfigDialogPrivate object.
 const TCHAR RP_ShellPropSheetExt_Private::D_PTR_PROP[] = _T("RP_ShellPropSheetExt_Private");
 
-RP_ShellPropSheetExt_Private::RP_ShellPropSheetExt_Private(RP_ShellPropSheetExt *q)
+RP_ShellPropSheetExt_Private::RP_ShellPropSheetExt_Private(RP_ShellPropSheetExt *q, string &&filename)
 	: q_ptr(q)
+	, filename(std::move(filename))
 	, romData(nullptr)
 	, hDlgSheet(nullptr)
 	, hFontDlg(nullptr)
@@ -451,6 +452,7 @@ void RP_ShellPropSheetExt_Private::loadImages(void)
 	const uint32_t imgbf = romData->supportedImageTypes();
 
 	// Banner.
+	bool ok = false;
 	if (imgbf & RomData::IMGBF_INT_BANNER) {
 		// Get the banner.
 		const rp_image *const banner = romData->image(RomData::IMG_INT_BANNER);
@@ -463,24 +465,18 @@ void RP_ShellPropSheetExt_Private::loadImages(void)
 				lblBanner->setRequiredSize(0, 0);
 			}
 
-			bool ok = lblBanner->setRpImage(banner);
-			if (!ok) {
-				// Unable to load the banner...
-				delete lblBanner;
-				lblBanner = nullptr;
-			}
-		} else {
-			// Delete the icon if it was created previously.
-			delete lblBanner;
-			lblBanner = nullptr;
+			ok = lblBanner->setRpImage(banner);
 		}
-	} else {
-		// Delete the icon if it was created previously.
+	}
+	if (!ok) {
+		// No banner, or unable to load the banner.
+		// Delete the DragImageLabel if it was created previously.
 		delete lblBanner;
 		lblBanner = nullptr;
 	}
 
 	// Icon.
+	ok = false;
 	if (imgbf & RomData::IMGBF_INT_ICON) {
 		// Get the icon.
 		const rp_image *const icon = romData->image(RomData::IMG_INT_ICON);
@@ -492,27 +488,19 @@ void RP_ShellPropSheetExt_Private::loadImages(void)
 			}
 
 			// Is this an animated icon?
-			bool ok = lblIcon->setIconAnimData(romData->iconAnimData());
+			ok = lblIcon->setIconAnimData(romData->iconAnimData());
 			if (!ok) {
 				// Not an animated icon, or invalid icon data.
 				// Set the static icon.
 				ok = lblIcon->setRpImage(icon);
 			}
-
-			if (!ok) {
-				// Unable to load the icon...
-				delete lblIcon;
-				lblIcon = nullptr;
-			}
-		} else {
-			// Delete the icon if it was created previously.
-			delete lblIcon;
-			lblIcon = nullptr;
 		}
-	} else {
-		// Delete the icon if it was created previously.
-		delete lblIcon;
-		lblIcon = nullptr;
+	}
+	if (!ok) {
+		// No icon, or unable to load the icon.
+		// Delete the DragImageLabel if it was created previously.
+		delete lblBanner;
+		lblBanner = nullptr;
 	}
 }
 
@@ -1723,7 +1711,7 @@ int RP_ShellPropSheetExt_Private::initAgeRatings(HWND hDlg, HWND hWndTab,
 	if (field.type != RomFields::RFT_AGE_RATINGS)
 		return 0;
 
-	const RomFields::age_ratings_t *age_ratings = field.data.age_ratings;
+	const RomFields::age_ratings_t *const age_ratings = field.data.age_ratings;
 	assert(age_ratings != nullptr);
 	if (!age_ratings) {
 		// No age ratings data.
@@ -2052,7 +2040,7 @@ void RP_ShellPropSheetExt_Private::updateMulti(uint32_t user_lc)
 			auto iter_ld_row = pListData->cbegin();
 			auto iter_vvStr_row = vvStr.begin();
 			for (; iter_ld_row != pListData->cend() && iter_vvStr_row != vvStr.end();
-			++iter_ld_row, ++iter_vvStr_row)
+			     ++iter_ld_row, ++iter_vvStr_row)
 			{
 				const vector<string> &src_data_row = *iter_ld_row;
 				vector<tstring> &dest_data_row = *iter_vvStr_row;
@@ -2061,7 +2049,7 @@ void RP_ShellPropSheetExt_Private::updateMulti(uint32_t user_lc)
 				auto iter_ddr = dest_data_row.begin();
 				int col = 0;
 				for (; iter_sdr != src_data_row.cend() && iter_ddr != dest_data_row.end();
-				++iter_sdr, ++iter_ddr, col++)
+				     ++iter_sdr, ++iter_ddr, col++)
 				{
 					tstring tstr = U82T_s(*iter_sdr);
 					int width = measureListDataString(hDC, tstr);
@@ -2079,7 +2067,7 @@ void RP_ShellPropSheetExt_Private::updateMulti(uint32_t user_lc)
 				// TODO: Do this on system theme change?
 				// TODO: Add a flag for 'main data column' and adjust it to
 				// not exceed the viewport.
-				for (int i = 0; i < colCount; i++) {
+				for (int i = colCount-1; i >= 0; i--) {
 					ListView_SetColumnWidth(hListView, i, col_width[i]);
 				}
 			}
@@ -2439,7 +2427,7 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 			const tstring tstr = U82T_c(name);
 			tcItem.pszText = const_cast<LPTSTR>(tstr.c_str());
 			// FIXME: Does the index work correctly if a tab is skipped?
-			TabCtrl_InsertItem(tabWidget, idx, &tcItem);
+			TabCtrl_InsertItem(tabWidget, i, &tcItem);
 		}
 
 		// Adjust the dialog size for subtabs.
@@ -2787,9 +2775,8 @@ IFACEMETHODIMP RP_ShellPropSheetExt::Initialize(
 
 	// Save the filename in the private class for later.
 	if (!d_ptr) {
-		d_ptr = new RP_ShellPropSheetExt_Private(this);
+		d_ptr = new RP_ShellPropSheetExt_Private(this, std::move(u8filename));
 	}
-	d_ptr->filename = std::move(u8filename);
 
 	hr = S_OK;
 
