@@ -11,6 +11,7 @@
 
 #include "libwin32common/RpWin32_sdk.h"
 
+class FontHandlerPrivate;
 class FontHandler
 {
 	public:
