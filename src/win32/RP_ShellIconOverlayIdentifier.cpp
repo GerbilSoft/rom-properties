@@ -15,6 +15,11 @@
 using namespace LibRpBase;
 using LibRomData::RomDataFactory;
 
+// from DllMain.cpp
+extern "C" {
+	extern TCHAR dll_filename[];
+}
+
 // C++ STL classes.
 using std::string;
 
@@ -168,7 +173,6 @@ IFACEMETHODIMP RP_ShellIconOverlayIdentifier::GetOverlayInfo(_Out_writes_(cchMax
 		// same size as the regular icon, but with transparency.
 		hr = E_FAIL;
 #if 0
-		extern wchar_t dll_filename[];
 		wcscpy_s(pwszIconFile, cchMax, dll_filename);
 		*pIndex = -IDI_SHIELD;
 		*pdwFlags = ISIOI_ICONFILE | ISIOI_ICONINDEX;

@@ -54,8 +54,10 @@ using std::unique_ptr;
 using std::vector;
 using std::wstring;
 
-extern TCHAR dll_filename[];
-TCHAR dll_filename[MAX_PATH];
+extern "C" {
+	extern TCHAR dll_filename[];
+	TCHAR dll_filename[MAX_PATH];
+}
 
 // Program ID for COM object registration.
 extern const TCHAR RP_ProgID[];

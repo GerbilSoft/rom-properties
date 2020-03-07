@@ -21,6 +21,11 @@
 using std::string;
 using std::wstring;
 
+// Defined in win32/DllMain.cpp.
+extern "C" {
+	extern TCHAR dll_filename[];
+}
+
 namespace LibRomData {
 
 /**
@@ -31,7 +36,6 @@ namespace LibRomData {
 int CacheManager::execRpDownload(const string &filteredCacheKey)
 {
 	// The executable should be located in the DLL directory.
-	extern TCHAR dll_filename[];
 	tstring rp_download_exe = dll_filename;
 	tstring::size_type bs = rp_download_exe.rfind(_T('\\'));
 	if (bs == tstring::npos) {
