@@ -86,10 +86,8 @@ ENDIF(NOT HAVE_LOCALTIME_R)
 CHECK_SYMBOL_EXISTS_OR_INLINE(timegm "time.h" "struct tm tm; time_t x = timegm(&tm);" HAVE_TIMEGM)
 IF(NOT HAVE_TIMEGM)
 	CHECK_SYMBOL_EXISTS_OR_INLINE(_mkgmtime "time.h" "struct tm tm; time_t x = _mkgmtime(&tm);" HAVE__MKGMTIME)
-	IF(HAVE__MKGMTIME)
-		CHECK_SYMBOL_EXISTS_OR_INLINE(_mkgmtime32 "time.h" "struct tm tm; time_t x = _mkgmtime32(&tm);" HAVE__MKGMTIME32)
-		CHECK_SYMBOL_EXISTS_OR_INLINE(_mkgmtime64 "time.h" "struct tm tm; time_t x = _mkgmtime64(&tm);" HAVE__MKGMTIME64)
-	ENDIF(HAVE__MKGMTIME)
+	CHECK_SYMBOL_EXISTS_OR_INLINE(_mkgmtime32 "time.h" "struct tm tm; time_t x = _mkgmtime32(&tm);" HAVE__MKGMTIME32)
+	CHECK_SYMBOL_EXISTS_OR_INLINE(_mkgmtime64 "time.h" "struct tm tm; time_t x = _mkgmtime64(&tm);" HAVE__MKGMTIME64)
 ENDIF(NOT HAVE_TIMEGM)
 
 # Check for C headers.

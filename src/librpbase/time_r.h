@@ -72,13 +72,13 @@ static inline time_t timegm(struct tm *tm)
 {
 	struct tm my_tm;
 	my_tm = *tm;
-#ifdef HAVE__MKGMTIME64
+#if defined(HAVE__MKGMTIME64)
 	return _mkgmtime64(&my_tm);
-#elif HAVE__MKGMTIME32
+#elif defined(HAVE__MKGMTIME32)
 	// FIXME: MinGW-w64 32-bit seems to be missing _mkgmtime64(),
 	// even though the headers are redirecting it.
 	return _mkgmtime32(&my_tm);
-#elif HAVE__MKGMTIME
+#elif defined(HAVE__MKGMTIME)
 	// Shouldn't happen...
 	return _mkgmtime(&my_tm);
 #else
