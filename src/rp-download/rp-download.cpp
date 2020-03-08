@@ -267,6 +267,14 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 		// TODO: Add more syscalls.
 		// FIXME: glibc-2.31 uses 64-bit time syscalls that may not be
 		// defined in earlier versions, including Ubuntu 14.04.
+
+		// NOTE: Special case for clone(). If it's the first syscall
+		// in the list, it has a parameter restriction added that
+		// ensures it can only be used to create threads.
+		SCMP_SYS(clone),
+		// Other multi-threading syscalls
+		SCMP_SYS(set_robust_list),
+
 		SCMP_SYS(access), SCMP_SYS(clock_gettime),
 #ifdef __SNR_clock_gettime64
 		SCMP_SYS(clock_gettime64),
@@ -286,6 +294,18 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 		SCMP_SYS(statx),	// maybe for future use
 #endif /* __SNR_statx */
 		SCMP_SYS(utimensat),
+
+		// glibc ncsd
+		SCMP_SYS(connect), SCMP_SYS(recvmsg), SCMP_SYS(sendto),
+
+		// cURL and OpenSSL
+#ifdef __SNR_getrandom
+		SCMP_SYS(getrandom),
+#endif /* __SNR_getrandom */
+		SCMP_SYS(getpeername), SCMP_SYS(getsockname),
+		SCMP_SYS(getsockopt), SCMP_SYS(madvise), SCMP_SYS(mprotect),
+		SCMP_SYS(setsockopt), SCMP_SYS(socket), SCMP_SYS(socketpair),
+		SCMP_SYS(sysinfo),
 
 		-1	// End of whitelist
 	};

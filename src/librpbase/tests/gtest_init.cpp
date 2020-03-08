@@ -65,6 +65,10 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 		SCMP_SYS(close),	// mktime() [mz_zip_dosdate_to_time_t()]
 		SCMP_SYS(stat),		// mktime() [mz_zip_dosdate_to_time_t()]
 
+		// glibc ncsd
+		// TODO: Restrict connect() to AF_UNIX.
+		SCMP_SYS(connect), SCMP_SYS(recvmsg), SCMP_SYS(sendto),
+
 		-1	// End of whitelist
 	};
 	param.syscall_wl = syscall_wl;

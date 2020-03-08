@@ -138,6 +138,8 @@ int main(int argc, char *argv[])
 		// in the list, it has a parameter restriction added that
 		// ensures it can only be used to create threads.
 		SCMP_SYS(clone),
+		// Other multi-threading syscalls
+		SCMP_SYS(set_robust_list),
 
 #if 0
 		SCMP_SYS(clock_gettime),
@@ -181,13 +183,16 @@ int main(int argc, char *argv[])
 		SCMP_SYS(statfs),	// LibRpBase::FileSystem::isOnBadFS()
 		SCMP_SYS(statfs64),	// LibRpBase::FileSystem::isOnBadFS()
 
+		// glibc ncsd
+		// TODO: Restrict connect() to AF_UNIX.
+		SCMP_SYS(connect), SCMP_SYS(recvmsg), SCMP_SYS(sendto),
+
 		// glib / D-Bus
-		SCMP_SYS(connect), SCMP_SYS(eventfd2), SCMP_SYS(fcntl),
+		SCMP_SYS(eventfd2), SCMP_SYS(fcntl),
 		SCMP_SYS(getdents),	// g_file_new_for_uri() [rp_create_thumbnail()]
 		SCMP_SYS(getdents64),	// g_file_new_for_uri() [rp_create_thumbnail()]
 		SCMP_SYS(getegid), SCMP_SYS(geteuid), SCMP_SYS(poll),
-		SCMP_SYS(recvfrom), SCMP_SYS(recvmsg), SCMP_SYS(set_robust_list),
-		SCMP_SYS(sendmsg), SCMP_SYS(sendto), SCMP_SYS(socket),
+		SCMP_SYS(recvfrom), SCMP_SYS(sendmsg), SCMP_SYS(socket),
 
 		// only if G_MESSAGES_DEBUG=all [on Gentoo, but not Ubuntu 14.04]
 		SCMP_SYS(getpeername),	// g_log_writer_is_journald() [g_log()]

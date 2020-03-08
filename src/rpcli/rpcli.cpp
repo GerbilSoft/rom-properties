@@ -348,11 +348,13 @@ int RP_C_API main(int argc, char *argv[])
 		SCMP_SYS(statx),	// maybe for future use
 #endif /* __SNR_statx */
 
+		// glibc ncsd
+		// TODO: Restrict connect() to AF_UNIX.
+		SCMP_SYS(connect), SCMP_SYS(recvmsg), SCMP_SYS(sendto),
+
 		// NOTE: The following syscalls are only made if either access() or stat() can't be run.
 		// TODO: Can this happen in other situations?
-		//SCMP_SYS(connect),	// ???
 		//SCMP_SYS(getuid),
-		//SCMP_SYS(sendto),	// ???
 		//SCMP_SYS(socket),	// ???
 
 		-1	// End of whitelist
