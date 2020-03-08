@@ -13,7 +13,9 @@
 // timegm() and/or replacement function.
 #include "time_r.h"
 
-// NOTE: MSVCRT's _mkgmtime() has a limited range of [1970/01/01, 3000/12/31].
+// NOTE: MSVCRT's documentation for _mkgmtime64() says it has a limited range:
+// - Documented: [1970/01/01, 3000/12/31]
+// - Actual:     [1969/01/01, 3001/01/01] ??? (may need more testing)
 
 namespace LibRpBase { namespace Tests {
 
@@ -31,6 +33,22 @@ static inline struct tm TM_INIT(int year, int month, int day, int hour, int minu
 	tm_ret.tm_mon = month - 1;
 	tm_ret.tm_year = year - 1900;
 	return tm_ret;
+}
+
+TEST(TimegmTest, unixEpochMinusTwoTest)
+{
+	struct tm tm_unix_epochMinusTwo = TM_INIT(1969, 12, 31, 23, 59, 58);
+#ifdef USING_MSVCRT_MKGMTIME
+	EXPECT_EQ(-2LL, timegm(&tm_unix_epochMinusTwo));
+#else /* !USING_MSVCRT_MKGMTIME */
+	EXPECT_EQ(-2LL, timegm(&tm_unix_epochMinusTwo));
+#endif /* USING_MSVCRT_MKGMTIME */
+}
+
+TEST(TimegmTest, unixEpochMinusOneTest)
+{
+	struct tm tm_unix_epochMinusOne = TM_INIT(1969, 12, 31, 23, 59, 59);
+	EXPECT_EQ(-1LL, timegm(&tm_unix_epochMinusOne));
 }
 
 TEST(TimegmTest, unixEpochTest)
@@ -87,6 +105,62 @@ TEST(TimegmTest, winEpochTest)
 #endif /* USING_MSVCRT_MKGMTIME */
 }
 
+// TODO: Figure this out. (It seems to be correct for MSVC 2010, but not MSVC 2019.)
+#if 0
+TEST(TimegmTest, mkgmtime64RealMinTest)
+{
+	// Real minimum value for MSVCRT _mkgmtime64().
+	struct tm tm_mkgmtime_realMin = TM_INIT(1969, 1, 1, 0, 0, 0);
+	EXPECT_EQ(-31536000LL, timegm(&tm_mkgmtime_realMin));
+}
+
+TEST(TimegmTest, mkgmtime64RealMinMinusOneTest)
+{
+	// Real minimum value for MSVCRT _mkgmtime64(), minus one.
+	struct tm tm_mkgmtime_realMinMinusOne = TM_INIT(1968, 12, 31, 23, 59, 59);
+#ifdef USING_MSVCRT_MKGMTIME
+	EXPECT_EQ(-1LL, timegm(&tm_mkgmtime_realMinMinusOne));
+#else /* !USING_MSVCRT_MKGMTIME */
+	EXPECT_EQ(-31536001LL, timegm(&tm_mkgmtime_realMinMinusOne));
+#endif /* USING_MSVCRT_MKGMTIME */
+}
+#endif
+
+TEST(TimegmTest, mkgmtime64DocMaxTest)
+{
+	// Documented maximum value for MSVCRT _mkgmtime64().
+	struct tm tm_mkgmtime_docMax = TM_INIT(3000, 12, 31, 23, 59, 59);
+	EXPECT_EQ(32535215999LL, timegm(&tm_mkgmtime_docMax));
+}
+
+TEST(TimegmTest, mkgmtime64DocMaxPlusOneTest)
+{
+	// Documented maximum value for MSVCRT _mkgmtime64(), plus one.
+	struct tm tm_mkgmtime_docMaxPlusOne = TM_INIT(3001, 1, 1, 0, 0, 0);
+	EXPECT_EQ(32535216000LL, timegm(&tm_mkgmtime_docMaxPlusOne));
+}
+
+#if 0
+TEST(TimegmTest, mkgmtime64RealMaxTest)
+{
+	// Real maximum value for MSVCRT _mkgmtime64().
+	// FIXME: Figure this out. It's between [3001/01/01, 3001/01/02].
+	struct tm tm_mkgmtime_realMax = TM_INIT(3001, 12, 31, 23, 59, 59);
+	EXPECT_EQ(32566751999LL, timegm(&tm_mkgmtime_realMax));
+}
+#endif
+
+TEST(TimegmTest, mkgmtime64RealMaxPlusOneTest)
+{
+	// Real maximum value for MSVCRT _mkgmtime64(), plus one.
+	struct tm tm_mkgmtime_realMaxPlusOne = TM_INIT(3002, 1, 1, 0, 0, 0);
+#ifdef USING_MSVCRT_MKGMTIME
+	EXPECT_EQ(-1LL, timegm(&tm_mkgmtime_realMaxPlusOne));
+#else /* !USING_MSVCRT_MKGMTIME */
+	EXPECT_EQ(32566752000LL, timegm(&tm_mkgmtime_realMaxPlusOne));
+#endif /* USING_MSVCRT_MKGMTIME */
+}
+
 TEST(TimegmTest, winMaxTimeTest)
 {
 	struct tm tm_win_maxTime = TM_INIT(30828, 9, 14, 2, 48, 5);
@@ -110,7 +184,22 @@ TEST(TimegmTest, gcnEpochTest)
  */
 extern "C" int gtest_main(int argc, TCHAR *argv[])
 {
-	fprintf(stderr, "LibRpBase test suite: timegm() tests.\n\n");
+#if defined(USING_MSVCRT_MKGMTIME)
+# if defined(HAVE__MKGMTIME64)
+	static const char func_name[] = "_mkgmtime64() (MSVCRT)";
+# elif defined(HAVE__MKGMTIME32)
+	static const char func_name[] = "_mkgmtime32() (MSVCRT)";
+# else /*elif defined(HAVE__MKGMTIME)*/
+	static const char func_name[] = "_mkgmtime() (MSVCRT)";
+# endif
+#elif defined(HAVE_TIMEGM)
+	static const char func_name[] = "timegm() (libc)";
+#else
+	static const char func_name[] = "timegm() (internal)";
+#endif
+
+	fprintf(stderr, "LibRpBase test suite: timegm() tests.\n");
+	fprintf(stderr, "Time conversion function in use: %s\n\n", func_name);
 	fflush(nullptr);
 
 	// coverity[fun_call_w_exception]: uncaught exceptions cause nonzero exit anyway, so don't warn.
