@@ -54,11 +54,11 @@ before_build:
   - appveyor.cmd
 
 build_script:
-  - cd %APPVEYOR_BUILD_FOLDER%
+  - cd %APPVEYOR_BUILD_FOLDER%\build
   - cmake --build . --config %configuration%
 
 test_script:
-  - cd %APPVEYOR_BUILD_FOLDER%
+  - cd %APPVEYOR_BUILD_FOLDER%\build
   - ctest -V -C %configuration%
 
 # TODO: Automatic packaging?
