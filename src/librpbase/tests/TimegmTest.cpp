@@ -37,6 +37,30 @@ TEST(TimegmTest, unixEpochTest)
 	EXPECT_EQ((time_t)0, timegm(&tm_unix_epoch));
 }
 
+TEST(TimegmTest, unix32bitMinMinusOneTest)
+{
+	struct tm tm_unix_32bit_minMinusOne = TM_INIT(1901, 12, 13, 20, 45, 51);
+	EXPECT_EQ((time_t)-2147483649, timegm(&tm_unix_32bit_minMinusOne));
+}
+
+TEST(TimegmTest, unix32bitMinTest)
+{
+	struct tm tm_unix_32bit_min = TM_INIT(1901, 12, 13, 20, 45, 52);
+	EXPECT_EQ((time_t)-2147483648, timegm(&tm_unix_32bit_min));
+}
+
+TEST(TimegmTest, unix32bitMaxTest)
+{
+	struct tm tm_unix_32bit_max = TM_INIT(2038, 1, 19, 3, 14, 7);
+	EXPECT_EQ((time_t)2147483647, timegm(&tm_unix_32bit_max));
+}
+
+TEST(TimegmTest, unix32bitMaxPlusOne)
+{
+	struct tm tm_unix_32bit_maxPlusOne = TM_INIT(2038, 1, 19, 3, 14, 8);
+	EXPECT_EQ((time_t)2147483648, timegm(&tm_unix_32bit_maxPlusOne));
+}
+
 TEST(TimegmTest, msdosEpochTest)
 {
 	struct tm tm_msdos_epoch = TM_INIT(1980, 1, 1, 0, 0, 0);
@@ -47,6 +71,18 @@ TEST(TimegmTest, winEpochTest)
 {
 	struct tm tm_win_epoch = TM_INIT(1601, 1, 1, 0, 0, 0);
 	EXPECT_EQ((time_t)-11644473600, timegm(&tm_win_epoch));
+}
+
+TEST(TimegmTest, winMaxTimeTest)
+{
+	struct tm tm_win_maxTime = TM_INIT(30828, 9, 14, 2, 48, 5);
+	EXPECT_EQ((time_t)910692730085, timegm(&tm_win_maxTime));
+}
+
+TEST(TimegmTest, gcnEpochTest)
+{
+	struct tm tm_gcn_epoch = TM_INIT(2000, 1, 1, 0, 0, 0);
+	EXPECT_EQ((time_t)0x386D4380, timegm(&tm_gcn_epoch));
 }
 
 } }
