@@ -67,24 +67,24 @@ static inline struct tm *localtime_r(const time_t *timep, struct tm *result)
  *
  * NOTE: timegm() is NOT part of *any* standard!
  */
-#ifndef HAVE_TIMEGM
+#if !defined(HAVE_TIMEGM) && (defined(HAVE__MKGMTIME64) || defined(HAVE__MKGMTIME))
 static inline time_t timegm(struct tm *tm)
 {
 	struct tm my_tm;
 	my_tm = *tm;
 #if defined(HAVE__MKGMTIME64)
 	return _mkgmtime64(&my_tm);
-#elif defined(HAVE__MKGMTIME32)
-	// FIXME: MinGW-w64 32-bit seems to be missing _mkgmtime64(),
-	// even though the headers are redirecting it.
-	return _mkgmtime32(&my_tm);
 #elif defined(HAVE__MKGMTIME)
-	// Shouldn't happen...
 	return _mkgmtime(&my_tm);
-#else
-# error _mkgmtime() is not available.
 #endif
 }
+#elif !defined(HAVE_TIMEGM)
+// timegm() or equivalent is not available.
+// Use the version in timegm.c.
+#ifdef __cplusplus
+extern "C"
+#endif /* __cplusplus */
+time_t timegm(const struct tm *t);
 #endif /* HAVE_TIMEGM */
 
 #endif /* __ROMPROPERTIES_LIBRPBASE_TIME_R_H__ */

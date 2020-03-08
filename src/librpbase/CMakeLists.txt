@@ -86,7 +86,6 @@ ENDIF(NOT HAVE_LOCALTIME_R)
 CHECK_SYMBOL_EXISTS_OR_INLINE(timegm "time.h" "struct tm tm; time_t x = timegm(&tm);" HAVE_TIMEGM)
 IF(NOT HAVE_TIMEGM)
 	CHECK_SYMBOL_EXISTS_OR_INLINE(_mkgmtime "time.h" "struct tm tm; time_t x = _mkgmtime(&tm);" HAVE__MKGMTIME)
-	CHECK_SYMBOL_EXISTS_OR_INLINE(_mkgmtime32 "time.h" "struct tm tm; time_t x = _mkgmtime32(&tm);" HAVE__MKGMTIME32)
 	CHECK_SYMBOL_EXISTS_OR_INLINE(_mkgmtime64 "time.h" "struct tm tm; time_t x = _mkgmtime64(&tm);" HAVE__MKGMTIME64)
 ENDIF(NOT HAVE_TIMEGM)
 
@@ -186,6 +185,11 @@ SET(librpbase_H
 	config/Config.hpp
 	config/AboutTabText.hpp
 	)
+
+# timegm.c for systems that don't have timegm() or 64-bit _mkgmtime().
+IF(NOT HAVE_TIMEGM AND NOT HAVE__MKGMTIME AND NOT HAVE__MKGMTIME64)
+	SET(librpbase_SRCS ${librpbase_SRCS} timegm.c)
+ENDIF(NOT HAVE_TIMEGM AND NOT HAVE__MKGMTIME AND NOT HAVE__MKGMTIME64)
 
 IF(NOT USE_INTERNAL_PNG OR (USE_INTERNAL_PNG AND USE_INTERNAL_PNG_DLL))
 	SET(librpbase_SRCS ${librpbase_SRCS} img/APNG_dlopen.c)
