@@ -141,20 +141,6 @@ int main(int argc, char *argv[])
 		// Other multi-threading syscalls
 		SCMP_SYS(set_robust_list),
 
-#if 0
-		SCMP_SYS(clock_gettime),
-#ifdef __SNR_clock_gettime64
-		SCMP_SYS(clock_gettime64),
-#endif /* __SNR_clock_gettime64 */
-		SCMP_SYS(close), SCMP_SYS(fcntl), SCMP_SYS(fsetxattr),
-		SCMP_SYS(fstat), SCMP_SYS(getdents),
-		SCMP_SYS(getrusage), SCMP_SYS(getuid), SCMP_SYS(lseek),
-		SCMP_SYS(mkdir), SCMP_SYS(mmap2),
-		SCMP_SYS(munmap),
-		SCMP_SYS(poll), SCMP_SYS(select),
-		SCMP_SYS(utimensat),
-#endif
-
 		SCMP_SYS(access),	// LibUnixCommon::isWritableDirectory()
 		SCMP_SYS(close),
 		SCMP_SYS(fstat),	// __GI___fxstat() [printf()]
@@ -169,7 +155,6 @@ int main(int argc, char *argv[])
 		SCMP_SYS(mmap2),	// iconv_open(), dlopen() [might only be needed on i386...]
 		SCMP_SYS(munmap),	// dlopen(), free() [in some cases]
 		SCMP_SYS(mprotect),	// iconv_open()
-		SCMP_SYS(mmap),		// iconv_open()
 		SCMP_SYS(open),		// Ubuntu 16.04
 		SCMP_SYS(openat),	// glibc-2.31
 #ifdef __SNR_openat2
