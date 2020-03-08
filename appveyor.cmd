@@ -17,7 +17,10 @@ cmake .. -G "%CMAKE_GENERATOR%" -DCMAKE_GENERATOR_TOOLSET=%CMAKE_GENERATOR_TOOLS
 exit /b %ERRORLEVEL%
 
 :mingw-w64
+set PATH=%PATH:C:\Program Files\Git\bin;=%
+set PATH=%PATH:C:\Program Files\Git\usr\bin;=%
 set PATH=%PATH:C:\Program Files (x86)\Git\bin;=%
+set PATH=%PATH:C:\Program Files (x86)\Git\usr\bin;=%
 mkdir build
 cd build
 cmake .. -G "MinGW Makefiles" -DCMAKE_PREFIX_PATH=C:\mingw64 -DCMAKE_BUILD_TYPE=%configuration% -DENABLE_JPEG=ON -DBUILD_TESTING=ON -DENABLE_LTO=OFF -DENABLE_PCH=ON
