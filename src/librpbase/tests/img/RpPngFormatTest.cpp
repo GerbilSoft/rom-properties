@@ -28,7 +28,7 @@
 #define gzclose_w(file) gzclose(file)
 #endif
 
-// libromdata
+// librpbase
 #include "common.h"
 #include "byteswap.h"
 #include "uvector.h"

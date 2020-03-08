@@ -11,7 +11,7 @@
 #include "tcharx.h"
 
 // timegm() and/or replacement function.
-#include "librpbase/time_r.h"
+#include "time_r.h"
 
 namespace LibRpBase { namespace Tests {
 
