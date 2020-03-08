@@ -38,7 +38,7 @@ static inline int32_t days_from_1970(int32_t year)
 	// error: initializer element is not constant
 	//static const int32_t days_from_0_to_1970 = days_from_0(1970);
 	static const int32_t days_from_0_to_1970 =
-		(365 * (1970-1) + ((1970-1) / 400) - ((1970-1)/100) + ((1970-1) / 4))
+		(365 * (1970-1) + ((1970-1) / 400) - ((1970-1)/100) + ((1970-1) / 4));
 	return days_from_0(year) - days_from_0_to_1970;
 }
 
