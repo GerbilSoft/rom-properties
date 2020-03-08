@@ -12,7 +12,7 @@ IF(NOT WIN32)
 	ENDIF(ENABLE_DECRYPTION)
 ENDIF(NOT WIN32)
 
-# librptest library.
+# librptest library
 ADD_LIBRARY(rptest STATIC gtest_init.cpp)
 TARGET_LINK_LIBRARIES(rptest PRIVATE rpsecure)
 IF(WIN32)
@@ -22,7 +22,7 @@ ENDIF(WIN32)
 INCLUDE(SetMSVCDebugPath)
 SET_MSVC_DEBUG_PATH(rptest)
 
-# RpImageLoader test.
+# RpImageLoader test
 ADD_EXECUTABLE(RpImageLoaderTest
 	img/RpImageLoaderTest.cpp
 	img/RpPngFormatTest.cpp
@@ -64,7 +64,7 @@ FOREACH(test_image ${RpImageLoaderTest_images})
 ENDFOREACH(test_image ${RpImageLoaderTest_images})
 
 IF(ENABLE_DECRYPTION)
-	# AesCipher test.
+	# AesCipher test
 	ADD_EXECUTABLE(AesCipherTest AesCipherTest.cpp)
 	TARGET_LINK_LIBRARIES(AesCipherTest PRIVATE rptest rpbase)
 	TARGET_LINK_LIBRARIES(AesCipherTest PRIVATE gtest)
@@ -81,7 +81,7 @@ IF(ENABLE_DECRYPTION)
 	ADD_TEST(NAME AesCipherTest COMMAND AesCipherTest)
 ENDIF(ENABLE_DECRYPTION)
 
-# TextFuncsTest.
+# TextFuncsTest
 ADD_EXECUTABLE(TextFuncsTest
 	TextFuncsTest.cpp
 	TextFuncsTest_data.hpp
@@ -93,7 +93,7 @@ SET_WINDOWS_SUBSYSTEM(TextFuncsTest CONSOLE)
 SET_WINDOWS_ENTRYPOINT(TextFuncsTest wmain OFF)
 ADD_TEST(NAME TextFuncsTest COMMAND TextFuncsTest)
 
-# ByteswapTest.
+# ByteswapTest
 ADD_EXECUTABLE(ByteswapTest
 	ByteswapTest.cpp
 	ByteswapTest_data.hpp
@@ -104,3 +104,12 @@ DO_SPLIT_DEBUG(ByteswapTest)
 SET_WINDOWS_SUBSYSTEM(ByteswapTest CONSOLE)
 SET_WINDOWS_ENTRYPOINT(ByteswapTest wmain OFF)
 ADD_TEST(NAME ByteswapTest COMMAND ByteswapTest "--gtest_filter=-*benchmark*")
+
+# TimegmTest
+ADD_EXECUTABLE(TimegmTest TimegmTest.cpp)
+TARGET_LINK_LIBRARIES(TimegmTest PRIVATE rptest rpbase)
+TARGET_LINK_LIBRARIES(TimegmTest PRIVATE gtest)
+DO_SPLIT_DEBUG(TimegmTest)
+SET_WINDOWS_SUBSYSTEM(TimegmTest CONSOLE)
+SET_WINDOWS_ENTRYPOINT(TimegmTest wmain OFF)
+ADD_TEST(NAME TimegmTest COMMAND TimegmTest)
