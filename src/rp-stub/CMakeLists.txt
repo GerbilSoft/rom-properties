@@ -1,7 +1,7 @@
 PROJECT(rp-stub)
 
 # rp-stub
-ADD_EXECUTABLE(rp-stub rp-stub.c)
+ADD_EXECUTABLE(rp-stub rp-stub.c rp-stub_secure.c rp-stub_secure.h)
 DO_SPLIT_DEBUG(rp-stub)
 TARGET_INCLUDE_DIRECTORIES(rp-stub
 	PUBLIC	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>		# rp-stub
@@ -17,7 +17,7 @@ IF(TARGET git_version)
 ENDIF(TARGET git_version)
 
 # dll-search.c is in libunixcommon.
-TARGET_LINK_LIBRARIES(rp-stub PRIVATE unixcommon)
+TARGET_LINK_LIBRARIES(rp-stub PRIVATE unixcommon rpsecure)
 
 IF(ENABLE_NLS)
 	TARGET_LINK_LIBRARIES(rp-stub PRIVATE i18n)

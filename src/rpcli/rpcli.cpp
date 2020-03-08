@@ -330,7 +330,7 @@ int RP_C_API main(int argc, char *argv[])
 		SCMP_SYS(futex),
 		SCMP_SYS(ioctl),	// for devices; also afl-fuzz
 		SCMP_SYS(lseek),
-		SCMP_SYS(lstat),	// LibRpBase::FileSystem::is_symlink()
+		SCMP_SYS(lstat),	// LibRpBase::FileSystem::is_symlink(), resolve_symlink()
 		SCMP_SYS(mmap), SCMP_SYS(mmap2),
 		SCMP_SYS(mprotect),	// dlopen()
 		SCMP_SYS(munmap),

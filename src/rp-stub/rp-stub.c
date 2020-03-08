@@ -18,6 +18,10 @@
 #include "libunixcommon/dll-search.h"
 #include "libi18n/i18n.h"
 
+// OS-specific security options.
+#include "rp-stub_secure.h"
+#include "stdboolx.h"
+
 // C includes.
 #include <dlfcn.h>
 #include <errno.h>
@@ -48,9 +52,9 @@ typedef int (*PFN_RP_CREATE_THUMBNAIL)(const char *source_file, const char *outp
 typedef int (*PFN_RP_SHOW_CONFIG_DIALOG)(int argc, char *argv[]);
 
 // Are we running as rp-config?
-static uint8_t is_rp_config = 0;
+static bool is_rp_config = false;
 // Is debug logging enabled?
-static uint8_t is_debug = 0;
+static bool is_debug = false;
 
 static void show_version(void)
 {
@@ -157,7 +161,7 @@ int main(int argc, char *argv[])
 	}
 	if (!strcmp(argv0, "rp-config")) {
 		// Invoked as rp-config.
-		is_rp_config = 1;
+		is_rp_config = true;
 	}
 
 	static const struct option long_options[] = {
@@ -207,12 +211,12 @@ int main(int argc, char *argv[])
 
 			case 'c':
 				// Show the configuration dialog.
-				config = 1;
+				config = true;
 				break;
 
 			case 'd':
 				// Enable debug output.
-				is_debug = 1;
+				is_debug = true;
 				break;
 
 			case 'h':
@@ -232,7 +236,13 @@ int main(int argc, char *argv[])
 		}
 	}
 
+	// Enable security options.
+	// TODO: Check for '-c' first, then enable options
+	// and reparse?
+	rp_stub_do_security_options(config);
+
 	if (!config) {
+		// Thumbnailing mode.
 		// We must have 2 filenames specified.
 		if (optind == argc) {
 			// tr: %s == program name

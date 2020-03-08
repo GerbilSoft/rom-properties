@@ -143,13 +143,14 @@ int main(int argc, char *argv[])
 
 		SCMP_SYS(access),	// LibUnixCommon::isWritableDirectory()
 		SCMP_SYS(close),
+		SCMP_SYS(dup),		// gzdopen()
 		SCMP_SYS(fstat),	// __GI___fxstat() [printf()]
 		SCMP_SYS(ftruncate),	// LibRpBase::RpFile::truncate() [from LibRpBase::RpPngWriterPrivate::init()]
 		SCMP_SYS(futex),	// iconv_open(), dlopen()
 		SCMP_SYS(getppid),	// dll-search.c: walk_proc_tree()
 		SCMP_SYS(getuid),	// TODO: Only use geteuid()?
 		SCMP_SYS(lseek),
-		SCMP_SYS(lstat),	// LibRpBase::FileSystem::is_symlink()
+		SCMP_SYS(lstat),	// LibRpBase::FileSystem::is_symlink(), resolve_symlink()
 		SCMP_SYS(mkdir),	// g_mkdir_with_parents() [rp_thumbnailer_process()]
 		SCMP_SYS(mmap),		// iconv_open(), dlopen()
 		SCMP_SYS(mmap2),	// iconv_open(), dlopen() [might only be needed on i386...]
