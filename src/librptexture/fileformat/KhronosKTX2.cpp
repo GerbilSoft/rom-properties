@@ -11,7 +11,7 @@
  * - https://github.khronos.org/KTX-Specification/
  *
  * WARNING: The specification is still in draft stages.
- * (2.0.draft18 as of 2020/02/08) It is subject to change
+ * (2.0.draft19 as of 2020/03/04) It is subject to change
  * prior to finalization.
  */
 
@@ -909,9 +909,7 @@ int KhronosKTX2::getFields(LibRpBase::RomFields *fields) const
 	static const char *const supercompression_tbl[] = {
 		"None",			// TODO: Localize?
 		"Basis Universal",
-		"zlib",
-		"zstd",
-		"LZMA",
+		"Zstandard",
 	};
 	if (ktx2Header->supercompressionScheme < ARRAY_SIZE(supercompression_tbl)) {
 		fields->addField_string(C_("KhronosKTX2", "Supercompression"),

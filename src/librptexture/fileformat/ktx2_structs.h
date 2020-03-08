@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * ktx2_structs.h: Khronos KTX2 texture format data structures.            *
  *                                                                         *
- * Copyright (c) 2019 by David Korth.                                      *
+ * Copyright (c) 2019-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -23,7 +23,7 @@ extern "C" {
  * - https://github.khronos.org/KTX-Specification/
  *
  * WARNING: The specification is still in draft stages.
- * (2.0.draft18 as of 2020/02/08) It is subject to change
+ * (2.0.draft19 as of 2020/03/04) It is subject to change
  * prior to finalization.
  */
 
