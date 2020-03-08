@@ -56,6 +56,7 @@
 #include "librpbase/bitstuff.h"
 #include "librpbase/aligned_malloc.h"
 #include "librpbase/ctypex.h"
+#include "librpbase/time_r.h"
 
 #ifdef __cplusplus
 // librpbase C++ headers

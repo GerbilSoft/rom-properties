@@ -104,20 +104,6 @@
 # define wcsncasecmp(s1, s2, n) _wcsnicmp(s1, s2, n)
 #endif
 
-/** timegm() **/
-
-/**
- * Linux, Mac OS X, and other Unix-like operating systems have a
- * function timegm() that converts `struct tm` to `time_t`.
- *
- * MSVCRT's equivalent function is _mkgmtime().
- *
- * NOTE: timegm() is NOT part of *any* standard!
- */
-#ifndef timegm
-# define timegm(tm)	_mkgmtime(tm)
-#endif
-
 /** strtok_r() **/
 
 // MSVC has strtok_s(), which is basically the same as strtok_r().

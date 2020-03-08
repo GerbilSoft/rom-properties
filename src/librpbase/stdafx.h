@@ -67,6 +67,7 @@
 #include "aligned_malloc.h"
 #include "cpu_dispatch.h"
 #include "ctypex.h"
+#include "time_r.h"
 
 #ifdef __cplusplus
 // librpbase C++ headers

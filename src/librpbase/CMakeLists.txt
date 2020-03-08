@@ -69,6 +69,29 @@ ELSE(NOT WIN32)
 		LANGUAGE C)
 ENDIF(NOT WIN32)
 
+# Check for reentrant time functions.
+# NOTE: May be _gmtime32_s() or _gmtime64_s() on MSVC 2005+.
+# The "inline" part will detect that.
+INCLUDE(CheckSymbolExistsOrInline)
+CHECK_SYMBOL_EXISTS_OR_INLINE(gmtime_r "time.h" "time_t tm; gmtime_r(&tm, NULL);" HAVE_GMTIME_R)
+IF(NOT HAVE_GMTIME_R)
+	CHECK_SYMBOL_EXISTS_OR_INLINE(gmtime_s "time.h" "time_t tm; gmtime_s(NULL, &tm);" HAVE_GMTIME_S)
+ENDIF(NOT HAVE_GMTIME_R)
+CHECK_SYMBOL_EXISTS_OR_INLINE(localtime_r "time.h" "time_t tm; localtime_r(&tm, NULL);" HAVE_LOCALTIME_R)
+IF(NOT HAVE_LOCALTIME_R)
+	CHECK_SYMBOL_EXISTS_OR_INLINE(localtime_s "time.h" "time_t tm; localtime_s(NULL, &tm);" HAVE_LOCALTIME_S)
+ENDIF(NOT HAVE_LOCALTIME_R)
+
+# Other time functions.
+CHECK_SYMBOL_EXISTS_OR_INLINE(timegm "time.h" "struct tm tm; time_t x = timegm(&tm);" HAVE_TIMEGM)
+IF(NOT HAVE_TIMEGM)
+	CHECK_SYMBOL_EXISTS_OR_INLINE(_mkgmtime "time.h" "struct tm tm; time_t x = _mkgmtime(&tm);" HAVE__MKGMTIME)
+	IF(HAVE__MKGMTIME)
+		CHECK_SYMBOL_EXISTS_OR_INLINE(_mkgmtime32 "time.h" "struct tm tm; time_t x = _mkgmtime32(&tm);" HAVE__MKGMTIME32)
+		CHECK_SYMBOL_EXISTS_OR_INLINE(_mkgmtime64 "time.h" "struct tm tm; time_t x = _mkgmtime64(&tm);" HAVE__MKGMTIME64)
+	ENDIF(HAVE__MKGMTIME)
+ENDIF(NOT HAVE_TIMEGM)
+
 # Check for C headers.
 CHECK_INCLUDE_FILES("features.h" HAVE_FEATURES_H)
 
