@@ -21,7 +21,8 @@ set PATH=%PATH:C:\Program Files\Git\bin;=%
 set PATH=%PATH:C:\Program Files\Git\usr\bin;=%
 set PATH=%PATH:C:\Program Files (x86)\Git\bin;=%
 set PATH=%PATH:C:\Program Files (x86)\Git\usr\bin;=%
+set MINGW64_ROOT=C:\mingw-w64\x86_64-8.1.0-posix-seh-rt_v6-rev0
 mkdir build
 cd build
-cmake .. -G "MinGW Makefiles" -DCMAKE_PREFIX_PATH=C:\mingw-w64\x86_64-8.1.0-posix-seh-rt_v6-rev0 -DCMAKE_BUILD_TYPE=%configuration% -DENABLE_JPEG=ON -DBUILD_TESTING=ON -DENABLE_LTO=OFF -DENABLE_PCH=ON
+cmake .. -G "MinGW Makefiles" -DCMAKE_PREFIX_PATH=%MINGW64_ROOT% -DCMAKE_C_COMPILER=%MINGW64_ROOT%\bin\gcc.exe -DCMAKE_CXX_COMPILER=%MINGW64_ROOT%\bin\g++.exe -DCMAKE_BUILD_TYPE=%configuration% -DENABLE_JPEG=ON -DBUILD_TESTING=ON -DENABLE_LTO=OFF -DENABLE_PCH=ON
 exit /b %ERRORLEVEL%
