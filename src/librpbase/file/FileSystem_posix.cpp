@@ -7,10 +7,12 @@
  ***************************************************************************/
 
 #include "stdafx.h"
+#include "config.librpbase.h"
 #include "FileSystem.hpp"
 
 // C includes.
-#include <sys/stat.h>
+#include <fcntl.h>	// AT_FDCWD
+#include <sys/stat.h>	// stat(), statx()
 #include <utime.h>
 #include <unistd.h>
 
@@ -115,21 +117,25 @@ int access(const string &pathname, int mode)
  */
 off64_t filesize(const string &filename)
 {
+#ifdef HAVE_STATX
+	struct statx sbx;
+	int ret = statx(AT_FDCWD, filename.c_str(), 0, STATX_SIZE, &sbx);
+	if (ret != 0 || !(sbx.stx_mask & STATX_SIZE)) {
+		// statx() failed and/or did not return the file size.
+		int ret = -errno;
+		return (ret != 0 ? ret : -EIO);
+	}
+	return sbx.stx_size;
+#else /* !HAVE_STATX */
 	struct stat sb;
 	int ret = stat(filename.c_str(), &sb);
 	if (ret != 0) {
 		// stat() failed.
-		ret = -errno;
-		if (ret == 0) {
-			// Something happened...
-			ret = -EIO;
-		}
-
-		return ret;
+		int ret = -errno;
+		return (ret != 0 ? ret : -EIO);
 	}
-
-	// Return the file size.
 	return sb.st_size;
+#endif /* HAVE_STATX */
 }
 
 /**
@@ -167,14 +173,28 @@ int get_mtime(const string &filename, time_t *pMtime)
 	// FIXME: time_t is 32-bit on 32-bit Linux.
 	// TODO: Add a static_warning() macro?
 	// - http://stackoverflow.com/questions/8936063/does-there-exist-a-static-warning
-	struct stat buf;
-	int ret = stat(filename.c_str(), &buf);
-	if (ret == 0) {
-		// stat() buffer retrieved.
-		*pMtime = buf.st_mtime;
-	}
 
-	return (ret == 0 ? 0 : -errno);
+#ifdef HAVE_STATX
+	struct statx sbx;
+	int ret = statx(AT_FDCWD, filename.c_str(), 0, STATX_MTIME, &sbx);
+	if (ret != 0 || !(sbx.stx_mask & STATX_MTIME)) {
+		// statx() failed and/or did not return the modification time.
+		int ret = -errno;
+		return (ret != 0 ? ret : -EIO);
+	}
+	*pMtime = sbx.stx_mtime.tv_sec;
+#else /* !HAVE_STATX */
+	struct stat sb;
+	int ret = stat(filename.c_str(), &sb);
+	if (ret != 0) {
+		// stat() failed.
+		int ret = -errno;
+		return (ret != 0 ? ret : -EIO);
+	}
+	*pMtime = sb.st_mtime;
+#endif /* HAVE_STATX */
+
+	return 0;
 }
 
 /**
@@ -205,14 +225,25 @@ bool is_symlink(const char *filename)
 	if (unlikely(!filename || filename[0] == 0))
 		return -EINVAL;
 	
-	struct stat buf;
-	int ret = lstat(filename, &buf);
+#ifdef HAVE_STATX
+	struct statx sbx;
+	int ret = statx(AT_FDCWD, filename, AT_SYMLINK_NOFOLLOW, STATX_TYPE, &sbx);
+	if (ret != 0 || !(sbx.stx_mask & STATX_TYPE)) {
+		// statx() failed and/or did not return the file type.
+		// Assume this is not a symlink.
+		return false;
+	}
+	return !!S_ISLNK(sbx.stx_mode);
+#else /* !HAVE_STATX */
+	struct stat sb;
+	int ret = lstat(filename, &sb);
 	if (ret != 0) {
 		// lstat() failed.
 		// Assume this is not a symlink.
 		return false;
 	}
-	return !!S_ISLNK(buf.st_mode);
+	return !!S_ISLNK(sb.st_mode);
+#endif /* HAVE_STATX */
 }
 
 /**
@@ -326,15 +357,32 @@ int get_file_size_and_mtime(const string &filename, off64_t *pFileSize, time_t *
 	// FIXME: time_t is 32-bit on 32-bit Linux.
 	// TODO: Add a static_warning() macro?
 	// - http://stackoverflow.com/questions/8936063/does-there-exist-a-static-warning
-	struct stat sb;
-	if (stat(filename.c_str(), &sb) != 0) {
-		// An error occurred.
+
+#ifdef HAVE_STATX
+	struct statx sbx;
+	int ret = statx(AT_FDCWD, filename.c_str(), 0, STATX_TYPE | STATX_MTIME | STATX_SIZE, &sbx);
+	if (ret != 0 || (sbx.stx_mask & (STATX_MTIME | STATX_SIZE)) != (STATX_MTIME | STATX_SIZE)) {
+		// statx() failed and/or did not return the modification time or file size.
 		int ret = -errno;
-		if (ret == 0) {
-			// No error?
-			ret = -EIO;
-		}
-		return ret;
+		return (ret != 0 ? ret : -EIO);
+	}
+
+	// Make sure this is not a directory.
+	if ((sbx.stx_mask & STATX_TYPE) && S_ISDIR(sbx.stx_mode)) {
+		// It's a directory.
+		return -EISDIR;
+	}
+
+	// Return the file size and mtime.
+	*pFileSize = sbx.stx_size;
+	*pMtime = sbx.stx_mtime.tv_sec;
+#else /* !HAVE_STATX */
+	struct stat sb;
+	int ret = stat(filename.c_str(), &sb);
+	if (ret != 0) {
+		// stat() failed.
+		int ret = -errno;
+		return (ret != 0 ? ret : -EIO);
 	}
 
 	// Make sure this is not a directory.
@@ -346,6 +394,8 @@ int get_file_size_and_mtime(const string &filename, off64_t *pFileSize, time_t *
 	// Return the file size and mtime.
 	*pFileSize = sb.st_size;
 	*pMtime = sb.st_mtime;
+#endif /* HAVE_STATX */
+
 	return 0;
 }
 

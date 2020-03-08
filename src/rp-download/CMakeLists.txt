@@ -1,12 +1,23 @@
 PROJECT(rp-download)
 # Online downloader program for external images.
 
+# Check for an xattr function.
+INCLUDE(CheckSymbolExists)
 IF(APPLE)
 	CHECK_SYMBOL_EXISTS(fsetxattr "sys/xattr.h" HAVE_FSETXATTR_MAC)
 ELSEIF(NOT WIN32)
 	CHECK_SYMBOL_EXISTS(fsetxattr "sys/xattr.h" HAVE_FSETXATTR_LINUX)
 	CHECK_SYMBOL_EXISTS(extattr_set_fd "sys/extattr.h" HAVE_EXTATTR_SET_FD)
 ENDIF()
+
+IF(NOT WIN32)
+	# Check for statx().
+	SET(OLD_CMAKE_REQUIRED_DEFINITIONS "${CMAKE_REQUIRED_DEFINITIONS}")
+	SET(CMAKE_REQUIRED_DEFINITIONS "-D_GNU_SOURCE=1")
+	CHECK_SYMBOL_EXISTS(statx "sys/stat.h" HAVE_STATX)
+	SET(CMAKE_REQUIRED_DEFINITIONS "${OLD_CMAKE_REQUIRED_DEFINITIONS}")
+	UNSET(OLD_CMAKE_REQUIRED_DEFINITIONS)
+ENDIF(NOT WIN32)
 
 # Write the config.h file.
 CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/config.rp-download.h.in" "${CMAKE_CURRENT_BINARY_DIR}/config.rp-download.h")

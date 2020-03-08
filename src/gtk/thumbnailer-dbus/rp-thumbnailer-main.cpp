@@ -162,11 +162,13 @@ int main(int argc, char *argv[])
 #endif /* __SNR_openat2 */
 		SCMP_SYS(readlink),	// realpath() [LibRpBase::FileSystem::resolve_symlink()]
 		SCMP_SYS(stat),		// LibUnixCommon::isWritableDirectory()
-#ifdef __SNR_statx
-		SCMP_SYS(statx),	// unsure?
-#endif /* __SNR_statx */
 		SCMP_SYS(statfs),	// LibRpBase::FileSystem::isOnBadFS()
 		SCMP_SYS(statfs64),	// LibRpBase::FileSystem::isOnBadFS()
+
+#ifdef __SNR_statx
+		SCMP_SYS(getcwd),	// called by glibc's statx()
+		SCMP_SYS(statx),
+#endif /* __SNR_statx */
 
 		// glibc ncsd
 		// TODO: Restrict connect() to AF_UNIX.

@@ -36,4 +36,7 @@
 /* Define to 1 if you have the `getpwuid' function. */
 #cmakedefine HAVE_GETPWUID 1
 
+/* Define to 1 if you have the `statx` function. */
+#cmakedefine HAVE_STATX 1
+
 #endif /* __ROMPROPERTIES_LIBUNIXCOMMON_CONFIG_H__ */

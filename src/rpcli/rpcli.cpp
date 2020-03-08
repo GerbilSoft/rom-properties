@@ -344,8 +344,10 @@ int RP_C_API main(int argc, char *argv[])
 		// KeyManager (keys.conf)
 		SCMP_SYS(access),	// LibUnixCommon::isWritableDirectory()
 		SCMP_SYS(stat),		// LibUnixCommon::isWritableDirectory()
+
 #ifdef __SNR_statx
-		SCMP_SYS(statx),	// maybe for future use
+		SCMP_SYS(getcwd),	// called by glibc's statx()
+		SCMP_SYS(statx),
 #endif /* __SNR_statx */
 
 		// glibc ncsd

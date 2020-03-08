@@ -13,8 +13,9 @@
 #include "userdirs.hpp"
 
 // C includes.
-#include <pwd.h>	/* getpwuid_r() */
-#include <sys/stat.h>	/* stat(), S_ISDIR */
+#include <fcntl.h>	// AT_FDCWD
+#include <pwd.h>	// getpwuid_r()
+#include <sys/stat.h>	// stat(), statx(), S_ISDIR()
 #include <stdlib.h>
 #include <unistd.h>
 
@@ -34,18 +35,34 @@ namespace LibUnixCommon {
  */
 static inline bool isWritableDirectory(const char *path)
 {
+#ifdef HAVE_STATX
+	struct statx sbx;
+	int ret = statx(AT_FDCWD, path, 0, STATX_TYPE, &sbx);
+	if (ret != 0) {
+		// statx() failed.
+		return false;
+	} else if (!(sbx.stx_mask & STATX_TYPE)) {
+		// Unable to get the file type.
+		return false;
+	} else if (!S_ISDIR(sbx.stx_mode)) {
+		// Not a directory.
+		return false;
+	}
+#else /* !HAVE_STATX */
 	struct stat sb;
 	int ret = stat(path, &sb);
-	if (ret == 0 && S_ISDIR(sb.st_mode)) {
-		// This is a directory.
-		if (!access(path, R_OK|W_OK)) {
-			// Directory is writable.
-			return true;
-		}
+	if (ret != 0) {
+		// stat() failed.
+		return false;
+	} else if (!S_ISDIR(sb.st_mode)) {
+		// Not a directory.
+		return false;
 	}
+#endif /* HAVE_STATX */
 
-	// Not a writable directory.
-	return false;
+	// This is a directory.
+	// Return true if it's writable.
+	return !access(path, R_OK|W_OK);
 }
 
 /**
@@ -133,6 +150,7 @@ string getHomeDirectory(void)
 	}
 
 	// Unable to get the user's home directory...
+	assert(!"Unable to get the user's home directory.");
 	return string();
 }
 

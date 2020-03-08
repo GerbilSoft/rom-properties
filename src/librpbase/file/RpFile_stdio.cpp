@@ -17,7 +17,8 @@
 #include "RpFile_p.hpp"
 
 // C includes.
-#include <sys/stat.h>
+#include <fcntl.h>	// AT_EMPTY_PATH
+#include <sys/stat.h>	// stat(), statx()
 #include <unistd.h>	// ftruncate()
 
 namespace LibRpBase {
@@ -88,18 +89,36 @@ int RpFilePrivate::reOpenFile(void)
 
 	// Check if this is a device.
 	bool isDevice = false;
+	bool hasFileMode = false;
+	uint16_t fileMode = 0;
+#ifdef HAVE_STATX
+	struct statx sbx;
+	int ret = statx(fileno(file), "", AT_EMPTY_PATH, STATX_TYPE, &sbx);
+	if (ret == 0 && (sbx.stx_mask & STATX_TYPE)) {
+		// statx() succeeded.
+		hasFileMode = true;
+		fileMode = sbx.stx_mode;
+	}
+#else /* !HAVE_STATX */
 	struct stat sb;
 	int ret = fstat(fileno(file), &sb);
 	if (ret == 0) {
 		// fstat() succeeded.
-		if (S_ISDIR(sb.st_mode)) {
+		hasFileMode = true;
+		fileMode = sb.st_mode;
+	}
+#endif /* HAVE_STATX */
+
+	// Did we get the file mode from statx() or stat()?
+	if (hasFileMode) {
+		if (S_ISDIR(fileMode)) {
 			// This is a directory.
 			fclose(file);
 			file = nullptr;
 			q->m_lastError = EISDIR;
 			return -EISDIR;
 		}
-		isDevice = (S_ISBLK(sb.st_mode) || S_ISCHR(sb.st_mode));
+		isDevice = (S_ISBLK(fileMode) || S_ISCHR(fileMode));
 	}
 
 	// NOTE: Opening certain device files can cause crashes
@@ -112,7 +131,7 @@ int RpFilePrivate::reOpenFile(void)
 		// block devices. Linux does not, so on Linux, we'll only
 		// allow block devices and not character devices.
 #ifdef __linux__
-		if (S_ISCHR(sb.st_mode)) {
+		if (S_ISCHR(fileMode)) {
 			// Character device. Not supported.
 			fclose(file);
 			file = nullptr;
