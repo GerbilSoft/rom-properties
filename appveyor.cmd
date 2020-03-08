@@ -27,10 +27,5 @@ set "PATH=%MINGW64_ROOT%\bin;%PATH%"
 
 mkdir build
 cd build
-dir C:\mingw-w64
-dir C:\mingw-w64\i686-6.3.0-posix-dwarf-rt_v5-rev1
-dir C:\mingw-w64\i686-6.3.0-posix-dwarf-rt_v5-rev1\mingw32
-dir C:\mingw-w64\x86_64-7.2.0-posix-seh-rt_v5-rev1
-dir C:\mingw-w64\x86_64-7.2.0-posix-seh-rt_v5-rev1\mingw64
 cmake .. -G "MinGW Makefiles" -DCMAKE_PREFIX_PATH=%MINGW64_ROOT% -DCMAKE_C_COMPILER=%MINGW64_ROOT%/bin/gcc.exe -DCMAKE_CXX_COMPILER=%MINGW64_ROOT%/bin/g++.exe -DCMAKE_BUILD_TYPE=%configuration% -DENABLE_JPEG=ON -DBUILD_TESTING=ON -DENABLE_LTO=OFF -DENABLE_PCH=ON
 exit /b %ERRORLEVEL%
