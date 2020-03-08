@@ -85,12 +85,14 @@ ENDIF(NOT HAVE_LOCALTIME_R)
 # Other time functions.
 CHECK_SYMBOL_EXISTS_OR_INLINE(timegm "time.h" "struct tm tm; time_t x = timegm(&tm);" HAVE_TIMEGM)
 IF(NOT HAVE_TIMEGM)
-	# FIXME: MinGW: _mkgmtime64() doesn't work with UNIX time outside of the 32-bit range.
-	IF(MSVC OR NOT WIN32)
-		CHECK_SYMBOL_EXISTS_OR_INLINE(_mkgmtime "time.h" "struct tm tm; time_t x = _mkgmtime(&tm);" HAVE__MKGMTIME)
-		CHECK_SYMBOL_EXISTS_OR_INLINE(_mkgmtime64 "time.h" "struct tm tm; time_t x = _mkgmtime64(&tm);" HAVE__MKGMTIME64)
-	ENDIF(MSVC OR NOT WIN32)
+	# NOTE: MSVCRT's _mkgmtime64() has a range of [1970/01/01, 3000/12/31].
+	# glibc and boost both support arbitrary ranges.
+	CHECK_SYMBOL_EXISTS_OR_INLINE(_mkgmtime "time.h" "struct tm tm; time_t x = _mkgmtime(&tm);" HAVE__MKGMTIME)
+	CHECK_SYMBOL_EXISTS_OR_INLINE(_mkgmtime64 "time.h" "struct tm tm; time_t x = _mkgmtime64(&tm);" HAVE__MKGMTIME64)
 ENDIF(NOT HAVE_TIMEGM)
+IF(NOT HAVE_TIMEGM AND NOT HAVE__MKGMTIME AND NOT HAVE__MKGMTIME64)
+	SET(USE_BOOST_TIMEGM 1)
+ENDIF(NOT HAVE_TIMEGM AND NOT HAVE__MKGMTIME AND NOT HAVE__MKGMTIME64)
 
 # Check for C headers.
 CHECK_INCLUDE_FILES("features.h" HAVE_FEATURES_H)
@@ -190,9 +192,9 @@ SET(librpbase_H
 	)
 
 # timegm.c for systems that don't have timegm() or 64-bit _mkgmtime().
-IF(NOT HAVE_TIMEGM AND NOT HAVE__MKGMTIME AND NOT HAVE__MKGMTIME64)
+IF(USE_BOOST_TIMEGM)
 	SET(librpbase_SRCS ${librpbase_SRCS} timegm.c)
-ENDIF(NOT HAVE_TIMEGM AND NOT HAVE__MKGMTIME AND NOT HAVE__MKGMTIME64)
+ENDIF(USE_BOOST_TIMEGM)
 
 IF(NOT USE_INTERNAL_PNG OR (USE_INTERNAL_PNG AND USE_INTERNAL_PNG_DLL))
 	SET(librpbase_SRCS ${librpbase_SRCS} img/APNG_dlopen.c)

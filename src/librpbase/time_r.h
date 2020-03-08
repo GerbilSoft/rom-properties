@@ -73,8 +73,10 @@ static inline time_t timegm(struct tm *tm)
 	struct tm my_tm;
 	my_tm = *tm;
 #if defined(HAVE__MKGMTIME64)
+# define USING_MSVCRT_MKGMTIME 1
 	return _mkgmtime64(&my_tm);
 #elif defined(HAVE__MKGMTIME)
+# define USING_MSVCRT_MKGMTIME 1
 	return _mkgmtime(&my_tm);
 #endif
 }

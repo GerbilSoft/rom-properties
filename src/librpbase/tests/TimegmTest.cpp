@@ -13,6 +13,8 @@
 // timegm() and/or replacement function.
 #include "time_r.h"
 
+// NOTE: MSVCRT's _mkgmtime() has a limited range of [1970/01/01, 3000/12/31].
+
 namespace LibRpBase { namespace Tests {
 
 // `struct tm` initialization macro using ISO date format.
@@ -34,55 +36,71 @@ static inline struct tm TM_INIT(int year, int month, int day, int hour, int minu
 TEST(TimegmTest, unixEpochTest)
 {
 	struct tm tm_unix_epoch = TM_INIT(1970, 1, 1, 0, 0, 0);
-	EXPECT_EQ((time_t)0, timegm(&tm_unix_epoch));
+	EXPECT_EQ(0LL, timegm(&tm_unix_epoch));
 }
 
 TEST(TimegmTest, unix32bitMinMinusOneTest)
 {
 	struct tm tm_unix_32bit_minMinusOne = TM_INIT(1901, 12, 13, 20, 45, 51);
-	EXPECT_EQ((time_t)-2147483649, timegm(&tm_unix_32bit_minMinusOne));
+#ifdef USING_MSVCRT_MKGMTIME
+	EXPECT_EQ(-1LL, timegm(&tm_unix_32bit_minMinusOne));
+#else /* !USING_MSVCRT_MKGMTIME */
+	EXPECT_EQ(-2147483649LL, timegm(&tm_unix_32bit_minMinusOne));
+#endif /* USING_MSVCRT_MKGMTIME */
 }
 
 TEST(TimegmTest, unix32bitMinTest)
 {
 	struct tm tm_unix_32bit_min = TM_INIT(1901, 12, 13, 20, 45, 52);
-	EXPECT_EQ((time_t)-2147483648, timegm(&tm_unix_32bit_min));
+#ifdef USING_MSVCRT_MKGMTIME
+	EXPECT_EQ(-1LL, timegm(&tm_unix_32bit_min));
+#else /* !USING_MSVCRT_MKGMTIME */
+	EXPECT_EQ(-2147483648LL, timegm(&tm_unix_32bit_min));
+#endif /* USING_MSVCRT_MKGMTIME */
 }
 
 TEST(TimegmTest, unix32bitMaxTest)
 {
 	struct tm tm_unix_32bit_max = TM_INIT(2038, 1, 19, 3, 14, 7);
-	EXPECT_EQ((time_t)2147483647, timegm(&tm_unix_32bit_max));
+	EXPECT_EQ(2147483647LL, timegm(&tm_unix_32bit_max));
 }
 
 TEST(TimegmTest, unix32bitMaxPlusOne)
 {
 	struct tm tm_unix_32bit_maxPlusOne = TM_INIT(2038, 1, 19, 3, 14, 8);
-	EXPECT_EQ((time_t)2147483648, timegm(&tm_unix_32bit_maxPlusOne));
+	EXPECT_EQ(2147483648LL, timegm(&tm_unix_32bit_maxPlusOne));
 }
 
 TEST(TimegmTest, msdosEpochTest)
 {
 	struct tm tm_msdos_epoch = TM_INIT(1980, 1, 1, 0, 0, 0);
-	EXPECT_EQ((time_t)315532800, timegm(&tm_msdos_epoch));
+	EXPECT_EQ(315532800LL, timegm(&tm_msdos_epoch));
 }
 
 TEST(TimegmTest, winEpochTest)
 {
 	struct tm tm_win_epoch = TM_INIT(1601, 1, 1, 0, 0, 0);
-	EXPECT_EQ((time_t)-11644473600, timegm(&tm_win_epoch));
+#ifdef USING_MSVCRT_MKGMTIME
+	EXPECT_EQ(-1LL, timegm(&tm_win_epoch));
+#else /* !USING_MSVCRT_MKGMTIME */
+	EXPECT_EQ(-11644473600LL, timegm(&tm_win_epoch));
+#endif /* USING_MSVCRT_MKGMTIME */
 }
 
 TEST(TimegmTest, winMaxTimeTest)
 {
 	struct tm tm_win_maxTime = TM_INIT(30828, 9, 14, 2, 48, 5);
-	EXPECT_EQ((time_t)910692730085, timegm(&tm_win_maxTime));
+#ifdef USING_MSVCRT_MKGMTIME
+	EXPECT_EQ(-1LL, timegm(&tm_win_maxTime));
+#else /* !USING_MSVCRT_MKGMTIME */
+	EXPECT_EQ(910692730085LL, timegm(&tm_win_maxTime));
+#endif /* USING_MSVCRT_MKGMTIME */
 }
 
 TEST(TimegmTest, gcnEpochTest)
 {
 	struct tm tm_gcn_epoch = TM_INIT(2000, 1, 1, 0, 0, 0);
-	EXPECT_EQ((time_t)0x386D4380, timegm(&tm_gcn_epoch));
+	EXPECT_EQ(0x386D4380LL, timegm(&tm_gcn_epoch));
 }
 
 } }
