@@ -26,9 +26,6 @@
 #include "libwin32common/sdk/windowsx_ts.h"
 #include "libwin32common/sdk/commctrl_ts.h"
 
-// Subclass functions for compatibility with older Windows.
-#include "libwin32common/SubclassWindow.h"
-
 // Additional Windows headers.
 #include <olectl.h>
 #include <shellapi.h>

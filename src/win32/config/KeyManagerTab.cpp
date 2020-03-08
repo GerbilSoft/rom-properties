@@ -19,6 +19,7 @@
 #include "KeyStore_OwnerDataCallback.hpp"
 
 // libwin32common
+#include "libwin32common/SubclassWindow.h"
 using LibWin32Common::WTSSessionNotification;
 
 // librpbase

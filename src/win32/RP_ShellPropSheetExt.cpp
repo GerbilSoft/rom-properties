@@ -21,6 +21,7 @@
 
 // libwin32common
 #include "libwin32common/AutoGetDC.hpp"
+#include "libwin32common/SubclassWindow.h"
 using LibWin32Common::AutoGetDC;
 using LibWin32Common::WTSSessionNotification;
 

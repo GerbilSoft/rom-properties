@@ -16,6 +16,9 @@
 #include "librpbase/config/AboutTabText.hpp"
 using namespace LibRpBase;
 
+// libwin32common
+#include "libwin32common/SubclassWindow.h"
+
 // Property sheet icon.
 // Extracted from imageres.dll or shell32.dll.
 #include "PropSheetIcon.hpp"
