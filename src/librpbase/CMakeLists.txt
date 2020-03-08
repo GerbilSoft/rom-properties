@@ -83,14 +83,14 @@ IF(NOT HAVE_LOCALTIME_R)
 ENDIF(NOT HAVE_LOCALTIME_R)
 
 # Other time functions.
-# FIXME: MinGW: _mkgmtime64() doesn't work with UNIX time outside of the 32-bit range.
-IF(MSVC OR NOT WIN32)
-	CHECK_SYMBOL_EXISTS_OR_INLINE(timegm "time.h" "struct tm tm; time_t x = timegm(&tm);" HAVE_TIMEGM)
-	IF(NOT HAVE_TIMEGM)
+CHECK_SYMBOL_EXISTS_OR_INLINE(timegm "time.h" "struct tm tm; time_t x = timegm(&tm);" HAVE_TIMEGM)
+IF(NOT HAVE_TIMEGM)
+	# FIXME: MinGW: _mkgmtime64() doesn't work with UNIX time outside of the 32-bit range.
+	IF(MSVC OR NOT WIN32)
 		CHECK_SYMBOL_EXISTS_OR_INLINE(_mkgmtime "time.h" "struct tm tm; time_t x = _mkgmtime(&tm);" HAVE__MKGMTIME)
 		CHECK_SYMBOL_EXISTS_OR_INLINE(_mkgmtime64 "time.h" "struct tm tm; time_t x = _mkgmtime64(&tm);" HAVE__MKGMTIME64)
-	ENDIF(NOT HAVE_TIMEGM)
-ENDIF(MSVC OR NOT WIN32)
+	ENDIF(MSVC OR NOT WIN32)
+ENDIF(NOT HAVE_TIMEGM)
 
 # Check for C headers.
 CHECK_INCLUDE_FILES("features.h" HAVE_FEATURES_H)
