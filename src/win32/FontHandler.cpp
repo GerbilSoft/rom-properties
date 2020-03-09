@@ -140,9 +140,23 @@ int FontHandlerPrivate::findMonospacedFont(LOGFONT *plfFontMono)
 	enum_fonts.reserve(64);
 #endif /* HAVE_UNORDERED_SET_RESERVE */
 
-	LOGFONT lfEnumFonts = { 0 };
-	lfEnumFonts.lfCharSet = DEFAULT_CHARSET;
-	lfEnumFonts.lfPitchAndFamily = FIXED_PITCH | FF_DONTCARE;
+	LOGFONT lfEnumFonts = {
+		0,	// lfHeight
+		0,	// lfWidth
+		0,	// lfEscapement
+		0,	// lfOrientation
+		0,	// lfWeight
+		0,	// lfItalic
+		0,	// lfUnderline
+		0,	// lfStrikeOut
+		DEFAULT_CHARSET, // lfCharSet
+		0,	// lfOutPrecision
+		0,	// lfClipPrecision
+		0,	// lfQuality
+		FIXED_PITCH | FF_DONTCARE, // lfPitchAndFamily
+		_T(""),	// lfFaceName
+	};
+
 	HDC hDC = GetDC(nullptr);
 	EnumFontFamiliesEx(hDC, &lfEnumFonts, MonospacedFontEnumProc,
 		reinterpret_cast<LPARAM>(&enum_fonts), 0);
