@@ -67,7 +67,7 @@ IFACEMETHODIMP RP_ExtractImage::QueryInterface(REFIID riid, LPVOID *ppvObj)
 		QITABENT(RP_ExtractImage, IPersistFile),
 		QITABENT(RP_ExtractImage, IExtractImage),
 		QITABENT(RP_ExtractImage, IExtractImage2),
-		{ 0 }
+		{ 0, 0 }
 	};
 #ifdef _MSC_VER
 # pragma warning(pop)
