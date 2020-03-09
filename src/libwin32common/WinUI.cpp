@@ -279,6 +279,8 @@ LRESULT CALLBACK SingleLineEditProc(
 	WPARAM wParam, LPARAM lParam,
 	UINT_PTR uIdSubclass, DWORD_PTR dwRefData)
 {
+	((void)dwRefData);
+
 	switch (uMsg) {
 		case WM_GETDLGCODE: {
 			// Filter out DLGC_HASSETSEL.

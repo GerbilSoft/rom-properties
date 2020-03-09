@@ -78,6 +78,7 @@ static DWORD adjustTokenIntegrityLevel(HANDLE hToken, int level)
 	// Based on Chromium's SetTokenIntegrityLevel().
 	if (!ConvertStringSidToSid(szIntegritySid, &pIntegritySid)) {
 		// Failed to convert the SID.
+		dwLastError = GetLastError();
 		goto out;
 	}
 

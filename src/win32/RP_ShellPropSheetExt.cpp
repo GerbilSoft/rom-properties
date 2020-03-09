@@ -2666,7 +2666,7 @@ IFACEMETHODIMP RP_ShellPropSheetExt::QueryInterface(REFIID riid, LPVOID *ppvObj)
 	static const QITAB rgqit[] = {
 		QITABENT(RP_ShellPropSheetExt, IShellExtInit),
 		QITABENT(RP_ShellPropSheetExt, IShellPropSheetExt),
-		{ 0 }
+		{ 0, 0 }
 	};
 #ifdef _MSC_VER
 # pragma warning(pop)
@@ -2682,6 +2682,9 @@ IFACEMETHODIMP RP_ShellPropSheetExt::QueryInterface(REFIID riid, LPVOID *ppvObj)
 IFACEMETHODIMP RP_ShellPropSheetExt::Initialize(
 	LPCITEMIDLIST pidlFolder, LPDATAOBJECT pDataObj, HKEY hKeyProgID)
 {
+	((void)pidlFolder);
+	((void)hKeyProgID);
+
 	// Based on CppShellExtPropSheetHandler.
 	// https://code.msdn.microsoft.com/windowsapps/CppShellExtPropSheetHandler-d93b49b7
 	if (!pDataObj) {
@@ -3076,6 +3079,8 @@ INT_PTR RP_ShellPropSheetExt_Private::DlgProc_WM_NOTIFY(HWND hDlg, NMHDR *pHdr)
  */
 INT_PTR RP_ShellPropSheetExt_Private::DlgProc_WM_COMMAND(HWND hDlg, WPARAM wParam, LPARAM lParam)
 {
+	((void)hDlg);
+	((void)lParam);
 	INT_PTR ret = false;
 
 	switch (HIWORD(wParam)) {
@@ -3398,6 +3403,8 @@ INT_PTR CALLBACK RP_ShellPropSheetExt_Private::DlgProc(HWND hDlg, UINT uMsg, WPA
 //
 UINT CALLBACK RP_ShellPropSheetExt_Private::CallbackProc(HWND hWnd, UINT uMsg, LPPROPSHEETPAGE ppsp)
 {
+	((void)hWnd);	// TODO: Validate this?
+
 	switch (uMsg) {
 		case PSPCB_CREATE: {
 			// Must return true to enable the page to be created.

@@ -289,5 +289,6 @@ IFACEMETHODIMP RP_ExtractIcon::Extract(LPCSTR pszFile, UINT nIconIndex,
 {
 	// NOTE: The IExtractIconW interface doesn't use pszFile,
 	// so no conversion is necessary.
+	((void)pszFile);
 	return Extract(L"", nIconIndex, phiconLarge, phiconSmall, nIconSize);
 }

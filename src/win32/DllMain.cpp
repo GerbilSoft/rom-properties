@@ -248,6 +248,9 @@ static LONG RegisterFileType(RegKey &hkcr, RegKey *pHklm, const RomDataFactory::
 		lResult = RP_PropertyStore::RegisterFileType(*pHklm, t_ext.c_str());
 		if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
 	}
+#else /* HAVE_RP_PROPERTYSTORE_DEPS */
+	// MinGW-w64: Suppress pHklm warnings, since it's unused.
+	((void)pHklm);
 #endif /* HAVE_RP_PROPERTYSTORE_DEPS */
 
 	if (extInfo.attrs & RomDataFactory::RDA_HAS_THUMBNAIL) {
@@ -325,6 +328,9 @@ static LONG UnregisterFileType(RegKey &hkcr, RegKey *pHklm, const RomDataFactory
 		lResult = RP_PropertyStore::UnregisterFileType(*pHklm, t_ext.c_str());
 		if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
 	}
+#else /* HAVE_RP_PROPERTYSTORE_DEPS */
+	// MinGW-w64: Suppress pHklm warnings, since it's unused.
+	((void)pHklm);
 #endif /* HAVE_RP_PROPERTYSTORE_DEPS */
 
 	// Delete keys if they're empty.

@@ -302,6 +302,9 @@ void DragImageLabelPrivate::updateRect(void)
  */
 void CALLBACK DragImageLabelPrivate::AnimTimerProc(HWND hWnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime)
 {
+	((void)uMsg);
+	((void)dwTime);
+
 	if (hWnd == nullptr || idEvent == 0) {
 		// Not a valid timer procedure call...
 		// - hWnd should not be nullptr.

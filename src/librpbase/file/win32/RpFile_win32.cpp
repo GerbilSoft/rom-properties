@@ -104,7 +104,9 @@ int RpFilePrivate::reOpenFile(void)
 	RP_Q(RpFile);
 
 	// Determine the file mode.
-	DWORD dwDesiredAccess, dwShareMode, dwCreationDisposition;
+	DWORD dwDesiredAccess = 0;
+	DWORD dwShareMode = 0;
+	DWORD dwCreationDisposition = 0;
 	if (mode_to_win32(mode, &dwDesiredAccess, &dwShareMode, &dwCreationDisposition) != 0) {
 		// Invalid mode.
 		q->m_lastError = EINVAL;

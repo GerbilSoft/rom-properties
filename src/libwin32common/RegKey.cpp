@@ -700,6 +700,8 @@ LONG RegKey::RegisterApprovedExtension(REFCLSID rclsid, LPCTSTR description)
  */
 LONG RegKey::UnregisterComObject(REFCLSID rclsid, LPCTSTR progID)
 {
+	((void)progID);
+
 	TCHAR szClsid[40];
 	LONG lResult = StringFromGUID2(rclsid, szClsid, _countof(szClsid));
 	if (lResult <= 0)

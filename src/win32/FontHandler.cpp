@@ -111,6 +111,8 @@ int CALLBACK FontHandlerPrivate::MonospacedFontEnumProc(
 	_In_ DWORD FontType,
 	_In_ LPARAM lParam)
 {
+	((void)lpntme);
+	((void)FontType);
 	unordered_set<tstring> *const pFonts = reinterpret_cast<unordered_set<tstring>*>(lParam);
 
 	// Check the font attributes:
