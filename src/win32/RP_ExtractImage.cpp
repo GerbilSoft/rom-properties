@@ -160,6 +160,9 @@ IFACEMETHODIMP RP_ExtractImage::GetLocation(LPWSTR pszPathBuffer,
 	DWORD cchMax, DWORD *pdwPriority, const SIZE *prgSize,
 	DWORD dwRecClrDepth, DWORD *pdwFlags)
 {
+	((void)pszPathBuffer);
+	((void)cchMax);
+
 	// TODO: If the image is cached on disk, return a filename.
 	if (!prgSize || !pdwFlags) {
 		// Invalid arguments.

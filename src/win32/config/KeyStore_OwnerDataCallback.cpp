@@ -26,7 +26,7 @@ IFACEMETHODIMP KeyStore_OwnerDataCallback::QueryInterface(REFIID riid, LPVOID *p
 #endif /* _MSC_VER */
 	static const QITAB rgqit[] = {
 		QITABENT(KeyStore_OwnerDataCallback, IOwnerDataCallback),
-		{ 0 }
+		{ 0, 0 }
 	};
 #ifdef _MSC_VER
 # pragma warning(pop)

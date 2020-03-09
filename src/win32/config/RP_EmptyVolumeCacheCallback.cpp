@@ -25,7 +25,7 @@ IFACEMETHODIMP RP_EmptyVolumeCacheCallback::QueryInterface(REFIID riid, LPVOID *
 #endif /* _MSC_VER */
 	static const QITAB rgqit[] = {
 		QITABENT(RP_EmptyVolumeCacheCallback, IEmptyVolumeCacheCallBack),
-		{ 0 }
+		{ 0, 0 }
 	};
 #ifdef _MSC_VER
 # pragma warning(pop)
