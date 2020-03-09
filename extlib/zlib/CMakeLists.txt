@@ -59,6 +59,13 @@ if(HAVE_OFF64_T)
 endif()
 set(CMAKE_REQUIRED_DEFINITIONS) # clear variable
 
+# rom-properties: 32-bit MSVC gets messed up here due to /Gz.
+# TODO: Use check_symbol_exists() instead?
+if(MSVC)
+   set(OLD_CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS}")
+   set(CMAKE_REQUIRED_FLAGS "/Gd")
+endif(MSVC)
+
 #
 # Check for fseeko
 #
@@ -66,6 +73,12 @@ check_function_exists(fseeko HAVE_FSEEKO)
 if(NOT HAVE_FSEEKO)
     add_definitions(-DNO_FSEEKO)
 endif()
+
+# rom-properties
+if(MSVC)
+   set(CMAKE_REQUIRED_FLAGS "${OLD_CMAKE_REQUIRED_FLAGS}")
+   unset(OLD_CMAKE_REQUIRED_FLAGS)
+endif(MSVC)
 
 #
 # Check for unistd.h

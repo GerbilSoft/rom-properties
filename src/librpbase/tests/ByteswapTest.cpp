@@ -21,7 +21,7 @@
 #include <memory>
 using std::unique_ptr;
 
-namespace LibRomData { namespace Tests {
+namespace LibRpBase { namespace Tests {
 
 class ByteswapTest : public ::testing::Test
 {
@@ -390,8 +390,8 @@ DO_ARRAY_32_unQWORD_BENCHMARK	(dispatch, true, "")
  */
 extern "C" int gtest_main(int argc, TCHAR *argv[])
 {
-	fprintf(stderr, "LibRomData test suite: Byteswap tests.\n\n");
-	fprintf(stderr, "Benchmark iterations: %u\n", LibRomData::Tests::ByteswapTest::BENCHMARK_ITERATIONS);
+	fprintf(stderr, "LibRpBase test suite: Byteswap tests.\n\n");
+	fprintf(stderr, "Benchmark iterations: %u\n", LibRpBase::Tests::ByteswapTest::BENCHMARK_ITERATIONS);
 	fflush(nullptr);
 
 	// coverity[fun_call_w_exception]: uncaught exceptions cause nonzero exit anyway, so don't warn.

@@ -26,16 +26,22 @@
 #include "libwin32common/sdk/windowsx_ts.h"
 #include "libwin32common/sdk/commctrl_ts.h"
 
-// Subclass functions for compatibility with older Windows.
-#include "libwin32common/SubclassWindow.h"
-
 // Additional Windows headers.
 #include <olectl.h>
-#include <shlobj.h>
 #include <shellapi.h>
 #include <shlwapi.h>
 #include <commdlg.h>
 #include <objidl.h>
+
+// FIXME: shlobj.h on MinGW-w64 on AppVeyor doesn't properly inline a few
+// functions when building in C mode, resulting in multiple definition errors.
+// C:/mingw-w64/x86_64-7.2.0-posix-seh-rt_v5-rev1
+// - FreeIDListArray
+// - FreeKnownFolderDefinitionFields
+// - IDListContainerIsConsistent
+#if defined(_MSC_VER) || defined(__cplusplus)
+# include <shlobj.h>
+#endif /* _MSC_VER || __cplusplus */
 
 // Native COM support. (C++ only!)
 #ifdef __cplusplus

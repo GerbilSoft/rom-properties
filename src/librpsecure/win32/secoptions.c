@@ -39,9 +39,12 @@ typedef NTSTATUS (WINAPI *PFNNTSETINFORMATIONPROCESS)(
 #ifndef MEM_EXECUTE_OPTION_PERMANENT
 # define MEM_EXECUTE_OPTION_PERMANENT 8
 #endif
-enum PROCESS_INFORMATION_CLASS {
-	ProcessExecuteFlags = 0x22,
-};
+// NOTE: ProcessExecuteFlags might be defined in an enum in newer
+// versions of the Windows SDK and/or MinGW-w64. We'll use a macro
+// instead of an enum value.
+#ifndef ProcessExecuteFlags
+# define ProcessExecuteFlags 0x22
+#endif
 
 // DEP policy. (Vista SP1; later backported to XP SP3)
 typedef BOOL (WINAPI *PFNSETPROCESSDEPPOLICY)(_In_ DWORD dwFlags);

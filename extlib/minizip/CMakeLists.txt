@@ -172,6 +172,13 @@ if(HAVE_INTTYPES_H)
     list(APPEND STDLIB_DEF -DHAVE_INTTYPES_H)
 endif()
 
+# rom-properties: 32-bit MSVC gets messed up here due to /Gz.
+# TODO: Use check_symbol_exists() instead?
+if(MSVC)
+   set(OLD_CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS}")
+   set(CMAKE_REQUIRED_FLAGS "/Gd")
+endif(MSVC)
+
 # Check for large file support
 check_type_size(off64_t OFF64_T)
 if(HAVE_OFF64_T)
@@ -185,6 +192,12 @@ check_function_exists(fseeko HAVE_FSEEKO)
 if(NOT HAVE_FSEEKO)
     list(APPEND STDLIB_DEF -DNO_FSEEKO)
 endif()
+
+# rom-properties
+if(MSVC)
+   set(CMAKE_REQUIRED_FLAGS "${OLD_CMAKE_REQUIRED_FLAGS}")
+   unset(OLD_CMAKE_REQUIRED_FLAGS)
+endif(MSVC)
 
 # Enable compiler warnings
 if(MSVC)

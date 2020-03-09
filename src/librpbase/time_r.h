@@ -1,15 +1,15 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (rpcli)                            *
+ * ROM Properties Page shell extension. (librpbase)                        *
  * time_r.h: Workaround for missing reentrant time functions.              *
  *                                                                         *
- * Copyright (c) 2017 by David Korth.                                      *
+ * Copyright (c) 2017-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_RPCLI_TIME_R_H__
-#define __ROMPROPERTIES_RPCLI_TIME_R_H__
+#ifndef __ROMPROPERTIES_LIBRPBASE_TIME_R_H__
+#define __ROMPROPERTIES_LIBRPBASE_TIME_R_H__
 
-#include "config.rpcli.h"
+#include "config.librpbase.h"
 
 // _POSIX_C_SOURCE is required for *_r() on MinGW-w64.
 // However, this breaks snprintf() on FreeBSD when using clang/libc++,
@@ -56,4 +56,37 @@ static inline struct tm *localtime_r(const time_t *timep, struct tm *result)
 }
 #endif /* HAVE_LOCALTIME_R */
 
-#endif /* __ROMPROPERTIES_RPCLI_TIME_R_H__ */
+/** timegm() **/
+
+/**
+ * Linux, Mac OS X, and other Unix-like operating systems have a
+ * function timegm() that converts `struct tm` to `time_t`.
+ *
+ * MSVCRT's equivalent function is _mkgmtime(). Note that it might
+ * write to the original `struct tm`, so we'll need to make a copy.
+ *
+ * NOTE: timegm() is NOT part of *any* standard!
+ */
+#if !defined(HAVE_TIMEGM) && (defined(HAVE__MKGMTIME64) || defined(HAVE__MKGMTIME))
+static inline time_t timegm(struct tm *tm)
+{
+	struct tm my_tm;
+	my_tm = *tm;
+#if defined(HAVE__MKGMTIME64)
+# define USING_MSVCRT_MKGMTIME 1
+	return _mkgmtime64(&my_tm);
+#elif defined(HAVE__MKGMTIME)
+# define USING_MSVCRT_MKGMTIME 1
+	return _mkgmtime(&my_tm);
+#endif
+}
+#elif !defined(HAVE_TIMEGM)
+// timegm() or equivalent is not available.
+// Use the version in timegm.c.
+#ifdef __cplusplus
+extern "C"
+#endif /* __cplusplus */
+time_t timegm(const struct tm *t);
+#endif /* HAVE_TIMEGM */
+
+#endif /* __ROMPROPERTIES_LIBRPBASE_TIME_R_H__ */

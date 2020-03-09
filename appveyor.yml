@@ -22,13 +22,31 @@ only_commits:
     - extlib/**/*
     - src/**/*
 
-platform:
-  - x86
-  - x64
+environment:
+  matrix:
+    - platform: x86
+      configuration: Debug
+      compiler: msvc2013
 
-configuration:
-  - Debug
-  - Release
+    - platform: x86
+      configuration: Release
+      compiler: msvc2013
+
+    - platform: x64
+      configuration: Debug
+      compiler: msvc2013
+
+    - platform: x64
+      configuration: Release
+      compiler: msvc2013
+
+    - platform: x86
+      configuration: Debug
+      compiler: mingw-w64
+
+    - platform: x64
+      configuration: Debug
+      compiler: mingw-w64
 
 # Run CMake.
 before_build:
@@ -36,11 +54,11 @@ before_build:
   - appveyor.cmd
 
 build_script:
-  - cd %APPVEYOR_BUILD_FOLDER%
-  - msbuild ALL_BUILD.vcxproj
+  - cd %APPVEYOR_BUILD_FOLDER%\build
+  - cmake --build . --config %configuration%
 
 test_script:
-  - cd %APPVEYOR_BUILD_FOLDER%
-  - ctest -V -C %CONFIGURATION%
+  - cd %APPVEYOR_BUILD_FOLDER%\build
+  - ctest -V -C %configuration%
 
 # TODO: Automatic packaging?
