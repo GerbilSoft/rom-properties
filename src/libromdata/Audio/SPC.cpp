@@ -454,13 +454,13 @@ SPCPrivate::TagData SPCPrivate::parseTags(void)
 				}
 
 				// Get the integer value.
-				// TODO: Use le32_to_cpu()?
 				if (data[i] == SPC_xID6_ITEM_DUMP_DATE) {
 					// Convert from BCD to Unix time.
 					kv.insertTimestamp(static_cast<SPC_xID6_Item_e>(data[i]),
 						bcd_to_unix_time(&data[i+4], 4));
 				} else {
 					// Regular integer.
+					// TODO: Use le32_to_cpu()?
 					const unsigned int uival =  data[i+4] |
 								   (data[i+5] <<  8) |
 								   (data[i+6] << 16) |
@@ -840,8 +840,8 @@ int SPC::loadMetaData(void)
 	auto kv = d->parseTags();
 	if (kv.empty()) {
 		// No tags.
-		// TODO: Return 0 instead of -EIO?
-		return -EIO;
+		// TODO: Return 0 instead of -ENOENT?
+		return -ENOENT;
 	}
 
 	// Create the metadata object.

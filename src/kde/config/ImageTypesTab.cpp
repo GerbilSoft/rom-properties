@@ -332,10 +332,6 @@ void ImageTypesTabPrivate::cboImageType_setPriorityValue(unsigned int cbid, unsi
 	}
 }
 
-/** Other ImageTypesTabPrivate functions. **/
-
-// TODO
-
 /** ImageTypesTab **/
 
 ImageTypesTab::ImageTypesTab(QWidget *parent)

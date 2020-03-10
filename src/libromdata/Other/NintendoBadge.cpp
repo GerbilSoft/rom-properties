@@ -116,7 +116,6 @@ NintendoBadgePrivate::NintendoBadgePrivate(NintendoBadge *q, IRpFile *file)
 	memset(&badgeHeader, 0, sizeof(badgeHeader));
 
 	// Clear the decoded images.
-	// FIXME: This may be slower than memset()...
 	img.fill(nullptr);
 }
 

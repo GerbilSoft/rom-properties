@@ -427,7 +427,7 @@ const rp_image *GameCubeSavePrivate::loadIcon(void)
 	// Set up the icon animation sequence.
 	// FIXME: This isn't done correctly if blank frames are present
 	// and the icon uses the "bounce" animation.
-	// 'rpcli -a' fails at a result.
+	// 'rpcli -a' fails as a result.
 	int idx = 0;
 	for (int i = 0; i < iconAnimData->count; i++, idx++) {
 		iconAnimData->seq_index[idx] = i;

@@ -588,7 +588,6 @@ static void InitDialog(HWND hDlg)
 	MapWindowPoints(HWND_DESKTOP, hDlg, (LPPOINT)&rectStatus1_noIcon, 2);
 
 	// Adjust the left boundary for the icon.
-	// FIXME: Assuming 16x16 icons. May need larger for HiDPI.
 	rectStatus1_icon = rectStatus1_noIcon;
 	rectStatus1_icon.left += szIcon.cx + (szIcon.cx / 5);
 

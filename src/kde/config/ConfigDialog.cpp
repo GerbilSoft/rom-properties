@@ -156,7 +156,8 @@ ConfigDialog::ConfigDialog(QWidget *parent)
 	d->btnReset->setEnabled(false);
 
 	// Connect the modification signals.
-	// FIXME: Should be doable in Qt Designer...
+	// NOTE: Qt Designer doesn't want to let us connect
+	// signals from the QTabWidget child widgets.
 	connect(d->ui.tabImageTypes, SIGNAL(modified()), this, SLOT(tabModified()));
 	connect(d->ui.tabOptions, SIGNAL(modified()), this, SLOT(tabModified()));
 #ifdef ENABLE_DECRYPTION

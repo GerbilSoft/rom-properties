@@ -283,7 +283,7 @@ QVariant KeyStoreModel::data(const QModelIndex& index, int role) const
 
 		case Qt::DecorationRole:
 			// Images must use Qt::DecorationRole.
-			// FIXME: Add a QStyledItemDelegate to center-align the icon.
+			// TODO: Add a QStyledItemDelegate to center-align the icon.
 			switch (index.column()) {
 				case COL_ISVALID:
 					switch (key->status) {

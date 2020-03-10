@@ -375,7 +375,7 @@ void DMGPrivate::getTitleAndGameID(string &s_title, string &s_gameID) const
 			s_gameID[5] = romHeader.new_publisher_code[1];
 		} else {
 			// Old publisher code.
-			// FIXME: This probably won't ever happen,
+			// NOTE: This probably won't ever happen,
 			// since Game ID was added *after* CGB.
 			static const char hex_lookup[16] = {
 				'0','1','2','3','4','5','6','7',

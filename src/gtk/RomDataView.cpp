@@ -1494,6 +1494,7 @@ rom_data_view_update_display(RomDataView *page)
 
 	// Get the fields.
 	const RomFields *const pFields = page->romData->fields();
+	assert(pFields != nullptr);
 	if (!pFields) {
 		// No fields.
 		// TODO: Show an error?

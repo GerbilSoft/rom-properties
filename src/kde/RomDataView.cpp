@@ -1050,6 +1050,7 @@ void RomDataViewPrivate::initDisplayWidgets(void)
 
 	// Get the fields.
 	const RomFields *const pFields = romData->fields();
+	assert(pFields != nullptr);
 	if (!pFields) {
 		// No fields.
 		// TODO: Show an error?

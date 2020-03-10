@@ -351,7 +351,7 @@ SegaSaturn::SegaSaturn(IRpFile *file)
 			break;
 		case SegaSaturnPrivate::DISC_ISO_2352:
 			// 2352-byte sectors.
-			// FIXME: Assuming Mode 1.
+			// Assuming Mode 1. (TODO: Check for Mode 2.)
 			memcpy(&d->discHeader, &sector.m1.data, sizeof(d->discHeader));
 			break;
 		default:

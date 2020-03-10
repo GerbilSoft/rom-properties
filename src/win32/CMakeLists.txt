@@ -141,7 +141,6 @@ ADD_SUBDIRECTORY(config)
 INCLUDE(../libwin32common/DelayLoadHelper.cmake)
 SET_DELAYLOAD_EXTLIB_FLAGS()
 
-# FIXME: Build both Win32 and Win64 DLLs?
 # NOTE: MODULE results in the .dll being placed in
 # the 'lib' directory. Use SHARED instead.
 # TODO: Disable building of import libraries.
