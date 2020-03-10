@@ -54,9 +54,8 @@ What it doesn't do.
 
 TinyXML-2 doesn't parse or use DTDs (Document Type Definitions) or XSLs
 (eXtensible Stylesheet Language.) There are other parsers out there
-that are much more fully featured. But they are also much bigger,
-take longer to set up in your project, have a higher learning curve,
-and often have a more restrictive license. If you are working with
+that are much more fully featured. But they are generally bigger and
+more difficult to use. If you are working with
 browsers or have more complete XML needs, TinyXML-2 is not the parser for you.
 
 TinyXML-1 vs. TinyXML-2
@@ -263,10 +262,23 @@ There are 2 files in TinyXML-2:
 And additionally a test file:
 * xmltest.cpp
 
-Simply compile and run. There is a visual studio 2017 project included, a simple Makefile,
+Simply compile and run. There is a visual studio 2019 project included, a simple Makefile,
 an Xcode project, a Code::Blocks project, and a cmake CMakeLists.txt included to help you.
-The top of tinyxml.h even has a simple g++ command line if you are are Unix/Linuk/BSD and
+The top of tinyxml.h even has a simple g++ command line if you are using Unix/Linux/BSD and
 don't want to use a build system.
+
+Building TinyXML-2 - Using vcpkg
+--------------------------------
+
+You can download and install TinyXML-2 using the [vcpkg](https://github.com/Microsoft/vcpkg) dependency manager:
+
+    git clone https://github.com/Microsoft/vcpkg.git
+    cd vcpkg
+    ./bootstrap-vcpkg.sh
+    ./vcpkg integrate install
+    ./vcpkg install tinyxml2
+
+The TinyXML-2 port in vcpkg is kept up to date by Microsoft team members and community contributors. If the version is out of date, please [create an issue or pull request](https://github.com/Microsoft/vcpkg) on the vcpkg repository.
 
 Versioning
 ----------
@@ -279,7 +291,7 @@ common.
 Documentation
 -------------
 
-The documentation is build with Doxygen, using the 'dox'
+The documentation is built with Doxygen, using the 'dox'
 configuration file.
 
 License

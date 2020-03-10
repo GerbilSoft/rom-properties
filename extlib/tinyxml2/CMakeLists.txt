@@ -34,8 +34,8 @@ ENDIF(0) # rom-properties
 ################################
 # set lib version here
 
-set(GENERIC_LIB_VERSION "7.1.0")
-set(GENERIC_LIB_SOVERSION "7")
+set(GENERIC_LIB_VERSION "8.0.0")
+set(GENERIC_LIB_SOVERSION "8")
 
 ################################
 # Add definitions
