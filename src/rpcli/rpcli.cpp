@@ -104,7 +104,7 @@ static void ExtractImages(const RomData *romData, vector<ExtractParam>& extract)
 		if (!it->filename) continue;
 		bool found = false;
 		
-		if (it->image_type >= 0 && supported & (1 << it->image_type)) {
+		if (it->image_type >= 0 && supported & (1U << it->image_type)) {
 			// normal image
 			auto image = romData->image((RomData::ImageType)it->image_type);
 			if (image && image->isValid()) {

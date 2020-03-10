@@ -307,12 +307,12 @@ static inline uint32_t clamp_ColorRGB(const ColorRGB &color)
 // ETC decoding mode.
 enum ETC_Decoding_Mode {
 	// Bit 0: ETC1 vs. ETC2
-	ETC_DM_ETC1 = (0 << 0),	// ETC1
-	ETC_DM_ETC2 = (1 << 0),	// ETC2
-	ETC_DM_MASK12 = (1 << 0),
+	ETC_DM_ETC1	= (0U << 0),	// ETC1
+	ETC_DM_ETC2	= (1U << 0),	// ETC2
+	ETC_DM_MASK12	= (1U << 0),
 
 	// Bit 1: ETC2 punchthrough alpha
-	ETC2_DM_A1 = (1 << 1),
+	ETC2_DM_A1	= (1U << 1),
 };
 
 /**

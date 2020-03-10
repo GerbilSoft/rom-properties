@@ -213,10 +213,10 @@ typedef enum {
  * NOTE: This is a bitfield.
  */
 typedef enum {
-	VGM_FLAG_SN76489_FREQ0_0x400	= (1 << 0),	// Frequency 0 is 0x400
-	VGM_FLAG_SN76489_OUTPUT_NEGATE	= (1 << 1),	// Negate output
-	VGM_FLAG_SN76489_STEREO		= (1 << 2),	// Stereo enable (0 == enabled)
-	VGM_FLAG_SN76489_CLOCK_DIV8	= (1 << 3),	// /8 Clock Divider (0 == enabled)
+	VGM_FLAG_SN76489_FREQ0_0x400	= (1U << 0),	// Frequency 0 is 0x400
+	VGM_FLAG_SN76489_OUTPUT_NEGATE	= (1U << 1),	// Negate output
+	VGM_FLAG_SN76489_STEREO		= (1U << 2),	// Stereo enable (0 == enabled)
+	VGM_FLAG_SN76489_CLOCK_DIV8	= (1U << 3),	// /8 Clock Divider (0 == enabled)
 } VGM_Flags_SN76489_e;
 
 /**
@@ -239,10 +239,10 @@ typedef enum {
  * NOTE: This is a bitfield.
  */
 typedef enum {
-	VGM_AY8910_FLAG_LEGACY_OUTPUT	= (1 << 0),
-	VGM_AY8910_FLAG_SINGLE_OUTPUT	= (1 << 1),
-	VGM_AY8910_FLAG_DISCRETE_OUTPUT	= (1 << 2),
-	VGM_AY8910_FLAG_RAW_OUTPUT	= (1 << 3),
+	VGM_AY8910_FLAG_LEGACY_OUTPUT	= (1U << 0),
+	VGM_AY8910_FLAG_SINGLE_OUTPUT	= (1U << 1),
+	VGM_AY8910_FLAG_DISCRETE_OUTPUT	= (1U << 2),
+	VGM_AY8910_FLAG_RAW_OUTPUT	= (1U << 3),
 } VGM_AY8910_Flags_e;
 
 /**
@@ -256,8 +256,8 @@ typedef enum {
 	VGM_OKIM6258_FLAG_CLKDIV_768	= 1,
 	VGM_OKIM6258_FLAG_CLKDIV_512	= 2,	// also 3
 
-	VGM_OKIM6258_FLAG_ADPCM_BITS	= (1 << 2),	// 0 == 4-bit ADPCM; 1 == 3-bit ADPCM
-	VGM_OKIM6258_FLAG_10_12_BIT	= (1 << 3),	// 0 == 10-bit output; 1 == 12-bit output
+	VGM_OKIM6258_FLAG_ADPCM_BITS	= (1U << 2),	// 0 == 4-bit ADPCM; 1 == 3-bit ADPCM
+	VGM_OKIM6258_FLAG_10_12_BIT	= (1U << 3),	// 0 == 10-bit output; 1 == 12-bit output
 } VGM_OKIM6258_Flags_e;
 
 /**
@@ -266,9 +266,9 @@ typedef enum {
  * NOTE: This is a bitfield.
  */
 typedef enum {
-	VGM_K054539_FLAG_REVERSE_STEREO		= (1 << 0),	// Reverse stereo. (1=ON; 0=OFF)
-	VGM_K054539_FLAG_DISABLE_REVERB		= (1 << 1),	// Disable reverb.
-	VGM_K054539_FLAG_UPDATE_AT_KEY_ON	= (1 << 2),	// Update at KeyOn.
+	VGM_K054539_FLAG_REVERSE_STEREO		= (1U << 0),	// Reverse stereo. (1=ON; 0=OFF)
+	VGM_K054539_FLAG_DISABLE_REVERB		= (1U << 1),	// Disable reverb.
+	VGM_K054539_FLAG_UPDATE_AT_KEY_ON	= (1U << 2),	// Update at KeyOn.
 } VGM_K054539_Flags_e;
 
 /**

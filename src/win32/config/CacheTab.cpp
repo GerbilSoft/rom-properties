@@ -385,7 +385,7 @@ int CacheTabPrivate::clearThumbnailCacheVista(void)
 	TCHAR szDrivePath[4] = _T("X:\\");
 	unsigned int driveCount = 0;
 	for (unsigned int bit = 0; bit < 26; bit++) {
-		const uint32_t mask = (1 << bit);
+		const uint32_t mask = (1U << bit);
 		if (!(driveLetters & mask))
 			continue;
 		szDrivePath[0] = _T('A') + bit;
@@ -477,7 +477,7 @@ int CacheTabPrivate::clearThumbnailCacheVista(void)
 	pCallback->m_baseProgress = 0;
 	unsigned int clearCount = 0;	// Number of drives actually cleared. (S_OK)
 	for (unsigned int bit = 0; bit < 26; bit++) {
-		const uint32_t mask = (1 << bit);
+		const uint32_t mask = (1U << bit);
 		if (!(driveLetters & mask))
 			continue;
 

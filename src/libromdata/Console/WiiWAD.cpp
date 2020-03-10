@@ -863,7 +863,7 @@ int WiiWAD::loadFieldData(void)
 		static const uint16_t valid_ratings = 0x3FB;
 
 		for (int i = static_cast<int>(age_ratings.size())-1; i >= 0; i--) {
-			if (!(valid_ratings & (1 << i))) {
+			if (!(valid_ratings & (1U << i))) {
 				// Rating is not applicable for GCN.
 				age_ratings[i] = 0;
 				continue;

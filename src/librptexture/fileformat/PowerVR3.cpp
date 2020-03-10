@@ -68,8 +68,8 @@ class PowerVR3Private : public FileFormatPrivate
 		uint8_t isFlipNeeded;
 		enum FlipBits : uint8_t {
 			FLIP_NONE	= 0,
-			FLIP_V		= (1 << 0),
-			FLIP_H		= (1 << 1),
+			FLIP_V		= (1U << 0),
+			FLIP_H		= (1U << 1),
 			FLIP_HV		= FLIP_H | FLIP_V,
 		};
 

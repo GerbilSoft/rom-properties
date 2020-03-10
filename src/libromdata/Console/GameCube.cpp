@@ -73,16 +73,16 @@ class GameCubePrivate : public RomDataPrivate
 			DISC_SYSTEM_MASK = 0xFF,
 
 			// High byte: Image format.
-			DISC_FORMAT_RAW   = (0 << 8),		// Raw image (ISO, GCM)
-			DISC_FORMAT_SDK   = (1 << 8),		// Raw image with SDK header
-			DISC_FORMAT_TGC   = (2 << 8),		// TGC (embedded disc image) (GCN only?)
-			DISC_FORMAT_WBFS  = (3 << 8),		// WBFS image (Wii only)
-			DISC_FORMAT_CISO  = (4 << 8),		// CISO image
-			DISC_FORMAT_WIA   = (5 << 8),		// WIA image (Header only!)
-			DISC_FORMAT_NASOS = (6 << 8),		// NASOS image
-			DISC_FORMAT_PARTITION = (7 << 8),	// Standalone Wii partition
-			DISC_FORMAT_UNKNOWN = (0xFF << 8),
-			DISC_FORMAT_MASK = (0xFF << 8),
+			DISC_FORMAT_RAW   = (0U << 8),		// Raw image (ISO, GCM)
+			DISC_FORMAT_SDK   = (1U << 8),		// Raw image with SDK header
+			DISC_FORMAT_TGC   = (2U << 8),		// TGC (embedded disc image) (GCN only?)
+			DISC_FORMAT_WBFS  = (3U << 8),		// WBFS image (Wii only)
+			DISC_FORMAT_CISO  = (4U << 8),		// CISO image
+			DISC_FORMAT_WIA   = (5U << 8),		// WIA image (Header only!)
+			DISC_FORMAT_NASOS = (6U << 8),		// NASOS image
+			DISC_FORMAT_PARTITION = (7U << 8),	// Standalone Wii partition
+			DISC_FORMAT_UNKNOWN = (0xFFU << 8),
+			DISC_FORMAT_MASK = (0xFFU << 8),
 		};
 
 		// Disc type and reader.
@@ -1065,7 +1065,7 @@ int GameCube::isRomSupported_static(const DetectInfo *info)
 	// Check for WBFS.
 	if (WbfsReader::isDiscSupported_static(info->header.pData, info->header.size) >= 0) {
 		// Disc image is stored in "HDD" sector 1.
-		unsigned int hdd_sector_size = (1 << info->header.pData[8]);
+		unsigned int hdd_sector_size = (1U << info->header.pData[8]);
 		if (info->header.size >= hdd_sector_size + 0x200) {
 			// Check for magic numbers.
 			gcn_header = reinterpret_cast<const GCN_DiscHeader*>(&info->header.pData[hdd_sector_size]);
@@ -1514,7 +1514,7 @@ int GameCube::loadFieldData(void)
 		static const uint16_t valid_ratings = 0x3FB;
 
 		for (int i = static_cast<int>(age_ratings.size())-1; i >= 0; i--) {
-			if (!(valid_ratings & (1 << i))) {
+			if (!(valid_ratings & (1U << i))) {
 				// Rating is not applicable for GameCube.
 				age_ratings[i] = 0;
 				continue;

@@ -334,11 +334,11 @@ int ConfigPrivate::processConfigLine(const char *section, const char *name, cons
 			}
 
 			// Check for duplicates.
-			if (imgbf & (1 << imgType)) {
+			if (imgbf & (1U << imgType)) {
 				// Duplicate image type!
 				continue;
 			}
-			imgbf |= (1 << imgType);
+			imgbf |= (1U << imgType);
 
 			// Add the image type.
 			// Maximum of 32 due to imgbf width.

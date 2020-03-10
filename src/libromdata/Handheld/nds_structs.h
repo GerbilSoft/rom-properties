@@ -207,51 +207,51 @@ ASSERT_STRUCT(NDS_RomHeader, 4096);
  * Nintendo DSi region code.
  */
 typedef enum {
-	DSi_REGION_JAPAN	= (1 << 0),
-	DSi_REGION_USA		= (1 << 1),
-	DSi_REGION_EUROPE	= (1 << 2),
-	DSi_REGION_AUSTRALIA	= (1 << 3),
-	DSi_REGION_CHINA	= (1 << 4),
-	DSi_REGION_SKOREA	= (1 << 5),
+	DSi_REGION_JAPAN	= (1U << 0),
+	DSi_REGION_USA		= (1U << 1),
+	DSi_REGION_EUROPE	= (1U << 2),
+	DSi_REGION_AUSTRALIA	= (1U << 3),
+	DSi_REGION_CHINA	= (1U << 4),
+	DSi_REGION_SKOREA	= (1U << 5),
 } DSi_Region;
 
 /**
  * Nintendo DSi access control. (0x1B4)
  */
 typedef enum {
-	DSi_ACCESS_COMMON_KEY			= (1 <<  0),
-	DSi_ACCESS_AES_SLOT_B			= (1 <<  1),
-	DSi_ACCESS_AES_SLOT_C			= (1 <<  2),
-	DSi_ACCESS_SD_CARD			= (1 <<  3),
-	DSi_ACCESS_eMMC_ACCESS			= (1 <<  4),
-	DSi_ACCESS_GAME_CARD_POWER_ON		= (1 <<  5),
-	DSi_ACCESS_SHARED2_FILE			= (1 <<  6),
-	DSi_ACCESS_SIGN_JPEG_FOR_LAUNCHER	= (1 <<  7),
-	DSi_ACCESS_GAME_CARD_NTR_MODE		= (1 <<  8),
-	DSi_ACCESS_SSL_CLIENT_CERT		= (1 <<  9),
-	DSi_ACCESS_SIGN_JPEG_FOR_USER		= (1 << 10),
-	DSi_ACCESS_PHOTO_READ_ACCESS		= (1 << 11),
-	DSi_ACCESS_PHOTO_WRITE_ACCESS		= (1 << 12),
-	DSi_ACCESS_SD_CARD_READ_ACCESS		= (1 << 13),
-	DSi_ACCESS_SD_CARD_WRITE_ACCESS		= (1 << 14),
-	DSi_ACCESS_GAME_CARD_SAVE_READ_ACCESS	= (1 << 15),
-	DSi_ACCESS_GAME_CARD_SAVE_WRITE_ACCESS	= (1 << 16),
+	DSi_ACCESS_COMMON_KEY			= (1U <<  0),
+	DSi_ACCESS_AES_SLOT_B			= (1U <<  1),
+	DSi_ACCESS_AES_SLOT_C			= (1U <<  2),
+	DSi_ACCESS_SD_CARD			= (1U <<  3),
+	DSi_ACCESS_eMMC_ACCESS			= (1U <<  4),
+	DSi_ACCESS_GAME_CARD_POWER_ON		= (1U <<  5),
+	DSi_ACCESS_SHARED2_FILE			= (1U <<  6),
+	DSi_ACCESS_SIGN_JPEG_FOR_LAUNCHER	= (1U <<  7),
+	DSi_ACCESS_GAME_CARD_NTR_MODE		= (1U <<  8),
+	DSi_ACCESS_SSL_CLIENT_CERT		= (1U <<  9),
+	DSi_ACCESS_SIGN_JPEG_FOR_USER		= (1U << 10),
+	DSi_ACCESS_PHOTO_READ_ACCESS		= (1U << 11),
+	DSi_ACCESS_PHOTO_WRITE_ACCESS		= (1U << 12),
+	DSi_ACCESS_SD_CARD_READ_ACCESS		= (1U << 13),
+	DSi_ACCESS_SD_CARD_WRITE_ACCESS		= (1U << 14),
+	DSi_ACCESS_GAME_CARD_SAVE_READ_ACCESS	= (1U << 15),
+	DSi_ACCESS_GAME_CARD_SAVE_WRITE_ACCESS	= (1U << 16),
 
-	DSi_ACCESS_DEBUG_KEY			= (1 << 31),
+	DSi_ACCESS_DEBUG_KEY			= (1U << 31),
 } DSi_Access;
 
 /**
  * Nintendo DSi Flags. (0x1BF)
  */
 typedef enum {
-	DSi_FLAGS_TOUCHSCREEN_MODE	= (1 << 0),	// 0 == NDS; 1 == DSi
-	DSi_FLAGS_REQUIRE_EULA		= (1 << 1),
-	DSi_FLAGS_CUSTOM_ICON		= (1 << 2),	// 0 == normal; 1 == banner.sav
-	DSi_FLAGS_NINTENDO_WFC		= (1 << 3),	// Show Nintendo WFC icon in launcher
-	DSi_FLAGS_DS_WIRELESS		= (1 << 4),	// Show DS Wireless icon in launcher
-	DSi_FLAGS_NDS_ICON_SHA1		= (1 << 5),	// NDS cart with icon SHA-1 (DSi FW v1.4+)
-	DSi_FLAGS_NDS_HEADER_RSA	= (1 << 6),	// NDS cart with header RSA (DSi FW v1.0+)
-	DSi_FLAGS_DEVELOPER		= (1 << 7),	// Developer application
+	DSi_FLAGS_TOUCHSCREEN_MODE	= (1U << 0),	// 0 == NDS; 1 == DSi
+	DSi_FLAGS_REQUIRE_EULA		= (1U << 1),
+	DSi_FLAGS_CUSTOM_ICON		= (1U << 2),	// 0 == normal; 1 == banner.sav
+	DSi_FLAGS_NINTENDO_WFC		= (1U << 3),	// Show Nintendo WFC icon in launcher
+	DSi_FLAGS_DS_WIRELESS		= (1U << 4),	// Show DS Wireless icon in launcher
+	DSi_FLAGS_NDS_ICON_SHA1		= (1U << 5),	// NDS cart with icon SHA-1 (DSi FW v1.4+)
+	DSi_FLAGS_NDS_HEADER_RSA	= (1U << 6),	// NDS cart with header RSA (DSi FW v1.0+)
+	DSi_FLAGS_DEVELOPER		= (1U << 7),	// Developer application
 } DSi_Flags;
 
 /**

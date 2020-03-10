@@ -163,8 +163,8 @@ ASSERT_STRUCT(RVL_TMD_Header, 0x1E4);
  * Access rights.
  */
 typedef enum {
-	RVL_ACCESS_RIGHTS_AHBPROT	= (1 << 0),
-	RVL_ACCESS_RIGHTS_DVD_VIDEO	= (1 << 1),
+	RVL_ACCESS_RIGHTS_AHBPROT	= (1U << 0),
+	RVL_ACCESS_RIGHTS_DVD_VIDEO	= (1U << 1),
 } RVL_Access_Rights_e;
 
 /**

@@ -44,20 +44,20 @@ class MegaDrivePrivate : public RomDataPrivate
 
 		// I/O support. (RFT_BITFIELD)
 		enum MD_IO_Support_Bitfield {
-			MD_IOBF_JOYPAD_3	= (1 << 0),	// 3-button joypad
-			MD_IOBF_JOYPAD_6	= (1 << 1),	// 6-button joypad
-			MD_IOBF_JOYPAD_SMS	= (1 << 2),	// 2-button joypad (SMS)
-			MD_IOBF_TEAM_PLAYER	= (1 << 3),	// Team Player
-			MD_IOBF_KEYBOARD	= (1 << 4),	// Keyboard
-			MD_IOBF_SERIAL		= (1 << 5),	// Serial (RS-232C)
-			MD_IOBF_PRINTER		= (1 << 6),	// Printer
-			MD_IOBF_TABLET		= (1 << 7),	// Tablet
-			MD_IOBF_TRACKBALL	= (1 << 8),	// Trackball
-			MD_IOBF_PADDLE		= (1 << 9),	// Paddle
-			MD_IOBF_FDD		= (1 << 10),	// Floppy Drive
-			MD_IOBF_CDROM		= (1 << 11),	// CD-ROM
-			MD_IOBF_ACTIVATOR	= (1 << 12),	// Activator
-			MD_IOBF_MEGA_MOUSE	= (1 << 13),	// Mega Mouse
+			MD_IOBF_JOYPAD_3	= (1U << 0),	// 3-button joypad
+			MD_IOBF_JOYPAD_6	= (1U << 1),	// 6-button joypad
+			MD_IOBF_JOYPAD_SMS	= (1U << 2),	// 2-button joypad (SMS)
+			MD_IOBF_TEAM_PLAYER	= (1U << 3),	// Team Player
+			MD_IOBF_KEYBOARD	= (1U << 4),	// Keyboard
+			MD_IOBF_SERIAL		= (1U << 5),	// Serial (RS-232C)
+			MD_IOBF_PRINTER		= (1U << 6),	// Printer
+			MD_IOBF_TABLET		= (1U << 7),	// Tablet
+			MD_IOBF_TRACKBALL	= (1U << 8),	// Trackball
+			MD_IOBF_PADDLE		= (1U << 9),	// Paddle
+			MD_IOBF_FDD		= (1U << 10),	// Floppy Drive
+			MD_IOBF_CDROM		= (1U << 11),	// CD-ROM
+			MD_IOBF_ACTIVATOR	= (1U << 12),	// Activator
+			MD_IOBF_MEGA_MOUSE	= (1U << 13),	// Mega Mouse
 		};
 
 		/** Internal ROM data. **/
@@ -86,13 +86,13 @@ class MegaDrivePrivate : public RomDataPrivate
 			ROM_SYSTEM_MASK = 0xFF,
 
 			// High byte: Image format.
-			ROM_FORMAT_CART_BIN = (0 << 8),		// Cartridge: Binary format.
-			ROM_FORMAT_CART_SMD = (1 << 8),		// Cartridge: SMD format.
-			ROM_FORMAT_DISC_2048 = (2 << 8),	// Disc: 2048-byte sectors. (ISO)
-			ROM_FORMAT_DISC_2352 = (3 << 8),	// Disc: 2352-byte sectors. (BIN)
+			ROM_FORMAT_CART_BIN = (0U << 8),		// Cartridge: Binary format.
+			ROM_FORMAT_CART_SMD = (1U << 8),		// Cartridge: SMD format.
+			ROM_FORMAT_DISC_2048 = (2U << 8),	// Disc: 2048-byte sectors. (ISO)
+			ROM_FORMAT_DISC_2352 = (3U << 8),	// Disc: 2352-byte sectors. (BIN)
 			ROM_FORMAT_MAX = ROM_FORMAT_DISC_2352,
-			ROM_FORMAT_UNKNOWN = (0xFF << 8),
-			ROM_FORMAT_MASK = (0xFF << 8),
+			ROM_FORMAT_UNKNOWN = (0xFFU << 8),
+			ROM_FORMAT_MASK = (0xFFU << 8),
 		};
 
 		// MIME type table.
@@ -783,7 +783,7 @@ const char *MegaDrive::systemName(unsigned int type) const
 	// - Bits 0-1: Type. (long, short, abbreviation)
 	// - Bits 2-4: System type.
 
-	static_assert(SYSNAME_REGION_MASK == (1 << 2),
+	static_assert(SYSNAME_REGION_MASK == (1U << 2),
 		"MegaDrive::systemName() region type optimization needs to be updated.");
 	const unsigned int idx = (type & SYSNAME_TYPE_MASK);
 	if ((type & SYSNAME_REGION_MASK) == SYSNAME_REGION_GENERIC) {

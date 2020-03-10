@@ -72,8 +72,8 @@ ASSERT_STRUCT(Wii_WIBN_Header_t, 160);
  * Wii save game flags.
  */
 typedef enum {
-	WII_WIBN_FLAG_NO_COPY		= (1 << 0),	// Cannot copy from NAND normally.
-	WII_WIBN_FLAG_ICON_BOUNCE	= (1 << 4),	// Icon animation "bounces" instead of looping.
+	WII_WIBN_FLAG_NO_COPY		= (1U << 0),	// Cannot copy from NAND normally.
+	WII_WIBN_FLAG_ICON_BOUNCE	= (1U << 4),	// Icon animation "bounces" instead of looping.
 } Wii_WIBN_Flags_e;
 
 // IMET magic number.

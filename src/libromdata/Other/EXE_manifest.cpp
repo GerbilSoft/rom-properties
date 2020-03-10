@@ -205,13 +205,13 @@ int EXEPrivate::addFields_PE_Manifest(void)
 	// Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/aa375635(v=vs.85).aspx
 	// TODO: Ordering.
 	typedef enum {
-		Setting_autoElevate				= (1 << 0),
-		Setting_disableTheming				= (1 << 1),
-		Setting_disableWindowFiltering			= (1 << 2),
-		Setting_highResolutionScrollingAware		= (1 << 3),
-		Setting_magicFutureSetting			= (1 << 4),
-		Setting_printerDriverIsolation			= (1 << 5),
-		Setting_ultraHighResolutionScrollingAware	= (1 << 6),
+		Setting_autoElevate				= (1U << 0),
+		Setting_disableTheming				= (1U << 1),
+		Setting_disableWindowFiltering			= (1U << 2),
+		Setting_highResolutionScrollingAware		= (1U << 3),
+		Setting_magicFutureSetting			= (1U << 4),
+		Setting_printerDriverIsolation			= (1U << 5),
+		Setting_ultraHighResolutionScrollingAware	= (1U << 6),
 	} WindowsSettings_t;
 
 	static const char *const WindowsSettings_names[] = {
@@ -271,15 +271,15 @@ int EXEPrivate::addFields_PE_Manifest(void)
 	// Operating system compatibility.
 	// Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/aa374191(v=vs.85).aspx
 	typedef enum {
-		OS_WinVista		= (1 << 0),
-		OS_Win7			= (1 << 1),
-		OS_Win8			= (1 << 2),
-		OS_Win81		= (1 << 3),
-		OS_Win10		= (1 << 4),
+		OS_WinVista		= (1U << 0),
+		OS_Win7			= (1U << 1),
+		OS_Win8			= (1U << 2),
+		OS_Win81		= (1U << 3),
+		OS_Win10		= (1U << 4),
 
 		// Not specifically OS-compatibility, but
 		// present in the same section.
-		OS_LongPathAware	= (1 << 5),
+		OS_LongPathAware	= (1U << 5),
 	} OS_Compatibility_t;
 
 	// NOTE: OS names aren't translatable, but "Long Path Aware" is.

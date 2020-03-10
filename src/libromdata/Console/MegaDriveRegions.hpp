@@ -25,10 +25,10 @@ class MegaDriveRegions
 		// Region code bitfields.
 		// This corresponds to the later hexadecimal region codes.
 		enum MD_RegionCode {
-			MD_REGION_JAPAN		= (1 << 0),
-			MD_REGION_ASIA		= (1 << 1),
-			MD_REGION_USA		= (1 << 2),
-			MD_REGION_EUROPE	= (1 << 3),
+			MD_REGION_JAPAN		= (1U << 0),
+			MD_REGION_ASIA		= (1U << 1),
+			MD_REGION_USA		= (1U << 2),
+			MD_REGION_EUROPE	= (1U << 3),
 		};
 
 		/**

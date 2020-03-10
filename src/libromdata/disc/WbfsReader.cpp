@@ -159,7 +159,7 @@ wbfs_t *WbfsReaderPrivate::readWbfsHeader(void)
 		free(p);
 		return nullptr;
 	}
-	p->hd_sec_sz = (1 << head->hd_sec_sz_s);
+	p->hd_sec_sz = (1U << head->hd_sec_sz_s);
 	p->hd_sec_sz_s = head->hd_sec_sz_s;
 	p->n_hd_sec = be32_to_cpu(head->n_hd_sec);	// TODO: Use file size?
 
@@ -197,7 +197,7 @@ wbfs_t *WbfsReaderPrivate::readWbfsHeader(void)
 
 	// WBFS sector size.
 	p->wbfs_sec_sz_s = head->wbfs_sec_sz_s;
-	p->wbfs_sec_sz = (1 << head->wbfs_sec_sz_s);
+	p->wbfs_sec_sz = (1U << head->wbfs_sec_sz_s);
 
 	// Disc size.
 	p->n_wbfs_sec = p->n_wii_sec >> (p->wbfs_sec_sz_s - p->wii_sec_sz_s);

@@ -86,12 +86,12 @@ ASSERT_STRUCT(INES_RomHeader, 16);
 typedef enum {
 	// Mirroring.
 	INES_F6_MIRROR_HORI = 0,
-	INES_F6_MIRROR_VERT = (1 << 0),
-	INES_F6_MIRROR_FOUR = (1 << 3),
+	INES_F6_MIRROR_VERT = (1U << 0),
+	INES_F6_MIRROR_FOUR = (1U << 3),
 
 	// Battery/trainer.
-	INES_F6_BATTERY = (1 << 1),
-	INES_F6_TRAINER = (1 << 2),
+	INES_F6_BATTERY = (1U << 1),
+	INES_F6_TRAINER = (1U << 2),
 
 	// Mapper low nybble.
 	INES_F6_MAPPER_MASK = 0xF0,
@@ -107,9 +107,9 @@ typedef enum {
 	INES_F7_SYSTEM_MASK	= 3,
 
 	// NES 2.0 identification.
-	INES_F7_NES2_MASK = (1 << 3) | (1 << 2),
+	INES_F7_NES2_MASK = (1U << 3) | (1U << 2),
 	INES_F7_NES2_INES_VAL = 0,
-	INES_F7_NES2_NES2_VAL = (1 << 3),
+	INES_F7_NES2_NES2_VAL = (1U << 3),
 
 	// Mapper high nybble.
 	INES_F7_MAPPER_MASK = 0xF0,

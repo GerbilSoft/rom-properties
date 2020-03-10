@@ -38,22 +38,22 @@ class RomDataFactory
 			RDA_NONE		= 0,
 
 			// RomData subclass has thumbnails.
-			RDA_HAS_THUMBNAIL	= (1 << 0),
+			RDA_HAS_THUMBNAIL	= (1U << 0),
 
 			// RomData subclass may have "dangerous" permissions.
-			RDA_HAS_DPOVERLAY	= (1 << 1),
+			RDA_HAS_DPOVERLAY	= (1U << 1),
 
 			// RomData subclass has metadata.
-			RDA_HAS_METADATA	= (1 << 2),
+			RDA_HAS_METADATA	= (1U << 2),
 
 			// RomData subclass may be present on devices.
 			// If not set, this subclass will be skipped if
 			// checking a device node.
-			RDA_SUPPORTS_DEVICES	= (1 << 3),
+			RDA_SUPPORTS_DEVICES	= (1U << 3),
 
 			// Check for game-specific disc file systems.
 			// (For internal RomDataFactory use only.)
-			RDA_CHECK_ISO		= (1 << 8),
+			RDA_CHECK_ISO		= (1U << 8),
 		};
 
 		/**

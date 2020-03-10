@@ -68,11 +68,11 @@ class RomFields
 		// String format flags. (RFT_STRING)
 		enum StringFormat : unsigned int {
 			// Print the string using a monospaced font.
-			STRF_MONOSPACE	= (1 << 0),
+			STRF_MONOSPACE	= (1U << 0),
 
 			// Print the string using a "warning" font.
 			// (usually bold and red)
-			STRF_WARNING	= (1 << 1),
+			STRF_WARNING	= (1U << 1),
 
 			// "Credits" field.
 			// Used for providing credits for an external database.
@@ -81,48 +81,48 @@ class RomFields
 			// always shown at the bottom of the dialog and with
 			// center-aligned text.
 			// NOTE: Maximum of one STRF_CREDITS per RomData subclass.
-			STRF_CREDITS	= (1 << 2),
+			STRF_CREDITS	= (1U << 2),
 
 			// Trim spaces from the end of strings.
-			STRF_TRIM_END	= (1 << 3),
+			STRF_TRIM_END	= (1U << 3),
 
 			// Numeric formatting: Use lowercase letters for hexadecimal.
-			STRF_HEX_LOWER	= (1 << 4),
+			STRF_HEX_LOWER	= (1U << 4),
 
 			// Hexdump: No spaces.
-			STRF_HEXDUMP_NO_SPACES	= (1 << 5),
+			STRF_HEXDUMP_NO_SPACES	= (1U << 5),
 		};
 
 		// Display flags for RFT_LISTDATA.
 		enum ListDataFlags : unsigned int {
 			// Show the ListView on a separate row
 			// from the description label.
-			RFT_LISTDATA_SEPARATE_ROW = (1 << 0),
+			RFT_LISTDATA_SEPARATE_ROW = (1U << 0),
 
 			// Enable checkboxes.
 			// NOTE: Mutually exclusive with icons.
-			RFT_LISTDATA_CHECKBOXES = (1 << 1),
+			RFT_LISTDATA_CHECKBOXES = (1U << 1),
 
 			// Enable icons.
 			// NOTE: Mutually exclusive with checkboxes.
-			RFT_LISTDATA_ICONS	= (1 << 2),
+			RFT_LISTDATA_ICONS	= (1U << 2),
 
 			// String data is multi-lingual.
 			// NOTE: This changes the structure of the
 			// data field!
-			RFT_LISTDATA_MULTI	= (1 << 3),
+			RFT_LISTDATA_MULTI	= (1U << 3),
 		};
 
 		// Display flags for RFT_DATETIME.
 		enum DateTimeFlags : unsigned int {
 			// Show the date value.
-			RFT_DATETIME_HAS_DATE = (1 << 0),
+			RFT_DATETIME_HAS_DATE = (1U << 0),
 
 			// Show the time value.
-			RFT_DATETIME_HAS_TIME = (1 << 1),
+			RFT_DATETIME_HAS_TIME = (1U << 1),
 
 			// Date does not have a valid year value.
-			RFT_DATETIME_NO_YEAR = (1 << 2),
+			RFT_DATETIME_NO_YEAR = (1U << 2),
 
 			// Mask for date/time display values.
 			RFT_DATETIME_HAS_DATETIME_MASK = RFT_DATETIME_HAS_DATE | RFT_DATETIME_HAS_TIME,
@@ -131,7 +131,7 @@ class RomFields
 			// Show the timestamp as UTC instead of the local timezone.
 			// This is useful for timestamps that aren't actually
 			// adjusted for the local timezone.
-			RFT_DATETIME_IS_UTC = (1 << 3),
+			RFT_DATETIME_IS_UTC = (1U << 3),
 		};
 
 		// Age Ratings indexes.

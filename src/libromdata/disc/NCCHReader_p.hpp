@@ -62,9 +62,9 @@ class NCCHReaderPrivate
 		// Loaded headers.
 		enum HeadersPresent {
 			HEADER_NONE	= 0,
-			HEADER_NCCH	= (1 << 0),
-			HEADER_EXHEADER	= (1 << 1),
-			HEADER_EXEFS	= (1 << 2),
+			HEADER_NCCH	= (1U << 0),
+			HEADER_EXHEADER	= (1U << 1),
+			HEADER_EXEFS	= (1U << 2),
 		};
 		uint32_t headers_loaded;	// HeadersPresent
 

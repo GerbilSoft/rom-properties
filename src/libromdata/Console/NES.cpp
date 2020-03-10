@@ -51,15 +51,15 @@ class NESPrivate : public RomDataPrivate
 			ROM_FORMAT_UNKNOWN = 0xFF,
 			ROM_FORMAT_MASK = 0xFF,
 
-			ROM_SYSTEM_NES = (0 << 8),	// NES / Famicom
-			ROM_SYSTEM_FDS = (1 << 8),	// Famicom Disk System
-			ROM_SYSTEM_VS = (2 << 8),	// VS. System
-			ROM_SYSTEM_PC10 = (3 << 8),	// PlayChoice-10
-			ROM_SYSTEM_UNKNOWN = (0xFF << 8),
-			ROM_SYSTEM_MASK = (0xFF << 8),
+			ROM_SYSTEM_NES = (0U << 8),	// NES / Famicom
+			ROM_SYSTEM_FDS = (1U << 8),	// Famicom Disk System
+			ROM_SYSTEM_VS = (2U << 8),	// VS. System
+			ROM_SYSTEM_PC10 = (3U << 8),	// PlayChoice-10
+			ROM_SYSTEM_UNKNOWN = (0xFFU << 8),
+			ROM_SYSTEM_MASK = (0xFFU << 8),
 
 			// Special flags. (bitfield)
-			ROM_SPECIAL_WIIU_VC = (1 << 16),	// Wii U VC (modified iNES)
+			ROM_SPECIAL_WIIU_VC = (1U << 16),	// Wii U VC (modified iNES)
 			// TODO: Other VC formats, maybe UNIF?
 		};
 		int romType;

@@ -44,29 +44,29 @@ class SegaSaturnPrivate : public RomDataPrivate
 
 		// Peripherals. (RFT_BITFIELD)
 		enum Saturn_Peripherals_Bitfield {
-			SATURN_IOBF_CONTROL_PAD		= (1 << 0),	// Standard control pad
-			SATURN_IOBF_ANALOG_CONTROLLER	= (1 << 1),	// Analog controller
-			SATURN_IOBF_MOUSE		= (1 << 2),	// Mouse
-			SATURN_IOBF_KEYBOARD		= (1 << 3),	// Keyboard
-			SATURN_IOBF_STEERING		= (1 << 4),	// Steering controller
-			SATURN_IOBF_MULTITAP		= (1 << 5),	// Multi-Tap
-			SATURN_IOBF_LIGHT_GUN		= (1 << 6),	// Light Gun
-			SATURN_IOBF_RAM_CARTRIDGE	= (1 << 7),	// RAM Cartridge
-			SATURN_IOBF_3D_CONTROLLER	= (1 << 8),	// 3D Controller
-			SATURN_IOBF_LINK_CABLE		= (1 << 9),	// Link Cable
-			SATURN_IOBF_NETLINK		= (1 << 10),	// NetLink
-			SATURN_IOBF_PACHINKO		= (1 << 11),	// Pachinko Controller
-			SATURN_IOBF_FDD			= (1 << 12),	// Floppy Disk Drive
-			SATURN_IOBF_ROM_CARTRIDGE	= (1 << 13),	// ROM Cartridge
-			SATURN_IOBF_MPEG_CARD		= (1 << 14),	// MPEG Card
+			SATURN_IOBF_CONTROL_PAD		= (1U <<  0),	// Standard control pad
+			SATURN_IOBF_ANALOG_CONTROLLER	= (1U <<  1),	// Analog controller
+			SATURN_IOBF_MOUSE		= (1U <<  2),	// Mouse
+			SATURN_IOBF_KEYBOARD		= (1U <<  3),	// Keyboard
+			SATURN_IOBF_STEERING		= (1U <<  4),	// Steering controller
+			SATURN_IOBF_MULTITAP		= (1U <<  5),	// Multi-Tap
+			SATURN_IOBF_LIGHT_GUN		= (1U <<  6),	// Light Gun
+			SATURN_IOBF_RAM_CARTRIDGE	= (1U <<  7),	// RAM Cartridge
+			SATURN_IOBF_3D_CONTROLLER	= (1U <<  8),	// 3D Controller
+			SATURN_IOBF_LINK_CABLE		= (1U <<  9),	// Link Cable
+			SATURN_IOBF_NETLINK		= (1U << 10),	// NetLink
+			SATURN_IOBF_PACHINKO		= (1U << 11),	// Pachinko Controller
+			SATURN_IOBF_FDD			= (1U << 12),	// Floppy Disk Drive
+			SATURN_IOBF_ROM_CARTRIDGE	= (1U << 13),	// ROM Cartridge
+			SATURN_IOBF_MPEG_CARD		= (1U << 14),	// MPEG Card
 		};
 
 		// Region code.
 		enum SaturnRegion {
-			SATURN_REGION_JAPAN	= (1 << 0),
-			SATURN_REGION_TAIWAN	= (1 << 1),
-			SATURN_REGION_USA	= (1 << 2),
-			SATURN_REGION_EUROPE	= (1 << 3),
+			SATURN_REGION_JAPAN	= (1U << 0),
+			SATURN_REGION_TAIWAN	= (1U << 1),
+			SATURN_REGION_USA	= (1U << 2),
+			SATURN_REGION_EUROPE	= (1U << 3),
 		};
 
 		/** Internal ROM data. **/

@@ -630,8 +630,8 @@ int SAP::loadFieldData(void)
 		"SAP|Flags", flags_names, ARRAY_SIZE(flags_names));
 	// TODO: Use a bitfield in tags?
 	uint32_t flags = 0;
-	if (tags.ntsc)   flags |= (1 << 0);
-	if (tags.stereo) flags |= (1 << 1);
+	if (tags.ntsc)   flags |= (1U << 0);
+	if (tags.stereo) flags |= (1U << 1);
 	d->fields->addField_bitfield(C_("SAP", "Flags"),
 		v_flags_names, 0, flags);
 

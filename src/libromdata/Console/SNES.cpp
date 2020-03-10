@@ -557,11 +557,11 @@ const char *SNES::systemName(unsigned int type) const
 		bool foundRegion = false;
 		switch (d->romHeader.snes.destination_code) {
 			case SNES_DEST_JAPAN:
-				idx |= (0 << 2);
+				idx |= (0U << 2);
 				foundRegion = true;
 				break;
 			case SNES_DEST_SOUTH_KOREA:
-				idx |= (1 << 2);
+				idx |= (1U << 2);
 				foundRegion = true;
 				break;
 
@@ -584,13 +584,13 @@ const char *SNES::systemName(unsigned int type) const
 			// Check the system locale.
 			switch (SystemRegion::getCountryCode()) {
 				case 'JP':
-					idx |= (0 << 2);
+					idx |= (0U << 2);
 					break;
 				case 'KR':
-					idx |= (1 << 2);
+					idx |= (1U << 2);
 					break;
 				default:
-					idx |= (2 << 2);
+					idx |= (2U << 2);
 					break;
 			}
 		}

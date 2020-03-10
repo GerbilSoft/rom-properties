@@ -100,16 +100,16 @@ ASSERT_STRUCT(iQuePlayer_BbContentMetaDataHead, 0x1AC);
  * Hardware access rights.
  */
 typedef enum {
-	IQUE_PLAYER_HW_PI_BUFFER		= (1 << 0),
-	IQUE_PLAYER_HW_NAND_FLASH		= (1 << 1),
-	IQUE_PLAYER_HW_MEMORY_MAPPER	= (1 << 2),
-	IQUE_PLAYER_HW_AES_ENGINE		= (1 << 3),
-	IQUE_PLAYER_HW_NEW_PI_DMA		= (1 << 4),
-	IQUE_PLAYER_HW_GPIO			= (1 << 5),
-	IQUE_PLAYER_HW_EXT_IO		= (1 << 6),
-	IQUE_PLAYER_HW_NEW_PI_ERR		= (1 << 7),
-	IQUE_PLAYER_HW_USB			= (1 << 8),
-	IQUE_PLAYER_HW_SK_RAM		= (1 << 9),
+	IQUE_PLAYER_HW_PI_BUFFER	= (1U << 0),
+	IQUE_PLAYER_HW_NAND_FLASH	= (1U << 1),
+	IQUE_PLAYER_HW_MEMORY_MAPPER	= (1U << 2),
+	IQUE_PLAYER_HW_AES_ENGINE	= (1U << 3),
+	IQUE_PLAYER_HW_NEW_PI_DMA	= (1U << 4),
+	IQUE_PLAYER_HW_GPIO		= (1U << 5),
+	IQUE_PLAYER_HW_EXT_IO		= (1U << 6),
+	IQUE_PLAYER_HW_NEW_PI_ERR	= (1U << 7),
+	IQUE_PLAYER_HW_USB		= (1U << 8),
+	IQUE_PLAYER_HW_SK_RAM		= (1U << 9),
 } iQuePlayer_hwAccessRights_e;
 
 /**

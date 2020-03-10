@@ -53,15 +53,15 @@ class NintendoDSPrivate : public RomDataPrivate
 
 		// Hardware type. (RFT_BITFIELD)
 		enum NDS_HWType {
-			DS_HW_DS	= (1 << 0),
-			DS_HW_DSi	= (1 << 1),
+			DS_HW_DS	= (1U << 0),
+			DS_HW_DSi	= (1U << 1),
 		};
 
 		// DS region. (RFT_BITFIELD)
 		enum NDS_Region {
-			NDS_REGION_FREE		= (1 << 0),
-			NDS_REGION_SKOREA	= (1 << 1),
-			NDS_REGION_CHINA	= (1 << 2),
+			NDS_REGION_FREE		= (1U << 0),
+			NDS_REGION_SKOREA	= (1U << 1),
+			NDS_REGION_CHINA	= (1U << 2),
 		};
 
 	public:
@@ -879,7 +879,7 @@ const char *NintendoDS::systemName(unsigned int type) const
 	// NDS/DSi are mostly the same worldwide, except for China.
 	static_assert(SYSNAME_TYPE_MASK == 3,
 		"NintendoDS::systemName() array index optimization needs to be updated.");
-	static_assert(SYSNAME_REGION_MASK == (1 << 2),
+	static_assert(SYSNAME_REGION_MASK == (1U << 2),
 		"NintendoDS::systemName() array index optimization needs to be updated.");
 
 	// Bits 0-1: Type. (long, short, abbreviation)
@@ -900,13 +900,13 @@ const char *NintendoDS::systemName(unsigned int type) const
 	unsigned int idx = (type & SYSNAME_TYPE_MASK);
 	if (d->romType == NintendoDSPrivate::ROM_DSi_ONLY) {
 		// DSi-exclusive game.
-		idx |= (1 << 2);
+		idx |= (1U << 2);
 		if ((type & SYSNAME_REGION_MASK) == SYSNAME_REGION_ROM_LOCAL) {
 			if ((d->romHeader.dsi.region_code == cpu_to_le32(DSi_REGION_CHINA)) ||
 			    (d->romHeader.nds_region & 0x80))
 			{
 				// iQue DSi.
-				idx |= (1 << 3);
+				idx |= (1U << 3);
 			}
 		}
 	} else {
@@ -914,7 +914,7 @@ const char *NintendoDS::systemName(unsigned int type) const
 		if ((type & SYSNAME_REGION_MASK) == SYSNAME_REGION_ROM_LOCAL) {
 			if (d->romHeader.nds_region & 0x80) {
 				// iQue DS.
-				idx |= (1 << 3);
+				idx |= (1U << 3);
 			}
 		}
 	}
@@ -1387,7 +1387,7 @@ int NintendoDS::loadFieldData(void)
 	static const uint16_t valid_ratings = 0x3FB;
 
 	for (int i = static_cast<int>(age_ratings.size())-1; i >= 0; i--) {
-		if (!(valid_ratings & (1 << i))) {
+		if (!(valid_ratings & (1U << i))) {
 			// Rating is not applicable for NintendoDS.
 			age_ratings[i] = 0;
 			continue;

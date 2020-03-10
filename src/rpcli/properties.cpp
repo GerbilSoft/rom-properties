@@ -1071,7 +1071,7 @@ std::ostream& operator<<(std::ostream& os, const ROMOutput& fo) {
 	const int supported = romdata->supportedImageTypes();
 
 	for (int i = RomData::IMG_INT_MIN; i <= RomData::IMG_INT_MAX; i++) {
-		if (!(supported & (1 << i)))
+		if (!(supported & (1U << i)))
 			continue;
 
 		auto image = romdata->image((RomData::ImageType)i);
@@ -1087,7 +1087,7 @@ std::ostream& operator<<(std::ostream& os, const ROMOutput& fo) {
 
 	std::vector<RomData::ExtURL> extURLs;
 	for (int i = RomData::IMG_EXT_MIN; i <= RomData::IMG_EXT_MAX; i++) {
-		if (!(supported & (1 << i)))
+		if (!(supported & (1U << i)))
 			continue;
 
 		// NOTE: extURLs may be empty even though the class supports it.
@@ -1146,7 +1146,7 @@ std::ostream& operator<<(std::ostream& os, const JSONROMOutput& fo) {
 	// TODO: Tabs.
 	bool first = true;
 	for (int i = RomData::IMG_INT_MIN; i <= RomData::IMG_INT_MAX; i++) {
-		if (!(supported & (1 << i)))
+		if (!(supported & (1U << i)))
 			continue;
 
 		if (first) {
@@ -1192,7 +1192,7 @@ std::ostream& operator<<(std::ostream& os, const JSONROMOutput& fo) {
 	first = true;
 	vector<RomData::ExtURL> extURLs;
 	for (int i = RomData::IMG_EXT_MIN; i <= RomData::IMG_EXT_MAX; i++) {
-		if (!(supported & (1 << i)))
+		if (!(supported & (1U << i)))
 			continue;
 
 		// NOTE: extURLs may be empty even though the class supports it.

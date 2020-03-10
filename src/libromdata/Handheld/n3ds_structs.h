@@ -75,30 +75,30 @@ typedef enum {
  * Region code bits.
  */
 typedef enum {
-	N3DS_REGION_JAPAN	= (1 << 0),
-	N3DS_REGION_USA		= (1 << 1),
-	N3DS_REGION_EUROPE	= (1 << 2),
-	N3DS_REGION_AUSTRALIA	= (1 << 3),
-	N3DS_REGION_CHINA	= (1 << 4),
-	N3DS_REGION_SOUTH_KOREA	= (1 << 5),
-	N3DS_REGION_TAIWAN	= (1 << 6),
+	N3DS_REGION_JAPAN	= (1U << 0),
+	N3DS_REGION_USA		= (1U << 1),
+	N3DS_REGION_EUROPE	= (1U << 2),
+	N3DS_REGION_AUSTRALIA	= (1U << 3),
+	N3DS_REGION_CHINA	= (1U << 4),
+	N3DS_REGION_SOUTH_KOREA	= (1U << 5),
+	N3DS_REGION_TAIWAN	= (1U << 6),
 } N3DS_Region_Code;
 
 /**
  * Flag bits.
  */
 typedef enum {
-	N3DS_FLAG_VISIBLE		= (1 << 0),
-	N3DS_FLAG_AUTOBOOT		= (1 << 1),
-	N3DS_FLAG_USE_3D		= (1 << 2),
-	N3DS_FLAG_REQUIRE_EULA		= (1 << 3),
-	N3DS_FLAG_AUTOSAVE		= (1 << 4),
-	N3DS_FLAG_EXT_BANNER		= (1 << 5),
-	N3DS_FLAG_AGE_RATING_REQUIRED	= (1 << 6),
-	N3DS_FLAG_HAS_SAVE_DATA		= (1 << 7),
-	N3DS_FLAG_RECORD_USAGE		= (1 << 8),
-	N3DS_FLAG_DISABLE_SD_BACKUP	= (1 << 10),
-	N3DS_FLAG_NEW3DS_ONLY		= (1 << 12),
+	N3DS_FLAG_VISIBLE		= (1U <<  0),
+	N3DS_FLAG_AUTOBOOT		= (1U <<  1),
+	N3DS_FLAG_USE_3D		= (1U <<  2),
+	N3DS_FLAG_REQUIRE_EULA		= (1U <<  3),
+	N3DS_FLAG_AUTOSAVE		= (1U <<  4),
+	N3DS_FLAG_EXT_BANNER		= (1U <<  5),
+	N3DS_FLAG_AGE_RATING_REQUIRED	= (1U <<  6),
+	N3DS_FLAG_HAS_SAVE_DATA		= (1U <<  7),
+	N3DS_FLAG_RECORD_USAGE		= (1U <<  8),
+	N3DS_FLAG_DISABLE_SD_BACKUP	= (1U << 10),
+	N3DS_FLAG_NEW3DS_ONLY		= (1U << 12),
 } N3DS_SMDH_Flags;
 
 /**
@@ -705,8 +705,8 @@ ASSERT_STRUCT(N3DS_NCCH_ExHeader_SCI_t, 0x200);
  * NCCH Extended Header: SCI flags.
  */
 typedef enum {
-	N3DS_NCCH_EXHEADER_SCI_CompressExefsCode	= (1 << 0),
-	N3DS_NCCH_EXHEADER_SCI_SDApplication		= (1 << 1),
+	N3DS_NCCH_EXHEADER_SCI_CompressExefsCode	= (1U << 0),
+	N3DS_NCCH_EXHEADER_SCI_SDApplication		= (1U << 1),
 } N3DS_NCCH_ExHeader_SCI_Flags;
 
 /**
@@ -780,8 +780,8 @@ ASSERT_STRUCT(N3DS_NCCH_ExHeader_ACI_t, 0x200);
  * NCCH Extended Header: ACI New3DS CPU mode. (flags[0])
  */
 typedef enum {
-	N3DS_NCCH_EXHEADER_ACI_FLAG0_EnableL2Cache	= (1 << 0),	// Ignored.
-	N3DS_NCCH_EXHEADER_ACI_FLAG0_cpuspeed_804MHz	= (1 << 1),
+	N3DS_NCCH_EXHEADER_ACI_FLAG0_EnableL2Cache	= (1U << 0),	// Ignored.
+	N3DS_NCCH_EXHEADER_ACI_FLAG0_cpuspeed_804MHz	= (1U << 1),
 } N3DS_NCCH_ExHeader_ACI_Flag_New3DS_CPUMode;
 
 /**
@@ -789,27 +789,27 @@ typedef enum {
  */
 typedef enum {
 	// New3DS system modes.
-	N3DS_NCCH_EXHEADER_ACI_FLAG1_New3DS_SysMode_Legacy	= (0 << 0),	// 64 MB
-	N3DS_NCCH_EXHEADER_ACI_FLAG1_New3DS_SysMode_Prod	= (1 << 0),	// 124 MB
-	N3DS_NCCH_EXHEADER_ACI_FLAG1_New3DS_SysMode_Dev1	= (2 << 0),	// 178 MB
-	N3DS_NCCH_EXHEADER_ACI_FLAG1_New3DS_SysMode_Dev2	= (3 << 0),	// 124 MB
-	N3DS_NCCH_EXHEADER_ACI_FLAG1_New3DS_SysMode_Mask	= (15 << 0),
+	N3DS_NCCH_EXHEADER_ACI_FLAG1_New3DS_SysMode_Legacy	= (  0U << 0),	// 64 MB
+	N3DS_NCCH_EXHEADER_ACI_FLAG1_New3DS_SysMode_Prod	= (  1U << 0),	// 124 MB
+	N3DS_NCCH_EXHEADER_ACI_FLAG1_New3DS_SysMode_Dev1	= (  2U << 0),	// 178 MB
+	N3DS_NCCH_EXHEADER_ACI_FLAG1_New3DS_SysMode_Dev2	= (  3U << 0),	// 124 MB
+	N3DS_NCCH_EXHEADER_ACI_FLAG1_New3DS_SysMode_Mask	= (0xFU << 0),
 } N3DS_NCCH_ExHeader_ACI_Flag_New3DS_SysMode;
 
 /**
  * NCCH Extended Header: ACI System Mode. (flags[2])
  */
 typedef enum {
-	N3DS_NCCH_EXHEADER_ACI_FLAG2_IdealCPU_Mask		= (2 << 0),
-	N3DS_NCCH_EXHEADER_ACI_FLAG2_Affinity_Mask		= (2 << 2),
+	N3DS_NCCH_EXHEADER_ACI_FLAG2_IdealCPU_Mask		= (2U << 0),
+	N3DS_NCCH_EXHEADER_ACI_FLAG2_Affinity_Mask		= (2U << 2),
 
 	// Old3DS system modes.
-	N3DS_NCCH_EXHEADER_ACI_FLAG2_Old3DS_SysMode_Prod	= (0 << 4),	// 64 MB
-	N3DS_NCCH_EXHEADER_ACI_FLAG2_Old3DS_SysMode_Dev1	= (2 << 4),	// 96 MB
-	N3DS_NCCH_EXHEADER_ACI_FLAG2_Old3DS_SysMode_Dev2	= (3 << 4),	// 80 MB
-	N3DS_NCCH_EXHEADER_ACI_FLAG2_Old3DS_SysMode_Dev3	= (4 << 4),	// 72 MB
-	N3DS_NCCH_EXHEADER_ACI_FLAG2_Old3DS_SysMode_Dev4	= (5 << 4),	// 32 MB
-	N3DS_NCCH_EXHEADER_ACI_FLAG2_Old3DS_SysMode_Mask	= (15 << 4),
+	N3DS_NCCH_EXHEADER_ACI_FLAG2_Old3DS_SysMode_Prod	= (  0U << 4),	// 64 MB
+	N3DS_NCCH_EXHEADER_ACI_FLAG2_Old3DS_SysMode_Dev1	= (  2U << 4),	// 96 MB
+	N3DS_NCCH_EXHEADER_ACI_FLAG2_Old3DS_SysMode_Dev2	= (  3U << 4),	// 80 MB
+	N3DS_NCCH_EXHEADER_ACI_FLAG2_Old3DS_SysMode_Dev3	= (  4U << 4),	// 72 MB
+	N3DS_NCCH_EXHEADER_ACI_FLAG2_Old3DS_SysMode_Dev4	= (  5U << 4),	// 32 MB
+	N3DS_NCCH_EXHEADER_ACI_FLAG2_Old3DS_SysMode_Mask	= (0xFU << 4),
 } N3DS_NCCH_ExHeader_ACI_Flag_SysMode;
 
 /**
@@ -826,52 +826,52 @@ typedef enum {
  * NCCH Extended Header: ACI filesystem access info.
  */
 typedef enum {
-	N3DS_NCCH_EXHEADER_ACI_FsAccess_CategorySystemApplication	= (1 <<  0),
-	N3DS_NCCH_EXHEADER_ACI_FsAccess_CategoryHardwareCheck		= (1 <<  1),
-	N3DS_NCCH_EXHEADER_ACI_FsAccess_CategoryFilesystemTool		= (1 <<  2),
-	N3DS_NCCH_EXHEADER_ACI_FsAccess_Debug				= (1 <<  3),
-	N3DS_NCCH_EXHEADER_ACI_FsAccess_TwlCardBackup			= (1 <<  4),
-	N3DS_NCCH_EXHEADER_ACI_FsAccess_TwlNandData			= (1 <<  5),
-	N3DS_NCCH_EXHEADER_ACI_FsAccess_Boss				= (1 <<  6),
-	N3DS_NCCH_EXHEADER_ACI_FsAccess_DirectSdmc			= (1 <<  7),
-	N3DS_NCCH_EXHEADER_ACI_FsAccess_Core				= (1 <<  8),
-	N3DS_NCCH_EXHEADER_ACI_FsAccess_CtrNandRo			= (1 <<  9),
-	N3DS_NCCH_EXHEADER_ACI_FsAccess_CtrNandRw			= (1 << 10),
-	N3DS_NCCH_EXHEADER_ACI_FsAccess_CtrNandRoWrite			= (1 << 11),
-	N3DS_NCCH_EXHEADER_ACI_FsAccess_CategorySystemSettings		= (1 << 12),
-	N3DS_NCCH_EXHEADER_ACI_FsAccess_Cardboard			= (1 << 13),
-	N3DS_NCCH_EXHEADER_ACI_FsAccess_ExportImportIvs			= (1 << 14),
-	N3DS_NCCH_EXHEADER_ACI_FsAccess_DirectSdmcWrite			= (1 << 15),
-	N3DS_NCCH_EXHEADER_ACI_FsAccess_SwitchCleanup			= (1 << 16),
-	N3DS_NCCH_EXHEADER_ACI_FsAccess_SaveDataMove			= (1 << 17),
-	N3DS_NCCH_EXHEADER_ACI_FsAccess_Shop				= (1 << 18),
-	N3DS_NCCH_EXHEADER_ACI_FsAccess_Shell				= (1 << 19),
-	N3DS_NCCH_EXHEADER_ACI_FsAccess_CategoryHomeMenu		= (1 << 20),
-	N3DS_NCCH_EXHEADER_ACI_FsAccess_SeedDB				= (1 << 21),
+	N3DS_NCCH_EXHEADER_ACI_FsAccess_CategorySystemApplication	= (1U <<  0),
+	N3DS_NCCH_EXHEADER_ACI_FsAccess_CategoryHardwareCheck		= (1U <<  1),
+	N3DS_NCCH_EXHEADER_ACI_FsAccess_CategoryFilesystemTool		= (1U <<  2),
+	N3DS_NCCH_EXHEADER_ACI_FsAccess_Debug				= (1U <<  3),
+	N3DS_NCCH_EXHEADER_ACI_FsAccess_TwlCardBackup			= (1U <<  4),
+	N3DS_NCCH_EXHEADER_ACI_FsAccess_TwlNandData			= (1U <<  5),
+	N3DS_NCCH_EXHEADER_ACI_FsAccess_Boss				= (1U <<  6),
+	N3DS_NCCH_EXHEADER_ACI_FsAccess_DirectSdmc			= (1U <<  7),
+	N3DS_NCCH_EXHEADER_ACI_FsAccess_Core				= (1U <<  8),
+	N3DS_NCCH_EXHEADER_ACI_FsAccess_CtrNandRo			= (1U <<  9),
+	N3DS_NCCH_EXHEADER_ACI_FsAccess_CtrNandRw			= (1U << 10),
+	N3DS_NCCH_EXHEADER_ACI_FsAccess_CtrNandRoWrite			= (1U << 11),
+	N3DS_NCCH_EXHEADER_ACI_FsAccess_CategorySystemSettings		= (1U << 12),
+	N3DS_NCCH_EXHEADER_ACI_FsAccess_Cardboard			= (1U << 13),
+	N3DS_NCCH_EXHEADER_ACI_FsAccess_ExportImportIvs			= (1U << 14),
+	N3DS_NCCH_EXHEADER_ACI_FsAccess_DirectSdmcWrite			= (1U << 15),
+	N3DS_NCCH_EXHEADER_ACI_FsAccess_SwitchCleanup			= (1U << 16),
+	N3DS_NCCH_EXHEADER_ACI_FsAccess_SaveDataMove			= (1U << 17),
+	N3DS_NCCH_EXHEADER_ACI_FsAccess_Shop				= (1U << 18),
+	N3DS_NCCH_EXHEADER_ACI_FsAccess_Shell				= (1U << 19),
+	N3DS_NCCH_EXHEADER_ACI_FsAccess_CategoryHomeMenu		= (1U << 20),
+	N3DS_NCCH_EXHEADER_ACI_FsAccess_SeedDB				= (1U << 21),
 } N3DS_NCCH_ExHeader_ACI_FsAccess;
 
 /**
  * NCCH Extended Header: ACI other attributes.
  */
 typedef enum {
-	N3DS_NCCH_EXHEADER_ACI_OtherAttr_NoRomFS			= (1 << 0),
-	N3DS_NCCH_EXHEADER_ACI_OtherAttr_ExtendedSavedataAccess		= (1 << 1),
+	N3DS_NCCH_EXHEADER_ACI_OtherAttr_NoRomFS			= (1U << 0),
+	N3DS_NCCH_EXHEADER_ACI_OtherAttr_ExtendedSavedataAccess		= (1U << 1),
 } N3DS_NCCH_ExHeader_ACI_OtherAttr;
 
 /**
  * NCCH Extended Header: I/O access control. (ARM9)
  */
 typedef enum {
-	N3DS_NCCH_EXHEADER_ACI_IoAccess_FsMountNand		= (1 << 0),
-	N3DS_NCCH_EXHEADER_ACI_IoAccess_FsMountNandRoWrite	= (1 << 1),
-	N3DS_NCCH_EXHEADER_ACI_IoAccess_FsMountTwln		= (1 << 2),
-	N3DS_NCCH_EXHEADER_ACI_IoAccess_FsMountWnand		= (1 << 3),
-	N3DS_NCCH_EXHEADER_ACI_IoAccess_FsMountCardSpi		= (1 << 4),
-	N3DS_NCCH_EXHEADER_ACI_IoAccess_UseSdif3		= (1 << 5),
-	N3DS_NCCH_EXHEADER_ACI_IoAccess_CreateSeed		= (1 << 6),
-	N3DS_NCCH_EXHEADER_ACI_IoAccess_UseCardSpi		= (1 << 7),
-	N3DS_NCCH_EXHEADER_ACI_IoAccess_SDApplication		= (1 << 8),
-	N3DS_NCCH_EXHEADER_ACI_IoAccess_FsMountSdmcWrite	= (1 << 9),
+	N3DS_NCCH_EXHEADER_ACI_IoAccess_FsMountNand		= (1U << 0),
+	N3DS_NCCH_EXHEADER_ACI_IoAccess_FsMountNandRoWrite	= (1U << 1),
+	N3DS_NCCH_EXHEADER_ACI_IoAccess_FsMountTwln		= (1U << 2),
+	N3DS_NCCH_EXHEADER_ACI_IoAccess_FsMountWnand		= (1U << 3),
+	N3DS_NCCH_EXHEADER_ACI_IoAccess_FsMountCardSpi		= (1U << 4),
+	N3DS_NCCH_EXHEADER_ACI_IoAccess_UseSdif3		= (1U << 5),
+	N3DS_NCCH_EXHEADER_ACI_IoAccess_CreateSeed		= (1U << 6),
+	N3DS_NCCH_EXHEADER_ACI_IoAccess_UseCardSpi		= (1U << 7),
+	N3DS_NCCH_EXHEADER_ACI_IoAccess_SDApplication		= (1U << 8),
+	N3DS_NCCH_EXHEADER_ACI_IoAccess_FsMountSdmcWrite	= (1U << 9),
 } N3DS_NCCH_ExHeader_IoAccessControl;
 
 /**
@@ -941,16 +941,16 @@ typedef enum {
 	// - 0: Unknown, or no encryption.
 	// - 1: Retail
 	// - 2: Debug
-	N3DS_TICKET_TITLEKEY_ISSUER_UNKNOWN	= (0 << 0),
-	N3DS_TICKET_TITLEKEY_ISSUER_RETAIL	= (1 << 0),
-	N3DS_TICKET_TITLEKEY_ISSUER_DEBUG	= (2 << 0),
-	N3DS_TICKET_TITLEKEY_ISSUER_MASK	= (3 << 0),
+	N3DS_TICKET_TITLEKEY_ISSUER_UNKNOWN	= (0U << 0),
+	N3DS_TICKET_TITLEKEY_ISSUER_RETAIL	= (1U << 0),
+	N3DS_TICKET_TITLEKEY_ISSUER_DEBUG	= (2U << 0),
+	N3DS_TICKET_TITLEKEY_ISSUER_MASK	= (3U << 0),
 
 	// Bits 2-4: KeyY index.
 	// - 0: eShop titles
 	// - 1: System titles
 	// - 2-5: Unknown
-	N3DS_TICKET_TITLEKEY_KEYY_INDEX_MASK	= (7 << 2),
+	N3DS_TICKET_TITLEKEY_KEYY_INDEX_MASK	= (7U << 2),
 } N3DS_Ticket_TitleKey_KeyY;
 
 #ifdef __cplusplus

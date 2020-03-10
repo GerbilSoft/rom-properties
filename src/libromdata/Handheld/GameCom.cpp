@@ -109,7 +109,7 @@ const rp_image *GameComPrivate::loadIcon(void)
 			return nullptr;
 		}
 		// Get the lowest power of two size and mask the bank number.
-		unsigned int lz = (1 << uilog2(static_cast<unsigned int>(fileSize)));
+		unsigned int lz = (1U << uilog2(static_cast<unsigned int>(fileSize)));
 		bank_number &= ((lz / GCOM_ICON_BANK_SIZE) - 1);
 		bank_offset = (bank_number * GCOM_ICON_BANK_SIZE) - bank_adj;
 	}

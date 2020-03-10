@@ -1332,7 +1332,7 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 			} else {
 				// Store the checkbox value for this row.
 				if (checkboxes & 1) {
-					lvData.checkboxes |= (1 << lv_row_num);
+					lvData.checkboxes |= (1U << lv_row_num);
 				}
 				checkboxes >>= 1;
 			}
@@ -2912,7 +2912,7 @@ inline BOOL RP_ShellPropSheetExtPrivate::ListView_GetDispInfo(NMLVDISPINFO *plvd
 				plvItem->mask |= LVIF_STATE;
 				plvItem->stateMask = LVIS_STATEIMAGEMASK;
 				plvItem->state = INDEXTOSTATEIMAGEMASK(
-					((lvData.checkboxes & (1 << plvItem->iItem)) ? 2 : 1));
+					((lvData.checkboxes & (1U << plvItem->iItem)) ? 2 : 1));
 				ret = true;
 			} else if (!lvData.vImageList.empty()) {
 				// We have an ImageList.

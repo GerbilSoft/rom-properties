@@ -147,7 +147,7 @@ class RomMetaData
 		// NOTE: These have the same values as RomFields::StringFormat.
 		enum StringFormat {
 			// Trim spaces from the end of strings.
-			STRF_TRIM_END	= (1 << 3),
+			STRF_TRIM_END	= (1U << 3),
 		};
 
 		// ROM metadata struct.

@@ -675,14 +675,14 @@ rp_image *fromETC2_RGB_A1(int width, int height,
 
 enum PVRTC_Mode_e {
 	// bpp
-	PVRTC_4BPP		= (0 << 0),
-	PVRTC_2BPP		= (1 << 0),
-	PVRTC_BPP_MASK		= (1 << 0),
+	PVRTC_4BPP		= (0U << 0),
+	PVRTC_2BPP		= (1U << 0),
+	PVRTC_BPP_MASK		= (1U << 0),
 
 	// Alpha channel (PVRTC-I only)
-	PVRTC_ALPHA_NONE	= (0 << 1),
-	PVRTC_ALPHA_YES		= (1 << 1),
-	PVRTC_ALPHA_MASK	= (1 << 1),
+	PVRTC_ALPHA_NONE	= (0U << 1),
+	PVRTC_ALPHA_YES		= (1U << 1),
+	PVRTC_ALPHA_MASK	= (1U << 1),
 };
 
 /**

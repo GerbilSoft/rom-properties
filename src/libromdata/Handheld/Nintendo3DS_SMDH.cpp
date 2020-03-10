@@ -316,7 +316,7 @@ const char *Nintendo3DS_SMDH::systemName(unsigned int type) const
 		// SMDH contains a region code bitfield.
 		if (d->smdh.header.settings.region_code == cpu_to_le32(N3DS_REGION_CHINA)) {
 			// Chinese exclusive.
-			idx |= (1 << 2);
+			idx |= (1U << 2);
 		}
 	}
 
@@ -577,7 +577,7 @@ int Nintendo3DS_SMDH::loadFieldData(void)
 	static const uint16_t valid_ratings = 0x7DB;
 
 	for (int i = static_cast<int>(age_ratings.size())-1; i >= 0; i--) {
-		if (!(valid_ratings & (1 << i))) {
+		if (!(valid_ratings & (1U << i))) {
 			// Rating is not applicable for NintendoDS.
 			age_ratings[i] = 0;
 			continue;

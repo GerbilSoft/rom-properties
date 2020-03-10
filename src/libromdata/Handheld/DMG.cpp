@@ -41,17 +41,17 @@ class DMGPrivate : public RomDataPrivate
 
 		// System. (RFT_BITFIELD)
 		enum DMG_System {
-			DMG_SYSTEM_DMG		= (1 << 0),
-			DMG_SYSTEM_SGB		= (1 << 1),
-			DMG_SYSTEM_CGB		= (1 << 2),
+			DMG_SYSTEM_DMG		= (1U << 0),
+			DMG_SYSTEM_SGB		= (1U << 1),
+			DMG_SYSTEM_CGB		= (1U << 2),
 		};
 
 		// Cartridge hardware features. (RFT_BITFIELD)
 		enum DMG_Feature {
-			DMG_FEATURE_RAM		= (1 << 0),
-			DMG_FEATURE_BATTERY	= (1 << 1),
-			DMG_FEATURE_TIMER	= (1 << 2),
-			DMG_FEATURE_RUMBLE	= (1 << 3),
+			DMG_FEATURE_RAM		= (1U << 0),
+			DMG_FEATURE_BATTERY	= (1U << 1),
+			DMG_FEATURE_TIMER	= (1U << 2),
+			DMG_FEATURE_RUMBLE	= (1U << 3),
 		};
 
 		/** Internal ROM data. **/
@@ -929,13 +929,13 @@ int DMG::loadFieldData(void)
 		// Assuming any non-zero value is present.
 		uint32_t gbx_features = 0;
 		if (gbxFooter->battery_flag) {
-			gbx_features |= (1 << 0);
+			gbx_features |= (1U << 0);
 		}
 		if (gbxFooter->rumble_flag) {
-			gbx_features |= (1 << 1);
+			gbx_features |= (1U << 1);
 		}
 		if (gbxFooter->timer_flag) {
-			gbx_features |= (1 << 2);
+			gbx_features |= (1U << 2);
 		}
 
 		static const char *const gbx_feature_bitfield_names[] = {

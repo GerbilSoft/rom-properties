@@ -155,7 +155,7 @@ int u16_strcasecmp(const char16_t *wcs1, const char16_t *wcs2);
 typedef enum {
 	// Enable cp1252 fallback if the text fails to
 	// decode using the specified code page.
-	TEXTCONV_FLAG_CP1252_FALLBACK		= (1 << 0),
+	TEXTCONV_FLAG_CP1252_FALLBACK		= (1U << 0),
 } TextConv_Flags_e;
 
 /**

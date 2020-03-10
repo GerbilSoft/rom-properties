@@ -1758,23 +1758,23 @@ int Xbox360_XEX::loadFieldData(void)
 			: d->secInfo.xex1.region_code));
 	uint32_t region_code = 0;
 	if (region_code_xbx & XEX2_REGION_CODE_NTSC_U) {
-		region_code |= (1 << 0);
+		region_code |= (1U << 0);
 	}
 	if (region_code_xbx & XEX2_REGION_CODE_NTSC_J_JAPAN) {
-		region_code |= (1 << 1);
+		region_code |= (1U << 1);
 	}
 	if (region_code_xbx & XEX2_REGION_CODE_NTSC_J_CHINA) {
-		region_code |= (1 << 2);
+		region_code |= (1U << 2);
 	}
 	if (region_code_xbx & XEX2_REGION_CODE_NTSC_J_OTHER) {
-		region_code |= (1 << 3);
+		region_code |= (1U << 3);
 	}
 	if (region_code_xbx & XEX2_REGION_CODE_PAL_OTHER) {
-		region_code |= (1 << 4);
+		region_code |= (1U << 4);
 	}
 	if (region_code_xbx & XEX2_REGION_CODE_PAL_AU_NZ) {
 		// TODO: Combine these bits?
-		region_code |= (1 << 5) | (1 << 6);
+		region_code |= (1U << 5) | (1U << 6);
 	}
 
 	vector<string> *const v_region_code = RomFields::strArrayToVector_i18n(

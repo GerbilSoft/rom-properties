@@ -574,12 +574,12 @@ typedef enum {
 } NE_DGroupType;
 
 typedef enum {
-	NE_GLOBINIT	= (1 << 2),	// Global initialization
-	NE_PMODEONLY	= (1 << 3),	// Protected mode only
-	NE_INSTRUC86	= (1 << 4),	// 8086 instructions
-	NE_INSTRU286	= (1 << 5),	// 80286 instructions
-	NE_INSTRU386	= (1 << 6),	// 80386 instructions
-	NE_INSTRUx87	= (1 << 7),	// 80x87 (FPU) instructions
+	NE_GLOBINIT	= (1U << 2),	// Global initialization
+	NE_PMODEONLY	= (1U << 3),	// Protected mode only
+	NE_INSTRUC86	= (1U << 4),	// 8086 instructions
+	NE_INSTRU286	= (1U << 5),	// 80286 instructions
+	NE_INSTRU386	= (1U << 6),	// 80386 instructions
+	NE_INSTRUx87	= (1U << 7),	// 80x87 (FPU) instructions
 } NE_ProgFlags;
 
 // Application flags (ApplFlags)
@@ -593,11 +593,11 @@ typedef enum {
 } NE_AppType;
 
 typedef enum {
-	NE_OS2APP	= (1 << 3),	// OS/2 family application
+	NE_OS2APP	= (1U << 3),	// OS/2 family application
 	// bit 4 reserved?
-	NE_IMAGEERROR	= (1 << 5),	// Errors in image/executable
-	NE_ONCONFORM	= (1 << 6),	// Non-conforming program?
-	NE_DLL		= (1 << 7),	// DLL or driver (SS:SP invalid, CS:IP -> Far INIT routine)
+	NE_IMAGEERROR	= (1U << 5),	// Errors in image/executable
+	NE_ONCONFORM	= (1U << 6),	// Non-conforming program?
+	NE_DLL		= (1U << 7),	// DLL or driver (SS:SP invalid, CS:IP -> Far INIT routine)
 					// AX=HMODULE, returns AX==0 success, AX!=0 fail
 } NE_ApplFlags;
 
@@ -618,10 +618,10 @@ typedef enum {
 
 // Other OS/2 flags.
 typedef enum {
-	NE_OS2_LFN	= (1 << 0),	// OS/2 Long File Names
-	NE_OS2_PMODE	= (1 << 1),	// OS/2 2.x Protected Mode executable
-	NE_OS2_PFONT	= (1 << 2),	// OS/2 2.x Proportional Fonts
-	NE_OS2_GANGL	= (1 << 3),	// OS/2 Gangload area
+	NE_OS2_LFN	= (1U << 0),	// OS/2 Long File Names
+	NE_OS2_PMODE	= (1U << 1),	// OS/2 2.x Protected Mode executable
+	NE_OS2_PFONT	= (1U << 2),	// OS/2 2.x Proportional Fonts
+	NE_OS2_GANGL	= (1U << 3),	// OS/2 Gangload area
 } NE_OS2EXEFlags;
 
 // 16-bit resource structs.
@@ -707,22 +707,22 @@ typedef enum {
 
 // Module type flags.
 typedef enum {
-	LE_DLL_INIT_GLOBAL		= (0 << 2),
-	LE_DLL_INIT_PER_PROCESS		= (1 << 2),
-	LE_DLL_INIT_MASK		= (1 << 2),
+	LE_DLL_INIT_GLOBAL		= (0U << 2),
+	LE_DLL_INIT_PER_PROCESS		= (1U << 2),
+	LE_DLL_INIT_MASK		= (1U << 2),
 
-	LE_EXE_NO_INTERNAL_FIXUP	= (1 << 4),
-	LE_EXE_NO_EXTERNAL_FIXUP	= (1 << 5),
+	LE_EXE_NO_INTERNAL_FIXUP	= (1U << 4),
+	LE_EXE_NO_EXTERNAL_FIXUP	= (1U << 5),
 
 	// Same sa NE_AppType.
-	LE_WINDOW_TYPE_UNKNOWN		= (0 << 8),
-	LE_WINDOW_TYPE_INCOMPATIBLE	= (1 << 8),
-	LE_WINDOW_TYPE_COMPATIBLE	= (2 << 8),
-	LE_WINDOW_TYPE_USES		= (3 << 8),
-	LE_WINDOW_TYPE_MASK		= (3 << 8),
+	LE_WINDOW_TYPE_UNKNOWN		= (0U << 8),
+	LE_WINDOW_TYPE_INCOMPATIBLE	= (1U << 8),
+	LE_WINDOW_TYPE_COMPATIBLE	= (2U << 8),
+	LE_WINDOW_TYPE_USES		= (3U << 8),
+	LE_WINDOW_TYPE_MASK		= (3U << 8),
 
-	LE_MODULE_NOT_LOADABLE		= (1 << 13),
-	LE_MODULE_IS_DLL		= (1 << 15),
+	LE_MODULE_NOT_LOADABLE		= (1U << 13),
+	LE_MODULE_IS_DLL		= (1U << 15),
 } LE_Module_Type_Flags;
 
 #pragma pack()

@@ -164,14 +164,14 @@ ASSERT_STRUCT(DC_VMI_Header, 108);
  */
 typedef enum {
 	// Copy protection.
-	DC_VMI_MODE_PROTECT_COPY_OK        = (0 << 0),
-	DC_VMI_MODE_PROTECT_COPY_PROTECTED = (1 << 0),
-	DC_VMI_MODE_PROTECT_MASK           = (1 << 0),
+	DC_VMI_MODE_PROTECT_COPY_OK        = (0U << 0),
+	DC_VMI_MODE_PROTECT_COPY_PROTECTED = (1U << 0),
+	DC_VMI_MODE_PROTECT_MASK           = (1U << 0),
 
 	// File type.
-	DC_VMI_MODE_FTYPE_DATA = (0 << 1),
-	DC_VMI_MODE_FTYPE_GAME = (1 << 1),
-	DC_VMI_MODE_FTYPE_MASK = (1 << 1),
+	DC_VMI_MODE_FTYPE_DATA = (0U << 1),
+	DC_VMI_MODE_FTYPE_GAME = (1U << 1),
+	DC_VMI_MODE_FTYPE_MASK = (1U << 1),
 } DC_VMI_Mode;
 
 /**
@@ -271,36 +271,36 @@ ASSERT_STRUCT(DC_IP0000_BIN_t, 256);
  * Reference: http://mc.pp.se/dc/ip0000.bin.html
  */
 typedef enum {
-	DCP_WINDOWS_CE		= (1 << 0),	// Uses Windows CE
-	DCP_VGA_BOX		= (1 << 4),	// Supports VGA Box
+	DCP_WINDOWS_CE		= (1U <<  0),	// Uses Windows CE
+	DCP_VGA_BOX		= (1U <<  4),	// Supports VGA Box
 
 	// Supported expansion units.
-	DCP_EXP_OTHER		= (1 << 8),	// Other expansions.
-	DCP_PURU_PURU		= (1 << 9),	// Puru Puru pack (Jump Pack)
-	DCP_MICROPHONE		= (1 << 10),	// Microphone
-	DCP_MEMORY_CARD		= (1 << 11),	// Memory Card (VMU)
+	DCP_EXP_OTHER		= (1U <<  8),	// Other expansions.
+	DCP_PURU_PURU		= (1U <<  9),	// Puru Puru pack (Jump Pack)
+	DCP_MICROPHONE		= (1U << 10),	// Microphone
+	DCP_MEMORY_CARD		= (1U << 11),	// Memory Card (VMU)
 
 	// Controller requirements.
 	// If any of these bits are set, the game *requires*
 	// a controller with the specified functionality,
-	DCP_CTRL_START_A_B_DPAD	= (1 << 12),	// Start, A, B, D-Pad
-	DCP_CTRL_C		= (1 << 13),	// C button
-	DCP_CTRL_D		= (1 << 14),	// D button
-	DCP_CTRL_X		= (1 << 15),	// X button
-	DCP_CTRL_Y		= (1 << 16),	// Y button
-	DCP_CTRL_Z		= (1 << 17),	// Z button
-	DCP_CTRL_DPAD_2		= (1 << 18),	// Second D-Pad
-	DCP_CTRL_ANALOG_RT	= (1 << 19),	// Analog R trigger
-	DCP_CTRL_ANALOG_LT	= (1 << 20),	// Analog L trigger
-	DCP_CTRL_ANALOG_H1	= (1 << 21),	// Analog horizontal controller
-	DCP_CTRL_ANALOG_V1	= (1 << 22),	// Analog vertical controller
-	DCP_CTRL_ANALOG_H2	= (1 << 23),	// Analog horizontal controller #2
-	DCP_CTRL_ANALOG_V2	= (1 << 24),	// Analog vertical controller #2
+	DCP_CTRL_START_A_B_DPAD	= (1U << 12),	// Start, A, B, D-Pad
+	DCP_CTRL_C		= (1U << 13),	// C button
+	DCP_CTRL_D		= (1U << 14),	// D button
+	DCP_CTRL_X		= (1U << 15),	// X button
+	DCP_CTRL_Y		= (1U << 16),	// Y button
+	DCP_CTRL_Z		= (1U << 17),	// Z button
+	DCP_CTRL_DPAD_2		= (1U << 18),	// Second D-Pad
+	DCP_CTRL_ANALOG_RT	= (1U << 19),	// Analog R trigger
+	DCP_CTRL_ANALOG_LT	= (1U << 20),	// Analog L trigger
+	DCP_CTRL_ANALOG_H1	= (1U << 21),	// Analog horizontal controller
+	DCP_CTRL_ANALOG_V1	= (1U << 22),	// Analog vertical controller
+	DCP_CTRL_ANALOG_H2	= (1U << 23),	// Analog horizontal controller #2
+	DCP_CTRL_ANALOG_V2	= (1U << 24),	// Analog vertical controller #2
 
 	// Optional expansion peripherals.
-	DCP_CTRL_GUN		= (1 << 25),	// Light Gun
-	DCP_CTRL_KEYBOARD	= (1 << 26),	// Keyboard
-	DCP_CTRL_MOUSE		= (1 << 27),	// Mouse
+	DCP_CTRL_GUN		= (1U << 25),	// Light Gun
+	DCP_CTRL_KEYBOARD	= (1U << 26),	// Keyboard
+	DCP_CTRL_MOUSE		= (1U << 27),	// Mouse
 } DC_IP0000_BIN_Peripherals;
 
 /**

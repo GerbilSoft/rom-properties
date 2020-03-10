@@ -84,9 +84,9 @@ class Xbox360_STFS_Private : public RomDataPrivate
 		STFS_Package_Thumbnails stfsThumbnails;
 
 		enum StfsPresent_e {
-			STFS_PRESENT_HEADER	= (1 << 0),
-			STFS_PRESENT_METADATA	= (1 << 1),
-			STFS_PRESENT_THUMBNAILS	= (1 << 2),
+			STFS_PRESENT_HEADER	= (1U << 0),
+			STFS_PRESENT_METADATA	= (1U << 1),
+			STFS_PRESENT_THUMBNAILS	= (1U << 2),
 		};
 		uint32_t headers_loaded;	// StfsPresent_e
 

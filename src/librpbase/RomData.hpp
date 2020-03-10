@@ -149,14 +149,14 @@ class RomData
 			 *   on the current system locale.
 			 */
 
-			SYSNAME_TYPE_LONG		= (0 << 0),
-			SYSNAME_TYPE_SHORT		= (1 << 0),
-			SYSNAME_TYPE_ABBREVIATION	= (2 << 0),
-			SYSNAME_TYPE_MASK		= (3 << 0),
+			SYSNAME_TYPE_LONG		= (0U << 0),
+			SYSNAME_TYPE_SHORT		= (1U << 0),
+			SYSNAME_TYPE_ABBREVIATION	= (2U << 0),
+			SYSNAME_TYPE_MASK		= (3U << 0),
 
-			SYSNAME_REGION_GENERIC		= (0 << 2),
-			SYSNAME_REGION_ROM_LOCAL	= (1 << 2),
-			SYSNAME_REGION_MASK		= (1 << 2),
+			SYSNAME_REGION_GENERIC		= (0U << 2),
+			SYSNAME_REGION_ROM_LOCAL	= (1U << 2),
+			SYSNAME_REGION_MASK		= (1U << 2),
 		};
 
 	protected:
@@ -314,19 +314,19 @@ class RomData
 		 */
 		enum ImageTypeBF {
 			// Internal images are contained with the ROM or disc image.
-			IMGBF_INT_ICON   = (1 << IMG_INT_ICON),		// Internal icon, e.g. DS launcher icon
-			IMGBF_INT_BANNER = (1 << IMG_INT_BANNER),	// Internal banner, e.g. GameCube discs
-			IMGBF_INT_MEDIA  = (1 << IMG_INT_MEDIA),	// Internal media scan, e.g. Dreamcast discs
-			IMGBF_INT_IMAGE  = (1 << IMG_INT_IMAGE),	// Internal image, e.g. PVR images.
+			IMGBF_INT_ICON   = (1U << IMG_INT_ICON),	// Internal icon, e.g. DS launcher icon
+			IMGBF_INT_BANNER = (1U << IMG_INT_BANNER),	// Internal banner, e.g. GameCube discs
+			IMGBF_INT_MEDIA  = (1U << IMG_INT_MEDIA),	// Internal media scan, e.g. Dreamcast discs
+			IMGBF_INT_IMAGE  = (1U << IMG_INT_IMAGE),	// Internal image, e.g. PVR images.
 
 			// External images are downloaded from websites,
 			// such as GameTDB.
-			IMGBF_EXT_MEDIA      = (1 << IMG_EXT_MEDIA),      // External media scan, e.g. GameTDB
-			IMGBF_EXT_COVER      = (1 << IMG_EXT_COVER),      // External cover scan
-			IMGBF_EXT_COVER_3D   = (1 << IMG_EXT_COVER_3D),   // External cover scan (3D version)
-			IMGBF_EXT_COVER_FULL = (1 << IMG_EXT_COVER_FULL), // External cover scan (front and back)
-			IMGBF_EXT_BOX	     = (1 << IMG_EXT_BOX),        // External box scan (cover + outer box)
-			IMGBF_EXT_TITLE_SCREEN = (1 << IMG_EXT_TITLE_SCREEN), // External title screen
+			IMGBF_EXT_MEDIA      = (1U << IMG_EXT_MEDIA),      // External media scan, e.g. GameTDB
+			IMGBF_EXT_COVER      = (1U << IMG_EXT_COVER),      // External cover scan
+			IMGBF_EXT_COVER_3D   = (1U << IMG_EXT_COVER_3D),   // External cover scan (3D version)
+			IMGBF_EXT_COVER_FULL = (1U << IMG_EXT_COVER_FULL), // External cover scan (front and back)
+			IMGBF_EXT_BOX	     = (1U << IMG_EXT_BOX),        // External box scan (cover + outer box)
+			IMGBF_EXT_TITLE_SCREEN = (1U << IMG_EXT_TITLE_SCREEN), // External title screen
 		};
 
 		/**
@@ -339,18 +339,18 @@ class RomData
 		 * Image processing flags.
 		 */
 		enum ImageProcessingBF {
-			IMGPF_CDROM_120MM	= (1 << 0),	// Apply a 120mm CD-ROM transparency mask.
-			IMGPF_CDROM_80MM	= (1 << 1),	// Apply an 80mm CD-ROM transparency mask.
+			IMGPF_CDROM_120MM	= (1U << 0),	// Apply a 120mm CD-ROM transparency mask.
+			IMGPF_CDROM_80MM	= (1U << 1),	// Apply an 80mm CD-ROM transparency mask.
 
 			// If the image needs to be resized, use
 			// nearest neighbor if the new size is an
 			// integer multiple of the old size.
-			IMGPF_RESCALE_NEAREST	= (1 << 2),
+			IMGPF_RESCALE_NEAREST	= (1U << 2),
 
 			// File supports animated icons.
 			// Call iconAnimData() to get the animated
 			// icon frames and control information.
-			IMGPF_ICON_ANIMATED	= (1 << 3),
+			IMGPF_ICON_ANIMATED	= (1U << 3),
 		};
 
 		struct ImageSizeDef {

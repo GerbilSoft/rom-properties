@@ -316,7 +316,7 @@ int TCreateThumbnail<ImgClass>::getThumbnail(const RomData *romData, int reqSize
 			continue;
 		}
 
-		const uint32_t bf = (1 << imgType);
+		const uint32_t bf = (1U << imgType);
 		if (!(imgbf & bf)) {
 			// Image is not present.
 			continue;

@@ -141,12 +141,12 @@ typedef struct PACKED _ISO_DirEntry {
 ASSERT_STRUCT(ISO_DirEntry, 33);
 
 typedef enum {
-	ISO_FLAG_HIDDEN		= (1 << 0),	// File is hidden.
-	ISO_FLAG_DIRECTORY	= (1 << 1),	// File is a subdirectory.
-	ISO_FLAG_ASSOCIATED	= (1 << 2),	// "Associated" file.
-	ISO_FLAG_XATTR		= (1 << 3),	// xattr contaisn information about the format of this file.
-	ISO_FLAG_UID_GID	= (1 << 4),	// xattr contains uid and gid.
-	ISO_FLAG_NOT_FINAL	= (1 << 7),	// If set, this is not the final directory record for the file.
+	ISO_FLAG_HIDDEN		= (1U << 0),	// File is hidden.
+	ISO_FLAG_DIRECTORY	= (1U << 1),	// File is a subdirectory.
+	ISO_FLAG_ASSOCIATED	= (1U << 2),	// "Associated" file.
+	ISO_FLAG_XATTR		= (1U << 3),	// xattr contaisn information about the format of this file.
+	ISO_FLAG_UID_GID	= (1U << 4),	// xattr contains uid and gid.
+	ISO_FLAG_NOT_FINAL	= (1U << 7),	// If set, this is not the final directory record for the file.
 						// Could be used for files larger than 4 GB, but generally isn't.
 } ISO_File_Flags_t;
 

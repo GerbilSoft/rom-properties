@@ -64,12 +64,12 @@ typedef enum {
  * NOTE: This is a bitfield.
  */
 typedef enum {
-	NSF_EXP_VRC6		= (1 << 0),	// Konami VRC6
-	NSF_EXP_VRC7		= (1 << 1),	// Konami VRC7
-	NSF_EXP_2C33		= (1 << 2),	// 2C33 (Famicom Disk System)
-	NSF_EXP_MMC5		= (1 << 3),	// MMC5
-	NSF_EXP_N163		= (1 << 4),	// Namco N163
-	NSF_EXP_SUNSOFT_5B	= (1 << 5),	// Sunsoft 5B
+	NSF_EXP_VRC6		= (1U << 0),	// Konami VRC6
+	NSF_EXP_VRC7		= (1U << 1),	// Konami VRC7
+	NSF_EXP_2C33		= (1U << 2),	// 2C33 (Famicom Disk System)
+	NSF_EXP_MMC5		= (1U << 3),	// MMC5
+	NSF_EXP_N163		= (1U << 4),	// Namco N163
+	NSF_EXP_SUNSOFT_5B	= (1U << 5),	// Sunsoft 5B
 } NSF_Expansion_e;
 
 #pragma pack()

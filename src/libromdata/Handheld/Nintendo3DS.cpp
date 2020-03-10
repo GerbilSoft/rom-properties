@@ -72,13 +72,13 @@ class Nintendo3DSPrivate : public RomDataPrivate
 
 			// The following headers are not exclusive,
 			// so one or more can be present.
-			HEADER_SMDH	= (1 << 0),	// Includes header and icon.
+			HEADER_SMDH	= (1U << 0),	// Includes header and icon.
 
 			// The following headers are mutually exclusive.
-			HEADER_3DSX	= (1 << 1),
-			HEADER_CIA	= (1 << 2),
-			HEADER_TMD	= (1 << 3),	// ticket, tmd_header
-			HEADER_NCSD	= (1 << 4),	// ncsd_header, cinfo_header
+			HEADER_3DSX	= (1U << 1),
+			HEADER_CIA	= (1U << 2),
+			HEADER_TMD	= (1U << 3),	// ticket, tmd_header
+			HEADER_NCSD	= (1U << 4),	// ncsd_header, cinfo_header
 		};
 		uint32_t headers_loaded;	// HeadersPresent
 
@@ -1671,7 +1671,7 @@ const char *Nintendo3DS::systemName(unsigned int type) const
 		(ncch && ncch->isOpen() ? ncch->ncchHeader() : nullptr);
 	if (ncch_header && ncch_header->product_code[0] == 'K') {
 		// *New* Nintendo 3DS exclusive.
-		type |= (1 << 2);
+		type |= (1U << 2);
 	}
 
 	// "iQue" is only used if the localized system name is requested
@@ -1681,7 +1681,7 @@ const char *Nintendo3DS::systemName(unsigned int type) const
 		uint32_t smdhRegion = const_cast<Nintendo3DSPrivate*>(d)->getSMDHRegionCode();
 		if (smdhRegion == N3DS_REGION_CHINA) {
 			// Chinese exclusive.
-			type |= (1 << 3);
+			type |= (1U << 3);
 		}
 	}
 

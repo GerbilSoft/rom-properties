@@ -62,16 +62,16 @@ class DreamcastSavePrivate : public RomDataPrivate
 			DC_HAVE_UNKNOWN = 0,
 
 			// VMS data. Present in .VMS and .DCI files.
-			DC_HAVE_VMS = (1 << 0),
+			DC_HAVE_VMS = (1U << 0),
 
 			// VMI header. Present in .VMI files only.
-			DC_HAVE_VMI = (1 << 1),
+			DC_HAVE_VMI = (1U << 1),
 
 			// Directory entry. Present in .VMI and .DCI files.
-			DC_HAVE_DIR_ENTRY = (1 << 2),
+			DC_HAVE_DIR_ENTRY = (1U << 2),
 
 			// ICONDATA_VMS.
-			DC_IS_ICONDATA_VMS = (1 << 3),
+			DC_IS_ICONDATA_VMS = (1U << 3),
 		};
 		uint32_t loaded_headers;
 

@@ -281,10 +281,10 @@ typedef struct PACKED _SCSI_RESP_REQUEST_SENSE {
 } SCSI_RESP_REQUEST_SENSE;
 
 /** SCSI error code macros. (From udev) **/
-#define ERRCODE(s)	((((s)[2] & 0x0F) << 16) | ((s)[12] << 8) | ((s)[13]))
-#define SK(errcode)	(((errcode) >> 16) & 0xF)
-#define ASC(errcode)	(((errcode) >> 8) & 0xFF)
-#define ASCQ(errcode)	((errcode) & 0xFF)
+#define ERRCODE(s)	((((s)[2] & 0x0FU) << 16) | ((s)[12] << 8) | ((s)[13]))
+#define SK(errcode)	(((errcode) >> 16) & 0xFU)
+#define ASC(errcode)	(((errcode) >> 8) & 0xFFU)
+#define ASCQ(errcode)	((errcode) & 0xFFU)
 
 /* REQUEST SENSE error codes. */
 #define SCSI_ERR_REQUEST_SENSE_CURRENT	0x70	/* Current errors, fixed format. */
@@ -293,10 +293,10 @@ typedef struct PACKED _SCSI_RESP_REQUEST_SENSE {
 #define SCSI_ERR_REQUEST_SENSE_DEFERRED_DESC	0x73	/* Deferred errors, descriptor format. */
 
 /* REQUEST SENSE bit definitions. */
-#define SCSI_BIT_REQUEST_SENSE_ERRORCODE_VALID	(1 << 7)	/* If set, INFORMATION is defined. */
-#define SCSI_BIT_REQUEST_SENSE_KEY_FILEMARK	(1 << 7)	/* Reached a filemark. */
-#define SCSI_BIT_REQUEST_SENSE_KEY_EOM		(1 << 6)	/* End of medium. */
-#define SCSI_BIT_REQUEST_SENSE_KEY_ILI		(1 << 5)	/* Incorrect length indicator. */
+#define SCSI_BIT_REQUEST_SENSE_ERRORCODE_VALID	(1U << 7)	/* If set, INFORMATION is defined. */
+#define SCSI_BIT_REQUEST_SENSE_KEY_FILEMARK	(1U << 7)	/* Reached a filemark. */
+#define SCSI_BIT_REQUEST_SENSE_KEY_EOM		(1U << 6)	/* End of medium. */
+#define SCSI_BIT_REQUEST_SENSE_KEY_ILI		(1U << 5)	/* Incorrect length indicator. */
 
 /* REQUEST SENSE sense key definitons. */
 #define SCSI_SENSE_KEY_NO_SENSE			0x0
@@ -380,13 +380,13 @@ typedef struct PACKED _SCSI_RESP_INQUIRY_STD {
 #define SCSI_VERSION_ANSI_SCSI2		0x2	/* SCSI-2 */
 
 /* Flags. */
-#define SCSI_BIT_INQUIRY_FLAGS_RELADR		(1 << 7)	/* 1 == device supports RelAdr mode. */
-#define SCSI_BIT_INQUIRY_FLAGS_WBUS32		(1 << 6)	/* 1 == device supports 32-bit mode. */
-#define SCSI_BIT_INQUIRY_FLAGS_WBUS16		(1 << 5)	/* 1 == device supports 16-bit mode. */
-#define SCSI_BIT_INQUIRY_FLAGS_SYNC		(1 << 4)	/* 1 == supports synchronous transfers. */
-#define SCSI_BIT_INQUIRY_FLAGS_LINKED		(1 << 3)	/* 1 == supports linked commands. */
-#define SCSI_BIT_INQUIRY_FLAGS_CMDQUE		(1 << 1)	/* 1 == supports Tagged Command Queueing. */
-#define SCSI_BIT_INQUIRY_FLAGS_SFTRE		(1 << 0)	/* 1 == supports Soft Reset. */
+#define SCSI_BIT_INQUIRY_FLAGS_RELADR		(1U << 7)	/* 1 == device supports RelAdr mode. */
+#define SCSI_BIT_INQUIRY_FLAGS_WBUS32		(1U << 6)	/* 1 == device supports 32-bit mode. */
+#define SCSI_BIT_INQUIRY_FLAGS_WBUS16		(1U << 5)	/* 1 == device supports 16-bit mode. */
+#define SCSI_BIT_INQUIRY_FLAGS_SYNC		(1U << 4)	/* 1 == supports synchronous transfers. */
+#define SCSI_BIT_INQUIRY_FLAGS_LINKED		(1U << 3)	/* 1 == supports linked commands. */
+#define SCSI_BIT_INQUIRY_FLAGS_CMDQUE		(1U << 1)	/* 1 == supports Tagged Command Queueing. */
+#define SCSI_BIT_INQUIRY_FLAGS_SFTRE		(1U << 0)	/* 1 == supports Soft Reset. */
 
 /** READ CAPACITY(10) (0x25) **/
 
@@ -437,8 +437,8 @@ typedef struct PACKED _SCSI_CDB_READ_10
 } SCSI_CDB_READ_10;
 
 /* Flags. */
-#define SCSI_BIT_READ_10_FUA		(1 << 3)	/* Force Unit Access */
-#define SCSI_BIT_READ_10_DPO		(1 << 4)	/* Disable Page Out */
+#define SCSI_BIT_READ_10_FUA		(1U << 3)	/* Force Unit Access */
+#define SCSI_BIT_READ_10_DPO		(1U << 4)	/* Disable Page Out */
 
 /** READ TOC (0x43) [CD-ROM] **/
 
@@ -454,8 +454,8 @@ typedef struct PACKED _SCSI_CDB_READ_TOC
 } SCSI_CDB_READ_TOC;
 
 /* MSF flags. */
-#define SCSI_BIT_READ_TOC_MSF_LBA	(0 << 2)	/* 0 == reads TOC in LBA format. */
-#define SCSI_BIT_READ_TOC_MSF_MSF	(1 << 2)	/* 1 == reads TOC in MSF format. */
+#define SCSI_BIT_READ_TOC_MSF_LBA	(0U << 2)	/* 0 == reads TOC in LBA format. */
+#define SCSI_BIT_READ_TOC_MSF_MSF	(1U << 2)	/* 1 == reads TOC in MSF format. */
 
 /* TOC: Track entry. */
 typedef struct PACKED _SCSI_CDROM_TOC_TRACK
@@ -611,7 +611,7 @@ typedef struct PACKED _SCSI_RESP_READ_DISC_INFORMATION_STANDARD {
 /* READ DISC INFORMATION response: Track resources information. */
 typedef struct PACKED _SCSI_RESP_READ_DISC_INFORMATION_TRACK {
 	uint16_t DiscInfoLength;			/* (BE16) == 10 */
-	uint8_t DiscInfoDataType;			/* == (0x1 << 5) */
+	uint8_t DiscInfoDataType;			/* == (0x1U << 5) */
 	uint8_t Reserved;
 	uint16_t MaxPossibleNumberOfTracks;		/* (BE16) */
 	uint16_t NumberOfAssignedTracks;		/* (BE16) */
@@ -622,7 +622,7 @@ typedef struct PACKED _SCSI_RESP_READ_DISC_INFORMATION_TRACK {
 /* READ DISC INFORMATION response: POW Resources information. */
 typedef struct PACKED _SCSI_RESP_READ_DISC_INFORMATION_POW {
 	uint16_t DiscInfoLength;			/* (BE16) == 14 */
-	uint8_t DiscInfoDataType;			/* == (0x2 << 5) */
+	uint8_t DiscInfoDataType;			/* == (0x2U << 5) */
 	uint8_t Reserved;
 	uint32_t RemainingPOWReplacements;		/* (BE32) */
 	uint32_t RemainingPOWReallocationMapEntries;	/* (BE32) */
@@ -642,23 +642,23 @@ typedef struct PACKED _SCSI_CDB_READ_CD {
 } SCSI_CDB_READ_CD;
 
 /* Expected sector types. */
-#define SCSI_READ_CD_SECTORTYPE_RELADR	(1 << 0)	/* 1 == relative addressing */
-#define SCSI_READ_CD_SECTORTYPE_DAP	(1 << 1)	/* 1 == enable error correction for audio */
-#define SCSI_READ_CD_SECTORTYPE_ANY	(0x0 << 2)	/* Any type allowed. */
-#define SCSI_READ_CD_SECTORTYPE_CDDA	(0x1 << 2)	/* CD audio. */
-#define SCSI_READ_CD_SECTORTYPE_M1F1	(0x2 << 2)	/* Yellow Book: 2048-byte user data */
-#define SCSI_READ_CD_SECTORTYPE_M1F2	(0x3 << 2)	/* Yellow Book: 2336-byte user data */
-#define SCSI_READ_CD_SECTORTYPE_M2F1	(0x4 << 2)	/* Green Book: 2048-byte user data */
-#define SCSI_READ_CD_SECTORTYPE_M2F2	(0x5 << 2)	/* Green Book: 2324-byte user data */
+#define SCSI_READ_CD_SECTORTYPE_RELADR	(1U << 0)	/* 1 == relative addressing */
+#define SCSI_READ_CD_SECTORTYPE_DAP	(1U << 1)	/* 1 == enable error correction for audio */
+#define SCSI_READ_CD_SECTORTYPE_ANY	(0x0U << 2)	/* Any type allowed. */
+#define SCSI_READ_CD_SECTORTYPE_CDDA	(0x1U << 2)	/* CD audio. */
+#define SCSI_READ_CD_SECTORTYPE_M1F1	(0x2U << 2)	/* Yellow Book: 2048-byte user data */
+#define SCSI_READ_CD_SECTORTYPE_M1F2	(0x3U << 2)	/* Yellow Book: 2336-byte user data */
+#define SCSI_READ_CD_SECTORTYPE_M2F1	(0x4U << 2)	/* Green Book: 2048-byte user data */
+#define SCSI_READ_CD_SECTORTYPE_M2F2	(0x5U << 2)	/* Green Book: 2324-byte user data */
 
 /* Flags. */
-#define SCSI_BIT_READ_CD_FLAGS_C2_ERROR		(1 << 1)	/* Read C2 error flags. */
-#define SCSI_BIT_READ_CD_FLAGS_C2_BLOCK_ERROR	(1 << 2)	/* Read C2 and block error flags. */
-#define SCSI_BIT_READ_CD_FLAGS_EDC_ECC		(1 << 3)	/* Read EDC & ECC data. */
-#define SCSI_BIT_READ_CD_FLAGS_USER_DATA	(1 << 4)	/* Read user data. */
-#define SCSI_BIT_READ_CD_FLAGS_HEADER		(1 << 5)	/* M1/F1 4-byte header. */
-#define SCSI_BIT_READ_CD_FLAGS_SUBHEADER	(1 << 6)	/* M2 subheader. */
-#define SCSI_BIT_READ_CD_FLAGS_SYNCH_FIELD	(1 << 7)	/* Synchronization field. */
+#define SCSI_BIT_READ_CD_FLAGS_C2_ERROR		(1U << 1)	/* Read C2 error flags. */
+#define SCSI_BIT_READ_CD_FLAGS_C2_BLOCK_ERROR	(1U << 2)	/* Read C2 and block error flags. */
+#define SCSI_BIT_READ_CD_FLAGS_EDC_ECC		(1U << 3)	/* Read EDC & ECC data. */
+#define SCSI_BIT_READ_CD_FLAGS_USER_DATA	(1U << 4)	/* Read user data. */
+#define SCSI_BIT_READ_CD_FLAGS_HEADER		(1U << 5)	/* M1/F1 4-byte header. */
+#define SCSI_BIT_READ_CD_FLAGS_SUBHEADER	(1U << 6)	/* M2 subheader. */
+#define SCSI_BIT_READ_CD_FLAGS_SYNCH_FIELD	(1U << 7)	/* Synchronization field. */
 
 /* Subchannel selection. */
 #define SCSI_READ_CD_SUBCHANNELS_NONE	0x0	/* No subchannel data. */
