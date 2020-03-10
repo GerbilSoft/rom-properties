@@ -327,14 +327,21 @@ Q_DECL_EXPORT int rp_create_thumbnail(const char *source_file, const char *outpu
 	if (localUrl.scheme().isEmpty() || localUrl.isLocalFile()) {
 		qs_source_filename = localUrl.toLocalFile();
 	}
-	QFileInfo fi_src(qs_source_filename);
 
-	// Modification time.
 	// FIXME: Local files only. Figure out how to handle this for remote.
 	if (!qs_source_filename.isEmpty()) {
+		QFileInfo fi_src(qs_source_filename);
+
+		// Modification time.
 		int64_t mtime = fi_src.lastModified().toMSecsSinceEpoch() / 1000;
 		if (mtime > 0) {
-			kv.emplace_back("Thumb::Size", rp_sprintf("%" PRId64, mtime));
+			kv.emplace_back("Thumb::MTime", rp_sprintf("%" PRId64, mtime));
+		}
+
+		// File size.
+		off64_t szFile = fi_src.size();
+		if (szFile > 0) {
+			kv.emplace_back("Thumb::Size", rp_sprintf("%" PRId64, szFile));
 		}
 	}
 
@@ -342,12 +349,6 @@ Q_DECL_EXPORT int rp_create_thumbnail(const char *source_file, const char *outpu
 	const char *const mimeType = romData->mimeType();
 	if (mimeType) {
 		kv.emplace_back("Thumb::Mimetype", mimeType);
-	}
-
-	// File size.
-	off64_t szFile = fi_src.size();
-	if (szFile > 0) {
-		kv.emplace_back("Thumb::Size", rp_sprintf("%" PRId64, szFile));
 	}
 
 	// Original image dimensions.
