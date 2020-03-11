@@ -15,6 +15,13 @@
  */
 int rpt_do_security_options(void)
 {
+	// FIXME: rp-download may be called by the stub, and any process
+	// exec()'d by us inherits the seccomp filter, which *will* break
+	// things, since child processes cannot enable syscalls if they
+	// weren't enabled here.
+	return 0;
+
+#if 0
 	// Set OS-specific security options.
 	rp_secure_param_t param;
 #if defined(_WIN32)
@@ -99,4 +106,5 @@ int rpt_do_security_options(void)
 	param.dummy = 0;
 #endif
 	return rp_secure_enable(param);
+#endif
 }
