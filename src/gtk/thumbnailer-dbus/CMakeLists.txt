@@ -36,10 +36,12 @@ ENDIF(CFLAG_Wno_unused_parameter)
 SET(rp-thumbnailer-dbus_SRCS
 	rp-thumbnailer-dbus.c
 	rp-thumbnailer-main.cpp
+	rptsecure.c
 	${CMAKE_CURRENT_BINARY_DIR}/SpecializedThumbnailer1.c
 	)
 SET(rp-thumbnailer-dbus_H
 	rp-thumbnailer-dbus.h
+	rptsecure.h
 	${CMAKE_CURRENT_BINARY_DIR}/SpecializedThumbnailer1.h
 	)
 
