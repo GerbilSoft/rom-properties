@@ -3,7 +3,7 @@
  * rpcli.cpp: Command-line interface for properties.                       *
  *                                                                         *
  * Copyright (c) 2016-2018 by Egor.                                        *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -11,7 +11,7 @@
 #include "config.rpcli.h"
 
 // OS-specific security options.
-#include "librpsecure/os-secure.h"
+#include "rpcli_secure.h"
 
 // librpbase
 #include "librpbase/config.librpbase.h"
@@ -313,69 +313,8 @@ static void DoAtaIdentifyDevice(const char *filename, bool json)
 
 int RP_C_API main(int argc, char *argv[])
 {
-	// Set OS-specific security options.
-	rp_secure_param_t param;
-#if defined(_WIN32)
-	param.bHighSec = FALSE;
-#elif defined(HAVE_SECCOMP)
-	static const int syscall_wl[] = {
-		// Syscalls used by rp-download.
-		// TODO: Add more syscalls.
-		// FIXME: glibc-2.31 uses 64-bit time syscalls that may not be
-		// defined in earlier versions, including Ubuntu 14.04.
-		SCMP_SYS(close),
-		SCMP_SYS(dup),		// gzdopen()
-		SCMP_SYS(fstat),
-		SCMP_SYS(ftruncate),	// LibRpBase::RpFile::truncate() [from LibRpBase::RpPngWriterPrivate::init()]
-		SCMP_SYS(futex),
-		SCMP_SYS(ioctl),	// for devices; also afl-fuzz
-		SCMP_SYS(lseek),
-		SCMP_SYS(lstat),	// LibRpBase::FileSystem::is_symlink(), resolve_symlink()
-		SCMP_SYS(mmap), SCMP_SYS(mmap2),
-		SCMP_SYS(mprotect),	// dlopen()
-		SCMP_SYS(munmap),
-		SCMP_SYS(open),		// Ubuntu 16.04
-		SCMP_SYS(openat),	// glibc-2.31
-#ifdef __SNR_openat2
-		SCMP_SYS(openat2),	// Linux 5.6
-#endif /* __SNR_openat2 */
-		SCMP_SYS(readlink),	// realpath() [LibRpBase::FileSystem::resolve_symlink()]
-
-		// KeyManager (keys.conf)
-		SCMP_SYS(access),	// LibUnixCommon::isWritableDirectory()
-		SCMP_SYS(stat),		// LibUnixCommon::isWritableDirectory()
-
-#ifdef __SNR_statx
-		SCMP_SYS(getcwd),	// called by glibc's statx()
-		SCMP_SYS(statx),
-#endif /* __SNR_statx */
-
-		// glibc ncsd
-		// TODO: Restrict connect() to AF_UNIX.
-		SCMP_SYS(connect), SCMP_SYS(recvmsg), SCMP_SYS(sendto),
-
-		// NOTE: The following syscalls are only made if either access() or stat() can't be run.
-		// TODO: Can this happen in other situations?
-		//SCMP_SYS(getuid),
-		//SCMP_SYS(socket),	// ???
-
-		-1	// End of whitelist
-	};
-	param.syscall_wl = syscall_wl;
-#elif defined(HAVE_PLEDGE)
-	// Promises:
-	// - stdio: General stdio functionality.
-	// - rpath: Read from ~/.config/rom-properties/ and ~/.cache/rom-properties/
-	// - wpath: Write to ~/.cache/rom-properties/
-	// - cpath: Create ~/.cache/rom-properties/ if it doesn't exist.
-	// - getpw: Get user's home directory if HOME is empty.
-	param.promises = "stdio rpath wpath cpath getpw";
-#elif defined(HAVE_TAME)
-	param.tame_flags = TAME_STDIO | TAME_RPATH | TAME_WPATH | TAME_CPATH | TAME_GETPW;
-#else
-	param.dummy = 0;
-#endif
-	rp_secure_enable(param);
+	// Enable security options.
+	rpcli_do_security_options();
 
 	// Set the C and C++ locales.
 	locale::global(locale(""));

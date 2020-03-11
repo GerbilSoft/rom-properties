@@ -5,10 +5,12 @@ SET(rpcli_SRCS
 	rpcli.cpp
 	properties.cpp
 	device.cpp
+	rpcli_secure.c
 	)
 SET(rpcli_H
 	properties.hpp
 	device.hpp
+	rpcli_secure.h
 	)
 
 # Check for system security functionality.
