@@ -43,13 +43,15 @@ int rpt_do_security_options(void)
 		SCMP_SYS(access),	// LibUnixCommon::isWritableDirectory()
 		SCMP_SYS(close),
 		SCMP_SYS(dup),		// gzdopen()
-		SCMP_SYS(fstat),	// __GI___fxstat() [printf()]
+		SCMP_SYS(fstat), SCMP_SYS(fstat64),	// __GI___fxstat() [printf()]
 		SCMP_SYS(ftruncate),	// LibRpBase::RpFile::truncate() [from LibRpBase::RpPngWriterPrivate::init()]
+		SCMP_SYS(ftruncate64),
 		SCMP_SYS(futex),	// iconv_open(), dlopen()
+		SCMP_SYS(gettimeofday),	// 32-bit only?
 		SCMP_SYS(getppid),	// dll-search.c: walk_proc_tree()
 		SCMP_SYS(getuid),	// TODO: Only use geteuid()?
-		SCMP_SYS(lseek),
-		SCMP_SYS(lstat),	// LibRpBase::FileSystem::is_symlink(), resolve_symlink()
+		SCMP_SYS(lseek), SCMP_SYS(_llseek),
+		SCMP_SYS(lstat), SCMP_SYS(lstat64),	// LibRpBase::FileSystem::is_symlink(), resolve_symlink()
 		SCMP_SYS(mkdir),	// g_mkdir_with_parents() [rp_thumbnailer_process()]
 		SCMP_SYS(mmap),		// iconv_open(), dlopen()
 		SCMP_SYS(mmap2),	// iconv_open(), dlopen() [might only be needed on i386...]
@@ -61,9 +63,8 @@ int rpt_do_security_options(void)
 		SCMP_SYS(openat2),	// Linux 5.6
 #endif /* __SNR_openat2 */
 		SCMP_SYS(readlink),	// realpath() [LibRpBase::FileSystem::resolve_symlink()]
-		SCMP_SYS(stat),		// LibUnixCommon::isWritableDirectory()
-		SCMP_SYS(statfs),	// LibRpBase::FileSystem::isOnBadFS()
-		SCMP_SYS(statfs64),	// LibRpBase::FileSystem::isOnBadFS()
+		SCMP_SYS(stat), SCMP_SYS(stat64),	// LibUnixCommon::isWritableDirectory()
+		SCMP_SYS(statfs), SCMP_SYS(statfs64),	// LibRpBase::FileSystem::isOnBadFS()
 
 #ifdef __SNR_statx
 		SCMP_SYS(getcwd),	// called by glibc's statx()
@@ -75,11 +76,12 @@ int rpt_do_security_options(void)
 		SCMP_SYS(connect), SCMP_SYS(recvmsg), SCMP_SYS(sendto),
 
 		// glib / D-Bus
-		SCMP_SYS(eventfd2), SCMP_SYS(fcntl),
-		SCMP_SYS(getdents),	// g_file_new_for_uri() [rp_create_thumbnail()]
-		SCMP_SYS(getdents64),	// g_file_new_for_uri() [rp_create_thumbnail()]
+		SCMP_SYS(eventfd2),
+		SCMP_SYS(fcntl), SCMP_SYS(fcntl64),
+		SCMP_SYS(getdents), SCMP_SYS(getdents64)	// g_file_new_for_uri() [rp_create_thumbnail()]
 		SCMP_SYS(getegid), SCMP_SYS(geteuid), SCMP_SYS(poll),
 		SCMP_SYS(recvfrom), SCMP_SYS(sendmsg), SCMP_SYS(socket),
+		SCMP_SYS(socketcall),	// FIXME: Enhanced filtering? [cURL+GnuTLS only?]
 
 		// only if G_MESSAGES_DEBUG=all [on Gentoo, but not Ubuntu 14.04]
 		SCMP_SYS(getpeername),	// g_log_writer_is_journald() [g_log()]

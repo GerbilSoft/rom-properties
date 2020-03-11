@@ -43,13 +43,14 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 		// TODO: Add more syscalls.
 		// FIXME: glibc-2.31 uses 64-bit time syscalls that may not be
 		// defined in earlier versions, including Ubuntu 14.04.
-		SCMP_SYS(fstat),	// __GI___fxstat() [printf()]
+		SCMP_SYS(fstat), SCMP_SYS(fstat64),	// __GI___fxstat() [printf()]
 		SCMP_SYS(futex),	// iconv_open()
+		SCMP_SYS(gettimeofday),	// 32-bit only? [testing::internal::GetTimeInMillis()]
 		SCMP_SYS(mmap),		// iconv_open()
 		SCMP_SYS(mmap2),	// iconv_open() [might only be needed on i386...]
 		SCMP_SYS(mprotect),	// iconv_open()
 		SCMP_SYS(munmap),	// free() [in some cases]
-		SCMP_SYS(lseek),
+		SCMP_SYS(lseek), SCMP_SYS(_llseek),
 		SCMP_SYS(open),		// Ubuntu 16.04
 		SCMP_SYS(openat),	// glibc-2.31
 #ifdef __SNR_openat2
@@ -63,7 +64,7 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 
 		// MiniZip
 		SCMP_SYS(close),	// mktime() [mz_zip_dosdate_to_time_t()]
-		SCMP_SYS(stat),		// mktime() [mz_zip_dosdate_to_time_t()]
+		SCMP_SYS(stat), SCMP_SYS(stat64),	// mktime() [mz_zip_dosdate_to_time_t()]
 
 		// glibc ncsd
 		// TODO: Restrict connect() to AF_UNIX.

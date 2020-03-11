@@ -46,7 +46,9 @@ int rp_stub_do_security_options(bool config)
 		// defined in earlier versions, including Ubuntu 14.04.
 
 		// dlopen()
-		SCMP_SYS(access), SCMP_SYS(close), SCMP_SYS(fstat),
+		SCMP_SYS(access), SCMP_SYS(close),
+		SCMP_SYS(fstat), SCMP_SYS(fstat64),
+		SCMP_SYS(gettimeofday),	// 32-bit only?
 		SCMP_SYS(mmap),
 		SCMP_SYS(mmap2),	// might only be needed on i386...
 		SCMP_SYS(mprotect), SCMP_SYS(munmap),
@@ -61,7 +63,7 @@ int rp_stub_do_security_options(bool config)
 #ifdef __SNR_prlimit64
 		SCMP_SYS(prlimit64),
 #endif /* __SNR_prlimit64 */
-		SCMP_SYS(stat),
+		SCMP_SYS(stat), SCMP_SYS(stat64),
 		SCMP_SYS(statfs), SCMP_SYS(statfs64),
 
 		// NPTL __pthread_initialize_minimal_internal()
@@ -85,10 +87,11 @@ int rp_stub_do_security_options(bool config)
 		// librpbase/libromdata
 		SCMP_SYS(dup),		// gzdopen()
 		SCMP_SYS(ftruncate),	// LibRpBase::RpFile::truncate() [from LibRpBase::RpPngWriterPrivate::init()]
+		SCMP_SYS(ftruncate64),
 		SCMP_SYS(futex),	// pthread_once()
 		SCMP_SYS(getuid), SCMP_SYS(geteuid),	// TODO: Only use geteuid()?
-		SCMP_SYS(lseek),
-		SCMP_SYS(lstat),	// realpath() [LibRpBase::FileSystem::resolve_symlink()]
+		SCMP_SYS(lseek), SCMP_SYS(_llseek),
+		SCMP_SYS(lstat), SCMP_SYS(lstat64),	// realpath() [LibRpBase::FileSystem::resolve_symlink()]
 		SCMP_SYS(readlink),	// realpath() [LibRpBase::FileSystem::resolve_symlink()]
 
 		// ExecRpDownload_posix.cpp

@@ -306,9 +306,17 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 #ifdef __SNR_clock_gettime64
 		SCMP_SYS(clock_gettime64),
 #endif /* __SNR_clock_gettime64 */
-		SCMP_SYS(close), SCMP_SYS(fcntl), SCMP_SYS(fsetxattr),
-		SCMP_SYS(fstat), SCMP_SYS(futex), SCMP_SYS(getdents),
-		SCMP_SYS(getrusage), SCMP_SYS(getuid), SCMP_SYS(lseek),
+		SCMP_SYS(close),
+		SCMP_SYS(fcntl), SCMP_SYS(fcntl64),
+		SCMP_SYS(fsetxattr),
+		SCMP_SYS(fstat), SCMP_SYS(fstat64),
+		SCMP_SYS(futex),
+		SCMP_SYS(getdents), SCMP_SYS(getdents64),
+		SCMP_SYS(getrusage),
+		SCMP_SYS(gettimeofday),	// 32-bit only?
+		SCMP_SYS(getuid),
+		SCMP_SYS(lseek), SCMP_SYS(_llseek),
+		//SCMP_SYS(lstat), SCMP_SYS(lstat64),	// Not sure if used?
 		SCMP_SYS(mkdir), SCMP_SYS(mmap), SCMP_SYS(mmap2),
 		SCMP_SYS(munmap),
 		SCMP_SYS(open),		// Ubuntu 16.04
@@ -316,7 +324,8 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 #ifdef __SNR_openat2
 		SCMP_SYS(openat2),	// Linux 5.6
 #endif /* __SNR_openat2 */
-		SCMP_SYS(poll), SCMP_SYS(select), SCMP_SYS(stat),
+		SCMP_SYS(poll), SCMP_SYS(select),
+		SCMP_SYS(stat), SCMP_SYS(stat64),
 		SCMP_SYS(utimensat),
 
 #ifdef __SNR_statx
@@ -325,7 +334,11 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 #endif /* __SNR_statx */
 
 		// glibc ncsd
+		// TODO: Restrict connect() to AF_UNIX.
 		SCMP_SYS(connect), SCMP_SYS(recvmsg), SCMP_SYS(sendto),
+		SCMP_SYS(sendmmsg),	// getaddrinfo() (32-bit only?)
+		SCMP_SYS(ioctl),	// getaddrinfo() (32-bit only?) [FIXME: Filter for FIONREAD]
+		SCMP_SYS(recvfrom),	// getaddrinfo() (32-bit only?)
 
 		// cURL and OpenSSL
 #ifdef __SNR_getrandom
@@ -333,8 +346,9 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 #endif /* __SNR_getrandom */
 		SCMP_SYS(getpeername), SCMP_SYS(getsockname),
 		SCMP_SYS(getsockopt), SCMP_SYS(madvise), SCMP_SYS(mprotect),
-		SCMP_SYS(setsockopt), SCMP_SYS(socket), SCMP_SYS(socketpair),
-		SCMP_SYS(sysinfo),
+		SCMP_SYS(setsockopt), SCMP_SYS(socket),
+		SCMP_SYS(socketcall),	// FIXME: Enhanced filtering? [cURL+GnuTLS only?]
+		SCMP_SYS(socketpair), SCMP_SYS(sysinfo),
 
 		-1	// End of whitelist
 	};

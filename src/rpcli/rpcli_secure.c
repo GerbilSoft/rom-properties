@@ -27,12 +27,14 @@ int rpcli_do_security_options(void)
 		// defined in earlier versions, including Ubuntu 14.04.
 		SCMP_SYS(close),
 		SCMP_SYS(dup),		// gzdopen()
-		SCMP_SYS(fstat),
+		SCMP_SYS(fstat), SCMP_SYS(fstat64),
 		SCMP_SYS(ftruncate),	// LibRpBase::RpFile::truncate() [from LibRpBase::RpPngWriterPrivate::init()]
+		SCMP_SYS(ftruncate64),
 		SCMP_SYS(futex),
+		SCMP_SYS(gettimeofday),	// 32-bit only?
 		SCMP_SYS(ioctl),	// for devices; also afl-fuzz
-		SCMP_SYS(lseek),
-		SCMP_SYS(lstat),	// LibRpBase::FileSystem::is_symlink(), resolve_symlink()
+		SCMP_SYS(lseek), SCMP_SYS(_llseek),
+		SCMP_SYS(lstat), SCMP_SYS(lstat64),	// LibRpBase::FileSystem::is_symlink(), resolve_symlink()
 		SCMP_SYS(mmap), SCMP_SYS(mmap2),
 		SCMP_SYS(mprotect),	// dlopen()
 		SCMP_SYS(munmap),
@@ -45,7 +47,7 @@ int rpcli_do_security_options(void)
 
 		// KeyManager (keys.conf)
 		SCMP_SYS(access),	// LibUnixCommon::isWritableDirectory()
-		SCMP_SYS(stat),		// LibUnixCommon::isWritableDirectory()
+		SCMP_SYS(stat), SCMP_SYS(stat64),	// LibUnixCommon::isWritableDirectory()
 
 #ifdef __SNR_statx
 		SCMP_SYS(getcwd),	// called by glibc's statx()
@@ -60,6 +62,7 @@ int rpcli_do_security_options(void)
 		// TODO: Can this happen in other situations?
 		//SCMP_SYS(getuid),
 		//SCMP_SYS(socket),	// ???
+		//SCMP_SYS(socketcall),	// FIXME: Enhanced filtering? [cURL+GnuTLS only?]
 
 		-1	// End of whitelist
 	};
