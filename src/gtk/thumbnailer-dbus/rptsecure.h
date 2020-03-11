@@ -9,8 +9,6 @@
 #ifndef __ROMPROPERTIES_GTK_RP_THUMBNAILER_DBUS_RPTSECURE_H__
 #define __ROMPROPERTIES_GTK_RP_THUMBNAILER_DBUS_RPTSECURE_H__
 
-#include "stdboolx.h"
-
 #ifdef __cplusplus
 extern "C" {
 #endif
