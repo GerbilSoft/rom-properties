@@ -63,7 +63,11 @@ TEST(TimegmTest, unix32bitMinMinusOneTest)
 #ifdef USING_MSVCRT_MKGMTIME
 	EXPECT_EQ(-1LL, timegm(&tm_unix_32bit_minMinusOne));
 #else /* !USING_MSVCRT_MKGMTIME */
-	EXPECT_EQ(-2147483649LL, timegm(&tm_unix_32bit_minMinusOne));
+	if (sizeof(size_t) < 8) {
+		EXPECT_EQ(-1LL, timegm(&tm_unix_32bit_minMinusOne));
+	} else {
+		EXPECT_EQ(-2147483649LL, timegm(&tm_unix_32bit_minMinusOne));
+	}
 #endif /* USING_MSVCRT_MKGMTIME */
 }
 
@@ -231,11 +235,12 @@ extern "C" int gtest_main(int argc, TCHAR *argv[])
 #endif
 
 	fprintf(stderr, "LibRpBase test suite: timegm() tests.\n");
-	fprintf(stderr, "Time conversion function in use: %s\n\n", func_name);
+	fprintf(stderr, "Time conversion function in use: %s\n", func_name);
 	if (sizeof(time_t) < 8) {
 		fprintf(stderr, "*** WARNING: 32-bit time_t is in use.\n"
-		                "*** Disabling tests known to fail with 32-bit time_t.");
+		                "*** Disabling tests known to fail with 32-bit time_t.\n");
 	}
+	fputc('\n', stderr);
 		
 	fflush(nullptr);
 
