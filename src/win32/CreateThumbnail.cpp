@@ -51,6 +51,7 @@ HBITMAP CreateThumbnail::rpImageToImgClass(const rp_image *img) const
 	// Windows doesn't like non-square icons.
 	// Add extra transparent columns/rows before
 	// converting to HBITMAP.
+	// TODO: Disable this for RP_ExtractImage and RP_ThumbnailProvider?
 	unique_ptr<rp_image> tmp_img;
 	if (!img->isSquare()) {
 		// Image is non-square.
