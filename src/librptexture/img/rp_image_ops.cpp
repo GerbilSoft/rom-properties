@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * rp_image_ops.cpp: Image class. (operations)                             *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -10,6 +10,9 @@
 #include "rp_image.hpp"
 #include "rp_image_p.hpp"
 #include "rp_image_backend.hpp"
+
+// C++ STL classes.
+using std::unique_ptr;
 
 // Workaround for RP_D() expecting the no-underscore, UpperCamelCase naming convention.
 #define rp_imagePrivate rp_image_private
@@ -172,34 +175,53 @@ rp_image *rp_image::squared(void) const
 		return nullptr;
 	}
 
-	rp_image *sq_img = nullptr;
 	if (width == height) {
 		// Image is already square. dup() it.
 		return this->dup();
-	} else if (width > height) {
-		// Image is wider. Add rows to the top and bottom.
-		// TODO: 8bpp support?
-		assert(d->backend->format == rp_image::FORMAT_ARGB32);
-		if (d->backend->format != rp_image::FORMAT_ARGB32) {
-			// Cannot resize this image.
-			// Use dup() instead.
-			return this->dup();
-		}
-		sq_img = new rp_image(width, width, rp_image::FORMAT_ARGB32);
-		if (!sq_img->isValid()) {
-			// Could not allocate the image.
-			delete sq_img;
-			return nullptr;
-		}
+	}
 
+	// Image needs adjustment.
+	// TODO: Native 8bpp support?
+	unique_ptr<rp_image> tmp_rp_image;
+	if (d->backend->format != rp_image::FORMAT_ARGB32) {
+		// Convert to ARGB32 first.
+		tmp_rp_image.reset(this->dup_ARGB32());
+	}
+
+	// Create the squared image.
+	const int max_dim = std::max(width, height);
+	rp_image *const sq_img = new rp_image(max_dim, max_dim, rp_image::FORMAT_ARGB32);
+	if (!sq_img->isValid()) {
+		// Could not allocate the image.
+		delete sq_img;
+		return nullptr;
+	}
+
+	// NOTE: Using uint8_t* because stride is measured in bytes.
+	uint8_t *dest = static_cast<uint8_t*>(sq_img->bits());
+	const int dest_stride = sq_img->stride();
+
+	const uint8_t *src;
+	int src_stride;
+	int src_row_bytes;
+	if (!tmp_rp_image) {
+		// Not using a temporary image.
+		auto backend = d->backend;
+		src = static_cast<const uint8_t*>(backend->data());
+		src_stride = backend->stride;
+		src_row_bytes = this->row_bytes();
+	} else {
+		// Using a temporary image.
+		auto backend = tmp_rp_image->d_ptr->backend;
+		src = static_cast<const uint8_t*>(backend->data());
+		src_stride = backend->stride;
+		src_row_bytes = tmp_rp_image->row_bytes();
+	}
+
+	if (width > height) {
+		// Image is wider. Add rows to the top and bottom.
 		const int addToTop = (width-height)/2;
 		const int addToBottom = addToTop + ((width-height)%2);
-
-		// NOTE: Using uint8_t* because stride is measured in bytes.
-		uint8_t *dest = static_cast<uint8_t*>(sq_img->bits());
-		const uint8_t *src = static_cast<const uint8_t*>(d->backend->data());
-		const int dest_stride = sq_img->stride();
-		const int src_stride = d->backend->stride;
 
 		// Clear the top rows.
 		memset(dest, 0, addToTop * dest_stride);
@@ -216,21 +238,8 @@ rp_image *rp_image::squared(void) const
 		// Clear the bottom rows.
 		// NOTE: Last row may not be the full stride.
 		memset(dest, 0, ((addToBottom-1) * dest_stride) + sq_img->row_bytes());
-	} else if (width < height) {
+	} else /*if (width < height)*/ {
 		// Image is taller. Add columns to the left and right.
-		// TODO: 8bpp support?
-		assert(d->backend->format == rp_image::FORMAT_ARGB32);
-		if (d->backend->format != rp_image::FORMAT_ARGB32) {
-			// Cannot resize this image.
-			// Use dup() instead.
-			return this->dup();
-		}
-		sq_img = new rp_image(height, height, rp_image::FORMAT_ARGB32);
-		if (!sq_img->isValid()) {
-			// Could not allocate the image.
-			delete sq_img;
-			return nullptr;
-		}
 
 		// NOTE: Mega Man Gold amiibo is "shifting" by 1px when
 		// refreshing in Win7. (switching from icon to thumbnail)
@@ -238,15 +247,8 @@ rp_image *rp_image::squared(void) const
 		const int addToLeft = (height-width)/2;
 		const int addToRight = addToLeft + ((height-width)%2);
 
-		// NOTE: Using uint8_t* because stride is measured in bytes.
-		uint8_t *dest = static_cast<uint8_t*>(sq_img->bits());
-
 		// "Blanking" area is right border, potential unused space from stride, then left border.
-		const uint8_t *src = static_cast<const uint8_t*>(d->backend->data());
-		const int src_row_bytes = this->row_bytes();	// Source row bytes.
 		const int dest_blanking = sq_img->stride() - src_row_bytes;
-		const int dest_stride = sq_img->stride();
-		const int src_stride = d->backend->stride;
 
 		// Clear the left part of the first row.
 		memset(dest, 0, addToLeft * sizeof(uint32_t));

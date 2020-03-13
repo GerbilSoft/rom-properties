@@ -140,6 +140,8 @@
     ".bundle" as separate extensions.)
   * KDE: Fixed vertical sizing of RFT_LISTDATA fields in some cases, e.g.
     Nintendo3DS.
+  * rp_image::squared(): Added (non-optimal) CI8 support; fixed a potential
+    memory corruption issue for images that are taller than they are wide.
 
 * Other changes:
   * Removed the internal copy of libjpeg-turbo. On Windows, gdiplus is now
