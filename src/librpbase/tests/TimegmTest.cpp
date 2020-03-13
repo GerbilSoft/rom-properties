@@ -63,7 +63,7 @@ TEST(TimegmTest, unix32bitMinMinusOneTest)
 #ifdef USING_MSVCRT_MKGMTIME
 	EXPECT_EQ(-1LL, timegm(&tm_unix_32bit_minMinusOne));
 #else /* !USING_MSVCRT_MKGMTIME */
-	if (sizeof(size_t) < 8) {
+	if (sizeof(time_t) < 8) {
 		EXPECT_EQ(-1LL, timegm(&tm_unix_32bit_minMinusOne));
 	} else {
 		EXPECT_EQ(-2147483649LL, timegm(&tm_unix_32bit_minMinusOne));
