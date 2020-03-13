@@ -22,6 +22,7 @@ macro(configure_msvc_runtime _crt)
     foreach(arg IN LISTS list_var)
       STRING(TOUPPER ${arg} arg)
       set(variables ${variables} CMAKE_C_FLAGS_${arg} CMAKE_CXX_FLAGS_${arg})
+      set(lvariables ${lvariables} CMAKE_EXE_LINKER_FLAGS_${arg} CMAKE_SHARED_LINKER_FLAGS_${arg} CMAKE_MODULE_LINKER_FLAGS_${arg})
     endforeach()
     unset(list_var)
     if(NOT variables)
@@ -35,6 +36,20 @@ macro(configure_msvc_runtime _crt)
         CMAKE_CXX_FLAGS_RELEASE
         CMAKE_CXX_FLAGS_RELWITHDEBINFO
       )
+      set(lvariables
+        CMAKE_EXE_LINKER_FLAGS_DEBUG
+        CMAKE_EXE_LINKER_FLAGS_MINSIZEREL
+        CMAKE_EXE_LINKER_FLAGS_RELEASE
+        CMAKE_EXE_LINKER_FLAGS_RELWITHDEBINFO
+        CMAKE_SHARED_LINKER_FLAGS_DEBUG
+        CMAKE_SHARED_LINKER_FLAGS_MINSIZEREL
+        CMAKE_SHARED_LINKER_FLAGS_RELEASE
+        CMAKE_SHARED_LINKER_FLAGS_RELWITHDEBINFO
+        CMAKE_MODULE_LINKER_FLAGS_DEBUG
+        CMAKE_MODULE_LINKER_FLAGS_MINSIZEREL
+        CMAKE_MODULE_LINKER_FLAGS_RELEASE
+        CMAKE_MODULE_LINKER_FLAGS_RELWITHDEBINFO
+      )
     endif(NOT variables)
     if(${_crt} STREQUAL "static")
       message(STATUS
@@ -44,6 +59,9 @@ macro(configure_msvc_runtime _crt)
         if(${variable} MATCHES "/MD")
           string(REGEX REPLACE "/MD" "/MT" ${variable} "${${variable}}")
         endif()
+      endforeach()
+      foreach(lvariable ${lvariables})
+        set(${lvariable} "${${lvariable}} /NODEFAULTLIB:MSVCRT.LIB")
       endforeach()
     else()
       message(STATUS
