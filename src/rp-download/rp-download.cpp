@@ -492,8 +492,8 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 #endif /* _WIN32 && _UNICODE */
 
 	// Get the cache file information.
-	off64_t filesize;
-	time_t filemtime;
+	off64_t filesize = 0;
+	time_t filemtime = 0;
 	int ret = get_file_size_and_mtime(cache_filename.c_str(), &filesize, &filemtime);
 	if (ret == 0) {
 		// Check if the file is 0 bytes.
