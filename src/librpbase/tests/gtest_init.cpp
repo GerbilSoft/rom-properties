@@ -70,10 +70,10 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 		// TODO: Restrict connect() to AF_UNIX.
 		SCMP_SYS(connect), SCMP_SYS(recvmsg), SCMP_SYS(sendto),
 
-//#ifdef __NR_statx
+#ifdef __NR_statx
 		//SCMP_SYS(getcwd),	// called by glibc's statx() [referenced above]
 		SCMP_SYS(statx),
-//#endif /* __NR_statx */
+#endif /* __NR_statx */
 
 		-1	// End of whitelist
 	};

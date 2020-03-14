@@ -66,10 +66,10 @@ int rpt_do_security_options(void)
 		SCMP_SYS(stat), SCMP_SYS(stat64),	// LibUnixCommon::isWritableDirectory()
 		SCMP_SYS(statfs), SCMP_SYS(statfs64),	// LibRpBase::FileSystem::isOnBadFS()
 
-//#ifdef __NR_statx
+#ifdef __NR_statx
 		SCMP_SYS(getcwd),	// called by glibc's statx()
 		SCMP_SYS(statx),
-//#endif /* __NR_statx */
+#endif /* __NR_statx */
 
 		// glibc ncsd
 		// TODO: Restrict connect() to AF_UNIX.

@@ -328,10 +328,10 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 		SCMP_SYS(stat), SCMP_SYS(stat64),
 		SCMP_SYS(utimensat),
 
-//#ifdef __NR_statx
+#ifdef __NR_statx
 		SCMP_SYS(getcwd),	// called by glibc's statx()
 		SCMP_SYS(statx),
-//#endif /* __NR_statx */
+#endif /* __NR_statx */
 
 		// glibc ncsd
 		// TODO: Restrict connect() to AF_UNIX.
