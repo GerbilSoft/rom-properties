@@ -1,3 +1,9 @@
+rom-properties (1.5-1ppa2~eoan4) eoan; urgency=medium
+
+  * Work around libseccomp-2.4.1 not having __SNR_* macros at all.
+
+ -- David Korth <gerbilsoft@gerbilsoft.com>  Fri, 13 Mar 2020 22:53:13 -0400
+
 rom-properties (1.5-1ppa2~eoan3) eoan; urgency=medium
 
   * Work around libseccomp-2.4.1 not having __SNR_statx.
