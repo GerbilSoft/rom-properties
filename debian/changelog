@@ -1,3 +1,9 @@
+rom-properties (1.5-1ppa2~bionic2) bionic; urgency=medium
+
+  * seccomp() fixes.
+
+ -- David Korth <gerbilsoft@gerbilsoft.com>  Sat, 14 Mar 2020 00:42:31 -0400
+
 rom-properties (1.5-1ppa2~bionic1) bionic; urgency=medium
 
   * Build for Ubuntu 18.04 "Bionic" Beaver.
