@@ -15,8 +15,6 @@ Build-Depends:
  nettle-dev,
  libtinyxml2-dev,
  libseccomp-dev,
- libqt4-dev,
- kdelibs5-dev,
  qtbase5-dev,
  qttools5-dev-tools,
  libkf5kio-dev | kio-dev,
@@ -41,24 +39,13 @@ Vcs-Browser: https://github.com/GerbilSoft/rom-properties
 
 Package: rom-properties-all
 Architecture: any
-Depends: rom-properties-kde4, rom-properties-kf5, rom-properties-xfce3, rom-properties-gnome, rom-properties-mate, rom-properties-cinnamon, rom-properties-cli, rom-properties-utils, rom-properties-lang, rom-properties-thumbnailer-dbus, ${misc:Depends}
+Depends: rom-properties-kf5, rom-properties-xfce3, rom-properties-gnome, rom-properties-mate, rom-properties-cinnamon, rom-properties-cli, rom-properties-utils, rom-properties-lang, rom-properties-thumbnailer-dbus, ${misc:Depends}
 Description: ROM Properties Page shell extension
  This shell extension provides thumbnailing and property page functionality
  for ROM images, disc images, and save files for various game consoles,
  including Nintendo GameCube and Wii.
  .
  This is a meta-package that installs all rom-properties packages.
-
-Package: rom-properties-kde4
-Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, rom-properties-utils
-Recommends: rom-properties-lang
-Description: ROM Properties Page shell extension
- This shell extension provides thumbnailing and property page functionality
- for ROM images, disc images, and save files for various game consoles,
- including Nintendo GameCube and Wii.
- .
- This package contains the KDE 4 version.
 
 Package: rom-properties-kf5
 Architecture: any
