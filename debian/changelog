@@ -1,3 +1,9 @@
+rom-properties (1.5-1ppa1~xenial2) xenial; urgency=medium
+
+  * seccomp() fixes.
+
+ -- David Korth <gerbilsoft@gerbilsoft.com>  Sat, 14 Mar 2020 00:28:37 -0400
+
 rom-properties (1.5-1ppa1~xenial1) xenial; urgency=medium
 
   * 1.5 release.
