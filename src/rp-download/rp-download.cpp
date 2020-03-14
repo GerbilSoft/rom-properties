@@ -310,6 +310,7 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 		SCMP_SYS(fcntl), SCMP_SYS(fcntl64),
 		SCMP_SYS(fsetxattr),
 		SCMP_SYS(fstat), SCMP_SYS(fstat64),
+		SCMP_SYS(fstatat), SCMP_SYS(fstatat64),	// Ubuntu 19.10
 		SCMP_SYS(futex),
 		SCMP_SYS(getdents), SCMP_SYS(getdents64),
 		SCMP_SYS(getrusage),

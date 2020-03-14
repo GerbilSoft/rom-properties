@@ -48,6 +48,7 @@ int rp_stub_do_security_options(bool config)
 		// dlopen()
 		SCMP_SYS(access), SCMP_SYS(close),
 		SCMP_SYS(fstat), SCMP_SYS(fstat64),
+		SCMP_SYS(fstatat), SCMP_SYS(fstatat64),	// Ubuntu 19.10
 		SCMP_SYS(gettimeofday),	// 32-bit only?
 		SCMP_SYS(mmap),
 		SCMP_SYS(mmap2),	// might only be needed on i386...

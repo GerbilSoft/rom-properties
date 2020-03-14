@@ -44,6 +44,7 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 		// FIXME: glibc-2.31 uses 64-bit time syscalls that may not be
 		// defined in earlier versions, including Ubuntu 14.04.
 		SCMP_SYS(fstat), SCMP_SYS(fstat64),	// __GI___fxstat() [printf()]
+		SCMP_SYS(fstatat), SCMP_SYS(fstatat64),	// Ubuntu 19.10
 		SCMP_SYS(futex),	// iconv_open()
 		SCMP_SYS(gettimeofday),	// 32-bit only? [testing::internal::GetTimeInMillis()]
 		SCMP_SYS(mmap),		// iconv_open()
