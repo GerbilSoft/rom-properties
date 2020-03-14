@@ -1,6 +1,6 @@
 # Changes
 
-## v1.5 (released 2020/??/??)
+## v1.5 (released 2020/03/13)
 
 * New features:
   * Improved support for FreeBSD and DragonFly BSD:

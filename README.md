@@ -10,17 +10,19 @@ video game ROM and disc images.
 [![Total alerts](https://img.shields.io/lgtm/alerts/g/GerbilSoft/rom-properties.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/GerbilSoft/rom-properties/alerts/)
 [![Language grade: C/C++](https://img.shields.io/lgtm/grade/cpp/g/GerbilSoft/rom-properties.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/GerbilSoft/rom-properties/context:cpp)
 
-## v1.4 - The Metadata and Xbox release
+## v1.5
 
-This release was originally focused on adding metadata for file browsers, but it ended up expanding to lots of things, including Xbox and Xbox 360 disc images and executables.
+This release adds a ton of new features, including support for Leapster Didj textures:
 
-![Xbawks is HUEG](doc/img/v1.4/rp.kde5.XboxDisc.png)
+![Leapster Didj textures](doc/img/v1.5/rp.win7.DidjTex.png)
 
-Other file formats added in this release include Wii WADs, encrypted Wii save files, Mach-O binaries, Neo Geo Pocket (Color) ROM images, and iQue Player metadata and ticket files.
+Other file formats added in this release include PowerVR 3.0.0 textures, Pokémon Mini ROM images, and Khronos KTX2 textures.
+
+This release also makes use of enhanced security functionality in various operating systems, including seccomp() on Linux, low-integrity processes on Windows (when downloading images from online databases), and pledge() on OpenBSD.
 
 Translators needed; file an issue if you'd like to get started on a new translation, or submit a Pull Request if you have a translation ready to go.
 
-See [`NEWS.md`](NEWS.md) for a full list of changes in v1.4.
+See [`NEWS.md`](NEWS.md) for a full list of changes in v1.5.
 
 ## Feedback
 
@@ -213,7 +215,8 @@ program, `rp-config.exe`.
 
 Downloaded images are cached to the following directory:
 * Linux: `~/.cache/rom-properties/`
-* Windows: `%LOCALAPPDATA%\rom-properties\cache`
+* Windows XP: `%LOCALAPPDATA%\rom-properties\cache`
+* Windows Vista+: `%USERPROFILE%\AppData\LocalLow\rom-properties\cache`
 
 The directory structure matches the source site, so e.g. a disc image of
 Super Smash Bros. Brawl would be downloaded to
