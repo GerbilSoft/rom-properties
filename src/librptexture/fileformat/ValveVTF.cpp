@@ -18,7 +18,6 @@
 #include "vtf_structs.h"
 
 // librpbase, librpfile
-#include "librpbase/bitstuff.h"
 using LibRpBase::rp_sprintf;
 using LibRpBase::RomFields;
 using LibRpFile::IRpFile;

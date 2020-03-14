@@ -106,7 +106,7 @@ IF(BUILD_GNOME)
 			$<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/src>
 		)
 	TARGET_LINK_LIBRARIES(rom-properties-gnome PRIVATE glibresources)
-	TARGET_LINK_LIBRARIES(rom-properties-gnome PRIVATE romdata rpfile rpbase)
+	TARGET_LINK_LIBRARIES(rom-properties-gnome PRIVATE rpcpu romdata rpfile rpbase)
 	IF(ENABLE_NLS)
 		TARGET_LINK_LIBRARIES(rom-properties-gnome PRIVATE i18n)
 	ENDIF(ENABLE_NLS)

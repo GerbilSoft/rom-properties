@@ -22,7 +22,7 @@ using LibRpTexture::rp_image;
 using LibRpTexture::argb32_t;
 
 #ifdef RPJPEG_HAS_SSSE3
-# include "librpbase/cpuflags_x86.h"
+# include "librpcpu/cpuflags_x86.h"
 #endif /* RPJPEG_HAS_SSSE3 */
 
 // C includes. (C++ namespace)

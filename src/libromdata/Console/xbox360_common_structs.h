@@ -10,8 +10,9 @@
 #define __ROMPROPERTIES_LIBROMDATA_CONSOLE_XBOX360_COMMON_STRUCTS_H__
 
 #include <stdint.h>
+
 #include "common.h"
-#include "librpbase/byteorder.h"
+#include "librpcpu/byteorder.h"
 
 /**
  * Xbox 360: Vesion number

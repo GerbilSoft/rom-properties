@@ -27,7 +27,7 @@ ADD_EXECUTABLE(RpImageLoaderTest
 	img/RpImageLoaderTest.cpp
 	img/RpPngFormatTest.cpp
 	)
-TARGET_LINK_LIBRARIES(RpImageLoaderTest PRIVATE rptest rpbase)
+TARGET_LINK_LIBRARIES(RpImageLoaderTest PRIVATE rptest rpcpu rpbase)
 TARGET_LINK_LIBRARIES(RpImageLoaderTest PRIVATE gtest ${ZLIB_LIBRARY})
 TARGET_INCLUDE_DIRECTORIES(RpImageLoaderTest PRIVATE ${ZLIB_INCLUDE_DIRS})
 TARGET_COMPILE_DEFINITIONS(RpImageLoaderTest PRIVATE ${ZLIB_DEFINITIONS})
@@ -86,24 +86,12 @@ ADD_EXECUTABLE(TextFuncsTest
 	TextFuncsTest.cpp
 	TextFuncsTest_data.hpp
 	)
-TARGET_LINK_LIBRARIES(TextFuncsTest PRIVATE rptest rpbase)
+TARGET_LINK_LIBRARIES(TextFuncsTest PRIVATE rptest rpcpu rpbase)
 TARGET_LINK_LIBRARIES(TextFuncsTest PRIVATE gtest)
 DO_SPLIT_DEBUG(TextFuncsTest)
 SET_WINDOWS_SUBSYSTEM(TextFuncsTest CONSOLE)
 SET_WINDOWS_ENTRYPOINT(TextFuncsTest wmain OFF)
 ADD_TEST(NAME TextFuncsTest COMMAND TextFuncsTest)
-
-# ByteswapTest
-ADD_EXECUTABLE(ByteswapTest
-	ByteswapTest.cpp
-	ByteswapTest_data.hpp
-	)
-TARGET_LINK_LIBRARIES(ByteswapTest PRIVATE rptest rpbase)
-TARGET_LINK_LIBRARIES(ByteswapTest PRIVATE gtest)
-DO_SPLIT_DEBUG(ByteswapTest)
-SET_WINDOWS_SUBSYSTEM(ByteswapTest CONSOLE)
-SET_WINDOWS_ENTRYPOINT(ByteswapTest wmain OFF)
-ADD_TEST(NAME ByteswapTest COMMAND ByteswapTest "--gtest_filter=-*benchmark*")
 
 # TimegmTest
 ADD_EXECUTABLE(TimegmTest TimegmTest.cpp)

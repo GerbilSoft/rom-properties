@@ -1,13 +1,13 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (librpbase)                        *
+ * ROM Properties Page shell extension. (librpcpu)                         *
  * bitstuff.h: Bit manipulation inline functions.                          *
  *                                                                         *
- * Copyright (c) 2016-2017 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBRPBASE_BITSTUFF_H__
-#define __ROMPROPERTIES_LIBRPBASE_BITSTUFF_H__
+#ifndef __ROMPROPERTIES_LIBRPCPU_BITSTUFF_H__
+#define __ROMPROPERTIES_LIBRPCPU_BITSTUFF_H__
 
 #ifdef __cplusplus
 extern "C" {
@@ -20,15 +20,7 @@ extern "C" {
 # endif /* !inline */
 #endif /* _MSC_VER */
 
-#ifndef __cplusplus
-# if defined(_MSC_VER) && _MSC_VER >= 1800
-#  include <stdbool.h>
-# else
-typedef unsigned char bool;
-#  define true 1
-#  define false 0
-# endif
-#endif /* __cplusplus */
+#include "stdboolx.h"
 
 /**
  * Unsigned integer log2(n).
@@ -91,4 +83,4 @@ static inline bool isPow2(unsigned int x)
 }
 #endif
 
-#endif /* __ROMPROPERTIES_LIBRPBASE_BITSTUFF_H__ */
+#endif /* __ROMPROPERTIES_LIBRPCPU_BITSTUFF_H__ */

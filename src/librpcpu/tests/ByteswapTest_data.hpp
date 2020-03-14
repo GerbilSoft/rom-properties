@@ -1,13 +1,13 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (librpbase/tests)                  *
+ * ROM Properties Page shell extension. (librpcpu/tests)                   *
  * ByteswapTest_data.hpp: Data for ByteswapTest.                           *
  *                                                                         *
- * Copyright (c) 2016-2017 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBRPBASE_TESTS_BYTESWAPTEST_DATA_HPP__
-#define __ROMPROPERTIES_LIBRPBASE_TESTS_BYTESWAPTEST_DATA_HPP__
+#ifndef __ROMPROPERTIES_LIBRPCPU_TESTS_BYTESWAPTEST_DATA_HPP__
+#define __ROMPROPERTIES_LIBRPCPU_TESTS_BYTESWAPTEST_DATA_HPP__
 
 /**
  * Original test data.
@@ -219,4 +219,4 @@ const uint8_t ByteswapTest::bswap_32b[TEST_ARRAY_SIZE] = {
 	0x76,0x54,0x32,0x10,0xFE,0xDC,0xBA,0x98,0x89,0xAB,0xCD,0xEF,0x01,0x23,0x45,0x67,
 };
 
-#endif /* __ROMPROPERTIES_LIBRPBASE_TESTS_BYTESWAPTEST_DATA_HPP__ */
+#endif /* __ROMPROPERTIES_LIBRPCPU_TESTS_BYTESWAPTEST_DATA_HPP__ */

@@ -13,7 +13,8 @@
 // we can't simply make a cairo_surface_t rp_image backend.
 
 #include "common.h"
-#include "librpbase/cpu_dispatch.h"
+#include "librpcpu/cpu_dispatch.h"
+
 namespace LibRpTexture {
 	class rp_image;
 }

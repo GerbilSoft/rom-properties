@@ -1,5 +1,5 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (librpbase/tests)                  *
+ * ROM Properties Page shell extension. (librpcpu/tests)                   *
  * ByteswapTest.cpp: Byteswap functions test.                              *
  *                                                                         *
  * Copyright (c) 2016-2020 by David Korth.                                 *
@@ -11,7 +11,7 @@
 #include "tcharx.h"
 
 // Byteswap functions.
-#include "librpbase/byteswap.h"
+#include "librpcpu/byteswap.h"
 #include "librpbase/aligned_malloc.h"
 
 // C includes. (C++ namespace)

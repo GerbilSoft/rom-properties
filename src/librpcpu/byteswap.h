@@ -1,13 +1,13 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (librpbase)                        *
+ * ROM Properties Page shell extension. (librpcpu)                         *
  * byteswap.h: Byteswapping functions.                                     *
  *                                                                         *
- * Copyright (c) 2008-2017 by David Korth.                                 *
+ * Copyright (c) 2008-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBRPBASE_BYTESWAP_H__
-#define __ROMPROPERTIES_LIBRPBASE_BYTESWAP_H__
+#ifndef __ROMPROPERTIES_LIBRPCPU_BYTESWAP_H__
+#define __ROMPROPERTIES_LIBRPCPU_BYTESWAP_H__
 
 // C includes.
 #include <stdint.h>
@@ -20,7 +20,7 @@
 #include "cpu_dispatch.h"
 
 #if defined(RP_CPU_I386) || defined(RP_CPU_AMD64)
-# include "librpbase/cpuflags_x86.h"
+# include "cpuflags_x86.h"
 /* MSVC does not support MMX intrinsics in 64-bit builds. */
 /* Reference: https://msdn.microsoft.com/en-us/library/08x3t697(v=vs.110).aspx */
 /* In addition, amd64 CPUs all support SSE2 as a minimum, */

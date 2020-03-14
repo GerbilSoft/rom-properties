@@ -42,8 +42,11 @@
 // librpbase common headers
 #include "common.h"
 #include "ctypex.h"
-#include "librpbase/byteswap.h"
 #include "librpbase/aligned_malloc.h"
+
+// librpcpu
+#include "librpcpu/byteswap.h"
+#include "librpcpu/bitstuff.h"
 
 #ifdef __cplusplus
 // librpbase C++ headers

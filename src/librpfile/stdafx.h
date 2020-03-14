@@ -44,8 +44,8 @@
 #include "common.h"
 #include "ctypex.h"
 
-// TODO: Move to librpcpu.
-#include "librpbase/byteswap.h"
-#include "librpbase/bitstuff.h"
+// librpcpu
+#include "librpcpu/byteswap.h"
+#include "librpcpu/bitstuff.h"
 
 #endif /* __ROMPROPERTIES_LIBRPFILE_STDAFX_H__ */

@@ -11,9 +11,10 @@
 #ifndef __ROMPROPERTIES_LIBROMDATA_ISO9660_H__
 #define __ROMPROPERTIES_LIBROMDATA_ISO9660_H__
 
-#include "common.h"
-#include "librpbase/byteorder.h"
 #include <stdint.h>
+
+#include "common.h"
+#include "librpcpu/byteorder.h"
 
 #ifdef __cplusplus
 extern "C" {

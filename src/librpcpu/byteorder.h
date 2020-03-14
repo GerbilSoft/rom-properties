@@ -1,13 +1,13 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (librpbase)                        *
+ * ROM Properties Page shell extension. (librpcpu)                         *
  * byteorder.h: System byte order header.                                  *
  *                                                                         *
- * Copyright (c) 2011-2016 by David Korth.                                 *
+ * Copyright (c) 2011-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBRPBASE_BYTEORDER_H__
-#define __ROMPROPERTIES_LIBRPBASE_BYTEORDER_H__
+#ifndef __ROMPROPERTIES_LIBRPCPU_BYTEORDER_H__
+#define __ROMPROPERTIES_LIBRPCPU_BYTEORDER_H__
 
 /**
  * Check the system byte order.
@@ -60,4 +60,4 @@
 
 #endif
 
-#endif /* __ROMPROPERTIES_LIBRPBASE_BYTEORDER_H__ */
+#endif /* __ROMPROPERTIES_LIBRPCPU_BYTEORDER_H__ */

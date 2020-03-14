@@ -53,10 +53,12 @@
 // librpbase common headers
 #include "common.h"
 #include "ctypex.h"
-#include "librpbase/byteswap.h"
-#include "librpbase/bitstuff.h"
 #include "librpbase/aligned_malloc.h"
 #include "librpbase/time_r.h"
+
+// librpcpu
+#include "librpcpu/byteswap.h"
+#include "librpcpu/bitstuff.h"
 
 #ifdef __cplusplus
 // librpbase C++ headers

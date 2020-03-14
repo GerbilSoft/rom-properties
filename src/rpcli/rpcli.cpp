@@ -13,9 +13,9 @@
 // OS-specific security options.
 #include "rpcli_secure.h"
 
-// librpbase
+// librpbase, librpcpu
+#include "librpcpu/byteswap.h"
 #include "librpbase/config.librpbase.h"
-#include "librpbase/byteswap.h"
 #include "librpbase/RomData.hpp"
 #include "librpbase/SystemRegion.hpp"
 #include "librpbase/TextFuncs.hpp"

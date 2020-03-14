@@ -52,9 +52,6 @@
 /* Define to 1 if `struct lconv` has wchar_t fields. */
 #cmakedefine HAVE_STRUCT_LCONV_WCHAR_T 1
 
-/* Define to 1 if you have the <features.h> header file. */
-#cmakedefine HAVE_FEATURES_H 1
-
 /* Define to 1 if decryption should be enabled. */
 #cmakedefine ENABLE_DECRYPTION 1
 

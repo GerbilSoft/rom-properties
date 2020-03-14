@@ -116,8 +116,7 @@ INCLUDE(SetMSVCDebugPath)
 SET_MSVC_DEBUG_PATH(rpfile)
 
 # rpthreads is needed for atomic functions.
-# FIXME: Split CPU functions out of rpbase into rpcpu?
-TARGET_LINK_LIBRARIES(rpfile PRIVATE rpbase rpthreads)
+TARGET_LINK_LIBRARIES(rpfile PRIVATE rpcpu rpthreads)
 IF(WIN32)
 	# for MiniU82T
 	TARGET_LINK_LIBRARIES(rpfile PRIVATE win32common)

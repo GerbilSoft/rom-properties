@@ -1,14 +1,16 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (librpbase)                        *
+ * ROM Properties Page shell extension. (librpcpu)                         *
  * byteswap_ssse3.c: Byteswapping functions.                               *
  * SSSE3-optimized version.                                                *
  *                                                                         *
- * Copyright (c) 2008-2019 by David Korth                                  *
+ * Copyright (c) 2008-2020 by David Korth                                  *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "byteswap.h"
+
+// C includes.
+#include <assert.h>
 
 // SSSE3 intrinsics.
 #include <emmintrin.h>

@@ -1,15 +1,15 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (librpbase)                        *
+ * ROM Properties Page shell extension. (librpcpu)                         *
  * cpu_dispatch.h: CPU dispatch macros.                                    *
  *                                                                         *
- * Copyright (c) 2016-2017 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBRPBASE_CPU_DISPATCH_H__
-#define __ROMPROPERTIES_LIBRPBASE_CPU_DISPATCH_H__
+#ifndef __ROMPROPERTIES_LIBRPCPU_CPU_DISPATCH_H__
+#define __ROMPROPERTIES_LIBRPCPU_CPU_DISPATCH_H__
 
-#include "config.librpbase.h"
+#include "librpcpu/config.byteswap.h"
 #ifdef HAVE_FEATURES_H
 # include <features.h>
 #endif
@@ -85,4 +85,4 @@
 # define IFUNC_ATTR(func)
 #endif
 
-#endif /* __ROMPROPERTIES_LIBRPBASE_CPU_DISPATCH_H__ */
+#endif /* __ROMPROPERTIES_LIBRPCPU_CPU_DISPATCH_H__ */

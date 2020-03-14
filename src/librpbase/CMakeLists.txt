@@ -86,9 +86,6 @@ IF(NOT HAVE_TIMEGM AND NOT HAVE__MKGMTIME AND NOT HAVE__MKGMTIME64)
 	SET(USE_BOOST_TIMEGM 1)
 ENDIF(NOT HAVE_TIMEGM AND NOT HAVE__MKGMTIME AND NOT HAVE__MKGMTIME64)
 
-# Check for C headers.
-CHECK_INCLUDE_FILES("features.h" HAVE_FEATURES_H)
-
 # Check for unordered_map::reserve and unordered_set::reserve.
 SET(OLD_CMAKE_REQUIRED_INCLUDES ${CMAKE_REQUIRED_INCLUDES})
 CHECK_CXX_SOURCE_COMPILES("#include <unordered_map>
@@ -108,7 +105,6 @@ UNSET(OLD_CMAKE_REQUIRED_INCLUDES)
 
 # Sources.
 SET(librpbase_SRCS
-	byteswap.c
 	TextFuncs.cpp
 	TextFuncs_libc.c
 	TextFuncs_conv.cpp
@@ -133,8 +129,6 @@ SET(librpbase_SRCS
 	)
 # Headers.
 SET(librpbase_H
-	byteorder.h
-	byteswap.h
 	uvector.h
 	aligned_malloc.h
 	TextFuncs.hpp
@@ -146,7 +140,6 @@ SET(librpbase_H
 	RomFields.hpp
 	RomMetaData.hpp
 	SystemRegion.hpp
-	bitstuff.h
 	img/RpPng.hpp
 	img/RpPngWriter.hpp
 	img/APNG_dlopen.h
@@ -220,20 +213,6 @@ ENDIF(CMAKE_COMPILER_IS_GNUCXX)
 
 # CPU-specific and optimized sources.
 IF(CPU_i386 OR CPU_amd64)
-	SET(librpbase_CPU_SRCS cpuflags_x86.c)
-	SET(librpbase_CPU_H cpuflags_x86.h)
-
-	# MSVC does not support MMX intrinsics in 64-bit builds.
-	# Reference: https://msdn.microsoft.com/en-us/library/08x3t697(v=vs.110).aspx
-	#
-	# amd64 CPUs support SSE2 as a minimum anyway, so there's
-	# no point in building MMX code for 64-bit.
-	IF(CPU_i386)
-		SET(librpbase_MMX_SRCS byteswap_mmx.c)
-	ENDIF(CPU_i386)
-
-	SET(librpbase_SSE2_SRCS byteswap_sse2.c)
-	SET(librpbase_SSSE3_SRCS byteswap_ssse3.c)
 	IF(JPEG_FOUND AND NOT WIN32)
 		SET(librpbase_SSSE3_SRCS
 			${librpbase_SSSE3_SRCS}
@@ -241,39 +220,12 @@ IF(CPU_i386 OR CPU_amd64)
 			)
 	ENDIF(JPEG_FOUND AND NOT WIN32)
 
-	# IFUNC requires glibc.
-	# We're not checking for glibc here, but we do have preprocessor
-	# checks, so even if this does get compiled on a non-glibc system,
-	# it won't do anything.
-	# TODO: Might be supported on other Unix-like operating systems...
-	IF(UNIX AND NOT APPLE)
-		SET(librpbase_IFUNC_SRCS byteswap_ifunc.c)
-		# Disable LTO on the IFUNC files if LTO is known to be broken.
-		IF(GCC_5xx_LTO_ISSUES)
-			SET_SOURCE_FILES_PROPERTIES(${librpbase_IFUNC_SRCS}
-				APPEND_STRING PROPERTIES COMPILE_FLAGS " -fno-lto ")
-		ENDIF(GCC_5xx_LTO_ISSUES)
-	ENDIF(UNIX AND NOT APPLE)
-
 	IF(MSVC AND NOT CMAKE_CL_64)
-		SET(SSE2_FLAG "/arch:SSE2")
 		SET(SSSE3_FLAG "/arch:SSE2")
 	ELSEIF(NOT MSVC)
 		# TODO: Other compilers?
-		SET(MMX_FLAG "-mmmx")
-		SET(SSE2_FLAG "-msse2")
 		SET(SSSE3_FLAG "-mssse3")
 	ENDIF()
-
-	IF(MMX_FLAG)
-		SET_SOURCE_FILES_PROPERTIES(${librpbase_MMX_SRCS}
-			APPEND_STRING PROPERTIES COMPILE_FLAGS " ${MMX_FLAG} ")
-	ENDIF(MMX_FLAG)
-
-	IF(SSE2_FLAG)
-		SET_SOURCE_FILES_PROPERTIES(${librpbase_SSE2_SRCS}
-			APPEND_STRING PROPERTIES COMPILE_FLAGS " ${SSE2_FLAG} ")
-	ENDIF(SSE2_FLAG)
 
 	IF(SSSE3_FLAG)
 		SET_SOURCE_FILES_PROPERTIES(${librpbase_SSSE3_SRCS}
@@ -295,16 +247,8 @@ IF(NOT HAVE_MSVC_ALIGNED_MALLOC AND NOT HAVE_ALIGNED_ALLOC AND NOT HAVE_POSIX_ME
 	MESSAGE(FATAL_ERROR "System does not have an aligned malloc() function.")
 ENDIF()
 
-# gcc byteswapping intrinsics.
-IF(NOT MSVC)
-	CHECK_C_SOURCE_COMPILES("int main(int argc, char *argv[]) { return __builtin_bswap16((unsigned short)argc); }" HAVE___BUILTIN_BSWAP16)
-	CHECK_C_SOURCE_COMPILES("int main(int argc, char *argv[]) { return __builtin_bswap32((unsigned int)argc); }" HAVE___BUILTIN_BSWAP32)
-	CHECK_C_SOURCE_COMPILES("int main(int argc, char *argv[]) { return __builtin_bswap64((unsigned long long)argc); }" HAVE___BUILTIN_BSWAP64)
-ENDIF(NOT MSVC)
-
 # Write the config.h files.
 CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/config.librpbase.h.in" "${CMAKE_CURRENT_BINARY_DIR}/config.librpbase.h")
-CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/config.byteswap.h.in" "${CMAKE_CURRENT_BINARY_DIR}/config.byteswap.h")
 
 IF(ENABLE_PCH)
 	# Precompiled headers.
@@ -325,10 +269,6 @@ ADD_LIBRARY(rpbase STATIC
 	${librpbase_OS_SRCS} ${librpbase_OS_H}
 	${librpbase_CRYPTO_SRCS} ${librpbase_CRYPTO_H}
 	${librpbase_CRYPTO_OS_SRCS} ${librpbase_CRYPTO_OS_H}
-	${librpbase_CPU_SRCS} ${librpbase_CPU_H}
-	${librpbase_IFUNC_SRCS}
-	${librpbase_MMX_SRCS}
-	${librpbase_SSE2_SRCS}
 	${librpbase_SSSE3_SRCS}
 	)
 IF(ENABLE_PCH)
@@ -372,7 +312,7 @@ IF(librpbase_NEEDS_DL AND CMAKE_DL_LIBS)
 ENDIF(librpbase_NEEDS_DL AND CMAKE_DL_LIBS)
 
 # Other libraries.
-TARGET_LINK_LIBRARIES(rpbase PRIVATE rpfile rptexture rpfile inih rpthreads cachecommon)
+TARGET_LINK_LIBRARIES(rpbase PRIVATE rpcpu rpfile rptexture rpfile inih rpthreads cachecommon)
 IF(Iconv_LIBRARY AND NOT Iconv_IS_BUILT_IN)
 	TARGET_LINK_LIBRARIES(rpbase PRIVATE Iconv::Iconv)
 ENDIF(Iconv_LIBRARY AND NOT Iconv_IS_BUILT_IN)

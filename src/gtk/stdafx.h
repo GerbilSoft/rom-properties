@@ -80,7 +80,9 @@
 // librpbase common headers
 #include "common.h"
 #include "librpbase/aligned_malloc.h"
-#include "librpbase/cpu_dispatch.h"
+
+// librpcpu
+#include "librpcpu/cpu_dispatch.h"
 
 #ifdef __cplusplus
 // librpbase C++ headers

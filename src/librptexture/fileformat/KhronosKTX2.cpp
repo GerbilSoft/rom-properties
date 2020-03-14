@@ -40,7 +40,8 @@ using std::vector;
 
 // Uninitialized vector class.
 // Reference: http://andreoffringa.org/?q=uvector
-#include "uvector.h"
+// FIXME: Move out of librpbase?
+#include "librpbase/uvector.h"
 
 namespace LibRpTexture {
 

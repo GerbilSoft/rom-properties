@@ -13,7 +13,6 @@
 #include "pvr_structs.h"
 
 // librpbase, librpfile
-#include "librpbase/bitstuff.h"
 using LibRpBase::RomFields;
 using LibRpFile::IRpFile;
 

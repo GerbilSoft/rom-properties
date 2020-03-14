@@ -194,8 +194,7 @@ INCLUDE(SetMSVCDebugPath)
 SET_MSVC_DEBUG_PATH(rptexture)
 
 # TODO: More public/private library stuff.
-# FIXME: Remove librpbase dependency; switch to librpcpu?
-TARGET_LINK_LIBRARIES(rptexture PUBLIC rpbase rpfile)
+TARGET_LINK_LIBRARIES(rptexture PUBLIC rpcpu rpfile)
 TARGET_LINK_LIBRARIES(rptexture PRIVATE rpthreads)
 
 # Include paths:

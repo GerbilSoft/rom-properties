@@ -7,7 +7,7 @@ INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR}/../..)
 # ImageDecoderLinear test
 # TODO: Move to libromdata, or move libromdata stuff here?
 ADD_EXECUTABLE(ImageDecoderLinearTest ImageDecoderLinearTest.cpp)
-TARGET_LINK_LIBRARIES(ImageDecoderLinearTest PRIVATE rptest romdata rptexture)
+TARGET_LINK_LIBRARIES(ImageDecoderLinearTest PRIVATE rptest rpcpu romdata rptexture)
 TARGET_LINK_LIBRARIES(ImageDecoderLinearTest PRIVATE gtest ${ZLIB_LIBRARY})
 TARGET_INCLUDE_DIRECTORIES(ImageDecoderLinearTest PRIVATE ${ZLIB_INCLUDE_DIRS})
 TARGET_COMPILE_DEFINITIONS(ImageDecoderLinearTest PRIVATE ${ZLIB_DEFINITIONS})
@@ -23,7 +23,7 @@ ADD_TEST(NAME ImageDecoderLinearTest COMMAND ImageDecoderLinearTest "--gtest_fil
 
 # UnPremultiplyTest
 ADD_EXECUTABLE(UnPremultiplyTest UnPremultiplyTest.cpp)
-TARGET_LINK_LIBRARIES(UnPremultiplyTest PRIVATE rptest rptexture rpbase)
+TARGET_LINK_LIBRARIES(UnPremultiplyTest PRIVATE rptest rpcpu rptexture)
 TARGET_LINK_LIBRARIES(UnPremultiplyTest PRIVATE gtest)
 DO_SPLIT_DEBUG(UnPremultiplyTest)
 SET_WINDOWS_SUBSYSTEM(UnPremultiplyTest CONSOLE)
