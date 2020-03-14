@@ -43,7 +43,8 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 		// TODO: Add more syscalls.
 		// FIXME: glibc-2.31 uses 64-bit time syscalls that may not be
 		// defined in earlier versions, including Ubuntu 14.04.
-		SCMP_SYS(fstat), SCMP_SYS(fstat64),	// __GI___fxstat() [printf()]
+		SCMP_SYS(fstat),     SCMP_SYS(fstat64),		// __GI___fxstat() [printf()]
+		SCMP_SYS(fstatat64), SCMP_SYS(newfstatat),	// Ubuntu 19.10 (32-bit)
 		SCMP_SYS(futex),	// iconv_open()
 		SCMP_SYS(gettimeofday),	// 32-bit only? [testing::internal::GetTimeInMillis()]
 		SCMP_SYS(mmap),		// iconv_open()
@@ -53,9 +54,9 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 		SCMP_SYS(lseek), SCMP_SYS(_llseek),
 		SCMP_SYS(open),		// Ubuntu 16.04
 		SCMP_SYS(openat),	// glibc-2.31
-#ifdef __SNR_openat2
+#if defined(__SNR_openat2) || defined(__NR_openat2)
 		SCMP_SYS(openat2),	// Linux 5.6
-#endif /* __SNR_openat2 */
+#endif /* __SNR_openat2 || __NR_openat2 */
 
 		// Google Test
 		SCMP_SYS(getcwd),	// testing::internal::FilePath::GetCurrentDir()
@@ -70,10 +71,10 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 		// TODO: Restrict connect() to AF_UNIX.
 		SCMP_SYS(connect), SCMP_SYS(recvmsg), SCMP_SYS(sendto),
 
-#ifdef __SNR_statx
+#if defined(__SNR_statx) || defined(__NR_statx)
 		//SCMP_SYS(getcwd),	// called by glibc's statx() [referenced above]
 		SCMP_SYS(statx),
-#endif /* __SNR_statx */
+#endif /* __SNR_statx || __NR_statx */
 
 		-1	// End of whitelist
 	};
