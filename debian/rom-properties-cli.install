@@ -1,1 +1,2 @@
+etc/apparmor.d/*.rpcli
 usr/bin/rpcli
