@@ -20,3 +20,13 @@ The configuration file is located at:
 * https://art.gametdb.com/ - Box, cover, and media scans for Nintendo
   GameCube, Wii, Wii U, DS, and 3DS games.
 * https://amiibo.life/ - Images of Nintendo amiibo products.
+
+## Security features
+
+As of rom-properties v1.5, the downloading functionality has been
+isolated into a single component, `rp-download`. The `rp-download`
+program uses the following security features:
+
+* Linux: seccomp(), AppArmor
+* OpenBSD: pledge()
+* Windows: Low-integrity process (on Vista+)
