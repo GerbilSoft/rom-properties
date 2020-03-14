@@ -14,15 +14,10 @@
 
 // C includes. (C++ namespace)
 #include <cassert>
+#include <cerrno>
 #include <cstring>
 #include <ctime>
 #include <stdint.h>
-#if 0
-#include <cerrno>
-#include <cstddef>
-#include <cstdio>
-#include <stdlib.h>
-#endif
 
 // C++ includes.
 #include <algorithm>
@@ -33,16 +28,12 @@
 
 // C includes.
 #include <assert.h>
+#include <errno.h>
 #include <string.h>
 #include <time.h>
 #include <stdint.h>
 
 #endif /* __cplusplus */
-
-// MSVC intrinsics
-#if defined(_MSC_VER) && _MSC_VER >= 1400
-//# include <intrin.h>
-#endif
 
 // libwin32common
 #ifdef _WIN32
