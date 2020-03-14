@@ -59,22 +59,17 @@ int rpt_do_security_options(void)
 		SCMP_SYS(mprotect),	// iconv_open()
 		SCMP_SYS(open),		// Ubuntu 16.04
 		SCMP_SYS(openat),	// glibc-2.31
-#ifdef __SNR_openat2
+#ifdef __NR_openat2
 		SCMP_SYS(openat2),	// Linux 5.6
-#endif /* __SNR_openat2 */
+#endif /* __NR_openat2 */
 		SCMP_SYS(readlink),	// realpath() [LibRpBase::FileSystem::resolve_symlink()]
 		SCMP_SYS(stat), SCMP_SYS(stat64),	// LibUnixCommon::isWritableDirectory()
 		SCMP_SYS(statfs), SCMP_SYS(statfs64),	// LibRpBase::FileSystem::isOnBadFS()
 
-#ifdef __SNR_statx
+#ifdef __NR_statx
 		SCMP_SYS(getcwd),	// called by glibc's statx()
 		SCMP_SYS(statx),
-#elif defined(__NR_statx)
-		// Ubuntu 19.10's glibc-2.30 calls statx(), but
-		// libseccomp-2.4.1 doesn't have __SNR_statx.
-		SCMP_SYS(getcwd),	// called by glibc's statx()
-		__NR_statx,
-#endif /* __SNR_statx */
+#endif /* __NR_statx */
 
 		// glibc ncsd
 		// TODO: Restrict connect() to AF_UNIX.

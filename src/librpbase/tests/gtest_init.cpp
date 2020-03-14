@@ -53,9 +53,9 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 		SCMP_SYS(lseek), SCMP_SYS(_llseek),
 		SCMP_SYS(open),		// Ubuntu 16.04
 		SCMP_SYS(openat),	// glibc-2.31
-#ifdef __SNR_openat2
+#ifdef __NR_openat2
 		SCMP_SYS(openat2),	// Linux 5.6
-#endif /* __SNR_openat2 */
+#endif /* __NR_openat2 */
 
 		// Google Test
 		SCMP_SYS(getcwd),	// testing::internal::FilePath::GetCurrentDir()
@@ -70,15 +70,10 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 		// TODO: Restrict connect() to AF_UNIX.
 		SCMP_SYS(connect), SCMP_SYS(recvmsg), SCMP_SYS(sendto),
 
-#ifdef __SNR_statx
+#ifdef __NR_statx
 		//SCMP_SYS(getcwd),	// called by glibc's statx() [referenced above]
 		SCMP_SYS(statx),
-#elif defined(__NR_statx)
-		// Ubuntu 19.10's glibc-2.30 calls statx(), but
-		// libseccomp-2.4.1 doesn't have __SNR_statx.
-		//SCMP_SYS(getcwd),	// called by glibc's statx() [referenced above]
-		__NR_statx,
-#endif /* __SNR_statx */
+#endif /* __NR_statx */
 
 		-1	// End of whitelist
 	};
