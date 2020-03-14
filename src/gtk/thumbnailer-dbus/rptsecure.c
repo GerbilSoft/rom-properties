@@ -69,6 +69,11 @@ int rpt_do_security_options(void)
 #ifdef __SNR_statx
 		SCMP_SYS(getcwd),	// called by glibc's statx()
 		SCMP_SYS(statx),
+#elif defined(__NR_statx)
+		// Ubuntu 19.10's glibc-2.30 calls statx(), but
+		// libseccomp-2.4.1 doesn't have __SNR_statx.
+		SCMP_SYS(getcwd),	// called by glibc's statx()
+		__NR_statx,
 #endif /* __SNR_statx */
 
 		// glibc ncsd
