@@ -1,3 +1,9 @@
+rom-properties (1.5-1ppa2~eoan8) eoan; urgency=medium
+
+  * Ubuntu 19.10 32-bit uses fstatat64().
+
+ -- David Korth <gerbilsoft@gerbilsoft.com>  Fri, 13 Mar 2020 23:54:22 -0400
+
 rom-properties (1.5-1ppa2~eoan7) eoan; urgency=medium
 
   * Enable seccomp debugging to figure out exactly what's going on in the
