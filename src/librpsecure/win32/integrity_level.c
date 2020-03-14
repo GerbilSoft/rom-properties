@@ -15,7 +15,6 @@
 #include <assert.h>
 #include <errno.h>
 #include <malloc.h>
-#include <stdio.h>
 #include <stdlib.h>
 
 // Windows includes.
@@ -67,13 +66,35 @@ static DWORD adjustTokenIntegrityLevel(HANDLE hToken, int level)
 	PSID pIntegritySid = NULL;
 	TOKEN_MANDATORY_LABEL tml;
 	DWORD dwLastError;
-	TCHAR szIntegritySid[20];
+	TCHAR szIntegritySid[20] = _T("S-1-16-");
 
 	// TODO: Verify the integrity level value?
 	if (level < 0) {
 		return ERROR_INVALID_PARAMETER;
 	}
-	_sntprintf(szIntegritySid, _countof(szIntegritySid), _T("S-1-16-%d"), level);
+
+	// NOTE: We can't use _sntprintf() here because that's a libc function,
+	// and we can't link to libc because of static vs. DLL CRT issues when
+	// linking to svrplus release builds.
+	if (level == 0) {
+		szIntegritySid[7] = '0';
+		szIntegritySid[8] = '\0';
+	} else {
+		TCHAR tmpbuf[16];
+		TCHAR *p = tmpbuf;
+		TCHAR *q = &szIntegritySid[7];
+
+		while (level > 0) {
+			*p++ = _T('0') + (level % 10);
+			level /= 10;
+		}
+		*p = '\0';
+		p--;
+		for (; p >= tmpbuf; p--) {
+			*q++ = *p;
+		}
+		*q = '\0';
+	}
 
 	// Based on Chromium's SetTokenIntegrityLevel().
 	if (!ConvertStringSidToSid(szIntegritySid, &pIntegritySid)) {
