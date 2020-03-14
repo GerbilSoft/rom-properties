@@ -29,7 +29,7 @@ int rpcli_do_security_options(void)
 		SCMP_SYS(close),
 		SCMP_SYS(dup),		// gzdopen()
 		SCMP_SYS(fstat), SCMP_SYS(fstat64),
-		SCMP_SYS(fstatat), SCMP_SYS(fstatat64),	// Ubuntu 19.10
+		SCMP_SYS(fstatat64),	// Ubuntu 19.10 (32-bit)
 		SCMP_SYS(ftruncate),	// LibRpBase::RpFile::truncate() [from LibRpBase::RpPngWriterPrivate::init()]
 		SCMP_SYS(ftruncate64),
 		SCMP_SYS(futex),
