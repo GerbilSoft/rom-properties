@@ -16,6 +16,7 @@
 #else /* !_WIN32 */
 # include <unistd.h>
 # ifdef HAVE_SECCOMP
+#  include <linux/unistd.h>
 #  include <seccomp.h>
 # elif HAVE_TAME
 #  include <sys/tame.h>

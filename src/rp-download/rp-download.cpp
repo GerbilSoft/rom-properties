@@ -303,13 +303,14 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 		SCMP_SYS(set_robust_list),
 
 		SCMP_SYS(access), SCMP_SYS(clock_gettime),
-#ifdef __SNR_clock_gettime64
+#if defined(__SNR_clock_gettime64) || defined(__NR_clock_gettime64)
 		SCMP_SYS(clock_gettime64),
-#endif /* __SNR_clock_gettime64 */
+#endif /* __SNR_clock_gettime64 || __NR_clock_gettime64 */
 		SCMP_SYS(close),
 		SCMP_SYS(fcntl), SCMP_SYS(fcntl64),
 		SCMP_SYS(fsetxattr),
-		SCMP_SYS(fstat), SCMP_SYS(fstat64),
+		SCMP_SYS(fstat),     SCMP_SYS(fstat64),		// __GI___fxstat() [printf()]
+		SCMP_SYS(fstatat64), SCMP_SYS(newfstatat),	// Ubuntu 19.10 (32-bit)
 		SCMP_SYS(futex),
 		SCMP_SYS(getdents), SCMP_SYS(getdents64),
 		SCMP_SYS(getrusage),
@@ -321,17 +322,17 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 		SCMP_SYS(munmap),
 		SCMP_SYS(open),		// Ubuntu 16.04
 		SCMP_SYS(openat),	// glibc-2.31
-#ifdef __SNR_openat2
+#if defined(__SNR_openat2) || defined(__NR_openat2)
 		SCMP_SYS(openat2),	// Linux 5.6
-#endif /* __SNR_openat2 */
+#endif /* __SNR_openat2 || __NR_openat2 */
 		SCMP_SYS(poll), SCMP_SYS(select),
 		SCMP_SYS(stat), SCMP_SYS(stat64),
 		SCMP_SYS(utimensat),
 
-#ifdef __SNR_statx
+#if defined(__SNR_statx) || defined(__NR_statx)
 		SCMP_SYS(getcwd),	// called by glibc's statx()
 		SCMP_SYS(statx),
-#endif /* __SNR_statx */
+#endif /* __SNR_statx || __NR_statx */
 
 		// glibc ncsd
 		// TODO: Restrict connect() to AF_UNIX.

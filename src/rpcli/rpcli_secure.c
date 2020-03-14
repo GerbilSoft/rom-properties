@@ -28,7 +28,8 @@ int rpcli_do_security_options(void)
 		// defined in earlier versions, including Ubuntu 14.04.
 		SCMP_SYS(close),
 		SCMP_SYS(dup),		// gzdopen()
-		SCMP_SYS(fstat), SCMP_SYS(fstat64),
+		SCMP_SYS(fstat),     SCMP_SYS(fstat64),		// __GI___fxstat() [printf()]
+		SCMP_SYS(fstatat64), SCMP_SYS(newfstatat),	// Ubuntu 19.10 (32-bit)
 		SCMP_SYS(ftruncate),	// LibRpBase::RpFile::truncate() [from LibRpBase::RpPngWriterPrivate::init()]
 		SCMP_SYS(ftruncate64),
 		SCMP_SYS(futex),
@@ -41,19 +42,19 @@ int rpcli_do_security_options(void)
 		SCMP_SYS(munmap),
 		SCMP_SYS(open),		// Ubuntu 16.04
 		SCMP_SYS(openat),	// glibc-2.31
-#ifdef __SNR_openat2
+#if defined(__SNR_openat2) || defined(__NR_openat2)
 		SCMP_SYS(openat2),	// Linux 5.6
-#endif /* __SNR_openat2 */
+#endif /* __SNR_openat2 || __NR_openat2 */
 		SCMP_SYS(readlink),	// realpath() [LibRpBase::FileSystem::resolve_symlink()]
 
 		// KeyManager (keys.conf)
 		SCMP_SYS(access),	// LibUnixCommon::isWritableDirectory()
 		SCMP_SYS(stat), SCMP_SYS(stat64),	// LibUnixCommon::isWritableDirectory()
 
-#ifdef __SNR_statx
+#if defined(__SNR_statx) || defined(__NR_statx)
 		SCMP_SYS(getcwd),	// called by glibc's statx()
 		SCMP_SYS(statx),
-#endif /* __SNR_statx */
+#endif /* __SNR_statx || __NR_statx */
 
 		// glibc ncsd
 		// TODO: Restrict connect() to AF_UNIX.
