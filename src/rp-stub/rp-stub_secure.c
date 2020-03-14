@@ -75,10 +75,10 @@ int rp_stub_do_security_options(bool config)
 
 		SCMP_SYS(getppid),	// dll-search.c: walk_proc_tree()
 
-#ifdef __NR_statx
+//#ifdef __NR_statx
 		SCMP_SYS(getcwd),	// called by glibc's statx()
 		SCMP_SYS(statx),
-#endif /* __NR_statx */
+//#endif /* __NR_statx */
 
 		// glibc ncsd
 		// TODO: Restrict connect() to AF_UNIX.
