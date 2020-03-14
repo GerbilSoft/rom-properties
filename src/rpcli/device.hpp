@@ -10,7 +10,7 @@
 #ifndef __ROMPROPERTIES_RPCLI_DEVICE_HPP__
 #define __ROMPROPERTIES_RPCLI_DEVICE_HPP__
 
-#include "librpbase/config.librpbase.h"
+#include "librpfile/config.librpfile.h"
 
 // NOTE: We can't check in CMake beacuse RP_OS_SCSI_SUPPORTED
 // is checked in librpbase, not rpcli.

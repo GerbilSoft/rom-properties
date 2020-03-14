@@ -25,6 +25,7 @@
 using namespace LibRpBase;
 
 // librpfile
+#include "librpfile/config.librpfile.h"
 #include "librpfile/FileSystem.hpp"
 #include "librpfile/RpFile.hpp"
 
