@@ -1,3 +1,12 @@
+rom-properties (1.5-1ppa2~eoan7) eoan; urgency=medium
+
+  * Enable seccomp debugging to figure out exactly what's going on in the
+    Launchpad build.
+
+  * Revert: Disable __NR_statx checks entirely.
+
+ -- David Korth <gerbilsoft@gerbilsoft.com>  Fri, 13 Mar 2020 23:34:42 -0400
+
 rom-properties (1.5-1ppa2~eoan6) eoan; urgency=medium
 
   * Disable __NR_statx checks entirely.
