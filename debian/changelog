@@ -1,3 +1,9 @@
+rom-properties (1.5-1ppa2~eoan6) eoan; urgency=medium
+
+  * Disable __NR_statx checks entirely.
+
+ -- David Korth <gerbilsoft@gerbilsoft.com>  Fri, 13 Mar 2020 23:22:16 -0400
+
 rom-properties (1.5-1ppa2~eoan5) eoan; urgency=medium
 
   * #include <linux/unistd.h> for syscall numbers.
