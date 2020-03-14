@@ -78,8 +78,8 @@
 #include "libi18n/i18n.h"
 
 // librpbase common headers
+#include "common.h"
 #include "librpbase/aligned_malloc.h"
-#include "librpbase/common.h"
 #include "librpbase/cpu_dispatch.h"
 
 #ifdef __cplusplus
@@ -88,10 +88,12 @@
 #include "librpbase/RomFields.hpp"
 #include "librpbase/TextFuncs.hpp"
 #include "librpbase/SystemRegion.hpp"
-#include "librpbase/file/FileSystem.hpp"
-#include "librpbase/file/IRpFile.hpp"
-#include "librpbase/file/RpFile.hpp"
 #include "librpbase/img/RpPngWriter.hpp"
+
+// librpfile C++ headers
+#include "librpfile/FileSystem.hpp"
+#include "librpfile/IRpFile.hpp"
+#include "librpfile/RpFile.hpp"
 
 // librptexture C++ headers
 #include "librptexture/img/rp_image.hpp"

@@ -51,14 +51,6 @@ INCLUDE(CheckSymbolExists)
 INCLUDE(CheckStructHasMember)
 CHECK_SYMBOL_EXISTS(strnlen "string.h" HAVE_STRNLEN)
 CHECK_SYMBOL_EXISTS(memmem "string.h" HAVE_MEMMEM)
-IF(NOT WIN32)
-	# Check for statx().
-	SET(OLD_CMAKE_REQUIRED_DEFINITIONS "${CMAKE_REQUIRED_DEFINITIONS}")
-	SET(CMAKE_REQUIRED_DEFINITIONS "-D_GNU_SOURCE=1")
-	CHECK_SYMBOL_EXISTS(statx "sys/stat.h" HAVE_STATX)
-	SET(CMAKE_REQUIRED_DEFINITIONS "${OLD_CMAKE_REQUIRED_DEFINITIONS}")
-	UNSET(OLD_CMAKE_REQUIRED_DEFINITIONS)
-ENDIF(NOT WIN32)
 # MSVCRT doesn't have nl_langinfo() and probably never will.
 IF(NOT WIN32)
 	CHECK_SYMBOL_EXISTS(nl_langinfo "langinfo.h" HAVE_NL_LANGINFO)
@@ -124,13 +116,6 @@ SET(librpbase_SRCS
 	RomFields.cpp
 	RomMetaData.cpp
 	SystemRegion.cpp
-	file/IRpFile.cpp
-	file/RpMemFile.cpp
-	file/RpVectorFile.cpp
-	file/FileSystem_common.cpp
-	file/RelatedFile.cpp
-	file/scsi/RpFile_Kreon.cpp
-	file/scsi/RpFile_scsi.cpp
 	img/RpImageLoader.cpp
 	img/RpPng.cpp
 	img/RpPngWriter.cpp
@@ -150,10 +135,8 @@ SET(librpbase_SRCS
 SET(librpbase_H
 	byteorder.h
 	byteswap.h
-	common.h
 	uvector.h
 	aligned_malloc.h
-	ctypex.h
 	TextFuncs.hpp
 	TextFuncs_wchar.hpp
 	TextFuncs_libc.h
@@ -164,16 +147,6 @@ SET(librpbase_H
 	RomMetaData.hpp
 	SystemRegion.hpp
 	bitstuff.h
-	file/IRpFile.hpp
-	file/RpFile.hpp
-	file/RpFile_p.hpp
-	file/RpMemFile.hpp
-	file/RpVectorFile.hpp
-	file/FileSystem.hpp
-	file/RelatedFile.hpp
-	file/scsi/ata_protocol.h
-	file/scsi/scsi_protocol.h
-	file/scsi/scsi_ata_cmds.h
 	img/RpPng.hpp
 	img/RpPngWriter.hpp
 	img/APNG_dlopen.h
@@ -209,69 +182,16 @@ ELSEIF(JPEG_FOUND)
 	SET(librpbase_H ${librpbase_H} img/RpJpeg.hpp)
 ENDIF()
 
-# SCSI implementation for Kreon disc drive support.
 IF(WIN32)
-	SET(librpbase_SRCS ${librpbase_SRCS} file/scsi/RpFile_scsi_win32.cpp)
-	SET(RP_OS_SCSI_SUPPORTED 1)
-ELSEIF(CMAKE_SYSTEM_NAME STREQUAL "Linux")
-	SET(librpbase_SRCS ${librpbase_SRCS} file/scsi/RpFile_scsi_linux.cpp)
-	SET(RP_OS_SCSI_SUPPORTED 1)
-ELSEIF(CMAKE_SYSTEM_NAME STREQUAL "FreeBSD" OR CMAKE_SYSTEM_NAME STREQUAL "Dragonfly")
-	# FIXME: Not working properly. (SCSI ILLEGAL REQUEST errors)
-	# NOTE: The file is still needed for rereadDeviceSizeOS().
-	SET(librpbase_SRCS ${librpbase_SRCS} file/scsi/RpFile_scsi_freebsd.cpp)
-
-	IF(0) # FIXME
-	# TODO: Check for header files. CHECK_INCLUDE_FILE() doesn't work
-	# properly because these header files use FILE*, so we need to
-	# #include <stdio.h>.
-	INCLUDE(CheckIncludeFile)
-	INCLUDE(CheckLibraryExists)
-	#CHECK_INCLUDE_FILE("camlib.h" HAVE_CAMLIB_H)
-	#CHECK_INCLUDE_FILE("cam/scsi/scsi_message.h" HAVE_CAM_SCSI_SCSI_MESSAGE_H)
-	#CHECK_INCLUDE_FILE("cam/scsi/scsi_pass.h" HAVE_CAM_SCSI_SCSI_PASS_H)
-	CHECK_LIBRARY_EXISTS(cam "cam_open_pass" "" HAVE_LIBCAM)
-	IF(HAVE_LIBCAM)
-		SET(SCSI_LIBRARY cam)
-		SET(RP_OS_SCSI_SUPPORTED 1)
-	ENDIF()
-	ENDIF(0) # FIXME
-ELSEIF(CMAKE_SYSTEM_NAME STREQUAL "NetBSD" OR CMAKE_SYSTEM_NAME STREQUAL "OpenBSD")
-	SET(librpbase_SRCS ${librpbase_SRCS} file/scsi/RpFile_scsi_netbsd.cpp)
-	SET(RP_OS_SCSI_SUPPORTED 1)
-ELSE()
-	# Dummy implementation for RpFile::rereadDeviceSizeOS().
-	SET(librpbase_SRCS ${librpbase_SRCS} file/scsi/RpFile_scsi_dummy.cpp)
-ENDIF()
-
-IF(WIN32)
-	SET(librpbase_OS_SRCS
-		TextFuncs_win32.cpp
-		file/win32/FileSystem_win32.cpp
-		file/win32/RpFile_win32.cpp
-		file/win32/IStreamWrapper.cpp
-		file/Win32/RpFile_windres.cpp
-		)
-	SET(librpbase_OS_H
-		TextFuncs_wchar.hpp
-		file/win32/IStreamWrapper.hpp
-		file/Win32/RpFile_windres.hpp
-		)
+	SET(librpbase_OS_SRCS TextFuncs_win32.cpp)
+	SET(librpbase_OS_H    TextFuncs_wchar.hpp)
 ELSE(WIN32)
-	SET(librpbase_OS_SRCS
-		TextFuncs_iconv.cpp
-		file/FileSystem_posix.cpp
-		file/RpFile_stdio.cpp
-		)
+	SET(librpbase_OS_SRCS TextFuncs_iconv.cpp)
 ENDIF(WIN32)
 
 IF(ENABLE_DECRYPTION)
-	SET(librpbase_CRYPTO_SRCS
-		crypto/AesCipherFactory.cpp
-		)
-	SET(librpbase_CRYPTO_H
-		crypto/IAesCipher.hpp
-		)
+	SET(librpbase_CRYPTO_SRCS crypto/AesCipherFactory.cpp)
+	SET(librpbase_CRYPTO_H    crypto/IAesCipher.hpp)
 	IF(WIN32)
 		SET(librpbase_CRYPTO_OS_SRCS
 			crypto/AesCAPI.cpp
@@ -282,12 +202,8 @@ IF(ENABLE_DECRYPTION)
 			crypto/AesCAPI_NG.hpp
 			)
 	ELSE(WIN32)
-		SET(librpbase_CRYPTO_OS_SRCS
-			crypto/AesNettle.cpp
-			)
-		SET(librpbase_CRYPTO_OS_H
-			crypto/AesNettle.hpp
-			)
+		SET(librpbase_CRYPTO_OS_SRCS crypto/AesNettle.cpp)
+		SET(librpbase_CRYPTO_OS_H    crypto/AesNettle.hpp)
 	ENDIF(WIN32)
 ENDIF(ENABLE_DECRYPTION)
 
@@ -456,7 +372,7 @@ IF(librpbase_NEEDS_DL AND CMAKE_DL_LIBS)
 ENDIF(librpbase_NEEDS_DL AND CMAKE_DL_LIBS)
 
 # Other libraries.
-TARGET_LINK_LIBRARIES(rpbase PRIVATE rptexture inih rpthreads cachecommon)
+TARGET_LINK_LIBRARIES(rpbase PRIVATE rpfile rptexture rpfile inih rpthreads cachecommon)
 IF(Iconv_LIBRARY AND NOT Iconv_IS_BUILT_IN)
 	TARGET_LINK_LIBRARIES(rpbase PRIVATE Iconv::Iconv)
 ENDIF(Iconv_LIBRARY AND NOT Iconv_IS_BUILT_IN)

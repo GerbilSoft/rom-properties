@@ -15,9 +15,9 @@
 #include "xbox360_xdbf_structs.h"
 #include "data/XboxLanguage.hpp"
 
-// librpbase, librptexture
-#include "librpbase/file/RpMemFile.hpp"
+// librpbase, librpfile, librptexture
 #include "librpbase/img/RpPng.hpp"
+#include "librpfile/RpMemFile.hpp"
 using namespace LibRpBase;
 using namespace LibRpTexture;
 

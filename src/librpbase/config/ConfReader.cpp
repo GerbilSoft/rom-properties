@@ -11,11 +11,13 @@
 #include "ConfReader_p.hpp"
 
 // librpbase
-#include "file/FileSystem.hpp"
 #include "TextFuncs.hpp"
 #ifdef _WIN32
 # include "TextFuncs_wchar.hpp"
 #endif
+
+// librpfile
+#include "librpfile/FileSystem.hpp"
 
 namespace LibRpBase {
 

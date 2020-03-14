@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * CairoImageConv.hpp: Helper functions to convert from rp_image to Cairo. *
  *                                                                         *
- * Copyright (c) 2017-2018 by David Korth.                                 *
+ * Copyright (c) 2017-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -12,7 +12,7 @@
 // NOTE: Cairo doesn't natively support 8bpp. Because of this,
 // we can't simply make a cairo_surface_t rp_image backend.
 
-#include "librpbase/common.h"
+#include "common.h"
 #include "librpbase/cpu_dispatch.h"
 namespace LibRpTexture {
 	class rp_image;

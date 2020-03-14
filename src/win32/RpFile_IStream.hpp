@@ -9,7 +9,7 @@
 #ifndef __ROMPROPERTIES_WIN32_RPFILE_ISTREAM_HPP__
 #define __ROMPROPERTIES_WIN32_RPFILE_ISTREAM_HPP__
 
-#include "librpbase/file/IRpFile.hpp"
+#include "librpfile/IRpFile.hpp"
 #include <objidl.h>
 
 // zlib

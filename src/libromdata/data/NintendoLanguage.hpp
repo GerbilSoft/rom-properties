@@ -2,14 +2,14 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * NintendoLanguage.hpp: Get the system language for Nintendo systems.     *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #ifndef __ROMPROPERTIES_LIBROMDATA_DATA_NINTENDOLANGUAGE_HPP__
 #define __ROMPROPERTIES_LIBROMDATA_DATA_NINTENDOLANGUAGE_HPP__
 
-#include "librpbase/common.h"
+#include "common.h"
 
 // C includes.
 #include <stdint.h>

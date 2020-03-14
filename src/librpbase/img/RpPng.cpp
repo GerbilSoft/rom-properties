@@ -10,7 +10,7 @@
 #include "config.librpbase.h"
 
 #include "RpPng.hpp"
-#include "../file/IRpFile.hpp"
+#include "librpfile/IRpFile.hpp"
 
 #include "img/rp_image.hpp"
 using LibRpTexture::rp_image;

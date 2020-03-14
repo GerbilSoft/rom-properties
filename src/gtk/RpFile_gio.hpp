@@ -9,8 +9,8 @@
 #ifndef __ROMPROPERTIES_GTK_RPFILE_GIO_HPP__
 #define __ROMPROPERTIES_GTK_RPFILE_GIO_HPP__
 
-// librpbase
-#include "librpbase/file/IRpFile.hpp"
+// librpfile
+#include "librpfile/IRpFile.hpp"
 
 class RpFileGioPrivate;
 class RpFileGio : public LibRpBase::IRpFile

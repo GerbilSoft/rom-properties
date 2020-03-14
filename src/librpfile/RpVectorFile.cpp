@@ -1,5 +1,5 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (librpbase)                        *
+ * ROM Properties Page shell extension. (librpfile)                        *
  * RpVectorFile.cpp: IRpFile implementation using an std::vector.          *
  *                                                                         *
  * Copyright (c) 2016-2020 by David Korth.                                 *

@@ -101,7 +101,7 @@ IF(BUILD_XFCE)
 	TARGET_INCLUDE_DIRECTORIES(rom-properties-xfce PUBLIC ${GTK2_INCLUDE_DIRS})
 
 	TARGET_LINK_LIBRARIES(rom-properties-xfce PRIVATE glibresources)
-	TARGET_LINK_LIBRARIES(rom-properties-xfce PRIVATE romdata rpbase)
+	TARGET_LINK_LIBRARIES(rom-properties-xfce PRIVATE romdata rpfile rpbase)
 	IF(ENABLE_NLS)
 		TARGET_LINK_LIBRARIES(rom-properties-xfce PRIVATE i18n)
 	ENDIF(ENABLE_NLS)

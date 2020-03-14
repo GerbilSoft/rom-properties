@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * gcn_banner.h: Nintendo GameCube banner structures.                      *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -15,7 +15,7 @@
 #define __ROMPROPERTIES_LIBROMDATA_GCN_BANNER_H__
 
 #include <stdint.h>
-#include "librpbase/common.h"
+#include "common.h"
 
 #ifdef __cplusplus
 extern "C" {

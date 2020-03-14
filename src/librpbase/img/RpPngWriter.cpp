@@ -12,7 +12,7 @@
 
 #include "byteorder.h"
 #include "TextFuncs.hpp"
-#include "file/RpFile.hpp"
+#include "librpfile/RpFile.hpp"
 
 #include "img/rp_image.hpp"
 using LibRpTexture::rp_image;

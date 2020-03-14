@@ -151,7 +151,7 @@ IF(BUILD_KF5)
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../..>	# src
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/../..>	# src
 		)
-	TARGET_LINK_LIBRARIES(rom-properties-kf5 PRIVATE romdata rpbase unixcommon)
+	TARGET_LINK_LIBRARIES(rom-properties-kf5 PRIVATE romdata rpfile rpbase unixcommon)
 	IF(ENABLE_NLS)
 		TARGET_LINK_LIBRARIES(rom-properties-kf5 PRIVATE i18n)
 	ENDIF(ENABLE_NLS)

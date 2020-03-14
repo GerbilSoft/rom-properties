@@ -2,15 +2,15 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * ktx_structs.h: Khronos KTX texture format data structures.              *
  *                                                                         *
- * Copyright (c) 2017-2019 by David Korth.                                 *
+ * Copyright (c) 2017-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #ifndef __ROMPROPERTIES_LIBRPTEXTURE_FILEFORMAT_KTX_STRUCTS_H__
 #define __ROMPROPERTIES_LIBRPTEXTURE_FILEFORMAT_KTX_STRUCTS_H__
 
-#include "librpbase/common.h"
 #include <stdint.h>
+#include "common.h"
 
 #ifdef __cplusplus
 extern "C" {

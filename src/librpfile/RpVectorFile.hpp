@@ -1,15 +1,15 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (librpbase)                        *
+ * ROM Properties Page shell extension. (librpfile)                        *
  * RpVectorFile.hpp: IRpFile implementation using an std::vector.          *
  *                                                                         *
  * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBRPBASE_RPVECTORFILE_HPP__
-#define __ROMPROPERTIES_LIBRPBASE_RPVECTORFILE_HPP__
+#ifndef __ROMPROPERTIES_LIBRPFILE_RPVECTORFILE_HPP__
+#define __ROMPROPERTIES_LIBRPFILE_RPVECTORFILE_HPP__
 
-#include "librpbase/file/IRpFile.hpp"
+#include "librpfile/IRpFile.hpp"
 
 // C++ includes.
 #include <vector>
@@ -114,4 +114,4 @@ class RpVectorFile : public IRpFile
 
 }
 
-#endif /* __ROMPROPERTIES_LIBRPBASE_RPVECTORFILE_HPP__ */
+#endif /* __ROMPROPERTIES_LIBRPFILE_RPVECTORFILE_HPP__ */

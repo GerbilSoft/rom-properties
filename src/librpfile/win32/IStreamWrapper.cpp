@@ -9,9 +9,9 @@
 #include "stdafx.h"
 #include "IStreamWrapper.hpp"
 
-// Text conversion functions and macros.
-#include "../../TextFuncs.hpp"
-#include "../../TextFuncs_wchar.hpp"
+// libwin32common
+#include "libwin32common/MiniU82T.hpp"
+using LibWin32Common::U82W_s;
 
 // C++ STL classes.
 using std::wstring;

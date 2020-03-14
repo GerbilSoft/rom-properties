@@ -51,19 +51,17 @@
 #include "libi18n/i18n.h"
 
 // librpbase common headers
-#include "librpbase/common.h"
+#include "common.h"
+#include "ctypex.h"
 #include "librpbase/byteswap.h"
 #include "librpbase/bitstuff.h"
 #include "librpbase/aligned_malloc.h"
-#include "librpbase/ctypex.h"
 #include "librpbase/time_r.h"
 
 #ifdef __cplusplus
 // librpbase C++ headers
 #include "librpbase/RomData.hpp"
 #include "librpbase/TextFuncs.hpp"
-#include "librpbase/file/IRpFile.hpp"
-#include "librpbase/file/FileSystem.hpp"
 #include "librpbase/img/IconAnimData.hpp"
 
 // Uninitialized vector class.
@@ -78,6 +76,10 @@
 
 // RomData private headers
 #include "librpbase/RomData_p.hpp"
+
+// librpfile C++ headers
+#include "librpfile/IRpFile.hpp"
+#include "librpfile/FileSystem.hpp"
 
 // librptexture C++ headers
 #include "librptexture/img/rp_image.hpp"

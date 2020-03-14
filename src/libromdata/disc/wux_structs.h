@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * wux_structs.h: Wii U .wux format structs.                               *
  *                                                                         *
- * Copyright (c) 2018 by David Korth.                                      *
+ * Copyright (c) 2018-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -12,8 +12,8 @@
 #ifndef __ROMPROPERTIES_LIBROMDATA_DISC_WUX_STRUCTS_H__
 #define __ROMPROPERTIES_LIBROMDATA_DISC_WUX_STRUCTS_H__
 
-#include "librpbase/common.h"
 #include <stdint.h>
+#include "common.h"
 
 #ifdef __cplusplus
 extern "C" {

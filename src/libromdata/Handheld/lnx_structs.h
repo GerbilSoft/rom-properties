@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * lnx_structs.h: Atari Lynx data structures.                              *
  *                                                                         *
- * Copyright (c) 2016 by David Korth.                                      *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * Copyright (c) 2017 by Egor.                                             *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
@@ -10,8 +10,8 @@
 #ifndef __ROMPROPERTIES_LIBROMDATA_LNX_STRUCTS_H__
 #define __ROMPROPERTIES_LIBROMDATA_LNX_STRUCTS_H__
 
-#include "librpbase/common.h"
 #include <stdint.h>
+#include "common.h"
 
 #ifdef __cplusplus
 extern "C" {

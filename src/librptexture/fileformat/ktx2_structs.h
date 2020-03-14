@@ -9,8 +9,8 @@
 #ifndef __ROMPROPERTIES_LIBRPTEXTURE_FILEFORMAT_KTX2_STRUCTS_H__
 #define __ROMPROPERTIES_LIBRPTEXTURE_FILEFORMAT_KTX2_STRUCTS_H__
 
-#include "librpbase/common.h"
 #include <stdint.h>
+#include "common.h"
 
 #ifdef __cplusplus
 extern "C" {

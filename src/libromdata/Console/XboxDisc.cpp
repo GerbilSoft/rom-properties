@@ -9,8 +9,8 @@
 #include "stdafx.h"
 #include "XboxDisc.hpp"
 
-// librpbase, librptexture
-#include "librpbase/file/RpFile.hpp"
+// librpbase, librpbase, librptexture
+#include "librpfile/RpFile.hpp"
 using namespace LibRpBase;
 using LibRpTexture::rp_image;
 

@@ -2,15 +2,15 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * gcom_structs.h: Tiger game.com data structures.                         *
  *                                                                         *
- * Copyright (c) 2018 by David Korth.                                      *
+ * Copyright (c) 2018-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #ifndef __ROMPROPERTIES_LIBROMDATA_GCOM_STRUCTS_H__
 #define __ROMPROPERTIES_LIBROMDATA_GCOM_STRUCTS_H__
 
-#include "librpbase/common.h"
 #include <stdint.h>
+#include "common.h"
 
 #ifdef __cplusplus
 extern "C" {

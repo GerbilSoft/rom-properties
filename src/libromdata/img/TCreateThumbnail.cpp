@@ -14,11 +14,11 @@
 // Cache Manager
 #include "CacheManager.hpp"
 
-// librpbase
+// librpbase, librpfile
 #include "librpbase/RomData.hpp"
-#include "librpbase/file/RpFile.hpp"
 #include "librpbase/config/Config.hpp"
 #include "librpbase/img/RpImageLoader.hpp"
+#include "librpfile/RpFile.hpp"
 using namespace LibRpBase;
 
 // librptexture

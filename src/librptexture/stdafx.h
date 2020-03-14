@@ -40,18 +40,20 @@
 #endif /* __cplusplus */
 
 // librpbase common headers
-#include "librpbase/common.h"
+#include "common.h"
+#include "ctypex.h"
 #include "librpbase/byteswap.h"
 #include "librpbase/aligned_malloc.h"
-#include "librpbase/ctypex.h"
 
 #ifdef __cplusplus
 // librpbase C++ headers
 #include "librpbase/uvector.h"
 #include "librpbase/RomFields.hpp"
 #include "librpbase/TextFuncs.hpp"
-#include "librpbase/file/IRpFile.hpp"
-#include "librpbase/file/FileSystem.hpp"
+
+// librpfile C++ headers
+#include "librpfile/IRpFile.hpp"
+#include "librpfile/FileSystem.hpp"
 #endif /* !__cplusplus */
 
 #endif /* __ROMPROPERTIES_LIBRPTEXTURE_STDAFX_H__ */

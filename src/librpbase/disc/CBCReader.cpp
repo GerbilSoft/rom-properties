@@ -11,12 +11,14 @@
 #include "CBCReader.hpp"
 
 // librpbase
-#include "file/IRpFile.hpp"
 #ifdef ENABLE_DECRYPTION
 # include "crypto/AesCipherFactory.hpp"
 # include "crypto/IAesCipher.hpp"
 # include "crypto/KeyManager.hpp"
 #endif
+
+// librpfile
+#include "librpfile/IRpFile.hpp"
 
 namespace LibRpBase {
 

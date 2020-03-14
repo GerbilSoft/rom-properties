@@ -10,9 +10,7 @@
 #define __ROMPROPERTIES_LIBRPTEXTURE_FILEFORMAT_FILEFORMAT_HPP__
 
 #include "librptexture/config.librptexture.h"
-
-// TODO: Move to librpfile or similar?
-#include "librpbase/common.h"
+#include "common.h"
 
 // Common declarations.
 #include "FileFormat_decl.hpp"

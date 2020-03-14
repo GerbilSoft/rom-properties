@@ -2,14 +2,14 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * SuperMagicDrive.cpp: Super Magic Drive deinterleaving function.         *
  *                                                                         *
- * Copyright (c) 2016-2017 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #ifndef __ROMPROPERTIES_LIBROMDATA_UTILS_SUPERMAGICDRIVE_HPP__
 #define __ROMPROPERTIES_LIBROMDATA_UTILS_SUPERMAGICDRIVE_HPP__
 
-#include "librpbase/common.h"
+#include "common.h"
 #include "cpu_dispatch.h"
 
 #include <stdint.h>

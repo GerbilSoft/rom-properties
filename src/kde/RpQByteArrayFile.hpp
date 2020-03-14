@@ -9,7 +9,8 @@
 #ifndef __ROMPROPERTIES_KDE_RPQBYTEARRAYFILE_HPP__
 #define __ROMPROPERTIES_KDE_RPQBYTEARRAYFILE_HPP__
 
-#include "librpbase/file/IRpFile.hpp"
+// librpfile
+#include "librpfile/IRpFile.hpp"
 
 // Qt includes.
 #include <QtCore/QByteArray>

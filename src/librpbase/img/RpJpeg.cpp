@@ -11,7 +11,7 @@
 
 #include "RpJpeg.hpp"
 #include "RpJpeg_p.hpp"
-#include "../file/IRpFile.hpp"
+#include "librpfile/IRpFile.hpp"
 
 // libi18n
 #include "libi18n/i18n.h"

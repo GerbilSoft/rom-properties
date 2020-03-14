@@ -13,8 +13,8 @@
 #include "../cdrom_structs.h"
 #include "IsoPartition.hpp"
 
-// librpbase
-#include "librpbase/file/RelatedFile.hpp"
+// librpbase, librpfile
+#include "librpfile/RelatedFile.hpp"
 using namespace LibRpBase;
 
 // Other RomData subclasses

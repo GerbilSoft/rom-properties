@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * badge_structs.h: Nintendo Badge Arcade data structures.                 *
  *                                                                         *
- * Copyright (c) 2017 by David Korth.                                      *
+ * Copyright (c) 2017-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -16,8 +16,8 @@
  * - https://github.com/TheMachinumps/Advanced-badge-editor
  */
 
-#include "librpbase/common.h"
 #include <stdint.h>
+#include "common.h"
 
 #ifdef __cplusplus
 extern "C" {

@@ -15,7 +15,7 @@
 #include <locale>
 using std::locale;
 
-#include "librpbase/common.h"
+#include "common.h"
 #include "tcharx.h"
 
 // librpsecure

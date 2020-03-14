@@ -18,9 +18,9 @@
 #include "mz_zip.h"
 #include "mz_compat.h"
 
-// librpbase
+// librpbase, librpfile
 #include "librpbase/TextFuncs.hpp"
-#include "librpbase/file/FileSystem.hpp"
+#include "librpfile/FileSystem.hpp"
 using namespace LibRpBase;
 
 // libromdata
@@ -36,7 +36,7 @@ using LibRomData::GcnFst;
 #include "FstPrint.hpp"
 
 // C includes. (C++ namespace)
-#include "librpbase/ctypex.h"
+#include "ctypex.h"
 
 // C++ includes.
 #include <sstream>

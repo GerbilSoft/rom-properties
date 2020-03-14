@@ -1,15 +1,13 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (librpbase)                        *
+ * ROM Properties Page shell extension. (librpfile)                        *
  * IRpFile.hpp: File wrapper interface.                                    *
  *                                                                         *
  * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBRPBASE_IRPFILE_HPP__
-#define __ROMPROPERTIES_LIBRPBASE_IRPFILE_HPP__
-
-#include "../common.h"
+#ifndef __ROMPROPERTIES_LIBRPFILE_IRPFILE_HPP__
+#define __ROMPROPERTIES_LIBRPFILE_IRPFILE_HPP__
 
 // C includes.
 #include <stdint.h>
@@ -20,6 +18,9 @@
 // C++ includes.
 #include <string>
 #include <type_traits>
+
+// common macros
+#include "common.h"
 
 namespace LibRpBase {
 
@@ -246,4 +247,4 @@ class unique_IRpFile
 
 }
 
-#endif /* __ROMPROPERTIES_LIBRPBASE_IRPFILE_HPP__ */
+#endif /* __ROMPROPERTIES_LIBRPFILE_IRPFILE_HPP__ */

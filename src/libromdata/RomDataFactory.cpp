@@ -12,8 +12,8 @@
 
 #include "RomDataFactory.hpp"
 
-// librpbase
-#include "librpbase/file/RelatedFile.hpp"
+// librpbase, librpfile
+#include "librpfile/RelatedFile.hpp"
 using namespace LibRpBase;
 
 // librpthreads

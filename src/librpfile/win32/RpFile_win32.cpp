@@ -12,11 +12,10 @@
 #include "../RpFile.hpp"
 #include "../RpFile_p.hpp"
 
-// librpbase
-#include "TextFuncs_wchar.hpp"
-
 // libwin32common
+#include "libwin32common/MiniU82T.hpp"
 #include "libwin32common/w32err.h"
+using LibWin32Common::U82T_s;
 
 // C includes.
 #include <fcntl.h>

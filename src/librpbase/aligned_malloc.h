@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * aligned_malloc.h: Aligned memory allocation compatibility header.       *
  *                                                                         *
- * Copyright (c) 2015-2018 by David Korth                                  *
+ * Copyright (c) 2015-2020 by David Korth                                  *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -25,7 +25,7 @@
  */
 
 #include "librpbase/config.librpbase.h"
-#include "librpbase/common.h"
+#include "common.h"
 
 /**
  * This header defines two functions if they aren't present:

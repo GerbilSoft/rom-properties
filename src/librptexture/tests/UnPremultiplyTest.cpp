@@ -9,9 +9,9 @@
 // Google Test
 #include "gtest/gtest.h"
 #include "tcharx.h"
+#include "common.h"
 
 // librpbase
-#include "librpbase/common.h"
 #include "librpbase/byteswap.h"
 #include "librpbase/TextFuncs.hpp"
 //#include "librpbase/uvector.h"

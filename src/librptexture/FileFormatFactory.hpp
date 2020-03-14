@@ -2,14 +2,14 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * FileFormatFactory.hpp: FileFormat factory class.                        *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #ifndef __ROMPROPERTIES_LIBRPTEXTURE_FILEFORMATFACTORY_HPP__
 #define __ROMPROPERTIES_LIBRPTEXTURE_FILEFORMATFACTORY_HPP__
 
-#include "librpbase/common.h"
+#include "common.h"
 
 // C++ includes.
 #include <utility>

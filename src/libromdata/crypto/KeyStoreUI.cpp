@@ -9,11 +9,11 @@
 #include "stdafx.h"
 #include "KeyStoreUI.hpp"
 
-// librpbase
+// librpbase, librpfile
 #include "librpbase/crypto/KeyManager.hpp"
 #include "librpbase/crypto/IAesCipher.hpp"
 #include "librpbase/crypto/AesCipherFactory.hpp"
-#include "librpbase/file/RpFile.hpp"
+#include "librpfile/RpFile.hpp"
 using namespace LibRpBase;
 
 // libromdata

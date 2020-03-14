@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * nasos_gcn.h: GameCube/Wii NASOS (.iso.dec) disc image reader.           *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -11,8 +11,8 @@
 #ifndef __ROMPROPERTIES_LIBROMDATA_DISC_NASOS_GCN_H__
 #define __ROMPROPERTIES_LIBROMDATA_DISC_NASOS_GCN_H__
 
-#include "librpbase/common.h"
 #include <stdint.h>
+#include "common.h"
 
 #ifdef __cplusplus
 extern "C" {

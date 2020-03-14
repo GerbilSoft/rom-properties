@@ -1,5 +1,5 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (librpbase)                        *
+ * ROM Properties Page shell extension. (librpfile)                        *
  * IRpFile.cpp: File wrapper interface.                                    *
  *                                                                         *
  * Copyright (c) 2016-2020 by David Korth.                                 *

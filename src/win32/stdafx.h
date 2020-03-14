@@ -107,7 +107,7 @@
 #include "libi18n/i18n.h"
 
 // librpbase common headers
-#include "librpbase/common.h"
+#include "common.h"
 
 #ifdef __cplusplus
 // librpbase C++ headers
@@ -115,9 +115,11 @@
 #include "librpbase/TextFuncs.hpp"
 #include "librpbase/TextFuncs_wchar.hpp"
 #include "librpbase/config/Config.hpp"
-#include "librpbase/file/IRpFile.hpp"
-#include "librpbase/file/RpFile.hpp"
-#include "librpbase/file/FileSystem.hpp"
+
+// librpfile C++ headers
+#include "librpfile/IRpFile.hpp"
+#include "librpfile/RpFile.hpp"
+#include "librpfile/FileSystem.hpp"
 
 // librptexture C++ headers
 #include "librptexture/img/rp_image.hpp"

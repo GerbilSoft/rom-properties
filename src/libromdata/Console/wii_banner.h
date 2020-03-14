@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * wii_banner.h: Nintendo Wii banner structures.                           *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -10,7 +10,7 @@
 #define __ROMPROPERTIES_LIBROMDATA_WII_BANNER_H__
 
 #include <stdint.h>
-#include "librpbase/common.h"
+#include "common.h"
 
 // for Title ID
 #include "wii_structs.h"

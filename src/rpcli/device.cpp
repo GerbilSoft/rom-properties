@@ -14,15 +14,15 @@
 // is checked in librpbase, not rpcli.
 #ifdef RP_OS_SCSI_SUPPORTED
 
-// librpbase
+// librpbase, librpfile
 #include "librpbase/TextFuncs.hpp"
-#include "librpbase/file/RpFile.hpp"
 #include "libi18n/i18n.h"
+#include "librpfile/RpFile.hpp"
 using namespace LibRpBase;
 
 // SCSI and ATA protocols.
-#include "librpbase/file/scsi/scsi_protocol.h"
-#include "librpbase/file/scsi/ata_protocol.h"
+#include "librpfile/scsi/scsi_protocol.h"
+#include "librpfile/scsi/ata_protocol.h"
 
 // C++ includes.
 #include <iomanip>

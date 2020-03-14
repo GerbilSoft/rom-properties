@@ -2,15 +2,15 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * gba_structs.h: Nintendo Game Boy Advance data structures.               *
  *                                                                         *
- * Copyright (c) 2016 by David Korth.                                      *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #ifndef __ROMPROPERTIES_LIBROMDATA_GBA_STRUCTS_H__
 #define __ROMPROPERTIES_LIBROMDATA_GBA_STRUCTS_H__
 
-#include "librpbase/common.h"
 #include <stdint.h>
+#include "common.h"
 
 #ifdef __cplusplus
 extern "C" {

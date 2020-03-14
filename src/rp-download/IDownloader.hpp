@@ -9,8 +9,7 @@
 #ifndef __ROMPROPERTIES_RP_DOWNLOAD_IDOWNLOADER_HPP__
 #define __ROMPROPERTIES_RP_DOWNLOAD_IDOWNLOADER_HPP__
 
-// librpbase
-#include "librpbase/common.h"
+#include "common.h"
 
 // C includes.
 #include <stdint.h>

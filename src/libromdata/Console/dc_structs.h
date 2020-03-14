@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * dc_structs.h: Sega Dreamcast data structures.                           *
  *                                                                         *
- * Copyright (c) 2017 by David Korth.                                      *
+ * Copyright (c) 2017-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -18,7 +18,7 @@
  * - http://mc.pp.se/dc/ip.bin.html
  */
 
-#include "librpbase/common.h"
+#include "common.h"
 #include <stdint.h>
 
 #ifdef __cplusplus

@@ -19,8 +19,8 @@
 #if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
 #define HAVE_RPFILE_KIO 1
 
-// librpbase
-#include "librpbase/file/IRpFile.hpp"
+// librpfile
+#include "librpfile/IRpFile.hpp"
 
 // Qt includes.
 #include <QtCore/QObject>

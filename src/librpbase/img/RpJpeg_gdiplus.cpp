@@ -9,8 +9,9 @@
 #include "stdafx.h"
 #include "RpJpeg.hpp"
 
-#include "file/IRpFile.hpp"
-#include "file/win32/IStreamWrapper.hpp"
+// librpfile
+#include "librpfile/IRpFile.hpp"
+#include "librpfile/win32/IStreamWrapper.hpp"
 using LibRpBase::IRpFile;
 using LibRpBase::IStreamWrapper;
 

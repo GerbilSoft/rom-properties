@@ -10,7 +10,7 @@
 #define __ROMPROPERTIES_LIBRPBASE_DISC_IFST_HPP__
 
 #include "librpbase/config.librpbase.h"
-#include "librpbase/common.h"
+#include "common.h"
 
 // C includes.
 #include <stdint.h>

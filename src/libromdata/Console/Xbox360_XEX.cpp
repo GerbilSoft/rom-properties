@@ -15,12 +15,10 @@
 #include "../Other/EXE.hpp"
 #include "xbox360_xex_structs.h"
 
-// librpbase
+// librpbase, librpfile, librptexture
 #include "librpbase/disc/CBCReader.hpp"
-#include "librpbase/file/RpMemFile.hpp"
+#include "librpfile/RpMemFile.hpp"
 using namespace LibRpBase;
-
-// librptexture
 using LibRpTexture::rp_image;
 
 #ifdef ENABLE_DECRYPTION

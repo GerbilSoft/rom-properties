@@ -43,7 +43,7 @@ distribution.
 #define __MCRECOVER_CARD_H__
 
 #include <stdint.h>
-#include "librpbase/common.h"
+#include "common.h"
 
 #ifdef __cplusplus
 extern "C" {

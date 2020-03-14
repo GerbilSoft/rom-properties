@@ -10,10 +10,10 @@
 #include "config.libromdata.h"
 #include "CacheManager.hpp"
 
-// librpbase
+// librpbase, librpfile
 #include "librpbase/TextFuncs.hpp"
-#include "librpbase/file/RpFile.hpp"
-#include "librpbase/file/FileSystem.hpp"
+#include "librpfile/RpFile.hpp"
+#include "librpfile/FileSystem.hpp"
 using namespace LibRpBase;
 using namespace LibRpBase::FileSystem;
 
