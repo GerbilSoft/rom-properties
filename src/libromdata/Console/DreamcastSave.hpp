@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * DreamcastSave.hpp: Sega Dreamcast save file reader.                     *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -32,7 +32,7 @@ ROMDATA_DECL_BEGIN(DreamcastSave)
 		 * @param vms_file Open .VMS save file.
 		 * @param vmi_file Open .VMI save file.
 		 */
-		DreamcastSave(LibRpBase::IRpFile *vms_file, LibRpBase::IRpFile *vmi_file);
+		DreamcastSave(LibRpFile::IRpFile *vms_file, LibRpFile::IRpFile *vmi_file);
 
 ROMDATA_DECL_CLOSE()
 ROMDATA_DECL_IMGSUPPORT()

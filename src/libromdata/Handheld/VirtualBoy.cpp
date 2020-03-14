@@ -12,8 +12,9 @@
 #include "data/NintendoPublishers.hpp"
 #include "vb_structs.h"
 
-// librpbase
+// librpbase, librpfile
 using namespace LibRpBase;
+using LibRpFile::IRpFile;
 
 // C++ STL classes.
 using std::string;

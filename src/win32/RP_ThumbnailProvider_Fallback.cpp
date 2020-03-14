@@ -11,8 +11,9 @@
 #include "RP_ThumbnailProvider.hpp"
 #include "RP_ThumbnailProvider_p.hpp"
 
-// librpbase, libwin32common
+// librpbase, librpfile, libwin32common
 using namespace LibRpBase;
+using namespace LibRpFile;
 using LibWin32Common::RegKey;
 
 // C++ STL classes.

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * ValveVTF.cpp: Valve VTF image reader.                                   *
  *                                                                         *
- * Copyright (c) 2017-2019 by David Korth.                                 *
+ * Copyright (c) 2017-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -17,11 +17,11 @@
 
 #include "vtf_structs.h"
 
-// librpbase
+// librpbase, librpfile
 #include "librpbase/bitstuff.h"
-using LibRpBase::IRpFile;
 using LibRpBase::rp_sprintf;
 using LibRpBase::RomFields;
+using LibRpFile::IRpFile;
 
 // librptexture
 #include "img/rp_image.hpp"

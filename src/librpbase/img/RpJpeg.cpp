@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * RpJpeg.cpp: JPEG image handler.                                         *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -16,7 +16,8 @@
 // libi18n
 #include "libi18n/i18n.h"
 
-// librptexture
+// librpfile, librptexture
+using LibRpFile::IRpFile;
 using LibRpTexture::rp_image;
 using LibRpTexture::argb32_t;
 

@@ -28,6 +28,7 @@ using namespace LibRpBase;
 #include "librpfile/config.librpfile.h"
 #include "librpfile/FileSystem.hpp"
 #include "librpfile/RpFile.hpp"
+using namespace LibRpFile;
 
 // libromdata
 #include "libromdata/RomDataFactory.hpp"

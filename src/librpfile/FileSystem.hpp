@@ -39,7 +39,7 @@
 // C++ includes.
 #include <string>
 
-namespace LibRpBase { namespace FileSystem {
+namespace LibRpFile { namespace FileSystem {
 
 /**
  * Recursively mkdir() subdirectories.

@@ -15,8 +15,9 @@
 #include "librpbase/disc/SparseDiscReader_p.hpp"
 #include "nasos_gcn.h"
 
-// librpbase
+// librpbase, librpfile
 using namespace LibRpBase;
+using LibRpFile::IRpFile;
 
 namespace LibRomData {
 

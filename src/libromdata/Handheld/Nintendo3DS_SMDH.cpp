@@ -13,8 +13,9 @@
 #include "n3ds_structs.h"
 #include "data/NintendoLanguage.hpp"
 
-// librpbase, librptexture
+// librpbase, librpfile, librptexture
 using namespace LibRpBase;
+using LibRpFile::IRpFile;
 using namespace LibRpTexture;
 
 // C++ STL classes.

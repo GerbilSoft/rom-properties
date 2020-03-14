@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * MachO.cpp: Mach-O executable format.                                    *
  *                                                                         *
- * Copyright (c) 2019 by David Korth.                                      *
+ * Copyright (c) 2019-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -11,8 +11,9 @@
 #include "data/MachOData.hpp"
 #include "macho_structs.h"
 
-// librpbase
+// librpbase, librpfile
 using namespace LibRpBase;
+using LibRpFile::IRpFile;
 
 // C++ STL classes.
 using std::string;
@@ -29,7 +30,7 @@ ROMDATA_IMPL(MachO)
 class MachOPrivate : public LibRpBase::RomDataPrivate
 {
 	public:
-		MachOPrivate(MachO *q, LibRpBase::IRpFile *file);
+		MachOPrivate(MachO *q, LibRpFile::IRpFile *file);
 
 	private:
 		typedef RomDataPrivate super;

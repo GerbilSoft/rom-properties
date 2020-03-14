@@ -20,13 +20,15 @@
 #include <string>
 #include <vector>
 
+namespace LibRpFile {
+	class IRpFile;
+}
 namespace LibRpTexture {
 	class rp_image;
 }
 
 namespace LibRpBase {
 
-class IRpFile;
 class RomFields;
 class RomMetaData;
 struct IconAnimData;
@@ -48,7 +50,7 @@ class RomData
 		 *
 		 * @param file ROM file.
 		 */
-		explicit RomData(IRpFile *file);
+		explicit RomData(LibRpFile::IRpFile *file);
 
 		/**
 		 * ROM data base class.

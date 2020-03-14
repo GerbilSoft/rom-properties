@@ -13,8 +13,9 @@
 #include "stdafx.h"
 #include "RpOverlayIconPlugin.hpp"
 
-// librpbase
+// librpbase, librpfile
 using namespace LibRpBase;
+using LibRpFile::IRpFile;
 
 // libromdata
 #include "libromdata/RomDataFactory.hpp"

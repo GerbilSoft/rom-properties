@@ -10,8 +10,9 @@
 #include "CacheTab.hpp"
 #include "res/resource.h"
 
-// librpbase, libwin32common
+// librpbase, librpfile, libwin32common
 using namespace LibRpBase;
+using namespace LibRpFile;
 using LibWin32Common::RegKey;
 using LibWin32Common::WTSSessionNotification;
 

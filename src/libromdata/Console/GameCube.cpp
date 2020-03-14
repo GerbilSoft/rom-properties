@@ -19,9 +19,10 @@
 #include "GameCubeRegions.hpp"
 #include "WiiCommon.hpp"
 
-// librpbase, librptexture
+// librpbase, librpfile, librptexture
 #include "librpbase/SystemRegion.hpp"
 using namespace LibRpBase;
+using LibRpFile::IRpFile;
 using LibRpTexture::rp_image;
 
 // DiscReader

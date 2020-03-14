@@ -13,9 +13,10 @@
 #include "data/NESMappers.hpp"
 #include "nes_structs.h"
 
-// librpbase
+// librpbase, librpfile
 #include "librpbase/SystemRegion.hpp"
 using namespace LibRpBase;
+using LibRpFile::IRpFile;
 
 // C++ STL classes.
 using std::string;

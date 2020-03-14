@@ -12,7 +12,7 @@
 // C++ STL classes.
 using std::string;
 
-namespace LibRpBase {
+namespace LibRpFile {
 
 /**
  * Open an IRpFile backed by an std::vector.

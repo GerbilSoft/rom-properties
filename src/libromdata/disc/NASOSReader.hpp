@@ -11,10 +11,6 @@
 
 #include "librpbase/disc/SparseDiscReader.hpp"
 
-namespace LibRpBase {
-	class IRpFile;
-}
-
 namespace LibRomData {
 
 class NASOSReaderPrivate;
@@ -27,7 +23,7 @@ class NASOSReader : public LibRpBase::SparseDiscReader
 		 * unref()'d by the caller afterwards.
 		 * @param file File to read from.
 		 */
-		explicit NASOSReader(LibRpBase::IRpFile *file);
+		explicit NASOSReader(LibRpFile::IRpFile *file);
 
 	private:
 		typedef SparseDiscReader super;

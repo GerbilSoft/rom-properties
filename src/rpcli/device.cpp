@@ -19,6 +19,7 @@
 #include "libi18n/i18n.h"
 #include "librpfile/RpFile.hpp"
 using namespace LibRpBase;
+using LibRpFile::RpFile;
 
 // SCSI and ATA protocols.
 #include "librpfile/scsi/scsi_protocol.h"

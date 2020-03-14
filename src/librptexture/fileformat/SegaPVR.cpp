@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * SegaPVR.cpp: Sega PVR texture reader.                                   *
  *                                                                         *
- * Copyright (c) 2017-2019 by David Korth.                                 *
+ * Copyright (c) 2017-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -12,10 +12,10 @@
 
 #include "pvr_structs.h"
 
-// librpbase
+// librpbase, librpfile
 #include "librpbase/bitstuff.h"
-using LibRpBase::IRpFile;
 using LibRpBase::RomFields;
+using LibRpFile::IRpFile;
 
 // librptexture
 #include "img/rp_image.hpp"

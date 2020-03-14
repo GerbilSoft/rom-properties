@@ -34,6 +34,7 @@ using LibWin32Common::WTSSessionNotification;
 #include "librpbase/img/RpPng.hpp"
 #include "librpfile/win32/RpFile_windres.hpp"
 using namespace LibRpBase;
+using namespace LibRpFile;
 using LibRpTexture::rp_image;
 using LibRomData::RomDataFactory;
 
@@ -2749,7 +2750,7 @@ IFACEMETHODIMP RP_ShellPropSheetExt::Initialize(
 
 	// Check for "bad" file systems.
 	config = Config::instance();
-	if (LibRpBase::FileSystem::isOnBadFS(u8filename.c_str(),
+	if (FileSystem::isOnBadFS(u8filename.c_str(),
 	    config->enableThumbnailOnNetworkFS()))
 	{
 		// This file is on a "bad" file system.

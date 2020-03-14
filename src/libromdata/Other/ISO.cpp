@@ -15,8 +15,8 @@
 #include "librpbase/byteswap.h"
 #include "librpbase/TextFuncs.hpp"
 #include "libi18n/i18n.h"
-#include "librpfile/IRpFile.hpp"
 using namespace LibRpBase;
+using LibRpFile::IRpFile;
 
 // C includes. (C++ namespace)
 #include <cassert>
@@ -37,7 +37,7 @@ ROMDATA_IMPL(ISO)
 class ISOPrivate : public LibRpBase::RomDataPrivate
 {
 	public:
-		ISOPrivate(ISO *q, LibRpBase::IRpFile *file);
+		ISOPrivate(ISO *q, LibRpFile::IRpFile *file);
 
 	private:
 		typedef RomDataPrivate super;

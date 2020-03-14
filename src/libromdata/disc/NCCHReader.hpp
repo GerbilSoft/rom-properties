@@ -15,10 +15,6 @@
 #include "librpbase/disc/IPartition.hpp"
 #include "librpbase/crypto/KeyManager.hpp"
 
-namespace LibRpBase {
-	class IRpFile;
-}
-
 namespace LibRomData {
 
 class CIAReader;
@@ -38,7 +34,7 @@ class NCCHReader : public LibRpBase::IPartition
 		 * @param ncch_offset		[in] NCCH start offset, in bytes.
 		 * @param ncch_length		[in] NCCH length, in bytes.
 		 */
-		NCCHReader(LibRpBase::IRpFile *file,
+		NCCHReader(LibRpFile::IRpFile *file,
 			uint8_t media_unit_shift,
 			off64_t ncch_offset, uint32_t ncch_length);
 
@@ -192,7 +188,7 @@ class NCCHReader : public LibRpBase::IPartition
 		 * @param filename Filename. (ASCII)
 		 * @return IRpFile*, or nullptr on error.
 		 */
-		LibRpBase::IRpFile *open(int section, const char *filename);
+		LibRpFile::IRpFile *open(int section, const char *filename);
 
 		/**
 		 * Open the logo section.
@@ -202,7 +198,7 @@ class NCCHReader : public LibRpBase::IPartition
 		 *
 		 * @return IRpFile*, or nullptr on error.
 		 */
-		LibRpBase::IRpFile *openLogo(void);
+		LibRpFile::IRpFile *openLogo(void);
 };
 
 }

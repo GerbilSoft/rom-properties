@@ -22,7 +22,7 @@
 // common macros
 #include "common.h"
 
-namespace LibRpBase {
+namespace LibRpFile {
 
 class IRpFile
 {

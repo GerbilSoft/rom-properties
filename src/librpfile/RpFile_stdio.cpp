@@ -21,7 +21,7 @@
 #include <sys/stat.h>	// stat(), statx()
 #include <unistd.h>	// ftruncate()
 
-namespace LibRpBase {
+namespace LibRpFile {
 
 /** RpFilePrivate **/
 

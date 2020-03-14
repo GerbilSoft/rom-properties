@@ -20,6 +20,7 @@
 #include "librpbase/img/RpImageLoader.hpp"
 #include "librpfile/RpFile.hpp"
 using namespace LibRpBase;
+using namespace LibRpFile;
 
 // librptexture
 #include "librptexture/img/rp_image.hpp"

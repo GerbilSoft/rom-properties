@@ -15,9 +15,10 @@
 #include <propkey.h>
 #include <propvarutil.h>
 
-// librpbase, libromdata
+// librpbase, librpfile, libromdata
 #include "librpbase/RomMetaData.hpp"
 using namespace LibRpBase;
+using LibRpFile::IRpFile;
 using LibRomData::RomDataFactory;
 
 // libwin32common

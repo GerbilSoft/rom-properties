@@ -10,7 +10,7 @@
 #include "librpbase/config.librpbase.h"
 #include "CIAReader.hpp"
 
-// librpbase
+// librpbase, librpfile
 #include "librpbase/disc/CBCReader.hpp"
 #ifdef ENABLE_DECRYPTION
 # include "librpbase/crypto/AesCipherFactory.hpp"
@@ -19,6 +19,7 @@
 # include "../crypto/N3DSVerifyKeys.hpp"
 #endif /* ENABLE_DECRYPTION */
 using namespace LibRpBase;
+using LibRpFile::IRpFile;
 
 namespace LibRomData {
 

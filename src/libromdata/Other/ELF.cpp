@@ -11,8 +11,9 @@
 #include "data/ELFData.hpp"
 #include "elf_structs.h"
 
-// librpbase
+// librpbase, librpfile
 using namespace LibRpBase;
+using LibRpFile::IRpFile;
 
 // cinttypes was added in MSVC 2013.
 // For older versions, we'll need to manually define PRIX64.
@@ -46,7 +47,7 @@ ROMDATA_IMPL(ELF)
 class ELFPrivate : public LibRpBase::RomDataPrivate
 {
 	public:
-		ELFPrivate(ELF *q, LibRpBase::IRpFile *file);
+		ELFPrivate(ELF *q, LibRpFile::IRpFile *file);
 
 	private:
 		typedef RomDataPrivate super;

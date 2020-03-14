@@ -15,8 +15,9 @@
 #include "gcn_structs.h"
 #include "data/WiiUData.hpp"
 
-// librpbase
+// librpbase, librpfile
 using namespace LibRpBase;
+using LibRpFile::IRpFile;
 
 // DiscReader
 #include "librpbase/disc/DiscReader.hpp"

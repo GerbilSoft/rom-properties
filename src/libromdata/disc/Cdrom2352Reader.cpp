@@ -17,8 +17,9 @@
 #include "librpbase/disc/SparseDiscReader_p.hpp"
 #include "../cdrom_structs.h"
 
-// librpbase
+// librpbase, librpfile
 using namespace LibRpBase;
+using LibRpFile::IRpFile;
 
 namespace LibRomData {
 

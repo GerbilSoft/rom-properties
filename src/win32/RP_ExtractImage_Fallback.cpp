@@ -11,8 +11,9 @@
 #include "RP_ExtractImage.hpp"
 #include "RP_ExtractImage_p.hpp"
 
-// librpbase, libwin32common
+// librpbase, librpfile, libwin32common
 using namespace LibRpBase;
+using namespace LibRpFile;
 using LibWin32Common::RegKey;
 
 // C++ STL classes.

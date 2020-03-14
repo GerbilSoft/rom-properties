@@ -45,7 +45,7 @@
 using std::string;
 using std::u16string;
 
-namespace LibRpBase { namespace FileSystem {
+namespace LibRpFile { namespace FileSystem {
 
 /**
  * Recursively mkdir() subdirectories.

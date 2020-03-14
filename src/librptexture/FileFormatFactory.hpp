@@ -15,7 +15,7 @@
 #include <utility>
 #include <vector>
 
-namespace LibRpBase {
+namespace LibRpFile {
 	class IRpFile;
 }
 
@@ -45,7 +45,7 @@ class FileFormatFactory
 		 * @param file Texture file.
 		 * @return FileFormat subclass, or nullptr if the texture file isn't supported.
 		 */
-		static LibRpTexture::FileFormat *create(LibRpBase::IRpFile *file);
+		static LibRpTexture::FileFormat *create(LibRpFile::IRpFile *file);
 
 		/**
 		 * Get all supported file extensions.

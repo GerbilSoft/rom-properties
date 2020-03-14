@@ -12,8 +12,9 @@
 #include "data/NintendoPublishers.hpp"
 #include "dmg_structs.h"
 
-// librpbase
+// librpbase, librpfile
 using namespace LibRpBase;
+using LibRpFile::IRpFile;
 
 // For sections delegated to other RomData subclasses.
 #include "Audio/GBS.hpp"

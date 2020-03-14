@@ -10,9 +10,10 @@
 #include "Xbox_XBE.hpp"
 #include "xbox_xbe_structs.h"
 
-// librpbase
+// librpbase, librpfile
 #include "librpbase/img/RpPng.hpp"
 using namespace LibRpBase;
+using LibRpFile::IRpFile;
 
 // librptexture
 #include "librptexture/fileformat/XboxXPR.hpp"

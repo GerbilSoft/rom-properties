@@ -1,8 +1,8 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (librpbase)                        *
+ * ROM Properties Page shell extension. (librpfile)                        *
  * scsi_ata_cmd.h: SCSI/ATA wrapper commands.                              *
  *                                                                         *
- * Copyright (c) 2019 by David Korth.                                      *
+ * Copyright (c) 2019-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -13,8 +13,8 @@
  * - https://www.t10.org/ftp/t10/document.04/04-262r8.pdf
  */
 
-#ifndef __ROMPROPERTIES_LIBRPBASE_FILE_SCSI_SCSI_ATA_CMDS_H__
-#define __ROMPROPERTIES_LIBRPBASE_FILE_SCSI_SCSI_ATA_CMDS_H__
+#ifndef __ROMPROPERTIES_LIBRPFILE_SCSI_SCSI_ATA_CMDS_H__
+#define __ROMPROPERTIES_LIBRPFILE_SCSI_SCSI_ATA_CMDS_H__
 
 #include "scsi_protocol.h"
 #include "ata_protocol.h"
@@ -115,4 +115,4 @@ typedef struct PACKED SCSI_CDB_ATA_PASS_THROUGH_12 {
 
 #pragma pack()
 
-#endif /* __ROMPROPERTIES_LIBRPBASE_FILE_SCSI_SCSI_ATA_CMDS_H__ */
+#endif /* __ROMPROPERTIES_LIBRPFILE_SCSI_SCSI_ATA_CMDS_H__ */

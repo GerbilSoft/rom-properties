@@ -15,8 +15,9 @@
 #include "PlayStationSave.hpp"
 #include "ps1_structs.h"
 
-// librpbase, librptexture
+// librpbase, librpfile, librptexture
 using namespace LibRpBase;
+using LibRpFile::IRpFile;
 using namespace LibRpTexture;
 
 // C++ STL classes.

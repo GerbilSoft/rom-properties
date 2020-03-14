@@ -19,7 +19,7 @@
 #include "ata_protocol.h"
 #include "scsi_ata_cmds.h"
 
-namespace LibRpBase {
+namespace LibRpFile {
 
 /**
  * Read one sector into the sector cache.

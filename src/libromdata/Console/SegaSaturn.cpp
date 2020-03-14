@@ -12,8 +12,9 @@
 #include "saturn_structs.h"
 #include "cdrom_structs.h"
 
-// librpbase
+// librpbase, librpfile
 using namespace LibRpBase;
+using LibRpFile::IRpFile;
 
 // CD-ROM reader
 #include "disc/Cdrom2352Reader.hpp"

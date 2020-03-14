@@ -133,7 +133,7 @@ CBCReaderPrivate::~CBCReaderPrivate()
  * @param key		[in] Encryption key. (Must be 128-bit) [If NULL, acts like no encryption.]
  * @param iv		[in] Initialization vector. (Must be 128-bit) [If NULL, uses ECB instead of CBC.]
  */
-CBCReader::CBCReader(LibRpBase::IRpFile *file, off64_t offset, off64_t length,
+CBCReader::CBCReader(LibRpFile::IRpFile *file, off64_t offset, off64_t length,
 		const uint8_t *key, const uint8_t *iv)
 	: super(file)
 	, d_ptr(new CBCReaderPrivate(this, offset, length, key, iv))

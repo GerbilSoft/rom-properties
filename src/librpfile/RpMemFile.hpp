@@ -1,17 +1,17 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (librpbase)                        *
+ * ROM Properties Page shell extension. (librpfile)                        *
  * RpMemFile.hpp: IRpFile implementation using a memory buffer.            *
  *                                                                         *
  * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBRPBASE_RPMEMFILE_HPP__
-#define __ROMPROPERTIES_LIBRPBASE_RPMEMFILE_HPP__
+#ifndef __ROMPROPERTIES_LIBRPFILE_RPMEMFILE_HPP__
+#define __ROMPROPERTIES_LIBRPFILE_RPMEMFILE_HPP__
 
 #include "IRpFile.hpp"
 
-namespace LibRpBase {
+namespace LibRpFile {
 
 class RpMemFile : public IRpFile
 {
@@ -114,4 +114,4 @@ class RpMemFile : public IRpFile
 
 }
 
-#endif /* __ROMPROPERTIES_LIBRPBASE_IRPFILE_HPP__ */
+#endif /* __ROMPROPERTIES_LIBRPFILE_RPMEMFILE_HPP__ */

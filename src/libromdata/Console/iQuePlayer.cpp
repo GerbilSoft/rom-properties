@@ -12,8 +12,9 @@
 #include "iQuePlayer.hpp"
 #include "ique_player_structs.h"
 
-// librpbase, librptexture
+// librpbase, librpfile, librptexture
 using namespace LibRpBase;
+using LibRpFile::IRpFile;
 using namespace LibRpTexture;
 
 // for memmem() if it's not available in <string.h>

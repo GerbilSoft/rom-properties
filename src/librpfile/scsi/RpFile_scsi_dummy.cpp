@@ -1,5 +1,5 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (librpbase)                        *
+ * ROM Properties Page shell extension. (librpfile)                        *
  * RpFile_scsi_dummy.cpp: Dummy implementation.                            *
  *                                                                         *
  * Copyright (c) 2016-2020 by David Korth.                                 *
@@ -10,7 +10,7 @@
 #include "../RpFile.hpp"
 #include "../RpFile_p.hpp"
 
-namespace LibRpBase {
+namespace LibRpFile {
 
 /**
  * Re-read device size using the native OS API.

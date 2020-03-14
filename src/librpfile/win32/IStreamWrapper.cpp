@@ -1,5 +1,5 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (librpbase)                        *
+ * ROM Properties Page shell extension. (librpfile)                        *
  * IStreamWrapper.cpp: IStream wrapper for IRpFile. (Win32)                *
  *                                                                         *
  * Copyright (c) 2016-2020 by David Korth.                                 *
@@ -16,7 +16,7 @@ using LibWin32Common::U82W_s;
 // C++ STL classes.
 using std::wstring;
 
-namespace LibRpBase {
+namespace LibRpFile {
 
 /**
  * Create an IStream wrapper for IRpFile.

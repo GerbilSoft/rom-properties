@@ -1,8 +1,8 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (librpbase)                        *
+ * ROM Properties Page shell extension. (librpfile)                        *
  * RpFile_Kreon.cpp: Standard file object. (Kreon-specific functions)      *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -19,7 +19,7 @@ using std::array;
 using std::unique_ptr;
 using std::vector;
 
-namespace LibRpBase {
+namespace LibRpFile {
 
 /**
  * Is this a supported Kreon drive?

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * RomData_p.hpp: ROM data base class. (PRIVATE CLASS)                     *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -21,13 +21,15 @@
 #include "RomFields.hpp"
 #include "RomMetaData.hpp"
 
+namespace LibRpFile {
+	class IRpFile;
+}
 namespace LibRpTexture {
 	class rp_image;
 }
 
 namespace LibRpBase {
 
-class IRpFile;
 class RomFields;
 class RomMetaData;
 
@@ -40,7 +42,7 @@ class RomDataPrivate
 		 * @param q RomData class.
 		 * @param file ROM file.
 		 */
-		RomDataPrivate(RomData *q, IRpFile *file);
+		RomDataPrivate(RomData *q, LibRpFile::IRpFile *file);
 
 		virtual ~RomDataPrivate();
 
@@ -53,7 +55,7 @@ class RomDataPrivate
 	public:
 		volatile int ref_cnt;		// Reference count.
 		bool isValid;			// Subclass must set this to true if the ROM is valid.
-		IRpFile *file;			// Open file.
+		LibRpFile::IRpFile *file;	// Open file.
 		RomFields *const fields;	// ROM fields. (NOTE: allocated by the base class)
 		RomMetaData *metaData;		// ROM metadata. (NOTE: nullptr initially.)
 

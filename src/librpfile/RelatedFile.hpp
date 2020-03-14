@@ -1,19 +1,19 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (librpbase)                        *
+ * ROM Properties Page shell extension. (librpfile)                        *
  * RelatedFile.hpp: Open a related file.                                   *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBRPBASE_RELATEDFILE_HPP__
-#define __ROMPROPERTIES_LIBRPBASE_RELATEDFILE_HPP__
+#ifndef __ROMPROPERTIES_LIBRPFILE_RELATEDFILE_HPP__
+#define __ROMPROPERTIES_LIBRPFILE_RELATEDFILE_HPP__
 
-namespace LibRpBase {
+namespace LibRpFile {
 	class IRpFile;
 }
 
-namespace LibRpBase { namespace FileSystem {
+namespace LibRpFile { namespace FileSystem {
 
 /**
  * Attempt to open a related file. (read-only)
@@ -30,8 +30,8 @@ namespace LibRpBase { namespace FileSystem {
  * @param ext		[in] New extension, including leading dot.
  * @return IRpFile*, or nullptr if not found.
  */
-LibRpBase::IRpFile *openRelatedFile(const char *filename, const char *basename, const char *ext);
+LibRpFile::IRpFile *openRelatedFile(const char *filename, const char *basename, const char *ext);
 
 } }
 
-#endif /* __ROMPROPERTIES_LIBRPBASE_RELATEDFILE_HPP__ */
+#endif /* __ROMPROPERTIES_LIBRPFILE_RELATEDFILE_HPP__ */

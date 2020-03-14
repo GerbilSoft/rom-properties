@@ -18,6 +18,7 @@
 
 // librpfile
 #include "librpfile/FileSystem.hpp"
+using namespace LibRpFile;
 
 namespace LibRpBase {
 

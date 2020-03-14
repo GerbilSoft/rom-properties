@@ -38,6 +38,7 @@
 #include "librpfile/RpFile.hpp"
 #include "librpfile/RpMemFile.hpp"
 #include "librpfile/FileSystem.hpp"
+using namespace LibRpFile;
 
 // librptexture
 #include "librptexture/img/rp_image.hpp"

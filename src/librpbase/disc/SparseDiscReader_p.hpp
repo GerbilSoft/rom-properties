@@ -12,13 +12,11 @@
 #define __ROMPROPERTIES_LIBRPBASE_DISC_SPARSEDISCREADER_P_HPP__
 
 #include <stdint.h>
-#include "../common.h"
+#include "common.h"
 
 namespace LibRpBase {
 
-class IRpFile;
 class SparseDiscReader;
-
 class SparseDiscReaderPrivate
 {
 	protected:

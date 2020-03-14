@@ -19,6 +19,8 @@
 #include "librpbase/disc/CBCReader.hpp"
 #include "librpfile/RpMemFile.hpp"
 using namespace LibRpBase;
+using LibRpFile::IRpFile;
+using LibRpFile::RpMemFile;
 using LibRpTexture::rp_image;
 
 #ifdef ENABLE_DECRYPTION

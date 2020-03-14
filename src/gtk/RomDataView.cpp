@@ -13,8 +13,10 @@
 // DragImage (GtkImage subclass)
 #include "DragImage.hpp"
 
-// librpbase, librptexture
+// librpbase, librpfile, librptexture
 using namespace LibRpBase;
+using LibRpFile::IRpFile;
+using LibRpFile::RpFile;
 using LibRpTexture::rp_image;
 
 // libromdata

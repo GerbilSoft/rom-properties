@@ -13,8 +13,9 @@
 #include "Nintendo3DS.hpp"
 #include "n3ds_structs.h"
 
-// librpbase, librptexture
+// librpbase, librpfile, librptexture
 using namespace LibRpBase;
+using namespace LibRpFile;
 using namespace LibRpTexture;
 
 // For sections delegated to other RomData subclasses.

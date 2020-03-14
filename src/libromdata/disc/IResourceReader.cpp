@@ -9,8 +9,8 @@
 #include "stdafx.h"
 #include "IResourceReader.hpp"
 
-// librpbase
-using LibRpBase::IRpFile;
+// librpfile
+using LibRpFile::IRpFile;
 
 namespace LibRomData {
 

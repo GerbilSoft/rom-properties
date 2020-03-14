@@ -15,8 +15,9 @@
 #include "CopierFormats.h"
 #include "utils/SuperMagicDrive.hpp"
 
-// librpbase
+// librpbase, librpfile
 using namespace LibRpBase;
+using LibRpFile::IRpFile;
 
 // Other RomData subclasses
 #include "Other/ISO.hpp"

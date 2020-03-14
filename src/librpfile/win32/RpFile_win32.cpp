@@ -29,7 +29,7 @@ using std::wstring;
 #include "libwin32common/DelayLoadHelper.h"
 #endif /* _MSC_VER */
 
-namespace LibRpBase {
+namespace LibRpFile {
 
 #ifdef _MSC_VER
 // DelayLoad test implementation.

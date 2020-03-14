@@ -15,6 +15,7 @@
 #include "librpbase/img/IconAnimHelper.hpp"
 #include "librpfile/RpVectorFile.hpp"
 using namespace LibRpBase;
+using LibRpFile::RpVectorFile;
 using LibRpTexture::rp_image;
 
 // C++ STL classes.

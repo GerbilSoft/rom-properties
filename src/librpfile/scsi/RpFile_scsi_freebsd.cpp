@@ -30,7 +30,7 @@
 #include <sys/cdio.h>
 #include <sys/disk.h>
 
-namespace LibRpBase {
+namespace LibRpFile {
 
 /**
  * Re-read device size using the native OS API.

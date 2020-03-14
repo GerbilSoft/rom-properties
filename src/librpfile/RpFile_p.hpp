@@ -1,5 +1,5 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (librpbase)                        *
+ * ROM Properties Page shell extension. (librpfile)                        *
  * RpFile_p.hpp: Standard file object. (PRIVATE CLASS)                     *
  *                                                                         *
  * Copyright (c) 2016-2020 by David Korth.                                 *
@@ -56,7 +56,7 @@ using std::vector;
 # endif /* __FreeBSD__ || __DragonFly__ */
 #endif /* RP_OS_SCSI_SUPPORTED */
 
-namespace LibRpBase {
+namespace LibRpFile {
 
 /** RpFilePrivate **/
 

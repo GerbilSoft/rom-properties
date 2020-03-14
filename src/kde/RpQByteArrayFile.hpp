@@ -15,7 +15,7 @@
 // Qt includes.
 #include <QtCore/QByteArray>
 
-class RpQByteArrayFile : public LibRpBase::IRpFile
+class RpQByteArrayFile : public LibRpFile::IRpFile
 {
 	public:
 		/**
@@ -27,7 +27,7 @@ class RpQByteArrayFile : public LibRpBase::IRpFile
 		virtual ~RpQByteArrayFile() { }	// call unref() instead
 
 	private:
-		typedef LibRpBase::IRpFile super;
+		typedef LibRpFile::IRpFile super;
 		RP_DISABLE_COPY(RpQByteArrayFile)
 
 	public:

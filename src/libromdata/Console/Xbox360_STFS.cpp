@@ -19,6 +19,8 @@
 #include "librpbase/img/RpPng.hpp"
 #include "librpfile/RpMemFile.hpp"
 using namespace LibRpBase;
+using LibRpFile::IRpFile;
+using LibRpFile::RpMemFile;
 using namespace LibRpTexture;
 
 // C++ STL classes.

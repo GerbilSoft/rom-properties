@@ -11,9 +11,10 @@
 #include "data/NintendoPublishers.hpp"
 #include "gcn_card.h"
 
-// librpbase, librptexture
+// librpbase, librpfile, librptexture
 #include "librpbase/SystemRegion.hpp"
 using namespace LibRpBase;
+using LibRpFile::IRpFile;
 using namespace LibRpTexture;
 
 // C++ STL classes.

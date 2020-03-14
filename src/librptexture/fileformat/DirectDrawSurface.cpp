@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * DirectDrawSurface.hpp: DirectDraw Surface image reader.                 *
  *                                                                         *
- * Copyright (c) 2017-2019 by David Korth.                                 *
+ * Copyright (c) 2017-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -15,10 +15,10 @@
 #include "dds_structs.h"
 #include "data/DX10Formats.hpp"
 
-// librpbase
-using LibRpBase::IRpFile;
+// librpbase, librpfile
 using LibRpBase::rp_sprintf;
 using LibRpBase::RomFields;
+using LibRpFile::IRpFile;
 
 // librptexture
 #include "img/rp_image.hpp"

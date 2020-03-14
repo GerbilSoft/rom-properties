@@ -1,5 +1,5 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (librpbase)                        *
+ * ROM Properties Page shell extension. (librpfile)                        *
  * RpMemFile.cpp: IRpFile implementation using a memory buffer.            *
  *                                                                         *
  * Copyright (c) 2016-2020 by David Korth.                                 *
@@ -12,7 +12,7 @@
 // C++ STL classes.
 using std::string;
 
-namespace LibRpBase {
+namespace LibRpFile {
 
 /**
  * Open an IRpFile backed by memory.

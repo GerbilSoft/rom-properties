@@ -10,8 +10,9 @@
 #include "ADX.hpp"
 #include "adx_structs.h"
 
-// librpbase
+// librpbase, librpfile
 using namespace LibRpBase;
+using LibRpFile::IRpFile;
 
 // C++ STL classes.
 using std::ostringstream;

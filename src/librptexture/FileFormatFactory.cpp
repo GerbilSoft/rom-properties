@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * FileFormatFactory.cpp: FileFormat factory class.                        *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -12,8 +12,9 @@
 #include "FileFormatFactory.hpp"
 #include "fileformat/FileFormat.hpp"
 
-// librpbase
+// librpbase, librpfile
 using namespace LibRpBase;
+using LibRpFile::IRpFile;
 
 // C++ STL classes.
 using std::string;
@@ -65,7 +66,7 @@ class FileFormatFactoryPrivate
 		 * @param klass Class name.
 		 */
 		template<typename klass>
-		static FileFormat *FileFormat_ctor(LibRpBase::IRpFile *file)
+		static FileFormat *FileFormat_ctor(LibRpFile::IRpFile *file)
 		{
 			return new klass(file);
 		}

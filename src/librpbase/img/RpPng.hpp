@@ -2,22 +2,24 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * RpPng.hpp: PNG image handler.                                           *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #ifndef __ROMPROPERTIES_LIBRPBASE_IMG_RPPNG_HPP__
 #define __ROMPROPERTIES_LIBRPBASE_IMG_RPPNG_HPP__
 
-#include "../common.h"
+#include "common.h"
 
+namespace LibRpFile {
+	class IRpFile;
+}
 namespace LibRpTexture {
 	class rp_image;
 }
 
 namespace LibRpBase {
 
-class IRpFile;
 struct IconAnimData;
 
 class RpPng
@@ -38,7 +40,7 @@ class RpPng
 		 * @param file IRpFile to load from.
 		 * @return rp_image*, or nullptr on error.
 		 */
-		static LibRpTexture::rp_image *loadUnchecked(IRpFile *file);
+		static LibRpTexture::rp_image *loadUnchecked(LibRpFile::IRpFile *file);
 
 		/**
 		 * Load a PNG image from an IRpFile.
@@ -49,7 +51,7 @@ class RpPng
 		 * @param file IRpFile to load from.
 		 * @return rp_image*, or nullptr on error.
 		 */
-		static LibRpTexture::rp_image *load(IRpFile *file);
+		static LibRpTexture::rp_image *load(LibRpFile::IRpFile *file);
 
 		/**
 		 * Save an image in PNG format to an IRpFile.
@@ -62,7 +64,7 @@ class RpPng
 		 * @param img rp_image to save.
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
-		static int save(IRpFile *file, const LibRpTexture::rp_image *img);
+		static int save(LibRpFile::IRpFile *file, const LibRpTexture::rp_image *img);
 
 		/**
 		 * Save an image in PNG format to a file.
@@ -92,7 +94,7 @@ class RpPng
 		 * @param iconAnimData Animated image data to save.
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
-		static int save(IRpFile *file, const IconAnimData *iconAnimData);
+		static int save(LibRpFile::IRpFile *file, const IconAnimData *iconAnimData);
 
 		/**
 		 * Save an animated image in APNG format to a file.

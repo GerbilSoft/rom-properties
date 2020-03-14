@@ -10,8 +10,10 @@
 #include "rom-properties-provider.hpp"
 #include "rom-properties-page.hpp"
 
-// librpbase
+// librpbase, librpfile
 using namespace LibRpBase;
+using LibRpFile::IRpFile;
+using LibRpFile::RpFile;
 
 // libromdata
 #include "libromdata/RomDataFactory.hpp"

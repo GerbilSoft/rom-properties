@@ -14,7 +14,7 @@
 // C++ includes.
 #include <vector>
 
-namespace LibRpBase {
+namespace LibRpFile {
 
 class RpVectorFile : public IRpFile
 {

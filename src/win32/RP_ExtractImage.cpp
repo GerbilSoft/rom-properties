@@ -11,8 +11,9 @@
 #include "RP_ExtractImage.hpp"
 #include "RpImageWin32.hpp"
 
-// librpbase, librptexture, libromdata
+// librpbase, librpfile, librptexture, libromdata
 using namespace LibRpBase;
+using namespace LibRpFile;
 using LibRpTexture::rp_image;
 using LibRomData::RomDataFactory;
 

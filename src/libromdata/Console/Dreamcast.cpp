@@ -13,12 +13,13 @@
 #include "dc_structs.h"
 #include "cdrom_structs.h"
 
-// librpbase, librptexture
+// librpbase, librpfile
 using namespace LibRpBase;
-using namespace LibRpTexture;
+using namespace LibRpFile;
 
 // librptexture
 #include "librptexture/fileformat/SegaPVR.hpp"
+using LibRpTexture::rp_image;
 using LibRpTexture::SegaPVR;
 
 // DiscReader

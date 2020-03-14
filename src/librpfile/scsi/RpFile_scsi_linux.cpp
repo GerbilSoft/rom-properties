@@ -1,5 +1,5 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (librpbase)                        *
+ * ROM Properties Page shell extension. (librpfile)                        *
  * RpFile_scsi_linux.cpp: Standard file object. (Linux SCSI)               *
  *                                                                         *
  * Copyright (c) 2016-2020 by David Korth.                                 *
@@ -23,7 +23,7 @@
 #include <linux/cdrom.h>
 #include <linux/fs.h>
 
-namespace LibRpBase {
+namespace LibRpFile {
 
 /**
  * Re-read device size using the native OS API.

@@ -10,9 +10,10 @@
 #include "RpQt.hpp"
 #include "RpQImageBackend.hpp"
 
-// librpbase, librptexture
+// librpbase, librpfile, librptexture
 #include "librpbase/config/Config.hpp"
 using namespace LibRpBase;
+using namespace LibRpFile;
 using LibRpTexture::rp_image;
 
 // RpFileKio

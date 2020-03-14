@@ -15,6 +15,7 @@
 #include "librpbase/crypto/AesCipherFactory.hpp"
 #include "librpfile/RpFile.hpp"
 using namespace LibRpBase;
+using namespace LibRpFile;
 
 // libromdata
 #include "../disc/WiiPartition.hpp"

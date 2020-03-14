@@ -17,21 +17,21 @@
 #ifdef RP_OS_SCSI_SUPPORTED
 
 #include <ostream>
-namespace LibRpBase {
+namespace LibRpFile {
 	class RpFile;
 }
 
 class ScsiInquiry {
-	LibRpBase::RpFile *const file;
+	LibRpFile::RpFile *const file;
 public:
-	explicit ScsiInquiry(LibRpBase::RpFile *file);
+	explicit ScsiInquiry(LibRpFile::RpFile *file);
 	friend std::ostream& operator<<(std::ostream& os, const ScsiInquiry& si);
 };
 
 class AtaIdentifyDevice {
-	LibRpBase::RpFile *const file;
+	LibRpFile::RpFile *const file;
 public:
-	explicit AtaIdentifyDevice(LibRpBase::RpFile *file);
+	explicit AtaIdentifyDevice(LibRpFile::RpFile *file);
 	friend std::ostream& operator<<(std::ostream& os, const AtaIdentifyDevice& si);
 };
 

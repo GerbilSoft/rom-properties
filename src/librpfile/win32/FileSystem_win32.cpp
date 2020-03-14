@@ -1,5 +1,5 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (librpbase)                        *
+ * ROM Properties Page shell extension. (librpfile)                        *
  * FileSystem_win32.cpp: File system functions. (Win32 implementation)     *
  *                                                                         *
  * Copyright (c) 2016-2020 by David Korth.                                 *
@@ -8,10 +8,6 @@
 
 #include "stdafx.h"
 #include "../FileSystem.hpp"
-
-// librpbase
-#include "TextFuncs.hpp"
-#include "TextFuncs_wchar.hpp"
 
 // librpthreads
 #include "librpthreads/pthread_once.h"
@@ -26,14 +22,19 @@ using std::u16string;
 using std::wstring;
 
 // libwin32common
+#include "libwin32common/MiniU82T.hpp"
 #include "libwin32common/RpWin32_sdk.h"
 #include "libwin32common/w32err.h"
 #include "libwin32common/w32time.h"
+using LibWin32Common::T2U8_c;
+using LibWin32Common::U82W_c;
+using LibWin32Common::U82W_s;
+using LibWin32Common::U82T_s;
 
 // Windows includes.
 #include <direct.h>
 
-namespace LibRpBase { namespace FileSystem {
+namespace LibRpFile { namespace FileSystem {
 
 #ifdef UNICODE
 /**
@@ -134,13 +135,8 @@ static inline tstring makeWinPath(const string &filename)
  */
 int rmkdir(const string &path)
 {
-	// Windows uses UTF-16 natively, so handle as UTF-16.
-#ifdef RP_WIS16
-	static_assert(sizeof(wchar_t) == sizeof(char16_t), "RP_WIS16 is defined, but wchar_t is not 16-bit!");
-#else
-#error Win32 must have a 16-bit wchar_t.
-	static_assert(sizeof(wchar_t) != sizeof(char16_t), "RP_WIS16 is not defined, but wchar_t is 16-bit!");
-#endif
+	// Windows uses UTF-16 natively, so handle it as UTF-16.
+	static_assert(sizeof(wchar_t) == sizeof(char16_t), "wchar_t is not 16-bit!");
 
 	// TODO: makeWinPath()?
 	tstring tpath = U82T_s(path);
@@ -432,7 +428,8 @@ string resolve_symlink(const char *filename)
 		cchDeref--;
 	}
 
-	string ret = T2U8(szDeref, cchDeref);
+	// TODO: Add back the cchDeref parameter for explicit length in MiniU82T?
+	string ret = T2U8_c(szDeref);
 	delete[] szDeref;
 	CloseHandle(hFile);
 	return ret;

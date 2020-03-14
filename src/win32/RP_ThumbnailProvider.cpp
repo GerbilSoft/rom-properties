@@ -11,8 +11,9 @@
 #include "RP_ThumbnailProvider.hpp"
 #include "RpImageWin32.hpp"
 
-// librpbase, librptexture
+// librpbase, librpfile, librptexture
 using namespace LibRpBase;
+using LibRpFile::IRpFile;
 using LibRpTexture::rp_image;
 
 // RpFile_IStream

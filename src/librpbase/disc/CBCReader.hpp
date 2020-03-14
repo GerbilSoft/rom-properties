@@ -14,8 +14,6 @@
 
 namespace LibRpBase {
 
-class IRpFile;
-
 class CBCReaderPrivate;
 class CBCReader : public LibRpBase::IPartition
 {
@@ -32,7 +30,7 @@ class CBCReader : public LibRpBase::IPartition
 		 * @param key		[in] Encryption key. (Must be 128-bit) [If NULL, acts like no encryption.]
 		 * @param iv		[in] Initialization vector. (Must be 128-bit) [If NULL, uses ECB instead of CBC.]
 		 */
-		CBCReader(LibRpBase::IRpFile *file, off64_t offset, off64_t length,
+		CBCReader(LibRpFile::IRpFile *file, off64_t offset, off64_t length,
 			const uint8_t *key, const uint8_t *iv);
 		virtual ~CBCReader();
 

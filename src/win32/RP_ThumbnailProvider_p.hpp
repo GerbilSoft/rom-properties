@@ -3,7 +3,7 @@
  * RP_ThumbnailProvider_p.hpp: IThumbnailProvider implementation.          *
  * (PRIVATE CLASS)                                                         *
  *                                                                         *
- * Copyright (c) 2016-2017 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -19,7 +19,7 @@
 // CLSID
 extern const CLSID CLSID_RP_ThumbnailProvider;
 
-namespace LibRpBase {
+namespace LibRpFile {
 	class IRpFile;
 }
 
@@ -34,7 +34,7 @@ class RP_ThumbnailProvider_Private
 
 	public:
 		// Set by IInitializeWithStream::Initialize().
-		LibRpBase::IRpFile *file;
+		LibRpFile::IRpFile *file;
 
 		// IStream* used by the IRpFile.
 		// NOTE: Do NOT Release() this; RpFile_IStream handles it.

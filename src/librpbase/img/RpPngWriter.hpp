@@ -2,23 +2,26 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * RpPngWriter.hpp: PNG image writer.                                      *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #ifndef __ROMPROPERTIES_LIBRPBASE_IMG_RPPNGWRITER_HPP__
 #define __ROMPROPERTIES_LIBRPBASE_IMG_RPPNGWRITER_HPP__
 
-#include "../common.h"
+#include "common.h"
 #include "librptexture/img/rp_image.hpp"
 
 // C++ includes.
 #include <string>
 #include <vector>
 
+namespace LibRpFile {
+	class IRpFile;
+}
+
 namespace LibRpBase {
 
-class IRpFile;
 struct IconAnimData;
 
 class RpPngWriterPrivate;
@@ -62,7 +65,7 @@ class RpPngWriter
 		 * @param height 	[in] Image height.
 		 * @param format 	[in] Image format.
 		 */
-		RpPngWriter(IRpFile *file, int width, int height, LibRpTexture::rp_image::Format format);
+		RpPngWriter(LibRpFile::IRpFile *file, int width, int height, LibRpTexture::rp_image::Format format);
 
 		/**
 		 * Write an image to a PNG file.
@@ -97,7 +100,7 @@ class RpPngWriter
 		 * @param file	[in] IRpFile open for writing.
 		 * @param img	[in] rp_image.
 		 */
-		RpPngWriter(IRpFile *file, const LibRpTexture::rp_image *img);
+		RpPngWriter(LibRpFile::IRpFile *file, const LibRpTexture::rp_image *img);
 
 		/**
 		 * Write an animated image to an APNG file.
@@ -142,7 +145,7 @@ class RpPngWriter
 		 * @param file		[in] IRpFile open for writing.
 		 * @param iconAnimData	[in] Animated image data.
 		 */
-		RpPngWriter(IRpFile *file, const IconAnimData *iconAnimData);
+		RpPngWriter(LibRpFile::IRpFile *file, const IconAnimData *iconAnimData);
 
 		~RpPngWriter();
 

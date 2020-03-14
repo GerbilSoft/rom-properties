@@ -13,8 +13,9 @@
 #error Cannot compile EXE_manifest.cpp without XML support.
 #endif
 
-// librpbase
+// librpbase, librpfile
 using namespace LibRpBase;
+using LibRpFile::IRpFile;
 
 // TinyXML2
 #include "tinyxml2.h"

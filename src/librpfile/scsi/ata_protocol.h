@@ -1,8 +1,8 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (librpbase)                        *
+ * ROM Properties Page shell extension. (librpfile)                        *
  * ata_protocol.h: ATA protocol definitions.                               *
  *                                                                         *
- * Copyright (c) 2019 by David Korth.                                      *
+ * Copyright (c) 2019-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -12,8 +12,8 @@
  * - http://www.t13.org/documents/uploadeddocuments/docs2006/d1699r3f-ata8-acs.pdf
  */
 
-#ifndef __ROMPROPERTIES_LIBRPBASE_FILE_SCSI_ATA_PROTOCOL_H__
-#define __ROMPROPERTIES_LIBRPBASE_FILE_SCSI_ATA_PROTOCOL_H__
+#ifndef __ROMPROPERTIES_LIBRPFILE_SCSI_ATA_PROTOCOL_H__
+#define __ROMPROPERTIES_LIBRPFILE_SCSI_ATA_PROTOCOL_H__
 
 #include <stdint.h>
 
@@ -230,4 +230,4 @@ typedef struct PACKED _ATA_RESP_IDENTIFY_DEVICE {
 
 #pragma pack()
 
-#endif /* __ROMPROPERTIES_LIBRPBASE_FILE_SCSI_ATA_PROTOCOL_H__ */
+#endif /* __ROMPROPERTIES_LIBRPFILE_SCSI_ATA_PROTOCOL_H__ */

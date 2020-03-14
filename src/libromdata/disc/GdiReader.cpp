@@ -16,6 +16,7 @@
 // librpbase, librpfile
 #include "librpfile/RelatedFile.hpp"
 using namespace LibRpBase;
+using namespace LibRpFile;
 
 // Other RomData subclasses
 #include "Other/ISO.hpp"

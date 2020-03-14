@@ -15,7 +15,6 @@
 
 namespace LibRpBase {
 
-class IRpFile;
 class DiscReader : public IDiscReader
 {
 	public:
@@ -25,7 +24,7 @@ class DiscReader : public IDiscReader
 		 * unref()'d by the caller afterwards.
 		 * @param file File to read from.
 		 */
-		explicit DiscReader(IRpFile *file);
+		explicit DiscReader(LibRpFile::IRpFile *file);
 
 		/**
 		 * Construct a DiscReader with the specified file.
@@ -35,7 +34,7 @@ class DiscReader : public IDiscReader
 		 * @param offset Starting offset.
 		 * @param length Disc length. (-1 for "until end of file")
 		 */
-		DiscReader(IRpFile *file, off64_t offset, off64_t length);
+		explicit DiscReader(LibRpFile::IRpFile *file, off64_t offset, off64_t length);
 
 	private:
 		typedef IDiscReader super;

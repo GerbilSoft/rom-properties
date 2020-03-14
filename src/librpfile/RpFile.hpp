@@ -1,13 +1,13 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (librpbase)                        *
+ * ROM Properties Page shell extension. (librpfile)                        *
  * RpFile.hpp: Standard file object.                                       *
  *                                                                         *
  * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBRPBASE_RPFILE_HPP__
-#define __ROMPROPERTIES_LIBRPBASE_RPFILE_HPP__
+#ifndef __ROMPROPERTIES_LIBRPFILE_RPFILE_HPP__
+#define __ROMPROPERTIES_LIBRPFILE_RPFILE_HPP__
 
 #include "IRpFile.hpp"
 
@@ -20,7 +20,7 @@ struct _SCSI_RESP_INQUIRY_STD;
 // from ata_protocol.h
 struct _ATA_RESP_IDENTIFY_DEVICE;
 
-namespace LibRpBase {
+namespace LibRpFile {
 
 class RpFilePrivate;
 class RpFile : public IRpFile
@@ -230,4 +230,4 @@ class RpFile : public IRpFile
 
 }
 
-#endif /* __ROMPROPERTIES_LIBRPBASE_IRPFILE_HPP__ */
+#endif /* __ROMPROPERTIES_LIBRPFILE_RPFILE_HPP__ */

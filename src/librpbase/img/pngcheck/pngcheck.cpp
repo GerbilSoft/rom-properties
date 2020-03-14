@@ -134,7 +134,7 @@
  */
 #include "pngcheck.hpp"
 #include "librpfile/IRpFile.hpp"
-using LibRpBase::IRpFile;
+using LibRpFile::IRpFile;
 
 #if 0
 // C includes.

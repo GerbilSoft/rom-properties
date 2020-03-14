@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * RomData_decl.hpp: ROM data base class. (Subclass macros)                *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * Copyright (c) 2016-2018 by Egor.                                        *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
@@ -27,7 +27,7 @@
 class klass##Private; \
 class klass : public LibRpBase::RomData { \
 	public: \
-		explicit klass(LibRpBase::IRpFile *file); \
+		explicit klass(LibRpFile::IRpFile *file); \
 	protected: \
 		virtual ~klass() { } \
 	private: \

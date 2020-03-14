@@ -15,6 +15,7 @@
 // librpbase, librpfile
 #include "librpfile/RelatedFile.hpp"
 using namespace LibRpBase;
+using namespace LibRpFile;
 
 // librpthreads
 #include "librpthreads/pthread_once.h"
@@ -130,7 +131,7 @@ class RomDataFactoryPrivate
 		 * @param klass Class name.
 		 */
 		template<typename klass>
-		static LibRpBase::RomData *RomData_ctor(LibRpBase::IRpFile *file)
+		static LibRpBase::RomData *RomData_ctor(LibRpFile::IRpFile *file)
 		{
 			return new klass(file);
 		}

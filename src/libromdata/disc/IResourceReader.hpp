@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * IResourceReader.hpp: Interface for Windows resource readers.            *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -20,16 +20,12 @@
 #include <unordered_map>
 #include <vector>
 
-namespace LibRpBase {
-	class IRpFile;
-}
-
 namespace LibRomData {
 
 class IResourceReader : public LibRpBase::IPartition
 {
 	protected:
-		IResourceReader(LibRpBase::IRpFile *file) : super(file) { }
+		IResourceReader(LibRpFile::IRpFile *file) : super(file) { }
 	public:
 		virtual ~IResourceReader() = 0;
 
@@ -43,7 +39,7 @@ class IResourceReader : public LibRpBase::IPartition
 		 * @param file	[in] File to DWORD align.
 		 * @return 0 on success; non-zero on error.
 		 */
-		static int alignFileDWORD(LibRpBase::IRpFile *file);
+		static int alignFileDWORD(LibRpFile::IRpFile *file);
 
 	public:
 		/** Resource access functions. **/
@@ -55,7 +51,7 @@ class IResourceReader : public LibRpBase::IPartition
 		 * @param lang Language ID. (-1 for "first entry")
 		 * @return IRpFile*, or nullptr on error.
 		 */
-		virtual LibRpBase::IRpFile *open(uint16_t type, int id, int lang) = 0;
+		virtual LibRpFile::IRpFile *open(uint16_t type, int id, int lang) = 0;
 
 		// StringTable.
 		// - Element 1: Key

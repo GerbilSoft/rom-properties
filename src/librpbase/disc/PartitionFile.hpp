@@ -15,7 +15,7 @@ namespace LibRpBase {
 
 class IDiscReader;
 
-class PartitionFile : public IRpFile
+class PartitionFile : public LibRpFile::IRpFile
 {
 	public:
 		/**

@@ -10,8 +10,9 @@
 #include "GameCom.hpp"
 #include "gcom_structs.h"
 
-// librpbase, librptexture
+// librpbase, librpfile, librptexture
 using namespace LibRpBase;
+using LibRpFile::IRpFile;
 using LibRpTexture::rp_image;
 
 // C++ STL classes.

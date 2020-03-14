@@ -1,8 +1,8 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (librpbase)                        *
+ * ROM Properties Page shell extension. (librpfile)                        *
  * FileSystem_common.cpp: File system functions. (Common functions)        *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -27,7 +27,7 @@
 // C++ STL classes.
 using std::string;
 
-namespace LibRpBase { namespace FileSystem {
+namespace LibRpFile { namespace FileSystem {
 
 /** Configuration directories. **/
 // pthread_once() control variable.

@@ -9,7 +9,7 @@
 #ifndef __ROMPROPERTIES_LIBRPBASE_IDISCREADER_HPP__
 #define __ROMPROPERTIES_LIBRPBASE_IDISCREADER_HPP__
 
-#include "../common.h"
+#include "common.h"
 
 // C includes.
 #include <stdint.h>
@@ -17,14 +17,17 @@
 // C includes. (C++ namespace)
 #include <cstddef>
 
+namespace LibRpFile {
+	class IRpFile;
+}
+
 namespace LibRpBase {
 
-class IRpFile;
 class IDiscReader
 {
 	protected:
-		IDiscReader(IRpFile *file);
-		IDiscReader(IDiscReader *discReader);
+		explicit IDiscReader(LibRpFile::IRpFile *file);
+		explicit IDiscReader(IDiscReader *discReader);
 	public:
 		virtual ~IDiscReader();
 
@@ -128,7 +131,7 @@ class IDiscReader
 		// Subclasses may have an underlying file, or may
 		// stack another IDiscReader object.
 		union {
-			IRpFile *m_file;
+			LibRpFile::IRpFile *m_file;
 			IDiscReader *m_discReader;
 		};
 		bool m_hasDiscReader;

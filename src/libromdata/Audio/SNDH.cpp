@@ -14,8 +14,9 @@
 
 #include "SNDH.hpp"
 
-// librpbase
+// librpbase, librpfile
 using namespace LibRpBase;
+using LibRpFile::IRpFile;
 
 // unice68
 #ifdef ENABLE_UNICE68

@@ -9,8 +9,9 @@
 #include "stdafx.h"
 #include "PEResourceReader.hpp"
 
-// librpbase
+// librpbase, librpfile
 using namespace LibRpBase;
+using namespace LibRpFile;
 
 // C++ STL classes.
 using std::string;

@@ -14,8 +14,9 @@
 #include "librpbase/disc/SparseDiscReader_p.hpp"
 #include "wux_structs.h"
 
-// librpbase
+// librpbase, librpfile
 using namespace LibRpBase;
+using LibRpFile::IRpFile;
 
 // C++ STL classes.
 using std::array;

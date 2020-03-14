@@ -1,8 +1,8 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (librpbase)                        *
+ * ROM Properties Page shell extension. (librpfile)                        *
  * scsi_protocol.h: SCSI protocol definitions.                             *
  *                                                                         *
- * Copyright (c) 2013-2019 by David Korth.                                 *
+ * Copyright (c) 2013-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -31,8 +31,8 @@
  * - https://en.wikipedia.org/wiki/Key_Code_Qualifier
  */
 
-#ifndef __ROMPROPERTIES_LIBRPBASE_FILE_SCSI_SCSI_PROTOCOL_H__
-#define __ROMPROPERTIES_LIBRPBASE_FILE_SCSI_SCSI_PROTOCOL_H__
+#ifndef __ROMPROPERTIES_LIBRPFILE_SCSI_SCSI_PROTOCOL_H__
+#define __ROMPROPERTIES_LIBRPFILE_SCSI_SCSI_PROTOCOL_H__
 
 #include <stdint.h>
 
@@ -693,4 +693,4 @@ typedef struct PACKED _SCSI_CDB_READ_CD_MSF {
 
 #pragma pack()
 
-#endif /* __ROMPROPERTIES_LIBRPBASE_FILE_SCSI_SCSI_PROTOCOL_H__ */
+#endif /* __ROMPROPERTIES_LIBRPFILE_SCSI_SCSI_PROTOCOL_H__ */

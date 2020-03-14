@@ -11,8 +11,9 @@
 #include "RP_ShellIconOverlayIdentifier.hpp"
 #include "res/resource.h"
 
-// librpbase, libromdata
+// librpbase, librpfile, libromdata
 using namespace LibRpBase;
+using namespace LibRpFile;
 using LibRomData::RomDataFactory;
 
 // from DllMain.cpp
@@ -109,7 +110,7 @@ IFACEMETHODIMP RP_ShellIconOverlayIdentifier::IsMemberOf(_In_ PCWSTR pwszPath, D
 
 	// Check for "bad" file systems.
 	// TODO: Combine with the above "slow" check?
-	if (LibRpBase::FileSystem::isOnBadFS(u8filename.c_str(),
+	if (FileSystem::isOnBadFS(u8filename.c_str(),
 	    config->enableThumbnailOnNetworkFS()))
 	{
 		// This file is on a "bad" file system.

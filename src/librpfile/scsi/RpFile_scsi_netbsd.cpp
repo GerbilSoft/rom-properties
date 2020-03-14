@@ -1,5 +1,5 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (librpbase)                        *
+ * ROM Properties Page shell extension. (librpfile)                        *
  * RpFile_scsi_netbsd.cpp: Standard file object. (NetBSD/OpenBSD SCSI)     *
  *                                                                         *
  * Copyright (c) 2016-2020 by David Korth.                                 *
@@ -24,7 +24,7 @@
 //#include <sys/disk.h>
 //#include <sys/cdio.h>
 
-namespace LibRpBase {
+namespace LibRpFile {
 
 /**
  * Re-read device size using the native OS API.

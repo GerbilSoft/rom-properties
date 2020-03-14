@@ -12,7 +12,7 @@
 // librpthreads
 #include "librpthreads/Atomics.h"
 
-namespace LibRpBase {
+namespace LibRpFile {
 
 // Total reference count for all files.
 volatile int IRpFile::ms_refCntTotal = 0;
