@@ -1,3 +1,9 @@
+rom-properties (1.5-1ppa2~eoan5) eoan; urgency=medium
+
+  * #include <linux/unistd.h> for syscall numbers.
+
+ -- David Korth <gerbilsoft@gerbilsoft.com>  Fri, 13 Mar 2020 23:08:51 -0400
+
 rom-properties (1.5-1ppa2~eoan4) eoan; urgency=medium
 
   * Work around libseccomp-2.4.1 not having __SNR_* macros at all.
