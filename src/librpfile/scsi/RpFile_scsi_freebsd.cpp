@@ -1,5 +1,5 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (librpbase)                        *
+ * ROM Properties Page shell extension. (librpfile)                        *
  * RpFile_scsi_freebsd.cpp: Standard file object. (FreeBSD SCSI)           *
  *                                                                         *
  * Copyright (c) 2016-2020 by David Korth.                                 *
@@ -11,6 +11,8 @@
 #endif /* !__FreeBSD__ && !__DragonFly__ */
 
 #include "stdafx.h"
+#include "config.librpfile.h"
+
 #include "../RpFile.hpp"
 #include "../RpFile_p.hpp"
 
@@ -19,7 +21,6 @@
 // C includes.
 #include <fcntl.h>
 
-#include "config.librpbase.h"
 // SCSI and CD-ROM IOCTLs.
 #ifdef RP_OS_SCSI_SUPPORTED
 #include <camlib.h>

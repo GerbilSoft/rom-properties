@@ -26,18 +26,7 @@
 
 // C++ includes.
 #include <algorithm>
-#if 0
 #include <array>
-#include <iomanip>
-#include <limits>
-#include <memory>
-#include <sstream>
-#include <string>
-#include <unordered_map>
-#include <unordered_set>
-#include <utility>
-#include <vector>
-#endif
 
 #else /* !__cplusplus */
 /** C **/
@@ -47,12 +36,6 @@
 #include <string.h>
 #include <time.h>
 #include <stdint.h>
-#if 0
-#include <errno.h>
-#include <stddef.h>
-#include <stdio.h>
-#include <stdlib.h>
-#endif
 
 #endif /* __cplusplus */
 
@@ -63,7 +46,7 @@
 
 // libwin32common
 #ifdef _WIN32
-//# include "libwin32common/RpWin32_sdk.h"
+# include "libwin32common/RpWin32_sdk.h"
 #endif /* _WIN32 */
 
 // Common headers

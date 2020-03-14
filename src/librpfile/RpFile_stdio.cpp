@@ -1,5 +1,5 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (librpbase)                        *
+ * ROM Properties Page shell extension. (librpfile)                        *
  * RpFile_stdio.cpp: Standard file object. (stdio implementation)          *
  *                                                                         *
  * Copyright (c) 2016-2020 by David Korth.                                 *
@@ -7,7 +7,7 @@
  ***************************************************************************/
 
 #include "stdafx.h"
-#include "config.librpbase.h"
+#include "config.librpfile.h"
 
 #ifdef _WIN32
 # error RpFile_stdio is not supported on Windows, use RpFile_win32.

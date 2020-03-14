@@ -1,5 +1,5 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (librpbase)                        *
+ * ROM Properties Page shell extension. (librpfile)                        *
  * RpFile_scsi.cpp: General SCSI functions.                                *
  *                                                                         *
  * Copyright (c) 2016-2020 by David Korth.                                 *
@@ -7,6 +7,8 @@
  ***************************************************************************/
 
 #include "stdafx.h"
+#include "config.librpfile.h"
+
 #include "../RpFile.hpp"
 #include "../RpFile_p.hpp"
 #ifdef _WIN32

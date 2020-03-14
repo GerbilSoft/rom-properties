@@ -7,7 +7,7 @@
  ***************************************************************************/
 
 #include "stdafx.h"
-#include "config.librpbase.h"
+#include "config.librpfile.h"
 
 #include "../RpFile.hpp"
 #include "../RpFile_p.hpp"

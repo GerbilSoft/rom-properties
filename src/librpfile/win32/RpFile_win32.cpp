@@ -1,5 +1,5 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (librpbase)                        *
+ * ROM Properties Page shell extension. (librpfile)                        *
  * RpFile_win32.cpp: Standard file object. (Win32 implementation)          *
  *                                                                         *
  * Copyright (c) 2016-2020 by David Korth.                                 *
@@ -7,7 +7,6 @@
  ***************************************************************************/
 
 #include "stdafx.h"
-#include "config.librpbase.h"
 
 #include "../RpFile.hpp"
 #include "../RpFile_p.hpp"

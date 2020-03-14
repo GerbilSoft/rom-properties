@@ -1,5 +1,5 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (librpbase)                        *
+ * ROM Properties Page shell extension. (librpfile)                        *
  * FileSystem_posix.cpp: File system functions. (POSIX implementation)     *
  *                                                                         *
  * Copyright (c) 2016-2020 by David Korth.                                 *
@@ -7,7 +7,7 @@
  ***************************************************************************/
 
 #include "stdafx.h"
-#include "config.librpbase.h"
+#include "config.librpfile.h"
 #include "FileSystem.hpp"
 
 // C includes.

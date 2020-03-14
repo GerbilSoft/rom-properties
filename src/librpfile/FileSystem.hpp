@@ -1,15 +1,14 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (librpbase)                        *
+ * ROM Properties Page shell extension. (librpfile)                        *
  * FileSystem.hpp: File system functions.                                  *
  *                                                                         *
  * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBRPBASE_FILESYSTEM_HPP__
-#define __ROMPROPERTIES_LIBRPBASE_FILESYSTEM_HPP__
+#ifndef __ROMPROPERTIES_LIBRPFILE_FILESYSTEM_HPP__
+#define __ROMPROPERTIES_LIBRPFILE_FILESYSTEM_HPP__
 
-#include "librpbase/config.librpbase.h"
 #include <stdint.h>
 
 // access() macros.
@@ -174,4 +173,4 @@ int get_file_size_and_mtime(const std::string &filename, off64_t *pFileSize, tim
 
 } }
 
-#endif /* __ROMPROPERTIES_LIBRPBASE_FILESYSTEM_HPP__ */
+#endif /* __ROMPROPERTIES_LIBRPFILE_FILESYSTEM_HPP__ */

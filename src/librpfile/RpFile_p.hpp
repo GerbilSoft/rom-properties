@@ -6,10 +6,10 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBRPBASE_FILE_RPFILE_P_HPP__
-#define __ROMPROPERTIES_LIBRPBASE_FILE_RPFILE_P_HPP__
+#ifndef __ROMPROPERTIES_LIBRPFILE_RPFILE_P_HPP__
+#define __ROMPROPERTIES_LIBRPFILE_RPFILE_P_HPP__
 
-#include "config.librpbase.h"
+#include "config.librpfile.h"
 #include "RpFile.hpp"
 
 // C includes. (C++ namespace)
@@ -261,4 +261,4 @@ class RpFilePrivate
 
 }
 
-#endif /* __ROMPROPERTIES_LIBRPBASE_FILE_RPFILE_STDIO_P_HPP__ */
+#endif /* __ROMPROPERTIES_LIBRPFILE_RPFILE_STDIO_P_HPP__ */
