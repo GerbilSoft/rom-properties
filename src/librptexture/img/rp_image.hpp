@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * rp_image.hpp: Image class.                                              *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -10,15 +10,15 @@
 #define __ROMPROPERTIES_LIBRPTEXTURE_RP_IMAGE_HPP__
 
 #include "common.h"
-#include "byteorder.h"
-#include "cpu_dispatch.h"
+#include "librpcpu/byteorder.h"
+#include "librpcpu/cpu_dispatch.h"
 
 // C includes.
 #include <stddef.h>	/* size_t */
 #include <stdint.h>
 
 #if defined(RP_CPU_I386) || defined(RP_CPU_AMD64)
-# include "librpbase/cpuflags_x86.h"
+# include "librpcpu/cpuflags_x86.h"
 # define RP_IMAGE_HAS_SSE2 1
 # define RP_IMAGE_HAS_SSE41 1
 #endif

@@ -11,8 +11,9 @@
 #include "gcn_card.h"
 #include "wii_banner.h"
 
-// librpbase, librptexture
+// librpbase, librpfile, librptexture
 using namespace LibRpBase;
+using LibRpFile::IRpFile;
 using namespace LibRpTexture;
 
 // C++ STL classes.

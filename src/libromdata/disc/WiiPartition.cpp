@@ -12,13 +12,14 @@
 #include "WiiPartition.hpp"
 #include "Console/wii_structs.h"
 
-// librpbase
+// librpbase, librpfile
 #include "librpbase/crypto/KeyManager.hpp"
 #ifdef ENABLE_DECRYPTION
 # include "librpbase/crypto/IAesCipher.hpp"
 # include "librpbase/crypto/AesCipherFactory.hpp"
 #endif /* ENABLE_DECRYPTION */
 using namespace LibRpBase;
+using LibRpFile::IRpFile;
 
 // C++ STL classes.
 using std::unique_ptr;

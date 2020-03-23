@@ -2,20 +2,22 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * RomDataFactory.hpp: RomData factory class.                              *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #ifndef __ROMPROPERTIES_LIBROMDATA_ROMDATAFACTORY_HPP__
 #define __ROMPROPERTIES_LIBROMDATA_ROMDATAFACTORY_HPP__
 
-#include "librpbase/common.h"
+#include "common.h"
 
 // C++ includes.
 #include <vector>
 
 namespace LibRpBase {
 	class RomData;
+}
+namespace LibRpFile {
 	class IRpFile;
 }
 
@@ -71,7 +73,7 @@ class RomDataFactory
 		 * @param attrs RomDataAttr bitfield. If set, RomData subclass must have the specified attributes.
 		 * @return RomData subclass, or nullptr if the ROM isn't supported.
 		 */
-		static LibRpBase::RomData *create(LibRpBase::IRpFile *file, unsigned int attrs = 0);
+		static LibRpBase::RomData *create(LibRpFile::IRpFile *file, unsigned int attrs = 0);
 
 		struct ExtInfo {
 			const char *ext;

@@ -11,12 +11,13 @@
 
 #include "NCCHReader.hpp"
 
-// librpbase
+// librpbase, librpfile
 #ifdef ENABLE_DECRYPTION
 #include "librpbase/crypto/AesCipherFactory.hpp"
 #include "librpbase/crypto/IAesCipher.hpp"
 #endif /* ENABLE_DECRYPTION */
 using namespace LibRpBase;
+using LibRpFile::IRpFile;
 
 // CIA Reader.
 #include "disc/CIAReader.hpp"
@@ -1054,7 +1055,7 @@ IRpFile *NCCHReader::open(int section, const char *filename)
  *
  * @return IRpFile*, or nullptr on error.
  */
-LibRpBase::IRpFile *NCCHReader::openLogo(void)
+LibRpFile::IRpFile *NCCHReader::openLogo(void)
 {
 	RP_D(const NCCHReader);
 	assert(isOpen());

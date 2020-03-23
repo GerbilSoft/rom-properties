@@ -14,9 +14,12 @@
 #endif /* !_WIN32 */
 
 // libwin32common
+#include "libwin32common/MiniU82T.hpp"
 #include "libwin32common/userdirs.hpp"
 #include "libwin32common/w32err.h"
 #include "libwin32common/w32time.h"
+using LibWin32Common::T2U8_c;
+using LibWin32Common::U82T_s;
 
 // C includes.
 #include <sys/utime.h>
@@ -26,70 +29,6 @@ using std::string;
 using std::tstring;
 
 namespace RpDownload {
-
-/**
- * Internal T2U8() function.
- * @param wcs TCHAR string.
- * @return UTF-8 C++ string.
- */
-#ifdef UNICODE
-static inline string T2U8(const TCHAR *wcs)
-{
-	string s_ret;
-
-	// NOTE: cbMbs includes the NULL terminator.
-	int cbMbs = WideCharToMultiByte(CP_UTF8, 0, wcs, -1, nullptr, 0, nullptr, nullptr);
-	if (cbMbs <= 1) {
-		return s_ret;
-	}
-	cbMbs--;
- 
-	char *mbs = static_cast<char*>(malloc(cbMbs * sizeof(char)));
-	assert(mbs != nullptr);
-	if (!mbs) {
-		return s_ret;
-	}
-	WideCharToMultiByte(CP_UTF8, 0, wcs, -1, mbs, cbMbs, nullptr, nullptr);
-	s_ret.assign(mbs, cbMbs);
-	free(mbs);
-	return s_ret;
-}
-#else /* !UNICODE */
-// TODO: Convert ANSI to UTF-8?
-# define T2U8(tcs) (tcs)
-#endif /* UNICODE */
-
-/**
- * Internal U82T() function.
- * @param mbs UTF-8 string.
- * @return TCHAR C++ string.
- */
-#ifdef UNICODE
-static inline tstring U82T(const char *mbs)
-{
-	tstring ts_ret;
-
-	// NOTE: cchWcs includes the NULL terminator.
-	int cchWcs = MultiByteToWideChar(CP_UTF8, 0, mbs, -1, nullptr, 0);
-	if (cchWcs <= 1) {
-		return ts_ret;
-	}
-	cchWcs--;
- 
-	wchar_t *wcs = static_cast<wchar_t*>(malloc(cchWcs * sizeof(wchar_t)));
-	assert(wcs != nullptr);
-	if (!wcs) {
-		return ts_ret;
-	}
-	MultiByteToWideChar(CP_UTF8, 0, mbs, -1, wcs, cchWcs);
-	ts_ret.assign(wcs, cchWcs);
-	free(wcs);
-	return ts_ret;
-}
-#else /* !UNICODE */
-// TODO: Convert UTF-8 to ANSI?
-# define U82T(mbs) (mbs)
-#endif /* UNICODE */
 
 /**
  * Get the storeFileOriginInfo setting from rom-properties.conf.
@@ -107,7 +46,7 @@ static bool getStoreFileOriginInfo(void)
 	// Get the config filename.
 	// NOTE: Not cached, since rp-download downloads one file per run.
 	// NOTE: This is sitll readable even when running as Low integrity.
-	tstring conf_filename = U82T(LibWin32Common::getConfigDirectory().c_str());
+	tstring conf_filename = U82T_s(LibWin32Common::getConfigDirectory());
 	if (conf_filename.empty()) {
 		// Empty filename...
 		return default_value;
@@ -184,7 +123,7 @@ int setFileOriginInfo(FILE *file, const TCHAR *filename, const TCHAR *url, time_
 			std::string s_zoneID;
 			s_zoneID.reserve(sizeof(zoneID_hdr) + _tcslen(url) + 2);
 			s_zoneID = zoneID_hdr;
-			s_zoneID += T2U8(url);
+			s_zoneID += T2U8_c(url);
 			s_zoneID += "\r\n";
 			DWORD dwBytesWritten = 0;
 			BOOL bRet = WriteFile(hAds, s_zoneID.data(),

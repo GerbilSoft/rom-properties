@@ -11,6 +11,9 @@
 #include "SparseDiscReader.hpp"
 #include "SparseDiscReader_p.hpp"
 
+// librpfile
+using LibRpFile::IRpFile;
+
 namespace LibRpBase {
 
 /** SparseDiscReaderPrivate **/

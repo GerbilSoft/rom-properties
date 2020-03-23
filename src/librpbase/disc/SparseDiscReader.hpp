@@ -18,7 +18,7 @@ class SparseDiscReaderPrivate;
 class SparseDiscReader : public IDiscReader
 {
 	protected:
-		explicit SparseDiscReader(SparseDiscReaderPrivate *d, IRpFile *file);
+		explicit SparseDiscReader(SparseDiscReaderPrivate *d, LibRpFile::IRpFile *file);
 	public:
 		virtual ~SparseDiscReader();
 

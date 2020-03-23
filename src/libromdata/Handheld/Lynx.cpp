@@ -11,8 +11,9 @@
 #include "Lynx.hpp"
 #include "lnx_structs.h"
 
-// librpbase
+// librpbase, librpfile
 using namespace LibRpBase;
+using LibRpFile::IRpFile;
 
 namespace LibRomData {
 

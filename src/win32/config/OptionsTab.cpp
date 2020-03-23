@@ -10,8 +10,9 @@
 #include "OptionsTab.hpp"
 #include "res/resource.h"
 
-// librpbase
+// librpbase, librpfile
 using namespace LibRpBase;
+using namespace LibRpFile;
 
 // C++ STL classes.
 using std::tstring;

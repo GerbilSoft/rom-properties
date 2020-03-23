@@ -10,13 +10,13 @@
 #include "ISO.hpp"
 #include "../iso_structs.h"
 
-// librpbase
-#include "librpbase/common.h"
-#include "librpbase/byteswap.h"
+// librpbase, librpfile, librpcpu
+#include "common.h"
 #include "librpbase/TextFuncs.hpp"
-#include "librpbase/file/IRpFile.hpp"
 #include "libi18n/i18n.h"
+#include "librpcpu/byteswap.h"
 using namespace LibRpBase;
+using LibRpFile::IRpFile;
 
 // C includes. (C++ namespace)
 #include <cassert>
@@ -37,7 +37,7 @@ ROMDATA_IMPL(ISO)
 class ISOPrivate : public LibRpBase::RomDataPrivate
 {
 	public:
-		ISOPrivate(ISO *q, LibRpBase::IRpFile *file);
+		ISOPrivate(ISO *q, LibRpFile::IRpFile *file);
 
 	private:
 		typedef RomDataPrivate super;

@@ -9,7 +9,7 @@
 #ifndef __ROMPROPERTIES_LIBRPBASE_SYSTEMREGION_HPP__
 #define __ROMPROPERTIES_LIBRPBASE_SYSTEMREGION_HPP__
 
-#include "librpbase/common.h"
+#include "common.h"
 
 // C includes.
 #include <stdint.h>

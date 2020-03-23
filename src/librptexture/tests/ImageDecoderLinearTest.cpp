@@ -9,16 +9,13 @@
 // Google Test
 #include "gtest/gtest.h"
 #include "tcharx.h"
+#include "common.h"
 
-// librpbase
-#include "librpbase/common.h"
-#include "librpbase/byteswap.h"
-#include "librpbase/TextFuncs.hpp"
+// librpbase, librptexture, librpcpu
 #include "librpbase/aligned_malloc.h"
-
-// librptexture
 #include "librptexture/img/rp_image.hpp"
 #include "librptexture/decoder/ImageDecoder.hpp"
+#include "librpcpu/byteswap.h"
 
 // C includes.
 #include <stdint.h>

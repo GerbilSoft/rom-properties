@@ -9,10 +9,9 @@
 #ifndef __ROMPROPERTIES_KDE_RPQT_HPP__
 #define __ROMPROPERTIES_KDE_RPQT_HPP__
 
-namespace LibRpBase {
+namespace LibRpFile {
 	class IRpFile;
 }
-
 namespace LibRpTexture {
 	class rp_image;
 }
@@ -99,6 +98,6 @@ QUrl localizeQUrl(const QUrl &url);
  *
  * @return IRpFile, or nullptr on error.
  */
-LibRpBase::IRpFile *openQUrl(const QUrl &url, bool isThumbnail = false);
+LibRpFile::IRpFile *openQUrl(const QUrl &url, bool isThumbnail = false);
 
 #endif /* __ROMPROPERTIES_KDE_RPQT_HPP__ */

@@ -9,13 +9,13 @@
 #ifndef __ROMPROPERTIES_WIN32_RPFILE_ISTREAM_HPP__
 #define __ROMPROPERTIES_WIN32_RPFILE_ISTREAM_HPP__
 
-#include "librpbase/file/IRpFile.hpp"
+#include "librpfile/IRpFile.hpp"
 #include <objidl.h>
 
 // zlib
 struct z_stream_s;
 
-class RpFile_IStream : public LibRpBase::IRpFile
+class RpFile_IStream : public LibRpFile::IRpFile
 {
 	public:
 		/**
@@ -28,7 +28,7 @@ class RpFile_IStream : public LibRpBase::IRpFile
 		virtual ~RpFile_IStream();	// call unref() instead
 
 	private:
-		typedef LibRpBase::IRpFile super;
+		typedef LibRpFile::IRpFile super;
 		RP_DISABLE_COPY(RpFile_IStream)
 
 	public:

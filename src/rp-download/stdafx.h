@@ -45,10 +45,8 @@
 
 #endif /* __cplusplus */
 
+#include "common.h"
+#include "ctypex.h"
 #include "tcharx.h"
-
-// librpbase common headers
-#include "librpbase/common.h"
-#include "librpbase/ctypex.h"
 
 #endif /* __ROMPROPERTIES_RP_DOWNLOAD_STDAFX_H__ */

@@ -2,14 +2,14 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * md_structs.h: Sega Mega Drive data structures.                          *
  *                                                                         *
- * Copyright (c) 2016 by David Korth.                                      *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #ifndef __ROMPROPERTIES_LIBROMDATA_MD_STRUCTS_H__
 #define __ROMPROPERTIES_LIBROMDATA_MD_STRUCTS_H__
 
-#include "librpbase/common.h"
+#include "common.h"
 #include <stdint.h>
 
 #ifdef __cplusplus

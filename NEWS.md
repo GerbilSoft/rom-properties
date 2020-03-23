@@ -2,6 +2,10 @@
 
 ## v1.6 (released 2020/??/??)
 
+* Other changes:
+  * Split file handling and CPU/byteorder code from librpbase into two
+    libraries: librpfile and librpcpu.
+
 ## v1.5 (released 2020/03/13)
 
 * New features:

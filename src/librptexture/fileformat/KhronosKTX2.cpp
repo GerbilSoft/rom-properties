@@ -25,9 +25,9 @@
 #include "vk_defs.h"
 #include "data/VkEnumStrings.hpp"
 
-// librpbase
-using LibRpBase::IRpFile;
+// librpbase, librpfile
 using LibRpBase::RomFields;
+using LibRpFile::IRpFile;
 
 // librptexture
 #include "img/rp_image.hpp"
@@ -40,7 +40,8 @@ using std::vector;
 
 // Uninitialized vector class.
 // Reference: http://andreoffringa.org/?q=uvector
-#include "uvector.h"
+// FIXME: Move out of librpbase?
+#include "librpbase/uvector.h"
 
 namespace LibRpTexture {
 

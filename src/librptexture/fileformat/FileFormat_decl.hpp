@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * FileFormat_decl.hpp: Texture file format base class. (Subclass macros)  *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * Copyright (c) 2016-2018 by Egor.                                        *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
@@ -16,10 +16,9 @@
 
 /** Macros for FileFormat subclasses. **/
 
-namespace LibRpBase {
+namespace LibRpFile {
 	class IRpFile;
 }
-
 namespace LibRpTexture {
 	class rp_image;
 }
@@ -45,7 +44,7 @@ namespace LibRpTexture {
 class klass##Private; \
 class klass : public LibRpTexture::FileFormat { \
 	public: \
-		explicit klass(LibRpBase::IRpFile *file); \
+		explicit klass(LibRpFile::IRpFile *file); \
 	protected: \
 		virtual ~klass() { } \
 	private: \

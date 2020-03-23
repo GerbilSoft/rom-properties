@@ -2,14 +2,14 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * KeyStoreUI.hpp: Key store UI base class.                                *
  *                                                                         *
- * Copyright (c) 2012-2018 by David Korth.                                 *
+ * Copyright (c) 2012-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #ifndef __ROMPROPERTIES_LIBROMDATA_CONFIG_KEYSTOREUI_HPP__
 #define __ROMPROPERTIES_LIBROMDATA_CONFIG_KEYSTOREUI_HPP__
 
-#include "librpbase/common.h"
+#include "common.h"
 
 // C includes.
 #include <stdint.h>

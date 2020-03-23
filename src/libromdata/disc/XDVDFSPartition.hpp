@@ -11,10 +11,6 @@
 
 #include "librpbase/disc/IPartition.hpp"
 
-namespace LibRpBase {
-	class IRpFile;
-}
-
 // C includes. (C++ namespace)
 #include <ctime>
 
@@ -138,7 +134,7 @@ class XDVDFSPartition : public LibRpBase::IPartition
 		 * @param filename Filename.
 		 * @return IRpFile*, or nullptr on error.
 		 */
-		LibRpBase::IRpFile *open(const char *filename);
+		LibRpFile::IRpFile *open(const char *filename);
 
 	public:
 		/** XDVDFSPartition **/

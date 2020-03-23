@@ -29,13 +29,14 @@
 #define gzclose_w(file) gzclose(file)
 #endif
 
-// librpbase
-#include "librpbase/common.h"
-#include "librpbase/file/RpFile.hpp"
-#include "librpbase/file/RpMemFile.hpp"
-#include "librpbase/file/FileSystem.hpp"
+// librpbase, librpfile
+#include "common.h"
 #include "librpbase/img/RpImageLoader.hpp"
+#include "librpfile/RpFile.hpp"
+#include "librpfile/RpMemFile.hpp"
+#include "librpfile/FileSystem.hpp"
 using namespace LibRpBase;
+using namespace LibRpFile;
 
 // librptexture
 #include "librptexture/img/rp_image.hpp"
@@ -59,7 +60,7 @@ using namespace LibRpTexture;
 #include <stdlib.h>
 
 // C includes. (C++ namespace)
-#include "librpbase/ctypex.h"
+#include "ctypex.h"
 #include <cstring>
 
 // C++ includes.

@@ -2,24 +2,23 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * ImageDecoder.cpp: Image decoding functions.                             *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #ifndef __ROMPROPERTIES_LIBRPTEXTURE_DECODER_IMAGEDECODER_HPP__
 #define __ROMPROPERTIES_LIBRPTEXTURE_DECODER_IMAGEDECODER_HPP__
 
-#include "config.librpbase.h"
 #include "config.librptexture.h"
 
 #include "common.h"
-#include "cpu_dispatch.h"
+#include "librpcpu/cpu_dispatch.h"
 
 // C includes.
 #include <stdint.h>
 
 #if defined(RP_CPU_I386) || defined(RP_CPU_AMD64)
-# include "librpbase/cpuflags_x86.h"
+# include "librpcpu/cpuflags_x86.h"
 # define IMAGEDECODER_HAS_SSE2 1
 # define IMAGEDECODER_HAS_SSSE3 1
 #endif

@@ -2,14 +2,14 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * RpJpeg_p.hpp: JPEG image handler. (Private class)                       *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #ifndef __ROMPROPERTIES_LIBRPBASE_IMG_RPJPEG_P_HPP__
 #define __ROMPROPERTIES_LIBRPBASE_IMG_RPJPEG_P_HPP__
 
-#include "../common.h"
+#include "common.h"
 
 // librptexture
 #include "librptexture/img/rp_image.hpp"
@@ -37,9 +37,11 @@
 # define RPJPEG_HAS_SSSE3 1
 #endif
 
-namespace LibRpBase {
+namespace LibRpFile {
+	class IRpFile;
+}
 
-class IRpFile;
+namespace LibRpBase {
 
 class RpJpegPrivate
 {
@@ -79,7 +81,7 @@ class RpJpegPrivate
 		struct MySourceMgr {
 			jpeg_source_mgr pub;
 
-			IRpFile *infile;	// Source stream.
+			LibRpFile::IRpFile *infile;	// Source stream.
 			JOCTET *buffer;		// Start of buffer.
 			bool start_of_file;	// Have we gotten any data yet?
 		};
@@ -118,7 +120,7 @@ class RpJpegPrivate
 		 * @param cinfo j_decompress_ptr
 		 * @param file IRpFile
 		 */
-		static void jpeg_IRpFile_src(j_decompress_ptr cinfo, IRpFile *infile);
+		static void jpeg_IRpFile_src(j_decompress_ptr cinfo, LibRpFile::IRpFile *infile);
 
 	public:
 #ifdef RPJPEG_HAS_SSSE3

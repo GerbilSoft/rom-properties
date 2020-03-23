@@ -9,12 +9,13 @@
 #ifndef __ROMPROPERTIES_KDE_RPQBYTEARRAYFILE_HPP__
 #define __ROMPROPERTIES_KDE_RPQBYTEARRAYFILE_HPP__
 
-#include "librpbase/file/IRpFile.hpp"
+// librpfile
+#include "librpfile/IRpFile.hpp"
 
 // Qt includes.
 #include <QtCore/QByteArray>
 
-class RpQByteArrayFile : public LibRpBase::IRpFile
+class RpQByteArrayFile : public LibRpFile::IRpFile
 {
 	public:
 		/**
@@ -26,7 +27,7 @@ class RpQByteArrayFile : public LibRpBase::IRpFile
 		virtual ~RpQByteArrayFile() { }	// call unref() instead
 
 	private:
-		typedef LibRpBase::IRpFile super;
+		typedef LibRpFile::IRpFile super;
 		RP_DISABLE_COPY(RpQByteArrayFile)
 
 	public:

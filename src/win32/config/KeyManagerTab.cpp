@@ -22,9 +22,10 @@
 #include "libwin32common/SubclassWindow.h"
 using LibWin32Common::WTSSessionNotification;
 
-// librpbase
+// librpbase, librpfile
 #include "librpbase/crypto/KeyManager.hpp"
 using namespace LibRpBase;
+using namespace LibRpFile;
 
 // libromdata
 #include "libromdata/disc/WiiPartition.hpp"

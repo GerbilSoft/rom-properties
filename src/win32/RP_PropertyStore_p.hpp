@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * RP_PropertyStore_p.hpp: IPropertyStore implementation. (PRIVATE CLASS)  *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -11,9 +11,9 @@
 
 #include "RP_PropertyStore.hpp"
 
-// librpbase
-#include "librpbase/file/IRpFile.hpp"
+// librpbase, librpfile
 #include "librpbase/RomData.hpp"
+#include "librpfile/IRpFile.hpp"
 
 // Workaround for RP_D() expecting the no-underscore naming convention.
 #define RP_PropertyStorePrivate RP_PropertyStore_Private
@@ -35,7 +35,7 @@ class RP_PropertyStore_Private
 
 	public:
 		// Set by IInitializeWithStream::Initialize().
-		LibRpBase::IRpFile *file;
+		LibRpFile::IRpFile *file;
 
 		// IStream* used by the IRpFile.
 		// NOTE: Do NOT Release() this; RpFile_IStream handles it.

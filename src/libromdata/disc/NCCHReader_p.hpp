@@ -13,8 +13,8 @@
 #include "librpbase/config.librpbase.h"
 #include "NCCHReader.hpp"
 
-// librpbase
-#include "librpbase/byteswap.h"
+// librpbase, librpcpu
+#include "librpcpu/byteswap.h"
 #include "librpbase/crypto/KeyManager.hpp"
 #ifdef ENABLE_DECRYPTION
 #include "../crypto/CtrKeyScrambler.hpp"

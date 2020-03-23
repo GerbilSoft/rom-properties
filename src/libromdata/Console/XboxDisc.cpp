@@ -9,9 +9,11 @@
 #include "stdafx.h"
 #include "XboxDisc.hpp"
 
-// librpbase, librptexture
-#include "librpbase/file/RpFile.hpp"
+// librpbase, librpfile, librptexture
+#include "librpfile/RpFile.hpp"
 using namespace LibRpBase;
+using LibRpFile::IRpFile;
+using LibRpFile::RpFile;
 using LibRpTexture::rp_image;
 
 // XDVDFSPartition
@@ -35,7 +37,7 @@ ROMDATA_IMPL(XboxDisc)
 class XboxDiscPrivate : public LibRpBase::RomDataPrivate
 {
 	public:
-		XboxDiscPrivate(XboxDisc *q, LibRpBase::IRpFile *file);
+		XboxDiscPrivate(XboxDisc *q, LibRpFile::IRpFile *file);
 		virtual ~XboxDiscPrivate();
 
 	private:

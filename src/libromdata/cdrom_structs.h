@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * cdrom_structs.h: CD-ROM data structures.                                *
  *                                                                         *
- * Copyright (c) 2017 by David Korth.                                      *
+ * Copyright (c) 2017-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -15,8 +15,8 @@
  * - https://github.com/Karlson2k/libcdio-k2k/blob/master/include/cdio/sector.h
  */
 
-#include "librpbase/common.h"
 #include <stdint.h>
+#include "common.h"
 
 #ifdef __cplusplus
 extern "C" {

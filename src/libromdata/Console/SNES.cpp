@@ -12,9 +12,10 @@
 #include "snes_structs.h"
 #include "CopierFormats.h"
 
-// librpbase
+// librpbase, librpfile
 #include "librpbase/SystemRegion.hpp"
 using namespace LibRpBase;
+using namespace LibRpFile;
 
 // C++ STL classes.
 using std::string;

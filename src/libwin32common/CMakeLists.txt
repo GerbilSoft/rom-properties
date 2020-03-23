@@ -33,6 +33,7 @@ SET(libwin32common_SRCS
 	propsys_xp.c
 	userdirs.cpp
 	HiDPI.h
+	MiniU82T.cpp
 	sdk/win_iid.c
 	sdk/GUID_fn.c
 	)
@@ -49,6 +50,7 @@ SET(libwin32common_H
 	WTSSessionNotification.hpp
 	userdirs.hpp
 	HiDPI.c
+	MiniU82T.hpp
 	sdk/QITab.h
 	sdk/IListView.hpp
 	sdk/IOwnerDataCallback.hpp

@@ -2,15 +2,15 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * Xbox360_STFS_ContentType.hpp: Microsoft Xbox 360 STFS Content Type.     *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #ifndef __ROMPROPERTIES_LIBROMDATA_DATA_XBOX360_STFS_CONTENTTYPE_HPP__
 #define __ROMPROPERTIES_LIBROMDATA_DATA_XBOX360_STFS_CONTENTTYPE_HPP__
 
-#include "librpbase/common.h"
 #include <stdint.h>
+#include "common.h"
 
 namespace LibRomData {
 

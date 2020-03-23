@@ -12,10 +12,6 @@
 #include "librpbase/disc/IPartition.hpp"
 //#include "librpbase/disc/IFst.hpp"
 
-namespace LibRpBase {
-	class IRpFile;
-}
-
 namespace LibRomData {
 
 class IsoPartitionPrivate;
@@ -136,7 +132,7 @@ class IsoPartition : public LibRpBase::IPartition
 		 * @param filename Filename.
 		 * @return IRpFile*, or nullptr on error.
 		 */
-		LibRpBase::IRpFile *open(const char *filename);
+		LibRpFile::IRpFile *open(const char *filename);
 };
 
 }

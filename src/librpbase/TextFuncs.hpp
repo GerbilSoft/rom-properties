@@ -11,7 +11,7 @@
 
 // System byteorder is needed for conversions from UTF-16.
 // Conversions to UTF-16 always use host-endian.
-#include "byteorder.h"
+#include "librpcpu/byteorder.h"
 
 // printf()-style function attribute.
 #ifndef ATTR_PRINTF

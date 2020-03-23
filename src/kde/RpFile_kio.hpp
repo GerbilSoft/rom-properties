@@ -19,15 +19,15 @@
 #if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
 #define HAVE_RPFILE_KIO 1
 
-// librpbase
-#include "librpbase/file/IRpFile.hpp"
+// librpfile
+#include "librpfile/IRpFile.hpp"
 
 // Qt includes.
 #include <QtCore/QObject>
 #include <QtCore/QUrl>
 
 class RpFileKioPrivate;
-class RpFileKio : public QObject, public LibRpBase::IRpFile
+class RpFileKio : public QObject, public LibRpFile::IRpFile
 {
 	Q_OBJECT
 
@@ -46,7 +46,7 @@ class RpFileKio : public QObject, public LibRpBase::IRpFile
 		virtual ~RpFileKio();	// call unref() instead
 
 	private:
-		typedef LibRpBase::IRpFile super;
+		typedef LibRpFile::IRpFile super;
 		RP_DISABLE_COPY(RpFileKio)
 	protected:
 		friend class RpFileKioPrivate;

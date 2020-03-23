@@ -133,8 +133,8 @@
  * instead of as a standalone program.
  */
 #include "pngcheck.hpp"
-#include "../../file/IRpFile.hpp"
-using LibRpBase::IRpFile;
+#include "librpfile/IRpFile.hpp"
+using LibRpFile::IRpFile;
 
 #if 0
 // C includes.

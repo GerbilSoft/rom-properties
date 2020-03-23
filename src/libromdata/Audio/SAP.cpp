@@ -12,8 +12,9 @@
 #include "stdafx.h"
 #include "SAP.hpp"
 
-// librpbase
+// librpbase, librpfile
 using namespace LibRpBase;
+using LibRpFile::IRpFile;
 
 // C++ STL classes.
 using std::pair;

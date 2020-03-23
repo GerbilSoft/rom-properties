@@ -10,8 +10,9 @@
 #include "librpbase/config.librpbase.h"
 #include "ConfigDialog.hpp"
 
-// librpbase
+// librpbase, librpfile
 using namespace LibRpBase;
+using namespace LibRpFile;
 
 #ifdef ENABLE_DECRYPTION
 # include "KeyManagerTab.hpp"

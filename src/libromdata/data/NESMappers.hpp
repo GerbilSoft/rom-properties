@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * NESMappers.hpp: NES mapper data.                                        *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * Copyright (c) 2016-2018 by Egor.                                        *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
@@ -10,7 +10,7 @@
 #ifndef __ROMPROPERTIES_LIBROMDATA_DATA_NESMAPPERS_HPP__
 #define __ROMPROPERTIES_LIBROMDATA_DATA_NESMAPPERS_HPP__
 
-#include "librpbase/common.h"
+#include "common.h"
 
 namespace LibRomData {
 

@@ -13,22 +13,26 @@
 // OS-specific security options.
 #include "rpcli_secure.h"
 
-// librpbase
+// librpbase, librpcpu
+#include "librpcpu/byteswap.h"
 #include "librpbase/config.librpbase.h"
-#include "librpbase/byteswap.h"
 #include "librpbase/RomData.hpp"
 #include "librpbase/SystemRegion.hpp"
-#include "librpbase/file/FileSystem.hpp"
+#include "librpbase/TextFuncs.hpp"
+#include "librpbase/img/RpPng.hpp"
+#include "librpbase/img/IconAnimData.hpp"
 #include "libi18n/i18n.h"
 using namespace LibRpBase;
 
+// librpfile
+#include "librpfile/config.librpfile.h"
+#include "librpfile/FileSystem.hpp"
+#include "librpfile/RpFile.hpp"
+using namespace LibRpFile;
+
 // libromdata
-#include "librpbase/TextFuncs.hpp"
-#include "librpbase/file/RpFile.hpp"
-#include "librpbase/img/RpPng.hpp"
-#include "librpbase/img/IconAnimData.hpp"
 #include "libromdata/RomDataFactory.hpp"
-using namespace LibRomData;
+using LibRomData::RomDataFactory;
 
 // librptexture
 #include "librptexture/img/rp_image.hpp"

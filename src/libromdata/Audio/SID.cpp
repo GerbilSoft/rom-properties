@@ -10,8 +10,9 @@
 #include "SID.hpp"
 #include "sid_structs.h"
 
-// librpbase
+// librpbase, librpfile
 using namespace LibRpBase;
+using LibRpFile::IRpFile;
 
 // C++ STL classes.
 using std::string;

@@ -9,7 +9,7 @@
 #ifndef __ROMPROPERTIES_LIBRPTEXTURE_DATA_VKENUMSTRINGS_HPP__
 #define __ROMPROPERTIES_LIBRPTEXTURE_DATA_VKENUMSTRINGS_HPP__
 
-#include "librpbase/common.h"
+#include "common.h"
 
 namespace LibRpTexture {
 

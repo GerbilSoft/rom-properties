@@ -11,10 +11,6 @@
 
 #include "librpbase/disc/SparseDiscReader.hpp"
 
-namespace LibRpBase {
-	class IRpFile;
-}
-
 namespace LibRomData {
 
 class WbfsReaderPrivate;
@@ -27,7 +23,7 @@ class WbfsReader : public LibRpBase::SparseDiscReader
 		 * unref()'d by the caller afterwards.
 		 * @param file File to read from.
 		 */
-		explicit WbfsReader(LibRpBase::IRpFile *file);
+		explicit WbfsReader(LibRpFile::IRpFile *file);
 
 	private:
 		typedef SparseDiscReader super;

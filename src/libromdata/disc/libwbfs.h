@@ -9,8 +9,8 @@
 # pragma warning(disable:4200)
 #endif
 
-#include "librpbase/common.h"
 #include <stdint.h>
+#include "common.h"
 
 #ifdef __cplusplus
    extern "C" {

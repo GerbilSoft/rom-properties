@@ -9,6 +9,9 @@
 #include "stdafx.h"
 #include "IDiscReader.hpp"
 
+// librpfile
+using LibRpFile::IRpFile;
+
 namespace LibRpBase {
 
 IDiscReader::IDiscReader(IRpFile *file)

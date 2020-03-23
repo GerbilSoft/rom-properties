@@ -11,10 +11,6 @@
 
 #include "librpbase/disc/SparseDiscReader.hpp"
 
-namespace LibRpBase {
-	class IRpFile;
-}
-
 namespace LibRomData {
 
 class IsoPartition;
@@ -30,7 +26,7 @@ class GdiReader : public LibRpBase::SparseDiscReader
 		 * unref()'d by the caller afterwards.
 		 * @param file File to read from.
 		 */
-		explicit GdiReader(LibRpBase::IRpFile *file);
+		explicit GdiReader(LibRpFile::IRpFile *file);
 
 	private:
 		typedef SparseDiscReader super;

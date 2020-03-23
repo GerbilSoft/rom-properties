@@ -14,10 +14,6 @@
 // librpbase
 #include "librpbase/disc/IPartition.hpp"
 
-namespace LibRpBase {
-	class IRpFile;
-}
-
 namespace LibRomData {
 
 class CIAReaderPrivate;
@@ -36,7 +32,7 @@ class CIAReader : public LibRpBase::IPartition
 		 * @param ticket		[in,opt] Ticket for decryption. (nullptr if NoCrypto)
 		 * @param tmd_content_index	[in,opt] TMD content index for decryption.
 		 */
-		CIAReader(LibRpBase::IRpFile *file,
+		CIAReader(LibRpFile::IRpFile *file,
 			off64_t content_offset, uint32_t content_length,
 			const N3DS_Ticket_t *ticket,
 			uint16_t tmd_content_index);

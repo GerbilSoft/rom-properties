@@ -10,12 +10,12 @@
 #include "config.libromdata.h"
 #include "CacheManager.hpp"
 
-// librpbase
+// librpbase, librpfile
 #include "librpbase/TextFuncs.hpp"
-#include "librpbase/file/RpFile.hpp"
-#include "librpbase/file/FileSystem.hpp"
+#include "librpfile/RpFile.hpp"
+#include "librpfile/FileSystem.hpp"
 using namespace LibRpBase;
-using namespace LibRpBase::FileSystem;
+using namespace LibRpFile;
 
 // libcachecommon
 #include "libcachecommon/CacheKeys.hpp"
@@ -122,7 +122,7 @@ string CacheManager::download(const string &cache_key)
 	// Check if the file already exists.
 	off64_t filesize = 0;
 	time_t filemtime = 0;
-	int ret = get_file_size_and_mtime(cache_filename.c_str(), &filesize, &filemtime);
+	int ret = FileSystem::get_file_size_and_mtime(cache_filename.c_str(), &filesize, &filemtime);
 	if (ret == 0) {
 		// Check if the file is 0 bytes.
 		// TODO: How should we handle errors?
@@ -139,7 +139,7 @@ string CacheManager::download(const string &cache_key)
 
 			// More than a week old.
 			// Delete the cache file and try to download it again.
-			if (delete_file(cache_filename) != 0) {
+			if (FileSystem::delete_file(cache_filename) != 0) {
 				// Unable to delete the cache file.
 				return string();
 			}
@@ -190,7 +190,7 @@ string CacheManager::findInCache(const string &cache_key)
 	}
 
 	// Return the filename if the file exists.
-	if (access(cache_filename, R_OK) != 0) {
+	if (FileSystem::access(cache_filename, R_OK) != 0) {
 		// Unable to read the cache file.
 		cache_filename.clear();
 	}

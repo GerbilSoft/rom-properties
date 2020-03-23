@@ -10,11 +10,12 @@
 #include "DragImage.hpp"
 #include "PIMGTYPE.hpp"
 
-// librpbase, librptexture
-#include "librpbase/file/RpVectorFile.hpp"
+// librpbase, librpfile, librptexture
 #include "librpbase/img/IconAnimData.hpp"
 #include "librpbase/img/IconAnimHelper.hpp"
+#include "librpfile/RpVectorFile.hpp"
 using namespace LibRpBase;
+using LibRpFile::RpVectorFile;
 using LibRpTexture::rp_image;
 
 // C++ STL classes.

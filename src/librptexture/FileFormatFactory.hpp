@@ -2,20 +2,20 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * FileFormatFactory.hpp: FileFormat factory class.                        *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #ifndef __ROMPROPERTIES_LIBRPTEXTURE_FILEFORMATFACTORY_HPP__
 #define __ROMPROPERTIES_LIBRPTEXTURE_FILEFORMATFACTORY_HPP__
 
-#include "librpbase/common.h"
+#include "common.h"
 
 // C++ includes.
 #include <utility>
 #include <vector>
 
-namespace LibRpBase {
+namespace LibRpFile {
 	class IRpFile;
 }
 
@@ -45,7 +45,7 @@ class FileFormatFactory
 		 * @param file Texture file.
 		 * @return FileFormat subclass, or nullptr if the texture file isn't supported.
 		 */
-		static LibRpTexture::FileFormat *create(LibRpBase::IRpFile *file);
+		static LibRpTexture::FileFormat *create(LibRpFile::IRpFile *file);
 
 		/**
 		 * Get all supported file extensions.

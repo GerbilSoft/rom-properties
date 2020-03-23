@@ -99,7 +99,7 @@
 
 // librpbase common headers
 #include "librpbase/aligned_malloc.h"
-#include "librpbase/ctypex.h"
+#include "ctypex.h"
 
 #ifdef __cplusplus
 // librpbase C++ headers
@@ -108,11 +108,13 @@
 #include "librpbase/RomMetaData.hpp"
 #include "librpbase/TextFuncs.hpp"
 #include "librpbase/config/Config.hpp"
-#include "librpbase/file/FileSystem.hpp"
-#include "librpbase/file/IRpFile.hpp"
-#include "librpbase/file/RpFile.hpp"
 #include "librpbase/SystemRegion.hpp"
 #include "librpbase/img/RpPngWriter.hpp"
+
+// librpfile C++ headers
+#include "librpfile/FileSystem.hpp"
+#include "librpfile/IRpFile.hpp"
+#include "librpfile/RpFile.hpp"
 
 // librptexture C++ headers
 #include "librptexture/img/rp_image.hpp"

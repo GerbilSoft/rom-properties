@@ -11,6 +11,9 @@
 #include "stdafx.h"
 #include "DiscReader.hpp"
 
+// librpfile
+using LibRpFile::IRpFile;
+
 namespace LibRpBase {
 
 /**

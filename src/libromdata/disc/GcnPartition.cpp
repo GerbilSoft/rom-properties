@@ -10,8 +10,9 @@
 #include "GcnPartition.hpp"
 #include "GcnFst.hpp"
 
-// librpbase
+// librpbase, librpfile
 using namespace LibRpBase;
+using LibRpFile::IRpFile;
 
 // C++ STL classes.
 using std::unique_ptr;

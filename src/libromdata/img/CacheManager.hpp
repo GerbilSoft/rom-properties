@@ -9,8 +9,7 @@
 #ifndef __ROMPROPERTIES_LIBROMDATA_IMG_CACHEMANAGER_HPP__
 #define __ROMPROPERTIES_LIBROMDATA_IMG_CACHEMANAGER_HPP__
 
-// librpbase
-#include "librpbase/common.h"
+#include "common.h"
 
 // librpthreads
 #include "librpthreads/Semaphore.hpp"

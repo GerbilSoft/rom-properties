@@ -23,9 +23,11 @@
 #ifndef __ROMPROPERTIES_LIBRPBASE_IMG_PNGCHECK_PNGCHECK_HPP__
 #define __ROMPROPERTIES_LIBRPBASE_IMG_PNGCHECK_PNGCHECK_HPP__
 
-namespace LibRpBase {
+namespace LibRpFile {
+	class IRpFile;
+}
 
-class IRpFile;
+namespace LibRpBase {
 
 enum {
   kOK = 0,
@@ -41,7 +43,7 @@ enum {
  * @param fp PNG file.
  * @return kOK on success; other value on error.
  */
-int pngcheck(IRpFile *fp);
+int pngcheck(LibRpFile::IRpFile *fp);
 
 }
 

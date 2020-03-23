@@ -12,10 +12,10 @@
 
 #include "didj_tex_structs.h"
 
-// librpbase
-using LibRpBase::IRpFile;
+// librpbase, librpfile
 using LibRpBase::rp_sprintf;
 using LibRpBase::RomFields;
+using LibRpFile::IRpFile;
 
 // librptexture
 #include "img/rp_image.hpp"
@@ -356,7 +356,7 @@ DidjTex::DidjTex(IRpFile *file)
 	const string filename = file->filename();
 	const char *pExt = nullptr;
 	if (!filename.empty()) {
-		pExt = LibRpBase::FileSystem::file_ext(filename);
+		pExt = LibRpFile::FileSystem::file_ext(filename);
 	}
 
 	const off64_t our_size = static_cast<off64_t>(le32_to_cpu(d->texHeader.compr_size) + sizeof(d->texHeader));

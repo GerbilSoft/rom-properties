@@ -18,9 +18,9 @@
 #include "RomPropertiesDialogPlugin.hpp"
 #include "RomDataView.hpp"
 
-// librpbase
+// librpbase, librpfile
 using LibRpBase::RomData;
-using LibRpBase::IRpFile;
+using LibRpFile::IRpFile;
 
 // libromdata
 #include "libromdata/RomDataFactory.hpp"

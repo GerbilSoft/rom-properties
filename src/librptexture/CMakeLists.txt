@@ -194,7 +194,7 @@ INCLUDE(SetMSVCDebugPath)
 SET_MSVC_DEBUG_PATH(rptexture)
 
 # TODO: More public/private library stuff.
-TARGET_LINK_LIBRARIES(rptexture PUBLIC rpbase)
+TARGET_LINK_LIBRARIES(rptexture PUBLIC rpcpu rpfile)
 TARGET_LINK_LIBRARIES(rptexture PRIVATE rpthreads)
 
 # Include paths:

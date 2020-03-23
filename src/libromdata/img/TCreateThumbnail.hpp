@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * TCreateThumbnail.hpp: Thumbnail creator template.                       *
  *                                                                         *
- * Copyright (c) 2016-2017 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -76,9 +76,11 @@ typedef int (*PFN_RP_CREATE_THUMBNAIL)(const char *source_file, const char *outp
 #include <string>
 
 namespace LibRpBase {
-	class IRpFile;
 	class RomData;
 };
+namespace LibRpFile {
+	class IRpFile;
+}
 
 namespace LibRomData {
 
@@ -153,7 +155,7 @@ class TCreateThumbnail
 		 * @param pOutParams	[out] Output parameters.
 		 * @return 0 on success; non-zero on error.
 		 */
-		int getThumbnail(LibRpBase::IRpFile *file, int reqSize, GetThumbnailOutParams_t *pOutParams);
+		int getThumbnail(LibRpFile::IRpFile *file, int reqSize, GetThumbnailOutParams_t *pOutParams);
 
 		/**
 		 * Create a thumbnail for the specified ROM file.

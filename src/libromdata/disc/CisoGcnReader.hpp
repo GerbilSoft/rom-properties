@@ -11,10 +11,6 @@
 
 #include "librpbase/disc/SparseDiscReader.hpp"
 
-namespace LibRpBase {
-	class IRpFile;
-}
-
 namespace LibRomData {
 
 class CisoGcnReaderPrivate;
@@ -27,7 +23,7 @@ class CisoGcnReader : public LibRpBase::SparseDiscReader
 		 * unref()'d by the caller afterwards.
 		 * @param file File to read from.
 		 */
-		explicit CisoGcnReader(LibRpBase::IRpFile *file);
+		explicit CisoGcnReader(LibRpFile::IRpFile *file);
 
 	private:
 		typedef SparseDiscReader super;

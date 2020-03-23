@@ -11,8 +11,9 @@
 #include "n3ds_firm_structs.h"
 #include "data/Nintendo3DSFirmData.hpp"
 
-// librpbase
+// librpbase, librpfile
 using namespace LibRpBase;
+using LibRpFile::IRpFile;
 
 // for memmem() if it's not available in <string.h>
 #include "librpbase/TextFuncs_libc.h"

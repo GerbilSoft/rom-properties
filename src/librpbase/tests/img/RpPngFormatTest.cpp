@@ -32,11 +32,13 @@
 #include "common.h"
 #include "byteswap.h"
 #include "uvector.h"
-
-#include "file/RpFile.hpp"
-#include "file/RpMemFile.hpp"
-#include "file/FileSystem.hpp"
 #include "img/RpImageLoader.hpp"
+
+// librpfile
+#include "librpfile/RpFile.hpp"
+#include "librpfile/RpMemFile.hpp"
+#include "librpfile/FileSystem.hpp"
+using namespace LibRpFile;
 
 // librptexture
 #include "librptexture/img/rp_image.hpp"
@@ -47,7 +49,7 @@ using LibRpTexture::rp_image;
 #include <stdlib.h>
 
 // C includes. (C++ namespace)
-#include "librpbase/ctypex.h"
+#include "ctypex.h"
 #include <cstring>
 
 // C++ includes.

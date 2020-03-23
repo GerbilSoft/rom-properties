@@ -9,11 +9,11 @@
 #ifndef __ROMPROPERTIES_GTK_RPFILE_GIO_HPP__
 #define __ROMPROPERTIES_GTK_RPFILE_GIO_HPP__
 
-// librpbase
-#include "librpbase/file/IRpFile.hpp"
+// librpfile
+#include "librpfile/IRpFile.hpp"
 
 class RpFileGioPrivate;
-class RpFileGio : public LibRpBase::IRpFile
+class RpFileGio : public LibRpFile::IRpFile
 {
 	public:
 		/**
@@ -29,7 +29,7 @@ class RpFileGio : public LibRpBase::IRpFile
 		virtual ~RpFileGio();	// call unref() instead
 
 	private:
-		typedef LibRpBase::IRpFile super;
+		typedef LibRpFile::IRpFile super;
 		RP_DISABLE_COPY(RpFileGio)
 	protected:
 		friend class RpFileGioPrivate;

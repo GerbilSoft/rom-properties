@@ -12,7 +12,7 @@
 
 // TextFuncs
 #include "../TextFuncs.hpp"
-#include "../byteorder.h"
+#include "librpcpu/byteorder.h"
 
 // C includes. (C++ namespace)
 #include <cstdio>
