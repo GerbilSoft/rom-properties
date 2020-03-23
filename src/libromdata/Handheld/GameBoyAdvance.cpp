@@ -22,6 +22,7 @@ using std::vector;
 namespace LibRomData {
 
 ROMDATA_IMPL(GameBoyAdvance)
+ROMDATA_IMPL_IMG(GameBoyAdvance)
 
 class GameBoyAdvancePrivate : public RomDataPrivate
 {
@@ -246,6 +247,68 @@ const char *const *GameBoyAdvance::supportedMimeTypes_static(void)
 }
 
 /**
+ * Get a bitfield of image types this class can retrieve.
+ * @return Bitfield of supported image types. (ImageTypesBF)
+ */
+uint32_t GameBoyAdvance::supportedImageTypes_static(void)
+{
+	return IMGBF_EXT_TITLE_SCREEN;
+}
+
+/**
+ * Get a list of all available image sizes for the specified image type.
+ * @param imageType Image type.
+ * @return Vector of available image sizes, or empty vector if no images are available.
+ */
+vector<RomData::ImageSizeDef> GameBoyAdvance::supportedImageSizes_static(ImageType imageType)
+{
+	ASSERT_supportedImageSizes(imageType);
+
+	switch (imageType) {
+		case IMG_EXT_TITLE_SCREEN: {
+			static const ImageSizeDef sz_EXT_TITLE_SCREEN[] = {
+				{nullptr, 240, 160, 0},
+			};
+			return vector<ImageSizeDef>(sz_EXT_TITLE_SCREEN,
+				sz_EXT_TITLE_SCREEN + ARRAY_SIZE(sz_EXT_TITLE_SCREEN));
+		}
+		default:
+			break;
+	}
+
+	// Unsupported image type.
+	return vector<ImageSizeDef>();
+}
+
+/**
+ * Get image processing flags.
+ *
+ * These specify post-processing operations for images,
+ * e.g. applying transparency masks.
+ *
+ * @param imageType Image type.
+ * @return Bitfield of ImageProcessingBF operations to perform.
+ */
+uint32_t GameBoyAdvance::imgpf(ImageType imageType) const
+{
+	ASSERT_imgpf(imageType);
+
+	uint32_t ret = 0;
+	switch (imageType) {
+		case IMG_EXT_TITLE_SCREEN:
+			// Use nearest-neighbor scaling when resizing.
+			ret = IMGPF_RESCALE_NEAREST;
+			break;
+
+		default:
+			// GameTDB's Nintendo DS cover scans have alpha transparency.
+			// Hence, no image processing is required.
+			break;
+	}
+	return ret;
+}
+
+/**
  * Load field data.
  * Called by RomData::fields() if the field data hasn't been loaded yet.
  * @return Number of fields read on success; negative POSIX error code on error.
@@ -359,6 +422,100 @@ int GameBoyAdvance::loadFieldData(void)
 
 	// Finished reading the field data.
 	return static_cast<int>(d->fields->count());
+}
+
+/**
+ * Get a list of URLs for an external image type.
+ *
+ * A thumbnail size may be requested from the shell.
+ * If the subclass supports multiple sizes, it should
+ * try to get the size that most closely matches the
+ * requested size.
+ *
+ * @param imageType	[in]     Image type.
+ * @param pExtURLs	[out]    Output vector.
+ * @param size		[in,opt] Requested image size. This may be a requested
+ *                               thumbnail size in pixels, or an ImageSizeType
+ *                               enum value.
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int GameBoyAdvance::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
+{
+	ASSERT_extURLs(imageType, pExtURLs);
+	pExtURLs->clear();
+
+	// Check for GBA ROMs that don't have external images.
+	RP_D(const GameBoyAdvance);
+	if (!d->isValid || d->romType < 0) {
+		// ROM image isn't valid.
+		return -EIO;
+	} else if (!memcmp(d->romHeader.id4, "AGBJ", 4) ||
+	           !memcmp(d->romHeader.id4, "    ", 4))
+	{
+		// This is a prototype.
+		// No external images are available.
+		// TODO: CRC32-based images?
+		return -ENOENT;
+	} else if (d->romType == GameBoyAdvancePrivate::ROM_NDS_EXP) {
+		// This is a Nintendo DS expansion cartridge.
+		// No external images are available.
+		return -ENOENT;
+	}
+
+	// NOTE: We only have one size for GBA right now.
+	RP_UNUSED(size);
+	vector<ImageSizeDef> sizeDefs = supportedImageSizes(imageType);
+	assert(sizeDefs.size() == 1);
+	if (sizeDefs.empty()) {
+		// No image sizes.
+		return -ENOENT;
+	}
+
+	// NOTE: RPDB's title screen database only has one size.
+	// There's no need to check image sizes, but we need to
+	// get the image size for the extURLs struct.
+
+	// Determine the image type name.
+	const char *imageTypeName;
+	const char *ext;
+	switch (imageType) {
+		case IMG_EXT_TITLE_SCREEN:
+			imageTypeName = "title";
+			ext = ".png";
+			break;
+		default:
+			// Unsupported image type.
+			return -ENOENT;
+	}
+
+	// Game ID. (RPDB uses ID6 for Game Boy Advance.)
+	// The ID6 cannot have non-printable characters.
+	char id6[7];
+	for (int i = ARRAY_SIZE(d->romHeader.id6)-1; i >= 0; i--) {
+		if (!ISPRINT(d->romHeader.id6[i])) {
+			// Non-printable character found.
+			return -ENOENT;
+		}
+		id6[i] = d->romHeader.id6[i];
+	}
+	// NULL-terminated ID6 is needed for the
+	// RPDB URL functions.
+	id6[6] = 0;
+
+	// Region code is id6[3].
+	const char region_code[2] = {id6[3], '\0'};
+
+	// Add the URLs.
+	pExtURLs->resize(1);
+	auto extURL_iter = pExtURLs->begin();
+	extURL_iter->url = d->getURL_RPDB("gba", imageTypeName, region_code, id6, ext);
+	extURL_iter->cache_key = d->getCacheKey_RPDB("gba", imageTypeName, region_code, id6, ext);
+	extURL_iter->width = sizeDefs[0].width;
+	extURL_iter->height = sizeDefs[0].height;
+	extURL_iter->high_res = (sizeDefs[0].index >= 2);
+
+	// All URLs added.
+	return 0;
 }
 
 }

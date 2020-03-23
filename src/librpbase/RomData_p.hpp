@@ -99,6 +99,36 @@ class RomDataPrivate
 			const char *ext);
 
 		/**
+		 * Get the RPDB URL for a given game.
+		 * @param system System name.
+		 * @param type Image type.
+		 * @param region Region name.
+		 * @param gameID Game ID.
+		 * @param ext File extension, e.g. ".png" or ".jpg".
+		 * TODO: PAL multi-region selection?
+		 * @return RPDB URL.
+		 */
+		static std::string getURL_RPDB(
+			const char *system, const char *type,
+			const char *region, const char *gameID,
+			const char *ext);
+
+		/**
+		 * Get the RPDB cache key for a given game.
+		 * @param system System name.
+		 * @param type Image type.
+		 * @param region Region name.
+		 * @param gameID Game ID.
+		 * @param ext File extension, e.g. ".png" or ".jpg".
+		 * TODO: PAL multi-region selection?
+		 * @return RPDB cache key.
+		 */
+		static std::string getCacheKey_RPDB(
+			const char *system, const char *type,
+			const char *region, const char *gameID,
+			const char *ext);
+
+		/**
 		 * Select the best size for an image.
 		 * @param sizeDefs Image size definitions.
 		 * @param size Requested thumbnail dimension. (assuming a square thumbnail)

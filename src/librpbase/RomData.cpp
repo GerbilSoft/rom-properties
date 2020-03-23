@@ -105,6 +105,44 @@ string RomDataPrivate::getCacheKey_GameTDB(
 }
 
 /**
+ * Get the RPDB URL for a given game.
+ * @param system System name.
+ * @param type Image type.
+ * @param region Region name.
+ * @param gameID Game ID.
+ * @param ext File extension, e.g. ".png" or ".jpg".
+ * TODO: PAL multi-region selection?
+ * @return RPDB URL.
+ */
+string RomDataPrivate::getURL_RPDB(
+	const char *system, const char *type,
+	const char *region, const char *gameID,
+	const char *ext)
+{
+	return rp_sprintf("https://rpdb.gerbilsoft.com/%s/%s/%s/%s%s",
+		system, type, region, gameID, ext);
+}
+
+/**
+ * Get the RPDB cache key for a given game.
+ * @param system System name.
+ * @param type Image type.
+ * @param region Region name.
+ * @param gameID Game ID.
+ * @param ext File extension, e.g. ".png" or ".jpg".
+ * TODO: PAL multi-region selection?
+ * @return RPDB cache key.
+ */
+string RomDataPrivate::getCacheKey_RPDB(
+	const char *system, const char *type,
+	const char *region, const char *gameID,
+	const char *ext)
+{
+	return rp_sprintf("%s/%s/%s/%s%s",
+		system, type, region, gameID, ext);
+}
+
+/**
  * Select the best size for an image.
  * @param sizeDefs Image size definitions.
  * @param size Requested thumbnail dimension. (assuming a square thumbnail)
