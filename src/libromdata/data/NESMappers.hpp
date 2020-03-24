@@ -3,7 +3,7 @@
  * NESMappers.hpp: NES mapper data.                                        *
  *                                                                         *
  * Copyright (c) 2016-2020 by David Korth.                                 *
- * Copyright (c) 2016-2018 by Egor.                                        *
+ * Copyright (c) 2016-2022 by Egor.                                        *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
  
@@ -45,6 +45,16 @@ class NESMappers
 		 * @return Submapper name, or nullptr if not found.
 		 */
 		static const char *lookup_nes2_submapper(int mapper, int submapper);
+
+		/**
+		 * Look up a description of mapper mirroring behavior
+		 * @param mapper Mapper number.
+		 * @param submapper Submapper number.
+		 * @param vert Vertical bit in the iNES header
+		 * @param vert Four-screen bit in the iNES header
+		 * @return String describing the mirroring behavior
+		 */
+		static const char *lookup_ines_mirroring(int mapper, int submapper, bool vert, bool four);
 };
 
 }
