@@ -408,6 +408,7 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 	// - ds:     https://art.gametdb.com/3ds/[key]
 	// - amiibo: https://amiibo.life/[key]/image
 	// - gba:    https://rpdb.gerbilsoft.com/gba/[key]
+	// - gb:     https://rpdb.gerbilsoft.com/gb/[key]
 	const TCHAR *slash_pos = _tcschr(cache_key, _T('/'));
 	if (slash_pos == nullptr || slash_pos == cache_key ||
 		slash_pos[1] == '\0')
@@ -465,8 +466,9 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 		_sntprintf(full_url, _countof(full_url),
 			_T("https://amiibo.life/nfc/%.*s/image"),
 			static_cast<int>(filename_len), slash_pos+1);
-	} else if (prefix_len == 3 && !_tcsncmp(cache_key, _T("gba"), 3)) {
-		// Game Boy Advance
+	} else if ((prefix_len == 3 && !_tcsncmp(cache_key, _T("gba"), 3)) ||
+		   (prefix_len == 2 && !_tcsncmp(cache_key, _T("gb"), 2))) {
+		// Game Boy, Game Boy Color, Game Boy Advance
 		_sntprintf(full_url, _countof(full_url),
 			_T("https://rpdb.gerbilsoft.com/%s"), cache_key);
 	} else {
