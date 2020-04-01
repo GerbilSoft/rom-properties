@@ -46,6 +46,13 @@ class GameBoyAdvancePrivate : public RomDataPrivate
 
 		// ROM header.
 		GBA_RomHeader romHeader;
+
+	public:
+		/**
+		 * Get the publisher.
+		 * @return Publisher, or "Unknown (xxx)" if unknown.
+		 */
+		string getPublisher(void) const;
 };
 
 /** GameBoyAdvancePrivate **/
@@ -56,6 +63,32 @@ GameBoyAdvancePrivate::GameBoyAdvancePrivate(GameBoyAdvance *q, IRpFile *file)
 {
 	// Clear the ROM header struct.
 	memset(&romHeader, 0, sizeof(romHeader));
+}
+
+/**
+ * Get the publisher.
+ * @return Publisher, or "Unknown (xxx)" if unknown.
+ */
+string GameBoyAdvancePrivate::getPublisher(void) const
+{
+	const char *const publisher = NintendoPublishers::lookup(romHeader.company);
+	string s_publisher;
+	if (publisher) {
+		s_publisher = publisher;
+	} else {
+		if (ISALNUM(romHeader.company[0]) &&
+		    ISALNUM(romHeader.company[1]))
+		{
+			s_publisher = rp_sprintf(C_("GameBoyAdvance", "Unknown (%.2s)"),
+				romHeader.company);
+		} else {
+			s_publisher = rp_sprintf(C_("GameBoyAdvance", "Unknown (%02X %02X)"),
+				static_cast<uint8_t>(romHeader.company[0]),
+				static_cast<uint8_t>(romHeader.company[1]));
+		}
+	}
+
+	return s_publisher;
 }
 
 /** GameBoyAdvance **/
@@ -327,15 +360,15 @@ int GameBoyAdvance::loadFieldData(void)
 		return -EIO;
 	}
 
-	// GBA ROM header.
+	// GBA ROM header
 	const GBA_RomHeader *const romHeader = &d->romHeader;
 	d->fields->reserve(7);	// Maximum of 7 fields.
 
-	// Game title.
+	// Title
 	d->fields->addField_string(C_("RomData", "Title"),
-		latin1_to_utf8(romHeader->title, sizeof(romHeader->title)));
+		cpN_to_utf8(437, romHeader->title, sizeof(romHeader->title)));
 
-	// Game ID.
+	// Game ID
 	// Replace any non-printable characters with underscores.
 	// (Action Replay has ID6 "\0\0\0\001".)
 	char id6[7];
@@ -347,30 +380,14 @@ int GameBoyAdvance::loadFieldData(void)
 	id6[6] = 0;
 	d->fields->addField_string(C_("GameBoyAdvance", "Game ID"), latin1_to_utf8(id6, 6));
 
-	// Look up the publisher.
-	const char *const publisher = NintendoPublishers::lookup(romHeader->company);
-	string s_publisher;
-	if (publisher) {
-		s_publisher = publisher;
-	} else {
-		if (ISALNUM(romHeader->company[0]) &&
-		    ISALNUM(romHeader->company[1]))
-		{
-			s_publisher = rp_sprintf(C_("GameBoyAdvance", "Unknown (%.2s)"),
-				romHeader->company);
-		} else {
-			s_publisher = rp_sprintf(C_("GameBoyAdvance", "Unknown (%02X %02X)"),
-				static_cast<uint8_t>(romHeader->company[0]),
-				static_cast<uint8_t>(romHeader->company[1]));
-		}
-	}
-	d->fields->addField_string(C_("RomData", "Publisher"), s_publisher);
+	// Publisher
+	d->fields->addField_string(C_("RomData", "Publisher"), d->getPublisher());
 
-	// ROM version.
+	// ROM version
 	d->fields->addField_string_numeric(C_("RomData", "Revision"),
 		romHeader->rom_version, RomFields::FB_DEC, 2);
 
-	// Entry point.
+	// Entry point
 	const char *const entry_point_title = C_("GameBoyAdvance", "Entry Point");
 	switch (d->romType) {
 		case GameBoyAdvancePrivate::ROM_GBA:
@@ -422,6 +439,44 @@ int GameBoyAdvance::loadFieldData(void)
 
 	// Finished reading the field data.
 	return static_cast<int>(d->fields->count());
+}
+
+/**
+ * Load metadata properties.
+ * Called by RomData::metaData() if the field data hasn't been loaded yet.
+ * @return Number of metadata properties read on success; negative POSIX error code on error.
+ */
+int GameBoyAdvance::loadMetaData(void)
+{
+	RP_D(GameBoyAdvance);
+	if (d->metaData != nullptr) {
+		// Metadata *has* been loaded...
+		return 0;
+	} else if (!d->file) {
+		// File isn't open.
+		return -EBADF;
+	} else if (!d->isValid || d->romType < 0) {
+		// Unknown ROM image type.
+		return -EIO;
+	}
+
+	// Create the metadata object.
+	d->metaData = new RomMetaData();
+	d->metaData->reserve(1);	// Maximum of 1 metadata property.
+
+	// GBA ROM header
+	const GBA_RomHeader *const romHeader = &d->romHeader;
+
+	// Title
+	d->metaData->addMetaData_string(Property::Title,
+		cpN_to_utf8(437, romHeader->title, sizeof(romHeader->title)),
+		RomMetaData::STRF_TRIM_END);
+
+	// Publisher
+	d->metaData->addMetaData_string(Property::Publisher, d->getPublisher());
+
+	// Finished reading the metadata.
+	return static_cast<int>(d->metaData->count());
 }
 
 /**
