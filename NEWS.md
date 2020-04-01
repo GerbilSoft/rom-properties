@@ -2,6 +2,12 @@
 
 ## v1.6 (released 2020/??/??)
 
+* New parser features:
+  * Game Boy, Game Boy Color, Game Boy Advance: Added external title screen
+    images using the official ROM Properties online database server.
+  * Game Boy Advance: Added metadata properties for Title and Publisher.
+    (Same as Game Boy and Game Boy Color.)
+
 * Other changes:
   * Split file handling and CPU/byteorder code from librpbase into two
     libraries: librpfile and librpcpu.
