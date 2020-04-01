@@ -373,16 +373,16 @@ void DMGPrivate::getTitleAndGameID(string &s_title, string &s_gameID) const
 	 * "Glücksrad", and the title has 0x9A, which is cp437.
 	 * TODO: GBC titles might use cp1252 instead.
 	 */
+	bool isGameID = false;
 	if (romHeader.cgbflag < 0x80) {
 		// Assuming 16-character title for non-CGB.
 		// Game ID is not present.
 		s_title = cpN_to_utf8(437, romHeader.title16, sizeof(romHeader.title16));
 		s_gameID.clear();
-		return;
+		goto trimTitle;
 	}
 
-	// Check if CGB flag is set.
-	bool isGameID;
+	// Check if the CGB flag is set.
 	if ((romHeader.cgbflag & 0x3F) == 0) {
 		// CGB flag is set.
 		// Check if a Game ID is present.
@@ -428,9 +428,6 @@ void DMGPrivate::getTitleAndGameID(string &s_title, string &s_gameID) const
 				isGameID = false;
 			}
 		}
-	} else {
-		// Not CGB. No Game ID.
-		isGameID = false;
 	}
 
 	if (isGameID) {
@@ -465,7 +462,21 @@ void DMGPrivate::getTitleAndGameID(string &s_title, string &s_gameID) const
 		s_gameID.clear();
 	}
 
-	// TODO: Trim excess spaces from the title?
+trimTitle:
+	// Trim trailing spaces if the title doesn't start with a space.
+	// TODO: Trim leading spaces?
+	if (!s_title.empty() && s_title[0] != ' ') {
+		while (!s_title.empty()) {
+			const size_t size = s_title.size();
+			if (s_title[size-1] == ' ') {
+				// Found a space. Remove it.
+				s_title.resize(size-1);
+			} else {
+				// Not a space. We're done here.
+				break;
+			}
+		}
+	}
 }
 
 /**
@@ -883,8 +894,7 @@ int DMG::loadFieldData(void)
 	}
 
 	// Publisher
-	d->fields->addField_string(C_("RomData", "Publisher"),
-		d->getPublisher());
+	d->fields->addField_string(C_("RomData", "Publisher"), d->getPublisher());
 
 	// Hardware
 	d->fields->addField_string(C_("DMG", "Hardware"),
@@ -1190,14 +1200,14 @@ int DMG::loadMetaData(void)
 	// Title
 	// NOTE: We don't actually need the game ID right now,
 	// but the function retrieves both at the same time.
+	// TODO: Remove STRF_TRIM_END, since we're doing that ourselves?
 	string s_title, s_gameID;
 	d->getTitleAndGameID(s_title, s_gameID);
 	d->metaData->addMetaData_string(Property::Title,
 		s_title, RomMetaData::STRF_TRIM_END);
 
 	// Publisher
-	d->metaData->addMetaData_string(Property::Publisher,
-		d->getPublisher(), RomMetaData::STRF_TRIM_END);
+	d->metaData->addMetaData_string(Property::Publisher, d->getPublisher());
 
 	// Finished reading the metadata.
 	return static_cast<int>(d->metaData->count());
@@ -1288,6 +1298,12 @@ int DMG::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
 			}
 			// The Legend of Zelda: Link's Awakening (non-JP, except US v1.2)
 			else if (isCGB && s_title == "ZELDA") {
+				// Append the ROM checksum.
+				append_cksum = true;
+			}
+			// Tom and Jerry: Both the "regular" game and "Frantic Antics"
+			// have the same title, except for spaces. (Non-CGB, JP, and non-JP)
+			else if (!isCGB && s_title == "TOM AND JERRY") {
 				// Append the ROM checksum.
 				append_cksum = true;
 			}
