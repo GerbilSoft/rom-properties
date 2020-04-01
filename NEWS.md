@@ -2,12 +2,16 @@
 
 ## v1.6 (released 2020/??/??)
 
-* New features:
+* New parser features:
   * Xbox360_XEX: Handle delta patches somewhat differently. We can't check the
     encryption key right now, so skip that check. Also skip reading the EXE
     and XDBF sections, since we don't have the full executable in a delta patch.
   * Xbox360_STFS: Partial support for handling the embedded default.xex and/or
     default.xexp file using the Xbox360_XEX class.
+  * Game Boy, Game Boy Color, Game Boy Advance: Added external title screen
+    images using the official ROM Properties online database server.
+  * Game Boy Advance: Added metadata properties for Title and Publisher.
+    (Same as Game Boy and Game Boy Color.)
 
 * Other changes:
   * Split file handling and CPU/byteorder code from librpbase into two
