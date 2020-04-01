@@ -15,13 +15,24 @@ The configuration file is located at:
 * Linux: `~/.config/rom-properties/rom-properties.conf`
 * Windows: `%APPDATA%\rom-properties\rom-properties.conf`
 
+Downloaded images are saved in the following directory:
+* Linux: `~/.cache/rom-properties/`
+* Windows XP: `%USERPROFILE%\Local Settings\Application Data\rom-properties`
+* Windows Vista and later: `%USERPROFILE%\AppData\LocalLow`
+
+NOTE: Prior to rom-properties v1.5, the Windows cache directory was
+`%LOCALAPPDATA%\rom-properties`. It was moved to `LocalLow` in order
+to allow `rp-download` to run as a low-integrity process. Existing
+files were not migrated over, so those can either be moved manually
+or deleted.
+
 ## Domains accessed:
 
 * https://art.gametdb.com/ - Box, cover, and media scans for Nintendo
   GameCube, Wii, Wii U, DS, and 3DS games.
 * https://amiibo.life/ - Images of Nintendo amiibo products.
 * https://rpdb.gerbilsoft.com/ - Title screen images of Nintendo
-  Game Boy Advance games.
+  Game Boy, Game Boy Color, and Game Boy Advance games.
 
 ## Security features
 
