@@ -1329,12 +1329,13 @@ int DMG::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
 				// Append the ROM checksum.
 				append_cksum = true;
 			}
-			// Tom and Jerry: Both the "regular" game and "Frantic Antics"
-			// have the same title, except for spaces. (Non-CGB, JP, and non-JP)
-			else if (!isCGB && s_title == "TOM AND JERRY") {
-				// Append the ROM checksum.
-				append_cksum = true;
-			}
+		}
+
+		// Tom and Jerry: Both the "regular" game and "Frantic Antics"
+		// have the same title, except for spaces. (Non-CGB, JP, and non-JP)
+		if (!isCGB && s_title == "TOM AND JERRY") {
+			// Append the ROM checksum.
+			append_cksum = true;
 		}
 	} else {
 		// Game ID is present. Subdirectory is based on the region byte.
