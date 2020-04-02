@@ -269,7 +269,7 @@ uint32_t DMGPrivate::systemID(void) const
 		ret |= DMG_SYSTEM_DMG;
 	}
 
-	if (romHeader.old_publisher_code == 0x33 && romHeader.sgbflag==0x03) {
+	if (romHeader.old_publisher_code == 0x33 && romHeader.sgbflag == 0x03) {
 		// Game supports SGB.
 		ret |= DMG_SYSTEM_SGB;
 	}
@@ -1262,16 +1262,44 @@ int DMG::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
 	const bool isJP = (romHeader->region == 0);
 	const bool isCGB = !!(dmg_system & DMGPrivate::DMG_SYSTEM_CGB);
 	bool append_cksum = false;
-	string img_subdir;	// Subdirectory. (Region byte, "DMG", or "CGB".)
+
+	// TODO: Implement the different-mode variants and take screenshots.
+	// Add a configuration option somewhere.
+
+	// Subdirectory:
+	// - CGB/x/:   CGB game. (x == region byte, or NoID if no Game ID)
+	// - CGB-DMG/: CGB game, taken in DMG mode.
+	// - CGB-SGB/: CGB+SGB game, taken in SGB mode. (with border)
+	// - SGB/:     SGB-enhanced game, taken in SGB mode. (with border)
+	// - SGB-DMG/: SGB-enhanced game, taken in DMG mode.
+	// - DMG/:     DMG-only game.
+	string img_subdir;
 	string img_filename;	// Filename.
 
 	if (s_gameID.empty()) {
-		// No game ID. Subdirectory is either DMG or CGB.
-		img_subdir = (isCGB ? "CGB" : "DMG");
+		// No game ID.
+		// TODO: DMG/SGB/CGB mode options.
+		if (isCGB) {
+			img_subdir = "CGB/NoID";
+		} else if (dmg_system & DMGPrivate::DMG_SYSTEM_SGB) {
+			img_subdir = "SGB";
+		} else {
+			img_subdir = "DMG";
+		}
 
 		// Image filename is based on the title, plus publisher
 		// code, plus "-J" if region is set to Japanese (0).
-		img_filename = s_title;
+
+		// Replace spaces with "%20".
+		img_filename.reserve(s_title.size());
+		for (auto iter = s_title.cbegin(); iter != s_title.cend(); ++iter) {
+			if (unlikely(*iter == ' ')) {
+				img_filename += "%20";
+			} else {
+				img_filename += *iter;
+			}
+		}
+
 		if (romHeader->old_publisher_code == 0x33) {
 			// New publisher code.
 			img_filename += '-';
@@ -1310,8 +1338,9 @@ int DMG::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
 		}
 	} else {
 		// Game ID is present. Subdirectory is based on the region byte.
-		img_subdir.resize(1);
-		img_subdir[0] = s_gameID[3];
+		// TODO: DMG/SGB/CGB mode options.
+		img_subdir = "CGB/";
+		img_subdir += s_gameID[3];
 
 		// Image filename is the Game ID.
 		img_filename = s_gameID;
