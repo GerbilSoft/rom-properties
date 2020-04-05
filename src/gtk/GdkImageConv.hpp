@@ -21,6 +21,9 @@ namespace LibRpTexture {
 
 #if defined(RP_CPU_I386) || defined(RP_CPU_AMD64)
 # include "librpcpu/cpuflags_x86.h"
+# ifdef RP_HAS_IFUNC
+#  define GDKIMAGECONV_HAS_IFUNC 1
+# endif
 # define GDKIMAGECONV_HAS_SSSE3 1
 #endif
 
@@ -51,36 +54,38 @@ class GdkImageConv
 		static GdkPixbuf *rp_image_to_GdkPixbuf_ssse3(const LibRpTexture::rp_image *img);
 #endif /* GDKIMAGECONV_HAS_SSSE3 */
 
+#ifdef GDKIMAGECONV_HAS_IFUNC
+		/* System has IFUNC. Use it for dispatching. */
+
 		/**
 		 * Convert an rp_image to GdkPixbuf.
 		 * @param img	[in] rp_image.
 		 * @return GdkPixbuf, or nullptr on error.
 		 */
-		static IFUNC_INLINE GdkPixbuf *rp_image_to_GdkPixbuf(const LibRpTexture::rp_image *img);
-};
+		static GdkPixbuf *rp_image_to_GdkPixbuf(const LibRpTexture::rp_image *img);
 
-#if !defined(RP_HAS_IFUNC) || (!defined(RP_CPU_I386) && !defined(RP_CPU_AMD64))
+#else
+		// System does not support IFUNC, or we don't have optimizations for these CPUs.
+		// Use standard inline dispatch.
 
-// System does not support IFUNC, or we don't have optimizations for these CPUs.
-// Use standard inline dispatch.
-
-/**
- * Convert an rp_image to GdkPixbuf.
- * @param img rp_image.
- * @return GdkPixbuf, or nullptr on error.
- */
-inline GdkPixbuf *GdkImageConv::rp_image_to_GdkPixbuf(const LibRpTexture::rp_image *img)
-{
+		/**
+		 * Convert an rp_image to GdkPixbuf.
+		 * @param img	[in] rp_image.
+		 * @return GdkPixbuf, or nullptr on error.
+		 */
+		static inline GdkPixbuf *rp_image_to_GdkPixbuf(const LibRpTexture::rp_image *img)
+		{
 #ifdef GDKIMAGECONV_HAS_SSSE3
-	if (RP_CPU_HasSSSE3()) {
-		return rp_image_to_GdkPixbuf_ssse3(img);
-	} else
+			if (RP_CPU_HasSSSE3()) {
+				return rp_image_to_GdkPixbuf_ssse3(img);
+			} else
 #endif /* GDKIMAGECONV_HAS_SSSE3 */
-	{
-		return rp_image_to_GdkPixbuf_cpp(img);
-	}
-}
+			{
+				return rp_image_to_GdkPixbuf_cpp(img);
+			}
+		}
 
-#endif /* !defined(RP_HAS_IFUNC) || (!defined(RP_CPU_I386) && !defined(RP_CPU_AMD64)) */
+#endif
+};
 
 #endif /* __ROMPROPERTIES_GTK_GDKIMAGECONV_HPP__ */
