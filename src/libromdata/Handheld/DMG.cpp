@@ -1272,7 +1272,9 @@ int DMG::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
 	// - CGB-SGB/: CGB+SGB game, taken in SGB mode. (with border)
 	// - SGB/:     SGB-enhanced game, taken in SGB mode. (with border)
 	// - SGB-DMG/: SGB-enhanced game, taken in DMG mode.
+	// - SGB-CGB/: SGB-enhanced game, taken in DMG mode, with CGB colorizations.
 	// - DMG/:     DMG-only game.
+	// - DMG-CGB/: DMG-only game, with CGB colorizations.
 	string img_subdir;
 	string img_filename;	// Filename.
 
