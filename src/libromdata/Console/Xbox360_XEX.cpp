@@ -1609,9 +1609,13 @@ int Xbox360_XEX::loadFieldData(void)
 		noKeyAvailable = true;
 	}
 	if (noKeyAvailable) {
-		d->fields->addField_string(C_("RomData", "Warning"),
-			rp_sprintf(C_("Xbox360_XEX", "The Xbox 360 %s encryption key is not available."), s_xexType),
-			RomFields::STRF_WARNING);
+		// FIXME: xextool can detect the encryption keys for
+		// delta patches. Figure out how to do that here.
+		if (!(d->xex2Header.module_flags & XEX2_MODULE_FLAG_PATCH_DELTA)) {
+			d->fields->addField_string(C_("RomData", "Warning"),
+				rp_sprintf(C_("Xbox360_XEX", "The Xbox 360 %s encryption key is not available."), s_xexType),
+				RomFields::STRF_WARNING);
+		}
 	}
 
 	// XDBF fields
@@ -1874,7 +1878,13 @@ int Xbox360_XEX::loadFieldData(void)
 		switch (d->keyInUse) {
 			default:
 			case -1:
-				s_encryption_key = C_("RomData", "Unknown");
+				// FIXME: xextool can detect the encryption keys for
+				// delta patches. Figure out how to do that here.
+				if (!(d->xex2Header.module_flags & XEX2_MODULE_FLAG_PATCH_DELTA)) {
+					s_encryption_key = C_("RomData", "Unknown");
+				} else {
+					s_encryption_key = C_("Xbox360_XEX|EncKey", "Cannot Determine");
+				}
 				break;
 			case 0:
 				s_encryption_key = C_("Xbox360_XEX|EncKey", "Retail");
