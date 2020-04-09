@@ -65,7 +65,7 @@
 #include "byteswap.h"
 #include "bitstuff.h"
 #include "aligned_malloc.h"
-#include "cpu_dispatch.h"
+#include "librpcpu/cpu_dispatch.h"
 #include "ctypex.h"
 #include "time_r.h"
 
