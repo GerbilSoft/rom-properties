@@ -2,6 +2,13 @@
 
 ## v1.6 (released 2020/??/??)
 
+* New features:
+  * Xbox360_XEX: Handle delta patches somewhat differently. We can't check the
+    encryption key right now, so skip that check. Also skip reading the EXE
+    and XDBF sections, since we don't have the full executable in a delta patch.
+  * Xbox360_STFS: Partial support for handling the embedded default.xex and/or
+    default.xexp file using the Xbox360_XEX class.
+
 * Other changes:
   * Split file handling and CPU/byteorder code from librpbase into two
     libraries: librpfile and librpcpu.
