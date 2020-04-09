@@ -17,9 +17,14 @@ extern "C" {
 
 #pragma pack(1)
 
+// STFS uses 4 KB blocks.
+#define STFS_BLOCK_SIZE 4096
+
 /**
  * Microsoft Xbox 360 content package header.
- * Reference: https://free60project.github.io/wiki/STFS.html
+ * References:
+ * - https://free60project.github.io/wiki/STFS.html
+ * - https://github.com/Free60Project/wiki/blob/master/STFS.md
  * 
  * All fields are in big-endian.
  */
@@ -78,8 +83,8 @@ typedef struct PACKED _STFS_Volume_Descriptor {
 	uint8_t size;				// [0x000] Size (0x24)
 	uint8_t reserved;			// [0x001]
 	uint8_t block_separation;		// [0x002]
-	uint16_t file_table_block_count;	// [0x003]
-	uint8_t file_table_block_number[3];	// [0x005] 24-bit integer
+	int16_t file_table_block_count;		// [0x003] File table block count. (BE16)
+	uint8_t file_table_block_number[3];	// [0x005] File table block number. (BE24)
 	uint8_t top_hash_table_hash[0x14];	// [0x008]
 	uint32_t total_alloc_block_count;	// [0x01C]
 	uint32_t total_unalloc_block_count;	// [0x020]
@@ -97,8 +102,8 @@ typedef struct PACKED _SVOD_Volume_Descriptor {
 	uint8_t worker_thread_priority;		// [0x003]
 	uint8_t hash[0x14];			// [0x004]
 	uint8_t device_features;		// [0x018]
-	uint8_t data_block_count[3];		// [0x019] 24-bit integer
-	uint8_t data_block_offset[3];		// [0x01C] 24-bit integer
+	uint8_t data_block_count[3];		// [0x019] (BE24)
+	uint8_t data_block_offset[3];		// [0x01C] (BE24)
 	uint8_t reserved[5];			// [0x01F]
 } SVOD_Volume_Descriptor;
 ASSERT_STRUCT(SVOD_Volume_Descriptor, 0x24);
@@ -250,6 +255,22 @@ typedef enum {
 } STFS_Transfer_Flags_e;
 
 #pragma pack()
+
+/**
+ * STFS: Directory entry.
+ */
+typedef struct _STFS_DirEntry_t {
+	char filename[0x28];		// [0x000] Filename, NULL-terminated.
+	uint8_t flags_len;		// [0x028] Flags, plus filename length. (mask with 0x3F)
+	uint8_t blocks[3];		// [0x029] Blocks. (LE24)
+	uint8_t blocks2[3];		// [0x02B] Copy of blocks. (LE24)
+	uint8_t block_number[3];	// [0x02F] Starting block number. (LE24)
+	int16_t path;			// [0x032] Path indicator. (BE16)
+	uint32_t filesize;		// [0x034] Filesize. (BE32)
+	int32_t update_time;		// [0x038] Update time. (BE32; FAT format)
+	int32_t access_time;		// [0x03C] ACcess time. (BE32; FAT format)
+} STFS_DirEntry_t;
+ASSERT_STRUCT(STFS_DirEntry_t, 0x40);
 
 #ifdef __cplusplus
 }
