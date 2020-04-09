@@ -223,6 +223,7 @@ class RomData
 			FTYPE_RESOURCE_FILE,		// Resource file
 			FTYPE_PARTITION,		// Partition
 			FTYPE_METADATA_FILE,		// Metadata File
+			FTYPE_PATCH_FILE,		// Patch File
 
 			FTYPE_LAST			// End of FileType.
 		};

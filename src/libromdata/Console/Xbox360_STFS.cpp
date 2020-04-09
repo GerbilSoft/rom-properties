@@ -7,7 +7,9 @@
  ***************************************************************************/
 
 #include "stdafx.h"
+
 #include "Xbox360_STFS.hpp"
+#include "Xbox360_XEX.hpp"
 #include "xbox360_stfs_structs.h"
 #include "data/Xbox360_STFS_ContentType.hpp"
 
@@ -17,6 +19,8 @@
 
 // librpbase, librpfile, librptexture
 #include "librpbase/img/RpPng.hpp"
+#include "librpbase/disc/DiscReader.hpp"
+#include "librpbase/disc/PartitionFile.hpp"
 #include "librpfile/RpMemFile.hpp"
 using namespace LibRpBase;
 using LibRpFile::IRpFile;
@@ -26,7 +30,6 @@ using namespace LibRpTexture;
 // C++ STL classes.
 using std::string;
 using std::vector;
-
 
 namespace LibRomData {
 
@@ -98,6 +101,52 @@ class Xbox360_STFS_Private : public RomDataPrivate
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
 		int loadHeader(unsigned int header);
+
+	public:
+		// XEX executable.
+		DiscReader *xexReader;
+		Xbox360_XEX *xex;
+
+		// File table.
+		ao::uvector<STFS_DirEntry_t> fileTable;
+
+		/**
+		 * Convert a block number to an offset.
+		 * @param blockNumber Block number.
+		 * @return Offset, or -1 on error.
+		 */
+		inline int32_t blockNumberToOffset(int blockNumber)
+		{
+			// Reference: https://github.com/Free60Project/wiki/blob/master/STFS.md
+			int ret;
+			if (blockNumber > 0xFFFFFF) {
+				ret = -1;
+			} else {
+				ret = (((be32_to_cpu(stfsMetadata.header_size) + 0xFFF) & 0xF000) +
+				        (blockNumber * STFS_BLOCK_SIZE));
+			}
+			return ret;
+		}
+
+		/**
+		 * Convert a data block number to a physical block number.
+		 * Data block numbers don't include hash blocks.
+		 * @param dataBlockNumber Data block number.
+		 * @return physBlockNumber Physical block number.
+		 */
+		int32_t dataBlockNumberToPhys(int dataBlockNumber);
+
+		/**
+		 * Load the file table.
+		 * @return 0 on success; negative POSIX error code on error.
+		 */
+		int loadFileTable(void);
+
+		/**
+		 * Open the default executable.
+		 * @return Default executable on success; nullptr on error.
+		 */
+		Xbox360_XEX *openDefaultXex(void);
 };
 
 /** Xbox360_STFS_Private **/
@@ -107,6 +156,8 @@ Xbox360_STFS_Private::Xbox360_STFS_Private(Xbox360_STFS *q, IRpFile *file)
 	, stfsType(STFS_TYPE_UNKNOWN)
 	, img_icon(nullptr)
 	, headers_loaded(0)
+	, xexReader(nullptr)
+	, xex(nullptr)
 {
 	// Clear the headers.
 	memset(&stfsHeader, 0, sizeof(stfsHeader));
@@ -116,6 +167,11 @@ Xbox360_STFS_Private::Xbox360_STFS_Private(Xbox360_STFS *q, IRpFile *file)
 
 Xbox360_STFS_Private::~Xbox360_STFS_Private()
 {
+	if (xex) {
+		xex->unref();
+	}
+	delete xexReader;
+
 	delete img_icon;
 }
 
@@ -268,6 +324,212 @@ int Xbox360_STFS_Private::loadHeader(unsigned int header)
 	return ret;
 }
 
+/**
+ * Convert a data block number to a physical block number.
+ * Data block numbers don't include hash blocks.
+ * @param dataBlockNumber Data block number.
+ * @return physBlockNumber Physical block number.
+ */
+int32_t Xbox360_STFS_Private::dataBlockNumberToPhys(int dataBlockNumber)
+{
+	// Reference: https://github.com/Free60Project/wiki/blob/master/STFS.md
+	int blockShift;
+	if (((be32_to_cpu(stfsMetadata.header_size) + 0xFFF) & 0xF000) == 0xB000) {
+		blockShift = 1;
+	} else {
+		if ((stfsMetadata.stfs_desc.block_separation & 1) == 1) {
+			blockShift = 0;
+		} else {
+			blockShift = 1;
+		}
+	}
+
+	int32_t base = ((dataBlockNumber + 0xAA) / 0xAA);
+	if (stfsType == STFS_TYPE_CON) {
+		base <<= blockShift;
+	}
+
+	int32_t ret = (base + dataBlockNumber);
+	if (dataBlockNumber > 0xAA) {
+		base = ((dataBlockNumber + 0x70E4) / 0x70E4);
+		if (stfsType == STFS_TYPE_CON) {
+			base <<= blockShift;
+		}
+		ret += base;
+
+		if (dataBlockNumber > 0x70E4) {
+			base = ((dataBlockNumber + 0x4AF768) / 0x4AF768);
+			// FIXME: Originally compared magic to blockShift,
+			// which doesn't make sense...
+			if (stfsType == STFS_TYPE_CON) {
+				base <<= blockShift;
+			}
+			ret += base;
+		}
+	}
+
+	return ret;
+}
+
+/**
+ * Load the file table.
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int Xbox360_STFS_Private::loadFileTable(void)
+{
+	if (!fileTable.empty()) {
+		// File table is already loaded.
+		return 0;
+	}
+
+	if (!this->file) {
+		// File isn't open.
+		return -EBADF;
+	} else if (!this->isValid || this->stfsType < 0) {
+		// STFS file isn't valid.
+		return -EIO;
+	}
+
+	// Make sure the STFS metadata is loaded.
+	int ret = loadHeader(Xbox360_STFS_Private::STFS_PRESENT_METADATA);
+	if (ret != 0) {
+		// Not loaded and unable to load.
+		return ret;
+	}
+
+	// TODO: Verify that this is STFS and not SVOD.
+	// NOTE: These values are signed. Make sure they're not negative.
+	const int16_t blockCount = be16_to_cpu(stfsMetadata.stfs_desc.file_table_block_count);
+	if (blockCount < 0 || stfsMetadata.stfs_desc.file_table_block_number[0] >= 0x80) {
+		// Negative values.
+		return -EIO;
+	}
+	const int32_t blockNumber =
+		(stfsMetadata.stfs_desc.file_table_block_number[0] << 16) |
+		(stfsMetadata.stfs_desc.file_table_block_number[1] <<  8) |
+		 stfsMetadata.stfs_desc.file_table_block_number[2];
+	const int32_t offset = blockNumberToOffset(dataBlockNumberToPhys(blockNumber));
+	if (offset < 0) {
+		// Invalid block number.
+		return -EIO;
+	}
+
+	// Load the file table.
+	size_t fileTableSize = ((uint32_t)blockCount * STFS_BLOCK_SIZE);
+	assert(fileTableSize % sizeof(STFS_DirEntry_t) == 0);
+	if (fileTableSize % sizeof(STFS_DirEntry_t) != 0) {
+		fileTableSize += sizeof(STFS_DirEntry_t);
+	}
+	fileTable.resize(fileTableSize / sizeof(STFS_DirEntry_t));
+	size_t size = file->seekAndRead(offset, fileTable.data(), fileTableSize);
+	if (size != fileTableSize) {
+		// Seek and/or read error.
+		fileTable.clear();
+		return -EIO;
+	}
+
+	// Find the end of the file table.
+	for (size_t i = 0; i < fileTable.size(); i++) {
+		if (fileTable[i].filename[0] == '\0') {
+			// NULL filename. End of table.
+			fileTable.resize(i);
+			break;
+		}
+	}
+
+	return (!fileTable.empty() ? 0 : -ENOENT);
+}
+
+/**
+ * Open the default executable.
+ * @return Default executable on success; nullptr on error.
+ */
+Xbox360_XEX *Xbox360_STFS_Private::openDefaultXex(void)
+{
+	if (this->xex) {
+		return this->xex;
+	}
+
+	// Make sure the file table is loaded.
+	int ret = loadFileTable();
+	if (ret != 0) {
+		// Unable to load the file table.
+		return nullptr;
+	}
+
+	// Find default.xex or default.xexp and load it.
+	// TODO: Handle subdirectories?
+	const STFS_DirEntry_t *dirEntry = nullptr;
+	for (auto iter = fileTable.cbegin(); iter != fileTable.cend(); ++iter) {
+		// Make sure this isn't a subdirectory.
+		if (iter->flags_len & 0x80) {
+			// It's a subdirectory.
+			continue;
+		}
+
+		// "default.xex" is 11 characters.
+		// "default.xexp" is 12 characters.
+		switch (iter->flags_len & 0x3F) {
+			case 11:
+				// Check for default.xex.
+				if (!strncasecmp("default.xex", iter->filename, 12)) {
+					// Found default.xex.
+					dirEntry = &(*iter);
+					break;
+				}
+				break;
+
+			case 12:
+				// Check for default.xexp.
+				if (!strncasecmp("default.xexp", iter->filename, 13)) {
+					// Found default.xexp.
+					dirEntry = &(*iter);
+					break;
+				}
+				break;
+
+			default:
+				break;
+		}
+	}
+
+	if (!dirEntry) {
+		// Directory entry not found.
+		return nullptr;
+	}
+
+	// Offset and filesize.
+	// NOTE: Block number is **little-endian** here.
+	const int32_t blockNumber =
+		(dirEntry->block_number[2] << 16) |
+		(dirEntry->block_number[1] <<  8) |
+		 dirEntry->block_number[0];
+	const int32_t offset = blockNumberToOffset(dataBlockNumberToPhys(blockNumber));
+	const uint32_t filesize = be32_to_cpu(dirEntry->filesize);
+
+	// Load default.xexp.
+	// FIXME: Maybe add a reader class to handle the hashes,
+	// though we only need the XEX header right now.
+	DiscReader *discReader = new DiscReader(this->file);
+	if (discReader->isOpen()) {
+		PartitionFile *const xexFile_tmp = new PartitionFile(discReader, offset, filesize);
+		if (xexFile_tmp->isOpen()) {
+			Xbox360_XEX *const xex_tmp = new Xbox360_XEX(xexFile_tmp);
+			if (xex_tmp->isOpen()) {
+				this->xex = xex_tmp;
+				this->xexReader = discReader;
+				discReader = nullptr;
+			} else {
+				xex_tmp->unref();
+			}
+		}
+		xexFile_tmp->unref();
+	}
+	delete discReader;
+
+	return this->xex;
+}
+
 /** Xbox360_STFS **/
 
 /**
@@ -324,6 +586,23 @@ Xbox360_STFS::Xbox360_STFS(IRpFile *file)
 	}
 
 	// Package metadata and thumbnails are loaded on demand.
+}
+
+/**
+ * Close the opened file.
+ */
+void Xbox360_STFS::close(void)
+{
+	RP_D(Xbox360_STFS);
+
+	// NOTE: Don't delete these. They have rp_image objects
+	// that may be used by the UI later.
+	if (d->xex) {
+		d->xex->close();
+	}
+
+	// Call the superclass function.
+	super::close();
 }
 
 /** ROM detection functions. **/
@@ -790,6 +1069,16 @@ int Xbox360_STFS::loadFieldData(void)
 		} else {
 			d->fields->addField_string(s_console_type_title,
 				rp_sprintf(C_("RomData", "Unknown (%u)"), stfsHeader->console.console_type));
+		}
+	}
+
+	// Attempt to open the default executable.
+	Xbox360_XEX *const default_xex = d->openDefaultXex();
+	if (default_xex) {
+		// Add the fields.
+		const RomFields *const xexFields = default_xex->fields();
+		if (xexFields) {
+			d->fields->addFields_romFields(xexFields, RomFields::TabOffset_AddTabs);
 		}
 	}
 

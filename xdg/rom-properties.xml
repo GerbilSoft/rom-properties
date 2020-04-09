@@ -365,6 +365,19 @@
       <match value="XEX2" type="string" offset="0"/>
     </magic>
   </mime-type>
+  <mime-type type="application/x-xbox360-patch">
+    <comment>Xbox 360 patch</comment>
+    <sub-class-of type="application/x-executable"/>
+    <generic-icon name="application-x-executable"/>
+    <glob pattern="*.xexp"/>
+    <magic priority="50">
+      <match value="XEX2" type="string" offset="0">
+        <match value="0x10" mask="0x70" type="byte" offset="7"/>
+        <match value="0x20" mask="0x70" type="byte" offset="7"/>
+        <match value="0x40" mask="0x70" type="byte" offset="7"/>
+      </match>
+    </magic>
+  </mime-type>
 
   <!-- *** Handheld *** -->
 
