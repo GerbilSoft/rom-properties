@@ -1330,6 +1330,16 @@ Xbox360_XEX::Xbox360_XEX(IRpFile *file)
 	d->xex2Header.opt_header_count	= be32_to_cpu(d->xex2Header.opt_header_count);
 #endif /* SYS_BYTEORDER == SYS_LIL_ENDIAN */
 
+	// Is this a patch?
+	if ((d->xex2Header.module_flags & (XEX2_MODULE_FLAG_MODULE_PATCH |
+	                                   XEX2_MODULE_FLAG_PATCH_FULL |
+                                           XEX2_MODULE_FLAG_PATCH_DELTA)) != 0)
+	{
+		// This is a patch.
+		d->mimeType = "application/x-xbox360-patch";	// unofficial, not on fd.o
+		d->fileType = FTYPE_PATCH_FILE;
+	}
+
 	// Read the security info.
 	// NOTE: This must be done after copying the XEX2 header,
 	// since the security info offset is stored in the header.
@@ -1470,7 +1480,8 @@ const char *Xbox360_XEX::systemName(unsigned int type) const
 const char *const *Xbox360_XEX::supportedFileExtensions_static(void)
 {
 	static const char *const exts[] = {
-		".xex",
+		".xex",		// Executable
+		".xexp",	// Patch
 
 		nullptr
 	};
@@ -1493,6 +1504,7 @@ const char *const *Xbox360_XEX::supportedMimeTypes_static(void)
 		// Unofficial MIME types.
 		// TODO: Get these upstreamed on FreeDesktop.org.
 		"application/x-xbox360-executable",
+		"application/x-xbox360-patch",
 
 		nullptr
 	};
@@ -1669,6 +1681,8 @@ int Xbox360_XEX::loadFieldData(void)
 	// NOTE: Using a string instead of a bitfield because very rarely
 	// are all of these set, and in most cases, none are.
 	// TODO: RFT_LISTDATA?
+	// NOTE 2: For Unleashed XEX, XGD2 flag is set and media type is 4 (DVD/CD).
+	// For Unleashed XEXP, XGD2 flag is set and media type is 0x18000000.
 	if (image_flags & XEX2_IMAGE_FLAG_XGD2_MEDIA_ONLY) {
 		// XGD2/XGD3 media only.
 		// TODO: Check the Burger King games. (XGD1)
@@ -1905,22 +1919,27 @@ int Xbox360_XEX::loadFieldData(void)
 		d->fields->addField_ageRatings(C_("RomData", "Age Ratings"), age_ratings);
 	}
 
-	// Can we get the EXE section?
-	const EXE *const pe_exe = const_cast<Xbox360_XEX_Private*>(d)->initEXE();
-	if (pe_exe) {
-		// Add the fields.
-		const RomFields *const exeFields = pe_exe->fields();
-		if (exeFields) {
-			d->fields->addFields_romFields(exeFields, RomFields::TabOffset_AddTabs);
+	// NOTE: If this is an XEXP with a delta patch instead of a
+	// full patch, we can't get any useful information from the
+	// EXE or XDBF sections.
+	if (!(xex2Header->module_flags & XEX2_MODULE_FLAG_PATCH_DELTA)) {
+		// Can we get the EXE section?
+		const EXE *const pe_exe = const_cast<Xbox360_XEX_Private*>(d)->initEXE();
+		if (pe_exe) {
+			// Add the fields.
+			const RomFields *const exeFields = pe_exe->fields();
+			if (exeFields) {
+				d->fields->addFields_romFields(exeFields, RomFields::TabOffset_AddTabs);
+			}
 		}
-	}
 
-	// Can we get the XDBF section?
-	if (pe_xdbf) {
-		// Add the fields.
-		const RomFields *const xdbfFields = pe_xdbf->fields();
-		if (xdbfFields) {
-			d->fields->addFields_romFields(xdbfFields, RomFields::TabOffset_AddTabs);
+		// Can we get the XDBF section?
+		if (pe_xdbf) {
+			// Add the fields.
+			const RomFields *const xdbfFields = pe_xdbf->fields();
+			if (xdbfFields) {
+				d->fields->addFields_romFields(xdbfFields, RomFields::TabOffset_AddTabs);
+			}
 		}
 	}
 
