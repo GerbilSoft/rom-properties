@@ -20,7 +20,7 @@ namespace LibRpTexture {
 #include <gdk-pixbuf/gdk-pixbuf.h>
 
 #if defined(RP_CPU_I386) || defined(RP_CPU_AMD64)
-# include "librpbase/cpuflags_x86.h"
+# include "librpcpu/cpuflags_x86.h"
 # define GDKIMAGECONV_HAS_SSSE3 1
 #endif
 
