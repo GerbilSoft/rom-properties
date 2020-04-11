@@ -9,6 +9,10 @@
   * Xbox360_STFS: Partial support for handling the embedded default.xex and/or
     default.xexp file using the Xbox360_XEX class.
 
+* Bug fixes:
+  * WiiWAD: Fix DLC icons no longer working after updating CBCReader to update
+    its internal position correctly, which was needed for Xbox 360 XDBF files.
+
 * Other changes:
   * Split file handling and CPU/byteorder code from librpbase into two
     libraries: librpfile and librpcpu.

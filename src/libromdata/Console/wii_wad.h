@@ -73,8 +73,7 @@ ASSERT_STRUCT(Wii_WAD_Header_EARLY, 32);
 /**
  * content.bin header.
  *
- * This is the encrypted program data in a WAD file and/or
- * copied to an SD card.
+ * This is the encrypted program data stored on an SD card.
  *
  * This is followed by one of the following:
  * - Wii_IMET_t: IMET header. (most WADs)

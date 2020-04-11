@@ -100,7 +100,6 @@ class WiiWADPrivate : public RomDataPrivate
 		WiiWIBN *wibnData;
 
 		// Main data headers.
-		Wii_Content_Bin_Header contentHeader;
 		Wii_IMET_t imet;	// NOTE: May be WIBN.
 #endif /* ENABLE_DECRYPTION */
 
@@ -136,7 +135,6 @@ WiiWADPrivate::WiiWADPrivate(WiiWAD *q, IRpFile *file)
 	memset(&tmdHeader, 0, sizeof(tmdHeader));
 
 #ifdef ENABLE_DECRYPTION
-	memset(&contentHeader, 0, sizeof(contentHeader));
 	memset(&imet, 0, sizeof(imet));
 #endif /* ENABLE_DECRYPTION */
 }
@@ -388,42 +386,36 @@ WiiWAD::WiiWAD(IRpFile *file)
 	// TODO: Verify some known data?
 	d->cbcReader = new CBCReader(d->file, d->data_offset, d->data_size, title_key, iv);
 
-	// Read the content header.
-	// NOTE: Continuing even if this fails, since we can show
-	// other information from the ticket and TMD.
-	size = d->cbcReader->read(&d->contentHeader, sizeof(d->contentHeader));
-	if (size == sizeof(d->contentHeader)) {
-		// Contents may be one of the following:
-		// - IMET header: Most common.
-		// - WIBN header: DLC titles.
-		size = d->cbcReader->read(&d->imet, sizeof(d->imet));
-		if (size == sizeof(d->imet)) {
-			// TODO: Use the WiiWIBN subclass.
-			// TODO: Create a WiiIMET subclass? (and also use it in GameCube)
-			if (d->imet.magic == cpu_to_be32(WII_IMET_MAGIC)) {
-				// This is an IMET header.
-				// TODO: Do something here?
-			} else if (d->imet.magic == cpu_to_be32(WII_WIBN_MAGIC)) {
-				// This is a WIBN header.
-				// Create the PartitionFile and WiiWIBN subclass.
-				// NOTE: Not sure how big the WIBN data is, so we'll
-				// allow it to read the rest of the file.
-				PartitionFile *const ptFile = new PartitionFile(d->cbcReader,
-					sizeof(d->contentHeader),
-					d->data_size - sizeof(d->contentHeader));
-				if (ptFile->isOpen()) {
-					// Open the WiiWIBN.
-					WiiWIBN *const wibn = new WiiWIBN(ptFile);
-					if (wibn->isOpen()) {
-						// Opened successfully.
-						d->wibnData = wibn;
-					} else {
-						// Unable to open the WiiWIBN.
-						wibn->unref();
-					}
+	// Contents may be one of the following:
+	// - IMET header: Most common.
+	// - WIBN header: DLC titles.
+	size = d->cbcReader->read(&d->imet, sizeof(d->imet));
+	if (size == sizeof(d->imet)) {
+		// TODO: Use the WiiWIBN subclass.
+		// TODO: Create a WiiIMET subclass? (and also use it in GameCube)
+		if (d->imet.magic == cpu_to_be32(WII_IMET_MAGIC)) {
+			// This is an IMET header.
+			// TODO: Do something here?
+		} else if (d->imet.magic == cpu_to_be32(WII_WIBN_MAGIC)) {
+			// This is a WIBN header.
+			// Create the PartitionFile and WiiWIBN subclass.
+			// NOTE: Not sure how big the WIBN data is, so we'll
+			// allow it to read the rest of the file.
+			PartitionFile *const ptFile = new PartitionFile(d->cbcReader,
+				offsetof(Wii_IMET_t, magic),
+				d->data_size - offsetof(Wii_IMET_t, magic));
+			if (ptFile->isOpen()) {
+				// Open the WiiWIBN.
+				WiiWIBN *const wibn = new WiiWIBN(ptFile);
+				if (wibn->isOpen()) {
+					// Opened successfully.
+					d->wibnData = wibn;
+				} else {
+					// Unable to open the WiiWIBN.
+					wibn->unref();
 				}
-				ptFile->unref();
 			}
+			ptFile->unref();
 		}
 	}
 #else /* !ENABLE_DECRYPTION */
@@ -511,8 +503,7 @@ int WiiWAD::isRomSupported_static(const DetectInfo *info)
 	unsigned int expected_size = WiiWADPrivate::toNext64(be32_to_cpu(wadHeader->header_size)) +
 				     WiiWADPrivate::toNext64(be32_to_cpu(wadHeader->cert_chain_size)) +
 				     WiiWADPrivate::toNext64(be32_to_cpu(wadHeader->ticket_size)) +
-				     WiiWADPrivate::toNext64(be32_to_cpu(wadHeader->tmd_size)) +
-				     sizeof(Wii_Content_Bin_Header);
+				     WiiWADPrivate::toNext64(be32_to_cpu(wadHeader->tmd_size));
 	if (expected_size > info->szFile) {
 		// File is too small.
 		return -1;
