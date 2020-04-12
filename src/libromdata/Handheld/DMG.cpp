@@ -13,6 +13,7 @@
 #include "dmg_structs.h"
 
 // librpbase, librpfile
+#include "librpbase/config/Config.hpp"
 using namespace LibRpBase;
 using LibRpFile::IRpFile;
 
@@ -1263,8 +1264,57 @@ int DMG::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
 	const bool isCGB = !!(dmg_system & DMGPrivate::DMG_SYSTEM_CGB);
 	bool append_cksum = false;
 
-	// TODO: Implement the different-mode variants and take screenshots.
-	// Add a configuration option somewhere.
+	// Check the title screen mode variant to use.
+	string img_subdir;
+	const Config *const config = Config::instance();
+	if (isCGB) {
+		// CGB, CGB-DMG, or CGB-SGB.
+		switch (config->dmgTitleScreenMode(Config::DMG_TitleScreen_Mode::DMG_TS_CGB)) {
+			case Config::DMG_TitleScreen_Mode::DMG_TS_CGB:
+			default:
+				img_subdir = "CGB";
+				break;
+			case Config::DMG_TitleScreen_Mode::DMG_TS_DMG:
+				img_subdir = "CGB-DMG";
+				break;
+			case Config::DMG_TitleScreen_Mode::DMG_TS_SGB:
+				// NOTE: Some CGB ROMs have an SGB border, but they don't
+				// have the SGB flag set, so the SGB border won't actually
+				// show up on hardware. It *does* show up on mGBA, though...
+				if (dmg_system & DMGPrivate::DMG_SYSTEM_SGB) {
+					img_subdir = "CGB-SGB";
+				} else {
+					img_subdir = "CGB-DMG";
+				}
+				break;
+		}
+	} else if (dmg_system & DMGPrivate::DMG_SYSTEM_SGB) {
+		// SGB, SGB-DMG, or SGB-CGB.
+		switch (config->dmgTitleScreenMode(Config::DMG_TitleScreen_Mode::DMG_TS_SGB)) {
+			case Config::DMG_TitleScreen_Mode::DMG_TS_SGB:
+			default:
+				img_subdir = "SGB";
+				break;
+			case Config::DMG_TitleScreen_Mode::DMG_TS_DMG:
+				img_subdir = "SGB-DMG";
+				break;
+			case Config::DMG_TitleScreen_Mode::DMG_TS_CGB:
+				img_subdir = "SGB-CGB";
+				break;
+		}
+	} else {
+		// DMG or DMG-CGB.
+		// NOTE: No DMG-SGB; this would be plain old SGB.
+		switch (config->dmgTitleScreenMode(Config::DMG_TitleScreen_Mode::DMG_TS_DMG)) {
+			case Config::DMG_TitleScreen_Mode::DMG_TS_DMG:
+			default:
+				img_subdir = "DMG";
+				break;
+			case Config::DMG_TitleScreen_Mode::DMG_TS_CGB:
+				img_subdir = "DMG-CGB";
+				break;
+		}
+	}
 
 	// Subdirectory:
 	// - CGB/x/:   CGB game. (x == region byte, or NoID if no Game ID)
@@ -1275,18 +1325,15 @@ int DMG::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
 	// - SGB-CGB/: SGB-enhanced game, taken in DMG mode, with CGB colorizations.
 	// - DMG/:     DMG-only game.
 	// - DMG-CGB/: DMG-only game, with CGB colorizations.
-	string img_subdir;
 	string img_filename;	// Filename.
 
 	if (s_gameID.empty()) {
 		// No game ID.
 		// TODO: DMG/SGB/CGB mode options.
 		if (isCGB) {
-			img_subdir = "CGB/NoID";
-		} else if (dmg_system & DMGPrivate::DMG_SYSTEM_SGB) {
-			img_subdir = "SGB";
-		} else {
-			img_subdir = "DMG";
+			// CGB has subdirectories for the region byte.
+			// This game doesn't have a game ID, so use "NoID".
+			img_subdir += "/NoID";
 		}
 
 		// Image filename is based on the title, plus publisher
@@ -1341,8 +1388,7 @@ int DMG::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
 		}
 	} else {
 		// Game ID is present. Subdirectory is based on the region byte.
-		// TODO: DMG/SGB/CGB mode options.
-		img_subdir = "CGB/";
+		img_subdir += '/';
 		img_subdir += s_gameID[3];
 
 		// Image filename is the Game ID.
