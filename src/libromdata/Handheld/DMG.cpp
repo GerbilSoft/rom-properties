@@ -1259,62 +1259,76 @@ int DMG::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
 	// DMG ROM header, excluding the RST table.
 	const DMG_RomHeader *const romHeader = &d->romHeader;
 
+	enum DmgFlags {
+		DMG_REGION_JP		= 0,
+		DMG_REGION_OTHER	= (1 << 0),
+		DMG_REGION_MASK		= (1 << 0),
+
+		DMG_CHECK_REGION	= (1 << 1),	// Check region in the exception list.
+		DMG_IS_CGB		= (1 << 2),
+	};
 	const uint32_t dmg_system = d->systemID();
-	const bool isJP = (romHeader->region == 0);
-	const bool isCGB = !!(dmg_system & DMGPrivate::DMG_SYSTEM_CGB);
+	uint8_t dmg_flags = (romHeader->region != 0);
+	if (dmg_system & DMGPrivate::DMG_SYSTEM_CGB) {
+		dmg_flags |= DMG_IS_CGB;
+	}
+
+	// We'll need to append global checksums in cases where
+	// we don't have a game ID and the title collides with
+	// different ROM images.
 	bool append_cksum = false;
 
 	// Check the title screen mode variant to use.
+	static const char ts_subdirs
+		[Config::DMG_TitleScreen_Mode::DMG_TS_MAX]
+		[Config::DMG_TitleScreen_Mode::DMG_TS_MAX][8] =
+	{
+		// Rows: ROM type (DMG, SGB, CGB)
+		// Columns: User selection (DMG, SGB, CGB)
+
+		// DMG (NOTE: DMG-SGB is not a thing; use SGB instead)
+		{"DMG", "DMG", "DMG-CGB"},
+
+		// SGB
+		{"SGB-DMG", "SGB", "SGB-CGB"},
+
+		// CGB
+		{"CGB-DMG", "CGB-SGB", "CGB"},
+	};
+
 	string img_subdir;
 	const Config *const config = Config::instance();
-	if (isCGB) {
-		// CGB, CGB-DMG, or CGB-SGB.
-		switch (config->dmgTitleScreenMode(Config::DMG_TitleScreen_Mode::DMG_TS_CGB)) {
-			case Config::DMG_TitleScreen_Mode::DMG_TS_CGB:
-			default:
-				img_subdir = "CGB";
-				break;
-			case Config::DMG_TitleScreen_Mode::DMG_TS_DMG:
-				img_subdir = "CGB-DMG";
-				break;
-			case Config::DMG_TitleScreen_Mode::DMG_TS_SGB:
-				// NOTE: Some CGB ROMs have an SGB border, but they don't
-				// have the SGB flag set, so the SGB border won't actually
-				// show up on hardware. It *does* show up on mGBA, though...
-				if (dmg_system & DMGPrivate::DMG_SYSTEM_SGB) {
-					img_subdir = "CGB-SGB";
-				} else {
-					img_subdir = "CGB-DMG";
-				}
-				break;
-		}
+	Config::DMG_TitleScreen_Mode cfg_rom;
+	if (dmg_flags & DMG_IS_CGB) {
+		cfg_rom = Config::DMG_TitleScreen_Mode::DMG_TS_CGB;
 	} else if (dmg_system & DMGPrivate::DMG_SYSTEM_SGB) {
-		// SGB, SGB-DMG, or SGB-CGB.
-		switch (config->dmgTitleScreenMode(Config::DMG_TitleScreen_Mode::DMG_TS_SGB)) {
-			case Config::DMG_TitleScreen_Mode::DMG_TS_SGB:
-			default:
-				img_subdir = "SGB";
-				break;
-			case Config::DMG_TitleScreen_Mode::DMG_TS_DMG:
-				img_subdir = "SGB-DMG";
-				break;
-			case Config::DMG_TitleScreen_Mode::DMG_TS_CGB:
-				img_subdir = "SGB-CGB";
-				break;
-		}
+		cfg_rom = Config::DMG_TitleScreen_Mode::DMG_TS_SGB;
 	} else {
-		// DMG or DMG-CGB.
-		// NOTE: No DMG-SGB; this would be plain old SGB.
-		switch (config->dmgTitleScreenMode(Config::DMG_TitleScreen_Mode::DMG_TS_DMG)) {
-			case Config::DMG_TitleScreen_Mode::DMG_TS_DMG:
-			default:
-				img_subdir = "DMG";
-				break;
-			case Config::DMG_TitleScreen_Mode::DMG_TS_CGB:
-				img_subdir = "DMG-CGB";
-				break;
-		}
+		cfg_rom = Config::DMG_TitleScreen_Mode::DMG_TS_DMG;
 	}
+
+	Config::DMG_TitleScreen_Mode cfg_ts = config->dmgTitleScreenMode(cfg_rom);
+	assert(cfg_ts >= Config::DMG_TitleScreen_Mode::DMG_TS_DMG);
+	assert(cfg_ts <  Config::DMG_TitleScreen_Mode::DMG_TS_MAX);
+	if (cfg_ts <  Config::DMG_TitleScreen_Mode::DMG_TS_DMG ||
+	    cfg_ts >= Config::DMG_TitleScreen_Mode::DMG_TS_MAX)
+	{
+		// Out of range. Use the default.
+		cfg_ts = cfg_rom;
+	}
+
+	// Special case: If CGB-SGB, make sure the ROM also supports SGB.
+	// Some CGB ROMs do have SGB borders, but since the header doesn't
+	// unlock SGB mode, it doesn't show up on hardware. It *does* show
+	// up on mGBA, though...
+	if (cfg_ts == Config::DMG_TitleScreen_Mode::DMG_TS_SGB &&
+	    !(dmg_system & DMGPrivate::DMG_SYSTEM_SGB))
+	{
+		cfg_ts = Config::DMG_TitleScreen_Mode::DMG_TS_DMG;
+	}
+
+	// Get the image subdirectory from the table.
+	img_subdir = ts_subdirs[cfg_rom][cfg_ts];
 
 	// Subdirectory:
 	// - CGB/x/:   CGB game. (x == region byte, or NoID if no Game ID)
@@ -1330,7 +1344,7 @@ int DMG::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
 	if (s_gameID.empty()) {
 		// No game ID.
 		// TODO: DMG/SGB/CGB mode options.
-		if (isCGB) {
+		if (dmg_flags & DMG_IS_CGB) {
 			// CGB has subdirectories for the region byte.
 			// This game doesn't have a game ID, so use "NoID".
 			img_subdir += "/NoID";
@@ -1359,32 +1373,48 @@ int DMG::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
 			snprintf(pbcode, sizeof(pbcode), "-%02X", romHeader->old_publisher_code);
 			img_filename += pbcode;
 		}
-		if (isJP) {
+		if ((dmg_flags & DMG_REGION_MASK) == DMG_REGION_JP) {
 			img_filename += "-J";
 		}
 
 		// Special cases for ROM images with identical titles.
+		struct DmgSpecialCase_t {
+			uint8_t flags;
+			char title[15];
+		};
+		static const DmgSpecialCase_t dmgSpecialCases[] = {
+			// Non-CGB; Non-JP
+			{DMG_CHECK_REGION | DMG_REGION_OTHER,	"POKEMON RED"},
+			{DMG_CHECK_REGION | DMG_REGION_OTHER,	"POKEMON BLUE"},
 
-		// Non-JP ROMs.
-		if (!isJP) {
-			// Pokémon Gen1, non-CGB: Use the ROM checksum to distinguish
-			// between various language versions.
-			if (!isCGB && (s_title == "POKEMON RED" || s_title == "POKEMON BLUE")) {
-				// Append the ROM checksum.
-				append_cksum = true;
-			}
-			// The Legend of Zelda: Link's Awakening (non-JP, except US v1.2)
-			else if (isCGB && s_title == "ZELDA") {
-				// Append the ROM checksum.
-				append_cksum = true;
-			}
-		}
+			// Non-CGB; no region check.
+			{0, "TOM AND JERRY"},
 
-		// Tom and Jerry: Both the "regular" game and "Frantic Antics"
-		// have the same title, except for spaces. (Non-CGB, JP, and non-JP)
-		if (!isCGB && s_title == "TOM AND JERRY") {
-			// Append the ROM checksum.
-			append_cksum = true;
+			{0, ""}
+		};
+		for (const DmgSpecialCase_t *p = dmgSpecialCases; p->title[0] != '\0'; p++) {
+			const uint8_t xor_flags = (p->flags ^ dmg_flags);
+
+			// Check the CGB flag.
+			if (xor_flags & DMG_IS_CGB) {
+				// CGB flag does not match.
+				continue;
+			}
+
+			if (p->flags & DMG_CHECK_REGION) {
+				// Check the region flag.
+				if (xor_flags & DMG_REGION_MASK) {
+					// Region flag does not match.
+					continue;
+				}
+			}
+
+			// Check the title.
+			if (s_title == p->title) {
+				// Title matches.
+				append_cksum = true;
+				break;
+			}
 		}
 	} else {
 		// Game ID is present. Subdirectory is based on the region byte.
