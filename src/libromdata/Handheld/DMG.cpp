@@ -1386,6 +1386,11 @@ int DMG::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
 			// Non-CGB; Non-JP
 			{DMG_CHECK_REGION | DMG_REGION_OTHER,	"POKEMON RED"},
 			{DMG_CHECK_REGION | DMG_REGION_OTHER,	"POKEMON BLUE"},
+			{DMG_CHECK_REGION | DMG_REGION_OTHER,	"TRACK MEET"},
+
+			// Non-CGB; JP (Sachen)
+			// TODO: "TETRIS" ROMs have the same global checksum.
+			{DMG_CHECK_REGION | DMG_REGION_JP,	"GAME"},
 
 			// CGB; Non-JP
 			{DMG_CHECK_REGION | DMG_REGION_OTHER | DMG_IS_CGB,	"ZELDA"},
@@ -1427,7 +1432,24 @@ int DMG::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
 		// Image filename is the Game ID.
 		img_filename = s_gameID;
 
-		// TODO: Are any special cases needed?
+		// Special cases for ROM images with identical game IDs.
+		static const char cgbSpecialCases[][8] = {
+			// Loppi Puzzle Magazine
+			"B52J8N", "B53J8N", "B5IJ8N",
+			"B62J8N", "B63J8N", "B6IJ8N",
+
+			""
+		};
+
+		for (const char *p = &cgbSpecialCases[0][0];
+		     p[0] != '\0'; p += sizeof(cgbSpecialCases[0]))
+		{
+			if (s_gameID == p) {
+				// Game ID matches.
+				append_cksum = true;
+				break;
+			}
+		}
 	}
 
 	if (append_cksum) {
