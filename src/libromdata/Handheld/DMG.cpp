@@ -1387,6 +1387,9 @@ int DMG::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
 			{DMG_CHECK_REGION | DMG_REGION_OTHER,	"POKEMON RED"},
 			{DMG_CHECK_REGION | DMG_REGION_OTHER,	"POKEMON BLUE"},
 
+			// CGB; Non-JP
+			{DMG_CHECK_REGION | DMG_REGION_OTHER | DMG_IS_CGB,	"ZELDA"},
+
 			// Non-CGB; no region check.
 			{0, "TOM AND JERRY"},
 
