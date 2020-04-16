@@ -1432,9 +1432,10 @@ int DMG::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
 
 	if (append_cksum) {
 		// Append the ROM checksum.
-		// NOTE: pandocs says "high byte first", so assuming big-endian.
+		// NOTE: pandocs says "high byte first", but the actual ROMs
+		// seem to use little-endian.
 		char cksum[16];
-		snprintf(cksum, sizeof(cksum), "-%04X", be16_to_cpu(romHeader->rom_checksum));
+		snprintf(cksum, sizeof(cksum), "-%04X", le16_to_cpu(romHeader->rom_checksum));
 		img_filename += cksum;
 	}
 
