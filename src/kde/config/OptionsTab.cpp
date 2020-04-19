@@ -177,6 +177,5 @@ void OptionsTab::checkBox_clicked(void)
 	// Configuration has been changed.
 	Q_D(OptionsTab);
 	d->changed = true;
-	printf("MOO\n");
 	emit modified();
 }
