@@ -12,6 +12,9 @@
 
 static GType type_list[1];
 
+// C includes.
+#include <assert.h>
+
 // dlopen()
 #include <dlfcn.h>
 
@@ -67,6 +70,13 @@ nautilus_module_initialize(GTypeModule *module)
 {
 	CHECK_UID();
 
+	assert(libnautilus_extension_so == NULL);
+	if (libnautilus_extension_so != NULL) {
+		// TODO: Reference count?
+		g_critical("*** " G_LOG_DOMAIN ": nautilus_module_initialize() called twice?");
+		return;
+	}
+
 	// dlopen() libnautilus-extension.so.
 	libnautilus_extension_so = dlopen("libnautilus-extension.so", RTLD_LAZY | RTLD_LOCAL);
 	if (!libnautilus_extension_so) {
@@ -89,6 +99,13 @@ caja_module_initialize(GTypeModule *module)
 {
 	CHECK_UID();
 
+	assert(libnautilus_extension_so == NULL);
+	if (libnautilus_extension_so != NULL) {
+		// TODO: Reference count?
+		g_critical("*** " G_LOG_DOMAIN ": caja_module_initialize() called twice?");
+		return;
+	}
+
 	// dlopen() libcaja-extension.so.
 	libnautilus_extension_so = dlopen("libcaja-extension.so", RTLD_LAZY | RTLD_LOCAL);
 	if (!libnautilus_extension_so) {
@@ -110,6 +127,13 @@ G_MODULE_EXPORT void
 nemo_module_initialize(GTypeModule *module)
 {
 	CHECK_UID();
+
+	assert(libnautilus_extension_so == NULL);
+	if (libnautilus_extension_so != NULL) {
+		// TODO: Reference count?
+		g_critical("*** " G_LOG_DOMAIN ": nemo_module_initialize() called twice?");
+		return;
+	}
 
 	// dlopen() libnemo-extension.so.
 	libnautilus_extension_so = dlopen("libnemo-extension.so", RTLD_LAZY | RTLD_LOCAL);
