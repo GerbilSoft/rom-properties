@@ -24,6 +24,11 @@
        <string>&amp;Image Types</string>
       </attribute>
      </widget>
+     <widget class="DMGTab" name="tabDMG">
+      <attribute name="title">
+       <string>&amp;Game Boy</string>
+      </attribute>
+     </widget>
      <widget class="OptionsTab" name="tabOptions">
       <attribute name="title">
        <string>&amp;Options</string>
@@ -77,6 +82,12 @@
    <class>AboutTab</class>
    <extends>QWidget</extends>
    <header>config/AboutTab.hpp</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>DMGTab</class>
+   <extends>QWidget</extends>
+   <header>config/DMGTab.hpp</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

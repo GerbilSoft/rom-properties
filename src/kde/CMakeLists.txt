@@ -16,6 +16,7 @@ SET(rom-properties-kde_SRCS
 	config/ConfigDialog.cpp
 	config/ITab.cpp
 	config/ImageTypesTab.cpp
+	config/DMGTab.cpp
 	config/OptionsTab.cpp
 	config/AboutTab.cpp
 	)
@@ -32,6 +33,7 @@ SET(rom-properties-kde_H
 	config/ConfigDialog.hpp
 	config/ITab.hpp
 	config/ImageTypesTab.hpp
+	config/DMGTab.cpp
 	config/OptionsTab.hpp
 	config/AboutTab.hpp
 	)
@@ -39,6 +41,7 @@ SET(rom-properties-kde_UIS
 	RomDataView.ui
 	config/ConfigDialog.ui
 	config/ImageTypesTab.ui
+	config/DMGTab.ui
 	config/OptionsTab.ui
 	config/AboutTab.ui
 	)
