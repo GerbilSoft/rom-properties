@@ -1363,14 +1363,18 @@ int DMG::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
 			}
 		}
 
+		char pbcode[16];
 		if (romHeader->old_publisher_code == 0x33) {
 			// New publisher code.
+			pbcode[0] = romHeader->new_publisher_code[0];
+			pbcode[1] = romHeader->new_publisher_code[1];
+			pbcode[2] = '\0';
 			img_filename += '-';
-			img_filename.append(romHeader->new_publisher_code, ARRAY_SIZE(romHeader->new_publisher_code));
+			img_filename.append(pbcode, 2);
 		} else {
 			// Old publisher code.
-			char pbcode[16];
-			snprintf(pbcode, sizeof(pbcode), "-%02X", romHeader->old_publisher_code);
+			snprintf(pbcode, sizeof(pbcode), "%02X", romHeader->old_publisher_code);
+			img_filename += '-';
 			img_filename += pbcode;
 		}
 		if ((dmg_flags & DMG_REGION_MASK) == DMG_REGION_JP) {
@@ -1380,25 +1384,36 @@ int DMG::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
 		// Special cases for ROM images with identical titles.
 		struct DmgSpecialCase_t {
 			uint8_t flags;
-			char title[15];
+			char title[16];
+			char publisher[3];
 		};
 		static const DmgSpecialCase_t dmgSpecialCases[] = {
 			// Non-CGB; Non-JP
-			{DMG_CHECK_REGION | DMG_REGION_OTHER,	"POKEMON RED"},
-			{DMG_CHECK_REGION | DMG_REGION_OTHER,	"POKEMON BLUE"},
-			{DMG_CHECK_REGION | DMG_REGION_OTHER,	"TRACK MEET"},
+			{DMG_CHECK_REGION | DMG_REGION_OTHER,	"POKEMON RED", ""},
+			{DMG_CHECK_REGION | DMG_REGION_OTHER,	"POKEMON BLUE", ""},
+			{DMG_CHECK_REGION | DMG_REGION_OTHER,	"TRACK MEET", ""},
 
 			// Non-CGB; JP (Sachen)
 			// TODO: "TETRIS" ROMs have the same global checksum.
-			{DMG_CHECK_REGION | DMG_REGION_JP,	"GAME"},
+			{DMG_CHECK_REGION | DMG_REGION_JP,	"GAME", ""},
 
 			// CGB; Non-JP
-			{DMG_CHECK_REGION | DMG_REGION_OTHER | DMG_IS_CGB,	"ZELDA"},
+			{DMG_CHECK_REGION | DMG_REGION_OTHER | DMG_IS_CGB,	"BUGS BUNNY", ""},
+			{DMG_CHECK_REGION | DMG_REGION_OTHER | DMG_IS_CGB,	"COOL HAND", ""},
+			{DMG_CHECK_REGION | DMG_REGION_OTHER | DMG_IS_CGB,	"GB SMART CARD", ""},
+			{DMG_CHECK_REGION | DMG_REGION_OTHER | DMG_IS_CGB,	"HARVEST-MOON GB", ""},
+			{DMG_CHECK_REGION | DMG_REGION_OTHER | DMG_IS_CGB,	"SHADOWGATE CLAS", ""},
+			{DMG_CHECK_REGION | DMG_REGION_OTHER | DMG_IS_CGB,	"SHANGHAI POCKET", ""},
+			{DMG_CHECK_REGION | DMG_REGION_OTHER | DMG_IS_CGB,	"SYLVESTER", ""},
+			{DMG_CHECK_REGION | DMG_REGION_OTHER | DMG_IS_CGB,	"ZELDA", ""},
+
+			// CGB; Non-JP; differs in SGB mode
+			{DMG_CHECK_REGION | DMG_REGION_OTHER | DMG_IS_CGB,	"HARVEST-MOON GB", "01"},
 
 			// Non-CGB; no region check.
-			{0, "TOM AND JERRY"},
+			{0, "TOM AND JERRY", ""},
 
-			{0, ""}
+			{0, "", ""}
 		};
 		for (const DmgSpecialCase_t *p = dmgSpecialCases; p->title[0] != '\0'; p++) {
 			const uint8_t xor_flags = (p->flags ^ dmg_flags);
@@ -1420,8 +1435,11 @@ int DMG::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
 			// Check the title.
 			if (s_title == p->title) {
 				// Title matches.
-				append_cksum = true;
-				break;
+				if (p->publisher[0] == '\0' || !strcmp(pbcode, p->publisher)) {
+					// Publisher matches (or isn't being checked).
+					append_cksum = true;
+					break;
+				}
 			}
 		}
 	} else {
@@ -1437,6 +1455,18 @@ int DMG::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
 			// Loppi Puzzle Magazine
 			"B52J8N", "B53J8N", "B5IJ8N",
 			"B62J8N", "B63J8N", "B6IJ8N",
+
+			// Antz Racing (E) - different non-CGB error screens
+			"BAZP69",
+
+			// Gift (E) - different non-CGB error screens
+			"BGFP5T",
+
+			// Tomb Raider (UE) - different non-CGB error screens
+			"AT9E78",
+
+			// F-1 Racing Championship (E) - slightly different copyright text on CGB
+			"AEQP41",
 
 			""
 		};
