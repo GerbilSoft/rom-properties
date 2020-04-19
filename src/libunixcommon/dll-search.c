@@ -31,9 +31,7 @@ typedef enum {
 	RP_FE_KF5,
 	RP_FE_XFCE,
 	RP_FE_XFCE3,
-	RP_FE_GNOME,
-	RP_FE_MATE,
-	RP_FE_CINNAMON,
+	RP_FE_GNOME,	// also MATE and Cinnamon
 
 	RP_FE_MAX
 } RP_Frontend;
@@ -65,29 +63,17 @@ static const char *const RP_Extension_Path[RP_FE_MAX] = {
 #else
 	NULL,
 #endif
-#ifdef LibCajaExtension_EXTENSION_DIR
-	LibCajaExtension_EXTENSION_DIR "/rom-properties-mate.so",
-#else
-	NULL,
-#endif
-#ifdef LibNemoExtension_EXTENSION_DIR
-	LibNemoExtension_EXTENSION_DIR "/rom-properties-cinnamon.so",
-#else
-	NULL,
-#endif
 };
 
 // Plugin priority order.
 // - Index: Current desktop environment. (RP_Frontend)
 // - Value: Plugin to use. (RP_Frontend)
 static const uint8_t plugin_prio[RP_FE_MAX][RP_FE_MAX] = {
-	{RP_FE_KDE4, RP_FE_KF5, RP_FE_XFCE, RP_FE_XFCE3, RP_FE_GNOME, RP_FE_MATE, RP_FE_CINNAMON},	// RP_FE_KDE4
-	{RP_FE_KF5, RP_FE_KDE4, RP_FE_GNOME, RP_FE_XFCE, RP_FE_XFCE3, RP_FE_MATE, RP_FE_CINNAMON},	// RP_FE_KF5
-	{RP_FE_XFCE, RP_FE_XFCE3, RP_FE_MATE, RP_FE_CINNAMON, RP_FE_GNOME, RP_FE_KF5, RP_FE_KDE4},	// RP_FE_XFCE
-	{RP_FE_XFCE3, RP_FE_XFCE, RP_FE_MATE, RP_FE_CINNAMON, RP_FE_GNOME, RP_FE_KF5, RP_FE_KDE4},	// RP_FE_XFCE3
-	{RP_FE_GNOME, RP_FE_MATE, RP_FE_CINNAMON, RP_FE_XFCE3, RP_FE_XFCE, RP_FE_KF5, RP_FE_KDE4},	// RP_FE_GNOME
-	{RP_FE_MATE, RP_FE_CINNAMON, RP_FE_GNOME, RP_FE_XFCE3, RP_FE_XFCE, RP_FE_KF5, RP_FE_KDE4},	// RP_FE_MATE
-	{RP_FE_CINNAMON, RP_FE_MATE, RP_FE_GNOME, RP_FE_XFCE3, RP_FE_XFCE, RP_FE_KF5, RP_FE_KDE4},	// RP_FE_CINNAMON
+	{RP_FE_KDE4, RP_FE_KF5, RP_FE_XFCE, RP_FE_XFCE3, RP_FE_GNOME},	// RP_FE_KDE4
+	{RP_FE_KF5, RP_FE_KDE4, RP_FE_GNOME, RP_FE_XFCE, RP_FE_XFCE3},	// RP_FE_KF5
+	{RP_FE_XFCE, RP_FE_XFCE3, RP_FE_GNOME, RP_FE_KF5, RP_FE_KDE4},	// RP_FE_XFCE
+	{RP_FE_XFCE3, RP_FE_XFCE, RP_FE_GNOME, RP_FE_KF5, RP_FE_KDE4},	// RP_FE_XFCE3
+	{RP_FE_GNOME, RP_FE_XFCE3, RP_FE_XFCE, RP_FE_KF5, RP_FE_KDE4},	// RP_FE_GNOME
 };
 
 /**
@@ -146,25 +132,15 @@ static RP_Frontend walk_proc_tree(void)
 						break;
 					}
 				} else if ((len == 11 && !strncmp(s_value, "gnome-panel", 11)) ||
-					   (len == 13 && !strncmp(s_value, "gnome-session", 13)))
+				           (len == 13 && !strncmp(s_value, "gnome-session", 13)) ||
+				           (len == 10 && !strncmp(s_value, "mate-panel", 10)) ||
+				           (len == 12 && !strncmp(s_value, "mate-session", 12)) ||
+				           (len == 14 && !strncmp(s_value, "cinnamon-panel", 14)) ||
+				           (len == 16 && !strncmp(s_value, "cinnamon-session", 16)))
 				{
-					// GNOME session.
+					// GNOME, MATE, or Cinnamon session.
+					// TODO: Verify the Cinnamon process names.
 					ret = RP_FE_GNOME;
-					ppid = 0;
-					break;
-				} else if ((len == 10 && !strncmp(s_value, "mate-panel", 10)) ||
-					   (len == 12 && !strncmp(s_value, "mate-session", 12)))
-				{
-					// MATE session.
-					ret = RP_FE_MATE;
-					ppid = 0;
-					break;
-				} else if ((len == 14 && !strncmp(s_value, "cinnamon-panel", 14)) ||
-					   (len == 16 && !strncmp(s_value, "cinnamon-session", 16)))
-				{
-					// Cinnamon session.
-					// TODO: Verify the process names.
-					ret = RP_FE_CINNAMON;
 					ppid = 0;
 					break;
 				}
@@ -214,23 +190,18 @@ static inline RP_Frontend check_xdg_desktop_name(const char *name)
 		}
 		return ret;
 	} else if (!strcasecmp(name, "GNOME") ||
-		   !strcasecmp(name, "Unity"))
+	           !strcasecmp(name, "Unity") ||
+	           !strcasecmp(name, "MATE") ||
+	           !strcasecmp(name, "X-Cinnamon") ||
+	           !strcasecmp(name, "Cinnamon"))
 	{
-		// GTK3-based desktop environment.
+		// GTK3-based desktop environment. (GNOME or GNOME-like)
 		return RP_FE_GNOME;
 	} else if (!strcasecmp(name, "XFCE") ||
 		   !strcasecmp(name, "LXDE"))
 	{
-		// This *may* be GTK3, but it may be GTK2.
+		// This *might* be GTK3 if it's new enough.
 		return RP_FE_XFCE3;
-	} else if (!strcasecmp(name, "MATE")) {
-		// MATE desktop.
-		return RP_FE_MATE;
-	} else if (!strcasecmp(name, "X-Cinnamon") ||
-		   !strcasecmp(name, "Cinnamon"))
-	{
-		// Cinnamon desktop.
-		return RP_FE_CINNAMON;
 	}
 
 	// NOTE: "KDE4", "KDE5", and "KF5" are not actually used.
@@ -323,7 +294,7 @@ int rp_dll_search(const char *symname, void **ppDll, void **ppfn, PFN_RP_DLL_DEB
 		static const char *const de_name_tbl[] = {
 			"KDE4", "KF5",
 			"XFCE (GTK+ 2.x)", "XFCE (GTK+ 3.x)",
-			"GNOME", "MATE", "Cinnamon"
+			"GNOME"
 		};
 		static_assert(sizeof(de_name_tbl)/sizeof(de_name_tbl[0]) == RP_FE_MAX,
 			"de_name_tbl[] needs to be updated.");

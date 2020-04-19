@@ -24,12 +24,6 @@
 /* libnautilus-extension extensions path. */
 #cmakedefine LibNautilusExtension_EXTENSION_DIR "@LibNautilusExtension_EXTENSION_DIR@"
 
-/* libcaja-extension extensions path. */
-#cmakedefine LibCajaExtension_EXTENSION_DIR "@LibCajaExtension_EXTENSION_DIR@"
-
-/* libnemo-extension extensions path. */
-#cmakedefine LibNemoExtension_EXTENSION_DIR "@LibNemoExtension_EXTENSION_DIR@"
-
 /* Define to 1 if you have the `getpwuid_r' function. */
 #cmakedefine HAVE_GETPWUID_R 1
 
