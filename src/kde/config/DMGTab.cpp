@@ -200,7 +200,6 @@ void DMGTab::save(QSettings *pSettings)
 void DMGTab::comboBox_changed(void)
 {
 	// Configuration has been changed.
-	printf("QUACK\n");
 	Q_D(DMGTab);
 	d->changed = true;
 	emit modified();
