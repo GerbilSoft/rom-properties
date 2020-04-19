@@ -83,6 +83,9 @@ class ConfigPrivate : public ConfReaderPrivate
 		bool downloadHighResScans;
 		bool storeFileOriginInfo;
 
+		// DMG title screen mode. [index is ROM type]
+		Config::DMG_TitleScreen_Mode dmgTSMode[Config::DMG_TitleScreen_Mode::DMG_TS_MAX];
+
 		// Other options.
 		bool showDangerousPermissionsOverlayIcon;
 		bool enableThumbnailOnNetworkFS;
@@ -126,6 +129,7 @@ ConfigPrivate::ConfigPrivate()
 	, enableThumbnailOnNetworkFS(false)
 {
 	// NOTE: Configuration is also initialized in the reset() function.
+	memset(dmgTSMode, 0, sizeof(dmgTSMode));
 }
 
 /**
@@ -149,6 +153,12 @@ void ConfigPrivate::reset(void)
 	useIntIconForSmallSizes = true;
 	downloadHighResScans = true;
 	storeFileOriginInfo = true;
+
+	// DMG title screen mode.
+	dmgTSMode[Config::DMG_TitleScreen_Mode::DMG_TS_DMG] = Config::DMG_TitleScreen_Mode::DMG_TS_DMG;
+	dmgTSMode[Config::DMG_TitleScreen_Mode::DMG_TS_SGB] = Config::DMG_TitleScreen_Mode::DMG_TS_SGB;
+	dmgTSMode[Config::DMG_TitleScreen_Mode::DMG_TS_CGB] = Config::DMG_TitleScreen_Mode::DMG_TS_CGB;
+
 	// Overlay icon
 	showDangerousPermissionsOverlayIcon = true;
 	// Enable thumbnail and metadata on network FS
@@ -203,6 +213,35 @@ int ConfigPrivate::processConfigLine(const char *section, const char *name, cons
 		} else {
 			// TODO: Show a warning or something?
 		}
+	} else if (!strcasecmp(section, "DMGTitleScreenMode")) {
+		// DMG title screen mode.
+		Config::DMG_TitleScreen_Mode dmg_key, dmg_value;
+
+		// Parse the key.
+		if (!strcasecmp(name, "DMG")) {
+			dmg_key = Config::DMG_TitleScreen_Mode::DMG_TS_DMG;
+		} else if (!strcasecmp(name, "SGB")) {
+			dmg_key = Config::DMG_TitleScreen_Mode::DMG_TS_SGB;
+		} else if (!strcasecmp(name, "CGB")) {
+			dmg_key = Config::DMG_TitleScreen_Mode::DMG_TS_CGB;
+		} else {
+			// Invalid key.
+			return 1;
+		}
+
+		// Parse the value.
+		if (!strcasecmp(value, "DMG")) {
+			dmg_value = Config::DMG_TitleScreen_Mode::DMG_TS_DMG;
+		} else if (!strcasecmp(value, "SGB")) {
+			dmg_value = Config::DMG_TitleScreen_Mode::DMG_TS_SGB;
+		} else if (!strcasecmp(value, "CGB")) {
+			dmg_value = Config::DMG_TitleScreen_Mode::DMG_TS_CGB;
+		} else {
+			// Invalid value.
+			return 1;
+		}
+
+		dmgTSMode[dmg_key] = dmg_value;
 	} else if (!strcasecmp(section, "Options")) {
 		// Options.
 		bool *param;
@@ -397,7 +436,7 @@ Config *Config::instance(void)
 	return &ConfigPrivate::instance;
 }
 
-/** Image types. **/
+/** Image types **/
 
 /**
  * Get the image type priority data for the specified class name.
@@ -469,7 +508,7 @@ void Config::getDefImgTypePrio(ImgTypePrio_t *imgTypePrio) const
 	}
 }
 
-/** Download options. **/
+/** Download options **/
 
 /**
  * Should we download images from external databases?
@@ -515,6 +554,30 @@ bool Config::storeFileOriginInfo(void) const
 	RP_D(const Config);
 	return d->storeFileOriginInfo;
 }
+
+/** DMG title screen mode **/
+
+/**
+ * Which title screen should we use for the specified DMG ROM type?
+ * @param romType DMG ROM type.
+ * @return Title screen to use.
+ */
+Config::DMG_TitleScreen_Mode Config::dmgTitleScreenMode(DMG_TitleScreen_Mode romType) const
+{
+	assert(romType >= DMG_TitleScreen_Mode::DMG_TS_DMG);
+	assert(romType <  DMG_TitleScreen_Mode::DMG_TS_MAX);
+	if (romType <  DMG_TitleScreen_Mode::DMG_TS_DMG ||
+	    romType >= DMG_TitleScreen_Mode::DMG_TS_MAX)
+	{
+		// Invalid ROM type. Return DMG.
+		return DMG_TitleScreen_Mode::DMG_TS_DMG;
+	}
+
+	RP_D(const Config);
+	return d->dmgTSMode[romType];
+}
+
+/** Other options **/
 
 /**
  * Show an overlay icon for "dangerous" permissions?
