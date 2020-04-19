@@ -1410,6 +1410,9 @@ int DMG::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
 			// CGB; Non-JP; differs in SGB mode
 			{DMG_CHECK_REGION | DMG_REGION_OTHER | DMG_IS_CGB,	"HARVEST-MOON GB", "01"},
 
+			// Non-CGB, Non-JP; TM vs. (R); different CGB colorization
+			{DMG_CHECK_REGION | DMG_REGION_OTHER,	"GALAGA&GALAXIAN", "01"},
+
 			// Non-CGB; no region check.
 			{0, "TOM AND JERRY", ""},
 
