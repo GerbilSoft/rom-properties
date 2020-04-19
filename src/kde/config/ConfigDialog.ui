@@ -36,7 +36,7 @@
      </widget>
      <widget class="AboutTab" name="tabAbout">
       <attribute name="title">
-       <string>&amp;About</string>
+       <string>About</string>
       </attribute>
      </widget>
     </widget>
