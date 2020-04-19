@@ -75,8 +75,6 @@ IF(GLib2_FOUND AND GObject2_FOUND)
 		SET(BUILD_GTK3 OFF CACHE INTERNAL "Check for GTK+ 3.x." FORCE)
 		SET(BUILD_GNOME OFF CACHE INTERNAL "Build the GNOME (GTK+ 3.x) plugin." FORCE)
 		SET(BUILD_XFCE3 OFF CACHE INTERNAL "Build the XFCE (GTK+ 3.x) plugin. (Thunar 1.8 and later)" FORCE)
-		SET(BUILD_MATE OFF CACHE INTERNAL "Build the MATE (GTK+ 3.x) plugin." FORCE)
-		SET(BUILD_CINNAMON OFF CACHE INTERNAL "Build the Cinnamon (GTK+ 3.x) plugin." FORCE)
 	ENDIF(NOT Cairo_FOUND)
 ELSE(GLib2_FOUND AND GObject2_FOUND)
 	# Cannot build any GTK+ frontends.
@@ -85,8 +83,6 @@ ELSE(GLib2_FOUND AND GObject2_FOUND)
 	SET(BUILD_XFCE OFF CACHE INTERNAL "Build the XFCE (GTK+ 2.x) plugin. (Thunar 1.7 and earlier)" FORCE)
 	SET(BUILD_XFCE3 OFF CACHE INTERNAL "Build the XFCE (GTK+ 3.x) plugin. (Thunar 1.8 and later)" FORCE)
 	SET(BUILD_GNOME OFF CACHE INTERNAL "Build the GNOME (GTK+ 3.x) plugin." FORCE)
-	SET(BUILD_MATE OFF CACHE INTERNAL "Build the MATE (GTK+ 3.x) plugin." FORCE)
-	SET(BUILD_CINNAMON OFF CACHE INTERNAL "Build the Cinnamon (GTK+ 3.x) plugin." FORCE)
 ENDIF(GLib2_FOUND AND GObject2_FOUND)
 
 # Build GTK+ 2.x frontends.
@@ -111,10 +107,8 @@ IF(BUILD_GTK3)
 	IF(GTK3_FOUND)
 		ADD_SUBDIRECTORY(gnome)
 		ADD_SUBDIRECTORY(xfce3)
-		ADD_SUBDIRECTORY(mate)
-		ADD_SUBDIRECTORY(cinnamon)
 
-		IF(BUILD_GNOME OR BUILD_MATE OR BUILD_CINNAMON)
+		IF(BUILD_GNOME)
 			# Process the .thumbnailer file.
 			INCLUDE(DirInstallPaths)
 			CONFIGURE_FILE(rom-properties.thumbnailer.in rom-properties.thumbnailer)
@@ -122,20 +116,16 @@ IF(BUILD_GTK3)
 				DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/thumbnailers"
 				COMPONENT "plugin"
 				)
-		ENDIF(BUILD_GNOME OR BUILD_MATE OR BUILD_CINNAMON)
+		ENDIF(BUILD_GNOME)
 	ELSE(GTK3_FOUND)
 		SET(BUILD_GTK3 OFF CACHE INTERNAL "Check for GTK+ 3.x." FORCE)
 		SET(BUILD_GNOME OFF CACHE INTERNAL "Build the GNOME (GTK+ 3.x) plugin." FORCE)
 		SET(BUILD_XFCE3 OFF CACHE INTERNAL "Build the XFCE (GTK+ 3.x) plugin. (Thunar 1.8 and later)" FORCE)
-		SET(BUILD_MATE OFF CACHE INTERNAL "Build the MATE (GTK+ 3.x) plugin." FORCE)
-		SET(BUILD_CINNAMON OFF CACHE INTERNAL "Build the Cinnamon (GTK+ 3.x) plugin." FORCE)
 	ENDIF(GTK3_FOUND)
 ELSE(BUILD_GTK3)
 	# No GTK3 builds.
 	SET(BUILD_GNOME OFF CACHE INTERNAL "Build the GNOME (GTK+ 3.x) plugin." FORCE)
 	SET(BUILD_XFCE3 OFF CACHE INTERNAL "Build the XFCE (GTK+ 3.x) plugin. (Thunar 1.8 and later)" FORCE)
-	SET(BUILD_MATE OFF CACHE INTERNAL "Build the MATE (GTK+ 3.x) plugin." FORCE)
-	SET(BUILD_CINNAMON OFF CACHE INTERNAL "Build the Cinnamon (GTK+ 3.x) plugin." FORCE)
 ENDIF(BUILD_GTK3)
 
 # Build the D-Bus thumbnailer if building an XFCE plugin.
