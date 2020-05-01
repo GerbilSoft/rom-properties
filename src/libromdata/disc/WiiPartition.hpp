@@ -147,7 +147,7 @@ class WiiPartition : public GcnPartition
 			// Retail
 			Key_Rvl_Common,
 			Key_Rvl_Korean,
-			Key_Wup_vWii_Common,
+			Key_Wup_Starbuck_vWii_Common,
 			Key_Rvl_SD_AES,
 			Key_Rvl_SD_IV,
 			Key_Rvl_SD_MD5,

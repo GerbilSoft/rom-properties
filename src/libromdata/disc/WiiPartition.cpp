@@ -115,7 +115,7 @@ const char *const WiiPartitionPrivate::EncryptionKeyNames[WiiPartition::Key_Max]
 	// Retail
 	"rvl-common",
 	"rvl-korean",
-	"wup-vwii-common",
+	"wup-starbuck-vwii-common",
 	"rvl-sd-aes",
 	"rvl-sd-iv",
 	"rvl-sd-md5",
@@ -133,7 +133,7 @@ const uint8_t WiiPartitionPrivate::EncryptionKeyVerifyData[WiiPartition::Key_Max
 	// rvl-korean
 	{0x98,0x1C,0xD4,0x51,0x17,0xF2,0x23,0xB6,
 	 0xC8,0x84,0x4A,0x97,0xA6,0x93,0xF2,0xE3},
-	// wup-vwii-common
+	// wup-starbuck-vwii-common
 	{0x04,0xF1,0x33,0x3F,0xF8,0x05,0x7B,0x8F,
 	 0xA7,0xF1,0xED,0x6E,0xAC,0x23,0x33,0xFA},
 	// rvl-sd-aes
@@ -284,7 +284,7 @@ KeyManager::VerifyResult WiiPartitionPrivate::initDecryption(void)
 			break;
 		case WiiPartition::ENCKEY_VWII:
 			// vWii common key.
-			keyIdx = WiiPartition::Key_Wup_vWii_Common;
+			keyIdx = WiiPartition::Key_Wup_Starbuck_vWii_Common;
 			break;
 		case WiiPartition::ENCKEY_DEBUG:
 			// Debug key. (RVT-R)

@@ -1186,7 +1186,7 @@ KeyStoreUI::ImportReturn KeyStoreUI::importWiiUOtpBin(const char *filename)
 		{0x014, WiiPartition::Key_Rvl_Common},
 		{0x014, WiiPartition::Key_Rvt_Debug},
 		{0x348, WiiPartition::Key_Rvl_Korean},
-		{0x0D0, WiiPartition::Key_Wup_vWii_Common},
+		{0x0D0, WiiPartition::Key_Wup_Starbuck_vWii_Common},
 
 		// TODO: Import Wii U keys.
 #if 0
