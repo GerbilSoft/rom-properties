@@ -552,7 +552,8 @@ const char *WiiWAD::systemName(unsigned int type) const
 const char *const *WiiWAD::supportedFileExtensions_static(void)
 {
 	static const char *const exts[] = {
-		".wad",
+		".wad",		// Nintendo WAD Format
+		".bwf",		// BroadOn WAD Format
 
 		nullptr
 	};
@@ -697,16 +698,30 @@ int WiiWAD::loadFieldData(void)
 	string s_wadType;
 	switch (d->wadType) {
 		case WiiWADPrivate::WAD_STANDARD: {
-			char buf[4];
-			memcpy(buf, &d->wadHeader.wad.type, sizeof(buf));
-			buf[2] = '\0';
-			buf[3] = '\0';
-			s_wadType = string(buf, 2);
+			switch (be32_to_cpu(d->wadHeader.wad.type)) {
+				case WII_WAD_TYPE_Is:
+					s_wadType = "Installable";
+					break;
+				case WII_WAD_TYPE_ib:
+					s_wadType = "Boot2";
+					break;
+				case WII_WAD_TYPE_Bk:
+					s_wadType = "Backup";
+					break;
+				default: {
+					char buf[4];
+					memcpy(buf, &d->wadHeader.wad.type, sizeof(buf));
+					buf[2] = '\0';
+					buf[3] = '\0';
+					s_wadType = string(buf, 2);
+					break;
+				}
+			}
 			break;
 		};
 
 		case WiiWADPrivate::WAD_EARLY:
-			s_wadType = C_("WiiWAD", "Early Devkit");
+			s_wadType = C_("WiiWAD", "BroadOn WAD Format");
 			break;
 
 		default:
