@@ -16,6 +16,8 @@
 * Bug fixes:
   * WiiWAD: Fix DLC icons no longer working after updating CBCReader to update
     its internal position correctly, which was needed for Xbox 360 XDBF files.
+  * RP_ExtractImage: Fix crash with dangling shortcut files. This bug was
+    reported by @Midou36O.
 
 * Other changes:
   * Split file handling and CPU/byteorder code from librpbase into two

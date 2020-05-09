@@ -118,7 +118,9 @@ IFACEMETHODIMP RP_ExtractImage::Load(LPCOLESTR pszFileName, DWORD dwMode)
 	// Attempt to open the ROM file.
 	RpFile *const file = new RpFile(d->filename, RpFile::FM_OPEN_READ_GZ);
 	if (!file->isOpen()) {
+		// Unable to open the file.
 		file->unref();
+		return E_FAIL;
 	}
 
 	// Get the appropriate RomData class for this ROM.
