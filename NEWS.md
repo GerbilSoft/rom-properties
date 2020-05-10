@@ -18,6 +18,8 @@
     its internal position correctly, which was needed for Xbox 360 XDBF files.
   * RP_ExtractImage: Fix crash with dangling shortcut files. This bug was
     reported by @Midou36O.
+  * Nintendo3DS: Show the issuer for CCI images. This was shown for CIAs, but
+    we forgot to add it for CCI.
 
 * Other changes:
   * Split file handling and CPU/byteorder code from librpbase into two

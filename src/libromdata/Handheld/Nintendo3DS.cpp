@@ -930,8 +930,8 @@ void Nintendo3DSPrivate::addTitleIdAndProductCodeFields(bool showContentType)
 		fields->addField_string(C_("Nintendo3DS", "Content Type"),
 			(content_type ? content_type : C_("RomData", "Unknown")));
 
-		// Also show encryption type.
 #ifdef ENABLE_DECRYPTION
+		// Also show encryption type.
 		fields->addField_string(C_("Nintendo3DS", "Issuer"),
 			ncch->isDebug()
 				? C_("Nintendo3DS", "Debug")
@@ -2189,6 +2189,17 @@ int Nintendo3DS::loadFieldData(void)
 				RomFields::FB_DEC, 2);
 
 			// TODO: Show "title version"?
+
+#ifdef ENABLE_DECRYPTION
+			// Also show encryption type.
+			// TODO: Show a warning if `ncch` is NULL?
+			if (ncch) {
+				d->fields->addField_string(C_("Nintendo3DS", "Issuer"),
+					ncch->isDebug()
+						? C_("Nintendo3DS", "Debug")
+						: C_("Nintendo3DS", "Retail"));
+			}
+#endif /* ENABLE_DECRYPTION */
 		}
 
 		// Partition table.
