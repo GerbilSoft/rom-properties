@@ -20,6 +20,9 @@
 * Other changes:
   * Split file handling and CPU/byteorder code from librpbase into two
     libraries: librpfile and librpcpu.
+  * The MATE and Cinnamon plugins have been merged into the GNOME plugin.
+    All three were effectively the same except for some function names,
+    which can be determined at runtime.
 
 ## v1.5 (released 2020/03/13)
 
