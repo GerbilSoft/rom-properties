@@ -1,6 +1,6 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (GNOME)                            *
- * rom-properties-provider.cpp: Nautilus Provider Definition.              *
+ * rom-properties-provider.cpp: Nautilus (and forks) Provider Definition.  *
  *                                                                         *
  * Copyright (c) 2017-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
@@ -17,6 +17,7 @@
 
 #include "stdafx.h"
 #include "rom-properties-provider.hpp"
+#include "rom-properties-plugin.h"
 
 // librpbase, librpfile
 using namespace LibRpBase;
@@ -29,35 +30,22 @@ using LibRomData::RomDataFactory;
 
 #include "../RomDataView.hpp"
 
-#if defined(RP_UI_GTK3_GNOME)
-// GNOME 3 desktop
-#elif defined(RP_UI_GTK3_MATE)
-// MATE desktop (v1.18.0+; GTK+ 3.x)
-typedef CajaPropertyPageProviderIface			NautilusPropertyPageProviderIface;
-typedef CajaPropertyPageProvider			NautilusPropertyPageProvider;
-typedef CajaPropertyPage				NautilusPropertyPage;
-# define NAUTILUS_TYPE_PROPERTY_PAGE_PROVIDER		CAJA_TYPE_PROPERTY_PAGE_PROVIDER
-# define NAUTILUS_FILE_INFO(obj)			CAJA_FILE_INFO(obj)
-# define NAUTILUS_IS_FILE_INFO(obj)			CAJA_IS_FILE_INFO(obj)
-# define nautilus_file_info_get_uri(file)		caja_file_info_get_uri(file)
-# define nautilus_property_page_new(name, label, page)	caja_property_page_new((name), (label), (page))
-#elif defined(RP_UI_GTK3_CINNAMON)
-// Cinnamon desktop
-typedef NemoPropertyPageProviderIface			NautilusPropertyPageProviderIface;
-typedef NemoPropertyPageProvider			NautilusPropertyPageProvider;
-typedef NemoPropertyPage				NautilusPropertyPage;
-# define NAUTILUS_TYPE_PROPERTY_PAGE_PROVIDER		NEMO_TYPE_PROPERTY_PAGE_PROVIDER
-# define NAUTILUS_FILE_INFO(obj)			NEMO_FILE_INFO(obj)
-# define NAUTILUS_IS_FILE_INFO(obj)			NEMO_IS_FILE_INFO(obj)
-# define nautilus_file_info_get_uri(file)		nemo_file_info_get_uri(file)
-# define nautilus_property_page_new(name, label, page)	nemo_property_page_new((name), (label), (page))
-#else
-# error GTK3 desktop environment not set and/or supported.
-#endif
+// NautilusPropertyPageProviderIface definition.
+// TODO: Make sure it's identical to caja and nemo.
+// TODO: Rename from Iface to Interface? (latest Nautilus does this)
+extern "C"
+struct _NautilusPropertyPageProviderIface {
+	GTypeInterface g_iface;
+
+	GList *(*get_pages) (NautilusPropertyPageProvider *provider,
+	                     GList                        *files);
+};
 
 static void   rom_properties_provider_page_provider_init	(NautilusPropertyPageProviderIface	*iface);
 static GList *rom_properties_provider_get_pages			(NautilusPropertyPageProvider		*provider,
 								 GList					*files);
+
+static gboolean rom_properties_get_file_supported		(NautilusFileInfo *info);
 
 struct _RomPropertiesProviderClass {
 	GObjectClass __parent__;
@@ -164,7 +152,7 @@ rom_properties_provider_get_pages(NautilusPropertyPageProvider *provider, GList 
 		const char *const tabTitle = C_("RomDataView", "ROM Properties");
 
 		// Create the NautilusPropertyPage.
-		NautilusPropertyPage *page = nautilus_property_page_new(
+		NautilusPropertyPage *const page = nautilus_property_page_new(
 			"RomPropertiesPage::property_page",
 			gtk_label_new(tabTitle), romDataView);
 
@@ -175,7 +163,7 @@ rom_properties_provider_get_pages(NautilusPropertyPageProvider *provider, GList 
 	return pages;
 }
 
-gboolean
+static gboolean
 rom_properties_get_file_supported(NautilusFileInfo *info)
 {
 	gboolean supported = false;

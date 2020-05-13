@@ -8,25 +8,23 @@ FIND_PACKAGE(Cairo ${REQUIRE_GNOME})
 # GTK3 minimum is 3.10.0. (gtk_image_set_from_surface)
 FIND_PACKAGE(GTK3 3.10.0 ${REQUIRE_GNOME})
 IF(GLib2_FOUND AND GObject2_FOUND AND GIO_FOUND AND Cairo_FOUND AND GTK3_FOUND)
-	# Find the Nautilus extension library.
-	# TODO: Minimum version, and ensure it's 3, not 4?
+	# We're not going to have an explicit dependency on libnautilus-extension.
+	# It will be dlopen()'d at runtime based on which
+	# initialization function is called.
+	# FIXME: Need to find extension dirs for Nautilus, Caja, and Nemo.
+
+	# Get the LibNautilusExtension directory.
+	# TODO: Also Caja (MATE) and Nemo (Cinnamon), with fallbacks if not found.
+	# TODO: For Caja and Nemo, we need to create symlinks to the GNOME library.
 	FIND_PACKAGE(LibNautilusExtension ${REQUIRE_GNOME} 3.0.0)
-	IF(LibNautilusExtension_FOUND)
-		# Check if we have nautilus-extension.h. (added in nautilus-3.30)
-		SET(OLD_CMAKE_REQUIRED_INCLUDES ${CMAKE_REQUIRED_INCLUDES})
-		LIST(APPEND CMAKE_REQUIRED_INCLUDES ${LibNautilusExtension_INCLUDE_DIRS})
-		CHECK_INCLUDE_FILES("nautilus-extension.h" HAVE_NAUTILUS_EXTENSION_H)
-		SET(CMAKE_REQUIRED_INCLUDES ${OLD_CMAKE_REQUIRED_INCLUDES})
-		UNSET(OLD_CMAKE_REQUIRED_INCLUDES)
-	ELSE(LibNautilusExtension_FOUND)
-		# Nautilus extension library was not found.
-		# Disable the GNOME frontend.
-		SET(BUILD_GNOME OFF CACHE INTERNAL "Build the GNOME (GTK+ 3.x) plugin." FORCE)
-	ENDIF(LibNautilusExtension_FOUND)
+	IF(NOT LibNautilusExtension_FOUND)
+		# TODO: Use a default directory, but warn the user.
+		SET(BUILD_GNOME OFF CACHE INTERNAL "Build the GNOME (GTK+ 3.x) plugin. (Also MATE and Cinnamon)" FORCE)
+	ENDIF(NOT LibNautilusExtension_FOUND)
 ELSE(GLib2_FOUND AND GObject2_FOUND AND GIO_FOUND AND Cairo_FOUND AND GTK3_FOUND)
 	# GTK+ 3.x (or required dependencies) were not found.
 	# Disable the GNOME frontend.
-	SET(BUILD_GNOME OFF CACHE INTERNAL "Build the GNOME (GTK+ 3.x) plugin." FORCE)
+	SET(BUILD_GNOME OFF CACHE INTERNAL "Build the GNOME (GTK+ 3.x) plugin. (Also MATE and Cinnamon)" FORCE)
 ENDIF(GLib2_FOUND AND GObject2_FOUND AND GIO_FOUND AND Cairo_FOUND AND GTK3_FOUND)
 
 # Sources and headers. (GTK+ common)
@@ -110,9 +108,14 @@ IF(BUILD_GNOME)
 	IF(ENABLE_NLS)
 		TARGET_LINK_LIBRARIES(rom-properties-gnome PRIVATE i18n)
 	ENDIF(ENABLE_NLS)
-	TARGET_LINK_LIBRARIES(rom-properties-gnome PUBLIC Gnome::libnautilus-extension)
 	TARGET_LINK_LIBRARIES(rom-properties-gnome PRIVATE Cairo::cairo)
 	TARGET_LINK_LIBRARIES(rom-properties-gnome PUBLIC Gtk3::gtk3 GLib2::gio GLib2::gobject GLib2::glib)
+
+	# Link in libdl if it's required for dlopen().
+	IF(CMAKE_DL_LIBS)
+		TARGET_LINK_LIBRARIES(rom-properties-gnome PRIVATE ${CMAKE_DL_LIBS})
+	ENDIF(CMAKE_DL_LIBS)
+
 	TARGET_COMPILE_DEFINITIONS(rom-properties-gnome
 		PRIVATE RP_UI_GTK3_GNOME
 		)
