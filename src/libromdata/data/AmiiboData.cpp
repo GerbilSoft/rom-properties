@@ -1042,7 +1042,7 @@ const AmiiboDataPrivate::char_id_t AmiiboDataPrivate::char_ids[] = {
 	AMIIBO_CHAR_ID_VAR(0x05C0, "Samus", metroid_samus_variants),
 	AMIIBO_CHAR_ID_ONE(0x05C1, "Metroid"),
 	AMIIBO_CHAR_ID_ONE(0x05C2, "Ridley"),
-	//AMIIBO_CHAR_ID_ONE(0x05C3, "Dark Samus"),
+	AMIIBO_CHAR_ID_ONE(0x05C3, "Dark Samus"),
 
 	// F-Zero (character series = 0x060)
 	AMIIBO_CHAR_ID_ONE(0x0600, "Captain Falcon"),
@@ -1190,7 +1190,7 @@ const AmiiboDataPrivate::char_id_t AmiiboDataPrivate::char_ids[] = {
 
 	// Castlevania (character series = 0x37C)
 	AMIIBO_CHAR_ID_ONE(0x37C0, "Simon"),
-	//AMIIBO_CHAR_ID_ONE(0x37C1, "Richter"),
+	AMIIBO_CHAR_ID_ONE(0x37C1, "Richter"),
 
 	// Jikkyou Powerful Pro Baseball (character series = 0x380)
 	// FIXME: All of these have character variant = 0x01.
@@ -2222,8 +2222,8 @@ const AmiiboDataPrivate::amiibo_id_t AmiiboDataPrivate::amiibo_ids[] = {
 	{ 65, 11, "Wolf"},			// 0x037E
 	{ 64, 11, "Ridley"},			// 0x037F
 
-	// Unused [0x0380]
-	{  0, 0, nullptr},			// 0x0380
+	// SSBU: Wave 12 [0x0380]
+	{ 81, 13, "Dark Samus"},		// 0x0380
 
 	// SSBU: Wave 12 [0x0381]
 	{ 67, 12, "Ice Climbers"},		// 0x0381
@@ -2241,9 +2241,7 @@ const AmiiboDataPrivate::amiibo_id_t AmiiboDataPrivate::amiibo_ids[] = {
 	{ 72, 13, "Ken"},			// 0x0389
 	{ 75, 13, "Snake"},			// 0x038A
 	{ 78, 13, "Simon"},			// 0x038B
-
-	// Unused [0x038C]
-	{  0, 0, nullptr},			// 0x038C
+	{ 82, 13, "Richter"},			// 0x038C
 
 	// SSBU: Wave 12 [0x038D]
 	{ 68, 12, "Piranha Plant"},		// 0x038D
