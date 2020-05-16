@@ -24,9 +24,9 @@
        <string>&amp;Image Types</string>
       </attribute>
      </widget>
-     <widget class="DMGTab" name="tabDMG">
+     <widget class="SystemsTab" name="tabSystems">
       <attribute name="title">
-       <string>&amp;Game Boy</string>
+       <string>&amp;Systems</string>
       </attribute>
      </widget>
      <widget class="OptionsTab" name="tabOptions">
@@ -85,9 +85,9 @@
    <container>1</container>
   </customwidget>
   <customwidget>
-   <class>DMGTab</class>
+   <class>SystemsTab</class>
    <extends>QWidget</extends>
-   <header>config/DMGTab.hpp</header>
+   <header>config/SystemsTab.hpp</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>DMGTab</class>
- <widget class="QWidget" name="DMGTab">
+ <class>SystemsTab</class>
+ <widget class="QWidget" name="SystemsTab">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -147,7 +147,7 @@
   <connection>
    <sender>cboDMG</sender>
    <signal>currentIndexChanged(int)</signal>
-   <receiver>DMGTab</receiver>
+   <receiver>SystemsTab</receiver>
    <slot>comboBox_changed()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -163,7 +163,7 @@
   <connection>
    <sender>cboSGB</sender>
    <signal>currentIndexChanged(int)</signal>
-   <receiver>DMGTab</receiver>
+   <receiver>SystemsTab</receiver>
    <slot>comboBox_changed()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -179,7 +179,7 @@
   <connection>
    <sender>cboCGB</sender>
    <signal>currentIndexChanged(int)</signal>
-   <receiver>DMGTab</receiver>
+   <receiver>SystemsTab</receiver>
    <slot>comboBox_changed()</slot>
    <hints>
     <hint type="sourcelabel">

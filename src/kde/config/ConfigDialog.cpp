@@ -160,7 +160,7 @@ ConfigDialog::ConfigDialog(QWidget *parent)
 	// NOTE: Qt Designer doesn't want to let us connect
 	// signals from the QTabWidget child widgets.
 	connect(d->ui.tabImageTypes, SIGNAL(modified()), this, SLOT(tabModified()));
-	connect(d->ui.tabDMG, SIGNAL(modified()), this, SLOT(tabModified()));
+	connect(d->ui.tabSystems, SIGNAL(modified()), this, SLOT(tabModified()));
 	connect(d->ui.tabOptions, SIGNAL(modified()), this, SLOT(tabModified()));
 #ifdef ENABLE_DECRYPTION
 	connect(d->tabKeyManager, SIGNAL(modified()), this, SLOT(tabModified()));
@@ -290,7 +290,7 @@ void ConfigDialog::apply(void)
 	// Save all tabs.
 	Q_D(ConfigDialog);
 	d->ui.tabImageTypes->save(&settings);
-	d->ui.tabDMG->save(&settings);
+	d->ui.tabSystems->save(&settings);
 	d->ui.tabOptions->save(&settings);
 
 #ifdef ENABLE_DECRYPTION
@@ -325,7 +325,7 @@ void ConfigDialog::reset(void)
 	// Reset all tabs.
 	Q_D(ConfigDialog);
 	d->ui.tabImageTypes->reset();
-	d->ui.tabDMG->reset();
+	d->ui.tabSystems->reset();
 	d->ui.tabOptions->reset();
 #ifdef ENABLE_DECRYPTION
 	d->tabKeyManager->reset();
@@ -353,7 +353,7 @@ void ConfigDialog::loadDefaults(void)
 			d->ui.tabImageTypes->loadDefaults();
 			break;
 		case 1:
-			d->ui.tabDMG->loadDefaults();
+			d->ui.tabSystems->loadDefaults();
 			break;
 		case 2:
 			d->ui.tabOptions->loadDefaults();

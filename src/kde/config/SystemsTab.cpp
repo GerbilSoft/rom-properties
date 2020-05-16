@@ -1,54 +1,54 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (KDE)                              *
- * DMG.cpp: Game Boy tab for rp-config.                                    *
+ * SystemsTab.cpp: Systems tab for rp-config.                              *
  *                                                                         *
  * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #include "stdafx.h"
-#include "DMGTab.hpp"
+#include "SystemsTab.hpp"
 
 // librpbase
 using LibRpBase::Config;
 
-#include "ui_DMGTab.h"
-class DMGTabPrivate
+#include "ui_SystemsTab.h"
+class SystemsTabPrivate
 {
 	public:
-		explicit DMGTabPrivate();
+		explicit SystemsTabPrivate();
 
 	private:
-		Q_DISABLE_COPY(DMGTabPrivate)
+		Q_DISABLE_COPY(SystemsTabPrivate)
 
 	public:
-		Ui::DMGTab ui;
+		Ui::SystemsTab ui;
 
 	public:
 		// Has the user changed anything?
 		bool changed;
 };
 
-/** DMGTabPrivate **/
+/** SystemsTabPrivate **/
 
-DMGTabPrivate::DMGTabPrivate()
+SystemsTabPrivate::SystemsTabPrivate()
 	: changed(false)
 { }
 
-/** DMGTab **/
+/** SystemsTab **/
 
-DMGTab::DMGTab(QWidget *parent)
+SystemsTab::SystemsTab(QWidget *parent)
 	: super(parent)
-	, d_ptr(new DMGTabPrivate())
+	, d_ptr(new SystemsTabPrivate())
 {
-	Q_D(DMGTab);
+	Q_D(SystemsTab);
 	d->ui.setupUi(this);
 
 	// Load the current configuration.
 	reset();
 }
 
-DMGTab::~DMGTab()
+SystemsTab::~SystemsTab()
 {
 	delete d_ptr;
 }
@@ -57,11 +57,11 @@ DMGTab::~DMGTab()
  * Widget state has changed.
  * @param event State change event.
  */
-void DMGTab::changeEvent(QEvent *event)
+void SystemsTab::changeEvent(QEvent *event)
 {
 	if (event->type() == QEvent::LanguageChange) {
 		// Retranslate the UI.
-		Q_D(DMGTab);
+		Q_D(SystemsTab);
 		d->ui.retranslateUi(this);
 	}
 
@@ -72,12 +72,12 @@ void DMGTab::changeEvent(QEvent *event)
 /**
  * Reset the configuration.
  */
-void DMGTab::reset(void)
+void SystemsTab::reset(void)
 {
 	// NOTE: This may re-check the configuration timestamp.
 	const Config *const config = Config::instance();
 
-	Q_D(DMGTab);
+	Q_D(SystemsTab);
 
 	// Block signals while reloading.
 	const bool blockDMG = d->ui.cboDMG->blockSignals(true);
@@ -114,7 +114,7 @@ void DMGTab::reset(void)
  * This does NOT save, and will only emit modified()
  * if it's different from the current configuration.
  */
-void DMGTab::loadDefaults(void)
+void SystemsTab::loadDefaults(void)
 {
 	// TODO: Get the defaults from Config.
 	// For now, hard-coding everything here.
@@ -123,7 +123,7 @@ void DMGTab::loadDefaults(void)
 	static const int8_t idxCGB_default = 2;
 	bool isDefChanged = false;
 
-	Q_D(DMGTab);
+	Q_D(SystemsTab);
 
 	// Block signals while reloading.
 	const bool blockDMG = d->ui.cboDMG->blockSignals(true);
@@ -158,14 +158,14 @@ void DMGTab::loadDefaults(void)
  * Save the configuration.
  * @param pSettings QSettings object.
  */
-void DMGTab::save(QSettings *pSettings)
+void SystemsTab::save(QSettings *pSettings)
 {
 	assert(pSettings != nullptr);
 	if (!pSettings)
 		return;
 
 	// Save the configuration.
-	Q_D(const DMGTab);
+	Q_D(const SystemsTab);
 	pSettings->beginGroup(QLatin1String("DMGTitleScreenMode"));
 
 	const char s_dmg_dmg[][4] = {"DMG", "CGB"};
@@ -197,10 +197,10 @@ void DMGTab::save(QSettings *pSettings)
 /**
  * A combobox was changed.
  */
-void DMGTab::comboBox_changed(void)
+void SystemsTab::comboBox_changed(void)
 {
 	// Configuration has been changed.
-	Q_D(DMGTab);
+	Q_D(SystemsTab);
 	d->changed = true;
 	emit modified();
 }

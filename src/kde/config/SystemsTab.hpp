@@ -1,30 +1,30 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (KDE)                              *
- * DMG.hpp: Game Boy tab for rp-config.                                    *
+ * SystemsTab.hpp: Systems tab for rp-config.                              *
  *                                                                         *
  * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_KDE_CONFIG_DMGTAB_HPP__
-#define __ROMPROPERTIES_KDE_CONFIG_DMGTAB_HPP__
+#ifndef __ROMPROPERTIES_KDE_CONFIG_SYSTEMSTAB_HPP__
+#define __ROMPROPERTIES_KDE_CONFIG_SYSTEMSTAB_HPP__
 
 #include "ITab.hpp"
 
-class DMGTabPrivate;
-class DMGTab : public ITab
+class SystemsTabPrivate;
+class SystemsTab : public ITab
 {
 	Q_OBJECT
 
 	public:
-		explicit DMGTab(QWidget *parent = nullptr);
-		virtual ~DMGTab();
+		explicit SystemsTab(QWidget *parent = nullptr);
+		virtual ~SystemsTab();
 
 	private:
 		typedef ITab super;
-		DMGTabPrivate *const d_ptr;
-		Q_DECLARE_PRIVATE(DMGTab);
-		Q_DISABLE_COPY(DMGTab)
+		SystemsTabPrivate *const d_ptr;
+		Q_DECLARE_PRIVATE(SystemsTab);
+		Q_DISABLE_COPY(SystemsTab)
 
 	protected:
 		// State change event. (Used for switching the UI language at runtime.)
@@ -56,4 +56,4 @@ class DMGTab : public ITab
 		void comboBox_changed(void);
 };
 
-#endif /* __ROMPROPERTIES_KDE_CONFIG_DMGTAB_HPP__ */
+#endif /* __ROMPROPERTIES_KDE_CONFIG_SYSTEMSTAB_HPP__ */
