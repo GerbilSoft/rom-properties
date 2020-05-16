@@ -20,7 +20,7 @@
 #undef APSTUDIO_HIDDEN_SYMBOLS
 
 /**
- * Configuration: Image type priorities.
+ * Configuration: Image type priorities
  */
 LANGUAGE LANG_PORTUGUESE, SUBLANG_PORTUGUESE_BRAZILIAN
 IDD_CONFIG_IMAGETYPES DIALOGEX 0, 0, 453, 245
@@ -35,7 +35,27 @@ BEGIN
 END
 
 /**
- * Configuration: Options.
+ * Configuration: Systems
+ */
+LANGUAGE LANG_PORTUGUESE, SUBLANG_PORTUGUESE_BRAZILIAN
+IDD_CONFIG_SYSTEMS DIALOGEX 0, 0, 453, 240
+STYLE DS_3DLOOK | DS_CONTROL | DS_SHELLFONT | WS_VISIBLE | WS_CHILDWINDOW | WS_TABSTOP
+EXSTYLE WS_EX_NOPARENTNOTIFY | WS_EX_CONTROLPARENT
+CAPTION "Dialog"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    GROUPBOX        "Game Boy Title Screens", IDC_STATIC, 7, 7, 437, 74
+    LTEXT           "Select the Game Boy model to use for title screens for different types of Game Boy ROM images.", IDC_STATIC, 15, 18, 381, 8
+    LTEXT           "Game Boy:",IDC_STATIC, 15, 30, 80, 9
+    COMBOBOX        IDC_SYSTEMS_DMGTS_DMG, 77, 29, 69, 30, CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Super Game Boy:",IDC_STATIC, 15, 45, 80, 9
+    COMBOBOX        IDC_SYSTEMS_DMGTS_SGB, 77, 44, 69, 30, CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Game Boy Color:",IDC_STATIC, 15, 60, 80, 9
+    COMBOBOX        IDC_SYSTEMS_DMGTS_CGB, 77, 59, 69, 30, CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+END
+
+/**
+ * Configuration: Options
  */
 LANGUAGE LANG_PORTUGUESE, SUBLANG_PORTUGUESE_BRAZILIAN
 IDD_CONFIG_OPTIONS DIALOGEX 0, 0, 453, 245
@@ -55,7 +75,7 @@ BEGIN
 END
 
 /**
- * Configuration: Thumbnail cache. (Windows Vista and later)
+ * Configuration: Thumbnail cache (Windows Vista and later)
  */
 LANGUAGE LANG_PORTUGUESE, SUBLANG_PORTUGUESE_BRAZILIAN
 IDD_CONFIG_CACHE DIALOGEX 0, 0, 453, 245
@@ -72,7 +92,7 @@ BEGIN
 END
 
 /**
- * Configuration: Thumbnail cache. (Windows XP and earlier)
+ * Configuration: Thumbnail cache (Windows XP and earlier)
  */
 LANGUAGE LANG_PORTUGUESE, SUBLANG_PORTUGUESE_BRAZILIAN
 IDD_CONFIG_CACHE_XP DIALOGEX 0, 0, 453, 245
@@ -95,7 +115,7 @@ END
 
 #ifdef ENABLE_DECRYPTION
 /**
- * Configuration: Key Manager.
+ * Configuration: Key Manager
  */
 LANGUAGE LANG_PORTUGUESE, SUBLANG_PORTUGUESE_BRAZILIAN
 IDD_CONFIG_KEYMANAGER DIALOGEX 0, 0, 453, 245
@@ -110,7 +130,7 @@ BEGIN
 END
 
 /**
- * Configuration: Key Manager. ("Import" popup menu.)
+ * Configuration: Key Manager ("Import" popup menu)
  */
 LANGUAGE LANG_PORTUGUESE, SUBLANG_PORTUGUESE_BRAZILIAN
 IDR_KEYMANAGER_IMPORT MENU
@@ -126,7 +146,7 @@ END
 #endif /* ENABLE_DECRYPTION */
 
 /**
- * Configuration: About.
+ * Configuration: About
  */
 LANGUAGE LANG_PORTUGUESE, SUBLANG_PORTUGUESE_BRAZILIAN
 IDD_CONFIG_ABOUT DIALOGEX 0, 0, 453, 245

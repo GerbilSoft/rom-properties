@@ -35,6 +35,7 @@ DELAYLOAD_TEST_FUNCTION_IMPL1(textdomain, nullptr);
 
 // Property sheet tabs.
 #include "ImageTypesTab.hpp"
+#include "SystemsTab.hpp"
 #include "OptionsTab.hpp"
 #include "CacheTab.hpp"
 #ifdef ENABLE_DECRYPTION
@@ -59,9 +60,9 @@ class ConfigDialogPrivate
 	public:
 		// Property sheet variables.
 #ifdef ENABLE_DECRYPTION
-		static const unsigned int TAB_COUNT = 5;
+		static const unsigned int TAB_COUNT = 6;
 #else
-		static const unsigned int TAB_COUNT = 4;
+		static const unsigned int TAB_COUNT = 5;
 #endif
 		array<ITab*, TAB_COUNT> tabs;
 		array<HPROPSHEETPAGE, TAB_COUNT> hpsp;
@@ -103,22 +104,25 @@ ConfigDialogPrivate::ConfigDialogPrivate()
 	// Image type priority.
 	tabs[0] = new ImageTypesTab();
 	hpsp[0] = tabs[0]->getHPropSheetPage();
-	// Download configuration.
-	tabs[1] = new OptionsTab();
+	// Systems
+	tabs[1] = new SystemsTab();
 	hpsp[1] = tabs[1]->getHPropSheetPage();
-	// Thumbnail cache.
+	// Options
+	tabs[2] = new OptionsTab();
+	hpsp[2] = tabs[2]->getHPropSheetPage();
+	// Thumbnail cache
 	// References:
 	// - http://stackoverflow.com/questions/23677175/clean-windows-thumbnail-cache-programmatically
 	// - https://www.codeproject.com/Articles/2408/Clean-Up-Handler
-	tabs[2] = new CacheTab();
-	hpsp[2] = tabs[2]->getHPropSheetPage();
-#ifdef ENABLE_DECRYPTION
-	// Key Manager.
-	tabs[3] = new KeyManagerTab();
+	tabs[3] = new CacheTab();
 	hpsp[3] = tabs[3]->getHPropSheetPage();
+#ifdef ENABLE_DECRYPTION
+	// Key Manager
+	tabs[4] = new KeyManagerTab();
+	hpsp[4] = tabs[4]->getHPropSheetPage();
 #endif /* ENABLE_DECRYPTION */
 
-	// About.
+	// About
 	tabs[TAB_COUNT-1] = new AboutTab();
 	hpsp[TAB_COUNT-1] = tabs[TAB_COUNT-1]->getHPropSheetPage();
 
