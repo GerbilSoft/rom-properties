@@ -40,7 +40,7 @@ Vcs-Browser: https://github.com/GerbilSoft/rom-properties
 
 Package: rom-properties-all
 Architecture: any
-Depends: rom-properties-kde4, rom-properties-kf5, rom-properties-xfce, rom-properties-gnome, rom-properties-cinnamon, rom-properties-cli, rom-properties-utils, rom-properties-lang, rom-properties-thumbnailer-dbus, ${misc:Depends}
+Depends: rom-properties-kde4, rom-properties-kf5, rom-properties-xfce, rom-properties-gnome, rom-properties-cli, rom-properties-utils, rom-properties-lang, rom-properties-thumbnailer-dbus, ${misc:Depends}
 Description: ROM Properties Page shell extension
  This shell extension provides thumbnailing and property page functionality
  for ROM images, disc images, and save files for various game consoles,
@@ -86,24 +86,15 @@ Package: rom-properties-gnome
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}, rom-properties-utils, rom-properties-gtk3-common
 Recommends: rom-properties-lang
+Replaces: rom-properties-mate, rom-properties-cinnamon
 Description: ROM Properties Page shell extension
  This shell extension provides thumbnailing and property page functionality
  for ROM images, disc images, and save files for various game consoles,
  including Nintendo GameCube and Wii.
  .
- This package contains the Nautilus (GNOME 3, Unity) version.
- The utils package is required for thumbnailing.
-
-Package: rom-properties-cinnamon
-Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, rom-properties-utils, rom-properties-gtk3-common
-Recommends: rom-properties-lang
-Description: ROM Properties Page shell extension
- This shell extension provides thumbnailing and property page functionality
- for ROM images, disc images, and save files for various game consoles,
- including Nintendo GameCube and Wii.
+ This package contains the Nautilus (GNOME 3, Unity) version, which is also
+ used for the Caja (MATE) and Nemo (Cinnamon) desktops.
  .
- This package contains the Nemo (Cinnamon) version.
  The utils package is required for thumbnailing.
 
 Package: rom-properties-gtk3-common

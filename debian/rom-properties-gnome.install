@@ -1,1 +1,3 @@
 usr/lib/nautilus/extensions-3.0/rom-properties-gnome.so
+usr/lib/*/caja/extensions-2.0/rom-properties-mate.so
+usr/lib/*/nemo/extensions-3.0/rom-properties-cinnamon.so

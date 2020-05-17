@@ -126,8 +126,51 @@ ENDIF(BUILD_GNOME)
 #######################
 
 IF(BUILD_GNOME)
+	# Find the extension directories.
+	# Default paths will be used if they aren't found.
+	FIND_PACKAGE(LibNautilusExtension 3.0.0)	# gnome
+	FIND_PACKAGE(LibCajaExtension 1.18.0)		# mate
+	FIND_PACKAGE(LibNemoExtension)			# cinnamon
+
+	IF(NOT LibNautilusExtension_EXTENSION_DIR)
+		MESSAGE(WARNING nautilus)
+		SET(LibNautilusExtension_EXTENSION_DIR "${CMAKE_INSTALL_LIBDIR}/nautilus/extensions-3.0")
+	ENDIF(NOT LibNautilusExtension_EXTENSION_DIR)
+	IF(NOT LibCajaExtension_EXTENSION_DIR)
+		MESSAGE(WARNING caja)
+		SET(LibCajaExtension_EXTENSION_DIR "${CMAKE_INSTALL_LIBDIR}/caja/extensions-2.0")
+	ENDIF(NOT LibCajaExtension_EXTENSION_DIR)
+	IF(NOT LibNemoExtension_EXTENSION_DIR)
+		MESSAGE(WARNING nemo)
+		SET(LibNemoExtension_EXTENSION_DIR "${CMAKE_INSTALL_LIBDIR}/nemo/extensions-3.0")
+	ENDIF(NOT LibNemoExtension_EXTENSION_DIR)
+
+	# GNOME (Nautilus) extension is installed directly.
 	INSTALL(TARGETS rom-properties-gnome
 		LIBRARY DESTINATION "${LibNautilusExtension_EXTENSION_DIR}"
+		COMPONENT "plugin"
+		)
+
+	# Symlinks are created for MATE (Caja) and Cinnamon (Nemo).
+	# Reference: https://stackoverflow.com/questions/34578362/how-can-i-package-a-symlink-with-cpack
+	ADD_CUSTOM_COMMAND(TARGET rom-properties-gnome POST_BUILD
+		COMMAND ln -sf "${LibNautilusExtension_EXTENSION_DIR}/rom-properties-gnome.so" rom-properties-mate.so
+		WORKING_DIRECTORY "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}"
+		VERBATIM
+		)
+	ADD_CUSTOM_COMMAND(TARGET rom-properties-gnome POST_BUILD
+		COMMAND ln -sf "${LibNautilusExtension_EXTENSION_DIR}/rom-properties-gnome.so" rom-properties-cinnamon.so
+		WORKING_DIRECTORY "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}"
+		VERBATIM
+		)
+
+	# Install symlinks.
+	INSTALL(FILES "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/rom-properties-mate.so"
+		DESTINATION "${LibCajaExtension_EXTENSION_DIR}"
+		COMPONENT "plugin"
+		)
+	INSTALL(FILES "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/rom-properties-cinnamon.so"
+		DESTINATION "${LibNemoExtension_EXTENSION_DIR}"
 		COMPONENT "plugin"
 		)
 
