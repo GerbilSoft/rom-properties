@@ -102,7 +102,7 @@ int CacheManager::execRpDownload(const string &filteredCacheKey)
 	}
 
 	// TODO: Maybe we should close file handles...
-#ifdef HAVE_POSIX_SPAWNNO
+#ifdef HAVE_POSIX_SPAWN
 	// posix_spawn()
 	errno = 0;
 	pid_t pid;
