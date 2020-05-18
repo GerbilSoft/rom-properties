@@ -206,7 +206,8 @@ typedef enum {
 #define RVL_RegionSetting_ADDRESS 0x4E000
 typedef struct PACKED _RVL_RegionSetting {
 	uint32_t region_code;	// Region code. (See GCN_Region_Code.)
-	uint8_t reserved[12];
+	uint32_t disc_count;	// Number of game discs.
+	uint8_t reserved[8];
 	uint8_t ratings[0x10];	// Country-specific age ratings.
 } RVL_RegionSetting;
 
