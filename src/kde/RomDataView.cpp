@@ -73,6 +73,7 @@ class RomDataViewPrivate
 
 		// RomData object.
 		RomData *romData;
+		bool hasCheckedAchievements;
 
 		/**
 		 * Initialize the header row widgets.
@@ -175,6 +176,7 @@ RomDataViewPrivate::RomDataViewPrivate(RomDataView *q, RomData *romData)
 	, def_lc(0)
 	, cboLanguage(nullptr)
 	, romData(romData->ref())
+	, hasCheckedAchievements(false)
 {
 	// Register RpQImageBackend.
 	// TODO: Static initializer somewhere?
@@ -1235,6 +1237,12 @@ void RomDataView::showEvent(QShowEvent *event)
 	// Start the icon animation.
 	Q_D(RomDataView);
 	d->ui.lblIcon->startAnimTimer();
+
+	// Check for "viewed" achievements.
+	if (!d->hasCheckedAchievements) {
+		d->romData->checkViewedAchievements();
+		d->hasCheckedAchievements = true;
+	}
 
 	// Pass the event to the superclass.
 	super::showEvent(event);

@@ -148,6 +148,7 @@ struct _RomDataView {
 
 	// ROM data.
 	RomData		*romData;
+	bool		hasCheckedAchievements;
 
 	// Tab layout.
 	GtkWidget	*tabWidget;
@@ -300,6 +301,7 @@ rom_data_view_init(RomDataView *page)
 	// No ROM data initially.
 	page->uri = nullptr;
 	page->romData = nullptr;
+	page->hasCheckedAchievements = false;
 	page->tabWidget = nullptr;
 	page->tabs = new vector<RomDataView::tab>();
 
@@ -519,6 +521,7 @@ rom_data_view_set_uri(RomDataView	*page,
 		if (page->romData) {
 			page->romData->unref();
 			page->romData = nullptr;
+			page->hasCheckedAchievements = false;
 		}
 
 		// Delete the icon frames and tabs.
@@ -1810,8 +1813,10 @@ rom_data_view_load_rom_data(gpointer data)
 		// Create the RomData object.
 		// file is ref()'d by RomData.
 		page->romData = RomDataFactory::create(file);
+		page->hasCheckedAchievements = false;
 
 		// Update the display widgets.
+		// TODO: If already mapped, check achievements again.
 		rom_data_view_update_display(page);
 
 		// Make sure the underlying file handle is closed,
@@ -1914,6 +1919,12 @@ rom_data_view_map_signal_handler(RomDataView	*page,
 {
 	RP_UNUSED(user_data);
 	drag_image_start_anim_timer(DRAG_IMAGE(page->imgIcon));
+
+	// Check for "viewed" achievements.
+	if (!page->hasCheckedAchievements) {
+		page->romData->checkViewedAchievements();
+		page->hasCheckedAchievements = true;
+	}
 }
 
 /**

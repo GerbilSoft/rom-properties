@@ -20,10 +20,10 @@
 #include "WiiCommon.hpp"
 
 // librpbase, librpfile, librptexture
+#include "librpbase/ach/Achievements.hpp"
 using namespace LibRpBase;
 using LibRpFile::IRpFile;
 using LibRpTexture::rp_image;
-
 
 // Decryption.
 #include "librpbase/crypto/KeyManager.hpp"
@@ -59,14 +59,14 @@ class WiiWADPrivate : public RomDataPrivate
 
 	public:
 		// WAD type.
-		enum WadType {
-			WAD_UNKNOWN	= -1,	// Unknown WAD type.
-			WAD_STANDARD	= 0,	// Standard WAD.
-			WAD_EARLY	= 1,	// Early WAD. (early devkits only)
+		enum class WadType {
+			Unknown		= -1,	// Unknown WAD type.
+			Standard	= 0,	// Standard WAD.
+			BroadOn		= 1,	// BroadOn WAD format.
 		};
 
 		// WAD type.
-		int wadType;
+		WadType wadType;
 
 		// WAD structs.
 		union {
@@ -119,7 +119,7 @@ class WiiWADPrivate : public RomDataPrivate
 
 WiiWADPrivate::WiiWADPrivate(WiiWAD *q, IRpFile *file)
 	: super(q, file)
-	, wadType(WAD_UNKNOWN)
+	, wadType(WadType::Unknown)
 	, data_offset(0)
 	, data_size(0)
 #ifdef ENABLE_DECRYPTION
@@ -237,8 +237,8 @@ WiiWAD::WiiWAD(IRpFile *file)
 	info.header.pData = reinterpret_cast<const uint8_t*>(&d->wadHeader);
 	info.ext = nullptr;	// Not needed for WiiWAD.
 	info.szFile = d->file->size();
-	d->wadType = isRomSupported_static(&info);
-	d->isValid = (d->wadType >= 0);
+	d->wadType = static_cast<WiiWADPrivate::WadType>(isRomSupported_static(&info));
+	d->isValid = ((int)d->wadType >= 0);
 	if (!d->isValid) {
 		d->file->unref();
 		d->file = nullptr;
@@ -248,7 +248,7 @@ WiiWAD::WiiWAD(IRpFile *file)
 	// Determine the addresses.
 	uint32_t ticket_addr, tmd_addr;
 	switch (d->wadType) {
-		case WiiWADPrivate::WAD_STANDARD:
+		case WiiWADPrivate::WadType::Standard:
 			// Standard WAD.
 			// Sections are 64-byte aligned.
 			ticket_addr = WiiWADPrivate::toNext64(be32_to_cpu(d->wadHeader.wad.header_size)) +
@@ -263,8 +263,8 @@ WiiWAD::WiiWAD(IRpFile *file)
 				      WiiWADPrivate::toNext64(be32_to_cpu(d->wadHeader.wad.tmd_size));
 			break;
 
-		case WiiWADPrivate::WAD_EARLY: {
-			// Early devkit WADs.
+		case WiiWADPrivate::WadType::BroadOn: {
+			// BroadOn WAD format.
 			// Sections are NOT 64-byte aligned,
 			// and there's an extra "name" section after the TMD.
 			ticket_addr = be32_to_cpu(d->wadHeader.wadE.header_size) +
@@ -484,8 +484,8 @@ int WiiWAD::isRomSupported_static(const DetectInfo *info)
 		const Wii_WAD_Header_EARLY *wadE = reinterpret_cast<const Wii_WAD_Header_EARLY*>(wadHeader);
 		if (wadE->ticket_size == cpu_to_be32(sizeof(RVL_Ticket))) {
 			// Ticket size is correct.
-			// This is probably an early WAD.
-			return WiiWADPrivate::WAD_EARLY;
+			// This is probably a BroadOn WAD format WAD.
+			return (int)WiiWADPrivate::WadType::BroadOn;
 		}
 
 		// Not supported.
@@ -510,7 +510,7 @@ int WiiWAD::isRomSupported_static(const DetectInfo *info)
 	}
 
 	// This appears to be a Wii WAD file.
-	return WiiWADPrivate::WAD_STANDARD;
+	return (int)WiiWADPrivate::WadType::Standard;
 }
 
 /**
@@ -675,7 +675,7 @@ int WiiWAD::loadFieldData(void)
 	} else if (!d->file || !d->file->isOpen()) {
 		// File isn't open.
 		return -EBADF;
-	} else if (!d->isValid || d->wadType < 0) {
+	} else if (!d->isValid || (int)d->wadType < 0) {
 		// Unknown file type.
 		return -EIO;
 	}
@@ -697,7 +697,7 @@ int WiiWAD::loadFieldData(void)
 	// Type.
 	string s_wadType;
 	switch (d->wadType) {
-		case WiiWADPrivate::WAD_STANDARD: {
+		case WiiWADPrivate::WadType::Standard: {
 			switch (be32_to_cpu(d->wadHeader.wad.type)) {
 				case WII_WAD_TYPE_Is:
 					s_wadType = "Installable";
@@ -720,7 +720,7 @@ int WiiWAD::loadFieldData(void)
 			break;
 		};
 
-		case WiiWADPrivate::WAD_EARLY:
+		case WiiWADPrivate::WadType::BroadOn:
 			s_wadType = C_("WiiWAD", "BroadOn WAD Format");
 			break;
 
@@ -971,7 +971,7 @@ int WiiWAD::loadMetaData(void)
 	} else if (!d->file) {
 		// File isn't open.
 		return -EBADF;
-	} else if (!d->isValid || d->wadType < 0) {
+	} else if (!d->isValid || (int)d->wadType < 0) {
 		// Unknown file type.
 		return -EIO;
 	}
@@ -1080,7 +1080,7 @@ int WiiWAD::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) con
 	// If it is, this is a DLC WAD, so the title ID
 	// won't match anything on GameTDB.
 	RP_D(const WiiWAD);
-	if (!d->isValid || d->wadType < 0) {
+	if (!d->isValid || (int)d->wadType < 0) {
 		// WAD isn't valid.
 		return -EIO;
 	} else
@@ -1225,6 +1225,36 @@ int WiiWAD::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) con
 
 	// All URLs added.
 	return 0;
+}
+
+/**
+ * Check for "viewed" achievements.
+ *
+ * @return Number of achievements unlocked.
+ */
+int WiiWAD::checkViewedAchievements(void) const
+{
+	RP_D(const WiiWAD);
+	if (!d->isValid) {
+		// WAD isn't valid.
+		return false;
+	}
+
+	int ret = 0;
+
+	if (d->key_idx == WiiPartition::Key_Rvt_Debug) {
+		// Debug encryption.
+		Achievements::unlock(Achievements::ID::ViewedDebugCryptedFile);
+		ret++;
+	}
+
+	if (d->wadType == WiiWADPrivate::WadType::BroadOn) {
+		// BroadOn WAD format.
+		Achievements::unlock(Achievements::ID::ViewedBroadOnWADFile);
+		ret++;
+	}
+
+	return ret;
 }
 
 }
