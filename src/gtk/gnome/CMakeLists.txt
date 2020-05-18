@@ -133,15 +133,12 @@ IF(BUILD_GNOME)
 	FIND_PACKAGE(LibNemoExtension)			# cinnamon
 
 	IF(NOT LibNautilusExtension_EXTENSION_DIR)
-		MESSAGE(WARNING nautilus)
 		SET(LibNautilusExtension_EXTENSION_DIR "${CMAKE_INSTALL_LIBDIR}/nautilus/extensions-3.0")
 	ENDIF(NOT LibNautilusExtension_EXTENSION_DIR)
 	IF(NOT LibCajaExtension_EXTENSION_DIR)
-		MESSAGE(WARNING caja)
 		SET(LibCajaExtension_EXTENSION_DIR "${CMAKE_INSTALL_LIBDIR}/caja/extensions-2.0")
 	ENDIF(NOT LibCajaExtension_EXTENSION_DIR)
 	IF(NOT LibNemoExtension_EXTENSION_DIR)
-		MESSAGE(WARNING nemo)
 		SET(LibNemoExtension_EXTENSION_DIR "${CMAKE_INSTALL_LIBDIR}/nemo/extensions-3.0")
 	ENDIF(NOT LibNemoExtension_EXTENSION_DIR)
 
