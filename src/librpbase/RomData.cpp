@@ -1056,4 +1056,14 @@ int RomData::doRomOp_int(int id, RomOpParams *pParams)
 	return -ENOTSUP;
 }
 
+/**
+ * Check for "viewed" achievements.
+ * @return Number of achievements unlocked.
+ */
+int RomData::checkViewedAchievements(void) const
+{
+	// No "viewed" achievements by default.
+	return 0;
+}
+
 }

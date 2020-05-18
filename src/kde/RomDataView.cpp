@@ -78,6 +78,7 @@ class RomDataViewPrivate
 
 		// RomData object.
 		RomData *romData;
+		bool hasCheckedAchievements;
 
 		// "Options" button.
 		QPushButton *btnOptions;
@@ -265,6 +266,7 @@ class RomDataViewPrivate
 RomDataViewPrivate::RomDataViewPrivate(RomDataView *q, RomData *romData)
 	: q_ptr(q)
 	, romData(nullptr)
+	, hasCheckedAchievements(false)
 	, btnOptions(nullptr)
 	, menuOptions(nullptr)
 	, romOps_firstActionIndex(-1)
@@ -1630,6 +1632,12 @@ void RomDataView::showEvent(QShowEvent *event)
 	// Show the "Options" button.
 	if (d->btnOptions) {
 		d->btnOptions->show();
+	}
+
+	// Check for "viewed" achievements.
+	if (!d->hasCheckedAchievements) {
+		d->romData->checkViewedAchievements();
+		d->hasCheckedAchievements = true;
 	}
 
 	// Pass the event to the superclass.

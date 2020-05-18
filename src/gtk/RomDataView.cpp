@@ -169,6 +169,7 @@ struct _RomDataView {
 
 	RomData		*romData;	// ROM data
 	gchar		*uri;		// URI (GVfs)
+	bool		hasCheckedAchievements;
 
 	// "Options" button.
 	GtkWidget	*btnOptions;
@@ -582,6 +583,7 @@ rom_data_view_set_uri(RomDataView	*page,
 
 		// Unreference the existing RomData object.
 		UNREF_AND_NULL(page->romData);
+		page->hasCheckedAchievements = false;
 
 		// Delete the icon frames and tabs.
 		rom_data_view_delete_tabs(page);
@@ -2208,10 +2210,12 @@ rom_data_view_load_rom_data(gpointer data)
 		RomData *const romData = RomDataFactory::create(file);
 		if (romData != page->romData) {
 			page->romData = romData;
+			page->hasCheckedAchievements = false;
 			g_object_notify_by_pspec(G_OBJECT(page), properties[PROP_SHOWING_DATA]);
 		}
 
 		// Update the display widgets.
+		// TODO: If already mapped, check achievements again.
 		rom_data_view_update_display(page);
 
 		// Make sure the underlying file handle is closed,
@@ -2322,6 +2326,12 @@ rom_data_view_map_signal_handler(RomDataView	*page,
 	drag_image_start_anim_timer(DRAG_IMAGE(page->imgIcon));
 	if (page->btnOptions) {
 		gtk_widget_show(page->btnOptions);
+	}
+
+	// Check for "viewed" achievements.
+	if (!page->hasCheckedAchievements) {
+		page->romData->checkViewedAchievements();
+		page->hasCheckedAchievements = true;
 	}
 }
 

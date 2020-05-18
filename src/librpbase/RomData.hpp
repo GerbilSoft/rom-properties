@@ -646,6 +646,13 @@ class RomData : public RefBase
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
 		virtual int doRomOp_int(int id, RomOpParams *pParams);
+
+	public:
+		/**
+		 * Check for "viewed" achievements.
+		 * @return Number of achievements unlocked.
+		 */
+		virtual int checkViewedAchievements(void) const;
 };
 
 }
