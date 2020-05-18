@@ -2632,6 +2632,9 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 		updateMulti(0);
 	}
 
+	// Check for "viewed" achievements.
+	romData->checkViewedAchievements();
+
 	// Register for WTS session notifications. (Remote Desktop)
 	wts.registerSessionNotification(hDlg, NOTIFY_FOR_THIS_SESSION);
 

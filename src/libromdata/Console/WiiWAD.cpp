@@ -20,10 +20,10 @@
 #include "WiiCommon.hpp"
 
 // librpbase, librpfile, librptexture
+#include "librpbase/ach/Achievements.hpp"
 using namespace LibRpBase;
 using LibRpFile::IRpFile;
 using LibRpTexture::rp_image;
-
 
 // Decryption.
 #include "librpbase/crypto/KeyManager.hpp"
@@ -1226,6 +1226,36 @@ int WiiWAD::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) con
 
 	// All URLs added.
 	return 0;
+}
+
+/**
+ * Check for "viewed" achievements.
+ *
+ * @return Number of achievements unlocked.
+ */
+int WiiWAD::checkViewedAchievements(void) const
+{
+	RP_D(const WiiWAD);
+	if (!d->isValid) {
+		// WAD isn't valid.
+		return false;
+	}
+
+	int ret = 0;
+
+	if (d->key_idx == WiiPartition::Key_Rvt_Debug) {
+		// Debug encryption.
+		Achievements::unlock(Achievements::ID::ViewedDebugCryptedFile);
+		ret++;
+	}
+
+	if (d->wadType == WiiWADPrivate::WadType::BWF) {
+		// BroadOn WAD format.
+		Achievements::unlock(Achievements::ID::ViewedBroadOnWADFile);
+		ret++;
+	}
+
+	return ret;
 }
 
 }

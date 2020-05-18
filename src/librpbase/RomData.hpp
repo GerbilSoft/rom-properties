@@ -539,6 +539,13 @@ class RomData
 		 * @return True if the ROM image has "dangerous" permissions; false if not.
 		 */
 		virtual bool hasDangerousPermissions(void) const;
+
+		/**
+		 * Check for "viewed" achievements.
+		 *
+		 * @return Number of achievements unlocked.
+		 */
+		virtual int checkViewedAchievements(void) const;
 };
 
 }
