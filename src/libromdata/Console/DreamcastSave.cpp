@@ -44,14 +44,16 @@ class DreamcastSavePrivate : public RomDataPrivate
 	public:
 		// Save file type.
 		// Applies to the main file, e.g. VMS or DCI.
-		enum SaveType {
-			SAVE_TYPE_UNKNOWN = -1,	// Unknown save type.
+		enum class SaveType {
+			Unknown	= -1,	// Unknown save type.
 
-			SAVE_TYPE_VMS = 0,	// VMS file (also .VMI+.VMS)
-			SAVE_TYPE_VMI = 1,	// VMI file (standalone)
-			SAVE_TYPE_DCI = 2,	// DCI (Nexus)
+			VMS = 0,	// VMS file (also .VMI+.VMS)
+			VMI = 1,	// VMI file (standalone)
+			DCI = 2,	// DCI (Nexus)
+
+			Max
 		};
-		int saveType;
+		SaveType saveType;
 
 		// MIME type table.
 		// Ordering matches SaveType.
@@ -204,7 +206,7 @@ DreamcastSavePrivate::DreamcastSavePrivate(DreamcastSave *q, IRpFile *file)
 	: super(q, file)
 	, img_banner(nullptr)
 	, iconAnimData(nullptr)
-	, saveType(SAVE_TYPE_UNKNOWN)
+	, saveType(SaveType::Unknown)
 	, loaded_headers(0)
 	, vmi_file(nullptr)
 	, data_area_offset(0)
@@ -322,7 +324,7 @@ unsigned int DreamcastSavePrivate::readAndVerifyVmsHeader(uint32_t address)
 	     vms_header.dc_description[3] == 0))
 	{
 		// This is probably ICONDATA_VMS.
-		if (this->saveType == SAVE_TYPE_DCI) {
+		if (this->saveType == SaveType::DCI) {
 			__byte_swap_32_array(vms_header.dci_dword, sizeof(vms_header.icondata_vms));
 		}
 
@@ -340,7 +342,7 @@ unsigned int DreamcastSavePrivate::readAndVerifyVmsHeader(uint32_t address)
 	// Description fields are valid.
 
 	// If DCI, the entire vms_header must be 32-bit byteswapped first.
-	if (this->saveType == SAVE_TYPE_DCI) {
+	if (this->saveType == SaveType::DCI) {
 		__byte_swap_32_array(vms_header.dci_dword, sizeof(vms_header.dci_dword));
 	}
 
@@ -469,7 +471,7 @@ const rp_image *DreamcastSavePrivate::loadIcon(void)
 		return nullptr;
 	}
 
-	if (this->saveType == SAVE_TYPE_DCI) {
+	if (this->saveType == SaveType::DCI) {
 		// Apply 32-bit byteswapping to the palette.
 		__byte_swap_32_array(buf.palette.u32, sizeof(buf.palette.u32));
 	}
@@ -492,7 +494,7 @@ const rp_image *DreamcastSavePrivate::loadIcon(void)
 			break;
 		}
 
-		if (this->saveType == SAVE_TYPE_DCI) {
+		if (this->saveType == SaveType::DCI) {
 			// Apply 32-bit byteswapping to the palette.
 			__byte_swap_32_array(buf.icon_color.u32, sizeof(buf.icon_color.u32));
 		}
@@ -572,7 +574,7 @@ const rp_image *DreamcastSavePrivate::loadIcon_ICONDATA_VMS(void)
 			return nullptr;
 		}
 
-		if (this->saveType == SAVE_TYPE_DCI) {
+		if (this->saveType == SaveType::DCI) {
 			// Apply 32-bit byteswapping to the palette.
 			__byte_swap_32_array(buf.palette.u32, sizeof(buf.palette.u32));
 		}
@@ -584,7 +586,7 @@ const rp_image *DreamcastSavePrivate::loadIcon_ICONDATA_VMS(void)
 			return nullptr;
 		}
 
-		if (this->saveType == SAVE_TYPE_DCI) {
+		if (this->saveType == SaveType::DCI) {
 			// Apply 32-bit byteswapping to the icon data.
 			__byte_swap_32_array(buf.icon_color.u32, sizeof(buf.icon_color.u32));
 		}
@@ -611,7 +613,7 @@ const rp_image *DreamcastSavePrivate::loadIcon_ICONDATA_VMS(void)
 		return nullptr;
 	}
 
-	if (this->saveType == SAVE_TYPE_DCI) {
+	if (this->saveType == SaveType::DCI) {
 		// Apply 32-bit byteswapping to the icon data.
 		__byte_swap_32_array(buf.icon_mono.u32, sizeof(buf.icon_mono.u32));
 	}
@@ -688,7 +690,7 @@ const rp_image *DreamcastSavePrivate::loadBanner(void)
 		return nullptr;
 	}
 
-	if (this->saveType == SAVE_TYPE_DCI) {
+	if (this->saveType == SaveType::DCI) {
 		// Apply 32-bit byteswapping to the eyecatch data.
 		__byte_swap_32_array(reinterpret_cast<uint32_t*>(data.get()), eyecatch_size);
 	}
@@ -785,13 +787,13 @@ DreamcastSave::DreamcastSave(IRpFile *file)
 	    fileSize == DC_VMS_ICONDATA_MONO_MINSIZE)
 	{
 		// VMS file.
-		d->saveType = DreamcastSavePrivate::SAVE_TYPE_VMS;
+		d->saveType = DreamcastSavePrivate::SaveType::VMS;
 		d->data_area_offset = DreamcastSavePrivate::DATA_AREA_OFFSET_VMS;
 	}
 	else if ((fileSize - 32) % DC_VMS_BLOCK_SIZE == 0 ||
 		 (fileSize - 32) == DC_VMS_ICONDATA_MONO_MINSIZE)
 	{
-		d->saveType = DreamcastSavePrivate::SAVE_TYPE_DCI;
+		d->saveType = DreamcastSavePrivate::SaveType::DCI;
 		d->data_area_offset = DreamcastSavePrivate::DATA_AREA_OFFSET_DCI;
 
 		// Load the directory entry.
@@ -819,7 +821,7 @@ DreamcastSave::DreamcastSave(IRpFile *file)
 		}
 	} else if (fileSize == sizeof(DC_VMI_Header)) {
 		// Standalone VMI file.
-		d->saveType = DreamcastSavePrivate::SAVE_TYPE_VMI;
+		d->saveType = DreamcastSavePrivate::SaveType::VMI;
 		d->data_area_offset = DreamcastSavePrivate::DATA_AREA_OFFSET_VMS;
 
 		// Load the VMI header.
@@ -832,19 +834,19 @@ DreamcastSave::DreamcastSave(IRpFile *file)
 		}
 
 		// Nothing else to do here for standalone VMI files.
-		d->mimeType = d->mimeType_tbl[d->saveType];
+		d->mimeType = d->mimeType_tbl[(int)d->saveType];
 		d->isValid = true;
 		return;
 	} else {
 		// Not valid.
-		d->saveType = DreamcastSavePrivate::SAVE_TYPE_UNKNOWN;
+		d->saveType = DreamcastSavePrivate::SaveType::Unknown;
 		d->file->unref();
 		d->file = nullptr;
 		return;
 	}
 
 	// Set the MIME type.
-	d->mimeType = d->mimeType_tbl[d->saveType];
+	d->mimeType = d->mimeType_tbl[(int)d->saveType];
 
 	// TODO: Load both VMI and VMS timestamps?
 	// Currently, only the VMS timestamp is loaded.
@@ -954,8 +956,8 @@ DreamcastSave::DreamcastSave(IRpFile *vms_file, IRpFile *vmi_file)
 	}
 
 	// Initialize the save type and data area offset.
-	d->saveType = DreamcastSavePrivate::DATA_AREA_OFFSET_VMS;
-	d->data_area_offset = 0;
+	d->saveType = DreamcastSavePrivate::SaveType::VMS;
+	d->data_area_offset = DreamcastSavePrivate::DATA_AREA_OFFSET_VMS;
 
 	// Read the VMI header and copy it to the directory entry.
 	// TODO: Verify that the file size from vmi_header matches
@@ -1024,7 +1026,7 @@ int DreamcastSave::isRomSupported_static(const DetectInfo *info)
 	if (!info || !info->ext) {
 		// Either no detection information was specified,
 		// or the file extension is missing.
-		return DreamcastSavePrivate::SAVE_TYPE_UNKNOWN;
+		return (int)DreamcastSavePrivate::SaveType::Unknown;
 	}
 
 	if (info->szFile == 108) {
@@ -1032,7 +1034,7 @@ int DreamcastSave::isRomSupported_static(const DetectInfo *info)
 		// Check the file extension.
 		if (!strcasecmp(info->ext, ".vmi")) {
 			// It's a match!
-			return DreamcastSavePrivate::SAVE_TYPE_VMI;
+			return (int)DreamcastSavePrivate::SaveType::VMI;
 		}
 	}
 
@@ -1043,7 +1045,7 @@ int DreamcastSave::isRomSupported_static(const DetectInfo *info)
 		// Check the file extension.
 		if (!strcasecmp(info->ext, ".vms")) {
 			// It's a match!
-			return DreamcastSavePrivate::SAVE_TYPE_VMS;
+			return (int)DreamcastSavePrivate::SaveType::VMS;
 		}
 	}
 
@@ -1061,14 +1063,14 @@ int DreamcastSave::isRomSupported_static(const DetectInfo *info)
 				// Check the file extension.
 				if (!strcasecmp(info->ext, ".dci")) {
 					// It's a match!
-					return DreamcastSavePrivate::SAVE_TYPE_DCI;
+					return (int)DreamcastSavePrivate::SaveType::DCI;
 				}
 			}
 		}
 	}
 
 	// Not supported.
-	return DreamcastSavePrivate::SAVE_TYPE_UNKNOWN;;
+	return (int)DreamcastSavePrivate::SaveType::Unknown;;
 }
 
 /**
@@ -1232,7 +1234,7 @@ int DreamcastSave::loadFieldData(void)
 	} else if (!d->file || !d->file->isOpen()) {
 		// File isn't open.
 		return -EBADF;
-	} else if (!d->isValid || d->saveType < 0) {
+	} else if (!d->isValid || (int)d->saveType < 0) {
 		// Unknown save file type.
 		return -EIO;
 	}
