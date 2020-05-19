@@ -154,10 +154,11 @@ int NGPC::isRomSupported_static(const DetectInfo *info)
 		return (int)NGPCPrivate::RomType::Unknown;
 	}
 
+	NGPCPrivate::RomType romType = NGPCPrivate::RomType::Unknown;
+
 	// Check the copyright/license string.
 	const NGPC_RomHeader *const romHeader =
 		reinterpret_cast<const NGPC_RomHeader*>(info->header.pData);
-	NGPCPrivate::RomType romType = NGPCPrivate::RomType::Unknown;
 	if (!memcmp(romHeader->copyright, NGPC_COPYRIGHT_STR, sizeof(romHeader->copyright)) ||
 	    !memcmp(romHeader->copyright, NGPC_LICENSED_STR,  sizeof(romHeader->copyright)))
 	{
