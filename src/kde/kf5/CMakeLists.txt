@@ -79,11 +79,11 @@ IF(ECM_MODULE_PATH AND ECM_KDE_MODULE_DIR)
 		SET(KFMD_PLUGIN_INSTALL_DIR "${PLUGIN_INSTALL_DIR}/kf5/kfilemetadata")
 		SET(KFOV_PLUGIN_INSTALL_DIR "${PLUGIN_INSTALL_DIR}/kf5/overlayicon")
 
-		IF(Qt5DBus_FOUND)
+		IF(ENABLE_ACHIEVEMENTS AND Qt5DBus_FOUND)
 			# QtDBus is used for notifications.
 			# TODO: Make notifications optional.
 			SET(HAVE_QtDBus_NOTIFY 1)
-		ENDIF(Qt5DBus_FOUND)
+		ENDIF(ENABLE_ACHIEVEMENTS AND Qt5DBus_FOUND)
 	ELSE()
 		# Qt5 not found.
 		SET(BUILD_KF5 OFF CACHE INTERNAL "Build the KDE Frameworks 5 plugin." FORCE)
