@@ -177,12 +177,6 @@ string CreateThumbnailPrivate::proxyForUrl(const string &url) const
 
 /** CreateThumbnail **/
 
-// NOTE: G_MODULE_EXPORT is a no-op on non-Windows platforms.
-#if !defined(_WIN32) && defined(__GNUC__) && __GNUC__ >= 4
-#  undef G_MODULE_EXPORT
-#  define G_MODULE_EXPORT __attribute__ ((visibility ("default")))
-#endif
-
 /**
  * Open a file from a filename or URI.
  * @param source_file	[in] Source filename or URI.

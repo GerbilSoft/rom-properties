@@ -1,6 +1,6 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (GTK+ 3.x)                         *
- * RpThunarPlugin.c: ThunarX Plugin Definition.                            *
+ * RpThunarPlugin.cpp: ThunarX Plugin Definition.                          *
  *                                                                         *
  * Copyright (c) 2017-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
@@ -9,20 +9,21 @@
 #include "stdafx.h"
 #include "plugin-helper.h"
 
-#include "RpThunarPlugin.h"
+#include "RpThunarPlugin.hpp"
 #include "RpThunarProvider.hpp"
+#include "AchGDBus.hpp"
 
 // Thunar version is based on GTK+ version.
 #if GTK_CHECK_VERSION(3,0,0)
-# define LIBTHUNARX_SO_FILENAME "libthunarx-3.so"
-# define THUNARX_MAJOR_VERSION 1
-# define THUNARX_MINOR_VERSION 8
-# define THUNARX_MICRO_VERSION 0
+#  define LIBTHUNARX_SO_FILENAME "libthunarx-3.so"
+#  define THUNARX_MAJOR_VERSION 1
+#  define THUNARX_MINOR_VERSION 8
+#  define THUNARX_MICRO_VERSION 0
 #else /* !GTK_CHECK_VERSION(3,0,0) */
-# define LIBTHUNARX_SO_FILENAME "libthunarx-2.so"
-# define THUNARX_MAJOR_VERSION 1
-# define THUNARX_MINOR_VERSION 6
-# define THUNARX_MICRO_VERSION 0
+#  define LIBTHUNARX_SO_FILENAME "libthunarx-2.so"
+#  define THUNARX_MAJOR_VERSION 1
+#  define THUNARX_MINOR_VERSION 6
+#  define THUNARX_MICRO_VERSION 0
 #endif
 
 static GType type_list[1];
@@ -49,11 +50,14 @@ rp_thunar_register_types(ThunarxProviderPlugin *plugin)
 
 	/* Setup the plugin provider type list */
 	type_list[0] = TYPE_RP_THUNAR_PROVIDER;
+
+	// Register AchGDBus.
+	AchGDBus::instance();
 }
 
 /** Per-frontend initialization functions. **/
 
-G_MODULE_EXPORT void
+extern "C" G_MODULE_EXPORT void
 thunar_extension_initialize(ThunarxProviderPlugin *plugin)
 {
 	CHECK_UID();
@@ -100,7 +104,7 @@ thunar_extension_initialize(ThunarxProviderPlugin *plugin)
 
 /** Common shutdown and list_types functions. **/
 
-G_MODULE_EXPORT void
+extern "C" G_MODULE_EXPORT void
 thunar_extension_shutdown(void)
 {
 #ifdef G_ENABLE_DEBUG
@@ -113,7 +117,7 @@ thunar_extension_shutdown(void)
 	}
 }
 
-G_MODULE_EXPORT void
+extern "C" G_MODULE_EXPORT void
 thunar_extension_list_types(const GType	**types,
 			    gint	 *n_types)
 {
