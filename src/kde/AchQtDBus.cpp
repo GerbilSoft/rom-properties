@@ -13,6 +13,7 @@ using LibRpBase::Achievements;
 // QtDBus
 #include <QtDBus/QDBusConnection>
 #include <QtDBus/QDBusInterface>
+#include <QtDBus/QDBusPendingCall>
 
 class AchQtDBusPrivate
 {
