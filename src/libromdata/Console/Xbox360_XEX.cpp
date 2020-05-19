@@ -16,6 +16,7 @@
 #include "xbox360_xex_structs.h"
 
 // librpbase, librpfile, librptexture
+#include "librpbase/Achievements.hpp"
 #include "librpbase/disc/CBCReader.hpp"
 #include "librpfile/RpMemFile.hpp"
 using namespace LibRpBase;
@@ -61,15 +62,15 @@ class Xbox360_XEX_Private : public RomDataPrivate
 
 	public:
 		// XEX type.
-		enum XexType {
-			XEX_TYPE_UNKNOWN = -1,	// Unknown XEX type.
+		enum class XexType {
+			Unknown	= -1,	// Unknown XEX type.
 
-			XEX_TYPE_XEX1	= 0,	// XEX1
-			XEX_TYPE_XEX2	= 1,	// XEX2
+			XEX1	= 0,	// XEX1
+			XEX2	= 1,	// XEX2
 
-			XEX_TYPE_MAX
+			Max
 		};
-		int xexType;
+		XexType xexType;
 
 	public:
 		// XEX headers.
@@ -255,7 +256,7 @@ const uint8_t Xbox360_XEXPrivate::EncryptionKeyVerifyData[Xbox360_XEX::Key_Max][
 
 Xbox360_XEX_Private::Xbox360_XEX_Private(Xbox360_XEX *q, IRpFile *file)
 	: super(q, file)
-	, xexType(XEX_TYPE_UNKNOWN)
+	, xexType(XexType::Unknown)
 	, isExecutionIDLoaded(false)
 	, keyInUse(-1)
 	, peReader(nullptr)
@@ -330,7 +331,7 @@ size_t Xbox360_XEX_Private::getOptHdrData(uint32_t header_id, uint32_t *pOut32)
 		return 0;
 	}
 
-	if (xexType < 0) {
+	if ((int)xexType < 0) {
 		// Invalid XEX type.
 		return 0;
 	}
@@ -379,7 +380,7 @@ size_t Xbox360_XEX_Private::getOptHdrData(uint32_t header_id, ao::uvector<uint8_
 		return 0;
 	}
 
-	if (xexType < 0) {
+	if ((int)xexType < 0) {
 		// Invalid XEX type.
 		return 0;
 	}
@@ -425,7 +426,7 @@ size_t Xbox360_XEX_Private::getOptHdrData(uint32_t header_id, ao::uvector<uint8_
  */
 const XEX2_Resource_Info *Xbox360_XEX_Private::getXdbfResInfo(const char *resource_id)
 {
-	if (xexType < 0) {
+	if ((int)xexType < 0) {
 		// Invalid XEX type.
 		return nullptr;
 	}
@@ -534,7 +535,7 @@ CBCReader *Xbox360_XEX_Private::initPeReader(void)
 	}
 #endif /* ENABLE_LIBMSPACK */
 
-	if (xexType <= XEX_TYPE_UNKNOWN || xexType >= XEX_TYPE_MAX) {
+	if (xexType <= XexType::Unknown || xexType >= XexType::Max) {
 		// Invalid XEX type.
 		return nullptr;
 	}
@@ -598,8 +599,8 @@ CBCReader *Xbox360_XEX_Private::initPeReader(void)
 		// Try to load the XEX key.
 		// TODO: Show a warning if it didn't work.
 		KeyManager::VerifyResult verifyResult = keyManager->getAndVerify(
-			EncryptionKeyNames[this->xexType], &keyData[0],
-			EncryptionKeyVerifyData[this->xexType], 16);
+			EncryptionKeyNames[(int)this->xexType], &keyData[0],
+			EncryptionKeyVerifyData[(int)this->xexType], 16);
 		if (verifyResult != KeyManager::VERIFY_OK) {
 			// An error occurred while loading the XEX key.
 			// Start with the all-zero key used on devkits.
@@ -608,7 +609,7 @@ CBCReader *Xbox360_XEX_Private::initPeReader(void)
 
 		// Title key.
 		const uint8_t *const pTitleKey =
-			(xexType != XEX_TYPE_XEX1
+			(xexType != XexType::XEX1
 				? secInfo.xex2.title_key
 				: secInfo.xex1.title_key);
 
@@ -709,7 +710,7 @@ CBCReader *Xbox360_XEX_Private::initPeReader(void)
 
 			// Image size must be at least 8 KB.
 			const uint32_t image_size = be32_to_cpu(
-				(xexType != XEX_TYPE_XEX1
+				(xexType != XexType::XEX1
 					? secInfo.xex2.image_size
 					: secInfo.xex1.image_size));
 			assert(image_size >= PE_HEADER_SIZE);
@@ -911,7 +912,7 @@ CBCReader *Xbox360_XEX_Private::initPeReader(void)
 			const XEX2_Resource_Info *const pResInfo = getXdbfResInfo();
 			if (pResInfo) {
 				const uint32_t load_address = be32_to_cpu(
-					(xexType != XEX_TYPE_XEX1
+					(xexType != XexType::XEX1
 						? secInfo.xex2.load_address
 						: secInfo.xex1.load_address));
 
@@ -1223,7 +1224,7 @@ const Xbox360_XDBF *Xbox360_XEX_Private::initXDBF(void)
 
 		// Calculate the XDBF physical address.
 		const uint32_t load_address = be32_to_cpu(
-			(xexType != XEX_TYPE_XEX1
+			(xexType != XexType::XEX1
 				? secInfo.xex2.load_address
 				: secInfo.xex1.load_address));
 		uint32_t xdbf_physaddr = pResInfo->vaddr - load_address;
@@ -1309,8 +1310,8 @@ Xbox360_XEX::Xbox360_XEX(IRpFile *file)
 	info.header.pData = header;
 	info.ext = nullptr;	// Not needed for XEX.
 	info.szFile = 0;	// Not needed for XEX.
-	d->xexType = isRomSupported_static(&info);
-	d->isValid = (d->xexType >= 0);
+	d->xexType = static_cast<Xbox360_XEX_Private::XexType>(isRomSupported_static(&info));
+	d->isValid = ((int)d->xexType >= 0);
 
 	if (!d->isValid) {
 		d->file->unref();
@@ -1355,7 +1356,7 @@ Xbox360_XEX::Xbox360_XEX(IRpFile *file)
 			// Seek and/or read error.
 			d->file->unref();
 			d->file = nullptr;
-			d->xexType = Xbox360_XEX_Private::XEX_TYPE_UNKNOWN;
+			d->xexType = Xbox360_XEX_Private::XexType::Unknown;
 			d->isValid = false;
 			return;
 		}
@@ -1421,7 +1422,7 @@ int Xbox360_XEX::isRomSupported_static(const DetectInfo *info)
 	{
 		// Either no detection information was specified,
 		// or the header is too small.
-		return Xbox360_XEX_Private::XEX_TYPE_UNKNOWN;
+		return (int)Xbox360_XEX_Private::XexType::Unknown;
 	}
 
 	// Check for XEX.
@@ -1429,14 +1430,14 @@ int Xbox360_XEX::isRomSupported_static(const DetectInfo *info)
 		reinterpret_cast<const XEX2_Header*>(info->header.pData);
 	if (xex2Header->magic == cpu_to_be32(XEX2_MAGIC)) {
 		// We have an XEX2 file.
-		return Xbox360_XEX_Private::XEX_TYPE_XEX2;
+		return (int)Xbox360_XEX_Private::XexType::XEX2;
 	} else if (xex2Header->magic == cpu_to_be32(XEX1_MAGIC)) {
 		// We have an XEX1 file.
-		return Xbox360_XEX_Private::XEX_TYPE_XEX1;
+		return (int)Xbox360_XEX_Private::XexType::XEX1;
 	}
 
 	// Not supported.
-	return Xbox360_XEX_Private::XEX_TYPE_UNKNOWN;
+	return (int)Xbox360_XEX_Private::XexType::Unknown;
 }
 
 /**
@@ -1580,7 +1581,7 @@ int Xbox360_XEX::loadFieldData(void)
 	} else if (!d->file || !d->file->isOpen()) {
 		// File isn't open.
 		return -EBADF;
-	} else if (!d->isValid || d->xexType < 0) {
+	} else if (!d->isValid || (int)d->xexType < 0) {
 		// XEX file isn't valid.
 		return -EIO;
 	}
@@ -1590,7 +1591,7 @@ int Xbox360_XEX::loadFieldData(void)
 	const XEX2_Header *const xex2Header = &d->xex2Header;
 
 	// Maximum of 14 fields, not including RomData subclasses.
-	const char *const s_xexType = (d->xexType != Xbox360_XEX_Private::XEX_TYPE_XEX1 ? "XEX2" : "XEX1");
+	const char *const s_xexType = (d->xexType != Xbox360_XEX_Private::XexType::XEX1 ? "XEX2" : "XEX1");
 	d->fields->reserve(14);
 	d->fields->setTabName(0, s_xexType);
 
@@ -1652,7 +1653,7 @@ int Xbox360_XEX::loadFieldData(void)
 	} else {
 		s_minver = C_("RomData", "Unknown");
 	}
-	if (d->xexType == Xbox360_XEX_Private::XEX_TYPE_XEX1) {
+	if (d->xexType == Xbox360_XEX_Private::XexType::XEX1) {
 		// Indicate that an XEX1 kernel is needed.
 		s_minver += " (XEX1)";
 	}
@@ -1677,7 +1678,7 @@ int Xbox360_XEX::loadFieldData(void)
 	// Image flags.
 	// NOTE: Same for both XEX1 and XEX2 according to Xenia.
 	// TODO: Show image flags as-is?
-	uint32_t image_flags = (d->xexType != Xbox360_XEX_Private::XEX_TYPE_XEX1)
+	uint32_t image_flags = (d->xexType != Xbox360_XEX_Private::XexType::XEX1)
 		? be32_to_cpu(d->secInfo.xex2.image_flags)
 		: be32_to_cpu(d->secInfo.xex1.image_flags);
 
@@ -1727,7 +1728,7 @@ int Xbox360_XEX::loadFieldData(void)
 		};
 
 		uint32_t media_types = be32_to_cpu(
-			(d->xexType != Xbox360_XEX_Private::XEX_TYPE_XEX1
+			(d->xexType != Xbox360_XEX_Private::XexType::XEX1
 				? d->secInfo.xex2.allowed_media_types
 				: d->secInfo.xex1.allowed_media_types));
 
@@ -1771,7 +1772,7 @@ int Xbox360_XEX::loadFieldData(void)
 
 	// Convert region code to a bitfield.
 	const uint32_t region_code_xbx = be32_to_cpu(
-		(d->xexType != Xbox360_XEX_Private::XEX_TYPE_XEX1
+		(d->xexType != Xbox360_XEX_Private::XexType::XEX1
 			? d->secInfo.xex2.region_code
 			: d->secInfo.xex1.region_code));
 	uint32_t region_code = 0;
@@ -1803,7 +1804,7 @@ int Xbox360_XEX::loadFieldData(void)
 	// Media ID
 	d->fields->addField_string(C_("Xbox360_XEX", "Media ID"),
 		d->formatMediaID(
-			(d->xexType != Xbox360_XEX_Private::XEX_TYPE_XEX1
+			(d->xexType != Xbox360_XEX_Private::XexType::XEX1
 				? d->secInfo.xex2.xgd2_media_id
 				: d->secInfo.xex1.xgd2_media_id)),
 		RomFields::STRF_MONOSPACE);
@@ -1971,7 +1972,7 @@ int Xbox360_XEX::loadMetaData(void)
 	} else if (!d->file) {
 		// File isn't open.
 		return -EBADF;
-	} else if (!d->isValid || d->xexType < 0) {
+	} else if (!d->isValid || (int)d->xexType < 0) {
 		// XEX file isn't valid.
 		return -EIO;
 	}
@@ -2015,6 +2016,37 @@ int Xbox360_XEX::loadInternalImage(ImageType imageType, const rp_image **pImage)
 	}
 
 	return -ENOENT;
+}
+
+/**
+ * Check for "viewed" achievements.
+ *
+ * @return Number of achievements unlocked.
+ */
+int Xbox360_XEX::checkViewedAchievements(void) const
+{
+	RP_D(const Xbox360_XEX);
+	if (!d->isValid) {
+		// Disc is either not valid or is not Wii.
+		return 0;
+	}
+
+	// Initialize the PE reader.
+	if (!const_cast<Xbox360_XEX_Private*>(d)->initPeReader()) {
+		// Error initializing the PE reader.
+		return 0;
+	}
+
+	Achievements *const pAch = Achievements::instance();
+	int ret = 0;
+
+	if (d->keyInUse == 1) {
+		// Debug encryption.
+		pAch->unlock(Achievements::ID::ViewedDebugCryptedFile);
+		ret++;
+	}
+
+	return ret;
 }
 
 #ifdef ENABLE_DECRYPTION
