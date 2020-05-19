@@ -34,6 +34,7 @@
   * XboxDisc: Fixed an incorrect double-unreference when opening original Xbox
     ISO images that have a `default.xbe` file that isn't readable by the
     XboxXBE parser. (Issue #219; reported by @cfas1)
+  * Nintendo3DS: CVer CIAs have an 8-byte meta section.
 
 * Other changes:
   * Split file handling and CPU/byteorder code from librpbase into two
