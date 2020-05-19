@@ -2027,7 +2027,7 @@ int Xbox360_XEX::checkViewedAchievements(void) const
 {
 	RP_D(const Xbox360_XEX);
 	if (!d->isValid) {
-		// Disc is either not valid or is not Wii.
+		// Disc is not valid.
 		return 0;
 	}
 
