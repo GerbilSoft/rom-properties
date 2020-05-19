@@ -43,14 +43,15 @@ class GameCubeBNRPrivate : public RomDataPrivate
 
 	public:
 		// Banner type.
-		enum RomType {
-			BANNER_UNKNOWN	= -1,	// Unknown banner type.
-			BANNER_BNR1	= 0,	// BNR1 (US/JP)
-			BANNER_BNR2	= 1,	// BNR2 (EU)
-		};
+		enum class BannerType {
+			Unknown	= -1,	// Unknown banner type.
 
-		// Banner type.
-		int bannerType;
+			BNR1	= 0,	// BNR1 (US/JP)
+			BNR2	= 1,	// BNR2 (EU)
+
+			Max
+		};
+		BannerType bannerType;
 
 		// Internal images.
 		rp_image *img_banner;
@@ -83,7 +84,7 @@ class GameCubeBNRPrivate : public RomDataPrivate
 
 GameCubeBNRPrivate::GameCubeBNRPrivate(GameCubeBNR *q, IRpFile *file)
 	: super(q, file)
-	, bannerType(BANNER_UNKNOWN)
+	, bannerType(BannerType::Unknown)
 	, img_banner(nullptr)
 { }
 
@@ -250,8 +251,8 @@ GameCubeBNR::GameCubeBNR(IRpFile *file)
 	info.header.pData = reinterpret_cast<const uint8_t*>(&bnr_magic);
 	info.ext = nullptr;	// Not needed for GameCube banner files.
 	info.szFile = d->file->size();
-	d->bannerType = isRomSupported_static(&info);
-	d->isValid = (d->bannerType >= 0);
+	d->bannerType = static_cast<GameCubeBNRPrivate::BannerType>(isRomSupported_static(&info));
+	d->isValid = ((int)d->bannerType >= 0);
 
 	if (!d->isValid) {
 		d->file->unref();
@@ -266,11 +267,11 @@ GameCubeBNR::GameCubeBNR(IRpFile *file)
 			// Unknown banner type.
 			num = 0;
 			break;
-		case GameCubeBNRPrivate::BANNER_BNR1:
+		case GameCubeBNRPrivate::BannerType::BNR1:
 			// US/JP: One comment.
 			num = 1;
 			break;
-		case GameCubeBNRPrivate::BANNER_BNR2:
+		case GameCubeBNRPrivate::BannerType::BNR2:
 			// PAL: Six comments.
 			num = 6;
 			break;
@@ -306,23 +307,26 @@ int GameCubeBNR::isRomSupported_static(const DetectInfo *info)
 	{
 		// Either no detection information was specified,
 		// or the header is too small.
-		return -1;
+		return (int)GameCubeBNRPrivate::BannerType::Unknown;
 	}
 
 	const uint32_t bnr_magic = be32_to_cpu(
 		*(reinterpret_cast<const uint32_t*>(info->header.pData)));
 
+	GameCubeBNRPrivate::BannerType bannerType = GameCubeBNRPrivate::BannerType::Unknown;
 	switch (bnr_magic) {
 		case GCN_BANNER_MAGIC_BNR1:
 			if (info->szFile >= (off64_t)sizeof(gcn_banner_bnr1_t)) {
 				// This is BNR1.
-				return GameCubeBNRPrivate::BANNER_BNR1;
+				bannerType = GameCubeBNRPrivate::BannerType::BNR1;
+				break;
 			}
 			break;
 		case GCN_BANNER_MAGIC_BNR2:
 			if (info->szFile >= (off64_t)sizeof(gcn_banner_bnr2_t)) {
 				// This is BNR2.
-				return GameCubeBNRPrivate::BANNER_BNR2;
+				bannerType = GameCubeBNRPrivate::BannerType::BNR2;
+				break;
 			}
 			// TODO: If size is >= BNR1 but not BNR2, handle as BNR1?
 			break;
@@ -330,8 +334,7 @@ int GameCubeBNR::isRomSupported_static(const DetectInfo *info)
 			break;
 	}
 
-	// Not suported.
-	return -1;
+	return (int)bannerType;
 }
 
 /**
@@ -475,7 +478,7 @@ int GameCubeBNR::loadFieldData(void)
 	} else if (!d->file || !d->file->isOpen()) {
 		// File isn't open.
 		return -EBADF;
-	} else if (!d->isValid || d->bannerType < 0) {
+	} else if (!d->isValid || (int)d->bannerType < 0) {
 		// Unknown banner file type.
 		return -EIO;
 	}
@@ -492,7 +495,7 @@ int GameCubeBNR::loadFieldData(void)
 	const char *const s_company_title = C_("GameCubeBNR", "Company");
 	const char *const s_description_title = C_("GameCubeBNR", "Description");
 
-	if (d->bannerType == GameCubeBNRPrivate::BANNER_BNR1) {
+	if (d->bannerType == GameCubeBNRPrivate::BannerType::BNR1) {
 		// BNR1: Assuming Shift-JIS with cp1252 fallback.
 		// The language is either English or Japanese, so we're
 		// using RFT_STRING here.
@@ -645,7 +648,7 @@ int GameCubeBNR::loadMetaData(void)
 	} else if (!d->file) {
 		// File isn't open.
 		return -EBADF;
-	} else if (!d->isValid || d->bannerType < 0) {
+	} else if (!d->isValid || (int)d->bannerType < 0) {
 		// Unknown banner file type.
 		return -EIO;
 	}
@@ -665,7 +668,7 @@ int GameCubeBNR::loadMetaData(void)
 	// FIXME: Prince of Persia: The Sands of Time has a full game name in
 	// company_full[], and an empty gamename_full[].
 
-	if (d->bannerType == GameCubeBNRPrivate::BANNER_BNR1) {
+	if (d->bannerType == GameCubeBNRPrivate::BannerType::BNR1) {
 		// BNR1: Assuming Shift-JIS with cp1252 fallback.
 		// TODO: Improve Shift-JIS detection to eliminate the
 		// false positive with Metroid Prime. (GM8E01)
@@ -771,7 +774,7 @@ int GameCubeBNR::loadInternalImage(ImageType imageType, const rp_image **pImage)
 		IMG_INT_BANNER,	// ourImageType
 		d->file,	// file
 		d->isValid,	// isValid
-		d->bannerType,	// romType
+		(int)d->bannerType,	// romType
 		d->img_banner,	// imgCache
 		d->loadBanner);	// func
 }
@@ -806,7 +809,7 @@ int GameCubeBNR::addField_gameInfo(LibRpBase::RomFields *fields, uint32_t gcnReg
 	// since this function is used by GameCube, not GameCubeBNR.
 	const char *const game_info_title = C_("GameCube", "Game Info");
 
-	if (d->bannerType == GameCubeBNRPrivate::BANNER_BNR1) {
+	if (d->bannerType == GameCubeBNRPrivate::BannerType::BNR1) {
 		// BNR1: Assuming Shift-JIS with cp1252 fallback.
 		// The language is either English or Japanese, so we're
 		// using RFT_STRING here.
