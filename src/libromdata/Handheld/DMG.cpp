@@ -589,7 +589,7 @@ DMG::DMG(IRpFile *file)
 	}
 
 	// Set the MIME type. (unofficial)
-	d->mimeType = (d->romType == DMGPrivate::DMG_SYSTEM_CGB)
+	d->mimeType = (d->romType == DMGPrivate::ROM_CGB)
 			? "application/x-gameboy-color-rom"
 			: "application/x-gameboy-rom";
 }
