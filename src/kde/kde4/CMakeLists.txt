@@ -19,11 +19,11 @@ IF(QT4_FOUND)
 	# Get rid of the explicit C90 setting.
 	STRING(REPLACE "-std=iso9899:1990" "" CMAKE_C_FLAGS "${CMAKE_C_FLAGS}")
 
-	IF(QT_QTDBUS_LIBRARY)
+	IF(ENABLE_ACHIEVEMENTS AND QT_QTDBUS_LIBRARY)
 		# QtDBus is used for notifications.
 		# TODO: Make notifications optional.
 		SET(HAVE_QtDBus_NOTIFY 1)
-	ENDIF(QT_QTDBUS_LIBRARY)
+	ENDIF(ENABLE_ACHIEVEMENTS AND QT_QTDBUS_LIBRARY)
 ELSE(QT4_FOUND)
 	# Qt4 not found.
 	SET(BUILD_KDE4 OFF CACHE INTERNAL "Build the KDE4 plugin." FORCE)
@@ -34,6 +34,9 @@ STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-kde4_SRCS "${rom-properti
 STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-kde4_H "${rom-properties-kde_H}")
 STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-kde4_UIS "${rom-properties-kde_UIS}")
 STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-kde4_RCC_SRCS "${rom-properties-kde_RCC_SRCS}")
+
+# Write the config.h file.
+CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/../config.kde.h.in" "${CMAKE_CURRENT_BINARY_DIR}/config.kde.h")
 
 # Sources and headers. (KDE4-specific)
 IF(QT4_FOUND)

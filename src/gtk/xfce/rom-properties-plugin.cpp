@@ -7,6 +7,8 @@
  ***************************************************************************/
 
 #include "stdafx.h"
+#include "config.xfce.h"
+
 #include "rom-properties-provider.hpp"
 #include "rom-properties-page.hpp"
 #include "AchGDBus.hpp"
@@ -39,8 +41,10 @@ thunar_extension_initialize(ThunarxProviderPlugin *plugin)
 	/* Setup the plugin provider type list */
 	type_list[0] = TYPE_ROM_PROPERTIES_PROVIDER;
 
+#ifdef ENABLE_ACHIEVEMENTS
 	// Register AchGDBus.
 	AchGDBus::instance();
+#endif /* ENABLE_ACHIEVEMENTS */
 }
 
 extern "C" G_MODULE_EXPORT void

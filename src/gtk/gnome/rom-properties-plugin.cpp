@@ -7,6 +7,8 @@
  ***************************************************************************/
 
 #include "stdafx.h"
+#include "config.gnome.h"
+
 #include "rom-properties-plugin.hpp"
 #include "rom-properties-provider.hpp"
 #include "AchGDBus.hpp"
@@ -94,8 +96,10 @@ nautilus_module_initialize(GTypeModule *module)
 	// Symbols loaded. Register our types.
 	rp_gnome_register_types(module);
 
+#ifdef ENABLE_ACHIEVEMENTS
 	// Register AchGDBus.
 	AchGDBus::instance();
+#endif /* ENABLE_ACHIEVEMENTS */
 }
 
 extern "C" G_MODULE_EXPORT void

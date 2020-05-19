@@ -1,13 +1,13 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (libromdata)                       *
+ * ROM Properties Page shell extension. (GNOME)                            *
  * config.gnome.h.in: GNOME frontend configuration. (source file)          *
  *                                                                         *
- * Copyright (c) 2017-2019 by David Korth.                                 *
+ * Copyright (c) 2017-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_GNOME_CONFIG_H__
-#define __ROMPROPERTIES_GNOME_CONFIG_H__
+#ifndef __ROMPROPERTIES_GTK_GNOME_CONFIG_H__
+#define __ROMPROPERTIES_GTK_GNOME_CONFIG_H__
 
 /* libnautilus-extension extensions path. */
 #define LibNautilusExtension_EXTENSION_DIR "@LibNautilusExtension_EXTENSION_DIR@"
@@ -15,4 +15,7 @@
 /* Define to 1 if you have the <nautilus-extension.h> header file. */
 #cmakedefine HAVE_NAUTILUS_EXTENSION_H 1
 
-#endif /* __ROMPROPERTIES_GNOME_CONFIG_H__ */
+/* Define to 1 if achievements are enabled. */
+#cmakedefine ENABLE_ACHIEVEMENTS 1
+
+#endif /* __ROMPROPERTIES_GTK_GNOME_CONFIG_H__ */
