@@ -3,7 +3,7 @@ SET(ENV{QT_SELECT} qt4)
 
 # Find Qt4.
 SET(QT4_NO_LINK_QTMAIN 1)
-FIND_PACKAGE(Qt4 4.6.0 ${REQUIRE_KDE4} COMPONENTS QtCore QtGui)
+FIND_PACKAGE(Qt4 4.6.0 ${REQUIRE_KDE4} COMPONENTS QtCore QtGui QtDBus)
 IF(QT4_FOUND)
 	# Make sure KDE4's CMake files don't create an uninstall rule.
 	SET(_kde4_uninstall_rule_created TRUE)
@@ -18,6 +18,13 @@ IF(QT4_FOUND)
 
 	# Get rid of the explicit C90 setting.
 	STRING(REPLACE "-std=iso9899:1990" "" CMAKE_C_FLAGS "${CMAKE_C_FLAGS}")
+
+	# FIXME: Make sure QtDBus_FOUND is correct.
+	IF(QtDBus_FOUND)
+		# QtDBus is used for notifications.
+		# TODO: Make notifications optional.
+		SET(HAVE_QtDBus_NOTIFY 1)
+	ENDIF(QtDBus_FOUND)
 ELSE(QT4_FOUND)
 	# Qt4 not found.
 	SET(BUILD_KDE4 OFF CACHE INTERNAL "Build the KDE4 plugin." FORCE)
@@ -36,6 +43,10 @@ IF(QT4_FOUND)
 		OPTIONS -no-compress
 		)
 ENDIF(QT4_FOUND)
+IF(HAVE_QtDBus_NOTIFY)
+	STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-kde4-notify_SRCS "${rom-properties-kde-notify_SRCS}")
+	STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-kde4-notify_H    "${rom-properties-kde-notify_H}")
+ENDIF(HAVE_QtDBus_NOTIFY)
 SET(rom-properties-kde4_SRCS
 	${rom-properties-kde4_SRCS}
 	${rom-properties-kde4_RCC_O}
@@ -89,6 +100,9 @@ IF(BUILD_KDE4)
 	TARGET_LINK_LIBRARIES(rom-properties-kde4 PUBLIC ${KDE4_KFILE_LIBRARY} ${KDE4_KDEUI_LIBRARY})
 	TARGET_LINK_LIBRARIES(rom-properties-kde4 PUBLIC Qt4::QtGui Qt4::QtCore)
 	TARGET_INCLUDE_DIRECTORIES(rom-properties-kde4 PUBLIC ${KDE4_INCLUDE_DIR})
+	IF(HAVE_QtDBus_NOTIFY)
+		TARGET_LINK_LIBRARIES(rom-properties-kf5 PUBLIC Qt4::QtDBus)
+	ENDIF(HAVE_QtDBus_NOTIFY)
 
 	# Add zlib and png directories for the About tab.
 	IF(HAVE_ZLIB)

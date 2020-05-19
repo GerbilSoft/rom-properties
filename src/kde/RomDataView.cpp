@@ -9,6 +9,7 @@
 #include "stdafx.h"
 #include "RomDataView.hpp"
 #include "RpQImageBackend.hpp"
+#include "AchQtDBus.hpp"
 
 // librpbase, librptexture
 using namespace LibRpBase;
@@ -178,9 +179,9 @@ RomDataViewPrivate::RomDataViewPrivate(RomDataView *q, RomData *romData)
 	, romData(romData->ref())
 	, hasCheckedAchievements(false)
 {
-	// Register RpQImageBackend.
-	// TODO: Static initializer somewhere?
+	// Register RpQImageBackend and AchQtDBus.
 	rp_image::setBackendCreatorFn(RpQImageBackend::creator_fn);
+	AchQtDBus::instance();
 }
 
 RomDataViewPrivate::~RomDataViewPrivate()

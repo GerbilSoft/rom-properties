@@ -9,6 +9,7 @@
 #include "stdafx.h"
 #include "RomThumbCreator.hpp"
 #include "RpQImageBackend.hpp"
+#include "AchQtDBus.hpp"
 
 // librpbase, librptexture
 using namespace LibRpBase;
@@ -54,9 +55,9 @@ using std::unique_ptr;
 extern "C" {
 	Q_DECL_EXPORT ThumbCreator *new_creator()
 	{
-		// Register RpQImageBackend.
-		// TODO: Static initializer somewhere?
+		// Register RpQImageBackend and AchQtDBus.
 		rp_image::setBackendCreatorFn(RpQImageBackend::creator_fn);
+		AchQtDBus::instance();
 
 		return new RomThumbCreator();
 	}
