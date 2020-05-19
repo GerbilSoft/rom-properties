@@ -829,24 +829,6 @@ GameCube::GameCube(IRpFile *file)
 		return;
 	}
 
-	if (!d->mimeType) {
-		// MIME type hasn't been set yet.
-		// Set it based on the system ID.
-		switch (d->discType & GameCubePrivate::DISC_SYSTEM_MASK) {
-			case GameCubePrivate::DISC_SYSTEM_GCN:
-			case GameCubePrivate::DISC_SYSTEM_TRIFORCE:
-				// TODO: Separate MIME type for Triforce.
-				d->mimeType = "application/x-gamecube-iso-image";
-				break;
-			case GameCubePrivate::DISC_SYSTEM_WII:
-				d->mimeType = "application/x-wii-iso-image";
-				break;
-			default:
-				assert(!"Invalid system ID...");
-				break;
-		}
-	}
-
 	if (!d->discReader) {
 		// No WiaReader yet. If this is WIA,
 		// retrieve the header from header[].
@@ -1032,6 +1014,24 @@ GameCube::GameCube(IRpFile *file)
 		default:
 			// Unknown system.
 			goto notSupported;
+	}
+
+	if (!d->mimeType) {
+		// MIME type hasn't been set yet.
+		// Set it based on the system ID.
+		switch (d->discType & GameCubePrivate::DISC_SYSTEM_MASK) {
+			case GameCubePrivate::DISC_SYSTEM_GCN:
+			case GameCubePrivate::DISC_SYSTEM_TRIFORCE:
+				// TODO: Separate MIME type for Triforce.
+				d->mimeType = "application/x-gamecube-iso-image";
+				break;
+			case GameCubePrivate::DISC_SYSTEM_WII:
+				d->mimeType = "application/x-wii-iso-image";
+				break;
+			default:
+				assert(!"Invalid system ID...");
+				break;
+		}
 	}
 
 	// Disc image loaded successfully.
