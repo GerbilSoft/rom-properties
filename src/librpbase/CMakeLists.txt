@@ -123,6 +123,7 @@ SET(librpbase_SRCS
 	TextOut_common.cpp
 	TextOut_text.cpp
 	TextOut_json.cpp
+	Achievements.cpp
 	img/RpImageLoader.cpp
 	img/RpPng.cpp
 	img/RpPngWriter.cpp
@@ -137,7 +138,6 @@ SET(librpbase_SRCS
 	config/ConfReader.cpp
 	config/Config.cpp
 	config/AboutTabText.cpp
-	ach/Achievements.cpp
 	)
 # Headers.
 SET(librpbase_H
@@ -153,6 +153,7 @@ SET(librpbase_H
 	RomMetaData.hpp
 	SystemRegion.hpp
 	TextOut.hpp
+	Achievements.hpp
 	img/RpPng.hpp
 	img/RpPngWriter.hpp
 	img/APNG_dlopen.h
@@ -168,7 +169,6 @@ SET(librpbase_H
 	config/ConfReader.hpp
 	config/Config.hpp
 	config/AboutTabText.hpp
-	ach/Achievements.hpp
 	)
 
 # timegm.c for systems that don't have timegm() or 64-bit _mkgmtime().
@@ -194,20 +194,7 @@ IF(WIN32)
 	SET(librpbase_OS_H    TextFuncs_wchar.hpp)
 ELSE(WIN32)
 	SET(librpbase_OS_SRCS TextFuncs_iconv.cpp)
-
-	# TODO: Make achievements selectable at configure time.
-	# Using `notify-send` because we can't link to libnotify,
-	# since the calling program may have initialized it separately.
-	CHECK_SYMBOL_EXISTS(posix_spawn "spawn.h" HAVE_POSIX_SPAWN)
-	SET(HAVE_NOTIFY_SEND 1)
-	SET(librpbase_OS_SRCS ${librpbase_OS_SRCS} ach/AchLibNotify.cpp)
-	SET(HAVE_ACH_OS_SPECIFIC 1)
 ENDIF(WIN32)
-
-IF(NOT HAVE_ACH_OS_SPECIFIC)
-	# OS-specific achievements function isn't available.
-	SET(librpbase_OS_SRCS ${librpbase_OS_SRCS} ach/AchDummy.cpp)
-ENDIF(NOT HAVE_ACH_OS_SPECIFIC)
 
 IF(ENABLE_DECRYPTION)
 	SET(librpbase_CRYPTO_SRCS crypto/AesCipherFactory.cpp)

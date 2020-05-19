@@ -10,6 +10,7 @@
 #include "RomDataView.hpp"
 #include "RpQImageBackend.hpp"
 #include "MessageSound.hpp"
+#include "AchQtDBus.hpp"
 
 // librpbase, librpfile, librptexture
 #include "librpbase/TextOut.hpp"
@@ -286,9 +287,9 @@ RomDataViewPrivate::RomDataViewPrivate(RomDataView *q, RomData *romData)
 		this->romData = romData->ref();
 	}
 
-	// Register RpQImageBackend.
-	// TODO: Static initializer somewhere?
+	// Register RpQImageBackend and AchQtDBus.
 	rp_image::setBackendCreatorFn(RpQImageBackend::creator_fn);
+	AchQtDBus::instance();
 }
 
 RomDataViewPrivate::~RomDataViewPrivate()

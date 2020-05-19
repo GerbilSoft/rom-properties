@@ -85,6 +85,10 @@ IF(ENABLE_NLS)
 	SET(rom-properties-kde_H    ${rom-properties-kde_H}    GettextTranslator.hpp)
 ENDIF(ENABLE_NLS)
 
+# D-Bus notification for achievements
+SET(rom-properties-kde-notify_SRCS AchQtDBus.cpp)
+SET(rom-properties-kde-notify_H    AchQtDBus.hpp)
+
 # RpFile_kio requires KDE Frameworks 5.
 # FIXME: Dolphin ends up hanging for some reason...
 #SET(rom-properties-kio_SRCS RpFile_kio.cpp)

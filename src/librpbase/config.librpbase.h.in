@@ -81,12 +81,6 @@
 # define XML_IS_DLL 1
 #endif
 
-/* Define to 1 if we're using `notify-send` for desktop notifications. */
-#cmakedefine HAVE_NOTIFY_SEND 1
-
-/* Define to 1 if you have the `posix_spawn` function declared in <spawn.h>. */
-#cmakedefine HAVE_POSIX_SPAWN 1
-
 /** Aligned malloc() functions. **/
 
 /* Define to 1 if you have the MSVC-specific `_aligned_malloc` function. */

@@ -18,7 +18,7 @@
 #include "WiiCommon.hpp"
 
 // librpbase, librpfile, librptexture
-#include "librpbase/ach/Achievements.hpp"
+#include "librpbase/Achievements.hpp"
 using namespace LibRpBase;
 using LibRpFile::IRpFile;
 using LibRpTexture::rp_image;
@@ -1529,17 +1529,18 @@ int WiiWAD::checkViewedAchievements(void) const
 		return false;
 	}
 
+	Achievements *const pAch = Achievements::instance();
 	int ret = 0;
 
 	if (d->key_idx == WiiPartition::Key_Rvt_Debug) {
 		// Debug encryption.
-		Achievements::unlock(Achievements::ID::ViewedDebugCryptedFile);
+		pAch->unlock(Achievements::ID::ViewedDebugCryptedFile);
 		ret++;
 	}
 
 	if (d->wadType == WiiWADPrivate::WadType::BWF) {
 		// BroadOn WAD format.
-		Achievements::unlock(Achievements::ID::ViewedBroadOnWADFile);
+		pAch->unlock(Achievements::ID::ViewedBroadOnWADFile);
 		ret++;
 	}
 
