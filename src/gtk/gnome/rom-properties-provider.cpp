@@ -17,7 +17,7 @@
 
 #include "stdafx.h"
 #include "rom-properties-provider.hpp"
-#include "rom-properties-plugin.h"
+#include "rom-properties-plugin.hpp"
 
 // librpbase, librpfile
 using namespace LibRpBase;
