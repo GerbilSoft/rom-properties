@@ -14,6 +14,7 @@
 #include "n3ds_structs.h"
 
 // librpbase, librpfile, librptexture
+#include "librpbase/Achievements.hpp"
 using namespace LibRpBase;
 using namespace LibRpFile;
 using namespace LibRpTexture;
@@ -933,11 +934,13 @@ void Nintendo3DSPrivate::addTitleIdAndProductCodeFields(bool showContentType)
 			(content_type ? content_type : C_("RomData", "Unknown")));
 
 #ifdef ENABLE_DECRYPTION
-		// Also show encryption type.
-		fields->addField_string(C_("Nintendo3DS", "Issuer"),
-			ncch->isDebug()
-				? C_("Nintendo3DS", "Debug")
-				: C_("Nintendo3DS", "Retail"));
+		// Only show the encryption type if a TMD isn't available.
+		if (loadTicketAndTMD() != 0) {
+			fields->addField_string(C_("Nintendo3DS", "Issuer"),
+				ncch->isDebug()
+					? C_("Nintendo3DS", "Debug")
+					: C_("Nintendo3DS", "Retail"));
+		}
 #endif /* ENABLE_DECRYPTION */
 
 		// Encryption.
@@ -3001,6 +3004,53 @@ bool Nintendo3DS::hasDangerousPermissions(void) const
 	}
 
 	return d->perm.isDangerous;
+}
+
+/**
+ * Check for "viewed" achievements.
+ *
+ * @return Number of achievements unlocked.
+ */
+int Nintendo3DS::checkViewedAchievements(void) const
+{
+	RP_D(const Nintendo3DS);
+	if (!d->isValid) {
+		// ROM is not valid.
+		return 0;
+	}
+
+#ifdef ENABLE_DECRYPTION
+	// NCCH header.
+	NCCHReader *const ncch = const_cast<Nintendo3DSPrivate*>(d)->loadNCCH();
+	if (!ncch) {
+		// Cannot load the NCCH.
+		return 0;
+	}
+
+	Achievements *const pAch = Achievements::instance();
+	int ret = 0;
+
+	// If a TMD is present, check the TMD issuer first.
+	if (const_cast<Nintendo3DSPrivate*>(d)->loadTicketAndTMD() == 0) {
+		if (!strncmp(d->mxh.ticket.issuer, N3DS_TICKET_ISSUER_DEBUG, sizeof(d->mxh.ticket.issuer))) {
+			// Debug issuer.
+			pAch->unlock(Achievements::ID::ViewedDebugCryptedFile);
+			ret++;
+		}
+	} else {
+		// Check the NCCH encryption.
+		if (ncch->isDebug()) {
+			// Debug encryption.
+			pAch->unlock(Achievements::ID::ViewedDebugCryptedFile);
+			ret++;
+		}
+	}
+
+	return ret;
+#else /* !ENABLE_DECRYPTION */
+	// Decryption is not available. Cannot check.
+	return 0;
+#endif /* ENABLE_DECRYPTION */
 }
 
 }
