@@ -38,7 +38,7 @@ int EXEPrivate::loadNEResourceTable(void)
 	} else if (!isValid) {
 		// Unknown executable type.
 		return -EIO;
-	} else if (exeType != EXE_TYPE_NE) {
+	} else if (exeType != ExeType::NE) {
 		// Unsupported executable type.
 		return -ENOTSUP;
 	}

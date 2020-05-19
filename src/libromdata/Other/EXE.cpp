@@ -10,6 +10,7 @@
 #include "EXE.hpp"
 
 // librpbase, librpfile
+#include "librpbase/Achievements.hpp"
 using namespace LibRpBase;
 using LibRpFile::IRpFile;
 
@@ -43,7 +44,7 @@ const char *const EXEPrivate::NE_TargetOSes[6] = {
 
 EXEPrivate::EXEPrivate(EXE *q, IRpFile *file)
 	: super(q, file)
-	, exeType(EXE_TYPE_UNKNOWN)
+	, exeType(ExeType::Unknown)
 	, rsrcReader(nullptr)
 	, pe_subsystem(IMAGE_SUBSYSTEM_UNKNOWN)
 {
@@ -429,7 +430,7 @@ EXE::EXE(IRpFile *file)
 	if (le16_to_cpu(d->mz.e_lfarlc) < 0x40 ||
 	    d->mz.e_magic == cpu_to_be16('ZM')) {
 		// MS-DOS executable.
-		d->exeType = EXEPrivate::EXE_TYPE_MZ;
+		d->exeType = EXEPrivate::ExeType::MZ;
 		// TODO: Check for MS-DOS device drivers?
 		d->fileType = FTYPE_EXECUTABLE;
 		return;
@@ -441,7 +442,7 @@ EXE::EXE(IRpFile *file)
 	uint32_t hdr_addr = le32_to_cpu(d->mz.e_lfanew);
 	if (hdr_addr < sizeof(d->mz) || hdr_addr >= (d->file->size() - sizeof(d->hdr))) {
 		// PE header address is out of range.
-		d->exeType = EXEPrivate::EXE_TYPE_MZ;
+		d->exeType = EXEPrivate::ExeType::MZ;
 		return;
 	}
 
@@ -450,7 +451,7 @@ EXE::EXE(IRpFile *file)
 		// Seek and/or read error.
 		// TODO: Check the signature first instead of
 		// depending on the full union being available?
-		d->exeType = EXEPrivate::EXE_TYPE_UNKNOWN;
+		d->exeType = EXEPrivate::ExeType::Unknown;
 		d->isValid = false;
 		return;
 	}
@@ -464,16 +465,16 @@ EXE::EXE(IRpFile *file)
 		// (.NET is checked in loadFieldData().)
 		switch (le16_to_cpu(d->hdr.pe.OptionalHeader.Magic)) {
 			case IMAGE_NT_OPTIONAL_HDR32_MAGIC:
-				d->exeType = EXEPrivate::EXE_TYPE_PE;
+				d->exeType = EXEPrivate::ExeType::PE;
 				d->pe_subsystem = le16_to_cpu(d->hdr.pe.OptionalHeader.opt32.Subsystem);
 				break;
 			case IMAGE_NT_OPTIONAL_HDR64_MAGIC:
-				d->exeType = EXEPrivate::EXE_TYPE_PE32PLUS;
+				d->exeType = EXEPrivate::ExeType::PE32PLUS;
 				d->pe_subsystem = le16_to_cpu(d->hdr.pe.OptionalHeader.opt64.Subsystem);
 				break;
 			default:
 				// Unsupported PE executable.
-				d->exeType = EXEPrivate::EXE_TYPE_UNKNOWN;
+				d->exeType = EXEPrivate::ExeType::Unknown;
 				d->isValid = false;
 				return;
 		}
@@ -505,7 +506,7 @@ EXE::EXE(IRpFile *file)
 		}
 	} else if (d->hdr.ne.sig == cpu_to_be16('NE') /* 'NE' */) {
 		// New Executable.
-		d->exeType = EXEPrivate::EXE_TYPE_NE;
+		d->exeType = EXEPrivate::ExeType::NE;
 
 		// Check if this is a resource library.
 		// (All segment size values are 0.)
@@ -513,7 +514,7 @@ EXE::EXE(IRpFile *file)
 		// FIXME: ULFONT.FON has non-zero values.
 
 		// Check 0x10-0x1F for all 0s.
-		const uint32_t *res0chk = reinterpret_cast<const uint32_t*>(&d->hdr.ne.InitHeapSize);
+		const uint32_t *const res0chk = reinterpret_cast<const uint32_t*>(&d->hdr.ne.InitHeapSize);
 		if (res0chk[0] == 0 && res0chk[1] == 0 &&
 		    res0chk[2] == 0 && res0chk[3] == 0)
 		{
@@ -535,9 +536,9 @@ EXE::EXE(IRpFile *file)
 	{
 		// Linear Executable.
 		if (d->hdr.le.sig == cpu_to_be16('LE')) {
-			d->exeType = EXEPrivate::EXE_TYPE_LE;
+			d->exeType = EXEPrivate::ExeType::LE;
 		} else /*if (d->hdr.le.sig == cpu_to_be16('LX'))*/ {
-			d->exeType = EXEPrivate::EXE_TYPE_LX;
+			d->exeType = EXEPrivate::ExeType::LX;
 		}
 
 		// TODO: Check byteorder flags and adjust as necessary.
@@ -555,11 +556,11 @@ EXE::EXE(IRpFile *file)
 		// W3 executable. (Collection of LE executables.)
 		// Only used by WIN386.EXE.
 		// TODO: Check for W4. (Compressed version of W3 used by Win9x.)
-		d->exeType = EXEPrivate::EXE_TYPE_W3;
+		d->exeType = EXEPrivate::ExeType::W3;
 		d->fileType = FTYPE_EXECUTABLE;
 	} else {
 		// Unrecognized secondary header.
-		d->exeType = EXEPrivate::EXE_TYPE_MZ;
+		d->exeType = EXEPrivate::ExeType::MZ;
 		d->fileType = FTYPE_EXECUTABLE;
 		return;
 	}
@@ -596,7 +597,7 @@ int EXE::isRomSupported_static(const DetectInfo *info)
 	if (pMZ->e_magic == 'ZM' || pMZ->e_magic == 'MZ') {
 		// This is a DOS "MZ" executable.
 		// Specific subtypes are checked later.
-		return EXEPrivate::EXE_TYPE_MZ;
+		return (int)EXEPrivate::ExeType::MZ;
 	}
 
 	// Not supported.
@@ -641,7 +642,7 @@ const char *EXE::systemName(unsigned int type) const
 	};
 
 	switch (d->exeType) {
-		case EXEPrivate::EXE_TYPE_MZ: {
+		case EXEPrivate::ExeType::MZ: {
 			// DOS executable.
 			static const char *const sysNames_DOS[4] = {
 				"Microsoft MS-DOS", "MS-DOS", "DOS", nullptr
@@ -649,7 +650,7 @@ const char *EXE::systemName(unsigned int type) const
 			return sysNames_DOS[type & SYSNAME_TYPE_MASK];
 		}
 
-		case EXEPrivate::EXE_TYPE_NE: {
+		case EXEPrivate::ExeType::NE: {
 			// New Executable.
 			if (d->hdr.ne.targOS > NE_OS_BOSS) {
 				// Check for Phar Lap 286 extenders.
@@ -670,8 +671,8 @@ const char *EXE::systemName(unsigned int type) const
 			return sysNames_NE[d->hdr.ne.targOS][type & SYSNAME_TYPE_MASK];
 		}
 
-		case EXEPrivate::EXE_TYPE_LE:
-		case EXEPrivate::EXE_TYPE_LX: {
+		case EXEPrivate::ExeType::LE:
+		case EXEPrivate::ExeType::LX: {
 			// Linear Executable.
 			// TODO: Some DOS extenders have the target OS set to OS/2.
 			// Check 'file' msdos magic.
@@ -683,14 +684,14 @@ const char *EXE::systemName(unsigned int type) const
 			return nullptr;
 		}
 
-		case EXEPrivate::EXE_TYPE_W3: {
+		case EXEPrivate::ExeType::W3: {
 			// W3 executable. (Collection of LE executables.)
 			// Only used by WIN386.EXE.
 			return sysNames_Windows[type & SYSNAME_TYPE_MASK];
 		}
 
-		case EXEPrivate::EXE_TYPE_PE:
-		case EXEPrivate::EXE_TYPE_PE32PLUS: {
+		case EXEPrivate::ExeType::PE:
+		case EXEPrivate::ExeType::PE32PLUS: {
 			// Portable Executable.
 			// TODO: Also used by older SkyOS and BeOS, and HX for DOS.
 			switch (d->pe_subsystem) {
@@ -816,7 +817,7 @@ int EXE::loadFieldData(void)
 	} else if (!d->file || !d->file->isOpen()) {
 		// File isn't open.
 		return -EBADF;
-	} else if (!d->isValid || d->exeType < 0) {
+	} else if (!d->isValid || (int)d->exeType < 0) {
 		// Unknown ROM image type.
 		return -EIO;
 	}
@@ -830,38 +831,38 @@ int EXE::loadFieldData(void)
 
 	// Executable type.
 	// NOTE: Not translatable.
-	static const char *const exeTypes[EXEPrivate::EXE_TYPE_LAST] = {
-		"MS-DOS Executable",		// EXE_TYPE_MZ
-		"16-bit New Executable",	// EXE_TYPE_NE
-		"Mixed-Mode Linear Executable",	// EXE_TYPE_LE
-		"Windows/386 Kernel",		// EXE_TYPE_W3
-		"32-bit Linear Executable",	// EXE_TYPE_LX
-		"32-bit Portable Executable",	// EXE_TYPE_PE
-		"64-bit Portable Executable",	// EXE_TYPE_PE32PLUS
+	static const char *const exeTypes[(int)EXEPrivate::ExeType::Max] = {
+		"MS-DOS Executable",		// ExeType::MZ
+		"16-bit New Executable",	// ExeType::NE
+		"Mixed-Mode Linear Executable",	// ExeType::LE
+		"Windows/386 Kernel",		// ExeType::W3
+		"32-bit Linear Executable",	// ExeType::LX
+		"32-bit Portable Executable",	// ExeType::PE
+		"64-bit Portable Executable",	// ExeType::PE32PLUS
 	};
 	const char *const type_title = C_("EXE", "Type");
-	if (d->exeType >= EXEPrivate::EXE_TYPE_MZ && d->exeType < EXEPrivate::EXE_TYPE_LAST) {
-		d->fields->addField_string(type_title, exeTypes[d->exeType]);
+	if (d->exeType >= EXEPrivate::ExeType::MZ && d->exeType < EXEPrivate::ExeType::Max) {
+		d->fields->addField_string(type_title, exeTypes[(int)d->exeType]);
 	} else {
 		d->fields->addField_string(type_title, C_("EXE", "Unknown"));
 	}
 
 	switch (d->exeType) {
-		case EXEPrivate::EXE_TYPE_MZ:
+		case EXEPrivate::ExeType::MZ:
 			d->addFields_MZ();
 			break;
 
-		case EXEPrivate::EXE_TYPE_NE:
+		case EXEPrivate::ExeType::NE:
 			d->addFields_NE();
 			break;
 
-		case EXEPrivate::EXE_TYPE_LE:
-		case EXEPrivate::EXE_TYPE_LX:
+		case EXEPrivate::ExeType::LE:
+		case EXEPrivate::ExeType::LX:
 			d->addFields_LE();
 			break;
 
-		case EXEPrivate::EXE_TYPE_PE:
-		case EXEPrivate::EXE_TYPE_PE32PLUS:
+		case EXEPrivate::ExeType::PE:
+		case EXEPrivate::ExeType::PE32PLUS:
 			d->addFields_PE();
 			break;
 
@@ -871,7 +872,7 @@ int EXE::loadFieldData(void)
 	}
 
 	// Add MZ tab for non-MZ executables
-	if (d->exeType != EXEPrivate::EXE_TYPE_MZ) {
+	if (d->exeType != EXEPrivate::ExeType::MZ) {
 		// NOTE: This doesn't actually create a separate tab for non-implemented types.
 		d->fields->addTab("MZ");
 		d->addFields_MZ();
@@ -879,6 +880,56 @@ int EXE::loadFieldData(void)
 
 	// Finished reading the field data.
 	return static_cast<int>(d->fields->count());
+}
+
+/**
+ * Check for "viewed" achievements.
+ *
+ * @return Number of achievements unlocked.
+ */
+int EXE::checkViewedAchievements(void) const
+{
+	RP_D(const EXE);
+	if (!d->isValid) {
+		// EXE is not valid.
+		return 0;
+	}
+
+	// Checking for PE and PE32+ only, and only for
+	// Windows GUI and console programs.
+	uint16_t subsystem = 0;
+	if (d->exeType == EXEPrivate::ExeType::PE) {
+		subsystem = le16_to_cpu(d->hdr.pe.OptionalHeader.opt32.Subsystem);
+	} else if (d->exeType == EXEPrivate::ExeType::PE32PLUS) {
+		subsystem = le16_to_cpu(d->hdr.pe.OptionalHeader.opt64.Subsystem);
+	} else {
+		return 0;
+	}
+
+	switch (subsystem) {
+		case IMAGE_SUBSYSTEM_WINDOWS_GUI:
+		case IMAGE_SUBSYSTEM_WINDOWS_CUI:
+			break;
+		default:
+			return 0;
+	}
+
+	// Machine type should NOT be x86, amd64, CIL (.NET),
+	// or big-endian PPC (Xbox 360).
+	switch (le16_to_cpu(d->hdr.pe.FileHeader.Machine)) {
+		case IMAGE_FILE_MACHINE_I386:
+		case IMAGE_FILE_MACHINE_AMD64:
+		case IMAGE_FILE_MACHINE_CEE:
+		case IMAGE_FILE_MACHINE_POWERPCBE:
+			return 0;
+		default:
+			break;
+	}
+
+	// Achievement unlocked!
+	Achievements *const pAch = Achievements::instance();
+	pAch->unlock(Achievements::ID::ViewedNonX86PE);
+	return 1;
 }
 
 }

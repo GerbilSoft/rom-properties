@@ -49,11 +49,11 @@ int EXEPrivate::loadPESectionTable(void)
 	uint32_t section_table_start = le32_to_cpu(mz.e_lfanew);
 	uint32_t SizeOfHeaders;
 	switch (exeType) {
-		case EXE_TYPE_PE:
+		case ExeType::PE:
 			section_table_start += sizeof(IMAGE_NT_HEADERS32);
 			SizeOfHeaders = le32_to_cpu(hdr.pe.OptionalHeader.opt32.SizeOfHeaders);
 			break;
-		case EXE_TYPE_PE32PLUS:
+		case ExeType::PE32PLUS:
 			section_table_start += sizeof(IMAGE_NT_HEADERS64);
 			SizeOfHeaders = le32_to_cpu(hdr.pe.OptionalHeader.opt64.SizeOfHeaders);
 			break;
@@ -138,7 +138,7 @@ int EXEPrivate::loadPEResourceTypes(void)
 	} else if (!isValid) {
 		// Unknown executable type.
 		return -EIO;
-	} else if (exeType != EXE_TYPE_PE && exeType != EXE_TYPE_PE32PLUS) {
+	} else if (exeType != ExeType::PE && exeType != ExeType::PE32PLUS) {
 		// Unsupported executable type.
 		return -ENOTSUP;
 	}
@@ -213,10 +213,10 @@ int EXEPrivate::findPERuntimeDLL(string &refDesc, string &refLink)
 	IMAGE_DATA_DIRECTORY dataDir;
 	bool is64 = false;
 	switch (exeType) {
-		case EXE_TYPE_PE:
+		case ExeType::PE:
 			dataDir = hdr.pe.OptionalHeader.opt32.DataDirectory[IMAGE_DATA_DIRECTORY_IMPORT_TABLE];
 			break;
-		case EXE_TYPE_PE32PLUS:
+		case ExeType::PE32PLUS:
 			dataDir = hdr.pe.OptionalHeader.opt64.DataDirectory[IMAGE_DATA_DIRECTORY_IMPORT_TABLE];
 			is64 = true;
 			break;
@@ -478,7 +478,7 @@ void EXEPrivate::addFields_PE(void)
 	uint16_t subsystem_ver_major, subsystem_ver_minor;
 	uint16_t dll_flags;
 	bool dotnet;
-	if (exeType == EXEPrivate::EXE_TYPE_PE) {
+	if (exeType == EXEPrivate::ExeType::PE) {
 		os_ver_major = le16_to_cpu(hdr.pe.OptionalHeader.opt32.MajorOperatingSystemVersion);
 		os_ver_minor = le16_to_cpu(hdr.pe.OptionalHeader.opt32.MinorOperatingSystemVersion);
 		subsystem_ver_major = le16_to_cpu(hdr.pe.OptionalHeader.opt32.MajorSubsystemVersion);
@@ -487,7 +487,7 @@ void EXEPrivate::addFields_PE(void)
 		// TODO: Check VirtualAddress, Size, or both?
 		// 'file' checks VirtualAddress.
 		dotnet = (hdr.pe.OptionalHeader.opt32.DataDirectory[IMAGE_DATA_DIRECTORY_CLR_HEADER].Size != 0);
-	} else /*if (exeType == EXEPrivate::EXE_TYPE_PE32PLUS)*/ {
+	} else /*if (exeType == EXEPrivate::ExeType::PE32PLUS)*/ {
 		os_ver_major = le16_to_cpu(hdr.pe.OptionalHeader.opt64.MajorOperatingSystemVersion);
 		os_ver_minor = le16_to_cpu(hdr.pe.OptionalHeader.opt64.MinorOperatingSystemVersion);
 		subsystem_ver_major = le16_to_cpu(hdr.pe.OptionalHeader.opt64.MajorSubsystemVersion);

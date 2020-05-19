@@ -63,7 +63,9 @@ const char *AchievementsPrivate::description(Achievements::ID id)
 	static const char *const ach_desc[] = {
 		// tr: ViewedDebugCryptedFile
 		NOP_C_("Achievements", "Viewed a debug-encrypted file."),
+		// tr: ViewedNonX86PE
 		NOP_C_("Achievements", "Viewed a non-x86/x64 Windows PE executable."),
+		// tr: ViewedBroadOnWADFile
 		NOP_C_("Achievements", "Viewed a BroadOn format Wii WAD file."),
 	};
 
