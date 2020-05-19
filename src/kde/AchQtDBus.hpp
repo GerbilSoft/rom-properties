@@ -14,10 +14,8 @@
 #include <QtCore/QObject>
 
 class AchQtDBusPrivate;
-class AchQtDBus : public QObject
+class AchQtDBus
 {
-	Q_OBJECT
-
 	protected:
 		/**
 		 * AchQtDBus class.
@@ -29,7 +27,6 @@ class AchQtDBus : public QObject
 		virtual ~AchQtDBus();
 
 	private:
-		typedef QObject super;
 		Q_DISABLE_COPY(AchQtDBus);
 	private:
 		friend class AchQtDBusPrivate;
