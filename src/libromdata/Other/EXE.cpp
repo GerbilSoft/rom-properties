@@ -601,7 +601,7 @@ int EXE::isRomSupported_static(const DetectInfo *info)
 	}
 
 	// Not supported.
-	return -1;
+	return (int)EXEPrivate::ExeType::Unknown;
 }
 
 /**

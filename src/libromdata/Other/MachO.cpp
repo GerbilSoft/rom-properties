@@ -38,36 +38,39 @@ class MachOPrivate : public LibRpBase::RomDataPrivate
 
 	public:
 		// Executable format.
-		enum Exec_Format {
-			EXEC_FORMAT_UNKNOWN	= -1,
-			EXEC_FORMAT_MACH	= 0,
-			EXEC_FORMAT_FAT		= 1,
+		enum class ExecFormat {
+			Unknown	= -1,
+
+			Mach	= 0,
+			Fat	= 1,
+
+			Max
 		};
-		int execFormat;
+		ExecFormat execFormat;
 
 		// Mach-O format.
-		enum Mach_Format {
-			MACH_FORMAT_UNKNOWN	= -1,
-			MACH_FORMAT_32LSB	= 0,
-			MACH_FORMAT_64LSB	= 1,
-			MACH_FORMAT_32MSB	= 2,
-			MACH_FORMAT_64MSB	= 3,
+		enum class MachFormat {
+			Unknown	= -1,
+
+			_32LSB	= 0,
+			_64LSB	= 1,
+			_32MSB	= 2,
+			_64MSB	= 3,
+
+			Max,
 
 			// Host/swap endian formats.
-
 #if SYS_BYTEORDER == SYS_LIL_ENDIAN
-			MACH_FORMAT_32HOST	= MACH_FORMAT_32LSB,
-			MACH_FORMAT_64HOST	= MACH_FORMAT_64LSB,
-			MACH_FORMAT_32SWAP	= MACH_FORMAT_32MSB,
-			MACH_FORMAT_64SWAP	= MACH_FORMAT_64MSB,
+			_32HOST	= _32LSB,
+			_64HOST	= _64LSB,
+			_32SWAP	= _32MSB,
+			_64SWAP	= _64MSB,
 #else /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
-			MACH_FORMAT_32HOST	= MACH_FORMAT_32MSB,
-			MACH_FORMAT_64HOST	= MACH_FORMAT_64MSB,
-			MACH_FORMAT_32SWAP	= MACH_FORMAT_32LSB,
-			MACH_FORMAT_64SWAP	= MACH_FORMAT_64LSB,
+			_32HOST	= _32MSB,
+			_64HOST	= _64MSB,
+			_32SWAP	= _32LSB,
+			_64SWAP	= _64LSB,
 #endif
-
-			MACHO_FORMAT_MAX
 		};
 
 		// Maximum number of Mach-O headers to read.
@@ -80,39 +83,39 @@ class MachOPrivate : public LibRpBase::RomDataPrivate
 		/**
 		 * Check the Mach-O magic number.
 		 * @param magic Magic number as read directly from disk.
-		 * @return Mach_Format value.
+		 * @return MachFormat value.
 		 */
-		static int checkMachMagicNumber(uint32_t magic);
+		static MachFormat checkMachMagicNumber(uint32_t magic);
 };
 
 /** MachOPrivate **/
 
 MachOPrivate::MachOPrivate(MachO *q, IRpFile *file)
 	: super(q, file)
-	, execFormat(EXEC_FORMAT_UNKNOWN)
+	, execFormat(ExecFormat::Unknown)
 { }
 
 /**
  * Check the Mach-O magic number.
  * @param magic Magic number as read directly from disk.
- * @return Mach_Format value.
+ * @return MachFormat value.
  */
-int MachOPrivate::checkMachMagicNumber(uint32_t magic)
+MachOPrivate::MachFormat MachOPrivate::checkMachMagicNumber(uint32_t magic)
 {
 	// NOTE: Checking in order of Mac OS X usage as of 2019.
-	int ret = MACH_FORMAT_UNKNOWN;
+	MachFormat ret = MachFormat::Unknown;
 	if (magic == cpu_to_le32(MH_MAGIC_64)) {
 		// LE64 magic number.
-		ret = MACH_FORMAT_64LSB;
+		ret = MachFormat::_64LSB;
 	} else if (magic == cpu_to_le32(MH_MAGIC)) {
 		// LE32 magic number.
-		ret = MACH_FORMAT_32LSB;
+		ret = MachFormat::_32LSB;
 	} else if (magic == cpu_to_be32(MH_MAGIC)) {
 		// BE32 magic number.
-		ret = MACH_FORMAT_32MSB;
+		ret = MachFormat::_32MSB;
 	} else if (magic == cpu_to_be32(MH_MAGIC_64)) {
 		// BE64 magic number.
-		ret = MACH_FORMAT_64MSB;
+		ret = MachFormat::_64MSB;
 	}
 	return ret;
 }
@@ -166,20 +169,20 @@ MachO::MachO(IRpFile *file)
 	info.header.pData = header;
 	info.ext = nullptr;	// Not needed for ELF.
 	info.szFile = 0;	// Not needed for ELF.
-	d->execFormat = isRomSupported_static(&info);
+	d->execFormat = static_cast<MachOPrivate::ExecFormat>(isRomSupported_static(&info));
 
 	// Load the Mach header.
 	switch (d->execFormat) {
-		case MachOPrivate::EXEC_FORMAT_MACH:
+		case MachOPrivate::ExecFormat::Mach:
 			// Standard Mach executable.
 			d->machFormats.resize(1);
 			d->machHeaders.resize(1);
 			memcpy(&d->machHeaders[0], header, sizeof(mach_header));
-			d->machFormats[0] = d->checkMachMagicNumber(d->machHeaders[0].magic);
+			d->machFormats[0] = (int8_t)d->checkMachMagicNumber(d->machHeaders[0].magic);
 			d->isValid = (d->machFormats[0] >= 0);
 			break;
 
-		case MachOPrivate::EXEC_FORMAT_FAT: {
+		case MachOPrivate::ExecFormat::Fat: {
 			// Read up to 16 architectures.
 			const fat_header *const fatHeader =
 				reinterpret_cast<const fat_header*>(info.header.pData);
@@ -201,7 +204,7 @@ MachO::MachO(IRpFile *file)
 				d->machHeaders.resize(idx+1);
 				size_t size = d->file->seekAndRead(offset, &d->machHeaders[i], sizeof(mach_header));
 				if (size == sizeof(mach_header)) {
-					d->machFormats[idx] = d->checkMachMagicNumber(d->machHeaders[idx].magic);
+					d->machFormats[idx] = (int8_t)d->checkMachMagicNumber(d->machHeaders[idx].magic);
 				} else {
 					// Unable to read this header.
 					// TODO: Show an error?
@@ -226,7 +229,7 @@ MachO::MachO(IRpFile *file)
 	}
 
 	if (!d->isValid) {
-		d->execFormat = MachOPrivate::EXEC_FORMAT_UNKNOWN;
+		d->execFormat = MachOPrivate::ExecFormat::Unknown;
 		d->machFormats.clear();
 		d->machHeaders.clear();
 		d->file->unref();
@@ -240,18 +243,18 @@ MachO::MachO(IRpFile *file)
 	for (auto fmtIter = d->machFormats.cbegin();
 	     fmtIter != d->machFormats.cend(); ++fmtIter, ++hdrIter)
 	{
-		switch (*fmtIter) {
+		switch (static_cast<MachOPrivate::MachFormat>(*fmtIter)) {
 			default:
 				// Invalid format. Continue anyway...
 				break;
 
-			case MachOPrivate::MACH_FORMAT_32HOST:
-			case MachOPrivate::MACH_FORMAT_64HOST:
+			case MachOPrivate::MachFormat::_32HOST:
+			case MachOPrivate::MachFormat::_64HOST:
 				// Host-endian. Nothing to do.
 				break;
 
-			case MachOPrivate::MACH_FORMAT_32SWAP:
-			case MachOPrivate::MACH_FORMAT_64SWAP: {
+			case MachOPrivate::MachFormat::_32SWAP:
+			case MachOPrivate::MachFormat::_64SWAP: {
 				// Swapped endian.
 				// NOTE: Not swapping the magic number.
 				mach_header *const machHeader = &(*hdrIter);
@@ -327,7 +330,7 @@ int MachO::isRomSupported_static(const DetectInfo *info)
 	{
 		// Either no detection information was specified,
 		// or the header is too small.
-		return -1;
+		return (int)MachOPrivate::ExecFormat::Unknown;
 	}
 
 	const uint32_t *const pu32 =
@@ -335,6 +338,7 @@ int MachO::isRomSupported_static(const DetectInfo *info)
 
 	// Check the magic number.
 	// NOTE: Checking in order of Mac OS X usage as of 2019.
+	MachOPrivate::ExecFormat execFormat = MachOPrivate::ExecFormat::Unknown;
 	if (pu32[0] == cpu_to_be32(FAT_MAGIC)) {
 		// Universal binary.
 		// Note that this is the same magic number as Java classes,
@@ -343,17 +347,16 @@ int MachO::isRomSupported_static(const DetectInfo *info)
 		// per executable.
 		if (be32_to_cpu(pu32[1]) <= 16) {
 			// Mach-O universal binary.
-			return MachOPrivate::EXEC_FORMAT_FAT;
+			execFormat = MachOPrivate::ExecFormat::Fat;
 		}
 	} else if (MachOPrivate::checkMachMagicNumber(pu32[0]) !=
-		   MachOPrivate::MACH_FORMAT_UNKNOWN)
+		   MachOPrivate::MachFormat::Unknown)
 	{
 		// Mach-O executable.
-		return MachOPrivate::EXEC_FORMAT_MACH;
+		execFormat = MachOPrivate::ExecFormat::Mach;
 	}
 
-	// Not supported.
-	return MachOPrivate::EXEC_FORMAT_UNKNOWN;
+	return (int)execFormat;
 }
 
 /**
@@ -479,7 +482,7 @@ int MachO::loadFieldData(void)
 	     hdrIter != d->machHeaders.cend(); ++hdrIter, ++fmtIter, i++)
 	{
 		const mach_header *const machHeader = &(*hdrIter);
-		const int machFormat = *fmtIter;
+		const MachOPrivate::MachFormat machFormat = static_cast<MachOPrivate::MachFormat>(*fmtIter);
 
 		// Use the CPU name for the tab title.
 		const char *const s_cpu = MachOData::lookup_cpu_type(machHeader->cputype);
@@ -508,11 +511,11 @@ int MachO::loadFieldData(void)
 			NOP_C_("RomData|ExecType", "64-bit Big-Endian"),
 		};
 		const char *const format_title = C_("MachO", "Format");
-		if (machFormat > MachOPrivate::MACH_FORMAT_UNKNOWN &&
-		    machFormat < ARRAY_SIZE(exec_type_tbl))
+		if (machFormat > MachOPrivate::MachFormat::Unknown &&
+		    (int)machFormat < ARRAY_SIZE(exec_type_tbl))
 		{
 			d->fields->addField_string(format_title,
-				dpgettext_expr(RP_I18N_DOMAIN, "RomData|ExecType", exec_type_tbl[machFormat]));
+				dpgettext_expr(RP_I18N_DOMAIN, "RomData|ExecType", exec_type_tbl[(int)machFormat]));
 		} else {
 			// TODO: Show individual values.
 			// NOTE: This shouldn't happen...
