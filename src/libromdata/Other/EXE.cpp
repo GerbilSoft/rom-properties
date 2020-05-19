@@ -933,16 +933,25 @@ int EXE::checkViewedAchievements(void) const
 
 	// Checking for PE and PE32+ only, and only for
 	// Windows GUI and console programs.
-	uint16_t subsystem = 0;
-	if (d->exeType == EXEPrivate::ExeType::PE) {
-		subsystem = le16_to_cpu(d->hdr.pe.OptionalHeader.opt32.Subsystem);
-	} else if (d->exeType == EXEPrivate::ExeType::PE32PLUS) {
-		subsystem = le16_to_cpu(d->hdr.pe.OptionalHeader.opt64.Subsystem);
-	} else {
-		return 0;
+	switch (d->exeType) {
+		case EXEPrivate::ExeType::PE:
+			// Check for .NET.
+			if (d->hdr.pe.OptionalHeader.opt32.DataDirectory[IMAGE_DATA_DIRECTORY_CLR_HEADER].Size != 0) {
+				// It's .NET. Ignore this.
+				return 0;
+			}
+			break;
+		case EXEPrivate::ExeType::PE32PLUS:
+			if (d->hdr.pe.OptionalHeader.opt64.DataDirectory[IMAGE_DATA_DIRECTORY_CLR_HEADER].Size != 0) {
+				// It's .NET. Ignore this.
+				return 0;
+			}
+			break;
+		default:
+			return 0;
 	}
 
-	switch (subsystem) {
+	switch (d->pe_subsystem) {
 		case IMAGE_SUBSYSTEM_WINDOWS_GUI:
 		case IMAGE_SUBSYSTEM_WINDOWS_CUI:
 			break;
