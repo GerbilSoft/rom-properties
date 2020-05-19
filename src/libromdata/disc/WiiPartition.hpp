@@ -105,15 +105,15 @@ class WiiPartition : public GcnPartition
 
 		// Encryption key in use.
 		// TODO: Merge with EncryptionKeys.
-		enum EncKey {
-			ENCKEY_UNKNOWN = -1,
-			ENCKEY_COMMON = 0,	// Wii common key
-			ENCKEY_KOREAN = 1,	// Korean key
-			ENCKEY_VWII = 2,	// vWii common key
-			ENCKEY_DEBUG = 3,	// RVT-R debug key
-			ENCKEY_NONE = 4,	// No encryption (RVT-H)
+		enum class EncKey {
+			Unknown = -1,
+			Common = 0,	// Wii common key (prod)
+			Korean = 1,	// Korean key
+			vWii = 2,	// vWii common key
+			Debug = 3,	// RVT-R debug key (devel)
+			None = 4,	// No encryption (RVT-H)
 
-			ENCKEY_MAX
+			Max
 		};
 
 		/**

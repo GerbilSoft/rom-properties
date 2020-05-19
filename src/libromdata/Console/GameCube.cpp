@@ -22,6 +22,7 @@
 // librpbase, librpfile, librptexture
 #include "librpfile/DualFile.hpp"
 #include "librpfile/RelatedFile.hpp"
+#include "librpbase/Achievements.hpp"
 #include "librpbase/SystemRegion.hpp"
 using namespace LibRpBase;
 using namespace LibRpFile;
@@ -383,6 +384,7 @@ int GameCubePrivate::loadWiiPartitionTables(void)
 	}
 
 	// Done reading the partition tables.
+	wiiPtblLoaded = true;
 	return 0;
 }
 
@@ -608,7 +610,7 @@ const char *GameCubePrivate::wii_getCryptoStatus(WiiPartition *partition)
 	const KeyManager::VerifyResult res = partition->verifyResult();
 	if (res == KeyManager::VerifyResult::KeyNotFound) {
 		// This may be an invalid key index.
-		if (partition->encKey() == WiiPartition::ENCKEY_UNKNOWN) {
+		if (partition->encKey() == WiiPartition::EncKey::Unknown) {
 			// Invalid key index.
 			return C_("GameCube", "ERROR: Invalid common key index.");
 		}
@@ -1566,7 +1568,7 @@ int GameCube::loadFieldData(void)
 	/** Wii-specific fields. **/
 
 	// Load the Wii partition tables.
-	int wiiPtLoaded = d->loadWiiPartitionTables();
+	const int wiiPtLoaded = d->loadWiiPartitionTables();
 
 	// TMD fields.
 	if (d->gamePartition) {
@@ -1808,25 +1810,25 @@ int GameCube::loadFieldData(void)
 			}
 
 			static const char *const wii_key_tbl[] = {
-				// tr: WiiPartition::ENCKEY_COMMON - Retail encryption key.
+				// tr: WiiPartition::EncKey::Common - Retail encryption key.
 				NOP_C_("GameCube|KeyIdx", "Retail"),
-				// tr: WiiPartition::ENCKEY_KOREAN - Korean encryption key.
+				// tr: WiiPartition::EncKey::Korean - Korean encryption key.
 				NOP_C_("GameCube|KeyIdx", "Korean"),
-				// tr: WiiPartition::ENCKEY_VWII - vWii-specific encryption key.
+				// tr: WiiPartition::EncKey::vWii - vWii-specific encryption key.
 				NOP_C_("GameCube|KeyIdx", "vWii"),
-				// tr: WiiPartition::ENCKEY_DEBUG - Debug encryption key.
+				// tr: WiiPartition::EncKey::Debug - Debug encryption key.
 				NOP_C_("GameCube|KeyIdx", "Debug"),
-				// tr: WiiPartition::ENCKEY_NONE - No encryption.
+				// tr: WiiPartition::EncKey::None - No encryption.
 				NOP_C_("GameCube|KeyIdx", "None"),
 			};
-			static_assert(ARRAY_SIZE(wii_key_tbl) == WiiPartition::ENCKEY_MAX,
+			static_assert(ARRAY_SIZE(wii_key_tbl) == (int)WiiPartition::EncKey::Max,
 				"wii_key_tbl[] size is incorrect.");
 
 			const char *s_key_name;
-			if (encKey >= 0 && encKey < ARRAY_SIZE(wii_key_tbl)) {
-				s_key_name = dpgettext_expr(RP_I18N_DOMAIN, "GameCube|KeyIdx", wii_key_tbl[encKey]);
+			if ((int)encKey >= 0 && (int)encKey < ARRAY_SIZE(wii_key_tbl)) {
+				s_key_name = dpgettext_expr(RP_I18N_DOMAIN, "GameCube|KeyIdx", wii_key_tbl[(int)encKey]);
 			} else {
-				// WiiPartition::ENCKEY_UNKNOWN
+				// WiiPartition::EncKey::Unknown
 				s_key_name = C_("RomData", "Unknown");
 			}
 			data_row.emplace_back(s_key_name);
@@ -2166,6 +2168,47 @@ int GameCube::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) c
 
 	// All URLs added.
 	return 0;
+}
+
+/**
+ * Check for "viewed" achievements.
+ *
+ * @return Number of achievements unlocked.
+ */
+int GameCube::checkViewedAchievements(void) const
+{
+	RP_D(const GameCube);
+	if (!d->isValid || ((d->discType & GameCubePrivate::DISC_SYSTEM_MASK) != GameCubePrivate::DISC_SYSTEM_WII)) {
+		// Disc is either not valid or is not Wii.
+		return 0;
+	}
+
+	Achievements *const pAch = Achievements::instance();
+	int ret = 0;
+
+	const int wiiPtLoaded = const_cast<GameCubePrivate*>(d)->loadWiiPartitionTables();
+	if (wiiPtLoaded == 0) {
+		// Wii partition tables loaded.
+		WiiPartition::EncKey encKey;
+		if ((d->discType & GameCubePrivate::DISC_FORMAT_MASK) == GameCubePrivate::DISC_FORMAT_NASOS) {
+			// NASOS disc image.
+			// If this would normally be an encrypted image, use encKeyReal().
+			encKey = (d->discHeader.disc_noCrypto == 0
+				? d->gamePartition->encKeyReal()
+				: d->gamePartition->encKey());
+		} else {
+			// Other disc image. Use encKey().
+			encKey = d->gamePartition->encKey();
+		}
+
+		if (encKey == WiiPartition::EncKey::Debug) {
+			// Debug encryption.
+			pAch->unlock(Achievements::ID::ViewedDebugCryptedFile);
+			ret++;
+		}
+	}
+
+	return ret;
 }
 
 }
