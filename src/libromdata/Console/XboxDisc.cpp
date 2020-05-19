@@ -75,7 +75,7 @@ class XboxDiscPrivate : public LibRpBase::RomDataPrivate
 			XBE	= 0,	// Xbox XBE
 			XEX	= 1,	// Xbox 360 XEX
 
-			MAX
+			Max
 		};
 		ExeType exeType;
 
@@ -885,6 +885,29 @@ int XboxDisc::loadInternalImage(ImageType imageType, const rp_image **pImage)
 	}
 
 	return -ENOENT;
+}
+
+/**
+ * Check for "viewed" achievements.
+ *
+ * @return Number of achievements unlocked.
+ */
+int XboxDisc::checkViewedAchievements(void) const
+{
+	RP_D(const XboxDisc);
+	if (!d->isValid) {
+		// Disc is not valid.
+		return 0;
+	}
+
+	RomData *const exe = const_cast<XboxDiscPrivate*>(d)->openDefaultExe();
+	if (!exe) {
+		// Unable to open the EXE.
+		return 0;
+	}
+
+	// Check the EXE for the viewed achievements.
+	return exe->checkViewedAchievements();
 }
 
 }
