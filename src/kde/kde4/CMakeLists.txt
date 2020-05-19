@@ -27,12 +27,11 @@ IF(QT4_FOUND)
 	# Get rid of the explicit C90 setting.
 	STRING(REPLACE "-std=iso9899:1990" "" CMAKE_C_FLAGS "${CMAKE_C_FLAGS}")
 
-	# FIXME: Make sure QtDBus_FOUND is correct.
-	IF(QtDBus_FOUND)
+	IF(QT_QTDBUS_LIBRARY)
 		# QtDBus is used for notifications.
 		# TODO: Make notifications optional.
 		SET(HAVE_QtDBus_NOTIFY 1)
-	ENDIF(QtDBus_FOUND)
+	ENDIF(QT_QTDBUS_LIBRARY)
 ELSE(QT4_FOUND)
 	# Qt4 not found.
 	SET(BUILD_KDE4 OFF CACHE INTERNAL "Build the KDE4 plugin." FORCE)
@@ -55,10 +54,16 @@ IF(HAVE_QtDBus_NOTIFY)
 	STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-kde4-notify_SRCS "${rom-properties-kde-notify_SRCS}")
 	STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-kde4-notify_H    "${rom-properties-kde-notify_H}")
 ENDIF(HAVE_QtDBus_NOTIFY)
+
 SET(rom-properties-kde4_SRCS
 	${rom-properties-kde4_SRCS}
+	${rom-properties-kde4-notify_SRCS}
 	${rom-properties-kde4_RCC_O}
 	RomPropertiesDialogPluginFactoryKDE4.cpp
+	)
+SET(rom-properties-kde4_H
+	${rom-properties-kde4_H}
+	${rom-properties-kde4-notify_H}
 	)
 
 IF(COMMAND QT4_WRAP_UI)
@@ -109,7 +114,7 @@ IF(BUILD_KDE4)
 	TARGET_LINK_LIBRARIES(rom-properties-kde4 PUBLIC Qt4::QtGui Qt4::QtCore)
 	TARGET_INCLUDE_DIRECTORIES(rom-properties-kde4 PUBLIC ${KDE4_INCLUDE_DIR})
 	IF(HAVE_QtDBus_NOTIFY)
-		TARGET_LINK_LIBRARIES(rom-properties-kf5 PUBLIC Qt4::QtDBus)
+		TARGET_LINK_LIBRARIES(rom-properties-kde4 PUBLIC Qt4::QtDBus)
 	ENDIF(HAVE_QtDBus_NOTIFY)
 
 	# Add zlib and png directories for the About tab.
