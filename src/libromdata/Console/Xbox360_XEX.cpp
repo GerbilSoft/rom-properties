@@ -17,6 +17,7 @@
 #include "data/XboxPublishers.hpp"
 
 // librpbase, librpfile, librptexture
+#include "librpbase/Achievements.hpp"
 #include "librpbase/disc/CBCReader.hpp"
 #include "librpfile/RpMemFile.hpp"
 using namespace LibRpBase;
@@ -2066,6 +2067,37 @@ int Xbox360_XEX::loadInternalImage(ImageType imageType, const rp_image **pImage)
 	}
 
 	return -ENOENT;
+}
+
+/**
+ * Check for "viewed" achievements.
+ *
+ * @return Number of achievements unlocked.
+ */
+int Xbox360_XEX::checkViewedAchievements(void) const
+{
+	RP_D(const Xbox360_XEX);
+	if (!d->isValid) {
+		// Disc is either not valid or is not Wii.
+		return 0;
+	}
+
+	// Initialize the PE reader.
+	if (!const_cast<Xbox360_XEX_Private*>(d)->initPeReader()) {
+		// Error initializing the PE reader.
+		return 0;
+	}
+
+	Achievements *const pAch = Achievements::instance();
+	int ret = 0;
+
+	if (d->keyInUse == 1) {
+		// Debug encryption.
+		pAch->unlock(Achievements::ID::ViewedDebugCryptedFile);
+		ret++;
+	}
+
+	return ret;
 }
 
 #ifdef ENABLE_DECRYPTION
