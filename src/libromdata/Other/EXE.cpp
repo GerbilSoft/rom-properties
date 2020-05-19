@@ -10,6 +10,7 @@
 #include "EXE.hpp"
 
 // librpbase, librpfile
+#include "librpbase/Achievements.hpp"
 using namespace LibRpBase;
 using LibRpFile::IRpFile;
 
@@ -523,7 +524,7 @@ EXE::EXE(IRpFile *file)
 		// FIXME: ULFONT.FON has non-zero values.
 
 		// Check 0x10-0x1F for all 0s.
-		const uint32_t *res0chk = reinterpret_cast<const uint32_t*>(&d->hdr.ne.InitHeapSize);
+		const uint32_t *const res0chk = reinterpret_cast<const uint32_t*>(&d->hdr.ne.InitHeapSize);
 		if (res0chk[0] == 0 && res0chk[1] == 0 &&
 		    res0chk[2] == 0 && res0chk[3] == 0)
 		{
@@ -915,6 +916,56 @@ bool EXE::hasDangerousPermissions(void) const
 	// Nothing to check here, since TinyXML2 is disabled...
 	return false;
 #endif /* ENABLE_XML */
+}
+
+/**
+ * Check for "viewed" achievements.
+ *
+ * @return Number of achievements unlocked.
+ */
+int EXE::checkViewedAchievements(void) const
+{
+	RP_D(const EXE);
+	if (!d->isValid) {
+		// EXE is not valid.
+		return 0;
+	}
+
+	// Checking for PE and PE32+ only, and only for
+	// Windows GUI and console programs.
+	uint16_t subsystem = 0;
+	if (d->exeType == EXEPrivate::ExeType::PE) {
+		subsystem = le16_to_cpu(d->hdr.pe.OptionalHeader.opt32.Subsystem);
+	} else if (d->exeType == EXEPrivate::ExeType::PE32PLUS) {
+		subsystem = le16_to_cpu(d->hdr.pe.OptionalHeader.opt64.Subsystem);
+	} else {
+		return 0;
+	}
+
+	switch (subsystem) {
+		case IMAGE_SUBSYSTEM_WINDOWS_GUI:
+		case IMAGE_SUBSYSTEM_WINDOWS_CUI:
+			break;
+		default:
+			return 0;
+	}
+
+	// Machine type should NOT be x86, amd64, CIL (.NET),
+	// or big-endian PPC (Xbox 360).
+	switch (le16_to_cpu(d->hdr.pe.FileHeader.Machine)) {
+		case IMAGE_FILE_MACHINE_I386:
+		case IMAGE_FILE_MACHINE_AMD64:
+		case IMAGE_FILE_MACHINE_CEE:
+		case IMAGE_FILE_MACHINE_POWERPCBE:
+			return 0;
+		default:
+			break;
+	}
+
+	// Achievement unlocked!
+	Achievements *const pAch = Achievements::instance();
+	pAch->unlock(Achievements::ID::ViewedNonX86PE);
+	return 1;
 }
 
 }
