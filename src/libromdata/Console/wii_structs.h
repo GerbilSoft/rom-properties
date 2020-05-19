@@ -55,11 +55,11 @@ typedef struct _RVL_PartitionTableEntry {
 } RVL_PartitionTableEntry;
 ASSERT_STRUCT(RVL_PartitionTableEntry, 2*sizeof(uint32_t));
 
-enum RVL_PartitionType {
+typedef enum {
 	RVL_PT_GAME	= 0,
 	RVL_PT_UPDATE	= 1,
 	RVL_PT_CHANNEL	= 2,
-};
+} RVL_PartitionType;
 
 // Wii ticket constants.
 #define RVL_SIGNATURE_TYPE_RSA2048 0x10001
