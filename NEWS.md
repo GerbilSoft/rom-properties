@@ -21,6 +21,7 @@
   * Nintendo3DS: Show the issuer for CCI images. This was shown for CIAs, but
     we forgot to add it for CCI.
   * Nintendo3DS: CVer CIAs have an 8-byte meta section.
+  * iQuePlayer: Fixed file type identification issues.
 
 * Other changes:
   * Split file handling and CPU/byteorder code from librpbase into two

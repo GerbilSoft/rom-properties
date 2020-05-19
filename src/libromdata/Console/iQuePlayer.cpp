@@ -53,12 +53,15 @@ class iQuePlayerPrivate : public RomDataPrivate
 
 	public:
 		// File type.
-		enum FileType {
-			FT_IQUE_UNKNOWN	= -1,	// Unknown ROM type.
-			FT_IQUE_CMD	= 0,	// .cmd file (content metadata)
-			FT_IQUE_DAT	= 1,	// .dat file (ticket)
+		enum class IQueFileType {
+			Unknown	= -1,	// Unknown ROM type.
+
+			CMD	= 0,	// .cmd file (content metadata)
+			DAT	= 1,	// .dat file (ticket)
+
+			Max
 		};
-		int fileType;
+		IQueFileType iQueFileType;
 
 		// .cmd structs.
 		iQuePlayer_contentDesc contentDesc;
@@ -112,7 +115,7 @@ class iQuePlayerPrivate : public RomDataPrivate
 
 iQuePlayerPrivate::iQuePlayerPrivate(iQuePlayer *q, IRpFile *file)
 	: super(q, file)
-	, fileType(FT_IQUE_UNKNOWN)
+	, iQueFileType(IQueFileType::Unknown)
 	, img_thumbnail(nullptr)
 	, img_title(nullptr)
 {
@@ -408,8 +411,8 @@ iQuePlayer::iQuePlayer(IRpFile *file)
 	info.header.pData = reinterpret_cast<const uint8_t*>(&d->contentDesc);
 	info.ext = nullptr;	// Not needed for iQuePlayer.
 	info.szFile = filesize;
-	d->fileType = isRomSupported_static(&info);
-	d->isValid = (d->fileType >= 0);
+	d->iQueFileType = static_cast<iQuePlayerPrivate::IQueFileType>(isRomSupported_static(&info));
+	d->isValid = ((int)d->iQueFileType >= 0);
 
 	if (!d->isValid) {
 		d->file->unref();
@@ -421,7 +424,7 @@ iQuePlayer::iQuePlayer(IRpFile *file)
 	size = d->file->seekAndRead(IQUE_PLAYER_BBCONTENTMETADATAHEAD_ADDRESS,
 		&d->bbContentMetaDataHead, sizeof(d->bbContentMetaDataHead));
 	if (size != sizeof(d->bbContentMetaDataHead)) {
-		d->fileType = iQuePlayerPrivate::FT_IQUE_UNKNOWN;
+		d->iQueFileType = iQuePlayerPrivate::IQueFileType::Unknown;
 		d->isValid = false;
 		d->file->unref();
 		d->file = nullptr;
@@ -429,14 +432,14 @@ iQuePlayer::iQuePlayer(IRpFile *file)
 	}
 
 	// If this is a ticket, read the BBTicketHead.
-	if (d->fileType == iQuePlayerPrivate::FT_IQUE_DAT) {
+	if (d->iQueFileType == iQuePlayerPrivate::IQueFileType::DAT) {
 		d->mimeType = "application/x-ique-dat";		// unofficial, not on fd.o
 		size = d->file->seekAndRead(IQUE_PLAYER_BBTICKETHEAD_ADDRESS,
 			&d->bbTicketHead, sizeof(d->bbTicketHead));
 		if (size != sizeof(d->bbTicketHead)) {
 			// Unable to read the ticket header.
 			// Handle it as a content metadata file.
-			d->fileType = iQuePlayerPrivate::FT_IQUE_CMD;
+			d->iQueFileType = iQuePlayerPrivate::IQueFileType::CMD;
 		}
 	} else {
 		d->mimeType = "application/x-ique-cmd";		// unofficial, not on fd.o
@@ -461,7 +464,7 @@ int iQuePlayer::isRomSupported_static(const DetectInfo *info)
 	{
 		// Either no detection information was specified,
 		// or the header is too small.
-		return -1;
+		return (int)iQuePlayerPrivate::IQueFileType::Unknown;
 	}
 
 	if (info->szFile != IQUE_PLAYER_CMD_FILESIZE &&
@@ -477,17 +480,17 @@ int iQuePlayer::isRomSupported_static(const DetectInfo *info)
 	// Check the magic number.
 	// NOTE: This technically isn't a "magic number",
 	// but it appears to be the same for all iQue .cmd files.
+	iQuePlayerPrivate::IQueFileType iQueFileType = iQuePlayerPrivate::IQueFileType::Unknown;
 	if (!memcmp(contentDesc->magic, IQUE_PLAYER_MAGIC, sizeof(contentDesc->magic))) {
 		// Magic number matches.
 		if (info->szFile == IQUE_PLAYER_DAT_FILESIZE) {
-			return iQuePlayerPrivate::FT_IQUE_DAT;
+			iQueFileType = iQuePlayerPrivate::IQueFileType::DAT;
 		} else /*if (info->szFile == IQUE_PLAYER_CMD_FILESIZE)*/ {
-			return iQuePlayerPrivate::FT_IQUE_CMD;
+			iQueFileType = iQuePlayerPrivate::IQueFileType::CMD;
 		}
 	}
 
-	// Not supported.
-	return -1;
+	return (int)iQueFileType;
 }
 
 /**
@@ -651,7 +654,7 @@ int iQuePlayer::loadFieldData(void)
 	} else if (!d->file || !d->file->isOpen()) {
 		// File isn't open.
 		return -EBADF;
-	} else if (!d->isValid || d->fileType < 0) {
+	} else if (!d->isValid || (int)d->iQueFileType < 0) {
 		// Unknown ROM image type.
 		return -EIO;
 	}
@@ -683,7 +686,7 @@ int iQuePlayer::loadFieldData(void)
 		rp_sprintf("%08X", be32_to_cpu(bbContentMetaDataHead->content_id)),
 		RomFields::STRF_MONOSPACE);
 
-	if (d->fileType == iQuePlayerPrivate::FT_IQUE_DAT) {
+	if (d->iQueFileType == iQuePlayerPrivate::IQueFileType::DAT) {
 		// Ticket-specific fields.
 		const iQuePlayer_BbTicketHead *const bbTicketHead = &d->bbTicketHead;
 
@@ -726,7 +729,7 @@ int iQuePlayer::loadMetaData(void)
 	} else if (!d->file) {
 		// File isn't open.
 		return -EBADF;
-	} else if (!d->isValid || d->fileType < 0) {
+	} else if (!d->isValid || (int)d->iQueFileType < 0) {
 		// Unknown ROM image type.
 		return -EIO;
 	}
@@ -791,7 +794,7 @@ int iQuePlayer::loadInternalImage(ImageType imageType, const rp_image **pImage)
 	if (!d->file) {
 		// File isn't open.
 		return -EBADF;
-	} else if (!d->isValid || d->fileType < 0) {
+	} else if (!d->isValid || (int)d->iQueFileType < 0) {
 		// Save file isn't valid.
 		return -EIO;
 	}
