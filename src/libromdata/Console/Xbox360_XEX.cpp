@@ -2046,6 +2046,12 @@ int Xbox360_XEX::checkViewedAchievements(void) const
 		ret++;
 	}
 
+	// Check the EXE for achievements.
+	const EXE *exe = const_cast<Xbox360_XEX_Private*>(d)->initEXE();
+	if (exe) {
+		ret += exe->checkViewedAchievements();
+	}
+
 	return ret;
 }
 
