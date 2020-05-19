@@ -631,11 +631,11 @@ void AboutTabPrivate::initCreditsTab(void)
 		sCredits += "https://www.gnu.org/licenses/gpl-2.0.html";
 	}
 
-	AboutTabText::CreditType_t lastCreditType = AboutTabText::CT_CONTINUE;
+	AboutTabText::CreditType_t lastCreditType = AboutTabText::CreditType::Continue;
 	for (const AboutTabText::CreditsData_t *creditsData = &AboutTabText::CreditsData[0];
-	     creditsData->type < AboutTabText::CT_MAX; creditsData++)
+	     creditsData->type < AboutTabText::CreditType::Max; creditsData++)
 	{
-		if (creditsData->type != AboutTabText::CT_CONTINUE &&
+		if (creditsData->type != AboutTabText::CreditType::Continue &&
 		    creditsData->type != lastCreditType)
 		{
 			// New credit type.
@@ -643,18 +643,18 @@ void AboutTabPrivate::initCreditsTab(void)
 			sCredits += "\\b ";
 
 			switch (creditsData->type) {
-				case AboutTabText::CT_DEVELOPER:
+				case AboutTabText::CreditType::Developer:
 					sCredits += rtfEscape(C_("AboutTab|Credits", "Developers:"));
 					break;
-				case AboutTabText::CT_CONTRIBUTOR:
+				case AboutTabText::CreditType::Contributor:
 					sCredits += rtfEscape(C_("AboutTab|Credits", "Contributors:"));
 					break;
-				case AboutTabText::CT_TRANSLATOR:
+				case AboutTabText::CreditType::Translator:
 					sCredits += rtfEscape(C_("AboutTab|Credits", "Translators:"));
 					break;
 
-				case AboutTabText::CT_CONTINUE:
-				case AboutTabText::CT_MAX:
+				case AboutTabText::CreditType::Continue:
+				case AboutTabText::CreditType::Max:
 				default:
 					assert(!"Invalid credit type.");
 					break;

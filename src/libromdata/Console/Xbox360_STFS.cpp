@@ -51,16 +51,16 @@ class Xbox360_STFS_Private : public RomDataPrivate
 
 	public:
 		// STFS type.
-		enum StfsType {
-			STFS_TYPE_UNKNOWN = -1,	// Unknown STFS type.
+		enum class StfsType {
+			Unknown	= -1,	// Unknown STFS type.
 
-			STFS_TYPE_CON	= 0,	// Console-signed
-			STFS_TYPE_PIRS	= 1,	// MS-signed for non-Xbox Live
-			STFS_TYPE_LIVE	= 2,	// MS-signed for Xbox Live
+			Con	= 0,	// Console-signed
+			Pirs	= 1,	// MS-signed for non-Xbox Live
+			Live	= 2,	// MS-signed for Xbox Live
 
-			STFS_TYPE_MAX
+			Max
 		};
-		int stfsType;
+		StfsType stfsType;
 
 		// Icon.
 		// NOTE: Currently using Title Thumbnail.
@@ -153,7 +153,7 @@ class Xbox360_STFS_Private : public RomDataPrivate
 
 Xbox360_STFS_Private::Xbox360_STFS_Private(Xbox360_STFS *q, IRpFile *file)
 	: super(q, file)
-	, stfsType(STFS_TYPE_UNKNOWN)
+	, stfsType(StfsType::Unknown)
 	, img_icon(nullptr)
 	, headers_loaded(0)
 	, xexReader(nullptr)
@@ -184,7 +184,7 @@ const rp_image *Xbox360_STFS_Private::loadIcon(void)
 	if (img_icon) {
 		// Icon has already been loaded.
 		return img_icon;
-	} else if (!this->isValid || this->stfsType < 0) {
+	} else if (!this->isValid || (int)this->stfsType < 0) {
 		// Can't load the icon.
 		return nullptr;
 	}
@@ -288,7 +288,7 @@ int Xbox360_STFS_Private::loadHeader(unsigned int header)
 	if (!this->file) {
 		// File isn't open.
 		return -EBADF;
-	} else if (!this->isValid || this->stfsType < 0) {
+	} else if (!this->isValid || (int)this->stfsType < 0) {
 		// STFS file isn't valid.
 		return -EIO;
 	}
@@ -345,14 +345,14 @@ int32_t Xbox360_STFS_Private::dataBlockNumberToPhys(int dataBlockNumber)
 	}
 
 	int32_t base = ((dataBlockNumber + 0xAA) / 0xAA);
-	if (stfsType == STFS_TYPE_CON) {
+	if (stfsType == StfsType::Con) {
 		base <<= blockShift;
 	}
 
 	int32_t ret = (base + dataBlockNumber);
 	if (dataBlockNumber > 0xAA) {
 		base = ((dataBlockNumber + 0x70E4) / 0x70E4);
-		if (stfsType == STFS_TYPE_CON) {
+		if (stfsType == StfsType::Con) {
 			base <<= blockShift;
 		}
 		ret += base;
@@ -361,7 +361,7 @@ int32_t Xbox360_STFS_Private::dataBlockNumberToPhys(int dataBlockNumber)
 			base = ((dataBlockNumber + 0x4AF768) / 0x4AF768);
 			// FIXME: Originally compared magic to blockShift,
 			// which doesn't make sense...
-			if (stfsType == STFS_TYPE_CON) {
+			if (stfsType == StfsType::Con) {
 				base <<= blockShift;
 			}
 			ret += base;
@@ -385,7 +385,7 @@ int Xbox360_STFS_Private::loadFileTable(void)
 	if (!this->file) {
 		// File isn't open.
 		return -EBADF;
-	} else if (!this->isValid || this->stfsType < 0) {
+	} else if (!this->isValid || (int)this->stfsType < 0) {
 		// STFS file isn't valid.
 		return -EIO;
 	}
@@ -577,8 +577,8 @@ Xbox360_STFS::Xbox360_STFS(IRpFile *file)
 	info.header.pData = reinterpret_cast<const uint8_t*>(&d->stfsHeader);
 	info.ext = nullptr;	// Not needed for STFS.
 	info.szFile = 0;	// Not needed for STFS.
-	d->stfsType = isRomSupported_static(&info);
-	d->isValid = (d->stfsType >= 0);
+	d->stfsType = static_cast<Xbox360_STFS_Private::StfsType>(isRomSupported_static(&info));
+	d->isValid = ((int)d->stfsType >= 0);
 
 	if (!d->isValid) {
 		d->file->unref();
@@ -623,28 +623,28 @@ int Xbox360_STFS::isRomSupported_static(const DetectInfo *info)
 	{
 		// Either no detection information was specified,
 		// or the header is too small.
-		return Xbox360_STFS_Private::STFS_TYPE_UNKNOWN;
+		return (int)Xbox360_STFS_Private::StfsType::Unknown;
 	}
 
-	Xbox360_STFS_Private::StfsType stfsType = Xbox360_STFS_Private::STFS_TYPE_UNKNOWN;
+	Xbox360_STFS_Private::StfsType stfsType = Xbox360_STFS_Private::StfsType::Unknown;
 
 	// Check for STFS.
 	const STFS_Package_Header *const stfsHeader =
 		reinterpret_cast<const STFS_Package_Header*>(info->header.pData);
 	if (stfsHeader->magic == cpu_to_be32(STFS_MAGIC_CON)) {
 		// We have a console-signed STFS package.
-		stfsType = Xbox360_STFS_Private::STFS_TYPE_CON;
+		stfsType = Xbox360_STFS_Private::StfsType::Con;
 	} else if (stfsHeader->magic == cpu_to_be32(STFS_MAGIC_PIRS)) {
 		// We have an MS-signed STFS package. (non-Xbox Live)
-		stfsType = Xbox360_STFS_Private::STFS_TYPE_PIRS;
+		stfsType = Xbox360_STFS_Private::StfsType::Pirs;
 	} else if (stfsHeader->magic == cpu_to_be32(STFS_MAGIC_LIVE)) {
 		// We have an MS-signed STFS package. (Xbox Live)
-		stfsType = Xbox360_STFS_Private::STFS_TYPE_LIVE;
+		stfsType = Xbox360_STFS_Private::StfsType::Live;
 	}
 
-	if (stfsType == Xbox360_STFS_Private::STFS_TYPE_UNKNOWN) {
+	if (stfsType == Xbox360_STFS_Private::StfsType::Unknown) {
 		// Not supported.
-		return stfsType;
+		return (int)stfsType;
 	}
 
 	// Check certain fields to prevent conflicts with the
@@ -652,9 +652,9 @@ int Xbox360_STFS::isRomSupported_static(const DetectInfo *info)
 	switch (stfsType) {
 		default:
 			assert(!"Invalid STFS type...");
-			return Xbox360_STFS_Private::STFS_TYPE_UNKNOWN;
+			return (int)Xbox360_STFS_Private::StfsType::Unknown;
 
-		case Xbox360_STFS_Private::STFS_TYPE_CON:
+		case Xbox360_STFS_Private::StfsType::Con:
 			// Console-signed.
 			// Check a few things.
 
@@ -667,7 +667,7 @@ int Xbox360_STFS::isRomSupported_static(const DetectInfo *info)
 					break;
 				default:
 					// Invalid value.
-					return Xbox360_STFS_Private::STFS_TYPE_UNKNOWN;
+					return (int)Xbox360_STFS_Private::StfsType::Unknown;
 			}
 
 			// Datestamp field format: "MM-DD-YY" (assuming 20xx for year)
@@ -677,12 +677,12 @@ int Xbox360_STFS::isRomSupported_static(const DetectInfo *info)
 			    stfsHeader->console.datestamp[5] != '-')
 			{
 				// Not dashes. This isn't an Xbox 360 package.
-				return Xbox360_STFS_Private::STFS_TYPE_UNKNOWN;
+				return (int)Xbox360_STFS_Private::StfsType::Unknown;
 			}
 			break;
 
-		case Xbox360_STFS_Private::STFS_TYPE_PIRS:
-		case Xbox360_STFS_Private::STFS_TYPE_LIVE: {
+		case Xbox360_STFS_Private::StfsType::Pirs:
+		case Xbox360_STFS_Private::StfsType::Live: {
 			// MS-signed package.
 			// Make sure the padding is empty.
 			// This area overlaps the Nintendo DS logo section,
@@ -694,14 +694,14 @@ int Xbox360_STFS::isRomSupported_static(const DetectInfo *info)
 				if (*pPadding != 0) {
 					// Not empty.
 					// This is not padding.
-					return Xbox360_STFS_Private::STFS_TYPE_UNKNOWN;
+					return (int)Xbox360_STFS_Private::StfsType::Unknown;
 				}
 			}
 			break;
 		}
 	}
 
-	return stfsType;
+	return (int)stfsType;
 }
 
 /**
@@ -847,7 +847,7 @@ int Xbox360_STFS::loadFieldData(void)
 	} else if (!d->file || !d->file->isOpen()) {
 		// File isn't open.
 		return -EBADF;
-	} else if (!d->isValid || d->stfsType < 0) {
+	} else if (!d->isValid || (int)d->stfsType < 0) {
 		// STFS file isn't valid.
 		return -EIO;
 	}
@@ -967,12 +967,12 @@ int Xbox360_STFS::loadFieldData(void)
 		NOP_C_("Xbox360_STFS|FileType", "Non-Xbox Live Package"),
 		NOP_C_("Xbox360_STFS|FileType", "Xbox Live Package"),
 	};
-	if (d->stfsType > Xbox360_STFS_Private::STFS_TYPE_UNKNOWN &&
-	    d->stfsType < Xbox360_STFS_Private::STFS_TYPE_MAX)
+	if (d->stfsType > Xbox360_STFS_Private::StfsType::Unknown &&
+	    d->stfsType < Xbox360_STFS_Private::StfsType::Max)
 	{
 		d->fields->addField_string(C_("Xbox360_STFS", "Package Type"),
 			dpgettext_expr(RP_I18N_DOMAIN, "Xbox360_STFS|FileType",
-				file_type_tbl[d->stfsType]));
+				file_type_tbl[(int)d->stfsType]));
 	} else {
 		d->fields->addField_string(C_("Xbox360_STFS|RomData", "Type"),
 			C_("RomData", "Unknown"));
@@ -1100,7 +1100,7 @@ int Xbox360_STFS::loadMetaData(void)
 	} else if (!d->file) {
 		// File isn't open.
 		return -EBADF;
-	} else if (!d->isValid || d->stfsType < 0) {
+	} else if (!d->isValid || (int)d->stfsType < 0) {
 		// STFS file isn't valid.
 		return -EIO;
 	}
@@ -1157,7 +1157,7 @@ int Xbox360_STFS::loadInternalImage(ImageType imageType, const rp_image **pImage
 		IMG_INT_ICON,	// ourImageType
 		d->file,	// file
 		d->isValid,	// isValid
-		d->stfsType,	// romType
+		(int)d->stfsType,	// romType
 		d->img_icon,	// imgCache
 		d->loadIcon);	// func
 }

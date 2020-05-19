@@ -137,16 +137,15 @@ class DMGPrivate : public RomDataPrivate
 		static const uint8_t dmg_nintendo[0x18];
 
 	public:
-		enum DMG_RomType {
-			ROM_UNKNOWN	= -1,	// Unknown ROM type.
-			ROM_DMG		= 0,	// Game Boy
-			ROM_CGB		= 1,	// Game Boy Color
+		enum class RomType {
+			Unknown	= -1,	// Unknown ROM type.
 
-			ROM_MAX
+			DMG	= 0,	// Game Boy
+			CGB	= 1,	// Game Boy Color
+
+			Max
 		};
-
-		// ROM type.
-		int romType;
+		RomType romType;
 
 	public:
 		// ROM header.
@@ -243,7 +242,7 @@ const DMGPrivate::dmg_cart_type DMGPrivate::dmg_cart_types_end[] = {
 
 DMGPrivate::DMGPrivate(DMG *q, IRpFile *file)
 	: super(q, file)
-	, romType(ROM_UNKNOWN)
+	, romType(RomType::Unknown)
 {
 	// Clear the various structs.
 	memset(&romHeader, 0, sizeof(romHeader));
@@ -564,9 +563,9 @@ DMG::DMG(IRpFile *file)
 	info.header.pData = header;
 	info.ext = nullptr;	// Not needed for DMG.
 	info.szFile = 0;	// Not needed for DMG.
-	d->romType = isRomSupported_static(&info);
+	d->romType = static_cast<DMGPrivate::RomType>(isRomSupported_static(&info));
 
-	d->isValid = (d->romType >= 0);
+	d->isValid = ((int)d->romType >= 0);
 	if (d->isValid) {
 		// Save the header for later.
 		// TODO: Save the RST table?
@@ -589,7 +588,7 @@ DMG::DMG(IRpFile *file)
 	}
 
 	// Set the MIME type. (unofficial)
-	d->mimeType = (d->romType == DMGPrivate::ROM_CGB)
+	d->mimeType = (d->romType == DMGPrivate::RomType::CGB)
 			? "application/x-gameboy-color-rom"
 			: "application/x-gameboy-rom";
 }
@@ -612,8 +611,10 @@ int DMG::isRomSupported_static(const DetectInfo *info)
 	{
 		// Either no detection information was specified,
 		// or the header is too small.
-		return -1;
+		return (int)DMGPrivate::RomType::Unknown;
 	}
+
+	DMGPrivate::RomType romType = DMGPrivate::RomType::Unknown;
 
 	// Check the system name.
 	const DMG_RomHeader *const romHeader =
@@ -621,13 +622,13 @@ int DMG::isRomSupported_static(const DetectInfo *info)
 	if (!memcmp(romHeader->nintendo, DMGPrivate::dmg_nintendo, sizeof(DMGPrivate::dmg_nintendo))) {
 		// Found a DMG ROM.
 		if (romHeader->cgbflag & 0x80) {
-			return DMGPrivate::ROM_CGB; // CGB supported
+			romType = DMGPrivate::RomType::CGB;	// CGB supported (TODO: CGB only?)
+		} else {
+			romType = DMGPrivate::RomType::DMG;
 		}
-		return DMGPrivate::ROM_DMG;
 	}
 
-	// Not supported.
-	return -1;
+	return (int)romType;
 }
 
 /**
@@ -646,7 +647,7 @@ const char *DMG::systemName(unsigned int type) const
 	// TODO: Abbreviation might be different... (Japan uses DMG/CGB?)
 	static_assert(SYSNAME_TYPE_MASK == 3,
 		"DMG::systemName() array index optimization needs to be updated.");
-	static_assert(DMGPrivate::ROM_MAX == 2,
+	static_assert((int)DMGPrivate::RomType::Max == 2,
 		"DMG::systemName() array index optimization needs to be updated.");
 
 	// Bits 0-1: Type. (long, short, abbreviation)
@@ -657,8 +658,8 @@ const char *DMG::systemName(unsigned int type) const
 	};
 
 	// NOTE: This might return an incorrect system name if
-	// d->romType is ROM_TYPE_UNKNOWN.
-	return sysNames[d->romType & 1][type & SYSNAME_TYPE_MASK];
+	// d->romType is RomType::Unknown.
+	return sysNames[(int)d->romType & 1][type & SYSNAME_TYPE_MASK];
 }
 
 /**
@@ -811,7 +812,7 @@ int DMG::loadFieldData(void)
 	} else if (!d->file || !d->file->isOpen()) {
 		// File isn't open.
 		return -EBADF;
-	} else if (!d->isValid || d->romType < 0) {
+	} else if (!d->isValid || (int)d->romType < 0) {
 		// Unknown ROM image type.
 		return -EIO;
 	}
@@ -1186,7 +1187,7 @@ int DMG::loadMetaData(void)
 	} else if (!d->file) {
 		// File isn't open.
 		return -EBADF;
-	} else if (!d->isValid || d->romType < 0) {
+	} else if (!d->isValid || (int)d->romType < 0) {
 		// Unknown ROM image type.
 		return -EIO;
 	}
@@ -1235,7 +1236,7 @@ int DMG::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
 	pExtURLs->clear();
 
 	RP_D(const DMG);
-	if (!d->isValid || d->romType < 0) {
+	if (!d->isValid || (int)d->romType < 0) {
 		// ROM image isn't valid.
 		return -EIO;
 	}

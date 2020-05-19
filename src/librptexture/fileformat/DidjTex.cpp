@@ -52,16 +52,15 @@ class DidjTexPrivate : public FileFormatPrivate
 		RP_DISABLE_COPY(DidjTexPrivate)
 
 	public:
-		enum TexType {
-			TEX_TYPE_UNKNOWN	= -1,	// Unknown image type.
-			TEX_TYPE_TEX		= 0,	// .tex
-			TEX_TYPE_TEXS		= 1,	// .texs (multiple .tex, concatenated)
+		enum class TexType {
+			Unknown	= -1,	// Unknown image type
 
-			TEX_TYPE_MAX
+			Tex	= 0,	// .tex
+			TexS	= 1,	// .texs (multiple .tex, concatenated)
+
+			Max
 		};
-
-		// .tex type.
-		int texType;
+		TexType texType;
 
 		// .tex header.
 		Didj_Tex_Header texHeader;
@@ -83,7 +82,7 @@ class DidjTexPrivate : public FileFormatPrivate
 
 DidjTexPrivate::DidjTexPrivate(DidjTex *q, IRpFile *file)
 	: super(q, file)
-	, texType(TEX_TYPE_UNKNOWN)
+	, texType(TexType::Unknown)
 	, img(nullptr)
 {
 	// Clear the structs and arrays.
@@ -369,7 +368,7 @@ DidjTex::DidjTex(IRpFile *file)
 			d->file = nullptr;
 			return;
 		}
-		d->texType = DidjTexPrivate::TEX_TYPE_TEXS;
+		d->texType = DidjTexPrivate::TexType::TexS;
 	} else {
 		// .tex - total filesize must be equal to compressed size plus header size.
 		if (our_size != filesize) {
@@ -379,7 +378,7 @@ DidjTex::DidjTex(IRpFile *file)
 			d->file = nullptr;
 			return;
 		}
-		d->texType = DidjTexPrivate::TEX_TYPE_TEX;
+		d->texType = DidjTexPrivate::TexType::Tex;
 	}
 
 	// Looks like it's valid.
@@ -448,11 +447,11 @@ const char *const *DidjTex::supportedMimeTypes_static(void)
 const char *DidjTex::textureFormatName(void) const
 {
 	RP_D(const DidjTex);
-	if (!d->isValid || d->texType < 0)
+	if (!d->isValid || (int)d->texType < 0)
 		return nullptr;
 
 	// TODO: Use an array?
-	return (d->texType == DidjTexPrivate::TEX_TYPE_TEXS
+	return (d->texType == DidjTexPrivate::TexType::TexS
 		? "Leapster Didj .texs"
 		: "Leapster Didj .tex");
 }
@@ -464,7 +463,7 @@ const char *DidjTex::textureFormatName(void) const
 const char *DidjTex::pixelFormat(void) const
 {
 	RP_D(const DidjTex);
-	if (!d->isValid || d->texType < 0) {
+	if (!d->isValid || (int)d->texType < 0) {
 		// Not supported.
 		return nullptr;
 	}
@@ -522,7 +521,7 @@ int DidjTex::getFields(RomFields *fields) const
 		return 0;
 
 	RP_D(DidjTex);
-	if (!d->isValid || d->texType < 0) {
+	if (!d->isValid || (int)d->texType < 0) {
 		// Not valid.
 		return -EIO;
 	}
@@ -551,7 +550,7 @@ int DidjTex::getFields(RomFields *fields) const
 const rp_image *DidjTex::image(void) const
 {
 	RP_D(const DidjTex);
-	if (!d->isValid || d->texType < 0) {
+	if (!d->isValid || (int)d->texType < 0) {
 		// Unknown file type.
 		return nullptr;
 	}

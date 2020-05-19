@@ -32,17 +32,17 @@ class AboutTabText {
 	public:
 		/** Credits **/
 
-		enum CreditType_t {
-			CT_CONTINUE = 0,	// Continue previous type.
-			CT_DEVELOPER,		// Developer
-			CT_CONTRIBUTOR,		// Contributor
-			CT_TRANSLATOR,		// Translator (TODO)
+		enum class CreditType {
+			Continue	= 0,	// Continue previous type.
+			Developer,		// Developer
+			Contributor,		// Contributor
+			Translator,		// Translator (TODO)
 
-			CT_MAX
+			Max
 		};
 
 		struct CreditsData_t {
-			CreditType_t type;
+			CreditType type;
 			const char *name;
 			const char *url;
 			const char *linkText;

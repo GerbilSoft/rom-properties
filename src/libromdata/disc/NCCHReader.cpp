@@ -37,7 +37,7 @@ NCCHReaderPrivate::NCCHReaderPrivate(NCCHReader *q,
 	, pos(0)
 	, headers_loaded(0)
 	, verifyResult(KeyManager::VERIFY_UNKNOWN)
-	, nonNcchContentType(NONCCH_UNKNOWN)
+	, nonNcchContentType(NonNCCHContentType::Unknown)
 #ifdef ENABLE_DECRYPTION
 	, tid_be(0)
 	, cipher(nullptr)
@@ -71,7 +71,7 @@ NCCHReaderPrivate::NCCHReaderPrivate(NCCHReader *q,
 			// NDHT. (DS Whitelist)
 			// 0004800F-484E4841
 			verifyResult = KeyManager::VERIFY_OK;
-			nonNcchContentType = NONCCH_NDHT;
+			nonNcchContentType = NonNCCHContentType::NDHT;
 			closeFileOrDiscReader();
 			return;
 		}
@@ -81,7 +81,7 @@ NCCHReaderPrivate::NCCHReaderPrivate(NCCHReader *q,
 			// NARC. (TWL Version Data)
 			// 0004800F-484E4C41
 			verifyResult = KeyManager::VERIFY_OK;
-			nonNcchContentType = NONCCH_NARC;
+			nonNcchContentType = NonNCCHContentType::NARC;
 		} else {
 			// TODO: Better verifyResult? (May be DSiWare...)
 			verifyResult = KeyManager::VERIFY_WRONG_KEY;
@@ -934,11 +934,11 @@ const char *NCCHReader::contentType(void) const
 		// Check if this is another content type.
 		RP_D(const NCCHReader);
 		switch (d->nonNcchContentType) {
-			case NCCHReaderPrivate::NONCCH_NDHT:
+			case NCCHReaderPrivate::NonNCCHContentType::NDHT:
 				// NDHT (DS Whitelist)
 				content_type = "NDHT";
 				break;
-			case NCCHReaderPrivate::NONCCH_NARC:
+			case NCCHReaderPrivate::NonNCCHContentType::NARC:
 				// NARC (TWL Version Data)
 				content_type = "NARC";
 				break;
