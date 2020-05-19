@@ -430,10 +430,12 @@ Config *Config::instance(void)
 {
 	// Initialize the singleton instance.
 	Config *const q = &ConfigPrivate::instance;
+
 	// Load the configuration if necessary.
 	q->load(false);
+
 	// Return the singleton instance.
-	return &ConfigPrivate::instance;
+	return q;
 }
 
 /** Image types **/
