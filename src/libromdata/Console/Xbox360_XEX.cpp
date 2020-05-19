@@ -2030,7 +2030,7 @@ int Xbox360_XEX::checkViewedAchievements(void) const
 {
 	RP_D(const Xbox360_XEX);
 	if (!d->isValid) {
-		// Disc is not valid.
+		// XEX is not valid.
 		return 0;
 	}
 

@@ -1237,7 +1237,7 @@ int WiiWAD::checkViewedAchievements(void) const
 {
 	RP_D(const WiiWAD);
 	if (!d->isValid) {
-		// WAD isn't valid.
+		// WAD is not valid.
 		return 0;
 	}
 
