@@ -76,8 +76,14 @@ class Achievements
 		 * Achievement identifiers.
 		 */
 		enum class ID {
+			// Debug-encrypted file. (devkits)
 			ViewedDebugCryptedFile = 0,
+
+			// Non-x86/x64 PE executable.
+			// Does not include Xbox 360 executables.
 			ViewedNonX86PE,
+
+			// BroadOn WAD file format for Wii.
 			ViewedBroadOnWADFile,
 
 			AchievementMax
