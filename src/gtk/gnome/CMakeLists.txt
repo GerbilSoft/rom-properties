@@ -33,6 +33,30 @@ STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-gnome_SRCS2 "${rom-proper
 STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-gnome_H     "${rom-properties-gtk_H}")
 STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-gnome_H2    "${rom-properties-gtk3_H}")
 
+# TODO: Make this optional.
+STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-gnome-notify_SRCS "${rom-properties-gtk-notify_SRCS}")
+STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-gnome-notify_H    "${rom-properties-gtk-notify_H}")
+
+# D-Bus bindings for notifications.
+# NOTE: This has to be in this file, not the GTK+ CMakeLists.txt.
+ADD_CUSTOM_COMMAND(
+	OUTPUT Notifications.c Notifications.h
+	COMMAND "${GDBUS_CODEGEN}"
+		--generate-c-code Notifications
+		"${CMAKE_CURRENT_SOURCE_DIR}/../org.freedesktop.Notifications.xml"
+	WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
+	DEPENDS ../org.freedesktop.Notifications.xml
+	VERBATIM
+	)
+
+# Disable unused parameter warnings in generated D-Bus sources.
+INCLUDE(CheckCCompilerFlag)
+CHECK_C_COMPILER_FLAG("-Wno-unused-parameter" CFLAG_Wno_unused_parameter)
+IF(CFLAG_Wno_unused_parameter)
+	SET_SOURCE_FILES_PROPERTIES(${CMAKE_CURRENT_BINARY_DIR}/Notifications.c
+		APPEND_STRING PROPERTIES COMPILE_FLAGS " -Wno-unused-parameter ")
+ENDIF(CFLAG_Wno_unused_parameter)
+
 # CPU-specific and optimized sources.
 IF(rom-properties-gtk3_SSSE3_SRCS)
 	STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-gnome_IFUNC_SRCS "${rom-properties-gtk3_IFUNC_SRCS}")
@@ -63,13 +87,16 @@ CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/config.gnome.h.in" "${CMAKE_CURRENT_
 # Sources and headers. (GNOME-specific)
 SET(rom-properties-gnome_SRCS
 	${rom-properties-gnome_SRCS} ${rom-properties-gnome_SRCS2}
+	${rom-properties-gnome-notify_SRCS} ${rom-properties-gnome-notify_H}
+	${CMAKE_CURRENT_BINARY_DIR}/Notifications.c
 	${rom-properties-gnome_IFUNC_SRCS}
 	${rom-properties-gnome_SSSE3_SRCS}
-	rom-properties-plugin.c
+	rom-properties-plugin.cpp
 	rom-properties-provider.cpp
 	)
 SET(rom-properties-gnome_H
 	${rom-properties-gnome_H} ${rom-properties-gnome_H2}
+	rom-properties-plugin.hpp
 	rom-properties-provider.hpp
 	)
 

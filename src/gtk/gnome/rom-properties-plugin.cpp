@@ -1,14 +1,15 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (GNOME)                            *
- * rom-properties-plugin.c: Nautilus (and forks) Plugin Definition.        *
+ * rom-properties-plugin.cpp: Nautilus (and forks) Plugin Definition.      *
  *                                                                         *
  * Copyright (c) 2017-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #include "stdafx.h"
-#include "rom-properties-plugin.h"
+#include "rom-properties-plugin.hpp"
 #include "rom-properties-provider.hpp"
+#include "AchGDBus.hpp"
 
 static GType type_list[1];
 
@@ -65,7 +66,7 @@ rp_gnome_register_types(GTypeModule *module)
 
 /** Per-frontend initialization functions. **/
 
-G_MODULE_EXPORT void
+extern "C" G_MODULE_EXPORT void
 nautilus_module_initialize(GTypeModule *module)
 {
 	CHECK_UID();
@@ -92,9 +93,12 @@ nautilus_module_initialize(GTypeModule *module)
 
 	// Symbols loaded. Register our types.
 	rp_gnome_register_types(module);
+
+	// Register AchGDBus.
+	AchGDBus::instance();
 }
 
-G_MODULE_EXPORT void
+extern "C" G_MODULE_EXPORT void
 caja_module_initialize(GTypeModule *module)
 {
 	CHECK_UID();
@@ -123,7 +127,7 @@ caja_module_initialize(GTypeModule *module)
 	rp_gnome_register_types(module);
 }
 
-G_MODULE_EXPORT void
+extern "C" G_MODULE_EXPORT void
 nemo_module_initialize(GTypeModule *module)
 {
 	CHECK_UID();
@@ -154,7 +158,7 @@ nemo_module_initialize(GTypeModule *module)
 
 /** Common shutdown and list_types functions. **/
 
-G_MODULE_EXPORT void
+extern "C" G_MODULE_EXPORT void
 nautilus_module_shutdown(void)
 {
 #ifdef G_ENABLE_DEBUG
@@ -167,13 +171,15 @@ nautilus_module_shutdown(void)
 	}
 }
 
-G_MODULE_EXPORT void
+extern "C" G_MODULE_EXPORT void
 nautilus_module_list_types(const GType	**types,
 			   gint		 *n_types)
 {
 	*types = type_list;
 	*n_types = G_N_ELEMENTS(type_list);
 }
+
+extern "C" {
 
 /** Symbol aliases for MATE (Caja) **/
 
@@ -190,3 +196,5 @@ G_MODULE_EXPORT void nemo_module_shutdown		(void)
 G_MODULE_EXPORT void nemo_module_list_types		(const GType	**types,
 							 gint		 *n_types)
 	__attribute__((alias("nautilus_module_list_types")));
+
+}

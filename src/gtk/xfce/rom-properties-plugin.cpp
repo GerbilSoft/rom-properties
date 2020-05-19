@@ -1,6 +1,6 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (XFCE)                             *
- * rom-properties-plugin.c: ThunarX Plugin Definition.                     *
+ * rom-properties-plugin.cpp: ThunarX Plugin Definition.                   *
  *                                                                         *
  * Copyright (c) 2017-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
@@ -9,15 +9,11 @@
 #include "stdafx.h"
 #include "rom-properties-provider.hpp"
 #include "rom-properties-page.hpp"
-
-G_MODULE_EXPORT void thunar_extension_initialize	(ThunarxProviderPlugin *plugin);
-G_MODULE_EXPORT void thunar_extension_shutdown		(void);
-G_MODULE_EXPORT void thunar_extension_list_types	(const GType	**types,
-							 gint		 *n_types);
+#include "AchGDBus.hpp"
 
 static GType type_list[1];
 
-G_MODULE_EXPORT void
+extern "C" G_MODULE_EXPORT void
 thunar_extension_initialize(ThunarxProviderPlugin *plugin)
 {
 	if (getuid() == 0 || geteuid() == 0) {
@@ -42,9 +38,12 @@ thunar_extension_initialize(ThunarxProviderPlugin *plugin)
 
 	/* Setup the plugin provider type list */
 	type_list[0] = TYPE_ROM_PROPERTIES_PROVIDER;
+
+	// Register AchGDBus.
+	AchGDBus::instance();
 }
 
-G_MODULE_EXPORT void
+extern "C" G_MODULE_EXPORT void
 thunar_extension_shutdown(void)
 {
 #ifdef G_ENABLE_DEBUG
@@ -52,7 +51,7 @@ thunar_extension_shutdown(void)
 #endif
 }
 
-G_MODULE_EXPORT void
+extern "C" G_MODULE_EXPORT void
 thunar_extension_list_types(const GType	**types,
 			    gint	 *n_types)
 {

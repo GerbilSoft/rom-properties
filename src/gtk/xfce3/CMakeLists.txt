@@ -29,6 +29,30 @@ STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-xfce3_SRCS2 "${rom-proper
 STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-xfce3_H     "${rom-properties-gtk_H}")
 STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-xfce3_H2    "${rom-properties-gtk3_H}")
 
+# TODO: Make this optional.
+STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-xfce3-notify_SRCS "${rom-properties-gtk-notify_SRCS}")
+STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-xfce3-notify_H    "${rom-properties-gtk-notify_H}")
+
+# D-Bus bindings for notifications.
+# NOTE: This has to be in this file, not the GTK+ CMakeLists.txt.
+ADD_CUSTOM_COMMAND(
+	OUTPUT Notifications.c Notifications.h
+	COMMAND "${GDBUS_CODEGEN}"
+		--generate-c-code Notifications
+		"${CMAKE_CURRENT_SOURCE_DIR}/../org.freedesktop.Notifications.xml"
+	WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
+	DEPENDS ../org.freedesktop.Notifications.xml
+	VERBATIM
+	)
+
+# Disable unused parameter warnings in generated D-Bus sources.
+INCLUDE(CheckCCompilerFlag)
+CHECK_C_COMPILER_FLAG("-Wno-unused-parameter" CFLAG_Wno_unused_parameter)
+IF(CFLAG_Wno_unused_parameter)
+	SET_SOURCE_FILES_PROPERTIES(${CMAKE_CURRENT_BINARY_DIR}/Notifications.c
+		APPEND_STRING PROPERTIES COMPILE_FLAGS " -Wno-unused-parameter ")
+ENDIF(CFLAG_Wno_unused_parameter)
+
 # CPU-specific and optimized sources.
 IF(rom-properties-gtk3_SSSE3_SRCS)
 	STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-xfce3_IFUNC_SRCS "${rom-properties-gtk3_IFUNC_SRCS}")
@@ -56,9 +80,11 @@ UNSET(arch)
 # Sources and headers. (XFCE-specific)
 SET(rom-properties-xfce3_SRCS
 	${rom-properties-xfce3_SRCS} ${rom-properties-xfce3_SRCS2}
+	${rom-properties-xfce3-notify_SRCS} ${rom-properties-xfce3-notify_H}
+	${CMAKE_CURRENT_BINARY_DIR}/Notifications.c
 	${rom-properties-xfce3_IFUNC_SRCS}
 	${rom-properties-xfce3_SSSE3_SRCS}
-	../xfce/rom-properties-plugin.c
+	../xfce/rom-properties-plugin.cpp
 	../xfce/rom-properties-provider.cpp
 	../xfce/rom-properties-page.cpp
 	)
