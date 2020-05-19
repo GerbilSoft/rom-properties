@@ -7,6 +7,8 @@
  ***************************************************************************/
 
 #include "stdafx.h"
+#include "config.kde.h"
+
 #include "RomDataView.hpp"
 #include "RpQImageBackend.hpp"
 #include "MessageSound.hpp"
@@ -289,7 +291,9 @@ RomDataViewPrivate::RomDataViewPrivate(RomDataView *q, RomData *romData)
 
 	// Register RpQImageBackend and AchQtDBus.
 	rp_image::setBackendCreatorFn(RpQImageBackend::creator_fn);
+#if defined(ENABLE_ACHIEVEMENTS) && defined(HAVE_QtDBus_NOTIFY)
 	AchQtDBus::instance();
+#endif /* ENABLE_ACHIEVEMENTS && HAVE_QtDBus_NOTIFY */
 }
 
 RomDataViewPrivate::~RomDataViewPrivate()

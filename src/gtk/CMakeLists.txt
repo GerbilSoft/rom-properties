@@ -68,9 +68,11 @@ SET(rom-properties-gtk2_H GdkImageConv.hpp)
 SET(rom-properties-gtk3_SRCS CairoImageConv.cpp)
 SET(rom-properties-gtk3_H CairoImageConv.hpp)
 
-# D-Bus notification for achievements
-SET(rom-properties-gtk-notify_SRCS AchGDBus.cpp)
-SET(rom-properties-gtk-notify_H    AchGDBus.hpp)
+IF(ENABLE_ACHIEVEMENTS)
+	# D-Bus notification for achievements
+	SET(rom-properties-gtk-notify_SRCS AchGDBus.cpp)
+	SET(rom-properties-gtk-notify_H    AchGDBus.hpp)
+ENDIF(ENABLE_ACHIEVEMENTS)
 
 # Common libraries required for both GTK+ 2.x and 3.x.
 FIND_PACKAGE(GLib2 2.26.0)

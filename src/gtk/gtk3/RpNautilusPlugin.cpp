@@ -7,6 +7,7 @@
  ***************************************************************************/
 
 #include "stdafx.h"
+#include "config.gtk3.h"
 #include "plugin-helper.h"
 
 #include "RpNautilusPlugin.hpp"
@@ -67,8 +68,10 @@ nautilus_module_initialize(GTypeModule *module)
 	// Symbols loaded. Register our types.
 	rp_nautilus_register_types(module);
 
+#ifdef ENABLE_ACHIEVEMENTS
 	// Register AchGDBus.
 	AchGDBus::instance();
+#endif /* ENABLE_ACHIEVEMENTS */
 }
 
 extern "C" G_MODULE_EXPORT void

@@ -15,11 +15,13 @@
 
 // Thunar version is based on GTK+ version.
 #if GTK_CHECK_VERSION(3,0,0)
+#  include "config.gtk3.h"
 #  define LIBTHUNARX_SO_FILENAME "libthunarx-3.so"
 #  define THUNARX_MAJOR_VERSION 1
 #  define THUNARX_MINOR_VERSION 8
 #  define THUNARX_MICRO_VERSION 0
 #else /* !GTK_CHECK_VERSION(3,0,0) */
+#  include "config.xfce.h"
 #  define LIBTHUNARX_SO_FILENAME "libthunarx-2.so"
 #  define THUNARX_MAJOR_VERSION 1
 #  define THUNARX_MINOR_VERSION 6
@@ -51,8 +53,10 @@ rp_thunar_register_types(ThunarxProviderPlugin *plugin)
 	/* Setup the plugin provider type list */
 	type_list[0] = TYPE_RP_THUNAR_PROVIDER;
 
+#ifdef ENABLE_ACHIEVEMENTS
 	// Register AchGDBus.
 	AchGDBus::instance();
+#endif /* ENABLE_ACHIEVEMENTS */
 }
 
 /** Per-frontend initialization functions. **/
