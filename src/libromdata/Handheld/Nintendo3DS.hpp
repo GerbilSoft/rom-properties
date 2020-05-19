@@ -3,7 +3,7 @@
  * Nintendo3DS.hpp: Nintendo 3DS ROM reader.                               *
  * Handles CCI/3DS, CIA, and SMDH files.                                   *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -24,6 +24,7 @@ ROMDATA_DECL_IMGINT()
 ROMDATA_DECL_ICONANIM()
 ROMDATA_DECL_IMGEXT()
 ROMDATA_DECL_ROMOPS()
+ROMDATA_DECL_VIEWED_ACHIEVEMENTS()
 ROMDATA_DECL_END()
 
 }
