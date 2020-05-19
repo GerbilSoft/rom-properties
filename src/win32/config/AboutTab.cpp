@@ -631,7 +631,7 @@ void AboutTabPrivate::initCreditsTab(void)
 		sCredits += "https://www.gnu.org/licenses/gpl-2.0.html";
 	}
 
-	AboutTabText::CreditType_t lastCreditType = AboutTabText::CreditType::Continue;
+	AboutTabText::CreditType lastCreditType = AboutTabText::CreditType::Continue;
 	for (const AboutTabText::CreditsData_t *creditsData = &AboutTabText::CreditsData[0];
 	     creditsData->type < AboutTabText::CreditType::Max; creditsData++)
 	{
