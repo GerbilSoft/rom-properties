@@ -16,6 +16,7 @@
 #include "utils/SuperMagicDrive.hpp"
 
 // librpbase, librpfile
+#include "librpbase/Achievements.hpp"
 using namespace LibRpBase;
 using LibRpFile::IRpFile;
 
@@ -35,6 +36,7 @@ class MegaDrivePrivate : public RomDataPrivate
 {
 	public:
 		MegaDrivePrivate(MegaDrive *q, IRpFile *file);
+		~MegaDrivePrivate();
 
 	private:
 		typedef RomDataPrivate super;
@@ -144,7 +146,10 @@ class MegaDrivePrivate : public RomDataPrivate
 		// NOTE: Must be byteswapped on access.
 		M68K_VectorTable vectors;	// Interrupt vectors.
 		MD_RomHeader romHeader;		// ROM header.
-		SMD_Header smdHeader;		// SMD header.
+
+		// Extra headers.
+		SMD_Header *smdHeader;		// SMD header.
+		MD_RomHeader *romHeaderLockOn;	// Locked-on ROM header.
 };
 
 /** MegaDrivePrivate **/
@@ -166,11 +171,18 @@ MegaDrivePrivate::MegaDrivePrivate(MegaDrive *q, IRpFile *file)
 	: super(q, file)
 	, romType(ROM_UNKNOWN)
 	, md_region(0)
+	, smdHeader(nullptr)
+	, romHeaderLockOn(nullptr)
 {
 	// Clear the various structs.
 	memset(&vectors, 0, sizeof(vectors));
 	memset(&romHeader, 0, sizeof(romHeader));
-	memset(&smdHeader, 0, sizeof(smdHeader));
+}
+
+MegaDrivePrivate::~MegaDrivePrivate()
+{
+	delete smdHeader;
+	delete romHeaderLockOn;
 }
 
 /** Internal ROM data. **/
@@ -545,94 +557,149 @@ MegaDrive::MegaDrive(IRpFile *file)
 	info.ext = nullptr;	// Not needed for MD.
 	info.szFile = 0;	// Not needed for MD.
 	d->romType = isRomSupported_static(&info);
+	d->isValid = (d->romType >= 0);
 
-	if (d->romType >= 0) {
-		// Save the header for later.
-		// TODO (remove before committing): Does gcc/msvc optimize this into a jump table?
-		switch (d->romType & MegaDrivePrivate::ROM_FORMAT_MASK) {
-			case MegaDrivePrivate::ROM_FORMAT_CART_BIN:
-				d->fileType = FileType::ROM_Image;
+	if (!d->isValid) {
+		// Not supported.
+		d->file->unref();
+		d->file = nullptr;
+		return;
+	}
 
-				// MD header is at 0x100.
-				// Vector table is at 0.
-				memcpy(&d->vectors,    header,        sizeof(d->vectors));
-				memcpy(&d->romHeader, &header[0x100], sizeof(d->romHeader));
-				break;
+	// Save the header for later.
+	switch (d->romType & MegaDrivePrivate::ROM_FORMAT_MASK) {
+		case MegaDrivePrivate::ROM_FORMAT_CART_BIN:
+			d->fileType = FileType::ROM_Image;
 
-			case MegaDrivePrivate::ROM_FORMAT_CART_SMD: {
-				d->fileType = FileType::ROM_Image;
+			// MD header is at 0x100.
+			// Vector table is at 0.
+			memcpy(&d->vectors,    header,        sizeof(d->vectors));
+			memcpy(&d->romHeader, &header[0x100], sizeof(d->romHeader));
+			break;
 
-				// Save the SMD header.
-				memcpy(&d->smdHeader, header, sizeof(d->smdHeader));
+		case MegaDrivePrivate::ROM_FORMAT_CART_SMD: {
+			d->fileType = FileType::ROM_Image;
 
-				// First bank needs to be deinterleaved.
-				auto block = aligned_uptr<uint8_t>(16, SuperMagicDrive::SMD_BLOCK_SIZE * 2);
-				uint8_t *const smd_data = block.get();
-				uint8_t *const bin_data = smd_data + SuperMagicDrive::SMD_BLOCK_SIZE;
-				size = d->file->seekAndRead(512, smd_data, SuperMagicDrive::SMD_BLOCK_SIZE);
-				if (size != SuperMagicDrive::SMD_BLOCK_SIZE) {
-					// Short read. ROM is invalid.
-					d->romType = MegaDrivePrivate::ROM_UNKNOWN;
-					break;
-				}
+			// Save the SMD header.
+			d->smdHeader = new SMD_Header;
+			memcpy(d->smdHeader, header, sizeof(*d->smdHeader));
 
-				// Decode the SMD block.
-				SuperMagicDrive::decodeBlock(bin_data, smd_data);
-
-				// MD header is at 0x100.
-				// Vector table is at 0.
-				memcpy(&d->vectors,    bin_data,        sizeof(d->vectors));
-				memcpy(&d->romHeader, &bin_data[0x100], sizeof(d->romHeader));
+			// First bank needs to be deinterleaved.
+			auto block = aligned_uptr<uint8_t>(16, SuperMagicDrive::SMD_BLOCK_SIZE * 2);
+			uint8_t *const smd_data = block.get();
+			uint8_t *const bin_data = smd_data + SuperMagicDrive::SMD_BLOCK_SIZE;
+			size = d->file->seekAndRead(512, smd_data, SuperMagicDrive::SMD_BLOCK_SIZE);
+			if (size != SuperMagicDrive::SMD_BLOCK_SIZE) {
+				// Short read. ROM is invalid.
+				d->romType = MegaDrivePrivate::ROM_UNKNOWN;
+				d->isValid = false;
 				break;
 			}
 
-			case MegaDrivePrivate::ROM_FORMAT_DISC_2048:
-				d->fileType = FileType::DiscImage;
+			// Decode the SMD block.
+			SuperMagicDrive::decodeBlock(bin_data, smd_data);
 
-				// MCD-specific header is at 0. [TODO]
-				// MD-style header is at 0x100.
-				// No vector table is present on the disc.
-				memcpy(&d->romHeader, &header[0x100], sizeof(d->romHeader));
-				break;
-
-			case MegaDrivePrivate::ROM_FORMAT_DISC_2352:
-				if (size < 0x210) {
-					// Not enough data for a 2352-byte sector disc image.
-					d->file->unref();
-					d->file = nullptr;
-					return;
-				}
-
-				d->fileType = FileType::DiscImage;
-				// MCD-specific header is at 0x10. [TODO]
-				// MD-style header is at 0x110.
-				// No vector table is present on the disc.
-				memcpy(&d->romHeader, &header[0x110], sizeof(d->romHeader));
-				break;
-
-			case MegaDrivePrivate::ROM_FORMAT_UNKNOWN:
-			default:
-				d->fileType = FileType::Unknown;
-				d->romType = MegaDrivePrivate::ROM_UNKNOWN;
-				break;
+			// MD header is at 0x100.
+			// Vector table is at 0.
+			memcpy(&d->vectors,    bin_data,        sizeof(d->vectors));
+			memcpy(&d->romHeader, &bin_data[0x100], sizeof(d->romHeader));
+			break;
 		}
+
+		case MegaDrivePrivate::ROM_FORMAT_DISC_2048:
+			d->fileType = FileType::DiscImage;
+
+			// MCD-specific header is at 0. [TODO]
+			// MD-style header is at 0x100.
+			// No vector table is present on the disc.
+			memcpy(&d->romHeader, &header[0x100], sizeof(d->romHeader));
+			break;
+
+		case MegaDrivePrivate::ROM_FORMAT_DISC_2352:
+			if (size < 0x210) {
+				// Not enough data for a 2352-byte sector disc image.
+				d->romType = MegaDrivePrivate::ROM_UNKNOWN;
+				d->isValid = false;
+				break;
+			}
+
+			d->fileType = FileType::DiscImage;
+			// MCD-specific header is at 0x10. [TODO]
+			// MD-style header is at 0x110.
+			// No vector table is present on the disc.
+			memcpy(&d->romHeader, &header[0x110], sizeof(d->romHeader));
+			break;
+
+		case MegaDrivePrivate::ROM_FORMAT_UNKNOWN:
+		default:
+			d->fileType = FileType::Unknown;
+			d->romType = MegaDrivePrivate::ROM_UNKNOWN;
+			break;
 	}
 
-	d->isValid = (d->romType >= 0);
-	if (d->isValid) {
-		// Parse the MD region code.
-		d->md_region = MegaDriveRegions::parseRegionCodes(
-			d->romHeader.region_codes, sizeof(d->romHeader.region_codes));
-	} else {
+	if (!d->isValid) {
 		// Not valid. Close the file.
 		d->file->unref();
 		d->file = nullptr;
 	}
 
+	// Parse the MD region code.
+	d->md_region = MegaDriveRegions::parseRegionCodes(
+		d->romHeader.region_codes, sizeof(d->romHeader.region_codes));
+
 	// Determine the MIME type.
 	const uint8_t sysID = (d->romType & MegaDrivePrivate::ROM_SYSTEM_MASK);
 	if (sysID < ARRAY_SIZE(d->mimeType_tbl)-1) {
 		d->mimeType = d->mimeType_tbl[sysID];
+	}
+
+	// If this is S&K, try reading the locked-on ROM header.
+	const int64_t fileSize = d->file->size();
+	if (sysID == MegaDrivePrivate::ROM_SYSTEM_MD && fileSize >= ((2*1024*1024)+512) &&
+	    !memcmp(d->romHeader.serial, "GM MK-1563 -00", sizeof(d->romHeader.serial)))
+	{
+		// Check if a locked-on ROM is present.
+		if ((d->romType & MegaDrivePrivate::ROM_FORMAT_MASK) == MegaDrivePrivate::ROM_FORMAT_CART_SMD) {
+			// Load the 16K block and deinterleave it.
+			if (fileSize >= (2*1024*1024)+512+16384) {
+				auto block = aligned_uptr<uint8_t>(16, SuperMagicDrive::SMD_BLOCK_SIZE * 2);
+				uint8_t *const smd_data = block.get();
+				uint8_t *const bin_data = smd_data + SuperMagicDrive::SMD_BLOCK_SIZE;
+				size_t size = d->file->seekAndRead(512 + (2*1024*1024), smd_data, SuperMagicDrive::SMD_BLOCK_SIZE);
+				if (size == SuperMagicDrive::SMD_BLOCK_SIZE) {
+					// Deinterleave the block.
+					SuperMagicDrive::decodeBlock(bin_data, smd_data);
+					d->romHeaderLockOn = new MD_RomHeader;
+					memcpy(d->romHeaderLockOn, &bin_data[0x100], sizeof(*d->romHeaderLockOn));
+				}
+			}
+		} else {
+			// Load the header directly.
+			d->romHeaderLockOn = new MD_RomHeader;
+			size_t size = d->file->seekAndRead((2*1024*1024)+0x100, d->romHeaderLockOn, sizeof(*d->romHeaderLockOn));
+			if (size != sizeof(*d->romHeaderLockOn)) {
+				// Error loading the ROM header.
+				delete d->romHeaderLockOn;
+				d->romHeaderLockOn = nullptr;
+			}
+		}
+
+		if (d->romHeaderLockOn) {
+			// Verify the "SEGA" magic.
+			static const char sega_magic[4] = {'S','E','G','A'};
+			if (!memcmp(&d->romHeaderLockOn->system[0], sega_magic, sizeof(sega_magic)) ||
+			    !memcmp(&d->romHeaderLockOn->system[1], sega_magic, sizeof(sega_magic)))
+			{
+				// Found the "SEGA" magic.
+			}
+			else
+			{
+				// "SEGA" magic not found.
+				// Assume this is invalid.
+				delete d->romHeaderLockOn;
+				d->romHeaderLockOn = nullptr;
+			}
+		}
 	}
 }
 
@@ -951,49 +1018,11 @@ int MegaDrive::loadFieldData(void)
 		d->addFields_vectorTable(&d->vectors);
 	}
 
-	// Check for S&K.
-	if (!memcmp(d->romHeader.serial, "GM MK-1563 -00", sizeof(d->romHeader.serial))) {
-		// Check if a locked-on ROM is present.
-		bool header_loaded = false;
-		uint8_t header[0x200];
-
-		if ((d->romType & MegaDrivePrivate::ROM_FORMAT_MASK) == MegaDrivePrivate::ROM_FORMAT_CART_SMD) {
-			// Load the 16K block and deinterleave it.
-			if (d->file->size() >= (512 + (2*1024*1024) + 16384)) {
-				auto block = aligned_uptr<uint8_t>(16, SuperMagicDrive::SMD_BLOCK_SIZE * 2);
-				uint8_t *const smd_data = block.get();
-				uint8_t *const bin_data = smd_data + SuperMagicDrive::SMD_BLOCK_SIZE;
-				size_t size = d->file->seekAndRead(512 + (2*1024*1024), smd_data, SuperMagicDrive::SMD_BLOCK_SIZE);
-				if (size == SuperMagicDrive::SMD_BLOCK_SIZE) {
-					// Deinterleave the block.
-					SuperMagicDrive::decodeBlock(bin_data, smd_data);
-					memcpy(header, bin_data, sizeof(header));
-					header_loaded = true;
-				}
-			}
-		} else {
-			// Load the header directly.
-			size_t size = d->file->seekAndRead(2*1024*1024, header, sizeof(header));
-			header_loaded = (size == sizeof(header));
-		}
-
-		if (header_loaded) {
-			// Check the "SEGA" magic.
-			static const char sega_magic[4] = {'S','E','G','A'};
-			if (!memcmp(&header[0x100], sega_magic, sizeof(sega_magic)) ||
-			    !memcmp(&header[0x101], sega_magic, sizeof(sega_magic)))
-			{
-				// Found the "SEGA" magic.
-				// Reserve more fields for the second ROM header.
-				d->fields->reserve(27);
-
-				// Show the ROM header.
-				const MD_RomHeader *const lockon_header =
-					reinterpret_cast<const MD_RomHeader*>(&header[0x100]);
-				d->fields->addTab(C_("MegaDrive", "Locked-On ROM Header"));
-				d->addFields_romHeader(lockon_header, true);
-			}
-		}
+	// Check for a locked-on ROM image.
+	if (d->romHeaderLockOn) {
+		// Locked-on ROM is present.
+		d->fields->addTab(C_("MegaDrive", "Locked-On ROM Header"));
+		d->addFields_romHeader(d->romHeaderLockOn, true);
 	}
 
 	// Try to open the ISO-9660 object.
@@ -1015,6 +1044,34 @@ int MegaDrive::loadFieldData(void)
 
 	// Finished reading the field data.
 	return static_cast<int>(d->fields->count());
+}
+
+/**
+ * Check for "viewed" achievements.
+ *
+ * @return Number of achievements unlocked.
+ */
+int MegaDrive::checkViewedAchievements(void) const
+{
+	RP_D(const MegaDrive);
+	if (!d->isValid) {
+		// ROM is not valid.
+		return 0;
+	}
+
+	Achievements *const pAch = Achievements::instance();
+	int ret = 0;
+
+	if (d->romHeaderLockOn) {
+		// Is it S&K locked on to S&K?
+		if (!memcmp(d->romHeaderLockOn->serial, "GM MK-1563 -00", sizeof(d->romHeaderLockOn->serial))) {
+			// It is!
+			pAch->unlock(Achievements::ID::ViewedMegaDriveSKwithSK);
+			ret++;
+		}
+	}
+
+	return ret;
 }
 
 }
