@@ -71,7 +71,7 @@ const char *AchievementsPrivate::description(Achievements::ID id)
 
 	assert((int)id >= 0);
 	assert((int)id < ARRAY_SIZE(ach_desc));
-	if ((int)id < 0 || (int)id > ARRAY_SIZE(ach_desc)) {
+	if ((int)id < 0 || (int)id >= ARRAY_SIZE(ach_desc)) {
 		// Out of range.
 		return nullptr;
 	}
