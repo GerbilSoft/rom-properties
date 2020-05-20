@@ -77,16 +77,16 @@ class Achievements
 		 */
 		enum class ID {
 			// Debug-encrypted file. (devkits)
-			ViewedDebugCryptedFile = 0,
+			ViewedDebugCryptedFile		= 0,
 
 			// Non-x86/x64 PE executable.
 			// Does not include Xbox 360 executables.
-			ViewedNonX86PE,
+			ViewedNonX86PE			= 1,
 
 			// BroadOn WAD file format for Wii.
-			ViewedBroadOnWADFile,
+			ViewedBroadOnWADFile		= 2,
 
-			AchievementMax
+			Max
 		};
 
 		/**
