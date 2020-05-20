@@ -192,7 +192,7 @@ VGM::VGM(IRpFile *file)
 	RP_D(VGM);
 	d->className = "VGM";
 	d->mimeType = "audio/x-vgm";	// unofficial
-	d->fileType = FTYPE_AUDIO_FILE;
+	d->fileType = FileType::AudioFile;
 
 	if (!d->file) {
 		// Could not ref() the file handle.

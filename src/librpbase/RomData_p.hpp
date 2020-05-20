@@ -63,7 +63,7 @@ class RomDataPrivate
 		/** These fields must be set by RomData subclasses in their constructors. **/
 		const char *className;		// Class name for user configuration. (ASCII) (default is nullptr)
 		const char *mimeType;		// MIME type. (ASCII) (default is nullptr)
-		RomData::FileType fileType;	// File type. (default is FTYPE_ROM_IMAGE)
+		RomData::FileType fileType;	// File type. (default is FileType::ROM_Image)
 
 	public:
 		/** Convenience functions. **/

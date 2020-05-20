@@ -100,7 +100,7 @@ WiiU::WiiU(IRpFile *file)
 	RP_D(WiiU);
 	d->className = "WiiU";
 	d->mimeType = "application/x-wii-u-rom";	// unofficial, not on fd.o
-	d->fileType = FTYPE_DISC_IMAGE;
+	d->fileType = FileType::DiscImage;
 
 	if (!d->file) {
 		// Could not ref() the file handle.
@@ -146,7 +146,7 @@ WiiU::WiiU(IRpFile *file)
 			break;
 		case WiiUPrivate::DiscType::Unknown:
 		default:
-			d->fileType = FTYPE_UNKNOWN;
+			d->fileType = FileType::Unknown;
 			d->discType = WiiUPrivate::DiscType::Unknown;
 			break;
 	}
@@ -155,7 +155,7 @@ WiiU::WiiU(IRpFile *file)
 		// Error opening the DiscReader.
 		delete d->discReader;
 		d->discReader = nullptr;
-		d->fileType = FTYPE_UNKNOWN;
+		d->fileType = FileType::Unknown;
 		d->discType = WiiUPrivate::DiscType::Unknown;
 		return;
 	}

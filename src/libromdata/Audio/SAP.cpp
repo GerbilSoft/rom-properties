@@ -436,7 +436,7 @@ SAP::SAP(IRpFile *file)
 	RP_D(SAP);
 	d->className = "SAP";
 	d->mimeType = "audio/x-sap";	// unofficial
-	d->fileType = FTYPE_AUDIO_FILE;
+	d->fileType = FileType::AudioFile;
 
 	if (!d->file) {
 		// Could not ref() the file handle.

@@ -93,7 +93,7 @@ BRSTM::BRSTM(IRpFile *file)
 	RP_D(BRSTM);
 	d->className = "BRSTM";
 	d->mimeType = "audio/x-brstm";	// unofficial, not on fd.o
-	d->fileType = FTYPE_AUDIO_FILE;
+	d->fileType = FileType::AudioFile;
 
 	if (!d->file) {
 		// Could not ref() the file handle.

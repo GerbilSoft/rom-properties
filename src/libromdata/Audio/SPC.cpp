@@ -500,7 +500,7 @@ SPC::SPC(IRpFile *file)
 	RP_D(SPC);
 	d->className = "SPC";
 	d->mimeType = "audio/x-spc";	// unofficial
-	d->fileType = FTYPE_AUDIO_FILE;
+	d->fileType = FileType::AudioFile;
 
 	if (!d->file) {
 		// Could not ref() the file handle.

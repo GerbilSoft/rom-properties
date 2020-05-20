@@ -125,7 +125,7 @@ BCSTM::BCSTM(IRpFile *file)
 {
 	RP_D(BCSTM);
 	d->className = "BCSTM";
-	d->fileType = FTYPE_AUDIO_FILE;
+	d->fileType = FileType::AudioFile;
 
 	if (!d->file) {
 		// Could not ref() the file handle.

@@ -67,7 +67,7 @@ SID::SID(IRpFile *file)
 	RP_D(SID);
 	d->className = "SID";
 	d->mimeType = "audio/prs.sid";	// official
-	d->fileType = FTYPE_AUDIO_FILE;
+	d->fileType = FileType::AudioFile;
 
 	if (!d->file) {
 		// Could not ref() the file handle.

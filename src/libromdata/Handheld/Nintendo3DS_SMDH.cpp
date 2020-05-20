@@ -228,7 +228,7 @@ Nintendo3DS_SMDH::Nintendo3DS_SMDH(IRpFile *file)
 	RP_D(Nintendo3DS_SMDH);
 	d->className = "Nintendo3DS";	// Using the same image settings as Nintendo3DS.
 	d->mimeType = "application/x-nintendo-3ds-smdh";	// unofficial, not on fd.o
-	d->fileType = FTYPE_ICON_FILE;
+	d->fileType = FileType::IconFile;
 
 	if (!d->file) {
 		// Could not ref() the file handle.

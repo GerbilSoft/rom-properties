@@ -1150,7 +1150,7 @@ Xbox360_XDBF::Xbox360_XDBF(IRpFile *file)
 	RP_D(Xbox360_XDBF);
 	d->className = "Xbox360_XEX";	// Using the same image settings as Xbox360_XEX.
 	d->mimeType = "application/x-xbox360-xdbf";	// unofficial, not on fd.o
-	d->fileType = FTYPE_RESOURCE_FILE;
+	d->fileType = FileType::ResourceFile;
 
 	if (!d->file) {
 		// Could not ref() the file handle.
@@ -1181,7 +1181,7 @@ Xbox360_XDBF::Xbox360_XDBF(IRpFile *file, bool xex)
 	RP_D(Xbox360_XDBF);
 	d->className = "Xbox360_XEX";	// Using the same image settings as Xbox360_XEX.
 	d->mimeType = "application/x-xbox360-xdbf";	// unofficial, not on fd.o
-	d->fileType = FTYPE_RESOURCE_FILE;
+	d->fileType = FileType::ResourceFile;
 
 	if (!d->file) {
 		// Could not ref() the file handle.

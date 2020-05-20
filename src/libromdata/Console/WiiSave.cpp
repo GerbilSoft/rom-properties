@@ -132,7 +132,7 @@ WiiSave::WiiSave(IRpFile *file)
 	RP_D(WiiSave);
 	d->className = "WiiSave";
 	d->mimeType = "application/x-wii-save";	// unofficial, not on fd.o
-	d->fileType = FTYPE_SAVE_FILE;
+	d->fileType = FileType::SaveFile;
 
 	if (!d->file) {
 		// Could not ref() the file handle.

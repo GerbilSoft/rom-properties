@@ -42,7 +42,7 @@ RomDataPrivate::RomDataPrivate(RomData *q, IRpFile *file)
 	, metaData(nullptr)
 	, className(nullptr)
 	, mimeType(nullptr)
-	, fileType(RomData::FTYPE_ROM_IMAGE)
+	, fileType(RomData::FileType::ROM_Image)
 {
 	// Initialize i18n.
 	rp_i18n_init();
@@ -541,75 +541,75 @@ RomData::FileType RomData::fileType(void) const
 const char *RomData::fileType_string(void) const
 {
 	RP_D(const RomData);
-	assert(d->fileType >= FTYPE_UNKNOWN && d->fileType < FTYPE_LAST);
-	if (d->fileType <= FTYPE_UNKNOWN || d->fileType >= FTYPE_LAST) {
+	assert(d->fileType >= FileType::Unknown && d->fileType < FileType::Max);
+	if (d->fileType <= FileType::Unknown || d->fileType >= FileType::Max) {
 		return nullptr;
 	}
 
 	static const char *const fileType_names[] = {
-		// FTYPE_UNKNOWN
+		// FileType::Unknown
 		nullptr,
-		// tr: FTYPE_ROM_IMAGE
+		// tr: FileType::ROM_Image
 		NOP_C_("RomData|FileType", "ROM Image"),
-		// tr: FTYPE_DISC_IMAGE
+		// tr: FileType::DiscImage
 		NOP_C_("RomData|FileType", "Disc Image"),
-		// tr: FTYPE_SAVE_FILE
+		// tr: FileType::SaveFile
 		NOP_C_("RomData|FileType", "Save File"),
-		// tr: FTYPE_EMBEDDED_DISC_IMAGE
+		// tr: FileType::EmbeddedDiscImage
 		NOP_C_("RomData|FileType", "Embedded Disc Image"),
-		// tr: FTYPE_APPLICATION_PACKAGE
+		// tr: FileType::ApplicationPackage
 		NOP_C_("RomData|FileType", "Application Package"),
-		// tr: FTYPE_NFC_DUMP
+		// tr: FileType::NFC_Dump
 		NOP_C_("RomData|FileType", "NFC Dump"),
-		// tr: FTYPE_DISK_IMAGE
+		// tr: FileType::DiskImage
 		NOP_C_("RomData|FileType", "Disk Image"),
-		// tr: FTYPE_EXECUTABLE
+		// tr: FileType::Executable
 		NOP_C_("RomData|FileType", "Executable"),
-		// tr: FTYPE_DLL
+		// tr: FileType::DLL
 		NOP_C_("RomData|FileType", "Dynamic Link Library"),
-		// tr: FTYPE_DEVICE_DRIVER
+		// tr: FileType::DeviceDriver
 		NOP_C_("RomData|FileType", "Device Driver"),
-		// tr: FTYPE_RESOURCE_LIBRARY
+		// tr: FileType::ResourceLibrary
 		NOP_C_("RomData|FileType", "Resource Library"),
-		// tr: FTYPE_ICON_FILE
+		// tr: FileType::IconFile
 		NOP_C_("RomData|FileType", "Icon File"),
-		// tr: FTYPE_BANNER_FILE
+		// tr: FileType::BannerFile
 		NOP_C_("RomData|FileType", "Banner File"),
-		// tr: FTYPE_HOMEBREW
+		// tr: FileType::Homebrew
 		NOP_C_("RomData|FileType", "Homebrew Application"),
-		// tr: FTYPE_EMMC_DUMP
+		// tr: FileType::eMMC_Dump
 		NOP_C_("RomData|FileType", "eMMC Dump"),
-		// tr: FTYPE_CONTAINER_FILE
+		// tr: FileType::ContainerFile
 		NOP_C_("RomData|FileType", "Container File"),
-		// tr: FTYPE_FIRMWARE_BINARY
+		// tr: FileType::FirmwareBinary
 		NOP_C_("RomData|FileType", "Firmware Binary"),
-		// tr: FTYPE_TEXTURE_FILE
+		// tr: FileType::TextureFile
 		NOP_C_("RomData|FileType", "Texture File"),
-		// tr: FTYPE_RELOCATABLE_OBJECT
+		// tr: FileType::RelocatableObject
 		NOP_C_("RomData|FileType", "Relocatable Object File"),
-		// tr: FTYPE_SHARED_LIBRARY
+		// tr: FileType::SharedLibrary
 		NOP_C_("RomData|FileType", "Shared Library"),
-		// tr: FTYPE_CORE_DUMP
+		// tr: FileType::CoreDump
 		NOP_C_("RomData|FileType", "Core Dump"),
-		// tr: FTYPE_AUDIO_FILE
+		// tr: FileType::AudioFile
 		NOP_C_("RomData|FileType", "Audio File"),
-		// tr: FTYPE_BOOT_SECTOR
+		// tr: FileType::BootSector
 		NOP_C_("RomData|FileType", "Boot Sector"),
-		// tr: FTYPE_BUNDLE (Mac OS X bundle)
+		// tr: FileType::Bundle (Mac OS X bundle)
 		NOP_C_("RomData|FileType", "Bundle"),
-		// tr: FTYPE_RESOURCE_FILE
+		// tr: FileType::ResourceFile
 		NOP_C_("RomData|FileType", "Resource File"),
-		// tr: FTYPE_PARTITION
+		// tr: FileType::Partition
 		NOP_C_("RomData|FileType", "Partition"),
-		// tr: FTYPE_METADATA_FILE
+		// tr: FileType::MetadataFile
 		NOP_C_("RomData|FileType", "Metadata File"),
-		// tr: FTYPE_PATCH_FILE
+		// tr: FileType::PatchFile
 		NOP_C_("RomData|FileType", "Patch File"),
 	};
-	static_assert(ARRAY_SIZE(fileType_names) == FTYPE_LAST,
+	static_assert(ARRAY_SIZE(fileType_names) == (int)FileType::Max,
 		"fileType_names[] needs to be updated.");
  
-	const char *const fileType = fileType_names[d->fileType];
+	const char *const fileType = fileType_names[(int)d->fileType];
 	if (fileType != nullptr) {
 		return dpgettext_expr(RP_I18N_DOMAIN, "RomData|FileType", fileType);
 	}

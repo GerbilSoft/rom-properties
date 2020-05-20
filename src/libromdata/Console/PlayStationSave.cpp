@@ -197,7 +197,7 @@ PlayStationSave::PlayStationSave(IRpFile *file)
 	RP_D(PlayStationSave);
 	d->className = "PlayStationSave";
 	d->mimeType = "application/x-ps1-save";	// unofficial, not on fd.o
-	d->fileType = FTYPE_SAVE_FILE;
+	d->fileType = FileType::SaveFile;
 
 	if (!d->file) {
 		// Could not ref() the file handle.

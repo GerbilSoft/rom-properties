@@ -666,7 +666,7 @@ GameCube::GameCube(IRpFile *file)
 	// This class handles disc images.
 	RP_D(GameCube);
 	d->className = "GameCube";
-	d->fileType = FTYPE_DISC_IMAGE;
+	d->fileType = FileType::DiscImage;
 
 	if (!d->file) {
 		// Could not ref() the file handle.
@@ -705,7 +705,7 @@ GameCube::GameCube(IRpFile *file)
 				d->discReader = new DiscReader(d->file, 32768, -1);
 				break;
 			case GameCubePrivate::DISC_FORMAT_TGC: {
-				d->fileType = FTYPE_EMBEDDED_DISC_IMAGE;
+				d->fileType = FileType::EmbeddedDiscImage;
 
 				// Check the TGC header for the disc offset.
 				const GCN_TGC_Header *tgcHeader = reinterpret_cast<const GCN_TGC_Header*>(header);
@@ -771,7 +771,7 @@ GameCube::GameCube(IRpFile *file)
 		d->hasRegionCode = true;
 	} else {
 		// Standalone partition.
-		d->fileType = FTYPE_PARTITION;
+		d->fileType = FileType::Partition;
 		d->wiiPtbl.resize(1);
 		GameCubePrivate::WiiPartEntry &pt = d->wiiPtbl[0];
 

@@ -227,7 +227,7 @@ GameCubeBNR::GameCubeBNR(IRpFile *file)
 	RP_D(GameCubeBNR);
 	d->className = "GameCube";
 	d->mimeType = "application/x-gamecube-bnr";	// unofficial, not on fd.o
-	d->fileType = FTYPE_BANNER_FILE;
+	d->fileType = FileType::BannerFile;
 
 	if (!d->file) {
 		// Could not ref() the file handle.

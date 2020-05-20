@@ -390,7 +390,7 @@ Xbox_XBE::Xbox_XBE(IRpFile *file)
 	RP_D(Xbox_XBE);
 	d->className = "Xbox_XBE";
 	d->mimeType = "application/x-xbox-executable";	// unofficial, not on fd.o
-	d->fileType = FTYPE_EXECUTABLE;
+	d->fileType = FileType::Executable;
 
 	if (!d->file) {
 		// Could not ref() the file handle.

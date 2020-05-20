@@ -376,7 +376,7 @@ iQuePlayer::iQuePlayer(IRpFile *file)
 {
 	RP_D(iQuePlayer);
 	d->className = "iQuePlayer";
-	d->fileType = FTYPE_METADATA_FILE;
+	d->fileType = FileType::MetadataFile;
 
 	if (!d->file) {
 		// Could not ref() the file handle.

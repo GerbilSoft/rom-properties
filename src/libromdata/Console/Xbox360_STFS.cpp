@@ -553,7 +553,7 @@ Xbox360_STFS::Xbox360_STFS(IRpFile *file)
 	RP_D(Xbox360_STFS);
 	d->className = "Xbox360_STFS";
 	d->mimeType = "application/x-xbox360-stfs";	// unofficial, not on fd.o
-	d->fileType = FTYPE_APPLICATION_PACKAGE;
+	d->fileType = FileType::ApplicationPackage;
 
 	if (!d->file) {
 		// Could not ref() the file handle.
