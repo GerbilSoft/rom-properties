@@ -14,6 +14,9 @@ using LibRpBase::Achievements;
 #include <glib-object.h>
 #include "Notifications.h"
 
+// C++ STL classes.
+using std::string;
+
 class AchGDBusPrivate
 {
 	public:
@@ -35,17 +38,19 @@ class AchGDBusPrivate
 		/**
 		 * Notification function. (static)
 		 * @param user_data User data. (this)
+		 * @param name Achievement name.
 		 * @param desc Achievement description.
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
-		static int notifyFunc(intptr_t user_data, const char *desc);
+		static int notifyFunc(intptr_t user_data, const char *name, const char *desc);
 
 		/**
 		 * Notification function. (non-static)
+		 * @param name Achievement name.
 		 * @param desc Achievement description.
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
-		int notifyFunc(const char *desc);
+		int notifyFunc(const char *name, const char *desc);
 };
 
 /** AchGDBusPrivate **/
@@ -73,21 +78,23 @@ AchGDBusPrivate::~AchGDBusPrivate()
 /**
  * Notification function. (static)
  * @param user_data User data. (this)
+ * @param name Achievement name.
  * @param desc Achievement description.
  * @return 0 on success; negative POSIX error code on error.
  */
-int AchGDBusPrivate::notifyFunc(intptr_t user_data, const char *desc)
+int AchGDBusPrivate::notifyFunc(intptr_t user_data, const char *name, const char *desc)
 {
 	AchGDBusPrivate *const pAchGP = reinterpret_cast<AchGDBusPrivate*>(user_data);
-	return pAchGP->notifyFunc(desc);
+	return pAchGP->notifyFunc(name, desc);
 }
 
 /**
  * Notification function. (non-static)
+ * @param name Achievement name.
  * @param desc Achievement description.
  * @return 0 on success; negative POSIX error code on error.
  */
-int AchGDBusPrivate::notifyFunc(const char *desc)
+int AchGDBusPrivate::notifyFunc(const char *name, const char *desc)
 {
 	// Connect to the service using gdbus-codegen's generated code.
 	OrgFreedesktopNotifications *proxy = nullptr;
@@ -106,6 +113,13 @@ int AchGDBusPrivate::notifyFunc(const char *desc)
 		return -EIO;
 	}
 
+	// Build the text.
+	// TODO: Better formatting?
+	string text = "<u>";
+	text += name;
+	text += "</u>\n";
+	text += desc;
+
 	// actions: as
 	static const gchar *const actions[] = { "", nullptr };
 
@@ -121,7 +135,7 @@ int AchGDBusPrivate::notifyFunc(const char *desc)
 		0,				// replaces_id [u]
 		"answer-correct",		// app_icon [s]
 		"Achievement Unlocked",		// summary [s]
-		desc,				// body [s]
+		text.c_str(),			// body [s]
 		actions,			// actions [as]
 		hints,				// hints [a{sv}]
 		5000,				// timeout (ms) [i]

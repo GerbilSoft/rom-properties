@@ -36,17 +36,19 @@ class AchQtDBusPrivate
 		/**
 		 * Notification function. (static)
 		 * @param user_data User data. (this)
+		 * @param name Achievement name.
 		 * @param desc Achievement description.
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
-		static int notifyFunc(intptr_t user_data, const char *desc);
+		static int notifyFunc(intptr_t user_data, const char *name, const char *desc);
 
 		/**
 		 * Notification function. (non-static)
+		 * @param name Achievement name.
 		 * @param desc Achievement description.
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
-		int notifyFunc(const char *desc);
+		int notifyFunc(const char *name, const char *desc);
 };
 
 /** AchQtDBusPrivate **/
@@ -74,21 +76,23 @@ AchQtDBusPrivate::~AchQtDBusPrivate()
 /**
  * Notification function. (static)
  * @param user_data User data. (this)
+ * @param name Achievement name.
  * @param desc Achievement description.
  * @return 0 on success; negative POSIX error code on error.
  */
-int AchQtDBusPrivate::notifyFunc(intptr_t user_data, const char *desc)
+int AchQtDBusPrivate::notifyFunc(intptr_t user_data, const char *name, const char *desc)
 {
 	AchQtDBusPrivate *const pAchQtP = reinterpret_cast<AchQtDBusPrivate*>(user_data);
-	return pAchQtP->notifyFunc(desc);
+	return pAchQtP->notifyFunc(name, desc);
 }
 
 /**
  * Notification function. (non-static)
+ * @param name Achievement name.
  * @param desc Achievement description.
  * @return 0 on success; negative POSIX error code on error.
  */
-int AchQtDBusPrivate::notifyFunc(const char *desc)
+int AchQtDBusPrivate::notifyFunc(const char *name, const char *desc)
 {
 	// Connect to the session bus.
 	QDBusConnection sessionBus = QDBusConnection::sessionBus();
@@ -107,13 +111,20 @@ int AchQtDBusPrivate::notifyFunc(const char *desc)
 		return -EIO;
 	}
 
+	// Build the text.
+	// TODO: Better formatting?
+	QString text = QLatin1String("<u>");
+	text += QString::fromUtf8(name);
+	text += QLatin1String("</u>\n");
+	text += QString::fromUtf8(desc);
+
 	iface.asyncCall(
 		QLatin1String("Notify"),		// Method
 		QLatin1String("rom-properties"),	// app-name [s]
 		(unsigned int)0,			// replaces_id [u]
 		QLatin1String("answer-correct"),	// app_icon [s]
 		QLatin1String("Achievement Unlocked"),	// summary [s]
-		QString::fromUtf8(desc),		// body [s]
+		text,					// body [s]
 		QStringList(),				// actions [as]
 		QVariantMap(),				// hints [a{sv}]
 		5000);					// timeout (ms) [i]

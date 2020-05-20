@@ -47,10 +47,11 @@ class Achievements
 		/**
 		 * Notification function.
 		 * @param user_data User data from registerNotifyFunction().
+		 * @param name Achievement name.
 		 * @param desc Achievement description.
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
-		typedef int (RP_C_API *NotifyFunc)(intptr_t user_data, const char *desc);
+		typedef int (RP_C_API *NotifyFunc)(intptr_t user_data, const char *name, const char *desc);
 
 		/**
 		 * Set the notification function.

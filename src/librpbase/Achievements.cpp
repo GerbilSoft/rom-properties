@@ -46,6 +46,7 @@ class AchievementsPrivate
 		// Achievement information.
 		// Array index is the ID.
 		struct AchInfo_t {
+			const char *name;	// Name (NOP_C_, translatable)
 			const char *desc;	// Description (NOP_C_, translatable)
 			AchType type;		// Achievement type
 			uint8_t count;		// AT_COUNT: Number of times needed to unlock.
@@ -66,22 +67,30 @@ class AchievementsPrivate
 // Achievement information.
 const struct AchievementsPrivate::AchInfo_t AchievementsPrivate::achInfo[] = {
 	{
-		// tr: ViewedDebugCryptedFile
+		// tr: ViewedDebugCryptedFile (name)
+		NOP_C_("Achievements", "You are now a developer!"),
+		// tr: ViewedDebugCryptedFile (description)
 		NOP_C_("Achievements", "Viewed a debug-encrypted file."),
 		AT_COUNT, 1
 	},
 	{
-		// tr: ViewedNonX86PE
+		// tr: ViewedNonX86PE (name)
+		NOP_C_("Achievements", "Now you're playing with POWER!"),
+		// tr: ViewedNonX86PE (description)
 		NOP_C_("Achievements", "Viewed a non-x86/x64 Windows PE executable."),
 		AT_COUNT, 1
 	},
 	{
-		// tr: ViewedBroadOnWADFile
+		// tr: ViewedBroadOnWADFile (name)
+		NOP_C_("Achievements", "Insert Startup Disc"),
+		// tr: ViewedBroadOnWADFile (description)
 		NOP_C_("Achievements", "Viewed a BroadOn format Wii WAD file."),
 		AT_COUNT, 1
 	},
 	{
-		// tr: ViewedMegaDriveSKwithSK
+		// tr: ViewedMegaDriveSKwithSK (name)
+		NOP_C_("Achievements", "Knuckles & Knuckles"),
+		// tr: ViewedMegaDriveSKwithSK (description)
 		NOP_C_("Achievements", "Viewed a copy of Sonic & Knuckles locked on to Sonic & Knuckles."),
 		AT_COUNT, 1
 	},
@@ -240,6 +249,7 @@ void Achievements::unlock(ID id, int bit)
 	// Achievement unlocked!
 	if (d->notifyFunc) {
 		d->notifyFunc(d->user_data,
+			dpgettext_expr(RP_I18N_DOMAIN, "Achievements", achInfo->name),
 			dpgettext_expr(RP_I18N_DOMAIN, "Achievements", achInfo->desc));
 	}
 }
