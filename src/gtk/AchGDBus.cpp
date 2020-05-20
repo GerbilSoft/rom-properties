@@ -161,8 +161,12 @@ AchGDBus *AchGDBus::instance(void)
 	// NOTE: Cannot register in the private class constructor because
 	// the Achievements instance might not be fully initialized yet.
 	// Registering here instead.
-	Achievements *const pAch = Achievements::instance();
-	pAch->setNotifyFunction(AchGDBusPrivate::notifyFunc, reinterpret_cast<intptr_t>(q->d_ptr));
+	AchGDBusPrivate *const d = q->d_ptr;
+	if (!d->hasRegistered) {
+		Achievements *const pAch = Achievements::instance();
+		pAch->setNotifyFunction(AchGDBusPrivate::notifyFunc, reinterpret_cast<intptr_t>(d));
+		d->hasRegistered = true;
+	}
 
 	return q;
 }
