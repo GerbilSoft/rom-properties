@@ -92,8 +92,9 @@ class Achievements
 		/**
 		 * Unlock an achievement.
 		 * @param id Achievement ID.
+		 * @param bit Bitfield index for AT_BITFIELD achievements. (-1 for none)
 		 */
-		void unlock(ID id);
+		void unlock(ID id, int bit = -1);
 };
 
 }

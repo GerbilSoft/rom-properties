@@ -10,6 +10,9 @@
 #include "Achievements.hpp"
 #include "libi18n/i18n.h"
 
+// C++ STL classes.
+using std::unordered_map;
+
 namespace LibRpBase {
 
 class AchievementsPrivate
@@ -33,15 +36,51 @@ class AchievementsPrivate
 		intptr_t user_data;
 
 	public:
-		/**
-		 * Get the translated description of an achievement.
-		 * @param id Achievement ID.
-		 * @return Translated description, or nullptr on error.
-		 */
-		static const char *description(Achievements::ID id);
+		// Achievement types
+		enum AchType : uint8_t {
+			AT_COUNT = 0,	// Count (requires the same action X number of times)
+					// For BOOLEAN achievements, set count to 1.
+			AT_BITFIELD,	// Bitfield (multiple actions)
+		};
+
+		// Achievement information.
+		// Array index is the ID.
+		struct AchInfo_t {
+			const char *desc;	// Description (NOP_C_, translatable)
+			AchType type;		// Achievement type
+			uint8_t count;		// AT_COUNT: Number of times needed to unlock.
+						// AT_BITFIELD: Number of bits. (up to 64)
+						//              All bits must be 1 to unlock.
+		};
+		static const AchInfo_t achInfo[];
+
+		// Active achievement data.
+		// Two maps: One for boolean/count, one for bitfield.
+		// TODO: Map vs. unordered_map for performance?
+		unordered_map<Achievements::ID, uint8_t> mapAchData_count;
+		unordered_map<Achievements::ID, uint64_t> mapAchData_bitfield;
 };
 
 /** AchievementsPrivate **/
+
+// Achievement information.
+const struct AchievementsPrivate::AchInfo_t AchievementsPrivate::achInfo[] = {
+	{
+		// tr: ViewedDebugCryptedFile
+		NOP_C_("Achievements", "Viewed a debug-encrypted file."),
+		AT_COUNT, 1
+	},
+	{
+		// tr: ViewedNonX86PE
+		NOP_C_("Achievements", "Viewed a non-x86/x64 Windows PE executable."),
+		AT_COUNT, 1
+	},
+	{
+		// tr: ViewedBroadOnWADFile
+		NOP_C_("Achievements", "Viewed a BroadOn format Wii WAD file."),
+		AT_COUNT, 1
+	},
+};
 
 // Singleton instance.
 // Using a static non-pointer variable in order to
@@ -53,37 +92,13 @@ AchievementsPrivate::AchievementsPrivate()
 	, user_data(0)
 { }
 
-/**
- * Get the translated description of an achievement.
- * @param id Achievement ID.
- * @return Translated description, or nullptr on error.
- */
-const char *AchievementsPrivate::description(Achievements::ID id)
-{
-	static const char *const ach_desc[] = {
-		// tr: ViewedDebugCryptedFile
-		NOP_C_("Achievements", "Viewed a debug-encrypted file."),
-		// tr: ViewedNonX86PE
-		NOP_C_("Achievements", "Viewed a non-x86/x64 Windows PE executable."),
-		// tr: ViewedBroadOnWADFile
-		NOP_C_("Achievements", "Viewed a BroadOn format Wii WAD file."),
-	};
-
-	assert((int)id >= 0);
-	assert((int)id < ARRAY_SIZE(ach_desc));
-	if ((int)id < 0 || (int)id >= ARRAY_SIZE(ach_desc)) {
-		// Out of range.
-		return nullptr;
-	}
-
-	return dpgettext_expr(RP_I18N_DOMAIN, "Achievements", ach_desc[(int)id]);
-}
-
 /** Achievements **/
 
 Achievements::Achievements()
 	: d_ptr(new AchievementsPrivate())
-{ }
+{
+	// TODO: Load achievements.
+}
 
 Achievements::~Achievements()
 {
@@ -144,15 +159,83 @@ void Achievements::clearNotifyFunction(NotifyFunc func, intptr_t user_data)
 /**
  * Unlock an achievement.
  * @param id Achievement ID.
+ * @param bit Bitfield index for AT_BITFIELD achievements.
  */
-void Achievements::unlock(ID id)
+void Achievements::unlock(ID id, int bit)
 {
-	RP_D(const Achievements);
-	if (d->notifyFunc) {
-		const char *const desc = d->description(id);
-		if (desc) {
-			d->notifyFunc(d->user_data, desc);
+	RP_D(Achievements);
+
+	// If this achievement is bool/count, increment the value.
+	// If the value has hit the maximum, achievement is unlocked.
+	assert((int)id >= 0);
+	assert(id < ID::Max);
+	if ((int)id < 0 || id >= ID::Max) {
+		// Invalid achievement ID.
+		return;
+	}
+
+	// Check the type.
+	const AchievementsPrivate::AchInfo_t *const achInfo = &d->achInfo[(int)id];
+	switch (achInfo->type) {
+		default:
+			assert(!"Achievement type not supported.");
+			return;
+
+		case AchievementsPrivate::AT_COUNT: {
+			// Check if we've already reached the required count.
+			uint8_t count = d->mapAchData_count[id];
+			if (count >= achInfo->count) {
+				// Count has been reached.
+				// Achievement is already unlocked.
+				return;
+			}
+
+			// Increment the count.
+			// TODO: Serialize and save the achievements.
+			count++;
+			d->mapAchData_count[id] = count;
+			if (count < achInfo->count) {
+				// Not unlocked yet.
+				return;
+			}
+			break;
 		}
+
+		case AchievementsPrivate::AT_BITFIELD: {
+			// Bitfield value.
+			assert(bit >= 0);
+			assert(bit < achInfo->count);
+			if (bit < 0 || bit >= achInfo->count) {
+				// Invalid bit index.
+				return;
+			}
+
+			// Check if we've already filled the bitfield.
+			// TODO: Verify 32-bit and 64-bit operation for values 32 and 64.
+			const uint64_t bf_filled = (1ULL << achInfo->count) - 1;
+			uint64_t bf_value = d->mapAchData_bitfield[id];
+			if (bf_value == bf_filled) {
+				// Bitfield has been filled.
+				// Achievement is already unlocked.
+				return;
+			}
+
+			// Set the bit.
+			// TODO: Serialize and save the achievements.
+			bf_value |= (1 << (unsigned int)bit);
+			d->mapAchData_bitfield[id] = bf_value;
+			if (bf_value != bf_filled) {
+				// Bitfield is not filled yet.
+				return;
+			}
+			break;
+		}
+	}
+
+	// Achievement unlocked!
+	if (d->notifyFunc) {
+		d->notifyFunc(d->user_data,
+			dpgettext_expr(RP_I18N_DOMAIN, "Achievements", achInfo->desc));
 	}
 }
 
