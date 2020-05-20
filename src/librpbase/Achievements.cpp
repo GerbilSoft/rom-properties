@@ -80,6 +80,11 @@ const struct AchievementsPrivate::AchInfo_t AchievementsPrivate::achInfo[] = {
 		NOP_C_("Achievements", "Viewed a BroadOn format Wii WAD file."),
 		AT_COUNT, 1
 	},
+	{
+		// tr: ViewedMegaDriveSKwithSK
+		NOP_C_("Achievements", "Viewed a copy of Sonic & Knuckles locked on to Sonic & Knuckles."),
+		AT_COUNT, 1
+	},
 };
 
 // Singleton instance.
