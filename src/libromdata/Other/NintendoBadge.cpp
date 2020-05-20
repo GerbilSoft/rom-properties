@@ -389,7 +389,7 @@ NintendoBadge::NintendoBadge(IRpFile *file)
 	// This class handles texture files.
 	RP_D(NintendoBadge);
 	d->className = "NintendoBadge";
-	d->fileType = FTYPE_TEXTURE_FILE;
+	d->fileType = FileType::TextureFile;
 
 	if (!d->file) {
 		// Could not ref() the file handle.

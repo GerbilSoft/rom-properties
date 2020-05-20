@@ -75,7 +75,7 @@ Nintendo3DSFirm::Nintendo3DSFirm(IRpFile *file)
 	RP_D(Nintendo3DSFirm);
 	d->className = "Nintendo3DSFirm";
 	d->mimeType = "application/x-nintendo-3ds-firm";	// unofficial, not on fd.o
-	d->fileType = FTYPE_FIRMWARE_BINARY;
+	d->fileType = FileType::FirmwareBinary;
 
 	if (!d->file) {
 		// Could not ref() the file handle.

@@ -69,7 +69,7 @@ ADX::ADX(IRpFile *file)
 	RP_D(ADX);
 	d->className = "ADX";
 	d->mimeType = "audio/x-adx";	// unofficial, not on fd.o
-	d->fileType = FTYPE_AUDIO_FILE;
+	d->fileType = FileType::AudioFile;
 
 	if (!d->file) {
 		// Could not ref() the file handle.

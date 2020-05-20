@@ -98,7 +98,7 @@ Amiibo::Amiibo(IRpFile *file)
 	RP_D(Amiibo);
 	d->className = "Amiibo";
 	d->mimeType = "application/x-nintendo-amiibo";	// unofficial, not on fd.o
-	d->fileType = FTYPE_NFC_DUMP;
+	d->fileType = FileType::NFC_Dump;
 
 	if (!d->file) {
 		// Could not ref() the file handle.

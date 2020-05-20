@@ -1282,7 +1282,7 @@ Xbox360_XEX::Xbox360_XEX(IRpFile *file)
 	RP_D(Xbox360_XEX);
 	d->className = "Xbox360_XEX";
 	d->mimeType = "application/x-xbox360-executable";	// unofficial, not on fd.o
-	d->fileType = FTYPE_EXECUTABLE;
+	d->fileType = FileType::Executable;
 
 	if (!d->file) {
 		// Could not ref() the file handle.
@@ -1337,7 +1337,7 @@ Xbox360_XEX::Xbox360_XEX(IRpFile *file)
 	{
 		// This is a patch.
 		d->mimeType = "application/x-xbox360-patch";	// unofficial, not on fd.o
-		d->fileType = FTYPE_PATCH_FILE;
+		d->fileType = FileType::PatchFile;
 	}
 
 	// Read the security info.

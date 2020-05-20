@@ -67,7 +67,7 @@ GBS::GBS(IRpFile *file)
 	RP_D(GBS);
 	d->className = "GBS";
 	d->mimeType = "audio/x-gbs";	// unofficial
-	d->fileType = FTYPE_AUDIO_FILE;
+	d->fileType = FileType::AudioFile;
 
 	if (!d->file) {
 		// Could not ref() the file handle.

@@ -295,7 +295,7 @@ XboxDisc::XboxDisc(IRpFile *file)
 	RP_D(XboxDisc);
 	d->className = "XboxDisc";
 	d->mimeType = "application/x-cd-image";	// unofficial
-	d->fileType = FTYPE_DISC_IMAGE;
+	d->fileType = FileType::DiscImage;
 
 	if (!d->file) {
 		// Could not ref() the file handle.

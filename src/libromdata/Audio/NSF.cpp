@@ -67,7 +67,7 @@ NSF::NSF(IRpFile *file)
 	RP_D(NSF);
 	d->className = "NSF";
 	d->mimeType = "audio/x-nsf";	// unofficial
-	d->fileType = FTYPE_AUDIO_FILE;
+	d->fileType = FileType::AudioFile;
 
 	if (!d->file) {
 		// Could not ref() the file handle.

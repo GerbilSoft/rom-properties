@@ -298,7 +298,7 @@ Dreamcast::Dreamcast(IRpFile *file)
 	// This class handles disc images.
 	RP_D(Dreamcast);
 	d->className = "Dreamcast";
-	d->fileType = FTYPE_DISC_IMAGE;
+	d->fileType = FileType::DiscImage;
 
 	if (!d->file) {
 		// Could not ref() the file handle.
@@ -344,7 +344,7 @@ Dreamcast::Dreamcast(IRpFile *file)
 			if (d->file->size() <= 64*1024) {
 				// 64 KB is way too small for a Dreamcast disc image.
 				// We'll assume this is IP.bin.
-				d->fileType = FTYPE_BOOT_SECTOR;
+				d->fileType = FileType::BootSector;
 			}
 			break;
 

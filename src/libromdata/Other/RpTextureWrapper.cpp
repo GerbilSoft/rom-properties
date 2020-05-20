@@ -78,7 +78,7 @@ RpTextureWrapper::RpTextureWrapper(IRpFile *file)
 	// This class handles texture files.
 	RP_D(RpTextureWrapper);
 	d->className = "RpTextureWrapper";
-	d->fileType = FTYPE_TEXTURE_FILE;
+	d->fileType = FileType::TextureFile;
 
 	if (!d->file) {
 		// Could not ref() the file handle.

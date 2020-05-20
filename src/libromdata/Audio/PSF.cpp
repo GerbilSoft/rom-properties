@@ -356,7 +356,7 @@ PSF::PSF(IRpFile *file)
 	RP_D(PSF);
 	d->className = "PSF";
 	d->mimeType = "audio/x-psf";	// unofficial (TODO: x-minipsf?)
-	d->fileType = FTYPE_AUDIO_FILE;
+	d->fileType = FileType::AudioFile;
 
 	if (!d->file) {
 		// Could not ref() the file handle.

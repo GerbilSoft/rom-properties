@@ -392,7 +392,7 @@ EXE::EXE(IRpFile *file)
 	RP_D(EXE);
 	d->className = "EXE";
 	d->mimeType = "application/x-ms-dos-executable";	// unofficial (TODO: More types?)
-	d->fileType = FTYPE_UNKNOWN;
+	d->fileType = FileType::Unknown;
 
 	if (!d->file) {
 		// Could not ref() the file handle.
@@ -431,7 +431,7 @@ EXE::EXE(IRpFile *file)
 		// MS-DOS executable.
 		d->exeType = EXEPrivate::EXE_TYPE_MZ;
 		// TODO: Check for MS-DOS device drivers?
-		d->fileType = FTYPE_EXECUTABLE;
+		d->fileType = FileType::Executable;
 		return;
 	}
 
@@ -482,24 +482,24 @@ EXE::EXE(IRpFile *file)
 		const uint16_t pe_flags = le16_to_cpu(d->hdr.pe.FileHeader.Characteristics);
 		if (pe_flags & IMAGE_FILE_DLL) {
 			// DLL file.
-			d->fileType = FTYPE_DLL;
+			d->fileType = FileType::DLL;
 		} else {
 			switch (d->pe_subsystem) {
 				case IMAGE_SUBSYSTEM_NATIVE:
 					// TODO: IMAGE_SUBSYSTEM_NATIVE may be either a
 					// device driver or boot-time executable.
 					// Need to check some other flag...
-					d->fileType = FTYPE_EXECUTABLE;
+					d->fileType = FileType::Executable;
 					break;
 				case IMAGE_SUBSYSTEM_EFI_BOOT_SERVICE_DRIVER:
 				case IMAGE_SUBSYSTEM_EFI_RUNTIME_DRIVER:
-					d->fileType = FTYPE_DEVICE_DRIVER;
+					d->fileType = FileType::DeviceDriver;
 					break;
 				case IMAGE_SUBSYSTEM_EFI_ROM:
-					d->fileType = FTYPE_ROM_IMAGE;
+					d->fileType = FileType::ROM_Image;
 					break;
 				default:
-					d->fileType = FTYPE_EXECUTABLE;
+					d->fileType = FileType::Executable;
 					break;
 			}
 		}
@@ -520,15 +520,15 @@ EXE::EXE(IRpFile *file)
 			// This is a resource library.
 			// May be a font (.FON) or an icon library (.ICL, moricons.dll).
 			// TODO: Check the version resource if it's present?
-			d->fileType = FTYPE_RESOURCE_LIBRARY;
+			d->fileType = FileType::ResourceLibrary;
 			return;
 		}
 
 		// TODO: Distinguish between DLL and driver?
 		if (d->hdr.ne.ApplFlags & NE_DLL) {
-			d->fileType = FTYPE_DLL;
+			d->fileType = FileType::DLL;
 		} else {
-			d->fileType = FTYPE_EXECUTABLE;
+			d->fileType = FileType::Executable;
 		}
 	} else if (d->hdr.le.sig == cpu_to_be16('LE') ||
 		   d->hdr.le.sig == cpu_to_be16('LX'))
@@ -543,24 +543,24 @@ EXE::EXE(IRpFile *file)
 		// TODO: Check byteorder flags and adjust as necessary.
 		if (d->hdr.le.targOS == cpu_to_le16(NE_OS_WIN386)) {
 			// LE VxD
-			d->fileType = FTYPE_DEVICE_DRIVER;
+			d->fileType = FileType::DeviceDriver;
 		} else if (d->hdr.le.module_type_flags & cpu_to_le32(LE_MODULE_IS_DLL)) {
 			// LE DLL
-			d->fileType = FTYPE_DLL;
+			d->fileType = FileType::DLL;
 		} else {
 			// LE EXE
-			d->fileType = FTYPE_EXECUTABLE;
+			d->fileType = FileType::Executable;
 		}
 	} else if (d->hdr.sig16 == cpu_to_be16('W3') /* 'W3' */) {
 		// W3 executable. (Collection of LE executables.)
 		// Only used by WIN386.EXE.
 		// TODO: Check for W4. (Compressed version of W3 used by Win9x.)
 		d->exeType = EXEPrivate::EXE_TYPE_W3;
-		d->fileType = FTYPE_EXECUTABLE;
+		d->fileType = FileType::Executable;
 	} else {
 		// Unrecognized secondary header.
 		d->exeType = EXEPrivate::EXE_TYPE_MZ;
-		d->fileType = FTYPE_EXECUTABLE;
+		d->fileType = FileType::Executable;
 		return;
 	}
 }

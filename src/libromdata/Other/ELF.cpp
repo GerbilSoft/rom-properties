@@ -752,7 +752,7 @@ ELF::ELF(IRpFile *file)
 	// d->fileType will be set later.
 	RP_D(ELF);
 	d->className = "ELF";
-	d->fileType = FTYPE_UNKNOWN;
+	d->fileType = FileType::Unknown;
 
 	if (!d->file) {
 		// Could not ref() the file handle.
@@ -863,11 +863,11 @@ ELF::ELF(IRpFile *file)
 		switch (primary->e_type) {
 			default:
 				// Should not happen...
-				d->fileType = FTYPE_UNKNOWN;
+				d->fileType = FileType::Unknown;
 				break;
 			case 0xFE01:
 				// This matches some homebrew software.
-				d->fileType = FTYPE_EXECUTABLE;
+				d->fileType = FileType::Executable;
 				d->mimeType = "application/x-executable";	// unofficial
 				break;
 		}
@@ -883,29 +883,29 @@ ELF::ELF(IRpFile *file)
 		switch (d->Elf_Header.primary.e_type) {
 			default:
 				// Should not happen...
-				d->fileType = FTYPE_UNKNOWN;
+				d->fileType = FileType::Unknown;
 				break;
 			case ET_REL:
-				d->fileType = FTYPE_RELOCATABLE_OBJECT;
+				d->fileType = FileType::RelocatableObject;
 				d->mimeType = "application/x-object";
 				break;
 			case ET_EXEC:
-				d->fileType = FTYPE_EXECUTABLE;
+				d->fileType = FileType::Executable;
 				d->mimeType = "application/x-executable";
 				break;
 			case ET_DYN:
 				// This may either be a shared library or a
 				// position-independent executable.
 				if (d->isPie) {
-					d->fileType = FTYPE_EXECUTABLE;
+					d->fileType = FileType::Executable;
 					d->mimeType = "application/x-executable";
 				} else {
-					d->fileType = FTYPE_SHARED_LIBRARY;
+					d->fileType = FileType::SharedLibrary;
 					d->mimeType = "application/x-sharedlib";
 				}
 				break;
 			case ET_CORE:
-				d->fileType = FTYPE_CORE_DUMP;
+				d->fileType = FileType::CoreDump;
 				d->mimeType = "application/x-core";
 				break;
 		}
@@ -1680,7 +1680,7 @@ int ELF::loadFieldData(void)
 	}
 
 	// Linkage. (Executables only)
-	if (d->fileType == FTYPE_EXECUTABLE) {
+	if (d->fileType == FileType::Executable) {
 		d->fields->addField_string(C_("ELF", "Linkage"),
 			d->pt_dynamic.addr != 0
 				? C_("ELF|Linkage", "Dynamic")
@@ -1701,7 +1701,7 @@ int ELF::loadFieldData(void)
 	// Also indicates PIE.
 	// NOTE: Formatting using 8 digits, since 64-bit executables
 	// usually have entry points within the first 4 GB.
-	if (d->fileType == FTYPE_EXECUTABLE) {
+	if (d->fileType == FileType::Executable) {
 		string entry_point;
 		if (primary->e_class == ELFCLASS64) {
 			entry_point = rp_sprintf("0x%08" PRIX64, d->Elf_Header.elf64.e_entry);

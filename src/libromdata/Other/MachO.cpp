@@ -139,7 +139,7 @@ MachO::MachO(IRpFile *file)
 	// d->fileType will be set later.
 	RP_D(MachO);
 	d->className = "MachO";
-	d->fileType = FTYPE_UNKNOWN;
+	d->fileType = FileType::Unknown;
 
 	if (!d->file) {
 		// Could not ref() the file handle.
@@ -269,18 +269,18 @@ MachO::MachO(IRpFile *file)
 	// Determine the file and MIME types.
 	// NOTE: This assumes all architectures have the same file type.
 	static const uint8_t fileTypes_tbl[] = {
-		FTYPE_UNKNOWN,				// 0
-		FTYPE_RELOCATABLE_OBJECT,		// MH_OBJECT
-		FTYPE_EXECUTABLE,			// MH_EXECUTE
-		FTYPE_SHARED_LIBRARY,			// MH_FVMLIB: "Fixed VM" library file. (TODO: Add a separate FTYPE?)
-		FTYPE_CORE_DUMP,			// MH_CORE
-		FTYPE_EXECUTABLE,			// MH_PRELOAD (TODO: Special FTYPE?)
-		FTYPE_SHARED_LIBRARY,			// MH_DYLIB
-		FTYPE_UNKNOWN,				// MH_DYLINKER (TODO)
-		FTYPE_BUNDLE,				// MH_BUNDLE
-		FTYPE_UNKNOWN,				// MH_DYLIB_STUB (TODO)
-		FTYPE_UNKNOWN,				// MH_DSYM (TODO)
-		FTYPE_UNKNOWN,				// MH_KEXT_BUNDLE (TODO)
+		(uint8_t)FileType::Unknown,		// 0
+		(uint8_t)FileType::RelocatableObject,	// MH_OBJECT
+		(uint8_t)FileType::Executable,		// MH_EXECUTE
+		(uint8_t)FileType::SharedLibrary,	// MH_FVMLIB: "Fixed VM" library file. (TODO: Add a separate FTYPE?)
+		(uint8_t)FileType::CoreDump,		// MH_CORE
+		(uint8_t)FileType::Executable,		// MH_PRELOAD (TODO: Special FTYPE?)
+		(uint8_t)FileType::SharedLibrary,	// MH_DYLIB
+		(uint8_t)FileType::Unknown,		// MH_DYLINKER (TODO)
+		(uint8_t)FileType::Bundle,		// MH_BUNDLE
+		(uint8_t)FileType::Unknown,		// MH_DYLIB_STUB (TODO)
+		(uint8_t)FileType::Unknown,		// MH_DSYM (TODO)
+		(uint8_t)FileType::Unknown,		// MH_KEXT_BUNDLE (TODO)
 	};
 	static const char *const mimeTypes_tbl[] = {
 		nullptr,				// 0
@@ -297,7 +297,7 @@ MachO::MachO(IRpFile *file)
 		nullptr,				// MH_KEXT_BUNDLE (TODO)
 	};
 
-	// d->fileType is set to FTYPE_UNKNOWN above, so only set it
+	// d->fileType is set to FileType::Unknown above, so only set it
 	// if the filetype is known.
 	if (d->machHeaders[0].filetype < ARRAY_SIZE(fileTypes_tbl)) {
 		d->fileType = static_cast<RomData::FileType>(fileTypes_tbl[d->machHeaders[0].filetype]);

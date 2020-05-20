@@ -306,7 +306,7 @@ SegaSaturn::SegaSaturn(IRpFile *file)
 	RP_D(SegaSaturn);
 	d->className = "SegaSaturn";
 	d->mimeType = "application/x-saturn-rom";	// unofficial
-	d->fileType = FTYPE_DISC_IMAGE;
+	d->fileType = FileType::DiscImage;
 
 	if (!d->file) {
 		// Could not ref() the file handle.
@@ -347,7 +347,7 @@ SegaSaturn::SegaSaturn(IRpFile *file)
 			if (d->file->size() <= 64*1024) {
 				// 64 KB is way too small for a Dreamcast disc image.
 				// We'll assume this is IP.bin.
-				d->fileType = FTYPE_BOOT_SECTOR;
+				d->fileType = FileType::BootSector;
 			}
 			break;
 		case SegaSaturnPrivate::DISC_ISO_2352:

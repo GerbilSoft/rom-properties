@@ -214,7 +214,7 @@ WiiWAD::WiiWAD(IRpFile *file)
 	RP_D(WiiWAD);
 	d->className = "WiiWAD";
 	d->mimeType = "application/x-wii-wad";	// unofficial
-	d->fileType = FTYPE_APPLICATION_PACKAGE;
+	d->fileType = FileType::ApplicationPackage;
 
 	if (!d->file) {
 		// Could not ref() the file handle.

@@ -1418,7 +1418,7 @@ Nintendo3DS::Nintendo3DS(IRpFile *file)
 	// so we'll initialize d->fileType later.
 	RP_D(Nintendo3DS);
 	d->className = "Nintendo3DS";
-	d->fileType = FTYPE_UNKNOWN;
+	d->fileType = FileType::Unknown;
 
 	if (!d->file) {
 		// Could not ref() the file handle.
@@ -1452,14 +1452,14 @@ Nintendo3DS::Nintendo3DS(IRpFile *file)
 			// Save the 3DSX header for later.
 			memcpy(&d->mxh.hb3dsx_header, header, sizeof(d->mxh.hb3dsx_header));
 			d->headers_loaded |= Nintendo3DSPrivate::HEADER_3DSX;
-			d->fileType = FTYPE_HOMEBREW;
+			d->fileType = FileType::Homebrew;
 			break;
 
 		case Nintendo3DSPrivate::ROM_TYPE_CIA:
 			// Save the CIA header for later.
 			memcpy(&d->mxh.cia_header, header, sizeof(d->mxh.cia_header));
 			d->headers_loaded |= Nintendo3DSPrivate::HEADER_CIA;
-			d->fileType = FTYPE_APPLICATION_PACKAGE;
+			d->fileType = FileType::ApplicationPackage;
 			break;
 
 		case Nintendo3DSPrivate::ROM_TYPE_CCI:
@@ -1472,20 +1472,20 @@ Nintendo3DS::Nintendo3DS(IRpFile *file)
 			d->media_unit_shift = 9 + d->mxh.ncsd_header.cci.partition_flags[N3DS_NCSD_PARTITION_FLAG_MEDIA_UNIT_SIZE];
 
 			d->headers_loaded |= Nintendo3DSPrivate::HEADER_NCSD;
-			d->fileType = FTYPE_ROM_IMAGE;
+			d->fileType = FileType::ROM_Image;
 			break;
 
 		case Nintendo3DSPrivate::ROM_TYPE_eMMC:
 			// Save the NCSD header for later.
 			memcpy(&d->mxh.ncsd_header, &header[N3DS_NCSD_NOSIG_HEADER_ADDRESS], sizeof(d->mxh.ncsd_header));
 			d->headers_loaded |= Nintendo3DSPrivate::HEADER_NCSD;
-			d->fileType = FTYPE_EMMC_DUMP;
+			d->fileType = FileType::eMMC_Dump;
 			break;
 
 		case Nintendo3DSPrivate::ROM_TYPE_NCCH:
 			// NCCH reader will be created when loadNCCH() is called.
 			// TODO: Better type.
-			d->fileType = FTYPE_CONTAINER_FILE;
+			d->fileType = FileType::ContainerFile;
 			break;
 
 		default:
