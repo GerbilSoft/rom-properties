@@ -55,11 +55,20 @@ class AchievementsPrivate
 		};
 		static const AchInfo_t achInfo[];
 
+		// C++14 adds support for enum classes as unordered_map keys.
+		// C++11 needs an explicit hash functor.
+		struct EnumClassHash {
+			inline std::size_t operator()(Achievements::ID t) const
+			{
+				return std::hash<int>()(static_cast<int>(t));
+			}
+		};
+
 		// Active achievement data.
 		// Two maps: One for boolean/count, one for bitfield.
 		// TODO: Map vs. unordered_map for performance?
-		unordered_map<Achievements::ID, uint8_t> mapAchData_count;
-		unordered_map<Achievements::ID, uint64_t> mapAchData_bitfield;
+		unordered_map<Achievements::ID, uint8_t, EnumClassHash> mapAchData_count;
+		unordered_map<Achievements::ID, uint64_t, EnumClassHash> mapAchData_bitfield;
 };
 
 /** AchievementsPrivate **/
