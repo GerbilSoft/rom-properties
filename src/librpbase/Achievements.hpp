@@ -87,7 +87,7 @@ class Achievements
 			// BroadOn WAD file format for Wii.
 			ViewedBroadOnWADFile		= 2,
 
-			// Sonic & Knuckles locked onto Sonic & Knuckles
+			// Sonic & Knuckles locked on to Sonic & Knuckles
 			ViewedMegaDriveSKwithSK		= 3,
 
 			Max
