@@ -129,10 +129,11 @@ class AchievementsPrivate
 
 		/**
 		 * Symmetric obfuscation function.
+		 * @param iv Initialization vector.
 		 * @param buf Data buffer.
 		 * @param size Size. (must be a multiple of 2)
 		 */
-		static void doObfuscate(uint8_t *buf, size_t size);
+		static void doObfuscate(uint16_t iv, uint8_t *buf, size_t size);
 
 		/**
 		 * Get the achievements filename.
@@ -212,10 +213,11 @@ AchievementsPrivate::AchievementsPrivate()
 
 /**
  * Symmetric obfuscation function.
+ * @param iv Initialization vector.
  * @param buf Data buffer.
  * @param size Size. (must be a multiple of 2)
  */
-void AchievementsPrivate::doObfuscate(uint8_t *buf, size_t size)
+void AchievementsPrivate::doObfuscate(uint16_t iv, uint8_t *buf, size_t size)
 {
 	assert(size % 2 == 0);
 	uint16_t *buf16 = reinterpret_cast<uint16_t*>(buf);
@@ -230,7 +232,7 @@ void AchievementsPrivate::doObfuscate(uint8_t *buf, size_t size)
 		lfsr |= (n << 15);
 	}
 
-	for (; size > 1; buf16++, size -= 2) {
+	for (; size > 1; buf16++, size -= 2, iv++) {
 		uint16_t data = ~(*buf16);
 		data ^= lfsr;
 		if (size & 4) {
@@ -238,6 +240,7 @@ void AchievementsPrivate::doObfuscate(uint8_t *buf, size_t size)
 		} else {
 			data ^= 0xA5A5;
 		}
+		data ^= iv;
 		*buf16 = data;
 
 		// Bits 3 and 0 are XOR'd to form the next input.
@@ -341,7 +344,20 @@ int AchievementsPrivate::save(void) const
 	if (buf.size() % 2 != 0) {
 		buf.push_back(0);
 	};
-	doObfuscate(buf.data(), buf.size());
+	union {
+		uint16_t u16[2];
+		uint8_t u8[4];
+	} iv;
+	iv.u16[0] = (getpid() ^ time(nullptr)) & 0xFFFF;
+	iv.u16[1] = 0xFFFF - iv.u16[0];
+#if SYS_BYTEORDER != SYS_LIL_ENDIAN
+	iv.u16[0] = cpu_to_le16(iv.u16[0]);
+	iv.u16[1] = cpu_to_le16(iv.u16[1]);
+#endif /* SYS_BYTEORDER != SYS_LIL_ENDIAN */
+	buf.resize(buf.size()+4);
+	memcpy(&buf.data()[buf.size()-4], iv.u8, sizeof(iv.u8));
+
+	doObfuscate(iv.u16[0], buf.data(), buf.size()-4);
 #endif /* NDEBUG || FORCE_OBFUSCATE */
 
 	// Write the achievements file.
@@ -437,10 +453,32 @@ int AchievementsPrivate::load(void)
 
 #if defined(NDEBUG) || defined(FORCE_OBFUSCATE)
 	// Deobfuscate the data.
-	if (buf.size() % 2 != 0) {
-		buf.push_back(0);
+	if (buf.size() < 4) {
+		// IV is missing.
+		return -EIO;
+	} else if (buf.size() % 2 != 0) {
+		// IV should've padded it.
+		return -EIO;
 	};
-	doObfuscate(buf.data(), buf.size());
+
+	union {
+		uint16_t u16[2];
+		uint8_t u8[4];
+	} iv;
+	memcpy(iv.u8, &buf.data()[buf.size()-4], sizeof(iv.u8));
+#if SYS_BYTEORDER != SYS_LIL_ENDIAN
+	iv.u16[0] = le16_to_cpu(iv.u16[0]);
+	iv.u16[1] = le16_to_cpu(iv.u16[1]);
+#endif /* SYS_BYTEORDER != SYS_LIL_ENDIAN */
+
+	if (iv.u16[1] != (0xFFFF - iv.u16[0])) {
+		// Incorrect iv1.
+		printf("IV1 ERR\n");
+		return -EIO;
+	}
+
+	buf.resize(buf.size()-4);
+	doObfuscate(iv.u16[0], buf.data(), buf.size());
 #endif /* NDEBUG || FORCE_OBFUSCATE */
 
 	// Check the header.
