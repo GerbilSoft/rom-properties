@@ -31,6 +31,9 @@ using std::unordered_map;
 # include "libwin32common/DelayLoadHelper.h"
 #endif /* _MSC_VER */
 
+// Win32 needed for GetCurrentProcessId().
+#include "libwin32common/RpWin32_sdk.h"
+
 // DEBUG: Uncomment this to force obfuscation in debug builds.
 // This will use ach.bin and "RPACH10R" magic.
 //#define FORCE_OBFUSCATE 1
@@ -348,7 +351,11 @@ int AchievementsPrivate::save(void) const
 		uint16_t u16[2];
 		uint8_t u8[4];
 	} iv;
+#ifdef _WIN32
+	iv.u16[0] = (GetCurrentProcessId() ^ time(nullptr)) & 0xFFFF;
+#else /* !_WIN32 */
 	iv.u16[0] = (getpid() ^ time(nullptr)) & 0xFFFF;
+#endif /* _WIN32 */
 	iv.u16[1] = 0xFFFF - iv.u16[0];
 #if SYS_BYTEORDER != SYS_LIL_ENDIAN
 	iv.u16[0] = cpu_to_le16(iv.u16[0]);
