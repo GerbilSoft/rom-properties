@@ -31,8 +31,10 @@ using std::unordered_map;
 # include "libwin32common/DelayLoadHelper.h"
 #endif /* _MSC_VER */
 
+#ifdef _WIN32
 // Win32 needed for GetCurrentProcessId().
-#include "libwin32common/RpWin32_sdk.h"
+# include "libwin32common/RpWin32_sdk.h"
+#endif /* _WIN32 */
 
 // DEBUG: Uncomment this to force obfuscation in debug builds.
 // This will use ach.bin and "RPACH10R" magic.
