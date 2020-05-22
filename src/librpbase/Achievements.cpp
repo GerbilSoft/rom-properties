@@ -556,6 +556,7 @@ int AchievementsPrivate::load(void)
 				}
 				// Save the achievement count.
 				mapAchData_count[(Achievements::ID)id] = p[3];
+				p += 4;
 				break;
 			}
 
