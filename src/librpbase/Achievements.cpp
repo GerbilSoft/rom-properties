@@ -675,8 +675,9 @@ void Achievements::clearNotifyFunction(NotifyFunc func, intptr_t user_data)
  * Unlock an achievement.
  * @param id Achievement ID.
  * @param bit Bitfield index for AT_BITFIELD achievements.
+ * @return 0 on success; negative POSIX error code on error.
  */
-void Achievements::unlock(ID id, int bit)
+int Achievements::unlock(ID id, int bit)
 {
 	RP_D(Achievements);
 
@@ -697,7 +698,7 @@ void Achievements::unlock(ID id, int bit)
 	assert(id < ID::Max);
 	if ((int)id < 0 || id >= ID::Max) {
 		// Invalid achievement ID.
-		return;
+		return -EINVAL;
 	}
 
 	// Make sure achievements have been loaded.
@@ -711,7 +712,7 @@ void Achievements::unlock(ID id, int bit)
 	switch (achInfo->type) {
 		default:
 			assert(!"Achievement type not supported.");
-			return;
+			return -EINVAL;
 
 		case AchievementsPrivate::AT_COUNT: {
 			// Check if we've already reached the required count.
@@ -719,7 +720,7 @@ void Achievements::unlock(ID id, int bit)
 			if (count >= achInfo->count) {
 				// Count has been reached.
 				// Achievement is already unlocked.
-				return;
+				return 0;
 			}
 
 			// Increment the count.
@@ -738,7 +739,7 @@ void Achievements::unlock(ID id, int bit)
 			assert(bit < achInfo->count);
 			if (bit < 0 || bit >= achInfo->count) {
 				// Invalid bit index.
-				return;
+				return -EINVAL;
 			}
 
 			// Check if we've already filled the bitfield.
@@ -748,14 +749,14 @@ void Achievements::unlock(ID id, int bit)
 			if (bf_value == bf_filled) {
 				// Bitfield is already filled.
 				// Achievement is already unlocked.
-				return;
+				return 0;
 			}
 
 			// Set the bit.
 			uint64_t bf_new = bf_value | (1 << (unsigned int)bit);
 			if (bf_new == bf_value) {
 				// No change.
-				return;
+				return 0;
 			}
 
 			d->mapAchData_bitfield[id] = bf_new;
@@ -778,6 +779,8 @@ void Achievements::unlock(ID id, int bit)
 				dpgettext_expr(RP_I18N_DOMAIN, "Achievements", achInfo->desc));
 		}
 	}
+
+	return 0;
 }
 
 }
