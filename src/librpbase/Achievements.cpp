@@ -753,7 +753,7 @@ int Achievements::unlock(ID id, int bit)
 			}
 
 			// Set the bit.
-			uint64_t bf_new = bf_value | (1 << (unsigned int)bit);
+			uint64_t bf_new = bf_value | (1ULL << (unsigned int)bit);
 			if (bf_new == bf_value) {
 				// No change.
 				return 0;
