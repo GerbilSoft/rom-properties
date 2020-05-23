@@ -12,6 +12,7 @@
     images using the official ROM Properties online database server.
   * Game Boy Advance: Added metadata properties for Title and Publisher.
     (Same as Game Boy and Game Boy Color.)
+  * NES: Added more (unused) mappers for TNES format.
 
 * Bug fixes:
   * WiiWAD: Fix DLC icons no longer working after updating CBCReader to update

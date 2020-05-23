@@ -141,7 +141,7 @@ const NESMappersPrivate::MapperEntry NESMappersPrivate::mappers_plane0[] = {
 	{"FCG-x",			"Bandai"},
 	{"FFE #17",			"FFE"},
 	{"SS 88006",			"Jaleco"},
-	{"Namco 129/163",		"Namco"},
+	{"Namco 129/163",		"Namco"},	// TODO: Namcot-106?
 
 	// Mappers 020-029
 	{"Famicom Disk System",		"Nintendo"}, // this isn't actually used, as FDS roms are stored in their own format.
@@ -176,7 +176,7 @@ const NESMappersPrivate::MapperEntry NESMappersPrivate::mappers_plane0[] = {
 	{"MMC3 multicart (GA23C)",	nullptr},
 	{"Rumble Station 15-in-1",	"Color Dreams"},	// NES-on-a-Chip
 	{"MMC3 multicart",		"Nintendo"},
-	{"Taito TC0690",		"Taito"},
+	{"Taito TC0690",		"Taito"},	// TODO: Taito-TC190V?
 	{"MMC3 multicart",		nullptr},
 
 	// Mappers 050-059
@@ -206,13 +206,13 @@ const NESMappersPrivate::MapperEntry NESMappersPrivate::mappers_plane0[] = {
 	// Mappers 070-079
 	{"Family Trainer",		"Bandai"},
 	{"Codemasters (UNROM clone)",	"Codemasters"},
-	{"Jaleco JF-17",		"Jaleco"},
+	{"Jaleco JF-17",		"Jaleco"},	// TODO: Jaleco-2?
 	{"VRC3",			"Konami"},
 	{"43-393/860908C (MMC3 clone)",	"Waixing"},
 	{"VRC1",			"Konami"},
-	{"NAMCOT-3446 (Namcot 108 variant)",	"Namco"},
-	{"Napoleon Senki",		"Lenar"},
-	{"Holy Diver; Uchuusen - Cosmo Carrier", nullptr},
+	{"NAMCOT-3446 (Namcot 108 variant)",	"Namco"},	// TODO: Namco-109?
+	{"Napoleon Senki",		"Lenar"},		// TODO: Irem-1?
+	{"Holy Diver; Uchuusen - Cosmo Carrier", nullptr},	// TODO: Irem-74HC161?
 	{"NINA-03, NINA-06",		"American Video Entertainment"},
 
 	// Mappers 080-089
@@ -222,20 +222,20 @@ const NESMappersPrivate::MapperEntry NESMappersPrivate::mappers_plane0[] = {
 	{"Cony/Yoko",			"Cony/Yoko"},
 	{"PC-SMB2J",			nullptr},
 	{"VRC7",			"Konami"},
-	{"Jaleco JF-13",		"Jaleco"},
-	{"CNROM variant",		nullptr},
-	{"Namcot 118 variant",		nullptr},
+	{"Jaleco JF-13",		"Jaleco"},	// TODO: Jaleco-4?
+	{"CNROM variant",		nullptr},	// TODO: Jaleco-1?
+	{"Namcot 118 variant",		nullptr},	// TODO: Namco-118?
 	{"Sunsoft-2 (Sunsoft-3 board)",	"Sunsoft"},
 
 	// Mappers 090-099
 	{"J.Y. Company (simple nametable control)", "J.Y. Company"},
 	{"J.Y. Company (Super Fighter III)", "J.Y. Company"},
-	{"Moero!! Pro",			"Jaleco"},
-	{"Sunsoft-2 (Sunsoft-3R board)", "Sunsoft"},
-	{"HVC-UN1ROM",			"Nintendo"},
-	{"NAMCOT-3425",			"Namco"},
+	{"Moero!! Pro",			"Jaleco"},	// TODO: Jaleco-3?
+	{"Sunsoft-2 (Sunsoft-3R board)", "Sunsoft"},	// TODO: 74161A?
+	{"HVC-UN1ROM",			"Nintendo"},	// TODO: 74161B?
+	{"NAMCOT-3425",			"Namco"},	// TODO: Namcot?
 	{"Oeka Kids",			"Bandai"},
-	{"Irem TAM-S1",			"Irem"},
+	{"Irem TAM-S1",			"Irem"},	// TODO: Irem-2?
 	{nullptr,			nullptr},
 	{"CNROM (Vs. System)",		"Nintendo"},
 
@@ -260,7 +260,7 @@ const NESMappersPrivate::MapperEntry NESMappersPrivate::mappers_plane0[] = {
 	{"Kǎshèng SFC-02B/-03/-004 (MMC3 clone)", "Kǎshèng"},
 	{"SOMARI-P (Huang-1/Huang-2)",	"Gouder"},
 	{nullptr,			nullptr},
-	{"TxSROM",			"Nintendo"},
+	{"TxSROM",			"Nintendo"},	// TODO: MMC-3+TLS?
 	{"TQROM",			"Nintendo"},
 
 	// Mappers 120-129
@@ -341,7 +341,7 @@ const NESMappersPrivate::MapperEntry NESMappersPrivate::mappers_plane0[] = {
 	{"MMC3 clone (scrambled registers) (same as 114)", nullptr},
 	{"Suikan Pipe (VRC4e clone)",	nullptr},
 	{"Sunsoft-1",			"Sunsoft"},
-	{"CNROM with weak copy protection", nullptr},	// Submapper field indicates required value for CHR banking.
+	{"CNROM with weak copy protection", nullptr},	// Submapper field indicates required value for CHR banking. (TODO: VROM-disable?)
 	{"Study Box",			"Fukutake Shoten"},
 	{"Kǎshèng A98402 (MMC3 clone)",	"Kǎshèng"},
 	{"Bandai Karaoke Studio",	"Bandai"},
@@ -937,21 +937,78 @@ const char *NESMappers::lookup_ines(int mapper)
  */
 int NESMappers::tnesMapperToInesMapper(int tnes_mapper)
 {
-	static const int8_t ines_mappers[10] = {
-		0,	// TNES 0 = NROM
-		1,	// TNES 1 = SxROM (MMC1)
-		9,	// TNES 2 = PxROM (MMC2)
-		4,	// TNES 3 = TxROM (MMC3)
-		10,	// TNES 4 = FxROM (MMC4)
-		5,	// TNES 5 = ExROM (MMC5)
-		2,	// TNES 6 = UxROM
-		3,	// TNES 7 = CNROM
-		-1,	// TNES 8 = undefined
-		7,	// TNES 9 = AxROM
+	// 255 == not supported
+	static const uint8_t ines_mappers[] = {
+		// 0
+		0,	// NROM
+		1,	// SxROM (MMC1)
+		9,	// PxROM (MMC2)
+		4,	// TxROM (MMC3)
+		10,	// FxROM (MMC4)
+		5,	// ExROM (MMC5)
+		2,	// UxROM
+		3,	// CNROM
+		66,	// GNROM
+		7,	// AxROM
+
+		// 10
+		184,	// Sunsoft-1
+		89,	// Sunsoft-2
+		67,	// Sunsoft-3
+		68,	// Sunsoft-4
+		69,	// Sunsoft-5
+		70,	// Bandai
+		75,	// Konami VRC1
+		22,	// Konami VRC2A
+		23,	// Konami VRC2B
+		73,	// Konami VRC3
+
+		// 20
+		21,	// Konami VRC4A
+		25,	// Konami VRC4B
+		255,	// Konami VRC4C (FIXME: Submapper?)
+		255,	// Konami VRC4D (FIXME: Submapper?)
+		255,	// Konami VRC4E (FIXME: Submapper?)
+		24,	// Konami VRC6A
+		26,	// Konami VRC6B
+		85,	// Konami VRC7
+		87,	// Jaleco-1
+		48,	// Jaleco-2
+
+		// 30
+		92,	// Jaleco-3
+		86,	// Jaleco-4
+		18,	// Jaleco-SS8806
+		93,	// 74161A
+		94,	// 74161B
+		95,	// Namcot
+		19,	// Namcot-106
+		76,	// Namco-109
+		88,	// Namco-118
+		118,	// MMC-3+TLS
+
+		// 40
+		33,	// Taito-TC0190
+		255,	// Taito-TC0350 (FIXME: Submapper?)
+		48,	// Taito-TC190V
+		80,	// Taito-X-005
+		82,	// Taito-X1-17
+		77,	// Irem-1
+		97,	// Irem-2
+		78,	// Irem-74HC161
+		255,	// Irem-74HC32 (FIXME: Submapper?)
+		32,	// Irem-G-101
+
+		// 50
+		65,	// Irem-H-3001
+		185,	// VROM-disable
 	};
 
 	if (tnes_mapper < 0 || tnes_mapper >= ARRAY_SIZE(ines_mappers)) {
 		// Undefined TNES mapper.
+		return -1;
+	} else if (ines_mappers[tnes_mapper] == 255) {
+		// Not supported.
 		return -1;
 	}
 
