@@ -1232,8 +1232,7 @@ int Nintendo3DSPrivate::loadPermissions(void)
 
 	// TODO: Other descriptor versions?
 	// v2 is standard; may be v3 on 9.3.0-X.
-	assert(ncch_exheader->aci.arm9.descriptor_version == 2 ||
-	       ncch_exheader->aci.arm9.descriptor_version == 3);
+	// FIXME: Some pre-release images have version 0.
 	perm.ioAccess = static_cast<uint32_t>(le64_to_cpu(ncch_exheader->aci.arm9.descriptors));
 	perm.ioAccessVersion = ncch_exheader->aci.arm9.descriptor_version;
 
@@ -1349,8 +1348,7 @@ int Nintendo3DSPrivate::addFields_permissions(void)
 
 	// TODO: Other descriptor versions?
 	// v2 is standard; may be v3 on 9.3.0-X.
-	assert(perm.ioAccessVersion == 2 ||
-	       perm.ioAccessVersion == 3);
+	// FIXME: Some pre-release images have version 0.
 	if (perm.ioAccessVersion == 2 ||
 	    perm.ioAccessVersion == 3)
 	{
