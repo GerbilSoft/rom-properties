@@ -363,10 +363,11 @@ int AchievementsPrivate::save(void) const
 	iv.u16[0] = cpu_to_le16(iv.u16[0]);
 	iv.u16[1] = cpu_to_le16(iv.u16[1]);
 #endif /* SYS_BYTEORDER != SYS_LIL_ENDIAN */
-	buf.resize(buf.size()+4);
-	memcpy(&buf.data()[buf.size()-4], iv.u8, sizeof(iv.u8));
+	const size_t ivpos = buf.size();
+	buf.resize(ivpos+4);
+	memcpy(&buf.data()[ivpos], iv.u8, sizeof(iv.u8));
 
-	doObfuscate(iv.u16[0], buf.data(), buf.size()-4);
+	doObfuscate(iv.u16[0], buf.data(), ivpos);
 #endif /* NDEBUG || FORCE_OBFUSCATE */
 
 	// Write the achievements file.
@@ -678,6 +679,17 @@ void Achievements::clearNotifyFunction(NotifyFunc func, intptr_t user_data)
 void Achievements::unlock(ID id, int bit)
 {
 	RP_D(Achievements);
+
+#if defined(_MSC_VER) && defined(ZLIB_IS_DLL)
+	// Delay load verification.
+	// TODO: Only if linked with /DELAYLOAD?
+	if (DelayLoad_test_zlibVersion() != 0) {
+		// Delay load failed.
+		// We won't be able to calculate CRC32s, so don't
+		// enable achievements at all.
+		return -ENOTSUP;
+	}
+#endif /* defined(_MSC_VER) && defined(ZLIB_IS_DLL) */
 
 	// If this achievement is bool/count, increment the value.
 	// If the value has hit the maximum, achievement is unlocked.
