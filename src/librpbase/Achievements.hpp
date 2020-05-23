@@ -97,8 +97,9 @@ class Achievements
 		 * Unlock an achievement.
 		 * @param id Achievement ID.
 		 * @param bit Bitfield index for AT_BITFIELD achievements. (-1 for none)
+		 * @return 0 on success; negative POSIX error code on error.
 		 */
-		void unlock(ID id, int bit = -1);
+		int unlock(ID id, int bit = -1);
 };
 
 }
