@@ -63,6 +63,7 @@ Package: rom-properties-kf5
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}, rom-properties-utils
 Recommends: rom-properties-lang
+Conflicts: rom-properties-kde5
 Replaces: rom-properties-kde5
 Description: ROM Properties Page shell extension
  This shell extension provides thumbnailing and property page functionality
@@ -86,6 +87,7 @@ Package: rom-properties-gnome
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}, rom-properties-utils, rom-properties-gtk3-common
 Recommends: rom-properties-lang
+Conflicts: rom-properties-mate, rom-properties-cinnamon
 Replaces: rom-properties-mate, rom-properties-cinnamon
 Description: ROM Properties Page shell extension
  This shell extension provides thumbnailing and property page functionality
@@ -124,6 +126,7 @@ Package: rom-properties-utils
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
 Recommends: rom-properties-lang
+Conflicts: rom-properties-stub
 Replaces: rom-properties-stub
 Description: ROM Properties Page shell extension
  This shell extension provides thumbnailing and property page functionality
