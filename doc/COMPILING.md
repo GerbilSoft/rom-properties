@@ -15,9 +15,10 @@ packages:
 
 NOTE: libkf5kio-dev was called kio-dev prior to Ubuntu 18.04.
 
-On Red Hat/Fedora, you will need to install "C Development Tools and Libraries"
-and the following development packages:
-* All: cmake libcurl-devel zlib-devel libpng-devel libjpeg-turbo-devel nettle-devel tinyxml2-devel libbsd-devel mesa-libGL-devel gettext libseccomp-devel
+On Red Hat, Fedora, OpenSUSE, and other RPM-based distributions, you will need
+to install "C Development Tools and Libraries" and the following development
+packages:
+* All: cmake libcurl-devel zlib-devel libpng16-devel libjpeg-turbo-devel nettle-devel tinyxml2-devel libbsd-devel mesa-libGL-devel gettext-tools libseccomp-devel
 * KDE 4.x: qt-devel kdelibs-devel
 * KDE 5.x: qt5-qtbase-devel qt5-qttools extra-cmake-modules kf5-kio-devel kf5-kwidgetsaddons-devel kf5-kfilemetadata-devel
 * XFCE (GTK+ 2.x): glib2-devel gtk2-devel gdk-pixbuf2-devel Thunar-devel
