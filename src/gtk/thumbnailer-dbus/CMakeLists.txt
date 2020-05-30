@@ -15,13 +15,14 @@ ELSE(GLib2_FOUND AND GObject2_FOUND AND GIO_FOUND AND GIO-UNIX_FOUND)
 ENDIF(GLib2_FOUND AND GObject2_FOUND AND GIO_FOUND AND GIO-UNIX_FOUND)
 
 # D-Bus bindings for the thumbnailer.
+SET(DBUS_XML_FILENAME "${CMAKE_CURRENT_SOURCE_DIR}/../../dbus/org.freedesktop.thumbnails.SpecializedThumbnailer1.xml")
 ADD_CUSTOM_COMMAND(
 	OUTPUT SpecializedThumbnailer1.c SpecializedThumbnailer1.h
 	COMMAND "${GDBUS_CODEGEN}"
 		--generate-c-code SpecializedThumbnailer1
-		"${CMAKE_CURRENT_SOURCE_DIR}/org.freedesktop.thumbnails.SpecializedThumbnailer1.xml"
+		"${DBUS_XML_FILENAME}"
 	WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
-	DEPENDS org.freedesktop.thumbnails.SpecializedThumbnailer1.xml
+	DEPENDS "${DBUS_XML_FILENAME}"
 	VERBATIM
 	)
 
