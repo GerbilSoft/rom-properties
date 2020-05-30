@@ -13,9 +13,9 @@
 #include "librpbase/config.librpbase.h"
 #include "NCCHReader.hpp"
 
-// librpbase, librpcpu
-#include "librpcpu/byteswap.h"
+// librpbase
 #include "librpbase/crypto/KeyManager.hpp"
+
 #ifdef ENABLE_DECRYPTION
 #include "../crypto/CtrKeyScrambler.hpp"
 #include "../crypto/N3DSVerifyKeys.hpp"

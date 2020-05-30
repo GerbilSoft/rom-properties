@@ -45,7 +45,7 @@
 #include "ctypex.h"
 
 // librpcpu
-#include "librpcpu/byteswap.h"
+#include "librpcpu/byteswap_rp.h"
 #include "librpcpu/bitstuff.h"
 
 #endif /* __ROMPROPERTIES_LIBRPFILE_STDAFX_H__ */

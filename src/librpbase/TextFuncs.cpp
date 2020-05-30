@@ -9,7 +9,6 @@
 #include "stdafx.h"
 #include "config.librpbase.h"
 #include "TextFuncs.hpp"
-#include "byteswap.h"
 
 // libi18n
 #include "libi18n/i18n.h"

@@ -11,7 +11,7 @@
 #include "tcharx.h"
 
 // Byteswap functions.
-#include "librpcpu/byteswap.h"
+#include "librpcpu/byteswap_rp.h"
 #include "librpbase/aligned_malloc.h"
 
 // C includes. (C++ namespace)

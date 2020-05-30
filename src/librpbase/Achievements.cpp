@@ -10,8 +10,7 @@
 #include "Achievements.hpp"
 #include "libi18n/i18n.h"
 
-// librpcpu, librpfile
-#include "librpcpu/byteswap.h"
+// librpfile
 #include "librpfile/FileSystem.hpp"
 #include "librpfile/RpFile.hpp"
 using namespace LibRpFile;
