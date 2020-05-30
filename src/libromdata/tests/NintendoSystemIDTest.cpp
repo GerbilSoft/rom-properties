@@ -10,7 +10,7 @@
 #include "gtest/gtest.h"
 #include "tcharx.h"
 
-#include "byteswap.h"
+#include "byteswap_rp.h"
 #include "nintendo_system_id.h"
 
 // C includes. (C++ namespace)

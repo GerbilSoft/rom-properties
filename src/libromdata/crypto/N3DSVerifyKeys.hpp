@@ -15,7 +15,9 @@
 #endif /* !ENABLE_DECRYPTION */
 
 #include "common.h"
-#include "librpcpu/byteswap.h"
+
+// librpcpu
+#include "librpcpu/byteswap_rp.h"
 
 #include "librpbase/crypto/KeyManager.hpp"
 #include "../Handheld/n3ds_structs.h"

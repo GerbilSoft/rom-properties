@@ -7,7 +7,7 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "byteswap.h"
+#include "byteswap_rp.h"
 
 // C includes.
 #include <assert.h>

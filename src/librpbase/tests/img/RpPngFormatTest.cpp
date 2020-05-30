@@ -28,9 +28,9 @@
 #define gzclose_w(file) gzclose(file)
 #endif
 
-// librpbase
+// librpcpu, librpbase
+#include "librpcpu/byteswap_rp.h"
 #include "common.h"
-#include "byteswap.h"
 #include "uvector.h"
 #include "img/RpImageLoader.hpp"
 

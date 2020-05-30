@@ -45,7 +45,7 @@
 #include "librpbase/aligned_malloc.h"
 
 // librpcpu
-#include "librpcpu/byteswap.h"
+#include "librpcpu/byteswap_rp.h"
 #include "librpcpu/bitstuff.h"
 
 #ifdef __cplusplus

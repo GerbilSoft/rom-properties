@@ -13,7 +13,7 @@
 #include "stdafx.h"
 #include "ndscrypt.hpp"
 
-#include "byteswap.h"
+#include "byteswap_rp.h"
 #include "nds_crc.hpp"	// TODO: Optimized versions?
 
 // C includes.

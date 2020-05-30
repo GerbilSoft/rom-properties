@@ -6,7 +6,7 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "byteswap.h"
+#include "byteswap_rp.h"
 #include "cpu_dispatch.h"
 
 #ifdef RP_HAS_IFUNC
