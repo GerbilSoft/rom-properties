@@ -47,13 +47,14 @@ IF(ENABLE_ACHIEVEMENTS)
 
 	# D-Bus bindings for notifications.
 	# NOTE: This has to be in this file, not the GTK+ CMakeLists.txt.
+	SET(DBUS_XML_FILENAME "${CMAKE_CURRENT_SOURCE_DIR}/../../dbus/org.freedesktop.Notifications.xml")
 	ADD_CUSTOM_COMMAND(
 		OUTPUT Notifications.c Notifications.h
 		COMMAND "${GDBUS_CODEGEN}"
 			--generate-c-code Notifications
-			"${CMAKE_CURRENT_SOURCE_DIR}/../org.freedesktop.Notifications.xml"
+			"${DBUS_XML_FILENAME}"
 		WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
-		DEPENDS ../org.freedesktop.Notifications.xml
+		DEPENDS "${DBUS_XML_FILENAME}"
 		VERBATIM
 		)
 

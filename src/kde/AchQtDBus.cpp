@@ -11,9 +11,7 @@
 using LibRpBase::Achievements;
 
 // QtDBus
-#include <QtDBus/QDBusConnection>
-#include <QtDBus/QDBusInterface>
-#include <QtDBus/QDBusPendingCall>
+#include "notificationsinterface.h"
 
 class AchQtDBusPrivate
 {
@@ -94,18 +92,11 @@ int AchQtDBusPrivate::notifyFunc(intptr_t user_data, const char *name, const cha
  */
 int AchQtDBusPrivate::notifyFunc(const char *name, const char *desc)
 {
-	// Connect to the session bus.
-	QDBusConnection sessionBus = QDBusConnection::sessionBus();
-	if (!sessionBus.isConnected()) {
-		// Unable to connect.
-		return -EIO;
-	}
-
-	QDBusInterface iface(
+	// Connect to org.freedesktop.Notifications.
+	org::freedesktop::Notifications iface(
 		QLatin1String("org.freedesktop.Notifications"),
 		QLatin1String("/org/freedesktop/Notifications"),
-		QLatin1String("org.freedesktop.Notifications"),
-		sessionBus);
+		QDBusConnection::sessionBus());
 	if (!iface.isValid()) {
 		// Invalid interface.
 		return -EIO;
@@ -118,10 +109,9 @@ int AchQtDBusPrivate::notifyFunc(const char *name, const char *desc)
 	text += QLatin1String("</u>\n");
 	text += QString::fromUtf8(desc);
 
-	iface.asyncCall(
-		QLatin1String("Notify"),		// Method
+	iface.Notify(
 		QLatin1String("rom-properties"),	// app-name [s]
-		(unsigned int)0,			// replaces_id [u]
+		0,					// replaces_id [u]
 		QLatin1String("answer-correct"),	// app_icon [s]
 		QLatin1String("Achievement Unlocked"),	// summary [s]
 		text,					// body [s]

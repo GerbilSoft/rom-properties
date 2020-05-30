@@ -115,12 +115,18 @@ ENDIF(Qt5Core_FOUND)
 IF(HAVE_QtDBus_NOTIFY)
 	STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-kf5-notify_SRCS "${rom-properties-kde-notify_SRCS}")
 	STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-kf5-notify_H    "${rom-properties-kde-notify_H}")
+
+	# QtDBus wrappers
+	QT5_ADD_DBUS_INTERFACES(rom-properties-kf5_DBUS_IFACE_SRCS
+		"${CMAKE_CURRENT_SOURCE_DIR}/../../dbus/org.freedesktop.Notifications.xml"
+		)
 ENDIF(HAVE_QtDBus_NOTIFY)
 
 SET(rom-properties-kf5_SRCS
 	${rom-properties-kf5_SRCS}
 	${rom-properties-kio5_SRCS}
 	${rom-properties-kf5-notify_SRCS}
+	${rom-properties-kf5_DBUS_IFACE_SRCS}
 	${rom-properties-kf5_RCC_O}
 	RpExtractorPlugin.cpp
 	RpOverlayIconPlugin.cpp
