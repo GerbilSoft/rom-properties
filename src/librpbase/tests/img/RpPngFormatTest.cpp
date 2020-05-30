@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase/tests)                  *
  * RpPngFormatTest.cpp: RpImageLoader PNG format test.                     *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -28,9 +28,9 @@
 #define gzclose_w(file) gzclose(file)
 #endif
 
-// librpbase
+// librpcpu, librpbase
+#include "librpcpu/byteswap_rp.h"
 #include "common.h"
-#include "byteswap.h"
 #include "uvector.h"
 #include "img/RpImageLoader.hpp"
 

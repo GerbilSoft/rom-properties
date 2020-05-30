@@ -14,7 +14,7 @@
 #include "rpcli_secure.h"
 
 // librpbase, librpcpu
-#include "librpcpu/byteswap.h"
+#include "librpcpu/byteswap_rp.h"
 #include "librpbase/config.librpbase.h"
 #include "librpbase/RomData.hpp"
 #include "librpbase/SystemRegion.hpp"

@@ -49,7 +49,7 @@ class ValveVTF3Private : public FileFormatPrivate
 
 #if SYS_BYTEORDER == SYS_BIG_ENDIAN
 		/**
-		 * Byteswap a float. (TODO: Move to byteswap.h?)
+		 * Byteswap a float. (TODO: Move to byteswap_rp.h?)
 		 * @param f Float to byteswap.
 		 * @return Byteswapped flaot.
 		 */

@@ -11,10 +11,8 @@
 #include "../iso_structs.h"
 
 // librpbase, librpfile, librpcpu
-#include "common.h"
 #include "librpbase/TextFuncs.hpp"
 #include "libi18n/i18n.h"
-#include "librpcpu/byteswap.h"
 using namespace LibRpBase;
 using LibRpFile::IRpFile;
 

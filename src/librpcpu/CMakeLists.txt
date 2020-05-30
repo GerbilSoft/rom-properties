@@ -10,7 +10,7 @@ SET(librpcpu_SRCS
 # Headers.
 SET(librpcpu_H
 	byteorder.h
-	byteswap.h
+	byteswap_rp.h
 	bitstuff.h
 	)
 

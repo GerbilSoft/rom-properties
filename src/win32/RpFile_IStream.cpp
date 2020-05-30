@@ -12,7 +12,7 @@
 #include "RpFile_IStream.hpp"
 
 // librpbase, librpcpu
-#include "librpcpu/byteswap.h"
+#include "librpcpu/byteswap_rp.h"
 using namespace LibRpBase;
 
 // C++ STL classes.
