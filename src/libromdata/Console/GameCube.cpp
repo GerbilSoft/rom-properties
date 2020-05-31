@@ -725,7 +725,8 @@ GameCube::GameCube(IRpFile *file)
 		case GameCubePrivate::DISC_FORMAT_WBFS: {
 			d->mimeType = "application/x-wbfs";
 			// Check for split WBFS.
-			if (info.ext && !strcasecmp(info.ext, ".wbf1")) {
+			// TODO: Make .wbf1 support optional. Disabled for now.
+			/*if (info.ext && !strcasecmp(info.ext, ".wbf1")) {
 				// Second part of split WBFS.
 				IRpFile *const wbfs0 = FileSystem::openRelatedFile(file->filename().c_str(), nullptr, ".wbfs");
 				if (unlikely(!wbfs0) || !wbfs0->isOpen()) {
@@ -755,7 +756,7 @@ GameCube::GameCube(IRpFile *file)
 
 				// Open the WbfsReader.
 				d->discReader = new WbfsReader(d->file);
-			} else if ((d->discType & GameCubePrivate::DISC_FORMAT_MASK) == GameCubePrivate::DISC_FORMAT_WBFS) {
+			} else*/ if ((d->discType & GameCubePrivate::DISC_FORMAT_MASK) == GameCubePrivate::DISC_FORMAT_WBFS) {
 				// First part of split WBFS.
 				// Check for a WBF1 file.
 				IRpFile *wbfs1 = FileSystem::openRelatedFile(file->filename().c_str(), nullptr, ".wbf1");
@@ -1165,12 +1166,13 @@ int GameCube::isRomSupported_static(const DetectInfo *info)
 			}
 		}
 	}
-	// Check for WBF1. (second file of WBFS split files)
+	// TODO: Make .wbf1 support optional. Disabled for now.
+	/*// Check for WBF1. (second file of WBFS split files)
 	if (info->ext && !strcasecmp(info->ext, ".wbf1")) {
 		// WBF1 file.
 		// We'll need to check the first file for the system information later.
 		return (GameCubePrivate::DISC_SYSTEM_UNKNOWN | GameCubePrivate::DISC_FORMAT_WBFS);
-	}
+	}*/
 
 	// Check for CISO.
 	if (CisoGcnReader::isDiscSupported_static(info->header.pData, info->header.size) >= 0) {
