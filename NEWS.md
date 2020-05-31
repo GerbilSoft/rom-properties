@@ -13,6 +13,7 @@
   * Game Boy Advance: Added metadata properties for Title and Publisher.
     (Same as Game Boy and Game Boy Color.)
   * NES: Added more (unused) mappers for TNES format.
+  * GameCube: Added support for split .wbfs/.wbf1 files.
 
 * Bug fixes:
   * WiiWAD: Fix DLC icons no longer working after updating CBCReader to update
