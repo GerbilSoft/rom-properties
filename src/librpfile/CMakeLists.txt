@@ -17,6 +17,7 @@ SET(librpfile_SRCS
 	RpVectorFile.cpp
 	FileSystem_common.cpp
 	RelatedFile.cpp
+	DualFile.cpp
 	scsi/RpFile_Kreon.cpp
 	scsi/RpFile_scsi.cpp
 	)
@@ -29,6 +30,7 @@ SET(librpfile_H
 	RpVectorFile.hpp
 	FileSystem.hpp
 	RelatedFile.hpp
+	DualFile.hpp
 	scsi/ata_protocol.h
 	scsi/scsi_protocol.h
 	scsi/scsi_ata_cmds.h

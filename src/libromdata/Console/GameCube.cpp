@@ -20,9 +20,11 @@
 #include "WiiCommon.hpp"
 
 // librpbase, librpfile, librptexture
+#include "librpfile/DualFile.hpp"
+#include "librpfile/RelatedFile.hpp"
 #include "librpbase/SystemRegion.hpp"
 using namespace LibRpBase;
-using LibRpFile::IRpFile;
+using namespace LibRpFile;
 using LibRpTexture::rp_image;
 
 // DiscReader
@@ -686,59 +688,141 @@ GameCube::GameCube(IRpFile *file)
 	info.header.addr = 0;
 	info.header.size = sizeof(header);
 	info.header.pData = header;
-	info.ext = nullptr;	// Not needed for GCN.
+	const string filename = file->filename();
+	info.ext = FileSystem::file_ext(filename);
 	info.szFile = 0;	// Not needed for GCN.
 	d->discType = isRomSupported_static(&info);
 
+	d->isValid = (d->discType >= 0);
+	if (!d->isValid) {
+		// Not supported.
+		d->file->unref();
+		d->file = nullptr;
+		return;
+	}
+
 	// TODO: DiscReaderFactory?
 	// TODO: More MIME types for e.g. Triforce, CISO, TGC, etc.
-	if (d->discType >= 0) {
-		switch (d->discType & GameCubePrivate::DISC_FORMAT_MASK) {
-			case GameCubePrivate::DISC_FORMAT_RAW:
-			case GameCubePrivate::DISC_FORMAT_PARTITION:
-				d->discReader = new DiscReader(d->file);
-				break;
-			case GameCubePrivate::DISC_FORMAT_SDK:
-				// Skip the SDK header.
-				d->discReader = new DiscReader(d->file, 32768, -1);
-				break;
-			case GameCubePrivate::DISC_FORMAT_TGC: {
-				d->fileType = FTYPE_EMBEDDED_DISC_IMAGE;
+	switch (d->discType & GameCubePrivate::DISC_FORMAT_MASK) {
+		case GameCubePrivate::DISC_FORMAT_RAW:
+		case GameCubePrivate::DISC_FORMAT_PARTITION:
+			d->discReader = new DiscReader(d->file);
+			break;
+		case GameCubePrivate::DISC_FORMAT_SDK:
+			// Skip the SDK header.
+			d->discReader = new DiscReader(d->file, 32768, -1);
+			break;
 
+		case GameCubePrivate::DISC_FORMAT_TGC: {
+			d->fileType = FTYPE_EMBEDDED_DISC_IMAGE;
 				// Check the TGC header for the disc offset.
-				const GCN_TGC_Header *tgcHeader = reinterpret_cast<const GCN_TGC_Header*>(header);
-				uint32_t gcm_offset = be32_to_cpu(tgcHeader->header_size);
-				d->discReader = new DiscReader(d->file, gcm_offset, -1);
-				break;
-			}
-			case GameCubePrivate::DISC_FORMAT_WBFS:
-				d->mimeType = "application/x-wbfs";
-				d->discReader = new WbfsReader(d->file);
-				break;
-			case GameCubePrivate::DISC_FORMAT_CISO:
-				d->discReader = new CisoGcnReader(d->file);
-				break;
-			case GameCubePrivate::DISC_FORMAT_NASOS:
-				d->mimeType = "application/x-nasos-image";
-				d->discReader = new NASOSReader(d->file);
-				break;
-			case GameCubePrivate::DISC_FORMAT_WIA:
-				// TODO: Implement WiaReader.
-				// For now, only the header will be readable.
-				d->mimeType = "application/x-wia";
-				d->discReader = nullptr;
-				break;
-
-			case GameCubePrivate::DISC_FORMAT_UNKNOWN:
-			default:
-				d->discType = GameCubePrivate::DISC_UNKNOWN;
-				break;
+			const GCN_TGC_Header *tgcHeader = reinterpret_cast<const GCN_TGC_Header*>(header);
+			uint32_t gcm_offset = be32_to_cpu(tgcHeader->header_size);
+			d->discReader = new DiscReader(d->file, gcm_offset, -1);
+			break;
 		}
+
+		case GameCubePrivate::DISC_FORMAT_WBFS: {
+			d->mimeType = "application/x-wbfs";
+			// Check for split WBFS.
+			if (info.ext && !strcasecmp(info.ext, ".wbf1")) {
+				// Second part of split WBFS.
+				IRpFile *const wbfs0 = FileSystem::openRelatedFile(file->filename().c_str(), nullptr, ".wbfs");
+				if (unlikely(!wbfs0) || !wbfs0->isOpen()) {
+					// Unable to open the .wbfs file.
+					if (wbfs0) {
+						wbfs0->unref();
+					}
+					d->discType = GameCubePrivate::DISC_UNKNOWN;
+					break;
+				}
+
+				// Split .wbfs/.wbf1.
+				DualFile *const dualFile = new DualFile(wbfs0, d->file);
+				if (!dualFile->isOpen()) {
+					// Unable to open DualFile.
+					dualFile->unref();
+					d->discType = GameCubePrivate::DISC_UNKNOWN;
+					break;
+				}
+
+				// DualFile maintains its own references, so unreference
+				// d->file and replace it with the DualFile.
+				IRpFile *const file_tmp = d->file;
+				d->file = dualFile;
+				file_tmp->unref();
+				wbfs0->unref();
+
+				// Open the WbfsReader.
+				d->discReader = new WbfsReader(d->file);
+			} else if ((d->discType & GameCubePrivate::DISC_FORMAT_MASK) == GameCubePrivate::DISC_FORMAT_WBFS) {
+				// First part of split WBFS.
+				// Check for a WBF1 file.
+				IRpFile *wbfs1 = FileSystem::openRelatedFile(file->filename().c_str(), nullptr, ".wbf1");
+				if (unlikely(wbfs1 && !wbfs1->isOpen())) {
+					// Unable to open the .wbf1 file.
+					// Assume it's a single .wbfs file.
+					if (wbfs1) {
+						wbfs1->unref();
+						wbfs1 = nullptr;
+					}
+				}
+
+				if (likely(!wbfs1)) {
+					// Single .wbfs file.
+					d->discReader = new WbfsReader(d->file);
+					break;
+				}
+
+				// Split .wbfs/.wbf1.
+				DualFile *const dualFile = new DualFile(d->file, wbfs1);
+				if (!dualFile->isOpen()) {
+					// Unable to open DualFile.
+					dualFile->unref();
+					d->discType = GameCubePrivate::DISC_UNKNOWN;
+					break;
+				}
+
+				// DualFile maintains its own references, so unreference
+				// d->file and replace it with the DualFile.
+				IRpFile *const file_tmp = d->file;
+				d->file = dualFile;
+				file_tmp->unref();
+				wbfs1->unref();
+
+				// Open the WbfsReader.
+				d->discReader = new WbfsReader(d->file);
+			} else {
+				// Not supported.
+				d->discType = GameCubePrivate::DISC_UNKNOWN;
+			}
+
+			break;
+		}
+
+		case GameCubePrivate::DISC_FORMAT_CISO:
+			d->discReader = new CisoGcnReader(d->file);
+			break;
+		case GameCubePrivate::DISC_FORMAT_NASOS:
+			d->mimeType = "application/x-nasos-image";
+			d->discReader = new NASOSReader(d->file);
+			break;
+		case GameCubePrivate::DISC_FORMAT_WIA:
+			// TODO: Implement WiaReader.
+			// For now, only the header will be readable.
+			d->mimeType = "application/x-wia";
+			d->discReader = nullptr;
+			break;
+
+		case GameCubePrivate::DISC_FORMAT_UNKNOWN:
+		default:
+			d->discType = GameCubePrivate::DISC_UNKNOWN;
+			break;
 	}
 
 	d->isValid = (d->discType >= 0);
 	if (!d->isValid) {
-		// Nothing else to do here.
+		// Not supported.
 		d->file->unref();
 		d->file = nullptr;
 		return;
@@ -1080,6 +1164,12 @@ int GameCube::isRomSupported_static(const DetectInfo *info)
 				return (GameCubePrivate::DISC_SYSTEM_GCN | GameCubePrivate::DISC_FORMAT_WBFS);
 			}
 		}
+	}
+	// Check for WBF1. (second file of WBFS split files)
+	if (info->ext && !strcasecmp(info->ext, ".wbf1")) {
+		// WBF1 file.
+		// We'll need to check the first file for the system information later.
+		return (GameCubePrivate::DISC_SYSTEM_UNKNOWN | GameCubePrivate::DISC_FORMAT_WBFS);
 	}
 
 	// Check for CISO.
