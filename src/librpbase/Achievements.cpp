@@ -551,7 +551,7 @@ int AchievementsPrivate::load(void)
 				if (iter != mapAchData_count.end()) {
 					// Found a duplicate.
 					assert(!"Duplicate AT_COUNT achievement found!");
-					p += 4;
+					ok = false;
 					break;
 				}
 				// Save the achievement count.
@@ -568,7 +568,7 @@ int AchievementsPrivate::load(void)
 				if (iter != mapAchData_bitfield.end()) {
 					// Found a duplicate.
 					assert(!"Duplicate AT_BITFIELD achievement found!");
-					p += 8;
+					ok = false;
 					break;
 				}
 				// Make sure we have 8 bytes available.
@@ -599,6 +599,14 @@ int AchievementsPrivate::load(void)
 				ok = false;
 				break;
 		}
+	}
+
+	if (!ok) {
+		// Error occurred while loading achievements.
+		loaded = false;
+		mapAchData_count.clear();
+		mapAchData_bitfield.clear();
+		return -EIO;
 	}
 
 	// Achievements loaded.
