@@ -1,9 +1,10 @@
-# minizip 2.9.2
+# minizip 2.9.3
 
 minizip is a zip manipulation library written in C that is supported on Windows, macOS, and Linux.
 
 [![Master Branch Status](https://github.com/nmoinvaz/minizip/workflows/CI/badge.svg)](https://github.com/nmoinvaz/minizip/actions)
 [![Fuzzing Status](https://oss-fuzz-build-logs.storage.googleapis.com/badges/minizip.svg)](https://bugs.chromium.org/p/oss-fuzz/issues/list?sort=-opened&can=1&q=proj:minizip)
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/53d48ca8fec549f4a8b39cf95cba6ad6)](https://www.codacy.com/manual/nmoinvaz/minizip?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=nmoinvaz/minizip&amp;utm_campaign=Badge_Grade)
 [![CodeFactor](https://www.codefactor.io/repository/github/nmoinvaz/minizip/badge)](https://www.codefactor.io/repository/github/nmoinvaz/minizip)
 [![License: Zlib](https://img.shields.io/badge/license-zlib-lightgrey.svg)](https://github.com/nmoinvaz/minizip/blob/master/LICENSE)
 [![codecov.io](https://codecov.io/github/nmoinvaz/minizip/coverage.svg?branch=dev)](https://codecov.io/github/nmoinvaz/minizip/)
@@ -12,8 +13,8 @@ Developed and maintained by Nathan Moinvaziri.
 
 ## Branches
 
-| Name | Description |
-|:- |:-|
+|Name|Description|
+|:-|:-|
 |[master](https://github.com/nmoinvaz/minizip/tree/master)|Modern rewrite that includes more advanced features, improvements in code maintainability and readability, and the reduction of duplicate code. Compatibility layer provided for older versions.|
 |[dev](https://github.com/nmoinvaz/minizip/tree/dev)|Latest development code|
 |[1.2](https://github.com/nmoinvaz/minizip/tree/1.2)|Drop-in replacement for zlib's minizip that includes WinZip AES encryption, disk splitting, I/O buffering and some additional fixes.|
@@ -68,47 +69,48 @@ cmake --build .
 
 ## Build Options
 
-| Name | Description | Default Value |
-|:- |:-|:-:|
-| MZ_COMPAT | Enables compatibility layer | ON |
-| MZ_ZLIB | Enables ZLIB compression | ON |
-| MZ_BZIP2 | Enables BZIP2 compression | ON |
-| MZ_LZMA | Enables LZMA compression | ON |
-| MZ_PKCRYPT | Enables PKWARE traditional encryption | ON |
-| MZ_WZAES | Enables WinZIP AES encryption | ON |
-| MZ_LIBCOMP | Enables Apple compression | OFF |
-| MZ_OPENSSL | Enables OpenSSL encryption | OFF |
-| MZ_BRG | Enables Brian Gladman's library | OFF |
-| MZ_SIGNING | Enables zip signing support | ON |
-| MZ_COMPRESS_ONLY | Only support compression | OFF |
-| MZ_DECOMPRESS_ONLY | Only support decompression | OFF |
-| MZ_BUILD_TEST | Builds minizip test executable | OFF |
-| MZ_BUILD_UNIT_TEST | Builds minizip unit test project | OFF |
-| MZ_BUILD_FUZZ_TEST | Builds minizip fuzz executables | OFF |
-| MZ_CODE_COVERAGE | Build with code coverage flags | OFF |
+| Name               | Description                           | Default Value |
+|:-------------------|:--------------------------------------|:-------------:|
+| MZ_COMPAT          | Enables compatibility layer           |      ON       |
+| MZ_ZLIB            | Enables ZLIB compression              |      ON       |
+| MZ_BZIP2           | Enables BZIP2 compression             |      ON       |
+| MZ_LZMA            | Enables LZMA compression              |      ON       |
+| MZ_PKCRYPT         | Enables PKWARE traditional encryption |      ON       |
+| MZ_WZAES           | Enables WinZIP AES encryption         |      ON       |
+| MZ_LIBCOMP         | Enables Apple compression             |      OFF      |
+| MZ_OPENSSL         | Enables OpenSSL encryption            |      OFF      |
+| MZ_BRG             | Enables Brian Gladman's library       |      OFF      |
+| MZ_SIGNING         | Enables zip signing support           |      ON       |
+| MZ_COMPRESS_ONLY   | Only support compression              |      OFF      |
+| MZ_DECOMPRESS_ONLY | Only support decompression            |      OFF      |
+| MZ_BUILD_TEST      | Builds minizip test executable        |      OFF      |
+| MZ_BUILD_UNIT_TEST | Builds minizip unit test project      |      OFF      |
+| MZ_BUILD_FUZZ_TEST | Builds minizip fuzz executables       |      OFF      |
+| MZ_CODE_COVERAGE   | Build with code coverage flags        |      OFF      |
+| MZ_PROJECT_SUFFIX  | Project name suffix for packaging     |               |
 
 ## Contents
 
-| File(s) | Description |
-|:- |:-|
-| minizip.c | Sample application |
-| mz_compat.\* | Minizip 1.x compatibility layer |
-| mz.h | Error codes and flags |
-| mz_os\* | Platform specific file/utility functions |
-| mz_crypt\* | Configuration specific crypto/hashing functions |
-| mz_strm.\* | Stream interface |
-| mz_strm_buf.\* | Buffered stream |
-| mz_strm_bzip.\* | BZIP2 stream using libbzip2 |
-| mz_strm_libcomp.\* | Apple compression stream |
-| mz_strm_lzma.\* | LZMA stream using liblzma |
-| mz_strm_mem.\* | Memory stream |
-| mz_strm_split.\* | Disk splitting stream |
-| mz_strm_pkcrypt.\* | PKWARE traditional encryption stream |
-| mz_strm_os\* | Platform specific file stream |
-| mz_strm_wzaes.\* | WinZIP AES stream |
-| mz_strm_zlib.\* | Deflate stream using zlib |
-| mz_zip.\* | Zip format |
-| mz_zip_rw.\* | Zip reader/writer |
+| File(s)            | Description                                     |
+|:-------------------|:------------------------------------------------|
+| minizip.c          | Sample application                              |
+| mz_compat.\*       | Minizip 1.x compatibility layer                 |
+| mz.h               | Error codes and flags                           |
+| mz_os\*            | Platform specific file/utility functions        |
+| mz_crypt\*         | Configuration specific crypto/hashing functions |
+| mz_strm.\*         | Stream interface                                |
+| mz_strm_buf.\*     | Buffered stream                                 |
+| mz_strm_bzip.\*    | BZIP2 stream using libbzip2                     |
+| mz_strm_libcomp.\* | Apple compression stream                        |
+| mz_strm_lzma.\*    | LZMA stream using liblzma                       |
+| mz_strm_mem.\*     | Memory stream                                   |
+| mz_strm_split.\*   | Disk splitting stream                           |
+| mz_strm_pkcrypt.\* | PKWARE traditional encryption stream            |
+| mz_strm_os\*       | Platform specific file stream                   |
+| mz_strm_wzaes.\*   | WinZIP AES stream                               |
+| mz_strm_zlib.\*    | Deflate stream using zlib                       |
+| mz_zip.\*          | Zip format                                      |
+| mz_zip_rw.\*       | Zip reader/writer                               |
 
 ## Third-Party Libraries
 
