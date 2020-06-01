@@ -1,5 +1,5 @@
 /* Message catalogs for internationalization.
-   Copyright (C) 1995-1997, 2000-2016, 2018-2019 Free Software Foundation, Inc.
+   Copyright (C) 1995-1997, 2000-2016, 2018-2020 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU Lesser General Public License as published by
@@ -26,6 +26,8 @@
 
 #if 1 && BUILDING_LIBINTL
 #define LIBINTL_DLL_EXPORTED __attribute__((__visibility__("default")))
+#elif defined _MSC_VER && BUILDING_LIBINTL
+#define LIBINTL_DLL_EXPORTED __declspec(dllexport)
 #else
 #define LIBINTL_DLL_EXPORTED
 #endif
@@ -67,7 +69,7 @@ extern "C" {
 
 
 /* Version number: (major<<16) + (minor<<8) + subminor */
-#define LIBINTL_VERSION 0x001400
+#define LIBINTL_VERSION 0x001402
 extern LIBINTL_DLL_EXPORTED __declspec (dllimport) int libintl_version;
 
 
