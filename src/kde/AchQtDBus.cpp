@@ -38,7 +38,7 @@ class AchQtDBusPrivate
 		 * @param desc Achievement description.
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
-		static int notifyFunc(intptr_t user_data, const char *name, const char *desc);
+		static int RP_C_API notifyFunc(intptr_t user_data, const char *name, const char *desc);
 
 		/**
 		 * Notification function. (non-static)
@@ -78,7 +78,7 @@ AchQtDBusPrivate::~AchQtDBusPrivate()
  * @param desc Achievement description.
  * @return 0 on success; negative POSIX error code on error.
  */
-int AchQtDBusPrivate::notifyFunc(intptr_t user_data, const char *name, const char *desc)
+int RP_C_API AchQtDBusPrivate::notifyFunc(intptr_t user_data, const char *name, const char *desc)
 {
 	AchQtDBusPrivate *const pAchQtP = reinterpret_cast<AchQtDBusPrivate*>(user_data);
 	return pAchQtP->notifyFunc(name, desc);

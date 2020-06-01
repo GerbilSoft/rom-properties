@@ -44,7 +44,7 @@ class AchWin32Private
 		 * @param desc Achievement description.
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
-		static int notifyFunc(intptr_t user_data, const char *name, const char *desc);
+		static int RP_C_API notifyFunc(intptr_t user_data, const char *name, const char *desc);
 
 		/**
 		 * Notification function. (non-static)
@@ -115,7 +115,7 @@ AchWin32Private::~AchWin32Private()
  * @param desc Achievement description.
  * @return 0 on success; negative POSIX error code on error.
  */
-int AchWin32Private::notifyFunc(intptr_t user_data, const char *name, const char *desc)
+int RP_C_API AchWin32Private::notifyFunc(intptr_t user_data, const char *name, const char *desc)
 {
 	AchWin32Private *const pAchWinP = reinterpret_cast<AchWin32Private*>(user_data);
 	return pAchWinP->notifyFunc(name, desc);
