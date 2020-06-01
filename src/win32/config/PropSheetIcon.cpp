@@ -9,51 +9,48 @@
 #include "stdafx.h"
 #include "PropSheetIcon.hpp"
 
-// librpthreads
-#include "librpthreads/pthread_once.h"
-
 class PropSheetIconPrivate
 {
-	private:
+	public:
 		PropSheetIconPrivate();
 		~PropSheetIconPrivate();
+
+	private:
 		RP_DISABLE_COPY(PropSheetIconPrivate)
 
 	public:
-		// pthread_once() control variable.
-		static pthread_once_t once_control;
+		// Static PropSheetIcon instance.
+		// TODO: Q_GLOBAL_STATIC() equivalent, though we
+		// may need special initialization if the compiler
+		// doesn't support thread-safe statics.
+		static PropSheetIcon instance;
 
+	public:
 		// Property sheet icons.
-		static HICON hIcon;
-		static HICON hIconSmall;
+		HICON hIcon;
+		HICON hIconSmall;
 
 		// 96x96 icon for the About tab.
-		static HICON hIcon96;
+		HICON hIcon96;
 
 		/**
 		 * Get the property sheet icons.
 		 * NOTE: This function should be called with pthread_once().
 		 */
-		static void getPropSheetIcons(void);
+		void getPropSheetIcons(void);
 };
 
 /** PropSheetIconPrivate **/
 
-// pthread_once() control variable.
-pthread_once_t PropSheetIconPrivate::once_control = PTHREAD_ONCE_INIT;
+// Singleton instance.
+// Using a static non-pointer variable in order to
+// handle proper destruction when the DLL is unloaded.
+PropSheetIcon PropSheetIconPrivate::instance;
 
-// Property sheet icons.
-HICON PropSheetIconPrivate::hIcon = nullptr;
-HICON PropSheetIconPrivate::hIconSmall = nullptr;
-
-// 96x96 icon for the About tab.
-HICON PropSheetIconPrivate::hIcon96 = nullptr;
-
-/**
- * Get the property sheet icons.
- * NOTE: This function should be called with pthread_once().
- */
-void PropSheetIconPrivate::getPropSheetIcons(void)
+PropSheetIconPrivate::PropSheetIconPrivate()
+	: hIcon(nullptr)
+	, hIconSmall(nullptr)
+	, hIcon96(nullptr)
 {
 	// Check for a DLL containing a usable ROM chip icon.
 	struct IconDllData_t {
@@ -92,59 +89,73 @@ void PropSheetIconPrivate::getPropSheetIcons(void)
 				96, 96, 0));
 
 			FreeLibrary(hDll);
-			return;
+			break;
 		}
 
 		// Icon not found in this DLL.
 		FreeLibrary(hDll);
 	}
+}
 
-	// No usable icon...
-	hIcon = nullptr;
-	hIconSmall = nullptr;
-	hIcon96 = nullptr;
-
-	// NOTE: pthread_once() has no way to indicate
-	// an error occurred, but that isn't important
-	// here because if we couldn't load the icons
-	// the first time, we won't be able to load the
-	// icons the second time.
+PropSheetIconPrivate::~PropSheetIconPrivate()
+{
+	if (hIcon) {
+		DestroyIcon(hIcon);
+	}
+	if (hIconSmall) {
+		DestroyIcon(hIconSmall);
+	}
+	if (hIcon96) {
+		DestroyIcon(hIcon96);
+	}
 }
 
 /** PropSheetIcon **/
+
+PropSheetIcon::PropSheetIcon()
+	: d_ptr(new PropSheetIconPrivate())
+{ }
+
+PropSheetIcon::~PropSheetIcon()
+{
+	delete d_ptr;
+}
+
+/**
+ * Get the PropSheetIcon instance.
+ * @return PropSheetIcon instance.
+ */
+PropSheetIcon *PropSheetIcon::instance(void)
+{
+	return &PropSheetIconPrivate::instance;
+}
 
 /**
  * Get the large property sheet icon.
  * @return Large property sheet icon, or nullptr on error.
  */
-HICON PropSheetIcon::getLargeIcon(void)
+HICON PropSheetIcon::getLargeIcon(void) const
 {
-	// TODO: Handle errors.
-	pthread_once(&PropSheetIconPrivate::once_control,
-		PropSheetIconPrivate::getPropSheetIcons);
-	return PropSheetIconPrivate::hIcon;
+	RP_D(const PropSheetIcon);
+	return d->hIcon;
 }
 
 /**
  * Get the small property sheet icon.
  * @return Small property sheet icon, or nullptr on error.
  */
-HICON PropSheetIcon::getSmallIcon(void)
+HICON PropSheetIcon::getSmallIcon(void) const
 {
-	// TODO: Handle errors.
-	pthread_once(&PropSheetIconPrivate::once_control,
-		PropSheetIconPrivate::getPropSheetIcons);
-	return PropSheetIconPrivate::hIconSmall;
+	RP_D(const PropSheetIcon);
+	return d->hIconSmall;
 }
 
 /**
  * Get the 96x96 icon.
  * @return 96x96 icon, or nullptr on error.
  */
-HICON PropSheetIcon::get96Icon(void)
+HICON PropSheetIcon::get96Icon(void) const
 {
-	// TODO: Handle errors.
-	pthread_once(&PropSheetIconPrivate::once_control,
-		PropSheetIconPrivate::getPropSheetIcons);
-	return PropSheetIconPrivate::hIcon96;
+	RP_D(const PropSheetIcon);
+	return d->hIcon96;
 }
