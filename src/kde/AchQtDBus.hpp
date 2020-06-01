@@ -10,8 +10,7 @@
 #define __ROMPROPERTIES_KDE_ACHQTDBUS_HPP__
 
 #include "librpbase/Achievements.hpp"
-
-#include <QtCore/QObject>
+#include "common.h"
 
 class AchQtDBusPrivate;
 class AchQtDBus
@@ -27,7 +26,7 @@ class AchQtDBus
 		virtual ~AchQtDBus();
 
 	private:
-		Q_DISABLE_COPY(AchQtDBus);
+		RP_DISABLE_COPY(AchQtDBus);
 	private:
 		friend class AchQtDBusPrivate;
 		AchQtDBusPrivate *const d_ptr;
