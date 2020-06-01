@@ -35,6 +35,8 @@
 #endif /* HAVE_RP_PROPERTYSTORE_DEPS */
 #include "RP_ShellIconOverlayIdentifier.hpp"
 
+#include "AchWin32.hpp"
+
 // libwin32common
 using LibWin32Common::RegKey;
 
@@ -103,9 +105,11 @@ BOOL WINAPI DllMain(HINSTANCE hInstance, DWORD dwReason, LPVOID /*lpReserved*/)
 			DisableThreadLibraryCalls(hInstance);
 #endif /* !defined(_MSC_VER) || defined(_DLL) */
 
-			// Register RpGdiplusBackend.
-			// TODO: Static initializer somewhere?
+			// Register RpGdiplusBackend and AchWin32.
 			rp_image::setBackendCreatorFn(RpGdiplusBackend::creator_fn);
+#if defined(ENABLE_ACHIEVEMENTS)
+			AchWin32::instance();
+#endif /* ENABLE_ACHIEVEMENTS */
 			break;
 		}
 
