@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * config.win32.h.in: Win32 configuration. (source file)                   *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -14,5 +14,8 @@
 
 /* Define to 1 if you have the required symbols and functions for RP_PropertyStore. */
 #cmakedefine HAVE_RP_PROPERTYSTORE_DEPS 1
+
+/* Define to 1 if achievements are enabled. */
+#cmakedefine ENABLE_ACHIEVEMENTS 1
 
 #endif /* __ROMPROPERTIES_WIN32_CONFIG_H__ */

@@ -126,12 +126,15 @@ ConfigDialogPrivate::ConfigDialogPrivate()
 	tabs[TAB_COUNT-1] = new AboutTab();
 	hpsp[TAB_COUNT-1] = tabs[TAB_COUNT-1]->getHPropSheetPage();
 
+	// "ROM chip" icon.
+	const PropSheetIcon *const psi = PropSheetIcon::instance();
+
 	// Create the property sheet.
 	psh.dwSize = sizeof(psh);
 	psh.dwFlags = PSH_USECALLBACK | PSH_NOCONTEXTHELP | PSH_USEHICON;
 	psh.hwndParent = nullptr;
 	psh.hInstance = HINST_THISCOMPONENT;
-	psh.hIcon = PropSheetIcon::getSmallIcon();	// Small icon only!
+	psh.hIcon = psi->getSmallIcon();	// Small icon only!
 	psh.pszCaption = nullptr;			// will be set in WM_SHOWWINDOW
 	psh.nPages = static_cast<UINT>(hpsp.size());
 	psh.nStartPage = 0;
@@ -176,7 +179,8 @@ int CALLBACK ConfigDialogPrivate::callbackProc(HWND hDlg, UINT uMsg, LPARAM lPar
 
 			// NOTE: PropertySheet's pszIcon only uses the small icon.
 			// Set the large icon here.
-			HICON hIcon = PropSheetIcon::getLargeIcon();
+			const PropSheetIcon *const psi = PropSheetIcon::instance();
+			HICON hIcon = psi->getLargeIcon();
 			if (hIcon) {
 				SendMessage(hDlg, WM_SETICON, ICON_BIG, reinterpret_cast<LPARAM>(hIcon));
 			}

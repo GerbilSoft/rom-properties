@@ -458,8 +458,6 @@ void RP_ShellPropSheetExt_Private::loadImages(void)
 	if (imgbf & RomData::IMGBF_INT_BANNER) {
 		// Get the banner.
 		const rp_image *const banner = romData->image(RomData::IMG_INT_BANNER);
-		assert(banner != nullptr);
-		assert(banner->isValid());
 		if (banner && banner->isValid()) {
 			if (!lblBanner) {
 				lblBanner = new DragImageLabel(hDlgSheet);
@@ -482,8 +480,6 @@ void RP_ShellPropSheetExt_Private::loadImages(void)
 	if (imgbf & RomData::IMGBF_INT_ICON) {
 		// Get the icon.
 		const rp_image *const icon = romData->image(RomData::IMG_INT_ICON);
-		assert(icon != nullptr);
-		assert(icon->isValid());
 		if (icon && icon->isValid()) {
 			if (!lblIcon) {
 				lblIcon = new DragImageLabel(hDlgSheet);
