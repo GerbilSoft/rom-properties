@@ -42,7 +42,7 @@ class AchGDBusPrivate
 		 * @param desc Achievement description.
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
-		static int notifyFunc(intptr_t user_data, const char *name, const char *desc);
+		static int RP_C_API notifyFunc(intptr_t user_data, const char *name, const char *desc);
 
 		/**
 		 * Notification function. (non-static)
@@ -82,7 +82,7 @@ AchGDBusPrivate::~AchGDBusPrivate()
  * @param desc Achievement description.
  * @return 0 on success; negative POSIX error code on error.
  */
-int AchGDBusPrivate::notifyFunc(intptr_t user_data, const char *name, const char *desc)
+int RP_C_API AchGDBusPrivate::notifyFunc(intptr_t user_data, const char *name, const char *desc)
 {
 	AchGDBusPrivate *const pAchGP = reinterpret_cast<AchGDBusPrivate*>(user_data);
 	return pAchGP->notifyFunc(name, desc);
