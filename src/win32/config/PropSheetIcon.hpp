@@ -12,6 +12,7 @@
 #include "common.h"
 #include "libwin32common/RpWin32_sdk.h"
 
+class PropSheetIconPrivate;
 class PropSheetIcon
 {
 	protected:
