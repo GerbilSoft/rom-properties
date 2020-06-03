@@ -87,13 +87,24 @@ SNESPrivate::SNESPrivate(SNES *q, IRpFile *file)
 bool SNESPrivate::isSnesRomHeaderValid(const SNES_RomHeader *romHeader, bool isHiROM)
 {
 	// Game title: Should be ASCII.
-	// TODO: Should not contain control characters. (0x01-0x1F)
+	// NOTE: Japanese ROMs may be Shift-JIS. (TODO: China, Korea?)
+	// We're only disallowing control codes for now.
 	// Check: Final Fantasy V - Expert v0.947 by JCE3000GT (Hack) [a1].smc
 	// - Zero out the low 0x7F00 bytes.
 	// - ROM is incorrectly detected as LoROM.
 	for (int i = 0; i < ARRAY_SIZE(romHeader->snes.title); i++) {
-		if (romHeader->snes.title[i] & 0x80) {
-			// Invalid character.
+		const uint8_t chr = static_cast<uint8_t>(romHeader->snes.title[i]);
+		if (chr == 0) {
+			if (i == 0) {
+				// First character is NULL. Not allowed.
+				return false;
+			}
+			break;
+		}
+
+		// Check for control characters.
+		if (!(chr & 0xE0)) {
+			// Control character. Not allowed.
 			return false;
 		}
 	}
@@ -705,8 +716,13 @@ int SNES::loadFieldData(void)
 			// Super NES / Super Famicom ROM image.
 
 			// Title.
-			// TODO: Space elimination, Shift-JIS?
-			title = latin1_to_utf8(romHeader->snes.title, sizeof(romHeader->snes.title));
+			// NOTE: If the region code is JPN, the title might be encoded in Shift-JIS.
+			// TODO: Space elimination; China, Korea encodings?
+			if (romHeader->snes.destination_code == SNES_DEST_JAPAN) {
+				title = cp1252_sjis_to_utf8(romHeader->snes.title, sizeof(romHeader->snes.title));
+			} else {
+				title = cp1252_to_utf8(romHeader->snes.title, sizeof(romHeader->snes.title));
+			}
 
 			// Game ID.
 			// NOTE: Only valid if the old publisher code is 0x33.
