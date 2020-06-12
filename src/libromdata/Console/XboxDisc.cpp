@@ -190,7 +190,7 @@ RomData *XboxDiscPrivate::openDefaultExe(int *pExeType)
 		RomData *const xbeData = new Xbox_XBE(f_defaultExe);
 		f_defaultExe->unref();
 		if (xbeData->isValid()) {
-			// default.xex is open and valid.
+			// default.xbe is open and valid.
 			defaultExeData = xbeData;
 			exeType = EXE_TYPE_XBE;
 			if (pExeType) {
@@ -198,14 +198,13 @@ RomData *XboxDiscPrivate::openDefaultExe(int *pExeType)
 			}
 			return xbeData;
 		}
-		f_defaultExe->unref();
-		exeType = EXE_TYPE_XBE;
-		if (pExeType) {
-			*pExeType = EXE_TYPE_XBE;
-		}
 	}
 
 	// Unable to open the default executable.
+	exeType = EXE_TYPE_UNKNOWN;
+	if (pExeType) {
+		*pExeType = EXE_TYPE_UNKNOWN;
+	}
 	return nullptr;
 }
 
