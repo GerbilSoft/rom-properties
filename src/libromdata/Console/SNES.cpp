@@ -430,10 +430,16 @@ string SNESPrivate::getGameID(bool doFake) const
 		}
 
 		// Manually filter out characters that are rejected by CacheKeys.
-		// TODO: More characters?
-		size_t pos = 0;
-		while ((pos = title.find(':', pos)) != string::npos) {
-			title[pos] = '_';
+		for (size_t n = 0; n < title.size(); n++) {
+			switch (title[n]) {
+				case ':':
+				case '/':
+				case '\\':
+					title[n] = '_';
+					break;
+				default:
+					break;
+			}
 		}
 
 		gameID.reserve(5 + title.size() + 4);
