@@ -1353,6 +1353,23 @@ int DMG::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
 		// Image filename is based on the title, plus publisher
 		// code, plus "-J" if region is set to Japanese (0).
 
+		// Manually filter out characters that are rejected by CacheKeys.
+		img_filename.reserve(s_title.size() + 8);
+		for (auto iter = s_title.cbegin(); iter != s_title.cend(); ++iter) {
+			switch (*iter) {
+				case ':':
+				case '/':
+				case '\\':
+				case '*':
+				case '?':
+					img_filename += '_';
+					break;
+				default:
+					img_filename += *iter;
+					break;
+			}
+		}
+
 		char pbcode[16];
 		if (romHeader->old_publisher_code == 0x33) {
 			// New publisher code.
