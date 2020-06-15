@@ -423,11 +423,19 @@ string SNESPrivate::getGameID(bool doFake) const
 		gameID += suffix;
 	} else {
 		// ID2/ID4 is not present. Use the ROM title.
-		const string title = getROMTitle();
+		string title = getROMTitle();
 		if (title.empty()) {
 			// No title...
 			return gameID;
 		}
+
+		// Manually filter out characters that are rejected by CacheKeys.
+		// TODO: More characters?
+		size_t pos = 0;
+		while ((pos = title.find(':', pos)) != string::npos) {
+			title[pos] = '_';
+		}
+
 		gameID.reserve(5 + title.size() + 4);
 		gameID = prefix;
 		gameID += title;
