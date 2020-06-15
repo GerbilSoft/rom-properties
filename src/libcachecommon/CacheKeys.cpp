@@ -304,7 +304,7 @@ int filterCacheKey(wchar_t *pCacheKey)
  * @param cacheKey Cache key. (Must be UTF-8, NULL-terminated.) (Will be filtered using filterCacheKey().)
  * @return Cache filename, or empty string on error.
  */
-std::string getCacheFilename(const char *pCacheKey)
+string getCacheFilename(const char *pCacheKey)
 {
 	string cacheFilename;
 	assert(pCacheKey != nullptr);
@@ -407,6 +407,66 @@ wstring getCacheFilename(const wchar_t *pCacheKey)
 	// Append the filtered cache key.
 	cacheFilename += filteredCacheKey;
 	return cacheFilename;
+}
+#endif /* _WIN32 */
+
+/**
+ * urlencode a URL component.
+ * This only encodes essential characters, e.g. ' ' and '%'.
+ * @param url URL component.
+ * @return urlencoded URL component.
+ */
+string urlencode(const char *url)
+{
+	string s_ret;
+	s_ret.reserve(strlen(url)+8);
+
+	assert(url != nullptr);
+	for (; *url != '\0'; url++) {
+		switch (*url) {
+			case ' ':
+				s_ret += "%20";
+				break;
+			case '%':
+				s_ret += "%25";
+				break;
+			default:
+				s_ret += *url;
+				break;
+		}
+	}
+
+	return s_ret;
+}
+
+#ifdef _WIN32
+/**
+ * urlencode a URL component.
+ * This only encodes essential characters, e.g. ' ' and '%'.
+ * @param url URL component.
+ * @return urlencoded URL component.
+ */
+wstring urlencode(const wchar_t *url)
+{
+	wstring ws_ret;
+	ws_ret.reserve(_wcslen(url)+8);
+
+	assert(url != nullptr);
+	for (; *url != L'\0'; url++) {
+		switch (*url) {
+			case L' ':
+				ws_ret += "%20";
+				break;
+			case L'%':
+				ws_ret += "%25";
+				break;
+			default:
+				ws_ret += *url;
+				break;
+		}
+	}
+
+	return ws_ret;
 }
 #endif /* _WIN32 */
 

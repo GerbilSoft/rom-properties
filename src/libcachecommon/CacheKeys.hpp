@@ -94,6 +94,46 @@ static inline std::wstring getCacheFilename(const std::wstring &cacheKey)
 }
 #endif /* _WIN32 */
 
+/**
+ * urlencode a URL component.
+ * This only encodes essential characters, e.g. ' ' and '%'.
+ * @param url URL component.
+ * @return urlencoded URL component.
+ */
+std::string urlencode(const char *url);
+
+/**
+ * urlencode a URL component.
+ * This only encodes essential characters, e.g. ' ' and '%'.
+ * @param url URL component.
+ * @return urlencoded URL component.
+ */
+static inline std::string urlencode(const std::string &url)
+{
+	return urlencode(url.c_str());
+}
+
+#ifdef _WIN32
+/**
+ * urlencode a URL component.
+ * This only encodes essential characters, e.g. ' ' and '%'.
+ * @param url URL component.
+ * @return urlencoded URL component.
+ */
+std::wstring urlencode(const wchar_t *url);
+
+/**
+ * urlencode a URL component.
+ * This only encodes essential characters, e.g. ' ' and '%'.
+ * @param url URL component.
+ * @return urlencoded URL component.
+ */
+static inline std::wstring urlencode(const std::wstring &url)
+{
+	return urlencode(url.c_str());
+}
+#endif /* _WIN32 */
+
 }
 
 #endif /* __ROMPROPERTIES_LIBCACHECOMMON_CACHEKEYS_HPP__ */

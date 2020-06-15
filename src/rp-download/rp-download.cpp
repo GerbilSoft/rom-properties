@@ -443,6 +443,11 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 		return EXIT_FAILURE;
 	}
 
+	// urlencode the cache key.
+	const tstring cache_key_urlencode = LibCacheCommon::urlencode(cache_key);
+	// Update the slash position based on the urlencoded string.
+	slash_pos = _tcschr(cache_key_urlencode.data(), _T('/'));
+
 	// Determine the full URL based on the cache key.
 	TCHAR full_url[256];
 	if ((prefix_len == 3 && !_tcsncmp(cache_key, _T("wii"), 3)) ||
@@ -452,7 +457,7 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 	{
 		// Wii, Wii U, Nintendo 3DS, Nintendo DS
 		_sntprintf(full_url, _countof(full_url),
-			_T("https://art.gametdb.com/%s"), cache_key);
+			_T("https://art.gametdb.com/%s"), cache_key_urlencode.c_str());
 	} else if (prefix_len == 6 && !_tcsncmp(cache_key, _T("amiibo"), 6)) {
 		// amiibo.
 		// NOTE: We need to remove the file extension.
@@ -472,7 +477,7 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 		   (prefix_len == 4 && !_tcsncmp(cache_key, _T("snes"), 4))) {
 		// Game Boy, Game Boy Color, Game Boy Advance, Super NES
 		_sntprintf(full_url, _countof(full_url),
-			_T("https://rpdb.gerbilsoft.com/%s"), cache_key);
+			_T("https://rpdb.gerbilsoft.com/%s"), cache_key_urlencode.c_str());
 	} else {
 		// Prefix is not supported.
 		SHOW_ERROR(_T("Cache key '%s' has an unsupported prefix."), cache_key);

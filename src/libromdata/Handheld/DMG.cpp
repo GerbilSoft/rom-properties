@@ -1353,16 +1353,6 @@ int DMG::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
 		// Image filename is based on the title, plus publisher
 		// code, plus "-J" if region is set to Japanese (0).
 
-		// Replace spaces with "%20".
-		img_filename.reserve(s_title.size());
-		for (auto iter = s_title.cbegin(); iter != s_title.cend(); ++iter) {
-			if (unlikely(*iter == ' ')) {
-				img_filename += "%20";
-			} else {
-				img_filename += *iter;
-			}
-		}
-
 		char pbcode[16];
 		if (romHeader->old_publisher_code == 0x33) {
 			// New publisher code.
