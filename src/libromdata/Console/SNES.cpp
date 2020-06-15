@@ -435,6 +435,8 @@ string SNESPrivate::getGameID(bool doFake) const
 				case ':':
 				case '/':
 				case '\\':
+				case '*':
+				case '?':
 					title[n] = '_';
 					break;
 				default:
