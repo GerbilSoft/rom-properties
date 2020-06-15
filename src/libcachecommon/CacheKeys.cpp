@@ -18,6 +18,7 @@
 // C++ STL classes.
 using std::string;
 #ifdef _WIN32
+#include <cwchar>
 using std::wstring;
 #endif /* _WIN32 */
 
@@ -455,10 +456,10 @@ wstring urlencode(const wchar_t *url)
 	for (; *url != L'\0'; url++) {
 		switch (*url) {
 			case L' ':
-				ws_ret += "%20";
+				ws_ret += L"%20";
 				break;
 			case L'%':
-				ws_ret += "%25";
+				ws_ret += L"%25";
 				break;
 			default:
 				ws_ret += *url;
