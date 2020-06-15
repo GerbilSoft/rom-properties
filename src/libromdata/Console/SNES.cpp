@@ -292,38 +292,55 @@ bool SNESPrivate::isBsxRomHeaderValid(const SNES_RomHeader *romHeader, bool isHi
  */
 string SNESPrivate::getROMTitle(void) const
 {
-	string title;
-
 	// NOTE: If the region code is JPN, the title might be encoded in Shift-JIS.
 	// TODO: Space elimination; China, Korea encodings?
+	// TODO: Remove leading spaces? (Capcom NFL Football; symlinked on the server for now.)
 
+	bool doSJIS = false;
+	const char *title;
+	size_t len;
 	switch (romType) {
 		case ROM_SNES:
-			if (romHeader.snes.destination_code == SNES_DEST_JAPAN) {
-				title = cp1252_sjis_to_utf8(romHeader.snes.title, sizeof(romHeader.snes.title));
-			} else {
-				title = cp1252_to_utf8(romHeader.snes.title, sizeof(romHeader.snes.title));
-			}
+			doSJIS = (romHeader.snes.destination_code == SNES_DEST_JAPAN);
+			title = romHeader.snes.title;
+			len = sizeof(romHeader.snes.title);
 			break;
-
 		case ROM_BSX:
-			title = cp1252_sjis_to_utf8(romHeader.bsx.title, sizeof(romHeader.bsx.title));
+			doSJIS = true;
+			title = romHeader.bsx.title;
+			len = sizeof(romHeader.bsx.title);
 			break;
-
 		default:
 			// Should not get here...
 			assert(!"Invalid ROM type.");
 			break;
 	}
 
-	// Trim the end of the title.
-	for (size_t n = title.size()-1; n > 0; n--) {
-		if (title[n] != ' ')
-			break;
-		title.resize(n);
+	// Trim the end of the title before converting it.
+	bool done = false;
+	while (!done && (len > 0)) {
+		switch (static_cast<uint8_t>(title[len-1])) {
+			case 0:
+			case ' ':
+			case 0xFF:
+				// Blank character. Trim it.
+				len--;
+				break;
+
+			default:
+				// Not a blank character.
+				done = true;
+				break;
+		}
 	}
 
-	return title;
+	string s_title;
+	if (doSJIS) {
+		s_title = cp1252_sjis_to_utf8(title, static_cast<int>(len));
+	} else {
+		s_title = cp1252_to_utf8(title, static_cast<int>(len));
+	}
+	return s_title;
 }
 
 /**
@@ -406,7 +423,11 @@ string SNESPrivate::getGameID(bool doFake) const
 		{"SNSP-", "-AUS"},	// Australia
 		{"SNSP-", "-SCN"},	// Scandinavia
 	};
-	if (region < ARRAY_SIZE(region_ps)) {
+	if (romType == ROM_BSX) {
+		// Separate BS-X titles from regular SNES titles.
+		prefix = "BSX-";
+		suffix = "-JPN";
+	} else if (region < ARRAY_SIZE(region_ps)) {
 		prefix = region_ps[region].prefix;
 		suffix = region_ps[region].suffix;
 	} else {
@@ -423,30 +444,30 @@ string SNESPrivate::getGameID(bool doFake) const
 		gameID += suffix;
 	} else {
 		// ID2/ID4 is not present. Use the ROM title.
-		string title = getROMTitle();
-		if (title.empty()) {
+		string s_title = getROMTitle();
+		if (s_title.empty()) {
 			// No title...
 			return gameID;
 		}
 
 		// Manually filter out characters that are rejected by CacheKeys.
-		for (size_t n = 0; n < title.size(); n++) {
-			switch (title[n]) {
+		for (size_t n = 0; n < s_title.size(); n++) {
+			switch (s_title[n]) {
 				case ':':
 				case '/':
 				case '\\':
 				case '*':
 				case '?':
-					title[n] = '_';
+					s_title[n] = '_';
 					break;
 				default:
 					break;
 			}
 		}
 
-		gameID.reserve(5 + title.size() + 4);
+		gameID.reserve(5 + s_title.size() + 4);
 		gameID = prefix;
-		gameID += title;
+		gameID += s_title;
 		gameID += suffix;
 	}
 
@@ -1260,15 +1281,16 @@ int SNES::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
 	}
 
 	// Determine the region code based on the destination code.
-	char region_code[2] = {'\0', '\0'};
+	char region_code[3] = {'\0', '\0', '\0'};
 	static const char RegionCode_tbl[] = {
 		'J', 'E', 'P', 'X', '\0', '\0', 'F', 'H',
 		'S', 'D', 'I', 'C', '\0',  'K', 'A', 'N',
 		'B', 'U', 'X', 'Y', 'Z'
 	};
 	if (d->romType == SNESPrivate::ROM_BSX) {
-		// BS-X. Region is always Japan.
-		region_code[0] = 'J';
+		// BS-X. Use a separate "region".
+		region_code[0] = 'B';
+		region_code[1] = 'S';
 	} else if (d->romHeader.snes.destination_code < ARRAY_SIZE(RegionCode_tbl)) {
 		// SNES region code is in range.
 		region_code[0] = RegionCode_tbl[d->romHeader.snes.destination_code];
