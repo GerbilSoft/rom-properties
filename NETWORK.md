@@ -31,8 +31,12 @@ or deleted.
 * https://art.gametdb.com/ - Box, cover, and media scans for Nintendo
   GameCube, Wii, Wii U, DS, and 3DS games.
 * https://amiibo.life/ - Images of Nintendo amiibo products.
-* https://rpdb.gerbilsoft.com/ - Title screen images of Nintendo
-  Game Boy, Game Boy Color, and Game Boy Advance games.
+* https://rpdb.gerbilsoft.com/ - Title screen images for the following
+  systems:
+  * Nintendo Game Boy
+  * Nintendo Game Boy Color
+  * Nintendo Game Boy Advance
+  * Super NES
 
 ## Security features
 

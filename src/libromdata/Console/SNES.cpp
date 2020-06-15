@@ -24,6 +24,7 @@ using std::vector;
 namespace LibRomData {
 
 ROMDATA_IMPL(SNES)
+ROMDATA_IMPL_IMG(SNES)
 
 class SNESPrivate : public RomDataPrivate
 {
@@ -65,6 +66,32 @@ class SNESPrivate : public RomDataPrivate
 		// NOTE: Must be byteswapped on access.
 		SNES_RomHeader romHeader;
 		uint32_t header_address;
+
+		/**
+		 * Get the ROM title.
+		 *
+		 * The ROM title length depends on type, and encoding
+		 * depends on type and region.
+		 *
+		 * @return ROM title.
+		 */
+		string getROMTitle(void) const;
+
+		/**
+		 * Is a character a valid game ID character?
+		 * @return True if it is; false if it isn't.
+		 */
+		static inline bool isValidGameIDChar(char x)
+		{
+			return (x >= '0' && x <= '9') || (x >= 'A' && x <= 'Z');
+		}
+
+		/**
+		 * Get the game ID.
+		 * @param doFake If true, return a fake ID using the ROM's title.
+		 * @return Game ID if available; empty string if not.
+		 */
+		string getGameID(bool doFake = false) const;
 };
 
 /** SNESPrivate **/
@@ -253,6 +280,161 @@ bool SNESPrivate::isBsxRomHeaderValid(const SNES_RomHeader *romHeader, bool isHi
 	// ROM header appears to be valid.
 	// TODO: Check other BS-X fields.
 	return true;
+}
+
+/**
+ * Get the ROM title.
+ *
+ * The ROM title length depends on type, and encoding
+ * depends on type and region.
+ *
+ * @return ROM title.
+ */
+string SNESPrivate::getROMTitle(void) const
+{
+	string title;
+
+	// NOTE: If the region code is JPN, the title might be encoded in Shift-JIS.
+	// TODO: Space elimination; China, Korea encodings?
+
+	switch (romType) {
+		case ROM_SNES:
+			if (romHeader.snes.destination_code == SNES_DEST_JAPAN) {
+				title = cp1252_sjis_to_utf8(romHeader.snes.title, sizeof(romHeader.snes.title));
+			} else {
+				title = cp1252_to_utf8(romHeader.snes.title, sizeof(romHeader.snes.title));
+			}
+			break;
+
+		case ROM_BSX:
+			title = cp1252_sjis_to_utf8(romHeader.bsx.title, sizeof(romHeader.bsx.title));
+			break;
+
+		default:
+			// Should not get here...
+			assert(!"Invalid ROM type.");
+			break;
+	}
+
+	// Trim the end of the title.
+	for (size_t n = title.size()-1; n > 0; n--) {
+		if (title[n] != ' ')
+			break;
+		title.resize(n);
+	}
+
+	return title;
+}
+
+/**
+ * Get the game ID.
+ * This returns a *full* game ID if available, e.g. SNS-YI-USA.
+ * @param doFake If true, return a fake ID using the ROM's title.
+ * @return Game ID if available; empty string if not.
+ */
+string SNESPrivate::getGameID(bool doFake) const
+{
+	string gameID;
+
+	// Game ID is only available for SNES, not BS-X.
+	// TODO: Are we sure this is the case?
+	if (romType != ROM_SNES && !doFake) {
+		return gameID;
+	}
+
+	char id4[5];
+	id4[0] = '\0';
+
+	// NOTE: The game ID field is Only valid if the old publisher code is 0x33.
+	if (romHeader.snes.old_publisher_code == 0x33) {
+		// Do we have a valid two-digit game ID?
+		if (isValidGameIDChar(romHeader.snes.ext.id4[0]) &&
+		    isValidGameIDChar(romHeader.snes.ext.id4[1]))
+		{
+			// Valid two-digit game ID.
+			id4[0] = romHeader.snes.ext.id4[0];
+			id4[1] = romHeader.snes.ext.id4[1];
+			id4[2] = '\0';
+
+			// Do we have a valid four-digit game ID?
+			if (isValidGameIDChar(romHeader.snes.ext.id4[2]) &&
+			    isValidGameIDChar(romHeader.snes.ext.id4[3]))
+			{
+				// Valid four-digit game ID.
+				id4[2] = romHeader.snes.ext.id4[2];
+				id4[3] = romHeader.snes.ext.id4[3];
+				id4[4] = '\0';
+			}
+		}
+	}
+
+	// Check the region value to determine the template.
+	// NOTE: BS-X might have BRA for some reason.
+	const char *prefix, *suffix;
+	const uint8_t region = ((romType != ROM_BSX)
+		? romHeader.snes.destination_code
+		: static_cast<uint8_t>(SNES_DEST_JAPAN));
+
+	// Prefix/suffix table.
+	struct PrefixSuffixTbl_t {
+		char prefix[8];
+		char suffix[8];
+	};
+	static const PrefixSuffixTbl_t region_ps[] = {
+		// 0x00
+		{"SHVC-", "-JPN"},	// Japan
+		{"SNS-",  "-USA"},	// North America
+		{"SNSP-", "-EUR"},	// Europe
+		{"SNSP-", "-SCN"},	// Scandinavia
+		{"",      ""},
+		{"",      ""},
+		{"SNSP-", "-FRA"},	// France
+		{"SNSP-", "-HOL"},	// Netherlands
+
+		// 0x08
+		{"SNSP-", "-ESP"},	// Spain
+		{"SNSP-", "-NOE"},	// Germany
+		{"SNSP-", "-ITA"},	// Italy
+		{"SNSN-", "-ROC"},	// China
+		{"",      ""},
+		{"SNSN-", "-KOR"},	// South Korea
+		{"",      ""},		// ALL region?
+		{"SNS-",  "-CAN"},	// Canada
+
+		// 0x10
+		{"SNS-",  "-BRA"},	// Brazil
+		{"SNSP-", "-AUS"},	// Australia
+		{"SNSP-", "-SCN"},	// Scandinavia
+	};
+	if (region < ARRAY_SIZE(region_ps)) {
+		prefix = region_ps[region].prefix;
+		suffix = region_ps[region].suffix;
+	} else {
+		prefix = "";
+		suffix = "";
+	}
+
+	// Do we have an ID2 or ID4?
+	if (id4[0] != '\0') {
+		// ID2/ID4 is present. Use it.
+		gameID.reserve(13);
+		gameID = prefix;
+		gameID += id4;
+		gameID += suffix;
+	} else {
+		// ID2/ID4 is not present. Use the ROM title.
+		const string title = getROMTitle();
+		if (title.empty()) {
+			// No title...
+			return gameID;
+		}
+		gameID.reserve(5 + title.size() + 4);
+		gameID = prefix;
+		gameID += title;
+		gameID += suffix;
+	}
+
+	return gameID;
 }
 
 /** SNES **/
@@ -560,7 +742,8 @@ const char *SNES::systemName(unsigned int type) const
 			// localization is necessary.
 			return sysNames_BSX[idx];
 		default:
-			// Unknown.
+			// Should not get here...
+			assert(!"Invalid ROM type.");
 			return nullptr;
 	}
 
@@ -666,6 +849,68 @@ const char *const *SNES::supportedMimeTypes_static(void)
 }
 
 /**
+ * Get a bitfield of image types this class can retrieve.
+ * @return Bitfield of supported image types. (ImageTypesBF)
+ */
+uint32_t SNES::supportedImageTypes_static(void)
+{
+	return IMGBF_EXT_TITLE_SCREEN;
+}
+
+/**
+ * Get a list of all available image sizes for the specified image type.
+ * @param imageType Image type.
+ * @return Vector of available image sizes, or empty vector if no images are available.
+ */
+vector<RomData::ImageSizeDef> SNES::supportedImageSizes_static(ImageType imageType)
+{
+	ASSERT_supportedImageSizes(imageType);
+
+	switch (imageType) {
+		case IMG_EXT_TITLE_SCREEN: {
+			// NOTE: Some images might use high-resolution mode.
+			static const ImageSizeDef sz_EXT_TITLE_SCREEN[] = {
+				{nullptr, 256, 224, 0},
+			};
+			return vector<ImageSizeDef>(sz_EXT_TITLE_SCREEN,
+				sz_EXT_TITLE_SCREEN + ARRAY_SIZE(sz_EXT_TITLE_SCREEN));
+		}
+		default:
+			break;
+	}
+
+	// Unsupported image type.
+	return vector<ImageSizeDef>();
+}
+
+/**
+ * Get image processing flags.
+ *
+ * These specify post-processing operations for images,
+ * e.g. applying transparency masks.
+ *
+ * @param imageType Image type.
+ * @return Bitfield of ImageProcessingBF operations to perform.
+ */
+uint32_t SNES::imgpf(ImageType imageType) const
+{
+	ASSERT_imgpf(imageType);
+
+	uint32_t ret = 0;
+	switch (imageType) {
+		case IMG_EXT_TITLE_SCREEN:
+			// Use nearest-neighbor scaling when resizing.
+			// FIXME: Add 256->320 / 512->640 rescaling.
+			ret = IMGPF_RESCALE_NEAREST;
+			break;
+
+		default:
+			break;
+	}
+	return ret;
+}
+
+/**
  * Load field data.
  * Called by RomData::fields() if the field data hasn't been loaded yet.
  * @return Number of fields read on success; negative POSIX error code on error.
@@ -705,8 +950,7 @@ int SNES::loadFieldData(void)
 		"Unknown", "Unknown", "Other", "Custom Chip"
 	};
 
-	string title, cart_hw;
-	char gameID[7];
+	string cart_hw;
 	const char *publisher = nullptr;
 	uint8_t rom_mapping;
 
@@ -714,35 +958,6 @@ int SNES::loadFieldData(void)
 	switch (d->romType) {
 		case SNESPrivate::ROM_SNES: {
 			// Super NES / Super Famicom ROM image.
-
-			// Title.
-			// NOTE: If the region code is JPN, the title might be encoded in Shift-JIS.
-			// TODO: Space elimination; China, Korea encodings?
-			if (romHeader->snes.destination_code == SNES_DEST_JAPAN) {
-				title = cp1252_sjis_to_utf8(romHeader->snes.title, sizeof(romHeader->snes.title));
-			} else {
-				title = cp1252_to_utf8(romHeader->snes.title, sizeof(romHeader->snes.title));
-			}
-
-			// Game ID.
-			// NOTE: Only valid if the old publisher code is 0x33.
-			if (romHeader->snes.old_publisher_code == 0x33) {
-				memcpy(gameID, romHeader->snes.ext.id4, 4);
-				if (romHeader->snes.ext.id4[2] == ' ' && romHeader->snes.ext.id4[3] == ' ') {
-					// Two-character ID.
-					// Don't append the publisher.
-					gameID[2] = 0;
-				} else {
-					// Four-character ID.
-					// Append the publisher.
-					gameID[4] = romHeader->snes.ext.new_publisher_code[0];
-					gameID[5] = romHeader->snes.ext.new_publisher_code[1];
-					gameID[6] = 0;
-				}
-			} else {
-				// No game ID.
-				gameID[0] = 0;
-			}
 
 			// Publisher.
 			if (romHeader->snes.old_publisher_code == 0x33) {
@@ -773,13 +988,6 @@ int SNES::loadFieldData(void)
 		case SNESPrivate::ROM_BSX: {
 			// Satellaview BS-X ROM image.
 
-			// Title.
-			// TODO: Space elimination?
-			title = cp1252_sjis_to_utf8(romHeader->bsx.title, sizeof(romHeader->bsx.title));
-
-			// NOTE: Game ID isn't available.
-			gameID[0] = 0;
-
 			// Publisher.
 			// NOTE: Old publisher code is always 0x33 or 0x00,
 			// so use the new publisher code.
@@ -800,11 +1008,12 @@ int SNES::loadFieldData(void)
 	/** Add the field data. **/
 
 	// Title
-	d->fields->addField_string(C_("SNES", "Title"), title, RomFields::STRF_TRIM_END);
+	d->fields->addField_string(C_("SNES", "Title"), d->getROMTitle());
 
 	// Game ID
 	const char *const game_id_title = C_("SNES", "Game ID");
-	if (gameID[0] != 0) {
+	string gameID = d->getGameID();
+	if (!gameID.empty()) {
 		d->fields->addField_string(game_id_title, gameID);
 	} else if (d->romType == SNESPrivate::ROM_SNES) {
 		// Unknown game ID.
@@ -1006,6 +1215,101 @@ int SNES::loadFieldData(void)
 
 	// Finished reading the field data.
 	return static_cast<int>(d->fields->count());
+}
+
+/**
+ * Get a list of URLs for an external image type.
+ *
+ * A thumbnail size may be requested from the shell.
+ * If the subclass supports multiple sizes, it should
+ * try to get the size that most closely matches the
+ * requested size.
+ *
+ * @param imageType	[in]     Image type.
+ * @param pExtURLs	[out]    Output vector.
+ * @param size		[in,opt] Requested image size. This may be a requested
+ *                               thumbnail size in pixels, or an ImageSizeType
+ *                               enum value.
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int SNES::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
+{
+	ASSERT_extURLs(imageType, pExtURLs);
+	pExtURLs->clear();
+
+	RP_D(const SNES);
+	if (!d->isValid || d->romType < 0) {
+		// ROM image isn't valid.
+		return -EIO;
+	}
+
+	// Determine the region code based on the destination code.
+	char region_code[2] = {'\0', '\0'};
+	static const char RegionCode_tbl[] = {
+		'J', 'E', 'P', 'X', '\0', '\0', 'F', 'H',
+		'S', 'D', 'I', 'C', '\0',  'K', 'A', 'N',
+		'B', 'U', 'X', 'Y', 'Z'
+	};
+	if (d->romType == SNESPrivate::ROM_BSX) {
+		// BS-X. Region is always Japan.
+		region_code[0] = 'J';
+	} else if (d->romHeader.snes.destination_code < ARRAY_SIZE(RegionCode_tbl)) {
+		// SNES region code is in range.
+		region_code[0] = RegionCode_tbl[d->romHeader.snes.destination_code];
+	} else {
+		// Unable to determine the region code.
+		return -ENOENT;
+	}
+
+	if (region_code[0] == '\0') {
+		// Invalid region code.
+		return -ENOENT;
+	}
+
+	// Get the game ID.
+	string gameID = d->getGameID(true);
+	if (gameID.empty()) {
+		// No game ID. Image is not available.
+		return -ENOENT;
+	}
+
+	// NOTE: We only have one size for SNES right now.
+	RP_UNUSED(size);
+	vector<ImageSizeDef> sizeDefs = supportedImageSizes(imageType);
+	assert(sizeDefs.size() == 1);
+	if (sizeDefs.empty()) {
+		// No image sizes.
+		return -ENOENT;
+	}
+
+	// NOTE: RPDB's title screen database only has one size.
+	// There's no need to check image sizes, but we need to
+	// get the image size for the extURLs struct.
+
+	// Determine the image type name.
+	const char *imageTypeName;
+	const char *ext;
+	switch (imageType) {
+		case IMG_EXT_TITLE_SCREEN:
+			imageTypeName = "title";
+			ext = ".png";
+			break;
+		default:
+			// Unsupported image type.
+			return -ENOENT;
+	}
+
+	// Add the URLs.
+	pExtURLs->resize(1);
+	auto extURL_iter = pExtURLs->begin();
+	extURL_iter->url = d->getURL_RPDB("snes", imageTypeName, region_code, gameID.c_str(), ext);
+	extURL_iter->cache_key = d->getCacheKey_RPDB("snes", imageTypeName, region_code, gameID.c_str(), ext);
+	extURL_iter->width = sizeDefs[0].width;
+	extURL_iter->height = sizeDefs[0].height;
+	extURL_iter->high_res = (sizeDefs[0].index >= 2);
+
+	// All URLs added.
+	return 0;
 }
 
 }

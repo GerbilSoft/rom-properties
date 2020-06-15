@@ -8,8 +8,8 @@
     and XDBF sections, since we don't have the full executable in a delta patch.
   * Xbox360_STFS: Partial support for handling the embedded default.xex and/or
     default.xexp file using the Xbox360_XEX class.
-  * Game Boy, Game Boy Color, Game Boy Advance: Added external title screen
-    images using the official ROM Properties online database server.
+  * Game Boy, Game Boy Color, Game Boy Advance, Super NES: Added external title
+    screen images using the official ROM Properties online database server.
   * Game Boy Advance: Added metadata properties for Title and Publisher.
     (Same as Game Boy and Game Boy Color.)
   * NES: Added more (unused) mappers for TNES format.
