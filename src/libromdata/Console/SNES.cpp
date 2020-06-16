@@ -152,6 +152,16 @@ uint8_t SNESPrivate::getSnesRomMapping(const SNES_RomHeader *romHeader, bool *pI
 			}
 			break;
 
+		case 'D':
+			// Some ROMs incorrectly extend the title into the mapping byte:
+			// - Super Adventure Island (U)
+			if (romHeader->snes.title[20] == 'N') {
+				// Assume this ROM is valid.
+				rom_mapping = SNES_ROMMAPPING_LoROM;
+				break;
+			}
+			break;
+
 		case 'E':
 			// Some ROMs incorrectly extend the title into the mapping byte:
 			// - Krusty's Super Fun House (some versions)
