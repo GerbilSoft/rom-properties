@@ -1322,7 +1322,7 @@ int SNES::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
 	}
 
 	// Determine the region code based on the destination code.
-	char region_code[3] = {'\0', '\0', '\0'};
+	char region_code[4] = {'\0', '\0', '\0', '\0'};
 	static const char RegionCode_tbl[] = {
 		'J', 'E', 'P', 'X', '\0', '\0', 'F', 'H',
 		'S', 'D', 'I', 'C', '\0',  'K', 'A', 'N',
@@ -1337,7 +1337,10 @@ int SNES::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
 		region_code[0] = RegionCode_tbl[d->romHeader.snes.destination_code];
 	} else {
 		// Unable to determine the region code.
-		return -ENOENT;
+		// Assume a default value.
+		region_code[0] = 'U';
+		region_code[1] = 'n';
+		region_code[2] = 'k';
 	}
 
 	if (region_code[0] == '\0') {
