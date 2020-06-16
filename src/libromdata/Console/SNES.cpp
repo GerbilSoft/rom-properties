@@ -267,6 +267,15 @@ bool SNESPrivate::isSnesRomHeaderValid(const SNES_RomHeader *romHeader, bool isH
 		}
 	}
 
+	// Make sure the two checksums are complementary.
+	// NOTE: Byteswapping isn't necessary here.
+	if (static_cast<uint16_t>( romHeader->snes.checksum) !=
+	    static_cast<uint16_t>(~romHeader->snes.checksum_complement))
+	{
+		// Checksums are not complementary.
+		return false;
+	}
+
 	// ROM header appears to be valid.
 	return true;
 }
