@@ -241,9 +241,16 @@ bool SNESPrivate::isSnesRomHeaderValid(const SNES_RomHeader *romHeader, bool isH
 
 	// Is the ROM type byte valid?
 	// TODO: Check if any other types exist.
-	if ( (romHeader->snes.rom_type & SNES_ROMTYPE_ROM_MASK) > SNES_ROMTYPE_ROM_BATT_ENH ||
-	    ((romHeader->snes.rom_type & SNES_ROMTYPE_ENH_MASK) >= 0x50 &&
-	     (romHeader->snes.rom_type & SNES_ROMTYPE_ENH_MASK) <= 0xD0))
+	switch (romHeader->snes.rom_type & SNES_ROMTYPE_ROM_MASK) {
+		case 0x07: case 0x08: case 0x0B:
+		case 0x0C: case 0x0D: case 0x0E: case 0x0F:
+			// Invalid ROM type.
+			return false;
+		default:
+			break;
+	}
+	if (((romHeader->snes.rom_type & SNES_ROMTYPE_ENH_MASK) >= SNES_ROMTYPE_ENH_S_RTC) &&
+	    ((romHeader->snes.rom_type & SNES_ROMTYPE_ENH_MASK) <  SNES_ROMTYPE_ENH_OTHER))
 	{
 		// Not a valid ROM type.
 		return false;
@@ -1052,16 +1059,20 @@ int SNES::loadFieldData(void)
 	// Cartridge HW.
 	// TODO: Make this translatable.
 	static const char *const hw_base_tbl[16] = {
-		"ROM", "ROM, RAM", "ROM, RAM, Battery",
-		"ROM, ", "ROM, RAM, ", "ROM, RAM, Battery, ",
-		"ROM, Battery, ", nullptr,
+		// 0
+		"ROM", "ROM, RAM", "ROM, RAM, Battery", "ROM, ",
+		"ROM, RAM, ", "ROM, RAM, Battery, ", "ROM, Battery, ", nullptr,
 
-		nullptr, nullptr, nullptr, nullptr,
+		// 8
+		nullptr,
+		"ROM, RAM, Battery, RTC-4513, ",
+		"ROM, RAM, Battery, Overclocked ",
+		nullptr,
 		nullptr, nullptr, nullptr, nullptr
 	};
 	static const char *const hw_enh_tbl[16] = {
 		"DSP-1", "Super FX", "OBC-1", "SA-1",
-		"S-DD1", "Unknown", "Unknown", "Unknown",
+		"S-DD1", "S-RTC", "Unknown", "Unknown",
 		"Unknown", "Unknown", "Unknown", "Unknown",
 		"Unknown", "Unknown", "Other", "Custom Chip"
 	};
