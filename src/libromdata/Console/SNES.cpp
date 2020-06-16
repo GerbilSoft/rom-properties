@@ -200,6 +200,28 @@ uint8_t SNESPrivate::getSnesRomMapping(const SNES_RomHeader *romHeader, bool *pI
 			}
 			break;
 
+		case 'P':
+			// Some ROMs incorrectly extend the title into the mapping byte:
+			// - TKO Super Championship Boxing (U)
+			if (romHeader->snes.title[20] == 'I') {
+				// Assume this ROM is valid.
+				// TODO: Is this FastROM?
+				rom_mapping = SNES_ROMMAPPING_LoROM;
+				break;
+			}
+			break;
+
+		case 'R':
+			// Some ROMs incorrectly extend the title into the mapping byte:
+			// - Super Formation Soccer (J)
+			if (romHeader->snes.title[20] == 'E') {
+				// Assume this ROM is valid.
+				// TODO: Is this FastROM?
+				rom_mapping = SNES_ROMMAPPING_LoROM;
+				break;
+			}
+			break;
+
 		case 'S':
 			// Some ROMs incorrectly extend the title into the mapping byte:
 			// - Contra III - The Alien Wars (U)
