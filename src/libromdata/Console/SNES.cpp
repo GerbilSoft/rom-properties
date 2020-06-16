@@ -137,6 +137,7 @@ uint8_t SNESPrivate::getSnesRomMapping(const SNES_RomHeader *romHeader, bool *pI
 		case SNES_ROMMAPPING_HiROM_FastROM:
 		case SNES_ROMMAPPING_ExHiROM:
 		case SNES_ROMMAPPING_ExHiROM_FastROM:
+		case SNES_ROMMAPPING_HiROM_FastROM_SPC7110:
 			// Valid HiROM mapping byte.
 			isHiROM = true;
 			break;
@@ -243,7 +244,7 @@ bool SNESPrivate::isSnesRomHeaderValid(const SNES_RomHeader *romHeader, bool isH
 	// TODO: Check if any other types exist.
 	switch (romHeader->snes.rom_type & SNES_ROMTYPE_ROM_MASK) {
 		case 0x07: case 0x08: case 0x0B:
-		case 0x0C: case 0x0D: case 0x0E: case 0x0F:
+		case 0x0C: case 0x0D: case 0x0E:
 			// Invalid ROM type.
 			return false;
 		default:
@@ -1103,7 +1104,32 @@ int SNES::loadFieldData(void)
 				cart_hw = hw_base;
 				if ((romHeader->snes.rom_type & SNES_ROMTYPE_ROM_MASK) >= SNES_ROMTYPE_ROM_ENH) {
 					// Enhancement chip.
-					cart_hw += hw_enh_tbl[(romHeader->snes.rom_type & SNES_ROMTYPE_ENH_MASK) >> 4];
+					const uint8_t enh = (romHeader->snes.rom_type & SNES_ROMTYPE_ENH_MASK);
+					if (enh == SNES_ROMTYPE_ENH_CUSTOM) {
+						// Check the chipset subtype.
+						const char *subtype;
+						switch (romHeader->snes.ext.chipset_subtype) {
+							case SNES_CHIPSUBTYPE_SPC7110:
+								subtype = "SPC7110";
+								break;
+							case SNES_CHIPSUBTYPE_STO10_ST011:
+								subtype = "ST010/ST011";
+								break;
+							case SNES_CHIPSUBTYPE_STO18:
+								subtype = "ST018";
+								break;
+							case SNES_CHIPSUBTYPE_CX4:
+								subtype = "CX4";
+								break;
+							default:
+								subtype = hw_enh_tbl[SNES_ROMTYPE_ENH_CUSTOM >> 4];
+								break;
+						}
+						cart_hw += subtype;
+					} else {
+						// No subtype needed.
+						cart_hw += hw_enh_tbl[(romHeader->snes.rom_type & SNES_ROMTYPE_ENH_MASK) >> 4];
+					}
 				}
 			} else {
 				// Unknown cartridge HW.
@@ -1168,6 +1194,7 @@ int SNES::loadFieldData(void)
 		{SNES_ROMMAPPING_HiROM_FastROM,		"HiROM + FastROM"},
 		{SNES_ROMMAPPING_ExLoROM_FastROM,	"ExLoROM + FastROM"},
 		{SNES_ROMMAPPING_ExHiROM_FastROM,	"ExHiROM + FastROM"},
+		{SNES_ROMMAPPING_HiROM_FastROM_SPC7110,	"HiROM + SPC7110"},
 
 		{0, nullptr}
 	};
