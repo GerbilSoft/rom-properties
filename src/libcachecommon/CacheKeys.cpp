@@ -18,7 +18,6 @@
 // C++ STL classes.
 using std::string;
 #ifdef _WIN32
-#include <cwchar>
 using std::wstring;
 #endif /* _WIN32 */
 
@@ -450,7 +449,7 @@ string urlencode(const char *url)
 wstring urlencode(const wchar_t *url)
 {
 	wstring ws_ret;
-	ws_ret.reserve(_wcslen(url)+8);
+	ws_ret.reserve(wcslen(url)+8);
 
 	assert(url != nullptr);
 	for (; *url != L'\0'; url++) {
