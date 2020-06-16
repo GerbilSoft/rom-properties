@@ -37,6 +37,14 @@ class SNESPrivate : public RomDataPrivate
 
 	public:
 		/**
+		 * Get the SNES ROM mapping and validate it.
+		 * @param romHeader	[in] SNES/SFC ROM header to check.
+		 * @param pIsHiROM	[out,opt] Set to true if the valid ROM mapping byte is HiROM.
+		 * @return SNES ROM mapping, or 0 if not valid.
+		 */
+		static uint8_t getSnesRomMapping(const SNES_RomHeader *romHeader, bool *pIsHiROM = nullptr);
+
+		/**
 		 * Is the specified SNES/SFC ROM header valid?
 		 * @param romHeader SNES/SFC ROM header to check.
 		 * @param isHiROM True if the header was read from a HiROM address; false if not.
@@ -106,6 +114,82 @@ SNESPrivate::SNESPrivate(SNES *q, IRpFile *file)
 }
 
 /**
+ * Get the SNES ROM mapping and validate it.
+ * @param romHeader	[in] SNES/SFC ROM header to check.
+ * @param pIsHiROM	[out,opt] Set to true if the valid ROM mapping byte is HiROM.
+ * @return SNES ROM mapping, or 0 if not valid.
+ */
+uint8_t SNESPrivate::getSnesRomMapping(const SNES_RomHeader *romHeader, bool *pIsHiROM)
+{
+	uint8_t rom_mapping = romHeader->snes.rom_mapping;
+	bool isHiROM = false;
+
+	switch (rom_mapping) {
+		case SNES_ROMMAPPING_LoROM:
+		case SNES_ROMMAPPING_LoROM_S_DD1:
+		case SNES_ROMMAPPING_LoROM_SA_1:
+		case SNES_ROMMAPPING_LoROM_FastROM:
+		case SNES_ROMMAPPING_ExLoROM_FastROM:
+			// Valid LoROM mapping byte.
+			break;
+
+		case SNES_ROMMAPPING_HiROM:
+		case SNES_ROMMAPPING_HiROM_FastROM:
+		case SNES_ROMMAPPING_ExHiROM:
+		case SNES_ROMMAPPING_ExHiROM_FastROM:
+			// Valid HiROM mapping byte.
+			isHiROM = true;
+			break;
+
+		case 'A':
+			// Some ROMs incorrectly extend the title into the mapping byte:
+			// - WWF Super WrestleMania
+			if (romHeader->snes.title[20] == 'I') {
+				// Assume this ROM is valid.
+				// TODO: Is this FastROM?
+				rom_mapping = SNES_ROMMAPPING_LoROM;
+				break;
+			}
+			break;
+
+		case 'E':
+			// Some ROMs incorrectly extend the title into the mapping byte:
+			// - Krusty's Super Fun House (some versions)
+			// - Space Football - One on One
+			if (romHeader->snes.title[20] == 'S' ||
+			    romHeader->snes.title[20] == 'N')
+			{
+				// Assume this ROM is valid.
+				// TODO: Is this FastROM?
+				rom_mapping = SNES_ROMMAPPING_LoROM;
+				break;
+			}
+			break;
+
+		case 'S':
+			// Some ROMs incorrectly extend the title into the mapping byte:
+			// - Contra III - The Alien Wars (U)
+			if (romHeader->snes.title[20] == 'R') {
+				// Assume this ROM is valid.
+				// TODO: Is this FastROM?
+				rom_mapping = SNES_ROMMAPPING_LoROM;
+				break;
+			}
+			break;
+
+		default:
+			// Not valid.
+			rom_mapping = 0;
+			break;
+	}
+
+	if (pIsHiROM) {
+		*pIsHiROM = isHiROM;
+	}
+	return rom_mapping;
+}
+
+/**
  * Is the specified SNES/SFC ROM header valid?
  * @param romHeader SNES/SFC ROM header to check.
  * @param isHiROM True if the header was read from a HiROM address; false if not.
@@ -137,69 +221,12 @@ bool SNESPrivate::isSnesRomHeaderValid(const SNES_RomHeader *romHeader, bool isH
 	}
 
 	// Is the ROM mapping byte valid?
-	switch (romHeader->snes.rom_mapping) {
-		case SNES_ROMMAPPING_LoROM:
-		case SNES_ROMMAPPING_LoROM_S_DD1:
-		case SNES_ROMMAPPING_LoROM_SA_1:
-		case SNES_ROMMAPPING_LoROM_FastROM:
-		case SNES_ROMMAPPING_ExLoROM_FastROM:
-			if (isHiROM) {
-				// LoROM mapping at a HiROM address.
-				// Not valid.
-				return false;
-			}
-			// Valid ROM mapping byte.
-			break;
-
-		case SNES_ROMMAPPING_HiROM:
-		case SNES_ROMMAPPING_HiROM_FastROM:
-		case SNES_ROMMAPPING_ExHiROM:
-		case SNES_ROMMAPPING_ExHiROM_FastROM:
-			if (!isHiROM) {
-				// HiROM mapping at a LoROM address.
-				// Not valid.
-				return false;
-			}
-
-			// Valid ROM mapping byte.
-			break;
-
-		case 'A':
-			// Some ROMs incorrectly extend the title into the mapping byte:
-			// - WWF Super WrestleMania
-			if (romHeader->snes.title[20] == 'I') {
-				// Assume this ROM is valid.
-				break;
-			}
-			// Not valid.
-			return false;
-
-		case 'E':
-			// Some ROMs incorrectly extend the title into the mapping byte:
-			// - Krusty's Super Fun House (some versions)
-			// - Space Football - One on One
-			if (romHeader->snes.title[20] == 'S' ||
-			    romHeader->snes.title[20] == 'N')
-			{
-				// Assume this ROM is valid.
-				break;
-			}
-			// Not valid.
-			return false;
-
-		case 'S':
-			// Some ROMs incorrectly extend the title into the mapping byte:
-			// - Contra III - The Alien Wars (U)
-			if (romHeader->snes.title[20] == 'R') {
-				// Assume this ROM is valid.
-				break;
-			}
-			// Not valid.
-			return false;
-
-		default:
-			// Not valid.
-			return false;
+	bool isMapHiROM = false;
+	const uint8_t rom_mapping = getSnesRomMapping(romHeader, &isMapHiROM);
+	if (rom_mapping == 0 || isMapHiROM != isHiROM) {
+		// Mapping is not valid, or does not match the
+		// ROM header address.
+		return false;
 	}
 
 	// Is the ROM type byte valid?
@@ -1037,40 +1064,8 @@ int SNES::loadFieldData(void)
 			}
 
 			// ROM mapping.
-			rom_mapping = romHeader->snes.rom_mapping;
-
-			// Some ROMs incorrectly extend the title into the mapping byte.
-			// TODO: Extend the title based on this?
-			switch (rom_mapping) {
-				case 'A':
-					if (romHeader->snes.title[20] == 'I' && d->header_address < 0x8000) {
-						// WWF Super WrestleMania
-						// Assume LoROM. (TODO: Is it FastROM?)
-						rom_mapping = SNES_ROMMAPPING_LoROM;
-					}
-					break;
-				case 'E':
-					if ((romHeader->snes.title[20] == 'S' || romHeader->snes.title[20] == 'N') &&
-					     d->header_address < 0x8000)
-					{
-						// Krusty's Super Fun House
-						// Space Football - One on One
-						// Assume LoROM. (TODO: Is it FastROM?)
-						rom_mapping = SNES_ROMMAPPING_LoROM;
-					}
-					break;
-
-				case 'S':
-					if (romHeader->snes.title[20] == 'R' && d->header_address < 0x8000) {
-						// Contra III - The Alien Wars (U)
-						// Assume LoROM. (TODO: Is it FastROM?)
-						break;
-					}
-					break;
-
-				default:
-					break;
-			}
+			rom_mapping = d->getSnesRomMapping(romHeader);
+			assert(rom_mapping != 0);
 
 			// Cartridge HW.
 			const char *const hw_base = hw_base_tbl[romHeader->snes.rom_type & SNES_ROMTYPE_ROM_MASK];
