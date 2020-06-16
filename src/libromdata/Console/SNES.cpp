@@ -164,6 +164,29 @@ bool SNESPrivate::isSnesRomHeaderValid(const SNES_RomHeader *romHeader, bool isH
 			// Valid ROM mapping byte.
 			break;
 
+		case 'A':
+			// Some ROMs incorrectly extend the title into the mapping byte:
+			// - WWF Super WrestleMania
+			if (romHeader->snes.title[20] == 'I') {
+				// Assume this ROM is valid.
+				break;
+			}
+			// Not valid.
+			return false;
+
+		case 'E':
+			// Some ROMs incorrectly extend the title into the mapping byte:
+			// - Krusty's Super Fun House (some versions)
+			// - Space Football - One on One
+			if (romHeader->snes.title[20] == 'S' ||
+			    romHeader->snes.title[20] == 'N')
+			{
+				// Assume this ROM is valid.
+				break;
+			}
+			// Not valid.
+			return false;
+
 		default:
 			// Not valid.
 			return false;
@@ -1005,6 +1028,24 @@ int SNES::loadFieldData(void)
 
 			// ROM mapping.
 			rom_mapping = romHeader->snes.rom_mapping;
+
+			// Some ROMs incorrectly extend the title into the mapping byte.
+			if (rom_mapping == 'A') {
+				if (romHeader->snes.title[20] == 'I' && d->header_address < 0x8000) {
+					// WWF Super WrestleMania
+					// Assume LoROM. (TODO: Is it FastROM?)
+					rom_mapping = SNES_ROMMAPPING_LoROM;
+				}
+			} else if (rom_mapping == 'E') {
+				if ((romHeader->snes.title[20] == 'S' || romHeader->snes.title[20] == 'N') &&
+				     d->header_address < 0x8000)
+				{
+					// Krusty's Super Fun House
+					// Space Football - One on One
+					// Assume LoROM. (TODO: Is it FastROM?)
+					rom_mapping = SNES_ROMMAPPING_LoROM;
+				}
+			}
 
 			// Cartridge HW.
 			const char *const hw_base = hw_base_tbl[romHeader->snes.rom_type & SNES_ROMTYPE_ROM_MASK];
