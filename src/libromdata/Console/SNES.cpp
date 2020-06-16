@@ -187,6 +187,16 @@ bool SNESPrivate::isSnesRomHeaderValid(const SNES_RomHeader *romHeader, bool isH
 			// Not valid.
 			return false;
 
+		case 'S':
+			// Some ROMs incorrectly extend the title into the mapping byte:
+			// - Contra III - The Alien Wars (U)
+			if (romHeader->snes.title[20] == 'R') {
+				// Assume this ROM is valid.
+				break;
+			}
+			// Not valid.
+			return false;
+
 		default:
 			// Not valid.
 			return false;
@@ -1030,21 +1040,36 @@ int SNES::loadFieldData(void)
 			rom_mapping = romHeader->snes.rom_mapping;
 
 			// Some ROMs incorrectly extend the title into the mapping byte.
-			if (rom_mapping == 'A') {
-				if (romHeader->snes.title[20] == 'I' && d->header_address < 0x8000) {
-					// WWF Super WrestleMania
-					// Assume LoROM. (TODO: Is it FastROM?)
-					rom_mapping = SNES_ROMMAPPING_LoROM;
-				}
-			} else if (rom_mapping == 'E') {
-				if ((romHeader->snes.title[20] == 'S' || romHeader->snes.title[20] == 'N') &&
-				     d->header_address < 0x8000)
-				{
-					// Krusty's Super Fun House
-					// Space Football - One on One
-					// Assume LoROM. (TODO: Is it FastROM?)
-					rom_mapping = SNES_ROMMAPPING_LoROM;
-				}
+			// TODO: Extend the title based on this?
+			switch (rom_mapping) {
+				case 'A':
+					if (romHeader->snes.title[20] == 'I' && d->header_address < 0x8000) {
+						// WWF Super WrestleMania
+						// Assume LoROM. (TODO: Is it FastROM?)
+						rom_mapping = SNES_ROMMAPPING_LoROM;
+					}
+					break;
+				case 'E':
+					if ((romHeader->snes.title[20] == 'S' || romHeader->snes.title[20] == 'N') &&
+					     d->header_address < 0x8000)
+					{
+						// Krusty's Super Fun House
+						// Space Football - One on One
+						// Assume LoROM. (TODO: Is it FastROM?)
+						rom_mapping = SNES_ROMMAPPING_LoROM;
+					}
+					break;
+
+				case 'S':
+					if (romHeader->snes.title[20] == 'R' && d->header_address < 0x8000) {
+						// Contra III - The Alien Wars (U)
+						// Assume LoROM. (TODO: Is it FastROM?)
+						break;
+					}
+					break;
+
+				default:
+					break;
 			}
 
 			// Cartridge HW.
