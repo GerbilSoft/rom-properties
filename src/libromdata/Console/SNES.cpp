@@ -177,6 +177,29 @@ uint8_t SNESPrivate::getSnesRomMapping(const SNES_RomHeader *romHeader, bool *pI
 			}
 			break;
 
+		case 'F':
+			// Some ROMs incorrectly extend the title into the mapping byte:
+			// - HAL's Hole in One Golf (E)
+			// - HAL's Hole in One Golf (U)
+			if (romHeader->snes.title[20] == 'L') {
+				// Assume this ROM is valid.
+				// TODO: Is this FastROM?
+				rom_mapping = SNES_ROMMAPPING_LoROM;
+				break;
+			}
+			break;
+
+		case 'N':
+			// Some ROMs incorrectly extend the title into the mapping byte:
+			// - Kentou-Ou World Champion (J)
+			if (romHeader->snes.title[20] == 'O') {
+				// Assume this ROM is valid.
+				// TODO: Is this FastROM?
+				rom_mapping = SNES_ROMMAPPING_LoROM;
+				break;
+			}
+			break;
+
 		case 'S':
 			// Some ROMs incorrectly extend the title into the mapping byte:
 			// - Contra III - The Alien Wars (U)
@@ -274,7 +297,7 @@ bool SNESPrivate::isSnesRomHeaderValid(const SNES_RomHeader *romHeader, bool isH
 			if (ISALNUM(romHeader->snes.ext.id4[i])) {
 				// Alphanumeric character.
 				continue;
-			} else if (i >= 2 && romHeader->snes.ext.id4[i] == ' ') {
+			} else if (i >= 2 && (romHeader->snes.ext.id4[i] == ' ' || romHeader->snes.ext.id4[i] == '\0')) {
 				// Some game IDs are two characters,
 				// and the remaining characters are spaces.
 				continue;
