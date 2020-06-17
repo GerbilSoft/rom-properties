@@ -358,15 +358,15 @@ skip_image_check:
 		return RPCT_SOURCE_FILE_ERROR;
 	}
 
-	if (imgpf & RomData::IMGPF_RESCALE_256to320_512to640) {
-		// If the image width is 256 or 512, rescale to 320 or 640.
+	if (imgpf & RomData::IMGPF_RESCALE_ASPECT_8to7) {
+		// If the image width is 256 or 512, rescale to an 8:7 pixel aspect ratio.
 		int scaleW = 0;
 		switch (pOutParams->fullSize.width) {
 			case 256:
-				scaleW = 320;
+				scaleW = 292;
 				break;
 			case 512:
-				scaleW = 640;
+				scaleW = 584;
 				break;
 			default:
 				break;

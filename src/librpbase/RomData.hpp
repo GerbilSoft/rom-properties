@@ -355,9 +355,10 @@ class RomData
 			// icon frames and control information.
 			IMGPF_ICON_ANIMATED	= (1U << 3),
 
-			// Image should be rescaled from 256->320 or 512->640.
-			// This is for systems that have non-square pixels.
-			IMGPF_RESCALE_256to320_512to640	= (1U << 4),
+			// Image should be rescaled to an 8:7 aspect ratio.
+			// This is for Super NES, and only applies to images
+			// with 256px and 512px widths.
+			IMGPF_RESCALE_ASPECT_8to7	= (1U << 4),
 		};
 
 		struct ImageSizeDef {

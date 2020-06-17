@@ -1204,8 +1204,10 @@ int DMG::loadMetaData(void)
 	// TODO: Remove STRF_TRIM_END, since we're doing that ourselves?
 	string s_title, s_gameID;
 	d->getTitleAndGameID(s_title, s_gameID);
-	d->metaData->addMetaData_string(Property::Title,
-		s_title, RomMetaData::STRF_TRIM_END);
+	if (!s_title.empty()) {
+		d->metaData->addMetaData_string(Property::Title,
+			s_title, RomMetaData::STRF_TRIM_END);
+	}
 
 	// Publisher
 	d->metaData->addMetaData_string(Property::Publisher, d->getPublisher());

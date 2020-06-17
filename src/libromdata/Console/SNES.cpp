@@ -1111,8 +1111,9 @@ vector<RomData::ImageSizeDef> SNES::supportedImageSizes_static(ImageType imageTy
 	switch (imageType) {
 		case IMG_EXT_TITLE_SCREEN: {
 			// NOTE: Some images might use high-resolution mode.
+			// 292 = floor((256 * 8) / 7)
 			static const ImageSizeDef sz_EXT_TITLE_SCREEN[] = {
-				{nullptr, 320, 224, 0},
+				{nullptr, 292, 224, 0},
 			};
 			return vector<ImageSizeDef>(sz_EXT_TITLE_SCREEN,
 				sz_EXT_TITLE_SCREEN + ARRAY_SIZE(sz_EXT_TITLE_SCREEN));
@@ -1141,8 +1142,8 @@ uint32_t SNES::imgpf(ImageType imageType) const
 	uint32_t ret = 0;
 	switch (imageType) {
 		case IMG_EXT_TITLE_SCREEN:
-			// Rescaling is required: 256->320, 512->640
-			ret = IMGPF_RESCALE_256to320_512to640;
+			// Rescaling is required for the 8:7 pixel aspect ratio.
+			ret = IMGPF_RESCALE_ASPECT_8to7;
 			break;
 
 		default:
