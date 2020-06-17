@@ -305,6 +305,17 @@
     </magic>
   </mime-type>
 
+  <!-- SufamiTurbo (handled as SNES, sort of) -->
+  <mime-type type="application/x-sufami-turbo-rom">
+    <comment>Sufami Turbo ROM</comment>
+    <sub-class-of type="application/vnd.nintendo.snes.rom"/>
+    <generic-icon name="application-x-executable"/>
+    <glob pattern="*.st"/>
+    <magic priority="50">
+      <match value="BANDAI SFC-ADX" type="string" offset="0"/>
+    </magic>
+  </mime-type>
+
   <!-- WiiU -->
   <mime-type type="application/x-wii-u-rom">
     <comment>Wii U disc image</comment>
