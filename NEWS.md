@@ -19,6 +19,9 @@
     don't quite match the specification. Added SPC7110 and other custom chip
     detection.
   * SNES: Added metadata properties.
+  * SufamiTurbo: New parser for Sufami Turbo mini-carts for Super Famicom.
+    This could have been part of SNES, but the header is completely different
+    and is always located at $0000.
 
 * Bug fixes:
   * WiiWAD: Fix DLC icons no longer working after updating CBCReader to update

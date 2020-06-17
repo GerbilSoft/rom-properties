@@ -84,7 +84,7 @@ class SNESPrivate : public RomDataPrivate
 		 *
 		 * @return ROM title.
 		 */
-		string getROMTitle(void) const;
+		string getRomTitle(void) const;
 
 		/**
 		 * Get the publisher.
@@ -442,7 +442,7 @@ bool SNESPrivate::isBsxRomHeaderValid(const SNES_RomHeader *romHeader, bool isHi
  *
  * @return ROM title.
  */
-string SNESPrivate::getROMTitle(void) const
+string SNESPrivate::getRomTitle(void) const
 {
 	// NOTE: If the region code is JPN, the title might be encoded in Shift-JIS.
 	// TODO: Space elimination; China, Korea encodings?
@@ -649,7 +649,7 @@ string SNESPrivate::getGameID(bool doFake) const
 		gameID += suffix;
 	} else {
 		// ID2/ID4 is not present. Use the ROM title.
-		string s_title = getROMTitle();
+		string s_title = getRomTitle();
 		if (s_title.empty()) {
 			// No title...
 			return gameID;
@@ -1171,7 +1171,7 @@ int SNES::loadFieldData(void)
 		return -EIO;
 	}
 
-	// ROM file header is read and byteswapped in the constructor.
+	// ROM file header is read in the constructor.
 	const SNES_RomHeader *const romHeader = &d->romHeader;
 	d->fields->reserve(8); // Maximum of 8 fields.
 
@@ -1267,7 +1267,7 @@ int SNES::loadFieldData(void)
 	/** Add the field data. **/
 
 	// Title
-	d->fields->addField_string(C_("SNES", "Title"), d->getROMTitle());
+	d->fields->addField_string(C_("RomData", "Title"), d->getRomTitle());
 
 	// Game ID
 	const char *const game_id_title = C_("SNES", "Game ID");
@@ -1468,7 +1468,6 @@ int SNES::loadFieldData(void)
 			return 0;
 	}
 
-
 	// TODO: Other fields.
 
 	// Finished reading the field data.
@@ -1496,13 +1495,13 @@ int SNES::loadMetaData(void)
 
 	// Create the metadata object.
 	d->metaData = new RomMetaData();
-	d->metaData->reserve(2);	// Maximum of 2 metadata property.
+	d->metaData->reserve(2);	// Maximum of 2 metadata properties.
 
 	// SNES ROM header
 	//const SNES_RomHeader *const romHeader = &d->romHeader;
 
 	// Title
-	string s_title = d->getROMTitle();
+	string s_title = d->getRomTitle();
 	if (!s_title.empty()) {
 		d->metaData->addMetaData_string(Property::Title, s_title);
 	}

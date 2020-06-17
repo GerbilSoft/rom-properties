@@ -427,6 +427,9 @@ string urlencode(const char *url)
 			case ' ':
 				s_ret += "%20";
 				break;
+			case '#':
+				s_ret += "%23";
+				break;
 			case '%':
 				s_ret += "%25";
 				break;
@@ -456,6 +459,9 @@ wstring urlencode(const wchar_t *url)
 		switch (*url) {
 			case L' ':
 				ws_ret += L"%20";
+				break;
+			case L'#':
+				ws_ret += L"%23";
 				break;
 			case L'%':
 				ws_ret += L"%25";

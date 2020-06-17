@@ -13,6 +13,9 @@
 // Conversions to UTF-16 always use host-endian.
 #include "librpcpu/byteorder.h"
 
+// i18n for "KiB".
+#include "libi18n/i18n.h"
+
 // printf()-style function attribute.
 #ifndef ATTR_PRINTF
 # ifdef __GNUC__
@@ -622,6 +625,20 @@ std::string rp_sprintf_p(const char *fmt, ...) ATTR_PRINTF(1, 2);
  * @return Formatted file size.
  */
 std::string formatFileSize(off64_t fileSize);
+
+/**
+ * Format a file size, in KiB.
+ *
+ * This function expects the size to be a multiple of 1024,
+ * so it doesn't do any fractional rounding or printing.
+ *
+ * @param size File size.
+ * @return Formatted file size.
+ */
+static inline std::string formatFileSizeKiB(unsigned int size)
+{
+	return rp_sprintf("%u %s", (size / 1024), C_("TextFuncs|FileSize", "KiB"));
+}
 
 /**
  * Remove trailing spaces from a string.

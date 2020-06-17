@@ -81,17 +81,6 @@ class NESPrivate : public RomDataPrivate
 		} header;
 
 		/**
-		 * Format PRG/CHR ROM bank sizes, in KiB.
-		 *
-		 * This function expects the size to be a multiple of 1024,
-		 * so it doesn't do any fractional rounding or printing.
-		 *
-		 * @param size File size.
-		 * @return Formatted file size.
-		 */
-		static inline string formatBankSizeKiB(unsigned int size);
-
-		/**
 		 * Convert an FDS BCD datestamp to Unix time.
 		 * @param fds_bcd_ds FDS BCD datestamp.
 		 * @return Unix time, or -1 if an error occurred.
@@ -111,20 +100,6 @@ NESPrivate::NESPrivate(NES *q, IRpFile *file)
 {
 	// Clear the ROM header structs.
 	memset(&header, 0, sizeof(header));
-}
-
-/**
- * Format PRG/CHR ROM bank sizes, in KiB.
- *
- * This function expects the size to be a multiple of 1024,
- * so it doesn't do any fractional rounding or printing.
- *
- * @param size File size.
- * @return Formatted file size.
- */
-inline string NESPrivate::formatBankSizeKiB(unsigned int size)
-{
-	return rp_sprintf("%u KiB", (size / 1024));
 }
 
 /**
@@ -845,31 +820,31 @@ int NES::loadFieldData(void)
 	// ROM sizes
 	if (prg_rom_size > 0) {
 		d->fields->addField_string(C_("NES", "PRG ROM Size"),
-			d->formatBankSizeKiB(prg_rom_size));
+			formatFileSizeKiB(prg_rom_size));
 	}
 	if (chr_rom_size > 0) {
 		d->fields->addField_string(C_("NES", "CHR ROM Size"),
-			d->formatBankSizeKiB(chr_rom_size));
+			formatFileSizeKiB(chr_rom_size));
 	}
 
 	// RAM sizes
 	if (chr_ram_size > 0) {
 		d->fields->addField_string(C_("NES", "CHR RAM Size"),
-			d->formatBankSizeKiB(chr_ram_size));
+			formatFileSizeKiB(chr_ram_size));
 	}
 	if (chr_ram_battery_size > 0) {
 		// tr: CHR RAM with a battery backup.
 		d->fields->addField_string(C_("NES", "CHR RAM (backed up)"),
-			d->formatBankSizeKiB(chr_ram_battery_size));
+			formatFileSizeKiB(chr_ram_battery_size));
 	}
 	if (prg_ram_size > 0) {
 		d->fields->addField_string(C_("NES", "PRG RAM Size"),
-			d->formatBankSizeKiB(prg_ram_size));
+			formatFileSizeKiB(prg_ram_size));
 	}
 	if (prg_ram_battery_size > 0) {
 		// tr: Save RAM with a battery backup.
 		d->fields->addField_string(C_("NES", "Save RAM (backed up)"),
-			d->formatBankSizeKiB(prg_ram_battery_size));
+			formatFileSizeKiB(prg_ram_battery_size));
 	}
 
 	// Check for FDS fields.
@@ -1222,7 +1197,7 @@ int NES::loadFieldData(void)
 			if (prg_sz_idx == 0) {
 				s_prg_size = C_("NES", "Not set");
 			} else if (prg_size > 1) {
-				s_prg_size = d->formatBankSizeKiB(prg_size);
+				s_prg_size = formatFileSizeKiB(prg_size);
 			} else {
 				s_prg_size = rp_sprintf(C_("RomData", "Unknown (0x%02X)"), prg_sz_idx);
 			}
@@ -1233,7 +1208,7 @@ int NES::loadFieldData(void)
 			if (chr_sz_idx == 0) {
 				s_chr_size = C_("NES", "Not set");
 			} else if (chr_size > 1) {
-				s_chr_size = d->formatBankSizeKiB(chr_size);
+				s_chr_size = formatFileSizeKiB(chr_size);
 			} else {
 				s_chr_size = rp_sprintf(C_("RomData", "Unknown (0x%02X)"), chr_sz_idx);
 			}

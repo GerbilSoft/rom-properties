@@ -44,6 +44,7 @@ using std::vector;
 #include "Console/Sega8Bit.hpp"
 #include "Console/SegaSaturn.hpp"
 #include "Console/SNES.hpp"
+#include "Console/SufamiTurbo.hpp"
 #include "Console/WiiSave.hpp"
 #include "Console/WiiU.hpp"
 #include "Console/WiiWAD.hpp"
@@ -238,6 +239,7 @@ pthread_once_t RomDataFactoryPrivate::once_mimeTypes = PTHREAD_ONCE_INIT;
 // TODO: Add support for multiple magic numbers per class.
 const RomDataFactoryPrivate::RomDataFns RomDataFactoryPrivate::romDataFns_magic[] = {
 	// Consoles
+	GetRomDataFns_addr(SufamiTurbo, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 8, 'FC-A'),	// Less common than "BAND"
 	GetRomDataFns_addr(WiiWIBN, ATTR_HAS_THUMBNAIL, 0, 'WIBN'),
 	GetRomDataFns_addr(Xbox_XBE, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'XBEH'),
 	GetRomDataFns_addr(Xbox360_XDBF, ATTR_HAS_THUMBNAIL, 0, 'XDBF'),
