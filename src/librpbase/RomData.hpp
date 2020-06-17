@@ -354,6 +354,10 @@ class RomData
 			// Call iconAnimData() to get the animated
 			// icon frames and control information.
 			IMGPF_ICON_ANIMATED	= (1U << 3),
+
+			// Image should be rescaled from 256->320 or 512->640.
+			// This is for systems that have non-square pixels.
+			IMGPF_RESCALE_256to320_512to640	= (1U << 4),
 		};
 
 		struct ImageSizeDef {

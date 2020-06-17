@@ -73,12 +73,13 @@ HBITMAP CreateThumbnail::rpImageToImgClass(const rp_image *img) const
 }
 
 /**
- * Rescale an ImgClass using nearest-neighbor scaling.
+ * Rescale an ImgClass using the specified scaling method.
  * @param imgClass ImgClass object.
  * @param sz New size.
+ * @param method Scaling method.
  * @return Rescaled ImgClass.
  */
-HBITMAP CreateThumbnail::rescaleImgClass(const HBITMAP &imgClass, const ImgSize &sz) const
+HBITMAP CreateThumbnail::rescaleImgClass(const HBITMAP &imgClass, const ImgSize &sz, ScalingMethod method) const
 {
 	// Convert the HBITMAP to rp_image.
 	unique_ptr<rp_image> img(RpImageWin32::fromHBITMAP(imgClass));
@@ -92,9 +93,8 @@ HBITMAP CreateThumbnail::rescaleImgClass(const HBITMAP &imgClass, const ImgSize 
 	// Our IExtractIcon implementation converts it to HICON later.
 
 	// Resize the image.
-	// TODO: "nearest" parameter.
 	const SIZE win_sz = {sz.width, sz.height};
-	return RpImageWin32::toHBITMAP_alpha(img.get(), win_sz, true);
+	return RpImageWin32::toHBITMAP_alpha(img.get(), win_sz, (method == ScalingMethod::Nearest));
 }
 
 /**
@@ -168,12 +168,13 @@ HBITMAP CreateThumbnailNoAlpha::rpImageToImgClass(const rp_image *img) const
 }
 
 /**
- * Rescale an ImgClass using nearest-neighbor scaling.
+ * Rescale an ImgClass using the specified scaling method.
  * @param imgClass ImgClass object.
  * @param sz New size.
+ * @param method Scaling method.
  * @return Rescaled ImgClass.
  */
-HBITMAP CreateThumbnailNoAlpha::rescaleImgClass(const HBITMAP &imgClass, const ImgSize &sz) const
+HBITMAP CreateThumbnailNoAlpha::rescaleImgClass(const HBITMAP &imgClass, const ImgSize &sz, ScalingMethod method) const
 {
 	// Convert the HBITMAP to rp_image.
 	unique_ptr<rp_image> img(RpImageWin32::fromHBITMAP(imgClass));
@@ -192,5 +193,5 @@ HBITMAP CreateThumbnailNoAlpha::rescaleImgClass(const HBITMAP &imgClass, const I
 	const SIZE win_sz = {sz.width, sz.height};
 	return RpImageWin32::toHBITMAP(img.get(),
 		LibWin32Common::GetSysColor_ARGB32(COLOR_WINDOW),
-		win_sz, true);
+		win_sz, (method == ScalingMethod::Nearest));
 }

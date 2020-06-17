@@ -358,6 +358,27 @@ skip_image_check:
 		return RPCT_SOURCE_FILE_ERROR;
 	}
 
+	if (imgpf & RomData::IMGPF_RESCALE_256to320_512to640) {
+		// If the image width is 256 or 512, rescale to 320 or 640.
+		int scaleW = 0;
+		switch (pOutParams->fullSize.width) {
+			case 256:
+				scaleW = 320;
+				break;
+			case 512:
+				scaleW = 640;
+				break;
+			default:
+				break;
+		}
+		if (scaleW != 0) {
+			pOutParams->fullSize.width = scaleW;
+			ImgClass scaled_img = rescaleImgClass(pOutParams->retImg, pOutParams->fullSize);
+			freeImgClass(pOutParams->retImg);
+			pOutParams->retImg = scaled_img;
+		}
+	}
+
 	// TODO: If image is larger than req_size, resize down.
 	if (imgpf & RomData::IMGPF_RESCALE_NEAREST) {
 		// TODO: User configuration.
