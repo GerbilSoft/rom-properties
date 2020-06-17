@@ -630,8 +630,16 @@ string SNESPrivate::getGameID(bool doFake) const
 	};
 	if (romType == ROM_BSX) {
 		// Separate BS-X titles from regular SNES titles.
-		prefix = "BSX-";
-		suffix = "-JPN";
+		// NOTE: This originally had a fake "BSX-" and "-JPN"
+		// prefix and suffix, but we're now only using this
+		// if the game ID is being used instead of the title.
+		if (id4[0] != '\0') {
+			prefix = "BSX-";
+			suffix = "-JPN";
+		} else {
+			prefix = "";
+			suffix = "";
+		}
 	} else if (region < ARRAY_SIZE(region_ps)) {
 		prefix = region_ps[region].prefix;
 		suffix = region_ps[region].suffix;
