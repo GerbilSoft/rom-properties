@@ -18,6 +18,7 @@
   * SNES: Significantly improved detection for ROM images with headers that
     don't quite match the specification. Added SPC7110 and other custom chip
     detection.
+  * SNES: Added metadata properties.
 
 * Bug fixes:
   * WiiWAD: Fix DLC icons no longer working after updating CBCReader to update

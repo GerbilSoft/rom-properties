@@ -87,7 +87,7 @@ button.
 |           System          | Properties Tab | Metadata | Internal Images | External Scans |
 |:-------------------------:|:--------------:|:--------:|:---------------:|:--------------:|
 | NES                       |       Yes      |    No    |       N/A       |       No       |
-| Super NES                 |       Yes      |    No    |       N/A       |      Title     |
+| Super NES                 |       Yes      |    Yes   |       N/A       |      Title     |
 | Microsoft Xbox (XBE)      |       Yes      |    Yes   |       Icon      |       No       |
 | Microsoft Xbox 360 (XEX)  |       Yes      |    Yes   |       Icon      |       No       |
 | Microsoft Xbox 360 (STFS) |       Yes      |    Yes   |       Icon      |       No       |

@@ -1193,7 +1193,7 @@ int DMG::loadMetaData(void)
 
 	// Create the metadata object.
 	d->metaData = new RomMetaData();
-	d->metaData->reserve(1);	// Maximum of 1 metadata property.
+	d->metaData->reserve(2);	// Maximum of 2 metadata properties.
 
 	// DMG ROM header
 	//const DMG_RomHeader *const romHeader = &d->romHeader;

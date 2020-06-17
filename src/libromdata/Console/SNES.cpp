@@ -87,6 +87,12 @@ class SNESPrivate : public RomDataPrivate
 		string getROMTitle(void) const;
 
 		/**
+		 * Get the publisher.
+		 * @return Publisher, or "Unknown (xxx)" if unknown.
+		 */
+		string getPublisher(void) const;
+
+		/**
 		 * Is a character a valid game ID character?
 		 * @return True if it is; false if it isn't.
 		 */
@@ -496,6 +502,50 @@ string SNESPrivate::getROMTitle(void) const
 		s_title += static_cast<char>(romHeader.snes.rom_mapping);
 	}
 	return s_title;
+}
+
+/**
+ * Get the publisher.
+ * @return Publisher, or "Unknown (xxx)" if unknown.
+ */
+string SNESPrivate::getPublisher(void) const
+{
+	const char* publisher;
+	string s_publisher;
+
+	// NOTE: SNES and BS-X have the same addresses for both publisher codes.
+	// Hence, we only need to check SNES.
+
+	// Publisher.
+	if (romHeader.snes.old_publisher_code == 0x33) {
+		// New publisher code.
+		publisher = NintendoPublishers::lookup(romHeader.snes.ext.new_publisher_code);
+		if (publisher) {
+			s_publisher = publisher;
+		} else {
+			if (ISALNUM(romHeader.snes.ext.new_publisher_code[0]) &&
+			    ISALNUM(romHeader.snes.ext.new_publisher_code[1]))
+			{
+				s_publisher = rp_sprintf(C_("SNES", "Unknown (%.2s)"),
+					romHeader.snes.ext.new_publisher_code);
+			} else {
+				s_publisher = rp_sprintf(C_("SNES", "Unknown (%02X %02X)"),
+					static_cast<uint8_t>(romHeader.snes.ext.new_publisher_code[0]),
+					static_cast<uint8_t>(romHeader.snes.ext.new_publisher_code[1]));
+			}
+		}
+	} else {
+		// Old publisher code.
+		publisher = NintendoPublishers::lookup_old(romHeader.snes.old_publisher_code);
+		if (publisher) {
+			s_publisher = publisher;
+		} else {
+			s_publisher = rp_sprintf(C_("RomData", "Unknown (%02X)"),
+				romHeader.snes.old_publisher_code);
+		}
+	}
+
+	return s_publisher;
 }
 
 /**
@@ -1146,20 +1196,12 @@ int SNES::loadFieldData(void)
 	};
 
 	string cart_hw;
-	const char *publisher = nullptr;
 	uint8_t rom_mapping;
 
 	// Get the field data based on ROM type.
 	switch (d->romType) {
 		case SNESPrivate::ROM_SNES: {
 			// Super NES / Super Famicom ROM image.
-
-			// Publisher.
-			if (romHeader->snes.old_publisher_code == 0x33) {
-				publisher = NintendoPublishers::lookup(romHeader->snes.ext.new_publisher_code);
-			} else {
-				publisher = NintendoPublishers::lookup_old(romHeader->snes.old_publisher_code);
-			}
 
 			// ROM mapping.
 			rom_mapping = d->getSnesRomMapping(romHeader);
@@ -1209,11 +1251,6 @@ int SNES::loadFieldData(void)
 		case SNESPrivate::ROM_BSX: {
 			// Satellaview BS-X ROM image.
 
-			// Publisher.
-			// NOTE: Old publisher code is always 0x33 or 0x00,
-			// so use the new publisher code.
-			publisher = NintendoPublishers::lookup(romHeader->bsx.ext.new_publisher_code);
-
 			// ROM mapping.
 			rom_mapping = romHeader->bsx.rom_mapping;
 
@@ -1242,9 +1279,7 @@ int SNES::loadFieldData(void)
 	}
 
 	// Publisher
-	// TODO: Print the publisher code if the lookup returns nullptr.
-	d->fields->addField_string(C_("RomData", "Publisher"),
-		publisher ? publisher : C_("RomData", "Unknown"));
+	d->fields->addField_string(C_("RomData", "Publisher"), d->getPublisher());
 
 	// ROM mapping
 	// NOTE: Not translatable!
@@ -1437,6 +1472,45 @@ int SNES::loadFieldData(void)
 
 	// Finished reading the field data.
 	return static_cast<int>(d->fields->count());
+}
+
+/**
+ * Load metadata properties.
+ * Called by RomData::metaData() if the field data hasn't been loaded yet.
+ * @return Number of metadata properties read on success; negative POSIX error code on error.
+ */
+int SNES::loadMetaData(void)
+{
+	RP_D(SNES);
+	if (d->metaData != nullptr) {
+		// Metadata *has* been loaded...
+		return 0;
+	} else if (!d->file) {
+		// File isn't open.
+		return -EBADF;
+	} else if (!d->isValid || d->romType < 0) {
+		// Unknown ROM image type.
+		return -EIO;
+	}
+
+	// Create the metadata object.
+	d->metaData = new RomMetaData();
+	d->metaData->reserve(2);	// Maximum of 2 metadata property.
+
+	// SNES ROM header
+	//const SNES_RomHeader *const romHeader = &d->romHeader;
+
+	// Title
+	string s_title = d->getROMTitle();
+	if (!s_title.empty()) {
+		d->metaData->addMetaData_string(Property::Title, s_title);
+	}
+
+	// Publisher
+	d->metaData->addMetaData_string(Property::Publisher, d->getPublisher());
+
+	// Finished reading the metadata.
+	return static_cast<int>(d->metaData->count());
 }
 
 /**
