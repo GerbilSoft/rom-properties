@@ -40,9 +40,10 @@ class SNESPrivate : public RomDataPrivate
 		 * Get the SNES ROM mapping and validate it.
 		 * @param romHeader	[in] SNES/SFC ROM header to check.
 		 * @param pIsHiROM	[out,opt] Set to true if the valid ROM mapping byte is HiROM.
+		 * @param pHasExtraChr	[out,opt] Set to true if the title extends into the mapping byte.
 		 * @return SNES ROM mapping, or 0 if not valid.
 		 */
-		static uint8_t getSnesRomMapping(const SNES_RomHeader *romHeader, bool *pIsHiROM = nullptr);
+		static uint8_t getSnesRomMapping(const SNES_RomHeader *romHeader, bool *pIsHiROM = nullptr, bool *pHasExtraChr = nullptr);
 
 		/**
 		 * Is the specified SNES/SFC ROM header valid?
@@ -117,12 +118,14 @@ SNESPrivate::SNESPrivate(SNES *q, IRpFile *file)
  * Get the SNES ROM mapping and validate it.
  * @param romHeader	[in] SNES/SFC ROM header to check.
  * @param pIsHiROM	[out,opt] Set to true if the valid ROM mapping byte is HiROM.
+ * @param pHasExtraChr	[out,opt] Set to true if the title extends into the mapping byte.
  * @return SNES ROM mapping, or 0 if not valid.
  */
-uint8_t SNESPrivate::getSnesRomMapping(const SNES_RomHeader *romHeader, bool *pIsHiROM)
+uint8_t SNESPrivate::getSnesRomMapping(const SNES_RomHeader *romHeader, bool *pIsHiROM, bool *pHasExtraChr)
 {
 	uint8_t rom_mapping = romHeader->snes.rom_mapping;
 	bool isHiROM = false;
+	bool hasExtraChr = false;
 
 	switch (rom_mapping) {
 		case SNES_ROMMAPPING_LoROM:
@@ -148,6 +151,7 @@ uint8_t SNESPrivate::getSnesRomMapping(const SNES_RomHeader *romHeader, bool *pI
 			if (romHeader->snes.title[20] == 'I') {
 				// Assume this ROM is valid.
 				// TODO: Is this FastROM?
+				hasExtraChr = true;
 				rom_mapping = SNES_ROMMAPPING_LoROM;
 				break;
 			}
@@ -158,6 +162,7 @@ uint8_t SNESPrivate::getSnesRomMapping(const SNES_RomHeader *romHeader, bool *pI
 			// - Super Adventure Island (U)
 			if (romHeader->snes.title[20] == 'N') {
 				// Assume this ROM is valid.
+				hasExtraChr = true;
 				rom_mapping = SNES_ROMMAPPING_LoROM;
 				break;
 			}
@@ -172,6 +177,7 @@ uint8_t SNESPrivate::getSnesRomMapping(const SNES_RomHeader *romHeader, bool *pI
 			{
 				// Assume this ROM is valid.
 				// TODO: Is this FastROM?
+				hasExtraChr = true;
 				rom_mapping = SNES_ROMMAPPING_LoROM;
 				break;
 			}
@@ -184,6 +190,7 @@ uint8_t SNESPrivate::getSnesRomMapping(const SNES_RomHeader *romHeader, bool *pI
 			if (romHeader->snes.title[20] == 'L') {
 				// Assume this ROM is valid.
 				// TODO: Is this FastROM?
+				hasExtraChr = true;
 				rom_mapping = SNES_ROMMAPPING_LoROM;
 				break;
 			}
@@ -195,6 +202,7 @@ uint8_t SNESPrivate::getSnesRomMapping(const SNES_RomHeader *romHeader, bool *pI
 			if (romHeader->snes.title[20] == 'O') {
 				// Assume this ROM is valid.
 				// TODO: Is this FastROM?
+				hasExtraChr = true;
 				rom_mapping = SNES_ROMMAPPING_LoROM;
 				break;
 			}
@@ -206,6 +214,7 @@ uint8_t SNESPrivate::getSnesRomMapping(const SNES_RomHeader *romHeader, bool *pI
 			if (romHeader->snes.title[20] == 'I') {
 				// Assume this ROM is valid.
 				// TODO: Is this FastROM?
+				hasExtraChr = true;
 				rom_mapping = SNES_ROMMAPPING_LoROM;
 				break;
 			}
@@ -217,6 +226,7 @@ uint8_t SNESPrivate::getSnesRomMapping(const SNES_RomHeader *romHeader, bool *pI
 			if (romHeader->snes.title[20] == 'E') {
 				// Assume this ROM is valid.
 				// TODO: Is this FastROM?
+				hasExtraChr = true;
 				rom_mapping = SNES_ROMMAPPING_LoROM;
 				break;
 			}
@@ -228,6 +238,7 @@ uint8_t SNESPrivate::getSnesRomMapping(const SNES_RomHeader *romHeader, bool *pI
 			if (romHeader->snes.title[20] == 'R') {
 				// Assume this ROM is valid.
 				// TODO: Is this FastROM?
+				hasExtraChr = true;
 				rom_mapping = SNES_ROMMAPPING_LoROM;
 				break;
 			}
@@ -241,6 +252,9 @@ uint8_t SNESPrivate::getSnesRomMapping(const SNES_RomHeader *romHeader, bool *pI
 
 	if (pIsHiROM) {
 		*pIsHiROM = isHiROM;
+	}
+	if (pHasExtraChr) {
+		*pHasExtraChr = hasExtraChr;
 	}
 	return rom_mapping;
 }
@@ -429,14 +443,17 @@ string SNESPrivate::getROMTitle(void) const
 	// TODO: Remove leading spaces? (Capcom NFL Football; symlinked on the server for now.)
 
 	bool doSJIS = false;
+	bool hasExtraChr = false;
 	const char *title;
 	size_t len;
 	switch (romType) {
-		case ROM_SNES:
+		case ROM_SNES: {
 			doSJIS = (romHeader.snes.destination_code == SNES_DEST_JAPAN);
 			title = romHeader.snes.title;
 			len = sizeof(romHeader.snes.title);
+			getSnesRomMapping(&romHeader, nullptr, &hasExtraChr);
 			break;
+		}
 		case ROM_BSX:
 			doSJIS = true;
 			title = romHeader.bsx.title;
@@ -445,6 +462,8 @@ string SNESPrivate::getROMTitle(void) const
 		default:
 			// Should not get here...
 			assert(!"Invalid ROM type.");
+			title = romHeader.snes.title;
+			len = sizeof(romHeader.snes.title);
 			break;
 	}
 
@@ -471,6 +490,10 @@ string SNESPrivate::getROMTitle(void) const
 		s_title = cp1252_sjis_to_utf8(title, static_cast<int>(len));
 	} else {
 		s_title = cp1252_to_utf8(title, static_cast<int>(len));
+	}
+	if (hasExtraChr) {
+		// Add the mapping byte as if it's an ASCII character.
+		s_title += static_cast<char>(romHeader.snes.rom_mapping);
 	}
 	return s_title;
 }
@@ -1069,7 +1092,7 @@ uint32_t SNES::imgpf(ImageType imageType) const
 	switch (imageType) {
 		case IMG_EXT_TITLE_SCREEN:
 			// Rescaling is required: 256->320, 512->640
-			ret = IMGPF_RESCALE_256to320_512to640
+			ret = IMGPF_RESCALE_256to320_512to640;
 			break;
 
 		default:
