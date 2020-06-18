@@ -1393,7 +1393,7 @@ int DMG::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
 		// Special cases for ROM images with identical titles.
 		struct DmgSpecialCase_t {
 			uint8_t flags;
-			char title[16];
+			char title[17];
 			char publisher[3];
 		};
 		static const DmgSpecialCase_t dmgSpecialCases[] = {
@@ -1409,7 +1409,6 @@ int DMG::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
 			// CGB; Non-JP
 			{DMG_CHECK_REGION | DMG_REGION_OTHER | DMG_IS_CGB,	"BUGS BUNNY", ""},
 			{DMG_CHECK_REGION | DMG_REGION_OTHER | DMG_IS_CGB,	"COOL HAND", ""},
-			{DMG_CHECK_REGION | DMG_REGION_OTHER | DMG_IS_CGB,	"GB SMART CARD", ""},
 			{DMG_CHECK_REGION | DMG_REGION_OTHER | DMG_IS_CGB,	"HARVEST-MOON GB", ""},
 			{DMG_CHECK_REGION | DMG_REGION_OTHER | DMG_IS_CGB,	"SHADOWGATE CLAS", ""},
 			{DMG_CHECK_REGION | DMG_REGION_OTHER | DMG_IS_CGB,	"SHANGHAI POCKET", ""},
@@ -1424,6 +1423,15 @@ int DMG::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
 
 			// Non-CGB; no region check.
 			{0, "TOM AND JERRY", ""},
+
+			// Unlicensed DMG titles.
+			{DMG_CHECK_REGION | DMG_REGION_JP,			"MENU", "00"},
+			{DMG_CHECK_REGION | DMG_REGION_JP,			"TEST", "00"},
+			{DMG_CHECK_REGION | DMG_REGION_OTHER,			"SGBPACK", "01"},
+
+			// Unlicensed CGB titles.
+			{DMG_CHECK_REGION | DMG_REGION_OTHER | DMG_IS_CGB,	"GB SMART CARD", ""},
+			{DMG_CHECK_REGION | DMG_REGION_JP | DMG_IS_CGB,		"DIGIMON 5", "MK"},
 
 			{0, "", ""}
 		};
@@ -1479,6 +1487,9 @@ int DMG::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
 
 			// F-1 Racing Championship (E) - slightly different copyright text on CGB
 			"AEQP41",
+
+			// Pokémon Crystal (U) - "Pokémon 2004" hack has the same game ID.
+			"BYTE01",
 
 			""
 		};
