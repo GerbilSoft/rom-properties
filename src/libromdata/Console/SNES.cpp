@@ -1561,17 +1561,14 @@ int SNES::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
 	} else if (d->romHeader.snes.destination_code < ARRAY_SIZE(RegionCode_tbl)) {
 		// SNES region code is in range.
 		region_code[0] = RegionCode_tbl[d->romHeader.snes.destination_code];
-	} else {
+	}
+
+	if (region_code[0] == '\0') {
 		// Unable to determine the region code.
 		// Assume a default value.
 		region_code[0] = 'U';
 		region_code[1] = 'n';
 		region_code[2] = 'k';
-	}
-
-	if (region_code[0] == '\0') {
-		// Invalid region code.
-		return -ENOENT;
 	}
 
 	// Get the game ID.
