@@ -1,5 +1,5 @@
 # inih: Simple .INI file parser in C
-PROJECT(inih VERSION 47 LANGUAGES C)
+PROJECT(inih VERSION 51 LANGUAGES C)
 
 # Sources.
 SET(inih_SRCS ini.c)

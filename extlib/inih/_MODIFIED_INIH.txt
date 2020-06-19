@@ -1,9 +1,9 @@
-This copy of inih-r47 is a modified version of the original.
+This copy of inih-r51 is a modified version of the original.
 
 commit 75fe6b1a03d99a9728b9924f9af30729e51357c2
-Make INIReader not crash when INI_CALL_HANDLER_ON_NEW_SECTION enabled (name NULL)
+Fix #107 (ugh, I thought changing from strncpy was a bad idea)
 
-Tag: r47 (+1 commit)
+Tag: r51
 
 The following changes have been made to the original:
 
@@ -13,5 +13,7 @@ The following changes have been made to the original:
   they work properly if compiling with 32-bit MSVC using /Gz.
   (default stdcall)
 
-To obtain the original inih-r47, visit:
+- The Meson build scripts have been removed.
+
+To obtain the original inih-r51, visit:
 https://github.com/benhoyt/inih
