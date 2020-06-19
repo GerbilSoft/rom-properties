@@ -1,5 +1,12 @@
-PROJECT(rp-download)
-# Online downloader program for external images.
+# Online downloader program for external images
+CMAKE_MINIMUM_REQUIRED(VERSION 3.0)
+PROJECT(rp-download LANGUAGES C CXX)
+
+IF(POLICY CMP0063)
+	# CMake 3.3: Enable symbol visibility presets for all
+	# target types, including static libraries and executables.
+	CMAKE_POLICY(SET CMP0063 NEW)
+ENDIF(POLICY CMP0063)
 
 # Check for an xattr function.
 INCLUDE(CheckSymbolExists)

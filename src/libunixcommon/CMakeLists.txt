@@ -1,5 +1,17 @@
-# Unix common code.
-PROJECT(libunixcommon)
+# Unix and Unix-like systems common code
+CMAKE_MINIMUM_REQUIRED(VERSION 3.0)
+IF(APPLE)
+	SET(UNIX_COMMON_LANG CXX OBJC)
+ELSE(APPLE)
+	SET(UNIX_COMMON_LANG C CXX)
+ENDIF(APPLE)
+PROJECT(libunixcommon LANGUAGES ${UNIX_COMMON_LANG})
+
+IF(POLICY CMP0063)
+	# CMake 3.3: Enable symbol visibility presets for all
+	# target types, including static libraries and executables.
+	CMAKE_POLICY(SET CMP0063 NEW)
+ENDIF(POLICY CMP0063)
 
 # Qt5 requires "-fpic -fPIC" due to reduced relocations.
 # This is also needed in order to link the static library

@@ -1,4 +1,3 @@
-PROJECT(libmspack C)
 # Minimal version of libmspack from Xenia.
 # We have to use our own version because the standard version
 # doesn't export the LZX symbols directly.
@@ -7,6 +6,7 @@ PROJECT(libmspack C)
 # - https://github.com/xenia-project/xenia/tree/master/third_party/mspack
 # - https://github.com/xenia-project/xenia/blob/master/src/xenia/cpu/lzx.cc
 # - https://github.com/xenia-project/xenia/blob/master/src/xenia/cpu/lzx.h
+PROJECT(libmspack C)
 
 # Configuration.
 INCLUDE(CheckIncludeFiles)

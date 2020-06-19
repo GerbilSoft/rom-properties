@@ -1,4 +1,12 @@
-PROJECT(librpfile)
+# rom-properties file handling library
+CMAKE_MINIMUM_REQUIRED(VERSION 3.0)
+PROJECT(librpfile LANGUAGES CXX)
+
+IF(POLICY CMP0063)
+	# CMake 3.3: Enable symbol visibility presets for all
+	# target types, including static libraries and executables.
+	CMAKE_POLICY(SET CMP0063 NEW)
+ENDIF(POLICY CMP0063)
 
 # Check for C library functions.
 IF(NOT WIN32)

@@ -1,4 +1,12 @@
-PROJECT(rp-thumbnailer-dbus)
+# D-Bus Thumbnailer for rom-properties
+CMAKE_MINIMUM_REQUIRED(VERSION 3.0)
+PROJECT(thumbnailer-dbus LANGUAGES C CXX)
+
+IF(POLICY CMP0063)
+	# CMake 3.3: Enable symbol visibility presets for all
+	# target types, including static libraries and executables.
+	CMAKE_POLICY(SET CMP0063 NEW)
+ENDIF(POLICY CMP0063)
 
 # Find packages.
 FIND_PACKAGE(GLib2 ${REQUIRE_XFCE} 2.26.0)

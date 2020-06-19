@@ -1,10 +1,10 @@
-PROJECT(PowerVR CXX)
 # PowerVR Texture Compression decompressor from the PowerVR Native SDK.
 # Copyright (c) Imagination Technologies Ltd.
 # Licensed under the MIT License.
 # References:
 # - PowerVR commit: c1605c99281797e5cd4c8439e1bc679706bbb311
 # - https://github.com/powervr-graphics/Native_SDK
+PROJECT(PowerVR LANGUAGES CXX)
 
 # Sources.
 SET(libpvrtc_SRCS PVRTDecompress.cpp)
