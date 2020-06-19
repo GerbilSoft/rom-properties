@@ -158,6 +158,7 @@ class NCCHReaderPrivate
 
 		// Are we using debug keys?
 		bool isDebug;
+#endif /* ENABLE_DECRYPTION */
 
 		/**
 		 * Close the file and/or IDiscReader.
@@ -176,7 +177,6 @@ class NCCHReaderPrivate
 				q->m_file = nullptr;
 			}
 		}
-#endif /* ENABLE_DECRYPTION */
 };
 
 }
