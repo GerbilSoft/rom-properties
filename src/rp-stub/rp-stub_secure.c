@@ -55,8 +55,10 @@ int rp_stub_do_security_options(bool config)
 		SCMP_SYS(mprotect), SCMP_SYS(munmap),
 		SCMP_SYS(open),		// Ubuntu 16.04
 		SCMP_SYS(openat),	// glibc-2.31
-#if defined(__SNR_openat2) || defined(__NR_openat2)
+#if defined(__SNR_openat2)
 		SCMP_SYS(openat2),	// Linux 5.6
+#elif defined(__NR_openat2)
+		__NR_openat2,		// Linux 5.6
 #endif /* __SNR_openat2 || __NR_openat2 */
 #if defined(__SNR_prlimit) || defined(__NR_prlimit)
 		SCMP_SYS(prlimit),

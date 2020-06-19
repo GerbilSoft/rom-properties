@@ -54,8 +54,10 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 		SCMP_SYS(lseek), SCMP_SYS(_llseek),
 		SCMP_SYS(open),		// Ubuntu 16.04
 		SCMP_SYS(openat),	// glibc-2.31
-#if defined(__SNR_openat2) || defined(__NR_openat2)
+#if defined(__SNR_openat2)
 		SCMP_SYS(openat2),	// Linux 5.6
+#elif defined(__NR_openat2)
+		__NR_openat2,		// Linux 5.6
 #endif /* __SNR_openat2 || __NR_openat2 */
 
 		// Google Test

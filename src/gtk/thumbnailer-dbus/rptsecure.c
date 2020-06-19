@@ -60,8 +60,10 @@ int rpt_do_security_options(void)
 		SCMP_SYS(mprotect),	// iconv_open()
 		SCMP_SYS(open),		// Ubuntu 16.04
 		SCMP_SYS(openat),	// glibc-2.31
-#if defined(__SNR_openat2) || defined(__NR_openat2)
+#if defined(__SNR_openat2)
 		SCMP_SYS(openat2),	// Linux 5.6
+#elif defined(__NR_openat2)
+		__NR_openat2,		// Linux 5.6
 #endif /* __SNR_openat2 || __NR_openat2 */
 		SCMP_SYS(readlink),	// realpath() [LibRpBase::FileSystem::resolve_symlink()]
 		SCMP_SYS(stat), SCMP_SYS(stat64),	// LibUnixCommon::isWritableDirectory()
