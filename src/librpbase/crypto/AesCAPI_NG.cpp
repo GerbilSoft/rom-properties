@@ -432,7 +432,7 @@ int AesCAPI_NG::setIV(const uint8_t *RESTRICT pIV, size_t size)
 	} else if (!d->hBcryptDll || !d->hAesAlg) {
 		// Algorithm is not available.
 		return -EBADF;
-	} else if (d->chainingMode < ChainingMode::CBC || d->chainingMode >= CTRChainingMode::Max) {
+	} else if (d->chainingMode < ChainingMode::CBC || d->chainingMode >= ChainingMode::Max) {
 		// This chaining mode doesn't have an IV or counter.
 		return -EINVAL;
 	}
