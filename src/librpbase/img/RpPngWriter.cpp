@@ -217,7 +217,7 @@ class RpPngWriterPrivate
 			cache_t()
 				: width(0)
 				, height(0)
-				, format(rp_image::FORMAT_NONE)
+				, format(rp_image::Format::None)
 				, palette_len(0)
 				, palette(nullptr)
 			{
@@ -232,7 +232,7 @@ class RpPngWriterPrivate
 				if (!img) {
 					this->width = 0;
 					this->height = 0;
-					this->format = rp_image::FORMAT_NONE;
+					this->format = rp_image::Format::None;
 					this->palette_len = 0;
 					this->palette = nullptr;
 #ifdef PNG_sBIT_SUPPORTED
@@ -245,7 +245,7 @@ class RpPngWriterPrivate
 				this->width = img->width();
 				this->height = img->height();
 				this->format = img->format();
-				if (this->format == rp_image::FORMAT_CI8) {
+				if (this->format == rp_image::Format::CI8) {
 					// Get the palette.
 					this->palette_len = img->palette_len();
 					this->palette = img->palette();
@@ -364,7 +364,7 @@ void RpPngWriterPrivate::init(IRpFile *file, int width, int height, rp_image::Fo
 {
 	this->img = nullptr;
 	if (!file || width <= 0 || height <= 0 ||
-	    (format != rp_image::FORMAT_CI8 && format != rp_image::FORMAT_ARGB32))
+	    (format != rp_image::Format::CI8 && format != rp_image::Format::ARGB32))
 	{
 		// Invalid parameters.
 		lastError = EINVAL;
@@ -673,8 +673,8 @@ void PNGCAPI RpPngWriterPrivate::png_io_IRpFile_flush(png_structp png_ptr)
  */
 int RpPngWriterPrivate::write_CI8_palette(void)
 {
-	assert(cache.format == rp_image::FORMAT_CI8);
-	if (unlikely(cache.format != rp_image::FORMAT_CI8)) {
+	assert(cache.format == rp_image::Format::CI8);
+	if (unlikely(cache.format != rp_image::Format::CI8)) {
 		// Not a CI8 image.
 		return -EINVAL;
 	}
@@ -764,7 +764,7 @@ int RpPngWriterPrivate::write_IDAT(const png_byte *const *row_pointers, bool is_
 		png_set_bgr(png_ptr);
 	}
 
-	if (cache.skip_alpha && cache.format == rp_image::FORMAT_ARGB32) {
+	if (cache.skip_alpha && cache.format == rp_image::Format::ARGB32) {
 		// Need to skip the alpha bytes.
 		// Assuming 'after' on LE, 'before' on BE.
 #if SYS_BYTEORDER == SYS_LIL_ENDIAN
@@ -1133,7 +1133,7 @@ int RpPngWriter::write_IHDR(void)
 
 	// Write the PNG header.
 	switch (d->cache.format) {
-		case rp_image::FORMAT_ARGB32: {
+		case rp_image::Format::ARGB32: {
 			// TODO: Use PNG_COLOR_TYPE_GRAY and/or PNG_COLOR_TYPE_GRAY_ALPHA
 			// if sBIT.gray > 0?
 #ifdef PNG_sBIT_SUPPORTED
@@ -1150,7 +1150,7 @@ int RpPngWriter::write_IHDR(void)
 			break;
 		}
 
-		case rp_image::FORMAT_CI8:
+		case rp_image::Format::CI8:
 			png_set_IHDR(d->png_ptr, d->info_ptr,
 					d->cache.width, d->cache.height, 8,
 					PNG_COLOR_TYPE_PALETTE,

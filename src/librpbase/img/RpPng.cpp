@@ -251,8 +251,8 @@ void RpPngPrivate::Read_CI8_Palette(png_structp png_ptr, png_infop info_ptr,
 	png_bytep trans;
 	int num_palette, num_trans;
 
-	assert(img->format() == rp_image::FORMAT_CI8);
-	if (img->format() != rp_image::FORMAT_CI8)
+	assert(img->format() == rp_image::Format::CI8);
+	if (img->format() != rp_image::Format::CI8)
 		return;
 
 	// rp_image's palette data.
@@ -391,7 +391,7 @@ rp_image *RpPngPrivate::loadPng(png_structp png_ptr, png_infop info_ptr)
 		case PNG_COLOR_TYPE_GRAY:
 			// Grayscale is handled as a 256-color image
 			// with a grayscale palette.
-			fmt = rp_image::FORMAT_CI8;
+			fmt = rp_image::Format::CI8;
 			if (bit_depth < 8) {
 				// Expand to 8-bit grayscale.
 				png_set_expand_gray_1_2_4_to_8(png_ptr);
@@ -401,7 +401,7 @@ rp_image *RpPngPrivate::loadPng(png_structp png_ptr, png_infop info_ptr)
 			// Grayscale+Alpha is handled as ARGB32.
 			// QImage, gdk-pixbuf, cairo, and GDI+ don't support IA8.
 			// TODO: Does this work with 1, 2, and 4-bit grayscale?
-			fmt = rp_image::FORMAT_ARGB32;
+			fmt = rp_image::Format::ARGB32;
 			png_set_gray_to_rgb(png_ptr);
 			break;
 		case PNG_COLOR_TYPE_PALETTE:
@@ -409,11 +409,11 @@ rp_image *RpPngPrivate::loadPng(png_structp png_ptr, png_infop info_ptr)
 				// Expand to 8-bit pixels.
 				png_set_packing(png_ptr);
 			}
-			fmt = rp_image::FORMAT_CI8;
+			fmt = rp_image::Format::CI8;
 			break;
 		case PNG_COLOR_TYPE_RGB:
 			// 24-bit RGB.
-			fmt = rp_image::FORMAT_ARGB32;
+			fmt = rp_image::Format::ARGB32;
 			if (png_get_valid(png_ptr, info_ptr, PNG_INFO_tRNS) == PNG_INFO_tRNS) {
 				// tRNS chunk is present. Use it as the alpha channel.
 				png_set_tRNS_to_alpha(png_ptr);
@@ -424,7 +424,7 @@ rp_image *RpPngPrivate::loadPng(png_structp png_ptr, png_infop info_ptr)
 			break;
 		case PNG_COLOR_TYPE_RGB_ALPHA:
 			// 32-bit ARGB.
-			fmt = rp_image::FORMAT_ARGB32;
+			fmt = rp_image::Format::ARGB32;
 			break;
 		default:
 			// Unsupported color type.
@@ -483,7 +483,7 @@ rp_image *RpPngPrivate::loadPng(png_structp png_ptr, png_infop info_ptr)
 	png_free(png_ptr, row_pointers);
 
 	// If CI8, read the palette.
-	if (fmt == rp_image::FORMAT_CI8) {
+	if (fmt == rp_image::Format::CI8) {
 		Read_CI8_Palette(png_ptr, info_ptr, color_type, img);
 	}
 

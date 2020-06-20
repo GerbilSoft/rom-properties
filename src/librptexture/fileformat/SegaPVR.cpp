@@ -1002,9 +1002,9 @@ rp_image *SegaPVRPrivate::svr_unswizzle_4or8(const rp_image *img_swz)
 	// Only CI8 formats are supported here.
 	assert(img_swz != nullptr);
 	assert(img_swz->isValid());
-	assert(img_swz->format() == rp_image::FORMAT_CI8);
+	assert(img_swz->format() == rp_image::Format::CI8);
 	if (!img_swz || !img_swz->isValid() ||
-	    img_swz->format() != rp_image::FORMAT_CI8)
+	    img_swz->format() != rp_image::Format::CI8)
 	{
 		return nullptr;
 	}
@@ -1104,9 +1104,9 @@ rp_image *SegaPVRPrivate::svr_unswizzle_16(const rp_image *img_swz)
 	// Only ARGB32 formats are supported here.
 	assert(img_swz != nullptr);
 	assert(img_swz->isValid());
-	assert(img_swz->format() == rp_image::FORMAT_ARGB32);
+	assert(img_swz->format() == rp_image::Format::ARGB32);
 	if (!img_swz || !img_swz->isValid() ||
-	    img_swz->format() != rp_image::FORMAT_ARGB32)
+	    img_swz->format() != rp_image::Format::ARGB32)
 	{
 		return nullptr;
 	}

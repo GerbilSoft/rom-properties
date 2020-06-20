@@ -94,7 +94,7 @@ HBITMAP RpImageWin32::toHBITMAP_mask(const rp_image *image)
 
 	// AND mask: Parse the original image.
 	switch (image->format()) {
-		case rp_image::FORMAT_CI8: {
+		case rp_image::Format::CI8: {
 			// Get the transparent color index.
 			int tr_idx = image->tr_idx();
 			if (tr_idx >= 0) {
@@ -141,7 +141,7 @@ HBITMAP RpImageWin32::toHBITMAP_mask(const rp_image *image)
 			break;
 		}
 
-		case rp_image::FORMAT_ARGB32: {
+		case rp_image::Format::ARGB32: {
 			// Find all pixels with a 0 alpha channel.
 			memset(pvBits, 0xFF, icon_sz);
 			uint8_t *dest = pvBits;
@@ -380,12 +380,12 @@ rp_image *RpImageWin32::fromHBITMAP(HBITMAP hBitmap)
 			assert(!"fromHBITMAP() doesn't support 8bpp yet.");
 			return nullptr;
 #if 0
-			format = rp_image::FORMAT_CI8;
+			format = rp_image::Format::CI8;
 			copy_len = bm.bmWidth;
 			break;
 #endif
 		case 32:
-			format = rp_image::FORMAT_ARGB32;
+			format = rp_image::Format::ARGB32;
 			copy_len = bm.bmWidth * 4;
 			break;
 		default:

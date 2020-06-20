@@ -16,9 +16,9 @@ namespace LibRpTexture {
 static inline int calc_stride(int width, rp_image::Format format)
 {
 	switch (format) {
-		case rp_image::FORMAT_CI8:
+		case rp_image::Format::CI8:
 			return ALIGN_BYTES(16, width);
-		case rp_image::FORMAT_ARGB32:
+		case rp_image::Format::ARGB32:
 			return ALIGN_BYTES(16, width * 4);
 		default:
 			// Invalid image format.
@@ -43,15 +43,15 @@ rp_image_backend::rp_image_backend(int width, int height, rp_image::Format forma
 	// These represent empty images. RpGdiplusBackend sets these
 	// initially when constructing an rp_image_backend from an
 	// existing Gdiplus::Bitmap.
-	assert(width > 0 || format == rp_image::FORMAT_NONE);
+	assert(width > 0 || format == rp_image::Format::None);
 	assert(width <= 32768);
-	assert(height > 0 || format == rp_image::FORMAT_NONE);
+	assert(height > 0 || format == rp_image::Format::None);
 	assert(height <= 32768);
-	assert(format >= rp_image::FORMAT_NONE);
-	assert(format <= rp_image::FORMAT_ARGB32);
+	assert(format >= rp_image::Format::None);
+	assert(format <= rp_image::Format::ARGB32);
 	if (width < 0 || width > 32768 ||
 	    height < 0 || height > 32768 ||
-	    format < rp_image::FORMAT_NONE || format >= rp_image::FORMAT_MAX)
+	    format < rp_image::Format::None || format >= rp_image::Format::Max)
 	{
 		// Invalid values.
 		clear_properties();
@@ -61,7 +61,7 @@ rp_image_backend::rp_image_backend(int width, int height, rp_image::Format forma
 	// Calculate the stride.
 	// NOTE: If format == FORMAT_NONE, the subclass is
 	// managing width/height/format.
-	if (format != rp_image::FORMAT_NONE) {
+	if (format != rp_image::Format::None) {
 		stride = calc_stride(width, format);
 	}
 }
@@ -72,9 +72,9 @@ rp_image_backend::~rp_image_backend()
 bool rp_image_backend::isValid(void) const
 {
 	return (width > 0 && height > 0 && stride > 0 &&
-		format != rp_image::FORMAT_NONE &&
+		format != rp_image::Format::None &&
 		data() && data_len() > 0 &&
-		(format != rp_image::FORMAT_CI8 ||
+		(format != rp_image::Format::CI8 ||
 		 (palette() && palette_len() > 0)));
 }
 
@@ -87,7 +87,7 @@ void rp_image_backend::clear_properties(void)
 	this->width = 0;
 	this->height = 0;
 	this->stride = 0;
-	this->format = rp_image::FORMAT_NONE;
+	this->format = rp_image::Format::None;
 }
 
 /**
@@ -96,8 +96,8 @@ void rp_image_backend::clear_properties(void)
  */
 bool rp_image_backend::has_translucent_palette_entries(void) const
 {
-	assert(this->format == rp_image::FORMAT_CI8);
-	if (this->format != rp_image::FORMAT_CI8)
+	assert(this->format == rp_image::Format::CI8);
+	if (this->format != rp_image::Format::CI8)
 		return false;
 
 	const uint32_t *palette = this->palette();

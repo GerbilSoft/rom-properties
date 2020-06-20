@@ -517,7 +517,7 @@ const rp_image *XboxXPRPrivate::loadXboxXPR0Image(void)
 
 		// Assuming img is ARGB32, since we're converting it
 		// from either a 16-bit or 32-bit ARGB format.
-		rp_image *const imgunswz = new rp_image(width, height, rp_image::FORMAT_ARGB32);
+		rp_image *const imgunswz = new rp_image(width, height, rp_image::Format::ARGB32);
 		unswizzle_box(static_cast<const uint8_t*>(img->bits()),
 			width, height,
 			static_cast<uint8_t*>(imgunswz->bits()),

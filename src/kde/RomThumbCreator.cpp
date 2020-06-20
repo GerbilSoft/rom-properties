@@ -311,10 +311,10 @@ Q_DECL_EXPORT int rp_create_thumbnail(const char *source_file, const char *outpu
 	rp_image::Format format;
 	switch (outParams.retImg.format()) {
 		case QImage::Format_Indexed8:
-			format = rp_image::FORMAT_CI8;
+			format = rp_image::Format::CI8;
 			break;
 		case QImage::Format_ARGB32:
-			format = rp_image::FORMAT_ARGB32;
+			format = rp_image::Format::ARGB32;
 			break;
 		default:
 			// Unsupported...

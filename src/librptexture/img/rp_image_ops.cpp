@@ -62,7 +62,7 @@ rp_image *rp_image::dup(void) const
 	}
 
 	// If CI8, copy the palette.
-	if (format == rp_image::FORMAT_CI8) {
+	if (format == rp_image::Format::CI8) {
 		int entries = std::min(img->palette_len(), d->backend->palette_len());
 		uint32_t *const dest_pal = img->palette();
 		memcpy(dest_pal, d->backend->palette(), entries * sizeof(uint32_t));
@@ -85,11 +85,11 @@ rp_image *rp_image::dup(void) const
 rp_image *rp_image::dup_ARGB32(void) const
 {
 	RP_D(const rp_image);
-	if (d->backend->format == FORMAT_ARGB32) {
+	if (d->backend->format == Format::ARGB32) {
 		// Already in ARGB32.
 		// Do a direct dup().
 		return this->dup();
-	} else if (d->backend->format != FORMAT_CI8) {
+	} else if (d->backend->format != Format::CI8) {
 		// Only CI8->ARGB32 is supported right now.
 		return nullptr;
 	}
@@ -105,7 +105,7 @@ rp_image *rp_image::dup_ARGB32(void) const
 		return nullptr;
 	}
 
-	rp_image *img = new rp_image(width, height, FORMAT_ARGB32);
+	rp_image *img = new rp_image(width, height, Format::ARGB32);
 	if (!img->isValid()) {
 		// Image is invalid. Something went wrong.
 		delete img;
@@ -183,14 +183,14 @@ rp_image *rp_image::squared(void) const
 	// Image needs adjustment.
 	// TODO: Native 8bpp support?
 	unique_ptr<rp_image> tmp_rp_image;
-	if (d->backend->format != rp_image::FORMAT_ARGB32) {
+	if (d->backend->format != rp_image::Format::ARGB32) {
 		// Convert to ARGB32 first.
 		tmp_rp_image.reset(this->dup_ARGB32());
 	}
 
 	// Create the squared image.
 	const int max_dim = std::max(width, height);
-	rp_image *const sq_img = new rp_image(max_dim, max_dim, rp_image::FORMAT_ARGB32);
+	rp_image *const sq_img = new rp_image(max_dim, max_dim, rp_image::Format::ARGB32);
 	if (!sq_img->isValid()) {
 		// Could not allocate the image.
 		delete sq_img;
@@ -337,7 +337,7 @@ rp_image *rp_image::resized(int width, int height, Alignment alignment, uint32_t
 
 	// We want to copy the minimum of new vs. old width.
 	int row_bytes = std::min(width, orig_width);
-	if (format == rp_image::FORMAT_ARGB32) {
+	if (format == rp_image::Format::ARGB32) {
 		row_bytes *= sizeof(uint32_t);
 	}
 
@@ -383,7 +383,7 @@ rp_image *rp_image::resized(int width, int height, Alignment alignment, uint32_t
 
 				// If this is ARGB32, set the background color of the top half.
 				// TODO: Optimize this.
-				if (format == rp_image::FORMAT_ARGB32 && bgColor != 0x00000000) {
+				if (format == rp_image::Format::ARGB32 && bgColor != 0x00000000) {
 					for (unsigned int y = (height - orig_height) / 2; y > 0; y--) {
 						uint32_t *dest32 = reinterpret_cast<uint32_t*>(dest);
 						for (unsigned int x = width; x > 0; x--) {
@@ -402,7 +402,7 @@ rp_image *rp_image::resized(int width, int height, Alignment alignment, uint32_t
 
 				// If this is ARGB32, set the background color of the blank area.
 				// TODO: Optimize this.
-				if (format == rp_image::FORMAT_ARGB32 && bgColor != 0x00000000) {
+				if (format == rp_image::Format::ARGB32 && bgColor != 0x00000000) {
 					for (unsigned int y = (height - orig_height); y > 0; y--) {
 						uint32_t *dest32 = reinterpret_cast<uint32_t*>(dest);
 						for (unsigned int x = width; x > 0; x--) {
@@ -429,7 +429,7 @@ rp_image *rp_image::resized(int width, int height, Alignment alignment, uint32_t
 	}
 
 	// If the image is taller, we may need to clear the bottom section.
-	if (height > orig_height && format == rp_image::FORMAT_ARGB32) {
+	if (height > orig_height && format == rp_image::Format::ARGB32) {
 		switch (alignment & AlignVertical_Mask) {
 			default:
 			case AlignTop:
@@ -474,7 +474,7 @@ rp_image *rp_image::resized(int width, int height, Alignment alignment, uint32_t
 	}
 
 	// If CI8, copy the palette.
-	if (format == rp_image::FORMAT_CI8) {
+	if (format == rp_image::Format::CI8) {
 		int entries = std::min(img->palette_len(), d->backend->palette_len());
 		uint32_t *const dest_pal = img->palette();
 		memcpy(dest_pal, d->backend->palette(), entries * sizeof(uint32_t));
@@ -508,8 +508,8 @@ int rp_image::apply_chroma_key_cpp(uint32_t key)
 {
 	RP_D(rp_image);
 	rp_image_backend *const backend = d->backend;
-	assert(backend->format == FORMAT_ARGB32);
-	if (backend->format != FORMAT_ARGB32) {
+	assert(backend->format == Format::ARGB32);
+	if (backend->format != Format::ARGB32) {
 		// ARGB32 only.
 		return -EINVAL;
 	}

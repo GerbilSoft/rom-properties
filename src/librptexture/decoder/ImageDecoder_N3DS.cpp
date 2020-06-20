@@ -55,7 +55,7 @@ rp_image *fromN3DSTiledRGB565(int width, int height,
 		return nullptr;
 
 	// Create an rp_image.
-	rp_image *img = new rp_image(width, height, rp_image::FORMAT_ARGB32);
+	rp_image *img = new rp_image(width, height, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
 		delete img;
@@ -130,7 +130,7 @@ rp_image *fromN3DSTiledRGB565_A4(int width, int height,
 	const unsigned int tilesY = static_cast<unsigned int>(height / 8);
 
 	// Create an rp_image.
-	rp_image *img = new rp_image(width, height, rp_image::FORMAT_ARGB32);
+	rp_image *img = new rp_image(width, height, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
 		delete img;

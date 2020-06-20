@@ -366,7 +366,7 @@ G_MODULE_EXPORT int rp_create_thumbnail(const char *source_file, const char *out
 	// TODO: Verify channels, etc.?
 	unique_ptr<RpPngWriter> pngWriter(new RpPngWriter(output_file,
 		outParams.thumbSize.width, outParams.thumbSize.height,
-		rp_image::FORMAT_ARGB32));
+		rp_image::Format::ARGB32));
 	if (!pngWriter->isOpen()) {
 		// Could not open the PNG writer.
 		ret = RPCT_OUTPUT_FILE_FAILED;

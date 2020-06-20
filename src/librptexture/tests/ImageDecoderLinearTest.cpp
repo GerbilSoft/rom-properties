@@ -356,7 +356,7 @@ void ImageDecoderLinearTest::Validate_RpImage(
 {
 	ASSERT_TRUE(pImg->width() == 128);
 	ASSERT_TRUE(pImg->height() == 128);
-	ASSERT_TRUE(pImg->format() == rp_image::FORMAT_ARGB32);
+	ASSERT_TRUE(pImg->format() == rp_image::Format::ARGB32);
 
 	const int width = pImg->width();
 	const int height = pImg->height();

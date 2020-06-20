@@ -71,7 +71,7 @@ GdkPixbuf *GdkImageConv::rp_image_to_GdkPixbuf_ssse3(const rp_image *img)
 	const __m128i shuf_mask = _mm_setr_epi8(2,1,0,3, 6,5,4,7, 10,9,8,11, 14,13,12,15);
 
 	switch (img->format()) {
-		case rp_image::FORMAT_ARGB32: {
+		case rp_image::Format::ARGB32: {
 			// Copy the image data.
 			const uint32_t *img_buf = static_cast<const uint32_t*>(img->bits());
 			const int src_stride_adj = (img->stride() / sizeof(uint32_t)) - width;
@@ -117,7 +117,7 @@ GdkPixbuf *GdkImageConv::rp_image_to_GdkPixbuf_ssse3(const rp_image *img)
 			break;
 		}
 
-		case rp_image::FORMAT_CI8: {
+		case rp_image::Format::CI8: {
 			const uint32_t *src_pal = img->palette();
 			const int src_pal_len = img->palette_len();
 			assert(src_pal != nullptr);

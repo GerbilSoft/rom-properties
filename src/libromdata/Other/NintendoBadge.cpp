@@ -269,7 +269,7 @@ const rp_image *NintendoBadgePrivate::loadImage(int idx)
 		const unsigned int mb_row_bytes = badge_dims * sizeof(uint32_t);
 
 		// Badges are stored vertically, then horizontally.
-		img[idx] = new rp_image(badge_dims * mb_width, badge_dims * mb_height, rp_image::FORMAT_ARGB32);
+		img[idx] = new rp_image(badge_dims * mb_width, badge_dims * mb_height, rp_image::Format::ARGB32);
 		for (unsigned int y = 0; y < mb_height; y++) {
 			const unsigned int my = y*badge_dims;
 			for (unsigned int x = 0; x < mb_width; x++, start_addr += (0x2800+0xA00)) {

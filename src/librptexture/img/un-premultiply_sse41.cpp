@@ -58,8 +58,8 @@ int rp_image::un_premultiply_sse41(void)
 {
 	RP_D(const rp_image);
 	rp_image_backend *const backend = d->backend;
-	assert(backend->format == rp_image::FORMAT_ARGB32);
-	if (backend->format != rp_image::FORMAT_ARGB32) {
+	assert(backend->format == rp_image::Format::ARGB32);
+	if (backend->format != rp_image::Format::ARGB32) {
 		// Incorrect format...
 		return -1;
 	}

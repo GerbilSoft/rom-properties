@@ -55,12 +55,12 @@ class rp_image_private;
 class rp_image
 {
 	public:
-		enum Format {
-			FORMAT_NONE,		// No image.
-			FORMAT_CI8,		// Color index, 8-bit palette.
-			FORMAT_ARGB32,		// 32-bit ARGB.
+		enum class Format {
+			None,	// No image.
+			CI8,	// Color index, 8-bit palette.
+			ARGB32,	// 32-bit ARGB.
 
-			FORMAT_MAX		// End of Format.
+			Max
 		};
 
 		/**

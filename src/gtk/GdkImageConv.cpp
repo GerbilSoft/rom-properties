@@ -40,7 +40,7 @@ GdkPixbuf *GdkImageConv::rp_image_to_GdkPixbuf_cpp(const rp_image *img)
 	const int dest_stride_adj = (gdk_pixbuf_get_rowstride(pixbuf) / sizeof(*px_dest)) - width;
 
 	switch (img->format()) {
-		case rp_image::FORMAT_ARGB32: {
+		case rp_image::Format::ARGB32: {
 			// Copy the image data.
 			const uint32_t *img_buf = static_cast<const uint32_t*>(img->bits());
 			const int src_stride_adj = (img->stride() / sizeof(uint32_t)) - width;
@@ -73,7 +73,7 @@ GdkPixbuf *GdkImageConv::rp_image_to_GdkPixbuf_cpp(const rp_image *img)
 			break;
 		}
 
-		case rp_image::FORMAT_CI8: {
+		case rp_image::Format::CI8: {
 			const uint32_t *src_pal = img->palette();
 			const int src_pal_len = img->palette_len();
 			assert(src_pal != nullptr);

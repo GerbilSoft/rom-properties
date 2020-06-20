@@ -68,7 +68,7 @@ rp_image *fromPVRTC(int width, int height,
 	}
 
 	// Create an rp_image.
-	rp_image *const img = new rp_image(width, height, rp_image::FORMAT_ARGB32);
+	rp_image *const img = new rp_image(width, height, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
 		delete img;
@@ -139,7 +139,7 @@ rp_image *fromPVRTCII(int width, int height,
 	}
 
 	// Create an rp_image.
-	rp_image *const img = new rp_image(width, height, rp_image::FORMAT_ARGB32);
+	rp_image *const img = new rp_image(width, height, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
 		delete img;
