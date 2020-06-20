@@ -929,7 +929,7 @@ int KhronosKTX2::getFields(LibRpBase::RomFields *fields) const
 	if (vkFormat_str) {
 		fields->addField_string("vkFormat", vkFormat_str);
 	} else {
-		fields->addField_string_numeric("vkFormat", ktx2Header->vkFormat, RomFields::FB_HEX);
+		fields->addField_string_numeric("vkFormat", ktx2Header->vkFormat, RomFields::Base::Hex);
 	}
 
 	// # of layers (for texture arrays)

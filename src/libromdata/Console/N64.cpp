@@ -307,11 +307,11 @@ int N64::loadFieldData(void)
 
 	// Revision.
 	d->fields->addField_string_numeric(C_("RomData", "Revision"),
-		romHeader->revision, RomFields::FB_DEC, 2);
+		romHeader->revision, RomFields::Base::Dec, 2);
 
 	// Entry point.
 	d->fields->addField_string_numeric(C_("N64", "Entry Point"),
-		romHeader->entrypoint, RomFields::FB_HEX, 8, RomFields::STRF_MONOSPACE);
+		romHeader->entrypoint, RomFields::Base::Hex, 8, RomFields::STRF_MONOSPACE);
 
 	// OS version.
 	// TODO: ISALPHA(), or ISUPPER()?

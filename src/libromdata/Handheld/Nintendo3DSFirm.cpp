@@ -380,11 +380,11 @@ int Nintendo3DSFirm::loadFieldData(void)
 	// Entry Points
 	if (arm11_entrypoint != 0) {
 		d->fields->addField_string_numeric(C_("Nintendo3DSFirm", "ARM11 Entry Point"),
-			arm11_entrypoint, RomFields::FB_HEX, 8, RomFields::STRF_MONOSPACE);
+			arm11_entrypoint, RomFields::Base::Hex, 8, RomFields::STRF_MONOSPACE);
 	}
 	if (arm9_entrypoint != 0) {
 		d->fields->addField_string_numeric(C_("Nintendo3DSFirm", "ARM9 Entry Point"),
-			arm9_entrypoint, RomFields::FB_HEX, 8, RomFields::STRF_MONOSPACE);
+			arm9_entrypoint, RomFields::Base::Hex, 8, RomFields::STRF_MONOSPACE);
 	}
 
 	// Finished reading the field data.

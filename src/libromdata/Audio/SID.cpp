@@ -268,17 +268,17 @@ int SID::loadFieldData(void)
 	// Load address.
 	d->fields->addField_string_numeric(C_("SID", "Load Address"),
 		be16_to_cpu(sidHeader->loadAddress),
-		RomFields::FB_HEX, 4, RomFields::STRF_MONOSPACE);
+		RomFields::Base::Hex, 4, RomFields::STRF_MONOSPACE);
 
 	// Init address.
 	d->fields->addField_string_numeric(C_("SID", "Init Address"),
 		be16_to_cpu(sidHeader->initAddress),
-		RomFields::FB_HEX, 4, RomFields::STRF_MONOSPACE);
+		RomFields::Base::Hex, 4, RomFields::STRF_MONOSPACE);
 
 	// Play address.
 	d->fields->addField_string_numeric(C_("SID", "Play Address"),
 		be16_to_cpu(sidHeader->playAddress),
-		RomFields::FB_HEX, 4, RomFields::STRF_MONOSPACE);
+		RomFields::Base::Hex, 4, RomFields::STRF_MONOSPACE);
 
 	// Number of songs.
 	d->fields->addField_string_numeric(C_("RomData|Audio", "# of Songs"),

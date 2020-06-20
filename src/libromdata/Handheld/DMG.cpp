@@ -874,12 +874,12 @@ int DMG::loadFieldData(void)
 		// NOTE: Some titles use a different opcode instead of NOP.
 		const uint16_t entry_address = (romHeader->entry[2] | (romHeader->entry[3] << 8));
 		d->fields->addField_string_numeric(entry_point_title,
-			entry_address, RomFields::FB_HEX, 4, RomFields::STRF_MONOSPACE);
+			entry_address, RomFields::Base::Hex, 4, RomFields::STRF_MONOSPACE);
 	} else if (romHeader->entry[0] == 0xC3) {
 		// JP nnnn without a NOP.
 		const uint16_t entry_address = (romHeader->entry[1] | (romHeader->entry[2] << 8));
 		d->fields->addField_string_numeric(entry_point_title,
-			entry_address, RomFields::FB_HEX, 4, RomFields::STRF_MONOSPACE);
+			entry_address, RomFields::Base::Hex, 4, RomFields::STRF_MONOSPACE);
 	} else if (romHeader->entry[0] == 0x18) {
 		// JR nnnn
 		// Found in many homebrew ROMs.
@@ -888,7 +888,7 @@ int DMG::loadFieldData(void)
 		// Add displacement, plus 2.
 		const uint16_t entry_address = 0x100 + disp + 2;
 		d->fields->addField_string_numeric(entry_point_title,
-			entry_address, RomFields::FB_HEX, 4, RomFields::STRF_MONOSPACE);
+			entry_address, RomFields::Base::Hex, 4, RomFields::STRF_MONOSPACE);
 	} else {
 		d->fields->addField_string_hexdump(entry_point_title,
 			romHeader->entry, 4, RomFields::STRF_MONOSPACE);
@@ -979,7 +979,7 @@ int DMG::loadFieldData(void)
 
 	// Revision
 	d->fields->addField_string_numeric(C_("RomData", "Revision"),
-		romHeader->version, RomFields::FB_DEC, 2);
+		romHeader->version, RomFields::Base::Dec, 2);
 
 	// Header checksum.
 	// This is a checksum of ROM addresses 0x134-0x14D.

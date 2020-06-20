@@ -255,22 +255,22 @@ int GBS::loadFieldData(void)
 	// Load address.
 	d->fields->addField_string_numeric(C_("GBS", "Load Address"),
 		le16_to_cpu(gbsHeader->load_address),
-		RomFields::FB_HEX, 4, RomFields::STRF_MONOSPACE);
+		RomFields::Base::Hex, 4, RomFields::STRF_MONOSPACE);
 
 	// Init address.
 	d->fields->addField_string_numeric(C_("GBS", "Init Address"),
 		le16_to_cpu(gbsHeader->init_address),
-		RomFields::FB_HEX, 4, RomFields::STRF_MONOSPACE);
+		RomFields::Base::Hex, 4, RomFields::STRF_MONOSPACE);
 
 	// Play address.
 	d->fields->addField_string_numeric(C_("GBS", "Play Address"),
 		le16_to_cpu(gbsHeader->play_address),
-		RomFields::FB_HEX, 4, RomFields::STRF_MONOSPACE);
+		RomFields::Base::Hex, 4, RomFields::STRF_MONOSPACE);
 
 	// Play address.
 	d->fields->addField_string_numeric(C_("GBS", "Stack Pointer"),
 		le16_to_cpu(gbsHeader->stack_pointer),
-		RomFields::FB_HEX, 4, RomFields::STRF_MONOSPACE);
+		RomFields::Base::Hex, 4, RomFields::STRF_MONOSPACE);
 
 	// TODO: Timer modulo and control?
 

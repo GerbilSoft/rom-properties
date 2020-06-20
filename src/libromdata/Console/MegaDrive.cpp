@@ -293,7 +293,7 @@ void MegaDrivePrivate::addFields_romHeader(const MD_RomHeader *pRomHeader, bool 
 	if (!isDisc()) {
 		// Checksum. (MD only; not valid for Mega CD.)
 		fields->addField_string_numeric(C_("RomData", "Checksum"),
-			be16_to_cpu(pRomHeader->checksum), RomFields::FB_HEX, 4,
+			be16_to_cpu(pRomHeader->checksum), RomFields::Base::Hex, 4,
 			RomFields::STRF_MONOSPACE);
 	}
 

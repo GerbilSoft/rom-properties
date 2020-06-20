@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * RomFields.hpp: ROM fields class.                                        *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -493,10 +493,10 @@ class RomFields
 		 */
 		int addField_string(const char *name, const std::string &str, unsigned int flags = 0);
 
-		enum Base {
-			FB_DEC,
-			FB_HEX,
-			FB_OCT,
+		enum class Base {
+			Dec,	// Decimal (Base 10)
+			Hex,	// Hexadecimal (Base 16)
+			Oct,	// Octal (Base 8)
 		};
 
 		/**
@@ -508,7 +508,7 @@ class RomFields
 		 * @param flags Formatting flags.
 		 * @return Field index, or -1 on error.
 		 */
-		int addField_string_numeric(const char *name, uint32_t val, Base base = FB_DEC, int digits = 0, unsigned int flags = 0);
+		int addField_string_numeric(const char *name, uint32_t val, Base base = Base::Dec, int digits = 0, unsigned int flags = 0);
 
 		/**
 		 * Add a string field formatted like a hex dump

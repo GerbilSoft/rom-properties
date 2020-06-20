@@ -693,7 +693,7 @@ int iQuePlayer::loadFieldData(void)
 		// Console ID.
 		// TODO: Hide the "0x" prefix?
 		d->fields->addField_string_numeric(C_("iQuePlayer", "Console ID"),
-			be32_to_cpu(bbTicketHead->bbId), RomFields::FB_HEX, 8,
+			be32_to_cpu(bbTicketHead->bbId), RomFields::Base::Hex, 8,
 			RomFields::STRF_MONOSPACE);
 	}
 

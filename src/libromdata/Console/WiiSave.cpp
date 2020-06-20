@@ -516,7 +516,7 @@ int WiiSave::loadFieldData(void)
 	if (isSvValid) {
 		d->fields->addField_string_numeric(C_("WiiSave", "Permissions"),
 			svHeader->permissions,
-			RomFields::FB_HEX, 2, RomFields::STRF_MONOSPACE);
+			RomFields::Base::Hex, 2, RomFields::STRF_MONOSPACE);
 	}
 
 	// MAC address.

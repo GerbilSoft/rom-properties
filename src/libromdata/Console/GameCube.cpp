@@ -1514,9 +1514,9 @@ int GameCube::loadFieldData(void)
 
 	// Other fields.
 	d->fields->addField_string_numeric(C_("RomData", "Disc #"),
-		discHeader->disc_number+1, RomFields::FB_DEC);
+		discHeader->disc_number+1, RomFields::Base::Dec);
 	d->fields->addField_string_numeric(C_("RomData", "Revision"),
-		discHeader->revision, RomFields::FB_DEC, 2);
+		discHeader->revision, RomFields::Base::Dec, 2);
 
 	// The remaining fields are not located in the disc header.
 	// If we can't read the disc contents for some reason, e.g.

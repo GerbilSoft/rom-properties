@@ -1220,7 +1220,7 @@ int NintendoDS::loadFieldData(void)
 
 	// ROM version.
 	d->fields->addField_string_numeric(C_("RomData", "Revision"),
-		romHeader->rom_version, RomFields::FB_DEC, 2);
+		romHeader->rom_version, RomFields::Base::Dec, 2);
 
 	// Is the security data present?
 	d->fields->addField_string(C_("NintendoDS", "Security Data"),

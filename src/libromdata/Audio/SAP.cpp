@@ -665,26 +665,26 @@ int SAP::loadFieldData(void)
 		case 'B': case 'D': case 'S':
 			d->fields->addField_string_numeric(C_("SAP", "Init Address"),
 				tags.init_addr,
-				RomFields::FB_HEX, 4, RomFields::STRF_MONOSPACE);
+				RomFields::Base::Hex, 4, RomFields::STRF_MONOSPACE);
 			break;
 
 		case 'C':
 			d->fields->addField_string_numeric(C_("SAP", "Music Address"),
 				tags.music_addr,
-				RomFields::FB_HEX, 4, RomFields::STRF_MONOSPACE);
+				RomFields::Base::Hex, 4, RomFields::STRF_MONOSPACE);
 			break;
 	}
 
 	// Player address.
 	d->fields->addField_string_numeric(C_("SAP", "Player Address"),
 		tags.player_addr,
-		RomFields::FB_HEX, 4, RomFields::STRF_MONOSPACE);
+		RomFields::Base::Hex, 4, RomFields::STRF_MONOSPACE);
 
 	// COVOX address. (if non-zero)
 	if (tags.covox_addr != 0) {
 		d->fields->addField_string_numeric(C_("SAP", "COVOX Address"),
 			tags.covox_addr,
-			RomFields::FB_HEX, 4, RomFields::STRF_MONOSPACE);
+			RomFields::Base::Hex, 4, RomFields::STRF_MONOSPACE);
 	}
 
 	// Song list.

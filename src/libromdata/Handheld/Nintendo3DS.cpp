@@ -2149,7 +2149,7 @@ int Nintendo3DS::loadFieldData(void)
 				// Card2 writable address.
 				d->fields->addField_string_numeric(C_("Nintendo3DS", "Card2 RW Address"),
 					le32_to_cpu(cinfo_header->card2_writable_address),
-					RomFields::FB_HEX, 4, RomFields::STRF_MONOSPACE);
+					RomFields::Base::Hex, 4, RomFields::STRF_MONOSPACE);
 			}
 
 			// Card device.
@@ -2184,7 +2184,7 @@ int Nintendo3DS::loadFieldData(void)
 			// Card revision.
 			d->fields->addField_string_numeric(C_("Nintendo3DS", "Card Revision"),
 				le32_to_cpu(cinfo_header->card_revision),
-				RomFields::FB_DEC, 2);
+				RomFields::Base::Dec, 2);
 
 			// TODO: Show "title version"?
 

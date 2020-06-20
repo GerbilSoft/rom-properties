@@ -1852,7 +1852,7 @@ int Xbox360_XEX::loadFieldData(void)
 		// Savegame ID
 		d->fields->addField_string_numeric(C_("Xbox360_XEX", "Savegame ID"),
 			d->executionID.savegame_id,
-			RomFields::FB_HEX, 8, RomFields::STRF_MONOSPACE);
+			RomFields::Base::Hex, 8, RomFields::STRF_MONOSPACE);
 
 		// Disc number
 		// NOTE: Not shown for single-disc games.

@@ -1376,7 +1376,7 @@ int SNES::loadFieldData(void)
 
 			// Revision
 			d->fields->addField_string_numeric(C_("SNES", "Revision"),
-				romHeader->snes.version, RomFields::FB_DEC, 2);
+				romHeader->snes.version, RomFields::Base::Dec, 2);
 
 			break;
 		}

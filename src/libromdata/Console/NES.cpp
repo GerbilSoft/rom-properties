@@ -789,7 +789,7 @@ int NES::loadFieldData(void)
 		// TNES mapper.
 		// TODO: Look up the name.
 		d->fields->addField_string_numeric(C_("NES", "TNES Mapper"),
-			tnes_mapper, RomFields::FB_DEC);
+			tnes_mapper, RomFields::Base::Dec);
 	}
 
 	// TV mode
@@ -869,7 +869,7 @@ int NES::loadFieldData(void)
 
 		// Revision
 		d->fields->addField_string_numeric(C_("RomData", "Revision"),
-			d->header.fds.revision, RomFields::FB_DEC, 2);
+			d->header.fds.revision, RomFields::Base::Dec, 2);
 
 		// Manufacturing Date.
 		time_t mfr_date = d->fds_bcd_datestamp_to_unix_time(&d->header.fds.mfr_date);
@@ -1165,12 +1165,12 @@ int NES::loadFieldData(void)
 			// PRG checksum
 			d->fields->addField_string_numeric(C_("NES", "PRG Checksum"),
 				le16_to_cpu(intFooter.prg_checksum),
-				RomFields::FB_HEX, 4, RomFields::STRF_MONOSPACE);
+				RomFields::Base::Hex, 4, RomFields::STRF_MONOSPACE);
 
 			// CHR checksum
 			d->fields->addField_string_numeric(C_("NES", "CHR Checksum"),
 				le16_to_cpu(intFooter.chr_checksum),
-				RomFields::FB_HEX, 4, RomFields::STRF_MONOSPACE);
+				RomFields::Base::Hex, 4, RomFields::STRF_MONOSPACE);
 
 			// ROM sizes (as powers of two)
 			static const uint8_t sz_shift_lookup[] = {

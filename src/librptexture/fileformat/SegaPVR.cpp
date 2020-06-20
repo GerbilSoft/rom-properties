@@ -1562,7 +1562,7 @@ int SegaPVR::getFields(LibRpBase::RomFields *fields) const
 	// Global index (if present)
 	if (d->gbix_len > 0) {
 		fields->addField_string_numeric(C_("SegaPVR", "Global Index"),
-			d->gbix, RomFields::FB_DEC, 0);
+			d->gbix, RomFields::Base::Dec, 0);
 	}
 
 	// Finished reading the field data.

@@ -1429,7 +1429,7 @@ int DreamcastSave::loadFieldData(void)
 		// NOTE: Seems to be 0 for all of the SA2 theme files.
 		// NOTE: "CRC" is non-translatable.
 		d->fields->addField_string_numeric("CRC",
-			vms_header->crc, RomFields::FB_HEX, 4,
+			vms_header->crc, RomFields::Base::Hex, 4,
 			RomFields::STRF_MONOSPACE);
 	}
 

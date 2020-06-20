@@ -385,7 +385,7 @@ int GameBoyAdvance::loadFieldData(void)
 
 	// ROM version
 	d->fields->addField_string_numeric(C_("RomData", "Revision"),
-		romHeader->rom_version, RomFields::FB_DEC, 2);
+		romHeader->rom_version, RomFields::Base::Dec, 2);
 
 	// Entry point
 	const char *const entry_point_title = C_("GameBoyAdvance", "Entry Point");
@@ -402,7 +402,7 @@ int GameBoyAdvance::loadFieldData(void)
 					entry_point |= 0xFC000000;
 				}
 				d->fields->addField_string_numeric(entry_point_title,
-					entry_point, RomFields::FB_HEX, 8,
+					entry_point, RomFields::Base::Hex, 8,
 					RomFields::STRF_MONOSPACE);
 			} else {
 				// Non-standard entry point instruction.
