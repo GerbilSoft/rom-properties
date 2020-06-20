@@ -1362,7 +1362,7 @@ int SegaPVR::isRomSupported_static(const DetectInfo *info)
 	}
 
 	// Check the PVR header magic.
-	SegaPVRPrivate::PVRType ret;
+	SegaPVRPrivate::PVRType pvrType;
 	if (pvrHeader->magic == cpu_to_be32(PVR_MAGIC_PVRT)) {
 		// Sega Dreamcast PVR.
 		if ((pvrHeader->pvr.px_format >= SVR_PX_MIN &&
@@ -1371,23 +1371,23 @@ int SegaPVR::isRomSupported_static(const DetectInfo *info)
 		     pvrHeader->pvr.img_data_type <= SVR_IMG_MAX))
 		{
 			// Pixel format and/or image data type is SVR.
-			ret = SegaPVRPrivate::PVRType::SVR;
+			pvrType = SegaPVRPrivate::PVRType::SVR;
 		} else {
 			// All other types are PVR.
-			ret = SegaPVRPrivate::PVRType::PVR;
+			pvrType = SegaPVRPrivate::PVRType::PVR;
 		}
 	} else if (pvrHeader->magic == cpu_to_be32(PVR_MAGIC_GVRT)) {
 		// GameCube GVR.
-		ret = SegaPVRPrivate::PVRType::GVR;
+		pvrType = SegaPVRPrivate::PVRType::GVR;
 	} else if (pvrHeader->magic == cpu_to_be32(PVR_MAGIC_PVRX)) {
 		// Xbox PVRX.
-		ret = SegaPVRPrivate::PVRType::PVRX;
+		pvrType = SegaPVRPrivate::PVRType::PVRX;
 	} else {
 		// Unknown.
-		ret = SegaPVRPrivate::PVRType::Unknown;
+		pvrType = SegaPVRPrivate::PVRType::Unknown;
 	}
 
-	return (int)ret;
+	return static_cast<int>(pvrType);
 }
 
 /** Class-specific functions that can be used even if isValid() is false. **/
