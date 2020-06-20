@@ -57,6 +57,8 @@ class MachOPrivate : public LibRpBase::RomDataPrivate
 			_32MSB	= 2,
 			_64MSB	= 3,
 
+			Max,
+
 			// Host/swap endian formats.
 
 #if SYS_BYTEORDER == SYS_LIL_ENDIAN
@@ -70,8 +72,6 @@ class MachOPrivate : public LibRpBase::RomDataPrivate
 			_32SWAP	= _32LSB,
 			_64SWAP	= _64LSB,
 #endif
-
-			Max
 		};
 
 		// Maximum number of Mach-O headers to read.
