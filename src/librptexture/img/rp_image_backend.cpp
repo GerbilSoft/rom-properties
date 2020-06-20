@@ -38,7 +38,7 @@ rp_image_backend::rp_image_backend(int width, int height, rp_image::Format forma
 {
 	// Sanity check: Maximum of 32768x32768.
 	// Also make sure the format is valid.
-	// NOTE: FORMAT_NONE *is* valid here, and if set, width/height
+	// NOTE: Format::None *is* valid here, and if set, width/height
 	// can both be set to 0.
 	// These represent empty images. RpGdiplusBackend sets these
 	// initially when constructing an rp_image_backend from an
@@ -59,7 +59,7 @@ rp_image_backend::rp_image_backend(int width, int height, rp_image::Format forma
 	}
 
 	// Calculate the stride.
-	// NOTE: If format == FORMAT_NONE, the subclass is
+	// NOTE: If format == Format::None, the subclass is
 	// managing width/height/format.
 	if (format != rp_image::Format::None) {
 		stride = calc_stride(width, format);

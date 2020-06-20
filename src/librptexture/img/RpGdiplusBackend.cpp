@@ -113,7 +113,7 @@ RpGdiplusBackend::RpGdiplusBackend(int width, int height, rp_image::Format forma
  * @param pGdipBmp Gdiplus::Bitmap.
  */
 RpGdiplusBackend::RpGdiplusBackend(Gdiplus::Bitmap *pGdipBmp)
-	: super(0, 0, rp_image::Format::NONE)
+	: super(0, 0, rp_image::Format::None)
 	, m_gdipToken(0)
 	, m_pGdipBmp(pGdipBmp)
 	, m_isLocked(false)
@@ -250,7 +250,7 @@ int RpGdiplusBackend::doInitialLock(void)
 		this->width = 0;
 		this->height = 0;
 		this->stride = 0;
-		this->format = rp_image::Format::NONE;
+		this->format = rp_image::Format::None;
 		return -1;
 	}
 	return 0;
