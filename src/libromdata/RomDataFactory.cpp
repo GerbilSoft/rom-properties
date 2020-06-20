@@ -331,7 +331,7 @@ const RomDataFactoryPrivate::RomDataFns RomDataFactoryPrivate::romDataFns_header
 	// Last chance: ISO-9660 disc images.
 	// NOTE: This might include some console-specific disc images
 	// that don't have an identifying boot sector at 0x0000.
-	// NOTE: Keeping the same address, since ISO only checks the file extension.
+	// NOTE: Keeping the same address as the previous entry, since ISO only checks the file extension.
 	// NOTE: ATTR_HAS_THUMBNAIL is needed for Xbox 360.
 	GetRomDataFns_addr(ISO, ATTR_HAS_THUMBNAIL | ATTR_SUPPORTS_DEVICES | ATTR_CHECK_ISO, 0x40000, 0x20),
 

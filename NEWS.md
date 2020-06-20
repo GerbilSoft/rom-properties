@@ -22,6 +22,7 @@
   * SufamiTurbo: New parser for Sufami Turbo mini-carts for Super Famicom.
     This could have been part of SNES, but the header is completely different
     and is always located at $0000.
+  * ISO: Added support for High Sierra Format CDs.
 
 * Bug fixes:
   * WiiWAD: Fix DLC icons no longer working after updating CBCReader to update
