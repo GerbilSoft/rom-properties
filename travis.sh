@@ -48,7 +48,7 @@ case "$OSTYPE" in
 			-DENABLE_DECRYPTION=OFF \
 			-DENABLE_UNICE68=OFF \
 			-DENABLE_LIBMSPACK=OFF \
-			-DENABLE_PVRTC=OFF
+			-DENABLE_PVRTC=OFF \
 			|| exit 1
 esac
 
@@ -69,7 +69,8 @@ cmake .. \
 	-DENABLE_DECRYPTION=ON \
 	-DENABLE_UNICE68=ON \
 	-DENABLE_LIBMSPACK=ON \
-	-DENABLE_PVRTC=ON
+	-DENABLE_PVRTC=ON \
+	|| exit 1
 
 # Build everything.
 make -k || RET=1
