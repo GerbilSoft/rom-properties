@@ -143,7 +143,7 @@ vector<uint16_t> RpFile::getKreonFeatureList(void)
 	// Reference: https://github.com/saramibreak/DiscImageCreator/blob/cb9267da4877d32ab68263c25187cbaab3435ad5/DiscImageCreator/execScsiCmdforDVD.cpp#L1223
 	static const uint8_t cdb[6] = {0xFF, 0x08, 0x01, 0x10, 0x00, 0x00};
 	array<uint16_t, 13> feature_buf;
-	int ret = d->scsi_send_cdb(cdb, sizeof(cdb), feature_buf.data(), sizeof(feature_buf), RpFilePrivate::SCSI_DIR_IN);
+	int ret = d->scsi_send_cdb(cdb, sizeof(cdb), feature_buf.data(), sizeof(feature_buf), RpFilePrivate::ScsiDirection::In);
 	if (ret != 0) {
 		// SCSI command failed.
 		return vec;
@@ -187,7 +187,7 @@ int RpFile::setKreonErrorSkipState(bool skip)
 	// Kreon "Set Error Skip State" command
 	// Reference: https://github.com/saramibreak/DiscImageCreator/blob/cb9267da4877d32ab68263c25187cbaab3435ad5/DiscImageCreator/execScsiCmdforDVD.cpp#L1341
 	const uint8_t cdb[6] = {0xFF, 0x08, 0x01, 0x15, (uint8_t)skip, 0x00};
-	return d->scsi_send_cdb(cdb, sizeof(cdb), nullptr, 0, RpFilePrivate::SCSI_DIR_IN);
+	return d->scsi_send_cdb(cdb, sizeof(cdb), nullptr, 0, RpFilePrivate::ScsiDirection::In);
 #else /* !RP_OS_SCSI_SUPPORTED */
 	// No SCSI implementation for this OS.
 	RP_UNUSED(skip);
@@ -213,9 +213,9 @@ int RpFile::setKreonLockState(KreonLockState lockState)
 	// Kreon "Set Lock State" command
 	// Reference: https://github.com/saramibreak/DiscImageCreator/blob/cb9267da4877d32ab68263c25187cbaab3435ad5/DiscImageCreator/execScsiCmdforDVD.cpp#L1309
 	const uint8_t cdb[6] = {0xFF, 0x08, 0x01, 0x11, static_cast<uint8_t>(lockState), 0x00};
-	int ret = d->scsi_send_cdb(cdb, sizeof(cdb), nullptr, 0, RpFilePrivate::SCSI_DIR_IN);
+	int ret = d->scsi_send_cdb(cdb, sizeof(cdb), nullptr, 0, RpFilePrivate::ScsiDirection::In);
 	if (ret == 0) {
-		d->devInfo->isKreonUnlocked = (lockState != KREON_STATE_LOCKED);
+		d->devInfo->isKreonUnlocked = (lockState != KreonLockState::Locked);
 	}
 	return ret;
 #else /* !RP_OS_SCSI_SUPPORTED */

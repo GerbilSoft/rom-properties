@@ -95,7 +95,7 @@ int RpFile::rereadDeviceSizeOS(off64_t *pDeviceSize, uint32_t *pSectorSize)
  * Send a SCSI command to the device.
  * @param cdb		[in] SCSI command descriptor block
  * @param cdb_len	[in] Length of cdb
- * @param data		[in/out] Data buffer, or nullptr for SCSI_DIR_NONE operations
+ * @param data		[in/out] Data buffer, or nullptr for ScsiDirection::None operations
  * @param data_len	[in] Length of data
  * @param direction	[in] Data direction
  * @return 0 on success, positive for SCSI sense key, negative for POSIX error code.
@@ -126,11 +126,11 @@ int RpFilePrivate::scsi_send_cdb(const void *cdb, uint8_t cdb_len,
 	req.timeout = 20;	// TODO
 
 	switch (direction) {
-		case SCSI_DIR_NONE:
-		case SCSI_DIR_IN:
+		case ScsiDirection::None:
+		case ScsiDirection::In:
 			req.flags = SCCMD_READ;
 			break;
-		case SCSI_DIR_OUT:
+		case ScsiDirection::Out:
 			req.flags = SCCMD_WRITE;
 			break;
 		default:
