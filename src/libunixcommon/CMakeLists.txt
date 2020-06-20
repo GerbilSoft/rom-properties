@@ -6,12 +6,8 @@ IF(POLICY CMP0063)
 	# target types, including static libraries and executables.
 	CMAKE_POLICY(SET CMP0063 NEW)
 ENDIF(POLICY CMP0063)
-IF(APPLE)
-	SET(UNIX_COMMON_LANG CXX OBJC)
-ELSE(APPLE)
-	SET(UNIX_COMMON_LANG C CXX)
-ENDIF(APPLE)
-PROJECT(libunixcommon LANGUAGES ${UNIX_COMMON_LANG})
+# FIXME: CMake-3.15.5 on travis-ci can't find Objective-C...
+PROJECT(libunixcommon LANGUAGES C CXX)
 
 # Qt5 requires "-fpic -fPIC" due to reduced relocations.
 # This is also needed in order to link the static library
