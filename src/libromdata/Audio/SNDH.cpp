@@ -199,6 +199,7 @@ SNDHPrivate::TagData SNDHPrivate::parseTags(void)
 	const uint32_t *const pData32 = reinterpret_cast<const uint32_t*>(header.get());
 	if (pData32[0] == cpu_to_be32('ICE!') || pData32[0] == cpu_to_be32('Ice!')) {
 		// Packed with ICE.
+		// FIXME: Show a warning if unpacking fails.
 #ifdef ENABLE_UNICE68
 		// Decompress the data.
 		// FIXME: unice68_depacker() only supports decompressing the entire file.
@@ -217,7 +218,7 @@ SNDHPrivate::TagData SNDHPrivate::parseTags(void)
 			return tags;
 		}
 		header.reset(new uint8_t[reqSize+1]);
-		int ret = unice68_depacker(header.get(), inbuf.get());
+		int ret = unice68_depacker(header.get(), reqSize, inbuf.get(), fileSize);
 		if (ret != 0) {
 			return tags;
 		}
