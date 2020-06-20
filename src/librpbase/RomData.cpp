@@ -15,6 +15,9 @@
 // librpthreads
 #include "librpthreads/Atomics.h"
 
+// libcachecommon
+#include "libcachecommon/CacheKeys.hpp"
+
 // C++ STL classes.
 using std::string;
 using std::vector;
@@ -119,8 +122,10 @@ string RomDataPrivate::getURL_RPDB(
 	const char *region, const char *gameID,
 	const char *ext)
 {
+	// Game ID may need to be urlencoded.
+	string gameID_urlencode = LibCacheCommon::urlencode(gameID);
 	return rp_sprintf("https://rpdb.gerbilsoft.com/%s/%s/%s/%s%s",
-		system, type, region, gameID, ext);
+		system, type, region, gameID_urlencode.c_str(), ext);
 }
 
 /**

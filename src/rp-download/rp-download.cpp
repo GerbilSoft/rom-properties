@@ -411,6 +411,7 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 	// - amiibo: https://amiibo.life/[key]/image
 	// - gba:    https://rpdb.gerbilsoft.com/gba/[key]
 	// - gb:     https://rpdb.gerbilsoft.com/gb/[key]
+	// - snes:   https://rpdb.gerbilsoft.com/snes/[key]
 	const TCHAR *slash_pos = _tcschr(cache_key, _T('/'));
 	if (slash_pos == nullptr || slash_pos == cache_key ||
 		slash_pos[1] == '\0')
@@ -444,6 +445,11 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 		return EXIT_FAILURE;
 	}
 
+	// urlencode the cache key.
+	const tstring cache_key_urlencode = LibCacheCommon::urlencode(cache_key);
+	// Update the slash position based on the urlencoded string.
+	slash_pos = _tcschr(cache_key_urlencode.data(), _T('/'));
+
 	// Determine the full URL based on the cache key.
 	TCHAR full_url[256];
 	if ((prefix_len == 3 && !_tcsncmp(cache_key, _T("wii"), 3)) ||
@@ -453,7 +459,7 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 	{
 		// Wii, Wii U, Nintendo 3DS, Nintendo DS
 		_sntprintf(full_url, _countof(full_url),
-			_T("https://art.gametdb.com/%s"), cache_key);
+			_T("https://art.gametdb.com/%s"), cache_key_urlencode.c_str());
 	} else if (prefix_len == 6 && !_tcsncmp(cache_key, _T("amiibo"), 6)) {
 		// amiibo.
 		// NOTE: We need to remove the file extension.
@@ -469,10 +475,11 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 			_T("https://amiibo.life/nfc/%.*s/image"),
 			static_cast<int>(filename_len), slash_pos+1);
 	} else if ((prefix_len == 3 && !_tcsncmp(cache_key, _T("gba"), 3)) ||
-		   (prefix_len == 2 && !_tcsncmp(cache_key, _T("gb"), 2))) {
-		// Game Boy, Game Boy Color, Game Boy Advance
+		   (prefix_len == 2 && !_tcsncmp(cache_key, _T("gb"), 2)) ||
+		   (prefix_len == 4 && !_tcsncmp(cache_key, _T("snes"), 4))) {
+		// Game Boy, Game Boy Color, Game Boy Advance, Super NES
 		_sntprintf(full_url, _countof(full_url),
-			_T("https://rpdb.gerbilsoft.com/%s"), cache_key);
+			_T("https://rpdb.gerbilsoft.com/%s"), cache_key_urlencode.c_str());
 	} else {
 		// Prefix is not supported.
 		SHOW_ERROR(_T("Cache key '%s' has an unsupported prefix."), cache_key);

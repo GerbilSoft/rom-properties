@@ -358,6 +358,27 @@ skip_image_check:
 		return RPCT_SOURCE_FILE_ERROR;
 	}
 
+	if (imgpf & RomData::IMGPF_RESCALE_ASPECT_8to7) {
+		// If the image width is 256 or 512, rescale to an 8:7 pixel aspect ratio.
+		int scaleW = 0;
+		switch (pOutParams->fullSize.width) {
+			case 256:
+				scaleW = 292;
+				break;
+			case 512:
+				scaleW = 584;
+				break;
+			default:
+				break;
+		}
+		if (scaleW != 0) {
+			pOutParams->fullSize.width = scaleW;
+			ImgClass scaled_img = rescaleImgClass(pOutParams->retImg, pOutParams->fullSize);
+			freeImgClass(pOutParams->retImg);
+			pOutParams->retImg = scaled_img;
+		}
+	}
+
 	// TODO: If image is larger than req_size, resize down.
 	if (imgpf & RomData::IMGPF_RESCALE_NEAREST) {
 		// TODO: User configuration.

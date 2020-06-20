@@ -24,6 +24,7 @@ using std::vector;
 namespace LibRomData {
 
 ROMDATA_IMPL(SNES)
+ROMDATA_IMPL_IMG(SNES)
 
 class SNESPrivate : public RomDataPrivate
 {
@@ -35,6 +36,15 @@ class SNESPrivate : public RomDataPrivate
 		RP_DISABLE_COPY(SNESPrivate)
 
 	public:
+		/**
+		 * Get the SNES ROM mapping and validate it.
+		 * @param romHeader	[in] SNES/SFC ROM header to check.
+		 * @param pIsHiROM	[out,opt] Set to true if the valid ROM mapping byte is HiROM.
+		 * @param pHasExtraChr	[out,opt] Set to true if the title extends into the mapping byte.
+		 * @return SNES ROM mapping, or 0 if not valid.
+		 */
+		static uint8_t getSnesRomMapping(const SNES_RomHeader *romHeader, bool *pIsHiROM = nullptr, bool *pHasExtraChr = nullptr);
+
 		/**
 		 * Is the specified SNES/SFC ROM header valid?
 		 * @param romHeader SNES/SFC ROM header to check.
@@ -65,6 +75,38 @@ class SNESPrivate : public RomDataPrivate
 		// NOTE: Must be byteswapped on access.
 		SNES_RomHeader romHeader;
 		uint32_t header_address;
+
+		/**
+		 * Get the ROM title.
+		 *
+		 * The ROM title length depends on type, and encoding
+		 * depends on type and region.
+		 *
+		 * @return ROM title.
+		 */
+		string getRomTitle(void) const;
+
+		/**
+		 * Get the publisher.
+		 * @return Publisher, or "Unknown (xxx)" if unknown.
+		 */
+		string getPublisher(void) const;
+
+		/**
+		 * Is a character a valid game ID character?
+		 * @return True if it is; false if it isn't.
+		 */
+		static inline bool isValidGameIDChar(char x)
+		{
+			return (x >= '0' && x <= '9') || (x >= 'A' && x <= 'Z');
+		}
+
+		/**
+		 * Get the game ID.
+		 * @param doFake If true, return a fake ID using the ROM's title.
+		 * @return Game ID if available; empty string if not.
+		 */
+		string getGameID(bool doFake = false) const;
 };
 
 /** SNESPrivate **/
@@ -76,6 +118,151 @@ SNESPrivate::SNESPrivate(SNES *q, IRpFile *file)
 {
 	// Clear the ROM header struct.
 	memset(&romHeader, 0, sizeof(romHeader));
+}
+
+/**
+ * Get the SNES ROM mapping and validate it.
+ * @param romHeader	[in] SNES/SFC ROM header to check.
+ * @param pIsHiROM	[out,opt] Set to true if the valid ROM mapping byte is HiROM.
+ * @param pHasExtraChr	[out,opt] Set to true if the title extends into the mapping byte.
+ * @return SNES ROM mapping, or 0 if not valid.
+ */
+uint8_t SNESPrivate::getSnesRomMapping(const SNES_RomHeader *romHeader, bool *pIsHiROM, bool *pHasExtraChr)
+{
+	uint8_t rom_mapping = romHeader->snes.rom_mapping;
+	bool isHiROM = false;
+	bool hasExtraChr = false;
+
+	switch (rom_mapping) {
+		case SNES_ROMMAPPING_LoROM:
+		case SNES_ROMMAPPING_LoROM_S_DD1:
+		case SNES_ROMMAPPING_LoROM_SA_1:
+		case SNES_ROMMAPPING_LoROM_FastROM:
+		case SNES_ROMMAPPING_ExLoROM_FastROM:
+			// Valid LoROM mapping byte.
+			break;
+
+		case SNES_ROMMAPPING_HiROM:
+		case SNES_ROMMAPPING_HiROM_FastROM:
+		case SNES_ROMMAPPING_ExHiROM:
+		case SNES_ROMMAPPING_ExHiROM_FastROM:
+		case SNES_ROMMAPPING_HiROM_FastROM_SPC7110:
+			// Valid HiROM mapping byte.
+			isHiROM = true;
+			break;
+
+		case 'A':
+			// Some ROMs incorrectly extend the title into the mapping byte:
+			// - WWF Super WrestleMania
+			if (romHeader->snes.title[20] == 'I') {
+				// Assume this ROM is valid.
+				// TODO: Is this FastROM?
+				hasExtraChr = true;
+				rom_mapping = SNES_ROMMAPPING_LoROM;
+				break;
+			}
+			break;
+
+		case 'D':
+			// Some ROMs incorrectly extend the title into the mapping byte:
+			// - Super Adventure Island (U)
+			if (romHeader->snes.title[20] == 'N') {
+				// Assume this ROM is valid.
+				hasExtraChr = true;
+				rom_mapping = SNES_ROMMAPPING_LoROM;
+				break;
+			}
+			break;
+
+		case 'E':
+			// Some ROMs incorrectly extend the title into the mapping byte:
+			// - Krusty's Super Fun House (some versions)
+			// - Space Football - One on One
+			if (romHeader->snes.title[20] == 'S' ||
+			    romHeader->snes.title[20] == 'N')
+			{
+				// Assume this ROM is valid.
+				// TODO: Is this FastROM?
+				hasExtraChr = true;
+				rom_mapping = SNES_ROMMAPPING_LoROM;
+				break;
+			}
+			break;
+
+		case 'F':
+			// Some ROMs incorrectly extend the title into the mapping byte:
+			// - HAL's Hole in One Golf (E)
+			// - HAL's Hole in One Golf (U)
+			if (romHeader->snes.title[20] == 'L') {
+				// Assume this ROM is valid.
+				// TODO: Is this FastROM?
+				hasExtraChr = true;
+				rom_mapping = SNES_ROMMAPPING_LoROM;
+				break;
+			}
+			break;
+
+		case 'N':
+			// Some ROMs incorrectly extend the title into the mapping byte:
+			// - Kentou-Ou World Champion (J)
+			if (romHeader->snes.title[20] == 'O') {
+				// Assume this ROM is valid.
+				// TODO: Is this FastROM?
+				hasExtraChr = true;
+				rom_mapping = SNES_ROMMAPPING_LoROM;
+				break;
+			}
+			break;
+
+		case 'P':
+			// Some ROMs incorrectly extend the title into the mapping byte:
+			// - TKO Super Championship Boxing (U)
+			if (romHeader->snes.title[20] == 'I') {
+				// Assume this ROM is valid.
+				// TODO: Is this FastROM?
+				hasExtraChr = true;
+				rom_mapping = SNES_ROMMAPPING_LoROM;
+				break;
+			}
+			break;
+
+		case 'R':
+			// Some ROMs incorrectly extend the title into the mapping byte:
+			// - Super Formation Soccer (J)
+			if (romHeader->snes.title[20] == 'E') {
+				// Assume this ROM is valid.
+				// TODO: Is this FastROM?
+				hasExtraChr = true;
+				rom_mapping = SNES_ROMMAPPING_LoROM;
+				break;
+			}
+			break;
+
+		case 'S':
+			// Some ROMs incorrectly extend the title into the mapping byte:
+			// - Contra III - The Alien Wars (U)
+			if (romHeader->snes.title[20] == 'R') {
+				// Assume this ROM is valid.
+				// TODO: Is this FastROM?
+				hasExtraChr = true;
+				rom_mapping = SNES_ROMMAPPING_LoROM;
+				break;
+			}
+			break;
+
+		default:
+			// Not valid.
+			rom_mapping = 0;
+			break;
+	}
+
+	if (pIsHiROM) {
+		*pIsHiROM = isHiROM;
+	}
+	if (pHasExtraChr) {
+		*pHasExtraChr = hasExtraChr;
+	}
+	return rom_mapping;
 }
 
 /**
@@ -110,43 +297,26 @@ bool SNESPrivate::isSnesRomHeaderValid(const SNES_RomHeader *romHeader, bool isH
 	}
 
 	// Is the ROM mapping byte valid?
-	switch (romHeader->snes.rom_mapping) {
-		case SNES_ROMMAPPING_LoROM:
-		case SNES_ROMMAPPING_LoROM_S_DD1:
-		case SNES_ROMMAPPING_LoROM_SA_1:
-		case SNES_ROMMAPPING_LoROM_FastROM:
-		case SNES_ROMMAPPING_ExLoROM_FastROM:
-			if (isHiROM) {
-				// LoROM mapping at a HiROM address.
-				// Not valid.
-				return false;
-			}
-			// Valid ROM mapping byte.
-			break;
-
-		case SNES_ROMMAPPING_HiROM:
-		case SNES_ROMMAPPING_HiROM_FastROM:
-		case SNES_ROMMAPPING_ExHiROM:
-		case SNES_ROMMAPPING_ExHiROM_FastROM:
-			if (!isHiROM) {
-				// HiROM mapping at a LoROM address.
-				// Not valid.
-				return false;
-			}
-
-			// Valid ROM mapping byte.
-			break;
-
-		default:
-			// Not valid.
-			return false;
+	bool isMapHiROM = false;
+	const uint8_t rom_mapping = getSnesRomMapping(romHeader, &isMapHiROM);
+	if (rom_mapping == 0 || isMapHiROM != isHiROM) {
+		// Mapping is not valid, or does not match the
+		// ROM header address.
+		return false;
 	}
 
 	// Is the ROM type byte valid?
 	// TODO: Check if any other types exist.
-	if ( (romHeader->snes.rom_type & SNES_ROMTYPE_ROM_MASK) > SNES_ROMTYPE_ROM_BATT_ENH ||
-	    ((romHeader->snes.rom_type & SNES_ROMTYPE_ENH_MASK) >= 0x50 &&
-	     (romHeader->snes.rom_type & SNES_ROMTYPE_ENH_MASK) <= 0xD0))
+	switch (romHeader->snes.rom_type & SNES_ROMTYPE_ROM_MASK) {
+		case 0x07: case 0x08: case 0x0B:
+		case 0x0C: case 0x0D: case 0x0E:
+			// Invalid ROM type.
+			return false;
+		default:
+			break;
+	}
+	if (((romHeader->snes.rom_type & SNES_ROMTYPE_ENH_MASK) >= SNES_ROMTYPE_ENH_S_RTC) &&
+	    ((romHeader->snes.rom_type & SNES_ROMTYPE_ENH_MASK) <  SNES_ROMTYPE_ENH_OTHER))
 	{
 		// Not a valid ROM type.
 		return false;
@@ -169,7 +339,7 @@ bool SNESPrivate::isSnesRomHeaderValid(const SNES_RomHeader *romHeader, bool isH
 			if (ISALNUM(romHeader->snes.ext.id4[i])) {
 				// Alphanumeric character.
 				continue;
-			} else if (i >= 2 && romHeader->snes.ext.id4[i] == ' ') {
+			} else if (i >= 2 && (romHeader->snes.ext.id4[i] == ' ' || romHeader->snes.ext.id4[i] == '\0')) {
 				// Some game IDs are two characters,
 				// and the remaining characters are spaces.
 				continue;
@@ -178,6 +348,15 @@ bool SNESPrivate::isSnesRomHeaderValid(const SNES_RomHeader *romHeader, bool isH
 			// Invalid character.
 			return false;
 		}
+	}
+
+	// Make sure the two checksums are complementary.
+	// NOTE: Byteswapping isn't necessary here.
+	if (static_cast<uint16_t>( romHeader->snes.checksum) !=
+	    static_cast<uint16_t>(~romHeader->snes.checksum_complement))
+	{
+		// Checksums are not complementary.
+		return false;
 	}
 
 	// ROM header appears to be valid.
@@ -253,6 +432,259 @@ bool SNESPrivate::isBsxRomHeaderValid(const SNES_RomHeader *romHeader, bool isHi
 	// ROM header appears to be valid.
 	// TODO: Check other BS-X fields.
 	return true;
+}
+
+/**
+ * Get the ROM title.
+ *
+ * The ROM title length depends on type, and encoding
+ * depends on type and region.
+ *
+ * @return ROM title.
+ */
+string SNESPrivate::getRomTitle(void) const
+{
+	// NOTE: If the region code is JPN, the title might be encoded in Shift-JIS.
+	// TODO: Space elimination; China, Korea encodings?
+	// TODO: Remove leading spaces? (Capcom NFL Football; symlinked on the server for now.)
+
+	bool doSJIS = false;
+	bool hasExtraChr = false;
+	const char *title;
+	size_t len;
+	switch (romType) {
+		case ROM_SNES: {
+			doSJIS = (romHeader.snes.destination_code == SNES_DEST_JAPAN);
+			title = romHeader.snes.title;
+			len = sizeof(romHeader.snes.title);
+			getSnesRomMapping(&romHeader, nullptr, &hasExtraChr);
+			break;
+		}
+		case ROM_BSX:
+			doSJIS = true;
+			title = romHeader.bsx.title;
+			len = sizeof(romHeader.bsx.title);
+			break;
+		default:
+			// Should not get here...
+			assert(!"Invalid ROM type.");
+			title = romHeader.snes.title;
+			len = sizeof(romHeader.snes.title);
+			break;
+	}
+
+	// Trim the end of the title before converting it.
+	bool done = false;
+	while (!done && (len > 0)) {
+		switch (static_cast<uint8_t>(title[len-1])) {
+			case 0:
+			case ' ':
+			case 0xFF:
+				// Blank character. Trim it.
+				len--;
+				break;
+
+			default:
+				// Not a blank character.
+				done = true;
+				break;
+		}
+	}
+
+	string s_title;
+	if (doSJIS) {
+		s_title = cp1252_sjis_to_utf8(title, static_cast<int>(len));
+	} else {
+		s_title = cp1252_to_utf8(title, static_cast<int>(len));
+	}
+	if (hasExtraChr) {
+		// Add the mapping byte as if it's an ASCII character.
+		s_title += static_cast<char>(romHeader.snes.rom_mapping);
+	}
+	return s_title;
+}
+
+/**
+ * Get the publisher.
+ * @return Publisher, or "Unknown (xxx)" if unknown.
+ */
+string SNESPrivate::getPublisher(void) const
+{
+	const char* publisher;
+	string s_publisher;
+
+	// NOTE: SNES and BS-X have the same addresses for both publisher codes.
+	// Hence, we only need to check SNES.
+
+	// Publisher.
+	if (romHeader.snes.old_publisher_code == 0x33) {
+		// New publisher code.
+		publisher = NintendoPublishers::lookup(romHeader.snes.ext.new_publisher_code);
+		if (publisher) {
+			s_publisher = publisher;
+		} else {
+			if (ISALNUM(romHeader.snes.ext.new_publisher_code[0]) &&
+			    ISALNUM(romHeader.snes.ext.new_publisher_code[1]))
+			{
+				s_publisher = rp_sprintf(C_("SNES", "Unknown (%.2s)"),
+					romHeader.snes.ext.new_publisher_code);
+			} else {
+				s_publisher = rp_sprintf(C_("SNES", "Unknown (%02X %02X)"),
+					static_cast<uint8_t>(romHeader.snes.ext.new_publisher_code[0]),
+					static_cast<uint8_t>(romHeader.snes.ext.new_publisher_code[1]));
+			}
+		}
+	} else {
+		// Old publisher code.
+		publisher = NintendoPublishers::lookup_old(romHeader.snes.old_publisher_code);
+		if (publisher) {
+			s_publisher = publisher;
+		} else {
+			s_publisher = rp_sprintf(C_("RomData", "Unknown (%02X)"),
+				romHeader.snes.old_publisher_code);
+		}
+	}
+
+	return s_publisher;
+}
+
+/**
+ * Get the game ID.
+ * This returns a *full* game ID if available, e.g. SNS-YI-USA.
+ * @param doFake If true, return a fake ID using the ROM's title.
+ * @return Game ID if available; empty string if not.
+ */
+string SNESPrivate::getGameID(bool doFake) const
+{
+	string gameID;
+
+	// Game ID is only available for SNES, not BS-X.
+	// TODO: Are we sure this is the case?
+	if (romType != ROM_SNES && !doFake) {
+		return gameID;
+	}
+
+	char id4[5];
+	id4[0] = '\0';
+
+	// NOTE: The game ID field is Only valid if the old publisher code is 0x33.
+	if (romHeader.snes.old_publisher_code == 0x33) {
+		// Do we have a valid two-digit game ID?
+		if (isValidGameIDChar(romHeader.snes.ext.id4[0]) &&
+		    isValidGameIDChar(romHeader.snes.ext.id4[1]))
+		{
+			// Valid two-digit game ID.
+			id4[0] = romHeader.snes.ext.id4[0];
+			id4[1] = romHeader.snes.ext.id4[1];
+			id4[2] = '\0';
+
+			// Do we have a valid four-digit game ID?
+			if (isValidGameIDChar(romHeader.snes.ext.id4[2]) &&
+			    isValidGameIDChar(romHeader.snes.ext.id4[3]))
+			{
+				// Valid four-digit game ID.
+				id4[2] = romHeader.snes.ext.id4[2];
+				id4[3] = romHeader.snes.ext.id4[3];
+				id4[4] = '\0';
+			}
+		}
+	}
+
+	// Check the region value to determine the template.
+	// NOTE: BS-X might have BRA for some reason.
+	const char *prefix, *suffix;
+	const uint8_t region = ((romType != ROM_BSX)
+		? romHeader.snes.destination_code
+		: static_cast<uint8_t>(SNES_DEST_JAPAN));
+
+	// Prefix/suffix table.
+	struct PrefixSuffixTbl_t {
+		char prefix[8];
+		char suffix[8];
+	};
+	static const PrefixSuffixTbl_t region_ps[] = {
+		// 0x00
+		{"SHVC-", "-JPN"},	// Japan
+		{"SNS-",  "-USA"},	// North America
+		{"SNSP-", "-EUR"},	// Europe
+		{"SNSP-", "-SCN"},	// Scandinavia
+		{"",      ""},
+		{"",      ""},
+		{"SNSP-", "-FRA"},	// France
+		{"SNSP-", "-HOL"},	// Netherlands
+
+		// 0x08
+		{"SNSP-", "-ESP"},	// Spain
+		{"SNSP-", "-NOE"},	// Germany
+		{"SNSP-", "-ITA"},	// Italy
+		{"SNSN-", "-ROC"},	// China
+		{"",      ""},
+		{"SNSN-", "-KOR"},	// South Korea
+		{"",      ""},		// ALL region?
+		{"SNS-",  "-CAN"},	// Canada
+
+		// 0x10
+		{"SNS-",  "-BRA"},	// Brazil
+		{"SNSP-", "-AUS"},	// Australia
+		{"SNSP-", "-SCN"},	// Scandinavia
+	};
+	if (romType == ROM_BSX) {
+		// Separate BS-X titles from regular SNES titles.
+		// NOTE: This originally had a fake "BSX-" and "-JPN"
+		// prefix and suffix, but we're now only using this
+		// if the game ID is being used instead of the title.
+		if (id4[0] != '\0') {
+			prefix = "BSX-";
+			suffix = "-JPN";
+		} else {
+			prefix = "";
+			suffix = "";
+		}
+	} else if (region < ARRAY_SIZE(region_ps)) {
+		prefix = region_ps[region].prefix;
+		suffix = region_ps[region].suffix;
+	} else {
+		prefix = "";
+		suffix = "";
+	}
+
+	// Do we have an ID2 or ID4?
+	if (id4[0] != '\0') {
+		// ID2/ID4 is present. Use it.
+		gameID.reserve(13);
+		gameID = prefix;
+		gameID += id4;
+		gameID += suffix;
+	} else {
+		// ID2/ID4 is not present. Use the ROM title.
+		string s_title = getRomTitle();
+		if (s_title.empty()) {
+			// No title...
+			return gameID;
+		}
+
+		// Manually filter out characters that are rejected by CacheKeys.
+		for (size_t n = 0; n < s_title.size(); n++) {
+			switch (s_title[n]) {
+				case ':':
+				case '/':
+				case '\\':
+				case '*':
+				case '?':
+					s_title[n] = '_';
+					break;
+				default:
+					break;
+			}
+		}
+
+		gameID.reserve(5 + s_title.size() + 4);
+		gameID = prefix;
+		gameID += s_title;
+		gameID += suffix;
+	}
+
+	return gameID;
 }
 
 /** SNES **/
@@ -560,7 +992,8 @@ const char *SNES::systemName(unsigned int type) const
 			// localization is necessary.
 			return sysNames_BSX[idx];
 		default:
-			// Unknown.
+			// Should not get here...
+			assert(!"Invalid ROM type.");
 			return nullptr;
 	}
 
@@ -666,6 +1099,68 @@ const char *const *SNES::supportedMimeTypes_static(void)
 }
 
 /**
+ * Get a bitfield of image types this class can retrieve.
+ * @return Bitfield of supported image types. (ImageTypesBF)
+ */
+uint32_t SNES::supportedImageTypes_static(void)
+{
+	return IMGBF_EXT_TITLE_SCREEN;
+}
+
+/**
+ * Get a list of all available image sizes for the specified image type.
+ * @param imageType Image type.
+ * @return Vector of available image sizes, or empty vector if no images are available.
+ */
+vector<RomData::ImageSizeDef> SNES::supportedImageSizes_static(ImageType imageType)
+{
+	ASSERT_supportedImageSizes(imageType);
+
+	switch (imageType) {
+		case IMG_EXT_TITLE_SCREEN: {
+			// NOTE: Some images might use high-resolution mode.
+			// 292 = floor((256 * 8) / 7)
+			static const ImageSizeDef sz_EXT_TITLE_SCREEN[] = {
+				{nullptr, 292, 224, 0},
+			};
+			return vector<ImageSizeDef>(sz_EXT_TITLE_SCREEN,
+				sz_EXT_TITLE_SCREEN + ARRAY_SIZE(sz_EXT_TITLE_SCREEN));
+		}
+		default:
+			break;
+	}
+
+	// Unsupported image type.
+	return vector<ImageSizeDef>();
+}
+
+/**
+ * Get image processing flags.
+ *
+ * These specify post-processing operations for images,
+ * e.g. applying transparency masks.
+ *
+ * @param imageType Image type.
+ * @return Bitfield of ImageProcessingBF operations to perform.
+ */
+uint32_t SNES::imgpf(ImageType imageType) const
+{
+	ASSERT_imgpf(imageType);
+
+	uint32_t ret = 0;
+	switch (imageType) {
+		case IMG_EXT_TITLE_SCREEN:
+			// Rescaling is required for the 8:7 pixel aspect ratio.
+			ret = IMGPF_RESCALE_ASPECT_8to7;
+			break;
+
+		default:
+			break;
+	}
+	return ret;
+}
+
+/**
  * Load field data.
  * Called by RomData::fields() if the field data hasn't been loaded yet.
  * @return Number of fields read on success; negative POSIX error code on error.
@@ -684,30 +1179,32 @@ int SNES::loadFieldData(void)
 		return -EIO;
 	}
 
-	// ROM file header is read and byteswapped in the constructor.
+	// ROM file header is read in the constructor.
 	const SNES_RomHeader *const romHeader = &d->romHeader;
 	d->fields->reserve(8); // Maximum of 8 fields.
 
 	// Cartridge HW.
 	// TODO: Make this translatable.
 	static const char *const hw_base_tbl[16] = {
-		"ROM", "ROM, RAM", "ROM, RAM, Battery",
-		"ROM, ", "ROM, RAM, ", "ROM, RAM, Battery, ",
-		"ROM, Battery, ", nullptr,
+		// 0
+		"ROM", "ROM, RAM", "ROM, RAM, Battery", "ROM, ",
+		"ROM, RAM, ", "ROM, RAM, Battery, ", "ROM, Battery, ", nullptr,
 
-		nullptr, nullptr, nullptr, nullptr,
+		// 8
+		nullptr,
+		"ROM, RAM, Battery, RTC-4513, ",
+		"ROM, RAM, Battery, Overclocked ",
+		nullptr,
 		nullptr, nullptr, nullptr, nullptr
 	};
 	static const char *const hw_enh_tbl[16] = {
 		"DSP-1", "Super FX", "OBC-1", "SA-1",
-		"S-DD1", "Unknown", "Unknown", "Unknown",
+		"S-DD1", "S-RTC", "Unknown", "Unknown",
 		"Unknown", "Unknown", "Unknown", "Unknown",
 		"Unknown", "Unknown", "Other", "Custom Chip"
 	};
 
-	string title, cart_hw;
-	char gameID[7];
-	const char *publisher = nullptr;
+	string cart_hw;
 	uint8_t rom_mapping;
 
 	// Get the field data based on ROM type.
@@ -715,44 +1212,9 @@ int SNES::loadFieldData(void)
 		case SNESPrivate::ROM_SNES: {
 			// Super NES / Super Famicom ROM image.
 
-			// Title.
-			// NOTE: If the region code is JPN, the title might be encoded in Shift-JIS.
-			// TODO: Space elimination; China, Korea encodings?
-			if (romHeader->snes.destination_code == SNES_DEST_JAPAN) {
-				title = cp1252_sjis_to_utf8(romHeader->snes.title, sizeof(romHeader->snes.title));
-			} else {
-				title = cp1252_to_utf8(romHeader->snes.title, sizeof(romHeader->snes.title));
-			}
-
-			// Game ID.
-			// NOTE: Only valid if the old publisher code is 0x33.
-			if (romHeader->snes.old_publisher_code == 0x33) {
-				memcpy(gameID, romHeader->snes.ext.id4, 4);
-				if (romHeader->snes.ext.id4[2] == ' ' && romHeader->snes.ext.id4[3] == ' ') {
-					// Two-character ID.
-					// Don't append the publisher.
-					gameID[2] = 0;
-				} else {
-					// Four-character ID.
-					// Append the publisher.
-					gameID[4] = romHeader->snes.ext.new_publisher_code[0];
-					gameID[5] = romHeader->snes.ext.new_publisher_code[1];
-					gameID[6] = 0;
-				}
-			} else {
-				// No game ID.
-				gameID[0] = 0;
-			}
-
-			// Publisher.
-			if (romHeader->snes.old_publisher_code == 0x33) {
-				publisher = NintendoPublishers::lookup(romHeader->snes.ext.new_publisher_code);
-			} else {
-				publisher = NintendoPublishers::lookup_old(romHeader->snes.old_publisher_code);
-			}
-
 			// ROM mapping.
-			rom_mapping = romHeader->snes.rom_mapping;
+			rom_mapping = d->getSnesRomMapping(romHeader);
+			assert(rom_mapping != 0);
 
 			// Cartridge HW.
 			const char *const hw_base = hw_base_tbl[romHeader->snes.rom_type & SNES_ROMTYPE_ROM_MASK];
@@ -760,7 +1222,32 @@ int SNES::loadFieldData(void)
 				cart_hw = hw_base;
 				if ((romHeader->snes.rom_type & SNES_ROMTYPE_ROM_MASK) >= SNES_ROMTYPE_ROM_ENH) {
 					// Enhancement chip.
-					cart_hw += hw_enh_tbl[(romHeader->snes.rom_type & SNES_ROMTYPE_ENH_MASK) >> 4];
+					const uint8_t enh = (romHeader->snes.rom_type & SNES_ROMTYPE_ENH_MASK);
+					if (enh == SNES_ROMTYPE_ENH_CUSTOM) {
+						// Check the chipset subtype.
+						const char *subtype;
+						switch (romHeader->snes.ext.chipset_subtype) {
+							case SNES_CHIPSUBTYPE_SPC7110:
+								subtype = "SPC7110";
+								break;
+							case SNES_CHIPSUBTYPE_STO10_ST011:
+								subtype = "ST010/ST011";
+								break;
+							case SNES_CHIPSUBTYPE_STO18:
+								subtype = "ST018";
+								break;
+							case SNES_CHIPSUBTYPE_CX4:
+								subtype = "CX4";
+								break;
+							default:
+								subtype = hw_enh_tbl[SNES_ROMTYPE_ENH_CUSTOM >> 4];
+								break;
+						}
+						cart_hw += subtype;
+					} else {
+						// No subtype needed.
+						cart_hw += hw_enh_tbl[(romHeader->snes.rom_type & SNES_ROMTYPE_ENH_MASK) >> 4];
+					}
 				}
 			} else {
 				// Unknown cartridge HW.
@@ -772,18 +1259,6 @@ int SNES::loadFieldData(void)
 
 		case SNESPrivate::ROM_BSX: {
 			// Satellaview BS-X ROM image.
-
-			// Title.
-			// TODO: Space elimination?
-			title = cp1252_sjis_to_utf8(romHeader->bsx.title, sizeof(romHeader->bsx.title));
-
-			// NOTE: Game ID isn't available.
-			gameID[0] = 0;
-
-			// Publisher.
-			// NOTE: Old publisher code is always 0x33 or 0x00,
-			// so use the new publisher code.
-			publisher = NintendoPublishers::lookup(romHeader->bsx.ext.new_publisher_code);
 
 			// ROM mapping.
 			rom_mapping = romHeader->bsx.rom_mapping;
@@ -800,11 +1275,12 @@ int SNES::loadFieldData(void)
 	/** Add the field data. **/
 
 	// Title
-	d->fields->addField_string(C_("SNES", "Title"), title, RomFields::STRF_TRIM_END);
+	d->fields->addField_string(C_("RomData", "Title"), d->getRomTitle());
 
 	// Game ID
 	const char *const game_id_title = C_("SNES", "Game ID");
-	if (gameID[0] != 0) {
+	string gameID = d->getGameID();
+	if (!gameID.empty()) {
 		d->fields->addField_string(game_id_title, gameID);
 	} else if (d->romType == SNESPrivate::ROM_SNES) {
 		// Unknown game ID.
@@ -812,9 +1288,7 @@ int SNES::loadFieldData(void)
 	}
 
 	// Publisher
-	// TODO: Print the publisher code if the lookup returns nullptr.
-	d->fields->addField_string(C_("RomData", "Publisher"),
-		publisher ? publisher : C_("RomData", "Unknown"));
+	d->fields->addField_string(C_("RomData", "Publisher"), d->getPublisher());
 
 	// ROM mapping
 	// NOTE: Not translatable!
@@ -831,6 +1305,7 @@ int SNES::loadFieldData(void)
 		{SNES_ROMMAPPING_HiROM_FastROM,		"HiROM + FastROM"},
 		{SNES_ROMMAPPING_ExLoROM_FastROM,	"ExLoROM + FastROM"},
 		{SNES_ROMMAPPING_ExHiROM_FastROM,	"ExHiROM + FastROM"},
+		{SNES_ROMMAPPING_HiROM_FastROM_SPC7110,	"HiROM + SPC7110"},
 
 		{0, nullptr}
 	};
@@ -1001,11 +1476,145 @@ int SNES::loadFieldData(void)
 			return 0;
 	}
 
-
 	// TODO: Other fields.
 
 	// Finished reading the field data.
 	return static_cast<int>(d->fields->count());
+}
+
+/**
+ * Load metadata properties.
+ * Called by RomData::metaData() if the field data hasn't been loaded yet.
+ * @return Number of metadata properties read on success; negative POSIX error code on error.
+ */
+int SNES::loadMetaData(void)
+{
+	RP_D(SNES);
+	if (d->metaData != nullptr) {
+		// Metadata *has* been loaded...
+		return 0;
+	} else if (!d->file) {
+		// File isn't open.
+		return -EBADF;
+	} else if (!d->isValid || d->romType < 0) {
+		// Unknown ROM image type.
+		return -EIO;
+	}
+
+	// Create the metadata object.
+	d->metaData = new RomMetaData();
+	d->metaData->reserve(2);	// Maximum of 2 metadata properties.
+
+	// SNES ROM header
+	//const SNES_RomHeader *const romHeader = &d->romHeader;
+
+	// Title
+	string s_title = d->getRomTitle();
+	if (!s_title.empty()) {
+		d->metaData->addMetaData_string(Property::Title, s_title);
+	}
+
+	// Publisher
+	d->metaData->addMetaData_string(Property::Publisher, d->getPublisher());
+
+	// Finished reading the metadata.
+	return static_cast<int>(d->metaData->count());
+}
+
+/**
+ * Get a list of URLs for an external image type.
+ *
+ * A thumbnail size may be requested from the shell.
+ * If the subclass supports multiple sizes, it should
+ * try to get the size that most closely matches the
+ * requested size.
+ *
+ * @param imageType	[in]     Image type.
+ * @param pExtURLs	[out]    Output vector.
+ * @param size		[in,opt] Requested image size. This may be a requested
+ *                               thumbnail size in pixels, or an ImageSizeType
+ *                               enum value.
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int SNES::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
+{
+	ASSERT_extURLs(imageType, pExtURLs);
+	pExtURLs->clear();
+
+	RP_D(const SNES);
+	if (!d->isValid || d->romType < 0) {
+		// ROM image isn't valid.
+		return -EIO;
+	}
+
+	// Determine the region code based on the destination code.
+	char region_code[4] = {'\0', '\0', '\0', '\0'};
+	static const char RegionCode_tbl[] = {
+		'J', 'E', 'P', 'X', '\0', '\0', 'F', 'H',
+		'S', 'D', 'I', 'C', '\0',  'K', 'A', 'N',
+		'B', 'U', 'X', 'Y', 'Z'
+	};
+	if (d->romType == SNESPrivate::ROM_BSX) {
+		// BS-X. Use a separate "region".
+		region_code[0] = 'B';
+		region_code[1] = 'S';
+	} else if (d->romHeader.snes.destination_code < ARRAY_SIZE(RegionCode_tbl)) {
+		// SNES region code is in range.
+		region_code[0] = RegionCode_tbl[d->romHeader.snes.destination_code];
+	}
+
+	if (region_code[0] == '\0') {
+		// Unable to determine the region code.
+		// Assume a default value.
+		region_code[0] = 'U';
+		region_code[1] = 'n';
+		region_code[2] = 'k';
+	}
+
+	// Get the game ID.
+	string gameID = d->getGameID(true);
+	if (gameID.empty()) {
+		// No game ID. Image is not available.
+		return -ENOENT;
+	}
+
+	// NOTE: We only have one size for SNES right now.
+	RP_UNUSED(size);
+	vector<ImageSizeDef> sizeDefs = supportedImageSizes(imageType);
+	assert(sizeDefs.size() == 1);
+	if (sizeDefs.empty()) {
+		// No image sizes.
+		return -ENOENT;
+	}
+
+	// NOTE: RPDB's title screen database only has one size.
+	// There's no need to check image sizes, but we need to
+	// get the image size for the extURLs struct.
+
+	// Determine the image type name.
+	const char *imageTypeName;
+	const char *ext;
+	switch (imageType) {
+		case IMG_EXT_TITLE_SCREEN:
+			imageTypeName = "title";
+			ext = ".png";
+			break;
+		default:
+			// Unsupported image type.
+			return -ENOENT;
+	}
+
+	// Add the URLs.
+	pExtURLs->resize(1);
+	auto extURL_iter = pExtURLs->begin();
+	extURL_iter->url = d->getURL_RPDB("snes", imageTypeName, region_code, gameID.c_str(), ext);
+	extURL_iter->cache_key = d->getCacheKey_RPDB("snes", imageTypeName, region_code, gameID.c_str(), ext);
+	extURL_iter->width = sizeDefs[0].width;
+	extURL_iter->height = sizeDefs[0].height;
+	extURL_iter->high_res = (sizeDefs[0].index >= 2);
+
+	// All URLs added.
+	return 0;
 }
 
 }

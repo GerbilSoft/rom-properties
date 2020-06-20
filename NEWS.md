@@ -8,12 +8,20 @@
     and XDBF sections, since we don't have the full executable in a delta patch.
   * Xbox360_STFS: Partial support for handling the embedded default.xex and/or
     default.xexp file using the Xbox360_XEX class.
-  * Game Boy, Game Boy Color, Game Boy Advance: Added external title screen
-    images using the official ROM Properties online database server.
+  * Added external title screen images using the official ROM Properties online
+    database server.
+    * Supported systems: Game Boy (original, Color, Advance), Super NES
   * Game Boy Advance: Added metadata properties for Title and Publisher.
     (Same as Game Boy and Game Boy Color.)
   * NES: Added more (unused) mappers for TNES format.
   * GameCube: Added support for split .wbfs/.wbf1 files.
+  * SNES: Significantly improved detection for ROM images with headers that
+    don't quite match the specification. Added SPC7110 and other custom chip
+    detection.
+  * SNES: Added metadata properties.
+  * SufamiTurbo: New parser for Sufami Turbo mini-carts for Super Famicom.
+    This could have been part of SNES, but the header is completely different
+    and is always located at $0000.
 
 * Bug fixes:
   * WiiWAD: Fix DLC icons no longer working after updating CBCReader to update

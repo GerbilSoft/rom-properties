@@ -37,6 +37,7 @@ typedef enum {
 	SNES_ROMMAPPING_FLAG_ExLoROM = 0x02,
 	SNES_ROMMAPPING_FLAG_SA_1    = 0x03,
 	SNES_ROMMAPPING_FLAG_ExHiROM = 0x05,
+	SNES_ROMMAPPING_FLAG_HiROM_SPC7110 = 0x0A,
 
 	// ROM speed flags.
 	SNES_ROMMAPPING_FLAG_SlowROM = 0x00,
@@ -52,6 +53,7 @@ typedef enum {
 	SNES_ROMMAPPING_HiROM_FastROM   = 0x31,
 	SNES_ROMMAPPING_ExLoROM_FastROM = 0x32,
 	SNES_ROMMAPPING_ExHiROM_FastROM = 0x35,
+	SNES_ROMMAPPING_HiROM_FastROM_SPC7110 = 0x3A,
 } SNES_ROM_Mapping;
 
 /**
@@ -66,25 +68,38 @@ typedef enum {
 	// TODO: Verify with an emulator.
 
 	// Low nybble.
-	SNES_ROMTYPE_ROM		= 0x00,
-	SNES_ROMTYPE_ROM_RAM		= 0x01,
-	SNES_ROMTYPE_ROM_RAM_BATT	= 0x02,
-	SNES_ROMTYPE_ROM_ENH		= 0x03,
-	SNES_ROMTYPE_ROM_RAM_ENH	= 0x04,
-	SNES_ROMTYPE_ROM_RAM_BATT_ENH	= 0x05,
-	SNES_ROMTYPE_ROM_BATT_ENH	= 0x06,
-	SNES_ROMTYPE_ROM_MASK		= 0x0F,
+	SNES_ROMTYPE_ROM			= 0x00,
+	SNES_ROMTYPE_ROM_RAM			= 0x01,
+	SNES_ROMTYPE_ROM_RAM_BATT		= 0x02,
+	SNES_ROMTYPE_ROM_ENH			= 0x03,
+	SNES_ROMTYPE_ROM_RAM_ENH		= 0x04,
+	SNES_ROMTYPE_ROM_RAM_BATT_ENH		= 0x05,
+	SNES_ROMTYPE_ROM_BATT_ENH		= 0x06,
+	SNES_ROMTYPE_ROM_BATT_RTC_4513_ENH	= 0x09,
+	SNES_ROMTYPE_ROM_BATT_RTC_GSU1_ENH	= 0x0A,
+	SNES_ROMTYPE_ROM_MASK			= 0x0F,
 
 	// High nybble.
 	SNES_ROMTYPE_ENH_DSP1		= 0x00,
-	SNES_ROMTYPE_ENH_SUPERFX	= 0x10,
+	SNES_ROMTYPE_ENH_SUPERFX	= 0x10,	// GSU-1 (Star Fox, Stunt Race FX, etc.)
 	SNES_ROMTYPE_ENH_OBC1		= 0x20,	// Metal Combat: Falcon's Revenge
 	SNES_ROMTYPE_ENH_SA_1		= 0x30,
 	SNES_ROMTYPE_ENH_S_DD1		= 0x40,	// Star Ocean, Street Fighter Alpha 2
+	SNES_ROMTYPE_ENH_S_RTC		= 0x50,
 	SNES_ROMTYPE_ENH_OTHER		= 0xE0,
 	SNES_ROMTYPE_ENH_CUSTOM		= 0xF0,
 	SNES_ROMTYPE_ENH_MASK		= 0xF0,
 } SNES_ROM_Type;
+
+/**
+ * Chipset subtype for custom cart HW. (0xFx) [0x7FBF]
+ */
+typedef enum {
+	SNES_CHIPSUBTYPE_SPC7110	= 0x00,
+	SNES_CHIPSUBTYPE_STO10_ST011	= 0x01,
+	SNES_CHIPSUBTYPE_STO18		= 0x02,
+	SNES_CHIPSUBTYPE_CX4		= 0x10,
+} SNES_Chipset_Subtype;
 
 /**
  * Super Nintendo ROM header.
@@ -111,7 +126,7 @@ typedef struct PACKED _SNES_RomHeader {
 				uint8_t exp_flash_size;		// [0x7FBC] Expansion FLASH size.
 				uint8_t exp_ram_size;		// [0x7FBD] Expansion RAM size.
 				uint8_t special_version;	// [0x7FBE]
-				uint8_t cart_type;		// [0x7FBF]
+				uint8_t chipset_subtype;	// [0x7FBF] For custom cart HW. (0xFx)
 			} ext;
 
 			/** Standard SNES header. **/

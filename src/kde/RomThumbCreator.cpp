@@ -114,15 +114,29 @@ class RomThumbCreatorPrivate : public TCreateThumbnail<QImage>
 		}
 
 		/**
-		 * Rescale an ImgClass using nearest-neighbor scaling.
+		 * Rescale an ImgClass using the specified scaling method.
 		 * @param imgClass ImgClass object.
 		 * @param sz New size.
+		 * @param method Scaling method.
 		 * @return Rescaled ImgClass.
 		 */
-		inline QImage rescaleImgClass(const QImage &imgClass, const ImgSize &sz) const final
+		inline QImage rescaleImgClass(const QImage &imgClass, const ImgSize &sz, ScalingMethod method = ScalingMethod::Nearest) const final
 		{
-			return imgClass.scaled(sz.width, sz.height,
-				Qt::KeepAspectRatio, Qt::FastTransformation);
+			Qt::TransformationMode mode;
+			switch (method) {
+				case ScalingMethod::Nearest:
+					mode = Qt::FastTransformation;
+					break;
+				case ScalingMethod::Bilinear:
+					mode = Qt::SmoothTransformation;
+					break;
+				default:
+					assert(!"Invalid scaling method.");
+					mode = Qt::FastTransformation;
+					break;
+			}
+
+			return imgClass.scaled(sz.width, sz.height, Qt::IgnoreAspectRatio, mode);
 		}
 
 		/**

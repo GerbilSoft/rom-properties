@@ -87,7 +87,7 @@ button.
 |           System          | Properties Tab | Metadata | Internal Images | External Scans |
 |:-------------------------:|:--------------:|:--------:|:---------------:|:--------------:|
 | NES                       |       Yes      |    No    |       N/A       |       No       |
-| Super NES                 |       Yes      |    No    |       N/A       |       No       |
+| Super NES                 |       Yes      |    Yes   |       N/A       |      Title     |
 | Microsoft Xbox (XBE)      |       Yes      |    Yes   |       Icon      |       No       |
 | Microsoft Xbox 360 (XEX)  |       Yes      |    Yes   |       Icon      |       No       |
 | Microsoft Xbox 360 (STFS) |       Yes      |    Yes   |       Icon      |       No       |
@@ -116,9 +116,9 @@ button.
 |:-----------------------------:|:--------------:|:--------:|:---------------:|:--------------:|
 | Atari Lynx                    |       Yes      |    No    |       N/A       |       No       |
 | Neo Geo Pocket (Color)        |       Yes      |    Yes   |       N/A       |       No       |
-| Nintendo Game Boy (Color)     |       Yes      |    Yes   |      Title      |       No       |
+| Nintendo Game Boy (Color)     |       Yes      |    Yes   |       N/Ae      |      Title     |
 | Nintendo Virtual Boy          |       Yes      |    No    |       N/A       |       No       |
-| Nintendo Game Boy Advance     |       Yes      |    Yes   |      Title      |       No       |
+| Nintendo Game Boy Advance     |       Yes      |    Yes   |       N/A       |      Title     |
 | Nintendo DS(i)                |       Yes      |    Yes   |       Icon      |  Covers, Box   |
 | Nintendo 3DS                  |       Yes      |    Yes   |       Icon      |  Covers, Box   |
 | Pokémon Mini                  |       Yes      |    Yes   |       N/A       |       No       |

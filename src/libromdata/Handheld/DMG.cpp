@@ -1193,7 +1193,7 @@ int DMG::loadMetaData(void)
 
 	// Create the metadata object.
 	d->metaData = new RomMetaData();
-	d->metaData->reserve(1);	// Maximum of 1 metadata property.
+	d->metaData->reserve(2);	// Maximum of 2 metadata properties.
 
 	// DMG ROM header
 	//const DMG_RomHeader *const romHeader = &d->romHeader;
@@ -1204,8 +1204,10 @@ int DMG::loadMetaData(void)
 	// TODO: Remove STRF_TRIM_END, since we're doing that ourselves?
 	string s_title, s_gameID;
 	d->getTitleAndGameID(s_title, s_gameID);
-	d->metaData->addMetaData_string(Property::Title,
-		s_title, RomMetaData::STRF_TRIM_END);
+	if (!s_title.empty()) {
+		d->metaData->addMetaData_string(Property::Title,
+			s_title, RomMetaData::STRF_TRIM_END);
+	}
 
 	// Publisher
 	d->metaData->addMetaData_string(Property::Publisher, d->getPublisher());
@@ -1353,13 +1355,20 @@ int DMG::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
 		// Image filename is based on the title, plus publisher
 		// code, plus "-J" if region is set to Japanese (0).
 
-		// Replace spaces with "%20".
-		img_filename.reserve(s_title.size());
+		// Manually filter out characters that are rejected by CacheKeys.
+		img_filename.reserve(s_title.size() + 8);
 		for (auto iter = s_title.cbegin(); iter != s_title.cend(); ++iter) {
-			if (unlikely(*iter == ' ')) {
-				img_filename += "%20";
-			} else {
-				img_filename += *iter;
+			switch (*iter) {
+				case ':':
+				case '/':
+				case '\\':
+				case '*':
+				case '?':
+					img_filename += '_';
+					break;
+				default:
+					img_filename += *iter;
+					break;
 			}
 		}
 
@@ -1384,7 +1393,7 @@ int DMG::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
 		// Special cases for ROM images with identical titles.
 		struct DmgSpecialCase_t {
 			uint8_t flags;
-			char title[16];
+			char title[17];
 			char publisher[3];
 		};
 		static const DmgSpecialCase_t dmgSpecialCases[] = {
@@ -1400,7 +1409,6 @@ int DMG::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
 			// CGB; Non-JP
 			{DMG_CHECK_REGION | DMG_REGION_OTHER | DMG_IS_CGB,	"BUGS BUNNY", ""},
 			{DMG_CHECK_REGION | DMG_REGION_OTHER | DMG_IS_CGB,	"COOL HAND", ""},
-			{DMG_CHECK_REGION | DMG_REGION_OTHER | DMG_IS_CGB,	"GB SMART CARD", ""},
 			{DMG_CHECK_REGION | DMG_REGION_OTHER | DMG_IS_CGB,	"HARVEST-MOON GB", ""},
 			{DMG_CHECK_REGION | DMG_REGION_OTHER | DMG_IS_CGB,	"SHADOWGATE CLAS", ""},
 			{DMG_CHECK_REGION | DMG_REGION_OTHER | DMG_IS_CGB,	"SHANGHAI POCKET", ""},
@@ -1415,6 +1423,15 @@ int DMG::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
 
 			// Non-CGB; no region check.
 			{0, "TOM AND JERRY", ""},
+
+			// Unlicensed DMG titles.
+			{DMG_CHECK_REGION | DMG_REGION_JP,			"MENU", "00"},
+			{DMG_CHECK_REGION | DMG_REGION_JP,			"TEST", "00"},
+			{DMG_CHECK_REGION | DMG_REGION_OTHER,			"SGBPACK", "01"},
+
+			// Unlicensed CGB titles.
+			{DMG_CHECK_REGION | DMG_REGION_OTHER | DMG_IS_CGB,	"GB SMART CARD", ""},
+			{DMG_CHECK_REGION | DMG_REGION_JP | DMG_IS_CGB,		"DIGIMON 5", "MK"},
 
 			{0, "", ""}
 		};
@@ -1470,6 +1487,9 @@ int DMG::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
 
 			// F-1 Racing Championship (E) - slightly different copyright text on CGB
 			"AEQP41",
+
+			// Pokémon Crystal (U) - "Pokémon 2004" hack has the same game ID.
+			"BYTE01",
 
 			""
 		};

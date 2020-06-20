@@ -27,10 +27,11 @@ SET(libromdata_SRCS
 	Console/MegaDriveRegions.cpp
 	Console/N64.cpp
 	Console/NES.cpp
+	Console/PlayStationSave.cpp
 	Console/Sega8Bit.cpp
 	Console/SegaSaturn.cpp
 	Console/SNES.cpp
-	Console/PlayStationSave.cpp
+	Console/SufamiTurbo.cpp
 	Console/WiiCommon.cpp
 	Console/WiiSave.cpp
 	Console/WiiU.cpp
@@ -136,6 +137,7 @@ SET(libromdata_H
 	Console/Sega8Bit.hpp
 	Console/SegaSaturn.hpp
 	Console/SNES.hpp
+	Console/SufamiTurbo.hpp
 	Console/WiiCommon.hpp
 	Console/WiiSave.hpp
 	Console/WiiU.hpp
@@ -159,6 +161,7 @@ SET(libromdata_H
 	Console/saturn_structs.h
 	Console/sega8_structs.h
 	Console/snes_structs.h
+	Console/st_structs.h
 	Console/wii_structs.h
 	Console/wii_banner.h
 	Console/wii_wad.h

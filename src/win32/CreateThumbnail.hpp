@@ -64,12 +64,13 @@ class CreateThumbnail : public LibRomData::TCreateThumbnail<HBITMAP>
 		}
 
 		/**
-		 * Rescale an ImgClass using nearest-neighbor scaling.
+		 * Rescale an ImgClass using the specified scaling method.
 		 * @param imgClass ImgClass object.
 		 * @param sz New size.
+		 * @param method Scaling method.
 		 * @return Rescaled ImgClass.
 		 */
-		HBITMAP rescaleImgClass(const HBITMAP &imgClass, const ImgSize &sz) const override;
+		HBITMAP rescaleImgClass(const HBITMAP &imgClass, const ImgSize &sz, ScalingMethod method = ScalingMethod::Nearest) const override;
 
 		/**
 		 * Get the size of the specified ImgClass.
@@ -117,12 +118,13 @@ class CreateThumbnailNoAlpha : public CreateThumbnail
 		HBITMAP rpImageToImgClass(const LibRpTexture::rp_image *img) const final;
 
 		/**
-		 * Rescale an ImgClass using nearest-neighbor scaling.
+		 * Rescale an ImgClass using the specified scaling method.
 		 * @param imgClass ImgClass object.
 		 * @param sz New size.
+		 * @param method Scaling method.
 		 * @return Rescaled ImgClass.
 		 */
-		HBITMAP rescaleImgClass(const HBITMAP &imgClass, const ImgSize &sz) const final;
+		HBITMAP rescaleImgClass(const HBITMAP &imgClass, const ImgSize &sz, ScalingMethod method = ScalingMethod::Nearest) const final;
 };
 
 #endif /* __ROMPROPERTIES_WIN32_CREATETHUMBNAIL_HPP__ */

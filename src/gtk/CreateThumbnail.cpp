@@ -93,15 +93,15 @@ class CreateThumbnailPrivate : public TCreateThumbnail<PIMGTYPE>
 		}
 
 		/**
-		 * Rescale an ImgClass using nearest-neighbor scaling.
+		 * Rescale an ImgClass using the specified scaling method.
 		 * @param imgClass ImgClass object.
 		 * @param sz New size.
+		 * @param method Scaling method.
 		 * @return Rescaled ImgClass.
 		 */
-		inline PIMGTYPE rescaleImgClass(const PIMGTYPE &imgClass, const ImgSize &sz) const final
+		inline PIMGTYPE rescaleImgClass(const PIMGTYPE &imgClass, const ImgSize &sz, ScalingMethod method = ScalingMethod::Nearest) const final
 		{
-			// TODO: Interpolation option?
-			return PIMGTYPE_scale(imgClass, sz.width, sz.height, false);
+			return PIMGTYPE_scale(imgClass, sz.width, sz.height, (method == ScalingMethod::Bilinear));
 		}
 
 		/**

@@ -208,13 +208,19 @@ class TCreateThumbnail
 		 */
 		virtual void freeImgClass(ImgClass &imgClass) const = 0;
 
+		enum class ScalingMethod {
+			Nearest = 0,
+			Bilinear = 1,
+		};
+
 		/**
-		 * Rescale an ImgClass using nearest-neighbor scaling.
+		 * Rescale an ImgClass using the specified scaling method.
 		 * @param imgClass ImgClass object.
 		 * @param sz New size.
+		 * @param method Scaling method.
 		 * @return Rescaled ImgClass.
 		 */
-		virtual ImgClass rescaleImgClass(const ImgClass &imgClass, const ImgSize &sz) const = 0;
+		virtual ImgClass rescaleImgClass(const ImgClass &imgClass, const ImgSize &sz, ScalingMethod method = ScalingMethod::Nearest) const = 0;
 
 		/**
 		 * Get the size of the specified ImgClass.

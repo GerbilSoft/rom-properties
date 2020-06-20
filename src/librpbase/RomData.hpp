@@ -354,6 +354,11 @@ class RomData
 			// Call iconAnimData() to get the animated
 			// icon frames and control information.
 			IMGPF_ICON_ANIMATED	= (1U << 3),
+
+			// Image should be rescaled to an 8:7 aspect ratio.
+			// This is for Super NES, and only applies to images
+			// with 256px and 512px widths.
+			IMGPF_RESCALE_ASPECT_8to7	= (1U << 4),
 		};
 
 		struct ImageSizeDef {

@@ -398,6 +398,20 @@ string formatFileSize(off64_t size)
 }
 
 /**
+ * Format a file size, in KiB.
+ *
+ * This function expects the size to be a multiple of 1024,
+ * so it doesn't do any fractional rounding or printing.
+ *
+ * @param size File size.
+ * @return Formatted file size.
+ */
+std::string formatFileSizeKiB(unsigned int size)
+{
+	return rp_sprintf("%u %s", (size / 1024), C_("TextFuncs|FileSize", "KiB"));
+}
+
+/**
  * Remove trailing spaces from a string.
  * NOTE: This modifies the string *in place*.
  * @param str String.
