@@ -48,10 +48,12 @@ class IAesCipher
 		 */
 		virtual int setKey(const uint8_t *RESTRICT pKey, size_t size) = 0;
 
-		enum ChainingMode {
-			CM_ECB,
-			CM_CBC,
-			CM_CTR,
+		enum class ChainingMode {
+			ECB,
+			CBC,
+			CTR,
+
+			Max
 		};
 
 		/**

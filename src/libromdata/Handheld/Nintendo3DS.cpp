@@ -1942,7 +1942,7 @@ int Nintendo3DS::loadFieldData(void)
 			}
 		} else {
 			KeyManager::VerifyResult res = ncch->verifyResult();
-			if (!d->sbptr.srl.data && res != KeyManager::VERIFY_OK) {
+			if (!d->sbptr.srl.data && res != KeyManager::VerifyResult::OK) {
 				// Missing encryption keys.
 				if (!shownWarning) {
 					const char *err = KeyManager::verifyResultToString(res);
@@ -2033,14 +2033,14 @@ int Nintendo3DS::loadFieldData(void)
 					RomFields::STRF_WARNING);
 				shownWarning = true;
 			}
-		} else if (ncch->verifyResult() != KeyManager::VERIFY_OK) {
+		} else if (ncch->verifyResult() != KeyManager::VerifyResult::OK) {
 			// Missing encryption keys.
 			// TODO: This warning probably isn't needed,
 			// since it's handled above...
 			if (!shownWarning) {
 				KeyManager::VerifyResult res = (ncch
 					? ncch->verifyResult()
-					: KeyManager::VERIFY_UNKNOWN);
+					: KeyManager::VerifyResult::Unknown);
 				const char *err = KeyManager::verifyResultToString(res);
 				if (!err) {
 					err = C_("Nintendo3DS", "Unknown error. (THIS IS A BUG!)");

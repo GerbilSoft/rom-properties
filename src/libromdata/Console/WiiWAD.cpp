@@ -127,7 +127,7 @@ WiiWADPrivate::WiiWADPrivate(WiiWAD *q, IRpFile *file)
 	, wibnData(nullptr)
 #endif /* ENABLE_DECRYPTION */
 	, key_idx(WiiPartition::Key_Max)
-	, key_status(KeyManager::VERIFY_UNKNOWN)
+	, key_status(KeyManager::VerifyResult::Unknown)
 {
 	// Clear the various structs.
 	memset(&wadHeader, 0, sizeof(wadHeader));
@@ -349,7 +349,7 @@ WiiWAD::WiiWAD(IRpFile *file)
 	// Get and verify the key.
 	KeyManager::KeyData_t keyData;
 	d->key_status = keyManager->getAndVerify(keyName, &keyData, verifyData, 16);
-	if (d->key_status != KeyManager::VERIFY_OK) {
+	if (d->key_status != KeyManager::VerifyResult::OK) {
 		// Unable to get and verify the key.
 		return;
 	}
@@ -362,7 +362,7 @@ WiiWAD::WiiWAD(IRpFile *file)
 	// Parameters:
 	// - Chaining mode: CBC
 	// - IV: Title ID (little-endian)
-	cipher->setChainingMode(IAesCipher::CM_CBC);
+	cipher->setChainingMode(IAesCipher::ChainingMode::CBC);
 	cipher->setKey(keyData.key, keyData.length);
 	// Title key IV: High 8 bytes are the title ID (in big-endian), low 8 bytes are 0.
 	uint8_t iv[16];
@@ -420,7 +420,7 @@ WiiWAD::WiiWAD(IRpFile *file)
 	}
 #else /* !ENABLE_DECRYPTION */
 	// Cannot decrypt anything...
-	d->key_status = KeyManager::VERIFY_NO_SUPPORT;
+	d->key_status = KeyManager::VerifyResult::NoSupport;
 #endif /* ENABLE_DECRYPTION */
 }
 
@@ -684,7 +684,7 @@ int WiiWAD::loadFieldData(void)
 	const RVL_TMD_Header *const tmdHeader = &d->tmdHeader;
 	d->fields->reserve(12);	// Maximum of 12 fields.
 
-	if (d->key_status != KeyManager::VERIFY_OK) {
+	if (d->key_status != KeyManager::VerifyResult::OK) {
 		// Unable to get the decryption key.
 		const char *err = KeyManager::verifyResultToString(d->key_status);
 		if (!err) {

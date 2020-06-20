@@ -70,13 +70,13 @@ inline ::std::ostream& operator<<(::std::ostream& os, const AesCipherTest_mode& 
 {
 	const char *cm_str;
 	switch (mode.chainingMode) {
-		case IAesCipher::CM_ECB:
+		case IAesCipher::ChainingMode::ECB:
 			cm_str = "ECB";
 			break;
-		case IAesCipher::CM_CBC:
+		case IAesCipher::ChainingMode::CBC:
 			cm_str = "CBC";
 			break;
-		case IAesCipher::CM_CTR:
+		case IAesCipher::ChainingMode::CTR:
 			cm_str = "CTR";
 			break;
 		default:
@@ -272,14 +272,14 @@ TEST_P(AesCipherTest, decryptTest_keyThenChaining)
 	EXPECT_EQ(0, m_cipher->setChainingMode(mode.chainingMode));
 
 	switch (mode.chainingMode) {
-		case IAesCipher::CM_CBC:
-		case IAesCipher::CM_CTR:
+		case IAesCipher::ChainingMode::CBC:
+		case IAesCipher::ChainingMode::CTR:
 			// CBC requires an initialization vector.
 			// CTR requires an initial counter value.
 			EXPECT_EQ(0, m_cipher->setIV(aes_iv, sizeof(aes_iv)));
 			break;
 
-		case IAesCipher::CM_ECB:
+		case IAesCipher::ChainingMode::ECB:
 		default:
 			// ECB doesn't use an initialization vector.
 			// setIV() should fail.
@@ -314,14 +314,14 @@ TEST_P(AesCipherTest, decryptTest_chainingThenKey)
 	EXPECT_EQ(0, m_cipher->setKey(aes_key, mode.key_len));
 
 	switch (mode.chainingMode) {
-		case IAesCipher::CM_CBC:
-		case IAesCipher::CM_CTR:
+		case IAesCipher::ChainingMode::CBC:
+		case IAesCipher::ChainingMode::CTR:
 			// CBC requires an initialization vector.
 			// CTR requires an initial counter value.
 			EXPECT_EQ(0, m_cipher->setIV(aes_iv, sizeof(aes_iv)));
 			break;
 
-		case IAesCipher::CM_ECB:
+		case IAesCipher::ChainingMode::ECB:
 		default:
 			// ECB doesn't use an initialization vector.
 			// setIV() should fail.
@@ -358,14 +358,14 @@ TEST_P(AesCipherTest, decryptTest_blockAtATime)
 	EXPECT_EQ(0, m_cipher->setKey(aes_key, mode.key_len));
 
 	switch (mode.chainingMode) {
-		case IAesCipher::CM_CBC:
-		case IAesCipher::CM_CTR:
+		case IAesCipher::ChainingMode::CBC:
+		case IAesCipher::ChainingMode::CTR:
 			// CBC requires an initialization vector.
 			// CTR requires an initial counter value.
 			EXPECT_EQ(0, m_cipher->setIV(aes_iv, sizeof(aes_iv)));
 			break;
 
-		case IAesCipher::CM_ECB:
+		case IAesCipher::ChainingMode::ECB:
 		default:
 			// ECB doesn't use an initialization vector.
 			// setIV() should fail.
@@ -400,13 +400,13 @@ string AesCipherTest::test_case_suffix_generator(const ::testing::TestParamInfo<
 
 	const char *cm_str;
 	switch (info.param.chainingMode) {
-		case IAesCipher::CM_ECB:
+		case IAesCipher::ChainingMode::ECB:
 			cm_str = "ECB";
 			break;
-		case IAesCipher::CM_CBC:
+		case IAesCipher::ChainingMode::CBC:
 			cm_str = "CBC";
 			break;
-		case IAesCipher::CM_CTR:
+		case IAesCipher::ChainingMode::CTR:
 			cm_str = "CTR";
 			break;
 		default:
@@ -525,41 +525,41 @@ static IAesCipher *createIAesCipher_##klass(void) { \
 INSTANTIATE_TEST_CASE_P(AesDecryptTest_##klass, AesCipherTest, \
 	::testing::Values( \
 		AesCipherTest_mode(createIAesCipher_##klass, (isRequired), \
-			IAesCipher::CM_ECB, 16, \
+			IAesCipher::ChainingMode::ECB, 16, \
 			aes128ecb_ciphertext, \
 			sizeof(aes128ecb_ciphertext)), \
 		AesCipherTest_mode(createIAesCipher_##klass, (isRequired), \
-			IAesCipher::CM_ECB, 24, \
+			IAesCipher::ChainingMode::ECB, 24, \
 			aes192ecb_ciphertext, \
 			sizeof(aes192ecb_ciphertext)), \
 		AesCipherTest_mode(createIAesCipher_##klass, (isRequired), \
-			IAesCipher::CM_ECB, 32, \
+			IAesCipher::ChainingMode::ECB, 32, \
 			aes256ecb_ciphertext, \
 			sizeof(aes256ecb_ciphertext)), \
 		\
 		AesCipherTest_mode(createIAesCipher_##klass, (isRequired), \
-			IAesCipher::CM_CBC, 16, \
+			IAesCipher::ChainingMode::CBC, 16, \
 			aes128cbc_ciphertext, \
 			sizeof(aes128cbc_ciphertext)), \
 		AesCipherTest_mode(createIAesCipher_##klass, (isRequired), \
-			IAesCipher::CM_CBC, 24, \
+			IAesCipher::ChainingMode::CBC, 24, \
 			aes192cbc_ciphertext, \
 			sizeof(aes192cbc_ciphertext)), \
 		AesCipherTest_mode(createIAesCipher_##klass, (isRequired), \
-			IAesCipher::CM_CBC, 32, \
+			IAesCipher::ChainingMode::CBC, 32, \
 			aes256cbc_ciphertext, \
 			sizeof(aes256cbc_ciphertext)), \
 		\
 		AesCipherTest_mode(createIAesCipher_##klass, (isRequired), \
-			IAesCipher::CM_CTR, 16, \
+			IAesCipher::ChainingMode::CTR, 16, \
 			aes128ctr_ciphertext, \
 			sizeof(aes128ctr_ciphertext)), \
 		AesCipherTest_mode(createIAesCipher_##klass, (isRequired), \
-			IAesCipher::CM_CTR, 24, \
+			IAesCipher::ChainingMode::CTR, 24, \
 			aes192ctr_ciphertext, \
 			sizeof(aes192ctr_ciphertext)), \
 		AesCipherTest_mode(createIAesCipher_##klass, (isRequired), \
-			IAesCipher::CM_CTR, 32, \
+			IAesCipher::ChainingMode::CTR, 32, \
 			aes256ctr_ciphertext, \
 			sizeof(aes256ctr_ciphertext)) \
 		) \

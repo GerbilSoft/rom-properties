@@ -116,26 +116,26 @@ class RpPngWriterPrivate
 		// NOTE: The public class constructor must NOT ref() file.
 		// ref() is done here if needed.
 		RpPngWriterPrivate(IRpFile *file, int width, int height, rp_image::Format format)
-			: lastError(0), file(nullptr), imageTag(IMGT_INVALID)
+			: lastError(0), file(nullptr), imageTag(ImageTag::Invalid)
 			, png_ptr(nullptr), info_ptr(nullptr), IHDR_written(false)
 		{
 			init(file, width, height, format);
 		}
 		RpPngWriterPrivate(IRpFile *file, const rp_image *img)
-			: lastError(0), file(nullptr), imageTag(IMGT_INVALID)
+			: lastError(0), file(nullptr), imageTag(ImageTag::Invalid)
 			, png_ptr(nullptr), info_ptr(nullptr), IHDR_written(false)
 		{
 			init(file, img);
 		}
 		RpPngWriterPrivate(IRpFile *file, const IconAnimData *iconAnimData)
-			: lastError(0), file(nullptr), imageTag(IMGT_INVALID)
+			: lastError(0), file(nullptr), imageTag(ImageTag::Invalid)
 			, png_ptr(nullptr), info_ptr(nullptr), IHDR_written(false)
 		{
 			init(file, iconAnimData);
 		}
 
 		RpPngWriterPrivate(const char *filename, int width, int height, rp_image::Format format)
-			: lastError(0), file(nullptr), imageTag(IMGT_INVALID)
+			: lastError(0), file(nullptr), imageTag(ImageTag::Invalid)
 			, png_ptr(nullptr), info_ptr(nullptr), IHDR_written(false)
 		{
 			RpFile *const file = (filename ? new RpFile(filename, RpFile::FM_CREATE_WRITE) : nullptr);
@@ -145,7 +145,7 @@ class RpPngWriterPrivate
 			}
 		}
 		RpPngWriterPrivate(const char *filename, const rp_image *img)
-			: lastError(0), file(nullptr), imageTag(IMGT_INVALID)
+			: lastError(0), file(nullptr), imageTag(ImageTag::Invalid)
 			, png_ptr(nullptr), info_ptr(nullptr), IHDR_written(false)
 		{
 			RpFile *const file = (filename ? new RpFile(filename, RpFile::FM_CREATE_WRITE) : nullptr);
@@ -155,7 +155,7 @@ class RpPngWriterPrivate
 			}
 		}
 		RpPngWriterPrivate(const char *filename, const IconAnimData *iconAnimData)
-			: lastError(0), file(nullptr), imageTag(IMGT_INVALID)
+			: lastError(0), file(nullptr), imageTag(ImageTag::Invalid)
 			, png_ptr(nullptr), info_ptr(nullptr), IHDR_written(false)
 		{
 			RpFile *const file = (filename ? new RpFile(filename, RpFile::FM_CREATE_WRITE) : nullptr);
@@ -184,12 +184,13 @@ class RpPngWriterPrivate
 		IRpFile *file;
 
 		// Image and/or animated image data to save.
-		enum {
-			IMGT_INVALID = 0,	// Invalid image.
-			IMGT_RAW,		// Raw image.
-			IMGT_RP_IMAGE,		// rp_image
-			IMGT_ICONANIMDATA,	// iconAnimData
-		} imageTag;
+		enum class ImageTag {
+			Invalid = 0,	// Invalid image.
+			Raw,		// Raw image.
+			RpImage,	// rp_image
+			IconAnimData,	// iconAnimData
+		};
+		ImageTag imageTag;
 		union {
 			const rp_image *img;
 			const IconAnimData *iconAnimData;
@@ -417,7 +418,7 @@ void RpPngWriterPrivate::init(IRpFile *file, int width, int height, rp_image::Fo
 
 	// Cache the image parameters.
 	// NOTE: sBIT is specified in write_IHDR().
-	imageTag = IMGT_RAW;
+	imageTag = ImageTag::Raw;
 	cache.width = width;
 	cache.height = height;
 	cache.format = format;
@@ -478,7 +479,7 @@ void RpPngWriterPrivate::init(IRpFile *file, const rp_image *img)
 	}
 
 	// Cache the image parameters.
-	imageTag = IMGT_RP_IMAGE;
+	imageTag = ImageTag::RpImage;
 	cache.setFrom(img);
 }
 
@@ -509,9 +510,9 @@ void RpPngWriterPrivate::init(IRpFile *file, const IconAnimData *iconAnimData)
 			lastError = ENOTSUP;
 			return;
 		}
-		imageTag = IMGT_ICONANIMDATA;
+		imageTag = ImageTag::IconAnimData;
 	} else {
-		imageTag = IMGT_RP_IMAGE;
+		imageTag = ImageTag::RpImage;
 	}
 
 	if (!file->isOpen()) {
@@ -539,7 +540,7 @@ void RpPngWriterPrivate::init(IRpFile *file, const IconAnimData *iconAnimData)
 	file->rewind();
 
 	// Set img or iconAnimData.
-	if (imageTag == IMGT_ICONANIMDATA) {
+	if (imageTag == ImageTag::IconAnimData) {
 		this->iconAnimData = iconAnimData;
 		// Cache the image parameters.
 		const rp_image *const img0 = iconAnimData->frames[iconAnimData->seq_index[0]];
@@ -547,7 +548,7 @@ void RpPngWriterPrivate::init(IRpFile *file, const IconAnimData *iconAnimData)
 		if (unlikely(!img0)) {
 			// Invalid animated image.
 			lastError = EINVAL;
-			imageTag = IMGT_INVALID;
+			imageTag = ImageTag::Invalid;
 		}
 		cache.setFrom(img0);
 	} else {
@@ -571,7 +572,7 @@ RpPngWriterPrivate::~RpPngWriterPrivate()
 {
 	this->close();
 
-	if (imageTag == IMGT_ICONANIMDATA) {
+	if (imageTag == ImageTag::IconAnimData) {
 		// Unreference APNG.
 		APNG_unref();
 	}
@@ -733,9 +734,9 @@ int RpPngWriterPrivate::write_CI8_palette(void)
 int RpPngWriterPrivate::write_IDAT(const png_byte *const *row_pointers, bool is_abgr)
 {
 	assert(file != nullptr);
-	assert(imageTag == IMGT_RAW || imageTag == IMGT_RP_IMAGE);
+	assert(imageTag == ImageTag::Raw || imageTag == ImageTag::RpImage);
 	assert(IHDR_written);
-	if (unlikely(!file || (imageTag != IMGT_RAW && imageTag != IMGT_RP_IMAGE))) {
+	if (unlikely(!file || (imageTag != ImageTag::Raw && imageTag != ImageTag::RpImage))) {
 		// Invalid state.
 		lastError = EIO;
 		return -lastError;
@@ -793,9 +794,9 @@ int RpPngWriterPrivate::write_IDAT(void)
 {
 	assert(file != nullptr);
 	assert(img != nullptr);
-	assert(imageTag == IMGT_RP_IMAGE);
+	assert(imageTag == ImageTag::RpImage);
 	assert(IHDR_written);
-	if (unlikely(!file || !img || imageTag != IMGT_RP_IMAGE)) {
+	if (unlikely(!file || !img || imageTag != ImageTag::RpImage)) {
 		// Invalid state.
 		lastError = EIO;
 		return -lastError;
@@ -841,9 +842,9 @@ int RpPngWriterPrivate::write_IDAT_APNG(void)
 {
 	assert(file != nullptr);
 	assert(img != nullptr);
-	assert(imageTag == IMGT_ICONANIMDATA);
+	assert(imageTag == ImageTag::IconAnimData);
 	assert(IHDR_written);
-	if (unlikely(!file || !img || imageTag != IMGT_ICONANIMDATA)) {
+	if (unlikely(!file || !img || imageTag != ImageTag::IconAnimData)) {
 		// Invalid state.
 		lastError = EIO;
 		return -lastError;
@@ -1177,7 +1178,7 @@ int RpPngWriter::write_IHDR(void)
 			return -d->lastError;
 	}
 
-	if (d->imageTag == RpPngWriterPrivate::IMGT_ICONANIMDATA) {
+	if (d->imageTag == RpPngWriterPrivate::ImageTag::IconAnimData) {
 		// Write an acTL chunk to indicate that this is an APNG image.
 		png_set_acTL(d->png_ptr, d->info_ptr, d->iconAnimData->seq_count, 0);
 	}
@@ -1213,8 +1214,8 @@ int RpPngWriter::write_IHDR(void)
 int RpPngWriter::write_IHDR(const rp_image::sBIT_t *sBIT, const uint32_t *palette, int palette_len)
 {
 	RP_D(RpPngWriter);
-	assert(d->imageTag == RpPngWriterPrivate::IMGT_RAW);
-	if (d->imageTag != RpPngWriterPrivate::IMGT_RAW) {
+	assert(d->imageTag == RpPngWriterPrivate::ImageTag::Raw);
+	if (d->imageTag != RpPngWriterPrivate::ImageTag::Raw) {
 		// Can't be used for this type.
 		return -EINVAL;
 	}
@@ -1417,8 +1418,8 @@ int RpPngWriter::write_IDAT(const uint8_t *const *row_pointers, bool is_abgr)
 	}
 
 	RP_D(RpPngWriter);
-	assert(d->imageTag == RpPngWriterPrivate::IMGT_RAW);
-	if (unlikely(d->imageTag != RpPngWriterPrivate::IMGT_RAW)) {
+	assert(d->imageTag == RpPngWriterPrivate::ImageTag::Raw);
+	if (unlikely(d->imageTag != RpPngWriterPrivate::ImageTag::Raw)) {
 		// Can't be used for this type.
 		return -EINVAL;
 	}
@@ -1444,12 +1445,12 @@ int RpPngWriter::write_IDAT(void)
 	RP_D(RpPngWriter);
 	int ret = -1;
 	switch (d->imageTag) {
-		case RpPngWriterPrivate::IMGT_RP_IMAGE:
+		case RpPngWriterPrivate::ImageTag::RpImage:
 			// Write a regular PNG image.
 			ret = d->write_IDAT();
 			break;
 
-		case RpPngWriterPrivate::IMGT_ICONANIMDATA:
+		case RpPngWriterPrivate::ImageTag::IconAnimData:
 			// Write an animated PNG image.
 			// NOTE: d->isAnimated is only set if APNG is loaded,
 			// so we don't have to check it again here.

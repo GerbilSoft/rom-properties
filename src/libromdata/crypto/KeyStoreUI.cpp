@@ -211,7 +211,7 @@ KeyStoreUIPrivate::KeyStoreUIPrivate(KeyStoreUI *q)
 	// Make sure the cipher is usable.
 	if (cipher->isInit()) {
 		// Set the cipher parameters.
-		cipher->setChainingMode(IAesCipher::CM_ECB);
+		cipher->setChainingMode(IAesCipher::ChainingMode::ECB);
 	} else {
 		// Cipher is not usable.
 		// We won't be able to verify keys.
@@ -331,7 +331,7 @@ void KeyStoreUIPrivate::reset(void)
 			// if it isn't valid.
 			KeyManager::VerifyResult res = keyManager->get(keyName, &keyData);
 			switch (res) {
-				case KeyManager::VERIFY_OK:
+				case KeyManager::VerifyResult::OK:
 					// Convert the key to a string.
 					assert(keyData.key != nullptr);
 					assert(keyData.length > 0);
@@ -356,7 +356,7 @@ void KeyStoreUIPrivate::reset(void)
 					}
 					break;
 
-				case KeyManager::VERIFY_KEY_INVALID:
+				case KeyManager::VerifyResult::KeyInvalid:
 					// Key is invalid. (i.e. not in the correct format)
 					if (!pKey->value.empty()) {
 						pKey->value.clear();
@@ -1332,7 +1332,7 @@ KeyStoreUI::ImportReturn KeyStoreUI::import3DSaeskeydb(const char *filename)
 	if (d->getAesKeyDB_key(&aeskeydb_key) == 0) {
 		// TODO: Support for debug-encrypted aeskeydb.bin?
 		cipher.reset(AesCipherFactory::create());
-		cipher->setChainingMode(IAesCipher::CM_CTR);
+		cipher->setChainingMode(IAesCipher::ChainingMode::CTR);
 		cipher->setKey(aeskeydb_key.u8, sizeof(aeskeydb_key.u8));
 	}
 

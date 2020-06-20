@@ -612,7 +612,7 @@ int GameCubePrivate::wii_addBannerName(void) const
 const char *GameCubePrivate::wii_getCryptoStatus(WiiPartition *partition)
 {
 	const KeyManager::VerifyResult res = partition->verifyResult();
-	if (res == KeyManager::VERIFY_KEY_NOT_FOUND) {
+	if (res == KeyManager::VerifyResult::KeyNotFound) {
 		// This may be an invalid key index.
 		if (partition->encKey() == WiiPartition::ENCKEY_UNKNOWN) {
 			// Invalid key index.
@@ -620,7 +620,7 @@ const char *GameCubePrivate::wii_getCryptoStatus(WiiPartition *partition)
 		}
 	}
 
-	if (res == KeyManager::VERIFY_OK) {
+	if (res == KeyManager::VerifyResult::OK) {
 		// Debug discs may have incrementing values instead of a
 		// valid update partition.
 		static const uint8_t incr_vals[32] = {
@@ -1648,7 +1648,7 @@ int GameCube::loadFieldData(void)
 					d->fields->addField_string(game_info_title,
 						C_("GameCube", "ERROR: No game partition was found."));
 				}
-			} else if (d->gamePartition->verifyResult() != KeyManager::VERIFY_OK) {
+			} else if (d->gamePartition->verifyResult() != KeyManager::VerifyResult::OK) {
 				// Key error.
 				const char *status = d->wii_getCryptoStatus(d->gamePartition);
 				d->fields->addField_string(game_info_title,

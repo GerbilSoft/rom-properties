@@ -99,7 +99,7 @@ WiiSavePrivate::WiiSavePrivate(WiiSave *q, IRpFile *file)
 	memset(&bkHeader, 0, sizeof(bkHeader));
 
 	key_idx.fill(WiiPartition::Key_Max);
-	key_status.fill(KeyManager::VERIFY_UNKNOWN);
+	key_status.fill(KeyManager::VerifyResult::Unknown);
 }
 
 WiiSavePrivate::~WiiSavePrivate()
@@ -218,8 +218,8 @@ WiiSave::WiiSave(IRpFile *file)
 		d->key_status[i] = keyManager->getAndVerify(keyName, &keyData[i], verifyData, 16);
 	}
 
-	if ((d->key_status[0] == KeyManager::VERIFY_OK) &&
-	    (d->key_status[1] == KeyManager::VERIFY_OK))
+	if ((d->key_status[0] == KeyManager::VerifyResult::OK) &&
+	    (d->key_status[1] == KeyManager::VerifyResult::OK))
 	{
 		// Create a CBC reader to decrypt the banner and icon.
 		// TODO: Verify some known data?
@@ -266,8 +266,8 @@ WiiSave::WiiSave(IRpFile *file)
 	}
 #else /* !ENABLE_DECRYPTION */
 	// Cannot decrypt anything...
-	d->key_status[0] = KeyManager::VERIFY_NO_SUPPORT;
-	d->key_status[1] = KeyManager::VERIFY_NO_SUPPORT;
+	d->key_status[0] = KeyManager::VerifyResult::NoSupport;
+	d->key_status[1] = KeyManager::VerifyResult::NoSupport;
 #endif /* ENABLE_DECRYPTION */
 }
 

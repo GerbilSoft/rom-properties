@@ -189,7 +189,7 @@ int CtrKeyScrambler::CtrScramble(u128_t *keyNormal,
 	KeyManager::VerifyResult res = keyManager->getAndVerify(
 		CtrKeyScramblerPrivate::EncryptionKeyNames[Key_Ctr_Scrambler], &keyData,
 		CtrKeyScramblerPrivate::EncryptionKeyVerifyData[Key_Ctr_Scrambler], 16);
-	if (res != KeyManager::VERIFY_OK) {
+	if (res != KeyManager::VerifyResult::OK) {
 		// Key error.
 		// TODO: Return the key error?
 		return -ENOENT;

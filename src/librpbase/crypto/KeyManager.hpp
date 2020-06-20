@@ -39,20 +39,20 @@ class KeyManager : public ConfReader
 		/**
 		 * Key verification result.
 		 */
-		enum VerifyResult {
-			VERIFY_UNKNOWN			= -1,	// Unknown status.
-			VERIFY_OK			= 0,	// Key obtained/verified.
-			VERIFY_INVALID_PARAMS		= 1,	// Parameters are invalid.
-			VERIFY_NO_SUPPORT		= 2,	// Decryption is not supported.
-			VERIFY_KEY_DB_NOT_LOADED	= 3,	// Key database is not loaded.
-			VERIFY_KEY_DB_ERROR		= 4,	// Something's wrong with the key database.
-			VERIFY_KEY_NOT_FOUND		= 5,	// Key was not found.
-			VERIFY_KEY_INVALID		= 6,	// Key is not valid for this operation.
-			VERFIY_IAESCIPHER_INIT_ERR	= 7,	// IAesCipher could not be created.
-			VERIFY_IAESCIPHER_DECRYPT_ERR	= 8,	// IAesCipher::decrypt() failed.
-			VERIFY_WRONG_KEY		= 9,	// The key did not decrypt the test string correctly.
+		enum class VerifyResult {
+			Unknown			= -1,	// Unknown status.
+			OK			= 0,	// Key obtained/verified.
+			InvalidParams		= 1,	// Parameters are invalid.
+			NoSupport		= 2,	// Decryption is not supported.
+			KeyDBNotLoaded		= 3,	// Key database is not loaded.
+			KeyDBError		= 4,	// Something's wrong with the key database.
+			KeyNotFound		= 5,	// Key was not found.
+			KeyInvalid		= 6,	// Key is not valid for this operation.
+			IAesCipherInitErr	= 7,	// IAesCipher could not be created.
+			IAesCipherDecryptErr	= 8,	// IAesCipher::decrypt() failed.
+			WrongKey		= 9,	// The key did not decrypt the test string correctly.
 
-			VERIFY_MAX
+			Max
 		};
 
 		/**

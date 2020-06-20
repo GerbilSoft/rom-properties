@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * KeyManager.cpp: Encryption key manager.                                 *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -229,33 +229,33 @@ KeyManager::KeyManager()
 const char *KeyManager::verifyResultToString(VerifyResult res)
 {
 	static const char *const errTbl[] = {
-		// tr: VERIFY_OK
+		// tr: VerifyResult::OK
 		NOP_C_("KeyManager|VerifyResult", "Something happened."),
-		// tr: VERIFY_INVALID_PARAMS
+		// tr: VerifyResult::InvalidParams
 		NOP_C_("KeyManager|VerifyResult", "Invalid parameters. (THIS IS A BUG!)"),
-		// tr: VERIFY_NO_SUPPORT
+		// tr: VerifyResult::NoSupport
 		NOP_C_("KeyManager|VerifyResult", "Decryption is not supported in this build."),
-		// tr: VERIFY_KEY_DB_NOT_LOADED
+		// tr: VerifyResult::KeyDBNotLoaded
 		NOP_C_("KeyManager|VerifyResult", "keys.conf was not found."),
-		// tr: VERIFY_KEY_DB_ERROR
+		// tr: VerifyResult::KeyDBError
 		NOP_C_("KeyManager|VerifyResult", "keys.conf has an error and could not be loaded."),
-		// tr: VERIFY_KEY_NOT_FOUND
+		// tr: VerifyResult::KeyNotFound
 		NOP_C_("KeyManager|VerifyResult", "Required key was not found in keys.conf."),
-		// tr: VERIFY_KEY_INVALID
+		// tr: VerifyResult::KeyInvalid
 		NOP_C_("KeyManager|VerifyResult", "The key in keys.conf is not a valid key."),
-		// tr: VERFIY_IAESCIPHER_INIT_ERR
+		// tr: VerifyResult::IAesCipherInitErr
 		NOP_C_("KeyManager|VerifyResult", "AES decryption could not be initialized."),
-		// tr: VERIFY_IAESCIPHER_DECRYPT_ERR
+		// tr: VerifyResult::IAesCipherDecryptErr
 		NOP_C_("KeyManager|VerifyResult", "AES decryption failed."),
-		// tr: VERIFY_WRONG_KEY
+		// tr: VerifyResult::WrongKey
 		NOP_C_("KeyManager|VerifyResult", "The key in keys.conf is incorrect."),
 	};
-	static_assert(ARRAY_SIZE(errTbl) == KeyManager::VERIFY_MAX, "Update errTbl[].");
+	static_assert(ARRAY_SIZE(errTbl) == (int)KeyManager::VerifyResult::Max, "Update errTbl[].");
 
-	assert(res >= 0);
-	assert(res < ARRAY_SIZE(errTbl));
-	return ((res >= 0 && res < ARRAY_SIZE(errTbl))
-		? dpgettext_expr(RP_I18N_DOMAIN, "KeyManager|VerifyResult", errTbl[res])
+	assert(res >= (KeyManager::VerifyResult)0);
+	assert(res < (KeyManager::VerifyResult)ARRAY_SIZE(errTbl));
+	return ((res >= (KeyManager::VerifyResult)0 && res < (KeyManager::VerifyResult)ARRAY_SIZE(errTbl))
+		? dpgettext_expr(RP_I18N_DOMAIN, "KeyManager|VerifyResult", errTbl[(int)res])
 		: nullptr);
 }
 
@@ -282,7 +282,7 @@ KeyManager::VerifyResult KeyManager::get(const char *keyName, KeyData_t *pKeyDat
 	assert(keyName[0] != 0);
 	if (!keyName || keyName[0] == 0) {
 		// Invalid parameters.
-		return VERIFY_INVALID_PARAMS;
+		return VerifyResult::InvalidParams;
 	}
 
 	// Check if keys.conf needs to be reloaded.
@@ -292,7 +292,7 @@ KeyManager::VerifyResult KeyManager::get(const char *keyName, KeyData_t *pKeyDat
 	const_cast<KeyManager*>(this)->load();
 	if (!isLoaded()) {
 		// Keys are not loaded.
-		return VERIFY_KEY_DB_NOT_LOADED;
+		return VerifyResult::KeyDBNotLoaded;
 	}
 
 	// Attempt to get the key from the map.
@@ -307,7 +307,7 @@ KeyManager::VerifyResult KeyManager::get(const char *keyName, KeyData_t *pKeyDat
 		}
 
 		// Key was not found.
-		return VERIFY_KEY_NOT_FOUND;
+		return VerifyResult::KeyNotFound;
 	}
 
 	// Found the key.
@@ -319,14 +319,14 @@ KeyManager::VerifyResult KeyManager::get(const char *keyName, KeyData_t *pKeyDat
 	assert(idx + len <= d->vKeys.size());
 	if (idx + len > d->vKeys.size()) {
 		// Should not happen...
-		return VERIFY_KEY_DB_ERROR;
+		return VerifyResult::KeyDBError;
 	}
 
 	if (pKeyData) {
 		pKeyData->key = d->vKeys.data() + idx;
 		pKeyData->length = len;
 	}
-	return VERIFY_OK;
+	return VerifyResult::OK;
 }
 
 /**
@@ -353,7 +353,7 @@ KeyManager::VerifyResult KeyManager::getAndVerify(const char *keyName, KeyData_t
 	assert(verifyLen == 16);
 	if (!keyName || !pVerifyData || verifyLen != 16) {
 		// Invalid parameters.
-		return VERIFY_INVALID_PARAMS;
+		return VerifyResult::InvalidParams;
 	}
 
 	// Temporary KeyData_t in case pKeyData is nullptr.
@@ -364,18 +364,18 @@ KeyManager::VerifyResult KeyManager::getAndVerify(const char *keyName, KeyData_t
 
 	// Get the key first.
 	VerifyResult res = get(keyName, pKeyData);
-	if (res != VERIFY_OK) {
+	if (res != VerifyResult::OK) {
 		// Error obtaining the key.
 		return res;
 	} else if (!pKeyData->key || pKeyData->length == 0) {
 		// Key is invalid.
-		return VERIFY_KEY_INVALID;
+		return VerifyResult::KeyInvalid;
 	}
 
 	// Verify the key length.
 	if (pKeyData->length != 16 && pKeyData->length != 24 && pKeyData->length != 32) {
 		// Key length is invalid.
-		return VERIFY_KEY_INVALID;
+		return VerifyResult::KeyInvalid;
 	}
 
 	// Decrypt the test data.
@@ -383,17 +383,17 @@ KeyManager::VerifyResult KeyManager::getAndVerify(const char *keyName, KeyData_t
 	unique_ptr<IAesCipher> cipher(AesCipherFactory::create());
 	if (!cipher) {
 		// Unable to create the IAesCipher.
-		return VERFIY_IAESCIPHER_INIT_ERR;
+		return VerifyResult::IAesCipherInitErr;
 	}
 
 	// Set cipher parameters.
-	int ret = cipher->setChainingMode(IAesCipher::CM_ECB);
+	int ret = cipher->setChainingMode(IAesCipher::ChainingMode::ECB);
 	if (ret != 0) {
-		return VERFIY_IAESCIPHER_INIT_ERR;
+		return VerifyResult::IAesCipherInitErr;
 	}
 	ret = cipher->setKey(pKeyData->key, pKeyData->length);
 	if (ret != 0) {
-		return VERFIY_IAESCIPHER_INIT_ERR;
+		return VerifyResult::IAesCipherInitErr;
 	}
 
 	// Decrypt the test data.
@@ -404,17 +404,17 @@ KeyManager::VerifyResult KeyManager::getAndVerify(const char *keyName, KeyData_t
 	size_t size = cipher->decrypt(tmpData.get(), verifyLen);
 	if (size != verifyLen) {
 		// Decryption failed.
-		return VERIFY_IAESCIPHER_DECRYPT_ERR;
+		return VerifyResult::IAesCipherDecryptErr;
 	}
 
 	// Verify the test data.
 	if (memcmp(tmpData.get(), verifyTestString, verifyLen) != 0) {
 		// Verification failed.
-		return VERIFY_WRONG_KEY;
+		return VerifyResult::WrongKey;
 	}
 
 	// Test data verified.
-	return VERIFY_OK;
+	return VerifyResult::OK;
 }
 
 /**

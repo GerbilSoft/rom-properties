@@ -66,7 +66,7 @@ class AesCAPIPrivate
 AesCAPIPrivate::AesCAPIPrivate()
 	: hProvider(0)
 	, hKey(0)
-	, chainingMode(IAesCipher::CM_ECB)
+	, chainingMode(IAesCipher::ChainingMode::ECB)
 {
 	// Clear the counter.
 	memset(ctr, 0, sizeof(ctr));
@@ -106,11 +106,11 @@ int AesCAPIPrivate::setChainingMode(HCRYPTKEY hKey, IAesCipher::ChainingMode mod
 {
 	DWORD dwMode;
 	switch (mode) {
-		case IAesCipher::CM_ECB:
-		case IAesCipher::CM_CTR:
+		case IAesCipher::ChainingMode::ECB:
+		case IAesCipher::ChainingMode::CTR:
 			dwMode = CRYPT_MODE_ECB;
 			break;
-		case IAesCipher::CM_CBC:
+		case IAesCipher::ChainingMode::CBC:
 			dwMode = CRYPT_MODE_CBC;
 			break;
 		default:
@@ -283,18 +283,18 @@ int AesCAPI::setIV(const uint8_t *RESTRICT pIV, size_t size)
 	}
 
 	switch (d->chainingMode) {
-		case CM_ECB:
+		case ChainingMode::ECB:
 		default:
 			// No IV.
 			return -EINVAL;
-		case CM_CBC:
+		case ChainingMode::CBC:
 			// Set the IV.
 			if (!CryptSetKeyParam(d->hKey, KP_IV, pIV, 0)) {
 				// Error setting the IV.
 				return -w32err_to_posix(GetLastError());
 			}
 			break;
-		case CM_CTR:
+		case ChainingMode::CTR:
 			// Set the counter.
 			memcpy(d->ctr, pIV, size);
 			break;
@@ -339,7 +339,7 @@ size_t AesCAPI::decrypt(uint8_t *RESTRICT pData, size_t size)
 		return 0;
 	}
 
-	if (d->chainingMode == CM_CBC) {
+	if (d->chainingMode == ChainingMode::CBC) {
 		// Ensure we have the correct IV afterwards.
 		// IV should be the last encrypted block.
 		// TODO: Optimize things so we don't have to do this...
@@ -352,7 +352,7 @@ size_t AesCAPI::decrypt(uint8_t *RESTRICT pData, size_t size)
 	// data has the correct block length.
 	DWORD dwLen;
 	BOOL bRet = FALSE;
-	if (d->chainingMode == CM_CTR) {
+	if (d->chainingMode == ChainingMode::CTR) {
 		// CTR isn't supported by CryptoAPI directly.
 		// Need to decrypt each block manually.
 

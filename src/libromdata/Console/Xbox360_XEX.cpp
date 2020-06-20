@@ -600,7 +600,7 @@ CBCReader *Xbox360_XEX_Private::initPeReader(void)
 		KeyManager::VerifyResult verifyResult = keyManager->getAndVerify(
 			EncryptionKeyNames[this->xexType], &keyData[0],
 			EncryptionKeyVerifyData[this->xexType], 16);
-		if (verifyResult != KeyManager::VERIFY_OK) {
+		if (verifyResult != KeyManager::VerifyResult::OK) {
 			// An error occurred while loading the XEX key.
 			// Start with the all-zero key used on devkits.
 			idx0 = 1;
@@ -618,7 +618,7 @@ CBCReader *Xbox360_XEX_Private::initPeReader(void)
 		for (size_t i = idx0; i < keyData.size(); i++) {
 			// Load the common key. (CBC mode)
 			int ret = cipher->setKey(keyData[i].key, keyData[i].length);
-			ret |= cipher->setChainingMode(IAesCipher::CM_CBC);
+			ret |= cipher->setChainingMode(IAesCipher::ChainingMode::CBC);
 			if (ret != 0) {
 				// Error initializing the cipher.
 				continue;
