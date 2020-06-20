@@ -46,14 +46,22 @@ class ISOPrivate : public LibRpBase::RomDataPrivate
 		RP_DISABLE_COPY(ISOPrivate)
 
 	public:
-		// ISO primary volume descriptor.
-		ISO_Primary_Volume_Descriptor pvd;
+		// Disc type.
+		enum class DiscType {
+			Unknown = -1,
 
-		// HSFS primary volume descriptor.
-		HSFS_Primary_Volume_Descriptor *const hspvd;
+			ISO9660 = 0,
+			HighSierra = 1,
 
-		// Whether this is ISO 9660 or High Sierra. Set by checkPVD.
-		bool high_sierra;
+			Max
+		};
+		DiscType discType;
+
+		// Primary volume descriptor.
+		union {
+			ISO_Primary_Volume_Descriptor iso;	// ISO-9660
+			HSFS_Primary_Volume_Descriptor hsfs;	// High Sierra
+		} pvd;
 
 		// Sector size.
 		// Usually 2048 or 2352.
@@ -112,18 +120,17 @@ class ISOPrivate : public LibRpBase::RomDataPrivate
 		void addPVDTimestamps(const T *pvd);
 
 		/**
-		 * Check PVD and determine whether it is High Sierra or not.
-		 * @return whether the PVD is valid
+		 * Check the PVD and determine its type.
+		 * @return DiscType value. (DiscType::Unknown if not valid)
 		 */
-		bool checkPVD(void);
+		DiscType checkPVD(void) const;
 };
 
 /** ISOPrivate **/
 
 ISOPrivate::ISOPrivate(ISO *q, IRpFile *file)
 	: super(q, file)
-	, hspvd(reinterpret_cast<HSFS_Primary_Volume_Descriptor*>(&pvd))
-	, high_sierra(false)
+	, discType(DiscType::Unknown)
 	, sector_size(0)
 	, sector_offset(0)
 	, s_udf_version(nullptr)
@@ -322,26 +329,29 @@ void ISOPrivate::addPVDTimestamps(const T *pvd)
 }
 
 /**
- * Check PVD and determine whether it is High Sierra or not.
- * @return whether the PVD is valid
+ * Check the PVD and determine its type.
+ * @return DiscType value. (DiscType::Unknown if not valid)
  */
-bool ISOPrivate::checkPVD(void)
+ISOPrivate::DiscType ISOPrivate::checkPVD(void) const
 {
-	if (pvd.header.type == ISO_VDT_PRIMARY &&
-	    pvd.header.version == ISO_VD_VERSION &&
-	    !memcmp(pvd.header.identifier, ISO_VD_MAGIC, sizeof(pvd.header.identifier)))
+	if (pvd.iso.header.type == ISO_VDT_PRIMARY &&
+	    pvd.iso.header.version == ISO_VD_VERSION &&
+	    !memcmp(pvd.iso.header.identifier, ISO_VD_MAGIC, sizeof(pvd.iso.header.identifier)))
 	{
-		high_sierra = false;
-		return true;
-	} else if (hspvd->header.type == ISO_VDT_PRIMARY &&
-	    hspvd->header.version == HSFS_VD_VERSION &&
-	    !memcmp(hspvd->header.identifier, HSFS_VD_MAGIC, sizeof(hspvd->header.identifier)))
-	{
-		high_sierra = true;
-		return true;
-	} else {
-		return false;
+		// ISO-9660 PVD.
+		return DiscType::ISO9660;
 	}
+
+	if (pvd.hsfs.header.type == ISO_VDT_PRIMARY &&
+	    pvd.hsfs.header.version == HSFS_VD_VERSION &&
+	    !memcmp(pvd.hsfs.header.identifier, HSFS_VD_MAGIC, sizeof(pvd.hsfs.header.identifier)))
+	{
+		// High Sierra PVD.
+		return DiscType::HighSierra;
+	}
+
+	// Not recognized.
+	return DiscType::Unknown;
 }
 
 /** ISO **/
@@ -386,7 +396,8 @@ ISO::ISO(IRpFile *file)
 	// Check if the PVD is valid.
 	// NOTE: Not using isRomSupported_static(), since this function
 	// only checks the file extension.
-	if (d->checkPVD()) {
+	d->discType = d->checkPVD();
+	if (d->discType > ISOPrivate::DiscType::Unknown) {
 		// Found the PVD using 2048-byte sectors.
 		d->sector_size = ISO_SECTOR_SIZE_MODE1_COOKED;
 		d->sector_offset = ISO_DATA_OFFSET_MODE1_COOKED;
@@ -401,7 +412,8 @@ ISO::ISO(IRpFile *file)
 			return;
 		}
 
-		if (d->checkPVD()) {
+		d->discType = d->checkPVD();
+		if (d->discType > ISOPrivate::DiscType::Unknown) {
 			// Found the PVD using 2352-byte sectors.
 			d->sector_size = ISO_SECTOR_SIZE_MODE1_RAW;
 			d->sector_offset = ISO_DATA_OFFSET_MODE1_RAW;
@@ -417,8 +429,9 @@ ISO::ISO(IRpFile *file)
 	d->isValid = true;
 
 	// Check for additional volume descriptors.
-	if (!d->high_sierra)
+	if (d->discType == ISOPrivate::DiscType::ISO9660) {
 		d->checkVolumeDescriptors();
+	}
 }
 
 /** ROM detection functions. **/
@@ -467,12 +480,16 @@ const char *ISO::systemName(unsigned int type) const
 		"ISO::systemName() array index optimization needs to be updated.");
 
 	// TODO: UDF, HFS, others?
-	static const char *const sysNames[8] = {
-		"ISO-9660", "ISO", "ISO", nullptr,
-		"High Sierra Format", "High Sierra", "HSF", nullptr,
+	static const char *const sysNames[2][4] = {
+		{"ISO-9660", "ISO", "ISO", nullptr},
+		{"High Sierra Format", "High Sierra", "HSF", nullptr},
 	};
 
-	return sysNames[(type & SYSNAME_TYPE_MASK) | (d->high_sierra ? 4 : 0)];
+	unsigned int sysID = 0;
+	if (d->discType == ISOPrivate::DiscType::HighSierra) {
+		sysID = 1;
+	}
+	return sysNames[sysID][type & SYSNAME_TYPE_MASK];
 }
 
 /**
@@ -546,35 +563,45 @@ int ISO::loadFieldData(void)
 		return -EIO;
 	}
 
-	// ISO-9660 Primary Volume Descriptor.
-	// TODO: Other descriptors?
-	const ISO_Primary_Volume_Descriptor *const pvd = &d->pvd;
-	const HSFS_Primary_Volume_Descriptor *const hspvd = d->hspvd;
 	d->fields->reserve(16);	// Maximum of 16 fields.
 
 	// NOTE: All fields are space-padded. (0x20, ' ')
 	// TODO: ascii_to_utf8()?
 
-	// ISO-9660 PVD
-	d->fields->setTabName(0, d->high_sierra ? C_("ISO", "High Sierra PVD")
-	                                        : C_("ISO", "ISO-9660 PVD"));
-	// Common fields between HSFS and ISO
-	if (d->high_sierra)
-		d->addPVDCommon(hspvd);
-	else
-		d->addPVDCommon(pvd);
+	switch (d->discType) {
+		case ISOPrivate::DiscType::ISO9660:
+			// ISO-9660
+			d->fields->setTabName(0, C_("ISO", "ISO-9660 PVD"));
 
-	// Bibliographic file
-	if (!d->high_sierra)
-		d->fields->addField_string(C_("ISO", "Bibliographic File"),
-			latin1_to_utf8(pvd->bibliographic_file, sizeof(pvd->bibliographic_file)),
-			RomFields::STRF_TRIM_END);
+			// PVD common fields (ISO-9660, High Sierra)
+			d->addPVDCommon(&d->pvd.iso);
 
-	// Timestamps
-	if (d->high_sierra)
-		d->addPVDTimestamps(hspvd);
-	else
-		d->addPVDTimestamps(pvd);
+			// Bibliographic file
+			d->fields->addField_string(C_("ISO", "Bibliographic File"),
+				latin1_to_utf8(d->pvd.iso.bibliographic_file, sizeof(d->pvd.iso.bibliographic_file)),
+				RomFields::STRF_TRIM_END);
+
+			// Timestamps
+			d->addPVDTimestamps(&d->pvd.iso);
+			break;
+
+		case ISOPrivate::DiscType::HighSierra:
+			// High Sierra
+			d->fields->setTabName(0, C_("ISO", "High Sierra PVD"));
+
+			// PVD common fields (ISO-9660, High Sierra)
+			d->addPVDCommon(&d->pvd.hsfs);
+
+			// Timestamps
+			d->addPVDTimestamps(&d->pvd.hsfs);
+			break;
+
+		default:
+			// Should not get here...
+			assert(!"Invalid ISO disc type.");
+			d->fields->setTabName(0, "ISO");
+			break;
+	}
 
 	if (d->s_udf_version) {
 		// UDF version.
