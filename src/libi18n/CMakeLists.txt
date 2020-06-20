@@ -1,12 +1,12 @@
 # Internationalization support code.
 CMAKE_MINIMUM_REQUIRED(VERSION 3.0)
-PROJECT(libi18n LANGUAGES C)
-
+CMAKE_POLICY(SET CMP0048 NEW)
 IF(POLICY CMP0063)
 	# CMake 3.3: Enable symbol visibility presets for all
 	# target types, including static libraries and executables.
 	CMAKE_POLICY(SET CMP0063 NEW)
 ENDIF(POLICY CMP0063)
+PROJECT(libi18n LANGUAGES C)
 
 # NOTE: This subdirectory is always built, even if NLS is disabled,
 # since config.libi18n.h is included by i18n.h.

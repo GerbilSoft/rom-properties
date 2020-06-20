@@ -1,12 +1,12 @@
 # KDE (Qt) UI frontends
 CMAKE_MINIMUM_REQUIRED(VERSION 3.0)
-PROJECT(rom-properties-kde LANGUAGES CXX)
-
+CMAKE_POLICY(SET CMP0048 NEW)
 IF(POLICY CMP0063)
 	# CMake 3.3: Enable symbol visibility presets for all
 	# target types, including static libraries and executables.
 	CMAKE_POLICY(SET CMP0063 NEW)
 ENDIF(POLICY CMP0063)
+PROJECT(rom-properties-kde LANGUAGES CXX)
 
 # Common files for both KDE4 and KF5.
 

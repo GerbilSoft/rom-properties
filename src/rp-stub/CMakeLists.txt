@@ -1,12 +1,12 @@
 # Stub executable for Unix and Unix-like thumbnailers
 CMAKE_MINIMUM_REQUIRED(VERSION 3.0)
-PROJECT(rp-stub LANGUAGES C)
-
+CMAKE_POLICY(SET CMP0048 NEW)
 IF(POLICY CMP0063)
 	# CMake 3.3: Enable symbol visibility presets for all
 	# target types, including static libraries and executables.
 	CMAKE_POLICY(SET CMP0063 NEW)
 ENDIF(POLICY CMP0063)
+PROJECT(rp-stub LANGUAGES C)
 
 # rp-stub
 ADD_EXECUTABLE(rp-stub rp-stub.c rp-stub_secure.c rp-stub_secure.h)

@@ -1,15 +1,15 @@
 # KDE 4.x UI frontend
 CMAKE_MINIMUM_REQUIRED(VERSION 3.0)
-PROJECT(rom-properties-kde4 LANGUAGES CXX)
-SET(ENV{QT_SELECT} qt4)
-
+CMAKE_POLICY(SET CMP0048 NEW)
 IF(POLICY CMP0063)
 	# CMake 3.3: Enable symbol visibility presets for all
 	# target types, including static libraries and executables.
 	CMAKE_POLICY(SET CMP0063 NEW)
 ENDIF(POLICY CMP0063)
+PROJECT(rom-properties-kde4 LANGUAGES CXX)
 
 # Find Qt4.
+SET(ENV{QT_SELECT} qt4)
 SET(QT4_NO_LINK_QTMAIN 1)
 FIND_PACKAGE(Qt4 4.6.0 ${REQUIRE_KDE4} COMPONENTS QtCore QtGui)
 IF(QT4_FOUND)

@@ -1,16 +1,16 @@
 # KDE Frameworks 5.x UI frontend
 CMAKE_MINIMUM_REQUIRED(VERSION 3.0)
-PROJECT(rom-properties-kf5 LANGUAGES CXX)
-SET(ENV{QT_SELECT} qt5)
-
+CMAKE_POLICY(SET CMP0048 NEW)
 IF(POLICY CMP0063)
 	# CMake 3.3: Enable symbol visibility presets for all
 	# target types, including static libraries and executables.
 	CMAKE_POLICY(SET CMP0063 NEW)
 ENDIF(POLICY CMP0063)
+PROJECT(rom-properties-kf5 LANGUAGES CXX)
 
 # Reference: http://www.proli.net/2014/06/21/porting-your-project-to-qt5kf5/
 # Find KF5 Extra CMake Modules.
+SET(ENV{QT_SELECT} qt5)
 FIND_PACKAGE(ECM ${REQUIRE_KF5} 0.0.11 NO_MODULE)
 IF(ECM_MODULE_PATH AND ECM_KDE_MODULE_DIR)
 	# Make sure ECM's CMake files don't create an uninstall rule.

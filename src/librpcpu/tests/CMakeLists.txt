@@ -1,12 +1,12 @@
 # librpcpu test suite
 CMAKE_MINIMUM_REQUIRED(VERSION 3.0)
-PROJECT(librpcpu-tests LANGUAGES CXX)
-
+CMAKE_POLICY(SET CMP0048 NEW)
 IF(POLICY CMP0063)
 	# CMake 3.3: Enable symbol visibility presets for all
 	# target types, including static libraries and executables.
 	CMAKE_POLICY(SET CMP0063 NEW)
 ENDIF(POLICY CMP0063)
+PROJECT(librpcpu-tests LANGUAGES CXX)
 
 # Top-level src directory.
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/../..)

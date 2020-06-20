@@ -1,12 +1,12 @@
 # Security functionality
 CMAKE_MINIMUM_REQUIRED(VERSION 3.0)
-PROJECT(librpsecure LANGUAGES C)
-
+CMAKE_POLICY(SET CMP0048 NEW)
 IF(POLICY CMP0063)
 	# CMake 3.3: Enable symbol visibility presets for all
 	# target types, including static libraries and executables.
 	CMAKE_POLICY(SET CMP0063 NEW)
 ENDIF(POLICY CMP0063)
+PROJECT(librpsecure LANGUAGES C)
 
 IF(CMAKE_SYSTEM_NAME STREQUAL "Linux")
 	OPTION(USE_SECCOMP "Use libseccomp filters in rp-download and rpcli." ON)
