@@ -39,14 +39,17 @@ class NintendoBadgePrivate : public RomDataPrivate
 		RP_DISABLE_COPY(NintendoBadgePrivate)
 
 	public:
-		enum BadgeType {
-			BADGE_TYPE_UNKNOWN	= -1,	// Unknown badge type.
-			BADGE_TYPE_PRBS		= 0,	// PRBS (individual badge)
-			BADGE_TYPE_CABS		= 1,	// CABS (set badge)
+		enum class BadgeType {
+			Unknown = -1,
 
-			BADGE_TYPE_MAX
+			PRBS	= 0,	// PRBS (individual badge)
+			CABS	= 1,	// CABS (set badge)
+
+			Max
 		};
+		BadgeType badgeType;
 
+		// PRBS badge index.
 		enum BadgeIndex_PRBS {
 			PRBS_SMALL	= 0,	// 32x32
 			PRBS_LARGE	= 1,	// 64x64
@@ -56,9 +59,7 @@ class NintendoBadgePrivate : public RomDataPrivate
 			PRBS_MAX
 		};
 
-		// Badge type.
-		int badgeType;
-		// Is this mega badge? (>1x1)
+		// Is this a mega badge? (>1x1)
 		bool megaBadge;
 
 		// MIME type table.
@@ -110,7 +111,7 @@ const char *const NintendoBadgePrivate::mimeType_tbl[] = {
 
 NintendoBadgePrivate::NintendoBadgePrivate(NintendoBadge *q, IRpFile *file)
 	: super(q, file)
-	, badgeType(BADGE_TYPE_UNKNOWN)
+	, badgeType(BadgeType::Unknown)
 	, megaBadge(false)
 {
 	// Clear the header structs.
@@ -161,7 +162,7 @@ const rp_image *NintendoBadgePrivate::loadImage(int idx)
 	unsigned int badge_rgb_sz, badge_a4_sz, badge_dims;
 	bool doMegaBadge = false;
 	switch (badgeType) {
-		case BADGE_TYPE_PRBS:
+		case BadgeType::PRBS:
 			if (megaBadge) {
 				// Sanity check: Maximum of 16x16 for mega badges.
 				assert(badgeHeader.prbs.mb_width <= 16);
@@ -208,7 +209,7 @@ const rp_image *NintendoBadgePrivate::loadImage(int idx)
 			}
 			break;
 
-		case BADGE_TYPE_CABS:
+		case BadgeType::CABS:
 			// CABS is technically 64x64 (0x2000),
 			// but it should be cropped to 48x48.
 			// No alpha channel.
@@ -253,7 +254,7 @@ const rp_image *NintendoBadgePrivate::loadImage(int idx)
 				reinterpret_cast<const uint16_t*>(badgeData.get()), badge_rgb_sz);
 		}
 
-		if (badgeType == BADGE_TYPE_CABS) {
+		if (badgeType == BadgeType::CABS) {
 			// Need to crop the 64x64 image to 48x48.
 			rp_image *img48 = img[idx]->resized(48, 48);
 			delete img[idx];
@@ -324,7 +325,7 @@ N3DS_Language_ID NintendoBadgePrivate::getLanguageID(void) const
 		langID = N3DS_LANG_ENGLISH;
 	}
 
-	if (this->badgeType == BADGE_TYPE_PRBS) {
+	if (this->badgeType == BadgeType::PRBS) {
 		// Check the header fields to determine if the language string is valid.
 		const Badge_PRBS_Header *const prbs = &badgeHeader.prbs;
 
@@ -414,8 +415,8 @@ NintendoBadge::NintendoBadge(IRpFile *file)
 	info.header.pData = reinterpret_cast<const uint8_t*>(&d->badgeHeader);
 	info.ext = nullptr;	// Not needed for badges.
 	info.szFile = 0;	// Not needed for badges.
-	d->badgeType = isRomSupported_static(&info);
-	d->isValid = (d->badgeType >= 0);
+	d->badgeType = static_cast<NintendoBadgePrivate::BadgeType>(isRomSupported_static(&info));
+	d->isValid = ((int)d->badgeType >= 0);
 	d->megaBadge = false;	// check later
 
 	if (!d->isValid) {
@@ -425,7 +426,7 @@ NintendoBadge::NintendoBadge(IRpFile *file)
 	}
 
 	// Check for mega badge.
-	if (d->badgeType == NintendoBadgePrivate::BADGE_TYPE_PRBS) {
+	if (d->badgeType == NintendoBadgePrivate::BadgeType::PRBS) {
 		d->megaBadge = (d->badgeHeader.prbs.mb_width > 1 ||
 				d->badgeHeader.prbs.mb_height > 1);
 	} else {
@@ -434,8 +435,8 @@ NintendoBadge::NintendoBadge(IRpFile *file)
 	}
 
 	// Set the MIME type.
-	if (d->badgeType < ARRAY_SIZE(d->mimeType_tbl)-1) {
-		d->mimeType = d->mimeType_tbl[d->badgeType];
+	if ((int)d->badgeType < ARRAY_SIZE(d->mimeType_tbl)-1) {
+		d->mimeType = d->mimeType_tbl[(int)d->badgeType];
 	}
 }
 
@@ -459,19 +460,22 @@ int NintendoBadge::isRomSupported_static(const DetectInfo *info)
 	}
 
 	// Check for PRBS.
+	NintendoBadgePrivate::BadgeType badgeType;
 	uint32_t magic = *((const uint32_t*)info->header.pData);
 	if (magic == cpu_to_be32(BADGE_PRBS_MAGIC)) {
 		// PRBS header is present.
 		// TODO: Other checks?
-		return NintendoBadgePrivate::BADGE_TYPE_PRBS;
+		badgeType = NintendoBadgePrivate::BadgeType::PRBS;
 	} else if (magic == cpu_to_be32(BADGE_CABS_MAGIC)) {
 		// CABS header is present.
 		// TODO: Other checks?
-		return NintendoBadgePrivate::BADGE_TYPE_CABS;
+		badgeType = NintendoBadgePrivate::BadgeType::CABS;
+	} else {
+		// Not supported.
+		badgeType = NintendoBadgePrivate::BadgeType::Unknown;
 	}
 
-	// Not supported.
-	return -1;
+	return static_cast<int>(badgeType);
 }
 
 /**
@@ -560,7 +564,7 @@ vector<RomData::ImageSizeDef> NintendoBadge::supportedImageSizes(ImageType image
 	}
 
 	switch (d->badgeType) {
-		case NintendoBadgePrivate::BADGE_TYPE_PRBS: {
+		case NintendoBadgePrivate::BadgeType::PRBS: {
 			// Badges have 32x32 and 64x64 variants.
 			// Mega Badges have multiples of those, but they also
 			// have 32x32 and 64x64 previews.
@@ -589,7 +593,7 @@ vector<RomData::ImageSizeDef> NintendoBadge::supportedImageSizes(ImageType image
 				imgsz + ARRAY_SIZE(imgsz));
 		}
 
-		case NintendoBadgePrivate::BADGE_TYPE_CABS: {
+		case NintendoBadgePrivate::BadgeType::CABS: {
 			// Badge set icons are always 48x48.
 			static const ImageSizeDef sz_CABS[] = {
 				{nullptr, 48, 48, 0},
@@ -649,7 +653,7 @@ int NintendoBadge::loadFieldData(void)
 	} else if (!d->file) {
 		// File isn't open.
 		return -EBADF;
-	} else if (!d->isValid || d->badgeType < 0) {
+	} else if (!d->isValid || (int)d->badgeType < 0) {
 		// Unknown badge type.
 		return -EIO;
 	}
@@ -666,7 +670,7 @@ int NintendoBadge::loadFieldData(void)
 	const char *const s_name_title = C_("NintendoBadge", "Name");
 	const char *const s_set_name_title = C_("NintendoBadge", "Set Name");
 	switch (d->badgeType) {
-		case NintendoBadgePrivate::BADGE_TYPE_PRBS: {
+		case NintendoBadgePrivate::BadgeType::PRBS: {
 			d->fields->addField_string(s_type_title,
 				d->megaBadge ? C_("NintendoBadge|Type", "Mega Badge")
 				             : C_("NintendoBadge|Type", "Individual Badge"));
@@ -782,7 +786,7 @@ int NintendoBadge::loadFieldData(void)
 			break;
 		}
 
-		case NintendoBadgePrivate::BADGE_TYPE_CABS: {
+		case NintendoBadgePrivate::BadgeType::CABS: {
 			d->fields->addField_string(s_type_title, C_("NintendoBadge", "Badge Set"));
 
 			// CABS-specific fields.
@@ -862,7 +866,7 @@ int NintendoBadge::loadInternalImage(ImageType imageType, const rp_image **pImag
 			// CABS: Use index 0. (only one available)
 			// PRBS: Use index 1. (no mega badges)
 			// - TODO: Select 64x64 or 32x32 depending on requested size.
-			idx = (d->badgeType == NintendoBadgePrivate::BADGE_TYPE_PRBS
+			idx = (d->badgeType == NintendoBadgePrivate::BadgeType::PRBS
 				? NintendoBadgePrivate::PRBS_LARGE : 0);
 			break;
 
@@ -872,10 +876,10 @@ int NintendoBadge::loadInternalImage(ImageType imageType, const rp_image **pImag
 			// in which case we're using index 3.
 			// - TODO: Select mega large or small depending on requested size.
 			switch (d->badgeType) {
-				case NintendoBadgePrivate::BADGE_TYPE_PRBS:
+				case NintendoBadgePrivate::BadgeType::PRBS:
 					idx = (d->megaBadge ? NintendoBadgePrivate::PRBS_MEGA_LARGE : NintendoBadgePrivate::PRBS_LARGE);
 					break;
-				case NintendoBadgePrivate::BADGE_TYPE_CABS:
+				case NintendoBadgePrivate::BadgeType::CABS:
 					idx = 0;
 					break;
 				default:

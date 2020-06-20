@@ -34,20 +34,20 @@ class EXEPrivate : public LibRpBase::RomDataPrivate
 
 	public:
 		// Executable type.
-		enum ExeType {
-			EXE_TYPE_UNKNOWN = -1,	// Unknown EXE type.
+		enum class ExeType {
+			Unknown = -1,	// Unknown EXE type.
 
-			EXE_TYPE_MZ = 0,	// DOS MZ
-			EXE_TYPE_NE,		// 16-bit New Executable
-			EXE_TYPE_LE,		// Mixed 16/32-bit Linear Executable
-			EXE_TYPE_W3,		// Collection of LE executables (WIN386.EXE)
-			EXE_TYPE_LX,		// 32-bit Linear Executable
-			EXE_TYPE_PE,		// 32-bit Portable Executable
-			EXE_TYPE_PE32PLUS,	// 64-bit Portable Executable
+			MZ = 0,		// DOS MZ
+			NE,		// 16-bit New Executable
+			LE,		// Mixed 16/32-bit Linear Executable
+			W3,		// Collection of LE executables (WIN386.EXE)
+			LX,		// 32-bit Linear Executable
+			PE,		// 32-bit Portable Executable
+			PE32PLUS,	// 64-bit Portable Executable
 
-			EXE_TYPE_LAST
+			Max
 		};
-		int exeType;
+		ExeType exeType;
 
 	public:
 		// DOS MZ header.
