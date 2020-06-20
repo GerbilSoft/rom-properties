@@ -8,6 +8,7 @@
 
 #include "config.librpbase.h"
 #include "config.libromdata.h"
+#include "config.librptexture.h"
 
 // Google Test
 #include "gtest/gtest.h"
@@ -1063,6 +1064,7 @@ INSTANTIATE_TEST_CASE_P(TCtest_S3TC, ImageDecoderTest,
 			"tctest/example-dxt5.s3tc.dds.png"))
 	, ImageDecoderTest::test_case_suffix_generator);
 
+#ifdef ENABLE_PVRTC
 // texture-compressor tests. (PVRTC)
 INSTANTIATE_TEST_CASE_P(TCtest_PVRTC, ImageDecoderTest,
 	::testing::Values(
@@ -1076,7 +1078,7 @@ INSTANTIATE_TEST_CASE_P(TCtest_PVRTC, ImageDecoderTest,
 			"tctest/example-pvrtc2-4bpp.pvr.gz",
 			"tctest/example-pvrtc2-4bpp.pvr.png"))
 	, ImageDecoderTest::test_case_suffix_generator);
-
+#endif /* ENABLE_PVRTC */
 
 // BC7 tests.
 INSTANTIATE_TEST_CASE_P(BC7, ImageDecoderTest,
@@ -1534,6 +1536,7 @@ INSTANTIATE_TEST_CASE_P(DidjTex, ImageDecoderTest,
 		DidjTex_IMAGE_TEST("Zone1Act1Icon"))
 	, ImageDecoderTest::test_case_suffix_generator);
 
+#ifdef ENABLE_PVRTC
 // PowerVR3 tests.
 #define PowerVR3_IMAGE_TEST(file) ImageDecoderTest_mode( \
 			"PowerVR3/" file ".pvr.gz", \
@@ -1548,6 +1551,7 @@ INSTANTIATE_TEST_CASE_P(PowerVR3, ImageDecoderTest,
 		//PowerVR3_IMAGE_TEST("Satyr-Table"))				// FIXME: Failing (RGBA8888)
 		)
 	, ImageDecoderTest::test_case_suffix_generator);
+#endif /* ENABLE_PVRTC */
 
 } }
 
