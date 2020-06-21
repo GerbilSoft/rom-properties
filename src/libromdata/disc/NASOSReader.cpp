@@ -37,10 +37,13 @@ class NASOSReaderPrivate : public SparseDiscReaderPrivate {
 			NASOSHeader_WIIx wiix;
 		} header;
 
-		enum DiscType {
-			DT_UNKNOWN = 0,
-			DT_GCML = 1,
-			DT_WIIx = 2,
+		enum class DiscType {
+			Unknown	= -1,
+
+			GCML	= 0,
+			WIIx	= 1,
+
+			Max
 		};
 		DiscType discType;
 
@@ -59,7 +62,7 @@ class NASOSReaderPrivate : public SparseDiscReaderPrivate {
 
 NASOSReaderPrivate::NASOSReaderPrivate(NASOSReader *q)
 	: super(q)
-	, discType(DT_UNKNOWN)
+	, discType(DiscType::Unknown)
 	, blockMapShift(0)
 {
 	// Clear the NASOSHeader structs.
@@ -93,7 +96,7 @@ NASOSReader::NASOSReader(IRpFile *file)
 	// TODO: Check the actual disc header magic?
 	unsigned int blockMapStart, blockCount;
 	if (d->header.nasos.magic == cpu_to_be32(NASOS_MAGIC_GCML)) {
-		d->discType = NASOSReaderPrivate::DT_GCML;
+		d->discType = NASOSReaderPrivate::DiscType::GCML;
 		d->block_size = 2048;			// NOTE: Not stored in the header.
 		blockMapStart = sizeof(d->header.gcml);
 		blockCount = NASOS_GCML_BlockCount;	// NOTE: Not stored in the header.
@@ -101,7 +104,7 @@ NASOSReader::NASOSReader(IRpFile *file)
 	} else if ((d->header.nasos.magic == cpu_to_be32(NASOS_MAGIC_WII5)) ||
 		   (d->header.nasos.magic == cpu_to_be32(NASOS_MAGIC_WII9)))
 	{
-		d->discType = NASOSReaderPrivate::DT_WIIx;
+		d->discType = NASOSReaderPrivate::DiscType::WIIx;
 		d->block_size = 1024;	// TODO: Is this stored in the header?
 		blockMapStart = sizeof(d->header.wiix);
 		// TODO: Verify against WII5 (0x460900) and WII9 (0x7ED380).

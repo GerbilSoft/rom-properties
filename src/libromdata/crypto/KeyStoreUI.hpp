@@ -34,17 +34,17 @@ class KeyStoreUI
 	public:
 		/** Key struct. **/
 		struct Key {
-			enum Status {
-				Status_Empty = 0,	// Key is empty.
-				Status_Unknown,		// Key status is unknown.
-				Status_NotAKey,		// Not a key.
-				Status_Incorrect,	// Key is incorrect.
-				Status_OK,		// Key is OK.
+			enum class Status : uint8_t {
+				Empty = 0,	// Key is empty.
+				Unknown,	// Key status is unknown.
+				NotAKey,	// Not a key.
+				Incorrect,	// Key is incorrect.
+				OK,		// Key is OK.
 			};
 
 			std::string name;	// Key name.
 			std::string value;	// Key value. (as rp-string for display purposes)
-			uint8_t status;		// Key status. (See the Status enum.)
+			Status status;		// Key status. (See the Status enum.)
 			bool modified;		// True if the key has been modified since last reset() or allKeysSaved().
 			bool allowKanji;	// Allow kanji for UTF-16LE + BOM.
 		};
@@ -195,20 +195,20 @@ class KeyStoreUI
 		virtual void modified_int(void) = 0;
 
 	public:
-		enum ImportStatus {
-			Import_InvalidParams = 0,	// Invalid parameters. (Should not happen!)
-			Import_OpenError,		// Could not open the file. (TODO: More info?)
-			Import_ReadError,		// Could not read the file. (TODO: More info?)
-			Import_InvalidFile,		// File is not the correct type.
-			Import_NoKeysImported,		// No keys were imported.
-			Import_KeysImported,		// Keys were imported.
+		enum class ImportStatus : uint8_t {
+			InvalidParams = 0,	// Invalid parameters. (Should not happen!)
+			OpenError,		// Could not open the file. (TODO: More info?)
+			ReadError,		// Could not read the file. (TODO: More info?)
+			InvalidFile,		// File is not the correct type.
+			NoKeysImported,		// No keys were imported.
+			KeysImported,		// Keys were imported.
 		};
 
 		/**
 		 * Return data for the import functions.
 		 */
 		struct ImportReturn {
-			uint8_t status;			/* ImportStatus */
+			ImportStatus status;		/* ImportStatus */
 			uint8_t error_code;		// POSIX error code. (0 for success or unknown)
 			uint8_t keysExist;		// Keys not imported because they're already in the file.
 			uint8_t keysInvalid;		// Keys not imported because they didn't verify.
