@@ -51,16 +51,18 @@ class Nintendo3DSPrivate : public RomDataPrivate
 
 	public:
 		// ROM type.
-		enum N3DS_RomType {
-			ROM_TYPE_UNKNOWN = -1,	// Unknown ROM type.
+		enum class RomType {
+			Unknown = -1,
 
-			ROM_TYPE_3DSX	= 0,	// 3DSX (homebrew)
-			ROM_TYPE_CCI	= 1,	// CCI/3DS (cartridge dump)
-			ROM_TYPE_eMMC	= 2,	// eMMC dump
-			ROM_TYPE_CIA	= 3,	// CIA
-			ROM_TYPE_NCCH	= 4,	// NCCH
+			_3DSX	= 0,	// 3DSX (homebrew)
+			CCI	= 1,	// CCI/3DS (cartridge dump)
+			eMMC	= 2,	// eMMC dump
+			CIA	= 3,	// CIA
+			NCCH	= 4,	// NCCH
+
+			Max
 		};
-		int romType;
+		RomType romType;
 
 		// MIME type table.
 		// Ordering matches N3DS_RomType.
@@ -277,7 +279,7 @@ const char *const Nintendo3DSPrivate::mimeType_tbl[] = {
 
 Nintendo3DSPrivate::Nintendo3DSPrivate(Nintendo3DS *q, IRpFile *file)
 	: super(q, file)
-	, romType(ROM_TYPE_UNKNOWN)
+	, romType(RomType::Unknown)
 	, headers_loaded(0)
 	, media_unit_shift(9)	// default is 9 (512 bytes)
 	, content_count(0)
@@ -344,7 +346,7 @@ int Nintendo3DSPrivate::loadSMDH(void)
 			// Unsupported...
 			return -1;
 
-		case ROM_TYPE_3DSX: {
+		case RomType::_3DSX: {
 			// 3DSX file. SMDH is included only if we have
 			// an extended header.
 			// NOTE: 3DSX header should have been loaded by the constructor.
@@ -362,7 +364,7 @@ int Nintendo3DSPrivate::loadSMDH(void)
 			break;
 		}
 
-		case ROM_TYPE_CIA:
+		case RomType::CIA:
 			// CIA file. SMDH may be located at the end
 			// of the file in plaintext, or as part of
 			// the executable in decrypted archives.
@@ -399,8 +401,8 @@ int Nintendo3DSPrivate::loadSMDH(void)
 			// wasn't valid. Try loading from the ExeFS.
 			// fall-through
 
-		case ROM_TYPE_CCI:
-		case ROM_TYPE_NCCH: {
+		case RomType::CCI:
+		case RomType::NCCH: {
 			// CCI file, CIA file with no meta section, or NCCH file.
 			// Open "exefs:/icon".
 			NCCHReader *const ncch_reader = loadNCCH();
@@ -481,7 +483,7 @@ int Nintendo3DSPrivate::loadNCCH(int idx, NCCHReader **pOutNcchReader)
 	off64_t offset = 0;
 	uint32_t length = 0;
 	switch (romType) {
-		case ROM_TYPE_CIA: {
+		case RomType::CIA: {
 			if (!(headers_loaded & HEADER_CIA)) {
 				// CIA header is not loaded...
 				return -EIO;
@@ -520,7 +522,7 @@ int Nintendo3DSPrivate::loadNCCH(int idx, NCCHReader **pOutNcchReader)
 			break;
 		}
 
-		case ROM_TYPE_CCI: {
+		case RomType::CCI: {
 			if (!(headers_loaded & HEADER_NCSD)) {
 				// NCSD header is not loaded...
 				return -EIO;
@@ -546,7 +548,7 @@ int Nintendo3DSPrivate::loadNCCH(int idx, NCCHReader **pOutNcchReader)
 			break;
 		}
 
-		case ROM_TYPE_NCCH: {
+		case RomType::NCCH: {
 			// NCCH file. Only one content.
 			if (idx != 0) {
 				// Invalid content index.
@@ -564,7 +566,7 @@ int Nintendo3DSPrivate::loadNCCH(int idx, NCCHReader **pOutNcchReader)
 
 	// Is this encrypted using CIA title key encryption?
 	CIAReader *ciaReader = nullptr;
-	if (romType == ROM_TYPE_CIA && idx < (int)content_count) {
+	if (romType == RomType::CIA && idx < (int)content_count) {
 		// Check if this content is encrypted.
 		// If it is, we'll need to create a CIAReader.
 		N3DS_Ticket_t *ticket = nullptr;
@@ -623,7 +625,7 @@ NCCHReader *Nintendo3DSPrivate::loadNCCH(void)
 	}
 
 	unsigned int content_idx = 0;
-	if (romType == ROM_TYPE_CIA) {
+	if (romType == RomType::CIA) {
 		// Use the boot content index.
 		if ((headers_loaded & Nintendo3DSPrivate::HEADER_TMD) || loadTicketAndTMD() == 0) {
 			content_idx = be16_to_cpu(mxh.tmd_header.boot_content);
@@ -660,7 +662,7 @@ int Nintendo3DSPrivate::loadTicketAndTMD(void)
 	if (headers_loaded & HEADER_TMD) {
 		// Ticket and TMD header are already loaded.
 		return 0;
-	} else if (romType != ROM_TYPE_CIA) {
+	} else if (romType != RomType::CIA) {
 		// Ticket and TMD are only available in CIA files.
 		return -1;
 	}
@@ -885,7 +887,7 @@ void Nintendo3DSPrivate::addTitleIdAndProductCodeFields(bool showContentType)
 
 	const char *tid_desc = nullptr;
 	uint32_t tid_hi, tid_lo;
-	if (romType == Nintendo3DSPrivate::ROM_TYPE_CCI &&
+	if (romType == Nintendo3DSPrivate::RomType::CCI &&
 	    headers_loaded & Nintendo3DSPrivate::HEADER_NCSD)
 	{
 		tid_desc = C_("Nintendo3DS", "Media ID");
@@ -1418,7 +1420,7 @@ Nintendo3DS::Nintendo3DS(IRpFile *file)
 	// so we'll initialize d->fileType later.
 	RP_D(Nintendo3DS);
 	d->className = "Nintendo3DS";
-	d->fileType = FTYPE_UNKNOWN;
+	d->fileType = FileType::Unknown;
 
 	if (!d->file) {
 		// Could not ref() the file handle.
@@ -1443,26 +1445,26 @@ Nintendo3DS::Nintendo3DS(IRpFile *file)
 	const string filename = file->filename();
 	info.ext = FileSystem::file_ext(filename);
 	info.szFile = d->file->size();
-	d->romType = isRomSupported_static(&info);
+	d->romType = static_cast<Nintendo3DSPrivate::RomType>(isRomSupported_static(&info));
 
 	// Determine what kind of file this is.
 	// NOTE: SMDH header and icon will be loaded on demand.
 	switch (d->romType) {
-		case Nintendo3DSPrivate::ROM_TYPE_3DSX:
+		case Nintendo3DSPrivate::RomType::_3DSX:
 			// Save the 3DSX header for later.
 			memcpy(&d->mxh.hb3dsx_header, header, sizeof(d->mxh.hb3dsx_header));
 			d->headers_loaded |= Nintendo3DSPrivate::HEADER_3DSX;
-			d->fileType = FTYPE_HOMEBREW;
+			d->fileType = FileType::Homebrew;
 			break;
 
-		case Nintendo3DSPrivate::ROM_TYPE_CIA:
+		case Nintendo3DSPrivate::RomType::CIA:
 			// Save the CIA header for later.
 			memcpy(&d->mxh.cia_header, header, sizeof(d->mxh.cia_header));
 			d->headers_loaded |= Nintendo3DSPrivate::HEADER_CIA;
-			d->fileType = FTYPE_APPLICATION_PACKAGE;
+			d->fileType = FileType::ApplicationPackage;
 			break;
 
-		case Nintendo3DSPrivate::ROM_TYPE_CCI:
+		case Nintendo3DSPrivate::RomType::CCI:
 			// Save the NCSD and Card Info headers for later.
 			memcpy(&d->mxh.ncsd_header, &header[N3DS_NCSD_NOSIG_HEADER_ADDRESS], sizeof(d->mxh.ncsd_header));
 			memcpy(&d->mxh.cinfo_header, &header[N3DS_NCSD_CARD_INFO_HEADER_ADDRESS], sizeof(d->mxh.cinfo_header));
@@ -1472,32 +1474,32 @@ Nintendo3DS::Nintendo3DS(IRpFile *file)
 			d->media_unit_shift = 9 + d->mxh.ncsd_header.cci.partition_flags[N3DS_NCSD_PARTITION_FLAG_MEDIA_UNIT_SIZE];
 
 			d->headers_loaded |= Nintendo3DSPrivate::HEADER_NCSD;
-			d->fileType = FTYPE_ROM_IMAGE;
+			d->fileType = FileType::ROM_Image;
 			break;
 
-		case Nintendo3DSPrivate::ROM_TYPE_eMMC:
+		case Nintendo3DSPrivate::RomType::eMMC:
 			// Save the NCSD header for later.
 			memcpy(&d->mxh.ncsd_header, &header[N3DS_NCSD_NOSIG_HEADER_ADDRESS], sizeof(d->mxh.ncsd_header));
 			d->headers_loaded |= Nintendo3DSPrivate::HEADER_NCSD;
-			d->fileType = FTYPE_EMMC_DUMP;
+			d->fileType = FileType::eMMC_Dump;
 			break;
 
-		case Nintendo3DSPrivate::ROM_TYPE_NCCH:
+		case Nintendo3DSPrivate::RomType::NCCH:
 			// NCCH reader will be created when loadNCCH() is called.
 			// TODO: Better type.
-			d->fileType = FTYPE_CONTAINER_FILE;
+			d->fileType = FileType::ContainerFile;
 			break;
 
 		default:
 			// Unknown ROM format.
-			d->romType = Nintendo3DSPrivate::ROM_TYPE_UNKNOWN;
+			d->romType = Nintendo3DSPrivate::RomType::Unknown;
 			d->file->unref();
 			d->file = nullptr;
 			return;
 	}
 
 	// Set the MIME type.
-	d->mimeType = d->mimeType_tbl[d->romType];
+	d->mimeType = d->mimeType_tbl[(int)d->romType];
 
 	// File is valid.
 	d->isValid = true;
@@ -1553,7 +1555,7 @@ int Nintendo3DS::isRomSupported_static(const DetectInfo *info)
 	{
 		// Either no detection information was specified,
 		// or the header is too small.
-		return -1;
+		return static_cast<int>(Nintendo3DSPrivate::RomType::Unknown);
 	}
 
 	// Check for CIA first. CIA doesn't have an unambiguous magic number,
@@ -1590,7 +1592,7 @@ int Nintendo3DS::isRomSupported_static(const DetectInfo *info)
 			      le32_to_cpu(cia_header->meta_size) >= (sizeof(N3DS_SMDH_Header_t) + sizeof(N3DS_SMDH_Icon_t)))))
 			{
 				// Sizes appear to be valid.
-				return Nintendo3DSPrivate::ROM_TYPE_CIA;
+				return static_cast<int>(Nintendo3DSPrivate::RomType::CIA);
 			}
 		}
 	}
@@ -1604,7 +1606,7 @@ int Nintendo3DS::isRomSupported_static(const DetectInfo *info)
 		// extended header, but that's fine, since a .3DSX
 		// file with just the standard header and nothing
 		// else is rather useless.
-		return Nintendo3DSPrivate::ROM_TYPE_3DSX;
+		return static_cast<int>(Nintendo3DSPrivate::RomType::_3DSX);
 	}
 
 	// Check for CCI/eMMC.
@@ -1622,12 +1624,12 @@ int Nintendo3DS::isRomSupported_static(const DetectInfo *info)
 		static const uint8_t crypt_emmc_new[8] = {1,2,2,2,3,0,0,0};
 		if (!memcmp(ncsd_header->emmc_part_tbl.crypt_type, crypt_cci, sizeof(crypt_cci))) {
 			// CCI image.
-			return Nintendo3DSPrivate::ROM_TYPE_CCI;
+			return static_cast<int>(Nintendo3DSPrivate::RomType::CCI);
 		} else if (!memcmp(ncsd_header->emmc_part_tbl.crypt_type, crypt_emmc_old, sizeof(crypt_emmc_old)) ||
 			   !memcmp(ncsd_header->emmc_part_tbl.crypt_type, crypt_emmc_new, sizeof(crypt_emmc_new))) {
 			// eMMC dump.
 			// NOTE: Not differentiating between Old3DS and New3DS here.
-			return Nintendo3DSPrivate::ROM_TYPE_eMMC;
+			return static_cast<int>(Nintendo3DSPrivate::RomType::eMMC);
 		}
 	}
 
@@ -1637,11 +1639,11 @@ int Nintendo3DS::isRomSupported_static(const DetectInfo *info)
 	if (ncch_header->hdr.magic == cpu_to_be32(N3DS_NCCH_HEADER_MAGIC)) {
 		// Found the NCCH magic.
 		// TODO: Other checks?
-		return Nintendo3DSPrivate::ROM_TYPE_NCCH;
+		return static_cast<int>(Nintendo3DSPrivate::RomType::NCCH);
 	}
 
 	// Not supported.
-	return -1;
+	return static_cast<int>(Nintendo3DSPrivate::RomType::Unknown);
 }
 
 /**
@@ -1769,7 +1771,7 @@ uint32_t Nintendo3DS::supportedImageTypes_static(void)
 uint32_t Nintendo3DS::supportedImageTypes(void) const
 {
 	RP_D(const Nintendo3DS);
-	if (d->romType == Nintendo3DSPrivate::ROM_TYPE_CIA) {
+	if (d->romType == Nintendo3DSPrivate::RomType::CIA) {
 		// TMD needs to be loaded so we can check if it's a DSiWare SRL.
 		if (!(d->headers_loaded & Nintendo3DSPrivate::HEADER_TMD)) {
 			const_cast<Nintendo3DSPrivate*>(d)->loadTicketAndTMD();
@@ -1855,7 +1857,7 @@ uint32_t Nintendo3DS::imgpf(ImageType imageType) const
 	ASSERT_imgpf(imageType);
 
 	RP_D(const Nintendo3DS);
-	if (d->romType == Nintendo3DSPrivate::ROM_TYPE_CIA) {
+	if (d->romType == Nintendo3DSPrivate::RomType::CIA) {
 		// TMD needs to be loaded so we can check if it's a DSiWare SRL.
 		if (!(d->headers_loaded & Nintendo3DSPrivate::HEADER_TMD)) {
 			const_cast<Nintendo3DSPrivate*>(d)->loadTicketAndTMD();
@@ -1893,7 +1895,7 @@ int Nintendo3DS::loadFieldData(void)
 	} else if (!d->file || !d->file->isOpen()) {
 		// File isn't open.
 		return -EBADF;
-	} else if (!d->isValid || d->romType < 0) {
+	} else if (!d->isValid || (int)d->romType < 0) {
 		// Unknown ROM type.
 		return -EIO;
 	}
@@ -1917,7 +1919,7 @@ int Nintendo3DS::loadFieldData(void)
 	if (!(d->headers_loaded & Nintendo3DSPrivate::HEADER_SMDH)) {
 		d->loadSMDH();
 	}
-	if ((d->romType == Nintendo3DSPrivate::ROM_TYPE_CIA) &&
+	if ((d->romType == Nintendo3DSPrivate::RomType::CIA) &&
 	    !(d->headers_loaded & Nintendo3DSPrivate::HEADER_TMD))
 	{
 		d->loadTicketAndTMD();
@@ -1929,9 +1931,9 @@ int Nintendo3DS::loadFieldData(void)
 	const NCCHReader *const ncch = d->loadNCCH();
 
 	// Check for potential encryption key errors.
-	if (d->romType == Nintendo3DSPrivate::ROM_TYPE_CCI ||
-	    d->romType == Nintendo3DSPrivate::ROM_TYPE_CIA ||
-	    d->romType == Nintendo3DSPrivate::ROM_TYPE_NCCH)
+	if (d->romType == Nintendo3DSPrivate::RomType::CCI ||
+	    d->romType == Nintendo3DSPrivate::RomType::CIA ||
+	    d->romType == Nintendo3DSPrivate::RomType::NCCH)
 	{
 		if (!ncch) {
 			// Unable to open the primary NCCH section.
@@ -1943,7 +1945,7 @@ int Nintendo3DS::loadFieldData(void)
 			}
 		} else {
 			KeyManager::VerifyResult res = ncch->verifyResult();
-			if (!d->sbptr.srl.data && res != KeyManager::VERIFY_OK) {
+			if (!d->sbptr.srl.data && res != KeyManager::VerifyResult::OK) {
 				// Missing encryption keys.
 				if (!shownWarning) {
 					const char *err = KeyManager::verifyResultToString(res);
@@ -2034,14 +2036,14 @@ int Nintendo3DS::loadFieldData(void)
 					RomFields::STRF_WARNING);
 				shownWarning = true;
 			}
-		} else if (ncch->verifyResult() != KeyManager::VERIFY_OK) {
+		} else if (ncch->verifyResult() != KeyManager::VerifyResult::OK) {
 			// Missing encryption keys.
 			// TODO: This warning probably isn't needed,
 			// since it's handled above...
 			if (!shownWarning) {
 				KeyManager::VerifyResult res = (ncch
 					? ncch->verifyResult()
-					: KeyManager::VERIFY_UNKNOWN);
+					: KeyManager::VerifyResult::Unknown);
 				const char *err = KeyManager::verifyResultToString(res);
 				if (!err) {
 					err = C_("Nintendo3DS", "Unknown error. (THIS IS A BUG!)");
@@ -2079,7 +2081,7 @@ int Nintendo3DS::loadFieldData(void)
 		const char *const *pt_types;
 		const uint8_t *keyslots = nullptr;
 		vector<string> *v_partitions_names;
-		if (d->romType != Nintendo3DSPrivate::ROM_TYPE_eMMC) {
+		if (d->romType != Nintendo3DSPrivate::RomType::eMMC) {
 			// CCI (3DS cartridge dump)
 
 			// Partition type names.
@@ -2123,7 +2125,7 @@ int Nintendo3DS::loadFieldData(void)
 				"Nintendo3DS|eMMC", emmc_partitions_names, ARRAY_SIZE(emmc_partitions_names));
 		}
 
-		if (d->romType == Nintendo3DSPrivate::ROM_TYPE_CCI) {
+		if (d->romType == Nintendo3DSPrivate::RomType::CCI) {
 			// CCI-specific fields.
 			const N3DS_NCSD_Card_Info_Header_t *const cinfo_header = &d->mxh.cinfo_header;
 
@@ -2150,7 +2152,7 @@ int Nintendo3DS::loadFieldData(void)
 				// Card2 writable address.
 				d->fields->addField_string_numeric(C_("Nintendo3DS", "Card2 RW Address"),
 					le32_to_cpu(cinfo_header->card2_writable_address),
-					RomFields::FB_HEX, 4, RomFields::STRF_MONOSPACE);
+					RomFields::Base::Hex, 4, RomFields::STRF_MONOSPACE);
 			}
 
 			// Card device.
@@ -2185,7 +2187,7 @@ int Nintendo3DS::loadFieldData(void)
 			// Card revision.
 			d->fields->addField_string_numeric(C_("Nintendo3DS", "Card Revision"),
 				le32_to_cpu(cinfo_header->card_revision),
-				RomFields::FB_DEC, 2);
+				RomFields::Base::Dec, 2);
 
 			// TODO: Show "title version"?
 
@@ -2230,7 +2232,7 @@ int Nintendo3DS::loadFieldData(void)
 			const char *const s_ptype = (pt_types[i] ? pt_types[i] : s_unknown);
 			data_row.emplace_back(s_ptype);
 
-			if (d->romType != Nintendo3DSPrivate::ROM_TYPE_eMMC) {
+			if (d->romType != Nintendo3DSPrivate::RomType::eMMC) {
 				const N3DS_NCCH_Header_NoSig_t *const part_ncch_header =
 					(pNcch && pNcch->isOpen() ? pNcch->ncchHeader() : nullptr);
 				if (part_ncch_header) {
@@ -2635,7 +2637,7 @@ int Nintendo3DS::loadMetaData(void)
 	} else if (!d->file) {
 		// File isn't open.
 		return -EBADF;
-	} else if (!d->isValid || d->romType < 0) {
+	} else if (!d->isValid || (int)d->romType < 0) {
 		// ROM image isn't valid.
 		return -EIO;
 	}
@@ -2674,18 +2676,38 @@ int Nintendo3DS::loadInternalImage(ImageType imageType, const rp_image **pImage)
 	ASSERT_loadInternalImage(imageType, pImage);
 
 	RP_D(Nintendo3DS);
-	if (d->romType == Nintendo3DSPrivate::ROM_TYPE_CIA) {
-		// TMD needs to be loaded so we can check if it's a DSiWare SRL.
-		if (!(d->headers_loaded & Nintendo3DSPrivate::HEADER_TMD)) {
-			d->loadTicketAndTMD();
-		}
-		if (d->sbptr.srl.data) {
-			// This is a DSiWare SRL.
-			// Get the image from the underlying SRL.
-			const rp_image *image = d->sbptr.srl.data->image(imageType);
-			*pImage = image;
-			return (image ? 0 : -EIO);
-		}
+	if (!d->isValid) {
+		// ROM image isn't valid.
+		return -EIO;
+	}
+
+	switch (d->romType) {
+		default:
+		case Nintendo3DSPrivate::RomType::Unknown:
+		case Nintendo3DSPrivate::RomType::eMMC:
+			// Cannot get external images for eMMC and unknown ROM types.
+			return -ENOENT;
+
+		case Nintendo3DSPrivate::RomType::CIA:
+			// TMD needs to be loaded so we can check if it's a DSiWare SRL.
+			if (!(d->headers_loaded & Nintendo3DSPrivate::HEADER_TMD)) {
+				d->loadTicketAndTMD();
+			}
+			if (d->sbptr.srl.data) {
+				// This is a DSiWare SRL.
+				// Get the image from the underlying SRL.
+				const rp_image *image = d->sbptr.srl.data->image(imageType);
+				*pImage = image;
+				return (image ? 0 : -EIO);
+			}
+			// Assume it's a regular 3DS CIA which has internal images.
+			break;
+
+		case Nintendo3DSPrivate::RomType::_3DSX:
+		case Nintendo3DSPrivate::RomType::CCI:
+		case Nintendo3DSPrivate::RomType::NCCH:
+			// Internal images are available.
+			break;
 	}
 
 	// TODO: Specify the icon index.
@@ -2748,19 +2770,36 @@ int Nintendo3DS::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size
 	pExtURLs->clear();
 
 	RP_D(const Nintendo3DS);
-	if (!d->isValid || d->romType < 0) {
+	if (!d->isValid) {
 		// ROM image isn't valid.
 		return -EIO;
-	} else if (d->romType == Nintendo3DSPrivate::ROM_TYPE_CIA) {
-		// TMD needs to be loaded so we can check if it's a DSiWare SRL.
-		if (!(d->headers_loaded & Nintendo3DSPrivate::HEADER_TMD)) {
-			const_cast<Nintendo3DSPrivate*>(d)->loadTicketAndTMD();
-		}
-		if (d->sbptr.srl.data) {
-			// This is a DSiWare SRL.
-			// Get the image URLs from the underlying SRL.
-			return d->sbptr.srl.data->extURLs(imageType, pExtURLs, size);
-		}
+	}
+
+	switch (d->romType) {
+		default:
+		case Nintendo3DSPrivate::RomType::Unknown:
+		case Nintendo3DSPrivate::RomType::eMMC:
+		case Nintendo3DSPrivate::RomType::_3DSX:
+			// Cannot get external images for eMMC, 3DSX, and unknown ROM types.
+			return -ENOENT;
+
+		case Nintendo3DSPrivate::RomType::CIA:
+			// TMD needs to be loaded so we can check if it's a DSiWare SRL.
+			if (!(d->headers_loaded & Nintendo3DSPrivate::HEADER_TMD)) {
+				const_cast<Nintendo3DSPrivate*>(d)->loadTicketAndTMD();
+			}
+			if (d->sbptr.srl.data) {
+				// This is a DSiWare SRL.
+				// Get the image URLs from the underlying SRL.
+				return d->sbptr.srl.data->extURLs(imageType, pExtURLs, size);
+			}
+			// Assume it's a regular 3DS CIA which has external images.
+			break;
+
+		case Nintendo3DSPrivate::RomType::CCI:
+		case Nintendo3DSPrivate::RomType::NCCH:
+			// External images are available.
+			break;
 	}
 
 	// Make sure the NCCH header is loaded.

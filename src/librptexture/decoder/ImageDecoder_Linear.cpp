@@ -66,7 +66,7 @@ rp_image *fromLinearCI4(PixelFormat px_format, bool msn_left,
 		return nullptr;
 
 	// Create an rp_image.
-	rp_image *img = new rp_image(width, height, rp_image::FORMAT_CI8);
+	rp_image *img = new rp_image(width, height, rp_image::Format::CI8);
 	if (!img->isValid()) {
 		// Could not allocate the image.
 		delete img;
@@ -300,7 +300,7 @@ rp_image *fromLinearCI8(PixelFormat px_format,
 	}
 
 	// Create an rp_image.
-	rp_image *img = new rp_image(width, height, rp_image::FORMAT_CI8);
+	rp_image *img = new rp_image(width, height, rp_image::Format::CI8);
 	if (!img->isValid()) {
 		// Could not allocate the image.
 		delete img;
@@ -492,7 +492,7 @@ rp_image *fromLinearMono(int width, int height,
 		return nullptr;
 
 	// Create an rp_image.
-	rp_image *img = new rp_image(width, height, rp_image::FORMAT_CI8);
+	rp_image *img = new rp_image(width, height, rp_image::Format::CI8);
 	if (!img->isValid()) {
 		// Could not allocate the image.
 		delete img;
@@ -578,7 +578,7 @@ rp_image *fromLinear8(PixelFormat px_format,
 	}
 
 	// Create an rp_image.
-	rp_image *img = new rp_image(width, height, rp_image::FORMAT_ARGB32);
+	rp_image *img = new rp_image(width, height, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
 		delete img;
@@ -675,7 +675,7 @@ rp_image *fromLinear16_cpp(PixelFormat px_format,
 	}
 
 	// Create an rp_image.
-	rp_image *img = new rp_image(width, height, rp_image::FORMAT_ARGB32);
+	rp_image *img = new rp_image(width, height, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
 		delete img;
@@ -790,7 +790,7 @@ rp_image *fromLinear24_cpp(PixelFormat px_format,
 	}
 
 	// Create an rp_image.
-	rp_image *img = new rp_image(width, height, rp_image::FORMAT_ARGB32);
+	rp_image *img = new rp_image(width, height, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
 		delete img;
@@ -891,7 +891,7 @@ rp_image *fromLinear32_cpp(PixelFormat px_format,
 	}
 
 	// Create an rp_image.
-	rp_image *img = new rp_image(width, height, rp_image::FORMAT_ARGB32);
+	rp_image *img = new rp_image(width, height, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
 		delete img;

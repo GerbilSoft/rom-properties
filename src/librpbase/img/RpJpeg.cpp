@@ -344,7 +344,7 @@ rp_image *RpJpeg::loadUnchecked(IRpFile *file)
 			}
 
 			// Create the image.
-			img = new rp_image(cinfo.output_width, cinfo.output_height, rp_image::FORMAT_CI8);
+			img = new rp_image(cinfo.output_width, cinfo.output_height, rp_image::Format::CI8);
 			if (!img->isValid()) {
 				// Could not allocate the image.
 				jpeg_destroy_decompress(&cinfo);
@@ -394,7 +394,7 @@ rp_image *RpJpeg::loadUnchecked(IRpFile *file)
 				return nullptr;
 			}
 
-			img = new rp_image(cinfo.image_width, cinfo.image_height, rp_image::FORMAT_ARGB32);
+			img = new rp_image(cinfo.image_width, cinfo.image_height, rp_image::Format::ARGB32);
 			if (!img->isValid()) {
 				// Could not allocate the image.
 				jpeg_destroy_decompress(&cinfo);
@@ -415,7 +415,7 @@ rp_image *RpJpeg::loadUnchecked(IRpFile *file)
 				return nullptr;
 			}
 
-			img = new rp_image(cinfo.image_width, cinfo.image_height, rp_image::FORMAT_ARGB32);
+			img = new rp_image(cinfo.image_width, cinfo.image_height, rp_image::Format::ARGB32);
 			if (!img->isValid()) {
 				// Could not allocate the image.
 				jpeg_destroy_decompress(&cinfo);
@@ -434,7 +434,7 @@ rp_image *RpJpeg::loadUnchecked(IRpFile *file)
 				return nullptr;
 			}
 
-			img = new rp_image(cinfo.image_width, cinfo.image_height, rp_image::FORMAT_ARGB32);
+			img = new rp_image(cinfo.image_width, cinfo.image_height, rp_image::Format::ARGB32);
 			if (!img->isValid()) {
 				// Could not allocate the image.
 				jpeg_destroy_decompress(&cinfo);

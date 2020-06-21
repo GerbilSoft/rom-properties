@@ -376,7 +376,7 @@ ISO::ISO(IRpFile *file)
 	RP_D(ISO);
 	d->className = "ISO";
 	d->mimeType = "application/x-cd-image";	// unofficial [TODO: Others?]
-	d->fileType = FTYPE_DISC_IMAGE;
+	d->fileType = FileType::DiscImage;
 
 	if (!d->file) {
 		// Could not ref() the file handle.

@@ -193,39 +193,39 @@ class RomData
 		 */
 		const char *className(void) const;
 
-		enum FileType {
-			FTYPE_UNKNOWN = 0,
+		enum class FileType {
+			Unknown = 0,
 
-			FTYPE_ROM_IMAGE,		// ROM image
-			FTYPE_DISC_IMAGE,		// Optical disc image
-			FTYPE_SAVE_FILE,		// Save file
-			FTYPE_EMBEDDED_DISC_IMAGE,	// "Embedded" disc image, e.g. GameCube TGC
-			FTYPE_APPLICATION_PACKAGE,	// Application package, e.g. WAD, CIA
-			FTYPE_NFC_DUMP,			// NFC dump, e.g. amiibo
-			FTYPE_DISK_IMAGE,		// Floppy and/or hard disk image
-			FTYPE_EXECUTABLE,		// Executable, e.g. EXE
-			FTYPE_DLL,			// Dynamic Link Library
-			FTYPE_DEVICE_DRIVER,		// Device driver
-			FTYPE_RESOURCE_LIBRARY,		// Resource library
-			FTYPE_ICON_FILE,		// Icon file, e.g. SMDH.
-			FTYPE_BANNER_FILE,		// Banner file, e.g. GameCube opening.bnr.
-			FTYPE_HOMEBREW,			// Homebrew application, e.g. 3DSX.
-			FTYPE_EMMC_DUMP,		// eMMC dump
-			FTYPE_CONTAINER_FILE,		// Container file, e.g. NCCH.
-			FTYPE_FIRMWARE_BINARY,		// Firmware binary, e.g. 3DS FIRM.
-			FTYPE_TEXTURE_FILE,		// Texture file, e.g. Sega PVR.
-			FTYPE_RELOCATABLE_OBJECT,	// Relocatable Object File (*.o)
-			FTYPE_SHARED_LIBRARY,		// Shared Library (similar to DLLs)
-			FTYPE_CORE_DUMP,		// Core Dump
-			FTYPE_AUDIO_FILE,		// Audio file
-			FTYPE_BOOT_SECTOR,		// Boot sector
-			FTYPE_BUNDLE,			// Bundle (Mac OS X)
-			FTYPE_RESOURCE_FILE,		// Resource file
-			FTYPE_PARTITION,		// Partition
-			FTYPE_METADATA_FILE,		// Metadata File
-			FTYPE_PATCH_FILE,		// Patch File
+			ROM_Image,		// ROM image
+			DiscImage,		// Optical disc image
+			SaveFile,		// Save file
+			EmbeddedDiscImage,	// "Embedded" disc image, e.g. GameCube TGC
+			ApplicationPackage,	// Application package, e.g. WAD, CIA
+			NFC_Dump,		// NFC dump, e.g. amiibo
+			DiskImage,		// Floppy and/or hard disk image
+			Executable,		// Executable, e.g. EXE
+			DLL,			// Dynamic Link Library
+			DeviceDriver,		// Device driver
+			ResourceLibrary,	// Resource library
+			IconFile,		// Icon file, e.g. SMDH.
+			BannerFile,		// Banner file, e.g. GameCube opening.bnr.
+			Homebrew,		// Homebrew application, e.g. 3DSX.
+			eMMC_Dump,		// eMMC dump
+			ContainerFile,		// Container file, e.g. NCCH.
+			FirmwareBinary,		// Firmware binary, e.g. 3DS FIRM.
+			TextureFile,		// Texture file, e.g. Sega PVR.
+			RelocatableObject,	// Relocatable Object File (*.o)
+			SharedLibrary,		// Shared Library (similar to DLLs)
+			CoreDump,		// Core Dump
+			AudioFile,		// Audio file
+			BootSector,		// Boot sector
+			Bundle,			// Bundle (Mac OS X)
+			ResourceFile,		// Resource file
+			Partition,		// Partition
+			MetadataFile,		// Metadata File
+			PatchFile,		// Patch File
 
-			FTYPE_LAST			// End of FileType.
+			Max
 		};
 
 		/**

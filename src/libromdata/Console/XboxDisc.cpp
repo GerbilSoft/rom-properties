@@ -46,17 +46,17 @@ class XboxDiscPrivate : public LibRpBase::RomDataPrivate
 
 	public:
 		// Disc type.
-		enum DiscType {
-			DISC_UNKNOWN = -1,	// Unknown disc type.
+		enum class DiscType {
+			Unknown	= -1,
 
-			DISC_TYPE_EXTRACTED	= 0,	// Extracted XDVDFS
-			DISC_TYPE_XGD1		= 1,	// XGD1 (Original Xbox)
-			DISC_TYPE_XGD2		= 2,	// XGD2 (Xbox 360)
-			DISC_TYPE_XGD3		= 3,	// XGD3 (Xbox 360)
+			Extracted	= 0,	// Extracted XDVDFS
+			XGD1		= 1,	// XGD1 (Original Xbox)
+			XGD2		= 2,	// XGD2 (Xbox 360)
+			XGD3		= 3,	// XGD3 (Xbox 360)
 
-			DISC_TYPE_MAX
+			Max
 		};
-		int discType;
+		DiscType discType;
 		uint8_t wave;
 
 		// XDVDFS starting address.
@@ -69,30 +69,30 @@ class XboxDiscPrivate : public LibRpBase::RomDataPrivate
 		// default.xbe / default.xex
 		RomData *defaultExeData;
 
-		enum ExeType {
-			EXE_TYPE_UNKNOWN	= -1,
+		enum class ExeType {
+			Unknown	= -1,
 
-			EXE_TYPE_XBE		= 0,	// Xbox XBE
-			EXE_TYPE_XEX		= 1,	// Xbox 360 XEX
+			XBE	= 0,	// Xbox XBE
+			XEX	= 1,	// Xbox 360 XEX
 
-			EXE_TYPE_MAX
+			MAX
 		};
-		int exeType;
+		ExeType exeType;
 
 		/**
 		 * Open default.xbe / default.xex.
 		 * @param pExeType	[out] EXE type.
 		 * @return RomData* on success; nullptr on error.
 		 */
-		RomData *openDefaultExe(int *pExeType = nullptr);
+		RomData *openDefaultExe(ExeType *pExeType = nullptr);
 
-		enum ConsoleType {
-			CONSOLE_TYPE_UNKNOWN	= -1,
+		enum class ConsoleType {
+			Unknown	= -1,
 
-			CONSOLE_TYPE_XBOX	= 0,	// Xbox
-			CONSOLE_TYPE_XBOX_360	= 1,	// Xbox 360
+			Xbox	= 0,	// Xbox
+			Xbox360	= 1,	// Xbox 360
 
-			CONSOLE_TYPE_MAX
+			Max
 		};
 
 		/**
@@ -123,13 +123,13 @@ class XboxDiscPrivate : public LibRpBase::RomDataPrivate
 
 XboxDiscPrivate::XboxDiscPrivate(XboxDisc *q, IRpFile *file)
 	: super(q, file)
-	, discType(DISC_UNKNOWN)
+	, discType(DiscType::Unknown)
 	, wave(0)
 	, xdvdfs_addr(0)
 	, discReader(nullptr)
 	, xdvdfsPartition(nullptr)
 	, defaultExeData(nullptr)
-	, exeType(EXE_TYPE_UNKNOWN)
+	, exeType(ExeType::Unknown)
 	, isKreon(false)
 {
 }
@@ -152,7 +152,7 @@ XboxDiscPrivate::~XboxDiscPrivate()
  * @param pExeType	[out] EXE type.
  * @return RomData* on success; nullptr on error.
  */
-RomData *XboxDiscPrivate::openDefaultExe(int *pExeType)
+RomData *XboxDiscPrivate::openDefaultExe(ExeType *pExeType)
 {
 	if (defaultExeData) {
 		// default.xbe / default.xex is already open.
@@ -175,9 +175,9 @@ RomData *XboxDiscPrivate::openDefaultExe(int *pExeType)
 		if (xexData->isValid()) {
 			// default.xex is open and valid.
 			defaultExeData = xexData;
-			exeType = EXE_TYPE_XEX;
+			exeType = ExeType::XEX;
 			if (pExeType) {
-				*pExeType = EXE_TYPE_XEX;
+				*pExeType = ExeType::XEX;
 			}
 			return xexData;
 		}
@@ -192,18 +192,18 @@ RomData *XboxDiscPrivate::openDefaultExe(int *pExeType)
 		if (xbeData->isValid()) {
 			// default.xbe is open and valid.
 			defaultExeData = xbeData;
-			exeType = EXE_TYPE_XBE;
+			exeType = ExeType::XBE;
 			if (pExeType) {
-				*pExeType = EXE_TYPE_XBE;
+				*pExeType = ExeType::XBE;
 			}
 			return xbeData;
 		}
 	}
 
 	// Unable to open the default executable.
-	exeType = EXE_TYPE_UNKNOWN;
+	exeType = ExeType::Unknown;
 	if (pExeType) {
-		*pExeType = EXE_TYPE_UNKNOWN;
+		*pExeType = ExeType::Unknown;
 	}
 	return nullptr;
 }
@@ -219,15 +219,15 @@ RomData *XboxDiscPrivate::openDefaultExe(int *pExeType)
 XboxDiscPrivate::ConsoleType XboxDiscPrivate::getConsoleType(void) const
 {
 	// Check for the default executable.
-	int exeType;
+	ExeType exeType;
 	RomData *const defaultExeData = const_cast<XboxDiscPrivate*>(this)->openDefaultExe(&exeType);
 	if (defaultExeData) {
 		// Default executable loaded.
 		switch (exeType) {
-			case EXE_TYPE_XBE:
-				return CONSOLE_TYPE_XBOX;
-			case EXE_TYPE_XEX:
-				return CONSOLE_TYPE_XBOX_360;
+			case ExeType::XBE:
+				return ConsoleType::Xbox;
+			case ExeType::XEX:
+				return ConsoleType::Xbox360;
 			default:
 				break;
 		}
@@ -235,12 +235,12 @@ XboxDiscPrivate::ConsoleType XboxDiscPrivate::getConsoleType(void) const
 
 	// Unable to load the EXE.
 	// Use the disc type.
-	if (discType >= XboxDiscPrivate::DISC_TYPE_XGD2) {
-		return CONSOLE_TYPE_XBOX_360;
+	if (discType >= XboxDiscPrivate::DiscType::XGD2) {
+		return ConsoleType::Xbox360;
 	}
 
 	// Assume Xbox for XGD1 and extracted XDVDFS.
-	return CONSOLE_TYPE_XBOX;
+	return ConsoleType::Xbox;
 }
 
 /**
@@ -254,7 +254,7 @@ inline void XboxDiscPrivate::unlockKreonDrive(void)
 	RpFile *const rpFile = dynamic_cast<RpFile*>(this->file);
 	if (rpFile) {
 		rpFile->setKreonErrorSkipState(true);
-		rpFile->setKreonLockState(RpFile::KREON_STATE_2_WXRIPPER);
+		rpFile->setKreonLockState(RpFile::KreonLockState::State2WxRipper);
 	}
 }
 
@@ -269,7 +269,7 @@ inline void XboxDiscPrivate::lockKreonDrive(void)
 	RpFile *const rpFile = dynamic_cast<RpFile*>(this->file);
 	if (rpFile) {
 		rpFile->setKreonErrorSkipState(false);
-		rpFile->setKreonLockState(RpFile::KREON_STATE_LOCKED);
+		rpFile->setKreonLockState(RpFile::KreonLockState::Locked);
 	}
 }
 
@@ -295,7 +295,7 @@ XboxDisc::XboxDisc(IRpFile *file)
 	RP_D(XboxDisc);
 	d->className = "XboxDisc";
 	d->mimeType = "application/x-cd-image";	// unofficial
-	d->fileType = FTYPE_DISC_IMAGE;
+	d->fileType = FileType::DiscImage;
 
 	if (!d->file) {
 		// Could not ref() the file handle.
@@ -315,16 +315,16 @@ XboxDisc::XboxDisc(IRpFile *file)
 	}
 
 	// Check if this disc image is supported.
-	d->discType = isRomSupported_static(&pvd, &d->wave);
+	d->discType = static_cast<XboxDiscPrivate::DiscType>(isRomSupported_static(&pvd, &d->wave));
 
 	switch (d->discType) {
-		case XboxDiscPrivate::DISC_TYPE_XGD1:
+		case XboxDiscPrivate::DiscType::XGD1:
 			d->xdvdfs_addr = XDVDFS_LBA_OFFSET_XGD1 * XDVDFS_BLOCK_SIZE;
 			break;
-		case XboxDiscPrivate::DISC_TYPE_XGD2:
+		case XboxDiscPrivate::DiscType::XGD2:
 			d->xdvdfs_addr = XDVDFS_LBA_OFFSET_XGD2 * XDVDFS_BLOCK_SIZE;
 			break;
-		case XboxDiscPrivate::DISC_TYPE_XGD3:
+		case XboxDiscPrivate::DiscType::XGD3:
 			d->xdvdfs_addr = XDVDFS_LBA_OFFSET_XGD3 * XDVDFS_BLOCK_SIZE;
 			break;
 		default:
@@ -381,9 +381,9 @@ XboxDisc::XboxDisc(IRpFile *file)
 	}
 
 	// XDVDFS partition is open.
-	if (d->discType <= XboxDiscPrivate::DISC_UNKNOWN) {
+	if (d->discType <= XboxDiscPrivate::DiscType::Unknown) {
 		// This is an extracted XDVDFS.
-		d->discType = XboxDiscPrivate::DISC_TYPE_EXTRACTED;
+		d->discType = XboxDiscPrivate::DiscType::Extracted;
 	}
 
 	// Disc image is ready.
@@ -449,7 +449,7 @@ int XboxDisc::isRomSupported_static(
 	assert(pvd != nullptr);
 	if (!pvd) {
 		// Bad.
-		return -1;
+		return static_cast<int>(XboxDiscPrivate::DiscType::Unknown);
 	}
 
 	// Get the creation time.
@@ -457,7 +457,7 @@ int XboxDisc::isRomSupported_static(
 		pvd->btime.full, pvd->btime.tz_offset);
 	if (btime == -1) {
 		// Invalid creation time.
-		return -1;
+		return static_cast<int>(XboxDiscPrivate::DiscType::Unknown);
 	}
 
 	// Compare to known times.
@@ -538,12 +538,12 @@ int XboxDisc::isRomSupported_static(
 			if (pWave) {
 				*pWave = 0;
 			}
-			return XboxDiscPrivate::DISC_TYPE_XGD3;
+			return static_cast<int>(XboxDiscPrivate::DiscType::XGD3);
 		}
 	}
 
 	// Not XGD.
-	return -1;
+	return static_cast<int>(XboxDiscPrivate::DiscType::Unknown);
 }
 
 /**
@@ -565,14 +565,14 @@ const char *XboxDisc::systemName(unsigned int type) const
 	XboxDiscPrivate::ConsoleType consoleType = d->getConsoleType();
 	switch (consoleType) {
 		default:
-		case XboxDiscPrivate::CONSOLE_TYPE_XBOX: {
+		case XboxDiscPrivate::ConsoleType::Xbox: {
 			static const char *const sysNames_Xbox[4] = {
 				"Microsoft Xbox", "Xbox", "Xbox", nullptr
 			};
 			return sysNames_Xbox[type & SYSNAME_TYPE_MASK];
 		}
 
-		case XboxDiscPrivate::CONSOLE_TYPE_XBOX_360: {
+		case XboxDiscPrivate::ConsoleType::Xbox360: {
 			static const char *const sysNames_X360[4] = {
 				"Microsoft Xbox 360", "Xbox 360", "X360", nullptr
 			};
@@ -702,7 +702,7 @@ int XboxDisc::loadFieldData(void)
 	} else if (!d->file || !d->file->isOpen()) {
 		// File isn't open.
 		return -EBADF;
-	} else if (!d->isValid || d->discType < 0) {
+	} else if (!d->isValid || (int)d->discType < 0) {
 		// Unknown disc type.
 		return -EIO;
 	}
@@ -724,10 +724,10 @@ int XboxDisc::loadFieldData(void)
 	const char *s_tab_name;
 	switch (consoleType) {
 		default:
-		case XboxDiscPrivate::CONSOLE_TYPE_XBOX:
+		case XboxDiscPrivate::ConsoleType::Xbox:
 			s_tab_name = "Xbox";
 			break;
-		case XboxDiscPrivate::CONSOLE_TYPE_XBOX_360:
+		case XboxDiscPrivate::ConsoleType::Xbox360:
 			s_tab_name = "Xbox 360";
 			break;
 	}
@@ -737,18 +737,18 @@ int XboxDisc::loadFieldData(void)
 	const char *const s_disc_type = C_("XboxDisc", "Disc Type");
 	// NOTE: Not translating "Xbox Game Disc".
 	switch (d->discType) {
-		case XboxDiscPrivate::DISC_TYPE_EXTRACTED:
+		case XboxDiscPrivate::DiscType::Extracted:
 			d->fields->addField_string(s_disc_type,
 				C_("XboxDisc", "Extracted XDVDFS"));
 			break;
-		case XboxDiscPrivate::DISC_TYPE_XGD1:
+		case XboxDiscPrivate::DiscType::XGD1:
 			d->fields->addField_string(s_disc_type, "Xbox Game Disc 1");
 			break;
-		case XboxDiscPrivate::DISC_TYPE_XGD2:
+		case XboxDiscPrivate::DiscType::XGD2:
 			d->fields->addField_string(s_disc_type,
 				rp_sprintf("Xbox Game Disc 2 (Wave %u)", d->wave));
 			break;
-		case XboxDiscPrivate::DISC_TYPE_XGD3:
+		case XboxDiscPrivate::DiscType::XGD3:
 			d->fields->addField_string(s_disc_type, "Xbox Game Disc 3");
 			break;
 		default:
@@ -765,16 +765,16 @@ int XboxDisc::loadFieldData(void)
 
 	// Do we have an XBE or XEX?
 	// If so, add it to the current tab.
-	int exeType;
+	XboxDiscPrivate::ExeType exeType;
 	RomData *const defaultExeData = d->openDefaultExe(&exeType);
 	if (defaultExeData) {
 		// Boot filename.
 		const char *s_boot_filename;
 		switch (exeType) {
-			case XboxDiscPrivate::EXE_TYPE_XBE:
+			case XboxDiscPrivate::ExeType::XBE:
 				s_boot_filename = "default.xbe";
 				break;
-			case XboxDiscPrivate::EXE_TYPE_XEX:
+			case XboxDiscPrivate::ExeType::XEX:
 				s_boot_filename = "default.xex";
 				break;
 			default:
@@ -800,7 +800,7 @@ int XboxDisc::loadFieldData(void)
 	}
 
 	// ISO object for ISO-9660 PVD
-	if (d->discType >= XboxDiscPrivate::DISC_TYPE_XGD1) {
+	if (d->discType >= XboxDiscPrivate::DiscType::XGD1) {
 		ISO *const isoData = new ISO(d->file);
 		if (isoData->isOpen()) {
 			// Add the fields.
@@ -834,7 +834,7 @@ int XboxDisc::loadMetaData(void)
 	} else if (!d->file) {
 		// File isn't open.
 		return -EBADF;
-	} else if (!d->isValid || d->discType < 0) {
+	} else if (!d->isValid || (int)d->discType < 0) {
 		// Unknown disc type.
 		return -EIO;
 	}

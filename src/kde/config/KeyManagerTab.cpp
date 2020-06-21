@@ -117,7 +117,7 @@ void KeyManagerTabPrivate::showKeyImportReturnStatus(
 	// TODO: Thread-safe strerror()?
 
 	switch (iret.status) {
-		case KeyStoreQt::Import_InvalidParams:
+		case KeyStoreQt::ImportStatus::InvalidParams:
 		default:
 			msg = C_("KeyManagerTab",
 				"An invalid parameter was passed to the key importer.\n"
@@ -126,7 +126,7 @@ void KeyManagerTabPrivate::showKeyImportReturnStatus(
 			icon = QStyle::SP_MessageBoxCritical;
 			break;
 
-		case KeyStoreQt::Import_OpenError:
+		case KeyStoreQt::ImportStatus::OpenError:
 			if (iret.error_code != 0) {
 				msg = rp_sprintf_p(C_("KeyManagerTab",
 					// tr: %1$s == filename, %2$s == error message
@@ -143,7 +143,7 @@ void KeyManagerTabPrivate::showKeyImportReturnStatus(
 			icon = QStyle::SP_MessageBoxCritical;
 			break;
 
-		case KeyStoreQt::Import_ReadError:
+		case KeyStoreQt::ImportStatus::ReadError:
 			// TODO: Error code for short reads.
 			if (iret.error_code != 0) {
 				msg = rp_sprintf_p(C_("KeyManagerTab",
@@ -161,7 +161,7 @@ void KeyManagerTabPrivate::showKeyImportReturnStatus(
 			icon = QStyle::SP_MessageBoxCritical;
 			break;
 
-		case KeyStoreQt::Import_InvalidFile:
+		case KeyStoreQt::ImportStatus::InvalidFile:
 			msg = rp_sprintf_p(C_("KeyManagerTab",
 				// tr: %1$s == filename, %2$s == type of file
 				"The file '%1$s' is not a valid %2$s file."),
@@ -171,7 +171,7 @@ void KeyManagerTabPrivate::showKeyImportReturnStatus(
 			icon = QStyle::SP_MessageBoxWarning;
 			break;
 
-		case KeyStoreQt::Import_NoKeysImported:
+		case KeyStoreQt::ImportStatus::NoKeysImported:
 			msg = rp_sprintf(C_("KeyManagerTab",
 				// tr: %s == filename
 				"No keys were imported from '%s'."),
@@ -181,7 +181,7 @@ void KeyManagerTabPrivate::showKeyImportReturnStatus(
 			showKeyStats = true;
 			break;
 
-		case KeyStoreQt::Import_KeysImported: {
+		case KeyStoreQt::ImportStatus::KeysImported: {
 			const unsigned int keyCount = iret.keysImportedVerify + iret.keysImportedNoVerify;
 			msg = rp_sprintf_p(NC_("KeyManagerTab",
 				// tr: %1$s == number of keys (formatted), %2$u == filename

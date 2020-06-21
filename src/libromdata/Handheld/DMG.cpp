@@ -59,26 +59,29 @@ class DMGPrivate : public RomDataPrivate
 		/** Internal ROM data. **/
 
 		// Cartridge hardware.
-		enum DMG_Hardware {
-			DMG_HW_UNK,
-			DMG_HW_ROM,
-			DMG_HW_MBC1,
-			DMG_HW_MBC2,
-			DMG_HW_MBC3,
-			DMG_HW_MBC4,
-			DMG_HW_MBC5,
-			DMG_HW_MBC6,
-			DMG_HW_MBC7,
-			DMG_HW_MMM01,
-			DMG_HW_HUC1,
-			DMG_HW_HUC3,
-			DMG_HW_TAMA5,
-			DMG_HW_CAMERA
+		enum class DMG_Hardware : uint8_t {
+			Unknown = 0,
+
+			ROM,
+			MBC1,
+			MBC2,
+			MBC3,
+			MBC4,
+			MBC5,
+			MBC6,
+			MBC7,
+			MMM01,
+			HUC1,
+			HUC3,
+			TAMA5,
+			Camera,
+
+			Max
 		};
 		static const char *const dmg_hardware_names[];
 
 		struct dmg_cart_type {
-			uint8_t hardware;	// DMG_Hardware
+			DMG_Hardware hardware;
 			uint8_t features;	// DMG_Feature
 		};
 
@@ -137,16 +140,15 @@ class DMGPrivate : public RomDataPrivate
 		static const uint8_t dmg_nintendo[0x18];
 
 	public:
-		enum DMG_RomType {
-			ROM_UNKNOWN	= -1,	// Unknown ROM type.
-			ROM_DMG		= 0,	// Game Boy
-			ROM_CGB		= 1,	// Game Boy Color
+		enum class RomType {
+			Unknown	= -1,
 
-			ROM_MAX
+			DMG	= 0,	// Game Boy
+			CGB	= 1,	// Game Boy Color
+
+			Max
 		};
-
-		// ROM type.
-		int romType;
+		RomType romType;
 
 	public:
 		// ROM header.
@@ -197,53 +199,53 @@ const char *const DMGPrivate::dmg_hardware_names[] = {
 };
 
 const DMGPrivate::dmg_cart_type DMGPrivate::dmg_cart_types_start[] = {
-	{DMG_HW_ROM,	0},
-	{DMG_HW_MBC1,	0},
-	{DMG_HW_MBC1,	DMG_FEATURE_RAM},
-	{DMG_HW_MBC1,	DMG_FEATURE_RAM|DMG_FEATURE_BATTERY},
-	{DMG_HW_UNK,	0},
-	{DMG_HW_MBC2,	0},
-	{DMG_HW_MBC2,	DMG_FEATURE_BATTERY},
-	{DMG_HW_UNK,	0},
-	{DMG_HW_ROM,	DMG_FEATURE_RAM},
-	{DMG_HW_ROM,	DMG_FEATURE_RAM|DMG_FEATURE_BATTERY},
-	{DMG_HW_UNK,	0},
-	{DMG_HW_MMM01,	0},
-	{DMG_HW_MMM01,	DMG_FEATURE_RAM},
-	{DMG_HW_MMM01,	DMG_FEATURE_RAM|DMG_FEATURE_BATTERY},
-	{DMG_HW_UNK,	0},
-	{DMG_HW_MBC3,	DMG_FEATURE_TIMER|DMG_FEATURE_BATTERY},
-	{DMG_HW_MBC3,	DMG_FEATURE_TIMER|DMG_FEATURE_RAM|DMG_FEATURE_BATTERY},
-	{DMG_HW_MBC3,	0},
-	{DMG_HW_MBC3,	DMG_FEATURE_RAM},
-	{DMG_HW_MBC3,	DMG_FEATURE_RAM|DMG_FEATURE_BATTERY},
-	{DMG_HW_UNK,	0},
-	{DMG_HW_MBC4,	0},
-	{DMG_HW_MBC4,	DMG_FEATURE_RAM},
-	{DMG_HW_MBC4,	DMG_FEATURE_RAM|DMG_FEATURE_BATTERY},
-	{DMG_HW_UNK,	0},
-	{DMG_HW_MBC5,	0},
-	{DMG_HW_MBC5,	DMG_FEATURE_RAM},
-	{DMG_HW_MBC5,	DMG_FEATURE_RAM|DMG_FEATURE_BATTERY},
-	{DMG_HW_MBC5,	DMG_FEATURE_RUMBLE},
-	{DMG_HW_MBC5,	DMG_FEATURE_RUMBLE|DMG_FEATURE_RAM},
-	{DMG_HW_MBC5,	DMG_FEATURE_RUMBLE|DMG_FEATURE_RAM|DMG_FEATURE_BATTERY},
-	{DMG_HW_UNK,	0},
-	{DMG_HW_MBC6,	0},
-	{DMG_HW_UNK,	0},
-	{DMG_HW_MBC7,	DMG_FEATURE_RUMBLE|DMG_FEATURE_RAM|DMG_FEATURE_BATTERY},
+	{DMG_Hardware::ROM,	0},
+	{DMG_Hardware::MBC1,	0},
+	{DMG_Hardware::MBC1,	DMG_FEATURE_RAM},
+	{DMG_Hardware::MBC1,	DMG_FEATURE_RAM|DMG_FEATURE_BATTERY},
+	{DMG_Hardware::Unknown,	0},
+	{DMG_Hardware::MBC2,	0},
+	{DMG_Hardware::MBC2,	DMG_FEATURE_BATTERY},
+	{DMG_Hardware::Unknown,	0},
+	{DMG_Hardware::ROM,	DMG_FEATURE_RAM},
+	{DMG_Hardware::ROM,	DMG_FEATURE_RAM|DMG_FEATURE_BATTERY},
+	{DMG_Hardware::Unknown,	0},
+	{DMG_Hardware::MMM01,	0},
+	{DMG_Hardware::MMM01,	DMG_FEATURE_RAM},
+	{DMG_Hardware::MMM01,	DMG_FEATURE_RAM|DMG_FEATURE_BATTERY},
+	{DMG_Hardware::Unknown,	0},
+	{DMG_Hardware::MBC3,	DMG_FEATURE_TIMER|DMG_FEATURE_BATTERY},
+	{DMG_Hardware::MBC3,	DMG_FEATURE_TIMER|DMG_FEATURE_RAM|DMG_FEATURE_BATTERY},
+	{DMG_Hardware::MBC3,	0},
+	{DMG_Hardware::MBC3,	DMG_FEATURE_RAM},
+	{DMG_Hardware::MBC3,	DMG_FEATURE_RAM|DMG_FEATURE_BATTERY},
+	{DMG_Hardware::Unknown,	0},
+	{DMG_Hardware::MBC4,	0},
+	{DMG_Hardware::MBC4,	DMG_FEATURE_RAM},
+	{DMG_Hardware::MBC4,	DMG_FEATURE_RAM|DMG_FEATURE_BATTERY},
+	{DMG_Hardware::Unknown,	0},
+	{DMG_Hardware::MBC5,	0},
+	{DMG_Hardware::MBC5,	DMG_FEATURE_RAM},
+	{DMG_Hardware::MBC5,	DMG_FEATURE_RAM|DMG_FEATURE_BATTERY},
+	{DMG_Hardware::MBC5,	DMG_FEATURE_RUMBLE},
+	{DMG_Hardware::MBC5,	DMG_FEATURE_RUMBLE|DMG_FEATURE_RAM},
+	{DMG_Hardware::MBC5,	DMG_FEATURE_RUMBLE|DMG_FEATURE_RAM|DMG_FEATURE_BATTERY},
+	{DMG_Hardware::Unknown,	0},
+	{DMG_Hardware::MBC6,	0},
+	{DMG_Hardware::Unknown,	0},
+	{DMG_Hardware::MBC7,	DMG_FEATURE_RUMBLE|DMG_FEATURE_RAM|DMG_FEATURE_BATTERY},
 };
 
 const DMGPrivate::dmg_cart_type DMGPrivate::dmg_cart_types_end[] = {
-	{DMG_HW_CAMERA, 0},
-	{DMG_HW_TAMA5, 0},
-	{DMG_HW_HUC3, 0},
-	{DMG_HW_HUC1, DMG_FEATURE_RAM|DMG_FEATURE_BATTERY},
+	{DMG_Hardware::Camera, 0},
+	{DMG_Hardware::TAMA5, 0},
+	{DMG_Hardware::HUC3, 0},
+	{DMG_Hardware::HUC1, DMG_FEATURE_RAM|DMG_FEATURE_BATTERY},
 };
 
 DMGPrivate::DMGPrivate(DMG *q, IRpFile *file)
 	: super(q, file)
-	, romType(ROM_UNKNOWN)
+	, romType(RomType::Unknown)
 {
 	// Clear the various structs.
 	memset(&romHeader, 0, sizeof(romHeader));
@@ -286,7 +288,7 @@ uint32_t DMGPrivate::systemID(void) const
  */
 inline const DMGPrivate::dmg_cart_type& DMGPrivate::CartType(uint8_t type)
 {
-	static const dmg_cart_type unk = {DMG_HW_UNK, 0};
+	static const dmg_cart_type unk = {DMG_Hardware::Unknown, 0};
 	if (type < ARRAY_SIZE(dmg_cart_types_start)) {
 		return dmg_cart_types_start[type];
 	}
@@ -564,9 +566,9 @@ DMG::DMG(IRpFile *file)
 	info.header.pData = header;
 	info.ext = nullptr;	// Not needed for DMG.
 	info.szFile = 0;	// Not needed for DMG.
-	d->romType = isRomSupported_static(&info);
+	d->romType = static_cast<DMGPrivate::RomType>(isRomSupported_static(&info));
 
-	d->isValid = (d->romType >= 0);
+	d->isValid = ((int)d->romType >= 0);
 	if (d->isValid) {
 		// Save the header for later.
 		// TODO: Save the RST table?
@@ -589,7 +591,7 @@ DMG::DMG(IRpFile *file)
 	}
 
 	// Set the MIME type. (unofficial)
-	d->mimeType = (d->romType == DMGPrivate::DMG_SYSTEM_CGB)
+	d->mimeType = (d->romType == DMGPrivate::RomType::CGB)
 			? "application/x-gameboy-color-rom"
 			: "application/x-gameboy-rom";
 }
@@ -612,22 +614,26 @@ int DMG::isRomSupported_static(const DetectInfo *info)
 	{
 		// Either no detection information was specified,
 		// or the header is too small.
-		return -1;
+		return static_cast<int>(DMGPrivate::RomType::Unknown);
 	}
 
 	// Check the system name.
+	DMGPrivate::RomType romType;
 	const DMG_RomHeader *const romHeader =
 		reinterpret_cast<const DMG_RomHeader*>(&info->header.pData[0x100]);
 	if (!memcmp(romHeader->nintendo, DMGPrivate::dmg_nintendo, sizeof(DMGPrivate::dmg_nintendo))) {
 		// Found a DMG ROM.
 		if (romHeader->cgbflag & 0x80) {
-			return DMGPrivate::ROM_CGB; // CGB supported
+			romType = DMGPrivate::RomType::CGB; // CGB supported
+		} else {
+			romType = DMGPrivate::RomType::DMG;
 		}
-		return DMGPrivate::ROM_DMG;
+	} else {
+		// Not supported.
+		romType = DMGPrivate::RomType::Unknown;
 	}
 
-	// Not supported.
-	return -1;
+	return static_cast<int>(romType);
 }
 
 /**
@@ -646,7 +652,7 @@ const char *DMG::systemName(unsigned int type) const
 	// TODO: Abbreviation might be different... (Japan uses DMG/CGB?)
 	static_assert(SYSNAME_TYPE_MASK == 3,
 		"DMG::systemName() array index optimization needs to be updated.");
-	static_assert(DMGPrivate::ROM_MAX == 2,
+	static_assert((int)DMGPrivate::RomType::Max == 2,
 		"DMG::systemName() array index optimization needs to be updated.");
 
 	// Bits 0-1: Type. (long, short, abbreviation)
@@ -658,7 +664,7 @@ const char *DMG::systemName(unsigned int type) const
 
 	// NOTE: This might return an incorrect system name if
 	// d->romType is ROM_TYPE_UNKNOWN.
-	return sysNames[d->romType & 1][type & SYSNAME_TYPE_MASK];
+	return sysNames[(int)d->romType & 1][type & SYSNAME_TYPE_MASK];
 }
 
 /**
@@ -811,7 +817,7 @@ int DMG::loadFieldData(void)
 	} else if (!d->file || !d->file->isOpen()) {
 		// File isn't open.
 		return -EBADF;
-	} else if (!d->isValid || d->romType < 0) {
+	} else if (!d->isValid || (int)d->romType < 0) {
 		// Unknown ROM image type.
 		return -EIO;
 	}
@@ -874,12 +880,12 @@ int DMG::loadFieldData(void)
 		// NOTE: Some titles use a different opcode instead of NOP.
 		const uint16_t entry_address = (romHeader->entry[2] | (romHeader->entry[3] << 8));
 		d->fields->addField_string_numeric(entry_point_title,
-			entry_address, RomFields::FB_HEX, 4, RomFields::STRF_MONOSPACE);
+			entry_address, RomFields::Base::Hex, 4, RomFields::STRF_MONOSPACE);
 	} else if (romHeader->entry[0] == 0xC3) {
 		// JP nnnn without a NOP.
 		const uint16_t entry_address = (romHeader->entry[1] | (romHeader->entry[2] << 8));
 		d->fields->addField_string_numeric(entry_point_title,
-			entry_address, RomFields::FB_HEX, 4, RomFields::STRF_MONOSPACE);
+			entry_address, RomFields::Base::Hex, 4, RomFields::STRF_MONOSPACE);
 	} else if (romHeader->entry[0] == 0x18) {
 		// JR nnnn
 		// Found in many homebrew ROMs.
@@ -888,7 +894,7 @@ int DMG::loadFieldData(void)
 		// Add displacement, plus 2.
 		const uint16_t entry_address = 0x100 + disp + 2;
 		d->fields->addField_string_numeric(entry_point_title,
-			entry_address, RomFields::FB_HEX, 4, RomFields::STRF_MONOSPACE);
+			entry_address, RomFields::Base::Hex, 4, RomFields::STRF_MONOSPACE);
 	} else {
 		d->fields->addField_string_hexdump(entry_point_title,
 			romHeader->entry, 4, RomFields::STRF_MONOSPACE);
@@ -899,7 +905,7 @@ int DMG::loadFieldData(void)
 
 	// Hardware
 	d->fields->addField_string(C_("DMG", "Hardware"),
-		DMGPrivate::dmg_hardware_names[DMGPrivate::CartType(romHeader->cart_type).hardware]);
+		DMGPrivate::dmg_hardware_names[(int)DMGPrivate::CartType(romHeader->cart_type).hardware]);
 
 	// Features
 	static const char *const feature_bitfield_names[] = {
@@ -938,7 +944,7 @@ int DMG::loadFieldData(void)
 	} else {
 		const uint8_t ram_size = DMGPrivate::dmg_ram_size[romHeader->ram_size];
 		if (ram_size == 0 &&
-		    DMGPrivate::CartType(romHeader->cart_type).hardware == DMGPrivate::DMG_HW_MBC2)
+		    DMGPrivate::CartType(romHeader->cart_type).hardware == DMGPrivate::DMG_Hardware::MBC2)
 		{
 			d->fields->addField_string(ram_size_title,
 				// tr: MBC2 internal memory - Not really RAM, but whatever.
@@ -979,7 +985,7 @@ int DMG::loadFieldData(void)
 
 	// Revision
 	d->fields->addField_string_numeric(C_("RomData", "Revision"),
-		romHeader->version, RomFields::FB_DEC, 2);
+		romHeader->version, RomFields::Base::Dec, 2);
 
 	// Header checksum.
 	// This is a checksum of ROM addresses 0x134-0x14D.
@@ -1186,7 +1192,7 @@ int DMG::loadMetaData(void)
 	} else if (!d->file) {
 		// File isn't open.
 		return -EBADF;
-	} else if (!d->isValid || d->romType < 0) {
+	} else if (!d->isValid || (int)d->romType < 0) {
 		// Unknown ROM image type.
 		return -EIO;
 	}
@@ -1237,7 +1243,7 @@ int DMG::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
 	pExtURLs->clear();
 
 	RP_D(const DMG);
-	if (!d->isValid || d->romType < 0) {
+	if (!d->isValid || (int)d->romType < 0) {
 		// ROM image isn't valid.
 		return -EIO;
 	}

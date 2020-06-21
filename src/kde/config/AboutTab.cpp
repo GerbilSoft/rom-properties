@@ -163,11 +163,11 @@ void AboutTabPrivate::initCreditsTab(void)
 		C_("AboutTab|Credits", "This program is licensed under the %s or later."),
 			sPrgLicense.c_str());
 
-	AboutTabText::CreditType_t lastCreditType = AboutTabText::CT_CONTINUE;
+	AboutTabText::CreditType lastCreditType = AboutTabText::CreditType::Continue;
 	for (const AboutTabText::CreditsData_t *creditsData = &AboutTabText::CreditsData[0];
-	     creditsData->type < AboutTabText::CT_MAX; creditsData++)
+	     creditsData->type < AboutTabText::CreditType::Max; creditsData++)
 	{
-		if (creditsData->type != AboutTabText::CT_CONTINUE &&
+		if (creditsData->type != AboutTabText::CreditType::Continue &&
 		    creditsData->type != lastCreditType)
 		{
 			// New credit type.
@@ -175,18 +175,18 @@ void AboutTabPrivate::initCreditsTab(void)
 			sCredits += b_start;
 
 			switch (creditsData->type) {
-				case AboutTabText::CT_DEVELOPER:
+				case AboutTabText::CreditType::Developer:
 					sCredits += C_("AboutTab|Credits", "Developers:");
 					break;
-				case AboutTabText::CT_CONTRIBUTOR:
+				case AboutTabText::CreditType::Contributor:
 					sCredits += C_("AboutTab|Credits", "Contributors:");
 					break;
-				case AboutTabText::CT_TRANSLATOR:
+				case AboutTabText::CreditType::Translator:
 					sCredits += C_("AboutTab|Credits", "Translators:");
 					break;
 
-				case AboutTabText::CT_CONTINUE:
-				case AboutTabText::CT_MAX:
+				case AboutTabText::CreditType::Continue:
+				case AboutTabText::CreditType::Max:
 				default:
 					assert(!"Invalid credit type.");
 					break;

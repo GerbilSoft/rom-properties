@@ -293,7 +293,7 @@ void MegaDrivePrivate::addFields_romHeader(const MD_RomHeader *pRomHeader, bool 
 	if (!isDisc()) {
 		// Checksum. (MD only; not valid for Mega CD.)
 		fields->addField_string_numeric(C_("RomData", "Checksum"),
-			be16_to_cpu(pRomHeader->checksum), RomFields::FB_HEX, 4,
+			be16_to_cpu(pRomHeader->checksum), RomFields::Base::Hex, 4,
 			RomFields::STRF_MONOSPACE);
 	}
 
@@ -551,7 +551,7 @@ MegaDrive::MegaDrive(IRpFile *file)
 		// TODO (remove before committing): Does gcc/msvc optimize this into a jump table?
 		switch (d->romType & MegaDrivePrivate::ROM_FORMAT_MASK) {
 			case MegaDrivePrivate::ROM_FORMAT_CART_BIN:
-				d->fileType = FTYPE_ROM_IMAGE;
+				d->fileType = FileType::ROM_Image;
 
 				// MD header is at 0x100.
 				// Vector table is at 0.
@@ -560,7 +560,7 @@ MegaDrive::MegaDrive(IRpFile *file)
 				break;
 
 			case MegaDrivePrivate::ROM_FORMAT_CART_SMD: {
-				d->fileType = FTYPE_ROM_IMAGE;
+				d->fileType = FileType::ROM_Image;
 
 				// Save the SMD header.
 				memcpy(&d->smdHeader, header, sizeof(d->smdHeader));
@@ -587,7 +587,7 @@ MegaDrive::MegaDrive(IRpFile *file)
 			}
 
 			case MegaDrivePrivate::ROM_FORMAT_DISC_2048:
-				d->fileType = FTYPE_DISC_IMAGE;
+				d->fileType = FileType::DiscImage;
 
 				// MCD-specific header is at 0. [TODO]
 				// MD-style header is at 0x100.
@@ -603,7 +603,7 @@ MegaDrive::MegaDrive(IRpFile *file)
 					return;
 				}
 
-				d->fileType = FTYPE_DISC_IMAGE;
+				d->fileType = FileType::DiscImage;
 				// MCD-specific header is at 0x10. [TODO]
 				// MD-style header is at 0x110.
 				// No vector table is present on the disc.
@@ -612,7 +612,7 @@ MegaDrive::MegaDrive(IRpFile *file)
 
 			case MegaDrivePrivate::ROM_FORMAT_UNKNOWN:
 			default:
-				d->fileType = FTYPE_UNKNOWN;
+				d->fileType = FileType::Unknown;
 				d->romType = MegaDrivePrivate::ROM_UNKNOWN;
 				break;
 		}
@@ -803,7 +803,7 @@ const char *MegaDrive::systemName(unsigned int type) const
 	const MegaDriveRegions::MD_BrandingRegion md_bregion =
 		MegaDriveRegions::getBrandingRegion(d->md_region);
 	switch (md_bregion) {
-		case MegaDriveRegions::MD_BREGION_JAPAN:
+		case MegaDriveRegions::MD_BrandingRegion::Japan:
 		default: {
 			static const char *const sysNames_JP[5][4] = {
 				{"Sega Mega Drive", "Mega Drive", "MD", nullptr},
@@ -815,7 +815,7 @@ const char *MegaDrive::systemName(unsigned int type) const
 			return sysNames_JP[romSys][idx];
 		}
 
-		case MegaDriveRegions::MD_BREGION_USA: {
+		case MegaDriveRegions::MD_BrandingRegion::USA: {
 			static const char *const sysNames_US[5][4] = {
 				// TODO: "MD" or "Gen"?
 				{"Sega Genesis", "Genesis", "MD", nullptr},
@@ -827,7 +827,7 @@ const char *MegaDrive::systemName(unsigned int type) const
 			return sysNames_US[romSys][idx];
 		}
 
-		case MegaDriveRegions::MD_BREGION_EUROPE: {
+		case MegaDriveRegions::MD_BrandingRegion::Europe: {
 			static const char *const sysNames_EU[5][4] = {
 				{"Sega Mega Drive", "Mega Drive", "MD", nullptr},
 				{"Sega Mega CD", "Mega CD", "MCD", nullptr},
@@ -838,7 +838,7 @@ const char *MegaDrive::systemName(unsigned int type) const
 			return sysNames_EU[romSys][idx];
 		}
 
-		case MegaDriveRegions::MD_BREGION_SOUTH_KOREA: {
+		case MegaDriveRegions::MD_BrandingRegion::South_Korea: {
 			static const char *const sysNames_KR[5][4] = {
 				// TODO: "MD" or something else?
 				{"Samsung Super Aladdin Boy", "Super Aladdin Boy", "MD", nullptr},
@@ -850,7 +850,7 @@ const char *MegaDrive::systemName(unsigned int type) const
 			return sysNames_KR[romSys][idx];
 		}
 
-		case MegaDriveRegions::MD_BREGION_BRAZIL: {
+		case MegaDriveRegions::MD_BrandingRegion::Brazil: {
 			static const char *const sysNames_BR[5][4] = {
 				{"Sega Mega Drive", "Mega Drive", "MD", nullptr},
 				{"Sega CD", "Sega CD", "MCD", nullptr},

@@ -46,7 +46,7 @@ cairo_surface_t *CairoImageConv::rp_image_to_cairo_surface_t(const rp_image *img
 	assert(px_dest != nullptr);
 
 	switch (img->format()) {
-		case rp_image::FORMAT_ARGB32: {
+		case rp_image::Format::ARGB32: {
 			const rp_image *img_prex;
 			if (premultiply) {
 				// Premultiply the image first.
@@ -91,7 +91,7 @@ cairo_surface_t *CairoImageConv::rp_image_to_cairo_surface_t(const rp_image *img
 			break;
 		}
 
-		case rp_image::FORMAT_CI8: {
+		case rp_image::Format::CI8: {
 			const uint32_t *const palette = img->palette();
 			const int palette_len = img->palette_len();
 			assert(palette != nullptr);

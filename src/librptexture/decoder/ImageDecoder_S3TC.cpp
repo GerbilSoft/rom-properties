@@ -212,7 +212,7 @@ rp_image *fromDXT1_GCN(int width, int height,
 		return nullptr;
 
 	// Create an rp_image.
-	rp_image *const img = new rp_image(width, height, rp_image::FORMAT_ARGB32);
+	rp_image *const img = new rp_image(width, height, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
 		delete img;
@@ -298,7 +298,7 @@ static rp_image *T_fromDXT1(int width, int height,
 	}
 
 	// Create an rp_image.
-	rp_image *const img = new rp_image(physWidth, physHeight, rp_image::FORMAT_ARGB32);
+	rp_image *const img = new rp_image(physWidth, physHeight, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
 		delete img;
@@ -434,7 +434,7 @@ rp_image *fromDXT3(int width, int height,
 	}
 
 	// Create an rp_image.
-	rp_image *const img = new rp_image(physWidth, physHeight, rp_image::FORMAT_ARGB32);
+	rp_image *const img = new rp_image(physWidth, physHeight, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
 		delete img;
@@ -551,7 +551,7 @@ rp_image *fromDXT5(int width, int height,
 	}
 
 	// Create an rp_image.
-	rp_image *const img = new rp_image(physWidth, physHeight, rp_image::FORMAT_ARGB32);
+	rp_image *const img = new rp_image(physWidth, physHeight, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
 		delete img;
@@ -638,7 +638,7 @@ rp_image *fromBC4(int width, int height,
 	}
 
 	// Create an rp_image.
-	rp_image *const img = new rp_image(physWidth, physHeight, rp_image::FORMAT_ARGB32);
+	rp_image *const img = new rp_image(physWidth, physHeight, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
 		delete img;
@@ -726,7 +726,7 @@ rp_image *fromBC5(int width, int height,
 	}
 
 	// Create an rp_image.
-	rp_image *const img = new rp_image(physWidth, physHeight, rp_image::FORMAT_ARGB32);
+	rp_image *const img = new rp_image(physWidth, physHeight, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
 		delete img;
@@ -795,8 +795,8 @@ rp_image *fromBC5(int width, int height,
 int fromRed8ToL8(rp_image *img)
 {
 	assert(img != nullptr);
-	assert(img->format() == rp_image::FORMAT_ARGB32);
-	if (!img || img->format() != rp_image::FORMAT_ARGB32)
+	assert(img->format() == rp_image::Format::ARGB32);
+	if (!img || img->format() != rp_image::Format::ARGB32)
 		return -EINVAL;
 
 	// TODO: Optimize with SSE2/SSSE3?
@@ -834,8 +834,8 @@ int fromRed8ToL8(rp_image *img)
 int fromRG8ToLA8(rp_image *img)
 {
 	assert(img != nullptr);
-	assert(img->format() == rp_image::FORMAT_ARGB32);
-	if (!img || img->format() != rp_image::FORMAT_ARGB32)
+	assert(img->format() == rp_image::Format::ARGB32);
+	if (!img || img->format() != rp_image::Format::ARGB32)
 		return -EINVAL;
 
 	// TODO: Optimize with SSE2/SSSE3?

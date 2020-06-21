@@ -3,7 +3,7 @@
  * EXE_NE.cpp: DOS/Windows executable reader.                              *
  * 16-bit New Executable format.                                           *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -38,7 +38,7 @@ int EXEPrivate::loadNEResourceTable(void)
 	} else if (!isValid) {
 		// Unknown executable type.
 		return -EIO;
-	} else if (exeType != EXE_TYPE_NE) {
+	} else if (exeType != ExeType::NE) {
 		// Unsupported executable type.
 		return -ENOTSUP;
 	}

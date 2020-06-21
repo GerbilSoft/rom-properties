@@ -130,7 +130,7 @@ CIAReaderPrivate::CIAReaderPrivate(CIAReader *q,
 	KeyManager::VerifyResult res = N3DSVerifyKeys::loadKeyNormal(&keyNormal,
 		keyNormal_name, keyX_name, keyY_name,
 		keyNormal_verify, keyX_verify, keyY_verify);
-	if (res == KeyManager::VERIFY_OK) {
+	if (res == KeyManager::VerifyResult::OK) {
 		// Create a cipher to decrypt the title key.
 		IAesCipher *cipher = AesCipherFactory::create();
 
@@ -140,7 +140,7 @@ CIAReaderPrivate::CIAReaderPrivate(CIAReader *q,
 		// - Keyslot: 0x3D
 		// - Chaining mode: CBC
 		// - IV: Title ID (little-endian)
-		cipher->setChainingMode(IAesCipher::CM_CBC);
+		cipher->setChainingMode(IAesCipher::ChainingMode::CBC);
 		cipher->setKey(keyNormal.u8, sizeof(keyNormal.u8));
 		// CIA IV is the title ID in big-endian.
 		// The ticket title ID is already in big-endian,

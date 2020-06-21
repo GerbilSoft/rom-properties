@@ -82,10 +82,13 @@ class NCCHReaderPrivate
 		// We won't extract any information from them,
 		// other than the type and the fact that they're
 		// not encrypted.
-		enum NonNCCHContentType {
-			NONCCH_UNKNOWN	= 0,
-			NONCCH_NDHT,
-			NONCCH_NARC,
+		enum class NonNCCHContentType {
+			Unknown	= 0,
+
+			NDHT,	// Nintendo DS Cart Whitelist
+			NARC,	// Nintendo Archive
+
+			Max
 		};
 		NonNCCHContentType nonNcchContentType;
 

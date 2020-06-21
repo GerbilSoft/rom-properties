@@ -1200,7 +1200,7 @@ int DirectDrawSurface::getFields(RomFields *fields) const
 	fields->addField_string_numeric(
 		/*dpgettext_expr(RP_I18N_DOMAIN, "DirectDrawSurface", pitch_name),*/
 		pitch_name,
-		ddsHeader->dwPitchOrLinearSize, RomFields::FB_DEC, 0);
+		ddsHeader->dwPitchOrLinearSize, RomFields::Base::Dec, 0);
 
 	if (d->dxgi_format != 0) {
 		// DX10 texture format.
@@ -1304,7 +1304,7 @@ int DirectDrawSurface::getFields(RomFields *fields) const
 		fields->addField_string_numeric(C_("DirectDrawSurface", "Data Size"), xb1Header->dataSize);
 		// TODO: Parse this.
 		fields->addField_string_numeric(C_("DirectDrawSurface", "XDK Version"),
-			xb1Header->xdkVer, RomFields::FB_HEX, 4, RomFields::STRF_MONOSPACE);
+			xb1Header->xdkVer, RomFields::Base::Hex, 4, RomFields::STRF_MONOSPACE);
 	}
 
 	// Finished reading the field data.

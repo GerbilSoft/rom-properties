@@ -159,7 +159,7 @@ WiiPartitionPrivate::WiiPartitionPrivate(WiiPartition *q,
 		WiiPartition::CryptoMethod cryptoMethod)
 	: super(q, partition_offset, data_size, 2)
 #ifdef ENABLE_DECRYPTION
-	, verifyResult(KeyManager::VERIFY_UNKNOWN)
+	, verifyResult(KeyManager::VerifyResult::Unknown)
 	, encKey(WiiPartition::ENCKEY_UNKNOWN)
 	, encKeyReal(WiiPartition::ENCKEY_UNKNOWN)
 	, cryptoMethod(cryptoMethod)
@@ -167,7 +167,7 @@ WiiPartitionPrivate::WiiPartitionPrivate(WiiPartition *q,
 	, sector_num(~0)
 	, aes_title(nullptr)
 #else /* !ENABLE_DECRYPTION */
-	, verifyResult(KeyManager::VERIFY_NO_SUPPORT)
+	, verifyResult(KeyManager::VerifyResult::NoSupport)
 	, encKey(WiiPartition::ENCKEY_UNKNOWN)
 	, encKeyReal(WiiPartition::ENCKEY_UNKNOWN)
 	, cryptoMethod(cryptoMethod)
@@ -180,7 +180,7 @@ WiiPartitionPrivate::WiiPartitionPrivate(WiiPartition *q,
 	// WiiPartition superclass's discReader field is set.
 	if ((cryptoMethod & WiiPartition::CM_MASK_ENCRYPTED) == WiiPartition::CM_UNENCRYPTED) {
 		// No encryption. (RVT-H)
-		verifyResult = KeyManager::VERIFY_OK;
+		verifyResult = KeyManager::VerifyResult::OK;
 	}
 
 	// Clear data set by GcnPartition in case the
@@ -248,7 +248,7 @@ void WiiPartitionPrivate::getEncKey(void)
  */
 KeyManager::VerifyResult WiiPartitionPrivate::initDecryption(void)
 {
-	if (verifyResult != KeyManager::VERIFY_UNKNOWN) {
+	if (verifyResult != KeyManager::VerifyResult::Unknown) {
 		// Decryption has already been initialized.
 		return verifyResult;
 	}
@@ -264,10 +264,10 @@ KeyManager::VerifyResult WiiPartitionPrivate::initDecryption(void)
 	getEncKey();
 	if (encKey <= WiiPartition::ENCKEY_UNKNOWN) {
 		// Invalid encryption key index.
-		// Use VERIFY_KEY_NOT_FOUND here.
-		// This condition is indicated by VERIFY_KEY_NOT_FOUND
+		// Use VerifyResult::KeyNotFound here.
+		// This condition is indicated by VerifyResult::KeyNotFound
 		// and a key index ENCKEY_UNKNOWN.
-		verifyResult = KeyManager::VERIFY_KEY_NOT_FOUND;
+		verifyResult = KeyManager::VerifyResult::KeyNotFound;
 		return verifyResult;
 	}
 
@@ -292,7 +292,7 @@ KeyManager::VerifyResult WiiPartitionPrivate::initDecryption(void)
 			break;
 		default:
 			// Unknown key...
-			verifyResult = KeyManager::VERIFY_KEY_NOT_FOUND;
+			verifyResult = KeyManager::VerifyResult::KeyNotFound;
 			return verifyResult;
 	}
 
@@ -300,7 +300,7 @@ KeyManager::VerifyResult WiiPartitionPrivate::initDecryption(void)
 	unique_ptr<IAesCipher> cipher(AesCipherFactory::create());
 	if (!cipher || !cipher->isInit()) {
 		// Error initializing the cipher.
-		verifyResult = KeyManager::VERFIY_IAESCIPHER_INIT_ERR;
+		verifyResult = KeyManager::VerifyResult::IAesCipherInitErr;
 		return verifyResult;
 	}
 
@@ -309,17 +309,17 @@ KeyManager::VerifyResult WiiPartitionPrivate::initDecryption(void)
 	verifyResult = keyManager->getAndVerify(
 		WiiPartitionPrivate::EncryptionKeyNames[keyIdx], &keyData,
 		WiiPartitionPrivate::EncryptionKeyVerifyData[keyIdx], 16);
-	if (verifyResult != KeyManager::VERIFY_OK) {
+	if (verifyResult != KeyManager::VerifyResult::OK) {
 		// An error occurred loading while the common key.
 		return verifyResult;
 	}
 
 	// Load the common key. (CBC mode)
 	int ret = cipher->setKey(keyData.key, keyData.length);
-	ret |= cipher->setChainingMode(IAesCipher::CM_CBC);
+	ret |= cipher->setChainingMode(IAesCipher::ChainingMode::CBC);
 	if (ret != 0) {
 		// Error initializing the cipher.
-		verifyResult = KeyManager::VERFIY_IAESCIPHER_INIT_ERR;
+		verifyResult = KeyManager::VerifyResult::IAesCipherInitErr;
 		return verifyResult;
 	}
 
@@ -334,14 +334,14 @@ KeyManager::VerifyResult WiiPartitionPrivate::initDecryption(void)
 	memcpy(title_key, partitionHeader.ticket.enc_title_key, sizeof(title_key));
 	if (cipher->decrypt(title_key, sizeof(title_key), iv, sizeof(iv)) != sizeof(title_key)) {
 		// Error decrypting the title key.
-		verifyResult = KeyManager::VERIFY_IAESCIPHER_DECRYPT_ERR;
+		verifyResult = KeyManager::VerifyResult::IAesCipherDecryptErr;
 		return verifyResult;
 	}
 
 	// Set the title key in the AES cipher.
 	if (cipher->setKey(title_key, sizeof(title_key)) != 0) {
 		// Error initializing the cipher.
-		verifyResult = KeyManager::VERFIY_IAESCIPHER_INIT_ERR;
+		verifyResult = KeyManager::VerifyResult::IAesCipherInitErr;
 		return verifyResult;
 	}
 
@@ -355,7 +355,7 @@ KeyManager::VerifyResult WiiPartitionPrivate::initDecryption(void)
 		// Error reading sector 0.
 		delete aes_title;
 		aes_title = nullptr;
-		verifyResult = KeyManager::VERIFY_IAESCIPHER_DECRYPT_ERR;
+		verifyResult = KeyManager::VerifyResult::IAesCipherDecryptErr;
 		return verifyResult;
 	}
 
@@ -365,12 +365,12 @@ KeyManager::VerifyResult WiiPartitionPrivate::initDecryption(void)
 		reinterpret_cast<const GCN_DiscHeader*>(&sector_buf[SECTOR_SIZE_DECRYPTED_OFFSET]);
 	if (discHeader->magic_wii != cpu_to_be32(WII_MAGIC)) {
 		// Invalid disc header.
-		verifyResult = KeyManager::VERIFY_WRONG_KEY;
+		verifyResult = KeyManager::VerifyResult::WrongKey;
 		return verifyResult;
 	}
 
 	// Cipher initialized.
-	verifyResult = KeyManager::VERIFY_OK;
+	verifyResult = KeyManager::VerifyResult::OK;
 	return verifyResult;
 }
 #endif /* ENABLE_DECRYPTION */
@@ -606,9 +606,9 @@ size_t WiiPartition::read(void *ptr, size_t size)
 #ifdef ENABLE_DECRYPTION
 			// Make sure decryption is initialized.
 			switch (d->verifyResult) {
-				case KeyManager::VERIFY_UNKNOWN:
+				case KeyManager::VerifyResult::Unknown:
 					// Attempt to initialize decryption.
-					if (d->initDecryption() != KeyManager::VERIFY_OK) {
+					if (d->initDecryption() != KeyManager::VerifyResult::OK) {
 						// Decryption could not be initialized.
 						// TODO: Better error?
 						m_lastError = EIO;
@@ -616,7 +616,7 @@ size_t WiiPartition::read(void *ptr, size_t size)
 					}
 					break;
 
-				case KeyManager::VERIFY_OK:
+				case KeyManager::VerifyResult::OK:
 					// Decryption is initialized.
 					break;
 

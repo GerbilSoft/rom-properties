@@ -35,17 +35,16 @@ class XboxXPRPrivate : public FileFormatPrivate
 		RP_DISABLE_COPY(XboxXPRPrivate)
 
 	public:
-		enum XPRType {
-			XPR_TYPE_UNKNOWN	= -1,	// Unknown image type.
-			XPR_TYPE_XPR0		= 0,	// XPR0
-			XPR_TYPE_XPR1		= 1,	// XPR1 (archive)
-			XPR_TYPE_XPR2		= 2,	// XPR2 (archive)
+		enum class XPRType {
+			Unknown = -1,
 
-			XPR_TYPE_MAX
+			XPR0	= 0,	// XPR0
+			XPR1	= 1,	// XPR1 (archive)
+			XPR2	= 2,	// XPR2 (archive)
+
+			Max
 		};
-
-		// XPR type.
-		int xprType;
+		XPRType xprType;
 
 		// XPR0 header.
 		Xbox_XPR0_Header xpr0Header;
@@ -148,7 +147,7 @@ class XboxXPRPrivate : public FileFormatPrivate
 
 XboxXPRPrivate::XboxXPRPrivate(XboxXPR *q, IRpFile *file)
 	: super(q, file)
-	, xprType(XPR_TYPE_UNKNOWN)
+	, xprType(XPRType::Unknown)
 	, img(nullptr)
 {
 	// Clear the structs and arrays.
@@ -518,7 +517,7 @@ const rp_image *XboxXPRPrivate::loadXboxXPR0Image(void)
 
 		// Assuming img is ARGB32, since we're converting it
 		// from either a 16-bit or 32-bit ARGB format.
-		rp_image *const imgunswz = new rp_image(width, height, rp_image::FORMAT_ARGB32);
+		rp_image *const imgunswz = new rp_image(width, height, rp_image::Format::ARGB32);
 		unswizzle_box(static_cast<const uint8_t*>(img->bits()),
 			width, height,
 			static_cast<uint8_t*>(imgunswz->bits()),
@@ -569,16 +568,16 @@ XboxXPR::XboxXPR(IRpFile *file)
 	// Verify the XPR0 magic.
 	if (d->xpr0Header.magic == cpu_to_be32(XBOX_XPR0_MAGIC)) {
 		// This is an XPR0 image.
-		d->xprType = XboxXPRPrivate::XPR_TYPE_XPR0;
+		d->xprType = XboxXPRPrivate::XPRType::XPR0;
 		d->isValid = true;
 	} else if (d->xpr0Header.magic == cpu_to_be32(XBOX_XPR1_MAGIC)) {
 		// This is an XPR1 archive.
-		d->xprType = XboxXPRPrivate::XPR_TYPE_XPR1;
+		d->xprType = XboxXPRPrivate::XPRType::XPR1;
 		// NOT SUPPORTED YET
 		d->isValid = false;
 	} else if (d->xpr0Header.magic == cpu_to_be32(XBOX_XPR2_MAGIC)) {
 		// This is an XPR2 archive.
-		d->xprType = XboxXPRPrivate::XPR_TYPE_XPR2;
+		d->xprType = XboxXPRPrivate::XPRType::XPR2;
 		// NOT SUPPORTED YET
 		d->isValid = false;
 	}
@@ -666,7 +665,7 @@ const char *XboxXPR::textureFormatName(void) const
 const char *XboxXPR::pixelFormat(void) const
 {
 	RP_D(const XboxXPR);
-	if (!d->isValid || d->xprType < 0) {
+	if (!d->isValid || (int)d->xprType < 0) {
 		// Not supported.
 		return nullptr;
 	}
@@ -769,7 +768,7 @@ int XboxXPR::getFields(LibRpBase::RomFields *fields) const
 		return 0;
 
 	RP_D(XboxXPR);
-	if (!d->isValid || d->xprType < 0) {
+	if (!d->isValid || (int)d->xprType < 0) {
 		// Unknown XPR image type.
 		return -EIO;
 	}
@@ -781,13 +780,13 @@ int XboxXPR::getFields(LibRpBase::RomFields *fields) const
 	static const char type_tbl[][8] = {
 		"XPR0", "XPR1", "XPR2"
 	};
-	if (d->xprType > XboxXPRPrivate::XPR_TYPE_UNKNOWN &&
-	    d->xprType < ARRAY_SIZE(type_tbl))
+	if (d->xprType > XboxXPRPrivate::XPRType::Unknown &&
+	    (int)d->xprType < ARRAY_SIZE(type_tbl))
 	{
-		fields->addField_string(C_("XboxXPR", "Type"), type_tbl[d->xprType]);
+		fields->addField_string(C_("XboxXPR", "Type"), type_tbl[(int)d->xprType]);
 	} else {
 		fields->addField_string(C_("XboxXPR", "Type"),
-			rp_sprintf(C_("RomData", "Unknown (%d)"), d->xprType));
+			rp_sprintf(C_("RomData", "Unknown (%d)"), (int)d->xprType));
 	}
 
 	// Finished reading the field data.
@@ -806,7 +805,7 @@ int XboxXPR::getFields(LibRpBase::RomFields *fields) const
 const rp_image *XboxXPR::image(void) const
 {
 	RP_D(const XboxXPR);
-	if (!d->isValid || d->xprType < 0) {
+	if (!d->isValid || (int)d->xprType < 0) {
 		// Unknown file type.
 		return nullptr;
 	}

@@ -46,7 +46,7 @@ KeyManager::VerifyResult N3DSVerifyKeys::loadKeyNormal(u128_t *pKeyOut,
 	assert(pKeyOut);
 	if (!pKeyOut) {
 		// Invalid parameters.
-		return KeyManager::VERIFY_INVALID_PARAMS;
+		return KeyManager::VerifyResult::InvalidParams;
 	}
 
 	// Get the Key Manager instance.
@@ -54,7 +54,7 @@ KeyManager::VerifyResult N3DSVerifyKeys::loadKeyNormal(u128_t *pKeyOut,
 	assert(keyManager != nullptr);
 	if (!keyManager) {
 		// TODO: Some other error?
-		return KeyManager::VERIFY_KEY_DB_ERROR;
+		return KeyManager::VerifyResult::KeyDBError;
 	}
 
 	// Attempt to load the Normal key first.
@@ -69,17 +69,17 @@ KeyManager::VerifyResult N3DSVerifyKeys::loadKeyNormal(u128_t *pKeyOut,
 			res = keyManager->get(keyNormal_name, &keyNormal_data);
 		}
 
-		if (res == KeyManager::VERIFY_OK && keyNormal_data.length == 16) {
+		if (res == KeyManager::VerifyResult::OK && keyNormal_data.length == 16) {
 			// KeyNormal loaded and verified.
 			memcpy(pKeyOut->u8, keyNormal_data.key, 16);
-			return KeyManager::VERIFY_OK;
+			return KeyManager::VerifyResult::OK;
 		}
 
 		// Check for database errors.
 		switch (res) {
-			case KeyManager::VERIFY_INVALID_PARAMS:
-			case KeyManager::VERIFY_KEY_DB_NOT_LOADED:
-			case KeyManager::VERIFY_KEY_DB_ERROR:
+			case KeyManager::VerifyResult::InvalidParams:
+			case KeyManager::VerifyResult::KeyDBNotLoaded:
+			case KeyManager::VerifyResult::KeyDBError:
 				// Database error. Don't continue.
 				return res;
 			default:
@@ -91,7 +91,7 @@ KeyManager::VerifyResult N3DSVerifyKeys::loadKeyNormal(u128_t *pKeyOut,
 	// Load KeyX and KeyY.
 	if (!keyX_name || !keyY_name) {
 		// One of them is missing...
-		return KeyManager::VERIFY_INVALID_PARAMS;
+		return KeyManager::VerifyResult::InvalidParams;
 	}
 	KeyManager::KeyData_t keyX_data, keyY_data;
 
@@ -104,7 +104,7 @@ KeyManager::VerifyResult N3DSVerifyKeys::loadKeyNormal(u128_t *pKeyOut,
 		res = keyManager->get(keyX_name, &keyX_data);
 	}
 
-	if (res != KeyManager::VERIFY_OK || keyX_data.length != 16) {
+	if (res != KeyManager::VerifyResult::OK || keyX_data.length != 16) {
 		// Error loading KeyX.
 		return res;
 	}
@@ -118,7 +118,7 @@ KeyManager::VerifyResult N3DSVerifyKeys::loadKeyNormal(u128_t *pKeyOut,
 		res = keyManager->get(keyY_name, &keyY_data);
 	}
 
-	if (res != KeyManager::VERIFY_OK || keyY_data.length != 16) {
+	if (res != KeyManager::VerifyResult::OK || keyY_data.length != 16) {
 		// Error loading KeyY.
 		return res;
 	}
@@ -129,7 +129,7 @@ KeyManager::VerifyResult N3DSVerifyKeys::loadKeyNormal(u128_t *pKeyOut,
 		reinterpret_cast<const u128_t*>(keyY_data.key));
 	// TODO: Scrambling-specific error?
 	if (ret != 0) {
-		return KeyManager::VERIFY_KEY_INVALID;
+		return KeyManager::VerifyResult::KeyInvalid;
 	}
 
 	if (keyNormal_verify) {
@@ -139,16 +139,16 @@ KeyManager::VerifyResult N3DSVerifyKeys::loadKeyNormal(u128_t *pKeyOut,
 		unique_ptr<IAesCipher> cipher(AesCipherFactory::create());
 		if (!cipher) {
 			// Unable to create the IAesCipher.
-			return KeyManager::VERFIY_IAESCIPHER_INIT_ERR;
+			return KeyManager::VerifyResult::IAesCipherInitErr;
 		}
 		// Set cipher parameters.
-		ret = cipher->setChainingMode(IAesCipher::CM_ECB);
+		ret = cipher->setChainingMode(IAesCipher::ChainingMode::ECB);
 		if (ret != 0) {
-			return KeyManager::VERFIY_IAESCIPHER_INIT_ERR;
+			return KeyManager::VerifyResult::IAesCipherInitErr;
 		}
 		ret = cipher->setKey(pKeyOut->u8, sizeof(*pKeyOut));
 		if (ret != 0) {
-			return KeyManager::VERFIY_IAESCIPHER_INIT_ERR;
+			return KeyManager::VerifyResult::IAesCipherInitErr;
 		}
 
 		// Decrypt the test data.
@@ -159,17 +159,17 @@ KeyManager::VerifyResult N3DSVerifyKeys::loadKeyNormal(u128_t *pKeyOut,
 		size_t size = cipher->decrypt(tmpData.get(), 16);
 		if (size != 16) {
 			// Decryption failed.
-			return KeyManager::VERIFY_IAESCIPHER_DECRYPT_ERR;
+			return KeyManager::VerifyResult::IAesCipherDecryptErr;
 		}
 
 		// Verify the test data.
 		if (memcmp(tmpData.get(), KeyManager::verifyTestString, 16) != 0) {
 			// Verification failed.
-			return KeyManager::VERIFY_WRONG_KEY;
+			return KeyManager::VerifyResult::WrongKey;
 		}
 	}
 
-	return (ret == 0 ? KeyManager::VERIFY_OK : KeyManager::VERIFY_KEY_INVALID);
+	return (ret == 0 ? KeyManager::VerifyResult::OK : KeyManager::VerifyResult::KeyInvalid);
 }
 
 /**
@@ -198,7 +198,7 @@ KeyManager::VerifyResult N3DSVerifyKeys::loadNCCHKeys(u128_t pKeyOut[2],
 	assert(pNcchHeader != nullptr);
 	if (!pKeyOut || !pNcchHeader) {
 		// Invalid parameters.
-		return KeyManager::VERIFY_INVALID_PARAMS;
+		return KeyManager::VerifyResult::InvalidParams;
 	}
 
 	// Initialize the Key Manager.
@@ -218,13 +218,13 @@ KeyManager::VerifyResult N3DSVerifyKeys::loadNCCHKeys(u128_t pKeyOut[2],
 		// No encryption.
 		// Zero the key anyway.
 		memset(pKeyOut, 0, sizeof(*pKeyOut) * 2);
-		return KeyManager::VERIFY_OK;
+		return KeyManager::VerifyResult::OK;
 	} else if (pNcchHeader->hdr.flags[N3DS_NCCH_FLAG_BIT_MASKS] & N3DS_NCCH_BIT_MASK_FixedCryptoKey) {
 		// Fixed key.
 		if (!isDebug) {
 			// Not valid on retail.
 			// TODO: Better return code?
-			return KeyManager::VERIFY_KEY_INVALID;
+			return KeyManager::VerifyResult::KeyInvalid;
 		}
 
 		if (le32_to_cpu(pNcchHeader->hdr.program_id.hi) & 0x10) {
@@ -236,7 +236,7 @@ KeyManager::VerifyResult N3DSVerifyKeys::loadNCCHKeys(u128_t pKeyOut[2],
 		} else {
 			// Zero-key.
 			memset(pKeyOut, 0, sizeof(*pKeyOut) * 2);
-			return KeyManager::VERIFY_OK;
+			return KeyManager::VerifyResult::OK;
 		}
 	} else {
 		// Regular NCCH encryption.
@@ -276,7 +276,7 @@ KeyManager::VerifyResult N3DSVerifyKeys::loadNCCHKeys(u128_t pKeyOut[2],
 				// TODO: Unknown encryption method...
 				// TODO: Better error code.
 				assert(!"Unknown NCCH encryption method.");
-				return KeyManager::VERIFY_WRONG_KEY;
+				return KeyManager::VerifyResult::WrongKey;
 		}
 
 		if (keyIdx >= 0) {
@@ -305,7 +305,7 @@ KeyManager::VerifyResult N3DSVerifyKeys::loadNCCHKeys(u128_t pKeyOut[2],
 			res = keyManager->get(keyX_name[i], &keyX_data[i]);
 		}
 
-		if (res != KeyManager::VERIFY_OK) {
+		if (res != KeyManager::VerifyResult::OK) {
 			// KeyX error.
 			if (i == 0)
 				return res;
@@ -314,7 +314,7 @@ KeyManager::VerifyResult N3DSVerifyKeys::loadNCCHKeys(u128_t pKeyOut[2],
 			keyX_name[i] = nullptr;
 		} else if (keyX_data[i].length != 16) {
 			// KeyX is the wrong length.
-			return KeyManager::VERIFY_KEY_INVALID;
+			return KeyManager::VerifyResult::KeyInvalid;
 		}
 	}
 
@@ -325,12 +325,12 @@ KeyManager::VerifyResult N3DSVerifyKeys::loadNCCHKeys(u128_t pKeyOut[2],
 		assert(keyX_data[0].key != nullptr);
 		if (!keyX_data[0].key) {
 			// Should not happen...
-			return KeyManager::VERIFY_KEY_DB_ERROR;
+			return KeyManager::VerifyResult::KeyDBError;
 		}
 		const int idx2 = (keyX_name[1] ? 1 : 0);
 		memcpy(pKeyOut[0].u8, keyX_data[0].key, 16);
 		memcpy(pKeyOut[1].u8, keyX_data[idx2].key, 16);
-		return KeyManager::VERIFY_OK;
+		return KeyManager::VerifyResult::OK;
 	}
 
 	// Scramble the primary keyslot to get KeyNormal.
@@ -339,7 +339,7 @@ KeyManager::VerifyResult N3DSVerifyKeys::loadNCCHKeys(u128_t pKeyOut[2],
 		reinterpret_cast<const u128_t*>(pNcchHeader->signature));
 	// TODO: Scrambling-specific error?
 	if (ret != 0) {
-		return KeyManager::VERIFY_KEY_INVALID;
+		return KeyManager::VerifyResult::KeyInvalid;
 	}
 
 	// Do we have a secondary key?
@@ -351,7 +351,7 @@ KeyManager::VerifyResult N3DSVerifyKeys::loadNCCHKeys(u128_t pKeyOut[2],
 		// TODO: Scrambling-specific error?
 		if (ret != 0) {
 			// FIXME: Ignoring errors for secondary keys for now.
-			//return KeyManager::VERIFY_KEY_INVALID;
+			//return KeyManager::VerifyResult::KeyInvalid;
 			memset(&pKeyOut[1], 0, sizeof(pKeyOut[1]));
 		}
 	} else {
@@ -360,7 +360,7 @@ KeyManager::VerifyResult N3DSVerifyKeys::loadNCCHKeys(u128_t pKeyOut[2],
 	}
 
 	// NCCH keys generated.
-	return KeyManager::VERIFY_OK;
+	return KeyManager::VerifyResult::OK;
 }
 
 /**

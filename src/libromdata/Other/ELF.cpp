@@ -55,32 +55,33 @@ class ELFPrivate : public LibRpBase::RomDataPrivate
 
 	public:
 		// ELF format.
-		enum Elf_Format {
-			ELF_FORMAT_UNKNOWN	= -1,
-			ELF_FORMAT_32LSB	= 0,
-			ELF_FORMAT_64LSB	= 1,
-			ELF_FORMAT_32MSB	= 2,
-			ELF_FORMAT_64MSB	= 3,
+		enum class Elf_Format {
+			Unknown	= -1,
+
+			_32LSB	= 0,
+			_64LSB	= 1,
+			_32MSB	= 2,
+			_64MSB	= 3,
+
+			Max,
 
 			// Host/swap endian formats.
 
 #if SYS_BYTEORDER == SYS_LIL_ENDIAN
 			#define ELFDATAHOST ELFDATA2LSB
-			ELF_FORMAT_32HOST	= ELF_FORMAT_32LSB,
-			ELF_FORMAT_64HOST	= ELF_FORMAT_64LSB,
-			ELF_FORMAT_32SWAP	= ELF_FORMAT_32MSB,
-			ELF_FORMAT_64SWAP	= ELF_FORMAT_64MSB,
+			_32HOST	= _32LSB,
+			_64HOST	= _64LSB,
+			_32SWAP	= _32MSB,
+			_64SWAP	= _64MSB,
 #else /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
 			#define ELFDATAHOST ELFDATA2MSB
-			ELF_FORMAT_32HOST	= ELF_FORMAT_32MSB,
-			ELF_FORMAT_64HOST	= ELF_FORMAT_64MSB,
-			ELF_FORMAT_32SWAP	= ELF_FORMAT_32LSB,
-			ELF_FORMAT_64SWAP	= ELF_FORMAT_64LSB,
+			_32HOST	= _32MSB,
+			_64HOST	= _64MSB,
+			_32SWAP	= _32LSB,
+			_64SWAP	= _64LSB,
 #endif
-
-			ELF_FORMAT_MAX
 		};
-		int elfFormat;
+		Elf_Format elfFormat;
 
 		// ELF header.
 		union {
@@ -166,7 +167,7 @@ class ELFPrivate : public LibRpBase::RomDataPrivate
 
 ELFPrivate::ELFPrivate(ELF *q, IRpFile *file)
 	: super(q, file)
-	, elfFormat(ELF_FORMAT_UNKNOWN)
+	, elfFormat(Elf_Format::Unknown)
 	, hasCheckedPH(false)
 	, isPie(false)
 	, isWiiU(false)
@@ -752,7 +753,7 @@ ELF::ELF(IRpFile *file)
 	// d->fileType will be set later.
 	RP_D(ELF);
 	d->className = "ELF";
-	d->fileType = FTYPE_UNKNOWN;
+	d->fileType = FileType::Unknown;
 
 	if (!d->file) {
 		// Could not ref() the file handle.
@@ -777,9 +778,9 @@ ELF::ELF(IRpFile *file)
 	info.header.pData = reinterpret_cast<const uint8_t*>(&d->Elf_Header);
 	info.ext = nullptr;	// Not needed for ELF.
 	info.szFile = 0;	// Not needed for ELF.
-	d->elfFormat = isRomSupported_static(&info);
+	d->elfFormat = static_cast<ELFPrivate::Elf_Format>(isRomSupported_static(&info));
 
-	d->isValid = (d->elfFormat >= 0);
+	d->isValid = ((int)d->elfFormat >= 0);
 	if (!d->isValid) {
 		// Not an ELF executable.
 		d->file->unref();
@@ -793,17 +794,17 @@ ELF::ELF(IRpFile *file)
 			// Should not get here...
 			assert(!"Should not get here...");
 			d->isValid = false;
-			d->elfFormat = ELFPrivate::ELF_FORMAT_UNKNOWN;
+			d->elfFormat = ELFPrivate::Elf_Format::Unknown;
 			d->file->unref();
 			d->file = nullptr;
 			return;
 
-		case ELFPrivate::ELF_FORMAT_32HOST:
-		case ELFPrivate::ELF_FORMAT_64HOST:
+		case ELFPrivate::Elf_Format::_32HOST:
+		case ELFPrivate::Elf_Format::_64HOST:
 			// Host-endian. Nothing to do.
 			break;
 
-		case ELFPrivate::ELF_FORMAT_32SWAP: {
+		case ELFPrivate::Elf_Format::_32SWAP: {
 			// 32-bit, swapped endian.
 			// NOTE: Not swapping the magic number.
 			Elf32_Ehdr *const elf32 = &d->Elf_Header.elf32;
@@ -823,7 +824,7 @@ ELF::ELF(IRpFile *file)
 			break;
 		}
 
-		case ELFPrivate::ELF_FORMAT_64SWAP: {
+		case ELFPrivate::Elf_Format::_64SWAP: {
 			// 64-bit, swapped endian.
 			// NOTE: Not swapping the magic number.
 			Elf64_Ehdr *const elf64 = &d->Elf_Header.elf64;
@@ -850,7 +851,7 @@ ELF::ELF(IRpFile *file)
 	// Is this a Wii U executable?
 	if (primary->e_osabi == ELFOSABI_CAFEOS &&
 	    primary->e_osabiversion == 0xFE &&
-	    d->elfFormat == ELFPrivate::ELF_FORMAT_32MSB &&
+	    d->elfFormat == ELFPrivate::Elf_Format::_32MSB &&
 	    primary->e_machine == EM_PPC)
 	{
 		// OS ABI and version is 0xCAFE.
@@ -863,11 +864,11 @@ ELF::ELF(IRpFile *file)
 		switch (primary->e_type) {
 			default:
 				// Should not happen...
-				d->fileType = FTYPE_UNKNOWN;
+				d->fileType = FileType::Unknown;
 				break;
 			case 0xFE01:
 				// This matches some homebrew software.
-				d->fileType = FTYPE_EXECUTABLE;
+				d->fileType = FileType::Executable;
 				d->mimeType = "application/x-executable";	// unofficial
 				break;
 		}
@@ -883,29 +884,29 @@ ELF::ELF(IRpFile *file)
 		switch (d->Elf_Header.primary.e_type) {
 			default:
 				// Should not happen...
-				d->fileType = FTYPE_UNKNOWN;
+				d->fileType = FileType::Unknown;
 				break;
 			case ET_REL:
-				d->fileType = FTYPE_RELOCATABLE_OBJECT;
+				d->fileType = FileType::RelocatableObject;
 				d->mimeType = "application/x-object";
 				break;
 			case ET_EXEC:
-				d->fileType = FTYPE_EXECUTABLE;
+				d->fileType = FileType::Executable;
 				d->mimeType = "application/x-executable";
 				break;
 			case ET_DYN:
 				// This may either be a shared library or a
 				// position-independent executable.
 				if (d->isPie) {
-					d->fileType = FTYPE_EXECUTABLE;
+					d->fileType = FileType::Executable;
 					d->mimeType = "application/x-executable";
 				} else {
-					d->fileType = FTYPE_SHARED_LIBRARY;
+					d->fileType = FileType::SharedLibrary;
 					d->mimeType = "application/x-sharedlib";
 				}
 				break;
 			case ET_CORE:
-				d->fileType = FTYPE_CORE_DUMP;
+				d->fileType = FileType::CoreDump;
 				d->mimeType = "application/x-core";
 				break;
 		}
@@ -946,18 +947,22 @@ int ELF::isRomSupported_static(const DetectInfo *info)
 	}
 
 	// Verify the bitness and endianness fields.
+	ELFPrivate::Elf_Format elfFormat;
 	switch (pHdr->e_data) {
 		case ELFDATA2LSB:
 			// Little-endian.
 			switch (pHdr->e_class) {
 				case ELFCLASS32:
 					// 32-bit LSB.
-					return ELFPrivate::ELF_FORMAT_32LSB;
+					elfFormat = ELFPrivate::Elf_Format::_32LSB;
+					break;
 				case ELFCLASS64:
 					// 64-bit LSB.
-					return ELFPrivate::ELF_FORMAT_64LSB;
+					elfFormat = ELFPrivate::Elf_Format::_64LSB;
+					break;
 				default:
 					// Unknown bitness.
+					elfFormat = ELFPrivate::Elf_Format::Unknown;
 					break;
 			}
 			break;
@@ -967,23 +972,26 @@ int ELF::isRomSupported_static(const DetectInfo *info)
 			switch (pHdr->e_class) {
 				case ELFCLASS32:
 					// 32-bit MSB.
-					return ELFPrivate::ELF_FORMAT_32MSB;
+					elfFormat = ELFPrivate::Elf_Format::_32MSB;
+					break;
 				case ELFCLASS64:
 					// 64-bit MSB.
-					return ELFPrivate::ELF_FORMAT_64MSB;
+					elfFormat = ELFPrivate::Elf_Format::_64MSB;
+					break;
 				default:
 					// Unknown bitness.
+					elfFormat = ELFPrivate::Elf_Format::Unknown;
 					break;
 			}
 			break;
 
 		default:
 			// Unknown endianness.
+			elfFormat = ELFPrivate::Elf_Format::Unknown;
 			break;
 	}
 
-	// Not supported.
-	return -1;
+	return static_cast<int>(elfFormat);
 }
 
 /**
@@ -1113,18 +1121,17 @@ int ELF::loadFieldData(void)
 		NOP_C_("RomData|ExecType", "64-bit Big-Endian"),
 	};
 	const char *const format_title = C_("ELF", "Format");
-	if (d->elfFormat > ELFPrivate::ELF_FORMAT_UNKNOWN &&
-	    d->elfFormat < ARRAY_SIZE(exec_type_tbl))
+	if (d->elfFormat > ELFPrivate::Elf_Format::Unknown &&
+	    (int)d->elfFormat < ARRAY_SIZE(exec_type_tbl))
 	{
 		d->fields->addField_string(format_title,
-			dpgettext_expr(RP_I18N_DOMAIN, "RomData|ExecType", exec_type_tbl[d->elfFormat]));
+			dpgettext_expr(RP_I18N_DOMAIN, "RomData|ExecType", exec_type_tbl[(int)d->elfFormat]));
 	}
 	else
 	{
 		// TODO: Show individual values.
 		// NOTE: This shouldn't happen...
-		d->fields->addField_string(format_title,
-			C_("RomData", "Unknown"));
+		d->fields->addField_string(format_title, C_("RomData", "Unknown"));
 	}
 
 	// CPU.
@@ -1680,7 +1687,7 @@ int ELF::loadFieldData(void)
 	}
 
 	// Linkage. (Executables only)
-	if (d->fileType == FTYPE_EXECUTABLE) {
+	if (d->fileType == FileType::Executable) {
 		d->fields->addField_string(C_("ELF", "Linkage"),
 			d->pt_dynamic.addr != 0
 				? C_("ELF|Linkage", "Dynamic")
@@ -1701,7 +1708,7 @@ int ELF::loadFieldData(void)
 	// Also indicates PIE.
 	// NOTE: Formatting using 8 digits, since 64-bit executables
 	// usually have entry points within the first 4 GB.
-	if (d->fileType == FTYPE_EXECUTABLE) {
+	if (d->fileType == FileType::Executable) {
 		string entry_point;
 		if (primary->e_class == ELFCLASS64) {
 			entry_point = rp_sprintf("0x%08" PRIX64, d->Elf_Header.elf64.e_entry);

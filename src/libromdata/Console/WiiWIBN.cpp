@@ -237,7 +237,7 @@ WiiWIBN::WiiWIBN(IRpFile *file)
 	RP_D(WiiWIBN);
 	d->className = "WiiSave";
 	d->mimeType = "application/x-wii-wibn";	// unofficial, not on fd.o
-	d->fileType = FTYPE_BANNER_FILE;
+	d->fileType = FileType::BannerFile;
 
 	if (!d->file) {
 		// Could not ref() the file handle.

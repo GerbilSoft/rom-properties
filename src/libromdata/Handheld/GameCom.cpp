@@ -133,7 +133,7 @@ const rp_image *GameComPrivate::loadIcon(void)
 
 	// Create the icon.
 	// TODO: Split into an ImageDecoder function?
-	unique_ptr<rp_image> tmp_icon(new rp_image(GCOM_ICON_W, GCOM_ICON_H, rp_image::FORMAT_CI8));
+	unique_ptr<rp_image> tmp_icon(new rp_image(GCOM_ICON_W, GCOM_ICON_H, rp_image::Format::CI8));
 
 	// Set the palette.
 	// NOTE: Index 0 is white; index 3 is black.
@@ -494,12 +494,12 @@ int GameCom::loadFieldData(void)
 	// Game ID.
 	d->fields->addField_string_numeric(C_("GameCom", "Game ID"),
 		le16_to_cpu(romHeader->game_id),
-		RomFields::FB_HEX, 4, RomFields::STRF_MONOSPACE);
+		RomFields::Base::Hex, 4, RomFields::STRF_MONOSPACE);
 
 	// Entry point.
 	d->fields->addField_string_numeric(C_("GameCom", "Entry Point"),
 		le16_to_cpu(romHeader->entry_point),
-		RomFields::FB_HEX, 4, RomFields::STRF_MONOSPACE);
+		RomFields::Base::Hex, 4, RomFields::STRF_MONOSPACE);
 
 	// Finished reading the field data.
 	return static_cast<int>(d->fields->count());

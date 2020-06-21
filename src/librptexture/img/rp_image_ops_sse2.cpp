@@ -38,8 +38,8 @@ int rp_image::apply_chroma_key_sse2(uint32_t key)
 {
 	RP_D(rp_image);
 	rp_image_backend *const backend = d->backend;
-	assert(backend->format == FORMAT_ARGB32);
-	if (backend->format != FORMAT_ARGB32) {
+	assert(backend->format == Format::ARGB32);
+	if (backend->format != Format::ARGB32) {
 		// ARGB32 only.
 		return -EINVAL;
 	}

@@ -98,7 +98,7 @@ CBCReaderPrivate::CBCReaderPrivate(CBCReader *q,
 	}
 
 	// Initialize parameters for CBC decryption.
-	cipher->setChainingMode(iv != nullptr ? IAesCipher::CM_CBC : IAesCipher::CM_ECB);
+	cipher->setChainingMode(iv != nullptr ? IAesCipher::ChainingMode::CBC : IAesCipher::ChainingMode::ECB);
 	cipher->setKey(this->key, sizeof(this->key));
 	if (iv) {
 		cipher->setIV(this->iv, sizeof(this->iv));

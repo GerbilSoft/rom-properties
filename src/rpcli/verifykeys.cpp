@@ -111,7 +111,7 @@ int VerifyKeys(void)
 			// Verify the key.
 			KeyManager::VerifyResult res = keyManager->getAndVerify(keyName, nullptr, verifyData, 16);
 			cerr << keyName << ": ";
-			if (res == KeyManager::VERIFY_OK) {
+			if (res == KeyManager::VerifyResult::OK) {
 				cerr << C_("rpcli", "OK") << endl;
 			} else {
 				cerr << rp_sprintf(C_("rpcli", "ERROR: %s"),

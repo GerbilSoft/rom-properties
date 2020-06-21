@@ -1455,7 +1455,7 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 					// TODO: Handle this in rp_image::resized()?
 					// TODO: Handle theme changes?
 					// TODO: Error handling.
-					if (icon->format() != rp_image::FORMAT_ARGB32) {
+					if (icon->format() != rp_image::Format::ARGB32) {
 						rp_image *const icon32 = icon->dup_ARGB32();
 						if (icon32) {
 							icon_resized = icon32->resized(szResize.cx, szResize.cy,

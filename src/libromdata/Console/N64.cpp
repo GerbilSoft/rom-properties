@@ -33,15 +33,17 @@ class N64Private : public RomDataPrivate
 
 	public:
 		// ROM image type.
-		enum RomType {
-			ROM_TYPE_UNKNOWN = -1,	// Unknown ROM type.
+		enum class RomType {
+			Unknown	= -1,
 
-			ROM_TYPE_Z64 = 0,	// Z64 format
-			ROM_TYPE_V64 = 1,	// V64 format
-			ROM_TYPE_SWAP2 = 2,	// swap2 format
-			ROM_TYPE_LE32 = 3,	// LE32 format
+			Z64	= 0,	// Z64 format
+			V64	= 1,	// V64 format
+			SWAP2	= 2,	// swap2 format
+			LE32	= 3,	// LE32 format
+
+			Max
 		};
-		int romType;
+		RomType romType;
 
 	public:
 		// ROM header.
@@ -53,7 +55,7 @@ class N64Private : public RomDataPrivate
 
 N64Private::N64Private(N64 *q, IRpFile *file)
 	: super(q, file)
-	, romType(ROM_TYPE_UNKNOWN)
+	, romType(RomType::Unknown)
 {
 	// Clear the ROM header struct.
 	memset(&romHeader, 0, sizeof(romHeader));
@@ -102,20 +104,20 @@ N64::N64(IRpFile *file)
 	info.header.pData = reinterpret_cast<const uint8_t*>(&d->romHeader);
 	info.ext = nullptr;	// Not needed for N64.
 	info.szFile = 0;	// Not needed for N64.
-	d->romType = isRomSupported_static(&info);
+	d->romType = static_cast<N64Private::RomType>(isRomSupported_static(&info));
 
 	switch (d->romType) {
-		case N64Private::ROM_TYPE_Z64:
+		case N64Private::RomType::Z64:
 			// Z64 format. Byteswapping will be done afterwards.
 			break;
 
-		case N64Private::ROM_TYPE_V64:
+		case N64Private::RomType::V64:
 			// V64 format. (16-bit byteswapped)
 			// Convert the header to Z64 first.
 			__byte_swap_16_array(d->romHeader.u16, sizeof(d->romHeader.u16));
 			break;
 
-		case N64Private::ROM_TYPE_SWAP2:
+		case N64Private::RomType::SWAP2:
 			// swap2 format. (wordswapped)
 			// Convert the header to Z64 first.
 			#define UNSWAP2(x) (uint32_t)(((x) >> 16) | ((x) << 16))
@@ -124,7 +126,7 @@ N64::N64(IRpFile *file)
 			}
 			break;
 
-		case N64Private::ROM_TYPE_LE32:
+		case N64Private::RomType::LE32:
 			// LE32 format. (32-bit byteswapped)
 			// Convert the header to Z64 first.
 			// TODO: Optimize by not converting the non-text fields
@@ -135,7 +137,7 @@ N64::N64(IRpFile *file)
 
 		default:
 			// Unknown ROM type.
-			d->romType = N64Private::ROM_TYPE_UNKNOWN;
+			d->romType = N64Private::RomType::Unknown;
 			d->file->unref();
 			d->file = nullptr;
 			return;
@@ -169,7 +171,7 @@ int N64::isRomSupported_static(const DetectInfo *info)
 	{
 		// Either no detection information was specified,
 		// or the header is too small.
-		return -1;
+		return static_cast<int>(N64Private::RomType::Unknown);
 	}
 
 	const N64_RomHeader *const romHeader =
@@ -179,18 +181,18 @@ int N64::isRomSupported_static(const DetectInfo *info)
 	// NOTE: This technically isn't a "magic number",
 	// but it appears to be the same for all N64 ROMs.
 	// TODO: Check 32-bit code generation.
-	int romType = N64Private::ROM_TYPE_UNKNOWN;
+	N64Private::RomType romType = N64Private::RomType::Unknown;
 	if (romHeader->magic64 == cpu_to_be64(N64_Z64_MAGIC)) {
-		romType = N64Private::ROM_TYPE_Z64;
+		romType = N64Private::RomType::Z64;
 	} else if (romHeader->magic64 == cpu_to_be64(N64_V64_MAGIC)) {
-		romType = N64Private::ROM_TYPE_V64;
+		romType = N64Private::RomType::V64;
 	} else if (romHeader->magic64 == cpu_to_be64(N64_SWAP2_MAGIC)) {
-		romType = N64Private::ROM_TYPE_SWAP2;
+		romType = N64Private::RomType::SWAP2;
 	} else if (romHeader->magic64 == cpu_to_be64(N64_LE32_MAGIC)) {
-		romType = N64Private::ROM_TYPE_LE32;
+		romType = N64Private::RomType::LE32;
 	}
 
-	return romType;
+	return static_cast<int>(romType);
 }
 
 /**
@@ -274,7 +276,7 @@ int N64::loadFieldData(void)
 	} else if (!d->file || !d->file->isOpen()) {
 		// File isn't open.
 		return -EBADF;
-	} else if (!d->isValid || d->romType < 0) {
+	} else if (!d->isValid || (int)d->romType < 0) {
 		// Unknown ROM image type.
 		return -EIO;
 	}
@@ -307,11 +309,11 @@ int N64::loadFieldData(void)
 
 	// Revision.
 	d->fields->addField_string_numeric(C_("RomData", "Revision"),
-		romHeader->revision, RomFields::FB_DEC, 2);
+		romHeader->revision, RomFields::Base::Dec, 2);
 
 	// Entry point.
 	d->fields->addField_string_numeric(C_("N64", "Entry Point"),
-		romHeader->entrypoint, RomFields::FB_HEX, 8, RomFields::STRF_MONOSPACE);
+		romHeader->entrypoint, RomFields::Base::Hex, 8, RomFields::STRF_MONOSPACE);
 
 	// OS version.
 	// TODO: ISALPHA(), or ISUPPER()?
@@ -354,7 +356,7 @@ int N64::loadMetaData(void)
 	} else if (!d->file) {
 		// File isn't open.
 		return -EBADF;
-	} else if (!d->isValid || d->romType < 0) {
+	} else if (!d->isValid || (int)d->romType < 0) {
 		// Unknown ROM image type.
 		return -EIO;
 	}

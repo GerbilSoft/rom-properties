@@ -332,11 +332,11 @@ void ImageDecoderTest::Compare_RpImage(
 	unique_ptr<rp_image> tmpImg_actual;
 
 	switch (pImgExpected->format()) {
-		case rp_image::FORMAT_ARGB32:
+		case rp_image::Format::ARGB32:
 			// No conversion needed.
 			break;
 
-		case rp_image::FORMAT_CI8:
+		case rp_image::Format::CI8:
 			// Convert to ARGB32.
 			tmpImg_expected.reset(pImgExpected->dup_ARGB32());
 			ASSERT_TRUE(tmpImg_expected != nullptr);
@@ -350,11 +350,11 @@ void ImageDecoderTest::Compare_RpImage(
 	}
 
 	switch (pImgActual->format()) {
-		case rp_image::FORMAT_ARGB32:
+		case rp_image::Format::ARGB32:
 			// No conversion needed.
 			break;
 
-		case rp_image::FORMAT_CI8:
+		case rp_image::Format::CI8:
 			// Convert to ARGB32.
 			tmpImg_actual.reset(pImgActual->dup_ARGB32());
 			ASSERT_TRUE(tmpImg_actual != nullptr);

@@ -31,7 +31,7 @@ namespace LibRpBase {
 void RpJpegPrivate::decodeBGRtoARGB(rp_image *RESTRICT img, jpeg_decompress_struct *RESTRICT cinfo, JSAMPARRAY buffer)
 {
 	ASSERT_ALIGNMENT(16, buffer);
-	assert(img->format() == rp_image::FORMAT_ARGB32);
+	assert(img->format() == rp_image::Format::ARGB32);
 
 	// SSSE3-optimized version based on:
 	// - https://stackoverflow.com/questions/2973708/fast-24-bit-array-32-bit-array-conversion

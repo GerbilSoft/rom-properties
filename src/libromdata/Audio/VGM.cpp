@@ -192,7 +192,7 @@ VGM::VGM(IRpFile *file)
 	RP_D(VGM);
 	d->className = "VGM";
 	d->mimeType = "audio/x-vgm";	// unofficial
-	d->fileType = FTYPE_AUDIO_FILE;
+	d->fileType = FileType::AudioFile;
 
 	if (!d->file) {
 		// Could not ref() the file handle.
@@ -495,7 +495,7 @@ int VGM::loadFieldData(void)
 
 		d->fields->addField_string_numeric(
 			rp_sprintf(C_("VGM", "%s LFSR pattern"), chip_name).c_str(),
-			lfsr_feedback, RomFields::FB_HEX, 4, RomFields::STRF_MONOSPACE);
+			lfsr_feedback, RomFields::Base::Hex, 4, RomFields::STRF_MONOSPACE);
 		d->fields->addField_string_numeric(
 			rp_sprintf(C_("VGM", "%s LFSR width"), chip_name).c_str(),
 			lfsr_width);
@@ -567,7 +567,7 @@ int VGM::loadFieldData(void)
 				d->fields->addField_string_numeric(
 					rp_sprintf(C_("VGM", "%s IF reg"), "Sega PCM").c_str(),
 					le32_to_cpu(vgmHeader->sega_pcm_if_reg),
-					RomFields::FB_HEX, 8, RomFields::STRF_MONOSPACE);
+					RomFields::Base::Hex, 8, RomFields::STRF_MONOSPACE);
 			}
 		}
 

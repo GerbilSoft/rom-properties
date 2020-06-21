@@ -34,15 +34,14 @@ class GameBoyAdvancePrivate : public RomDataPrivate
 		RP_DISABLE_COPY(GameBoyAdvancePrivate)
 
 	public:
-		enum RomType {
-			ROM_UNKNOWN		= -1,	// Unknown ROM type.
-			ROM_GBA			= 0,	// Standard GBA ROM.
-			ROM_GBA_PASSTHRU	= 1,	// Unlicensed GBA pass-through cartridge.
-			ROM_NDS_EXP		= 2,	// Non-bootable NDS expansion ROM.
-		};
+		enum class RomType {
+			Unknown	= -1,
 
-		// ROM type.
-		int romType;
+			GBA		= 0,	// Standard GBA ROM.
+			GBA_PassThru	= 1,	// Unlicensed GBA pass-through cartridge.
+			NDS_Expansion	= 2,	// Non-bootable NDS expansion ROM.
+		};
+		RomType romType;
 
 		// ROM header.
 		GBA_RomHeader romHeader;
@@ -59,7 +58,7 @@ class GameBoyAdvancePrivate : public RomDataPrivate
 
 GameBoyAdvancePrivate::GameBoyAdvancePrivate(GameBoyAdvance *q, IRpFile *file)
 	: super(q, file)
-	, romType(ROM_UNKNOWN)
+	, romType(RomType::Unknown)
 {
 	// Clear the ROM header struct.
 	memset(&romHeader, 0, sizeof(romHeader));
@@ -134,9 +133,9 @@ GameBoyAdvance::GameBoyAdvance(IRpFile *file)
 	info.header.pData = reinterpret_cast<const uint8_t*>(&d->romHeader);
 	info.ext = nullptr;	// Not needed for GBA.
 	info.szFile = 0;	// Not needed for GBA.
-	d->romType = isRomSupported_static(&info);
+	d->romType = static_cast<GameBoyAdvancePrivate::RomType>(isRomSupported_static(&info));
 
-	d->isValid = (d->romType >= 0);
+	d->isValid = ((int)d->romType >= 0);
 	if (!d->isValid) {
 		d->file->unref();
 		d->file = nullptr;
@@ -168,11 +167,13 @@ int GameBoyAdvance::isRomSupported_static(const DetectInfo *info)
 		0x3D, 0x84, 0x82, 0x0A, 0x84, 0xE4, 0x09, 0xAD
 	};
 
+	GameBoyAdvancePrivate::RomType romType = GameBoyAdvancePrivate::RomType::Unknown;
+
 	const GBA_RomHeader *const gba_header =
 		reinterpret_cast<const GBA_RomHeader*>(info->header.pData);
 	if (!memcmp(gba_header->nintendo_logo, nintendo_gba_logo, sizeof(nintendo_gba_logo))) {
 		// Nintendo logo is present at the correct location.
-		return GameBoyAdvancePrivate::ROM_GBA;
+		romType = GameBoyAdvancePrivate::RomType::GBA;
 	} else if (gba_header->fixed_96h == 0x96 && gba_header->device_type == 0x00) {
 		// This may be an expansion cartridge for a DS game.
 		// These cartridges don't have the logo data, so they
@@ -193,16 +194,15 @@ int GameBoyAdvance::isRomSupported_static(const DetectInfo *info)
 			// The entry point for expansion cartridges is 0xFFFFFFFF.
 			if (gba_header->entry_point == cpu_to_le32(0xFFFFFFFF)) {
 				// This is a Nintendo DS expansion cartridge.
-				return GameBoyAdvancePrivate::ROM_NDS_EXP;
+				romType = GameBoyAdvancePrivate::RomType::NDS_Expansion;
 			} else {
 				// This is an unlicensed pass-through cartridge.
-				return GameBoyAdvancePrivate::ROM_GBA_PASSTHRU;
+				romType = GameBoyAdvancePrivate::RomType::GBA_PassThru;
 			}
 		}
 	}
 
-	// Not supported.
-	return -1;
+	return static_cast<int>(romType);
 }
 
 /**
@@ -355,7 +355,7 @@ int GameBoyAdvance::loadFieldData(void)
 	} else if (!d->file) {
 		// File isn't open.
 		return -EBADF;
-	} else if (!d->isValid || d->romType < 0) {
+	} else if (!d->isValid || (int)d->romType < 0) {
 		// Unknown ROM image type.
 		return -EIO;
 	}
@@ -385,13 +385,13 @@ int GameBoyAdvance::loadFieldData(void)
 
 	// ROM version
 	d->fields->addField_string_numeric(C_("RomData", "Revision"),
-		romHeader->rom_version, RomFields::FB_DEC, 2);
+		romHeader->rom_version, RomFields::Base::Dec, 2);
 
 	// Entry point
 	const char *const entry_point_title = C_("GameBoyAdvance", "Entry Point");
 	switch (d->romType) {
-		case GameBoyAdvancePrivate::ROM_GBA:
-		case GameBoyAdvancePrivate::ROM_GBA_PASSTHRU:
+		case GameBoyAdvancePrivate::RomType::GBA:
+		case GameBoyAdvancePrivate::RomType::GBA_PassThru:
 			if (romHeader->entry_point_bytes[3] == 0xEA) {
 				// Unconditional branch instruction.
 				// NOTE: Due to pipelining, the actual branch is 2 words
@@ -402,7 +402,7 @@ int GameBoyAdvance::loadFieldData(void)
 					entry_point |= 0xFC000000;
 				}
 				d->fields->addField_string_numeric(entry_point_title,
-					entry_point, RomFields::FB_HEX, 8,
+					entry_point, RomFields::Base::Hex, 8,
 					RomFields::STRF_MONOSPACE);
 			} else {
 				// Non-standard entry point instruction.
@@ -412,7 +412,7 @@ int GameBoyAdvance::loadFieldData(void)
 			}
 			break;
 
-		case GameBoyAdvancePrivate::ROM_NDS_EXP:
+		case GameBoyAdvancePrivate::RomType::NDS_Expansion:
 			// Not bootable.
 			d->fields->addField_string(entry_point_title,
 				C_("GameBoyAdvance", "Not bootable (Nintendo DS expansion)"));
@@ -427,7 +427,7 @@ int GameBoyAdvance::loadFieldData(void)
 
 	// Debugging enabled?
 	// Reference: https://problemkaputt.de/gbatek.htm#gbacartridgeheader
-	if (d->romType == GameBoyAdvancePrivate::ROM_GBA) {
+	if (d->romType == GameBoyAdvancePrivate::RomType::GBA) {
 		const uint8_t debug_enable = romHeader->nintendo_logo[0x9C-4];
 		d->fields->addField_string(C_("GameBoyAdvance", "Enable Debug"),
 			(debug_enable & 0xA5) == 0xA5
@@ -455,7 +455,7 @@ int GameBoyAdvance::loadMetaData(void)
 	} else if (!d->file) {
 		// File isn't open.
 		return -EBADF;
-	} else if (!d->isValid || d->romType < 0) {
+	} else if (!d->isValid || (int)d->romType < 0) {
 		// Unknown ROM image type.
 		return -EIO;
 	}
@@ -501,7 +501,7 @@ int GameBoyAdvance::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int s
 
 	// Check for GBA ROMs that don't have external images.
 	RP_D(const GameBoyAdvance);
-	if (!d->isValid || d->romType < 0) {
+	if (!d->isValid || (int)d->romType < 0) {
 		// ROM image isn't valid.
 		return -EIO;
 	} else if (!memcmp(d->romHeader.id4, "AGBJ", 4) ||
@@ -511,7 +511,7 @@ int GameBoyAdvance::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int s
 		// No external images are available.
 		// TODO: CRC32-based images?
 		return -ENOENT;
-	} else if (d->romType == GameBoyAdvancePrivate::ROM_NDS_EXP) {
+	} else if (d->romType == GameBoyAdvancePrivate::RomType::NDS_Expansion) {
 		// This is a Nintendo DS expansion cartridge.
 		// No external images are available.
 		return -ENOENT;

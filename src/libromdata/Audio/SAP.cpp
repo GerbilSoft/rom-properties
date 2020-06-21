@@ -272,15 +272,15 @@ SAPPrivate::TagData SAPPrivate::parseTags(void)
 		// NOTE: String encoding is the common subset of ASCII and ATASCII.
 		// TODO: ascii_to_utf8()?
 		// TODO: Check for duplicate keywords?
-		enum KeywordType {
-			KT_UNKNOWN = 0,
+		enum class KeywordType {
+			Unknown = 0,
 
-			KT_BOOL,	// bool: Keyword presence sets the value to true.
-			KT_UINT16_DEC,	// uint16 dec: Parameter is a decimal uint16_t.
-			KT_UINT16_HEX,	// uint16 hex: Parameter is a hexadecimal uint16_t.
-			KT_CHAR,	// char: Parameter is a single character.
-			KT_STRING,	// string: Parameter is a string, enclosed in double-quotes.
-			KT_TIME_LOOP,	// time+loop: Parameter is a duration, plus an optional "LOOP" setting.
+			Bool,		// bool: Keyword presence sets the value to true.
+			UInt16_Dec,	// uint16 dec: Parameter is a decimal uint16_t.
+			UInt16_Hex,	// uint16 hex: Parameter is a hexadecimal uint16_t.
+			Char,		// char: Parameter is a single character.
+			String,		// string: Parameter is a string, enclosed in double-quotes.
+			TimeLoop,	// time+loop: Parameter is a duration, plus an optional "LOOP" setting.
 		};
 		struct KeywordDef {
 			const char *keyword;	// Keyword, e.g. "AUTHOR".
@@ -289,23 +289,23 @@ SAPPrivate::TagData SAPPrivate::parseTags(void)
 		};
 
 		const KeywordDef kwds[] = {
-			{"AUTHOR",	KT_STRING,	&tags.author},
-			{"NAME",	KT_STRING,	&tags.name},
-			{"DATE",	KT_STRING,	&tags.date},
-			{"SONGS",	KT_UINT16_DEC,	&tags.songs},
-			{"DEFSONG",	KT_UINT16_DEC,	&tags.def_song},
-			{"STEREO",	KT_BOOL,	&tags.stereo},
-			{"NTSC",	KT_BOOL,	&tags.ntsc},
-			{"TYPE",	KT_CHAR,	&tags.type},
-			{"FASTPLAY",	KT_UINT16_DEC,	&tags.fastplay},
-			{"INIT",	KT_UINT16_HEX,	&tags.init_addr},
-			{"MUSIC",	KT_UINT16_HEX,	&tags.music_addr},
-			{"PLAYER",	KT_UINT16_HEX,	&tags.player_addr},
-			{"COVOX",	KT_UINT16_HEX,	&tags.covox_addr},
+			{"AUTHOR",	KeywordType::String,		&tags.author},
+			{"NAME",	KeywordType::String,		&tags.name},
+			{"DATE",	KeywordType::String,		&tags.date},
+			{"SONGS",	KeywordType::UInt16_Dec,	&tags.songs},
+			{"DEFSONG",	KeywordType::UInt16_Dec,	&tags.def_song},
+			{"STEREO",	KeywordType::Bool,		&tags.stereo},
+			{"NTSC",	KeywordType::Bool,		&tags.ntsc},
+			{"TYPE",	KeywordType::Char,		&tags.type},
+			{"FASTPLAY",	KeywordType::UInt16_Dec,	&tags.fastplay},
+			{"INIT",	KeywordType::UInt16_Hex,	&tags.init_addr},
+			{"MUSIC",	KeywordType::UInt16_Hex,	&tags.music_addr},
+			{"PLAYER",	KeywordType::UInt16_Hex,	&tags.player_addr},
+			{"COVOX",	KeywordType::UInt16_Hex,	&tags.covox_addr},
 			// TIME is handled separately.
-			{"TIME",	KT_TIME_LOOP,	nullptr},
+			{"TIME",	KeywordType::TimeLoop,		nullptr},
 
-			{nullptr, KT_UNKNOWN, nullptr}
+			{nullptr, KeywordType::Unknown, nullptr}
 		};
 
 		// TODO: Show errors for unsupported tags?
@@ -321,12 +321,12 @@ SAPPrivate::TagData SAPPrivate::parseTags(void)
 					assert(!"Unsupported keyword type.");
 					break;
 
-				case KT_BOOL:
+				case KeywordType::Bool:
 					// Presence of this keyword sets the value to true.
 					*(static_cast<bool*>(kwd->ptr)) = true;
 					break;
 
-				case KT_UINT16_DEC: {
+				case KeywordType::UInt16_Dec: {
 					// Decimal value.
 					if (!params)
 						break;
@@ -339,7 +339,7 @@ SAPPrivate::TagData SAPPrivate::parseTags(void)
 					break;
 				}
 
-				case KT_UINT16_HEX: {
+				case KeywordType::UInt16_Hex: {
 					// Hexadecimal value.
 					if (!params)
 						break;
@@ -352,7 +352,7 @@ SAPPrivate::TagData SAPPrivate::parseTags(void)
 					break;
 				}
 
-				case KT_CHAR: {
+				case KeywordType::Char: {
 					// Character.
 					if (!params)
 						break;
@@ -364,7 +364,7 @@ SAPPrivate::TagData SAPPrivate::parseTags(void)
 					break;
 				}
 
-				case KT_STRING: {
+				case KeywordType::String: {
 					// String value.
 					if (!params)
 						break;
@@ -387,7 +387,7 @@ SAPPrivate::TagData SAPPrivate::parseTags(void)
 					break;
 				}
 
-				case KT_TIME_LOOP: {
+				case KeywordType::TimeLoop: {
 					// Duration, plus optional "LOOP" keyword.
 					// TODO: Verify that we don't go over the song count?
 					if (tags.durations.empty()) {
@@ -436,7 +436,7 @@ SAP::SAP(IRpFile *file)
 	RP_D(SAP);
 	d->className = "SAP";
 	d->mimeType = "audio/x-sap";	// unofficial
-	d->fileType = FTYPE_AUDIO_FILE;
+	d->fileType = FileType::AudioFile;
 
 	if (!d->file) {
 		// Could not ref() the file handle.
@@ -665,26 +665,26 @@ int SAP::loadFieldData(void)
 		case 'B': case 'D': case 'S':
 			d->fields->addField_string_numeric(C_("SAP", "Init Address"),
 				tags.init_addr,
-				RomFields::FB_HEX, 4, RomFields::STRF_MONOSPACE);
+				RomFields::Base::Hex, 4, RomFields::STRF_MONOSPACE);
 			break;
 
 		case 'C':
 			d->fields->addField_string_numeric(C_("SAP", "Music Address"),
 				tags.music_addr,
-				RomFields::FB_HEX, 4, RomFields::STRF_MONOSPACE);
+				RomFields::Base::Hex, 4, RomFields::STRF_MONOSPACE);
 			break;
 	}
 
 	// Player address.
 	d->fields->addField_string_numeric(C_("SAP", "Player Address"),
 		tags.player_addr,
-		RomFields::FB_HEX, 4, RomFields::STRF_MONOSPACE);
+		RomFields::Base::Hex, 4, RomFields::STRF_MONOSPACE);
 
 	// COVOX address. (if non-zero)
 	if (tags.covox_addr != 0) {
 		d->fields->addField_string_numeric(C_("SAP", "COVOX Address"),
 			tags.covox_addr,
-			RomFields::FB_HEX, 4, RomFields::STRF_MONOSPACE);
+			RomFields::Base::Hex, 4, RomFields::STRF_MONOSPACE);
 	}
 
 	// Song list.

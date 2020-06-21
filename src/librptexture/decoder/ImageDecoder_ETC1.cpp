@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * ImageDecoder_ETC1.cpp: Image decoding functions. (ETC1)                 *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -197,11 +197,11 @@ static const int8_t etc1_3bit_diff_tbl[8] = {
 };
 
 // ETC2 block mode.
-enum etc2_block_mode {
-	ETC2_BLOCK_MODE_UNKNOWN = 0,
-	ETC2_BLOCK_MODE_ETC1,		// ETC1-compatible mode (indiv, diff)
-	ETC2_BLOCK_MODE_TH,		// ETC2 'T' or 'H' mode
-	ETC2_BLOCK_MODE_PLANAR,		// ETC2 'Planar' mode
+enum class etc2_block_mode {
+	Unknown = 0,
+	ETC1,	// ETC1-compatible mode (indiv, diff)
+	TH,	// ETC2 'T' or 'H' mode
+	Planar,	// ETC2 'Planar' mode
 };
 
 // ETC2 distance table for 'T' and 'H' modes.
@@ -339,7 +339,7 @@ static void decodeBlock_ETC_RGB(uint32_t tileBuf[4*4], const etc1_block *etc1_sr
 	uint32_t paint_color[4];
 
 	// ETC2 block mode.
-	etc2_block_mode block_mode = ETC2_BLOCK_MODE_UNKNOWN;
+	etc2_block_mode block_mode = etc2_block_mode::Unknown;
 
 	// TODO: Optimize the extend function by assuming the value is MSB-aligned.
 
@@ -348,7 +348,7 @@ static void decodeBlock_ETC_RGB(uint32_t tileBuf[4*4], const etc1_block *etc1_sr
 	// Hence, individual mode is unavailable.
 	if (!(mode & ETC2_DM_A1) && !(etc1_src->control & 0x02)) {
 		// Individual mode.
-		block_mode = ETC2_BLOCK_MODE_ETC1;
+		block_mode = etc2_block_mode::ETC1;
 		base_color[0].R = extend_4to8bits(etc1_src->id.R >> 4);
 		base_color[0].G = extend_4to8bits(etc1_src->id.G >> 4);
 		base_color[0].B = extend_4to8bits(etc1_src->id.B >> 4);
@@ -377,7 +377,7 @@ static void decodeBlock_ETC_RGB(uint32_t tileBuf[4*4], const etc1_block *etc1_sr
 				// Base colors are arranged differently compared to ETC1,
 				// and R1 is calculated differently.
 				// Note that G and B are arranged slightly differently.
-				block_mode = ETC2_BLOCK_MODE_TH;
+				block_mode = etc2_block_mode::TH;
 				base_color[0].R = extend_4to8bits(((etc1_src->t.R1 & 0x18) >> 1) |
 								   (etc1_src->t.R1 & 0x03));
 				base_color[0].G = extend_4to8bits(etc1_src->t.G1B1 >> 4);
@@ -406,7 +406,7 @@ static void decodeBlock_ETC_RGB(uint32_t tileBuf[4*4], const etc1_block *etc1_sr
 				// 'H' mode.
 				// Base colors are arranged differently compared to ETC1,
 				// and G1 and B1 are calculated differently.
-				block_mode = ETC2_BLOCK_MODE_TH;
+				block_mode = etc2_block_mode::TH;
 				base_color[0].R = extend_4to8bits(etc1_src->h.R1G1a >> 3);
 				base_color[0].G = extend_4to8bits(((etc1_src->h.R1G1a & 0x07) << 1) |
 								  ((etc1_src->h.G1bB1aB1b >> 4) & 0x01));
@@ -445,7 +445,7 @@ static void decodeBlock_ETC_RGB(uint32_t tileBuf[4*4], const etc1_block *etc1_sr
 			} else if ((sB & ~0x1F) != 0) {
 				// 'Planar' mode.
 				// TODO: Needs testing - I don't have a sample file with 'Planar' encoding.
-				block_mode = ETC2_BLOCK_MODE_PLANAR;
+				block_mode = etc2_block_mode::Planar;
 
 				// 'O' color.
 				base_color[0].R = extend_6to8bits((etc1_src->planar.RO_GO1 >> 1) & 0x3F);
@@ -473,10 +473,10 @@ static void decodeBlock_ETC_RGB(uint32_t tileBuf[4*4], const etc1_block *etc1_sr
 		}
 
 		if ((mode & ETC_DM_MASK12) == ETC_DM_ETC1 ||
-		    block_mode == ETC2_BLOCK_MODE_UNKNOWN)
+		    block_mode == etc2_block_mode::Unknown)
 		{
 			// ETC1 differential mode.
-			block_mode = ETC2_BLOCK_MODE_ETC1;
+			block_mode = etc2_block_mode::ETC1;
 			base_color[0].R = extend_5to8bits(etc1_src->id.R >> 3);
 			base_color[0].G = extend_5to8bits(etc1_src->id.G >> 3);
 			base_color[0].B = extend_5to8bits(etc1_src->id.B >> 3);
@@ -505,7 +505,7 @@ static void decodeBlock_ETC_RGB(uint32_t tileBuf[4*4], const etc1_block *etc1_sr
 			memset(tileBuf, 0, 4*4*sizeof(uint32_t));
 			break;
 
-		case ETC2_BLOCK_MODE_ETC1: {
+		case etc2_block_mode::ETC1: {
 			// ETC1 block mode.
 
 			// Intensities for the table codewords.
@@ -549,7 +549,7 @@ static void decodeBlock_ETC_RGB(uint32_t tileBuf[4*4], const etc1_block *etc1_sr
 			break;
 		}
 
-		case ETC2_BLOCK_MODE_TH: {
+		case etc2_block_mode::TH: {
 			// ETC2 'T' or 'H' mode.
 			for (unsigned int i = 0; i < 16; i++, px_msb >>= 1, px_lsb >>= 1) {
 				uint32_t *const p = &tileBuf[etc1_mapping[i]];
@@ -570,7 +570,7 @@ static void decodeBlock_ETC_RGB(uint32_t tileBuf[4*4], const etc1_block *etc1_sr
 			break;
 		}
 
-		case ETC2_BLOCK_MODE_PLANAR: {
+		case etc2_block_mode::Planar: {
 			// ETC2 'Planar' mode.
 			// Each pixel is interpolated using the three RGB676 colors.
 			for (unsigned int i = 0; i < 16; i++) {
@@ -629,7 +629,7 @@ rp_image *fromETC1(int width, int height,
 		return nullptr;
 
 	// Create an rp_image.
-	rp_image *img = new rp_image(width, height, rp_image::FORMAT_ARGB32);
+	rp_image *img = new rp_image(width, height, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
 		delete img;
@@ -691,7 +691,7 @@ rp_image *fromETC2_RGB(int width, int height,
 		return nullptr;
 
 	// Create an rp_image.
-	rp_image *img = new rp_image(width, height, rp_image::FORMAT_ARGB32);
+	rp_image *img = new rp_image(width, height, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
 		delete img;
@@ -793,7 +793,7 @@ rp_image *fromETC2_RGBA(int width, int height,
 		return nullptr;
 
 	// Create an rp_image.
-	rp_image *img = new rp_image(width, height, rp_image::FORMAT_ARGB32);
+	rp_image *img = new rp_image(width, height, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
 		delete img;
@@ -859,7 +859,7 @@ rp_image *fromETC2_RGB_A1(int width, int height,
 		return nullptr;
 
 	// Create an rp_image.
-	rp_image *img = new rp_image(width, height, rp_image::FORMAT_ARGB32);
+	rp_image *img = new rp_image(width, height, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
 		delete img;

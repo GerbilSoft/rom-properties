@@ -353,42 +353,42 @@ std::vector<RomData::ImageSizeDef> klass::supportedImageSizes(ImageType imageTyp
 /** Assertion macros. **/
 
 #define ASSERT_supportedImageSizes(imageType) do { \
-	assert(imageType >= IMG_INT_MIN && imageType <= IMG_EXT_MAX); \
-	if (imageType < IMG_INT_MIN || imageType > IMG_EXT_MAX) { \
+	assert((imageType) >= IMG_INT_MIN && (imageType) <= IMG_EXT_MAX); \
+	if ((imageType) < IMG_INT_MIN || (imageType) > IMG_EXT_MAX) { \
 		/* ImageType is out of range. */ \
 		return vector<ImageSizeDef>(); \
 	} \
 } while (0)
 
 #define ASSERT_imgpf(imageType) do { \
-	assert(imageType >= IMG_INT_MIN && imageType <= IMG_EXT_MAX); \
-	if (imageType < IMG_INT_MIN || imageType > IMG_EXT_MAX) { \
+	assert((imageType) >= IMG_INT_MIN && (imageType) <= IMG_EXT_MAX); \
+	if ((imageType) < IMG_INT_MIN || (imageType) > IMG_EXT_MAX) { \
 		/* ImageType is out of range. */ \
 		return 0; \
 	} \
 } while (0)
 
 #define ASSERT_loadInternalImage(imageType, pImage) do { \
-	assert(imageType >= IMG_INT_MIN && imageType <= IMG_INT_MAX); \
-	assert(pImage != nullptr); \
-	if (!pImage) { \
+	assert((imageType) >= IMG_INT_MIN && (imageType) <= IMG_INT_MAX); \
+	assert((pImage) != nullptr); \
+	if (!(pImage)) { \
 		/* Invalid parameters. */ \
 		return -EINVAL; \
-	} else if (imageType < IMG_INT_MIN || imageType > IMG_INT_MAX) { \
+	} else if ((imageType) < IMG_INT_MIN || (imageType) > IMG_INT_MAX) { \
 		/* ImageType is out of range. */ \
-		*pImage = nullptr; \
+		*(pImage) = nullptr; \
 		return -ERANGE; \
 	} \
 } while (0)
 
 #define ASSERT_extURLs(imageType, pExtURLs) do { \
-	assert(imageType >= IMG_EXT_MIN && imageType <= IMG_EXT_MAX); \
-	if (imageType < IMG_EXT_MIN || imageType > IMG_EXT_MAX) { \
+	assert((imageType) >= IMG_EXT_MIN && (imageType) <= IMG_EXT_MAX); \
+	if ((imageType) < IMG_EXT_MIN || (imageType) > IMG_EXT_MAX) { \
 		/* ImageType is out of range. */ \
 		return -ERANGE; \
 	} \
-	assert(pExtURLs != nullptr); \
-	if (!pExtURLs) { \
+	assert((pExtURLs) != nullptr); \
+	if (!(pExtURLs)) { \
 		/* No vector. */ \
 		return -EINVAL; \
 	} \
@@ -406,22 +406,22 @@ std::vector<RomData::ImageSizeDef> klass::supportedImageSizes(ImageType imageTyp
  * @param func		Function to load the image.
  */
 #define ROMDATA_loadInternalImage_single(ourImageType, file, isValid, romType, imgCache, func) do { \
-	if (imageType != (ourImageType)) { \
-		*pImage = nullptr; \
+	if ((imageType) != (ourImageType)) { \
+		*(pImage) = nullptr; \
 		return -ENOENT; \
 	} else if ((imgCache) != nullptr) { \
-		*pImage = (imgCache); \
+		*(pImage) = (imgCache); \
 		return 0; \
 	} else if (!(file)) { \
-		*pImage = nullptr; \
+		*(pImage) = nullptr; \
 		return -EBADF; \
-	} else if (!(isValid) || (romType) < 0) { \
-		*pImage = nullptr; \
+	} else if (!(isValid) || ((int)(romType)) < 0) { \
+		*(pImage) = nullptr; \
 		return -EIO; \
 	} \
 	\
-	*pImage = (func)(); \
-	return (*pImage != nullptr ? 0 : -EIO); \
+	*(pImage) = (func)(); \
+	return (*(pImage) != nullptr ? 0 : -EIO); \
 } while (0)
 
 #endif /* __ROMPROPERTIES_LIBRPBASE_ROMDATA_DECL_HPP__ */

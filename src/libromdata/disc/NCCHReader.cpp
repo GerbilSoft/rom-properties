@@ -36,8 +36,8 @@ NCCHReaderPrivate::NCCHReaderPrivate(NCCHReader *q,
 	, media_unit_shift(media_unit_shift)
 	, pos(0)
 	, headers_loaded(0)
-	, verifyResult(KeyManager::VERIFY_UNKNOWN)
-	, nonNcchContentType(NONCCH_UNKNOWN)
+	, verifyResult(KeyManager::VerifyResult::Unknown)
+	, nonNcchContentType(NonNCCHContentType::Unknown)
 #ifdef ENABLE_DECRYPTION
 	, tid_be(0)
 	, cipher(nullptr)
@@ -58,7 +58,7 @@ NCCHReaderPrivate::NCCHReaderPrivate(NCCHReader *q,
 		// Read error.
 		// NOTE: readFromROM() sets q->m_lastError.
 		// TODO: Better verifyResult?
-		verifyResult = KeyManager::VERIFY_WRONG_KEY;
+		verifyResult = KeyManager::VerifyResult::WrongKey;
 		closeFileOrDiscReader();
 		return;
 	}
@@ -70,8 +70,8 @@ NCCHReaderPrivate::NCCHReaderPrivate(NCCHReader *q,
 		if (ncch_header.hdr.magic == cpu_to_be32('NDHT')) {
 			// NDHT. (DS Whitelist)
 			// 0004800F-484E4841
-			verifyResult = KeyManager::VERIFY_OK;
-			nonNcchContentType = NONCCH_NDHT;
+			verifyResult = KeyManager::VerifyResult::OK;
+			nonNcchContentType = NonNCCHContentType::NDHT;
 			closeFileOrDiscReader();
 			return;
 		}
@@ -80,11 +80,11 @@ NCCHReaderPrivate::NCCHReaderPrivate(NCCHReader *q,
 		if (magic_narc == cpu_to_be32('NARC')) {
 			// NARC. (TWL Version Data)
 			// 0004800F-484E4C41
-			verifyResult = KeyManager::VERIFY_OK;
-			nonNcchContentType = NONCCH_NARC;
+			verifyResult = KeyManager::VerifyResult::OK;
+			nonNcchContentType = NonNCCHContentType::NARC;
 		} else {
 			// TODO: Better verifyResult? (May be DSiWare...)
-			verifyResult = KeyManager::VERIFY_WRONG_KEY;
+			verifyResult = KeyManager::VerifyResult::WrongKey;
 			if (q->m_lastError == 0) {
 				q->m_lastError = EIO;
 			}
@@ -104,12 +104,12 @@ NCCHReaderPrivate::NCCHReaderPrivate(NCCHReader *q,
 	// NOTE: Assuming Retail by default. Will fall back to
 	// Debug if ExeFS header decryption fails.
 	verifyResult = N3DSVerifyKeys::loadNCCHKeys(ncch_keys, &ncch_header, N3DS_TICKET_TITLEKEY_ISSUER_RETAIL);
-	if (verifyResult != KeyManager::VERIFY_OK) {
+	if (verifyResult != KeyManager::VerifyResult::OK) {
 		// Failed to load the keyset.
 		// Try debug keys instead.
 		verifyResult = N3DSVerifyKeys::loadNCCHKeys(ncch_keys, &ncch_header,
 			N3DS_TICKET_TITLEKEY_ISSUER_DEBUG);
-		if (verifyResult != KeyManager::VERIFY_OK) {
+		if (verifyResult != KeyManager::VerifyResult::OK) {
 			// Debug keys didn't work.
 			// Zero out the keys.
 			memset(ncch_keys, 0, sizeof(ncch_keys));
@@ -124,13 +124,13 @@ NCCHReaderPrivate::NCCHReaderPrivate(NCCHReader *q,
 	// Decryption is not available, so only NoCrypto is allowed.
 	if (!(ncch_header.hdr.flags[N3DS_NCCH_FLAG_BIT_MASKS] & N3DS_NCCH_BIT_MASK_NoCrypto)) {
 		// Unsupported.
-		verifyResult = KeyManager::VERIFY_NO_SUPPORT;
+		verifyResult = KeyManager::VerifyResult::NoSupport;
 		q->m_lastError = EIO;
 		closeFileOrDiscReader();
 		return;
 	}
 	// No decryption is required.
-	verifyResult = KeyManager::VERIFY_OK;
+	verifyResult = KeyManager::VerifyResult::OK;
 #endif /* ENABLE_DECRYPTION */
 
 	// Load the ExeFS header.
@@ -156,7 +156,7 @@ NCCHReaderPrivate::NCCHReaderPrivate(NCCHReader *q,
 		// Initialize the AES cipher.
 		// TODO: Check for errors.
 		cipher = AesCipherFactory::create();
-		cipher->setChainingMode(IAesCipher::CM_CTR);
+		cipher->setChainingMode(IAesCipher::ChainingMode::CTR);
 		u128_t ctr;
 
 		if (headers_loaded & HEADER_EXEFS) {
@@ -191,7 +191,7 @@ NCCHReaderPrivate::NCCHReaderPrivate(NCCHReader *q,
 				// TODO: Consolidate this code.
 				verifyResult = N3DSVerifyKeys::loadNCCHKeys(ncch_keys, &ncch_header,
 					N3DS_TICKET_TITLEKEY_ISSUER_DEBUG);
-				if (verifyResult != KeyManager::VERIFY_OK) {
+				if (verifyResult != KeyManager::VerifyResult::OK) {
 					// Failed to load the keyset.
 					// Zero out the keys.
 					memset(ncch_keys, 0, sizeof(ncch_keys));
@@ -934,11 +934,11 @@ const char *NCCHReader::contentType(void) const
 		// Check if this is another content type.
 		RP_D(const NCCHReader);
 		switch (d->nonNcchContentType) {
-			case NCCHReaderPrivate::NONCCH_NDHT:
+			case NCCHReaderPrivate::NonNCCHContentType::NDHT:
 				// NDHT (DS Whitelist)
 				content_type = "NDHT";
 				break;
-			case NCCHReaderPrivate::NONCCH_NARC:
+			case NCCHReaderPrivate::NonNCCHContentType::NARC:
 				// NARC (TWL Version Data)
 				content_type = "NARC";
 				break;

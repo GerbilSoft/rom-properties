@@ -443,7 +443,7 @@ int Sega8Bit::loadFieldData(void)
 
 	// Checksum.
 	d->fields->addField_string_numeric(C_("RomData", "Checksum"),
-		le16_to_cpu(tmr->checksum), RomFields::FB_HEX, 4,
+		le16_to_cpu(tmr->checksum), RomFields::Base::Hex, 4,
 		RomFields::STRF_MONOSPACE);
 
 	// TODO: ROM size?
@@ -471,10 +471,10 @@ int Sega8Bit::loadFieldData(void)
 			codemasters->checksum_banks);
 		d->fields->addField_string_numeric(C_("Sega8Bit", "CM Checksum 1"),
 			le16_to_cpu(codemasters->checksum),
-			RomFields::FB_HEX, 4, RomFields::STRF_MONOSPACE);
+			RomFields::Base::Hex, 4, RomFields::STRF_MONOSPACE);
 		d->fields->addField_string_numeric(C_("Sega8Bit", "CM Checksum 2"),
 			le16_to_cpu(codemasters->checksum_compl),
-			RomFields::FB_HEX, 4, RomFields::STRF_MONOSPACE);
+			RomFields::Base::Hex, 4, RomFields::STRF_MONOSPACE);
 	} else if (d->romHeader.sdsc.magic == cpu_to_be32(SDSC_MAGIC)) {
 		// SDSC header magic.
 		const Sega8_SDSC_RomHeader *sdsc = &d->romHeader.sdsc;

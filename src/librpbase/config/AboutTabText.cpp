@@ -33,22 +33,22 @@ const char AboutTabText::git_describe[] = "";
 
 /**
  * Credits data.
- * Ends with CT_MAX.
+ * Ends with CreditType::Max.
  */
 const AboutTabText::CreditsData_t AboutTabText::CreditsData[] = {
 	// Developers
-	{CT_DEVELOPER,		"David Korth", "mailto:gerbilsoft@gerbilsoft.com", "gerbilsoft@gerbilsoft.com", nullptr},
-	{CT_CONTINUE,		"Egor", "mailto:egor@opensrc.club", "egor@opensrc.club", nullptr},
+	{CreditType::Developer,		"David Korth", "mailto:gerbilsoft@gerbilsoft.com", "gerbilsoft@gerbilsoft.com", nullptr},
+	{CreditType::Continue,		"Egor", "mailto:egor@opensrc.club", "egor@opensrc.club", nullptr},
 
 	// Translators
-	{CT_TRANSLATOR,		"Egor", "mailto:egor@opensrc.club", "egor@opensrc.club", "ru, uk"},
-	{CT_CONTINUE,		"Null Magic", nullptr, nullptr, "pt_BR"},
+	{CreditType::Translator,	"Egor", "mailto:egor@opensrc.club", "egor@opensrc.club", "ru, uk"},
+	{CreditType::Continue,		"Null Magic", nullptr, nullptr, "pt_BR"},
 
 	// Contributors
-	{CT_CONTRIBUTOR,	"CheatFreak47", nullptr, nullptr, nullptr},
+	{CreditType::Contributor,	"CheatFreak47", nullptr, nullptr, nullptr},
 
 	// End of list
-	{CT_MAX, nullptr, nullptr, nullptr, nullptr}
+	{CreditType::Max, nullptr, nullptr, nullptr, nullptr}
 };
 
 /** Support **/

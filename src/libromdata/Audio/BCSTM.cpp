@@ -33,16 +33,16 @@ class BCSTMPrivate : public RomDataPrivate
 
 	public:
 		// Audio format.
-		enum AudioFormat {
-			AUDIO_FORMAT_UNKNOWN = -1,	// Unknown file type.
+		enum class AudioFormat {
+			Unknown = -1,
 
-			AUDIO_FORMAT_BCSTM = 0,
-			AUDIO_FORMAT_BFSTM = 1,
-			AUDIO_FORMAT_BCWAV = 2,
+			BCSTM = 0,
+			BFSTM = 1,
+			BCWAV = 2,
 
-			AUDIO_FORMAT_MAX
+			Max
 		};
-		int audioFormat;
+		AudioFormat audioFormat;
 
 		// MIME type table.
 		// Ordering matches AudioFormat.
@@ -97,7 +97,7 @@ const char *const BCSTMPrivate::mimeType_tbl[] = {
 
 BCSTMPrivate::BCSTMPrivate(BCSTM *q, IRpFile *file)
 	: super(q, file)
-	, audioFormat(AUDIO_FORMAT_UNKNOWN)
+	, audioFormat(AudioFormat::Unknown)
 	, needsByteswap(false)
 {
 	// Clear the BCSTM header structs.
@@ -125,7 +125,7 @@ BCSTM::BCSTM(IRpFile *file)
 {
 	RP_D(BCSTM);
 	d->className = "BCSTM";
-	d->fileType = FTYPE_AUDIO_FILE;
+	d->fileType = FileType::AudioFile;
 
 	if (!d->file) {
 		// Could not ref() the file handle.
@@ -148,14 +148,14 @@ BCSTM::BCSTM(IRpFile *file)
 	info.header.pData = reinterpret_cast<const uint8_t*>(&d->bcstmHeader);
 	info.ext = nullptr;	// Not needed for BCSTM.
 	info.szFile = 0;	// Not needed for BCSTM.
-	d->audioFormat = isRomSupported_static(&info);
+	d->audioFormat = static_cast<BCSTMPrivate::AudioFormat>(isRomSupported_static(&info));
 
-	if (d->audioFormat < 0) {
+	if ((int)d->audioFormat < 0) {
 		d->file->unref();
 		d->file = nullptr;
 		return;
-	} else if (d->audioFormat < ARRAY_SIZE(d->mimeType_tbl)-1) {
-		d->mimeType = d->mimeType_tbl[d->audioFormat];
+	} else if ((int)d->audioFormat < ARRAY_SIZE(d->mimeType_tbl)-1) {
+		d->mimeType = d->mimeType_tbl[(int)d->audioFormat];
 	}
 
 	// Is byteswapping needed?
@@ -164,18 +164,18 @@ BCSTM::BCSTM(IRpFile *file)
 	// Get the INFO block.
 	const uint32_t info_offset = d->bcstm32_to_cpu(d->bcstmHeader.info.ref.offset);
 	const uint32_t info_size = d->bcstm32_to_cpu(d->bcstmHeader.info.size);
-	const size_t req_size = (d->audioFormat == BCSTMPrivate::AUDIO_FORMAT_BCWAV
+	const size_t req_size = (d->audioFormat == BCSTMPrivate::AudioFormat::BCWAV
 		? sizeof(d->infoBlock.cwav) : sizeof(d->infoBlock.cstm));
        if (info_offset == 0 || info_offset == ~0U ||
 	    info_size < req_size)
 	{
 		// Invalid INFO block.
-		d->audioFormat = BCSTMPrivate::AUDIO_FORMAT_UNKNOWN;
+		d->audioFormat = BCSTMPrivate::AudioFormat::Unknown;
 		d->file->unref();
 		d->file = nullptr;
 		return;
 	}
-	if (d->audioFormat == BCSTMPrivate::AUDIO_FORMAT_BCWAV) {
+	if (d->audioFormat == BCSTMPrivate::AudioFormat::BCWAV) {
 		size = d->file->seekAndRead(info_offset,
 			&d->infoBlock.cwav, sizeof(d->infoBlock.cwav));
 	} else {
@@ -184,7 +184,7 @@ BCSTM::BCSTM(IRpFile *file)
 	}
 	if (size != req_size) {
 		// Seek and/or read error.
-		d->audioFormat = BCSTMPrivate::AUDIO_FORMAT_UNKNOWN;
+		d->audioFormat = BCSTMPrivate::AudioFormat::Unknown;
 		d->file->unref();
 		d->file = nullptr;
 		return;
@@ -195,7 +195,7 @@ BCSTM::BCSTM(IRpFile *file)
 	// magic and size, so we don't have to check the fileType.
        if (d->infoBlock.cstm.magic != cpu_to_be32(BCSTM_INFO_MAGIC)) {
 		// Incorrect magic number.
-		d->audioFormat = BCSTMPrivate::AUDIO_FORMAT_UNKNOWN;
+		d->audioFormat = BCSTMPrivate::AudioFormat::Unknown;
 		d->file->unref();
 		d->file = nullptr;
 		return;
@@ -228,19 +228,19 @@ int BCSTM::isRomSupported_static(const DetectInfo *info)
 		reinterpret_cast<const BCSTM_Header*>(info->header.pData);
 
 	// Check the magic number.
-	int audioFormat;
+	BCSTMPrivate::AudioFormat audioFormat;
 	if (bcstmHeader->magic == cpu_to_be32(BCSTM_MAGIC)) {
 		// BCSTM magic number.
-		audioFormat = BCSTMPrivate::AUDIO_FORMAT_BCSTM;
+		audioFormat = BCSTMPrivate::AudioFormat::BCSTM;
 	} else if (bcstmHeader->magic == cpu_to_be32(BFSTM_MAGIC)) {
 		// BFSTM magic number.
-		audioFormat = BCSTMPrivate::AUDIO_FORMAT_BFSTM;
+		audioFormat = BCSTMPrivate::AudioFormat::BFSTM;
        } else if (bcstmHeader->magic == cpu_to_be32(BCWAV_MAGIC)) {
 		// BCWAV magic number.
-		audioFormat = BCSTMPrivate::AUDIO_FORMAT_BCWAV;
+		audioFormat = BCSTMPrivate::AudioFormat::BCWAV;
 	} else {
 		// Invalid magic number.
-		return BCSTMPrivate::AUDIO_FORMAT_UNKNOWN;
+		return (int)BCSTMPrivate::AudioFormat::Unknown;
 	}
 
 	// Check the byte-order mark.
@@ -256,7 +256,7 @@ int BCSTM::isRomSupported_static(const DetectInfo *info)
 			break;
 		default:
 			// Invalid.
-			return BCSTMPrivate::AUDIO_FORMAT_UNKNOWN;
+			return (int)BCSTMPrivate::AudioFormat::Unknown;
 	}
 
 	// TODO: Check the version number, file size, and header size?
@@ -268,10 +268,10 @@ int BCSTM::isRomSupported_static(const DetectInfo *info)
 		? __swab16(bcstmHeader->block_count)
 		: bcstmHeader->block_count);
 	const uint16_t req_block_count =
-		(audioFormat != BCSTMPrivate::AUDIO_FORMAT_BCWAV ? 3 : 2);
+		(audioFormat != BCSTMPrivate::AudioFormat::BCWAV ? 3 : 2);
 	if (block_count < req_block_count) {
 		// Not enough blocks.
-		return BCSTMPrivate::AUDIO_FORMAT_UNKNOWN;
+		return (int)BCSTMPrivate::AudioFormat::Unknown;
 	}
 
 	// INFO, SEEK, and DATA offset and sizes must both be valid.
@@ -283,18 +283,18 @@ int BCSTM::isRomSupported_static(const DetectInfo *info)
 	    bcstmHeader->info.size == ~0U)
 	{
 		// Missing a required block.
-		return BCSTMPrivate::AUDIO_FORMAT_UNKNOWN;
+		return (int)BCSTMPrivate::AudioFormat::Unknown;
 	}
 
 	// SEEK is not present in BCWAV.
-	if (audioFormat == BCSTMPrivate::AUDIO_FORMAT_BCWAV) {
+	if (audioFormat == BCSTMPrivate::AudioFormat::BCWAV) {
 		if (bcstmHeader->cwav.data.ref.offset == 0 ||
 		    bcstmHeader->cwav.data.ref.offset == ~0U ||
 		    bcstmHeader->cwav.data.size == 0 ||
 		    bcstmHeader->cwav.data.size == ~0U)
 		{
 			// Missing a required block.
-			return BCSTMPrivate::AUDIO_FORMAT_UNKNOWN;
+			return (int)BCSTMPrivate::AudioFormat::Unknown;
 		}
 	} else {
 		// BCSTM/BFSTM
@@ -308,12 +308,12 @@ int BCSTM::isRomSupported_static(const DetectInfo *info)
 		    bcstmHeader->cstm.data.size == ~0U)
 		{
 			// Missing a required block.
-			return BCSTMPrivate::AUDIO_FORMAT_UNKNOWN;
+			return (int)BCSTMPrivate::AudioFormat::Unknown;
 		}
 	}
 
 	// This is a supported file.
-	return audioFormat;
+	return static_cast<int>(audioFormat);
 }
 
 /**
@@ -333,8 +333,8 @@ const char *BCSTM::systemName(unsigned int type) const
 		"BCSTM::systemName() array index optimization needs to be updated.");
 
 	switch (d->audioFormat) {
-		case BCSTMPrivate::AUDIO_FORMAT_BCSTM:
-		case BCSTMPrivate::AUDIO_FORMAT_BCWAV: {
+		case BCSTMPrivate::AudioFormat::BCSTM:
+		case BCSTMPrivate::AudioFormat::BCWAV: {
 			// Nintendo 3DS
 			static const char *const sysNames_3DS[4] = {
 				"Nintendo 3DS", "Nintendo 3DS", "3DS", nullptr
@@ -342,7 +342,7 @@ const char *BCSTM::systemName(unsigned int type) const
 			return sysNames_3DS[type & SYSNAME_TYPE_MASK];
 		}
 
-		case BCSTMPrivate::AUDIO_FORMAT_BFSTM: {
+		case BCSTMPrivate::AudioFormat::BFSTM: {
 			// Wii U and/or Switch
 			if (d->bcstmHeader.bom == cpu_to_be16(BCSTM_BOM_HOST)) {
 				// Big-Endian
@@ -436,13 +436,13 @@ int BCSTM::loadFieldData(void)
 	static const char type_tbl[][8] = {
 		"BCSTM", "BFSTM", "BCWAV"
 	};
-	if (d->audioFormat > BCSTMPrivate::AUDIO_FORMAT_UNKNOWN &&
-	    d->audioFormat < ARRAY_SIZE(type_tbl))
+	if (d->audioFormat > BCSTMPrivate::AudioFormat::Unknown &&
+	    (int)d->audioFormat < ARRAY_SIZE(type_tbl))
 	{
-		d->fields->addField_string(C_("BCSTM", "Type"), type_tbl[d->audioFormat]);
+		d->fields->addField_string(C_("BCSTM", "Type"), type_tbl[(int)d->audioFormat]);
 	} else {
 		d->fields->addField_string(C_("BCSTM", "Type"),
-			rp_sprintf(C_("RomData", "Unknown (%d)"), d->audioFormat));
+			rp_sprintf(C_("RomData", "Unknown (%d)"), (int)d->audioFormat));
 	}
 
 	// TODO: Show the version field?
@@ -456,7 +456,7 @@ int BCSTM::loadFieldData(void)
 	// Get stream info data.
 	uint8_t codec, loop_flag, channel_count;
 	uint32_t sample_rate, sample_count, loop_start, loop_end;
-	if (d->audioFormat == BCSTMPrivate::AUDIO_FORMAT_BCWAV) {
+	if (d->audioFormat == BCSTMPrivate::AudioFormat::BCWAV) {
 		// BCWAV uses a simpler info block.
 		const BCWAV_INFO_Block *const info = &d->infoBlock.cwav;
 		codec		= info->codec;
@@ -477,7 +477,7 @@ int BCSTM::loadFieldData(void)
 		sample_rate	= d->bcstm32_to_cpu(info->sample_rate);
 		loop_start	= d->bcstm32_to_cpu(info->loop_start);
 
-		if (d->audioFormat == BCSTMPrivate::AUDIO_FORMAT_BCSTM) {
+		if (d->audioFormat == BCSTMPrivate::AudioFormat::BCSTM) {
 			loop_end = d->bcstm32_to_cpu(info->loop_end);
 
 			// BCSTM: Sample count needs to be calculated based on
@@ -487,7 +487,7 @@ int BCSTM::loadFieldData(void)
 				(d->bcstm32_to_cpu(info->sample_block_count - 1) *
 				 d->bcstm32_to_cpu(info->sample_block_sample_count)) +
 				d->bcstm32_to_cpu(info->last_sample_block_sample_count);
-		} else /* if (d->audioFormat == BCSTMPrivate::AUDIO_FORMAT_BFSTM) */ {
+		} else /* if (d->audioFormat == BCSTMPrivate::AudioFormat::BFSTM) */ {
 			// TODO: Verify that this isn't used in looping BFSTMs.
 			loop_end = 0;
 
@@ -522,7 +522,7 @@ int BCSTM::loadFieldData(void)
 
 	// Length (non-looping)
 	// TODO: Figure this out for BCWAV.
-	if (d->audioFormat != BCSTMPrivate::AUDIO_FORMAT_BCWAV) {
+	if (d->audioFormat != BCSTMPrivate::AudioFormat::BCWAV) {
 		d->fields->addField_string(C_("RomData|Audio", "Length"),
 			formatSampleAsTime(sample_count, sample_rate));
 	}
@@ -533,7 +533,7 @@ int BCSTM::loadFieldData(void)
 	if (loop_flag) {
 		d->fields->addField_string(C_("BCSTM", "Loop Start"),
 			formatSampleAsTime(loop_start, sample_rate));
-		if (d->audioFormat == BCSTMPrivate::AUDIO_FORMAT_BCSTM) {
+		if (d->audioFormat == BCSTMPrivate::AudioFormat::BCSTM) {
 			// TODO: Verify that this isn't used in looping BFSTMs.
 			d->fields->addField_string(C_("BCSTM", "Loop End"),
 				formatSampleAsTime(loop_end, sample_rate));
@@ -570,7 +570,7 @@ int BCSTM::loadMetaData(void)
 	// Get stream info data.
 	uint8_t channel_count;
 	uint32_t sample_rate, sample_count;
-	if (d->audioFormat == BCSTMPrivate::AUDIO_FORMAT_BCWAV) {
+	if (d->audioFormat == BCSTMPrivate::AudioFormat::BCWAV) {
 		// BCWAV uses a simpler info block.
 		const BCWAV_INFO_Block *const info = &d->infoBlock.cwav;
 		channel_count	= 2;    // fixed value for CWAV
@@ -584,7 +584,7 @@ int BCSTM::loadMetaData(void)
 		channel_count	= info->channel_count;
 		sample_rate	= d->bcstm32_to_cpu(info->sample_rate);
 
-		if (d->audioFormat == BCSTMPrivate::AUDIO_FORMAT_BCSTM) {
+		if (d->audioFormat == BCSTMPrivate::AudioFormat::BCSTM) {
 			// BCSTM: Sample count needs to be calculated based on
 			// sample block count, number of samples per block, and
 			// number of samples in the last block.
@@ -592,7 +592,7 @@ int BCSTM::loadMetaData(void)
 				(d->bcstm32_to_cpu(info->sample_block_count - 1) *
 				 d->bcstm32_to_cpu(info->sample_block_sample_count)) +
 				d->bcstm32_to_cpu(info->last_sample_block_sample_count);
-		} else /* if (d->audioFormat == BCSTMPrivate::AUDIO_FORMAT_BFSTM) */ {
+		} else /* if (d->audioFormat == BCSTMPrivate::AudioFormat::BFSTM) */ {
 			// BFSTM: Sample block count is too high for some reason.
 			// Use the total frame count instead.
 			sample_count = d->bcstm32_to_cpu(info->frame_count);
@@ -607,7 +607,7 @@ int BCSTM::loadMetaData(void)
 
 	// Length, in milliseconds (non-looping)
 	// TODO: Figure this out for BCWAV.
-	if (d->audioFormat != BCSTMPrivate::AUDIO_FORMAT_BCWAV) {
+	if (d->audioFormat != BCSTMPrivate::AudioFormat::BCWAV) {
 		d->metaData->addMetaData_integer(Property::Duration,
 			convSampleToMs(sample_count, sample_rate));
 	}

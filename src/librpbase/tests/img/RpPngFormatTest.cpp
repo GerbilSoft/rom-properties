@@ -907,7 +907,7 @@ TEST_P(RpPngFormatTest, loadTest)
 
 	// Compare the image data.
 	const uint8_t *pBits = m_bmp_buf.data() + bfh.bfOffBits;
-	if (img->format() == rp_image::FORMAT_ARGB32) {
+	if (img->format() == rp_image::Format::ARGB32) {
 		if (bih.biBitCount == 24 && bih.biCompression == BI_RGB) {
 			// Comparing an ARGB32 rp_image to a 24-bit RGB bitmap.
 			ASSERT_NO_FATAL_FAILURE(Compare_ARGB32_BMP24(img.get(), pBits));
@@ -928,7 +928,7 @@ TEST_P(RpPngFormatTest, loadTest)
 			// Unsupported comparison.
 			ASSERT_TRUE(false) << "Image format comparison isn't supported.";
 		}
-	} else if (img->format() == rp_image::FORMAT_CI8) {
+	} else if (img->format() == rp_image::Format::CI8) {
 		if (bih.biBitCount == 8 && bih.biCompression == BI_RGB) {
 			// 256-color image. Get the palette.
 			// NOTE: rp_image's palette length is always 256, which may be
@@ -1053,31 +1053,31 @@ INSTANTIATE_TEST_CASE_P(gl_triangle_png, RpPngFormatTest,
 			"gl_triangle.RGB24.bmp.gz",
 			gl_triangle_RGB24_IHDR,
 			gl_triangle_RGB24_BIH,
-			rp_image::FORMAT_ARGB32),
+			rp_image::Format::ARGB32),
 		RpPngFormatTest_mode(
 			"gl_triangle.RGB24.tRNS.png",
 			"gl_triangle.RGB24.tRNS.bmp.gz",
 			gl_triangle_RGB24_IHDR,
 			gl_triangle_RGB24_tRNS_BIH,
-			rp_image::FORMAT_ARGB32),
+			rp_image::Format::ARGB32),
 		RpPngFormatTest_mode(
 			"gl_triangle.ARGB32.png",
 			"gl_triangle.ARGB32.bmp.gz",
 			gl_triangle_ARGB32_IHDR,
 			gl_triangle_ARGB32_BIH,
-			rp_image::FORMAT_ARGB32),
+			rp_image::Format::ARGB32),
 		RpPngFormatTest_mode(
 			"gl_triangle.gray.png",
 			"gl_triangle.gray.bmp.gz",
 			gl_triangle_gray_IHDR,
 			gl_triangle_gray_BIH,
-			rp_image::FORMAT_CI8),
+			rp_image::Format::CI8),
 		RpPngFormatTest_mode(
 			"gl_triangle.gray.alpha.png",
 			"gl_triangle.gray.alpha.bmp.gz",
 			gl_triangle_gray_alpha_IHDR,
 			gl_triangle_gray_alpha_BIH,
-			rp_image::FORMAT_ARGB32)
+			rp_image::Format::ARGB32)
 		)
 	, RpPngFormatTest::test_case_suffix_generator);
 
@@ -1122,31 +1122,31 @@ INSTANTIATE_TEST_CASE_P(gl_quad_png, RpPngFormatTest,
 			"gl_quad.RGB24.bmp.gz",
 			gl_quad_RGB24_IHDR,
 			gl_quad_RGB24_BIH,
-			rp_image::FORMAT_ARGB32),
+			rp_image::Format::ARGB32),
 		RpPngFormatTest_mode(
 			"gl_quad.RGB24.tRNS.png",
 			"gl_quad.RGB24.tRNS.bmp.gz",
 			gl_quad_RGB24_IHDR,
 			gl_quad_RGB24_tRNS_BIH,
-			rp_image::FORMAT_ARGB32),
+			rp_image::Format::ARGB32),
 		RpPngFormatTest_mode(
 			"gl_quad.ARGB32.png",
 			"gl_quad.ARGB32.bmp.gz",
 			gl_quad_ARGB32_IHDR,
 			gl_quad_ARGB32_BIH,
-			rp_image::FORMAT_ARGB32),
+			rp_image::Format::ARGB32),
 		RpPngFormatTest_mode(
 			"gl_quad.gray.png",
 			"gl_quad.gray.bmp.gz",
 			gl_quad_gray_IHDR,
 			gl_quad_gray_BIH,
-			rp_image::FORMAT_CI8),
+			rp_image::Format::CI8),
 		RpPngFormatTest_mode(
 			"gl_quad.gray.alpha.png",
 			"gl_quad.gray.alpha.bmp.gz",
 			gl_quad_gray_alpha_IHDR,
 			gl_quad_gray_alpha_BIH,
-			rp_image::FORMAT_ARGB32)
+			rp_image::Format::ARGB32)
 		)
 	, RpPngFormatTest::test_case_suffix_generator);
 
@@ -1206,7 +1206,7 @@ INSTANTIATE_TEST_CASE_P(xterm_256color_png, RpPngFormatTest,
 			"xterm-256color.CI8.bmp.gz",
 			xterm_256color_CI8_IHDR,
 			xterm_256color_CI8_BIH,
-			rp_image::FORMAT_CI8)
+			rp_image::Format::CI8)
 		)
 	, RpPngFormatTest::test_case_suffix_generator);
 
@@ -1222,7 +1222,7 @@ INSTANTIATE_TEST_CASE_P(xterm_256color_tRNS_png, RpPngFormatTest,
 			xterm_256color_CI8_tRNS_IHDR,
 			xterm_256color_CI8_tRNS_BIH,
 			xterm_256color_CI8_tRNS_bmp_tRNS,
-			rp_image::FORMAT_CI8)
+			rp_image::Format::CI8)
 		)
 	, RpPngFormatTest::test_case_suffix_generator);
 #elif defined(_WIN32)
@@ -1233,7 +1233,7 @@ INSTANTIATE_TEST_CASE_P(xterm_256color_tRNS_png, RpPngFormatTest,
 			"xterm-256color.CI8.tRNS.gdip.bmp.gz",
 			xterm_256color_CI8_tRNS_IHDR,
 			xterm_256color_CI8_tRNS_gdip_BIH,
-			rp_image::FORMAT_ARGB32)
+			rp_image::Format::ARGB32)
 		)
 	, RpPngFormatTest::test_case_suffix_generator);
 #endif
@@ -1263,7 +1263,7 @@ INSTANTIATE_TEST_CASE_P(odd_width_16color_png, RpPngFormatTest,
 			"odd-width.16color.CI8.bmp.gz",
 			odd_width_16color_CI4_IHDR,
 			odd_width_16color_CI8_BIH,
-			rp_image::FORMAT_CI8)
+			rp_image::Format::CI8)
 		)
 	, RpPngFormatTest::test_case_suffix_generator);
 
@@ -1295,7 +1295,7 @@ INSTANTIATE_TEST_CASE_P(happy_mac_mono_png, RpPngFormatTest,
 			"happy-mac.mono.bmp.gz",
 			happy_mac_mono_IHDR,
 			happy_mac_mono_BIH,
-			rp_image::FORMAT_CI8),
+			rp_image::Format::CI8),
 
 		// Cropped 75x73 version.
 		RpPngFormatTest_mode(
@@ -1303,7 +1303,7 @@ INSTANTIATE_TEST_CASE_P(happy_mac_mono_png, RpPngFormatTest,
 			"happy-mac.mono.odd-size.bmp.gz",
 			happy_mac_mono_odd_size_IHDR,
 			happy_mac_mono_odd_size_BIH,
-			rp_image::FORMAT_CI8)
+			rp_image::Format::CI8)
 		)
 	, RpPngFormatTest::test_case_suffix_generator);
 

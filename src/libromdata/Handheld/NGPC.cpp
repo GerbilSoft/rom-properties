@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * NGPC.cpp: Neo Geo Pocket (Color) ROM reader.                            *
  *                                                                         *
- * Copyright (c) 2019 by David Korth.                                      *
+ * Copyright (c) 2019-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -35,17 +35,18 @@ class NGPCPrivate : public RomDataPrivate
 		/** RomFields **/
 
 		// ROM type.
-		enum NGPC_RomType {
-			ROM_UNKNOWN	= -1,	// Unknown ROM type.
-			ROM_NGP		= 0,	// Neo Geo Pocket
-			ROM_NGPC	= 1,	// Neo Geo Pocket Color
+		enum class RomType {
+			Unknown	= -1,
 
-			ROM_MAX
+			NGP	= 0,	// Neo Geo Pocket
+			NGPC	= 1,	// Neo Geo Pocket Color
+
+			Max
 		};
-		int romType;
+		RomType romType;
 
 		// MIME type table.
-		// Ordering matches NGPC_RomType.
+		// Ordering matches RomType.
 		static const char *const mimeType_tbl[];
 
 	public:
@@ -56,7 +57,7 @@ class NGPCPrivate : public RomDataPrivate
 /** NGPCPrivate **/
 
 // MIME type table.
-// Ordering matches NGPC_RomType.
+// Ordering matches RomType.
 const char *const NGPCPrivate::mimeType_tbl[] = {
 	// Unofficial MIME types from FreeDesktop.org.
 	"application/x-neo-geo-pocket-rom",
@@ -67,7 +68,7 @@ const char *const NGPCPrivate::mimeType_tbl[] = {
 
 NGPCPrivate::NGPCPrivate(NGPC *q, IRpFile *file)
 	: super(q, file)
-	, romType(ROM_UNKNOWN)
+	, romType(RomType::Unknown)
 {
 	// Clear the various structs.
 	memset(&romHeader, 0, sizeof(romHeader));
@@ -118,8 +119,8 @@ NGPC::NGPC(IRpFile *file)
 	info.header.pData = reinterpret_cast<const uint8_t*>(&d->romHeader);
 	info.ext = nullptr;	// Not needed for NGPC.
 	info.szFile = 0;	// Not needed for NGPC.
-	d->romType = isRomSupported_static(&info);
-	d->isValid = (d->romType >= 0);
+	d->romType = static_cast<NGPCPrivate::RomType>(isRomSupported_static(&info));
+	d->isValid = ((int)d->romType >= 0);
 
 	if (!d->isValid) {
 		d->file->unref();
@@ -127,8 +128,8 @@ NGPC::NGPC(IRpFile *file)
 	}
 
 	// Set the MIME type.
-	if (d->romType < ARRAY_SIZE(d->mimeType_tbl)-1) {
-		d->mimeType = d->mimeType_tbl[d->romType];
+	if ((int)d->romType < ARRAY_SIZE(d->mimeType_tbl)-1) {
+		d->mimeType = d->mimeType_tbl[(int)d->romType];
 	}
 }
 
@@ -153,6 +154,8 @@ int NGPC::isRomSupported_static(const DetectInfo *info)
 		return -1;
 	}
 
+	NGPCPrivate::RomType romType = NGPCPrivate::RomType::Unknown;
+
 	// Check the copyright/license string.
 	const NGPC_RomHeader *const romHeader =
 		reinterpret_cast<const NGPC_RomHeader*>(info->header.pData);
@@ -163,17 +166,18 @@ int NGPC::isRomSupported_static(const DetectInfo *info)
 		// Check the machine type.
 		switch (romHeader->machine_type) {
 			case NGPC_MACHINETYPE_MONOCHROME:
-				return NGPCPrivate::ROM_NGP;
+				romType = NGPCPrivate::RomType::NGP;
+				break;
 			case NGPC_MACHINETYPE_COLOR:
-				return NGPCPrivate::ROM_NGPC;
+				romType = NGPCPrivate::RomType::NGPC;
+				break;
 			default:
 				// Invalid.
 				break;
 		}
 	}
 
-	// Not supported.
-	return -1;
+	return static_cast<int>(romType);
 }
 
 /**
@@ -191,7 +195,7 @@ const char *NGPC::systemName(unsigned int type) const
 	// ignore the region selection.
 	static_assert(SYSNAME_TYPE_MASK == 3,
 		"NGPC::systemName() array index optimization needs to be updated.");
-	static_assert(NGPCPrivate::ROM_MAX == 2,
+	static_assert((int)NGPCPrivate::RomType::Max == 2,
 		"NGPC::systemName() array index optimization needs to be updated.");
 
 	// Bits 0-1: Type. (long, short, abbreviation)
@@ -202,8 +206,8 @@ const char *NGPC::systemName(unsigned int type) const
 	};
 
 	// NOTE: This might return an incorrect system name if
-	// d->romType is ROM_TYPE_UNKNOWN.
-	return sysNames[d->romType & 1][type & SYSNAME_TYPE_MASK];
+	// d->romType is RomType::TYPE_UNKNOWN.
+	return sysNames[(int)d->romType & 1][type & SYSNAME_TYPE_MASK];
 }
 
 /**
@@ -258,7 +262,7 @@ int NGPC::loadFieldData(void)
 	} else if (!d->file || !d->file->isOpen()) {
 		// File isn't open.
 		return -EBADF;
-	} else if (!d->isValid || d->romType < 0) {
+	} else if (!d->isValid || (int)d->romType < 0) {
 		// Unknown ROM image type.
 		return -EIO;
 	}
@@ -279,7 +283,7 @@ int NGPC::loadFieldData(void)
 
 	// Revision
 	d->fields->addField_string_numeric(C_("RomData", "Revision"),
-		romHeader->version, RomFields::FB_DEC, 2);
+		romHeader->version, RomFields::Base::Dec, 2);
 
 	// System
 	static const char *const system_bitfield_names[] = {
@@ -289,12 +293,12 @@ int NGPC::loadFieldData(void)
 		system_bitfield_names, ARRAY_SIZE(system_bitfield_names));
 	d->fields->addField_bitfield(C_("NGPC", "System"),
 		v_system_bitfield_names, 0,
-			(d->romType == NGPCPrivate::ROM_NGPC ? 3 : 1));
+			(d->romType == NGPCPrivate::RomType::NGPC ? 3 : 1));
 
 	// Entry point
 	const uint32_t entry_point = le32_to_cpu(romHeader->entry_point);
 	d->fields->addField_string_numeric(C_("NGPC", "Entry Point"),
-		entry_point, RomFields::FB_HEX, 8, RomFields::STRF_MONOSPACE);
+		entry_point, RomFields::Base::Hex, 8, RomFields::STRF_MONOSPACE);
 
 	// Debug enabled?
 	const char *s_debug = nullptr;
@@ -333,7 +337,7 @@ int NGPC::loadMetaData(void)
 	} else if (!d->file) {
 		// File isn't open.
 		return -EBADF;
-	} else if (!d->isValid || d->romType < 0) {
+	} else if (!d->isValid || (int)d->romType < 0) {
 		// Unknown ROM image type.
 		return -EIO;
 	}

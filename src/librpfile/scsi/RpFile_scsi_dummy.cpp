@@ -30,7 +30,7 @@ int RpFile::rereadDeviceSizeOS(off64_t *pDeviceSize, uint32_t *pSectorSize)
  * Send a SCSI command to the device.
  * @param cdb		[in] SCSI command descriptor block
  * @param cdb_len	[in] Length of cdb
- * @param data		[in/out] Data buffer, or nullptr for SCSI_DIR_NONE operations
+ * @param data		[in/out] Data buffer, or nullptr for ScsiDirection::None operations
  * @param data_len	[in] Length of data
  * @param direction	[in] Data direction
  * @return 0 on success, positive for SCSI sense key, negative for POSIX error code.

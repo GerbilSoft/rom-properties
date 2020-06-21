@@ -26,11 +26,11 @@ RpQImageBackend::RpQImageBackend(int width, int height, rp_image::Format format)
 	// Initialize the QImage.
 	QImage::Format qfmt;
 	switch (format) {
-		case rp_image::FORMAT_CI8:
+		case rp_image::Format::CI8:
 			qfmt = QImage::Format_Indexed8;
 			this->stride = ALIGN_BYTES(16, width);
 			break;
-		case rp_image::FORMAT_ARGB32:
+		case rp_image::Format::ARGB32:
 			qfmt = QImage::Format_ARGB32;
 			this->stride = ALIGN_BYTES(16, width * sizeof(uint32_t));
 			break;
@@ -39,7 +39,7 @@ RpQImageBackend::RpQImageBackend(int width, int height, rp_image::Format format)
 			this->width = 0;
 			this->height = 0;
 			this->stride = 0;
-			this->format = rp_image::FORMAT_NONE;
+			this->format = rp_image::Format::None;
 			return;
 	}
 
@@ -84,7 +84,7 @@ RpQImageBackend::RpQImageBackend(int width, int height, rp_image::Format format)
 	// Make sure we have the correct stride.
 	assert(this->stride == m_qImage.bytesPerLine());
 
-	if (format == rp_image::FORMAT_CI8) {
+	if (format == rp_image::Format::CI8) {
 		// Initialize the palette.
 		m_qPalette.resize(256);
 	}
@@ -184,7 +184,7 @@ int RpQImageBackend::shrink(int width, int height)
  */
 QImage RpQImageBackend::getQImage(void) const
 {
-	if (this->format == rp_image::FORMAT_CI8) {
+	if (this->format == rp_image::Format::CI8) {
 		// Copy the local color table to the QImage.
 		const_cast<RpQImageBackend*>(this)->m_qImage.setColorTable(m_qPalette);
 	}

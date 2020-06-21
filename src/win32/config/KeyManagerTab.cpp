@@ -1275,22 +1275,22 @@ inline int KeyManagerTabPrivate::ListView_CustomDraw(NMLVCUSTOMDRAW *plvcd)
 
 					HICON hDrawIcon = nullptr;
 					switch (key->status) {
-						case KeyStoreWin32::Key::Status_Unknown:
+						case KeyStoreWin32::Key::Status::Unknown:
 							// Unknown...
 							hDrawIcon = hIconUnknown;
 							break;
-						case KeyStoreWin32::Key::Status_NotAKey:
+						case KeyStoreWin32::Key::Status::NotAKey:
 							// The key data is not in the correct format.
 							hDrawIcon = hIconInvalid;
 							break;
-						case KeyStoreWin32::Key::Status_Empty:
+						case KeyStoreWin32::Key::Status::Empty:
 							// Empty key.
 							break;
-						case KeyStoreWin32::Key::Status_Incorrect:
+						case KeyStoreWin32::Key::Status::Incorrect:
 							// Key is incorrect.
 							hDrawIcon = hIconInvalid;
 							break;
-						case KeyStoreWin32::Key::Status_OK:
+						case KeyStoreWin32::Key::Status::OK:
 							// Key is correct.
 							hDrawIcon = hIconGood;
 							break;

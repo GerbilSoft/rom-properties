@@ -944,7 +944,7 @@ int KhronosKTX::getFields(LibRpBase::RomFields *fields) const
 	if (glType_str) {
 		fields->addField_string("glType", glType_str);
 	} else {
-		fields->addField_string_numeric("glType", ktxHeader->glType, RomFields::FB_HEX);
+		fields->addField_string_numeric("glType", ktxHeader->glType, RomFields::Base::Hex);
 	}
 
 	// glFormat
@@ -952,7 +952,7 @@ int KhronosKTX::getFields(LibRpBase::RomFields *fields) const
 	if (glFormat_str) {
 		fields->addField_string("glFormat", glFormat_str);
 	} else {
-		fields->addField_string_numeric("glFormat", ktxHeader->glFormat, RomFields::FB_HEX);
+		fields->addField_string_numeric("glFormat", ktxHeader->glFormat, RomFields::Base::Hex);
 	}
 
 	// glInternalFormat
@@ -961,7 +961,7 @@ int KhronosKTX::getFields(LibRpBase::RomFields *fields) const
 		fields->addField_string("glInternalFormat", glInternalFormat_str);
 	} else {
 		fields->addField_string_numeric("glInternalFormat",
-			ktxHeader->glInternalFormat, RomFields::FB_HEX);
+			ktxHeader->glInternalFormat, RomFields::Base::Hex);
 	}
 
 	// glBaseInternalFormat (only if != glFormat)
@@ -972,7 +972,7 @@ int KhronosKTX::getFields(LibRpBase::RomFields *fields) const
 			fields->addField_string("glBaseInternalFormat", glBaseInternalFormat_str);
 		} else {
 			fields->addField_string_numeric("glBaseInternalFormat",
-				ktxHeader->glBaseInternalFormat, RomFields::FB_HEX);
+				ktxHeader->glBaseInternalFormat, RomFields::Base::Hex);
 		}
 	}
 

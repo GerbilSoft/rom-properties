@@ -52,14 +52,16 @@ class GameCubeSavePrivate : public RomDataPrivate
 		card_direntry direntry;
 
 		// Save file type.
-		enum SaveType {
-			SAVE_TYPE_UNKNOWN = -1,	// Unknown save type.
+		enum class SaveType {
+			Unknown	= -1,
 
-			SAVE_TYPE_GCI = 0,	// USB Memory Adapter
-			SAVE_TYPE_GCS = 1,	// GameShark
-			SAVE_TYPE_SAV = 2,	// MaxDrive
+			GCI	= 0,	// USB Memory Adapter
+			GCS	= 1,	// GameShark
+			SAV	= 2,	// MaxDrive
+
+			Max
 		};
-		int saveType;
+		SaveType saveType;
 
 		/**
 		 * Byteswap a card_direntry struct.
@@ -105,7 +107,7 @@ GameCubeSavePrivate::GameCubeSavePrivate(GameCubeSave *q, IRpFile *file)
 	: super(q, file)
 	, img_banner(nullptr)
 	, iconAnimData(nullptr)
-	, saveType(SAVE_TYPE_UNKNOWN)
+	, saveType(SaveType::Unknown)
 	, dataOffset(-1)
 {
 	// Clear the directory entry.
@@ -130,7 +132,7 @@ GameCubeSavePrivate::~GameCubeSavePrivate()
  */
 void GameCubeSavePrivate::byteswap_direntry(card_direntry *direntry, SaveType saveType)
 {
-	if (saveType == SAVE_TYPE_SAV) {
+	if (saveType == SaveType::SAV) {
 		// Swap 16-bit values at 0x2E through 0x40.
 		// Also 0x06 (pad_00 / bannerfmt).
 		// Reference: https://github.com/dolphin-emu/dolphin/blob/master/Source/Core/Core/HW/GCMemcard.cpp
@@ -180,7 +182,7 @@ bool GameCubeSavePrivate::isCardDirEntry(const uint8_t *buffer, uint32_t data_si
 	}
 
 	// Padding should be 0xFF.
-	if (saveType == SAVE_TYPE_SAV) {
+	if (saveType == SaveType::SAV) {
 		// MaxDrive SAV. pad_00 and bannerfmt are swappde.
 		if (direntry->bannerfmt != 0xFF) {
 			// Incorrect padding.
@@ -207,7 +209,7 @@ bool GameCubeSavePrivate::isCardDirEntry(const uint8_t *buffer, uint32_t data_si
 	// field will always be 1.
 	unsigned int length;
 	switch (saveType) {
-		case SAVE_TYPE_GCS:
+		case SaveType::GCS:
 			// Just check for >= 1.
 			length = be16_to_cpu(direntry->length);
 			if (length == 0) {
@@ -216,7 +218,7 @@ bool GameCubeSavePrivate::isCardDirEntry(const uint8_t *buffer, uint32_t data_si
 			}
 			break;
 
-		case SAVE_TYPE_SAV:
+		case SaveType::SAV:
 			// SAV: Field is little-endian
 			length = le16_to_cpu(direntry->length);
 			if (length * 8192 != data_size) {
@@ -225,7 +227,7 @@ bool GameCubeSavePrivate::isCardDirEntry(const uint8_t *buffer, uint32_t data_si
 			}
 			break;
 
-		case SAVE_TYPE_GCI:
+		case SaveType::GCI:
 		default:
 			// GCI: Field is big-endian.
 			length = be16_to_cpu(direntry->length);
@@ -247,7 +249,7 @@ bool GameCubeSavePrivate::isCardDirEntry(const uint8_t *buffer, uint32_t data_si
 		(dest) = tmp.d; \
 	} while (0)
 	uint32_t iconaddr, commentaddr;
-	if (saveType != SAVE_TYPE_SAV) {
+	if (saveType != SaveType::SAV) {
 		iconaddr = be32_to_cpu(direntry->iconaddr);
 		commentaddr = be32_to_cpu(direntry->commentaddr);
 	} else {
@@ -531,7 +533,7 @@ GameCubeSave::GameCubeSave(IRpFile *file)
 	RP_D(GameCubeSave);
 	d->className = "GameCubeSave";
 	d->mimeType = "application/x-gamecube-save";	// unofficial, not on fd.o
-	d->fileType = FTYPE_SAVE_FILE;
+	d->fileType = FileType::SaveFile;
 
 	if (!d->file) {
 		// Could not ref() the file handle.
@@ -555,23 +557,23 @@ GameCubeSave::GameCubeSave(IRpFile *file)
 	info.header.pData = header;
 	info.ext = nullptr;	// Not needed for GCN save files.
 	info.szFile = d->file->size();
-	d->saveType = isRomSupported_static(&info);
+	d->saveType = static_cast<GameCubeSavePrivate::SaveType>(isRomSupported_static(&info));
 
 	// Save the directory entry for later.
 	uint32_t gciOffset;	// offset to GCI header
 	switch (d->saveType) {
-		case GameCubeSavePrivate::SAVE_TYPE_GCI:
+		case GameCubeSavePrivate::SaveType::GCI:
 			gciOffset = 0;
 			break;
-		case GameCubeSavePrivate::SAVE_TYPE_GCS:
+		case GameCubeSavePrivate::SaveType::GCS:
 			gciOffset = 0x110;
 			break;
-		case GameCubeSavePrivate::SAVE_TYPE_SAV:
+		case GameCubeSavePrivate::SaveType::SAV:
 			gciOffset = 0x80;
 			break;
 		default:
 			// Unknown save type.
-			d->saveType = GameCubeSavePrivate::SAVE_TYPE_UNKNOWN;
+			d->saveType = GameCubeSavePrivate::SaveType::Unknown;
 			d->file->unref();
 			d->file = nullptr;
 			return;
@@ -604,7 +606,7 @@ int GameCubeSave::isRomSupported_static(const DetectInfo *info)
 	{
 		// Either no detection information was specified,
 		// or the header is too small.
-		return -1;
+		return static_cast<int>(GameCubeSavePrivate::SaveType::Unknown);
 	}
 
 	if (info->szFile > ((8192*2043) + 0x110)) {
@@ -626,10 +628,10 @@ int GameCubeSave::isRomSupported_static(const DetectInfo *info)
 		if (data_size % 8192 == 0) {
 			// Check the CARD directory entry.
 			if (GameCubeSavePrivate::isCardDirEntry(
-			    &info->header.pData[0x110], data_size, GameCubeSavePrivate::SAVE_TYPE_GCS))
+			    &info->header.pData[0x110], data_size, GameCubeSavePrivate::SaveType::GCS))
 			{
 				// This is a GCS file.
-				return GameCubeSavePrivate::SAVE_TYPE_GCS;
+				return static_cast<int>(GameCubeSavePrivate::SaveType::GCS);
 			}
 		}
 	}
@@ -646,10 +648,10 @@ int GameCubeSave::isRomSupported_static(const DetectInfo *info)
 		if (data_size % 8192 == 0) {
 			// Check the CARD directory entry.
 			if (GameCubeSavePrivate::isCardDirEntry(
-			    &info->header.pData[0x80], data_size, GameCubeSavePrivate::SAVE_TYPE_SAV))
+			    &info->header.pData[0x80], data_size, GameCubeSavePrivate::SaveType::SAV))
 			{
 				// This is a GCS file.
-				return GameCubeSavePrivate::SAVE_TYPE_SAV;
+				return static_cast<int>(GameCubeSavePrivate::SaveType::SAV);
 			}
 		}
 	}
@@ -661,15 +663,15 @@ int GameCubeSave::isRomSupported_static(const DetectInfo *info)
 	if (data_size % 8192 == 0) {
 		// Check the CARD directory entry.
 		if (GameCubeSavePrivate::isCardDirEntry(
-		    info->header.pData, data_size, GameCubeSavePrivate::SAVE_TYPE_GCI))
+		    info->header.pData, data_size, GameCubeSavePrivate::SaveType::GCI))
 		{
 			// This is a GCI file.
-			return GameCubeSavePrivate::SAVE_TYPE_GCI;
+			return static_cast<int>(GameCubeSavePrivate::SaveType::GCI);
 		}
 	}
 
 	// Not supported.
-	return -1;
+	return static_cast<int>(GameCubeSavePrivate::SaveType::Unknown);
 }
 
 /**
@@ -856,7 +858,7 @@ int GameCubeSave::loadFieldData(void)
 	} else if (!d->file || !d->file->isOpen()) {
 		// File isn't open.
 		return -EBADF;
-	} else if (!d->isValid || d->saveType < 0 || d->dataOffset < 0) {
+	} else if (!d->isValid || (int)d->saveType < 0 || d->dataOffset < 0) {
 		// Unknown save file type.
 		return -EIO;
 	}
@@ -959,7 +961,7 @@ int GameCubeSave::loadMetaData(void)
 	} else if (!d->file) {
 		// File isn't open.
 		return -EBADF;
-	} else if (!d->isValid || d->saveType < 0 || d->dataOffset < 0) {
+	} else if (!d->isValid || (int)d->saveType < 0 || d->dataOffset < 0) {
 		// Unknown disc image type.
 		return -EIO;
 	}

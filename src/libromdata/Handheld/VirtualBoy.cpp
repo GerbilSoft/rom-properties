@@ -379,7 +379,7 @@ int VirtualBoy::loadFieldData(void)
 
 	// Revision
 	d->fields->addField_string_numeric(C_("RomData", "Revision"),
-		romHeader->version, RomFields::FB_DEC, 2);
+		romHeader->version, RomFields::Base::Dec, 2);
 
 	// Region
 	const char *s_region;

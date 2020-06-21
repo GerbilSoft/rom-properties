@@ -35,6 +35,7 @@
     ISO images that have a `default.xbe` file that isn't readable by the
     XboxXBE parser. (Issue #219; reported by @cfas1)
   * Nintendo3DS: CVer CIAs have an 8-byte meta section.
+  * iQuePlayer: Fixed file type identification issues.
 
 * Other changes:
   * Split file handling and CPU/byteorder code from librpbase into two

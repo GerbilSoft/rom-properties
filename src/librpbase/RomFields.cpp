@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * RomFields.cpp: ROM fields class.                                        *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -891,14 +891,14 @@ int RomFields::addField_string_numeric(const char *name, uint32_t val, Base base
 
 	const char *fmtstr;
 	switch (base) {
-		case FB_DEC:
+		case Base::Dec:
 		default:
 			fmtstr = "%0*u";
 			break;
-		case FB_HEX:
+		case Base::Hex:
 			fmtstr = (!(flags & STRF_HEX_LOWER)) ? "0x%0*X" : "0x%0*x";
 			break;
-		case FB_OCT:
+		case Base::Oct:
 			fmtstr = "0%0*o";
 			break;
 	}

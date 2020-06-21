@@ -113,12 +113,6 @@ class GameCubePrivate : public RomDataPrivate
 		uint32_t gcnRegion;
 		bool hasRegionCode;
 
-		enum WiiPartitionType {
-			PARTITION_GAME = 0,
-			PARTITION_UPDATE = 1,
-			PARTITION_CHANNEL = 2,
-		};
-
 		/**
 		 * Wii partition tables.
 		 * Decoded from the actual on-disc tables.
@@ -379,10 +373,10 @@ int GameCubePrivate::loadWiiPartitionTables(void)
 		iter->partition = new WiiPartition(discReader, iter->start, iter->size,
 			(WiiPartition::CryptoMethod)cryptoMethod);
 
-		if (iter->type == PARTITION_UPDATE && !updatePartition) {
+		if (iter->type == RVL_PT_UPDATE && !updatePartition) {
 			// System Update partition.
 			updatePartition = iter->partition;
-		} else if (iter->type == PARTITION_GAME && !gamePartition) {
+		} else if (iter->type == RVL_PT_GAME && !gamePartition) {
 			// Game partition.
 			gamePartition = iter->partition;
 		}
@@ -612,7 +606,7 @@ int GameCubePrivate::wii_addBannerName(void) const
 const char *GameCubePrivate::wii_getCryptoStatus(WiiPartition *partition)
 {
 	const KeyManager::VerifyResult res = partition->verifyResult();
-	if (res == KeyManager::VERIFY_KEY_NOT_FOUND) {
+	if (res == KeyManager::VerifyResult::KeyNotFound) {
 		// This may be an invalid key index.
 		if (partition->encKey() == WiiPartition::ENCKEY_UNKNOWN) {
 			// Invalid key index.
@@ -620,7 +614,7 @@ const char *GameCubePrivate::wii_getCryptoStatus(WiiPartition *partition)
 		}
 	}
 
-	if (res == KeyManager::VERIFY_OK) {
+	if (res == KeyManager::VerifyResult::OK) {
 		// Debug discs may have incrementing values instead of a
 		// valid update partition.
 		static const uint8_t incr_vals[32] = {
@@ -666,7 +660,7 @@ GameCube::GameCube(IRpFile *file)
 	// This class handles disc images.
 	RP_D(GameCube);
 	d->className = "GameCube";
-	d->fileType = FTYPE_DISC_IMAGE;
+	d->fileType = FileType::DiscImage;
 
 	if (!d->file) {
 		// Could not ref() the file handle.
@@ -714,8 +708,8 @@ GameCube::GameCube(IRpFile *file)
 			break;
 
 		case GameCubePrivate::DISC_FORMAT_TGC: {
-			d->fileType = FTYPE_EMBEDDED_DISC_IMAGE;
-				// Check the TGC header for the disc offset.
+			d->fileType = FileType::EmbeddedDiscImage;
+			// Check the TGC header for the disc offset.
 			const GCN_TGC_Header *tgcHeader = reinterpret_cast<const GCN_TGC_Header*>(header);
 			uint32_t gcm_offset = be32_to_cpu(tgcHeader->header_size);
 			d->discReader = new DiscReader(d->file, gcm_offset, -1);
@@ -854,7 +848,7 @@ GameCube::GameCube(IRpFile *file)
 		d->hasRegionCode = true;
 	} else {
 		// Standalone partition.
-		d->fileType = FTYPE_PARTITION;
+		d->fileType = FileType::Partition;
 		d->wiiPtbl.resize(1);
 		GameCubePrivate::WiiPartEntry &pt = d->wiiPtbl[0];
 
@@ -1514,9 +1508,9 @@ int GameCube::loadFieldData(void)
 
 	// Other fields.
 	d->fields->addField_string_numeric(C_("RomData", "Disc #"),
-		discHeader->disc_number+1, RomFields::FB_DEC);
+		discHeader->disc_number+1, RomFields::Base::Dec);
 	d->fields->addField_string_numeric(C_("RomData", "Revision"),
-		discHeader->revision, RomFields::FB_DEC, 2);
+		discHeader->revision, RomFields::Base::Dec, 2);
 
 	// The remaining fields are not located in the disc header.
 	// If we can't read the disc contents for some reason, e.g.
@@ -1648,7 +1642,7 @@ int GameCube::loadFieldData(void)
 					d->fields->addField_string(game_info_title,
 						C_("GameCube", "ERROR: No game partition was found."));
 				}
-			} else if (d->gamePartition->verifyResult() != KeyManager::VERIFY_OK) {
+			} else if (d->gamePartition->verifyResult() != KeyManager::VerifyResult::OK) {
 				// Key error.
 				const char *status = d->wii_getCryptoStatus(d->gamePartition);
 				d->fields->addField_string(game_info_title,
@@ -1768,14 +1762,14 @@ int GameCube::loadFieldData(void)
 			// Partition type.
 			string s_ptype;
 			static const char *const part_type_tbl[3] = {
-				// tr: GameCubePrivate::PARTITION_GAME
+				// tr: GameCubePrivate::RVL_PT_GAME (Game partition)
 				NOP_C_("GameCube|Partition", "Game"),
-				// tr: GameCubePrivate::PARTITION_UPDATE
+				// tr: GameCubePrivate::RVL_PT_UPDATE (Update partition)
 				NOP_C_("GameCube|Partition", "Update"),
-				// tr: GameCubePrivate::PARTITION_CHANNEL
+				// tr: GameCubePrivate::RVL_PT_CHANNEL (Channel partition)
 				NOP_C_("GameCube|Partition", "Channel"),
 			};
-			if (entry.type <= GameCubePrivate::PARTITION_CHANNEL) {
+			if (entry.type <= RVL_PT_CHANNEL) {
 				s_ptype = dpgettext_expr(RP_I18N_DOMAIN, "GameCube|Partition", part_type_tbl[entry.type]);
 			} else {
 				// If all four bytes are ASCII letters and/or numbers,

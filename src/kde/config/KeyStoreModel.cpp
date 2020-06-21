@@ -288,19 +288,19 @@ QVariant KeyStoreModel::data(const QModelIndex& index, int role) const
 				case COL_ISVALID:
 					switch (key->status) {
 						default:
-						case KeyStoreQt::Key::Status_Unknown:
+						case KeyStoreQt::Key::Status::Unknown:
 							// Unknown...
 							return d->style.pxmIsValid_unknown;
-						case KeyStoreQt::Key::Status_NotAKey:
+						case KeyStoreQt::Key::Status::NotAKey:
 							// The key data is not in the correct format.
 							return d->style.pxmIsValid_invalid;
-						case KeyStoreQt::Key::Status_Empty:
+						case KeyStoreQt::Key::Status::Empty:
 							// Empty key.
 							break;
-						case KeyStoreQt::Key::Status_Incorrect:
+						case KeyStoreQt::Key::Status::Incorrect:
 							// Key is incorrect.
 							return d->style.pxmIsValid_invalid;
-						case KeyStoreQt::Key::Status_OK:
+						case KeyStoreQt::Key::Status::OK:
 							// Key is correct.
 							return d->style.pxmIsValid_good;
 					}

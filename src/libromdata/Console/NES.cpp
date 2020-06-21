@@ -205,14 +205,14 @@ NES::NES(IRpFile *file)
 		case NESPrivate::ROM_FORMAT_INES:
 		case NESPrivate::ROM_FORMAT_NES2:
 			// iNES-style ROM header.
-			d->fileType = FTYPE_ROM_IMAGE;
+			d->fileType = FileType::ROM_Image;
 			d->mimeType = "application/x-nes-rom";	// unofficial
 			memcpy(&d->header.ines, header, sizeof(d->header.ines));
 			break;
 
 		case NESPrivate::ROM_FORMAT_TNES:
 			// TNES ROM header.
-			d->fileType = FTYPE_ROM_IMAGE;
+			d->fileType = FileType::ROM_Image;
 			d->mimeType = "application/x-nes-rom";	// unofficial
 			memcpy(&d->header.tnes, header, sizeof(d->header.tnes));
 			break;
@@ -225,7 +225,7 @@ NES::NES(IRpFile *file)
 				d->file = nullptr;
 				return;
 			}
-			d->fileType = FTYPE_DISK_IMAGE;
+			d->fileType = FileType::DiskImage;
 			d->mimeType = "application/x-fds-disk";	// unofficial
 			memcpy(&d->header.fds, header, sizeof(d->header.fds));
 			break;
@@ -238,7 +238,7 @@ NES::NES(IRpFile *file)
 				d->file = nullptr;
 				return;
 			}
-			d->fileType = FTYPE_DISK_IMAGE;
+			d->fileType = FileType::DiskImage;
 			d->mimeType = "application/x-fds-disk";	// unofficial
 			memcpy(&d->header.fds_fwNES, header, sizeof(d->header.fds_fwNES));
 			memcpy(&d->header.fds, &header[16], sizeof(d->header.fds));
@@ -251,11 +251,11 @@ NES::NES(IRpFile *file)
 				// Seek and/or read error.
 				d->file->unref();
 				d->file = nullptr;
-				d->fileType = FTYPE_UNKNOWN;
+				d->fileType = FileType::Unknown;
 				d->romType = NESPrivate::ROM_FORMAT_UNKNOWN;
 				return;
 			}
-			d->fileType = FTYPE_DISK_IMAGE;
+			d->fileType = FileType::DiskImage;
 			d->mimeType = "application/x-fds-disk";	// unofficial
 			break;
 		}
@@ -264,7 +264,7 @@ NES::NES(IRpFile *file)
 			// Unknown ROM type.
 			d->file->unref();
 			d->file = nullptr;
-			d->fileType = FTYPE_UNKNOWN;
+			d->fileType = FileType::Unknown;
 			d->romType = NESPrivate::ROM_FORMAT_UNKNOWN;
 			return;
 	}
@@ -789,7 +789,7 @@ int NES::loadFieldData(void)
 		// TNES mapper.
 		// TODO: Look up the name.
 		d->fields->addField_string_numeric(C_("NES", "TNES Mapper"),
-			tnes_mapper, RomFields::FB_DEC);
+			tnes_mapper, RomFields::Base::Dec);
 	}
 
 	// TV mode
@@ -869,7 +869,7 @@ int NES::loadFieldData(void)
 
 		// Revision
 		d->fields->addField_string_numeric(C_("RomData", "Revision"),
-			d->header.fds.revision, RomFields::FB_DEC, 2);
+			d->header.fds.revision, RomFields::Base::Dec, 2);
 
 		// Manufacturing Date.
 		time_t mfr_date = d->fds_bcd_datestamp_to_unix_time(&d->header.fds.mfr_date);
@@ -1165,12 +1165,12 @@ int NES::loadFieldData(void)
 			// PRG checksum
 			d->fields->addField_string_numeric(C_("NES", "PRG Checksum"),
 				le16_to_cpu(intFooter.prg_checksum),
-				RomFields::FB_HEX, 4, RomFields::STRF_MONOSPACE);
+				RomFields::Base::Hex, 4, RomFields::STRF_MONOSPACE);
 
 			// CHR checksum
 			d->fields->addField_string_numeric(C_("NES", "CHR Checksum"),
 				le16_to_cpu(intFooter.chr_checksum),
-				RomFields::FB_HEX, 4, RomFields::STRF_MONOSPACE);
+				RomFields::Base::Hex, 4, RomFields::STRF_MONOSPACE);
 
 			// ROM sizes (as powers of two)
 			static const uint8_t sz_shift_lookup[] = {

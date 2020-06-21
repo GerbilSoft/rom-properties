@@ -67,7 +67,7 @@ NSF::NSF(IRpFile *file)
 	RP_D(NSF);
 	d->className = "NSF";
 	d->mimeType = "audio/x-nsf";	// unofficial
-	d->fileType = FTYPE_AUDIO_FILE;
+	d->fileType = FileType::AudioFile;
 
 	if (!d->file) {
 		// Could not ref() the file handle.
@@ -254,17 +254,17 @@ int NSF::loadFieldData(void)
 	// Load address.
 	d->fields->addField_string_numeric(C_("NSF", "Load Address"),
 		le16_to_cpu(nsfHeader->load_address),
-		RomFields::FB_HEX, 4, RomFields::STRF_MONOSPACE);
+		RomFields::Base::Hex, 4, RomFields::STRF_MONOSPACE);
 
 	// Init address.
 	d->fields->addField_string_numeric(C_("NSF", "Init Address"),
 		le16_to_cpu(nsfHeader->init_address),
-		RomFields::FB_HEX, 4, RomFields::STRF_MONOSPACE);
+		RomFields::Base::Hex, 4, RomFields::STRF_MONOSPACE);
 
 	// Play address.
 	d->fields->addField_string_numeric(C_("NSF", "Play Address"),
 		le16_to_cpu(nsfHeader->play_address),
-		RomFields::FB_HEX, 4, RomFields::STRF_MONOSPACE);
+		RomFields::Base::Hex, 4, RomFields::STRF_MONOSPACE);
 
 	// TV System.
 	// TODO: NTSC/PAL framerates?

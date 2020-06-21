@@ -89,14 +89,15 @@ class SegaSaturnPrivate : public RomDataPrivate
 		static unsigned int parseRegionCodes(const char *region_codes, int size);
 
 	public:
-		enum DiscType {
-			DISC_UNKNOWN		= -1,	// Unknown ROM type.
-			DISC_ISO_2048		= 0,	// ISO-9660, 2048-byte sectors.
-			DISC_ISO_2352		= 1,	// ISO-9660, 2352-byte sectors.
-		};
+		enum class DiscType {
+			Unknown	= -1,
 
-		// Disc type.
-		int discType;
+			Iso2048	= 0,	// ISO-9660, 2048-byte sectors.
+			Iso2352	= 1,	// ISO-9660, 2352-byte sectors.
+
+			Max
+		};
+		DiscType discType;
 
 		// Disc header.
 		Saturn_IP0000_BIN_t discHeader;
@@ -122,7 +123,7 @@ class SegaSaturnPrivate : public RomDataPrivate
 
 SegaSaturnPrivate::SegaSaturnPrivate(SegaSaturn *q, IRpFile *file)
 	: super(q, file)
-	, discType(DISC_UNKNOWN)
+	, discType(DiscType::Unknown)
 	, saturn_region(0)
 {
 	// Clear the disc header struct.
@@ -306,7 +307,7 @@ SegaSaturn::SegaSaturn(IRpFile *file)
 	RP_D(SegaSaturn);
 	d->className = "SegaSaturn";
 	d->mimeType = "application/x-saturn-rom";	// unofficial
-	d->fileType = FTYPE_DISC_IMAGE;
+	d->fileType = FileType::DiscImage;
 
 	if (!d->file) {
 		// Could not ref() the file handle.
@@ -331,26 +332,20 @@ SegaSaturn::SegaSaturn(IRpFile *file)
 	info.header.pData = reinterpret_cast<const uint8_t*>(&sector);
 	info.ext = nullptr;	// Not needed for SegaSaturn.
 	info.szFile = 0;	// Not needed for SegaSaturn.
-	d->discType = isRomSupported_static(&info);
-
-	if (d->discType < 0) {
-		d->file->unref();
-		d->file = nullptr;
-		return;
-	}
+	d->discType = static_cast<SegaSaturnPrivate::DiscType>(isRomSupported_static(&info));
 
 	switch (d->discType) {
-		case SegaSaturnPrivate::DISC_ISO_2048:
+		case SegaSaturnPrivate::DiscType::Iso2048:
 			// 2048-byte sectors.
 			// TODO: Determine session start address.
 			memcpy(&d->discHeader, &sector, sizeof(d->discHeader));
 			if (d->file->size() <= 64*1024) {
 				// 64 KB is way too small for a Dreamcast disc image.
 				// We'll assume this is IP.bin.
-				d->fileType = FTYPE_BOOT_SECTOR;
+				d->fileType = FileType::BootSector;
 			}
 			break;
-		case SegaSaturnPrivate::DISC_ISO_2352:
+		case SegaSaturnPrivate::DiscType::Iso2352:
 			// 2352-byte sectors.
 			// Assuming Mode 1. (TODO: Check for Mode 2.)
 			memcpy(&d->discHeader, &sector.m1.data, sizeof(d->discHeader));
@@ -384,7 +379,7 @@ int SegaSaturn::isRomSupported_static(const DetectInfo *info)
 	{
 		// Either no detection information was specified,
 		// or the header is too small.
-		return -1;
+		return static_cast<int>(SegaSaturnPrivate::DiscType::Unknown);
 	}
 
 	// Check for Sega Saturn HW and Maker ID.
@@ -394,7 +389,7 @@ int SegaSaturn::isRomSupported_static(const DetectInfo *info)
 	if (!memcmp(ip0000_bin->hw_id, SATURN_IP0000_BIN_HW_ID, sizeof(ip0000_bin->hw_id))) {
 		// Found HW ID at 0x0000.
 		// This is a 2048-byte sector image.
-		return SegaSaturnPrivate::DISC_ISO_2048;
+		return static_cast<int>(SegaSaturnPrivate::DiscType::Iso2048);
 	}
 
 	// 0x0010: 2352-byte sectors;
@@ -405,14 +400,14 @@ int SegaSaturn::isRomSupported_static(const DetectInfo *info)
 		if (Cdrom2352Reader::isDiscSupported_static(info->header.pData, info->header.size) >= 0) {
 			// Found CD-ROM sync bytes.
 			// This is a 2352-byte sector image.
-			return SegaSaturnPrivate::DISC_ISO_2352;
+			return static_cast<int>(SegaSaturnPrivate::DiscType::Iso2352);
 		}
 	}
 
 	// TODO: Check for other formats, including CDI and NRG?
 
 	// Not supported.
-	return -1;
+	return static_cast<int>(SegaSaturnPrivate::DiscType::Unknown);
 }
 
 /**
@@ -501,7 +496,7 @@ int SegaSaturn::loadFieldData(void)
 	} else if (!d->file) {
 		// File isn't open.
 		return -EBADF;
-	} else if (!d->isValid || d->discType < 0) {
+	} else if (!d->isValid || (int)d->discType < 0) {
 		// Unknown ROM image type.
 		return -EIO;
 	}
@@ -624,7 +619,7 @@ int SegaSaturn::loadMetaData(void)
 	} else if (!d->file) {
 		// File isn't open.
 		return -EBADF;
-	} else if (!d->isValid || d->discType < 0) {
+	} else if (!d->isValid || (int)d->discType < 0) {
 		// Unknown disc image type.
 		return -EIO;
 	}

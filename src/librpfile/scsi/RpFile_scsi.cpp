@@ -359,7 +359,7 @@ int RpFilePrivate::scsi_read_capacity(off64_t *pDeviceSize, uint32_t *pSectorSiz
 	cdb10.PMI = 0;
 	cdb10.Control = 0;
 
-	int ret = scsi_send_cdb(&cdb10, sizeof(cdb10), &resp10, sizeof(resp10), RpFilePrivate::SCSI_DIR_IN);
+	int ret = scsi_send_cdb(&cdb10, sizeof(cdb10), &resp10, sizeof(resp10), RpFilePrivate::ScsiDirection::In);
 	if (ret != 0) {
 		// SCSI command failed.
 		return ret;
@@ -385,7 +385,7 @@ int RpFilePrivate::scsi_read_capacity(off64_t *pDeviceSize, uint32_t *pSectorSiz
 	cdb16.Reserved = 0;
 	cdb16.Control = 0;
 
-	ret = scsi_send_cdb(&cdb16, sizeof(cdb16), &resp16, sizeof(resp16), RpFilePrivate::SCSI_DIR_IN);
+	ret = scsi_send_cdb(&cdb16, sizeof(cdb16), &resp16, sizeof(resp16), RpFilePrivate::ScsiDirection::In);
 	if (ret != 0) {
 		// SCSI command failed.
 		// TODO: Return 0xFFFFFFFF+1 blocks anyway?
@@ -449,7 +449,7 @@ int RpFilePrivate::scsi_read(uint32_t lbaStart, uint16_t lbaCount, uint8_t *pBuf
 	cdb10.TransferLen = cpu_to_be16(lbaCount);
 	cdb10.Control = 0;
 
-	return scsi_send_cdb(&cdb10, sizeof(cdb10), pBuf, req_buf_size, SCSI_DIR_IN);
+	return scsi_send_cdb(&cdb10, sizeof(cdb10), pBuf, req_buf_size, ScsiDirection::In);
 #else /* !RP_OS_SCSI_SUPPORTED */
 	// No SCSI implementation for this OS.
 	RP_UNUSED(lbaStart);
@@ -525,7 +525,7 @@ int RpFile::scsi_inquiry(SCSI_RESP_INQUIRY_STD *pResp)
 	cdb.Control = 0;
 
 	RP_D(RpFile);
-	return d->scsi_send_cdb(&cdb, sizeof(cdb), pResp, sizeof(*pResp), RpFilePrivate::SCSI_DIR_IN);
+	return d->scsi_send_cdb(&cdb, sizeof(cdb), pResp, sizeof(*pResp), RpFilePrivate::ScsiDirection::In);
 }
 
 /**
@@ -555,7 +555,7 @@ int RpFile::ata_identify_device(ATA_RESP_IDENTIFY_DEVICE *pResp)
 	cdb.Control = 0;
 
 	RP_D(RpFile);
-	int ret = d->scsi_send_cdb(&cdb, sizeof(cdb), pResp, sizeof(*pResp), RpFilePrivate::SCSI_DIR_IN);
+	int ret = d->scsi_send_cdb(&cdb, sizeof(cdb), pResp, sizeof(*pResp), RpFilePrivate::ScsiDirection::In);
 	if (ret != 0) {
 		// SCSI/ATA error.
 		return ret;

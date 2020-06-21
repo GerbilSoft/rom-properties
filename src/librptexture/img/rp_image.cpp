@@ -109,7 +109,7 @@ rp_image_backend_default::rp_image_backend_default(int width, int height, rp_ima
 	}
 
 	// Do we need to allocate memory for the palette?
-	if (format == rp_image::FORMAT_CI8) {
+	if (format == rp_image::Format::CI8) {
 		// Palette is initialized to 0 to ensure
 		// there's no weird artifacts if the caller
 		// is converting a lower-color image.
@@ -186,10 +186,10 @@ rp_image_private::rp_image_private(int width, int height, rp_image::Format forma
 	memset(&sBIT, 0, sizeof(sBIT));
 
 	if (width <= 0 || height <= 0 ||
-	    (format != rp_image::FORMAT_CI8 && format != rp_image::FORMAT_ARGB32))
+	    (format != rp_image::Format::CI8 && format != rp_image::Format::ARGB32))
 	{
 		// Invalid image specifications.
-		this->backend = new rp_image_backend_default(0, 0, rp_image::FORMAT_NONE);
+		this->backend = new rp_image_backend_default(0, 0, rp_image::Format::None);
 		return;
 	}
 
@@ -346,9 +346,9 @@ int rp_image::row_bytes(void) const
 {
 	RP_D(const rp_image);
 	switch (d->backend->format) {
-		case FORMAT_CI8:
+		case rp_image::Format::CI8:
 			return d->backend->width;
-		case rp_image::FORMAT_ARGB32:
+		case rp_image::Format::ARGB32:
 			return d->backend->width * sizeof(uint32_t);
 		default:
 			assert(!"Unsupported rp_image::Format.");
@@ -471,8 +471,8 @@ int rp_image::palette_len(void) const
 int rp_image::tr_idx(void) const
 {
 	RP_D(const rp_image);
-	assert(d->backend->format == FORMAT_CI8);
-	if (d->backend->format != FORMAT_CI8)
+	assert(d->backend->format == Format::CI8);
+	if (d->backend->format != Format::CI8)
 		return -1;
 
 	return d->backend->tr_idx;
@@ -487,10 +487,10 @@ int rp_image::tr_idx(void) const
 void rp_image::set_tr_idx(int tr_idx)
 {
 	RP_D(rp_image);
-	assert(d->backend->format == FORMAT_CI8);
+	assert(d->backend->format == Format::CI8);
 	assert(tr_idx >= -1 && tr_idx < d->backend->palette_len());
 
-	if (d->backend->format == FORMAT_CI8 &&
+	if (d->backend->format == Format::CI8 &&
 	    tr_idx >= -1 && tr_idx < d->backend->palette_len())
 	{
 		d->backend->tr_idx = tr_idx;
@@ -504,8 +504,8 @@ void rp_image::set_tr_idx(int tr_idx)
 */
 const char *rp_image::getFormatName(Format format)
 {
-	assert(format >= FORMAT_NONE && format < FORMAT_MAX);
-	if (format < FORMAT_NONE || format >= FORMAT_MAX) {
+	assert(format >= Format::None && format < Format::Max);
+	if (format < Format::None || format >= Format::Max) {
 		return nullptr;
 	}
 
@@ -514,10 +514,10 @@ const char *rp_image::getFormatName(Format format)
 		"CI8",
 		"ARGB32",
 	};
-	static_assert(ARRAY_SIZE(format_names) == FORMAT_MAX,
+	static_assert(ARRAY_SIZE(format_names) == (int)Format::Max,
 		"format_names[] needs to be updated.");
 
-	return format_names[format];
+	return format_names[(int)format];
 }
 
 /** Metadata. **/

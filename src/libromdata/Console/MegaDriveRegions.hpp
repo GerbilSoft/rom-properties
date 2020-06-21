@@ -40,17 +40,17 @@ class MegaDriveRegions
 		static unsigned int parseRegionCodes(const char *region_codes, int size);
 
 		// Branding region.
-		enum MD_BrandingRegion {
-			MD_BREGION_UNKNOWN = 0,
+		enum class MD_BrandingRegion {
+			Unknown = 0,
 
 			// Primary regions.
-			MD_BREGION_JAPAN,
-			MD_BREGION_USA,
-			MD_BREGION_EUROPE,
+			Japan,
+			USA,
+			Europe,
 
 			// Additional regions.
-			MD_BREGION_SOUTH_KOREA,
-			MD_BREGION_BRAZIL,
+			South_Korea,
+			Brazil,
 		};
 
 		/**
