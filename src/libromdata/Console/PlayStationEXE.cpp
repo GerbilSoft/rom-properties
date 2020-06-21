@@ -24,7 +24,7 @@ ROMDATA_IMPL(PlayStationEXE)
 class PlayStationEXEPrivate : public RomDataPrivate
 {
 	public:
-		PlayStationEXEPrivate(PlayStationEXE *q, IRpFile *file, bool skipStack);
+		PlayStationEXEPrivate(PlayStationEXE *q, IRpFile *file, uint32_t sp_override);
 
 	private:
 		typedef RomDataPrivate super;
@@ -35,15 +35,15 @@ class PlayStationEXEPrivate : public RomDataPrivate
 		// NOTE: **NOT** byteswapped.
 		PS1_EXE_Header psxHeader;
 
-		// Skip stack fields?
-		bool skipStack;
+		// Stack pointer override
+		uint32_t sp_override;
 };
 
 /** PlayStationEXEPrivate **/
 
-PlayStationEXEPrivate::PlayStationEXEPrivate(PlayStationEXE *q, IRpFile *file, bool skipStack)
+PlayStationEXEPrivate::PlayStationEXEPrivate(PlayStationEXE *q, IRpFile *file, uint32_t sp_override)
 	: super(q, file)
-	, skipStack(skipStack)
+	, sp_override(sp_override)
 {
 	// Clear the structs.
 	memset(&psxHeader, 0, sizeof(psxHeader));
@@ -65,7 +65,7 @@ PlayStationEXEPrivate::PlayStationEXEPrivate(PlayStationEXE *q, IRpFile *file, b
  * @param file Open PS-X executable file.
  */
 PlayStationEXE::PlayStationEXE(IRpFile *file)
-	: super(new PlayStationEXEPrivate(this, file, false))
+	: super(new PlayStationEXEPrivate(this, file, 0))
 {
 	// This class handles executables.
 	RP_D(PlayStationEXE);
@@ -93,10 +93,10 @@ PlayStationEXE::PlayStationEXE(IRpFile *file)
  * NOTE: Check isValid() to determine if this is a valid ROM.
  *
  * @param file Open PS-X executable file.
- * @param skipStack Skip stack fields.
+ * @param sp_override Stack pointer override.
  */
-PlayStationEXE::PlayStationEXE(IRpFile *file, bool skipStack)
-	: super(new PlayStationEXEPrivate(this, file, skipStack))
+PlayStationEXE::PlayStationEXE(IRpFile *file, uint32_t sp_override)
+	: super(new PlayStationEXEPrivate(this, file, sp_override))
 {
 	// This class handles executables.
 	RP_D(PlayStationEXE);
@@ -272,7 +272,7 @@ int PlayStationEXE::loadFieldData(void)
 	// Parse the PS-X executable.
 	const PS1_EXE_Header *const psxHeader = &d->psxHeader;
 
-	d->fields->reserve(d->skipStack ? 4 : 6);	// Maximum of 6 fields.
+	d->fields->reserve(6);	// Maximum of 6 fields.
 	d->fields->setTabName(0, "PS1 EXE");
 
 	// RAM Address
@@ -290,17 +290,16 @@ int PlayStationEXE::loadFieldData(void)
 		le32_to_cpu(psxHeader->initial_gp), RomFields::Base::Hex, 8,
 		RomFields::STRF_MONOSPACE);
 
-	if (!d->skipStack) {
-		// Initial SP
-		d->fields->addField_string_numeric(C_("PlayStationEXE", "Initial SP/FP"),
-			le32_to_cpu(psxHeader->initial_sp), RomFields::Base::Hex, 8,
-			RomFields::STRF_MONOSPACE);
+	// Initial SP
+	const uint32_t initial_sp = (d->sp_override != 0 ? d->sp_override : le32_to_cpu(psxHeader->initial_sp));
+	d->fields->addField_string_numeric(C_("PlayStationEXE", "Initial SP/FP"),
+		initial_sp, RomFields::Base::Hex, 8,
+		RomFields::STRF_MONOSPACE);
 
-		// Initial SP offset
-		d->fields->addField_string_numeric(C_("PlayStationEXE", "Initial SP Offset"),
-			le32_to_cpu(psxHeader->initial_sp_off), RomFields::Base::Hex, 8,
-			RomFields::STRF_MONOSPACE);
-	}
+	// Initial SP offset
+	d->fields->addField_string_numeric(C_("PlayStationEXE", "Initial SP Offset"),
+		le32_to_cpu(psxHeader->initial_sp_off), RomFields::Base::Hex, 8,
+		RomFields::STRF_MONOSPACE);
 
 	// Region
 	// To avoid shenanigans, we'll do a 16-bit XOR of the first part.

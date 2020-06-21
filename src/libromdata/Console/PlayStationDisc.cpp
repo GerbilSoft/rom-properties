@@ -243,10 +243,17 @@ RomData *PlayStationDiscPrivate::openBootExe(void)
 		switch (consoleType) {
 			case ConsoleType::PS1: {
 				// Check if we have a STACK override in system.cnf.
-				// TODO: Validate it and ignore it if it isn't valid?
+				uint32_t sp_override = 0;
 				auto iter = system_cnf.find("STACK");
-				bool skipStack = (iter != system_cnf.end());
-				exeData = new PlayStationEXE(f_bootExe, skipStack);
+				if (iter != system_cnf.end() && !iter->second.empty()) {
+					// Validate the value.
+					char *endptr = nullptr;
+					sp_override = strtoul(iter->second.c_str(), &endptr, 16);
+					if (*endptr != '\0') {
+						sp_override = 0;
+					}
+				}
+				exeData = new PlayStationEXE(f_bootExe, sp_override);
 				break;
 			}
 			case ConsoleType::PS2:
@@ -654,18 +661,6 @@ int PlayStationDisc::loadFieldData(void)
 			if (iter != d->system_cnf.end() && !iter->second.empty()) {
 				d->fields->addField_string(C_("PlayStationDisc", "Max Event Count"), iter->second);
 			}
-
-			// Initial SP
-			// NOTE: This overrides the executable!
-			iter = d->system_cnf.find("STACK");
-			if (iter != d->system_cnf.end() && !iter->second.empty()) {
-				// Validate the value.
-				char *endptr = nullptr;
-				sp_override = strtoul(iter->second.c_str(), &endptr, 16);
-				if (*endptr != '\0') {
-					sp_override = 0;
-				}
-			}
 			break;
 		}
 
@@ -685,14 +680,6 @@ int PlayStationDisc::loadFieldData(void)
 		boot_file_timestamp,
 		RomFields::RFT_DATETIME_HAS_DATE |
 		RomFields::RFT_DATETIME_HAS_TIME);
-
-	// PS1: Stack pointer override.
-	// TODO: Inject it into PlayStationEXE?
-	if (sp_override != 0) {
-		d->fields->addField_string_numeric(C_("PlayStationDisc", "Initial SP"),
-			sp_override, RomFields::Base::Hex, 8,
-			RomFields::STRF_MONOSPACE);
-	}
 
 	// Show a tab for the boot file.
 	RomData *const bootExeData = d->openBootExe();

@@ -28,9 +28,9 @@ ROMDATA_DECL_BEGIN(PlayStationEXE)
 		 * NOTE: Check isValid() to determine if this is a valid ROM.
 		 *
 		 * @param file Open PS-X executable file.
-		 * @param skipStack Skip stack fields.
+		 * @param sp_override Stack pointer override.
 		 */
-		PlayStationEXE(LibRpFile::IRpFile *file, bool skipStack);
+		PlayStationEXE(LibRpFile::IRpFile *file, uint32_t sp_override);
 
 	private:
 		/**
