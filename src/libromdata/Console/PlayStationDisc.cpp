@@ -622,8 +622,7 @@ int PlayStationDisc::loadFieldData(void)
 		return -EIO;
 	}
 
-	// TODO: Add actual fields.
-	d->fields->reserve(4);	// Maximum of 4 fields.
+	d->fields->reserve(6);	// Maximum of 6 fields.
 
 	const char *s_tab_name;
 	switch (d->consoleType) {
@@ -665,7 +664,18 @@ int PlayStationDisc::loadFieldData(void)
 		}
 
 		case PlayStationDiscPrivate::ConsoleType::PS2: {
-			// TODO
+			// Version
+			auto iter = d->system_cnf.find("VER");
+			if (iter != d->system_cnf.end() && !iter->second.empty()) {
+				d->fields->addField_string(C_("PlayStationDisc", "Version"), iter->second);
+			}
+
+			// Video mode
+			// TODO: Validate this?
+			iter = d->system_cnf.find("VMODE");
+			if (iter != d->system_cnf.end() && !iter->second.empty()) {
+				d->fields->addField_string(C_("PlayStationDisc", "Video Mode"), iter->second);
+			}
 			break;
 		}
 	}
