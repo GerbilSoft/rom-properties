@@ -23,6 +23,7 @@ using LibRpFile::RpFile;
 
 // Other RomData subclasses
 #include "Other/ISO.hpp"
+#include "Console/PlayStationEXE.hpp"
 #include "Other/ELF.hpp"
 
 // inih for system.cnf
@@ -89,16 +90,6 @@ class PlayStationDiscPrivate : public LibRpBase::RomDataPrivate
 		// Boot executable
 		RomData *bootExeData;
 
-		enum class ExeType {
-			Unknown	= -1,
-
-			PSX	= 0,	// PS-X executable
-			ELF	= 1,	// ELF executable
-
-			Max
-		};
-		ExeType exeType;
-
 		// Boot filename.
 		// Normalized:
 		// - "cdrom:\" (PS1) or "cdrom0:\" (PS2) removed.
@@ -130,7 +121,6 @@ PlayStationDiscPrivate::PlayStationDiscPrivate(PlayStationDisc *q, IRpFile *file
 	, discReader(nullptr)
 	, isoPartition(nullptr)
 	, bootExeData(nullptr)
-	, exeType(ExeType::Unknown)
 	, consoleType(ConsoleType::Unknown)
 {
 	// Clear the structs.
@@ -249,7 +239,7 @@ RomData *PlayStationDiscPrivate::openBootExe(void)
 		RomData *exeData = nullptr;
 		switch (consoleType) {
 			case ConsoleType::PS1:
-				// TODO
+				exeData = new PlayStationEXE(f_bootExe);
 				break;
 			case ConsoleType::PS2:
 				exeData = new ELF(f_bootExe);
