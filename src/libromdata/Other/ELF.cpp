@@ -931,7 +931,7 @@ int ELF::isRomSupported_static(const DetectInfo *info)
 	{
 		// Either no detection information was specified,
 		// or the header is too small.
-		return -1;
+		return static_cast<int>(ELFPrivate::Elf_Format::Unknown);
 	}
 
 	// TODO: Use 32-bit and/or 16-bit reads to improve performance.
@@ -943,7 +943,7 @@ int ELF::isRomSupported_static(const DetectInfo *info)
 	// Check the magic number.
 	if (pHdr->e_magic != cpu_to_be32(ELF_MAGIC)) {
 		// Invalid magic.
-		return -1;
+		return static_cast<int>(ELFPrivate::Elf_Format::Unknown);
 	}
 
 	// Verify the bitness and endianness fields.

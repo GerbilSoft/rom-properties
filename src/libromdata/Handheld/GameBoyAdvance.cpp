@@ -40,6 +40,8 @@ class GameBoyAdvancePrivate : public RomDataPrivate
 			GBA		= 0,	// Standard GBA ROM.
 			GBA_PassThru	= 1,	// Unlicensed GBA pass-through cartridge.
 			NDS_Expansion	= 2,	// Non-bootable NDS expansion ROM.
+
+			Max
 		};
 		RomType romType;
 
@@ -158,7 +160,7 @@ int GameBoyAdvance::isRomSupported_static(const DetectInfo *info)
 	{
 		// Either no detection information was specified,
 		// or the header is too small.
-		return -1;
+		return static_cast<int>(GameBoyAdvancePrivate::RomType::Unknown);
 	}
 
 	// Check the first 16 bytes of the Nintendo logo.

@@ -151,7 +151,7 @@ int NGPC::isRomSupported_static(const DetectInfo *info)
 	{
 		// Either no detection information was specified,
 		// or the header is too small.
-		return -1;
+		return static_cast<int>(NGPCPrivate::RomType::Unknown);
 	}
 
 	NGPCPrivate::RomType romType = NGPCPrivate::RomType::Unknown;

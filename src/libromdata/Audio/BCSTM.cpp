@@ -221,7 +221,7 @@ int BCSTM::isRomSupported_static(const DetectInfo *info)
 	{
 		// Either no detection information was specified,
 		// or the header is too small.
-		return -1;
+		return static_cast<int>(BCSTMPrivate::AudioFormat::Unknown);
 	}
 
 	const BCSTM_Header *const bcstmHeader =

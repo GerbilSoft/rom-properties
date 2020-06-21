@@ -464,14 +464,14 @@ int iQuePlayer::isRomSupported_static(const DetectInfo *info)
 	{
 		// Either no detection information was specified,
 		// or the header is too small.
-		return (int)iQuePlayerPrivate::IQueFileType::Unknown;
+		return static_cast<int>(iQuePlayerPrivate::IQueFileType::Unknown);
 	}
 
 	if (info->szFile != IQUE_PLAYER_CMD_FILESIZE &&
 	    info->szFile != IQUE_PLAYER_DAT_FILESIZE)
 	{
 		// Incorrect filesize.
-		return -1;
+		return static_cast<int>(iQuePlayerPrivate::IQueFileType::Unknown);
 	}
 
 	const iQuePlayer_contentDesc *const contentDesc =

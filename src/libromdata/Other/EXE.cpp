@@ -583,7 +583,7 @@ int EXE::isRomSupported_static(const DetectInfo *info)
 	{
 		// Either no detection information was specified,
 		// or the header is too small.
-		return -1;
+		return static_cast<int>(EXEPrivate::ExeType::Unknown);
 	}
 
 	const IMAGE_DOS_HEADER *const pMZ =
