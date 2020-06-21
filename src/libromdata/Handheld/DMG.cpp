@@ -390,12 +390,13 @@ void DMGPrivate::getTitleAndGameID(string &s_title, string &s_gameID) const
 		// CGB flag is set.
 		// Check if a Game ID is present.
 		isGameID = true;
-		// First character must be: [ABV] (V=rumble) [TODO: Verify HW byte?]
+		// First character must be: [ABKV] [TODO: Verify HW byte?]
 		// Region byte must be: [ADEFGHIJKPSXY]
 		switch (romHeader.title15[11]) {
 			case 'A':
 			case 'B':
-			case 'V':
+			case 'K':	// tilt sensor
+			case 'V':	// rumble
 				switch (romHeader.title15[14]) {
 					case 'A': case 'D':
 					case 'E': case 'F':
