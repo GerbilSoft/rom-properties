@@ -67,16 +67,17 @@ class NintendoDSPrivate : public RomDataPrivate
 
 	public:
 		// ROM type.
-		enum NDS_RomType {
-			ROM_UNKNOWN	= -1,	// Unknown ROM type.
-			ROM_NDS		= 0,	// Nintendo DS ROM.
-			ROM_NDS_SLOT2	= 1,	// Nintendo DS ROM. (Slot-2)
-			ROM_DSi_ENH	= 2,	// Nintendo DSi-enhanced ROM.
-			ROM_DSi_ONLY	= 3,	// Nintendo DSi-only ROM.
-		};
+		enum class RomType {
+			Unknown	= -1,
 
-		// ROM type.
-		int romType;
+			NDS		= 0,	// Nintendo DS ROM
+			NDS_Slot2	= 1,	// Nintendo DS ROM (Slot-2)
+			DSi_Enhanced	= 2,	// Nintendo DSi-enhanced ROM
+			DSi_Exclusive	= 3,	// Nintendo DSi-exclusive ROM
+
+			Max
+		};
+		RomType romType;
 
 		// ROM header.
 		// NOTE: Must be byteswapped on access.
@@ -177,7 +178,7 @@ NintendoDSPrivate::NintendoDSPrivate(NintendoDS *q, IRpFile *file, bool cia)
 	: super(q, file)
 	, iconAnimData(nullptr)
 	, icon_first_frame(nullptr)
-	, romType(ROM_UNKNOWN)
+	, romType(RomType::Unknown)
 	, nds_icon_title_loaded(false)
 	, cia(cia)
 {
@@ -800,8 +801,8 @@ void NintendoDS::init(void)
 	info.header.pData = reinterpret_cast<const uint8_t*>(&d->romHeader);
 	info.ext = nullptr;	// Not needed for NDS.
 	info.szFile = 0;	// Not needed for NDS.
-	d->romType = isRomSupported_static(&info);
-	d->isValid = (d->romType >= 0);
+	d->romType = static_cast<NintendoDSPrivate::RomType>(isRomSupported_static(&info));
+	d->isValid = ((int)d->romType >= 0);
 
 	if (!d->isValid) {
 		d->file->unref();
@@ -809,7 +810,7 @@ void NintendoDS::init(void)
 	}
 
 	// Set the MIME type. (unofficial)
-	d->mimeType = (d->romType == NintendoDSPrivate::ROM_DSi_ONLY)
+	d->mimeType = (d->romType == NintendoDSPrivate::RomType::DSi_Exclusive)
 			? "application/x-nintendo-dsi-rom"	// (not on fd.o)
 			: "application/x-nintendo-ds-rom";
 }
@@ -830,7 +831,7 @@ int NintendoDS::isRomSupported_static(const DetectInfo *info)
 	{
 		// Either no detection information was specified,
 		// or the header is too small.
-		return -1;
+		return static_cast<int>(NintendoDSPrivate::RomType::Unknown);
 	}
 
 	// Check the first 16 bytes of the Nintendo logo.
@@ -848,22 +849,22 @@ int NintendoDS::isRomSupported_static(const DetectInfo *info)
 	if (!memcmp(romHeader->nintendo_logo, nintendo_gba_logo, sizeof(nintendo_gba_logo)) &&
 	    romHeader->nintendo_logo_checksum == cpu_to_le16(0xCF56)) {
 		// Nintendo logo is valid. (Slot-1)
-		static const uint8_t nds_romType[] = {
-			NintendoDSPrivate::ROM_NDS,		// 0x00 == Nintendo DS
-			NintendoDSPrivate::ROM_NDS,		// 0x01 == invalid (assuming DS)
-			NintendoDSPrivate::ROM_DSi_ENH,		// 0x02 == DSi-enhanced
-			NintendoDSPrivate::ROM_DSi_ONLY,	// 0x03 == DSi-only
+		static const int8_t nds_romType[] = {
+			(int8_t)NintendoDSPrivate::RomType::NDS,		// 0x00 == Nintendo DS
+			(int8_t)NintendoDSPrivate::RomType::NDS,		// 0x01 == invalid (assuming DS)
+			(int8_t)NintendoDSPrivate::RomType::DSi_Enhanced,	// 0x02 == DSi-enhanced
+			(int8_t)NintendoDSPrivate::RomType::DSi_Exclusive,	// 0x03 == DSi-only
 		};
 		return nds_romType[romHeader->unitcode & 3];
 	} else if (!memcmp(romHeader->nintendo_logo, nintendo_ds_logo_slot2, sizeof(nintendo_ds_logo_slot2)) &&
 		   romHeader->nintendo_logo_checksum == cpu_to_le16(0x9E1A)) {
 		// Nintendo logo is valid. (Slot-2)
 		// NOTE: Slot-2 is NDS only.
-		return NintendoDSPrivate::ROM_NDS_SLOT2;
+		return static_cast<int>(NintendoDSPrivate::RomType::NDS_Slot2);
 	}
 
 	// Not supported.
-	return NintendoDSPrivate::ROM_UNKNOWN;
+	return static_cast<int>(NintendoDSPrivate::RomType::Unknown);
 }
 
 /**
@@ -899,7 +900,7 @@ const char *NintendoDS::systemName(unsigned int type) const
 	// "iQue" is only used if the localized system name is requested
 	// *and* the ROM's region code is China only.
 	unsigned int idx = (type & SYSNAME_TYPE_MASK);
-	if (d->romType == NintendoDSPrivate::ROM_DSi_ONLY) {
+	if (d->romType == NintendoDSPrivate::RomType::DSi_Exclusive) {
 		// DSi-exclusive game.
 		idx |= (1U << 2);
 		if ((type & SYSNAME_REGION_MASK) == SYSNAME_REGION_ROM_LOCAL) {
@@ -1093,7 +1094,7 @@ int NintendoDS::loadFieldData(void)
 	} else if (!d->file) {
 		// File isn't open.
 		return -EBADF;
-	} else if (!d->isValid || d->romType < 0) {
+	} else if (!d->isValid || (int)d->romType < 0) {
 		// ROM image isn't valid.
 		return -EIO;
 	}
@@ -1140,7 +1141,7 @@ int NintendoDS::loadFieldData(void)
 	} else {
 		// TODO: Identify NDS Download Play titles.
 		switch (d->romType) {
-			case NintendoDSPrivate::ROM_NDS_SLOT2:
+			case NintendoDSPrivate::RomType::NDS_Slot2:
 				nds_romType = "Slot-2 (PassMe)";
 				break;
 			default:
@@ -1490,7 +1491,7 @@ int NintendoDS::loadMetaData(void)
 	} else if (!d->file) {
 		// File isn't open.
 		return -EBADF;
-	} else if (!d->isValid || d->romType < 0) {
+	} else if (!d->isValid || (int)d->romType < 0) {
 		// ROM image isn't valid.
 		return -EIO;
 	}
@@ -1594,7 +1595,7 @@ int NintendoDS::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size)
 
 	// Check for DS ROMs that don't have boxart.
 	RP_D(const NintendoDS);
-	if (!d->isValid || d->romType < 0) {
+	if (!d->isValid || (int)d->romType < 0) {
 		// ROM image isn't valid.
 		return -EIO;
 	} else if (!memcmp(d->romHeader.id4, "NTRJ", 4) ||
