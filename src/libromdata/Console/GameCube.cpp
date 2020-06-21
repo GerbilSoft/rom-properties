@@ -113,12 +113,6 @@ class GameCubePrivate : public RomDataPrivate
 		uint32_t gcnRegion;
 		bool hasRegionCode;
 
-		enum WiiPartitionType {
-			PARTITION_GAME = 0,
-			PARTITION_UPDATE = 1,
-			PARTITION_CHANNEL = 2,
-		};
-
 		/**
 		 * Wii partition tables.
 		 * Decoded from the actual on-disc tables.
@@ -379,10 +373,10 @@ int GameCubePrivate::loadWiiPartitionTables(void)
 		iter->partition = new WiiPartition(discReader, iter->start, iter->size,
 			(WiiPartition::CryptoMethod)cryptoMethod);
 
-		if (iter->type == PARTITION_UPDATE && !updatePartition) {
+		if (iter->type == RVL_PT_UPDATE && !updatePartition) {
 			// System Update partition.
 			updatePartition = iter->partition;
-		} else if (iter->type == PARTITION_GAME && !gamePartition) {
+		} else if (iter->type == RVL_PT_GAME && !gamePartition) {
 			// Game partition.
 			gamePartition = iter->partition;
 		}
@@ -1768,14 +1762,14 @@ int GameCube::loadFieldData(void)
 			// Partition type.
 			string s_ptype;
 			static const char *const part_type_tbl[3] = {
-				// tr: GameCubePrivate::PARTITION_GAME
+				// tr: GameCubePrivate::RVL_PT_GAME (Game partition)
 				NOP_C_("GameCube|Partition", "Game"),
-				// tr: GameCubePrivate::PARTITION_UPDATE
+				// tr: GameCubePrivate::RVL_PT_UPDATE (Update partition)
 				NOP_C_("GameCube|Partition", "Update"),
-				// tr: GameCubePrivate::PARTITION_CHANNEL
+				// tr: GameCubePrivate::RVL_PT_CHANNEL (Channel partition)
 				NOP_C_("GameCube|Partition", "Channel"),
 			};
-			if (entry.type <= GameCubePrivate::PARTITION_CHANNEL) {
+			if (entry.type <= RVL_PT_CHANNEL) {
 				s_ptype = dpgettext_expr(RP_I18N_DOMAIN, "GameCube|Partition", part_type_tbl[entry.type]);
 			} else {
 				// If all four bytes are ASCII letters and/or numbers,
