@@ -44,15 +44,17 @@ class PlayStationSavePrivate : public RomDataPrivate
 
 	public:
 		// Save file type.
-		enum SaveType {
-			SAVE_TYPE_UNKNOWN = -1,	// Unknown save type.
+		enum class SaveType {
+			Unknown	= -1,
 
-			SAVE_TYPE_PSV = 0,	// PS1 on PS3 individual save file.
-			SAVE_TYPE_RAW,		// Raw blocks without header information
-			SAVE_TYPE_BLOCK,	// Prefixed by header of the first block (*.mcs, *.ps1)
-			SAVE_TYPE_54		// Prefixed by 54-byte header (*.mcb, *.mcx, *.pda, *.psx)
+			PSV = 0,	// PS1 on PS3 individual save file.
+			Raw,		// Raw blocks without header information
+			Block,		// Prefixed by header of the first block (*.mcs, *.ps1)
+			_54,		// Prefixed by 54-byte header (*.mcb, *.mcx, *.pda, *.psx)
+
+			Max
 		};
-		int saveType;
+		SaveType saveType;
 
 	public:
 		// Save file header.
@@ -79,7 +81,7 @@ class PlayStationSavePrivate : public RomDataPrivate
 PlayStationSavePrivate::PlayStationSavePrivate(PlayStationSave *q, IRpFile *file)
 	: super(q, file)
 	, iconAnimData(nullptr)
-	, saveType(SAVE_TYPE_UNKNOWN)
+	, saveType(SaveType::Unknown)
 {
 	// Clear the various headers.
 	memset(&mxh, 0, sizeof(mxh));
@@ -113,7 +115,8 @@ const rp_image *PlayStationSavePrivate::loadIcon(void)
 		return iconAnimData->frames[0];
 	}
 
-	if (saveType == SAVE_TYPE_UNKNOWN) {
+	if ((int)saveType < 0) {
+		// Invalid save type...
 		return nullptr;
 	}
 
@@ -219,22 +222,22 @@ PlayStationSave::PlayStationSave(IRpFile *file)
 	info.header.pData = header;
 	info.ext = nullptr;	// Not needed for PS1.
 	info.szFile = file->size();
-	d->saveType = isRomSupported(&info);
+	d->saveType = static_cast<PlayStationSavePrivate::SaveType>(isRomSupported(&info));
 
 	switch (d->saveType) {
-		case PlayStationSavePrivate::SAVE_TYPE_PSV:
+		case PlayStationSavePrivate::SaveType::PSV:
 			// PSV (PS1 on PS3)
 			memcpy(&d->mxh.psvHeader, header, sizeof(d->mxh.psvHeader));
 			memcpy(&d->scHeader, &header[sizeof(d->mxh.psvHeader)], sizeof(d->scHeader));
 			break;
-		case PlayStationSavePrivate::SAVE_TYPE_RAW:
+		case PlayStationSavePrivate::SaveType::Raw:
 			memcpy(&d->scHeader, header, sizeof(d->scHeader));
 			break;
-		case PlayStationSavePrivate::SAVE_TYPE_BLOCK:
+		case PlayStationSavePrivate::SaveType::Block:
 			memcpy(&d->mxh.blockHeader, header, sizeof(d->mxh.blockHeader));
 			memcpy(&d->scHeader, &header[sizeof(d->mxh.blockHeader)], sizeof(d->scHeader));
 			break;
-		case PlayStationSavePrivate::SAVE_TYPE_54:
+		case PlayStationSavePrivate::SaveType::_54:
 			memcpy(&d->mxh.ps54Header, header, sizeof(d->mxh.ps54Header));
 			memcpy(&d->scHeader, &header[sizeof(d->mxh.ps54Header)], sizeof(d->scHeader));
 			break;
@@ -242,7 +245,7 @@ PlayStationSave::PlayStationSave(IRpFile *file)
 			// Unknown save type.
 			d->file->unref();
 			d->file = nullptr;
-			d->saveType = PlayStationSavePrivate::SAVE_TYPE_UNKNOWN;
+			d->saveType = PlayStationSavePrivate::SaveType::Unknown;
 			return;
 	}
 
@@ -266,7 +269,7 @@ int PlayStationSave::isRomSupported_static(const DetectInfo *info)
 	{
 		// Either no detection information was specified,
 		// or the header is too small.
-		return -1;
+		return static_cast<int>(PlayStationSavePrivate::SaveType::Unknown);
 	}
 
 	// Check for PSV+SC.
@@ -281,11 +284,11 @@ int PlayStationSave::isRomSupported_static(const DetectInfo *info)
 				reinterpret_cast<const PS1_PSV_Header*>(info->header.pData);
 			if (psvHeader->magic == cpu_to_be64(PS1_PSV_MAGIC)) {
 				// This is a PSV (PS1 on PS3) save file.
-				return PlayStationSavePrivate::SAVE_TYPE_PSV;
+				return static_cast<int>(PlayStationSavePrivate::SaveType::PSV);
 			}
 
 			// PSV magic is incorrect.
-			return -1;
+			return static_cast<int>(PlayStationSavePrivate::SaveType::Unknown);
 		}
 	}
 
@@ -304,7 +307,7 @@ int PlayStationSave::isRomSupported_static(const DetectInfo *info)
 			};
 			if (memcmp(header, block_magic, sizeof(block_magic)) != 0) {
 				// Block magic is incorrect.
-				return -1;
+				return static_cast<int>(PlayStationSavePrivate::SaveType::Unknown);
 			}
 
 			// Check the checksum
@@ -314,7 +317,7 @@ int PlayStationSave::isRomSupported_static(const DetectInfo *info)
 			}
 			if (checksum != 0) return -1;
 
-			return PlayStationSavePrivate::SAVE_TYPE_BLOCK;
+			return static_cast<int>(PlayStationSavePrivate::SaveType::Block);
 		}
 	}
 
@@ -327,7 +330,7 @@ int PlayStationSave::isRomSupported_static(const DetectInfo *info)
 		if (scHeader->magic == cpu_to_be16(PS1_SC_MAGIC)) {
 			// Extra filesize check to prevent false-positives
 			if (info->szFile % 8192 != 54) return -1;
-			return PlayStationSavePrivate::SAVE_TYPE_54;
+			return static_cast<int>(PlayStationSavePrivate::SaveType::_54);
 		}
 	}
 
@@ -336,12 +339,13 @@ int PlayStationSave::isRomSupported_static(const DetectInfo *info)
 		reinterpret_cast<const PS1_SC_Struct*>(info->header.pData);
 	if (scHeader->magic == cpu_to_be16(PS1_SC_MAGIC)) {
 		// Extra filesize check to prevent false-positives
-		if (info->szFile % 8192 != 0) return -1;
-		return PlayStationSavePrivate::SAVE_TYPE_RAW;
+		if (info->szFile % 8192 == 0) {
+			return static_cast<int>(PlayStationSavePrivate::SaveType::Raw);
+		}
 	}
 
 	// Not supported.
-	return -1;
+	return static_cast<int>(PlayStationSavePrivate::SaveType::Unknown);
 }
 
 /**
@@ -502,7 +506,7 @@ int PlayStationSave::loadFieldData(void)
 	} else if (!d->file) {
 		// File isn't open.
 		return -EBADF;
-	} else if (!d->isValid) {
+	} else if (!d->isValid || (int)d->saveType < 0) {
 		// ROM image isn't valid.
 		return -EIO;
 	}
@@ -513,16 +517,18 @@ int PlayStationSave::loadFieldData(void)
 
 	// Filename.
 	const char* filename = nullptr;
-	switch(d->saveType) {
-	case PlayStationSavePrivate::SAVE_TYPE_PSV:
-		filename = d->mxh.psvHeader.filename;
-		break;
-	case PlayStationSavePrivate::SAVE_TYPE_BLOCK:
-		filename = d->mxh.blockHeader.filename;
-		break;
-	case PlayStationSavePrivate::SAVE_TYPE_54:
-		filename = d->mxh.ps54Header.filename;
-		break;
+	switch (d->saveType) {
+		case PlayStationSavePrivate::SaveType::PSV:
+			filename = d->mxh.psvHeader.filename;
+			break;
+		case PlayStationSavePrivate::SaveType::Block:
+			filename = d->mxh.blockHeader.filename;
+			break;
+		case PlayStationSavePrivate::SaveType::_54:
+			filename = d->mxh.ps54Header.filename;
+			break;
+		default:
+			break;
 	}
 
 	if (filename) {
