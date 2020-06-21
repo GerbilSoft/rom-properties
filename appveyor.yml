@@ -63,4 +63,4 @@ test_script:
 
 after_test:
   - cd %APPVEYOR_BUILD_FOLDER%\build
-  - appveyor-artifacts.cmd
+  - ..\appveyor-artifacts.cmd
