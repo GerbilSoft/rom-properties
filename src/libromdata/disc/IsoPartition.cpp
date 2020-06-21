@@ -85,7 +85,7 @@ IsoPartitionPrivate::IsoPartitionPrivate(IsoPartition *q,
 	// Load the primary volume descriptor.
 	// TODO: Assuming this is the first one.
 	// Check for multiple?
-	size_t size = q->m_discReader->seekAndRead(partition_offset + 0x8000, &pvd, sizeof(pvd));
+	size_t size = q->m_discReader->seekAndRead(partition_offset + ISO_PVD_ADDRESS_2048, &pvd, sizeof(pvd));
 	if (size != sizeof(pvd)) {
 		// Seek and/or read error.
 		q->m_discReader = nullptr;
@@ -93,8 +93,7 @@ IsoPartitionPrivate::IsoPartitionPrivate(IsoPartition *q,
 	}
 
 	// Verify the signature and volume descriptor type.
-	if (pvd.header.type != ISO_VDT_PRIMARY ||
-	    pvd.header.version != ISO_VD_VERSION ||
+	if (pvd.header.type != ISO_VDT_PRIMARY || pvd.header.version != ISO_VD_VERSION ||
 	    memcmp(pvd.header.identifier, ISO_VD_MAGIC, sizeof(pvd.header.identifier)) != 0)
 	{
 		// Invalid volume descriptor.
@@ -123,7 +122,7 @@ int IsoPartitionPrivate::loadRootDirectory(void)
 		// DiscReader isn't open.
 		q->m_lastError = EIO;
 		return -q->m_lastError;
-	} else if (unlikely(pvd.header.type != ISO_VDT_PRIMARY)) {
+	} else if (unlikely(pvd.header.type != ISO_VDT_PRIMARY || pvd.header.version != ISO_VD_VERSION)) {
 		// PVD isn't loaded.
 		q->m_lastError = EIO;
 		return -q->m_lastError;

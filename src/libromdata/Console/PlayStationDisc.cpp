@@ -16,6 +16,7 @@ using LibRpFile::IRpFile;
 using LibRpFile::RpFile;
 
 // IsoPartition
+#include "../cdrom_structs.h"
 #include "../iso_structs.h"
 #include "../disc/Cdrom2352Reader.hpp"
 #include "../disc/IsoPartition.hpp"
@@ -284,7 +285,7 @@ PlayStationDisc::PlayStationDisc(IRpFile *file)
 		d->file = nullptr;
 		return;
 	}
-	if (d->pvd.header.type == ISO_VDT_PRIMARY &&
+	if (d->pvd.header.type == ISO_VDT_PRIMARY && d->pvd.header.version == ISO_VD_VERSION &&
 	    !memcmp(d->pvd.header.identifier, ISO_VD_MAGIC, sizeof(d->pvd.header.identifier)))
 	{
 		// Disc has 2048-byte sectors.
@@ -292,13 +293,22 @@ PlayStationDisc::PlayStationDisc(IRpFile *file)
 		discReader = new DiscReader(d->file);
 	} else {
 		// Check for a PVD with 2352-byte sectors.
-		size_t size = d->file->seekAndRead(ISO_PVD_ADDRESS_2352, &d->pvd, sizeof(d->pvd));
-		if (size != sizeof(d->pvd)) {
+		CDROM_2352_Sector_t sector;
+		size_t size = d->file->seekAndRead(ISO_PVD_ADDRESS_2352, &sector, sizeof(sector));
+		if (size != sizeof(sector)) {
 			d->file->unref();
 			d->file = nullptr;
 			return;
 		}
-		if (d->pvd.header.type == ISO_VDT_PRIMARY &&
+
+		// Data start offset depends on whether it's Mode 1 or Mode 2.
+		if (sector.mode == 2) {
+			memcpy(&d->pvd, sector.m2xa_f1.data, sizeof(d->pvd));
+		} else {
+			memcpy(&d->pvd, sector.m1.data, sizeof(d->pvd));
+		}
+
+		if (d->pvd.header.type == ISO_VDT_PRIMARY && d->pvd.header.version == ISO_VD_VERSION &&
 		    !memcmp(d->pvd.header.identifier, ISO_VD_MAGIC, sizeof(d->pvd.header.identifier)))
 		{
 			// Disc has 2352-byte sectors.

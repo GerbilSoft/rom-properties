@@ -29,6 +29,7 @@ extern "C" {
 // Data offsets.
 #define ISO_DATA_OFFSET_MODE1_RAW    16
 #define ISO_DATA_OFFSET_MODE1_COOKED 0
+#define ISO_DATA_OFFSET_MODE2_XA     (16+8)
 
 // strD: [A-Z0-9_]
 // strA: strD plus: ! " % & ' ( ) * + , - . / : ; < = > ?
