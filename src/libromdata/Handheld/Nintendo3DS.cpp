@@ -2673,18 +2673,33 @@ int Nintendo3DS::loadInternalImage(ImageType imageType, const rp_image **pImage)
 	ASSERT_loadInternalImage(imageType, pImage);
 
 	RP_D(Nintendo3DS);
-	if (d->romType == Nintendo3DSPrivate::ROM_TYPE_CIA) {
-		// TMD needs to be loaded so we can check if it's a DSiWare SRL.
-		if (!(d->headers_loaded & Nintendo3DSPrivate::HEADER_TMD)) {
-			d->loadTicketAndTMD();
-		}
-		if (d->sbptr.srl.data) {
-			// This is a DSiWare SRL.
-			// Get the image from the underlying SRL.
-			const rp_image *image = d->sbptr.srl.data->image(imageType);
-			*pImage = image;
-			return (image ? 0 : -EIO);
-		}
+	switch (d->romType) {
+		default:
+		case Nintendo3DSPrivate::ROM_TYPE_UNKNOWN:
+		case Nintendo3DSPrivate::ROM_TYPE_eMMC:
+			// Cannot get external images for eMMC and unknown ROM types.
+			return -ENOENT;
+
+		case Nintendo3DSPrivate::ROM_TYPE_CIA:
+			// TMD needs to be loaded so we can check if it's a DSiWare SRL.
+			if (!(d->headers_loaded & Nintendo3DSPrivate::HEADER_TMD)) {
+				d->loadTicketAndTMD();
+			}
+			if (d->sbptr.srl.data) {
+				// This is a DSiWare SRL.
+				// Get the image from the underlying SRL.
+				const rp_image *image = d->sbptr.srl.data->image(imageType);
+				*pImage = image;
+				return (image ? 0 : -EIO);
+			}
+			// Assume it's a regular 3DS CIA which has internal images.
+			break;
+
+		case Nintendo3DSPrivate::ROM_TYPE_3DSX:
+		case Nintendo3DSPrivate::ROM_TYPE_CCI:
+		case Nintendo3DSPrivate::ROM_TYPE_NCCH:
+			// Internal images are available.
+			break;
 	}
 
 	// TODO: Specify the icon index.
@@ -2747,19 +2762,36 @@ int Nintendo3DS::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size
 	pExtURLs->clear();
 
 	RP_D(const Nintendo3DS);
-	if (!d->isValid || d->romType < 0) {
+	if (!d->isValid) {
 		// ROM image isn't valid.
 		return -EIO;
-	} else if (d->romType == Nintendo3DSPrivate::ROM_TYPE_CIA) {
-		// TMD needs to be loaded so we can check if it's a DSiWare SRL.
-		if (!(d->headers_loaded & Nintendo3DSPrivate::HEADER_TMD)) {
-			const_cast<Nintendo3DSPrivate*>(d)->loadTicketAndTMD();
-		}
-		if (d->sbptr.srl.data) {
-			// This is a DSiWare SRL.
-			// Get the image URLs from the underlying SRL.
-			return d->sbptr.srl.data->extURLs(imageType, pExtURLs, size);
-		}
+	}
+
+	switch (d->romType) {
+		default:
+		case Nintendo3DSPrivate::ROM_TYPE_UNKNOWN:
+		case Nintendo3DSPrivate::ROM_TYPE_eMMC:
+		case Nintendo3DSPrivate::ROM_TYPE_3DSX:
+			// Cannot get external images for eMMC, 3DSX, and unknown ROM types.
+			return -ENOENT;
+
+		case Nintendo3DSPrivate::ROM_TYPE_CIA:
+			// TMD needs to be loaded so we can check if it's a DSiWare SRL.
+			if (!(d->headers_loaded & Nintendo3DSPrivate::HEADER_TMD)) {
+				const_cast<Nintendo3DSPrivate*>(d)->loadTicketAndTMD();
+			}
+			if (d->sbptr.srl.data) {
+				// This is a DSiWare SRL.
+				// Get the image URLs from the underlying SRL.
+				return d->sbptr.srl.data->extURLs(imageType, pExtURLs, size);
+			}
+			// Assume it's a regular 3DS CIA which has external images.
+			break;
+
+		case Nintendo3DSPrivate::ROM_TYPE_CCI:
+		case Nintendo3DSPrivate::ROM_TYPE_NCCH:
+			// External images are available.
+			break;
 	}
 
 	// Make sure the NCCH header is loaded.
