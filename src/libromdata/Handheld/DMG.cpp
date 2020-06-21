@@ -54,6 +54,7 @@ class DMGPrivate : public RomDataPrivate
 			DMG_FEATURE_BATTERY	= (1U << 1),
 			DMG_FEATURE_TIMER	= (1U << 2),
 			DMG_FEATURE_RUMBLE	= (1U << 3),
+			DMG_FEATURE_TILT	= (1U << 4),
 		};
 
 		/** Internal ROM data. **/
@@ -233,7 +234,7 @@ const DMGPrivate::dmg_cart_type DMGPrivate::dmg_cart_types_start[] = {
 	{DMG_Hardware::Unknown,	0},
 	{DMG_Hardware::MBC6,	0},
 	{DMG_Hardware::Unknown,	0},
-	{DMG_Hardware::MBC7,	DMG_FEATURE_RUMBLE|DMG_FEATURE_RAM|DMG_FEATURE_BATTERY},
+	{DMG_Hardware::MBC7,	DMG_FEATURE_TILT|DMG_FEATURE_RAM|DMG_FEATURE_BATTERY},
 };
 
 const DMGPrivate::dmg_cart_type DMGPrivate::dmg_cart_types_end[] = {
@@ -914,11 +915,12 @@ int DMG::loadFieldData(void)
 		NOP_C_("DMG|Features", "Battery"),
 		NOP_C_("DMG|Features", "Timer"),
 		NOP_C_("DMG|Features", "Rumble"),
+		NOP_C_("DMG|Features", "Tilt Sensor"),
 	};
 	vector<string> *const v_feature_bitfield_names = RomFields::strArrayToVector_i18n(
 		"DMG|Features", feature_bitfield_names, ARRAY_SIZE(feature_bitfield_names));
 	d->fields->addField_bitfield(C_("DMG", "Features"),
-		v_feature_bitfield_names, 0, DMGPrivate::CartType(romHeader->cart_type).features);
+		v_feature_bitfield_names, 3, DMGPrivate::CartType(romHeader->cart_type).features);
 
 	// ROM Size
 	const char *const rom_size_title = C_("DMG", "ROM Size");
