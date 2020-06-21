@@ -24,7 +24,7 @@ ROMDATA_IMPL(PlayStationEXE)
 class PlayStationEXEPrivate : public RomDataPrivate
 {
 	public:
-		PlayStationEXEPrivate(PlayStationEXE *q, IRpFile *file);
+		PlayStationEXEPrivate(PlayStationEXE *q, IRpFile *file, bool skipStack);
 
 	private:
 		typedef RomDataPrivate super;
@@ -34,12 +34,16 @@ class PlayStationEXEPrivate : public RomDataPrivate
 		// PS-X EXE header.
 		// NOTE: **NOT** byteswapped.
 		PS1_EXE_Header psxHeader;
+
+		// Skip stack fields?
+		bool skipStack;
 };
 
 /** PlayStationEXEPrivate **/
 
-PlayStationEXEPrivate::PlayStationEXEPrivate(PlayStationEXE *q, IRpFile *file)
+PlayStationEXEPrivate::PlayStationEXEPrivate(PlayStationEXE *q, IRpFile *file, bool skipStack)
 	: super(q, file)
+	, skipStack(skipStack)
 {
 	// Clear the structs.
 	memset(&psxHeader, 0, sizeof(psxHeader));
@@ -58,10 +62,10 @@ PlayStationEXEPrivate::PlayStationEXEPrivate(PlayStationEXE *q, IRpFile *file)
  *
  * NOTE: Check isValid() to determine if this is a valid ROM.
  *
- * @param file Open XBE file.
+ * @param file Open PS-X executable file.
  */
 PlayStationEXE::PlayStationEXE(IRpFile *file)
-	: super(new PlayStationEXEPrivate(this, file))
+	: super(new PlayStationEXEPrivate(this, file, false))
 {
 	// This class handles executables.
 	RP_D(PlayStationEXE);
@@ -73,6 +77,47 @@ PlayStationEXE::PlayStationEXE(IRpFile *file)
 		// Could not ref() the file handle.
 		return;
 	}
+
+	init();
+}
+
+/**
+ * Read a PlayStation PS-X executable file.
+ *
+ * A ROM image must be opened by the caller. The file handle
+ * will be ref()'d and must be kept open in order to load
+ * data from the disc image.
+ *
+ * To close the file, either delete this object or call close().
+ *
+ * NOTE: Check isValid() to determine if this is a valid ROM.
+ *
+ * @param file Open PS-X executable file.
+ * @param skipStack Skip stack fields.
+ */
+PlayStationEXE::PlayStationEXE(IRpFile *file, bool skipStack)
+	: super(new PlayStationEXEPrivate(this, file, skipStack))
+{
+	// This class handles executables.
+	RP_D(PlayStationEXE);
+	d->className = "PlayStationEXE";
+	d->mimeType = "application/x-ps1-executable";	// unofficial, not on fd.o
+	d->fileType = FileType::Executable;
+
+	if (!d->file) {
+		// Could not ref() the file handle.
+		return;
+	}
+
+	init();
+}
+
+/**
+ * Common initialization function for the constructors.
+ */
+void PlayStationEXE::init(void)
+{
+	RP_D(PlayStationEXE);
 
 	// Read the PS-X EXE header.
 	d->file->rewind();
@@ -227,7 +272,7 @@ int PlayStationEXE::loadFieldData(void)
 	// Parse the PS-X executable.
 	const PS1_EXE_Header *const psxHeader = &d->psxHeader;
 
-	d->fields->reserve(6);	// Maximum of 6 fields.
+	d->fields->reserve(d->skipStack ? 4 : 6);	// Maximum of 6 fields.
 	d->fields->setTabName(0, "PS1 EXE");
 
 	// RAM Address
@@ -245,15 +290,17 @@ int PlayStationEXE::loadFieldData(void)
 		le32_to_cpu(psxHeader->initial_gp), RomFields::Base::Hex, 8,
 		RomFields::STRF_MONOSPACE);
 
-	// Initial SP
-	d->fields->addField_string_numeric(C_("PlayStationEXE", "Initial SP/FP"),
-		le32_to_cpu(psxHeader->initial_sp), RomFields::Base::Hex, 8,
-		RomFields::STRF_MONOSPACE);
+	if (!d->skipStack) {
+		// Initial SP
+		d->fields->addField_string_numeric(C_("PlayStationEXE", "Initial SP/FP"),
+			le32_to_cpu(psxHeader->initial_sp), RomFields::Base::Hex, 8,
+			RomFields::STRF_MONOSPACE);
 
-	// Initial SP offset
-	d->fields->addField_string_numeric(C_("PlayStationEXE", "Initial SP Offset"),
-		le32_to_cpu(psxHeader->initial_sp_off), RomFields::Base::Hex, 8,
-		RomFields::STRF_MONOSPACE);
+		// Initial SP offset
+		d->fields->addField_string_numeric(C_("PlayStationEXE", "Initial SP Offset"),
+			le32_to_cpu(psxHeader->initial_sp_off), RomFields::Base::Hex, 8,
+			RomFields::STRF_MONOSPACE);
+	}
 
 	// Region
 	// To avoid shenanigans, we'll do a 16-bit XOR of the first part.

@@ -96,6 +96,9 @@ class PlayStationDiscPrivate : public LibRpBase::RomDataPrivate
 		// - ISO version number removed.
 		string boot_filename;
 
+		// Optional boot argument.
+		string boot_argument;
+
 		/**
 		 * Open the boot executable.
 		 * @return RomData* on success; nullptr on error.
@@ -202,7 +205,7 @@ int PlayStationDiscPrivate::loadSystemCnf(IsoPartition *pt)
 		// Short read.
 		return -EIO;
 	}
-	buf[static_cast<size_t>(fileSize)-1] = '\0';
+	buf[static_cast<size_t>(fileSize)] = '\0';
 
 	// Process the file.
 	// TODO: Fail on error?
@@ -238,9 +241,14 @@ RomData *PlayStationDiscPrivate::openBootExe(void)
 	if (f_bootExe) {
 		RomData *exeData = nullptr;
 		switch (consoleType) {
-			case ConsoleType::PS1:
-				exeData = new PlayStationEXE(f_bootExe);
+			case ConsoleType::PS1: {
+				// Check if we have a STACK override in system.cnf.
+				// TODO: Validate it and ignore it if it isn't valid?
+				auto iter = system_cnf.find("STACK");
+				bool skipStack = (iter != system_cnf.end());
+				exeData = new PlayStationEXE(f_bootExe, skipStack);
 				break;
+			}
 			case ConsoleType::PS2:
 				exeData = new ELF(f_bootExe);
 				break;
@@ -396,6 +404,16 @@ PlayStationDisc::PlayStationDisc(IRpFile *file)
 	} else {
 		d->boot_filename = bf_str;
 	}
+
+	// Check if there is a space.
+	pos = bf_str.find(' ');
+	if (pos != string::npos && pos > 0) {
+		// Found a space.
+		// Everything after the space is a boot argument.
+		d->boot_argument = d->boot_filename.substr(pos+1);
+		d->boot_filename.resize(pos-1);
+	}
+
 	// Remove the ISO version number.
 	size_t len = d->boot_filename.size();
 	if (len > 2) {
@@ -598,7 +616,7 @@ int PlayStationDisc::loadFieldData(void)
 	}
 
 	// TODO: Add actual fields.
-	d->fields->reserve(3);	// Maximum of 3 fields.
+	d->fields->reserve(4);	// Maximum of 4 fields.
 
 	const char *s_tab_name;
 	switch (d->consoleType) {
@@ -615,6 +633,48 @@ int PlayStationDisc::loadFieldData(void)
 	// Boot filename
 	d->fields->addField_string(C_("PlayStationDisc", "Boot Filename"), d->boot_filename);
 
+	// Boot argument, if present
+	if (!d->boot_argument.empty()) {
+		d->fields->addField_string(C_("PlayStationDisc", "Boot Argument"), d->boot_argument);
+	}
+
+	// Console-specific fields
+	uint32_t sp_override = 0;
+	switch (d->consoleType) {
+		default:
+		case PlayStationDiscPrivate::ConsoleType::PS1: {
+			// Max thread count
+			auto iter = d->system_cnf.find("TCB");
+			if (iter != d->system_cnf.end() && !iter->second.empty()) {
+				d->fields->addField_string(C_("PlayStationDisc", "Max Thread Count"), iter->second);
+			}
+
+			// Max event count
+			iter = d->system_cnf.find("EVENT");
+			if (iter != d->system_cnf.end() && !iter->second.empty()) {
+				d->fields->addField_string(C_("PlayStationDisc", "Max Event Count"), iter->second);
+			}
+
+			// Initial SP
+			// NOTE: This overrides the executable!
+			iter = d->system_cnf.find("STACK");
+			if (iter != d->system_cnf.end() && !iter->second.empty()) {
+				// Validate the value.
+				char *endptr = nullptr;
+				sp_override = strtoul(iter->second.c_str(), &endptr, 16);
+				if (*endptr != '\0') {
+					sp_override = 0;
+				}
+			}
+			break;
+		}
+
+		case PlayStationDiscPrivate::ConsoleType::PS2: {
+			// TODO
+			break;
+		}
+	}
+
 	// Boot file timestamp
 	time_t boot_file_timestamp = -1;
 	if (!d->boot_filename.empty()) {
@@ -625,6 +685,14 @@ int PlayStationDisc::loadFieldData(void)
 		boot_file_timestamp,
 		RomFields::RFT_DATETIME_HAS_DATE |
 		RomFields::RFT_DATETIME_HAS_TIME);
+
+	// PS1: Stack pointer override.
+	// TODO: Inject it into PlayStationEXE?
+	if (sp_override != 0) {
+		d->fields->addField_string_numeric(C_("PlayStationDisc", "Initial SP"),
+			sp_override, RomFields::Base::Hex, 8,
+			RomFields::STRF_MONOSPACE);
+	}
 
 	// Show a tab for the boot file.
 	RomData *const bootExeData = d->openBootExe();
