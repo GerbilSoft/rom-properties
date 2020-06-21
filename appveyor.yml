@@ -61,4 +61,7 @@ test_script:
   - cd %APPVEYOR_BUILD_FOLDER%\build
   - ctest -V -C %configuration%
 
-# TODO: Automatic packaging?
+# Artifacts.
+# Only MSVC release builds will be packaged.
+artifacts:
+  - path: '*.zip'
