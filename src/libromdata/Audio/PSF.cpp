@@ -139,7 +139,8 @@ unordered_map<string, string> PSFPrivate::parseTags(off64_t tag_addr)
 				// NOTE: Key is case-insensitive, so convert to lowercase.
 				// NOTE: Key *must* be ASCII.
 				string key(p, k_len);
-				std::transform(key.begin(), key.end(), key.begin(), ::tolower);
+				std::transform(key.begin(), key.end(), key.begin(),
+					[](unsigned char c) { return std::tolower(c); });
 				kv.insert(std::make_pair(key, string(eq+1, v_len)));
 
 				// Check for UTF-8.

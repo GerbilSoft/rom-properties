@@ -69,7 +69,8 @@ IRpFile *openRelatedFile(const char *filename, const char *basename, const char 
 
 	// Check for uppercase extensions first.
 	string s_ext = ext;
-	std::transform(s_ext.begin(), s_ext.end(), s_ext.begin(), ::toupper);
+	std::transform(s_ext.begin(), s_ext.end(), s_ext.begin(),
+		[](unsigned char c) { return std::toupper(c); });
 
 	// Attempt to open the related file.
 	string rel_filename = s_dir + s_basename + s_ext;
@@ -79,7 +80,8 @@ IRpFile *openRelatedFile(const char *filename, const char *basename, const char 
 		test_file->unref();
 
 		// Try again with a lowercase extension.
-		std::transform(s_ext.begin(), s_ext.end(), s_ext.begin(), ::tolower);
+		std::transform(s_ext.begin(), s_ext.end(), s_ext.begin(),
+			[](unsigned char c) { return std::tolower(c); });
 		rel_filename.replace(rel_filename.size() - s_ext.size(), s_ext.size(), s_ext);
 		test_file = new RpFile(rel_filename, RpFile::FM_OPEN_READ);
 		if (!test_file->isOpen()) {
