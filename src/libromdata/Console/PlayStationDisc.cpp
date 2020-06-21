@@ -403,14 +403,29 @@ PlayStationDisc::PlayStationDisc(IRpFile *file)
 		}
 	}
 
-	// Normalize the boot filename.
+	// Boot filename should start with:
+	// - cdrom: (PS1)
+	// - cdrom0: (PS2)
+	// There's usually a backslash after the colon, but some
+	// prototypes don't have it.
 	const auto &bf_str = iter->second;
-	size_t pos = bf_str.find(":\\");
-	if (pos != string::npos) {
-		d->boot_filename = bf_str.substr(pos+2);
-	} else {
-		d->boot_filename = bf_str;
+	size_t pos = 0;
+	if (!strncasecmp(bf_str.c_str(), "cdrom", 5)) {
+		pos = 5;
+		if (bf_str[pos] == '0') {
+			// "cdrom0"
+			pos++;
+		}
+		if (bf_str[pos] == ':') {
+			// "cdrom:" / "cdrom0:"
+			pos++;
+			if (bf_str[pos] == '\\') {
+				// "cdrom:\\" / "cdrom0:\\"
+				pos++;
+			}
+		}
 	}
+	d->boot_filename = bf_str.substr(pos);
 
 	// Check if there is a space.
 	pos = bf_str.find(' ');
