@@ -54,9 +54,10 @@ using std::vector;
 #include "Console/Xbox360_XDBF.hpp"
 #include "Console/Xbox360_XEX.hpp"
 
-// Special handling for Xbox discs.
+// Special handling for Xbox and PlayStation discs.
 #include "iso_structs.h"
 #include "Console/XboxDisc.hpp"
+#include "Console/PlayStationDisc.hpp"
 #include "disc/xdvdfs_structs.h"
 
 // RomData subclasses: Handhelds
@@ -465,6 +466,17 @@ RomData *RomDataFactoryPrivate::checkISO(IRpFile *file)
 		RomData *const romData = new XboxDisc(file);
 		if (romData->isValid()) {
 			// Got an Xbox disc.
+			return romData;
+		}
+		romData->unref();
+	}
+
+	// PlayStation 1 and 2.
+	if (PlayStationDisc::isRomSupported_static(&pvd) >= 0) {
+		// This might be a PS1 or PS2 disc.
+		RomData *const romData = new PlayStationDisc(file);
+		if (romData->isValid()) {
+			// Got a PS1 or PS2 disc.
 			return romData;
 		}
 		romData->unref();
