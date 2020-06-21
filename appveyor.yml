@@ -60,3 +60,7 @@ build_script:
 test_script:
   - cd %APPVEYOR_BUILD_FOLDER%\build
   - ctest -V -C %configuration%
+
+before_deploy:
+  - cd %APPVEYOR_BUILD_FOLDER%\build
+  - appveyor-artifacts.cmd
