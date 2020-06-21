@@ -23,6 +23,7 @@ using LibRpFile::RpFile;
 
 // Other RomData subclasses
 #include "Other/ISO.hpp"
+#include "Other/ELF.hpp"
 
 // inih for system.cnf
 #include "ini.h"
@@ -106,10 +107,9 @@ class PlayStationDiscPrivate : public LibRpBase::RomDataPrivate
 
 		/**
 		 * Open the boot executable.
-		 * @param pExeType	[out] EXE type.
 		 * @return RomData* on success; nullptr on error.
 		 */
-		RomData *openBootExe(ExeType *pExeType = nullptr);
+		RomData *openBootExe(void);
 
 		enum class ConsoleType {
 			Unknown	= -1,
@@ -223,16 +223,12 @@ int PlayStationDiscPrivate::loadSystemCnf(IsoPartition *pt)
 
 /**
  * Open the boot executable.
- * @param pExeType	[out] EXE type.
  * @return RomData* on success; nullptr on error.
  */
-RomData *PlayStationDiscPrivate::openBootExe(ExeType *pExeType)
+RomData *PlayStationDiscPrivate::openBootExe(void)
 {
 	if (bootExeData) {
 		// The boot executable is already open.
-		if (pExeType) {
-			*pExeType = exeType;
-		}
 		return bootExeData;
 	}
 
@@ -241,8 +237,41 @@ RomData *PlayStationDiscPrivate::openBootExe(ExeType *pExeType)
 		return nullptr;
 	}
 
-	// FIXME: Open the boot executable based on system.cnf.
-	// It should be a PS-X executable (PS1) or ELF executable (PS2).
+	if (boot_filename.empty()) {
+		// No boot filename...
+		return nullptr;
+	}
+
+	// Open the boot file.
+	// TODO: Do we need a leading slash?
+	IRpFile *f_bootExe = isoPartition->open(boot_filename.c_str());
+	if (f_bootExe) {
+		RomData *exeData = nullptr;
+		switch (consoleType) {
+			case ConsoleType::PS1:
+				// TODO
+				break;
+			case ConsoleType::PS2:
+				exeData = new ELF(f_bootExe);
+				break;
+			default:
+				assert(!"Console type not supported.");
+				break;
+		}
+		f_bootExe->unref();
+		if (exeData && exeData->isValid()) {
+			// Boot executable is open and valid.
+			bootExeData = exeData;
+			return exeData;
+		}
+
+		// Unable to open the executable.
+		if (exeData) {
+			exeData->unref();
+		}
+	}
+
+	// Unable to open the default executable.
 	return nullptr;
 }
 
@@ -599,6 +628,7 @@ int PlayStationDisc::loadFieldData(void)
 	// Boot file timestamp
 	time_t boot_file_timestamp = -1;
 	if (!d->boot_filename.empty()) {
+		// TODO: Do we need a leading slash?
 		boot_file_timestamp = d->isoPartition->get_mtime(d->boot_filename.c_str());
 	}
 	d->fields->addField_dateTime(C_("PlayStationDisc", "Boot File Time"),
@@ -606,7 +636,15 @@ int PlayStationDisc::loadFieldData(void)
 		RomFields::RFT_DATETIME_HAS_DATE |
 		RomFields::RFT_DATETIME_HAS_TIME);
 
-	// TODO: Show a tab for the PS-X or ELF executable.
+	// Show a tab for the boot file.
+	RomData *const bootExeData = d->openBootExe();
+	if (bootExeData) {
+		// Add the fields.
+		const RomFields *const exeFields = bootExeData->fields();
+		if (exeFields) {
+			d->fields->addFields_romFields(exeFields, RomFields::TabOffset_AddTabs);
+		}
+	}
 
 	// ISO object for ISO-9660 PVD
 	ISO *const isoData = new ISO(d->file);
