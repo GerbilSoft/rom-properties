@@ -60,8 +60,3 @@ build_script:
 test_script:
   - cd %APPVEYOR_BUILD_FOLDER%\build
   - ctest -V -C %configuration%
-
-# Artifacts.
-# Only MSVC release builds will be packaged.
-artifacts:
-  - path: '*.zip'

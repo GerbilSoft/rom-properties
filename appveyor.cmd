@@ -16,6 +16,8 @@ cd build
 cmake .. -G "%CMAKE_GENERATOR%" -DCMAKE_GENERATOR_TOOLSET=%CMAKE_GENERATOR_TOOLSET% -DENABLE_JPEG=ON -DBUILD_TESTING=ON -DENABLE_LTO=OFF -DENABLE_PCH=ON
 if ERRORLEVEL 1 exit /b %ERRORLEVEL%
 if "%configuration%" == "Release" cpack -C "%configuration%"
+if ERRORLEVEL 1 exit /b %ERRORLEVEL%
+if "%configuration%" == "Release" appveyor PushArtifact *.zip
 exit /b %ERRORLEVEL%
 
 :mingw-w64
