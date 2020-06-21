@@ -596,7 +596,15 @@ int PlayStationDisc::loadFieldData(void)
 	// Boot filename
 	d->fields->addField_string(C_("PlayStationDisc", "Boot Filename"), d->boot_filename);
 
-	// TODO: Boot file timestamp
+	// Boot file timestamp
+	time_t boot_file_timestamp = -1;
+	if (!d->boot_filename.empty()) {
+		boot_file_timestamp = d->isoPartition->get_mtime(d->boot_filename.c_str());
+	}
+	d->fields->addField_dateTime(C_("PlayStationDisc", "Boot File Time"),
+		boot_file_timestamp,
+		RomFields::RFT_DATETIME_HAS_DATE |
+		RomFields::RFT_DATETIME_HAS_TIME);
 
 	// TODO: Show a tab for the PS-X or ELF executable.
 

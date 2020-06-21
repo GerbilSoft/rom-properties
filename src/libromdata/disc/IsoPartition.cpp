@@ -53,6 +53,20 @@ class IsoPartitionPrivate
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
 		int loadRootDirectory(void);
+
+		/**
+		 * Look up a directory entry from a filename.
+		 * @param filename Filename
+		 * @return ISO directory entry.
+		 */
+		const ISO_DirEntry *lookup(const char *filename);
+
+		/**
+		 * Parse an ISO-9660 timestamp.
+		 * @param isofiletime File timestamp.
+		 * @return Unix time.
+		 */
+		time_t parseTimestamp(const ISO_Dir_DateTime_t *isofiletime);
 };
 
 /** IsoPartitionPrivate **/
@@ -180,6 +194,137 @@ int IsoPartitionPrivate::loadRootDirectory(void)
 
 	// Root directory loaded.
 	return 0;
+}
+
+/**
+ * Look up a directory entry from a filename.
+ * @param filename Filename
+ * @return ISO directory entry.
+ */
+const ISO_DirEntry *IsoPartitionPrivate::lookup(const char *filename)
+{
+	assert(filename != nullptr);
+	assert(filename[0] != '\0');
+	RP_Q(IsoPartition);
+
+	// Remove leading slashes.
+	while (*filename == '/') {
+		filename++;
+	}
+	if (filename[0] == 0) {
+		// Nothing but slashes...
+		q->m_lastError = EINVAL;
+		return nullptr;
+	}
+
+	// TODO: Which encoding?
+	// Assuming cp1252...
+	string s_filename = utf8_to_cp1252(filename, -1);
+
+	if (rootDir_data.empty()) {
+		// Root directory isn't loaded.
+		if (loadRootDirectory() != 0) {
+			// Root directory load failed.
+			q->m_lastError = EIO;
+			return nullptr;
+		}
+	}
+
+	// Find the file in the root directory.
+	// TODO: Support subdirectories.
+	// NOTE: Filenames are case-insensitive.
+	// NOTE: File might have a ";1" suffix.
+	const unsigned int filename_len = static_cast<unsigned int>(s_filename.size());
+	const ISO_DirEntry *dirEntry_found = nullptr;
+	const uint8_t *p = rootDir_data.data();
+	const uint8_t *const p_end = p + rootDir_data.size();
+	while (p < p_end) {
+		const ISO_DirEntry *dirEntry = reinterpret_cast<const ISO_DirEntry*>(p);
+		if (dirEntry->entry_length < sizeof(*dirEntry)) {
+			// End of directory.
+			break;
+		}
+
+		const char *entry_filename = reinterpret_cast<const char*>(p) + sizeof(*dirEntry);
+		if (entry_filename + dirEntry->filename_length > reinterpret_cast<const char*>(p_end)) {
+			// Filename is out of bounds.
+			break;
+		}
+
+		// Check the filename.
+		// 1990s and early 2000s CD-ROM games usually have
+		// ";1" filenames, so check for that first.
+		if (dirEntry->filename_length == filename_len + 2) {
+			// +2 length match.
+			// This might have ";1".
+			if (!strncasecmp(entry_filename, s_filename.c_str(), filename_len)) {
+				// Check for ";1".
+				// TODO: Also allow other version numbers?
+				if (entry_filename[filename_len]   == ';' &&
+				    entry_filename[filename_len+1] == '1')
+				{
+					// Found it!
+					dirEntry_found = dirEntry;
+					break;
+				}
+			}
+		} else if (dirEntry->filename_length == filename_len) {
+			// Exact length match.
+			if (!strncasecmp(entry_filename, s_filename.c_str(), filename_len)) {
+				// Found it!
+				dirEntry_found = dirEntry;
+				break;
+			}
+		}
+
+		// Next entry.
+		p += dirEntry->entry_length;
+	}
+
+	if (!dirEntry_found) {
+		q->m_lastError = ENOENT;
+	}
+	return dirEntry_found;
+}
+
+/**
+ * Parse an ISO-9660 timestamp.
+ * @param isofiletime File timestamp.
+ * @return Unix time.
+ */
+time_t IsoPartitionPrivate::parseTimestamp(const ISO_Dir_DateTime_t *isofiletime)
+{
+	// Convert to Unix time.
+	// NOTE: struct tm has some oddities:
+	// - tm_year: year - 1900
+	// - tm_mon: 0 == January
+	struct tm isotime;
+
+	isotime.tm_year = isofiletime->year;
+	isotime.tm_mon  = isofiletime->month - 1;
+	isotime.tm_mday = isofiletime->day;
+
+	isotime.tm_hour = isofiletime->hour;
+	isotime.tm_min = isofiletime->minute;
+	isotime.tm_sec = isofiletime->second;
+
+	// tm_wday and tm_yday are output variables.
+	isotime.tm_wday = 0;
+	isotime.tm_yday = 0;
+	isotime.tm_isdst = 0;
+
+	// If conversion fails, this will return -1.
+	time_t unixtime = timegm(&isotime);
+	if (unixtime == -1) {
+		return unixtime;
+	}
+
+	// Adjust for the timezone offset.
+	// NOTE: Restricting to [-52, 52] as per the Linux kernel's isofs module.
+	if (-52 <= isofiletime->tz_offset && isofiletime->tz_offset <= 52) {
+		unixtime -= (static_cast<int>(isofiletime->tz_offset) * (15*60));
+	}
+	return unixtime;
 }
 
 /** IsoPartition **/
@@ -391,98 +536,26 @@ IRpFile *IsoPartition::open(const char *filename)
 		return nullptr;
 	}
 
-	// TODO: File reference counter.
-	// This might be difficult to do because PartitionFile is a separate class.
-
-	// TODO: Support subdirectories.
-
+	assert(filename != nullptr);
 	if (!filename || filename[0] == 0) {
 		// No filename.
 		m_lastError = EINVAL;
 		return nullptr;
 	}
 
-	// Remove leading slashes.
-	while (*filename == '/') {
-		filename++;
-	}
-	if (filename[0] == 0) {
-		// Nothing but slashes...
-		return nullptr;
-	}
-
-	// TODO: Which encoding?
-	// Assuming cp1252...
-	string s_filename = utf8_to_cp1252(filename, -1);
-
-	if (d->rootDir_data.empty()) {
-		// Root directory isn't loaded.
-		if (d->loadRootDirectory() != 0) {
-			// Root directory load failed.
-			m_lastError = EIO;
-			return nullptr;
-		}
-	}
-
-	// Find the file in the root directory.
-	// NOTE: Filenames are case-insensitive.
-	// NOTE: File might have a ";1" suffix.
-	const unsigned int filename_len = static_cast<unsigned int>(s_filename.size());
-	const ISO_DirEntry *dirEntry_found = nullptr;
-	const uint8_t *p = d->rootDir_data.data();
-	const uint8_t *const p_end = p + d->rootDir_data.size();
-	while (p < p_end) {
-		const ISO_DirEntry *dirEntry = reinterpret_cast<const ISO_DirEntry*>(p);
-		if (dirEntry->entry_length < sizeof(*dirEntry)) {
-			// End of directory.
-			break;
-		}
-
-		const char *entry_filename = reinterpret_cast<const char*>(p) + sizeof(*dirEntry);
-		if (entry_filename + dirEntry->filename_length > reinterpret_cast<const char*>(p_end)) {
-			// Filename is out of bounds.
-			break;
-		}
-
-		// Check the filename.
-		// 1990s and early 2000s CD-ROM games usually have
-		// ";1" filenames, so check for that first.
-		if (dirEntry->filename_length == filename_len + 2) {
-			// +2 length match.
-			// This might have ";1".
-			if (!strncasecmp(entry_filename, s_filename.c_str(), filename_len)) {
-				// Check for ";1".
-				if (entry_filename[filename_len]   == ';' &&
-				    entry_filename[filename_len+1] == '1')
-				{
-					// Found it!
-					dirEntry_found = dirEntry;
-					break;
-				}
-			}
-		} else if (dirEntry->filename_length == filename_len) {
-			// Exact length match.
-			if (!strncasecmp(entry_filename, s_filename.c_str(), filename_len)) {
-				// Found it!
-				dirEntry_found = dirEntry;
-				break;
-			}
-		}
-
-		// Next entry.
-		p += dirEntry->entry_length;
-	}
-
-	if (!dirEntry_found) {
+	// TODO: File reference counter.
+	// This might be difficult to do because PartitionFile is a separate class.
+	const ISO_DirEntry *const dirEntry = d->lookup(filename);
+	if (!dirEntry) {
 		// Not found.
 		return nullptr;
 	}
 
 	// Make sure this is a regular file.
 	// TODO: What is an "associated" file?
-	if (dirEntry_found->flags & (ISO_FLAG_ASSOCIATED | ISO_FLAG_DIRECTORY)) {
+	if (dirEntry->flags & (ISO_FLAG_ASSOCIATED | ISO_FLAG_DIRECTORY)) {
 		// Not a regular file.
-		m_lastError = ((dirEntry_found->flags & ISO_FLAG_DIRECTORY) ? EISDIR : EPERM);
+		m_lastError = ((dirEntry->flags & ISO_FLAG_DIRECTORY) ? EISDIR : EPERM);
 		return nullptr;
 	}
 
@@ -491,9 +564,9 @@ IRpFile *IsoPartition::open(const char *filename)
 	const unsigned int block_size = d->pvd.logical_block_size.he;
 
 	// Make sure the file is in bounds.
-	const off64_t file_addr = (static_cast<off64_t>(dirEntry_found->block.he) - d->iso_start_offset) * block_size;
+	const off64_t file_addr = (static_cast<off64_t>(dirEntry->block.he) - d->iso_start_offset) * block_size;
 	if (file_addr >= d->partition_size + d->partition_offset ||
-	    file_addr > d->partition_size + d->partition_offset - dirEntry_found->size.he)
+	    file_addr > d->partition_size + d->partition_offset - dirEntry->size.he)
 	{
 		// File is out of bounds.
 		m_lastError = EIO;
@@ -504,7 +577,41 @@ IRpFile *IsoPartition::open(const char *filename)
 	// This is an IRpFile implementation that uses an
 	// IPartition as the reader and takes an offset
 	// and size as the file parameters.
-	return new PartitionFile(this, file_addr, dirEntry_found->size.he);
+	return new PartitionFile(this, file_addr, dirEntry->size.he);
+}
+
+/**
+ * Get a file's timestamp.
+ * @param filename Filename.
+ * @return Timestamp, or -1 on error.
+ */
+time_t IsoPartition::get_mtime(const char *filename)
+{
+	RP_D(IsoPartition);
+	assert(m_discReader != nullptr);
+	assert(m_discReader->isOpen());
+	if (!m_discReader ||  !m_discReader->isOpen()) {
+		m_lastError = EBADF;
+		return -1;
+	}
+
+	assert(filename != nullptr);
+	if (!filename || filename[0] == 0) {
+		// No filename.
+		m_lastError = EINVAL;
+		return -1;
+	}
+
+	// TODO: File reference counter.
+	// This might be difficult to do because PartitionFile is a separate class.
+	const ISO_DirEntry *const dirEntry = d->lookup(filename);
+	if (!dirEntry) {
+		// Not found.
+		return -1;
+	}
+
+	// Parse the timestamp.
+	return d->parseTimestamp(&dirEntry->mtime);
 }
 
 }
