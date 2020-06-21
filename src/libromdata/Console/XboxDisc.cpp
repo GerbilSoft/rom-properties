@@ -75,7 +75,7 @@ class XboxDiscPrivate : public LibRpBase::RomDataPrivate
 			XBE	= 0,	// Xbox XBE
 			XEX	= 1,	// Xbox 360 XEX
 
-			MAX
+			Max
 		};
 		ExeType exeType;
 
