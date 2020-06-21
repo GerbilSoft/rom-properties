@@ -28,6 +28,7 @@ SET(libromdata_SRCS
 	Console/N64.cpp
 	Console/NES.cpp
 	Console/PlayStationDisc.cpp
+	Console/PlayStationEXE.cpp
 	Console/PlayStationSave.cpp
 	Console/Sega8Bit.cpp
 	Console/SegaSaturn.cpp
@@ -135,6 +136,7 @@ SET(libromdata_H
 	Console/N64.hpp
 	Console/NES.hpp
 	Console/PlayStationDisc.hpp
+	Console/PlayStationEXE.cpp
 	Console/PlayStationSave.hpp
 	Console/Sega8Bit.hpp
 	Console/SegaSaturn.hpp
@@ -160,6 +162,7 @@ SET(libromdata_H
 	Console/n64_structs.h
 	Console/nes_structs.h
 	Console/ps1_structs.h
+	Console/ps1_exe_structs.h
 	Console/saturn_structs.h
 	Console/sega8_structs.h
 	Console/snes_structs.h

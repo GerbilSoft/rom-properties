@@ -287,6 +287,16 @@
     </magic>
   </mime-type>
 
+  <!-- PlayStationEXE -->
+  <mime-type type="application/x-ps1-executable">
+    <comment>PlayStation executable</comment>
+    <sub-class-of type="application/octet-stream"/>
+    <generic-icon name="application-octet-stream"/>
+    <magic priority="50">
+      <match value="PS-X EXE" type="string" offset="0"/>
+    </magic>
+  </mime-type>
+
   <!-- PlayStationSave -->
   <mime-type type="application/x-ps1-save">
     <comment>PlayStation save file</comment>
