@@ -409,26 +409,41 @@ PlayStationDisc::PlayStationDisc(IRpFile *file)
 	// There's usually a backslash after the colon, but some
 	// prototypes don't have it.
 	const auto &bf_str = iter->second;
-	size_t pos = 0;
-	if (!strncasecmp(bf_str.c_str(), "cdrom", 5)) {
-		pos = 5;
-		if (bf_str[pos] == '0') {
-			// "cdrom0"
-			pos++;
-		}
-		if (bf_str[pos] == ':') {
-			// "cdrom:" / "cdrom0:"
-			pos++;
-			if (bf_str[pos] == '\\') {
-				// "cdrom:\\" / "cdrom0:\\"
+	if (!bf_str.empty()) {
+		size_t pos = 0;
+		if (!strncasecmp(bf_str.c_str(), "cdrom", 5)) {
+			pos = 5;
+			if (bf_str[pos] == '0') {
+				// "cdrom0"
 				pos++;
 			}
+			if (bf_str[pos] == ':') {
+				// "cdrom:" / "cdrom0:"
+				pos++;
+				if (bf_str[pos] == '\\') {
+					// "cdrom:\\" / "cdrom0:\\"
+					pos++;
+				}
+			}
+		}
+		d->boot_filename = bf_str.substr(pos);
+	}
+	if (d->boot_filename.empty()) {
+		// No boot filename specified.
+		// Use the console-specific default.
+		switch (consoleType) {
+			default:
+			case PlayStationDiscPrivate::ConsoleType::PS1:
+				d->boot_filename = "PSX.EXE";
+				break;
+			case PlayStationDiscPrivate::ConsoleType::PS2:
+				// TODO: Default PS2 boot filename?
+				break;
 		}
 	}
-	d->boot_filename = bf_str.substr(pos);
 
 	// Check if there is a space.
-	pos = bf_str.find(' ');
+	size_t pos = bf_str.find(' ');
 	if (pos != string::npos && pos > 0) {
 		// Found a space.
 		// Everything after the space is a boot argument.
@@ -660,7 +675,6 @@ int PlayStationDisc::loadFieldData(void)
 	}
 
 	// Console-specific fields
-	uint32_t sp_override = 0;
 	switch (d->consoleType) {
 		default:
 		case PlayStationDiscPrivate::ConsoleType::PS1: {
