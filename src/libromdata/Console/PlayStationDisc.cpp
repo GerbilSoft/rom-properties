@@ -630,9 +630,17 @@ int PlayStationDisc::loadFieldData(void)
 	RomData *const bootExeData = d->openBootExe();
 	if (bootExeData) {
 		// Add the fields.
+		// NOTE: Adding tabs manually so we can show the disc info in
+		// the primary tab.
 		const RomFields *const exeFields = bootExeData->fields();
 		if (exeFields) {
-			d->fields->addFields_romFields(exeFields, RomFields::TabOffset_AddTabs);
+			int exeTabCount = exeFields->tabCount();
+			for (int i = 1; i < exeTabCount; i++) {
+				d->fields->setTabName(i, exeFields->tabName(i));
+			}
+			d->fields->setTabIndex(0);
+			d->fields->addFields_romFields(exeFields, 0);
+			d->fields->setTabIndex(exeTabCount - 1);
 		}
 	}
 
