@@ -891,32 +891,39 @@ int GameCubeSave::loadFieldData(void)
 			direntry->filename, sizeof(direntry->filename)));
 
 	// Description.
-	char desc_buf[64];
+	union {
+		struct {
+			char desc[32];
+			char file[32];
+		};
+		char full[64];
+	} comment;
 	size_t size = d->file->seekAndRead(d->dataOffset + direntry->commentaddr,
-					   desc_buf, sizeof(desc_buf));
-	if (size == sizeof(desc_buf)) {
+					   &comment, sizeof(comment));
+	if (size == sizeof(comment)) {
 		// Add the description.
 		// NOTE: Some games have garbage after the first NULL byte
 		// in the two description fields, which prevents the rest
 		// of the field from being displayed.
 
 		// Check for a NULL byte in the game description.
-		int desc_len = 32;
-		const char *null_pos = static_cast<const char*>(memchr(desc_buf, 0, 32));
+		size_t desc_len = sizeof(comment.desc);
+		const char *null_pos = static_cast<const char*>(memchr(comment.desc, 0, desc_len));
 		if (null_pos) {
 			// Found a NULL byte.
-			desc_len = static_cast<int>(null_pos - desc_buf);
+			desc_len = null_pos - comment.desc;
 		}
-		string desc = cp1252_sjis_to_utf8(desc_buf, desc_len);
+		string desc = cp1252_sjis_to_utf8(comment.desc, static_cast<int>(desc_len));
 		desc += '\n';
 
 		// Check for a NULL byte in the file description.
-		null_pos = static_cast<const char*>(memchr(&desc_buf[32], 0, 32));
+		desc_len = sizeof(comment.file);
+		null_pos = static_cast<const char*>(memchr(comment.file, 0, desc_len));
 		if (null_pos) {
 			// Found a NULL byte.
-			desc_len = static_cast<int>(null_pos - desc_buf - 32);
+			desc_len = null_pos - comment.file;
 		}
-		desc += cp1252_sjis_to_utf8(&desc_buf[32], desc_len);
+		desc += cp1252_sjis_to_utf8(comment.file, desc_len);
 
 		d->fields->addField_string(C_("GameCubeSave", "Description"), desc);
 	}

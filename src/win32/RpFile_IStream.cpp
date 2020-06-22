@@ -95,21 +95,22 @@ RpFile_IStream::RpFile_IStream(IStream *pStream, bool gzip)
 							// Make sure the CRC32 table is initialized.
 							get_crc_table();
 
-							int err = inflateInit2(m_pZstm, 16+MAX_WBITS);
-							if (err != Z_OK) {
+							int err = inflateInit2(m_pZstm, 16 + MAX_WBITS);
+							if (err == Z_OK) {
+								// Allocate the zlib buffer.
+								m_pZbuf = static_cast<uint8_t*>(malloc(ZLIB_BUFFER_SIZE));
+								if (!m_pZbuf) {
+									// malloc() failed.
+									inflateEnd(m_pZstm);
+									free(m_pZstm);
+									m_pZstm = nullptr;
+									m_z_uncomp_sz = 0;
+								}
+							} else {
 								// Error initializing zlib.
 								free(m_pZstm);
 								m_pZstm = nullptr;
 								m_z_uncomp_sz = 0;
-							}
-
-							// Allocate the zlib buffer.
-							m_pZbuf = static_cast<uint8_t*>(malloc(ZLIB_BUFFER_SIZE));
-							if (!m_pZbuf) {
-								// malloc() failed.
-								inflateEnd(m_pZstm);
-								free(m_pZstm);
-								m_pZstm = nullptr;
 							}
 						}
 					}

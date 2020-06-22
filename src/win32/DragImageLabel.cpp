@@ -68,6 +68,7 @@ class DragImageLabelPrivate
 
 			anim_vars(HWND hwndParent)
 				: m_hwndParent(hwndParent)
+				, iconAnimData(nullptr)
 				, animTimerID(0)
 				, last_frame_number(0) { }
 			~anim_vars()

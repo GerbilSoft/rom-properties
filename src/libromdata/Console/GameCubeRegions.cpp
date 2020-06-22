@@ -210,16 +210,13 @@ vector<const char*> GameCubeRegions::gcnRegionToGameTDB(unsigned int gcnRegion, 
 				case 'J':
 					break;
 
-				case 'W':	// Taiwan
-					// NOTE: GameTDB only has "ZH" for boxart, not "ZHCN" or "ZHTW".
-					ret.emplace_back("ZH");
-					break;
 				case 'K':
 				case 'T':	// South Korea with Japanese language
 				case 'Q':	// South Korea with English language
 					ret.emplace_back("KO");
 					break;
 				case 'C':	// China (unofficial?)
+				case 'W':	// Taiwan
 					// NOTE: GameTDB only has "ZH" for boxart, not "ZHCN" or "ZHTW".
 					ret.emplace_back("ZH");
 					break;

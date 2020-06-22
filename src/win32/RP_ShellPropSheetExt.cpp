@@ -1842,11 +1842,9 @@ void RP_ShellPropSheetExt_Private::buildCboLanguageImageList(void)
 	// TODO: Is premultiplied alpha needed?
 	// Reference: https://stackoverflow.com/questions/307348/how-to-draw-32-bit-alpha-channel-bitmaps
 	RpFile_windres *const f_res = new RpFile_windres(HINST_THISCOMPONENT, MAKEINTRESOURCE(flagResource), MAKEINTRESOURCE(RT_PNG));
-	if (!f_res || !f_res->isOpen()) {
+	if (!f_res->isOpen()) {
 		// Unable to open the resource.
-		if (f_res) {
-			f_res->unref();
-		}
+		f_res->unref();
 		return;
 	}
 	unique_ptr<rp_image> imgFlagsSheet(RpPng::loadUnchecked(f_res));

@@ -171,23 +171,19 @@ int INIHCALL PlayStationDiscPrivate::parse_system_cnf(void *user, const char *se
  */
 int PlayStationDiscPrivate::loadSystemCnf(IsoPartition *pt)
 {
-	int ret = 0;
-
 	IRpFile *f_system_cnf = pt->open("system.cnf");
 	if (!f_system_cnf) {
-		ret = -pt->lastError();
+		int ret = -pt->lastError();
 		if (ret == 0) {
 			ret = -EIO;
 		}
+		return ret;
 	} else if (!f_system_cnf->isOpen()) {
-		ret = -f_system_cnf->lastError();
+		int ret = -f_system_cnf->lastError();
 		if (ret == 0) {
 			ret = -EIO;
 		}
 		f_system_cnf->unref();
-	}
-
-	if (ret != 0) {
 		return ret;
 	}
 

@@ -784,7 +784,7 @@ SNES::SNES(IRpFile *file)
 					break;
 				}
 			}
-			if (!areFieldsZero) {
+			if (areFieldsZero) {
 				for (int i = ARRAY_SIZE(smdHeader.reserved2)-1; i >= 0; i--) {
 					if (smdHeader.reserved2[i] != 0) {
 						areFieldsZero = false;
@@ -1019,7 +1019,7 @@ const char *SNES::systemName(unsigned int type) const
 
 			default:
 				if (d->romHeader.snes.destination_code <= SNES_DEST_AUSTRALIA) {
-					idx |= (2 << 2);
+					idx |= (2U << 2);
 					foundRegion = true;
 				}
 				break;
