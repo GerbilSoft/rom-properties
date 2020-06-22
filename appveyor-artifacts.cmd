@@ -5,5 +5,5 @@ if not "%configuration%" == "Release" exit /b 0
 cpack --version
 cpack -C "%configuration%"
 if ERRORLEVEL 1 exit /b %ERRORLEVEL%
-appveyor PushArtifact *.zip
+for /r %%z in (*.zip) do appveyor PushArtifact "%%z"
 exit /b %ERRORLEVEL%
