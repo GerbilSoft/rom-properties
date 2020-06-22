@@ -706,6 +706,22 @@
 
   <!-- *** Texture *** -->
 
+  <!-- KhronosKTX2 -->
+  <!-- NOTE: Upstream has KTX1. -->
+  <mime-type type="image/ktx2">
+    <comment>Khronos KTX2 texture image</comment>
+    <sub-class-of type="image/x-generic"/>
+    <glob pattern="*.ktx2"/>
+    <generic-icon name="image-x-generic"/>
+    <magic priority="80">
+      <match type="big32" value="0xAB4B5458" offset="0">
+        <match type="big32" value="0x203230BB" offset="4">
+          <match type="big32" value="0x0D0A1A0A" offset="8"/>
+        </match>
+      </match>
+    </magic>
+  </mime-type>
+
   <!-- SegaPVR -->
   <!-- FIXME: libmirage-gbi.xml is overriding this. -->
   <mime-type type="image/x-sega-pvr">
