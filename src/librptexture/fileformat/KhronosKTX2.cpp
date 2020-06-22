@@ -11,7 +11,7 @@
  * - https://github.khronos.org/KTX-Specification/
  *
  * WARNING: The specification is still in draft stages.
- * (2.0.draft19 as of 2020/03/04) It is subject to change
+ * (2.0.rc4 as of 2020/06/17) It is subject to change
  * prior to finalization.
  */
 
@@ -816,7 +816,6 @@ const char *const *KhronosKTX2::supportedMimeTypes_static(void)
 {
 	static const char *const mimeTypes[] = {
 		// Official MIME types.
-		// FIXME: KTX2 is to be determined.
 		"image/ktx2",
 
 		nullptr
@@ -909,8 +908,9 @@ int KhronosKTX2::getFields(LibRpBase::RomFields *fields) const
 	// Supercompression.
 	static const char *const supercompression_tbl[] = {
 		"None",			// TODO: Localize?
-		"Basis Universal",
+		"BasisLZ",
 		"Zstandard",
+		"ZLIB",
 	};
 	if (ktx2Header->supercompressionScheme < ARRAY_SIZE(supercompression_tbl)) {
 		fields->addField_string(C_("KhronosKTX2", "Supercompression"),
