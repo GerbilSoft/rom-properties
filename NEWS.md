@@ -41,6 +41,7 @@
     XboxXBE parser. (Issue #219; reported by @cfas1)
   * Nintendo3DS: CVer CIAs have an 8-byte meta section.
   * iQuePlayer: Fixed file type identification issues.
+  * KhronosKTX: Fixed preview of textures with more than one array element.
 
 * Other changes:
   * Split file handling and CPU/byteorder code from librpbase into two

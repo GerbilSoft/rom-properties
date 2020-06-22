@@ -292,6 +292,7 @@ const rp_image *KhronosKTXPrivate::loadImage(void)
 	}
 
 	// Read the image size field.
+	// NOTE: Divide image size by # of layers to get the expected size.
 	uint32_t imageSize;
 	size_t size = file->read(&imageSize, sizeof(imageSize));
 	if (size != sizeof(imageSize)) {
@@ -301,9 +302,18 @@ const rp_image *KhronosKTXPrivate::loadImage(void)
 	if (isByteswapNeeded) {
 		imageSize = __swab32(imageSize);
 	}
-	if (imageSize != expected_size) {
-		// Size is incorrect.
-		return nullptr;
+	if (ktxHeader.numberOfArrayElements <= 1) {
+		// Single array element.
+		if (imageSize != expected_size) {
+			// Size is incorrect.
+			return nullptr;
+		}
+	} else {
+		// Multiple array elements.
+		if (imageSize / ktxHeader.numberOfArrayElements != expected_size) {
+			// Size is incorrect.
+			return nullptr;
+		}
 	}
 
 	// Read the texture data.
