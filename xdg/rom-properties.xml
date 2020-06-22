@@ -828,4 +828,30 @@
       <match value="XPR2" type="string" offset="0"/>
     </magic>
   </mime-type>
+
+  <!-- Not supported by rom-properties, but useful to have anyway. -->
+
+  <!-- IPS patches -->
+  <mime-type type="application/x-ips-patch">
+    <comment>IPS patch file</comment>
+    <sub-class-of type="application/x-patch"/>
+    <generic-icon name="text-x-patch"/>
+    <glob pattern="*.ips"/>
+    <magic priority="50">
+      <match value="PATCH" type="string" offset="0"/>
+    </magic>
+  </mime-type>
+
+  <!-- BasisLZ texture -->
+  <mime-type type="image/basis">
+    <comment>BasisLZ texture image</comment>
+    <sub-class-of type="image/x-generic"/>
+    <glob pattern="*.basis"/>
+    <generic-icon name="image-x-generic"/>
+    <magic priority="80">
+      <match type="little16" value="0x4273" offset="0">
+        <match type="little16" value="0x4D" offset="4"/>
+      </match>
+    </magic>
+  </mime-type>
 </mime-info>
