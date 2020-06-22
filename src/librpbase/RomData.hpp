@@ -10,6 +10,7 @@
 #define __ROMPROPERTIES_LIBRPBASE_ROMDATA_HPP__
 
 #include "common.h"
+#include "RefBase.hpp"
 #include "RomData_decl.hpp"
 
 // C includes.
@@ -34,7 +35,7 @@ class RomMetaData;
 struct IconAnimData;
 
 class RomDataPrivate;
-class RomData
+class RomData : public RefBase
 {
 	protected:
 		/**
@@ -81,17 +82,10 @@ class RomData
 		RomDataPrivate *const d_ptr;
 
 	public:
-		/**
-		 * Take a reference to this RomData* object.
-		 * @return this
-		 */
-		RomData *ref(void);
-
-		/**
-		 * Unreference this RomData* object.
-		 * If ref_cnt reaches 0, the RomData* object is deleted.
-		 */
-		void unref(void);
+		inline RomData *ref(void)
+		{
+			return RefBase::ref<RomData>();
+		}
 
 	public:
 		/**

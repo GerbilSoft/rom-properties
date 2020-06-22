@@ -11,6 +11,7 @@
 
 #include "librptexture/config.librptexture.h"
 #include "common.h"
+#include "RefBase.hpp"
 
 // Common declarations.
 #include "FileFormat_decl.hpp"
@@ -29,7 +30,7 @@ namespace LibRpTexture {
 class rp_image;
 
 class FileFormatPrivate;
-class FileFormat
+class FileFormat : public RefBase
 {
 	protected:
 		explicit FileFormat(FileFormatPrivate *d);
@@ -48,17 +49,10 @@ class FileFormat
 		FileFormatPrivate *const d_ptr;
 
 	public:
-		/**
-		 * Take a reference to this FileFormat* object.
-		 * @return this
-		 */
-		FileFormat *ref(void);
-
-		/**
-		 * Unreference this FileFormat* object.
-		 * If ref_cnt reaches 0, the FileFormat* object is deleted.
-		 */
-		void unref(void);
+		inline FileFormat *ref(void)
+		{
+			return RefBase::ref<FileFormat>();
+		}
 
 	public:
 		/**

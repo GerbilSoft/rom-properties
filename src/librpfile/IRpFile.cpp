@@ -14,43 +14,10 @@
 
 namespace LibRpFile {
 
-// Total reference count for all files.
-volatile int IRpFile::ms_refCntTotal = 0;
-
 IRpFile::IRpFile()
 	: m_lastError(0)
-	, m_refCnt(1)
 {
 	static_assert(sizeof(off64_t) == 8, "off64_t is not 64-bit!");
-
-	// Increment the total reference count.
-	ATOMIC_INC_FETCH(&ms_refCntTotal);
-}
-
-/**
- * Take a reference to this IRpFile* object.
- * @return this
- */
-IRpFile *IRpFile::ref(void)
-{
-	ATOMIC_INC_FETCH(&m_refCnt);
-	ATOMIC_INC_FETCH(&ms_refCntTotal);
-	return this;
-}
-
-/**
- * Unreference this IRpFile* object.
- * If ref_cnt reaches 0, the IRpFile* object is deleted.
- */
-void IRpFile::unref(void)
-{
-	assert(m_refCnt > 0);
-	assert(ms_refCntTotal > 0);
-	if (ATOMIC_DEC_FETCH(&m_refCnt) <= 0) {
-		// All references removed.
-		delete this;
-	}
-	ATOMIC_DEC_FETCH(&ms_refCntTotal);
 }
 
 /**

@@ -53,7 +53,6 @@ class RomDataPrivate
 		RomData *const q_ptr;
 
 	public:
-		volatile int ref_cnt;		// Reference count.
 		bool isValid;			// Subclass must set this to true if the ROM is valid.
 		LibRpFile::IRpFile *file;	// Open file.
 		RomFields *const fields;	// ROM fields. (NOTE: allocated by the base class)

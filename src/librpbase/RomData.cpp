@@ -12,9 +12,6 @@
 
 #include "libi18n/i18n.h"
 
-// librpthreads
-#include "librpthreads/Atomics.h"
-
 // libcachecommon
 #include "libcachecommon/CacheKeys.hpp"
 
@@ -38,7 +35,6 @@ namespace LibRpBase {
  */
 RomDataPrivate::RomDataPrivate(RomData *q, IRpFile *file)
 	: q_ptr(q)
-	, ref_cnt(1)
 	, isValid(false)
 	, file(nullptr)
 	, fields(new RomFields())
@@ -461,31 +457,6 @@ RomData::RomData(RomDataPrivate *d)
 RomData::~RomData()
 {
 	delete d_ptr;
-}
-
-/**
- * Take a reference to this RomData* object.
- * @return this
- */
-RomData *RomData::ref(void)
-{
-	RP_D(RomData);
-	ATOMIC_INC_FETCH(&d->ref_cnt);
-	return this;
-}
-
-/**
- * Unreference this RomData* object.
- * If ref_cnt reaches 0, the RomData* object is deleted.
- */
-void RomData::unref(void)
-{
-	RP_D(RomData);
-	assert(d->ref_cnt > 0);
-	if (ATOMIC_DEC_FETCH(&d->ref_cnt) <= 0) {
-		// All references removed.
-		delete this;
-	}
 }
 
 /**

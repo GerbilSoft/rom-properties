@@ -62,31 +62,6 @@ FileFormat::~FileFormat()
 }
 
 /**
- * Take a reference to this FileFormat* object.
- * @return this
- */
-FileFormat *FileFormat::ref(void)
-{
-	RP_D(FileFormat);
-	ATOMIC_INC_FETCH(&d->ref_cnt);
-	return this;
-}
-
-/**
- * Unreference this FileFormat* object.
- * If ref_cnt reaches 0, the FileFormat* object is deleted.
- */
-void FileFormat::unref(void)
-{
-	RP_D(FileFormat);
-	assert(d->ref_cnt > 0);
-	if (ATOMIC_DEC_FETCH(&d->ref_cnt) <= 0) {
-		// All references removed.
-		delete this;
-	}
-}
-
-/**
  * Is this ROM valid?
  * @return True if it is; false if it isn't.
  */

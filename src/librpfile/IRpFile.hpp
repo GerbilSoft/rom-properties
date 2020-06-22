@@ -21,10 +21,11 @@
 
 // common macros
 #include "common.h"
+#include "RefBase.hpp"
 
 namespace LibRpFile {
 
-class IRpFile
+class IRpFile : public RefBase
 {
 	protected:
 		IRpFile();
@@ -34,17 +35,10 @@ class IRpFile
 		RP_DISABLE_COPY(IRpFile)
 
 	public:
-		/**
-		 * Take a reference to this IRpFile* object.
-		 * @return this
-		 */
-		IRpFile *ref(void);
-
-		/**
-		 * Unreference this IRpFile* object.
-		 * If m_refCnt reaches 0, the IRpFile* object is deleted.
-		 */
-		void unref(void);
+		inline IRpFile *ref(void)
+		{
+			return RefBase::ref<IRpFile>();
+		}
 
 	public:
 		/**
@@ -180,9 +174,6 @@ class IRpFile
 
 	protected:
 		int m_lastError;
-	private:
-		volatile int m_refCnt;
-		static volatile int ms_refCntTotal;
 };
 
 /**
