@@ -61,4 +61,6 @@ test_script:
   - cd %APPVEYOR_BUILD_FOLDER%\build
   - ctest -V -C %configuration%
 
-# TODO: Automatic packaging?
+after_test:
+  - cd %APPVEYOR_BUILD_FOLDER%\build
+  - ..\appveyor-artifacts.cmd

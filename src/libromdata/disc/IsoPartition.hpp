@@ -133,6 +133,13 @@ class IsoPartition : public LibRpBase::IPartition
 		 * @return IRpFile*, or nullptr on error.
 		 */
 		LibRpFile::IRpFile *open(const char *filename);
+
+		/**
+		 * Get a file's timestamp.
+		 * @param filename Filename.
+		 * @return Timestamp, or -1 on error.
+		 */
+		time_t get_mtime(const char *filename);
 };
 
 }

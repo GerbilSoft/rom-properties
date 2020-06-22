@@ -40,6 +40,7 @@ using std::vector;
 #include "Console/MegaDrive.hpp"
 #include "Console/N64.hpp"
 #include "Console/NES.hpp"
+#include "Console/PlayStationEXE.hpp"
 #include "Console/PlayStationSave.hpp"
 #include "Console/Sega8Bit.hpp"
 #include "Console/SegaSaturn.hpp"
@@ -54,9 +55,11 @@ using std::vector;
 #include "Console/Xbox360_XDBF.hpp"
 #include "Console/Xbox360_XEX.hpp"
 
-// Special handling for Xbox discs.
+// Special handling for Xbox and PlayStation discs.
+#include "cdrom_structs.h"
 #include "iso_structs.h"
 #include "Console/XboxDisc.hpp"
+#include "Console/PlayStationDisc.hpp"
 #include "disc/xdvdfs_structs.h"
 
 // RomData subclasses: Handhelds
@@ -239,6 +242,7 @@ pthread_once_t RomDataFactoryPrivate::once_mimeTypes = PTHREAD_ONCE_INIT;
 // TODO: Add support for multiple magic numbers per class.
 const RomDataFactoryPrivate::RomDataFns RomDataFactoryPrivate::romDataFns_magic[] = {
 	// Consoles
+	GetRomDataFns_addr(PlayStationEXE, 0, 0, 'PS-X'),
 	GetRomDataFns_addr(SufamiTurbo, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 8, 'FC-A'),	// Less common than "BAND"
 	GetRomDataFns_addr(WiiWIBN, ATTR_HAS_THUMBNAIL, 0, 'WIBN'),
 	GetRomDataFns_addr(Xbox_XBE, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'XBEH'),
@@ -433,17 +437,43 @@ RomData *RomDataFactoryPrivate::checkISO(IRpFile *file)
 {
 	// Check for specific disc file systems.
 	// TODO: 2352-byte sector handling?
-	ISO_Primary_Volume_Descriptor pvd;
-	size_t size = file->seekAndRead(ISO_PVD_ADDRESS_2048, &pvd, sizeof(pvd));
-	if (size != sizeof(pvd)) {
+	CDROM_2352_Sector_t sector;
+	size_t size = file->seekAndRead(ISO_PVD_ADDRESS_2048, &sector.m1.data, sizeof(sector.m1.data));
+	if (size != sizeof(sector.m1.data)) {
 		// Unable to read the PVD.
 		return nullptr;
 	}
 
-	// Try various game disc file systems.
+	const ISO_Primary_Volume_Descriptor *pvd =
+		reinterpret_cast<const ISO_Primary_Volume_Descriptor*>(sector.m1.data);
+	if (pvd->header.type != ISO_VDT_PRIMARY || pvd->header.version != ISO_VD_VERSION ||
+	    memcmp(pvd->header.identifier, ISO_VD_MAGIC, sizeof(pvd->header.identifier)) != 0)
+	{
+		// Not a valid PVD.
+		// Try 2352-byte sectors.
+		size_t size = file->seekAndRead(ISO_PVD_ADDRESS_2352, &sector, sizeof(sector));
+		if (size != sizeof(sector)) {
+			// Unable to read the PVD.
+			return nullptr;
+		}
+
+		// Data start offset depends on whether it's Mode 1 or Mode 2.
+		if (sector.mode == 2) {
+			pvd = reinterpret_cast<const ISO_Primary_Volume_Descriptor*>(sector.m2xa_f1.data);
+		} else {
+			pvd = reinterpret_cast<const ISO_Primary_Volume_Descriptor*>(sector.m1.data);
+		}
+
+		if (pvd->header.type != ISO_VDT_PRIMARY || pvd->header.version != ISO_VD_VERSION ||
+		    memcmp(pvd->header.identifier, ISO_VD_MAGIC, sizeof(pvd->header.identifier)) != 0)
+		{
+			// Not a valid PVD.
+			return nullptr;
+		}
+	}
 
 	// Xbox / Xbox 360
-	bool mayBeXbox = (XboxDisc::isRomSupported_static(&pvd) >= 0);
+	bool mayBeXbox = (XboxDisc::isRomSupported_static(pvd) >= 0);
 	if (!mayBeXbox) {
 		// This might be an extracted XDVDFS.
 		// Check for the magic number at the base offset.
@@ -465,6 +495,17 @@ RomData *RomDataFactoryPrivate::checkISO(IRpFile *file)
 		RomData *const romData = new XboxDisc(file);
 		if (romData->isValid()) {
 			// Got an Xbox disc.
+			return romData;
+		}
+		romData->unref();
+	}
+
+	// PlayStation 1 and 2.
+	if (PlayStationDisc::isRomSupported_static(pvd) >= 0) {
+		// This might be a PS1 or PS2 disc.
+		RomData *const romData = new PlayStationDisc(file);
+		if (romData->isValid()) {
+			// Got a PS1 or PS2 disc.
 			return romData;
 		}
 		romData->unref();
@@ -624,6 +665,7 @@ RomData *RomDataFactory::create(IRpFile *file, unsigned int attrs)
 					".gg",		/* Game Gear */
 					".tgc",		/* game.com */
 					".iso",		/* ISO-9660 */
+					".img",		/* CCD/IMG */
 					".xiso",	/* Xbox disc image */
 					".min",		/* Pokémon Mini */
 					nullptr

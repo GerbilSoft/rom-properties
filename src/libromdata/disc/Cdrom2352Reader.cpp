@@ -145,4 +145,63 @@ off64_t Cdrom2352Reader::getPhysBlockAddr(uint32_t blockIdx) const
 	return (static_cast<off64_t>(blockIdx) * d->physBlockSize) + 16;
 }
 
+/**
+ * Read the specified block.
+ *
+ * This can read either a full block or a partial block.
+ * For a full block, set pos = 0 and size = block_size.
+ *
+ * @param blockIdx	[in] Block index.
+ * @param ptr		[out] Output data buffer.
+ * @param pos		[in] Starting position. (Must be >= 0 and <= the block size!)
+ * @param size		[in] Amount of data to read, in bytes. (Must be <= the block size!)
+ * @return Number of bytes read, or -1 if the block index is invalid.
+ */
+int Cdrom2352Reader::readBlock(uint32_t blockIdx, void *ptr, int pos, size_t size)
+{
+	// Read 'size' bytes of block 'blockIdx', starting at 'pos'.
+	// NOTE: This can only be called by SparseDiscReader,
+	// so the main assertions are already checked there.
+	RP_D(Cdrom2352Reader);
+	assert(pos >= 0 && pos < (int)d->block_size);
+	assert(size <= d->block_size);
+	// TODO: Make sure overflow doesn't occur.
+	assert(static_cast<off64_t>(pos + size) <= static_cast<off64_t>(d->block_size));
+	if (pos < 0 || static_cast<off64_t>(pos + size) > static_cast<off64_t>(d->block_size)) {
+		// pos+size is out of range.
+		return -1;
+	}
+
+	if (unlikely(size == 0)) {
+		// Nothing to read.
+		return 0;
+	}
+
+	// Get the physical address first.
+	const off64_t physBlockAddr = static_cast<off64_t>(blockIdx) * d->physBlockSize;
+
+	// Read from the block.
+	// NOTE: We need to read the entire 2352-byte block in order to
+	// determine the data offset, since Mode 1 and Mode 2 have different
+	// sector layouts.
+	CDROM_2352_Sector_t sector;
+	size_t sz_read = m_file->seekAndRead(physBlockAddr, &sector, sizeof(sector));
+	m_lastError = m_file->lastError();
+	if (sz_read != sizeof(sector)) {
+		// Read error.
+		return -1;
+	}
+
+	// Determine the data start offset.
+	const uint8_t *data;
+	if (sector.mode == 2) {
+		data = sector.m2xa_f1.data;
+	} else {
+		data = sector.m1.data;
+	}
+
+	memcpy(ptr, &data[pos], size);
+	return size;
+}
+
 }

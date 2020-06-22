@@ -27,6 +27,8 @@ SET(libromdata_SRCS
 	Console/MegaDriveRegions.cpp
 	Console/N64.cpp
 	Console/NES.cpp
+	Console/PlayStationDisc.cpp
+	Console/PlayStationEXE.cpp
 	Console/PlayStationSave.cpp
 	Console/Sega8Bit.cpp
 	Console/SegaSaturn.cpp
@@ -133,6 +135,8 @@ SET(libromdata_H
 	Console/MegaDriveRegions.hpp
 	Console/N64.hpp
 	Console/NES.hpp
+	Console/PlayStationDisc.hpp
+	Console/PlayStationEXE.cpp
 	Console/PlayStationSave.hpp
 	Console/Sega8Bit.hpp
 	Console/SegaSaturn.hpp
@@ -158,6 +162,7 @@ SET(libromdata_H
 	Console/n64_structs.h
 	Console/nes_structs.h
 	Console/ps1_structs.h
+	Console/ps1_exe_structs.h
 	Console/saturn_structs.h
 	Console/sega8_structs.h
 	Console/snes_structs.h
@@ -390,6 +395,7 @@ SET_MSVC_DEBUG_PATH(romdata)
 # TODO: More public/private library stuff.
 TARGET_LINK_LIBRARIES(romdata PUBLIC rptexture rpfile rpbase)
 TARGET_LINK_LIBRARIES(romdata PRIVATE rpcpu rpthreads cachecommon)
+TARGET_LINK_LIBRARIES(romdata PRIVATE inih)
 IF(ENABLE_NLS)
 	TARGET_LINK_LIBRARIES(romdata PRIVATE i18n)
 ENDIF(ENABLE_NLS)

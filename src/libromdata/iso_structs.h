@@ -29,6 +29,7 @@ extern "C" {
 // Data offsets.
 #define ISO_DATA_OFFSET_MODE1_RAW    16
 #define ISO_DATA_OFFSET_MODE1_COOKED 0
+#define ISO_DATA_OFFSET_MODE2_XA     (16+8)
 
 // strD: [A-Z0-9_]
 // strA: strD plus: ! " % & ' ( ) * + , - . / : ; < = > ?
@@ -118,9 +119,8 @@ typedef struct PACKED _ISO_Dir_DateTime_t {
 	uint8_t second;		// Second, from 0 to 59.
 
 	// Timezone offset, in 15-minute intervals.
-	//   0 == interval -48 (GMT-1200)
-	// 100 == interval  52 (GMT+1300)
-	uint8_t tz_offset;
+	// Range: [-48 (GMT-1200), +52 (GMT+1300)]
+	int8_t tz_offset;
 } ISO_Dir_DateTime_t;
 ASSERT_STRUCT(ISO_Dir_DateTime_t, 7);
 

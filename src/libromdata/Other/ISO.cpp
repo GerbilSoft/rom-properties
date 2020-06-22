@@ -9,6 +9,8 @@
 
 #include "stdafx.h"
 #include "ISO.hpp"
+
+#include "../cdrom_structs.h"
 #include "../iso_structs.h"
 #include "hsfs_structs.h"
 
@@ -334,16 +336,14 @@ void ISOPrivate::addPVDTimestamps(const T *pvd)
  */
 ISOPrivate::DiscType ISOPrivate::checkPVD(void) const
 {
-	if (pvd.iso.header.type == ISO_VDT_PRIMARY &&
-	    pvd.iso.header.version == ISO_VD_VERSION &&
+	if (pvd.iso.header.type == ISO_VDT_PRIMARY && pvd.iso.header.version == ISO_VD_VERSION &&
 	    !memcmp(pvd.iso.header.identifier, ISO_VD_MAGIC, sizeof(pvd.iso.header.identifier)))
 	{
 		// ISO-9660 PVD.
 		return DiscType::ISO9660;
 	}
 
-	if (pvd.hsfs.header.type == ISO_VDT_PRIMARY &&
-	    pvd.hsfs.header.version == HSFS_VD_VERSION &&
+	if (pvd.hsfs.header.type == ISO_VDT_PRIMARY && pvd.hsfs.header.version == HSFS_VD_VERSION &&
 	    !memcmp(pvd.hsfs.header.identifier, HSFS_VD_MAGIC, sizeof(pvd.hsfs.header.identifier)))
 	{
 		// High Sierra PVD.
@@ -403,20 +403,29 @@ ISO::ISO(IRpFile *file)
 		d->sector_offset = ISO_DATA_OFFSET_MODE1_COOKED;
 	} else {
 		// Try again using 2352-byte sectors.
-		size = d->file->seekAndRead(ISO_PVD_ADDRESS_2352 + ISO_DATA_OFFSET_MODE1_RAW,
-			&d->pvd, sizeof(d->pvd));
-		if (size != sizeof(d->pvd)) {
+		CDROM_2352_Sector_t sector;
+		size = d->file->seekAndRead(ISO_PVD_ADDRESS_2352, &sector, sizeof(sector));
+		if (size != sizeof(sector)) {
 			// Seek and/or read error.
 			d->file->unref();
 			d->file = nullptr;
 			return;
 		}
 
+		// Data start offset depends on whether it's Mode 1 or Mode 2.
+		const uint8_t *data;
+		if (sector.mode == 2) {
+			data = sector.m2xa_f1.data;
+		} else {
+			data = sector.m1.data;
+		}
+		memcpy(&d->pvd, data, sizeof(d->pvd));
+
 		d->discType = d->checkPVD();
 		if (d->discType > ISOPrivate::DiscType::Unknown) {
 			// Found the PVD using 2352-byte sectors.
 			d->sector_size = ISO_SECTOR_SIZE_MODE1_RAW;
-			d->sector_offset = ISO_DATA_OFFSET_MODE1_RAW;
+			d->sector_offset = (sector.mode == 2 ? ISO_DATA_OFFSET_MODE2_XA : ISO_DATA_OFFSET_MODE1_RAW);
 		} else {
 			// Not a PVD.
 			d->file->unref();
@@ -512,6 +521,7 @@ const char *const *ISO::supportedFileExtensions_static(void)
 		".iso9660",	// ISO (listed in shared-mime-info)
 		".bin",		// BIN (2352-byte)
 		".xiso",	// Xbox ISO image
+		".img",		// CCD/IMG
 		// TODO: More?
 		// TODO: Is there a separate extension for High Sierra?
 

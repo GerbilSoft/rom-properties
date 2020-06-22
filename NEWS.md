@@ -2,6 +2,10 @@
 
 ## v1.6 (released 2020/??/??)
 
+* New parsers:
+  * PlayStationDisc: New parser for PS1 and PS2 disc images.
+  * PlayStationEXE: Basic parser for PS1 executables.
+
 * New parser features:
   * Xbox360_XEX: Handle delta patches somewhat differently. We can't check the
     encryption key right now, so skip that check. Also skip reading the EXE
@@ -23,6 +27,7 @@
     This could have been part of SNES, but the header is completely different
     and is always located at $0000.
   * ISO: Added support for High Sierra Format CDs.
+  * Cdrom2352Reader: Mode 2 sectors are now read correctly.
 
 * Bug fixes:
   * WiiWAD: Fix DLC icons no longer working after updating CBCReader to update
