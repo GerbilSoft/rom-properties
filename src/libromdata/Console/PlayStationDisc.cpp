@@ -603,6 +603,7 @@ const char *const *PlayStationDisc::supportedFileExtensions_static(void)
 	static const char *const exts[] = {
 		".iso",		// ISO
 		".bin",		// BIN/CUE
+		".img",		// CCD/IMG
 		// TODO: More?
 
 		nullptr

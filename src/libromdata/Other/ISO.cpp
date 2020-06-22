@@ -521,6 +521,7 @@ const char *const *ISO::supportedFileExtensions_static(void)
 		".iso9660",	// ISO (listed in shared-mime-info)
 		".bin",		// BIN (2352-byte)
 		".xiso",	// Xbox ISO image
+		".img",		// CCD/IMG
 		// TODO: More?
 		// TODO: Is there a separate extension for High Sierra?
 

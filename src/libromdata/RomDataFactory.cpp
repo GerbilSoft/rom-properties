@@ -665,6 +665,7 @@ RomData *RomDataFactory::create(IRpFile *file, unsigned int attrs)
 					".gg",		/* Game Gear */
 					".tgc",		/* game.com */
 					".iso",		/* ISO-9660 */
+					".img",		/* CCD/IMG */
 					".xiso",	/* Xbox disc image */
 					".min",		/* Pokémon Mini */
 					nullptr
