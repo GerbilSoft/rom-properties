@@ -935,6 +935,10 @@ int KeyStoreUI::setKey(int sectIdx, int keyIdx, const string &value)
 	if (idx < 0)
 		return -ERANGE;
 
+	// Expected key length, in hex digits.
+	// TODO: Support more than 128-bit keys.
+	static const size_t expected_key_len = 16*2;
+
 	// If allowKanji is true, check if the key is kanji
 	// and convert it to UTF-16LE hexadecimal.
 	Key &key = d->keys[idx];
@@ -943,11 +947,19 @@ int KeyStoreUI::setKey(int sectIdx, int keyIdx, const string &value)
 		// Convert kanji to hexadecimal if needed.
 		// NOTE: convertKanjiToHex() returns an empty string on error,
 		// so if the original string is empty, don't do anything.
+		// NOTE 2: convertKanjiToHex() only errors if the string is
+		// non-ASCII and cannot be converted properly, so valid hex
+		// strings will always return the original string.
 		if (!value.empty()) {
 			string convKey = d->convertKanjiToHex(value);
 			if (convKey.empty()) {
 				// Invalid kanji key.
 				return -EINVAL;
+			}
+
+			// Truncate the key if necessary.
+			if (convKey.size() > expected_key_len) {
+				convKey.resize(expected_key_len);
 			}
 			new_value = convKey;
 		}
@@ -955,14 +967,21 @@ int KeyStoreUI::setKey(int sectIdx, int keyIdx, const string &value)
 
 	if (new_value.empty()) {
 		// Hexadecimal only.
-		// TODO: Validate it here? We're already
-		// using a validator in the UI...
-		new_value = value;
-		// Convert ASCII characters to uppercase.
-		for (auto iter = new_value.begin(); iter != new_value.end(); ++iter) {
-			if ((unsigned int)*iter < 128) {
-				*iter = toupper(*iter);
+		// NOTE: We only want up to expected_key_len.
+		new_value.resize(unlikely(value.size() > expected_key_len)
+			? expected_key_len
+			: value.size());
+
+		// Validate hex digits and convert to uppercase.
+		auto iter_src = value.cbegin();
+		auto iter_dest = new_value.begin();
+		for (; iter_src != value.cend() && iter_dest != new_value.end(); ++iter_src, ++iter_dest) {
+			char chr = *iter_src;
+			if (!ISXDIGIT(chr)) {
+				// Not a hex digit.
+				return -EINVAL;
 			}
+			*iter_dest = TOUPPER(chr);
 		}
 	}
 
@@ -991,11 +1010,17 @@ int KeyStoreUI::setKey(int sectIdx, int keyIdx, const string &value)
  */
 int KeyStoreUI::setKey(int idx, const string &value)
 {
+	// FIXME: don't commit anything yet
+	// rewrite this to be a wrapper around the other setKey() function
 	RP_D(KeyStoreUI);
 	assert(idx >= 0);
 	assert(idx < static_cast<int>(d->keys.size()));
 	if (idx < 0 || idx >= static_cast<int>(d->keys.size()))
 		return -ERANGE;
+
+	// Expected key length, in hex digits.
+	// TODO: Support more than 128-bit keys.
+	static const size_t expected_key_len = 16*2;
 
 	Key &key = d->keys[idx];
 	string new_value;
@@ -1004,23 +1029,35 @@ int KeyStoreUI::setKey(int idx, const string &value)
 		// NOTE: convertKanjiToHex() returns an empty string on error,
 		// so if the original string is empty, don't do anything.
 		if (!value.empty()) {
-			string convKey = KeyStoreUIPrivate::convertKanjiToHex(value);
+			string convKey = d->convertKanjiToHex(value);
 			if (convKey.empty()) {
 				// Invalid kanji key.
 				return -EINVAL;
+			}
+
+			// Truncate the key if necessary.
+			if (convKey.size() > expected_key_len) {
+				convKey.resize(expected_key_len);
 			}
 			new_value = convKey;
 		}
 	} else {
 		// Hexadecimal only.
-		// TODO: Validate it here? We're already
-		// using a validator in the UI...
-		new_value = value;
-		// Convert ASCII characters to uppercase.
-		for (auto iter = new_value.begin(); iter != new_value.end(); ++iter) {
-			if ((unsigned int)*iter < 128) {
-				*iter = toupper(*iter);
+		// NOTE: We only want up to expected_key_len.
+		new_value.resize(unlikely(value.size() > expected_key_len)
+			? expected_key_len
+			: value.size());
+
+		// Validate hex digits and convert to uppercase.
+		auto iter_src = value.cbegin();
+		auto iter_dest = new_value.begin();
+		for (; iter_src != value.cend() && iter_dest != new_value.end(); ++iter_src, ++iter_dest) {
+			char chr = *iter_src;
+			if (!ISXDIGIT(chr)) {
+				// Not a hex digit.
+				return -EINVAL;
 			}
+			*iter_dest = TOUPPER(chr);
 		}
 	}
 
