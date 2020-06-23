@@ -191,14 +191,8 @@ int Cdrom2352Reader::readBlock(uint32_t blockIdx, void *ptr, int pos, size_t siz
 		return -1;
 	}
 
-	// Determine the data start offset.
-	const uint8_t *data;
-	if (sector.mode == 2) {
-		data = sector.m2xa_f1.data;
-	} else {
-		data = sector.m1.data;
-	}
-
+	// NOTE: Sector user data area position depends on the sector mode.
+	const uint8_t *const data = cdromSectorDataPtr(&sector);
 	memcpy(ptr, &data[pos], size);
 	return size;
 }

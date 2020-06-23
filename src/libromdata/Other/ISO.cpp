@@ -410,14 +410,9 @@ ISO::ISO(IRpFile *file)
 			return;
 		}
 
-		// Data start offset depends on whether it's Mode 1 or Mode 2.
-		const uint8_t *data;
-		if (sector.mode == 2) {
-			data = sector.m2xa_f1.data;
-		} else {
-			data = sector.m1.data;
-		}
-		memcpy(&d->pvd, data, sizeof(d->pvd));
+		// Copy the PVD from the sector.
+		// NOTE: Sector user data area position depends on the sector mode.
+		memcpy(&d->pvd, cdromSectorDataPtr(&sector), sizeof(d->pvd));
 
 		d->discType = d->checkPVD();
 		if (d->discType > ISOPrivate::DiscType::Unknown) {

@@ -325,12 +325,9 @@ PlayStationDisc::PlayStationDisc(IRpFile *file)
 			return;
 		}
 
-		// Data start offset depends on whether it's Mode 1 or Mode 2.
-		if (sector.mode == 2) {
-			memcpy(&d->pvd, sector.m2xa_f1.data, sizeof(d->pvd));
-		} else {
-			memcpy(&d->pvd, sector.m1.data, sizeof(d->pvd));
-		}
+		// Copy the PVD from the sector.
+		// NOTE: Sector user data area position depends on the sector mode.
+		memcpy(&d->pvd, cdromSectorDataPtr(&sector), sizeof(d->pvd));
 
 		if (d->pvd.header.type == ISO_VDT_PRIMARY && d->pvd.header.version == ISO_VD_VERSION &&
 		    !memcmp(d->pvd.header.identifier, ISO_VD_MAGIC, sizeof(d->pvd.header.identifier)))

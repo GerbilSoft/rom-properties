@@ -457,12 +457,9 @@ RomData *RomDataFactoryPrivate::checkISO(IRpFile *file)
 			return nullptr;
 		}
 
-		// Data start offset depends on whether it's Mode 1 or Mode 2.
-		if (sector.mode == 2) {
-			pvd = reinterpret_cast<const ISO_Primary_Volume_Descriptor*>(sector.m2xa_f1.data);
-		} else {
-			pvd = reinterpret_cast<const ISO_Primary_Volume_Descriptor*>(sector.m1.data);
-		}
+		// Copy the PVD from the sector.
+		// NOTE: Sector user data area position depends on the sector mode.
+		pvd = reinterpret_cast<const ISO_Primary_Volume_Descriptor*>(cdromSectorDataPtr(&sector));
 
 		if (pvd->header.type != ISO_VDT_PRIMARY || pvd->header.version != ISO_VD_VERSION ||
 		    memcmp(pvd->header.identifier, ISO_VD_MAGIC, sizeof(pvd->header.identifier)) != 0)
