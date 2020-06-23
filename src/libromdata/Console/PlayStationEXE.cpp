@@ -124,8 +124,7 @@ void PlayStationEXE::init(void)
 	size_t size = d->file->read(&d->psxHeader, sizeof(d->psxHeader));
 	if (size != sizeof(d->psxHeader)) {
 		d->psxHeader.magic[0] = 0;
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
 
@@ -140,8 +139,7 @@ void PlayStationEXE::init(void)
 
 	if (!d->isValid) {
 		d->psxHeader.magic[0] = 0;
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 	}
 }
 

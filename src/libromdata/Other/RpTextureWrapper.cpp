@@ -52,9 +52,7 @@ RpTextureWrapperPrivate::RpTextureWrapperPrivate(RpTextureWrapper *q, IRpFile *f
 
 RpTextureWrapperPrivate::~RpTextureWrapperPrivate()
 {
-	if (texture) {
-		texture->unref();
-	}
+	UNREF(texture);
 }
 
 /** RpTextureWrapper **/
@@ -89,8 +87,7 @@ RpTextureWrapper::RpTextureWrapper(IRpFile *file)
 	d->texture = FileFormatFactory::create(d->file);
 	if (!d->texture) {
 		// Not a valid texture.
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
 

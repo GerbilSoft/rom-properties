@@ -111,9 +111,7 @@ Xbox_XBE_Private::Xbox_XBE_Private(Xbox_XBE *q, IRpFile *file)
 
 Xbox_XBE_Private::~Xbox_XBE_Private()
 {
-	if (pe_exe) {
-		pe_exe->unref();
-	}
+	UNREF(pe_exe);
 
 	if (xtImage.isInit) {
 		if (!xtImage.isPng) {
@@ -125,9 +123,7 @@ Xbox_XBE_Private::~Xbox_XBE_Private()
 		}
 	}
 
-	if (discReader) {
-		discReader->unref();
-	}
+	UNREF(discReader);
 }
 
 /**
@@ -404,8 +400,7 @@ Xbox_XBE::Xbox_XBE(IRpFile *file)
 	size_t size = d->file->read(&d->xbeHeader, sizeof(d->xbeHeader));
 	if (size != sizeof(d->xbeHeader)) {
 		d->xbeHeader.magic = 0;
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
 
@@ -420,8 +415,7 @@ Xbox_XBE::Xbox_XBE(IRpFile *file)
 
 	if (!d->isValid) {
 		d->xbeHeader.magic = 0;
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
 
@@ -459,10 +453,7 @@ void Xbox_XBE::close(void)
 		}
 	}
 
-	if (d->discReader) {
-		d->discReader->unref();
-		d->discReader = nullptr;
-	}
+	UNREF_AND_NULL(d->discReader);
 
 	// Call the superclass function.
 	super::close();

@@ -185,9 +185,7 @@ RomDataViewPrivate::~RomDataViewPrivate()
 {
 	ui.lblIcon->clearRp();
 	ui.lblBanner->clearRp();
-	if (romData) {
-		romData->unref();
-	}
+	UNREF(romData);
 }
 
 /**
@@ -1391,9 +1389,7 @@ void RomDataView::setRomData(RomData *romData)
 		d->ui.lblIcon->resetAnimFrame();
 	}
 
-	if (d->romData) {
-		d->romData->unref();
-	}
+	UNREF(d->romData);
 	d->romData = (romData ? romData->ref() : nullptr);
 	d->initDisplayWidgets();
 

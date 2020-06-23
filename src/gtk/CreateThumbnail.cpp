@@ -281,9 +281,7 @@ static int openFromFilenameOrURI(const char *source_file, IRpFile **pp_file, str
 
 	// File was not opened.
 	// TODO: Actual error code?
-	if (file) {
-		file->unref();
-	}
+	UNREF(file);
 	return RPCT_SOURCE_FILE_ERROR;
 }
 

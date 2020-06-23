@@ -545,8 +545,7 @@ GameCubeSave::GameCubeSave(IRpFile *file)
 	d->file->rewind();
 	size_t size = d->file->read(&header, sizeof(header));
 	if (size != sizeof(header)) {
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
 
@@ -574,8 +573,7 @@ GameCubeSave::GameCubeSave(IRpFile *file)
 		default:
 			// Unknown save type.
 			d->saveType = GameCubeSavePrivate::SaveType::Unknown;
-			d->file->unref();
-			d->file = nullptr;
+			UNREF_AND_NULL_NOCHK(d->file);
 			return;
 	}
 

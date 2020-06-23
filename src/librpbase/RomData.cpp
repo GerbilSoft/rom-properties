@@ -58,9 +58,7 @@ RomDataPrivate::~RomDataPrivate()
 	delete metaData;
 
 	// Unreference the file.
-	if (this->file) {
-		this->file->unref();
-	}
+	UNREF(this->file);
 }
 
 /** Convenience functions. **/
@@ -486,10 +484,7 @@ void RomData::close(void)
 {
 	// Unreference the file.
 	RP_D(RomData);
-	if (d->file) {
-		d->file->unref();
-		d->file = nullptr;
-	}
+	UNREF_AND_NULL(d->file);
 }
 
 /**

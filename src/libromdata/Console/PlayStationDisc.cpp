@@ -132,15 +132,9 @@ PlayStationDiscPrivate::PlayStationDiscPrivate(PlayStationDisc *q, IRpFile *file
 
 PlayStationDiscPrivate::~PlayStationDiscPrivate()
 {
-	if (bootExeData) {
-		bootExeData->unref();
-	}
-	if (isoPartition) {
-		isoPartition->unref();
-	}
-	if (discReader) {
-		discReader->unref();
-	}
+	UNREF(bootExeData);
+	UNREF(isoPartition);
+	UNREF(discReader);
 }
 
 /**
@@ -271,9 +265,7 @@ RomData *PlayStationDiscPrivate::openBootExe(void)
 		}
 
 		// Unable to open the executable.
-		if (exeData) {
-			exeData->unref();
-		}
+		UNREF(exeData);
 	}
 
 	// Unable to open the default executable.
@@ -315,8 +307,7 @@ PlayStationDisc::PlayStationDisc(IRpFile *file)
 	// Check for a PVD with 2048-byte sectors.
 	size_t size = d->file->seekAndRead(ISO_PVD_ADDRESS_2048, &d->pvd, sizeof(d->pvd));
 	if (size != sizeof(d->pvd)) {
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
 	if (d->pvd.header.type == ISO_VDT_PRIMARY && d->pvd.header.version == ISO_VD_VERSION &&
@@ -330,8 +321,7 @@ PlayStationDisc::PlayStationDisc(IRpFile *file)
 		CDROM_2352_Sector_t sector;
 		size_t size = d->file->seekAndRead(ISO_PVD_ADDRESS_2352, &sector, sizeof(sector));
 		if (size != sizeof(sector)) {
-			d->file->unref();
-			d->file = nullptr;
+			UNREF_AND_NULL_NOCHK(d->file);
 			return;
 		}
 
@@ -353,11 +343,8 @@ PlayStationDisc::PlayStationDisc(IRpFile *file)
 
 	if (!discReader || !discReader->isOpen()) {
 		// Error opening the DiscReader.
-		if (discReader) {
-			discReader->unref();
-		}
-		d->file->unref();
-		d->file = nullptr;
+		UNREF(discReader);
+		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
 
@@ -365,12 +352,8 @@ PlayStationDisc::PlayStationDisc(IRpFile *file)
 	IsoPartition *const isoPartition = new IsoPartition(discReader, 0, 0);
 	if (!isoPartition->isOpen()) {
 		// Error opening the ISO partition.
-		if (isoPartition) {
-			isoPartition->unref();
-		}
-		if (discReader) {
-			discReader->unref();
-		}
+		UNREF(isoPartition);
+		UNREF(discReader);
 		d->file->unref();
 		d->file = nullptr;
 		return;
@@ -381,14 +364,9 @@ PlayStationDisc::PlayStationDisc(IRpFile *file)
 	int ret = d->loadSystemCnf(isoPartition);
 	if (ret != 0) {
 		// Error loading system.cnf.
-		if (isoPartition) {
-			isoPartition->unref();
-		}
-		if (discReader) {
-			discReader->unref();
-		}
-		d->file->unref();
-		d->file = nullptr;
+		UNREF(isoPartition);
+		UNREF(discReader);
+		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
 
@@ -405,14 +383,9 @@ PlayStationDisc::PlayStationDisc(IRpFile *file)
 			consoleType = PlayStationDiscPrivate::ConsoleType::PS1;
 		} else {
 			// Not valid.
-			if (isoPartition) {
-				isoPartition->unref();
-			}
-			if (discReader) {
-				discReader->unref();
-			}
-			d->file->unref();
-			d->file = nullptr;
+			UNREF(isoPartition);
+			UNREF(discReader);
+			UNREF_AND_NULL_NOCHK(d->file);
 			return;
 		}
 	}
@@ -494,14 +467,8 @@ void PlayStationDisc::close(void)
 		d->bootExeData->close();
 	}
 
-	if (d->isoPartition) {
-		d->isoPartition->unref();
-		d->isoPartition = nullptr;
-	}
-	if (d->discReader) {
-		d->discReader->unref();
-		d->discReader = nullptr;
-	}
+	UNREF_AND_NULL(d->isoPartition);
+	UNREF_AND_NULL(d->discReader);
 
 	// Call the superclass function.
 	super::close();

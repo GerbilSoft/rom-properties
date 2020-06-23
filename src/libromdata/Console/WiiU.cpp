@@ -75,9 +75,7 @@ WiiUPrivate::WiiUPrivate(WiiU *q, IRpFile *file)
 
 WiiUPrivate::~WiiUPrivate()
 {
-	if (discReader) {
-		discReader->unref();
-	}
+	UNREF(discReader);
 }
 
 /** WiiU **/
@@ -118,8 +116,7 @@ WiiU::WiiU(IRpFile *file)
 	d->file->rewind();
 	size_t size = d->file->read(header, sizeof(header));
 	if (size != sizeof(header)) {
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
 
@@ -145,17 +142,13 @@ WiiU::WiiU(IRpFile *file)
 			// Disc image is invalid.
 			d->fileType = FileType::Unknown;
 			d->discType = WiiUPrivate::DiscType::Unknown;
-			d->file->unref();
-			d->file = nullptr;
+			UNREF_AND_NULL_NOCHK(d->file);
 			break;
 	}
 
 	if (!d->discReader || !d->discReader->isOpen()) {
 		// Error opening the DiscReader.
-		if (d->discReader) {
-			d->discReader->unref();
-			d->discReader = nullptr;
-		}
+		UNREF_AND_NULL(d->discReader);
 		d->fileType = FileType::Unknown;
 		d->discType = WiiUPrivate::DiscType::Unknown;
 		return;
@@ -166,10 +159,8 @@ WiiU::WiiU(IRpFile *file)
 		size = d->discReader->seekAndRead(0, header, sizeof(header));
 		if (size != sizeof(header)) {
 			// Seek and/or read error.
-			d->discReader->unref();
-			d->file->unref();
-			d->discReader = nullptr;
-			d->file = nullptr;
+			UNREF_AND_NULL_NOCHK(d->discReader);
+			UNREF_AND_NULL_NOCHK(d->file);
 			d->discType = WiiUPrivate::DiscType::Unknown;
 			return;
 		}
@@ -180,10 +171,8 @@ WiiU::WiiU(IRpFile *file)
 	size = d->discReader->seekAndRead(0x10000, &disc_magic, sizeof(disc_magic));
 	if (size != sizeof(disc_magic)) {
 		// Seek and/or read error.
-		d->discReader->unref();
-		d->file->unref();
-		d->discReader = nullptr;
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->discReader);
+		UNREF_AND_NULL_NOCHK(d->file);
 		d->discType = WiiUPrivate::DiscType::Unknown;
 		return;
 	}
@@ -196,10 +185,8 @@ WiiU::WiiU(IRpFile *file)
 		memcpy(&d->discHeader, header, sizeof(d->discHeader));
 	} else {
 		// No match.
-		d->discReader->unref();
-		d->file->unref();
-		d->discReader = nullptr;
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->discReader);
+		UNREF_AND_NULL_NOCHK(d->file);
 		d->discType = WiiUPrivate::DiscType::Unknown;
 		return;
 	}

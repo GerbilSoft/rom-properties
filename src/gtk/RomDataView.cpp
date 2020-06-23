@@ -417,9 +417,7 @@ rom_data_view_finalize(GObject *object)
 	delete page->vecListDataMulti;
 
 	// Unreference romData.
-	if (page->romData) {
-		page->romData->unref();
-	}
+	UNREF(page->romData);
 
 	// Call the superclass finalize() function.
 	G_OBJECT_CLASS(rom_data_view_parent_class)->finalize(object);
@@ -516,10 +514,7 @@ rom_data_view_set_uri(RomDataView	*page,
 		page->uri = nullptr;
 
 		// Unreference the existing RomData object.
-		if (page->romData) {
-			page->romData->unref();
-			page->romData = nullptr;
-		}
+		UNREF_AND_NULL(page->romData);
 
 		// Delete the icon frames and tabs.
 		rom_data_view_delete_tabs(page);

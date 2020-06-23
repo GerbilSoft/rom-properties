@@ -170,11 +170,9 @@ class NCCHReaderPrivate
 		{
 			RP_Q(NCCHReader);
 			if (q->m_hasDiscReader) {
-				q->m_discReader->unref();
-				q->m_discReader = nullptr;
+				UNREF_AND_NULL_NOCHK(q->m_discReader);
 			} else if (q->m_file) {
-				q->m_file->unref();
-				q->m_file = nullptr;
+				UNREF_AND_NULL_NOCHK(q->m_file);
 			}
 		}
 };

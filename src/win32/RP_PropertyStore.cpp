@@ -160,15 +160,11 @@ RP_PropertyStore_Private::RP_PropertyStore_Private()
 
 RP_PropertyStore_Private::~RP_PropertyStore_Private()
 {
-	if (romData) {
-		romData->unref();
-	}
+	UNREF(romData);
 
 	// pstream is owned by file,
 	// so don't Release() it here.
-	if (file) {
-		file->unref();
-	}
+	UNREF(file);
 
 	// Clear property variants.
 	std::for_each(prop_val.begin(), prop_val.end(),

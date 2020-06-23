@@ -158,8 +158,7 @@ MachO::MachO(IRpFile *file)
 	d->file->rewind();
 	size_t size = d->file->read(header, sizeof(header));
 	if (size != sizeof(header)) {
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
 
@@ -233,8 +232,7 @@ MachO::MachO(IRpFile *file)
 		d->execFormat = MachOPrivate::Exec_Format::Unknown;
 		d->machFormats.clear();
 		d->machHeaders.clear();
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
 

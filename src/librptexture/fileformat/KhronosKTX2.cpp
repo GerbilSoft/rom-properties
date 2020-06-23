@@ -669,8 +669,7 @@ KhronosKTX2::KhronosKTX2(IRpFile *file)
 	d->file->rewind();
 	size_t size = d->file->read(&d->ktx2Header, sizeof(d->ktx2Header));
 	if (size != sizeof(d->ktx2Header)) {
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
 
@@ -684,8 +683,7 @@ KhronosKTX2::KhronosKTX2(IRpFile *file)
 	d->isValid = (isRomSupported_static(&info) >= 0);
 
 	if (!d->isValid) {
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
 
@@ -721,8 +719,7 @@ KhronosKTX2::KhronosKTX2(IRpFile *file)
 	size = d->file->read(d->mipmap_data.data(), mipdata_size);
 	if (size != mipdata_size) {
 		d->isValid = false;
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
 #if SYS_BYTEORDER == SYS_BIG_ENDIAN

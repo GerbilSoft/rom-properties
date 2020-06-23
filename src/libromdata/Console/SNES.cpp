@@ -739,8 +739,7 @@ SNES::SNES(IRpFile *file)
 			size_t size = d->file->seekAndRead(bsx_addrs[i], buf, sizeof(buf));
 			if (size != sizeof(buf)) {
 				// Read error.
-				d->file->unref();
-				d->file = nullptr;
+				UNREF_AND_NULL_NOCHK(d->file);
 				return;
 			}
 
@@ -768,8 +767,7 @@ SNES::SNES(IRpFile *file)
 		d->file->rewind();
 		size_t size = d->file->read(&smdHeader, sizeof(smdHeader));
 		if (size != sizeof(smdHeader)) {
-			d->file->unref();
-			d->file = nullptr;
+			UNREF_AND_NULL_NOCHK(d->file);
 			return;
 		}
 
@@ -868,8 +866,7 @@ SNES::SNES(IRpFile *file)
 
 	if (d->header_address == 0) {
 		// No ROM header.
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 		d->romType = SNESPrivate::RomType::Unknown;
 		d->isValid = false;
 		return;

@@ -390,8 +390,7 @@ iQuePlayer::iQuePlayer(IRpFile *file)
 	    filesize != IQUE_PLAYER_DAT_FILESIZE)
 	{
 		// Incorrect filesize.
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
 
@@ -399,8 +398,7 @@ iQuePlayer::iQuePlayer(IRpFile *file)
 	d->file->rewind();
 	size_t size = d->file->read(&d->contentDesc, sizeof(d->contentDesc));
 	if (size != sizeof(d->contentDesc)) {
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
 
@@ -415,8 +413,7 @@ iQuePlayer::iQuePlayer(IRpFile *file)
 	d->isValid = ((int)d->iQueFileType >= 0);
 
 	if (!d->isValid) {
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
 
@@ -426,8 +423,7 @@ iQuePlayer::iQuePlayer(IRpFile *file)
 	if (size != sizeof(d->bbContentMetaDataHead)) {
 		d->iQueFileType = iQuePlayerPrivate::IQueFileType::Unknown;
 		d->isValid = false;
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
 

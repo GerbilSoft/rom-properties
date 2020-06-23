@@ -560,8 +560,7 @@ XboxXPR::XboxXPR(IRpFile *file)
 	d->file->rewind();
 	size_t size = d->file->read(&d->xpr0Header, sizeof(d->xpr0Header));
 	if (size != sizeof(d->xpr0Header)) {
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
 
@@ -583,8 +582,7 @@ XboxXPR::XboxXPR(IRpFile *file)
 	}
 
 	if (!d->isValid) {
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
 

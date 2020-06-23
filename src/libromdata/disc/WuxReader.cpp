@@ -70,8 +70,7 @@ WuxReader::WuxReader(IRpFile *file)
 	size_t sz = m_file->read(&d->wuxHeader, sizeof(d->wuxHeader));
 	if (sz != sizeof(d->wuxHeader)) {
 		// Error reading the .wux header.
-		m_file->unref();
-		m_file = nullptr;
+		UNREF_AND_NULL_NOCHK(m_file);
 		m_lastError = EIO;
 		return;
 	}
@@ -81,8 +80,7 @@ WuxReader::WuxReader(IRpFile *file)
 	    d->wuxHeader.magic[1] != cpu_to_le32(WUX_MAGIC_1))
 	{
 		// Invalid magic.
-		m_file->unref();
-		m_file = nullptr;
+		UNREF_AND_NULL_NOCHK(m_file);
 		m_lastError = EIO;
 		return;
 	}
@@ -95,8 +93,7 @@ WuxReader::WuxReader(IRpFile *file)
 	    d->block_size < WUX_BLOCK_SIZE_MIN || d->block_size > WUX_BLOCK_SIZE_MAX)
 	{
 		// Block size is out of range.
-		m_file->unref();
-		m_file = nullptr;
+		UNREF_AND_NULL_NOCHK(m_file);
 		m_lastError = EIO;
 		return;
 	}
@@ -105,8 +102,7 @@ WuxReader::WuxReader(IRpFile *file)
 	d->disc_size = static_cast<off64_t>(le64_to_cpu(d->wuxHeader.uncompressedSize));
 	if (d->disc_size < 0 || d->disc_size > 50LL*1024*1024*1024) {
 		// Disc size is out of range.
-		m_file->unref();
-		m_file = nullptr;
+		UNREF_AND_NULL_NOCHK(m_file);
 		m_lastError = EIO;
 		return;
 	}
@@ -120,8 +116,7 @@ WuxReader::WuxReader(IRpFile *file)
 		// Read error.
 		d->idxTbl.clear();
 		d->disc_size = 0;
-		m_file->unref();
-		m_file = nullptr;
+		UNREF_AND_NULL_NOCHK(m_file);
 		m_lastError = EIO;
 		return;
 	}

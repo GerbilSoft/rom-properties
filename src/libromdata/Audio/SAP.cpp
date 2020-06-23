@@ -448,8 +448,7 @@ SAP::SAP(IRpFile *file)
 	d->file->rewind();
 	size_t size = d->file->read(buf, sizeof(buf));
 	if (size != sizeof(buf)) {
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
 
@@ -463,9 +462,7 @@ SAP::SAP(IRpFile *file)
 	d->isValid = (isRomSupported_static(&info) >= 0);
 
 	if (!d->isValid) {
-		d->file->unref();
-		d->file = nullptr;
-		return;
+		UNREF_AND_NULL_NOCHK(d->file);
 	}
 }
 

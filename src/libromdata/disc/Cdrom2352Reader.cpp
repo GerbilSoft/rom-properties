@@ -68,8 +68,7 @@ Cdrom2352Reader::Cdrom2352Reader(IRpFile *file)
 	const off64_t fileSize = m_file->size();
 	if (fileSize <= 0 || fileSize % 2352 != 0) {
 		// Invalid disc size.
-		m_file->unref();
-		m_file = nullptr;
+		UNREF_AND_NULL_NOCHK(m_file);
 		m_lastError = EIO;
 		return;
 	}

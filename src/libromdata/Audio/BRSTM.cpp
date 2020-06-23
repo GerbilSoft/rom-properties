@@ -104,8 +104,7 @@ BRSTM::BRSTM(IRpFile *file)
 	d->file->rewind();
 	size_t size = d->file->read(&d->brstmHeader, sizeof(d->brstmHeader));
 	if (size != sizeof(d->brstmHeader)) {
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
 
@@ -119,8 +118,7 @@ BRSTM::BRSTM(IRpFile *file)
 	d->isValid = (isRomSupported_static(&info) >= 0);
 
 	if (!d->isValid) {
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
 
@@ -134,16 +132,14 @@ BRSTM::BRSTM(IRpFile *file)
 	if (head_offset == 0 || head_size < sizeof(headHeader)) {
 		// Invalid HEAD chunk.
 		d->isValid = false;
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
 	size = d->file->seekAndRead(head_offset, &headHeader, sizeof(headHeader));
 	if (size != sizeof(headHeader)) {
 		// Seek and/or read error.
 		d->isValid = false;
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
 
@@ -151,8 +147,7 @@ BRSTM::BRSTM(IRpFile *file)
 	if (headHeader.magic != cpu_to_be32(BRSTM_HEAD_MAGIC)) {
 		// Incorrect magic number.
 		d->isValid = false;
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
 
@@ -162,16 +157,14 @@ BRSTM::BRSTM(IRpFile *file)
 	if (head1_offset < sizeof(headHeader) - 8) {
 		// Invalid offset.
 		d->isValid = false;
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
 	size = d->file->seekAndRead(head_offset + 8 + head1_offset, &d->headChunk1, sizeof(d->headChunk1));
 	if (size != sizeof(d->headChunk1)) {
 		// Seek and/or read error.
 		d->isValid = false;
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
 

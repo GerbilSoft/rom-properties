@@ -294,8 +294,7 @@ GameCom::GameCom(IRpFile *file)
 
 	if (!d->isValid) {
 		// Still not valid.
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 	}
 }
 

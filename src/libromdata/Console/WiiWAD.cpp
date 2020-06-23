@@ -143,12 +143,8 @@ WiiWADPrivate::WiiWADPrivate(WiiWAD *q, IRpFile *file)
 WiiWADPrivate::~WiiWADPrivate()
 {
 #ifdef ENABLE_DECRYPTION
-	if (wibnData) {
-		wibnData->unref();
-	}
-	if (cbcReader) {
-		cbcReader->unref();
-	}
+	UNREF(wibnData);
+	UNREF(cbcReader);
 #endif /* ENABLE_DECRYPTION */
 }
 
@@ -228,8 +224,7 @@ WiiWAD::WiiWAD(IRpFile *file)
 	d->file->rewind();
 	size_t size = d->file->read(&d->wadHeader, sizeof(d->wadHeader));
 	if (size != sizeof(d->wadHeader)) {
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
 
@@ -243,8 +238,7 @@ WiiWAD::WiiWAD(IRpFile *file)
 	d->wadType = static_cast<WiiWADPrivate::WadType>(isRomSupported_static(&info));
 	d->isValid = ((int)d->wadType >= 0);
 	if (!d->isValid) {
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
 
@@ -295,8 +289,7 @@ WiiWAD::WiiWAD(IRpFile *file)
 
 		default:
 			assert(!"Should not get here...");
-			d->file->unref();
-			d->file = nullptr;
+			UNREF_AND_NULL_NOCHK(d->file);
 			return;
 	}
 
@@ -306,16 +299,14 @@ WiiWAD::WiiWAD(IRpFile *file)
 	if (size != sizeof(d->ticket)) {
 		// Seek and/or read error.
 		d->isValid = false;
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
 	size = d->file->seekAndRead(tmd_addr, &d->tmdHeader, sizeof(d->tmdHeader));
 	if (size != sizeof(d->tmdHeader)) {
 		// Seek and/or read error.
 		d->isValid = false;
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
 
@@ -441,10 +432,7 @@ void WiiWAD::close(void)
 	}
 
 	// Close associated files used with child RomData subclasses.
-	if (d->cbcReader) {
-		d->cbcReader->unref();
-		d->cbcReader = nullptr;
-	}
+	UNREF_AND_NULL(d->cbcReader);
 #endif /* ENABLE_DECRYPTION */
 
 	// Call the superclass function.

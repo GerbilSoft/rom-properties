@@ -137,8 +137,7 @@ VirtualBoy::VirtualBoy(IRpFile *file)
 	// and cannot be larger than 16 MB.
 	if (filesize < 0x220 || filesize > (16*1024*1024)) {
 		// File size is out of range.
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
 
@@ -147,8 +146,7 @@ VirtualBoy::VirtualBoy(IRpFile *file)
 	d->file->seek(header_addr);
 	size_t size = d->file->read(&d->romHeader, sizeof(d->romHeader));
 	if (size != sizeof(d->romHeader)) {
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
 
@@ -162,8 +160,7 @@ VirtualBoy::VirtualBoy(IRpFile *file)
 	d->isValid = (isRomSupported(&info) >= 0);
 
 	if (!d->isValid) {
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 	}
 }
 

@@ -92,8 +92,7 @@ CBCReaderPrivate::CBCReaderPrivate(CBCReader *q,
 	if (!cipher) {
 		// Unable to initialize decryption.
 		// TODO: Error code.
-		q->m_file->unref();
-		q->m_file = nullptr;
+		UNREF_AND_NULL_NOCHK(q->m_file);
 		return;
 	}
 

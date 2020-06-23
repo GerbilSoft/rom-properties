@@ -85,8 +85,7 @@ NASOSReader::NASOSReader(IRpFile *file)
 	size_t sz = m_file->read(&d->header, sizeof(d->header));
 	if (sz != sizeof(d->header)) {
 		// Error reading the NASOS header.
-		m_file->unref();
-		m_file = nullptr;
+		UNREF_AND_NULL_NOCHK(m_file);
 		m_lastError = EIO;
 		return;
 	}
@@ -112,8 +111,7 @@ NASOSReader::NASOSReader(IRpFile *file)
 		d->blockMapShift = 8;
 	} else {
 		// Invalid magic.
-		m_file->unref();
-		m_file = nullptr;
+		UNREF_AND_NULL_NOCHK(m_file);
 		m_lastError = EIO;
 		return;
 	}
@@ -128,8 +126,7 @@ NASOSReader::NASOSReader(IRpFile *file)
 	if (sz != sz_blockMap) {
 		// Error reading the block map.
 		d->blockMap.clear();
-		m_file->unref();
-		m_file = nullptr;
+		UNREF_AND_NULL_NOCHK(m_file);
 		m_lastError = EIO;
 		return;
 	}

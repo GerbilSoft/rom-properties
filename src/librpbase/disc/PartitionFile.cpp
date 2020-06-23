@@ -40,9 +40,7 @@ PartitionFile::PartitionFile(IDiscReader *partition, off64_t offset, off64_t siz
 
 PartitionFile::~PartitionFile()
 {
-	if (m_partition) {
-		m_partition->unref();
-	}
+	UNREF(m_partition);
 }
 
 /**
@@ -60,10 +58,7 @@ bool PartitionFile::isOpen(void) const
  */
 void PartitionFile::close(void)
 {
-	if (m_partition) {
-		m_partition->unref();
-		m_partition = nullptr;
-	}
+	UNREF_AND_NULL(m_partition);
 }
 
 /**

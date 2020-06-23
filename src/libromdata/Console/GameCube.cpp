@@ -228,9 +228,7 @@ GameCubePrivate::~GameCubePrivate()
 	// Clear the existing partition table vector.
 	std::for_each(wiiPtbl.begin(), wiiPtbl.end(),
 		[](WiiPartEntry &entry) {
-			if (entry.partition) {
-				entry.partition->unref();
-			}
+			UNREF(entry.partition);
 		}
 	);
 	wiiPtbl.clear();
@@ -239,12 +237,8 @@ GameCubePrivate::~GameCubePrivate()
 		// Delete opening.bnr data.
 		switch (discType & DISC_SYSTEM_MASK) {
 			case DISC_SYSTEM_GCN:
-				if (opening_bnr.gcn.data) {
-					opening_bnr.gcn.data->unref();
-				}
-				if (opening_bnr.gcn.partition) {
-					opening_bnr.gcn.partition->unref();
-				}
+				UNREF(opening_bnr.gcn.data);
+				UNREF(opening_bnr.gcn.partition);
 				break;
 			case DISC_SYSTEM_WII:
 				delete opening_bnr.wii.imet;
@@ -254,9 +248,7 @@ GameCubePrivate::~GameCubePrivate()
 		}
 	}
 
-	if (discReader) {
-		discReader->unref();
-	}
+	UNREF(discReader);
 }
 
 /**
@@ -687,8 +679,7 @@ GameCube::GameCube(IRpFile *file)
 	d->file->rewind();
 	size_t size = d->file->read(&header, sizeof(header));
 	if (size != sizeof(header)) {
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
 
@@ -705,8 +696,7 @@ GameCube::GameCube(IRpFile *file)
 	d->isValid = (d->discType >= 0);
 	if (!d->isValid) {
 		// Not supported.
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
 
@@ -740,9 +730,7 @@ GameCube::GameCube(IRpFile *file)
 				IRpFile *const wbfs0 = FileSystem::openRelatedFile(file->filename().c_str(), nullptr, ".wbfs");
 				if (unlikely(!wbfs0) || !wbfs0->isOpen()) {
 					// Unable to open the .wbfs file.
-					if (wbfs0) {
-						wbfs0->unref();
-					}
+					UNREF(wbfs0);
 					d->discType = GameCubePrivate::DISC_UNKNOWN;
 					break;
 				}
@@ -769,13 +757,11 @@ GameCube::GameCube(IRpFile *file)
 				// First part of split WBFS.
 				// Check for a WBF1 file.
 				IRpFile *wbfs1 = FileSystem::openRelatedFile(file->filename().c_str(), nullptr, ".wbf1");
-				if (unlikely(wbfs1 && !wbfs1->isOpen())) {
+				// COMMIT THIS FIRST BEFORE UNREF
+				if (unlikely(!wbfs1 || !wbfs1->isOpen())) {
 					// Unable to open the .wbf1 file.
 					// Assume it's a single .wbfs file.
-					if (wbfs1) {
-						wbfs1->unref();
-						wbfs1 = nullptr;
-					}
+					UNREF_AND_NULL(wbfs1);
 				}
 
 				if (likely(!wbfs1)) {
@@ -833,8 +819,7 @@ GameCube::GameCube(IRpFile *file)
 	d->isValid = (d->discType >= 0);
 	if (!d->isValid) {
 		// Not supported.
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
 
@@ -904,8 +889,7 @@ GameCube::GameCube(IRpFile *file)
 		size = pt.partition->read(&d->discHeader, sizeof(d->discHeader));
 		if (size != sizeof(d->discHeader)) {
 			// Error reading the partition header.
-			pt.partition->unref();
-			pt.partition = nullptr;
+			UNREF_AND_NULL_NOCHK(pt.partition);
 			d->wiiPtbl.clear();
 			goto notSupported;
 		}
@@ -1049,12 +1033,8 @@ GameCube::GameCube(IRpFile *file)
 
 notSupported:
 	// This disc image is not supported.
-	if (d->discReader) {
-		d->discReader->unref();
-		d->discReader = nullptr;
-	}
-	d->file->unref();
-	d->file = nullptr;
+	UNREF_AND_NULL(d->discReader);
+	UNREF_AND_NULL_NOCHK(d->file);
 	d->discType = GameCubePrivate::DISC_UNKNOWN;
 	d->isValid = false;
 }
@@ -1074,10 +1054,7 @@ void GameCube::close(void)
 				if (d->opening_bnr.gcn.data) {
 					d->opening_bnr.gcn.data->close();
 				}
-				if (d->opening_bnr.gcn.partition) {
-					d->opening_bnr.gcn.partition->unref();
-					d->opening_bnr.gcn.partition = nullptr;
-				}
+				UNREF_AND_NULL(d->opening_bnr.gcn.partition);
 				break;
 			case GameCubePrivate::DISC_SYSTEM_WII:
 				// No subclass for Wii yet.

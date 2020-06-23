@@ -75,8 +75,7 @@ CisoGcnReader::CisoGcnReader(IRpFile *file)
 	size_t sz = m_file->read(&d->cisoHeader, sizeof(d->cisoHeader));
 	if (sz != sizeof(d->cisoHeader)) {
 		// Error reading the CISO header.
-		m_file->unref();
-		m_file = nullptr;
+		UNREF_AND_NULL_NOCHK(m_file);
 		m_lastError = EIO;
 		return;
 	}
@@ -84,8 +83,7 @@ CisoGcnReader::CisoGcnReader(IRpFile *file)
 	// Verify the CISO header.
 	if (d->cisoHeader.magic != cpu_to_be32(CISO_MAGIC)) {
 		// Invalid magic.
-		m_file->unref();
-		m_file = nullptr;
+		UNREF_AND_NULL_NOCHK(m_file);
 		m_lastError = EIO;
 		return;
 	}
@@ -122,8 +120,7 @@ CisoGcnReader::CisoGcnReader(IRpFile *file)
 				break;
 			default:
 				// Invalid entry.
-				m_file->unref();
-				m_file = nullptr;
+				UNREF_AND_NULL_NOCHK(m_file);
 				m_lastError = EIO;
 				return;
 		}

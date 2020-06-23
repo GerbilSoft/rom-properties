@@ -766,8 +766,7 @@ ELF::ELF(IRpFile *file)
 	d->file->rewind();
 	size_t size = d->file->read(&d->Elf_Header, sizeof(d->Elf_Header));
 	if (size != sizeof(d->Elf_Header)) {
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
 
@@ -783,8 +782,7 @@ ELF::ELF(IRpFile *file)
 	d->isValid = ((int)d->elfFormat >= 0);
 	if (!d->isValid) {
 		// Not an ELF executable.
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
 
@@ -795,8 +793,7 @@ ELF::ELF(IRpFile *file)
 			assert(!"Should not get here...");
 			d->isValid = false;
 			d->elfFormat = ELFPrivate::Elf_Format::Unknown;
-			d->file->unref();
-			d->file = nullptr;
+			UNREF_AND_NULL_NOCHK(d->file);
 			return;
 
 		case ELFPrivate::Elf_Format::_32HOST:

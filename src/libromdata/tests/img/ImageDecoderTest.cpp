@@ -294,15 +294,8 @@ void ImageDecoderTest::SetUp(void)
  */
 void ImageDecoderTest::TearDown(void)
 {
-	if (m_romData) {
-		m_romData->unref();
-		m_romData = nullptr;
-	}
-
-	if (m_f_dds) {
-		m_f_dds->unref();
-		m_f_dds = nullptr;
-	}
+	UNREF_AND_NULL(m_romData);
+	UNREF_AND_NULL(m_f_dds);
 
 	if (m_gzDds) {
 		gzclose_r(m_gzDds);
@@ -622,8 +615,7 @@ void ImageDecoderTest::decodeBenchmark_internal(void)
 		const rp_image *const img_dds = m_romData->image(mode.imgType);
 		ASSERT_TRUE(img_dds != nullptr) << "Could not load the source image as rp_image.";
 
-		m_romData->unref();
-		m_romData = nullptr;
+		UNREF_AND_NULL_NOCHK(m_romData);
 	}
 }
 

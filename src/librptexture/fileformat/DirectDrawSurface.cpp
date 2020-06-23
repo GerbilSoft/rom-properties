@@ -843,8 +843,7 @@ DirectDrawSurface::DirectDrawSurface(IRpFile *file)
 	d->file->rewind();
 	size_t size = d->file->read(header, sizeof(header));
 	if (size < 4+sizeof(DDS_HEADER)) {
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
 
@@ -858,8 +857,7 @@ DirectDrawSurface::DirectDrawSurface(IRpFile *file)
 	d->isValid = (isRomSupported_static(&info) >= 0);
 
 	if (!d->isValid) {
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
 
@@ -880,8 +878,7 @@ DirectDrawSurface::DirectDrawSurface(IRpFile *file)
 		}
 		if (size < headerSize) {
 			// Extra headers weren't read.
-			d->file->unref();
-			d->file = nullptr;
+			UNREF_AND_NULL_NOCHK(d->file);
 			d->isValid = false;
 			return;
 		}
@@ -917,8 +914,7 @@ DirectDrawSurface::DirectDrawSurface(IRpFile *file)
 		    d->dxt10Header.dxgiFormat <= DXGI_FORMAT_FAKE_END)
 		{
 			// "Fake" format...
-			d->file->unref();
-			d->file = nullptr;
+			UNREF_AND_NULL_NOCHK(d->file);
 			d->isValid = false;
 			return;
 		}

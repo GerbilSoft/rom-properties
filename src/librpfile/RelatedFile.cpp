@@ -86,8 +86,7 @@ IRpFile *openRelatedFile(const char *filename, const char *basename, const char 
 		test_file = new RpFile(rel_filename, RpFile::FM_OPEN_READ);
 		if (!test_file->isOpen()) {
 			// Still can't open the related file.
-			test_file->unref();
-			test_file = nullptr;
+			UNREF_AND_NULL_NOCHK(test_file);
 		}
 	}
 

@@ -92,8 +92,7 @@ N64::N64(IRpFile *file)
 	d->file->rewind();
 	size_t size = d->file->read(&d->romHeader, sizeof(d->romHeader));
 	if (size != sizeof(d->romHeader)) {
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
 
@@ -138,8 +137,7 @@ N64::N64(IRpFile *file)
 		default:
 			// Unknown ROM type.
 			d->romType = N64Private::RomType::Unknown;
-			d->file->unref();
-			d->file = nullptr;
+			UNREF_AND_NULL_NOCHK(d->file);
 			return;
 	}
 

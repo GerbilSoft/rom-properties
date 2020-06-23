@@ -532,8 +532,7 @@ MegaDrive::MegaDrive(IRpFile *file)
 	uint8_t header[0x800];
 	size_t size = d->file->read(header, sizeof(header));
 	if (size < 0x200) {
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
 
@@ -598,8 +597,7 @@ MegaDrive::MegaDrive(IRpFile *file)
 			case MegaDrivePrivate::ROM_FORMAT_DISC_2352:
 				if (size < 0x210) {
 					// Not enough data for a 2352-byte sector disc image.
-					d->file->unref();
-					d->file = nullptr;
+					UNREF_AND_NULL_NOCHK(d->file);
 					return;
 				}
 
@@ -625,8 +623,7 @@ MegaDrive::MegaDrive(IRpFile *file)
 			d->romHeader.region_codes, sizeof(d->romHeader.region_codes));
 	} else {
 		// Not valid. Close the file.
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 	}
 
 	// Determine the MIME type.

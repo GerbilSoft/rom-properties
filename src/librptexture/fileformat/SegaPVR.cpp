@@ -1206,8 +1206,7 @@ SegaPVR::SegaPVR(IRpFile *file)
 	d->file->rewind();
 	size_t sz_header = d->file->read(header, sizeof(header));
 	if (sz_header < 32) {
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
 
@@ -1222,8 +1221,7 @@ SegaPVR::SegaPVR(IRpFile *file)
 	d->isValid = ((int)d->pvrType >= 0);
 
 	if (!d->isValid) {
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
 
@@ -1254,8 +1252,7 @@ SegaPVR::SegaPVR(IRpFile *file)
 		assert(d->gbix_len <= 128);
 		if (d->gbix_len < 4 || d->gbix_len > 128 || (d->gbix_len > (sz_header-8))) {
 			// Invalid GBIX header.
-			d->file->unref();
-			d->file = nullptr;
+			UNREF_AND_NULL_NOCHK(d->file);
 			d->pvrType = SegaPVRPrivate::PVRType::Unknown;
 			d->isValid = false;
 			return;
@@ -1287,8 +1284,7 @@ SegaPVR::SegaPVR(IRpFile *file)
 		default:
 			// Should not get here...
 			assert(!"Invalid PVR type.");
-			d->file->unref();
-			d->file = nullptr;
+			UNREF_AND_NULL_NOCHK(d->file);
 			d->pvrType = SegaPVRPrivate::PVRType::Unknown;
 			d->isValid = false;
 			break;

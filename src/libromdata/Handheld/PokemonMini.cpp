@@ -75,8 +75,7 @@ PokemonMini::PokemonMini(IRpFile *file)
 	// Read the ROM header.
 	size_t size = d->file->seekAndRead(POKEMONMINI_HEADER_ADDRESS, &d->romHeader, sizeof(d->romHeader));
 	if (size != sizeof(d->romHeader)) {
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
 
@@ -90,8 +89,7 @@ PokemonMini::PokemonMini(IRpFile *file)
 	d->isValid = (isRomSupported_static(&info) >= 0);
 
 	if (!d->isValid) {
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 	}
 }
 

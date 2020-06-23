@@ -753,8 +753,7 @@ PowerVR3::PowerVR3(IRpFile *file)
 	d->file->rewind();
 	size_t size = d->file->read(&d->pvr3Header, sizeof(d->pvr3Header));
 	if (size != sizeof(d->pvr3Header)) {
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
 
@@ -789,9 +788,7 @@ PowerVR3::PowerVR3(IRpFile *file)
 		d->isByteswapNeeded = true;
 	} else {
 		// Invalid magic.
-		d->isValid = false;
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
 

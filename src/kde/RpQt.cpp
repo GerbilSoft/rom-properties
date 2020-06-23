@@ -197,8 +197,7 @@ IRpFile *openQUrl(const QUrl &url, bool isThumbnail)
 	if (!file->isOpen()) {
 		// Unable to open the file...
 		// TODO: Return an error code?
-		file->unref();
-		file = nullptr;
+		UNREF_AND_NULL_NOCHK(file);
 	}
 
 	return file;

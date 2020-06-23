@@ -421,9 +421,7 @@ RP_ShellPropSheetExt_Private::~RP_ShellPropSheetExt_Private()
 	delete lblIcon;
 
 	// Unreference the RomData object.
-	if (romData) {
-		romData->unref();
-	}
+	UNREF(romData);
 
 	// Destroy the flags ImageList.
 	if (cboLanguage) {
@@ -2784,9 +2782,7 @@ IFACEMETHODIMP RP_ShellPropSheetExt::Initialize(
 	hr = S_OK;
 
 cleanup:
-	if (file) {
-		file->unref();
-	}
+	UNREF(file);
 	GlobalUnlock(stm.hGlobal);
 	ReleaseStgMedium(&stm);
 	free(tfilename);
@@ -3205,8 +3201,7 @@ INT_PTR CALLBACK RP_ShellPropSheetExt_Private::DlgProc(HWND hDlg, UINT uMsg, WPA
 				break;
 			} else if (!d->romData->isOpen()) {
 				// RomData is not open.
-				d->romData->unref();
-				d->romData = nullptr;
+				UNREF_AND_NULL_NOCHK(d->romData);
 				break;
 			}
 

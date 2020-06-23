@@ -222,9 +222,7 @@ DreamcastSavePrivate::DreamcastSavePrivate(DreamcastSave *q, IRpFile *file)
 
 DreamcastSavePrivate::~DreamcastSavePrivate()
 {
-	if (vmi_file) {
-		vmi_file->unref();
-	}
+	UNREF(vmi_file);
 
 	delete img_banner;
 	if (iconAnimData) {
@@ -801,8 +799,7 @@ DreamcastSave::DreamcastSave(IRpFile *file)
 		size_t size = d->file->read(&d->vms_dirent, sizeof(d->vms_dirent));
 		if (size != sizeof(d->vms_dirent)) {
 			// Read error.
-			d->file->unref();
-			d->file = nullptr;
+			UNREF_AND_NULL_NOCHK(d->file);
 			return;
 		}
 
@@ -828,8 +825,7 @@ DreamcastSave::DreamcastSave(IRpFile *file)
 		int ret = d->readVmiHeader(d->file);
 		if (ret != 0) {
 			// Read error.
-			d->file->unref();
-			d->file = nullptr;
+			UNREF_AND_NULL_NOCHK(d->file);
 			return;
 		}
 
@@ -840,8 +836,7 @@ DreamcastSave::DreamcastSave(IRpFile *file)
 	} else {
 		// Not valid.
 		d->saveType = DreamcastSavePrivate::SaveType::Unknown;
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
 
@@ -863,8 +858,7 @@ DreamcastSave::DreamcastSave(IRpFile *file)
 			d->loaded_headers |= headerLoaded;
 		} else {
 			// Not valid.
-			d->file->unref();
-			d->file = nullptr;
+			UNREF_AND_NULL_NOCHK(d->file);
 			return;
 		}
 
@@ -889,8 +883,7 @@ DreamcastSave::DreamcastSave(IRpFile *file)
 				d->loaded_headers |= headerLoaded;
 			} else {
 				// Not valid.
-				d->file->unref();
-				d->file = nullptr;
+				UNREF_AND_NULL_NOCHK(d->file);
 				return;
 			}
 		}
@@ -933,8 +926,7 @@ DreamcastSave::DreamcastSave(IRpFile *vms_file, IRpFile *vmi_file)
 	d->vmi_file = vmi_file->ref();
 	if (!d->vmi_file) {
 		// Could not ref() the VMI file.
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
 
@@ -948,10 +940,8 @@ DreamcastSave::DreamcastSave(IRpFile *vms_file, IRpFile *vmi_file)
 	      vmi_fileSize != DC_VMI_Header_SIZE)
 	{
 		// Invalid file(s).
-		d->vmi_file->unref();
-		d->file->unref();
-		d->vmi_file = nullptr;
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->vmi_file);
+		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
 
@@ -965,10 +955,8 @@ DreamcastSave::DreamcastSave(IRpFile *vms_file, IRpFile *vmi_file)
 	int ret = d->readVmiHeader(d->vmi_file);
 	if (ret != 0) {
 		// Error reading the VMI header.
-		d->vmi_file->unref();
-		d->file->unref();
-		d->vmi_file = nullptr;
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->vmi_file);
+		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
 
@@ -986,10 +974,8 @@ DreamcastSave::DreamcastSave(IRpFile *vms_file, IRpFile *vmi_file)
 			d->loaded_headers |= headerLoaded;
 		} else {
 			// Not valid.
-			d->vmi_file->unref();
-			d->file->unref();
-			d->vmi_file = nullptr;
-			d->file = nullptr;
+			UNREF_AND_NULL_NOCHK(d->vmi_file);
+			UNREF_AND_NULL_NOCHK(d->file);
 			return;
 		}
 	}
@@ -1006,10 +992,7 @@ void DreamcastSave::close(void)
 	RP_D(DreamcastSave);
 
 	// Close the VMI file if it's open.
-	if (d->vmi_file) {
-		d->vmi_file->unref();
-		d->vmi_file = nullptr;
-	}
+	UNREF_AND_NULL(d->vmi_file);
 
 	// Call the superclass function.
 	super::close();

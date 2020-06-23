@@ -76,8 +76,7 @@ Lynx::Lynx(IRpFile *file)
 	uint8_t header[0x40];
 	size_t size = d->file->read(header, sizeof(header));
 	if (size != sizeof(header)) {
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
 
@@ -94,8 +93,7 @@ Lynx::Lynx(IRpFile *file)
 		// Save the header for later.
 		memcpy(&d->romHeader, header, sizeof(d->romHeader));
 	} else {
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 	}
 }
 

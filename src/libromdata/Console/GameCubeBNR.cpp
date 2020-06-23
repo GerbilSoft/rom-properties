@@ -239,8 +239,7 @@ GameCubeBNR::GameCubeBNR(IRpFile *file)
 	d->file->rewind();
 	size_t size = d->file->read(&bnr_magic, sizeof(bnr_magic));
 	if (size != sizeof(bnr_magic)) {
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
 
@@ -255,8 +254,7 @@ GameCubeBNR::GameCubeBNR(IRpFile *file)
 	d->isValid = ((int)d->bannerType >= 0);
 
 	if (!d->isValid) {
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
 

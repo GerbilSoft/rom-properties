@@ -403,8 +403,7 @@ NintendoBadge::NintendoBadge(IRpFile *file)
 	d->file->rewind();
 	size_t size = d->file->read(&d->badgeHeader, sizeof(d->badgeHeader));
 	if (size != sizeof(d->badgeHeader)) {
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
 
@@ -420,8 +419,7 @@ NintendoBadge::NintendoBadge(IRpFile *file)
 	d->megaBadge = false;	// check later
 
 	if (!d->isValid) {
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
 

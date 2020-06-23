@@ -210,8 +210,7 @@ PlayStationSave::PlayStationSave(IRpFile *file)
 	d->file->rewind();
 	size_t size = d->file->read(&header, sizeof(header));
 	if (size != sizeof(header)) {
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
 
@@ -243,8 +242,7 @@ PlayStationSave::PlayStationSave(IRpFile *file)
 			break;
 		default:
 			// Unknown save type.
-			d->file->unref();
-			d->file = nullptr;
+			UNREF_AND_NULL_NOCHK(d->file);
 			d->saveType = PlayStationSavePrivate::SaveType::Unknown;
 			return;
 	}

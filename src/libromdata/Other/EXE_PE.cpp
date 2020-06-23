@@ -179,8 +179,7 @@ int EXEPrivate::loadPEResourceTypes(void)
 	if (!rsrcReader->isOpen()) {
 		// Failed to open the .rsrc section.
 		int err = rsrcReader->lastError();
-		rsrcReader->unref();
-		rsrcReader = nullptr;
+		UNREF_AND_NULL_NOCHK(rsrcReader);
 		return (err != 0 ? err : -EIO);
 	}
 

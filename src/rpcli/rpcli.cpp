@@ -190,9 +190,7 @@ static void DoFile(const char *filename, bool json, vector<ExtractParam>& extrac
 			if (json) cout << "{\"error\":\"rom is not supported\"}" << endl;
 		}
 
-		if (romData) {
-			romData->unref();
-		}
+		UNREF(romData);
 	} else {
 		cerr << "-- " << rp_sprintf(C_("rpcli", "Couldn't open file: %s"), strerror(file->lastError())) << endl;
 		if (json) cout << "{\"error\":\"couldn't open file\",\"code\":" << file->lastError() << "}" << endl;

@@ -58,12 +58,8 @@ DualFile::DualFile()
 
 DualFile::~DualFile()
 {
-	if (m_file[0]) {
-		m_file[0]->unref();
-	}
-	if (m_file[1]) {
-		m_file[1]->unref();
-	}
+	UNREF(m_file[0]);
+	UNREF(m_file[1]);
 }
 
 /**
@@ -81,14 +77,8 @@ bool DualFile::isOpen(void) const
  */
 void DualFile::close(void)
 {
-	if (m_file[0]) {
-		m_file[0]->unref();
-		m_file[0] = nullptr;
-	}
-	if (m_file[1]) {
-		m_file[1]->unref();
-		m_file[1] = nullptr;
-	}
+	UNREF_AND_NULL(m_file[0]);
+	UNREF_AND_NULL(m_file[1]);
 
 	m_size[0] = 0;
 	m_size[1] = 0;

@@ -136,8 +136,7 @@ BCSTM::BCSTM(IRpFile *file)
 	d->file->rewind();
 	size_t size = d->file->read(&d->bcstmHeader, sizeof(d->bcstmHeader));
 	if (size != sizeof(d->bcstmHeader)) {
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
 
@@ -151,8 +150,7 @@ BCSTM::BCSTM(IRpFile *file)
 	d->audioFormat = static_cast<BCSTMPrivate::AudioFormat>(isRomSupported_static(&info));
 
 	if ((int)d->audioFormat < 0) {
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	} else if ((int)d->audioFormat < ARRAY_SIZE(d->mimeType_tbl)-1) {
 		d->mimeType = d->mimeType_tbl[(int)d->audioFormat];
@@ -171,8 +169,7 @@ BCSTM::BCSTM(IRpFile *file)
 	{
 		// Invalid INFO block.
 		d->audioFormat = BCSTMPrivate::AudioFormat::Unknown;
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
 	if (d->audioFormat == BCSTMPrivate::AudioFormat::BCWAV) {
@@ -185,8 +182,7 @@ BCSTM::BCSTM(IRpFile *file)
 	if (size != req_size) {
 		// Seek and/or read error.
 		d->audioFormat = BCSTMPrivate::AudioFormat::Unknown;
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
 
@@ -196,8 +192,7 @@ BCSTM::BCSTM(IRpFile *file)
        if (d->infoBlock.cstm.magic != cpu_to_be32(BCSTM_INFO_MAGIC)) {
 		// Incorrect magic number.
 		d->audioFormat = BCSTMPrivate::AudioFormat::Unknown;
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
 

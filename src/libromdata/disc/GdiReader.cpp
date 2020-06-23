@@ -105,9 +105,7 @@ void GdiReaderPrivate::close(void)
 {
 	std::for_each(blockRanges.begin(), blockRanges.end(),
 		[](BlockRange &blockRange) {
-			if (blockRange.file) {
-				blockRange.file->unref();
-			}
+			UNREF(blockRange.file);
 		}
 	);
 	blockRanges.clear();
@@ -115,10 +113,7 @@ void GdiReaderPrivate::close(void)
 
 	// GDI file.
 	RP_Q(GdiReader);
-	if (q->m_file) {
-		q->m_file->unref();
-		q->m_file = nullptr;
-	}
+	UNREF_AND_NULL(q->m_file);
 }
 
 /**
@@ -278,7 +273,7 @@ int GdiReaderPrivate::openTrack(int trackNumber)
 	}
 
 	// Open the related file.
-	IRpFile *file = FileSystem::openRelatedFile(filename.c_str(), basename.c_str(), ext.c_str());
+	IRpFile *const file = FileSystem::openRelatedFile(filename.c_str(), basename.c_str(), ext.c_str());
 	if (!file) {
 		// Unable to open the file.
 		// TODO: Return the actual error.
@@ -324,8 +319,7 @@ GdiReader::GdiReader(IRpFile *file)
 	const off64_t fileSize = m_file->size();
 	if (fileSize <= 0 || fileSize > 4096) {
 		// Invalid GDI file size.
-		m_file->unref();
-		m_file = nullptr;
+		UNREF_AND_NULL_NOCHK(m_file);
 		m_lastError = EIO;
 		return;
 	}
@@ -337,8 +331,7 @@ GdiReader::GdiReader(IRpFile *file)
 	size_t size = m_file->read(gdibuf.get(), gdisize);
 	if (size != gdisize) {
 		// Read error.
-		m_file->unref();
-		m_file = nullptr;
+		UNREF_AND_NULL_NOCHK(m_file);
 		m_lastError = EIO;
 		return;
 	}
@@ -649,8 +642,7 @@ ISO *GdiReader::openIsoRomData(int trackNumber)
 		isoData = new ISO(isoFile);
 		if (!isoData->isOpen()) {
 			// Unable to open ISO object.
-			isoData->unref();
-			isoData = nullptr;
+			UNREF_AND_NULL_NOCHK(isoData);
 		}
 	}
 	isoFile->unref();

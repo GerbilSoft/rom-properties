@@ -186,8 +186,7 @@ NES::NES(IRpFile *file)
 	uint8_t header[128];
 	size_t size = d->file->read(header, sizeof(header));
 	if (size < 16) {
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
 
@@ -221,8 +220,7 @@ NES::NES(IRpFile *file)
 			// FDS disk image.
 			if (size < sizeof(FDS_DiskHeader)) {
 				// Not enough data for an FDS image.
-				d->file->unref();
-				d->file = nullptr;
+				UNREF_AND_NULL_NOCHK(d->file);
 				return;
 			}
 			d->fileType = FileType::DiskImage;
@@ -234,8 +232,7 @@ NES::NES(IRpFile *file)
 			// FDS disk image, with fwNES header.
 			if (size < (sizeof(FDS_DiskHeader) + sizeof(FDS_DiskHeader_fwNES))) {
 				// Not enough data for an FDS image with fwNES header.
-				d->file->unref();
-				d->file = nullptr;
+				UNREF_AND_NULL_NOCHK(d->file);
 				return;
 			}
 			d->fileType = FileType::DiskImage;
@@ -249,8 +246,7 @@ NES::NES(IRpFile *file)
 			size_t szret = d->file->seekAndRead(0x2010, &d->header.fds, sizeof(d->header.fds));
 			if (szret != sizeof(d->header.fds)) {
 				// Seek and/or read error.
-				d->file->unref();
-				d->file = nullptr;
+				UNREF_AND_NULL_NOCHK(d->file);
 				d->fileType = FileType::Unknown;
 				d->romType = NESPrivate::ROM_FORMAT_UNKNOWN;
 				return;
@@ -262,8 +258,7 @@ NES::NES(IRpFile *file)
 
 		default:
 			// Unknown ROM type.
-			d->file->unref();
-			d->file = nullptr;
+			UNREF_AND_NULL_NOCHK(d->file);
 			d->fileType = FileType::Unknown;
 			d->romType = NESPrivate::ROM_FORMAT_UNKNOWN;
 			return;

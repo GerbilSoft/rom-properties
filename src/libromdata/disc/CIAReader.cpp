@@ -167,22 +167,18 @@ CIAReaderPrivate::CIAReaderPrivate(CIAReader *q,
 		// Unable to get the CIA encryption keys.
 		// TODO: Set an error.
 		//verifyResult = res;
-		q->m_file->unref();
-		q->m_file = nullptr;
+		UNREF_AND_NULL_NOCHK(q->m_file);
 	}
 #else /* !ENABLE_DECRYPTION */
 	// Cannot decrypt the CIA.
 	// TODO: Set an error.
-	q->m_file->unref();
-	q->m_file = nullptr;
+	UNREF_AND_NULL_NOCHK(q->m_file);
 #endif /* ENABLE_DECRYPTION */
 }
 
 CIAReaderPrivate::~CIAReaderPrivate()
 {
-	if (cbcReader) {
-		cbcReader->unref();
-	}
+	UNREF(cbcReader);
 }
 
 /** CIAReader **/

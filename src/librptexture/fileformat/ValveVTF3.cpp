@@ -204,17 +204,14 @@ ValveVTF3::ValveVTF3(IRpFile *file)
 	d->file->rewind();
 	size_t size = d->file->read(&d->vtf3Header, sizeof(d->vtf3Header));
 	if (size != sizeof(d->vtf3Header)) {
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
 
 	// Verify the VTF magic.
 	if (d->vtf3Header.signature != cpu_to_be32(VTF3_SIGNATURE)) {
 		// Incorrect magic.
-		d->isValid = false;
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
 

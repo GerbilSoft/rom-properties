@@ -86,8 +86,7 @@ Nintendo3DSFirm::Nintendo3DSFirm(IRpFile *file)
 	d->file->rewind();
 	size_t size = d->file->read(&d->firmHeader, sizeof(d->firmHeader));
 	if (size != sizeof(d->firmHeader)) {
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
 
@@ -101,8 +100,7 @@ Nintendo3DSFirm::Nintendo3DSFirm(IRpFile *file)
 	d->isValid = (isRomSupported_static(&info) >= 0);
 
 	if (!d->isValid) {
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 	}
 }
 

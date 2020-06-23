@@ -40,13 +40,9 @@ IDiscReader::IDiscReader(IDiscReader *discReader)
 IDiscReader::~IDiscReader()
 {
 	if (!m_hasDiscReader) {
-		if (m_file) {
-			m_file->unref();
-		}
+		UNREF(m_file);
 	} else {
-		if (m_discReader) {
-			m_discReader->unref();
-		}
+		UNREF(m_discReader);
 	}
 }
 

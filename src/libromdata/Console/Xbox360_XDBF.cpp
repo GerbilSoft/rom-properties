@@ -1203,8 +1203,7 @@ void Xbox360_XDBF::init(void)
 	size_t size = d->file->read(&d->xdbfHeader, sizeof(d->xdbfHeader));
 	if (size != sizeof(d->xdbfHeader)) {
 		d->xdbfHeader.magic = 0;
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
 
@@ -1219,8 +1218,7 @@ void Xbox360_XDBF::init(void)
 
 	if (!d->isValid) {
 		d->xdbfHeader.magic = 0;
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
 
@@ -1244,8 +1242,7 @@ void Xbox360_XDBF::init(void)
 	if (d->xdbfHeader.entry_table_length >= 1048576) {
 		// Too many entries.
 		d->xdbfHeader.magic = 0;
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 		d->isValid = false;
 		return;
 	}
@@ -1258,8 +1255,7 @@ void Xbox360_XDBF::init(void)
 		// Read error.
 		d->entryTable.clear();
 		d->xdbfHeader.magic = 0;
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 		d->isValid = false;
 		return;
 	}

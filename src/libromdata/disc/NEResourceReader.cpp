@@ -91,16 +91,14 @@ NEResourceReaderPrivate::NEResourceReaderPrivate(
 		q->m_lastError = -EBADF;
 		return;
 	} else if (rsrc_tbl_addr == 0) {
-		q->m_file->unref();
-		q->m_file = nullptr;
+		UNREF_AND_NULL_NOCHK(q->m_file);
 		q->m_lastError = -EIO;
 		return;
 	} else if (rsrc_tbl_size < 6 || rsrc_tbl_size >= 65536) {
 		// 64 KB is the segment size, so this shouldn't be possible.
 		// Also, it should be at least 6 bytes.
 		// (TODO: Larger minimum size?)
-		q->m_file->unref();
-		q->m_file = nullptr;
+		UNREF_AND_NULL_NOCHK(q->m_file);
 		q->m_lastError = -EIO;
 		return;
 	}
@@ -114,8 +112,7 @@ NEResourceReaderPrivate::NEResourceReaderPrivate(
 	const off64_t fileSize_o64 = q->m_file->size();
 	if (fileSize_o64 > fileSize_MAX) {
 		// A Win16 executable larger than 16 MB doesn't make any sense.
-		q->m_file->unref();
-		q->m_file = nullptr;
+		UNREF_AND_NULL_NOCHK(q->m_file);
 		q->m_lastError = -EIO;
 		return;
 	}
@@ -127,8 +124,7 @@ NEResourceReaderPrivate::NEResourceReaderPrivate(
 	{
 		// Starting address is past the end of the file,
 		// or resource ends past the end of the file.
-		q->m_file->unref();
-		q->m_file = nullptr;
+		UNREF_AND_NULL_NOCHK(q->m_file);
 		q->m_lastError = -EIO;
 		return;
 	}
@@ -137,8 +133,7 @@ NEResourceReaderPrivate::NEResourceReaderPrivate(
 	int ret = loadResTbl();
 	if (ret != 0) {
 		// No resources, or an error occurred.
-		q->m_file->unref();
-		q->m_file = nullptr;
+		UNREF_AND_NULL_NOCHK(q->m_file);
 	}
 }
 

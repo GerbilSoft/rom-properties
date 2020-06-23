@@ -248,8 +248,7 @@ WiiWIBN::WiiWIBN(IRpFile *file)
 	d->file->rewind();
 	size_t size = d->file->read(&d->wibnHeader, sizeof(d->wibnHeader));
 	if (size != sizeof(d->wibnHeader)) {
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
 
@@ -263,8 +262,7 @@ WiiWIBN::WiiWIBN(IRpFile *file)
 	d->isValid = (isRomSupported_static(&info) >= 0);
 
 	if (!d->isValid) {
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 	}
 }
 

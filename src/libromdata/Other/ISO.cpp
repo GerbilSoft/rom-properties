@@ -388,8 +388,7 @@ ISO::ISO(IRpFile *file)
 		&d->pvd, sizeof(d->pvd));
 	if (size != sizeof(d->pvd)) {
 		// Seek and/or read error.
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
 
@@ -407,8 +406,7 @@ ISO::ISO(IRpFile *file)
 		size = d->file->seekAndRead(ISO_PVD_ADDRESS_2352, &sector, sizeof(sector));
 		if (size != sizeof(sector)) {
 			// Seek and/or read error.
-			d->file->unref();
-			d->file = nullptr;
+			UNREF_AND_NULL_NOCHK(d->file);
 			return;
 		}
 
@@ -428,8 +426,7 @@ ISO::ISO(IRpFile *file)
 			d->sector_offset = (sector.mode == 2 ? ISO_DATA_OFFSET_MODE2_XA : ISO_DATA_OFFSET_MODE1_RAW);
 		} else {
 			// Not a PVD.
-			d->file->unref();
-			d->file = nullptr;
+			UNREF_AND_NULL_NOCHK(d->file);
 			return;
 		}
 	}

@@ -556,8 +556,7 @@ DMG::DMG(IRpFile *file)
 	uint8_t header[0x150];
 	size_t size = d->file->read(header, sizeof(header));
 	if (size != sizeof(header)) {
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
 
@@ -576,8 +575,7 @@ DMG::DMG(IRpFile *file)
 		// TODO: Save the RST table?
 		memcpy(&d->romHeader, &header[0x100], sizeof(d->romHeader));
 	} else {
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
 

@@ -140,9 +140,7 @@ class RpPngWriterPrivate
 		{
 			RpFile *const file = (filename ? new RpFile(filename, RpFile::FM_CREATE_WRITE) : nullptr);
 			init(file, width, height, format);
-			if (file) {
-				file->unref();
-			}
+			UNREF(file);
 		}
 		RpPngWriterPrivate(const char *filename, const rp_image *img)
 			: lastError(0), file(nullptr), imageTag(ImageTag::Invalid)
@@ -150,9 +148,7 @@ class RpPngWriterPrivate
 		{
 			RpFile *const file = (filename ? new RpFile(filename, RpFile::FM_CREATE_WRITE) : nullptr);
 			init(file, img);
-			if (file) {
-				file->unref();
-			}
+			UNREF(file);
 		}
 		RpPngWriterPrivate(const char *filename, const IconAnimData *iconAnimData)
 			: lastError(0), file(nullptr), imageTag(ImageTag::Invalid)
@@ -160,9 +156,7 @@ class RpPngWriterPrivate
 		{
 			RpFile *const file = (filename ? new RpFile(filename, RpFile::FM_CREATE_WRITE) : nullptr);
 			init(file, iconAnimData);
-			if (file) {
-				file->unref();
-			}
+			UNREF(file);
 		}
 
 		~RpPngWriterPrivate();
@@ -629,10 +623,7 @@ void RpPngWriterPrivate::close(void)
 	}
 
 	// unref() the file.
-	if (this->file) {
-		this->file->unref();
-		this->file = nullptr;
-	}
+	UNREF_AND_NULL(this->file);
 }
 
 /**
@@ -920,8 +911,7 @@ int RpPngWriterPrivate::write_IDAT_APNG(void)
 
 	// Free the PNG structs and unref() the file.
 	png_destroy_write_struct(&png_ptr, &info_ptr);
-	file->unref();
-	file = nullptr;
+	UNREF_AND_NULL_NOCHK(file);
 	return 0;
 }
 

@@ -45,9 +45,7 @@ FileFormatPrivate::FileFormatPrivate(FileFormat *q, IRpFile *file)
 FileFormatPrivate::~FileFormatPrivate()
 {
 	// Unreference the file.
-	if (this->file) {
-		this->file->unref();
-	}
+	UNREF(this->file);
 }
 
 /** FileFormat **/
@@ -88,10 +86,7 @@ void FileFormat::close(void)
 {
 	// Unreference the file.
 	RP_D(FileFormat);
-	if (d->file) {
-		d->file->unref();
-		d->file = nullptr;
-	}
+	UNREF_AND_NULL(d->file);
 }
 
 /** Property accessors **/

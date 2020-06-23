@@ -33,9 +33,7 @@ RP_ExtractIcon_Private::RP_ExtractIcon_Private()
 
 RP_ExtractIcon_Private::~RP_ExtractIcon_Private()
 {
-	if (romData) {
-		romData->unref();
-	}
+	UNREF(romData);
 }
 
 /** RP_ExtractIcon **/
@@ -94,10 +92,7 @@ IFACEMETHODIMP RP_ExtractIcon::Load(LPCOLESTR pszFileName, DWORD dwMode)
 
 	// If we already have a RomData object, unref() it first.
 	RP_D(RP_ExtractIcon);
-	if (d->romData) {
-		d->romData->unref();
-		d->romData = nullptr;
-	}
+	UNREF_AND_NULL(d->romData);
 
 	// pszFileName is the file being worked on.
 	// TODO: If the file was already loaded, don't reload it.

@@ -167,12 +167,8 @@ Xbox360_STFS_Private::Xbox360_STFS_Private(Xbox360_STFS *q, IRpFile *file)
 
 Xbox360_STFS_Private::~Xbox360_STFS_Private()
 {
-	if (xex) {
-		xex->unref();
-	}
-	if (xexReader) {
-		xexReader->unref();
-	}
+	UNREF(xex);
+	UNREF(xexReader);
 
 	delete img_icon;
 }
@@ -521,17 +517,14 @@ Xbox360_XEX *Xbox360_STFS_Private::openDefaultXex(void)
 				this->xex = xex_tmp;
 				this->xexReader = discReader;
 				// We don't need to keep the DiscReader reference.
-				discReader->unref();
-				discReader = nullptr;
+				UNREF_AND_NULL_NOCHK(discReader);
 			} else {
 				xex_tmp->unref();
 			}
 		}
 		xexFile_tmp->unref();
 	}
-	if (discReader) {
-		discReader->unref();
-	}
+	UNREF(discReader);
 
 	return this->xex;
 }
@@ -571,8 +564,7 @@ Xbox360_STFS::Xbox360_STFS(IRpFile *file)
 	size_t size = d->file->read(&d->stfsHeader, sizeof(d->stfsHeader));
 	if (size != sizeof(d->stfsHeader)) {
 		// Read error.
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
 
@@ -587,8 +579,7 @@ Xbox360_STFS::Xbox360_STFS(IRpFile *file)
 	d->isValid = ((int)d->stfsType >= 0);
 
 	if (!d->isValid) {
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 	}
 
 	// Package metadata and thumbnails are loaded on demand.
@@ -606,10 +597,7 @@ void Xbox360_STFS::close(void)
 	if (d->xex) {
 		d->xex->close();
 	}
-	if (d->xexReader) {
-		d->xexReader->unref();
-		d->xexReader = nullptr;
-	}
+	UNREF_AND_NULL(d->xexReader);
 
 	// Call the superclass function.
 	super::close();

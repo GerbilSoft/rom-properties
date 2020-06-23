@@ -141,8 +141,7 @@ SufamiTurbo::SufamiTurbo(IRpFile *file)
 	d->file->rewind();
 	size_t size = d->file->read(&d->romHeader, sizeof(d->romHeader));
 	if (size != sizeof(d->romHeader)) {
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
 
@@ -156,8 +155,7 @@ SufamiTurbo::SufamiTurbo(IRpFile *file)
 	d->isValid = (isRomSupported_static(&info) >= 0);
 
 	if (!d->isValid) {
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
 
@@ -166,8 +164,7 @@ SufamiTurbo::SufamiTurbo(IRpFile *file)
 	if (!memcmp(d->romHeader.title, ST_BIOS_TITLE, sizeof(d->romHeader.title))) {
 		// This is the Sufami Turbo BIOS.
 		d->isValid = false;
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
 

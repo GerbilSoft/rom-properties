@@ -211,8 +211,7 @@ Sega8Bit::Sega8Bit(IRpFile *file)
 	size_t size = d->file->seekAndRead(0x7FE0, &d->romHeader, sizeof(d->romHeader));
 	if (size != sizeof(d->romHeader)) {
 		// Seek and/or read error.
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
 

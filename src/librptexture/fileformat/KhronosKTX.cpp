@@ -703,8 +703,7 @@ KhronosKTX::KhronosKTX(IRpFile *file)
 	d->file->rewind();
 	size_t size = d->file->read(&d->ktxHeader, sizeof(d->ktxHeader));
 	if (size != sizeof(d->ktxHeader)) {
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
 
@@ -718,8 +717,7 @@ KhronosKTX::KhronosKTX(IRpFile *file)
 	d->isValid = (isRomSupported_static(&info) >= 0);
 
 	if (!d->isValid) {
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
 

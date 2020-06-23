@@ -124,15 +124,9 @@ DreamcastPrivate::DreamcastPrivate(Dreamcast *q, IRpFile *file)
 
 DreamcastPrivate::~DreamcastPrivate()
 {
-	if (pvrData) {
-		pvrData->unref();
-	}
-	if (isoPartition) {
-		isoPartition->unref();
-	}
-	if (discReader) {
-		discReader->unref();
-	}
+	UNREF(pvrData);
+	UNREF(isoPartition);
+	UNREF(discReader);
 }
 
 /**
@@ -188,8 +182,7 @@ const rp_image *DreamcastPrivate::load0GDTEX(void)
 		}
 		if (!isoPartition->isOpen()) {
 			// Unable to open the ISO-9660 partition.
-			isoPartition->unref();
-			isoPartition = nullptr;
+			UNREF_AND_NULL_NOCHK(isoPartition);
 			return nullptr;
 		}
 	}
@@ -318,8 +311,7 @@ Dreamcast::Dreamcast(IRpFile *file)
 	d->file->rewind();
 	size_t size = d->file->read(&sector, sizeof(sector));
 	if (size == 0 || size > sizeof(sector)) {
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
 
@@ -334,8 +326,7 @@ Dreamcast::Dreamcast(IRpFile *file)
 	d->discType = static_cast<DreamcastPrivate::DiscType>(isRomSupported_static(&info));
 
 	if ((int)d->discType < 0) {
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
 
@@ -371,10 +362,8 @@ Dreamcast::Dreamcast(IRpFile *file)
 			const int lba_track03 = d->gdiReader->startingLBA(3);
 			if (lba_track03 < 0) {
 				// Error getting the track 03 LBA.
-				d->gdiReader->unref();
-				d->file->unref();
-				d->gdiReader = nullptr;
-				d->file = nullptr;
+				UNREF_AND_NULL_NOCHK(d->gdiReader);
+				UNREF_AND_NULL_NOCHK(d->file);
 				return;
 			}
 			// TODO: Don't hard-code 2048?
@@ -399,19 +388,9 @@ void Dreamcast::close(void)
 	RP_D(Dreamcast);
 
 	// Close any child RomData subclasses.
-	if (d->pvrData) {
-		d->pvrData->unref();
-		d->pvrData = nullptr;
-	}
-
-	if (d->isoPartition) {
-		d->isoPartition->unref();
-		d->isoPartition = nullptr;
-	}
-	if (d->discReader) {
-		d->discReader->unref();
-		d->discReader = nullptr;
-	}
+	UNREF_AND_NULL(d->pvrData);
+	UNREF_AND_NULL(d->isoPartition);
+	UNREF_AND_NULL(d->discReader);
 
 	// Call the superclass function.
 	super::close();

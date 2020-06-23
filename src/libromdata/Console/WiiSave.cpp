@@ -105,12 +105,8 @@ WiiSavePrivate::WiiSavePrivate(WiiSave *q, IRpFile *file)
 WiiSavePrivate::~WiiSavePrivate()
 {
 #ifdef ENABLE_DECRYPTION
-	if (wibnData) {
-		wibnData->unref();
-	}
-	if (cbcReader) {
-		cbcReader->unref();
-	}
+	UNREF(wibnData);
+	UNREF(cbcReader);
 #endif /* ENABLE_DECRYPTION */
 }
 
@@ -158,8 +154,7 @@ WiiSave::WiiSave(IRpFile *file)
 	d->file->rewind();
 	size_t size = d->file->read(svData.get(), svSizeTotal);
 	if (size < svSizeMin) {
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	} else if (size > svSizeTotal) {
 		// NOTE: Shouldn't happen...
@@ -183,8 +178,7 @@ WiiSave::WiiSave(IRpFile *file)
 	if (d->bkHeader.magic != cpu_to_be16(WII_BK_MAGIC)) {
 		// Bk header not found.
 		d->isValid = false;
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
 
@@ -287,10 +281,7 @@ void WiiSave::close(void)
 	}
 
 	// Close associated files used with child RomData subclasses.
-	if (d->cbcReader) {
-		d->cbcReader->unref();
-		d->cbcReader = nullptr;
-	}
+	UNREF_AND_NULL(d->cbcReader);
 #endif /* ENABLE_DECRYPTION */
 
 	// Call the superclass function.

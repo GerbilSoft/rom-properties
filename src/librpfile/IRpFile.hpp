@@ -193,9 +193,7 @@ class unique_IRpFile
 
 		inline ~unique_IRpFile()
 		{
-			if (m_file) {
-				m_file->unref();
-			}
+			UNREF(m_file);
 		}
 
 		/**

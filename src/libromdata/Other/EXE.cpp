@@ -54,9 +54,7 @@ EXEPrivate::EXEPrivate(EXE *q, IRpFile *file)
 
 EXEPrivate::~EXEPrivate()
 {
-	if (rsrcReader) {
-		rsrcReader->unref();
-	}
+	UNREF(rsrcReader);
 }
 
 /**
@@ -404,8 +402,10 @@ EXE::EXE(IRpFile *file)
 	// Read the DOS MZ header.
 	d->file->rewind();
 	size_t size = d->file->read(&d->mz, sizeof(d->mz));
-	if (size != sizeof(d->mz))
+	if (size != sizeof(d->mz)) {
+		UNREF_AND_NULL_NOCHK(d->file);
 		return;
+	}
 
 	// Check if this executable is supported.
 	DetectInfo info;
@@ -418,6 +418,7 @@ EXE::EXE(IRpFile *file)
 
 	if (!d->isValid) {
 		// Not an MZ executable.
+		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
 

@@ -629,8 +629,7 @@ SNDH::SNDH(IRpFile *file)
 	// ICE-compressed SNDH files are really small.
 	// - Lowe_Al/Kings_Quest_II.sndh: 453 bytes.
 	if (size < 12) {
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
 
@@ -644,9 +643,7 @@ SNDH::SNDH(IRpFile *file)
 	d->isValid = (isRomSupported_static(&info) >= 0);
 
 	if (!d->isValid) {
-		d->file->unref();
-		d->file = nullptr;
-		return;
+		UNREF_AND_NULL_NOCHK(d->file);
 	}
 }
 

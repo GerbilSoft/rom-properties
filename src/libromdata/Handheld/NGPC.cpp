@@ -107,8 +107,7 @@ NGPC::NGPC(IRpFile *file)
 	d->file->rewind();
 	size_t size = d->file->read(&d->romHeader, sizeof(d->romHeader));
 	if (size != sizeof(d->romHeader)) {
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
 
@@ -123,8 +122,8 @@ NGPC::NGPC(IRpFile *file)
 	d->isValid = ((int)d->romType >= 0);
 
 	if (!d->isValid) {
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
+		return;
 	}
 
 	// Set the MIME type.

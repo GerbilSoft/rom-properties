@@ -320,8 +320,7 @@ SegaSaturn::SegaSaturn(IRpFile *file)
 	d->file->rewind();
 	size_t size = d->file->read(&sector, sizeof(sector));
 	if (size != sizeof(sector)) {
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
 
@@ -352,8 +351,7 @@ SegaSaturn::SegaSaturn(IRpFile *file)
 			break;
 		default:
 			// Unsupported.
-			d->file->unref();
-			d->file = nullptr;
+			UNREF_AND_NULL_NOCHK(d->file);
 			return;
 	}
 	d->isValid = true;

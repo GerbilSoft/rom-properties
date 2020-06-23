@@ -702,17 +702,14 @@ ValveVTF::ValveVTF(IRpFile *file)
 	d->file->rewind();
 	size_t size = d->file->read(&d->vtfHeader, sizeof(d->vtfHeader));
 	if (size != sizeof(d->vtfHeader)) {
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
 
 	// Verify the VTF magic.
 	if (d->vtfHeader.signature != cpu_to_be32(VTF_SIGNATURE)) {
 		// Incorrect magic.
-		d->isValid = false;
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
 

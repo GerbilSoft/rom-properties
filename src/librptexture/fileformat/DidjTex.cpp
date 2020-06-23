@@ -330,8 +330,7 @@ DidjTex::DidjTex(IRpFile *file)
 	d->file->rewind();
 	size_t size = d->file->read(&d->texHeader, sizeof(d->texHeader));
 	if (size != sizeof(d->texHeader)) {
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
 
@@ -342,9 +341,7 @@ DidjTex::DidjTex(IRpFile *file)
 	    d->texHeader.num_images != cpu_to_le32(1))
 	{
 		// Incorrect values.
-		d->isValid = false;
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
 
@@ -363,9 +360,7 @@ DidjTex::DidjTex(IRpFile *file)
 		// .texs - allow the total filesize to be larger than the compressed size.
 		if (our_size > filesize) {
 			// Incorrect compressed filesize.
-			d->isValid = false;
-			d->file->unref();
-			d->file = nullptr;
+			UNREF_AND_NULL_NOCHK(d->file);
 			return;
 		}
 		d->texType = DidjTexPrivate::TexType::TEXS;
@@ -373,9 +368,7 @@ DidjTex::DidjTex(IRpFile *file)
 		// .tex - total filesize must be equal to compressed size plus header size.
 		if (our_size != filesize) {
 			// Incorrect compressed filesize.
-			d->isValid = false;
-			d->file->unref();
-			d->file = nullptr;
+			UNREF_AND_NULL_NOCHK(d->file);
 			return;
 		}
 		d->texType = DidjTexPrivate::TexType::TEX;

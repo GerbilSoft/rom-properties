@@ -78,8 +78,7 @@ SID::SID(IRpFile *file)
 	d->file->rewind();
 	size_t size = d->file->read(&d->sidHeader, sizeof(d->sidHeader));
 	if (size != sizeof(d->sidHeader)) {
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
 
@@ -93,9 +92,7 @@ SID::SID(IRpFile *file)
 	d->isValid = (isRomSupported_static(&info) >= 0);
 
 	if (!d->isValid) {
-		d->file->unref();
-		d->file = nullptr;
-		return;
+		UNREF_AND_NULL_NOCHK(d->file);
 	}
 }
 

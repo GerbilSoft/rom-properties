@@ -36,9 +36,7 @@ IStreamWrapper::IStreamWrapper(IRpFile *file)
 
 IStreamWrapper::~IStreamWrapper()
 {
-	if (m_file) {
-		m_file->unref();
-	}
+	UNREF(m_file);
 }
 
 /**

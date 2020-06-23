@@ -134,8 +134,7 @@ PEResourceReaderPrivate::PEResourceReaderPrivate(
 		q->m_lastError = -EBADF;
 		return;
 	} else if (rsrc_addr == 0 || rsrc_size == 0) {
-		q->m_file->unref();
-		q->m_file = nullptr;
+		UNREF_AND_NULL_NOCHK(q->m_file);
 		q->m_lastError = -EIO;
 		return;
 	}
@@ -145,8 +144,7 @@ PEResourceReaderPrivate::PEResourceReaderPrivate(
 	const off64_t fileSize_o64 = q->m_file->size();
 	if (fileSize_o64 > fileSize_MAX) {
 		// A Win32/Win64 executable larger than 2 GB doesn't make any sense.
-		q->m_file->unref();
-		q->m_file = nullptr;
+		UNREF_AND_NULL_NOCHK(q->m_file);
 		q->m_lastError = -EIO;
 		return;
 	}
@@ -158,8 +156,7 @@ PEResourceReaderPrivate::PEResourceReaderPrivate(
 	{
 		// Starting address is past the end of the file,
 		// or resource ends past the end of the file.
-		q->m_file->unref();
-		q->m_file = nullptr;
+		UNREF_AND_NULL_NOCHK(q->m_file);
 		q->m_lastError = -EIO;
 		return;
 	}
@@ -168,8 +165,7 @@ PEResourceReaderPrivate::PEResourceReaderPrivate(
 	int ret = loadResDir(0, res_types);
 	if (ret <= 0) {
 		// No resources, or an error occurred.
-		q->m_file->unref();
-		q->m_file = nullptr;
+		UNREF_AND_NULL_NOCHK(q->m_file);
 	}
 }
 

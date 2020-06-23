@@ -128,8 +128,7 @@ Amiibo::Amiibo(IRpFile *file)
 
 		default:
 			// Unsupported file size.
-			d->file->unref();
-			d->file = nullptr;
+			UNREF_AND_NULL_NOCHK(d->file);
 			return;
 	}
 
@@ -143,8 +142,7 @@ Amiibo::Amiibo(IRpFile *file)
 	d->isValid = (isRomSupported_static(&info) >= 0);
 
 	if (!d->isValid) {
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 	}
 }
 

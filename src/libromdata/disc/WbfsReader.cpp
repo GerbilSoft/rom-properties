@@ -345,8 +345,7 @@ WbfsReader::WbfsReader(IRpFile *file)
 	d->m_wbfs = d->readWbfsHeader();
 	if (!d->m_wbfs) {
 		// Error reading the WBFS header.
-		m_file->unref();
-		m_file = nullptr;
+		UNREF_AND_NULL_NOCHK(m_file);
 		m_lastError = EIO;
 		return;
 	}
@@ -357,8 +356,7 @@ WbfsReader::WbfsReader(IRpFile *file)
 		// Error opening the WBFS disc.
 		d->freeWbfsHeader(d->m_wbfs);
 		d->m_wbfs = nullptr;
-		m_file->unref();
-		m_file = nullptr;
+		UNREF_AND_NULL_NOCHK(m_file);
 		m_lastError = EIO;
 		return;
 	}
