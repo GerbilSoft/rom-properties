@@ -1214,10 +1214,20 @@ int NintendoDS::loadFieldData(void)
 		latin1_to_utf8(romHeader->id6, ARRAY_SIZE(romHeader->id6)));
 
 	// Publisher.
+	const char *const publisher_title = C_("RomData", "Publisher");
 	const char *const publisher = NintendoPublishers::lookup(romHeader->company);
-	d->fields->addField_string(C_("RomData", "Publisher"),
-		publisher ? publisher :
-			rp_sprintf(C_("NintendoDS", "Unknown (%.2s)"), romHeader->company));
+	if (publisher) {
+		d->fields->addField_string(publisher_title, publisher);
+	} else {
+		if (ISALNUM(romHeader->company[0]) && ISALNUM(romHeader->company[1])) {
+			d->fields->addField_string(publisher_title,
+				rp_sprintf(C_("NintendoDS", "Unknown (%.2s)"), romHeader->company));
+		} else {
+			d->fields->addField_string(publisher_title,
+				rp_sprintf(C_("NintendoDS", "Unknown (%02X %02X)"),
+					romHeader->company[0], romHeader->company[1]));
+		}
+	}
 
 	// ROM version.
 	d->fields->addField_string_numeric(C_("RomData", "Revision"),

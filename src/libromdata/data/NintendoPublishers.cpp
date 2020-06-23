@@ -81,6 +81,7 @@ class NintendoPublishersPrivate {
  * - https://wiki.nesdev.com/w/index.php/Family_Computer_Disk_System#Manufacturer_codes
  */
 const NintendoPublishersPrivate::ThirdPartyEntry NintendoPublishersPrivate::thirdPartyList[] = {
+	{0,	"<unlicensed>"},
 	{'00',	"<unlicensed>"},
 	{'01',	"Nintendo"},
 	{'02',	"Rocket Games / Ajinomoto"},
@@ -606,8 +607,6 @@ const char *NintendoPublishers::lookup(uint16_t code)
  */
 const char *NintendoPublishers::lookup(const char *code)
 {
-	if (!code[0] || !code[1])
-		return nullptr;
 	const uint16_t code16 = (static_cast<uint8_t>(code[0]) << 8) |
 				 static_cast<uint8_t>(code[1]);
 	return lookup(code16);
