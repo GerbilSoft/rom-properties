@@ -21,6 +21,9 @@
 
 #if defined(RP_CPU_I386) || defined(RP_CPU_AMD64)
 # include "cpuflags_x86.h"
+# ifdef RP_HAS_IFUNC
+#  define BYTESWAP_HAS_IFUNC 1
+# endif
 /* MSVC does not support MMX intrinsics in 64-bit builds. */
 /* Reference: https://msdn.microsoft.com/en-us/library/08x3t697(v=vs.110).aspx */
 /* In addition, amd64 CPUs all support SSE2 as a minimum, */
@@ -186,7 +189,7 @@ void __byte_swap_16_array_ssse3(uint16_t *ptr, size_t n);
 void __byte_swap_32_array_ssse3(uint32_t *ptr, size_t n);
 #endif /* BYTESWAP_HAS_SSSE3 */
 
-#if defined(RP_HAS_IFUNC)
+#ifdef BYTESWAP_HAS_IFUNC
 /* System has IFUNC. Use it for dispatching. */
 
 /**
