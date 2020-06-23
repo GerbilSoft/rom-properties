@@ -99,6 +99,25 @@ RpTextureWrapper::RpTextureWrapper(IRpFile *file)
 }
 
 /**
+ * Close the opened file.
+ */
+void RpTextureWrapper::close(void)
+{
+	RP_D(RpTextureWrapper);
+
+	// NOTE: Don't delete these. They have rp_image objects
+	// that may be used by the UI later.
+	if (d->texture) {
+		d->texture->close();
+	}
+
+	// Call the superclass function.
+	super::close();
+}
+
+/** ROM detection functions. **/
+
+/**
  * Is a ROM image supported by this class?
  * @param info DetectInfo containing ROM detection information.
  * @return Class-specific system ID (>= 0) if supported; -1 if not.
