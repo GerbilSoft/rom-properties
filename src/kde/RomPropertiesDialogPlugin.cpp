@@ -45,7 +45,6 @@ RomPropertiesDialogPlugin::RomPropertiesDialogPlugin(KPropertiesDialog *props, c
 	IRpFile *const file = openQUrl(items.at(0).url(), false);
 	if (!file) {
 		// Unable to open the file.
-		file->unref();
 		return;
 	}
 
