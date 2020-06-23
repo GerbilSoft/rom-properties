@@ -318,7 +318,6 @@ bool isOnBadFS(const char *filename, bool netFS)
 		case CIFS_MAGIC_NUMBER:
 		case CODA_SUPER_MAGIC:
 		case COH_SUPER_MAGIC:
-		case FUSE_SUPER_MAGIC:	// TODO: Check the actual fs type.
 		case NCP_SUPER_MAGIC:
 		case NFS_SUPER_MAGIC:
 		case OCFS2_SUPER_MAGIC:
@@ -329,8 +328,14 @@ bool isOnBadFS(const char *filename, bool netFS)
 			bRet = !netFS;
 			break;
 
-		default:
+		case FUSE_SUPER_MAGIC:	// TODO: Check the actual fs type.
 			// Other file system.
+			// FIXME: `fuse` is used for various local file systems
+			// as well as sshfs. Local is more common, so let's assume
+			// it's in use for a local file system.
+			break;
+
+		default:
 			break;
 	}
 #else
