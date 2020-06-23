@@ -56,6 +56,16 @@ DualFile::DualFile()
 	m_size[1] = 0;
 }
 
+DualFile::~DualFile()
+{
+	if (m_file[0]) {
+		m_file[0]->unref();
+	}
+	if (m_file[1]) {
+		m_file[1]->unref();
+	}
+}
+
 /**
  * Is the file open?
  * This usually only returns false if an error occurred.
