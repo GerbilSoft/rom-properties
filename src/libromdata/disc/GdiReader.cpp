@@ -546,16 +546,20 @@ int GdiReader::readBlock(uint32_t blockIdx, void *ptr, int pos, size_t size)
 		return 0;
 	}
 
-	// Go to the block.
-	off64_t phys_pos = (static_cast<off64_t>(blockIdx - blockRange->blockStart) * blockRange->sectorSize) + pos;
-	if (blockRange->sectorSize == 2352) {
-		// FIXME: Read the whole block so we can determine if this is Mode 1 or Mode 2.
-		// Mode 1 data starts at byte 16; Mode 2 data starts at byte 24.
-		phys_pos += 16;
-	}
-	size_t sz_read = blockRange->file->seekAndRead(phys_pos, ptr, size);
+	// Read the full block.
+	CDROM_2352_Sector_t sector;
+	off64_t phys_pos = (static_cast<off64_t>(blockIdx - blockRange->blockStart) * blockRange->sectorSize);
+	size_t sz_read = blockRange->file->seekAndRead(phys_pos, &sector, sizeof(sector));
 	m_lastError = blockRange->file->lastError();
-	return (sz_read > 0 ? (int)sz_read : -1);
+	if (sz_read != sizeof(sector)) {
+		// Read error.
+		return -1;
+	}
+
+	// NOTE: Sector user data area position depends on the sector mode.
+	const uint8_t *const data = cdromSectorDataPtr(&sector);
+	memcpy(ptr, &data[pos], size);
+	return size;
 }
 
 /** GDI-specific functions. **/
