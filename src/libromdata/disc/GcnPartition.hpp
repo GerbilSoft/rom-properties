@@ -30,7 +30,8 @@ class GcnPartition : public LibRpBase::IPartition
 		 * @param partition_offset Partition start offset.
 		 */
 		explicit GcnPartition(IDiscReader *discReader, off64_t partition_offset);
-		virtual ~GcnPartition();
+	protected:
+		virtual ~GcnPartition();	// call unref() instead
 	protected:
 		explicit GcnPartition(GcnPartitionPrivate *d, IDiscReader *discReader);
 

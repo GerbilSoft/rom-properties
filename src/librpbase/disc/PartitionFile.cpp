@@ -24,16 +24,25 @@ namespace LibRpBase {
  */
 PartitionFile::PartitionFile(IDiscReader *partition, off64_t offset, off64_t size)
 	: super()
-	, m_partition(partition)
 	, m_offset(offset)
 	, m_size(size)
 	, m_pos(0)
 {
-	if (!partition) {
+	if (partition) {
+		m_partition = partition->ref();
+	} else {
+		m_partition = nullptr;
 		m_lastError = EBADF;
 	}
 
 	// TODO: Reference counting?
+}
+
+PartitionFile::~PartitionFile()
+{
+	if (m_partition) {
+		m_partition->unref();
+	}
 }
 
 /**
@@ -51,7 +60,10 @@ bool PartitionFile::isOpen(void) const
  */
 void PartitionFile::close(void)
 {
-	m_partition = nullptr;
+	if (m_partition) {
+		m_partition->unref();
+		m_partition = nullptr;
+	}
 }
 
 /**

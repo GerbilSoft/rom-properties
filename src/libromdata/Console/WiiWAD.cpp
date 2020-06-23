@@ -146,7 +146,9 @@ WiiWADPrivate::~WiiWADPrivate()
 	if (wibnData) {
 		wibnData->unref();
 	}
-	delete cbcReader;
+	if (cbcReader) {
+		cbcReader->unref();
+	}
 #endif /* ENABLE_DECRYPTION */
 }
 
@@ -439,8 +441,10 @@ void WiiWAD::close(void)
 	}
 
 	// Close associated files used with child RomData subclasses.
-	delete d->cbcReader;
-	d->cbcReader = nullptr;
+	if (d->cbcReader) {
+		d->cbcReader->unref();
+		d->cbcReader = nullptr;
+	}
 #endif /* ENABLE_DECRYPTION */
 
 	// Call the superclass function.

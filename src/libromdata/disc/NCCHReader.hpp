@@ -53,7 +53,8 @@ class NCCHReader : public LibRpBase::IPartition
 		NCCHReader(CIAReader *ciaReader,
 			uint8_t media_unit_shift,
 			off64_t ncch_offset, uint32_t ncch_length);
-		virtual ~NCCHReader();
+	protected:
+		virtual ~NCCHReader();	// call unref() instead
 
 	private:
 		typedef IPartition super;

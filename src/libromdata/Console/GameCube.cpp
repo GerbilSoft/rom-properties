@@ -227,7 +227,11 @@ GameCubePrivate::~GameCubePrivate()
 
 	// Clear the existing partition table vector.
 	std::for_each(wiiPtbl.begin(), wiiPtbl.end(),
-		[](WiiPartEntry &entry) { delete entry.partition; }
+		[](WiiPartEntry &entry) {
+			if (entry.partition) {
+				entry.partition->unref();
+			}
+		}
 	);
 	wiiPtbl.clear();
 
@@ -238,7 +242,9 @@ GameCubePrivate::~GameCubePrivate()
 				if (opening_bnr.gcn.data) {
 					opening_bnr.gcn.data->unref();
 				}
-				delete opening_bnr.gcn.partition;
+				if (opening_bnr.gcn.partition) {
+					opening_bnr.gcn.partition->unref();
+				}
 				break;
 			case DISC_SYSTEM_WII:
 				delete opening_bnr.wii.imet;
@@ -248,7 +254,9 @@ GameCubePrivate::~GameCubePrivate()
 		}
 	}
 
-	delete discReader;
+	if (discReader) {
+		discReader->unref();
+	}
 }
 
 /**
@@ -271,7 +279,11 @@ int GameCubePrivate::loadWiiPartitionTables(void)
 
 	// Clear the existing partition table vector.
 	std::for_each(wiiPtbl.begin(), wiiPtbl.end(),
-		[](WiiPartEntry &entry) { delete entry.partition; }
+		[](WiiPartEntry &entry) {
+			if (entry.partition) {
+				entry.partition->unref();
+			}
+		}
 	);
 	wiiPtbl.clear();
 
@@ -436,15 +448,17 @@ int GameCubePrivate::gcn_loadOpeningBnr(void)
 	// NOTE: The GCN partition needs to stay open,
 	// since we have a subclass for reading the object.
 	// since we don't need to access more than one file.
-	unique_ptr<GcnPartition> gcnPartition(new GcnPartition(discReader, 0));
+	GcnPartition *const gcnPartition = new GcnPartition(discReader, 0);
 	if (!gcnPartition->isOpen()) {
 		// Could not open the partition.
+		gcnPartition->unref();
 		return -EIO;
 	}
 
 	IRpFile *const f_opening_bnr = gcnPartition->open("/opening.bnr");
 	if (!f_opening_bnr) {
 		// Error opening "opening.bnr".
+		gcnPartition->unref();
 		return -gcnPartition->lastError();
 	}
 
@@ -452,13 +466,14 @@ int GameCubePrivate::gcn_loadOpeningBnr(void)
 	GameCubeBNR *const bnr = new GameCubeBNR(f_opening_bnr);
 	f_opening_bnr->unref();
 	if (!bnr->isOpen()) {
-		// Unable to open the subcalss.
+		// Unable to open the subclass.
 		bnr->unref();
+		gcnPartition->unref();
 		return -EIO;
 	}
 
 	// GameCubeBNR subclass is open.
-	opening_bnr.gcn.partition = gcnPartition.release();
+	opening_bnr.gcn.partition = gcnPartition;
 	opening_bnr.gcn.data = bnr;
 	return 0;
 }
@@ -889,7 +904,8 @@ GameCube::GameCube(IRpFile *file)
 		size = pt.partition->read(&d->discHeader, sizeof(d->discHeader));
 		if (size != sizeof(d->discHeader)) {
 			// Error reading the partition header.
-			delete pt.partition;
+			pt.partition->unref();
+			pt.partition = nullptr;
 			d->wiiPtbl.clear();
 			goto notSupported;
 		}
@@ -1033,8 +1049,10 @@ GameCube::GameCube(IRpFile *file)
 
 notSupported:
 	// This disc image is not supported.
-	delete d->discReader;
-	d->discReader = nullptr;
+	if (d->discReader) {
+		d->discReader->unref();
+		d->discReader = nullptr;
+	}
 	d->file->unref();
 	d->file = nullptr;
 	d->discType = GameCubePrivate::DISC_UNKNOWN;
@@ -1056,8 +1074,10 @@ void GameCube::close(void)
 				if (d->opening_bnr.gcn.data) {
 					d->opening_bnr.gcn.data->close();
 				}
-				delete d->opening_bnr.gcn.partition;
-				d->opening_bnr.gcn.partition = nullptr;
+				if (d->opening_bnr.gcn.partition) {
+					d->opening_bnr.gcn.partition->unref();
+					d->opening_bnr.gcn.partition = nullptr;
+				}
 				break;
 			case GameCubePrivate::DISC_SYSTEM_WII:
 				// No subclass for Wii yet.

@@ -127,9 +127,12 @@ DreamcastPrivate::~DreamcastPrivate()
 	if (pvrData) {
 		pvrData->unref();
 	}
-
-	delete discReader;
-	delete isoPartition;
+	if (isoPartition) {
+		isoPartition->unref();
+	}
+	if (discReader) {
+		discReader->unref();
+	}
 }
 
 /**
@@ -185,7 +188,7 @@ const rp_image *DreamcastPrivate::load0GDTEX(void)
 		}
 		if (!isoPartition->isOpen()) {
 			// Unable to open the ISO-9660 partition.
-			delete isoPartition;
+			isoPartition->unref();
 			isoPartition = nullptr;
 			return nullptr;
 		}
@@ -368,7 +371,7 @@ Dreamcast::Dreamcast(IRpFile *file)
 			const int lba_track03 = d->gdiReader->startingLBA(3);
 			if (lba_track03 < 0) {
 				// Error getting the track 03 LBA.
-				delete d->gdiReader;
+				d->gdiReader->unref();
 				d->file->unref();
 				d->gdiReader = nullptr;
 				d->file = nullptr;
@@ -401,10 +404,14 @@ void Dreamcast::close(void)
 		d->pvrData = nullptr;
 	}
 
-	delete d->discReader;
-	delete d->isoPartition;
-	d->discReader = nullptr;
-	d->isoPartition = nullptr;
+	if (d->isoPartition) {
+		d->isoPartition->unref();
+		d->isoPartition = nullptr;
+	}
+	if (d->discReader) {
+		d->discReader->unref();
+		d->discReader = nullptr;
+	}
 
 	// Call the superclass function.
 	super::close();

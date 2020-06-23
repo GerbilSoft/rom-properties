@@ -27,7 +27,7 @@ class PartitionFile : public LibRpFile::IRpFile
 		 */
 		PartitionFile(IDiscReader *partition, off64_t offset, off64_t size);
 	protected:
-		virtual ~PartitionFile() { }	// call unref() instead
+		virtual ~PartitionFile();	// call unref() instead
 
 	private:
 		typedef IRpFile super;

@@ -143,8 +143,12 @@ XboxDiscPrivate::~XboxDiscPrivate()
 	if (defaultExeData) {
 		defaultExeData->unref();
 	}
-	delete xdvdfsPartition;
-	delete discReader;
+	if (xdvdfsPartition) {
+		xdvdfsPartition->unref();
+	}
+	if (discReader) {
+		discReader->unref();
+	}
 }
 
 /**
@@ -362,7 +366,7 @@ XboxDisc::XboxDisc(IRpFile *file)
 	d->discReader = new DiscReader(d->file);
 	if (!d->discReader->isOpen()) {
 		// Unable to open the discReader.
-		delete d->discReader;
+		d->discReader->unref();
 		d->discReader = nullptr;
 		d->lockKreonDrive();
 		d->isKreon = false;
@@ -371,8 +375,8 @@ XboxDisc::XboxDisc(IRpFile *file)
 	d->xdvdfsPartition = new XDVDFSPartition(d->discReader, d->xdvdfs_addr, d->file->size() - d->xdvdfs_addr);
 	if (!d->xdvdfsPartition->isOpen()) {
 		// Unable to open the XDVDFSPartition.
-		delete d->xdvdfsPartition;
-		delete d->discReader;
+		d->xdvdfsPartition->unref();
+		d->discReader->unref();
 		d->xdvdfsPartition = nullptr;
 		d->discReader = nullptr;
 		d->lockKreonDrive();
@@ -403,15 +407,15 @@ void XboxDisc::close(void)
 	if (d->defaultExeData) {
 		d->defaultExeData->close();
 	}
-#if 0
-	// TODO: Add close() functions?
+
 	if (d->xdvdfsPartition) {
-		d->xdvdfsPartition->close();
+		d->xdvdfsPartition->unref();
+		d->xdvdfsPartition = nullptr;
 	}
 	if (d->discReader) {
-		d->discReader->close();
+		d->discReader->unref();
+		d->discReader = nullptr;
 	}
-#endif
 
 	// Call the superclass function.
 	super::close();

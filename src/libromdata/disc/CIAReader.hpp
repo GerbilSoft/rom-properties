@@ -36,7 +36,8 @@ class CIAReader : public LibRpBase::IPartition
 			off64_t content_offset, uint32_t content_length,
 			const N3DS_Ticket_t *ticket,
 			uint16_t tmd_content_index);
-		virtual ~CIAReader();
+	protected:
+		virtual ~CIAReader();	// call unref() instead
 
 	private:
 		typedef IPartition super;

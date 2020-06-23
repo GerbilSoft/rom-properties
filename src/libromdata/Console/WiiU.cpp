@@ -75,7 +75,9 @@ WiiUPrivate::WiiUPrivate(WiiU *q, IRpFile *file)
 
 WiiUPrivate::~WiiUPrivate()
 {
-	delete discReader;
+	if (discReader) {
+		discReader->unref();
+	}
 }
 
 /** WiiU **/
@@ -150,8 +152,10 @@ WiiU::WiiU(IRpFile *file)
 
 	if (!d->discReader || !d->discReader->isOpen()) {
 		// Error opening the DiscReader.
-		delete d->discReader;
-		d->discReader = nullptr;
+		if (d->discReader) {
+			d->discReader->unref();
+			d->discReader = nullptr;
+		}
 		d->fileType = FileType::Unknown;
 		d->discType = WiiUPrivate::DiscType::Unknown;
 		return;
@@ -162,7 +166,7 @@ WiiU::WiiU(IRpFile *file)
 		size = d->discReader->seekAndRead(0, header, sizeof(header));
 		if (size != sizeof(header)) {
 			// Seek and/or read error.
-			delete d->discReader;
+			d->discReader->unref();
 			d->file->unref();
 			d->discReader = nullptr;
 			d->file = nullptr;
@@ -176,7 +180,7 @@ WiiU::WiiU(IRpFile *file)
 	size = d->discReader->seekAndRead(0x10000, &disc_magic, sizeof(disc_magic));
 	if (size != sizeof(disc_magic)) {
 		// Seek and/or read error.
-		delete d->discReader;
+		d->discReader->unref();
 		d->file->unref();
 		d->discReader = nullptr;
 		d->file = nullptr;
@@ -192,7 +196,7 @@ WiiU::WiiU(IRpFile *file)
 		memcpy(&d->discHeader, header, sizeof(d->discHeader));
 	} else {
 		// No match.
-		delete d->discReader;
+		d->discReader->unref();
 		d->file->unref();
 		d->discReader = nullptr;
 		d->file = nullptr;

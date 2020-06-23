@@ -18,8 +18,8 @@ class IPartition : public IDiscReader
 	protected:
 		explicit IPartition(LibRpFile::IRpFile *file) : super(file) { }
 		explicit IPartition(IDiscReader *discReader) : super(discReader) { }
-	public:
-		virtual ~IPartition() = 0;
+	protected:
+		virtual ~IPartition() = 0;	// call unref() instead
 
 	private:
 		typedef IDiscReader super;

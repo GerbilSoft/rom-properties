@@ -32,7 +32,8 @@ class CBCReader : public LibRpBase::IPartition
 		 */
 		CBCReader(LibRpFile::IRpFile *file, off64_t offset, off64_t length,
 			const uint8_t *key, const uint8_t *iv);
-		virtual ~CBCReader();
+	protected:
+		virtual ~CBCReader();	// call unref() instead
 
 	private:
 		typedef IPartition super;

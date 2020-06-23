@@ -170,10 +170,7 @@ class NCCHReaderPrivate
 		{
 			RP_Q(NCCHReader);
 			if (q->m_hasDiscReader) {
-				// Delete the IDiscReader, since it's
-				// most likely a temporary CIAReader.
-				// TODO: Use reference counting?
-				delete q->m_discReader;
+				q->m_discReader->unref();
 				q->m_discReader = nullptr;
 			} else if (q->m_file) {
 				q->m_file->unref();

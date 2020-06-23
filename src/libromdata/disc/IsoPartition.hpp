@@ -29,7 +29,8 @@ class IsoPartition : public LibRpBase::IPartition
 		 * @param iso_start_offset ISO start offset, in blocks. (If -1, uses heuristics.)
 		 */
 		IsoPartition(IDiscReader *discReader, off64_t partition_offset, int iso_start_offset = -1);
-		virtual ~IsoPartition();
+	protected:
+		virtual ~IsoPartition();	// call unref() instead
 
 	private:
 		typedef IPartition super;

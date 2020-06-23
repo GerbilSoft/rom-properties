@@ -30,7 +30,11 @@ IDiscReader::IDiscReader(IDiscReader *discReader)
 	, m_lastError(0)
 {
 	// TODO: Reference counting?
-	m_discReader = discReader;
+	if (discReader) {
+		m_discReader = discReader->ref();
+	} else {
+		m_discReader = nullptr;
+	}
 }
 
 IDiscReader::~IDiscReader()
@@ -38,6 +42,10 @@ IDiscReader::~IDiscReader()
 	if (!m_hasDiscReader) {
 		if (m_file) {
 			m_file->unref();
+		}
+	} else {
+		if (m_discReader) {
+			m_discReader->unref();
 		}
 	}
 }

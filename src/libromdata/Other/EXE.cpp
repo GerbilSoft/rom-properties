@@ -54,7 +54,9 @@ EXEPrivate::EXEPrivate(EXE *q, IRpFile *file)
 
 EXEPrivate::~EXEPrivate()
 {
-	delete rsrcReader;
+	if (rsrcReader) {
+		rsrcReader->unref();
+	}
 }
 
 /**

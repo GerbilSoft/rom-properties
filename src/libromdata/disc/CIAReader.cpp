@@ -180,7 +180,9 @@ CIAReaderPrivate::CIAReaderPrivate(CIAReader *q,
 
 CIAReaderPrivate::~CIAReaderPrivate()
 {
-	delete cbcReader;
+	if (cbcReader) {
+		cbcReader->unref();
+	}
 }
 
 /** CIAReader **/

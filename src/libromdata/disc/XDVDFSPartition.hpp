@@ -31,7 +31,8 @@ class XDVDFSPartition : public LibRpBase::IPartition
 		 * @param partition_size Partition size.
 		 */
 		XDVDFSPartition(IDiscReader *discReader, off64_t partition_offset, off64_t partition_size);
-		virtual ~XDVDFSPartition();
+	protected:
+		virtual ~XDVDFSPartition();	// call unref() instead
 
 	private:
 		typedef IPartition super;

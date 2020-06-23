@@ -277,8 +277,9 @@ Xbox360_XEX_Private::~Xbox360_XEX_Private()
 	if (pe_exe) {
 		pe_exe->unref();
 	}
-
-	delete peReader;
+	if (peReader) {
+		peReader->unref();
+	}
 }
 
 /**
@@ -636,7 +637,7 @@ CBCReader *Xbox360_XEX_Private::initPeReader(void)
 			reader[i] = new CBCReader(file, xex2Header.pe_offset, pe_length, dec_title_key, zero16);
 			if (!reader[i]->isOpen()) {
 				// Unable to open the CBCReader.
-				delete reader[i];
+				reader[i]->unref();
 				reader[i] = nullptr;
 				continue;
 			}
@@ -650,8 +651,12 @@ CBCReader *Xbox360_XEX_Private::initPeReader(void)
 	    (!reader[1] || !reader[1]->isOpen()))
 	{
 		// Unable to open any CBCReader.
-		delete reader[0];
-		delete reader[1];
+		if (reader[0]) {
+			reader[0]->unref();
+		}
+		if (reader[1]) {
+			reader[1]->unref();
+		}
 		return nullptr;
 	}
 
@@ -669,8 +674,12 @@ CBCReader *Xbox360_XEX_Private::initPeReader(void)
 			assert(fileFormatInfo.size > sizeof(fileFormatInfo));
 			if (fileFormatInfo.size <= sizeof(fileFormatInfo)) {
 				// No segment information is available.
-				delete reader[0];
-				delete reader[1];
+				if (reader[0]) {
+					reader[0]->unref();
+				}
+				if (reader[1]) {
+					reader[1]->unref();
+				}
 				return nullptr;
 			}
 
@@ -702,8 +711,12 @@ CBCReader *Xbox360_XEX_Private::initPeReader(void)
 			assert(fileFormatInfo.size >= sizeof(fileFormatInfo) + sizeof(XEX2_Compression_Normal_Header));
 			if (fileFormatInfo.size < sizeof(fileFormatInfo) + sizeof(XEX2_Compression_Normal_Header)) {
 				// No segment information is available.
-				delete reader[0];
-				delete reader[1];
+				if (reader[0]) {
+					reader[0]->unref();
+				}
+				if (reader[1]) {
+					reader[1]->unref();
+				}
 				return nullptr;
 			}
 
@@ -715,8 +728,12 @@ CBCReader *Xbox360_XEX_Private::initPeReader(void)
 			assert(image_size >= PE_HEADER_SIZE);
 			if (image_size < PE_HEADER_SIZE) {
 				// Too small.
-				delete reader[0];
-				delete reader[1];
+				if (reader[0]) {
+					reader[0]->unref();
+				}
+				if (reader[1]) {
+					reader[1]->unref();
+				}
 				return nullptr;
 			}
 
@@ -749,8 +766,12 @@ CBCReader *Xbox360_XEX_Private::initPeReader(void)
 			const off64_t fileSize = file->size();
 			if (fileSize > 64*1024*1024 || image_size > 64*1024*1024) {
 				// 64 MB is our compressed and uncompressed limit.
-				delete reader[0];
-				delete reader[1];
+				if (reader[0]) {
+					reader[0]->unref();
+				}
+				if (reader[1]) {
+					reader[1]->unref();
+				}
 				return nullptr;
 			}
 
@@ -769,6 +790,10 @@ CBCReader *Xbox360_XEX_Private::initPeReader(void)
 			unsigned int rd_idx = (reader[0] ? 0 : 1);
 			if (!reader[rd_idx]) {
 				// No readers available...
+				// FIXME: Not sure if this is needed...
+				if (reader[!rd_idx]) {
+					reader[!rd_idx]->unref();
+				}
 				return nullptr;
 			}
 
@@ -781,8 +806,12 @@ CBCReader *Xbox360_XEX_Private::initPeReader(void)
 				size = reader[rd_idx]->read(&lzx_blocks[!lzx_idx], sizeof(lzx_blocks[!lzx_idx]));
 				if (size != sizeof(lzx_blocks[!lzx_idx])) {
 					// Seek and/or read error.
-					delete reader[0];
-					delete reader[1];
+					if (reader[0]) {
+						reader[0]->unref();
+					}
+					if (reader[1]) {
+						reader[1]->unref();
+					}
 					return nullptr;
 				}
 
@@ -795,10 +824,10 @@ CBCReader *Xbox360_XEX_Private::initPeReader(void)
 					// Switch to the other reader.
 					if (rd_idx == 1) {
 						// No more readers...
-						delete reader[1];
+						reader[1]->unref();
 						return nullptr;
 					}
-					delete reader[0];
+					reader[0]->unref();
 					reader[0] = nullptr;
 
 					// reader[1] might be nullptr here...
@@ -823,8 +852,12 @@ CBCReader *Xbox360_XEX_Private::initPeReader(void)
 				assert(block_size > sizeof(lzx_blocks[!lzx_idx]));
 				if (block_size <= sizeof(lzx_blocks[!lzx_idx])) {
 					// Block is missing the "next block" header...
-					delete reader[0];
-					delete reader[1];
+					if (reader[0]) {
+						reader[0]->unref();
+					}
+					if (reader[1]) {
+						reader[1]->unref();
+					}
 					return nullptr;
 				}
 				block_size -= sizeof(lzx_blocks[!lzx_idx]);
@@ -835,8 +868,12 @@ CBCReader *Xbox360_XEX_Private::initPeReader(void)
 					size = reader[rd_idx]->read(&chunk_size, sizeof(chunk_size));
 					if (size != sizeof(chunk_size)) {
 						// Seek and/or read error.
-						delete reader[0];
-						delete reader[1];
+						if (reader[0]) {
+							reader[0]->unref();
+						}
+						if (reader[1]) {
+							reader[1]->unref();
+						}
 						return nullptr;
 					}
 #if SYS_BYTEORDER == SYS_LIL_ENDIAN
@@ -852,16 +889,24 @@ CBCReader *Xbox360_XEX_Private::initPeReader(void)
 					if (p_dblk + chunk_size >= p_dblk_end) {
 						// Out of memory.
 						// TODO: Error reporting.
-						delete reader[0];
-						delete reader[1];
+						if (reader[0]) {
+							reader[0]->unref();
+						}
+						if (reader[1]) {
+							reader[1]->unref();
+						}
 						return nullptr;
 					}
 
 					size = reader[rd_idx]->read(p_dblk, chunk_size);
 					if (size != chunk_size) {
 						// Seek and/or read error.
-						delete reader[0];
-						delete reader[1];
+						if (reader[0]) {
+							reader[0]->unref();
+						}
+						if (reader[1]) {
+							reader[1]->unref();
+						}
 						return nullptr;
 					}
 
@@ -887,8 +932,12 @@ CBCReader *Xbox360_XEX_Private::initPeReader(void)
 				window_size, nullptr, 0);
 			if (res != MSPACK_ERR_OK) {
 				// Error decompressing the data.
-				delete reader[0];
-				delete reader[1];
+				if (reader[0]) {
+					reader[0]->unref();
+				}
+				if (reader[1]) {
+					reader[1]->unref();
+				}
 				return nullptr;
 			}
 
@@ -898,8 +947,12 @@ CBCReader *Xbox360_XEX_Private::initPeReader(void)
 			if (mz != cpu_to_be16('MZ')) {
 				// MZ header is not valid.
 				// TODO: Other checks?
-				delete reader[0];
-				delete reader[1];
+				if (reader[0]) {
+					reader[0]->unref();
+				}
+				if (reader[1]) {
+					reader[1]->unref();
+				}
 				return nullptr;
 			}
 
@@ -958,8 +1011,12 @@ CBCReader *Xbox360_XEX_Private::initPeReader(void)
 	}
 
 	// Delete the incorrect CBCReaders.
-	delete reader[0];
-	delete reader[1];
+	if (reader[0]) {
+		reader[0]->unref();
+	}
+	if (reader[1]) {
+		reader[1]->unref();
+	}
 
 	// CBCReader is open and file decompression has been initialized.
 	return this->peReader;
@@ -1377,20 +1434,17 @@ void Xbox360_XEX::close(void)
 {
 	RP_D(Xbox360_XEX);
 
-	// NOTE: Don't delete these. They have rp_image objects
-	// that may be used by the UI later.
 	if (d->pe_xdbf) {
 		d->pe_xdbf->close();
 	}
 	if (d->pe_exe) {
 		d->pe_exe->close();
 	}
-#if 0
-	// TODO: Add CBCReader::close()?
+
 	if (d->peReader) {
-		d->peReader->close();
+		d->peReader->unref();
+		d->peReader = nullptr;
 	}
-#endif
 
 #ifdef ENABLE_LIBMSPACK
 	d->lzx_peHeader.clear();

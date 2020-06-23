@@ -301,7 +301,11 @@ Nintendo3DSPrivate::~Nintendo3DSPrivate()
 		if (sbptr.file) {
 			sbptr.file->unref();
 		}
-		delete sbptr.reader;
+		// NOTE: smdhReader references ncch_f_icon,
+		// so it has to be unreferenced *before* ncch_f_icon.
+		if (sbptr.reader) {
+			sbptr.reader->unref();
+		}
 		if (sbptr.smdh.ncch_f_icon) {
 			sbptr.smdh.ncch_f_icon->unref();
 		}
@@ -313,11 +317,15 @@ Nintendo3DSPrivate::~Nintendo3DSPrivate()
 		if (sbptr.file) {
 			sbptr.file->unref();
 		}
-		delete sbptr.reader;
+		if (sbptr.reader) {
+			sbptr.reader->unref();
+		}
 	}
 
 	// NCCH reader.
-	delete ncch_reader;
+	if (ncch_reader) {
+		ncch_reader->unref();
+	}
 }
 
 /**
@@ -461,7 +469,9 @@ err:
 	if (smdhFile) {
 		smdhFile->unref();
 	}
-	delete smdhReader;
+	if (smdhReader) {
+		smdhReader->unref();
+	}
 	if (ncch_f_icon) {
 		ncch_f_icon->unref();
 	}
@@ -588,7 +598,7 @@ int Nintendo3DSPrivate::loadNCCH(int idx, NCCHReader **pOutNcchReader)
 			ciaReader = new CIAReader(file, offset, length, ticket, idx);
 			if (!ciaReader->isOpen()) {
 				// Unable to open the CIAReader.
-				delete ciaReader;
+				ciaReader->unref();
 				ciaReader = nullptr;
 			}
 		}
@@ -599,14 +609,17 @@ int Nintendo3DSPrivate::loadNCCH(int idx, NCCHReader **pOutNcchReader)
 	// That should be checked by the caller.
 	if (ciaReader && ciaReader->isOpen()) {
 		// This is an encrypted CIA.
-		// NOTE: NCCHReader will take ownership of the CIAReader,
-		// so we don't have to manage it ourselves.
 		// NOTE 2: CIAReader handles the offset, so we need to
 		// tell NCCHReader that the offset is 0.
 		*pOutNcchReader = new NCCHReader(ciaReader, media_unit_shift, 0, length);
 	} else {
 		// Anything else is read directly.
 		*pOutNcchReader = new NCCHReader(file, media_unit_shift, offset, length);
+	}
+
+	if (ciaReader) {
+		// We don't need to keep a reference to the CIAReader.
+		ciaReader->unref();
 	}
 	return 0;
 }
@@ -835,7 +848,8 @@ int Nintendo3DSPrivate::loadTicketAndTMD(void)
 				if (srlFile) {
 					srlFile->unref();
 				}
-				delete srlReader;
+				// srlReader shouldn't be nullptr at this point.
+				srlReader->unref();
 			}
 		}
 	}
@@ -1528,10 +1542,12 @@ void Nintendo3DS::close(void)
 	// Close associated files used with child RomData subclasses.
 	if (d->sbptr.file) {
 		d->sbptr.file->unref();
+		d->sbptr.file = nullptr;
 	}
-	delete d->sbptr.reader;
-	d->sbptr.file = nullptr;
-	d->sbptr.reader = nullptr;
+	if (d->sbptr.reader) {
+		d->sbptr.reader->unref();
+		d->sbptr.reader = nullptr;
+	}
 
 	// Call the superclass function.
 	super::close();
@@ -2292,7 +2308,9 @@ int Nintendo3DS::loadFieldData(void)
 			const off64_t length_bytes = static_cast<off64_t>(length) << d->media_unit_shift;
 			data_row.emplace_back(LibRpBase::formatFileSize(length_bytes));
 
-			delete pNcch;
+			if (pNcch) {
+				pNcch->unref();
+			}
 		}
 
 		// Add the partitions list data.
@@ -2435,7 +2453,9 @@ int Nintendo3DS::loadFieldData(void)
 				} else {
 					data_row.emplace_back("");
 				}
-				delete pNcch;
+				if (pNcch) {
+					pNcch->unref();
+				}
 				continue;
 			}
 
@@ -2481,7 +2501,9 @@ int Nintendo3DS::loadFieldData(void)
 			// Content size.
 			data_row.emplace_back(LibRpBase::formatFileSize(pNcch->partition_size()));
 
-			delete pNcch;
+			if (pNcch) {
+				pNcch->unref();
+			}
 		}
 
 		// Add the contents table.

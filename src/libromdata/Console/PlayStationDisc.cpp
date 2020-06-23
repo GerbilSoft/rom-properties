@@ -135,8 +135,12 @@ PlayStationDiscPrivate::~PlayStationDiscPrivate()
 	if (bootExeData) {
 		bootExeData->unref();
 	}
-	delete isoPartition;
-	delete discReader;
+	if (isoPartition) {
+		isoPartition->unref();
+	}
+	if (discReader) {
+		discReader->unref();
+	}
 }
 
 /**
@@ -349,7 +353,9 @@ PlayStationDisc::PlayStationDisc(IRpFile *file)
 
 	if (!discReader || !discReader->isOpen()) {
 		// Error opening the DiscReader.
-		delete discReader;
+		if (discReader) {
+			discReader->unref();
+		}
 		d->file->unref();
 		d->file = nullptr;
 		return;
@@ -359,8 +365,12 @@ PlayStationDisc::PlayStationDisc(IRpFile *file)
 	IsoPartition *const isoPartition = new IsoPartition(discReader, 0, 0);
 	if (!isoPartition->isOpen()) {
 		// Error opening the ISO partition.
-		delete isoPartition;
-		delete discReader;
+		if (isoPartition) {
+			isoPartition->unref();
+		}
+		if (discReader) {
+			discReader->unref();
+		}
 		d->file->unref();
 		d->file = nullptr;
 		return;
@@ -371,8 +381,12 @@ PlayStationDisc::PlayStationDisc(IRpFile *file)
 	int ret = d->loadSystemCnf(isoPartition);
 	if (ret != 0) {
 		// Error loading system.cnf.
-		delete isoPartition;
-		delete discReader;
+		if (isoPartition) {
+			isoPartition->unref();
+		}
+		if (discReader) {
+			discReader->unref();
+		}
 		d->file->unref();
 		d->file = nullptr;
 		return;
@@ -391,8 +405,12 @@ PlayStationDisc::PlayStationDisc(IRpFile *file)
 			consoleType = PlayStationDiscPrivate::ConsoleType::PS1;
 		} else {
 			// Not valid.
-			delete isoPartition;
-			delete discReader;
+			if (isoPartition) {
+				isoPartition->unref();
+			}
+			if (discReader) {
+				discReader->unref();
+			}
 			d->file->unref();
 			d->file = nullptr;
 			return;
@@ -475,15 +493,15 @@ void PlayStationDisc::close(void)
 	if (d->bootExeData) {
 		d->bootExeData->close();
 	}
-#if 0
-	// TODO: Add close() functions?
+
 	if (d->isoPartition) {
-		d->isoPartition->close();
+		d->isoPartition->unref();
+		d->isoPartition = nullptr;
 	}
 	if (d->discReader) {
-		d->discReader->close();
+		d->discReader->unref();
+		d->discReader = nullptr;
 	}
-#endif
 
 	// Call the superclass function.
 	super::close();

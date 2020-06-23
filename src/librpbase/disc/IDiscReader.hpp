@@ -9,13 +9,15 @@
 #ifndef __ROMPROPERTIES_LIBRPBASE_IDISCREADER_HPP__
 #define __ROMPROPERTIES_LIBRPBASE_IDISCREADER_HPP__
 
-#include "common.h"
-
 // C includes.
 #include <stdint.h>
 
 // C includes. (C++ namespace)
 #include <cstddef>
+
+// common macros
+#include "common.h"
+#include "RefBase.hpp"
 
 namespace LibRpFile {
 	class IRpFile;
@@ -23,16 +25,22 @@ namespace LibRpFile {
 
 namespace LibRpBase {
 
-class IDiscReader
+class IDiscReader : public RefBase
 {
 	protected:
 		explicit IDiscReader(LibRpFile::IRpFile *file);
 		explicit IDiscReader(IDiscReader *discReader);
-	public:
-		virtual ~IDiscReader();
+	protected:
+		virtual ~IDiscReader();	// call unref() instead
 
 	private:
 		RP_DISABLE_COPY(IDiscReader)
+
+	public:
+		inline IDiscReader *ref(void)
+		{
+			return RefBase::ref<IDiscReader>();
+		}
 
 	public:
 		/** Disc image detection functions. **/

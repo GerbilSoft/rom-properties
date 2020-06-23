@@ -528,13 +528,6 @@ NCCHReader::NCCHReader(CIAReader *ciaReader, uint8_t media_unit_shift,
 NCCHReader::~NCCHReader()
 {
 	delete d_ptr;
-
-	if (m_hasDiscReader) {
-		// Delete the IDiscReader, since it's
-		// most likely a temporary CIAReader.
-		// TODO: Use reference counting?
-		delete m_discReader;
-	}
 }
 
 /** IDiscReader **/
