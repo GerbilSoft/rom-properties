@@ -125,7 +125,9 @@ Xbox_XBE_Private::~Xbox_XBE_Private()
 		}
 	}
 
-	delete discReader;
+	if (discReader) {
+		discReader->unref();
+	}
 }
 
 /**
@@ -248,7 +250,7 @@ int Xbox_XBE_Private::initXPR0_xtImage(void)
 		DiscReader *const discReader_tmp = new DiscReader(this->file);
 		if (!discReader_tmp->isOpen()) {
 			// Unable to open the DiscReader.
-			delete discReader_tmp;
+			discReader_tmp->unref();
 			return -EIO;
 		}
 		discReader = discReader_tmp;
@@ -340,7 +342,7 @@ const EXE *Xbox_XBE_Private::initEXE(void)
 		DiscReader *const discReader_tmp = new DiscReader(this->file);
 		if (!discReader_tmp->isOpen()) {
 			// Unable to open the DiscReader.
-			delete discReader_tmp;
+			discReader_tmp->unref();
 			return nullptr;
 		}
 		discReader = discReader_tmp;
@@ -457,8 +459,10 @@ void Xbox_XBE::close(void)
 		}
 	}
 
-	delete d->discReader;
-	d->discReader = nullptr;
+	if (d->discReader) {
+		d->discReader->unref();
+		d->discReader = nullptr;
+	}
 
 	// Call the superclass function.
 	super::close();

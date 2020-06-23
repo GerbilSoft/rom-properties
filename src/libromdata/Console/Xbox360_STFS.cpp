@@ -170,7 +170,9 @@ Xbox360_STFS_Private::~Xbox360_STFS_Private()
 	if (xex) {
 		xex->unref();
 	}
-	delete xexReader;
+	if (xexReader) {
+		xexReader->unref();
+	}
 
 	delete img_icon;
 }
@@ -518,6 +520,8 @@ Xbox360_XEX *Xbox360_STFS_Private::openDefaultXex(void)
 			if (xex_tmp->isOpen()) {
 				this->xex = xex_tmp;
 				this->xexReader = discReader;
+				// We don't need to keep the DiscReader reference.
+				discReader->unref();
 				discReader = nullptr;
 			} else {
 				xex_tmp->unref();
@@ -525,7 +529,9 @@ Xbox360_XEX *Xbox360_STFS_Private::openDefaultXex(void)
 		}
 		xexFile_tmp->unref();
 	}
-	delete discReader;
+	if (discReader) {
+		discReader->unref();
+	}
 
 	return this->xex;
 }
@@ -599,6 +605,10 @@ void Xbox360_STFS::close(void)
 	// that may be used by the UI later.
 	if (d->xex) {
 		d->xex->close();
+	}
+	if (d->xexReader) {
+		d->xexReader->unref();
+		d->xexReader = nullptr;
 	}
 
 	// Call the superclass function.

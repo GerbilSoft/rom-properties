@@ -1172,7 +1172,7 @@ int DMG::loadFieldData(void)
 					}
 					ptFile->unref();
 				}
-				delete reader;
+				reader->unref();
 			}
 		}
 	}
