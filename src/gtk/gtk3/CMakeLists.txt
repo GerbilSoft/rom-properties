@@ -44,7 +44,7 @@ IF(GLib2_FOUND AND GObject2_FOUND AND GIO_FOUND AND Cairo_FOUND AND GTK3_FOUND)
 		SET(LibNemoExtension_EXTENSION_DIR "${CMAKE_INSTALL_LIBDIR}/nemo/extensions-3.0")
 	ENDIF(NOT LibNemoExtension_FOUND)
 
-	# Thunar (XFCE)
+	# ThunarX3 (XFCE)
 	FIND_PACKAGE(ThunarX3)
 	IF(NOT ThunarX3_FOUND)
 		MESSAGE(STATUS "ThunarX3 not found. Using the default extensions directory.")

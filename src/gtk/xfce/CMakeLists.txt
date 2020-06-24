@@ -21,7 +21,7 @@ IF(GLib2_FOUND AND GObject2_FOUND AND GIO_FOUND AND GdkPixbuf2_FOUND AND GTK2_FO
 	# It will be dlopen()'d at runtime based on which
 	# initialization function is called.
 
-	# Thunar (XFCE)
+	# ThunarX2 (XFCE)
 	FIND_PACKAGE(ThunarX2)
 	IF(NOT ThunarX2_FOUND)
 		MESSAGE(STATUS "ThunarX2 not found. Using the default extensions directory.")
