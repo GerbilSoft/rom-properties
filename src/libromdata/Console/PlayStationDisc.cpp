@@ -8,6 +8,7 @@
 
 #include "stdafx.h"
 #include "PlayStationDisc.hpp"
+#include "ps2_structs.h"
 
 // librpbase, librpfile
 #include "librpfile/RpFile.hpp"
@@ -713,6 +714,60 @@ int PlayStationDisc::loadFieldData(void)
 			d->fields->addFields_romFields(exeFields, 0);
 			d->fields->setTabIndex(exeTabCount - 1);
 		}
+	}
+
+	// Check for CDVDGEN.
+	PS2_CDVDGEN_t cdvdgen;
+	size_t size = d->discReader->seekAndRead(
+		PS2_CDVDGEN_LBA * ISO_SECTOR_SIZE_MODE1_COOKED, &cdvdgen, sizeof(cdvdgen));
+	if (size == sizeof(cdvdgen) && !memcmp(cdvdgen.sw_version, "CDVDGEN ", 8)) {
+		// CDVDGEN data found.
+		d->fields->addTab("CDVDGEN");
+		d->fields->reserve(d->fields->count() + 9);
+
+		// CDVDGEN version
+		d->fields->addField_string(C_("PlayStationDisc", "CDVDGEN Version"),
+			cp1252_to_utf8(&cdvdgen.sw_version[8], sizeof(cdvdgen.disc_name)-8),
+			RomFields::STRF_TRIM_END);
+
+		// Disc name
+		d->fields->addField_string(C_("PlayStationDisc", "Disc Name"),
+			cp1252_to_utf8(cdvdgen.disc_name, sizeof(cdvdgen.disc_name)),
+			RomFields::STRF_TRIM_END);
+
+		// Producer name
+		d->fields->addField_string(C_("PlayStationDisc", "Producer Name"),
+			cp1252_to_utf8(cdvdgen.producer_name, sizeof(cdvdgen.producer_name)),
+			RomFields::STRF_TRIM_END);
+
+		// Copyright holder
+		d->fields->addField_string(C_("PlayStationDisc", "Copyright Holder"),
+			cp1252_to_utf8(cdvdgen.copyright_holder, sizeof(cdvdgen.copyright_holder)),
+			RomFields::STRF_TRIM_END);
+
+		// Creation date
+		// NOTE: Marking as UTC because there's no timezone information.
+		d->fields->addField_dateTime(C_("PlayStationDisc", "Creation Date"),
+			d->ascii_yyyymmdd_to_unix_time(cdvdgen.creation_date),
+			RomFields::RFT_DATETIME_HAS_DATE |
+			RomFields::RFT_DATETIME_IS_UTC);
+
+		// TODO: Show the master disc ID?
+
+		// Disc drive information
+		// TODO: Hide if empty?
+		d->fields->addField_string(C_("PlayStationDisc", "Drive Vendor"),
+			cp1252_to_utf8(cdvdgen.drive.vendor, sizeof(cdvdgen.drive.vendor)),
+			RomFields::STRF_TRIM_END);
+		d->fields->addField_string(C_("PlayStationDisc", "Drive Model"),
+			cp1252_to_utf8(cdvdgen.drive.model, sizeof(cdvdgen.drive.model)),
+			RomFields::STRF_TRIM_END);
+		d->fields->addField_string(C_("PlayStationDisc", "Drive Firmware"),
+			cp1252_to_utf8(cdvdgen.drive.revision, sizeof(cdvdgen.drive.revision)),
+			RomFields::STRF_TRIM_END);
+		d->fields->addField_string(C_("PlayStationDisc", "Drive Notes"),
+			cp1252_to_utf8(cdvdgen.drive.notes, sizeof(cdvdgen.drive.notes)),
+			RomFields::STRF_TRIM_END);
 	}
 
 	// ISO object for ISO-9660 PVD

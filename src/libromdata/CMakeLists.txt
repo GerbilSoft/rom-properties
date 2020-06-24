@@ -163,6 +163,7 @@ SET(libromdata_H
 	Console/nes_structs.h
 	Console/ps1_structs.h
 	Console/ps1_exe_structs.h
+	Console/ps2_structs.h
 	Console/saturn_structs.h
 	Console/sega8_structs.h
 	Console/snes_structs.h
