@@ -21,14 +21,19 @@ IF(GLib2_FOUND AND GObject2_FOUND AND GIO_FOUND AND Cairo_FOUND AND GTK3_FOUND)
 	# initialization function is called.
 	# FIXME: Need to find extension dirs for Nautilus, Caja, and Nemo.
 
-	# Get the LibNautilusExtension directory.
-	# TODO: Also Caja (MATE) and Nemo (Cinnamon), with fallbacks if not found.
-	# TODO: For Caja and Nemo, we need to create symlinks to the GNOME library.
-	FIND_PACKAGE(LibNautilusExtension ${REQUIRE_GNOME} 3.0.0)
+	# Get the various extensions directories.
+	FIND_PACKAGE(LibNautilusExtension 3.0.0)
 	IF(NOT LibNautilusExtension_FOUND)
-		# TODO: Use a default directory, but warn the user.
-		SET(BUILD_GNOME OFF CACHE INTERNAL "Build the GNOME (GTK+ 3.x) plugin. (Also MATE and Cinnamon)" FORCE)
+		MESSAGE(STATUS "LibNautilusExtension not found. Using default extensions directory.")
 	ENDIF(NOT LibNautilusExtension_FOUND)
+	FIND_PACKAGE(LibCajaExtension 1.18.0)
+	IF(NOT LibCajaExtension_FOUND)
+		MESSAGE(STATUS "LibCajaExtension not found. Using default extensions directory.")
+	ENDIF(NOT LibCajaExtension_FOUND)
+	FIND_PACKAGE(LibNemoExtension)
+	IF(NOT LibNemoExtension_FOUND)
+		MESSAGE(STATUS "LibNemoExtension not found. Using default extensions directory.")
+	ENDIF(NOT LibNemoExtension_FOUND)
 ELSE(GLib2_FOUND AND GObject2_FOUND AND GIO_FOUND AND Cairo_FOUND AND GTK3_FOUND)
 	# GTK+ 3.x (or required dependencies) were not found.
 	# Disable the GNOME frontend.
@@ -134,12 +139,8 @@ ENDIF(BUILD_GNOME)
 #######################
 
 IF(BUILD_GNOME)
-	# Find the extension directories.
+	# Check the extension directories.
 	# Default paths will be used if they aren't found.
-	FIND_PACKAGE(LibNautilusExtension 3.0.0)	# gnome
-	FIND_PACKAGE(LibCajaExtension 1.18.0)		# mate
-	FIND_PACKAGE(LibNemoExtension)			# cinnamon
-
 	IF(NOT LibNautilusExtension_EXTENSION_DIR)
 		SET(LibNautilusExtension_EXTENSION_DIR "${CMAKE_INSTALL_LIBDIR}/nautilus/extensions-3.0")
 	ENDIF(NOT LibNautilusExtension_EXTENSION_DIR)
