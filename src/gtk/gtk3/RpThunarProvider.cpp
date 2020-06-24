@@ -8,8 +8,9 @@
 
 #include "stdafx.h"
 #include "RpThunarProvider.hpp"
-#include "RpThunarPage.hpp"
 #include "is-supported.hpp"
+
+#include "../RomDataView.hpp"
 
 // thunarx.h mini replacement
 #include "thunarx-mini.h"
@@ -104,13 +105,23 @@ rp_thunar_provider_get_pages(ThunarxPropertyPageProvider *page_provider, GList *
 	// TODO: Maybe we should just open the RomData here
 	// and pass it to the RomDataView.
 	if (G_LIKELY(rp_gtk3_is_uri_supported(uri))) {
-		// Create the ROM Properties page.
-		RpThunarPage *const page = rp_thunar_page_new();
+		// Create the RomDataView.
+		GtkWidget *const romDataView = static_cast<GtkWidget*>(
+			g_object_new(TYPE_ROM_DATA_VIEW, nullptr));
+		rom_data_view_set_desc_format_type(ROM_DATA_VIEW(romDataView), RP_DFT_GNOME);
+		rom_data_view_set_uri(ROM_DATA_VIEW(romDataView), uri);
+		gtk_widget_show(romDataView);
 
-		/* Assign supported file info to the page */
-		rp_thunar_page_set_file(page, info);
+		// tr: Tab title.
+		const char *const tabTitle = C_("RomDataView", "ROM Properties");
 
-		/* Add the page to the pages provided by this plugin */
+		// Create the ThunarxPropertyPage.
+		GtkWidget *const page = thunarx_property_page_new(tabTitle);
+		rom_data_view_set_desc_format_type(ROM_DATA_VIEW(romDataView), RP_DFT_XFCE);
+		gtk_container_add(GTK_CONTAINER(page), romDataView);
+		gtk_widget_show(romDataView);
+
+		// Add the page to the pages provided by this plugin.
 		pages = g_list_prepend(pages, page);
 	}
 

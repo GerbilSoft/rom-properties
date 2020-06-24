@@ -124,9 +124,6 @@ rp_nautilus_provider_get_pages(NautilusPropertyPageProvider *provider, GList *fi
 	// and pass it to the RomDataView.
 	if (G_LIKELY(rp_gtk3_is_uri_supported(uri))) {
 		// Create the RomDataView.
-		// NOTE: Unlike the Xfce/Thunar (GTK+ 2.x) version, we don't
-		// need to subclass NautilusPropertyPage. Instead, we create a
-		// NautilusPropertyPage and add a RomDataView widget to it.
 		// TODO: Add some extra padding to the top...
 		GtkWidget *const romDataView = static_cast<GtkWidget*>(
 			g_object_new(TYPE_ROM_DATA_VIEW, nullptr));
@@ -142,7 +139,7 @@ rp_nautilus_provider_get_pages(NautilusPropertyPageProvider *provider, GList *fi
 			"RomPropertiesPage::property_page",
 			gtk_label_new(tabTitle), romDataView);
 
-		/* Add the page to the pages provided by this plugin */
+		// Add the page to the pages provided by this plugin.
 		pages = g_list_prepend(pages, page);
 	}
 

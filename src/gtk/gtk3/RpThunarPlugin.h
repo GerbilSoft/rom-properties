@@ -38,9 +38,8 @@ typedef struct _ThunarxPropertyPage ThunarxPropertyPage;
 typedef const gchar* (*PFN_THUNARX_CHECK_VERSION)(guint required_major, guint required_micro, guint required_minor);
 
 typedef GType (*PFN_THUNARX_PROPERTY_PAGE_PROVIDER_GET_TYPE)(void);
+typedef GtkWidget* (*PFN_THUNARX_PROPERTY_PAGE_NEW)(const gchar *label);
 typedef GType (*PFN_THUNARX_PROPERTY_PAGE_GET_TYPE)(void);
-typedef void (*PFN_THUNARX_PROPERTY_PAGE_SET_LABEL)(ThunarxPropertyPage *property_page,
-						    const gchar         *label);
 
 typedef GType (*PFN_THUNARX_FILE_INFO_GET_TYPE)(void);
 typedef gchar* (*PFN_THUNARX_FILE_INFO_GET_URI)(ThunarxFileInfo *file);
@@ -49,8 +48,8 @@ typedef gchar* (*PFN_THUNARX_FILE_INFO_GET_URI)(ThunarxFileInfo *file);
 extern PFN_THUNARX_CHECK_VERSION pfn_thunarx_check_version;
 
 extern PFN_THUNARX_PROPERTY_PAGE_PROVIDER_GET_TYPE pfn_thunarx_property_page_provider_get_type;
+extern PFN_THUNARX_PROPERTY_PAGE_NEW pfn_thunarx_property_page_new;
 extern PFN_THUNARX_PROPERTY_PAGE_GET_TYPE pfn_thunarx_property_page_get_type;
-extern PFN_THUNARX_PROPERTY_PAGE_SET_LABEL pfn_thunarx_property_page_set_label;
 
 extern PFN_THUNARX_FILE_INFO_GET_TYPE pfn_thunarx_file_info_get_type;
 extern PFN_THUNARX_FILE_INFO_GET_URI pfn_thunarx_file_info_get_uri;
@@ -60,9 +59,8 @@ extern PFN_THUNARX_FILE_INFO_GET_URI pfn_thunarx_file_info_get_uri;
 	pfn_thunarx_check_version((required_major), (required_minor), (required_micro))
 
 #define thunarx_property_page_provider_get_type()	(pfn_thunarx_property_page_provider_get_type ())
+#define thunarx_property_page_new(label)		(pfn_thunarx_property_page_new(label))
 #define thunarx_property_page_get_type()		(pfn_thunarx_property_page_get_type ())
-#define thunarx_property_page_set_label(property_page, label) \
-	pfn_thunarx_property_page_set_label((property_page), (label));
 
 #define thunarx_file_info_get_type()			(pfn_thunarx_file_info_get_type ())
 #define thunarx_file_info_get_uri(file)			(pfn_thunarx_file_info_get_uri(file))

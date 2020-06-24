@@ -11,7 +11,6 @@
 
 #include "RpThunarPlugin.h"
 #include "RpThunarProvider.hpp"
-#include "RpThunarPage.hpp"
 
 // Thunar version is based on GTK+ version.
 #if GTK_CHECK_VERSION(3,0,0)
@@ -26,7 +25,7 @@
 # define THUNARX_MICRO_VERSION 0
 #endif
 
-static GType type_list[2];
+static GType type_list[1];
 
 // C includes.
 #include <assert.h>
@@ -37,8 +36,8 @@ static void *libextension_so;
 PFN_THUNARX_CHECK_VERSION pfn_thunarx_check_version;
 
 PFN_THUNARX_PROPERTY_PAGE_PROVIDER_GET_TYPE pfn_thunarx_property_page_provider_get_type;
+PFN_THUNARX_PROPERTY_PAGE_NEW pfn_thunarx_property_page_new;
 PFN_THUNARX_PROPERTY_PAGE_GET_TYPE pfn_thunarx_property_page_get_type;
-PFN_THUNARX_PROPERTY_PAGE_SET_LABEL pfn_thunarx_property_page_set_label;
 
 PFN_THUNARX_FILE_INFO_GET_TYPE pfn_thunarx_file_info_get_type;
 PFN_THUNARX_FILE_INFO_GET_URI pfn_thunarx_file_info_get_uri;
@@ -50,11 +49,9 @@ rp_thunar_register_types(ThunarxProviderPlugin *plugin)
 	// NOTE: G_DEFINE_DYNAMIC_TYPE() marks the *_register_type()
 	// functions as static, so we're using wrapper functions here.
 	rp_thunar_provider_register_type_ext(plugin);
-	rp_thunar_page_register_type_ext(plugin);
 
 	/* Setup the plugin provider type list */
 	type_list[0] = TYPE_RP_THUNAR_PROVIDER;
-	type_list[1] = TYPE_RP_THUNAR_PAGE;
 }
 
 /** Per-frontend initialization functions. **/
@@ -86,8 +83,8 @@ thunar_extension_initialize(ThunarxProviderPlugin *plugin)
 	// Load symbols.
 	DLSYM(thunarx_check_version,			thunarx_check_version);
 	DLSYM(thunarx_property_page_provider_get_type,	thunarx_property_page_provider_get_type);
+	DLSYM(thunarx_property_page_new,		thunarx_property_page_new);
 	DLSYM(thunarx_property_page_get_type,		thunarx_property_page_get_type);
-	DLSYM(thunarx_property_page_set_label,		thunarx_property_page_set_label);
 	DLSYM(thunarx_file_info_get_type,		thunarx_file_info_get_type);
 	DLSYM(thunarx_file_info_get_uri,		thunarx_file_info_get_uri);
 
