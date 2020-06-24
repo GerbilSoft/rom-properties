@@ -35,37 +35,6 @@ struct _ThunarxPropertyPageProviderIface {
 };
 typedef struct _ThunarxPropertyPageProviderIface ThunarxPropertyPageProviderIface;
 
-// From thunarx/thunarx-property-page.h
-// Compatible with:
-// - Thunar 1.6.12
-// - Thunar 1.8.14
-struct _ThunarxPropertyPageClass {
-	GtkBinClass __parent__;
-
-	/*< private >*/
-	void (*reserved1) (void);
-	void (*reserved2) (void);
-	void (*reserved3) (void);
-	void (*reserved4) (void);
-};
-typedef struct _ThunarxPropertyPageClass ThunarxPropertyPageClass;
-
-// From thunarx/thunarx-property-page.h
-struct _ThunarxPropertyPagePrivate;
-typedef struct _ThunarxPropertyPagePrivate ThunarxPropertyPagePrivate;
-
-// From thunarx/thunarx-property-page.h
-// Compatible with:
-// - Thunar 1.6.12
-// - Thunar 1.8.14
-struct _ThunarxPropertyPage {
-	GtkBin __parent__;
-
-	/*< private >*/
-	ThunarxPropertyPagePrivate *priv;
-};
-typedef struct _ThunarxPropertyPage ThunarxPropertyPage;
-
 G_END_DECLS
 
 #endif /* __ROMPROPERTIES_GTK3_THUNARX_MINI_H__ */
