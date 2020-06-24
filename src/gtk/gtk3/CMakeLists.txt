@@ -165,12 +165,12 @@ IF(BUILD_GTK3)
 		)
 
 	# Install symlinks.
-	INSTALL(FILES "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/rom-properties-mate.so"
+	INSTALL(FILES "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/rom-properties-gtk3.symlink.so"
 		DESTINATION "${LibCajaExtension_EXTENSION_DIR}"
 		RENAME "rom-properties-gtk3.so"
 		COMPONENT "plugin"
 		)
-	INSTALL(FILES "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/rom-properties-cinnamon.so"
+	INSTALL(FILES "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/rom-properties-gtk3.symlink.so"
 		DESTINATION "${LibNemoExtension_EXTENSION_DIR}"
 		RENAME "rom-properties-gtk3.so"
 		COMPONENT "plugin"
