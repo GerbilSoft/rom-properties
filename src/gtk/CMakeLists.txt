@@ -117,5 +117,7 @@ ENDIF(BUILD_GTK3)
 
 # Build the D-Bus thumbnailer.
 # Required for XFCE.
-SET(BUILD_THUMBNAILER_DBUS ON CACHE INTERNAL "Build the D-Bus thumbnailer." FORCE)
-ADD_SUBDIRECTORY(thumbnailer-dbus)
+IF(BUILD_GTK2 OR BUILD_GTK3)
+	SET(BUILD_THUMBNAILER_DBUS ON CACHE INTERNAL "Build the D-Bus thumbnailer." FORCE)
+	ADD_SUBDIRECTORY(thumbnailer-dbus)
+ENDIF(BUILD_GTK2 OR BUILD_GTK3)
