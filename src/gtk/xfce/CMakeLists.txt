@@ -118,7 +118,6 @@ IF(BUILD_GTK2)
 	IF(ENABLE_NLS)
 		TARGET_LINK_LIBRARIES(rom-properties-xfce PRIVATE i18n)
 	ENDIF(ENABLE_NLS)
-	TARGET_LINK_LIBRARIES(rom-properties-xfce PUBLIC Xfce::thunarx-2)
 	TARGET_LINK_LIBRARIES(rom-properties-xfce PRIVATE GdkPixbuf2::gdkpixbuf2)
 	TARGET_LINK_LIBRARIES(rom-properties-xfce PUBLIC ${GTK2_LIBRARIES} GLib2::gio GLib2::gobject GLib2::glib)
 	# TODO: Move GTK2_DEFINITIONS to TARGET_COMPILE_DEFINITIONS.
