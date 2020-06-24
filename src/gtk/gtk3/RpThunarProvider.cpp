@@ -16,7 +16,7 @@
 #include "thunarx-mini.h"
 
 static void   rp_thunar_provider_page_provider_init	(ThunarxPropertyPageProviderIface *iface);
-static GList *rp_thunar_provider_get_pages		(ThunarxPropertyPageProvider      *renamer_provider,
+static GList *rp_thunar_provider_get_pages		(ThunarxPropertyPageProvider      *page_provider,
 							 GList                            *files);
 
 struct _RpThunarProviderClass {
