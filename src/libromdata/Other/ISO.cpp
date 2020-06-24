@@ -63,6 +63,7 @@ class ISOPrivate : public LibRpBase::RomDataPrivate
 		union {
 			ISO_Primary_Volume_Descriptor iso;	// ISO-9660
 			HSFS_Primary_Volume_Descriptor hsfs;	// High Sierra
+			uint8_t data[ISO_DATA_OFFSET_MODE1_COOKED];
 		} pvd;
 
 		// Sector size.
@@ -125,7 +126,10 @@ class ISOPrivate : public LibRpBase::RomDataPrivate
 		 * Check the PVD and determine its type.
 		 * @return DiscType value. (DiscType::Unknown if not valid)
 		 */
-		DiscType checkPVD(void) const;
+		inline DiscType checkPVD(void) const
+		{
+			return static_cast<DiscType>(ISO::checkPVD(pvd.data));
+		}
 };
 
 /** ISOPrivate **/
@@ -330,30 +334,6 @@ void ISOPrivate::addPVDTimestamps(const T *pvd)
 		RomFields::RFT_DATETIME_HAS_TIME);
 }
 
-/**
- * Check the PVD and determine its type.
- * @return DiscType value. (DiscType::Unknown if not valid)
- */
-ISOPrivate::DiscType ISOPrivate::checkPVD(void) const
-{
-	if (pvd.iso.header.type == ISO_VDT_PRIMARY && pvd.iso.header.version == ISO_VD_VERSION &&
-	    !memcmp(pvd.iso.header.identifier, ISO_VD_MAGIC, sizeof(pvd.iso.header.identifier)))
-	{
-		// ISO-9660 PVD.
-		return DiscType::ISO9660;
-	}
-
-	if (pvd.hsfs.header.type == ISO_VDT_PRIMARY && pvd.hsfs.header.version == HSFS_VD_VERSION &&
-	    !memcmp(pvd.hsfs.header.identifier, HSFS_VD_MAGIC, sizeof(pvd.hsfs.header.identifier)))
-	{
-		// High Sierra PVD.
-		return DiscType::HighSierra;
-	}
-
-	// Not recognized.
-	return DiscType::Unknown;
-}
-
 /** ISO **/
 
 /**
@@ -436,6 +416,37 @@ ISO::ISO(IRpFile *file)
 }
 
 /** ROM detection functions. **/
+
+/**
+ * Check for a valid PVD.
+ * @param data Potential PVD. (Must be 2048 bytes)
+ * @return DiscType if valid; -1 if not.
+ */
+int ISO::checkPVD(const uint8_t *data)
+{
+	// Check for an ISO-9660 PVD.
+	const ISO_Primary_Volume_Descriptor *const pvd_iso =
+		reinterpret_cast<const ISO_Primary_Volume_Descriptor*>(data);
+	if (pvd_iso->header.type == ISO_VDT_PRIMARY && pvd_iso->header.version == ISO_VD_VERSION &&
+	    !memcmp(pvd_iso->header.identifier, ISO_VD_MAGIC, sizeof(pvd_iso->header.identifier)))
+	{
+		// This is an ISO-9660 PVD.
+		return static_cast<int>(ISOPrivate::DiscType::ISO9660);
+	}
+
+	// Check for a High Sierra PVD.
+	const HSFS_Primary_Volume_Descriptor *const pvd_hsfs =
+		reinterpret_cast<const HSFS_Primary_Volume_Descriptor*>(data);
+	if (pvd_hsfs->header.type == ISO_VDT_PRIMARY && pvd_hsfs->header.version == HSFS_VD_VERSION &&
+	    !memcmp(pvd_hsfs->header.identifier, HSFS_VD_MAGIC, sizeof(pvd_hsfs->header.identifier)))
+	{
+		// This is a High Sierra PVD.
+		return static_cast<int>(ISOPrivate::DiscType::HighSierra);
+	}
+
+	// Not supported.
+	return static_cast<int>(ISOPrivate::DiscType::Unknown);
+}
 
 /**
  * Is a ROM image supported by this class?

@@ -435,8 +435,7 @@ RomData *RomDataFactoryPrivate::openDreamcastVMSandVMI(IRpFile *file)
  */
 RomData *RomDataFactoryPrivate::checkISO(IRpFile *file)
 {
-	// Check for specific disc file systems.
-	// TODO: 2352-byte sector handling?
+	// Check for a CD file system with 2048-byte sectors.
 	CDROM_2352_Sector_t sector;
 	size_t size = file->seekAndRead(ISO_PVD_ADDRESS_2048, &sector.m1.data, sizeof(sector.m1.data));
 	if (size != sizeof(sector.m1.data)) {
@@ -444,27 +443,26 @@ RomData *RomDataFactoryPrivate::checkISO(IRpFile *file)
 		return nullptr;
 	}
 
-	const ISO_Primary_Volume_Descriptor *pvd =
-		reinterpret_cast<const ISO_Primary_Volume_Descriptor*>(sector.m1.data);
-	if (pvd->header.type != ISO_VDT_PRIMARY || pvd->header.version != ISO_VD_VERSION ||
-	    memcmp(pvd->header.identifier, ISO_VD_MAGIC, sizeof(pvd->header.identifier)) != 0)
-	{
-		// Not a valid PVD.
-		// Try 2352-byte sectors.
+	const ISO_Primary_Volume_Descriptor *pvd;
+	int discType = ISO::checkPVD(sector.m1.data);
+	if (discType >= 0) {
+		// Found a Mode 1 PVD.
+		pvd = reinterpret_cast<const ISO_Primary_Volume_Descriptor*>(sector.m1.data);
+	} else {
+		// Check for a CD file system with 2352-byte sectors.
 		size_t size = file->seekAndRead(ISO_PVD_ADDRESS_2352, &sector, sizeof(sector));
 		if (size != sizeof(sector)) {
 			// Unable to read the PVD.
 			return nullptr;
 		}
 
-		// Copy the PVD from the sector.
-		// NOTE: Sector user data area position depends on the sector mode.
-		pvd = reinterpret_cast<const ISO_Primary_Volume_Descriptor*>(cdromSectorDataPtr(&sector));
-
-		if (pvd->header.type != ISO_VDT_PRIMARY || pvd->header.version != ISO_VD_VERSION ||
-		    memcmp(pvd->header.identifier, ISO_VD_MAGIC, sizeof(pvd->header.identifier)) != 0)
-		{
-			// Not a valid PVD.
+		const uint8_t *const pData = cdromSectorDataPtr(&sector);
+		discType = ISO::checkPVD(pData);
+		if (discType >= 0) {
+			// Found a Mode 2 PVD.
+			pvd = reinterpret_cast<const ISO_Primary_Volume_Descriptor*>(pData);
+		} else {
+			// Not a supported disc.
 			return nullptr;
 		}
 	}

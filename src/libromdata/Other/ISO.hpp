@@ -14,6 +14,15 @@
 namespace LibRomData {
 
 ROMDATA_DECL_BEGIN(ISO)
+
+	public:
+		/**
+		* Check for a valid PVD.
+		* @param data Potential PVD. (Must be 2048 bytes)
+		* @return DiscType if valid; -1 if not.
+		*/
+		static int checkPVD(const uint8_t *data);
+
 ROMDATA_DECL_END()
 
 }
