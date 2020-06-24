@@ -29,9 +29,8 @@
 typedef enum {
 	RP_FE_KDE4,
 	RP_FE_KF5,
-	RP_FE_XFCE,
-	RP_FE_XFCE3,
-	RP_FE_GNOME,	// also MATE and Cinnamon
+	RP_FE_GTK2,	// XFCE (Thunar 1.6)
+	RP_FE_GTK3,	// GNOME, MATE, Cinnamon, XFCE (Thunar 1.8)
 
 	RP_FE_MAX
 } RP_Frontend;
@@ -53,13 +52,8 @@ static const char *const RP_Extension_Path[RP_FE_MAX] = {
 #else
 	NULL,
 #endif
-#ifdef ThunarX3_EXTENSIONS_DIR
-	ThunarX3_EXTENSIONS_DIR "/rom-properties-xfce3.so",
-#else
-	NULL,
-#endif
 #ifdef LibNautilusExtension_EXTENSION_DIR
-	LibNautilusExtension_EXTENSION_DIR "/rom-properties-gnome.so",
+	LibNautilusExtension_EXTENSION_DIR "/rom-properties-gtk3.so",
 #else
 	NULL,
 #endif
@@ -69,11 +63,10 @@ static const char *const RP_Extension_Path[RP_FE_MAX] = {
 // - Index: Current desktop environment. (RP_Frontend)
 // - Value: Plugin to use. (RP_Frontend)
 static const uint8_t plugin_prio[RP_FE_MAX][RP_FE_MAX] = {
-	{RP_FE_KDE4, RP_FE_KF5, RP_FE_XFCE, RP_FE_XFCE3, RP_FE_GNOME},	// RP_FE_KDE4
-	{RP_FE_KF5, RP_FE_KDE4, RP_FE_GNOME, RP_FE_XFCE, RP_FE_XFCE3},	// RP_FE_KF5
-	{RP_FE_XFCE, RP_FE_XFCE3, RP_FE_GNOME, RP_FE_KF5, RP_FE_KDE4},	// RP_FE_XFCE
-	{RP_FE_XFCE3, RP_FE_XFCE, RP_FE_GNOME, RP_FE_KF5, RP_FE_KDE4},	// RP_FE_XFCE3
-	{RP_FE_GNOME, RP_FE_XFCE3, RP_FE_XFCE, RP_FE_KF5, RP_FE_KDE4},	// RP_FE_GNOME
+	{RP_FE_KDE4, RP_FE_KF5, RP_FE_GTK2, RP_FE_GTK3},	// RP_FE_KDE4
+	{RP_FE_KF5, RP_FE_KDE4, RP_FE_GTK3, RP_FE_GTK2},	// RP_FE_KF5
+	{RP_FE_GTK2, RP_FE_GTK3, RP_FE_KF5, RP_FE_KDE4},	// RP_FE_GTK2
+	{RP_FE_GTK3, RP_FE_GTK2, RP_FE_KF5, RP_FE_KDE4},	// RP_FE_GTK3
 };
 
 /**
@@ -140,7 +133,7 @@ static RP_Frontend walk_proc_tree(void)
 				{
 					// GNOME, MATE, or Cinnamon session.
 					// TODO: Verify the Cinnamon process names.
-					ret = RP_FE_GNOME;
+					ret = RP_FE_GTK3;
 					ppid = 0;
 					break;
 				}
@@ -196,12 +189,12 @@ static inline RP_Frontend check_xdg_desktop_name(const char *name)
 	           !strcasecmp(name, "Cinnamon"))
 	{
 		// GTK3-based desktop environment. (GNOME or GNOME-like)
-		return RP_FE_GNOME;
+		return RP_FE_GTK3;
 	} else if (!strcasecmp(name, "XFCE") ||
 		   !strcasecmp(name, "LXDE"))
 	{
 		// This *might* be GTK3 if it's new enough.
-		return RP_FE_XFCE3;
+		return RP_FE_GTK3;
 	}
 
 	// NOTE: "KDE4", "KDE5", and "KF5" are not actually used.
@@ -261,8 +254,8 @@ static RP_Frontend get_active_de(void)
 	// Walk the process tree to find a known parent process.
 	RP_Frontend ret = walk_proc_tree();
 	if (ret >= RP_FE_MAX) {
-		// No match. Assume RP_FE_GNOME.
-		ret = RP_FE_GNOME;
+		// No match. Assume RP_FE_GTK3.
+		ret = RP_FE_GTK3;
 	}
 
 	return ret;
@@ -293,21 +286,20 @@ int rp_dll_search(const char *symname, void **ppDll, void **ppfn, PFN_RP_DLL_DEB
 	if (pfnDebug) {
 		static const char *const de_name_tbl[] = {
 			"KDE4", "KF5",
-			"XFCE (GTK+ 2.x)", "XFCE (GTK+ 3.x)",
-			"GNOME"
+			"GTK2", "GTK3",
 		};
 		static_assert(sizeof(de_name_tbl)/sizeof(de_name_tbl[0]) == RP_FE_MAX,
 			"de_name_tbl[] needs to be updated.");
 		if (cur_desktop == RP_FE_MAX) {
-			pfnDebug(LEVEL_DEBUG, "*** Could not determine active desktop environment. Defaulting to GNOME.");
+			pfnDebug(LEVEL_DEBUG, "*** Could not determine active desktop environment. Defaulting to GTK3.");
 		} else {
 			pfnDebug(LEVEL_DEBUG, "Active desktop environment: %s", de_name_tbl[cur_desktop]);
 		}
 	}
 
 	if (cur_desktop == RP_FE_MAX) {
-		// Default to GNOME.
-		cur_desktop = RP_FE_GNOME;
+		// Default to GTK3.
+		cur_desktop = RP_FE_GTK3;
 	}
 
 	const uint8_t *const prio = &plugin_prio[cur_desktop][0];

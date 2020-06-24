@@ -18,9 +18,6 @@
 /* ThunarX2 extensions path. */
 #cmakedefine ThunarX2_EXTENSIONS_DIR "@ThunarX2_EXTENSIONS_DIR@"
 
-/* ThunarX3 extensions path. */
-#cmakedefine ThunarX3_EXTENSIONS_DIR "@ThunarX3_EXTENSIONS_DIR@"
-
 /* libnautilus-extension extensions path. */
 #cmakedefine LibNautilusExtension_EXTENSION_DIR "@LibNautilusExtension_EXTENSION_DIR@"
 
