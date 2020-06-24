@@ -1,5 +1,5 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (GNOME)                            *
+ * ROM Properties Page shell extension. (GTK+ 3.x)                         *
  * RpNautilusProvider.cpp: Nautilus (and forks) Provider Definition.       *
  *                                                                         *
  * Copyright (c) 2017-2020 by David Korth.                                 *

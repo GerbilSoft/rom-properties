@@ -2,6 +2,7 @@
 # - Nautilus 3.x (GNOME)
 # - Caja 1.18 (MATE)
 # - Nemo (Cinnamon)
+# - Thunar 1.8 (XFCE)
 CMAKE_MINIMUM_REQUIRED(VERSION 3.0)
 CMAKE_POLICY(SET CMP0048 NEW)
 IF(POLICY CMP0063)
@@ -22,23 +23,37 @@ IF(GLib2_FOUND AND GObject2_FOUND AND GIO_FOUND AND Cairo_FOUND AND GTK3_FOUND)
 	# It will be dlopen()'d at runtime based on which
 	# initialization function is called.
 
-	# Get the various extensions directories.
+	# Nautilus (GNOME)
 	FIND_PACKAGE(LibNautilusExtension 3.0.0)
 	IF(NOT LibNautilusExtension_FOUND)
 		MESSAGE(STATUS "LibNautilusExtension not found. Using default extensions directory.")
+		SET(LibNautilusExtension_EXTENSION_DIR "${CMAKE_INSTALL_LIBDIR}/nautilus/extensions-3.0")
 	ENDIF(NOT LibNautilusExtension_FOUND)
+
+	# Caja (MATE)
 	FIND_PACKAGE(LibCajaExtension 1.18.0)
 	IF(NOT LibCajaExtension_FOUND)
 		MESSAGE(STATUS "LibCajaExtension not found. Using default extensions directory.")
+		SET(LibCajaExtension_EXTENSION_DIR "${CMAKE_INSTALL_LIBDIR}/caja/extensions-2.0")
 	ENDIF(NOT LibCajaExtension_FOUND)
+
+	# Nemo (Cinnamon)
 	FIND_PACKAGE(LibNemoExtension)
 	IF(NOT LibNemoExtension_FOUND)
 		MESSAGE(STATUS "LibNemoExtension not found. Using default extensions directory.")
+		SET(LibNemoExtension_EXTENSION_DIR "${CMAKE_INSTALL_LIBDIR}/nemo/extensions-3.0")
 	ENDIF(NOT LibNemoExtension_FOUND)
+
+	# Thunar (XFCE)
+	FIND_PACKAGE(ThunarX3)
+	IF(NOT ThunarX3_FOUND)
+		MESSAGE(STATUS "ThunarX3 not found. Using default extensions directory.")
+		SET(ThunarX3_EXTENSIONS_DIR "${CMAKE_INSTALL_LIBDIR}/thunarx-3")
+	ENDIF(NOT ThunarX3_FOUND)
 ELSE(GLib2_FOUND AND GObject2_FOUND AND GIO_FOUND AND Cairo_FOUND AND GTK3_FOUND)
 	# GTK+ 3.x (or required dependencies) were not found.
 	# Disable the GNOME frontend.
-	SET(BUILD_GTK3 OFF CACHE INTERNAL "Build the GTK+ 3.x plugin. (GNOME, MATE, and Cinnamon)" FORCE)
+	SET(BUILD_GTK3 OFF CACHE INTERNAL "Build the GTK+ 3.x plugin." FORCE)
 ENDIF(GLib2_FOUND AND GObject2_FOUND AND GIO_FOUND AND Cairo_FOUND AND GTK3_FOUND)
 
 # Sources and headers. (GTK+ common)
@@ -78,11 +93,18 @@ SET(rom-properties-gtk3_SRCS
 	${rom-properties-gtk3_SSSE3_SRCS}
 	RpNautilusPlugin.c
 	RpNautilusProvider.cpp
+	RpThunarPlugin.c
+	RpThunarProvider.cpp
+	RpThunarPage.cpp
 	)
 SET(rom-properties-gtk3_H
 	${rom-properties-gtk3_CH} ${rom-properties-gtk3_CH2}
 	RpNautilusPlugin.h
 	RpNautilusProvider.hpp
+	RpThunarPlugin.h
+	RpThunarProvider.hpp
+	RpThunarPage.hpp
+	thunarx-mini.h
 	)
 
 IF(ENABLE_PCH)
@@ -138,25 +160,13 @@ ENDIF(BUILD_GTK3)
 #######################
 
 IF(BUILD_GTK3)
-	# Check the extension directories.
-	# Default paths will be used if they aren't found.
-	IF(NOT LibNautilusExtension_EXTENSION_DIR)
-		SET(LibNautilusExtension_EXTENSION_DIR "${CMAKE_INSTALL_LIBDIR}/nautilus/extensions-3.0")
-	ENDIF(NOT LibNautilusExtension_EXTENSION_DIR)
-	IF(NOT LibCajaExtension_EXTENSION_DIR)
-		SET(LibCajaExtension_EXTENSION_DIR "${CMAKE_INSTALL_LIBDIR}/caja/extensions-2.0")
-	ENDIF(NOT LibCajaExtension_EXTENSION_DIR)
-	IF(NOT LibNemoExtension_EXTENSION_DIR)
-		SET(LibNemoExtension_EXTENSION_DIR "${CMAKE_INSTALL_LIBDIR}/nemo/extensions-3.0")
-	ENDIF(NOT LibNemoExtension_EXTENSION_DIR)
-
 	# GNOME (Nautilus) extension is installed directly.
 	INSTALL(TARGETS rom-properties-gtk3
 		LIBRARY DESTINATION "${LibNautilusExtension_EXTENSION_DIR}"
 		COMPONENT "plugin"
 		)
 
-	# Symlinks are created for MATE (Caja) and Cinnamon (Nemo).
+	# Symlinks are created for Caja, Nemo, and Thunar.
 	# Reference: https://stackoverflow.com/questions/34578362/how-can-i-package-a-symlink-with-cpack
 	ADD_CUSTOM_COMMAND(TARGET rom-properties-gtk3 POST_BUILD
 		COMMAND ln -sf "${LibNautilusExtension_EXTENSION_DIR}/rom-properties-gtk3.so" rom-properties-gtk3.symlink.so
@@ -172,6 +182,11 @@ IF(BUILD_GTK3)
 		)
 	INSTALL(FILES "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/rom-properties-gtk3.symlink.so"
 		DESTINATION "${LibNemoExtension_EXTENSION_DIR}"
+		RENAME "rom-properties-gtk3.so"
+		COMPONENT "plugin"
+		)
+	INSTALL(FILES "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/rom-properties-gtk3.symlink.so"
+		DESTINATION "${ThunarX3_EXTENSIONS_DIR}"
 		RENAME "rom-properties-gtk3.so"
 		COMPONENT "plugin"
 		)

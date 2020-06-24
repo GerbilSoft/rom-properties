@@ -79,16 +79,12 @@ IF(GLib2_FOUND AND GObject2_FOUND)
 	IF(NOT Cairo_FOUND)
 		# Cannot build GTK3 frontends.
 		SET(BUILD_GTK3 OFF CACHE INTERNAL "Check for GTK+ 3.x." FORCE)
-		SET(BUILD_GNOME OFF CACHE INTERNAL "Build the GNOME (GTK+ 3.x) plugin." FORCE)
-		SET(BUILD_XFCE3 OFF CACHE INTERNAL "Build the XFCE (GTK+ 3.x) plugin. (Thunar 1.8 and later)" FORCE)
 	ENDIF(NOT Cairo_FOUND)
 ELSE(GLib2_FOUND AND GObject2_FOUND)
 	# Cannot build any GTK+ frontends.
 	SET(BUILD_GTK2 OFF CACHE INTERNAL "Check for GTK+ 2.x." FORCE)
 	SET(BUILD_GTK3 OFF CACHE INTERNAL "Check for GTK+ 3.x." FORCE)
 	SET(BUILD_XFCE OFF CACHE INTERNAL "Build the XFCE (GTK+ 2.x) plugin. (Thunar 1.7 and earlier)" FORCE)
-	SET(BUILD_XFCE3 OFF CACHE INTERNAL "Build the XFCE (GTK+ 3.x) plugin. (Thunar 1.8 and later)" FORCE)
-	SET(BUILD_GNOME OFF CACHE INTERNAL "Build the GNOME (GTK+ 3.x) plugin." FORCE)
 ENDIF(GLib2_FOUND AND GObject2_FOUND)
 
 # Build GTK+ 2.x frontends.
@@ -112,7 +108,6 @@ IF(BUILD_GTK3)
 	FIND_PACKAGE(GTK3 3.10.0 ${REQUIRE_GTK3})
 	IF(GTK3_FOUND)
 		ADD_SUBDIRECTORY(gtk3)
-		ADD_SUBDIRECTORY(xfce3)
 
 		# Process the .thumbnailer file.
 		INCLUDE(DirInstallPaths)
@@ -122,12 +117,8 @@ IF(BUILD_GTK3)
 			COMPONENT "plugin"
 			)
 	ELSE(GTK3_FOUND)
-		SET(BUILD_GTK3 OFF CACHE INTERNAL "Build the GTK+ 3.x plugin. (GNOME, MATE, and Cinnamon)" FORCE)
-		SET(BUILD_XFCE3 OFF CACHE INTERNAL "Build the XFCE (GTK+ 3.x) plugin. (Thunar 1.8 and later)" FORCE)
+		SET(BUILD_GTK3 OFF CACHE INTERNAL "Build the GTK+ 3.x plugin." FORCE)
 	ENDIF(GTK3_FOUND)
-ELSE(BUILD_GTK3)
-	# No GTK3 builds.
-	SET(BUILD_XFCE3 OFF CACHE INTERNAL "Build the XFCE (GTK+ 3.x) plugin. (Thunar 1.8 and later)" FORCE)
 ENDIF(BUILD_GTK3)
 
 # Build the D-Bus thumbnailer if building an XFCE plugin.
