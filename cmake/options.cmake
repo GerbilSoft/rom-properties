@@ -25,11 +25,12 @@ IF(UNIX AND NOT APPLE)
 	# Reference: https://cmake.org/pipermail/cmake/2016-October/064342.html
 	OPTION_UI(KDE4 "Build the KDE4 plugin.")
 	OPTION_UI(KF5 "Build the KDE Frameworks 5 plugin.")
-	OPTION_UI(XFCE "Build the XFCE (GTK+ 2.x) plugin. (Thunar 1.7 and earlier)")
+	OPTION_UI(XFCE "Build the XFCE (GTK+ 2.x) plugin.")
 	OPTION_UI(GTK3 "Build the GTK+ 3.x plugin.")
 
-	# Set BUILD_GTK2 depending on frontends.
-	SET(BUILD_GTK2 ${BUILD_XFCE} CACHE INTERNAL "Check for GTK+ 2.x." FORCE)
+	# NOTE: The GTK+ 2.x plugin is XFCE only right now.
+	SET(BUILD_GTK2 "${BUILD_XFCE}")
+	SET(REQUIRE_GTK2 "${REQUIRE_XFCE}")
 
 	# QT_SELECT must be unset before compiling.
 	UNSET(ENV{QT_SELECT})

@@ -104,6 +104,7 @@ SET(rom-properties-gtk3_H
 	RpThunarPlugin.h
 	RpThunarProvider.hpp
 	RpThunarPage.hpp
+	plugin-helper.h
 	thunarx-mini.h
 	)
 

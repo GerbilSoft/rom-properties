@@ -1,4 +1,5 @@
-# XFCE (Thunar) (GTK+ 2.x) UI frontend
+# GTK+ 2.x UI frontend for:
+# - Thunar 1.6 (XFCE)
 CMAKE_MINIMUM_REQUIRED(VERSION 3.0)
 CMAKE_POLICY(SET CMP0048 NEW)
 IF(POLICY CMP0063)
@@ -9,24 +10,27 @@ ENDIF(POLICY CMP0063)
 PROJECT(rom-properties-xfce LANGUAGES C CXX)
 
 # Find packages.
-FIND_PACKAGE(GLib2 ${REQUIRE_XFCE} 2.26.0)
-FIND_PACKAGE(GObject2 ${REQUIRE_XFCE} 2.26.0)
-FIND_PACKAGE(GIO ${REQUIRE_XFCE} 2.26.0)
-FIND_PACKAGE(GdkPixbuf2 ${REQUIRE_XFCE})
+FIND_PACKAGE(GLib2 ${REQUIRE_GTK2} 2.26.0)
+FIND_PACKAGE(GObject2 ${REQUIRE_GTK2} 2.26.0)
+FIND_PACKAGE(GIO ${REQUIRE_GTK2} 2.26.0)
+FIND_PACKAGE(GdkPixbuf2 ${REQUIRE_GTK2})
 # GTK2 minimum is 2.0.0, so no version check is needed.
-FIND_PACKAGE(GTK2 ${REQUIRE_XFCE} COMPONENTS gtk)
+FIND_PACKAGE(GTK2 ${REQUIRE_GTK2} COMPONENTS gtk)
 IF(GLib2_FOUND AND GObject2_FOUND AND GIO_FOUND AND GdkPixbuf2_FOUND AND GTK2_FOUND)
-	# Find the ThunarX 2 library.
-	FIND_PACKAGE(ThunarX2 ${REQUIRE_XFCE})
+	# We're not going to have an explicit dependency on libnautilus-extension.
+	# It will be dlopen()'d at runtime based on which
+	# initialization function is called.
+
+	# Thunar (XFCE)
+	FIND_PACKAGE(ThunarX2)
 	IF(NOT ThunarX2_FOUND)
-		# ThunarX 2 was not found.
-		# Disable the XFCE frontend.
-		SET(BUILD_XFCE OFF CACHE INTERNAL "Build the XFCE (GTK+ 2.x) plugin. (Thunar 1.7 and earlier)" FORCE)
+		MESSAGE(STATUS "ThunarX2 not found. Using the default extensions directory.")
+		SET(ThunarX2_EXTENSIONS_DIR "${CMAKE_INSTALL_LIBDIR}/thunarx-2")
 	ENDIF(NOT ThunarX2_FOUND)
 ELSE(GLib2_FOUND AND GObject2_FOUND AND GIO_FOUND AND GdkPixbuf2_FOUND AND GTK2_FOUND)
 	# GTK+ 2.x (or required dependencies) were not found.
 	# Disable the XFCE frontend.
-	SET(BUILD_XFCE OFF CACHE INTERNAL "Build the XFCE (GTK+ 2.x) plugin. (Thunar 1.7 and earlier)" FORCE)
+	SET(BUILD_GTK2 OFF CACHE INTERNAL "Build the XFCE (GTK+ 2.x) plugin. (Thunar 1.7 and earlier)" FORCE)
 ENDIF(GLib2_FOUND AND GObject2_FOUND AND GIO_FOUND AND GdkPixbuf2_FOUND AND GTK2_FOUND)
 
 # Sources and headers. (GTK+ common)
@@ -64,14 +68,17 @@ SET(rom-properties-xfce_SRCS
 	${rom-properties-xfce_SRCS} ${rom-properties-xfce_SRCS2}
 	${rom-properties-xfce_IFUNC_SRCS}
 	${rom-properties-xfce_SSSE3_SRCS}
-	rom-properties-plugin.c
-	rom-properties-provider.cpp
-	rom-properties-page.cpp
+	../gtk3/RpThunarPlugin.c
+	../gtk3/RpThunarProvider.cpp
+	../gtk3/RpThunarPage.cpp
 	)
 SET(rom-properties-xfce_H
 	${rom-properties-xfce_H} ${rom-properties-xfce_H2}
-	rom-properties-provider.hpp
-	rom-properties-page.hpp
+	../gtk3/RpThunarPlugin.h
+	../gtk3/RpThunarProvider.hpp
+	../gtk3/RpThunarPage.hpp
+	../gtk3/plugin-helper.h
+	../gtk3/thunarx-mini.h
 	)
 
 IF(ENABLE_PCH)
@@ -83,7 +90,7 @@ IF(ENABLE_PCH)
 	SET(rom-properties-xfce_PCH_H ../stdafx.h)
 ENDIF(ENABLE_PCH)
 
-IF(BUILD_XFCE)
+IF(BUILD_GTK2)
 	ADD_LIBRARY(rom-properties-xfce MODULE
 		${rom-properties-xfce_PCH_SRC} ${rom-properties-xfce_PCH_H}
 		${rom-properties-xfce_SRCS}
@@ -120,13 +127,13 @@ IF(BUILD_XFCE)
 	TARGET_COMPILE_DEFINITIONS(rom-properties-xfce
 		PRIVATE RP_UI_GTK2_XFCE
 		)
-ENDIF(BUILD_XFCE)
+ENDIF(BUILD_GTK2)
 
 #######################
 # Install the plugin. #
 #######################
 
-IF(BUILD_XFCE)
+IF(BUILD_GTK2)
 	# FIXME: ${ThunarX2_EXTENSIONS_DIR} always uses the system prefix.
 	# This should be adjusted to ${CMAKE_INSTALL_PREFIX}.
 	INSTALL(TARGETS rom-properties-xfce
@@ -145,4 +152,4 @@ IF(BUILD_XFCE)
 				)
 		ENDIF(DEBUG_FILENAME)
 	ENDIF(INSTALL_DEBUG)
-ENDIF(BUILD_XFCE)
+ENDIF(BUILD_GTK2)
