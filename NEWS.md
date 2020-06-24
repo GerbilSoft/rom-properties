@@ -46,9 +46,11 @@
 * Other changes:
   * Split file handling and CPU/byteorder code from librpbase into two
     libraries: librpfile and librpcpu.
-  * The MATE and Cinnamon plugins have been merged into the GNOME plugin.
-    All three were effectively the same except for some function names,
-    which can be determined at runtime.
+  * The MATE, Cinnamon, and XFCE (GTK+ 3.x) plugins have all been merged
+    into the GNOME plugin, and it is now named "gtk3". Among other things,
+    this makes it possible to use the Ubuntu 18.04 "Bionic" packages on
+    Linux Mint 19.3, which has an Ubuntu 18.04 base but uses the GTK+ 3.x
+    version of Thunar.
 
 ## v1.5 (released 2020/03/13)
 
