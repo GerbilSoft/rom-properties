@@ -9,18 +9,10 @@
 #include "stdafx.h"
 #include "RpThunarProvider.hpp"
 #include "RpThunarPage.hpp"
+#include "is-supported.hpp"
 
 // thunarx.h mini replacement
 #include "thunarx-mini.h"
-
-// librpbase, librpfile
-using namespace LibRpBase;
-using LibRpFile::IRpFile;
-using LibRpFile::RpFile;
-
-// libromdata
-#include "libromdata/RomDataFactory.hpp"
-using LibRomData::RomDataFactory;
 
 static void   rp_thunar_provider_page_provider_init	(ThunarxPropertyPageProviderIface *iface);
 static GList *rp_thunar_provider_get_pages		(ThunarxPropertyPageProvider      *renamer_provider,
@@ -103,8 +95,15 @@ rp_thunar_provider_get_pages(ThunarxPropertyPageProvider *page_provider, GList *
 		return nullptr;
 
 	info = THUNARX_FILE_INFO(file->data);
+	gchar *const uri = thunarx_file_info_get_uri(info);
+	if (G_UNLIKELY(uri == nullptr)) {
+		// No URI...
+		return nullptr;
+	}
 
-	if (G_LIKELY(rp_thunar_provider_get_file_supported(info))) {
+	// TODO: Maybe we should just open the RomData here
+	// and pass it to the RomDataView.
+	if (G_LIKELY(rp_gtk3_is_uri_supported(uri))) {
 		// Create the ROM Properties page.
 		RpThunarPage *const page = rp_thunar_page_new();
 
@@ -115,49 +114,6 @@ rp_thunar_provider_get_pages(ThunarxPropertyPageProvider *page_provider, GList *
 		pages = g_list_prepend(pages, page);
 	}
 
-	return pages;
-}
-
-gboolean
-rp_thunar_provider_get_file_supported(ThunarxFileInfo *info)
-{
-	gboolean supported = false;
-	g_return_val_if_fail(info != nullptr || THUNARX_IS_FILE_INFO (info), false);
-
-	gchar *const uri = thunarx_file_info_get_uri(info);
-	if (G_UNLIKELY(uri == nullptr)) {
-		// No URI...
-		return false;
-	}
-
-	// TODO: Check file extensions and/or MIME types?
-
-	// Check if the URI maps to a local file.
-	IRpFile *file = nullptr;
-	gchar *const filename = g_filename_from_uri(uri, nullptr, nullptr);
-	if (filename) {
-		// Local file. Use RpFile.
-		file = new RpFile(filename, RpFile::FM_OPEN_READ_GZ);
-		g_free(filename);
-	} else {
-		// Not a local file. Use RpFileGio.
-		file = new RpFileGio(uri);
-	}
 	g_free(uri);
-
-	// Open the ROM file.
-	if (file->isOpen()) {
-		// Is this ROM file supported?
-		// NOTE: We have to create an instance here in order to
-		// prevent false positives caused by isRomSupported()
-		// saying "yes" while new RomData() says "no".
-		RomData *const romData = RomDataFactory::create(file);
-		if (romData != nullptr) {
-			supported = true;
-			romData->unref();
-		}
-	}
-	file->unref();
-
-	return supported;
+	return pages;
 }

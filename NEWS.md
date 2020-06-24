@@ -42,6 +42,8 @@
   * Nintendo3DS: CVer CIAs have an 8-byte meta section.
   * iQuePlayer: Fixed file type identification issues.
   * KhronosKTX: Fixed preview of textures with more than one array element.
+  * GTK+ 3.x (Nautilus) UI frontends: Fixed a minor memory leak that leaked a
+    file URI every time a File Properties dialog was opened.
 
 * Other changes:
   * Split file handling and CPU/byteorder code from librpbase into two

@@ -28,8 +28,6 @@ GType		rp_thunar_provider_get_type		(void) G_GNUC_CONST G_GNUC_INTERNAL;
 /* NOTE: G_DEFINE_DYNAMIC_TYPE() declares the actual function as static. */
 void		rp_thunar_provider_register_type_ext	(ThunarxProviderPlugin *plugin) G_GNUC_INTERNAL;
 
-gboolean	rp_thunar_provider_get_file_supported	(ThunarxFileInfo *info) G_GNUC_INTERNAL;
-
 G_END_DECLS
 
 #endif /* !__ROMPROPERTIES_GTK3_RPTHUNARPROVIDER_HPP__ */

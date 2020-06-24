@@ -71,12 +71,14 @@ SET(rom-properties-xfce_SRCS
 	../gtk3/RpThunarPlugin.c
 	../gtk3/RpThunarProvider.cpp
 	../gtk3/RpThunarPage.cpp
+	../gtk3/is-supported.cpp
 	)
 SET(rom-properties-xfce_H
 	${rom-properties-xfce_H} ${rom-properties-xfce_H2}
 	../gtk3/RpThunarPlugin.h
 	../gtk3/RpThunarProvider.hpp
 	../gtk3/RpThunarPage.hpp
+	../gtk3/is-supported.hpp
 	../gtk3/plugin-helper.h
 	../gtk3/thunarx-mini.h
 	)

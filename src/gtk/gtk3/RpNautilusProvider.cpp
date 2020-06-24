@@ -18,15 +18,7 @@
 #include "stdafx.h"
 #include "RpNautilusProvider.hpp"
 #include "RpNautilusPlugin.h"
-
-// librpbase, librpfile
-using namespace LibRpBase;
-using LibRpFile::IRpFile;
-using LibRpFile::RpFile;
-
-// libromdata
-#include "libromdata/RomDataFactory.hpp"
-using LibRomData::RomDataFactory;
+#include "is-supported.hpp"
 
 #include "../RomDataView.hpp"
 
@@ -44,8 +36,6 @@ struct _NautilusPropertyPageProviderIface {
 static void   rp_nautilus_provider_page_provider_init	(NautilusPropertyPageProviderIface	*iface);
 static GList *rp_nautilus_provider_get_pages		(NautilusPropertyPageProvider		*provider,
 							 GList					*files);
-
-static gboolean rom_properties_get_file_supported	(NautilusFileInfo *info);
 
 struct _RpNautilusProviderClass {
 	GObjectClass __parent__;
@@ -130,23 +120,19 @@ rp_nautilus_provider_get_pages(NautilusPropertyPageProvider *provider, GList *fi
 		return nullptr;
 	}
 
-	// TODO: Do we have to keep rom_properties_get_file_supported()
-	// as a separate function that takes a NautilusFileInfo*?
-	if (G_LIKELY(rom_properties_get_file_supported(info))) {
-		// Get the URI.
-		gchar *const uri = nautilus_file_info_get_uri(info);
-
+	// TODO: Maybe we should just open the RomData here
+	// and pass it to the RomDataView.
+	if (G_LIKELY(rp_gtk3_is_uri_supported(uri))) {
 		// Create the RomDataView.
 		// NOTE: Unlike the Xfce/Thunar (GTK+ 2.x) version, we don't
 		// need to subclass NautilusPropertyPage. Instead, we create a
 		// NautilusPropertyPage and add a RomDataView widget to it.
 		// TODO: Add some extra padding to the top...
-		GtkWidget *romDataView = static_cast<GtkWidget*>(
-			g_object_new(rom_data_view_get_type(), nullptr));
+		GtkWidget *const romDataView = static_cast<GtkWidget*>(
+			g_object_new(TYPE_ROM_DATA_VIEW, nullptr));
 		rom_data_view_set_desc_format_type(ROM_DATA_VIEW(romDataView), RP_DFT_GNOME);
 		rom_data_view_set_uri(ROM_DATA_VIEW(romDataView), uri);
 		gtk_widget_show(romDataView);
-		g_free(uri);
 
 		// tr: Tab title.
 		const char *const tabTitle = C_("RomDataView", "ROM Properties");
@@ -160,48 +146,6 @@ rp_nautilus_provider_get_pages(NautilusPropertyPageProvider *provider, GList *fi
 		pages = g_list_prepend(pages, page);
 	}
 
-	return pages;
-}
-
-static gboolean
-rom_properties_get_file_supported(NautilusFileInfo *info)
-{
-	gboolean supported = false;
-	g_return_val_if_fail(info != nullptr || NAUTILUS_IS_FILE_INFO(info), false);
-
-	gchar *const uri = nautilus_file_info_get_uri(info);
-	if (G_UNLIKELY(uri == nullptr)) {
-		// No URI...
-		return false;
-	}
-
-	// TODO: Check file extensions and/or MIME types?
-
-	// Check if the URI maps to a local file.
-	IRpFile *file = nullptr;
-	gchar *const filename = g_filename_from_uri(uri, nullptr, nullptr);
-	if (filename) {
-		// Local file. Use RpFile.
-		file = new RpFile(filename, RpFile::FM_OPEN_READ_GZ);
-		g_free(filename);
-	} else {
-		// Not a local file. Use RpFileGio.
-		file = new RpFileGio(uri);
-	}
 	g_free(uri);
-
-	if (file->isOpen()) {
-		// Is this ROM file supported?
-		// NOTE: We have to create an instance here in order to
-		// prevent false positives caused by isRomSupported()
-		// saying "yes" while new RomData() says "no".
-		RomData *const romData = RomDataFactory::create(file);
-		if (romData != nullptr) {
-			supported = true;
-			romData->unref();
-		}
-	}
-	file->unref();
-
-	return supported;
+	return pages;
 }

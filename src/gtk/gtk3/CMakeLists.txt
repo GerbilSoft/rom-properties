@@ -96,6 +96,7 @@ SET(rom-properties-gtk3_SRCS
 	RpThunarPlugin.c
 	RpThunarProvider.cpp
 	RpThunarPage.cpp
+	is-supported.cpp
 	)
 SET(rom-properties-gtk3_H
 	${rom-properties-gtk3_CH} ${rom-properties-gtk3_CH2}
@@ -104,6 +105,7 @@ SET(rom-properties-gtk3_H
 	RpThunarPlugin.h
 	RpThunarProvider.hpp
 	RpThunarPage.hpp
+	is-supported.hpp
 	plugin-helper.h
 	thunarx-mini.h
 	)
