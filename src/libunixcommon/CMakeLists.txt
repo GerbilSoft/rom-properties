@@ -54,16 +54,22 @@ IF(BUILD_KF5)
 	UNSET(QT_SELECT_OLD)
 ENDIF(BUILD_KF5)
 
-# XFCE and GNOME.
-IF(BUILD_XFCE)
+# GTK+ UI frontends.
+# NOTE: Only checking for the main plugin, not symlinked plugins.
+IF(BUILD_GTK2)
+	# Thunar (XFCE)
 	FIND_PACKAGE(ThunarX2)
-ENDIF(BUILD_XFCE)
-IF(BUILD_XFCE3)
-	FIND_PACKAGE(ThunarX3)
-ENDIF(BUILD_XFCE3)
-IF(BUILD_GNOME)
+	IF(NOT ThunarX2_FOUND)
+		SET(ThunarX2_EXTENSIONS_DIR "${CMAKE_INSTALL_LIBDIR}/thunarx-2")
+	ENDIF(NOT ThunarX2_FOUND)
+ENDIF(BUILD_GTK2)
+IF(BUILD_GTK3)
+	# Nautilus (GNOME)
 	FIND_PACKAGE(LibNautilusExtension 3.0.0)
-ENDIF(BUILD_GNOME)
+	IF(NOT LibNautilusExtension_FOUND)
+		SET(LibNautilusExtension_EXTENSION_DIR "${CMAKE_INSTALL_LIBDIR}/nautilus/extensions-3.0")
+	ENDIF(NOT LibNautilusExtension_FOUND)
+ENDIF(BUILD_GTK3)
 
 # Check for C library functions.
 INCLUDE(CheckSymbolExists)

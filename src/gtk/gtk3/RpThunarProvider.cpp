@@ -1,14 +1,17 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (XFCE)                             *
- * rom-properties-provider.cpp: ThunarX Provider Definition.               *
+ * ROM Properties Page shell extension. (GTK+ 3.x)                         *
+ * RpThunarProvider.cpp: ThunarX Provider Definition.                      *
  *                                                                         *
  * Copyright (c) 2017-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #include "stdafx.h"
-#include "rom-properties-provider.hpp"
-#include "rom-properties-page.hpp"
+#include "RpThunarProvider.hpp"
+#include "RpThunarPage.hpp"
+
+// thunarx.h mini replacement
+#include "thunarx-mini.h"
 
 // librpbase, librpfile
 using namespace LibRpBase;
@@ -19,15 +22,15 @@ using LibRpFile::RpFile;
 #include "libromdata/RomDataFactory.hpp"
 using LibRomData::RomDataFactory;
 
-static void   rom_properties_provider_page_provider_init	(ThunarxPropertyPageProviderIface *iface);
-static GList *rom_properties_provider_get_pages			(ThunarxPropertyPageProvider      *renamer_provider,
-								 GList                            *files);
+static void   rp_thunar_provider_page_provider_init	(ThunarxPropertyPageProviderIface *iface);
+static GList *rp_thunar_provider_get_pages		(ThunarxPropertyPageProvider      *renamer_provider,
+							 GList                            *files);
 
-struct _RomPropertiesProviderClass {
+struct _RpThunarProviderClass {
 	GObjectClass __parent__;
 };
 
-struct _RomPropertiesProvider {
+struct _RpThunarProvider {
 	GObject __parent__;
 };
 
@@ -41,12 +44,12 @@ struct _RomPropertiesProvider {
 # endif
 #endif /* !GLIB_CHECK_VERSION(2,59,1) */
 
-// NOTE: THUNARX_DEFINE_TYPE_WITH_CODE() doesn't work in C++ mode with gcc-6.2
+// NOTE: G_DEFINE_TYPE() doesn't work in C++ mode with gcc-6.2
 // due to an implicit int to GTypeFlags conversion.
-THUNARX_DEFINE_TYPE_EXTENDED(RomPropertiesProvider, rom_properties_provider,
+G_DEFINE_DYNAMIC_TYPE_EXTENDED(RpThunarProvider, rp_thunar_provider,
 	G_TYPE_OBJECT, static_cast<GTypeFlags>(0),
-	THUNARX_IMPLEMENT_INTERFACE(THUNARX_TYPE_PROPERTY_PAGE_PROVIDER,
-			rom_properties_provider_page_provider_init));
+	G_IMPLEMENT_INTERFACE_DYNAMIC(THUNARX_TYPE_PROPERTY_PAGE_PROVIDER,
+		rp_thunar_provider_page_provider_init));
 
 #if !GLIB_CHECK_VERSION(2,59,1)
 # if defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6))
@@ -54,26 +57,38 @@ THUNARX_DEFINE_TYPE_EXTENDED(RomPropertiesProvider, rom_properties_provider,
 # endif
 #endif /* !GLIB_CHECK_VERSION(2,59,1) */
 
+void
+rp_thunar_provider_register_type_ext(ThunarxProviderPlugin *plugin)
+{
+	rp_thunar_provider_register_type(G_TYPE_MODULE(plugin));
+}
+
 static void
-rom_properties_provider_class_init (RomPropertiesProviderClass *klass)
+rp_thunar_provider_class_init(RpThunarProviderClass *klass)
 {
 	RP_UNUSED(klass);
 }
 
 static void
-rom_properties_provider_init(RomPropertiesProvider *sbr_provider)
+rp_thunar_provider_class_finalize(RpThunarProviderClass *klass)
+{
+	RP_UNUSED(klass);
+}
+
+static void
+rp_thunar_provider_init(RpThunarProvider *sbr_provider)
 {
 	RP_UNUSED(sbr_provider);
 }
 
 static void
-rom_properties_provider_page_provider_init(ThunarxPropertyPageProviderIface *iface)
+rp_thunar_provider_page_provider_init(ThunarxPropertyPageProviderIface *iface)
 {
-	iface->get_pages = rom_properties_provider_get_pages;
+	iface->get_pages = rp_thunar_provider_get_pages;
 }
 
 static GList*
-rom_properties_provider_get_pages(ThunarxPropertyPageProvider *page_provider, GList *files)
+rp_thunar_provider_get_pages(ThunarxPropertyPageProvider *page_provider, GList *files)
 {
 	RP_UNUSED(page_provider);
 	GList *pages = nullptr;
@@ -89,12 +104,12 @@ rom_properties_provider_get_pages(ThunarxPropertyPageProvider *page_provider, GL
 
 	info = THUNARX_FILE_INFO(file->data);
 
-	if (G_LIKELY(rom_properties_get_file_supported(info))) {
+	if (G_LIKELY(rp_thunar_provider_get_file_supported(info))) {
 		// Create the ROM Properties page.
-		RomPropertiesPage *page = rom_properties_page_new();
+		RpThunarPage *const page = rp_thunar_page_new();
 
 		/* Assign supported file info to the page */
-		rom_properties_page_set_file(page, info);
+		rp_thunar_page_set_file(page, info);
 
 		/* Add the page to the pages provided by this plugin */
 		pages = g_list_prepend(pages, page);
@@ -104,7 +119,7 @@ rom_properties_provider_get_pages(ThunarxPropertyPageProvider *page_provider, GL
 }
 
 gboolean
-rom_properties_get_file_supported(ThunarxFileInfo *info)
+rp_thunar_provider_get_file_supported(ThunarxFileInfo *info)
 {
 	gboolean supported = false;
 	g_return_val_if_fail(info != nullptr || THUNARX_IS_FILE_INFO (info), false);

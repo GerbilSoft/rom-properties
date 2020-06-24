@@ -11,8 +11,8 @@ matrix:
       compiler: clang
 
 # Build dependencies. (Linux)
-# NOTE: KF5 and MATE (GTK3) are not available on Ubuntu 14.04,
-# so we can't build the KF5 or MATE plugins.
+# NOTE: KF5 is not available on Ubuntu 14.04,
+# so we can't build the KF5 plugin.
 addons:
   apt:
     packages:

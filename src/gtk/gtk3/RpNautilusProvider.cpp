@@ -1,6 +1,6 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (GNOME)                            *
- * rom-properties-provider.cpp: Nautilus (and forks) Provider Definition.  *
+ * ROM Properties Page shell extension. (GTK+ 3.x)                         *
+ * RpNautilusProvider.cpp: Nautilus (and forks) Provider Definition.       *
  *                                                                         *
  * Copyright (c) 2017-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
@@ -16,8 +16,8 @@
  */
 
 #include "stdafx.h"
-#include "rom-properties-provider.hpp"
-#include "rom-properties-plugin.h"
+#include "RpNautilusProvider.hpp"
+#include "RpNautilusPlugin.h"
 
 // librpbase, librpfile
 using namespace LibRpBase;
@@ -41,17 +41,17 @@ struct _NautilusPropertyPageProviderIface {
 	                     GList                        *files);
 };
 
-static void   rom_properties_provider_page_provider_init	(NautilusPropertyPageProviderIface	*iface);
-static GList *rom_properties_provider_get_pages			(NautilusPropertyPageProvider		*provider,
-								 GList					*files);
+static void   rp_nautilus_provider_page_provider_init	(NautilusPropertyPageProviderIface	*iface);
+static GList *rp_nautilus_provider_get_pages		(NautilusPropertyPageProvider		*provider,
+							 GList					*files);
 
-static gboolean rom_properties_get_file_supported		(NautilusFileInfo *info);
+static gboolean rom_properties_get_file_supported	(NautilusFileInfo *info);
 
-struct _RomPropertiesProviderClass {
+struct _RpNautilusProviderClass {
 	GObjectClass __parent__;
 };
 
-struct _RomPropertiesProvider {
+struct _RpNautilusProvider {
 	GObject __parent__;
 };
 
@@ -67,10 +67,10 @@ struct _RomPropertiesProvider {
 
 // NOTE: G_DEFINE_TYPE() doesn't work in C++ mode with gcc-6.2
 // due to an implicit int to GTypeFlags conversion.
-G_DEFINE_DYNAMIC_TYPE_EXTENDED(RomPropertiesProvider, rom_properties_provider,
+G_DEFINE_DYNAMIC_TYPE_EXTENDED(RpNautilusProvider, rp_nautilus_provider,
 	G_TYPE_OBJECT, 0,
 	G_IMPLEMENT_INTERFACE(NAUTILUS_TYPE_PROPERTY_PAGE_PROVIDER,
-			rom_properties_provider_page_provider_init));
+			rp_nautilus_provider_page_provider_init));
 
 #if !GLIB_CHECK_VERSION(2,59,1)
 # if defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6))
@@ -79,37 +79,37 @@ G_DEFINE_DYNAMIC_TYPE_EXTENDED(RomPropertiesProvider, rom_properties_provider,
 #endif /* !GLIB_CHECK_VERSION(2,59,1) */
 
 void
-rom_properties_provider_register_type_ext(GTypeModule *module)
+rp_nautilus_provider_register_type_ext(GTypeModule *module)
 {
-	rom_properties_provider_register_type(module);
+	rp_nautilus_provider_register_type(module);
 }
 
 static void
-rom_properties_provider_class_init(RomPropertiesProviderClass *klass)
-{
-	RP_UNUSED(klass);
-}
-
-static void
-rom_properties_provider_class_finalize(RomPropertiesProviderClass *klass)
+rp_nautilus_provider_class_init(RpNautilusProviderClass *klass)
 {
 	RP_UNUSED(klass);
 }
 
 static void
-rom_properties_provider_init(RomPropertiesProvider *sbr_provider)
+rp_nautilus_provider_class_finalize(RpNautilusProviderClass *klass)
+{
+	RP_UNUSED(klass);
+}
+
+static void
+rp_nautilus_provider_init(RpNautilusProvider *sbr_provider)
 {
 	RP_UNUSED(sbr_provider);
 }
 
 static void
-rom_properties_provider_page_provider_init(NautilusPropertyPageProviderIface *iface)
+rp_nautilus_provider_page_provider_init(NautilusPropertyPageProviderIface *iface)
 {
-	iface->get_pages = rom_properties_provider_get_pages;
+	iface->get_pages = rp_nautilus_provider_get_pages;
 }
 
 static GList*
-rom_properties_provider_get_pages(NautilusPropertyPageProvider *provider, GList *files)
+rp_nautilus_provider_get_pages(NautilusPropertyPageProvider *provider, GList *files)
 {
 	RP_UNUSED(provider);
 	GList *pages = nullptr;

@@ -27,8 +27,8 @@ case "$OSTYPE" in
 		;;
 	*)
 		# Linux. Enable everything.
-		# NOTE: KF5 and MATE (GTK3) are not available on Ubuntu 14.04,
-		# so we can't build the KDE5 or MATE plugins.
+		# NOTE: KF5 is not available on Ubuntu 14.04,
+		# so we can't build the KF5 plugin.
 		cmake .. \
 			-DCMAKE_INSTALL_PREFIX=/usr \
 			-DENABLE_LTO=OFF \
@@ -38,9 +38,7 @@ case "$OSTYPE" in
 			-DBUILD_KDE4=ON \
 			-DBUILD_KDE5=OFF \
 			-DBUILD_XFCE=ON \
-			-DBUILD_XFCE3=OFF \
-			-DBUILD_GNOME=ON \
-			-DBUILD_MATE=OFF \
+			-DBUILD_GTK3=ON \
 			\
 			-DUSE_SECCOMP=OFF \
 			-DENABLE_JPEG=OFF \

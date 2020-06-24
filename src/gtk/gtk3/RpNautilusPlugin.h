@@ -1,13 +1,13 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (GNOME)                            *
- * rom-properties-plugin.h: Nautilus (and forks) Plugin Definition.        *
+ * ROM Properties Page shell extension. (GTK+ 3.x)                         *
+ * RpNautilusPlugin.h: Nautilus (and forks) Plugin Definition.             *
  *                                                                         *
  * Copyright (c) 2017-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_GNOME_ROM_PROPERTIES_PLUGIN_H__
-#define __ROMPROPERTIES_GNOME_ROM_PROPERTIES_PLUGIN_H__
+#ifndef __ROMPROPERTIES_GTK3_RPNAUTILUSPLUGIN_H__
+#define __ROMPROPERTIES_GTK3_RPNAUTILUSPLUGIN_H__
 
 #include <glib.h>
 #include <glib-object.h>
@@ -45,10 +45,10 @@ extern PFN_NAUTILUS_PROPERTY_PAGE_PROVIDER_GET_TYPE pfn_nautilus_property_page_p
 extern PFN_NAUTILUS_PROPERTY_PAGE_NEW pfn_nautilus_property_page_new;
 
 // Function pointer macros.
-#define nautilus_file_info_get_type()			pfn_nautilus_file_info_get_type()
-#define nautilus_file_info_get_uri(file)		pfn_nautilus_file_info_get_uri(file)
-#define nautilus_property_page_provider_get_type()	pfn_nautilus_property_page_provider_get_type()
-#define nautilus_property_page_new(name, label, page)	pfn_nautilus_property_page_new((name), (label), (page))
+#define nautilus_file_info_get_type()			(pfn_nautilus_file_info_get_type ())
+#define nautilus_file_info_get_uri(file)		(pfn_nautilus_file_info_get_uri(file))
+#define nautilus_property_page_provider_get_type()	(pfn_nautilus_property_page_provider_get_type ())
+#define nautilus_property_page_new(name, label, page)	(pfn_nautilus_property_page_new((name), (label), (page)))
 
 // GType macros.
 #define NAUTILUS_TYPE_PROPERTY_PAGE_PROVIDER		(pfn_nautilus_property_page_provider_get_type ())
@@ -63,4 +63,4 @@ extern PFN_NAUTILUS_PROPERTY_PAGE_NEW pfn_nautilus_property_page_new;
 
 G_END_DECLS;
 
-#endif /* __ROMPROPERTIES_GNOME_ROM_PROPERTIES_PLUGIN_H__ */
+#endif /* __ROMPROPERTIES_GTK3_RPNAUTILUSPLUGIN_H__ */
