@@ -44,6 +44,9 @@
   * KhronosKTX: Fixed preview of textures with more than one array element.
   * GTK+ 3.x (Nautilus) UI frontends: Fixed a minor memory leak that leaked a
     file URI every time a File Properties dialog was opened.
+  * D-Bus Thumbnailer (XFCE): Fixed an incorrect MimeTypes key that broke
+    thumbnailing on systems that use tumblerd. This was broken starting
+    with v1.4.
 
 * Other changes:
   * Split file handling and CPU/byteorder code from librpbase into two
