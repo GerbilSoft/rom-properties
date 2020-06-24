@@ -1,14 +1,14 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (GNOME)                            *
- * rom-properties-plugin.c: Nautilus (and forks) Plugin Definition.        *
+ * RpNautilusPlugin.c: Nautilus (and forks) Plugin Definition.             *
  *                                                                         *
  * Copyright (c) 2017-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #include "stdafx.h"
-#include "rom-properties-plugin.h"
-#include "rom-properties-provider.hpp"
+#include "RpNautilusPlugin.h"
+#include "RpNautilusProvider.hpp"
 
 static GType type_list[1];
 
@@ -52,15 +52,15 @@ PFN_NAUTILUS_PROPERTY_PAGE_NEW pfn_nautilus_property_page_new;
 } while (0)
 
 static void
-rp_gnome_register_types(GTypeModule *module)
+rp_nautilus_register_types(GTypeModule *module)
 {
 	/* Register the types provided by this module */
 	// NOTE: G_DEFINE_DYNAMIC_TYPE() marks the *_register_type()
 	// functions as static, so we're using wrapper functions here.
-	rom_properties_provider_register_type_ext(module);
+	rp_nautilus_provider_register_type_ext(module);
 
 	/* Setup the plugin provider type list */
-	type_list[0] = TYPE_ROM_PROPERTIES_PROVIDER;
+	type_list[0] = TYPE_RP_NAUTILUS_PROVIDER;
 }
 
 /** Per-frontend initialization functions. **/
@@ -91,7 +91,7 @@ nautilus_module_initialize(GTypeModule *module)
 	DLSYM(nautilus_property_page_new,		nautilus_property_page_new);
 
 	// Symbols loaded. Register our types.
-	rp_gnome_register_types(module);
+	rp_nautilus_register_types(module);
 }
 
 G_MODULE_EXPORT void
@@ -120,7 +120,7 @@ caja_module_initialize(GTypeModule *module)
 	DLSYM(nautilus_property_page_new,		caja_property_page_new);
 
 	// Symbols loaded. Register our types.
-	rp_gnome_register_types(module);
+	rp_nautilus_register_types(module);
 }
 
 G_MODULE_EXPORT void
@@ -149,7 +149,7 @@ nemo_module_initialize(GTypeModule *module)
 	DLSYM(nautilus_property_page_new,		nemo_property_page_new);
 
 	// Symbols loaded. Register our types.
-	rp_gnome_register_types(module);
+	rp_nautilus_register_types(module);
 }
 
 /** Common shutdown and list_types functions. **/

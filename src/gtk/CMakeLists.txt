@@ -111,26 +111,22 @@ IF(BUILD_GTK3)
 	# GTK3 minimum is 3.10.0. (gtk_image_set_from_surface)
 	FIND_PACKAGE(GTK3 3.10.0 ${REQUIRE_GTK3})
 	IF(GTK3_FOUND)
-		ADD_SUBDIRECTORY(gnome)
+		ADD_SUBDIRECTORY(gtk3)
 		ADD_SUBDIRECTORY(xfce3)
 
-		IF(BUILD_GNOME)
-			# Process the .thumbnailer file.
-			INCLUDE(DirInstallPaths)
-			CONFIGURE_FILE(rom-properties.thumbnailer.in rom-properties.thumbnailer)
-			INSTALL(FILES "${CMAKE_CURRENT_BINARY_DIR}/rom-properties.thumbnailer"
-				DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/thumbnailers"
-				COMPONENT "plugin"
-				)
-		ENDIF(BUILD_GNOME)
+		# Process the .thumbnailer file.
+		INCLUDE(DirInstallPaths)
+		CONFIGURE_FILE(rom-properties.thumbnailer.in rom-properties.thumbnailer)
+		INSTALL(FILES "${CMAKE_CURRENT_BINARY_DIR}/rom-properties.thumbnailer"
+			DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/thumbnailers"
+			COMPONENT "plugin"
+			)
 	ELSE(GTK3_FOUND)
-		SET(BUILD_GTK3 OFF CACHE INTERNAL "Check for GTK+ 3.x." FORCE)
-		SET(BUILD_GNOME OFF CACHE INTERNAL "Build the GNOME (GTK+ 3.x) plugin." FORCE)
+		SET(BUILD_GTK3 OFF CACHE INTERNAL "Build the GTK+ 3.x plugin. (GNOME, MATE, and Cinnamon)" FORCE)
 		SET(BUILD_XFCE3 OFF CACHE INTERNAL "Build the XFCE (GTK+ 3.x) plugin. (Thunar 1.8 and later)" FORCE)
 	ENDIF(GTK3_FOUND)
 ELSE(BUILD_GTK3)
 	# No GTK3 builds.
-	SET(BUILD_GNOME OFF CACHE INTERNAL "Build the GNOME (GTK+ 3.x) plugin." FORCE)
 	SET(BUILD_XFCE3 OFF CACHE INTERNAL "Build the XFCE (GTK+ 3.x) plugin. (Thunar 1.8 and later)" FORCE)
 ENDIF(BUILD_GTK3)
 
