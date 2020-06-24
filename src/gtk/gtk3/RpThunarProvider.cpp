@@ -106,10 +106,7 @@ rp_thunar_provider_get_pages(ThunarxPropertyPageProvider *page_provider, GList *
 	// and pass it to the RomDataView.
 	if (G_LIKELY(rp_gtk3_is_uri_supported(uri))) {
 		// Create the RomDataView.
-		GtkWidget *const romDataView = static_cast<GtkWidget*>(
-			g_object_new(TYPE_ROM_DATA_VIEW, nullptr));
-		rom_data_view_set_desc_format_type(ROM_DATA_VIEW(romDataView), RP_DFT_GNOME);
-		rom_data_view_set_uri(ROM_DATA_VIEW(romDataView), uri);
+		GtkWidget *const romDataView = rom_data_view_new_with_uri(uri, RP_DFT_XFCE);
 		gtk_widget_show(romDataView);
 
 		// tr: Tab title.
@@ -117,9 +114,7 @@ rp_thunar_provider_get_pages(ThunarxPropertyPageProvider *page_provider, GList *
 
 		// Create the ThunarxPropertyPage.
 		GtkWidget *const page = thunarx_property_page_new(tabTitle);
-		rom_data_view_set_desc_format_type(ROM_DATA_VIEW(romDataView), RP_DFT_XFCE);
 		gtk_container_add(GTK_CONTAINER(page), romDataView);
-		gtk_widget_show(romDataView);
 
 		// Add the page to the pages provided by this plugin.
 		pages = g_list_prepend(pages, page);

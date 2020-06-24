@@ -125,10 +125,7 @@ rp_nautilus_provider_get_pages(NautilusPropertyPageProvider *provider, GList *fi
 	if (G_LIKELY(rp_gtk3_is_uri_supported(uri))) {
 		// Create the RomDataView.
 		// TODO: Add some extra padding to the top...
-		GtkWidget *const romDataView = static_cast<GtkWidget*>(
-			g_object_new(TYPE_ROM_DATA_VIEW, nullptr));
-		rom_data_view_set_desc_format_type(ROM_DATA_VIEW(romDataView), RP_DFT_GNOME);
-		rom_data_view_set_uri(ROM_DATA_VIEW(romDataView), uri);
+		GtkWidget *const romDataView = rom_data_view_new_with_uri(uri, RP_DFT_GNOME);
 		gtk_widget_show(romDataView);
 
 		// tr: Tab title.

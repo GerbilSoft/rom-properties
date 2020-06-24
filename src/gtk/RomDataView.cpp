@@ -60,6 +60,7 @@ enum {
 	PROP_0,
 	PROP_URI,
 	PROP_DESC_FORMAT_TYPE,
+	PROP_SHOWING_DATA,
 	PROP_LAST
 };
 
@@ -74,8 +75,6 @@ static void	rom_data_view_set_property	(GObject	*object,
 						 const GValue	*value,
 						 GParamSpec	*pspec);
 // TODO: Make 'page' the first argument?
-static void	rom_data_view_uri_changed	(const gchar 	*uri,
-						 RomDataView	*page);
 static void	rom_data_view_desc_format_type_changed(RpDescFormatType desc_format_type,
 						 RomDataView	*page);
 
@@ -215,9 +214,21 @@ rom_data_view_class_init(RomDataViewClass *klass)
 		RP_DFT_XFCE,
 		(GParamFlags)(G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
+	/**
+	 * RomDataView:showing_data:
+	 *
+	 * True if a valid RomData object is being displayed.
+	 */
+	properties[PROP_SHOWING_DATA] = g_param_spec_boolean(
+		"showing-data", "showing-data",
+		"Is a valid RomData object being displayed?",
+		false,
+		(GParamFlags)(G_PARAM_READABLE | G_PARAM_STATIC_STRINGS));
+
 	// Install the properties.
 	g_object_class_install_property(gobject_class, PROP_URI, properties[PROP_URI]);
 	g_object_class_install_property(gobject_class, PROP_DESC_FORMAT_TYPE, properties[PROP_DESC_FORMAT_TYPE]);
+	g_object_class_install_property(gobject_class, PROP_SHOWING_DATA, properties[PROP_SHOWING_DATA]);
 }
 
 /**
@@ -429,6 +440,19 @@ rom_data_view_new(void)
 	return static_cast<GtkWidget*>(g_object_new(TYPE_ROM_DATA_VIEW, nullptr));
 }
 
+GtkWidget*
+rom_data_view_new_with_uri(const gchar *uri, RpDescFormatType desc_format_type)
+{
+	RomDataView *const page = static_cast<RomDataView*>(g_object_new(TYPE_ROM_DATA_VIEW, nullptr));
+	page->desc_format_type = desc_format_type;
+	page->uri = g_strdup(uri);
+	if (G_LIKELY(page->uri != nullptr)) {
+		page->changed_idle = g_idle_add(rom_data_view_load_rom_data, page);
+	}
+
+	return reinterpret_cast<GtkWidget*>(page);
+}
+
 static void
 rom_data_view_get_property(GObject	*object,
 			   guint	 prop_id,
@@ -525,7 +549,9 @@ rom_data_view_set_uri(RomDataView	*page,
 
 	/* Connect to the new file (if any) */
 	if (G_LIKELY(page->uri != nullptr)) {
-		rom_data_view_uri_changed(page->uri, page);
+		if (page->changed_idle == 0) {
+			page->changed_idle = g_idle_add(rom_data_view_load_rom_data, page);
+		}
 	} else {
 		// Hide the header row. (outerbox)
 		if (page->hboxHeaderRow_outer) {
@@ -535,19 +561,6 @@ rom_data_view_set_uri(RomDataView	*page,
 
 	// URI has been changed.
 	g_object_notify_by_pspec(G_OBJECT(page), properties[PROP_URI]);
-}
-
-static void
-rom_data_view_uri_changed(const gchar	*uri,
-			  RomDataView	*page)
-{
-	g_return_if_fail(uri != nullptr);
-	g_return_if_fail(IS_ROM_DATA_VIEW(page));
-	g_return_if_fail(!g_strcmp0(page->uri, uri));
-
-	if (page->changed_idle == 0) {
-		page->changed_idle = g_idle_add(rom_data_view_load_rom_data, page);
-	}
 }
 
 RpDescFormatType
@@ -586,6 +599,14 @@ rom_data_view_desc_format_type_changed(RpDescFormatType	desc_format_type,
 			set_label_format_type(GTK_LABEL(label), desc_format_type);
 		}
 	);
+}
+
+gboolean
+rom_data_view_is_showing_data(RomDataView *page)
+{
+	g_return_val_if_fail(IS_ROM_DATA_VIEW(page), false);
+	printf("page->romData == %p\n", page->romData);
+	return (page->romData != nullptr);
 }
 
 static void
@@ -1804,7 +1825,11 @@ rom_data_view_load_rom_data(gpointer data)
 	if (file->isOpen()) {
 		// Create the RomData object.
 		// file is ref()'d by RomData.
-		page->romData = RomDataFactory::create(file);
+		RomData *const romData = RomDataFactory::create(file);
+		if (romData != page->romData) {
+			page->romData = romData;
+			g_object_notify_by_pspec(G_OBJECT(page), properties[PROP_SHOWING_DATA]);
+		}
 
 		// Update the display widgets.
 		rom_data_view_update_display(page);
@@ -1812,8 +1837,8 @@ rom_data_view_load_rom_data(gpointer data)
 		// Make sure the underlying file handle is closed,
 		// since we don't need it once the RomData has been
 		// loaded by RomDataView.
-		if (page->romData) {
-			page->romData->close();
+		if (romData) {
+			romData->close();
 		}
 	}
 	file->unref();

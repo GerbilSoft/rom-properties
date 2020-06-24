@@ -36,13 +36,18 @@ GType		rom_data_view_get_type		(void) G_GNUC_CONST G_GNUC_INTERNAL;
 void		rom_data_view_register_type	(GtkWidget *widget) G_GNUC_INTERNAL;
 
 GtkWidget	*rom_data_view_new		(void) G_GNUC_INTERNAL G_GNUC_MALLOC;
+GtkWidget	*rom_data_view_new_with_uri	(const gchar	*uri,
+						 RpDescFormatType desc_format_type) G_GNUC_INTERNAL G_GNUC_MALLOC;
 
 const gchar	*rom_data_view_get_uri		(RomDataView	*page) G_GNUC_INTERNAL;
 void		rom_data_view_set_uri		(RomDataView	*page,
 						 const gchar	*uri) G_GNUC_INTERNAL;
 
 RpDescFormatType rom_data_view_get_desc_format_type(RomDataView *page) G_GNUC_INTERNAL;
-void		rom_data_view_set_desc_format_type(RomDataView *page, RpDescFormatType desc_format_type);
+void		rom_data_view_set_desc_format_type(RomDataView *page,
+						   RpDescFormatType desc_format_type) G_GNUC_INTERNAL;
+
+gboolean	rom_data_view_is_showing_data	(RomDataView	*page) G_GNUC_INTERNAL;
 
 G_END_DECLS
 
