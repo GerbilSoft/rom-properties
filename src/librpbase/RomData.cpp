@@ -516,13 +516,13 @@ const char *RomData::fileType_string(void) const
 {
 	RP_D(const RomData);
 	assert(d->fileType >= FileType::Unknown && d->fileType < FileType::Max);
-	if (d->fileType <= FileType::Unknown || d->fileType >= FileType::Max) {
-		return nullptr;
+	if (d->fileType < FileType::Unknown || d->fileType >= FileType::Max) {
+		return C_("RomData|FileType", "(unknown file type)");
 	}
 
 	static const char *const fileType_names[] = {
 		// FileType::Unknown
-		nullptr,
+		NOP_C_("RomData|FileType", "(unknown file type)"),
 		// tr: FileType::ROM_Image
 		NOP_C_("RomData|FileType", "ROM Image"),
 		// tr: FileType::DiscImage

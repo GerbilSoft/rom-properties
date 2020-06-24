@@ -906,6 +906,27 @@ ELF::ELF(IRpFile *file)
 				d->fileType = FileType::CoreDump;
 				d->mimeType = "application/x-core";
 				break;
+
+			// Special cases
+			case 0xFF80: {
+				// PS2 IOP Relocatable Executable
+				// This is basically a shared library.
+				// TODO: Use something like "isWiiU"?
+				const uint32_t e_flags = d->Elf_Header.elf32.e_flags;
+				if (d->elfFormat == ELFPrivate::Elf_Format::_32LSB &&
+				    primary->e_machine == EM_MIPS &&
+				    !(e_flags & 0x20) /* O32 */ &&
+				    (e_flags >> 28) == 0 /* MIPS-I */)
+				{
+					// This is likely for PS2 IOP.
+					d->fileType = FileType::SharedLibrary;
+					d->mimeType = "application/x-sharedlib";
+				} else {
+					// Unknown type...
+					d->fileType = FileType::Unknown;
+				}
+				break;
+			}
 		}
 	}
 }
