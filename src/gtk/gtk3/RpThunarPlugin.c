@@ -34,13 +34,10 @@ static GType type_list[1];
 static void *libextension_so;
 
 PFN_THUNARX_CHECK_VERSION pfn_thunarx_check_version;
-
-PFN_THUNARX_PROPERTY_PAGE_PROVIDER_GET_TYPE pfn_thunarx_property_page_provider_get_type;
-PFN_THUNARX_PROPERTY_PAGE_NEW pfn_thunarx_property_page_new;
-PFN_THUNARX_PROPERTY_PAGE_GET_TYPE pfn_thunarx_property_page_get_type;
-
 PFN_THUNARX_FILE_INFO_GET_TYPE pfn_thunarx_file_info_get_type;
 PFN_THUNARX_FILE_INFO_GET_URI pfn_thunarx_file_info_get_uri;
+PFN_THUNARX_PROPERTY_PAGE_PROVIDER_GET_TYPE pfn_thunarx_property_page_provider_get_type;
+PFN_THUNARX_PROPERTY_PAGE_NEW pfn_thunarx_property_page_new;
 
 static void
 rp_thunar_register_types(ThunarxProviderPlugin *plugin)
@@ -82,11 +79,10 @@ thunar_extension_initialize(ThunarxProviderPlugin *plugin)
 
 	// Load symbols.
 	DLSYM(thunarx_check_version,			thunarx_check_version);
-	DLSYM(thunarx_property_page_provider_get_type,	thunarx_property_page_provider_get_type);
-	DLSYM(thunarx_property_page_new,		thunarx_property_page_new);
-	DLSYM(thunarx_property_page_get_type,		thunarx_property_page_get_type);
 	DLSYM(thunarx_file_info_get_type,		thunarx_file_info_get_type);
 	DLSYM(thunarx_file_info_get_uri,		thunarx_file_info_get_uri);
+	DLSYM(thunarx_property_page_provider_get_type,	thunarx_property_page_provider_get_type);
+	DLSYM(thunarx_property_page_new,		thunarx_property_page_new);
 
 	// Verify that the ThunarX versions are compatible.
 	const gchar *mismatch = thunarx_check_version(
