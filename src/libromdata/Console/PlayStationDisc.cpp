@@ -310,9 +310,7 @@ PlayStationDisc::PlayStationDisc(IRpFile *file)
 		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
-	if (d->pvd.header.type == ISO_VDT_PRIMARY && d->pvd.header.version == ISO_VD_VERSION &&
-	    !memcmp(d->pvd.header.identifier, ISO_VD_MAGIC, sizeof(d->pvd.header.identifier)))
-	{
+	if (ISO::checkPVD(reinterpret_cast<const uint8_t*>(&d->pvd)) >= 0) {
 		// Disc has 2048-byte sectors.
 		discType = PlayStationDiscPrivate::DiscType::Iso2048;
 		discReader = new DiscReader(d->file);
@@ -325,16 +323,16 @@ PlayStationDisc::PlayStationDisc(IRpFile *file)
 			return;
 		}
 
-		// Copy the PVD from the sector.
-		// NOTE: Sector user data area position depends on the sector mode.
-		memcpy(&d->pvd, cdromSectorDataPtr(&sector), sizeof(d->pvd));
-
-		if (d->pvd.header.type == ISO_VDT_PRIMARY && d->pvd.header.version == ISO_VD_VERSION &&
-		    !memcmp(d->pvd.header.identifier, ISO_VD_MAGIC, sizeof(d->pvd.header.identifier)))
-		{
+		const uint8_t *const pData = cdromSectorDataPtr(&sector);
+		if (ISO::checkPVD(sector.m2xa_f1.data) >= 0) {
 			// Disc has 2352-byte sectors.
+			memcpy(&d->pvd, pData, sizeof(d->pvd));
 			discType = PlayStationDiscPrivate::DiscType::Iso2352;
 			discReader = new Cdrom2352Reader(d->file);
+		} else {
+			// Valid PVD not found.
+			UNREF_AND_NULL_NOCHK(d->file);
+			return;
 		}
 	}
 
