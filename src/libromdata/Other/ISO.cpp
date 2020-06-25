@@ -63,7 +63,7 @@ class ISOPrivate : public LibRpBase::RomDataPrivate
 		union {
 			ISO_Primary_Volume_Descriptor iso;	// ISO-9660
 			HSFS_Primary_Volume_Descriptor hsfs;	// High Sierra
-			uint8_t data[ISO_DATA_OFFSET_MODE1_COOKED];
+			uint8_t data[ISO_SECTOR_SIZE_MODE1_RAW];
 		} pvd;
 
 		// Sector size.
