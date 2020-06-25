@@ -839,15 +839,9 @@ int Nintendo3DSPrivate::loadTicketAndTMD(void)
 uint32_t Nintendo3DSPrivate::getSMDHRegionCode(void)
 {
 	uint32_t smdhRegion = 0;
-	if (headers_loaded & Nintendo3DSPrivate::HEADER_SMDH) {
+	if ((headers_loaded & Nintendo3DSPrivate::HEADER_SMDH) || loadSMDH() == 0) {
 		// SMDH section loaded.
 		smdhRegion = sbptr.smdh.data->getRegionCode();
-	} else {
-		// Load the SMDH section.
-		if (loadSMDH() == 0) {
-			// SMDH section loaded.
-			smdhRegion = sbptr.smdh.data->getRegionCode();
-		}
 	}
 	return smdhRegion;
 }
@@ -1005,6 +999,7 @@ void Nintendo3DSPrivate::addTitleIdAndProductCodeFields(bool showContentType)
 			if (pLogo->crc == crc) {
 				// Found a matching logo.
 				logo_name = pLogo->name;
+				break;
 			}
 		}
 
@@ -1612,6 +1607,9 @@ int Nintendo3DS::isRomSupported_static(const DetectInfo *info)
 			// eMMC dump.
 			// NOTE: Not differentiating between Old3DS and New3DS here.
 			return static_cast<int>(Nintendo3DSPrivate::RomType::eMMC);
+		} else {
+			// Not valid.
+			return static_cast<int>(Nintendo3DSPrivate::RomType::Unknown);
 		}
 	}
 
@@ -1662,7 +1660,7 @@ const char *Nintendo3DS::systemName(unsigned int type) const
 	// *and* the ROM's region code is China only.
 	if ((type & SYSNAME_REGION_MASK) == SYSNAME_REGION_ROM_LOCAL) {
 		// SMDH contains a region code bitfield.
-		uint32_t smdhRegion = const_cast<Nintendo3DSPrivate*>(d)->getSMDHRegionCode();
+		const uint32_t smdhRegion = const_cast<Nintendo3DSPrivate*>(d)->getSMDHRegionCode();
 		if (smdhRegion == N3DS_REGION_CHINA) {
 			// Chinese exclusive.
 			type |= (1U << 3);
