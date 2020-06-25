@@ -158,10 +158,14 @@
 #include <string.h> /* memset, strncpy, strlen */
 #include <limits.h>
 
+// rom-properties: FIXME: This breaks on MSVC 2013.
+#if 0 // rom-properties
 #if defined(HAVE_STDINT_H) || \
    (defined(__has_include) && __has_include(<stdint.h>))
 #  include <stdint.h>
 #endif
+#endif // rom-properties
+#include <stdint.h>
 
 #ifndef __INT8_TYPE__
 typedef signed char        int8_t;
