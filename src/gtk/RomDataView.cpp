@@ -604,8 +604,10 @@ rom_data_view_desc_format_type_changed(RpDescFormatType	desc_format_type,
 gboolean
 rom_data_view_is_showing_data(RomDataView *page)
 {
+	// FIXME: This was intended to be used to determine if
+	// the RomData was valid, but the RomData isn't loaded
+	// until idle is processed...
 	g_return_val_if_fail(IS_ROM_DATA_VIEW(page), false);
-	printf("page->romData == %p\n", page->romData);
 	return (page->romData != nullptr);
 }
 
