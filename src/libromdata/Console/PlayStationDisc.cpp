@@ -501,23 +501,36 @@ int PlayStationDisc::isRomSupported_static(
 	}
 
 	// PlayStation 1 and 2 discs have the system ID "PLAYSTATION".
-	if (!strncmp(pvd->sysID, "PLAYSTATION", 11)) {
-		// Make sure the rest of the system ID is either spaces or NULLs.
-		const char *p = &pvd->sysID[11];
-		const char *const p_end = &pvd->sysID[sizeof(pvd->sysID)];
-		bool isOK = true;
-		for (; p < p_end; p++) {
-			if (*p != ' ' && *p != '\0') {
-				isOK = false;
-				break;
-			}
-		}
+	// NOTE: Some PS2 prototypes have "CD-RTOS CD-BRIDGE", which is
+	// normally used for CD-i discs. We'll verify that system.cnf
+	// is present regardless.
+	int pos = -1;
+	if (!strncmp(pvd->sysID, "PLAYSTATION ", 12)) {
+		pos = 12;
+	} else if (!strncmp(pvd->sysID, "CD-RTOS CD-BRIDGE ", 18)) {
+		pos = 18;
+	}
 
-		if (isOK) {
-			// Valid PVD.
-			// Caller will need to check for 2048 vs. 2352.
-			return 0;
+	if (pos < 0) {
+		// Not valid.
+		return static_cast<int>(PlayStationDiscPrivate::DiscType::Unknown);
+	}
+
+	// Make sure the rest of the system ID is either spaces or NULLs.
+	const char *p = &pvd->sysID[pos];
+	const char *const p_end = &pvd->sysID[sizeof(pvd->sysID)];
+	bool isOK = true;
+	for (; p < p_end; p++) {
+		if (*p != ' ' && *p != '\0') {
+			isOK = false;
+			break;
 		}
+	}
+
+	if (isOK) {
+		// Valid PVD.
+		// Caller will need to check for 2048 vs. 2352.
+		return 0;
 	}
 
 	// Not a PlayStation 1 or 2 disc.
