@@ -15,10 +15,12 @@ option(MZ_COMPAT "Enables compatibility layer" ON)
 option(MZ_ZLIB "Enables ZLIB compression" ON)
 option(MZ_BZIP2 "Enables BZIP2 compression" ON)
 option(MZ_LZMA "Enables LZMA compression" ON)
+option(MZ_ZSTD "Enables ZSTD compression" ON)
 option(MZ_PKCRYPT "Enables PKWARE traditional encryption" ON)
 option(MZ_WZAES "Enables WinZIP AES encryption" ON)
 option(MZ_LIBCOMP "Enables Apple compression" OFF)
 option(MZ_OPENSSL "Enables OpenSSL for encryption" OFF)
+option(MZ_LIBBSD "Enable libbsd crypto random" ON)
 option(MZ_BRG "Enables Brian Gladman's encryption library" OFF)
 option(MZ_SIGNING "Enables zip signing support" ON)
 option(MZ_COMPRESS_ONLY "Only support compression" OFF)
@@ -27,10 +29,15 @@ option(MZ_BUILD_TEST "Builds minizip test executable" OFF)
 option(MZ_BUILD_UNIT_TEST "Builds minizip unit test project" OFF)
 option(MZ_BUILD_FUZZ_TEST "Builds minizip fuzzer executables" OFF)
 option(MZ_CODE_COVERAGE "Builds with code coverage flags" OFF)
+option(MZ_FILE32_API "Builds using posix 32-bit file api" OFF)
 set(MZ_PROJECT_SUFFIX "" CACHE STRING "Project name suffix for package managers")
+option(ZLIB_FORCE_FETCH "Skips find package for ZLIB" OFF)
+option(ZSTD_FORCE_FETCH "Skips find package for ZSTD" OFF)
+mark_as_advanced(MZ_FILE32_API MZ_PROJECT_SUFFIX ZLIB_FORCE_FETCH ZSTD_FORCE_FETCH)
 ENDIF(0)
 
 # rom-properties: Using ZLIB.
+# TODO: Add ZSTD support.
 SET(MZ_ZLIB ON)
 include_directories(${ZLIB_INCLUDE_DIRS})
 
@@ -44,7 +51,7 @@ endif()
 enable_language(C)
 
 # Minizip library version
-set(VERSION "2.9.3")
+set(VERSION "2.10.0")
 
 # Minizip api version
 set(SOVERSION "2.5")
@@ -71,67 +78,86 @@ set(PC_PRIVATE_LIBS)
 
 # Check if zlib installation is present
 if(MZ_ZLIB AND NOT MZ_LIBCOMP)
-    find_package(ZLIB)
-    if(ZLIB_FOUND)
+    if(NOT ZLIB_FORCE_FETCH)
+        find_package(ZLIB QUIET)
+    endif()
+    if(ZLIB_FOUND AND NOT ZLIB_FORCE_FETCH)
         message(STATUS "Using ZLIB ${ZLIB_VERSION_STRING}")
         list(APPEND MINIZIP_INC ${ZLIB_INCLUDE_DIRS})
         set(PC_PRIVATE_LIBS " -lz")
     else()
-        if (NOT ZLIB_TAG)
+        if(NOT ZLIB_TAG)
             set(ZLIB_TAG master)
         endif()
-        if (NOT ZLIB_REPOSITORY)
+        if(NOT ZLIB_REPOSITORY)
             set(ZLIB_REPOSITORY https://github.com/madler/zlib)
         endif()
 
-        message(STATUS "Using ZLIB ${ZLIB_REPOSITORY} ${ZLIB_TAG}")
+        message(STATUS "Fetching ZLIB ${ZLIB_REPOSITORY} ${ZLIB_TAG}")
 
-        set(ZLIB_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/lib/zlib)
-        set(ZLIB_INSTALL_DIR ${CMAKE_CURRENT_BINARY_DIR}/install/zlib)
-        set(ZLIB_INCLUDE_DIRS ${ZLIB_INSTALL_DIR}/include)
-
-        if(WIN32)
-            set(ZLIB_LIBRARIES
-                ${ZLIB_INSTALL_DIR}/lib/zlibstatic$<$<CONFIG:Debug>:d>.lib)
-            set(ZLIB_BYPRODUCTS
-                ${ZLIB_INSTALL_DIR}/lib/zlibstatic.lib ${ZLIB_INSTALL_DIR}/lib/zlibstaticd.lib)
+        if(${CMAKE_VERSION} VERSION_LESS "3.11")
+            message(FATAL_ERROR "CMake 3.11 required to fetch zlib")
         else()
-            set(ZLIB_LIBRARIES
-                ${ZLIB_INSTALL_DIR}/lib/libz.a)
-            set(ZLIB_BYPRODUCTS
-                ${ZLIB_INSTALL_DIR}/lib/libz.a)
+            include(FetchContent)
+
+            set(ZLIB_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/lib/zlib)
+
+            FetchContent_Declare(zlib
+                GIT_REPOSITORY ${ZLIB_REPOSITORY}
+                GIT_TAG ${ZLIB_TAG}
+                GIT_SHALLOW TRUE
+                SOURCE_DIR ${ZLIB_SOURCE_DIR}
+                BINARY_DIR ${ZLIB_SOURCE_DIR})
+
+            FetchContent_GetProperties(zlib
+                POPULATED ZLIB_POPULATED)
+            if(NOT ZLIB_POPULATED)
+                FetchContent_Populate(zlib)
+                add_subdirectory(${ZLIB_SOURCE_DIR} ${ZLIB_BINARY_DIR} EXCLUDE_FROM_ALL)
+            endif()
+
+            list(APPEND MINIZIP_INC ${ZLIB_SOURCE_DIR})
+        endif()
+    endif()
+endif()
+
+# Check if zstd installation is present
+if(MZ_ZSTD)
+    if(NOT ZSTD_FORCE_FETCH)
+        find_package(ZSTD QUIET)
+    endif()
+    if(ZSTD_FOUND AND NOT ZSTD_FORCE_FETCH)
+        message(STATUS "Using ZSTD")
+        list(APPEND MINIZIP_INC ${ZSTD_INCLUDE_DIRS})
+        set(PC_PRIVATE_LIBS "${PC_PRIVATE_LIBS} -lzstd")
+    else()
+        if(NOT ZSTD_REPOSITORY)
+            set(ZSTD_REPOSITORY https://github.com/facebook/zstd)
         endif()
 
-        # Build args variable based on cache variables
-        unset(CMAKE_ARGS)
-        get_cmake_property(CACHE_VARS CACHE_VARIABLES)
-        foreach(CACHE_VAR ${CACHE_VARS})
-            get_property(CACHE_VAR_HELPSTRING CACHE ${CACHE_VAR} PROPERTY HELPSTRING)
-            if(CACHE_VAR_HELPSTRING STREQUAL "No help, variable specified on the command line.")
-                get_property(CACHE_VAR_TYPE CACHE ${CACHE_VAR} PROPERTY TYPE)
-                if(CACHE_VAR_TYPE STREQUAL "UNINITIALIZED")
-                    set(CACHE_VAR_TYPE)
-                else()
-                    set(CACHE_VAR_TYPE :${CACHE_VAR_TYPE})
-                endif()
-                if (NOT CACHE_VAR MATCHES "^MZ_")
-                    list(APPEND CMAKE_ARGS "-D${CACHE_VAR}${CACHE_VAR_TYPE}=${${CACHE_VAR}}")
-                endif()
+        message(STATUS "Fetching ZSTD ${ZSTD_REPOSITORY}")
+
+        if(${CMAKE_VERSION} VERSION_LESS "3.11")
+            message(FATAL_ERROR "CMake 3.11 required to fetch zlib")
+        else()
+            include(FetchContent)
+
+            set(ZSTD_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/lib/zstd)
+
+            FetchContent_Declare(zstd
+                GIT_REPOSITORY ${ZSTD_REPOSITORY}
+                SOURCE_DIR ${ZSTD_SOURCE_DIR}
+                BINARY_DIR ${ZSTD_SOURCE_DIR})
+
+            FetchContent_GetProperties(zstd
+                POPULATED ZSTD_POPULATED)
+            if(NOT ZSTD_POPULATED)
+                FetchContent_Populate(zstd)
+                add_subdirectory(${ZSTD_SOURCE_DIR}/build/cmake ${ZSTD_BINARY_DIR} EXCLUDE_FROM_ALL)
             endif()
-        endforeach()
 
-        ExternalProject_Add(zlib
-            PREFIX zlib
-            GIT_REPOSITORY ${ZLIB_REPOSITORY}
-            GIT_TAG ${ZLIB_TAG}
-            SOURCE_DIR ${ZLIB_SOURCE_DIR}
-            BUILD_IN_SOURCE 1
-            INSTALL_DIR ${ZLIB_INSTALL_DIR}
-            BUILD_BYPRODUCTS ${ZLIB_BYPRODUCTS}
-            UPDATE_COMMAND ""
-            CMAKE_ARGS "${CMAKE_ARGS};-DCMAKE_INSTALL_PREFIX:STRING=${ZLIB_INSTALL_DIR}")
-
-        list(APPEND MINIZIP_INC ${ZLIB_INCLUDE_DIRS})
+            list(APPEND MINIZIP_INC ${ZSTD_SOURCE_DIR}/lib)
+        endif()
     endif()
 endif()
 
@@ -148,8 +174,14 @@ endif()
 
 # Check to see if openssl installation is present
 if(MZ_OPENSSL)
-    find_package(OpenSSL)
-    if (OPENSSL_FOUND)
+    find_package(PkgConfig)
+    if(PKGCONFIG_FOUND)
+        pkg_check_modules(OPENSSL openssl)
+    endif()
+    if(NOT OPENSSL_FOUND)
+        find_package(OpenSSL)
+    endif()
+    if(OPENSSL_FOUND)
         message(STATUS "Using OpenSSL ${OPENSSL_VERSION}")
 
         list(APPEND MINIZIP_INC ${OPENSSL_INCLUDE_DIR})
@@ -180,10 +212,8 @@ endif(MSVC)
 # Check for large file support
 check_type_size(off64_t OFF64_T)
 if(HAVE_OFF64_T)
-    list(APPEND STDLIB_DEF -D__USE_FILE_OFFSET64)
     list(APPEND STDLIB_DEF -D__USE_LARGEFILE64)
     list(APPEND STDLIB_DEF -D_LARGEFILE64_SOURCE)
-    list(APPEND STDLIB_DEF -D_FILE_OFFSET_BITS=64)
 endif()
 # Check for fseeko support
 check_function_exists(fseeko HAVE_FSEEKO)
@@ -276,8 +306,8 @@ if(WIN32)
     list(APPEND MINIZIP_DEF -D_CRT_SECURE_NO_DEPRECATE)
 
     list(APPEND MINIZIP_SRC "mz_os_win32.c" "mz_strm_os_win32.c")
-    if (MZ_PKCRYPT OR MZ_WZAES)
-        if (NOT MZ_OPENSSL AND NOT OPENSSL_FOUND AND NOT MZ_BRG)
+    if(MZ_PKCRYPT OR MZ_WZAES)
+        if(NOT MZ_OPENSSL AND NOT OPENSSL_FOUND AND NOT MZ_BRG)
             list(APPEND MINIZIP_SRC "mz_crypt_win32.c")
         endif()
     endif()
@@ -291,11 +321,11 @@ if(UNIX)
     list(APPEND STDLIB_DEF -D_POSIX_C_SOURCE=200112L)
     list(APPEND MINIZIP_SRC "mz_os_posix.c" "mz_strm_os_posix.c")
 
-    if ((MZ_PKCRYPT OR MZ_WZAES) AND NOT (MZ_OPENSSL AND OPENSSL_FOUND))
+    if((MZ_PKCRYPT OR MZ_WZAES) AND NOT (MZ_OPENSSL AND OPENSSL_FOUND))
 
-        if (APPLE AND NOT MZ_BRG)
+        if(APPLE AND NOT MZ_BRG)
             check_include_file(CommonCrypto/CommonCrypto.h COMMONCRYPTO_FOUND)
-            if (COMMONCRYPTO_FOUND)
+            if(COMMONCRYPTO_FOUND)
                 list(APPEND MINIZIP_SRC "mz_crypt_apple.c")
             else()
                 message(STATUS "CommonCrypto not found, using BRG instead")
@@ -307,44 +337,50 @@ if(UNIX)
 
         # Check to see which random generation functions we have
         check_symbol_exists("getrandom" "sys/random.h" HAVE_GETRANDOM)
-        if (HAVE_GETRANDOM)
+        if(HAVE_GETRANDOM)
             list(APPEND MINIZIP_DEF -DHAVE_GETRANDOM)
         endif()
         check_symbol_exists("arc4random_buf" "stdlib.h" HAVE_ARC4RANDOM_BUF)
-        if (HAVE_ARC4RANDOM_BUF)
+        if(HAVE_ARC4RANDOM_BUF)
             list(APPEND MINIZIP_DEF -DHAVE_ARC4RANDOM_BUF)
         else()
             check_symbol_exists("arc4random" "stdlib.h" HAVE_ARC4RANDOM)
-            if (HAVE_ARC4RANDOM)
+            if(HAVE_ARC4RANDOM)
                 list(APPEND MINIZIP_DEF -DHAVE_ARC4RANDOM)
             endif()
         endif()
 
-        if(NOT HAVE_ARC4RANDOM_BUF)
+        if(MZ_LIBBSD AND NOT HAVE_ARC4RANDOM_BUF)
             find_package(PkgConfig REQUIRED)
 
             pkg_check_modules(LIBBSD libbsd)
-            if (LIBBSD_FOUND)
+            if(LIBBSD_FOUND)
                 check_library_exists("${LIBBSD_LIBRARIES}" "arc4random_buf"
                     "${LIBBSD_LIBRARY_DIRS}" HAVE_LIBBSD_ARC4RANDOM_BUF)
-                if (HAVE_LIBBSD_ARC4RANDOM_BUF)
+                if(HAVE_LIBBSD_ARC4RANDOM_BUF)
                     list(APPEND MINIZIP_DEF -DHAVE_LIBBSD)
                     list(APPEND MINIZIP_DEF -DHAVE_ARC4RANDOM_BUF)
                     list(APPEND MINIZIP_INC ${LIBBSD_INCLUDE_DIRS})
                     link_directories(${LIBBSD_LIBRARY_DIRS})
                 endif()
+            else()
+                set(MZ_LIBBSD FALSE)
             endif()
+        else()
+            set(MZ_LIBBSD FALSE)
         endif()
     endif()
 
     # Iconv is only necessary when it is not already built-in
     # FindIconv requires cmake 3.11 or higher
     find_package(Iconv QUIET)
-    if (Iconv_FOUND)
+    if(Iconv_FOUND)
         message(STATUS "Using Iconv")
         list(APPEND MINIZIP_DEF -DHAVE_ICONV)
         list(APPEND MINIZIP_INC ${Iconv_INCLUDE_DIRS})
         set(PC_PRIVATE_LIBS "${PC_PRIVATE_LIBS} -liconv")
+    else()
+        message(WARNING "Limited encoding support due to missing iconv")
     endif()
 endif()
 
@@ -397,6 +433,9 @@ if(MZ_BRG OR (MZ_OPENSSL AND NOT OPENSSL_FOUND))
 endif()
 if(MZ_SIGNING)
     list(APPEND MINIZIP_DEF -DMZ_ZIP_SIGNING)
+endif()
+if(MZ_FILE32_API)
+    list(APPEND MINIZIP_DEF -DMZ_FILE32_API)
 endif()
 
 # Include PKCRYPT
@@ -464,6 +503,13 @@ if(MZ_ZLIB)
         list(APPEND MINIZIP_SRC "mz_strm_zlib.c")
         list(APPEND MINIZIP_PUBLIC_HEADERS "mz_strm_zlib.h")
     endif()
+endif()
+
+# Include ZSTD
+if(MZ_ZSTD)
+    list(APPEND MINIZIP_DEF -DHAVE_ZSTD)
+    list(APPEND MINIZIP_SRC "mz_strm_zstd.c")
+    list(APPEND MINIZIP_PUBLIC_HEADERS "mz_strm_zstd.h")
 endif()
 
 # Include BZIP2
@@ -672,7 +718,7 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
                         LINKER_LANGUAGE C
                         DEFINE_SYMBOL "MZ_EXPORTS")
 
-if(WIN32)
+if(MSVC)
     # VS debugger has problems when executable and static library are named the same
     set_target_properties(${PROJECT_NAME} PROPERTIES OUTPUT_NAME lib${PROJECT_NAME})
 endif()
@@ -688,9 +734,36 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE ${MINIZIP_DEF})
 
 # Link with external libraries
 if(MZ_ZLIB AND NOT MZ_LIBCOMP)
-    target_link_libraries(${PROJECT_NAME} ${ZLIB_LIBRARIES})
-    if(NOT ZLIB_FOUND)
-        add_dependencies(${PROJECT_NAME} zlib)
+    if(ZLIB_FOUND)
+        target_link_libraries(${PROJECT_NAME} ${ZLIB_LIBRARIES})
+    else()
+        # Have to add zlib to install targets
+        if(NOT DEFINED BUILD_SHARED_LIBS OR NOT ${BUILD_SHARED_LIBS})
+            set(ZLIB_TARGET zlibstatic)
+        else()
+            set(ZLIB_TARGET zlib)
+        endif()
+        target_link_libraries(${PROJECT_NAME} ${ZLIB_TARGET})
+        if(MZ_BUILD_UNIT_TEST)
+            # Can't disable zlib testing so ctest tries to run zlib example app
+            add_dependencies(${PROJECT_NAME} example)
+            if(HAVE_OFF64_T)
+                add_dependencies(${PROJECT_NAME} example64)
+            endif()
+        endif()
+    endif()
+endif()
+if(MZ_ZSTD)
+    if(ZSTD_FOUND)
+        target_link_libraries(${PROJECT_NAME} ${ZSTD_LIBRARIES})
+    else()
+        # Have to add zlib to install targets
+        if(NOT DEFINED BUILD_SHARED_LIBS OR NOT ${BUILD_SHARED_LIBS})
+            set(ZSTD_TARGET libzstd_static)
+        else()
+            set(ZSTD_TARGET libzstd_shared)
+        endif()
+        target_link_libraries(${PROJECT_NAME} ${ZSTD_TARGET})
     endif()
 endif()
 if(MZ_BZIP2 AND BZIP2_FOUND)
@@ -705,7 +778,7 @@ endif()
 if(MZ_OPENSSL AND OPENSSL_FOUND)
     target_link_libraries(${PROJECT_NAME} ${OPENSSL_LIBRARIES})
 elseif(UNIX)
-    if(APPLE AND NOT MZ_BRG)
+    if(APPLE AND (MZ_PKCRYPT OR MZ_WZAES) AND NOT MZ_BRG)
         message(STATUS "Using CoreFoundation Framework")
         find_library(COREFOUNDATION_LIBRARY CoreFoundation)
         target_link_libraries(${PROJECT_NAME} ${COREFOUNDATION_LIBRARY})
@@ -725,13 +798,15 @@ elseif(WIN32)
     endif()
 endif()
 
-#target_include_directories(${PROJECT_NAME} PUBLIC $<INSTALL_INTERFACE:${INSTALL_INC_DIR}>)
+#target_include_directories(${PROJECT_NAME} PUBLIC
+#    $<INSTALL_INTERFACE:${INSTALL_INC_DIR}>
+#    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
 target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_compile_definitions(${PROJECT_NAME} PUBLIC ZLIB_CONST)
 
 # Install files
 if(NOT SKIP_INSTALL_LIBRARIES AND NOT SKIP_INSTALL_ALL)
-    install(TARGETS ${PROJECT_NAME} EXPORT ${PROJECT_NAME}
+    install(TARGETS ${PROJECT_NAME} ${ZLIB_TARGET} EXPORT ${PROJECT_NAME}
             INCLUDES DESTINATION "${INSTALL_INC_DIR}"
             RUNTIME DESTINATION "${INSTALL_BIN_DIR}"
             ARCHIVE DESTINATION "${INSTALL_LIB_DIR}"
@@ -809,17 +884,21 @@ if(MZ_BUILD_TEST AND MZ_BUILD_UNIT_TEST)
             set(COMPRESS_METHOD_NAMES "raw")
             set(COMPRESS_METHOD_ARGS "-0")
         endif()
-        if (MZ_ZLIB OR MZ_LIBCOMP)
+        if(MZ_ZLIB OR MZ_LIBCOMP)
             list(APPEND COMPRESS_METHOD_NAMES "deflate")
             list(APPEND COMPRESS_METHOD_ARGS "-9")
         endif()
-        if (MZ_BZIP2)
+        if(MZ_BZIP2)
             list(APPEND COMPRESS_METHOD_NAMES "bzip2")
             list(APPEND COMPRESS_METHOD_ARGS "-b")
         endif()
-        if (MZ_LZMA)
+        if(MZ_LZMA)
             list(APPEND COMPRESS_METHOD_NAMES "lzma")
             list(APPEND COMPRESS_METHOD_ARGS "-m")
+        endif()
+        if(MZ_ZSTD)
+            list(APPEND COMPRESS_METHOD_NAMES "zstd")
+            list(APPEND COMPRESS_METHOD_ARGS "-t")
         endif()
         list(LENGTH COMPRESS_METHOD_NAMES COMPRESS_METHOD_COUNT)
         math(EXPR COMPRESS_METHOD_COUNT "${COMPRESS_METHOD_COUNT}-1")
@@ -964,10 +1043,12 @@ add_feature_info(MZ_COMPAT MZ_COMPAT "Enables compatibility layer")
 add_feature_info(MZ_ZLIB MZ_ZLIB "Enables ZLIB compression")
 add_feature_info(MZ_BZIP2 MZ_BZIP2 "Enables BZIP2 compression")
 add_feature_info(MZ_LZMA MZ_LZMA "Enables LZMA compression")
+add_feature_info(MZ_ZSTD MZ_ZSTD "Enables ZSTD compression")
 add_feature_info(MZ_PKCRYPT MZ_PKCRYPT "Enables PKWARE traditional encryption")
 add_feature_info(MZ_WZAES MZ_WZAES "Enables WinZIP AES encryption")
 add_feature_info(MZ_LIBCOMP MZ_LIBCOMP "Enables Apple compression")
 add_feature_info(MZ_OPENSSL MZ_OPENSSL "Enables OpenSSL for encryption")
+add_feature_info(MZ_LIBBSD MZ_LIBBSD "Build with libbsd for crypto random")
 add_feature_info(MZ_BRG MZ_BRG "Enables Brian Gladman's encryption library")
 add_feature_info(MZ_SIGNING MZ_SIGNING "Enables zip signing support")
 add_feature_info(MZ_COMPRESS_ONLY MZ_COMPRESS_ONLY "Only support compression")

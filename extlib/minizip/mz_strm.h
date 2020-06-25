@@ -1,5 +1,4 @@
 /* mz_strm.h -- Stream interface
-   Version 2.9.3, May 21, 2020
    part of the MiniZip project
 
    Copyright (C) 2010-2020 Nathan Moinvaziri
@@ -51,8 +50,7 @@ typedef int32_t (*mz_stream_find_cb)           (void *stream, const void *find, 
 
 /***************************************************************************/
 
-typedef struct mz_stream_vtbl_s
-{
+typedef struct mz_stream_vtbl_s {
     mz_stream_open_cb           open;
     mz_stream_is_open_cb        is_open;
     mz_stream_read_cb           read;

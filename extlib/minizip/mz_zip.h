@@ -1,5 +1,4 @@
 /* mz_zip.h -- Zip manipulation
-   Version 2.9.3, May 21, 2020
    part of the MiniZip project
 
    Copyright (C) 2010-2020 Nathan Moinvaziri
@@ -23,8 +22,7 @@ extern "C" {
 
 /***************************************************************************/
 
-typedef struct mz_zip_file_s
-{
+typedef struct mz_zip_file_s {
     uint16_t version_madeby;            /* version made by */
     uint16_t version_needed;            /* version needed to extract */
     uint16_t flag;                      /* general purpose bit flag */

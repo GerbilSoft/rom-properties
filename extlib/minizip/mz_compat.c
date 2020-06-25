@@ -1,5 +1,4 @@
 /* mz_compat.c -- Backwards compatible interface for older versions
-   Version 2.9.3, May 21, 2020
    part of the MiniZip project
 
    Copyright (C) 2010-2020 Nathan Moinvaziri
@@ -36,11 +35,9 @@ typedef struct mz_compat_s {
 
 /***************************************************************************/
 
-static int32_t zipConvertAppendToStreamMode(int append)
-{
+static int32_t zipConvertAppendToStreamMode(int append) {
     int32_t mode = MZ_OPEN_MODE_WRITE;
-    switch (append)
-    {
+    switch (append) {
     case APPEND_STATUS_CREATE:
         mode |= MZ_OPEN_MODE_CREATE;
         break;
@@ -54,52 +51,43 @@ static int32_t zipConvertAppendToStreamMode(int append)
     return mode;
 }
 
-zipFile zipOpen(const char *path, int append)
-{
+zipFile zipOpen(const char *path, int append) {
     zlib_filefunc64_def pzlib = mz_stream_os_get_interface();
     return zipOpen2(path, append, NULL, &pzlib);
 }
 
-zipFile zipOpen64(const void *path, int append)
-{
+zipFile zipOpen64(const void *path, int append) {
     zlib_filefunc64_def pzlib = mz_stream_os_get_interface();
     return zipOpen2(path, append, NULL, &pzlib);
 }
 
 zipFile zipOpen2(const char *path, int append, const char **globalcomment,
-    zlib_filefunc_def *pzlib_filefunc_def)
-{
+    zlib_filefunc_def *pzlib_filefunc_def) {
     return zipOpen2_64(path, append, globalcomment, pzlib_filefunc_def);
 }
 
 zipFile zipOpen2_64(const void *path, int append, const char **globalcomment,
-    zlib_filefunc64_def *pzlib_filefunc_def)
-{
+    zlib_filefunc64_def *pzlib_filefunc_def) {
     zipFile zip = NULL;
     int32_t mode = zipConvertAppendToStreamMode(append);
     void *stream = NULL;
 
-    if (pzlib_filefunc_def)
-    {
+    if (pzlib_filefunc_def) {
         if (mz_stream_create(&stream, (mz_stream_vtbl *)*pzlib_filefunc_def) == NULL)
             return NULL;
-    }
-    else
-    {
+    } else {
         if (mz_stream_os_create(&stream) == NULL)
             return NULL;
     }
 
-    if (mz_stream_open(stream, path, mode) != MZ_OK)
-    {
+    if (mz_stream_open(stream, path, mode) != MZ_OK) {
         mz_stream_delete(&stream);
         return NULL;
     }
 
     zip = zipOpen_MZ(stream, append, globalcomment);
 
-    if (zip == NULL)
-    {
+    if (zip == NULL) {
         mz_stream_delete(&stream);
         return NULL;
     }
@@ -107,8 +95,7 @@ zipFile zipOpen2_64(const void *path, int append, const char **globalcomment,
     return zip;
 }
 
-zipFile zipOpen_MZ(void *stream, int append, const char **globalcomment)
-{
+zipFile zipOpen_MZ(void *stream, int append, const char **globalcomment) {
     mz_compat *compat = NULL;
     int32_t err = MZ_OK;
     int32_t mode = zipConvertAppendToStreamMode(append);
@@ -117,8 +104,7 @@ zipFile zipOpen_MZ(void *stream, int append, const char **globalcomment)
     mz_zip_create(&handle);
     err = mz_zip_open(handle, stream, mode);
 
-    if (err != MZ_OK)
-    {
+    if (err != MZ_OK) {
         mz_zip_delete(&handle);
         return NULL;
     }
@@ -127,29 +113,24 @@ zipFile zipOpen_MZ(void *stream, int append, const char **globalcomment)
         mz_zip_get_comment(handle, globalcomment);
 
     compat = (mz_compat *)MZ_ALLOC(sizeof(mz_compat));
-    if (compat != NULL)
-    {
+    if (compat != NULL) {
         compat->handle = handle;
         compat->stream = stream;
-    }
-    else
-    {
+    } else {
         mz_zip_delete(&handle);
     }
 
     return (zipFile)compat;
 }
 
-void* zipGetHandle_MZ(zipFile file)
-{
+void* zipGetHandle_MZ(zipFile file) {
     mz_compat *compat = (mz_compat *)file;
     if (compat == NULL)
         return NULL;
     return compat->handle;
 }
 
-void* zipGetStream_MZ(zipFile file)
-{
+void* zipGetStream_MZ(zipFile file) {
     mz_compat *compat = (mz_compat *)file;
     if (compat == NULL)
         return NULL;
@@ -160,8 +141,7 @@ int zipOpenNewFileInZip5(zipFile file, const char *filename, const zip_fileinfo 
     const void *extrafield_local, uint16_t size_extrafield_local, const void *extrafield_global,
     uint16_t size_extrafield_global, const char *comment, uint16_t compression_method, int level,
     int raw, int windowBits, int memLevel, int strategy, const char *password,
-    uint32_t crc_for_crypting,  uint16_t version_madeby, uint16_t flag_base, int zip64)
-{
+    unsigned long crc_for_crypting, unsigned long version_madeby, unsigned long flag_base, int zip64) {
     mz_compat *compat = (mz_compat *)file;
     mz_zip_file file_info;
 
@@ -177,8 +157,7 @@ int zipOpenNewFileInZip5(zipFile file, const char *filename, const zip_fileinfo 
 
     memset(&file_info, 0, sizeof(file_info));
 
-    if (zipfi != NULL)
-    {
+    if (zipfi != NULL) {
         uint64_t dos_date = 0;
 
         if (zipfi->mz_dos_date != 0)
@@ -200,11 +179,11 @@ int zipOpenNewFileInZip5(zipFile file, const char *filename, const zip_fileinfo 
     /* file_info.extrafield_local_size = size_extrafield_local; */
     file_info.extrafield = extrafield_global;
     file_info.extrafield_size = size_extrafield_global;
-    file_info.version_madeby = version_madeby;
+    file_info.version_madeby = (uint16_t)version_madeby;
     file_info.comment = comment;
     if (file_info.comment != NULL)
         file_info.comment_size = (uint16_t)strlen(file_info.comment);
-    file_info.flag = flag_base;
+    file_info.flag = (uint16_t)flag_base;
     if (zip64)
         file_info.zip64 = MZ_ZIP64_FORCE;
     else
@@ -221,8 +200,7 @@ int zipOpenNewFileInZip4_64(zipFile file, const char *filename, const zip_filein
     const void *extrafield_local, uint16_t size_extrafield_local, const void *extrafield_global,
     uint16_t size_extrafield_global, const char *comment, uint16_t compression_method, int level,
     int raw, int windowBits, int memLevel,   int strategy, const char *password,
-    uint32_t crc_for_crypting, uint16_t version_madeby, uint16_t flag_base, int zip64)
-{
+    unsigned long crc_for_crypting, unsigned long version_madeby, unsigned long flag_base, int zip64) {
     return zipOpenNewFileInZip5(file, filename, zipfi, extrafield_local, size_extrafield_local,
         extrafield_global, size_extrafield_global, comment, compression_method, level, raw, windowBits,
         memLevel, strategy, password, crc_for_crypting, version_madeby, flag_base, zip64);
@@ -232,8 +210,7 @@ int zipOpenNewFileInZip4(zipFile file, const char *filename, const zip_fileinfo 
     const void *extrafield_local, uint16_t size_extrafield_local, const void *extrafield_global,
     uint16_t size_extrafield_global, const char *comment, uint16_t compression_method, int level,
     int raw, int windowBits, int memLevel, int strategy, const char *password,
-    uint32_t crc_for_crypting, uint16_t version_madeby, uint16_t flag_base)
-{
+    unsigned long crc_for_crypting, unsigned long version_madeby, unsigned long flag_base) {
     return zipOpenNewFileInZip4_64(file, filename, zipfi, extrafield_local, size_extrafield_local,
         extrafield_global, size_extrafield_global, comment, compression_method, level, raw, windowBits,
         memLevel, strategy, password, crc_for_crypting, version_madeby, flag_base, 0);
@@ -243,8 +220,7 @@ int zipOpenNewFileInZip3(zipFile file, const char *filename, const zip_fileinfo 
     const void *extrafield_local, uint16_t size_extrafield_local, const void *extrafield_global,
     uint16_t size_extrafield_global, const char *comment, uint16_t compression_method, int level,
     int raw, int windowBits, int memLevel, int strategy, const char *password,
-    uint32_t crc_for_crypting)
-{
+    unsigned long crc_for_crypting) {
     return zipOpenNewFileInZip3_64(file, filename, zipfi, extrafield_local, size_extrafield_local,
         extrafield_global, size_extrafield_global, comment, compression_method, level, raw, windowBits,
         memLevel, strategy, password, crc_for_crypting, 0);
@@ -254,8 +230,7 @@ int zipOpenNewFileInZip3_64(zipFile file, const char *filename, const zip_filein
     const void *extrafield_local, uint16_t size_extrafield_local, const void *extrafield_global,
     uint16_t size_extrafield_global, const char *comment, uint16_t compression_method, int level,
     int raw, int windowBits, int memLevel, int strategy, const char *password,
-    uint32_t crc_for_crypting, int zip64)
-{
+    uint32_t crc_for_crypting, int zip64) {
     return zipOpenNewFileInZip4_64(file, filename, zipfi, extrafield_local, size_extrafield_local,
         extrafield_global, size_extrafield_global, comment, compression_method, level, raw, windowBits,
         memLevel, strategy, password, crc_for_crypting, MZ_VERSION_MADEBY, 0, zip64);
@@ -264,8 +239,7 @@ int zipOpenNewFileInZip3_64(zipFile file, const char *filename, const zip_filein
 int zipOpenNewFileInZip2(zipFile file, const char *filename, const zip_fileinfo *zipfi,
     const void *extrafield_local, uint16_t size_extrafield_local, const void *extrafield_global,
     uint16_t size_extrafield_global, const char *comment, uint16_t compression_method, int level,
-    int raw)
-{
+    int raw) {
     return zipOpenNewFileInZip3_64(file, filename, zipfi, extrafield_local, size_extrafield_local,
         extrafield_global, size_extrafield_global, comment, compression_method, level, raw,
             0, 0, 0, NULL, 0, 0);
@@ -274,8 +248,7 @@ int zipOpenNewFileInZip2(zipFile file, const char *filename, const zip_fileinfo 
 int zipOpenNewFileInZip2_64(zipFile file, const char *filename, const zip_fileinfo *zipfi,
     const void *extrafield_local, uint16_t size_extrafield_local, const void *extrafield_global,
     uint16_t size_extrafield_global, const char *comment, uint16_t compression_method, int level,
-    int raw, int zip64)
-{
+    int raw, int zip64) {
     return zipOpenNewFileInZip3_64(file, filename, zipfi, extrafield_local, size_extrafield_local,
         extrafield_global, size_extrafield_global, comment, compression_method, level, raw, 0,
         0, 0, NULL, 0, zip64);
@@ -283,8 +256,7 @@ int zipOpenNewFileInZip2_64(zipFile file, const char *filename, const zip_filein
 
 int zipOpenNewFileInZip(zipFile file, const char *filename, const zip_fileinfo *zipfi,
     const void *extrafield_local, uint16_t size_extrafield_local, const void *extrafield_global,
-    uint16_t size_extrafield_global, const char *comment, uint16_t compression_method, int level)
-{
+    uint16_t size_extrafield_global, const char *comment, uint16_t compression_method, int level) {
     return zipOpenNewFileInZip_64(file, filename, zipfi, extrafield_local, size_extrafield_local,
         extrafield_global, size_extrafield_global, comment, compression_method, level, 0);
 }
@@ -292,14 +264,12 @@ int zipOpenNewFileInZip(zipFile file, const char *filename, const zip_fileinfo *
 int zipOpenNewFileInZip_64(zipFile file, const char *filename, const zip_fileinfo *zipfi,
     const void *extrafield_local, uint16_t size_extrafield_local, const void *extrafield_global,
     uint16_t size_extrafield_global, const char *comment, uint16_t compression_method, int level,
-    int zip64)
-{
+    int zip64) {
     return zipOpenNewFileInZip2_64(file, filename, zipfi, extrafield_local, size_extrafield_local,
         extrafield_global, size_extrafield_global, comment, compression_method, level, 0, zip64);
 }
 
-int zipWriteInFileInZip(zipFile file, const void *buf, uint32_t len)
-{
+int zipWriteInFileInZip(zipFile file, const void *buf, uint32_t len) {
     mz_compat *compat = (mz_compat *)file;
     int32_t written = 0;
     if (compat == NULL || len >= INT32_MAX)
@@ -310,52 +280,44 @@ int zipWriteInFileInZip(zipFile file, const void *buf, uint32_t len)
     return ZIP_OK;
 }
 
-int zipCloseFileInZipRaw(zipFile file, uint32_t uncompressed_size, uint32_t crc32)
-{
+int zipCloseFileInZipRaw(zipFile file, unsigned long uncompressed_size, unsigned long crc32) {
     return zipCloseFileInZipRaw64(file, uncompressed_size, crc32);
 }
 
-int zipCloseFileInZipRaw64(zipFile file, int64_t uncompressed_size, uint32_t crc32)
-{
+int zipCloseFileInZipRaw64(zipFile file, int64_t uncompressed_size, unsigned long crc32) {
     mz_compat *compat = (mz_compat *)file;
     if (compat == NULL)
         return ZIP_PARAMERROR;
     return mz_zip_entry_close_raw(compat->handle, uncompressed_size, crc32);
 }
 
-int zipCloseFileInZip(zipFile file)
-{
+int zipCloseFileInZip(zipFile file) {
     return zipCloseFileInZip64(file);
 }
 
-int zipCloseFileInZip64(zipFile file)
-{
+int zipCloseFileInZip64(zipFile file) {
     mz_compat *compat = (mz_compat *)file;
     if (compat == NULL)
         return ZIP_PARAMERROR;
     return mz_zip_entry_close(compat->handle);
 }
 
-int zipClose(zipFile file, const char *global_comment)
-{
+int zipClose(zipFile file, const char *global_comment) {
     return zipClose_64(file, global_comment);
 }
 
-int zipClose_64(zipFile file, const char *global_comment)
-{
+int zipClose_64(zipFile file, const char *global_comment) {
     return zipClose2_64(file, global_comment, MZ_VERSION_MADEBY);
 }
 
-int zipClose2_64(zipFile file, const char *global_comment, uint16_t version_madeby)
-{
+int zipClose2_64(zipFile file, const char *global_comment, uint16_t version_madeby) {
     mz_compat *compat = (mz_compat *)file;
     int32_t err = MZ_OK;
 
     if (compat->handle != NULL)
         err = zipClose2_MZ(file, global_comment, version_madeby);
 
-    if (compat->stream != NULL)
-    {
+    if (compat->stream != NULL) {
         mz_stream_close(compat->stream);
         mz_stream_delete(&compat->stream);
     }
@@ -366,14 +328,12 @@ int zipClose2_64(zipFile file, const char *global_comment, uint16_t version_made
 }
 
 /* Only closes the zip handle, does not close the stream */
-int zipClose_MZ(zipFile file, const char *global_comment)
-{
+int zipClose_MZ(zipFile file, const char *global_comment) {
     return zipClose2_MZ(file, global_comment, MZ_VERSION_MADEBY);
 }
 
 /* Only closes the zip handle, does not close the stream */
-int zipClose2_MZ(zipFile file, const char *global_comment, uint16_t version_madeby)
-{
+int zipClose2_MZ(zipFile file, const char *global_comment, uint16_t version_madeby) {
     mz_compat *compat = (mz_compat *)file;
     int32_t err = MZ_OK;
 
@@ -394,47 +354,38 @@ int zipClose2_MZ(zipFile file, const char *global_comment, uint16_t version_made
 
 /***************************************************************************/
 
-unzFile unzOpen(const char *path)
-{
+unzFile unzOpen(const char *path) {
     return unzOpen64(path);
 }
 
-unzFile unzOpen64(const void *path)
-{
+unzFile unzOpen64(const void *path) {
     zlib_filefunc64_def pzlib = mz_stream_os_get_interface();
     return unzOpen2(path, &pzlib);
 }
 
-unzFile unzOpen2(const char *path, zlib_filefunc_def *pzlib_filefunc_def)
-{
+unzFile unzOpen2(const char *path, zlib_filefunc_def *pzlib_filefunc_def) {
     return unzOpen2_64(path, pzlib_filefunc_def);
 }
 
-unzFile unzOpen2_64(const void *path, zlib_filefunc64_def *pzlib_filefunc_def)
-{
+unzFile unzOpen2_64(const void *path, zlib_filefunc64_def *pzlib_filefunc_def) {
     unzFile unz = NULL;
     void *stream = NULL;
 
-    if (pzlib_filefunc_def)
-    {
+    if (pzlib_filefunc_def) {
         if (mz_stream_create(&stream, (mz_stream_vtbl *)*pzlib_filefunc_def) == NULL)
             return NULL;
-    }
-    else
-    {
+    } else {
         if (mz_stream_os_create(&stream) == NULL)
             return NULL;
     }
 
-    if (mz_stream_open(stream, path, MZ_OPEN_MODE_READ) != MZ_OK)
-    {
+    if (mz_stream_open(stream, path, MZ_OPEN_MODE_READ) != MZ_OK) {
         mz_stream_delete(&stream);
         return NULL;
     }
 
     unz = unzOpen_MZ(stream);
-    if (unz == NULL)
-    {
+    if (unz == NULL) {
         mz_stream_close(stream);
         mz_stream_delete(&stream);
         return NULL;
@@ -442,24 +393,21 @@ unzFile unzOpen2_64(const void *path, zlib_filefunc64_def *pzlib_filefunc_def)
     return unz;
 }
 
-void* unzGetHandle_MZ(unzFile file)
-{
+void* unzGetHandle_MZ(unzFile file) {
     mz_compat *compat = (mz_compat *)file;
     if (compat == NULL)
         return NULL;
     return compat->handle;
 }
 
-void* unzGetStream_MZ(unzFile file)
-{
+void* unzGetStream_MZ(unzFile file) {
     mz_compat *compat = (mz_compat *)file;
     if (compat == NULL)
         return NULL;
     return compat->stream;
 }
 
-unzFile unzOpen_MZ(void *stream)
-{
+unzFile unzOpen_MZ(void *stream) {
     mz_compat *compat = NULL;
     int32_t err = MZ_OK;
     void *handle = NULL;
@@ -467,30 +415,25 @@ unzFile unzOpen_MZ(void *stream)
     mz_zip_create(&handle);
     err = mz_zip_open(handle, stream, MZ_OPEN_MODE_READ);
 
-    if (err != MZ_OK)
-    {
+    if (err != MZ_OK) {
         mz_zip_delete(&handle);
         return NULL;
     }
 
     compat = (mz_compat *)MZ_ALLOC(sizeof(mz_compat));
-    if (compat != NULL)
-    {
+    if (compat != NULL) {
         compat->handle = handle;
         compat->stream = stream;
 
         mz_zip_goto_first_entry(compat->handle);
-    }
-    else
-    {
+    } else {
         mz_zip_delete(&handle);
     }
 
     return (unzFile)compat;
 }
 
-int unzClose(unzFile file)
-{
+int unzClose(unzFile file) {
     mz_compat *compat = (mz_compat *)file;
     int32_t err = MZ_OK;
 
@@ -500,8 +443,7 @@ int unzClose(unzFile file)
     if (compat->handle != NULL)
         err = unzClose_MZ(file);
 
-    if (compat->stream != NULL)
-    {
+    if (compat->stream != NULL) {
         mz_stream_close(compat->stream);
         mz_stream_delete(&compat->stream);
     }
@@ -512,8 +454,7 @@ int unzClose(unzFile file)
 }
 
 /* Only closes the zip handle, does not close the stream */
-int unzClose_MZ(unzFile file)
-{
+int unzClose_MZ(unzFile file) {
     mz_compat *compat = (mz_compat *)file;
     int32_t err = MZ_OK;
 
@@ -526,8 +467,7 @@ int unzClose_MZ(unzFile file)
     return err;
 }
 
-int unzGetGlobalInfo(unzFile file, unz_global_info* pglobal_info32)
-{
+int unzGetGlobalInfo(unzFile file, unz_global_info* pglobal_info32) {
     mz_compat *compat = (mz_compat *)file;
     unz_global_info64 global_info64;
     int32_t err = MZ_OK;
@@ -537,8 +477,7 @@ int unzGetGlobalInfo(unzFile file, unz_global_info* pglobal_info32)
         return UNZ_PARAMERROR;
 
     err = unzGetGlobalInfo64(file, &global_info64);
-    if (err == MZ_OK)
-    {
+    if (err == MZ_OK) {
         pglobal_info32->number_entry = (uint32_t)global_info64.number_entry;
         pglobal_info32->size_comment = global_info64.size_comment;
         pglobal_info32->number_disk_with_CD = global_info64.number_disk_with_CD;
@@ -546,8 +485,7 @@ int unzGetGlobalInfo(unzFile file, unz_global_info* pglobal_info32)
     return err;
 }
 
-int unzGetGlobalInfo64(unzFile file, unz_global_info64 *pglobal_info)
-{
+int unzGetGlobalInfo64(unzFile file, unz_global_info64 *pglobal_info) {
     mz_compat *compat = (mz_compat *)file;
     const char *comment_ptr = NULL;
     int32_t err = MZ_OK;
@@ -565,8 +503,7 @@ int unzGetGlobalInfo64(unzFile file, unz_global_info64 *pglobal_info)
     return err;
 }
 
-int unzGetGlobalComment(unzFile file, char *comment, uint16_t comment_size)
-{
+int unzGetGlobalComment(unzFile file, char *comment, unsigned long comment_size) {
     mz_compat *compat = (mz_compat *)file;
     const char *comment_ptr = NULL;
     int32_t err = MZ_OK;
@@ -574,16 +511,14 @@ int unzGetGlobalComment(unzFile file, char *comment, uint16_t comment_size)
     if (comment == NULL || comment_size == 0)
         return UNZ_PARAMERROR;
     err = mz_zip_get_comment(compat->handle, &comment_ptr);
-    if (err == MZ_OK)
-    {
+    if (err == MZ_OK) {
         strncpy(comment, comment_ptr, comment_size - 1);
         comment[comment_size - 1] = 0;
     }
     return err;
 }
 
-int unzOpenCurrentFile3(unzFile file, int *method, int *level, int raw, const char *password)
-{
+int unzOpenCurrentFile3(unzFile file, int *method, int *level, int raw, const char *password) {
     mz_compat *compat = (mz_compat *)file;
     mz_zip_file *file_info = NULL;
     int32_t err = MZ_OK;
@@ -600,18 +535,14 @@ int unzOpenCurrentFile3(unzFile file, int *method, int *level, int raw, const ch
     err = mz_zip_entry_read_open(compat->handle, (uint8_t)raw, password);
     if (err == MZ_OK)
         err = mz_zip_entry_get_info(compat->handle, &file_info);
-    if (err == MZ_OK)
-    {
-        if (method != NULL)
-        {
+    if (err == MZ_OK) {
+        if (method != NULL) {
             *method = file_info->compression_method;
         }
 
-        if (level != NULL)
-        {
+        if (level != NULL) {
             *level = 6;
-            switch (file_info->flag & 0x06)
-            {
+            switch (file_info->flag & 0x06) {
             case MZ_ZIP_FLAG_DEFLATE_SUPER_FAST:
                 *level = 1;
                 break;
@@ -631,23 +562,19 @@ int unzOpenCurrentFile3(unzFile file, int *method, int *level, int raw, const ch
     return err;
 }
 
-int unzOpenCurrentFile(unzFile file)
-{
+int unzOpenCurrentFile(unzFile file) {
     return unzOpenCurrentFile3(file, NULL, NULL, 0, NULL);
 }
 
-int unzOpenCurrentFilePassword(unzFile file, const char *password)
-{
+int unzOpenCurrentFilePassword(unzFile file, const char *password) {
     return unzOpenCurrentFile3(file, NULL, NULL, 0, password);
 }
 
-int unzOpenCurrentFile2(unzFile file, int *method, int *level, int raw)
-{
+int unzOpenCurrentFile2(unzFile file, int *method, int *level, int raw) {
     return unzOpenCurrentFile3(file, method, level, raw, NULL);
 }
 
-int unzReadCurrentFile(unzFile file, void *buf, uint32_t len)
-{
+int unzReadCurrentFile(unzFile file, void *buf, uint32_t len) {
     mz_compat *compat = (mz_compat *)file;
     int32_t err = MZ_OK;
     if (compat == NULL || len >= INT32_MAX)
@@ -658,8 +585,7 @@ int unzReadCurrentFile(unzFile file, void *buf, uint32_t len)
     return err;
 }
 
-int unzCloseCurrentFile(unzFile file)
-{
+int unzCloseCurrentFile(unzFile file) {
     mz_compat *compat = (mz_compat *)file;
     int32_t err = MZ_OK;
     if (compat == NULL)
@@ -669,8 +595,8 @@ int unzCloseCurrentFile(unzFile file)
 }
 
 int unzGetCurrentFileInfo(unzFile file, unz_file_info *pfile_info, char *filename,
-    uint16_t filename_size, void *extrafield, uint16_t extrafield_size, char *comment, uint16_t comment_size)
-{
+    unsigned long filename_size, void *extrafield, unsigned long extrafield_size, char *comment,
+    unsigned long comment_size) {
     mz_compat *compat = (mz_compat *)file;
     mz_zip_file *file_info = NULL;
     uint16_t bytes_to_copy = 0;
@@ -681,8 +607,7 @@ int unzGetCurrentFileInfo(unzFile file, unz_file_info *pfile_info, char *filenam
 
     err = mz_zip_entry_get_info(compat->handle, &file_info);
 
-    if ((err == MZ_OK) && (pfile_info != NULL))
-    {
+    if ((err == MZ_OK) && (pfile_info != NULL)) {
         pfile_info->version = file_info->version_madeby;
         pfile_info->version_needed = file_info->version_needed;
         pfile_info->flag = file_info->flag;
@@ -703,25 +628,22 @@ int unzGetCurrentFileInfo(unzFile file, unz_file_info *pfile_info, char *filenam
         pfile_info->compressed_size = (uint32_t)file_info->compressed_size;
         pfile_info->uncompressed_size = (uint32_t)file_info->uncompressed_size;
 
-        if (filename_size > 0 && filename != NULL && file_info->filename != NULL)
-        {
-            bytes_to_copy = filename_size;
+        if (filename_size > 0 && filename != NULL && file_info->filename != NULL) {
+            bytes_to_copy = (uint16_t)filename_size;
             if (bytes_to_copy > file_info->filename_size)
                 bytes_to_copy = file_info->filename_size;
             memcpy(filename, file_info->filename, bytes_to_copy);
             if (bytes_to_copy < filename_size)
                 filename[bytes_to_copy] = 0;
         }
-        if (extrafield_size > 0 && extrafield != NULL)
-        {
-            bytes_to_copy = extrafield_size;
+        if (extrafield_size > 0 && extrafield != NULL) {
+            bytes_to_copy = (uint16_t)extrafield_size;
             if (bytes_to_copy > file_info->extrafield_size)
                 bytes_to_copy = file_info->extrafield_size;
             memcpy(extrafield, file_info->extrafield, bytes_to_copy);
         }
-        if (comment_size > 0 && comment != NULL && file_info->comment != NULL)
-        {
-            bytes_to_copy = comment_size;
+        if (comment_size > 0 && comment != NULL && file_info->comment != NULL) {
+            bytes_to_copy = (uint16_t)comment_size;
             if (bytes_to_copy > file_info->comment_size)
                 bytes_to_copy = file_info->comment_size;
             memcpy(comment, file_info->comment, bytes_to_copy);
@@ -733,8 +655,8 @@ int unzGetCurrentFileInfo(unzFile file, unz_file_info *pfile_info, char *filenam
 }
 
 int unzGetCurrentFileInfo64(unzFile file, unz_file_info64 * pfile_info, char *filename,
-    uint16_t filename_size, void *extrafield, uint16_t extrafield_size, char *comment, uint16_t comment_size)
-{
+    unsigned long filename_size, void *extrafield, unsigned long extrafield_size, char *comment,
+    unsigned long comment_size) {
     mz_compat *compat = (mz_compat *)file;
     mz_zip_file *file_info = NULL;
     uint16_t bytes_to_copy = 0;
@@ -745,8 +667,7 @@ int unzGetCurrentFileInfo64(unzFile file, unz_file_info64 * pfile_info, char *fi
 
     err = mz_zip_entry_get_info(compat->handle, &file_info);
 
-    if ((err == MZ_OK) && (pfile_info != NULL))
-    {
+    if ((err == MZ_OK) && (pfile_info != NULL)) {
         pfile_info->version = file_info->version_madeby;
         pfile_info->version_needed = file_info->version_needed;
         pfile_info->flag = file_info->flag;
@@ -767,9 +688,8 @@ int unzGetCurrentFileInfo64(unzFile file, unz_file_info64 * pfile_info, char *fi
         pfile_info->compressed_size = (uint64_t)file_info->compressed_size;
         pfile_info->uncompressed_size = (uint64_t)file_info->uncompressed_size;
 
-        if (filename_size > 0 && filename != NULL && file_info->filename != NULL)
-        {
-            bytes_to_copy = filename_size;
+        if (filename_size > 0 && filename != NULL && file_info->filename != NULL) {
+            bytes_to_copy = (uint16_t)filename_size;
             if (bytes_to_copy > file_info->filename_size)
                 bytes_to_copy = file_info->filename_size;
             memcpy(filename, file_info->filename, bytes_to_copy);
@@ -777,17 +697,15 @@ int unzGetCurrentFileInfo64(unzFile file, unz_file_info64 * pfile_info, char *fi
                 filename[bytes_to_copy] = 0;
         }
 
-        if (extrafield_size > 0 && extrafield != NULL)
-        {
-            bytes_to_copy = extrafield_size;
+        if (extrafield_size > 0 && extrafield != NULL) {
+            bytes_to_copy = (uint16_t)extrafield_size;
             if (bytes_to_copy > file_info->extrafield_size)
                 bytes_to_copy = file_info->extrafield_size;
             memcpy(extrafield, file_info->extrafield, bytes_to_copy);
         }
 
-        if (comment_size > 0 && comment != NULL && file_info->comment != NULL)
-        {
-            bytes_to_copy = comment_size;
+        if (comment_size > 0 && comment != NULL && file_info->comment != NULL) {
+            bytes_to_copy = (uint16_t)comment_size;
             if (bytes_to_copy > file_info->comment_size)
                 bytes_to_copy = file_info->comment_size;
             memcpy(comment, file_info->comment, bytes_to_copy);
@@ -798,8 +716,7 @@ int unzGetCurrentFileInfo64(unzFile file, unz_file_info64 * pfile_info, char *fi
     return err;
 }
 
-int unzGoToFirstFile(unzFile file)
-{
+int unzGoToFirstFile(unzFile file) {
     mz_compat *compat = (mz_compat *)file;
     if (compat == NULL)
         return UNZ_PARAMERROR;
@@ -807,8 +724,7 @@ int unzGoToFirstFile(unzFile file)
     return mz_zip_goto_first_entry(compat->handle);
 }
 
-int unzGoToNextFile(unzFile file)
-{
+int unzGoToNextFile(unzFile file) {
     mz_compat *compat = (mz_compat *)file;
     int32_t err = MZ_OK;
     if (compat == NULL)
@@ -819,8 +735,7 @@ int unzGoToNextFile(unzFile file)
     return err;
 }
 
-int unzLocateFile(unzFile file, const char *filename, unzFileNameComparer filename_compare_func)
-{
+int unzLocateFile(unzFile file, const char *filename, unzFileNameComparer filename_compare_func) {
     mz_compat *compat = (mz_compat *)file;
     mz_zip_file *file_info = NULL;
     uint64_t preserve_index = 0;
@@ -833,19 +748,15 @@ int unzLocateFile(unzFile file, const char *filename, unzFileNameComparer filena
     preserve_index = compat->entry_index;
 
     err = mz_zip_goto_first_entry(compat->handle);
-    while (err == MZ_OK)
-    {
+    while (err == MZ_OK) {
         err = mz_zip_entry_get_info(compat->handle, &file_info);
         if (err != MZ_OK)
             break;
 
-        if ((intptr_t)filename_compare_func > 2)
-        {
+        if ((intptr_t)filename_compare_func > 2) {
             result = filename_compare_func(file, filename, file_info->filename);
-        }
-        else
-        {
-            int32_t case_sensitive = (int32_t)filename_compare_func;
+        } else {
+            int32_t case_sensitive = (int32_t)(intptr_t)filename_compare_func;
             result = mz_path_compare_wc(filename, file_info->filename, !case_sensitive);
         }
 
@@ -861,8 +772,7 @@ int unzLocateFile(unzFile file, const char *filename, unzFileNameComparer filena
 
 /***************************************************************************/
 
-int unzGetFilePos(unzFile file, unz_file_pos *file_pos)
-{
+int unzGetFilePos(unzFile file, unz_file_pos *file_pos) {
     unz64_file_pos file_pos64;
     int32_t err = 0;
 
@@ -875,8 +785,7 @@ int unzGetFilePos(unzFile file, unz_file_pos *file_pos)
     return err;
 }
 
-int unzGoToFilePos(unzFile file, unz_file_pos *file_pos)
-{
+int unzGoToFilePos(unzFile file, unz_file_pos *file_pos) {
     mz_compat *compat = (mz_compat *)file;
     unz64_file_pos file_pos64;
 
@@ -889,8 +798,7 @@ int unzGoToFilePos(unzFile file, unz_file_pos *file_pos)
     return unzGoToFilePos64(file, &file_pos64);
 }
 
-int unzGetFilePos64(unzFile file, unz64_file_pos *file_pos)
-{
+int unzGetFilePos64(unzFile file, unz64_file_pos *file_pos) {
     mz_compat *compat = (mz_compat *)file;
     int64_t offset = 0;
 
@@ -906,8 +814,7 @@ int unzGetFilePos64(unzFile file, unz64_file_pos *file_pos)
     return UNZ_OK;
 }
 
-int unzGoToFilePos64(unzFile file, const unz64_file_pos *file_pos)
-{
+int unzGoToFilePos64(unzFile file, const unz64_file_pos *file_pos) {
     mz_compat *compat = (mz_compat *)file;
     int32_t err = MZ_OK;
 
@@ -920,34 +827,29 @@ int unzGoToFilePos64(unzFile file, const unz64_file_pos *file_pos)
     return err;
 }
 
-int32_t unzGetOffset(unzFile file)
-{
-    return (int32_t)unzGetOffset64(file);
+unsigned long unzGetOffset(unzFile file) {
+    return (uint32_t)unzGetOffset64(file);
 }
 
-int64_t unzGetOffset64(unzFile file)
-{
+int64_t unzGetOffset64(unzFile file) {
     mz_compat *compat = (mz_compat *)file;
     if (compat == NULL)
         return UNZ_PARAMERROR;
     return mz_zip_get_entry(compat->handle);
 }
 
-int unzSetOffset(unzFile file, uint32_t pos)
-{
+int unzSetOffset(unzFile file, unsigned long pos) {
     return unzSetOffset64(file, pos);
 }
 
-int unzSetOffset64(unzFile file, int64_t pos)
-{
+int unzSetOffset64(unzFile file, int64_t pos) {
     mz_compat *compat = (mz_compat *)file;
     if (compat == NULL)
         return UNZ_PARAMERROR;
     return (int)mz_zip_goto_entry(compat->handle, pos);
 }
 
-int unzGetLocalExtrafield(unzFile file, void *buf, unsigned int len)
-{
+int unzGetLocalExtrafield(unzFile file, void *buf, unsigned int len) {
     mz_compat *compat = (mz_compat *)file;
     mz_zip_file *file_info = NULL;
     int32_t err = MZ_OK;
@@ -968,31 +870,26 @@ int unzGetLocalExtrafield(unzFile file, void *buf, unsigned int len)
     return MZ_OK;
 }
 
-int64_t unztell(unzFile file)
-{
+int64_t unztell(unzFile file) {
     return unzTell64(file);
 }
 
-int32_t unzTell(unzFile file)
-{
+int32_t unzTell(unzFile file) {
     return (int32_t)unzTell64(file);
 }
 
-int64_t unzTell64(unzFile file)
-{
+int64_t unzTell64(unzFile file) {
     mz_compat *compat = (mz_compat *)file;
     if (compat == NULL)
         return UNZ_PARAMERROR;
     return (int64_t)compat->total_out;
 }
 
-int unzSeek(unzFile file, int32_t offset, int origin)
-{
+int unzSeek(unzFile file, int32_t offset, int origin) {
     return unzSeek64(file, offset, origin);
 }
 
-int unzSeek64(unzFile file, int64_t offset, int origin)
-{
+int unzSeek64(unzFile file, int64_t offset, int origin) {
     mz_compat *compat = (mz_compat *)file;
     mz_zip_file *file_info = NULL;
     int64_t position = 0;
@@ -1027,8 +924,7 @@ int unzSeek64(unzFile file, int64_t offset, int origin)
     return err;
 }
 
-int unzEndOfFile(unzFile file)
-{
+int unzEndOfFile(unzFile file) {
     mz_compat *compat = (mz_compat *)file;
     mz_zip_file *file_info = NULL;
     int32_t err = MZ_OK;
@@ -1043,8 +939,7 @@ int unzEndOfFile(unzFile file)
     return 0;
 }
 
-void* unzGetStream(unzFile file)
-{
+void* unzGetStream(unzFile file) {
     mz_compat *compat = (mz_compat *)file;
     if (compat == NULL)
         return NULL;
@@ -1053,45 +948,38 @@ void* unzGetStream(unzFile file)
 
 /***************************************************************************/
 
-void fill_fopen_filefunc(zlib_filefunc_def *pzlib_filefunc_def)
-{
+void fill_fopen_filefunc(zlib_filefunc_def *pzlib_filefunc_def) {
     if (pzlib_filefunc_def != NULL)
         *pzlib_filefunc_def = mz_stream_os_get_interface();
 }
 
-void fill_fopen64_filefunc(zlib_filefunc64_def *pzlib_filefunc_def)
-{
+void fill_fopen64_filefunc(zlib_filefunc64_def *pzlib_filefunc_def) {
     if (pzlib_filefunc_def != NULL)
         *pzlib_filefunc_def = mz_stream_os_get_interface();
 }
 
-void fill_win32_filefunc(zlib_filefunc_def *pzlib_filefunc_def)
-{
+void fill_win32_filefunc(zlib_filefunc_def *pzlib_filefunc_def) {
     if (pzlib_filefunc_def != NULL)
         *pzlib_filefunc_def = mz_stream_os_get_interface();
 }
 
-void fill_win32_filefunc64(zlib_filefunc64_def *pzlib_filefunc_def)
-{
+void fill_win32_filefunc64(zlib_filefunc64_def *pzlib_filefunc_def) {
     if (pzlib_filefunc_def != NULL)
         *pzlib_filefunc_def = mz_stream_os_get_interface();
 }
 
-void fill_win32_filefunc64A(zlib_filefunc64_def *pzlib_filefunc_def)
-{
+void fill_win32_filefunc64A(zlib_filefunc64_def *pzlib_filefunc_def) {
     if (pzlib_filefunc_def != NULL)
         *pzlib_filefunc_def = mz_stream_os_get_interface();
 }
 
-void fill_win32_filefunc64W(zlib_filefunc64_def *pzlib_filefunc_def)
-{
+void fill_win32_filefunc64W(zlib_filefunc64_def *pzlib_filefunc_def) {
     /* NOTE: You should no longer pass in widechar string to open function */
     if (pzlib_filefunc_def != NULL)
         *pzlib_filefunc_def = mz_stream_os_get_interface();
 }
 
-void fill_memory_filefunc(zlib_filefunc_def *pzlib_filefunc_def)
-{
+void fill_memory_filefunc(zlib_filefunc_def *pzlib_filefunc_def) {
     if (pzlib_filefunc_def != NULL)
         *pzlib_filefunc_def = mz_stream_mem_get_interface();
 }

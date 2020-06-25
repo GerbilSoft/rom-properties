@@ -1,10 +1,10 @@
 This copy of minizip is based on the updated version maintained
 by Nathan Moinvaziri at https://github.com/nmoinvaz/minizip .
 
-commit 2aa369c468aa1d931c52ff7dc3da962b71a94118
-Version 2.9.3.
+commit 46157039728e4220a4f35388c3a9f7a774e7be3a
+Version 2.10.0
 
-Tag: 2.9.3
+Tag: 2.10.0
 
 The following changes have been made to the original:
 
