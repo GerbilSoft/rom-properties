@@ -132,8 +132,7 @@ class Nintendo3DSPrivate : public RomDataPrivate
 
 		// Content chunk records. (CIA only)
 		// Loaded by loadTicketAndTMD().
-		unsigned int content_count;
-		unique_ptr<N3DS_Content_Chunk_Record_t[]> content_chunks;
+		vector<N3DS_Content_Chunk_Record_t> content_chunks;
 
 		// TODO: Move the pointers to the union?
 		// That requires careful memory management...
@@ -282,7 +281,6 @@ Nintendo3DSPrivate::Nintendo3DSPrivate(Nintendo3DS *q, IRpFile *file)
 	, romType(RomType::Unknown)
 	, headers_loaded(0)
 	, media_unit_shift(9)	// default is 9 (512 bytes)
-	, content_count(0)
 	, ncch_reader(nullptr)
 {
 	// Clear the various structs.
@@ -483,21 +481,24 @@ int Nintendo3DSPrivate::loadNCCH(int idx, NCCHReader **pOutNcchReader)
 			}
 
 			// Check if the content index is valid.
-			if (static_cast<unsigned int>(idx) >= content_count) {
+			if (static_cast<unsigned int>(idx) >= content_chunks.size()) {
 				// Content index is out of range.
 				return -ENOENT;
 			}
 
 			// Determine the content start position.
 			// Need to add all content chunk sizes, algined to 64 bytes.
-			for (unsigned int i = 0; i < content_count; i++) {
-				if (be16_to_cpu(content_chunks[i].index) == idx) {
+			for (auto iter = content_chunks.cbegin();
+			     iter != content_chunks.cend(); ++iter)
+			{
+				const uint32_t cur_size = static_cast<uint32_t>(be64_to_cpu(iter->size));
+				if (be16_to_cpu(iter->index) == idx) {
 					// Found the content chunk.
-					length = static_cast<uint32_t>(be64_to_cpu(content_chunks[i].size));
+					length = cur_size;
 					break;
 				}
 				// Next chunk.
-				offset += toNext64(be64_to_cpu(content_chunks[i].size));
+				offset += toNext64(cur_size);
 			}
 			if (length == 0) {
 				// Content chunk not found.
@@ -553,16 +554,17 @@ int Nintendo3DSPrivate::loadNCCH(int idx, NCCHReader **pOutNcchReader)
 
 	// Is this encrypted using CIA title key encryption?
 	CIAReader *ciaReader = nullptr;
-	if (romType == RomType::CIA && idx < (int)content_count) {
+	if (romType == RomType::CIA && idx < (int)content_chunks.size()) {
 		// Check if this content is encrypted.
 		// If it is, we'll need to create a CIAReader.
 		N3DS_Ticket_t *ticket = nullptr;
-		const N3DS_Content_Chunk_Record_t *content_chunk = &content_chunks[0];
-		for (unsigned int i = 0; i < content_count; i++, content_chunk++) {
-			const uint16_t content_index = be16_to_cpu(content_chunk->index);
+		for (auto iter = content_chunks.cbegin();
+		     iter != content_chunks.cend(); ++iter)
+		{
+			const uint16_t content_index = be16_to_cpu(iter->index);
 			if (content_index == idx) {
 				// Found the content index.
-				if (content_chunk->type & cpu_to_be16(N3DS_CONTENT_CHUNK_ENCRYPTED)) {
+				if (iter->type & cpu_to_be16(N3DS_CONTENT_CHUNK_ENCRYPTED)) {
 					// Content is encrypted.
 					ticket = &mxh.ticket;
 				}
@@ -752,21 +754,21 @@ int Nintendo3DSPrivate::loadTicketAndTMD(void)
 	}
 
 	// Load the content chunk records.
-	content_count = be16_to_cpu(mxh.tmd_header.content_count);
+	unsigned int content_count = be16_to_cpu(mxh.tmd_header.content_count);
 	if (content_count > 255) {
 		// TODO: Do any titles have more than 255 contents?
 		// Restricting to 255 maximum for now.
 		content_count = 255;
 	}
-	content_chunks.reset(new N3DS_Content_Chunk_Record_t[content_count]);
+	content_chunks.resize(content_count);
 	const size_t content_chunks_size = content_count * sizeof(N3DS_Content_Chunk_Record_t);
 
 	addr += sizeof(N3DS_TMD_t);
-	size = file->seekAndRead(addr, content_chunks.get(), content_chunks_size);
+	size = file->seekAndRead(addr, content_chunks.data(), content_chunks_size);
 	if (size != content_chunks_size) {
 		// Seek and/or read error.
 		content_count = 0;
-		content_chunks.reset(nullptr);
+		content_chunks.clear();
 		return -10;
 	}
 
@@ -777,8 +779,9 @@ int Nintendo3DSPrivate::loadTicketAndTMD(void)
 	// NOTE: "WarioWare Touched!" has a manual, but no other
 	// DSiWare titles that I've seen do.
 	if (content_count <= 2 && !(headers_loaded & HEADER_SMDH) && !this->sbptr.srl.data) {
+		const N3DS_Content_Chunk_Record_t *const chunk0 = &content_chunks[0];
 		const off64_t offset = mxh.content_start_addr;
-		const uint32_t length = static_cast<uint32_t>(be64_to_cpu(content_chunks[0].size));
+		const uint32_t length = static_cast<uint32_t>(be64_to_cpu(chunk0->size));
 		if (length >= 0x8000) {
 			// Attempt to open the SRL as if it's a new file.
 			// TODO: IRpFile implementation with offset/length, so we don't
@@ -787,10 +790,10 @@ int Nintendo3DSPrivate::loadTicketAndTMD(void)
 			// Check if this content is encrypted.
 			// If it is, we'll need to create a CIAReader.
 			IDiscReader *srlReader = nullptr;
-			if (content_chunks[0].type & cpu_to_be16(N3DS_CONTENT_CHUNK_ENCRYPTED)) {
+			if (chunk0->type & cpu_to_be16(N3DS_CONTENT_CHUNK_ENCRYPTED)) {
 				// Content is encrypted.
 				srlReader = new CIAReader(this->file, offset, length,
-					&mxh.ticket, be16_to_cpu(content_chunks[0].index));
+					&mxh.ticket, be16_to_cpu(chunk0->index));
 			} else {
 				// Content is NOT encrypted.
 				// Use a plain old DiscReader.
@@ -2344,12 +2347,14 @@ int Nintendo3DS::loadFieldData(void)
 
 		// Contents table.
 		auto vv_contents = new RomFields::ListData_t();
-		vv_contents->reserve(d->content_count);
+		vv_contents->reserve(d->content_chunks.size());
 
 		// Process the contents.
 		// TODO: Content types?
-		const N3DS_Content_Chunk_Record_t *content_chunk = &d->content_chunks[0];
-		for (unsigned int i = 0; i < d->content_count; i++, content_chunk++) {
+		int i = 0;
+		for (auto iter = d->content_chunks.cbegin();
+		     iter != d->content_chunks.cend(); ++iter, ++i)
+		{
 			// Make sure the content exists first.
 			NCCHReader *pNcch = nullptr;
 			int ret = d->loadNCCH(i, &pNcch);
@@ -2381,7 +2386,7 @@ int Nintendo3DS::loadFieldData(void)
 				// TODO: Are there CIAs with discontiguous content indexes?
 				// (Themes, DLC...)
 				const char *crypto = nullptr;
-				if (content_chunk->type & cpu_to_be16(N3DS_CONTENT_CHUNK_ENCRYPTED)) {
+				if (iter->type & cpu_to_be16(N3DS_CONTENT_CHUNK_ENCRYPTED)) {
 					// CIA encryption.
 					crypto = "CIA";
 				}
@@ -2409,11 +2414,8 @@ int Nintendo3DS::loadFieldData(void)
 				data_row.emplace_back("");
 
 				// Content size.
-				if (i < d->content_count) {
-					data_row.emplace_back(LibRpBase::formatFileSize(be64_to_cpu(content_chunk->size)));
-				} else {
-					data_row.emplace_back("");
-				}
+				// FIXME: This condition is likely always true...
+				data_row.emplace_back(LibRpBase::formatFileSize(be64_to_cpu(iter->size)));
 				UNREF(pNcch);
 				continue;
 			}
@@ -2423,7 +2425,7 @@ int Nintendo3DS::loadFieldData(void)
 
 			// Encryption.
 			NCCHReader::CryptoType cryptoType;
-			bool isCIAcrypto = !!(content_chunk->type & cpu_to_be16(N3DS_CONTENT_CHUNK_ENCRYPTED));
+			bool isCIAcrypto = !!(iter->type & cpu_to_be16(N3DS_CONTENT_CHUNK_ENCRYPTED));
 			ret = NCCHReader::cryptoType_static(&cryptoType, content_ncch_header);
 			if (ret != 0) {
 				// Unknown encryption.
