@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase/tests)                  *
  * RpPngFormatTest.cpp: RpImageLoader PNG format test.                     *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -311,7 +311,7 @@ void RpPngFormatTest::SetUp(void)
 	string path = "png_data";
 	path += DIR_SEP_CHR;
 	path += mode.png_filename;
-	unique_IRpFile<RpFile> file(new RpFile(path, RpFile::FM_OPEN_READ));
+	unique_RefBase<RpFile> file(new RpFile(path, RpFile::FM_OPEN_READ));
 	ASSERT_TRUE(file->isOpen());
 
 	// Maximum image size.
@@ -871,7 +871,7 @@ TEST_P(RpPngFormatTest, loadTest)
 	EXPECT_EQ(mode.ihdr.interlace_method,	ihdr.interlace_method);
 
 	// Create an RpMemFile.
-	unique_IRpFile<RpMemFile> png_mem_file(new RpMemFile(m_png_buf.data(), m_png_buf.size()));
+	unique_RefBase<RpMemFile> png_mem_file(new RpMemFile(m_png_buf.data(), m_png_buf.size()));
 	ASSERT_TRUE(png_mem_file->isOpen());
 
 	// Load the PNG image from memory.

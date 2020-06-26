@@ -176,64 +176,6 @@ class IRpFile : public RefBase
 		int m_lastError;
 };
 
-/**
- * unique_ptr<>-style class for IRpFile.
- * Takes the implied ref() for the IRpFile,
- * and unref()'s it when it goes out of scope.
- */
-template<class T>
-class unique_IRpFile
-{
-	public:
-		inline explicit unique_IRpFile(T *file)
-			: m_file(file)
-		{
-			static_assert(std::is_base_of<IRpFile, T>::value, "unique_IRpFile<> only supports IRpFile subclasses");
-		}
-
-		inline ~unique_IRpFile()
-		{
-			UNREF(m_file);
-		}
-
-		/**
-		 * Get the IRpFile*.
-		 * @return IRpFile*
-		 */
-		inline T *get(void) { return m_file; }
-
-		/**
-		 * Release the IRpFile*.
-		 * This class will reset its pointer to nullptr,
-		 * and won't unref() the IRpFile* on destruction.
-		 * @return IRpFile*
-		 */
-		inline T *release(void)
-		{
-			T *const ptr = m_file;
-			m_file = nullptr;
-			return ptr;
-		}
-
-		/**
-		 * Dereference the IRpFile*.
-		 * @return IRpFile*
-		 */
-		inline T *operator->(void) const { return m_file; }
-
-		/**
-		 * Is the IRpFile* valid or nullptr?
-		 * @return True if valid; false if nullptr.
-		 */
-		operator bool(void) const { return (m_file != nullptr); }
-
-	private:
-		RP_DISABLE_COPY(unique_IRpFile)
-
-	private:
-		T *m_file;
-};
-
 }
 
 #endif /* __ROMPROPERTIES_LIBRPFILE_IRPFILE_HPP__ */

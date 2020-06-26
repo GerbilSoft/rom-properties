@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * TCreateThumbnail.cpp: Thumbnail creator template.                       *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -176,7 +176,7 @@ ImgClass TCreateThumbnail<ImgClass>::getExternalImage(
 			continue;
 
 		// Attempt to load the image.
-		unique_IRpFile<RpFile> file(new RpFile(cache_filename, RpFile::FM_OPEN_READ));
+		unique_RefBase<RpFile> file(new RpFile(cache_filename, RpFile::FM_OPEN_READ));
 		if (file->isOpen()) {
 			unique_ptr<rp_image> dl_img(RpImageLoader::load(file.get()));
 			if (dl_img && dl_img->isValid()) {

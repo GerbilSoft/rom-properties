@@ -1064,7 +1064,7 @@ KeyStoreUI::ImportReturn KeyStoreUI::importWiiKeysBin(const char *filename)
 {
 	ImportReturn iret = {ImportStatus::InvalidParams, 0, 0, 0, 0, 0, 0, 0};
 
-	unique_IRpFile<RpFile> file(new RpFile(filename, RpFile::FM_OPEN_READ));
+	unique_RefBase<RpFile> file(new RpFile(filename, RpFile::FM_OPEN_READ));
 	if (!file->isOpen()) {
 		// TODO: file->lastError()?
 		iret.status = ImportStatus::OpenError;
@@ -1125,7 +1125,7 @@ KeyStoreUI::ImportReturn KeyStoreUI::importWiiUOtpBin(const char *filename)
 {
 	ImportReturn iret = {ImportStatus::InvalidParams, 0, 0, 0, 0, 0, 0, 0};
 
-	unique_IRpFile<RpFile> file(new RpFile(filename, RpFile::FM_OPEN_READ));
+	unique_RefBase<RpFile> file(new RpFile(filename, RpFile::FM_OPEN_READ));
 	if (!file->isOpen()) {
 		iret.status = ImportStatus::OpenError;
 		iret.error_code = static_cast<uint8_t>(file->lastError());
@@ -1195,7 +1195,7 @@ KeyStoreUI::ImportReturn KeyStoreUI::import3DSboot9bin(const char *filename)
 {
 	ImportReturn iret = {ImportStatus::InvalidParams, 0, 0, 0, 0, 0, 0, 0};
 
-	unique_IRpFile<RpFile> file(new RpFile(filename, RpFile::FM_OPEN_READ));
+	unique_RefBase<RpFile> file(new RpFile(filename, RpFile::FM_OPEN_READ));
 	if (!file->isOpen()) {
 		iret.status = ImportStatus::OpenError;
 		iret.error_code = static_cast<uint8_t>(file->lastError());
@@ -1267,7 +1267,7 @@ KeyStoreUI::ImportReturn KeyStoreUI::import3DSaeskeydb(const char *filename)
 {
 	ImportReturn iret = {ImportStatus::InvalidParams, 0, 0, 0, 0, 0, 0, 0};
 
-	unique_IRpFile<RpFile> file(new RpFile(filename, RpFile::FM_OPEN_READ));
+	unique_RefBase<RpFile> file(new RpFile(filename, RpFile::FM_OPEN_READ));
 	if (!file->isOpen()) {
 		iret.status = ImportStatus::OpenError;
 		iret.error_code = static_cast<uint8_t>(file->lastError());

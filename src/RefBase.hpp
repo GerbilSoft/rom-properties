@@ -80,4 +80,71 @@ class RefBase
 		volatile int m_ref_cnt;
 };
 
+/**
+ * unique_ptr<>-style class for RefBase subclasses.
+ * Takes the implied ref() for the RefBase subclass,
+ * and unref()'s it when it goes out of scope.
+ */
+template<class T>
+class unique_RefBase
+{
+	public:
+		inline explicit unique_RefBase(T *refBase)
+			: m_refBase(refBase)
+		{
+			static_assert(std::is_base_of<RefBase, T>::value,
+				"unique_RefBase<> only supports RefBase subclasses");
+		}
+
+		inline ~unique_RefBase()
+		{
+			UNREF(m_refBase);
+		}
+
+		/**
+		 * Get the RefBase*.
+		 * @return RefBase*
+		 */
+		inline T *get(void) { return m_refBase; }
+
+		/**
+		 * Release the IRpFile*.
+		 * This class will reset its pointer to nullptr,
+		 * and won't unref() the IRpFile* on destruction.
+		 * @return IRpFile*
+		 */
+		inline T *release(void)
+		{
+			T *const ptr = m_refBase;
+			m_refBase = nullptr;
+			return ptr;
+		}
+
+		/**
+		 * Dereference the RefBase*.
+		 * @return RefBase*
+		 */
+		inline T *operator->(void) const { return m_refBase; }
+
+		/**
+		 * Is the RefBase* valid or nullptr?
+		 * @return True if valid; false if nullptr.
+		 */
+		operator bool(void) const { return (m_refBase != nullptr); }
+
+	private:
+		// Disable copy/assignment constructors.
+#if __cplusplus >= 201103L
+		unique_RefBase(const unique_RefBase &) = delete;
+		unique_RefBase &operator=(const unique_RefBase &) = delete;
+#else
+#define RP_DISABLE_COPY(klass) \
+		unique_RefBase(const unique_RefBase &); \
+		unique_RefBase &operator=(const unique_RefBase &);
+#endif
+
+	private:
+		T *m_refBase;
+};
+
 #endif /* __ROMPROPERTIES_REFBASE_HPP__ */

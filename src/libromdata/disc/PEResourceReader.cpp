@@ -782,7 +782,7 @@ int PEResourceReader::load_VS_VERSION_INFO(int id, int lang, VS_FIXEDFILEINFO *p
 	}
 
 	// Open the VS_VERSION_INFO resource.
-	unique_IRpFile<IRpFile> f_ver(this->open(RT_VERSION, id, lang));
+	unique_RefBase<IRpFile> f_ver(this->open(RT_VERSION, id, lang));
 	if (!f_ver) {
 		// Not found.
 		return -ENOENT;

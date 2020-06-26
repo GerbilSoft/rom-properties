@@ -272,7 +272,7 @@ void ImageDecoderTest::SetUp(void)
 	path.resize(18);	// Back to "ImageDecoder_data/".
 	path += mode.png_filename;
 	replace_slashes(path);
-	unique_IRpFile<RpFile> file(new RpFile(path, RpFile::FM_OPEN_READ));
+	unique_RefBase<RpFile> file(new RpFile(path, RpFile::FM_OPEN_READ));
 	ASSERT_TRUE(file->isOpen()) << "Error loading PNG image file: " <<
 		mode.png_filename << " - " << strerror(file->lastError());
 
@@ -391,7 +391,7 @@ void ImageDecoderTest::decodeTest_internal(void)
 	const ImageDecoderTest_mode &mode = GetParam();
 
 	// Load the PNG image.
-	unique_IRpFile<RpMemFile> f_png(new RpMemFile(m_png_buf.data(), m_png_buf.size()));
+	unique_RefBase<RpMemFile> f_png(new RpMemFile(m_png_buf.data(), m_png_buf.size()));
 	ASSERT_TRUE(f_png->isOpen()) << "Could not create RpMemFile for the PNG image.";
 	unique_ptr<rp_image> img_png(RpImageLoader::load(f_png.get()));
 	ASSERT_TRUE(img_png != nullptr) << "Could not load the PNG image as rp_image.";
