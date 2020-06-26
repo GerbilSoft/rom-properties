@@ -132,7 +132,7 @@ class Nintendo3DSPrivate : public RomDataPrivate
 
 		// Content chunk records. (CIA only)
 		// Loaded by loadTicketAndTMD().
-		vector<N3DS_Content_Chunk_Record_t> content_chunks;
+		ao::uvector<N3DS_Content_Chunk_Record_t> content_chunks;
 
 		// TODO: Move the pointers to the union?
 		// That requires careful memory management...
