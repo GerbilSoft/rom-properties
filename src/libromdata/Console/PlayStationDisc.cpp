@@ -501,14 +501,18 @@ int PlayStationDisc::isRomSupported_static(
 	}
 
 	// PlayStation 1 and 2 discs have the system ID "PLAYSTATION".
-	// NOTE: Some PS2 prototypes have "CD-RTOS CD-BRIDGE", which is
-	// normally used for CD-i discs. We'll verify that system.cnf
-	// is present regardless.
+	// NOTE: Some PS2 prototypes have incorrect system IDs. We'll
+	// check for those here, and then verify system.cnf later.
 	int pos = -1;
 	if (!strncmp(pvd->sysID, "PLAYSTATION ", 12)) {
 		pos = 12;
 	} else if (!strncmp(pvd->sysID, "CD-RTOS CD-BRIDGE ", 18)) {
+		// CD-i system ID
+		// Some PS2 prototypes have this for some reason.
 		pos = 18;
+	} else if (!strncmp(pvd->sysID, "Win32 ", 6)) {
+		// No idea why some PS2 prototypes have this one...
+		pos = 6;
 	}
 
 	if (pos < 0) {
