@@ -138,8 +138,7 @@ class unique_RefBase
 		unique_RefBase(const unique_RefBase &) = delete;
 		unique_RefBase &operator=(const unique_RefBase &) = delete;
 #else
-#define RP_DISABLE_COPY(klass) \
-		unique_RefBase(const unique_RefBase &); \
+		unique_RefBase(const unique_RefBase &);
 		unique_RefBase &operator=(const unique_RefBase &);
 #endif
 
