@@ -154,16 +154,16 @@ KeyManager::VerifyResult N3DSVerifyKeys::loadKeyNormal(u128_t *pKeyOut,
 		// Decrypt the test data.
 		// NOTE: IAesCipher decrypts in place, so we need to
 		// make a temporary copy.
-		unique_ptr<uint8_t[]> tmpData(new uint8_t[16]);
-		memcpy(tmpData.get(), keyNormal_verify, 16);
-		size_t size = cipher->decrypt(tmpData.get(), 16);
+		uint8_t tmpData[16];
+		memcpy(tmpData, keyNormal_verify, sizeof(tmpData));
+		size_t size = cipher->decrypt(tmpData, sizeof(tmpData));
 		if (size != 16) {
 			// Decryption failed.
 			return KeyManager::VerifyResult::IAesCipherDecryptErr;
 		}
 
 		// Verify the test data.
-		if (memcmp(tmpData.get(), KeyManager::verifyTestString, 16) != 0) {
+		if (memcmp(tmpData, KeyManager::verifyTestString, sizeof(tmpData)) != 0) {
 			// Verification failed.
 			return KeyManager::VerifyResult::WrongKey;
 		}
