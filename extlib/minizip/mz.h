@@ -192,10 +192,14 @@ typedef unsigned int       uint32_t;
 typedef unsigned long long uint64_t;
 #endif
 
+// rom-properties: FIXME: This breaks on MSVC 2013.
+#if 0 // rom-properties
 #if defined(HAVE_INTTYPES_H) || \
    (defined(__has_include) && __has_include(<inttypes.h>))
 #  include <inttypes.h>
 #endif
+#endif // rom-properties
+#include <inttypes.h>
 
 #ifndef PRId8
 #  define PRId8  "hhd"
