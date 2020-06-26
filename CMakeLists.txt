@@ -174,6 +174,18 @@ ELSE(BUILD_CLI)
 	SET(CLI_BUILD_MSG "No")
 ENDIF(BUILD_CLI)
 
+IF(SECCOMP_FOUND)
+	SET(SEC_MECHANISM "seccomp()")
+ELSEIF(HAVE_PLEDGE)
+	SET(SEC_MECHANISM "pledge()")
+ELSEIF(HAVE_TAME)
+	SET(SEC_MECHANISM "tame()")
+ELSEIF(WIN32)
+	SET(SEC_MECHANISM "Win32")
+ELSE()
+	SET(SEC_MECHANISM "none")
+ENDIF()
+
 IF(ENABLE_DECRYPTION)
 	SET(ENABLE_DECRYPTION_MSG "Enabled")
 ELSE(ENABLE_DECRYPTION)
@@ -212,11 +224,13 @@ IF(BUILD_TESTING)
 	SET(EXTLIB_BUILD "${EXTLIB_BUILD}  - Google Test\n")
 ENDIF(BUILD_TESTING)
 
+
 MESSAGE("
 *** rom-properties build summary ***
 
 - Building these UI frontends: ${UI_FRONTENDS}
 - Building command-line frontend: ${CLI_BUILD_MSG}
+- Security mechanism: ${SEC_MECHANISM}
 - Decryption functionality: ${ENABLE_DECRYPTION_MSG}
 - XML parsing: ${ENABLE_XML_MSG}
 - PVRTC decoder: ${ENABLE_PVRTC_MSG}
