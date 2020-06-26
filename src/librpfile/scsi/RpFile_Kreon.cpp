@@ -16,7 +16,6 @@
 
 // C++ STL classes.
 using std::array;
-using std::unique_ptr;
 using std::vector;
 
 namespace LibRpFile {

@@ -17,7 +17,6 @@ using namespace LibRpFile;
 using LibWin32Common::RegKey;
 
 // C++ STL classes.
-using std::unique_ptr;
 using std::tstring;
 
 // COM smart pointer typedefs.

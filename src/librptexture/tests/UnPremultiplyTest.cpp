@@ -24,9 +24,7 @@
 #include <cstring>
 
 // C++ includes.
-#include <memory>
 #include <string>
-using std::unique_ptr;
 using std::string;
 
 namespace LibRpTexture { namespace Tests {

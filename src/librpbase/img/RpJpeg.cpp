@@ -28,9 +28,6 @@ using LibRpTexture::argb32_t;
 // C includes. (C++ namespace)
 #include <csetjmp>
 
-// C++ STL classes.
-using std::unique_ptr;
-
 #ifdef _WIN32
 // For OutputDebugStringA().
 #include <windows.h>

@@ -17,10 +17,6 @@
 // C includes. (C++ namespace)
 #include <cstdio>
 
-// C++ includes.
-#include <memory>
-using std::unique_ptr;
-
 namespace LibRpBase { namespace Tests {
 
 class ByteswapTest : public ::testing::Test

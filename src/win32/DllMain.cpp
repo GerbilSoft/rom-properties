@@ -50,7 +50,6 @@ using LibRomData::RomDataFactory;
 // C++ STL classes.
 using std::list;
 using std::string;
-using std::unique_ptr;
 using std::vector;
 using std::wstring;
 

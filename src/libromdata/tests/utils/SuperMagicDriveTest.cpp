@@ -17,10 +17,6 @@
 // C includes. (C++ namespace)
 #include <cstdio>
 
-// C++ includes.
-#include <memory>
-using std::unique_ptr;
-
 // zlib
 #define CHUNK 4096
 #include <zlib.h>

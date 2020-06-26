@@ -14,9 +14,6 @@
 using namespace LibRpBase;
 using LibRpFile::IRpFile;
 
-// C++ STL classes.
-using std::unique_ptr;
-
 #include "GcnPartitionPrivate.hpp"
 namespace LibRomData {
 

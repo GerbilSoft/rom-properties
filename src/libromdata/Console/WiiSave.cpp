@@ -29,7 +29,6 @@ using LibRpTexture::rp_image;
 // C++ STL classes.
 using std::array;
 using std::string;
-using std::unique_ptr;
 using std::vector;
 
 namespace LibRomData {

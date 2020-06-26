@@ -11,7 +11,6 @@
 
 // C++ STL classes.
 using std::array;
-using std::unique_ptr;
 
 // librptexture
 using LibRpTexture::rp_image;

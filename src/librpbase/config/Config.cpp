@@ -14,7 +14,6 @@
 
 // C++ STL classes.
 using std::string;
-using std::unique_ptr;
 using std::unordered_map;
 
 #include "RomData.hpp"

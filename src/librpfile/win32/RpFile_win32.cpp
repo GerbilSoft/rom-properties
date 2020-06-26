@@ -21,7 +21,6 @@ using LibWin32Common::U82T_s;
 
 // C++ STL classes.
 using std::string;
-using std::unique_ptr;
 using std::wstring;
 
 #ifdef _MSC_VER
