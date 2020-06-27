@@ -143,6 +143,11 @@ Files:
 Copyright: (c) Imagination Technologies Ltd.
 License: MIT
 
+Files:
+ extlib/zstd/*
+Copyright: 2016-present, Facebook, Inc.
+License: BSD-3-clause
+
 License: BSD-3-clause
  Redistribution and use in source and binary forms, with or without
  modification, are permitted provided that the following conditions
