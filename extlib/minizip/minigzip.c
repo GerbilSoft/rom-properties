@@ -125,7 +125,12 @@ int32_t minigzip_copy(const char *path, const char *destination, int16_t operati
 /***************************************************************************/
 
 #if !defined(MZ_ZIP_NO_MAIN)
-int main(int argc, const char *argv[]) {
+#  ifdef _MSC_VER
+#    define MZ_C_API __cdecl
+#  else
+#    define MZ_C_API
+#  endif
+int MZ_C_API main(int argc, const char *argv[]) {
     int16_t operation_level = MZ_COMPRESS_LEVEL_DEFAULT;
     int32_t path_arg = 0;
     int32_t err = 0;
