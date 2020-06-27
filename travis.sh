@@ -23,10 +23,11 @@ case "$OSTYPE" in
 			-DENABLE_UNICE68=OFF \
 			-DENABLE_LIBMSPACK=OFF \
 			-DENABLE_PVRTC=OFF \
+			-DENABLE_ZSTD=OFF \
 			|| exit 1
 		;;
 	*)
-		# Linux. Enable everything.
+		# Linux. Enable all UI frontends.
 		# NOTE: KF5 is not available on Ubuntu 14.04,
 		# so we can't build the KF5 plugin.
 		cmake .. \
@@ -47,6 +48,7 @@ case "$OSTYPE" in
 			-DENABLE_UNICE68=OFF \
 			-DENABLE_LIBMSPACK=OFF \
 			-DENABLE_PVRTC=OFF \
+			-DENABLE_ZSTD=OFF \
 			|| exit 1
 esac
 
@@ -68,6 +70,7 @@ cmake .. \
 	-DENABLE_UNICE68=ON \
 	-DENABLE_LIBMSPACK=ON \
 	-DENABLE_PVRTC=ON \
+	-DENABLE_ZSTD=ON \
 	|| exit 1
 
 # Build everything.
