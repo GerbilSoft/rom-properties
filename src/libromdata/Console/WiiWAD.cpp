@@ -72,7 +72,7 @@ class WiiWADPrivate : public RomDataPrivate
 		// WAD structs.
 		union {
 			Wii_WAD_Header wad;
-			Wii_WAD_Header_EARLY wadE;
+			Wii_BWF_Header bwf;
 		} wadHeader;
 		RVL_Ticket ticket;
 		RVL_TMD_Header tmdHeader;
@@ -81,7 +81,8 @@ class WiiWADPrivate : public RomDataPrivate
 		uint32_t data_offset;
 		uint32_t data_size;
 
-		// Name. (Early WADs only)
+		// Name. (BroadOn WADs only)
+		// FIXME: This is the same "meta" section as Nintendo WADs...
 		string wadName;
 
 		/**
@@ -264,19 +265,19 @@ WiiWAD::WiiWAD(IRpFile *file)
 			// BroadOn WAD Format.
 			// Sections are NOT 64-byte aligned,
 			// and there's an extra "name" section after the TMD.
-			ticket_addr = be32_to_cpu(d->wadHeader.wadE.header_size) +
-				      be32_to_cpu(d->wadHeader.wadE.cert_chain_size);
-			tmd_addr = ticket_addr + be32_to_cpu(d->wadHeader.wadE.ticket_size);
+			ticket_addr = be32_to_cpu(d->wadHeader.bwf.header_size) +
+				      be32_to_cpu(d->wadHeader.bwf.cert_chain_size);
+			tmd_addr = ticket_addr + be32_to_cpu(d->wadHeader.bwf.ticket_size);
 
 			// Data offset is explicitly specified.
 			// Data size is assumed to be the rest of the file.
-			d->data_offset = be32_to_cpu(d->wadHeader.wadE.data_offset);
+			d->data_offset = be32_to_cpu(d->wadHeader.bwf.data_offset);
 			d->data_size = (uint32_t)d->file->size() - d->data_offset;
 
 			// Read the name here, since it's only present in early WADs.
-			const uint32_t name_size = be32_to_cpu(d->wadHeader.wadE.name_size);
+			const uint32_t name_size = be32_to_cpu(d->wadHeader.bwf.name_size);
 			if (name_size > 0 && name_size <= 1024) {
-				const uint32_t name_addr = tmd_addr + be32_to_cpu(d->wadHeader.wadE.tmd_size);
+				const uint32_t name_addr = tmd_addr + be32_to_cpu(d->wadHeader.bwf.tmd_size);
 				unique_ptr<char[]> namebuf(new char[name_size]);
 				size = d->file->seekAndRead(name_addr, namebuf.get(), name_size);
 				if (size == name_size) {
@@ -473,9 +474,9 @@ int WiiWAD::isRomSupported_static(const DetectInfo *info)
 	    wadHeader->type != cpu_to_be32(WII_WAD_TYPE_Bk))
 	{
 		// WAD type is incorrect.
-		// NOTE: This may be an early WAD.
-		const Wii_WAD_Header_EARLY *wadE = reinterpret_cast<const Wii_WAD_Header_EARLY*>(wadHeader);
-		if (wadE->ticket_size == cpu_to_be32(sizeof(RVL_Ticket))) {
+		// NOTE: This may be a BroadOn WAD.
+		const Wii_BWF_Header *bwf = reinterpret_cast<const Wii_BWF_Header*>(wadHeader);
+		if (bwf->ticket_size == cpu_to_be32(sizeof(RVL_Ticket))) {
 			// Ticket size is correct.
 			// This is probably in BroadOn WAD Format.
 			return static_cast<int>(WiiWADPrivate::WadType::BWF);
@@ -723,7 +724,8 @@ int WiiWAD::loadFieldData(void)
 	}
 	d->fields->addField_string(C_("WiiWAD", "Type"), s_wadType);
 
-	// Internal name. (Early WADs only)
+	// Internal name. (BroadOn WADs only)
+	// FIXME: This is the same "meta" section as Nintendo WADs...
 	if (!d->wadName.empty()) {
 		d->fields->addField_string(C_("RomData", "Name"), d->wadName);
 	}

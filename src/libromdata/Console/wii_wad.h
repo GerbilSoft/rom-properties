@@ -48,17 +48,16 @@ typedef struct PACKED _Wii_WAD_Header {
 ASSERT_STRUCT(Wii_WAD_Header, 32);
 
 /**
- * Nintendo Wii WAD file header.
- * EARLY VERSION; used with some early devkit software.
+ * BroadOn WAD Format file header.
  *
- * To identify the early version, check for an invalid WAD type,
+ * To distinguish between BWF and WAD, check for an invalid WAD type,
  * then the ticket size.
  *
  * NOTE: Sections are NOT 64-byte aligned in early WADs!
  *
  * All fields are big-endian.
  */
-typedef struct PACKED _Wii_WAD_Header_EARLY {
+typedef struct PACKED _Wii_BWF_Header {
 	uint32_t header_size;		// [0x000] Header size. (0x0020)
 	uint32_t data_offset;		// [0x004] Data offset. (usually 0x1140)
 	uint32_t cert_chain_size;	// [0x008] Certificate chain size.
@@ -67,8 +66,8 @@ typedef struct PACKED _Wii_WAD_Header_EARLY {
 	uint32_t name_size;		// [0x014] Name size.
 	uint32_t unknown;		// [0x018] Unknown.
 	uint32_t reserved;		// [0x01C] Reserved.
-} Wii_WAD_Header_EARLY;
-ASSERT_STRUCT(Wii_WAD_Header_EARLY, 32);
+} Wii_BWF_Header;
+ASSERT_STRUCT(Wii_BWF_Header, 32);
 
 /**
  * content.bin header.
