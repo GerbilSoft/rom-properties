@@ -40,18 +40,20 @@ ENDIF()
 
 OPTION(BUILD_CLI "Build the `rpcli` command line program." ON)
 
-# ZLIB, libpng
+# ZLIB, libpng, XML, zstd
 # Internal versions are always used on Windows.
+OPTION(ENABLE_XML "Enable XML parsing for e.g. Windows manifests." ON)
+OPTION(ENABLE_ZSTD "Enable ZSTD decompression. (Required for some unit tests.)" ON)
 IF(WIN32)
 	SET(USE_INTERNAL_ZLIB ON)
 	SET(USE_INTERNAL_PNG ON)
-	OPTION(ENABLE_XML "Enable XML parsing for e.g. Windows manifests." ON)
-	SET(USE_INTERNAL_XML ON)
+	SET(USE_INTERNAL_XML ${ENABLE_XML})
+	SET(USE_INTERNAL_ZSTD ${ENABLE_ZSTD})
 ELSE(WIN32)
 	OPTION(USE_INTERNAL_ZLIB "Use the internal copy of zlib." OFF)
 	OPTION(USE_INTERNAL_PNG "Use the internal copy of libpng." OFF)
-	OPTION(ENABLE_XML "Enable XML parsing for e.g. Windows manifests." ON)
 	OPTION(USE_INTERNAL_XML "Use the internal copy of TinyXML2." OFF)
+	OPTION(USE_INTERNAL_ZSTD "Use the internal copy of zstd." OFF)
 ENDIF()
 
 # TODO: If APNG export is added, verify that system libpng

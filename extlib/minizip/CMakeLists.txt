@@ -36,10 +36,12 @@ option(ZSTD_FORCE_FETCH "Skips find package for ZSTD" OFF)
 mark_as_advanced(MZ_FILE32_API MZ_PROJECT_SUFFIX ZLIB_FORCE_FETCH ZSTD_FORCE_FETCH)
 ENDIF(0)
 
-# rom-properties: Using ZLIB.
-# TODO: Add ZSTD support.
+# rom-properties: Using ZLIB and (optionally) ZSTD.
 SET(MZ_ZLIB ON)
 include_directories(${ZLIB_INCLUDE_DIRS})
+IF(MZ_ZSTD)
+	include_directories(${ZSTD_INCLUDE_DIRS})
+ENDIF(MZ_ZSTD)
 
 if(POLICY CMP0074)
     cmake_policy(SET CMP0074 OLD)
@@ -861,6 +863,8 @@ if(MZ_BUILD_TEST)
         install(TARGETS minizip_cmd RUNTIME DESTINATION "bin")
     endif()
 
+    # rom-properties: test/ files aren't available.
+    IF(0) # rom-properties
     add_executable(test_cmd "test/test.c" "test/test.h")
     mz_configure_target(test_cmd)
     target_compile_definitions(test_cmd PRIVATE ${MINIZIP_DEF})
@@ -868,6 +872,7 @@ if(MZ_BUILD_TEST)
         target_compile_definitions(test_cmd PRIVATE -DHAVE_COMPAT)
     endif()
     target_link_libraries(test_cmd ${PROJECT_NAME})
+    ENDIF(0) # rom-properties
 endif()
 
 if(MZ_BUILD_TEST AND MZ_BUILD_UNIT_TEST)

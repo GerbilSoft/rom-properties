@@ -597,6 +597,13 @@ if(PNG_SHARED)
     set_target_properties(png PROPERTIES IMPORT_PREFIX "lib")
   endif()
   target_link_libraries(png PRIVATE ${ZLIB_LIBRARY} ${M_LIBRARY})
+  # rom-properties: Set PNG_USE_DLL to use dllimport.
+  IF(WIN32)
+    target_compile_definitions(png
+      PRIVATE -DPNG_BUILD_DLL
+      INTERFACE -DPNG_USE_DLL
+      )
+  ENDIF(WIN32)
   # rom-properties: Split debug functionality; Windows subsystem.
   DO_SPLIT_DEBUG(png)
   SET_WINDOWS_SUBSYSTEM(png WIN32)
