@@ -65,6 +65,9 @@ int32_t mz_stream_zstd_open(void *stream, const char *path, int32_t mode) {
         return MZ_SUPPORT_ERROR;
 #else
         zstd->zcstream = ZSTD_createCStream();
+        // rom-properties: Force max compression.
+        // TODO: Map the 0-9 value from minizip.
+        ZSTD_initCStream(zstd->zcstream, ZSTD_maxCLevel());
         zstd->out.dst = zstd->buffer;
         zstd->out.size = sizeof(zstd->buffer);
         zstd->out.pos = 0;

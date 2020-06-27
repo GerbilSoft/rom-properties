@@ -125,6 +125,7 @@ INCLUDE(CheckPNG)
 INCLUDE(CheckJPEG)
 INCLUDE(CheckTinyXML2)
 INCLUDE(CheckOpenGL)
+INCLUDE(CheckZSTD)
 
 # Reference: https://cmake.org/Wiki/RecipeAddUninstallTarget
 ########### Add uninstall target ###############
@@ -215,6 +216,9 @@ ENDIF(USE_INTERNAL_PNG)
 IF(USE_INTERNAL_JPEG)
 	SET(EXTLIB_BUILD "${EXTLIB_BUILD}  - libjpeg-turbo\n")
 ENDIF(USE_INTERNAL_JPEG)
+IF(USE_INTERNAL_ZSTD)
+	SET(EXTLIB_BUILD "${EXTLIB_BUILD}  - zstd\n")
+ENDIF(USE_INTERNAL_ZSTD)
 SET(EXTLIB_BUILD "${EXTLIB_BUILD}  - minizip\n")
 SET(EXTLIB_BUILD "${EXTLIB_BUILD}  - inih\n")
 IF(USE_INTERNAL_XML)
