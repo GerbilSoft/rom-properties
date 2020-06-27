@@ -687,7 +687,7 @@ void RomDataViewPrivate::adjustListData(int tabIdx)
 		}
 		assert(newRow >= 0);
 		tab.form->removeItem(liField);
-		tab.vbox->insertWidget(newRow, treeWidget, 999, 0);
+		tab.vbox->insertWidget(newRow, treeWidget, 999, Qt::Alignment());
 		delete liField;
 
 		// Unset this property to prevent the event filter from
