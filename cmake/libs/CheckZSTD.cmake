@@ -1,6 +1,8 @@
 # Check for zstd.
 # If zstd isn't found, extlib/zstd/ will be used instead.
 
+IF(ENABLE_ZSTD)
+
 IF(NOT USE_INTERNAL_ZSTD)
 	IF(ZSTD_LIBRARY MATCHES "^zstd$" OR ZSTD_LIBRARY MATCHES "^zstd")
 		# Internal zstd was previously in use.
@@ -45,3 +47,5 @@ IF(USE_INTERNAL_ZSTD)
 ELSE(USE_INTERNAL_ZSTD)
 	SET(USE_INTERNAL_ZSTD_DLL OFF)
 ENDIF(USE_INTERNAL_ZSTD)
+
+ENDIF(ENABLE_ZSTD)

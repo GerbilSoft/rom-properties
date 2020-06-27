@@ -36,11 +36,12 @@ option(ZSTD_FORCE_FETCH "Skips find package for ZSTD" OFF)
 mark_as_advanced(MZ_FILE32_API MZ_PROJECT_SUFFIX ZLIB_FORCE_FETCH ZSTD_FORCE_FETCH)
 ENDIF(0)
 
-# rom-properties: Using ZLIB and ZSTD.
+# rom-properties: Using ZLIB and (optionally) ZSTD.
 SET(MZ_ZLIB ON)
-SET(MZ_ZSTD ON)
 include_directories(${ZLIB_INCLUDE_DIRS})
-include_directories(${ZSTD_INCLUDE_DIRS})
+IF(MZ_ZSTD)
+	include_directories(${ZSTD_INCLUDE_DIRS})
+ENDIF(MZ_ZSTD)
 
 if(POLICY CMP0074)
     cmake_policy(SET CMP0074 OLD)
