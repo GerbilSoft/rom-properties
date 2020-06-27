@@ -507,6 +507,7 @@ class RomData : public RefBase
 		 * @param size Size of HTML data.
 		 * @return Image URL, or empty string if not found or not supported.
 		 */
+		ATTR_ACCESS_SIZE(read_only, 2, 3)
 		virtual std::string scrapeImageURL(const char *html, size_t size) const;
 
 		/**

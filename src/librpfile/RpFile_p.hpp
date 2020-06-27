@@ -218,6 +218,7 @@ class RpFilePrivate
 		 * @param size Amount of data to read, in bytes.
 		 * @return Number of bytes read.
 		 */
+		ATTR_ACCESS_SIZE(write_only, 2, 3)
 		size_t readUsingBlocks(void *ptr, size_t size);
 
 	public:
@@ -236,6 +237,7 @@ class RpFilePrivate
 		 * @param direction	[in] Data direction
 		 * @return 0 on success, positive for SCSI sense key, negative for POSIX error code.
 		 */
+		ATTR_ACCESS_SIZE(read_only, 2, 3)
 		int scsi_send_cdb(const void *cdb, uint8_t cdb_len,
 			void *data, size_t data_len,
 			ScsiDirection direction);
@@ -256,6 +258,7 @@ class RpFilePrivate
 		 * @param bufLen	[in] Output buffer length.
 		 * @return 0 on success, positive for SCSI sense key, negative for POSIX error code.
 		 */
+		ATTR_ACCESS_SIZE(write_only, 4, 5)
 		int scsi_read(uint32_t lbaStart, uint16_t lbaCount, uint8_t *pBuf, size_t bufLen);
 };
 

@@ -76,6 +76,7 @@ class IRpFile : public RefBase
 		 * @param size Amount of data to read, in bytes.
 		 * @return Number of bytes read.
 		 */
+		ATTR_ACCESS_SIZE(write_only, 2, 3)
 		virtual size_t read(void *ptr, size_t size) = 0;
 
 		/**
@@ -84,6 +85,7 @@ class IRpFile : public RefBase
 		 * @param size Amount of data to read, in bytes.
 		 * @return Number of bytes written.
 		 */
+		ATTR_ACCESS_SIZE(read_only, 2, 3)
 		virtual size_t write(const void *ptr, size_t size) = 0;
 
 		/**

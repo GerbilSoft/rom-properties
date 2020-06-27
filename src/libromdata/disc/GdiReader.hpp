@@ -43,6 +43,7 @@ class GdiReader : public LibRpBase::SparseDiscReader
 		 * @param szHeader Size of header.
 		 * @return Class-specific disc format ID (>= 0) if supported; -1 if not.
 		 */
+		ATTR_ACCESS_SIZE(read_only, 1, 2)
 		static int isDiscSupported_static(const uint8_t *pHeader, size_t szHeader);
 
 		/**
@@ -51,6 +52,7 @@ class GdiReader : public LibRpBase::SparseDiscReader
 		 * @param szHeader Size of header.
 		 * @return Class-specific disc format ID (>= 0) if supported; -1 if not.
 		 */
+		ATTR_ACCESS_SIZE(read_only, 2, 3)
 		int isDiscSupported(const uint8_t *pHeader, size_t szHeader) const final;
 
 	protected:
@@ -78,6 +80,7 @@ class GdiReader : public LibRpBase::SparseDiscReader
 		 * @param size		[in] Amount of data to read, in bytes. (Must be <= the block size!)
 		 * @return Number of bytes read, or -1 if the block index is invalid.
 		 */
+		ATTR_ACCESS_SIZE(write_only, 3, 5)
 		int readBlock(uint32_t blockIdx, void *ptr, int pos, size_t size) final;
 
 	public:

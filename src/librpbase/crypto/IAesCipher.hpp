@@ -46,6 +46,7 @@ class IAesCipher
 		 * @param size	[in] Size of pKey, in bytes.
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
+		ATTR_ACCESS_SIZE(read_only, 2, 3)
 		virtual int setKey(const uint8_t *RESTRICT pKey, size_t size) = 0;
 
 		enum class ChainingMode {
@@ -73,6 +74,7 @@ class IAesCipher
 		 * @param size	[in] Size of pIV, in bytes.
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
+		ATTR_ACCESS_SIZE(read_only, 2, 3)
 		virtual int setIV(const uint8_t *RESTRICT pIV, size_t size) = 0;
 
 		/**
@@ -83,6 +85,7 @@ class IAesCipher
 		 * @param size	[in] Length of data block. (Must be a multiple of 16.)
 		 * @return Number of bytes decrypted on success; 0 on error.
 		 */
+		ATTR_ACCESS_SIZE(read_write, 2, 3)
 		virtual size_t decrypt(uint8_t *RESTRICT pData, size_t size) = 0;
 
 		/**
@@ -95,8 +98,17 @@ class IAesCipher
 		 * @param size_iv	[in] Size of pIV, in bytes.
 		 * @return Number of bytes decrypted on success; 0 on error.
 		 */
+		ATTR_ACCESS_SIZE(read_write, 2, 3)
+		ATTR_ACCESS_SIZE(read_only, 4, 5)
 		inline size_t decrypt(uint8_t *RESTRICT pData, size_t size,
-			const uint8_t *RESTRICT pIV, size_t size_iv);
+			const uint8_t *RESTRICT pIV, size_t size_iv)
+		{
+			int ret = setIV(pIV, size_iv);
+			if (ret != 0) {
+				return 0;
+			}
+			return decrypt(pData, size);
+		}
 };
 
 /**
@@ -105,26 +117,6 @@ class IAesCipher
  * declared as pure-virtual.
  */
 inline IAesCipher::~IAesCipher() { }
-
-/**
- * Decrypt a block of data.
- * Key must be set before calling this function.
- *
- * @param pData		[in/out] Data block.
- * @param size		[in] Length of data block. (Must be a multiple of 16.)
- * @param pIV		[in] IV/counter for the data block.
- * @param size_iv	[in] Size of pIV, in bytes.
- * @return Number of bytes decrypted on success; 0 on error.
- */
-inline size_t IAesCipher::decrypt(uint8_t *RESTRICT pData, size_t size,
-	const uint8_t *RESTRICT pIV, size_t size_iv)
-{
-	int ret = setIV(pIV, size_iv);
-	if (ret != 0) {
-		return 0;
-	}
-	return decrypt(pData, size);
-}
 
 }
 

@@ -101,6 +101,7 @@ class KeyManager : public ConfReader
 		 * @param verifyLen	[in] Length of pVerifyData. (Must be 16.)
 		 * @return VerifyResult.
 		 */
+		ATTR_ACCESS_SIZE(read_only, 4, 5)
 		VerifyResult getAndVerify(const char *keyName, KeyData_t *pKeyData,
 			const uint8_t *pVerifyData, unsigned int verifyLen) const;
 
@@ -116,6 +117,7 @@ class KeyManager : public ConfReader
 		 * @return 0 on success; non-zero on error.
 		 */
 		template<typename Char>
+		ATTR_ACCESS_SIZE(write_only, 2, 3)
 		static int hexStringToBytes(const Char *str, uint8_t *buf, unsigned int len);
 #endif /* ENABLE_DECRYPTION */
 };

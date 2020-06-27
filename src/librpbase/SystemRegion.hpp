@@ -69,6 +69,8 @@ class SystemRegion
 		 * @param pRow	[out] Pointer to store the row value. (-1 if not found)
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
+		ATTR_ACCESS(write_only, 2)
+		ATTR_ACCESS(write_only, 3)
 		static int getFlagPosition(uint32_t lc, int *pCol, int *pRow);
 };
 

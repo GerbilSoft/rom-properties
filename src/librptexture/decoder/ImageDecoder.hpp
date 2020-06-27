@@ -17,6 +17,9 @@
 // C includes.
 #include <stdint.h>
 
+// Common definitions, including function attributes.
+#include "common.h"
+
 #if defined(RP_CPU_I386) || defined(RP_CPU_AMD64)
 # include "librpcpu/cpuflags_x86.h"
 # define IMAGEDECODER_HAS_SSE2 1
@@ -146,6 +149,8 @@ enum PixelFormat {
  * @param pal_siz Size of palette data. [must be >= 16*2 for 16-bit, >= 16*4 for 32-bit]
  * @return rp_image, or nullptr on error.
  */
+ATTR_ACCESS_SIZE(read_only, 5, 6)
+ATTR_ACCESS_SIZE(read_only, 7, 8)
 rp_image *fromLinearCI4(PixelFormat px_format, bool msn_left,
 	int width, int height,
 	const uint8_t *RESTRICT img_buf, int img_siz,
@@ -162,6 +167,8 @@ rp_image *fromLinearCI4(PixelFormat px_format, bool msn_left,
  * @param pal_siz Size of palette data. [must be >= 256*2 for 16-bit, >= 256*4 for 32-bit]
  * @return rp_image, or nullptr on error.
  */
+ATTR_ACCESS_SIZE(read_only, 4, 5)
+ATTR_ACCESS_SIZE(read_only, 6, 7)
 rp_image *fromLinearCI8(PixelFormat px_format,
 	int width, int height,
 	const uint8_t *RESTRICT img_buf, int img_siz,
@@ -175,6 +182,7 @@ rp_image *fromLinearCI8(PixelFormat px_format,
  * @param img_siz Size of image data. [must be >= (w*h)/8]
  * @return rp_image, or nullptr on error.
  */
+ATTR_ACCESS_SIZE(read_only, 3, 4)
 rp_image *fromLinearMono(int width, int height,
 	const uint8_t *RESTRICT img_buf, int img_siz);
 
@@ -189,6 +197,7 @@ rp_image *fromLinearMono(int width, int height,
  * @param stride	[in,opt] Stride, in bytes. If 0, assumes width*bytespp.
  * @return rp_image, or nullptr on error.
  */
+ATTR_ACCESS_SIZE(read_only, 4, 5)
 rp_image *fromLinear8(PixelFormat px_format,
 	int width, int height,
 	const uint8_t *RESTRICT img_buf, int img_siz, int stride = 0);
@@ -254,6 +263,7 @@ IFUNC_SSE2_STATIC_INLINE rp_image *fromLinear16(PixelFormat px_format,
  * @param stride	[in,opt] Stride, in bytes. If 0, assumes width*bytespp.
  * @return rp_image, or nullptr on error.
  */
+ATTR_ACCESS_SIZE(read_only, 4, 5)
 rp_image *fromLinear24_cpp(PixelFormat px_format,
 	int width, int height,
 	const uint8_t *RESTRICT img_buf, int img_siz, int stride = 0);
@@ -270,6 +280,7 @@ rp_image *fromLinear24_cpp(PixelFormat px_format,
  * @param stride	[in,opt] Stride, in bytes. If 0, assumes width*bytespp.
  * @return rp_image, or nullptr on error.
  */
+ATTR_ACCESS_SIZE(read_only, 4, 5)
 rp_image *fromLinear24_ssse3(PixelFormat px_format,
 	int width, int height,
 	const uint8_t *RESTRICT img_buf, int img_siz, int stride = 0);
@@ -285,6 +296,7 @@ rp_image *fromLinear24_ssse3(PixelFormat px_format,
  * @param stride	[in,opt] Stride, in bytes. If 0, assumes width*bytespp.
  * @return rp_image, or nullptr on error.
  */
+ATTR_ACCESS_SIZE(read_only, 4, 5)
 IFUNC_STATIC_INLINE rp_image *fromLinear24(PixelFormat px_format,
 	int width, int height,
 	const uint8_t *RESTRICT img_buf, int img_siz, int stride = 0);
@@ -375,6 +387,7 @@ rp_image *fromGcnCI8(int width, int height,
  * @param img_siz Size of image data. [must be >= (w*h)]
  * @return rp_image, or nullptr on error.
  */
+ATTR_ACCESS_SIZE(read_only, 3, 4)
 rp_image *fromGcnI8(int width, int height,
 	const uint8_t *img_buf, int img_siz);
 
@@ -390,6 +403,7 @@ rp_image *fromGcnI8(int width, int height,
  * @param pal_siz Size of palette data. [must be >= 16*2]
  * @return rp_image, or nullptr on error.
  */
+ATTR_ACCESS_SIZE(read_only, 3, 4)
 rp_image *fromNDS_CI4(int width, int height,
 	const uint8_t *RESTRICT img_buf, int img_siz,
 	const uint16_t *RESTRICT pal_buf, int pal_siz);
@@ -417,6 +431,7 @@ rp_image *fromN3DSTiledRGB565(int width, int height,
  * @param alpha_siz Size of alpha data. [must be >= (w*h)/2]
  * @return rp_image, or nullptr on error.
  */
+ATTR_ACCESS_SIZE(read_only, 5, 6)
 rp_image *fromN3DSTiledRGB565_A4(int width, int height,
 	const uint16_t *RESTRICT img_buf, int img_siz,
 	const uint8_t *RESTRICT alpha_buf, int alpha_siz);
@@ -434,6 +449,7 @@ rp_image *fromN3DSTiledRGB565_A4(int width, int height,
  * @param img_siz Size of image data. [must be >= (w*h)/2]
  * @return rp_image, or nullptr on error.
  */
+ATTR_ACCESS_SIZE(read_only, 3, 4)
 rp_image *fromDXT1_GCN(int width, int height,
 	const uint8_t *RESTRICT img_buf, int img_siz);
 
@@ -447,6 +463,7 @@ rp_image *fromDXT1_GCN(int width, int height,
  * @param img_siz Size of image data. [must be >= (w*h)/2]
  * @return rp_image, or nullptr on error.
  */
+ATTR_ACCESS_SIZE(read_only, 3, 4)
 rp_image *fromDXT1(int width, int height,
 	const uint8_t *RESTRICT img_buf, int img_siz);
 
@@ -460,6 +477,7 @@ rp_image *fromDXT1(int width, int height,
  * @param img_siz Size of image data. [must be >= (w*h)/2]
  * @return rp_image, or nullptr on error.
  */
+ATTR_ACCESS_SIZE(read_only, 3, 4)
 rp_image *fromDXT1_A1(int width, int height,
 	const uint8_t *RESTRICT img_buf, int img_siz);
 
@@ -471,6 +489,7 @@ rp_image *fromDXT1_A1(int width, int height,
  * @param img_siz Size of image data. [must be >= (w*h)]
  * @return rp_image, or nullptr on error.
  */
+ATTR_ACCESS_SIZE(read_only, 3, 4)
 rp_image *fromDXT2(int width, int height,
 	const uint8_t *RESTRICT img_buf, int img_siz);
 
@@ -482,6 +501,7 @@ rp_image *fromDXT2(int width, int height,
  * @param img_siz Size of image data. [must be >= (w*h)]
  * @return rp_image, or nullptr on error.
  */
+ATTR_ACCESS_SIZE(read_only, 3, 4)
 rp_image *fromDXT3(int width, int height,
 	const uint8_t *RESTRICT img_buf, int img_siz);
 
@@ -493,6 +513,7 @@ rp_image *fromDXT3(int width, int height,
  * @param img_siz Size of image data. [must be >= (w*h)]
  * @return rp_image, or nullptr on error.
  */
+ATTR_ACCESS_SIZE(read_only, 3, 4)
 rp_image *fromDXT4(int width, int height,
 	const uint8_t *RESTRICT img_buf, int img_siz);
 
@@ -504,6 +525,7 @@ rp_image *fromDXT4(int width, int height,
  * @param img_siz Size of image data. [must be >= (w*h)]
  * @return rp_image, or nullptr on error.
  */
+ATTR_ACCESS_SIZE(read_only, 3, 4)
 rp_image *fromDXT5(int width, int height,
 	const uint8_t *RESTRICT img_buf, int img_siz);
 
@@ -517,6 +539,7 @@ rp_image *fromDXT5(int width, int height,
  * @param img_siz Size of image data. [must be >= (w*h)]
  * @return rp_image, or nullptr on error.
  */
+ATTR_ACCESS_SIZE(read_only, 3, 4)
 rp_image *fromBC4(int width, int height,
 	const uint8_t *RESTRICT img_buf, int img_siz);
 
@@ -530,6 +553,7 @@ rp_image *fromBC4(int width, int height,
  * @param img_siz Size of image data. [must be >= (w*h)]
  * @return rp_image, or nullptr on error.
  */
+ATTR_ACCESS_SIZE(read_only, 3, 4)
 rp_image *fromBC5(int width, int height,
 	const uint8_t *RESTRICT img_buf, int img_siz);
 
@@ -577,6 +601,7 @@ rp_image *fromDreamcastSquareTwiddled16(PixelFormat px_format,
  * @param pal_siz Size of palette data. [must be >= 1024*2; for SmallVQ, 64*2, 256*2, or 512*2]
  * @return rp_image, or nullptr on error.
  */
+ATTR_ACCESS_SIZE(read_only, 6, 7)
 rp_image *fromDreamcastVQ16(PixelFormat px_format,
 	bool smallVQ, bool hasMipmaps,
 	int width, int height,
@@ -633,6 +658,7 @@ static inline int calcDreamcastSmallVQPaletteEntries_WithMipmaps(int width)
  * @param img_siz Size of image data. [must be >= (w*h)/2]
  * @return rp_image, or nullptr on error.
  */
+ATTR_ACCESS_SIZE(read_only, 3, 4)
 rp_image *fromETC1(int width, int height,
 	const uint8_t *RESTRICT img_buf, int img_siz);
 
@@ -644,6 +670,7 @@ rp_image *fromETC1(int width, int height,
  * @param img_siz Size of image data. [must be >= (w*h)/2]
  * @return rp_image, or nullptr on error.
  */
+ATTR_ACCESS_SIZE(read_only, 3, 4)
 rp_image *fromETC2_RGB(int width, int height,
 	const uint8_t *RESTRICT img_buf, int img_siz);
 
@@ -655,6 +682,7 @@ rp_image *fromETC2_RGB(int width, int height,
  * @param img_siz Size of image data. [must be >= (w*h)]
  * @return rp_image, or nullptr on error.
  */
+ATTR_ACCESS_SIZE(read_only, 3, 4)
 rp_image *fromETC2_RGBA(int width, int height,
 	const uint8_t *RESTRICT img_buf, int img_siz);
 
@@ -666,6 +694,7 @@ rp_image *fromETC2_RGBA(int width, int height,
  * @param img_siz Size of image data. [must be >= (w*h)/2]
  * @return rp_image, or nullptr on error.
  */
+ATTR_ACCESS_SIZE(read_only, 3, 4)
 rp_image *fromETC2_RGB_A1(int width, int height,
 	const uint8_t *RESTRICT img_buf, int img_siz);
 
@@ -693,6 +722,7 @@ enum PVRTC_Mode_e {
  * @param mode Mode bitfield. (See PVRTC_Mode_e.)
  * @return rp_image, or nullptr on error.
  */
+ATTR_ACCESS_SIZE(read_only, 3, 4)
 rp_image *fromPVRTC(int width, int height,
 	const uint8_t *RESTRICT img_buf, int img_siz,
 	uint8_t mode);
@@ -706,6 +736,7 @@ rp_image *fromPVRTC(int width, int height,
  * @param mode Mode bitfield. (See PVRTC_Mode_e.)
  * @return rp_image, or nullptr on error.
  */
+ATTR_ACCESS_SIZE(read_only, 3, 4)
 rp_image *fromPVRTCII(int width, int height,
 	const uint8_t *RESTRICT img_buf, int img_siz,
 	uint8_t mode);
@@ -721,6 +752,7 @@ rp_image *fromPVRTCII(int width, int height,
  * @param img_siz Size of image data. [must be >= (w*h)]
  * @return rp_image, or nullptr on error.
  */
+ATTR_ACCESS_SIZE(read_only, 3, 4)
 rp_image *fromBC7(int width, int height,
 	const uint8_t *img_buf, int img_siz);
 
@@ -797,6 +829,7 @@ static inline rp_image *fromLinear16(PixelFormat px_format,
  * @param stride	[in,opt] Stride, in bytes. If 0, assumes width*bytespp.
  * @return rp_image, or nullptr on error.
  */
+ATTR_ACCESS_SIZE(read_only, 4, 5)
 static inline rp_image *fromLinear24(PixelFormat px_format,
 	int width, int height,
 	const uint8_t *RESTRICT img_buf, int img_siz, int stride)

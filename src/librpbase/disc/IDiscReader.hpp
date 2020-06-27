@@ -85,6 +85,7 @@ class IDiscReader : public RefBase
 		 * @param size Amount of data to read, in bytes.
 		 * @return Number of bytes read.
 		 */
+		ATTR_ACCESS_SIZE(write_only, 2, 3)
 		virtual size_t read(void *ptr, size_t size) = 0;
 
 		/**
@@ -124,6 +125,7 @@ class IDiscReader : public RefBase
 		 * @param size	[in] Amount of data to read, in bytes.
 		 * @return Number of bytes read on success; 0 on seek or read error.
 		 */
+		ATTR_ACCESS_SIZE(write_only, 3, 4)
 		size_t seekAndRead(off64_t pos, void *ptr, size_t size);
 
 	public:

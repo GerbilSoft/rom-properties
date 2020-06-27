@@ -9,6 +9,7 @@
 #ifndef __ROMPROPERTIES_RP_DOWNLOAD_IDOWNLOADER_HPP__
 #define __ROMPROPERTIES_RP_DOWNLOAD_IDOWNLOADER_HPP__
 
+// Common definitions, including function attributes.
 #include "common.h"
 
 // C includes.

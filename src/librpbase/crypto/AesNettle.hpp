@@ -46,6 +46,7 @@ class AesNettle : public IAesCipher
 		 * @param size	[in] Size of pKey, in bytes.
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
+		ATTR_ACCESS_SIZE(read_only, 2, 3)
 		int setKey(const uint8_t *RESTRICT pKey, size_t size) final;
 
 		/**
@@ -65,6 +66,7 @@ class AesNettle : public IAesCipher
 		 * @param size	[in] Size of pIV, in bytes.
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
+		ATTR_ACCESS_SIZE(read_only, 2, 3)
 		int setIV(const uint8_t *RESTRICT pIV, size_t size) final;
 
 		/**
@@ -75,6 +77,7 @@ class AesNettle : public IAesCipher
 		 * @param size	[in] Length of data block. (Must be a multiple of 16.)
 		 * @return Number of bytes decrypted on success; 0 on error.
 		 */
+		ATTR_ACCESS_SIZE(read_write, 2, 3)
 		size_t decrypt(uint8_t *RESTRICT pData, size_t size) final;
 };
 

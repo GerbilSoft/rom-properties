@@ -38,6 +38,7 @@ class SparseDiscReader : public IDiscReader
 		 * @param size Amount of data to read, in bytes.
 		 * @return Number of bytes read.
 		 */
+		ATTR_ACCESS_SIZE(write_only, 2, 3)
 		size_t read(void *ptr, size_t size) final;
 
 		/**
@@ -91,6 +92,7 @@ class SparseDiscReader : public IDiscReader
 		 * @param size		[in] Amount of data to read, in bytes. (Must be <= the block size!)
 		 * @return Number of bytes read, or -1 if the block index is invalid.
 		 */
+		ATTR_ACCESS_SIZE(write_only, 3, 5)
 		virtual int readBlock(uint32_t blockIdx, void *ptr, int pos, size_t size);
 };
 

@@ -24,6 +24,7 @@ extern "C" {
  * @param maxlen Maximum length of the string
  * @returns equivivalent to min(strlen(str), maxlen) without buffer overruns
  */
+ATTR_ACCESS_SIZE(read_only, 1, 2)
 size_t strnlen(const char *str, size_t maxlen);
 #endif /* !HAVE_STRNLEN */
 
@@ -36,6 +37,8 @@ size_t strnlen(const char *str, size_t maxlen);
  * @param needlelen Length of needle.
  * @return Location of needle in haystack, or NULL if not found.
  */
+ATTR_ACCESS_SIZE(read_only, 1, 2)
+ATTR_ACCESS_SIZE(read_only, 3, 4)
 void *memmem(const void *haystack, size_t haystacklen,
 	     const void *needle, size_t needlelen);
 #endif /* !HAVE_MEMMEM */

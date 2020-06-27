@@ -518,6 +518,7 @@ class RomFields
 		 * @param flags Formatting flags.
 		 * @return Field index, or -1 on error.
 		 */
+		ATTR_ACCESS_SIZE(read_only, 3, 4)
 		int addField_string_hexdump(const char *name, const uint8_t *buf, size_t size, unsigned int flags = 0);
 
 		/**

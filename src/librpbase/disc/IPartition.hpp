@@ -34,6 +34,7 @@ class IPartition : public IDiscReader
 		 * TODO: Move to IPartition.cpp?
 		 * @return -1
 		 */
+		ATTR_ACCESS_SIZE(read_only, 2, 3)
 		int isDiscSupported(const uint8_t *pHeader, size_t szHeader) const final
 		{
 			RP_UNUSED(pHeader);

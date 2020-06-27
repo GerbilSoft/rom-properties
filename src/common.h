@@ -166,4 +166,24 @@
 # define RP_C_API
 #endif
 
+// printf()-style function attribute.
+#ifndef ATTR_PRINTF
+# ifdef __GNUC__
+#  define ATTR_PRINTF(fmt, args) __attribute__((format(printf, fmt, args)))
+# else
+#  define ATTR_PRINTF(fmt, args)
+# endif
+#endif /* ATTR_PRINTF */
+
+// gcc-10 adds an "access" attribute to mark pointers as
+// read-only, read-write, write-only, or none, and an
+// optional object size.
+#if !defined(__clang__) && defined(__GNUC__) && __GNUC__ >= 10
+# define ATTR_ACCESS(access_mode, ref_index) __attribute__((access(access_mode, (ref_index))))
+# define ATTR_ACCESS_SIZE(access_mode, ref_index, size_index) __attribute__((access(access_mode, (ref_index), (size_index))))
+#else
+# define ATTR_ACCESS(access_mode, ref_index)
+# define ATTR_ACCESS_SIZE(access_mode, ref_index, size_index)
+#endif
+
 #endif /* __ROMPROPERTIES_COMMON_H__ */

@@ -13,13 +13,8 @@
 extern "C" {
 #endif
 
-#ifndef ATTR_PRINTF
-# ifdef __GNUC__
-#  define ATTR_PRINTF(arg_format, arg_varargs) __attribute__ ((format (printf, arg_format, arg_varargs)))
-# else
-#  define ATTR_PRINTF(arg_format, arg_varargs)
-# endif
-#endif
+// Common definitions, including function attributes.
+#include "common.h"
 
 #define LEVEL_DEBUG 0
 #define LEVEL_ERROR 1

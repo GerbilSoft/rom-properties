@@ -23,6 +23,7 @@ class GcnFst : public LibRpBase::IFst
 		 * @param len Length of fstData, in bytes.
 		 * @param offsetShift File offset shift. (0 = GCN, 2 = Wii)
 		 */
+		ATTR_ACCESS_SIZE(read_only, 2, 3)
 		GcnFst(const uint8_t *fstData, uint32_t len, uint8_t offsetShift);
 		virtual ~GcnFst();
 

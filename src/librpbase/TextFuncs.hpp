@@ -13,14 +13,8 @@
 // Conversions to UTF-16 always use host-endian.
 #include "librpcpu/byteorder.h"
 
-// printf()-style function attribute.
-#ifndef ATTR_PRINTF
-# ifdef __GNUC__
-#  define ATTR_PRINTF(fmt, args) __attribute__((format(printf, fmt, args)))
-# else
-#  define ATTR_PRINTF(fmt, args)
-# endif
-#endif /* ATTR_PRINTF */
+// Common definitions, including function attributes.
+#include "common.h"
 
 // C includes.
 #include <stddef.h>	/* size_t */
@@ -59,6 +53,7 @@ size_t u16_strlen(const char16_t *wcs);
  * @return Length of wcs, in characters.
  */
 #ifdef RP_WIS16
+ATTR_ACCESS_SIZE(read_only, 1, 2)
 static inline size_t u16_strnlen(const char16_t *wcs, size_t maxlen)
 {
 	return wcsnlen(reinterpret_cast<const wchar_t*>(wcs), maxlen);
@@ -105,12 +100,16 @@ int u16_strcmp(const char16_t *wcs1, const char16_t *wcs2);
  * @return strncmp() result.
  */
 #ifdef RP_WIS16
+ATTR_ACCESS_SIZE(read_only, 1, 3)
+ATTR_ACCESS_SIZE(read_only, 2, 3)
 static inline int u16_strncmp(const char16_t *wcs1, const char16_t *wcs2, size_t n)
 {
 	return wcsncmp(reinterpret_cast<const wchar_t*>(wcs1),
 	               reinterpret_cast<const wchar_t*>(wcs2), n);
 }
 #else /* !RP_WIS16 */
+ATTR_ACCESS_SIZE(read_only, 1, 3)
+ATTR_ACCESS_SIZE(read_only, 2, 3)
 int u16_strncmp(const char16_t *wcs1, const char16_t *wcs2, size_t n);
 #endif /* RP_WIS16 */
 
@@ -593,7 +592,8 @@ std::string petscii_to_utf8(const char *str, int len, bool shifted = false);
  * @param ... Arguments.
  * @return std::string
  */
-std::string rp_sprintf(const char *fmt, ...) ATTR_PRINTF(1, 2);
+ATTR_PRINTF(1, 2)
+std::string rp_sprintf(const char *fmt, ...);
 
 #if defined(_MSC_VER) || defined(__MINGW32__)
 /**
@@ -607,7 +607,8 @@ std::string rp_sprintf(const char *fmt, ...) ATTR_PRINTF(1, 2);
  * @param ... Arguments.
  * @return std::string.
  */
-std::string rp_sprintf_p(const char *fmt, ...) ATTR_PRINTF(1, 2);
+ATTR_PRINTF(1, 2)
+std::string rp_sprintf_p(const char *fmt, ...);
 #else /* !_MSC_VER && !__MINGW32__ */
 // glibc supports positional format string arguments
 // in the standard printf() functions.

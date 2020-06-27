@@ -49,6 +49,7 @@ class RpQByteArrayFile : public LibRpFile::IRpFile
 		 * @param size Amount of data to read, in bytes.
 		 * @return Number of bytes read.
 		 */
+		ATTR_ACCESS_SIZE(write_only, 2, 3)
 		size_t read(void *ptr, size_t size) final;
 
 		/**
@@ -57,6 +58,7 @@ class RpQByteArrayFile : public LibRpFile::IRpFile
 		 * @param size Amount of data to read, in bytes.
 		 * @return Number of bytes written.
 		 */
+		ATTR_ACCESS_SIZE(read_only, 2, 3)
 		size_t write(const void *ptr, size_t size) final;
 
 		/**

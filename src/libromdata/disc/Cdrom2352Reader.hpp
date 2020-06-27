@@ -73,6 +73,7 @@ class Cdrom2352Reader : public LibRpBase::SparseDiscReader
 		 * @param size		[in] Amount of data to read, in bytes. (Must be <= the block size!)
 		 * @return Number of bytes read, or -1 if the block index is invalid.
 		 */
+		ATTR_ACCESS_SIZE(write_only, 3, 5)
 		int readBlock(uint32_t blockIdx, void *ptr, int pos, size_t size) final;
 };
 
