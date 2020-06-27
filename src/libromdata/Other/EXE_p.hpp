@@ -55,10 +55,10 @@ class EXEPrivate : public LibRpBase::RomDataPrivate
 
 		// Secondary header.
 		#pragma pack(1)
-		union PACKED {
+		union {
 			uint32_t sig32;
 			uint16_t sig16;
-			struct PACKED {
+			struct {
 				uint32_t Signature;
 				IMAGE_FILE_HEADER FileHeader;
 				union {

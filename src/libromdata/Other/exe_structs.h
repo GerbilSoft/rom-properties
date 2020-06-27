@@ -25,8 +25,6 @@
 extern "C" {
 #endif
 
-#pragma pack(1)
-
 #define IMAGE_DOS_SIGNATURE 0x5A4D
 #define IMAGE_OS2_SIGNATURE 0x454E
 #define IMAGE_OS2_SIGNATURE_LE 0x454C
@@ -147,7 +145,7 @@ typedef enum {
  *
  * All fields are little-endian.
  */
-typedef struct PACKED _IMAGE_DOS_HEADER {
+typedef struct _IMAGE_DOS_HEADER {
 	uint16_t e_magic;	// "MZ"
 	uint16_t e_cblp;
 	uint16_t e_cp;
@@ -174,7 +172,7 @@ ASSERT_STRUCT(IMAGE_DOS_HEADER, 64);
  * Standard PE header.
  * All fields are little-endian.
  */
-typedef struct PACKED _IMAGE_FILE_HEADER {
+typedef struct _IMAGE_FILE_HEADER {
 	uint16_t Machine;		// See PE_Machine
 	uint16_t NumberOfSections;
 	uint32_t TimeDateStamp;		// UNIX timestamp
@@ -212,17 +210,17 @@ typedef enum {
  * PE image data directory.
  * All fields are little-endian.
  */
-typedef struct PACKED _IMAGE_DATA_DIRECTORY {
+typedef struct _IMAGE_DATA_DIRECTORY {
 	uint32_t VirtualAddress;
 	uint32_t Size;
 } IMAGE_DATA_DIRECTORY;
-ASSERT_STRUCT(IMAGE_DATA_DIRECTORY, 8);
+ASSERT_STRUCT(IMAGE_DATA_DIRECTORY, 2*sizeof(uint32_t));
 
 /**
  * "Optional" 32-bit PE header.
  * All fields are little-endian.
  */
-typedef struct PACKED _IMAGE_OPTIONAL_HEADER32 {
+typedef struct _IMAGE_OPTIONAL_HEADER32 {
 	uint16_t Magic;
 	uint8_t MajorLinkerVersion;
 	uint8_t MinorLinkerVersion;
@@ -261,7 +259,7 @@ ASSERT_STRUCT(IMAGE_OPTIONAL_HEADER32, 224);
  * "Optional" 64-bit PE header.
  * All fields are little-endian.
  */
-typedef struct PACKED _IMAGE_OPTIONAL_HEADER64 {
+typedef struct _IMAGE_OPTIONAL_HEADER64 {
 	uint16_t Magic;
 	uint8_t MajorLinkerVersion;
 	uint8_t MinorLinkerVersion;
@@ -299,7 +297,7 @@ ASSERT_STRUCT(IMAGE_OPTIONAL_HEADER64, 240);
  * 32-bit PE headers.
  * All fields are little-endian.
  */
-typedef struct PACKED _IMAGE_NT_HEADERS32 {
+typedef struct _IMAGE_NT_HEADERS32 {
 	uint32_t Signature;
 	IMAGE_FILE_HEADER FileHeader;
 	IMAGE_OPTIONAL_HEADER32 OptionalHeader;
@@ -310,7 +308,7 @@ ASSERT_STRUCT(IMAGE_NT_HEADERS32, 248);
  * 64-bit PE32+ headers.
  * All fields are little-endian.
  */
-typedef struct PACKED _IMAGE_NT_HEADERS64 {
+typedef struct _IMAGE_NT_HEADERS64 {
 	uint32_t Signature;
 	IMAGE_FILE_HEADER FileHeader;
 	IMAGE_OPTIONAL_HEADER64 OptionalHeader;
@@ -387,7 +385,7 @@ typedef enum {
 } ResourceType;
 
 // Resource directory.
-typedef struct PACKED _IMAGE_RESOURCE_DIRECTORY {
+typedef struct _IMAGE_RESOURCE_DIRECTORY {
 	uint32_t Characteristics;
 	uint32_t TimeDateStamp;
 	uint16_t MajorVersion;
@@ -396,9 +394,10 @@ typedef struct PACKED _IMAGE_RESOURCE_DIRECTORY {
 	uint16_t NumberOfIdEntries;
 	// following this struct are named entries, then ID entries
 } IMAGE_RESOURCE_DIRECTORY;
+ASSERT_STRUCT(IMAGE_RESOURCE_DIRECTORY, 16);
 
 // Resource directory entry.
-typedef struct PACKED _IMAGE_RESOURCE_DIRECTORY_ENTRY {
+typedef struct _IMAGE_RESOURCE_DIRECTORY_ENTRY {
 	// Name/ID field.
 	// If bit 31 is set, this is an offset into the string table.
 	// Otherwise, it's a 16-bit ID.
@@ -409,14 +408,15 @@ typedef struct PACKED _IMAGE_RESOURCE_DIRECTORY_ENTRY {
 	// Otherwise, it's an actual resource.
 	uint32_t OffsetToData;
 } IMAGE_RESOURCE_DIRECTORY_ENTRY;
-
+ASSERT_STRUCT(IMAGE_RESOURCE_DIRECTORY_ENTRY, 2*sizeof(uint32_t));
 // Resource data entry.
-typedef struct PACKED _IMAGE_RESOURCE_DATA_ENTRY {
+typedef struct _IMAGE_RESOURCE_DATA_ENTRY {
 	uint32_t OffsetToData;
 	uint32_t Size;
 	uint32_t CodePage;
 	uint32_t Reserved;
 } IMAGE_RESOURCE_DATA_ENTRY;
+ASSERT_STRUCT(IMAGE_RESOURCE_DATA_ENTRY, 4*sizeof(uint32_t));
 
 // Version flags.
 //#define VS_FILE_INFO RT_VERSION	// TODO
@@ -489,7 +489,7 @@ typedef enum {
 /**
  * Version info resource. (fixed-size data section)
  */
-typedef struct PACKED _VS_FIXEDFILEINFO {
+typedef struct _VS_FIXEDFILEINFO {
 	uint32_t dwSignature;
 	uint32_t dwStrucVersion;
 	uint32_t dwFileVersionMS;
@@ -504,7 +504,7 @@ typedef struct PACKED _VS_FIXEDFILEINFO {
 	uint32_t dwFileDateMS;
 	uint32_t dwFileDateLS;
 } VS_FIXEDFILEINFO;
-ASSERT_STRUCT(VS_FIXEDFILEINFO, 13*4);
+ASSERT_STRUCT(VS_FIXEDFILEINFO, 13*sizeof(uint32_t));
 
 // Manifest IDs.
 typedef enum {
@@ -522,7 +522,7 @@ typedef enum {
 // - http://wiki.osdev.org/NE
 // - http://www.fileformat.info/format/exe/corion-ne.htm
 
-typedef struct PACKED _NE_Header {
+typedef struct _NE_Header {
 	// 0x00
 	uint16_t sig;			// "NE" (0x4E45)
 	uint8_t MajLinkerVersion;	// The major linker version
@@ -626,7 +626,7 @@ typedef enum {
 
 // 16-bit resource structs.
 
-typedef struct PACKED _NE_NAMEINFO {
+typedef struct _NE_NAMEINFO {
 	uint16_t rnOffset;
 	uint16_t rnLength;
 	uint16_t rnFlags;
@@ -634,13 +634,15 @@ typedef struct PACKED _NE_NAMEINFO {
 	uint16_t rnHandle;
 	uint16_t rnUsage;
 } NE_NAMEINFO;
+ASSERT_STRUCT(NE_NAMEINFO, 6*sizeof(uint16_t));
 
-typedef struct PACKED _NE_TYPEINFO {
+typedef struct _NE_TYPEINFO {
 	uint16_t rtTypeID;
 	uint16_t rtResourceCount;
 	uint32_t rtReserved;
 	// followed by NE_NAMEINFO[]
 } NE_TYPEINFO;
+ASSERT_STRUCT(NE_TYPEINFO, 8);
 
 /** Linear Executable structs. **/
 // NOTE: The header format is the same for LE (Win16 drivers)
@@ -650,7 +652,7 @@ typedef struct PACKED _NE_TYPEINFO {
 // - http://faydoc.tripod.com/formats/exe-LE.htm
 // - http://www.textfiles.com/programming/FORMATS/lxexe.txt
 
-typedef struct PACKED _LE_Header {
+typedef struct _LE_Header {
 	// 0x00
 	uint16_t sig;		// 'LE' (0x4C45)
 	uint8_t byte_order;	// 0 == little-endian; other == big-endian
@@ -724,8 +726,6 @@ typedef enum {
 	LE_MODULE_NOT_LOADABLE		= (1U << 13),
 	LE_MODULE_IS_DLL		= (1U << 15),
 } LE_Module_Type_Flags;
-
-#pragma pack()
 
 #ifdef __cplusplus
 }

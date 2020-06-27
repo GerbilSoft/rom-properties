@@ -25,8 +25,6 @@
 extern "C" {
 #endif
 
-#pragma pack(1)
-
 // VMS blocks are 512 bytes.
 #define DC_VMS_BLOCK_SIZE 512
 
@@ -38,7 +36,7 @@ extern "C" {
  *
  * All fields are in little-endian.
  */
-typedef struct PACKED _DC_VMS_ICONDATA_Header {
+typedef struct _DC_VMS_ICONDATA_Header {
 	char vms_description[16];	// Shift-JIS; space-padded.
 	uint32_t mono_icon_addr;	// Address of monochrome icon.
 	uint32_t color_icon_addr;	// Address of color icon.
@@ -55,7 +53,7 @@ ASSERT_STRUCT(DC_VMS_ICONDATA_Header, 24);
  *
  * NOTE: Strings are NOT null-terminated!
  */
-typedef union PACKED _DC_VMS_Header {
+typedef union _DC_VMS_Header {
 	struct {
 		char vms_description[16];	// Shift-JIS; space-padded.
 		char dc_description[32];	// Shift-JIS; space-padded.
@@ -121,7 +119,7 @@ typedef enum {
  *
  * All fields are in little-endian.
  */
-typedef struct PACKED _DC_VMI_Timestamp {
+typedef struct _DC_VMI_Timestamp {
 	uint16_t year;		// Year (exact value)
 	uint8_t mon;		// Month (1-12)
 	uint8_t mday;		// Day of month (1-31)
@@ -130,6 +128,7 @@ typedef struct PACKED _DC_VMI_Timestamp {
 	uint8_t sec;		// Second (0-59)
 	uint8_t wday;		// Day of week (0=Sunday, 6=Saturday)
 } DC_VMI_Timestamp;
+ASSERT_STRUCT(DC_VMI_Timestamp, 8);
 
 /**
  * Dreamcast VMI header. (.vmi files)
@@ -139,7 +138,7 @@ typedef struct PACKED _DC_VMI_Timestamp {
  *
  * NOTE: Strings are NOT null-terminated!
  */
-typedef struct PACKED _DC_VMI_Header {
+typedef struct _DC_VMI_Header {
 	// Very primitive checksum.
 	// First four bytes of vms_resource_name,
 	// ANDed with 0x53454741 ("SEGA").
@@ -180,7 +179,7 @@ typedef enum {
  *
  * Reference: http://mc.pp.se/dc/vms/flashmem.html
  */
-typedef struct PACKED _DC_VMS_BCD_Timestamp {
+typedef struct _DC_VMS_BCD_Timestamp {
 	uint8_t century;	// Century.
 	uint8_t year;		// Year.
 	uint8_t mon;		// Month (1-12)
@@ -190,6 +189,7 @@ typedef struct PACKED _DC_VMS_BCD_Timestamp {
 	uint8_t sec;		// Second (0-59)
 	uint8_t wday;		// Day of week (0=Monday, 6=Sunday)
 } DC_VMS_BCD_Timestamp;
+ASSERT_STRUCT(DC_VMS_BCD_Timestamp, 8);
 
 /**
  * Dreamcast VMS directory entry.
@@ -202,7 +202,7 @@ typedef struct PACKED _DC_VMS_BCD_Timestamp {
  *
  * NOTE: Strings are NOT null-terminated!
  */
-typedef struct PACKED _DC_VMS_DirEnt {
+typedef struct _DC_VMS_DirEnt {
 	uint8_t filetype;	// See DC_VMS_DirEnt_FType.
 	uint8_t protect;	// See DC_VMS_DirEnt_Protect.
 	uint16_t address;	// First block number.
@@ -244,7 +244,7 @@ typedef enum {
  */
 #define DC_IP0000_BIN_HW_ID	"SEGA SEGAKATANA "
 #define DC_IP0000_BIN_MAKER_ID	"SEGA ENTERPRISES"
-typedef struct PACKED _DC_IP0000_BIN_t {
+typedef struct _DC_IP0000_BIN_t {
 	char hw_id[16];			// "SEGA SEGAKATANA "
 	char maker_id[16];		// "SEGA ENTERPRISES"
 	char device_info[16];		// "1234 GD-ROM1/1  "
@@ -311,7 +311,7 @@ typedef enum {
  *
  * All fields are in little-endian.
  */
-typedef struct PACKED _DC_IP_BIN_t {
+typedef struct _DC_IP_BIN_t {
 	DC_IP0000_BIN_t meta;			// Meta information. (IP0000.BIN)
 	uint8_t toc[0x200];			// Table of contents.
 	uint8_t license_screen_code[0x3400];	// License screen code.
@@ -330,8 +330,6 @@ typedef struct PACKED _DC_IP_BIN_t {
 	uint8_t bootstrap2[0x2000];
 } DC_IP_BIN_t;
 ASSERT_STRUCT(DC_IP_BIN_t, 0x8000);
-
-#pragma pack()
 
 #ifdef __cplusplus
 }
