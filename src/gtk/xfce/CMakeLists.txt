@@ -9,6 +9,14 @@ IF(POLICY CMP0063)
 ENDIF(POLICY CMP0063)
 PROJECT(rom-properties-xfce LANGUAGES C CXX)
 
+# Disable glib deprecation warnings.
+# - GTypeDebugFlags is deprecated as of glib-2.36.
+# - GTimeVal is deprecated as of glib-2.62.
+# GTK+ 2.x uses both of these, and since it's unlikely that
+# GTK+ 2.x will ever be updated to use the non-deprecated
+# versions, simply remove the deprecation warning.
+ADD_DEFINITIONS(-DGLIB_DISABLE_DEPRECATION_WARNINGS)
+
 # Find packages.
 FIND_PACKAGE(GLib2 ${REQUIRE_GTK2} 2.26.0)
 FIND_PACKAGE(GObject2 ${REQUIRE_GTK2} 2.26.0)
