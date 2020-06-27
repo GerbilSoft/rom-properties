@@ -241,6 +241,9 @@ add_definitions(${ZLIB_DEFINITIONS})
 # rom-properties: Set target definitions and include directories.
 IF(BUILD_SHARED_LIBS)
 	target_compile_definitions(zlib PUBLIC -DZLIB_CONST)
+	IF(NOT WIN32)
+		target_compile_definitions(zlib PRIVATE -DHAVE_HIDDEN)
+	ENDIF(NOT WIN32)
 	TARGET_INCLUDE_DIRECTORIES(zlib
 		PUBLIC  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
