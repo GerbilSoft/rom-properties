@@ -384,7 +384,7 @@ Qt::ItemFlags KeyStoreModel::flags(const QModelIndex &index) const
 {
 	Q_D(const KeyStoreModel);
 	if (!d->keyStore || !index.isValid())
-		return 0;
+		return Qt::ItemFlags();
 
 	// Check the internal ID.
 	const uint32_t id = (uint32_t)index.internalId();
