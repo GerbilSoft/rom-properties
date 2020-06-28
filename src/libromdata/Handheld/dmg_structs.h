@@ -17,8 +17,6 @@
 extern "C" {
 #endif
 
-#pragma pack(1)
-
 /**
  * Game Boy ROM header.
  * This matches the ROM header format exactly.
@@ -28,7 +26,7 @@ extern "C" {
  * 
  * NOTE: Strings are NOT null-terminated!
  */
-typedef struct PACKED _DMG_RomHeader {
+typedef struct _DMG_RomHeader {
 	uint8_t entry[4];
 	uint8_t nintendo[0x30];
 
@@ -132,8 +130,6 @@ typedef enum {
 	GBX_MAPPER_LAST_BIBLE		= 'LBMC',
 	GBX_MAPPER_LIEBAO		= 'LIBA',
 } GBX_Mapper_e;
-
-#pragma pack()
 
 #ifdef __cplusplus
 }

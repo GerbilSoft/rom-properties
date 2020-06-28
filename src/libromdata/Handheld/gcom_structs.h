@@ -16,8 +16,6 @@
 extern "C" {
 #endif
 
-#pragma pack(1)
-
 // Icon information.
 // NOTE: Icons are 2bpp.
 #define GCOM_ICON_BANK_W 256
@@ -40,7 +38,7 @@ extern "C" {
  * NOTE: Strings are NOT null-terminated!
  */
 #define GCOM_SYS_ID "TigerDMGC"
-typedef struct PACKED _Gcom_RomHeader {
+typedef struct _Gcom_RomHeader {
 	uint8_t rom_size;		// [0x000] ROM size?
 	uint8_t entry_point_bank;	// [0x001] Entry point: Bank number.
 	uint16_t entry_point;		// [0x002] Entry point.
@@ -68,8 +66,6 @@ typedef struct PACKED _Gcom_RomHeader {
 	uint8_t padding[3];		// [0x01D] Padding.
 } Gcom_RomHeader;
 ASSERT_STRUCT(Gcom_RomHeader, 32);
-
-#pragma pack()
 
 #ifdef __cplusplus
 }

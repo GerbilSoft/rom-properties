@@ -23,15 +23,13 @@
 extern "C" {
 #endif
 
-#pragma pack(1)
-
 /**
  * Portable Sound Format.
  * All fields are little-endian.
  */
 #define PSF_MAGIC "PSF"
 #define PSF_TAG_MAGIC "[TAG]"
-typedef struct PACKED _PSF_Header {
+typedef struct _PSF_Header {
 	char magic[3];			// [0x000] "PSF"
 	uint8_t version;		// [0x003] Version. Identifies the system. (See PSF_Version_e.)
 	uint32_t reserved_size;		// [0x004] Size of reserved area. (R)
@@ -54,8 +52,6 @@ typedef enum {
 	PSF_VERSION_SNES		= 0x23,	// SNSF
 	PSF_VERSION_QSOUND		= 0x41,	// QSF
 } PSF_Version_e;
-
-#pragma pack()
 
 #ifdef __cplusplus
 }

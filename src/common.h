@@ -40,10 +40,10 @@
  */
 // TODO: Check MSVC support for static_assert() in C mode.
 #if defined(__cplusplus)
-# define ASSERT_STRUCT(st,sz) enum { st##_SIZE = (sz), }; \
+# define ASSERT_STRUCT(st,sz) /*enum { st##_SIZE = (sz), };*/ \
 	static_assert(sizeof(st)==(sz),#st " is not " #sz " bytes.")
 #elif defined(__GNUC__) && defined(__STDC_VERSION__) && __STDC_VERSION__ >= 201112L
-# define ASSERT_STRUCT(st,sz) enum { st##_SIZE = (sz), }; \
+# define ASSERT_STRUCT(st,sz) /*enum { st##_SIZE = (sz), };*/ \
 	_Static_assert(sizeof(st)==(sz),#st " is not " #sz " bytes.")
 #else
 # define ASSERT_STRUCT(st, sz)

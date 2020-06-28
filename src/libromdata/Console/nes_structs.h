@@ -24,8 +24,6 @@
 extern "C" {
 #endif
 
-#pragma pack(1)
-
 // Bank sizes for iNES.
 #define INES_PRG_BANK_SIZE 16384
 #define INES_CHR_BANK_SIZE 8192
@@ -49,7 +47,7 @@ extern "C" {
  */
 #define INES_MAGIC		'NES\x1A'
 #define INES_MAGIC_WIIU_VC	0x4E455300	// 'NES\x00'
-typedef struct PACKED _INES_RomHeader {
+typedef struct _INES_RomHeader {
 	uint32_t magic;		// [0x000] 'NES\x1A' (big-endian)
 	uint8_t prg_banks;	// [0x004] # of 16 KB PRG ROM banks.
 	uint8_t chr_banks;	// [0x005]# of 8 KB CHR ROM banks.
@@ -244,7 +242,7 @@ typedef enum {
  *
  * TODO: Add enums?
  */
-typedef struct PACKED _NES_IntFooter {
+typedef struct _NES_IntFooter {
 	char name[16];		// [0x000] Name. (May be right-aligned with 0xFF filler bytes.)
 	uint16_t prg_checksum;	// [0x010] PRG checksum.
 	uint16_t chr_checksum;	// [0x012] CHR checksum.
@@ -270,7 +268,7 @@ ASSERT_STRUCT(NES_IntFooter, 32);
  * except for the magic number.
  */
 #define TNES_MAGIC 'TNES'
-typedef struct PACKED _TNES_RomHeader {
+typedef struct _TNES_RomHeader {
 	uint32_t magic;		// [0x000] 'TNES' (big-endian)
 	uint8_t mapper;		// [0x004]
 	uint8_t prg_banks;	// [0x005] # of 8 KB PRG ROM banks.
@@ -311,7 +309,7 @@ typedef enum {
 /**
  * 3-byte BCD date stamp.
  */
-typedef struct PACKED _FDS_BCD_DateStamp {
+typedef struct _FDS_BCD_DateStamp {
 	uint8_t year;	// Add 1925 to this.
 	uint8_t mon;	// 1-12
 	uint8_t mday;	// 1-31
@@ -321,6 +319,7 @@ ASSERT_STRUCT(FDS_BCD_DateStamp, 3);
 /**
  * Famicom Disk System header.
  */
+#pragma pack(1)
 typedef struct PACKED _FDS_DiskHeader {
 	uint8_t block_code;	// 0x01
 	uint8_t magic[14];	// "*NINTENDO-HVC*"
@@ -348,6 +347,7 @@ typedef struct PACKED _FDS_DiskHeader {
 	uint16_t crc;
 } FDS_DiskHeader;
 ASSERT_STRUCT(FDS_DiskHeader, 58);
+#pragma pack()
 
 typedef enum {
 	FDS_GTYPE_NORMAL	= ' ',
@@ -368,14 +368,12 @@ typedef enum {
  * except for the magic number.
  */
 #define fwNES_MAGIC 'FDS\x1A'
-typedef struct PACKED _FDS_DiskHeader_fwNES {
+typedef struct _FDS_DiskHeader_fwNES {
 	uint32_t magic;		// [0x000] 'FDS\x1A' (big-endian)
 	uint8_t disk_sides;	// [0x004] Number of disk sides.
 	uint8_t reserved[11];	// [0x005] Zero filled.
 } FDS_DiskHeader_fwNES;
 ASSERT_STRUCT(FDS_DiskHeader_fwNES, 16);
-
-#pragma pack()
 
 #ifdef __cplusplus
 }

@@ -26,7 +26,7 @@ extern "C" {
  * All fields are little-endian.
  */
 #define PS1_EXE_MAGIC "PS-X EXE"
-typedef struct PACKED _PS1_EXE_Header {
+typedef struct _PS1_EXE_Header {
 	char magic[8];			// [0x000] Magic ("PS-X EXE")
 	uint8_t padding1[8];		// [0x008] Zero-filled
 	uint32_t initial_pc;		// [0x010] Initial PC

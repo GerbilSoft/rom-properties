@@ -16,8 +16,6 @@
 extern "C" {
 #endif
 
-#pragma pack(1)
-
 /**
  * Nintendo Wii U disc header.
  * Reference: https://github.com/maki-chan/wudecrypt/blob/master/main.c
@@ -25,7 +23,7 @@ extern "C" {
  * All fields are big-endian.
  * NOTE: Strings are NOT null-terminated!
  */
-typedef struct PACKED _WiiU_DiscHeader {
+typedef struct _WiiU_DiscHeader {
 	union {
 		char id[10];		// WUP-P-xxxx
 		struct {
@@ -48,8 +46,6 @@ ASSERT_STRUCT(WiiU_DiscHeader, 22);
 
 // Secondary Wii U disc magic at 0x10000.
 #define WIIU_SECONDARY_MAGIC 0xCC549EB9
-
-#pragma pack()
 
 #ifdef __cplusplus
 }

@@ -15,8 +15,6 @@
 extern "C" {
 #endif
 
-#pragma pack(1)
-
 /**
  * Microsoft Xbox 360 executable header.
  * References:
@@ -29,7 +27,7 @@ extern "C" {
  */
 #define XEX1_MAGIC 'XEX1'
 #define XEX2_MAGIC 'XEX2'
-typedef struct PACKED _XEX2_Header {
+typedef struct _XEX2_Header {
 	uint32_t magic;			// [0x000] 'XEX2' or 'XEX1'
 	uint32_t module_flags;		// [0x004] See XEX2_Flags_e
 	uint32_t pe_offset;		// [0x008] PE data offset
@@ -37,7 +35,7 @@ typedef struct PACKED _XEX2_Header {
 	uint32_t sec_info_offset;	// [0x010] Security info offset (See XEX2_Security_Info)
 	uint32_t opt_header_count;	// [0x014] Optional header count
 } XEX2_Header;
-ASSERT_STRUCT(XEX2_Header, 24);
+ASSERT_STRUCT(XEX2_Header, 6*sizeof(uint32_t));
 
 /**
  * XEX2: Module flags
@@ -59,7 +57,7 @@ typedef enum {
  *
  * All fields are in big-endian.
  */
-typedef struct PACKED _XEX1_Security_Info {
+typedef struct _XEX1_Security_Info {
 	uint32_t header_size;		// [0x000] Header size [should be at least sizeof(XEX1_Security_Info)]
 	uint32_t image_size;		// [0x004] Image size (slightly larger than the .xex file)
 	uint8_t rsa_signature[0x100];	// [0x008] RSA-2048 signature
@@ -80,7 +78,7 @@ ASSERT_STRUCT(XEX1_Security_Info, 0x168);
  * XEX2: Security info
  * All fields are in big-endian.
  */
-typedef struct PACKED _XEX2_Security_Info {
+typedef struct _XEX2_Security_Info {
 	uint32_t header_size;		// [0x000] Header size [should be at least sizeof(XEX2_Security_Info)]
 	uint32_t image_size;		// [0x004] Image size (slightly larger than the .xex file)
 	uint8_t rsa_signature[0x100];	// [0x008] RSA-2048 signature
@@ -175,7 +173,7 @@ typedef enum {
  *
  * All fields are in big-endian.
  */
-typedef struct PACKED _XEX2_Optional_Header_Tbl {
+typedef struct _XEX2_Optional_Header_Tbl {
 	uint32_t header_id;	// [0x000] Header ID. (See XEX2_Optional_Header_e.)
 	uint32_t offset;	// [0x004] Data/offset, depending on the low byte of Header ID:
 				// - 0x00: Field contains a 32-bit value.
@@ -186,6 +184,7 @@ typedef struct PACKED _XEX2_Optional_Header_Tbl {
 				//   a struct, and the first DWORD of the struct
 				//   contains its size, in bytes.
 } XEX2_Optional_Header_Tbl;
+ASSERT_STRUCT(XEX2_Optional_Header_Tbl, 2*sizeof(uint32_t));
 
 /**
  * XEX2 optional header IDs
@@ -234,7 +233,7 @@ typedef enum {
  *
  * All fields are in big-endian.
  */
-typedef struct PACKED _XEX2_Resource_Info {
+typedef struct _XEX2_Resource_Info {
 	char resource_id[8];	// [0x000] Resource ID. This is usually the
 				//         title ID as a hex string.
 	uint32_t vaddr;		// [0x00C] Virtual address.
@@ -249,7 +248,7 @@ ASSERT_STRUCT(XEX2_Resource_Info, 4*sizeof(uint32_t));
  * XEX2: File format info (0x3FF)
  * All fields are in big-endian.
  */
-typedef struct PACKED _XEX2_File_Format_Info {
+typedef struct _XEX2_File_Format_Info {
 	uint32_t size;			// [0x000] Structure size
 	uint16_t encryption_type;	// [0x004] Encryption type (See XEX2_Encryption_Type_e)
 	uint16_t compression_type;	// [0x006] Compression type (See XEX2_Compression_Type_e)
@@ -289,7 +288,7 @@ typedef enum {
  *
  * All fields are in big-endian.
  */
-typedef struct PACKED _XEX2_Compression_Basic_Info {
+typedef struct _XEX2_Compression_Basic_Info {
 	uint32_t data_size;	// [0x000] Number of valid data bytes.
 	uint32_t zero_size;	// [0x004] Number of zero bytes to be inserted after the data bytes.
 } XEX2_Compression_Basic_Info;
@@ -310,7 +309,7 @@ ASSERT_STRUCT(XEX2_Compression_Basic_Info, 2*sizeof(uint32_t));
  *
  * All fields are in big-endian.
  */
-typedef struct PACKED _XEX2_Compression_Normal_Info {
+typedef struct _XEX2_Compression_Normal_Info {
 	uint32_t block_size;	// [0x000] Compressed block size.
 	uint8_t sha1_hash[20];	// [0x004] SHA-1 hash.
 } XEX2_Compression_Normal_Info;
@@ -327,7 +326,7 @@ ASSERT_STRUCT(XEX2_Compression_Normal_Info, 24);
  *
  * All fields are in big-endian.
  */
-typedef struct PACKED _XEX2_Compression_Normal_Header {
+typedef struct _XEX2_Compression_Normal_Header {
 	uint32_t window_size;				// [0x000] LZX compression window size.
 	XEX2_Compression_Normal_Info first_block;	// [0x004] First block information.
 } XEX2_Compression_Normal_Header;
@@ -337,7 +336,7 @@ ASSERT_STRUCT(XEX2_Compression_Normal_Header, sizeof(uint32_t) + 24);
  * XEX2: Import libraries (0x103FF)
  * All fields are in big-endian.
  */
-typedef struct PACKED _XEX2_Import_Libraries_Header {
+typedef struct _XEX2_Import_Libraries_Header {
 	uint32_t size;		// [0x000] Size of the library header
 	uint32_t str_tbl_size;	// [0x004] String table size, in bytes
 	uint32_t str_tbl_count;	// [0x008] Number of string table entries
@@ -354,7 +353,7 @@ ASSERT_STRUCT(XEX2_Import_Libraries_Header, 3*sizeof(uint32_t));
  *
  * All fields are in big-endian.
  */
-typedef struct PACKED _XEX2_Import_Library_Entry {
+typedef struct _XEX2_Import_Library_Entry {
 	uint32_t size;			// [0x000] Size of entry
 	uint8_t next_import_digest[20];	// [0x004] SHA1 of the *next* entry?
 	uint32_t id;			// [0x018] Library ID
@@ -372,7 +371,7 @@ ASSERT_STRUCT(XEX2_Import_Library_Entry, 0x28);
  * XEX2: Checksum and timestamp (0x18002)
  * All fields are in big-endian.
  */
-typedef struct PACKED _XEX2_Checksum_Timestamp {
+typedef struct _XEX2_Checksum_Timestamp {
 	uint32_t checksum;	// [0x000] Checksum (???)
 	uint32_t filetime;	// [0x004] Timestamp (UNIX time)
 } XEX2_Checksum_Timestamp;
@@ -382,7 +381,7 @@ ASSERT_STRUCT(XEX2_Checksum_Timestamp, 2*sizeof(uint32_t));
  * XEX2: TLS info (0x20104)
  * All fields are in big-endian.
  */
-typedef struct PACKED _XEX2_TLS_Info {
+typedef struct _XEX2_TLS_Info {
 	uint32_t slot_count;		// [0x000]
 	uint32_t raw_data_address;	// [0x004]
 	uint32_t data_size;		// [0x008]
@@ -432,7 +431,7 @@ typedef enum {
  * XEX2: Execution ID (0x40006)
  * All fields are in big-endian.
  */
-typedef struct PACKED _XEX2_Execution_ID {
+typedef struct _XEX2_Execution_ID {
 	uint32_t media_id;		// [0x000] Media ID
 	Xbox360_Version_t version;	// [0x004] Version
 	Xbox360_Version_t base_version;	// [0x008] Base version
@@ -443,7 +442,7 @@ typedef struct PACKED _XEX2_Execution_ID {
 	uint8_t disc_count;		// [0x013] Number of discs
 	uint32_t savegame_id;		// [0x014] Savegame ID.
 } XEX2_Execution_ID;
-ASSERT_STRUCT(XEX2_Execution_ID, 6*sizeof(uint32_t));
+ASSERT_STRUCT(XEX2_Execution_ID, 24);
 
 /**
  * XEX2: Game ratings. (0x40310)
@@ -622,12 +621,10 @@ typedef enum {
 /**
  * XEX2: LAN key. (0x40404)
  */
-typedef struct PACKED _XEX2_LAN_Key {
+typedef struct _XEX2_LAN_Key {
 	uint8_t key[16];
 } XEX2_LAN_Key;
-ASSERT_STRUCT(XEX2_LAN_Key, 4*sizeof(uint32_t));
-
-#pragma pack()
+ASSERT_STRUCT(XEX2_LAN_Key, 16);
 
 #ifdef __cplusplus
 }

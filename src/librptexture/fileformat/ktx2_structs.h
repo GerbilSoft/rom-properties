@@ -16,8 +16,6 @@
 extern "C" {
 #endif
 
-#pragma pack(1)
-
 /**
  * References:
  * - https://github.khronos.org/KTX-Specification/
@@ -36,7 +34,7 @@ extern "C" {
  * All fields are in little-endian.
  */
 #define KTX2_IDENTIFIER "\xABKTX 20\xBB\r\n\x1A\n"
-typedef struct PACKED _KTX2_Header {
+typedef struct _KTX2_Header {
 	uint8_t identifier[12];			// [0x000] KTX2_IDENTIFIER
 	uint32_t vkFormat;			// [0x00C] Vulkan texture format
 	uint32_t typeSize;			// [0x010]
@@ -83,9 +81,7 @@ typedef struct _KTX2_Mipmap_Index {
 	uint64_t byteLength;			// [0x008] Length, in bytes.
 	uint64_t uncompressedByteLength;	// [0x010] Total uncompressed size, including all z slices and faces.
 } KTX2_Mipmap_Index;
-ASSERT_STRUCT(KTX2_Mipmap_Index, 24);
-
-#pragma pack()
+ASSERT_STRUCT(KTX2_Mipmap_Index, 3*sizeof(uint64_t));
 
 #ifdef __cplusplus
 }

@@ -24,8 +24,6 @@
 extern "C" {
 #endif
 
-#pragma pack(1)
-
 // XDVDFS offsets, in LBAs.
 // TODO: Multiple XGD1 offsets? (This matches Futurama.)
 #define XDVDFS_BLOCK_SIZE	2048U	/* same as CD/DVD */
@@ -41,6 +39,7 @@ extern "C" {
  */
 #define XDVDFS_MAGIC "MICROSOFT*XBOX*MEDIA"
 #define XDVDFS_HEADER_LBA_OFFSET	32U	/* relative to XDVDFS offset, in LBAs */
+#pragma pack(4)
 typedef struct PACKED _XDVDFS_Header {
 	char magic[20];			// [0x000] "MICROSOFT*XBOX*MEDIA"
 	uint32_t root_dir_sector;	// [0x014] Root directory sector
@@ -50,6 +49,7 @@ typedef struct PACKED _XDVDFS_Header {
 	char magic_footer[20];		// [0x7EC] "MICROSOFT*XBOX*MEDIA" (footer magic)
 } XDVDFS_Header;
 ASSERT_STRUCT(XDVDFS_Header, XDVDFS_BLOCK_SIZE);
+#pragma pack()
 
 /**
  * Directory entry.
@@ -71,7 +71,8 @@ ASSERT_STRUCT(XDVDFS_Header, XDVDFS_BLOCK_SIZE);
  *
  * All fields are in little-endian.
  */
-typedef struct PACKED _XDVDFS_DirEntry {
+#pragma pack(1)
+typedef struct _XDVDFS_DirEntry {
 	uint16_t left_offset;		// [0x000] Offset to left subtree entry, in DWORDs. (0 for none)
 	uint16_t right_offset;		// [0x002] Offset to right subtree entry, in DWORDs. (0 for none)
 	uint32_t start_sector;		// [0x004] Starting sector
@@ -80,6 +81,7 @@ typedef struct PACKED _XDVDFS_DirEntry {
 	uint8_t name_length;		// [0x00D] Filename length, in bytes
 } XDVDFS_DirEntry;
 ASSERT_STRUCT(XDVDFS_DirEntry, 14);
+#pragma pack()
 
 /**
  * File attributes. (bitfield)
@@ -92,8 +94,6 @@ typedef enum {
 	XDVDFS_ATTR_ARCHIVE	= 0x20,
 	XDVDFS_ATTR_NORMAL	= 0x80,
 } XDVDFS_Attributes_e;
-
-#pragma pack()
 
 #ifdef __cplusplus
 }

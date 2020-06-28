@@ -20,8 +20,6 @@
 extern "C" {
 #endif
 
-#pragma pack(1)
-
 // ISO-9660 sector sizes.
 #define ISO_SECTOR_SIZE_MODE1_RAW    2352
 #define ISO_SECTOR_SIZE_MODE1_COOKED 2048
@@ -37,7 +35,7 @@ extern "C" {
 /**
  * ISO-9660 16-bit value, stored as both LE and BE.
  */
-typedef union PACKED _uint16_lsb_msb_t {
+typedef union _uint16_lsb_msb_t {
 	struct {
 		uint16_t le;
 		uint16_t be;
@@ -60,7 +58,7 @@ ASSERT_STRUCT(uint16_lsb_msb_t, 4);
 /**
  * ISO-9660 32-bit value, stored as both LE and BE.
  */
-typedef union PACKED _uint32_lsb_msb_t {
+typedef union _uint32_lsb_msb_t {
 	struct {
 		uint32_t le;
 		uint32_t be;
@@ -87,7 +85,7 @@ ASSERT_STRUCT(uint32_lsb_msb_t, 8);
  * For an unspecified time, all text fields contain '0' (ASCII zero)
  * and tz_offset is binary zero.
  */
-typedef struct PACKED _ISO_PVD_DateTime_t {
+typedef struct _ISO_PVD_DateTime_t {
 	union {
 		char full[16];
 		struct {
@@ -110,7 +108,7 @@ ASSERT_STRUCT(ISO_PVD_DateTime_t, 17);
 /**
  * ISO-9660 Directory Entry date/time struct.
  */
-typedef struct PACKED _ISO_Dir_DateTime_t {
+typedef struct _ISO_Dir_DateTime_t {
 	uint8_t year;		// Number of years since 1900.
 	uint8_t month;		// Month, from 1 to 12.
 	uint8_t day;		// Day, from 1 to 31.
@@ -127,6 +125,7 @@ ASSERT_STRUCT(ISO_Dir_DateTime_t, 7);
 /**
  * Directory entry, excluding the variable-length file identifier.
  */
+#pragma pack(1)
 typedef struct PACKED _ISO_DirEntry {
 	uint8_t entry_length;			// Length of Directory Record. (must be at least 33 + filename)
 	uint8_t xattr_length;			// Extended Attribute Record length.
@@ -140,6 +139,7 @@ typedef struct PACKED _ISO_DirEntry {
 	uint8_t filename_length;		// Filename length. Terminated with ';' followed by the file ID number in ASCII ('1').
 } ISO_DirEntry;
 ASSERT_STRUCT(ISO_DirEntry, 33);
+#pragma pack()
 
 typedef enum {
 	ISO_FLAG_HIDDEN		= (1U << 0),	// File is hidden.
@@ -154,7 +154,7 @@ typedef enum {
 /**
  * Volume descriptor header.
  */
-typedef struct PACKED _ISO_Volume_Descriptor_Header {
+typedef struct _ISO_Volume_Descriptor_Header {
 	uint8_t type;		// Volume descriptor type code. (See ISO_Volume_Descriptor_Type.)
 	char identifier[5];	// (strA) "CD001"
 	uint8_t version;	// Volume descriptor version. (0x01)
@@ -164,6 +164,7 @@ ASSERT_STRUCT(ISO_Volume_Descriptor_Header, 7);
 /**
  * Boot volume descriptor.
  */
+#pragma pack(1)
 typedef struct PACKED _ISO_Boot_Volume_Descriptor {
 	ISO_Volume_Descriptor_Header header;
 	char sysID[32];		// (strA) System identifier.
@@ -173,6 +174,7 @@ typedef struct PACKED _ISO_Boot_Volume_Descriptor {
 		uint8_t boot_system_use[1977];
 	};
 } ISO_Boot_Volume_Descriptor;
+#pragma pack()
 ASSERT_STRUCT(ISO_Boot_Volume_Descriptor, ISO_SECTOR_SIZE_MODE1_COOKED);
 
 /**
@@ -180,6 +182,7 @@ ASSERT_STRUCT(ISO_Boot_Volume_Descriptor, ISO_SECTOR_SIZE_MODE1_COOKED);
  *
  * NOTE: All fields are space-padded. (0x20, ' ')
  */
+#pragma pack(1)
 typedef struct PACKED _ISO_Primary_Volume_Descriptor {
 	ISO_Volume_Descriptor_Header header;
 
@@ -228,6 +231,7 @@ typedef struct PACKED _ISO_Primary_Volume_Descriptor {
 	uint8_t iso_reserved[653];		// [0x573] Reserved by ISO.
 } ISO_Primary_Volume_Descriptor;
 ASSERT_STRUCT(ISO_Primary_Volume_Descriptor, ISO_SECTOR_SIZE_MODE1_COOKED);
+#pragma pack()
 
 /**
  * Volume descriptor.
@@ -239,6 +243,7 @@ ASSERT_STRUCT(ISO_Primary_Volume_Descriptor, ISO_SECTOR_SIZE_MODE1_COOKED);
 #define ISO_PVD_LBA 0x10
 #define ISO_PVD_ADDRESS_2048 (ISO_PVD_LBA * ISO_SECTOR_SIZE_MODE1_COOKED)
 #define ISO_PVD_ADDRESS_2352 (ISO_PVD_LBA * ISO_SECTOR_SIZE_MODE1_RAW)
+#pragma pack(1)
 typedef union PACKED _ISO_Volume_Descriptor {
 	ISO_Volume_Descriptor_Header header;
 
@@ -251,6 +256,7 @@ typedef union PACKED _ISO_Volume_Descriptor {
 	ISO_Primary_Volume_Descriptor pri;
 } ISO_Volume_Descriptor;
 ASSERT_STRUCT(ISO_Volume_Descriptor, ISO_SECTOR_SIZE_MODE1_COOKED);
+#pragma pack()
 
 /**
  * Volume descriptor type.
@@ -274,8 +280,6 @@ typedef enum {
 #define UDF_VD_NSR03 "NSR03"	/* UDF 2.00 */
 #define UDF_VD_BOOT2 "BOOT2"
 #define UDF_VD_TEA01 "TEA01"
-
-#pragma pack()
 
 #ifdef __cplusplus
 }

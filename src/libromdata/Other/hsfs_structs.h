@@ -21,14 +21,13 @@
 extern "C" {
 #endif
 
-#pragma pack(1)
 /**
  * HSFS Primary Volume Descriptor date/time struct.
  * Note that the fields are all strings.
  *
  * For an unspecified time, all text fields contain '0' (ASCII zero)
  */
-typedef union PACKED _HSFS_PVD_DateTime_t {
+typedef union _HSFS_PVD_DateTime_t {
 	char full[16];
 	struct {
 		char year[4];		// Year, from 1 to 9999.
@@ -45,7 +44,7 @@ ASSERT_STRUCT(HSFS_PVD_DateTime_t, 16);
 /**
  * HSFS Directory Entry date/time struct.
  */
-typedef struct PACKED _HSFS_Dir_DateTime_t {
+typedef struct _HSFS_Dir_DateTime_t {
 	uint8_t year;		// Number of years since 1900.
 	uint8_t month;		// Month, from 1 to 12.
 	uint8_t day;		// Day, from 1 to 31.
@@ -58,10 +57,11 @@ ASSERT_STRUCT(HSFS_Dir_DateTime_t, 6);
 /**
  * Directory entry, excluding the variable-length file identifier.
  */
+#pragma pack(1)
 typedef struct PACKED _HSFS_DirEntry {
-	uint8_t entry_length;			// Length of Directory Record. (must be at least 33 + filename)
-	uint8_t xattr_length;			// Extended Attribute Record length.
-	uint32_lsb_msb_t block;			// Starting LBA of the file.
+	uint8_t entry_length;			// [0x000] Length of Directory Record. (must be at least 33 + filename)
+	uint8_t xattr_length;			// [0x001] Extended Attribute Record length.
+	uint32_lsb_msb_t block;			// [0x002] Starting LBA of the file.
 	uint32_lsb_msb_t size;			// Size of the file.
 	HSFS_Dir_DateTime_t mtime;		// Recording date and time.
 	uint8_t flags;				// File flags. (See ISO_File_Flags_t.)
@@ -72,10 +72,12 @@ typedef struct PACKED _HSFS_DirEntry {
 	uint8_t filename_length;		// Filename length. Terminated with ';' followed by the file ID number in ASCII ('1').
 } HSFS_DirEntry;
 ASSERT_STRUCT(HSFS_DirEntry, 33);
+#pragma pack()
 
 /**
  * Volume descriptor header.
  */
+#pragma pack(1)
 typedef struct PACKED _HSFS_Volume_Descriptor_Header {
 	uint32_lsb_msb_t block;	// LBA of this volume descriptor.
 	uint8_t type;		// Volume descriptor type code. (See ISO_Volume_Descriptor_Type.)
@@ -83,12 +85,14 @@ typedef struct PACKED _HSFS_Volume_Descriptor_Header {
 	uint8_t version;	// Volume descriptor version. (0x01)
 } HSFS_Volume_Descriptor_Header;
 ASSERT_STRUCT(HSFS_Volume_Descriptor_Header, 15);
+#pragma pack()
 
 /**
  * Primary volume descriptor.
  *
  * NOTE: All fields are space-padded. (0x20, ' ')
  */
+#pragma pack(1)
 typedef struct PACKED _HSFS_Primary_Volume_Descriptor {
 	HSFS_Volume_Descriptor_Header header;
 
@@ -133,11 +137,10 @@ typedef struct PACKED _HSFS_Primary_Volume_Descriptor {
 	uint8_t reserved4[1193];		// [0x357]
 } HSFS_Primary_Volume_Descriptor;
 ASSERT_STRUCT(HSFS_Primary_Volume_Descriptor, ISO_SECTOR_SIZE_MODE1_COOKED);
+#pragma pack()
 
 #define HSFS_VD_MAGIC "CDROM"
 #define HSFS_VD_VERSION 0x01
-
-#pragma pack()
 
 #ifdef __cplusplus
 }

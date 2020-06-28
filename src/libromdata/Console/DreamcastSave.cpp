@@ -316,7 +316,7 @@ unsigned int DreamcastSavePrivate::readAndVerifyVmsHeader(uint32_t address)
 	// Monochrome icon is usually within the first 256 bytes
 	// of the start of the file.
 	if ((loaded_headers & DC_IS_ICONDATA_VMS) ||
-	    (vms_header.dc_description[0] >= DC_VMS_ICONDATA_Header_SIZE &&
+	    (vms_header.dc_description[0] >= sizeof(DC_VMS_ICONDATA_Header) &&
 	     vms_header.dc_description[1] == 0 &&
 	     vms_header.dc_description[2] == 0 &&
 	     vms_header.dc_description[3] == 0))
@@ -937,7 +937,7 @@ DreamcastSave::DreamcastSave(IRpFile *vms_file, IRpFile *vmi_file)
 	const off64_t vms_fileSize = d->file->size();
 	const off64_t vmi_fileSize = d->vmi_file->size();
 	if (((vms_fileSize % 512 != 0) && vms_fileSize != DC_VMS_ICONDATA_MONO_MINSIZE) ||
-	      vmi_fileSize != DC_VMI_Header_SIZE)
+	      vmi_fileSize != sizeof(DC_VMI_Header))
 	{
 		// Invalid file(s).
 		UNREF_AND_NULL_NOCHK(d->vmi_file);

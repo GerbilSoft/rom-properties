@@ -16,15 +16,13 @@
 extern "C" {
 #endif
 
-#pragma pack(1)
-
 /**
  * BCSTM reference.
  * Indicates the block type.
  *
  * Endianness depends on the byte-order mark.
  */
-typedef struct PACKED _BCSTM_Reference {
+typedef struct _BCSTM_Reference {
 	uint16_t type_id;	// [0x000] Type ID (See BCSTM_Block_Type_e)
 	uint16_t padding;	// [0x002] Padding
 	uint32_t offset;	// [0x004] Offset (~0 for "null")
@@ -54,7 +52,7 @@ typedef enum {
  *
  * Endianness depends on the byte-order mark.
  */
-typedef struct PACKED _BCSTM_SizedRef {
+typedef struct _BCSTM_SizedRef {
 	BCSTM_Reference ref;	// [0x000] Reference
 	uint32_t size;		// [0x008] Size
 } BCSTM_SizedRef;
@@ -79,7 +77,7 @@ ASSERT_STRUCT(BCSTM_SizedRef, 12);
 #define BCSTM_BOM_HOST 0xFEFF	// UTF-8 BOM; matches host-endian.
 #define BCSTM_BOM_SWAP 0xFFFE	// UTF-8 BOM; matches swapped-endian.
 #define BCSTM_VERSION 0x02000000
-typedef struct PACKED _BCSTM_Header {
+typedef struct _BCSTM_Header {
 	uint32_t magic;		// [0x000] 'CSTM', 'FSTM', 'CWAV'
 	uint16_t bom;		// [0x004] Byte-order mark
 	uint16_t header_size;	// [0x006] Header size (0x40 due to Info Block alignment)
@@ -110,7 +108,7 @@ ASSERT_STRUCT(BCSTM_Header, 0x38);
  *
  * Endianness depends on the byte-order mark.
  */
-typedef struct PACKED _BCSTM_Stream_Info {
+typedef struct _BCSTM_Stream_Info {
 	uint8_t codec;			// [0x000] Codec (See BCSTM_Codec_e)
 					//         (listed as Encoding on 3dbrew)
 	uint8_t loop_flag;		// [0x001] Loop flag
@@ -137,7 +135,7 @@ typedef struct PACKED _BCSTM_Stream_Info {
 						//         (relative to Data Block field)
 
 	// NOTE: The following region data is BFSTM-specific.
-	// The definitions are kept here for reference purpose,
+	// The definitions are kept here for reference purposes,
 	// but they're disabled in the build.
 #if 0
 	uint16_t region_info_size;	// [0x038] Size of each region info.
@@ -171,7 +169,7 @@ typedef enum {
  * Endianness depends on the byte-order mark.
  */
 #define BCSTM_INFO_MAGIC 'INFO'
-typedef struct PACKED _BCSTM_INFO_Block {
+typedef struct _BCSTM_INFO_Block {
 	uint32_t magic;				// [0x000] 'INFO'
 	uint32_t size;				// [0x004] Size of the info block.
 	BCSTM_Reference stream_info_ref;	// [0x008] Stream Info
@@ -197,7 +195,7 @@ ASSERT_STRUCT(BCSTM_INFO_Block, 0x58);
  *
  * Endianness depends on the byte-order mark.
  */
-typedef struct PACKED _BCWAV_INFO_Block {
+typedef struct _BCWAV_INFO_Block {
 	uint32_t magic;		// [0x000] 'INFO'
 	uint32_t size;		// [0x004] Size of the info block.
 	uint8_t codec;		// [0x008] Codec (See BCSTM_Codec_e)
@@ -212,8 +210,6 @@ typedef struct PACKED _BCWAV_INFO_Block {
 	// The remainder of the INFO block is variable-length.
 } BCWAV_INFO_Block;
 ASSERT_STRUCT(BCWAV_INFO_Block, 0x1C);
-
-#pragma pack()
 
 #ifdef __cplusplus
 }

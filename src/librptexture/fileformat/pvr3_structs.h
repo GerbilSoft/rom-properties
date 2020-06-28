@@ -170,11 +170,12 @@ typedef enum {
 /**
  * Metadata block header.
  */
-typedef struct PACKED _PowerVR3_Metadata_Block_Header_t {
+typedef struct _PowerVR3_Metadata_Block_Header_t {
 	uint32_t fourCC;
 	uint32_t key;
 	uint32_t size;
 } PowerVR3_Metadata_Block_Header_t;
+ASSERT_STRUCT(PowerVR3_Metadata_Block_Header_t, 3*sizeof(uint32_t));
 
 /**
  * Metadata keys for PowerVR3 fourCC.
@@ -191,11 +192,12 @@ typedef enum {
 /**
  * PowerVR3 Metadata: Orientation struct.
  */
-typedef struct PACKED _PowerVR3_Metadata_Orientation_t {
+typedef struct _PowerVR3_Metadata_Orientation_t {
 	uint8_t x;	// 0 == increases to the right; 1 == increases to the left
 	uint8_t y;	// 0 == increases downwards; 1 == increases upwards
 	uint8_t z;	// 0 == increases inwards; 1 == increases outwards
 } PowerVR3_Metadata_Orientation;
+ASSERT_STRUCT(PowerVR3_Metadata_Orientation, 3);
 
 #ifdef __cplusplus
 }

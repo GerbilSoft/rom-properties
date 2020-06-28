@@ -21,12 +21,10 @@
 extern "C" {
 #endif
 
-#pragma pack(1)
-
 /**
  * 54-byte header used by some standalone saves
  */
-typedef struct PACKED _PS1_54_Header {
+typedef struct _PS1_54_Header {
 	char filename[21];	// Filename from BlockEntry->filename
 	char title[33];		// Title from SC->title converted to ASCII
 } PS1_54_Header;
@@ -46,7 +44,7 @@ typedef enum {
  * Block Entry. Stored in Block 0 of memorycard.
  * Also used as a header for some standalone saves.
  */
-typedef struct PACKED _PS1_Block_Entry {
+typedef struct _PS1_Block_Entry {
 	uint32_t alloc_flag;	// Type
 	uint32_t filesize;	// Filesize
 	uint16_t next_block;	// Pointer to next block (0xFFFF = EOF)
@@ -82,6 +80,7 @@ typedef enum {
 #define PS1_POCKETSTATION_MCX0	'MCX0'
 #define PS1_POCKETSTATION_MCX1	'MCX1'
 #define PS1_POCKETSTATION_CRD0	'CRD0'
+#pragma pack(1)
 typedef struct PACKED _PS1_SC_Struct {
 	uint16_t magic;		// [0x000] Magic. ("SC")
 	uint8_t icon_flag;	// [0x002] Icon display flag.
@@ -103,6 +102,7 @@ typedef struct PACKED _PS1_SC_Struct {
 	uint8_t icon_data[3][16*16/2];	// [0x080] Icon data. (16x16, 4bpp; up to 3 frames)
 } PS1_SC_Struct;
 ASSERT_STRUCT(PS1_SC_Struct, 512);
+#pragma pack()
 
 /**
  * PSV save format. (PS1 on PS3)
@@ -111,6 +111,7 @@ ASSERT_STRUCT(PS1_SC_Struct, 512);
  * NOTE: Strings are NOT null-terminated!
  */
 #define PS1_PSV_MAGIC 0x0056535000000000ULL	// "\0VSP\0\0\0\0"
+#pragma pack(1)
 typedef struct PACKED _PS1_PSV_Header {
 	uint64_t magic;		// [0x000] Magic. ("\0VSP\0\0\0\0")
 	uint8_t key_seed[20];	// [0x008] Key seed.
@@ -125,7 +126,7 @@ typedef struct PACKED _PS1_PSV_Header {
 	uint32_t data_block_offset;	// [0x044] Offset of Data Block 1. (PS1_SC_Struct)
 	uint32_t unknown1;		// [0x048] 00 02 00 00
 
-	// 0x5C
+	// 0x4C
 	uint8_t reserved3[16];	// [0x04C]
 	uint32_t unknown2;	// [0x05C] 00 20 00 00
 	uint32_t unknown3;	// [0x060] 03 90 00 00
@@ -135,7 +136,6 @@ typedef struct PACKED _PS1_PSV_Header {
 	uint8_t reserved4[12];	// [0x078]
 } PS1_PSV_Header;
 ASSERT_STRUCT(PS1_PSV_Header, 0x84);
-
 #pragma pack()
 
 #ifdef __cplusplus

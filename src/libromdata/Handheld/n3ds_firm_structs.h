@@ -19,13 +19,11 @@
 extern "C" {
 #endif
 
-#pragma pack(1)
-
 /**
  * Nintendo 3DS firmware section header struct.
  * All fields are little-endian.
  */
-typedef struct PACKED _N3DS_FIRM_Section_Header_t {
+typedef struct _N3DS_FIRM_Section_Header_t {
 	uint32_t offset;		// [0x000] Byte offset.
 	uint32_t load_addr;		// [0x004] Physical address where the section is loaded to.
 	uint32_t size;			// [0x008] Byte size. (If 0, section does not exist.)
@@ -41,7 +39,7 @@ ASSERT_STRUCT(_N3DS_FIRM_Section_Header_t, 48);
  * except for the magic number.
  */
 #define N3DS_FIRM_MAGIC 'FIRM'
-typedef struct PACKED _N3DS_FIRM_Header_t {
+typedef struct _N3DS_FIRM_Header_t {
 	uint32_t magic;				// [0x000] 'FIRM' (big-endian)
 	uint32_t boot_priority;			// [0x004] Normally 0. (highest value = max prio)
 	uint32_t arm11_entrypoint;		// [0x008] Non-zero for FIRM; zero for Boot9Strap payloads.
@@ -51,8 +49,6 @@ typedef struct PACKED _N3DS_FIRM_Header_t {
 	uint8_t signature[0x100];		// [0x100] RSA-2048 signature.
 } N3DS_FIRM_Header_t;
 ASSERT_STRUCT(_N3DS_FIRM_Header_t, 512);
-
-#pragma pack()
 
 #ifdef __cplusplus
 }

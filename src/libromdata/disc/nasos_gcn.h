@@ -18,8 +18,6 @@
 extern "C" {
 #endif /* __cplusplus */
 
-#pragma pack(1)
-
 /**
  * .iso.dec header.
  *
@@ -30,7 +28,7 @@ extern "C" {
 #define NASOS_MAGIC_GCMM 'GCMM'	// TODO: Figure out what this is used for.
 #define NASOS_MAGIC_WII5 'WII5'
 #define NASOS_MAGIC_WII9 'WII9'
-typedef struct PACKED _NASOSHeader {
+typedef struct _NASOSHeader {
 	uint32_t magic;		// [0x000] Magic number. ('GCML', 'WII5', 'WII9')
 	char id4[4];		// [0x004] ID4 of the disc image.
 } NASOSHeader;
@@ -70,8 +68,6 @@ typedef struct _NASOSHeader_WIIx {
 	uint8_t unknown2[16];	// [0x04C]
 } NASOSHeader_WIIx;
 ASSERT_STRUCT(NASOSHeader_WIIx, 0x5C);
-
-#pragma pack()
 
 #ifdef __cplusplus
 }

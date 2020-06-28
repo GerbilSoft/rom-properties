@@ -23,8 +23,6 @@
 extern "C" {
 #endif
 
-#pragma pack(1)
-
 /**
  * Amiibo binary file sizes.
  */
@@ -48,7 +46,7 @@ typedef enum {
  * RO = read-only
  * RW = read/write
  */
-typedef struct PACKED _NFP_Data_t {
+typedef struct _NFP_Data_t {
 	/** NTAG215 header. **/
 	uint8_t serial[9];		// [0x00,RO] NTAG215 serial number.
 	uint8_t int_u8;			// [0x02,RO] "Internal" u8 value
@@ -99,8 +97,6 @@ typedef enum {
 	NFP_TYPE_CARD		= 0x01,
 	NFP_TYPE_YARN		= 0x02,
 } NFP_Type_t;
-
-#pragma pack()
 
 #ifdef __cplusplus
 }

@@ -17,11 +17,9 @@
 
 namespace LibRpTexture { namespace ImageDecoder {
 
-#pragma pack(1)
-
 // ETC1 block format.
 // NOTE: Layout maps to on-disk format, which is big-endian.
-union PACKED etc1_block {
+typedef union _etc1_block {
 	struct {
 		// Base colors
 		// Byte layout:
@@ -77,30 +75,28 @@ union PACKED etc1_block {
 		uint8_t RV_GV;		// 7-5: RV;   4-0: GV
 		uint8_t GV_BV;		// 7-6: GV;   5-0: BV
 	} planar;
-};
-ASSERT_STRUCT(etc1_block, 8);
+} etc1_block;
+ASSERT_STRUCT(etc1_block, sizeof(uint64_t));
 
 // ETC2 alpha block format.
 // NOTE: Layout maps to on-disk format, which is big-endian.
-union etc2_alpha {
+typedef union _etc2_alpha {
 	struct {
 		uint8_t base_codeword;	// Base codeword.
 		uint8_t mult_tbl_idx;	// Multiplier (high 4); table index (low 4)
 		uint8_t values[6];	// Alpha values. (48-bit unsigned; 3-bit per pixel)
 	};
 	uint64_t u64;				// Access the 48-bit alpha value directly. (Requires shifting.)
-};
-ASSERT_STRUCT(etc2_alpha, 8);
+} etc2_alpha;
+ASSERT_STRUCT(etc2_alpha, sizeof(uint64_t));
 
 // ETC2 RGBA block format.
 // NOTE: Layout maps to on-disk format, which is big-endian.
-struct etc2_rgba_block {
+typedef struct _etc2_rgba_block {
 	etc2_alpha alpha;
 	etc1_block etc1;
-};
+} etc2_rgba_block;
 ASSERT_STRUCT(etc2_rgba_block, 16);
-
-#pragma pack()
 
 /**
  * Extract the 48-bit code value from etc2_alpha.

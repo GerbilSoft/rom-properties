@@ -16,8 +16,6 @@
 extern "C" {
 #endif
 
-#pragma pack(1)
-
 /**
  * GameCube/Wii disc image header.
  * This matches the disc image format exactly.
@@ -26,7 +24,7 @@ extern "C" {
  */
 #define GCN_MAGIC 0xC2339F3D
 #define WII_MAGIC 0x5D1C9EA3
-typedef struct PACKED _GCN_DiscHeader {
+typedef struct _GCN_DiscHeader {
 	union {
 		char id6[6];	// [0x000] Game code. (ID6)
 		struct {
@@ -51,8 +49,10 @@ typedef struct PACKED _GCN_DiscHeader {
 	// Normally 0 on retail and RVT-R (indicating the disc is encrypted).
 	uint8_t hash_verify;		// [0x060] If non-zero, disable hash verification.
 	uint8_t disc_noCrypto;		// [0x061] If non-zero, disable disc encryption.
+
+	uint8_t reserved[2];		// [0x062] Reserved (alignment padding)
 } GCN_DiscHeader;
-ASSERT_STRUCT(GCN_DiscHeader, 98);
+ASSERT_STRUCT(GCN_DiscHeader, 100);
 
 /**
  * GameCube region codes.
@@ -81,7 +81,7 @@ typedef enum {
  * All fields are big-endian.
  */
 #define GCN_Boot_Block_ADDRESS 0x420
-typedef struct PACKED _GCN_Boot_Block {
+typedef struct _GCN_Boot_Block {
 	uint32_t dol_offset;	// NOTE: 34-bit RSH2 on Wii.
 	uint32_t fst_offset;	// NOTE: 34-bit RSH2 on Wii.
 	uint32_t fst_size;	// FST size. (NOTE: 34-bit RSH2 on Wii.)
@@ -92,7 +92,7 @@ typedef struct PACKED _GCN_Boot_Block {
 	uint32_t user_len;	// Data area length. (Might be wrong; use FST.)
 	uint32_t reserved;
 } GCN_Boot_Block;
-ASSERT_STRUCT(GCN_Boot_Block, 32);
+ASSERT_STRUCT(GCN_Boot_Block, 8*sizeof(uint32_t));
 
 /**
  * DVD Boot Info. (bi2.bin)
@@ -101,7 +101,7 @@ ASSERT_STRUCT(GCN_Boot_Block, 32);
  * All fields are big-endian.
  */
 #define GCN_Boot_Info_ADDRESS 0x440
-typedef struct PACKED _GCN_Boot_Info {
+typedef struct _GCN_Boot_Info {
 	uint32_t debug_mon_size;	// Debug monitor size.
 	uint32_t sim_mem_size;		// Simulated memory size.
 	uint32_t arg_offset;		// Command line arguments.
@@ -113,7 +113,7 @@ typedef struct PACKED _GCN_Boot_Info {
 	uint32_t dol_limit;		// Maximum total size of DOL text/data sections. (0 == unlimited)
 	uint32_t reserved2;
 } GCN_Boot_Info;
-ASSERT_STRUCT(GCN_Boot_Info, 48);
+ASSERT_STRUCT(GCN_Boot_Info, 12*sizeof(uint32_t));
 
 /**
  * FST entry.
@@ -121,7 +121,7 @@ ASSERT_STRUCT(GCN_Boot_Info, 48);
  *
  * Reference: http://hitmen.c02.at/files/yagcd/yagcd/index.html#idx13.4
  */
-typedef struct PACKED _GCN_FST_Entry {
+typedef struct _GCN_FST_Entry {
 	uint32_t file_type_name_offset;	// MSB = type; low 24 bits = name offset
 	union {
 		struct {
@@ -138,7 +138,7 @@ typedef struct PACKED _GCN_FST_Entry {
 		} file;
 	};
 } GCN_FST_Entry;
-ASSERT_STRUCT(GCN_FST_Entry, 12);
+ASSERT_STRUCT(GCN_FST_Entry, 3*sizeof(uint32_t));
 
 /**
  * TGC header.
@@ -149,7 +149,7 @@ ASSERT_STRUCT(GCN_FST_Entry, 12);
  * All fields are big-endian.
  */
 #define TGC_MAGIC 0xAE0F38A2
-typedef struct PACKED _GCN_TGC_Header {
+typedef struct _GCN_TGC_Header {
 	uint32_t tgc_magic;	// TGC magic.
 	uint32_t reserved1;	// Unknown (usually 0x00000000)
 	uint32_t header_size;	// Header size. (usually 0x8000)
@@ -164,9 +164,7 @@ typedef struct PACKED _GCN_TGC_Header {
 	uint32_t banner_size;	// opening.bnr size.
 	uint32_t reserved4[3];
 } GCN_TGC_Header;
-ASSERT_STRUCT(GCN_TGC_Header, 64);
-
-#pragma pack()
+ASSERT_STRUCT(GCN_TGC_Header, 16*sizeof(uint32_t));
 
 #ifdef __cplusplus
 }

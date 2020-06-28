@@ -31,7 +31,7 @@ extern "C" {
 #define ST_HEADER_ADDRESS 0x0000
 #define ST_MAGIC	"BANDAI SFC-ADX"
 #define ST_BIOS_TITLE	"SFC-ADX BACKUP"
-typedef struct PACKED _ST_RomHeader {
+typedef struct _ST_RomHeader {
 	char magic[14];		// [0x000] "BANDAI SFC-ADX"
 	char padding1[2];	// [0x00E] Zero-filled
 	char title[14];		// [0x010] Title: Can be ASCII and/or 8-bit JIS
@@ -54,6 +54,7 @@ typedef struct PACKED _ST_RomHeader {
 	uint8_t sram_size;	// [0x037] SRAM size, in 2 KB units
 	uint8_t padding4[8];	// [0x038] Zero-filled
 } ST_RomHeader;
+ASSERT_STRUCT(ST_RomHeader, 0x40);
 
 /**
  * Sufami Turbo: ROM speed

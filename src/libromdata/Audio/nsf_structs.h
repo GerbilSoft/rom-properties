@@ -19,14 +19,12 @@
 extern "C" {
 #endif
 
-#pragma pack(1)
-
 /**
  * Nintendo Sound Format. (NES/Famicom)
  * All fields are little-endian.
  */
 #define NSF_MAGIC "NESM\x1A\x01"
-typedef struct PACKED _NSF_Header {
+typedef struct _NSF_Header {
 	char magic[6];			// [0x000] "NESM\x1A\x01"
 	uint8_t track_count;		// [0x006] Number of tracks
 	uint8_t default_track;		// [0x007] Default track number, plus one.
@@ -71,8 +69,6 @@ typedef enum {
 	NSF_EXP_N163		= (1U << 4),	// Namco N163
 	NSF_EXP_SUNSOFT_5B	= (1U << 5),	// Sunsoft 5B
 } NSF_Expansion_e;
-
-#pragma pack()
 
 #ifdef __cplusplus
 }

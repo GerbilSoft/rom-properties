@@ -16,8 +16,6 @@
 extern "C" {
 #endif
 
-#pragma pack(1)
-
 /**
  * ADX loop data.
  * This is the same for both types 03 and 04,
@@ -25,7 +23,7 @@ extern "C" {
  *
  * All fields are in big-endian.
  */
-typedef struct PACKED _ADX_LoopData {
+typedef struct _ADX_LoopData {
 	uint32_t unknown;	// [0x000] Unknown.
 	uint32_t loop_flag;	// [0x004] Loop flag.
 	uint32_t start_sample;	// [0x008] Starting sample.
@@ -33,7 +31,7 @@ typedef struct PACKED _ADX_LoopData {
 	uint32_t end_sample;	// [0x010] Ending sample.
 	uint32_t end_byte;	// [0x014] Ending byte.
 } ADX_LoopData;
-ASSERT_STRUCT(ADX_LoopData, 24);
+ASSERT_STRUCT(ADX_LoopData, 6*sizeof(uint32_t));
 
 /**
  * ADX header.
@@ -52,7 +50,7 @@ ASSERT_STRUCT(ADX_LoopData, 24);
 #define ADX_MAGIC_NUM 0x8000
 #define ADX_MAGIC_STR "(c)CRI"
 #define ADX_FORMAT 3
-typedef struct PACKED _ADX_Header {
+typedef struct _ADX_Header {
 	uint16_t magic;			// [0x000] Magic number. (0x8000)
 					// NOTE: Too short to use by itself;
 					// check for "(c)CRI" at the data offset.
@@ -97,8 +95,6 @@ typedef enum {
 typedef enum {
 	ADX_FLAG_ENCRYPTED	= 0x08,	// Encrypted
 } ADX_Flags_e;
-
-#pragma pack()
 
 #ifdef __cplusplus
 }

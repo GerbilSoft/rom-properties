@@ -652,13 +652,11 @@ typedef enum {
  * All fields are BIG-endian due to its
  * roots in the Wii TMD format.
  */
-#pragma pack(1)
-typedef struct PACKED _N3DS_TMD_t {
+typedef struct _N3DS_TMD_t {
 	N3DS_TMD_Header_t header;			// [0x00] TMD header.
 	N3DS_Content_Info_Record_t cinfo_records[64];	// [0xA4] Content info records.
 } N3DS_TMD_t;
 ASSERT_STRUCT(N3DS_TMD_t, 0xC4+(0x24*64));
-#pragma pack()
 
 /**
  * Nintendo 3DS: NCCH Extended Header: Code Set Info.

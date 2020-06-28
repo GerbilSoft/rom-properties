@@ -22,8 +22,6 @@
 extern "C" {
 #endif
 
-#pragma pack(1)
-
 // Type for a 16-bit quantity.
 typedef uint16_t Elf32_Half;
 typedef uint16_t Elf64_Half;
@@ -61,7 +59,7 @@ typedef uint64_t Elf64_Symndx;
  * These fields are identical for both 32-bit and 64-bit.
  */
 #define ELF_MAGIC '\177ELF'
-typedef struct PACKED _Elf_PrimaryEhdr {
+typedef struct _Elf_PrimaryEhdr {
 	uint32_t e_magic;	// [0x000] '\x177ELF' (big-endian)
 	uint8_t e_class;	// [0x004] Bitness (see Elf_Bitness)
 	uint8_t e_data;		// [0x005] Endianness (see Elf_Endianness)
@@ -195,7 +193,7 @@ typedef enum {
  * ELF 32-bit header.
  * Contains Elf_PrimaryEhdr and fields for 32-bit executables.
  */
-typedef struct PACKED _Elf32_Ehdr {
+typedef struct _Elf32_Ehdr {
 	// Primary header. (Same as Elf_PrimaryEhdr)
 	char e_magic[4];	// [0x000] "\x7FELF"
 	uint8_t e_class;	// [0x004] Bitness (see Elf_Bitness)
@@ -226,7 +224,7 @@ ASSERT_STRUCT(Elf32_Ehdr, 52);
  * ELF 64-bit header.
  * Contains Elf_PrimaryEhdr and fields for 64-bit executables.
  */
-typedef struct PACKED _Elf64_Ehdr {
+typedef struct _Elf64_Ehdr {
 	// Primary header. (Same as Elf_PrimaryEhdr)
 	char e_magic[4];	// [0x000] "\x7FELF"
 	uint8_t e_class;	// [0x004] Bitness (see Elf_Bitness)
@@ -256,7 +254,7 @@ ASSERT_STRUCT(Elf64_Ehdr, 64);
 /**
  * ELF 32-bit program header.
  */
-typedef struct PACKED _Elf32_Phdr {
+typedef struct _Elf32_Phdr {
 	Elf32_Word p_type;	// [0x000] Program header type (see Elf_Phdr_Type)
 	Elf32_Off  p_offset;	// [0x004] Offset of segment from the beginning of the file
 	Elf32_Addr p_vaddr;	// [0x008] Virtual address
@@ -271,7 +269,7 @@ ASSERT_STRUCT(Elf32_Phdr, 32);
 /**
  * ELF 64-bit program header.
  */
-typedef struct PACKED _Elf64_Phdr {
+typedef struct _Elf64_Phdr {
 	Elf64_Word  p_type;	// [0x000] Program header type (see Elf_Phdr_Type)
 	Elf64_Word  p_flags;	// [0x004] Flags
 	Elf64_Off   p_offset;	// [0x008] Offset of segment from the beginning of the file
@@ -617,8 +615,6 @@ typedef enum {
 	DF_1_STUB	= 0x04000000,
 	DF_1_PIE	= 0x08000000,
 } Elf_DT_FLAGS_1;
-
-#pragma pack()
 
 #ifdef __cplusplus
 }

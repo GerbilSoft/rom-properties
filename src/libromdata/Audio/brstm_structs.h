@@ -16,8 +16,6 @@
 extern "C" {
 #endif
 
-#pragma pack(1)
-
 /**
  * BRSTM chunk information.
  * Endianness depends on the byte-order mark.
@@ -41,7 +39,7 @@ ASSERT_STRUCT(BRSTM_ChunkInfo, 8);
 #define BRSTM_MAGIC 'RSTM'
 #define BRSTM_BOM_HOST 0xFEFF	// UTF-8 BOM; matches host-endian.
 #define BRSTM_BOM_SWAP 0xFFFE	// UTF-8 BOM; matches swapped-endian.
-typedef struct PACKED _BRSTM_Header {
+typedef struct _BRSTM_Header {
 	uint32_t magic;		// [0x000] 'RSTM'
 	uint16_t bom;		// [0x004] Byte-order mark
 	uint8_t version_major;	// [0x006] Major version (1)
@@ -73,7 +71,7 @@ ASSERT_STRUCT(BRSTM_Header, 0x28);
  */
 #define BRSTM_HEAD_MAGIC 'HEAD'
 #define BRSTM_HEAD_MARKER 0x01000000
-typedef struct PACKED _BRSTM_HEAD_Header {
+typedef struct _BRSTM_HEAD_Header {
 	uint32_t magic;		// [0x000] 'HEAD'
 	uint32_t size;		// [0x004] Size of entire HEAD section.
 	uint32_t marker1;	// [0x008] Marker? (0x01000000)
@@ -83,7 +81,7 @@ typedef struct PACKED _BRSTM_HEAD_Header {
 	uint32_t marker3;	// [0x008] Marker? (0x01000000)
 	uint32_t head3_offset;	// [0x00C] HEAD chunk, part 3
 } BRSTM_HEAD_Header;
-ASSERT_STRUCT(BRSTM_HEAD_Header, 32);
+ASSERT_STRUCT(BRSTM_HEAD_Header, 8*sizeof(uint32_t));
 
 /**
  * HEAD chunk, part 1.
@@ -92,7 +90,7 @@ ASSERT_STRUCT(BRSTM_HEAD_Header, 32);
  *
  * Endianness depends on the byte-order mark.
  */
-typedef struct PACKED _BRSTM_HEAD_Chunk1 {
+typedef struct _BRSTM_HEAD_Chunk1 {
 	uint8_t codec;				// [0x000] See BRSTM_Codec_e
 	uint8_t loop_flag;			// [0x001] Loop flag
 	uint8_t channel_count;			// [0x002] Number of channels
@@ -122,8 +120,6 @@ typedef enum {
 	BRSTM_CODEC_PCM_S16	= 1,	// Signed 16-bit PCM
 	BRSTM_CODEC_ADPCM_THP	= 2,	// 4-bit ADPCM
 } BRSTM_Codec_e;
-
-#pragma pack()
 
 #ifdef __cplusplus
 }

@@ -24,13 +24,8 @@
 // Windows SDK.
 #include <objbase.h>
 
-// NOTE: We can't use libromdata/common.h here.
-// Define the PACKED attribute manually.
-#ifdef __GNUC__
-#define PACKED __attribute__((packed))
-#else
-#define PACKED
-#endif
+// PACKED attribute.
+#include "common.h"
 
 namespace LibWin32Common {
 
@@ -44,10 +39,10 @@ DialogBuilder::DialogBuilder()
  * These structs contain the main data, but not the
  * variable-length strings.
  *
- * NOTE: These structs MUST be packed!
+ * NOTE: These structs MUST be WORD-packed!
  */
 
-#pragma pack(1)
+#pragma pack(2)
 typedef struct PACKED _DLGTEMPLATEEX {
 	WORD dlgVer;
 	WORD signature;
@@ -60,18 +55,20 @@ typedef struct PACKED _DLGTEMPLATEEX {
 	short cx;
 	short cy;
 } DLGTEMPLATEEX;
+ASSERT_STRUCT(DLGTEMPLATEEX, 26);
 #pragma pack()
 
-#pragma pack(1)
+#pragma pack(2)
 typedef struct PACKED _DLGTEMPLATEEX_FONT {
 	WORD pointsize;
 	WORD weight;
 	BYTE italic;
 	BYTE charset;
 } DLGTEMPLATEEX_FONT;
+ASSERT_STRUCT(DLGTEMPLATEEX_FONT, 6);
 #pragma pack()
 
-#pragma pack(1)
+#pragma pack(2)
 typedef struct PACKED _DLGITEMTEMPLATEEX {
 	DWORD helpID;
 	DWORD exStyle;
@@ -82,6 +79,7 @@ typedef struct PACKED _DLGITEMTEMPLATEEX {
 	short cy;
 	DWORD id;
 } DLGITEMTEMPLATEEX;
+ASSERT_STRUCT(DLGITEMTEMPLATEEX, 24);
 #pragma pack()
 
 /**

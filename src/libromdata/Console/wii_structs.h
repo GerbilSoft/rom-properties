@@ -19,8 +19,6 @@
 extern "C" {
 #endif
 
-#pragma pack(1)
-
 // 34-bit value stored in uint32_t.
 // The value must be lshifted by 2.
 typedef uint32_t uint34_rshift2_t;
@@ -35,12 +33,13 @@ typedef uint32_t uint34_rshift2_t;
  * All fields are big-endian.
  */
 #define RVL_VolumeGroupTable_ADDRESS 0x40000
-typedef struct PACKED _RVL_VolumeGroupTable {
+typedef struct _RVL_VolumeGroupTable {
 	struct {
 		uint32_t count;		// Number of partitions in this volume group.
 		uint34_rshift2_t addr;	// Start address of this table, rshifted by 2.
 	} vg[4];
 } RVL_VolumeGroupTable;
+ASSERT_STRUCT(RVL_VolumeGroupTable, 2*4*sizeof(uint32_t));
 
 /**
  * Wii partition table entry.
@@ -49,10 +48,11 @@ typedef struct PACKED _RVL_VolumeGroupTable {
  *
  * All fields are big-endian.
  */
-typedef struct PACKED _RVL_PartitionTableEntry {
+typedef struct _RVL_PartitionTableEntry {
 	uint34_rshift2_t addr;	// Start address of this partition, rshifted by 2.
 	uint32_t type;		// Type of partition. (0 == Game, 1 == Update, 2 == Channel Installer, other = title ID)
 } RVL_PartitionTableEntry;
+ASSERT_STRUCT(RVL_PartitionTableEntry, 2*sizeof(uint32_t));
 
 enum RVL_PartitionType {
 	RVL_PT_GAME	= 0,
@@ -69,17 +69,17 @@ enum RVL_PartitionType {
  * Time limit structs for Wii ticket.
  * Reference: https://wiibrew.org/wiki/Ticket
  */
-typedef struct PACKED _RVL_TimeLimit {
+typedef struct _RVL_TimeLimit {
 	uint32_t enable;	// 1 == enable; 0 == disable
 	uint32_t seconds;	// Time limit, in seconds.
 } RVL_TimeLimit;
-ASSERT_STRUCT(RVL_TimeLimit, 8);
+ASSERT_STRUCT(RVL_TimeLimit, 2*sizeof(uint32_t));
 
 /**
  * Title ID struct/union.
  * TODO: Verify operation on big-endian systems.
  */
-typedef union PACKED _RVL_TitleID_t {
+typedef union _RVL_TitleID_t {
 	uint64_t id;
 	struct {
 		uint32_t hi;
@@ -87,12 +87,13 @@ typedef union PACKED _RVL_TitleID_t {
 	};
 	uint8_t u8[8];
 } RVL_TitleID_t;
-ASSERT_STRUCT(RVL_TitleID_t, 8);
+ASSERT_STRUCT(RVL_TitleID_t, sizeof(uint64_t));
 
 /**
  * Wii ticket.
  * Reference: https://wiibrew.org/wiki/Ticket
  */
+#pragma pack(1)
 typedef struct PACKED _RVL_Ticket {
 	uint32_t signature_type;	// [0x000] Always 0x10001 for RSA-2048.
 	uint8_t signature[0x100];	// [0x004] Signature.
@@ -119,11 +120,13 @@ typedef struct PACKED _RVL_Ticket {
 	RVL_TimeLimit time_limits[8];	// [0x264] Time limits.
 } RVL_Ticket;
 ASSERT_STRUCT(RVL_Ticket, 0x2A4);
+#pragma pack()
 
 /**
  * Wii TMD header.
  * Reference: https://wiibrew.org/wiki/Tmd_file_structure
  */
+#pragma pack(1)
 typedef struct PACKED _RVL_TMD_Header {
 	uint32_t signature_type;	// [0x000] Always 0x10001 for RSA-2048.
 	uint8_t signature[0x100];	// [0x004] Signature.
@@ -158,6 +161,7 @@ typedef struct PACKED _RVL_TMD_Header {
 	// Following this header is a variable-length content table.
 } RVL_TMD_Header;
 ASSERT_STRUCT(RVL_TMD_Header, 0x1E4);
+#pragma pack()
 
 /**
  * Access rights.
@@ -171,7 +175,7 @@ typedef enum {
  * Wii partition header.
  * Reference: https://wiibrew.org/wiki/Wii_Disc#Partition
  */
-typedef struct PACKED _RVL_PartitionHeader {
+typedef struct _RVL_PartitionHeader {
 	RVL_Ticket ticket;			// [0x000]
 	uint32_t tmd_size;			// [0x2A4] TMD size.
 	uint34_rshift2_t tmd_offset;		// [0x2A8] TMD offset, rshifted by 2.
@@ -210,8 +214,7 @@ typedef struct PACKED _RVL_RegionSetting {
 	uint8_t reserved[8];
 	uint8_t ratings[0x10];	// Country-specific age ratings.
 } RVL_RegionSetting;
-
-#pragma pack()
+ASSERT_STRUCT(RVL_RegionSetting, 32);
 
 #ifdef __cplusplus
 }

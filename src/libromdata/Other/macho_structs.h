@@ -26,8 +26,6 @@
 extern "C" {
 #endif
 
-#pragma pack(1)
-
 // Capability bits used in the CPU type.
 #define CPU_ARCH_MASK	0xFF000000	/* mask for architecture bits */
 #define CPU_ARCH_ABI64	0x01000000	/* 64-bit ABI */
@@ -233,7 +231,7 @@ typedef enum {
 #define MH_CIGAM	0xCEFAEDFE	/* 32-bit, byteswapped */
 #define MH_MAGIC_64	0xFEEDFACF	/* 64-bit, host-endian */
 #define MH_CIGAM_64	0xCFFAEDFE	/* 64-bit, byteswapped */
-typedef struct PACKED _mach_header {
+typedef struct _mach_header {
 	uint32_t magic;		// [0x000] mach magic number identifier
 	uint32_t cputype;	// [0x004] cpu specifier (see cpu_type_t)
 	uint32_t cpusubtype;	// [0x008] machine specifier (see cpu_subtype_*_t)
@@ -243,7 +241,7 @@ typedef struct PACKED _mach_header {
 	uint32_t flags;		// [0x018] flags
 	//uint32_t reserved;	// [0x01C] reserved (64-bit only)
 } mach_header;
-ASSERT_STRUCT(mach_header, 28);
+ASSERT_STRUCT(mach_header, 7*sizeof(uint32_t));
 
 // Filetype field.
 typedef enum {
@@ -308,20 +306,20 @@ typedef enum {
  */
 #define FAT_MAGIC	0xCAFEBABE
 
-typedef struct PACKED _fat_header {
+typedef struct _fat_header {
 	uint32_t magic;		/* FAT_MAGIC */
 	uint32_t nfat_arch;	/* number of structs that follow */
 } fat_header;
+ASSERT_STRUCT(fat_header, 2*sizeof(uint32_t));
 
-typedef struct PACKED _fat_arch {
+typedef struct _fat_arch {
 	uint32_t cputype;	/* cpu specifier (int) */
 	uint32_t cpusubtype;	/* machine specifier (int) */
 	uint32_t offset;	/* file offset to this object file */
 	uint32_t size;		/* size of this object file */
 	uint32_t align;		/* alignment as a power of 2 */
 } fat_arch;
-
-#pragma pack()
+ASSERT_STRUCT(fat_arch, 5*sizeof(uint32_t));
 
 #ifdef __cplusplus
 }

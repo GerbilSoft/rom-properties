@@ -1297,7 +1297,7 @@ KeyStoreUI::ImportReturn KeyStoreUI::import3DSaeskeydb(const char *filename)
 	// - Decrypt9WIP: isDevkitKey == 0 for retail, non-zero for debug
 	// - SafeB9SInstaller: keyUnitType == 0 for ALL units, 1 for retail only, 2 for debug only
 	// To prevent issues, we'll check both retail and debug for all keys.
-	typedef struct PACKED _AesKeyInfo {
+	typedef struct _AesKeyInfo {
 		uint8_t slot;		// keyslot, 0x00...0x3F 
 		char type;		// type 'X' / 'Y' / 'N' for normalKey / 'I' for IV
 		char id[10];		// key ID for special keys, all zero for standard keys
@@ -1306,6 +1306,7 @@ KeyStoreUI::ImportReturn KeyStoreUI::import3DSaeskeydb(const char *filename)
 		uint8_t isEncrypted;	// if non-zero, key is encrypted using Slot0x2C, with KeyY = 0
 		uint8_t key[16];
 	} AesKeyInfo;
+	ASSERT_STRUCT(AesKeyInfo, 32);
 
 	// Slot0x2CKeyX is needed to decrypt keys if the
 	// aeskeydb.bin file is encrypted.

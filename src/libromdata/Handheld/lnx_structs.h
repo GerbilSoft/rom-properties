@@ -17,8 +17,6 @@
 extern "C" {
 #endif
 
-#pragma pack(1)
-
 /**
  * Atari Lynx ROM header.
  * This matches the ROM header format exactly.
@@ -31,7 +29,7 @@ extern "C" {
  * NOTE: Strings are NOT null-terminated!
  */
 #define LYNX_MAGIC 'LYNX'
-typedef struct PACKED _Lynx_RomHeader {
+typedef struct _Lynx_RomHeader {
 	uint32_t magic;			// [0x000] 'LYNX' (big-endian)
 	uint16_t page_size_bank0;	// [0x004]
 	uint16_t page_size_bank1;	// [0x006]
@@ -49,8 +47,6 @@ typedef enum {
 	LYNX_ROTATE_LEFT	= 1,
 	LYNX_ROTATE_RIGHT	= 2,
 } Lynx_Rotation;
-
-#pragma pack()
 
 #ifdef __cplusplus
 }

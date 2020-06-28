@@ -16,8 +16,6 @@
 extern "C" {
 #endif
 
-#pragma pack(1)
-
 /**
  * Pokémon Mini ROM header.
  * This matches the Pokémon Mini ROM header format exactly.
@@ -34,7 +32,7 @@ extern "C" {
 #define POKEMONMINI_HEADER_ADDRESS 0x2100
 #define POKEMONMINI_MN_MAGIC 'MN'
 #define POKEMONMINI_2P_MAGIC '2P'
-typedef struct PACKED _PokemonMini_RomHeader {
+typedef struct _PokemonMini_RomHeader {
 	uint16_t pm_magic;	// [0x000] 'PM' or 'MN'
 	uint8_t irqs[27][6];	// [0x002] IRQs. (See PokemonMini_IRQ_e for descriptions.)
 	char nintendo[8];	// [0x0A4] "NINTENDO"
@@ -76,8 +74,6 @@ typedef enum {
 
 	PokemonMini_IRQ_MAX			= 27
 } PokemonMini_IRQ_e;
-
-#pragma pack()
 
 #ifdef __cplusplus
 }

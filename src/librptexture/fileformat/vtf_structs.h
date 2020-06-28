@@ -16,8 +16,6 @@
 extern "C" {
 #endif
 
-#pragma pack(1)
-
 /**
  * Valve VTF: File header.
  * Reference: https://developer.valvesoftware.com/wiki/Valve_Texture_Format
@@ -28,6 +26,7 @@ extern "C" {
 #define VTF_SIGNATURE 'VTF\0'
 #define VTF_VERSION_MAJOR 7
 #define VTF_VERSION_MINOR 2
+#pragma pack(1)
 typedef struct PACKED _VTFHEADER {
 	uint32_t signature;		// 'VTF\0' (big-endian)
 	uint32_t version[2];		// Version number. (current version is 7.2)
@@ -61,6 +60,7 @@ typedef struct PACKED _VTFHEADER {
 } VTFHEADER;
 // FIXME: Not sure if 72 is correct.
 ASSERT_STRUCT(VTFHEADER, 72);
+#pragma pack()
 
 /**
  * Image format.
@@ -97,8 +97,6 @@ typedef enum {
 
 	VTF_IMAGE_FORMAT_MAX
 } VTF_IMAGE_FORMAT;
-
-#pragma pack()
 
 #ifdef __cplusplus
 }

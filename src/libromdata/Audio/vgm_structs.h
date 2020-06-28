@@ -20,8 +20,6 @@
 extern "C" {
 #endif
 
-#pragma pack(1)
-
 /**
  * Video Game Music Format.
  *
@@ -35,7 +33,7 @@ extern "C" {
 #define VGM_CLK_FLAG_ALTMODE	(1U << 31)	/* alternate mode for some sound chips */
 #define VGM_CLK_FLAG_DUALCHIP	(1U << 30)	/* dual-chip mode for some sound chips */
 #define PSG_T6W28 (VGM_CLK_FLAG_ALTMODE | VGM_CLK_FLAG_DUALCHIP)
-typedef struct PACKED _VGM_Header {
+typedef struct _VGM_Header {
 	uint32_t magic;		// [0x000] "Vgm "
 	uint32_t eof_offset;	// [0x004] Offset: End of file.
 	uint32_t version;	// [0x008] Version number, in BCD.
@@ -164,12 +162,12 @@ ASSERT_STRUCT(VGM_Header, 232);
  * GD3 header
  */
 #define GD3_MAGIC 'Gd3 '
-typedef struct PACKED _GD3_Header {
+typedef struct _GD3_Header {
 	uint32_t magic;		// [0x000] "Gd3 "
 	uint32_t version;	// [0x004] Version number, in BCD. (v1.00)
 	uint32_t length;	// [0x008] Length of the GD3 data.
 } GD3_Header;
-ASSERT_STRUCT(GD3_Header, 12);
+ASSERT_STRUCT(GD3_Header, 3*sizeof(uint32_t));
 
 /**
  * GD3 tag indexes
@@ -285,25 +283,27 @@ typedef enum {
  * Indicates additional chip clocks and volumes for
  * systems with multiples of the same chips.
  */
-typedef struct PACKED _VGM_170_ExtraHeader {
+typedef struct _VGM_170_ExtraHeader {
 	uint32_t chpclock_offset;	// [0x000] Offset to chip clocks.
 	uint32_t chpvol_offset;		// [0x004] Offset to chip volumes.
 } VGM_170_ExtraHeader;
-ASSERT_STRUCT(VGM_170_ExtraHeader, 8);
+ASSERT_STRUCT(VGM_170_ExtraHeader, 2*sizeof(uint32_t));
 
 /**
  * VGM 1.70: Chip Clock entry.
  */
+#pragma pack(1)
 typedef struct PACKED _VGM_170_ChipClock {
 	uint8_t chip_id;		// [0x000] Chip ID.
 	uint32_t clock_rate;		// [0x001] Clock rate.
 } VGM_170_ChipClock;
 ASSERT_STRUCT(VGM_170_ChipClock, 5);
+#pragma pack()
 
 /**
  * VGM 1.70: Chip Volume entry.
  */
-typedef struct PACKED _VGM_170_ChipVolume {
+typedef struct _VGM_170_ChipVolume {
 	uint8_t chip_id;	// [0x000] Chip ID.
 				// If bit 7 is set, it's the volume for a paired chip,
 				// e.g. the AY- part of the YM2203.
@@ -315,8 +315,6 @@ typedef struct PACKED _VGM_170_ChipVolume {
 				// multiplied by ((value & 0x7FFF) / 0x0100).
 } VGM_170_ChipVolume;
 ASSERT_STRUCT(VGM_170_ChipVolume, 4);
-
-#pragma pack()
 
 #ifdef __cplusplus
 }

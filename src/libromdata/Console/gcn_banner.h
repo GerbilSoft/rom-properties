@@ -21,8 +21,6 @@
 extern "C" {
 #endif
 
-#pragma pack(1)
-
 // Magic numbers.
 #define GCN_BANNER_MAGIC_BNR1 'BNR1'
 #define GCN_BANNER_MAGIC_BNR2 'BNR2'
@@ -36,8 +34,7 @@ extern "C" {
 // depending on the game region.
 
 // Banner comment.
-typedef struct PACKED _gcn_banner_comment_t
-{
+typedef struct _gcn_banner_comment_t {
 	char gamename[0x20];
 	char company[0x20];
 	char gamename_full[0x40];
@@ -47,8 +44,7 @@ typedef struct PACKED _gcn_banner_comment_t
 ASSERT_STRUCT(gcn_banner_comment_t, 0x140);
 
 // BNR1
-typedef struct PACKED _gcn_banner_bnr1_t
-{
+typedef struct _gcn_banner_bnr1_t {
 	uint32_t magic;					// BANNER_MAGIC_BNR1
 	uint8_t reserved[0x1C];
 	uint16_t banner[GCN_BANNER_IMAGE_SIZE/2];	// Banner image. (96x32, RGB5A3)
@@ -57,8 +53,7 @@ typedef struct PACKED _gcn_banner_bnr1_t
 ASSERT_STRUCT(gcn_banner_bnr1_t, 0x1820 + 0x140);
 
 // BNR2
-typedef struct PACKED _gcn_banner_bnr2_t
-{
+typedef struct _gcn_banner_bnr2_t {
 	uint32_t magic;					// BANNER_MAGIC_BNR2
 	uint8_t reserved[0x1C];
 	uint16_t banner[GCN_BANNER_IMAGE_SIZE/2];	// Banner image. (96x32, RGB5A3)
@@ -77,8 +72,6 @@ typedef enum {
 
 	GCN_PAL_LANG_MAX
 } GCN_PAL_Language_ID;
-
-#pragma pack()
 
 #ifdef __cplusplus
 }

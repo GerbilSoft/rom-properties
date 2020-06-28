@@ -15,8 +15,6 @@
 extern "C" {
 #endif
 
-#pragma pack(1)
-
 // STFS uses 4 KB blocks.
 #define STFS_BLOCK_SIZE 4096
 
@@ -31,7 +29,7 @@ extern "C" {
 #define STFS_MAGIC_CON  'CON '	// Package signed by a console.
 #define STFS_MAGIC_PIRS 'PIRS'	// Package signed by Microsoft from a non-Xbox Live source, e.g. System Update.
 #define STFS_MAGIC_LIVE 'LIVE'	// Package signed by Microsoft from an Xbox Live source, e.g. a title update.
-typedef struct PACKED _STFS_Package_Header {
+typedef struct _STFS_Package_Header {
 	uint32_t magic;			// [0x000] 'CON ', 'PIRS', or 'LIVE'
 
 	union {
@@ -79,6 +77,7 @@ ASSERT_STRUCT(STFS_License_Entry, 16);
  * STFS: Volume descriptor
  * All fields are in big-endian.
  */
+#pragma pack(1)
 typedef struct PACKED _STFS_Volume_Descriptor {
 	uint8_t size;				// [0x000] Size (0x24)
 	uint8_t reserved;			// [0x001]
@@ -90,12 +89,13 @@ typedef struct PACKED _STFS_Volume_Descriptor {
 	uint32_t total_unalloc_block_count;	// [0x020]
 } STFS_Volume_Descriptor;
 ASSERT_STRUCT(STFS_Volume_Descriptor, 0x24);
+#pragma pack()
 
 /**
  * SVOD: Volume descriptor
  * All fields are in big-endian.
  */
-typedef struct PACKED _SVOD_Volume_Descriptor {
+typedef struct _SVOD_Volume_Descriptor {
 	uint8_t size;				// [0x000] Size (0x24)
 	uint8_t block_cache_element_count;	// [0x001]
 	uint8_t worker_thread_processor;	// [0x002]
@@ -117,6 +117,7 @@ ASSERT_STRUCT(SVOD_Volume_Descriptor, 0x24);
  * All fields are in big-endian.
  */
 #define STFS_METADATA_ADDRESS 0x22C
+#pragma pack(1)
 typedef struct PACKED _STFS_Package_Metadata {
 	STFS_License_Entry license_entries[16];	// [0x22C] License entries
 	uint8_t header_sha1[0x14];		// [0x32C] Header SHA1 (from 0x344 to first hash table)
@@ -164,6 +165,7 @@ typedef struct PACKED _STFS_Package_Metadata {
 	uint8_t transfer_flags;				// [0x1711] Transfer flags (See STFS_Transfer_Flags_e)
 } STFS_Package_Metadata;
 ASSERT_STRUCT(STFS_Package_Metadata, 0x1712-0x22C);
+#pragma pack()
 
 /**
  * STFS: Thumbnail data.
@@ -174,7 +176,7 @@ ASSERT_STRUCT(STFS_Package_Metadata, 0x1712-0x22C);
  * All fields are in big-endian.
  */
 #define STFS_THUMBNAILS_ADDRESS 0x1712
-typedef struct PACKED _STFS_Package_Thumbnails {
+typedef struct _STFS_Package_Thumbnails {
 	// Thumbnail sizes are 0x4000 for v0, 0x3D00 for v2.
 	uint32_t thumbnail_image_size;			// [0x1712] Thumbnail image size
 	uint32_t title_thumbnail_image_size;		// [0x1716] Title thumbnail image size
@@ -253,8 +255,6 @@ typedef enum {
 	STFS_TRANSFER_FLAG_BIT_DEVICE_TRANSFER		= (1U << 6),
 	STFS_TRANSFER_FLAG_BIT_PROFILE_TRANSFER		= (1U << 7),
 } STFS_Transfer_Flags_e;
-
-#pragma pack()
 
 /**
  * STFS: Directory entry.

@@ -96,7 +96,7 @@ ASSERT_STRUCT(card_header, 512);
 /**
  * Directory control block.
  */
-typedef struct PACKED _card_dircntrl {
+typedef struct _card_dircntrl {
 	uint8_t pad[58];
 	uint16_t updated;	// Update counter.
 	uint16_t chksum1;	// Checksum 1.

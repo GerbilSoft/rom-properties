@@ -23,8 +23,6 @@
 extern "C" {
 #endif
 
-#pragma pack(1)
-
 /**
  * IP0000.BIN
  * This is located in the boot sector of CD-ROM track 1.
@@ -33,7 +31,7 @@ extern "C" {
  */
 #define SATURN_IP0000_BIN_HW_ID		"SEGA SEGASATURN "
 #define SATURN_IP0000_BIN_MAKER_ID	"SEGA ENTERPRISES"
-typedef struct PACKED _Saturn_IP0000_BIN_t {
+typedef struct _Saturn_IP0000_BIN_t {
 	char hw_id[16];			// "SEGA SEGASATURN "
 	char maker_id[16];		// Sega:  "SEGA ENTERPRISES"
 					// Other: "SEGA TP T-999   "
@@ -81,8 +79,6 @@ typedef enum {
 	SATURN_IO_ROM_CARTRIDGE		= 'R',
 	SATURN_IO_MPEG_CARD		= 'P',
 } Saturn_Peripherals;
-
-#pragma pack()
 
 #ifdef __cplusplus
 }

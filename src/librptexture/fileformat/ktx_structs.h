@@ -16,8 +16,6 @@
 extern "C" {
 #endif
 
-#pragma pack(1)
-
 /**
  * References:
  * - https://www.khronos.org/opengles/sdk/tools/KTX/file_format_spec/
@@ -32,7 +30,7 @@ extern "C" {
  */
 #define KTX_IDENTIFIER "\xABKTX 11\xBB\r\n\x1A\n"
 #define KTX_ENDIAN_MAGIC 0x04030201
-typedef struct PACKED _KTX_Header {
+typedef struct _KTX_Header {
 	uint8_t identifier[12];		// KTX_IDENTIFIER
 	uint32_t endianness;		// KTX_ENDIAN_MAGIC
 	uint32_t glType;
@@ -49,8 +47,6 @@ typedef struct PACKED _KTX_Header {
 	uint32_t bytesOfKeyValueData;
 } KTX_Header;
 ASSERT_STRUCT(KTX_Header, 64);
-
-#pragma pack()
 
 #ifdef __cplusplus
 }

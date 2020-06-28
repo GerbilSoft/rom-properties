@@ -372,7 +372,7 @@ RomData *RomDataFactoryPrivate::openDreamcastVMSandVMI(IRpFile *file)
 	off64_t filesize = file->size();
 	bool has_dc_vms = (filesize % DC_VMS_BLOCK_SIZE == 0) ||
 			  (filesize == DC_VMS_ICONDATA_MONO_MINSIZE);
-	bool has_dc_vmi = (filesize == DC_VMI_Header_SIZE);
+	bool has_dc_vmi = (filesize == sizeof(DC_VMI_Header));
 	if (!(has_dc_vms ^ has_dc_vmi)) {
 		// Can't be none or both...
 		return nullptr;

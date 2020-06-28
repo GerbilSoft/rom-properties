@@ -16,10 +16,6 @@
 extern "C" {
 #endif
 
-#pragma pack(1)
-
-// TODO: In addition to the main game info, handle achievements?
-
 // NOTE: Entries begin after all headers:
 // - XDBF_Header
 // - XDBF_Entry * entry_table_length
@@ -38,7 +34,7 @@ extern "C" {
  */
 #define XDBF_MAGIC 'XDBF'
 #define XDBF_VERSION 0x10000
-typedef struct PACKED _XDBF_Header {
+typedef struct _XDBF_Header {
 	uint32_t magic;				// [0x000] 'XDBF'
 	uint32_t version;			// [0x004] Version (0x10000)
 	uint32_t entry_table_length;		// [0x008] Entry table length, in number of entries
@@ -46,7 +42,7 @@ typedef struct PACKED _XDBF_Header {
 	uint32_t free_space_table_length;	// [0x010] Free space table length, in number of entries
 	uint32_t free_space_table_count;	// [0x014] Free space table entry count (# of used entries)
 } XDBF_Header;
-ASSERT_STRUCT(XDBF_Header, 0x18);
+ASSERT_STRUCT(XDBF_Header, 6*sizeof(uint32_t));
 
 // Title resource ID.
 // This resource ID contains the game title in each language-specific string table.
@@ -59,21 +55,25 @@ ASSERT_STRUCT(XDBF_Header, 0x18);
  * XDBF entry
  * All fields are in big-endian.
  */
+#pragma pack(1)
 typedef struct PACKED _XDBF_Entry {
 	uint16_t namespace_id;		// [0x000] See XDBF_Namespace_e
 	uint64_t resource_id;		// [0x002] ID
 	uint32_t offset;		// [0x00A] Offset specifier
 	uint32_t length;		// [0x00E] Length
 } XDBF_Entry;
+ASSERT_STRUCT(XDBF_Entry, 18);
+#pragma pack()
 
 /**
  * XDBG free space table entry
  * All fields are in big-endian.
  */
-typedef struct PACKED _XDBF_Free_Space_Entry {
+typedef struct _XDBF_Free_Space_Entry {
 	uint32_t offset;		// [0x000] Offset specifier
 	uint32_t length;		// [0x004] Length
 } XDBF_Free_Space_Entry;
+ASSERT_STRUCT(XDBF_Free_Space_Entry, 2*sizeof(uint32_t));
 
 /**
  * XDBF: Namespace IDs
@@ -93,7 +93,7 @@ typedef enum {
  */
 #define XDBF_XSTC_MAGIC 'XSTC'
 #define XDBF_XSTC_VERSION 1
-typedef struct PACKED _XDBF_Default_Language {
+typedef struct _XDBF_XSTC {
 	uint32_t magic;			// [0x000] 'XSTC'
 	uint32_t version;		// [0x004] Version (1)
 	uint32_t size;			// [0x008] sizeof(XDBF_XSTC) - sizeof(uint32_t)
@@ -133,6 +133,7 @@ typedef enum {
  */
 #define XDBF_XSTR_MAGIC 'XSTR'
 #define XDBF_XSTR_VERSION 1
+#pragma pack(1)
 typedef struct PACKED _XDBF_XSTR_Header {
 	uint32_t magic;		// [0x000] 'XSTR'
 	uint32_t version;	// [0x004] Version (1)
@@ -140,16 +141,17 @@ typedef struct PACKED _XDBF_XSTR_Header {
 	uint16_t string_count;	// [0x00C] String count
 } XDBF_XSTR_Header;
 ASSERT_STRUCT(XDBF_XSTR_Header, 14);
+#pragma pack()
 
 /**
  * XDBF: String table entry header
  * All fields are in big-endian.
  */
-typedef struct PACKED _XDBF_XSTR_Entry_Header {
+typedef struct _XDBF_XSTR_Entry_Header {
 	uint16_t string_id;	// [0x000] ID
 	uint16_t length;	// [0x002] String length (NOT NULL-terminated)
 } XDBF_XSTR_Entry_Header;
-ASSERT_STRUCT(XDBF_XSTR_Entry_Header, sizeof(uint32_t));
+ASSERT_STRUCT(XDBF_XSTR_Entry_Header, 2*sizeof(uint16_t));
 
 /**
  * XDBF: Title ID
@@ -157,7 +159,7 @@ ASSERT_STRUCT(XDBF_XSTR_Entry_Header, sizeof(uint32_t));
  * NOTE: Struct positioning only works with the original BE32 value.
  * TODO: Combine with XEX2 version.
  */
-typedef union PACKED _XDBF_Title_ID {
+typedef union _XDBF_Title_ID {
 	struct {
 		char c[2];
 		uint16_t u16;
@@ -172,6 +174,7 @@ ASSERT_STRUCT(XDBF_Title_ID, sizeof(uint32_t));
  */
 #define XDBF_XACH_MAGIC 'XACH'
 #define XDBF_XACH_VERSION 1
+#pragma pack(1)
 typedef struct PACKED _XDBF_XACH_Header {
 	uint32_t magic;		// [0x000] 'XACH'
 	uint32_t version;	// [0x004] Version (1)
@@ -183,12 +186,13 @@ typedef struct PACKED _XDBF_XACH_Header {
 	// of XDBF_XACH_Entry.
 } XDBF_XACH_Header;
 ASSERT_STRUCT(XDBF_XACH_Header, 14);
+#pragma pack(0)
 
 /**
  * XDBF: XACH - Achievements table entry
  * All fields are in big-endian.
  */
-typedef struct PACKED _XDBF_XACH_Entry {
+typedef struct _XDBF_XACH_Entry {
 	uint16_t achievement_id;	// [0x000] Achievement ID
 	uint16_t name_id;		// [0x002] Name ID (string table)
 	uint16_t unlocked_desc_id;	// [0x004] Unlocked description ID (string table)
@@ -207,7 +211,7 @@ ASSERT_STRUCT(XDBF_XACH_Entry, 0x24);
  */
 #define XDBF_XTHD_MAGIC 'XTHD'
 #define XDBF_XTHD_VERSION 1
-typedef struct PACKED _XDBF_XTHD {
+typedef struct _XDBF_XTHD {
 	uint32_t magic;		// [0x000] 'XTHD'
 	uint32_t version;	// [0x004] Version (1)
 	uint32_t size;		// [0x008] Size (might be 0?)
@@ -219,7 +223,7 @@ typedef struct PACKED _XDBF_XTHD {
 		uint16_t build;
 		uint16_t revision;
 	} title_version;	// [0x014] Title version
-	uint32_t unknown[4];	// [0x018]
+	uint32_t unknown[4];	// [0x01C]
 } XDBF_XTHD;
 ASSERT_STRUCT(XDBF_XTHD, 0x2C);
 
@@ -239,6 +243,7 @@ typedef enum {
  */
 #define XDBF_XGAA_MAGIC 'XGAA'
 #define XDBF_XGAA_VERSION 1
+#pragma pack(1)
 typedef struct PACKED _XDBF_XGAA_Header {
 	uint32_t magic;		// [0x000] 'XGAA'
 	uint32_t version;	// [0x004] Version (1)
@@ -248,12 +253,13 @@ typedef struct PACKED _XDBF_XGAA_Header {
 	// of XDBF_XGAA_Entry.
 } XDBF_XGAA_Header;
 ASSERT_STRUCT(XDBF_XGAA_Header, 14);
+#pragma pack()
 
 /**
  * XDBF: XGAA - Avatar award entry
  * All fields are in big-endian.
  */
-typedef struct PACKED _XDBF_XGAA_Entry {
+typedef struct _XDBF_XGAA_Entry {
 	uint32_t unk_0x000;		// [0x000] ???
 	uint16_t avatar_award_id;	// [0x004] Avatar award ID
 	uint16_t unk_0x006;		// [0x006] ???
@@ -279,7 +285,7 @@ ASSERT_STRUCT(XDBF_XGAA_Entry, 36);
  */
 #define XDBF_XSRC_MAGIC 'XSRC'
 #define XDBF_XSRC_VERSION 1
-typedef struct PACKED _XDBF_XSRC_Header {
+typedef struct _XDBF_XSRC_Header {
 	uint32_t magic;		// [0x000] 'XSRC'
 	uint32_t version;	// [0x004] Version (1)
 	uint32_t size;		// [0x008] Size of entire struct, including gzipped data.
@@ -294,13 +300,11 @@ ASSERT_STRUCT(XDBF_XSRC_Header, 4*sizeof(uint32_t));
  * XDBF: XSRC - second header, stored after the filename.
  * All fields are in big-endian.
  */
-typedef struct PACKED _XDBF_XSRC_Header2 {
+typedef struct _XDBF_XSRC_Header2 {
 	uint32_t uncompressed_size;	// [0x000] Uncompressed data size
 	uint32_t compressed_size;	// [0x004] Compressed data size
 } XDBF_XSRC_Header2;
 ASSERT_STRUCT(XDBF_XSRC_Header2, 2*sizeof(uint32_t));
-
-#pragma pack()
 
 #ifdef __cplusplus
 }

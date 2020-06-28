@@ -19,8 +19,6 @@
 extern "C" {
 #endif
 
-#pragma pack(1)
-
 /**
  * Game Boy Sound System.
  *
@@ -28,7 +26,7 @@ extern "C" {
  * except for the magic number.
  */
 #define GBS_MAGIC 'GBS\x01'
-typedef struct PACKED _GBS_Header {
+typedef struct _GBS_Header {
 	uint32_t magic;			// [0x000] 'GBS\x01' (big-endian)
 					//         NOTE: \x01 is technically a version number.
 	uint8_t track_count;		// [0x004] Number of tracks
@@ -45,8 +43,6 @@ typedef struct PACKED _GBS_Header {
 	char copyright[32];		// [0x050] Copyright. (ASCII, NULL-terminated)
 } GBS_Header;
 ASSERT_STRUCT(GBS_Header, 112);
-
-#pragma pack()
 
 #ifdef __cplusplus
 }

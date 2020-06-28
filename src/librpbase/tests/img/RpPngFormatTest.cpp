@@ -382,9 +382,9 @@ void RpPngFormatTest::TearDown(void)
  */
 void RpPngFormatTest::Load_Verify_IHDR(PNG_IHDR_t *ihdr, const uint8_t *ihdr_src)
 {
-	static_assert(sizeof(PNG_IHDR_t) == PNG_IHDR_t_SIZE,
+	static_assert(sizeof(PNG_IHDR_t) == 13,
 		"PNG_IHDR_t size is incorrect. (should be 13 bytes)");
-	static_assert(sizeof(PNG_IHDR_full_t) == PNG_IHDR_full_t_SIZE,
+	static_assert(sizeof(PNG_IHDR_full_t) == 25,
 		"PNG_IHDR_full_t size is incorrect. (should be 25 bytes)");
 
 	PNG_IHDR_full_t ihdr_full;

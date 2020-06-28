@@ -16,8 +16,6 @@
 extern "C" {
 #endif
 
-#pragma pack(1)
-
 /**
  * References:
  * - https://msdn.microsoft.com/en-us/library/windows/desktop/bb943990(v=vs.85).aspx
@@ -37,7 +35,7 @@ extern "C" {
  *
  * All fields are in little-endian.
  */
-typedef struct PACKED _DDS_PIXELFORMAT {
+typedef struct _DDS_PIXELFORMAT {
 	uint32_t dwSize;		// [0x000]
 	uint32_t dwFlags;		// [0x004] See DDS_PIXELFORMAT_FLAGS
 	uint32_t dwFourCC;		// [0x008] See DDS_PIXELFORMAT_FOURCC
@@ -47,7 +45,7 @@ typedef struct PACKED _DDS_PIXELFORMAT {
 	uint32_t dwBBitMask;		// [0x018]
 	uint32_t dwABitMask;		// [0x01C]
 } DDS_PIXELFORMAT;
-ASSERT_STRUCT(DDS_PIXELFORMAT, 32);
+ASSERT_STRUCT(DDS_PIXELFORMAT, 8*sizeof(uint32_t));
 
 // dwFlags
 typedef enum {
@@ -95,7 +93,7 @@ typedef enum {
  * All fields are in little-endian.
  */
 #define NVTT_MAGIC 'NVTT'
-typedef struct PACKED _DDS_NVTT_Header {
+typedef struct _DDS_NVTT_Header {
 	uint32_t dwNvttReserved[9];	// [0x000]
 	uint32_t dwNvttMagic;		// [0x024] 'NVTT'
 	// TODO: Separate uint8_t values for major/minor/revision?
@@ -112,7 +110,7 @@ ASSERT_STRUCT(DDS_NVTT_Header, 11*sizeof(uint32_t));
  * All fields are in little-endian.
  */
 #define DDS_MAGIC 'DDS '
-typedef struct PACKED _DDS_HEADER {
+typedef struct _DDS_HEADER {
 	uint32_t dwSize;		// [0x000]
 	uint32_t dwFlags;		// [0x004] See DDS_HEADER_FLAGS
 	uint32_t dwHeight;		// [0x008]
@@ -334,14 +332,14 @@ typedef enum {
  *
  * All fields are in little-endian.
  */
-typedef struct PACKED _DDS_HEADER_DXT10 {
+typedef struct _DDS_HEADER_DXT10 {
 	DXGI_FORMAT dxgiFormat;
 	D3D10_RESOURCE_DIMENSION resourceDimension;
 	uint32_t miscFlag;	// See DDS_DXT10_MISC_FLAG.
 	uint32_t arraySize;
 	uint32_t miscFlags2;	// See DDS_DXT10_MISC_FLAGS2.
 } DDS_HEADER_DXT10;
-ASSERT_STRUCT(DDS_HEADER_DXT10, 20);
+ASSERT_STRUCT(DDS_HEADER_DXT10, 5*sizeof(uint32_t));
 
 // miscFlag
 typedef enum {
@@ -365,14 +363,13 @@ typedef enum {
  *
  * All fields are in little-endian.
  */
-typedef struct PACKED _DDS_HEADER_XBOX {
+typedef struct _DDS_HEADER_XBOX {
 	uint32_t tileMode;		// See DDS_XBOX_TILE_MODE. [TODO]
 	uint32_t baseAlignment;
 	uint32_t dataSize;
 	uint32_t xdkVer;		// _XDK_VER
 } DDS_HEADER_XBOX;
-
-#pragma pack()
+ASSERT_STRUCT(DDS_HEADER_XBOX, 4*sizeof(uint32_t));
 
 #ifdef __cplusplus
 }

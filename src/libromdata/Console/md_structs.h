@@ -16,13 +16,11 @@
 extern "C" {
 #endif
 
-#pragma pack(1)
-
 /**
  * Motorola 68000 vector table.
  * All fields are big-endian.
  */
-typedef struct PACKED _M68K_VectorTable {
+typedef struct _M68K_VectorTable {
 	union {
 		uint32_t vectors[64];
 		struct {
@@ -50,7 +48,7 @@ typedef struct PACKED _M68K_VectorTable {
 		};
 	};
 } M68K_VectorTable;
-ASSERT_STRUCT(M68K_VectorTable, 256);
+ASSERT_STRUCT(M68K_VectorTable, 64*sizeof(uint32_t));
 
 /**
  * Mega Drive ROM header.
@@ -59,7 +57,7 @@ ASSERT_STRUCT(M68K_VectorTable, 256);
  * All fields are big-endian.
  * NOTE: Strings are NOT null-terminated!
  */
-typedef struct PACKED _MD_RomHeader {
+typedef struct _MD_RomHeader {
 	// Titles may be encoded in either
 	// Shift-JIS (cp932) or cp1252.
 	char system[16];
@@ -140,8 +138,6 @@ typedef struct __32X_SecurityProgram_UserHeader {
 	uint32_t ssh2_vbr;		// [0x02C] Slave SH-2 VBR
 } _32X_SecurityProgram_UserHeader;
 ASSERT_STRUCT(_32X_SecurityProgram_UserHeader, 48);
-
-#pragma pack()
 
 #ifdef __cplusplus
 }

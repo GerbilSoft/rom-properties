@@ -24,8 +24,7 @@ extern "C" {
  * - http://cgfm2.emuviews.com/txt/smdtech.txt
  * - http://wiki.superfamicom.org/snes/show/Super+Wild+Card
  */
-#pragma pack(1)
-typedef struct PACKED SMD_Header {
+typedef struct SMD_Header {
 	union {
 		// Console-specific parameters.
 		struct {
@@ -36,16 +35,17 @@ typedef struct PACKED SMD_Header {
 		struct {
 			uint16_t pages;		// Number of 8 KB pages. (LE16)
 			uint8_t emulation_mode;	// Emulation mode. (See SMC_EmulationMode)
+			uint8_t unused;		// Unused
 		} smc;
 		// TODO: Magic Griffin parameters.
 	};
-	uint8_t reserved1[5];		// Reserved. (Should be 0.)
+	uint8_t reserved1[4];		// Reserved. (Should be 0.)
 	uint8_t id[2];			// Should be {0xAA 0xBB}.
 	// NOTE: file_type is only valid if id is correct.
 	uint8_t file_type;		// File type. (See SMD_FileType)
 	uint8_t reserved2[501];		// Reserved. (Should be 0.)
 } SMD_Header;
-#pragma pack()
+ASSERT_STRUCT(SMD_Header, 512);
 
 /**
  * SMD file data types.
