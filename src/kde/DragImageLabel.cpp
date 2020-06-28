@@ -362,10 +362,14 @@ void DragImageLabel::mouseMoveEvent(QMouseEvent *event)
 		}
 	} else {
 		// Not animated. Use the QLabel pixmap directly.
+#if QT_VERSION >= QT_VERSION_CHECK(5,15,0)
+		drag->setPixmap(this->pixmap(Qt::ReturnByValue));
+#else /* QT_VERSION < QT_VERSION_CHECK(5,15,0) */
 		const QPixmap *const qpxm = this->pixmap();
 		if (qpxm) {
 			drag->setPixmap(*qpxm);
 		}
+#endif /* QT_VERSION >= QT_VERSION_CHECK(5,15,0) */
 	}
 
 	drag->exec(Qt::CopyAction);
