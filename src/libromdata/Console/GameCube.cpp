@@ -1372,6 +1372,7 @@ const char *const *GameCube::supportedMimeTypes_static(void)
 		"application/x-cso",		// technically a different format...
 		"application/x-nasos-image",
 		"application/x-gcz-image",
+		"application/x-rvz-image",
 
 		nullptr
 	};
