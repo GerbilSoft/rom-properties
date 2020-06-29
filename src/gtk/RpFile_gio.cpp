@@ -18,9 +18,9 @@ using std::string;
 class RpFileGioPrivate
 {
 	public:
-		RpFileGioPrivate(const char *uri)
+		explicit RpFileGioPrivate(const char *uri)
 			: stream(nullptr), uri(uri) { }
-		RpFileGioPrivate(const string &uri)
+		explicit RpFileGioPrivate(const string &uri)
 			: stream(nullptr), uri(uri) { }
 		~RpFileGioPrivate();
 
@@ -185,7 +185,6 @@ size_t RpFileGio::read(void *ptr, size_t size)
 			// No GError...
 			m_lastError = EIO;
 		}
-		g_error_free(err);
 		ret = 0;
 	}
 
@@ -234,7 +233,6 @@ int RpFileGio::seek(off64_t pos)
 			// No GError...
 			m_lastError = EIO;
 		}
-		g_error_free(err);
 		ret = -1;
 	}
 

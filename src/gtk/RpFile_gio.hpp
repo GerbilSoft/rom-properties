@@ -21,8 +21,8 @@ class RpFileGio : public LibRpFile::IRpFile
 		 * NOTE: Files are always opened as read-only in binary mode.
 		 * @param uri GVfs URI.
 		 */
-		RpFileGio(const char *uri);
-		RpFileGio(const std::string &uri);
+		explicit RpFileGio(const char *uri);
+		explicit RpFileGio(const std::string &uri);
 	private:
 		void init(void);
 	protected:
