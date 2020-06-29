@@ -1045,6 +1045,10 @@ const char *const *DirectDrawSurface::supportedFileExtensions_static(void)
 const char *const *DirectDrawSurface::supportedMimeTypes_static(void)
 {
 	static const char *const mimeTypes[] = {
+		// Vendor-specific MIME types.
+		// TODO: Get these upstreamed on FreeDesktop.org.
+		"image/vnd.ms-dds",
+
 		// Unofficial MIME types from FreeDesktop.org.
 		"image/x-dds",
 
