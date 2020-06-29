@@ -127,7 +127,7 @@ SufamiTurbo::SufamiTurbo(IRpFile *file)
 	RP_D(SufamiTurbo);
 	// NOTE: Handling Sufami Turbo ROMs as if they're Super NES.
 	d->className = "SNES";
-	d->mimeType = "application/vnd.nintendo.snes.rom";	// vendor-specific
+	d->mimeType = "application/x-sufami-turbo-rom";	// unofficial, not on fd.o
 
 	if (!d->file) {
 		// Could not ref() the file handle.
@@ -275,6 +275,7 @@ const char *const *SufamiTurbo::supportedMimeTypes_static(void)
 
 		// Unofficial MIME types from FreeDesktop.org.
 		"application/x-snes-rom",
+		"application/x-sufami-turbo-rom",
 
 		nullptr
 	};
