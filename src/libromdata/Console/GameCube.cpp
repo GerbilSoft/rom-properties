@@ -1340,6 +1340,7 @@ const char *const *GameCube::supportedMimeTypes_static(void)
 		// Unofficial MIME types from FreeDesktop.org.
 		"application/x-gamecube-rom",
 		"application/x-gamecube-iso-image",
+		"application/x-gamecube-tgc",
 		"application/x-wii-rom",
 		"application/x-wii-iso-image",
 		"application/x-wbfs",
