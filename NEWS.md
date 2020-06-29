@@ -18,7 +18,9 @@
   * Game Boy Advance: Added metadata properties for Title and Publisher.
     (Same as Game Boy and Game Boy Color.)
   * NES: Added more (unused) mappers for TNES format.
-  * GameCube: Added support for split .wbfs/.wbf1 files.
+  * GameCube: Added support for more formats:
+    * Split .wbfs/.wbf1 files
+    * GCZ compressed images
   * SNES: Significantly improved detection for ROM images with headers that
     don't quite match the specification. Added SPC7110 and other custom chip
     detection.

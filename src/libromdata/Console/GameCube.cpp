@@ -30,6 +30,7 @@ using LibRpTexture::rp_image;
 // DiscReader
 #include "disc/WbfsReader.hpp"
 #include "disc/CisoGcnReader.hpp"
+#include "disc/GczReader.hpp"
 #include "disc/NASOSReader.hpp"
 #include "disc/nasos_gcn.h"	// for magic numbers
 #include "disc/WiiPartition.hpp"
@@ -83,7 +84,8 @@ class GameCubePrivate : public RomDataPrivate
 			DISC_FORMAT_CISO  = (4U << 8),		// CISO image
 			DISC_FORMAT_WIA   = (5U << 8),		// WIA image (Header only!)
 			DISC_FORMAT_NASOS = (6U << 8),		// NASOS image
-			DISC_FORMAT_PARTITION = (7U << 8),	// Standalone Wii partition
+			DISC_FORMAT_GCZ   = (7U << 8),		// GCZ image
+			DISC_FORMAT_PARTITION = (0xFEU << 8),	// Standalone Wii partition
 			DISC_FORMAT_UNKNOWN = (0xFFU << 8),
 			DISC_FORMAT_MASK = (0xFFU << 8),
 		};
@@ -803,6 +805,10 @@ GameCube::GameCube(IRpFile *file)
 			d->mimeType = "application/x-nasos-image";
 			d->discReader = new NASOSReader(d->file);
 			break;
+		case GameCubePrivate::DISC_FORMAT_GCZ:
+			d->mimeType = "application/x-gcz-image";
+			d->discReader = new GczReader(d->file);
+			break;
 		case GameCubePrivate::DISC_FORMAT_WIA:
 			// TODO: Implement WiaReader.
 			// For now, only the header will be readable.
@@ -834,7 +840,12 @@ GameCube::GameCube(IRpFile *file)
 			goto notSupported;
 		}
 		return;
- 	}
+	}
+
+	if (!d->discReader->isOpen()) {
+		// Error opening the DiscReader.
+		goto notSupported;
+	}
 
 	// Save the disc header for later.
 	d->discReader->rewind();
@@ -1215,6 +1226,13 @@ int GameCube::isRomSupported_static(const DetectInfo *info)
 		return (GameCubePrivate::DISC_SYSTEM_WII | GameCubePrivate::DISC_FORMAT_NASOS);
 	}
 
+	// Check for GCZ.
+	if (GczReader::isDiscSupported_static(info->header.pData, info->header.size) >= 0) {
+		// GCZ has a "disc type" field in the header, but it shouldn't
+		// be relied upon as correct. (NKit has a weird value there.)
+		return (GameCubePrivate::DISC_SYSTEM_UNKNOWN | GameCubePrivate::DISC_FORMAT_GCZ);
+	}
+
 	// Check for a standalone Wii partition.
 	if (pData32[0] == cpu_to_be32(0x00010001)) {
 		// Signature type is correct.
@@ -1331,6 +1349,7 @@ const char *const *GameCube::supportedMimeTypes_static(void)
 		// TODO: Get these upstreamed on FreeDesktop.org.
 		"application/x-cso",		// technically a different format...
 		"application/x-nasos-image",
+		"application/x-gcz-image",
 
 		nullptr
 	};

@@ -100,6 +100,7 @@ SET(libromdata_SRCS
 	disc/GcnFst.cpp
 	disc/GcnPartition.cpp
 	disc/GcnPartitionPrivate.cpp
+	disc/GczReader.cpp
 	disc/GdiReader.cpp
 	disc/IResourceReader.cpp
 	disc/IsoPartition.cpp
@@ -254,16 +255,14 @@ SET(libromdata_H
 
 	disc/Cdrom2352Reader.hpp
 	disc/CIAReader.hpp
-	disc/ciso_gcn.h
 	disc/CisoGcnReader.hpp
 	disc/GcnFst.hpp
 	disc/GcnPartition.hpp
 	disc/GcnPartitionPrivate.hpp
+	disc/GczReader.hpp
 	disc/GdiReader.hpp
 	disc/IResourceReader.hpp
 	disc/IsoPartition.hpp
-	disc/libwbfs.h
-	disc/nasos_gcn.h
 	disc/NASOSReader.hpp
 	disc/NCCHReader.hpp
 	disc/NCCHReader_p.hpp
@@ -272,8 +271,13 @@ SET(libromdata_H
 	disc/WbfsReader.hpp
 	disc/WiiPartition.hpp
 	disc/WuxReader.hpp
-	disc/wux_structs.h
 	disc/XDVDFSPartition.cpp
+
+	disc/ciso_gcn.h
+	disc/gcz_structs.h
+	disc/libwbfs.h
+	disc/nasos_gcn.h
+	disc/wux_structs.h
 	disc/xdvdfs_structs.h
 
 	config/TImageTypesConfig.hpp
