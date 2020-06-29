@@ -301,9 +301,17 @@ MachO::MachO(IRpFile *file)
 
 	// d->fileType is set to FileType::Unknown above, so only set it
 	// if the filetype is known.
+	bool mimeIsSet = false;
+	if (d->execFormat == MachOPrivate::Exec_Format::Fat) {
+		// Fat binary.
+		d->mimeType = "application/x-mach-fat-binary";
+		mimeIsSet = true;
+	}
 	if (d->machHeaders[0].filetype < ARRAY_SIZE(fileTypes_tbl)) {
 		d->fileType = static_cast<RomData::FileType>(fileTypes_tbl[d->machHeaders[0].filetype]);
-		d->mimeType = mimeTypes_tbl[d->machHeaders[0].filetype];
+		if (!mimeIsSet) {
+			d->mimeType = mimeTypes_tbl[d->machHeaders[0].filetype];
+		}
 	}
 }
 
@@ -444,6 +452,7 @@ const char *const *MachO::supportedMimeTypes_static(void)
 		"application/x-mach-sharedlib",
 		"application/x-mach-core",
 		"application/x-mach-bundle",
+		"application/x-mach-fat-binary",
 
 		nullptr
 	};
