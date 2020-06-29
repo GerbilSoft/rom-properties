@@ -715,6 +715,7 @@ GameCube::GameCube(IRpFile *file)
 			break;
 
 		case GameCubePrivate::DISC_FORMAT_TGC: {
+			d->mimeType = "application/x-gamecube-tgc";
 			d->fileType = FileType::EmbeddedDiscImage;
 			// Check the TGC header for the disc offset.
 			const GCN_TGC_Header *tgcHeader = reinterpret_cast<const GCN_TGC_Header*>(header);
@@ -799,6 +800,7 @@ GameCube::GameCube(IRpFile *file)
 		}
 
 		case GameCubePrivate::DISC_FORMAT_CISO:
+			d->mimeType = "application/x-cso";
 			d->discReader = new CisoGcnReader(d->file);
 			break;
 		case GameCubePrivate::DISC_FORMAT_NASOS:
