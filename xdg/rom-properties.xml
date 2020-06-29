@@ -209,6 +209,14 @@
       <match value="WII\001DISC" type="string" offset="0"/>
     </magic>
   </mime-type>
+  <mime-type type="application/x-gcz-image">
+    <sub-class-of type="application/x-gamecube-rom"/>
+    <generic-icon name="application-x-cd-image"/>
+    <glob pattern="*.gcz"/>
+    <magic priority="50">
+      <match value="0xb10bc001" type="big32" offset="0"/>
+    </magic>
+  </mime-type>
 
   <!-- GameCubeBNR -->
   <mime-type type="application/x-gamecube-bnr">
