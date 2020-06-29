@@ -99,8 +99,7 @@ CisoGcnReader::CisoGcnReader(IRpFile *file)
 		// If the block size is 0x18, then this is
 		// actually a PSP CISO, and this field is
 		// the CISO header size.
-		m_file->unref();
-		m_file = nullptr;
+		UNREF_AND_NULL_NOCHK(m_file);
 		m_lastError = EIO;
 		return;
 	}
