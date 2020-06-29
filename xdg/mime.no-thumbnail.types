@@ -1,0 +1,68 @@
+# MIME types for rom-properties.
+# These MIME types do not have thumbnails, so they should only be
+# listed in the KDE .desktop files, not the GTK+ .thumbnailer files.
+
+# NOTES:
+# - all/all doesn't work; use application/octet-stream.
+#   - TODO: Remove application/octet-stream and only use more-specific types?
+# - MS CAB is listed for Nintendo Badge Arcade .cab files.
+# - model/x.stl-binary and image/x-3ds are listed for Nintendo 3DS files.
+# - Non-thumbnailable MIME types are only listed in KDE .desktop files.
+
+# Generic
+application/octet-stream
+application/x-cd-image
+application/x-iso9660-image
+
+# Audio
+audio/x-adx				# ADX
+audio/x-bcstm				# BCSTM
+audio/x-bfstm				# BCSTM
+audio/x-bcwav				# BCSTM
+audio/x-brstm				# BRSTM
+audio/x-gbs				# GBS
+audio/x-nsf				# NSF
+audio/x-psf				# PSF
+audio/x-minipsf				# PSF
+audio/x-sap				# SAP
+audio/prs.sid				# SID
+audio/x-sndh				# SNDH
+audio/x-spc				# SPC
+audio/x-vgm				# VGM
+
+# Console
+application/x-genesis-rom		# MegaDrive
+application/x-sega-cd-rom		# MegaDrive
+application/x-genesis-32x-rom		# MegaDrive
+application/x-sega-cd-32x-rom		# MegaDrive
+application/x-sega-pico-rom		# MegaDrive
+application/x-n64-rom			# N64
+application/x-nes-rom			# NES
+application/x-fds-disk			# NES
+application/x-ps1-executable		# PlayStationEXE
+application/x-sms-rom			# Sega8Bit
+application/x-gamegear-rom		# Sega8Bit
+application/x-saturn-rom		# SegaSaturn
+
+# Handheld
+application/x-atari-lynx-rom		# Lynx
+application/x-neo-geo-pocket-rom	# NGPC
+application/x-neo-geo-pocket-color-rom	# NGPC
+application/x-nintendo-3ds-emmc		# Nintendo3DS
+application/x-nintendo-3ds-firm		# Nintendo3DSFirm
+application/x-pokemon-mini-rom		# PokemonMini
+application/x-virtual-boy-rom		# VirtualBoy
+
+# Other
+application/x-object			# ELF
+application/x-executable		# ELF/EXE
+application/x-sharedlib			# ELF
+application/x-core			# ELF
+application/x-ms-dos-executable		# EXE
+application/x-msdownload		# EXE
+application/x-mach-object		# MachO
+application/x-mach-executable		# MachO
+application/x-mach-sharedlib		# MachO
+application/x-mach-core			# MachO
+application/x-mach-bundle		# MachO
+application/x-mach-fat-binary		# MachO

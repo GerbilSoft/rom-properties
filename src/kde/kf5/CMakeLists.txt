@@ -227,6 +227,11 @@ ENDIF(BUILD_KF5)
 #######################
 
 IF(BUILD_KF5)
+	# Process MIME types for the .desktop file.
+	INCLUDE(ParseMimeTypes)
+	PARSE_MIME_TYPES(MIMETYPES_ALL "${CMAKE_SOURCE_DIR}/xdg/mime.thumbnail.types" "${CMAKE_SOURCE_DIR}/xdg/mime.no-thumbnail.types")
+	CONFIGURE_FILE(rom-properties-kf5.desktop.in rom-properties-kf5.desktop @ONLY)
+
 	INSTALL(TARGETS rom-properties-kf5
 		LIBRARY DESTINATION "${PLUGIN_INSTALL_DIR}"
 		COMPONENT "plugin"
@@ -239,7 +244,7 @@ IF(BUILD_KF5)
 		LIBRARY DESTINATION "${KFOV_PLUGIN_INSTALL_DIR}"
 		COMPONENT "plugin"
 		)
-	INSTALL(FILES "${CMAKE_CURRENT_SOURCE_DIR}/rom-properties-kf5.desktop"
+	INSTALL(FILES rom-properties-kf5.desktop
 		DESTINATION "${SERVICES_INSTALL_DIR}"
 		COMPONENT "plugin"
 		)

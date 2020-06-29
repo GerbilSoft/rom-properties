@@ -105,8 +105,10 @@ IF(BUILD_GTK3)
 
 		# Process the .thumbnailer file.
 		INCLUDE(DirInstallPaths)
-		CONFIGURE_FILE(rom-properties.thumbnailer.in rom-properties.thumbnailer)
-		INSTALL(FILES "${CMAKE_CURRENT_BINARY_DIR}/rom-properties.thumbnailer"
+		INCLUDE(ParseMimeTypes)
+		PARSE_MIME_TYPES(MIMETYPES_THUMBONLY "${CMAKE_SOURCE_DIR}/xdg/mime.thumbnail.types")
+		CONFIGURE_FILE(rom-properties.thumbnailer.in rom-properties.thumbnailer @ONLY)
+		INSTALL(FILES rom-properties.thumbnailer
 			DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/thumbnailers"
 			COMPONENT "plugin"
 			)

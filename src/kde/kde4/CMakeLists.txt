@@ -112,13 +112,18 @@ ENDIF(BUILD_KDE4)
 #######################
 
 IF(BUILD_KDE4)
+	# Process MIME types for the .desktop file.
+	INCLUDE(ParseMimeTypes)
+	PARSE_MIME_TYPES(MIMETYPES_ALL "${CMAKE_SOURCE_DIR}/xdg/mime.thumbnail.types" "${CMAKE_SOURCE_DIR}/xdg/mime.no-thumbnail.types")
+	CONFIGURE_FILE(rom-properties-kde4.desktop.in rom-properties-kde4.desktop @ONLY)
+
 	# FIXME: KDE4's installation directories have the prefix
 	# hard-coded. This should be removed.
 	INSTALL(TARGETS rom-properties-kde4
 		LIBRARY DESTINATION "${PLUGIN_INSTALL_DIR}"
 		COMPONENT "plugin"
 		)
-	INSTALL(FILES "${CMAKE_CURRENT_SOURCE_DIR}/rom-properties-kde4.desktop"
+	INSTALL(FILES rom-properties-kde4.desktop
 		DESTINATION "${SERVICES_INSTALL_DIR}"
 		COMPONENT "plugin"
 		)
