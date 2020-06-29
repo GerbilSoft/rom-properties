@@ -192,12 +192,10 @@
     <generic-icon name="application-x-cd-image"/>
     <alias type="application/x-wii-iso-image"/>
     <alias type="application/x-wbfs"/>
-    <alias type="application/x-wia"/>
     <glob pattern="*.iso"/>
     <glob pattern="*.gcm"/>
     <glob pattern="*.ciso"/>
     <glob pattern="*.rvm"/>
-    <glob pattern="*.wia"/>
     <magic priority="50">
       <match value="0x5d1c9ea3" type="big32" offset="24"/>
       <match value="CISO" type="string" offset="4">
@@ -210,11 +208,30 @@
     </magic>
   </mime-type>
   <mime-type type="application/x-gcz-image">
+    <comment>Compressed GameCube/Wii disc image</comment>
     <sub-class-of type="application/x-gamecube-rom"/>
     <generic-icon name="application-x-cd-image"/>
     <glob pattern="*.gcz"/>
     <magic priority="50">
       <match value="0xb10bc001" type="big32" offset="0"/>
+    </magic>
+  </mime-type>
+  <mime-type type="application/x-wia">
+    <comment>Compressed GameCube/Wii disc image</comment>
+    <sub-class-of type="application/x-wii-rom"/>
+    <generic-icon name="application-x-cd-image"/>
+    <glob pattern="*.wia"/>
+    <magic priority="50">
+      <match value="WIA\x01" type="string" offset="0"/>
+    </magic>
+  </mime-type>
+  <mime-type type="application/x-rvz-image">
+    <comment>Compressed GameCube/Wii disc image</comment>
+    <sub-class-of type="application/x-wii-rom"/>
+    <generic-icon name="application-x-cd-image"/>
+    <glob pattern="*.rvz"/>
+    <magic priority="50">
+      <match value="RVZ\x01" type="string" offset="0"/>
     </magic>
   </mime-type>
 

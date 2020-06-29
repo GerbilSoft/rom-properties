@@ -21,6 +21,7 @@
   * GameCube: Added support for more formats:
     * Split .wbfs/.wbf1 files
     * GCZ compressed images
+    * RVZ compressed images (header only; similar to WIA)
   * SNES: Significantly improved detection for ROM images with headers that
     don't quite match the specification. Added SPC7110 and other custom chip
     detection.

@@ -82,9 +82,13 @@ class GameCubePrivate : public RomDataPrivate
 			DISC_FORMAT_TGC   = (2U << 8),		// TGC (embedded disc image) (GCN only?)
 			DISC_FORMAT_WBFS  = (3U << 8),		// WBFS image (Wii only)
 			DISC_FORMAT_CISO  = (4U << 8),		// CISO image
-			DISC_FORMAT_WIA   = (5U << 8),		// WIA image (Header only!)
-			DISC_FORMAT_NASOS = (6U << 8),		// NASOS image
-			DISC_FORMAT_GCZ   = (7U << 8),		// GCZ image
+			DISC_FORMAT_NASOS = (5U << 8),		// NASOS image
+			DISC_FORMAT_GCZ   = (6U << 8),		// GCZ image
+
+			// WIA and RVZ formats are similar.
+			DISC_FORMAT_WIA   = (7U << 8),		// WIA image (Header only!)
+			DISC_FORMAT_RVZ   = (8U << 8),		// RVZ image (Header only!)
+
 			DISC_FORMAT_PARTITION = (0xFEU << 8),	// Standalone Wii partition
 			DISC_FORMAT_UNKNOWN = (0xFFU << 8),
 			DISC_FORMAT_MASK = (0xFFU << 8),
@@ -811,10 +815,17 @@ GameCube::GameCube(IRpFile *file)
 			d->mimeType = "application/x-gcz-image";
 			d->discReader = new GczReader(d->file);
 			break;
+
 		case GameCubePrivate::DISC_FORMAT_WIA:
 			// TODO: Implement WiaReader.
 			// For now, only the header will be readable.
 			d->mimeType = "application/x-wia";
+			d->discReader = nullptr;
+			break;
+		case GameCubePrivate::DISC_FORMAT_RVZ:
+			// TODO: Implement RvzReader.
+			// For now, only the header will be readable.
+			d->mimeType = "application/x-rvz-image";
 			d->discReader = nullptr;
 			break;
 
@@ -832,15 +843,20 @@ GameCube::GameCube(IRpFile *file)
 	}
 
 	if (!d->discReader) {
-		// No WiaReader yet. If this is WIA,
+		// No WiaReader or RvzReader yet. If this is WIA or RVZ,
 		// retrieve the header from header[].
-		if ((d->discType & GameCubePrivate::DISC_FORMAT_MASK) == GameCubePrivate::DISC_FORMAT_WIA) {
-			// GCN/Wii header starts at 0x58.
-			memcpy(&d->discHeader, &header[0x58], sizeof(d->discHeader));
-		} else {
-			// Non-WIA formats must have a valid DiscReader.
-			goto notSupported;
+		switch (d->discType & GameCubePrivate::DISC_FORMAT_MASK) {
+			case GameCubePrivate::DISC_FORMAT_WIA:
+			case GameCubePrivate::DISC_FORMAT_RVZ:
+				// GCN/Wii header starts at 0x58.
+				memcpy(&d->discHeader, &header[0x58], sizeof(d->discHeader));
+				break;
+			default:
+				// Non-WIA formats must have a valid DiscReader.
+				goto notSupported;
 		}
+
+		// Done for now...
 		return;
 	}
 
@@ -1186,13 +1202,33 @@ int GameCube::isRomSupported_static(const DetectInfo *info)
 		return (GameCubePrivate::DISC_SYSTEM_UNKNOWN | GameCubePrivate::DISC_FORMAT_CISO);
 	}
 
-	// Check for WIA.
+	// Check for NASOS.
+	// TODO: WII9?
+	if (pData32[0] == cpu_to_be32(NASOS_MAGIC_GCML)) {
+		// GameCube NASOS image.
+		return (GameCubePrivate::DISC_SYSTEM_GCN | GameCubePrivate::DISC_FORMAT_NASOS);
+	} else if (pData32[0] == cpu_to_be32(NASOS_MAGIC_WII5)) {
+		// Wii NASOS image. (single-layer)
+		return (GameCubePrivate::DISC_SYSTEM_WII | GameCubePrivate::DISC_FORMAT_NASOS);
+	}
+
+	// Check for GCZ.
+	if (GczReader::isDiscSupported_static(info->header.pData, info->header.size) >= 0) {
+		// GCZ has a "disc type" field in the header, but it shouldn't
+		// be relied upon as correct. (NKit has a weird value there.)
+		return (GameCubePrivate::DISC_SYSTEM_UNKNOWN | GameCubePrivate::DISC_FORMAT_GCZ);
+	}
+
+	// Check for WIA or RVZ.
 	static const uint32_t wia_magic = 'WIA\x01';
-	if (pData32[0] == cpu_to_be32(wia_magic)) {
+	static const uint32_t rvz_magic = 'RVZ\x01';
+	if (pData32[0] == cpu_to_be32(wia_magic) ||
+	    pData32[0] == cpu_to_be32(rvz_magic))
+	{
 		// This is a WIA image.
 		// NOTE: We're using the WIA system ID if it's valid.
 		// Otherwise, fall back to GCN/Wii magic.
-		switch (info->header.pData[0x48]) {
+		switch (be32_to_cpu(pData32[0x48/sizeof(uint32_t)])) {
 			case 1:
 				// GameCube disc image. (WIA format)
 				return (GameCubePrivate::DISC_SYSTEM_GCN | GameCubePrivate::DISC_FORMAT_WIA);
@@ -1216,23 +1252,6 @@ int GameCube::isRomSupported_static(const DetectInfo *info)
 
 		// Unrecognized WIA image...
 		return (GameCubePrivate::DISC_SYSTEM_UNKNOWN | GameCubePrivate::DISC_FORMAT_WIA);
-	}
-
-	// Check for NASOS.
-	// TODO: WII9?
-	if (pData32[0] == cpu_to_be32(NASOS_MAGIC_GCML)) {
-		// GameCube NASOS image.
-		return (GameCubePrivate::DISC_SYSTEM_GCN | GameCubePrivate::DISC_FORMAT_NASOS);
-	} else if (pData32[0] == cpu_to_be32(NASOS_MAGIC_WII5)) {
-		// Wii NASOS image. (single-layer)
-		return (GameCubePrivate::DISC_SYSTEM_WII | GameCubePrivate::DISC_FORMAT_NASOS);
-	}
-
-	// Check for GCZ.
-	if (GczReader::isDiscSupported_static(info->header.pData, info->header.size) >= 0) {
-		// GCZ has a "disc type" field in the header, but it shouldn't
-		// be relied upon as correct. (NKit has a weird value there.)
-		return (GameCubePrivate::DISC_SYSTEM_UNKNOWN | GameCubePrivate::DISC_FORMAT_GCZ);
 	}
 
 	// Check for a standalone Wii partition.
