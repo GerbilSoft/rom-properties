@@ -345,14 +345,15 @@ IF(CPU_i386 OR CPU_amd64)
 		utils/SuperMagicDrive_sse2.cpp
 		)
 
-	IF(MSVC AND NOT CMAKE_CL_64)
-		SET(SSE2_FLAG "/arch:SSE2")
-	ELSEIF(NOT MSVC)
-		# TODO: Other compilers?
-		# TODO: Not needed on 64-bit.
-		SET(MMX_FLAG "-mmmx")
-		SET(SSE2_FLAG "-msse2")
-	ENDIF()
+	IF(CPU_i386)
+		IF(MSVC)
+			SET(SSE2_FLAG "/arch:SSE2")
+		ELSE(MSVC)
+			# TODO: Other compilers?
+			SET(MMX_FLAG "-mmmx")
+			SET(SSE2_FLAG "-msse2")
+		ENDIF(MSVC)
+	ENDIF(CPU_i386)
 
 	IF(MMX_FLAG)
 		SET_SOURCE_FILES_PROPERTIES(utils/SuperMagicDrive_mmx.cpp
