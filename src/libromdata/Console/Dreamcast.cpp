@@ -344,14 +344,15 @@ Dreamcast::Dreamcast(IRpFile *file)
 			}
 			break;
 
-		case DreamcastPrivate::DiscType::Iso2352:
+		case DreamcastPrivate::DiscType::Iso2352: {
 			// 2352-byte sectors.
-			// FIXME: Assuming Mode 1.
 			d->mimeType = "application/x-dreamcast-rom";	// unofficial, not on fd.o
-			memcpy(&d->discHeader, &sector.m1.data, sizeof(d->discHeader));
+			const uint8_t *const data = cdromSectorDataPtr(&sector);
+			memcpy(&d->discHeader, data, sizeof(d->discHeader));
 			d->discReader = new Cdrom2352Reader(d->file);
 			d->iso_start_offset = static_cast<int>(cdrom_msf_to_lba(&sector.msf));
 			break;
+		}
 
 		case DreamcastPrivate::DiscType::GDI: {
 			// GD-ROM cuesheet.
@@ -434,25 +435,35 @@ int Dreamcast::isRomSupported_static(const DetectInfo *info)
 
 	// Check for Dreamcast HW and Maker ID.
 
-	// 0x0000: 2048-byte sectors.
-	const DC_IP0000_BIN_t *ip0000_bin = reinterpret_cast<const DC_IP0000_BIN_t*>(info->header.pData);
-	if (!memcmp(ip0000_bin->hw_id, DC_IP0000_BIN_HW_ID, sizeof(ip0000_bin->hw_id)) &&
-	    !memcmp(ip0000_bin->maker_id, DC_IP0000_BIN_MAKER_ID, sizeof(ip0000_bin->maker_id)))
-	{
-		// Found HW and Maker IDs at 0x0000.
-		// This is a 2048-byte sector image.
-		return static_cast<int>(DreamcastPrivate::DiscType::Iso2048);
+	// Try 2048-byte sectors. (IP0000.bin located at 0x0000.)
+	if (info->header.size >= 2048) {
+		const DC_IP0000_BIN_t *ip0000_bin = reinterpret_cast<const DC_IP0000_BIN_t*>(info->header.pData);
+		if (!memcmp(ip0000_bin->hw_id, DC_IP0000_BIN_HW_ID, sizeof(ip0000_bin->hw_id)) &&
+		    !memcmp(ip0000_bin->maker_id, DC_IP0000_BIN_MAKER_ID, sizeof(ip0000_bin->maker_id)))
+		{
+			// Found HW and Maker IDs at 0x0000.
+			// This is a 2048-byte sector image.
+			return static_cast<int>(DreamcastPrivate::DiscType::Iso2048);
+		}
 	}
 
-	// 0x0010: 2352-byte sectors;
-	ip0000_bin = reinterpret_cast<const DC_IP0000_BIN_t*>(&info->header.pData[0x10]);
-	if (!memcmp(ip0000_bin->hw_id, DC_IP0000_BIN_HW_ID, sizeof(ip0000_bin->hw_id)) &&
-	    !memcmp(ip0000_bin->maker_id, DC_IP0000_BIN_MAKER_ID, sizeof(ip0000_bin->maker_id)))
+	// Try 2352-byte sectors.
+	if (info->header.size >= 2352 &&
+	    Cdrom2352Reader::isDiscSupported_static(info->header.pData, info->header.size) >= 0)
 	{
-		// Found HW and Maker IDs at 0x0010.
-		// Verify the sync bytes.
-		if (Cdrom2352Reader::isDiscSupported_static(info->header.pData, info->header.size) >= 0) {
-			// Found CD-ROM sync bytes.
+		// Sync bytes are valid.
+		const CDROM_2352_Sector_t *const sector =
+			reinterpret_cast<const CDROM_2352_Sector_t*>(info->header.pData);
+
+		// Get the user data area. (Offset depends on Mode 1 vs. Mode 2 XA.)
+		const uint8_t *const data = cdromSectorDataPtr(sector);
+
+		// Check IP0000.bin.
+		const DC_IP0000_BIN_t *ip0000_bin = reinterpret_cast<const DC_IP0000_BIN_t*>(data);
+		if (!memcmp(ip0000_bin->hw_id, DC_IP0000_BIN_HW_ID, sizeof(ip0000_bin->hw_id)) &&
+		    !memcmp(ip0000_bin->maker_id, DC_IP0000_BIN_MAKER_ID, sizeof(ip0000_bin->maker_id)))
+		{
+			// Found HW and Maker IDs.
 			// This is a 2352-byte sector image.
 			return static_cast<int>(DreamcastPrivate::DiscType::Iso2352);
 		}
