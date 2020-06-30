@@ -33,6 +33,7 @@
   * Cdrom2352Reader: Mode 2 sectors are now read correctly.
   * WiiSave: Show permissions as if they're Unix-style permissions, and show
     the "No Copy from NAND" flag.
+  * WiiU: Get the GameTDB region code for boxart from the game ID.
 
 * Bug fixes:
   * WiiWAD: Fix DLC icons no longer working after updating CBCReader to update

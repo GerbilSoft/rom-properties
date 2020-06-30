@@ -14,6 +14,7 @@
 #include "wiiu_structs.h"
 #include "gcn_structs.h"
 #include "data/WiiUData.hpp"
+#include "GameCubeRegions.hpp"
 
 // librpbase, librpfile
 using namespace LibRpBase;
@@ -575,10 +576,9 @@ int WiiU::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
 	}
 
 	// Determine the GameTDB region code(s).
-	// TODO: Wii U version. (Figure out the region code field...)
-	//vector<const char*> tdb_regions = d->gcnRegionToGameTDB(d->gcnRegion, d->discHeader.id4[3]);
-	vector<const char*> tdb_regions;
-	tdb_regions.emplace_back("US");
+	// TODO: Figure out the actual Wii U region code.
+	// Using the game ID for now.
+	vector<const char*> tdb_regions = GameCubeRegions::gcnRegionToGameTDB(~0U, d->discHeader.id4[3]);
 
 	// Game ID.
 	// Replace any non-printable characters with underscores.
