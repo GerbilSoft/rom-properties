@@ -125,12 +125,7 @@ GcnFstPrivate::GcnFstPrivate(const uint8_t *fstData, uint32_t len, uint8_t offse
 
 	// Copy the FST data.
 	// NOTE: +1 for NULL termination.
-	uint8_t *fst8 = static_cast<uint8_t*>(malloc(fstData_sz + 1));
-	if (!fst8) {
-		// Could not allocate memory for the FST.
-		hasErrors = true;
-		return;
-	}
+	uint8_t *const fst8 = new uint8_t[fstData_sz + 1];
 	memcpy(fst8, fstData, fstData_sz);
 	fst8[fstData_sz] = 0; // Make sure the string table is NULL-terminated.
 	this->fstData = reinterpret_cast<GCN_FST_Entry*>(fst8);
@@ -149,7 +144,7 @@ GcnFstPrivate::GcnFstPrivate(const uint8_t *fstData, uint32_t len, uint8_t offse
 GcnFstPrivate::~GcnFstPrivate()
 {
 	assert(fstDirCount == 0);
-	free(fstData);
+	delete[] fstData;
 }
 
 /**

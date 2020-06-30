@@ -98,13 +98,7 @@ int RP_C_API main(int argc, char *argv[])
 	fseeko(f, 0, SEEK_SET);
 
 	// Read the FST into memory.
-	uint8_t *fstData = static_cast<uint8_t*>(malloc(filesize));
-	if (!fstData) {
-		printf(C_("GcnFstPrint", "ERROR: malloc(%u) failed."), static_cast<unsigned int>(filesize));
-		putchar('\n');
-		fclose(f);
-		return EXIT_FAILURE;
-	}
+	uint8_t *const fstData = new uint8_t[filesize];
 	size_t rd_size = fread(fstData, 1, filesize, f);
 	fclose(f);
 	if (rd_size != static_cast<size_t>(filesize)) {

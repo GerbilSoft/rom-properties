@@ -35,14 +35,10 @@ string T2U8_c(const TCHAR *wcs)
 	}
 	cbMbs--;
  
-	char *mbs = static_cast<char*>(malloc(cbMbs * sizeof(char)));
-	assert(mbs != nullptr);
-	if (!mbs) {
-		return s_ret;
-	}
+	char *const mbs = new char[cbMbs];
 	WideCharToMultiByte(CP_UTF8, 0, wcs, -1, mbs, cbMbs, nullptr, nullptr);
 	s_ret.assign(mbs, cbMbs);
-	free(mbs);
+	delete[] mbs;
 	return s_ret;
 }
 #endif /* UNICODE */
@@ -63,14 +59,10 @@ wstring U82W_c(const char *mbs)
 	}
 	cchWcs--;
  
-	wchar_t *wcs = static_cast<wchar_t*>(malloc(cchWcs * sizeof(wchar_t)));
-	assert(wcs != nullptr);
-	if (!wcs) {
-		return ts_ret;
-	}
+	wchar_t *const wcs = new wchar_t[cchWcs];
 	MultiByteToWideChar(CP_UTF8, 0, mbs, -1, wcs, cchWcs);
 	ts_ret.assign(wcs, cchWcs);
-	free(wcs);
+	delete[] wcs;
 	return ts_ret;
 }
 

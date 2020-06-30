@@ -105,7 +105,7 @@ size_t u16_strnlen(const char16_t *wcs, size_t maxlen)
 char16_t *u16_strdup(const char16_t *wcs)
 {
 	size_t len = u16_strlen(wcs)+1;	// includes terminator
-	char16_t *ret = (char16_t*)malloc(len*sizeof(*wcs));
+	char16_t *const ret = static_cast<char16_t*>(malloc(len * sizeof(*wcs)));
 	memcpy(ret, wcs, len*sizeof(*wcs));
 	return ret;
 }

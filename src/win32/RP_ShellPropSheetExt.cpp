@@ -2730,11 +2730,7 @@ IFACEMETHODIMP RP_ShellPropSheetExt::Initialize(
 		goto cleanup;
 	}
 
-	tfilename = (TCHAR*)malloc((cchFilename+1) * sizeof(TCHAR));
-	if (!tfilename) {
-		// Memory allocation failed.
-		goto cleanup;
-	}
+	tfilename = new TCHAR[cchFilename+1];
 	cchFilename = DragQueryFile(hDrop, 0, tfilename, cchFilename+1);
 	if (cchFilename == 0) {
 		// No filename.
@@ -2785,7 +2781,7 @@ cleanup:
 	UNREF(file);
 	GlobalUnlock(stm.hGlobal);
 	ReleaseStgMedium(&stm);
-	free(tfilename);
+	delete[] tfilename;
 
 	// If any value other than S_OK is returned from the method, the property 
 	// sheet is not displayed.

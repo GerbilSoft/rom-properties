@@ -29,7 +29,7 @@ namespace LibWin32Common {
  * @param wcs TCHAR string.
  * @return UTF-8 C++ string.
  */
-static inline string W2U8(const WCHAR *wcs)
+static inline string W2U8(const wchar_t *wcs)
 {
 	string s_ret;
 
@@ -40,14 +40,10 @@ static inline string W2U8(const WCHAR *wcs)
 	}
 	cbMbs--;
  
-	char *mbs = static_cast<char*>(malloc(cbMbs));
-	assert(mbs != nullptr);
-	if (!mbs) {
-		return s_ret;
-	}
+	char *const mbs = new char[cbMbs];
 	WideCharToMultiByte(CP_UTF8, 0, wcs, -1, mbs, cbMbs, nullptr, nullptr);
 	s_ret.assign(mbs, cbMbs);
-	free(mbs);
+	delete[] mbs;
 	return s_ret;
 }
 #ifdef UNICODE
