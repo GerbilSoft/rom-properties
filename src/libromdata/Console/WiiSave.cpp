@@ -473,7 +473,7 @@ int WiiSave::loadFieldData(void)
 	// Wii save and backup headers.
 	const Wii_SaveGame_Header_t *const svHeader = &d->svHeader;
 	const Wii_Bk_Header_t *const bkHeader = &d->bkHeader;
-	d->fields->reserve(4);	// Maximum of 4 fields.
+	d->fields->reserve(5);	// Maximum of 5 fields.
 
 	// Check if the headers are valid.
 	// TODO: Do this in the constructor instead?
@@ -506,11 +506,35 @@ int WiiSave::loadFieldData(void)
 		}
 	}
 
-	// Permissions. (TODO)
+	// Permissions.
 	if (isSvValid) {
-		d->fields->addField_string_numeric(C_("WiiSave", "Permissions"),
-			svHeader->permissions,
-			RomFields::Base::Hex, 2, RomFields::STRF_MONOSPACE);
+		// Unix-style permissions field.
+		char s_perms[] = "----------";
+		uint8_t perms = svHeader->permissions;
+		for (char *p = &s_perms[1]; p < s_perms + sizeof(s_perms); p += 3, perms <<= 2) {
+			if (perms & 0x20) {
+				p[0] = 'r';
+			}
+			if (perms & 0x10) {
+				p[1] = 'w';
+			}
+		}
+
+		d->fields->addField_string(C_("WiiSave", "Permissions"), s_perms,
+			RomFields::STRF_MONOSPACE);
+	}
+
+	// NoCopy? (separate from permissions)
+	if (d->wibnData) {
+		// Flags bitfield.
+		static const char *const flags_names[] = {
+			NOP_C_("WiiSave|Flags", "No Copy from NAND"),
+		};
+		vector<string> *const v_flags_names = RomFields::strArrayToVector_i18n(
+			"WiiSave|Flags", flags_names, ARRAY_SIZE(flags_names));
+		const uint32_t flags = (d->wibnData->isNoCopyFlagSet() ? 1 : 0);
+		d->fields->addField_bitfield(C_("WiiSave", "Flags"),
+			v_flags_names, 3, flags);
 	}
 
 	// MAC address.

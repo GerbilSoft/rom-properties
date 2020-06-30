@@ -603,4 +603,14 @@ const IconAnimData *WiiWIBN::iconAnimData(void) const
 	return d->iconAnimData;
 }
 
+/**
+ * Is the NoCopy flag set?
+ * @return True if set; false if not.
+ */
+bool WiiWIBN::isNoCopyFlagSet(void) const
+{
+	RP_D(const WiiWIBN);
+	return !!(d->wibnHeader.flags & cpu_to_be32(BANNER_WIBN_FLAGS_NOCOPY));
+}
+
 }

@@ -131,12 +131,29 @@ typedef enum {
 typedef struct _Wii_SaveGame_Header_t {
 	RVL_TitleID_t savegame_id;	// [0x000] Savegame ID (title ID)
 	uint32_t banner_size;		// [0x008] Size of banner+icons, with header. (max 0xF0A0)
-	uint8_t permissions;		// [0x00C] Permissions (???)
+	uint8_t permissions;		// [0x00C] Permissions (See Wii_SaveGame_Perm_e.)
 	uint8_t unknown1;		// [0x00D]
 	uint8_t md5_header[16];		// [0x00E] MD5 of plaintext header, with md5 blanker applied
 	uint8_t unknown2[2];		// [0x01E]
 } Wii_SaveGame_Header_t;
 ASSERT_STRUCT(Wii_SaveGame_Header_t, 32);
+
+/**
+ * Wii save game permissions.
+ * Similar to Unix permissions, except there's no Execute bit.
+ */
+typedef enum {
+	Wii_SaveGame_Perm_User_Read	= 0x20,
+	Wii_SaveGame_Perm_User_Write	= 0x10,
+	Wii_SaveGame_Perm_Group_Read	= 0x08,
+	Wii_SaveGame_Perm_Group_Write	= 0x04,
+	Wii_SaveGame_Perm_Other_Read	= 0x02,
+	Wii_SaveGame_Perm_Other_Write	= 0x01,
+
+	Wii_SaveGame_Perm_Mask_User	= 0x30,
+	Wii_SaveGame_Perm_Mask_Group	= 0x0C,
+	Wii_SaveGame_Perm_Mask_Other	= 0x03,
+} Wii_SaveGame_Perm_e;
 
 /**
  * Wii save game Bk (backup) header.

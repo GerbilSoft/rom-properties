@@ -31,6 +31,8 @@
     and is always located at $0000.
   * ISO: Added support for High Sierra Format CDs.
   * Cdrom2352Reader: Mode 2 sectors are now read correctly.
+  * WiiSave: Show permissions as if they're Unix-style permissions, and show
+    the "No Copy from NAND" flag.
 
 * Bug fixes:
   * WiiWAD: Fix DLC icons no longer working after updating CBCReader to update
