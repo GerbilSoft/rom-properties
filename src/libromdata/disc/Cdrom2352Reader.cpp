@@ -130,18 +130,11 @@ int Cdrom2352Reader::isDiscSupported(const uint8_t *pHeader, size_t szHeader) co
  */
 off64_t Cdrom2352Reader::getPhysBlockAddr(uint32_t blockIdx) const
 {
-	// Make sure the block index is in range.
-	RP_D(Cdrom2352Reader);
-	assert(blockIdx < d->blockCount);
-	if (blockIdx >= d->blockCount) {
-		// Out of range.
-		return -1;
-	}
-
-	// Convert to a physical block address and return.
-	// FIXME: Currently only supports Mode 1.
-	// Check for Mode 2 and handle it correctly.
-	return (static_cast<off64_t>(blockIdx) * d->physBlockSize) + 16;
+	// NOTE: This function should NOT be used.
+	// Use the readBlock() function instead.
+	RP_UNUSED(blockIdx);
+	assert(!"Cdrom2352Reader::getPhysBlockAddr() should not be used!");
+	return -1;
 }
 
 /**
@@ -181,7 +174,7 @@ int Cdrom2352Reader::readBlock(uint32_t blockIdx, void *ptr, int pos, size_t siz
 
 	// Read from the block.
 	// NOTE: We need to read the entire 2352-byte block in order to
-	// determine the data offset, since Mode 1 and Mode 2 have different
+	// determine the data offset, since Mode 1 and Mode 2 XA have different
 	// sector layouts.
 	CDROM_2352_Sector_t sector;
 	size_t sz_read = m_file->seekAndRead(physBlockAddr, &sector, sizeof(sector));
