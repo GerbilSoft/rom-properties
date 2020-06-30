@@ -84,7 +84,7 @@ the directory above the top-level source directory.
 ## Windows
 
 The Windows version requires one of the following compilers: (minimum versions)
-* Microsoft Visual C++ 2010 with the Windows 7 SDK
+* Microsoft Visual C++ 2012 with the Windows 7 SDK
 * gcc-4.5 with MinGW-w64
   * The MinGW build is currently somewhat broken, so MSVC is preferred.
     (The property page icon doesn't show up sometimes for Nintendo DS

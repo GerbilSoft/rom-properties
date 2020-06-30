@@ -1,7 +1,7 @@
 /***************************************************************************
  * c++11-compat.clang.h: C++ 2011 compatibility header. (clang)            *
  *                                                                         *
- * Copyright (c) 2011-2018 by David Korth.                                 *
+ * Copyright (c) 2011-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -9,7 +9,7 @@
 #define __CXX11_COMPAT_CLANG_H__
 
 #if !defined(__clang__)
-#error c++11-compat.clang.h should only be included in LLVM/clang builds.
+#  error c++11-compat.clang.h should only be included in LLVM/clang builds.
 #endif
 
 /**
@@ -39,33 +39,33 @@
 /* Older versions didn't set the correct value for __cplusplus in order to    */
 /* maintain compatibility with gcc-4.6 and earlier. */
 #if (__clang_major__ > 3 || (__clang_major__ == 3 && __clang_minor__ >= 1))
-# if __cplusplus < 201103L
-#  error Please compile with -std=c++11 or -std=gnu++11.
-# endif /* __cplusplus */
+#  if __cplusplus < 201103L
+#    error Please compile with -std=c++11 or -std=gnu++11.
+#  endif /* __cplusplus */
 #endif /* __clang_major__ */
 
 /* clang-3.1: constexpr */
 #if !__has_feature(cxx_constexpr)
-# define CXX11_COMPAT_CONSTEXPR
+#  define CXX11_COMPAT_CONSTEXPR
 #endif
 
 /* clang-3.0: nullptr, explicit virtual override */
 #if !__has_feature(cxx_nullptr)
-# define CXX11_COMPAT_NULLPTR
+#  define CXX11_COMPAT_NULLPTR
 #endif
 #if !__has_feature(cxx_override_control)
-# define CXX11_COMPAT_OVERRIDE
+#  define CXX11_COMPAT_OVERRIDE
 #endif
 
 /* clang-2.9: New character types, static assertions */
 // NOTE: Can't find a feature macro for char16_t/char32_t,
 // so using Unicode literals instead.
 #if !__has_feature(cxx_unicode_literals)
-# define CXX11_COMPAT_CHARTYPES
+#  define CXX11_COMPAT_CHARTYPES
 #endif
 
 #if !__has_feature(cxx_static_assert)
-# define CXX11_COMPAT_STATIC_ASSERT
+#  define CXX11_COMPAT_STATIC_ASSERT
 #endif
 
 #endif /* __cplusplus */
