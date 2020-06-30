@@ -74,9 +74,9 @@ static void	rom_data_view_set_property	(GObject	*object,
 						 guint		 prop_id,
 						 const GValue	*value,
 						 GParamSpec	*pspec);
-// TODO: Make 'page' the first argument?
-static void	rom_data_view_desc_format_type_changed(RpDescFormatType desc_format_type,
-						 RomDataView	*page);
+
+static void	rom_data_view_desc_format_type_changed(RomDataView *page,
+						 RpDescFormatType desc_format_type);
 
 static void	rom_data_view_init_header_row	(RomDataView	*page);
 static void	rom_data_view_update_display	(RomDataView	*page);
@@ -243,7 +243,8 @@ set_label_format_type(GtkLabel *label, RpDescFormatType desc_format_type)
 	PangoAttrList *attr_lst = pango_attr_list_new();
 
 	// Check if this label has the "Warning" flag set.
-	const gboolean is_warning = (gboolean)GPOINTER_TO_UINT(g_object_get_data(G_OBJECT(label), "RFT_STRING_warning"));
+	const gboolean is_warning = (gboolean)GPOINTER_TO_UINT(
+		g_object_get_data(G_OBJECT(label), "RFT_STRING_warning"));
 	if (is_warning) {
 		// Use the "Warning" format.
 		pango_attr_list_insert(attr_lst,
@@ -470,6 +471,10 @@ rom_data_view_get_property(GObject	*object,
 			g_value_set_enum(value, page->desc_format_type);
 			break;
 
+		case PROP_SHOWING_DATA:
+			g_value_set_boolean(value, (page->romData != nullptr));
+			break;
+
 		default:
 			G_OBJECT_WARN_INVALID_PROPERTY_ID(object, prop_id, pspec);
 			break;
@@ -494,6 +499,7 @@ rom_data_view_set_property(GObject	*object,
 				static_cast<RpDescFormatType>(g_value_get_enum(value)));
 			break;
 
+		case PROP_SHOWING_DATA:	// TODO: "Non-writable property" warning?
 		default:
 			G_OBJECT_WARN_INVALID_PROPERTY_ID(object, prop_id, pspec);
 			break;
@@ -583,13 +589,13 @@ rom_data_view_set_desc_format_type(RomDataView *page, RpDescFormatType desc_form
 	}
 
 	page->desc_format_type = desc_format_type;
-	rom_data_view_desc_format_type_changed(desc_format_type, page);
+	rom_data_view_desc_format_type_changed(page, desc_format_type);
 	g_object_notify_by_pspec(G_OBJECT(page), properties[PROP_DESC_FORMAT_TYPE]);
 }
 
 static void
-rom_data_view_desc_format_type_changed(RpDescFormatType	desc_format_type,
-				       RomDataView	*page)
+rom_data_view_desc_format_type_changed(RomDataView	*page,
+				       RpDescFormatType	desc_format_type)
 {
 	g_return_if_fail(IS_ROM_DATA_VIEW(page));
 	g_return_if_fail(desc_format_type >= RP_DFT_XFCE && desc_format_type < RP_DFT_LAST);
