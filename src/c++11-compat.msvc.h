@@ -42,6 +42,8 @@
 #define CXX11_COMPAT_CONSTEXPR
 #endif
 
+#endif /* __cplusplus */
+
 /**
  * MSVC doesn't have typeof(), but as of MSVC 2010,
  * it has decltype(), which is essentially the same thing.
