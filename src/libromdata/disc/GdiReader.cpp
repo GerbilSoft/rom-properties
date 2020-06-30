@@ -50,10 +50,9 @@ class GdiReaderPrivate : public SparseDiscReaderPrivate {
 		struct BlockRange {
 			unsigned int blockStart;	// First LBA.
 			unsigned int blockEnd;		// Last LBA. (inclusive) (0 if the file hasn't been opened yet)
-			uint16_t sectorSize;		// 2048 or 2352
+			uint16_t sectorSize;		// 2048 or 2352 (TODO: Make this a bool?)
 			uint8_t trackNumber;		// 01 through 99
 			uint8_t reserved;
-			// TODO: Mode1/Mode2 designation? (bool to indicate 2352?)
 			// TODO: Data vs. audio?
 			string filename;		// Relative to the .gdi file. Cleared on error.
 			IRpFile *file;
@@ -547,19 +546,27 @@ int GdiReader::readBlock(uint32_t blockIdx, void *ptr, int pos, size_t size)
 	}
 
 	// Read the full block.
-	CDROM_2352_Sector_t sector;
 	off64_t phys_pos = (static_cast<off64_t>(blockIdx - blockRange->blockStart) * blockRange->sectorSize);
-	size_t sz_read = blockRange->file->seekAndRead(phys_pos, &sector, sizeof(sector));
-	m_lastError = blockRange->file->lastError();
-	if (sz_read != sizeof(sector)) {
-		// Read error.
-		return -1;
+	if (blockRange->sectorSize == 2352) {
+		// 2352-byte sectors.
+		// TODO: Handle audio tracks properly?
+		CDROM_2352_Sector_t sector;
+		size_t sz_read = blockRange->file->seekAndRead(phys_pos, &sector, sizeof(sector));
+		m_lastError = blockRange->file->lastError();
+		if (sz_read != sizeof(sector)) {
+			// Read error.
+			return -1;
+		}
+
+		// NOTE: Sector user data area position depends on the sector mode.
+		const uint8_t *const data = cdromSectorDataPtr(&sector);
+		memcpy(ptr, &data[pos], size);
+		return size;
 	}
 
-	// NOTE: Sector user data area position depends on the sector mode.
-	const uint8_t *const data = cdromSectorDataPtr(&sector);
-	memcpy(ptr, &data[pos], size);
-	return size;
+	// 2048-byte sectors.
+	size_t sz_read = blockRange->file->seekAndRead(phys_pos, ptr, size);
+	return (sz_read > 0 ? (int)sz_read : -1);
 }
 
 /** GDI-specific functions. **/
