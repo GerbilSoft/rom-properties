@@ -199,7 +199,7 @@ SNDHPrivate::TagData SNDHPrivate::parseTags(void)
 	const uint32_t *const pData32 = reinterpret_cast<const uint32_t*>(header.get());
 	if (pData32[0] == cpu_to_be32('ICE!') || pData32[0] == cpu_to_be32('Ice!')) {
 		// Packed with ICE.
-		// FIXME: Return an error 
+		// FIXME: Return an error if unpacking fails.
 #ifdef ENABLE_UNICE68
 		// Decompress the data.
 		// FIXME: unice68_depacker() only supports decompressing the entire file.

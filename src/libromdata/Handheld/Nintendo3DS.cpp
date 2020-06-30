@@ -2412,7 +2412,6 @@ int Nintendo3DS::loadFieldData(void)
 				data_row.emplace_back("");
 
 				// Content size.
-				// FIXME: This condition is likely always true...
 				data_row.emplace_back(LibRpBase::formatFileSize(be64_to_cpu(iter->size)));
 				UNREF(pNcch);
 				continue;
