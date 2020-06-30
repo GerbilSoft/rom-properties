@@ -626,6 +626,10 @@ cleanup:
 	g_checksum_free(md5);
 	g_free(cache_filename);
 
+	// req was allocated using g_malloc() before it was
+	// added to the queue. We'll need to free it here.
+	g_free((gpointer)req);
+
 	// Return TRUE if we still have more thumbnails queued.
 	const bool isEmpty = g_queue_is_empty(thumbnailer->request_queue);
 	if (isEmpty) {
