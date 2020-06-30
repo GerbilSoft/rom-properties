@@ -11,11 +11,18 @@
 // - https://github.com/dolphin-emu/dolphin/blob/master/Source/Core/DiscIO/CompressedBlob.h
 
 #include "stdafx.h"
+#include "config.librpbase.h"
+
 #include "GczReader.hpp"
 #include "librpbase/disc/SparseDiscReader_p.hpp"
 #include "gcz_structs.h"
 
+// zlib
 #include <zlib.h>
+#ifdef _MSC_VER
+// MSVC: Exception handling for /DELAYLOAD.
+#  include "libwin32common/DelayLoadHelper.h"
+#endif /* _MSC_VER */
 
 // librpbase, librpfile
 using namespace LibRpBase;
@@ -25,6 +32,11 @@ using LibRpFile::IRpFile;
 using std::unique_ptr;
 
 namespace LibRomData {
+
+#ifdef _MSC_VER
+// DelayLoad test implementation.
+DELAYLOAD_TEST_FUNCTION_IMPL0(zlibVersion);
+#endif /* _MSC_VER */
 
 class GczReaderPrivate : public SparseDiscReaderPrivate {
 	public:
@@ -101,6 +113,17 @@ GczReader::GczReader(IRpFile *file)
 		// File could not be ref()'d.
 		return;
 	}
+
+#if defined(_MSC_VER) && defined(ZLIB_IS_DLL)
+	// Delay load verification.
+	// TODO: Only if linked with /DELAYLOAD?
+	if (DelayLoad_test_zlibVersion() != 0) {
+		// Delay load failed.
+		// GCZ is not supported without zlib.
+		UNREF_AND_NULL_NOCHK(m_file);
+		return nullptr;
+	}
+#endif /* defined(_MSC_VER) && defined(ZLIB_IS_DLL) */
 
 	// Read the GCZ header.
 	RP_D(GczReader);
@@ -230,7 +253,17 @@ int GczReader::isDiscSupported_static(const uint8_t *pHeader, size_t szHeader)
 		return -1;
 	}
 
-	// Check the CISO magic.
+#if defined(_MSC_VER) && defined(ZLIB_IS_DLL)
+	// Delay load verification.
+	// TODO: Only if linked with /DELAYLOAD?
+	if (DelayLoad_test_zlibVersion() != 0) {
+		// Delay load failed.
+		// GCZ is not supported without zlib.
+		return nullptr;
+	}
+#endif /* defined(_MSC_VER) && defined(ZLIB_IS_DLL) */
+
+	// Check the GCZ magic.
 	const GczHeader *const gczHeader = reinterpret_cast<const GczHeader*>(pHeader);
 	if (gczHeader->magic != cpu_to_le32(GCZ_MAGIC)) {
 		// Invalid magic.
