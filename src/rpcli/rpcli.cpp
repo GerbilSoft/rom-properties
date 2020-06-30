@@ -355,7 +355,7 @@ int RP_C_API main(int argc, char *argv[])
 		cerr << "  -a:   " << C_("rpcli", "Extract the animated icon to outfile in APNG format.") << endl;
 		cerr << endl;
 #ifdef RP_OS_SCSI_SUPPORTED
-		cerr << "Special options for devices:" << endl;
+		cerr << C_("rpcli", "Special options for devices:") << endl;
 		cerr << "  -is:   " << C_("rpcli", "Run a SCSI INQUIRY command.") << endl;
 		cerr << "  -ia:   " << C_("rpcli", "Run an ATA IDENTIFY DEVICE command.") << endl;
 		cerr << endl;
