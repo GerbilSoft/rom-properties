@@ -1026,7 +1026,6 @@ int PowerVR3::getFields(LibRpBase::RomFields *fields) const
 	fields->addField_string(C_("PowerVR3", "Version"), "3.0.0");
 
 	// Endianness.
-	// TODO: Save big vs. little in the constructor instead of just "needs byteswapping"?
 	const char *endian_str;
 	if (pvr3Header->version == PVR3_VERSION_HOST) {
 		// Matches host-endian.
