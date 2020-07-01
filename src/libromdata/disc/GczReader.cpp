@@ -121,7 +121,7 @@ GczReader::GczReader(IRpFile *file)
 		// Delay load failed.
 		// GCZ is not supported without zlib.
 		UNREF_AND_NULL_NOCHK(m_file);
-		return nullptr;
+		return;
 	}
 #endif /* defined(_MSC_VER) && defined(ZLIB_IS_DLL) */
 
@@ -259,7 +259,7 @@ int GczReader::isDiscSupported_static(const uint8_t *pHeader, size_t szHeader)
 	if (DelayLoad_test_zlibVersion() != 0) {
 		// Delay load failed.
 		// GCZ is not supported without zlib.
-		return nullptr;
+		return -1;
 	}
 #endif /* defined(_MSC_VER) && defined(ZLIB_IS_DLL) */
 
