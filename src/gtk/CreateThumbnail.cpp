@@ -147,7 +147,6 @@ int CreateThumbnailPrivate::getImgClassSize(const PIMGTYPE &imgClass, ImgSize *p
  */
 string CreateThumbnailPrivate::proxyForUrl(const string &url) const
 {
-	// TODO: Optimizations.
 	// TODO: Support multiple proxies?
 	string ret;
 

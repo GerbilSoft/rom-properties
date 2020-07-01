@@ -480,7 +480,6 @@ int PEResourceReaderPrivate::load_StringTable(IRpFile *file, IResourceReader::St
 			// Not a string...
 			return -EIO;
 		}
-		// TODO: Use fields[] directly?
 		// NOTE: wValueLength is number of *words* (aka UTF-16 characters).
 		// Hence, we're multiplying by two to get bytes.
 		const uint16_t wLength = le16_to_cpu(fields[0]);
@@ -488,7 +487,7 @@ int PEResourceReaderPrivate::load_StringTable(IRpFile *file, IResourceReader::St
 			// Invalid length.
 			return -EIO;
 		}
-		const int wValueLength = le16_to_cpu(fields[1]) * 2;
+		const int wValueLength = le16_to_cpu(fields[1]) * sizeof(char16_t);
 		if (wValueLength >= wLength || wLength > (strTblData_len - tblPos)) {
 			// Not valid.
 			return -EIO;

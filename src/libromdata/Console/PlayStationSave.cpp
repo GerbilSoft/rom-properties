@@ -364,7 +364,6 @@ const char *PlayStationSave::systemName(unsigned int type) const
 
 	// Bits 0-1: Type. (long, short, abbreviation)
 	static const char *const sysNames[4] = {
-		// TODO: PS1 or PSX?
 		"Sony PlayStation", "PlayStation", "PS1", nullptr
 	};
 

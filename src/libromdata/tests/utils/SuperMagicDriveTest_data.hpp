@@ -2,15 +2,12 @@
  * ROM Properties Page shell extension. (libromdata/tests)                 *
  * SuperMagicDriveTest_data.hpp: Data for SuperMagicDriveTest.             *
  *                                                                         *
- * Copyright (c) 2016-2017 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #ifndef __ROMPROPERTIES_LIBROMDATA_TESTS_UTILS_SUPERMAGICDRIVETEST_DATA_HPP__
 #define __ROMPROPERTIES_LIBROMDATA_TESTS_UTILS_SUPERMAGICDRIVETEST_DATA_HPP__
-
-// TODO: BEFORE MAIN COMMIT
-// - gzip the data and implement decompression!
 
 /**
  * 16 KB plain binary data block.

@@ -378,8 +378,6 @@ int GameCubePrivate::loadWiiPartitionTables(void)
 
 	// Create the WiiPartition objects.
 	for (auto iter = wiiPtbl.begin(); iter != wiiPtbl.end(); ++iter) {
-		// TODO: NASOS images are decrypted, but we should
-		// still show how they'd be encrypted.
 		iter->partition = new WiiPartition(discReader, iter->start, iter->size,
 			(WiiPartition::CryptoMethod)cryptoMethod);
 

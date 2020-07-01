@@ -406,7 +406,6 @@ int NEResourceReaderPrivate::load_StringTable(IRpFile *file, IResourceReader::St
 		// wLength, wValueLength
 		memcpy(fields, &strTblData[tblPos], sizeof(fields));
 
-		// TODO: Use fields[] directly?
 		const uint16_t wLength = le16_to_cpu(fields[0]);
 		if (wLength < sizeof(fields)) {
 			// Invalid length.

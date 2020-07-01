@@ -386,7 +386,6 @@ WiiWAD::WiiWAD(IRpFile *file)
 	// - WIBN header: DLC titles.
 	size = d->cbcReader->read(&d->imet, sizeof(d->imet));
 	if (size == sizeof(d->imet)) {
-		// TODO: Use the WiiWIBN subclass.
 		// TODO: Create a WiiIMET subclass? (and also use it in GameCube)
 		if (d->imet.magic == cpu_to_be32(WII_IMET_MAGIC)) {
 			// This is an IMET header.

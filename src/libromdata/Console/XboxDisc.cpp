@@ -498,7 +498,6 @@ int XboxDisc::isRomSupported_static(
 		{0, 0, 0}
 	};
 
-	// TODO: Use a binary search instead of linear?
 	for (const xgd_pvd_t *pXgd = xgd_tbl; pXgd->xgd != 0; pXgd++) {
 		if (pXgd->btime == btime) {
 			// Found a match!

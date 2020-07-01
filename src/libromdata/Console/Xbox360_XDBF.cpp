@@ -260,8 +260,7 @@ int Xbox360_XDBF_Private::initStrTblIndexes(void)
 
 		assert(strTblIndexes[langID] < 0);
 		if (strTblIndexes[langID] < 0) {
-			// First instance of this language.
-			// TODO: What if multiple string tables exist for the same language?
+			// Found the language. (Assuming only one string table per language.)
 			strTblIndexes[langID] = idx;
 			total++;
 		}

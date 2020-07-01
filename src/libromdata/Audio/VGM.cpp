@@ -152,7 +152,6 @@ VGMPrivate::gd3_tags_t *VGMPrivate::loadGD3(unsigned int addr)
 	gd3_tags_t *gd3_tags = new gd3_tags_t;
 
 	// Convert from NULL-terminated strings to gd3_tags_t.
-	// TODO: Optimize on systems where wchar_t functions are 16-bit?
 	size_t tag_idx = 0;
 	const char16_t *start = gd3.get();
 	const char16_t *const endptr = start + length16;

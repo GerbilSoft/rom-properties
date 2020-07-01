@@ -952,9 +952,6 @@ int ELF::isRomSupported_static(const DetectInfo *info)
 		return static_cast<int>(ELFPrivate::Elf_Format::Unknown);
 	}
 
-	// TODO: Use 32-bit and/or 16-bit reads to improve performance.
-	// (Manual vectorization.)
-
 	const Elf_PrimaryEhdr *const pHdr =
 		reinterpret_cast<const Elf_PrimaryEhdr*>(info->header.pData);
 

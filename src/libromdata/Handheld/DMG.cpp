@@ -1028,7 +1028,6 @@ int DMG::loadFieldData(void)
 		};
 
 		// TODO: Localization?
-		// TODO: bsearch()?
 		static const gbx_mapper_tbl_t gbx_mapper_tbl[] = {
 			// Nintendo
 			{GBX_MAPPER_ROM_ONLY,		"ROM only"},
@@ -1352,7 +1351,6 @@ int DMG::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
 
 	if (s_gameID.empty()) {
 		// No game ID.
-		// TODO: DMG/SGB/CGB mode options.
 		if (dmg_flags & DMG_IS_CGB) {
 			// CGB has subdirectories for the region byte.
 			// This game doesn't have a game ID, so use "NoID".
@@ -1534,9 +1532,6 @@ int DMG::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
 		}
 	}
 
-	// TODO: Option for DMG vs. SGB vs. CGB images?
-	// Currently the server has a strict priority order of:
-	// CGB > SGB > DMG.
 	RP_UNUSED(size);
 	vector<ImageSizeDef> sizeDefs = supportedImageSizes(imageType);
 	assert(sizeDefs.size() == 1);

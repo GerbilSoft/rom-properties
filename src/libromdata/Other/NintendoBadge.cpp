@@ -759,7 +759,6 @@ int NintendoBadge::loadFieldData(void)
 					le32_to_cpu(prbs->title_id.lo), &region);
 				if (title) {
 					// Add optional fields.
-					// TODO: Positional arguments.
 					string str;
 					bool isN3DS = !!(le32_to_cpu(prbs->title_id.lo) & 0x20000000);
 					if (isN3DS) {

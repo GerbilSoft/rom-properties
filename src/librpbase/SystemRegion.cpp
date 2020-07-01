@@ -422,7 +422,6 @@ int SystemRegion::getFlagPosition(uint32_t lc, int *pCol, int *pRow)
 
 	// Flags are stored in a sprite sheet, so we need to
 	// determine the column and row.
-	// TODO: Sort by lc and use bsearch()?
 	struct flagpos_t {
 		uint32_t lc;
 		uint16_t col;

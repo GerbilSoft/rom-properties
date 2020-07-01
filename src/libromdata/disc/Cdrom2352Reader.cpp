@@ -74,7 +74,7 @@ Cdrom2352Reader::Cdrom2352Reader(IRpFile *file)
 	}
 
 	// Disc parameters.
-	// TODO: 64-bit block count?
+	// NOTE: A 32-bit block count allows for ~8 TiB with 2048-byte sectors.
 	RP_D(Cdrom2352Reader);
 	d->blockCount = static_cast<unsigned int>(fileSize / 2352);
 	d->block_size = 2048;

@@ -178,7 +178,6 @@ int N64::isRomSupported_static(const DetectInfo *info)
 	// Check the magic number.
 	// NOTE: This technically isn't a "magic number",
 	// but it appears to be the same for all N64 ROMs.
-	// TODO: Check 32-bit code generation.
 	N64Private::RomType romType = N64Private::RomType::Unknown;
 	if (romHeader->magic64 == cpu_to_be64(N64_Z64_MAGIC)) {
 		romType = N64Private::RomType::Z64;

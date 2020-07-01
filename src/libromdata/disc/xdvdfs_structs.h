@@ -25,7 +25,6 @@ extern "C" {
 #endif
 
 // XDVDFS offsets, in LBAs.
-// TODO: Multiple XGD1 offsets? (This matches Futurama.)
 #define XDVDFS_BLOCK_SIZE	2048U	/* same as CD/DVD */
 #define XDVDFS_LBA_OFFSET_XGD1	0x30600U
 #define XDVDFS_LBA_OFFSET_XGD2	0x1FB20U

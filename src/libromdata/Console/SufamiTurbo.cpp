@@ -267,8 +267,6 @@ const char *const *SufamiTurbo::supportedFileExtensions_static(void)
  */
 const char *const *SufamiTurbo::supportedMimeTypes_static(void)
 {
-	// TODO: Sufami Turbo MIME types?
-
 	static const char *const mimeTypes[] = {
 		// Vendor-specific MIME types from FreeDesktop.org.
 		"application/vnd.nintendo.snes.rom",

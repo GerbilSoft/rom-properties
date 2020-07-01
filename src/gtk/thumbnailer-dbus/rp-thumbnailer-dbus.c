@@ -364,7 +364,6 @@ rp_thumbnailer_set_property(GObject *object,
 		case PROP_CONNECTION: {
 			GDBusConnection *const old_connection = thumbnailer->connection;
 			GDBusConnection *const connection = (GDBusConnection*)g_value_get_object(value);
-			// TODO: Atomic exchange?
 			thumbnailer->connection = (connection
 				? (GDBusConnection*)g_object_ref(connection)
 				: NULL);

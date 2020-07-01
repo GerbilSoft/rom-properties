@@ -166,7 +166,8 @@ int RpQImageBackend::shrink(int width, int height)
 		return -EINVAL;
 	}
 
-	// TODO: Is there a way to resize the QImage in place?
+	// QImage doesn't support changing width/height in-place,
+	// so we'll need to copy it to a new QImage.
 	m_qImage = m_qImage.copy(0, 0, width, height);
 	return 0;
 }

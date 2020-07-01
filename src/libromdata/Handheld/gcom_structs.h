@@ -33,7 +33,7 @@ extern "C" {
  * Tiger game.com ROM header.
  *
  * All fields are in little-endian.
- * NOTE: Icon is rotated. (TODO: Figure out rotation.)
+ * NOTE: Icon is rotated.
  *
  * NOTE: Strings are NOT null-terminated!
  */
