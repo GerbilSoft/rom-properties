@@ -97,7 +97,7 @@ typedef enum {
 
 /**
  * XBE: Title ID
- * Contains two characters and a 16-bit number.
+ * Contains a two-character company ID and a 16-bit game ID.
  * NOTE: Struct positioning only works with the original LE32 value.
  */
 typedef union _XBE_Title_ID {

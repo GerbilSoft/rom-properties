@@ -92,6 +92,7 @@ SET(libromdata_SRCS
 	data/WiiSystemMenuVersion.cpp
 	data/WiiUData.cpp
 	data/XboxLanguage.cpp
+	data/XboxPublishers.cpp
 	data/Xbox360_STFS_ContentType.cpp
 
 	disc/Cdrom2352Reader.cpp
@@ -251,6 +252,7 @@ SET(libromdata_H
 	data/WiiSystemMenuVersion.hpp
 	data/WiiUData.hpp
 	data/XboxLanguage.hpp
+	data/XboxPublishers.hpp
 	data/Xbox360_STFS_ContentType.hpp
 
 	disc/Cdrom2352Reader.hpp

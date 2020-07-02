@@ -12,8 +12,9 @@
 
 #include "Xbox360_XEX.hpp"
 #include "Xbox360_XDBF.hpp"
-#include "../Other/EXE.hpp"
+#include "Other/EXE.hpp"
 #include "xbox360_xex_structs.h"
+#include "data/XboxPublishers.hpp"
 
 // librpbase, librpfile, librptexture
 #include "librpbase/disc/CBCReader.hpp"
@@ -219,6 +220,12 @@ class Xbox360_XEX_Private : public RomDataPrivate
 		 * @return Xbox360_XDBF object on success; nullptr on error.
 		 */
 		const Xbox360_XDBF *initXDBF(void);
+
+		/**
+		 * Get the publisher.
+		 * @return Publisher.
+		 */
+		string getPublisher(void) const;
 
 #ifdef ENABLE_DECRYPTION
 	public:
@@ -1255,6 +1262,43 @@ const Xbox360_XDBF *Xbox360_XEX_Private::initXDBF(void)
 	return pe_xdbf;
 }
 
+/**
+ * Get the publisher.
+ * @return Publisher.
+ */
+string Xbox360_XEX_Private::getPublisher(void) const
+{
+	if (!isExecutionIDLoaded) {
+		const_cast<Xbox360_XEX_Private*>(this)->getXdbfResInfo();
+		if (!isExecutionIDLoaded) {
+			// Unable to get the publisher.
+			return string();
+		}
+	}
+
+	uint16_t pub_id = ((unsigned int)executionID.title_id.a << 8) |
+	                  ((unsigned int)executionID.title_id.b);
+	const char *const publisher = XboxPublishers::lookup(pub_id);
+	if (publisher) {
+		return publisher;
+	}
+
+	// Unknown publisher.
+	if (ISALNUM(executionID.title_id.a) &&
+	    ISALNUM(executionID.title_id.b))
+	{
+		// Publisher ID is alphanumeric.
+		return rp_sprintf(C_("RomData", "Unknown (%c%c)"),
+			executionID.title_id.a,
+			executionID.title_id.b);
+	}
+
+	// Publisher ID is not alphanumeric.
+	return rp_sprintf(C_("RomData", "Unknown (%02X %02X)"),
+		static_cast<uint8_t>(executionID.title_id.a),
+		static_cast<uint8_t>(executionID.title_id.b));
+}
+
 /** Xbox360_XEX **/
 
 /**
@@ -1578,9 +1622,9 @@ int Xbox360_XEX::loadFieldData(void)
 	// NOTE: The magic number is NOT byteswapped in the constructor.
 	const XEX2_Header *const xex2Header = &d->xex2Header;
 
-	// Maximum of 14 fields, not including RomData subclasses.
+	// Maximum of 15 fields, not including RomData subclasses.
 	const char *const s_xexType = (d->xexType != Xbox360_XEX_Private::XexType::XEX1 ? "XEX2" : "XEX1");
-	d->fields->reserve(14);
+	d->fields->reserve(15);
 	d->fields->setTabName(0, s_xexType);
 
 	// Is the encryption key available?
@@ -1838,6 +1882,12 @@ int Xbox360_XEX::loadFieldData(void)
 				be16_to_cpu(d->executionID.title_id.u16)),
 			RomFields::STRF_MONOSPACE);
 
+		// Publisher
+		const string publisher = d->getPublisher();
+		if (!publisher.empty()) {
+			d->fields->addField_string(C_("RomData", "Publisher"), publisher);
+		}
+
 		// Savegame ID
 		d->fields->addField_string_numeric(C_("Xbox360_XEX", "Savegame ID"),
 			d->executionID.savegame_id,
@@ -1974,12 +2024,21 @@ int Xbox360_XEX::loadMetaData(void)
 
 	// Create the metadata object.
 	d->metaData = new RomMetaData();
-	d->metaData->reserve(1);	// Maximum of 1 metadata property.
+	d->metaData->reserve(2);	// Maximum of 2 metadata properties.
+
+	// TODO: Have the RomMetaData object simply ignore empty strings?
+	// (If so, check all RomData subclasses and remove these checks.)
 
 	// Title
 	string title = xdbf->getString(Property::Title);
 	if (!title.empty()) {
 		d->metaData->addMetaData_string(Property::Title, title);
+	}
+
+	// Publisher
+	const string publisher = d->getPublisher();
+	if (!publisher.empty()) {
+		d->metaData->addMetaData_string(Property::Publisher, publisher);
 	}
 
 	// Finished reading the metadata.

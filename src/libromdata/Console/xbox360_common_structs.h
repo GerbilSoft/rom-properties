@@ -42,7 +42,7 @@ ASSERT_STRUCT(Xbox360_Version_t, sizeof(uint32_t));
 
 /**
  * Xbox 360: Title ID
- * Contains two characters and a 16-bit number.
+ * Contains a two-character company ID and a 16-bit game ID.
  * NOTE: Struct positioning only works with the original BE32 value.
  */
 typedef union _XEX2_Title_ID {

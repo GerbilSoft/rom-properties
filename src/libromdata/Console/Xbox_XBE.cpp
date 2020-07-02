@@ -9,6 +9,7 @@
 #include "stdafx.h"
 #include "Xbox_XBE.hpp"
 #include "xbox_xbe_structs.h"
+#include "data/XboxPublishers.hpp"
 
 // librpbase, librpfile
 #include "librpbase/img/RpPng.hpp"
@@ -92,6 +93,12 @@ class Xbox_XBE_Private : public RomDataPrivate
 		 * @return EXE object on success; nullptr on error.
 		 */
 		const EXE *initEXE(void);
+
+		/**
+		 * Get the publisher.
+		 * @return Publisher.
+		 */
+		string getPublisher(void) const;
 };
 
 /** Xbox_XBE_Private **/
@@ -364,6 +371,35 @@ const EXE *Xbox_XBE_Private::initEXE(void)
 
 	// EXE loaded.
 	return this->pe_exe;
+}
+
+/**
+ * Get the publisher.
+ * @return Publisher.
+ */
+string Xbox_XBE_Private::getPublisher(void) const
+{
+	uint16_t pub_id = ((unsigned int)xbeCertificate.title_id.a << 8) |
+	                  ((unsigned int)xbeCertificate.title_id.b);
+	const char *const publisher = XboxPublishers::lookup(pub_id);
+	if (publisher) {
+		return publisher;
+	}
+
+	// Unknown publisher.
+	if (ISALNUM(xbeCertificate.title_id.a) &&
+	    ISALNUM(xbeCertificate.title_id.b))
+	{
+		// Publisher ID is alphanumeric.
+		return rp_sprintf(C_("RomData", "Unknown (%c%c)"),
+			xbeCertificate.title_id.a,
+			xbeCertificate.title_id.b);
+	}
+
+	// Publisher ID is not alphanumeric.
+	return rp_sprintf(C_("RomData", "Unknown (%02X %02X)"),
+		static_cast<uint8_t>(xbeCertificate.title_id.a),
+		static_cast<uint8_t>(xbeCertificate.title_id.b));
 }
 
 /** Xbox_XBE **/
@@ -694,8 +730,8 @@ int Xbox_XBE::loadFieldData(void)
 		return 0;
 	}
 
-	// Maximum of 11 fields.
-	d->fields->reserve(11);
+	// Maximum of 12 fields.
+	d->fields->reserve(12);
 	d->fields->setTabName(0, "XBE");
 
 	// Game name
@@ -752,6 +788,9 @@ int Xbox_XBE::loadFieldData(void)
 			tid_str.c_str(),
 			le16_to_cpu(xbeCertificate->title_id.u16)),
 		RomFields::STRF_MONOSPACE);
+
+	// Publisher
+	d->fields->addField_string(C_("RomData", "Publisher"), d->getPublisher());
 
 	// Timestamp
 	// TODO: time_t is signed, so values greater than 2^31-1 may be negative.
@@ -869,13 +908,16 @@ int Xbox_XBE::loadMetaData(void)
 
 	// Create the metadata object.
 	d->metaData = new RomMetaData();
-	d->metaData->reserve(1);	// Maximum of 1 metadata property.
+	d->metaData->reserve(2);	// Maximum of 2 metadata properties.
 
 	const XBE_Certificate *const xbeCertificate = &d->xbeCertificate;
 
 	// Title
 	d->metaData->addMetaData_string(Property::Title,
 		utf16le_to_utf8(xbeCertificate->title_name, ARRAY_SIZE(xbeCertificate->title_name)));
+
+	// Publisher
+	d->metaData->addMetaData_string(Property::Publisher, d->getPublisher());
 
 	// Finished reading the metadata.
 	return static_cast<int>(d->metaData->count());
