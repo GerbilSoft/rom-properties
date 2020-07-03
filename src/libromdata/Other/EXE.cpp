@@ -153,7 +153,7 @@ void EXEPrivate::addFields_VS_VERSION_INFO(const VS_FIXEDFILEINFO *pVsFfi, const
 	// File type.
 	static const char *const fileTypes_tbl[] = {
 		// VFT_UNKNOWN
-		nullptr,
+		NOP_C_("RomData", "Unknown"),
 		// tr: VFT_APP
 		NOP_C_("EXE|FileType", "Application"),
 		// tr: VFT_DLL
@@ -164,12 +164,15 @@ void EXEPrivate::addFields_VS_VERSION_INFO(const VS_FIXEDFILEINFO *pVsFfi, const
 		NOP_C_("EXE|FileType", "Font"),
 		// tr: VFT_VXD
 		NOP_C_("EXE|FileType", "Virtual Device Driver"),
+		// Type 6 is unknown...
 		nullptr,
 		// tr: VFT_STATIC_LIB
 		NOP_C_("EXE|FileType", "Static Library"),
 	};
 	const char *const fileType_title = C_("EXE", "File Type");
-	if (pVsFfi->dwFileType < ARRAY_SIZE(fileTypes_tbl)) {
+	if (pVsFfi->dwFileType < ARRAY_SIZE(fileTypes_tbl) &&
+	    fileTypes_tbl[pVsFfi->dwFileType] != nullptr)
+	{
 		fields->addField_string(fileType_title,
 			dpgettext_expr(RP_I18N_DOMAIN, "EXE|FileType", fileTypes_tbl[pVsFfi->dwFileType]));
 	} else {
