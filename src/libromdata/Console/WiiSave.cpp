@@ -524,6 +524,7 @@ int WiiSave::loadFieldData(void)
 			RomFields::STRF_MONOSPACE);
 	}
 
+#ifdef ENABLE_DECRYPTION
 	// NoCopy? (separate from permissions)
 	if (d->wibnData) {
 		// Flags bitfield.
@@ -536,6 +537,7 @@ int WiiSave::loadFieldData(void)
 		d->fields->addField_bitfield(C_("WiiSave", "Flags"),
 			v_flags_names, 3, flags);
 	}
+#endif /* ENABLE_DECRYPTION */
 
 	// MAC address.
 	if (isBkValid) {
