@@ -123,7 +123,7 @@ IF(BUILD_KDE4)
 		LIBRARY DESTINATION "${PLUGIN_INSTALL_DIR}"
 		COMPONENT "plugin"
 		)
-	INSTALL(FILES rom-properties-kde4.desktop
+	INSTALL(FILES "${CMAKE_CURRENT_BINARY_DIR}/rom-properties-kde4.desktop"
 		DESTINATION "${SERVICES_INSTALL_DIR}"
 		COMPONENT "plugin"
 		)

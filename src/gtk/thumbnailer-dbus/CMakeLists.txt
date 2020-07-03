@@ -96,7 +96,7 @@ IF(BUILD_THUMBNAILER_DBUS)
 		COMPONENT "plugin"
 		)
 	# TODO: Use session_bus_services_dir from dbus-1.pc.
-	INSTALL(FILES com.gerbilsoft.rom-properties.SpecializedThumbnailer1.service
+	INSTALL(FILES "${CMAKE_CURRENT_BINARY_DIR}/com.gerbilsoft.rom-properties.SpecializedThumbnailer1.service"
 		DESTINATION "share/dbus-1/services"
 		COMPONENT "plugin"
 		)
@@ -127,7 +127,7 @@ IF(BUILD_THUMBNAILER_DBUS)
 	PARSE_MIME_TYPES(MIMETYPES_THUMBONLY "${CMAKE_SOURCE_DIR}/xdg/mime.thumbnail.types")
 	CONFIGURE_FILE(com.gerbilsoft.rom-properties.SpecializedThumbnailer1.thumbnailer.in
 	               com.gerbilsoft.rom-properties.SpecializedThumbnailer1.thumbnailer @ONLY)
-	INSTALL(FILES com.gerbilsoft.rom-properties.SpecializedThumbnailer1.thumbnailer
+	INSTALL(FILES "${CMAKE_CURRENT_BINARY_DIR}/com.gerbilsoft.rom-properties.SpecializedThumbnailer1.thumbnailer"
 		RENAME com.gerbilsoft.rom-properties.SpecializedThumbnailer1.service
 		DESTINATION "${THUMBNAIL_DEST_DIR}"
 		COMPONENT "plugin"
