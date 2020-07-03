@@ -157,14 +157,14 @@ int GcnPartitionPrivate::loadFst(void)
 	size_t size = q->read(fstData, fstData_len);
 	if (size != fstData_len) {
 		// Short read.
-		free(fstData);
+		delete[] fstData;
 		q->m_lastError = EIO;
 		return -EIO;
 	}
 
 	// Create the GcnFst.
 	GcnFst *const gcnFst = new GcnFst(fstData, fstData_len, offsetShift);
-	free(fstData);	// TODO: Eliminate the extra copy?
+	delete[] fstData;	// TODO: Eliminate the extra copy?
 	if (gcnFst->hasErrors()) {
 		// FST has errors.
 		delete gcnFst;
