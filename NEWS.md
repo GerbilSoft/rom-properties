@@ -34,6 +34,7 @@
   * WiiSave: Show permissions as if they're Unix-style permissions, and show
     the "No Copy from NAND" flag.
   * WiiU: Get the GameTDB region code for boxart from the game ID.
+  * XboxPublishers: New publishers lookup class for Xbox and Xbox 360.
 
 * Bug fixes:
   * WiiWAD: Fix DLC icons no longer working after updating CBCReader to update
