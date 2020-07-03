@@ -400,7 +400,7 @@ int GczReader::readBlock(uint32_t blockIdx, void *ptr, int pos, size_t size)
 			return 0;
 		}
 
-		unique_ptr<uint8_t> zlib_buffer(new uint8_t[z_block_size]);
+		unique_ptr<uint8_t[]> zlib_buffer(new uint8_t[z_block_size]);
 		size_t sz_read = m_file->seekAndRead(physBlockAddr, zlib_buffer.get(), z_block_size);
 		if (sz_read != z_block_size) {
 			// Seek and/or read error.
