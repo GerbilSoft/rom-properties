@@ -72,7 +72,7 @@ QStringList RpExtractorPlugin::mimetypes(void) const
 	mimeTypes.reserve(static_cast<int>(vec_mimeTypes.size()));
 	std::for_each(vec_mimeTypes.cbegin(), vec_mimeTypes.cend(),
 		[&mimeTypes](const char *mimeType) {
-			mimeTypes += QString::fromUtf8(mimeType);
+			mimeTypes += QLatin1String(mimeType);
 		}
 	);
 	return mimeTypes;
