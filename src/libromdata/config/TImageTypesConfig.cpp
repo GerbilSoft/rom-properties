@@ -191,17 +191,15 @@ bool TImageTypesConfig<ComboBox>::reset_int(bool loadDefaults)
 			if (p_cboImageType[imageType] && !imageTypeSet[imageType]) {
 				// Set the image type.
 				imageTypeSet[imageType] = true;
-				if (imageType < IMG_TYPE_COUNT) {
-					if (imageTypes[sys][imageType] != nextPrio) {
-						imageTypes[sys][imageType] = nextPrio;
-						hasChanged = true;
+				if (imageTypes[sys][imageType] != nextPrio) {
+					imageTypes[sys][imageType] = nextPrio;
+					hasChanged = true;
 
-						// NOTE: Using the actual priority value, not the ComboBox index.
-						cboImageType_setPriorityValue(sysAndImageTypeToCbid(sys, imageType), nextPrio);
-					}
-					cbo_needsReset[sys][imageType] = false;
-					nextPrio++;
+					// NOTE: Using the actual priority value, not the ComboBox index.
+					cboImageType_setPriorityValue(sysAndImageTypeToCbid(sys, imageType), nextPrio);
 				}
+				cbo_needsReset[sys][imageType] = false;
+				nextPrio++;
 			}
 		}
 	}

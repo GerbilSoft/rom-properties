@@ -404,8 +404,7 @@ void ImageTypesTabPrivate::finishComboBoxes(void)
 	if (!lblCredits)
 		return;
 
-	SetWindowPos(lblCredits,
-		cboImageType_lastAdded ? cboImageType_lastAdded : hWndPropSheet,
+	SetWindowPos(lblCredits, cboImageType_lastAdded,
 		0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
 	cboImageType_lastAdded = nullptr;
 }
