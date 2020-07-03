@@ -880,8 +880,6 @@ GameCube::GameCube(IRpFile *file)
 		GameCubePrivate::WiiPartEntry &pt = d->wiiPtbl[0];
 
 		// Determine the partition type.
-		// If title ID low is '\0UPD' or '\0UPE', assume it's an update partition.
-		// Otherwise, it's probably a game partition.
 		// TODO: Identify channel partitions by the title ID high?
 		RVL_TitleID_t title_id;
 		size = d->file->seekAndRead(offsetof(RVL_Ticket, title_id), &title_id, sizeof(title_id));
@@ -898,8 +896,16 @@ GameCube::GameCube(IRpFile *file)
 		pt.partition = new WiiPartition(d->discReader, pt.start, pt.size);
 
 		// TODO: Super Smash Bros. Brawl "Masterpieces" partitions.
-		if (title_id.lo == be32_to_cpu('UPD') || title_id.lo == be32_to_cpu('UPE')) {
+		if (title_id.lo == be32_to_cpu('UPD') ||	// IOS only
+		    title_id.lo == be32_to_cpu('UPE') ||	// USA region
+		    title_id.lo == be32_to_cpu('UPJ') ||	// JPN region
+		    title_id.lo == be32_to_cpu('UPP') ||	// EUR region
+		    title_id.lo == be32_to_cpu('UPK') ||	// KOR region
+		    title_id.lo == be32_to_cpu('UPC'))		// CHN region (maybe?)
+		{
 			// Update partition.
+			// TODO: What's the difference between the different title IDs?
+			// It might be region code, but what is 'UPD'?
 			pt.type = RVL_PT_UPDATE;
 			d->updatePartition = pt.partition;
 		} else if (title_id.lo == be32_to_cpu('INS')) {
@@ -1715,7 +1721,7 @@ int GameCube::loadFieldData(void)
 			//   - 64: Memory configuration (64 or 128)
 			//   - 56: IOS slot
 			//   - 21.29: IOS version. (21.29 == v5405)
-			IFst::Dir *dirp = d->updatePartition->opendir("/_sys/");
+			IFst::Dir *const dirp = d->updatePartition->opendir("/_sys/");
 			if (dirp) {
 				IFst::DirEnt *dirent;
 				while ((dirent = d->updatePartition->readdir(dirp)) != nullptr) {

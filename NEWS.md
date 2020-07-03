@@ -35,6 +35,7 @@
     the "No Copy from NAND" flag.
   * WiiU: Get the GameTDB region code for boxart from the game ID.
   * XboxPublishers: New publishers lookup class for Xbox and Xbox 360.
+  * GameCube: Detect more types of standalone update partitions.
 
 * Bug fixes:
   * WiiWAD: Fix DLC icons no longer working after updating CBCReader to update
