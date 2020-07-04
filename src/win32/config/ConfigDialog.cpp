@@ -172,7 +172,9 @@ int CALLBACK ConfigDialogPrivate::callbackProc(HWND hDlg, UINT uMsg, LPARAM lPar
 			// Not only is this needed to restore the default entries,
 			// it's needed to make the Minimize button work on Windows 8.1
 			// and Windows 10 (and possibly Windows 8.0 as well).
-			// Reference: http://ntcoder.com/bab/2008/03/27/making-a-property-sheet-window-resizable/
+			// References:
+			// - http://ntcoder.com/bab/2008/03/27/making-a-property-sheet-window-resizable/
+			// - https://www.experts-exchange.com/articles/1521/Using-a-Property-Sheet-as-your-Main-Window.html
 			GetSystemMenu(hDlg, false);
 			GetSystemMenu(hDlg, true);
 
