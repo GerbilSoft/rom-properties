@@ -525,9 +525,11 @@ void EXEPrivate::addFields_PE(void)
 		NOP_C_("EXE|Subsystem", "Windows"),
 		// tr: IMAGE_SUBSYSTEM_WINDOWS_CUI
 		NOP_C_("EXE|Subsystem", "Console"),
+		// Unused...
 		nullptr,
 		// tr: IMAGE_SUBSYSTEM_OS2_CUI
 		NOP_C_("EXE|Subsystem", "OS/2 Console"),
+		// Unused...
 		nullptr,
 		// tr: IMAGE_SUBSYSTEM_POSIX_CUI
 		NOP_C_("EXE|Subsystem", "POSIX Console"),
@@ -548,12 +550,24 @@ void EXEPrivate::addFields_PE(void)
 	};
 
 	// Subsystem name and version.
-	fields->addField_string(C_("EXE", "Subsystem"),
-		rp_sprintf("%s %u.%u",
-			(pe_subsystem < ARRAY_SIZE(subsysNames)
-				? dpgettext_expr(RP_I18N_DOMAIN, "EXE|Subsystem", subsysNames[pe_subsystem])
-				: C_("RomData", "Unknown")),
-			subsystem_ver_major, subsystem_ver_minor));
+	string subsystem_name;
+	if (pe_subsystem < ARRAY_SIZE(subsysNames) && subsysNames[pe_subsystem] != nullptr) {
+		subsystem_name = rp_sprintf("%s %u.%u",
+			dpgettext_expr(RP_I18N_DOMAIN, "EXE|Subsystem", subsysNames[pe_subsystem]),
+			subsystem_ver_major, subsystem_ver_minor);
+	} else {
+		const char *const s_unknown = C_("RomData", "Unknown");
+		if (pe_subsystem == IMAGE_SUBSYSTEM_UNKNOWN) {
+			subsystem_name = rp_sprintf("%s %u.%u",
+				s_unknown,
+				subsystem_ver_major, subsystem_ver_minor);
+		} else {
+			subsystem_name = rp_sprintf("%s (%u) %u.%u",
+				s_unknown, pe_subsystem,
+				subsystem_ver_major, subsystem_ver_minor);
+		}
+	}
+	fields->addField_string(C_("EXE", "Subsystem"), subsystem_name);
 
 	// PE flags. (characteristics)
 	// NOTE: Only important flags will be listed.
