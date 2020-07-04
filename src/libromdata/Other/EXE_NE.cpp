@@ -165,6 +165,12 @@ int EXEPrivate::findNERuntimeDLL(string &refDesc, string &refLink, bool &refHasK
 		read_size = nameTable_size + (modRefs * static_cast<uint32_t>(sizeof(uint16_t)));
 	}
 
+	if (read_size > 128*1024) {
+		// Shouldn't be more than 128 KB...
+		// (Actually, it probably shouldn't be more than 64 KB.)
+		return -EIO;
+	}
+
 	unique_ptr<uint8_t[]> tbls(new uint8_t[read_size]);
 	size_t size = file->seekAndRead(read_low_addr, tbls.get(), read_size);
 	if (size != read_size) {
