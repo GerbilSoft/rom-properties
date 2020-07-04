@@ -186,7 +186,7 @@ typedef struct PACKED _XDBF_XACH_Header {
 	// of XDBF_XACH_Entry.
 } XDBF_XACH_Header;
 ASSERT_STRUCT(XDBF_XACH_Header, 14);
-#pragma pack(0)
+#pragma pack()
 
 /**
  * XDBF: XACH - Achievements table entry
