@@ -162,10 +162,19 @@ int CALLBACK ConfigDialogPrivate::callbackProc(HWND hDlg, UINT uMsg, LPARAM lPar
 	switch (uMsg) {
 		case PSCB_INITIALIZED: {
 			// Property sheet has been initialized.
+
 			// Add the system menu and minimize box.
 			LONG style = GetWindowLong(hDlg, GWL_STYLE);
 			style |= WS_MINIMIZEBOX | WS_SYSMENU;
 			SetWindowLong(hDlg, GWL_STYLE, style);
+
+			// Restore the default system menu.
+			// Not only is this needed to restore the default entries,
+			// it's needed to make the Minimize button work on Windows 8.1
+			// and Windows 10 (and possibly Windows 8.0 as well).
+			// Reference: http://ntcoder.com/bab/2008/03/27/making-a-property-sheet-window-resizable/
+			GetSystemMenu(hDlg, false);
+			GetSystemMenu(hDlg, true);
 
 			// Remove the context help box.
 			// NOTE: Setting WS_MINIMIZEBOX does this,
