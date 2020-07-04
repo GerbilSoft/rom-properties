@@ -55,6 +55,8 @@
   * D-Bus Thumbnailer (XFCE): Fixed an incorrect MimeTypes key that broke
     thumbnailing on systems that use tumblerd. This was broken starting
     with v1.4.
+  * EXE: Fixed crashes for VFT_UNKNOWN and IMAGE_SUBSYSTEM_UNKNOWN.
+    The latter case occurs with Wine's built-in DLLs.
 
 * Other changes:
   * Split file handling and CPU/byteorder code from librpbase into two
