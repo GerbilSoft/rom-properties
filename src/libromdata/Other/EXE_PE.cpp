@@ -245,6 +245,10 @@ int EXEPrivate::findPERuntimeDLL(string &refDesc, string &refLink)
 	if (dataDir.Size < sizeof(IMAGE_IMPORT_DIRECTORY)) {
 		// Not enough space for the import table...
 		return -ENOENT;
+	} else if (dataDir.Size > 4*1024*1024) {
+		// Import table is larger than 4 MB...
+		// This might be data corruption.
+		return -EIO;
 	}
 
 	// Load the import directory table.
@@ -289,6 +293,11 @@ int EXEPrivate::findPERuntimeDLL(string &refDesc, string &refLink)
 	// with the last one. It's unlikely that it'll be at EOF, but we'll
 	// allow for 'short reads'.
 	const uint32_t dll_size_min = dll_vaddr_high - dll_vaddr_low + 1;
+	if (dll_size_min > 1*1024*1024) {
+		// More than 1 MB of DLL names is highly unlikely.
+		// There's probably some corruption in the import table.
+		return -EIO;
+	}
 	uint32_t dll_paddr = pe_vaddr_to_paddr(dll_vaddr_low, dll_size_min);
 	if (dll_paddr == 0) {
 		// Invalid VAs...
