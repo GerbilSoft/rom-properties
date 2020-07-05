@@ -1810,10 +1810,10 @@ rom_data_view_load_rom_data(gpointer data)
 {
 	RomDataView *page = ROM_DATA_VIEW(data);
 	g_return_val_if_fail(page != nullptr || IS_ROM_DATA_VIEW(page), false);
-	g_return_val_if_fail(page->uri != nullptr, false);
 
 	if (G_UNLIKELY(page->uri == nullptr)) {
 		// No URI.
+		// TODO: Remove widgets?
 		page->changed_idle = 0;
 		return false;
 	}
