@@ -322,7 +322,7 @@ ASSERT_STRUCT(Elf32_Shdr, 40);
 /**
  * ELF 64-bit section header.
  */
-typedef struct {
+typedef struct _Elf64_Shdr {
 	Elf64_Word  sh_name;		/* [0x000] Section name (string tbl index) */
 	Elf64_Word  sh_type;		/* [0x004] Section type */
 	Elf64_Xword sh_flags;		/* [0x008] Section flags */
