@@ -106,15 +106,19 @@ class WiiPartition : public GcnPartition
 
 		// Encryption key in use.
 		// TODO: Merge with EncryptionKeys.
-		enum EncKey {
-			ENCKEY_UNKNOWN = -1,
-			ENCKEY_COMMON = 0,	// Wii common key
-			ENCKEY_KOREAN = 1,	// Korean key
-			ENCKEY_VWII = 2,	// vWii common key
-			ENCKEY_DEBUG = 3,	// RVT-R debug key
-			ENCKEY_NONE = 4,	// No encryption (RVT-H)
+		enum class EncKey {
+			Unknown = -1,
 
-			ENCKEY_MAX
+			RVL_Common = 0,		// Common key
+			RVL_Korean = 1,		// Korean key
+			WUP_vWii = 2,		// vWii key
+
+			RVT_Debug = 3,		// Common key (debug)
+			RVT_Korean = 4,		// Korean key (debug)
+			CAT_vWii = 5,		// vWii key (debug)
+
+			None = 6,		// No encryption (RVT-H)
+			Max
 		};
 
 		/**
@@ -149,12 +153,16 @@ class WiiPartition : public GcnPartition
 			Key_Rvl_Common,
 			Key_Rvl_Korean,
 			Key_Wup_Starbuck_vWii_Common,
-			Key_Rvl_SD_AES,
-			Key_Rvl_SD_IV,
-			Key_Rvl_SD_MD5,
 
 			// Debug
 			Key_Rvt_Debug,
+			Key_Rvt_Korean,
+			Key_Cat_Starbuck_vWii_Common,
+
+			// SD card (TODO: Retail vs. Debug?)
+			Key_Rvl_SD_AES,
+			Key_Rvl_SD_IV,
+			Key_Rvl_SD_MD5,
 
 			Key_Max
 		};

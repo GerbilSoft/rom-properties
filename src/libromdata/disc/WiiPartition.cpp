@@ -116,12 +116,16 @@ const char *const WiiPartitionPrivate::EncryptionKeyNames[WiiPartition::Key_Max]
 	"rvl-common",
 	"rvl-korean",
 	"wup-starbuck-vwii-common",
-	"rvl-sd-aes",
-	"rvl-sd-iv",
-	"rvl-sd-md5",
 
 	// Debug
 	"rvt-debug",
+	"rvt-korean",
+	"cat-starbuck-vwii-common",
+
+	// SD card (TODO: Retail vs. Debug?)
+	"rvl-sd-aes",
+	"rvl-sd-iv",
+	"rvl-sd-md5",
 };
 
 const uint8_t WiiPartitionPrivate::EncryptionKeyVerifyData[WiiPartition::Key_Max][16] = {
@@ -136,6 +140,21 @@ const uint8_t WiiPartitionPrivate::EncryptionKeyVerifyData[WiiPartition::Key_Max
 	// wup-starbuck-vwii-common
 	{0x04,0xF1,0x33,0x3F,0xF8,0x05,0x7B,0x8F,
 	 0xA7,0xF1,0xED,0x6E,0xAC,0x23,0x33,0xFA},
+
+	/** Debug **/
+
+	// rvt-debug
+	{0x22,0xC4,0x2C,0x5B,0xCB,0xFE,0x75,0xAC,
+	 0xEB,0xC3,0x6B,0xAF,0x90,0xB3,0xB4,0xF5},
+	// rvt-korean
+	{0x31,0x81,0xF2,0xCA,0xFE,0x70,0x58,0xCB,
+	 0x3C,0x0F,0xB9,0x9D,0x2D,0x45,0x74,0xDA},
+	// cat-starbuck-vwii-common
+	{0x0B,0xFB,0x83,0x83,0x38,0xCB,0x1A,0x83,
+	 0x5E,0x1C,0xEC,0xCA,0xDC,0x5D,0xF1,0xFA},
+
+	/** SD card (TODO: Retail vs. Debug?) **/
+
 	// rvl-sd-aes
 	{0x8C,0x1C,0xBA,0x01,0x02,0xB9,0x6F,0x65,
 	 0x24,0x7C,0x85,0x3C,0x0F,0x3B,0x8C,0x37},
@@ -145,12 +164,6 @@ const uint8_t WiiPartitionPrivate::EncryptionKeyVerifyData[WiiPartition::Key_Max
 	// rvl-sd-md5
 	{0xF8,0xE1,0x8D,0x89,0x06,0xC7,0x21,0x32,
 	 0x9D,0xE0,0x14,0x19,0x30,0xC3,0x88,0x1F},
-
-	/** Debug **/
-
-	// rvt-debug
-	{0x22,0xC4,0x2C,0x5B,0xCB,0xFE,0x75,0xAC,
-	 0xEB,0xC3,0x6B,0xAF,0x90,0xB3,0xB4,0xF5},
 };
 #endif /* ENABLE_DECRYPTION */
 
@@ -160,16 +173,16 @@ WiiPartitionPrivate::WiiPartitionPrivate(WiiPartition *q,
 	: super(q, partition_offset, data_size, 2)
 #ifdef ENABLE_DECRYPTION
 	, verifyResult(KeyManager::VerifyResult::Unknown)
-	, encKey(WiiPartition::ENCKEY_UNKNOWN)
-	, encKeyReal(WiiPartition::ENCKEY_UNKNOWN)
+	, encKey(WiiPartition::EncKey::Unknown)
+	, encKeyReal(WiiPartition::EncKey::Unknown)
 	, cryptoMethod(cryptoMethod)
 	, pos_7C00(-1)
 	, sector_num(~0)
 	, aes_title(nullptr)
 #else /* !ENABLE_DECRYPTION */
 	, verifyResult(KeyManager::VerifyResult::NoSupport)
-	, encKey(WiiPartition::ENCKEY_UNKNOWN)
-	, encKeyReal(WiiPartition::ENCKEY_UNKNOWN)
+	, encKey(WiiPartition::EncKey::Unknown)
+	, encKeyReal(WiiPartition::EncKey::Unknown)
 	, cryptoMethod(cryptoMethod)
 	, pos_7C00(-1)
 	, sector_num(~0)
@@ -201,13 +214,13 @@ WiiPartitionPrivate::WiiPartitionPrivate(WiiPartition *q,
  */
 void WiiPartitionPrivate::getEncKey(void)
 {
-	if (encKey > WiiPartition::ENCKEY_UNKNOWN) {
+	if (encKey > WiiPartition::EncKey::Unknown) {
 		// Encryption key has already been determined.
 		return;
 	}
 
-	encKey = WiiPartition::ENCKEY_UNKNOWN;
-	encKeyReal = WiiPartition::ENCKEY_UNKNOWN;
+	encKey = WiiPartition::EncKey::Unknown;
+	encKeyReal = WiiPartition::EncKey::Unknown;
 	if (partition_size < 0) {
 		// Error loading the partition header.
 		return;
@@ -220,21 +233,26 @@ void WiiPartitionPrivate::getEncKey(void)
 	static const char issuer_rvt[] = "Root-CA00000002-XS00000006";
 	if (!memcmp(partitionHeader.ticket.signature_issuer, issuer_rvt, sizeof(issuer_rvt))) {
 		// Debug issuer. Use the debug key for keyIdx == 0.
-		if (keyIdx == 0) {
-			encKeyReal = WiiPartition::ENCKEY_DEBUG;
+		// NOTE: vWii common key shouldn't be used for discs,
+		// but we'll allow it anyway...
+		if (keyIdx <= 2) {
+			encKeyReal = static_cast<WiiPartition::EncKey>(
+				(int)WiiPartition::EncKey::RVT_Debug + keyIdx);
 		}
 	} else {
 		// Assuming Retail issuer.
-		// NOTE: vWii common key cannot be used for discs.
-		if (keyIdx <= 1) {
+		// NOTE: vWii common key shouldn't be used for discs,
+		// but we'll allow it anyway...
+		if (keyIdx <= 2) {
 			// keyIdx maps to encKey directly for retail.
-			encKeyReal = static_cast<WiiPartition::EncKey>(keyIdx);
+			encKeyReal = static_cast<WiiPartition::EncKey>(
+				(int)WiiPartition::EncKey::RVL_Common + keyIdx);
 		}
 	}
 
 	if ((cryptoMethod & WiiPartition::CM_MASK_ENCRYPTED) == WiiPartition::CM_UNENCRYPTED) {
 		// Not encrypted.
-		encKey = WiiPartition::ENCKEY_NONE;
+		encKey = WiiPartition::EncKey::None;
 	} else {
 		// Encrypted.
 		encKey = encKeyReal;
@@ -262,11 +280,11 @@ KeyManager::VerifyResult WiiPartitionPrivate::initDecryption(void)
 
 	// Determine the required encryption key.
 	getEncKey();
-	if (encKey <= WiiPartition::ENCKEY_UNKNOWN) {
+	if (encKey <= WiiPartition::EncKey::Unknown) {
 		// Invalid encryption key index.
 		// Use VerifyResult::KeyNotFound here.
 		// This condition is indicated by VerifyResult::KeyNotFound
-		// and a key index ENCKEY_UNKNOWN.
+		// and a key index EncKey::Unknown.
 		verifyResult = KeyManager::VerifyResult::KeyNotFound;
 		return verifyResult;
 	}
@@ -274,21 +292,23 @@ KeyManager::VerifyResult WiiPartitionPrivate::initDecryption(void)
 	// Determine the encryption key to use.
 	WiiPartition::EncryptionKeys keyIdx;
 	switch (encKey) {
-		case WiiPartition::ENCKEY_COMMON:
-			// Wii common key.
+		case WiiPartition::EncKey::RVL_Common:
 			keyIdx = WiiPartition::Key_Rvl_Common;
 			break;
-		case WiiPartition::ENCKEY_KOREAN:
-			// Korean key.
+		case WiiPartition::EncKey::RVL_Korean:
 			keyIdx = WiiPartition::Key_Rvl_Korean;
 			break;
-		case WiiPartition::ENCKEY_VWII:
-			// vWii common key.
+		case WiiPartition::EncKey::WUP_vWii:
 			keyIdx = WiiPartition::Key_Wup_Starbuck_vWii_Common;
 			break;
-		case WiiPartition::ENCKEY_DEBUG:
-			// Debug key. (RVT-R)
+		case WiiPartition::EncKey::RVT_Debug:
 			keyIdx = WiiPartition::Key_Rvt_Debug;
+			break;
+		case WiiPartition::EncKey::RVT_Korean:
+			keyIdx = WiiPartition::Key_Rvt_Korean;
+			break;
+		case WiiPartition::EncKey::CAT_vWii:
+			keyIdx = WiiPartition::Key_Cat_Starbuck_vWii_Common;
 			break;
 		default:
 			// Unknown key...

@@ -893,14 +893,21 @@ int WiiWAD::loadFieldData(void)
 
 	// Encryption key.
 	// TODO: WiiPartition function to get a key's "display name"?
-	static const char encKeyNames[][8] = {
+	static const char *const encKeyNames[] = {
+		// Retail
 		NOP_C_("WiiWAD|EncKey", "Retail"),
 		NOP_C_("WiiWAD|EncKey", "Korean"),
 		NOP_C_("WiiWAD|EncKey", "vWii"),
+
+		// Debug
+		NOP_C_("WiiWAD|EncKey", "Debug"),
+		NOP_C_("WiiWAD|EncKey", "Korean (debug)"),
+		NOP_C_("WiiWAD|EncKey", "vWii (debug)"),
+
+		// SD card (TODO: Retail vs. Debug?)
 		NOP_C_("WiiWAD|EncKey", "SD AES"),
 		NOP_C_("WiiWAD|EncKey", "SD IV"),
 		NOP_C_("WiiWAD|EncKey", "SD MD5"),
-		NOP_C_("WiiWAD|EncKey", "Debug"),
 	};
 	static_assert(ARRAY_SIZE(encKeyNames) == WiiPartition::Key_Max, "Update encKeyNames[]!");
 	const char *keyName;

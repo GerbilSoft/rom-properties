@@ -619,7 +619,7 @@ const char *GameCubePrivate::wii_getCryptoStatus(WiiPartition *partition)
 	const KeyManager::VerifyResult res = partition->verifyResult();
 	if (res == KeyManager::VerifyResult::KeyNotFound) {
 		// This may be an invalid key index.
-		if (partition->encKey() == WiiPartition::ENCKEY_UNKNOWN) {
+		if (partition->encKey() == WiiPartition::EncKey::Unknown) {
 			// Invalid key index.
 			return C_("GameCube", "ERROR: Invalid common key index.");
 		}
@@ -1851,23 +1851,29 @@ int GameCube::loadFieldData(void)
 			}
 
 			static const char *const wii_key_tbl[] = {
-				// tr: WiiPartition::ENCKEY_COMMON - Retail encryption key.
+				// tr: WiiPartition::EncKey::RVL_Common - Retail encryption key.
 				NOP_C_("GameCube|KeyIdx", "Retail"),
-				// tr: WiiPartition::ENCKEY_KOREAN - Korean encryption key.
+				// tr: WiiPartition::EncKey::RVL_Korean - Korean encryption key.
 				NOP_C_("GameCube|KeyIdx", "Korean"),
-				// tr: WiiPartition::ENCKEY_VWII - vWii-specific encryption key.
+				// tr: WiiPartition::EncKey::WUP_vWii - vWii-specific encryption key.
 				NOP_C_("GameCube|KeyIdx", "vWii"),
-				// tr: WiiPartition::ENCKEY_DEBUG - Debug encryption key.
+
+				// tr: WiiPartition::EncKey::RVT_Debug - Debug encryption key.
 				NOP_C_("GameCube|KeyIdx", "Debug"),
-				// tr: WiiPartition::ENCKEY_NONE - No encryption.
+				// tr: WiiPartition::EncKey::RVT_Korean - Korean (debug) encryption key.
+				NOP_C_("GameCube|KeyIdx", "Korean (debug)"),
+				// tr: WiiPartition::EncKey::CAT_vWii - vWii (debug) encryption key.
+				NOP_C_("GameCube|KeyIdx", "vWii (debug)"),
+
+				// tr: WiiPartition::EncKey::None - No encryption.
 				NOP_C_("GameCube|KeyIdx", "None"),
 			};
-			static_assert(ARRAY_SIZE(wii_key_tbl) == WiiPartition::ENCKEY_MAX,
+			static_assert(ARRAY_SIZE(wii_key_tbl) == (int)WiiPartition::EncKey::Max,
 				"wii_key_tbl[] size is incorrect.");
 
 			const char *s_key_name;
-			if (encKey >= 0 && encKey < ARRAY_SIZE(wii_key_tbl)) {
-				s_key_name = dpgettext_expr(RP_I18N_DOMAIN, "GameCube|KeyIdx", wii_key_tbl[encKey]);
+			if ((int)encKey >= 0 && (int)encKey < ARRAY_SIZE(wii_key_tbl)) {
+				s_key_name = dpgettext_expr(RP_I18N_DOMAIN, "GameCube|KeyIdx", wii_key_tbl[(int)encKey]);
 			} else {
 				// WiiPartition::ENCKEY_UNKNOWN
 				s_key_name = C_("RomData", "Unknown");
