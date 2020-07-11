@@ -1151,23 +1151,34 @@ KeyStoreUI::ImportReturn KeyStoreUI::importWiiUOtpBin(const char *filename)
 
 	// Verify the vWii Boot1 hash.
 	// TODO: Are there multiple variants of vWii Boot1?
-	static const uint8_t vWii_Boot1_hash[20] = {
+	bool isDebug;
+	static const uint8_t vWii_Boot1_hash_retail[20] = {
 		0xF8,0xB1,0x8E,0xC3,0xFE,0x26,0xB9,0xB1,
 		0x1A,0xD4,0xA4,0xED,0xD3,0xB7,0xA0,0x31,
 		0x11,0x9A,0x79,0xF8
 	};
-	if (memcmp(buf, vWii_Boot1_hash, sizeof(vWii_Boot1_hash)-1) != 0) {
+	static const uint8_t vWii_Boot1_hash_debug[20] = {
+		0x9C,0x43,0x35,0x08,0x0C,0xC7,0x57,0x4F,
+		0xCD,0xDE,0x85,0xBF,0x21,0xF6,0xC9,0x7C,
+		0x6C,0xAF,0xC1,0xDB
+	};
+	if (!memcmp(&buf[0], vWii_Boot1_hash_retail, sizeof(vWii_Boot1_hash_retail))) {
+		// Retail Boot1 hash matches.
+		isDebug = false;
+	} else if (!memcmp(&buf[0], vWii_Boot1_hash_debug, sizeof(vWii_Boot1_hash_debug))) {
+		// Debug Boot1 hash matches.
+		isDebug = true;
+	} else {
+		// Not a match.
 		iret.status = ImportStatus::InvalidFile;
 		return iret;
 	}
 
 	// Key addresses and indexes.
 	// TODO:
-	// - Verify if Wii debug keys are present in otp.bin from CAT-R units.
 	// - SD keys are not present in otp.bin.
-	static const KeyStoreUIPrivate::KeyBinAddress keyBinAddress[] = {
+	static const KeyStoreUIPrivate::KeyBinAddress keyBinAddress_retail[] = {
 		{0x014, WiiPartition::Key_Rvl_Common},
-		{0x014, WiiPartition::Key_Rvt_Debug},
 		{0x348, WiiPartition::Key_Rvl_Korean},
 		{0x0D0, WiiPartition::Key_Wup_Starbuck_vWii_Common},
 
@@ -1180,10 +1191,27 @@ KeyStoreUI::ImportReturn KeyStoreUI::importWiiUOtpBin(const char *filename)
 		{0, -1}
 	};
 
+	static const KeyStoreUIPrivate::KeyBinAddress keyBinAddress_debug[] = {
+		{0x014, WiiPartition::Key_Rvt_Debug},
+		{0x348, WiiPartition::Key_Rvt_Korean},
+		{0x0D0, WiiPartition::Key_Cat_Starbuck_vWii_Common},
+
+		// TODO: Import Wii U keys.
+#if 0
+		{0x090, /* Wii U ancast key */},
+		{0x0E0, /* Wii U common key */},
+#endif
+
+		{0, -1}
+	};
+
+	const KeyStoreUIPrivate::KeyBinAddress *const kba =
+		(likely(!isDebug) ? keyBinAddress_retail : keyBinAddress_debug);
+
 	// Import the keys.
 	RP_D(KeyStoreUI);
 	return d->importKeysFromBlob(KeyStoreUIPrivate::Section_WiiPartition,
-		keyBinAddress, buf, sizeof(buf));
+		kba, buf, sizeof(buf));
 }
 
 /**
