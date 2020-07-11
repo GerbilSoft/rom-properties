@@ -66,6 +66,8 @@
     this makes it possible to use the Ubuntu 18.04 "Bionic" packages on
     Linux Mint 19.3, which has an Ubuntu 18.04 base but uses the GTK+ 3.x
     version of Thunar.
+  * KeyManager: Added full support for Wii U devkit otp.bin files, as well as
+    debug Korean and vWii keys.
 
 ## v1.5 (released 2020/03/13)
 
