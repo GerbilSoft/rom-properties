@@ -783,7 +783,7 @@ rp_image *fromBC7(int width, int height,
  */
 static inline rp_image *fromLinear16(PixelFormat px_format,
 	int width, int height,
-	const uint16_t *img_buf, int img_siz, int stride)
+	const uint16_t *img_buf, int img_siz, int stride = 0)
 {
 	// amd64 always has SSE2.
 	return fromLinear16_sse2(px_format, width, height, img_buf, img_siz, stride);
@@ -808,7 +808,7 @@ static inline rp_image *fromLinear16(PixelFormat px_format,
  */
 static inline rp_image *fromLinear16(PixelFormat px_format,
 	int width, int height,
-	const uint16_t *RESTRICT img_buf, int img_siz, int stride)
+	const uint16_t *RESTRICT img_buf, int img_siz, int stride = 0)
 {
 #ifdef IMAGEDECODER_ALWAYS_HAS_SSE2
 	// amd64 always has SSE2.
@@ -838,7 +838,7 @@ static inline rp_image *fromLinear16(PixelFormat px_format,
 ATTR_ACCESS_SIZE(read_only, 4, 5)
 static inline rp_image *fromLinear24(PixelFormat px_format,
 	int width, int height,
-	const uint8_t *RESTRICT img_buf, int img_siz, int stride)
+	const uint8_t *RESTRICT img_buf, int img_siz, int stride = 0)
 {
 #ifdef IMAGEDECODER_HAS_SSSE3
 	if (RP_CPU_HasSSSE3()) {
@@ -862,7 +862,7 @@ static inline rp_image *fromLinear24(PixelFormat px_format,
  */
 static rp_image *fromLinear32(PixelFormat px_format,
 	int width, int height,
-	const uint32_t *RESTRICT img_buf, int img_siz, int stride)
+	const uint32_t *RESTRICT img_buf, int img_siz, int stride = 0)
 {
 #ifdef IMAGEDECODER_HAS_SSSE3
 	if (RP_CPU_HasSSSE3()) {
