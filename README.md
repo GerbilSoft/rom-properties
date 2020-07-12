@@ -10,19 +10,19 @@ video game ROM and disc images.
 [![Total alerts](https://img.shields.io/lgtm/alerts/g/GerbilSoft/rom-properties.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/GerbilSoft/rom-properties/alerts/)
 [![Language grade: C/C++](https://img.shields.io/lgtm/grade/cpp/g/GerbilSoft/rom-properties.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/GerbilSoft/rom-properties/context:cpp)
 
-## v1.5
+## v1.6
 
-This release adds a ton of new features, including support for Leapster Didj textures:
+This release adds a ton of new features, including a new online image database for Game Boy, Game Boy Color, Game Boy Advance, and Super NES title screens:
 
-![Leapster Didj textures](doc/img/v1.5/rp.win7.DidjTex.png)
+![ROM images using title screens from the new online title screen database](doc/img/v1.6/rp.kde5.rpdb.png)
 
-Other file formats added in this release include PowerVR 3.0.0 textures, Pokémon Mini ROM images, and Khronos KTX2 textures.
+Other new parsers in this release include PlayStation 1 and 2 disc images, and PlayStation 1 executable files.
 
-This release also makes use of enhanced security functionality in various operating systems, including seccomp() on Linux, low-integrity processes on Windows (when downloading images from online databases), and pledge() on OpenBSD.
+On Linux systems, the GTK+ 3.x UI frontends were all merged together into a single shared library. This reduces the number of packages, and it allows for non-default combinations of file browser and distribution, e.g. Thunar 1.8 on Ubuntu 18.04. (Linux Mint 19.3 uses this setup.)
 
 Translators needed; file an issue if you'd like to get started on a new translation, or submit a Pull Request if you have a translation ready to go.
 
-See [`NEWS.md`](NEWS.md) for a full list of changes in v1.5.
+See [`NEWS.md`](NEWS.md) for a full list of changes in v1.6.
 
 ## Feedback
 
