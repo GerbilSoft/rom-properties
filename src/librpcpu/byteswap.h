@@ -186,7 +186,7 @@ void __byte_swap_16_array_ssse3(uint16_t *ptr, size_t n);
 void __byte_swap_32_array_ssse3(uint32_t *ptr, size_t n);
 #endif /* BYTESWAP_HAS_SSSE3 */
 
-#if defined(RP_HAS_IFUNC)
+#if defined(RP_HAS_IFUNC) && (defined(RP_CPU_I386) || defined(RP_CPU_AMD64))
 /* System has IFUNC. Use it for dispatching. */
 
 /**
@@ -203,7 +203,7 @@ void __byte_swap_16_array(uint16_t *ptr, size_t n);
  */
 void __byte_swap_32_array(uint32_t *ptr, size_t n);
 
-#else /* !RP_HAS_IFUNC */
+#else /* !RP_HAS_IFUNC && !(defined(RP_CPU_I386) || defined(RP_CPU_AMD64)) */
 /* System does not have IFUNC. Use inline dispatch functions. */
 
 /**
@@ -275,7 +275,7 @@ static inline void __byte_swap_32_array(uint32_t *ptr, size_t n)
 # endif /* !BYTESWAP_ALWAYS_HAS_SSE2 */
 }
 
-#endif /* RP_HAS_IFUNC */
+#endif /* RP_HAS_IFUNC && (defined(RP_CPU_I386) || defined(RP_CPU_AMD64)) */
 
 #ifdef __cplusplus
 }

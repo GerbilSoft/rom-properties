@@ -1,3 +1,10 @@
+rom-properties (1.6-1ppa1~xenial4) xenial; urgency=medium
+
+  * ImageDecoder: Fix ARM64 linkage and AMD64 compile errors as a result of
+    the IFUNC fixes.
+
+ -- David Korth <gerbilsoft@gerbilsoft.com>  Sun, 12 Jul 2020 15:54:10 -0400
+
 rom-properties (1.6-1ppa1~xenial3) xenial; urgency=medium
 
   * ImageDecoder: Another attempt to fix ARM64 IFUNC build issues...

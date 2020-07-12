@@ -783,13 +783,13 @@ rp_image *fromBC7(int width, int height,
  */
 static inline rp_image *fromLinear16(PixelFormat px_format,
 	int width, int height,
-	const uint16_t *img_buf, int img_siz, int stride = 0)
+	const uint16_t *img_buf, int img_siz, int stride)
 {
 	// amd64 always has SSE2.
 	return fromLinear16_sse2(px_format, width, height, img_buf, img_siz, stride);
 }
 
-#endif /* defined(RP_HAS_IFUNC) && defined(IMAGEDECODER_ALWAYS_HAS_SSE2) */
+#endif /* RP_HAS_IFUNC && IMAGEDECODER_ALWAYS_HAS_SSE2 */
 
 #if !defined(RP_HAS_IFUNC) || (!defined(RP_CPU_I386) && !defined(RP_CPU_AMD64))
 
@@ -874,7 +874,7 @@ static rp_image *fromLinear32(PixelFormat px_format,
 	}
 }
 
-#endif /* !defined(RP_HAS_IFUNC) || (!defined(RP_CPU_I386) && !defined(RP_CPU_AMD64)) */
+#endif /* !RP_HAS_IFUNC || (!RP_CPU_I386 && !RP_CPU_AMD64) */
 
 } }
 
