@@ -1,3 +1,9 @@
+rom-properties (1.6-1ppa1~xenial2) xenial; urgency=medium
+
+  * ImageDecoder: Attempt to fix ARM64 IFUNC build issues on Launchpad.
+
+ -- David Korth <gerbilsoft@gerbilsoft.com>  Sun, 12 Jul 2020 15:25:59 -0400
+
 rom-properties (1.6-1ppa1~xenial1) xenial; urgency=medium
 
   * 1.6 release.
