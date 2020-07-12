@@ -501,10 +501,10 @@ string DMGPrivate::getPublisher(void) const
 			if (ISALNUM(romHeader.new_publisher_code[0]) &&
 			    ISALNUM(romHeader.new_publisher_code[1]))
 			{
-				s_publisher = rp_sprintf(C_("DMG", "Unknown (%.2s)"),
+				s_publisher = rp_sprintf(C_("RomData", "Unknown (%.2s)"),
 					romHeader.new_publisher_code);
 			} else {
-				s_publisher = rp_sprintf(C_("DMG", "Unknown (%02X %02X)"),
+				s_publisher = rp_sprintf(C_("RomData", "Unknown (%02X %02X)"),
 					static_cast<uint8_t>(romHeader.new_publisher_code[0]),
 					static_cast<uint8_t>(romHeader.new_publisher_code[1]));
 			}

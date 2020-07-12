@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rom-properties 1.6+\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
-"POT-Creation-Date: 2020-07-12 17:27-0400\n"
+"POT-Creation-Date: 2020-07-12 17:46-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1977,14 +1977,27 @@ msgid "Game Info"
 msgstr ""
 
 #: ../src/libromdata/Console/GameCube.cpp:413
+#: ../src/libromdata/Console/SNES.cpp:529
+#: ../src/libromdata/Handheld/DMG.cpp:504
+#: ../src/libromdata/Handheld/GameBoyAdvance.cpp:83
+#: ../src/libromdata/Handheld/NintendoDS.cpp:1223
+#: ../src/libromdata/Handheld/NintendoDS.cpp:1527
+#: ../src/libromdata/Handheld/VirtualBoy.cpp:367
 #, c-format
 msgctxt "RomData"
 msgid "Unknown (%.2s)"
 msgstr ""
 
 #: ../src/libromdata/Console/GameCube.cpp:418
+#: ../src/libromdata/Console/SNES.cpp:532
+#: ../src/libromdata/Console/Xbox360_XEX.cpp:1297
+#: ../src/libromdata/Console/Xbox_XBE.cpp:400
+#: ../src/libromdata/Handheld/DMG.cpp:507
+#: ../src/libromdata/Handheld/GameBoyAdvance.cpp:86
+#: ../src/libromdata/Handheld/NintendoDS.cpp:1226
+#: ../src/libromdata/Handheld/VirtualBoy.cpp:370
 #, c-format
-msgctxt "GameCube"
+msgctxt "RomData"
 msgid "Unknown (%02X %02X)"
 msgstr ""
 
@@ -3302,18 +3315,6 @@ msgctxt "SegaSaturn"
 msgid "Peripherals"
 msgstr ""
 
-#: ../src/libromdata/Console/SNES.cpp:529
-#, c-format
-msgctxt "SNES"
-msgid "Unknown (%.2s)"
-msgstr ""
-
-#: ../src/libromdata/Console/SNES.cpp:532
-#, c-format
-msgctxt "SNES"
-msgid "Unknown (%02X %02X)"
-msgstr ""
-
 #: ../src/libromdata/Console/SNES.cpp:543
 #: ../src/libromdata/Handheld/DMG.cpp:518
 #, c-format
@@ -3461,13 +3462,13 @@ msgstr ""
 
 #: ../src/libromdata/Console/WiiU.cpp:460
 #, c-format
-msgctxt "WiiU"
+msgctxt "RomData"
 msgid "Unknown (%.4s)"
 msgstr ""
 
 #: ../src/libromdata/Console/WiiU.cpp:462
 #, c-format
-msgctxt "WiiU"
+msgctxt "RomData"
 msgid "Unknown (%02X %02X %02X %02X)"
 msgstr ""
 
@@ -3767,13 +3768,6 @@ msgstr ""
 #, c-format
 msgctxt "RomData"
 msgid "Unknown (%c%c)"
-msgstr ""
-
-#: ../src/libromdata/Console/Xbox360_XEX.cpp:1297
-#: ../src/libromdata/Console/Xbox_XBE.cpp:400
-#, c-format
-msgctxt "RomData"
-msgid "Unknown (%02X %02X)"
 msgstr ""
 
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1649
@@ -4459,18 +4453,6 @@ msgctxt "Xbox360_STFS|ContentType"
 msgid "Community Game"
 msgstr ""
 
-#: ../src/libromdata/Handheld/DMG.cpp:504
-#, c-format
-msgctxt "DMG"
-msgid "Unknown (%.2s)"
-msgstr ""
-
-#: ../src/libromdata/Handheld/DMG.cpp:507
-#, c-format
-msgctxt "DMG"
-msgid "Unknown (%02X %02X)"
-msgstr ""
-
 #: ../src/libromdata/Handheld/DMG.cpp:845
 #: ../src/libromdata/Handheld/DMG.cpp:847
 msgctxt "DMG"
@@ -4614,18 +4596,6 @@ msgstr ""
 #: ../src/libromdata/Handheld/DMG.cpp:1087
 msgctxt "DMG"
 msgid "Mapper"
-msgstr ""
-
-#: ../src/libromdata/Handheld/GameBoyAdvance.cpp:83
-#, c-format
-msgctxt "GameBoyAdvance"
-msgid "Unknown (%.2s)"
-msgstr ""
-
-#: ../src/libromdata/Handheld/GameBoyAdvance.cpp:86
-#, c-format
-msgctxt "GameBoyAdvance"
-msgid "Unknown (%02X %02X)"
 msgstr ""
 
 #: ../src/libromdata/Handheld/GameBoyAdvance.cpp:381
@@ -5185,19 +5155,6 @@ msgctxt "NintendoDS"
 msgid "Game ID"
 msgstr ""
 
-#: ../src/libromdata/Handheld/NintendoDS.cpp:1223
-#: ../src/libromdata/Handheld/NintendoDS.cpp:1527
-#, c-format
-msgctxt "NintendoDS"
-msgid "Unknown (%.2s)"
-msgstr ""
-
-#: ../src/libromdata/Handheld/NintendoDS.cpp:1226
-#, c-format
-msgctxt "NintendoDS"
-msgid "Unknown (%02X %02X)"
-msgstr ""
-
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1236
 msgctxt "NintendoDS"
 msgid "Security Data"
@@ -5390,18 +5347,6 @@ msgctxt "VirtualBoy"
 msgid "Game ID"
 msgstr ""
 
-#: ../src/libromdata/Handheld/VirtualBoy.cpp:367
-#, c-format
-msgctxt "VirtualBoy"
-msgid "Unknown (%.2s)"
-msgstr ""
-
-#: ../src/libromdata/Handheld/VirtualBoy.cpp:370
-#, c-format
-msgctxt "VirtualBoy"
-msgid "Unknown (%02X %02X)"
-msgstr ""
-
 #: ../src/libromdata/Other/Amiibo.cpp:410
 msgctxt "Amiibo"
 msgid "NTAG215 Serial"
@@ -5510,9 +5455,10 @@ msgctxt "ELF"
 msgid "CPU"
 msgstr ""
 
-#: ../src/libromdata/Other/ELF.cpp:1159
+#: ../src/libromdata/Other/ELF.cpp:1159 ../src/libromdata/Other/EXE.cpp:364
+#: ../src/libromdata/Other/EXE_PE.cpp:515
 #, c-format
-msgctxt "ELF"
+msgctxt "RomData"
 msgid "Unknown (0x%04X)"
 msgstr ""
 
@@ -5990,12 +5936,6 @@ msgstr ""
 #: ../src/libromdata/Other/EXE.cpp:357 ../src/libromdata/Other/EXE_PE.cpp:521
 msgctxt "EXE"
 msgid "CPU"
-msgstr ""
-
-#: ../src/libromdata/Other/EXE.cpp:364 ../src/libromdata/Other/EXE_PE.cpp:515
-#, c-format
-msgctxt "RomData"
-msgid "Unknown (0x%04X)"
 msgstr ""
 
 #: ../src/libromdata/Other/EXE.cpp:369 ../src/libromdata/Other/EXE_NE.cpp:315

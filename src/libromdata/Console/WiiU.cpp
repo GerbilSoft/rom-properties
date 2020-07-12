@@ -457,9 +457,9 @@ int WiiU::loadFieldData(void)
 		if (ISALNUM(publisher_code[0]) && ISALNUM(publisher_code[1]) &&
 		    ISALNUM(publisher_code[2]) && ISALNUM(publisher_code[3]))
 		{
-			s_publisher = rp_sprintf(C_("WiiU", "Unknown (%.4s)"), publisher_code);
+			s_publisher = rp_sprintf(C_("RomData", "Unknown (%.4s)"), publisher_code);
 		} else {
-			s_publisher = rp_sprintf(C_("WiiU", "Unknown (%02X %02X %02X %02X)"),
+			s_publisher = rp_sprintf(C_("RomData", "Unknown (%02X %02X %02X %02X)"),
 				static_cast<uint8_t>(publisher_code[0]),
 				static_cast<uint8_t>(publisher_code[1]),
 				static_cast<uint8_t>(publisher_code[2]),

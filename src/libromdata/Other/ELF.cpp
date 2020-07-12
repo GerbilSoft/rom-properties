@@ -1156,7 +1156,7 @@ int ELF::loadFieldData(void)
 		d->fields->addField_string(cpu_title, cpu);
 	} else {
 		d->fields->addField_string(cpu_title,
-			rp_sprintf(C_("ELF", "Unknown (0x%04X)"), primary->e_machine));
+			rp_sprintf(C_("RomData", "Unknown (0x%04X)"), primary->e_machine));
 	}
 
 	// CPU flags.

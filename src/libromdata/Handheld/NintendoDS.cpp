@@ -1220,10 +1220,10 @@ int NintendoDS::loadFieldData(void)
 	} else {
 		if (ISALNUM(romHeader->company[0]) && ISALNUM(romHeader->company[1])) {
 			d->fields->addField_string(publisher_title,
-				rp_sprintf(C_("NintendoDS", "Unknown (%.2s)"), romHeader->company));
+				rp_sprintf(C_("RomData", "Unknown (%.2s)"), romHeader->company));
 		} else {
 			d->fields->addField_string(publisher_title,
-				rp_sprintf(C_("NintendoDS", "Unknown (%02X %02X)"),
+				rp_sprintf(C_("RomData", "Unknown (%02X %02X)"),
 					romHeader->company[0], romHeader->company[1]));
 		}
 	}
@@ -1524,7 +1524,7 @@ int NintendoDS::loadMetaData(void)
 	const char *const publisher = NintendoPublishers::lookup(romHeader->company);
 	d->metaData->addMetaData_string(Property::Publisher,
 		publisher ? publisher :
-			rp_sprintf(C_("NintendoDS", "Unknown (%.2s)"), romHeader->company));
+			rp_sprintf(C_("RomData", "Unknown (%.2s)"), romHeader->company));
 
 	// Finished reading the metadata.
 	return static_cast<int>(d->metaData->count());

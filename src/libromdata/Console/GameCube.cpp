@@ -415,7 +415,7 @@ string GameCubePrivate::getPublisher(void) const
 	}
 
 	// Disc ID is not alphanumeric.
-	return rp_sprintf(C_("GameCube", "Unknown (%02X %02X)"),
+	return rp_sprintf(C_("RomData", "Unknown (%02X %02X)"),
 		static_cast<uint8_t>(discHeader.company[0]),
 		static_cast<uint8_t>(discHeader.company[1]));
 }

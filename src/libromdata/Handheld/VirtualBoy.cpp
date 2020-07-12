@@ -364,10 +364,10 @@ int VirtualBoy::loadFieldData(void)
 		if (ISALNUM(romHeader->publisher[0]) &&
 		    ISALNUM(romHeader->publisher[1]))
 		{
-			s_publisher = rp_sprintf(C_("VirtualBoy", "Unknown (%.2s)"),
+			s_publisher = rp_sprintf(C_("RomData", "Unknown (%.2s)"),
 				romHeader->publisher);
 		} else {
-			s_publisher = rp_sprintf(C_("VirtualBoy", "Unknown (%02X %02X)"),
+			s_publisher = rp_sprintf(C_("RomData", "Unknown (%02X %02X)"),
 				static_cast<uint8_t>(romHeader->publisher[0]),
 				static_cast<uint8_t>(romHeader->publisher[1]));
 		}

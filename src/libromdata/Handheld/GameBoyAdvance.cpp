@@ -80,10 +80,10 @@ string GameBoyAdvancePrivate::getPublisher(void) const
 		if (ISALNUM(romHeader.company[0]) &&
 		    ISALNUM(romHeader.company[1]))
 		{
-			s_publisher = rp_sprintf(C_("GameBoyAdvance", "Unknown (%.2s)"),
+			s_publisher = rp_sprintf(C_("RomData", "Unknown (%.2s)"),
 				romHeader.company);
 		} else {
-			s_publisher = rp_sprintf(C_("GameBoyAdvance", "Unknown (%02X %02X)"),
+			s_publisher = rp_sprintf(C_("RomData", "Unknown (%02X %02X)"),
 				static_cast<uint8_t>(romHeader.company[0]),
 				static_cast<uint8_t>(romHeader.company[1]));
 		}
