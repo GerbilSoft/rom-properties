@@ -106,7 +106,7 @@ IF(USE_INTERNAL_ZSTD)
 	# On Windows and Mac OS X, this will build DLLs.
 	# On other systems, this will be statically-linked.
 	IF(WIN32 OR APPLE)
-		SET(SKIP_INSTALL_LIBRARIES OFF)
+		SET(SKIP_INSTALL_LIBRARIES ON)
 		SET(SKIP_INSTALL_ALL OFF)
 		SET(BUILD_SHARED_LIBS ON)
 		SET(BUILD_STATIC_LIBS OFF)
