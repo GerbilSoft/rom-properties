@@ -91,16 +91,19 @@ GczReaderPrivate::GczReaderPrivate(GczReader *q)
 uint32_t GczReaderPrivate::getBlockCompressedSize(uint64_t blockNum) const
 {
 	assert(blockNum < blockPointers.size());
-	if (blockNum >= blockPointers.size())
+	if (blockNum >= blockPointers.size()) {
+		// Out of range.
 		return 0;
+	}
 
-	const uint64_t start = le32_to_cpu(blockPointers[blockNum]);
+	const uint64_t bptrStart = le64_to_cpu(blockPointers[blockNum]);
 	if (blockNum < blockPointers.size() - 1) {
 		// Not the last block.
-		return le32_to_cpu(blockPointers[blockNum + 1]) - start;
+		const uint64_t bptrEnd = le64_to_cpu(blockPointers[blockNum + 1]);
+		return static_cast<uint32_t>(bptrEnd - bptrStart);
 	} else /*if (blockNum == blockPointers.size() - 1)*/ {
 		// Last block. Read up until the end of the disc.
-		return gczHeader.z_data_size - start;
+		return static_cast<uint32_t>(gczHeader.z_data_size - bptrStart);
 	}
 }
 
