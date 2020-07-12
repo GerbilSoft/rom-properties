@@ -41,23 +41,31 @@ ENDIF(CMAKE_DL_LIBS)
 ###########################
 
 INCLUDE(DirInstallPaths)
+
+# Create symlinks for rp-thumbnail and rp-config.
+# Reference: https://stackoverflow.com/questions/34578362/how-can-i-package-a-symlink-with-cpack
+ADD_CUSTOM_COMMAND(TARGET rp-stub POST_BUILD
+	COMMAND ln -sf "${CMAKE_INSTALL_PREFIX}/${DIR_INSTALL_EXE}/rp-stub" rp-thumbnail
+	WORKING_DIRECTORY "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}"
+	VERBATIM
+	)
+ADD_CUSTOM_COMMAND(TARGET rp-stub POST_BUILD
+	COMMAND ln -sf rp-stub rp-config
+	WORKING_DIRECTORY "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}"
+	VERBATIM
+	)
+
+# Install the main target and the symlinks.
 INSTALL(TARGETS rp-stub
 	RUNTIME DESTINATION "${DIR_INSTALL_EXE}"
 	COMPONENT "plugin"
 	)
-
-# FIXME: Create symlinks for rp-thumbnail and rp-config.
-# CMake doesn't really like this, and in the Debian package build,
-# it results in errors due to attempting to create a symlink in
-# the real file system instead of the fakeroot.
-INSTALL(PROGRAMS "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/rp-stub"
+INSTALL(FILES "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/rp-thumbnail"
 	DESTINATION "${DIR_INSTALL_LIBEXEC}"
-	RENAME "rp-thumbnail"
 	COMPONENT "plugin"
 	)
-INSTALL(PROGRAMS "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/rp-stub"
+INSTALL(PROGRAMS "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/rp-config"
 	DESTINATION "${DIR_INSTALL_EXE}"
-	RENAME "rp-config"
 	COMPONENT "plugin"
 	)
 
