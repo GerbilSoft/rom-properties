@@ -1,3 +1,11 @@
+rom-properties (1.6-1ppa2~bionic1) bionic; urgency=medium
+
+  * Build for Ubuntu 18.04 "Bionic" Beaver.
+
+    PPA version bumped to ensure it updates from previous versions.
+
+ -- David Korth <gerbilsoft@gerbilsoft.com>  Sun, 12 Jul 2020 16:23:03 -0400
+
 rom-properties (1.6-1ppa1~xenial4) xenial; urgency=medium
 
   * ImageDecoder: Fix ARM64 linkage and AMD64 compile errors as a result of
