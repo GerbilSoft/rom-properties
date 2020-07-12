@@ -236,6 +236,7 @@ rp_image *fromLinear16_sse2(PixelFormat px_format,
 	const uint16_t *RESTRICT img_buf, int img_siz, int stride = 0);
 #endif /* IMAGEDECODER_HAS_SSE2 */
 
+#if defined(RP_HAS_IFUNC) && (defined(RP_CPU_I386) || defined(RP_CPU_AMD64))
 /**
  * Convert a linear 16-bit RGB image to rp_image.
  * @param px_format	[in] 16-bit pixel format.
@@ -249,6 +250,7 @@ rp_image *fromLinear16_sse2(PixelFormat px_format,
 IFUNC_SSE2_STATIC_INLINE rp_image *fromLinear16(PixelFormat px_format,
 	int width, int height,
 	const uint16_t *RESTRICT img_buf, int img_siz, int stride = 0);
+#endif /* RP_HAS_IFUNC && (RP_CPU_I386 || RP_CPU_AMD64) */
 
 /** 24-bit **/
 
@@ -286,6 +288,7 @@ rp_image *fromLinear24_ssse3(PixelFormat px_format,
 	const uint8_t *RESTRICT img_buf, int img_siz, int stride = 0);
 #endif /* IMAGEDECODER_HAS_SSSE3 */
 
+#if defined(RP_HAS_IFUNC) && (defined(RP_CPU_I386) || defined(RP_CPU_AMD64))
 /**
  * Convert a linear 24-bit RGB image to rp_image.
  * @param px_format	[in] 24-bit pixel format.
@@ -300,6 +303,7 @@ ATTR_ACCESS_SIZE(read_only, 4, 5)
 IFUNC_STATIC_INLINE rp_image *fromLinear24(PixelFormat px_format,
 	int width, int height,
 	const uint8_t *RESTRICT img_buf, int img_siz, int stride = 0);
+#endif /* RP_HAS_IFUNC && (RP_CPU_I386 || RP_CPU_AMD64) */
 
 /** 32-bit **/
 
@@ -335,6 +339,7 @@ rp_image *fromLinear32_ssse3(PixelFormat px_format,
 	const uint32_t *RESTRICT img_buf, int img_siz, int stride = 0);
 #endif /* IMAGEDECODER_HAS_SSSE3 */
 
+#if defined(RP_HAS_IFUNC) && (defined(RP_CPU_I386) || defined(RP_CPU_AMD64))
 /**
  * Convert a linear 32-bit RGB image to rp_image.
  * @param px_format	[in] 32-bit pixel format.
@@ -348,6 +353,7 @@ rp_image *fromLinear32_ssse3(PixelFormat px_format,
 IFUNC_STATIC_INLINE rp_image *fromLinear32(PixelFormat px_format,
 	int width, int height,
 	const uint32_t *RESTRICT img_buf, int img_siz, int stride = 0);
+#endif /* RP_HAS_IFUNC && (RP_CPU_I386 || RP_CPU_AMD64) */
 
 /** GameCube **/
 
