@@ -191,7 +191,7 @@ if [ "x$git_repo_dir" != "x" ] && [ "x${abs_repo_dir}" = "x${abs_srcdir}/.git" ]
             # This happens, is OK, and "(no branch)" is what "git branch" prints.
             git_branch="(no branch)"
         fi
-        git_dirty=no
+        git_dirty=yes
         # git-1.4 does not understand "git-diff-files --quiet"
         # git-1.4 does not understand "git-diff-index --cached --quiet HEAD"
         if [ "x$($GIT diff-files)" = "x" ] && [ "x$($GIT diff-index --cached HEAD)" = "x" ]; then
