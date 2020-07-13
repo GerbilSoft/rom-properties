@@ -1,5 +1,7 @@
 # Changes
 
+## v1.7 (released 2020/??/??)
+
 ## v1.6.1 (released 2020/07/13)
 
 * Bug fixes:
