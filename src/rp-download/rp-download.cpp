@@ -80,7 +80,7 @@ static bool verbose = false;
  */
 static void show_usage(void)
 {
-	_ftprintf(stderr, _T("Syntax: %s [-v] cache_key\n"), argv0);
+	_ftprintf(stderr, _T("Syntax: %s [-v] [-f] cache_key\n"), argv0);
 }
 
 /**
@@ -329,6 +329,7 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 #endif /* __SNR_openat2 || __NR_openat2 */
 		SCMP_SYS(poll), SCMP_SYS(select),
 		SCMP_SYS(stat), SCMP_SYS(stat64),
+		SCMP_SYS(unlink),	// to delete expired cache files
 		SCMP_SYS(utimensat),
 
 #if defined(__SNR_statx) || defined(__NR_statx)
@@ -380,26 +381,46 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 	// Store argv[0] globally.
 	argv0 = argv[0];
 
-	const TCHAR *cache_key = argv[1];
 	if (argc < 2) {
-		// TODO: Add a verbose option to print messages.
-		// Normally, the only output is a return value.
 		show_usage();
 		return EXIT_FAILURE;
 	}
 
-	// Check for "-v" or "--verbose".
-	if (!_tcscmp(argv[1], _T("-v")) || !_tcscmp(argv[1], _T("--verbose"))) {
-		// Verbose mode is enabled.
-		verbose = true;
-		// We need at least three parameters now.
-		if (argc < 3) {
-			show_error(_T("No cache key specified."));
-			show_usage();
-			return EXIT_FAILURE;
+	// Check for arguments. (simple non-getopt version)
+	bool force = false;
+	int optind = 1;
+	for (; optind < argc; optind++) {
+		if (!argv[optind] || argv[optind][0] != '-') {
+			// End of options.
+			break;
 		}
-		cache_key = argv[2];
+
+		// Allow multiple options in one argument, e.g. '-vf'.
+		for (int i = 1; argv[optind][i] != '\0'; i++) {
+			switch (argv[optind][i]) {
+				case 'v':
+					// Verbose mode is enabled.
+					verbose = true;
+					break;
+				case 'f':
+					// Force download is enabled.
+					force = true;
+					break;
+				default:
+					// Invalid parameter.
+					show_error(_T("Unrecognized option: %c"), argv[optind][i]);
+					show_usage();
+					return EXIT_FAILURE;
+			}
+		}
 	}
+
+	if (optind >= argc) {
+		show_error(_T("No cache key specified."));
+		show_usage();
+		return EXIT_FAILURE;
+	}
+	const TCHAR *const cache_key = argv[optind];
 
 	// Check the cache key prefix. The prefix indicates the system
 	// and identifies the online database used.
@@ -524,8 +545,12 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 			const time_t systime = time(nullptr);
 			if ((systime - filemtime) < (86400*7)) {
 				// Less than a week old.
-				SHOW_ERROR(_T("Negative cache file for '%s' has not expired; not redownloading."), cache_key);
-				return EXIT_FAILURE;
+				if (likely(!force)) {
+					SHOW_ERROR(_T("Negative cache file for '%s' has not expired; not redownloading."), cache_key);
+					return EXIT_FAILURE;
+				} else {
+					SHOW_ERROR(_T("Negative cache file for '%s' has not expired, but -f was specified. Redownloading anyway."), cache_key);
+				}
 			}
 
 			// More than a week old.
