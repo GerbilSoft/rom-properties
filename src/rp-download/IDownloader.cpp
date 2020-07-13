@@ -336,7 +336,9 @@ void IDownloader::createUserAgent(void)
 
 	char buf[32];
 	snprintf(buf, sizeof(buf), "%d.%d", major, minor);
-	m_userAgent += _T(" (Macintosh; ") _T(MAC_CPU) _T(" Mac OS X ") + buf + _T(')');
+	m_userAgent += _T(" (Macintosh; ") _T(MAC_CPU) _T(" Mac OS X ");
+	m_userAgent += buf;
+	m_userAgent += _T(')');
 #elif defined(__unix__)
 	// Generic UNIX fallback.
 	m_userAgent += _T(" (Unix; ") _T(CPU) _T(")");
