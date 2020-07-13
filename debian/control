@@ -31,7 +31,6 @@ Build-Depends:
  libnautilus-extension-dev,
  libnemo-extension-dev,
  libbsd-dev,
- mesa-common-dev,
  gettext
 Standards-Version: 3.9.8
 Homepage: https://github.com/GerbilSoft/rom-properties
