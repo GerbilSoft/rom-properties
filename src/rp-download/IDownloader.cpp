@@ -149,6 +149,88 @@ void IDownloader::clear(void)
 	m_data.clear();
 }
 
+#if defined(__linux__)
+/**
+ * Get the distribution name from /etc/os-release.
+ * @return Distribution name, or "Linux" if not available.
+ */
+static tstring getOSRelease(void)
+{
+	// Reference: https://www.freedesktop.org/software/systemd/man/os-release.html
+
+	// TODO: Distro and/or kernel version?
+	FILE *f_in = fopen("/etc/os-release", "r");
+	if (!f_in) {
+		f_in = fopen("/usr/lib/os-release", "r");
+		if (!f_in) {
+			// os-release file not found.
+			return _T("Linux");
+		}
+	}
+
+	// Find the "NAME=" line.
+	unsigned int line_count = 0;
+	string distro_name;
+	char buf[256];
+	for (unsigned int line_count = 0; !feof(f_in) && line_count < 32; line_count++) {
+		char *line = fgets(buf, sizeof(buf), f_in);
+		if (!line)
+			break;
+
+		// Remove leading spaces.
+		while (*line != '\0' && ISSPACE(*line)) {
+			line++;
+		}
+		if (*line == '\0')
+			continue;
+
+		if (strncmp(line, "NAME=", 5) != 0) {
+			// Not "NAME=".
+			continue;
+		}
+
+		line += 5;
+		if (*line == '\0')
+			continue;
+
+		// Remove spaces at the end.
+		size_t len = strlen(line);
+		while (len > 0 && ISSPACE(line[len-1])) {
+			len--;
+		}
+		if (len == 0)
+			continue;
+
+		// Check if we need to remove double-quotes.
+		if (*line == '"') {
+			// Check if the last character is double-quotes.
+			if (len >= 2 && line[len-1] == '"') {
+				// It's double-quotes.
+				line++;
+				len -= 2;
+			}
+		}
+
+		// Line found.
+		distro_name.assign(line, len);
+		break;
+	}
+
+	if (distro_name.empty()) {
+		// Not found.
+		return _T("Linux");
+	}
+
+	// Check if the distribution name contains "inux".
+	if (distro_name.find("inux") == string::npos) {
+		// "inux" not found. Add "Linux" to the end.
+		distro_name += " Linux";
+	}
+
+	return distro_name;
+}
+#endif /* __linux__ */
+
 /**
  * Create the User-Agent value.
  */
@@ -223,32 +305,32 @@ void IDownloader::createUserAgent(void)
 # endif /* !NO_CPU */
 
 #elif defined(__linux__)
-	// TODO: Kernel version and/or lsb_release?
-	m_userAgent += _T(" (Linux ") _T(CPU) _T(")");
+	const tstring os_release = getOSRelease();
+	m_userAgent += _T(" (") + os_release + _T("; ") _T(CPU) _T(")");
 #elif defined(__FreeBSD__)
 	// TODO: Distribution version?
-	m_userAgent += _T(" (FreeBSD ") _T(CPU) _T(")");
+	m_userAgent += _T(" (FreeBSD; ") _T(CPU) _T(")");
 #elif defined(__NetBSD__)
 	// TODO: Distribution version?
-	m_userAgent += _T(" (NetBSD ") _T(CPU) _T(")");
+	m_userAgent += _T(" (NetBSD; ") _T(CPU) _T(")");
 #elif defined(__OpenBSD__)
 	// TODO: Distribution version?
-	m_userAgent += _T(" (OpenBSD ") _T(CPU) _T(")");
+	m_userAgent += _T(" (OpenBSD; ") _T(CPU) _T(")");
 #elif defined(__bsdi__)
 	// TODO: Distribution version?
-	m_userAgent += _T(" (BSDi ") _T(CPU) _T(")");
+	m_userAgent += _T(" (BSDi; ") _T(CPU) _T(")");
 #elif defined(__DragonFly__)
 	// TODO: Distribution version?
-	m_userAgent += _T(" (DragonFlyBSD ") _T(CPU) _T(")");
+	m_userAgent += _T(" (DragonFlyBSD; ") _T(CPU) _T(")");
 #elif defined(__APPLE__)
 	// TODO: OS version?
 	m_userAgent += _T(" (Macintosh; ") _T(MAC_CPU) _T(" Mac OS X)");
 #elif defined(__unix__)
 	// Generic UNIX fallback.
-	m_userAgent += _T(" (Unix ") _T(CPU) _T(")");
+	m_userAgent += _T(" (Unix; ") _T(CPU) _T(")");
 #else
 	// Unknown OS...
-	m_userAgent += _T(" (Unknown ") _T(CPU) _T(")");
+	m_userAgent += _T(" (Unknown; ") _T(CPU) _T(")");
 #endif
 }
 
