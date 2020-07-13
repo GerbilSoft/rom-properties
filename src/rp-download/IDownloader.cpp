@@ -173,12 +173,12 @@ static tstring getOSRelease(void)
 		f_in = fopen("/usr/lib/os-release", "r");
 		if (!f_in) {
 			// os-release file not found.
-			return _T("Linux");
+			return tstring();
 		}
 	}
 
 	// Find the "NAME=" line.
-	string distro_name;
+	tstring distro_name;
 	char buf[256];
 	for (unsigned int line_count = 0; !feof(f_in) && line_count < 32; line_count++) {
 		char *line = fgets(buf, sizeof(buf), f_in);
@@ -222,11 +222,6 @@ static tstring getOSRelease(void)
 		// Line found.
 		distro_name.assign(line, len);
 		break;
-	}
-
-	if (distro_name.empty()) {
-		// Not found.
-		return _T("Linux");
 	}
 
 	return distro_name;
