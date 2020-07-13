@@ -85,6 +85,7 @@ static void show_usage(void)
 
 /**
  * Show an error message.
+ * This includes the program's filename from argv[0].
  * @param format printf() format string.
  * @param ... printf() format parameters.
  */
@@ -104,6 +105,28 @@ show_error(const TCHAR *format, ...)
 }
 
 #define SHOW_ERROR(...) if (verbose) show_error(__VA_ARGS__)
+
+/**
+ * Show an information message.
+ * This does *not* include the program's filename from argv[0].
+ * @param format printf() format string.
+ * @param ... printf() format parameters.
+ */
+static void
+#if !defined(_MSC_VER) && !defined(_UNICODE)
+__attribute__ ((format (printf, 1, 2)))
+#endif /* !_MSC_VER && !_UNICODE */
+show_info(const TCHAR *format, ...)
+{
+	va_list ap;
+
+	va_start(ap, format);
+	_vftprintf(stderr, format, ap);
+	va_end(ap);
+	_fputtc(_T('\n'), stderr);
+}
+
+#define SHOW_INFO(...) if (verbose) show_info(__VA_ARGS__)
 
 /**
  * Get a file's size and time.
@@ -546,10 +569,10 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 			if ((systime - filemtime) < (86400*7)) {
 				// Less than a week old.
 				if (likely(!force)) {
-					SHOW_ERROR(_T("Negative cache file for '%s' has not expired; not redownloading."), cache_key);
+					SHOW_INFO(_T("Negative cache file for '%s' has not expired; not redownloading."), cache_key);
 					return EXIT_FAILURE;
 				} else {
-					SHOW_ERROR(_T("Negative cache file for '%s' has not expired, but -f was specified. Redownloading anyway."), cache_key);
+					SHOW_INFO(_T("Negative cache file for '%s' has not expired, but -f was specified. Redownloading anyway."), cache_key);
 				}
 			}
 
@@ -562,8 +585,16 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 		} else if (filesize > 0) {
 			// File is larger than 0 bytes, which indicates
 			// it was previously cached successfully
-			SHOW_ERROR(_T("Cache file for '%s' is already downloaded."), cache_key);
-			return EXIT_SUCCESS;
+			if (likely(!force)) {
+				SHOW_INFO(_T("Cache file for '%s' is already downloaded."), cache_key);
+				return EXIT_SUCCESS;
+			} else {
+				SHOW_INFO(_T("Cache file for '%s' is already downloaded, but -f was specified. Redownloading anyway."), cache_key);
+				if (_tremove(cache_filename.c_str()) != 0) {
+					SHOW_ERROR(_T("Error deleting cache file for '%s': %s"), cache_key, _tcserror(errno));
+					return EXIT_FAILURE;
+				}
+			}
 		}
 	} else if (ret == -ENOENT) {
 		// File not found. We'll need to download it.
@@ -630,7 +661,8 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 
 	// Write the file to the cache.
 	// TODO: Verify the size.
-	size_t size = fwrite(m_downloader->data(), 1, m_downloader->dataSize(), f_out);
+	const size_t dataSize = m_downloader->dataSize();
+	size_t size = fwrite(m_downloader->data(), 1, dataSize, f_out);
 
 	// Save the file origin information.
 #ifdef _WIN32
@@ -643,5 +675,8 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 	fclose(f_out);
 
 	// Success.
+	SHOW_INFO(_T("Downloaded cache file for '%s': %u byte%s."),
+		cache_key, static_cast<unsigned int>(dataSize),
+		unlikely(dataSize == 1) ? "" : "s");
 	return EXIT_SUCCESS;
 }
