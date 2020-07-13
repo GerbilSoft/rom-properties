@@ -332,7 +332,7 @@ void IDownloader::createUserAgent(void)
 	m_userAgent += s_os_version;
 #  ifndef NO_CPU
 	if (!s_os_version.empty()) {
-		m_userAgent += _T("; ") CPU;
+		m_userAgent += _T("; ") _T(CPU);
 	}
 #  endif /* NO_CPU */
 	m_userAgent += _T(')');
