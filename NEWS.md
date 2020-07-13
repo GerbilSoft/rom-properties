@@ -1,6 +1,14 @@
 # Changes
 
-## v1.7 (released 2020/??/??)
+## v1.6.1 (released 2020/07/13)
+
+* Bug fixes:
+  * Windows: Fixed a guaranteed crash when viewing the "ROM Properties" tab.
+    Fixes issue #236.
+
+* Other changes:
+  * Windows: The rp-download User-Agent string now includes the OS version
+    number.
 
 ## v1.6 (released 2020/07/12)
 
