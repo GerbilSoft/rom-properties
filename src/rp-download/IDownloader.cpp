@@ -188,9 +188,32 @@ void IDownloader::createUserAgent(void)
 #endif
 
 #ifdef _WIN32
-	// TODO: OS version number.
-	// For now, assuming "Windows NT".
-	m_userAgent += _T(" (Windows NT");
+	// Get the OS version number.
+	OSVERSIONINFO osvi;
+	osvi.dwOSVersionInfoSize = sizeof(osvi);
+	GetVersionEx(&osvi);
+
+	m_userAgent += _T(" (");
+	switch (osvi.dwPlatformId) {
+		case VER_PLATFORM_WIN32s:
+			// Good luck with that.
+			m_userAgent += _T("Win32s");
+			break;
+		case VER_PLATFORM_WIN32_WINDOWS:
+		default:
+			m_userAgent += _T("Windows");
+			break;
+		case VER_PLATFORM_WIN32_NT:
+			m_userAgent += _T("Windows NT");
+			break;
+	}
+	m_userAgent += _T(' ');
+
+	// Version number.
+	TCHAR buf[32];
+	_sntprintf(buf, _countof(buf), _T("%u.%u"), osvi.dwMajorVersion, osvi.dwMinorVersion);
+	m_userAgent += buf;
+
 # ifndef NO_CPU
 	m_userAgent += _T("; ");
 #  ifdef _WIN64
