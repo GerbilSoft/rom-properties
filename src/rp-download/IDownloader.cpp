@@ -21,6 +21,11 @@ using std::tstring;
 # include <CoreServices/CoreServices.h>
 #endif /* __APPLE__ */
 
+#if defined(_WIN32) && !defined(_WIN64)
+static bool bTriedWow64 = false;
+static bool bIsWow64 = false;
+#endif /* _WIN32 && !_WIN64 */
+
 namespace RpDownload {
 
 IDownloader::IDownloader()
@@ -293,13 +298,37 @@ void IDownloader::createUserAgent(void)
 	_sntprintf(buf, _countof(buf), _T("%u.%u"), osvi.dwMajorVersion, osvi.dwMinorVersion);
 	m_userAgent += buf;
 
-# ifndef NO_CPU
-	m_userAgent += _T("; ");
 #  ifdef _WIN64
-	m_userAgent += _T("Win64; ");
+	m_userAgent += _T("; Win64; ") _T(CPU);
+#  else /* !_WIN64 */
+	// Check for WOW64.
+	if (!bTriedWow64) {
+		HMODULE hKernel32 = GetModuleHandle(_T("kernel32"));
+		assert(hKernel32 != nullptr);
+		if (hKernel32) {
+			typedef BOOL (WINAPI *PFNISWOW64PROCESS)(HANDLE hProcess, PBOOL Wow64Process);
+			PFNISWOW64PROCESS pfnIsWow64Process = (PFNISWOW64PROCESS)GetProcAddress(hKernel32, "IsWow64Process");
+
+			if (pfnIsWow64Process) {
+				BOOL bIsWow64Process = FALSE;
+				BOOL bRet = IsWow64Process(GetCurrentProcess(), &bIsWow64Process);
+				if (bRet && bIsWow64Process) {
+					bIsWow64 = true;
+				}
+			}
+		}
+		bTriedWow64 = true;
+	}
+
+	if (bIsWow64) {
+		m_userAgent += _T("; WOW64");
+	}
+#    ifndef NO_CPU
+	m_userAgent += _T("; ") _T(CPU);
+#    endif /* !NO_CPU */
 #  endif /* _WIN64 */
-	m_userAgent += _T(CPU) _T(")");
-# endif /* !NO_CPU */
+
+	m_userAgent += _T(")");
 
 #elif defined(__linux__)
 	const tstring os_release = getOSRelease();
