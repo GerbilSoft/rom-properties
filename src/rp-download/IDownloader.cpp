@@ -21,11 +21,6 @@ using std::tstring;
 # include <CoreServices/CoreServices.h>
 #endif /* __APPLE__ */
 
-#if defined(_WIN32) && !defined(_WIN64)
-static bool bTriedWow64 = false;
-static bool bIsWow64 = false;
-#endif /* _WIN32 && !_WIN64 */
-
 namespace RpDownload {
 
 IDownloader::IDownloader()
@@ -158,10 +153,75 @@ void IDownloader::clear(void)
 	m_data.clear();
 }
 
-#if defined(__linux__)
+#if defined(_WIN32)
 /**
- * Get the distribution name from /etc/os-release.
- * @return Distribution name, or "Linux" if not available.
+ * Get the OS release information.
+ * @return OS release information, or empty string if not available.
+ */
+static tstring getOSRelease(void)
+{
+	static bool bTriedWow64 = false;
+	static bool bIsWow64 = false;
+
+	// Get the OS version number.
+	OSVERSIONINFO osvi;
+	osvi.dwOSVersionInfoSize = sizeof(osvi);
+	GetVersionEx(&osvi);
+
+	tstring s_os_version;
+	switch (osvi.dwPlatformId) {
+		case VER_PLATFORM_WIN32s:
+			// Good luck with that.
+			s_os_version = _T("Win32s");
+			break;
+		case VER_PLATFORM_WIN32_WINDOWS:
+		default:
+			s_os_version = _T("Windows");
+			break;
+		case VER_PLATFORM_WIN32_NT:
+			s_os_version = _T("Windows NT");
+			break;
+	}
+	s_os_version += _T(' ');
+
+	// Version number.
+	TCHAR buf[32];
+	_sntprintf(buf, _countof(buf), _T("%u.%u"), osvi.dwMajorVersion, osvi.dwMinorVersion);
+	s_os_version += buf;
+
+#  ifdef _WIN64
+	s_os_version += _T("; Win64");
+#  else /* !_WIN64 */
+	// Check for WOW64.
+	if (!bTriedWow64) {
+		HMODULE hKernel32 = GetModuleHandle(_T("kernel32"));
+		assert(hKernel32 != nullptr);
+		if (hKernel32) {
+			typedef BOOL (WINAPI *PFNISWOW64PROCESS)(HANDLE hProcess, PBOOL Wow64Process);
+			PFNISWOW64PROCESS pfnIsWow64Process = (PFNISWOW64PROCESS)GetProcAddress(hKernel32, "IsWow64Process");
+
+			if (pfnIsWow64Process) {
+				BOOL bIsWow64Process = FALSE;
+				BOOL bRet = IsWow64Process(GetCurrentProcess(), &bIsWow64Process);
+				if (bRet && bIsWow64Process) {
+					bIsWow64 = true;
+				}
+			}
+		}
+		bTriedWow64 = true;
+	}
+
+	if (bIsWow64) {
+		s_os_version += _T("; WOW64");
+	}
+#  endif /* _WIN64 */
+
+	return s_os_version;
+}
+#elif defined(__linux__)
+/**
+ * Get the OS release information.
+ * @return OS release information, or empty string if not available.
  */
 static tstring getOSRelease(void)
 {
@@ -226,7 +286,7 @@ static tstring getOSRelease(void)
 
 	return distro_name;
 }
-#endif /* __linux__ */
+#endif
 
 /**
  * Create the User-Agent value.
@@ -267,64 +327,15 @@ void IDownloader::createUserAgent(void)
 #endif
 
 #ifdef _WIN32
-	// Get the OS version number.
-	OSVERSIONINFO osvi;
-	osvi.dwOSVersionInfoSize = sizeof(osvi);
-	GetVersionEx(&osvi);
-
 	m_userAgent += _T(" (");
-	switch (osvi.dwPlatformId) {
-		case VER_PLATFORM_WIN32s:
-			// Good luck with that.
-			m_userAgent += _T("Win32s");
-			break;
-		case VER_PLATFORM_WIN32_WINDOWS:
-		default:
-			m_userAgent += _T("Windows");
-			break;
-		case VER_PLATFORM_WIN32_NT:
-			m_userAgent += _T("Windows NT");
-			break;
+	const tstring s_os_version = getOSRelease();
+	m_userAgent += s_os_version;
+#  ifndef NO_CPU
+	if (!s_os_version.empty()) {
+		m_userAgent += _T("; ") CPU;
 	}
-	m_userAgent += _T(' ');
-
-	// Version number.
-	TCHAR buf[32];
-	_sntprintf(buf, _countof(buf), _T("%u.%u"), osvi.dwMajorVersion, osvi.dwMinorVersion);
-	m_userAgent += buf;
-
-#  ifdef _WIN64
-	m_userAgent += _T("; Win64; ") _T(CPU);
-#  else /* !_WIN64 */
-	// Check for WOW64.
-	if (!bTriedWow64) {
-		HMODULE hKernel32 = GetModuleHandle(_T("kernel32"));
-		assert(hKernel32 != nullptr);
-		if (hKernel32) {
-			typedef BOOL (WINAPI *PFNISWOW64PROCESS)(HANDLE hProcess, PBOOL Wow64Process);
-			PFNISWOW64PROCESS pfnIsWow64Process = (PFNISWOW64PROCESS)GetProcAddress(hKernel32, "IsWow64Process");
-
-			if (pfnIsWow64Process) {
-				BOOL bIsWow64Process = FALSE;
-				BOOL bRet = IsWow64Process(GetCurrentProcess(), &bIsWow64Process);
-				if (bRet && bIsWow64Process) {
-					bIsWow64 = true;
-				}
-			}
-		}
-		bTriedWow64 = true;
-	}
-
-	if (bIsWow64) {
-		m_userAgent += _T("; WOW64");
-	}
-#    ifndef NO_CPU
-	m_userAgent += _T("; ") _T(CPU);
-#    endif /* !NO_CPU */
-#  endif /* _WIN64 */
-
-	m_userAgent += _T(")");
-
+#  endif /* NO_CPU */
+	m_userAgent += _T(')');
 #elif defined(__linux__)
 	const tstring os_release = getOSRelease();
 	m_userAgent += _T(" (");
