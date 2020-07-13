@@ -169,7 +169,6 @@ static tstring getOSRelease(void)
 	}
 
 	// Find the "NAME=" line.
-	unsigned int line_count = 0;
 	string distro_name;
 	char buf[256];
 	for (unsigned int line_count = 0; !feof(f_in) && line_count < 32; line_count++) {
@@ -219,12 +218,6 @@ static tstring getOSRelease(void)
 	if (distro_name.empty()) {
 		// Not found.
 		return _T("Linux");
-	}
-
-	// Check if the distribution name contains "inux".
-	if (distro_name.find("inux") == string::npos) {
-		// "inux" not found. Add "Linux" to the end.
-		distro_name += " Linux";
 	}
 
 	return distro_name;
@@ -306,7 +299,12 @@ void IDownloader::createUserAgent(void)
 
 #elif defined(__linux__)
 	const tstring os_release = getOSRelease();
-	m_userAgent += _T(" (") + os_release + _T("; ") _T(CPU) _T(")");
+	m_userAgent += _T(" (");
+	if (!os_release.empty()) {
+		m_userAgent += os_release;
+		m_userAgent += _T("; ");
+	}
+	m_userAgent += _T("Linux ") _T(CPU) _T(")");
 #elif defined(__FreeBSD__)
 	// TODO: Distribution version?
 	m_userAgent += _T(" (FreeBSD; ") _T(CPU) _T(")");
