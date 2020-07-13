@@ -26,6 +26,10 @@ IF(NOT WIN32)
 	UNSET(OLD_CMAKE_REQUIRED_DEFINITIONS)
 ENDIF(NOT WIN32)
 
+IF(APPLE)
+	FIND_LIBRARY(CORESERVICES_LIBRARY CoreServices REQUIRED)
+ENDIF(APPLE)
+
 # Write the config.h file.
 CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/config.rp-download.h.in" "${CMAKE_CURRENT_BINARY_DIR}/config.rp-download.h")
 
@@ -121,6 +125,10 @@ ELSE(WIN32)
 	TARGET_LINK_LIBRARIES(rp-download PRIVATE unixcommon inih)
 	TARGET_LINK_LIBRARIES(rp-download PRIVATE ${CURL_LIBRARIES})
 ENDIF(WIN32)
+
+IF(APPLE)
+	TARGET_LINK_LIBRARIES(rp-download PRIVATE ${CORESERVICES_LIBRARY})
+ENDIF(APPLE)
 
 # Make sure git_version.h is created before compiling this target.
 IF(TARGET git_version)

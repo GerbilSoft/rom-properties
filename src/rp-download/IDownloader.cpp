@@ -17,6 +17,10 @@
 #include <string>
 using std::tstring;
 
+#ifdef __APPLE__
+# include <CoreServices/CoreServices.h>
+#endif /* __APPLE__ */
+
 namespace RpDownload {
 
 IDownloader::IDownloader()
@@ -321,8 +325,18 @@ void IDownloader::createUserAgent(void)
 	// TODO: Distribution version?
 	m_userAgent += _T(" (DragonFlyBSD; ") _T(CPU) _T(")");
 #elif defined(__APPLE__)
-	// TODO: OS version?
-	m_userAgent += _T(" (Macintosh; ") _T(MAC_CPU) _T(" Mac OS X)");
+	// Get the OS version.
+	// TODO: Include the bugfix version?
+	SInt32 major, minor;
+	//SInt32 bugfix;
+
+	Gestalt(gestaltSystemVersionMajor, &major);
+	Gestalt(gestaltSystemVersionMinor, &minor);
+	//Gestalt(gestaltSystemVersionBugFix, &bugfix);
+
+	char buf[32];
+	snprintf(buf, sizeof(buf), "%d.%d", major, minor);
+	m_userAgent += _T(" (Macintosh; ") _T(MAC_CPU) _T(" Mac OS X ") + buf + _T(')');
 #elif defined(__unix__)
 	// Generic UNIX fallback.
 	m_userAgent += _T(" (Unix; ") _T(CPU) _T(")");
