@@ -687,7 +687,7 @@ int RP_ShellPropSheetExt_Private::initString(_In_ HWND hDlg, _In_ HWND hWndTab,
 	// If string data wasn't specified, get the RFT_STRING data
 	// from the RomFields::Field object.
 	int lf_count = 0;
-	tstring str_nl = 0;
+	tstring str_nl;
 	if (!str) {
 		if (field.type != RomFields::RFT_STRING)
 			return 0;
