@@ -404,8 +404,8 @@ void DMGPrivate::getTitleAndGameID(string &s_title, string &s_gameID) const
 					case 'G': case 'H':
 					case 'I': case 'J':
 					case 'K': case 'P':
-					case 'S': case 'X':
-					case 'Y':
+					case 'S': case 'U':
+					case 'X': case 'Y':
 						// Region byte is valid.
 						break;
 
@@ -1403,9 +1403,13 @@ int DMG::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
 		};
 		static const DmgSpecialCase_t dmgSpecialCases[] = {
 			// Non-CGB; Non-JP
+			{DMG_CHECK_REGION | DMG_REGION_OTHER,	"DONKEYKONGLAND 3", ""},
 			{DMG_CHECK_REGION | DMG_REGION_OTHER,	"POKEMON RED", ""},
 			{DMG_CHECK_REGION | DMG_REGION_OTHER,	"POKEMON BLUE", ""},
 			{DMG_CHECK_REGION | DMG_REGION_OTHER,	"TRACK MEET", ""},
+
+			// Non-CGB; JP
+			{DMG_CHECK_REGION | DMG_REGION_JP,	"GBWARST", ""},
 
 			// Non-CGB; JP (Sachen)
 			// TODO: "TETRIS" ROMs have the same global checksum.
