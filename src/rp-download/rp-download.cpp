@@ -36,6 +36,7 @@
 
 // C++ includes.
 #include <memory>
+using std::string;
 using std::tstring;
 using std::unique_ptr;
 
