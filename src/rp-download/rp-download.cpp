@@ -47,6 +47,7 @@ using std::unique_ptr;
 #endif /* _WIN32 */
 
 // libcachecommon
+#include "libcachecommon/CacheDir.hpp"
 #include "libcachecommon/CacheKeys.hpp"
 
 #ifdef _WIN32
@@ -269,9 +270,10 @@ int rmkdir(const tstring &path)
 			// Could not create the directory.
 			// If it exists already, that's fine.
 			// Otherwise, something went wrong.
-			if (errno != EEXIST) {
+			const int err = errno;
+			if (err != EEXIST) {
 				// Something went wrong.
-				return -errno;
+				return -err;
 			}
 		}
 
@@ -336,6 +338,7 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 		SCMP_SYS(fstatat64), SCMP_SYS(newfstatat),	// Ubuntu 19.10 (32-bit)
 		SCMP_SYS(futex),
 		SCMP_SYS(getdents), SCMP_SYS(getdents64),
+		SCMP_SYS(getppid),	// for bubblewrap verification
 		SCMP_SYS(getrusage),
 		SCMP_SYS(gettimeofday),	// 32-bit only?
 		SCMP_SYS(getuid),	// TODO: Only use geteuid()?
@@ -541,6 +544,15 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 
 	if (verbose) {
 		_ftprintf(stderr, _T("URL: %s\n"), full_url);
+	}
+
+	// Make sure we have a valid cache directory.
+	const string &cache_dir = LibCacheCommon::getCacheDirectory();
+	if (cache_dir.empty()) {
+		// Cache directory is invalid...
+		// This may happen if bubblewrap is in use.
+		SHOW_ERROR(_T("Unable to access cache directory. Check the sandbox environment!"));
+		return EXIT_FAILURE;
 	}
 
 	// Get the cache filename.
