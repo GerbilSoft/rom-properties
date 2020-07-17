@@ -360,6 +360,11 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 		SCMP_SYS(statx),
 #endif /* __SNR_statx || __NR_statx */
 
+#ifndef NDEBUG
+		// Needed for assert() on some systems.
+		SCMP_SYS(uname),
+#endif /* NDEBUG */
+
 		// glibc ncsd
 		// TODO: Restrict connect() to AF_UNIX.
 		SCMP_SYS(connect), SCMP_SYS(recvmsg), SCMP_SYS(sendto),
