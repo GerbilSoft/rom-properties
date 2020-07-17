@@ -9,12 +9,26 @@
 #ifndef __ROMPROPERTIES_RP_STUB_DLL_SEARCH_H__
 #define __ROMPROPERTIES_RP_STUB_DLL_SEARCH_H__
 
+#include <sys/types.h>
+
+// Common definitions, including function attributes.
+#include "common.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-// Common definitions, including function attributes.
-#include "common.h"
+/**
+ * Get a process's executable name and, optionally, its parent process ID.
+ * @param pid	[	in] Process ID.
+ * @param pidname	[out] String buffer.
+ * @param len		[in] Size of buf.
+ * @param ppid	[out,opt] Parent process ID.
+ * @return 0 on success; non-zero on error.
+ */
+ATTR_ACCESS_SIZE(write_only, 2, 3)
+ATTR_ACCESS(write_only, 4)
+int rp_get_process_name(pid_t pid, char *buf, size_t len, pid_t *ppid);
 
 #define LEVEL_DEBUG 0
 #define LEVEL_ERROR 1

@@ -70,6 +70,88 @@ static const uint8_t plugin_prio[RP_FE_MAX][RP_FE_MAX] = {
 };
 
 /**
+ * Get a process's executable name.
+ * @param pid		[in] Process ID.
+ * @param pidname	[out] String buffer.
+ * @param len		[in] Size of buf.
+ * @return 0 on success; non-zero on error.
+ */
+int rp_get_process_name(pid_t pid, char *pidname, size_t len, pid_t *ppid)
+{
+	int ret = -EIO;
+
+	// Zero the ppid initially.
+	if (ppid) {
+		*ppid = 0;
+	}
+
+#ifdef __linux__
+	// Open the /proc/$PID/status file.
+	char buf[64];
+	snprintf(buf, sizeof(buf), "/proc/%d/status", pid);
+	errno = 0;
+	FILE *f = fopen(buf, "r");
+	if (!f) {
+		// Unable to open the file...
+		int err = errno;
+		if (err == 0) {
+			err = EIO;
+		}
+		return err;
+	}
+
+	while (!feof(f) && fgets(buf, sizeof(buf), f) != NULL) {
+		if (buf[0] == 0)
+			break;
+
+		// "Name:\t" is always the first line.
+		if (!strncmp(buf, "Name:\t", 6)) {
+			// Found the "Name:" row.
+			const char *const s_value = &buf[6];
+			const size_t s_value_sz = sizeof(buf)-6;
+
+			const char *const chr = memchr(s_value, '\n', s_value_sz);
+			if (!chr)
+				continue;
+
+			size_t namelen = (int)(chr - s_value);
+			if (namelen > len - 1) {
+				namelen = len - 1;
+			}
+			memcpy(pidname, s_value, namelen);
+			pidname[namelen] = '\0';
+
+			if (!ppid) {
+				// Not searching for ppid, so we can stop here.
+				ret = 0;
+				break;
+			}
+		} else if (!strncmp(buf, "PPid:\t", 6)) {
+			// Found the "PPid:" row.
+			if (ppid) {
+				char *endptr = NULL;
+				*ppid = (pid_t)strtol(&buf[6], &endptr, 10);
+				if (*endptr != 0 && *endptr != '\n') {
+					// Invalid numeric value...
+					*ppid = 0;
+				} else {
+					// Valid ppid.
+					ret = 0;
+				}
+				break;
+			}
+		}
+	}
+	fclose(f);
+#else /* !__linux__ */
+	// Not supported.
+	ret = -ENOSYS;
+#endif
+
+	return ret;
+}
+
+/**
  * Walk through the process tree to determine the active desktop environment.
  * @return RP_Frontend, or RP_FE_MAX if unknown.
  */
@@ -82,76 +164,41 @@ static RP_Frontend walk_proc_tree(void)
 	pid_t ppid = getppid();
 	while (ppid > 1) {
 		// Open the /proc/$PID/status file.
-		char buf[32];
-		snprintf(buf, sizeof(buf), "/proc/%d/status", ppid);
-		FILE *f = fopen(buf, "r");
-		if (!f) {
-			// Unable to open the file...
-			ppid = 0;
+		char process_name[32];
+
+		const pid_t pid = ppid;
+		int ret = rp_get_process_name(pid, process_name, sizeof(process_name), &ppid);
+		if (ret != 0) {
+			// Error getting the parent process information.
 			break;
 		}
 
-		// Zero the ppid in case we don't find another one.
-		// This prevents infinite loops.
-		ppid = 0;
-
-		while (!feof(f) && fgets(buf, sizeof(buf), f) != NULL) {
-			if (buf[0] == 0)
-				break;
-
-			// "Name:\t" is always the first line.
-			// If it matches an expected version of KDE, we're done.
-			// Otherwise, continue until we find "PPid:\t".
-			if (!strncmp(buf, "Name:\t", 6)) {
-				// Found the "Name:" row.
-				const char *const s_value = &buf[6];
-				const size_t s_value_sz = sizeof(buf)-6;
-
-				const char *const chr = memchr(s_value, '\n', s_value_sz);
-				if (!chr)
-					continue;
-
-				const int len = (int)(chr - s_value);
-				if (len == 8) {
-					if (!strncmp(s_value, "kdeinit5", 8)) {
-						// Found kdeinit5.
-						ret = RP_FE_KF5;
-						ppid = 0;
-						break;
-					} else if (!strncmp(s_value, "kdeinit4", 8)) {
-						// Found kdeinit4.
-						ret = RP_FE_KDE4;
-						ppid = 0;
-						break;
-					}
-				} else if ((len == 11 && !strncmp(s_value, "gnome-panel", 11)) ||
-				           (len == 13 && !strncmp(s_value, "gnome-session", 13)) ||
-				           (len == 10 && !strncmp(s_value, "mate-panel", 10)) ||
-				           (len == 12 && !strncmp(s_value, "mate-session", 12)) ||
-				           (len == 14 && !strncmp(s_value, "cinnamon-panel", 14)) ||
-				           (len == 16 && !strncmp(s_value, "cinnamon-session", 16)))
-				{
-					// GNOME, MATE, or Cinnamon session.
-					// TODO: Verify the Cinnamon process names.
-					ret = RP_FE_GTK3;
-					ppid = 0;
-					break;
-				}
-				// NOTE: Unity and XFCE don't have unique
-				// parent processes.
-			} else if (!strncmp(buf, "PPid:\t", 6)) {
-				// Found the "PPid:" row.
-				char *endptr = NULL;
-				ppid = (pid_t)strtol(&buf[6], &endptr, 10);
-				if (*endptr != 0 && *endptr != '\n') {
-					// Invalid numeric value...
-					ppid = 0;
-				}
-				// Check the next process.
-				break;
-			}
+		// Check the parent process name.
+		// NOTE: Unity and XFCE don't have unique parent processes.
+		// FIXME: Handle ksmserver...
+		if (!strcmp(process_name, "kdeinit5")) {
+			// Found kdeinit5.
+			ret = RP_FE_KF5;
+			ppid = 0;
+			break;
+		} else if (!strcmp(process_name, "kdeinit4")) {
+			// Found kdeinit4.
+			ret = RP_FE_KDE4;
+			ppid = 0;
+			break;
+		} else if (!strcmp(process_name, "gnome-panel") ||
+		           !strcmp(process_name, "gnome-session") ||
+		           !strcmp(process_name, "mate-panel") ||
+		           !strcmp(process_name, "mate-session") ||
+		           !strcmp(process_name, "cinnamon-panel") ||
+		           !strcmp(process_name, "cinnamon-session"))
+		{
+			// GNOME, MATE, or Cinnamon session.
+			// TODO: Verify the Cinnamon process names.
+			ret = RP_FE_GTK3;
+			ppid = 0;
+			break;
 		}
-		fclose(f);
 	}
 #else
 # warning walk_proc_tree() is not implemented for this OS.
