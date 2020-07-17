@@ -64,7 +64,7 @@ int rpcli_do_security_options(void)
 
 		// NOTE: The following syscalls are only made if either access() or stat() can't be run.
 		// TODO: Can this happen in other situations?
-		//SCMP_SYS(getuid),
+		//SCMP_SYS(geteuid), SCMP_SYS(getuid),
 		//SCMP_SYS(socket),	// ???
 		//SCMP_SYS(socketcall),	// FIXME: Enhanced filtering? [cURL+GnuTLS only?]
 

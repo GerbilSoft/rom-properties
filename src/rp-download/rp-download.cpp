@@ -338,7 +338,7 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 		SCMP_SYS(getdents), SCMP_SYS(getdents64),
 		SCMP_SYS(getrusage),
 		SCMP_SYS(gettimeofday),	// 32-bit only?
-		SCMP_SYS(getuid),
+		SCMP_SYS(getuid),	// TODO: Only use geteuid()?
 		SCMP_SYS(lseek), SCMP_SYS(_llseek),
 		//SCMP_SYS(lstat), SCMP_SYS(lstat64),	// Not sure if used?
 		SCMP_SYS(mkdir), SCMP_SYS(mmap), SCMP_SYS(mmap2),
@@ -377,6 +377,10 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 		SCMP_SYS(setsockopt), SCMP_SYS(socket),
 		SCMP_SYS(socketcall),	// FIXME: Enhanced filtering? [cURL+GnuTLS only?]
 		SCMP_SYS(socketpair), SCMP_SYS(sysinfo),
+
+		// libnss_resolve.so (systemd-resolved)
+		SCMP_SYS(geteuid),
+		SCMP_SYS(sendmsg),	// libpthread.so [_nss_resolve_gethostbyname4_r() from libnss_resolve.so]
 
 		-1	// End of whitelist
 	};
