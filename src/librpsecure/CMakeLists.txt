@@ -32,7 +32,7 @@ ELSEIF(UNIX AND NOT APPLE)
 	# Check for system security functionality.
 	IF(USE_SECCOMP)
 		# Linux: Use seccomp().
-		FIND_PACKAGE(Seccomp REQUIRED)
+		FIND_PACKAGE(SECCOMP REQUIRED)
 		IF(SECCOMP_FOUND)
 			SET(librpsecure_OS_SRCS os-secure_linux.c)
 			IF(ENABLE_SECCOMP_DEBUG)
