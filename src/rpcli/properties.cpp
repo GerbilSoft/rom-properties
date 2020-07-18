@@ -12,6 +12,7 @@
 
 // C includes. (C++ namespace)
 #include <cassert>
+#include "ctypex.h"
 
 // C++ includes.
 #include <algorithm>
@@ -1049,6 +1050,51 @@ public:
 
 
 
+/**
+ * Partially unescape a URL.
+ * %20, %23, and %25 are left escaped.
+ * @param url URL.
+ * @return Partially unescaped URL.
+ */
+static string urlPartialUnescape(const string &url)
+{
+	// Unescape everything except %20, %23, and %25.
+	string unesc_url;
+	const size_t src_size = url.size();
+	unesc_url.reserve(src_size);
+
+	for (size_t i = 0; i < src_size; i++) {
+		if (url[i] == '%' && (i + 2) < src_size) {
+			// Check for two hex digits.
+			const char chr0 = url[i+1];
+			const char chr1 = url[i+2];
+			if (ISXDIGIT(chr0) && ISXDIGIT(chr1)) {
+				// Unescape it.
+				uint8_t val = (chr0 & 0x0F) << 4;
+				if (chr0 >= 'A') {
+					val += 0x90;
+				}
+				val |= (chr1 & 0x0F);
+				if (chr1 >= 'A') {
+					val += 0x09;
+				}
+
+				if (val != 0x20 && val != 0x23 && val != 0x25) {
+					unesc_url += static_cast<char>(val);
+					i += 2;
+					continue;
+				}
+			}
+		}
+
+		// Print the character as-is.
+		unesc_url += url[i];
+	}
+
+	return unesc_url;
+}
+
+
 ROMOutput::ROMOutput(const RomData *romdata, uint32_t lc)
 	: romdata(romdata)
 	, lc(lc) { }
@@ -1103,7 +1149,7 @@ std::ostream& operator<<(std::ostream& os, const ROMOutput& fo) {
 		std::for_each(extURLs.cbegin(), extURLs.cend(),
 			[i, &os](const RomData::ExtURL &extURL) {
 				os << "-- " <<
-					RomData::getImageTypeName((RomData::ImageType)i) << ": " << extURL.url <<
+					RomData::getImageTypeName((RomData::ImageType)i) << ": " << urlPartialUnescape(extURL.url) <<
 					" (cache_key: " << extURL.cache_key << ')' << endl;
 			}
 		);
@@ -1224,7 +1270,7 @@ std::ostream& operator<<(std::ostream& os, const JSONROMOutput& fo) {
 			if (did_one) os << ',';
 			did_one = true;
 
-			os << "{\"url\":" << JSONString(iter->url.c_str());
+			os << "{\"url\":" << JSONString(urlPartialUnescape(iter->url).c_str());
 			os << ",\"cache_key\":" << JSONString(iter->cache_key.c_str()) << '}';
 		}
 		os << "]}";
