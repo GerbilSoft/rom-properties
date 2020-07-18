@@ -120,6 +120,12 @@ class IDownloader
 		 */
 		void createUserAgent(void);
 
+		/**
+		 * Get the OS release information.
+		 * @return OS release information, or empty string if not available.
+		 */
+		std::tstring getOSRelease(void);
+
 	protected:
 		std::tstring m_url;
 
@@ -135,6 +141,9 @@ class IDownloader
 
 		// User-Agent.
 		std::tstring m_userAgent;
+#ifdef _WIN32
+		bool m_isWinXP;		// Set for Windows versions older than Vista.
+#endif /* _WIN32 */
 };
 
 }

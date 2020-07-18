@@ -27,6 +27,9 @@ IDownloader::IDownloader()
 	: m_mtime(-1)
 	, m_inProgress(false)
 	, m_maxSize(0)
+#ifdef _WIN32
+	, m_isWinXP(false)
+#endif /* _WIN32 */
 {
 	createUserAgent();
 }
@@ -36,6 +39,9 @@ IDownloader::IDownloader(const TCHAR *url)
 	, m_mtime(-1)
 	, m_inProgress(false)
 	, m_maxSize(0)
+#ifdef _WIN32
+	, m_isWinXP(false)
+#endif /* _WIN32 */
 {
 	createUserAgent();
 }
@@ -153,13 +159,15 @@ void IDownloader::clear(void)
 	m_data.clear();
 }
 
-#if defined(_WIN32)
 /**
  * Get the OS release information.
  * @return OS release information, or empty string if not available.
  */
-static tstring getOSRelease(void)
+tstring IDownloader::getOSRelease(void)
 {
+	tstring s_os_release;
+
+#if defined(_WIN32)
 	static bool bTriedWow64 = false;
 	static bool bIsWow64 = false;
 
@@ -168,29 +176,31 @@ static tstring getOSRelease(void)
 	osvi.dwOSVersionInfoSize = sizeof(osvi);
 	GetVersionEx(&osvi);
 
-	tstring s_os_version;
 	switch (osvi.dwPlatformId) {
 		case VER_PLATFORM_WIN32s:
 			// Good luck with that.
-			s_os_version = _T("Win32s");
+			s_os_release = _T("Win32s");
 			break;
 		case VER_PLATFORM_WIN32_WINDOWS:
 		default:
-			s_os_version = _T("Windows");
+			s_os_release = _T("Windows");
 			break;
 		case VER_PLATFORM_WIN32_NT:
-			s_os_version = _T("Windows NT");
+			s_os_release = _T("Windows NT");
 			break;
 	}
-	s_os_version += _T(' ');
+	s_os_release += _T(' ');
 
 	// Version number.
 	TCHAR buf[32];
 	_sntprintf(buf, _countof(buf), _T("%u.%u"), osvi.dwMajorVersion, osvi.dwMinorVersion);
-	s_os_version += buf;
+	s_os_release += buf;
+
+	// Check if we're using an older (pre-Vista) version of Windows.
+	m_isWinXP = (osvi.dwMajorVersion < 6);
 
 #  ifdef _WIN64
-	s_os_version += _T("; Win64");
+	s_os_release += _T("; Win64");
 #  else /* !_WIN64 */
 	// Check for WOW64.
 	if (!bTriedWow64) {
@@ -212,19 +222,12 @@ static tstring getOSRelease(void)
 	}
 
 	if (bIsWow64) {
-		s_os_version += _T("; WOW64");
+		s_os_release += _T("; WOW64");
 	}
 #  endif /* _WIN64 */
 
-	return s_os_version;
-}
 #elif defined(__linux__)
-/**
- * Get the OS release information.
- * @return OS release information, or empty string if not available.
- */
-static tstring getOSRelease(void)
-{
+
 	// Reference: https://www.freedesktop.org/software/systemd/man/os-release.html
 
 	// TODO: Distro and/or kernel version?
@@ -238,7 +241,6 @@ static tstring getOSRelease(void)
 	}
 
 	// Find the "NAME=" line.
-	tstring distro_name;
 	char buf[256];
 	for (unsigned int line_count = 0; !feof(f_in) && line_count < 32; line_count++) {
 		char *line = fgets(buf, sizeof(buf), f_in);
@@ -280,13 +282,13 @@ static tstring getOSRelease(void)
 		}
 
 		// Line found.
-		distro_name.assign(line, len);
+		s_os_release.assign(line, len);
 		break;
 	}
-
-	return distro_name;
-}
 #endif
+
+	return s_os_release;
+}
 
 /**
  * Create the User-Agent value.
@@ -328,19 +330,19 @@ void IDownloader::createUserAgent(void)
 
 #ifdef _WIN32
 	m_userAgent += _T(" (");
-	const tstring s_os_version = getOSRelease();
-	m_userAgent += s_os_version;
+	const tstring s_os_release = getOSRelease();
+	m_userAgent += s_os_release;
 #  ifndef NO_CPU
-	if (!s_os_version.empty()) {
+	if (!s_os_release.empty()) {
 		m_userAgent += _T("; ") _T(CPU);
 	}
 #  endif /* NO_CPU */
 	m_userAgent += _T(')');
 #elif defined(__linux__)
-	const tstring os_release = getOSRelease();
+	const tstring s_os_release = getOSRelease();
 	m_userAgent += _T(" (");
-	if (!os_release.empty()) {
-		m_userAgent += os_release;
+	if (!s_os_release.empty()) {
+		m_userAgent += s_os_release;
 		m_userAgent += _T("; ");
 	}
 	m_userAgent += _T("Linux ") _T(CPU) _T(")");

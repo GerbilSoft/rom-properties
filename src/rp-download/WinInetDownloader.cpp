@@ -64,16 +64,23 @@ int WinInetDownloader::download(void)
 		return (err != 0 ? -err : -EIO);
 	}
 
+	// Flags.
+	DWORD dwFlags = INTERNET_FLAG_IGNORE_REDIRECT_TO_HTTPS |
+			INTERNET_FLAG_NO_AUTH |
+			INTERNET_FLAG_NO_COOKIES |
+			INTERNET_FLAG_NO_UI;
+	if (m_isWinXP) {
+		// WinInet doesn't support SNI prior to Vista.
+		dwFlags |= INTERNET_FLAG_IGNORE_CERT_CN_INVALID;
+	}
+
 	// Request the URL.
 	HINTERNET hURL = InternetOpenUrl(
-		hConnection,		// hInternet
-		m_url.c_str(),		// lpszUrl (Latin-1 characters only!)
-		nullptr,		// lpszHeaders
-		0,			// dwHeaderLength
-		INTERNET_FLAG_IGNORE_REDIRECT_TO_HTTPS |
-		INTERNET_FLAG_NO_AUTH |
-		INTERNET_FLAG_NO_COOKIES |
-		INTERNET_FLAG_NO_UI,	// dwFlags
+		hConnection,	// hInternet
+		m_url.c_str(),	// lpszUrl (Latin-1 characters only!)
+		nullptr,	// lpszHeaders
+		0,		// dwHeaderLength
+		dwFlags,	// dwFlags
 		reinterpret_cast<DWORD_PTR>(this));	// dwContext
 	if (!hURL) {
 		// Error opening the URL.
