@@ -7,6 +7,7 @@
 * Bug fixes:
   * Windows: Fixed a guaranteed crash when viewing the "ROM Properties" tab.
     Fixes issue #236.
+  * Downloads: Make sure Unicode sequences are properly escaped.
 
 * Other changes:
   * Windows: The rp-download User-Agent string now includes the OS version
