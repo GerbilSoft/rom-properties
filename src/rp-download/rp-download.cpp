@@ -659,7 +659,7 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 		if (verbose) {
 			if (ret < 0) {
 				// POSIX error code
-				show_error(_T("Error downloading file: %s"), _tcserror(errno));
+				show_error(_T("Error downloading file: %s"), _tcserror(-ret));
 			} else /*if (ret > 0)*/ {
 				// HTTP status code
 				const TCHAR *msg = http_status_string(ret);
