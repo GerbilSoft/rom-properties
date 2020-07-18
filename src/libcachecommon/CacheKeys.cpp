@@ -419,19 +419,27 @@ string urlencode(const char *url)
 
 	assert(url != nullptr);
 	for (; *url != '\0'; url++) {
-		switch (*url) {
-			case ' ':
-				s_ret += "%20";
-				break;
-			case '#':
-				s_ret += "%23";
-				break;
-			case '%':
-				s_ret += "%25";
-				break;
-			default:
-				s_ret += *url;
-				break;
+		uint8_t chr = static_cast<uint8_t>(*url);
+		if (chr & 0x80) {
+			// UTF-8 code sequence.
+			char buf[8];
+			snprintf(buf, sizeof(buf), "%%%02X", chr);
+			s_ret += buf;
+		} else {
+			switch (*url) {
+				case ' ':
+					s_ret += "%20";
+					break;
+				case '#':
+					s_ret += "%23";
+					break;
+				case '%':
+					s_ret += "%25";
+					break;
+				default:
+					s_ret += *url;
+					break;
+			}
 		}
 	}
 
