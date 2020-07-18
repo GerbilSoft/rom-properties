@@ -505,7 +505,8 @@ int GameBoyAdvance::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int s
 		// ROM image isn't valid.
 		return -EIO;
 	} else if (!memcmp(d->romHeader.id4, "AGBJ", 4) ||
-	           !memcmp(d->romHeader.id4, "    ", 4))
+	           !memcmp(d->romHeader.id4, "    ", 4) ||
+	           !memcmp(d->romHeader.id4, "____", 4))
 	{
 		// This is a prototype.
 		// No external images are available.
