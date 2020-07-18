@@ -71,7 +71,13 @@ int WinInetDownloader::download(void)
 			INTERNET_FLAG_NO_UI;
 	if (m_isWinXP) {
 		// WinInet doesn't support SNI prior to Vista.
-		dwFlags |= INTERNET_FLAG_IGNORE_CERT_CN_INVALID;
+		static const TCHAR rpdb_domain[] = _T("https://rpdb.gerbilsoft.com/");
+		if (m_url.size() >= _countof(rpdb_domain) &&
+		    !_tcsncmp(m_url.c_str(), rpdb_domain, _countof(rpdb_domain)-1))
+		{
+			// rpdb.gerbilsoft.com requires SNI.
+			dwFlags |= INTERNET_FLAG_IGNORE_CERT_CN_INVALID;
+		}
 	}
 
 	// Request the URL.
