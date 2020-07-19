@@ -1410,6 +1410,7 @@ int DMG::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
 			{DMG_CHECK_REGION | DMG_REGION_OTHER,	"COOL SPOT", ""},
 			{DMG_CHECK_REGION | DMG_REGION_OTHER,	"SOLOMON'S CLUB", ""},
 			{DMG_CHECK_REGION | DMG_REGION_OTHER,	"BIONIC-COMMANDO", ""},
+			{DMG_CHECK_REGION | DMG_REGION_OTHER,	"OBELIX", ""},
 
 			// Non-CGB; JP
 			{DMG_CHECK_REGION | DMG_REGION_JP,	"GBWARST", ""},
@@ -1417,6 +1418,19 @@ int DMG::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
 			// Non-CGB; JP (Sachen)
 			// TODO: "TETRIS" ROMs have the same global checksum.
 			{DMG_CHECK_REGION | DMG_REGION_JP,	"GAME", ""},
+
+			// Non-CGB; Non-JP (Pokémon hacks)
+			{DMG_CHECK_REGION | DMG_REGION_OTHER,	"BOKEMOB BLUE", ""},
+			{DMG_CHECK_REGION | DMG_REGION_OTHER,	"COKEMON BLUE", ""},
+			{DMG_CHECK_REGION | DMG_REGION_OTHER,	"PKMN Generations", ""},
+			{DMG_CHECK_REGION | DMG_REGION_OTHER,	"POKEMON AQUA", ""},
+			// NOTE: Linux is case-sensitive; Windows is not.
+			{DMG_CHECK_REGION | DMG_REGION_OTHER,	"Pokemon Red", ""},
+			{DMG_CHECK_REGION | DMG_REGION_OTHER,	"Pokemon Blue", ""},
+
+			// Non-CGB; JP (Pokémon hacks)
+			{DMG_CHECK_REGION | DMG_REGION_JP,	"POCKET MONSTERS", ""},
+			{DMG_CHECK_REGION | DMG_REGION_JP,	"POCKETMON", ""},
 
 			// CGB; Non-JP
 			{DMG_CHECK_REGION | DMG_REGION_OTHER | DMG_IS_CGB,	"BUGS BUNNY", ""},
