@@ -73,7 +73,24 @@ class WiiPartitionPrivate : public GcnPartitionPrivate
 		// NOTE: Actual data starts at 0x400.
 		// Hashes and the sector IV are stored first.
 		uint32_t sector_num;				// Sector number.
-		uint8_t sector_buf[SECTOR_SIZE_ENCRYPTED];	// Decrypted sector data.
+		union EncSector_t {
+			struct {
+				// NOTE: &hashes.H2[7][4], when encrypted, is the sector IV.
+				struct {
+					uint8_t H0[31][20];
+					uint8_t pad_H0[20];
+					uint8_t H1[8][20];
+					uint8_t pad_H1[32];
+					uint8_t H2[8][20];
+					uint8_t pad_H2[32];
+				} hashes;
+				uint8_t data[SECTOR_SIZE_DECRYPTED];
+			};
+			uint8_t fulldata[SECTOR_SIZE_ENCRYPTED];
+		};
+		ASSERT_STRUCT(EncSector_t, SECTOR_SIZE_ENCRYPTED);
+		static_assert(offsetof(EncSector_t, hashes.H2) + (7*20) + 4 == 0x3D0, "IV location is wrong");
+		EncSector_t sector_buf;	// Decrypted sector data.
 
 		/**
 		 * Read and decrypt a sector.
@@ -381,8 +398,8 @@ KeyManager::VerifyResult WiiPartitionPrivate::initDecryption(void)
 
 	// Verify that this is a Wii partition.
 	// If it isn't, the key is probably wrong.
-	const GCN_DiscHeader *discHeader =
-		reinterpret_cast<const GCN_DiscHeader*>(&sector_buf[SECTOR_SIZE_DECRYPTED_OFFSET]);
+	const GCN_DiscHeader *const discHeader =
+		reinterpret_cast<const GCN_DiscHeader*>(sector_buf.data);
 	if (discHeader->magic_wii != cpu_to_be32(WII_MAGIC)) {
 		// Invalid disc header.
 		verifyResult = KeyManager::VerifyResult::WrongKey;
@@ -438,8 +455,8 @@ int WiiPartitionPrivate::readSector(uint32_t sector_num)
 		return ret;
 	}
 
-	size_t sz = q->m_discReader->read(sector_buf, sizeof(sector_buf));
-	if (sz != SECTOR_SIZE_ENCRYPTED) {
+	size_t sz = q->m_discReader->read(&sector_buf, sizeof(sector_buf));
+	if (sz != sizeof(sector_buf)) {
 		// sector_buf may be invalid.
 		this->sector_num = ~0;
 		q->m_lastError = EIO;
@@ -449,8 +466,8 @@ int WiiPartitionPrivate::readSector(uint32_t sector_num)
 #ifdef ENABLE_DECRYPTION
 	if (isCrypted) {
 		// Decrypt the sector.
-		if (aes_title->decrypt(&sector_buf[SECTOR_SIZE_DECRYPTED_OFFSET], SECTOR_SIZE_DECRYPTED,
-		    &sector_buf[0x3D0], 16) != SECTOR_SIZE_DECRYPTED)
+		if (aes_title->decrypt(sector_buf.data, sizeof(sector_buf.data),
+		    &sector_buf.hashes.H2[7][4], 16) != SECTOR_SIZE_DECRYPTED)
 		{
 			// sector_buf may be invalid.
 			this->sector_num = ~0;
@@ -582,7 +599,7 @@ size_t WiiPartition::read(void *ptr, size_t size)
 			d->readSector(blockStart);
 
 			// Copy data from the sector.
-			memcpy(ptr8, &d->sector_buf[blockStartOffset], read_sz);
+			memcpy(ptr8, &d->sector_buf.fulldata[blockStartOffset], read_sz);
 
 			// Starting block read.
 			size -= read_sz;
@@ -603,7 +620,7 @@ size_t WiiPartition::read(void *ptr, size_t size)
 			d->readSector(blockStart);
 
 			// Copy data from the sector.
-			memcpy(ptr8, d->sector_buf, SECTOR_SIZE_ENCRYPTED);
+			memcpy(ptr8, d->sector_buf.fulldata, SECTOR_SIZE_ENCRYPTED);
 		}
 
 		// Check if we still have data left. (not a full block)
@@ -616,7 +633,7 @@ size_t WiiPartition::read(void *ptr, size_t size)
 			d->readSector(blockEnd);
 
 			// Copy data from the sector.
-			memcpy(ptr8, &d->sector_buf[blockStartOffset], size);
+			memcpy(ptr8, &d->sector_buf.fulldata[blockStartOffset], size);
 
 			ret += size;
 			d->pos_7C00 += size;
@@ -668,7 +685,7 @@ size_t WiiPartition::read(void *ptr, size_t size)
 			d->readSector(blockStart);
 
 			// Copy data from the sector.
-			memcpy(ptr8, &d->sector_buf[SECTOR_SIZE_DECRYPTED_OFFSET + blockStartOffset], read_sz);
+			memcpy(ptr8, &d->sector_buf.data[blockStartOffset], read_sz);
 
 			// Starting block read.
 			size -= read_sz;
@@ -689,7 +706,7 @@ size_t WiiPartition::read(void *ptr, size_t size)
 			d->readSector(blockStart);
 
 			// Copy data from the sector.
-			memcpy(ptr8, &d->sector_buf[SECTOR_SIZE_DECRYPTED_OFFSET], SECTOR_SIZE_DECRYPTED);
+			memcpy(ptr8, d->sector_buf.data, SECTOR_SIZE_DECRYPTED);
 		}
 
 		// Check if we still have data left. (not a full block)
@@ -702,7 +719,7 @@ size_t WiiPartition::read(void *ptr, size_t size)
 			d->readSector(blockEnd);
 
 			// Copy data from the sector.
-			memcpy(ptr8, &d->sector_buf[SECTOR_SIZE_DECRYPTED_OFFSET], size);
+			memcpy(ptr8, d->sector_buf.data, size);
 
 			ret += size;
 			d->pos_7C00 += size;
