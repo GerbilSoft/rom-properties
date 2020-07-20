@@ -10,6 +10,7 @@
   * Downloads: Make sure Unicode sequences are properly escaped.
   * Windows XP: Added a workaround for RPDB not connecting over https due to
     WinInet.dll not supporting SNI.
+  * PlayStationDisc: Allow discs that lack SYSTEM.CNF if they have PSX.EXE.
 
 * Other changes:
   * Windows: The rp-download User-Agent string now includes the OS version

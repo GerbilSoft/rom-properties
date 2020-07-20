@@ -27,7 +27,7 @@ using LibRpFile::RpFile;
 #include "Console/PlayStationEXE.hpp"
 #include "Other/ELF.hpp"
 
-// inih for system.cnf
+// inih for SYSTEM.CNF
 #include "ini.h"
 
 // C++ STL classes.
@@ -63,12 +63,12 @@ class PlayStationDiscPrivate : public LibRpBase::RomDataPrivate
 
 		ISO_Primary_Volume_Descriptor pvd;
 
-		// system.cnf contents
+		// SYSTEM.CNF contents
 		// Keys are stored in upper-case.
 		unordered_map<string, string> system_cnf;
 
 		/**
-		 * ini.h callback for parsing system.cnf.
+		 * ini.h callback for parsing SYSTEM.CNF.
 		 * @param user		[in] User data parameter (this)
 		 * @param section	[in] Section name
 		 * @param name		[in] Value name
@@ -78,8 +78,8 @@ class PlayStationDiscPrivate : public LibRpBase::RomDataPrivate
 		static int INIHCALL parse_system_cnf(void *user, const char *section, const char *name, const char *value);
 
 		/**
-		 * Load system.cnf.
-		 * @param pt IPartition containing system.cnf.
+		 * Load SYSTEM.CNF.
+		 * @param pt IPartition containing SYSTEM.CNF.
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
 		int loadSystemCnf(IsoPartition *pt);
@@ -139,7 +139,7 @@ PlayStationDiscPrivate::~PlayStationDiscPrivate()
 }
 
 /**
- * ini.h callback for parsing system.cnf.
+ * ini.h callback for parsing SYSTEM.CNF.
  * @param user		[in] User data parameter (this)
  * @param section	[in] Section name
  * @param name		[in] Value name
@@ -164,19 +164,38 @@ int INIHCALL PlayStationDiscPrivate::parse_system_cnf(void *user, const char *se
 }
 
 /**
- * Load system.cnf.
- * @param pt IPartition containing system.cnf.
+ * Load SYSTEM.CNF.
+ * @param pt IPartition containing SYSTEM.CNF.
  * @return 0 on success; negative POSIX error code on error.
  */
 int PlayStationDiscPrivate::loadSystemCnf(IsoPartition *pt)
 {
-	IRpFile *f_system_cnf = pt->open("system.cnf");
+	if (!system_cnf.empty()) {
+		// Already loaded.
+		return 0;
+	}
+
+	IRpFile *const f_system_cnf = pt->open("SYSTEM.CNF");
 	if (!f_system_cnf) {
-		int ret = -pt->lastError();
-		if (ret == 0) {
-			ret = -EIO;
+		// SYSTEM.CNF might not be present.
+		// If it isn't, but PSX.EXE is present, use default values.
+		int ret = pt->lastError();
+		if (ret == ENOENT) {
+			// SYSTEM.CNF not found. Check for PSX.EXE.
+			IRpFile *const f_psx_exe = pt->open("PSX.EXE");
+			if (f_psx_exe && f_psx_exe->isOpen()) {
+				// Found PSX.EXE.
+				system_cnf.emplace(std::make_pair("BOOT", "PSX.EXE"));
+				if (f_psx_exe) {
+					f_psx_exe->unref();
+				}
+			} else {
+				// Not found.
+				return -ENOENT;
+			}
+		} else {
+			return (ret == 0 ? -EIO : -ret);
 		}
-		return ret;
 	} else if (!f_system_cnf->isOpen()) {
 		int ret = -f_system_cnf->lastError();
 		if (ret == 0) {
@@ -237,7 +256,7 @@ RomData *PlayStationDiscPrivate::openBootExe(void)
 		RomData *exeData = nullptr;
 		switch (consoleType) {
 			case ConsoleType::PS1: {
-				// Check if we have a STACK override in system.cnf.
+				// Check if we have a STACK override in SYSTEM.CNF.
 				uint32_t sp_override = 0;
 				auto iter = system_cnf.find("STACK");
 				if (iter != system_cnf.end() && !iter->second.empty()) {
@@ -356,10 +375,10 @@ PlayStationDisc::PlayStationDisc(IRpFile *file)
 	}
 
 	// ISO-9660 partition is open.
-	// Load system.cnf.
+	// Load SYSTEM.CNF.
 	int ret = d->loadSystemCnf(isoPartition);
 	if (ret != 0) {
-		// Error loading system.cnf.
+		// Error loading SYSTEM.CNF.
 		UNREF(isoPartition);
 		UNREF(discReader);
 		UNREF_AND_NULL_NOCHK(d->file);
@@ -502,7 +521,7 @@ int PlayStationDisc::isRomSupported_static(
 
 	// PlayStation 1 and 2 discs have the system ID "PLAYSTATION".
 	// NOTE: Some PS2 prototypes have incorrect system IDs. We'll
-	// check for those here, and then verify system.cnf later.
+	// check for those here, and then verify SYSTEM.CNF later.
 	int pos = -1;
 	if (!strncmp(pvd->sysID, "PLAYSTATION ", 12)) {
 		pos = 12;
