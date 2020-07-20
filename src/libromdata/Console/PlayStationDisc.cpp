@@ -422,8 +422,9 @@ PlayStationDisc::PlayStationDisc(IRpFile *file)
 			if (bf_str[pos] == ':') {
 				// "cdrom:" / "cdrom0:"
 				pos++;
-				if (bf_str[pos] == '\\') {
-					// "cdrom:\\" / "cdrom0:\\"
+				// Remove one or more backslashes.
+				// "cdrom:\\", "cdrom0:\\"
+				while (bf_str[pos] == '\\') {
 					pos++;
 				}
 			}
