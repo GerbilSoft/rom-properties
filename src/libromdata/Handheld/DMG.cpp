@@ -1411,9 +1411,11 @@ int DMG::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
 			{DMG_CHECK_REGION | DMG_REGION_OTHER,	"SOLOMON'S CLUB", ""},
 			{DMG_CHECK_REGION | DMG_REGION_OTHER,	"BIONIC-COMMANDO", ""},
 			{DMG_CHECK_REGION | DMG_REGION_OTHER,	"OBELIX", ""},
+			{DMG_CHECK_REGION | DMG_REGION_OTHER,	"THE SWORD OFHOPE", "7F"},
 
 			// Non-CGB; JP
 			{DMG_CHECK_REGION | DMG_REGION_JP,	"GBWARST", ""},
+			{DMG_CHECK_REGION | DMG_REGION_JP,	"SAGA", "C3"},
 
 			// Non-CGB; JP (Sachen)
 			// TODO: "TETRIS" ROMs have the same global checksum.
