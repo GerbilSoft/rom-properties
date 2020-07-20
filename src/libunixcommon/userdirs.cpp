@@ -176,6 +176,11 @@ static string getXDGDirectory(const char *xdgvar, const char *relpath)
 	// Check the XDG variable first.
 	const char *const xdg_env = getenv(xdgvar);
 	if (xdg_env && xdg_env[0] == '/') {
+		// If the directory doesn't exist, create it.
+		if (access(xdg_env, F_OK) != 0) {
+			mkdir(xdg_env, 0777);
+		}
+
 		// Make sure this is a writable directory.
 		if (isWritableDirectory(xdg_env)) {
 			// This is a writable directory.
@@ -198,6 +203,11 @@ static string getXDGDirectory(const char *xdgvar, const char *relpath)
 
 	xdg_dir += '/';
 	xdg_dir += relpath;
+
+	// If the directory doesn't exist, create it.
+	if (access(xdg_dir.c_str(), F_OK) != 0) {
+		mkdir(xdg_dir.c_str(), 0777);
+	}
 	return xdg_dir;
 }
 
