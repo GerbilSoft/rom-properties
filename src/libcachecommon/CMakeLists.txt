@@ -17,6 +17,10 @@ SET(libcachecommon_H
 	CacheDir.hpp
 	)
 
+# Write the config.h file.
+INCLUDE(DirInstallPaths)
+CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/config.libcachecommon.h.in" "${CMAKE_CURRENT_BINARY_DIR}/config.libcachecommon.h")
+
 ######################
 # Build the library. #
 ######################

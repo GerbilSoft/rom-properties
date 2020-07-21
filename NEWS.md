@@ -8,6 +8,12 @@
     * Handle boot filenames with two backslashes.
   * KDE: Fix thumbnailing of files with '#' in their filenames.
 
+* Other changes:
+  * Linux: A system-wide cache directory (/usr/share/rom-properties/cache)
+    is now supported. The primary use case is for systems that sandbox the
+    thumbnailing process, which prevents rom-properties from downloading
+    files from the Internet and from using the ~/.cache/ directory.
+
 ## v1.6.1 (released 2020/07/13)
 
 * Bug fixes:

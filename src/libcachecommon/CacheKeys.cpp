@@ -6,6 +6,7 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+#include "config.libcachecommon.h"
 #include "CacheKeys.hpp"
 #include "CacheDir.hpp"
 
@@ -306,19 +307,18 @@ int filterCacheKey(wchar_t *pCacheKey)
  */
 string getCacheFilename(const char *pCacheKey)
 {
-	string cacheFilename;
 	assert(pCacheKey != nullptr);
 	assert(pCacheKey[0] != '\0');
 	if (!pCacheKey || pCacheKey[0] == '\0') {
 		// No cache key...
-		return cacheFilename;
+		return string();
 	}
 
 	// Make sure the cache directory is initialized.
 	const string &cache_dir = getCacheDirectory();
 	if (cache_dir.empty()) {
 		// Unable to get the cache directory.
-		return cacheFilename;
+		return string();
 	}
 
 	// Filter the cache key.
@@ -326,19 +326,41 @@ string getCacheFilename(const char *pCacheKey)
 	int ret = filterCacheKey(filteredCacheKey);
 	if (ret != 0) {
 		// Invalid cache key.
-		return cacheFilename;
+		return string();
 	}
 
 	// Get the cache filename.
 	// This is the cache directory plus the cache key.
-	cacheFilename = cache_dir;
-	if (cacheFilename.at(cacheFilename.size()-1) != DIR_SEP_CHR) {
-		cacheFilename += DIR_SEP_CHR;
+	string cacheFilename_user = cache_dir;
+	if (cacheFilename_user.at(cacheFilename_user.size()-1) != DIR_SEP_CHR) {
+		cacheFilename_user += DIR_SEP_CHR;
 	}
+	cacheFilename_user += filteredCacheKey;
 
-	// Append the filtered cache key.
-	cacheFilename += filteredCacheKey;
-	return cacheFilename;
+#ifdef DIR_INSTALL_CACHE
+	// If the requested file is in the system-wide cache directory,
+	// but is not in the user's cache directory, use the system-wide
+	// version. This is useful in cases where the thumbnailer cannot
+	// download files, e.g. bubblewrap.
+	string cacheFilename_sys = DIR_INSTALL_CACHE;
+	if (cacheFilename_sys.at(cacheFilename_sys.size()-1) != DIR_SEP_CHR) {
+		cacheFilename_sys += DIR_SEP_CHR;
+	}
+	cacheFilename_sys += filteredCacheKey;
+
+	if (!access(cacheFilename_sys.c_str(), R_OK)) {
+		// File is in the system-wide cache.
+		if (!access(cacheFilename_user.c_str(), R_OK)) {
+			// File is also in the user's cache.
+			// User version overrides the system version.
+			return cacheFilename_user;
+		}
+		// File is not in the user's cache.
+		return cacheFilename_sys;
+	}
+#endif /* DIR_INSTALL_CACHE */
+
+	return cacheFilename_user;
 }
 
 #ifdef _WIN32
@@ -395,14 +417,12 @@ wstring getCacheFilename(const wchar_t *pCacheKey)
 
 	// Get the cache filename.
 	// This is the cache directory plus the cache key.
-	cacheFilename = U82W(cache_dir);
-	if (cacheFilename.at(cacheFilename.size()-1) != DIR_SEP_WCHR) {
-		cacheFilename += DIR_SEP_WCHR;
+	cacheFilename = cache_dir;
+	if (cacheFilename_user.at(cacheFilename_user.size()-1) != DIR_SEP_CHR) {
+		cacheFilename_user += DIR_SEP_CHR;
 	}
-
-	// Append the filtered cache key.
-	cacheFilename += filteredCacheKey;
-	return cacheFilename;
+	cacheFilename_user += filteredCacheKey;
+	return cacheFilename_user;
 }
 #endif /* _WIN32 */
 
