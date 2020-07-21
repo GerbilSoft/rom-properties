@@ -209,9 +209,25 @@ RomThumbCreator::~RomThumbCreator()
 bool RomThumbCreator::create(const QString &path, int width, int height, QImage &img)
 {
 	Q_UNUSED(height);
+	if (path.isEmpty()) {
+		return false;
+	}
 
 	// Attempt to open the ROM file.
-	IRpFile *const file = openQUrl(QUrl(path), true);
+	// NOTE: QUrl will truncate the filename if a '#' is present,
+	// so we need to urlencode it first if it's an absolute path.
+	QUrl path_url;
+	if (path[0] == QChar(L'/')) {
+		// Encode '#' as "%23" to prevent issues.
+		QString path_enc = path;
+		path_enc.replace(QChar(L'#'), QLatin1String("%23"));
+		path_url.setUrl(path_enc);
+	} else {
+		// Use the path as-is.
+		path_url.setUrl(path);
+	}
+
+	IRpFile *const file = openQUrl(path_url, true);
 	if (!file) {
 		return false;
 	}

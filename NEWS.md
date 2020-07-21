@@ -6,6 +6,7 @@
   * PlayStationDisc:
     * Allow discs that lack SYSTEM.CNF if they have PSX.EXE.
     * Handle boot filenames with two backslashes.
+  * KDE: Fix thumbnailing of files with '#' in their filenames.
 
 ## v1.6.1 (released 2020/07/13)
 
