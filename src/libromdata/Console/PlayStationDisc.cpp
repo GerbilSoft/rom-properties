@@ -185,7 +185,8 @@ int PlayStationDiscPrivate::loadSystemCnf(IsoPartition *pt)
 			IRpFile *const f_psx_exe = pt->open("PSX.EXE");
 			if (f_psx_exe && f_psx_exe->isOpen()) {
 				// Found PSX.EXE.
-				system_cnf.emplace(std::make_pair("BOOT", "PSX.EXE"));
+				boot_filename = "PSX.EXE";
+				system_cnf.emplace(std::make_pair("BOOT", boot_filename));
 				if (f_psx_exe) {
 					f_psx_exe->unref();
 				}
