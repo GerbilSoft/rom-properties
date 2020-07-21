@@ -2,6 +2,11 @@
 
 ## v1.7 (released 2020/??/??)
 
+* Bug fixes:
+  * PlayStationDisc:
+    * Allow discs that lack SYSTEM.CNF if they have PSX.EXE.
+    * Handle boot filenames with two backslashes.
+
 ## v1.6.1 (released 2020/07/13)
 
 * Bug fixes:
@@ -10,9 +15,6 @@
   * Downloads: Make sure Unicode sequences are properly escaped.
   * Windows XP: Added a workaround for RPDB not connecting over https due to
     WinInet.dll not supporting SNI.
-  * PlayStationDisc:
-    * Allow discs that lack SYSTEM.CNF if they have PSX.EXE.
-    * Handle boot filenames with two backslashes.
 
 * Other changes:
   * Windows: The rp-download User-Agent string now includes the OS version
