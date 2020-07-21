@@ -417,9 +417,9 @@ wstring getCacheFilename(const wchar_t *pCacheKey)
 
 	// Get the cache filename.
 	// This is the cache directory plus the cache key.
-	cacheFilename = cache_dir;
-	if (cacheFilename_user.at(cacheFilename_user.size()-1) != DIR_SEP_CHR) {
-		cacheFilename_user += DIR_SEP_CHR;
+	cacheFilename = U82W(cache_dir);
+	if (cacheFilename_user.at(cacheFilename_user.size()-1) != DIR_SEP_WCHR) {
+		cacheFilename_user += DIR_SEP_WCHR;
 	}
 	cacheFilename_user += filteredCacheKey;
 	return cacheFilename_user;
