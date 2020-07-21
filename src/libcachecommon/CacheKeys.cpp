@@ -392,19 +392,19 @@ static inline wstring U82W(const string &mbs)
  */
 wstring getCacheFilename(const wchar_t *pCacheKey)
 {
-	wstring cacheFilename;
+	wstring cacheFilename_user;
 	assert(pCacheKey != nullptr);
 	assert(pCacheKey[0] != L'\0');
 	if (!pCacheKey || pCacheKey[0] == L'\0') {
 		// No cache key...
-		return cacheFilename;
+		return cacheFilename_user;
 	}
 
 	// Make sure the cache directory is initialized.
 	const string &cache_dir = getCacheDirectory();
 	if (cache_dir.empty()) {
 		// Unable to get the cache directory.
-		return cacheFilename;
+		return cacheFilename_user;
 	}
 
 	// Filter the cache key.
@@ -412,12 +412,12 @@ wstring getCacheFilename(const wchar_t *pCacheKey)
 	int ret = filterCacheKey(filteredCacheKey);
 	if (ret != 0) {
 		// Invalid cache key.
-		return cacheFilename;
+		return cacheFilename_user;
 	}
 
 	// Get the cache filename.
 	// This is the cache directory plus the cache key.
-	cacheFilename = U82W(cache_dir);
+	cacheFilename_user = U82W(cache_dir);
 	if (cacheFilename_user.at(cacheFilename_user.size()-1) != DIR_SEP_WCHR) {
 		cacheFilename_user += DIR_SEP_WCHR;
 	}
