@@ -74,14 +74,12 @@ int rpt_do_security_options(void)
 		SCMP_SYS(statx),
 #endif /* __SNR_statx || __NR_statx */
 
-#ifndef NDEBUG
-		// Needed for assert() on some systems.
-		SCMP_SYS(uname),
-#endif /* NDEBUG */
-
 		// glibc ncsd
 		// TODO: Restrict connect() to AF_UNIX.
 		SCMP_SYS(connect), SCMP_SYS(recvmsg), SCMP_SYS(sendto),
+
+		// Needed for network access on Kubuntu 20.04 for some reason.
+		SCMP_SYS(getpid), SCMP_SYS(uname),
 
 		// glib / D-Bus
 		SCMP_SYS(eventfd2),

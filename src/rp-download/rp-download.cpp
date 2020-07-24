@@ -376,6 +376,9 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 		SCMP_SYS(ioctl),	// getaddrinfo() (32-bit only?) [FIXME: Filter for FIONREAD]
 		SCMP_SYS(recvfrom),	// getaddrinfo() (32-bit only?)
 
+		// Needed for network access on Kubuntu 20.04 for some reason.
+		SCMP_SYS(getpid), SCMP_SYS(uname),
+
 		// cURL and OpenSSL
 		SCMP_SYS(bind),		// getaddrinfo() [curl_thread_create_thunk(), curl-7.68.0]
 #ifdef __SNR_getrandom
