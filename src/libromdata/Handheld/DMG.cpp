@@ -1380,9 +1380,18 @@ int DMG::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
 		char pbcode[16];
 		if (romHeader->old_publisher_code == 0x33) {
 			// New publisher code.
-			pbcode[0] = romHeader->new_publisher_code[0];
-			pbcode[1] = romHeader->new_publisher_code[1];
-			pbcode[2] = '\0';
+			if (unlikely(romHeader->new_publisher_code[0] == '\0' &&
+			             romHeader->new_publisher_code[1] == '\0'))
+			{
+				// NULL publisher code. Use 00.
+				pbcode[0] = '0';
+				pbcode[1] = '0';
+				pbcode[2] = '\0';
+			} else {
+				pbcode[0] = romHeader->new_publisher_code[0];
+				pbcode[1] = romHeader->new_publisher_code[1];
+				pbcode[2] = '\0';
+			}
 			img_filename += '-';
 			img_filename.append(pbcode, 2);
 		} else {
@@ -1412,6 +1421,19 @@ int DMG::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
 			{DMG_CHECK_REGION | DMG_REGION_OTHER,	"BIONIC-COMMANDO", ""},
 			{DMG_CHECK_REGION | DMG_REGION_OTHER,	"OBELIX", ""},
 			{DMG_CHECK_REGION | DMG_REGION_OTHER,	"THE SWORD OFHOPE", "7F"},
+			{DMG_CHECK_REGION | DMG_REGION_OTHER,	"PAC-MAN", "AF"},
+			{DMG_CHECK_REGION | DMG_REGION_OTHER,	"THE LION KING", ""},
+			{DMG_CHECK_REGION | DMG_REGION_OTHER,	"CAESARS PALACE", "61"},
+			{DMG_CHECK_REGION | DMG_REGION_OTHER,	"MOTOCROSSMANIACS", ""},
+			{DMG_CHECK_REGION | DMG_REGION_OTHER,	"MYSTIC QUEST", ""},
+			{DMG_CHECK_REGION | DMG_REGION_OTHER,	"SPY VS SPY", "7F"},
+			{DMG_CHECK_REGION | DMG_REGION_OTHER,	"DUCK TALES", ""},
+			{DMG_CHECK_REGION | DMG_REGION_OTHER,	"DIG DUG", ""},
+			{DMG_CHECK_REGION | DMG_REGION_OTHER,	"NFL QUARTERBACK", "56"},
+			{DMG_CHECK_REGION | DMG_REGION_OTHER,	"DENNIS", "67"},
+			{DMG_CHECK_REGION | DMG_REGION_OTHER,	"TAZMANIA", "78"},
+			{DMG_CHECK_REGION | DMG_REGION_OTHER,	"SNOW BROS.JR", ""},
+			{DMG_CHECK_REGION | DMG_REGION_OTHER,	"LOST WORLD", "78"},
 
 			// Non-CGB; JP
 			{DMG_CHECK_REGION | DMG_REGION_JP,	"GBWARST", ""},
@@ -1434,17 +1456,26 @@ int DMG::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
 			{DMG_CHECK_REGION | DMG_REGION_JP,	"POCKET MONSTERS", ""},
 			{DMG_CHECK_REGION | DMG_REGION_JP,	"POCKETMON", ""},
 
+			// Non-CGB; Non-JP (other hacks)
+			{DMG_CHECK_REGION | DMG_REGION_OTHER,	"MOTOCROSS+  ASG", ""},
+			{DMG_CHECK_REGION | DMG_REGION_OTHER,	"DUCK TALES+ ASG", ""},
+			{DMG_CHECK_REGION | DMG_REGION_OTHER,	"DIG DUG+  ASG", ""},
+			{DMG_CHECK_REGION | DMG_REGION_OTHER,	"Zelda Colour", ""},
+
 			// CGB; Non-JP
 			{DMG_CHECK_REGION | DMG_REGION_OTHER | DMG_IS_CGB,	"BUGS BUNNY", ""},
 			{DMG_CHECK_REGION | DMG_REGION_OTHER | DMG_IS_CGB,	"COOL HAND", ""},
-			{DMG_CHECK_REGION | DMG_REGION_OTHER | DMG_IS_CGB,	"HARVEST-MOON GB", ""},
 			{DMG_CHECK_REGION | DMG_REGION_OTHER | DMG_IS_CGB,	"SHADOWGATE CLAS", ""},
 			{DMG_CHECK_REGION | DMG_REGION_OTHER | DMG_IS_CGB,	"SHANGHAI POCKET", ""},
 			{DMG_CHECK_REGION | DMG_REGION_OTHER | DMG_IS_CGB,	"SYLVESTER", ""},
 			{DMG_CHECK_REGION | DMG_REGION_OTHER | DMG_IS_CGB,	"ZELDA", ""},
 
-			// CGB; Non-JP; differs in SGB mode
-			{DMG_CHECK_REGION | DMG_REGION_OTHER | DMG_IS_CGB,	"HARVEST-MOON GB", "01"},
+			// CGB; both JP and non-JP
+			{DMG_CHECK_REGION | DMG_REGION_OTHER | DMG_IS_CGB,	"HARVEST-MOON GB", ""},
+			{DMG_CHECK_REGION | DMG_REGION_JP | DMG_IS_CGB,		"HARVEST-MOON GB", ""},
+
+			// CGB: Non-JP (other hacks)
+			{DMG_CHECK_REGION | DMG_REGION_OTHER | DMG_IS_CGB,	"ZELDA PL", ""},
 
 			// Non-CGB, Non-JP; TM vs. (R); different CGB colorization
 			{DMG_CHECK_REGION | DMG_REGION_OTHER,	"GALAGA&GALAXIAN", "01"},
@@ -1460,6 +1491,7 @@ int DMG::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
 			// Unlicensed CGB titles.
 			{DMG_CHECK_REGION | DMG_REGION_OTHER | DMG_IS_CGB,	"GB SMART CARD", ""},
 			{DMG_CHECK_REGION | DMG_REGION_JP | DMG_IS_CGB,		"DIGIMON 5", "MK"},
+			{DMG_CHECK_REGION | DMG_REGION_JP | DMG_IS_CGB,		"METAL SLUG 2", "01"},
 
 			{0, "", ""}
 		};
