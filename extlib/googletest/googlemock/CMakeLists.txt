@@ -1,13 +1,14 @@
 ########################################################################
+# Note: CMake support is community-based. The maintainers do not use CMake
+# internally.
+#
 # CMake build script for Google Mock.
 #
 # To run the tests for Google Mock itself on Linux, use 'make test' or
 # ctest.  You can select which tests to run using 'ctest -R regex'.
 # For more options, run 'ctest --help'.
 
-# rom-properties: Disabled.
-#option(gmock_build_tests "Build all of Google Mock's own tests." OFF)
-set(gmock_build_tests OFF)
+option(gmock_build_tests "Build all of Google Mock's own tests." OFF)
 
 # A directory to find Google Test sources.
 if (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/gtest/CMakeLists.txt")
@@ -41,8 +42,7 @@ else()
   cmake_policy(SET CMP0048 NEW)
   project(gmock VERSION ${GOOGLETEST_VERSION} LANGUAGES CXX C)
 endif()
-# rom-properties: Disabled.
-#cmake_minimum_required(VERSION 2.6.4)
+cmake_minimum_required(VERSION 2.6.4)
 
 if (COMMAND set_up_hermetic_build)
   set_up_hermetic_build()
@@ -52,15 +52,14 @@ endif()
 # targets to the current scope.  We are placing Google Test's binary
 # directory in a subdirectory of our own as VC compilation may break
 # if they are the same (the default).
-add_subdirectory("${gtest_dir}" "${gmock_BINARY_DIR}/gtest")
+add_subdirectory("${gtest_dir}" "${gmock_BINARY_DIR}/${gtest_dir}")
 
 
 # These commands only run if this is the main project
 if(CMAKE_PROJECT_NAME STREQUAL "gmock" OR CMAKE_PROJECT_NAME STREQUAL "googletest-distribution")
   # BUILD_SHARED_LIBS is a standard CMake variable, but we declare it here to
   # make it prominent in the GUI.
-  # rom-properties: Disabled.
-  #option(BUILD_SHARED_LIBS "Build shared libraries (DLLs)." OFF)
+  option(BUILD_SHARED_LIBS "Build shared libraries (DLLs)." OFF)
 else()
   mark_as_advanced(gmock_build_tests)
 endif()
@@ -78,18 +77,6 @@ set(gmock_build_include_dirs
   # This directory is needed to build directly from Google Test sources.
   "${gtest_SOURCE_DIR}")
 include_directories(${gmock_build_include_dirs})
-
-# Summary of tuple support for Microsoft Visual Studio:
-# Compiler    version(MS)  version(cmake)  Support
-# ----------  -----------  --------------  -----------------------------
-# <= VS 2010  <= 10        <= 1600         Use Google Tests's own tuple.
-# VS 2012     11           1700            std::tr1::tuple + _VARIADIC_MAX=10
-# VS 2013     12           1800            std::tr1::tuple
-# VS 2015     14           1900            std::tuple
-# VS 2017     15           >= 1910         std::tuple
-if (MSVC AND MSVC_VERSION EQUAL 1700)
-  add_definitions(/D _VARIADIC_MAX=10)
-endif()
 
 ########################################################################
 #
@@ -149,15 +136,37 @@ if (gmock_build_tests)
   # 'make test' or ctest.
   enable_testing()
 
+  if (WIN32)
+    file(GENERATE OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG>/RunTest.ps1"
+         CONTENT
+"$project_bin = \"${CMAKE_BINARY_DIR}/bin/$<CONFIG>\"
+$env:Path = \"$project_bin;$env:Path\"
+& $args")
+  elseif (MINGW OR CYGWIN)
+    file(GENERATE OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/RunTest.ps1"
+         CONTENT
+"$project_bin = (cygpath --windows ${CMAKE_BINARY_DIR}/bin)
+$env:Path = \"$project_bin;$env:Path\"
+& $args")
+  endif()
+
+  if (MINGW OR CYGWIN)
+    if (CMAKE_VERSION VERSION_LESS "2.8.12")
+      add_compile_options("-Wa,-mbig-obj")
+    else()
+      add_definitions("-Wa,-mbig-obj")
+    endif()
+  endif()
+
   ############################################################
   # C++ tests built with standard compiler flags.
 
   cxx_test(gmock-actions_test gmock_main)
   cxx_test(gmock-cardinalities_test gmock_main)
   cxx_test(gmock_ex_test gmock_main)
+  cxx_test(gmock-function-mocker_test gmock_main)
   cxx_test(gmock-generated-actions_test gmock_main)
   cxx_test(gmock-generated-function-mockers_test gmock_main)
-  cxx_test(gmock-generated-internal-utils_test gmock_main)
   cxx_test(gmock-generated-matchers_test gmock_main)
   cxx_test(gmock-internal-utils_test gmock_main)
   cxx_test(gmock-matchers_test gmock_main)
@@ -186,25 +195,12 @@ if (gmock_build_tests)
     cxx_library(gmock_main_no_rtti "${cxx_no_rtti}"
       "${gtest_dir}/src/gtest-all.cc" src/gmock-all.cc src/gmock_main.cc)
 
-    if (MSVC_VERSION LESS 1600)  # 1600 is Visual Studio 2010.
-      # Visual Studio 2010, 2012, and 2013 define symbols in std::tr1 that
-      # conflict with our own definitions. Therefore using our own tuple does not
-      # work on those compilers.
-      cxx_library(gmock_main_use_own_tuple "${cxx_use_own_tuple}"
-        "${gtest_dir}/src/gtest-all.cc" src/gmock-all.cc src/gmock_main.cc)
-
-      cxx_test_with_flags(gmock_use_own_tuple_test "${cxx_use_own_tuple}"
-        gmock_main_use_own_tuple test/gmock-spec-builders_test.cc)
-    endif()
   else()
     cxx_library(gmock_main_no_exception "${cxx_no_exception}" src/gmock_main.cc)
     target_link_libraries(gmock_main_no_exception PUBLIC gmock)
 
     cxx_library(gmock_main_no_rtti "${cxx_no_rtti}" src/gmock_main.cc)
     target_link_libraries(gmock_main_no_rtti PUBLIC gmock)
-
-    cxx_library(gmock_main_use_own_tuple "${cxx_use_own_tuple}" src/gmock_main.cc)
-    target_link_libraries(gmock_main_use_own_tuple PUBLIC gmock)
   endif()
   cxx_test_with_flags(gmock-more-actions_no_exception_test "${cxx_no_exception}"
     gmock_main_no_exception test/gmock-more-actions_test.cc)
