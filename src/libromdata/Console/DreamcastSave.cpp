@@ -22,7 +22,6 @@ using std::vector;
 namespace LibRomData {
 
 ROMDATA_IMPL(DreamcastSave)
-ROMDATA_IMPL_IMG(DreamcastSave)
 
 class DreamcastSavePrivate : public RomDataPrivate
 {
@@ -1128,6 +1127,27 @@ uint32_t DreamcastSave::supportedImageTypes_static(void)
 }
 
 /**
+ * Get a bitfield of image types this object can retrieve.
+ * @return Bitfield of supported image types. (ImageTypesBF)
+ */
+uint32_t DreamcastSave::supportedImageTypes(void) const
+{
+	RP_D(const DreamcastSave);
+	uint32_t ret = 0;
+
+	if (d->vms_header.icon_count > 0 || (d->loaded_headers & DreamcastSavePrivate::DC_IS_ICONDATA_VMS)) {
+		ret = IMGBF_INT_ICON;
+	}
+	if (d->vms_header.eyecatch_type >  DC_VMS_EYECATCH_NONE &&
+	    d->vms_header.eyecatch_type <= DC_VMS_EYECATCH_CI4)
+	{
+		ret |= IMGBF_INT_BANNER;
+	}
+
+	return ret;
+}
+
+/**
  * Get a list of all available image sizes for the specified image type.
  *
  * The first item in the returned vector is the "default" size.
@@ -1154,6 +1174,53 @@ vector<RomData::ImageSizeDef> DreamcastSave::supportedImageSizes_static(ImageTyp
 			};
 			return vector<ImageSizeDef>(sz_INT_BANNER,
 				sz_INT_BANNER + ARRAY_SIZE(sz_INT_BANNER));
+		}
+		default:
+			break;
+	}
+
+	// Unsupported image type.
+	return vector<ImageSizeDef>();
+}
+
+/**
+ * Get a list of all available image sizes for the specified image type.
+ *
+ * The first item in the returned vector is the "default" size.
+ * If the width/height is 0, then an image exists, but the size is unknown.
+ *
+ * @param imageType Image type.
+ * @return Vector of available image sizes, or empty vector if no images are available.
+ */
+vector<RomData::ImageSizeDef> DreamcastSave::supportedImageSizes(ImageType imageType) const
+{
+	ASSERT_supportedImageSizes(imageType);
+	RP_D(const DreamcastSave);
+
+	switch (imageType) {
+		case IMG_INT_ICON: {
+			if (d->vms_header.icon_count > 0 || (d->loaded_headers & DreamcastSavePrivate::DC_IS_ICONDATA_VMS)) {
+				// Icon is present.
+				static const ImageSizeDef sz_INT_ICON[] = {
+					{nullptr, DC_VMS_ICON_W, DC_VMS_ICON_H, 0},
+				};
+				return vector<ImageSizeDef>(sz_INT_ICON,
+					sz_INT_ICON + ARRAY_SIZE(sz_INT_ICON));
+			}
+			break;
+		}
+		case IMG_INT_BANNER: {
+			if (d->vms_header.eyecatch_type >  DC_VMS_EYECATCH_NONE &&
+			    d->vms_header.eyecatch_type <= DC_VMS_EYECATCH_CI4)
+			{
+				// Eyecatch (banner) is present.
+				static const ImageSizeDef sz_INT_BANNER[] = {
+					{nullptr, DC_VMS_EYECATCH_W, DC_VMS_EYECATCH_H, 0},
+				};
+				return vector<ImageSizeDef>(sz_INT_BANNER,
+					sz_INT_BANNER + ARRAY_SIZE(sz_INT_BANNER));
+			}
+			break;
 		}
 		default:
 			break;
