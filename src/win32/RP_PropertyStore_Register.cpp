@@ -111,7 +111,7 @@ LONG RP_PropertyStore::RegisterCLSID(void)
 	// Get the default "InfoTip" and prepend them
 	// to the custom "InfoTip".
 	tstring s_infoTip;
-	s_reg = hkcr_All.read(_T("PreviewDetails"));
+	s_reg = hkcr_All.read(_T("InfoTip"));
 	if (s_reg.size() > 5) {
 		// First 5 characters should be "prop:".
 		if (!_tcsnicmp(s_reg.c_str(), _T("prop:"), 5)) {

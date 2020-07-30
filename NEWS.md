@@ -7,6 +7,7 @@
     * Allow discs that lack SYSTEM.CNF if they have PSX.EXE.
     * Handle boot filenames with two backslashes.
   * KDE: Fix thumbnailing of files with '#' in their filenames.
+  * Win32: Default InfoTip value incorrectly used PreviewDetails.
 
 * Other changes:
   * Linux: A system-wide cache directory (/usr/share/rom-properties/cache)
