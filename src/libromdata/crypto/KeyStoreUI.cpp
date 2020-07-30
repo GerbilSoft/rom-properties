@@ -1272,8 +1272,11 @@ KeyStoreUI::ImportReturn KeyStoreUI::import3DSboot9bin(const char *filename)
 
 	// Key addresses and indexes.
 	static const KeyStoreUIPrivate::KeyBinAddress keyBinAddress[] = {
+		{0xD720, N3DSVerifyKeys::Key_Retail_SpiBoot},
 		{0x59D0, N3DSVerifyKeys::Key_Retail_Slot0x2CKeyX},
 		{0x5A20, N3DSVerifyKeys::Key_Retail_Slot0x3DKeyX},
+
+		{0xD740, N3DSVerifyKeys::Key_Debug_SpiBoot},
 		{0x5DD0, N3DSVerifyKeys::Key_Debug_Slot0x2CKeyX},
 		{0x5E20, N3DSVerifyKeys::Key_Debug_Slot0x3DKeyX},
 

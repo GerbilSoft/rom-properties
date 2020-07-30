@@ -98,6 +98,7 @@ class N3DSVerifyKeys
 		// Encryption key indexes.
 		enum EncryptionKeys {
 			// Retail
+			Key_Retail_SpiBoot,
 			Key_Retail_Slot0x18KeyX,
 			Key_Retail_Slot0x1BKeyX,
 			Key_Retail_Slot0x25KeyX,
@@ -117,6 +118,7 @@ class N3DSVerifyKeys
 			Key_Retail_Slot0x3DKeyNormal_5,
 
 			// Debug
+			Key_Debug_SpiBoot,
 			Key_Debug_FixedCryptoKey,
 			Key_Debug_Slot0x18KeyX,
 			Key_Debug_Slot0x1BKeyX,
