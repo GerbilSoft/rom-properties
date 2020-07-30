@@ -4,6 +4,7 @@
 
 * New parser features:
   * Dreamcast: Added metadata properties.
+  * NintendoDS: Use the full title in metadata properties if available.
 
 * Bug fixes:
   * PlayStationDisc:

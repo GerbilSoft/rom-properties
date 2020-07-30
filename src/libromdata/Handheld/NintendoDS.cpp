@@ -1513,14 +1513,48 @@ int NintendoDS::loadMetaData(void)
 	const NDS_RomHeader *const romHeader = &d->romHeader;
 
 	// Title.
-	// TODO: Show the full title if it's present:
-	// - Three lines: Concatenate the first two lines
-	// - Two lines: Show the first line only.
-	// - One line: Show that line.
-	d->metaData->addMetaData_string(Property::Title,
-		latin1_to_utf8(romHeader->title, ARRAY_SIZE(romHeader->title)));
+	string s_title;
+	if (!d->nds_icon_title_loaded) {
+		// Attempt to load the icon/title data.
+		const_cast<NintendoDSPrivate*>(d)->loadIconTitleData();
+	}
+	if (d->nds_icon_title_loaded) {
+		// Full title.
+		// TODO: Use the default LC if it's available.
+		// For now, default to English.
+		if (d->nds_icon_title.title[NDS_LANG_ENGLISH][0] != cpu_to_le16(0)) {
+			s_title = utf16_to_utf8(d->nds_icon_title.title[NDS_LANG_ENGLISH],
+			                        ARRAY_SIZE(d->nds_icon_title.title[NDS_LANG_ENGLISH]));
+
+			// Adjust the title based on the number of lines.
+			size_t nl_1 = s_title.find('\n');
+			if (nl_1 != string::npos) {
+				// Found the first newline.
+				size_t nl_2 = s_title.find('\n', nl_1+1);
+				if (nl_2 != string::npos) {
+					// Found the second newline.
+					// Change the first to a space, and remove the third line.
+					s_title[nl_1] = ' ';
+					s_title.resize(nl_2);
+				} else {
+					// Only two lines.
+					// Remove the second line.
+					s_title.resize(nl_1);
+				}
+			}
+		}
+	}
+
+	if (s_title.empty()) {
+		// Full title is not available.
+		// Use the short title from the NDS header.
+		s_title = latin1_to_utf8(romHeader->title, ARRAY_SIZE(romHeader->title));
+	}
+
+	d->metaData->addMetaData_string(Property::Title, s_title);
 
 	// Publisher.
+	// TODO: Use publisher from the full title?
 	const char *const publisher = NintendoPublishers::lookup(romHeader->company);
 	d->metaData->addMetaData_string(Property::Publisher,
 		publisher ? publisher :
