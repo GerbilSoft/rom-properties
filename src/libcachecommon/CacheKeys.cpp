@@ -29,6 +29,7 @@ using std::wstring;
 # define DIR_SEP_WCHR L'\\'
 #else /* !_WIN32 */
 # define DIR_SEP_CHR '/'
+# include <unistd.h>	/* for R_OK */
 #endif /* _WIN32 */
 
 namespace LibCacheCommon {
