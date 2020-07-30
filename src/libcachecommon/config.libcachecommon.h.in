@@ -16,8 +16,8 @@
 #cmakedefine HAVE_GETTEXT 1
 
 /* Define to the system-wide rom-properties cache directory on Unix and Unix-like systems. */
-#if !defined(_WIN32) && !defined(__APPLE__)
-#cmakedefine DIR_INSTALL_CACHE "@CMAKE_INSTALL_PREFIX@/@DIR_INSTALL_CACHE@"
+#if !defined(_WIN32) && !defined(__APPLE__) && defined(DIR_INSTALL_CACHE)
+# define DIR_INSTALL_CACHE "@CMAKE_INSTALL_PREFIX@/@DIR_INSTALL_CACHE@"
 #endif
 
 #endif /* __ROMPROPERTIES_LIBCACHECOMMON_CONFIG_H__ */
