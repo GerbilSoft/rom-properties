@@ -2,6 +2,9 @@
 
 ## v1.7 (released 2020/??/??)
 
+* New parser features:
+  * Dreamcast: Added metadata properties.
+
 * Bug fixes:
   * PlayStationDisc:
     * Allow discs that lack SYSTEM.CNF if they have PSX.EXE.

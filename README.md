@@ -104,7 +104,7 @@ button.
 | Sega 8-bit (SMS, GG)      |       Yes      |    Yes   |       N/A       |       No       |
 | Sega Mega Drive           |       Yes      |    No    |       N/A       |       No       |
 | Sega Dreamcast            |       Yes      |    Yes   |      Media      |       No       |
-| Sega Dreamcast Saves      |       Yes      |    No    |   Icon, Banner  |       No       |
+| Sega Dreamcast Saves      |       Yes      |    Yes   |   Icon, Banner  |       No       |
 | Sega Saturn               |       Yes      |    Yes   |       N/A       |       No       |
 | Sony PlayStation Discs    |       Yes      |    No    |       N/A       |       No       |
 | Sony PlayStation EXEs     |       Yes      |    No    |       N/A       |       N/A      |
