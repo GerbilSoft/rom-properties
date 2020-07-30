@@ -46,6 +46,25 @@ RP_PropertyStore : public LibWin32Common::ComBase3<IInitializeWithStream, IPrope
 		// IUnknown
 		IFACEMETHODIMP QueryInterface(REFIID riid, LPVOID *ppvObj) final;
 
+	private:
+		/**
+		 * Get the PreviewDetails string.
+		 * @return PreviewDetails string.
+		 */
+		static std::tstring GetPreviewDetailsString();
+
+		/**
+		 * Get the InfoTip string.
+		 * @return InfoTip string.
+		 */
+		static std::tstring GetInfoTipString();
+
+		/**
+		 * Get the FullDetails string.
+		 * @return FullDetails string.
+		 */
+		static std::tstring GetFullDetailsString();
+
 	public:
 		/**
 		 * Register the COM object.
@@ -55,11 +74,12 @@ RP_PropertyStore : public LibWin32Common::ComBase3<IInitializeWithStream, IPrope
 
 		/**
 		 * Register the file type handler.
-		 * @param hklm HKEY_LOCAL_MACHINE or user-specific root.
+		 * @param hkcr HKEY_CLASSES_ROOT or user-specific classes root.
+		 * @param pHklm HKEY_LOCAL_MACHINE or user-specific root, or nullptr to skip.
 		 * @param ext File extension, including the leading dot.
 		 * @return ERROR_SUCCESS on success; Win32 error code on error.
 		 */
-		static LONG RegisterFileType(LibWin32Common::RegKey &hklm, LPCTSTR ext);
+		static LONG RegisterFileType(LibWin32Common::RegKey &hkcr, LibWin32Common::RegKey *pHklm, LPCTSTR ext);
 
 		/**
 		 * Unregister the COM object.
@@ -69,11 +89,12 @@ RP_PropertyStore : public LibWin32Common::ComBase3<IInitializeWithStream, IPrope
 
 		/**
 		 * Unregister the file type handler.
-		 * @param hklm HKEY_LOCAL_MACHINE or user-specific root.
+		 * @param hkcr HKEY_CLASSES_ROOT or user-specific classes root.
+		 * @param pHklm HKEY_LOCAL_MACHINE or user-specific root, or nullptr to skip.
 		 * @param ext File extension, including the leading dot.
 		 * @return ERROR_SUCCESS on success; Win32 error code on error.
 		 */
-		static LONG UnregisterFileType(LibWin32Common::RegKey &hklm, LPCTSTR ext);
+		static LONG UnregisterFileType(LibWin32Common::RegKey &hkcr, LibWin32Common::RegKey *pHklm, LPCTSTR ext);
 
 	public:
 		// IInitializeWithStream

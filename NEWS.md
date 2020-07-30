@@ -12,6 +12,9 @@
     * Handle boot filenames with two backslashes.
   * KDE: Fix thumbnailing of files with '#' in their filenames.
   * Win32: Default InfoTip value incorrectly used PreviewDetails.
+  * Win32: Register Previewdetails and InfoTip per extension instead of
+    using a ProgID. Using a ProgID breaks .cmd files on Windows 8.
+    * This fixes issue #242, reported by @mariomadproductions.
 
 * Other changes:
   * Linux: A system-wide cache directory (/usr/share/rom-properties/cache)

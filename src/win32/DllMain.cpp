@@ -229,22 +229,28 @@ static LONG RegisterFileType(RegKey &hkcr, RegKey *pHklm, const RomDataFactory::
 	lResult = RP_ShellPropSheetExt::UnregisterFileType(hkcr, t_ext.c_str());
 	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
 
-	// Register as "OpenWithProgids/rom-properties".
-	// This is needed for RP_PropertyStore.
-	RegKey hkey_ext(hkcr, t_ext.c_str(), KEY_READ|KEY_WRITE, true);
-	if (!hkey_ext.isOpen())
-		return SELFREG_E_CLASS;
-	RegKey hkey_OpenWithProgids(hkey_ext, _T("OpenWithProgids"), KEY_READ|KEY_WRITE, true);
-	if (!hkey_ext.isOpen())
-		return SELFREG_E_CLASS;
-	hkey_OpenWithProgids.write(RP_ProgID, nullptr);
-	hkey_OpenWithProgids.close();
+	// If "OpenWithProgids/rom-properties" is set, remove it.
+	// We're setting RP_PropertyStore settings per file extension
+	// to prevent issues opening .cmd files on some versions of
+	// Windows 10. (Works on Win7 SP1 and Win10 LTSC 1809...)
+	RegKey hkey_ext(hkcr, t_ext.c_str(), KEY_READ|KEY_WRITE, false);
+	if (hkey_ext.isOpen()) {
+		RegKey hkey_OpenWithProgids(hkey_ext, _T("OpenWithProgids"), KEY_READ|KEY_WRITE, false);
+		if (hkey_OpenWithProgids.isOpen()) {
+			hkey_OpenWithProgids.deleteValue(RP_ProgID);
+			if (hkey_OpenWithProgids.isKeyEmpty()) {
+				// OpenWithProgids is empty. Delete it.
+				hkey_OpenWithProgids.close();
+				hkey_ext.deleteSubKey(_T("OpenWithProgids"));
+			}
+		}
+	}
 	hkey_ext.close();
 
 #ifdef HAVE_RP_PROPERTYSTORE_DEPS
 	// Register the property store handler.
-	if (pHklm && (extInfo.attrs & RomDataFactory::RDA_HAS_METADATA)) {
-		lResult = RP_PropertyStore::RegisterFileType(*pHklm, t_ext.c_str());
+	if (extInfo.attrs & RomDataFactory::RDA_HAS_METADATA) {
+		lResult = RP_PropertyStore::RegisterFileType(hkcr, pHklm, t_ext.c_str());
 		if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
 	}
 #else /* HAVE_RP_PROPERTYSTORE_DEPS */
@@ -323,10 +329,8 @@ static LONG UnregisterFileType(RegKey &hkcr, RegKey *pHklm, const RomDataFactory
 	lResult = RP_ThumbnailProvider::UnregisterFileType(hkcr, t_ext.c_str());
 	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
 #ifdef HAVE_RP_PROPERTYSTORE_DEPS
-	if (pHklm) {
-		lResult = RP_PropertyStore::UnregisterFileType(*pHklm, t_ext.c_str());
-		if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
-	}
+	lResult = RP_PropertyStore::UnregisterFileType(hkcr, pHklm, t_ext.c_str());
+	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
 #else /* HAVE_RP_PROPERTYSTORE_DEPS */
 	// MinGW-w64: Suppress pHklm warnings, since it's unused.
 	((void)pHklm);
@@ -656,23 +660,10 @@ STDAPI DllRegisterServer(void)
 	RegKey hklm(HKEY_LOCAL_MACHINE, nullptr, KEY_READ, false);
 	if (!hklm.isOpen()) return SELFREG_E_CLASS;
 
-	// Create a ProgID.
-	RegKey hkey_progID(HKEY_CLASSES_ROOT, RP_ProgID, KEY_READ|KEY_WRITE, true);
-	if (!hkey_progID.isOpen()) return SELFREG_E_CLASS;
-	// Delete the default value, since we don't want to override
-	// the default file type description.
-	hkey_progID.deleteValue(nullptr);
+	// Remove the ProgID if it exists, since we aren't using it anymore.
+	hkcr.deleteSubKey(RP_ProgID);
 
-	// Register the classes with the ProgID.
-	// NOTE: Skipping RP_PropertyStore.
-	lResult = RP_ExtractIcon::RegisterFileType(hkcr, RP_ProgID);
-	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
-	lResult = RP_ExtractImage::RegisterFileType(hkcr, RP_ProgID);
-	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
-	lResult = RP_ThumbnailProvider::RegisterFileType(hkcr, RP_ProgID);
-	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
-
-	// Register all supported file types and associate them with our ProgID.
+	// Register all supported file extensions.
 	const vector<RomDataFactory::ExtInfo> &vec_exts = RomDataFactory::supportedFileExtensions();
 	for (auto ext_iter = vec_exts.cbegin(); ext_iter != vec_exts.cend(); ++ext_iter) {
 		// Register the file type handlers for this file extension globally.
@@ -767,15 +758,6 @@ STDAPI DllUnregisterServer(void)
 	RegKey hklm(HKEY_LOCAL_MACHINE, nullptr, KEY_READ, false);
 	if (!hklm.isOpen()) return SELFREG_E_CLASS;
 
-	// Unregister the classes from the ProgID.
-	// NOTE: Skipping RP_PropertyStore.
-	lResult = RP_ExtractIcon::UnregisterFileType(hkcr, RP_ProgID);
-	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
-	lResult = RP_ExtractImage::UnregisterFileType(hkcr, RP_ProgID);
-	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
-	lResult = RP_ThumbnailProvider::UnregisterFileType(hkcr, RP_ProgID);
-	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
-
 	// Unegister all supported file types.
 	vector<RomDataFactory::ExtInfo> vec_exts = RomDataFactory::supportedFileExtensions();
 	for (auto ext_iter = vec_exts.cbegin(); ext_iter != vec_exts.cend(); ++ext_iter) {
@@ -823,13 +805,8 @@ STDAPI DllUnregisterServer(void)
 	lResult = RP_ShellPropSheetExt::UnregisterFileType(hkcr, _T("Drive"));
 	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
 
-	// Remove the ProgID if it's empty.
-	RegKey hkey_progID(hkcr, RP_ProgID, KEY_READ|KEY_WRITE, false);
-	if (hkey_progID.isOpen() && hkey_progID.isKeyEmpty()) {
-		// No subkeys. Delete this key.
-		hkey_progID.close();
-		hkcr.deleteSubKey(RP_ProgID);
-	}
+	// Remove the ProgID.
+	hkcr.deleteSubKey(RP_ProgID);
 
 	// Notify the shell that file associations have changed.
 	// Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/cc144148(v=vs.85).aspx
