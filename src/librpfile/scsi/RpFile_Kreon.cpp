@@ -127,11 +127,11 @@ bool RpFile::isKreonDriveModel(void)
  * Get a list of supported Kreon features.
  * @return List of Kreon feature IDs, or empty vector if not supported.
  */
-vector<uint16_t> RpFile::getKreonFeatureList(void)
+vector<RpFile::KreonFeature> RpFile::getKreonFeatureList(void)
 {
 	// NOTE: On Linux, this ioctl will fail if not running as root.
 	RP_D(RpFile);
-	vector<uint16_t> vec;
+	vector<KreonFeature> vec;
 	if (!d->devInfo) {
 		// Not a device.
 		return vec;
@@ -153,11 +153,12 @@ vector<uint16_t> RpFile::getKreonFeatureList(void)
 		const uint16_t feature = be16_to_cpu(*iter);
 		if (feature == 0)
 			break;
-		vec.emplace_back(feature);
+		vec.emplace_back(static_cast<KreonFeature>(feature));
 	}
 
-	if (vec.size() < 2 || vec[0] != KREON_FEATURE_HEADER_0 ||
-	    vec[1] != KREON_FEATURE_HEADER_1)
+	if (vec.size() < 2 ||
+	    vec[0] != KreonFeature::Header0 ||
+	    vec[1] != KreonFeature::Header1)
 	{
 		// Kreon feature list is invalid.
 		vec.clear();

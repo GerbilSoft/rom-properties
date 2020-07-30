@@ -124,11 +124,11 @@ class KeyStoreUIPrivate
 
 	public:
 		// Section enumeration.
-		enum SectionIDs {
-			Section_WiiPartition = 0,
-			Section_CtrKeyScrambler,
-			Section_N3DSVerifyKeys,
-			Section_Xbox360_XEX,
+		enum class SectionID {
+			WiiPartition	= 0,
+			CtrKeyScrambler	= 1,
+			N3DSVerifyKeys	= 2,
+			Xbox360_XEX	= 3,
 		};
 
 		struct KeyBinAddress {
@@ -144,7 +144,7 @@ class KeyStoreUIPrivate
 		 * @param len		[in] Length of buf.
 		 * @return Key import status.
 		 */
-		KeyStoreUI::ImportReturn importKeysFromBlob(int sectIdx,
+		KeyStoreUI::ImportReturn importKeysFromBlob(SectionID sectIdx,
 			const KeyBinAddress *kba, const uint8_t *buf, unsigned int len);
 
 		/**
@@ -455,16 +455,16 @@ inline int KeyStoreUIPrivate::idxToSectKey(int idx, int *pSectIdx, int *pKeyIdx)
  * @return Key import status.
  */
 KeyStoreUI::ImportReturn KeyStoreUIPrivate::importKeysFromBlob(
-	int sectIdx, const KeyBinAddress *kba, const uint8_t *buf, unsigned int len)
+	SectionID sectIdx, const KeyBinAddress *kba, const uint8_t *buf, unsigned int len)
 {
 	KeyStoreUI::ImportReturn iret = {KeyStoreUI::ImportStatus::InvalidParams, 0, 0, 0, 0, 0, 0, 0};
 
-	assert(sectIdx >= 0);
-	assert(sectIdx < static_cast<int>(sections.size()));
+	assert((int)sectIdx >= 0);
+	assert((int)sectIdx < static_cast<int>(sections.size()));
 	assert(kba != nullptr);
 	assert(buf != nullptr);
 	assert(len != 0);
-	if (sectIdx < 0 || sectIdx >= static_cast<int>(sections.size()) ||
+	if ((int)sectIdx < 0 || (int)sectIdx >= static_cast<int>(sections.size()) ||
 	    !kba || !buf || len == 0)
 	{
 		iret.status = KeyStoreUI::ImportStatus::InvalidParams;
@@ -473,7 +473,7 @@ KeyStoreUI::ImportReturn KeyStoreUIPrivate::importKeysFromBlob(
 
 	RP_Q(KeyStoreUI);
 	bool wereKeysImported = false;
-	const int keyIdxStart = sections[sectIdx].keyIdxStart;
+	const int keyIdxStart = sections[(int)sectIdx].keyIdxStart;
 	for (; kba->keyIdx >= 0; kba++) {
 		KeyStoreUI::Key *const pKey = &keys[keyIdxStart + kba->keyIdx];
 		if (pKey->status == KeyStoreUI::Key::Status::OK) {
@@ -490,7 +490,7 @@ KeyStoreUI::ImportReturn KeyStoreUIPrivate::importKeysFromBlob(
 		const uint8_t *const keyData = &buf[kba->address];
 
 		// Check if the key in the binary file is correct.
-		const uint8_t *const verifyData = encKeyFns[sectIdx].pfnVerifyData(kba->keyIdx);
+		const uint8_t *const verifyData = encKeyFns[(int)sectIdx].pfnVerifyData(kba->keyIdx);
 		assert(verifyData != nullptr);
 		if (!verifyData) {
 			// Can't verify this key...
@@ -502,7 +502,7 @@ KeyStoreUI::ImportReturn KeyStoreUIPrivate::importKeysFromBlob(
 				pKey->modified = true;
 				iret.keysImportedNoVerify++;
 				wereKeysImported = true;
-				emit q->keyChanged_int(sectIdx, kba->keyIdx);
+				emit q->keyChanged_int((int)sectIdx, kba->keyIdx);
 				emit q->keyChanged_int(keyIdxStart + kba->keyIdx);
 			} else {
 				// No change.
@@ -522,7 +522,7 @@ KeyStoreUI::ImportReturn KeyStoreUIPrivate::importKeysFromBlob(
 				pKey->modified = true;
 				iret.keysImportedVerify++;
 				wereKeysImported = true;
-				emit q->keyChanged_int(sectIdx, kba->keyIdx);
+				emit q->keyChanged_int((int)sectIdx, kba->keyIdx);
 				emit q->keyChanged_int(keyIdxStart + kba->keyIdx);
 			} else {
 				// No change.
@@ -558,7 +558,7 @@ int KeyStoreUIPrivate::getAesKeyDB_key(u128_t *pKey) const
 	}
 
 	// Get the CTR scrambler constant.
-	const Section &sectScrambler = sections[Section_CtrKeyScrambler];
+	const Section &sectScrambler = sections[(int)SectionID::CtrKeyScrambler];
 	const KeyStoreUI::Key &ctr_scrambler = keys[sectScrambler.keyIdxStart + CtrKeyScrambler::Key_Ctr_Scrambler];
 	if (ctr_scrambler.status != KeyStoreUI::Key::Status::OK) {
 		// Key is not correct.
@@ -566,7 +566,7 @@ int KeyStoreUIPrivate::getAesKeyDB_key(u128_t *pKey) const
 	}
 
 	// Get Slot0x2CKeyX.
-	const Section &sectN3DS = sections[Section_N3DSVerifyKeys];
+	const Section &sectN3DS = sections[(int)SectionID::N3DSVerifyKeys];
 	const KeyStoreUI::Key &key_slot0x2CKeyX = keys[sectN3DS.keyIdxStart + N3DSVerifyKeys::Key_Retail_Slot0x2CKeyX];
 	if (key_slot0x2CKeyX.status != KeyStoreUI::Key::Status::OK) {
 		// Key is not correct.
@@ -1112,7 +1112,7 @@ KeyStoreUI::ImportReturn KeyStoreUI::importWiiKeysBin(const char *filename)
 
 	// Import the keys.
 	RP_D(KeyStoreUI);
-	return d->importKeysFromBlob(KeyStoreUIPrivate::Section_WiiPartition,
+	return d->importKeysFromBlob(KeyStoreUIPrivate::SectionID::WiiPartition,
 		keyBinAddress, buf, sizeof(buf));
 }
 
@@ -1210,7 +1210,7 @@ KeyStoreUI::ImportReturn KeyStoreUI::importWiiUOtpBin(const char *filename)
 
 	// Import the keys.
 	RP_D(KeyStoreUI);
-	return d->importKeysFromBlob(KeyStoreUIPrivate::Section_WiiPartition,
+	return d->importKeysFromBlob(KeyStoreUIPrivate::SectionID::WiiPartition,
 		kba, buf, sizeof(buf));
 }
 
@@ -1282,7 +1282,7 @@ KeyStoreUI::ImportReturn KeyStoreUI::import3DSboot9bin(const char *filename)
 
 	// Import the keys.
 	RP_D(KeyStoreUI);
-	return d->importKeysFromBlob(KeyStoreUIPrivate::Section_N3DSVerifyKeys,
+	return d->importKeysFromBlob(KeyStoreUIPrivate::SectionID::N3DSVerifyKeys,
 		keyBinAddress, buf.get(), 32768);
 }
 
@@ -1350,7 +1350,7 @@ KeyStoreUI::ImportReturn KeyStoreUI::import3DSaeskeydb(const char *filename)
 
 	AesKeyInfo *aesKey = reinterpret_cast<AesKeyInfo*>(buf.get());
 	const AesKeyInfo *const aesKeyEnd = reinterpret_cast<const AesKeyInfo*>(buf.get() + fileSize);
-	const int keyIdxStart = d->sections[KeyStoreUIPrivate::Section_N3DSVerifyKeys].keyIdxStart;
+	const int keyIdxStart = d->sections[(int)KeyStoreUIPrivate::SectionID::N3DSVerifyKeys].keyIdxStart;
 	bool wereKeysImported = false;
 	do {
 		// Check if this is a supported keyslot.
@@ -1522,7 +1522,7 @@ KeyStoreUI::ImportReturn KeyStoreUI::import3DSaeskeydb(const char *filename)
 						pKey->modified = true;
 						iret.keysImportedVerify++;
 						wereKeysImported = true;
-						emit keyChanged_int(KeyStoreUIPrivate::Section_N3DSVerifyKeys, *pKeyIdx);
+						emit keyChanged_int((int)KeyStoreUIPrivate::SectionID::N3DSVerifyKeys, *pKeyIdx);
 						emit keyChanged_int(keyIdxStart + *pKeyIdx);
 					} else {
 						// No change.
@@ -1543,7 +1543,7 @@ KeyStoreUI::ImportReturn KeyStoreUI::import3DSaeskeydb(const char *filename)
 					pKey->modified = true;
 					iret.keysImportedNoVerify++;
 					wereKeysImported = true;
-					emit keyChanged_int(KeyStoreUIPrivate::Section_N3DSVerifyKeys, *pKeyIdx);
+					emit keyChanged_int((int)KeyStoreUIPrivate::SectionID::N3DSVerifyKeys, *pKeyIdx);
 					emit keyChanged_int(keyIdxStart + *pKeyIdx);
 				} else {
 					// No change.

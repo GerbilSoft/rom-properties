@@ -31,12 +31,12 @@ class KeyStoreModel : public QAbstractItemModel
 		Q_DISABLE_COPY(KeyStoreModel)
 
 	public:
-		enum Column {
-			COL_KEY_NAME,	// Key name
-			COL_VALUE,	// Value
-			COL_ISVALID,	// Valid?
+		enum class Column {
+			KeyName	= 0,
+			Value	= 1,
+			IsValid	= 2,
 
-			COL_MAX
+			Max
 		};
 
 		// Qt Model/View interface.

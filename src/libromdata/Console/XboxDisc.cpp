@@ -337,7 +337,7 @@ XboxDisc::XboxDisc(IRpFile *file)
 			// Check if this is a supported drive model.
 			if (rpFile->isKreonDriveModel()) {
 				// Do we have Kreon features?
-				vector<uint16_t> features = rpFile->getKreonFeatureList();
+				vector<RpFile::KreonFeature> features = rpFile->getKreonFeatureList();
 				if (!features.empty()) {
 					// Found Kreon features.
 					// TODO: Check the feature list?

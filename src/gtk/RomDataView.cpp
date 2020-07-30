@@ -56,13 +56,13 @@ static inline GtkWidget *gtk_tree_view_column_get_button(GtkTreeViewColumn *tree
 // - http://api.xfce.m8t.in/xfce-4.10/thunarx-1.4.0/ThunarxPropertyPage.html
 
 /* Property identifiers */
-enum {
+typedef enum {
 	PROP_0,
 	PROP_URI,
 	PROP_DESC_FORMAT_TYPE,
 	PROP_SHOWING_DATA,
 	PROP_LAST
-};
+} RomDataViewPropID;
 
 static void	rom_data_view_dispose		(GObject	*object);
 static void	rom_data_view_finalize		(GObject	*object);
