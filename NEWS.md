@@ -5,6 +5,7 @@
 * New parser features:
   * Dreamcast: Added metadata properties.
   * NintendoDS: Use the full title in metadata properties if available.
+  * Nintendo3DSFirm: Added some more homebrews and show sighax status.
 
 * Bug fixes:
   * PlayStationDisc:
