@@ -103,7 +103,7 @@ LONG RP_PropertyStore::RegisterCLSID(void)
 		// First 5 characters should be "prop:".
 		if (!_tcsnicmp(s_reg.c_str(), _T("prop:"), 5)) {
 			// Append the properties.
-			s_previewDetails += L';';
+			s_previewDetails += _T(';');
 			s_previewDetails.append(s_reg.c_str()+5, s_reg.size()-5);
 		}
 	}
@@ -122,6 +122,9 @@ LONG RP_PropertyStore::RegisterCLSID(void)
 	if (s_infoTip.empty()) {
 		// Prepend with "prop:".
 		s_infoTip = _T("prop:");
+	} else {
+		// Append a semicolon.
+		s_previewDetails += _T(';');
 	}
 	s_infoTip.append(InfoTip, _countof(InfoTip)-1);
 
