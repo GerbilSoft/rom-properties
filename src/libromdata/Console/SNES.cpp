@@ -411,17 +411,29 @@ bool SNESPrivate::isBsxRomHeaderValid(const SNES_RomHeader *romHeader, bool isHi
 			// Not valid.
 			// (ExLoROM/ExHiROM is not valid for BS-X.)
 			return false;
+
+		case 0x00:
+			// Seen in a few ROM images:
+			// - Excitebike - Bun Bun Mario Battle - Stadium 3
+			break;
 	}
 
 	// Old publisher code must be either 0x33 or 0x00.
 	// 0x00 indicates the file was deleted.
-	if (romHeader->bsx.old_publisher_code != 0x33 &&
-	    romHeader->bsx.old_publisher_code != 0x00)
-	{
-		// Invalid old publisher code.
-		return false;
+	// NOTE: Some BS-X ROMs have an old publisher code of 0xFF.
+	switch (romHeader->bsx.old_publisher_code) {
+		case 0x33:	// OK
+		case 0x00:	// "Deleted"
+		case 0xFF:	// Kodomo Chousadan Mighty Pockets
+			break;
+
+		default:
+			// Invalid old publisher code.
+			return false;
 	}
 
+	// FIXME: Some BS-X ROMs have an invalid publisher code...
+#if 0
 	// New publisher code must be alphanumeric.
 	if (!ISALNUM(romHeader->bsx.ext.new_publisher_code[0]) ||
 	    !ISALNUM(romHeader->bsx.ext.new_publisher_code[1]))
@@ -429,6 +441,7 @@ bool SNESPrivate::isBsxRomHeaderValid(const SNES_RomHeader *romHeader, bool isHi
 		// New publisher code is invalid.
 		return false;
 	}
+#endif
 
 	// ROM header appears to be valid.
 	// TODO: Check other BS-X fields.
@@ -461,6 +474,9 @@ string SNESPrivate::getRomTitle(void) const
 			getSnesRomMapping(&romHeader, nullptr, &hasExtraChr);
 			break;
 		case RomType::BSX:
+			// TODO: Extra characters may be needed for:
+			// - Excitebike - Bun Bun Mario Battle - Stadium 3
+			// - Excitebike - Bun Bun Mario Battle - Stadium 4
 			doSJIS = true;
 			title = romHeader.bsx.title;
 			len = sizeof(romHeader.bsx.title);
@@ -903,7 +919,7 @@ int SNES::isRomSupported_static(const DetectInfo *info)
 		for (; *exts != nullptr; exts++) {
 			if (!strcasecmp(info->ext, *exts)) {
 				// File extension is supported.
-				if (*exts[1] == 'b') {
+				if ((*exts)[1] == 'b') {
 					// BS-X extension.
 					return static_cast<int>(SNESPrivate::RomType::BSX);
 				} else {
