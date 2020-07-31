@@ -1046,7 +1046,7 @@ static const BITMAPINFOHEADER gl_triangle_gray_alpha_BIH =
 		3936, 3936, 0, 0};
 
 // gl_triangle PNG image tests.
-INSTANTIATE_TEST_CASE_P(gl_triangle_png, RpPngFormatTest,
+INSTANTIATE_TEST_SUITE_P(gl_triangle_png, RpPngFormatTest,
 	::testing::Values(
 		RpPngFormatTest_mode(
 			"gl_triangle.RGB24.png",
@@ -1115,7 +1115,7 @@ static const BITMAPINFOHEADER gl_quad_gray_alpha_BIH =
 		3936, 3936, 0, 0};
 
 // gl_quad PNG image tests.
-INSTANTIATE_TEST_CASE_P(gl_quad_png, RpPngFormatTest,
+INSTANTIATE_TEST_SUITE_P(gl_quad_png, RpPngFormatTest,
 	::testing::Values(
 		RpPngFormatTest_mode(
 			"gl_quad.RGB24.png",
@@ -1199,7 +1199,7 @@ static const tRNS_CI8_t xterm_256color_CI8_tRNS_bmp_tRNS = {{
 #endif /* HAVE_PNG */
 
 // xterm 256-color PNG image tests.
-INSTANTIATE_TEST_CASE_P(xterm_256color_png, RpPngFormatTest,
+INSTANTIATE_TEST_SUITE_P(xterm_256color_png, RpPngFormatTest,
 	::testing::Values(
 		RpPngFormatTest_mode(
 			"xterm-256color.CI8.png",
@@ -1214,7 +1214,7 @@ INSTANTIATE_TEST_CASE_P(xterm_256color_png, RpPngFormatTest,
 // FIXME: MSVC (2010, others) doesn't support #if/#endif within macros.
 // https://connect.microsoft.com/VisualStudio/Feedback/Details/2084691
 #if defined(HAVE_PNG)
-INSTANTIATE_TEST_CASE_P(xterm_256color_tRNS_png, RpPngFormatTest,
+INSTANTIATE_TEST_SUITE_P(xterm_256color_tRNS_png, RpPngFormatTest,
 	::testing::Values(
 		RpPngFormatTest_mode(
 			"xterm-256color.CI8.tRNS.png",
@@ -1226,7 +1226,7 @@ INSTANTIATE_TEST_CASE_P(xterm_256color_tRNS_png, RpPngFormatTest,
 		)
 	, RpPngFormatTest::test_case_suffix_generator);
 #elif defined(_WIN32)
-INSTANTIATE_TEST_CASE_P(xterm_256color_tRNS_png, RpPngFormatTest,
+INSTANTIATE_TEST_SUITE_P(xterm_256color_tRNS_png, RpPngFormatTest,
 	::testing::Values(
 		RpPngFormatTest_mode(
 			"xterm-256color.CI8.tRNS.png",
@@ -1255,7 +1255,7 @@ static const BITMAPINFOHEADER odd_width_16color_CI8_BIH =
 		3936, 3936, 16, 16};
 
 // odd-width_16color PNG image tests.
-INSTANTIATE_TEST_CASE_P(odd_width_16color_png, RpPngFormatTest,
+INSTANTIATE_TEST_SUITE_P(odd_width_16color_png, RpPngFormatTest,
 	::testing::Values(
 		// TODO: Use a CI4 BMP?
 		RpPngFormatTest_mode(
@@ -1287,7 +1287,7 @@ static const BITMAPINFOHEADER happy_mac_mono_odd_size_BIH =
 		3936, 3936, 2, 2};
 
 // happy_mac_mono PNG image tests.
-INSTANTIATE_TEST_CASE_P(happy_mac_mono_png, RpPngFormatTest,
+INSTANTIATE_TEST_SUITE_P(happy_mac_mono_png, RpPngFormatTest,
 	::testing::Values(
 		// Full 512x342 version.
 		RpPngFormatTest_mode(

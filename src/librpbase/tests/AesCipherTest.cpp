@@ -522,7 +522,7 @@ static const uint8_t aes256ctr_ciphertext[64] = {
 static IAesCipher *createIAesCipher_##klass(void) { \
 	return new Aes##klass(); \
 } \
-INSTANTIATE_TEST_CASE_P(AesDecryptTest_##klass, AesCipherTest, \
+INSTANTIATE_TEST_SUITE_P(AesDecryptTest_##klass, AesCipherTest, \
 	::testing::Values( \
 		AesCipherTest_mode(createIAesCipher_##klass, (isRequired), \
 			IAesCipher::ChainingMode::ECB, 16, \

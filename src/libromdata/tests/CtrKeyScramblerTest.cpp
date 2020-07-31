@@ -209,7 +209,7 @@ static const uint8_t test_CtrScramble[16] = {
 	0x1B,0xBB,0x85,0x34,0x0E,0x5B,0x70,0xE4
 };
 
-INSTANTIATE_TEST_CASE_P(ctrScrambleTest, CtrKeyScramblerTest,
+INSTANTIATE_TEST_SUITE_P(ctrScrambleTest, CtrKeyScramblerTest,
 	::testing::Values(
 		CtrKeyScramblerTest_mode(test_CtrScramble, test_KeyX, test_KeyY)
 	));

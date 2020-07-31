@@ -581,11 +581,11 @@ string GcnFstTest::test_case_suffix_generator(const ::testing::TestParamInfo<Gcn
 	return suffix;
 }
 
-INSTANTIATE_TEST_CASE_P(GameCube, GcnFstTest,
+INSTANTIATE_TEST_SUITE_P(GameCube, GcnFstTest,
 	testing::ValuesIn(GcnFstTest::ReadTestCasesFromDisk(0))
 	, GcnFstTest::test_case_suffix_generator);
 
-INSTANTIATE_TEST_CASE_P(Wii, GcnFstTest,
+INSTANTIATE_TEST_SUITE_P(Wii, GcnFstTest,
 	testing::ValuesIn(GcnFstTest::ReadTestCasesFromDisk(2))
 	, GcnFstTest::test_case_suffix_generator);
 

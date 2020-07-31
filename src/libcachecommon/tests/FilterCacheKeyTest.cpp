@@ -96,7 +96,7 @@ TEST_P(FilterCacheKeyTest, filterCacheKey)
 }
 
 // TODO: Add more test cases.
-INSTANTIATE_TEST_CASE_P(CacheManagerTest, FilterCacheKeyTest,
+INSTANTIATE_TEST_SUITE_P(CacheManagerTest, FilterCacheKeyTest,
 	::testing::Values(
 		// Known-good cache key.
 		FilterCacheKeyTest_mode(

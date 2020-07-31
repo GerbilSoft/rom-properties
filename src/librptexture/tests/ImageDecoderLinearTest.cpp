@@ -722,7 +722,7 @@ TEST_P(ImageDecoderLinearTest, fromLinear_dispatch_benchmark)
 // Test cases.
 
 // 32-bit tests.
-INSTANTIATE_TEST_CASE_P(fromLinear32, ImageDecoderLinearTest,
+INSTANTIATE_TEST_SUITE_P(fromLinear32, ImageDecoderLinearTest,
 	::testing::Values(
 		// ARGB
 		ImageDecoderLinearTest_mode(
@@ -790,7 +790,7 @@ INSTANTIATE_TEST_CASE_P(fromLinear32, ImageDecoderLinearTest,
 	, ImageDecoderLinearTest::test_case_suffix_generator);
 
 // 32-bit tests. (custom stride)
-INSTANTIATE_TEST_CASE_P(fromLinear32_stride640, ImageDecoderLinearTest,
+INSTANTIATE_TEST_SUITE_P(fromLinear32_stride640, ImageDecoderLinearTest,
 	::testing::Values(
 		// ARGB
 		ImageDecoderLinearTest_mode(
@@ -858,7 +858,7 @@ INSTANTIATE_TEST_CASE_P(fromLinear32_stride640, ImageDecoderLinearTest,
 	, ImageDecoderLinearTest::test_case_suffix_generator);
 
 // 24-bit tests.
-INSTANTIATE_TEST_CASE_P(fromLinear24, ImageDecoderLinearTest,
+INSTANTIATE_TEST_SUITE_P(fromLinear24, ImageDecoderLinearTest,
 	::testing::Values(
 		ImageDecoderLinearTest_mode(
 			le32_to_cpu(0x123456),
@@ -875,7 +875,7 @@ INSTANTIATE_TEST_CASE_P(fromLinear24, ImageDecoderLinearTest,
 	, ImageDecoderLinearTest::test_case_suffix_generator);
 
 // 24-bit tests. (custom stride)
-INSTANTIATE_TEST_CASE_P(fromLinear24_stride512, ImageDecoderLinearTest,
+INSTANTIATE_TEST_SUITE_P(fromLinear24_stride512, ImageDecoderLinearTest,
 	::testing::Values(
 		ImageDecoderLinearTest_mode(
 			le32_to_cpu(0x123456),
@@ -892,7 +892,7 @@ INSTANTIATE_TEST_CASE_P(fromLinear24_stride512, ImageDecoderLinearTest,
 	, ImageDecoderLinearTest::test_case_suffix_generator);
 
 // 15/16-bit tests.
-INSTANTIATE_TEST_CASE_P(fromLinear16, ImageDecoderLinearTest,
+INSTANTIATE_TEST_SUITE_P(fromLinear16, ImageDecoderLinearTest,
 	::testing::Values(
 		/** 16-bit **/
 		ImageDecoderLinearTest_mode(
@@ -1042,7 +1042,7 @@ INSTANTIATE_TEST_CASE_P(fromLinear16, ImageDecoderLinearTest,
 	, ImageDecoderLinearTest::test_case_suffix_generator);
 
 // 15/16-bit tests. (custom stride)
-INSTANTIATE_TEST_CASE_P(fromLinear16_384, ImageDecoderLinearTest,
+INSTANTIATE_TEST_SUITE_P(fromLinear16_384, ImageDecoderLinearTest,
 	::testing::Values(
 		/** 16-bit **/
 		ImageDecoderLinearTest_mode(
