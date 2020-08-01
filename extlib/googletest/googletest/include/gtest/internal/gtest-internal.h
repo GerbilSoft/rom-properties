@@ -1189,7 +1189,7 @@ class FlatTuple
 #if !defined(_MSC_VER) || _MSC_VER >= 1900
   using Indices = typename FlatTuple::FlatTupleBase::Indices;
 #else
-  typedef FlatTuple::FlatTupleBase::Indices Incides;
+  typedef FlatTuple::FlatTupleBase::Indices Indices;
 #endif
 
  public:
