@@ -2297,7 +2297,7 @@ class GTEST_API_ ScopedTrace {
 //
 // to cause a compiler error.
 template <typename T1, typename T2>
-GTEST_CONSTEXPR bool StaticAssertTypeEq() noexcept {
+GTEST_CONSTEXPR bool StaticAssertTypeEq() GTEST_NOEXCEPT {
   static_assert(std::is_same<T1, T2>::value,
                 "type1 and type2 are not the same type");
   return true;

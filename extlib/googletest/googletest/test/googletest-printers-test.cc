@@ -1566,12 +1566,12 @@ class string_ptr {
  public:
   string_ptr(const char* data, size_t size) : data_(data), size_(size) {}
 
-  string_ptr& operator++() noexcept {
+  string_ptr& operator++() GTEST_NOEXCEPT {
     data_ += size_;
     return *this;
   }
 
-  string_ref operator*() const noexcept;
+  string_ref operator*() const GTEST_NOEXCEPT;
 
  private:
   const char* data_;
@@ -1585,9 +1585,9 @@ class string_ref {
  public:
   string_ref(const char* data, size_t size) : data_(data), size_(size) {}
 
-  string_ptr operator&() const noexcept { return {data_, size_}; }  // NOLINT
+  string_ptr operator&() const GTEST_NOEXCEPT { return {data_, size_}; }  // NOLINT
 
-  bool operator==(const char* s) const noexcept {
+  bool operator==(const char* s) const GTEST_NOEXCEPT {
     if (size_ > 0 && data_[size_ - 1] != 0) {
       return std::string(data_, size_) == std::string(s);
     } else {
@@ -1600,7 +1600,7 @@ class string_ref {
   size_t size_;
 };
 
-string_ref string_ptr::operator*() const noexcept { return {data_, size_}; }
+string_ref string_ptr::operator*() const GTEST_NOEXCEPT { return {data_, size_}; }
 
 TEST(string_ref, compare) {
   const char* s = "alex\0davidjohn\0";

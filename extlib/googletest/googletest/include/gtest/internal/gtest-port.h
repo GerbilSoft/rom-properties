@@ -2065,9 +2065,11 @@ GTEST_DISABLE_MSC_DEPRECATED_POP_()
 #if defined(_MSC_VER) && _MSC_VER < 1900
 #  define GTEST_NORETURN __declspec(noreturn)
 #  define GTEST_CONSTEXPR
+#  define GTEST_NOEXCEPT
 #else
 #  define GTEST_NORETURN [[noreturn]]
 #  define GTEST_CONSTEXPR constexpr
+#  define GTEST_NOEXCEPT noexcept
 #endif
 
 #if GTEST_OS_WINDOWS_MOBILE
