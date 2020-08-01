@@ -84,7 +84,10 @@
 # undef min
 
 # include <crtdbg.h>  // NOLINT
-# include <debugapi.h>  // NOLINT
+// rom-properties: Only #include debugapi.h on MSVC 2015 and later.
+# if defined(_MSC_VER) && _MSC_VER >= 1900
+#  include <debugapi.h>  // NOLINT
+# endif
 # include <io.h>  // NOLINT
 # include <sys/timeb.h>  // NOLINT
 # include <sys/types.h>  // NOLINT

@@ -1185,7 +1185,12 @@ template <typename... T>
 class FlatTuple
     : private FlatTupleBase<FlatTuple<T...>,
                             typename MakeIndexSequence<sizeof...(T)>::type> {
+  // rom-properties: MSVC 2013 doesn't support this form of using statement.
+#if !defined(_MSC_VER) || _MSC_VER >= 1900
   using Indices = typename FlatTuple::FlatTupleBase::Indices;
+#else
+  typedef FlatTuple::FlatTupleBase::Indices Incides;
+#endif
 
  public:
   FlatTuple() = default;
