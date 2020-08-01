@@ -490,7 +490,7 @@ struct Function;
 template <typename R, typename... Args>
 struct Function<R(Args...)> {
   using Result = R;
-  static constexpr size_t ArgumentCount = sizeof...(Args);
+  static GTEST_CONSTEXPR size_t ArgumentCount = sizeof...(Args);
   template <size_t I>
   using Arg = ElemFromList<I, typename MakeIndexSequence<sizeof...(Args)>::type,
                            Args...>;
@@ -501,7 +501,7 @@ struct Function<R(Args...)> {
 };
 
 template <typename R, typename... Args>
-constexpr size_t Function<R(Args...)>::ArgumentCount;
+GTEST_CONSTEXPR size_t Function<R(Args...)>::ArgumentCount;
 
 #ifdef _MSC_VER
 # pragma warning(pop)

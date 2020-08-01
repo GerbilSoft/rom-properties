@@ -1207,27 +1207,27 @@ class FlatTuple
 GTEST_INTERNAL_DEPRECATED(
     "INSTANTIATE_TEST_CASE_P is deprecated, please use "
     "INSTANTIATE_TEST_SUITE_P")
-constexpr bool InstantiateTestCase_P_IsDeprecated() { return true; }
+GTEST_CONSTEXPR bool InstantiateTestCase_P_IsDeprecated() { return true; }
 
 GTEST_INTERNAL_DEPRECATED(
     "TYPED_TEST_CASE_P is deprecated, please use "
     "TYPED_TEST_SUITE_P")
-constexpr bool TypedTestCase_P_IsDeprecated() { return true; }
+GTEST_CONSTEXPR bool TypedTestCase_P_IsDeprecated() { return true; }
 
 GTEST_INTERNAL_DEPRECATED(
     "TYPED_TEST_CASE is deprecated, please use "
     "TYPED_TEST_SUITE")
-constexpr bool TypedTestCaseIsDeprecated() { return true; }
+GTEST_CONSTEXPR bool TypedTestCaseIsDeprecated() { return true; }
 
 GTEST_INTERNAL_DEPRECATED(
     "REGISTER_TYPED_TEST_CASE_P is deprecated, please use "
     "REGISTER_TYPED_TEST_SUITE_P")
-constexpr bool RegisterTypedTestCase_P_IsDeprecated() { return true; }
+GTEST_CONSTEXPR bool RegisterTypedTestCase_P_IsDeprecated() { return true; }
 
 GTEST_INTERNAL_DEPRECATED(
     "INSTANTIATE_TYPED_TEST_CASE_P is deprecated, please use "
     "INSTANTIATE_TYPED_TEST_SUITE_P")
-constexpr bool InstantiateTypedTestCase_P_IsDeprecated() { return true; }
+GTEST_CONSTEXPR bool InstantiateTypedTestCase_P_IsDeprecated() { return true; }
 
 }  // namespace internal
 }  // namespace testing

@@ -2061,13 +2061,22 @@ inline const char* GetEnv(const char* name) {
 
 GTEST_DISABLE_MSC_DEPRECATED_POP_()
 
+// rom-properties: MSVC added [[noreturn]] and constexpr in MSVC 2015.
+#if defined(_MSC_VER) && _MSC_VER < 1900
+#  define GTEST_NORETURN __declspec(noreturn)
+#  define GTEST_CONSTEXPR
+#else
+#  define GTEST_NORETURN [[noreturn]]
+#  define GTEST_CONSTEXPR constexpr
+#endif
+
 #if GTEST_OS_WINDOWS_MOBILE
 // Windows CE has no C library. The abort() function is used in
 // several places in Google Test. This implementation provides a reasonable
 // imitation of standard behaviour.
-[[noreturn]] void Abort();
+GTEST_NORETURN void Abort();
 #else
-[[noreturn]] inline void Abort() { abort(); }
+GTEST_NORETURN inline void Abort() { abort(); }
 #endif  // GTEST_OS_WINDOWS_MOBILE
 
 }  // namespace posix
