@@ -306,8 +306,11 @@ class MatcherBase {
 
   MatcherBase(const MatcherBase&) = default;
   MatcherBase& operator=(const MatcherBase&) = default;
+  // rom-properties: MSVC 2013 doesn't support default move constructors.
+#if !defined(_MSC_VER) || _MSC_VER >= 1900
   MatcherBase(MatcherBase&&) = default;
   MatcherBase& operator=(MatcherBase&&) = default;
+#endif
 
   virtual ~MatcherBase() {}
 
