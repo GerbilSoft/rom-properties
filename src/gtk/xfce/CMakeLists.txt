@@ -33,7 +33,7 @@ IF(GLib2_FOUND AND GObject2_FOUND AND GIO_FOUND AND GdkPixbuf2_FOUND AND GTK2_FO
 	FIND_PACKAGE(ThunarX2)
 	IF(NOT ThunarX2_FOUND)
 		MESSAGE(STATUS "ThunarX2 not found. Using the default extensions directory.")
-		SET(ThunarX2_EXTENSIONS_DIR "${CMAKE_INSTALL_LIBDIR}/thunarx-2")
+		SET(ThunarX2_EXTENSIONS_DIR "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/thunarx-2")
 	ENDIF(NOT ThunarX2_FOUND)
 ELSE(GLib2_FOUND AND GObject2_FOUND AND GIO_FOUND AND GdkPixbuf2_FOUND AND GTK2_FOUND)
 	# GTK+ 2.x (or required dependencies) were not found.
