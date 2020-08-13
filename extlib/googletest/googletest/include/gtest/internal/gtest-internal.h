@@ -1188,8 +1188,6 @@ class FlatTuple
   // rom-properties: MSVC 2013 doesn't support this form of using statement.
 #if !defined(_MSC_VER) || _MSC_VER >= 1900
   using Indices = typename FlatTuple::FlatTupleBase::Indices;
-#else
-  typedef FlatTuple::FlatTupleBase::Indices Indices;
 #endif
 
  public:
@@ -1197,12 +1195,12 @@ class FlatTuple
   explicit FlatTuple(T... t) : FlatTuple::FlatTupleBase(std::move(t)...) {}
 
   template <size_t I>
-  const typename ElemFromList<I, Indices, T...>::type& Get() const {
+  const typename ElemFromList<I, FlatTuple::FlatTupleBase::Indices, T...>::type& Get() const {
     return static_cast<const FlatTupleElemBase<FlatTuple, I>*>(this)->value;
   }
 
   template <size_t I>
-  typename ElemFromList<I, Indices, T...>::type& Get() {
+  typename ElemFromList<I, FlatTuple::FlatTupleBase::Indices, T...>::type& Get() {
     return static_cast<FlatTupleElemBase<FlatTuple, I>*>(this)->value;
   }
 };
