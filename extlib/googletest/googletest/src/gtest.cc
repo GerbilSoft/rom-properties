@@ -84,7 +84,6 @@
 # undef min
 
 # include <crtdbg.h>  // NOLINT
-# include <debugapi.h>  // NOLINT
 # include <io.h>  // NOLINT
 # include <sys/timeb.h>  // NOLINT
 # include <sys/types.h>  // NOLINT
