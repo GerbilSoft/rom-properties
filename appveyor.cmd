@@ -1,15 +1,15 @@
 @ECHO OFF
 cmake --version
 
-if "%compiler%" == "msvc2013" goto :msvc2013
+if "%compiler%" == "msvc2015" goto :msvc2015
 if "%compiler%" == "mingw-w64" goto :mingw-w64
 echo *** ERROR: Unsupported compiler '%compiler%'.
 exit /b 1
 
-:msvc2013
+:msvc2015
 set PreferredToolArchitecture=x64
-set "CMAKE_GENERATOR=Visual Studio 12 2013"
-set CMAKE_GENERATOR_TOOLSET=v120_xp
+set "CMAKE_GENERATOR=Visual Studio 14 2015"
+set CMAKE_GENERATOR_TOOLSET=v140_xp
 if "%platform%" == "x64" set "CMAKE_GENERATOR=%CMAKE_GENERATOR% Win64"
 mkdir build
 cd build
