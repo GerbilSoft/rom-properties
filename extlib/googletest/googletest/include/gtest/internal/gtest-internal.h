@@ -1185,22 +1185,19 @@ template <typename... T>
 class FlatTuple
     : private FlatTupleBase<FlatTuple<T...>,
                             typename MakeIndexSequence<sizeof...(T)>::type> {
-  // rom-properties: MSVC 2013 doesn't support this form of using statement.
-#if !defined(_MSC_VER) || _MSC_VER >= 1900
   using Indices = typename FlatTuple::FlatTupleBase::Indices;
-#endif
 
  public:
   FlatTuple() = default;
   explicit FlatTuple(T... t) : FlatTuple::FlatTupleBase(std::move(t)...) {}
 
   template <size_t I>
-  const typename ElemFromList<I, FlatTuple::FlatTupleBase::Indices, T...>::type& Get() const {
+  const typename ElemFromList<I, Indices, T...>::type& Get() const {
     return static_cast<const FlatTupleElemBase<FlatTuple, I>*>(this)->value;
   }
 
   template <size_t I>
-  typename ElemFromList<I, FlatTuple::FlatTupleBase::Indices, T...>::type& Get() {
+  typename ElemFromList<I, Indices, T...>::type& Get() {
     return static_cast<FlatTupleElemBase<FlatTuple, I>*>(this)->value;
   }
 };
@@ -1210,27 +1207,27 @@ class FlatTuple
 GTEST_INTERNAL_DEPRECATED(
     "INSTANTIATE_TEST_CASE_P is deprecated, please use "
     "INSTANTIATE_TEST_SUITE_P")
-GTEST_CONSTEXPR bool InstantiateTestCase_P_IsDeprecated() { return true; }
+constexpr bool InstantiateTestCase_P_IsDeprecated() { return true; }
 
 GTEST_INTERNAL_DEPRECATED(
     "TYPED_TEST_CASE_P is deprecated, please use "
     "TYPED_TEST_SUITE_P")
-GTEST_CONSTEXPR bool TypedTestCase_P_IsDeprecated() { return true; }
+constexpr bool TypedTestCase_P_IsDeprecated() { return true; }
 
 GTEST_INTERNAL_DEPRECATED(
     "TYPED_TEST_CASE is deprecated, please use "
     "TYPED_TEST_SUITE")
-GTEST_CONSTEXPR bool TypedTestCaseIsDeprecated() { return true; }
+constexpr bool TypedTestCaseIsDeprecated() { return true; }
 
 GTEST_INTERNAL_DEPRECATED(
     "REGISTER_TYPED_TEST_CASE_P is deprecated, please use "
     "REGISTER_TYPED_TEST_SUITE_P")
-GTEST_CONSTEXPR bool RegisterTypedTestCase_P_IsDeprecated() { return true; }
+constexpr bool RegisterTypedTestCase_P_IsDeprecated() { return true; }
 
 GTEST_INTERNAL_DEPRECATED(
     "INSTANTIATE_TYPED_TEST_CASE_P is deprecated, please use "
     "INSTANTIATE_TYPED_TEST_SUITE_P")
-GTEST_CONSTEXPR bool InstantiateTypedTestCase_P_IsDeprecated() { return true; }
+constexpr bool InstantiateTypedTestCase_P_IsDeprecated() { return true; }
 
 }  // namespace internal
 }  // namespace testing

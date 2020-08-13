@@ -926,7 +926,7 @@ int FuchsiaDeathTest::Wait() {
       GTEST_DEATH_TEST_CHECK_(ZX_PKT_IS_SIGNAL_ONE(packet.type));
       if (packet.signal.observed & ZX_SOCKET_READABLE) {
         // Read data from the socket.
-        GTEST_CONSTEXPR size_t kBufferSize = 1024;
+        constexpr size_t kBufferSize = 1024;
         do {
           size_t old_length = captured_stderr_.length();
           size_t bytes_read = 0;

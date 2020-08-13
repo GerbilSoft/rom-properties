@@ -78,10 +78,6 @@ macro(config_compiler_and_linker)
     set(cxx_exception_flags "-EHsc -D_HAS_EXCEPTIONS=1")
     set(cxx_no_exception_flags "-EHs-c- -D_HAS_EXCEPTIONS=0")
     set(cxx_no_rtti_flags "-GR-")
-    # rom-properties: Remove -WX for MSVC 2013 and earlier.
-    IF(MSVC_VERSION LESS 1900)
-      STRING(REPLACE "-WX" "" cxx_base_flags "${cxx_base_flags}")
-    ENDIF()
     # Suppress "unreachable code" warning
     # http://stackoverflow.com/questions/3232669 explains the issue.
     set(cxx_base_flags "${cxx_base_flags} -wd4702")

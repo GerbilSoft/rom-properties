@@ -833,7 +833,7 @@ class CartesianProductGenerator
         return;
       }
 
-      GTEST_CONSTEXPR size_t NextI = ThisI - (ThisI != 0);
+      constexpr size_t NextI = ThisI - (ThisI != 0);
       std::get<ThisI>(current_) = std::get<ThisI>(begin_);
       ++std::get<NextI>(current_);
       AdvanceIfEnd<NextI>();
