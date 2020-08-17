@@ -4,7 +4,9 @@
 
 * New parser features:
   * Dreamcast: Added metadata properties.
-  * NintendoDS: Use the full title in metadata properties if available.
+  * NintendoDS:
+    * Use the full title in metadata properties if available.
+    * Indicate the specific Security Data that's present.
   * Nintendo3DSFirm: Added some more homebrews and show sighax status.
 
 * Bug fixes:
