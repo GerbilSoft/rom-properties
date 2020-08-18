@@ -753,7 +753,7 @@ vector<RomData::ImageSizeDef> DMG::supportedImageSizes(ImageType imageType) cons
 			};
 
 			// If this game supports SGB but not CGB, we'll have an SGB border.
-			RP_D(DMG);
+			RP_D(const DMG);
 			const uint32_t dmg_system = d->systemID();
 			if (dmg_system & DMGPrivate::DMG_SYSTEM_SGB) {
 				if (!(dmg_system & DMGPrivate::DMG_SYSTEM_CGB)) {
