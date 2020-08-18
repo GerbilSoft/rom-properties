@@ -18,6 +18,8 @@
   * Win32: Register Previewdetails and InfoTip per extension instead of
     using a ProgID. Using a ProgID breaks .cmd files on Windows 8.
     * This fixes issue #242, reported by @mariomadproductions.
+  * DMG: SRAM bank size is 8 KB, not 16 KB.
+    * This fixes issue #246, reported by @Icesythe7.
 
 * Other changes:
   * Linux: A system-wide cache directory (/usr/share/rom-properties/cache)

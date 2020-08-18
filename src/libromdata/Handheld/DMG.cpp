@@ -954,7 +954,7 @@ int DMG::loadFieldData(void)
 			d->fields->addField_string(ram_size_title, C_("DMG", "No RAM"));
 		} else {
 			if (ram_size > 8) {
-				const int banks = ram_size / 16;
+				const int banks = ram_size / 8;
 				d->fields->addField_string(ram_size_title,
 					rp_sprintf_p(NC_("DMG", "%1$u KiB (%2$u bank)", "%1$u KiB (%2$u banks)", banks),
 						static_cast<unsigned int>(ram_size),
