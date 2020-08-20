@@ -1,4 +1,7 @@
 EXPORTS
+    DllMain
+    __imp_gl_get_setlocale_null_lock DATA
+    __imp_libintl_version DATA
     __printf__
     _nl_expand_alias
     _nl_explode_name
@@ -62,6 +65,7 @@ EXPORTS
     libintl_vprintf
     libintl_vsnprintf
     libintl_vsprintf
+    libintl_wbindtextdomain
     locale_charset
     ngettext
     setlocale_null

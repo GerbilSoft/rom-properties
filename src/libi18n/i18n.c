@@ -42,17 +42,10 @@ int rp_i18n_init(void)
 {
 	// Windows: Use the application-specific locale directory.
 	DWORD dwResult, dwAttrs;
-	int ret;
 	TCHAR tpathname[MAX_PATH+16];
-#ifndef UNICODE
-	wchar_t wpathname[MAX_PATH+16];
-#else
-# define wpathname tpathname
-#endif
-	char u8pathname[MAX_PATH+16];
 
 	TCHAR *bs;
-	const char *base;
+	LPCTSTR base;
 
 	// Get the current module filename.
 	// NOTE: Delay-load only supports ANSI module names.
@@ -109,25 +102,12 @@ int rp_i18n_init(void)
 
 	// Found the locale subdirectory.
 	// Bind the gettext domain.
-	// NOTE: The bundled copy of gettext supports UTF-8 paths.
-	// Results with other versions may vary.
-
-#ifndef UNICODE
-	// Convert the pathname from ANSI to UTF-16 first.
-	ret = MultiByteToWideChar(CP_ACP, 0, tpathname, -1, wpathname, ARRAY_SIZE(wpathname));
-	if (ret <= 0) {
-		// Error converting the pathname.
-		return -1;
-	}
-#endif /* !UNICODE */
-	// Convert the pathname from UTF-16 to UTF-8.
-	ret = WideCharToMultiByte(CP_UTF8, 0, wpathname, -1, u8pathname, ARRAY_SIZE(u8pathname), NULL, NULL);
-	if (ret <= 0) {
-		// Error converting the pathname.
-		return -1;
-	}
-
-	base = bindtextdomain(RP_I18N_DOMAIN, u8pathname);
+	// NOTE: gettext-0.21 supports Unicode paths using wbindtextdomain().
+#ifdef UNICODE
+	base = wbindtextdomain(RP_I18N_DOMAIN, tpathname);
+#else /* !UNICODE */
+	base = bindtextdomain(RP_I18N_DOMAIN, tpathname);
+#endif /* UNICODE */
 	if (!base) {
 		// bindtextdomain() failed.
 		return -1;

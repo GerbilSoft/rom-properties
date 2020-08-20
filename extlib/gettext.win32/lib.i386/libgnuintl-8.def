@@ -64,6 +64,7 @@ EXPORTS
     libintl_vprintf
     libintl_vsnprintf
     libintl_vsprintf
+    libintl_wbindtextdomain
     locale_charset
     ngettext
     setlocale_null

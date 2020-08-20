@@ -69,7 +69,7 @@ extern "C" {
 
 
 /* Version number: (major<<16) + (minor<<8) + subminor */
-#define LIBINTL_VERSION 0x001402
+#define LIBINTL_VERSION 0x001500
 extern LIBINTL_DLL_EXPORTED __declspec (dllimport) int libintl_version;
 
 
@@ -304,6 +304,27 @@ static inline char *bindtextdomain (const char *__domainname,
 #endif
 extern LIBINTL_DLL_EXPORTED char * INTLCALL bindtextdomain (const char *__domainname, const char *__dirname)
        _INTL_ASM (libintl_bindtextdomain);
+#endif
+
+#if defined _WIN32 && !defined __CYGWIN__
+/* Specify that the DOMAINNAME message catalog will be found
+   in WDIRNAME rather than in the system locale data base.  */
+#ifdef _INTL_REDIRECT_INLINE
+extern LIBINTL_DLL_EXPORTED wchar_t * INTLCALL libintl_wbindtextdomain (const char *__domainname,
+                                         const wchar_t *__wdirname);
+static inline wchar_t *wbindtextdomain (const char *__domainname,
+                                        const wchar_t *__wdirname)
+{
+  return libintl_wbindtextdomain (__domainname, __wdirname);
+}
+#else
+#ifdef _INTL_REDIRECT_MACROS
+# define wbindtextdomain libintl_wbindtextdomain
+#endif
+extern LIBINTL_DLL_EXPORTED wchar_t * INTLCALL wbindtextdomain (const char *__domainname,
+                                 const wchar_t *__wdirname)
+       _INTL_ASM (libintl_wbindtextdomain);
+#endif
 #endif
 
 /* Specify the character encoding in which the messages from the
