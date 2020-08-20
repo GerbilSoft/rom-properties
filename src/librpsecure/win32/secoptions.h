@@ -9,8 +9,6 @@
 #ifndef __ROMPROPERTIES_LIBRPSECURE_WIN32_SECOPTIONS_H__
 #define __ROMPROPERTIES_LIBRPSECURE_WIN32_SECOPTIONS_H__
 
-#include <windows.h>
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -21,7 +19,7 @@ extern "C" {
  * @param bHighSec If non-zero, enable high security for unprivileged processes.
  * @return 0 on success; negative POSIX error code on error.
  */
-int rp_secure_win32_secoptions_init(BOOL bHighSec);
+int rp_secure_win32_secoptions_init(int bHighSec);
 
 #ifdef __cplusplus
 }

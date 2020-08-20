@@ -41,7 +41,7 @@ case "$OSTYPE" in
 			-DBUILD_XFCE=ON \
 			-DBUILD_GTK3=ON \
 			\
-			-DUSE_SECCOMP=OFF \
+			-DENABLE_EXTRA_SECURITY=OFF \
 			-DENABLE_JPEG=OFF \
 			-DENABLE_XML=OFF \
 			-DENABLE_DECRYPTION=OFF \
@@ -60,10 +60,8 @@ LC_ALL="en_US.UTF8" ctest -V || RET=1
 LC_ALL="fr_FR.UTF8" ctest -V || RET=1
 
 # Second build with optional components enabled.
-# NOTE: Seccomp is Linux only, so a warning will be printed
-# on other platforms.
 cmake .. \
-	-DUSE_SECCOMP=ON \
+	-DENABLE_EXTRA_SECURITY=ON \
 	-DENABLE_JPEG=ON \
 	-DENABLE_XML=ON \
 	-DENABLE_DECRYPTION=ON \

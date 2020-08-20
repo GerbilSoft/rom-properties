@@ -19,7 +19,7 @@ int rpcli_do_security_options(void)
 	// Set OS-specific security options.
 	rp_secure_param_t param;
 #if defined(_WIN32)
-	param.bHighSec = FALSE;
+	param.bHighSec = 0;
 #elif defined(HAVE_SECCOMP)
 	static const int syscall_wl[] = {
 		// Syscalls used by rp-download.
@@ -89,5 +89,6 @@ int rpcli_do_security_options(void)
 #else
 	param.dummy = 0;
 #endif
+
 	return rp_secure_enable(param);
 }

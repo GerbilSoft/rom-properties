@@ -9,6 +9,10 @@
 #ifndef __ROMPROPERTIES_LIBRPSECURE_WIN32_INTEGRITY_LEVEL_H__
 #define __ROMPROPERTIES_LIBRPSECURE_WIN32_INTEGRITY_LEVEL_H__
 
+#include "config.librpsecure.h"
+
+#ifdef ENABLE_EXTRA_SECURITY
+
 #include <windows.h>
 
 #ifdef __cplusplus
@@ -47,5 +51,7 @@ DWORD SetProcessIntegrityLevel(int level);
 #ifdef __cplusplus
 }
 #endif
+
+#endif /* ENABLE_EXTRA_SECURITY */
 
 #endif /* __ROMPROPERTIES_LIBRPSECURE_WIN32_INTEGRITY_LEVEL_H__ */

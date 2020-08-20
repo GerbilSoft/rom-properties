@@ -21,7 +21,7 @@
 /* Define to 1 if you have the Linux `seccomp` library. */
 #cmakedefine HAVE_SECCOMP 1
 
-/* Define to 1 to enable seccomp debugging. */
-#cmakedefine ENABLE_SECCOMP_DEBUG 1
+/* Define to 1 to enable extra security functionality. */
+#cmakedefine ENABLE_EXTRA_SECURITY 1
 
 #endif /* __ROMPROPERTIES_LIBRPSECURE_CONFIG_H__ */

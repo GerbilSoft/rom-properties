@@ -8,48 +8,48 @@ IF(POLICY CMP0063)
 ENDIF(POLICY CMP0063)
 PROJECT(librpsecure LANGUAGES C)
 
-IF(CMAKE_SYSTEM_NAME STREQUAL "Linux")
-	OPTION(USE_SECCOMP "Use libseccomp filters in rp-download and rpcli." ON)
-	OPTION(ENABLE_SECCOMP_DEBUG "Enable libseccomp debugging." OFF)
-ELSE()
-	SET(USE_SECCOMP OFF CACHE INTERNAL "Use libseccomp filters in rp-download and rpcli." FORCE)
-	SET(ENABLE_SECCOMP_DEBUG OFF CACHE INTERNAL "Enable libseccomp debugging." FORCE)
-ENDIF()
+OPTION(ENABLE_EXTRA_SECURITY "Enable extra security functionality if available." ON)
 
-IF(WIN32)
-	SET(librpsecure_SRCS
-		win32/integrity_level.c
-		win32/secoptions.c
-		)
-	SET(librpsecure_H
-		os-secure.h
-		win32/integrity_level.h
-		win32/secoptions.h
-		win32/secoptions_win8.h
-		)
-	SET(librpsecure_OS_SRCS os-secure_win32.c)
-ELSEIF(UNIX AND NOT APPLE)
-	# Check for system security functionality.
-	IF(USE_SECCOMP)
-		# Linux: Use seccomp().
-		FIND_PACKAGE(SECCOMP REQUIRED)
-		IF(SECCOMP_FOUND)
-			SET(librpsecure_OS_SRCS os-secure_linux.c)
-			IF(ENABLE_SECCOMP_DEBUG)
-				SET(librpsecure_OS_SRCS ${librpsecure_OS_SRCS} seccomp-debug.c)
-				SET(librpsecure_OS_H ${librpsecure_OS_H} seccomp-debug.h)
-			ENDIF(ENABLE_SECCOMP_DEBUG)
-			SET(HAVE_SECCOMP 1)
-		ENDIF(SECCOMP_FOUND)
-	ELSE()
-		# OpenBSD: Use pledge()/tame().
-		INCLUDE(CheckOpenBSDPledge)
-		CHECK_OPENBSD_PLEDGE()
-		IF(HAVE_PLEDGE OR HAVE_TAME)
-			SET(librpsecure_OS_SRCS os-secure_openbsd.c)
+IF(ENABLE_EXTRA_SECURITY)
+	IF(WIN32)
+		SET(librpsecure_SRCS
+			win32/integrity_level.c
+			win32/secoptions.c
+			)
+		SET(librpsecure_H
+			os-secure.h
+			win32/integrity_level.h
+			win32/secoptions.h
+			win32/secoptions_win8.h
+			)
+		SET(librpsecure_OS_SRCS os-secure_win32.c)
+		SET(SECURITY_MECHANISM_int "Win32 API")
+	ELSEIF(UNIX AND NOT APPLE)
+		# Check for system security functionality.
+		IF(CMAKE_SYSTEM MATCHES "Linux")
+			# Linux: Use seccomp().
+			FIND_PACKAGE(SECCOMP REQUIRED)
+			IF(SECCOMP_FOUND)
+				SET(librpsecure_OS_SRCS os-secure_linux.c seccomp-debug.c)
+				SET(librpsecure_OS_H seccomp-debug.h)
+				SET(HAVE_SECCOMP 1)
+				SET(SECURITY_MECHANISM_int "seccomp()")
+			ENDIF(SECCOMP_FOUND)
+		ELSE()
+			# OpenBSD: Use pledge()/tame().
+			INCLUDE(CheckOpenBSDPledge)
+			CHECK_OPENBSD_PLEDGE()
+			IF(HAVE_PLEDGE)
+				SET(librpsecure_OS_SRCS os-secure_openbsd.c)
+				SET(SECURITY_MECHANISM_int "pledge()")
+			ELSEIF(HAVE_TAME)
+				SET(librpsecure_OS_SRCS os-secure_openbsd.c)
+				SET(SECURITY_MECHANISM_int "tame()")
+			ENDIF()
 		ENDIF()
 	ENDIF()
-ENDIF()
+ENDIF(ENABLE_EXTRA_SECURITY)
+SET(SECURITY_MECHANISM "${SECURITY_MECHANISM_int}" CACHE INTERNAL "Security mechanism" FORCE)
 
 IF(NOT librpsecure_OS_SRCS)
 	# TODO: Add support for other systems.
@@ -73,9 +73,11 @@ INCLUDE(SetMSVCDebugPath)
 SET_MSVC_DEBUG_PATH(rpsecure)
 # Exclude from ALL builds.
 SET_TARGET_PROPERTIES(rpsecure PROPERTIES EXCLUDE_FROM_ALL TRUE)
-IF(USE_SECCOMP AND SECCOMP_FOUND)
-	TARGET_LINK_LIBRARIES(rpsecure PUBLIC Seccomp::seccomp)
-ENDIF(USE_SECCOMP AND SECCOMP_FOUND)
+IF(ENABLE_EXTRA_SECURITY)
+	IF(CMAKE_SYSTEM MATCHES "Linux" AND SECCOMP_FOUND)
+		TARGET_LINK_LIBRARIES(rpsecure PUBLIC Seccomp::seccomp)
+	ENDIF(CMAKE_SYSTEM MATCHES "Linux" AND SECCOMP_FOUND)
+ENDIF(ENABLE_EXTRA_SECURITY)
 
 TARGET_INCLUDE_DIRECTORIES(rpsecure
 	PUBLIC  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>		# librpsecure

@@ -9,6 +9,8 @@
 #ifndef __ROMPROPERTIES_LIBRPSECURE_SECCOMP_DEBUG_H__
 #define __ROMPROPERTIES_LIBRPSECURE_SECCOMP_DEBUG_H__
 
+#ifndef NDEBUG
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -22,5 +24,7 @@ void seccomp_debug_install_sigsys(void);
 #ifdef __cplusplus
 }
 #endif
+
+#endif /* !NDEBUG */
 
 #endif /* __ROMPROPERTIES_LIBRPSECURE_SECCOMP_DEBUG_H__ */

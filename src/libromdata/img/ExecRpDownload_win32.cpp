@@ -66,6 +66,7 @@ int CacheManager::execRpDownload(const string &filteredCacheKey)
 	memset(&pi, 0, sizeof(pi));
 	si.cb = sizeof(si);
 
+#ifdef ENABLE_EXTRA_SECURITY
 	// Attempt to create a low-integrity token.
 	HANDLE hLowToken = CreateIntegrityLevelToken(SECURITY_MANDATORY_LOW_RID);
 	if (hLowToken) {
@@ -83,7 +84,9 @@ int CacheManager::execRpDownload(const string &filteredCacheKey)
 			&si,				// lpStartupInfo
 			&pi);				// lpProcessInformation
 		CloseHandle(hLowToken);
-	} else {
+	} else
+#endif /* ENABLE_EXTRA_SECURITY */
+	{
 		// Unable to create a low-integrity token.
 		// Create the process normally.
 		bRet = CreateProcess(

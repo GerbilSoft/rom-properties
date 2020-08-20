@@ -18,6 +18,7 @@
 #include <stdlib.h>
 
 // Windows includes.
+#include <windows.h>
 #include <sdkddkver.h>
 #include <winternl.h>
 #include <tchar.h>
@@ -213,7 +214,7 @@ out:
  * @param bHighSec If non-zero, enable high security for unprivileged processes.
  * @return 0 on success; negative POSIX error code on error.
  */
-int rp_secure_win32_secoptions_init(BOOL bHighSec)
+int rp_secure_win32_secoptions_init(int bHighSec)
 {
 	OSVERSIONINFO osvi;
 	HMODULE hKernel32;
