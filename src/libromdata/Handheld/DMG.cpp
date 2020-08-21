@@ -552,19 +552,27 @@ DMG::DMG(IRpFile *file)
 	// Seek to the beginning of the header.
 	d->file->rewind();
 
-	// Read the ROM header. [0x150 bytes]
-	uint8_t header[0x150];
-	size_t size = d->file->read(header, sizeof(header));
-	if (size != sizeof(header)) {
+	// Read the ROM header.
+	// We're reading extra data in case the ROM has an extra
+	// 512-byte copier header present.
+	union {
+		uint8_t   u8[ 0x300 + sizeof(d->romHeader)];
+		uint32_t u32[(0x300 + sizeof(d->romHeader))/4];
+	} header;
+	size_t size = d->file->read(header.u8, sizeof(header.u8));
+	if (size < (0x100 + sizeof(d->romHeader))) {
 		UNREF_AND_NULL_NOCHK(d->file);
 		return;
+	}
+	if (size < sizeof(header.u8)) {
+		memset(&header.u8[size], 0, sizeof(header)-size);
 	}
 
 	// Check if this ROM is supported.
 	DetectInfo info;
 	info.header.addr = 0;
-	info.header.size = sizeof(header);
-	info.header.pData = header;
+	info.header.size = size;
+	info.header.pData = header.u8;
 	info.ext = nullptr;	// Not needed for DMG.
 	info.szFile = 0;	// Not needed for DMG.
 	d->romType = static_cast<DMGPrivate::RomType>(isRomSupported_static(&info));
@@ -573,7 +581,14 @@ DMG::DMG(IRpFile *file)
 	if (d->isValid) {
 		// Save the header for later.
 		// TODO: Save the RST table?
-		memcpy(&d->romHeader, &header[0x100], sizeof(d->romHeader));
+
+		// Check the first DWORD of the Nintendo logo
+		// to determine if a copier header is present.
+		if (likely(header.u32[0x104/4] == cpu_to_be32(0xCEED6666))) {
+			memcpy(&d->romHeader, &header.u8[0x100], sizeof(d->romHeader));
+		} else {
+			memcpy(&d->romHeader, &header.u8[0x300], sizeof(d->romHeader));
+		}
 	} else {
 		UNREF_AND_NULL_NOCHK(d->file);
 		return;
@@ -617,23 +632,53 @@ int DMG::isRomSupported_static(const DetectInfo *info)
 		return static_cast<int>(DMGPrivate::RomType::Unknown);
 	}
 
-	// Check the system name.
-	DMGPrivate::RomType romType;
-	const DMG_RomHeader *const romHeader =
+	// Check for the ROM header at 0x100. (standard location)
+	const DMG_RomHeader *romHeader =
 		reinterpret_cast<const DMG_RomHeader*>(&info->header.pData[0x100]);
-	if (!memcmp(romHeader->nintendo, DMGPrivate::dmg_nintendo, sizeof(DMGPrivate::dmg_nintendo))) {
-		// Found a DMG ROM.
+	if (!memcmp(romHeader->nintendo, DMGPrivate::dmg_nintendo,
+	     sizeof(DMGPrivate::dmg_nintendo)))
+	{
+		// Found at the standard location.
+		DMGPrivate::RomType romType;
 		if (romHeader->cgbflag & 0x80) {
 			romType = DMGPrivate::RomType::CGB; // CGB supported
 		} else {
 			romType = DMGPrivate::RomType::DMG;
 		}
-	} else {
-		// Not supported.
-		romType = DMGPrivate::RomType::Unknown;
+		return (int)romType;
 	}
 
-	return static_cast<int>(romType);
+	// Not found at the standard location.
+
+	// A few DMG ROMs have a 512-byte copier header, similar to
+	// Super Magic Drive (MD) and Super Wild Card (SNES).
+	// The header is sometimes missing the identification bytes
+	// (0xAA, 0xBB), so we'll just check for zero bytes.
+	if (info->header.size >= 0x300 + sizeof(DMG_RomHeader)) {
+		const uint32_t *const pData32 =
+			reinterpret_cast<const uint32_t*>(info->header.pData);
+		if (pData32[0x10/4] == 0 && pData32[0x14/4] == 0 &&
+		    pData32[0x18/4] == 0 && pData32[0x1C/4] == 0)
+		{
+			// Check the headered location.
+			romHeader = reinterpret_cast<const DMG_RomHeader*>(&info->header.pData[0x300]);
+			if (!memcmp(romHeader->nintendo, DMGPrivate::dmg_nintendo,
+			     sizeof(DMGPrivate::dmg_nintendo)))
+			{
+				// Found at the headered location.
+				DMGPrivate::RomType romType;
+				if (romHeader->cgbflag & 0x80) {
+					romType = DMGPrivate::RomType::CGB; // CGB supported
+				} else {
+					romType = DMGPrivate::RomType::DMG;
+				}
+				return (int)romType;
+			}
+		}
+	}
+
+	// Not supported.
+	return (int)DMGPrivate::RomType::Unknown;
 }
 
 /**

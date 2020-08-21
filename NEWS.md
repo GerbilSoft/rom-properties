@@ -8,6 +8,7 @@
     * Use the full title in metadata properties if available.
     * Indicate the specific Security Data that's present.
   * Nintendo3DSFirm: Added some more homebrews and show sighax status.
+  * DMG: Added support for ROMs with 512-byte copier headers.
 
 * Bug fixes:
   * PlayStationDisc:
