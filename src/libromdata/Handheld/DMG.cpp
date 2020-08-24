@@ -1311,20 +1311,7 @@ int DMG::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
 
 	// DMG ROM header, excluding the RST table.
 	const DMG_RomHeader *const romHeader = &d->romHeader;
-
-	enum DmgFlags {
-		DMG_REGION_JP		= 0,
-		DMG_REGION_OTHER	= (1 << 0),
-		DMG_REGION_MASK		= (1 << 0),
-
-		DMG_CHECK_REGION	= (1 << 1),	// Check region in the exception list.
-		DMG_IS_CGB		= (1 << 2),
-	};
 	const uint32_t dmg_system = d->systemID();
-	uint8_t dmg_flags = (romHeader->region != 0);
-	if (dmg_system & DMGPrivate::DMG_SYSTEM_CGB) {
-		dmg_flags |= DMG_IS_CGB;
-	}
 
 	// We'll need to append global checksums in cases where
 	// we don't have a game ID and the title collides with
@@ -1352,7 +1339,7 @@ int DMG::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
 	string img_subdir;
 	const Config *const config = Config::instance();
 	Config::DMG_TitleScreen_Mode cfg_rom;
-	if (dmg_flags & DMG_IS_CGB) {
+	if (dmg_system & DMGPrivate::DMG_SYSTEM_CGB) {
 		cfg_rom = Config::DMG_TitleScreen_Mode::DMG_TS_CGB;
 	} else if (dmg_system & DMGPrivate::DMG_SYSTEM_SGB) {
 		cfg_rom = Config::DMG_TitleScreen_Mode::DMG_TS_SGB;
@@ -1396,7 +1383,7 @@ int DMG::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
 
 	if (s_gameID.empty()) {
 		// No game ID.
-		if (dmg_flags & DMG_IS_CGB) {
+		if (dmg_system & DMGPrivate::DMG_SYSTEM_CGB) {
 			// CGB has subdirectories for the region byte.
 			// This game doesn't have a game ID, so use "NoID".
 			img_subdir += "/NoID";
@@ -1445,120 +1432,114 @@ int DMG::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
 			img_filename += '-';
 			img_filename += pbcode;
 		}
-		if ((dmg_flags & DMG_REGION_MASK) == DMG_REGION_JP) {
+		if (romHeader->region == 0) {
 			img_filename += "-J";
 		}
 
 		// Special cases for ROM images with identical titles.
 		struct DmgSpecialCase_t {
-			uint8_t flags;
 			char title[17];
 			char publisher[3];
 		};
-		static const DmgSpecialCase_t dmgSpecialCases[] = {
-			// Non-CGB; Non-JP
-			{DMG_CHECK_REGION | DMG_REGION_OTHER,	"DONKEYKONGLAND 3", ""},
-			{DMG_CHECK_REGION | DMG_REGION_OTHER,	"POKEMON RED", ""},
-			{DMG_CHECK_REGION | DMG_REGION_OTHER,	"POKEMON BLUE", ""},
-			{DMG_CHECK_REGION | DMG_REGION_OTHER,	"TRACK MEET", ""},
-			{DMG_CHECK_REGION | DMG_REGION_OTHER,	"COOL SPOT", ""},
-			{DMG_CHECK_REGION | DMG_REGION_OTHER,	"SOLOMON'S CLUB", ""},
-			{DMG_CHECK_REGION | DMG_REGION_OTHER,	"BIONIC-COMMANDO", ""},
-			{DMG_CHECK_REGION | DMG_REGION_OTHER,	"OBELIX", ""},
-			{DMG_CHECK_REGION | DMG_REGION_OTHER,	"THE SWORD OFHOPE", "7F"},
-			{DMG_CHECK_REGION | DMG_REGION_OTHER,	"PAC-MAN", "AF"},
-			{DMG_CHECK_REGION | DMG_REGION_OTHER,	"THE LION KING", ""},
-			{DMG_CHECK_REGION | DMG_REGION_OTHER,	"CAESARS PALACE", "61"},
-			{DMG_CHECK_REGION | DMG_REGION_OTHER,	"MOTOCROSSMANIACS", ""},
-			{DMG_CHECK_REGION | DMG_REGION_OTHER,	"MYSTIC QUEST", ""},
-			{DMG_CHECK_REGION | DMG_REGION_OTHER,	"SPY VS SPY", "7F"},
-			{DMG_CHECK_REGION | DMG_REGION_OTHER,	"DUCK TALES", ""},
-			{DMG_CHECK_REGION | DMG_REGION_OTHER,	"DIG DUG", ""},
-			{DMG_CHECK_REGION | DMG_REGION_OTHER,	"NFL QUARTERBACK", "56"},
-			{DMG_CHECK_REGION | DMG_REGION_OTHER,	"DENNIS", "67"},
-			{DMG_CHECK_REGION | DMG_REGION_OTHER,	"TAZMANIA", "78"},
-			{DMG_CHECK_REGION | DMG_REGION_OTHER,	"SNOW BROS.JR", ""},
-			{DMG_CHECK_REGION | DMG_REGION_OTHER,	"LOST WORLD", "78"},
-			{DMG_CHECK_REGION | DMG_REGION_OTHER,	"SUPER HUNCHBACK", "67"},
-			{DMG_CHECK_REGION | DMG_REGION_OTHER,	"TESSERAE", "54"},
 
-			// Non-CGB; JP
-			{DMG_CHECK_REGION | DMG_REGION_JP,	"GBWARST", ""},
-			{DMG_CHECK_REGION | DMG_REGION_JP,	"SAGA", "C3"},
+		// Non-CGB, Non-JP cases.
+		// NOTE: Linux is case-sensitive; Windows is not.
+		static const DmgSpecialCase_t dmgSpecialCases_NoCGB_NoJP[] = {
+			{"BIONIC-COMMANDO", ""},
+			{"BOKEMOB BLUE", ""},
+			{"CAESARS PALACE", "61"},
+			{"COKEMON BLUE", ""},
+			{"COOL SPOT", ""},
+			{"DENNIS", "67"},
+			{"DIG DUG", ""},
+			{"DIG DUG+  ASG", ""},		// Other hacks
+			{"DONKEYKONGLAND 3", ""},
+			{"DUCK TALES", ""},
+			{"DUCK TALES+ ASG", ""},	// Other hacks
+			{"GALAGA&GALAXIAN", "01"},	// TM vs. (R); different CGB colorization
+			{"LOST WORLD", "78"},
+			{"MOTOCROSS+  ASG", ""},	// Other hacks
+			{"MOTOCROSSMANIACS", ""},
+			{"MYSTIC QUEST", ""},
+			{"NFL QUARTERBACK", "56"},
+			{"OBELIX", ""},
+			{"PAC-MAN", "AF"},
+			{"PKMN Generations", ""},
+			{"POKEMON AQUA", ""},
+			{"POKEMON BLUE", ""},
+			{"POKEMON RED", ""},
+			{"Pokemon Blue", ""},
+			{"Pokemon Red", ""},
+			{"SGBPACK", "01"},		// Unl
+			{"SNOW BROS.JR", ""},
+			{"SOLOMON'S CLUB", ""},
+			{"SPY VS SPY", "7F"},
+			{"SUPER HUNCHBACK", "67"},
+			{"TAZMANIA", "78"},
+			{"TESSERAE", "54"},
+			{"THE LION KING", ""},
+			{"THE SWORD OFHOPE", "7F"},
+			{"TOM AND JERRY", ""},
+			{"TRACK MEET", ""},
+			{"Zelda Colour", ""},		// Other hacks
 
-			// Non-CGB; JP (Sachen)
-			// TODO: "TETRIS" ROMs have the same global checksum.
-			{DMG_CHECK_REGION | DMG_REGION_JP,	"GAME", ""},
-
-			// Non-CGB; Non-JP (Pokémon hacks)
-			{DMG_CHECK_REGION | DMG_REGION_OTHER,	"BOKEMOB BLUE", ""},
-			{DMG_CHECK_REGION | DMG_REGION_OTHER,	"COKEMON BLUE", ""},
-			{DMG_CHECK_REGION | DMG_REGION_OTHER,	"PKMN Generations", ""},
-			{DMG_CHECK_REGION | DMG_REGION_OTHER,	"POKEMON AQUA", ""},
-			// NOTE: Linux is case-sensitive; Windows is not.
-			{DMG_CHECK_REGION | DMG_REGION_OTHER,	"Pokemon Red", ""},
-			{DMG_CHECK_REGION | DMG_REGION_OTHER,	"Pokemon Blue", ""},
-
-			// Non-CGB; JP (Pokémon hacks)
-			{DMG_CHECK_REGION | DMG_REGION_JP,	"POCKET MONSTERS", ""},
-			{DMG_CHECK_REGION | DMG_REGION_JP,	"POCKETMON", ""},
-
-			// Non-CGB; Non-JP (other hacks)
-			{DMG_CHECK_REGION | DMG_REGION_OTHER,	"MOTOCROSS+  ASG", ""},
-			{DMG_CHECK_REGION | DMG_REGION_OTHER,	"DUCK TALES+ ASG", ""},
-			{DMG_CHECK_REGION | DMG_REGION_OTHER,	"DIG DUG+  ASG", ""},
-			{DMG_CHECK_REGION | DMG_REGION_OTHER,	"Zelda Colour", ""},
-
-			// CGB; Non-JP
-			{DMG_CHECK_REGION | DMG_REGION_OTHER | DMG_IS_CGB,	"BUGS BUNNY", ""},
-			{DMG_CHECK_REGION | DMG_REGION_OTHER | DMG_IS_CGB,	"COOL HAND", ""},
-			{DMG_CHECK_REGION | DMG_REGION_OTHER | DMG_IS_CGB,	"SHADOWGATE CLAS", ""},
-			{DMG_CHECK_REGION | DMG_REGION_OTHER | DMG_IS_CGB,	"SHANGHAI POCKET", ""},
-			{DMG_CHECK_REGION | DMG_REGION_OTHER | DMG_IS_CGB,	"SYLVESTER", ""},
-			{DMG_CHECK_REGION | DMG_REGION_OTHER | DMG_IS_CGB,	"ZELDA", ""},
-
-			// CGB; both JP and non-JP
-			{DMG_CHECK_REGION | DMG_REGION_OTHER | DMG_IS_CGB,	"HARVEST-MOON GB", ""},
-			{DMG_CHECK_REGION | DMG_REGION_JP | DMG_IS_CGB,		"HARVEST-MOON GB", ""},
-
-			// CGB: Non-JP (other hacks)
-			{DMG_CHECK_REGION | DMG_REGION_OTHER | DMG_IS_CGB,	"ZELDA PL", ""},
-
-			// Non-CGB, Non-JP; TM vs. (R); different CGB colorization
-			{DMG_CHECK_REGION | DMG_REGION_OTHER,	"GALAGA&GALAXIAN", "01"},
-
-			// Non-CGB; no region check.
-			{0, "TOM AND JERRY", ""},
-
-			// Unlicensed DMG titles.
-			{DMG_CHECK_REGION | DMG_REGION_JP,			"MENU", "00"},
-			{DMG_CHECK_REGION | DMG_REGION_JP,			"TEST", "00"},
-			{DMG_CHECK_REGION | DMG_REGION_OTHER,			"SGBPACK", "01"},
-
-			// Unlicensed CGB titles.
-			{DMG_CHECK_REGION | DMG_REGION_OTHER | DMG_IS_CGB,	"GB SMART CARD", ""},
-			{DMG_CHECK_REGION | DMG_REGION_JP | DMG_IS_CGB,		"DIGIMON 5", "MK"},
-			{DMG_CHECK_REGION | DMG_REGION_JP | DMG_IS_CGB,		"METAL SLUG 2", "01"},
-
-			{0, "", ""}
+			{"", ""}
 		};
-		for (const DmgSpecialCase_t *p = dmgSpecialCases; p->title[0] != '\0'; p++) {
-			const uint8_t xor_flags = (p->flags ^ dmg_flags);
 
-			// Check the CGB flag.
-			if (xor_flags & DMG_IS_CGB) {
-				// CGB flag does not match.
-				continue;
-			}
+		// Non-CGB, JP cases.
+		static const DmgSpecialCase_t dmgSpecialCases_NoCGB_JP[] = {
+			// TODO: Sachen "TETRIS" ROMs have the same global checksum.
+			{"GAME", ""},			// Sachen
+			{"GBWARST", ""},
+			{"MENU", "00"},			// Unl
+			{"POCKET MONSTERS", ""},
+			{"POCKETMON", ""},
+			{"SAGA", "C3"},
+			{"TEST", "00"},			// Unl
+			{"TOM AND JERRY", ""},
 
-			if (p->flags & DMG_CHECK_REGION) {
-				// Check the region flag.
-				if (xor_flags & DMG_REGION_MASK) {
-					// Region flag does not match.
-					continue;
-				}
-			}
+			{"", ""}
+		};
 
+		// CGB, Non-JP cases.
+		static const DmgSpecialCase_t dmgSpecialCases_CGB_NoJP[] = {
+			{"BUGS BUNNY", ""},
+			{"COOL HAND", ""},
+			{"GB SMART CARD", ""},	// Unl
+			{"HARVEST-MOON GB", ""},
+			{"SHADOWGATE CLAS", ""},
+			{"SHANGHAI POCKET", ""},
+			{"SYLVESTER", ""},
+			{"ZELDA PL", ""},
+			{"ZELDA", ""},
+
+			{"", ""}
+		};
+
+		// CGB, JP cases.
+		static const DmgSpecialCase_t dmgSpecialCases_CGB_JP[] = {
+			{"DIGIMON 5", "MK"},	// CGB
+			{"HARVEST-MOON GB", ""},
+			{"METAL SLUG 2", "01"},	// CGB
+
+			{"", ""}
+		};
+
+		// Determine which set of special cases to use.
+		const DmgSpecialCase_t *p;
+		if (dmg_system & DMGPrivate::DMG_SYSTEM_CGB) {
+			// CGB
+			p = (romHeader->region != 0)
+				? dmgSpecialCases_CGB_NoJP
+				: dmgSpecialCases_CGB_JP;
+		} else {
+			// Non-CGB
+			p = (romHeader->region != 0)
+				? dmgSpecialCases_NoCGB_NoJP
+				: dmgSpecialCases_NoCGB_JP;
+		}
+
+		for (; p->title[0] != '\0'; p++) {
 			// Check the title.
 			if (s_title == p->title) {
 				// Title matches.
