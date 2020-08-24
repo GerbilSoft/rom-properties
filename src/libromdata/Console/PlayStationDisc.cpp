@@ -218,6 +218,7 @@ int PlayStationDiscPrivate::loadSystemCnf(IsoPartition *pt)
 	size_t size = f_system_cnf->read(buf, 2048);
 	if (size != static_cast<size_t>(fileSize)) {
 		// Short read.
+		f_system_cnf->unref();
 		return -EIO;
 	}
 	buf[static_cast<size_t>(fileSize)] = '\0';
@@ -226,6 +227,7 @@ int PlayStationDiscPrivate::loadSystemCnf(IsoPartition *pt)
 	// TODO: Fail on error?
 	ini_parse_string(buf, parse_system_cnf, this);
 
+	f_system_cnf->unref();
 	return (!system_cnf.empty() ? 0 : -EIO);
 }
 
