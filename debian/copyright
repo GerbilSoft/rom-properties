@@ -144,6 +144,11 @@ Copyright: (c) Imagination Technologies Ltd.
 License: MIT
 
 Files:
+ extlib/rapidjson/*
+Copyright: Copyright (C) 2015 THL A29 Limited, a Tencent company, and Milo Yip.
+License: MIT
+
+Files:
  extlib/zstd/*
 Copyright: 2016-present, Facebook, Inc.
 License: BSD-3-clause
