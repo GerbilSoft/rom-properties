@@ -30,6 +30,12 @@ using std::vector;
 #include "librptexture/img/rp_image.hpp"
 using LibRpTexture::rp_image;
 
+// rapidjson
+#include "rapidjson/document.h"
+#include "rapidjson/ostreamwrapper.h"
+#include "rapidjson/writer.h"
+using namespace rapidjson;
+
 namespace LibRpBase {
 
 class JSONString {
@@ -369,117 +375,119 @@ std::ostream& operator<<(std::ostream& os, const JSONROMOutput& fo) {
 	assert(systemName != nullptr);
 	assert(fileType != nullptr);
 
-	os << "{\"system\":";
-	if (systemName) {
-		os << JSONString(systemName);
-	} else {
-		os << "\"unknown\"";
-	}
-	os << ",\"filetype\":";
-	if (fileType) {
-		os << JSONString(fileType);
-	} else {
-		os << "\"unknown\"";
-	}
+	Document document;
+	document.SetObject();	// document should be an object, not an array
+	Document::AllocatorType& allocator = document.GetAllocator();
+	document.AddMember("system", StringRef(systemName ? systemName : "unknown"), allocator);
+	document.AddMember("filetype", StringRef(fileType ? fileType : "unknown"), allocator);
+
+#if 0
+	// Fields.
 	const RomFields *const fields = romdata->fields();
 	assert(fields != nullptr);
 	if (fields) {
 		os << ",\"fields\":" << JSONFieldsOutput(*fields);
 	}
+#endif
 
-	const int supported = romdata->supportedImageTypes();
+	// Internal images.
+	const uint32_t imgbf = romdata->supportedImageTypes();
+	if (imgbf != 0) {
+		Value imgint_array(kArrayType);	// imgint
 
-	// TODO: Tabs.
-	bool first = true;
-	for (int i = RomData::IMG_INT_MIN; i <= RomData::IMG_INT_MAX; i++) {
-		if (!(supported & (1U << i)))
-			continue;
+		for (int i = RomData::IMG_INT_MIN; i <= RomData::IMG_INT_MAX; i++) {
+			if (!(imgbf & (1U << i)))
+				continue;
 
-		if (first) {
-			os << ",\n\"imgint\":[";
-			first = false;
-		} else {
-			os << ',';
-		}
+			auto image = romdata->image((RomData::ImageType)i);
+			if (!image || !image->isValid())
+				continue;
 
-		os << "{\"type\":" << JSONString(RomData::getImageTypeName((RomData::ImageType)i));
-		auto image = romdata->image((RomData::ImageType)i);
-		if (image && image->isValid()) {
-			os << ",\"format\":" << JSONString(rp_image::getFormatName(image->format()));
-			os << ",\"size\":[" << image->width() << ',' << image->height() << ']';
-			int ppf = romdata->imgpf((RomData::ImageType) i);
+			Value imgint_obj(kObjectType);
+			imgint_obj.AddMember("type", StringRef(RomData::getImageTypeName((RomData::ImageType)i)), allocator);
+			imgint_obj.AddMember("format", StringRef(rp_image::getFormatName(image->format())), allocator);
+
+			Value sizebuf_val;
+			char sizebuf[32];
+			int snret = snprintf(sizebuf, sizeof(sizebuf), "%d,%d", image->width(), image->height());
+			sizebuf_val.SetString(sizebuf, snret, allocator);
+			imgint_obj.AddMember("size", sizebuf_val, allocator);
+
+			const uint32_t ppf = romdata->imgpf((RomData::ImageType)i);
 			if (ppf) {
-				os << ",\"postprocessing\":" << ppf;
+				imgint_obj.AddMember("postprocessing", ppf, allocator);
 			}
+
 			if (ppf & RomData::IMGPF_ICON_ANIMATED) {
 				auto animdata = romdata->iconAnimData();
 				if (animdata) {
-					os << ",\"frames\":" << animdata->count;
-					os << ",\"sequence\":[";
+					imgint_obj.AddMember("frames", animdata->count, allocator);
+
+					Value animseq(kArrayType);	// sequence
 					for (int j = 0; j < animdata->seq_count; j++) {
-						if (j) os << ',';
-						os << (unsigned)animdata->seq_index[j];
+						animseq.PushBack((unsigned)animdata->seq_index[j], allocator);
 					}
-					os << "],\"delay\":[";
+					imgint_obj.AddMember("sequence", animseq, allocator);
+
+					Value animdelay(kArrayType);	// delay
 					for (int j = 0; j < animdata->seq_count; j++) {
-						if (j) os << ',';
-						os << animdata->delays[j].ms;
+						animdelay.PushBack(animdata->delays[j].ms, allocator);
 					}
-					os << ']';
+					imgint_obj.AddMember("delay", animdelay, allocator);
 				}
 			}
+
+			imgint_array.PushBack(imgint_obj, allocator);
 		}
-		os << '}';
-	}
-	if (!first) {
-		os << ']';
-	}
-
-	first = true;
-	vector<RomData::ExtURL> extURLs;
-	for (int i = RomData::IMG_EXT_MIN; i <= RomData::IMG_EXT_MAX; i++) {
-		if (!(supported & (1U << i)))
-			continue;
-
-		// NOTE: extURLs may be empty even though the class supports it.
-		// Check extURLs before doing anything else.
-
-		extURLs.clear();	// NOTE: May not be needed...
-		// TODO: Customize the image size parameter?
-		// TODO: Option to retrieve supported image size?
-		int ret = romdata->extURLs((RomData::ImageType)i, &extURLs, RomData::IMAGE_SIZE_DEFAULT);
-		if (ret != 0 || extURLs.empty())
-			continue;
-
-		if (first) {
-			os << ",\n\"imgext\":[";
-			first = false;
-		} else {
-			os << ',';
+		if (!imgint_array.Empty()) {
+			document.AddMember("imgint", imgint_array, allocator);
 		}
 
-		os << "{\"type\":" << JSONString(RomData::getImageTypeName((RomData::ImageType)i));
-		int ppf = romdata->imgpf((RomData::ImageType) i);
-		if (ppf) {
-			os << ",\"postprocessing\":" << ppf;
-		}
+		// External images.
 		// NOTE: IMGPF_ICON_ANIMATED won't ever appear in external image
-		os << ",\"exturls\":[";
-		bool did_one = false;
-		for (auto iter = extURLs.cbegin(); iter != extURLs.cend(); ++iter) {
-			if (did_one) os << ',';
-			did_one = true;
+		Value imgext_array(kArrayType);	// imgext
+		vector<RomData::ExtURL> extURLs;
+		for (int i = RomData::IMG_EXT_MIN; i <= RomData::IMG_EXT_MAX; i++) {
+			if (!(imgbf & (1U << i)))
+				continue;
 
-			os << "{\"url\":" << JSONString(urlPartialUnescape(iter->url).c_str());
-			os << ",\"cache_key\":" << JSONString(iter->cache_key.c_str()) << '}';
+			// NOTE: extURLs may be empty even though the class supports it.
+			// Check extURLs before doing anything else.
+
+			extURLs.clear();	// NOTE: May not be needed...
+			// TODO: Customize the image size parameter?
+			// TODO: Option to retrieve supported image size?
+			int ret = romdata->extURLs((RomData::ImageType)i, &extURLs, RomData::IMAGE_SIZE_DEFAULT);
+			if (ret != 0 || extURLs.empty())
+				continue;
+
+			Value imgext_obj(kObjectType);
+			imgext_obj.AddMember("type", StringRef(RomData::getImageTypeName((RomData::ImageType)i)), allocator);
+
+			Value exturls_obj(kObjectType);
+			for (auto iter = extURLs.cbegin(); iter != extURLs.cend(); ++iter) {
+				Value url_val;
+				const string url_str = urlPartialUnescape(iter->url);
+				url_val.SetString(url_str.data(), url_str.size(), allocator);
+				exturls_obj.AddMember("url", url_val, allocator);
+
+				Value cache_key_val;
+				cache_key_val.SetString(iter->cache_key.data(), iter->cache_key.size(), allocator);
+				exturls_obj.AddMember("cache_key", cache_key_val, allocator);
+			}
+			imgext_obj.AddMember("exturls", exturls_obj, allocator);
+			imgext_array.PushBack(imgext_obj, allocator);
 		}
-		os << "]}";
-	}
-	if (!first) {
-		os << ']';
+		if (!imgext_array.Empty()) {
+			document.AddMember("imgext", imgext_array, allocator);
+		}
 	}
 
-	return os << '}';
+	OStreamWrapper oswr(os);
+	Writer<OStreamWrapper> writer(oswr);
+	document.Accept(writer);
+
+	return os;
 }
 
 }
