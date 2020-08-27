@@ -89,276 +89,309 @@ public:
 	}
 };
 
+template<typename Allocator>
 class JSONFieldsOutput {
 	const RomFields& fields;
 public:
 	explicit JSONFieldsOutput(const RomFields& fields) :fields(fields) {}
-	friend std::ostream& operator<<(std::ostream& os, const JSONFieldsOutput& fo) {
-		os << "[\n";
-		bool printed_first = false;
-		const auto iter_end = fo.fields.cend();
-		for (auto iter = fo.fields.cbegin(); iter != iter_end; ++iter) {
+
+	void writeToJSON(Value &fields_array, Allocator &allocator)
+	{
+		const auto iter_end = fields.cend();
+		for (auto iter = fields.cbegin(); iter != iter_end; ++iter) {
 			const auto &romField = *iter;
 			if (!romField.isValid)
 				continue;
 
-			if (printed_first)
-				os << ',' << endl;
+			Value field_obj(kObjectType);	// field
 
 			switch (romField.type) {
-			case RomFields::RFT_INVALID: {
-				assert(!"INVALID field type");
-				os << "{\"type\":\"INVALID\"}";
-				break;
-			}
-
-			case RomFields::RFT_STRING: {
-				os << "{\"type\":\"STRING\",\"desc\":{\"name\":" << JSONString(romField.name.c_str())
-				   << ",\"format\":" << romField.desc.flags
-				   << "},\"data\":" << JSONString(romField.data.str->c_str()) << '}';
-				break;
-			}
-
-			case RomFields::RFT_BITFIELD: {
-				const auto &bitfieldDesc = romField.desc.bitfield;
-				os << "{\"type\":\"BITFIELD\",\"desc\":{\"name\":" << JSONString(romField.name.c_str())
-				   << ",\"elementsPerRow\":" << bitfieldDesc.elemsPerRow
-				   << ",\"names\":";
-				assert(bitfieldDesc.names != nullptr);
-				if (bitfieldDesc.names) {
-					os << '[';
-					unsigned int count = static_cast<unsigned int>(bitfieldDesc.names->size());
-					assert(count <= 32);
-					if (count > 32)
-						count = 32;
-					bool printedOne = false;
-					const auto iter_end = bitfieldDesc.names->cend();
-					for (auto iter = bitfieldDesc.names->cbegin(); iter != iter_end; ++iter) {
-						const string &name = *iter;
-						if (name.empty())
-							continue;
-
-						if (printedOne) os << ',';
-						printedOne = true;
-						os << JSONString(name.c_str());
-					}
-					os << ']';
-				} else {
-					os << "\"ERROR\"";
-				}
-				os << "},\"data\":" << romField.data.bitfield << '}';
-				break;
-			}
-
-			case RomFields::RFT_LISTDATA: {
-				const auto &listDataDesc = romField.desc.list_data;
-				os << "{\"type\":\"LISTDATA\",\"desc\":{\"name\":" << JSONString(romField.name.c_str());
-
-				if (listDataDesc.names) {
-					os << ",\"names\":[";
-					const unsigned int col_count = static_cast<unsigned int>(listDataDesc.names->size());
-					if (listDataDesc.flags & RomFields::RFT_LISTDATA_CHECKBOXES) {
-						// TODO: Better JSON schema for RFT_LISTDATA_CHECKBOXES?
-						os << "checked,";
-					}
-					for (unsigned int j = 0; j < col_count; j++) {
-						if (j) os << ',';
-						os << JSONString(listDataDesc.names->at(j).c_str());
-					}
-					os << ']';
-				} else {
-					os << ",\"names\":[]";
-				}
-
-				os << "},\"data\":";
-				if (!(listDataDesc.flags & RomFields::RFT_LISTDATA_MULTI)) {
-					// Single-language ListData.
-					os << "[\n";
-					const auto list_data = romField.data.list_data.data.single;
-					assert(list_data != nullptr);
-					if (list_data) {
-						uint32_t checkboxes = romField.data.list_data.mxd.checkboxes;
-						for (auto it = list_data->cbegin(); it != list_data->cend(); ++it) {
-							if (it != list_data->cbegin()) os << ",\n";
-							os << "\t[";
-							if (listDataDesc.flags & RomFields::RFT_LISTDATA_CHECKBOXES) {
-								// TODO: Better JSON schema for RFT_LISTDATA_CHECKBOXES?
-								os << ((checkboxes & 1) ? "true" : "false") << ',';
-								checkboxes >>= 1;
-							}
-
-							bool did_one = false;
-							for (auto jt = it->cbegin(); jt != it->cend(); ++jt) {
-								if (did_one) os << ',';
-								did_one = true;
-								os << JSONString(jt->c_str());
-							}
-							os << ']';
-						}
-						if (!list_data->empty()) {
-							os << '\n';
-						}
-					}
-					os << "]";
-				} else {
-					// Multi-language ListData.
-					os << "{\n";
-					const auto *const list_data = romField.data.list_data.data.multi;
-					assert(list_data != nullptr);
-					if (list_data) {
-						for (auto mapIter = list_data->cbegin(); mapIter != list_data->cend(); ++mapIter) {
-							// Key: Language code
-							// Value: Vector of string data
-							if (mapIter != list_data->cbegin()) os << ",\n";
-							os << "\t\"";
-							for (uint32_t lc = mapIter->first; lc != 0; lc <<= 8) {
-								char chr = (char)(lc >> 24);
-								if (chr != 0) {
-									os << chr;
-								}
-							}
-							os << "\":[";
-							// TODO: Consolidate single/multi here?
-							const auto &lc_data = mapIter->second;
-							if (!lc_data.empty()) {
-								os << '\n';
-								uint32_t checkboxes = romField.data.list_data.mxd.checkboxes;
-								for (auto lcIter = lc_data.cbegin(); lcIter != lc_data.cend(); ++lcIter) {
-									if (lcIter != lc_data.cbegin()) os << ",\n";
-									os << "\t\t[";
-									if (listDataDesc.flags & RomFields::RFT_LISTDATA_CHECKBOXES) {
-										// TODO: Better JSON schema for RFT_LISTDATA_CHECKBOXES?
-										os << ((checkboxes & 1) ? "true" : "false") << ',';
-										checkboxes >>= 1;
-									}
-
-									bool did_one = false;
-									for (auto jt = lcIter->cbegin(); jt != lcIter->cend(); ++jt) {
-										if (did_one) os << ',';
-										did_one = true;
-										os << JSONString(jt->c_str());
-									}
-									os << ']';
-								}
-								if (!lc_data.empty()) {
-									os << '\n';
-								}
-							}
-							os << "\t]";
-						}
-						if (!list_data->empty()) {
-							os << '\n';
-						}
-					}
-					os << '}';
-				}
-				os << '}';
-				break;
-			}
-
-			case RomFields::RFT_DATETIME: {
-				os << "{\"type\":\"DATETIME\",\"desc\":{\"name\":" << JSONString(romField.name.c_str())
-				   << ",\"flags\":" << romField.desc.flags
-				   << "},\"data\":" << romField.data.date_time
-				   << '}';
-				break;
-			}
-
-			case RomFields::RFT_AGE_RATINGS: {
-				os << "{\"type\":\"AGE_RATINGS\",\"desc\":{\"name\":" << JSONString(romField.name.c_str())
-				   << "},\"data\":";
-
-				const RomFields::age_ratings_t *age_ratings = romField.data.age_ratings;
-				assert(age_ratings != nullptr);
-				if (!age_ratings) {
-					os << "\"ERROR\"}";
+				case RomFields::RFT_INVALID: {
+					assert(!"INVALID field type");
+					field_obj.AddMember("type", "INVALID", allocator);
 					break;
 				}
 
-				os << '[';
-				bool printedOne = false;
-				const unsigned int age_ratings_max = static_cast<unsigned int>(age_ratings->size());
-				for (unsigned int j = 0; j < age_ratings_max; j++) {
-					const uint16_t rating = age_ratings->at(j);
-					if (!(rating & RomFields::AGEBF_ACTIVE))
-						continue;
+				case RomFields::RFT_STRING: {
+					field_obj.AddMember("type", "STRING", allocator);
 
-					if (printedOne) {
-						// Append a comma.
-						os << ',';
-					}
-					printedOne = true;
+					Value desc_obj(kObjectType);	// desc
+					desc_obj.AddMember("name", StringRef(romField.name), allocator);
+					desc_obj.AddMember("format", romField.desc.flags, allocator);
+					field_obj.AddMember("desc", desc_obj, allocator);
 
-					os << "{\"name\":";
-					const char *const abbrev = RomFields::ageRatingAbbrev(j);
-					if (abbrev) {
-						os << '"' << abbrev << '"';
+					field_obj.AddMember("data", StringRef(*(romField.data.str)), allocator);
+					break;
+				}
+
+				case RomFields::RFT_BITFIELD: {
+					field_obj.AddMember("type", "BITFIELD", allocator);
+					const auto &bitfieldDesc = romField.desc.bitfield;
+
+					Value desc_obj(kObjectType);	// desc
+					desc_obj.AddMember("name", StringRef(romField.name), allocator);
+					desc_obj.AddMember("elementsPerRow", bitfieldDesc.elemsPerRow, allocator);
+
+					assert(bitfieldDesc.names != nullptr);
+					if (bitfieldDesc.names) {
+						Value names_array(kArrayType);	// names
+						unsigned int count = static_cast<unsigned int>(bitfieldDesc.names->size());
+						assert(count <= 32);
+						if (count > 32)
+							count = 32;
+						const auto iter_end = bitfieldDesc.names->cend();
+						for (auto iter = bitfieldDesc.names->cbegin(); iter != iter_end; ++iter) {
+							const string &name = *iter;
+							if (name.empty())
+								continue;
+
+							names_array.PushBack(StringRef(name), allocator);
+						}
+						if (!names_array.Empty()) {
+							desc_obj.AddMember("names", names_array, allocator);
+						} else {
+							desc_obj.AddMember("names", "ERROR", allocator);
+						}
 					} else {
-						// Invalid age rating.
-						// Use the numeric index.
-						os << j;
+						desc_obj.AddMember("names", "ERROR", allocator);
 					}
-					os << ",\"rating\":\""
-					   << RomFields::ageRatingDecode(j, rating)
-					   << "\"}";
+
+					field_obj.AddMember("desc", desc_obj, allocator);
+					field_obj.AddMember("data", romField.data.bitfield, allocator);
+					break;
 				}
-				os << "]}";
-				break;
-			}
 
-			case RomFields::RFT_DIMENSIONS: {
-				os << "{\"type\":\"DIMENSIONS\",\"desc\":{\"name\":" << JSONString(romField.name.c_str())
-				   << "},\"data\":";
+				case RomFields::RFT_LISTDATA: {
+					field_obj.AddMember("type", "LISTDATA", allocator);
+					const auto &listDataDesc = romField.desc.list_data;
 
-				const int *const dimensions = romField.data.dimensions;
-				os << "{\"w\":" << dimensions[0];
-				if (dimensions[1] > 0) {
-					os << ",\"h\":" << dimensions[1];
-					if (dimensions[2] > 0) {
-						os << ",\"d\":" << dimensions[2];
-					}
-				}
-				os << "}}";
-				break;
-			}
+					Value desc_obj(kObjectType);	// desc
+					desc_obj.AddMember("name", StringRef(romField.name), allocator);
 
-			case RomFields::RFT_STRING_MULTI: {
-				// TODO: Act like RFT_STRING if there's only one language?
-				os << "{\"type\":\"STRING_MULTI\",\"desc\":{\"name\":" << JSONString(romField.name.c_str())
-				   << ",\"format\":" << romField.desc.flags
-				   << "},\"data\":{\n";
-				const auto *const pStr_multi = romField.data.str_multi;
-				bool didFirst = false;
-				for (auto iter = pStr_multi->cbegin(); iter != pStr_multi->cend(); ++iter) {
-					// Convert the language code to ASCII.
-					if (didFirst) {
-						os << ",\n";
-					}
-					didFirst = true;
-					os << "\t\"";
-					for (uint32_t lc = iter->first; lc != 0; lc <<= 8) {
-						char chr = (char)(lc >> 24);
-						if (chr != 0) {
-							os << chr;
+					Value names_array(kArrayType);	// names
+					if (listDataDesc.names) {
+						if (listDataDesc.flags & RomFields::RFT_LISTDATA_CHECKBOXES) {
+							// TODO: Better JSON schema for RFT_LISTDATA_CHECKBOXES?
+							names_array.PushBack("checked", allocator);
+						}
+						for (auto iter = listDataDesc.names->cbegin();
+						     iter != listDataDesc.names->cend(); ++iter)
+						{
+							const string &name = *iter;
+							names_array.PushBack(StringRef(name), allocator);
 						}
 					}
-					os << "\":" << JSONString(iter->second.c_str());
+					desc_obj.AddMember("names", names_array, allocator);
+					field_obj.AddMember("desc", desc_obj, allocator);
+
+					if (!(listDataDesc.flags & RomFields::RFT_LISTDATA_MULTI)) {
+						// Single-language ListData.
+						Value data_array(kArrayType);	// data
+						const auto list_data = romField.data.list_data.data.single;
+						assert(list_data != nullptr);
+						if (!list_data) {
+							// No data...
+							field_obj.AddMember("data", "ERROR", allocator);
+							break;
+						}
+
+						uint32_t checkboxes = romField.data.list_data.mxd.checkboxes;
+						for (auto it = list_data->cbegin(); it != list_data->cend(); ++it) {
+							Value row_array(kArrayType);
+							if (listDataDesc.flags & RomFields::RFT_LISTDATA_CHECKBOXES) {
+								// TODO: Better JSON schema for RFT_LISTDATA_CHECKBOXES?
+								row_array.PushBack((checkboxes & 1) ? true : false, allocator);
+								checkboxes >>= 1;
+							}
+
+							for (auto jt = it->cbegin(); jt != it->cend(); ++jt) {
+								row_array.PushBack(StringRef(*jt), allocator);
+							}
+
+							data_array.PushBack(row_array, allocator);
+						}
+
+						field_obj.AddMember("data", data_array, allocator);
+					} else {
+						// Multi-language ListData.
+						Value data_obj(kObjectType);	// data
+						const auto *const list_data = romField.data.list_data.data.multi;
+						assert(list_data != nullptr);
+						if (!list_data) {
+							// No data...
+							field_obj.AddMember("data", "ERROR", allocator);
+							break;
+						}
+
+						for (auto mapIter = list_data->cbegin(); mapIter != list_data->cend(); ++mapIter) {
+							// Key: Language code
+							// Value: Vector of string data
+							char s_lc[8];
+							int s_lc_pos = 0;
+							for (uint32_t lc = mapIter->first; lc != 0; lc <<= 8) {
+								char chr = (char)(lc >> 24);
+								if (chr != 0) {
+									s_lc[s_lc_pos++] = chr;
+								}
+							}
+							s_lc[s_lc_pos] = '\0';
+
+							Value s_lc_name;
+							s_lc_name.SetString(s_lc, s_lc_pos, allocator);
+
+							Value lc_array(kArrayType);	// language data
+							// TODO: Consolidate single/multi here?
+							const auto &lc_data = mapIter->second;
+							if (lc_data.empty()) {
+								// No data...
+								data_obj.AddMember(s_lc_name, "ERROR", allocator);
+								continue;
+							}
+
+							uint32_t checkboxes = romField.data.list_data.mxd.checkboxes;
+							for (auto lcIter = lc_data.cbegin(); lcIter != lc_data.cend(); ++lcIter) {
+								Value row_array(kArrayType);
+								if (listDataDesc.flags & RomFields::RFT_LISTDATA_CHECKBOXES)
+								{
+									// TODO: Better JSON schema for RFT_LISTDATA_CHECKBOXES?
+									row_array.PushBack((checkboxes & 1) ? true : false, allocator);
+									checkboxes >>= 1;
+								}
+
+								for (auto jt = lcIter->cbegin(); jt != lcIter->cend(); ++jt) {
+									row_array.PushBack(StringRef(*jt), allocator);
+								}
+
+								lc_array.PushBack(row_array, allocator);
+							}
+
+							data_obj.AddMember(s_lc_name, lc_array, allocator);
+						}
+
+						field_obj.AddMember("data", data_obj, allocator);
+					}
+
+					field_obj.AddMember("desc", desc_obj, allocator);
+					break;
 				}
-				os << "\n}}";
-				break;
+
+				case RomFields::RFT_DATETIME: {
+					field_obj.AddMember("type", "DATETIME", allocator);
+
+					Value desc_obj(kObjectType);	// desc
+					desc_obj.AddMember("name", StringRef(romField.name), allocator);
+					desc_obj.AddMember("flags", romField.desc.flags, allocator);
+					field_obj.AddMember("desc", desc_obj, allocator);
+
+					field_obj.AddMember("data", romField.data.date_time, allocator);
+					break;
+				}
+
+				case RomFields::RFT_AGE_RATINGS: {
+					field_obj.AddMember("type", "AGE_RATINGS", allocator);
+
+					Value desc_obj(kObjectType);	// desc
+					desc_obj.AddMember("name", StringRef(romField.name), allocator);
+					field_obj.AddMember("desc", desc_obj, allocator);
+
+					const RomFields::age_ratings_t *age_ratings = romField.data.age_ratings;
+					assert(age_ratings != nullptr);
+					if (!age_ratings) {
+						field_obj.AddMember("data", "ERROR", allocator);
+						break;
+					}
+
+					Value data_array(kArrayType);	// data
+					const unsigned int age_ratings_max = static_cast<unsigned int>(age_ratings->size());
+					for (unsigned int j = 0; j < age_ratings_max; j++) {
+						const uint16_t rating = age_ratings->at(j);
+						if (!(rating & RomFields::AGEBF_ACTIVE))
+							continue;
+
+						Value rating_obj(kObjectType);
+						const char *const abbrev = RomFields::ageRatingAbbrev(j);
+						if (abbrev) {
+							rating_obj.AddMember("name", StringRef(abbrev), allocator);
+						} else {
+							// Invalid age rating.
+							// Use the numeric index.
+							rating_obj.AddMember("name", j, allocator);
+						}
+
+						const string s_age_rating = RomFields::ageRatingDecode(j, rating);
+						Value rating_val;
+						rating_val.SetString(s_age_rating, allocator);
+						rating_obj.AddMember("rating", rating_val, allocator);
+
+						data_array.PushBack(rating_obj, allocator);
+					}
+
+					field_obj.AddMember("data", data_array, allocator);
+					break;
+				}
+
+				case RomFields::RFT_DIMENSIONS: {
+					field_obj.AddMember("type", "DIMENSIONS", allocator);
+
+					const int *const dimensions = romField.data.dimensions;
+					Value data_obj(kObjectType);	// data
+					data_obj.AddMember("w", dimensions[0], allocator);
+					if (dimensions[1] > 0) {
+						data_obj.AddMember("h", dimensions[1], allocator);
+						if (dimensions[2] > 0) {
+							data_obj.AddMember("d", dimensions[2], allocator);
+						}
+					}
+					field_obj.AddMember("data", data_obj, allocator);
+					break;
+				}
+
+				case RomFields::RFT_STRING_MULTI: {
+					// TODO: Act like RFT_STRING if there's only one language?
+					field_obj.AddMember("type", "STRING_MULTI", allocator);
+
+					Value desc_obj(kObjectType);	// desc
+					desc_obj.AddMember("name", StringRef(romField.name), allocator);
+					desc_obj.AddMember("format", romField.desc.flags, allocator);
+					field_obj.AddMember("desc", desc_obj, allocator);
+
+					Value data_obj(kObjectType);	// data
+					const auto *const pStr_multi = romField.data.str_multi;
+					for (auto iter = pStr_multi->cbegin(); iter != pStr_multi->cend(); ++iter) {
+						// Convert the language code to ASCII.
+						char s_lc[8];
+						int s_lc_pos = 0;
+						for (uint32_t lc = iter->first; lc != 0; lc <<= 8) {
+							char chr = (char)(lc >> 24);
+							if (chr != 0) {
+								s_lc[s_lc_pos++] = chr;
+							}
+						}
+						s_lc[s_lc_pos] = '\0';
+
+						Value s_lc_name;
+						s_lc_name.SetString(s_lc, s_lc_pos, allocator);
+
+						data_obj.AddMember(s_lc_name, StringRef(iter->second), allocator);
+					}
+
+					field_obj.AddMember("data", data_obj, allocator);
+					break;
+				}
+
+				default: {
+					assert(!"Unknown RomFieldType");
+					field_obj.AddMember("type", "NYI", allocator);
+
+					Value desc_obj(kObjectType);	// desc
+					desc_obj.AddMember("name", StringRef(romField.name), allocator);
+					field_obj.AddMember("desc", desc_obj, allocator);
+					break;
+				}
 			}
 
-			default: {
-				assert(!"Unknown RomFieldType");
-				os << "{\"type\":\"NYI\",\"desc\":{\"name\":" << JSONString(romField.name.c_str()) << "}}";
-				break;
-			}
-			}
-
-			printed_first = true;
+			fields_array.PushBack(field_obj, allocator);
 		}
-		os << ']';
-		return os;
 	}
 };
 
@@ -381,14 +414,16 @@ std::ostream& operator<<(std::ostream& os, const JSONROMOutput& fo) {
 	document.AddMember("system", StringRef(systemName ? systemName : "unknown"), allocator);
 	document.AddMember("filetype", StringRef(fileType ? fileType : "unknown"), allocator);
 
-#if 0
 	// Fields.
 	const RomFields *const fields = romdata->fields();
 	assert(fields != nullptr);
 	if (fields) {
-		os << ",\"fields\":" << JSONFieldsOutput(*fields);
+		Value fields_array(kArrayType);	// fields
+		JSONFieldsOutput<Document::AllocatorType>(*fields).writeToJSON(fields_array, allocator);
+		if (!fields_array.Empty()) {
+			document.AddMember("fields", fields_array, allocator);
+		}
 	}
-#endif
 
 	// Internal images.
 	const uint32_t imgbf = romdata->supportedImageTypes();

@@ -304,19 +304,22 @@ TARGET_INCLUDE_DIRECTORIES(rpbase
 		$<BUILD_INTERFACE:${CMAKE_BINARY_DIR}>			# build
 		${RAPIDJSON_INCLUDE_DIRS}				# rapidjson
 	)
-IF(NOT ZLIB_LIBRARY)
-	MESSAGE(FATAL_ERROR "ZLIB_LIBRARY has not been set by CheckZLIB.cmake.")
-ENDIF(NOT ZLIB_LIBRARY)
-TARGET_LINK_LIBRARIES(rpbase PRIVATE ${ZLIB_LIBRARY})
-IF(MSVC)
-	TARGET_LINK_LIBRARIES(rpbase PRIVATE delayimp)
-ENDIF(MSVC)
 # Exclude from ALL builds.
 SET_TARGET_PROPERTIES(rpbase PROPERTIES EXCLUDE_FROM_ALL TRUE)
 # Make sure git_version.h is created before compiling this target.
 IF(TARGET git_version)
 	ADD_DEPENDENCIES(rpbase git_version)
 ENDIF(TARGET git_version)
+
+IF(MSVC)
+	# Delay-load implementation.
+	TARGET_LINK_LIBRARIES(rpbase PRIVATE delayimp)
+ENDIF(MSVC)
+
+IF(NOT ZLIB_LIBRARY)
+	MESSAGE(FATAL_ERROR "ZLIB_LIBRARY has not been set by CheckZLIB.cmake.")
+ENDIF(NOT ZLIB_LIBRARY)
+TARGET_LINK_LIBRARIES(rpbase PRIVATE ${ZLIB_LIBRARY})
 
 # Link in libdl if it's required for dlopen()
 # and we have a component that uses it.
@@ -363,6 +366,9 @@ IF(SCSI_LIBRARY)
 	# An extra library is needed for SCSI support.
 	TARGET_LINK_LIBRARIES(rpbase PRIVATE ${SCSI_LIBRARY})
 ENDIF(SCSI_LIBRARY)
+
+# rapidjson: Enable std::string support.
+ADD_DEFINITIONS(-DRAPIDJSON_HAS_STDSTRING)
 
 IF(ENABLE_NLS)
 	TARGET_LINK_LIBRARIES(rpbase PRIVATE i18n)
