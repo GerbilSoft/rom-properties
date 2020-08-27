@@ -33,7 +33,7 @@ using LibRpTexture::rp_image;
 // rapidjson
 #include "rapidjson/document.h"
 #include "rapidjson/ostreamwrapper.h"
-#include "rapidjson/writer.h"
+#include "rapidjson/prettywriter.h"
 using namespace rapidjson;
 
 namespace LibRpBase {
@@ -484,7 +484,7 @@ std::ostream& operator<<(std::ostream& os, const JSONROMOutput& fo) {
 	}
 
 	OStreamWrapper oswr(os);
-	Writer<OStreamWrapper> writer(oswr);
+	PrettyWriter<OStreamWrapper> writer(oswr);
 	document.Accept(writer);
 
 	return os;
