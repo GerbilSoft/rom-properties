@@ -1510,8 +1510,8 @@ int DMG::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
 			{"SHADOWGATE CLAS", ""},
 			{"SHANGHAI POCKET", ""},
 			{"SYLVESTER", ""},
-			{"ZELDA PL", ""},
 			{"ZELDA", ""},
+			{"ZELDA PL", ""},
 
 			{"", ""}
 		};
