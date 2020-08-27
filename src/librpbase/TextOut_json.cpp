@@ -95,6 +95,55 @@ class JSONFieldsOutput {
 public:
 	explicit JSONFieldsOutput(const RomFields& fields) :fields(fields) {}
 
+private:
+	static Value lcToValue(uint32_t lc, Allocator &allocator)
+	{
+		char s_lc[8];
+		int s_lc_pos = 0;
+		for (; lc != 0; lc <<= 8) {
+			char chr = (char)(lc >> 24);
+			if (chr != 0) {
+				s_lc[s_lc_pos++] = chr;
+			}
+		}
+		s_lc[s_lc_pos] = '\0';
+
+		Value s_lc_name;
+		s_lc_name.SetString(s_lc, s_lc_pos, allocator);
+		return s_lc_name;
+	}
+
+	static Value listDataToValue(const RomFields::Field &field,
+		const RomFields::ListData_t *list_data, Allocator &allocator)
+	{
+		Value data_array(kArrayType);	// data
+		assert(list_data != nullptr);
+		if (!list_data) {
+			// No data...
+			return data_array;
+		}
+
+		const bool has_checkboxes = !!(field.desc.list_data.flags & RomFields::RFT_LISTDATA_CHECKBOXES);
+		uint32_t checkboxes = field.data.list_data.mxd.checkboxes;
+		for (auto it = list_data->cbegin(); it != list_data->cend(); ++it) {
+			Value row_array(kArrayType);
+			if (has_checkboxes) {
+				// TODO: Better JSON schema for RFT_LISTDATA_CHECKBOXES?
+				row_array.PushBack((checkboxes & 1) ? true : false, allocator);
+				checkboxes >>= 1;
+			}
+
+			for (auto jt = it->cbegin(); jt != it->cend(); ++jt) {
+				row_array.PushBack(StringRef(*jt), allocator);
+			}
+
+			data_array.PushBack(row_array, allocator);
+		}
+
+		return data_array;
+	}
+
+public:
 	void writeToJSON(Value &fields_array, Allocator &allocator)
 	{
 		const auto iter_end = fields.cend();
@@ -186,32 +235,15 @@ public:
 
 					if (!(listDataDesc.flags & RomFields::RFT_LISTDATA_MULTI)) {
 						// Single-language ListData.
-						Value data_array(kArrayType);	// data
-						const auto list_data = romField.data.list_data.data.single;
-						assert(list_data != nullptr);
-						if (!list_data) {
+						Value data_array = listDataToValue(romField,
+							romField.data.list_data.data.single, allocator);
+						if (!data_array.Empty()) {
+							field_obj.AddMember("data", data_array, allocator);
+						} else {
 							// No data...
 							field_obj.AddMember("data", "ERROR", allocator);
 							break;
 						}
-
-						uint32_t checkboxes = romField.data.list_data.mxd.checkboxes;
-						for (auto it = list_data->cbegin(); it != list_data->cend(); ++it) {
-							Value row_array(kArrayType);
-							if (listDataDesc.flags & RomFields::RFT_LISTDATA_CHECKBOXES) {
-								// TODO: Better JSON schema for RFT_LISTDATA_CHECKBOXES?
-								row_array.PushBack((checkboxes & 1) ? true : false, allocator);
-								checkboxes >>= 1;
-							}
-
-							for (auto jt = it->cbegin(); jt != it->cend(); ++jt) {
-								row_array.PushBack(StringRef(*jt), allocator);
-							}
-
-							data_array.PushBack(row_array, allocator);
-						}
-
-						field_obj.AddMember("data", data_array, allocator);
 					} else {
 						// Multi-language ListData.
 						Value data_obj(kObjectType);	// data
@@ -226,46 +258,17 @@ public:
 						for (auto mapIter = list_data->cbegin(); mapIter != list_data->cend(); ++mapIter) {
 							// Key: Language code
 							// Value: Vector of string data
-							char s_lc[8];
-							int s_lc_pos = 0;
-							for (uint32_t lc = mapIter->first; lc != 0; lc <<= 8) {
-								char chr = (char)(lc >> 24);
-								if (chr != 0) {
-									s_lc[s_lc_pos++] = chr;
-								}
-							}
-							s_lc[s_lc_pos] = '\0';
+							Value s_lc_name = lcToValue(mapIter->first, allocator);
 
-							Value s_lc_name;
-							s_lc_name.SetString(s_lc, s_lc_pos, allocator);
-
-							Value lc_array(kArrayType);	// language data
-							// TODO: Consolidate single/multi here?
-							const auto &lc_data = mapIter->second;
-							if (lc_data.empty()) {
+							Value lc_array = listDataToValue(romField,
+								&mapIter->second, allocator);
+							if (!lc_array.Empty()) {
+								data_obj.AddMember(s_lc_name, lc_array, allocator);
+							} else {
 								// No data...
 								data_obj.AddMember(s_lc_name, "ERROR", allocator);
 								continue;
 							}
-
-							uint32_t checkboxes = romField.data.list_data.mxd.checkboxes;
-							for (auto lcIter = lc_data.cbegin(); lcIter != lc_data.cend(); ++lcIter) {
-								Value row_array(kArrayType);
-								if (listDataDesc.flags & RomFields::RFT_LISTDATA_CHECKBOXES)
-								{
-									// TODO: Better JSON schema for RFT_LISTDATA_CHECKBOXES?
-									row_array.PushBack((checkboxes & 1) ? true : false, allocator);
-									checkboxes >>= 1;
-								}
-
-								for (auto jt = lcIter->cbegin(); jt != lcIter->cend(); ++jt) {
-									row_array.PushBack(StringRef(*jt), allocator);
-								}
-
-								lc_array.PushBack(row_array, allocator);
-							}
-
-							data_obj.AddMember(s_lc_name, lc_array, allocator);
 						}
 
 						field_obj.AddMember("data", data_obj, allocator);
@@ -356,20 +359,7 @@ public:
 					Value data_obj(kObjectType);	// data
 					const auto *const pStr_multi = romField.data.str_multi;
 					for (auto iter = pStr_multi->cbegin(); iter != pStr_multi->cend(); ++iter) {
-						// Convert the language code to ASCII.
-						char s_lc[8];
-						int s_lc_pos = 0;
-						for (uint32_t lc = iter->first; lc != 0; lc <<= 8) {
-							char chr = (char)(lc >> 24);
-							if (chr != 0) {
-								s_lc[s_lc_pos++] = chr;
-							}
-						}
-						s_lc[s_lc_pos] = '\0';
-
-						Value s_lc_name;
-						s_lc_name.SetString(s_lc, s_lc_pos, allocator);
-
+						Value s_lc_name = lcToValue(iter->first, allocator);
 						data_obj.AddMember(s_lc_name, StringRef(iter->second), allocator);
 					}
 
