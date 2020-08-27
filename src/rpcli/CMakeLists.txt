@@ -11,7 +11,9 @@ PROJECT(rpcli LANGUAGES C CXX)
 # Sources and headers.
 SET(rpcli_SRCS
 	rpcli.cpp
-	properties.cpp
+	properties-common.cpp
+	properties-text.cpp
+	properties-json.cpp
 	device.cpp
 	rpcli_secure.c
 	)

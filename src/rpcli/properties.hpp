@@ -3,18 +3,31 @@
  * properties.hpp: Properties output.                                      *
  *                                                                         *
  * Copyright (c) 2016-2017 by Egor.                                        *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #ifndef __ROMPROPERTIES_RPCLI_PROPERTIES_HPP__
 #define __ROMPROPERTIES_RPCLI_PROPERTIES_HPP__
 
-#include <string.h>
+// C includes.
+#include <stdint.h>
+
+// C++ includes.
+#include <string>
 #include <ostream>
 
 namespace LibRpBase {
 	class RomData;
 }
+
+/**
+ * Partially unescape a URL.
+ * %20, %23, and %25 are left escaped.
+ * @param url URL.
+ * @return Partially unescaped URL.
+ */
+std::string urlPartialUnescape(const std::string &url);
 
 class ROMOutput {
 	const LibRpBase::RomData *const romdata;
