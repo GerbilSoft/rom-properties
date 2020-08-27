@@ -440,11 +440,10 @@ std::ostream& operator<<(std::ostream& os, const JSONROMOutput& fo) {
 			imgint_obj.AddMember("type", StringRef(RomData::getImageTypeName((RomData::ImageType)i)), allocator);
 			imgint_obj.AddMember("format", StringRef(rp_image::getFormatName(image->format())), allocator);
 
-			Value sizebuf_val;
-			char sizebuf[32];
-			int snret = snprintf(sizebuf, sizeof(sizebuf), "%d,%d", image->width(), image->height());
-			sizebuf_val.SetString(sizebuf, snret, allocator);
-			imgint_obj.AddMember("size", sizebuf_val, allocator);
+			Value size_array(kArrayType);	// size
+			size_array.PushBack(image->width(), allocator);
+			size_array.PushBack(image->height(), allocator);
+			imgint_obj.AddMember("size", size_array, allocator);
 
 			const uint32_t ppf = romdata->imgpf((RomData::ImageType)i);
 			if (ppf) {
