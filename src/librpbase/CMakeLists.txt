@@ -120,6 +120,9 @@ SET(librpbase_SRCS
 	RomFields.cpp
 	RomMetaData.cpp
 	SystemRegion.cpp
+	TextOut_common.cpp
+	TextOut_text.cpp
+	TextOut_json.cpp
 	img/RpImageLoader.cpp
 	img/RpPng.cpp
 	img/RpPngWriter.cpp
@@ -148,6 +151,7 @@ SET(librpbase_H
 	RomFields.hpp
 	RomMetaData.hpp
 	SystemRegion.hpp
+	TextOut.hpp
 	img/RpPng.hpp
 	img/RpPngWriter.hpp
 	img/APNG_dlopen.h

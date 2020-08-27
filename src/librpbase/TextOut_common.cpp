@@ -1,6 +1,6 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (rpcli)                            *
- * properties-text.cpp: Properties output. (common functions)              *
+ * TextOut.hpp: Text output for RomData. (common functions)                *
  *                                                                         *
  * Copyright (c) 2016-2018 by Egor.                                        *
  * Copyright (c) 2016-2020 by David Korth.                                 *
@@ -8,7 +8,7 @@
  ***************************************************************************/
 
 #include "stdafx.h"
-#include "properties.hpp"
+#include "TextOut.hpp"
 
 // C includes. (C++ namespace)
 #include "ctypex.h"
@@ -16,6 +16,8 @@
 // C++ includes.
 #include <string>
 using std::string;
+
+namespace LibRpBase {
 
 /**
  * Partially unescape a URL.
@@ -59,4 +61,6 @@ string urlPartialUnescape(const string &url)
 	}
 
 	return unesc_url;
+}
+
 }

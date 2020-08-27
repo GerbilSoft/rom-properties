@@ -21,6 +21,7 @@
 #include "librpbase/TextFuncs.hpp"
 #include "librpbase/img/RpPng.hpp"
 #include "librpbase/img/IconAnimData.hpp"
+#include "librpbase/TextOut.hpp"
 #include "libi18n/i18n.h"
 using namespace LibRpBase;
 
@@ -43,7 +44,6 @@ using LibRpTexture::rp_image;
 # include "libwin32common/RpWin32_sdk.h"
 #endif /* _WIN32 */
 
-#include "properties.hpp"
 #ifdef ENABLE_DECRYPTION
 # include "verifykeys.hpp"
 #endif /* ENABLE_DECRYPTION */
