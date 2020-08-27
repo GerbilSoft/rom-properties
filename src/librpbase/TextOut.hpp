@@ -1,14 +1,14 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (rpcli)                            *
- * properties.hpp: Properties output.                                      *
+ * ROM Properties Page shell extension. (librpbase)                        *
+ * TextOut.hpp: Text output for RomData.                                   *
  *                                                                         *
  * Copyright (c) 2016-2017 by Egor.                                        *
  * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_RPCLI_PROPERTIES_HPP__
-#define __ROMPROPERTIES_RPCLI_PROPERTIES_HPP__
+#ifndef __ROMPROPERTIES_LIBRPBASE_TEXTOUT_HPP__
+#define __ROMPROPERTIES_LIBRPBASE_TEXTOUT_HPP__
 
 // C includes.
 #include <stdint.h>
@@ -18,8 +18,8 @@
 #include <ostream>
 
 namespace LibRpBase {
-	class RomData;
-}
+
+class RomData;
 
 /**
  * Partially unescape a URL.
@@ -30,19 +30,21 @@ namespace LibRpBase {
 std::string urlPartialUnescape(const std::string &url);
 
 class ROMOutput {
-	const LibRpBase::RomData *const romdata;
+	const RomData *const romdata;
 	uint32_t lc;
 public:
-	explicit ROMOutput(const LibRpBase::RomData *romdata, uint32_t lc = 0);
+	explicit ROMOutput(const RomData *romdata, uint32_t lc = 0);
 	friend std::ostream& operator<<(std::ostream& os, const ROMOutput& fo);
 };
 
 class JSONROMOutput {
-	const LibRpBase::RomData *const romdata;
+	const RomData *const romdata;
 	uint32_t lc;
 public:
-	explicit JSONROMOutput(const LibRpBase::RomData *romdata, uint32_t lc = 0);
+	explicit JSONROMOutput(const RomData *romdata, uint32_t lc = 0);
 	friend std::ostream& operator<<(std::ostream& os, const JSONROMOutput& fo);
 };
 
-#endif /* __ROMPROPERTIES_RPCLI_PROPERTIES_HPP__ */
+}
+
+#endif /* __ROMPROPERTIES_LIBRPBASE_TEXTOUT_HPP__ */

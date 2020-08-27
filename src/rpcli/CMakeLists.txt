@@ -11,14 +11,10 @@ PROJECT(rpcli LANGUAGES C CXX)
 # Sources and headers.
 SET(rpcli_SRCS
 	rpcli.cpp
-	properties-common.cpp
-	properties-text.cpp
-	properties-json.cpp
 	device.cpp
 	rpcli_secure.c
 	)
 SET(rpcli_H
-	properties.hpp
 	device.hpp
 	rpcli_secure.h
 	)

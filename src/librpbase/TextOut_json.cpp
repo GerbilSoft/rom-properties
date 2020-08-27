@@ -1,6 +1,6 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (rpcli)                            *
- * properties.cpp: Properties output. (JSON output)                        *
+ * ROM Properties Page shell extension. (librpbase)                        *
+ * TextOut.hpp: Text output for RomData. (JSON output)                     *
  *                                                                         *
  * Copyright (c) 2016-2018 by Egor.                                        *
  * Copyright (c) 2016-2020 by David Korth.                                 *
@@ -8,7 +8,7 @@
  ***************************************************************************/
 
 #include "stdafx.h"
-#include "properties.hpp"
+#include "TextOut.hpp"
 
 // C includes. (C++ namespace)
 #include <cassert>
@@ -21,15 +21,16 @@ using std::string;
 using std::vector;
 
 // librpbase
-#include "librpbase/RomData.hpp"
-#include "librpbase/RomFields.hpp"
-#include "librpbase/TextFuncs.hpp"
-#include "librpbase/img/IconAnimData.hpp"
-using namespace LibRpBase;
+#include "RomData.hpp"
+#include "RomFields.hpp"
+#include "TextFuncs.hpp"
+#include "img/IconAnimData.hpp"
 
 // librptexture
 #include "librptexture/img/rp_image.hpp"
 using LibRpTexture::rp_image;
+
+namespace LibRpBase {
 
 class JSONString {
 	const char* str;
@@ -479,4 +480,6 @@ std::ostream& operator<<(std::ostream& os, const JSONROMOutput& fo) {
 	}
 
 	return os << '}';
+}
+
 }
