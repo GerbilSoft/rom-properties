@@ -270,8 +270,6 @@ public:
 
 						field_obj.AddMember("data", data_obj, allocator);
 					}
-
-					field_obj.AddMember("desc", desc_obj, allocator);
 					break;
 				}
 
