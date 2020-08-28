@@ -184,8 +184,8 @@ public:
 
 		// Determine the column widths.
 		unsigned int col = 0;
-		const auto iter_end = bitfieldDesc.names->cend();
-		for (auto iter = bitfieldDesc.names->cbegin(); iter != iter_end; ++iter) {
+		const auto names_cend = bitfieldDesc.names->cend();
+		for (auto iter = bitfieldDesc.names->cbegin(); iter != names_cend; ++iter) {
 			const string &name = *iter;
 			if (name.empty())
 				continue;
@@ -203,7 +203,7 @@ public:
 		os << left;
 		col = 0;
 		uint32_t bitfield = romField.data.bitfield;
-		for (auto iter = bitfieldDesc.names->cbegin(); iter != iter_end; ++iter, bitfield >>= 1) {
+		for (auto iter = bitfieldDesc.names->cbegin(); iter != names_cend; ++iter, bitfield >>= 1) {
 			const string &name = *iter;
 			if (name.empty())
 				continue;
@@ -286,7 +286,8 @@ public:
 		size_t totalWidth = col_count + 1;
 		if (listDataDesc.names) {
 			int i = 0;
-			for (auto it = listDataDesc.names->cbegin(); it != listDataDesc.names->cend(); ++it, ++i) {
+			const auto names_cend = listDataDesc.names->cend();
+			for (auto it = listDataDesc.names->cbegin(); it != names_cend; ++it, ++i) {
 				colSize[i] = it->size();
 			}
 		}
@@ -294,9 +295,11 @@ public:
 		// Row data
 		unique_ptr<unsigned int[]> nl_count(new unsigned int[pListData->size()]());
 		unsigned int row = 0;
-		for (auto it = pListData->cbegin(); it != pListData->cend(); ++it, row++) {
+		const auto pListData_cend = pListData->cend();
+		for (auto it = pListData->cbegin(); it != pListData_cend; ++it, row++) {
 			unsigned int col = 0;
-			for (auto jt = it->cbegin(); jt != it->cend(); ++jt, col++) {
+			const auto it_cend = it->cend();
+			for (auto jt = it->cbegin(); jt != it_cend; ++jt, col++) {
 				// Check for newlines.
 				unsigned int nl_row = 0;
 				const size_t str_sz = jt->size();
@@ -345,7 +348,8 @@ public:
 			// Print the column names.
 			unsigned int col = 0;
 			uint32_t align = listDataDesc.alignment.headers;
-			for (auto it = listDataDesc.names->cbegin(); it != listDataDesc.names->cend(); ++it, ++col, align >>= 2) {
+			const auto names_cend = listDataDesc.names->cend();
+			for (auto it = listDataDesc.names->cbegin(); it != names_cend; ++it, ++col, align >>= 2) {
 				// FIXME: What was this used for?
 				totalWidth += colSize[col]; // this could be in a separate loop, but whatever
 				os << setw(0) << '|';
@@ -406,7 +410,7 @@ public:
 		unique_ptr<unsigned int[]> linePos(new unsigned int[col_count]);
 
 		row = 0;
-		for (auto it = pListData->cbegin(); it != pListData->cend(); ++it, row++) {
+		for (auto it = pListData->cbegin(); it != pListData_cend; ++it, row++) {
 			// Print one line at a time for multi-line entries.
 			// TODO: Better formatting for multi-line?
 			// Right now we're assuming that at least one column is a single line.
@@ -430,7 +434,8 @@ public:
 				}
 				unsigned int col = 0;
 				uint32_t align = listDataDesc.alignment.data;
-				for (auto jt = it->cbegin(); jt != it->cend(); ++jt, ++col, align >>= 2) {
+				const auto it_cend = it->cend();
+				for (auto jt = it->cbegin(); jt != it_cend; ++jt, ++col, align >>= 2) {
 					string str;
 					if (nl_count[row] == 0) {
 						// No newlines. Print the string directly.
@@ -632,10 +637,11 @@ public:
 		: fields(fields), lc(lc) { }
 	friend std::ostream& operator<<(std::ostream& os, const FieldsOutput& fo) {
 		size_t maxWidth = 0;
-		const auto iter_end = fo.fields.cend();
-		for (auto iter = fo.fields.cbegin(); iter != iter_end; ++iter) {
-			maxWidth = max(maxWidth, iter->name.size());
-		}
+		std::for_each(fo.fields.cbegin(), fo.fields.cend(),
+			[&maxWidth](const RomFields::Field &field) {
+				maxWidth = max(maxWidth, field.name.size());
+			}
+		);
 		maxWidth += 2;
 
 		const int tabCount = fo.fields.tabCount();
@@ -646,7 +652,8 @@ public:
 		const uint32_t user_lc = (fo.lc != 0 ? fo.lc : def_lc);
 
 		bool printed_first = false;
-		for (auto iter = fo.fields.cbegin(); iter != iter_end; ++iter) {
+		const auto fields_cend = fo.fields.cend();
+		for (auto iter = fo.fields.cbegin(); iter != fields_cend; ++iter) {
 			const auto &romField = *iter;
 			if (!romField.isValid)
 				continue;
