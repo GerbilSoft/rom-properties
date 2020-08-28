@@ -125,7 +125,8 @@ private:
 
 		const bool has_checkboxes = !!(field.desc.list_data.flags & RomFields::RFT_LISTDATA_CHECKBOXES);
 		uint32_t checkboxes = field.data.list_data.mxd.checkboxes;
-		for (auto it = list_data->cbegin(); it != list_data->cend(); ++it) {
+		const auto list_data_cend = list_data->cend();
+		for (auto it = list_data->cbegin(); it != list_data_cend; ++it) {
 			Value row_array(kArrayType);
 			if (has_checkboxes) {
 				// TODO: Better JSON schema for RFT_LISTDATA_CHECKBOXES?
@@ -133,7 +134,8 @@ private:
 				checkboxes >>= 1;
 			}
 
-			for (auto jt = it->cbegin(); jt != it->cend(); ++jt) {
+			const auto it_cend = it->cend();
+			for (auto jt = it->cbegin(); jt != it_cend; ++jt) {
 				row_array.PushBack(StringRef(*jt), allocator);
 			}
 
@@ -146,8 +148,8 @@ private:
 public:
 	void writeToJSON(Value &fields_array, Allocator &allocator)
 	{
-		const auto iter_end = fields.cend();
-		for (auto iter = fields.cbegin(); iter != iter_end; ++iter) {
+		const auto fields_cend = fields.cend();
+		for (auto iter = fields.cbegin(); iter != fields_cend; ++iter) {
 			const auto &romField = *iter;
 			if (!romField.isValid)
 				continue;
@@ -188,8 +190,8 @@ public:
 						assert(count <= 32);
 						if (count > 32)
 							count = 32;
-						const auto iter_end = bitfieldDesc.names->cend();
-						for (auto iter = bitfieldDesc.names->cbegin(); iter != iter_end; ++iter) {
+						const auto names_cend = bitfieldDesc.names->cend();
+						for (auto iter = bitfieldDesc.names->cbegin(); iter != names_cend; ++iter) {
 							const string &name = *iter;
 							if (name.empty())
 								continue;
@@ -223,8 +225,9 @@ public:
 							// TODO: Better JSON schema for RFT_LISTDATA_CHECKBOXES?
 							names_array.PushBack("checked", allocator);
 						}
+						const auto names_cend = listDataDesc.names->cend();
 						for (auto iter = listDataDesc.names->cbegin();
-						     iter != listDataDesc.names->cend(); ++iter)
+						     iter != names_cend; ++iter)
 						{
 							const string &name = *iter;
 							names_array.PushBack(StringRef(name), allocator);
@@ -255,7 +258,8 @@ public:
 							break;
 						}
 
-						for (auto mapIter = list_data->cbegin(); mapIter != list_data->cend(); ++mapIter) {
+						const auto list_data_cend = list_data->cend();
+						for (auto mapIter = list_data->cbegin(); mapIter != list_data_cend; ++mapIter) {
 							// Key: Language code
 							// Value: Vector of string data
 							Value s_lc_name = lcToValue(mapIter->first, allocator);
@@ -358,7 +362,8 @@ public:
 
 					Value data_obj(kObjectType);	// data
 					const auto *const pStr_multi = romField.data.str_multi;
-					for (auto iter = pStr_multi->cbegin(); iter != pStr_multi->cend(); ++iter) {
+					const auto pStr_multi_cend = pStr_multi->cend();
+					for (auto iter = pStr_multi->cbegin(); iter != pStr_multi_cend; ++iter) {
 						Value s_lc_name = lcToValue(iter->first, allocator);
 						data_obj.AddMember(s_lc_name, StringRef(iter->second), allocator);
 					}
@@ -487,7 +492,8 @@ std::ostream& operator<<(std::ostream& os, const JSONROMOutput& fo) {
 			imgext_obj.AddMember("type", StringRef(RomData::getImageTypeName((RomData::ImageType)i)), allocator);
 
 			Value exturls_obj(kObjectType);
-			for (auto iter = extURLs.cbegin(); iter != extURLs.cend(); ++iter) {
+			const auto extURLs_cend = extURLs.cend();
+			for (auto iter = extURLs.cbegin(); iter != extURLs_cend; ++iter) {
 				Value url_val;
 				const string url_str = urlPartialUnescape(iter->url);
 				url_val.SetString(url_str, allocator);
