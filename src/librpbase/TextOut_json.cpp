@@ -490,11 +490,11 @@ std::ostream& operator<<(std::ostream& os, const JSONROMOutput& fo) {
 			for (auto iter = extURLs.cbegin(); iter != extURLs.cend(); ++iter) {
 				Value url_val;
 				const string url_str = urlPartialUnescape(iter->url);
-				url_val.SetString(url_str.data(), url_str.size(), allocator);
+				url_val.SetString(url_str, allocator);
 				exturls_obj.AddMember("url", url_val, allocator);
 
 				Value cache_key_val;
-				cache_key_val.SetString(iter->cache_key.data(), iter->cache_key.size(), allocator);
+				cache_key_val.SetString(iter->cache_key, allocator);
 				exturls_obj.AddMember("cache_key", cache_key_val, allocator);
 			}
 			imgext_obj.AddMember("exturls", exturls_obj, allocator);
