@@ -246,8 +246,9 @@ int Xbox360_XDBF_Private::initStrTblIndexes(void)
 	// Go through the entry table.
 	unsigned int total = 0;
 	int16_t idx = 0;
+	const auto entryTable_cend = entryTable.cend();
 	for (auto iter = entryTable.cbegin();
-	     iter != entryTable.cend() && total < XDBF_LANGUAGE_MAX; ++iter, idx++)
+	     iter != entryTable_cend && total < XDBF_LANGUAGE_MAX; ++iter, idx++)
 	{
 		if (iter->namespace_id != cpu_to_be16(XDBF_SPA_NAMESPACE_STRING_TABLE))
 			continue;

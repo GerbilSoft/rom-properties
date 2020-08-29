@@ -458,7 +458,8 @@ Xbox360_XEX *Xbox360_STFS_Private::openDefaultXex(void)
 	// Find default.xex or default.xexp and load it.
 	// TODO: Handle subdirectories?
 	const STFS_DirEntry_t *dirEntry = nullptr;
-	for (auto iter = fileTable.cbegin(); iter != fileTable.cend(); ++iter) {
+	const auto fileTable_cend = fileTable.cend();
+	for (auto iter = fileTable.cbegin(); iter != fileTable_cend; ++iter) {
 		// Make sure this isn't a subdirectory.
 		if (iter->flags_len & 0x80) {
 			// It's a subdirectory.

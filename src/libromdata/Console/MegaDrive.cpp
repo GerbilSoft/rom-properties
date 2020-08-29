@@ -471,7 +471,8 @@ void MegaDrivePrivate::addFields_vectorTable(const M68K_VectorTable *pVectors)
 
 	auto vv_vectors = new RomFields::ListData_t(ARRAY_SIZE(vectors_names)-1);
 	auto iter = vv_vectors->begin();
-	for (size_t i = 0; i < ARRAY_SIZE(vectors_names)-1 && iter != vv_vectors->end(); ++i, ++iter) {
+	const auto vv_vectors_end = vv_vectors->end();
+	for (size_t i = 0; i < ARRAY_SIZE(vectors_names)-1 && iter != vv_vectors_end; ++i, ++iter) {
 		auto &data_row = *iter;
 		data_row.reserve(3);
 

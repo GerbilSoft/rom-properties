@@ -377,7 +377,8 @@ int GameCubePrivate::loadWiiPartitionTables(void)
 	);
 
 	// Create the WiiPartition objects.
-	for (auto iter = wiiPtbl.begin(); iter != wiiPtbl.end(); ++iter) {
+	const auto wiiPtbl_end = wiiPtbl.end();
+	for (auto iter = wiiPtbl.begin(); iter != wiiPtbl_end; ++iter) {
 		iter->partition = new WiiPartition(discReader, iter->start, iter->size,
 			(WiiPartition::CryptoMethod)cryptoMethod);
 
@@ -1792,7 +1793,8 @@ int GameCube::loadFieldData(void)
 
 		auto src_iter = d->wiiPtbl.cbegin();
 		auto dest_iter = vv_partitions->begin();
-		for ( ; dest_iter != vv_partitions->end(); ++src_iter, ++dest_iter) {
+		const auto vv_partitions_end = vv_partitions->end();
+		for ( ; dest_iter != vv_partitions_end; ++src_iter, ++dest_iter) {
 			vector<string> &data_row = *dest_iter;
 			data_row.reserve(5);	// 5 fields per row.
 
@@ -2183,6 +2185,7 @@ int GameCube::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) c
 
 	pExtURLs->resize(vsz);
 	auto extURL_iter = pExtURLs->begin();
+	const auto tdb_regions_cend = tdb_regions.cend();
 
 	// Is this not the first disc?
 	if (isDisc2) {
@@ -2193,7 +2196,7 @@ int GameCube::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) c
 			 imageTypeName, d->discHeader.disc_number+1);
 
 		for (auto tdb_iter = tdb_regions.cbegin();
-		     tdb_iter != tdb_regions.cend(); ++tdb_iter, ++extURL_iter)
+		     tdb_iter != tdb_regions_cend; ++tdb_iter, ++extURL_iter)
 		{
 			extURL_iter->url = d->getURL_GameTDB("wii", discName, *tdb_iter, id6, ".png");
 			extURL_iter->cache_key = d->getCacheKey_GameTDB("wii", discName, *tdb_iter, id6, ".png");
@@ -2204,7 +2207,7 @@ int GameCube::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) c
 
 	// First disc, or not a disc scan.
 	for (auto tdb_iter = tdb_regions.cbegin();
-	     tdb_iter != tdb_regions.cend(); ++tdb_iter, ++extURL_iter)
+	     tdb_iter != tdb_regions_cend; ++tdb_iter, ++extURL_iter)
 	{
 		extURL_iter->url = d->getURL_GameTDB("wii", imageTypeName, *tdb_iter, id6, ".png");
 		extURL_iter->cache_key = d->getCacheKey_GameTDB("wii", imageTypeName, *tdb_iter, id6, ".png");

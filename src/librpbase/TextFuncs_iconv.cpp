@@ -238,7 +238,8 @@ string cpN_to_utf8(unsigned int cp, const char *str, int len, unsigned int flags
 		if (cp == CP_SJIS) {
 			// libiconv's cp932 maps Shift-JIS 8160 to U+301C. This is expected
 			// behavior for Shift-JIS, but cp932 should map it to U+FF5E.
-			for (auto p = ret.begin(); p != ret.end(); ++p) {
+			const auto ret_end = ret.end();
+			for (auto p = ret.begin(); p != ret_end; ++p) {
 				if ((uint8_t)p[0] == 0xE3 && (uint8_t)p[1] == 0x80 && (uint8_t)p[2] == 0x9C) {
 					// Found a wave dash.
 					p[0] = (uint8_t)0xEF;

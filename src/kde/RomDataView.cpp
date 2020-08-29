@@ -404,8 +404,8 @@ void RomDataViewPrivate::initBitfield(QLabel *lblDesc, const RomFields::Field &f
 	QGridLayout *gridLayout = new QGridLayout();
 	int row = 0, col = 0;
 	uint32_t bitfield = field.data.bitfield;
-	const auto iter_end = bitfieldDesc.names->cend();
-	for (auto iter = bitfieldDesc.names->cbegin(); iter != iter_end; ++iter, bitfield >>= 1) {
+	const auto names_cend = bitfieldDesc.names->cend();
+	for (auto iter = bitfieldDesc.names->cbegin(); iter != names_cend; ++iter, bitfield >>= 1) {
 		const string &name = *iter;
 		if (name.empty())
 			continue;
@@ -583,7 +583,8 @@ void RomDataViewPrivate::initListData(QLabel *lblDesc, const RomFields::Field &f
 	}
 
 	unsigned int row = 0;	// for icons [TODO: Use iterator?]
-	for (auto iter = list_data->cbegin(); iter != list_data->cend(); ++iter, row++) {
+	const auto list_data_cend = list_data->cend();
+	for (auto iter = list_data->cbegin(); iter != list_data_cend; ++iter, row++) {
 		const vector<string> &data_row = *iter;
 		// FIXME: Skip even if we don't have checkboxes?
 		// (also check other UI frontends)
@@ -614,7 +615,8 @@ void RomDataViewPrivate::initListData(QLabel *lblDesc, const RomFields::Field &f
 
 		int col = 0;
 		uint32_t align = listDataDesc.alignment.data;
-		for (auto iter = data_row.cbegin(); iter != data_row.cend(); ++iter) {
+		const auto data_row_cend = data_row.cend();
+		for (auto iter = data_row.cbegin(); iter != data_row_cend; ++iter) {
 			if (!isMulti) {
 				treeWidgetItem->setData(col, Qt::DisplayRole, U82Q(*iter));
 			}
@@ -861,7 +863,8 @@ void RomDataViewPrivate::updateMulti(uint32_t user_lc)
 	set<uint32_t> set_lc;
 
 	// RFT_STRING_MULTI
-	for (auto iter = vecStringMulti.cbegin(); iter != vecStringMulti.cend(); ++iter) {
+	const auto vecStringMulti_cend = vecStringMulti.cend();
+	for (auto iter = vecStringMulti.cbegin(); iter != vecStringMulti_cend; ++iter) {
 		QLabel *const lblString = iter->first;
 		const RomFields::Field *const pField = iter->second;
 		const auto *const pStr_multi = pField->data.str_multi;
@@ -875,8 +878,9 @@ void RomDataViewPrivate::updateMulti(uint32_t user_lc)
 		if (!cboLanguage) {
 			// Need to add all supported languages.
 			// TODO: Do we need to do this for all of them, or just one?
+			const auto pStr_multi_cend = pStr_multi->cend();
 			for (auto iter_sm = pStr_multi->cbegin();
-			     iter_sm != pStr_multi->cend(); ++iter_sm)
+			     iter_sm != pStr_multi_cend; ++iter_sm)
 			{
 				set_lc.insert(iter_sm->first);
 			}
@@ -893,7 +897,8 @@ void RomDataViewPrivate::updateMulti(uint32_t user_lc)
 	}
 
 	// RFT_LISTDATA_MULTI
-	for (auto iter = vecListDataMulti.cbegin(); iter != vecListDataMulti.cend(); ++iter) {
+	const auto vecListDataMulti_cend = vecListDataMulti.cend();
+	for (auto iter = vecListDataMulti.cbegin(); iter != vecListDataMulti_cend; ++iter) {
 		QTreeWidget *const treeWidget = iter->first;
 		const RomFields::Field *const pField = iter->second;
 		const auto *const pListData_multi = pField->data.list_data.data.multi;
@@ -907,8 +912,9 @@ void RomDataViewPrivate::updateMulti(uint32_t user_lc)
 		if (!cboLanguage) {
 			// Need to add all supported languages.
 			// TODO: Do we need to do this for all of them, or just one?
+			const auto pListData_multi_cend = pListData_multi->cend();
 			for (auto iter_sm = pListData_multi->cbegin();
-			     iter_sm != pListData_multi->cend(); ++iter_sm)
+			     iter_sm != pListData_multi_cend; ++iter_sm)
 			{
 				set_lc.insert(iter_sm->first);
 			}
@@ -921,12 +927,14 @@ void RomDataViewPrivate::updateMulti(uint32_t user_lc)
 			// Update the list.
 			const int rowCount = treeWidget->topLevelItemCount();
 			auto iter_listData = pListData->cbegin();
-			for (int row = 0; row < rowCount && iter_listData != pListData->cend(); row++, ++iter_listData) {
+			const auto pListData_cend = pListData->cend();
+			for (int row = 0; row < rowCount && iter_listData != pListData_cend; row++, ++iter_listData) {
 				QTreeWidgetItem *const treeWidgetItem = treeWidget->topLevelItem(row);
 
 				int col = 0;
+				const auto iter_listData_cend = iter_listData->cend();
 				for (auto iter_row = iter_listData->cbegin();
-				iter_row != iter_listData->cend(); ++iter_row, col++)
+				     iter_row != iter_listData_cend; ++iter_row, col++)
 				{
 					treeWidgetItem->setData(col, Qt::DisplayRole, U82Q(*iter_row));
 				}
@@ -959,7 +967,8 @@ void RomDataViewPrivate::updateMulti(uint32_t user_lc)
 		};
 
 		int sel_idx = -1;
-		for (auto iter = set_lc.cbegin(); iter != set_lc.cend(); ++iter) {
+		const auto set_lc_cend = set_lc.cend();
+		for (auto iter = set_lc.cbegin(); iter != set_lc_cend; ++iter) {
 			const uint32_t lc = *iter;
 			const char *const name = SystemRegion::getLocalizedLanguageName(lc);
 			if (name) {
@@ -1107,8 +1116,8 @@ void RomDataViewPrivate::initDisplayWidgets(void)
 
 	// Create the data widgets.
 	int prevTabIdx = 0;
-	const auto iter_end = pFields->cend();
-	for (auto iter = pFields->cbegin(); iter != iter_end; ++iter) {
+	const auto pFields_cend = pFields->cend();
+	for (auto iter = pFields->cbegin(); iter != pFields_cend; ++iter) {
 		const RomFields::Field &field = *iter;
 		if (!field.isValid)
 			continue;

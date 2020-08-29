@@ -665,13 +665,15 @@ STDAPI DllRegisterServer(void)
 
 	// Register all supported file extensions.
 	const vector<RomDataFactory::ExtInfo> &vec_exts = RomDataFactory::supportedFileExtensions();
-	for (auto ext_iter = vec_exts.cbegin(); ext_iter != vec_exts.cend(); ++ext_iter) {
+	const auto vec_exts_cend = vec_exts.cend();
+	const auto user_SIDs_cend = user_SIDs.cend();
+	for (auto ext_iter = vec_exts.cbegin(); ext_iter != vec_exts_cend; ++ext_iter) {
 		// Register the file type handlers for this file extension globally.
 		lResult = RegisterFileType(hkcr, &hklm, *ext_iter);
 		if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
 
 		// Register user file types if necessary.
-		for (auto sid_iter = user_SIDs.cbegin(); sid_iter != user_SIDs.cend(); ++sid_iter) {
+		for (auto sid_iter = user_SIDs.cbegin(); sid_iter != user_SIDs_cend; ++sid_iter) {
 			lResult = RegisterUserFileType(*sid_iter, *ext_iter);
 			if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
 		}
@@ -684,7 +686,7 @@ STDAPI DllRegisterServer(void)
 	// NOTE: Ignoring any errors to prevent `regsvr32` from failing.
 	hkcr.deleteSubKey(_T("*.vxd"));
 	hkcr.deleteSubKey(_T(".dylib.bundle"));
-	for (auto sid_iter = user_SIDs.cbegin(); sid_iter != user_SIDs.cend(); ++sid_iter) {
+	for (auto sid_iter = user_SIDs.cbegin(); sid_iter != user_SIDs_cend; ++sid_iter) {
 		TCHAR regPath[288];
 		int len = _sntprintf_s(regPath, _countof(regPath),
 			_T("%s\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\FileExts"),
@@ -759,14 +761,16 @@ STDAPI DllUnregisterServer(void)
 	if (!hklm.isOpen()) return SELFREG_E_CLASS;
 
 	// Unegister all supported file types.
-	vector<RomDataFactory::ExtInfo> vec_exts = RomDataFactory::supportedFileExtensions();
-	for (auto ext_iter = vec_exts.cbegin(); ext_iter != vec_exts.cend(); ++ext_iter) {
+	const vector<RomDataFactory::ExtInfo> vec_exts = RomDataFactory::supportedFileExtensions();
+	const auto vec_exts_cend = vec_exts.cend();
+	const auto user_SIDs_cend = user_SIDs.cend();
+	for (auto ext_iter = vec_exts.cbegin(); ext_iter != vec_exts_cend; ++ext_iter) {
 		// Unregister the file type handlers for this file extension globally.
 		lResult = UnregisterFileType(hkcr, &hklm, *ext_iter);
 		if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
 
 		// Unregister user file types if necessary.
-		for (auto sid_iter = user_SIDs.cbegin(); sid_iter != user_SIDs.cend(); ++sid_iter) {
+		for (auto sid_iter = user_SIDs.cbegin(); sid_iter != user_SIDs_cend; ++sid_iter) {
 			lResult = UnregisterUserFileType(*sid_iter, *ext_iter);
 			if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
 		}
@@ -779,7 +783,7 @@ STDAPI DllUnregisterServer(void)
 	// NOTE: Ignoring any errors to prevent `regsvr32` from failing.
 	hkcr.deleteSubKey(_T("*.vxd"));
 	hkcr.deleteSubKey(_T(".dylib.bundle"));
-	for (auto sid_iter = user_SIDs.cbegin(); sid_iter != user_SIDs.cend(); ++sid_iter) {
+	for (auto sid_iter = user_SIDs.cbegin(); sid_iter != user_SIDs_cend; ++sid_iter) {
 		TCHAR regPath[288];
 		int len = _sntprintf_s(regPath, _countof(regPath),
 			_T("%s\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\FileExts"),

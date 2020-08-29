@@ -1319,7 +1319,8 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 
 	int lv_row_num = 0, data_row_num = 0;
 	int nl_max = 0;	// Highest number of newlines in any string.
-	for (auto iter = list_data->cbegin(); iter != list_data->cend(); ++iter, data_row_num++) {
+	const auto list_data_cend = list_data->cend();
+	for (auto iter = list_data->cbegin(); iter != list_data_cend; ++iter, data_row_num++) {
 		const vector<string> &data_row = *iter;
 		// FIXME: Skip even if we don't have checkboxes?
 		// (also check other UI frontends)
@@ -1350,11 +1351,14 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 
 			// Check newline counts in all strings to find nl_max.
 			const auto *const multi = field.data.list_data.data.multi;
-			for (auto iter_m = multi->cbegin(); iter_m != multi->cend(); ++iter_m) {
+			const auto multi_cend = multi->cend();
+			for (auto iter_m = multi->cbegin(); iter_m != multi_cend; ++iter_m) {
 				const RomFields::ListData_t &ld = iter_m->second;
-				for (auto iter_row = ld.cbegin(); iter_row != ld.cend(); ++iter_row) {
+				const auto ld_cend = ld.cend();
+				for (auto iter_row = ld.cbegin(); iter_row != ld_cend; ++iter_row) {
 					const auto &data_row = *iter_row;
-					for (auto iter_col = data_row.cbegin(); iter_col != data_row.cend(); ++iter_col) {
+					const auto data_row_cend = data_row.cend();
+					for (auto iter_col = data_row.cbegin(); iter_col != data_row_cend; ++iter_col) {
 						size_t prev_nl_pos = 0;
 						size_t cur_nl_pos;
 						int nl = 0;
@@ -1369,7 +1373,8 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 		} else {
 			// Single language.
 			int col = 0;
-			for (auto iter = data_row.cbegin(); iter != data_row.cend(); ++iter, col++) {
+			const auto data_row_cend = data_row.cend();
+			for (auto iter = data_row.cbegin(); iter != data_row_cend; ++iter, col++) {
 				tstring tstr = U82T_s(*iter);
 
 				int nl_count;
@@ -1425,10 +1430,11 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 			lvBgColor[1] = LibWin32Common::getAltRowColor_ARGB32();
 
 			// Add icons.
-			const auto &icons = field.data.list_data.mxd.icons;
 			uint8_t rowColorIdx = 0;
-			for (auto iter = icons->cbegin(); iter != icons->cend();
-				++iter, rowColorIdx = !rowColorIdx)
+			const auto &icons = field.data.list_data.mxd.icons;
+			const auto icons_cend = icons->cend();
+			for (auto iter = icons->cbegin(); iter != icons_cend;
+			     ++iter, rowColorIdx = !rowColorIdx)
 			{
 				int iImage = -1;
 				const rp_image *const icon = *iter;
@@ -1886,7 +1892,8 @@ void RP_ShellPropSheetExt_Private::buildCboLanguageImageList(void)
 	};
 
 	HDC hdcIcon = GetDC(nullptr);
-	for (auto iter = set_lc.cbegin(); iter != set_lc.end(); ++iter) {
+	const auto set_lc_cend = set_lc.cend();
+	for (auto iter = set_lc.cbegin(); iter != set_lc_cend; ++iter) {
 		int col, row;
 		int ret = SystemRegion::getFlagPosition(*iter, &col, &row);
 		assert(ret == 0);
@@ -1941,8 +1948,9 @@ void RP_ShellPropSheetExt_Private::buildCboLanguageImageList(void)
 void RP_ShellPropSheetExt_Private::updateMulti(uint32_t user_lc)
 {
 	// RFT_STRING_MULTI
+	const auto vecStringMulti_cend = vecStringMulti.cend();
 	for (auto iter = vecStringMulti.cbegin();
-	     iter != vecStringMulti.cend(); ++iter)
+	     iter != vecStringMulti_cend; ++iter)
 	{
 		const HWND lblString = iter->first;
 		const RomFields::Field *const pField = iter->second;
@@ -1957,8 +1965,9 @@ void RP_ShellPropSheetExt_Private::updateMulti(uint32_t user_lc)
 		if (!cboLanguage) {
 			// Need to add all supported languages.
 			// TODO: Do we need to do this for all of them, or just one?
+			const auto pStr_multi_cend = pStr_multi->cend();
 			for (auto iter_sm = pStr_multi->cbegin();
-			     iter_sm != pStr_multi->cend(); ++iter_sm)
+			     iter_sm != pStr_multi_cend; ++iter_sm)
 			{
 				set_lc.insert(iter_sm->first);
 			}
@@ -1975,7 +1984,8 @@ void RP_ShellPropSheetExt_Private::updateMulti(uint32_t user_lc)
 	}
 
 	// RFT_LISTDATA_MULTI
-	for (auto iter = map_lvData.begin(); iter != map_lvData.end(); ++iter) {
+	const auto map_lvData_end = map_lvData.end();
+	for (auto iter = map_lvData.begin(); iter != map_lvData_end; ++iter) {
 		LvData_t &lvData = iter->second;
 		if (!lvData.hListView) {
 			// Not an RFT_LISTDATA_MULTI.
@@ -1995,8 +2005,9 @@ void RP_ShellPropSheetExt_Private::updateMulti(uint32_t user_lc)
 		if (!cboLanguage) {
 			// Need to add all supported languages.
 			// TODO: Do we need to do this for all of them, or just one?
+			const auto pListData_multi_cend = pListData_multi->cend();
 			for (auto iter_sm = pListData_multi->cbegin();
-			     iter_sm != pListData_multi->cend(); ++iter_sm)
+			     iter_sm != pListData_multi_cend; ++iter_sm)
 			{
 				set_lc.insert(iter_sm->first);
 			}
@@ -2037,16 +2048,20 @@ void RP_ShellPropSheetExt_Private::updateMulti(uint32_t user_lc)
 
 			auto iter_ld_row = pListData->cbegin();
 			auto iter_vvStr_row = vvStr.begin();
-			for (; iter_ld_row != pListData->cend() && iter_vvStr_row != vvStr.end();
+			const auto pListData_cend = pListData->cend();
+			const auto vvStr_end = vvStr.end();
+			for (; iter_ld_row != pListData_cend && iter_vvStr_row != vvStr_end;
 			     ++iter_ld_row, ++iter_vvStr_row)
 			{
 				const vector<string> &src_data_row = *iter_ld_row;
 				vector<tstring> &dest_data_row = *iter_vvStr_row;
 
+				int col = 0;
 				auto iter_sdr = src_data_row.cbegin();
 				auto iter_ddr = dest_data_row.begin();
-				int col = 0;
-				for (; iter_sdr != src_data_row.cend() && iter_ddr != dest_data_row.end();
+				const auto src_data_row_cend = src_data_row.cend();
+				const auto dest_data_row_end = dest_data_row.end();
+				for (; iter_sdr != src_data_row_cend && iter_ddr != dest_data_row_end;
 				     ++iter_sdr, ++iter_ddr, col++)
 				{
 					tstring tstr = U82T_s(*iter_sdr);
@@ -2083,7 +2098,8 @@ void RP_ShellPropSheetExt_Private::updateMulti(uint32_t user_lc)
 		SIZE maxSize = {0, 0};
 		vector<tstring> vec_lc_str;
 		vec_lc_str.reserve(set_lc.size());
-		for (auto iter = set_lc.cbegin(); iter != set_lc.cend(); ++iter) {
+		const auto set_lc_cend = set_lc.cend();
+		for (auto iter = set_lc.cbegin(); iter != set_lc_cend; ++iter) {
 			const uint32_t lc = *iter;
 			const char *lc_str = SystemRegion::getLocalizedLanguageName(lc);
 			if (lc_str) {
@@ -2164,7 +2180,8 @@ void RP_ShellPropSheetExt_Private::updateMulti(uint32_t user_lc)
 		cbItem.mask = CBEIF_TEXT | CBEIF_LPARAM | CBEIF_IMAGE | CBEIF_SELECTEDIMAGE;
 		cbItem.iItem = 0;
 		int iImage = 0;
-		for (; iter_str != vec_lc_str.cend(); ++iter_str, ++iter_lc, cbItem.iItem++, iImage++) {
+		const auto vec_lc_str_cend = vec_lc_str.cend();
+		for (; iter_str != vec_lc_str_cend; ++iter_str, ++iter_lc, cbItem.iItem++, iImage++) {
 			const uint32_t lc = *iter_lc;
 			cbItem.pszText = const_cast<LPTSTR>(iter_str->c_str());
 			cbItem.cchTextMax = static_cast<int>(iter_str->size());
@@ -2298,9 +2315,9 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 
 	// tr: Field description label.
 	const char *const desc_label_fmt = C_("RomDataView", "%s:");
-	const auto iter_end = pFields->cend();
+	const auto pFields_cend = pFields->cend();
 	int idx = 0;	// needed for control IDs
-	for (auto iter = pFields->cbegin(); iter != iter_end; ++iter, idx++) {
+	for (auto iter = pFields->cbegin(); iter != pFields_cend; ++iter, idx++) {
 		const RomFields::Field &field = *iter;
 		if (!field.isValid) {
 			t_desc_text.emplace_back(tstring());
@@ -2478,7 +2495,7 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 
 	idx = 0;	// needed for control IDs
 	auto iter_desc = t_desc_text.cbegin();
-	for (auto iter = pFields->cbegin(); iter != iter_end; ++iter, ++iter_desc, idx++) {
+	for (auto iter = pFields->cbegin(); iter != pFields_cend; ++iter, ++iter_desc, idx++) {
 		assert(iter_desc != t_desc_text.cend());
 		const RomFields::Field &field = *iter;
 		if (!field.isValid)
@@ -2555,7 +2572,7 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 						// Check if the next field is on the next tab.
 						RomFields::const_iterator nextIter = iter;
 						++nextIter;
-						if (nextIter != iter_end && nextIter->tabIdx != tabIdx) {
+						if (nextIter != pFields_cend && nextIter->tabIdx != tabIdx) {
 							// Next field is on the next tab.
 							doVBox = true;
 						}

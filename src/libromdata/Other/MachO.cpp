@@ -239,8 +239,9 @@ MachO::MachO(IRpFile *file)
 	// Swap endianness if needed.
 	assert(d->machFormats.size() == d->machHeaders.size());
 	auto hdrIter = d->machHeaders.begin();
+	const auto machFormats_cend = d->machFormats.cend();
 	for (auto fmtIter = d->machFormats.cbegin();
-	     fmtIter != d->machFormats.cend(); ++fmtIter, ++hdrIter)
+	     fmtIter != machFormats_cend; ++fmtIter, ++hdrIter)
 	{
 		switch (*fmtIter) {
 			default:
@@ -490,10 +491,11 @@ int MachO::loadFieldData(void)
 	d->fields->reserve(4*n_tabs);
 	d->fields->reserveTabs(n_tabs);
 
-	auto fmtIter = d->machFormats.cbegin();
 	int i = 0;
+	auto fmtIter = d->machFormats.cbegin();
+	const auto machHeaders_cend = d->machHeaders.cend();
 	for (auto hdrIter = d->machHeaders.cbegin();
-	     hdrIter != d->machHeaders.cend(); ++hdrIter, ++fmtIter, i++)
+	     hdrIter != machHeaders_cend; ++hdrIter, ++fmtIter, i++)
 	{
 		const mach_header *const machHeader = &(*hdrIter);
 		const MachOPrivate::Mach_Format machFormat = *fmtIter;
