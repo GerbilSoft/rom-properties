@@ -167,7 +167,8 @@ const RomData::ImageSizeDef *RomDataPrivate::selectBestSize(const std::vector<Ro
 			// Find the smallest image.
 			const RomData::ImageSizeDef *ret = &sizeDefs[0];
 			int sz = std::min(ret->width, ret->height);
-			for (auto iter = sizeDefs.begin()+1; iter != sizeDefs.end(); ++iter) {
+			const auto sizeDefs_cend = sizeDefs.cend();
+			for (auto iter = sizeDefs.cbegin()+1; iter != sizeDefs_cend; ++iter) {
 				const RomData::ImageSizeDef *sizeDef = &(*iter);
 				if (sizeDef->width < sz || sizeDef->height < sz) {
 					ret = sizeDef;
@@ -181,7 +182,8 @@ const RomData::ImageSizeDef *RomDataPrivate::selectBestSize(const std::vector<Ro
 			// Find the largest image.
 			const RomData::ImageSizeDef *ret = &sizeDefs[0];
 			int sz = std::max(ret->width, ret->height);
-			for (auto iter = sizeDefs.begin()+1; iter != sizeDefs.end(); ++iter) {
+			const auto sizeDefs_cend = sizeDefs.cend();
+			for (auto iter = sizeDefs.cbegin()+1; iter != sizeDefs_cend; ++iter) {
 				const RomData::ImageSizeDef *sizeDef = &(*iter);
 				if (sizeDef->width > sz || sizeDef->height > sz) {
 					ret = sizeDef;
@@ -205,7 +207,8 @@ const RomData::ImageSizeDef *RomDataPrivate::selectBestSize(const std::vector<Ro
 		// Found a match already.
 		return ret;
 	}
-	for (auto iter = sizeDefs.cbegin()+1; iter != sizeDefs.cend(); ++iter) {
+	const auto sizeDefs_cend = sizeDefs.cend();
+	for (auto iter = sizeDefs.cbegin()+1; iter != sizeDefs_cend; ++iter) {
 		const RomData::ImageSizeDef *sizeDef = &(*iter);
 		const int szchk = std::max(sizeDef->width, sizeDef->height);
 		if (sz >= size) {

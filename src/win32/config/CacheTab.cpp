@@ -657,7 +657,8 @@ int CacheTabPrivate::clearRomPropertiesCache(void)
 	// Sanity check: Must be at least 8 characters.
 	const string cacheDir = FileSystem::getCacheDirectory();
 	size_t bscount = 0;
-	for (auto iter = cacheDir.cbegin(); iter != cacheDir.cend(); ++iter) {
+	const auto cacheDir_cend = cacheDir.cend();
+	for (auto iter = cacheDir.cbegin(); iter != cacheDir_cend; ++iter) {
 		if (*iter == L'\\')
 			bscount++;
 	}
@@ -728,7 +729,8 @@ int CacheTabPrivate::clearRomPropertiesCache(void)
 	SendMessage(hProgressBar, PBM_SETPOS, 2, 0);
 	unsigned int count = 0;
 	unsigned int dirErrs = 0, fileErrs = 0;
-	for (auto iter = rlist.cbegin(); iter != rlist.cend(); ++iter) {
+	const auto rlist_cend = rlist.cend();
+	for (auto iter = rlist.cbegin(); iter != rlist_cend; ++iter) {
 		if (iter->second & FILE_ATTRIBUTE_DIRECTORY) {
 			// Remove the directory.
 			BOOL bRet = RemoveDirectory(iter->first.c_str());

@@ -862,9 +862,11 @@ void RomDataFactoryPrivate::init_supportedFileExtensions(void)
 	);
 
 	// Make sure the vector's attributes fields are up to date.
-	for (auto iter = vec_exts.begin(); iter != vec_exts.end(); ++iter) {
-		iter->attrs = map_exts[iter->ext];
-	}
+	std::for_each(vec_exts.begin(), vec_exts.end(),
+		[&map_exts](RomDataFactory::ExtInfo &extInfo) {
+			extInfo.attrs = map_exts[extInfo.ext];
+		}
+	);
 }
 
 /**

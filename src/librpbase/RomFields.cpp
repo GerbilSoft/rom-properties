@@ -718,8 +718,9 @@ int RomFields::addFields_romFields(const RomFields *other, int tabOffset)
 		d->def_lc = other->d_ptr->def_lc;
 	}
 
+	const auto other_fields_cend = other->d_ptr->fields.cend();
 	for (auto old_iter = other->d_ptr->fields.cbegin();
-	     old_iter != other->d_ptr->fields.cend(); ++old_iter)
+	     old_iter != other_fields_cend; ++old_iter)
 	{
 		size_t idx = d->fields.size();
 		d->fields.resize(idx+1);

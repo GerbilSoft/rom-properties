@@ -613,6 +613,7 @@ int WiiU::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
 	// Add the URLs.
 	pExtURLs->resize(szdef_count * tdb_regions.size());
 	auto extURL_iter = pExtURLs->begin();
+	const auto tdb_regions_cend = tdb_regions.cend();
 	for (unsigned int i = 0; i < szdef_count; i++) {
 		// Current image type.
 		char imageTypeName[16];
@@ -621,7 +622,7 @@ int WiiU::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
 
 		// Add the images.
 		for (auto tdb_iter = tdb_regions.cbegin();
-		     tdb_iter != tdb_regions.cend(); ++tdb_iter, ++extURL_iter)
+		     tdb_iter != tdb_regions_cend; ++tdb_iter, ++extURL_iter)
 		{
 			extURL_iter->url = d->getURL_GameTDB("wiiu", imageTypeName, *tdb_iter, id6, ext);
 			extURL_iter->cache_key = d->getCacheKey_GameTDB("wiiu", imageTypeName, *tdb_iter, id6, ext);

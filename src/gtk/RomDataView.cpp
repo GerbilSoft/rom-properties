@@ -824,8 +824,8 @@ rom_data_view_init_bitfield(RomDataView *page, const RomFields::Field &field)
 
 	int row = 0, col = 0;
 	uint32_t bitfield = field.data.bitfield;
-	const auto iter_end = bitfieldDesc.names->cend();
-	for (auto iter = bitfieldDesc.names->cbegin(); iter != iter_end; ++iter, bitfield >>= 1) {
+	const auto names_cend = bitfieldDesc.names->cend();
+	for (auto iter = bitfieldDesc.names->cbegin(); iter != names_cend; ++iter, bitfield >>= 1) {
 		const string &name = *iter;
 		if (name.empty())
 			continue;
@@ -967,7 +967,8 @@ rom_data_view_init_listdata(G_GNUC_UNUSED RomDataView *page, const RomFields::Fi
 		checkboxes = field.data.list_data.mxd.checkboxes;
 	}
 	unsigned int row = 0;	// for icons [TODO: Use iterator?]
-	for (auto iter = list_data->cbegin(); iter != list_data->cend(); ++iter, row++) {
+	const auto list_data_cend = list_data->cend();
+	for (auto iter = list_data->cbegin(); iter != list_data_cend; ++iter, row++) {
 		const vector<string> &data_row = *iter;
 		// FIXME: Skip even if we don't have checkboxes?
 		// (also check other UI frontends)
@@ -1014,7 +1015,8 @@ rom_data_view_init_listdata(G_GNUC_UNUSED RomDataView *page, const RomFields::Fi
 
 		if (!isMulti) {
 			int col = col_start;
-			for (auto iter = data_row.cbegin(); iter != data_row.cend(); ++iter, col++) {
+			const auto data_row_cend = data_row.cend();
+			for (auto iter = data_row.cbegin(); iter != data_row_cend; ++iter, col++) {
 				gtk_list_store_set(listStore, &treeIter, col, iter->c_str(), -1);
 			}
 		}
@@ -1319,8 +1321,9 @@ static void
 rom_data_view_update_multi(RomDataView *page, uint32_t user_lc)
 {
 	// RFT_STRING_MULTI
+	const auto vecStringMulti_cend = page->vecStringMulti->cend();
 	for (auto iter = page->vecStringMulti->cbegin();
-	     iter != page->vecStringMulti->cend(); ++iter)
+	     iter != vecStringMulti_cend; ++iter)
 	{
 		GtkWidget *const lblString = iter->first;
 		const RomFields::Field *const pField = iter->second;
@@ -1335,8 +1338,9 @@ rom_data_view_update_multi(RomDataView *page, uint32_t user_lc)
 		if (!page->cboLanguage) {
 			// Need to add all supported languages.
 			// TODO: Do we need to do this for all of them, or just one?
+			const auto pStr_multi_cend = pStr_multi->cend();
 			for (auto iter_sm = pStr_multi->cbegin();
-			     iter_sm != pStr_multi->cend(); ++iter_sm)
+			     iter_sm != pStr_multi_cend; ++iter_sm)
 			{
 				page->set_lc->insert(iter_sm->first);
 			}
@@ -1349,8 +1353,9 @@ rom_data_view_update_multi(RomDataView *page, uint32_t user_lc)
 	}
 
 	// RFT_LISTDATA_MULTI
+	const auto vecListDataMulti_cend = page->vecListDataMulti->cend();
 	for (auto iter = page->vecListDataMulti->cbegin();
-	     iter != page->vecListDataMulti->cend(); ++iter)
+	     iter != vecListDataMulti_cend; ++iter)
 	{
 		GtkListStore *const listStore = iter->listStore;
 		const RomFields::Field *const pField = iter->field;
@@ -1365,8 +1370,9 @@ rom_data_view_update_multi(RomDataView *page, uint32_t user_lc)
 		if (!page->cboLanguage) {
 			// Need to add all supported languages.
 			// TODO: Do we need to do this for all of them, or just one?
+			const auto pListData_multi_cend = pListData_multi->cend();
 			for (auto iter_sm = pListData_multi->cbegin();
-			     iter_sm != pListData_multi->cend(); ++iter_sm)
+			     iter_sm != pListData_multi_cend; ++iter_sm)
 			{
 				page->set_lc->insert(iter_sm->first);
 			}
@@ -1392,11 +1398,13 @@ rom_data_view_update_multi(RomDataView *page, uint32_t user_lc)
 			GtkTreeIter treeIter;
 			gboolean ok = gtk_tree_model_get_iter_first(GTK_TREE_MODEL(listStore), &treeIter);
 			auto iter_listData = pListData->cbegin();
-			while (ok && iter_listData != pListData->cend()) {
+			const auto pListData_cend = pListData->cend();
+			while (ok && iter_listData != pListData_cend) {
 				// TODO: Verify GtkListStore column count?
 				int col = col_start;
+				const auto iter_listData_cend = iter_listData->cend();
 				for (auto iter_row = iter_listData->cbegin();
-				iter_row != iter_listData->cend(); ++iter_row, col++)
+				     iter_row != iter_listData_cend; ++iter_row, col++)
 				{
 					gtk_list_store_set(listStore, &treeIter, col, iter_row->c_str(), -1);
 				}
@@ -1423,7 +1431,8 @@ rom_data_view_update_multi(RomDataView *page, uint32_t user_lc)
 		page->lstoreLanguage = gtk_list_store_new(3, PIMGTYPE_GOBJECT_TYPE, G_TYPE_STRING, G_TYPE_UINT);
 
 		int sel_idx = -1;
-		for (auto iter = page->set_lc->cbegin(); iter != page->set_lc->cend(); ++iter) {
+		const auto set_lc_cend = page->set_lc->cend();
+		for (auto iter = page->set_lc->cbegin(); iter != set_lc_cend; ++iter) {
 			const uint32_t lc = *iter;
 			const char *const name = SystemRegion::getLocalizedLanguageName(lc);
 
@@ -1615,8 +1624,8 @@ rom_data_view_update_display(RomDataView *page)
 	const char *const desc_label_fmt = C_("RomDataView", "%s:");
 
 	// Create the data widgets.
-	const auto iter_end = pFields->cend();
-	for (auto iter = pFields->cbegin(); iter != iter_end; ++iter) {
+	const auto pFields_cend = pFields->cend();
+	for (auto iter = pFields->cbegin(); iter != pFields_cend; ++iter) {
 		const RomFields::Field &field = *iter;
 		if (!field.isValid)
 			continue;
@@ -1714,7 +1723,7 @@ rom_data_view_update_display(RomDataView *page)
 				bool doVBox = false;
 				RomFields::const_iterator nextIter = iter;
 				++nextIter;
-				if (tabIdx + 1 == tabCount && (nextIter == iter_end)) {
+				if (tabIdx + 1 == tabCount && (nextIter == pFields_cend)) {
 					// Last tab, and last field.
 					doVBox = true;
 				} else {

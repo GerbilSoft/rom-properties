@@ -686,11 +686,12 @@ int SAP::loadFieldData(void)
 
 	// Song list.
 	if (!tags.durations.empty()) {
+		unsigned int song_num = 0;
 		auto song_list = new RomFields::ListData_t(tags.durations.size());
 		auto src_iter = tags.durations.cbegin();
 		auto dest_iter = song_list->begin();
-		unsigned int song_num = 0;
-		for ( ; dest_iter != song_list->end(); ++src_iter, ++dest_iter, song_num++) {
+		const auto song_list_end = song_list->end();
+		for ( ; dest_iter != song_list_end; ++src_iter, ++dest_iter, song_num++) {
 			vector<string> &data_row = *dest_iter;
 			data_row.reserve(3);	// 3 fields per row.
 
