@@ -2704,29 +2704,11 @@ void RP_ShellPropSheetExt_Private::createOptionsButton(void)
 		rect_btnOK.bottom - rect_btnOK.top
 	};
 
-	// Check the COMCTL32.DLL version.
-	// TODO: Split this into libwin32common. (Also present in KeyManagerTab.)
-	bool isComCtl32_610 = false;
-	HMODULE hComCtl32 = GetModuleHandle(_T("COMCTL32"));
-	assert(hComCtl32 != nullptr);
-	typedef HRESULT (CALLBACK *PFNDLLGETVERSION)(DLLVERSIONINFO *pdvi);
-	PFNDLLGETVERSION pfnDllGetVersion = nullptr;
-	if (hComCtl32) {
-		pfnDllGetVersion = (PFNDLLGETVERSION)GetProcAddress(hComCtl32, "DllGetVersion");
-	}
-	if (pfnDllGetVersion) {
-		DLLVERSIONINFO dvi;
-		dvi.cbSize = sizeof(dvi);
-		HRESULT hr = pfnDllGetVersion(&dvi);
-		if (SUCCEEDED(hr)) {
-			isComCtl32_610 = dvi.dwMajorVersion > 6 ||
-				(dvi.dwMajorVersion == 6 && dvi.dwMinorVersion >= 10);
-		}
-	}
+	const bool isComCtl32_v610 = LibWin32Common::isComCtl32_v610();
 
 	tstring ts_caption;
 	LONG lStyle = WS_CHILD | WS_VISIBLE | WS_TABSTOP | WS_GROUP | BS_CENTER;
-	if (isComCtl32_610) {
+	if (isComCtl32_v610) {
 		// COMCTL32 is v6.10 or later. Use BS_SPLITBUTTON.
 		// (Windows Vista or later)
 		lStyle |= BS_SPLITBUTTON;
@@ -2746,7 +2728,7 @@ void RP_ShellPropSheetExt_Private::createOptionsButton(void)
 		hWndParent, (HMENU)IDC_RP_OPTIONS, nullptr, nullptr);
 	SetWindowFont(hBtnOptions, hFontDlg, FALSE);
 
-	if (isComCtl32_610) {
+	if (isComCtl32_v610) {
 		BUTTON_SPLITINFO bsi;
 		bsi.mask = BCSIF_STYLE;
 		bsi.uSplitStyle = BCSS_NOSPLIT;
