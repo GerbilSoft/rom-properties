@@ -103,6 +103,7 @@ class RP_ShellPropSheetExt_Private
 
 		// Useful window handles.
 		HWND hDlgSheet;		// Property sheet.
+		HWND hBtnOptions;	// Options button.
 
 		// Fonts.
 		HFONT hFontDlg;		// Main dialog font.
@@ -358,11 +359,16 @@ class RP_ShellPropSheetExt_Private
 
 	public:
 		/**
-		 * Initialize the dialog.
+		 * Initialize the dialog. (hDlgSheet)
 		 * Called by WM_INITDIALOG.
-		 * @param hDlg Dialog window.
 		 */
-		void initDialog(HWND hDlg);
+		void initDialog(void);
+
+		/**
+		 * Create the "Options" button in the parent window.
+		 * Called by WM_INITDIALOG.
+		 */
+		void createOptionsButton(void);
 
 	private:
 		// Internal functions used by the callback functions.
@@ -396,6 +402,7 @@ RP_ShellPropSheetExt_Private::RP_ShellPropSheetExt_Private(RP_ShellPropSheetExt 
 	, filename(std::move(filename))
 	, romData(nullptr)
 	, hDlgSheet(nullptr)
+	, hBtnOptions(nullptr)
 	, hFontDlg(nullptr)
 	, hFontBold(nullptr)
 	, fontHandler(nullptr)
@@ -2261,15 +2268,14 @@ void RP_ShellPropSheetExt_Private::initBoldFont(HFONT hFont)
 }
 
 /**
- * Initialize the dialog.
+ * Initialize the dialog. (hDlgSheet)
  * Called by WM_INITDIALOG.
- * @param hDlg Dialog window.
  */
-void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
+void RP_ShellPropSheetExt_Private::initDialog(void)
 {
-	assert(hDlg != nullptr);
+	assert(hDlgSheet != nullptr);
 	assert(romData != nullptr);
-	if (!hDlg || !romData) {
+	if (!hDlgSheet || !romData) {
 		// No dialog, or no ROM data loaded.
 		return;
 	}
@@ -2295,13 +2301,13 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 
 	// Dialog font and device context.
 	if (!hFontDlg) {
-		hFontDlg = GetWindowFont(hDlg);
+		hFontDlg = GetWindowFont(hDlgSheet);
 	}
-	AutoGetDC hDC(hDlg, hFontDlg);
+	AutoGetDC hDC(hDlgSheet, hFontDlg);
 
 	// Initialize the fonts.
 	initBoldFont(hFontDlg);
-	fontHandler.setWindow(hDlg);
+	fontHandler.setWindow(hDlgSheet);
 
 	// Convert the bitfield description names to the
 	// native Windows encoding once.
@@ -2362,14 +2368,14 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 	// Each static control is max_text_width pixels wide
 	// and 8 DLUs tall, plus 4 vertical DLUs for spacing.
 	RECT tmpRect = {0, 0, 0, 8+4};
-	MapDialogRect(hDlg, &tmpRect);
+	MapDialogRect(hDlgSheet, &tmpRect);
 	SIZE descSize = {max_text_width, tmpRect.bottom};
 
 	// Get the dialog margin.
 	// 7x7 DLU margin is recommended by the Windows UX guidelines.
 	// Reference: http://stackoverflow.com/questions/2118603/default-dialog-padding
 	RECT dlgMargin = {7, 7, 8, 8};
-	MapDialogRect(hDlg, &dlgMargin);
+	MapDialogRect(hDlgSheet, &dlgMargin);
 
 	// Get the dialog size.
 	// - fullDlgRect: Full dialog size
@@ -2377,7 +2383,7 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 	// FIXME: Vertical height is off by 3px on Win7...
 	// Verified with WinSpy++: expected 341x408, got 341x405.
 	RECT fullDlgRect, dlgRect;
-	GetClientRect(hDlg, &fullDlgRect);
+	GetClientRect(hDlgSheet, &fullDlgRect);
 	dlgRect = fullDlgRect;
 	// Adjust the rectangle for margins.
 	InflateRect(&dlgRect, -dlgMargin.left, -dlgMargin.top);
@@ -2393,7 +2399,7 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 
 	// Create the header row.
 	const SIZE header_size = {dlgSize.cx, descSize.cy};
-	const int headerH = createHeaderRow(hDlg, headerPt, header_size);
+	const int headerH = createHeaderRow(hDlgSheet, headerPt, header_size);
 	// Save the header rect for later.
 	rectHeader.left = headerPt.x;
 	rectHeader.top = headerPt.y;
@@ -2422,7 +2428,7 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 			WC_TABCONTROL, nullptr,
 			WS_CHILD | WS_TABSTOP | WS_VISIBLE,
 			dlgRect.left, dlgRect.top, dlgSize.cx, dlgSize.cy,
-			hDlg, (HMENU)(INT_PTR)IDC_TAB_WIDGET,
+			hDlgSheet, (HMENU)(INT_PTR)IDC_TAB_WIDGET,
 			nullptr, nullptr);
 		SetWindowFont(tabWidget, hFontDlg, false);
 		curTabIndex = 0;
@@ -2467,7 +2473,7 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 			// Create a child dialog for the tab.
 			tab.hDlg = CreateDialog(HINST_THISCOMPONENT,
 				MAKEINTRESOURCE(IDD_SUBTAB_CHILD_DIALOG),
-				hDlg, SubtabDlgProc);
+				hDlgSheet, SubtabDlgProc);
 			SetWindowPos(tab.hDlg, nullptr,
 				dlgRect.left, dlgRect.top,
 				dlgSize.cx, dlgSize.cy,
@@ -2489,7 +2495,7 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 		tabCount = 1;
 		tabs.resize(1);
 		auto &tab = tabs[0];
-		tab.hDlg = hDlg;
+		tab.hDlg = hDlgSheet;
 		tab.curPt = headerPt;
 	}
 
@@ -2536,11 +2542,11 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 
 			case RomFields::RFT_STRING:
 				// String data.
-				field_cy = initString(hDlg, tab.hDlg, pt_start, idx, size, field, nullptr);
+				field_cy = initString(hDlgSheet, tab.hDlg, pt_start, idx, size, field, nullptr);
 				break;
 			case RomFields::RFT_BITFIELD:
 				// Create checkboxes starting at the current point.
-				field_cy = initBitfield(hDlg, tab.hDlg, pt_start, idx, field);
+				field_cy = initBitfield(hDlgSheet, tab.hDlg, pt_start, idx, field);
 				break;
 			case RomFields::RFT_LISTDATA: {
 				// Create a ListView control.
@@ -2591,7 +2597,7 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 					}
 				}
 
-				field_cy = initListData(hDlg, tab.hDlg, pt_ListData, idx, size, !doVBox, field);
+				field_cy = initListData(hDlgSheet, tab.hDlg, pt_ListData, idx, size, !doVBox, field);
 				if (field_cy > 0) {
 					// Add the extra row if necessary.
 					if (field.desc.list_data.flags & RomFields::RFT_LISTDATA_SEPARATE_ROW) {
@@ -2607,19 +2613,19 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 
 			case RomFields::RFT_DATETIME:
 				// Date/Time in Unix format.
-				field_cy = initDateTime(hDlg, tab.hDlg, pt_start, idx, size, field);
+				field_cy = initDateTime(hDlgSheet, tab.hDlg, pt_start, idx, size, field);
 				break;
 			case RomFields::RFT_AGE_RATINGS:
 				// Age Ratings field.
-				field_cy = initAgeRatings(hDlg, tab.hDlg, pt_start, idx, size, field);
+				field_cy = initAgeRatings(hDlgSheet, tab.hDlg, pt_start, idx, size, field);
 				break;
 			case RomFields::RFT_DIMENSIONS:
 				// Dimensions field.
-				field_cy = initDimensions(hDlg, tab.hDlg, pt_start, idx, size, field);
+				field_cy = initDimensions(hDlgSheet, tab.hDlg, pt_start, idx, size, field);
 				break;
 			case RomFields::RFT_STRING_MULTI:
 				// Multi-language string field.
-				field_cy = initStringMulti(hDlg, tab.hDlg, pt_start, idx, size, field);
+				field_cy = initStringMulti(hDlgSheet, tab.hDlg, pt_start, idx, size, field);
 				break;
 
 			default:
@@ -2646,10 +2652,113 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 	}
 
 	// Register for WTS session notifications. (Remote Desktop)
-	wts.registerSessionNotification(hDlg, NOTIFY_FOR_THIS_SESSION);
+	wts.registerSessionNotification(hDlgSheet, NOTIFY_FOR_THIS_SESSION);
 
 	// Window is fully initialized.
 	isFullyInit = true;
+}
+
+/**
+ * Create the "Options" button in the parent window.
+ * Called by WM_INITDIALOG.
+ */
+void RP_ShellPropSheetExt_Private::createOptionsButton(void)
+{
+	assert(hDlgSheet != nullptr);
+	assert(romData != nullptr);
+	if (!hDlgSheet || !romData) {
+		// No dialog, or no ROM data loaded.
+		return;
+	}
+
+	HWND hWndParent = GetParent(hDlgSheet);
+	assert(hWndParent != nullptr);
+	if (!hWndParent) {
+		// No parent window...
+		return;
+	}
+
+	// is the "Options" button already present?
+	if (GetDlgItem(hWndParent, IDC_RP_OPTIONS) != nullptr) {
+		assert(!"IDC_RP_OPTIONS is already created.");
+		return;
+	}
+
+	// TODO: Verify RTL positioning.
+	HWND hBtnOK = GetDlgItem(hWndParent, IDOK);
+	HWND hTabControl = PropSheet_GetTabControl(hWndParent);
+	if (!hBtnOK || !hTabControl) {
+		return;
+	}
+
+	RECT rect_btnOK, rect_tabControl;
+	GetWindowRect(hBtnOK, &rect_btnOK);
+	GetWindowRect(hTabControl, &rect_tabControl);
+	MapWindowPoints(HWND_DESKTOP, hWndParent, (LPPOINT)&rect_btnOK, 2);
+	MapWindowPoints(HWND_DESKTOP, hWndParent, (LPPOINT)&rect_tabControl, 2);
+
+	// Create the "Options" button.
+	POINT ptBtn = {rect_tabControl.left, rect_btnOK.top};
+	const SIZE szBtn = {
+		rect_btnOK.right - rect_btnOK.left,
+		rect_btnOK.bottom - rect_btnOK.top
+	};
+
+	// Check the COMCTL32.DLL version.
+	// TODO: Split this into libwin32common. (Also present in KeyManagerTab.)
+	bool isComCtl32_610 = false;
+	HMODULE hComCtl32 = GetModuleHandle(_T("COMCTL32"));
+	assert(hComCtl32 != nullptr);
+	typedef HRESULT (CALLBACK *PFNDLLGETVERSION)(DLLVERSIONINFO *pdvi);
+	PFNDLLGETVERSION pfnDllGetVersion = nullptr;
+	if (hComCtl32) {
+		pfnDllGetVersion = (PFNDLLGETVERSION)GetProcAddress(hComCtl32, "DllGetVersion");
+	}
+	if (pfnDllGetVersion) {
+		DLLVERSIONINFO dvi;
+		dvi.cbSize = sizeof(dvi);
+		HRESULT hr = pfnDllGetVersion(&dvi);
+		if (SUCCEEDED(hr)) {
+			isComCtl32_610 = dvi.dwMajorVersion > 6 ||
+				(dvi.dwMajorVersion == 6 && dvi.dwMinorVersion >= 10);
+		}
+	}
+
+	tstring ts_caption;
+	LONG lStyle = WS_CHILD | WS_VISIBLE | WS_TABSTOP | WS_GROUP | BS_CENTER;
+	if (isComCtl32_610) {
+		// COMCTL32 is v6.10 or later. Use BS_SPLITBUTTON.
+		// (Windows Vista or later)
+		lStyle |= BS_SPLITBUTTON;
+		// tr: "Options" button.
+		ts_caption = U82T_c(C_("RomDataView", "Op&tions"));
+	} else {
+		// COMCTL32 is older than v6.10. Use a regular button.
+		// NOTE: The Unicode down arrow doesn't show on on Windows XP.
+		// Maybe we *should* use ownerdraw...
+		// tr: "Options" button. (WinXP version, with ellipsis.)
+		ts_caption = U82T_c(C_("RomDataView", "Op&tions..."));
+	}
+
+	hBtnOptions = CreateWindowEx(0, WC_BUTTON,
+		ts_caption.c_str(), lStyle,
+		ptBtn.x, ptBtn.y, szBtn.cx, szBtn.cy,
+		hWndParent, (HMENU)IDC_RP_OPTIONS, nullptr, nullptr);
+	SetWindowFont(hBtnOptions, hFontDlg, FALSE);
+
+	if (isComCtl32_610) {
+		BUTTON_SPLITINFO bsi;
+		bsi.mask = BCSIF_STYLE;
+		bsi.uSplitStyle = BCSS_NOSPLIT;
+		Button_SetSplitInfo(hBtnOptions, &bsi);
+	}
+
+	// Fix up the tab order. ("Options" should be after "Apply".)
+	HWND hBtnApply = GetDlgItem(hWndParent, IDC_APPLY_BUTTON);
+	if (hBtnApply) {
+		SetWindowPos(hBtnOptions, hBtnApply,
+			0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
+	}
 }
 
 /** RP_ShellPropSheetExt **/
@@ -2989,11 +3098,17 @@ INT_PTR RP_ShellPropSheetExt_Private::DlgProc_WM_NOTIFY(HWND hDlg, NMHDR *pHdr)
 			if (lblIcon) {
 				lblIcon->startAnimTimer();
 			}
+			if (hBtnOptions) {
+				ShowWindow(hBtnOptions, SW_SHOW);
+			}
 			break;
 
 		case PSN_KILLACTIVE:
 			if (lblIcon) {
 				lblIcon->stopAnimTimer();
+			}
+			if (hBtnOptions) {
+				ShowWindow(hBtnOptions, SW_HIDE);
 			}
 			break;
 
@@ -3221,9 +3336,12 @@ INT_PTR CALLBACK RP_ShellPropSheetExt_Private::DlgProc(HWND hDlg, UINT uMsg, WPA
 			// Load the images.
 			d->loadImages();
 			// Initialize the dialog.
-			d->initDialog(hDlg);
+			d->initDialog();
 			// We can close the RomData's underlying IRpFile now.
 			d->romData->close();
+
+			// Create the "Options" button in the parent window.
+			d->createOptionsButton();
 
 			// Start the icon animation timer.
 			if (d->lblIcon) {

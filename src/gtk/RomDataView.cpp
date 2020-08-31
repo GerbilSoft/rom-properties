@@ -135,6 +135,9 @@ struct _RomDataView {
 	/* Timeouts */
 	guint		changed_idle;
 
+	// "Options" button.
+	GtkWidget	*btnOptions;
+
 	// Header row.
 	GtkWidget	*hboxHeaderRow_outer;
 	GtkWidget	*hboxHeaderRow;
@@ -1512,12 +1515,101 @@ rom_data_view_update_multi(RomDataView *page, uint32_t user_lc)
 }
 
 static void
+rom_data_view_create_options_button(RomDataView *page)
+{
+	assert(!page->btnOptions);
+	if (page->btnOptions != nullptr)
+		return;
+
+	GtkWidget *parent = gtk_widget_get_parent(GTK_WIDGET(page));
+	if (page->desc_format_type == RP_DFT_XFCE) {
+		// On XFCE, the first parent is ThunarxPropertyPage.
+		// On GNOME, this is skipped and we go directly to GtkNotebook.
+		parent = gtk_widget_get_parent(parent);
+	}
+
+	// On GNOME, the first parent is GtkNotebook.
+	assert(GTK_IS_NOTEBOOK(parent));
+	if (!GTK_IS_NOTEBOOK(parent))
+		return;
+
+	// Next: GtkBox (or GtkVBox for GTK+ 2.x).
+	parent = gtk_widget_get_parent(parent);
+#if GTK_CHECK_VERSION(3,0,0)
+	assert(GTK_IS_BOX(parent) || GTK_IS_VBOX(parent));
+	if (!GTK_IS_BOX(parent) && !GTK_IS_VBOX(parent))
+		return;
+#else /* !GTK_CHECK_VERSION(3,0,0) */
+	assert(GTK_IS_VBOX(parent));
+	if (!GTK_IS_VBOX(parent))
+		return;
+#endif /* GTK_CHECK_VERSION(3,0,0) */
+
+	// Next: GtkDialog subclass.
+	// - XFCE: ThunarPropertiesDialog
+	// - Nautilus: NautilusPropertiesWindow
+	// - Caja: FMPropertiesWindow
+	// - Nemo: NemoPropertiesWindow
+	parent = gtk_widget_get_parent(parent);
+	assert(GTK_IS_DIALOG(parent));
+	if (!GTK_IS_DIALOG(parent))
+		return;
+
+	// NOTE: GTK+ uses '_' for accelerators, not '&'.
+	string s_title = C_("RomDataView", "Op&tions");
+	size_t accel_pos = s_title.find('&');
+	if (accel_pos != string::npos) {
+		s_title[accel_pos] = '_';
+	}
+
+	// Add an "Options" button.
+	// TODO: Connect the signal.
+	// TODO: Submenu.
+	page->btnOptions = gtk_dialog_add_button(GTK_DIALOG(parent), s_title.c_str(), GTK_RESPONSE_NONE);
+	gtk_widget_hide(page->btnOptions);
+	assert(page->btnOptions != nullptr);
+	if (!page->btnOptions)
+		return;
+
+	// Disconnect the "clicked" signal from the default GtkDialog response handler.
+	guint signal_id = g_signal_lookup("clicked", GTK_TYPE_BUTTON);
+	gulong handler_id = g_signal_handler_find(page->btnOptions, G_SIGNAL_MATCH_ID,
+		signal_id, 0, nullptr, 0, 0);
+	g_signal_handler_disconnect(page->btnOptions, handler_id);
+
+#if GTK_CHECK_VERSION(3,12,0)
+	GtkWidget *const headerBar = gtk_dialog_get_header_bar(GTK_DIALOG(parent));
+	if (headerBar) {
+		// Dialog has a Header Bar instead of an action area.
+		// No reordering is necessary.
+		return;
+	}
+#endif /* GTK_CHECK_VERSION(3,12,0) */
+
+	// Reorder the "Options" button so it's to the right of "Help".
+	// NOTE: GTK+ 3.10 introduced the GtkHeaderBar, but
+	// gtk_dialog_get_header_bar() was added in GTK+ 3.12.
+	// Hence, this might not work properly on GTK+ 3.10.
+	GtkWidget *const btnBox = gtk_widget_get_parent(page->btnOptions);
+	//assert(GTK_IS_BUTTON_BOX(btnBox));
+	if (GTK_IS_BUTTON_BOX(btnBox))
+	{
+		gtk_button_box_set_child_secondary(GTK_BUTTON_BOX(btnBox), page->btnOptions, TRUE);
+	}
+}
+
+static void
 rom_data_view_update_display(RomDataView *page)
 {
 	assert(page != nullptr);
 
 	// Delete the icon frames and tabs.
 	rom_data_view_delete_tabs(page);
+
+	// Create the "Options" button.
+	if (!page->btnOptions) {
+		rom_data_view_create_options_button(page);
+	}
 
 	// Initialize the header row.
 	rom_data_view_init_header_row(page);
@@ -1951,6 +2043,9 @@ rom_data_view_map_signal_handler(RomDataView	*page,
 {
 	RP_UNUSED(user_data);
 	drag_image_start_anim_timer(DRAG_IMAGE(page->imgIcon));
+	if (page->btnOptions) {
+		gtk_widget_show(page->btnOptions);
+	}
 }
 
 /**
@@ -1964,6 +2059,9 @@ rom_data_view_unmap_signal_handler(RomDataView	*page,
 {
 	RP_UNUSED(user_data);
 	drag_image_stop_anim_timer(DRAG_IMAGE(page->imgIcon));
+	if (page->btnOptions) {
+		gtk_widget_hide(page->btnOptions);
+	}
 }
 
 /**
