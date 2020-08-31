@@ -1963,7 +1963,7 @@ rom_data_view_unmap_signal_handler(RomDataView	*page,
 				   gpointer	 user_data)
 {
 	RP_UNUSED(user_data);
-	drag_image_start_anim_timer(DRAG_IMAGE(page->imgIcon));
+	drag_image_stop_anim_timer(DRAG_IMAGE(page->imgIcon));
 }
 
 /**
