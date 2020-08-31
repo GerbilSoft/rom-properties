@@ -9,7 +9,9 @@
 #include "config.libwin32common.h"
 #include "WinUI.hpp"
 #include "AutoGetDC.hpp"
+
 #include <commctrl.h>
+#include <shlwapi.h>
 
 // C++ includes.
 #include <memory>
@@ -193,6 +195,37 @@ COLORREF getAltRowColor(void)
 	}
 
 	return rgb.color;
+}
+
+/**
+ * Are we using COMCTL32.DLL v6.10 or later?
+ * @return True if it's v6.10 or later; false if not.
+ */
+bool isComCtl32_v610(void)
+{
+	// Check the COMCTL32.DLL version.
+	// TODO: Split this into libwin32common. (Also present in KeyManagerTab.)
+	HMODULE hComCtl32 = GetModuleHandle(_T("COMCTL32"));
+	assert(hComCtl32 != nullptr);
+
+	typedef HRESULT (CALLBACK *PFNDLLGETVERSION)(DLLVERSIONINFO *pdvi);
+	PFNDLLGETVERSION pfnDllGetVersion = nullptr;
+	if (!hComCtl32)
+		return false;
+
+	pfnDllGetVersion = (PFNDLLGETVERSION)GetProcAddress(hComCtl32, "DllGetVersion");
+	if (!pfnDllGetVersion)
+		return false;
+
+	bool ret = false;
+	DLLVERSIONINFO dvi;
+	dvi.cbSize = sizeof(dvi);
+	HRESULT hr = pfnDllGetVersion(&dvi);
+	if (SUCCEEDED(hr)) {
+		ret = dvi.dwMajorVersion > 6 ||
+			(dvi.dwMajorVersion == 6 && dvi.dwMinorVersion >= 10);
+	}
+	return ret;
 }
 
 /** Window procedure subclasses **/

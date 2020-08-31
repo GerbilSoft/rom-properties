@@ -139,7 +139,7 @@ class KeyManagerTabPrivate
 		bool bAllowKanji;	// Allow kanji in the editor.
 
 		// Is this COMCTL32.dll v6.10 or later?
-		bool isComCtl32_610;
+		bool isComCtl32_v610;
 
 		// wtsapi32.dll for Remote Desktop status. (WinXP and later)
 		WTSSessionNotification wts;
@@ -229,7 +229,7 @@ KeyManagerTabPrivate::KeyManagerTabPrivate()
 	, iEditItem(-1)
 	, bCancelEdit(false)
 	, bAllowKanji(false)
-	, isComCtl32_610(false)
+	, isComCtl32_v610(false)
 	, iconSize(0)
 	, hIconUnknown(nullptr)
 	, hIconInvalid(nullptr)
@@ -245,22 +245,7 @@ KeyManagerTabPrivate::KeyManagerTabPrivate()
 	hbrAltRow = CreateSolidBrush(colorAltRow);
 
 	// Check the COMCTL32.DLL version.
-	HMODULE hComCtl32 = GetModuleHandle(_T("COMCTL32"));
-	assert(hComCtl32 != nullptr);
-	typedef HRESULT (CALLBACK *PFNDLLGETVERSION)(DLLVERSIONINFO *pdvi);
-	PFNDLLGETVERSION pfnDllGetVersion = nullptr;
-	if (hComCtl32) {
-		pfnDllGetVersion = (PFNDLLGETVERSION)GetProcAddress(hComCtl32, "DllGetVersion");
-	}
-	if (pfnDllGetVersion) {
-		DLLVERSIONINFO dvi;
-		dvi.cbSize = sizeof(dvi);
-		HRESULT hr = pfnDllGetVersion(&dvi);
-		if (SUCCEEDED(hr)) {
-			isComCtl32_610 = dvi.dwMajorVersion > 6 ||
-				(dvi.dwMajorVersion == 6 && dvi.dwMinorVersion >= 10);
-		}
-	}
+	isComCtl32_v610 = LibWin32Common::isComCtl32_v610();
 }
 
 KeyManagerTabPrivate::~KeyManagerTabPrivate()
@@ -315,7 +300,7 @@ void KeyManagerTabPrivate::initUI(void)
 	if (!hBtnImport || !hListView)
 		return;
 
-	if (isComCtl32_610) {
+	if (isComCtl32_v610) {
 		// COMCTL32 is v6.10 or later. Use BS_SPLITBUTTON.
 		// (Windows Vista or later)
 		LONG lStyle = GetWindowLong(hBtnImport, GWL_STYLE);
@@ -370,7 +355,7 @@ void KeyManagerTabPrivate::initUI(void)
 	lvCol.pszText = const_cast<LPTSTR>(tsColTitle.c_str());
 	ListView_InsertColumn(hListView, 2, &lvCol);
 
-	if (isComCtl32_610) {
+	if (isComCtl32_v610) {
 		// Set the IOwnerDataCallback.
 		bool hasIListView = false;
 
@@ -1209,7 +1194,7 @@ inline int KeyManagerTabPrivate::ListView_CustomDraw(NMLVCUSTOMDRAW *plvcd)
 {
 	// Check if this is an "odd" row.
 	bool isOdd;
-	if (isComCtl32_610) {
+	if (isComCtl32_v610) {
 		// COMCTL32.dll v6.10: We're using groups, so
 		// check the key index within the section.
 		int sectIdx = -1, keyIdx = -1;

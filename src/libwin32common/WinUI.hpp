@@ -114,6 +114,12 @@ static inline uint32_t GetSysColor_ARGB32(int nIndex)
 	       ((color >> 16) & 0xFF);
 }
 
+/**
+ * Are we using COMCTL32.DLL v6.10 or later?
+ * @return True if it's v6.10 or later; false if not.
+ */
+bool isComCtl32_v610(void);
+
 /** Window procedure subclasses **/
 
 /**
