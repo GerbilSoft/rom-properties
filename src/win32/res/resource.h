@@ -41,6 +41,7 @@
 // Custom property sheet controls.
 #define IDC_RP_RESET                            13431
 #define IDC_RP_DEFAULTS                         13432
+#define IDC_RP_OPTIONS                          13433
 
 // "Reset" and "Defaults" messages.
 // The parent PropertySheet doesn't store any user data, so we can't

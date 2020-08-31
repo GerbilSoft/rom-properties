@@ -33,6 +33,9 @@ using std::vector;
 # include <kacceleratormanager.h>
 #endif /* QT_VERSION >= QT_VERSION_CHECK(5,0,0) */
 
+// KPageWidget
+#include <KWidgetsAddons/kpagewidget.h>
+
 #include "ui_RomDataView.h"
 class RomDataViewPrivate
 {
@@ -48,6 +51,9 @@ class RomDataViewPrivate
 
 	public:
 		Ui::RomDataView ui;
+
+		// "Options" button.
+		QPushButton *btnOptions;
 
 		// Tab contents.
 		struct tab {
@@ -73,6 +79,11 @@ class RomDataViewPrivate
 
 		// RomData object.
 		RomData *romData;
+
+		/**
+		 * Create the "Options" button in the parent window.
+		 */
+		void createOptionsButton(void);
 
 		/**
 		 * Initialize the header row widgets.
@@ -172,6 +183,7 @@ class RomDataViewPrivate
 
 RomDataViewPrivate::RomDataViewPrivate(RomDataView *q, RomData *romData)
 	: q_ptr(q)
+	, btnOptions(nullptr)
 	, def_lc(0)
 	, cboLanguage(nullptr)
 	, romData(romData->ref())
@@ -186,6 +198,45 @@ RomDataViewPrivate::~RomDataViewPrivate()
 	ui.lblIcon->clearRp();
 	ui.lblBanner->clearRp();
 	UNREF(romData);
+}
+
+/**
+ * Create the "Options" button in the parent window.
+ */
+void RomDataViewPrivate::createOptionsButton(void)
+{
+	assert(btnOptions == nullptr);
+	if (btnOptions)
+		return;
+
+	Q_Q(RomDataView);
+
+	// Parent should be a KPropertiesDialog.
+	QObject *const parent = q->parent();
+	assert(parent != nullptr);
+	if (!parent)
+		return;
+
+	// Parent should contain a KPageWidget.
+	KPageWidget *const pageWidget = parent->findChild<KPageWidget*>(
+		QString(), Qt::FindDirectChildrenOnly);
+	assert(pageWidget != nullptr);
+	if (!pageWidget)
+		return;
+
+	// KPageWidget should contain a QDialogButtonBox.
+	QDialogButtonBox *const btnBox = pageWidget->findChild<QDialogButtonBox*>(
+		QString(), Qt::FindDirectChildrenOnly);
+	assert(btnBox != nullptr);
+	if (!btnBox)
+		return;
+
+	// Create the "Options" button.
+	// TODO: Left-align the button.
+	// TODO: Submenu.
+	// tr: "Options" button.
+	btnOptions = btnBox->addButton(U82Q(C_("RomDataView", "Op&tions")), QDialogButtonBox::ActionRole);
+	btnOptions->hide();
 }
 
 /**
@@ -1211,7 +1262,8 @@ RomDataView::RomDataView(QWidget *parent)
 	Q_D(RomDataView);
 	d->ui.setupUi(this);
 
-	// No display widgets to initialize...
+	// Create the "Options" button in the parent window.
+	d->createOptionsButton();
 }
 
 RomDataView::RomDataView(RomData *romData, QWidget *parent)
@@ -1220,6 +1272,9 @@ RomDataView::RomDataView(RomData *romData, QWidget *parent)
 {
 	Q_D(RomDataView);
 	d->ui.setupUi(this);
+
+	// Create the "Options" button in the parent window.
+	d->createOptionsButton();
 
 	// Initialize the display widgets.
 	d->initDisplayWidgets();
@@ -1243,6 +1298,11 @@ void RomDataView::showEvent(QShowEvent *event)
 	Q_D(RomDataView);
 	d->ui.lblIcon->startAnimTimer();
 
+	// Show the "Options" button.
+	if (d->btnOptions) {
+		d->btnOptions->show();
+	}
+
 	// Pass the event to the superclass.
 	super::showEvent(event);
 }
@@ -1257,6 +1317,11 @@ void RomDataView::hideEvent(QHideEvent *event)
 	// Stop the icon animation.
 	Q_D(RomDataView);
 	d->ui.lblIcon->stopAnimTimer();
+
+	// Hide the "Options" button.
+	if (d->btnOptions) {
+		d->btnOptions->hide();
+	}
 
 	// Pass the event to the superclass.
 	super::hideEvent(event);

@@ -238,6 +238,7 @@ LRESULT CALLBACK ConfigDialogPrivate::subclassProc(
 				break;
 			}
 
+			// TODO: Verify RTL positioning.
 			HWND hBtnOK = GetDlgItem(hWnd, IDOK);
 			HWND hBtnCancel = GetDlgItem(hWnd, IDCANCEL);
 			HWND hTabControl = PropSheet_GetTabControl(hWnd);
