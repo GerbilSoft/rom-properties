@@ -10,7 +10,7 @@
 #include "RomDataView.hpp"
 #include "RpQImageBackend.hpp"
 
-// librpbase, librpfile librptexture
+// librpbase, librpfile, librptexture
 #include "librpbase/TextOut.hpp"
 using namespace LibRpBase;
 using LibRpFile::IRpFile;
@@ -82,6 +82,12 @@ class RomDataViewPrivate
 		// Multi-language functionality.
 		uint32_t def_lc;
 		QComboBox *cboLanguage;
+
+		/**
+		 * Get the selected language code.
+		 * @return Selected language code, or 0 for none (default).
+		 */
+		inline uint32_t sel_lc(void) const;
 
 		// RFT_STRING_MULTI value labels.
 		typedef std::pair<QLabel*, const RomFields::Field*> Data_StringMulti_t;
@@ -216,6 +222,20 @@ RomDataViewPrivate::~RomDataViewPrivate()
 	ui.lblIcon->clearRp();
 	ui.lblBanner->clearRp();
 	UNREF(romData);
+}
+
+/**
+ * Get the selected language code.
+ * @return Selected language code, or 0 for none (default).
+ */
+inline uint32_t RomDataViewPrivate::sel_lc(void) const
+{
+	if (!cboLanguage) {
+		// No language dropdown...
+		return 0;
+	}
+
+	return cboLanguage->currentData().value<uint32_t>();
 }
 
 /**
@@ -1480,8 +1500,7 @@ void RomDataView::cboLanguage_currentIndexChanged_slot(int index)
 		return;
 	}
 
-	const uint32_t lc = d->cboLanguage->itemData(index).value<uint32_t>();
-	d->updateMulti(lc);
+	d->updateMulti(d->sel_lc());
 }
 
 /** Properties. **/
@@ -1588,15 +1607,14 @@ void RomDataView::optionsMenuAction_triggered(int id)
 
 		if (id == RomDataViewPrivate::OPTION_EXPORT_TEXT) {
 			// Get the selected language code.
-			const uint32_t lc = (d->cboLanguage)
-				? d->cboLanguage->currentData().value<uint32_t>()
-				: 0;
 			ofs << "== " << rp_sprintf(C_("RomDataView", "File: '%s'"), rom_filename) << std::endl;
-			ROMOutput ro(d->romData, lc);
+			ROMOutput ro(d->romData, d->sel_lc());
 			ofs << ro;
 		} else if (id == RomDataViewPrivate::OPTION_EXPORT_JSON) {
 			JSONROMOutput jsro(d->romData);
 			ofs << jsro;
 		}
 	}
+
+	// TODO: RomOps
 }
