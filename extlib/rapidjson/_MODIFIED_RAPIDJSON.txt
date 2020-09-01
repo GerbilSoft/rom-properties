@@ -16,6 +16,9 @@ The following changes have been made to the original:
 
 - Removed jsonchecker, which uses the JSON license.
 
+- prettywriter.h: Added an option to use CRLF newlines, which is needed
+  on Windows when copying JSON data to the clipboard.
+
 To obtain the original rapidjson-1.1.0, visit:
 https://rapidjson.org/
 https://github.com/Tencent/rapidjson

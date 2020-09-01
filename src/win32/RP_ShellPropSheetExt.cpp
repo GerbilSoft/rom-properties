@@ -41,8 +41,10 @@ using LibRomData::RomDataFactory;
 
 // C++ STL classes.
 #include <fstream>
+#include <sstream>
 using std::array;
 using std::ofstream;
+using std::ostringstream;
 using std::set;
 using std::string;
 using std::unique_ptr;
@@ -82,6 +84,8 @@ const CLSID CLSID_RP_ShellPropSheetExt =
 #define IDM_OPTIONS_MENU_BASE		0x8000
 #define IDM_OPTIONS_MENU_EXPORT_TEXT	(IDM_OPTIONS_MENU_BASE - 1)
 #define IDM_OPTIONS_MENU_EXPORT_JSON	(IDM_OPTIONS_MENU_BASE - 2)
+#define IDM_OPTIONS_MENU_COPY_TEXT	(IDM_OPTIONS_MENU_BASE - 3)
+#define IDM_OPTIONS_MENU_COPY_JSON	(IDM_OPTIONS_MENU_BASE - 4)
 
 /** RP_ShellPropSheetExt_Private **/
 // Workaround for RP_D() expecting the no-underscore naming convention.
@@ -2725,89 +2729,145 @@ void RP_ShellPropSheetExt_Private::menuOptions_action_triggered(int id)
 		if (!rom_filename)
 			return;
 
+		bool toClipboard;
 		tstring ts_title, ts_filter;
-		const TCHAR *ts_default_ext;
+		const TCHAR *ts_default_ext = nullptr;
 		switch (id) {
 			case IDM_OPTIONS_MENU_EXPORT_TEXT:
+				toClipboard = false;
 				ts_title = U82T_c(C_("RomDataView", "Export to Text File"));
 				// tr: Text files filter. (Win32) [Use '|' instead of '\0'! gettext() doesn't support embedded nulls.]
 				ts_filter = U82T_c(C_("RomDataView", "Text Files (*.txt)|*.txt|All Files (*.*)|*.*||"));
 				ts_default_ext = _T(".txt");
 				break;
 			case IDM_OPTIONS_MENU_EXPORT_JSON:
+				toClipboard = false;
 				ts_title = U82T_c(C_("RomDataView", "Export to JSON File"));
 				// tr: JSON files filter. (Win32) [Use '|' instead of '\0'! gettext() doesn't support embedded nulls.]
 				ts_filter = U82T_c(C_("RomDataView", "JSON Files (*.json)|*.json|All Files (*.*)|*.*||"));
 				ts_default_ext = _T(".json");
+				break;
+			case IDM_OPTIONS_MENU_COPY_TEXT:
+			case IDM_OPTIONS_MENU_COPY_JSON:
+				toClipboard = true;
 				break;
 			default:
 				assert(!"Invalid action ID.");
 				return;
 		}
 
-		if (ts_prevExportDir.empty()) {
-			ts_prevExportDir = U82T_c(rom_filename);
+		ofstream ofs;
+		ostringstream oss;
 
-			// Remove the filename portion.
-			size_t bspos = ts_prevExportDir.rfind(_T('\\'));
-			if (bspos != string::npos) {
-				if (bspos > 2) {
-					ts_prevExportDir.resize(bspos);
-				} else if (bspos == 2) {
-					ts_prevExportDir.resize(3);
+		if (!toClipboard) {
+			if (ts_prevExportDir.empty()) {
+				ts_prevExportDir = U82T_c(rom_filename);
+
+				// Remove the filename portion.
+				size_t bspos = ts_prevExportDir.rfind(_T('\\'));
+				if (bspos != string::npos) {
+					if (bspos > 2) {
+						ts_prevExportDir.resize(bspos);
+					} else if (bspos == 2) {
+						ts_prevExportDir.resize(3);
+					}
 				}
 			}
-		}
 
-		tstring defaultFileName = ts_prevExportDir;
-		if (!defaultFileName.empty() && defaultFileName.at(defaultFileName.size()-1) != _T('\\')) {
-			defaultFileName += _T('\\');
-		}
+			tstring defaultFileName = ts_prevExportDir;
+			if (!defaultFileName.empty() && defaultFileName.at(defaultFileName.size()-1) != _T('\\')) {
+				defaultFileName += _T('\\');
+			}
 
-		// Get the base name of the ROM.
-		tstring rom_basename;
-		const char *const bspos = strrchr(rom_filename, '\\');
-		if (bspos) {
-			rom_basename = U82T_c(bspos+1);
-		} else {
-			rom_basename = U82T_c(rom_filename);
-		}
-		// Remove the extension, if present.
-		size_t extpos = rom_basename.rfind(_T('.'));
-		if (extpos != string::npos) {
-			rom_basename.resize(extpos);
-		}
-		defaultFileName += rom_basename + ts_default_ext;
+			// Get the base name of the ROM.
+			tstring rom_basename;
+			const char *const bspos = strrchr(rom_filename, '\\');
+			if (bspos) {
+				rom_basename = U82T_c(bspos+1);
+			} else {
+				rom_basename = U82T_c(rom_filename);
+			}
+			// Remove the extension, if present.
+			size_t extpos = rom_basename.rfind(_T('.'));
+			if (extpos != string::npos) {
+				rom_basename.resize(extpos);
+			}
+			defaultFileName += rom_basename + ts_default_ext;
 
-		const tstring tfilename = LibWin32Common::getSaveFileName(hDlgSheet,
-			ts_title.c_str(), ts_filter.c_str(), defaultFileName.c_str());
-		if (tfilename.empty())
-			return;
+			const tstring tfilename = LibWin32Common::getSaveFileName(hDlgSheet,
+				ts_title.c_str(), ts_filter.c_str(), defaultFileName.c_str());
+			if (tfilename.empty())
+				return;
 
-		// Save the previous export directory.
-		ts_prevExportDir = tfilename;
-		size_t bspos2 = ts_prevExportDir.rfind(_T('\\'));
-		if (bspos2 != tstring::npos && bspos2 > 3) {
-			ts_prevExportDir.resize(bspos2);
-		}
+			// Save the previous export directory.
+			ts_prevExportDir = tfilename;
+			size_t bspos2 = ts_prevExportDir.rfind(_T('\\'));
+			if (bspos2 != tstring::npos && bspos2 > 3) {
+				ts_prevExportDir.resize(bspos2);
+			}
 
 #ifdef __GNUC__
-		// FIXME: MinGW doesn't have wchar_t overloads.
-		ofstream ofs(T2U8(tfilename).c_str(), ofstream::out);
+			// FIXME: MinGW doesn't have wchar_t overloads.
+			ofs.open(T2U8(tfilename).c_str(), ofstream::out);
 #else /* !__GNUC__ */
-		ofstream ofs(tfilename.c_str(), ofstream::out);
+			ofs.open(tfilename.c_str(), ofstream::out);
 #endif /* __GNUC__ */
-		if (ofs.fail())
-			return;
+			if (ofs.fail())
+				return;
+		}
 
-		if (id == IDM_OPTIONS_MENU_EXPORT_TEXT) {
-			// Get the selected language code.
-			ofs << "== " << rp_sprintf(C_("RomDataView", "File: '%s'"), rom_filename) << std::endl;
-			ROMOutput ro(romData, sel_lc());
-			ofs << ro;
-		} else /*if (id == RomDataViewPrivate::OPTION_EXPORT_JSON)*/ {
-			JSONROMOutput jsro(romData);
-			ofs << jsro;
+		// TODO: Optimize this such that we can pass ofstream or ostringstream
+		// to a factored-out function.
+
+		switch (id) {
+			case IDM_OPTIONS_MENU_EXPORT_TEXT: {
+				ofs << "== " << rp_sprintf(C_("RomDataView", "File: '%s'"), rom_filename) << '\n';
+				ROMOutput ro(romData, sel_lc());
+				ofs << ro;
+				ofs.flush();
+				break;
+			}
+			case IDM_OPTIONS_MENU_EXPORT_JSON: {
+				JSONROMOutput jsro(romData);
+				ofs << jsro << '\n';
+				ofs.flush();
+				break;
+			}
+			case IDM_OPTIONS_MENU_COPY_TEXT: {
+				oss << "== " << rp_sprintf(C_("RomDataView", "File: '%s'"), rom_filename) << "\r\n";
+				ROMOutput ro(romData, sel_lc());
+				ro.setCrlf(true);
+				oss << ro;
+				oss.flush();
+				break;
+			}
+			case IDM_OPTIONS_MENU_COPY_JSON: {
+				JSONROMOutput jsro(romData);
+				jsro.setCrlf(true);
+				oss << jsro << std::endl;
+				oss.flush();
+				break;
+			}
+			default:
+				assert(!"Invalid action ID.");
+				return;
+		}
+
+		if (toClipboard) {
+			// FIXME: ostringstream doesn't have CRLF conversion.
+			const tstring tstr = U82T_s(oss.str());
+			if (OpenClipboard(hDlgSheet)) {
+				EmptyClipboard();
+				HGLOBAL hglbCopy = GlobalAlloc(GMEM_MOVEABLE, (tstr.size() + 1) * sizeof(TCHAR));
+				if (hglbCopy) {
+					LPTSTR lpszCopy = static_cast<LPTSTR>(GlobalLock(hglbCopy));
+					memcpy(lpszCopy, tstr.data(), tstr.size() * sizeof(TCHAR));
+					lpszCopy[tstr.size()] = _T('\0');
+					GlobalUnlock(hglbCopy);
+					SetClipboardData(CF_UNICODETEXT, hglbCopy);
+				}
+				CloseClipboard();
+			}
 		}
 	}
 
@@ -2959,10 +3019,21 @@ void RP_ShellPropSheetExt_Private::createOptionsButton(void)
 	hMenuOptions = CreatePopupMenu();
 
 	/** Standard actions. **/
-	AppendMenu(hMenuOptions, MF_STRING, IDM_OPTIONS_MENU_EXPORT_TEXT,
-		U82T_c(C_("RomDataView|Options", "Export to &Text...")));
-	AppendMenu(hMenuOptions, MF_STRING, IDM_OPTIONS_MENU_EXPORT_JSON,
-		U82T_c(C_("RomDataView|Options", "Export to &JSON...")));
+	static const struct {
+		const char *desc;
+		unsigned int id;
+	} stdacts[] = {
+		{NOP_C_("RomDataView|Options", "Export to Text"),	IDM_OPTIONS_MENU_EXPORT_TEXT},
+		{NOP_C_("RomDataView|Options", "Export to JSON"),	IDM_OPTIONS_MENU_EXPORT_JSON},
+		{NOP_C_("RomDataView|Options", "Copy as Text"),		IDM_OPTIONS_MENU_COPY_TEXT},
+		{NOP_C_("RomDataView|Options", "Copy as JSON"),		IDM_OPTIONS_MENU_COPY_JSON},
+		{nullptr, 0}
+	};
+
+	for (const auto *p = stdacts; p->desc != nullptr; p++) {
+		AppendMenu(hMenuOptions, MF_STRING, p->id,
+			U82T_c(dpgettext_expr(RP_I18N_DOMAIN, "RomDataView|Options", p->desc)));
+	}
 
 	// TODO: RomOps
 }

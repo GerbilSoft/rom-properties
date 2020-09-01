@@ -15,7 +15,6 @@
 #include "ctypex.h"
 
 // C++ includes.
-using std::endl;
 using std::ostream;
 using std::string;
 using std::vector;
@@ -391,7 +390,8 @@ public:
 
 JSONROMOutput::JSONROMOutput(const RomData *romdata, uint32_t lc)
 	: romdata(romdata)
-	, lc(lc) { }
+	, lc(lc)
+	, crlf_(false) { }
 std::ostream& operator<<(std::ostream& os, const JSONROMOutput& fo) {
 	auto romdata = fo.romdata;
 	assert(romdata && romdata->isValid());
@@ -513,8 +513,10 @@ std::ostream& operator<<(std::ostream& os, const JSONROMOutput& fo) {
 
 	OStreamWrapper oswr(os);
 	PrettyWriter<OStreamWrapper> writer(oswr);
+	writer.SetNewlineMode(fo.crlf_);
 	document.Accept(writer);
 
+	os.flush();
 	return os;
 }
 

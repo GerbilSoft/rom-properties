@@ -51,11 +51,25 @@ public:
         \param levelDepth Initial capacity of stack.
     */
     explicit PrettyWriter(OutputStream& os, StackAllocator* allocator = 0, size_t levelDepth = Base::kDefaultLevelDepth) : 
-        Base(os, allocator, levelDepth), indentChar_(' '), indentCharCount_(4), formatOptions_(kFormatDefault) {}
+        Base(os, allocator, levelDepth), indentChar_(' '), indentCharCount_(4), formatOptions_(kFormatDefault), crlf_(false) {}
 
 
     explicit PrettyWriter(StackAllocator* allocator = 0, size_t levelDepth = Base::kDefaultLevelDepth) : 
-        Base(allocator, levelDepth), indentChar_(' '), indentCharCount_(4) {}
+        Base(allocator, levelDepth), indentChar_(' '), indentCharCount_(4), crlf_(false) {}
+
+    PrettyWriter& SetNewlineMode(bool crlf)
+    {
+        crlf_ = crlf;
+        return *this;
+    }
+
+    inline void PutNewline(void)
+    {
+        if (crlf_) {
+            Base::os_->Put('\r');
+        }
+        Base::os_->Put('\n');
+    }
 
     //! Set custom indentation.
     /*! \param indentChar       Character for indentation. Must be whitespace character (' ', '\\t', '\\n', '\\r').
@@ -129,7 +143,7 @@ public:
         bool empty = Base::level_stack_.template Pop<typename Base::Level>(1)->valueCount == 0;
 
         if (!empty) {
-            Base::os_->Put('\n');
+            PutNewline();
             WriteIndent();
         }
         bool ret = Base::WriteEndObject();
@@ -153,7 +167,7 @@ public:
         bool empty = Base::level_stack_.template Pop<typename Base::Level>(1)->valueCount == 0;
 
         if (!empty && !(formatOptions_ & kFormatSingleLineArray)) {
-            Base::os_->Put('\n');
+            PutNewline();
             WriteIndent();
         }
         bool ret = Base::WriteEndArray();
@@ -200,7 +214,7 @@ protected:
                 }
 
                 if (!(formatOptions_ & kFormatSingleLineArray)) {
-                    Base::os_->Put('\n');
+                    PutNewline();
                     WriteIndent();
                 }
             }
@@ -208,7 +222,7 @@ protected:
                 if (level->valueCount > 0) {
                     if (level->valueCount % 2 == 0) {
                         Base::os_->Put(',');
-                        Base::os_->Put('\n');
+                        PutNewline();
                     }
                     else {
                         Base::os_->Put(':');
@@ -216,7 +230,7 @@ protected:
                     }
                 }
                 else
-                    Base::os_->Put('\n');
+                    PutNewline();
 
                 if (level->valueCount % 2 == 0)
                     WriteIndent();
@@ -239,6 +253,9 @@ protected:
     Ch indentChar_;
     unsigned indentCharCount_;
     PrettyFormatOptions formatOptions_;
+
+    // rom-properties
+    bool crlf_;
 
 private:
     // Prohibit copy constructor & assignment operator.
