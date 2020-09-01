@@ -30,15 +30,14 @@ using std::vector;
 // Custom Qt widgets.
 #include "DragImageTreeWidget.hpp"
 
-// KAcceleratorManager
+// KDE4/KF5 includes.
 #if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
 # include <KAcceleratorManager>
+# include <KWidgetsAddons/kpagewidget.h>
 #else /* !QT_VERSION >= QT_VERSION_CHECK(5,0,0) */
 # include <kacceleratormanager.h>
+# include <kpagewidget.h>
 #endif /* QT_VERSION >= QT_VERSION_CHECK(5,0,0) */
-
-// KPageWidget
-#include <KWidgetsAddons/kpagewidget.h>
 
 #include "ui_RomDataView.h"
 class RomDataViewPrivate
@@ -235,7 +234,29 @@ inline uint32_t RomDataViewPrivate::sel_lc(void) const
 		return 0;
 	}
 
-	return cboLanguage->currentData().value<uint32_t>();
+	return cboLanguage->itemData(cboLanguage->currentIndex()).value<uint32_t>();
+}
+
+/**
+ * Find direct child widgets only.
+ * @param T Type.
+ */
+template<typename T>
+static inline T findDirectChild(QObject *obj, const QString &aName = QString())
+{
+#if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
+	return obj->findChild<T>(aName, Qt::FindDirectChildrenOnly);
+#else /* QT_VERSION < QT_VERSION_CHECK(5,0,0) */
+	foreach(QObject *child, obj->children()) {
+		T qchild = qobject_cast<T>(child);
+		if (qchild != nullptr) {
+			if (aName.isEmpty() || qchild->objectName() == aName) {
+				return qchild;
+			}
+		}
+	}
+	return nullptr;
+#endif /* QT_VERSION >= QT_VERSION_CHECK(5,0,0) */
 }
 
 /**
@@ -256,15 +277,13 @@ void RomDataViewPrivate::createOptionsButton(void)
 		return;
 
 	// Parent should contain a KPageWidget.
-	KPageWidget *const pageWidget = parent->findChild<KPageWidget*>(
-		QString(), Qt::FindDirectChildrenOnly);
+	KPageWidget *const pageWidget = findDirectChild<KPageWidget*>(parent);
 	assert(pageWidget != nullptr);
 	if (!pageWidget)
 		return;
 
 	// KPageWidget should contain a QDialogButtonBox.
-	QDialogButtonBox *const btnBox = pageWidget->findChild<QDialogButtonBox*>(
-		QString(), Qt::FindDirectChildrenOnly);
+	QDialogButtonBox *const btnBox = findDirectChild<QDialogButtonBox*>(pageWidget);
 	assert(btnBox != nullptr);
 	if (!btnBox)
 		return;
