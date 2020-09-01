@@ -1592,7 +1592,7 @@ void RomDataView::menuOptions_action_triggered(int id)
 	RP_D(RomDataView);
 
 	if (id < 0) {
-		// Export to text or JSON.
+		// Export/copy to text or JSON.
 		const char *const rom_filename = d->romData->filename();
 		if (!rom_filename)
 			return;
@@ -1625,6 +1625,8 @@ void RomDataView::menuOptions_action_triggered(int id)
 				return;
 		}
 
+		// TODO: QTextStream wrapper for ostream.
+		// For now, we'll use ofstream.
 		ofstream ofs;
 
 		if (!toClipboard) {
@@ -1642,8 +1644,6 @@ void RomDataView::menuOptions_action_triggered(int id)
 			QFileInfo fi2(out_filename);
 			d->prevExportDir = fi2.path();
 
-			// TODO: QTextStream wrapper for ostream.
-			// For now, we'll use ofstream.
 			ofs.open(out_filename.toUtf8().constData(), ofstream::out);
 			if (ofs.fail())
 				return;
