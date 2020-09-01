@@ -309,7 +309,7 @@ void RomDataViewPrivate::createOptionsButton(void)
 #if QT_VERSION < QT_VERSION_CHECK(5,0,0)
 	mapperOptionsMenu = new QSignalMapper(q);
 	QObject::connect(mapperOptionsMenu, SIGNAL(mapped(int)),
-		q, SLOT(optionsMenuAction_triggered(int)));
+		q, SLOT(menuOptions_action_triggered(int)));
 #endif /* QT_VERSION < QT_VERSION_CHECK(5,0,0) */
 
 	/** Standard actions. **/
@@ -318,7 +318,7 @@ void RomDataViewPrivate::createOptionsButton(void)
 		U82Q(C_("RomDataView|Options", "Export to &Text...")));
 #if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
 	QObject::connect(action, &QAction::triggered,
-		[q] { q->optionsMenuAction_triggered(OPTION_EXPORT_TEXT); });
+		[q] { q->menuOptions_action_triggered(OPTION_EXPORT_TEXT); });
 #else /* QT_VERSION < QT_VERSION_CHECK(5,0,0) */
 	QObject::connect(action, SIGNAL(triggered()),
 		mapperOptionsMenu, SLOT(map()));
@@ -329,7 +329,7 @@ void RomDataViewPrivate::createOptionsButton(void)
 		U82Q(C_("RomDataView|Options", "Export to &JSON...")));
 #if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
 	QObject::connect(action, &QAction::triggered,
-		[q] { q->optionsMenuAction_triggered(OPTION_EXPORT_JSON); });
+		[q] { q->menuOptions_action_triggered(OPTION_EXPORT_JSON); });
 #else /* QT_VERSION < QT_VERSION_CHECK(5,0,0) */
 	QObject::connect(action, SIGNAL(triggered()),
 		mapperOptionsMenu, SLOT(map()));
@@ -1577,7 +1577,7 @@ void RomDataView::setRomData(RomData *romData)
  * An "Options" menu action was triggered.
  * @param id Options ID.
  */
-void RomDataView::optionsMenuAction_triggered(int id)
+void RomDataView::menuOptions_action_triggered(int id)
 {
 	// IDs below 0 are for built-in actions.
 	// IDs >= 0 are for RomData-specific actions.
