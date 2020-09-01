@@ -102,7 +102,7 @@ class RomDataView : public QWidget
 		 * An "Options" menu action was triggered.
 		 * @param id Options ID.
 		 */
-		void optionsMenuAction_triggered(int id);
+		void menuOptions_action_triggered(int id);
 };
 
 #endif /* __ROMPROPERTIES_KDE_ROMDATAVIEW_HPP__ */
