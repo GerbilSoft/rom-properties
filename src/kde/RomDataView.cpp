@@ -1635,7 +1635,7 @@ void RomDataView::menuOptions_action_triggered(int id)
 			ofs << "== " << rp_sprintf(C_("RomDataView", "File: '%s'"), rom_filename) << std::endl;
 			ROMOutput ro(d->romData, d->sel_lc());
 			ofs << ro;
-		} else if (id == RomDataViewPrivate::OPTION_EXPORT_JSON) {
+		} else /*if (id == RomDataViewPrivate::OPTION_EXPORT_JSON)*/ {
 			JSONROMOutput jsro(d->romData);
 			ofs << jsro;
 		}

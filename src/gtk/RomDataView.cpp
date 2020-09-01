@@ -2468,7 +2468,7 @@ menuOptions_triggered_signal_handler(GtkMenuItem *menuItem,
 			ofs << "== " << rp_sprintf(C_("RomDataView", "File: '%s'"), rom_filename) << std::endl;
 			ROMOutput ro(page->romData, rom_data_view_get_sel_lc(page));
 			ofs << ro;
-		} else if (id == OPTION_EXPORT_JSON) {
+		} else /*if (id == OPTION_EXPORT_JSON)*/ {
 			JSONROMOutput jsro(page->romData);
 			ofs << jsro;
 		}
