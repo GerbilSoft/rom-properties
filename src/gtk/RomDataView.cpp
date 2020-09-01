@@ -14,6 +14,7 @@
 #include "DragImage.hpp"
 
 // librpbase, librpfile, librptexture
+#include "librpbase/TextOut.hpp"
 using namespace LibRpBase;
 using LibRpFile::IRpFile;
 using LibRpFile::RpFile;
@@ -23,8 +24,10 @@ using LibRpTexture::rp_image;
 #include "libromdata/RomDataFactory.hpp"
 using LibRomData::RomDataFactory;
 
-// C++ includes.
+// C++ STL classes.
+#include <fstream>
 using std::array;
+using std::ofstream;
 using std::set;
 using std::string;
 using std::vector;
@@ -94,6 +97,8 @@ static void	tree_view_realize_signal_handler    (GtkTreeView	*treeView,
 						     RomDataView	*page);
 static void	cboLanguage_changed_signal_handler  (GtkComboBox	*widget,
 						     gpointer	 	 user_data);
+static void	menuOptions_triggered_signal_handler(GtkMenuItem	*widget,
+						     gpointer		 user_data);
 
 #if GTK_CHECK_VERSION(3,0,0)
 typedef GtkBoxClass superclass;
@@ -113,6 +118,11 @@ struct _RomDataViewClass {
 // Multi-language stuff.
 typedef enum _StringMultiColumns { SM_COL_ICON, SM_COL_TEXT, SM_COL_LC } StringMultiColumns;
 typedef std::pair<GtkWidget*, const RomFields::Field*> Data_StringMulti_t;
+
+enum StandardOptionID {
+	OPTION_EXPORT_TEXT = -1,
+	OPTION_EXPORT_JSON = -2,
+};
 
 struct Data_ListDataMulti_t {
 	GtkListStore *listStore;
@@ -137,6 +147,8 @@ struct _RomDataView {
 
 	// "Options" button.
 	GtkWidget	*btnOptions;
+	GtkWidget	*menuOptions;
+	gchar		*prevExportDir;
 
 	// Header row.
 	GtkWidget	*hboxHeaderRow_outer;
@@ -408,6 +420,14 @@ rom_data_view_dispose(GObject *object)
 		page->changed_idle = 0;
 	}
 
+#if !GTK_CHECK_VERSION(3,6,0)
+	// Delete the "Options" button menu.
+	if (page->menuOptions) {
+		gtk_widget_destroy(page->menuOptions);
+		page->menuOptions = nullptr;
+	}
+#endif /* !GTK_CHECK_VERSION(3,6,0) */
+
 	// Delete the icon frames and tabs.
 	rom_data_view_delete_tabs(page);
 
@@ -420,7 +440,8 @@ rom_data_view_finalize(GObject *object)
 {
 	RomDataView *page = ROM_DATA_VIEW(object);
 
-	// Free the URI.
+	// Free the strings.
+	g_free(page->prevExportDir);
 	g_free(page->uri);
 
 	// Delete the C++ objects.
@@ -1514,6 +1535,18 @@ rom_data_view_update_multi(RomDataView *page, uint32_t user_lc)
 	}
 }
 
+static string
+convert_accel_to_gtk(const char *str)
+{
+	// GTK+ uses '_' for accelerators, not '&'.
+	string s_ret = str;
+	size_t accel_pos = s_ret.find('&');
+	if (accel_pos != string::npos) {
+		s_ret[accel_pos] = '_';
+	}
+	return s_ret;
+}
+
 static void
 rom_data_view_create_options_button(RomDataView *page)
 {
@@ -1555,17 +1588,36 @@ rom_data_view_create_options_button(RomDataView *page)
 	if (!GTK_IS_DIALOG(parent))
 		return;
 
-	// NOTE: GTK+ uses '_' for accelerators, not '&'.
-	string s_title = C_("RomDataView", "Op&tions");
-	size_t accel_pos = s_title.find('&');
-	if (accel_pos != string::npos) {
-		s_title[accel_pos] = '_';
-	}
+	string s_title = convert_accel_to_gtk(C_("RomDataView", "Op&tions"));
 
 	// Add an "Options" button.
+#if GTK_CHECK_VERSION(3,6,0)
+	// GTK+ 3.6 has GtkMenuButton.
+	// NOTE: GTK+ 4.x's GtkMenuButton supports both label and image.
+	// GTK+ 3.x's only supports image by default, so we'll have to
+	// build a GtkBox with both label and image.
+	GtkWidget *const lblOptions = gtk_label_new(nullptr);
+	gtk_label_set_markup_with_mnemonic(GTK_LABEL(lblOptions), s_title.c_str());
+	gtk_widget_show(lblOptions);
+	GtkWidget *const imgOptions = gtk_image_new_from_icon_name("pan-up-symbolic", GTK_ICON_SIZE_BUTTON);
+	gtk_widget_show(imgOptions);
+	GtkWidget *const hboxOptions = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+	gtk_widget_show(hboxOptions);
+	gtk_box_pack_start(GTK_BOX(hboxOptions), lblOptions, false, false, 0);
+	gtk_box_pack_start(GTK_BOX(hboxOptions), imgOptions, false, false, 0);
+
+	page->btnOptions = gtk_menu_button_new();
+	g_object_set(page->btnOptions, "direction", GTK_ARROW_UP, nullptr);
+	gtk_container_add(GTK_CONTAINER(page->btnOptions), hboxOptions);
+#else /* !GTK_CHECK_VERSION(3,6,0) */
+	// Use plain old GtkButton.
+	// TODO: Menu functionality.
+	page->btnOptions = gtk_button_new_with_mnemonic(s_title.c_str());
+#endif /* GTK_CHECK_VERSION(3,6,0) */
+
 	// TODO: Connect the signal.
 	// TODO: Submenu.
-	page->btnOptions = gtk_dialog_add_button(GTK_DIALOG(parent), s_title.c_str(), GTK_RESPONSE_NONE);
+	gtk_dialog_add_action_widget(GTK_DIALOG(parent), page->btnOptions, GTK_RESPONSE_NONE);
 	gtk_widget_hide(page->btnOptions);
 	assert(page->btnOptions != nullptr);
 	if (!page->btnOptions)
@@ -1582,20 +1634,44 @@ rom_data_view_create_options_button(RomDataView *page)
 	if (headerBar) {
 		// Dialog has a Header Bar instead of an action area.
 		// No reordering is necessary.
-		return;
-	}
+	} else
 #endif /* GTK_CHECK_VERSION(3,12,0) */
-
-	// Reorder the "Options" button so it's to the right of "Help".
-	// NOTE: GTK+ 3.10 introduced the GtkHeaderBar, but
-	// gtk_dialog_get_header_bar() was added in GTK+ 3.12.
-	// Hence, this might not work properly on GTK+ 3.10.
-	GtkWidget *const btnBox = gtk_widget_get_parent(page->btnOptions);
-	//assert(GTK_IS_BUTTON_BOX(btnBox));
-	if (GTK_IS_BUTTON_BOX(btnBox))
 	{
-		gtk_button_box_set_child_secondary(GTK_BUTTON_BOX(btnBox), page->btnOptions, TRUE);
+		// Reorder the "Options" button so it's to the right of "Help".
+		// NOTE: GTK+ 3.10 introduced the GtkHeaderBar, but
+		// gtk_dialog_get_header_bar() was added in GTK+ 3.12.
+		// Hence, this might not work properly on GTK+ 3.10.
+		GtkWidget *const btnBox = gtk_widget_get_parent(page->btnOptions);
+		//assert(GTK_IS_BUTTON_BOX(btnBox));
+		if (GTK_IS_BUTTON_BOX(btnBox))
+		{
+			gtk_button_box_set_child_secondary(GTK_BUTTON_BOX(btnBox), page->btnOptions, TRUE);
+		}
 	}
+
+	// Create the menu.
+	// TODO: Switch to GMenu? (glib-2.32)
+	page->menuOptions = gtk_menu_new();
+#if GTK_CHECK_VERSION(3,6,0)
+	// NOTE: GtkMenuButton takes ownership of the menu.
+	gtk_menu_button_set_popup(GTK_MENU_BUTTON(page->btnOptions), page->menuOptions);
+#endif /* GTK_CHECK_VERSION(3,6,0) */
+
+	/** Standard actions. **/
+
+	s_title = convert_accel_to_gtk(C_("RomDataView|Options", "Export to &Text..."));
+	GtkWidget *menuItem = gtk_menu_item_new_with_mnemonic(s_title.c_str());
+	g_object_set_data(G_OBJECT(menuItem), "menuOptions_id", GINT_TO_POINTER(OPTION_EXPORT_TEXT));
+	g_signal_connect(menuItem, "activate", G_CALLBACK(menuOptions_triggered_signal_handler), page);
+	gtk_widget_show(menuItem);
+	gtk_menu_shell_append(GTK_MENU_SHELL(page->menuOptions), menuItem);
+
+	s_title = convert_accel_to_gtk(C_("RomDataView|Options", "Export to &JSON..."));
+	menuItem = gtk_menu_item_new_with_mnemonic(s_title.c_str());
+	g_object_set_data(G_OBJECT(menuItem), "menuOptions_id", GINT_TO_POINTER(OPTION_EXPORT_JSON));
+	g_signal_connect(menuItem, "activate", G_CALLBACK(menuOptions_triggered_signal_handler), page);
+	gtk_widget_show(menuItem);
+	gtk_menu_shell_append(GTK_MENU_SHELL(page->menuOptions), menuItem);
 }
 
 static void
@@ -2148,18 +2224,22 @@ tree_view_realize_signal_handler(GtkTreeView	*treeView,
 }
 
 /**
- * The RFT_MULTI_STRING language was changed.
- * @param lc Language code. (Cast to uint32_t)
+ * Get the selected language code.
+ * @param page RomDataView
+ * @return Selected language code, or 0 for none (default).
  */
-static void
-cboLanguage_changed_signal_handler(GtkComboBox	*widget,
-				   gpointer	 user_data)
+static uint32_t
+rom_data_view_get_sel_lc(RomDataView *page)
 {
-	RomDataView *page = ROM_DATA_VIEW(user_data);
-	gint index = gtk_combo_box_get_active(widget);
+	if (!page->cboLanguage) {
+		// No language dropdown...
+		return 0;
+	}
+
+	const gint index = gtk_combo_box_get_active(GTK_COMBO_BOX(page->cboLanguage));
 	if (index < 0) {
 		// Invalid index...
-		return;
+		return 0;
 	}
 
 	// Get the language code from the GtkListStore.
@@ -2171,10 +2251,143 @@ cboLanguage_changed_signal_handler(GtkComboBox	*widget,
 	assert(success);
 	if (!success) {
 		// Shouldn't happen...
-		return;
+		return 0;
 	}
 
 	uint32_t lc = 0;
 	gtk_tree_model_get(GTK_TREE_MODEL(page->lstoreLanguage), &iter, SM_COL_LC, &lc, -1);
+	return lc;
+}
+
+/**
+ * The RFT_MULTI_STRING language was changed.
+ * @param widget	GtkComboBox
+ * @param user_data	RomDataView
+ */
+static void
+cboLanguage_changed_signal_handler(GtkComboBox	*widget,
+				   gpointer	 user_data)
+{
+	RP_UNUSED(widget);
+	RomDataView *const page = ROM_DATA_VIEW(user_data);
+	const uint32_t lc = rom_data_view_get_sel_lc(page);
 	rom_data_view_update_multi(page, lc);
+}
+
+/**
+ * An "Options" menu action was triggered.
+ * @param widget	Menu action. (Get the "menuOptions_id" data.)
+ * @param user_data	RomDataView.
+ */
+static void
+menuOptions_triggered_signal_handler(GtkMenuItem *widget,
+				     gpointer	  user_data)
+{
+	RomDataView *const page = ROM_DATA_VIEW(user_data);
+	const gint id = (gboolean)GPOINTER_TO_INT(
+		g_object_get_data(G_OBJECT(widget), "menuOptions_id"));
+
+	if (id < 0) {
+		// Export to text or JSON.
+		const char *const rom_filename = page->romData->filename();
+		if (!rom_filename)
+			return;
+
+		GtkFileFilter *filter = gtk_file_filter_new();
+		const char *s_title;
+		const char *s_default_ext;
+		switch (id) {
+			case OPTION_EXPORT_TEXT:
+				s_title = C_("RomDataView", "Export to Text File");
+				s_default_ext = ".txt";
+				gtk_file_filter_set_name(filter, C_("RomDataView", "Text Files"));
+				gtk_file_filter_add_mime_type(filter, "text/plain");
+				gtk_file_filter_add_pattern(filter, "*.txt");
+				break;
+			case OPTION_EXPORT_JSON:
+				s_title = C_("RomDataView", "Export to JSON File");
+				s_default_ext = ".json";
+				gtk_file_filter_set_name(filter, C_("RomDataView", "JSON Files"));
+				gtk_file_filter_add_mime_type(filter, "application/json");
+				gtk_file_filter_add_pattern(filter, "*.json");
+				break;
+			default:
+				assert(!"Invalid action ID.");
+				return;
+		}
+
+		GtkWidget *const dialog = gtk_file_chooser_dialog_new(s_title,
+			GTK_WINDOW(gtk_widget_get_toplevel(GTK_WIDGET(page))),
+			GTK_FILE_CHOOSER_ACTION_SAVE,
+			GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+			GTK_STOCK_SAVE, GTK_RESPONSE_ACCEPT,
+			nullptr);
+		gtk_file_chooser_set_do_overwrite_confirmation(GTK_FILE_CHOOSER(dialog), true);
+
+		// Set the filters.
+		gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dialog), filter);
+
+		filter = gtk_file_filter_new();
+		gtk_file_filter_set_name(filter, C_("RomDataView", "All Files"));
+		gtk_file_filter_add_pattern(filter, "*");
+		gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dialog), filter);
+
+		if (!page->prevExportDir) {
+			page->prevExportDir = g_path_get_dirname(rom_filename);
+		}
+
+		gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(dialog), page->prevExportDir);
+
+		gchar *const basename = g_path_get_basename(rom_filename);
+		string defaultName = basename;
+		g_free(basename);
+		// Remove the extension, if present.
+		size_t extpos = defaultName.rfind('.');
+		if (extpos != string::npos) {
+			defaultName.resize(extpos);
+		}
+		defaultName += s_default_ext;
+		gtk_file_chooser_set_current_name(GTK_FILE_CHOOSER(dialog), defaultName.c_str());
+
+		gint res = gtk_dialog_run(GTK_DIALOG(dialog));
+		if (res != GTK_RESPONSE_ACCEPT) {
+			// Cancelled...
+			gtk_widget_destroy(dialog);
+			return;
+		}
+
+		gchar *out_filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
+		gtk_widget_destroy(dialog);
+		if (!out_filename) {
+			// No filename...
+			return;
+		}
+
+		// Save the previous export directory.
+		if (page->prevExportDir) {
+			g_free(page->prevExportDir);
+			page->prevExportDir = nullptr;
+		}
+		page->prevExportDir = g_path_get_dirname(out_filename);
+
+		// TODO: GIO wrapper for ostream.
+		// For now, we'll use ofstream.
+		ofstream ofs(out_filename, ofstream::out);
+		g_free(out_filename);
+		if (ofs.fail()) {
+			return;
+		}
+
+		if (id == OPTION_EXPORT_TEXT) {
+			// Get the selected language code.
+			ofs << "== " << rp_sprintf(C_("RomDataView", "File: '%s'"), rom_filename) << std::endl;
+			ROMOutput ro(page->romData, rom_data_view_get_sel_lc(page));
+			ofs << ro;
+		} else if (id == OPTION_EXPORT_JSON) {
+			JSONROMOutput jsro(page->romData);
+			ofs << jsro;
+		}
+	}
+
+	// TODO: RomOps
 }
