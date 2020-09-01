@@ -120,6 +120,36 @@ static inline uint32_t GetSysColor_ARGB32(int nIndex)
  */
 bool isComCtl32_v610(void);
 
+/**
+ * Get a filename using the Open File Name dialog.
+ *
+ * Depending on OS, this may use:
+ * - Vista+: IFileOpenDialog
+ * - XP: GetOpenFileName()
+ *
+ * @param hWnd		[in] Owner.
+ * @param dlgTitle	[in] Dialog title.
+ * @param filterSpec	[in] Filter specification. (pipe-delimited)
+ * @param origFilename	[in,opt] Starting filename.
+ * @return Filename, or empty string on error.
+ */
+std::tstring getOpenFileName(HWND hWnd, const TCHAR *dlgTitle, const TCHAR *filterSpec, const TCHAR *origFilename);
+
+/**
+ * Get a filename using the Save File Name dialog.
+ *
+ * Depending on OS, this may use:
+ * - Vista+: IFileSaveDialog
+ * - XP: GetSaveFileName()
+ *
+ * @param hWnd		[in] Owner.
+ * @param dlgTitle	[in] Dialog title.
+ * @param filterSpec	[in] Filter specification. (pipe-delimited)
+ * @param origFilename	[in,opt] Starting filename.
+ * @return Filename, or empty string on error.
+ */
+std::tstring getSaveFileName(HWND hWnd, const TCHAR *dlgTitle, const TCHAR *filterSpec, const TCHAR *origFilename);
+
 /** Window procedure subclasses **/
 
 /**

@@ -180,20 +180,27 @@ class KeyManagerTabPrivate
 
 		// Starting directory for importing keys.
 		// TODO: Save this in the configuration file?
-		tstring tsKeyFileDir;
+		tstring ts_keyFileDir;
 
 		/**
-		 * Get a filename using the Open File Name dialog.
-		 *
-		 * Depending on OS, this may use:
-		 * - Vista+: IOpenFileDialog
-		 * - XP: GetOpenFileName()
-		 *
-		 * @param dlgTitle Dialog title.
-		 * @param filterSpec Filter specification. (pipe-delimited)
-		 * @return Filename (in UTF-8), or empty string on error.
+		 * Update ts_keyFileDir.
+		 * @param tfilename New filename.
 		 */
-		string getOpenFileName(const TCHAR *dlgTitle, const TCHAR *filterSpec);
+		inline void updateKeyFileDir(const tstring &tfilename)
+		{
+			// Remove everything after the first backslash.
+			// NOTE: If this is the root directory, the backslash is left intact.
+			// Otherwise, the backslash is removed.
+			ts_keyFileDir = tfilename;
+			size_t bspos = ts_keyFileDir.rfind(_T('\\'));
+			if (bspos != string::npos) {
+				if (bspos > 2) {
+					ts_keyFileDir.resize(bspos);
+				} else if (bspos == 2) {
+					ts_keyFileDir.resize(3);
+				}
+			}
+		}
 
 		/**
 		 * Import keys from Wii keys.bin. (BootMii format)
@@ -1409,88 +1416,6 @@ void KeyManagerTabPrivate::loadImages(void)
 /** "Import" menu actions. **/
 
 /**
- * Get a filename using the Open File Name dialog.
- *
- * Depending on OS, this may use:
- * - Vista+: IOpenFileDialog
- * - XP: GetOpenFileName()
- *
- * @param dlgTitle Dialog title.
- * @param filterSpec Filter specification. (pipe-delimited)
- * @return Filename (in UTF-8), or empty string on error.
- */
-string KeyManagerTabPrivate::getOpenFileName(const TCHAR *dlgTitle, const TCHAR *filterSpec)
-{
-	assert(dlgTitle != nullptr);
-	assert(filterSpec != nullptr);
-	string s_ret;
-
-	if (0) {
-		// TODO: Implement IOpenFileDialog.
-		// This should support >MAX_PATH on Windows 10 v1607 and later.
-		// Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/bb776913%28v=vs.85%29.aspx?f=255&MSPPError=-2147217396
-		// Requires the following:
-		// - -DWINVER=0x0600
-		// - IFileDialogEvents object
-
-		// TODO: Move to libwin32common and implement everything there.
-	} else {
-		// GetOpenFileName()
-
-		// Convert filterSpec from pipe-delimited to NULL-deliminted.
-		// This is needed because Win32 file filters use embedded
-		// NULL characters, but gettext doesn't support that because
-		// it uses C strings.
-		tstring ts_filterSpec(filterSpec);
-		std::for_each(ts_filterSpec.begin(), ts_filterSpec.end(), [](TCHAR &p) {
-			if (p == _T('|')) {
-				p = _T('\0');
-			}
-		});
-
-		TCHAR filename[MAX_PATH];
-		filename[0] = 0;
-
-		OPENFILENAME ofn;
-		memset(&ofn, 0, sizeof(ofn));
-		ofn.lStructSize = sizeof(ofn);
-		ofn.hwndOwner = hWndPropSheet;
-		ofn.lpstrFilter = ts_filterSpec.c_str();
-		ofn.lpstrCustomFilter = nullptr;
-		ofn.lpstrFile = filename;
-		ofn.nMaxFile = _countof(filename);
-		ofn.lpstrInitialDir = tsKeyFileDir.c_str();
-		ofn.lpstrTitle = dlgTitle;
-		ofn.Flags = OFN_DONTADDTORECENT | OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST | OFN_HIDEREADONLY;
-
-		BOOL bRet = GetOpenFileName(&ofn);
-		if (!bRet || filename[0] == 0)
-			return s_ret;
-
-		// Save the native filename for tsKeyFileDir.
-		tsKeyFileDir = filename;
-		// Convert to UTF-8 for the return value.
-		s_ret = T2U8(tsKeyFileDir);
-	}
-
-	// Assuming the filename has been saved in tsKeyFileDir.
-	// Remove everything after the first backslash.
-	// NOTE: If this is the root directory, the backslash is left intact.
-	// Otherwise, the backslash is removed.
-	size_t bspos = tsKeyFileDir.rfind(_T('\\'));
-	if (bspos != tstring::npos) {
-		if (bspos > 2) {
-			tsKeyFileDir.resize(bspos);
-		} else if (bspos == 2) {
-			tsKeyFileDir.resize(3);
-		}
-	}
-
-	// Return the filename.
-	return s_ret;
-}
-
-/**
  * Import keys from Wii keys.bin. (BootMii format)
  */
 void KeyManagerTabPrivate::importWiiKeysBin(void)
@@ -1499,15 +1424,19 @@ void KeyManagerTabPrivate::importWiiKeysBin(void)
 	if (!hWndPropSheet)
 		return;
 
-	string filename = getOpenFileName(
+	const tstring tfilename = LibWin32Common::getOpenFileName(hWndPropSheet,
 		// tr: Wii keys.bin dialog title.
 		U82T_c(C_("KeyManagerTab", "Select Wii keys.bin File")),
 		// tr: Wii keys.bin file filter. (Win32) [Use '|' instead of '\0'! gettext() doesn't support embedded nulls.]
-		U82T_c(C_("KeyManagerTab", "keys.bin|keys.bin|Binary Files (*.bin)|*.bin|All Files (*.*)|*.*||")));
-	if (filename.empty())
+		U82T_c(C_("KeyManagerTab", "keys.bin|keys.bin|Binary Files (*.bin)|*.bin|All Files (*.*)|*.*||")),
+		ts_keyFileDir.c_str());
+	if (tfilename.empty())
 		return;
 
-	KeyStoreWin32::ImportReturn iret = keyStore->importWiiKeysBin(filename.c_str());
+	// Update ts_keyFileDir using the returned filename.
+	updateKeyFileDir(tfilename);
+
+	KeyStoreWin32::ImportReturn iret = keyStore->importWiiKeysBin(T2U8(tfilename).c_str());
 	// TODO: Port showKeyImportReturnStatus from the KDE version.
 	//d->showKeyImportReturnStatus(filename, U82T_c(C_("KeyManagerTab", "Wii keys.bin")), iret);
 }
@@ -1521,15 +1450,19 @@ void KeyManagerTabPrivate::importWiiUOtpBin(void)
 	if (!hWndPropSheet)
 		return;
 
-	string filename = getOpenFileName(
+	const tstring tfilename = LibWin32Common::getOpenFileName(hWndPropSheet,
 		// tr: Wii U otp.bin dialog title.
 		U82T_c(C_("KeyManagerTab", "Select Wii U otp.bin File")),
 		// tr: Wii U otp.bin file filter. (Win32) [Use '|' instead of '\0'! gettext() doesn't support embedded nulls.]
-		U82T_c(C_("KeyManagerTab", "otp.bin|otp.bin|Binary Files (*.bin)|*.bin|All Files (*.*)|*.*||")));
-	if (filename.empty())
+		U82T_c(C_("KeyManagerTab", "otp.bin|otp.bin|Binary Files (*.bin)|*.bin|All Files (*.*)|*.*||")),
+		ts_keyFileDir.c_str());
+	if (tfilename.empty())
 		return;
 
-	KeyStoreWin32::ImportReturn iret = keyStore->importWiiUOtpBin(filename.c_str());
+	// Update ts_keyFileDir using the returned filename.
+	updateKeyFileDir(tfilename);
+
+	KeyStoreWin32::ImportReturn iret = keyStore->importWiiUOtpBin(T2U8(tfilename).c_str());
 	// TODO: Port showKeyImportReturnStatus from the KDE version.
 	//d->showKeyImportReturnStatus(filename, U82T_c(C_("KeyManagerTab", "Wii U otp.bin"), iret);
 }
@@ -1543,15 +1476,19 @@ void KeyManagerTabPrivate::import3DSboot9bin(void)
 	if (!hWndPropSheet)
 		return;
 
-	string filename = getOpenFileName(
+	const tstring tfilename = LibWin32Common::getOpenFileName(hWndPropSheet,
 		// tr: 3DS boot9.bin dialog title.
 		U82T_c(C_("KeyManagerTab", "Select 3DS boot9.bin File")),
 		// tr: 3DS boot9.bin file filter. (Win32) [Use '|' instead of '\0'! gettext() doesn't support embedded nulls.]
-		U82T_c(C_("KeyManagerTab", "boot9.bin|boot9.bin|Binary Files (*.bin)|*.bin|All Files (*.*)|*.*||")));
-	if (filename.empty())
+		U82T_c(C_("KeyManagerTab", "boot9.bin|boot9.bin|Binary Files (*.bin)|*.bin|All Files (*.*)|*.*||")),
+		ts_keyFileDir.c_str());
+	if (tfilename.empty())
 		return;
 
-	KeyStoreWin32::ImportReturn iret = keyStore->import3DSboot9bin(filename.c_str());
+	// Update ts_keyFileDir using the returned filename.
+	updateKeyFileDir(tfilename);
+
+	KeyStoreWin32::ImportReturn iret = keyStore->import3DSboot9bin(T2U8(tfilename).c_str());
 	// TODO: Port showKeyImportReturnStatus from the KDE version.
 	//d->showKeyImportReturnStatus(filename, U82T_c(C_("KeyManagerTab", "3DS boot9.bin"), iret);
 }
@@ -1565,15 +1502,19 @@ void KeyManagerTabPrivate::import3DSaeskeydb(void)
 	if (!hWndPropSheet)
 		return;
 
-	string filename = getOpenFileName(
+	const tstring tfilename = LibWin32Common::getOpenFileName(hWndPropSheet,
 		// tr: aeskeydb.bin dialog title.
 		U82T_c(C_("KeyManagerTab", "Select 3DS aeskeydb.bin File")),
 		// tr: aeskeydb.bin file filter. (Win32) [Use '|' instead of '\0'! gettext() doesn't support embedded nulls.]
-		U82T_c(C_("KeyManagerTab", "aeskeydb.bin|aeskeydb.bin|Binary Files (*.bin)|*.bin|All Files (*.*)|*.*||")));
-	if (filename.empty())
+		U82T_c(C_("KeyManagerTab", "aeskeydb.bin|aeskeydb.bin|Binary Files (*.bin)|*.bin|All Files (*.*)|*.*||")),
+		ts_keyFileDir.c_str());
+	if (tfilename.empty())
 		return;
 
-	KeyStoreWin32::ImportReturn iret = keyStore->import3DSaeskeydb(filename.c_str());
+	// Update ts_keyFileDir using the returned filename.
+	updateKeyFileDir(tfilename);
+
+	KeyStoreWin32::ImportReturn iret = keyStore->import3DSaeskeydb(T2U8(tfilename).c_str());
 	// TODO: Port showKeyImportReturnStatus from the KDE version.
 	//d->showKeyImportReturnStatus(filename, U82T_c(C_("KeyManagerTab", "3DS aeskeydb.bin"), iret);
 }
