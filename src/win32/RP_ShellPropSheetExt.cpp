@@ -2791,7 +2791,12 @@ void RP_ShellPropSheetExt_Private::menuOptions_action_triggered(int id)
 			ts_prevExportDir.resize(bspos2);
 		}
 
+#ifdef __GNUC__
+		// FIXME: MinGW doesn't have wchar_t overloads.
+		ofstream ofs(T2U8(tfilename).c_str(), ofstream::out);
+#else /* !__GNUC__ */
 		ofstream ofs(tfilename.c_str(), ofstream::out);
+#endif /* __GNUC__ */
 		if (ofs.fail())
 			return;
 
