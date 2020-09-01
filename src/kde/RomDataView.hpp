@@ -96,6 +96,13 @@ class RomDataView : public QWidget
 		 * @param romData New RomData object.
 		 */
 		void romDataChanged(LibRpBase::RomData *romData);
+
+	private slots:
+		/**
+		 * An "Options" menu action was triggered.
+		 * @param id Options ID.
+		 */
+		void optionsMenuAction_triggered(int id);
 };
 
 #endif /* __ROMPROPERTIES_KDE_ROMDATAVIEW_HPP__ */

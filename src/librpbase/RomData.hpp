@@ -105,6 +105,12 @@ class RomData : public RefBase
 		 */
 		virtual void close(void);
 
+		/**
+		 * Get the filename that was loaded.
+		 * @return Filename, or nullptr on error.
+		 */
+		const char *filename(void) const;
+
 	public:
 		/** ROM detection functions. **/
 

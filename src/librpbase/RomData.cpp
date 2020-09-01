@@ -49,6 +49,7 @@ RomDataPrivate::RomDataPrivate(RomData *q, IRpFile *file)
 	if (file) {
 		// Reference the file.
 		this->file = file->ref();
+		this->filename = this->file->filename();
 	}
 }
 
@@ -488,6 +489,16 @@ void RomData::close(void)
 	// Unreference the file.
 	RP_D(RomData);
 	UNREF_AND_NULL(d->file);
+}
+
+/**
+ * Get the filename that was loaded.
+ * @return Filename, or nullptr on error.
+ */
+const char *RomData::filename(void) const
+{
+	RP_D(const RomData);
+	return (!d->filename.empty() ? d->filename.c_str() : nullptr);
 }
 
 /**
