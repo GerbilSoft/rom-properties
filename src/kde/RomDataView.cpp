@@ -21,11 +21,16 @@ using LibRpTexture::rp_image;
 
 // C++ STL classes.
 #include <fstream>
+#include <sstream>
 using std::array;
 using std::ofstream;
+using std::ostringstream;
 using std::set;
 using std::string;
 using std::vector;
+
+// Qt includes.
+#include <QtGui/QClipboard>
 
 // Custom Qt widgets.
 #include "DragImageTreeWidget.hpp"
@@ -66,6 +71,8 @@ class RomDataViewPrivate
 		enum StandardOptionID {
 			OPTION_EXPORT_TEXT = -1,
 			OPTION_EXPORT_JSON = -2,
+			OPTION_COPY_TEXT = -3,
+			OPTION_COPY_JSON = -4,
 		};
 
 		// Tab contents.
@@ -313,28 +320,29 @@ void RomDataViewPrivate::createOptionsButton(void)
 #endif /* QT_VERSION < QT_VERSION_CHECK(5,0,0) */
 
 	/** Standard actions. **/
+	static const struct {
+		const char *desc;
+		int id;
+	} stdacts[] = {
+		{NOP_C_("RomDataView|Options", "Export to Text"),	OPTION_EXPORT_TEXT},
+		{NOP_C_("RomDataView|Options", "Export to JSON"),	OPTION_EXPORT_JSON},
+		{NOP_C_("RomDataView|Options", "Copy as Text"),		OPTION_COPY_TEXT},
+		{NOP_C_("RomDataView|Options", "Copy as JSON"),		OPTION_COPY_JSON},
+		{nullptr, 0}
+	};
 
-	QAction *action = menuOptions->addAction(
-		U82Q(C_("RomDataView|Options", "Export to &Text...")));
+	for (const auto *p = stdacts; p->desc != nullptr; p++) {
+		QAction *const action = menuOptions->addAction(
+			U82Q(dpgettext_expr(RP_I18N_DOMAIN, "RomDataView|Options", p->desc)));
 #if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
-	QObject::connect(action, &QAction::triggered,
-		[q] { q->menuOptions_action_triggered(OPTION_EXPORT_TEXT); });
+		QObject::connect(action, &QAction::triggered,
+			[q, p] { q->menuOptions_action_triggered(p->id); });
 #else /* QT_VERSION < QT_VERSION_CHECK(5,0,0) */
-	QObject::connect(action, SIGNAL(triggered()),
-		mapperOptionsMenu, SLOT(map()));
-	mapperOptionsMenu->setMapping(action, OPTION_EXPORT_TEXT);
+		QObject::connect(action, SIGNAL(triggered()),
+			mapperOptionsMenu, SLOT(map()));
+		mapperOptionsMenu->setMapping(action, p->id);
 #endif /* QT_VERSION >= QT_VERSION_CHECK(5,0,0) */
-
-	action = menuOptions->addAction(
-		U82Q(C_("RomDataView|Options", "Export to &JSON...")));
-#if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
-	QObject::connect(action, &QAction::triggered,
-		[q] { q->menuOptions_action_triggered(OPTION_EXPORT_JSON); });
-#else /* QT_VERSION < QT_VERSION_CHECK(5,0,0) */
-	QObject::connect(action, SIGNAL(triggered()),
-		mapperOptionsMenu, SLOT(map()));
-	mapperOptionsMenu->setMapping(action, OPTION_EXPORT_JSON);
-#endif /* QT_VERSION >= QT_VERSION_CHECK(5,0,0) */
+	}
 }
 
 /**
@@ -1590,54 +1598,90 @@ void RomDataView::menuOptions_action_triggered(int id)
 			return;
 		QFileInfo fi(U82Q(rom_filename));
 
+		bool toClipboard;
 		QString s_title, s_filter;
 		QString s_default_ext;
 		switch (id) {
 			case RomDataViewPrivate::OPTION_EXPORT_TEXT:
+				toClipboard = false;
 				s_title = U82Q(C_("RomDataView", "Export to Text File"));
 				// tr: Text files filter. (Qt)
 				s_filter = U82Q(C_("RomDataView", "Text Files (*.txt);;All Files (*.*)"));
 				s_default_ext = QLatin1String(".txt");
 				break;
 			case RomDataViewPrivate::OPTION_EXPORT_JSON:
+				toClipboard = false;
 				s_title = U82Q(C_("RomDataView", "Export to JSON File"));
 				// tr: JSON files filter. (Qt)
 				s_filter = U82Q(C_("RomDataView", "JSON Files (*.json);;All Files (*.*)"));
 				s_default_ext = QLatin1String(".json");
+				break;
+			case RomDataViewPrivate::OPTION_COPY_TEXT:
+			case RomDataViewPrivate::OPTION_COPY_JSON:
+				toClipboard = true;
 				break;
 			default:
 				assert(!"Invalid action ID.");
 				return;
 		}
 
-		if (d->prevExportDir.isEmpty()) {
-			d->prevExportDir = fi.path();
+		ofstream ofs;
+
+		if (!toClipboard) {
+			if (d->prevExportDir.isEmpty()) {
+				d->prevExportDir = fi.path();
+			}
+
+			QString defaultFileName = d->prevExportDir + QChar(L'/') + fi.completeBaseName() + s_default_ext;
+			QString out_filename = QFileDialog::getSaveFileName(this,
+				s_title, defaultFileName, s_filter);
+			if (out_filename.isEmpty())
+				return;
+
+			// Save the previous export directory.
+			QFileInfo fi2(out_filename);
+			d->prevExportDir = fi2.path();
+
+			// TODO: QTextStream wrapper for ostream.
+			// For now, we'll use ofstream.
+			ofs.open(out_filename.toUtf8().constData(), ofstream::out);
+			if (ofs.fail())
+				return;
 		}
 
-		QString defaultFileName = d->prevExportDir + QChar(L'/') + fi.completeBaseName() + s_default_ext;
-		QString out_filename = QFileDialog::getSaveFileName(this,
-			s_title, defaultFileName, s_filter);
-		if (out_filename.isEmpty())
-			return;
+		// TODO: Optimize this such that we can pass ofstream or ostringstream
+		// to a factored-out function.
 
-		// Save the previous export directory.
-		QFileInfo fi2(out_filename);
-		d->prevExportDir = fi2.path();
-
-		// TODO: QTextStream wrapper for ostream.
-		// For now, we'll use ofstream.
-		ofstream ofs(out_filename.toUtf8().constData(), ofstream::out);
-		if (ofs.fail())
-			return;
-
-		if (id == RomDataViewPrivate::OPTION_EXPORT_TEXT) {
-			// Get the selected language code.
-			ofs << "== " << rp_sprintf(C_("RomDataView", "File: '%s'"), rom_filename) << std::endl;
-			ROMOutput ro(d->romData, d->sel_lc());
-			ofs << ro;
-		} else /*if (id == RomDataViewPrivate::OPTION_EXPORT_JSON)*/ {
-			JSONROMOutput jsro(d->romData);
-			ofs << jsro;
+		switch (id) {
+			case RomDataViewPrivate::OPTION_EXPORT_TEXT: {
+				ofs << "== " << rp_sprintf(C_("RomDataView", "File: '%s'"), rom_filename) << std::endl;
+				ROMOutput ro(d->romData, d->sel_lc());
+				ofs << ro;
+				break;
+			}
+			case RomDataViewPrivate::OPTION_EXPORT_JSON: {
+				JSONROMOutput jsro(d->romData);
+				ofs << jsro << std::endl;
+				break;
+			}
+			case RomDataViewPrivate::OPTION_COPY_TEXT: {
+				ostringstream oss;
+				oss << "== " << rp_sprintf(C_("RomDataView", "File: '%s'"), rom_filename) << std::endl;
+				ROMOutput ro(d->romData, d->sel_lc());
+				oss << ro;
+				QApplication::clipboard()->setText(U82Q(oss.str()));
+				break;
+			}
+			case RomDataViewPrivate::OPTION_COPY_JSON: {
+				ostringstream oss;
+				JSONROMOutput jsro(d->romData);
+				oss << jsro << std::endl;
+				QApplication::clipboard()->setText(U82Q(oss.str()));
+				break;
+			}
+			default:
+				assert(!"Invalid action ID.");
+				return;
 		}
 	}
 
