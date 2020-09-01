@@ -31,6 +31,7 @@ using LibWin32Common::WTSSessionNotification;
 // librpbase, librpfile, librptexture, libromdata
 #include "librpbase/RomFields.hpp"
 #include "librpbase/SystemRegion.hpp"
+#include "librpbase/TextOut.hpp"
 #include "librpbase/img/RpPng.hpp"
 #include "librpfile/win32/RpFile_windres.hpp"
 using namespace LibRpBase;
@@ -39,7 +40,9 @@ using LibRpTexture::rp_image;
 using LibRomData::RomDataFactory;
 
 // C++ STL classes.
+#include <fstream>
 using std::array;
+using std::ofstream;
 using std::set;
 using std::string;
 using std::unique_ptr;
@@ -75,6 +78,11 @@ const CLSID CLSID_RP_ShellPropSheetExt =
 // Bitfield is last due to multiple controls per field.
 #define IDC_RFT_BITFIELD(idx, bit)	(0x7000 + ((idx) * 32) + (bit))
 
+// "Options" menu item.
+#define IDM_OPTIONS_MENU_BASE		0x8000
+#define IDM_OPTIONS_MENU_EXPORT_TEXT	(IDM_OPTIONS_MENU_BASE - 1)
+#define IDM_OPTIONS_MENU_EXPORT_JSON	(IDM_OPTIONS_MENU_BASE - 2)
+
 /** RP_ShellPropSheetExt_Private **/
 // Workaround for RP_D() expecting the no-underscore naming convention.
 #define RP_ShellPropSheetExtPrivate RP_ShellPropSheetExt_Private
@@ -104,6 +112,8 @@ class RP_ShellPropSheetExt_Private
 		// Useful window handles.
 		HWND hDlgSheet;		// Property sheet.
 		HWND hBtnOptions;	// Options button.
+		HMENU hMenuOptions;	// Options menu.
+		tstring ts_prevExportDir;
 
 		// Fonts.
 		HFONT hFontDlg;		// Main dialog font.
@@ -191,6 +201,25 @@ class RP_ShellPropSheetExt_Private
 		set<uint32_t> set_lc;	// Set of supported language codes.
 		HWND cboLanguage;
 		HIMAGELIST himglFlags;
+
+		/**
+		 * Get the selected language code.
+		 * @return Selected language code, or 0 for none (default).
+		 */
+		inline uint32_t sel_lc(void) const
+		{
+			uint32_t lc = 0;
+			if (!cboLanguage) {
+				// No language dropdown...
+				return lc;
+			}
+
+			const int sel_idx = ComboBox_GetCurSel(cboLanguage);
+			if (sel_idx >= 0) {
+				lc = static_cast<uint32_t>(ComboBox_GetItemData(cboLanguage, sel_idx));
+			}
+			return lc;
+		}
 
 		// RFT_STRING_MULTI value labels.
 		typedef std::pair<HWND, const RomFields::Field*> Data_StringMulti_t;
@@ -365,6 +394,26 @@ class RP_ShellPropSheetExt_Private
 		void initDialog(void);
 
 		/**
+		 * An "Options" menu action was triggered.
+		 * @param id Options ID.
+		 */
+		void menuOptions_action_triggered(int id);
+
+		/**
+		 * Dialog subclass procedure to intercept WM_COMMAND for the "Options" button.
+		 * @param hWnd
+		 * @param uMsg
+		 * @param wParam
+		 * @param lParam
+		 * @param uIdSubclass
+		 * @param dWRefData RP_ShellPropSheetExt_Private
+		 */
+		static LRESULT CALLBACK DialogSubclassProc(
+			HWND hWnd, UINT uMsg,
+			WPARAM wParam, LPARAM lParam,
+			UINT_PTR uIdSubclass, DWORD_PTR dwRefData);
+
+		/**
 		 * Create the "Options" button in the parent window.
 		 * Called by WM_INITDIALOG.
 		 */
@@ -403,6 +452,7 @@ RP_ShellPropSheetExt_Private::RP_ShellPropSheetExt_Private(RP_ShellPropSheetExt 
 	, romData(nullptr)
 	, hDlgSheet(nullptr)
 	, hBtnOptions(nullptr)
+	, hMenuOptions(nullptr)
 	, hFontDlg(nullptr)
 	, hFontBold(nullptr)
 	, fontHandler(nullptr)
@@ -426,6 +476,11 @@ RP_ShellPropSheetExt_Private::~RP_ShellPropSheetExt_Private()
 	// Delete the banner and icon frames.
 	delete lblBanner;
 	delete lblIcon;
+
+	// Delete the popup menu.
+	if (hMenuOptions) {
+		DestroyMenu(hMenuOptions);
+	}
 
 	// Unreference the RomData object.
 	UNREF(romData);
@@ -814,7 +869,7 @@ int RP_ShellPropSheetExt_Private::initString(_In_ HWND hDlg, _In_ HWND hWndTab,
 			// Subclass multi-line EDIT controls to work around Enter/Escape issues.
 			// We're also subclassing single-line EDIT controls to disable the
 			// initial selection. (DLGC_HASSETSEL)
-			// Reference:  http://blogs.msdn.com/b/oldnewthing/archive/2007/08/20/4470527.aspx
+			// Reference: http://blogs.msdn.com/b/oldnewthing/archive/2007/08/20/4470527.aspx
 			// TODO: Error handling?
 			SUBCLASSPROC proc = (dwStyle & ES_MULTILINE)
 				? LibWin32Common::MultiLineEditProc
@@ -2659,6 +2714,152 @@ void RP_ShellPropSheetExt_Private::initDialog(void)
 }
 
 /**
+ * An "Options" menu action was triggered.
+ * @param id Options ID.
+ */
+void RP_ShellPropSheetExt_Private::menuOptions_action_triggered(int id)
+{
+	if (id < IDM_OPTIONS_MENU_BASE) {
+		// Export to text or JSON.
+		const char *const rom_filename = romData->filename();
+		if (!rom_filename)
+			return;
+
+		tstring ts_title, ts_filter;
+		const TCHAR *ts_default_ext;
+		switch (id) {
+			case IDM_OPTIONS_MENU_EXPORT_TEXT:
+				ts_title = U82T_c(C_("RomDataView", "Export to Text File"));
+				// tr: Text files filter. (Win32) [Use '|' instead of '\0'! gettext() doesn't support embedded nulls.]
+				ts_filter = U82T_c(C_("RomDataView", "Text Files (*.txt)|*.txt|All Files (*.*)|*.*||"));
+				ts_default_ext = _T(".txt");
+				break;
+			case IDM_OPTIONS_MENU_EXPORT_JSON:
+				ts_title = U82T_c(C_("RomDataView", "Export to JSON File"));
+				// tr: JSON files filter. (Win32) [Use '|' instead of '\0'! gettext() doesn't support embedded nulls.]
+				ts_filter = U82T_c(C_("RomDataView", "JSON Files (*.json)|*.json|All Files (*.*)|*.*||"));
+				ts_default_ext = _T(".json");
+				break;
+			default:
+				assert(!"Invalid action ID.");
+				return;
+		}
+
+		if (ts_prevExportDir.empty()) {
+			ts_prevExportDir = U82T_c(rom_filename);
+
+			// Remove the filename portion.
+			size_t bspos = ts_prevExportDir.rfind(_T('\\'));
+			if (bspos != string::npos) {
+				if (bspos > 2) {
+					ts_prevExportDir.resize(bspos);
+				} else if (bspos == 2) {
+					ts_prevExportDir.resize(3);
+				}
+			}
+		}
+
+		tstring defaultFileName = ts_prevExportDir;
+		if (!defaultFileName.empty() && defaultFileName.at(defaultFileName.size()-1) != _T('\\')) {
+			defaultFileName += _T('\\');
+		}
+
+		// Get the base name of the ROM.
+		tstring rom_basename;
+		const char *const bspos = strrchr(rom_filename, '\\');
+		if (bspos) {
+			rom_basename = U82T_c(bspos+1);
+		} else {
+			rom_basename = U82T_c(rom_filename);
+		}
+		// Remove the extension, if present.
+		size_t extpos = rom_basename.rfind(_T('.'));
+		if (extpos != string::npos) {
+			rom_basename.resize(extpos);
+		}
+		defaultFileName += rom_basename + ts_default_ext;
+
+		const tstring tfilename = LibWin32Common::getSaveFileName(hDlgSheet,
+			ts_title.c_str(), ts_filter.c_str(), defaultFileName.c_str());
+		if (tfilename.empty())
+			return;
+
+		// Save the previous export directory.
+		ts_prevExportDir = tfilename;
+		size_t bspos2 = ts_prevExportDir.rfind(_T('\\'));
+		if (bspos2 != tstring::npos && bspos2 > 3) {
+			ts_prevExportDir.resize(bspos2);
+		}
+
+		ofstream ofs(tfilename.c_str(), ofstream::out);
+		if (ofs.fail())
+			return;
+
+		if (id == IDM_OPTIONS_MENU_EXPORT_TEXT) {
+			// Get the selected language code.
+			ofs << "== " << rp_sprintf(C_("RomDataView", "File: '%s'"), rom_filename) << std::endl;
+			ROMOutput ro(romData, sel_lc());
+			ofs << ro;
+		} else /*if (id == RomDataViewPrivate::OPTION_EXPORT_JSON)*/ {
+			JSONROMOutput jsro(romData);
+			ofs << jsro;
+		}
+	}
+
+	// TODO: RomOps
+}
+
+/**
+ * Dialog subclass procedure to intercept WM_COMMAND for the "Options" button.
+ * @param hWnd
+ * @param uMsg
+ * @param wParam
+ * @param lParam
+ * @param uIdSubclass
+ * @param dWRefData RP_ShellPropSheetExt_Private
+ */
+LRESULT CALLBACK RP_ShellPropSheetExt_Private::DialogSubclassProc(
+	HWND hWnd, UINT uMsg,
+	WPARAM wParam, LPARAM lParam,
+	UINT_PTR uIdSubclass, DWORD_PTR dwRefData)
+{
+	switch (uMsg) {
+		case WM_NCDESTROY:
+			// Remove the window subclass.
+			// Reference: https://blogs.msdn.microsoft.com/oldnewthing/20031111-00/?p=41883
+			RemoveWindowSubclass(hWnd, DialogSubclassProc, uIdSubclass);
+			break;
+
+		case WM_COMMAND:
+			if (HIWORD(wParam) == BN_CLICKED && LOWORD(wParam) == IDC_RP_OPTIONS) {
+				// Pop up the menu.
+				RP_ShellPropSheetExt_Private *const d = reinterpret_cast<RP_ShellPropSheetExt_Private*>(dwRefData);
+				assert(d->hBtnOptions != nullptr);
+				assert(d->hMenuOptions != nullptr);
+				if (!d->hBtnOptions || !d->hMenuOptions)
+					break;
+
+				// Get the absolute position of the "Options" button.
+				RECT rect_btnOptions;
+				GetWindowRect(d->hBtnOptions, &rect_btnOptions);
+				int id = TrackPopupMenu(d->hMenuOptions,
+					TPM_LEFTALIGN | TPM_BOTTOMALIGN | TPM_VERNEGANIMATION |
+						TPM_NONOTIFY | TPM_RETURNCMD,
+					rect_btnOptions.left, rect_btnOptions.top, 0,
+					hWnd, nullptr);
+				d->menuOptions_action_triggered(id);
+				return TRUE;
+			}
+			break;
+
+		default:
+			break;
+	}
+
+	return DefSubclassProc(hWnd, uMsg, wParam, lParam);
+}
+
+/**
  * Create the "Options" button in the parent window.
  * Called by WM_INITDIALOG.
  */
@@ -2741,6 +2942,22 @@ void RP_ShellPropSheetExt_Private::createOptionsButton(void)
 		SetWindowPos(hBtnOptions, hBtnApply,
 			0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
 	}
+
+	// Subclass the parent dialog so we can intercept WM_COMMAND.
+	SetWindowSubclass(hWndParent, DialogSubclassProc,
+		static_cast<UINT_PTR>(IDC_RP_OPTIONS),
+		reinterpret_cast<DWORD_PTR>(this));
+
+	// Create the menu.
+	hMenuOptions = CreatePopupMenu();
+
+	/** Standard actions. **/
+	AppendMenu(hMenuOptions, MF_STRING, IDM_OPTIONS_MENU_EXPORT_TEXT,
+		U82T_c(C_("RomDataView|Options", "Export to &Text...")));
+	AppendMenu(hMenuOptions, MF_STRING, IDM_OPTIONS_MENU_EXPORT_JSON,
+		U82T_c(C_("RomDataView|Options", "Export to &JSON...")));
+
+	// TODO: RomOps
 }
 
 /** RP_ShellPropSheetExt **/
@@ -3196,9 +3413,8 @@ INT_PTR RP_ShellPropSheetExt_Private::DlgProc_WM_COMMAND(HWND hDlg, WPARAM wPara
 				break;
 
 			// NOTE: lParam also has the ComboBox HWND.
-			const int sel_idx = ComboBox_GetCurSel(cboLanguage);
-			if (sel_idx >= 0) {
-				const uint32_t lc = static_cast<uint32_t>(ComboBox_GetItemData(cboLanguage, sel_idx));
+			const uint32_t lc = sel_lc();
+			if (lc != 0) {
 				updateMulti(lc);
 			}
 			break;
