@@ -10,15 +10,19 @@
 #include "RomDataView.hpp"
 #include "RpQImageBackend.hpp"
 
-// librpbase, librptexture
+// librpbase, librpfile librptexture
+#include "librpbase/TextOut.hpp"
 using namespace LibRpBase;
+using LibRpFile::IRpFile;
 using LibRpTexture::rp_image;
 
 // libi18n
 #include "libi18n/i18n.h"
 
 // C++ STL classes.
+#include <fstream>
 using std::array;
+using std::ofstream;
 using std::set;
 using std::string;
 using std::vector;
@@ -54,6 +58,16 @@ class RomDataViewPrivate
 
 		// "Options" button.
 		QPushButton *btnOptions;
+		QMenu *menuOptions;
+#if QT_VERSION < QT_VERSION_CHECK(5,0,0)
+		QSignalMapper *mapperOptionsMenu;
+#endif /* QT_VERSION < QT_VERSION_CHECK(5,0,0) */
+		QString prevExportDir;
+
+		enum StandardOptionID {
+			OPTION_EXPORT_TEXT = -1,
+			OPTION_EXPORT_JSON = -2,
+		};
 
 		// Tab contents.
 		struct tab {
@@ -184,6 +198,10 @@ class RomDataViewPrivate
 RomDataViewPrivate::RomDataViewPrivate(RomDataView *q, RomData *romData)
 	: q_ptr(q)
 	, btnOptions(nullptr)
+	, menuOptions(nullptr)
+#if QT_VERSION < QT_VERSION_CHECK(5,0,0)
+	, mapperOptionsMenu(nullptr)
+#endif /* QT_VERSION < QT_VERSION_CHECK(5,0,0) */
 	, def_lc(0)
 	, cboLanguage(nullptr)
 	, romData(romData->ref())
@@ -233,10 +251,45 @@ void RomDataViewPrivate::createOptionsButton(void)
 
 	// Create the "Options" button.
 	// TODO: Left-align the button.
-	// TODO: Submenu.
 	// tr: "Options" button.
-	btnOptions = btnBox->addButton(U82Q(C_("RomDataView", "Op&tions")), QDialogButtonBox::ActionRole);
+	const QString s_options = U82Q(C_("RomDataView", "Op&tions"));
+	btnOptions = btnBox->addButton(s_options, QDialogButtonBox::ActionRole);
 	btnOptions->hide();
+
+	// Create the menu and (for Qt4) signal mapper.
+	// TODO: Signals.
+	menuOptions = new QMenu(s_options, q);
+	btnOptions->setMenu(menuOptions);
+
+#if QT_VERSION < QT_VERSION_CHECK(5,0,0)
+	mapperOptionsMenu = new QSignalMapper(q);
+	QObject::connect(mapperOptionsMenu, SIGNAL(mapped(int)),
+		q, SLOT(optionsMenuAction_triggered(int)));
+#endif /* QT_VERSION < QT_VERSION_CHECK(5,0,0) */
+
+	/** Standard actions. **/
+
+	QAction *action = menuOptions->addAction(
+		U82Q(C_("RomDataView|Options", "Export to &Text...")));
+#if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
+	QObject::connect(action, &QAction::triggered,
+		[q] { q->optionsMenuAction_triggered(OPTION_EXPORT_TEXT); });
+#else /* QT_VERSION < QT_VERSION_CHECK(5,0,0) */
+	QObject::connect(action, SIGNAL(triggered()),
+		mapperOptionsMenu, SLOT(map()));
+	mapperOptionsMenu->setMapping(action, OPTION_EXPORT_TEXT);
+#endif /* QT_VERSION >= QT_VERSION_CHECK(5,0,0) */
+
+	action = menuOptions->addAction(
+		U82Q(C_("RomDataView|Options", "Export to &JSON...")));
+#if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
+	QObject::connect(action, &QAction::triggered,
+		[q] { q->optionsMenuAction_triggered(OPTION_EXPORT_JSON); });
+#else /* QT_VERSION < QT_VERSION_CHECK(5,0,0) */
+	QObject::connect(action, SIGNAL(triggered()),
+		mapperOptionsMenu, SLOT(map()));
+	mapperOptionsMenu->setMapping(action, OPTION_EXPORT_JSON);
+#endif /* QT_VERSION >= QT_VERSION_CHECK(5,0,0) */
 }
 
 /**
@@ -1474,4 +1527,76 @@ void RomDataView::setRomData(RomData *romData)
 	}
 
 	emit romDataChanged(romData);
+}
+
+/**
+ * An "Options" menu action was triggered.
+ * @param id Options ID.
+ */
+void RomDataView::optionsMenuAction_triggered(int id)
+{
+	// IDs below 0 are for built-in actions.
+	// IDs >= 0 are for RomData-specific actions.
+	RP_D(RomDataView);
+
+	if (id < 0) {
+		// Export to text or JSON.
+		const char *const rom_filename = d->romData->filename();
+		if (!rom_filename)
+			return;
+		QFileInfo fi(U82Q(rom_filename));
+
+		QString s_title, s_filter;
+		QString s_default_ext;
+		switch (id) {
+			case RomDataViewPrivate::OPTION_EXPORT_TEXT:
+				s_title = U82Q(C_("RomDataView", "Export to Text File"));
+				// tr: Text files filter. (Qt)
+				s_filter = U82Q(C_("RomDataView", "Text Files (*.txt);;All Files (*.*)"));
+				s_default_ext = QLatin1String(".txt");
+				break;
+			case RomDataViewPrivate::OPTION_EXPORT_JSON:
+				s_title = U82Q(C_("RomDataView", "Export to JSON File"));
+				// tr: JSON files filter. (Qt)
+				s_filter = U82Q(C_("RomDataView", "JSON Files (*.json);;All Files (*.*)"));
+				s_default_ext = QLatin1String(".json");
+				break;
+			default:
+				assert(!"Invalid action ID.");
+				return;
+		}
+
+		if (d->prevExportDir.isEmpty()) {
+			d->prevExportDir = fi.path();
+		}
+
+		QString defaultFileName = d->prevExportDir + QChar(L'/') + fi.completeBaseName() + s_default_ext;
+		QString out_filename = QFileDialog::getSaveFileName(this,
+			s_title, defaultFileName, s_filter);
+		if (out_filename.isEmpty())
+			return;
+
+		// Save the previous export directory.
+		QFileInfo fi2(out_filename);
+		d->prevExportDir = fi2.path();
+
+		// TODO: QTextStream wrapper for ostream.
+		// For now, we'll use ofstream.
+		ofstream ofs(out_filename.toUtf8().constData(), ofstream::out);
+		if (ofs.fail())
+			return;
+
+		if (id == RomDataViewPrivate::OPTION_EXPORT_TEXT) {
+			// Get the selected language code.
+			const uint32_t lc = (d->cboLanguage)
+				? d->cboLanguage->currentData().value<uint32_t>()
+				: 0;
+			ofs << "== " << rp_sprintf(C_("RomDataView", "File: '%s'"), rom_filename) << std::endl;
+			ROMOutput ro(d->romData, lc);
+			ofs << ro;
+		} else if (id == RomDataViewPrivate::OPTION_EXPORT_JSON) {
+			JSONROMOutput jsro(d->romData);
+			ofs << jsro;
+		}
+	}
 }
