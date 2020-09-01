@@ -162,11 +162,10 @@ public:
 
 class BitfieldField {
 	size_t width;
-	const char *nl;
 	const RomFields::Field &romField;
 public:
-	BitfieldField(size_t width, const char *nl, const RomFields::Field &romField)
-		: width(width), nl(nl), romField(romField) { }
+	BitfieldField(size_t width, const RomFields::Field &romField)
+		: width(width), romField(romField) { }
 	friend ostream& operator<<(ostream& os, const BitfieldField& field) {
 		auto romField = field.romField;
 		const auto &bitfieldDesc = romField.desc.bitfield;
@@ -214,7 +213,7 @@ public:
 			// if the number of valid elements is divisible by
 			// the column count.
 			if (col == perRow) {
-				os << field.nl << Pad(field.width);
+				os << '\n' << Pad(field.width);
 				col = 0;
 			}
 
@@ -228,13 +227,12 @@ public:
 
 class ListDataField {
 	size_t width;
-	const char *nl;
 	const RomFields::Field &romField;
 	uint32_t def_lc;	// ROM-default language code.
 	uint32_t user_lc;	// User-specified language code.
 public:
-	ListDataField(size_t width, const char *nl, const RomFields::Field &romField, uint32_t def_lc, uint32_t user_lc)
-		: width(width), nl(nl), romField(romField), def_lc(def_lc), user_lc(user_lc) { }
+	ListDataField(size_t width, const RomFields::Field &romField, uint32_t def_lc, uint32_t user_lc)
+		: width(width), romField(romField), def_lc(def_lc), user_lc(user_lc) { }
 	friend ostream& operator<<(ostream& os, const ListDataField& field) {
 		auto romField = field.romField;
 
@@ -342,7 +340,7 @@ public:
 		// Print the list on a separate row from the field name?
 		const bool separateRow = !!(listDataDesc.flags & RomFields::RFT_LISTDATA_SEPARATE_ROW);
 		if (separateRow) {
-			os << field.nl;
+			os << '\n';
 		}
 
 		bool skipFirstNL = true;
@@ -384,7 +382,7 @@ public:
 				}
 			}
 			os << setw(0) << std::right;
-			os << '|' << field.nl;
+			os << '|' << '\n';
 
 			// Separator between the headers and the data.
 			if (!separateRow) {
@@ -422,7 +420,7 @@ public:
 			// NOTE: nl_count[row] is 0 for single-line items.
 			for (int line = nl_count[row]; line >= 0; line--) {
 				if (!skipFirstNL) {
-					os << field.nl;
+					os << '\n';
 					if (!separateRow) {
 						os << Pad(field.width);
 					}
@@ -632,12 +630,11 @@ public:
 };
 
 class FieldsOutput {
-	const char *nl;
 	const RomFields& fields;
 	uint32_t lc;
 public:
-	explicit FieldsOutput(const char *nl, const RomFields& fields, uint32_t lc = 0)
-		: nl(nl), fields(fields), lc(lc) { }
+	explicit FieldsOutput(const RomFields& fields, uint32_t lc = 0)
+		: fields(fields), lc(lc) { }
 	friend std::ostream& operator<<(std::ostream& os, const FieldsOutput& fo) {
 		size_t maxWidth = 0;
 		std::for_each(fo.fields.cbegin(), fo.fields.cend(),
@@ -662,7 +659,7 @@ public:
 				continue;
 
 			if (printed_first)
-				os << fo.nl;
+				os << '\n';
 
 			// New tab?
 			if (tabCount > 1 && tabIdx != romField.tabIdx) {
@@ -679,7 +676,7 @@ public:
 				} else {
 					os << "(tab " << tabIdx << ')';
 				}
-				os << " -----" << fo.nl;
+				os << " -----" << '\n';
 			}
 
 			switch (romField.type) {
@@ -691,10 +688,10 @@ public:
 					os << StringField(maxWidth, romField);
 					break;
 				case RomFields::RFT_BITFIELD:
-					os << BitfieldField(maxWidth, fo.nl, romField);
+					os << BitfieldField(maxWidth, romField);
 					break;
 				case RomFields::RFT_LISTDATA:
-					os << ListDataField(maxWidth, fo.nl, romField, def_lc, user_lc);
+					os << ListDataField(maxWidth, romField, def_lc, user_lc);
 					break;
 				case RomFields::RFT_DATETIME:
 					os << DateTimeField(maxWidth, romField);
@@ -723,8 +720,7 @@ public:
 
 ROMOutput::ROMOutput(const RomData *romdata, uint32_t lc)
 	: romdata(romdata)
-	, lc(lc)
-	, crlf_(false) { }
+	, lc(lc) { }
 std::ostream& operator<<(std::ostream& os, const ROMOutput& fo) {
 	auto romdata = fo.romdata;
 	const char *const systemName = romdata->systemName(RomData::SYSNAME_TYPE_LONG | RomData::SYSNAME_REGION_ROM_LOCAL);
@@ -732,14 +728,13 @@ std::ostream& operator<<(std::ostream& os, const ROMOutput& fo) {
 	assert(systemName != nullptr);
 	assert(fileType != nullptr);
 
-	const char *const nl_cstr = (fo.crlf_ ? "\r\n" : "\n");
 	os << "-- " << (systemName ? systemName : "(unknown system)") <<
 	      ' ' << (fileType ? fileType : "(unknown filetype)") <<
-	      " detected" << nl_cstr;
+	      " detected" << '\n';
 	const RomFields *const fields = romdata->fields();
 	assert(fields != nullptr);
 	if (fields) {
-		os << FieldsOutput(nl_cstr, *fields, fo.lc) << nl_cstr;
+		os << FieldsOutput(*fields, fo.lc) << '\n';
 	}
 
 	const int supported = romdata->supportedImageTypes();
@@ -750,11 +745,11 @@ std::ostream& operator<<(std::ostream& os, const ROMOutput& fo) {
 
 		auto image = romdata->image((RomData::ImageType)i);
 		if (image && image->isValid()) {
-			os << "-- " << RomData::getImageTypeName((RomData::ImageType)i) << " is present (use -x" << i << " to extract)" << nl_cstr;
-			os << "   Format : " << rp_image::getFormatName(image->format()) << nl_cstr;
-			os << "   Size   : " << image->width() << " x " << image->height() << nl_cstr;
+			os << "-- " << RomData::getImageTypeName((RomData::ImageType)i) << " is present (use -x" << i << " to extract)" << '\n';
+			os << "   Format : " << rp_image::getFormatName(image->format()) << '\n';
+			os << "   Size   : " << image->width() << " x " << image->height() << '\n';
 			if (romdata->imgpf((RomData::ImageType) i)  & RomData::IMGPF_ICON_ANIMATED) {
-				os << "   Animated icon present (use -a to extract)" << nl_cstr;
+				os << "   Animated icon present (use -a to extract)" << '\n';
 			}
 		}
 	}
@@ -775,10 +770,10 @@ std::ostream& operator<<(std::ostream& os, const ROMOutput& fo) {
 			continue;
 
 		std::for_each(extURLs.cbegin(), extURLs.cend(),
-			[i, &os, nl_cstr](const RomData::ExtURL &extURL) {
+			[i, &os](const RomData::ExtURL &extURL) {
 				os << "-- " <<
 					RomData::getImageTypeName((RomData::ImageType)i) << ": " << urlPartialUnescape(extURL.url) <<
-					" (cache_key: " << extURL.cache_key << ')' << nl_cstr;
+					" (cache_key: " << extURL.cache_key << ')' << '\n';
 			}
 		);
 	}

@@ -2757,7 +2757,7 @@ void RP_ShellPropSheetExt_Private::menuOptions_action_triggered(int id)
 		}
 
 		ofstream ofs;
-		ostringstream oss;
+		tstring ts_out;
 
 		if (!toClipboard) {
 			if (ts_prevExportDir.empty()) {
@@ -2834,18 +2834,23 @@ void RP_ShellPropSheetExt_Private::menuOptions_action_triggered(int id)
 				break;
 			}
 			case IDM_OPTIONS_MENU_COPY_TEXT: {
-				oss << "== " << rp_sprintf(C_("RomDataView", "File: '%s'"), rom_filename) << "\r\n";
+				// NOTE: Some fields may have embedded newlines,
+				// so we'll need to convert everything afterwards.
+				ostringstream oss;
+				oss << "== " << rp_sprintf(C_("RomDataView", "File: '%s'"), rom_filename) << '\n';
 				ROMOutput ro(romData, sel_lc());
-				ro.setCrlf(true);
 				oss << ro;
 				oss.flush();
+				ts_out = LibWin32Common::unix2dos(U82T_s(oss.str()));
 				break;
 			}
 			case IDM_OPTIONS_MENU_COPY_JSON: {
+				ostringstream oss;
 				JSONROMOutput jsro(romData);
 				jsro.setCrlf(true);
-				oss << jsro << std::endl;
+				oss << jsro << '\n';
 				oss.flush();
+				ts_out = U82T_s(oss.str());
 				break;
 			}
 			default:
@@ -2854,15 +2859,13 @@ void RP_ShellPropSheetExt_Private::menuOptions_action_triggered(int id)
 		}
 
 		if (toClipboard) {
-			// FIXME: ostringstream doesn't have CRLF conversion.
-			const tstring tstr = U82T_s(oss.str());
 			if (OpenClipboard(hDlgSheet)) {
 				EmptyClipboard();
-				HGLOBAL hglbCopy = GlobalAlloc(GMEM_MOVEABLE, (tstr.size() + 1) * sizeof(TCHAR));
+				HGLOBAL hglbCopy = GlobalAlloc(GMEM_MOVEABLE, (ts_out.size() + 1) * sizeof(TCHAR));
 				if (hglbCopy) {
 					LPTSTR lpszCopy = static_cast<LPTSTR>(GlobalLock(hglbCopy));
-					memcpy(lpszCopy, tstr.data(), tstr.size() * sizeof(TCHAR));
-					lpszCopy[tstr.size()] = _T('\0');
+					memcpy(lpszCopy, ts_out.data(), ts_out.size() * sizeof(TCHAR));
+					lpszCopy[ts_out.size()] = _T('\0');
 					GlobalUnlock(hglbCopy);
 					SetClipboardData(CF_UNICODETEXT, hglbCopy);
 				}
