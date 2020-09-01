@@ -277,13 +277,19 @@ void RomDataViewPrivate::createOptionsButton(void)
 		return;
 
 	// Parent should contain a KPageWidget.
+	// NOTE: Kubuntu 16.04 (Dolphin 15.12.3, KWidgetsAddons 5.18.0) has
+	// the QDialogButtonBox in the KPropertiesDialog, not the KPageWidget.
+	// NOTE 2: Newer frameworks with QDialogButtonBox in the KPageWidget
+	// also give it the object name "buttonbox". We'll leave out the name
+	// for compatibility purposes.
 	KPageWidget *const pageWidget = findDirectChild<KPageWidget*>(parent);
-	assert(pageWidget != nullptr);
-	if (!pageWidget)
-		return;
 
-	// KPageWidget should contain a QDialogButtonBox.
-	QDialogButtonBox *const btnBox = findDirectChild<QDialogButtonBox*>(pageWidget);
+	// Check for the QDialogButtonBox in the KPageWidget first.
+	QDialogButtonBox *btnBox = findDirectChild<QDialogButtonBox*>(pageWidget);
+	if (!btnBox) {
+		// Check in the KPropertiesDialog.
+		btnBox = findDirectChild<QDialogButtonBox*>(parent);
+	}
 	assert(btnBox != nullptr);
 	if (!btnBox)
 		return;
