@@ -1695,7 +1695,8 @@ rom_data_view_create_options_button(RomDataView *page)
 	};
 
 	for (const auto *p = stdacts; p->desc != nullptr; p++) {
-		GtkWidget *menuItem = gtk_menu_item_new_with_label(p->desc);
+		GtkWidget *const menuItem = gtk_menu_item_new_with_label(
+			dpgettext_expr(RP_I18N_DOMAIN, "RomDataView|Options", p->desc));
 		g_object_set_data(G_OBJECT(menuItem), "menuOptions_id", GINT_TO_POINTER(p->id));
 		g_signal_connect(menuItem, "activate", G_CALLBACK(menuOptions_triggered_signal_handler), page);
 		gtk_widget_show(menuItem);
