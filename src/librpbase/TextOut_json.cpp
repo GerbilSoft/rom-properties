@@ -288,7 +288,7 @@ public:
 					desc_obj.AddMember("flags", romField.desc.flags, allocator);
 					field_obj.AddMember("desc", desc_obj, allocator);
 
-					field_obj.AddMember("data", romField.data.date_time, allocator);
+					field_obj.AddMember("data", static_cast<int64_t>(romField.data.date_time), allocator);
 					break;
 				}
 
