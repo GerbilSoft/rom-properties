@@ -26,8 +26,10 @@ using LibRomData::RomDataFactory;
 
 // C++ STL classes.
 #include <fstream>
+#include <sstream>
 using std::array;
 using std::ofstream;
+using std::ostringstream;
 using std::set;
 using std::string;
 using std::vector;
@@ -131,6 +133,8 @@ typedef std::pair<GtkWidget*, const RomFields::Field*> Data_StringMulti_t;
 enum StandardOptionID {
 	OPTION_EXPORT_TEXT = -1,
 	OPTION_EXPORT_JSON = -2,
+	OPTION_COPY_TEXT = -3,
+	OPTION_COPY_JSON = -4,
 };
 
 struct Data_ListDataMulti_t {
@@ -1679,20 +1683,24 @@ rom_data_view_create_options_button(RomDataView *page)
 #endif /* USE_GTK_MENU_BUTTON */
 
 	/** Standard actions. **/
+	static const struct {
+		const char *desc;
+		int id;
+	} stdacts[] = {
+		{NOP_C_("RomDataView|Options", "Export to Text"),	OPTION_EXPORT_TEXT},
+		{NOP_C_("RomDataView|Options", "Export to JSON"),	OPTION_EXPORT_JSON},
+		{NOP_C_("RomDataView|Options", "Copy as Text"),		OPTION_COPY_TEXT},
+		{NOP_C_("RomDataView|Options", "Copy as JSON"),		OPTION_COPY_JSON},
+		{nullptr, 0}
+	};
 
-	s_title = convert_accel_to_gtk(C_("RomDataView|Options", "Export to &Text..."));
-	GtkWidget *menuItem = gtk_menu_item_new_with_mnemonic(s_title.c_str());
-	g_object_set_data(G_OBJECT(menuItem), "menuOptions_id", GINT_TO_POINTER(OPTION_EXPORT_TEXT));
-	g_signal_connect(menuItem, "activate", G_CALLBACK(menuOptions_triggered_signal_handler), page);
-	gtk_widget_show(menuItem);
-	gtk_menu_shell_append(GTK_MENU_SHELL(page->menuOptions), menuItem);
-
-	s_title = convert_accel_to_gtk(C_("RomDataView|Options", "Export to &JSON..."));
-	menuItem = gtk_menu_item_new_with_mnemonic(s_title.c_str());
-	g_object_set_data(G_OBJECT(menuItem), "menuOptions_id", GINT_TO_POINTER(OPTION_EXPORT_JSON));
-	g_signal_connect(menuItem, "activate", G_CALLBACK(menuOptions_triggered_signal_handler), page);
-	gtk_widget_show(menuItem);
-	gtk_menu_shell_append(GTK_MENU_SHELL(page->menuOptions), menuItem);
+	for (const auto *p = stdacts; p->desc != nullptr; p++) {
+		GtkWidget *menuItem = gtk_menu_item_new_with_label(p->desc);
+		g_object_set_data(G_OBJECT(menuItem), "menuOptions_id", GINT_TO_POINTER(p->id));
+		g_signal_connect(menuItem, "activate", G_CALLBACK(menuOptions_triggered_signal_handler), page);
+		gtk_widget_show(menuItem);
+		gtk_menu_shell_append(GTK_MENU_SHELL(page->menuOptions), menuItem);
+	}
 }
 
 static void
@@ -2373,16 +2381,18 @@ menuOptions_triggered_signal_handler(GtkMenuItem *menuItem,
 		g_object_get_data(G_OBJECT(menuItem), "menuOptions_id"));
 
 	if (id < 0) {
-		// Export to text or JSON.
+		// Export/copy to text or JSON.
 		const char *const rom_filename = page->romData->filename();
 		if (!rom_filename)
 			return;
 
+		bool toClipboard;
 		GtkFileFilter *filter = gtk_file_filter_new();
-		const char *s_title;
-		const char *s_default_ext;
+		const char *s_title = nullptr;
+		const char *s_default_ext = nullptr;
 		switch (id) {
 			case OPTION_EXPORT_TEXT:
+				toClipboard = false;
 				s_title = C_("RomDataView", "Export to Text File");
 				s_default_ext = ".txt";
 				gtk_file_filter_set_name(filter, C_("RomDataView", "Text Files"));
@@ -2390,87 +2400,127 @@ menuOptions_triggered_signal_handler(GtkMenuItem *menuItem,
 				gtk_file_filter_add_pattern(filter, "*.txt");
 				break;
 			case OPTION_EXPORT_JSON:
+				toClipboard = false;
 				s_title = C_("RomDataView", "Export to JSON File");
 				s_default_ext = ".json";
 				gtk_file_filter_set_name(filter, C_("RomDataView", "JSON Files"));
 				gtk_file_filter_add_mime_type(filter, "application/json");
 				gtk_file_filter_add_pattern(filter, "*.json");
 				break;
+			case OPTION_COPY_TEXT:
+			case OPTION_COPY_JSON:
+				toClipboard = true;
+				break;
 			default:
 				assert(!"Invalid action ID.");
 				return;
 		}
 
-		GtkWidget *const dialog = gtk_file_chooser_dialog_new(s_title,
-			GTK_WINDOW(gtk_widget_get_toplevel(GTK_WIDGET(page))),
-			GTK_FILE_CHOOSER_ACTION_SAVE,
-			GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
-			GTK_STOCK_SAVE, GTK_RESPONSE_ACCEPT,
-			nullptr);
-		gtk_file_chooser_set_do_overwrite_confirmation(GTK_FILE_CHOOSER(dialog), true);
-
-		// Set the filters.
-		gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dialog), filter);
-
-		filter = gtk_file_filter_new();
-		gtk_file_filter_set_name(filter, C_("RomDataView", "All Files"));
-		gtk_file_filter_add_pattern(filter, "*");
-		gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dialog), filter);
-
-		if (!page->prevExportDir) {
-			page->prevExportDir = g_path_get_dirname(rom_filename);
-		}
-
-		gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(dialog), page->prevExportDir);
-
-		gchar *const basename = g_path_get_basename(rom_filename);
-		string defaultName = basename;
-		g_free(basename);
-		// Remove the extension, if present.
-		size_t extpos = defaultName.rfind('.');
-		if (extpos != string::npos) {
-			defaultName.resize(extpos);
-		}
-		defaultName += s_default_ext;
-		gtk_file_chooser_set_current_name(GTK_FILE_CHOOSER(dialog), defaultName.c_str());
-
-		gint res = gtk_dialog_run(GTK_DIALOG(dialog));
-		if (res != GTK_RESPONSE_ACCEPT) {
-			// Cancelled...
-			gtk_widget_destroy(dialog);
-			return;
-		}
-
-		gchar *out_filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
-		gtk_widget_destroy(dialog);
-		if (!out_filename) {
-			// No filename...
-			return;
-		}
-
-		// Save the previous export directory.
-		if (page->prevExportDir) {
-			g_free(page->prevExportDir);
-			page->prevExportDir = nullptr;
-		}
-		page->prevExportDir = g_path_get_dirname(out_filename);
-
 		// TODO: GIO wrapper for ostream.
 		// For now, we'll use ofstream.
-		ofstream ofs(out_filename, ofstream::out);
-		g_free(out_filename);
-		if (ofs.fail()) {
-			return;
+		ofstream ofs;
+
+		if (!toClipboard) {
+			GtkWidget *const dialog = gtk_file_chooser_dialog_new(s_title,
+				GTK_WINDOW(gtk_widget_get_toplevel(GTK_WIDGET(page))),
+				GTK_FILE_CHOOSER_ACTION_SAVE,
+				GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+				GTK_STOCK_SAVE, GTK_RESPONSE_ACCEPT,
+				nullptr);
+			gtk_file_chooser_set_do_overwrite_confirmation(GTK_FILE_CHOOSER(dialog), true);
+
+			// Set the filters.
+			gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dialog), filter);
+
+			filter = gtk_file_filter_new();
+			gtk_file_filter_set_name(filter, C_("RomDataView", "All Files"));
+			gtk_file_filter_add_pattern(filter, "*");
+			gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dialog), filter);
+
+			if (!page->prevExportDir) {
+				page->prevExportDir = g_path_get_dirname(rom_filename);
+			}
+
+			gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(dialog), page->prevExportDir);
+
+			gchar *const basename = g_path_get_basename(rom_filename);
+			string defaultName = basename;
+			g_free(basename);
+			// Remove the extension, if present.
+			size_t extpos = defaultName.rfind('.');
+			if (extpos != string::npos) {
+				defaultName.resize(extpos);
+			}
+			defaultName += s_default_ext;
+			gtk_file_chooser_set_current_name(GTK_FILE_CHOOSER(dialog), defaultName.c_str());
+
+			gint res = gtk_dialog_run(GTK_DIALOG(dialog));
+			if (res != GTK_RESPONSE_ACCEPT) {
+				// Cancelled...
+				gtk_widget_destroy(dialog);
+				return;
+			}
+
+			gchar *out_filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
+			gtk_widget_destroy(dialog);
+			if (!out_filename) {
+				// No filename...
+				return;
+			}
+
+			// Save the previous export directory.
+			if (page->prevExportDir) {
+				g_free(page->prevExportDir);
+				page->prevExportDir = nullptr;
+			}
+			page->prevExportDir = g_path_get_dirname(out_filename);
+
+			ofs.open(out_filename, ofstream::out);
+			g_free(out_filename);
+			if (ofs.fail()) {
+				return;
+			}
 		}
 
-		if (id == OPTION_EXPORT_TEXT) {
-			// Get the selected language code.
-			ofs << "== " << rp_sprintf(C_("RomDataView", "File: '%s'"), rom_filename) << std::endl;
-			ROMOutput ro(page->romData, rom_data_view_get_sel_lc(page));
-			ofs << ro;
-		} else /*if (id == OPTION_EXPORT_JSON)*/ {
-			JSONROMOutput jsro(page->romData);
-			ofs << jsro;
+		// TODO: Optimize this such that we can pass ofstream or ostringstream
+		// to a factored-out function.
+
+		switch (id) {
+			case OPTION_EXPORT_TEXT: {
+				ofs << "== " << rp_sprintf(C_("RomDataView", "File: '%s'"), rom_filename) << std::endl;
+				ROMOutput ro(page->romData, rom_data_view_get_sel_lc(page));
+				ofs << ro;
+				break;
+			}
+			case OPTION_EXPORT_JSON: {
+				JSONROMOutput jsro(page->romData);
+				ofs << jsro << std::endl;
+				break;
+			}
+			case OPTION_COPY_TEXT: {
+				ostringstream oss;
+				oss << "== " << rp_sprintf(C_("RomDataView", "File: '%s'"), rom_filename) << std::endl;
+				ROMOutput ro(page->romData, rom_data_view_get_sel_lc(page));
+				oss << ro;
+
+				const string str = oss.str();
+				GtkClipboard *const clip = gtk_clipboard_get(GDK_SELECTION_CLIPBOARD);
+				gtk_clipboard_set_text(clip, str.data(), static_cast<gint>(str.size()));
+				break;
+			}
+			case OPTION_COPY_JSON: {
+				ostringstream oss;
+				JSONROMOutput jsro(page->romData);
+				oss << jsro << std::endl;
+
+				const string str = oss.str();
+				GtkClipboard *const clip = gtk_clipboard_get(GDK_SELECTION_CLIPBOARD);
+				gtk_clipboard_set_text(clip, str.data(), static_cast<gint>(str.size()));
+				break;
+			}
+			default:
+				assert(!"Invalid action ID.");
+				return;
 		}
 	}
 
