@@ -302,11 +302,30 @@ void RomDataViewPrivate::createOptionsButton(void)
 		return;
 
 	// Create the "Options" button.
-	// TODO: Left-align the button.
 	// tr: "Options" button.
 	const QString s_options = U82Q(C_("RomDataView", "Op&tions"));
 	btnOptions = btnBox->addButton(s_options, QDialogButtonBox::ActionRole);
 	btnOptions->hide();
+
+	// Add a spacer to the QDialogButtonBox.
+	// This will ensure that the "Options" button is left-aligned.
+	QBoxLayout *const boxLayout = findDirectChild<QBoxLayout*>(btnBox);
+	if (boxLayout) {
+		// Find the index of the "Options" button.
+		const int count = boxLayout->count();
+		int idx = -1;
+		for (int i = 0; i < count; i++) {
+			if (boxLayout->itemAt(i)->widget() == btnOptions) {
+				printf("found btnOptions: %d\n", i);
+				idx = i;
+				break;
+			}
+		}
+
+		if (idx >= 0) {
+			boxLayout->insertStretch(idx+1, 1);
+		}
+	}
 
 	// Create the menu and (for Qt4) signal mapper.
 	// TODO: Signals.
