@@ -2847,7 +2847,9 @@ LRESULT CALLBACK RP_ShellPropSheetExt_Private::DialogSubclassProc(
 						TPM_NONOTIFY | TPM_RETURNCMD,
 					rect_btnOptions.left, rect_btnOptions.top, 0,
 					hWnd, nullptr);
-				d->menuOptions_action_triggered(id);
+				if (id != 0) {
+					d->menuOptions_action_triggered(id);
+				}
 				return TRUE;
 			}
 			break;
