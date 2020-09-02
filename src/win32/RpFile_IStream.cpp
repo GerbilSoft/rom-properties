@@ -54,6 +54,9 @@ RpFile_IStream::RpFile_IStream(IStream *pStream, bool gzip)
 {
 	pStream->AddRef();
 
+	// TODO: Proper writable check.
+	m_isWritable = true;
+
 	if (gzip) {
 #if defined(_MSC_VER) && defined(ZLIB_IS_DLL)
 		// Delay load verification.
@@ -99,7 +102,9 @@ RpFile_IStream::RpFile_IStream(IStream *pStream, bool gzip)
 							if (err == Z_OK) {
 								// Allocate the zlib buffer.
 								m_pZbuf = static_cast<uint8_t*>(malloc(ZLIB_BUFFER_SIZE));
-								if (!m_pZbuf) {
+								if (m_pZbuf) {
+									m_isCompressed = true;
+								} else {
 									// malloc() failed.
 									inflateEnd(m_pZstm);
 									free(m_pZstm);

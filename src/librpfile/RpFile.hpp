@@ -133,6 +133,15 @@ class RpFile : public IRpFile
 		std::string filename(void) const final;
 
 	public:
+		/** Extra functions **/
+
+		/**
+		 * Make the file writable.
+		 * @return 0 on success; negative POSIX error code on error.
+		 */
+		int makeWritable(void) final;
+
+	public:
 		/** Device file functions **/
 
 		/**
