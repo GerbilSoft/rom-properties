@@ -16,6 +16,8 @@ namespace LibRpFile {
 
 IRpFile::IRpFile()
 	: m_lastError(0)
+	, m_isWritable(false)
+	, m_isCompressed(true)
 {
 	static_assert(sizeof(off64_t) == 8, "off64_t is not 64-bit!");
 }

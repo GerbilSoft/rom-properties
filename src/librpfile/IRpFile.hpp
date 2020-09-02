@@ -13,6 +13,7 @@
 #include <stdint.h>
 
 // C includes. (C++ namespace)
+#include <cerrno>
 #include <cstddef>	/* for size_t */
 
 // C++ includes.
@@ -49,6 +50,26 @@ class IRpFile : public RefBase
 		virtual bool isOpen(void) const = 0;
 
 		/**
+		 * Is the file compressed?
+		 * @return True if writable; false if not.
+		 */
+		inline bool isWritable(void) const
+		{
+			return m_isWritable;
+		}
+
+		/**
+		 * Is the file compressed?
+		 * If it is, then we're using a transparent decompression
+		 * wrapper, so it can't be written to easily.
+		 * @return True if compressed; false if not.
+		 */
+		inline bool isCompressed(void) const
+		{
+			return m_isCompressed;
+		}
+
+		/**
 		 * Get the last error.
 		 * @return Last POSIX error, or 0 if no error.
 		 */
@@ -65,6 +86,7 @@ class IRpFile : public RefBase
 			m_lastError = 0;
 		}
 
+	public:
 		/**
 		 * Close the file.
 		 */
@@ -132,6 +154,18 @@ class IRpFile : public RefBase
 		virtual std::string filename(void) const = 0;
 
 	public:
+		/** Extra functions **/
+
+		/**
+		 * Make the file writable.
+		 * @return 0 on success; negative POSIX error code on error.
+		 */
+		virtual int makeWritable(void)
+		{
+			return -ENOTSUP;
+		}
+
+	public:
 		/** Device file functions **/
 
 		/**
@@ -176,6 +210,8 @@ class IRpFile : public RefBase
 
 	protected:
 		int m_lastError;
+		bool m_isWritable;
+		bool m_isCompressed;
 };
 
 }

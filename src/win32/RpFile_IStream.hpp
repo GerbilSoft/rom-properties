@@ -95,6 +95,20 @@ class RpFile_IStream : public LibRpFile::IRpFile
 		 */
 		std::string filename(void) const final;
 
+	public:
+		/** Extra functions **/
+
+		/**
+		 * Make the file writable.
+		 * @return 0 on success; negative POSIX error code on error.
+		 */
+		int makeWritable(void) final
+		{
+			// TODO: Actually do something here...
+			// For now, return 0 if writable; -ENOTSUP if not.
+			return (isWritable() ? 0 : -ENOTSUP);
+		}
+
 	protected:
 		IStream *m_pStream;
 		std::string m_filename;

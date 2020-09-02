@@ -27,7 +27,7 @@ namespace LibRpFile {
 
 RpFilePrivate::~RpFilePrivate()
 {
-	if (gzfd) {
+	if (gzfd != 0) {
 		gzclose_r(gzfd);
 	}
 	if (file) {
@@ -245,6 +245,8 @@ void RpFile::init(void)
 		return;
 	}
 
+	m_isWritable = !!(d->mode & RpFile::FM_WRITE);
+
 	// Check if this is a gzipped file.
 	// If it is, use transparent decompression.
 	// Reference: https://www.forensicswiki.org/wiki/Gzip
@@ -277,7 +279,9 @@ void RpFile::init(void)
 						int gzfd_dup = ::dup(fileno(d->file));
 						if (gzfd_dup >= 0) {
 							d->gzfd = gzdopen(gzfd_dup, "r");
-							if (!d->gzfd) {
+							if (d->gzfd) {
+								m_isCompressed = true;
+							} else {
 								// gzdopen() failed.
 								// Close the dup()'d handle to prevent a leak.
 								::close(gzfd_dup);
@@ -328,7 +332,7 @@ void RpFile::close(void)
 		d->devInfo->close();
 	}
 
-	if (d->gzfd) {
+	if (d->gzfd != 0) {
 		gzclose_r(d->gzfd);
 		d->gzfd = nullptr;
 	}
@@ -358,7 +362,7 @@ size_t RpFile::read(void *ptr, size_t size)
 	}
 
 	size_t ret;
-	if (d->gzfd) {
+	if (d->gzfd != 0) {
 		int iret = gzread(d->gzfd, ptr, size);
 		if (iret >= 0) {
 			ret = (size_t)iret;
@@ -429,7 +433,7 @@ int RpFile::seek(off64_t pos)
 	}
 
 	int ret;
-	if (d->gzfd) {
+	if (d->gzfd != 0) {
 		z_off_t zret = gzseek(d->gzfd, pos, SEEK_SET);
 		if (zret >= 0) {
 			ret = 0;
@@ -460,7 +464,7 @@ off64_t RpFile::tell(void)
 		return -1;
 	}
 
-	if (d->gzfd) {
+	if (d->gzfd != 0) {
 		return (off64_t)gztell(d->gzfd);
 	}
 	return ftello(d->file);
@@ -532,7 +536,7 @@ off64_t RpFile::size(void)
 	if (d->devInfo) {
 		// Block device. Use the cached device size.
 		return d->devInfo->device_size;
-	} else if (d->gzfd) {
+	} else if (d->gzfd != 0) {
 		// gzipped files have the uncompressed size stored
 		// at the end of the stream.
 		return d->gzsz;
@@ -560,6 +564,45 @@ string RpFile::filename(void) const
 {
 	RP_D(const RpFile);
 	return d->filename;
+}
+
+/** Extra functions **/
+
+/**
+ * Make the file writable.
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int RpFile::makeWritable(void)
+{
+	if (isCompressed()) {
+		// File is compressed. Cannot make it writable.
+		return -ENOTSUP;
+	} else if (isWritable()) {
+		// File is already writable.
+		return 0;
+	}
+
+	RP_D(RpFile);
+	off64_t prev_pos = ftello(d->file);
+	fclose(d->file);
+	d->file = fopen(d->filename.c_str(), "rb+");
+	if (d->file) {
+		// File is now writable.
+		m_isWritable = true;
+	} else {
+		// Failed to open the file as writable.
+		// Try reopening as read-only.
+		d->file = fopen(d->filename.c_str(), "rb");
+		if (d->file) {
+			fseeko(d->file, prev_pos, SEEK_SET);
+		}
+		return -ENOTSUP;
+	}
+
+	// Restore the seek position.
+	fseeko(d->file, prev_pos, SEEK_SET);
+	d->mode = (RpFile::FileMode)(d->mode | FM_WRITE);
+	return 0;
 }
 
 /** Device file functions **/

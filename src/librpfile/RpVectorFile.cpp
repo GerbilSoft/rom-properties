@@ -24,6 +24,9 @@ RpVectorFile::RpVectorFile()
 {
 	// Reserve at least 16 KB.
 	m_vector.reserve(16*1024);
+
+	// RpVectorFile is writable.
+	m_isWritable = true;
 }
 
 /**
