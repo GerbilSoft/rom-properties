@@ -73,6 +73,7 @@ using std::vector;
 #include "Handheld/Nintendo3DS_SMDH.hpp"
 #include "Handheld/NintendoDS.hpp"
 #include "Handheld/PokemonMini.hpp"
+#include "Handheld/PSP.hpp"
 #include "Handheld/VirtualBoy.hpp"
 
 // RomData subclasses: Audio
@@ -496,12 +497,23 @@ RomData *RomDataFactoryPrivate::checkISO(IRpFile *file)
 		romData->unref();
 	}
 
-	// PlayStation 1 and 2.
+	// PlayStation 1 and 2
 	if (PlayStationDisc::isRomSupported_static(pvd) >= 0) {
 		// This might be a PS1 or PS2 disc.
 		RomData *const romData = new PlayStationDisc(file);
 		if (romData->isValid()) {
 			// Got a PS1 or PS2 disc.
+			return romData;
+		}
+		romData->unref();
+	}
+
+	// PlayStation Portable
+	if (PSP::isRomSupported_static(pvd) >= 0) {
+		// This might be a PSP disc.
+		RomData *const romData = new PSP(file);
+		if (romData->isValid()) {
+			// Got a PSP disc.
 			return romData;
 		}
 		romData->unref();
