@@ -16,6 +16,7 @@ using LibRpFile::IRpFile;
 
 // C++ STL classes.
 using std::string;
+using std::unordered_map;
 
 namespace LibRomData {
 
@@ -43,20 +44,51 @@ class IsoPartitionPrivate
 		// ISO primary volume descriptor.
 		ISO_Primary_Volume_Descriptor pvd;
 
-		// Root directory.
+		// Directories.
+		// - Key: Directory name, WITHOUT leading slash. (Root == empty string)
+		// - Value: Directory entries.
 		// NOTE: Directory entries are variable-length, so this
 		// is a byte array, not an ISO_DirEntry array.
-		ao::uvector<uint8_t> rootDir_data;
+		typedef ao::uvector<uint8_t> DirData_t;
+		unordered_map<string, DirData_t> dir_data;
 
 		/**
-		 * Load the root directory.
-		 * @return 0 on success; negative POSIX error code on error.
+		 * Find the last slash or backslash in a path.
+		 * @param path Path.
+		 * @return Last slash or backslash, or nullptr if not found.
 		 */
-		int loadRootDirectory(void);
+		inline const char *findLastSlash(const char *path)
+		{
+			const char *sl = strrchr(path, '/');
+			const char *const bs = strrchr(path, '\\');
+			if (sl && bs) {
+				if (bs > sl) {
+					sl = bs;
+				}
+			}
+			return (sl ? sl : bs);
+		}
+
+		/**
+		 * Look up a directory entry from a base filename and directory.
+		 * @param pDir		[in] Directory.
+		 * @param filename	[in] Base filename. (cp1252)
+		 * @param bFindDir	[in] True to find a subdirectory; false to find a file.
+		 * @return ISO directory entry.
+		 */
+		const ISO_DirEntry *lookup_int(const DirData_t *pDir, const char *filename, bool bFindDir);
+
+		/**
+		 * Get a directory.
+		 * @param path		[in] Pathname. (cp1252) (For root, specify "" or "/".)
+		 * @param pError	[out] POSIX error code on error.
+		 * @return Directory on success; nullptr on error.
+		 */
+		const DirData_t *getDirectory(const char *path, int *pError = nullptr);
 
 		/**
 		 * Look up a directory entry from a filename.
-		 * @param filename Filename
+		 * @param filename Filename. (UTF-8)
 		 * @return ISO directory entry.
 		 */
 		const ISO_DirEntry *lookup(const char *filename);
@@ -116,89 +148,252 @@ IsoPartitionPrivate::IsoPartitionPrivate(IsoPartition *q,
 	}
 
 	// Load the root directory.
-	loadRootDirectory();
+	getDirectory("/");
 }
 
 IsoPartitionPrivate::~IsoPartitionPrivate()
 { }
 
 /**
- * Load the root directory.
- * @return 0 on success; negative POSIX error code on error.
+ * Look up a directory entry from a base filename and directory.
+ * @param pDir		[in] Directory.
+ * @param filename	[in] Base filename. (cp1252)
+ * @param bFindDir	[in] True to find a subdirectory; false to find a file.
+ * @return ISO directory entry.
  */
-int IsoPartitionPrivate::loadRootDirectory(void)
+const ISO_DirEntry *IsoPartitionPrivate::lookup_int(const DirData_t *pDir, const char *filename, bool bFindDir)
+{
+	// Find the file in the directory.
+	// NOTE: Filenames are case-insensitive.
+	// NOTE: File might have a ";1" suffix.
+	int err = ENOENT;
+	const unsigned int filename_len = static_cast<unsigned int>(strlen(filename));
+	const ISO_DirEntry *dirEntry_found = nullptr;
+	const uint8_t *p = pDir->data();
+	const uint8_t *const p_end = p + pDir->size();
+	while (p < p_end) {
+		const ISO_DirEntry *dirEntry = reinterpret_cast<const ISO_DirEntry*>(p);
+		if (dirEntry->entry_length < sizeof(*dirEntry)) {
+			// End of directory.
+			break;
+		}
+
+		const char *const entry_filename = reinterpret_cast<const char*>(p) + sizeof(*dirEntry);
+		if (entry_filename + dirEntry->filename_length > reinterpret_cast<const char*>(p_end)) {
+			// Filename is out of bounds.
+			break;
+		}
+
+		// Check the filename.
+		// 1990s and early 2000s CD-ROM games usually have
+		// ";1" filenames, so check for that first.
+		if (dirEntry->filename_length == filename_len + 2) {
+			// +2 length match.
+			// This might have ";1".
+			if (!strncasecmp(entry_filename, filename, filename_len)) {
+				// Check for ";1".
+				// TODO: Also allow other version numbers?
+				if (entry_filename[filename_len]   == ';' &&
+				    entry_filename[filename_len+1] == '1')
+				{
+					// Found it!
+					// Verify directory vs. file.
+					bool isDir = !!(dirEntry->flags & ISO_FLAG_DIRECTORY);
+					if (isDir == bFindDir) {
+						// Directory attribute matches.
+						dirEntry_found = dirEntry;
+					} else {
+						// Not a match.
+						err = (isDir ? EISDIR : ENOTDIR);
+					}
+					break;
+				}
+			}
+		} else if (dirEntry->filename_length == filename_len) {
+			// Exact length match.
+			if (!strncasecmp(entry_filename, filename, filename_len)) {
+				// Found it!
+				dirEntry_found = dirEntry;
+				break;
+			}
+		}
+
+		// Next entry.
+		p += dirEntry->entry_length;
+	}
+
+	if (!dirEntry_found) {
+		RP_Q(IsoPartition);
+		q->m_lastError = err;
+	}
+	return dirEntry_found;
+}
+
+/**
+ * Get a directory.
+ * @param path		[in] Pathname. (cp1252) (For root, specify "" or "/".)
+ * @param pError	[out] POSIX error code on error.
+ * @return Directory on success; nullptr on error.
+ */
+const IsoPartitionPrivate::DirData_t *IsoPartitionPrivate::getDirectory(const char *path, int *pError)
 {
 	RP_Q(IsoPartition);
-	if (unlikely(!rootDir_data.empty())) {
-		// Root directory is already loaded.
-		return 0;
-	} else if (unlikely(!q->m_discReader)) {
+	if (!path || !strcmp(path, "/")) {
+		// Root directory. Use "".
+		path = "";
+	}
+
+	// Check if this directory was already loaded.
+	auto iter = dir_data.find(path);
+	if (iter != dir_data.end()) {
+		// Directory is already loaded.
+		return &iter->second;
+	}
+
+	if (unlikely(!q->m_discReader)) {
 		// DiscReader isn't open.
 		q->m_lastError = EIO;
-		return -q->m_lastError;
+		if (pError) {
+			*pError = EIO;
+		}
+		return nullptr;
 	} else if (unlikely(pvd.header.type != ISO_VDT_PRIMARY || pvd.header.version != ISO_VD_VERSION)) {
 		// PVD isn't loaded.
 		q->m_lastError = EIO;
-		return -q->m_lastError;
+		if (pError) {
+			*pError = EIO;
+		}
+		return nullptr;
 	}
 
 	// Block size.
 	// Should be 2048, but other values are possible.
 	const unsigned int block_size = pvd.logical_block_size.he;
 
-	// Check the root directory entry.
-	const ISO_DirEntry *const rootdir = &pvd.dir_entry_root;
-	if (rootdir->size.he > 16*1024*1024) {
-		// Root directory is too big.
-		q->m_lastError = EIO;
-		return -q->m_lastError;
+	if (path[0] == '\0') {
+		// Loading the root directory.
+
+		// Check the root directory entry.
+		const ISO_DirEntry *const rootdir = &pvd.dir_entry_root;
+		if (rootdir->size.he > 16*1024*1024) {
+			// Root directory is too big.
+			q->m_lastError = EIO;
+			if (pError) {
+				*pError = EIO;
+			}
+			return nullptr;
+		}
+
+		if (iso_start_offset >= 0) {
+			// ISO start address was already determined.
+			if (rootdir->block.he < ((unsigned int)iso_start_offset + 2)) {
+				// Starting block is invalid.
+				q->m_lastError = EIO;
+				if (pError) {
+					*pError = EIO;
+				}
+				return nullptr;
+			}
+		} else {
+			// We didn't find the ISO start address yet.
+			// This might be a 2048-byte single-track image,
+			// in which case, we'll need to assume that the
+			// root directory starts at block 20.
+			// TODO: Better heuristics.
+			if (rootdir->block.he < 20) {
+				// Starting block is invalid.
+				q->m_lastError = EIO;
+				if (pError) {
+					*pError = EIO;
+				}
+				return nullptr;
+			}
+			iso_start_offset = static_cast<int>(rootdir->block.he - 20);
+		}
+
+		// Load the root directory.
+		// NOTE: Due to variable-length entries, we need to load
+		// the entire root directory all at once.
+		DirData_t dir;
+		dir.resize(rootdir->size.he);
+		const off64_t rootDir_addr = partition_offset +
+			static_cast<off64_t>(rootdir->block.he - iso_start_offset) * block_size;
+		size_t size = q->m_discReader->seekAndRead(rootDir_addr, dir.data(), dir.size());
+		if (size != dir.size()) {
+			// Seek and/or read error.
+			dir.clear();
+			q->m_lastError = q->m_discReader->lastError();
+			if (q->m_lastError == 0) {
+				q->m_lastError = EIO;
+			}
+			if (pError) {
+				*pError = q->m_lastError;
+			}
+			return nullptr;
+		}
+
+		// Root directory loaded.
+		auto ins = dir_data.emplace("", std::move(dir));
+		return &(ins.first->second);
 	}
 
-	if (iso_start_offset >= 0) {
-		// ISO start address was already determined.
-		if (rootdir->block.he < ((unsigned int)iso_start_offset + 2)) {
-			// Starting block is invalid.
-			q->m_lastError = EIO;
-			return -q->m_lastError;
-		}
+	// Get the parent directory.
+	const DirData_t *pDir;
+	const char *const sl = findLastSlash(path);
+	if (!sl) {
+		// No slash. Parent is root.
+		pDir = getDirectory("");
 	} else {
-		// We didn't find the ISO start address yet.
-		// This might be a 2048-byte single-track image,
-		// in which case, we'll need to assume that the
-		// root directory starts at block 20.
-		// TODO: Better heuristics.
-		if (rootdir->block.he < 20) {
-			// Starting block is invalid.
-			q->m_lastError = EIO;
-			return -q->m_lastError;
-		}
-		iso_start_offset = static_cast<int>(rootdir->block.he - 20);
+		// Found a slash.
+		string s_parentDir(path, (sl - path));
+		path = sl + 1;
+		pDir = getDirectory(s_parentDir.c_str());
 	}
 
-	// Load the root directory.
+	if (!pDir) {
+		// Can't find the parent directory.
+		// getDirectory() already set q->lastError().
+		return nullptr;
+	}
+
+	// Find this directory.
+	string s_subdir(utf8_to_cp1252(path, -1));
+	const ISO_DirEntry *const entry = lookup_int(pDir, s_subdir.c_str(), true);
+	if (!entry) {
+		// Not found.
+		// lookup_int() already set q->lastError().
+		return nullptr;
+	}
+
+	// Load the subdirectory.
 	// NOTE: Due to variable-length entries, we need to load
 	// the entire root directory all at once.
-	rootDir_data.resize(rootdir->size.he);
+	DirData_t dir;
+	dir.resize(entry->size.he);
 	const off64_t rootDir_addr = partition_offset +
-		static_cast<off64_t>(rootdir->block.he - iso_start_offset) * block_size;
-	size_t size = q->m_discReader->seekAndRead(rootDir_addr, rootDir_data.data(), rootDir_data.size());
-	if (size != rootDir_data.size()) {
+		static_cast<off64_t>(entry->block.he - iso_start_offset) * block_size;
+	size_t size = q->m_discReader->seekAndRead(rootDir_addr, dir.data(), dir.size());
+	if (size != dir.size()) {
 		// Seek and/or read error.
-		rootDir_data.clear();
+		dir.clear();
 		q->m_lastError = q->m_discReader->lastError();
 		if (q->m_lastError == 0) {
 			q->m_lastError = EIO;
 		}
-		return -q->m_lastError;
+		if (pError) {
+			*pError = q->m_lastError;
+		}
+		return nullptr;
 	}
 
-	// Root directory loaded.
-	return 0;
+	// Subdirectory loaded.
+	auto ins = dir_data.emplace(std::move(s_subdir), std::move(dir));
+	return &(ins.first->second);
 }
 
 /**
  * Look up a directory entry from a filename.
- * @param filename Filename
+ * @param filename Filename. (UTF-8)
  * @return ISO directory entry.
  */
 const ISO_DirEntry *IsoPartitionPrivate::lookup(const char *filename)
@@ -219,72 +414,30 @@ const ISO_DirEntry *IsoPartitionPrivate::lookup(const char *filename)
 
 	// TODO: Which encoding?
 	// Assuming cp1252...
+	const DirData_t *pDir;
+
+	// Is this file in a subdirectory?
+	const char *const sl = findLastSlash(filename);
+	if (sl) {
+		// This file is in a subdirectory.
+		string s_parentDir = utf8_to_cp1252(filename, static_cast<int>(sl - filename));
+		filename = sl + 1;
+		pDir = getDirectory(s_parentDir.c_str());
+	} else {
+		// Not in a subdirectory.
+		// Parent directory is root.
+		pDir = getDirectory("");
+	}
+
+	if (!pDir) {
+		// Error getting the directory.
+		// getDirectory() has already set q->lastError.
+		return nullptr;
+	}
+
+	// Find the file in the directory.
 	string s_filename = utf8_to_cp1252(filename, -1);
-
-	if (rootDir_data.empty()) {
-		// Root directory isn't loaded.
-		if (loadRootDirectory() != 0) {
-			// Root directory load failed.
-			q->m_lastError = EIO;
-			return nullptr;
-		}
-	}
-
-	// Find the file in the root directory.
-	// TODO: Support subdirectories.
-	// NOTE: Filenames are case-insensitive.
-	// NOTE: File might have a ";1" suffix.
-	const unsigned int filename_len = static_cast<unsigned int>(s_filename.size());
-	const ISO_DirEntry *dirEntry_found = nullptr;
-	const uint8_t *p = rootDir_data.data();
-	const uint8_t *const p_end = p + rootDir_data.size();
-	while (p < p_end) {
-		const ISO_DirEntry *dirEntry = reinterpret_cast<const ISO_DirEntry*>(p);
-		if (dirEntry->entry_length < sizeof(*dirEntry)) {
-			// End of directory.
-			break;
-		}
-
-		const char *entry_filename = reinterpret_cast<const char*>(p) + sizeof(*dirEntry);
-		if (entry_filename + dirEntry->filename_length > reinterpret_cast<const char*>(p_end)) {
-			// Filename is out of bounds.
-			break;
-		}
-
-		// Check the filename.
-		// 1990s and early 2000s CD-ROM games usually have
-		// ";1" filenames, so check for that first.
-		if (dirEntry->filename_length == filename_len + 2) {
-			// +2 length match.
-			// This might have ";1".
-			if (!strncasecmp(entry_filename, s_filename.c_str(), filename_len)) {
-				// Check for ";1".
-				// TODO: Also allow other version numbers?
-				if (entry_filename[filename_len]   == ';' &&
-				    entry_filename[filename_len+1] == '1')
-				{
-					// Found it!
-					dirEntry_found = dirEntry;
-					break;
-				}
-			}
-		} else if (dirEntry->filename_length == filename_len) {
-			// Exact length match.
-			if (!strncasecmp(entry_filename, s_filename.c_str(), filename_len)) {
-				// Found it!
-				dirEntry_found = dirEntry;
-				break;
-			}
-		}
-
-		// Next entry.
-		p += dirEntry->entry_length;
-	}
-
-	if (!dirEntry_found) {
-		q->m_lastError = ENOENT;
-	}
-	return dirEntry_found;
+	return lookup_int(pDir, s_filename.c_str(), false);
 }
 
 /**

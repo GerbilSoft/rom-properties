@@ -96,6 +96,8 @@ RomData *PSPPrivate::openBootExe(void)
 	}
 
 	// Open the boot file.
+	// FIXME: This is normally encrypted, but some games have
+	// an unencrypted EBOOT.BIN.
 	IRpFile *f_bootExe = isoPartition->open("/PSP_GAME/SYSDIR/EBOOT.BIN");
 	if (f_bootExe) {
 		RomData *const exeData = new ELF(f_bootExe);
