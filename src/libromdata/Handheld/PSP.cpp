@@ -9,11 +9,13 @@
 #include "stdafx.h"
 #include "PSP.hpp"
 
-// librpbase, librpfile
+// librpbase, librpfile, librptexture
+#include "librpbase/img/RpPng.hpp"
 #include "librpfile/RpFile.hpp"
 using namespace LibRpBase;
 using LibRpFile::IRpFile;
 using LibRpFile::RpFile;
+using namespace LibRpTexture;
 
 // IsoPartition
 #include "../cdrom_structs.h"
@@ -32,6 +34,7 @@ using std::vector;
 namespace LibRomData {
 
 ROMDATA_IMPL(PSP)
+ROMDATA_IMPL_IMG_TYPES(PSP)
 
 class PSPPrivate : public LibRpBase::RomDataPrivate
 {
@@ -50,6 +53,15 @@ class PSPPrivate : public LibRpBase::RomDataPrivate
 		IDiscReader *discReader;
 		IsoPartition *isoPartition;
 
+		// Icon.
+		rp_image *img_icon;
+
+		/**
+		 * Load the icon.
+		 * @return Icon, or nullptr on error.
+		 */
+		const rp_image *loadIcon(void);
+
 		// Boot executable (EBOOT.BIN)
 		RomData *bootExeData;
 
@@ -66,6 +78,7 @@ PSPPrivate::PSPPrivate(PSP *q, IRpFile *file)
 	: super(q, file)
 	, discReader(nullptr)
 	, isoPartition(nullptr)
+	, img_icon(nullptr)
 	, bootExeData(nullptr)
 {
 	// Clear the structs.
@@ -77,6 +90,37 @@ PSPPrivate::~PSPPrivate()
 	UNREF(bootExeData);
 	UNREF(isoPartition);
 	UNREF(discReader);
+
+	delete img_icon;
+}
+
+/**
+ * Load the icon.
+ * @return Icon, or nullptr on error.
+ */
+const rp_image *PSPPrivate::loadIcon(void)
+{
+	if (img_icon) {
+		// Icon has already been loaded.
+		return img_icon;
+	} else if (!this->isValid || !this->isoPartition) {
+		// Can't load the icon.
+		return nullptr;
+	}
+
+	// Icon is located on disc as a regular PNG image.
+	IRpFile *const f_icon = isoPartition->open("/PSP_GAME/ICON0.PNG");
+	if (!f_icon->isOpen()) {
+		// Unable to open the icon file.
+		f_icon->unref();
+		return nullptr;
+	}
+
+	// Decode the image.
+	// TODO: For rpcli, shortcut to extract the PNG directly.
+	this->img_icon = RpPng::load(f_icon);
+	f_icon->unref();
+	return this->img_icon;
 }
 
 /**
@@ -338,6 +382,65 @@ const char *const *PSP::supportedMimeTypes_static(void)
 }
 
 /**
+ * Get a bitfield of image types this class can retrieve.
+ * @return Bitfield of supported image types. (ImageTypesBF)
+ */
+uint32_t PSP::supportedImageTypes_static(void)
+{
+	return IMGBF_INT_ICON;
+}
+
+/**
+ * Get a list of all available image sizes for the specified image type.
+ * @param imageType Image type.
+ * @return Vector of available image sizes, or empty vector if no images are available.
+ */
+vector<RomData::ImageSizeDef> PSP::supportedImageSizes(ImageType imageType) const
+{
+	ASSERT_supportedImageSizes(imageType);
+
+	RP_D(const PSP);
+	if (!d->isValid || imageType != IMG_INT_MEDIA) {
+		// Only IMG_INT_MEDIA is supported.
+		return vector<ImageSizeDef>();
+	}
+
+	// TODO: Actually check the icon size.
+	// Assuming 144x80 for now.
+	static const ImageSizeDef sz_INT_ICON[] = {
+		{nullptr, 144, 80, 0},
+	};
+	return vector<ImageSizeDef>(sz_INT_ICON,
+		sz_INT_ICON + ARRAY_SIZE(sz_INT_ICON));
+}
+
+/**
+ * Get a list of all available image sizes for the specified image type.
+ *
+ * The first item in the returned vector is the "default" size.
+ * If the width/height is 0, then an image exists, but the size is unknown.
+ *
+ * @param imageType Image type.
+ * @return Vector of available image sizes, or empty vector if no images are available.
+ */
+vector<RomData::ImageSizeDef> PSP::supportedImageSizes_static(ImageType imageType)
+{
+	ASSERT_supportedImageSizes(imageType);
+
+	if (imageType != IMG_INT_ICON) {
+		// Only icons are supported.
+		return vector<ImageSizeDef>();
+	}
+
+	// NOTE: Assuming the icon is 144x80.
+	static const ImageSizeDef sz_INT_ICON[] = {
+		{nullptr, 144, 80, 0},
+	};
+	return vector<ImageSizeDef>(sz_INT_ICON,
+		sz_INT_ICON + ARRAY_SIZE(sz_INT_ICON));
+}
+
+/**
  * Load field data.
  * Called by RomData::fields() if the field data hasn't been loaded yet.
  * @return Number of fields read on success; negative POSIX error code on error.
@@ -418,6 +521,26 @@ int PSP::loadFieldData(void)
 
 	// Finished reading the field data.
 	return static_cast<int>(d->fields->count());
+}
+
+/**
+ * Load an internal image.
+ * Called by RomData::image().
+ * @param imageType	[in] Image type to load.
+ * @param pImage	[out] Pointer to const rp_image* to store the image in.
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int PSP::loadInternalImage(ImageType imageType, const rp_image **pImage)
+{
+	ASSERT_loadInternalImage(imageType, pImage);
+	RP_D(PSP);
+	ROMDATA_loadInternalImage_single(
+		IMG_INT_ICON,	// ourImageType
+		d->file,	// file
+		d->isValid,	// isValid
+		0,		// romType
+		d->img_icon,	// imgCache
+		d->loadIcon);	// func
 }
 
 }

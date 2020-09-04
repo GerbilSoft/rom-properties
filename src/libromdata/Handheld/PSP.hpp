@@ -26,6 +26,8 @@ ROMDATA_DECL_CLOSE()
 		static int isRomSupported_static(
 			const ISO_Primary_Volume_Descriptor *pvd);
 
+ROMDATA_DECL_IMGSUPPORT()
+ROMDATA_DECL_IMGINT()
 ROMDATA_DECL_END()
 
 }
