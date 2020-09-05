@@ -415,7 +415,6 @@ CisoPspReader::CisoPspReader(IRpFile *file)
 	}
 #endif /* HAVE_LZO */
 
-	// TODO: NC areas for JISO.
 	if (d->cisoType == CisoPspReaderPrivate::CisoType::DAX) {
 		// Read the DAX size table.
 		d->daxSizeTable.resize(num_blocks);
