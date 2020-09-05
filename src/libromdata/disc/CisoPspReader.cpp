@@ -559,7 +559,7 @@ int CisoPspReader::readBlock(uint32_t blockIdx, void *ptr, int pos, size_t size)
 
 			if (d->header.cisoPsp.version < 2) {
 				// CISO v0/v1: Check if compressed.
-				z_mode = (physBlockAddr & CISO_PSP_V0_NOT_COMPRESSED)
+				z_mode = (indexEntry & CISO_PSP_V0_NOT_COMPRESSED)
 					? CompressionMode::None
 					: CompressionMode::Deflate;
 
@@ -576,7 +576,7 @@ int CisoPspReader::readBlock(uint32_t blockIdx, void *ptr, int pos, size_t size)
 				if (z_block_size == d->block_size) {
 					z_mode = CompressionMode::None;
 				} else {
-					z_mode = (physBlockAddr & CISO_PSP_V2_LZ4_COMPRESSED)
+					z_mode = (indexEntry & CISO_PSP_V2_LZ4_COMPRESSED)
 						? CompressionMode::LZ4
 						: CompressionMode::Deflate;
 				}
