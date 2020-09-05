@@ -315,7 +315,7 @@ int PSP::isRomSupported_static(const DetectInfo *info)
 	}
 
 	// Not a supported compressed disc image.
-	return 0;
+	return -1;
 }
 
 /**
