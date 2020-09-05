@@ -9,5 +9,7 @@ The following changes have been made to the original:
 
 - Only the lib/ subdirectory is included.
 
+- Added the Win32 resource file to the DLL build.
+
 To obtain the original zstd-1.4.5, visit:
 https://github.com/facebook/zstd
