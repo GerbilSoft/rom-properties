@@ -819,8 +819,8 @@ int PlayStationDisc::loadFieldData(void)
 			d->fields->addFields_romFields(isoFields,
 				RomFields::TabOffset_AddTabs);
 		}
-		isoData->unref();
 	}
+	isoData->unref();
 
 	// Finished reading the field data.
 	return static_cast<int>(d->fields->count());
