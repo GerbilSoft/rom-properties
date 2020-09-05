@@ -21,4 +21,7 @@
 /* Define to 1 if libmspack-xenia is enabled. */
 #cmakedefine ENABLE_LIBMSPACK 1
 
+/* Define to 1 if LZ4 is enabled. */
+#cmakedefine ENABLE_LZ4 1
+
 #endif /* __ROMPROPERTIES_LIBROMDATA_CONFIG_H__ */

@@ -26,13 +26,14 @@ extern "C" {
  *
  * All fields are in little-endian.
  */
-#define CISO_MAGIC 'CISO'
+#define CISO_MAGIC 'CISO'	// CISO
+#define ZISO_MAGIC 'ZISO'	// Same as CISO v0/v1, but uses LZ4.
 typedef struct _CisoPspHeader {
-	uint32_t magic;			// [0x000] 'CISO'
+	uint32_t magic;			// [0x000] 'CISO' or 'ZISO'
 	uint32_t header_size;		// [0x004] Should be 0x18, but is not reliable in v1.
 	uint64_t uncompressed_size;	// [0x008] Uncompressed data size.
 	uint32_t block_size;		// [0x010] Block size, usually 2048.
-	uint8_t version;		// [0x014] Version. (0, 1, or 2)
+	uint8_t version;		// [0x014] Version. (CISO: 0, 1, or 2; ZISO: 1)
 	uint8_t index_shift;		// [0x015] Left shift of index values.
 	uint8_t unused[2];		// [0x016]
 } CisoPspHeader;

@@ -7,6 +7,8 @@
  ***************************************************************************/
 
 #include "stdafx.h"
+
+#include "config.libromdata.h"
 #include "PSP.hpp"
 
 // librpbase, librpfile, librptexture
@@ -402,7 +404,12 @@ const char *const *PSP::supportedFileExtensions_static(void)
 		".iso",			// ISO
 		".dax",			// DAX
 		".ciso", ".cso",	// CISO
-		".jiso", ".jso",	// JISO (TODO)
+
+#ifdef ENABLE_LZ4
+		".ziso", "zso",		// ZISO
+#endif /* ENABLE_LZ4 */
+
+		//".jiso", ".jso",	// JISO (TODO)
 
 		nullptr
 	};

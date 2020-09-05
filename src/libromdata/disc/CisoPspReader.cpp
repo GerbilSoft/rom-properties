@@ -11,6 +11,7 @@
 
 #include "stdafx.h"
 #include "config.librpbase.h"
+#include "config.libromdata.h"
 
 #include "CisoPspReader.hpp"
 #include "librpbase/disc/SparseDiscReader_p.hpp"
@@ -22,6 +23,11 @@
 // MSVC: Exception handling for /DELAYLOAD.
 #  include "libwin32common/DelayLoadHelper.h"
 #endif /* _MSC_VER */
+
+// LZ4
+#ifdef ENABLE_LZ4
+#  include <lz4.h>
+#endif /* ENABLE_LZ4 */
 
 // librpbase, librpfile
 using namespace LibRpBase;
@@ -50,7 +56,10 @@ class CisoPspReaderPrivate : public SparseDiscReaderPrivate {
 			Unknown	= -1,
 
 			CISO	= 0,	// CISO
-			DAX	= 1,	// DAX
+#ifdef ENABLE_LZ4
+			ZISO	= 1,	// ZISO
+#endif /* ENABLE_LZ4 */
+			DAX	= 2,	// DAX
 
 			Max
 		};
@@ -126,6 +135,9 @@ uint32_t CisoPspReaderPrivate::getBlockCompressedSize(uint32_t blockNum) const
 			return 0;
 
 		case CisoPspReaderPrivate::CisoType::CISO:
+#ifdef ENABLE_LZ4
+		case CisoPspReaderPrivate::CisoType::ZISO:
+#endif /* ENABLE_LZ4 */
 			// Index entry table has an extra entry for the final block.
 			// Hence, we don't need the same workaround as GCZ.
 			assert(blockNum != indexEntries.size()-1);
@@ -199,6 +211,9 @@ CisoPspReader::CisoPspReader(IRpFile *file)
 			return;
 
 		case CisoPspReaderPrivate::CisoType::CISO:
+#ifdef ENABLE_LZ4
+		case CisoPspReaderPrivate::CisoType::ZISO:
+#endif /* ENABLE_LZ4 */
 #if SYS_BYTEORDER != SYS_LIL_ENDIAN
 			// Byteswap the header.
 			d->header.cisoPsp.magic			= le32_to_cpu(d->header.cisoPsp.magic);
@@ -241,7 +256,12 @@ CisoPspReader::CisoPspReader(IRpFile *file)
 	// Read the index entries.
 	// NOTE: These are byteswapped on demand, not ahead of time.
 	uint32_t num_blocks_alloc = num_blocks;
-	if (d->cisoType == CisoPspReaderPrivate::CisoType::CISO) {
+	if (d->cisoType == CisoPspReaderPrivate::CisoType::CISO
+#ifdef ENABLE_LZ4
+	    || d->cisoType == CisoPspReaderPrivate::CisoType::ZISO
+#endif /* ENABLE_LZ4 */
+	    )
+	{
 		num_blocks_alloc++;
 	}
 	d->indexEntries.resize(num_blocks_alloc);
@@ -355,20 +375,39 @@ int CisoPspReader::isDiscSupported_static(const uint8_t *pHeader, size_t szHeade
 
 	// Check the magic number.
 	const uint32_t *const pu32 = reinterpret_cast<const uint32_t*>(pHeader);
-	if (*pu32 == be32_to_cpu(CISO_MAGIC) && szHeader >= sizeof(CisoPspHeader)) {
+	if ((*pu32 == be32_to_cpu(CISO_MAGIC)
+#ifdef ENABLE_LZ4
+	     || *pu32 == be32_to_cpu(ZISO_MAGIC)
+#endif /* ENABLE_LZ4 */
+	     ) && szHeader >= sizeof(CisoPspHeader))
+	{
 		// CISO magic.
 		const CisoPspHeader *const cisoPspHeader = reinterpret_cast<const CisoPspHeader*>(pHeader);
 
-		// Header size should be either 0x18 or 0.
-		// If it's v2, it *must* be 0x18.
+		// Header size:
+		// - CISO v0/v1: 0 or 0x18
+		// - CISO v2: 0x18
+		// - ZISO: 0x18
 		if (cisoPspHeader->header_size == 0) {
-			if (cisoPspHeader->version >= 2) {
+			if (pHeader[0] != 'C' || cisoPspHeader->version >= 2) {
 				// Invalid header size.
 				return -1;
 			}
 		} else if (cisoPspHeader->header_size != cpu_to_le32(sizeof(*cisoPspHeader))) {
 			// Invalid header size.
 			return (int)CisoPspReaderPrivate::CisoType::Unknown;
+		}
+
+		// Version checks.
+#ifdef ENABLE_LZ4
+		if (pHeader[0] == 'Z' && cisoPspHeader->version != 1) {
+			// ZISO: Only v1 is known to exist.
+			return -1;
+		} else
+#endif /* ENABLE_LZ4 */
+		if (cisoPspHeader->version > 2) {
+			// CISO: v2 is max.
+			return -1;
 		}
 
 		// Check if the block size is a supported power of two.
@@ -398,6 +437,11 @@ int CisoPspReader::isDiscSupported_static(const uint8_t *pHeader, size_t szHeade
 		}
 
 		// This is a valid CISO PSP image.
+#ifdef ENABLE_LZ4
+		if (pHeader[0] == 'Z') {
+			return (int)CisoPspReaderPrivate::CisoType::ZISO;
+		}
+#endif /* ENABLE_LZ4 */
 		return (int)CisoPspReaderPrivate::CisoType::CISO;
 	} else if (*pu32 == be32_to_cpu(DAX_MAGIC) && szHeader >= sizeof(DaxHeader)) {
 		// DAX magic.
@@ -472,6 +516,9 @@ off64_t CisoPspReader::getPhysBlockAddr(uint32_t blockIdx) const
 			return 0;
 
 		case CisoPspReaderPrivate::CisoType::CISO:
+#ifdef ENABLE_LZ4
+		case CisoPspReaderPrivate::CisoType::ZISO:
+#endif /* ENABLE_LZ4 */
 			addr = static_cast<off64_t>(d->indexEntries[blockIdx] & ~CISO_PSP_V0_NOT_COMPRESSED);
 			addr <<= d->index_shift;
 			break;
@@ -583,6 +630,21 @@ int CisoPspReader::readBlock(uint32_t blockIdx, void *ptr, int pos, size_t size)
 			}
 			break;
 
+#ifdef ENABLE_LZ4
+		case CisoPspReaderPrivate::CisoType::ZISO:
+			// ZISO uses LZ4.
+
+			// Mask off the compression bit, and shift the address
+			// based on the index shift.
+			physBlockAddr = static_cast<off64_t>(indexEntry & ~CISO_PSP_V0_NOT_COMPRESSED);
+			physBlockAddr <<= d->index_shift;
+
+			z_mode = (indexEntry & CISO_PSP_V0_NOT_COMPRESSED)
+				? CompressionMode::None
+				: CompressionMode::LZ4;
+			break;
+#endif /* ENABLE_LZ4 */
+
 		case CisoPspReaderPrivate::CisoType::DAX:
 			physBlockAddr = static_cast<off64_t>(indexEntry);
 			if (d->header.dax.nc_areas > 0 && d->daxNCTable[blockIdx]) {
@@ -665,6 +727,54 @@ int CisoPspReader::readBlock(uint32_t blockIdx, void *ptr, int pos, size_t size)
 				return 0;
 			}
 			break;
+		}
+
+		case CompressionMode::LZ4: {
+#ifdef ENABLE_LZ4
+			// Read compressed data into a temporary buffer,
+			// then decompress it.
+			uint32_t z_max_size = d->block_size;
+			if (unlikely(d->isDaxWithoutNCTable)) {
+				// DAX without NC table can end up compressing to larger
+				// than the uncompressed size.
+				z_max_size *= 2;
+			}
+			if (z_block_size > z_max_size) {
+				// Compressed data is larger than the uncompressed block size.
+				// This is only allowed for DAX without NC table.
+				m_lastError = EIO;
+				return 0;
+			}
+
+			size_t sz_read = m_file->seekAndRead(physBlockAddr, d->z_buffer.data(), z_block_size);
+			if (sz_read != z_block_size) {
+				// Seek and/or read error.
+				m_lastError = m_file->lastError();
+				if (m_lastError == 0) {
+					m_lastError = EIO;
+				}
+				return 0;
+			}
+
+			// Decompress the data.
+			int size = LZ4_decompress_safe(
+				reinterpret_cast<const char*>(d->z_buffer.data()),
+				reinterpret_cast<char*>(d->blockCache.data()),
+				z_block_size, d->block_size);
+			if (size != (int)d->block_size) {
+				// Decompression error.
+				// TODO: Print warnings and/or more comprehensive error codes.
+				d->blockCacheIdx = ~0U;
+				m_lastError = EIO;
+				return 0;
+			}
+			break;
+#else /* !ENABLE_LZ4 */
+			// TODO: If it's CISOv2, check for LZ4-compressed blocks and fail early?
+			assert(!"LZ4 is not enabled in this build.");
+			m_lastError = EIO;
+			return 0;
+#endif /* ENABLE_LZ4 */
 		}
 	}
 
