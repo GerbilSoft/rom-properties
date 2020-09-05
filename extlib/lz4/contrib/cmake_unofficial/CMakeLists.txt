@@ -103,6 +103,13 @@ set(LZ4_CLI_SOURCES
 #option(LZ4_POSITION_INDEPENDENT_LIB "Use position independent code for static library (if applicable)" ON)
 set(LZ4_POSITION_INDEPENDENT_LIB ON)
 
+# rom-properties
+IF(MSVC)
+	# FIXME: MSVC 2019 is complaining of C2373 type redefinitions
+	# if we don't remove "/Gz", even though we have ZSTDAPI_CALL.
+	STRING(REPLACE "/Gz" "" CMAKE_C_FLAGS "${CMAKE_C_FLAGS}")
+ENDIF(MSVC)
+
 # liblz4
 set(LZ4_LIBRARIES_BUILT)
 if(BUILD_SHARED_LIBS)
