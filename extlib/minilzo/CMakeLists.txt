@@ -6,9 +6,15 @@ IF(MSVC)
 	SET(CMAKE_DEBUG_POSTFIX "d")
 ENDIF(MSVC)
 
+IF(WIN32)
+	# rom-properties: Add the Win32 resource file.
+	SET(LZO_RC_FILE minilzo-dll.rc)
+ENDIF(WIN32)
+
 ADD_LIBRARY(minilzo SHARED
 	minilzo.c minilzo.h
 	lzoconf.h lzodefs.h
+	${LZO_RC_FILE}
 	)
 TARGET_INCLUDE_DIRECTORIES(minilzo
 	PUBLIC  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
