@@ -71,7 +71,9 @@ class CisoPspReaderPrivate : public SparseDiscReaderPrivate {
 		// DAX: Size and NC area tables.
 		ao::uvector<uint16_t> daxSizeTable;
 		ao::uvector<uint8_t> daxNCTable;	// 0 = compressed; 1 = not compressed
-		bool isDaxWithoutNCTable;
+
+		bool isDaxWithoutNCTable;	// Convenience variable.
+		uint8_t index_shift;		// Index shift value.
 
 		// Block cache.
 		ao::uvector<uint8_t> blockCache;
@@ -95,6 +97,7 @@ CisoPspReaderPrivate::CisoPspReaderPrivate(CisoPspReader *q)
 	: super(q)
 	, cisoType(CisoType::Unknown)
 	, isDaxWithoutNCTable(false)
+	, index_shift(0)
 	, blockCacheIdx(~0U)
 {
 	// Clear the header structs.
@@ -128,8 +131,10 @@ uint32_t CisoPspReaderPrivate::getBlockCompressedSize(uint32_t blockNum) const
 			assert(blockNum != indexEntries.size()-1);
 			if (blockNum < indexEntries.size()-1) {
 				// High bit is reserved as a flag for all CISO versions.
-				const uint32_t idxStart = le32_to_cpu(indexEntries[blockNum]) & ~CISO_PSP_V0_NOT_COMPRESSED;
-				const uint32_t idxEnd = le32_to_cpu(indexEntries[blockNum + 1]) & ~CISO_PSP_V0_NOT_COMPRESSED;
+				off64_t idxStart = le32_to_cpu(indexEntries[blockNum]) & ~CISO_PSP_V0_NOT_COMPRESSED;
+				off64_t idxEnd = le32_to_cpu(indexEntries[blockNum + 1]) & ~CISO_PSP_V0_NOT_COMPRESSED;
+				idxStart <<= index_shift;
+				idxEnd <<= index_shift;
 				size = static_cast<uint32_t>(idxEnd - idxStart);
 			}
 			break;
@@ -204,6 +209,7 @@ CisoPspReader::CisoPspReader(IRpFile *file)
 
 			d->block_size = d->header.cisoPsp.block_size;
 			d->disc_size = d->header.cisoPsp.uncompressed_size;
+			d->index_shift = d->header.cisoPsp.index_shift;
 			indexEntryTblPos = static_cast<off64_t>(sizeof(d->header.cisoPsp));
 			break;
 
@@ -218,7 +224,7 @@ CisoPspReader::CisoPspReader(IRpFile *file)
 
 			d->block_size = DAX_BLOCK_SIZE;
 			d->disc_size = d->header.dax.uncompressed_size;
-			// FIXME: Handle NC areas.
+			d->index_shift = 0;
 			indexEntryTblPos = static_cast<off64_t>(sizeof(d->header.dax));
 			break;
 	}
@@ -448,7 +454,7 @@ off64_t CisoPspReader::getPhysBlockAddr(uint32_t blockIdx) const
 {
 	// Make sure the block index is in range.
 	// TODO: Check against maxLogicalBlockUsed?
-	RP_D(CisoPspReader);
+	RP_D(const CisoPspReader);
 	assert(!d->indexEntries.empty());
 	assert(blockIdx < d->indexEntries.size()-1);
 	if (d->indexEntries.empty() || blockIdx >= d->indexEntries.size()-1) {
@@ -458,7 +464,24 @@ off64_t CisoPspReader::getPhysBlockAddr(uint32_t blockIdx) const
 
 	// Get the physical block address.
 	// NOTE: The caller has to decompress the block.
-	return (d->indexEntries[blockIdx] & ~CISO_PSP_V0_NOT_COMPRESSED);
+	off64_t addr = -1;
+	switch (d->cisoType) {
+		default:
+		case CisoPspReaderPrivate::CisoType::Unknown:
+			assert(!"Unsupported CisoType.");
+			return 0;
+
+		case CisoPspReaderPrivate::CisoType::CISO:
+			addr = static_cast<off64_t>(d->indexEntries[blockIdx] & ~CISO_PSP_V0_NOT_COMPRESSED);
+			addr <<= d->index_shift;
+			break;
+
+		case CisoPspReaderPrivate::CisoType::DAX:
+			addr = static_cast<off64_t>(d->indexEntries[blockIdx]);
+			break;
+	}
+
+	return addr;
 }
 
 /**
@@ -508,12 +531,6 @@ int CisoPspReader::readBlock(uint32_t blockIdx, void *ptr, int pos, size_t size)
 		return 0;
 	}
 
-	// Mask the high bit for CISO format.
-	uint32_t physBlockAddr = indexEntry;
-	if (likely(d->cisoType == CisoPspReaderPrivate::CisoType::CISO)) {
-		physBlockAddr &= ~CISO_PSP_V0_NOT_COMPRESSED;
-	}
-
 	enum class CompressionMode {
 		None = 0,
 		Deflate = 1,
@@ -522,6 +539,7 @@ int CisoPspReader::readBlock(uint32_t blockIdx, void *ptr, int pos, size_t size)
 	CompressionMode z_mode;
 	int windowBits = -15;	// raw deflate (CISO)
 
+	off64_t physBlockAddr;
 	switch (d->cisoType) {
 		default:
 		case CisoPspReaderPrivate::CisoType::Unknown:
@@ -533,6 +551,11 @@ int CisoPspReader::readBlock(uint32_t blockIdx, void *ptr, int pos, size_t size)
 		case CisoPspReaderPrivate::CisoType::CISO:
 			// CISO uses raw deflate.
 			//windowBits = -15;
+
+			// Mask off the compression bit, and shift the address
+			// based on the index shift.
+			physBlockAddr = static_cast<off64_t>(indexEntry & ~CISO_PSP_V0_NOT_COMPRESSED);
+			physBlockAddr <<= d->index_shift;
 
 			if (d->header.cisoPsp.version < 2) {
 				// CISO v0/v1: Check if compressed.
@@ -561,6 +584,7 @@ int CisoPspReader::readBlock(uint32_t blockIdx, void *ptr, int pos, size_t size)
 			break;
 
 		case CisoPspReaderPrivate::CisoType::DAX:
+			physBlockAddr = static_cast<off64_t>(indexEntry);
 			if (d->header.dax.nc_areas > 0 && d->daxNCTable[blockIdx]) {
 				// Uncompressed block.
 				z_mode = CompressionMode::None;
