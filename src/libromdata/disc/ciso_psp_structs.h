@@ -91,7 +91,8 @@ ASSERT_STRUCT(DaxNCArea, 2*sizeof(uint32_t));
  *   equals the block size. (Same as CISOv2.)
  *
  * - If block headers are enabled, a 4-byte header is prepended to
- *   each block. Not sure what it's useful for...
+ *   each block.
+ * - TODO: jiso.exe says this can provide for "faster decompression".
  *
  * All fields are in little-endian.
  */

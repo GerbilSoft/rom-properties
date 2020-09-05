@@ -836,7 +836,7 @@ int CisoPspReader::readBlock(uint32_t blockIdx, void *ptr, int pos, size_t size)
 
 			if (d->header.jiso.block_headers) {
 				// Block headers are present.
-				// TODO: What do the headers mean?
+				// TODO: jiso.exe says this can provide for "faster decompression".
 				if (z_block_size <= 4) {
 					// Incorrect block size.
 					m_lastError = EIO;
