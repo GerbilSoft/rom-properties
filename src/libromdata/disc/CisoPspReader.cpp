@@ -68,6 +68,9 @@ class CisoPspReaderPrivate : public SparseDiscReaderPrivate {
 		// - v2: If set, block is compressed using LZ4; otherwise, deflate.
 		ao::uvector<uint32_t> indexEntries;
 
+		// DAX: Size table.
+		ao::uvector<uint16_t> daxSizeTable;
+
 		// Block cache.
 		ao::uvector<uint8_t> blockCache;
 		uint32_t blockCacheIdx;
@@ -103,19 +106,37 @@ CisoPspReaderPrivate::CisoPspReaderPrivate(CisoPspReader *q)
 uint32_t CisoPspReaderPrivate::getBlockCompressedSize(uint32_t blockNum) const
 {
 	assert(!indexEntries.empty());
-	assert(blockNum < indexEntries.size()-1);
-	if (indexEntries.empty() || blockNum >= indexEntries.size()-1) {
+	assert(blockNum < indexEntries.size());
+	if (indexEntries.empty() || blockNum >= indexEntries.size()) {
 		// Out of range.
 		return 0;
 	}
 
-	// NOTE: Index entry table has an extra entry for the final block.
-	// Hence, we don't need the same workaround as GCZ.
+	uint32_t size = 0;
+	switch (cisoType) {
+		default:
+		case CisoPspReaderPrivate::CisoType::Unknown:
+			assert(!"Unsupported CisoType.");
+			return 0;
 
-	// High bit is reserved as a flag for all CISO versions.
-	const uint32_t idxStart = le32_to_cpu(indexEntries[blockNum]) & ~CISO_PSP_V0_NOT_COMPRESSED;
-	const uint32_t idxEnd = le32_to_cpu(indexEntries[blockNum + 1]) & ~CISO_PSP_V0_NOT_COMPRESSED;
-	return static_cast<uint32_t>(idxEnd - idxStart);
+		case CisoPspReaderPrivate::CisoType::CISO:
+			// Index entry table has an extra entry for the final block.
+			// Hence, we don't need the same workaround as GCZ.
+			assert(blockNum != indexEntries.size()-1);
+			if (blockNum < indexEntries.size()-1) {
+				// High bit is reserved as a flag for all CISO versions.
+				const uint32_t idxStart = le32_to_cpu(indexEntries[blockNum]) & ~CISO_PSP_V0_NOT_COMPRESSED;
+				const uint32_t idxEnd = le32_to_cpu(indexEntries[blockNum + 1]) & ~CISO_PSP_V0_NOT_COMPRESSED;
+				size = static_cast<uint32_t>(idxEnd - idxStart);
+			}
+			break;
+
+		case CisoPspReaderPrivate::CisoType::DAX:
+			// DAX uses a separate size table.
+			size = static_cast<uint32_t>(daxSizeTable[blockNum]);
+			break;
+	}
+	return size;
 }
 
 /** CisoPspReader **/
@@ -211,7 +232,11 @@ CisoPspReader::CisoPspReader(IRpFile *file)
 	// Read the index entries.
 	// NOTE: These are byteswapped on demand, not ahead of time.
 	d->indexEntries.resize(num_blocks);
-	size_t expected_size = (num_blocks + 1) * sizeof(uint32_t);
+	size_t expected_size = num_blocks * sizeof(uint32_t);
+	if (d->cisoType == CisoPspReaderPrivate::CisoType::CISO) {
+		// CISO has an extra entry for proper size handling.
+		expected_size += sizeof(uint32_t);
+	}
 	size_t size = m_file->seekAndRead(indexEntryTblPos, d->indexEntries.data(), expected_size);
 	if (size != expected_size) {
 		// Read error.
@@ -221,6 +246,42 @@ CisoPspReader::CisoPspReader(IRpFile *file)
 		}
 		UNREF_AND_NULL_NOCHK(m_file);
 		return;
+	}
+
+	if (d->cisoType == CisoPspReaderPrivate::CisoType::DAX) {
+		// Read the DAX size table.
+		d->daxSizeTable.resize(num_blocks);
+		expected_size = num_blocks * sizeof(uint16_t);
+		size = m_file->read(d->daxSizeTable.data(), expected_size);
+		if (size != expected_size) {
+			// Read error.
+			m_lastError = m_file->lastError();
+			if (m_lastError == 0) {
+				m_lastError = EIO;
+			}
+			UNREF_AND_NULL_NOCHK(m_file);
+			return;
+		}
+
+		if (d->header.dax.nc_areas > 0) {
+			// Handle the NC (non-compressed) areas.
+			// This table is stored immediately after the index entry table.
+			ao::uvector<DaxNCArea> nc_areas;
+			nc_areas.resize(d->header.dax.nc_areas);
+			expected_size = d->header.dax.nc_areas * sizeof(DaxNCArea);
+			size = m_file->read(nc_areas.data(), expected_size);
+			if (size != expected_size) {
+				// Read error.
+				m_lastError = m_file->lastError();
+				if (m_lastError == 0) {
+					m_lastError = EIO;
+				}
+				UNREF_AND_NULL_NOCHK(m_file);
+				return;
+			}
+
+			// TODO: Handle it.
+		}
 	}
 
 	// Initialize the block cache and decompression buffer.

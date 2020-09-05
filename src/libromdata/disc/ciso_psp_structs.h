@@ -63,7 +63,16 @@ typedef struct _DaxHeader {
 	uint32_t nc_areas;		// [0x014] Number of non-compressed areas.
 	uint32_t unused[4];		// [0x018]
 } DaxHeader;
-ASSERT_STRUCT(DaxHeader, 32);
+ASSERT_STRUCT(DaxHeader, 8*sizeof(uint32_t));
+
+/**
+ * DAX: Non-compressed area.
+ */
+typedef struct _DaxNCArea {
+	uint32_t start;		// [0x000]
+	uint32_t count;		// [0x004]
+} DaxNCArea;
+ASSERT_STRUCT(DaxNCArea, 2*sizeof(uint32_t));
 
 // DAX has a fixed block size.
 #define DAX_BLOCK_SIZE 0x2000
