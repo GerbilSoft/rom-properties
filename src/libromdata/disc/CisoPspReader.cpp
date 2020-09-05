@@ -563,6 +563,13 @@ int CisoPspReader::isDiscSupported_static(const uint8_t *pHeader, size_t szHeade
 
 		// TODO: Version number field?
 
+		// Header size.
+		// TODO: Is this accurate?
+		if (jisoHeader->header_size != cpu_to_le32(sizeof(*jisoHeader))) {
+			// Header size is incorrect.
+			return (int)CisoPspReaderPrivate::CisoType::Unknown;
+		}
+
 		// Check if the block size is a supported power of two.
 		// - Minimum: JISO_BLOCK_SIZE_MIN ( 2 KB, 1 << 11)
 		// - Maximum: JISO_BLOCK_SIZE_MAX (64 KB, 1 << 16)
