@@ -90,6 +90,9 @@ ASSERT_STRUCT(DaxNCArea, 2*sizeof(uint32_t));
  * - If a block is uncompressed, the difference between index entries
  *   equals the block size. (Same as CISOv2.)
  *
+ * - If block headers are enabled, a 4-byte header is prepended to
+ *   each block. Not sure what it's useful for...
+ *
  * All fields are in little-endian.
  */
 #define JISO_MAGIC 'JISO'	// JISO
@@ -98,7 +101,8 @@ typedef struct _JisoHeader {
 	uint8_t unk_x001;		// [0x004] 0x03?
 	uint8_t unk_x002;		// [0x005] 0x01?
 	uint16_t block_size;		// [0x006] Block size, usually 2048.
-	uint8_t unk_x008;		// [0x008]
+	// TODO: Are block_headers and method 8-bit or 16-bit?
+	uint8_t block_headers;		// [0x008] Block headers. (1 if present; 0 if not.)
 	uint8_t unk_x009;		// [0x009]
 	uint8_t method;			// [0x00A] Method. (See JisoAlgorithm_e.)
 	uint8_t unk_x00b;		// [0x00B]

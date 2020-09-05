@@ -748,7 +748,7 @@ int CisoPspReader::readBlock(uint32_t blockIdx, void *ptr, int pos, size_t size)
 
 	// Get the physical address first.
 	const uint32_t indexEntry = d->indexEntries[blockIdx];
-	const uint32_t z_block_size = d->getBlockCompressedSize(blockIdx);
+	uint32_t z_block_size = d->getBlockCompressedSize(blockIdx);
 	if (z_block_size == 0) {
 		// Unable to get the block's compressed size...
 		m_lastError = EIO;
@@ -833,6 +833,18 @@ int CisoPspReader::readBlock(uint32_t blockIdx, void *ptr, int pos, size_t size)
 			// block size, similar to CISOv2.
 			physBlockAddr = static_cast<off64_t>(indexEntry);
 			physBlockAddr <<= d->index_shift;
+
+			if (d->header.jiso.block_headers) {
+				// Block headers are present.
+				// TODO: What do the headers mean?
+				if (z_block_size <= 4) {
+					// Incorrect block size.
+					m_lastError = EIO;
+					return 0;
+				}
+				physBlockAddr += 4;
+				z_block_size -= 4;
+			}
 
 			if (z_block_size == d->block_size) {
 				z_mode = CompressionMode::None;
