@@ -194,12 +194,14 @@ CisoPspReader::CisoPspReader(IRpFile *file)
 	}
 
 	unsigned int indexEntryTblPos;
-#ifdef ZLIB_IS_DLL
+#ifdef _MSC_VER
+#  ifdef ZLIB_IS_DLL
 	bool isZlib = false;
-#endif /* ZLIB_IS_DLL */
-#if defined(HAVE_LZ4) && defined(LZ4_IS_DLL)
+#  endif /* ZLIB_IS_DLL */
+#  if defined(HAVE_LZ4) && defined(LZ4_IS_DLL)
 	bool isLZ4 = false;
-#endif /* HAVE_LZ4 && LZ4_IS_DLL */
+#  endif /* HAVE_LZ4 && LZ4_IS_DLL */
+#endif /* MSC_VER */
 	switch (d->cisoType) {
 		default:
 		case CisoPspReaderPrivate::CisoType::Unknown:
@@ -209,14 +211,14 @@ CisoPspReader::CisoPspReader(IRpFile *file)
 			return;
 
 		case CisoPspReaderPrivate::CisoType::CISO:
-#ifdef ZLIB_IS_DLL
+#if defined(_MSC_VER) && defined(ZLIB_IS_DLL)
 			isZlib = true;
-#endif /* ZLIB_IS_DLL */
+#endif /* _MSC_VER && ZLIB_IS_DLL */
 #ifdef HAVE_LZ4
 		case CisoPspReaderPrivate::CisoType::ZISO:
-#  ifdef LZ4_IS_DLL
+#  if defined(_MSC_VER) && defined(LZ4_IS_DLL)
 			isLZ4 = true;
-#  endif /* LZ4_IS_DLL */
+#  endif /* _MSC_VER && LZ4_IS_DLL */
 #endif /* HAVE_LZ4 */
 #if SYS_BYTEORDER != SYS_LIL_ENDIAN
 			// Byteswap the header.
@@ -231,18 +233,18 @@ CisoPspReader::CisoPspReader(IRpFile *file)
 			d->index_shift = d->header.cisoPsp.index_shift;
 			indexEntryTblPos = static_cast<off64_t>(sizeof(d->header.cisoPsp));
 
-#ifdef HAVE_LZ4
+#if defined(_MSC_VER) && defined(HAVE_LZ4)
 			// If CISOv2, we might also have LZ4.
 			if (d->header.cisoPsp.version >= 2) {
 				isLZ4 = true;
 			}
-#endif /* HAVE_LZ4 */
+#endif /* _MSC_VER && HAVE_LZ4 */
 			break;
 
 		case CisoPspReaderPrivate::CisoType::DAX:
-#ifdef ZLIB_IS_DLL
+#if defined(_MSC_VER) && defined(ZLIB_IS_DLL)
 			isZlib = true;
-#endif /* ZLIB_IS_DLL */
+#endif /* _MSC_VER && ZLIB_IS_DLL */
 #if SYS_BYTEORDER != SYS_LIL_ENDIAN
 			// Byteswap the header.
 			d->header.dax.magic		= le32_to_cpu(d->header.dax.magic);
