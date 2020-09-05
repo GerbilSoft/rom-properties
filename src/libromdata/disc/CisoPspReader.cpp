@@ -216,9 +216,6 @@ CisoPspReader::CisoPspReader(IRpFile *file)
 #endif /* _MSC_VER && ZLIB_IS_DLL */
 #ifdef HAVE_LZ4
 		case CisoPspReaderPrivate::CisoType::ZISO:
-#  if defined(_MSC_VER) && defined(LZ4_IS_DLL)
-			isLZ4 = true;
-#  endif /* _MSC_VER && LZ4_IS_DLL */
 #endif /* HAVE_LZ4 */
 #if SYS_BYTEORDER != SYS_LIL_ENDIAN
 			// Byteswap the header.
@@ -235,7 +232,10 @@ CisoPspReader::CisoPspReader(IRpFile *file)
 
 #if defined(_MSC_VER) && defined(HAVE_LZ4)
 			// If CISOv2, we might also have LZ4.
-			if (d->header.cisoPsp.version >= 2) {
+			// If ZISO, we *definitely* have LZ4.
+			if (d->header.cisoPsp.version >= 2 ||
+			    d->cisoType == CisoPspReaderPrivate::CisoType::ZISO)
+			{
 				isLZ4 = true;
 			}
 #endif /* _MSC_VER && HAVE_LZ4 */
