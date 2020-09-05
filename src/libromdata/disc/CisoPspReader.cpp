@@ -415,6 +415,7 @@ CisoPspReader::CisoPspReader(IRpFile *file)
 	}
 #endif /* HAVE_LZO */
 
+	// TODO: NC areas for JISO.
 	if (d->cisoType == CisoPspReaderPrivate::CisoType::DAX) {
 		// Read the DAX size table.
 		d->daxSizeTable.resize(num_blocks);
@@ -771,7 +772,7 @@ int CisoPspReader::readBlock(uint32_t blockIdx, void *ptr, int pos, size_t size)
 		LZO = 3,
 	};
 	CompressionMode z_mode;
-	int windowBits = -15;	// raw deflate (CISO)
+	int windowBits = 0;
 
 	off64_t physBlockAddr;
 	switch (d->cisoType) {
@@ -784,7 +785,7 @@ int CisoPspReader::readBlock(uint32_t blockIdx, void *ptr, int pos, size_t size)
 
 		case CisoPspReaderPrivate::CisoType::CISO:
 			// CISO uses raw deflate.
-			//windowBits = -15;
+			windowBits = -15;
 
 			// Mask off the compression bit, and shift the address
 			// based on the index shift.
@@ -915,6 +916,11 @@ int CisoPspReader::readBlock(uint32_t blockIdx, void *ptr, int pos, size_t size)
 		case CompressionMode::Deflate: {
 			// Read compressed data into a temporary buffer,
 			// then decompress it.
+			assert(windowBits != 0);
+			if (windowBits == 0) {
+				m_lastError = EINVAL;
+			}
+			return 0;
 			uint32_t z_max_size = d->block_size;
 			if (unlikely(d->isDaxWithoutNCTable)) {
 				// DAX without NC table can end up compressing to larger
