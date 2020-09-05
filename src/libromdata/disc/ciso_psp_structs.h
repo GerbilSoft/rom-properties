@@ -8,6 +8,8 @@
 
 // References:
 // - https://github.com/unknownbrackets/maxcso/blob/master/README_CSO.md
+// - https://github.com/unknownbrackets/maxcso/blob/master/src/dax.h
+// - https://github.com/unknownbrackets/maxcso/blob/master/src/input.cpp
 
 #ifndef __ROMPROPERTIES_LIBROMDATA_DISC_CISO_PSP_STRUCTS_H__
 #define __ROMPROPERTIES_LIBROMDATA_DISC_CISO_PSP_STRUCTS_H__
@@ -47,6 +49,24 @@ ASSERT_STRUCT(CisoPspHeader, 0x18);
 // For v2: High bit of index entry is 1==LZ4, 0==deflate.
 // Uncompressed is indicated by compressed size == block size.
 #define CISO_PSP_V2_LZ4_COMPRESSED	(1U << 31)
+
+/**
+ * PlayStation Portable DAX header.
+ *
+ * All fields are in little-endian.
+ */
+#define DAX_MAGIC 0x44415800
+typedef struct _DaxHeader {
+	uint32_t magic;			// [0x000] 'DAX\0'
+	uint32_t uncompressed_size;	// [0x004] Uncompressed data size.
+	uint32_t version;		// [0x010] Version. (0 or 1)
+	uint32_t nc_areas;		// [0x014] Number of non-compressed areas.
+	uint32_t unused[4];		// [0x018]
+} DaxHeader;
+ASSERT_STRUCT(DaxHeader, 32);
+
+// DAX has a fixed block size.
+#define DAX_BLOCK_SIZE 0x2000
 
 #ifdef __cplusplus
 }

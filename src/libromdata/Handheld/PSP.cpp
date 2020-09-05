@@ -400,9 +400,9 @@ const char *const *PSP::supportedFileExtensions_static(void)
 {
 	static const char *const exts[] = {
 		".iso",			// ISO
-		".ciso", ".cso",	// CISO (TODO)
+		".dax",			// DAX
+		".ciso", ".cso",	// CISO
 		".jiso", ".jso",	// JISO (TODO)
-		".dax",			// DAX (TODO)
 
 		nullptr
 	};

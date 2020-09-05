@@ -46,8 +46,21 @@ class CisoPspReaderPrivate : public SparseDiscReaderPrivate {
 		RP_DISABLE_COPY(CisoPspReaderPrivate)
 
 	public:
-		// CISO PSP header.
-		CisoPspHeader cisoPspHeader;
+		enum class CisoType {
+			Unknown	= -1,
+
+			CISO	= 0,	// CISO
+			DAX	= 1,	// DAX
+
+			Max
+		};
+		CisoType cisoType;
+
+		// Header.
+		union {
+			CisoPspHeader cisoPsp;
+			DaxHeader dax;
+		} header;
 
 		// Index entries. These are *absolute* offsets.
 		// High bit interpretation depends on CISO version.
@@ -75,10 +88,11 @@ class CisoPspReaderPrivate : public SparseDiscReaderPrivate {
 
 CisoPspReaderPrivate::CisoPspReaderPrivate(CisoPspReader *q)
 	: super(q)
+	, cisoType(CisoType::Unknown)
 	, blockCacheIdx(~0U)
 {
-	// Clear the GCZ header struct.
-	memset(&cisoPspHeader, 0, sizeof(cisoPspHeader));
+	// Clear the header structs.
+	memset(&header, 0, sizeof(header));
 }
 
 /**
@@ -125,36 +139,68 @@ CisoPspReader::CisoPspReader(IRpFile *file)
 	}
 #endif /* defined(_MSC_VER) && defined(ZLIB_IS_DLL) */
 
-	// Read the CISO header.
+	// Read the header.
 	RP_D(CisoPspReader);
 	m_file->rewind();
-	size_t sz = m_file->read(&d->cisoPspHeader, sizeof(d->cisoPspHeader));
-	if (sz != sizeof(d->cisoPspHeader)) {
-		// Error reading the GCZ header.
+	size_t sz = m_file->read(&d->header, sizeof(d->header));
+	if (sz != sizeof(d->header)) {
+		// Error reading the header.
 		UNREF_AND_NULL_NOCHK(m_file);
 		m_lastError = EIO;
 		return;
 	}
 
 	// Reuse isDiscSupported_static() for validation.
-	if (isDiscSupported_static(reinterpret_cast<const uint8_t*>(&d->cisoPspHeader), sizeof(d->cisoPspHeader)) < 0) {
+	d->cisoType = static_cast<CisoPspReaderPrivate::CisoType>(
+		isDiscSupported_static(reinterpret_cast<const uint8_t*>(&d->header), sizeof(d->header)));
+	if ((int)d->cisoType < 0) {
 		// Not valid.
 		UNREF_AND_NULL_NOCHK(m_file);
 		m_lastError = EIO;
 		return;
 	}
 
+	unsigned int indexEntryTblPos;
+	switch (d->cisoType) {
+		default:
+		case CisoPspReaderPrivate::CisoType::Unknown:
+			assert(!"Unsupported CisoType.");
+			UNREF_AND_NULL_NOCHK(m_file);
+			m_lastError = ENOTSUP;
+			return;
+
+		case CisoPspReaderPrivate::CisoType::CISO:
 #if SYS_BYTEORDER != SYS_LIL_ENDIAN
-	// Byteswap the header.
-	d->cisoPspHeader.magic			= le32_to_cpu(d->cisoPspHeader.magic);
-	d->cisoPspHeader.header_size		= le32_to_cpu(d->cisoPspHeader.header_size);
-	d->cisoPspHeader.uncompressed_size	= le64_to_cpu(d->cisoPspHeader.uncompressed_size);
-	d->cisoPspHeader.block_size		= le32_to_cpu(d->cisoPspHeader.block_size);
+			// Byteswap the header.
+			d->header.cisoPsp.magic			= le32_to_cpu(d->header.cisoPsp.magic);
+			d->header.cisoPsp.header_size		= le32_to_cpu(d->header.cisoPsp.header_size);
+			d->header.cisoPsp.uncompressed_size	= le64_to_cpu(d->header.cisoPsp.uncompressed_size);
+			d->header.cisoPsp.block_size		= le32_to_cpu(d->header.cisoPsp.block_size);
 #endif /* SYS_BYTEORDER != SYS_LIL_ENDIAN */
 
+			d->block_size = d->header.cisoPsp.block_size;
+			d->disc_size = d->header.cisoPsp.uncompressed_size;
+			indexEntryTblPos = static_cast<off64_t>(sizeof(d->header.cisoPsp));
+			break;
+
+		case CisoPspReaderPrivate::CisoType::DAX:
+#if SYS_BYTEORDER != SYS_LIL_ENDIAN
+			// Byteswap the header.
+			d->header.dax.magic		= le32_to_cpu(d->header.dax.magic);
+			d->header.dax.uncompressed_size	= le32_to_cpu(d->header.dax.uncompressed_size);
+			d->header.dax.version		= le32_to_cpu(d->header.dax.version);
+			d->header.dax.nc_areas		= le32_to_cpu(d->header.dax.nc_areas);
+#endif /* SYS_BYTEORDER != SYS_LIL_ENDIAN */
+
+			d->block_size = DAX_BLOCK_SIZE;
+			d->disc_size = d->header.dax.uncompressed_size;
+			// FIXME: Handle NC areas.
+			indexEntryTblPos = static_cast<off64_t>(sizeof(d->header.dax));
+			break;
+	}
+
 	// Calculate the number of blocks.
-	d->block_size = d->cisoPspHeader.block_size;
-	const uint32_t num_blocks = d->cisoPspHeader.uncompressed_size / d->block_size;
+	const uint32_t num_blocks = static_cast<uint32_t>(d->disc_size / d->block_size);
 	assert(num_blocks > 0);
 	if (num_blocks == 0) {
 		// No blocks...
@@ -166,7 +212,7 @@ CisoPspReader::CisoPspReader(IRpFile *file)
 	// NOTE: These are byteswapped on demand, not ahead of time.
 	d->indexEntries.resize(num_blocks);
 	size_t expected_size = (num_blocks + 1) * sizeof(uint32_t);
-	size_t size = m_file->read(d->indexEntries.data(), expected_size);
+	size_t size = m_file->seekAndRead(indexEntryTblPos, d->indexEntries.data(), expected_size);
 	if (size != expected_size) {
 		// Read error.
 		m_lastError = m_file->lastError();
@@ -176,10 +222,6 @@ CisoPspReader::CisoPspReader(IRpFile *file)
 		UNREF_AND_NULL_NOCHK(m_file);
 		return;
 	}
-
-	// Use the disc size directly from the header.
-	// TODO: Verify it?
-	d->disc_size = d->cisoPspHeader.uncompressed_size;
 
 	// Initialize the block cache and decompression buffer.
 	// NOTE: Extra 64 bytes is for zlib, in case it needs it.
@@ -214,53 +256,83 @@ int CisoPspReader::isDiscSupported_static(const uint8_t *pHeader, size_t szHeade
 	}
 #endif /* defined(_MSC_VER) && defined(ZLIB_IS_DLL) */
 
-	// Check the CISO magic.
-	const CisoPspHeader *const cisoPspHeader = reinterpret_cast<const CisoPspHeader*>(pHeader);
-	if (cisoPspHeader->magic != be32_to_cpu(CISO_MAGIC)) {
-		// Invalid magic.
-		return -1;
-	}
+	// Check the magic number.
+	const uint32_t *const pu32 = reinterpret_cast<const uint32_t*>(pHeader);
+	if (*pu32 == be32_to_cpu(CISO_MAGIC) && szHeader >= sizeof(CisoPspHeader)) {
+		// CISO magic.
+		const CisoPspHeader *const cisoPspHeader = reinterpret_cast<const CisoPspHeader*>(pHeader);
 
-	// Header size should be either 0x18 or 0.
-	// If it's v2, it *must* be 0x18.
-	if (cisoPspHeader->header_size == 0) {
-		if (cisoPspHeader->version >= 2) {
+		// Header size should be either 0x18 or 0.
+		// If it's v2, it *must* be 0x18.
+		if (cisoPspHeader->header_size == 0) {
+			if (cisoPspHeader->version >= 2) {
+				// Invalid header size.
+				return -1;
+			}
+		} else if (cisoPspHeader->header_size != cpu_to_le32(sizeof(*cisoPspHeader))) {
 			// Invalid header size.
-			return -1;
+			return (int)CisoPspReaderPrivate::CisoType::Unknown;
 		}
-	} else if (cisoPspHeader->header_size != cpu_to_le32(sizeof(*cisoPspHeader))) {
-		// Invalid header size.
-		return -1;
+
+		// Check if the block size is a supported power of two.
+		// - Minimum: CISO_PSP_BLOCK_SIZE_MIN ( 2 KB, 1 << 11)
+		// - Maximum: CISO_PSP_BLOCK_SIZE_MAX (16 MB, 1 << 24)
+		const uint32_t block_size = le32_to_cpu(cisoPspHeader->block_size);
+		if (!isPow2(block_size) ||
+		    block_size < CISO_PSP_BLOCK_SIZE_MIN || block_size > CISO_PSP_BLOCK_SIZE_MAX)
+		{
+			// Block size is out of range.
+			return (int)CisoPspReaderPrivate::CisoType::Unknown;
+		}
+
+		// Must have at least one block and less than 16 GB of uncompressed data.
+		const uint64_t uncompressed_size = le64_to_cpu(cisoPspHeader->uncompressed_size);
+		if (uncompressed_size < cisoPspHeader->block_size ||
+		    uncompressed_size > 16ULL*1024ULL*1024ULL*1024ULL)
+		{
+			// Less than one block, or more than 16 GB...
+			return (int)CisoPspReaderPrivate::CisoType::Unknown;
+		}
+
+		// Uncompressed data size must be a multiple of the block size.
+		if (uncompressed_size % block_size != 0) {
+			// Not a multiple.
+			return (int)CisoPspReaderPrivate::CisoType::Unknown;
+		}
+
+		// This is a valid CISO PSP image.
+		return (int)CisoPspReaderPrivate::CisoType::CISO;
+	} else if (*pu32 == be32_to_cpu(DAX_MAGIC) && szHeader >= sizeof(DaxHeader)) {
+		// DAX magic.
+		const DaxHeader *const daxHeader = reinterpret_cast<const DaxHeader*>(pHeader);
+
+		// Version must be 0 or 1.
+		if (le32_to_cpu(daxHeader->version) > 1) {
+			// Not supported.
+			return (int)CisoPspReaderPrivate::CisoType::Unknown;
+		}
+
+		// Must have at least one block and less than 4 GB of uncompressed data.
+		const uint32_t uncompressed_size = le32_to_cpu(daxHeader->uncompressed_size);
+		if (uncompressed_size < DAX_BLOCK_SIZE ||
+		    uncompressed_size > 4ULL*1024ULL*1024ULL*1024ULL)
+		{
+			// Less than one block, or more than 4 GB...
+			return (int)CisoPspReaderPrivate::CisoType::Unknown;
+		}
+
+		// Uncompressed data size must be a multiple of the block size.
+		if (uncompressed_size % DAX_BLOCK_SIZE != 0) {
+			// Not a multiple.
+			return (int)CisoPspReaderPrivate::CisoType::Unknown;
+		}
+
+		// This is a valid DAX image.
+		return (int)CisoPspReaderPrivate::CisoType::DAX;
 	}
 
-	// Check if the block size is a supported power of two.
-	// - Minimum: CISO_PSP_BLOCK_SIZE_MIN ( 2 KB, 1 << 11)
-	// - Maximum: CISO_PSP_BLOCK_SIZE_MAX (16 MB, 1 << 24)
-	const uint32_t block_size = le32_to_cpu(cisoPspHeader->block_size);
-	if (!isPow2(block_size) ||
-	    block_size < CISO_PSP_BLOCK_SIZE_MIN || block_size > CISO_PSP_BLOCK_SIZE_MAX)
-	{
-		// Block size is out of range.
-		return -1;
-	}
-
-	// Must have at least one block and less than 16 GB of uncompressed data.
-	const uint64_t uncompressed_size = le64_to_cpu(cisoPspHeader->uncompressed_size);
-	if (uncompressed_size < cisoPspHeader->block_size ||
-	    uncompressed_size > 16ULL*1024ULL*1024ULL*1024ULL)
-	{
-		// Less than one block, or more than 16 GB...
-		return -1;
-	}
-
-	// Uncompressed data size must be a multiple of the block size.
-	if (uncompressed_size % block_size != 0) {
-		// Not a multiple.
-		return -1;
-	}
-
-	// This is a valid CISO PSP image.
-	return 0;
+	// Not supported.
+	return (int)CisoPspReaderPrivate::CisoType::Unknown;
 }
 
 /**
@@ -353,29 +425,53 @@ int CisoPspReader::readBlock(uint32_t blockIdx, void *ptr, int pos, size_t size)
 		LZ4 = 2,
 	};
 	CompressionMode z_mode;
-	if (d->cisoPspHeader.version < 2) {
-		// CISO v0/v1: Check if compressed.
-		z_mode = (physBlockAddr & CISO_PSP_V0_NOT_COMPRESSED)
-			? CompressionMode::None
-			: CompressionMode::Deflate;
+	int windowBits = -15;	// raw deflate (CISO)
 
-		if (z_mode == CompressionMode::None) {
-			// (Un)compressed block size must match the actual block size.
-			if (z_block_size != d->block_size) {
-				// Error...
-				m_lastError = EIO;
-				return 0;
+	switch (d->cisoType) {
+		default:
+		case CisoPspReaderPrivate::CisoType::Unknown:
+			assert(!"Unsupported CisoType.");
+			UNREF_AND_NULL_NOCHK(m_file);
+			m_lastError = ENOTSUP;
+			return 0;
+
+		case CisoPspReaderPrivate::CisoType::CISO:
+			// CISO uses raw deflate.
+			//windowBits = -15;
+
+			if (d->header.cisoPsp.version < 2) {
+				// CISO v0/v1: Check if compressed.
+				z_mode = (physBlockAddr & CISO_PSP_V0_NOT_COMPRESSED)
+					? CompressionMode::None
+					: CompressionMode::Deflate;
+
+				if (z_mode == CompressionMode::None) {
+					// (Un)compressed block size must match the actual block size.
+					if (z_block_size != d->block_size) {
+						// Error...
+						m_lastError = EIO;
+						return 0;
+					}
+				}
+			} else {
+				// CISO v2: Check if compressed, and if so, which algorithm.
+				if (z_block_size == d->block_size) {
+					z_mode = CompressionMode::None;
+				} else {
+					z_mode = (physBlockAddr & CISO_PSP_V2_LZ4_COMPRESSED)
+						? CompressionMode::LZ4
+						: CompressionMode::Deflate;
+				}
 			}
-		}
-	} else {
-		// CISO v2: Check if compressed, and if so, which algorithm.
-		if (z_block_size == d->block_size) {
-			z_mode = CompressionMode::None;
-		} else {
-			z_mode = (physBlockAddr & CISO_PSP_V2_LZ4_COMPRESSED)
-				? CompressionMode::LZ4
-				: CompressionMode::Deflate;
-		}
+			break;
+
+		case CisoPspReaderPrivate::CisoType::DAX:
+			// DAX uses zlib deflate.
+			windowBits = 15;
+
+			// TODO: NC area support.
+			z_mode = CompressionMode::Deflate;
+			break;
 	}
 
 	switch (z_mode) {
@@ -425,9 +521,7 @@ int CisoPspReader::readBlock(uint32_t blockIdx, void *ptr, int pos, size_t size)
 			z.avail_in = z_block_size;
 			z.next_out = d->blockCache.data();
 			z.avail_out = d->block_size;
-			// CISO uses raw deflate. (-15)
-			// DAX uses regular deflate. (15)
-			inflateInit2(&z, -15);
+			inflateInit2(&z, windowBits);
 
 			int status = inflate(&z, Z_FULL_FLUSH);
 			const uint32_t uncomp_size = d->block_size - z.avail_out;
