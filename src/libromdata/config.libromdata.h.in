@@ -21,7 +21,18 @@
 /* Define to 1 if libmspack-xenia is enabled. */
 #cmakedefine ENABLE_LIBMSPACK 1
 
-/* Define to 1 if LZ4 is enabled. */
-#cmakedefine ENABLE_LZ4 1
+/* Define to 1 if you have LZ4. */
+#cmakedefine HAVE_LZ4 1
+
+/* Define to 1 if we're using the internal copy of LZ4. */
+#cmakedefine USE_INTERNAL_LZ4 1
+
+/* Define to 1 if we're using the internal copy of LZ4 as a DLL. */
+#cmakedefine USE_INTERNAL_LZ4_DLL 1
+
+/* Define to 1 if zlib is a DLL. */
+#if !defined(USE_INTERNAL_LZ4) || defined(USE_INTERNAL_LZ4_DLL)
+#  define LZ4_IS_DLL 1
+#endif
 
 #endif /* __ROMPROPERTIES_LIBROMDATA_CONFIG_H__ */

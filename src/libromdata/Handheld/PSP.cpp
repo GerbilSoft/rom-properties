@@ -405,9 +405,9 @@ const char *const *PSP::supportedFileExtensions_static(void)
 		".dax",			// DAX
 		".ciso", ".cso",	// CISO
 
-#ifdef ENABLE_LZ4
+#ifdef HAVE_LZ4
 		".ziso", "zso",		// ZISO
-#endif /* ENABLE_LZ4 */
+#endif /* HAVE_LZ4 */
 
 		//".jiso", ".jso",	// JISO (TODO)
 
