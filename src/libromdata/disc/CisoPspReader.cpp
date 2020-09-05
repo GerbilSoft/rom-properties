@@ -71,6 +71,7 @@ class CisoPspReaderPrivate : public SparseDiscReaderPrivate {
 		// DAX: Size and NC area tables.
 		ao::uvector<uint16_t> daxSizeTable;
 		ao::uvector<uint8_t> daxNCTable;	// 0 = compressed; 1 = not compressed
+		bool isDaxWithoutNCTable;
 
 		// Block cache.
 		ao::uvector<uint8_t> blockCache;
@@ -93,6 +94,7 @@ class CisoPspReaderPrivate : public SparseDiscReaderPrivate {
 CisoPspReaderPrivate::CisoPspReaderPrivate(CisoPspReader *q)
 	: super(q)
 	, cisoType(CisoType::Unknown)
+	, isDaxWithoutNCTable(false)
 	, blockCacheIdx(~0U)
 {
 	// Clear the header structs.
@@ -299,13 +301,23 @@ CisoPspReader::CisoPspReader(IRpFile *file)
 					d->daxNCTable[i] = true;
 				}
 			}
+		} else {
+			// No NC areas.
+			d->isDaxWithoutNCTable = true;
 		}
 	}
 
 	// Initialize the block cache and decompression buffer.
 	// NOTE: Extra 64 bytes is for zlib, in case it needs it.
-	d->blockCache.resize(d->block_size + 64);
-	d->z_buffer.resize(d->block_size + 64);
+	size_t cache_size = d->block_size + 64;
+	if (d->isDaxWithoutNCTable) {
+		// DAX with no NC table. Use double the block size,
+		// since zlib-compressed data can end up taking up
+		// more space than uncompressed.
+		cache_size *= 2;
+	}
+	d->blockCache.resize(cache_size);
+	d->z_buffer.resize(cache_size);
 	d->blockCacheIdx = ~0U;
 
 	// Reset the disc position.
@@ -586,8 +598,15 @@ int CisoPspReader::readBlock(uint32_t blockIdx, void *ptr, int pos, size_t size)
 		case CompressionMode::Deflate: {
 			// Read compressed data into a temporary buffer,
 			// then decompress it.
-			if (z_block_size > d->block_size) {
-				// Compressed data is larger than the uncompressed block size...
+			uint32_t z_max_size = d->block_size;
+			if (unlikely(d->isDaxWithoutNCTable)) {
+				// DAX without NC table can end up compressing to larger
+				// than the uncompressed size.
+				z_max_size *= 2;
+			}
+			if (z_block_size > z_max_size) {
+				// Compressed data is larger than the uncompressed block size.
+				// This is only allowed for DAX without NC table.
 				m_lastError = EIO;
 				return 0;
 			}
