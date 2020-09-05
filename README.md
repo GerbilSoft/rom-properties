@@ -129,7 +129,7 @@ button.
 | Tiger game.com                |       Yes      |    Yes   |       Icon      |       No       |
 
 \* The PSP parser supports several compressed disc formats: CISOv1, CISOv2,
-   ZISO, and DAX. JISO is currently not supported.
+   ZISO, JISO, and DAX.
 
 ### Texture Formats
 
