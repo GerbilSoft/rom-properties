@@ -70,7 +70,7 @@ class CisoPspReaderPrivate : public SparseDiscReaderPrivate {
 
 		// DAX: Size and NC area tables.
 		ao::uvector<uint16_t> daxSizeTable;
-		ao::uvector<uint8_t> daxNCTable;	// 0 = compressed; 1 = not compressed
+		std::vector<uint8_t> daxNCTable;	// 0 = compressed; 1 = not compressed
 
 		bool isDaxWithoutNCTable;	// Convenience variable.
 		uint8_t index_shift;		// Index shift value.
@@ -240,12 +240,12 @@ CisoPspReader::CisoPspReader(IRpFile *file)
 
 	// Read the index entries.
 	// NOTE: These are byteswapped on demand, not ahead of time.
-	d->indexEntries.resize(num_blocks);
-	size_t expected_size = num_blocks * sizeof(uint32_t);
+	uint32_t num_blocks_alloc = num_blocks;
 	if (d->cisoType == CisoPspReaderPrivate::CisoType::CISO) {
-		// CISO has an extra entry for proper size handling.
-		expected_size += sizeof(uint32_t);
+		num_blocks_alloc++;
 	}
+	d->indexEntries.resize(num_blocks_alloc);
+	size_t expected_size = num_blocks_alloc * sizeof(uint32_t);
 	size_t size = m_file->seekAndRead(indexEntryTblPos, d->indexEntries.data(), expected_size);
 	if (size != expected_size) {
 		// Read error.
