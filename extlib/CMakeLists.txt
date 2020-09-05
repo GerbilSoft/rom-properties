@@ -123,6 +123,30 @@ IF(USE_INTERNAL_ZSTD)
 	SET_EXTLIB_PROPERTIES(zstdstatic)
 ENDIF(USE_INTERNAL_ZSTD)
 
+IF(USE_INTERNAL_LZ4)
+	# Use the internal copy of LZ4.
+	# On Windows and Mac OS X, this will build DLLs.
+	# On other systems, this will be statically-linked.
+	IF(WIN32 OR APPLE)
+		SET(SKIP_INSTALL_LIBRARIES ON)
+		SET(SKIP_INSTALL_ALL OFF)
+		SET(BUILD_SHARED_LIBS ON)
+		SET(BUILD_STATIC_LIBS OFF)
+	ELSE()
+		SET(SKIP_INSTALL_LIBRARIES ON)
+		SET(SKIP_INSTALL_ALL ON)
+		SET(BUILD_SHARED_LIBS OFF)
+		SET(BUILD_STATIC_LIBS ON)
+	ENDIF()
+	ADD_SUBDIRECTORY(lz4/contrib/cmake_unofficial)
+	# NOTE: Cannot remove targets from all builds
+	# if they're being installed.
+	#SET_EXTLIB_PROPERTIES(lz4_shared)
+	SET_EXTLIB_PROPERTIES(lz4_static)
+	# lz4 programs that we don't need.
+	SET_EXTLIB_PROPERTIES(lz4cli lz4c)
+ENDIF(USE_INTERNAL_LZ4)
+
 # MiniZip
 SET(SKIP_INSTALL_LIBRARIES ON)
 SET(SKIP_INSTALL_ALL ON)

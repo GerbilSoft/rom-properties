@@ -5,7 +5,7 @@ IF(ENABLE_LZ4)
 
 IF(NOT USE_INTERNAL_LZ4)
 	IF(LZ4_LIBRARY MATCHES "^lz4$" OR LZ4_LIBRARY MATCHES "^lz4")
-		# Internal zstd was previously in use.
+		# Internal LZ4 was previously in use.
 		UNSET(LZ4_FOUND)
 		UNSET(HAVE_LZ4)
 		UNSET(LZ4_LIBRARY CACHE)
@@ -20,9 +20,7 @@ IF(NOT USE_INTERNAL_LZ4)
 	ELSE()
 		# System LZ4 was not found.
 		MESSAGE(STATUS "Using the internal copy of LZ4 since a system version was not found.")
-		# FIXME: Uncomment this after LZ4 is added to extlib.
-		#SET(USE_INTERNAL_LZ4 ON CACHE BOOL "Use the internal copy of LZ4" FORCE)
-		SET(ENABLE_LZ4 OFF CACHE BOOL "Enable LZ4 decompression. (Required for some PSP disc formats.)" FORCE)
+		SET(USE_INTERNAL_LZ4 ON CACHE BOOL "Use the internal copy of LZ4" FORCE)
 	ENDIF()
 ELSE()
 	MESSAGE(STATUS "Using the internal copy of LZ4.")
