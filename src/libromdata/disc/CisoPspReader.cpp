@@ -75,9 +75,7 @@ class CisoPspReaderPrivate : public SparseDiscReaderPrivate {
 #ifdef HAVE_LZ4
 			ZISO	= 1,
 #endif /* HAVE_LZ4 */
-#ifdef HAVE_LZO
 			JISO	= 2,
-#endif /* HAVE_LZO */
 
 			DAX	= 3,
 
@@ -88,9 +86,7 @@ class CisoPspReaderPrivate : public SparseDiscReaderPrivate {
 		// Header.
 		union {
 			CisoPspHeader cisoPsp;
-#ifdef HAVE_LZO
 			JisoHeader jiso;
-#endif /* HAVE_LZO */
 			DaxHeader dax;
 		} header;
 
@@ -174,7 +170,6 @@ uint32_t CisoPspReaderPrivate::getBlockCompressedSize(uint32_t blockNum) const
 			}
 			break;
 
-#ifdef HAVE_LZO
 		case CisoPspReaderPrivate::CisoType::JISO:
 			// Index entry table has an extra entry for the final block.
 			// Hence, we don't need the same workaround as GCZ.
@@ -188,7 +183,6 @@ uint32_t CisoPspReaderPrivate::getBlockCompressedSize(uint32_t blockNum) const
 				size = static_cast<uint32_t>(idxEnd - idxStart);
 			}
 			break;
-#endif /* HAVE_LZO */
 
 		case CisoPspReaderPrivate::CisoType::DAX:
 			// DAX uses a separate size table.
@@ -280,8 +274,16 @@ CisoPspReader::CisoPspReader(IRpFile *file)
 #endif /* _MSC_VER && HAVE_LZ4 */
 			break;
 
-#ifdef HAVE_LZO
 		case CisoPspReaderPrivate::CisoType::JISO:
+#ifndef HAVE_LZO
+			if (d->header.jiso.method == JISO_METHOD_LZO) {
+				// LZO is not available.
+				UNREF_AND_NULL_NOCHK(m_file);
+				m_lastError = ENOTSUP;
+				return;
+			}
+#endif /* HAVE_LZO */
+
 #if SYS_BYTEORDER != SYS_LIL_ENDIAN
 			// Byteswap the header.
 			d->header.jiso.magic			= le32_to_cpu(d->header.jiso.magic);
@@ -290,11 +292,13 @@ CisoPspReader::CisoPspReader(IRpFile *file)
 			d->header.jiso.header_size		= le32_to_cpu(d->header.jiso.block_size);
 #endif /* SYS_BYTEORDER != SYS_LIL_ENDIAN */
 
+#ifdef _MSC_VER
+			// Determine which library should be checked
+			// by the Delay Load helper.
 			switch (d->header.jiso.method) {
 				default:
 					break;
 
-#ifdef _MSC_VER
 #  ifdef LZO_IS_DLL
 				case JISO_METHOD_LZO:
 					isLZO = true;
@@ -305,15 +309,14 @@ CisoPspReader::CisoPspReader(IRpFile *file)
 					isZlib = true;
 					break;
 #  endif /* ZLIB_IS_DLL */
-#endif /* _MSC_VER */
 			}
+#endif /* _MSC_VER */
 
 			d->block_size = d->header.jiso.block_size;
 			d->disc_size = d->header.jiso.uncompressed_size;
 			// TODO: index_shift field?
 			indexEntryTblPos = static_cast<off64_t>(sizeof(d->header.jiso));
 			break;
-#endif /* HAVE_LZO */
 
 		case CisoPspReaderPrivate::CisoType::DAX:
 #if defined(_MSC_VER) && defined(ZLIB_IS_DLL)
@@ -383,9 +386,7 @@ CisoPspReader::CisoPspReader(IRpFile *file)
 #ifdef HAVE_LZ4
 		case CisoPspReaderPrivate::CisoType::ZISO:
 #endif /* HAVE_LZ4 */
-#ifdef HAVE_LZO
 		case CisoPspReaderPrivate::CisoType::JISO:
-#endif /* HAVE_LZO */
 			num_blocks_alloc++;
 			break;
 
@@ -405,12 +406,14 @@ CisoPspReader::CisoPspReader(IRpFile *file)
 		return;
 	}
 
+#ifdef HAVE_LZO
 	if (d->cisoType == CisoPspReaderPrivate::CisoType::JISO &&
 	    d->header.jiso.method == JISO_METHOD_LZO)
 	{
 		// Initialize LZO.
 		lzo_init();
 	}
+#endif /* HAVE_LZO */
 
 	// TODO: NC areas for JISO.
 	if (d->cisoType == CisoPspReaderPrivate::CisoType::DAX) {
