@@ -166,7 +166,7 @@
     <glob pattern="*.ciso"/>
     <magic priority="50">
       <match value="0xc2339f3d" type="big32" offset="28"/>
-      <match value="CISO" type="string" offset="4">
+      <match value="CISO" type="string" offset="0">
         <match value="0xc2339f3d" type="big32" offset="32796"/>
       </match>
       <match value="WBFS" type="string" offset="0">
@@ -198,7 +198,7 @@
     <glob pattern="*.rvm"/>
     <magic priority="50">
       <match value="0x5d1c9ea3" type="big32" offset="24"/>
-      <match value="CISO" type="string" offset="4">
+      <match value="CISO" type="string" offset="0">
         <match value="0x5d1c9ea3" type="big32" offset="32792"/>
       </match>
       <match value="WBFS" type="string" offset="0">
@@ -363,6 +363,17 @@
     <magic priority="50">
       <match value="WUP-" type="string" offset="0"/>
       <match value="WUX0\x2E\xD0\x99\x10" type="string" offset="0"/>
+    </magic>
+  </mime-type>
+
+  <!-- WiiWIBN -->
+  <mime-type type="application/x-wii-wibn">
+    <comment>Wii save game banner file</comment>
+    <!-- FIXME: Better icon. -->
+    <sub-class-of type="application/octet-stream"/>
+    <generic-icon name="application-octet-stream"/>
+    <magic priority="50">
+      <match value="WIBN" type="string" offset="0"/>
     </magic>
   </mime-type>
 
@@ -549,14 +560,37 @@
     </magic>
   </mime-type>
 
-  <!-- WiiWIBN -->
-  <mime-type type="application/x-wii-wibn">
-    <comment>Wii save game banner file</comment>
-    <!-- FIXME: Better icon. -->
-    <sub-class-of type="application/octet-stream"/>
-    <generic-icon name="application-octet-stream"/>
+  <!-- PSP -->
+  <mime-type type="application/x-psp-ciso-image">
+    <comment>PlayStation Portable CISO disc image</comment>
+    <sub-class-of type="application/x-cd-image"/>
+    <generic-icon name="application-x-cd-image"/>
+    <glob pattern="*.cso"/>
     <magic priority="50">
-      <match value="WIBN" type="string" offset="0"/>
+      <match value="CISO" type="string" offset="0">
+        <!--<match value="0" type="little32" offset="8"/>-->
+        <match value="0x18" type="little32" offset="8"/>
+      </match>
+    </magic>
+  </mime-type>
+  <mime-type type="application/x-psp-ziso-image">
+    <comment>PlayStation Portable ZISO disc image</comment>
+    <sub-class-of type="application/x-cd-image"/>
+    <generic-icon name="application-x-cd-image"/>
+    <glob pattern="*.zso"/>
+    <magic priority="50">
+      <match value="ZISO" type="string" offset="0">
+        <match value="0x18" type="little32" offset="8"/>
+      </match>
+    </magic>
+  </mime-type>
+  <mime-type type="application/x-psp-dax-image">
+    <comment>PlayStation Portable DAX disc image</comment>
+    <sub-class-of type="application/x-cd-image"/>
+    <generic-icon name="application-x-cd-image"/>
+    <glob pattern="*.dax"/>
+    <magic priority="50">
+      <match value="0x41445800" type="big32" offset="0"/>
     </magic>
   </mime-type>
 
