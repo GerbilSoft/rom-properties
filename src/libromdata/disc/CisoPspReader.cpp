@@ -68,8 +68,9 @@ class CisoPspReaderPrivate : public SparseDiscReaderPrivate {
 		// - v2: If set, block is compressed using LZ4; otherwise, deflate.
 		ao::uvector<uint32_t> indexEntries;
 
-		// DAX: Size table.
+		// DAX: Size and NC area tables.
 		ao::uvector<uint16_t> daxSizeTable;
+		ao::uvector<uint8_t> daxNCTable;	// 0 = compressed; 1 = not compressed
 
 		// Block cache.
 		ao::uvector<uint8_t> blockCache;
@@ -280,7 +281,24 @@ CisoPspReader::CisoPspReader(IRpFile *file)
 				return;
 			}
 
-			// TODO: Handle it.
+			// Process the NC areas.
+			d->daxNCTable.resize(num_blocks);
+			const auto nc_areas_end = nc_areas.cend();
+			for (auto iter = nc_areas.cbegin(); iter != nc_areas_end; ++iter) {
+				uint32_t i = le32_to_cpu(iter->start);
+				const uint32_t end = i + le32_to_cpu(iter->count);
+				if (end > num_blocks) {
+					// Out of range...
+					m_lastError = EIO;
+					UNREF_AND_NULL_NOCHK(m_file);
+					return;
+				}
+
+				// TODO: Assert on overlapping NC areas?
+				for (; i < end; i++) {
+					d->daxNCTable[i] = true;
+				}
+			}
 		}
 	}
 
@@ -374,11 +392,10 @@ int CisoPspReader::isDiscSupported_static(const uint8_t *pHeader, size_t szHeade
 		}
 
 		// Must have at least one block and less than 4 GB of uncompressed data.
+		// NOTE: 4 GB is the implied maximum size due to use of uint32_t.
 		const uint32_t uncompressed_size = le32_to_cpu(daxHeader->uncompressed_size);
-		if (uncompressed_size < DAX_BLOCK_SIZE ||
-		    uncompressed_size > 4ULL*1024ULL*1024ULL*1024ULL)
-		{
-			// Less than one block, or more than 4 GB...
+		if (uncompressed_size < DAX_BLOCK_SIZE) {
+			// Less than one block...
 			return (int)CisoPspReaderPrivate::CisoType::Unknown;
 		}
 
@@ -472,12 +489,17 @@ int CisoPspReader::readBlock(uint32_t blockIdx, void *ptr, int pos, size_t size)
 
 	// Get the physical address first.
 	const uint32_t indexEntry = d->indexEntries[blockIdx];
-	const off64_t physBlockAddr = static_cast<off64_t>(indexEntry & ~CISO_PSP_V0_NOT_COMPRESSED);
 	const uint32_t z_block_size = d->getBlockCompressedSize(blockIdx);
 	if (z_block_size == 0) {
 		// Unable to get the block's compressed size...
 		m_lastError = EIO;
 		return 0;
+	}
+
+	// Mask the high bit for CISO format.
+	uint32_t physBlockAddr = indexEntry;
+	if (likely(d->cisoType == CisoPspReaderPrivate::CisoType::CISO)) {
+		physBlockAddr &= ~CISO_PSP_V0_NOT_COMPRESSED;
 	}
 
 	enum class CompressionMode {
@@ -527,11 +549,15 @@ int CisoPspReader::readBlock(uint32_t blockIdx, void *ptr, int pos, size_t size)
 			break;
 
 		case CisoPspReaderPrivate::CisoType::DAX:
-			// DAX uses zlib deflate.
-			windowBits = 15;
-
-			// TODO: NC area support.
-			z_mode = CompressionMode::Deflate;
+			if (d->header.dax.nc_areas > 0 && d->daxNCTable[blockIdx]) {
+				// Uncompressed block.
+				z_mode = CompressionMode::None;
+			} else {
+				// Compressed block.
+				// DAX uses zlib deflate.
+				windowBits = 15;
+				z_mode = CompressionMode::Deflate;
+			}
 			break;
 	}
 
