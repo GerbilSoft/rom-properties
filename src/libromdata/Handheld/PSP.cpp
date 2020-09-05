@@ -406,7 +406,7 @@ const char *const *PSP::supportedFileExtensions_static(void)
 		".ciso", ".cso",	// CISO
 
 #ifdef HAVE_LZ4
-		".ziso", "zso",		// ZISO
+		".ziso", ".zso",		// ZISO
 #endif /* HAVE_LZ4 */
 
 		//".jiso", ".jso",	// JISO (TODO)
