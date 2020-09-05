@@ -123,6 +123,22 @@ class ISOPrivate : public LibRpBase::RomDataPrivate
 		void addPVDTimestamps(const T *pvd);
 
 		/**
+		 * Add metadata properties common to HSFS and ISO-9660 (except timestamps)
+		 * @param metaData RomMetaData object.
+		 * @param pvd PVD
+		 */
+		template<typename T>
+		static void addPVDCommon_metaData(RomMetaData *metaData, const T *pvd);
+
+		/**
+		 * Add timestamp metadata properties from PVD
+		 * @param metaData RomMetaData object.
+		 * @param pvd PVD
+		 */
+		template<typename T>
+		static void addPVDTimestamps_metaData(RomMetaData *metaData, const T *pvd);
+
+		/**
 		 * Check the PVD and determine its type.
 		 * @return DiscType value. (DiscType::Unknown if not valid)
 		 */
@@ -334,6 +350,42 @@ void ISOPrivate::addPVDTimestamps(const T *pvd)
 		RomFields::RFT_DATETIME_HAS_TIME);
 }
 
+/**
+ * Add fields common to HSFS and ISO-9660 (except timestamps)
+ * @param metaData RomMetaData object.
+ * @param pvd PVD
+ */
+template<typename T>
+void ISOPrivate::addPVDCommon_metaData(RomMetaData *metaData, const T *pvd)
+{
+	// TODO: More properties?
+
+	// Title
+	metaData->addMetaData_string(Property::Title,
+		latin1_to_utf8(pvd->volID, sizeof(pvd->volID)),
+		RomMetaData::STRF_TRIM_END);
+
+	// Publisher
+	metaData->addMetaData_string(Property::Publisher,
+		latin1_to_utf8(pvd->publisher, sizeof(pvd->publisher)),
+		RomFields::STRF_TRIM_END);
+}
+
+/**
+ * Add metadata properties common to HSFS and ISO-9660 (except timestamps)
+ * @param metaData RomMetaData object.
+ * @param pvd PVD
+ */
+template<typename T>
+void ISOPrivate::addPVDTimestamps_metaData(RomMetaData *metaData, const T *pvd)
+{
+	// TODO: More properties?
+
+	// Volume creation time
+	metaData->addMetaData_timestamp(Property::CreationDate,
+		pvd_time_to_unix_time(&pvd->btime));
+}
+
 /** ISO **/
 
 /**
@@ -446,6 +498,18 @@ int ISO::checkPVD(const uint8_t *data)
 
 	// Not supported.
 	return static_cast<int>(ISOPrivate::DiscType::Unknown);
+}
+
+/**
+ * Add metadata properties from an ISO-9660 PVD.
+ * Convenience function for other classes.
+ * @param metaData RomMetaData object.
+ * @param pvd ISO-9660 PVD.
+ */
+void ISO::addMetaData_PVD(RomMetaData *metaData, const struct _ISO_Primary_Volume_Descriptor *pvd)
+{
+	ISOPrivate::addPVDCommon_metaData(metaData, pvd);
+	ISOPrivate::addPVDTimestamps_metaData(metaData, pvd);
 }
 
 /**
@@ -626,6 +690,47 @@ int ISO::loadFieldData(void)
 
 	// Finished reading the field data.
 	return static_cast<int>(d->fields->count());
+}
+
+/**
+ * Load metadata properties.
+ * Called by RomData::metaData() if the field data hasn't been loaded yet.
+ * @return Number of metadata properties read on success; negative POSIX error code on error.
+ */
+int ISO::loadMetaData(void)
+{
+	RP_D(ISO);
+	if (d->metaData != nullptr) {
+		// Metadata *has* been loaded...
+		return 0;
+	} else if (!d->isValid || (int)d->discType < 0) {
+		// Unknown disc image type.
+		return -EIO;
+	}
+
+	// Create the metadata object.
+	d->metaData = new RomMetaData();
+	d->metaData->reserve(3);	// Maximum of 3 metadata properties.
+
+	switch (d->discType) {
+		default:
+		case ISOPrivate::DiscType::Unknown:
+			assert(!"Unknown disc type.");
+			break;
+
+		case ISOPrivate::DiscType::ISO9660:
+			d->addPVDCommon_metaData(d->metaData, &d->pvd.iso);
+			d->addPVDTimestamps_metaData(d->metaData, &d->pvd.iso);
+			break;
+
+		case ISOPrivate::DiscType::HighSierra:
+			d->addPVDCommon_metaData(d->metaData, &d->pvd.hsfs);
+			d->addPVDTimestamps_metaData(d->metaData, &d->pvd.hsfs);
+			break;
+	}
+
+	// Finished reading the metadata.
+	return static_cast<int>(d->metaData->count());
 }
 
 }
