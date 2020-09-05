@@ -2,6 +2,10 @@
 
 ## v1.7 (released 2020/??/??)
 
+* New parsers:
+  * PSP: PlayStation Portable disc images. Supports ISO, CISOv1, CISOv2,
+    ZISO, and DAX. PARAM.SFO and firmware updates aren't parsed yet.
+
 * New parser features:
   * Dreamcast: Added metadata properties.
   * NintendoDS:
