@@ -132,7 +132,7 @@ if(BUILD_SHARED_LIBS)
   target_include_directories(lz4_shared PUBLIC "${LZ4_LIB_SOURCE_DIR}")
   target_compile_definitions(lz4_shared
 	PRIVATE -DLZ4_DLL_EXPORT=1
-	PUBLIC -DLZ4_DLL_IMPORT=1
+	INTERFACE -DLZ4_DLL_IMPORT=1
 	)
   DO_SPLIT_DEBUG(lz4_shared)
   SET_WINDOWS_SUBSYSTEM(lz4_shared WIN32)

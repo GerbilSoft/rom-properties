@@ -158,6 +158,11 @@ Files:
 Copyright: Copyright (C) Yann Collet 2011-present
 License: BSD-2-clause
 
+Files:
+ extlib/minilzo/*
+Copyright: Copyright (C) 1996-2017 Markus Franz Xaver Johannes Oberhumer
+License: GPL-2+
+
 License: BSD-2-clause
  All rights reserved.
  .

@@ -38,7 +38,7 @@
 /* Define to 1 if you have LZO. */
 #cmakedefine HAVE_LZO 1
 
-/* Define to 1 if we're using the internal copy of LZO. */
+/* Define to 1 if we're using the internal copy of LZO. (MiniLZO) */
 #cmakedefine USE_INTERNAL_LZO 1
 
 /* Define to 1 if we're using the internal copy of LZO as a DLL. */

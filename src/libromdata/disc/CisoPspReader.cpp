@@ -30,8 +30,13 @@
 #endif /* HAVE_LZ4 */
 
 // LZO (JISO)
+// NOTE: The bundled version is MiniLZO.
 #ifdef HAVE_LZO
-#  include <lzo/lzo1x.h>
+#  ifdef USE_INTERNAL_LZO
+#    include "minilzo.h"
+#  else
+#    include <lzo/lzo1x.h>
+#  endif
 #endif /* HAVE_LZO */
 
 // librpbase, librpfile
@@ -297,7 +302,7 @@ CisoPspReader::CisoPspReader(IRpFile *file)
 #  endif /* LZO_IS_DLL */
 #  ifdef ZLIB_IS_DLL
 				case JISO_METHOD_ZLIB:
-					isZLIB = true;
+					isZlib = true;
 					break;
 #  endif /* ZLIB_IS_DLL */
 #endif /* _MSC_VER */
@@ -400,7 +405,9 @@ CisoPspReader::CisoPspReader(IRpFile *file)
 		return;
 	}
 
-	if (d->cisoType == CisoPspReaderPrivate::CisoType::JISO) {
+	if (d->cisoType == CisoPspReaderPrivate::CisoType::JISO &&
+	    d->header.jiso.method == JISO_METHOD_LZO)
+	{
 		// Initialize LZO.
 		lzo_init();
 	}
