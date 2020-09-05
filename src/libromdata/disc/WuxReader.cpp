@@ -189,7 +189,7 @@ int WuxReader::isDiscSupported(const uint8_t *pHeader, size_t szHeader) const
 off64_t WuxReader::getPhysBlockAddr(uint32_t blockIdx) const
 {
 	// Make sure the block index is in range.
-	RP_D(WuxReader);
+	RP_D(const WuxReader);
 	assert(blockIdx < d->idxTbl.size());
 	if (blockIdx >= d->idxTbl.size()) {
 		// Out of range.

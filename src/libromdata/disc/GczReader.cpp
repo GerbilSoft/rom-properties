@@ -332,7 +332,7 @@ off64_t GczReader::getPhysBlockAddr(uint32_t blockIdx) const
 {
 	// Make sure the block index is in range.
 	// TODO: Check against maxLogicalBlockUsed?
-	RP_D(GczReader);
+	RP_D(const GczReader);
 	assert(blockIdx < d->blockPointers.size());
 	if (blockIdx >= d->blockPointers.size()) {
 		// Out of range.
