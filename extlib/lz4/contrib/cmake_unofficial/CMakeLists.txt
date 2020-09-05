@@ -113,7 +113,11 @@ ENDIF(MSVC)
 # liblz4
 set(LZ4_LIBRARIES_BUILT)
 if(BUILD_SHARED_LIBS)
-  add_library(lz4_shared SHARED ${LZ4_SOURCES})
+  IF(WIN32)
+    # rom-properties: Add the Win32 resource file.
+    SET(LZ4_RC_FILE "${LZ4_TOP_SOURCE_DIR}/visual/VS2017/liblz4-dll/liblz4-dll.rc")
+  ENDIF(WIN32)
+  add_library(lz4_shared SHARED ${LZ4_SOURCES} ${LZ4_RC_FILE})
   set_target_properties(lz4_shared PROPERTIES
     OUTPUT_NAME lz4
     SOVERSION "${LZ4_VERSION_MAJOR}"
