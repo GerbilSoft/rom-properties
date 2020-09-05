@@ -108,6 +108,9 @@ IF(MSVC)
 	# FIXME: MSVC 2019 is complaining of C2373 type redefinitions
 	# if we don't remove "/Gz", even though we have ZSTDAPI_CALL.
 	STRING(REPLACE "/Gz" "" CMAKE_C_FLAGS "${CMAKE_C_FLAGS}")
+
+	# Append 'd' to the DLL filename for debug builds.
+	SET(CMAKE_DEBUG_POSTFIX "d")
 ENDIF(MSVC)
 
 # liblz4

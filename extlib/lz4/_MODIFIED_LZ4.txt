@@ -16,5 +16,7 @@ The following changes have been made to the original:
 
 - Added the Win32 resource file to the DLL build.
 
+- MSVC builds: Debug DLLs now have a 'd' postfix.
+
 To obtain the original lz4-1.9.2, visit:
 https://github.com/lz4/lz4
