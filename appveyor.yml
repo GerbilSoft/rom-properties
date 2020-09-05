@@ -48,12 +48,18 @@ environment:
       configuration: Debug
       compiler: mingw-w64
 
-# Run CMake.
+# Run CMake with optional features turned off initially.
 before_build:
   - cd %APPVEYOR_BUILD_FOLDER%
-  - appveyor.cmd
+  - appveyor.cmd OFF
 
+# Build once with optional features turned off,
+# then build again with optional features turned on.
 build_script:
+  - cd %APPVEYOR_BUILD_FOLDER%\build
+  - cmake --build . --config %configuration%
+  - cd ..
+  - appveyor.cmd ON
   - cd %APPVEYOR_BUILD_FOLDER%\build
   - cmake --build . --config %configuration%
 
