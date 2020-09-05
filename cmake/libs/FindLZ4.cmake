@@ -5,7 +5,7 @@
 # - LZ4_LIBRARIES: LZ4 libraries.
 # - LZ4_DEFINITIONS: Compiler switches required for using LZ4.
 #
-# In addition, a target Gtk3::gtk3 will be created with all of
+# In addition, a target LZ4::lz4 will be created with all of
 # these definitions.
 #
 # References:
