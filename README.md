@@ -119,7 +119,7 @@ button.
 |:-----------------------------:|:--------------:|:--------:|:---------------:|:--------------:|
 | Atari Lynx                    |       Yes      |    No    |       N/A       |       No       |
 | Neo Geo Pocket (Color)        |       Yes      |    Yes   |       N/A       |       No       |
-| Nintendo Game Boy (Color)     |       Yes      |    Yes   |       N/Ae      |      Title     |
+| Nintendo Game Boy (Color)     |       Yes      |    Yes   |       N/A       |      Title     |
 | Nintendo Virtual Boy          |       Yes      |    No    |       N/A       |       No       |
 | Nintendo Game Boy Advance     |       Yes      |    Yes   |       N/A       |      Title     |
 | Nintendo DS(i)                |       Yes      |    Yes   |       Icon      |  Covers, Box   |
