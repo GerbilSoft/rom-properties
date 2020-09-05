@@ -60,6 +60,10 @@ class GczReaderPrivate : public SparseDiscReaderPrivate {
 		ao::uvector<uint8_t> blockCache;
 		uint32_t blockCacheIdx;
 
+		// Decompression buffer.
+		// (Same size as blockCache.)
+		ao::uvector<uint8_t> z_buffer;
+
 		// Starting offset of the data area.
 		// This offset must be added to the blockPointers value.
 		uint32_t dataOffset;
@@ -139,7 +143,7 @@ GczReader::GczReader(IRpFile *file)
 		return;
 	}
 
-	// Verify the GCZ header.
+	// Check the GCZ magic.
 	if (d->gczHeader.magic != cpu_to_le32(GCZ_MAGIC)) {
 		// Invalid magic.
 		UNREF_AND_NULL_NOCHK(m_file);
@@ -165,6 +169,15 @@ GczReader::GczReader(IRpFile *file)
 	    d->block_size < GCZ_BLOCK_SIZE_MIN || d->block_size > GCZ_BLOCK_SIZE_MAX)
 	{
 		// Block size is out of range.
+		UNREF_AND_NULL_NOCHK(m_file);
+		m_lastError = EIO;
+		return;
+	}
+
+	// Uncompressed data size must be a multiple of the block size.
+	if (d->gczHeader.data_size % d->block_size != 0) {
+		// Not a multiple.
+		// COMMIT NOTE: Do this check for other sparse readers like CISO GCN?
 		UNREF_AND_NULL_NOCHK(m_file);
 		m_lastError = EIO;
 		return;
@@ -234,9 +247,10 @@ GczReader::GczReader(IRpFile *file)
 	}
 	d->dataOffset = static_cast<uint32_t>(pos);
 
-	// Initialize the block cache.
+	// Initialize the block cache and decompression buffer.
 	// NOTE: Extra 64 bytes is for zlib, in case it needs it.
 	d->blockCache.resize(d->block_size + 64);
+	d->z_buffer.resize(d->block_size + 64);
 	d->blockCacheIdx = ~0U;
 
 	// Reset the disc position.
@@ -284,6 +298,13 @@ int GczReader::isDiscSupported_static(const uint8_t *pHeader, size_t szHeader)
 		return -1;
 	}
 
+	// Uncompressed data size must be a multiple of the block size.
+	const uint64_t data_size = le64_to_cpu(gczHeader->data_size);
+	if (data_size % block_size != 0) {
+		// Not a multiple.
+		return -1;
+	}
+
 	// This is a valid GCZ image.
 	return 0;
 }
@@ -320,7 +341,7 @@ off64_t GczReader::getPhysBlockAddr(uint32_t blockIdx) const
 
 	// Get the physical block address.
 	// NOTE: The caller has to decompress the block.
-	return d->blockPointers[blockIdx] + d->dataOffset;
+	return (d->blockPointers[blockIdx] & ~GCZ_FLAG_BLOCK_NOT_COMPRESSED) + d->dataOffset;
 }
 
 /**
@@ -362,7 +383,8 @@ int GczReader::readBlock(uint32_t blockIdx, void *ptr, int pos, size_t size)
 	}
 
 	// Get the physical address first.
-	off64_t physBlockAddr = d->blockPointers[blockIdx] + d->dataOffset;
+	const uint64_t blockPointer = d->blockPointers[blockIdx];
+	const off64_t physBlockAddr = static_cast<off64_t>(blockPointer & ~GCZ_FLAG_BLOCK_NOT_COMPRESSED) + d->dataOffset;
 	const uint32_t z_block_size = d->getBlockCompressedSize(blockIdx);
 	if (z_block_size == 0) {
 		// Unable to get the block's compressed size...
@@ -370,7 +392,7 @@ int GczReader::readBlock(uint32_t blockIdx, void *ptr, int pos, size_t size)
 		return 0;
 	}
 
-	bool compressed = (!(physBlockAddr & GCZ_FLAG_BLOCK_NOT_COMPRESSED));
+	bool compressed = (!(blockPointer & GCZ_FLAG_BLOCK_NOT_COMPRESSED));
 	if (!compressed) {
 		// (Un)compressed block size must match the actual block size.
 		if (z_block_size != d->block_size) {
@@ -382,7 +404,6 @@ int GczReader::readBlock(uint32_t blockIdx, void *ptr, int pos, size_t size)
 
 	if (!compressed) {
 		// Reading uncompressed data directly into the cache.
-		physBlockAddr &= ~GCZ_FLAG_BLOCK_NOT_COMPRESSED;
 		size_t sz_read = m_file->seekAndRead(physBlockAddr, d->blockCache.data(), z_block_size);
 		if (sz_read != z_block_size) {
 			// Seek and/or read error.
@@ -403,8 +424,7 @@ int GczReader::readBlock(uint32_t blockIdx, void *ptr, int pos, size_t size)
 			return 0;
 		}
 
-		unique_ptr<uint8_t[]> zlib_buffer(new uint8_t[z_block_size]);
-		size_t sz_read = m_file->seekAndRead(physBlockAddr, zlib_buffer.get(), z_block_size);
+		size_t sz_read = m_file->seekAndRead(physBlockAddr, d->z_buffer.data(), z_block_size);
 		if (sz_read != z_block_size) {
 			// Seek and/or read error.
 			m_lastError = m_file->lastError();
@@ -416,7 +436,7 @@ int GczReader::readBlock(uint32_t blockIdx, void *ptr, int pos, size_t size)
 
 		// Verify the hash of the *compressed* data.
 		uint32_t hash_calc = adler32(0L, Z_NULL, 0);
-		hash_calc = adler32(hash_calc, zlib_buffer.get(), z_block_size);
+		hash_calc = adler32(hash_calc, d->z_buffer.data(), z_block_size);
 		if (hash_calc != le32_to_cpu(d->hashes[blockIdx])) {
 			// Hash error.
 			// TODO: Print warnings and/or more comprehensive error codes.
@@ -426,7 +446,7 @@ int GczReader::readBlock(uint32_t blockIdx, void *ptr, int pos, size_t size)
 
 		// Decompress the data.
 		z_stream z = { };
-		z.next_in = zlib_buffer.get();
+		z.next_in = d->z_buffer.data();
 		z.avail_in = z_block_size;
 		z.next_out = d->blockCache.data();
 		z.avail_out = d->block_size;
