@@ -573,6 +573,27 @@
       </match>
     </magic>
   </mime-type>
+  <mime-type type="application/x-psp-dax-image">
+    <comment>PlayStation Portable DAX disc image</comment>
+    <sub-class-of type="application/x-cd-image"/>
+    <generic-icon name="application-x-cd-image"/>
+    <glob pattern="*.dax"/>
+    <magic priority="50">
+      <match value="0x41445800" type="big32" offset="0"/>
+    </magic>
+  </mime-type>
+  <mime-type type="application/x-psp-jiso-image">
+    <comment>PlayStation Portable JISO disc image</comment>
+    <sub-class-of type="application/x-cd-image"/>
+    <generic-icon name="application-x-cd-image"/>
+    <glob pattern="*.jso"/>
+    <magic priority="50">
+      <match value="JISO" type="string" offset="0">
+        <!-- TODO: Verify this. -->
+        <match value="0x30" type="little32" offset="32"/>
+      </match>
+    </magic>
+  </mime-type>
   <mime-type type="application/x-psp-ziso-image">
     <comment>PlayStation Portable ZISO disc image</comment>
     <sub-class-of type="application/x-cd-image"/>
@@ -582,15 +603,6 @@
       <match value="ZISO" type="string" offset="0">
         <match value="0x18" type="little32" offset="8"/>
       </match>
-    </magic>
-  </mime-type>
-  <mime-type type="application/x-psp-dax-image">
-    <comment>PlayStation Portable DAX disc image</comment>
-    <sub-class-of type="application/x-cd-image"/>
-    <generic-icon name="application-x-cd-image"/>
-    <glob pattern="*.dax"/>
-    <magic priority="50">
-      <match value="0x41445800" type="big32" offset="0"/>
     </magic>
   </mime-type>
 

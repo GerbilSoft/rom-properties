@@ -125,6 +125,7 @@ INCLUDE(CheckJPEG)
 INCLUDE(CheckTinyXML2)
 INCLUDE(CheckZSTD)
 INCLUDE(CheckLZ4)
+INCLUDE(CheckLZO)
 
 # Reference: https://cmake.org/Wiki/RecipeAddUninstallTarget
 ########### Add uninstall target ###############
@@ -220,6 +221,16 @@ ELSE(ENABLE_LZ4)
 	SET(ENABLE_LZ4_MSG "Disabled")
 ENDIF(ENABLE_LZ4)
 
+IF(ENABLE_LZO)
+	IF(USE_INTERNAL_LZO)
+		SET(ENABLE_LZO_MSG "Enabled (bundled)")
+	ELSE(USE_INTERNAL_LZO)
+		SET(ENABLE_LZO_MSG "Enabled (system)")
+	ENDIF(USE_INTERNAL_LZO)
+ELSE(ENABLE_LZO)
+	SET(ENABLE_LZO_MSG "Disabled")
+ENDIF(ENABLE_LZO)
+
 
 UNSET(EXTLIB_BUILD)
 IF(USE_INTERNAL_ZLIB)
@@ -237,6 +248,9 @@ ENDIF(USE_INTERNAL_ZSTD)
 IF(USE_INTERNAL_LZ4)
 	SET(EXTLIB_BUILD "${EXTLIB_BUILD}  - lz4\n")
 ENDIF(USE_INTERNAL_LZ4)
+IF(USE_INTERNAL_LZO)
+	SET(EXTLIB_BUILD "${EXTLIB_BUILD}  - lzo\n")
+ENDIF(USE_INTERNAL_LZO)
 SET(EXTLIB_BUILD "${EXTLIB_BUILD}  - minizip\n")
 SET(EXTLIB_BUILD "${EXTLIB_BUILD}  - inih\n")
 IF(USE_INTERNAL_XML)
@@ -258,6 +272,7 @@ MESSAGE("
 - PVRTC decoder: ${ENABLE_PVRTC_MSG}
 - ZSTD decompression: ${ENABLE_ZSTD_MSG}
 - LZ4 decompression: ${ENABLE_LZ4_MSG}
+- LZO decompression: ${ENABLE_LZO_MSG}
 
 - Building these third-party libraries from extlib:
 ${EXTLIB_BUILD}")

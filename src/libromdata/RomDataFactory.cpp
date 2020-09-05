@@ -265,6 +265,9 @@ const RomDataFactoryPrivate::RomDataFns RomDataFactoryPrivate::romDataFns_magic[
 #ifdef HAVE_LZ4
 	GetRomDataFns_addr(PSP, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'ZISO'),
 #endif /* HAVE_LZ4 */
+#ifdef HAVE_LZO
+	GetRomDataFns_addr(PSP, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'JISO'),
+#endif /* HAVE_LZO */
 	GetRomDataFns_addr(PSP, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 0x44415800),	// 'DAX\0'
 
 	// Audio

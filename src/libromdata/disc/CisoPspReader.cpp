@@ -29,6 +29,11 @@
 #  include <lz4.h>
 #endif /* HAVE_LZ4 */
 
+// LZO (JISO)
+#ifdef HAVE_LZO
+#  include <lzo/lzo1x.h>
+#endif /* HAVE_LZO */
+
 // librpbase, librpfile
 using namespace LibRpBase;
 using LibRpFile::IRpFile;
@@ -44,6 +49,9 @@ DELAYLOAD_TEST_FUNCTION_IMPL0(zlibVersion);
 #  ifdef HAVE_LZ4
 DELAYLOAD_TEST_FUNCTION_IMPL0(LZ4_versionNumber);
 #  endif /* HAVE_LZ4 */
+#  ifdef HAVE_LZO
+DELAYLOAD_TEST_FUNCTION_IMPL0(lzo_version);
+#  endif /* HAVE_LZO */
 #endif /* _MSC_VER */
 
 class CisoPspReaderPrivate : public SparseDiscReaderPrivate {
@@ -58,11 +66,15 @@ class CisoPspReaderPrivate : public SparseDiscReaderPrivate {
 		enum class CisoType {
 			Unknown	= -1,
 
-			CISO	= 0,	// CISO
+			CISO	= 0,
 #ifdef HAVE_LZ4
-			ZISO	= 1,	// ZISO
+			ZISO	= 1,
 #endif /* HAVE_LZ4 */
-			DAX	= 2,	// DAX
+#ifdef HAVE_LZO
+			JISO	= 2,
+#endif /* HAVE_LZO */
+
+			DAX	= 3,
 
 			Max
 		};
@@ -71,6 +83,9 @@ class CisoPspReaderPrivate : public SparseDiscReaderPrivate {
 		// Header.
 		union {
 			CisoPspHeader cisoPsp;
+#ifdef HAVE_LZO
+			JisoHeader jiso;
+#endif /* HAVE_LZO */
 			DaxHeader dax;
 		} header;
 
@@ -154,6 +169,22 @@ uint32_t CisoPspReaderPrivate::getBlockCompressedSize(uint32_t blockNum) const
 			}
 			break;
 
+#ifdef HAVE_LZO
+		case CisoPspReaderPrivate::CisoType::JISO:
+			// Index entry table has an extra entry for the final block.
+			// Hence, we don't need the same workaround as GCZ.
+			// NOTE: JISO doesn't use the high bit for NC.
+			assert(blockNum != indexEntries.size()-1);
+			if (blockNum < indexEntries.size()-1) {
+				off64_t idxStart = le32_to_cpu(indexEntries[blockNum]);
+				off64_t idxEnd = le32_to_cpu(indexEntries[blockNum + 1]);
+				idxStart <<= index_shift;
+				idxEnd <<= index_shift;
+				size = static_cast<uint32_t>(idxEnd - idxStart);
+			}
+			break;
+#endif /* HAVE_LZO */
+
 		case CisoPspReaderPrivate::CisoType::DAX:
 			// DAX uses a separate size table.
 			size = static_cast<uint32_t>(daxSizeTable[blockNum]);
@@ -201,6 +232,9 @@ CisoPspReader::CisoPspReader(IRpFile *file)
 #  if defined(HAVE_LZ4) && defined(LZ4_IS_DLL)
 	bool isLZ4 = false;
 #  endif /* HAVE_LZ4 && LZ4_IS_DLL */
+#  if defined(HAVE_LZO) && defined(LZO_IS_DLL)
+	bool isLZO = false;
+#  endif /* HAVE_LZO && LZO_IS_DLL */
 #endif /* MSC_VER */
 	switch (d->cisoType) {
 		default:
@@ -240,6 +274,26 @@ CisoPspReader::CisoPspReader(IRpFile *file)
 			}
 #endif /* _MSC_VER && HAVE_LZ4 */
 			break;
+
+#ifdef HAVE_LZO
+		case CisoPspReaderPrivate::CisoType::JISO:
+#if defined(_MSC_VER) && defined(LZO_IS_DLL)
+			isLZO = true;
+#endif /* _MSC_VER && LZO_IS_DLL */
+#if SYS_BYTEORDER != SYS_LIL_ENDIAN
+			// Byteswap the header.
+			d->header.jiso.magic			= le32_to_cpu(d->header.jiso.magic);
+			d->header.jiso.block_size		= le16_to_cpu(d->header.jiso.block_size);
+			d->header.jiso.uncompressed_size	= le32_to_cpu(d->header.jiso.uncompressed_size);
+			d->header.jiso.header_size		= le32_to_cpu(d->header.jiso.block_size);
+#endif /* SYS_BYTEORDER != SYS_LIL_ENDIAN */
+
+			d->block_size = d->header.jiso.block_size;
+			d->disc_size = d->header.jiso.uncompressed_size;
+			// TODO: index_shift field?
+			indexEntryTblPos = static_cast<off64_t>(sizeof(d->header.jiso));
+			break;
+#endif /* HAVE_LZO */
 
 		case CisoPspReaderPrivate::CisoType::DAX:
 #if defined(_MSC_VER) && defined(ZLIB_IS_DLL)
@@ -281,6 +335,15 @@ CisoPspReader::CisoPspReader(IRpFile *file)
 		}
 	}
 #  endif /* HAVE_LZ4 && LZ4_IS_DLL */
+#  if defined(HAVE_LZO) && defined(LZO_IS_DLL)
+	if (isLZO) {
+		if (DelayLoad_test_lzo_version() != 0) {
+			// Delay load for LZO failed.
+			UNREF_AND_NULL_NOCHK(m_file);
+			return;
+		}
+	}
+#  endif /* HAVE_LZ4 && LZ4_IS_DLL */
 #endif /* _MSC_VER */
 
 	// Calculate the number of blocks.
@@ -295,13 +358,19 @@ CisoPspReader::CisoPspReader(IRpFile *file)
 	// Read the index entries.
 	// NOTE: These are byteswapped on demand, not ahead of time.
 	uint32_t num_blocks_alloc = num_blocks;
-	if (d->cisoType == CisoPspReaderPrivate::CisoType::CISO
+	switch (d->cisoType) {
+		case CisoPspReaderPrivate::CisoType::CISO:
 #ifdef HAVE_LZ4
-	    || d->cisoType == CisoPspReaderPrivate::CisoType::ZISO
+		case CisoPspReaderPrivate::CisoType::ZISO:
 #endif /* HAVE_LZ4 */
-	    )
-	{
-		num_blocks_alloc++;
+#ifdef HAVE_LZO
+		case CisoPspReaderPrivate::CisoType::JISO:
+#endif /* HAVE_LZO */
+			num_blocks_alloc++;
+			break;
+
+		default:
+			break;
 	}
 	d->indexEntries.resize(num_blocks_alloc);
 	size_t expected_size = num_blocks_alloc * sizeof(uint32_t);
@@ -316,6 +385,12 @@ CisoPspReader::CisoPspReader(IRpFile *file)
 		return;
 	}
 
+	if (d->cisoType == CisoPspReaderPrivate::CisoType::JISO) {
+		// Initialize LZO.
+		lzo_init();
+	}
+
+	// TODO: NC areas for JISO.
 	if (d->cisoType == CisoPspReaderPrivate::CisoType::DAX) {
 		// Read the DAX size table.
 		d->daxSizeTable.resize(num_blocks);
@@ -420,7 +495,7 @@ int CisoPspReader::isDiscSupported_static(const uint8_t *pHeader, size_t szHeade
 #endif /* HAVE_LZ4 */
 	     ) && szHeader >= sizeof(CisoPspHeader))
 	{
-		// CISO magic.
+		// CISO/ZISO magic.
 		const CisoPspHeader *const cisoPspHeader = reinterpret_cast<const CisoPspHeader*>(pHeader);
 
 		// Header size:
@@ -482,6 +557,39 @@ int CisoPspReader::isDiscSupported_static(const uint8_t *pHeader, size_t szHeade
 		}
 #endif /* HAVE_LZ4 */
 		return (int)CisoPspReaderPrivate::CisoType::CISO;
+	} else if (*pu32 == be32_to_cpu(JISO_MAGIC) && szHeader >= sizeof(JisoHeader)) {
+		// JISO magic.
+		const JisoHeader *const jisoHeader = reinterpret_cast<const JisoHeader*>(pHeader);
+
+		// TODO: Version number field?
+
+		// Check if the block size is a supported power of two.
+		// - Minimum: JISO_BLOCK_SIZE_MIN ( 2 KB, 1 << 11)
+		// - Maximum: JISO_BLOCK_SIZE_MAX (64 KB, 1 << 16)
+		const uint32_t block_size = le32_to_cpu(jisoHeader->block_size);
+		if (!isPow2(block_size) ||
+		    block_size < JISO_BLOCK_SIZE_MIN || block_size > JISO_BLOCK_SIZE_MAX)
+		{
+			// Block size is out of range.
+			return (int)CisoPspReaderPrivate::CisoType::Unknown;
+		}
+
+		// Must have at least one block and less than 4 GB of uncompressed data.
+		// NOTE: 4 GB is the implied maximum size due to use of uint32_t.
+		const uint32_t uncompressed_size = le32_to_cpu(jisoHeader->uncompressed_size);
+		if (uncompressed_size < DAX_BLOCK_SIZE) {
+			// Less than one block...
+			return (int)CisoPspReaderPrivate::CisoType::Unknown;
+		}
+
+		// Uncompressed data size must be a multiple of the block size.
+		if (uncompressed_size % block_size != 0) {
+			// Not a multiple.
+			return (int)CisoPspReaderPrivate::CisoType::Unknown;
+		}
+
+		// This is a valid JISO image.
+		return (int)CisoPspReaderPrivate::CisoType::JISO;
 	} else if (*pu32 == be32_to_cpu(DAX_MAGIC) && szHeader >= sizeof(DaxHeader)) {
 		// DAX magic.
 		const DaxHeader *const daxHeader = reinterpret_cast<const DaxHeader*>(pHeader);
@@ -562,6 +670,14 @@ off64_t CisoPspReader::getPhysBlockAddr(uint32_t blockIdx) const
 			addr <<= d->index_shift;
 			break;
 
+#ifdef HAVE_LZO
+		case CisoPspReaderPrivate::CisoType::JISO:
+			// TODO: Is index_shift actually supported by JISO?
+			addr = static_cast<off64_t>(d->indexEntries[blockIdx]);
+			addr <<= d->index_shift;
+			break;
+#endif /* HAVE_LZO */
+
 		case CisoPspReaderPrivate::CisoType::DAX:
 			addr = static_cast<off64_t>(d->indexEntries[blockIdx]);
 			break;
@@ -621,6 +737,7 @@ int CisoPspReader::readBlock(uint32_t blockIdx, void *ptr, int pos, size_t size)
 		None = 0,
 		Deflate = 1,
 		LZ4 = 2,
+		LZO = 3,
 	};
 	CompressionMode z_mode;
 	int windowBits = -15;	// raw deflate (CISO)
@@ -683,6 +800,23 @@ int CisoPspReader::readBlock(uint32_t blockIdx, void *ptr, int pos, size_t size)
 				: CompressionMode::LZ4;
 			break;
 #endif /* HAVE_LZ4 */
+
+#ifdef HAVE_LZO
+		case CisoPspReaderPrivate::CisoType::JISO:
+			// JISO uses LZO.
+			// TODO: Verify the rest of this.
+
+			// JISO does *not* indicate compression using the high bit.
+			// Instead, the compressed block size will match the uncompressed
+			// block size, similar to CISOv2.
+			physBlockAddr = static_cast<off64_t>(indexEntry);
+			physBlockAddr <<= d->index_shift;
+
+			z_mode = (z_block_size == d->block_size)
+				? CompressionMode::None
+				: CompressionMode::LZO;
+			break;
+#endif /* HAVE_LZO */
 
 		case CisoPspReaderPrivate::CisoType::DAX:
 			physBlockAddr = static_cast<off64_t>(indexEntry);
@@ -814,6 +948,55 @@ int CisoPspReader::readBlock(uint32_t blockIdx, void *ptr, int pos, size_t size)
 			m_lastError = EIO;
 			return 0;
 #endif /* HAVE_LZ4 */
+		}
+
+		case CompressionMode::LZO: {
+#ifdef HAVE_LZO
+			// Read compressed data into a temporary buffer,
+			// then decompress it.
+			uint32_t z_max_size = d->block_size;
+			if (unlikely(d->isDaxWithoutNCTable)) {
+				// DAX without NC table can end up compressing to larger
+				// than the uncompressed size.
+				z_max_size *= 2;
+			}
+			if (z_block_size > z_max_size) {
+				// Compressed data is larger than the uncompressed block size.
+				// This is only allowed for DAX without NC table.
+				m_lastError = EIO;
+				return 0;
+			}
+
+			size_t sz_read = m_file->seekAndRead(physBlockAddr, d->z_buffer.data(), z_block_size);
+			if (sz_read != z_block_size) {
+				// Seek and/or read error.
+				m_lastError = m_file->lastError();
+				if (m_lastError == 0) {
+					m_lastError = EIO;
+				}
+				return 0;
+			}
+
+			// Decompress the data.
+			// TODO: LZO in-place decompression?
+			lzo_uint dst_len = d->block_size;
+			int ret = lzo1x_decompress_safe(
+				d->z_buffer.data(), z_block_size,
+				d->blockCache.data(), &dst_len,
+				nullptr);
+			if (ret != LZO_E_OK || dst_len != d->block_size) {
+				// Decompression error.
+				// TODO: Print warnings and/or more comprehensive error codes.
+				d->blockCacheIdx = ~0U;
+				m_lastError = EIO;
+				return 0;
+			}
+			break;
+#else /* !HAVE_LZO */
+			assert(!"LZO is not enabled in this build.");
+			m_lastError = EIO;
+			return 0;
+#endif /* HAVE_LZO */
 		}
 	}
 

@@ -68,6 +68,7 @@ application/x-nintendo-ds-rom		# NintendoDS
 application/x-nintendo-dsi-rom		# NintendoDS
 application/x-psp-ciso-image		# PSP
 application/x-psp-dax-image		# PSP
+application/x-psp-jiso-image		# PSP
 application/x-psp-ziso-image		# PSP
 
 # Other

@@ -30,9 +30,23 @@
 /* Define to 1 if we're using the internal copy of LZ4 as a DLL. */
 #cmakedefine USE_INTERNAL_LZ4_DLL 1
 
-/* Define to 1 if zlib is a DLL. */
+/* Define to 1 if LZ4 is a DLL. */
 #if !defined(USE_INTERNAL_LZ4) || defined(USE_INTERNAL_LZ4_DLL)
 #  define LZ4_IS_DLL 1
+#endif
+
+/* Define to 1 if you have LZO. */
+#cmakedefine HAVE_LZO 1
+
+/* Define to 1 if we're using the internal copy of LZO. */
+#cmakedefine USE_INTERNAL_LZO 1
+
+/* Define to 1 if we're using the internal copy of LZO as a DLL. */
+#cmakedefine USE_INTERNAL_LZO_DLL 1
+
+/* Define to 1 if LZO is a DLL. */
+#if !defined(USE_INTERNAL_LZO) || defined(USE_INTERNAL_LZO_DLL)
+#  define LZO_IS_DLL 1
 #endif
 
 #endif /* __ROMPROPERTIES_LIBROMDATA_CONFIG_H__ */

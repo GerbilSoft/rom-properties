@@ -78,6 +78,39 @@ ASSERT_STRUCT(DaxNCArea, 2*sizeof(uint32_t));
 // DAX has a fixed block size.
 #define DAX_BLOCK_SIZE 0x2000
 
+/**
+ * PlayStation Portable JISO header.
+ * NOTE: Based on reverse-engineered samples,
+ * so this may be incomplete.
+ *
+ * - An extra index entry is included to determine the size of the
+ *   last compressed block, similar to CISO.
+ * - Index entries do NOT use the high bit to indicate uncompressed.
+ * - TODO: There might be an NC area.
+ * - If a block is uncompressed, the difference between index entries
+ *   equals the block size. (Same as CISOv2.)
+ *
+ * All fields are in little-endian.
+ */
+#define JISO_MAGIC 'JISO'	// JISO
+typedef struct _JisoHeader {
+	uint32_t magic;			// [0x000] 'JISO'
+	uint8_t unk3;			// [0x004] 0x03?
+	uint8_t unk1;			// [0x005] 0x01?
+	uint16_t block_size;		// [0x006] Block size, usually 2048.
+	uint32_t unk_nc_area;		// [0x008] Unknown (NC areas?)
+	uint32_t uncompressed_size;	// [0x00C] Uncompressed data size.
+	uint8_t unknown_data[16];	// [0x010]
+	uint32_t header_size;		// [0x020] Header size? (0x30)
+	uint8_t unknown[12];		// [0x024]
+} JisoHeader;
+ASSERT_STRUCT(JisoHeader, 0x30);
+
+// 2 KB minimum block size (DVD sector)
+// 64 KB maximum block size
+#define JISO_BLOCK_SIZE_MIN (2048)
+#define JISO_BLOCK_SIZE_MAX (64*1024)
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
