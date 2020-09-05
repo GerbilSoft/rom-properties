@@ -95,12 +95,15 @@ ASSERT_STRUCT(DaxNCArea, 2*sizeof(uint32_t));
 #define JISO_MAGIC 'JISO'	// JISO
 typedef struct _JisoHeader {
 	uint32_t magic;			// [0x000] 'JISO'
-	uint8_t unk3;			// [0x004] 0x03?
-	uint8_t unk1;			// [0x005] 0x01?
+	uint8_t unk_x001;		// [0x004] 0x03?
+	uint8_t unk_x002;		// [0x005] 0x01?
 	uint16_t block_size;		// [0x006] Block size, usually 2048.
-	uint32_t unk_nc_area;		// [0x008] Unknown (NC areas?)
+	uint8_t unk_x008;		// [0x008]
+	uint8_t unk_x009;		// [0x009]
+	uint8_t method;			// [0x00A] Method. (See JisoAlgorithm_e.)
+	uint8_t unk_x00b;		// [0x00B]
 	uint32_t uncompressed_size;	// [0x00C] Uncompressed data size.
-	uint8_t unknown_data[16];	// [0x010]
+	uint8_t md5sum[16];		// [0x010] MD5 hash of the original image.
 	uint32_t header_size;		// [0x020] Header size? (0x30)
 	uint8_t unknown[12];		// [0x024]
 } JisoHeader;
@@ -110,6 +113,14 @@ ASSERT_STRUCT(JisoHeader, 0x30);
 // 64 KB maximum block size
 #define JISO_BLOCK_SIZE_MIN (2048)
 #define JISO_BLOCK_SIZE_MAX (64*1024)
+
+/**
+ * JISO: Compression method.
+ */
+typedef enum {
+	JISO_METHOD_LZO		= 0,
+	JISO_METHOD_ZLIB	= 1,
+} JisoMethod_e;
 
 #ifdef __cplusplus
 }

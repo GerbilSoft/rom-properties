@@ -277,9 +277,6 @@ CisoPspReader::CisoPspReader(IRpFile *file)
 
 #ifdef HAVE_LZO
 		case CisoPspReaderPrivate::CisoType::JISO:
-#if defined(_MSC_VER) && defined(LZO_IS_DLL)
-			isLZO = true;
-#endif /* _MSC_VER && LZO_IS_DLL */
 #if SYS_BYTEORDER != SYS_LIL_ENDIAN
 			// Byteswap the header.
 			d->header.jiso.magic			= le32_to_cpu(d->header.jiso.magic);
@@ -287,6 +284,24 @@ CisoPspReader::CisoPspReader(IRpFile *file)
 			d->header.jiso.uncompressed_size	= le32_to_cpu(d->header.jiso.uncompressed_size);
 			d->header.jiso.header_size		= le32_to_cpu(d->header.jiso.block_size);
 #endif /* SYS_BYTEORDER != SYS_LIL_ENDIAN */
+
+			switch (d->header.jiso.method) {
+				default:
+					break;
+
+#ifdef _MSC_VER
+#  ifdef LZO_IS_DLL
+				case JISO_METHOD_LZO:
+					isLZO = true;
+					break;
+#  endif /* LZO_IS_DLL */
+#  ifdef ZLIB_IS_DLL
+				case JISO_METHOD_ZLIB:
+					isZLIB = true;
+					break;
+#  endif /* ZLIB_IS_DLL */
+#endif /* _MSC_VER */
+			}
 
 			d->block_size = d->header.jiso.block_size;
 			d->disc_size = d->header.jiso.uncompressed_size;
@@ -810,7 +825,7 @@ int CisoPspReader::readBlock(uint32_t blockIdx, void *ptr, int pos, size_t size)
 
 #ifdef HAVE_LZO
 		case CisoPspReaderPrivate::CisoType::JISO:
-			// JISO uses LZO.
+			// JISO uses LZO or zlib.
 			// TODO: Verify the rest of this.
 
 			// JISO does *not* indicate compression using the high bit.
@@ -819,9 +834,24 @@ int CisoPspReader::readBlock(uint32_t blockIdx, void *ptr, int pos, size_t size)
 			physBlockAddr = static_cast<off64_t>(indexEntry);
 			physBlockAddr <<= d->index_shift;
 
-			z_mode = (z_block_size == d->block_size)
-				? CompressionMode::None
-				: CompressionMode::LZO;
+			if (z_block_size == d->block_size) {
+				z_mode = CompressionMode::None;
+			} else {
+				switch (d->header.jiso.method) {
+					case JISO_METHOD_LZO:
+						z_mode = CompressionMode::LZO;
+						break;
+					case JISO_METHOD_ZLIB:
+						// JISO zlib uses raw deflate.
+						windowBits = -15;
+						z_mode = CompressionMode::Deflate;
+						break;
+					default:
+						assert(!"Unsupported JISO compression method.");
+						m_lastError = ENOTSUP;
+						return 0;
+				}
+			}
 			break;
 #endif /* HAVE_LZO */
 
