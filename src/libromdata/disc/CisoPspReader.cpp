@@ -274,10 +274,7 @@ CisoPspReader::CisoPspReader(IRpFile *file)
 #  endif /* ZLIB_IS_DLL */
 #  if defined(HAVE_LZ4) && defined(LZ4_IS_DLL)
 	if (isLZ4) {
-		// Make sure the LZ4 version number is at least 1.0.0.
-		// That's probably "too old", but I don't have a definitive
-		// "minimum version number", so it's good enough.
-		if (DelayLoad_test_LZ4_versionNumber() < 10000) {
+		if (DelayLoad_test_LZ4_versionNumber() != 0) {
 			// Delay load for LZ4 failed.
 			UNREF_AND_NULL_NOCHK(m_file);
 			return;
