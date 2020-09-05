@@ -299,11 +299,11 @@ CisoPspReader::CisoPspReader(IRpFile *file)
 				default:
 					break;
 
-#  ifdef LZO_IS_DLL
+#  if defined(HAVE_LZO) && defined(LZO_IS_DLL)
 				case JISO_METHOD_LZO:
 					isLZO = true;
 					break;
-#  endif /* LZO_IS_DLL */
+#  endif /* HAVE_LZO && LZO_IS_DLL */
 #  ifdef ZLIB_IS_DLL
 				case JISO_METHOD_ZLIB:
 					isZlib = true;
