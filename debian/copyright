@@ -151,12 +151,12 @@ License: BSD-3-clause
 Files:
  extlib/lz4/*
 Copyright: Copyright (C) Yann Collet 2011-present
-License: BSD-2-clause
+License: GPL-2+
 
 Files:
  extlib/lz4/lib/*
 Copyright: Copyright (C) Yann Collet 2011-present
-License: GPL-2
+License: BSD-2-clause
 
 License: BSD-2-clause
  All rights reserved.
