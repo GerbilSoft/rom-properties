@@ -17,11 +17,13 @@ using LibRpFile::IRpFile;
 using LibRpFile::RpFile;
 using namespace LibRpTexture;
 
-// IsoPartition
-#include "../cdrom_structs.h"
-#include "../iso_structs.h"
-#include "../disc/Cdrom2352Reader.hpp"
-#include "../disc/IsoPartition.hpp"
+// DiscReader
+#include "cdrom_structs.h"
+#include "iso_structs.h"
+#include "disc/Cdrom2352Reader.hpp"
+#include "disc/IsoPartition.hpp"
+#include "disc/CisoPspReader.hpp"
+#include "disc/PartitionFile.hpp"
 
 // Other RomData subclasses
 #include "Other/ISO.hpp"
@@ -192,21 +194,53 @@ PSP::PSP(IRpFile *file)
 	// UMD is based on the DVD specification and therefore only has 2048-byte sectors.
 	IDiscReader *discReader = nullptr;
 
-	size_t size = d->file->seekAndRead(ISO_PVD_ADDRESS_2048, &d->pvd, sizeof(d->pvd));
-	if (size != sizeof(d->pvd)) {
+	// Check if this is a supported compressed disc image.
+	uint8_t header[256];
+	d->file->rewind();
+	size_t size = d->file->read(header, sizeof(header));
+	if (size != sizeof(header)) {
+		// Read error.
 		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
-	if (ISO::checkPVD(reinterpret_cast<const uint8_t*>(&d->pvd)) >= 0) {
-		// Disc is valid.
+	if (CisoPspReader::isDiscSupported_static(header, sizeof(header)) >= 0) {
+		discReader = new CisoPspReader(d->file);
+		if (!discReader->isOpen()) {
+			// Not CISO.
+			discReader->unref();
+			discReader = nullptr;
+		}
+	}
+
+	if (!discReader) {
+		// Not a supported compressed disc image.
+		// Try opening as uncompressed.
 		discReader = new DiscReader(d->file);
-	} else {
-		UNREF_AND_NULL_NOCHK(d->file);
-		return;
 	}
 
 	if (!discReader->isOpen()) {
 		// Error opening the DiscReader.
+		UNREF(discReader);
+		UNREF_AND_NULL_NOCHK(d->file);
+		return;
+	}
+
+	// Check the ISO PVD and system ID.
+	size = discReader->seekAndRead(ISO_PVD_ADDRESS_2048, &d->pvd, sizeof(d->pvd));
+	if (size != sizeof(d->pvd)) {
+		UNREF_AND_NULL_NOCHK(d->file);
+		return;
+	}
+	if (ISO::checkPVD(reinterpret_cast<const uint8_t*>(&d->pvd)) < 0) {
+		// Not ISO-9660.
+		UNREF(discReader);
+		UNREF_AND_NULL_NOCHK(d->file);
+		return;
+	}
+
+	// Verify the system ID.
+	if (isRomSupported_static(&d->pvd) < 0) {
+		// Incorrect system ID..
 		UNREF(discReader);
 		UNREF_AND_NULL_NOCHK(d->file);
 		return;
@@ -218,8 +252,7 @@ PSP::PSP(IRpFile *file)
 		// Error opening the ISO partition.
 		UNREF(isoPartition);
 		UNREF(discReader);
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
 
@@ -258,11 +291,29 @@ void PSP::close(void)
  */
 int PSP::isRomSupported_static(const DetectInfo *info)
 {
-	// NOTE: This version is NOT supported for PSP.
-	// Use the ISO-9660 PVD check instead.
-	RP_UNUSED(info);
-	assert(!"Use the ISO-9660 PVD check instead.");
-	return -1;
+	// NOTE: This version is only supported for compressed disc images.
+	assert(info != nullptr);
+	assert(info->header.pData != nullptr);
+	assert(info->header.addr == 0);
+	if (!info || !info->header.pData ||
+	    info->header.addr != 0 ||
+	    info->header.size < 256)
+	{
+		// Either no detection information was specified,
+		// or the header is too small.
+		return -1;
+	}
+
+	// Check if it's supported by the CISO reader.
+	if (CisoPspReader::isDiscSupported_static(
+		info->header.pData, info->header.size) >= 0)
+	{
+		// Supported by CISO.
+		return 0;
+	}
+
+	// Not a supported compressed disc image.
+	return 0;
 }
 
 /**
@@ -508,7 +559,10 @@ int PSP::loadFieldData(void)
 	// TODO: Parse firmware update PARAM.SFO and EBOOT.BIN?
 
 	// ISO object for ISO-9660 PVD
-	ISO *const isoData = new ISO(d->file);
+	// TODO: DiscReader overload for ISO.
+	PartitionFile *const ptFile = new PartitionFile(d->discReader, 0, d->discReader->size());
+	ISO *const isoData = new ISO(ptFile);
+	ptFile->unref();
 	if (isoData->isOpen()) {
 		// Add the fields.
 		const RomFields *const isoFields = isoData->fields();
@@ -516,8 +570,8 @@ int PSP::loadFieldData(void)
 			d->fields->addFields_romFields(isoFields,
 				RomFields::TabOffset_AddTabs);
 		}
-		isoData->unref();
 	}
+	isoData->unref();
 
 	// Finished reading the field data.
 	return static_cast<int>(d->fields->count());

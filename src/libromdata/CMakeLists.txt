@@ -99,6 +99,7 @@ SET(libromdata_SRCS
 	disc/Cdrom2352Reader.cpp
 	disc/CIAReader.cpp
 	disc/CisoGcnReader.cpp
+	disc/CisoPspReader.cpp
 	disc/GcnFst.cpp
 	disc/GcnPartition.cpp
 	disc/GcnPartitionPrivate.cpp
@@ -260,6 +261,7 @@ SET(libromdata_H
 	disc/Cdrom2352Reader.hpp
 	disc/CIAReader.hpp
 	disc/CisoGcnReader.hpp
+	disc/CisoPspReader.hpp
 	disc/GcnFst.hpp
 	disc/GcnPartition.hpp
 	disc/GcnPartitionPrivate.hpp
@@ -278,6 +280,7 @@ SET(libromdata_H
 	disc/XDVDFSPartition.cpp
 
 	disc/ciso_gcn.h
+	disc/ciso_psp_structs.h
 	disc/gcz_structs.h
 	disc/libwbfs.h
 	disc/nasos_gcn.h
