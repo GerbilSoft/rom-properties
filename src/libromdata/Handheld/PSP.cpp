@@ -209,8 +209,7 @@ PSP::PSP(IRpFile *file)
 		discReader = new CisoPspReader(d->file);
 		if (!discReader->isOpen()) {
 			// Not CISO.
-			discReader->unref();
-			discReader = nullptr;
+			UNREF_AND_NULL_NOCHK(discReader);
 		}
 	}
 
@@ -541,7 +540,7 @@ int PSP::loadFieldData(void)
 				latin1_to_utf8(buf, static_cast<int>(p - buf)));
 		}
 	}
-	umdDataBin->unref();
+	UNREF(umdDataBin);
 
 	// TODO: Add fields from PARAM.SFO.
 
