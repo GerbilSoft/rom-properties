@@ -3,7 +3,7 @@
 	by Rafael Vuijk (aka DarkFader)
 */
 
-#include "nds_crc.h"
+#include "nds_crc.hpp"
 
 const uint16_t crc16tab[] =
 {

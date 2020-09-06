@@ -9,7 +9,7 @@
 #include "ndscrypt.hpp"
 
 #include "byteswap.h"
-#include "nds_crc.h"	// TODO: Optimized versions?
+#include "nds_crc.hpp"	// TODO: Optimized versions?
 
 // C includes.
 #include <stdint.h>

@@ -309,7 +309,7 @@ IF(ENABLE_DECRYPTION)
 		crypto/KeyStoreUI.cpp
 
 		Handheld/ndscrypt.cpp
-		Handheld/nds_crc.c
+		Handheld/nds_crc.cpp
 		)
 	SET(libromdata_CRYPTO_H
 		crypto/CtrKeyScrambler.hpp
@@ -317,7 +317,7 @@ IF(ENABLE_DECRYPTION)
 		crypto/KeyStoreUI.hpp
 
 		Handheld/ndscrypt.hpp
-		Handheld/nds_crc.h
+		Handheld/nds_crc.hpp
 		)
 ENDIF(ENABLE_DECRYPTION)
 
