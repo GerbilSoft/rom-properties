@@ -42,6 +42,8 @@ NintendoDSPrivate::NintendoDSPrivate(NintendoDS *q, IRpFile *file, bool cia)
 	, secArea(NDS_SECAREA_UNKNOWN)
 	, nds_icon_title_loaded(false)
 	, cia(cia)
+	, fieldIdx_secData(-1)
+	, fieldIdx_secArea(-1)
 {
 	// Clear the various structs.
 	memset(&romHeader, 0, sizeof(romHeader));
@@ -1031,26 +1033,13 @@ int NintendoDS::loadFieldData(void)
 		"NintendoDS|SecurityData", nds_security_data_names, ARRAY_SIZE(nds_security_data_names));
 	d->fields->addField_bitfield(C_("NintendoDS", "Security Data"),
 		v_nds_security_data_names, 0, d->secData);
+	d->fieldIdx_secData = static_cast<int>(d->fields->count()-1);
 
 	// Secure Area.
 	// TODO: Verify the CRC.
-	static const char *const nds_secure_area_type[] = {
-		nullptr,
-		NOP_C_("NintendoDS|SecureArea", "Homebrew"),
-		NOP_C_("NintendoDS|SecureArea", "Multiboot"),
-		NOP_C_("NintendoDS|SecureArea", "Decrypted"),
-		NOP_C_("NintendoDS|SecureArea", "Encrypted"),
-	};
-	NintendoDSPrivate::NDS_SecureArea secArea = d->checkNDSSecureArea();
-	const char *s_secArea = nullptr;
-	if (secArea >= NintendoDSPrivate::NDS_SECAREA_HOMEBREW &&
-	    secArea <= NintendoDSPrivate::NDS_SECAREA_ENCRYPTED)
-	{
-		s_secArea = dpgettext_expr(RP_I18N_DOMAIN,
-			"NintendoDS|SecureArea", nds_secure_area_type[secArea]);
-	}
 	d->fields->addField_string(C_("NintendoDS", "Secure Area"),
-		s_secArea ? s_secArea : C_("RomData", "Unknown"));
+		d->getNDSSecureAreaString());
+	d->fieldIdx_secArea = static_cast<int>(d->fields->count()-1);
 
 	// Hardware type.
 	// NOTE: DS_HW_DS is inverted bit0; DS_HW_DSi is normal bit1.

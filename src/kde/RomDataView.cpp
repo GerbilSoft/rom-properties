@@ -199,6 +199,14 @@ class RomDataViewPrivate
 		void updateMulti(uint32_t user_lc);
 
 		/**
+		 * Update a field's value.
+		 * This is called after running a ROM operation.
+		 * @param fieldIdx Field index.
+		 * @return 0 on success; non-zero on error.
+		 */
+		int updateField(int fieldIdx);
+
+		/**
 		 * Initialize the display widgets.
 		 * If the widgets already exist, they will
 		 * be deleted and recreated.
@@ -1220,6 +1228,101 @@ void RomDataViewPrivate::updateMulti(uint32_t user_lc)
 }
 
 /**
+ * Update a field's value.
+ * This is called after running a ROM operation.
+ * @param fieldIdx Field index.
+ * @return 0 on success; non-zero on error.
+ */
+int RomDataViewPrivate::updateField(int fieldIdx)
+{
+	const RomFields *const pFields = romData->fields();
+	assert(pFields != nullptr);
+	if (!pFields) {
+		// No fields.
+		// TODO: Show an error?
+		return 1;
+	}
+
+	assert(fieldIdx >= 0);
+	assert(fieldIdx < pFields->count());
+	if (fieldIdx < 0 || fieldIdx >= pFields->count())
+		return 2;
+
+	const RomFields::Field *const field = pFields->at(fieldIdx);
+	assert(field != nullptr);
+	if (!field)
+		return 3;
+
+	// Get the QLayoutItem in the QFormLayout.
+	const auto tabs_cend = tabs.cend();
+	int firstIdx = 0;
+	QLayoutItem *layoutItem = nullptr;
+	for (auto iter = tabs.cbegin(); iter != tabs_cend; ++iter) {
+		// FIXME: Handle STRF_CREDITS properly.
+		// Maybe they shouldn't be considered a "field"...
+		auto &tab = *iter;
+		assert(tab.lblCredits == nullptr);
+		if (tab.lblCredits != nullptr)
+			return 4;
+
+		// Is the requested field index on this tab?
+		const int form_rowCount = tab.form->rowCount();
+		if (fieldIdx >= firstIdx && fieldIdx < (firstIdx + form_rowCount)) {
+			// It's on this tab.
+			layoutItem = tab.form->itemAt(fieldIdx - firstIdx, QFormLayout::FieldRole);
+			break;
+		}
+
+		// Next tab.
+		firstIdx += form_rowCount;
+	}
+
+	assert(layoutItem != nullptr);
+	if (!layoutItem) {
+		// Could not get the QLayoutItem...
+		return 5;
+	}
+
+	// Update the value widget(s).
+	int ret;
+	switch (field->type) {
+		case RomFields::RFT_INVALID:
+			assert(!"Cannot update an RFT_INVALID field.");
+			ret = 6;
+			break;
+		default:
+			assert(!"Unsupported field type.");
+			ret = 7;
+			break;
+
+		case RomFields::RFT_STRING: {
+			// QLayoutItem contains a single widget.
+			QLabel *const label = qobject_cast<QLabel*>(layoutItem->widget());
+			assert(label != nullptr);
+			if (label) {
+				printf("fieldIdx: %d; old text: %s; new text: %s\n",
+					fieldIdx, label->text().toUtf8().constData(),
+					field->data.str->c_str());
+				label->setText(field->data.str
+					? U82Q(*(field->data.str))
+					: QString());
+				ret = 0;
+			} else {
+				ret = 8;
+			}
+			break;
+		}
+
+		case RomFields::RFT_BITFIELD:
+			// TODO
+			ret = 9;
+			break;
+	}
+
+	return ret;
+}
+
+/**
  * Initialize the display widgets.
  * If the widgets already exist, they will
  * be deleted and recreated.
@@ -1731,7 +1834,13 @@ void RomDataView::menuOptions_action_triggered(int id)
 		int ret = d->romData->doRomOp(id, &result);
 		if (ret == 0) {
 			// Operation completed.
-			// TODO: Update relevant field(s).
+
+			// Update fields.
+			std::for_each(result.fieldIdx.cbegin(), result.fieldIdx.cend(),
+				[d](int fieldIdx) {
+					d->updateField(fieldIdx);
+				}
+			);
 
 			// Update the RomOp menu entry in case it changed.
 			// NOTE: Assuming the RomOps vector order hasn't changed.

@@ -120,6 +120,10 @@ class NintendoDSPrivate : public LibRpBase::RomDataPrivate
 		// Some fields shouldn't be displayed.
 		bool cia;
 
+		// Field indexes for ROM operations.
+		int fieldIdx_secData;	// "Security Data" (RFT_BITFIELD)
+		int fieldIdx_secArea;	// "Secure Area" (RFT_STRING)
+
 		/**
 		 * Load the icon/title data.
 		 * @return 0 on success; negative POSIX error code on error.
@@ -176,9 +180,17 @@ class NintendoDSPrivate : public LibRpBase::RomDataPrivate
 
 		/**
 		 * Check the NDS Secure Area type.
+		 * This reads from the ROM, so the ROM must be open.
 		 * @return Secure area type.
 		 */
 		NDS_SecureArea checkNDSSecureArea(void);
+
+		/**
+		 * Get the localized string identifying the NDS Secure Area type.
+		 * This uses the cached secArea value.
+		 * @return NDS Secure Area type string.
+		 */
+		const char *getNDSSecureAreaString(void);
 
 		/**
 		 * Convert a Nintendo DS(i) region value to a GameTDB region code.

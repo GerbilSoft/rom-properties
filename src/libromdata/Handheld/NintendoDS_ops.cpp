@@ -15,11 +15,13 @@
 
 // librpbase
 using LibRpBase::RomData;
+using LibRpBase::RomFields;
 using LibRpBase::rp_sprintf;
 using LibRpBase::rp_sprintf_p;
 
 // C++ STL classes.
 using std::ostringstream;
+using std::string;
 using std::unique_ptr;
 using std::vector;
 
@@ -96,6 +98,7 @@ uint32_t NintendoDSPrivate::checkNDSSecurityData(void)
 
 /**
  * Check the NDS Secure Area type.
+ * This reads from the ROM, so the ROM must be open.
  * @return Secure area type.
  */
 NintendoDSPrivate::NDS_SecureArea NintendoDSPrivate::checkNDSSecureArea(void)
@@ -140,6 +143,31 @@ NintendoDSPrivate::NDS_SecureArea NintendoDSPrivate::checkNDSSecureArea(void)
 	// TODO: Verify the CRC?
 	// For decrypted ROMs, this requires re-encrypting the secure area.
 	return ret;
+}
+
+/**
+ * Get the localized string identifying the NDS Secure Area type.
+ * This uses the cached secArea value.
+ * @return NDS Secure Area type string.
+ */
+const char *NintendoDSPrivate::getNDSSecureAreaString(void)
+{
+	static const char *const nds_secure_area_type[] = {
+		nullptr,
+		NOP_C_("NintendoDS|SecureArea", "Homebrew"),
+		NOP_C_("NintendoDS|SecureArea", "Multiboot"),
+		NOP_C_("NintendoDS|SecureArea", "Decrypted"),
+		NOP_C_("NintendoDS|SecureArea", "Encrypted"),
+	};
+
+	if (secArea >= NintendoDSPrivate::NDS_SECAREA_HOMEBREW &&
+	    secArea <= NintendoDSPrivate::NDS_SECAREA_ENCRYPTED)
+	{
+		return dpgettext_expr(RP_I18N_DOMAIN,
+			"NintendoDS|SecureArea", nds_secure_area_type[secArea]);
+	}
+
+	return C_("RomData", "Unknown");
 }
 
 /** NintendoDS **/
@@ -439,6 +467,29 @@ int NintendoDS::doRomOp_int(int id, RomOpResult *pResult)
 			// Update the secData and secArea values.
 			d->secData = d->checkNDSSecurityData();
 			d->secArea = d->checkNDSSecureArea();
+
+			// Update the fields.
+			// TODO: Better way to update fields.
+			if (pResult && !d->fields->empty()) {
+				pResult->fieldIdx.reserve(2);
+
+				RomFields::Field *field;
+				if (d->fieldIdx_secData >= 0) {
+					field = const_cast<RomFields::Field*>(d->fields->at(d->fieldIdx_secData));
+					field->data.bitfield = d->secData;
+					pResult->fieldIdx.emplace_back(d->fieldIdx_secData);
+				}
+				if (d->fieldIdx_secArea >= 0) {
+					field = const_cast<RomFields::Field*>(d->fields->at(d->fieldIdx_secArea));
+					const char *const s_secArea = d->getNDSSecureAreaString();
+					if (field->data.str) {
+						const_cast<string*>(field->data.str)->assign(s_secArea);
+					} else {
+						field->data.str = new string(s_secArea);
+					}
+					pResult->fieldIdx.emplace_back(d->fieldIdx_secArea);
+				}
+			}
 			break;
 		}
 #endif /* ENABLE_DECRYPTION */

@@ -565,7 +565,7 @@ class RomData : public RefBase
 		struct RomOpResult {
 			int status;			// Status. (0 == success; other == error)
 			std::string msg;		// Status message. (optional)
-			std::vector<int> field_upd;	// Field indexes that were updated.
+			std::vector<int> fieldIdx;	// Field indexes that were updated.
 		};
 
 		/**
