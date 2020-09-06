@@ -51,10 +51,16 @@ static HMODULE WINAPI rp_loadLibrary(LPCSTR pszModuleName)
 		"zlib1.dll",
 		"libpng16.dll",
 		"tinyxml2.dll",
+		"zstd.dll",
+		"lz4.dll",
+		"minilzo.dll",
 #else /* !NDEBUG */
 		"zlib1d.dll",
 		"libpng16d.dll",
 		"tinyxml2d.dll",
+		"zstdd.dll",
+		"lz4d.dll",
+		"minilzod.dll",
 #endif /* NDEBUG */
 		"libgnuintl-8.dll",
 	};

@@ -55,6 +55,7 @@ SET(libromdata_SRCS
 	Handheld/Nintendo3DS_SMDH.cpp
 	Handheld/NintendoDS.cpp
 	Handheld/PokemonMini.cpp
+	Handheld/PSP.cpp
 	Handheld/VirtualBoy.cpp
 
 	Audio/ADX.cpp
@@ -98,6 +99,7 @@ SET(libromdata_SRCS
 	disc/Cdrom2352Reader.cpp
 	disc/CIAReader.cpp
 	disc/CisoGcnReader.cpp
+	disc/CisoPspReader.cpp
 	disc/GcnFst.cpp
 	disc/GcnPartition.cpp
 	disc/GcnPartitionPrivate.cpp
@@ -190,6 +192,7 @@ SET(libromdata_H
 	Handheld/Nintendo3DS_SMDH.hpp
 	Handheld/NintendoDS.hpp
 	Handheld/PokemonMini.hpp
+	Handheld/PSP.hpp
 	Handheld/VirtualBoy.hpp
 
 	Handheld/dmg_structs.h
@@ -258,6 +261,7 @@ SET(libromdata_H
 	disc/Cdrom2352Reader.hpp
 	disc/CIAReader.hpp
 	disc/CisoGcnReader.hpp
+	disc/CisoPspReader.hpp
 	disc/GcnFst.hpp
 	disc/GcnPartition.hpp
 	disc/GcnPartitionPrivate.hpp
@@ -276,6 +280,7 @@ SET(libromdata_H
 	disc/XDVDFSPartition.cpp
 
 	disc/ciso_gcn.h
+	disc/ciso_psp_structs.h
 	disc/gcz_structs.h
 	disc/libwbfs.h
 	disc/nasos_gcn.h
@@ -446,6 +451,13 @@ ENDIF(ENABLE_UNICE68)
 IF(ENABLE_LIBMSPACK)
 	TARGET_LINK_LIBRARIES(romdata PRIVATE mspack)
 ENDIF(ENABLE_LIBMSPACK)
+
+IF(ENABLE_LZ4 AND LZ4_FOUND)
+	TARGET_LINK_LIBRARIES(romdata PRIVATE ${LZ4_LIBRARY})
+ENDIF(ENABLE_LZ4 AND LZ4_FOUND)
+IF(ENABLE_LZO AND LZO_FOUND)
+	TARGET_LINK_LIBRARIES(romdata PRIVATE ${LZO_LIBRARY})
+ENDIF(ENABLE_LZO AND LZO_FOUND)
 
 # Unix: Add -fpic/-fPIC in order to use this static library in plugins.
 IF(UNIX AND NOT APPLE)

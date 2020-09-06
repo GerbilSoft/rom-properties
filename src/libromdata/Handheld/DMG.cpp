@@ -886,12 +886,8 @@ int DMG::loadFieldData(void)
 	string s_title, s_gameID;
 	d->getTitleAndGameID(s_title, s_gameID);
 	d->fields->addField_string(C_("RomData", "Title"), s_title);
-	if (!s_gameID.empty()) {
-		d->fields->addField_string(C_("DMG", "Game ID"), s_gameID);
-	} else {
-		d->fields->addField_string(C_("DMG", "Game ID"),
-			C_("RomData", "Unknown"));
-	}
+	d->fields->addField_string(C_("RomData", "Game ID"),
+		s_gameID.empty() ? s_gameID.c_str() : C_("RomData", "Unknown"));
 
 	// System
 	const uint32_t dmg_system = d->systemID();

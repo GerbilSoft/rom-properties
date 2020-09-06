@@ -846,7 +846,7 @@ int NES::loadFieldData(void)
 	if ((d->romType & NESPrivate::ROM_SYSTEM_MASK) == NESPrivate::ROM_SYSTEM_FDS) {
 		// Game ID
 		// TODO: Check for invalid characters?
-		d->fields->addField_string(C_("NES", "Game ID"),
+		d->fields->addField_string(C_("RomData", "Game ID"),
 			rp_sprintf("%s-%.3s",
 				(d->header.fds.disk_type == FDS_DTYPE_FSC ? "FSC" : "FMC"),
 				d->header.fds.game_id));

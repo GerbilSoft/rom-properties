@@ -73,6 +73,7 @@ using std::vector;
 #include "Handheld/Nintendo3DS_SMDH.hpp"
 #include "Handheld/NintendoDS.hpp"
 #include "Handheld/PokemonMini.hpp"
+#include "Handheld/PSP.hpp"
 #include "Handheld/VirtualBoy.hpp"
 
 // RomData subclasses: Audio
@@ -260,6 +261,14 @@ const RomDataFactoryPrivate::RomDataFns RomDataFactoryPrivate::romDataFns_magic[
 	GetRomDataFns_addr(Nintendo3DS_SMDH, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'SMDH'),
 	GetRomDataFns_addr(NintendoDS, ATTR_HAS_THUMBNAIL | ATTR_HAS_DPOVERLAY | ATTR_HAS_METADATA, 0xC0, 0x24FFAE51),
 	GetRomDataFns_addr(NintendoDS, ATTR_HAS_THUMBNAIL | ATTR_HAS_DPOVERLAY | ATTR_HAS_METADATA, 0xC0, 0xC8604FE2),
+	GetRomDataFns_addr(PSP, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'CISO'),
+#ifdef HAVE_LZ4
+	GetRomDataFns_addr(PSP, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'ZISO'),
+#endif /* HAVE_LZ4 */
+#ifdef HAVE_LZO
+	GetRomDataFns_addr(PSP, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'JISO'),
+#endif /* HAVE_LZO */
+	GetRomDataFns_addr(PSP, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 0x44415800),	// 'DAX\0'
 
 	// Audio
 	GetRomDataFns_addr(BRSTM, ATTR_HAS_METADATA, 0, 'RSTM'),
@@ -338,7 +347,7 @@ const RomDataFactoryPrivate::RomDataFns RomDataFactoryPrivate::romDataFns_header
 	// that don't have an identifying boot sector at 0x0000.
 	// NOTE: Keeping the same address as the previous entry, since ISO only checks the file extension.
 	// NOTE: ATTR_HAS_THUMBNAIL is needed for Xbox 360.
-	GetRomDataFns_addr(ISO, ATTR_HAS_THUMBNAIL | ATTR_SUPPORTS_DEVICES | ATTR_CHECK_ISO, 0x40000, 0x20),
+	GetRomDataFns_addr(ISO, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA | ATTR_SUPPORTS_DEVICES | ATTR_CHECK_ISO, 0x40000, 0x20),
 
 	{nullptr, nullptr, nullptr, nullptr, ATTR_NONE, 0, 0}
 };
@@ -496,12 +505,23 @@ RomData *RomDataFactoryPrivate::checkISO(IRpFile *file)
 		romData->unref();
 	}
 
-	// PlayStation 1 and 2.
+	// PlayStation 1 and 2
 	if (PlayStationDisc::isRomSupported_static(pvd) >= 0) {
 		// This might be a PS1 or PS2 disc.
 		RomData *const romData = new PlayStationDisc(file);
 		if (romData->isValid()) {
 			// Got a PS1 or PS2 disc.
+			return romData;
+		}
+		romData->unref();
+	}
+
+	// PlayStation Portable
+	if (PSP::isRomSupported_static(pvd) >= 0) {
+		// This might be a PSP disc.
+		RomData *const romData = new PSP(file);
+		if (romData->isValid()) {
+			// Got a PSP disc.
 			return romData;
 		}
 		romData->unref();

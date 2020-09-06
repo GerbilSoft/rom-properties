@@ -421,7 +421,7 @@ int WbfsReader::isDiscSupported(const uint8_t *pHeader, size_t szHeader) const
 off64_t WbfsReader::getPhysBlockAddr(uint32_t blockIdx) const
 {
 	// Make sure the block index is in range.
-	RP_D(WbfsReader);
+	RP_D(const WbfsReader);
 	assert(blockIdx < d->m_wbfs_disc->p->n_wbfs_sec_per_disc);
 	if (blockIdx >= d->m_wbfs_disc->p->n_wbfs_sec_per_disc) {
 		// Out of range.

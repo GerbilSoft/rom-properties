@@ -5,7 +5,7 @@
 # - ZSTD_LIBRARIES: ZSTD libraries.
 # - ZSTD_DEFINITIONS: Compiler switches required for using ZSTD.
 #
-# In addition, a target Gtk3::gtk3 will be created with all of
+# In addition, a target ZSTD::zstd will be created with all of
 # these definitions.
 #
 # References:

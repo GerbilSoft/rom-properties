@@ -1291,7 +1291,7 @@ int SNES::loadFieldData(void)
 	d->fields->addField_string(C_("RomData", "Title"), d->getRomTitle());
 
 	// Game ID
-	const char *const game_id_title = C_("SNES", "Game ID");
+	const char *const game_id_title = C_("RomData", "Game ID");
 	string gameID = d->getGameID();
 	if (!gameID.empty()) {
 		d->fields->addField_string(game_id_title, gameID);

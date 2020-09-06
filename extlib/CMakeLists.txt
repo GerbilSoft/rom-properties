@@ -228,6 +228,51 @@ IF(ENABLE_OLDWINCOMPAT)
 	SET_EXTLIB_PROPERTIES(oldwincompat)
 ENDIF(ENABLE_OLDWINCOMPAT)
 
+IF(USE_INTERNAL_LZ4)
+	# Use the internal copy of LZ4.
+	# On Windows and Mac OS X, this will build DLLs.
+	# On other systems, this will be statically-linked.
+	IF(WIN32 OR APPLE)
+		SET(SKIP_INSTALL_LIBRARIES ON)
+		SET(SKIP_INSTALL_ALL OFF)
+		SET(BUILD_SHARED_LIBS ON)
+		SET(BUILD_STATIC_LIBS OFF)
+	ELSE()
+		SET(SKIP_INSTALL_LIBRARIES ON)
+		SET(SKIP_INSTALL_ALL ON)
+		SET(BUILD_SHARED_LIBS OFF)
+		SET(BUILD_STATIC_LIBS ON)
+	ENDIF()
+	ADD_SUBDIRECTORY(lz4/contrib/cmake_unofficial)
+	# NOTE: Cannot remove targets from all builds
+	# if they're being installed.
+	#SET_EXTLIB_PROPERTIES(lz4_shared)
+	SET_EXTLIB_PROPERTIES(lz4_static)
+	# lz4 programs that we don't need.
+	SET_EXTLIB_PROPERTIES(lz4cli lz4c)
+ENDIF(USE_INTERNAL_LZ4)
+
+IF(USE_INTERNAL_LZO)
+	# Use the internal copy of LZO. (actually MiniLZO)
+	# On Windows and Mac OS X, this will build DLLs.
+	# On other systems, this will be statically-linked.
+	IF(WIN32 OR APPLE)
+		SET(SKIP_INSTALL_LIBRARIES ON)
+		SET(SKIP_INSTALL_ALL OFF)
+		SET(BUILD_SHARED_LIBS ON)
+		SET(BUILD_STATIC_LIBS OFF)
+	ELSE()
+		SET(SKIP_INSTALL_LIBRARIES ON)
+		SET(SKIP_INSTALL_ALL ON)
+		SET(BUILD_SHARED_LIBS OFF)
+		SET(BUILD_STATIC_LIBS ON)
+	ENDIF()
+	ADD_SUBDIRECTORY(minilzo)
+	# NOTE: Cannot remove targets from all builds
+	# if they're being installed.
+	#SET_EXTLIB_PROPERTIES(minilzo)
+ENDIF(USE_INTERNAL_LZO)
+
 # Google Test
 IF(BUILD_TESTING)
 	# Reference: http://stackoverflow.com/questions/12540970/how-to-make-gtest-build-mdd-instead-of-mtd-by-default-using-cmake

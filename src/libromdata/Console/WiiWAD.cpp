@@ -746,7 +746,7 @@ int WiiWAD::loadFieldData(void)
 	{
 		// Print the game ID.
 		// TODO: Is the publisher code available anywhere?
-		d->fields->addField_string(C_("WiiWAD", "Game ID"),
+		d->fields->addField_string(C_("RomData", "Game ID"),
 			rp_sprintf("%.4s", reinterpret_cast<const char*>(&tmdHeader->title_id.u8[4])));
 	}
 

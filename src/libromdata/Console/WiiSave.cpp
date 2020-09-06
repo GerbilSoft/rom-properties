@@ -501,7 +501,7 @@ int WiiSave::loadFieldData(void)
 		{
 			// Print the game ID.
 			// TODO: Is the publisher code available anywhere?
-			d->fields->addField_string(C_("WiiSave", "Game ID"),
+			d->fields->addField_string(C_("RomData", "Game ID"),
 				latin1_to_utf8(bkHeader->id4, sizeof(bkHeader->id4)));
 		}
 	}

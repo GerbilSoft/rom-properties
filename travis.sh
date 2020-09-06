@@ -17,6 +17,7 @@ case "$OSTYPE" in
 			-DBUILD_TESTING=ON \
 			-DENABLE_NLS=OFF \
 			\
+			-DENABLE_EXTRA_SECURITY=OFF \
 			-DENABLE_JPEG=OFF \
 			-DENABLE_XML=OFF \
 			-DENABLE_DECRYPTION=OFF \
@@ -24,6 +25,8 @@ case "$OSTYPE" in
 			-DENABLE_LIBMSPACK=OFF \
 			-DENABLE_PVRTC=OFF \
 			-DENABLE_ZSTD=OFF \
+			-DENABLE_LZ4=OFF \
+			-DENABLE_LZO=OFF \
 			|| exit 1
 		;;
 	*)
@@ -49,6 +52,8 @@ case "$OSTYPE" in
 			-DENABLE_LIBMSPACK=OFF \
 			-DENABLE_PVRTC=OFF \
 			-DENABLE_ZSTD=OFF \
+			-DENABLE_LZ4=OFF \
+			-DENABLE_LZO=OFF \
 			|| exit 1
 esac
 
@@ -69,6 +74,8 @@ cmake .. \
 	-DENABLE_LIBMSPACK=ON \
 	-DENABLE_PVRTC=ON \
 	-DENABLE_ZSTD=ON \
+	-DENABLE_LZ4=ON \
+	-DENABLE_LZO=ON \
 	|| exit 1
 
 # Build everything.

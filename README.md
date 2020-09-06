@@ -109,7 +109,7 @@ button.
 | Sony PlayStation Discs    |       Yes      |    No    |       N/A       |       No       |
 | Sony PlayStation EXEs     |       Yes      |    No    |       N/A       |       N/A      |
 | Sony PlayStation Saves    |       Yes      |    Yes   |       Icon      |       N/A      |
-| Sony PlayStation 2 Discs  |       Yes      |    No    |       N/A       |       No       |
+| Sony PlayStation 2 Discs  |       Yes      |    Yes   |       N/A       |       No       |
 
 \* Internal images are only present in Wii DLC WADs.
 
@@ -119,13 +119,17 @@ button.
 |:-----------------------------:|:--------------:|:--------:|:---------------:|:--------------:|
 | Atari Lynx                    |       Yes      |    No    |       N/A       |       No       |
 | Neo Geo Pocket (Color)        |       Yes      |    Yes   |       N/A       |       No       |
-| Nintendo Game Boy (Color)     |       Yes      |    Yes   |       N/Ae      |      Title     |
+| Nintendo Game Boy (Color)     |       Yes      |    Yes   |       N/A       |      Title     |
 | Nintendo Virtual Boy          |       Yes      |    No    |       N/A       |       No       |
 | Nintendo Game Boy Advance     |       Yes      |    Yes   |       N/A       |      Title     |
 | Nintendo DS(i)                |       Yes      |    Yes   |       Icon      |  Covers, Box   |
 | Nintendo 3DS                  |       Yes      |    Yes   |       Icon      |  Covers, Box   |
 | Pokémon Mini                  |       Yes      |    Yes   |       N/A       |       No       |
+| Sony PlayStation Portable     |       Yes      |    Yes   |       Icon      |       No       |
 | Tiger game.com                |       Yes      |    Yes   |       Icon      |       No       |
+
+\* The PSP parser supports several compressed disc formats: CISOv1, CISOv2,
+   ZISO, JISO, and DAX.
 
 ### Texture Formats
 
@@ -181,7 +185,7 @@ button.
 |             System             | Properties Tab | Metadata | Internal Images | External Scans |
 |:------------------------------:|:--------------:|:--------:|:---------------:|:--------------:|
 | Executable and Linkable Format |       Yes      |    No    |       N/A       |       N/A      |
-| ISO-9660 Disc Images           |       Yes      |    No    |        No       |       N/A      |
+| ISO-9660 Disc Images           |       Yes      |   Yes    |        No       |       N/A      |
 | Mach-O Binaries                |       Yes      |    No    |       N/A       |       N/A      |
 | Nintendo amiibo                |       Yes      |    No    |       N/A       |      Media     |
 | Nintendo Badge Arcade          |       Yes      |    No    |      Image      |       N/A      |

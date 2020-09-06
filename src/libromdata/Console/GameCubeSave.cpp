@@ -875,7 +875,7 @@ int GameCubeSave::loadFieldData(void)
 			: '_');
 	}
 	id6[6] = 0;
-	d->fields->addField_string(C_("GameCubeSave", "Game ID"), latin1_to_utf8(id6, 6));
+	d->fields->addField_string(C_("RomData", "Game ID"), latin1_to_utf8(id6, 6));
 
 	// Look up the publisher.
 	const char *publisher = NintendoPublishers::lookup(direntry->company);

@@ -819,11 +819,39 @@ int PlayStationDisc::loadFieldData(void)
 			d->fields->addFields_romFields(isoFields,
 				RomFields::TabOffset_AddTabs);
 		}
-		isoData->unref();
 	}
+	isoData->unref();
 
 	// Finished reading the field data.
 	return static_cast<int>(d->fields->count());
+}
+
+/**
+ * Load metadata properties.
+ * Called by RomData::metaData() if the field data hasn't been loaded yet.
+ * @return Number of metadata properties read on success; negative POSIX error code on error.
+ */
+int PlayStationDisc::loadMetaData(void)
+{
+	RP_D(PlayStationDisc);
+	if (d->metaData != nullptr) {
+		// Metadata *has* been loaded...
+		return 0;
+	} else if (!d->isValid) {
+		// Unknown disc image type.
+		return -EIO;
+	}
+
+	// Create the metadata object.
+	d->metaData = new RomMetaData();
+	d->metaData->reserve(3);	// Maximum of 3 metadata properties.
+
+	// Add the PVD metadata.
+	// TODO: PlayStationDisc-specific metadata?
+	ISO::addMetaData_PVD(d->metaData, &d->pvd);
+
+	// Finished reading the metadata.
+	return static_cast<int>(d->metaData->count());
 }
 
 }

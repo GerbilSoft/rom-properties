@@ -190,7 +190,7 @@ int NASOSReader::isDiscSupported(const uint8_t *pHeader, size_t szHeader) const
 off64_t NASOSReader::getPhysBlockAddr(uint32_t blockIdx) const
 {
 	// Make sure the block index is in range.
-	RP_D(NASOSReader);
+	RP_D(const NASOSReader);
 	assert(blockIdx < d->blockMap.size());
 	if (blockIdx >= d->blockMap.size()) {
 		// Out of range.

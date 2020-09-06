@@ -1,0 +1,22 @@
+This copy of lz4-1.9.2 is a modified version of the original.
+
+commit fdf2ef5809ca875c454510610764d9125ef2ebbd
+fixed test error
+
+Tag: v1.9.2
+
+The following changes have been made to the original:
+
+- Disabled some options.
+
+- Added TARGET_INCLUDE_DIRECTORIES().
+
+- Set LZ4_DLL_EXPORT=1 to ensure the import library is built,
+  and LZ4_DLL_IMPORT to optimize DLL imports.
+
+- Added the Win32 resource file to the DLL build.
+
+- MSVC builds: Debug DLLs now have a 'd' postfix.
+
+To obtain the original lz4-1.9.2, visit:
+https://github.com/lz4/lz4
