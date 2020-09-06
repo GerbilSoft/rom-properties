@@ -29,7 +29,6 @@ IDiscReader::IDiscReader(IDiscReader *discReader)
 	: m_hasDiscReader(true)
 	, m_lastError(0)
 {
-	// TODO: Reference counting?
 	if (discReader) {
 		m_discReader = discReader->ref();
 	} else {

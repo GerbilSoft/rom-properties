@@ -93,7 +93,7 @@ XDVDFSPartitionPrivate::XDVDFSPartitionPrivate(XDVDFSPartition *q,
 		if (q->m_lastError == 0) {
 			q->m_lastError = EIO;
 		}
-		q->m_discReader = nullptr;
+		UNREF_AND_NULL_NOCHK(q->m_discReader);
 		return;
 	}
 
@@ -104,7 +104,7 @@ XDVDFSPartitionPrivate::XDVDFSPartitionPrivate(XDVDFSPartition *q,
 	if (size != sizeof(xdvdfsHeader)) {
 		// Seek and/or read error.
 		memset(&xdvdfsHeader, 0, sizeof(xdvdfsHeader));
-		q->m_discReader = nullptr;
+		UNREF_AND_NULL_NOCHK(q->m_discReader);
 		return;
 	}
 
@@ -114,7 +114,7 @@ XDVDFSPartitionPrivate::XDVDFSPartitionPrivate(XDVDFSPartition *q,
 	{
 		// Invalid XDVDFS header.
 		memset(&xdvdfsHeader, 0, sizeof(xdvdfsHeader));
-		q->m_discReader = nullptr;
+		UNREF_AND_NULL_NOCHK(q->m_discReader);
 		return;
 	}
 

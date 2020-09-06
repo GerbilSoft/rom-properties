@@ -89,7 +89,7 @@ IsoPartitionPrivate::IsoPartitionPrivate(IsoPartition *q,
 		if (q->m_lastError == 0) {
 			q->m_lastError = EIO;
 		}
-		q->m_discReader = nullptr;
+		UNREF_AND_NULL_NOCHK(q->m_discReader);
 		return;
 	}
 
@@ -102,7 +102,7 @@ IsoPartitionPrivate::IsoPartitionPrivate(IsoPartition *q,
 	size_t size = q->m_discReader->seekAndRead(partition_offset + ISO_PVD_ADDRESS_2048, &pvd, sizeof(pvd));
 	if (size != sizeof(pvd)) {
 		// Seek and/or read error.
-		q->m_discReader = nullptr;
+		UNREF_AND_NULL_NOCHK(q->m_discReader);
 		return;
 	}
 
@@ -111,7 +111,7 @@ IsoPartitionPrivate::IsoPartitionPrivate(IsoPartition *q,
 	    memcmp(pvd.header.identifier, ISO_VD_MAGIC, sizeof(pvd.header.identifier)) != 0)
 	{
 		// Invalid volume descriptor.
-		q->m_discReader = nullptr;
+		UNREF_AND_NULL_NOCHK(q->m_discReader);
 		return;
 	}
 

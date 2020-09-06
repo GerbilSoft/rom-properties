@@ -23,6 +23,8 @@
     * This fixes issue #246, reported by @Icesythe7.
   * PlayStationDisc: Fix a file handle leak.
     * This fixes issue #247, reported by @Masamune3210.
+  * IsoPartition, XDVDFSPartition: Fix some more file handle leaks.
+    * This fixes issue #249, reported by @Masamune3210.
 
 * Other changes:
   * Linux: A system-wide cache directory (/usr/share/rom-properties/cache)
