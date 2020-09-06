@@ -352,17 +352,18 @@ int NDSCrypt::encrypt_arm9(uint8_t *data)
 }
 
 /**
- * Create encryption data required for official flash carts and IS-NITRO.
+ * Encrypt the secure area and create the encryption data
+ * required for official flash carts and IS-NITRO.
  * @param pRom First 32 KB of the ROM image.
  * @return 0 on success; non-zero on error.
  */
-int encryptSecureArea(uint8_t *pRom)
+static int encryptSecureArea(uint8_t *pRom)
 {
 	static const unsigned int rounds_offsets = 0x1600;
 	static const unsigned int sbox_offsets = 0x1C00;
 
-	// If ROM is already encrypted, we don't need to do anything.
-	uint32_t *pRom32 = reinterpret_cast<uint32_t*>(pRom);
+	// If the ROM is already encrypted, we don't need to do anything.
+	uint32_t *const pRom32 = reinterpret_cast<uint32_t*>(pRom);
 	if (pRom32[0x4000/4] != 0xE7FFDEFF && pRom32[0x4004/4] != 0xE7FFDEFF) {
 		// ROM is already encrypted.
 		return 0;
@@ -373,7 +374,7 @@ int encryptSecureArea(uint8_t *pRom)
 	ndsCrypt.encrypt_arm9(&pRom[0x4000]);
 
 	// Calculate CRCs.
-	uint16_t *pRom16 = reinterpret_cast<uint16_t*>(pRom);
+	uint16_t *const pRom16 = reinterpret_cast<uint16_t*>(pRom);
 	// Secure Area CRC16
 	pRom16[0x6C/2] = cpu_to_le16(CalcCrc16(&pRom[0x4000], 0x4000));
 	// Header CRC16
@@ -382,10 +383,10 @@ int encryptSecureArea(uint8_t *pRom)
 	// Reinitialize the card hash.
 	ndsCrypt.init0();
 	//srand(gamecode);	// FIXME: Is this actually needed?
-	
+
 	// rounds table
 	memcpy(&pRom[rounds_offsets], ndsCrypt.card_hash(), 4*18);
-	
+
 	// S-boxes
 	for (unsigned int i = 0; i < 4; i++) {
 		memcpy(&pRom[sbox_offsets + (4*256*i)], &ndsCrypt.card_hash()[18 + (i*256)], 4*256);
@@ -402,7 +403,7 @@ int encryptSecureArea(uint8_t *pRom)
 	memset(&pRom[0x3C00], 0x55, 0x200);
 	memset(&pRom[0x3E00], 0xAA, 0x200);
 	pRom[0x3FFF] = 0x00;
-	
+
 	// Calculate CRCs and write header.
 	// Secure Area CRC16
 	pRom16[0x6C/2] = cpu_to_le16(CalcCrc16(&pRom[0x4000], 0x4000));
@@ -432,4 +433,47 @@ int ndscrypt_encrypt_secure_area(uint8_t *pRom, size_t len)
 
 	// Encrypt the Secure Area.
 	return encryptSecureArea(pRom);
+}
+
+/**
+ * Decrypt the secure area and remove the static data.
+ * @param pRom First 32 KB of the ROM image.
+ * @return 0 on success; non-zero on error.
+ */
+static int decryptSecureArea(uint8_t *pRom)
+{
+	// If the ROM is already decrypted, we don't need to do anything.
+	uint32_t *const pRom32 = reinterpret_cast<uint32_t*>(pRom);
+	if (pRom32[0x4000/4] == 0xE7FFDEFF && pRom32[0x4004/4] == 0xE7FFDEFF) {
+		// ROM is already decrypted.
+		return 0;
+	}
+
+	uint32_t gamecode = le32_to_cpu(pRom32[0x0C/4]);
+	NDSCrypt ndsCrypt(gamecode);
+	ndsCrypt.decrypt_arm9(&pRom[0x4000]);
+
+	// Zero out the static data.
+	memset(&pRom[0x1000], 0, 0x3000);
+	return 0;
+}
+
+/**
+ * Decrypt the ROM's Secure Area, if necessary.
+ * @param pRom First 32 KB of the ROM image.
+ * @param len Length of pRom.
+ * @return 0 on success; non-zero on error.
+ */
+int ndscrypt_decrypt_secure_area(uint8_t *pRom, size_t len)
+{
+	assert(len >= 32768);
+	if (len < 32768)
+		return -EINVAL;
+
+	// nds-blowfish.bin must have been loaded before calling this function.
+	if (nds_blowfish_data[0] != 0x99)
+		return -EIO;
+
+	// Decrypt the Secure Area.
+	return decryptSecureArea(pRom);
 }

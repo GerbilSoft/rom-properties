@@ -221,7 +221,6 @@ int NintendoDS::doRomOp_int(int id)
 	RP_D(NintendoDS);
 	int ret = 0;
 
-	printf("DO OP: %d\n", id);
 	switch (id) {
 		case 0: {
 			// Trim/untrim ROM.
@@ -307,7 +306,6 @@ int NintendoDS::doRomOp_int(int id)
 			} else if (d->secArea == NintendoDSPrivate::NDS_SECAREA_ENCRYPTED) {
 				// Decrypt the secure area.
 				doEncrypt = false;
-				break;
 			} else {
 				// Cannot perform this ROM operation.
 				assert(!"Secure area cannot be adjusted.");
@@ -342,7 +340,7 @@ int NintendoDS::doRomOp_int(int id)
 			// TODO: Decrypt function.
 			ret = doEncrypt
 				? ndscrypt_encrypt_secure_area(buf.get(), SEC_AREA_SIZE)
-				: -ENOTSUP;
+				: ndscrypt_decrypt_secure_area(buf.get(), SEC_AREA_SIZE);
 			if (ret != 0) {
 				// Error encrypting/decrypting.
 				// TODO: Show an error message.
