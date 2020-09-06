@@ -314,7 +314,7 @@ int NintendoDS::doRomOp_int(int id)
 			}
 
 			// Make sure nds-blowfish.bin is loaded.
-			int ret = ndscrypt_load_nds_blowfish_bin();
+			ret = ndscrypt_load_nds_blowfish_bin();
 			if (ret != 0) {
 				// TODO: Show an error message.
 				ret = -EIO;
