@@ -1290,11 +1290,11 @@ int RomDataViewPrivate::updateField(int fieldIdx)
 	switch (field->type) {
 		case RomFields::RFT_INVALID:
 			assert(!"Cannot update an RFT_INVALID field.");
-			ret = 6;
+			ret = 5;
 			break;
 		default:
 			assert(!"Unsupported field type.");
-			ret = 7;
+			ret = 6;
 			break;
 
 		case RomFields::RFT_STRING: {
@@ -1302,7 +1302,7 @@ int RomDataViewPrivate::updateField(int fieldIdx)
 			QLabel *const label = qobject_cast<QLabel*>(iter->second);
 			assert(label != nullptr);
 			if (!label) {
-				ret = 8;
+				ret = 7;
 				break;
 			}
 
@@ -1317,7 +1317,7 @@ int RomDataViewPrivate::updateField(int fieldIdx)
 			QGridLayout *const layout = qobject_cast<QGridLayout*>(iter->second);
 			assert(layout != nullptr);
 			if (!layout) {
-				ret = 9;
+				ret = 8;
 				break;
 			}
 
