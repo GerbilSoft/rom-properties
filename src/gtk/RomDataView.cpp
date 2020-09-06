@@ -115,6 +115,7 @@ static void	menuOptions_triggered_signal_handler(GtkMenuItem	*menuItem,
 typedef GtkBoxClass superclass;
 typedef GtkBox super;
 #define GTK_TYPE_SUPER GTK_TYPE_BOX
+#define USE_GTK_GRID 1	// Use GtkGrid instead of GtkTable.
 #else
 typedef GtkVBoxClass superclass;
 typedef GtkVBox super;
@@ -833,11 +834,11 @@ rom_data_view_init_bitfield(RomDataView *page, const RomFields::Field &field)
 	if (count > 32)
 		count = 32;
 
-#if GTK_CHECK_VERSION(3,0,0)
+#ifdef USE_GTK_GRID
 	GtkWidget *widget = gtk_grid_new();
 	//gtk_grid_set_row_spacings(GTK_TABLE(widget), 2);
 	//gtk_grid_set_column_spacings(GTK_TABLE(widget), 8);
-#else /* !GTK_CHECK_VERSION(3,0,0) */
+#else /* !USE_GTK_GRID */
 	// Determine the total number of rows and columns.
 	int totalRows, totalCols;
 	if (bitfieldDesc.elemsPerRow == 0) {
@@ -856,7 +857,7 @@ rom_data_view_init_bitfield(RomDataView *page, const RomFields::Field &field)
 	GtkWidget *widget = gtk_table_new(totalRows, totalCols, false);
 	//gtk_table_set_row_spacings(GTK_TABLE(widget), 2);
 	//gtk_table_set_col_spacings(GTK_TABLE(widget), 8);
-#endif /* GTK_CHECK_VERSION(3,0,0) */
+#endif /* USE_GTK_GRID */
 	gtk_widget_show(widget);
 
 	int row = 0, col = 0;
@@ -881,13 +882,13 @@ rom_data_view_init_bitfield(RomDataView *page, const RomFields::Field &field)
 		// connect this signal *after* setting the initial value.
 		g_signal_connect(checkBox, "toggled", G_CALLBACK(checkbox_no_toggle_signal_handler), page);
 
-#if GTK_CHECK_VERSION(3,0,0)
+#if USE_GTK_GRID
 		// TODO: GTK_FILL
 		gtk_grid_attach(GTK_GRID(widget), checkBox, col, row, 1, 1);
-#else /* !GTK_CHECK_VERSION(3,0,0) */
+#else /* !USE_GTK_GRID */
 		gtk_table_attach(GTK_TABLE(widget), checkBox, col, col+1, row, row+1,
 			GTK_FILL, GTK_FILL, 0, 0);
-#endif /* GTK_CHECK_VERSION(3,0,0) */
+#endif /* USE_GTK_GRID */
 		col++;
 		if (col == bitfieldDesc.elemsPerRow) {
 			row++;
@@ -1779,18 +1780,18 @@ rom_data_view_update_display(RomDataView *page)
 			}
 
 			auto &tab = *tabIter;
-#if GTK_CHECK_VERSION(3,0,0)
+#if USE_GTK_GRID
 			tab.vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 8);
 			tab.table = gtk_grid_new();
 			gtk_grid_set_row_spacing(GTK_GRID(tab.table), 2);
 			gtk_grid_set_column_spacing(GTK_GRID(tab.table), 8);
-#else /* !GTK_CHECK_VERSION(3,0,0) */
+#else /* !USE_GTK_GRID */
 			tab.vbox = gtk_vbox_new(false, 8);
 			// TODO: Adjust the table size?
 			tab.table = gtk_table_new(rowCount, 2, false);
 			gtk_table_set_row_spacings(GTK_TABLE(tab.table), 2);
 			gtk_table_set_col_spacings(GTK_TABLE(tab.table), 8);
-#endif /* GTK_CHECK_VERSION(3,0,0) */
+#endif /* USE_GTK_GRID */
 
 			gtk_container_set_border_width(GTK_CONTAINER(tab.table), 8);
 			gtk_box_pack_start(GTK_BOX(tab.vbox), tab.table, false, false, 0);
@@ -1812,16 +1813,16 @@ rom_data_view_update_display(RomDataView *page)
 		auto &tab = page->tabs->at(0);
 		tab.vbox = GTK_WIDGET(page);
 
-#if GTK_CHECK_VERSION(3,0,0)
+#if USE_GTK_GRID
 		tab.table = gtk_grid_new();
 		gtk_grid_set_row_spacing(GTK_GRID(tab.table), 2);
 		gtk_grid_set_column_spacing(GTK_GRID(tab.table), 8);
-#else /* !GTK_CHECK_VERSION(3,0,0) */
+#else /* !USE_GTK_GRID */
 		// TODO: Adjust the table size?
 		tab.table = gtk_table_new(count, 2, false);
 		gtk_table_set_row_spacings(GTK_TABLE(tab.table), 2);
 		gtk_table_set_col_spacings(GTK_TABLE(tab.table), 8);
-#endif /* GTK_CHECK_VERSION(3,0,0) */
+#endif /* USE_GTK_GRID */
 
 		gtk_container_set_border_width(GTK_CONTAINER(tab.table), 8);
 		gtk_box_pack_start(GTK_BOX(page), tab.table, false, false, 0);
@@ -1919,15 +1920,15 @@ rom_data_view_update_display(RomDataView *page)
 
 			// Value widget.
 			int &row = tabRowCount[tabIdx];
-#if GTK_CHECK_VERSION(3,0,0)
+#if USE_GTK_GRID
 			// TODO: GTK_FILL
 			gtk_grid_attach(GTK_GRID(tab.table), lblDesc, 0, row, 1, 1);
 			// Widget halign is set above.
 			gtk_widget_set_valign(widget, GTK_ALIGN_START);
-#else /* !GTK_CHECK_VERSION(3,0,0) */
+#else /* !USE_GTK_GRID */
 			gtk_table_attach(GTK_TABLE(tab.table), lblDesc, 0, 1, row, row+1,
 				GTK_FILL, GTK_FILL, 0, 0);
-#endif /* GTK_CHECK_VERSION(3,0,0) */
+#endif /* USE_GTK_GRID */
 
 			if (separate_rows) {
 				// Separate rows.
@@ -1965,7 +1966,7 @@ rom_data_view_update_display(RomDataView *page)
 					g_object_set_data(G_OBJECT(widget), "RFT_LISTDATA_rows_visible",
 						GINT_TO_POINTER(0));
 
-#if GTK_CHECK_VERSION(3,0,0)
+#if USE_GTK_GRID
 					// Change valign to FILL.
 					gtk_widget_set_valign(widget, GTK_ALIGN_FILL);
 
@@ -1984,7 +1985,7 @@ rom_data_view_update_display(RomDataView *page)
 						// TODO: Verify this.
 						gtk_box_reorder_child(GTK_BOX(tab.vbox), widget, 1);
 					}
-#else /* !GTK_CHECK_VERSION(3,0,0) */
+#else /* !USE_GTK_GRID */
 					// Need to use GtkAlignment on GTK+ 2.x.
 					GtkWidget *const alignment = gtk_alignment_new(0.0f, 0.0f, 1.0f, 1.0f);
 					gtk_alignment_set_padding(GTK_ALIGNMENT(alignment), 0, 8, 8, 8);
@@ -1998,30 +1999,30 @@ rom_data_view_update_display(RomDataView *page)
 						// TODO: Verify this.
 						gtk_box_reorder_child(GTK_BOX(tab.vbox), alignment, 1);
 					}
-#endif /* GTK_CHECK_VERSION(3,0,0) */
+#endif /* USE_GTK_GRID */
 					// Increment row by one, since only one widget is
 					// actually being added to the GtkTable/GtkGrid.
 					row++;
 				} else {
 					// Add the widget to the GtkTable/GtkGrid.
-#if GTK_CHECK_VERSION(3,0,0)
+#if USE_GTK_GRID
 					gtk_grid_attach(GTK_GRID(tab.table), widget, 0, row+1, 2, 1);
-#else /* !GTK_CHECK_VERSION(3,0,0) */
+#else /* !USE_GTK_GRID */
 					rowCount++;
 					gtk_table_resize(GTK_TABLE(tab.table), rowCount, 2);
 					gtk_table_attach(GTK_TABLE(tab.table), widget, 0, 2, row+1, row+2,
 						GTK_FILL, GTK_FILL, 0, 0);
-#endif /* GTK_CHECK_VERSION(3,0,0) */
+#endif /* USE_GTK_GRID */
 					row += 2;
 				}
 			} else {
 				// Single row.
-#if GTK_CHECK_VERSION(3,0,0)
+#if USE_GTK_GRID
 				gtk_grid_attach(GTK_GRID(tab.table), widget, 1, row, 1, 1);
-#else /* !GTK_CHECK_VERSION(3,0,0) */
+#else /* !USE_GTK_GRID */
 				gtk_table_attach(GTK_TABLE(tab.table), widget, 1, 2, row, row+1,
 					GTK_FILL, GTK_FILL, 0, 0);
-#endif /* GTK_CHECK_VERSION(3,0,0) */
+#endif /* USE_GTK_GRID */
 				row++;
 			}
 		}
