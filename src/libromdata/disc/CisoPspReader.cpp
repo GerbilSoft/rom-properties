@@ -920,7 +920,6 @@ int CisoPspReader::readBlock(uint32_t blockIdx, void *ptr, int pos, size_t size)
 			if (windowBits == 0) {
 				m_lastError = EINVAL;
 			}
-			return 0;
 			uint32_t z_max_size = d->block_size;
 			if (unlikely(d->isDaxWithoutNCTable)) {
 				// DAX without NC table can end up compressing to larger
