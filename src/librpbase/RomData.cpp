@@ -21,6 +21,7 @@ using std::vector;
 
 // librpfile, librptexture
 using LibRpFile::IRpFile;
+using LibRpFile::RpFile;
 using LibRpTexture::rp_image;
 
 namespace LibRpBase {
@@ -937,7 +938,9 @@ vector<RomData::RomOps> RomData::romOps(void) const
 int RomData::doRomOp(int id)
 {
 	RP_D(RomData);
+	bool closeFileAfter;
 	if (d->file) {
+		closeFileAfter = false;
 		if (d->file->isCompressed()) {
 			// Cannot write to a compressed file.
 			return -EIO;
@@ -952,12 +955,26 @@ int RomData::doRomOp(int id)
 			}
 		}
 	} else {
-		// TODO: Need to reopen the file.
-		// TODO: Close it afterwards.
-		return -EIO;
+		// Reopen the file.
+		closeFileAfter = true;
+		RpFile *const file = new RpFile(d->filename, RpFile::FM_OPEN_WRITE);
+		if (!file->isOpen()) {
+			// Error opening the file.
+			int err = file->lastError();
+			if (err == 0) {
+				err = EIO;
+			}
+			UNREF(file);
+			return -err;
+		}
+		d->file = file;
 	}
 
-	return doRomOp(id);
+	int ret = doRomOp_int(id);
+	if (closeFileAfter) {
+		UNREF_AND_NULL_NOCHK(d->file);
+	}
+	return ret;
 }
 
 /**
@@ -980,6 +997,7 @@ vector<RomData::RomOps> RomData::romOps_int(void) const
 int RomData::doRomOp_int(int id)
 {
 	// Default implementation has no ROM operations.
+	RP_UNUSED(id);
 	return -ENOTSUP;
 }
 

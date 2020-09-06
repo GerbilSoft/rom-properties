@@ -82,6 +82,13 @@ class RpVectorFile : public IRpFile
 		 */
 		int truncate(off64_t size = 0) final;
 
+		/**
+		 * Flush buffers.
+		 * This operation only makes sense on writable files.
+		 * @return 0 on success; negative POSIX error code on error.
+		 */
+		int flush(void) final;
+
 	public:
 		/** File properties **/
 

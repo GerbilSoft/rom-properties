@@ -399,9 +399,9 @@ class RP_ShellPropSheetExt_Private
 
 		/**
 		 * An "Options" menu action was triggered.
-		 * @param id Options ID.
+		 * @param menuId Menu ID. (Options ID + IDM_OPTIONS_MENU_BASE)
 		 */
-		void menuOptions_action_triggered(int id);
+		void menuOptions_action_triggered(int menuId);
 
 		/**
 		 * Dialog subclass procedure to intercept WM_COMMAND for the "Options" button.
@@ -2719,11 +2719,11 @@ void RP_ShellPropSheetExt_Private::initDialog(void)
 
 /**
  * An "Options" menu action was triggered.
- * @param id Options ID.
+ * @param menuId Menu ID. (Options ID + IDM_OPTIONS_MENU_BASE)
  */
-void RP_ShellPropSheetExt_Private::menuOptions_action_triggered(int id)
+void RP_ShellPropSheetExt_Private::menuOptions_action_triggered(int menuId)
 {
-	if (id < IDM_OPTIONS_MENU_BASE) {
+	if (menuId < IDM_OPTIONS_MENU_BASE) {
 		// Export to text or JSON.
 		const char *const rom_filename = romData->filename();
 		if (!rom_filename)
@@ -2732,7 +2732,7 @@ void RP_ShellPropSheetExt_Private::menuOptions_action_triggered(int id)
 		bool toClipboard;
 		tstring ts_title, ts_filter;
 		const TCHAR *ts_default_ext = nullptr;
-		switch (id) {
+		switch (menuId) {
 			case IDM_OPTIONS_MENU_EXPORT_TEXT:
 				toClipboard = false;
 				ts_title = U82T_c(C_("RomDataView", "Export to Text File"));
@@ -2819,7 +2819,7 @@ void RP_ShellPropSheetExt_Private::menuOptions_action_triggered(int id)
 		// TODO: Optimize this such that we can pass ofstream or ostringstream
 		// to a factored-out function.
 
-		switch (id) {
+		switch (menuId) {
 			case IDM_OPTIONS_MENU_EXPORT_TEXT: {
 				ofs << "== " << rp_sprintf(C_("RomDataView", "File: '%s'"), rom_filename) << '\n';
 				ROMOutput ro(romData, sel_lc());
@@ -2872,9 +2872,36 @@ void RP_ShellPropSheetExt_Private::menuOptions_action_triggered(int id)
 				CloseClipboard();
 			}
 		}
-	}
+	} else {
+		// Run a ROM operation.
+		const int id = menuId - IDM_OPTIONS_MENU_BASE;
+		int ret = romData->doRomOp(id);
+		if (ret == 0) {
+			// Operation completed.
+			// TODO: Update relevant field(s).
 
-	// TODO: RomOps
+			// Update the RomOp menu entry in case it changed.
+			// NOTE: Assuming the RomOps vector order hasn't changed.
+			// TODO: Have RomData store the RomOps vector instead of
+			// rebuilding it here?
+			const vector<RomData::RomOps> ops = romData->romOps();
+			assert(id < (int)ops.size());
+			if (id < (int)ops.size()) {
+				const RomData::RomOps &op = ops[id];
+
+				UINT uFlags;
+				if (!(op.flags & RomData::RomOps::ROF_ENABLED)) {
+					uFlags = MF_BYCOMMAND | MF_STRING | MF_DISABLED;
+				} else {
+					uFlags = MF_BYCOMMAND | MF_STRING;
+				}
+				ModifyMenu(hMenuOptions, menuId, uFlags, menuId, U82T_c(op.desc.c_str()));
+			}
+		} else {
+			// An error occurred...
+			// TODO: Show an error message.
+		}
+	}
 }
 
 /**

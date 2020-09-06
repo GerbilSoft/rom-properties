@@ -63,6 +63,7 @@ class RomDataViewPrivate
 		// "Options" button.
 		QPushButton *btnOptions;
 		QMenu *menuOptions;
+		int romOps_firstActionIndex;
 #if QT_VERSION < QT_VERSION_CHECK(5,0,0)
 		QSignalMapper *mapperOptionsMenu;
 #endif /* QT_VERSION < QT_VERSION_CHECK(5,0,0) */
@@ -211,6 +212,7 @@ RomDataViewPrivate::RomDataViewPrivate(RomDataView *q, RomData *romData)
 	: q_ptr(q)
 	, btnOptions(nullptr)
 	, menuOptions(nullptr)
+	, romOps_firstActionIndex(-1)
 #if QT_VERSION < QT_VERSION_CHECK(5,0,0)
 	, mapperOptionsMenu(nullptr)
 #endif /* QT_VERSION < QT_VERSION_CHECK(5,0,0) */
@@ -366,6 +368,7 @@ void RomDataViewPrivate::createOptionsButton(void)
 	const vector<RomData::RomOps> ops = romData->romOps();
 	if (!ops.empty()) {
 		menuOptions->addSeparator();
+		romOps_firstActionIndex = menuOptions->children().count();
 
 		int i = 0;
 		const auto ops_end = ops.cend();
@@ -1628,7 +1631,7 @@ void RomDataView::menuOptions_action_triggered(int id)
 {
 	// IDs below 0 are for built-in actions.
 	// IDs >= 0 are for RomData-specific actions.
-	RP_D(RomDataView);
+	Q_D(RomDataView);
 
 	if (id < 0) {
 		// Export/copy to text or JSON.
@@ -1722,7 +1725,35 @@ void RomDataView::menuOptions_action_triggered(int id)
 				assert(!"Invalid action ID.");
 				return;
 		}
-	}
+	} else if (d->romOps_firstActionIndex >= 0) {
+		// Run a ROM operation.
+		int ret = d->romData->doRomOp(id);
+		if (ret == 0) {
+			// Operation completed.
+			// TODO: Update relevant field(s).
 
-	// TODO: RomOps
+			// Update the RomOp menu entry in case it changed.
+			// NOTE: Assuming the RomOps vector order hasn't changed.
+			// TODO: Have RomData store the RomOps vector instead of
+			// rebuilding it here?
+			const vector<RomData::RomOps> ops = d->romData->romOps();
+			assert(id < (int)ops.size());
+			if (id < (int)ops.size()) {
+				const QObjectList &objList = d->menuOptions->children();
+				int actionIndex = d->romOps_firstActionIndex + id;
+				assert(actionIndex < objList.size());
+				if (actionIndex < objList.size()) {
+					QAction *const action = qobject_cast<QAction*>(objList.at(actionIndex));
+					if (action) {
+						const RomData::RomOps &op = ops[id];
+						action->setText(U82Q(op.desc));
+						action->setEnabled(!!(op.flags & RomData::RomOps::ROF_ENABLED));
+					}
+				}
+			}
+		} else {
+			// An error occurred...
+			// TODO: Show an error message.
+		}
+	}
 }

@@ -664,6 +664,27 @@ int RpFile::truncate(off64_t size)
 	return 0;
 }
 
+/**
+ * Flush buffers.
+ * This operation only makes sense on writable files.
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int RpFile::flush(void)
+{
+	if (isWritable()) {
+		RP_D(RpFile);
+		BOOL bRet = FlushFileBuffers(d->file);
+		if (!bRet) {
+			m_lastError = w32err_to_posix(GetLastError());
+			return -m_lastError;
+		}
+		return 0;
+	}
+
+	// Ignore flush operations if the file isn't writable.
+	return 0;
+}
+
 /** File properties **/
 
 /**

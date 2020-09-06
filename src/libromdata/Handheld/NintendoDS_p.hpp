@@ -141,10 +141,24 @@ class NintendoDSPrivate : public LibRpBase::RomDataPrivate
 		int getTitleIndex(void) const;
 
 		/**
+		 * Get the total used ROM size as indicated from the ROM header.
+		 * @return Total used ROM size, in bytes.
+		 */
+		inline uint32_t totalUsedRomSize(void) const
+		{
+			return likely(romType < RomType::DSi_Enhanced)
+				? le32_to_cpu(romHeader.total_used_rom_size)
+				: le32_to_cpu(romHeader.dsi.total_used_rom_size);
+		}
+
+		/**
 		 * Is the ROM trimmed?
 		 * @return True if trimmed; false if not trimmed.
 		 */
-		bool isRomTrimmed(void) const;
+		inline bool isRomTrimmed(void) const
+		{
+			return !(totalUsedRomSize() < this->romSize);
+		}
 
 		/**
 		 * Check the NDS security data.

@@ -550,7 +550,7 @@ class RomData : public RefBase
 
 	public:
 		struct RomOps {
-			std::string desc;	// Description
+			std::string desc;	// Description (Use '&' for mnemonics)
 			uint32_t flags;		// Flags
 
 			enum RomOpsFlags {

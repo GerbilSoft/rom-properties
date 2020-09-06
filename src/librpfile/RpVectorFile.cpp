@@ -146,6 +146,17 @@ int RpVectorFile::truncate(off64_t size)
 	return 0;
 }
 
+/**
+ * Flush buffers.
+ * This operation only makes sense on writable files.
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int RpVectorFile::flush(void)
+{
+	// Ignore flush operations, since RpVectorFile is entirely in memory.
+	return 0;
+}
+
 /** File properties **/
 
 /**

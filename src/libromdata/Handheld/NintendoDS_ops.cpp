@@ -15,28 +15,12 @@
 using LibRpBase::RomData;
 
 // C++ STL classes.
+using std::unique_ptr;
 using std::vector;
 
 namespace LibRomData {
 
 /** NintendoDSPrivate **/
-
-/**
- * Is the ROM trimmed?
- * @return True if trimmed; false if not trimmed.
- */
-bool NintendoDSPrivate::isRomTrimmed(void) const
-{
-	// If the ROM size is larger than the "used" size in the
-	// ROM header, then it's not trimmed.
-	// TODO: What if the ROM size is an exact power of two?
-	const uint32_t total_used_rom_size =
-		likely(romType < RomType::DSi_Enhanced)
-		? le32_to_cpu(romHeader.total_used_rom_size)
-		: le32_to_cpu(romHeader.dsi.total_used_rom_size);
-
-	return !(total_used_rom_size < this->romSize);
-}
 
 /**
  * Check the NDS security data.
@@ -168,32 +152,52 @@ vector<RomData::RomOps> NintendoDS::romOps_int(void) const
 	ops.resize(2);
 
 	RP_D(NintendoDS);
-	if (d->romSize > 0) {
-		const char *const s_trim = d->isRomTrimmed()
-			? C_("NintendoDS|RomOps", "Untrim ROM")
-			: C_("NintendoDS|RomOps", "Trim ROM");
-		ops[0].desc = s_trim;
-		ops[0].flags = RomOps::ROF_ENABLED;
-	} else {
-		// Unable to trim/untrim.
-		ops[0].desc = C_("NintendoDS|RomOps", "Trim ROM");
-		ops[0].flags = 0;
-	}
+	uint32_t flags;
 
+	// Trim/Untrim ROM
+	bool showUntrim = false;
+	if (likely(d->romSize > 0)) {
+		// Determine if the ROM is trimmed.
+
+		const uint32_t total_used_rom_size = d->totalUsedRomSize();
+		if (total_used_rom_size == d->romSize && isPow2(d->romSize)) {
+			// ROM is technically trimmed, but it's already a power of two.
+			// Cannot trim/untrim, so show the "Trim ROM" option but disabled.
+			showUntrim = false;
+			flags = 0;
+		} else {
+			showUntrim = !(total_used_rom_size < d->romSize);
+			flags = RomOps::ROF_ENABLED;
+		}
+	} else {
+		// Empty ROM?
+		flags = 0;
+	}
+	ops[0].desc = showUntrim
+		? C_("NintendoDS|RomOps", "&Untrim ROM")
+		: C_("NintendoDS|RomOps", "&Trim ROM");
+	ops[0].flags = flags;
+
+	// Encrypt/Decrypt ROM
+	bool showEncrypt = false;
 	switch (d->secArea) {
 		case NintendoDSPrivate::NDS_SECAREA_DECRYPTED:
-			ops[1].desc = C_("NintendoDS|RomOps", "Encrypt ROM");
-			ops[1].flags = RomOps::ROF_ENABLED;
+			showEncrypt = true;
+			flags = RomOps::ROF_ENABLED;
 			break;
 		case NintendoDSPrivate::NDS_SECAREA_ENCRYPTED:
-			ops[1].desc = C_("NintendoDS|RomOps", "Decrypt ROM");
-			ops[1].flags = RomOps::ROF_ENABLED;
+			showEncrypt = false;
+			flags = RomOps::ROF_ENABLED;
 			break;
 		default:
-			ops[1].desc = C_("NintendoDS|RomOps", "Decrypt ROM");
-			ops[1].flags = 0;
+			showEncrypt = false;
+			flags = 0;
 			break;
 	}
+	ops[1].desc = showEncrypt
+		? C_("NintendoDS|RomOps", "Encrypt ROM")
+		: C_("NintendoDS|RomOps", "Decrypt ROM");
+	ops[1].flags = flags;
 
 	return ops;
 }
@@ -209,12 +213,81 @@ int NintendoDS::doRomOp_int(int id)
 	RP_D(NintendoDS);
 	int ret = 0;
 
+	printf("DO OP: %d\n", id);
 	switch (id) {
-		case 0:
+		case 0: {
 			// Trim/untrim ROM.
 			// Trim = reduce ROM to minimum size as indicated by header.
 			// Untrim = expand to power of 2 size, filled with 0xFF.
+			const uint32_t total_used_rom_size = d->totalUsedRomSize();
+			if (!(total_used_rom_size < d->romSize)) {
+				// ROM is trimmed. Untrim it.
+				const off64_t next_pow2 = (1LL << (uilog2(total_used_rom_size) + 1));
+				assert(next_pow2 > total_used_rom_size);
+				if (next_pow2 <= total_used_rom_size) {
+					// Something screwed up here...
+					return -EIO;
+				}
+
+#define UNTRIM_BLOCK_SIZE (64*1024)
+				unique_ptr<uint8_t[]> ff_block(new uint8_t[UNTRIM_BLOCK_SIZE]);
+				memset(ff_block.get(), 0xFF, UNTRIM_BLOCK_SIZE);
+
+				off64_t pos = static_cast<off64_t>(total_used_rom_size);
+				int ret = d->file->seek(pos);
+				if (ret != 0) {
+					// Seek error.
+					int err = d->file->lastError();
+					if (err == 0) {
+						err = EIO;
+					}
+					return -err;
+				}
+
+				// If we're not aligned to the untrim block size,
+				// write a partial block.
+				const unsigned int partial = static_cast<unsigned int>(pos % UNTRIM_BLOCK_SIZE);
+				if (partial != 0) {
+					const unsigned int toWrite = UNTRIM_BLOCK_SIZE - partial;
+					size_t size = d->file->write(ff_block.get(), toWrite);
+					if (size != toWrite) {
+						// Write error.
+						int err = d->file->lastError();
+						if (err == 0) {
+							err = EIO;
+						}
+						return -err;
+					}
+					pos += toWrite;
+				}
+
+				// Write remaining full blocks.
+				for (; pos < next_pow2; pos += UNTRIM_BLOCK_SIZE) {
+					size_t size = d->file->write(ff_block.get(), UNTRIM_BLOCK_SIZE);
+					if (size != UNTRIM_BLOCK_SIZE) {
+						// Write error.
+						int err = d->file->lastError();
+						if (err == 0) {
+							err = EIO;
+						}
+						return -err;
+					}
+				}
+
+				// ROM untrimmed.
+				d->file->flush();
+				d->romSize = d->file->size();
+			} else if (total_used_rom_size < d->romSize) {
+				// ROM is untrimmed. Trim it.
+				d->file->truncate(total_used_rom_size);
+				d->file->flush();
+				d->romSize = d->file->size();
+			} else {
+				// ROM can't be trimmed or untrimmed...
+				assert(!"ROM can't be trimmed or untrimmed; menu option should have been disabled.");
+			}
 			break;
+		}
 
 		case 1:
 			// Encrypt/decrypt ROM.

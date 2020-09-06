@@ -138,6 +138,16 @@ class IRpFile : public RefBase
 		 */
 		virtual int truncate(off64_t size = 0) = 0;
 
+		/**
+		 * Flush buffers.
+		 * This operation only makes sense on writable files.
+		 * @return 0 on success; negative POSIX error code on error.
+		 */
+		virtual int flush(void)
+		{
+			return -ENOTSUP;
+		}
+
 	public:
 		/** File properties **/
 

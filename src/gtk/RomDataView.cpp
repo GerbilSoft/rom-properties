@@ -2545,6 +2545,29 @@ menuOptions_triggered_signal_handler(GtkMenuItem *menuItem,
 				assert(!"Invalid action ID.");
 				return;
 		}
+	} else {
+		// Run a ROM operation.
+		int ret = page->romData->doRomOp(id);
+		if (ret == 0) {
+			// Operation completed.
+			// TODO: Update relevant field(s).
+
+			// Update the RomOp menu entry in case it changed.
+			// NOTE: Assuming the RomOps vector order hasn't changed.
+			// TODO: Have RomData store the RomOps vector instead of
+			// rebuilding it here?
+			const vector<RomData::RomOps> ops = page->romData->romOps();
+			assert(id < (int)ops.size());
+			if (id < (int)ops.size()) {
+				const RomData::RomOps &op = ops[id];
+				const string desc = convert_accel_to_gtk(op.desc.c_str());
+				gtk_menu_item_set_label(menuItem, desc.c_str());
+				gtk_widget_set_sensitive(GTK_WIDGET(menuItem), !!(op.flags & RomData::RomOps::ROF_ENABLED));
+			}
+		} else {
+			// An error occurred...
+			// TODO: Show an error message.
+		}
 	}
 
 	// TODO: RomOps
