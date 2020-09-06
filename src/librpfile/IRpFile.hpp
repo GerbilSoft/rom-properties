@@ -94,8 +94,8 @@ class IRpFile : public RefBase
 
 		/**
 		 * Read data from the file.
-		 * @param ptr Output data buffer.
-		 * @param size Amount of data to read, in bytes.
+		 * @param ptr	[out] Output data buffer.
+		 * @param size	[in] Amount of data to read, in bytes.
 		 * @return Number of bytes read.
 		 */
 		ATTR_ACCESS_SIZE(write_only, 2, 3)
@@ -103,8 +103,8 @@ class IRpFile : public RefBase
 
 		/**
 		 * Write data to the file.
-		 * @param ptr Input data buffer.
-		 * @param size Amount of data to read, in bytes.
+		 * @param ptr	[in] Input data buffer.
+		 * @param size	[in] Amount of data to write, in bytes.
 		 * @return Number of bytes written.
 		 */
 		ATTR_ACCESS_SIZE(read_only, 2, 3)
@@ -112,7 +112,7 @@ class IRpFile : public RefBase
 
 		/**
 		 * Set the file position.
-		 * @param pos File position.
+		 * @param pos	[in] File position.
 		 * @return 0 on success; -1 on error.
 		 */
 		virtual int seek(off64_t pos) = 0;
@@ -216,7 +216,34 @@ class IRpFile : public RefBase
 		 * @param size	[in] Amount of data to read, in bytes.
 		 * @return Number of bytes read on success; 0 on seek or read error.
 		 */
-		size_t seekAndRead(off64_t pos, void *ptr, size_t size);
+		ATTR_ACCESS_SIZE(write_only, 3, 4)
+		inline size_t seekAndRead(off64_t pos, void *ptr, size_t size)
+		{
+			int ret = this->seek(pos);
+			if (ret != 0) {
+				// Seek error.
+				return 0;
+			}
+			return this->read(ptr, size);
+		}
+
+		/**
+		 * Seek to the specified address, then write data.
+		 * @param pos	[in] Requested seek address.
+		 * @param ptr	[in] Input data buffer.
+		 * @param size	[in] Amount of data to write, in bytes.
+		 * @return Number of bytes read on success; 0 on seek or read error.
+		 */
+		ATTR_ACCESS_SIZE(read_only, 3, 4)
+		inline size_t seekAndWrite(off64_t pos, const void *ptr, size_t size)
+		{
+			int ret = this->seek(pos);
+			if (ret != 0) {
+				// Seek error.
+				return 0;
+			}
+			return this->write(ptr, size);
+		}
 
 	protected:
 		int m_lastError;
