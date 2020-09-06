@@ -330,6 +330,15 @@ XboxDisc::XboxDisc(IRpFile *file)
 			break;
 	}
 
+	// Is the file large enough?
+	// Must have at least the first XDVDFS sector.
+	const off64_t fileSize = d->file->size();
+	if (fileSize < d->xdvdfs_addr + XDVDFS_BLOCK_SIZE) {
+		// File is too small.
+		UNREF_AND_NULL_NOCHK(d->file);
+		return;
+	}
+
 	// If this is a Kreon drive, unlock it.
 	if (d->file->isDevice()) {
 		RpFile *const rpFile = dynamic_cast<RpFile*>(d->file);
@@ -360,6 +369,7 @@ XboxDisc::XboxDisc(IRpFile *file)
 	if (!d->discReader->isOpen()) {
 		// Unable to open the discReader.
 		UNREF_AND_NULL_NOCHK(d->discReader);
+		UNREF_AND_NULL_NOCHK(d->file);
 		d->lockKreonDrive();
 		d->isKreon = false;
 		return;
@@ -369,6 +379,7 @@ XboxDisc::XboxDisc(IRpFile *file)
 		// Unable to open the XDVDFSPartition.
 		UNREF_AND_NULL_NOCHK(d->xdvdfsPartition);
 		UNREF_AND_NULL_NOCHK(d->discReader);
+		UNREF_AND_NULL_NOCHK(d->file);
 		d->lockKreonDrive();
 		d->isKreon = false;
 		return;
