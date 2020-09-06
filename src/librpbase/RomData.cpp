@@ -913,12 +913,20 @@ bool RomData::hasDangerousPermissions(void) const
 vector<RomData::RomOps> RomData::romOps(void) const
 {
 	RP_D(const RomData);
+	vector<RomData::RomOps> v_ret = romOps_int();
+
 	if (d->isCompressed) {
 		// Cannot run RomOps on a compressed file.
-		return vector<RomData::RomOps>();
+		// Mark all options as disabled.
+		// TODO: Indicate why they're disabled?
+		std::for_each(v_ret.begin(), v_ret.end(),
+			[](RomData::RomOps &op) {
+				op.flags &= ~RomOps::ROF_ENABLED;
+			}
+		);
 	}
 
-	return romOps_int();
+	return v_ret;
 }
 
 /**

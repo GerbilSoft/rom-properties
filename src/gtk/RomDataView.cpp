@@ -1717,6 +1717,7 @@ rom_data_view_create_options_button(RomDataView *page)
 		for (auto iter = ops.cbegin(); iter != ops_end; ++iter, i++) {
 			const string desc = convert_accel_to_gtk(iter->desc.c_str());
 			menuItem = gtk_menu_item_new_with_mnemonic(desc.c_str());
+			gtk_widget_set_sensitive(menuItem, !!(iter->flags & RomData::RomOps::ROF_ENABLED));
 			g_object_set_data(G_OBJECT(menuItem), "menuOptions_id", GINT_TO_POINTER(i));
 			g_signal_connect(menuItem, "activate", G_CALLBACK(menuOptions_triggered_signal_handler), page);
 			gtk_widget_show(menuItem);

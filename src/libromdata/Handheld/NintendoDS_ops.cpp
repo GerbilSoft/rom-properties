@@ -163,26 +163,35 @@ NintendoDSPrivate::NDS_SecureArea NintendoDSPrivate::checkNDSSecureArea(void)
 vector<RomData::RomOps> NintendoDS::romOps_int(void) const
 {
 	// Determine if the ROM is trimmed and/or encrypted.
-	// TODO: Make this non-static.
+	// TODO: Cache the vector?
 	vector<RomOps> ops;
-	ops.reserve(2);
+	ops.resize(2);
 
 	RP_D(NintendoDS);
 	if (d->romSize > 0) {
 		const char *const s_trim = d->isRomTrimmed()
 			? C_("NintendoDS|RomOps", "Untrim ROM")
 			: C_("NintendoDS|RomOps", "Trim ROM");
-		ops.emplace_back(RomOps(s_trim, 0));
+		ops[0].desc = s_trim;
+		ops[0].flags = RomOps::ROF_ENABLED;
+	} else {
+		// Unable to trim/untrim.
+		ops[0].desc = C_("NintendoDS|RomOps", "Trim ROM");
+		ops[0].flags = 0;
 	}
 
 	switch (d->secArea) {
 		case NintendoDSPrivate::NDS_SECAREA_DECRYPTED:
-			ops.emplace_back(RomOps(C_("NintendoDS|RomOps", "Encrypt ROM"), 0));
+			ops[1].desc = C_("NintendoDS|RomOps", "Encrypt ROM");
+			ops[1].flags = RomOps::ROF_ENABLED;
 			break;
 		case NintendoDSPrivate::NDS_SECAREA_ENCRYPTED:
-			ops.emplace_back(RomOps(C_("NintendoDS|RomOps", "Decrypt ROM"), 0));
+			ops[1].desc = C_("NintendoDS|RomOps", "Decrypt ROM");
+			ops[1].flags = RomOps::ROF_ENABLED;
 			break;
 		default:
+			ops[1].desc = C_("NintendoDS|RomOps", "Decrypt ROM");
+			ops[1].flags = 0;
 			break;
 	}
 

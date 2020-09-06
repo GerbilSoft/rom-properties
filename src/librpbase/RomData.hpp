@@ -551,7 +551,11 @@ class RomData : public RefBase
 	public:
 		struct RomOps {
 			std::string desc;	// Description
-			uint32_t flags;		// Flags (all zero right now)
+			uint32_t flags;		// Flags
+
+			enum RomOpsFlags {
+				ROF_ENABLED	= (1U << 0),	// Set to enable the ROM op
+			};
 
 			RomOps() { }
 			RomOps(const char *desc, uint32_t flags)

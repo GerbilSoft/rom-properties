@@ -316,7 +316,6 @@ void RomDataViewPrivate::createOptionsButton(void)
 		int idx = -1;
 		for (int i = 0; i < count; i++) {
 			if (boxLayout->itemAt(i)->widget() == btnOptions) {
-				printf("found btnOptions: %d\n", i);
 				idx = i;
 				break;
 			}
@@ -372,6 +371,7 @@ void RomDataViewPrivate::createOptionsButton(void)
 		const auto ops_end = ops.cend();
 		for (auto iter = ops.cbegin(); iter != ops_end; ++iter, i++) {
 			QAction *const action = menuOptions->addAction(U82Q(iter->desc));
+			action->setEnabled(!!(iter->flags & RomData::RomOps::ROF_ENABLED));
 #if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
 			QObject::connect(action, &QAction::triggered,
 				[q, i] { q->menuOptions_action_triggered(i); });

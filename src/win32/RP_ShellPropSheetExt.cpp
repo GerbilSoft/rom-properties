@@ -3046,7 +3046,13 @@ void RP_ShellPropSheetExt_Private::createOptionsButton(void)
 		unsigned int i = IDM_OPTIONS_MENU_BASE;
 		const auto ops_end = ops.cend();
 		for (auto iter = ops.cbegin(); iter != ops_end; ++iter, i++) {
-			AppendMenu(hMenuOptions, MF_STRING, i, U82T_c(iter->desc.c_str()));
+			UINT uFlags;
+			if (!(iter->flags & RomData::RomOps::ROF_ENABLED)) {
+				uFlags = MF_STRING | MF_DISABLED;
+			} else {
+				uFlags = MF_STRING;
+			}
+			AppendMenu(hMenuOptions, uFlags, i, U82T_c(iter->desc.c_str()));
 		}
 	}
 }
