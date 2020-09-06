@@ -196,18 +196,19 @@ ENDIF(WIN32)
 
 IF(ENABLE_DECRYPTION)
 	SET(librpbase_CRYPTO_SRCS crypto/AesCipherFactory.cpp)
-	SET(librpbase_CRYPTO_H    crypto/IAesCipher.hpp)
+	SET(librpbase_CRYPTO_H    crypto/IAesCipher.hpp crypto/MD5.hpp)
 	IF(WIN32)
 		SET(librpbase_CRYPTO_OS_SRCS
 			crypto/AesCAPI.cpp
 			crypto/AesCAPI_NG.cpp
+			crypto/MD5Capi.cpp
 			)
 		SET(librpbase_CRYPTO_OS_H
 			crypto/AesCAPI.hpp
 			crypto/AesCAPI_NG.hpp
 			)
 	ELSE(WIN32)
-		SET(librpbase_CRYPTO_OS_SRCS crypto/AesNettle.cpp)
+		SET(librpbase_CRYPTO_OS_SRCS crypto/AesNettle.cpp crypto/MD5Nettle.cpp)
 		SET(librpbase_CRYPTO_OS_H    crypto/AesNettle.hpp)
 	ENDIF(WIN32)
 ENDIF(ENABLE_DECRYPTION)

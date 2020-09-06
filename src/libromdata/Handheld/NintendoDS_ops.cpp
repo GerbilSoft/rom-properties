@@ -7,9 +7,11 @@
  ***************************************************************************/
 
 #include "stdafx.h"
+#include "config.librpbase.h"
 
 #include "NintendoDS.hpp"
 #include "NintendoDS_p.hpp"
+#include "ndscrypt.hpp"
 
 // librpbase
 using LibRpBase::RomData;
@@ -149,7 +151,11 @@ vector<RomData::RomOps> NintendoDS::romOps_int(void) const
 	// Determine if the ROM is trimmed and/or encrypted.
 	// TODO: Cache the vector?
 	vector<RomOps> ops;
+#ifdef ENABLE_DECRYPTION
 	ops.resize(2);
+#else /* !ENABLE_DECRYPTION */
+	ops.resize(1);
+#endif /* ENABLE_DECRYPTION */
 
 	RP_D(NintendoDS);
 	uint32_t flags;
@@ -178,6 +184,7 @@ vector<RomData::RomOps> NintendoDS::romOps_int(void) const
 		: C_("NintendoDS|RomOps", "&Trim ROM");
 	ops[0].flags = flags;
 
+#ifdef ENABLE_DECRYPTION
 	// Encrypt/Decrypt ROM
 	bool showEncrypt = false;
 	switch (d->secArea) {
@@ -198,6 +205,7 @@ vector<RomData::RomOps> NintendoDS::romOps_int(void) const
 		? C_("NintendoDS|RomOps", "Encrypt ROM")
 		: C_("NintendoDS|RomOps", "Decrypt ROM");
 	ops[1].flags = flags;
+#endif /* ENABLE_DECRYPTION */
 
 	return ops;
 }
@@ -289,9 +297,77 @@ int NintendoDS::doRomOp_int(int id)
 			break;
 		}
 
-		case 1:
-			// Encrypt/decrypt ROM.
+#ifdef ENABLE_DECRYPTION
+		case 1: {
+			// Encrypt/Decrypt ROM.
+			bool doEncrypt;
+			if (d->secArea == NintendoDSPrivate::NDS_SECAREA_DECRYPTED) {
+				// Encrypt the secure area.
+				doEncrypt = true;
+			} else if (d->secArea == NintendoDSPrivate::NDS_SECAREA_ENCRYPTED) {
+				// Decrypt the secure area.
+				doEncrypt = false;
+				break;
+			} else {
+				// Cannot perform this ROM operation.
+				assert(!"Secure area cannot be adjusted.");
+				ret = -ENOTSUP;
+				break;
+			}
+
+			// Make sure nds-blowfish.bin is loaded.
+			int ret = ndscrypt_load_nds_blowfish_bin();
+			if (ret != 0) {
+				// TODO: Show an error message.
+				ret = -EIO;
+				break;
+			}
+
+			// Load the first 32 KB.
+#define SEC_AREA_SIZE (32*1024)
+			unique_ptr<uint8_t[]> buf(new uint8_t[SEC_AREA_SIZE]);
+			d->file->rewind();
+			size_t size = d->file->read(buf.get(), SEC_AREA_SIZE);
+			if (size != SEC_AREA_SIZE) {
+				// Seek and/or read error.
+				// TODO: Show an error message.
+				ret = -d->file->lastError();
+				if (ret == 0) {
+					ret = -EIO;
+				}
+				break;
+			}
+
+			// Run the actual encryption.
+			// TODO: Decrypt function.
+			ret = doEncrypt
+				? ndscrypt_encrypt_secure_area(buf.get(), SEC_AREA_SIZE)
+				: -ENOTSUP;
+			if (ret != 0) {
+				// Error encrypting/decrypting.
+				// TODO: Show an error message.
+				break;
+			}
+
+			// Write the data back to the ROM.
+			d->file->rewind();
+			size = d->file->write(buf.get(), SEC_AREA_SIZE);
+			if (size != SEC_AREA_SIZE) {
+				// Seek and/or write error.
+				// TODO: Show an error message.
+				ret = -d->file->lastError();
+				if (ret == 0) {
+					ret = -EIO;
+				}
+				break;
+			}
+
+			// Update the secData and secArea values.
+			d->secData = d->checkNDSSecurityData();
+			d->secArea = d->checkNDSSecureArea();
 			break;
+		}
+#endif /* ENABLE_DECRYPTION */
 	}
 
 	return ret;
