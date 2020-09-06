@@ -18,6 +18,7 @@
 
 // C includes.
 #include <stddef.h>	/* size_t */
+#include <stdarg.h>
 
 // C++ includes.
 #include <string>
@@ -586,14 +587,31 @@ std::string petscii_to_utf8(const char *str, int len, bool shifted = false);
 /** sprintf() **/
 
 /**
+ * vsprintf()-style function for std::string.
+ *
+ * @param fmt Format string
+ * @param ap Arguments
+ * @return std::string
+ */
+ATTR_PRINTF(1, 0)
+std::string rp_vsprintf(const char *fmt, va_list ap);
+
+/**
  * sprintf()-style function for std::string.
  *
- * @param fmt Format string.
- * @param ... Arguments.
+ * @param fmt Format string
+ * @param ... Arguments
  * @return std::string
  */
 ATTR_PRINTF(1, 2)
-std::string rp_sprintf(const char *fmt, ...);
+static inline std::string rp_sprintf(const char *fmt, ...)
+{
+	va_list ap;
+	va_start(ap, fmt);
+	std::string s_ret = rp_vsprintf(fmt, ap);
+	va_end(ap);
+	return s_ret;
+}
 
 #if defined(_MSC_VER) || defined(__MINGW32__)
 /**
@@ -603,16 +621,51 @@ std::string rp_sprintf(const char *fmt, ...);
  * MSVCRT doesn't support positional arguments in the standard
  * printf() functions. Instead, it has printf_p().
  *
- * @param fmt Format string.
- * @param ... Arguments.
- * @return std::string.
+ * @param fmt Format string
+ * @param ap Arguments
+ * @return std::string
+ */
+ATTR_PRINTF(1, 0)
+std::string rp_vsprintf_p(const char *fmt, va_list ap);
+
+/**
+ * sprintf()-style function for std::string.
+ * This version supports positional format string arguments.
+ *
+ * MSVCRT doesn't support positional arguments in the standard
+ * printf() functions. Instead, it has printf_p().
+ *
+ * @param fmt Format string
+ * @param ... Arguments
+ * @return std::string
  */
 ATTR_PRINTF(1, 2)
-std::string rp_sprintf_p(const char *fmt, ...);
+static inline std::string rp_sprintf_p(const char *fmt, ...)
+{
+	va_list ap;
+	va_start(ap, fmt);
+	std::string s_ret = rp_vsprintf_p(fmt, ap);
+	va_end(ap);
+	return s_ret;
+}
+
 #else /* !_MSC_VER && !__MINGW32__ */
+
 // glibc supports positional format string arguments
 // in the standard printf() functions.
-#define rp_sprintf_p(fmt, ...) rp_sprintf(fmt, ##__VA_ARGS__)
+static inline std::string rp_vsprintf_p(const char *fmt, va_list ap)
+{
+	return rp_vsprintf(fmt, ap);
+}
+
+static inline std::string rp_sprintf_p(const char *fmt, ...)
+{
+	va_list ap;
+	va_start(ap, fmt);
+	std::string s_ret = rp_vsprintf(fmt, ap);
+	va_end(ap);
+	return s_ret;
+}
 #endif /* _MSC_VER && __MINGW32__ */
 
 /** Other useful text functions **/
