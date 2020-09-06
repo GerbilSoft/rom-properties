@@ -1030,7 +1030,7 @@ int NintendoDS::loadFieldData(void)
 	vector<string> *const v_nds_security_data_names = RomFields::strArrayToVector_i18n(
 		"NintendoDS|SecurityData", nds_security_data_names, ARRAY_SIZE(nds_security_data_names));
 	d->fields->addField_bitfield(C_("NintendoDS", "Security Data"),
-		v_nds_security_data_names, 0, d->checkNDSSecurityData());
+		v_nds_security_data_names, 0, d->secData);
 
 	// Secure Area.
 	// TODO: Verify the CRC.
