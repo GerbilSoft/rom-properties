@@ -268,10 +268,11 @@ class klass : public LibRpBase::RomData { \
 		/** \
 		 * Perform a ROM operation. \
 		 * Internal function; called by RomData::doRomOp(). \
-		 * @param id Operation index. \
+		 * @param id		[in] Operation index. \
+		 * @param pResult	[out,opt] Result. (For UI updates) \
 		 * @return 0 on success; positive for "field updated" (subtract 1 for index); negative POSIX error code on error.
 		 */ \
-		int doRomOp_int(int id) final;
+		int doRomOp_int(int id, RomOpResult *pResult) final;
 
 /**
  * RomData subclass function declaration for closing the internal file handle.

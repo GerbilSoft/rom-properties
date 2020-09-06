@@ -2875,10 +2875,13 @@ void RP_ShellPropSheetExt_Private::menuOptions_action_triggered(int menuId)
 	} else {
 		// Run a ROM operation.
 		const int id = menuId - IDM_OPTIONS_MENU_BASE;
-		int ret = romData->doRomOp(id);
+		RomData::RomOpResult result;
+		int ret = romData->doRomOp(id, &result);
+		// TODO: Show the status message.
 		if (ret == 0) {
 			// Operation completed.
 			// TODO: Update relevant field(s).
+			MessageBeep(MB_ICONINFORMATION);
 
 			// Update the RomOp menu entry in case it changed.
 			// NOTE: Assuming the RomOps vector order hasn't changed.
@@ -2900,6 +2903,7 @@ void RP_ShellPropSheetExt_Private::menuOptions_action_triggered(int menuId)
 		} else {
 			// An error occurred...
 			// TODO: Show an error message.
+			MessageBeep(MB_ICONWARNING);
 		}
 	}
 }

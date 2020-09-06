@@ -16,6 +16,9 @@
 extern "C" {
 #endif
 
+// nds-blowfish.bin size.
+#define NDS_BLOWFISH_SIZE 0x1048
+
 /**
  * Load and verify nds-blowfish.bin.
  * This must be present in order to use ndscrypt_secure_area().

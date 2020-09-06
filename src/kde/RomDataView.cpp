@@ -1727,7 +1727,8 @@ void RomDataView::menuOptions_action_triggered(int id)
 		}
 	} else if (d->romOps_firstActionIndex >= 0) {
 		// Run a ROM operation.
-		int ret = d->romData->doRomOp(id);
+		RomData::RomOpResult result;
+		int ret = d->romData->doRomOp(id, &result);
 		if (ret == 0) {
 			// Operation completed.
 			// TODO: Update relevant field(s).

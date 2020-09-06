@@ -15,8 +15,11 @@
 
 // librpbase
 using LibRpBase::RomData;
+using LibRpBase::rp_sprintf;
+using LibRpBase::rp_sprintf_p;
 
 // C++ STL classes.
+using std::ostringstream;
 using std::unique_ptr;
 using std::vector;
 
@@ -213,10 +216,11 @@ vector<RomData::RomOps> NintendoDS::romOps_int(void) const
 /**
  * Perform a ROM operation.
  * Internal function; called by RomData::doRomOp().
- * @param id Operation index.
+ * @param id		[in] Operation index.
+ * @param pResult	[out,opt] Result. (For UI updates)
  * @return 0 on success; negative POSIX error code on error.
  */
-int NintendoDS::doRomOp_int(int id)
+int NintendoDS::doRomOp_int(int id, RomOpResult *pResult)
 {
 	RP_D(NintendoDS);
 	int ret = 0;
@@ -233,6 +237,10 @@ int NintendoDS::doRomOp_int(int id)
 				assert(next_pow2 > total_used_rom_size);
 				if (next_pow2 <= total_used_rom_size) {
 					// Something screwed up here...
+					if (pResult) {
+						pResult->status = -EIO;
+						pResult->msg = C_("NintendoDS", "ROM size would not change if untrimmed.");
+					}
 					return -EIO;
 				}
 
@@ -247,6 +255,10 @@ int NintendoDS::doRomOp_int(int id)
 					int err = d->file->lastError();
 					if (err == 0) {
 						err = EIO;
+					}
+					if (pResult) {
+						pResult->status = err;
+						pResult->msg = C_("NintendoDS", "Seek error when attempting to untrim ROM.");
 					}
 					return -err;
 				}
@@ -263,6 +275,10 @@ int NintendoDS::doRomOp_int(int id)
 						if (err == 0) {
 							err = EIO;
 						}
+						if (pResult) {
+							pResult->status = err;
+							pResult->msg = C_("NintendoDS", "Write error when attempting to untrim ROM.");
+						}
 						return -err;
 					}
 					pos += toWrite;
@@ -277,6 +293,10 @@ int NintendoDS::doRomOp_int(int id)
 						if (err == 0) {
 							err = EIO;
 						}
+						if (pResult) {
+							pResult->status = err;
+							pResult->msg = C_("NintendoDS", "Write error when attempting to untrim ROM.");
+						}
 						return -err;
 					}
 				}
@@ -286,7 +306,18 @@ int NintendoDS::doRomOp_int(int id)
 				d->romSize = d->file->size();
 			} else if (total_used_rom_size < d->romSize) {
 				// ROM is untrimmed. Trim it.
-				d->file->truncate(total_used_rom_size);
+				int ret = d->file->truncate(total_used_rom_size);
+				if (ret != 0) {
+					// Truncate failed.
+					int err = d->file->lastError();
+					if (err == 0) {
+						err = EIO;
+					}
+					if (pResult) {
+						pResult->status = err;
+						pResult->msg = C_("NintendoDS", "Truncate failed when attempting to trim ROM.");
+					}
+				}
 				d->file->flush();
 				d->romSize = d->file->size();
 			} else {
@@ -308,7 +339,10 @@ int NintendoDS::doRomOp_int(int id)
 				doEncrypt = false;
 			} else {
 				// Cannot perform this ROM operation.
-				assert(!"Secure area cannot be adjusted.");
+				if (pResult) {
+					pResult->status = -ENOTSUP;
+					pResult->msg = C_("NintendoDS", "Secure area cannot be adjusted in this ROM.");
+				}
 				ret = -ENOTSUP;
 				break;
 			}
@@ -316,8 +350,37 @@ int NintendoDS::doRomOp_int(int id)
 			// Make sure nds-blowfish.bin is loaded.
 			ret = ndscrypt_load_nds_blowfish_bin();
 			if (ret != 0) {
-				// TODO: Show an error message.
-				ret = -EIO;
+				if (pResult) {
+					if (ret < 0) {
+						pResult->status = ret;
+						pResult->msg = rp_sprintf_p(C_("RomData", "Could not open '%1$s': %2$s"),
+							"nds-blowfish.bin", strerror(-ret));
+					} else {
+						pResult->status = -EIO;
+						switch (ret) {
+							case 1: {
+								// TODO: Show actual file size?
+								ostringstream oss_exp;
+								oss_exp << NDS_BLOWFISH_SIZE;
+								pResult->msg = rp_sprintf_p(C_("NintendoDS", "File '%1$s' has the wrong size. (should be %2$s bytes)"),
+									"nds-blowfish.bin", oss_exp.str().c_str());
+								break;
+							}
+							case 2:
+								// Wrong hash.
+								pResult->msg = rp_sprintf(C_("NintendoDS", "File '%s' has the wrong MD5 hash."), "nds-blowfish.bin");
+								break;
+							default:
+								assert(!"Unhandled NDS Blowfish error code.");
+								pResult->msg.clear();
+								break;
+						}
+					}
+				}
+				if (ret > 0) {
+					// Silently suppress positive error codes.
+					ret = -EIO;
+				}
 				break;
 			}
 
@@ -333,6 +396,10 @@ int NintendoDS::doRomOp_int(int id)
 				if (ret == 0) {
 					ret = -EIO;
 				}
+				if (pResult) {
+					pResult->status = ret;
+					pResult->msg = C_("NintendoDS", "Could not read the ROM header.");
+				}
 				break;
 			}
 
@@ -343,7 +410,12 @@ int NintendoDS::doRomOp_int(int id)
 				: ndscrypt_decrypt_secure_area(buf.get(), SEC_AREA_SIZE);
 			if (ret != 0) {
 				// Error encrypting/decrypting.
-				// TODO: Show an error message.
+				if (pResult) {
+					pResult->status = -EIO;
+					pResult->msg = doEncrypt
+						? C_("NintendoDS", "Encrypting the Secure Area failed.")
+						: C_("NintendoDS", "Decrypting the Secure Area failed.");
+				}
 				break;
 			}
 
@@ -356,6 +428,10 @@ int NintendoDS::doRomOp_int(int id)
 				ret = -d->file->lastError();
 				if (ret == 0) {
 					ret = -EIO;
+				}
+				if (pResult) {
+					pResult->status = ret;
+					pResult->msg = C_("NintendoDS", "Could not write the updated ROM header.");
 				}
 				break;
 			}

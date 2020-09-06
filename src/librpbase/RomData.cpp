@@ -932,10 +932,11 @@ vector<RomData::RomOps> RomData::romOps(void) const
 
 /**
  * Perform a ROM operation.
- * @param id Operation index.
+ * @param id		[in] Operation index.
+ * @param pResult	[out,opt] Result. (For UI updates)
  * @return 0 on success; positive for "field updated" (subtract 1 for index); negative POSIX error code on error.
  */
-int RomData::doRomOp(int id)
+int RomData::doRomOp(int id, RomOpResult *pResult)
 {
 	RP_D(RomData);
 	bool closeFileAfter;
@@ -943,6 +944,10 @@ int RomData::doRomOp(int id)
 		closeFileAfter = false;
 		if (d->file->isCompressed()) {
 			// Cannot write to a compressed file.
+			if (pResult) {
+				pResult->status = -EIO;
+				pResult->msg = C_("RomData", "Cannot perform ROM operations on compressed files.");
+			}
 			return -EIO;
 		}
 
@@ -951,6 +956,10 @@ int RomData::doRomOp(int id)
 			int ret = d->file->makeWritable();
 			if (ret != 0) {
 				// Error making the file writable.
+				if (pResult) {
+					pResult->status = ret;
+					pResult->msg = C_("RomData", "Unable to write to the file.");
+				}
 				return ret;
 			}
 		}
@@ -960,17 +969,21 @@ int RomData::doRomOp(int id)
 		RpFile *const file = new RpFile(d->filename, RpFile::FM_OPEN_WRITE);
 		if (!file->isOpen()) {
 			// Error opening the file.
-			int err = file->lastError();
-			if (err == 0) {
-				err = EIO;
+			int ret = -file->lastError();
+			if (ret == 0) {
+				ret = -EIO;
+			}
+			if (pResult) {
+				pResult->status = ret;
+				pResult->msg = C_("RomData", "Unable to reopen the file for writing.");
 			}
 			UNREF(file);
-			return -err;
+			return ret;
 		}
 		d->file = file;
 	}
 
-	int ret = doRomOp_int(id);
+	int ret = doRomOp_int(id, pResult);
 	if (closeFileAfter) {
 		UNREF_AND_NULL_NOCHK(d->file);
 	}
@@ -991,13 +1004,18 @@ vector<RomData::RomOps> RomData::romOps_int(void) const
 /**
  * Perform a ROM operation.
  * Internal function; called by RomData::doRomOp().
- * @param id Operation index.
+ * @param id		[in] Operation index.
+ * @param pResult	[out,opt] Result. (For UI updates)
  * @return 0 on success; positive for "field updated" (subtract 1 for index); negative POSIX error code on error.
  */
-int RomData::doRomOp_int(int id)
+int RomData::doRomOp_int(int id, RomOpResult *pResult)
 {
 	// Default implementation has no ROM operations.
 	RP_UNUSED(id);
+	if (pResult) {
+		pResult->status = -ENOTSUP;
+		pResult->msg = C_("RomData", "RomData object does not support any ROM operations.");
+	}
 	return -ENOTSUP;
 }
 

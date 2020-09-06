@@ -2547,7 +2547,8 @@ menuOptions_triggered_signal_handler(GtkMenuItem *menuItem,
 		}
 	} else {
 		// Run a ROM operation.
-		int ret = page->romData->doRomOp(id);
+		RomData::RomOpResult result;
+		int ret = page->romData->doRomOp(id, &result);
 		if (ret == 0) {
 			// Operation completed.
 			// TODO: Update relevant field(s).
