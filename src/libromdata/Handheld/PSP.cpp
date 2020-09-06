@@ -229,6 +229,7 @@ PSP::PSP(IRpFile *file)
 	// Check the ISO PVD and system ID.
 	size = discReader->seekAndRead(ISO_PVD_ADDRESS_2048, &d->pvd, sizeof(d->pvd));
 	if (size != sizeof(d->pvd)) {
+		UNREF(discReader);
 		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
