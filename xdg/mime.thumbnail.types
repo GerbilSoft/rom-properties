@@ -13,6 +13,7 @@
 application/octet-stream
 application/x-cd-image
 application/x-iso9660-image
+application/x-raw-disk-image
 
 # Console
 application/x-dreamcast-rom		# Dreamcast

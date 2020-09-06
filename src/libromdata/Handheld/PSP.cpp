@@ -402,6 +402,7 @@ const char *const *PSP::supportedFileExtensions_static(void)
 {
 	static const char *const exts[] = {
 		".iso",			// ISO
+		".img",			// USER_L0.IMG on PSP dev DVD-Rs
 		".dax",			// DAX
 		".ciso", ".cso",	// CISO
 
