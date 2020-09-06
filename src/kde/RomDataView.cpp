@@ -1023,28 +1023,17 @@ void RomDataViewPrivate::initAgeRatings(QLabel *lblDesc,
 	const RomFields::Field &field, int fieldIdx)
 {
 	// Age ratings.
-	Q_Q(RomDataView);
-	QLabel *lblAgeRatings = new QLabel(q);
-	lblAgeRatings->setAlignment(Qt::AlignLeft | Qt::AlignTop);
-	lblAgeRatings->setTextFormat(Qt::PlainText);
-	lblAgeRatings->setTextInteractionFlags(
-		Qt::TextSelectableByMouse | Qt::TextSelectableByKeyboard);
-	lblAgeRatings->setFocusPolicy(Qt::StrongFocus);
-
 	const RomFields::age_ratings_t *age_ratings = field.data.age_ratings;
 	assert(age_ratings != nullptr);
 	if (!age_ratings) {
 		// tr: No age ratings data.
-		lblAgeRatings->setText(U82Q(C_("RomDataView", "ERROR")));
-		tabs[field.tabIdx].form->addRow(lblDesc, lblAgeRatings);
+		initString(lblDesc, field, fieldIdx, U82Q(C_("RomDataView", "ERROR")));
 		return;
 	}
 
 	// Convert the age ratings field to a string.
-	QString str = U82Q(RomFields::ageRatingsDecode(age_ratings));
-	lblAgeRatings->setText(str);
-	tabs[field.tabIdx].form->addRow(lblDesc, lblAgeRatings);
-	map_fieldIdx.insert(std::make_pair(fieldIdx, lblAgeRatings));
+	const QString str = U82Q(RomFields::ageRatingsDecode(age_ratings));
+	initString(lblDesc, field, fieldIdx, str);
 }
 
 /**
@@ -1057,14 +1046,6 @@ void RomDataViewPrivate::initDimensions(QLabel *lblDesc,
 	const RomFields::Field &field, int fieldIdx)
 {
 	// Dimensions.
-	Q_Q(RomDataView);
-	QLabel *lblDimensions = new QLabel(q);
-	lblDimensions->setAlignment(Qt::AlignLeft | Qt::AlignTop);
-	lblDimensions->setTextFormat(Qt::PlainText);
-	lblDimensions->setTextInteractionFlags(
-		Qt::TextSelectableByMouse | Qt::TextSelectableByKeyboard);
-	lblDimensions->setFocusPolicy(Qt::StrongFocus);
-
 	// TODO: 'x' or '×'? Using 'x' for now.
 	const int *const dimensions = field.data.dimensions;
 	char buf[64];
@@ -1080,9 +1061,7 @@ void RomDataViewPrivate::initDimensions(QLabel *lblDesc,
 		snprintf(buf, sizeof(buf), "%d", dimensions[0]);
 	}
 
-	lblDimensions->setText(QLatin1String(buf));
-	tabs[field.tabIdx].form->addRow(lblDesc, lblDimensions);
-	map_fieldIdx.insert(std::make_pair(fieldIdx, lblDimensions));
+	initString(lblDesc, field, fieldIdx, QString::fromLatin1(buf));
 }
 
 /**
