@@ -581,6 +581,7 @@ size_t WiiPartition::read(void *ptr, size_t size)
 		size = static_cast<size_t>(d->data_size - d->pos_7C00);
 	}
 
+	printf("Wii READ: offset %08lX, size %zu\n", d->pos_7C00, size);
 	if ((d->cryptoMethod & CM_MASK_SECTOR) == CM_32K) {
 		// Full 32K sectors. (implies no encryption)
 
@@ -633,7 +634,7 @@ size_t WiiPartition::read(void *ptr, size_t size)
 			d->readSector(blockEnd);
 
 			// Copy data from the sector.
-			memcpy(ptr8, &d->sector_buf.fulldata[blockStartOffset], size);
+			memcpy(ptr8, d->sector_buf.fulldata, size);
 
 			ret += size;
 			d->pos_7C00 += size;

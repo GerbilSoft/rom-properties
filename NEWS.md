@@ -29,6 +29,8 @@
     * This fixes issue #247, reported by @Masamune3210.
   * IsoPartition, XDVDFSPartition: Fix some more file handle leaks.
     * This fixes issue #249, reported by @Masamune3210.
+  * WiiPartition: Fixed a potential memory corruption issue when reading
+    a partial block from an unencrypted disc image.
 
 * Other changes:
   * Linux: A system-wide cache directory (/usr/share/rom-properties/cache)
