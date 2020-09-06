@@ -3,6 +3,7 @@
 	by Rafael Vuijk (aka DarkFader)
 */
 
+#include "stdafx.h"
 #include "nds_crc.hpp"
 
 const uint16_t crc16tab[] =
