@@ -491,7 +491,7 @@ int GameCom::loadFieldData(void)
 		RomFields::STRF_TRIM_END);
 
 	// Game ID.
-	d->fields->addField_string_numeric(C_("GameCom", "Game ID"),
+	d->fields->addField_string_numeric(C_("RomData", "Game ID"),
 		le16_to_cpu(romHeader->game_id),
 		RomFields::Base::Hex, 4, RomFields::STRF_MONOSPACE);
 

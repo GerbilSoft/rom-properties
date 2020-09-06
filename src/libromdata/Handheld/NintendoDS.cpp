@@ -1249,7 +1249,7 @@ int NintendoDS::loadFieldData(void)
 	}
 
 	// Game ID.
-	d->fields->addField_string(C_("NintendoDS", "Game ID"),
+	d->fields->addField_string(C_("RomData", "Game ID"),
 		latin1_to_utf8(romHeader->id6, ARRAY_SIZE(romHeader->id6)));
 
 	// Publisher.

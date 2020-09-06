@@ -378,7 +378,7 @@ int GameBoyAdvance::loadFieldData(void)
 			: '_');
 	}
 	id6[6] = 0;
-	d->fields->addField_string(C_("GameBoyAdvance", "Game ID"), latin1_to_utf8(id6, 6));
+	d->fields->addField_string(C_("RomData", "Game ID"), latin1_to_utf8(id6, 6));
 
 	// Publisher
 	d->fields->addField_string(C_("RomData", "Publisher"), d->getPublisher());

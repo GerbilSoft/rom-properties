@@ -432,7 +432,7 @@ int WiiU::loadFieldData(void)
 	d->fields->reserve(4);	// Maximum of 4 fields.
 
 	// Game ID.
-	d->fields->addField_string(C_("WiiU", "Game ID"),
+	d->fields->addField_string(C_("RomData", "Game ID"),
 		latin1_to_utf8(d->discHeader.id, sizeof(d->discHeader.id)));
 
 	// Publisher.

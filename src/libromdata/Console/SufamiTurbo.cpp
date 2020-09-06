@@ -376,7 +376,7 @@ int SufamiTurbo::loadFieldData(void)
 	char gameID[16];
 	snprintf(gameID, sizeof(gameID), "%02X%02X%02X",
 		romHeader->game_id[0], romHeader->game_id[1], romHeader->game_id[2]);
-	d->fields->addField_string(C_("SufamiTurbo", "Game ID"), gameID,
+	d->fields->addField_string(C_("RomData", "Game ID"), gameID,
 		RomFields::STRF_MONOSPACE);
 #endif
 

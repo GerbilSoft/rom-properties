@@ -251,7 +251,7 @@ int PokemonMini::loadFieldData(void)
 			: '_');
 	}
 	id4[4] = 0;
-	d->fields->addField_string(C_("PokemonMini", "Game ID"), latin1_to_utf8(id4, 4));
+	d->fields->addField_string(C_("RomData", "Game ID"), latin1_to_utf8(id4, 4));
 
 	// Vector table.
 	static const char *const vectors_names[PokemonMini_IRQ_MAX] = {
