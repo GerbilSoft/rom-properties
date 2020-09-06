@@ -362,6 +362,26 @@ void RomDataViewPrivate::createOptionsButton(void)
 		mapperOptionsMenu->setMapping(action, p->id);
 #endif /* QT_VERSION >= QT_VERSION_CHECK(5,0,0) */
 	}
+
+	/** ROM operations. **/
+	const vector<RomData::RomOps> ops = romData->romOps();
+	if (!ops.empty()) {
+		menuOptions->addSeparator();
+
+		int i = 0;
+		const auto ops_end = ops.cend();
+		for (auto iter = ops.cbegin(); iter != ops_end; ++iter, i++) {
+			QAction *const action = menuOptions->addAction(U82Q(iter->desc));
+#if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
+			QObject::connect(action, &QAction::triggered,
+				[q, i] { q->menuOptions_action_triggered(i); });
+#else /* QT_VERSION < QT_VERSION_CHECK(5,0,0) */
+			QObject::connect(action, SIGNAL(triggered()),
+				mapperOptionsMenu, SLOT(map()));
+			mapperOptionsMenu->setMapping(action, i);
+#endif /* QT_VERSION >= QT_VERSION_CHECK(5,0,0) */
+		}
+	}
 }
 
 /**

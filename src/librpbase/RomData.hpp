@@ -111,6 +111,13 @@ class RomData : public RefBase
 		 */
 		const char *filename(void) const;
 
+		/**
+		 * Is the file compressed? (transparent decompression)
+		 * If it is, then ROM operations won't be allowed.
+		 * @return True if compressed; false if not.
+		 */
+		bool isCompressed(void) const;
+
 	public:
 		/** ROM detection functions. **/
 
@@ -540,6 +547,45 @@ class RomData : public RefBase
 		 * @return True if the ROM image has "dangerous" permissions; false if not.
 		 */
 		virtual bool hasDangerousPermissions(void) const;
+
+	public:
+		struct RomOps {
+			std::string desc;	// Description
+			uint32_t flags;		// Flags (all zero right now)
+
+			RomOps() { }
+			RomOps(const char *desc, uint32_t flags)
+				: desc(desc), flags(flags) { }
+		};
+
+		/**
+		 * Get the list of operations that can be performed on this ROM.
+		 * @return List of operations.
+		 */
+		std::vector<RomOps> romOps(void) const;
+
+		/**
+		 * Perform a ROM operation.
+		 * @param id Operation index.
+		 * @return 0 on success; negative POSIX error code on error.
+		 */
+		int doRomOp(int id);
+
+	protected:
+		/**
+		 * Get the list of operations that can be performed on this ROM.
+		 * Internal function; called by RomData::romOps().
+		 * @return List of operations.
+		 */
+		virtual std::vector<RomOps> romOps_int(void) const;
+
+		/**
+		 * Perform a ROM operation.
+		 * Internal function; called by RomData::doRomOp().
+		 * @param id Operation index.
+		 * @return 0 on success; positive for "field updated" (subtract 1 for index); negative POSIX error code on error.
+		 */
+		virtual int doRomOp_int(int id);
 };
 
 }

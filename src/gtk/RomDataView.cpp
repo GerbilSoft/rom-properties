@@ -1702,6 +1702,27 @@ rom_data_view_create_options_button(RomDataView *page)
 		gtk_widget_show(menuItem);
 		gtk_menu_shell_append(GTK_MENU_SHELL(page->menuOptions), menuItem);
 	}
+
+	/** ROM operations. **/
+	const vector<RomData::RomOps> ops = page->romData->romOps();
+	if (!ops.empty()) {
+		// FIXME: Not showing up properly with the KDE Breeze theme,
+		// though other separators *do* show up...
+		GtkWidget *menuItem = gtk_separator_menu_item_new();
+		gtk_widget_show(menuItem);
+		gtk_menu_shell_append(GTK_MENU_SHELL(page->menuOptions), menuItem);
+
+		int i = 0;
+		const auto ops_end = ops.cend();
+		for (auto iter = ops.cbegin(); iter != ops_end; ++iter, i++) {
+			const string desc = convert_accel_to_gtk(iter->desc.c_str());
+			menuItem = gtk_menu_item_new_with_mnemonic(desc.c_str());
+			g_object_set_data(G_OBJECT(menuItem), "menuOptions_id", GINT_TO_POINTER(i));
+			g_signal_connect(menuItem, "activate", G_CALLBACK(menuOptions_triggered_signal_handler), page);
+			gtk_widget_show(menuItem);
+			gtk_menu_shell_append(GTK_MENU_SHELL(page->menuOptions), menuItem);
+		}
+	}
 }
 
 static void

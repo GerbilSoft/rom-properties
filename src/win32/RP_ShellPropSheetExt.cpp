@@ -3038,7 +3038,17 @@ void RP_ShellPropSheetExt_Private::createOptionsButton(void)
 			U82T_c(dpgettext_expr(RP_I18N_DOMAIN, "RomDataView|Options", p->desc)));
 	}
 
-	// TODO: RomOps
+	/** ROM operations. **/
+	const vector<RomData::RomOps> ops = romData->romOps();
+	if (!ops.empty()) {
+		AppendMenu(hMenuOptions, MF_SEPARATOR, 0, nullptr);
+
+		unsigned int i = IDM_OPTIONS_MENU_BASE;
+		const auto ops_end = ops.cend();
+		for (auto iter = ops.cbegin(); iter != ops_end; ++iter, i++) {
+			AppendMenu(hMenuOptions, MF_STRING, i, U82T_c(iter->desc.c_str()));
+		}
+	}
 }
 
 /** RP_ShellPropSheetExt **/

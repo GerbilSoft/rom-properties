@@ -36,6 +36,7 @@ namespace LibRpBase {
 RomDataPrivate::RomDataPrivate(RomData *q, IRpFile *file)
 	: q_ptr(q)
 	, isValid(false)
+	, isCompressed(false)
 	, file(nullptr)
 	, fields(new RomFields())
 	, metaData(nullptr)
@@ -50,6 +51,7 @@ RomDataPrivate::RomDataPrivate(RomData *q, IRpFile *file)
 		// Reference the file.
 		this->file = file->ref();
 		this->filename = this->file->filename();
+		this->isCompressed = this->file->isCompressed();
 	}
 }
 
@@ -502,6 +504,17 @@ const char *RomData::filename(void) const
 }
 
 /**
+ * Is the file compressed? (transparent decompression)
+ * If it is, then ROM operations won't be allowed.
+ * @return True if compressed; false if not.
+ */
+bool RomData::isCompressed(void) const
+{
+	RP_D(const RomData);
+	return d->isCompressed;
+}
+
+/**
  * Get the class name for the user configuration.
  * @return Class name. (ASCII) (nullptr on error)
  */
@@ -891,6 +904,75 @@ bool RomData::hasDangerousPermissions(void) const
 {
 	// No dangerous permissions by default.
 	return false;
+}
+
+/**
+ * Get the list of operations that can be performed on this ROM.
+ * @return List of operations.
+ */
+vector<RomData::RomOps> RomData::romOps(void) const
+{
+	RP_D(const RomData);
+	if (d->isCompressed) {
+		// Cannot run RomOps on a compressed file.
+		return vector<RomData::RomOps>();
+	}
+
+	return romOps_int();
+}
+
+/**
+ * Perform a ROM operation.
+ * @param id Operation index.
+ * @return 0 on success; positive for "field updated" (subtract 1 for index); negative POSIX error code on error.
+ */
+int RomData::doRomOp(int id)
+{
+	RP_D(RomData);
+	if (d->file) {
+		if (d->file->isCompressed()) {
+			// Cannot write to a compressed file.
+			return -EIO;
+		}
+
+		if (!d->file->isWritable()) {
+			// File is not writable. We'll need to reopen it.
+			int ret = d->file->makeWritable();
+			if (ret != 0) {
+				// Error making the file writable.
+				return ret;
+			}
+		}
+	} else {
+		// TODO: Need to reopen the file.
+		// TODO: Close it afterwards.
+		return -EIO;
+	}
+
+	return doRomOp(id);
+}
+
+/**
+ * Get the list of operations that can be performed on this ROM.
+ * Internal function; called by RomData::romOps().
+ * @return List of operations.
+ */
+vector<RomData::RomOps> RomData::romOps_int(void) const
+{
+	// Default implementation has no ROM operations.
+	return vector<RomData::RomOps>();
+}
+
+/**
+ * Perform a ROM operation.
+ * Internal function; called by RomData::doRomOp().
+ * @param id Operation index.
+ * @return 0 on success; positive for "field updated" (subtract 1 for index); negative POSIX error code on error.
+ */
+int RomData::doRomOp_int(int id)
+{
+	// Default implementation has no ROM operations.
+	return -ENOTSUP;
 }
 
 }
