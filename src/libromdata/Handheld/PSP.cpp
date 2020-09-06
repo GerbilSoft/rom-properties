@@ -541,6 +541,7 @@ int PSP::loadFieldData(void)
 				latin1_to_utf8(buf, static_cast<int>(p - buf)));
 		}
 	}
+	umdDataBin->unref();
 
 	// TODO: Add fields from PARAM.SFO.
 
