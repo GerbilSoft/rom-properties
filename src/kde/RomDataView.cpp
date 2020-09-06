@@ -27,6 +27,7 @@ using std::ofstream;
 using std::ostringstream;
 using std::set;
 using std::string;
+using std::unordered_map;
 using std::vector;
 
 // Qt includes.
@@ -86,6 +87,10 @@ class RomDataViewPrivate
 		};
 		vector<tab> tabs;
 
+		// Mapping of field index to QObject*.
+		// For updateField().
+		unordered_map<int, QObject*> map_fieldIdx;
+
 		// Multi-language functionality.
 		uint32_t def_lc;
 		QComboBox *cboLanguage;
@@ -126,37 +131,47 @@ class RomDataViewPrivate
 
 		/**
 		 * Initialize a string field.
-		 * @param lblDesc	[in] Description label.
+		 * @param lblDesc	[in] Description label
 		 * @param field		[in] RomFields::Field
-		 * @param str		[in,opt] String data. (If nullptr, field data is used.)
+		 * @param fieldIdx	[in] Field index
+		 * @param str		[in,opt] String data (If nullptr, field data is used)
 		 * @return QLabel*, or nullptr on error.
 		 */
-		QLabel *initString(QLabel *lblDesc, const RomFields::Field &field, const QString *str = nullptr);
+		QLabel *initString(QLabel *lblDesc,
+			const RomFields::Field &field, int fieldIdx,
+			const QString *str = nullptr);
 
 		/**
 		 * Initialize a string field.
-		 * @param lblDesc	[in] Description label.
+		 * @param lblDesc	[in] Description label
 		 * @param field		[in] RomFields::Field
-		 * @param str		[in] String data.
+		 * @param fieldIdx	[in] Field index
+		 * @param str		[in] String data
 		 */
-		inline QLabel *initString(QLabel *lblDesc, const RomFields::Field &field, const QString &str)
+		inline QLabel *initString(QLabel *lblDesc,
+			const RomFields::Field &field, int fieldIdx,
+			const QString &str)
 		{
-			return initString(lblDesc, field, &str);
+			return initString(lblDesc, field, fieldIdx, &str);
 		}
 
 		/**
 		 * Initialize a bitfield.
-		 * @param lblDesc	[in] Description label.
+		 * @param lblDesc	[in] Description label
 		 * @param field		[in] RomFields::Field
+		 * @param fieldIdx	[in] Field index
 		 */
-		void initBitfield(QLabel *lblDesc, const RomFields::Field &field);
+		void initBitfield(QLabel *lblDesc,
+			const RomFields::Field &field, int fieldIdx);
 
 		/**
 		 * Initialize a list data field.
-		 * @param lblDesc	[in] Description label.
+		 * @param lblDesc	[in] Description label
 		 * @param field		[in] RomFields::Field
+		 * @param fieldIdx	[in] Field index
 		 */
-		void initListData(QLabel *lblDesc, const RomFields::Field &field);
+		void initListData(QLabel *lblDesc,
+			const RomFields::Field &field, int fieldIdx);
 
 		/**
 		 * Adjust an RFT_LISTDATA field if it's the last field in a tab.
@@ -166,31 +181,39 @@ class RomDataViewPrivate
 
 		/**
 		 * Initialize a Date/Time field.
-		 * @param lblDesc	[in] Description label.
+		 * @param lblDesc	[in] Description label
 		 * @param field		[in] RomFields::Field
+		 * @param fieldIdx	[in] Field index
 		 */
-		void initDateTime(QLabel *lblDesc, const RomFields::Field &field);
+		void initDateTime(QLabel *lblDesc,
+			const RomFields::Field &field, int fieldIdx);
 
 		/**
 		 * Initialize an Age Ratings field.
-		 * @param lblDesc	[in] Description label.
+		 * @param lblDesc	[in] Description label
 		 * @param field		[in] RomFields::Field
+		 * @param fieldIdx	[in] Field index
 		 */
-		void initAgeRatings(QLabel *lblDesc, const RomFields::Field &field);
+		void initAgeRatings(QLabel *lblDesc,
+			const RomFields::Field &field, int fieldIdx);
 
 		/**
 		 * Initialize a Dimensions field.
-		 * @param lblDesc	[in] Description label.
+		 * @param lblDesc	[in] Description label
 		 * @param field		[in] RomFields::Field
+		 * @param fieldIdx	[in] Field index
 		 */
-		void initDimensions(QLabel *lblDesc, const RomFields::Field &field);
+		void initDimensions(QLabel *lblDesc,
+			const RomFields::Field &field, int fieldIdx);
 
 		/**
 		 * Initialize a multi-language string field.
-		 * @param lblDesc	[in] Description label.
+		 * @param lblDesc	[in] Description label
 		 * @param field		[in] RomFields::Field
+		 * @param fieldIdx	[in] Field index
 		 */
-		void initStringMulti(QLabel *lblDesc, const RomFields::Field &field);
+		void initStringMulti(QLabel *lblDesc,
+			const RomFields::Field &field, int fieldIdx);
 
 		/**
 		 * Update all multi-language fields.
@@ -495,12 +518,15 @@ void RomDataViewPrivate::clearLayout(QLayout *layout)
 
 /**
  * Initialize a string field.
- * @param lblDesc	[in] Description label.
+ * @param lblDesc	[in] Description label
  * @param field		[in] RomFields::Field
- * @param str		[in,opt] String data. (If nullptr, field data is used.)
+ * @param fieldIdx	[in] Field index
+ * @param str		[in,opt] String data (If nullptr, field data is used)
  * @return QLabel*, or nullptr on error.
  */
-QLabel *RomDataViewPrivate::initString(QLabel *lblDesc, const RomFields::Field &field, const QString *str)
+QLabel *RomDataViewPrivate::initString(QLabel *lblDesc,
+	const RomFields::Field &field, int fieldIdx,
+	const QString *str)
 {
 	// String type.
 	Q_Q(RomDataView);
@@ -590,15 +616,18 @@ QLabel *RomDataViewPrivate::initString(QLabel *lblDesc, const RomFields::Field &
 		tab.form->addRow(lblDesc, lblString);
 	}
 
+	map_fieldIdx.insert(std::make_pair(fieldIdx, lblString));
 	return lblString;
 }
 
 /**
  * Initialize a bitfield.
- * @param lblDesc Description label.
- * @param field RomFields::Field
+ * @param lblDesc Description label
+ * @param field		[in] RomFields::Field
+ * @param fieldIdx	[in] Field index
  */
-void RomDataViewPrivate::initBitfield(QLabel *lblDesc, const RomFields::Field &field)
+void RomDataViewPrivate::initBitfield(QLabel *lblDesc,
+	const RomFields::Field &field, int fieldIdx)
 {
 	// Bitfield type. Create a grid of checkboxes.
 	Q_Q(RomDataView);
@@ -643,15 +672,19 @@ void RomDataViewPrivate::initBitfield(QLabel *lblDesc, const RomFields::Field &f
 			col = 0;
 		}
 	}
+
 	tabs[field.tabIdx].form->addRow(lblDesc, gridLayout);
+	map_fieldIdx.insert(std::make_pair(fieldIdx, gridLayout));
 }
 
 /**
  * Initialize a list data field.
- * @param lblDesc Description label.
- * @param field RomFields::Field
+ * @param lblDesc	[in] Description label
+ * @param field		[in] RomFields::Field
+ * @param fieldIdx	[in] Field index
  */
-void RomDataViewPrivate::initListData(QLabel *lblDesc, const RomFields::Field &field)
+void RomDataViewPrivate::initListData(QLabel *lblDesc,
+	const RomFields::Field &field, int fieldIdx)
 {
 	// ListData type. Create a QTreeWidget.
 	const auto &listDataDesc = field.desc.list_data;
@@ -694,6 +727,7 @@ void RomDataViewPrivate::initListData(QLabel *lblDesc, const RomFields::Field &f
 	assert(!(hasCheckboxes && hasIcons));
 	if (hasCheckboxes && hasIcons) {
 		// Both are set. This shouldn't happen...
+		delete lblDesc;
 		return;
 	}
 
@@ -701,6 +735,7 @@ void RomDataViewPrivate::initListData(QLabel *lblDesc, const RomFields::Field &f
 		assert(field.data.list_data.mxd.icons != nullptr);
 		if (!field.data.list_data.mxd.icons) {
 			// No icons vector...
+			delete lblDesc;
 			return;
 		}
 	}
@@ -849,6 +884,7 @@ void RomDataViewPrivate::initListData(QLabel *lblDesc, const RomFields::Field &f
 		// Single row.
 		tabs[field.tabIdx].form->addRow(lblDesc, treeWidget);
 	}
+	map_fieldIdx.insert(std::make_pair(fieldIdx, treeWidget));
 
 	// Row height is recalculated when the window is first visible
 	// and/or the system theme is changed.
@@ -907,15 +943,17 @@ void RomDataViewPrivate::adjustListData(int tabIdx)
 
 /**
  * Initialize a Date/Time field.
- * @param lblDesc Description label.
- * @param field RomFields::Field
+ * @param lblDesc	[in] Description label
+ * @param field		[in] RomFields::Field
+ * @param fieldIdx	[in] Field index
  */
-void RomDataViewPrivate::initDateTime(QLabel *lblDesc, const RomFields::Field &field)
+void RomDataViewPrivate::initDateTime(QLabel *lblDesc,
+	const RomFields::Field &field, int fieldIdx)
 {
 	// Date/Time.
 	if (field.data.date_time == -1) {
 		// tr: Invalid date/time.
-		initString(lblDesc, field, U82Q(C_("RomDataView", "Unknown")));
+		initString(lblDesc, field, fieldIdx, U82Q(C_("RomDataView", "Unknown")));
 		return;
 	}
 
@@ -968,7 +1006,7 @@ void RomDataViewPrivate::initDateTime(QLabel *lblDesc, const RomFields::Field &f
 	}
 
 	if (!str.isEmpty()) {
-		initString(lblDesc, field, str);
+		initString(lblDesc, field, fieldIdx, str);
 	} else {
 		// Invalid date/time.
 		delete lblDesc;
@@ -977,10 +1015,12 @@ void RomDataViewPrivate::initDateTime(QLabel *lblDesc, const RomFields::Field &f
 
 /**
  * Initialize an Age Ratings field.
- * @param lblDesc Description label.
- * @param field RomFields::Field
+ * @param lblDesc	[in] Description label
+ * @param field		[in] RomFields::Field
+ * @param fieldIdx	[in] Field index
  */
-void RomDataViewPrivate::initAgeRatings(QLabel *lblDesc, const RomFields::Field &field)
+void RomDataViewPrivate::initAgeRatings(QLabel *lblDesc,
+	const RomFields::Field &field, int fieldIdx)
 {
 	// Age ratings.
 	Q_Q(RomDataView);
@@ -1004,14 +1044,17 @@ void RomDataViewPrivate::initAgeRatings(QLabel *lblDesc, const RomFields::Field 
 	QString str = U82Q(RomFields::ageRatingsDecode(age_ratings));
 	lblAgeRatings->setText(str);
 	tabs[field.tabIdx].form->addRow(lblDesc, lblAgeRatings);
+	map_fieldIdx.insert(std::make_pair(fieldIdx, lblAgeRatings));
 }
 
 /**
  * Initialize a Dimensions field.
- * @param lblDesc Description label.
- * @param field RomFields::Field
+ * @param lblDesc Description label
+ * @param field		[in] RomFields::Field
+ * @param fieldIdx	[in] Field index
  */
-void RomDataViewPrivate::initDimensions(QLabel *lblDesc, const RomFields::Field &field)
+void RomDataViewPrivate::initDimensions(QLabel *lblDesc,
+	const RomFields::Field &field, int fieldIdx)
 {
 	// Dimensions.
 	Q_Q(RomDataView);
@@ -1039,21 +1082,24 @@ void RomDataViewPrivate::initDimensions(QLabel *lblDesc, const RomFields::Field 
 
 	lblDimensions->setText(QLatin1String(buf));
 	tabs[field.tabIdx].form->addRow(lblDesc, lblDimensions);
+	map_fieldIdx.insert(std::make_pair(fieldIdx, lblDimensions));
 }
 
 /**
  * Initialize a multi-language string field.
- * @param lblDesc	[in] Description label.
+ * @param lblDesc	[in] Description label
  * @param field		[in] RomFields::Field
+ * @param fieldIdx	[in] Field index
  */
-void RomDataViewPrivate::initStringMulti(QLabel *lblDesc, const RomFields::Field &field)
+void RomDataViewPrivate::initStringMulti(QLabel *lblDesc,
+	const RomFields::Field &field, int fieldIdx)
 {
 	// Mutli-language string.
 	// NOTE: The string contents won't be initialized here.
 	// They will be initialized separately, since the user will
 	// be able to change the displayed language.
 	QString qs_empty;
-	QLabel *const lblStringMulti = initString(lblDesc, field, &qs_empty);
+	QLabel *const lblStringMulti = initString(lblDesc, field, fieldIdx, &qs_empty);
 	if (lblStringMulti) {
 		vecStringMulti.emplace_back(std::make_pair(lblStringMulti, &field));
 	}
@@ -1253,34 +1299,11 @@ int RomDataViewPrivate::updateField(int fieldIdx)
 	if (!field)
 		return 3;
 
-	// Get the QLayoutItem in the QFormLayout.
-	const auto tabs_cend = tabs.cend();
-	int firstIdx = 0;
-	QLayoutItem *layoutItem = nullptr;
-	for (auto iter = tabs.cbegin(); iter != tabs_cend; ++iter) {
-		// FIXME: Handle STRF_CREDITS properly.
-		// Maybe they shouldn't be considered a "field"...
-		auto &tab = *iter;
-		assert(tab.lblCredits == nullptr);
-		if (tab.lblCredits != nullptr)
-			return 4;
-
-		// Is the requested field index on this tab?
-		const int form_rowCount = tab.form->rowCount();
-		if (fieldIdx >= firstIdx && fieldIdx < (firstIdx + form_rowCount)) {
-			// It's on this tab.
-			layoutItem = tab.form->itemAt(fieldIdx - firstIdx, QFormLayout::FieldRole);
-			break;
-		}
-
-		// Next tab.
-		firstIdx += form_rowCount;
-	}
-
-	assert(layoutItem != nullptr);
-	if (!layoutItem) {
-		// Could not get the QLayoutItem...
-		return 5;
+	// Get the QObject*.
+	auto iter = map_fieldIdx.find(fieldIdx);
+	if (iter == map_fieldIdx.end()) {
+		// Not found.
+		return 4;
 	}
 
 	// Update the value widget(s).
@@ -1296,8 +1319,8 @@ int RomDataViewPrivate::updateField(int fieldIdx)
 			break;
 
 		case RomFields::RFT_STRING: {
-			// QLayoutItem contains a single widget.
-			QLabel *const label = qobject_cast<QLabel*>(layoutItem->widget());
+			// QObject is a QLabel.
+			QLabel *const label = qobject_cast<QLabel*>(iter->second);
 			assert(label != nullptr);
 			if (!label) {
 				ret = 8;
@@ -1311,8 +1334,8 @@ int RomDataViewPrivate::updateField(int fieldIdx)
 		}
 
 		case RomFields::RFT_BITFIELD: {
-			// QLayoutItem contains a layout with QCheckBox widgets.
-			QGridLayout *const layout = qobject_cast<QGridLayout*>(layoutItem->layout());
+			// QObject is a QGridLayout with QCheckBox widgets.
+			QGridLayout *const layout = qobject_cast<QGridLayout*>(iter->second);
 			assert(layout != nullptr);
 			if (!layout) {
 				ret = 9;
@@ -1384,6 +1407,7 @@ void RomDataViewPrivate::initDisplayWidgets(void)
 		}
 	);
 	tabs.clear();
+	map_fieldIdx.clear();
 	ui.tabWidget->clear();
 	ui.tabWidget->hide();
 
@@ -1457,7 +1481,8 @@ void RomDataViewPrivate::initDisplayWidgets(void)
 	// Create the data widgets.
 	int prevTabIdx = 0;
 	const auto pFields_cend = pFields->cend();
-	for (auto iter = pFields->cbegin(); iter != pFields_cend; ++iter) {
+	int fieldIdx = 0;
+	for (auto iter = pFields->cbegin(); iter != pFields_cend; ++iter, fieldIdx++) {
 		const RomFields::Field &field = *iter;
 		if (!field.isValid)
 			continue;
@@ -1500,25 +1525,25 @@ void RomDataViewPrivate::initDisplayWidgets(void)
 				break;
 
 			case RomFields::RFT_STRING:
-				initString(lblDesc, field);
+				initString(lblDesc, field, fieldIdx);
 				break;
 			case RomFields::RFT_BITFIELD:
-				initBitfield(lblDesc, field);
+				initBitfield(lblDesc, field, fieldIdx);
 				break;
 			case RomFields::RFT_LISTDATA:
-				initListData(lblDesc, field);
+				initListData(lblDesc, field, fieldIdx);
 				break;
 			case RomFields::RFT_DATETIME:
-				initDateTime(lblDesc, field);
+				initDateTime(lblDesc, field, fieldIdx);
 				break;
 			case RomFields::RFT_AGE_RATINGS:
-				initAgeRatings(lblDesc, field);
+				initAgeRatings(lblDesc, field, fieldIdx);
 				break;
 			case RomFields::RFT_DIMENSIONS:
-				initDimensions(lblDesc, field);
+				initDimensions(lblDesc, field, fieldIdx);
 				break;
 			case RomFields::RFT_STRING_MULTI:
-				initStringMulti(lblDesc, field);
+				initStringMulti(lblDesc, field, fieldIdx);
 				break;
 		}
 	}
