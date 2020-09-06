@@ -64,7 +64,7 @@ class RomDataView : public QWidget
 		/**
 		 * Disable user modification of RFT_BITFIELD checkboxes.
 		 */
-		void bitfield_toggled_slot(bool checked);
+		void bitfield_clicked_slot(bool checked);
 
 		/**
 		 * The RFT_MULTI_STRING language was changed.

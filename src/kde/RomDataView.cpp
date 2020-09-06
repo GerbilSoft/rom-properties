@@ -633,8 +633,8 @@ void RomDataViewPrivate::initBitfield(QLabel *lblDesc, const RomFields::Field &f
 		// Disable user modifications.
 		// TODO: Prevent the initial mousebutton down from working;
 		// otherwise, it shows a partial check mark.
-		QObject::connect(checkBox, SIGNAL(toggled(bool)),
-				 q, SLOT(bitfield_toggled_slot(bool)));
+		QObject::connect(checkBox, SIGNAL(clicked(bool)),
+				 q, SLOT(bitfield_clicked_slot(bool)));
 
 		gridLayout->addWidget(checkBox, row, col, 1, 1);
 		col++;
@@ -1299,24 +1299,62 @@ int RomDataViewPrivate::updateField(int fieldIdx)
 			// QLayoutItem contains a single widget.
 			QLabel *const label = qobject_cast<QLabel*>(layoutItem->widget());
 			assert(label != nullptr);
-			if (label) {
-				printf("fieldIdx: %d; old text: %s; new text: %s\n",
-					fieldIdx, label->text().toUtf8().constData(),
-					field->data.str->c_str());
-				label->setText(field->data.str
-					? U82Q(*(field->data.str))
-					: QString());
-				ret = 0;
-			} else {
+			if (!label) {
 				ret = 8;
+				break;
 			}
+
+			label->setText(field->data.str
+				? U82Q(*(field->data.str))
+				: QString());
 			break;
 		}
 
-		case RomFields::RFT_BITFIELD:
-			// TODO
-			ret = 9;
+		case RomFields::RFT_BITFIELD: {
+			// QLayoutItem contains a layout with QCheckBox widgets.
+			QGridLayout *const layout = qobject_cast<QGridLayout*>(layoutItem->layout());
+			assert(layout != nullptr);
+			if (!layout) {
+				ret = 9;
+				break;
+			}
+
+			// Bits with a blank name aren't included, so we'll need to iterate
+			// over the bitfield description.
+			const auto &bitfieldDesc = field->desc.bitfield;
+			int count = (int)bitfieldDesc.names->size();
+			assert(count <= 32);
+			if (count > 32)
+				count = 32;
+
+			uint32_t bitfield = field->data.bitfield;
+			const auto names_cend = bitfieldDesc.names->cend();
+			int layoutIdx = 0;
+			for (auto iter = bitfieldDesc.names->cbegin(); iter != names_cend; ++iter, bitfield >>= 1) {
+				const string &name = *iter;
+				if (name.empty())
+					continue;
+
+				// Get the widget.
+				QLayoutItem *const subLayoutItem = layout->itemAt(layoutIdx);
+				assert(subLayoutItem != nullptr);
+				if (!subLayoutItem)
+					break;
+
+				QCheckBox *const checkBox = qobject_cast<QCheckBox*>(subLayoutItem->widget());
+				assert(checkBox != nullptr);
+				if (!checkBox)
+					break;
+
+				const bool value = (bitfield & 1);
+				checkBox->setChecked(value);
+				checkBox->setProperty("RFT_BITFIELD_value", value);
+
+				// Next layout item.
+				layoutIdx++;
+			}
 			break;
+		}
 	}
 
 	return ret;
@@ -1652,7 +1690,7 @@ bool RomDataView::eventFilter(QObject *object, QEvent *event)
 /**
  * Disable user modification of RFT_BITFIELD checkboxes.
  */
-void RomDataView::bitfield_toggled_slot(bool checked)
+void RomDataView::bitfield_clicked_slot(bool checked)
 {
 	QAbstractButton *sender = qobject_cast<QAbstractButton*>(QObject::sender());
 	if (!sender)
