@@ -27,7 +27,7 @@ namespace LibRpBase {
  * @param len		[in] Data length.
  * @return 0 on success; negative POSIX error code on error.
  */
-void MD5::calcHash(uint8_t *pHash, size_t hash_len, const void *pData, size_t len)
+int MD5::calcHash(uint8_t *pHash, size_t hash_len, const void *pData, size_t len)
 {
 	HCRYPTPROV hProvider;
 	HCRYPTHASH hHash;
@@ -50,7 +50,7 @@ void MD5::calcHash(uint8_t *pHash, size_t hash_len, const void *pData, size_t le
 	}
 
 	// Create an MD5 hash object.
-	if (!CryptCreateHash(hProv, CALG_MD5, 0, 0, &hHash)) {
+	if (!CryptCreateHash(hProvider, CALG_MD5, 0, 0, &hHash)) {
 		// Error creating the MD5 hash object.
 		int ret = -w32err_to_posix(GetLastError());
 		CryptReleaseContext(hProvider, 0);
@@ -58,7 +58,7 @@ void MD5::calcHash(uint8_t *pHash, size_t hash_len, const void *pData, size_t le
 	}
 
 	// Hash the data.
-	if (!CryptHashData(hHash, pData, len, 0)) {
+	if (!CryptHashData(hHash, static_cast<const BYTE*>(pData), len, 0)) {
 		// Error hashing the data.
 		int ret = -w32err_to_posix(GetLastError());
 		CryptDestroyHash(hHash);
