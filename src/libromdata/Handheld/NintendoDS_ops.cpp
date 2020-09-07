@@ -391,14 +391,42 @@ int NintendoDS::doRomOp_int(int id, RomOpResult *pResult)
 				break;
 			}
 
+			// If this is a DSi-enhanced game, we have two Secure Areas.
+			// FIXME: DSi Secure Area encryption isn't working...
+			bool dsi = false;
+			const uint32_t arm9i_rom_offset = le32_to_cpu(d->romHeader.dsi.arm9i.rom_offset);
+			if (d->romHeader.unitcode & 2) {
+				// Verify the ARM9i secure area settings.
+				// Reference: https://github.com/d0k3/GodMode9/blob/d010f2858bc2c852f81cca3ac2bc3537c96ecd1a/arm9/source/gamecart/gamecart.c#L120
+				// TODO: Check the modcrypt area size in the header. Assuming 0x4000.
+				if (arm9i_rom_offset >= le32_to_cpu(d->romHeader.total_used_rom_size) &&
+				    (arm9i_rom_offset + 0x4000) <= le32_to_cpu(d->romHeader.dsi.total_used_rom_size))
+				{
+					// ARM9i offsets are in range.
+					// Verify that the ARM9i offset is 0xXXX3000.
+					// If it isn't, we might have a special case...
+					if ((arm9i_rom_offset & 0xFFFF) == 0x3000) {
+						// DSi secure area is present.
+						dsi = true;
+					}
+				}
+			}
+
 			// Make sure nds-blowfish.bin is loaded.
-			ret = ndscrypt_load_nds_blowfish_bin();
+			const char *filename = "nds-blowfish.bin";
+			ret = ndscrypt_load_blowfish_bin(NDSCRYPT_BF_NDS);
+			if (ret == 0 && dsi) {
+				// We also need dsi-blowfish.bin for the DSi secure area.
+				// TODO: Identify DSi development cartridges.
+				filename = "dsi-blowfish.bin";
+				ret = ndscrypt_load_blowfish_bin(NDSCRYPT_BF_DSi);
+			}
 			if (ret != 0) {
 				if (pResult) {
 					if (ret < 0) {
 						pResult->status = ret;
 						pResult->msg = rp_sprintf_p(C_("RomData", "Could not open '%1$s': %2$s"),
-							"nds-blowfish.bin", strerror(-ret));
+							filename, strerror(-ret));
 					} else {
 						pResult->status = -EIO;
 						switch (ret) {
@@ -407,12 +435,12 @@ int NintendoDS::doRomOp_int(int id, RomOpResult *pResult)
 								ostringstream oss_exp;
 								oss_exp << NDS_BLOWFISH_SIZE;
 								pResult->msg = rp_sprintf_p(C_("NintendoDS", "File '%1$s' has the wrong size. (should be %2$s bytes)"),
-									"nds-blowfish.bin", oss_exp.str().c_str());
+									filename, oss_exp.str().c_str());
 								break;
 							}
 							case 2:
 								// Wrong hash.
-								pResult->msg = rp_sprintf(C_("NintendoDS", "File '%s' has the wrong MD5 hash."), "nds-blowfish.bin");
+								pResult->msg = rp_sprintf(C_("NintendoDS", "File '%s' has the wrong MD5 hash."), filename);
 								break;
 							default:
 								assert(!"Unhandled NDS Blowfish error code.");
@@ -428,12 +456,13 @@ int NintendoDS::doRomOp_int(int id, RomOpResult *pResult)
 				break;
 			}
 
-			// Load the first 32 KB.
-#define SEC_AREA_SIZE (32*1024)
-			unique_ptr<uint8_t[]> buf(new uint8_t[SEC_AREA_SIZE]);
+			// NDS secure area: Load the ROM header, static area, and NDS Secure Area.
+#define NDS_SEC_AREA_SIZE (0x1000*8)
+#define DSi_SEC_AREA_SIZE (0x1000*7)
+			unique_ptr<uint8_t[]> ndsbuf(new uint8_t[NDS_SEC_AREA_SIZE]);
 			d->file->rewind();
-			size_t size = d->file->read(buf.get(), SEC_AREA_SIZE);
-			if (size != SEC_AREA_SIZE) {
+			size_t size = d->file->read(ndsbuf.get(), NDS_SEC_AREA_SIZE);
+			if (size != NDS_SEC_AREA_SIZE) {
 				// Seek and/or read error.
 				// TODO: Show an error message.
 				ret = -d->file->lastError();
@@ -442,31 +471,84 @@ int NintendoDS::doRomOp_int(int id, RomOpResult *pResult)
 				}
 				if (pResult) {
 					pResult->status = ret;
-					pResult->msg = C_("NintendoDS", "Could not read the ROM header.");
+					pResult->msg = C_("NintendoDS", "Could not read the NDS Secure Area.");
 				}
 				break;
 			}
 
-			// Run the actual encryption.
-			// TODO: Decrypt function.
+			// Run the actual encryption/decryption.
 			ret = doEncrypt
-				? ndscrypt_encrypt_secure_area(buf.get(), SEC_AREA_SIZE)
-				: ndscrypt_decrypt_secure_area(buf.get(), SEC_AREA_SIZE);
+				? ndscrypt_encrypt_secure_area(ndsbuf.get(), NDS_SEC_AREA_SIZE, NDSCRYPT_BF_NDS)
+				: ndscrypt_decrypt_secure_area(ndsbuf.get(), NDS_SEC_AREA_SIZE, NDSCRYPT_BF_NDS);
 			if (ret != 0) {
 				// Error encrypting/decrypting.
 				if (pResult) {
 					pResult->status = -EIO;
 					pResult->msg = doEncrypt
-						? C_("NintendoDS", "Encrypting the Secure Area failed.")
-						: C_("NintendoDS", "Decrypting the Secure Area failed.");
+						? C_("NintendoDS", "Encrypting the NDS Secure Area failed.")
+						: C_("NintendoDS", "Decrypting the NDS Secure Area failed.");
 				}
 				break;
 			}
 
-			// Write the data back to the ROM.
+			if (dsi) {
+				// DSi secure area: Load the static area and DSi Secure Area.
+				// ROM header is kept from the NDS section.
+				unique_ptr<uint8_t[]> dsibuf(new uint8_t[NDS_SEC_AREA_SIZE]);
+				memcpy(dsibuf.get(), ndsbuf.get(), 0x1000);
+				const uint32_t dsisec_offset = arm9i_rom_offset - 0x3000;
+				size_t size = d->file->seekAndRead(dsisec_offset, &dsibuf[0x1000], DSi_SEC_AREA_SIZE);
+				if (size != DSi_SEC_AREA_SIZE) {
+					// Seek and/or read error.
+					// TODO: Show an error message.
+					ret = -d->file->lastError();
+					if (ret == 0) {
+						ret = -EIO;
+					}
+					if (pResult) {
+						pResult->status = ret;
+						pResult->msg = C_("NintendoDS", "Could not read the DSi Secure Area.");
+					}
+					break;
+				}
+
+				// Run the actual encryption/decryption.
+				// TODO: DSi development cartridge detection.
+				ret = doEncrypt
+					? ndscrypt_encrypt_secure_area(dsibuf.get(), NDS_SEC_AREA_SIZE, NDSCRYPT_BF_DSi)
+					: ndscrypt_decrypt_secure_area(dsibuf.get(), NDS_SEC_AREA_SIZE, NDSCRYPT_BF_DSi);
+				if (ret != 0) {
+					// Error encrypting/decrypting.
+					if (pResult) {
+						pResult->status = -EIO;
+						pResult->msg = doEncrypt
+							? C_("NintendoDS", "Encrypting the DSi Secure Area failed.")
+							: C_("NintendoDS", "Decrypting the DSi Secure Area failed.");
+					}
+					break;
+				}
+
+				// Write the DSi Secure Area back to the ROM.
+				size = d->file->seekAndWrite(dsisec_offset, &dsibuf[0x1000], DSi_SEC_AREA_SIZE);
+				if (size != DSi_SEC_AREA_SIZE) {
+					// Seek and/or write error.
+					// TODO: Show an error message.
+					ret = -d->file->lastError();
+					if (ret == 0) {
+						ret = -EIO;
+					}
+					if (pResult) {
+						pResult->status = ret;
+						pResult->msg = C_("NintendoDS", "Could not write the updated DSi Secure Area.");
+					}
+					break;
+				}
+			}
+
+			// Write the NDS Secure Area back to the ROM.
 			d->file->rewind();
-			size = d->file->write(buf.get(), SEC_AREA_SIZE);
-			if (size != SEC_AREA_SIZE) {
+			size = d->file->write(ndsbuf.get(), NDS_SEC_AREA_SIZE);
+			if (size != NDS_SEC_AREA_SIZE) {
 				// Seek and/or write error.
 				// TODO: Show an error message.
 				ret = -d->file->lastError();
@@ -475,10 +557,13 @@ int NintendoDS::doRomOp_int(int id, RomOpResult *pResult)
 				}
 				if (pResult) {
 					pResult->status = ret;
-					pResult->msg = C_("NintendoDS", "Could not write the updated ROM header.");
+					pResult->msg = C_("NintendoDS", "Could not write the updated NDS Secure Area.");
 				}
 				break;
 			}
+
+			// Make sure the updated Secure Areas are flushed to disk.
+			d->file->flush();
 
 			// Update the secData and secArea values.
 			d->secData = d->checkNDSSecurityData();
@@ -505,8 +590,10 @@ int NintendoDS::doRomOp_int(int id, RomOpResult *pResult)
 
 			if (pResult) {
 				pResult->msg = doEncrypt
-					? C_("NintendoDS", "Secure Area encrypted successfully.")
-					: C_("NintendoDS", "Secure Area decrypted successfully.");
+					? NC_("NintendoDS", "Secure Area encrypted successfully.",
+						"Secure Areas encrypted successfully.", (dsi ? 2 : 1))
+					: NC_("NintendoDS", "Secure Area decrypted successfully.",
+						"Secure Areas decrypted successfully.", (dsi ? 2 : 1));
 				pResult->fieldIdx.reserve(2);
 				if (d->fieldIdx_secData >= 0) {
 					pResult->fieldIdx.emplace_back(d->fieldIdx_secData);

@@ -6,6 +6,10 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+// References:
+// - https://github.com/devkitPro/ndstool/blob/master/source/encryption.cpp
+// - https://github.com/d0k3/GodMode9/blob/master/arm9/source/gamecart/secure_ntr.c
+
 #include "stdafx.h"
 #include "ndscrypt.hpp"
 
@@ -35,29 +39,46 @@ using std::string;
 
 // Blowfish data.
 // This is loaded from ~/.config/rom-properties/nds-blowfish.bin.
-static const uint8_t nds_blowfish_md5[16] = {
-	0xC0,0x8C,0x5A,0xFD,0x9C,0x6D,0x95,0x30,
-	0x81,0x7C,0xD2,0x03,0x3E,0x38,0x64,0xD7,
+static Mutex blowfish_mutex;
+static const uint8_t blowfish_md5[3][16] = {
+	// nds-blowfish
+	{0xC0,0x8C,0x5A,0xFD,0x9C,0x6D,0x95,0x30,
+	 0x81,0x7C,0xD2,0x03,0x3E,0x38,0x64,0xD7},
+	// dsi-blowfish
+	{0x6E,0x16,0x12,0x45,0xE8,0xF2,0xEA,0xF5,
+	 0xF5,0xEE,0xBB,0x31,0x4F,0x50,0x60,0x5F},
+	// dsi-devel-blowfish
+	{0xBC,0x03,0xB0,0xBF,0x27,0x38,0xA2,0x88,
+	 0x9B,0xEA,0x52,0xEE,0xC4,0xF1,0x35,0x7F},
 };
-static uint8_t nds_blowfish_data[NDS_BLOWFISH_SIZE];
-static Mutex nds_mutex;
+static uint8_t blowfish_data[3][NDS_BLOWFISH_SIZE];
 
 /**
- * Load and verify nds-blowfish.bin.
- * This must be present in order to use ndscrypt_secure_area().
- * TODO: Custom error codes enum.
+ * Load and verify a Blowfish file.
+ * These must be present in order to use ndscrypt_secure_area().
+ * @param bfkey Blowfish key ID.
  * @return 0 on success; negative POSIX error code, positive custom error code on error.
  */
-int ndscrypt_load_nds_blowfish_bin(void)
+int ndscrypt_load_blowfish_bin(BlowfishKey bfkey)
 {
-	if (nds_blowfish_data[0] != 0) {
+	static const char *const filenames[] = {
+		"nds-blowfish.bin",
+		"dsi-blowfish.bin",
+		"dsi-devel-blowfish.bin",
+	};
+	assert(bfkey >= NDSCRYPT_BF_NDS);
+	assert(bfkey < NDSCRYPT_BF_MAX);
+	if (bfkey < NDSCRYPT_BF_NDS || bfkey >= NDSCRYPT_BF_MAX)
+		return -EINVAL;
+
+	if (blowfish_data[bfkey][0] != 0) {
 		// Blowfish data was already loaded.
 		return 0;
 	}
 
-	MutexLocker mutexLocker(nds_mutex);
+	MutexLocker mutexLocker(blowfish_mutex);
 	// Verify again after the mutex is locked.
-	if (nds_blowfish_data[0] == 0x99) {
+	if (blowfish_data[bfkey][0] != 0) {
 		// Blowfish data was already loaded.
 		return 0;
 	}
@@ -71,7 +92,7 @@ int ndscrypt_load_nds_blowfish_bin(void)
 	if (bin_filename.at(bin_filename.size()-1) != DIR_SEP_CHR) {
 		bin_filename += DIR_SEP_CHR;
 	}
-	bin_filename += "nds-blowfish.bin";
+	bin_filename += filenames[bfkey];
 
 	// Open the file.
 	RpFile *const f_blowfish = new RpFile(bin_filename, RpFile::FM_OPEN_READ);
@@ -86,17 +107,17 @@ int ndscrypt_load_nds_blowfish_bin(void)
 	}
 
 	// File must be the correct size.
-	if (f_blowfish->size() != static_cast<off64_t>(sizeof(nds_blowfish_data))) {
+	if (f_blowfish->size() != static_cast<off64_t>(sizeof(blowfish_data[bfkey]))) {
 		// Wrong size.
 		UNREF(f_blowfish);
 		return 1;
 	}
 
 	// Read the file.
-	size_t size = f_blowfish->read(nds_blowfish_data, sizeof(nds_blowfish_data));
-	if (size != sizeof(nds_blowfish_data)) {
+	size_t size = f_blowfish->read(blowfish_data[bfkey], sizeof(blowfish_data[bfkey]));
+	if (size != sizeof(blowfish_data[bfkey])) {
 		// Read error.
-		nds_blowfish_data[0] = 0;
+		blowfish_data[bfkey][0] = 0;
 		int err = f_blowfish->lastError();
 		if (err == 0) {
 			err = EIO;
@@ -107,10 +128,10 @@ int ndscrypt_load_nds_blowfish_bin(void)
 
 	// Verify the MD5.
 	uint8_t md5[16];
-	MD5::calcHash(md5, sizeof(md5), nds_blowfish_data, sizeof(nds_blowfish_data));
-	if (memcmp(md5, nds_blowfish_md5, sizeof(md5)) != 0) {
+	MD5::calcHash(md5, sizeof(md5), blowfish_data[bfkey], sizeof(blowfish_data[bfkey]));
+	if (memcmp(md5, blowfish_md5[bfkey], sizeof(md5)) != 0) {
 		// MD5 is incorrect.
-		nds_blowfish_data[0] = 0;
+		blowfish_data[bfkey][0] = 0;
 		return 2;
 	}
 
@@ -135,12 +156,12 @@ class NDSCrypt
 
 		static void update_hashtable(uint32_t* magic, uint8_t arg1[8]);
 		static void init2(uint32_t *magic, uint32_t a[3]);
-		void init1(void);
+		void init1(BlowfishKey bfkey);
 
 	public:
-		void init0(void);
-		int decrypt_arm9(uint8_t *data);
-		int encrypt_arm9(uint8_t *data);
+		void init0(BlowfishKey bfkey);
+		int decrypt_arm9(uint8_t *data, BlowfishKey bfkey);
+		int encrypt_arm9(uint8_t *data, BlowfishKey bfkey);
 
 		inline const uint32_t *card_hash(void) const
 		{
@@ -150,23 +171,21 @@ class NDSCrypt
 	private:
 		uint32_t m_gamecode;
 
-		uint32_t m_card_hash[0x412];
-		int m_cardheader_devicetype;		// TODO: DSi?
+		uint32_t m_card_hash[NDS_BLOWFISH_SIZE/sizeof(uint32_t)];
 		uint32_t m_global3_x00, m_global3_x04;	// RTC value
 		uint32_t m_global3_rand1;
 		uint32_t m_global3_rand3;
-		uint32_t m_arg2[3];
+		uint32_t m_keycode[3];
 };
 
 NDSCrypt::NDSCrypt(uint32_t gamecode)
 	: m_gamecode(gamecode)
-	, m_cardheader_devicetype(0)
 	, m_global3_x00(0)
 	, m_global3_x04(0)
 	, m_global3_rand1(0)
 	, m_global3_rand3(0)
 {
-	memset(m_arg2, 0, sizeof(m_arg2));
+	memset(m_keycode, 0, sizeof(m_keycode));
 }
 
 uint32_t NDSCrypt::lookup(uint32_t *magic, uint32_t v)
@@ -260,19 +279,20 @@ void NDSCrypt::init2(uint32_t *magic, uint32_t a[3])
 	update_hashtable(magic, (uint8_t*)a);
 }
 
-void NDSCrypt::init1(void)
+void NDSCrypt::init1(BlowfishKey bfkey)
 {
-	memcpy(m_card_hash, &nds_blowfish_data, 4*(1024 + 18));
-	m_arg2[0] = m_gamecode;
-	m_arg2[1] = m_gamecode >> 1;
-	m_arg2[2] = m_gamecode << 1;
-	init2(m_card_hash, m_arg2);
-	init2(m_card_hash, m_arg2);
+	// FIXME: Not big-endian safe.
+	memcpy(m_card_hash, &blowfish_data[bfkey], 4*(1024 + 18));
+	m_keycode[0] = m_gamecode;
+	m_keycode[1] = m_gamecode >> 1;
+	m_keycode[2] = m_gamecode << 1;
+	init2(m_card_hash, m_keycode);	// level 1 (NDS init)
+	init2(m_card_hash, m_keycode);	// level 2 (DSi init, NDS/DSi before reading Secure Area)
 }
 
-void NDSCrypt::init0(void)
+void NDSCrypt::init0(BlowfishKey bfkey)
 {
-	init1();
+	init1(bfkey);
 	encrypt(m_card_hash, (uint32_t*)&m_global3_x04, (uint32_t*)&m_global3_x00);
 	m_global3_rand1 = m_global3_x00 ^ m_global3_x04;		// more RTC
 	m_global3_rand3 = m_global3_x04 ^ 0x0380FEB2;
@@ -286,24 +306,32 @@ void NDSCrypt::init0(void)
 /*
  * decrypt_arm9
  */
-int NDSCrypt::decrypt_arm9(uint8_t *data)
+int NDSCrypt::decrypt_arm9(uint8_t *data, BlowfishKey bfkey)
 {
 	uint32_t *p = (uint32_t*)data;
 
-	init1();
+	init1(bfkey);
 	decrypt(m_card_hash, p+1, p);
-	m_arg2[1] <<= 1;
-	m_arg2[2] >>= 1;	
-	init2(m_card_hash, m_arg2);
+	m_keycode[1] <<= 1;
+	m_keycode[2] >>= 1;	
+	init2(m_card_hash, m_keycode);
 	decrypt(m_card_hash, p+1, p);
 
-	if (p[0] != MAGIC30 || p[1] != MAGIC34)
-	{
-		return -EIO;
+	if (bfkey == NDSCRYPT_BF_NDS) {
+		// Verify the NDS Secure Area header.
+		if (p[0] != MAGIC30 || p[1] != MAGIC34) {
+			// Expected 'encryObj'...
+			return -EIO;
+		}
+
+		// Overwrite 'encryObj'.
+		*p++ = cpu_to_le32(0xE7FFDEFF);
+		*p++ = cpu_to_le32(0xE7FFDEFF);
+	} else {
+		// FIXME: DSi Secure Area header?
+		p += 2;
 	}
 
-	*p++ = 0xE7FFDEFF;
-	*p++ = 0xE7FFDEFF;
 	uint32_t size = 0x800 - 8;
 	while (size > 0)
 	{
@@ -318,21 +346,25 @@ int NDSCrypt::decrypt_arm9(uint8_t *data)
 /*
  * encrypt_arm9
  */
-int NDSCrypt::encrypt_arm9(uint8_t *data)
+int NDSCrypt::encrypt_arm9(uint8_t *data, BlowfishKey bfkey)
 {
 	uint32_t *p = (uint32_t*)data;
-	if (p[0] != cpu_to_le32(0xE7FFDEFF) || p[1] != cpu_to_le32(0xE7FFDEFF))
-	{
-		return -EIO;
+	// FIXME: DSi Secure Area header?
+	if (bfkey == NDSCRYPT_BF_NDS) {
+		// Verify the overwritten 'encryObj'.
+		if (p[0] != cpu_to_le32(0xE7FFDEFF) || p[1] != cpu_to_le32(0xE7FFDEFF)) {
+			// Not the expected value...
+			return -EIO;
+		}
 	}
 	p += 2;
 
-	init1();
+	init1(bfkey);
 
-	m_arg2[1] <<= 1;
-	m_arg2[2] >>= 1;
+	m_keycode[1] <<= 1;
+	m_keycode[2] >>= 1;
 	
-	init2(m_card_hash, m_arg2);
+	init2(m_card_hash, m_keycode);
 
 	uint32_t size = 0x800 - 8;
 	while (size > 0)
@@ -344,10 +376,12 @@ int NDSCrypt::encrypt_arm9(uint8_t *data)
 
 	// place header
 	p = (uint32_t*)data;
-	p[0] = MAGIC30;
-	p[1] = MAGIC34;
+	if (bfkey == NDSCRYPT_BF_NDS) {
+		p[0] = MAGIC30;
+		p[1] = MAGIC34;
+	}
 	encrypt(m_card_hash, p+1, p);
-	init1();
+	init1(bfkey);
 	encrypt(m_card_hash, p+1, p);
 	return 0;
 }
@@ -356,23 +390,31 @@ int NDSCrypt::encrypt_arm9(uint8_t *data)
  * Encrypt the secure area and create the encryption data
  * required for official flash carts and IS-NITRO.
  * @param pRom First 32 KB of the ROM image.
+ * @param bfkey Blowfish key.
  * @return 0 on success; non-zero on error.
  */
-static int encryptSecureArea(uint8_t *pRom)
+static int encryptSecureArea(uint8_t *pRom, BlowfishKey bfkey)
 {
 	static const unsigned int rounds_offsets = 0x1600;
 	static const unsigned int sbox_offsets = 0x1C00;
 
 	// If the ROM is already encrypted, we don't need to do anything.
 	uint32_t *const pRom32 = reinterpret_cast<uint32_t*>(pRom);
-	if (pRom32[0x4000/4] != 0xE7FFDEFF && pRom32[0x4004/4] != 0xE7FFDEFF) {
-		// ROM is already encrypted.
-		return 0;
+	if (bfkey == NDSCRYPT_BF_NDS) {
+		if (pRom32[0x4000/4] != 0xE7FFDEFF && pRom32[0x4004/4] != 0xE7FFDEFF) {
+			// ROM is already encrypted.
+			return 0;
+		}
 	}
 
 	uint32_t gamecode = le32_to_cpu(pRom32[0x0C/4]);
 	NDSCrypt ndsCrypt(gamecode);
-	ndsCrypt.encrypt_arm9(&pRom[0x4000]);
+	ndsCrypt.encrypt_arm9(&pRom[0x4000], bfkey);
+
+	if (bfkey > NDSCRYPT_BF_NDS) {
+		// TODO: Static area for DSi.
+		return 0;
+	}
 
 	// Calculate CRCs.
 	uint16_t *const pRom16 = reinterpret_cast<uint16_t*>(pRom);
@@ -382,7 +424,7 @@ static int encryptSecureArea(uint8_t *pRom)
 	pRom16[0x15E/2] = cpu_to_le16(CalcCrc16(pRom, 0x15E));
 
 	// Reinitialize the card hash.
-	ndsCrypt.init0();
+	ndsCrypt.init0(bfkey);
 	//srand(gamecode);	// FIXME: Is this actually needed?
 
 	// rounds table
@@ -418,63 +460,89 @@ static int encryptSecureArea(uint8_t *pRom)
 
 /**
  * Encrypt the ROM's Secure Area, if necessary.
- * @param pRom First 32 KB of the ROM image.
+ * @param pRom NDS or DSi secure area. (For DSi secure area, first 4 KB is the ROM header.)
  * @param len Length of pRom.
+ * @param bfkey Blowfish key.
  * @return 0 on success; non-zero on error.
  */
-int ndscrypt_encrypt_secure_area(uint8_t *pRom, size_t len)
+int ndscrypt_encrypt_secure_area(uint8_t *pRom, size_t len, BlowfishKey bfkey)
 {
 	assert(len >= 32768);
-	if (len < 32768)
+	assert(bfkey >= NDSCRYPT_BF_NDS);
+	assert(bfkey < NDSCRYPT_BF_MAX);
+	if (len < 32768 || bfkey < NDSCRYPT_BF_NDS || bfkey >= NDSCRYPT_BF_MAX)
 		return -EINVAL;
 
-	// nds-blowfish.bin must have been loaded before calling this function.
-	if (nds_blowfish_data[0] != 0x99)
-		return -EIO;
+	// Make sure the Blowfish data has been loaded.
+	if (bfkey == NDSCRYPT_BF_NDS) {
+		if (blowfish_data[NDSCRYPT_BF_NDS][0] != 0x99)
+			return -EIO;
+	} else {
+		// FIXME: Check if it's a development cartridge.
+		if (blowfish_data[NDSCRYPT_BF_DSi][0] != 0x59) {
+			return -EIO;
+		}
+	}
 
 	// Encrypt the Secure Area.
-	return encryptSecureArea(pRom);
+	return encryptSecureArea(pRom, bfkey);
 }
 
 /**
  * Decrypt the secure area and remove the static data.
  * @param pRom First 32 KB of the ROM image.
+ * @param bfkey Blowfish key.
  * @return 0 on success; non-zero on error.
  */
-static int decryptSecureArea(uint8_t *pRom)
+static int decryptSecureArea(uint8_t *pRom, BlowfishKey bfkey)
 {
 	// If the ROM is already decrypted, we don't need to do anything.
 	uint32_t *const pRom32 = reinterpret_cast<uint32_t*>(pRom);
-	if (pRom32[0x4000/4] == 0xE7FFDEFF && pRom32[0x4004/4] == 0xE7FFDEFF) {
-		// ROM is already decrypted.
-		return 0;
+	if (bfkey == NDSCRYPT_BF_NDS) {
+		if (pRom32[0x4000/4] == 0xE7FFDEFF && pRom32[0x4004/4] == 0xE7FFDEFF) {
+			// ROM is already decrypted.
+			return 0;
+		}
 	}
 
 	uint32_t gamecode = le32_to_cpu(pRom32[0x0C/4]);
 	NDSCrypt ndsCrypt(gamecode);
-	ndsCrypt.decrypt_arm9(&pRom[0x4000]);
+	ndsCrypt.decrypt_arm9(&pRom[0x4000], bfkey);
 
-	// Zero out the static data.
-	memset(&pRom[0x1000], 0, 0x3000);
+	if (bfkey == NDSCRYPT_BF_NDS) {
+		// Zero out the static data.
+		// TODO: Do this on DSi too?
+		memset(&pRom[0x1000], 0, 0x3000);
+	}
 	return 0;
 }
 
 /**
  * Decrypt the ROM's Secure Area, if necessary.
- * @param pRom First 32 KB of the ROM image.
+ * @param pRom NDS or DSi secure area. (For DSi secure area, first 4 KB is the ROM header.)
  * @param len Length of pRom.
+ * @param bfkey Blowfish key.
  * @return 0 on success; non-zero on error.
  */
-int ndscrypt_decrypt_secure_area(uint8_t *pRom, size_t len)
+int ndscrypt_decrypt_secure_area(uint8_t *pRom, size_t len, BlowfishKey bfkey)
 {
 	assert(len >= 32768);
-	if (len < 32768)
+	assert(bfkey >= NDSCRYPT_BF_NDS);
+	assert(bfkey < NDSCRYPT_BF_MAX);
+	if (len < 32768 || bfkey < NDSCRYPT_BF_NDS || bfkey >= NDSCRYPT_BF_MAX)
 		return -EINVAL;
 
-	// nds-blowfish.bin must have been loaded before calling this function.
-	if (nds_blowfish_data[0] != 0x99)
-		return -EIO;
+	// Make sure the Blowfish data has been loaded.
+	if (bfkey == NDSCRYPT_BF_NDS) {
+		if (blowfish_data[NDSCRYPT_BF_NDS][0] != 0x99)
+			return -EIO;
+	} else {
+		// FIXME: Check if it's a development cartridge.
+		if (blowfish_data[NDSCRYPT_BF_DSi][0] != 0x59) {
+			return -EIO;
+		}
+	}
 
 	// Decrypt the Secure Area.
-	return decryptSecureArea(pRom);
+	return decryptSecureArea(pRom, bfkey);
 }
