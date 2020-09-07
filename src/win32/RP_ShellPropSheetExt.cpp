@@ -2325,7 +2325,28 @@ int RP_ShellPropSheetExt_Private::updateField(int fieldIdx)
 		}
 
 		case RomFields::RFT_BITFIELD: {
-			// TODO
+			// Multiple checkboxes with unique dialog IDs.
+
+			// Bits with a blank name aren't included, so we'll need to iterate
+			// over the bitfield description.
+			const auto &bitfieldDesc = field->desc.bitfield;
+			int count = (int)bitfieldDesc.names->size();
+			assert(count <= 32);
+			if (count > 32)
+				count = 32;
+
+			// Unlike GTK+ and KDE, we don't need to check bitfieldDesc.names to determine
+			// if a checkbox is present, since GetDlgItem() will return nullptr in that case.
+			uint32_t bitfield = field->data.bitfield;
+			int id = IDC_RFT_BITFIELD(fieldIdx, 0);
+			for (; count >= 0; count--, id++, bitfield >>= 1) {
+				HWND hCheckBox = GetDlgItem(hDlgSheet, id);
+				if (!hCheckBox)
+					continue;
+
+				// Set the checkbox.
+				Button_SetCheck(hCheckBox, (bitfield & 1) ? BST_CHECKED : BST_UNCHECKED);
+			}
 			ret = 0;
 			break;
 		}
