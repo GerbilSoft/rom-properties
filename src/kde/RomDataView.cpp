@@ -1892,30 +1892,6 @@ void RomDataView::menuOptions_action_triggered(int id)
 		}
 	} else if (d->romOps_firstActionIndex >= 0) {
 		// Run a ROM operation.
-#ifdef HAVE_KMESSAGEWIDGET
-		if (!d->messageWidget) {
-			d->messageWidget = new KMessageWidget(this);
-			d->messageWidget->setCloseButtonVisible(true);
-			d->messageWidget->setWordWrap(true);
-			d->ui.vboxLayout->addWidget(d->messageWidget);
-
-			d->tmrMessageWidget = new QTimer(this);
-			d->tmrMessageWidget->setSingleShot(true);
-			d->tmrMessageWidget->setInterval(10*1000);
-			connect(d->tmrMessageWidget, SIGNAL(timeout()),
-				d->messageWidget, SLOT(animatedHide()));
-#  if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
-			// KMessageWidget::hideAnimationFinished was added in KF5.
-			// FIXME: This is after the animation *finished*, not when
-			// the Close button was clicked.
-			connect(d->messageWidget, &KMessageWidget::showAnimationFinished,
-				d->tmrMessageWidget, static_cast<void (QTimer::*)()>(&QTimer::start));
-			connect(d->messageWidget, &KMessageWidget::hideAnimationFinished,
-				d->tmrMessageWidget, &QTimer::stop);
-#  endif /* QT_VERSION >= QT_VERSION_CHECK(5,0,0) */
-		}
-#endif /* HAVE_KMESSAGEWIDGET */
-
 		RomData::RomOpResult result;
 		int ret = d->romData->doRomOp(id, &result);
 		const QString qs_msg = U82Q(result.msg);
@@ -1958,7 +1934,30 @@ void RomDataView::menuOptions_action_triggered(int id)
 			MessageSound::play(QMessageBox::Warning, qs_msg, this);
 			d->messageWidget->setMessageType(KMessageWidget::Warning);
 		}
+
+#ifdef HAVE_KMESSAGEWIDGET
 		if (!qs_msg.isEmpty()) {
+			if (!d->messageWidget) {
+				d->messageWidget = new KMessageWidget(this);
+				d->messageWidget->setCloseButtonVisible(true);
+				d->messageWidget->setWordWrap(true);
+				d->ui.vboxLayout->addWidget(d->messageWidget);
+
+				d->tmrMessageWidget = new QTimer(this);
+				d->tmrMessageWidget->setSingleShot(true);
+				d->tmrMessageWidget->setInterval(10*1000);
+				connect(d->tmrMessageWidget, SIGNAL(timeout()),
+				        d->messageWidget, SLOT(animatedHide()));
+#  if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
+				// KMessageWidget::hideAnimationFinished was added in KF5.
+				// FIXME: This is after the animation *finished*, not when
+				// the Close button was clicked.
+				connect(d->messageWidget, &KMessageWidget::showAnimationFinished,
+				        d->tmrMessageWidget, static_cast<void (QTimer::*)()>(&QTimer::start));
+				connect(d->messageWidget, &KMessageWidget::hideAnimationFinished,
+				        d->tmrMessageWidget, &QTimer::stop);
+#  endif /* QT_VERSION >= QT_VERSION_CHECK(5,0,0) */
+			}
 			d->messageWidget->setText(qs_msg);
 			d->messageWidget->animatedShow();
 //#if QT_VERSION < QT_VERSION_CHECK(5,0,0)
@@ -1967,5 +1966,6 @@ void RomDataView::menuOptions_action_triggered(int id)
 			d->tmrMessageWidget->start();
 //#endif /* QT_VERSION < QT_VERSION_CHECK(5,0,0) */
 		}
+#endif /* HAVE_KMESSAGEWIDGET */
 	}
 }
