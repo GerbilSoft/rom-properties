@@ -21,7 +21,7 @@
 #ifndef __ROMPROPERTIES_KDE_MESSAGESOUND_HPP__
 #define __ROMPROPERTIES_KDE_MESSAGESOUND_HPP__
 
-#include <QtWidgets/QMessageBox>
+#include <QMessageBox>
 
 class MessageSound
 {

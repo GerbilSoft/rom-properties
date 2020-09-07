@@ -15,7 +15,7 @@
 #if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
 #  include <kmessageboxnotifyinterface.h>
 #else
-// FIXME: KDE4 support.
+#  include <knotification.h>
 #endif
 
 /**
@@ -26,6 +26,7 @@
  */
 void MessageSound::play(QMessageBox::Icon notificationType, const QString &message, QWidget *parent)
 {
+#if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
 	QPluginLoader lib(QStringLiteral("kf5/FrameworkIntegrationPlugin"));
 	QObject *const rootObj = lib.instance();
 	if (rootObj) {
@@ -35,4 +36,25 @@ void MessageSound::play(QMessageBox::Icon notificationType, const QString &messa
 			iface->sendNotification(notificationType, message, parent);
 		}
 	}
+#else /* QT_VERSION < QT_VERSION_CHECK(5,0,0) */
+	// FIXME: KNotification::event() doesn't seem to work.
+	// This might not be too important nowadays, since KDE4 is ancient...
+	QString messageType;
+	switch (notificationType) {
+		default:
+		case QMessageBox::Information:
+			messageType = QLatin1String("messageInformation");
+			break;
+		case QMessageBox::Warning:
+			messageType = QLatin1String("messageWarning");
+			break;
+		case QMessageBox::Question:
+			messageType = QLatin1String("messageQuestion");
+			break;
+		case QMessageBox::Critical:
+			messageType = QLatin1String("messageCritical");
+			break;
+	}
+	KNotification::event(messageType, message, QPixmap(), parent);
+#endif
 }
