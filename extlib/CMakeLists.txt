@@ -232,8 +232,7 @@ IF(USE_INTERNAL_LZ4)
 	# Use the internal copy of LZ4.
 	# On Windows and Mac OS X, this will build DLLs.
 	# On other systems, this will be statically-linked.
-	# FIXME: dylib version is failing on travis-ci.
-	IF(WIN32)
+	IF(WIN32 OR APPLE)
 		SET(SKIP_INSTALL_LIBRARIES ON)
 		SET(SKIP_INSTALL_ALL OFF)
 		SET(BUILD_SHARED_LIBS ON)
