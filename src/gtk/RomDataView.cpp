@@ -1636,11 +1636,13 @@ rom_data_view_update_field(RomDataView *page, int fieldIdx)
 			gtk_label_set_text(GTK_LABEL(label), field->data.str
 				? field->data.str->c_str()
 				: nullptr);
+			ret = 0;
 			break;
 		}
 
 		case RomFields::RFT_BITFIELD: {
 			// TODO
+			ret = 0;
 			break;
 		}
 	}

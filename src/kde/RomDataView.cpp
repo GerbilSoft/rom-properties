@@ -1309,6 +1309,7 @@ int RomDataViewPrivate::updateField(int fieldIdx)
 			label->setText(field->data.str
 				? U82Q(*(field->data.str))
 				: QString());
+			ret = 0;
 			break;
 		}
 
@@ -1355,6 +1356,7 @@ int RomDataViewPrivate::updateField(int fieldIdx)
 				// Next layout item.
 				layoutIdx++;
 			}
+			ret = 0;
 			break;
 		}
 	}
