@@ -32,6 +32,7 @@ using std::ofstream;
 using std::ostringstream;
 using std::set;
 using std::string;
+using std::unordered_map;
 using std::vector;
 
 // GTK+ 2.x compatibility macros.
@@ -188,6 +189,10 @@ struct _RomDataView {
 	};
 	vector<tab>	*tabs;
 
+	// Mapping of field index to GtkWidget*.
+	// For updateField().
+	unordered_map<int, GtkWidget*> *map_fieldIdx;
+
 	// Description labels.
 	RpDescFormatType	desc_format_type;
 	vector<GtkWidget*>	*vecDescLabels;
@@ -343,6 +348,7 @@ rom_data_view_init(RomDataView *page)
 	page->romData = nullptr;
 	page->tabWidget = nullptr;
 	page->tabs = new vector<RomDataView::tab>();
+	page->map_fieldIdx = new unordered_map<int, GtkWidget*>();
 
 	page->desc_format_type = RP_DFT_XFCE;
 
@@ -460,6 +466,7 @@ rom_data_view_finalize(GObject *object)
 
 	// Delete the C++ objects.
 	delete page->tabs;
+	delete page->map_fieldIdx;
 	delete page->vecDescLabels;
 
 	delete page->set_lc;
@@ -738,13 +745,16 @@ rom_data_view_init_header_row(RomDataView *page)
 
 /**
  * Initialize a string field.
- * @param page	[in] RomDataView object.
- * @param field	[in] RomFields::Field
- * @param str	[in,opt] String data. (If nullptr, field data is used.)
+ * @param page		[in] RomDataView object
+ * @param field		[in] RomFields::Field
+ * @param fieldIdx	[in] Field index
+ * @param str		[in,opt] String data (If nullptr, field data is used)
  * @return Display widget, or nullptr on error.
  */
 static GtkWidget*
-rom_data_view_init_string(RomDataView *page, const RomFields::Field &field, const char *str = nullptr)
+rom_data_view_init_string(RomDataView *page,
+	const RomFields::Field &field, int fieldIdx,
+	const char *str = nullptr)
 {
 	// String type.
 	GtkWidget *widget = gtk_label_new(nullptr);
@@ -775,6 +785,10 @@ rom_data_view_init_string(RomDataView *page, const RomFields::Field &field, cons
 			gtk_label_set_text(GTK_LABEL(widget), str);
 		}
 	}
+
+	// NOTE: Add the widget to the field index map here,
+	// since `widget` might be NULLed out later.
+	page->map_fieldIdx->insert(std::make_pair(fieldIdx, widget));
 
 	// Check for any formatting options. (RFT_STRING only)
 	if (field.type == RomFields::RFT_STRING && field.desc.flags != 0) {
@@ -818,12 +832,14 @@ rom_data_view_init_string(RomDataView *page, const RomFields::Field &field, cons
 
 /**
  * Initialize a bitfield.
- * @param page	[in] RomDataView object.
- * @param field	[in] RomFields::Field
+ * @param page		[in] RomDataView object
+ * @param field		[in] RomFields::Field
+ * @param fieldIdx	[in] Field index
  * @return Display widget, or nullptr on error.
  */
 static GtkWidget*
-rom_data_view_init_bitfield(RomDataView *page, const RomFields::Field &field)
+rom_data_view_init_bitfield(RomDataView *page,
+	const RomFields::Field &field, int fieldIdx)
 {
 	// Bitfield type. Create a grid of checkboxes.
 	// TODO: Description label needs some padding on the top...
@@ -896,17 +912,20 @@ rom_data_view_init_bitfield(RomDataView *page, const RomFields::Field &field)
 		}
 	}
 
+	page->map_fieldIdx->insert(std::make_pair(fieldIdx, widget));
 	return widget;
 }
 
 /**
  * Initialize a list data field.
- * @param page	[in] RomDataView object.
- * @param field	[in] RomFields::Field
+ * @param page		[in] RomDataView object
+ * @param field		[in] RomFields::Field
+ * @param fieldIdx	[in] Field index
  * @return Display widget, or nullptr on error.
  */
 static GtkWidget*
-rom_data_view_init_listdata(G_GNUC_UNUSED RomDataView *page, const RomFields::Field &field)
+rom_data_view_init_listdata(RomDataView *page,
+	const RomFields::Field &field, int fieldIdx)
 {
 	// ListData type. Create a GtkListStore for the data.
 	const auto &listDataDesc = field.desc.list_data;
@@ -1164,22 +1183,25 @@ rom_data_view_init_listdata(G_GNUC_UNUSED RomDataView *page, const RomFields::Fi
 			Data_ListDataMulti_t(listStore, GTK_TREE_VIEW(treeView), &field));
 	}
 
+	page->map_fieldIdx->insert(std::make_pair(fieldIdx, widget));
 	return widget;
 }
 
 /**
  * Initialize a Date/Time field.
- * @param page	[in] RomDataView object.
+ * @param page	[in] RomDataView object
  * @param field	[in] RomFields::Field
+ * @param fieldIdx	[in] Field index
  * @return Display widget, or nullptr on error.
  */
 static GtkWidget*
-rom_data_view_init_datetime(G_GNUC_UNUSED RomDataView *page, const RomFields::Field &field)
+rom_data_view_init_datetime(RomDataView *page,
+	const RomFields::Field &field, int fieldIdx)
 {
 	// Date/Time.
 	if (field.data.date_time == -1) {
 		// tr: Invalid date/time.
-		return rom_data_view_init_string(page, field, C_("RomDataView", "Unknown"));
+		return rom_data_view_init_string(page, field, fieldIdx, C_("RomDataView", "Unknown"));
 	}
 
 	GDateTime *dateTime;
@@ -1208,7 +1230,7 @@ rom_data_view_init_datetime(G_GNUC_UNUSED RomDataView *page, const RomFields::Fi
 	if (format) {
 		gchar *const str = g_date_time_format(dateTime, format);
 		if (str) {
-			widget = rom_data_view_init_string(page, field, str);
+			widget = rom_data_view_init_string(page, field, fieldIdx, str);
 			g_free(str);
 		}
 	}
@@ -1219,34 +1241,38 @@ rom_data_view_init_datetime(G_GNUC_UNUSED RomDataView *page, const RomFields::Fi
 
 /**
  * Initialize an Age Ratings field.
- * @param page	[in] RomDataView object.
- * @param field	[in] RomFields::Field
+ * @param page		[in] RomDataView object
+ * @param field		[in] RomFields::Field
+ * @param fieldIdx	[in] Field index
  * @return Display widget, or nullptr on error.
  */
 static GtkWidget*
-rom_data_view_init_age_ratings(G_GNUC_UNUSED RomDataView *page, const RomFields::Field &field)
+rom_data_view_init_age_ratings(RomDataView *page,
+	const RomFields::Field &field, int fieldIdx)
 {
 	// Age ratings.
 	const RomFields::age_ratings_t *const age_ratings = field.data.age_ratings;
 	assert(age_ratings != nullptr);
 	if (!age_ratings) {
 		// tr: No age ratings data.
-		return rom_data_view_init_string(page, field, C_("RomDataView", "ERROR"));
+		return rom_data_view_init_string(page, field, fieldIdx, C_("RomDataView", "ERROR"));
 	}
 
 	// Convert the age ratings field to a string.
 	string str = RomFields::ageRatingsDecode(age_ratings);
-	return rom_data_view_init_string(page, field, str.c_str());
+	return rom_data_view_init_string(page, field, fieldIdx, str.c_str());
 }
 
 /**
  * Initialize a Dimensions field.
- * @param page	[in] RomDataView object.
- * @param field	[in] RomFields::Field
+ * @param page		[in] RomDataView object
+ * @param field		[in] RomFields::Field
+ * @param fieldIdx	[in] Field index
  * @return Display widget, or nullptr on error.
  */
 static GtkWidget*
-rom_data_view_init_dimensions(G_GNUC_UNUSED RomDataView *page, const RomFields::Field &field)
+rom_data_view_init_dimensions(RomDataView *page,
+	const RomFields::Field &field, int fieldIdx)
 {
 	// Dimensions.
 	// TODO: 'x' or '×'? Using 'x' for now.
@@ -1264,23 +1290,25 @@ rom_data_view_init_dimensions(G_GNUC_UNUSED RomDataView *page, const RomFields::
 		snprintf(buf, sizeof(buf), "%d", dimensions[0]);
 	}
 
-	return rom_data_view_init_string(page, field, buf);
+	return rom_data_view_init_string(page, field, fieldIdx, buf);
 }
 
 /**
  * Initialize a multi-language string field.
- * @param page	[in] RomDataView object.
- * @param field	[in] RomFields::Field
+ * @param page		[in] RomDataView object
+ * @param field		[in] RomFields::Field
+ * @param fieldIdx	[in] Field index
  * @return Display widget, or nullptr on error.
  */
 static GtkWidget*
-rom_data_view_init_string_multi(G_GNUC_UNUSED RomDataView *page, const RomFields::Field &field)
+rom_data_view_init_string_multi(RomDataView *page,
+	const RomFields::Field &field, int fieldIdx)
 {
 	// Mutli-language string.
 	// NOTE: The string contents won't be initialized here.
 	// They will be initialized separately, since the user will
 	// be able to change the displayed language.
-	GtkWidget *const lblStringMulti = rom_data_view_init_string(page, field, "");
+	GtkWidget *const lblStringMulti = rom_data_view_init_string(page, field, fieldIdx, "");
 	if (lblStringMulti) {
 		page->vecStringMulti->emplace_back(lblStringMulti, &field);
 	}
@@ -1547,6 +1575,77 @@ rom_data_view_update_multi(RomDataView *page, uint32_t user_lc)
 		// Connect the "changed" signal.
 		g_signal_connect(page->cboLanguage, "changed", G_CALLBACK(cboLanguage_changed_signal_handler), page);
 	}
+}
+
+/**
+ * Update a field's value.
+ * This is called after running a ROM operation.
+ * @param page		[in] RomDataView object.
+ * @param fieldIdx	[in] Field index.
+ * @return 0 on success; non-zero on error.
+ */
+static int
+rom_data_view_update_field(RomDataView *page, int fieldIdx)
+{
+	const RomFields *const pFields = page->romData->fields();
+	assert(pFields != nullptr);
+	if (!pFields) {
+		// No fields.
+		// TODO: Show an error?
+		return 1;
+	}
+
+	assert(fieldIdx >= 0);
+	assert(fieldIdx < pFields->count());
+	if (fieldIdx < 0 || fieldIdx >= pFields->count())
+		return 2;
+
+	const RomFields::Field *const field = pFields->at(fieldIdx);
+	assert(field != nullptr);
+	if (!field)
+		return 3;
+
+	// Get the GtkWidget*.
+	auto iter = page->map_fieldIdx->find(fieldIdx);
+	if (iter == page->map_fieldIdx->end()) {
+		// Not found.
+		return 4;
+	}
+
+	// Update the value widget(s).
+	int ret;
+	switch (field->type) {
+		case RomFields::RFT_INVALID:
+			assert(!"Cannot update an RFT_INVALID field.");
+			ret = 5;
+			break;
+		default:
+			assert(!"Unsupported field type.");
+			ret = 6;
+			break;
+
+		case RomFields::RFT_STRING: {
+			// GtkWidget is a GtkLabel.
+			GtkWidget *const label = iter->second;
+			assert(GTK_IS_LABEL(label));
+			if (!GTK_IS_LABEL(label)) {
+				ret = 7;
+				break;
+			}
+
+			gtk_label_set_text(GTK_LABEL(label), field->data.str
+				? field->data.str->c_str()
+				: nullptr);
+			break;
+		}
+
+		case RomFields::RFT_BITFIELD: {
+			// TODO
+			break;
+		}
+	}
+
+	return ret;
 }
 
 static string
@@ -1846,7 +1945,8 @@ rom_data_view_update_display(RomDataView *page)
 
 	// Create the data widgets.
 	const auto pFields_cend = pFields->cend();
-	for (auto iter = pFields->cbegin(); iter != pFields_cend; ++iter) {
+	int fieldIdx = 0;
+	for (auto iter = pFields->cbegin(); iter != pFields_cend; ++iter, fieldIdx++) {
 		const RomFields::Field &field = *iter;
 		if (!field.isValid)
 			continue;
@@ -1874,26 +1974,26 @@ rom_data_view_update_display(RomDataView *page)
 				break;
 
 			case RomFields::RFT_STRING:
-				widget = rom_data_view_init_string(page, field);
+				widget = rom_data_view_init_string(page, field, fieldIdx);
 				break;
 			case RomFields::RFT_BITFIELD:
-				widget = rom_data_view_init_bitfield(page, field);
+				widget = rom_data_view_init_bitfield(page, field, fieldIdx);
 				break;
 			case RomFields::RFT_LISTDATA:
 				separate_rows = !!(field.desc.list_data.flags & RomFields::RFT_LISTDATA_SEPARATE_ROW);
-				widget = rom_data_view_init_listdata(page, field);
+				widget = rom_data_view_init_listdata(page, field, fieldIdx);
 				break;
 			case RomFields::RFT_DATETIME:
-				widget = rom_data_view_init_datetime(page, field);
+				widget = rom_data_view_init_datetime(page, field, fieldIdx);
 				break;
 			case RomFields::RFT_AGE_RATINGS:
-				widget = rom_data_view_init_age_ratings(page, field);
+				widget = rom_data_view_init_age_ratings(page, field, fieldIdx);
 				break;
 			case RomFields::RFT_DIMENSIONS:
-				widget = rom_data_view_init_dimensions(page, field);
+				widget = rom_data_view_init_dimensions(page, field, fieldIdx);
 				break;
 			case RomFields::RFT_STRING_MULTI:
-				widget = rom_data_view_init_string_multi(page, field);
+				widget = rom_data_view_init_string_multi(page, field, fieldIdx);
 				break;
 		}
 
@@ -2098,6 +2198,7 @@ rom_data_view_delete_tabs(RomDataView *page)
 {
 	assert(page != nullptr);
 	assert(page->tabs != nullptr);
+	assert(page->map_fieldIdx != nullptr);
 	assert(page->vecDescLabels != nullptr);
 	assert(page->vecStringMulti != nullptr);
 	assert(page->vecListDataMulti != nullptr);
@@ -2117,6 +2218,7 @@ rom_data_view_delete_tabs(RomDataView *page)
 		}
 	);
 	page->tabs->clear();
+	page->map_fieldIdx->clear();
 
 	if (page->tabWidget) {
 		// Delete the tab widget.
@@ -2552,7 +2654,13 @@ menuOptions_triggered_signal_handler(GtkMenuItem *menuItem,
 		int ret = page->romData->doRomOp(id, &result);
 		if (ret == 0) {
 			// Operation completed.
-			// TODO: Update relevant field(s).
+
+			// Update fields.
+			std::for_each(result.fieldIdx.cbegin(), result.fieldIdx.cend(),
+				[page](int fieldIdx) {
+					rom_data_view_update_field(page, fieldIdx);
+				}
+			);
 
 			// Update the RomOp menu entry in case it changed.
 			// NOTE: Assuming the RomOps vector order hasn't changed.
