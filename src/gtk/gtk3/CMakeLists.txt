@@ -50,6 +50,11 @@ IF(GLib2_FOUND AND GObject2_FOUND AND GIO_FOUND AND Cairo_FOUND AND GTK3_FOUND)
 		MESSAGE(STATUS "ThunarX3 not found. Using the default extensions directory.")
 		SET(ThunarX3_EXTENSIONS_DIR "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/thunarx-3")
 	ENDIF(NOT ThunarX3_FOUND)
+
+	# LibCanberra and LibCanberraGtk3
+	# TODO: Add an OPTION() to allow the user to disable this?
+	FIND_PACKAGE(LibCanberra)
+	FIND_PACKAGE(LibCanberraGtk3)
 ELSE(GLib2_FOUND AND GObject2_FOUND AND GIO_FOUND AND Cairo_FOUND AND GTK3_FOUND)
 	# GTK+ 3.x (or required dependencies) were not found.
 	# Disable the GNOME frontend.
@@ -108,6 +113,11 @@ SET(rom-properties-gtk3_H
 	thunarx-mini.h
 	)
 
+IF(LibCanberra_FOUND AND LibCanberraGtk3_FOUND)
+	SET(rom-properties-gtk3_SRCS ${rom-properties-gtk3_SRCS} ../MessageSound.cpp)
+	SET(rom-properties-gtk3_H    ${rom-properties-gtk3_H}    ../MessageSound.hpp)
+ENDIF(LibCanberra_FOUND AND LibCanberraGtk3_FOUND)
+
 IF(ENABLE_PCH)
 	# Precompiled headers.
 	INCLUDE(PrecompiledHeader)
@@ -145,6 +155,10 @@ IF(BUILD_GTK3)
 	ENDIF(ENABLE_NLS)
 	TARGET_LINK_LIBRARIES(rom-properties-gtk3 PRIVATE Cairo::cairo)
 	TARGET_LINK_LIBRARIES(rom-properties-gtk3 PUBLIC Gtk3::gtk3 GLib2::gio GLib2::gobject GLib2::glib)
+	IF(LibCanberra_FOUND AND LibCanberraGtk3_FOUND)
+		TARGET_LINK_LIBRARIES(rom-properties-gtk3 PRIVATE LibCanberra::libcanberra LibCanberra::gtk3)
+		TARGET_COMPILE_DEFINITIONS(rom-properties-gtk3 PRIVATE ENABLE_MESSAGESOUND)
+	ENDIF(LibCanberra_FOUND AND LibCanberraGtk3_FOUND)
 
 	# Link in libdl if it's required for dlopen().
 	IF(CMAKE_DL_LIBS)

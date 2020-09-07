@@ -10,6 +10,11 @@
 #include "RomDataView.hpp"
 #include "rp-gtk-enums.h"
 
+// ENABLE_MESSAGESOUND is set by CMakeLists.txt.
+#ifdef ENABLE_MESSAGESOUND
+#  include "MessageSound.hpp"
+#endif /* ENABLE_MESSAGESOUND */
+
 // DragImage (GtkImage subclass)
 #include "DragImage.hpp"
 
@@ -2716,7 +2721,10 @@ menuOptions_triggered_signal_handler(GtkMenuItem *menuItem,
 		RomData::RomOpResult result;
 		int ret = page->romData->doRomOp(id, &result);
 		if (ret == 0) {
-			// Operation completed.
+			// ROM operation completed.
+#ifdef ENABLE_MESSAGESOUND
+			MessageSound::play(GTK_MESSAGE_INFO, result.msg.c_str(), GTK_WIDGET(page));
+#endif /* ENABLE_MESSAGESOUND */
 
 			// Update fields.
 			std::for_each(result.fieldIdx.cbegin(), result.fieldIdx.cend(),
@@ -2740,6 +2748,9 @@ menuOptions_triggered_signal_handler(GtkMenuItem *menuItem,
 		} else {
 			// An error occurred...
 			// TODO: Show an error message.
+#ifdef ENABLE_MESSAGESOUND
+			MessageSound::play(GTK_MESSAGE_WARNING, result.msg.c_str(), GTK_WIDGET(page));
+#endif /* ENABLE_MESSAGESOUND */
 		}
 	}
 
