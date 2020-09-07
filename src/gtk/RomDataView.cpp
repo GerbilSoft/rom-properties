@@ -74,6 +74,7 @@ typedef enum {
 	PROP_SHOWING_DATA,
 	PROP_LAST
 } RomDataViewPropID;
+static GParamSpec *properties[PROP_LAST];
 
 // Use GtkButton or GtkMenuButton?
 #if GTK_CHECK_VERSION(3,6,0)
@@ -221,8 +222,6 @@ struct _RomDataView {
 G_DEFINE_TYPE_EXTENDED(RomDataView, rom_data_view,
 	GTK_TYPE_SUPER, static_cast<GTypeFlags>(0), {});
 
-static GParamSpec *properties[PROP_LAST];
-
 static void
 rom_data_view_class_init(RomDataViewClass *klass)
 {
@@ -232,43 +231,25 @@ rom_data_view_class_init(RomDataViewClass *klass)
 	gobject_class->get_property = rom_data_view_get_property;
 	gobject_class->set_property = rom_data_view_set_property;
 
-	/**
-	 * RomDataView:uri:
-	 *
-	 * The URI of the file being displayed on this page.
-	 **/
+	/** Properties **/
+
 	properties[PROP_URI] = g_param_spec_string(
 		"uri", "URI", "URI of the ROM image being displayed.",
 		nullptr,
 		(GParamFlags)(G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
-	/**
-	 * RomDataView:desc_format_type:
-	 *
-	 * The formatting to use for description labels.
-	 **/
 	properties[PROP_DESC_FORMAT_TYPE] = g_param_spec_enum(
-		"desc-format-type", "desc-format-type",
-		"Description format type.",
-		RP_TYPE_DESC_FORMAT_TYPE,
-		RP_DFT_XFCE,
+		"desc-format-type", "desc-format-type", "Description format type.",
+		RP_TYPE_DESC_FORMAT_TYPE, RP_DFT_XFCE,
 		(GParamFlags)(G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
-	/**
-	 * RomDataView:showing_data:
-	 *
-	 * True if a valid RomData object is being displayed.
-	 */
 	properties[PROP_SHOWING_DATA] = g_param_spec_boolean(
-		"showing-data", "showing-data",
-		"Is a valid RomData object being displayed?",
+		"showing-data", "showing-data", "Is a valid RomData object being displayed?",
 		false,
 		(GParamFlags)(G_PARAM_READABLE | G_PARAM_STATIC_STRINGS));
 
 	// Install the properties.
-	g_object_class_install_property(gobject_class, PROP_URI, properties[PROP_URI]);
-	g_object_class_install_property(gobject_class, PROP_DESC_FORMAT_TYPE, properties[PROP_DESC_FORMAT_TYPE]);
-	g_object_class_install_property(gobject_class, PROP_SHOWING_DATA, properties[PROP_SHOWING_DATA]);
+	g_object_class_install_properties(gobject_class, PROP_LAST, properties);
 }
 
 /**
