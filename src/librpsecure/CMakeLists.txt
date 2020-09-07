@@ -53,6 +53,7 @@ SET(SECURITY_MECHANISM "${SECURITY_MECHANISM_int}" CACHE INTERNAL "Security mech
 
 IF(NOT librpsecure_OS_SRCS)
 	# TODO: Add support for other systems.
+	SET(ENABLE_EXTRA_SECURITY OFF CACHE INTERNAL "Enable extra security functionality if available." FORCE)
 	SET(librpsecure_OS_SRCS os-secure_dummy.c)
 ENDIF(NOT librpsecure_OS_SRCS)
 
