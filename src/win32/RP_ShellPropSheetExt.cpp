@@ -2929,7 +2929,7 @@ void RP_ShellPropSheetExt_Private::menuOptions_action_triggered(int menuId)
 		int ret = romData->doRomOp(id, &result);
 		// TODO: Show the status message.
 		if (ret == 0) {
-			// Operation completed.
+			// ROM operation completed.
 			MessageBeep(MB_ICONINFORMATION);
 
 			// Update fields.

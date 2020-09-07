@@ -1878,7 +1878,7 @@ void RomDataView::menuOptions_action_triggered(int id)
 		RomData::RomOpResult result;
 		int ret = d->romData->doRomOp(id, &result);
 		if (ret == 0) {
-			// Operation completed.
+			// ROM operation completed.
 			MessageSound::play(QMessageBox::Information, U82Q(result.msg), this);
 
 			// Update fields.
