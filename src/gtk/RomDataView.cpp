@@ -190,8 +190,9 @@ struct _RomDataView {
 	vector<tab>	*tabs;
 
 	// Mapping of field index to GtkWidget*.
-	// For updateField().
+	// For rom_data_view_update_field().
 	unordered_map<int, GtkWidget*> *map_fieldIdx;
+	bool inhibit_checkbox_no_toggle;
 
 	// Description labels.
 	RpDescFormatType	desc_format_type;
@@ -349,6 +350,7 @@ rom_data_view_init(RomDataView *page)
 	page->tabWidget = nullptr;
 	page->tabs = new vector<RomDataView::tab>();
 	page->map_fieldIdx = new unordered_map<int, GtkWidget*>();
+	page->inhibit_checkbox_no_toggle = false;
 
 	page->desc_format_type = RP_DFT_XFCE;
 
@@ -1611,6 +1613,7 @@ rom_data_view_update_field(RomDataView *page, int fieldIdx)
 		// Not found.
 		return 4;
 	}
+	GtkWidget *const widget = iter->second;
 
 	// Update the value widget(s).
 	int ret;
@@ -1626,14 +1629,13 @@ rom_data_view_update_field(RomDataView *page, int fieldIdx)
 
 		case RomFields::RFT_STRING: {
 			// GtkWidget is a GtkLabel.
-			GtkWidget *const label = iter->second;
-			assert(GTK_IS_LABEL(label));
-			if (!GTK_IS_LABEL(label)) {
+			assert(GTK_IS_LABEL(widget));
+			if (!GTK_IS_LABEL(widget)) {
 				ret = 7;
 				break;
 			}
 
-			gtk_label_set_text(GTK_LABEL(label), field->data.str
+			gtk_label_set_text(GTK_LABEL(widget), field->data.str
 				? field->data.str->c_str()
 				: nullptr);
 			ret = 0;
@@ -1641,7 +1643,62 @@ rom_data_view_update_field(RomDataView *page, int fieldIdx)
 		}
 
 		case RomFields::RFT_BITFIELD: {
-			// TODO
+			// GtkWidget is a GtkGrid/GtkTable GtkCheckButton widgets.
+#ifdef USE_GTK_GRID
+			assert(GTK_IS_GRID(widget));
+			if (!GTK_IS_GRID(widget)) {
+				ret = 8;
+				break;
+			}
+#else /* !USE_GTK_GRID */
+			assert(GTK_IS_TABLE(widget));
+			if (!GTK_IS_TABLE(widget)) {
+				ret = 8;
+				break;
+			}
+#endif /* USE_GTK_GRID */
+
+			// Bits with a blank name aren't included, so we'll need to iterate
+			// over the bitfield description.
+			const auto &bitfieldDesc = field->desc.bitfield;
+			int count = (int)bitfieldDesc.names->size();
+			assert(count <= 32);
+			if (count > 32)
+				count = 32;
+
+			GList *const widgetList = gtk_container_get_children(GTK_CONTAINER(widget));
+			if (!widgetList) {
+				ret = 9;
+				break;
+			}
+			// NOTE: Widgets are enumerated in reverse.
+			GList *checkBoxIter = g_list_last(widgetList);
+
+			// Inhibit the "no-toggle" signal while updating.
+			page->inhibit_checkbox_no_toggle = true;
+
+			uint32_t bitfield = field->data.bitfield;
+			const auto names_cend = bitfieldDesc.names->cend();
+			for (auto iter = bitfieldDesc.names->cbegin(); iter != names_cend && checkBoxIter != nullptr;
+			     ++iter, checkBoxIter = checkBoxIter->prev, bitfield >>= 1)
+			{
+				const string &name = *iter;
+				if (name.empty())
+					continue;
+
+				GtkWidget *const checkBox = GTK_WIDGET(checkBoxIter->data);
+				assert(GTK_IS_CHECK_BUTTON(checkBox));
+				if (!GTK_IS_CHECK_BUTTON(checkBox))
+					break;
+
+				const bool value = (bitfield & 1);
+				gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(checkBox), value);
+				g_object_set_data(G_OBJECT(checkBox), "RFT_BITFIELD_value", GUINT_TO_POINTER((guint)value));
+			}
+			g_list_free(widgetList);
+
+			// Done updating.
+			page->inhibit_checkbox_no_toggle = false;
 			ret = 0;
 			break;
 		}
@@ -2255,7 +2312,11 @@ static void
 checkbox_no_toggle_signal_handler(GtkToggleButton	*togglebutton,
 				  gpointer		 user_data)
 {
-	RP_UNUSED(user_data);
+	RomDataView *const page = ROM_DATA_VIEW(user_data);
+	if (page->inhibit_checkbox_no_toggle) {
+		// Inhibiting the no-toggle handler.
+		return;
+	}
 
 	// Get the saved RFT_BITFIELD value.
 	const gboolean value = (gboolean)GPOINTER_TO_UINT(g_object_get_data(G_OBJECT(togglebutton), "RFT_BITFIELD_value"));
