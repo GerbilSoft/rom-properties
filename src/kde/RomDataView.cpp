@@ -1928,11 +1928,9 @@ void RomDataView::menuOptions_action_triggered(int id)
 			// Show the message and play the sound.
 			const QString qs_msg = QString::fromUtf8("This is a test of the GerbilSoft notification system. Had this been an actual notification, ducks would be quacking. 🦆");//U82Q(result.msg);
 			MessageSound::play(QMessageBox::Information, qs_msg, this);
-			d->messageWidget->setMessageType(KMessageWidget::Information);
 		} else {
 			// An error occurred...
 			MessageSound::play(QMessageBox::Warning, qs_msg, this);
-			d->messageWidget->setMessageType(KMessageWidget::Warning);
 		}
 
 #ifdef HAVE_KMESSAGEWIDGET
@@ -1958,6 +1956,8 @@ void RomDataView::menuOptions_action_triggered(int id)
 				        d->tmrMessageWidget, &QTimer::stop);
 #  endif /* QT_VERSION >= QT_VERSION_CHECK(5,0,0) */
 			}
+
+			d->messageWidget->setMessageType(ret == 0 ? KMessageWidget::Information : KMessageWidget::Warning);
 			d->messageWidget->setText(qs_msg);
 			d->messageWidget->animatedShow();
 //#if QT_VERSION < QT_VERSION_CHECK(5,0,0)
