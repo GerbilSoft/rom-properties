@@ -15,8 +15,9 @@
 #  include "MessageSound.hpp"
 #endif /* ENABLE_MESSAGESOUND */
 
-// DragImage (GtkImage subclass)
+// Custom widgets
 #include "DragImage.hpp"
+#include "MessageWidget.hpp"
 
 // librpbase, librpfile, librptexture
 #include "librpbase/TextOut.hpp"
@@ -100,7 +101,7 @@ static void	rom_data_view_update_display	(RomDataView	*page);
 static gboolean	rom_data_view_load_rom_data	(gpointer	 data);
 static void	rom_data_view_delete_tabs	(RomDataView	*page);
 
-/** Signal handlers. **/
+/** Signal handlers **/
 static void	checkbox_no_toggle_signal_handler   (GtkToggleButton	*togglebutton,
 						     gpointer		 user_data);
 static void	rom_data_view_map_signal_handler    (RomDataView	*page,
@@ -199,6 +200,9 @@ struct _RomDataView {
 	// For rom_data_view_update_field().
 	unordered_map<int, GtkWidget*> *map_fieldIdx;
 	bool inhibit_checkbox_no_toggle;
+
+	// MessageWidget for ROM operation notifications.
+	GtkWidget	*messageWidget;
 
 	// Description labels.
 	RpDescFormatType	desc_format_type;
@@ -338,6 +342,7 @@ rom_data_view_init(RomDataView *page)
 	page->map_fieldIdx = new unordered_map<int, GtkWidget*>();
 	page->inhibit_checkbox_no_toggle = false;
 
+	page->messageWidget = nullptr;
 	page->desc_format_type = RP_DFT_XFCE;
 
 	page->def_lc = 0;
@@ -411,8 +416,10 @@ rom_data_view_init(RomDataView *page)
 
 	// Connect the "map" and "unmap" signals.
 	// These are needed in order to start and stop the animation.
-	g_signal_connect(page, "map", G_CALLBACK(rom_data_view_map_signal_handler), nullptr);
-	g_signal_connect(page, "unmap", G_CALLBACK(rom_data_view_unmap_signal_handler), nullptr);
+	g_signal_connect(page, "map",
+		G_CALLBACK(rom_data_view_map_signal_handler), nullptr);
+	g_signal_connect(page, "unmap",
+		G_CALLBACK(rom_data_view_unmap_signal_handler), nullptr);
 
 	// Table layout is created in rom_data_view_update_display().
 }
@@ -486,6 +493,8 @@ rom_data_view_new_with_uri(const gchar *uri, RpDescFormatType desc_format_type)
 
 	return reinterpret_cast<GtkWidget*>(page);
 }
+
+/** Properties **/
 
 static void
 rom_data_view_get_property(GObject	*object,
@@ -2287,7 +2296,7 @@ rom_data_view_delete_tabs(RomDataView *page)
 	page->vecListDataMulti->clear();
 }
 
-/** Signal handlers. **/
+/** Signal handlers **/
 
 /**
  * Prevent bitfield checkboxes from being toggled.
@@ -2699,13 +2708,11 @@ menuOptions_triggered_signal_handler(GtkMenuItem *menuItem,
 		}
 	} else {
 		// Run a ROM operation.
+		GtkMessageType messageType;
 		RomData::RomOpResult result;
 		int ret = page->romData->doRomOp(id, &result);
 		if (ret == 0) {
 			// ROM operation completed.
-#ifdef ENABLE_MESSAGESOUND
-			MessageSound::play(GTK_MESSAGE_INFO, result.msg.c_str(), GTK_WIDGET(page));
-#endif /* ENABLE_MESSAGESOUND */
 
 			// Update fields.
 			std::for_each(result.fieldIdx.cbegin(), result.fieldIdx.cend(),
@@ -2726,12 +2733,28 @@ menuOptions_triggered_signal_handler(GtkMenuItem *menuItem,
 				gtk_menu_item_set_label(menuItem, desc.c_str());
 				gtk_widget_set_sensitive(GTK_WIDGET(menuItem), !!(op.flags & RomData::RomOps::ROF_ENABLED));
 			}
+
+			messageType = GTK_MESSAGE_INFO;
 		} else {
 			// An error occurred...
 			// TODO: Show an error message.
+			messageType = GTK_MESSAGE_WARNING;
+		}
+
 #ifdef ENABLE_MESSAGESOUND
-			MessageSound::play(GTK_MESSAGE_WARNING, result.msg.c_str(), GTK_WIDGET(page));
+		MessageSound::play(messageType, result.msg.c_str(), GTK_WIDGET(page));
 #endif /* ENABLE_MESSAGESOUND */
+
+		if (!result.msg.empty()) {
+			// Show the MessageWidget.
+			if (!page->messageWidget) {
+				page->messageWidget = message_widget_new();
+				gtk_box_pack_end(GTK_BOX(page), page->messageWidget, false, false, 0);
+			}
+
+			message_widget_set_message_type(MESSAGE_WIDGET(page->messageWidget), messageType);
+			message_widget_set_text(MESSAGE_WIDGET(page->messageWidget), result.msg.c_str());
+			gtk_widget_show(page->messageWidget);
 		}
 	}
 

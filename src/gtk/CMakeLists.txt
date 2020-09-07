@@ -46,6 +46,7 @@ SET(rom-properties-gtk_SRCS
 	PIMGTYPE.cpp
 	rp-gtk-enums.c
 	RpFile_gio.cpp
+	MessageWidget.cpp
 	)
 SET(rom-properties-gtk_H
 	RomDataView.hpp
@@ -54,6 +55,7 @@ SET(rom-properties-gtk_H
 	PIMGTYPE.hpp
 	rp-gtk-enums.h
 	RpFile_gio.hpp
+	MessageWidget.hpp
 	)
 
 # GTK2 sources and headers.
