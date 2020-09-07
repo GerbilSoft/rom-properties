@@ -31,7 +31,11 @@ Build-Depends:
  libnautilus-extension-dev,
  libnemo-extension-dev,
  libbsd-dev,
- gettext
+ gettext,
+ libzstd1-dev | libzstd-dev,
+ libcanberra-dev,
+ libcanberra-gtk-dev,
+ libcanberra-gtk3-dev
 Standards-Version: 3.9.8
 Homepage: https://github.com/GerbilSoft/rom-properties
 Vcs-Git: https://github.com/GerbilSoft/rom-properties
