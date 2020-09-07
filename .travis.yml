@@ -32,6 +32,12 @@ addons:
       - gettext
       - libnemo-extension-dev
       - libseccomp-dev
+      - libzstd-dev
+      - liblz4-dev
+      - liblzo2-dev
+      - libcanberra-dev
+      - libcanberra-gtk-dev
+      - libcanberra-gtk3-dev
 
 # Run the build script.
 script: ./travis.sh
