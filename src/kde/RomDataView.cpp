@@ -39,11 +39,18 @@ using std::vector;
 
 // KDE4/KF5 includes.
 #if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
-# include <KAcceleratorManager>
-# include <KWidgetsAddons/kpagewidget.h>
+#  include <KAcceleratorManager>
+#  include <KWidgetsAddons/kpagewidget.h>
+#  define HAVE_KMESSAGEWIDGET 1
+#  include <KWidgetsAddons/kmessagewidget.h>
 #else /* !QT_VERSION >= QT_VERSION_CHECK(5,0,0) */
-# include <kacceleratormanager.h>
-# include <kpagewidget.h>
+#  include <kacceleratormanager.h>
+#  include <kpagewidget.h>
+#  include <kdeversion.h>
+#  if (KDE_VERSION_MAJOR > 4) || (KDE_VERSION_MAJOR == 4 && KDE_VERSION_MINOR >= 7)
+#    define HAVE_KMESSAGEWIDGET 1
+#    include <kmessagewidget.h>
+#  endif
 #endif /* QT_VERSION >= QT_VERSION_CHECK(5,0,0) */
 
 #include "ui_RomDataView.h"
@@ -91,6 +98,12 @@ class RomDataViewPrivate
 		// Mapping of field index to QObject*.
 		// For updateField().
 		unordered_map<int, QObject*> map_fieldIdx;
+
+#ifdef HAVE_KMESSAGEWIDGET
+		// KMessageWidget for ROM operation notifications.
+		KMessageWidget *messageWidget;
+		QTimer *tmrMessageWidget;
+#endif /* HAVE_KMESSAGEWIDGET */
 
 		// Multi-language functionality.
 		uint32_t def_lc;
@@ -248,6 +261,10 @@ RomDataViewPrivate::RomDataViewPrivate(RomDataView *q, RomData *romData)
 #if QT_VERSION < QT_VERSION_CHECK(5,0,0)
 	, mapperOptionsMenu(nullptr)
 #endif /* QT_VERSION < QT_VERSION_CHECK(5,0,0) */
+#ifdef HAVE_KMESSAGEWIDGET
+	, messageWidget(nullptr)
+	, tmrMessageWidget(nullptr)
+#endif /* HAVE_KMESSAGEWIDGET */
 	, def_lc(0)
 	, cboLanguage(nullptr)
 	, romData(romData->ref())
@@ -1875,11 +1892,34 @@ void RomDataView::menuOptions_action_triggered(int id)
 		}
 	} else if (d->romOps_firstActionIndex >= 0) {
 		// Run a ROM operation.
+#ifdef HAVE_KMESSAGEWIDGET
+		if (!d->messageWidget) {
+			d->messageWidget = new KMessageWidget(this);
+			d->messageWidget->setCloseButtonVisible(true);
+			d->messageWidget->setWordWrap(true);
+			d->ui.vboxLayout->addWidget(d->messageWidget);
+
+			d->tmrMessageWidget = new QTimer(this);
+			d->tmrMessageWidget->setSingleShot(true);
+			d->tmrMessageWidget->setInterval(10*1000);
+			connect(d->tmrMessageWidget, SIGNAL(timeout()),
+				d->messageWidget, SLOT(animatedHide()));
+#  if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
+			// KMessageWidget::hideAnimationFinished was added in KF5.
+			// FIXME: This is after the animation *finished*, not when
+			// the Close button was clicked.
+			//connect(d->messageWidget, &KMessageWidget::showAnimationFinished,
+			//	d->tmrMessageWidget, static_cast<void (QTimer::*)()>(&QTimer::start));
+			//connect(d->messageWidget, &KMessageWidget::hideAnimationFinished,
+			//	d->tmrMessageWidget, &QTimer::stop);
+#  endif /* QT_VERSION >= QT_VERSION_CHECK(5,0,0) */
+		}
+#endif /* HAVE_KMESSAGEWIDGET */
 		RomData::RomOpResult result;
 		int ret = d->romData->doRomOp(id, &result);
+		const QString qs_msg = U82Q(result.msg);
 		if (ret == 0) {
 			// ROM operation completed.
-			MessageSound::play(QMessageBox::Information, U82Q(result.msg), this);
 
 			// Update fields.
 			std::for_each(result.fieldIdx.cbegin(), result.fieldIdx.cend(),
@@ -1907,10 +1947,24 @@ void RomDataView::menuOptions_action_triggered(int id)
 					}
 				}
 			}
+
+			// Show the message and play the sound.
+			const QString qs_msg = QString::fromUtf8("This is a test of the GerbilSoft notification system. Had this been an actual notification, ducks would be quacking. 🦆");//U82Q(result.msg);
+			MessageSound::play(QMessageBox::Information, qs_msg, this);
+			d->messageWidget->setMessageType(KMessageWidget::Information);
 		} else {
 			// An error occurred...
-			// TODO: Show an error message.
-			MessageSound::play(QMessageBox::Warning, U82Q(result.msg), this);
+			MessageSound::play(QMessageBox::Warning, qs_msg, this);
+			d->messageWidget->setMessageType(KMessageWidget::Warning);
+		}
+		if (!qs_msg.isEmpty()) {
+			d->messageWidget->setText(qs_msg);
+			d->messageWidget->animatedShow();
+//#if QT_VERSION < QT_VERSION_CHECK(5,0,0)
+			// KDE4's KMessageWidget doesn't have the "animation finished"
+			// signals, so we'll have to start the timer manually.
+			d->tmrMessageWidget->start();
+//#endif /* QT_VERSION < QT_VERSION_CHECK(5,0,0) */
 		}
 	}
 }
