@@ -5,11 +5,12 @@ cd "${TRAVIS_BUILD_DIR}/build"
 cmake --version
 
 # Initial build with optional components disabled.
+OS_ENABLE_LZ4=ON
 case "$OSTYPE" in
 	darwin*)
 		# Mac OS X. Disable gettext for now.
 		# Also disable split debug due to lack of `objcopy`.
-		OS_SPECIFIC_OPTS="-DUSE_INTERNAL_LZ4=ON"
+		OS_ENABLE_LZ4=OFF
 		cmake .. \
 			-DCMAKE_INSTALL_PREFIX=/usr \
 			-DSPLIT_DEBUG=OFF \
@@ -75,7 +76,7 @@ cmake .. \
 	-DENABLE_LIBMSPACK=ON \
 	-DENABLE_PVRTC=ON \
 	-DENABLE_ZSTD=ON \
-	-DENABLE_LZ4=ON \
+	-DENABLE_LZ4=${OS_ENABLE_LZ4} \
 	-DENABLE_LZO=ON \
 	${OS_SPECIFIC_OPTS} \
 	|| exit 1
