@@ -9,6 +9,7 @@
 #include "stdafx.h"
 #include "RomDataView.hpp"
 #include "RpQImageBackend.hpp"
+#include "MessageSound.hpp"
 
 // librpbase, librpfile, librptexture
 #include "librpbase/TextOut.hpp"
@@ -1878,6 +1879,7 @@ void RomDataView::menuOptions_action_triggered(int id)
 		int ret = d->romData->doRomOp(id, &result);
 		if (ret == 0) {
 			// Operation completed.
+			MessageSound::play(QMessageBox::Information, U82Q(result.msg), this);
 
 			// Update fields.
 			std::for_each(result.fieldIdx.cbegin(), result.fieldIdx.cend(),
@@ -1908,6 +1910,7 @@ void RomDataView::menuOptions_action_triggered(int id)
 		} else {
 			// An error occurred...
 			// TODO: Show an error message.
+			MessageSound::play(QMessageBox::Warning, U82Q(result.msg), this);
 		}
 	}
 }

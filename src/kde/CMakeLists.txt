@@ -20,6 +20,7 @@ SET(rom-properties-kde_SRCS
 	DragImageLabel.cpp
 	RpQByteArrayFile.cpp
 	DragImageTreeWidget.cpp
+	MessageSound.cpp
 	config/stub-export.cpp
 	config/ConfigDialog.cpp
 	config/ITab.cpp
@@ -38,6 +39,7 @@ SET(rom-properties-kde_H
 	DragImageLabel.hpp
 	RpQByteArrayFile.hpp
 	DragImageTreeWidget.hpp
+	MessageSound.hpp
 	config/ConfigDialog.hpp
 	config/ITab.hpp
 	config/ImageTypesTab.hpp
