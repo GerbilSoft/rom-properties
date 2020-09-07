@@ -32,7 +32,7 @@ addons:
       - gettext
       - libnemo-extension-dev
       - libseccomp-dev
-      - libzstd-dev
+      #- libzstd-dev
       - liblz4-dev
       - liblzo2-dev
       - libcanberra-dev
