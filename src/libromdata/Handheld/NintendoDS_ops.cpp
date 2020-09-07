@@ -25,6 +25,12 @@ using std::string;
 using std::unique_ptr;
 using std::vector;
 
+// DSi Secure Area handling is disabled by default.
+// Most DSi emulators expect the Secure Area to be encrypted, so there's
+// no point in decrypting it, and I'm not sure if the encryption function
+// is correct.
+//#define ENABLE_DSi_SECURE_AREA 1
+
 namespace LibRomData {
 
 /** NintendoDSPrivate **/
@@ -391,6 +397,7 @@ int NintendoDS::doRomOp_int(int id, RomOpResult *pResult)
 				break;
 			}
 
+#ifdef ENABLE_DSi_SECURE_AREA
 			// If this is a DSi-enhanced game, we have two Secure Areas.
 			// FIXME: DSi Secure Area encryption isn't working...
 			bool dsi = false;
@@ -411,16 +418,19 @@ int NintendoDS::doRomOp_int(int id, RomOpResult *pResult)
 					}
 				}
 			}
+#endif /* ENABLE_DSi_SECURE_AREA */
 
 			// Make sure nds-blowfish.bin is loaded.
 			const char *filename = "nds-blowfish.bin";
 			ret = ndscrypt_load_blowfish_bin(NDSCRYPT_BF_NDS);
+#ifdef ENABLE_DSi_SECURE_AREA
 			if (ret == 0 && dsi) {
 				// We also need dsi-blowfish.bin for the DSi secure area.
 				// TODO: Identify DSi development cartridges.
 				filename = "dsi-blowfish.bin";
 				ret = ndscrypt_load_blowfish_bin(NDSCRYPT_BF_DSi);
 			}
+#endif /* ENABLE_DSi_SECURE_AREA */
 			if (ret != 0) {
 				if (pResult) {
 					if (ret < 0) {
@@ -491,6 +501,7 @@ int NintendoDS::doRomOp_int(int id, RomOpResult *pResult)
 				break;
 			}
 
+#ifdef ENABLE_DSi_SECURE_AREA
 			if (dsi) {
 				// DSi secure area: Load the static area and DSi Secure Area.
 				// ROM header is kept from the NDS section.
@@ -544,6 +555,7 @@ int NintendoDS::doRomOp_int(int id, RomOpResult *pResult)
 					break;
 				}
 			}
+#endif /* ENABLE_DSi_SECURE_AREA */
 
 			// Write the NDS Secure Area back to the ROM.
 			d->file->rewind();
@@ -589,6 +601,9 @@ int NintendoDS::doRomOp_int(int id, RomOpResult *pResult)
 			}
 
 			if (pResult) {
+#ifndef ENABLE_DSi_SECURE_AREA
+				static const bool dsi = false;
+#endif /* ENABLE_DSi_SECURE_AREA */
 				pResult->msg = doEncrypt
 					? NC_("NintendoDS", "Secure Area encrypted successfully.",
 						"Secure Areas encrypted successfully.", (dsi ? 2 : 1))
@@ -601,7 +616,7 @@ int NintendoDS::doRomOp_int(int id, RomOpResult *pResult)
 				if (d->fieldIdx_secArea >= 0) {
 					pResult->fieldIdx.emplace_back(d->fieldIdx_secArea);
 				}
-			}
+			} 
 			break;
 		}
 #endif /* ENABLE_DECRYPTION */
