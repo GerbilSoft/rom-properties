@@ -385,6 +385,14 @@ class RP_ShellPropSheetExt_Private
 		void updateMulti(uint32_t user_lc);
 
 		/**
+		 * Update a field's value.
+		 * This is called after running a ROM operation.
+		 * @param fieldIdx Field index.
+		 * @return 0 on success; non-zero on error.
+		 */
+		int updateField(int fieldIdx);
+
+		/**
 		 * Initialize the bold font.
 		 * @param hFont Base font.
 		 */
@@ -646,14 +654,14 @@ int RP_ShellPropSheetExt_Private::createHeaderRow(HWND hDlg, const POINT &pt_sta
 		fileType = C_("RomDataView", "(unknown filetype)");
 	}
 
-	const tstring tSysInfo =
+	const tstring ts_sysInfo =
 		LibWin32Common::unix2dos(U82T_s(rp_sprintf_p(
 			// tr: %1$s == system name, %2$s == file type
 			C_("RomDataView", "%1$s\n%2$s"), systemName, fileType)));
 
-	if (!tSysInfo.empty()) {
+	if (!ts_sysInfo.empty()) {
 		// Determine the appropriate label size.
-		if (!LibWin32Common::measureTextSize(hDlg, hFont, tSysInfo, &size_lblSysInfo)) {
+		if (!LibWin32Common::measureTextSize(hDlg, hFont, ts_sysInfo, &size_lblSysInfo)) {
 			// Start the total_widget_width.
 			total_widget_width = size_lblSysInfo.cx;
 		} else {
@@ -693,7 +701,7 @@ int RP_ShellPropSheetExt_Private::createHeaderRow(HWND hDlg, const POINT &pt_sta
 		ptSysInfo.y = curPt.y;
 
 		lblSysInfo = CreateWindowEx(WS_EX_NOPARENTNOTIFY | WS_EX_TRANSPARENT,
-			WC_STATIC, tSysInfo.c_str(),
+			WC_STATIC, ts_sysInfo.c_str(),
 			WS_CHILD | WS_VISIBLE | SS_CENTER,
 			ptSysInfo.x, ptSysInfo.y,
 			size_lblSysInfo.cx, size_lblSysInfo.cy,
@@ -2260,6 +2268,73 @@ void RP_ShellPropSheetExt_Private::updateMulti(uint32_t user_lc)
 }
 
 /**
+ * Update a field's value.
+ * This is called after running a ROM operation.
+ * @param fieldIdx Field index.
+ * @return 0 on success; non-zero on error.
+ */
+int RP_ShellPropSheetExt_Private::updateField(int fieldIdx)
+{
+	const RomFields *const pFields = romData->fields();
+	assert(pFields != nullptr);
+	if (!pFields) {
+		// No fields.
+		// TODO: Show an error?
+		return 1;
+	}
+
+	assert(fieldIdx >= 0);
+	assert(fieldIdx < pFields->count());
+	if (fieldIdx < 0 || fieldIdx >= pFields->count())
+		return 2;
+
+	const RomFields::Field *const field = pFields->at(fieldIdx);
+	assert(field != nullptr);
+	if (!field)
+		return 3;
+
+	// Update the value widget(s).
+	int ret;
+	switch (field->type) {
+		case RomFields::RFT_INVALID:
+			assert(!"Cannot update an RFT_INVALID field.");
+			ret = 5;
+			break;
+		default:
+			assert(!"Unsupported field type.");
+			ret = 6;
+			break;
+
+		case RomFields::RFT_STRING: {
+			// HWND is a STATIC control.
+			HWND hLabel = GetDlgItem(hDlgSheet, IDC_RFT_STRING(fieldIdx));
+			assert(hLabel != nullptr);
+			if (!hLabel) {
+				ret = 7;
+				break;
+			}
+
+			if (field->data.str && !field->data.str->empty()) {
+				const tstring ts_text = LibWin32Common::unix2dos(U82T_s(*field->data.str));
+				SetWindowText(hLabel, ts_text.c_str());
+			} else {
+				SetWindowText(hLabel, _T(""));
+			}
+			ret = 0;
+			break;
+		}
+
+		case RomFields::RFT_BITFIELD: {
+			// TODO
+			ret = 0;
+			break;
+		}
+	}
+
+	return ret;
+}
+
+/**
  * Initialize the bold font.
  * @param hFont Base font.
  */
@@ -2834,8 +2909,14 @@ void RP_ShellPropSheetExt_Private::menuOptions_action_triggered(int menuId)
 		// TODO: Show the status message.
 		if (ret == 0) {
 			// Operation completed.
-			// TODO: Update relevant field(s).
 			MessageBeep(MB_ICONINFORMATION);
+
+			// Update fields.
+			std::for_each(result.fieldIdx.cbegin(), result.fieldIdx.cend(),
+				[this](int fieldIdx) {
+					this->updateField(fieldIdx);
+				}
+			);
 
 			// Update the RomOp menu entry in case it changed.
 			// NOTE: Assuming the RomOps vector order hasn't changed.
