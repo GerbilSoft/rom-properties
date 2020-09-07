@@ -26,6 +26,7 @@ case "$OSTYPE" in
 			-DENABLE_PVRTC=OFF \
 			-DENABLE_ZSTD=OFF \
 			-DENABLE_LZ4=OFF \
+			-DUSE_INTERNAL_LZ4=ON \
 			-DENABLE_LZO=OFF \
 			|| exit 1
 		;;
