@@ -42,6 +42,7 @@ using std::vector;
 #  include <KAcceleratorManager>
 #  include <KWidgetsAddons/kpagewidget.h>
 #  define HAVE_KMESSAGEWIDGET 1
+#  define HAVE_KMESSAGEWIDGET_SETICON 1
 #  include <KWidgetsAddons/kmessagewidget.h>
 #else /* !QT_VERSION >= QT_VERSION_CHECK(5,0,0) */
 #  include <kacceleratormanager.h>
@@ -50,6 +51,9 @@ using std::vector;
 #  if (KDE_VERSION_MAJOR > 4) || (KDE_VERSION_MAJOR == 4 && KDE_VERSION_MINOR >= 7)
 #    define HAVE_KMESSAGEWIDGET 1
 #    include <kmessagewidget.h>
+#    if (KDE_VERSION_MAJOR > 4) || (KDE_VERSION_MAJOR == 4 && KDE_VERSION_MINOR >= 11)
+#      define HAVE_KMESSAGEWIDGET_SETICON 1
+#    endif
 #  endif
 #endif /* QT_VERSION >= QT_VERSION_CHECK(5,0,0) */
 
@@ -1957,7 +1961,19 @@ void RomDataView::menuOptions_action_triggered(int id)
 #  endif /* QT_VERSION >= QT_VERSION_CHECK(5,0,0) */
 			}
 
-			d->messageWidget->setMessageType(ret == 0 ? KMessageWidget::Information : KMessageWidget::Warning);
+			if (ret == 0) {
+				d->messageWidget->setMessageType(KMessageWidget::Information);
+#  ifdef HAVE_KMESSAGEWIDGET_SETICON
+				d->messageWidget->setIcon(
+					d->messageWidget->style()->standardIcon(QStyle::SP_MessageBoxInformation));
+#  endif /* HAVE_KMESSAGEWIDGET_SETICON */
+			} else {
+				d->messageWidget->setMessageType(KMessageWidget::Warning);
+#  ifdef HAVE_KMESSAGEWIDGET_SETICON
+				d->messageWidget->setIcon(
+					d->messageWidget->style()->standardIcon(QStyle::SP_MessageBoxWarning));
+#  endif /* HAVE_KMESSAGEWIDGET_SETICON */
+			}
 			d->messageWidget->setText(qs_msg);
 			d->messageWidget->animatedShow();
 //#if QT_VERSION < QT_VERSION_CHECK(5,0,0)
