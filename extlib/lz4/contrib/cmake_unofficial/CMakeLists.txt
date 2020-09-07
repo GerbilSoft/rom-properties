@@ -130,10 +130,12 @@ if(BUILD_SHARED_LIBS)
   # Also set LZ4_DLL_EXPORT to ensure the import library is built,
   # and LZ4_DLL_IMPORT to optimize DLL imports.
   target_include_directories(lz4_shared PUBLIC "${LZ4_LIB_SOURCE_DIR}")
-  target_compile_definitions(lz4_shared
+  IF(WIN32)
+    target_compile_definitions(lz4_shared
 	PRIVATE -DLZ4_DLL_EXPORT=1
 	INTERFACE -DLZ4_DLL_IMPORT=1
 	)
+  ENDIF(WIN32)
   DO_SPLIT_DEBUG(lz4_shared)
   SET_WINDOWS_SUBSYSTEM(lz4_shared WIN32)
 endif()
