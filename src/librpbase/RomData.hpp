@@ -563,7 +563,7 @@ class RomData : public RefBase
 		};
 
 		struct RomOpResult {
-			int status;			// Status. (0 == success; other == error)
+			int status;			// Status. (0 == success; negative == POSIX error; positive == other error)
 			std::string msg;		// Status message. (optional)
 			std::vector<int> fieldIdx;	// Field indexes that were updated.
 		};

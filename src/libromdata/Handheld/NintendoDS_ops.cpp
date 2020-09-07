@@ -259,8 +259,10 @@ int NintendoDS::doRomOp_int(int id, RomOpResult *pResult)
 			// Trim = reduce ROM to minimum size as indicated by header.
 			// Untrim = expand to power of 2 size, filled with 0xFF.
 			const uint32_t total_used_rom_size = d->totalUsedRomSize();
+			bool doTrim;
 			if (!(total_used_rom_size < d->romSize)) {
 				// ROM is trimmed. Untrim it.
+				doTrim = false;
 				const off64_t next_pow2 = (1LL << (uilog2(total_used_rom_size) + 1));
 				assert(next_pow2 > total_used_rom_size);
 				if (next_pow2 <= total_used_rom_size) {
@@ -280,15 +282,15 @@ int NintendoDS::doRomOp_int(int id, RomOpResult *pResult)
 				int ret = d->file->seek(pos);
 				if (ret != 0) {
 					// Seek error.
-					int err = d->file->lastError();
-					if (err == 0) {
-						err = EIO;
+					ret = -d->file->lastError();
+					if (ret == 0) {
+						ret = -EIO;
 					}
 					if (pResult) {
-						pResult->status = err;
+						pResult->status = ret;
 						pResult->msg = C_("NintendoDS", "Seek error when attempting to untrim ROM.");
 					}
-					return -err;
+					return ret;
 				}
 
 				// If we're not aligned to the untrim block size,
@@ -299,15 +301,15 @@ int NintendoDS::doRomOp_int(int id, RomOpResult *pResult)
 					size_t size = d->file->write(ff_block.get(), toWrite);
 					if (size != toWrite) {
 						// Write error.
-						int err = d->file->lastError();
-						if (err == 0) {
-							err = EIO;
+						ret = -d->file->lastError();
+						if (ret == 0) {
+							ret = -EIO;
 						}
 						if (pResult) {
-							pResult->status = err;
+							pResult->status = ret;
 							pResult->msg = C_("NintendoDS", "Write error when attempting to untrim ROM.");
 						}
-						return -err;
+						return ret;
 					}
 					pos += toWrite;
 				}
@@ -317,15 +319,15 @@ int NintendoDS::doRomOp_int(int id, RomOpResult *pResult)
 					size_t size = d->file->write(ff_block.get(), UNTRIM_BLOCK_SIZE);
 					if (size != UNTRIM_BLOCK_SIZE) {
 						// Write error.
-						int err = d->file->lastError();
-						if (err == 0) {
-							err = EIO;
+						ret = -d->file->lastError();
+						if (ret == 0) {
+							ret = -EIO;
 						}
 						if (pResult) {
-							pResult->status = err;
+							pResult->status = ret;
 							pResult->msg = C_("NintendoDS", "Write error when attempting to untrim ROM.");
 						}
-						return -err;
+						return ret;
 					}
 				}
 
@@ -334,23 +336,37 @@ int NintendoDS::doRomOp_int(int id, RomOpResult *pResult)
 				d->romSize = d->file->size();
 			} else if (total_used_rom_size < d->romSize) {
 				// ROM is untrimmed. Trim it.
+				doTrim = true;
 				int ret = d->file->truncate(total_used_rom_size);
 				if (ret != 0) {
 					// Truncate failed.
-					int err = d->file->lastError();
-					if (err == 0) {
-						err = EIO;
+					ret = -d->file->lastError();
+					if (ret == 0) {
+						ret = -EIO;
 					}
 					if (pResult) {
-						pResult->status = err;
+						pResult->status = ret;
 						pResult->msg = C_("NintendoDS", "Truncate failed when attempting to trim ROM.");
 					}
+					return ret;
 				}
 				d->file->flush();
 				d->romSize = d->file->size();
 			} else {
 				// ROM can't be trimmed or untrimmed...
 				assert(!"ROM can't be trimmed or untrimmed; menu option should have been disabled.");
+				ret = -EIO;
+				if (pResult) {
+					pResult->status = EIO;
+					pResult->msg = C_("NintendoDS", "ROM can't be trimmed or untrimmed.");
+				}
+				return ret;
+			}
+
+			if (pResult) {
+				pResult->msg = doTrim
+					? C_("NintendoDS", "ROM image trimmed successfully.")
+					: C_("NintendoDS", "ROM image untrimmed successfully.");
 			}
 			break;
 		}
@@ -367,11 +383,11 @@ int NintendoDS::doRomOp_int(int id, RomOpResult *pResult)
 				doEncrypt = false;
 			} else {
 				// Cannot perform this ROM operation.
+				ret = -ENOTSUP;
 				if (pResult) {
-					pResult->status = -ENOTSUP;
+					pResult->status = ret;
 					pResult->msg = C_("NintendoDS", "Secure area cannot be adjusted in this ROM.");
 				}
-				ret = -ENOTSUP;
 				break;
 			}
 
@@ -470,14 +486,11 @@ int NintendoDS::doRomOp_int(int id, RomOpResult *pResult)
 
 			// Update the fields.
 			// TODO: Better way to update fields.
-			if (pResult && !d->fields->empty()) {
-				pResult->fieldIdx.reserve(2);
-
+			if (!d->fields->empty()) {
 				RomFields::Field *field;
 				if (d->fieldIdx_secData >= 0) {
 					field = const_cast<RomFields::Field*>(d->fields->at(d->fieldIdx_secData));
 					field->data.bitfield = d->secData;
-					pResult->fieldIdx.emplace_back(d->fieldIdx_secData);
 				}
 				if (d->fieldIdx_secArea >= 0) {
 					field = const_cast<RomFields::Field*>(d->fields->at(d->fieldIdx_secArea));
@@ -487,6 +500,18 @@ int NintendoDS::doRomOp_int(int id, RomOpResult *pResult)
 					} else {
 						field->data.str = new string(s_secArea);
 					}
+				}
+			}
+
+			if (pResult) {
+				pResult->msg = doEncrypt
+					? C_("NintendoDS", "Secure Area encrypted successfully.")
+					: C_("NintendoDS", "Secure Area decrypted successfully.");
+				pResult->fieldIdx.reserve(2);
+				if (d->fieldIdx_secData >= 0) {
+					pResult->fieldIdx.emplace_back(d->fieldIdx_secData);
+				}
+				if (d->fieldIdx_secArea >= 0) {
 					pResult->fieldIdx.emplace_back(d->fieldIdx_secArea);
 				}
 			}
