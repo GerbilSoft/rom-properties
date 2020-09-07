@@ -9,7 +9,6 @@ case "$OSTYPE" in
 	darwin*)
 		# Mac OS X. Disable gettext for now.
 		# Also disable split debug due to lack of `objcopy`.
-		OS_SPECIFIC_OPTS="-DUSE_INTERNAL_LZ4=ON"
 		cmake .. \
 			-DCMAKE_INSTALL_PREFIX=/usr \
 			-DSPLIT_DEBUG=OFF \
@@ -77,7 +76,6 @@ cmake .. \
 	-DENABLE_ZSTD=ON \
 	-DENABLE_LZ4=ON \
 	-DENABLE_LZO=ON \
-	${OS_SPECIFIC_OPTS} \
 	|| exit 1
 
 # Build everything.
