@@ -21,8 +21,8 @@
 /**
  * Play a message sound effect.
  * @param notificationType Notification type.
- * @param message Message for logging. (not supported on all systems)
- * @param parent Parent window. (not supported on all systems)
+ * @param message Message for logging.
+ * @param parent Parent window.
  */
 void MessageSound::play(QMessageBox::Icon notificationType, const QString &message, QWidget *parent)
 {
