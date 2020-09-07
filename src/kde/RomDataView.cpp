@@ -1915,6 +1915,7 @@ void RomDataView::menuOptions_action_triggered(int id)
 #  endif /* QT_VERSION >= QT_VERSION_CHECK(5,0,0) */
 		}
 #endif /* HAVE_KMESSAGEWIDGET */
+
 		RomData::RomOpResult result;
 		int ret = d->romData->doRomOp(id, &result);
 		const QString qs_msg = U82Q(result.msg);
