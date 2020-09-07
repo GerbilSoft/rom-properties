@@ -1908,10 +1908,10 @@ void RomDataView::menuOptions_action_triggered(int id)
 			// KMessageWidget::hideAnimationFinished was added in KF5.
 			// FIXME: This is after the animation *finished*, not when
 			// the Close button was clicked.
-			//connect(d->messageWidget, &KMessageWidget::showAnimationFinished,
-			//	d->tmrMessageWidget, static_cast<void (QTimer::*)()>(&QTimer::start));
-			//connect(d->messageWidget, &KMessageWidget::hideAnimationFinished,
-			//	d->tmrMessageWidget, &QTimer::stop);
+			connect(d->messageWidget, &KMessageWidget::showAnimationFinished,
+				d->tmrMessageWidget, static_cast<void (QTimer::*)()>(&QTimer::start));
+			connect(d->messageWidget, &KMessageWidget::hideAnimationFinished,
+				d->tmrMessageWidget, &QTimer::stop);
 #  endif /* QT_VERSION >= QT_VERSION_CHECK(5,0,0) */
 		}
 #endif /* HAVE_KMESSAGEWIDGET */
