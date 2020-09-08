@@ -22,8 +22,11 @@ class MessageWidgetPrivate
 			, hFont(nullptr)
 			, hUser32(GetModuleHandle(_T("user32")))
 			, hIcon(nullptr)
-			, hBtnClose(nullptr)
 			, messageType(MB_ICONINFORMATION)
+			, closeButtonState(CLSBTN_NORMAL)
+			, bBtnCloseDown(false)
+			, hFontMarlett(nullptr)
+			, hFontMarlettBold(nullptr)
 		{
 			assert(hUser32 != nullptr);
 
@@ -34,25 +37,40 @@ class MessageWidgetPrivate
 			// Initialize the icon.
 			updateIcon();
 
-			// Create the Close button.
-			// TODO: Icon.
+			// Get the rect for the Close button.
 			// TODO: Reposition on WM_SIZE?
-			// FIXME: The button isn't working...
 			RECT rect;
 			GetClientRect(hWnd, &rect);
 
-			POINT ptBtnClose; SIZE szBtnClose;
+			SIZE szBtnClose;
 			szBtnClose.cx = szIcon.cx + BORDER_SIZE;
 			szBtnClose.cy = szIcon.cy + BORDER_SIZE;
-			ptBtnClose.x = rect.right - szBtnClose.cx - BORDER_SIZE;
-			ptBtnClose.y = (rect.bottom - szBtnClose.cy) / 2;
-			hBtnClose = CreateWindowEx(WS_EX_NOPARENTNOTIFY,
-				WC_BUTTON, nullptr,
-				WS_CHILD | WS_TABSTOP | WS_VISIBLE | BS_PUSHBUTTON,
-				ptBtnClose.x, ptBtnClose.y,
-				szBtnClose.cx, szBtnClose.cy,
-				hWnd, (HMENU)IDC_CLOSE_BUTTON,
-				nullptr, nullptr);
+			rectBtnClose.left = rect.right - szBtnClose.cx - BORDER_SIZE;
+			rectBtnClose.top = (rect.bottom - szBtnClose.cy) / 2;
+			rectBtnClose.right = rectBtnClose.left + szBtnClose.cx;
+			rectBtnClose.bottom = rectBtnClose.top + szBtnClose.cy;
+
+			// Create the fonts for the Close button.
+			// (one regular, one bold)
+			LOGFONT lfMarlett = {
+				0,			// lfHeight
+				12,			// lfWidth
+				0,			// lfEscapement
+				0,			// lfOrientation
+				FW_NORMAL,		// lfWeight
+				FALSE,			// lfItalic
+				FALSE,			// lfUnderline
+				FALSE,			// lfStrikeout
+				DEFAULT_CHARSET,	// lfCharset
+				OUT_DEFAULT_PRECIS,	// lfOutPrecision
+				CLIP_DEFAULT_PRECIS,	// lfClipPrecision
+				DEFAULT_QUALITY,	// lfQuality
+				DEFAULT_PITCH | FF_DONTCARE,	// lfPitchAndFamily
+				_T("Marlett"),		// lfFaceName
+			};
+			hFontMarlett = CreateFontIndirect(&lfMarlett);
+			lfMarlett.lfWeight = FW_BOLD;
+			hFontMarlettBold = CreateFontIndirect(&lfMarlett);
 		}
 
 		~MessageWidgetPrivate()
@@ -62,6 +80,12 @@ class MessageWidgetPrivate
 			}
 			if (hbrBg) {
 				DeleteBrush(hbrBg);
+			}
+			if (hFontMarlett) {
+				DeleteFont(hFontMarlett);
+			}
+			if (hFontMarlettBold) {
+				DeleteFont(hFontMarlettBold);
 			}
 		}
 
@@ -95,12 +119,22 @@ class MessageWidgetPrivate
 		HFONT hFont;			// set by the parent window
 		HMODULE hUser32;		// USER32.DLL
 		HICON hIcon;			// loaded with LR_SHARED
-		HWND hBtnClose;			// initialized in WM_CREATE
 
 		unsigned int messageType;	// MB_ICON*
 		SIZE szIcon;			// Icon size
 		HBRUSH hbrBorder;		// Border brush
 		HBRUSH hbrBg;			// Background brush
+
+		enum CloseButtonState {
+			CLSBTN_NORMAL = 0,
+			CLSBTN_HOVER,
+			CLSBTN_PRESSED,
+		};
+		CloseButtonState closeButtonState;
+		RECT rectBtnClose;		// Close button rect
+		bool bBtnCloseDown;		// True if WM_LBUTTONDOWN received while over the Close button.
+		HFONT hFontMarlett;
+		HFONT hFontMarlettBold;
 };
 
 /**
@@ -160,8 +194,9 @@ void MessageWidgetPrivate::updateIcon(void)
  */
 void MessageWidgetPrivate::paint(void)
 {
-	RECT rect;
+	RECT rect, rectUpdate;
 	GetClientRect(hWnd, &rect);
+	BOOL bHasUpdateRect = GetUpdateRect(hWnd, &rectUpdate, TRUE);
 
 	PAINTSTRUCT ps;
 	HDC hDC = BeginPaint(hWnd, &ps);
@@ -171,6 +206,7 @@ void MessageWidgetPrivate::paint(void)
 
 	// Clear the background so we don't end up drawing over
 	// the previous icon/text.
+	bool bClearedBG = true;
 	FillRect(hDC, &rect, hbrBorder);
 	if (hbrBg) {
 		RECT rectBg = rect;
@@ -185,6 +221,7 @@ void MessageWidgetPrivate::paint(void)
 		rect.left += BORDER_SIZE;
 	}
 
+	// Message
 	TCHAR tbuf[128];
 	int len = GetWindowTextLength(hWnd);
 	if (len < 128) {
@@ -196,6 +233,30 @@ void MessageWidgetPrivate::paint(void)
 		DrawText(hDC, tmbuf, len, &rect, DT_SINGLELINE | DT_VCENTER);
 		free(tmbuf);
 	}
+
+	// Close button
+	// TODO: If hovering over the button, use bold.
+	if (!bClearedBG) {
+		FillRect(hDC, &rectBtnClose, hbrBg);
+	}
+	RECT tmpRectBtnClose = rectBtnClose;
+	switch (closeButtonState) {
+		case CLSBTN_NORMAL:
+		default:
+			SelectObject(hDC, hFontMarlett);
+			break;
+		case CLSBTN_HOVER:
+			SelectObject(hDC, hFontMarlettBold);
+			break;
+		case CLSBTN_PRESSED:
+			SelectObject(hDC, hFontMarlettBold);
+			tmpRectBtnClose.left += 2;
+			tmpRectBtnClose.top += 2;
+			break;
+	}
+	// "r" == Close button
+	DrawText(hDC, _T("r"), 1, &tmpRectBtnClose, DT_SINGLELINE | DT_CENTER | DT_VCENTER);
+
 	EndPaint(hWnd, &ps);
 }
 
@@ -222,11 +283,16 @@ MessageWidgetWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			break;
 		}
 
+		case WM_ERASEBKGND:
+			// Handled by WM_PAINT.
+			// TODO: Return FALSE if we're using "no message type"?
+			return TRUE;
+
 		case WM_PAINT: {
 			MessageWidgetPrivate *const d = reinterpret_cast<MessageWidgetPrivate*>(
 				GetWindowLongPtr(hWnd, GWLP_USERDATA));
 			d->paint();
-			return 0;
+			return TRUE;
 		}
 
 		case WM_SETFONT: {
@@ -236,7 +302,7 @@ MessageWidgetWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			if (LOWORD(lParam)) {
 				InvalidateRect(hWnd, nullptr, TRUE);
 			}
-			return 0;
+			return FALSE;
 		}
 
 		case WM_GETFONT: {
@@ -245,11 +311,74 @@ MessageWidgetWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			return reinterpret_cast<LRESULT>(d->hFont);
 		}
 
+		case WM_MOUSEMOVE: {
+			MessageWidgetPrivate *const d = reinterpret_cast<MessageWidgetPrivate*>(
+				GetWindowLongPtr(hWnd, GWLP_USERDATA));
+			if (!(wParam & MK_LBUTTON)) {
+				d->bBtnCloseDown = false;
+			}
+
+			const POINT pt = {GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam)};
+			MessageWidgetPrivate::CloseButtonState clsbtn;
+			if (PtInRect(&d->rectBtnClose, pt)) {
+				// We're hovering over the Close button.
+				clsbtn = d->bBtnCloseDown
+					? MessageWidgetPrivate::CLSBTN_PRESSED
+					: MessageWidgetPrivate::CLSBTN_HOVER;
+			} else {
+				// Not hovering over the Close button.
+				clsbtn = MessageWidgetPrivate::CLSBTN_NORMAL;
+			}
+			if (clsbtn != d->closeButtonState) {
+				d->closeButtonState = clsbtn;
+				InvalidateRect(hWnd, &d->rectBtnClose, TRUE);
+			}
+			break;
+		}
+
+		case WM_LBUTTONDOWN: {
+			if (wParam != MK_LBUTTON)
+				break;
+
+			MessageWidgetPrivate *const d = reinterpret_cast<MessageWidgetPrivate*>(
+				GetWindowLongPtr(hWnd, GWLP_USERDATA));
+			const POINT pt = {GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam)};
+			if (PtInRect(&d->rectBtnClose, pt)) {
+				// Mouse button down on the Close button.
+				d->bBtnCloseDown = true;
+				SetCapture(hWnd);
+
+				// Redraw the Close button.
+				d->closeButtonState = MessageWidgetPrivate::CLSBTN_PRESSED;
+				InvalidateRect(hWnd, &d->rectBtnClose, TRUE);
+				return TRUE;
+			}
+			break;
+		}
+
+		case WM_LBUTTONUP: {
+			ReleaseCapture();
+			MessageWidgetPrivate *const d = reinterpret_cast<MessageWidgetPrivate*>(
+				GetWindowLongPtr(hWnd, GWLP_USERDATA));
+			const POINT pt = {GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam)};
+			if (d->bBtnCloseDown && PtInRect(&d->rectBtnClose, pt)) {
+				// Mouse button released over the Close button.
+				d->bBtnCloseDown = false;
+				d->closeButtonState = MessageWidgetPrivate::CLSBTN_NORMAL;
+
+				// Hide the widget.
+				// TODO: Send a notification.
+				ShowWindow(hWnd, SW_HIDE);
+				return TRUE;
+			}
+			break;
+		}
+
 		case WM_MSGW_SET_MESSAGE_TYPE: {
 			MessageWidgetPrivate *const d = reinterpret_cast<MessageWidgetPrivate*>(
 				GetWindowLongPtr(hWnd, GWLP_USERDATA));
 			d->setMessageType(static_cast<unsigned int>(wParam));
-			return 0;
+			return TRUE;
 		}
 
 		case WM_MSGW_GET_MESSAGE_TYPE: {

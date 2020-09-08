@@ -3003,14 +3003,29 @@ void RP_ShellPropSheetExt_Private::menuOptions_action_triggered(int menuId)
 				ptMsgw.y = winRect.bottom - tmpRect.top - szMsgw.cy;
 				szMsgw.cx = winRect.right - winRect.left - (tmpRect.left * 2);
 
-				hMessageWidget = CreateWindowEx(WS_EX_NOPARENTNOTIFY | WS_EX_TRANSPARENT | WS_EX_CONTROLPARENT,
+				hMessageWidget = CreateWindowEx(
+					WS_EX_NOPARENTNOTIFY | WS_EX_TRANSPARENT,
 					WC_MESSAGEWIDGET, nullptr,
 					WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_CLIPCHILDREN,
 					ptMsgw.x, ptMsgw.y, szMsgw.cx, szMsgw.cy,
-					hDlgSheet, (HMENU)IDC_MESSAGE_WIDGET, nullptr, nullptr);
+					hDlgSheet, (HMENU)IDC_MESSAGE_WIDGET,
+					HINST_THISCOMPONENT, nullptr);
 				SetWindowFont(hMessageWidget, hFontDlg, false);
 			}
 
+			if (tabs.size() > 1) {
+				// Need to adjust tab dialog height to compensate for MessageWidget.
+				// TODO: Restore it after the MessageWidget is closed?
+				std::for_each(tabs.cbegin(), tabs.cend(),
+					[](const tab &tab) {
+						RECT tabRect;
+						GetClientRect(tab.hDlg, &tabRect);
+						tabRect.bottom -= 16;
+						SetWindowPos(tab.hDlg, nullptr, 0, 0, tabRect.right, tabRect.bottom,
+							SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOZORDER);
+					}
+				);
+			}
 			SendMessage(hMessageWidget, WM_MSGW_SET_MESSAGE_TYPE, messageType, 0);
 			SetWindowText(hMessageWidget, U82T_s(result.msg));
 			ShowWindow(hMessageWidget, SW_SHOW);

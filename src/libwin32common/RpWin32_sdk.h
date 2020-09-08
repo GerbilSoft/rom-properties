@@ -40,7 +40,7 @@
 //#define NOSYSMETRICS 1
 //#define NOMENUS 1
 #define NOICONS 1
-#define NOKEYSTATES 1
+//#define NOKEYSTATES 1
 #define NOSYSCOMMANDS 1
 //#define NORASTEROPS 1
 //#define NOSHOWWINDOW 1
