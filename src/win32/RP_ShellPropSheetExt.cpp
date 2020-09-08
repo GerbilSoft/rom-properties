@@ -829,6 +829,8 @@ int RP_ShellPropSheetExt_Private::initString(_In_ HWND hDlg, _In_ HWND hWndTab,
 		MapDialogRect(hWndTab, &tmpRect);
 		RECT winRect;
 		GetClientRect(hWndTab, &winRect);
+		// NOTE: We need to move left by 1px.
+		OffsetRect(&winRect, -1, 0);
 
 		// There should be a maximum of one STRF_CREDITS per tab.
 		auto &tab = tabs[field.tabIdx];
@@ -1001,6 +1003,8 @@ int RP_ShellPropSheetExt_Private::initBitfield(HWND hDlg, HWND hWndTab,
 	// Determine the available width for checkboxes.
 	RECT rectDlg;
 	GetClientRect(hWndTab, &rectDlg);
+	// NOTE: We need to move left by 1px.
+	OffsetRect(&rectDlg, -1, 0);
 	const int max_width = rectDlg.right - pt_start.x;
 
 	// Convert the bitfield description names to the
@@ -2988,6 +2992,8 @@ void RP_ShellPropSheetExt_Private::menuOptions_action_triggered(int menuId)
 				MapDialogRect(hDlgSheet, &tmpRect);
 				RECT winRect;
 				GetClientRect(hDlgSheet, &winRect);
+				// NOTE: We need to move left by 1px.
+				OffsetRect(&winRect, -1, 0);
 
 				// Determine the position.
 				// TODO: Icon size; respond to DPI changes.
