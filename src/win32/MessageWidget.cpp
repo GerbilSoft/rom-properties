@@ -55,6 +55,16 @@ class MessageWidgetPrivate
 				nullptr, nullptr);
 		}
 
+		~MessageWidgetPrivate()
+		{
+			if (hbrBorder) {
+				DeleteBrush(hbrBorder);
+			}
+			if (hbrBg) {
+				DeleteBrush(hbrBg);
+			}
+		}
+
 	public:
 		void setMessageType(unsigned int messageType)
 		{
@@ -67,31 +77,10 @@ class MessageWidgetPrivate
 		}
 
 	private:
-		void updateIcon(void)
-		{
-			LPCTSTR lpszRes;
-			switch (messageType) {
-				case MB_ICONEXCLAMATION:
-					lpszRes = MAKEINTRESOURCE(101);
-					break;
-				case MB_ICONQUESTION:
-					lpszRes = MAKEINTRESOURCE(102);
-					break;
-				case MB_ICONSTOP:
-					lpszRes = MAKEINTRESOURCE(103);
-					break;
-				case MB_ICONINFORMATION:
-				default:
-					lpszRes = MAKEINTRESOURCE(104);
-					break;
-			}
-			hIcon = (HICON)LoadImage(hUser32, lpszRes, IMAGE_ICON,
-				szIcon.cx, szIcon.cy, LR_SHARED);
-
-			// Invalidate the icon portion.
-			RECT rectIcon = {4, 4, szIcon.cx, szIcon.cy};
-			InvalidateRect(hWnd, &rectIcon, TRUE);
-		}
+		/**
+		 * Update the icon and brushes.
+		 */
+		void updateIcon();
 
 	public:
 		/** Window Message functions **/
@@ -110,7 +99,61 @@ class MessageWidgetPrivate
 
 		unsigned int messageType;	// MB_ICON*
 		SIZE szIcon;			// Icon size
+		HBRUSH hbrBorder;		// Border brush
+		HBRUSH hbrBg;			// Background brush
 };
+
+/**
+ * Update the icon and brushes.
+ */
+void MessageWidgetPrivate::updateIcon(void)
+{
+	if (hbrBorder) {
+		DeleteBrush(hbrBorder);
+		hbrBorder = nullptr;
+	}
+	if (hbrBg) {
+		DeleteBrush(hbrBg);
+		hbrBg = nullptr;
+	}
+
+	LPCTSTR lpszRes;
+	switch (messageType) {
+		case 0:
+			lpszRes = nullptr;
+			break;
+		case MB_ICONEXCLAMATION:
+			lpszRes = MAKEINTRESOURCE(101);
+			hbrBorder = CreateSolidBrush(0x0074F6);
+			hbrBg = CreateSolidBrush(0x419BFF);
+			break;
+		case MB_ICONQUESTION:
+			lpszRes = MAKEINTRESOURCE(102);
+			hbrBorder = CreateSolidBrush(0xE9AE3D);
+			hbrBg = CreateSolidBrush(0xFFD37F);
+			break;
+		case MB_ICONSTOP:
+			lpszRes = MAKEINTRESOURCE(103);
+			hbrBorder = CreateSolidBrush(0x5344DA);
+			hbrBg = CreateSolidBrush(0x8A7EF7);
+			break;
+		case MB_ICONINFORMATION:
+		default:
+			lpszRes = MAKEINTRESOURCE(104);
+			hbrBorder = CreateSolidBrush(0xE9AE3D);
+			hbrBg = CreateSolidBrush(0xFFD37F);
+			break;
+	}
+	if (lpszRes) {
+		hIcon = (HICON)LoadImage(hUser32, lpszRes, IMAGE_ICON,
+			szIcon.cx, szIcon.cy, LR_SHARED);
+	} else {
+		hIcon = nullptr;
+	}
+
+	// Invalidate the entire control.
+	InvalidateRect(hWnd, nullptr, TRUE);
+}
 
 /**
  * WM_PAINT handler.
@@ -124,11 +167,16 @@ void MessageWidgetPrivate::paint(void)
 	HDC hDC = BeginPaint(hWnd, &ps);
 	SelectObject(hDC, hFont);
 	SetTextColor(hDC, GetSysColor(COLOR_WINDOWTEXT));
-	SetBkMode(hDC, OPAQUE);
+	SetBkMode(hDC, TRANSPARENT);
 
 	// Clear the background so we don't end up drawing over
 	// the previous icon/text.
-	FillRect(hDC, &rect, nullptr);
+	FillRect(hDC, &rect, hbrBorder);
+	if (hbrBg) {
+		RECT rectBg = rect;
+		InflateRect(&rectBg, -(BORDER_SIZE/2), -(BORDER_SIZE/2));
+		FillRect(hDC, &rectBg, hbrBg);
+	}
 
 	if (hIcon) {
 		DrawIconEx(hDC, BORDER_SIZE, BORDER_SIZE, hIcon, szIcon.cx, szIcon.cy, 0, nullptr, DI_NORMAL);
