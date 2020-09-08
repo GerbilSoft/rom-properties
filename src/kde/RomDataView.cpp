@@ -272,7 +272,9 @@ RomDataViewPrivate::RomDataViewPrivate(RomDataView *q, RomData *romData)
 #endif /* QT_VERSION < QT_VERSION_CHECK(5,0,0) */
 #ifdef HAVE_KMESSAGEWIDGET
 	, messageWidget(nullptr)
+#  ifdef AUTO_TIMEOUT_MESSAGEWIDGET
 	, tmrMessageWidget(nullptr)
+#  endif /* AUTO_TIMEOUT_MESSAGEWIDGET */
 #endif /* HAVE_KMESSAGEWIDGET */
 	, def_lc(0)
 	, cboLanguage(nullptr)
