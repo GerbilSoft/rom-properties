@@ -2293,6 +2293,13 @@ int RP_ShellPropSheetExt_Private::updateField(int fieldIdx)
 	if (!field)
 		return 3;
 
+	// Get the tab dialog control the control is in.
+	assert(field->tabIdx >= 0);
+	assert(field->tabIdx < tabs.size());
+	if (field->tabIdx < 0 || field->tabIdx >= tabs.size())
+		return 4;
+	HWND hDlg = tabs[field->tabIdx].hDlg;
+
 	// Update the value widget(s).
 	int ret;
 	switch (field->type) {
@@ -2307,7 +2314,7 @@ int RP_ShellPropSheetExt_Private::updateField(int fieldIdx)
 
 		case RomFields::RFT_STRING: {
 			// HWND is a STATIC control.
-			HWND hLabel = GetDlgItem(hDlgSheet, IDC_RFT_STRING(fieldIdx));
+			HWND hLabel = GetDlgItem(hDlg, IDC_RFT_STRING(fieldIdx));
 			assert(hLabel != nullptr);
 			if (!hLabel) {
 				ret = 7;
@@ -2340,7 +2347,7 @@ int RP_ShellPropSheetExt_Private::updateField(int fieldIdx)
 			uint32_t bitfield = field->data.bitfield;
 			int id = IDC_RFT_BITFIELD(fieldIdx, 0);
 			for (; count >= 0; count--, id++, bitfield >>= 1) {
-				HWND hCheckBox = GetDlgItem(hDlgSheet, id);
+				HWND hCheckBox = GetDlgItem(hDlg, id);
 				if (!hCheckBox)
 					continue;
 
