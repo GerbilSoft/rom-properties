@@ -82,6 +82,9 @@ static GParamSpec *properties[PROP_LAST];
 #  define USE_GTK_MENU_BUTTON 1
 #endif
 
+// Uncomment to enable the automatic timeout for the ROM Operations MessageWidget.
+//#define AUTO_TIMEOUT_MESSAGEWIDGET 1
+
 static void	rom_data_view_dispose		(GObject	*object);
 static void	rom_data_view_finalize		(GObject	*object);
 static void	rom_data_view_get_property	(GObject	*object,
@@ -2770,7 +2773,11 @@ menuOptions_triggered_signal_handler(GtkMenuItem *menuItem,
 			MessageWidget *const messageWidget = MESSAGE_WIDGET(page->messageWidget);
 			message_widget_set_message_type(messageWidget, messageType);
 			message_widget_set_text(messageWidget, result.msg.c_str());
+#ifdef AUTO_TIMEOUT_MESSAGEWIDGET
 			message_widget_show_with_timeout(messageWidget);
+#else /* AUTO_TIMEOUT_MESSAGEWIDGET */
+			gtk_widget_show(page->messageWidget);
+#endif /* AUTO_TIMEOUT_MESSAGEWIDGET */
 		}
 	}
 
