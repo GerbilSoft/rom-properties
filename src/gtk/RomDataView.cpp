@@ -1777,7 +1777,7 @@ rom_data_view_create_options_button(RomDataView *page)
 	// GTK+ 3.x's only supports image by default, so we'll have to
 	// build a GtkBox with both label and image.
 	page->btnOptions = gtk_menu_button_new();
-	g_object_set(page->btnOptions, "direction", GTK_ARROW_UP, nullptr);
+	gtk_menu_button_set_direction(GTK_MENU_BUTTON(page->btnOptions), GTK_ARROW_UP);
 #else /* !USE_GTK_MENU_BUTTON */
 	// Use plain old GtkButton.
 	// TODO: Menu functionality.
@@ -1813,6 +1813,10 @@ rom_data_view_create_options_button(RomDataView *page)
 	if (headerBar) {
 		// Dialog has a Header Bar instead of an action area.
 		// No reordering is necessary.
+
+		// Change the arrow to point down instead of up.
+		gtk_image_set_from_icon_name(GTK_IMAGE(imgOptions), "pan-down-symbolic", GTK_ICON_SIZE_BUTTON);
+		gtk_menu_button_set_direction(GTK_MENU_BUTTON(page->btnOptions), GTK_ARROW_DOWN);
 	} else
 #endif /* GTK_CHECK_VERSION(3,12,0) */
 	{
@@ -2534,12 +2538,23 @@ btnOptions_clicked_signal_handler(GtkButton *button,
 			return FALSE;
 		}
 
+		GtkMenuPositionFunc menuPositionFunc;
+#if GTK_CHECK_VERSION(3,12,0)
+		// If we're using a GtkHeaderBar, don't use a custom menu positioning function.
+		if (gtk_dialog_get_header_bar(GTK_DIALOG(gtk_widget_get_toplevel(GTK_WIDGET(page)))) != nullptr) {
+			menuPositionFunc = nullptr;
+		} else
+#endif /* GTK_CHECK_VERSION(3,12,0) */
+		{
+			menuPositionFunc = btnOptions_menu_pos_func;
+		}
+
 		// Pop up the menu.
 		// FIXME: Improve button appearance so it's more pushed-in.
 		GdkEventButton *const bevent = reinterpret_cast<GdkEventButton*>(event);
 		gtk_menu_popup(GTK_MENU(page->menuOptions),
 			nullptr, nullptr,
-			btnOptions_menu_pos_func, button,
+			menuPositionFunc, button,
 			bevent->button, bevent->time);
 
 		// Tell the caller that we handled the event.
