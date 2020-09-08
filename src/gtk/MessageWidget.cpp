@@ -33,6 +33,7 @@ static void	message_widget_set_property	(GObject	*object,
 /** Signal handlers. **/
 static void	closeButton_clicked_handler	(GtkButton	*button,
 						 gpointer	 user_data);
+static gboolean	timeout_hide_source_func	(gpointer	 user_data);
 
 #if GTK_CHECK_VERSION(3,0,0)
 typedef GtkBoxClass superclass;
@@ -65,6 +66,7 @@ struct _MessageWidget {
 	GtkWidget *closeButton;
 
 	GtkMessageType messageType;
+	guint timeout_hide;
 };
 
 // NOTE: G_DEFINE_TYPE() doesn't work in C++ mode with gcc-6.2
@@ -345,6 +347,23 @@ message_widget_get_message_type(MessageWidget *widget)
 	return widget->messageType;
 }
 
+/** Other functions **/
+
+void
+message_widget_show_with_timeout(MessageWidget *widget)
+{
+	g_return_if_fail(widget != nullptr || IS_MESSAGE_WIDGET(widget));
+	gtk_widget_show(GTK_WIDGET(widget));
+
+	// TODO: Animation like KMessageWidget.
+	if (widget->timeout_hide) {
+		// Remove the current timeout.
+		g_source_remove(widget->timeout_hide);
+	}
+	// Set the timeout.
+	widget->timeout_hide = g_timeout_add_seconds(10, timeout_hide_source_func, widget);
+}
+
 /** Signal handlers **/
 
 /**
@@ -356,7 +375,27 @@ static void
 closeButton_clicked_handler(GtkButton	*button,
 			    gpointer	 user_data)
 {
+	MessageWidget *const widget = MESSAGE_WIDGET(user_data);
+
 	// TODO: Animation like KMessageWidget.
 	RP_UNUSED(button);
-	gtk_widget_hide(GTK_WIDGET(user_data));
+	if (widget->timeout_hide != 0) {
+		g_source_remove(widget->timeout_hide);
+		widget->timeout_hide = 0;
+	}
+	gtk_widget_hide(GTK_WIDGET(widget));
+}
+
+/**
+ * Message hide timeout has elapsed.
+ * @param user_data MessageWidget*
+ * @return G_SOURCE_CONTINUE to continue the timer; G_SOURCE_REMOVE to remove the timer.
+ */
+static gboolean
+timeout_hide_source_func(gpointer user_data)
+{
+	MessageWidget *const widget = MESSAGE_WIDGET(user_data);
+	widget->timeout_hide = 0;
+	gtk_widget_hide(GTK_WIDGET(widget));
+	return G_SOURCE_REMOVE;
 }

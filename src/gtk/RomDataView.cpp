@@ -2767,9 +2767,10 @@ menuOptions_triggered_signal_handler(GtkMenuItem *menuItem,
 				gtk_box_pack_end(GTK_BOX(page), page->messageWidget, false, false, 0);
 			}
 
-			message_widget_set_message_type(MESSAGE_WIDGET(page->messageWidget), messageType);
-			message_widget_set_text(MESSAGE_WIDGET(page->messageWidget), result.msg.c_str());
-			gtk_widget_show(page->messageWidget);
+			MessageWidget *const messageWidget = MESSAGE_WIDGET(page->messageWidget);
+			message_widget_set_message_type(messageWidget, messageType);
+			message_widget_set_text(messageWidget, result.msg.c_str());
+			message_widget_show_with_timeout(messageWidget);
 		}
 	}
 
