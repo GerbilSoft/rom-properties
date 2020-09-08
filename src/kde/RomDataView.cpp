@@ -1937,7 +1937,7 @@ void RomDataView::menuOptions_action_triggered(int id)
 			}
 
 			// Show the message and play the sound.
-			const QString qs_msg = QString::fromUtf8("This is a test of the GerbilSoft notification system. Had this been an actual notification, ducks would be quacking. 🦆");//U82Q(result.msg);
+			const QString qs_msg = U82Q(result.msg);
 			MessageSound::play(QMessageBox::Information, qs_msg, this);
 		} else {
 			// An error occurred...
