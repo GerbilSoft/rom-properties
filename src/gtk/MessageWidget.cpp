@@ -40,9 +40,9 @@ typedef GtkBox super;
 #define GTK_TYPE_SUPER GTK_TYPE_BOX
 #define USE_GTK_GRID 1	// Use GtkGrid instead of GtkTable.
 #else
-typedef GtkVBoxClass superclass;
-typedef GtkVBox super;
-#define GTK_TYPE_SUPER GTK_TYPE_VBOX
+typedef GtkHBoxClass superclass;
+typedef GtkHBox super;
+#define GTK_TYPE_SUPER GTK_TYPE_HBOX
 #endif
 
 // MessageWidget class.
@@ -89,11 +89,50 @@ message_widget_class_init(MessageWidgetClass *klass)
 
 	// Install the properties.
 	g_object_class_install_properties(gobject_class, PROP_LAST, properties);
+
+#if GTK_CHECK_VERSION(3,0,0)
+	// Initialize MessageWidget CSS.
+	GtkCssProvider *const provider = gtk_css_provider_new();
+	GdkDisplay *const display = gdk_display_get_default();
+	GdkScreen *const screen = gdk_display_get_default_screen(display);
+
+	gtk_style_context_add_provider_for_screen(screen,
+		GTK_STYLE_PROVIDER(provider), GTK_STYLE_PROVIDER_PRIORITY_USER);
+
+	static const char css_MessageWidget[] =
+		"@define-color gsrp_color_info rgb(61,174,233);\n"
+		"@define-color gsrp_color_warning rgb(246,116,0);\n"
+		"@define-color gsrp_color_error rgb(218,68,83);\n"
+		".gsrp_msgw_info {\n"
+		"\tbackground-color: lighter(@gsrp_color_info);\n"
+		"\tborder: 2px solid @gsrp_color_info;\n"
+		"}\n"
+		".gsrp_msgw_warning {\n"
+		"\tbackground-color: lighter(@gsrp_color_warning);\n"
+		"\tborder: 2px solid @gsrp_color_warning;\n"
+		"}\n"
+		".gsrp_msgw_question {\n"
+		"\tbackground-color: lighter(@gsrp_color_info);\n"	// NOTE: Same as INFO.
+		"\tborder: 2px solid @gsrp_color_info;\n"
+		"}\n"
+		".gsrp_msgw_error {\n"
+		"\tbackground-color: lighter(@gsrp_color_error);\n"
+		"\tborder: 2px solid @gsrp_color_error;\n"
+		"}\n";
+
+	gtk_css_provider_load_from_data(GTK_CSS_PROVIDER(provider), css_MessageWidget, -1, nullptr);
+	g_object_unref(provider);
+#endif /* GTK_CHECK_VERSION(3,0,0) */
 }
 
 static void
 message_widget_init(MessageWidget *widget)
 {
+#if GTK_CHECK_VERSION(3,0,0)
+	// Make this an HBox.
+	gtk_orientable_set_orientation(GTK_ORIENTABLE(widget), GTK_ORIENTATION_HORIZONTAL);
+#endif /* GTK_CHECK_VERSION(3,0,0) */
+
 	widget->messageType = GTK_MESSAGE_OTHER;
 
 	widget->image = gtk_image_new();
@@ -213,38 +252,45 @@ message_widget_set_message_type(MessageWidget *widget, GtkMessageType messageTyp
 	widget->messageType = messageType;
 
 	// Update the icon.
-	// TODO: Background color?
-	bool show;
-	const char *icon_name;
-	switch (messageType) {
-		default:
-		case GTK_MESSAGE_OTHER:
-			show = false;
-			icon_name = nullptr;
-			break;
-		case GTK_MESSAGE_INFO:
-			show = true;
-			icon_name = "dialog-information";
-			break;
-		case GTK_MESSAGE_WARNING:
-			show = true;
-			icon_name = "dialog-warning";
-			break;
-		case GTK_MESSAGE_QUESTION:
-			// TODO: Make sure dialog-question exists.
-			show = true;
-			icon_name = "dialog-question";
-			break;
-		case GTK_MESSAGE_ERROR:
-			show = true;
-			icon_name = "dialog-error";
-			break;
+	// Background colors based on KMessageWidget.
+	struct IconInfo_t {
+		const char *icon_name;	// XDG icon name
+		const char *css_class;	// CSS class (GTK+ 3.x only)
+		uint32_t bg_color;
+	};
+	static const IconInfo_t iconInfo[] = {
+		{"dialog-information",	"gsrp_msgw_info",	0x3DAEE9},	// INFO
+		{"dialog-warning",	"gsrp_msgw_warning",	0xF67400},	// WARNING
+		{"dialog-question",	"gsrp_msgw_question",	0x3DAEE9},	// QUESTION (same as INFO)
+		{"dialog-error",	"gsrp_msgw_error",	0xDA4453},	// ERROR
+		{nullptr,		nullptr,		0},		// OTHER
+	};
+
+	if (messageType < 0 || messageType > ARRAY_SIZE(iconInfo)) {
+		// Default to OTHER.
+		messageType = GTK_MESSAGE_OTHER;
 	}
 
-	gtk_widget_set_visible(widget->image, show);
-	if (show) {
+	const IconInfo_t *const pIconInfo = &iconInfo[messageType];
+
+	gtk_widget_set_visible(widget->image, (pIconInfo->icon_name != nullptr));
+	if (pIconInfo->icon_name) {
 		// TODO: Better icon size?
-		gtk_image_set_from_icon_name(GTK_IMAGE(widget->image), icon_name, GTK_ICON_SIZE_BUTTON);
+		gtk_image_set_from_icon_name(GTK_IMAGE(widget->image), pIconInfo->icon_name, GTK_ICON_SIZE_BUTTON);
+
+#if GTK_CHECK_VERSION(3,0,0)
+		// Remove all of our CSS classes first.
+		GtkStyleContext *const context = gtk_widget_get_style_context(GTK_WIDGET(widget));
+		gtk_style_context_remove_class(context, "gsrp_msgw_info");
+		gtk_style_context_remove_class(context, "gsrp_msgw_warning");
+		gtk_style_context_remove_class(context, "gsrp_msgw_question");
+		gtk_style_context_remove_class(context, "gsrp_msgw_error");
+
+		// Add the new CSS class.
+		gtk_style_context_add_class(context, pIconInfo->css_class);
+#else /* !GTK_CHECK_VERSION(3,0,0) */
+		// TODO: GTK+ 2.x coloring.
+#endif /* GTK_CHECK_VERSION(3,0,0) */
 	}
 }
 
