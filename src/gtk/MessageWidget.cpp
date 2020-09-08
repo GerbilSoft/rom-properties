@@ -40,9 +40,11 @@ typedef GtkBox super;
 #define GTK_TYPE_SUPER GTK_TYPE_BOX
 #define USE_GTK_GRID 1	// Use GtkGrid instead of GtkTable.
 #else
-typedef GtkHBoxClass superclass;
-typedef GtkHBox super;
-#define GTK_TYPE_SUPER GTK_TYPE_HBOX
+// Top class is GtkEventBox, since we can't
+// set the background color of GtkHBox.
+typedef GtkEventBoxClass superclass;
+typedef GtkEventBox super;
+#define GTK_TYPE_SUPER GTK_TYPE_EVENT_BOX
 #endif
 
 // MessageWidget class.
@@ -53,6 +55,10 @@ struct _MessageWidgetClass {
 // MessageWidget instance.
 struct _MessageWidget {
 	super __parent__;
+#if !GTK_CHECK_VERSION(3,0,0)
+	GtkWidget *evbox_inner;
+	GtkWidget *hbox;
+#endif /* !GTK_CHECK_VERSION(3,0,0) */
 
 	GtkWidget *image;
 	GtkWidget *label;
@@ -128,19 +134,32 @@ message_widget_class_init(MessageWidgetClass *klass)
 static void
 message_widget_init(MessageWidget *widget)
 {
+	GtkBox *hbox;
 #if GTK_CHECK_VERSION(3,0,0)
 	// Make this an HBox.
 	gtk_orientable_set_orientation(GTK_ORIENTABLE(widget), GTK_ORIENTATION_HORIZONTAL);
+	hbox = GTK_BOX(widget);
+#else
+	// Add a GtkEventBox for the inner color.
+	widget->evbox_inner = gtk_event_box_new();
+	gtk_widget_show(widget->evbox_inner);
+	gtk_container_add(GTK_CONTAINER(widget), widget->evbox_inner);
+
+	// Add a GtkHBox for all the other widgets.
+	widget->hbox = gtk_hbox_new(0, 0);
+	gtk_widget_show(widget->hbox);
+	gtk_container_add(GTK_CONTAINER(widget->evbox_inner), widget->hbox);
+	hbox = GTK_BOX(widget->hbox);
 #endif /* GTK_CHECK_VERSION(3,0,0) */
 
 	widget->messageType = GTK_MESSAGE_OTHER;
 
 	widget->image = gtk_image_new();
-	gtk_box_pack_start(GTK_BOX(widget), widget->image, FALSE, FALSE, 4);
+	gtk_box_pack_start(hbox, widget->image, FALSE, FALSE, 4);
 
 	widget->label = gtk_label_new(nullptr);
 	gtk_widget_show(widget->label);
-	gtk_box_pack_start(GTK_BOX(widget), widget->label, FALSE, FALSE, 0);
+	gtk_box_pack_start(hbox, widget->label, FALSE, FALSE, 0);
 
 	// TODO: Prpoer alignment.
 
@@ -149,7 +168,7 @@ message_widget_init(MessageWidget *widget)
 	gtk_button_set_image(GTK_BUTTON(widget->closeButton), imageClose);
 	gtk_button_set_relief(GTK_BUTTON(widget->closeButton), GTK_RELIEF_NONE);
 	gtk_widget_show(widget->closeButton);
-	gtk_box_pack_end(GTK_BOX(widget), widget->closeButton, FALSE, FALSE, 0);
+	gtk_box_pack_end(hbox, widget->closeButton, FALSE, FALSE, 0);
 
 	g_signal_connect(widget->closeButton, "clicked",
 		G_CALLBACK(closeButton_clicked_handler), widget);
@@ -256,14 +275,15 @@ message_widget_set_message_type(MessageWidget *widget, GtkMessageType messageTyp
 	struct IconInfo_t {
 		const char *icon_name;	// XDG icon name
 		const char *css_class;	// CSS class (GTK+ 3.x only)
-		uint32_t bg_color;
+		uint32_t border_color;	// from KMessageWidget
+		uint32_t bg_color;	// lightened version of border_color
 	};
 	static const IconInfo_t iconInfo[] = {
-		{"dialog-information",	"gsrp_msgw_info",	0x3DAEE9},	// INFO
-		{"dialog-warning",	"gsrp_msgw_warning",	0xF67400},	// WARNING
-		{"dialog-question",	"gsrp_msgw_question",	0x3DAEE9},	// QUESTION (same as INFO)
-		{"dialog-error",	"gsrp_msgw_error",	0xDA4453},	// ERROR
-		{nullptr,		nullptr,		0},		// OTHER
+		{"dialog-information",	"gsrp_msgw_info",	0x3DAEE9, 0x7FD3FF},	// INFO
+		{"dialog-warning",	"gsrp_msgw_warning",	0xF67400, 0xFF9B41},	// WARNING
+		{"dialog-question",	"gsrp_msgw_question",	0x3DAEE9, 0x7FD3FF},	// QUESTION (same as INFO)
+		{"dialog-error",	"gsrp_msgw_error",	0xDA4453, 0xF77E8A},	// ERROR
+		{nullptr,		nullptr,		0,        0},		// OTHER
 	};
 
 	if (messageType < 0 || messageType > ARRAY_SIZE(iconInfo)) {
@@ -289,8 +309,33 @@ message_widget_set_message_type(MessageWidget *widget, GtkMessageType messageTyp
 		// Add the new CSS class.
 		gtk_style_context_add_class(context, pIconInfo->css_class);
 #else /* !GTK_CHECK_VERSION(3,0,0) */
-		// TODO: GTK+ 2.x coloring.
+		GdkColor color;
+		color.pixel	 = pIconInfo->border_color;
+		color.red	 = (color.pixel >> 16) & 0xFF;
+		color.green	 = (color.pixel >>  8) & 0xFF;
+		color.blue	 =  color.pixel & 0xFF;
+		color.red	|= (color.red << 8);
+		color.green	|= (color.green << 8);
+		color.blue	|= (color.blue << 8);
+		gtk_widget_modify_bg(GTK_WIDGET(widget), GTK_STATE_NORMAL, &color);
+
+		color.pixel	 = pIconInfo->bg_color;
+		color.red	 = (color.pixel >> 16) & 0xFF;
+		color.green	 = (color.pixel >>  8) & 0xFF;
+		color.blue	 =  color.pixel & 0xFF;
+		color.red	|= (color.red << 8);
+		color.green	|= (color.green << 8);
+		color.blue	|= (color.blue << 8);
+		gtk_widget_modify_bg(GTK_WIDGET(widget->evbox_inner), GTK_STATE_NORMAL, &color);
+
+		gtk_container_set_border_width(GTK_CONTAINER(widget->evbox_inner), 2);
 #endif /* GTK_CHECK_VERSION(3,0,0) */
+	} else {
+#if !GTK_CHECK_VERSION(3,0,0)
+		gtk_container_set_border_width(GTK_CONTAINER(widget->evbox_inner), 0);
+		gtk_widget_modify_bg(GTK_WIDGET(widget), GTK_STATE_NORMAL, nullptr);
+		gtk_widget_modify_bg(GTK_WIDGET(widget->evbox_inner), GTK_STATE_NORMAL, nullptr);
+#endif /* !GTK_CHECK_VERSION(3,0,0) */
 	}
 }
 
