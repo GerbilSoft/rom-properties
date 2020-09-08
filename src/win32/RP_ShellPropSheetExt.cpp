@@ -2991,15 +2991,16 @@ void RP_ShellPropSheetExt_Private::menuOptions_action_triggered(int menuId)
 
 				// Determine the position.
 				// TODO: Icon size; respond to DPI changes.
-				const int h = 16+8;
-				const int x = winRect.left + tmpRect.left;
-				const int y = winRect.bottom - tmpRect.top - h;
-				const int w = winRect.right - winRect.left - (tmpRect.left * 2);
+				POINT ptMsgw; SIZE szMsgw;
+				szMsgw.cy = 16+8;
+				ptMsgw.x = winRect.left + tmpRect.left;
+				ptMsgw.y = winRect.bottom - tmpRect.top - szMsgw.cy;
+				szMsgw.cx = winRect.right - winRect.left - (tmpRect.left * 2);
 
-				hMessageWidget = CreateWindowEx(WS_EX_NOPARENTNOTIFY | WS_EX_TRANSPARENT,
+				hMessageWidget = CreateWindowEx(WS_EX_NOPARENTNOTIFY | WS_EX_TRANSPARENT | WS_EX_CONTROLPARENT,
 					WC_MESSAGEWIDGET, nullptr,
-					WS_CHILD | WS_TABSTOP,
-					x, y, w, h,
+					WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_CLIPCHILDREN,
+					ptMsgw.x, ptMsgw.y, szMsgw.cx, szMsgw.cy,
 					hDlgSheet, (HMENU)IDC_MESSAGE_WIDGET, nullptr, nullptr);
 				SetWindowFont(hMessageWidget, hFontDlg, false);
 			}
@@ -3112,7 +3113,7 @@ void RP_ShellPropSheetExt_Private::createOptionsButton(void)
 	const bool isComCtl32_v610 = LibWin32Common::isComCtl32_v610();
 
 	tstring ts_caption;
-	LONG lStyle = WS_CHILD | WS_VISIBLE | WS_TABSTOP | WS_GROUP | BS_CENTER;
+	LONG lStyle = WS_CHILD | WS_VISIBLE | WS_TABSTOP | WS_GROUP | BS_PUSHBUTTON | BS_CENTER;
 	if (isComCtl32_v610) {
 		// COMCTL32 is v6.10 or later. Use BS_SPLITBUTTON.
 		// (Windows Vista or later)

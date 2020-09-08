@@ -11,6 +11,9 @@
 
 static ATOM atom_messageWidget;
 
+#define IDC_CLOSE_BUTTON	0x0101
+#define BORDER_SIZE 4
+
 class MessageWidgetPrivate
 {
 	public:
@@ -19,6 +22,7 @@ class MessageWidgetPrivate
 			, hFont(nullptr)
 			, hUser32(GetModuleHandle(_T("user32")))
 			, hIcon(nullptr)
+			, hBtnClose(nullptr)
 			, messageType(MB_ICONINFORMATION)
 		{
 			assert(hUser32 != nullptr);
@@ -29,6 +33,26 @@ class MessageWidgetPrivate
 
 			// Initialize the icon.
 			updateIcon();
+
+			// Create the Close button.
+			// TODO: Icon.
+			// TODO: Reposition on WM_SIZE?
+			// FIXME: The button isn't working...
+			RECT rect;
+			GetClientRect(hWnd, &rect);
+
+			POINT ptBtnClose; SIZE szBtnClose;
+			szBtnClose.cx = szIcon.cx + BORDER_SIZE;
+			szBtnClose.cy = szIcon.cy + BORDER_SIZE;
+			ptBtnClose.x = rect.right - szBtnClose.cx - BORDER_SIZE;
+			ptBtnClose.y = (rect.bottom - szBtnClose.cy) / 2;
+			hBtnClose = CreateWindowEx(WS_EX_NOPARENTNOTIFY,
+				WC_BUTTON, nullptr,
+				WS_CHILD | WS_TABSTOP | WS_VISIBLE | BS_PUSHBUTTON,
+				ptBtnClose.x, ptBtnClose.y,
+				szBtnClose.cx, szBtnClose.cy,
+				hWnd, (HMENU)IDC_CLOSE_BUTTON,
+				nullptr, nullptr);
 		}
 
 	public:
@@ -82,6 +106,7 @@ class MessageWidgetPrivate
 		HFONT hFont;			// set by the parent window
 		HMODULE hUser32;		// USER32.DLL
 		HICON hIcon;			// loaded with LR_SHARED
+		HWND hBtnClose;			// initialized in WM_CREATE
 
 		unsigned int messageType;	// MB_ICON*
 		SIZE szIcon;			// Icon size
@@ -106,10 +131,10 @@ void MessageWidgetPrivate::paint(void)
 	FillRect(hDC, &rect, nullptr);
 
 	if (hIcon) {
-		DrawIconEx(hDC, 4, 4, hIcon, szIcon.cx, szIcon.cy, 0, nullptr, DI_NORMAL);
-		rect.left += szIcon.cx + 4*2;
+		DrawIconEx(hDC, BORDER_SIZE, BORDER_SIZE, hIcon, szIcon.cx, szIcon.cy, 0, nullptr, DI_NORMAL);
+		rect.left += szIcon.cx + BORDER_SIZE*2;
 	} else {
-		rect.left += 4;
+		rect.left += BORDER_SIZE;
 	}
 
 	TCHAR tbuf[128];
@@ -123,7 +148,7 @@ void MessageWidgetPrivate::paint(void)
 		DrawText(hDC, tmbuf, len, &rect, DT_SINGLELINE | DT_VCENTER);
 		free(tmbuf);
 	}
-	EndPaint(hWnd, &ps);	
+	EndPaint(hWnd, &ps);
 }
 
 static LRESULT CALLBACK
