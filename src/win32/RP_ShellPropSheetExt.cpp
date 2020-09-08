@@ -18,6 +18,7 @@
 
 #include "DragImageLabel.hpp"
 #include "FontHandler.hpp"
+#include "MessageWidget.hpp"
 
 // libwin32common
 #include "libwin32common/AutoGetDC.hpp"
@@ -70,6 +71,7 @@ const CLSID CLSID_RP_ShellPropSheetExt =
 #define IDC_STATIC_ICON			0x0101
 #define IDC_TAB_WIDGET			0x0102
 #define IDC_CBO_LANGUAGE		0x0103
+#define IDC_MESSAGE_WIDGET		0x0104
 #define IDC_TAB_PAGE(idx)		(0x0200 + (idx))
 #define IDC_STATIC_DESC(idx)		(0x1000 + (idx))
 #define IDC_RFT_STRING(idx)		(0x1400 + (idx))
@@ -199,6 +201,9 @@ class RP_ShellPropSheetExt_Private
 		};
 		vector<tab> tabs;
 		int curTabIndex;
+
+		// MessageWidget for ROM operation notifications.
+		HWND hMessageWidget;
 
 		// Multi-language functionality.
 		uint32_t def_lc;	// Default language code from RomFields.
@@ -475,6 +480,7 @@ RP_ShellPropSheetExt_Private::RP_ShellPropSheetExt_Private(RP_ShellPropSheetExt 
 	, lblIcon(nullptr)
 	, tabWidget(nullptr)
 	, curTabIndex(0)
+	, hMessageWidget(nullptr)
 	, def_lc(0)
 	, cboLanguage(nullptr)
 	, himglFlags(nullptr)
@@ -2934,10 +2940,10 @@ void RP_ShellPropSheetExt_Private::menuOptions_action_triggered(int menuId)
 		const int id = menuId - IDM_OPTIONS_MENU_BASE;
 		RomData::RomOpResult result;
 		int ret = romData->doRomOp(id, &result);
-		// TODO: Show the status message.
+		unsigned int messageType;
 		if (ret == 0) {
 			// ROM operation completed.
-			MessageBeep(MB_ICONINFORMATION);
+			messageType = MB_ICONINFORMATION;
 
 			// Update fields.
 			std::for_each(result.fieldIdx.cbegin(), result.fieldIdx.cend(),
@@ -2966,7 +2972,41 @@ void RP_ShellPropSheetExt_Private::menuOptions_action_triggered(int menuId)
 		} else {
 			// An error occurred...
 			// TODO: Show an error message.
-			MessageBeep(MB_ICONWARNING);
+			messageType = MB_ICONWARNING;
+		}
+
+		MessageBeep(messageType);
+		if (!result.msg.empty()) {
+			if (!hMessageWidget) {
+				// FIXME: Make sure this works if multiple tabs are present.
+				MessageWidgetRegister();
+
+				// Align to the bottom of the dialog and center-align the text.
+				// 7x7 DLU margin is recommended by the Windows UX guidelines.
+				// Reference: http://stackoverflow.com/questions/2118603/default-dialog-padding
+				RECT tmpRect = {7, 7, 8, 8};
+				MapDialogRect(hDlgSheet, &tmpRect);
+				RECT winRect;
+				GetClientRect(hDlgSheet, &winRect);
+
+				// Determine the position.
+				// TODO: Icon size; respond to DPI changes.
+				const int h = 16+8;
+				const int x = winRect.left + tmpRect.left;
+				const int y = winRect.bottom - tmpRect.top - h;
+				const int w = winRect.right - winRect.left - (tmpRect.left * 2);
+
+				hMessageWidget = CreateWindowEx(WS_EX_NOPARENTNOTIFY | WS_EX_TRANSPARENT,
+					WC_MESSAGEWIDGET, nullptr,
+					WS_CHILD | WS_TABSTOP,
+					x, y, w, h,
+					hDlgSheet, (HMENU)IDC_MESSAGE_WIDGET, nullptr, nullptr);
+				SetWindowFont(hMessageWidget, hFontDlg, false);
+			}
+
+			SendMessage(hMessageWidget, WM_MSGW_SET_MESSAGE_TYPE, messageType, 0);
+			SetWindowText(hMessageWidget, U82T_s(result.msg));
+			ShowWindow(hMessageWidget, SW_SHOW);
 		}
 	}
 }

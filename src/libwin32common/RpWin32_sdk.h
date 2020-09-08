@@ -48,7 +48,7 @@
 //#define NOCLIPBOARD 1
 //#define NOCOLOR 1
 //#define NOCTLMGR 1
-#define NODRAWTEXT 1
+//#define NODRAWTEXT 1
 //#define NOGDI 1
 //#define NOKERNEL 1
 //#define NONLS 1

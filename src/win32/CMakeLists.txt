@@ -51,6 +51,7 @@ SET(rom-properties-win32_SRCS
 	CreateThumbnail.cpp
 	DragImageLabel.cpp
 	FontHandler.cpp
+	MessageWidget.cpp
 	config/ConfigDialog.cpp
 	config/PropSheetIcon.cpp
 	config/RP_EmptyVolumeCacheCallback.cpp
@@ -78,6 +79,7 @@ SET(rom-properties-win32_H
 	CreateThumbnail.hpp
 	DragImageLabel.hpp
 	FontHandler.hpp
+	MessageWidget.hpp
 	config/ConfigDialog.hpp
 	config/PropSheetIcon.hpp
 	config/RP_EmptyVolumeCacheCallback.hpp
