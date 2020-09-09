@@ -204,6 +204,7 @@ class RP_ShellPropSheetExt_Private
 
 		// MessageWidget for ROM operation notifications.
 		HWND hMessageWidget;
+		int iTabHeightOrig;
 
 		// Multi-language functionality.
 		uint32_t def_lc;	// Default language code from RomFields.
@@ -414,8 +415,9 @@ class RP_ShellPropSheetExt_Private
 		 * Adjust tabs for the message widget.
 		 * Message widget must have been created first.
 		 * Only run this after the message widget visibiliy has changed!
+		 * @param bVisible True for visible; false for not.
 		 */
-		void adjustTabsForMessageWidgetVisibility(void);
+		void adjustTabsForMessageWidgetVisibility(bool bVisible);
 
 		/**
 		 * Show the message widget.
@@ -496,6 +498,7 @@ RP_ShellPropSheetExt_Private::RP_ShellPropSheetExt_Private(RP_ShellPropSheetExt 
 	, tabWidget(nullptr)
 	, curTabIndex(0)
 	, hMessageWidget(nullptr)
+	, iTabHeightOrig(0)
 	, def_lc(0)
 	, cboLanguage(nullptr)
 	, himglFlags(nullptr)
@@ -2597,6 +2600,7 @@ void RP_ShellPropSheetExt_Private::initDialog(void)
 		// Update dlgSize.
 		dlgSize.cx = dlgRect.right - dlgRect.left;
 		dlgSize.cy = dlgRect.bottom - dlgRect.top;
+		iTabHeightOrig = dlgSize.cy;	// for MessageWidget
 		// Update dlg_value_width.
 		// FIXME: Results in 9px left, 8px right margins for RFT_LISTDATA.
 		dlg_value_width = dlgSize.cx - descSize.cx - dlgMargin.left - 1;
@@ -2802,31 +2806,33 @@ void RP_ShellPropSheetExt_Private::initDialog(void)
 /**
  * Adjust tabs for the message widget.
  * Message widget must have been created first.
- * Only run this after the message widget visibiliy has changed!
+ * @param bVisible True for visible; false for not.
  */
-void RP_ShellPropSheetExt_Private::adjustTabsForMessageWidgetVisibility(void)
+void RP_ShellPropSheetExt_Private::adjustTabsForMessageWidgetVisibility(bool bVisible)
 {
 	if (tabs.size() == 1) {
 		// Only one tab. Nothing to do here.
 		return;
 	}
 
-	// TODO: Store the last height adjustment in case the MessageWidget
-	// height is changed for e.g. multi-line.
+	// NOTE: IsWindowVisible(hMessageWidget) doesn't seem to be
+	// correct when this function is called, so we have to take
+	// the visibility as a parameter instead.
 	RECT rectMsgw;
 	GetClientRect(hMessageWidget, &rectMsgw);
-	int msgw_h = rectMsgw.bottom;
-	if (IsWindowVisible(hMessageWidget)) {
-		msgw_h = -msgw_h;
+	int tab_h = iTabHeightOrig;
+	if (bVisible) {
+		tab_h -= rectMsgw.bottom;
 	}
 
 	std::for_each(tabs.cbegin(), tabs.cend(),
-		[msgw_h](const tab &tab) {
+		[tab_h](const tab &tab) {
 			RECT tabRect;
 			GetClientRect(tab.hDlg, &tabRect);
-			tabRect.bottom -= msgw_h;
-			SetWindowPos(tab.hDlg, nullptr, 0, 0, tabRect.right, tabRect.bottom,
-				SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOZORDER);
+			if (tabRect.bottom != tab_h) {
+				SetWindowPos(tab.hDlg, nullptr, 0, 0, tabRect.right, tab_h,
+					SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOZORDER);
+			}
 		}
 	);
 }
@@ -2847,10 +2853,8 @@ void RP_ShellPropSheetExt_Private::showMessageWidget(unsigned int messageType, c
 	SendMessage(hMessageWidget, WM_MSGW_SET_MESSAGE_TYPE, messageType, 0);
 	SetWindowText(hMessageWidget, lpszMsg);
 
-	if (!IsWindowVisible(hMessageWidget)) {
-		adjustTabsForMessageWidgetVisibility();
-		ShowWindow(hMessageWidget, SW_SHOW);
-	}
+	adjustTabsForMessageWidgetVisibility(true);
+	ShowWindow(hMessageWidget, SW_SHOW);
 }
 
 /**
@@ -3689,6 +3693,13 @@ INT_PTR RP_ShellPropSheetExt_Private::DlgProc_WM_NOTIFY(HWND hDlg, NMHDR *pHdr)
 			const unsigned int state = (pnmlv->uOldState ^ pnmlv->uNewState) & LVIS_STATEIMAGEMASK;
 			// Set result to true if the state difference is non-zero (i.e. it's changed).
 			SetWindowLongPtr(hDlg, DWLP_MSGRESULT, (state != 0));
+			ret = true;
+			break;
+		}
+
+		case MSGWN_CLOSED: {
+			// MessageWidget Close button was clicked.
+			adjustTabsForMessageWidgetVisibility(false);
 			ret = true;
 			break;
 		}

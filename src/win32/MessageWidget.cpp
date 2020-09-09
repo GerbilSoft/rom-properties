@@ -392,8 +392,14 @@ MessageWidgetWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 				if (PtInRect(&d->rectBtnClose, pt)) {
 					// Hide the widget.
-					// TODO: Send a notification.
 					ShowWindow(hWnd, SW_HIDE);
+					// Send a notification.
+					const NMHDR nmhdr = {
+						hWnd,			// hwndFrom
+						GetDlgCtrlID(hWnd),	// idFrom
+						MSGWN_CLOSED,
+					};
+					SendMessage(GetParent(hWnd), WM_NOTIFY, nmhdr.idFrom, reinterpret_cast<LPARAM>(&nmhdr));
 				}
 				return TRUE;
 			}

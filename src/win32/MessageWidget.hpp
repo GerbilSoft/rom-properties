@@ -20,6 +20,9 @@ extern "C" {
 #define WM_MSGW_SET_MESSAGE_TYPE	(WM_USER + 1)
 #define WM_MSGW_GET_MESSAGE_TYPE	(WM_USER + 2)
 
+#define MSGWN_FIRST			(NM_LAST - 2600U)
+#define MSGWN_CLOSED			(MSGWN_FIRST - 1)
+
 void MessageWidgetRegister(void);
 void MessageWidgetUnregister(void);
 
