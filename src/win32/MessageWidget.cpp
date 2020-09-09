@@ -370,14 +370,19 @@ MessageWidgetWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			MessageWidgetPrivate *const d = reinterpret_cast<MessageWidgetPrivate*>(
 				GetWindowLongPtr(hWnd, GWLP_USERDATA));
 			const POINT pt = {GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam)};
-			if (d->bBtnCloseDown && PtInRect(&d->rectBtnClose, pt)) {
+			if (d->bBtnCloseDown) {
 				// Mouse button released over the Close button.
 				d->bBtnCloseDown = false;
-				d->closeButtonState = MessageWidgetPrivate::CLSBTN_NORMAL;
+				if (d->closeButtonState != MessageWidgetPrivate::CLSBTN_NORMAL) {
+					d->closeButtonState = MessageWidgetPrivate::CLSBTN_NORMAL;
+					InvalidateRect(hWnd, &d->rectBtnClose, TRUE);
+				}
 
-				// Hide the widget.
-				// TODO: Send a notification.
-				ShowWindow(hWnd, SW_HIDE);
+				if (PtInRect(&d->rectBtnClose, pt)) {
+					// Hide the widget.
+					// TODO: Send a notification.
+					ShowWindow(hWnd, SW_HIDE);
+				}
 				return TRUE;
 			}
 			break;
