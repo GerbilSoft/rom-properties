@@ -688,6 +688,7 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 	// TODO: Verify the size.
 	const size_t dataSize = m_downloader->dataSize();
 	size_t size = fwrite(m_downloader->data(), 1, dataSize, f_out);
+	fflush(f_out);
 
 	// Save the file origin information.
 #ifdef _WIN32
