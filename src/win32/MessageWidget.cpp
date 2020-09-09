@@ -27,6 +27,7 @@ class MessageWidgetPrivate
 			, hbrBg(nullptr)
 			, colorBg(0)
 			, closeButtonState(CLSBTN_NORMAL)
+			, bBtnCloseEntered(false)
 			, bBtnCloseDown(false)
 			, hFontMarlett(nullptr)
 			, hFontMarlettBold(nullptr)
@@ -136,6 +137,7 @@ class MessageWidgetPrivate
 		};
 		CloseButtonState closeButtonState;
 		RECT rectBtnClose;		// Close button rect
+		bool bBtnCloseEntered;		// True if the mouse cursor entered the Close button area.
 		bool bBtnCloseDown;		// True if WM_LBUTTONDOWN received while over the Close button.
 		HFONT hFontMarlett;
 		HFONT hFontMarlettBold;
@@ -334,6 +336,16 @@ MessageWidgetWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				clsbtn = d->bBtnCloseDown
 					? MessageWidgetPrivate::CLSBTN_PRESSED
 					: MessageWidgetPrivate::CLSBTN_HOVER;
+				if (!d->bBtnCloseEntered) {
+					// Start mouse tracking for WM_MOUSELEAVE.
+					TRACKMOUSEEVENT tme;
+					tme.cbSize = sizeof(tme);
+					tme.hwndTrack = hWnd;
+					tme.dwFlags = TME_LEAVE;
+					tme.dwHoverTime = 0;
+					TrackMouseEvent(&tme);
+					d->bBtnCloseEntered = true;
+				}
 			} else {
 				// Not hovering over the Close button.
 				clsbtn = MessageWidgetPrivate::CLSBTN_NORMAL;
@@ -386,6 +398,17 @@ MessageWidgetWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				return TRUE;
 			}
 			break;
+		}
+
+		case WM_MOUSELEAVE: {
+			MessageWidgetPrivate *const d = reinterpret_cast<MessageWidgetPrivate*>(
+				GetWindowLongPtr(hWnd, GWLP_USERDATA));
+			d->bBtnCloseEntered = false;
+			if (d->closeButtonState != MessageWidgetPrivate::CLSBTN_NORMAL) {
+				d->closeButtonState = MessageWidgetPrivate::CLSBTN_NORMAL;
+				InvalidateRect(hWnd, &d->rectBtnClose, TRUE);
+			}
+			return TRUE;
 		}
 
 		case WM_MSGW_SET_MESSAGE_TYPE: {
