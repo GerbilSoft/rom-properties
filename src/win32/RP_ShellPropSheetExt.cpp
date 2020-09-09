@@ -2996,9 +2996,10 @@ void RP_ShellPropSheetExt_Private::menuOptions_action_triggered(int menuId)
 				OffsetRect(&winRect, -1, 0);
 
 				// Determine the position.
-				// TODO: Icon size; respond to DPI changes.
+				// TODO: Update on DPI change.
+				const int cySmIcon = GetSystemMetrics(SM_CYSMICON);
 				POINT ptMsgw; SIZE szMsgw;
-				szMsgw.cy = 16+8;
+				szMsgw.cy = cySmIcon + 8;
 				ptMsgw.x = winRect.left + tmpRect.left;
 				ptMsgw.y = winRect.bottom - tmpRect.top - szMsgw.cy;
 				szMsgw.cx = winRect.right - winRect.left - (tmpRect.left * 2);
@@ -3011,21 +3012,23 @@ void RP_ShellPropSheetExt_Private::menuOptions_action_triggered(int menuId)
 					hDlgSheet, (HMENU)IDC_MESSAGE_WIDGET,
 					HINST_THISCOMPONENT, nullptr);
 				SetWindowFont(hMessageWidget, hFontDlg, false);
+
+				if (tabs.size() > 1) {
+					// Need to adjust tab dialog height to compensate for MessageWidget.
+					// TODO: Restore it after the MessageWidget is closed?
+					// TODO: Update on DPI change.
+					std::for_each(tabs.cbegin(), tabs.cend(),
+						[cySmIcon](const tab &tab) {
+							RECT tabRect;
+							GetClientRect(tab.hDlg, &tabRect);
+							tabRect.bottom -= cySmIcon;
+							SetWindowPos(tab.hDlg, nullptr, 0, 0, tabRect.right, tabRect.bottom,
+								SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOZORDER);
+						}
+					);
+				}
 			}
 
-			if (tabs.size() > 1) {
-				// Need to adjust tab dialog height to compensate for MessageWidget.
-				// TODO: Restore it after the MessageWidget is closed?
-				std::for_each(tabs.cbegin(), tabs.cend(),
-					[](const tab &tab) {
-						RECT tabRect;
-						GetClientRect(tab.hDlg, &tabRect);
-						tabRect.bottom -= 16;
-						SetWindowPos(tab.hDlg, nullptr, 0, 0, tabRect.right, tabRect.bottom,
-							SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOZORDER);
-					}
-				);
-			}
 			SendMessage(hMessageWidget, WM_MSGW_SET_MESSAGE_TYPE, messageType, 0);
 			SetWindowText(hMessageWidget, U82T_s(result.msg));
 			ShowWindow(hMessageWidget, SW_SHOW);
