@@ -1,13 +1,13 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (librpbase)                        *
- * MD5Capi.cpp: MD5 class. (Win32 CryptoAPI implementation.)               *
+ * MD5HashCAPI.cpp: MD5 hash class. (Win32 CryptoAPI implementation.)      *
  *                                                                         *
  * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #include "stdafx.h"
-#include "MD5.hpp"
+#include "MD5Hash.hpp"
 
 // libwin32common
 #include "libwin32common/RpWin32_sdk.h"
@@ -27,7 +27,7 @@ namespace LibRpBase {
  * @param len		[in] Data length.
  * @return 0 on success; negative POSIX error code on error.
  */
-int MD5::calcHash(uint8_t *pHash, size_t hash_len, const void *pData, size_t len)
+int MD5Hash::calcHash(uint8_t *pHash, size_t hash_len, const void *pData, size_t len)
 {
 	HCRYPTPROV hProvider;
 	HCRYPTHASH hHash;

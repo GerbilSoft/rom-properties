@@ -25,12 +25,12 @@
 #include <cerrno>
 
 // librpbase, librpfile, librpthreads
-#include "librpbase/crypto/MD5.hpp"
+#include "librpbase/crypto/MD5Hash.hpp"
 #include "librpfile/FileSystem.hpp"
 #include "librpfile/RpFile.hpp"
 #include "librpthreads/Mutex.hpp"
 using namespace LibRpFile;
-using LibRpBase::MD5;
+using LibRpBase::MD5Hash;
 using LibRpThreads::Mutex;
 using LibRpThreads::MutexLocker;
 
@@ -128,7 +128,7 @@ int ndscrypt_load_blowfish_bin(BlowfishKey bfkey)
 
 	// Verify the MD5.
 	uint8_t md5[16];
-	MD5::calcHash(md5, sizeof(md5), blowfish_data[bfkey], sizeof(blowfish_data[bfkey]));
+	MD5Hash::calcHash(md5, sizeof(md5), blowfish_data[bfkey], sizeof(blowfish_data[bfkey]));
 	if (memcmp(md5, blowfish_md5[bfkey], sizeof(md5)) != 0) {
 		// MD5 is incorrect.
 		blowfish_data[bfkey][0] = 0;

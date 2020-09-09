@@ -1,6 +1,6 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (librpbase)                        *
- * MD5.hpp: MD5 class.                                                     *
+ * MD5Hash.hpp: MD5 hash class.                                            *
  *                                                                         *
  * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
@@ -17,14 +17,14 @@
 
 namespace LibRpBase {
 
-class MD5
+class MD5Hash
 {
 	protected:
-		MD5() { }
-		~MD5() { }
+		MD5Hash() { }
+		~MD5Hash() { }
 
 	private:
-		RP_DISABLE_COPY(MD5)
+		RP_DISABLE_COPY(MD5Hash)
 
 	public:
 		/**
