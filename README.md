@@ -265,6 +265,13 @@ In this example, both keys are AES-128, so the hexadecimal strings should be
 NOTE: If a key is incorrect, any properties dialog that uses the key to
 decrypt data will show an error message instead of the data in question.
 
+### Nintendo DS Secure Area
+
+To encrypt or decrypt the Nintendo DS Secure Area, the Blowfish key must be
+named `nds-blowfish.bin` and placed in the same directory as `keys.conf`.
+
+MD5sum: `c08c5afd9c6d9530817cd2033e3864d7`
+
 ## Unsupported File?
 
 If you have a file that you believe should be supported by ROM Propeties, or

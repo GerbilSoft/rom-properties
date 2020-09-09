@@ -2,6 +2,17 @@
 
 ## v1.7 (released 2020/??/??)
 
+* New features:
+  * An "Options" button is now present in the property page. The Options
+    button allows for exporting the ROM properties in text and JSON format,
+    using the same mechanism as rpcli's output.
+  * A new "ROM operations" subsystem allows for certain operations to be
+    performed on supported ROM images. Currently, Nintendo DS supports
+    trimming and untrimming ROMs, and encrypting and decrypting the Secure
+    Area. These operations are available in the "Options" menu. Note that
+    modifying the Secure Area requires having the Nintendo DS Blowfish key
+    as `nds-blowfish.bin` in the ROM Properties configuration directory.
+
 * New parsers:
   * PSP: PlayStation Portable disc images. Supports ISO, CISOv1, CISOv2,
     ZISO, JISO, and DAX. PARAM.SFO and firmware updates aren't parsed yet.
