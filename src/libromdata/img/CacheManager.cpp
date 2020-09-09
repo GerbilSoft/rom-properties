@@ -10,12 +10,14 @@
 #include "config.libromdata.h"
 #include "CacheManager.hpp"
 
-// librpbase, librpfile
+// librpbase, librpfile, librpthreads
 #include "librpbase/TextFuncs.hpp"
 #include "librpfile/RpFile.hpp"
 #include "librpfile/FileSystem.hpp"
 using namespace LibRpBase;
 using namespace LibRpFile;
+using LibRpThreads::Semaphore;
+using LibRpThreads::SemaphoreLocker;
 
 // libcachecommon
 #include "libcachecommon/CacheKeys.hpp"

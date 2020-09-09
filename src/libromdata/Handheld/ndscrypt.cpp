@@ -31,8 +31,8 @@
 #include "librpthreads/Mutex.hpp"
 using namespace LibRpFile;
 using LibRpBase::MD5;
-using LibRpBase::Mutex;
-using LibRpBase::MutexLocker;
+using LibRpThreads::Mutex;
+using LibRpThreads::MutexLocker;
 
 // C++ STL classes.
 using std::string;

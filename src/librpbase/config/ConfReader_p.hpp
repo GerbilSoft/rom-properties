@@ -39,7 +39,7 @@ class ConfReaderPrivate
 
 	public:
 		// load() mutex.
-		Mutex mtxLoad;
+		LibRpThreads::Mutex mtxLoad;
 
 		// Configuration filename.
 		const char *const conf_rel_filename;	// from ctor

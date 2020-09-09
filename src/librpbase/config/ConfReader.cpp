@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * ConfReader.hpp: Configuration reader base class.                        *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -10,15 +10,14 @@
 #include "ConfReader.hpp"
 #include "ConfReader_p.hpp"
 
-// librpbase
+// librpbase, librpfile, librpthreads
 #include "TextFuncs.hpp"
 #ifdef _WIN32
 # include "TextFuncs_wchar.hpp"
 #endif
-
-// librpfile
 #include "librpfile/FileSystem.hpp"
 using namespace LibRpFile;
+using LibRpThreads::MutexLocker;
 
 namespace LibRpBase {
 

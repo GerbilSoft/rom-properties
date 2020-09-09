@@ -89,7 +89,7 @@ class CacheManager
 		std::string m_proxyUrl;
 
 		// Semaphore used to limit the number of simultaneous downloads.
-		static LibRpBase::Semaphore m_dlsem;
+		static LibRpThreads::Semaphore m_dlsem;
 };
 
 }
