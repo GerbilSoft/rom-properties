@@ -22,18 +22,16 @@
 
 #include "../RomDataView.hpp"
 
-// NautilusPropertyPageProviderIface definition.
-// TODO: Make sure it's identical to caja and nemo.
-// TODO: Rename from Iface to Interface? (latest Nautilus does this)
+// NautilusPropertyPageProviderInterface definition.
 extern "C"
-struct _NautilusPropertyPageProviderIface {
+struct _NautilusPropertyPageProviderInterface {
 	GTypeInterface g_iface;
 
 	GList *(*get_pages) (NautilusPropertyPageProvider *provider,
 	                     GList                        *files);
 };
 
-static void   rp_nautilus_provider_page_provider_init	(NautilusPropertyPageProviderIface	*iface);
+static void   rp_nautilus_provider_page_provider_init	(NautilusPropertyPageProviderInterface	*iface);
 static GList *rp_nautilus_provider_get_pages		(NautilusPropertyPageProvider		*provider,
 							 GList					*files);
 
@@ -93,7 +91,7 @@ rp_nautilus_provider_init(RpNautilusProvider *sbr_provider)
 }
 
 static void
-rp_nautilus_provider_page_provider_init(NautilusPropertyPageProviderIface *iface)
+rp_nautilus_provider_page_provider_init(NautilusPropertyPageProviderInterface *iface)
 {
 	iface->get_pages = rp_nautilus_provider_get_pages;
 }

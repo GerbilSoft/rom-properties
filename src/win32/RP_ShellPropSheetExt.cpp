@@ -785,7 +785,7 @@ int RP_ShellPropSheetExt_Private::initString(_In_ HWND hDlg, _In_ HWND hWndTab,
 		if (field.type != RomFields::RFT_STRING)
 			return 0;
 
-		// TODO: NULL string == empty string?
+		// NULL string == empty string
 		if (field.data.str) {
 			str_nl = LibWin32Common::unix2dos(U82T_s(*(field.data.str)), &lf_count);
 		}
@@ -2160,8 +2160,9 @@ void RP_ShellPropSheetExt_Private::updateMulti(uint32_t user_lc)
 			const uint32_t lc = *iter;
 			const char *lc_str = SystemRegion::getLocalizedLanguageName(lc);
 			if (lc_str) {
-				// FIXME: std::move might be redundant here...
-				vec_lc_str.emplace_back(std::move(U82T_c(lc_str)));
+				// NOTE: U82T_c() returns c_str(), which prevents
+				// the std::move() optimization from working.
+				vec_lc_str.emplace_back(utf8_to_utf16(lc_str));
 			} else {
 				// Invalid language code.
 				tstring s_lc;

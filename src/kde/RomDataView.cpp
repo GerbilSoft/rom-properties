@@ -389,7 +389,6 @@ void RomDataViewPrivate::createOptionsButton(void)
 	}
 
 	// Create the menu and (for Qt4) signal mapper.
-	// TODO: Signals.
 	menuOptions = new QMenu(s_options, q);
 	btnOptions->setMenu(menuOptions);
 

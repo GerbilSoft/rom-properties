@@ -16,14 +16,14 @@
 G_BEGIN_DECLS;
 
 // Opaque structs.
-struct _NautilusFileInfoIface;
-typedef struct _NautilusFileInfoIface NautilusFileInfoIface;
+struct _NautilusFileInfoInterface;
+typedef struct _NautilusFileInfoInterface NautilusFileInfoInterface;
 
 struct _NautilusFileInfo;
 typedef struct _NautilusFileInfo NautilusFileInfo;
 
-struct _NautilusPropertyPageProviderIface;
-typedef struct _NautilusPropertyPageProviderIface NautilusPropertyPageProviderIface;
+struct _NautilusPropertyPageProviderInterface;
+typedef struct _NautilusPropertyPageProviderInterface NautilusPropertyPageProviderInterface;
 
 struct _NautilusPropertyPageProvider;
 typedef struct _NautilusPropertyPageProvider NautilusPropertyPageProvider;
@@ -54,12 +54,12 @@ extern PFN_NAUTILUS_PROPERTY_PAGE_NEW pfn_nautilus_property_page_new;
 #define NAUTILUS_TYPE_FILE_INFO				(pfn_nautilus_file_info_get_type ())
 #define NAUTILUS_FILE_INFO(obj)				(G_TYPE_CHECK_INSTANCE_CAST((obj), NAUTILUS_TYPE_FILE_INFO, NautilusFileInfo))
 #define NAUTILUS_IS_FILE_INFO(obj)			(G_TYPE_CHECK_INSTANCE_TYPE((obj), NAUTILUS_TYPE_FILE_INFO))
-#define NAUTILUS_FILE_INFO_GET_IFACE(obj)		(G_TYPE_INSTANCE_GET_INTERFACE((obj),  NAUTILUS_TYPE_FILE_INFO, NautilusFileInfoIface))
+#define NAUTILUS_FILE_INFO_GET_IFACE(obj)		(G_TYPE_INSTANCE_GET_INTERFACE((obj),  NAUTILUS_TYPE_FILE_INFO, NautilusFileInfoInterface))
 
 #define NAUTILUS_TYPE_PROPERTY_PAGE_PROVIDER		(pfn_nautilus_property_page_provider_get_type ())
 #define NAUTILUS_PROPERTY_PAGE_PROVIDER(obj)		(G_TYPE_CHECK_INSTANCE_CAST((obj), NAUTILUS_TYPE_PROPERTY_PAGE_PROVIDER, NautilusPropertyPageProvider))
 #define NAUTILUS_IS_PROPERTY_PAGE_PROVIDER(obj)		(G_TYPE_CHECK_INSTANCE_TYPE((obj), NAUTILUS_TYPE_PROPERTY_PAGE_PROVIDER))
-#define NAUTILUS_PROPERTY_PAGE_PROVIDER_GET_IFACE(obj)	(G_TYPE_INSTANCE_GET_INTERFACE((obj),  NAUTILUS_TYPE_PROPERTY_PAGE_PROVIDER, NautilusPropertyPageProviderIface))
+#define NAUTILUS_PROPERTY_PAGE_PROVIDER_GET_IFACE(obj)	(G_TYPE_INSTANCE_GET_INTERFACE((obj),  NAUTILUS_TYPE_PROPERTY_PAGE_PROVIDER, NautilusPropertyPageProviderInterface))
 
 G_END_DECLS;
 

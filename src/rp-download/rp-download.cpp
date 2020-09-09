@@ -691,8 +691,7 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 
 	// Save the file origin information.
 #ifdef _WIN32
-	// TODO: Figure out how to setFileOriginInfo() on Windows
-	// using an open file handle.
+	// TODO: Figure out how to setFileOriginInfo() on Windows using an open file handle.
 	setFileOriginInfo(f_out, cache_filename.c_str(), full_url, m_downloader->mtime());
 #else /* !_WIN32 */
 	setFileOriginInfo(f_out, full_url, m_downloader->mtime());

@@ -434,13 +434,16 @@ int RpFile::seek(off64_t pos)
 
 	int ret;
 	if (d->gzfd != 0) {
+		errno = 0;
 		z_off_t zret = gzseek(d->gzfd, pos, SEEK_SET);
 		if (zret >= 0) {
 			ret = 0;
 		} else {
-			// TODO: Does gzseek() set errno?
 			ret = -1;
-			m_lastError = -EIO;
+			m_lastError = -errno;
+			if (m_lastError == 0) {
+				m_lastError = -EIO;
+			}
 		}
 	} else {
 		ret = fseeko(d->file, pos, SEEK_SET);

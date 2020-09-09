@@ -458,7 +458,6 @@ int RP_C_API main(int argc, char *argv[])
 				break;
 #ifdef RP_OS_SCSI_SUPPORTED
 			case 'i':
-				// TODO: Check if a SCSI implementation is available for this OS?
 				// These commands take precedence over the usual rpcli functionality.
 				if (argv[i][2] == 's') {
 					// SCSI INQUIRY command.

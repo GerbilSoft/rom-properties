@@ -416,7 +416,6 @@ SNDHPrivate::TagData SNDHPrivate::parseTags(void)
 			}
 
 			case 'FLAG': {
-				// TODO: Optimize this!
 				// TODO: This is non-standard.
 				// Observed variants: (after the tag)
 				// - Two bytes, and a NULL terminator.

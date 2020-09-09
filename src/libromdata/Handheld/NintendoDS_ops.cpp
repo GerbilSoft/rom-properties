@@ -474,7 +474,6 @@ int NintendoDS::doRomOp_int(int id, RomOpResult *pResult)
 			size_t size = d->file->read(ndsbuf.get(), NDS_SEC_AREA_SIZE);
 			if (size != NDS_SEC_AREA_SIZE) {
 				// Seek and/or read error.
-				// TODO: Show an error message.
 				ret = -d->file->lastError();
 				if (ret == 0) {
 					ret = -EIO;
@@ -511,7 +510,6 @@ int NintendoDS::doRomOp_int(int id, RomOpResult *pResult)
 				size_t size = d->file->seekAndRead(dsisec_offset, &dsibuf[0x1000], DSi_SEC_AREA_SIZE);
 				if (size != DSi_SEC_AREA_SIZE) {
 					// Seek and/or read error.
-					// TODO: Show an error message.
 					ret = -d->file->lastError();
 					if (ret == 0) {
 						ret = -EIO;
@@ -543,7 +541,6 @@ int NintendoDS::doRomOp_int(int id, RomOpResult *pResult)
 				size = d->file->seekAndWrite(dsisec_offset, &dsibuf[0x1000], DSi_SEC_AREA_SIZE);
 				if (size != DSi_SEC_AREA_SIZE) {
 					// Seek and/or write error.
-					// TODO: Show an error message.
 					ret = -d->file->lastError();
 					if (ret == 0) {
 						ret = -EIO;
@@ -562,7 +559,6 @@ int NintendoDS::doRomOp_int(int id, RomOpResult *pResult)
 			size = d->file->write(ndsbuf.get(), NDS_SEC_AREA_SIZE);
 			if (size != NDS_SEC_AREA_SIZE) {
 				// Seek and/or write error.
-				// TODO: Show an error message.
 				ret = -d->file->lastError();
 				if (ret == 0) {
 					ret = -EIO;

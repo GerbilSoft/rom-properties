@@ -556,9 +556,11 @@ int RpFile::seek(off64_t pos)
 		if (zret >= 0) {
 			ret = 0;
 		} else {
-			// TODO: Does gzseek() set errno?
 			ret = -1;
-			m_lastError = -EIO;
+			m_lastError = -errno;
+			if (m_lastError == 0) {
+				m_lastError = -EIO;
+			}
 		}
 	} else {
 		LARGE_INTEGER liSeekPos;

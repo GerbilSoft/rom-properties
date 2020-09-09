@@ -1783,13 +1783,10 @@ rom_data_view_create_options_button(RomDataView *page)
 	gtk_menu_button_set_direction(GTK_MENU_BUTTON(page->btnOptions), GTK_ARROW_UP);
 #else /* !USE_GTK_MENU_BUTTON */
 	// Use plain old GtkButton.
-	// TODO: Menu functionality.
 	page->btnOptions = gtk_button_new();
 #endif /* USE_GTK_MENU_BUTTON */
 	gtk_container_add(GTK_CONTAINER(page->btnOptions), hboxOptions);
 
-	// TODO: Connect the signal.
-	// TODO: Submenu.
 	gtk_dialog_add_action_widget(GTK_DIALOG(parent), page->btnOptions, GTK_RESPONSE_NONE);
 	gtk_widget_hide(page->btnOptions);
 	assert(page->btnOptions != nullptr);
@@ -2780,6 +2777,4 @@ menuOptions_triggered_signal_handler(GtkMenuItem *menuItem,
 #endif /* AUTO_TIMEOUT_MESSAGEWIDGET */
 		}
 	}
-
-	// TODO: RomOps
 }

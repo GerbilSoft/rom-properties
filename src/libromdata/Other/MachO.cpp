@@ -446,8 +446,6 @@ const char *const *MachO::supportedMimeTypes_static(void)
 		// standard definitions. Hence, we're using our
 		// own types.
 
-		// TODO: Upstream the Mach-O definitions.
-
 		"application/x-mach-object",
 		"application/x-mach-executable",
 		"application/x-mach-sharedlib",

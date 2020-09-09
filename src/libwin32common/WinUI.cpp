@@ -28,7 +28,6 @@ namespace LibWin32Common {
 
 /**
  * Convert UNIX line endings to DOS line endings.
- * TODO: Move to RpWin32?
  * @param tstr_unix	[in] String with UNIX line endings.
  * @param lf_count	[out,opt] Number of LF characters found.
  * @return tstring with DOS line endings.
@@ -207,7 +206,6 @@ COLORREF getAltRowColor(void)
 bool isComCtl32_v610(void)
 {
 	// Check the COMCTL32.DLL version.
-	// TODO: Split this into libwin32common. (Also present in KeyManagerTab.)
 	HMODULE hComCtl32 = GetModuleHandle(_T("COMCTL32"));
 	assert(hComCtl32 != nullptr);
 
@@ -367,8 +365,6 @@ static tstring getFileName_int(bool bSave, HWND hWnd, const TCHAR *dlgTitle, con
 		// Requires the following:
 		// - -DWINVER=0x0600
 		// - IFileDialogEvents object
-
-		// TODO: Move to libwin32common and implement everything there.
 	} else {
 		// GetOpenFileName() / GetSaveFileName()
 

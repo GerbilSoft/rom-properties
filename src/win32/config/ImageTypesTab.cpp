@@ -323,8 +323,7 @@ void ImageTypesTabPrivate::createComboBox(unsigned int cbid)
 	if (!validateSysImageType(sys, imageType))
 		return;
 
-	// Get the font of the parent dialog.
-	// TODO: Cache this?
+	// Get the parent dialog's font.
 	HFONT hFontDlg = GetWindowFont(GetParent(hWndPropSheet));
 	assert(hFontDlg != nullptr);
 	if (!hFontDlg) {

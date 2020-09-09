@@ -131,7 +131,6 @@ string getCacheDirectory(void)
 		(PFNSHGETKNOWNFOLDERPATH)GetProcAddress(hShell32_dll, "SHGetKnownFolderPath");
 	if (pfnSHGetKnownFolderPath) {
 		// We have SHGetKnownFolderPath. (NOTE: Unicode only!)
-		// TODO: Get LocalLow. For now, we'll get Local.
 		PWSTR pszPath = nullptr;	// free with CoTaskMemFree()
 		HRESULT hr = pfnSHGetKnownFolderPath(FOLDERID_LocalAppDataLow,
 			SHGFP_TYPE_CURRENT, nullptr, &pszPath);
@@ -147,7 +146,7 @@ string getCacheDirectory(void)
 		if (cache_dir.empty()) {
 			// SHGetKnownFolderPath(FOLDERID_LocalAppDataLow) failed.
 			// Try again with FOLDERID_LocalAppData.
-			// NOTE: This might cause problems if rp-download runs
+			// NOTE: This might cause problems if rp-download is running
 			// with a low integrity level.
 			hr = pfnSHGetKnownFolderPath(FOLDERID_LocalAppData,
 				SHGFP_TYPE_CURRENT, nullptr, &pszPath);

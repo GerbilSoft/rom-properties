@@ -48,7 +48,7 @@ typedef enum {
 	GCZ_SubType_Wii		= 1,
 } GCZ_SubType_e;
 
-// 32 KB minimum block size (GCN/Wii sector) [FIXME: NKit uses 16 KB]
+// 32 KB minimum block size (GCN/Wii sector) [NOTE: NKit uses 16 KB]
 // 16 MB maximum block size
 //#define GCZ_BLOCK_SIZE_MIN (32768)
 #define GCZ_BLOCK_SIZE_MIN (16384)

@@ -334,7 +334,6 @@ int PokemonMini::loadFieldData(void)
 		} else {
 			// Not a standard jump opcode.
 			// Show the hexdump.
-			// TODO: Use something other than rp_sprintf()?
 			s_address = rp_sprintf("%02X %02X %02X %02X %02X %02X",
 				romHeader->irqs[i][0], romHeader->irqs[i][1],
 				romHeader->irqs[i][2], romHeader->irqs[i][3],

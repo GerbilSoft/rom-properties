@@ -23,8 +23,7 @@
 #include <commctrl.h>
 
 // Undefine isolation-aware subclass macros.
-// WARNING: This breaks isolation awareness!
-// TODO: Implement isolation-aware subclassing here?
+// This breaks isolation awareness, but Windows 2000 doesn't have that anyway.
 #ifdef SetWindowSubclass
 #undef SetWindowSubclass
 #endif

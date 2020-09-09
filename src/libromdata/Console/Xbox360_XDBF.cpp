@@ -1043,6 +1043,7 @@ int Xbox360_XDBF_Private::addFields_avatarAwards(void)
 		const uint16_t unlocked_desc_id = be16_to_cpu(p->unlocked_desc_id);
 
 		// TODO: Localized numeric formatting?
+		// FIXME: Should this be decimal instead of hex?
 		char s_avatar_award_id[16];
 		snprintf(s_avatar_award_id, sizeof(s_avatar_award_id), "%04X", be16_to_cpu(p->avatar_award_id));
 

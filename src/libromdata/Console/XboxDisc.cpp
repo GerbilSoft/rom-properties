@@ -852,7 +852,8 @@ int XboxDisc::loadMetaData(void)
 	d->metaData = new RomMetaData();
 
 	// Add metadata properties from the default executable.
-	// TODO: Also ISO PVD?
+	// ISO PVD is skipped because it's the same for all discs
+	// of a given XGD wave.
 	d->metaData->addMetaData_metaData(defaultExeData->metaData());
 
 	// Re-lock the Kreon drive.
