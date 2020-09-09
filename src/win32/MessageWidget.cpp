@@ -23,6 +23,9 @@ class MessageWidgetPrivate
 			, hUser32(GetModuleHandle(_T("user32")))
 			, hIcon(nullptr)
 			, messageType(MB_ICONINFORMATION)
+			, hbrBorder(nullptr)
+			, hbrBg(nullptr)
+			, colorBg(0)
 			, closeButtonState(CLSBTN_NORMAL)
 			, bBtnCloseDown(false)
 			, hFontMarlett(nullptr)
@@ -124,6 +127,7 @@ class MessageWidgetPrivate
 		SIZE szIcon;			// Icon size
 		HBRUSH hbrBorder;		// Border brush
 		HBRUSH hbrBg;			// Background brush
+		COLORREF colorBg;		// Background color
 
 		enum CloseButtonState {
 			CLSBTN_NORMAL = 0,
@@ -159,26 +163,27 @@ void MessageWidgetPrivate::updateIcon(void)
 		case MB_ICONEXCLAMATION:
 			lpszRes = MAKEINTRESOURCE(101);
 			hbrBorder = CreateSolidBrush(0x0074F6);
-			hbrBg = CreateSolidBrush(0x419BFF);
+			colorBg = 0x419BFF;
 			break;
 		case MB_ICONQUESTION:
 			lpszRes = MAKEINTRESOURCE(102);
 			hbrBorder = CreateSolidBrush(0xE9AE3D);
-			hbrBg = CreateSolidBrush(0xFFD37F);
+			colorBg = 0xFFD37F;
 			break;
 		case MB_ICONSTOP:
 			lpszRes = MAKEINTRESOURCE(103);
 			hbrBorder = CreateSolidBrush(0x5344DA);
-			hbrBg = CreateSolidBrush(0x8A7EF7);
+			colorBg = 0x8A7EF7;
 			break;
 		case MB_ICONINFORMATION:
 		default:
 			lpszRes = MAKEINTRESOURCE(104);
 			hbrBorder = CreateSolidBrush(0xE9AE3D);
-			hbrBg = CreateSolidBrush(0xFFD37F);
+			colorBg = 0xFFD37F;
 			break;
 	}
 	if (lpszRes) {
+		hbrBg = CreateSolidBrush(colorBg);
 		hIcon = (HICON)LoadImage(hUser32, lpszRes, IMAGE_ICON,
 			szIcon.cx, szIcon.cy, LR_SHARED);
 	} else {
@@ -202,43 +207,47 @@ void MessageWidgetPrivate::paint(void)
 	HDC hDC = BeginPaint(hWnd, &ps);
 	SelectObject(hDC, hFont);
 	SetTextColor(hDC, GetSysColor(COLOR_WINDOWTEXT));
-	SetBkMode(hDC, TRANSPARENT);
 
-	// Clear the background so we don't end up drawing over
-	// the previous icon/text.
-	bool bClearedBG = true;
-	FillRect(hDC, &rect, hbrBorder);
-	if (hbrBg) {
-		RECT rectBg = rect;
-		InflateRect(&rectBg, -(BORDER_SIZE/2), -(BORDER_SIZE/2));
-		FillRect(hDC, &rectBg, hbrBg);
-	}
+	if (bHasUpdateRect && !EqualRect(&rectUpdate, &rectBtnClose)) {
+		SetBkMode(hDC, TRANSPARENT);
 
-	if (hIcon) {
-		DrawIconEx(hDC, BORDER_SIZE, BORDER_SIZE, hIcon, szIcon.cx, szIcon.cy, 0, nullptr, DI_NORMAL);
-		rect.left += szIcon.cx + BORDER_SIZE*2;
+		// Clear the background so we don't end up drawing over
+		// the previous icon/text.
+		bool bClearedBG = true;
+		FillRect(hDC, &rect, hbrBorder);
+		if (hbrBg) {
+			RECT rectBg = rect;
+			InflateRect(&rectBg, -(BORDER_SIZE/2), -(BORDER_SIZE/2));
+			FillRect(hDC, &rectBg, hbrBg);
+		}
+
+		if (hIcon) {
+			DrawIconEx(hDC, BORDER_SIZE, BORDER_SIZE, hIcon, szIcon.cx, szIcon.cy, 0, nullptr, DI_NORMAL);
+			rect.left += szIcon.cx + BORDER_SIZE*2;
+		} else {
+			rect.left += BORDER_SIZE;
+		}
+
+		// Message
+		TCHAR tbuf[128];
+		int len = GetWindowTextLength(hWnd);
+		if (len < 128) {
+			GetWindowText(hWnd, tbuf, _countof(tbuf));
+			DrawText(hDC, tbuf, len, &rect, DT_SINGLELINE | DT_VCENTER);
+		} else {
+			TCHAR *const tmbuf = static_cast<TCHAR*>(malloc((len+1) * sizeof(TCHAR)));
+			GetWindowText(hWnd, tmbuf, len+1);
+			DrawText(hDC, tmbuf, len, &rect, DT_SINGLELINE | DT_VCENTER);
+			free(tmbuf);
+		}
 	} else {
-		rect.left += BORDER_SIZE;
-	}
-
-	// Message
-	TCHAR tbuf[128];
-	int len = GetWindowTextLength(hWnd);
-	if (len < 128) {
-		GetWindowText(hWnd, tbuf, _countof(tbuf));
-		DrawText(hDC, tbuf, len, &rect, DT_SINGLELINE | DT_VCENTER);
-	} else {
-		TCHAR *const tmbuf = static_cast<TCHAR*>(malloc((len+1) * sizeof(TCHAR)));
-		GetWindowText(hWnd, tmbuf, len+1);
-		DrawText(hDC, tmbuf, len, &rect, DT_SINGLELINE | DT_VCENTER);
-		free(tmbuf);
+		// Only updating the Close button.
+		// Use OPAQUE background drawing.
+		SetBkMode(hDC, OPAQUE);
+		SetBkColor(hDC, colorBg);
 	}
 
 	// Close button
-	// TODO: If hovering over the button, use bold.
-	if (!bClearedBG) {
-		FillRect(hDC, &rectBtnClose, hbrBg);
-	}
 	RECT tmpRectBtnClose = rectBtnClose;
 	switch (closeButtonState) {
 		case CLSBTN_NORMAL:
@@ -255,7 +264,7 @@ void MessageWidgetPrivate::paint(void)
 			break;
 	}
 	// "r" == Close button
-	DrawText(hDC, _T("r"), 1, &tmpRectBtnClose, DT_SINGLELINE | DT_CENTER | DT_VCENTER);
+	DrawText(hDC, _T("r "), 1, &tmpRectBtnClose, DT_SINGLELINE | DT_CENTER | DT_VCENTER);
 
 	EndPaint(hWnd, &ps);
 }
