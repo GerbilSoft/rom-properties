@@ -411,6 +411,21 @@ class RP_ShellPropSheetExt_Private
 		void initDialog(void);
 
 		/**
+		 * Adjust tabs for the message widget.
+		 * Message widget must have been created first.
+		 * Only run this after the message widget visibiliy has changed!
+		 */
+		void adjustTabsForMessageWidgetVisibility(void);
+
+		/**
+		 * Show the message widget.
+		 * Message widget must have been created first.
+		 * @param messageType Message type.
+		 * @param lpszMsg Message.
+		 */
+		void showMessageWidget(unsigned int messageType, const TCHAR *lpszMsg);
+
+		/**
 		 * An "Options" menu action was triggered.
 		 * @param menuId Menu ID. (Options ID + IDM_OPTIONS_MENU_BASE)
 		 */
@@ -2785,6 +2800,60 @@ void RP_ShellPropSheetExt_Private::initDialog(void)
 }
 
 /**
+ * Adjust tabs for the message widget.
+ * Message widget must have been created first.
+ * Only run this after the message widget visibiliy has changed!
+ */
+void RP_ShellPropSheetExt_Private::adjustTabsForMessageWidgetVisibility(void)
+{
+	if (tabs.size() == 1) {
+		// Only one tab. Nothing to do here.
+		return;
+	}
+
+	// TODO: Store the last height adjustment in case the MessageWidget
+	// height is changed for e.g. multi-line.
+	RECT rectMsgw;
+	GetClientRect(hMessageWidget, &rectMsgw);
+	int msgw_h = rectMsgw.bottom;
+	if (IsWindowVisible(hMessageWidget)) {
+		msgw_h = -msgw_h;
+	}
+
+	std::for_each(tabs.cbegin(), tabs.cend(),
+		[msgw_h](const tab &tab) {
+			RECT tabRect;
+			GetClientRect(tab.hDlg, &tabRect);
+			tabRect.bottom -= msgw_h;
+			SetWindowPos(tab.hDlg, nullptr, 0, 0, tabRect.right, tabRect.bottom,
+				SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOZORDER);
+		}
+	);
+}
+
+/**
+ * Show the message widget.
+ * Message widget must have been created first.
+ * @param messageType Message type.
+ * @param lpszMsg Message.
+ */
+void RP_ShellPropSheetExt_Private::showMessageWidget(unsigned int messageType, const TCHAR *lpszMsg)
+{
+	assert(hMessageWidget != nullptr);
+	if (!hMessageWidget)
+		return;
+
+	// Set the message widget stuff.
+	SendMessage(hMessageWidget, WM_MSGW_SET_MESSAGE_TYPE, messageType, 0);
+	SetWindowText(hMessageWidget, lpszMsg);
+
+	if (!IsWindowVisible(hMessageWidget)) {
+		adjustTabsForMessageWidgetVisibility();
+		ShowWindow(hMessageWidget, SW_SHOW);
+	}
+}
+
+/**
  * An "Options" menu action was triggered.
  * @param menuId Menu ID. (Options ID + IDM_OPTIONS_MENU_BASE)
  */
@@ -3012,26 +3081,9 @@ void RP_ShellPropSheetExt_Private::menuOptions_action_triggered(int menuId)
 					hDlgSheet, (HMENU)IDC_MESSAGE_WIDGET,
 					HINST_THISCOMPONENT, nullptr);
 				SetWindowFont(hMessageWidget, hFontDlg, false);
-
-				if (tabs.size() > 1) {
-					// Need to adjust tab dialog height to compensate for MessageWidget.
-					// TODO: Restore it after the MessageWidget is closed?
-					// TODO: Update on DPI change.
-					std::for_each(tabs.cbegin(), tabs.cend(),
-						[cySmIcon](const tab &tab) {
-							RECT tabRect;
-							GetClientRect(tab.hDlg, &tabRect);
-							tabRect.bottom -= cySmIcon;
-							SetWindowPos(tab.hDlg, nullptr, 0, 0, tabRect.right, tabRect.bottom,
-								SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOZORDER);
-						}
-					);
-				}
 			}
 
-			SendMessage(hMessageWidget, WM_MSGW_SET_MESSAGE_TYPE, messageType, 0);
-			SetWindowText(hMessageWidget, U82T_s(result.msg));
-			ShowWindow(hMessageWidget, SW_SHOW);
+			showMessageWidget(messageType, U82T_s(result.msg));
 		}
 	}
 }
