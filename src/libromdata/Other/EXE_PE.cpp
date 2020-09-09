@@ -110,7 +110,8 @@ uint32_t EXEPrivate::pe_vaddr_to_paddr(uint32_t vaddr, uint32_t size)
 		}
 	}
 
-	for (auto iter = pe_sections.cbegin(); iter != pe_sections.cend(); ++iter) {
+	const auto pe_sections_cend = pe_sections.cend();
+	for (auto iter = pe_sections.cbegin(); iter != pe_sections_cend; ++iter) {
 		if (iter->VirtualAddress <= vaddr) {
 			if ((iter->VirtualAddress + iter->SizeOfRawData) >= (vaddr+size)) {
 				// Found the section. Adjust the address.
@@ -351,7 +352,8 @@ int EXEPrivate::findPERuntimeDLL(string &refDesc, string &refLink)
 
 	// Check all of the DLL names.
 	bool found = false;
-	for (auto iter = set_dll_vaddrs.cbegin(); iter != set_dll_vaddrs.cend() && !found; ++iter) {
+	const auto set_dll_vaddrs_cend = set_dll_vaddrs.cend();
+	for (auto iter = set_dll_vaddrs.cbegin(); iter != set_dll_vaddrs_cend && !found; ++iter) {
 		uint32_t vaddr = *iter;
 		assert(vaddr >= dll_vaddr_low);
 		assert(vaddr <= dll_vaddr_high);

@@ -54,6 +54,9 @@ RpFile_IStream::RpFile_IStream(IStream *pStream, bool gzip)
 {
 	pStream->AddRef();
 
+	// TODO: Proper writable check.
+	m_isWritable = true;
+
 	if (gzip) {
 #if defined(_MSC_VER) && defined(ZLIB_IS_DLL)
 		// Delay load verification.
@@ -99,7 +102,9 @@ RpFile_IStream::RpFile_IStream(IStream *pStream, bool gzip)
 							if (err == Z_OK) {
 								// Allocate the zlib buffer.
 								m_pZbuf = static_cast<uint8_t*>(malloc(ZLIB_BUFFER_SIZE));
-								if (!m_pZbuf) {
+								if (m_pZbuf) {
+									m_isCompressed = true;
+								} else {
 									// malloc() failed.
 									inflateEnd(m_pZstm);
 									free(m_pZstm);
@@ -599,6 +604,37 @@ int RpFile_IStream::truncate(off64_t size)
 	}
 
 	// Stream truncated.
+	return 0;
+}
+
+/**
+ * Flush buffers.
+ * This operation only makes sense on writable files.
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int RpFile_IStream::flush(void)
+{
+	// TODO: Needs testing.
+	if (!m_pStream) {
+		m_lastError = EBADF;
+		return -1;
+	} else if (m_pZstm) {
+		// zlib is read-only.
+		m_lastError = EROFS;
+		return -1;
+	}
+
+	if (isWritable()) {
+		HRESULT hr = m_pStream->Commit(STGC_DEFAULT);
+		if (FAILED(hr)) {
+			// TODO: Convert HRESULT to POSIX?
+			m_lastError = EIO;
+			return -m_lastError;
+		}
+		return 0;
+	}
+
+	// Ignore flush operations if the file isn't writable.
 	return 0;
 }
 

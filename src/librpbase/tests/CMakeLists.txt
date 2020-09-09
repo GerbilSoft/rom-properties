@@ -22,7 +22,7 @@ ENDIF(NOT WIN32)
 
 # librptest library
 ADD_LIBRARY(rptest STATIC gtest_init.cpp)
-TARGET_LINK_LIBRARIES(rptest PRIVATE rpsecure)
+TARGET_LINK_LIBRARIES(rptest PUBLIC rpsecure)
 IF(WIN32)
 	# rptexture is only used for GDI+ rp_image backend registration on Windows.
 	TARGET_LINK_LIBRARIES(rptest PRIVATE rptexture)

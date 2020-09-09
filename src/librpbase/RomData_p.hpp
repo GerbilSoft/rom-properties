@@ -54,7 +54,9 @@ class RomDataPrivate
 
 	public:
 		bool isValid;			// Subclass must set this to true if the ROM is valid.
+		bool isCompressed;		// True if the file is compressed. (transparent decompression)
 		LibRpFile::IRpFile *file;	// Open file.
+		std::string filename;		// Copy of the filename.
 		RomFields *const fields;	// ROM fields. (NOTE: allocated by the base class)
 		RomMetaData *metaData;		// ROM metadata. (NOTE: nullptr initially.)
 

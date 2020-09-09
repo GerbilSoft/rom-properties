@@ -21,6 +21,7 @@ using std::vector;
 
 // librpfile, librptexture
 using LibRpFile::IRpFile;
+using LibRpFile::RpFile;
 using LibRpTexture::rp_image;
 
 namespace LibRpBase {
@@ -36,6 +37,7 @@ namespace LibRpBase {
 RomDataPrivate::RomDataPrivate(RomData *q, IRpFile *file)
 	: q_ptr(q)
 	, isValid(false)
+	, isCompressed(false)
 	, file(nullptr)
 	, fields(new RomFields())
 	, metaData(nullptr)
@@ -49,6 +51,8 @@ RomDataPrivate::RomDataPrivate(RomData *q, IRpFile *file)
 	if (file) {
 		// Reference the file.
 		this->file = file->ref();
+		this->filename = this->file->filename();
+		this->isCompressed = this->file->isCompressed();
 	}
 }
 
@@ -167,7 +171,8 @@ const RomData::ImageSizeDef *RomDataPrivate::selectBestSize(const std::vector<Ro
 			// Find the smallest image.
 			const RomData::ImageSizeDef *ret = &sizeDefs[0];
 			int sz = std::min(ret->width, ret->height);
-			for (auto iter = sizeDefs.begin()+1; iter != sizeDefs.end(); ++iter) {
+			const auto sizeDefs_cend = sizeDefs.cend();
+			for (auto iter = sizeDefs.cbegin()+1; iter != sizeDefs_cend; ++iter) {
 				const RomData::ImageSizeDef *sizeDef = &(*iter);
 				if (sizeDef->width < sz || sizeDef->height < sz) {
 					ret = sizeDef;
@@ -181,7 +186,8 @@ const RomData::ImageSizeDef *RomDataPrivate::selectBestSize(const std::vector<Ro
 			// Find the largest image.
 			const RomData::ImageSizeDef *ret = &sizeDefs[0];
 			int sz = std::max(ret->width, ret->height);
-			for (auto iter = sizeDefs.begin()+1; iter != sizeDefs.end(); ++iter) {
+			const auto sizeDefs_cend = sizeDefs.cend();
+			for (auto iter = sizeDefs.cbegin()+1; iter != sizeDefs_cend; ++iter) {
 				const RomData::ImageSizeDef *sizeDef = &(*iter);
 				if (sizeDef->width > sz || sizeDef->height > sz) {
 					ret = sizeDef;
@@ -205,7 +211,8 @@ const RomData::ImageSizeDef *RomDataPrivate::selectBestSize(const std::vector<Ro
 		// Found a match already.
 		return ret;
 	}
-	for (auto iter = sizeDefs.cbegin()+1; iter != sizeDefs.cend(); ++iter) {
+	const auto sizeDefs_cend = sizeDefs.cend();
+	for (auto iter = sizeDefs.cbegin()+1; iter != sizeDefs_cend; ++iter) {
 		const RomData::ImageSizeDef *sizeDef = &(*iter);
 		const int szchk = std::max(sizeDef->width, sizeDef->height);
 		if (sz >= size) {
@@ -485,6 +492,27 @@ void RomData::close(void)
 	// Unreference the file.
 	RP_D(RomData);
 	UNREF_AND_NULL(d->file);
+}
+
+/**
+ * Get the filename that was loaded.
+ * @return Filename, or nullptr on error.
+ */
+const char *RomData::filename(void) const
+{
+	RP_D(const RomData);
+	return (!d->filename.empty() ? d->filename.c_str() : nullptr);
+}
+
+/**
+ * Is the file compressed? (transparent decompression)
+ * If it is, then ROM operations won't be allowed.
+ * @return True if compressed; false if not.
+ */
+bool RomData::isCompressed(void) const
+{
+	RP_D(const RomData);
+	return d->isCompressed;
 }
 
 /**
@@ -877,6 +905,118 @@ bool RomData::hasDangerousPermissions(void) const
 {
 	// No dangerous permissions by default.
 	return false;
+}
+
+/**
+ * Get the list of operations that can be performed on this ROM.
+ * @return List of operations.
+ */
+vector<RomData::RomOps> RomData::romOps(void) const
+{
+	RP_D(const RomData);
+	vector<RomData::RomOps> v_ret = romOps_int();
+
+	if (d->isCompressed) {
+		// Cannot run RomOps on a compressed file.
+		// Mark all options as disabled.
+		// TODO: Indicate why they're disabled?
+		std::for_each(v_ret.begin(), v_ret.end(),
+			[](RomData::RomOps &op) {
+				op.flags &= ~RomOps::ROF_ENABLED;
+			}
+		);
+	}
+
+	return v_ret;
+}
+
+/**
+ * Perform a ROM operation.
+ * @param id		[in] Operation index.
+ * @param pResult	[out,opt] Result. (For UI updates)
+ * @return 0 on success; positive for "field updated" (subtract 1 for index); negative POSIX error code on error.
+ */
+int RomData::doRomOp(int id, RomOpResult *pResult)
+{
+	RP_D(RomData);
+	bool closeFileAfter;
+	if (d->file) {
+		closeFileAfter = false;
+		if (d->file->isCompressed()) {
+			// Cannot write to a compressed file.
+			if (pResult) {
+				pResult->status = -EIO;
+				pResult->msg = C_("RomData", "Cannot perform ROM operations on compressed files.");
+			}
+			return -EIO;
+		}
+
+		if (!d->file->isWritable()) {
+			// File is not writable. We'll need to reopen it.
+			int ret = d->file->makeWritable();
+			if (ret != 0) {
+				// Error making the file writable.
+				if (pResult) {
+					pResult->status = ret;
+					pResult->msg = C_("RomData", "Unable to write to the file.");
+				}
+				return ret;
+			}
+		}
+	} else {
+		// Reopen the file.
+		closeFileAfter = true;
+		RpFile *const file = new RpFile(d->filename, RpFile::FM_OPEN_WRITE);
+		if (!file->isOpen()) {
+			// Error opening the file.
+			int ret = -file->lastError();
+			if (ret == 0) {
+				ret = -EIO;
+			}
+			if (pResult) {
+				pResult->status = ret;
+				pResult->msg = C_("RomData", "Unable to reopen the file for writing.");
+			}
+			UNREF(file);
+			return ret;
+		}
+		d->file = file;
+	}
+
+	int ret = doRomOp_int(id, pResult);
+	if (closeFileAfter) {
+		UNREF_AND_NULL_NOCHK(d->file);
+	}
+	return ret;
+}
+
+/**
+ * Get the list of operations that can be performed on this ROM.
+ * Internal function; called by RomData::romOps().
+ * @return List of operations.
+ */
+vector<RomData::RomOps> RomData::romOps_int(void) const
+{
+	// Default implementation has no ROM operations.
+	return vector<RomData::RomOps>();
+}
+
+/**
+ * Perform a ROM operation.
+ * Internal function; called by RomData::doRomOp().
+ * @param id		[in] Operation index.
+ * @param pResult	[out,opt] Result. (For UI updates)
+ * @return 0 on success; positive for "field updated" (subtract 1 for index); negative POSIX error code on error.
+ */
+int RomData::doRomOp_int(int id, RomOpResult *pResult)
+{
+	// Default implementation has no ROM operations.
+	RP_UNUSED(id);
+	if (pResult) {
+		pResult->status = -ENOTSUP;
+		pResult->msg = C_("RomData", "RomData object does not support any ROM operations.");
+	}
+	return -ENOTSUP;
 }
 
 }

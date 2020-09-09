@@ -311,6 +311,8 @@ void RpFile::init(void)
 		return;
 	}
 
+	m_isWritable = !!(d->mode & RpFile::FM_WRITE);
+
 	// Check if this is a gzipped file.
 	// If it is, use transparent decompression.
 	// Reference: https://www.forensicswiki.org/wiki/Gzip
@@ -373,7 +375,9 @@ void RpFile::init(void)
 								get_crc_table();
 
 								d->gzfd = gzdopen(gzfd_dup, "r");
-								if (!d->gzfd) {
+								if (d->gzfd) {
+									m_isCompressed = true;
+								} else {
 									// gzdopen() failed.
 									// Close the dup()'d handle to prevent a leak.
 									_close(gzfd_dup);
@@ -660,6 +664,27 @@ int RpFile::truncate(off64_t size)
 	return 0;
 }
 
+/**
+ * Flush buffers.
+ * This operation only makes sense on writable files.
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int RpFile::flush(void)
+{
+	if (isWritable()) {
+		RP_D(RpFile);
+		BOOL bRet = FlushFileBuffers(d->file);
+		if (!bRet) {
+			m_lastError = w32err_to_posix(GetLastError());
+			return -m_lastError;
+		}
+		return 0;
+	}
+
+	// Ignore flush operations if the file isn't writable.
+	return 0;
+}
+
 /** File properties **/
 
 /**
@@ -705,6 +730,45 @@ string RpFile::filename(void) const
 {
 	RP_D(const RpFile);
 	return d->filename;
+}
+
+/** Extra functions **/
+
+/**
+ * Make the file writable.
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int RpFile::makeWritable(void)
+{
+	if (isCompressed()) {
+		// File is compressed. Cannot make it writable.
+		return -ENOTSUP;
+	} else if (isWritable()) {
+		// File is already writable.
+		return 0;
+	}
+
+	RP_D(RpFile);
+	off64_t prev_pos = this->tell();
+	// Set file mode to FM_WRITE and reopen it.
+	d->mode = (RpFile::FileMode)(d->mode | FM_WRITE);
+	int ret = d->reOpenFile();
+	if (!ret) {
+		// File is now writable.
+		m_isWritable = true;
+	} else {
+		// Failed to open the file as writable.
+		// Try reopening as read-only.
+		d->mode = (RpFile::FileMode)(d->mode & ~FM_WRITE);
+		if (d->reOpenFile() != 0) {
+			this->seek(prev_pos);
+		}
+		return -ENOTSUP;
+	}
+
+	// Restore the seek position.
+	this->seek(prev_pos);
+	return 0;
 }
 
 /** Device file functions **/

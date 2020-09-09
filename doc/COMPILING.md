@@ -4,28 +4,26 @@
 
 On Debian/Ubuntu, you will need build-essential and the following development
 packages:
-* All: cmake libcurl-dev zlib1g-dev libpng-dev libjpeg-dev nettle-dev pkg-config libtinyxml2-dev libbsd-dev gettext libseccomp-dev libzstd-dev
+* All: cmake libcurl-dev zlib1g-dev libpng-dev libjpeg-dev nettle-dev pkg-config libtinyxml2-dev libbsd-dev gettext libseccomp-dev
+* Optional decompression: libzstd-dev liblz4-dev liblzo2-dev
 * KDE 4.x: libqt4-dev kdelibs5-dev
 * KDE 5.x: qtbase5-dev qttools5-dev-tools extra-cmake-modules libkf5kio-dev libkf5widgetsaddons-dev libkf5filemetadata-dev
-* XFCE (GTK+ 2.x): libglib2.0-dev libgtk2.0-dev libgdk-pixbuf2.0-dev libthunarx-2-dev
-* XFCE (GTK+ 3.x): libglib2.0-dev libgtk-3-dev libcairo2-dev libthunarx-3-dev
-* GNOME: libglib2.0-dev libgtk-3-dev libcairo2-dev libnautilus-extension-dev
-* MATE: libglib2.0-dev libgtk-3-dev libcairo2-dev libcaja-extension-dev
-* Cinnamon: libglib2.0-dev libgtk-3-dev libcairo2-dev libnemo-extension-dev
+* XFCE (GTK+ 2.x): libglib2.0-dev libgtk2.0-dev libgdk-pixbuf2.0-dev libthunarx-2-dev libcanberra-dev libcanberra-gtk-dev
+* XFCE (GTK+ 3.x): libglib2.0-dev libgtk-3-dev libcairo2-dev libthunarx-3-dev libcanberra-dev libcanberra-gtk3-dev
+* GNOME, MATE, Cinnamon: libglib2.0-dev libgtk-3-dev libcairo2-dev libnautilus-extension-dev libcanberra-dev libcanberra-gtk3-dev
 
 NOTE: libkf5kio-dev was called kio-dev prior to Ubuntu 18.04.
 
 On Red Hat, Fedora, OpenSUSE, and other RPM-based distributions, you will need
 to install "C Development Tools and Libraries" and the following development
 packages:
-* All: cmake libcurl-devel zlib-devel libpng16-devel libjpeg-turbo-devel nettle-devel tinyxml2-devel libbsd-devel gettext-tools libseccomp-devel libzstd-devel
+* All: cmake libcurl-devel zlib-devel libpng16-devel libjpeg-turbo-devel nettle-devel tinyxml2-devel libbsd-devel gettext-tools libseccomp-devel
+* Optional decompression: libzstd-devel lz4-devel lzo-devel
 * KDE 4.x: qt-devel kdelibs-devel
 * KDE 5.x: qt5-qtbase-devel qt5-qttools extra-cmake-modules kf5-kio-devel kf5-kwidgetsaddons-devel kf5-kfilemetadata-devel
 * XFCE (GTK+ 2.x): glib2-devel gtk2-devel gdk-pixbuf2-devel Thunar-devel
 * XFCE (GTK+ 3.x): glib2-devel gtk3-devel cairo-devel Thunar-devel
-* GNOME: glib2-devel gtk3-devel cairo-devel nautilus-devel
-* MATE: glib2-devel gtk3-devel cairo-devel caja-devel
-* Cinnamon: glib2-devel gtk3-devel cairo-devel nemo-devel
+* GNOME, MATE, Cinnamon: glib2-devel gtk3-devel cairo-devel nautilus-devel libcanberra-devel
 
 NOTE: XFCE's Thunar file browser requires the Tumbler D-Bus daemon to be
 installed in order to create thumbnails.

@@ -9,6 +9,9 @@
 #ifndef __ROMPROPERTIES_LIBRPBASE_STDAFX_H__
 #define __ROMPROPERTIES_LIBRPBASE_STDAFX_H__
 
+// time_r.h needs to be here due to *_r() issues on MinGW-w64.
+#include "time_r.h"
+
 #ifdef __cplusplus
 /** C++ **/
 
@@ -67,7 +70,6 @@
 #include "aligned_malloc.h"
 #include "librpcpu/cpu_dispatch.h"
 #include "ctypex.h"
-#include "time_r.h"
 
 #ifdef __cplusplus
 // librpbase C++ headers

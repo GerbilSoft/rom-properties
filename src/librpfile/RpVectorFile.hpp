@@ -82,6 +82,13 @@ class RpVectorFile : public IRpFile
 		 */
 		int truncate(off64_t size = 0) final;
 
+		/**
+		 * Flush buffers.
+		 * This operation only makes sense on writable files.
+		 * @return 0 on success; negative POSIX error code on error.
+		 */
+		int flush(void) final;
+
 	public:
 		/** File properties **/
 
@@ -96,6 +103,15 @@ class RpVectorFile : public IRpFile
 		 * @return Filename. (May be empty if the filename is not available.)
 		 */
 		std::string filename(void) const final;
+
+	public:
+		/** Extra functions **/
+
+		/**
+		 * Make the file writable.
+		 * @return 0 on success; negative POSIX error code on error.
+		 */
+		int makeWritable(void) final { return 0; }
 
 	public:
 		/** RpVectorFile-specific functions **/

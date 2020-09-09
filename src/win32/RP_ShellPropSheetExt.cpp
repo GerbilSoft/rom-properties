@@ -18,6 +18,7 @@
 
 #include "DragImageLabel.hpp"
 #include "FontHandler.hpp"
+#include "MessageWidget.hpp"
 
 // libwin32common
 #include "libwin32common/AutoGetDC.hpp"
@@ -31,6 +32,7 @@ using LibWin32Common::WTSSessionNotification;
 // librpbase, librpfile, librptexture, libromdata
 #include "librpbase/RomFields.hpp"
 #include "librpbase/SystemRegion.hpp"
+#include "librpbase/TextOut.hpp"
 #include "librpbase/img/RpPng.hpp"
 #include "librpfile/win32/RpFile_windres.hpp"
 using namespace LibRpBase;
@@ -39,7 +41,11 @@ using LibRpTexture::rp_image;
 using LibRomData::RomDataFactory;
 
 // C++ STL classes.
+#include <fstream>
+#include <sstream>
 using std::array;
+using std::ofstream;
+using std::ostringstream;
 using std::set;
 using std::string;
 using std::unique_ptr;
@@ -65,6 +71,7 @@ const CLSID CLSID_RP_ShellPropSheetExt =
 #define IDC_STATIC_ICON			0x0101
 #define IDC_TAB_WIDGET			0x0102
 #define IDC_CBO_LANGUAGE		0x0103
+#define IDC_MESSAGE_WIDGET		0x0104
 #define IDC_TAB_PAGE(idx)		(0x0200 + (idx))
 #define IDC_STATIC_DESC(idx)		(0x1000 + (idx))
 #define IDC_RFT_STRING(idx)		(0x1400 + (idx))
@@ -74,6 +81,13 @@ const CLSID CLSID_RP_ShellPropSheetExt =
 
 // Bitfield is last due to multiple controls per field.
 #define IDC_RFT_BITFIELD(idx, bit)	(0x7000 + ((idx) * 32) + (bit))
+
+// "Options" menu item.
+#define IDM_OPTIONS_MENU_BASE		0x8000
+#define IDM_OPTIONS_MENU_EXPORT_TEXT	(IDM_OPTIONS_MENU_BASE - 1)
+#define IDM_OPTIONS_MENU_EXPORT_JSON	(IDM_OPTIONS_MENU_BASE - 2)
+#define IDM_OPTIONS_MENU_COPY_TEXT	(IDM_OPTIONS_MENU_BASE - 3)
+#define IDM_OPTIONS_MENU_COPY_JSON	(IDM_OPTIONS_MENU_BASE - 4)
 
 /** RP_ShellPropSheetExt_Private **/
 // Workaround for RP_D() expecting the no-underscore naming convention.
@@ -103,6 +117,9 @@ class RP_ShellPropSheetExt_Private
 
 		// Useful window handles.
 		HWND hDlgSheet;		// Property sheet.
+		HWND hBtnOptions;	// Options button.
+		HMENU hMenuOptions;	// Options menu.
+		tstring ts_prevExportDir;
 
 		// Fonts.
 		HFONT hFontDlg;		// Main dialog font.
@@ -185,11 +202,34 @@ class RP_ShellPropSheetExt_Private
 		vector<tab> tabs;
 		int curTabIndex;
 
+		// MessageWidget for ROM operation notifications.
+		HWND hMessageWidget;
+		int iTabHeightOrig;
+
 		// Multi-language functionality.
 		uint32_t def_lc;	// Default language code from RomFields.
 		set<uint32_t> set_lc;	// Set of supported language codes.
 		HWND cboLanguage;
 		HIMAGELIST himglFlags;
+
+		/**
+		 * Get the selected language code.
+		 * @return Selected language code, or 0 for none (default).
+		 */
+		inline uint32_t sel_lc(void) const
+		{
+			uint32_t lc = 0;
+			if (!cboLanguage) {
+				// No language dropdown...
+				return lc;
+			}
+
+			const int sel_idx = ComboBox_GetCurSel(cboLanguage);
+			if (sel_idx >= 0) {
+				lc = static_cast<uint32_t>(ComboBox_GetItemData(cboLanguage, sel_idx));
+			}
+			return lc;
+		}
 
 		// RFT_STRING_MULTI value labels.
 		typedef std::pair<HWND, const RomFields::Field*> Data_StringMulti_t;
@@ -230,30 +270,30 @@ class RP_ShellPropSheetExt_Private
 		 * @param hDlg		[in] Parent dialog window. (for dialog unit mapping)
 		 * @param hWndTab	[in] Tab window. (for the actual control)
 		 * @param pt_start	[in] Starting position, in pixels.
-		 * @param idx		[in] Field index.
 		 * @param size		[in] Width and height for a single line label.
 		 * @param field		[in] RomFields::Field
+		 * @param fieldIdx	[in] Field index
 		 * @param str		[in,opt] String data. (If nullptr, field data is used.)
 		 * @param pOutHWND	[out,opt] Retrieves the control's HWND.
 		 * @return Field height, in pixels.
 		 */
 		int initString(_In_ HWND hDlg, _In_ HWND hWndTab,
-			_In_ const POINT &pt_start, _In_ int idx, _In_ const SIZE &size,
-			_In_ const RomFields::Field &field, _In_ LPCTSTR str = nullptr,
-			_Outptr_opt_ HWND *pOutHWND = nullptr);
+			_In_ const POINT &pt_start, _In_ const SIZE &size,
+			_In_ const RomFields::Field &field, _In_ int fieldIdx,
+			_In_ LPCTSTR str = nullptr, _Outptr_opt_ HWND *pOutHWND = nullptr);
 
 		/**
 		 * Initialize a bitfield layout.
 		 * @param hDlg		[in] Parent dialog window. (for dialog unit mapping)
 		 * @param hWndTab	[in] Tab window. (for the actual control)
 		 * @param pt_start	[in] Starting position, in pixels.
-		 * @param idx		[in] Field index.
 		 * @param field		[in] RomFields::Field
+		 * @param fieldIdx	[in] Field index
 		 * @return Field height, in pixels.
 		 */
 		int initBitfield(HWND hDlg, HWND hWndTab,
-			const POINT &pt_start, int idx,
-			const RomFields::Field &field);
+			const POINT &pt_start,
+			const RomFields::Field &field, int fieldIdx);
 
 		/**
 		 * Measure the width of a ListData string.
@@ -270,15 +310,15 @@ class RP_ShellPropSheetExt_Private
 		 * @param hDlg		[in] Parent dialog window. (for dialog unit mapping)
 		 * @param hWndTab	[in] Tab window. (for the actual control)
 		 * @param pt_start	[in] Starting position, in pixels.
-		 * @param idx		[in] Field index.
 		 * @param size		[in] Width and height for a default ListView.
 		 * @param doResize	[in] If true, resize the ListView to accomodate rows_visible.
 		 * @param field		[in] RomFields::Field
+		 * @param fieldIdx	[in] Field index
 		 * @return Field height, in pixels.
 		 */
 		int initListData(HWND hDlg, HWND hWndTab,
-			const POINT &pt_start, int idx, const SIZE &size, bool doResize,
-			const RomFields::Field &field);
+			const POINT &pt_start, const SIZE &size, bool doResize,
+			const RomFields::Field &field, int fieldIdx);
 
 		/**
 		 * Initialize a Date/Time field.
@@ -286,14 +326,14 @@ class RP_ShellPropSheetExt_Private
 		 * @param hDlg		[in] Parent dialog window. (for dialog unit mapping)
 		 * @param hWndTab	[in] Tab window. (for the actual control)
 		 * @param pt_start	[in] Starting position, in pixels.
-		 * @param idx		[in] Field index.
 		 * @param size		[in] Width and height for a single line label.
 		 * @param field		[in] RomFields::Field
+		 * @param fieldIdx	[in] Field index
 		 * @return Field height, in pixels.
 		 */
 		int initDateTime(HWND hDlg, HWND hWndTab,
-			const POINT &pt_start, int idx, const SIZE &size,
-			const RomFields::Field &field);
+			const POINT &pt_start, const SIZE &size,
+			const RomFields::Field &field, int fieldIdx);
 
 		/**
 		 * Initialize an Age Ratings field.
@@ -301,14 +341,14 @@ class RP_ShellPropSheetExt_Private
 		 * @param hDlg		[in] Parent dialog window. (for dialog unit mapping)
 		 * @param hWndTab	[in] Tab window. (for the actual control)
 		 * @param pt_start	[in] Starting position, in pixels.
-		 * @param idx		[in] Field index.
 		 * @param size		[in] Width and height for a single line label.
 		 * @param field		[in] RomFields::Field
+		 * @param fieldIdx	[in] Field index
 		 * @return Field height, in pixels.
 		 */
 		int initAgeRatings(HWND hDlg, HWND hWndTab,
-			const POINT &pt_start, int idx, const SIZE &size,
-			const RomFields::Field &field);
+			const POINT &pt_start, const SIZE &size,
+			const RomFields::Field &field, int fieldIdx);
 
 		/**
 		 * Initialize a Dimensions field.
@@ -316,28 +356,28 @@ class RP_ShellPropSheetExt_Private
 		 * @param hDlg		[in] Parent dialog window. (for dialog unit mapping)
 		 * @param hWndTab	[in] Tab window. (for the actual control)
 		 * @param pt_start	[in] Starting position, in pixels.
-		 * @param idx		[in] Field index.
 		 * @param size		[in] Width and height for a single line label.
 		 * @param field		[in] RomFields::Field
+		 * @param fieldIdx	[in] Field index
 		 * @return Field height, in pixels.
 		 */
 		int initDimensions(HWND hDlg, HWND hWndTab,
-			const POINT &pt_start, int idx, const SIZE &size,
-			const RomFields::Field &field);
+			const POINT &pt_start, const SIZE &size,
+			const RomFields::Field &field, int fieldIdx);
 
 		/**
 		 * Initialize a multi-language string field.
 		 * @param hDlg		[in] Parent dialog window. (for dialog unit mapping)
 		 * @param hWndTab	[in] Tab window. (for the actual control)
 		 * @param pt_start	[in] Starting position, in pixels.
-		 * @param idx		[in] Field index.
 		 * @param size		[in] Width and height for a single line label.
 		 * @param field		[in] RomFields::Field
+		 * @param fieldIdx	[in] Field index
 		 * @return Field height, in pixels.
 		 */
 		int initStringMulti(HWND hDlg, HWND hWndTab,
-			const POINT &pt_start, int idx, const SIZE &size,
-			const RomFields::Field &field);
+			const POINT &pt_start, const SIZE &size,
+			const RomFields::Field &field, int fieldIdx);
 
 		/**
 		 * Build the cboLanguage image list.
@@ -351,6 +391,14 @@ class RP_ShellPropSheetExt_Private
 		void updateMulti(uint32_t user_lc);
 
 		/**
+		 * Update a field's value.
+		 * This is called after running a ROM operation.
+		 * @param fieldIdx Field index.
+		 * @return 0 on success; non-zero on error.
+		 */
+		int updateField(int fieldIdx);
+
+		/**
 		 * Initialize the bold font.
 		 * @param hFont Base font.
 		 */
@@ -358,11 +406,52 @@ class RP_ShellPropSheetExt_Private
 
 	public:
 		/**
-		 * Initialize the dialog.
+		 * Initialize the dialog. (hDlgSheet)
 		 * Called by WM_INITDIALOG.
-		 * @param hDlg Dialog window.
 		 */
-		void initDialog(HWND hDlg);
+		void initDialog(void);
+
+		/**
+		 * Adjust tabs for the message widget.
+		 * Message widget must have been created first.
+		 * Only run this after the message widget visibiliy has changed!
+		 * @param bVisible True for visible; false for not.
+		 */
+		void adjustTabsForMessageWidgetVisibility(bool bVisible);
+
+		/**
+		 * Show the message widget.
+		 * Message widget must have been created first.
+		 * @param messageType Message type.
+		 * @param lpszMsg Message.
+		 */
+		void showMessageWidget(unsigned int messageType, const TCHAR *lpszMsg);
+
+		/**
+		 * An "Options" menu action was triggered.
+		 * @param menuId Menu ID. (Options ID + IDM_OPTIONS_MENU_BASE)
+		 */
+		void menuOptions_action_triggered(int menuId);
+
+		/**
+		 * Dialog subclass procedure to intercept WM_COMMAND for the "Options" button.
+		 * @param hWnd
+		 * @param uMsg
+		 * @param wParam
+		 * @param lParam
+		 * @param uIdSubclass
+		 * @param dWRefData RP_ShellPropSheetExt_Private
+		 */
+		static LRESULT CALLBACK DialogSubclassProc(
+			HWND hWnd, UINT uMsg,
+			WPARAM wParam, LPARAM lParam,
+			UINT_PTR uIdSubclass, DWORD_PTR dwRefData);
+
+		/**
+		 * Create the "Options" button in the parent window.
+		 * Called by WM_INITDIALOG.
+		 */
+		void createOptionsButton(void);
 
 	private:
 		// Internal functions used by the callback functions.
@@ -396,6 +485,8 @@ RP_ShellPropSheetExt_Private::RP_ShellPropSheetExt_Private(RP_ShellPropSheetExt 
 	, filename(std::move(filename))
 	, romData(nullptr)
 	, hDlgSheet(nullptr)
+	, hBtnOptions(nullptr)
+	, hMenuOptions(nullptr)
 	, hFontDlg(nullptr)
 	, hFontBold(nullptr)
 	, fontHandler(nullptr)
@@ -406,6 +497,8 @@ RP_ShellPropSheetExt_Private::RP_ShellPropSheetExt_Private(RP_ShellPropSheetExt 
 	, lblIcon(nullptr)
 	, tabWidget(nullptr)
 	, curTabIndex(0)
+	, hMessageWidget(nullptr)
+	, iTabHeightOrig(0)
 	, def_lc(0)
 	, cboLanguage(nullptr)
 	, himglFlags(nullptr)
@@ -419,6 +512,11 @@ RP_ShellPropSheetExt_Private::~RP_ShellPropSheetExt_Private()
 	// Delete the banner and icon frames.
 	delete lblBanner;
 	delete lblIcon;
+
+	// Delete the popup menu.
+	if (hMenuOptions) {
+		DestroyMenu(hMenuOptions);
+	}
 
 	// Unreference the RomData object.
 	UNREF(romData);
@@ -580,14 +678,14 @@ int RP_ShellPropSheetExt_Private::createHeaderRow(HWND hDlg, const POINT &pt_sta
 		fileType = C_("RomDataView", "(unknown filetype)");
 	}
 
-	const tstring tSysInfo =
+	const tstring ts_sysInfo =
 		LibWin32Common::unix2dos(U82T_s(rp_sprintf_p(
 			// tr: %1$s == system name, %2$s == file type
 			C_("RomDataView", "%1$s\n%2$s"), systemName, fileType)));
 
-	if (!tSysInfo.empty()) {
+	if (!ts_sysInfo.empty()) {
 		// Determine the appropriate label size.
-		if (!LibWin32Common::measureTextSize(hDlg, hFont, tSysInfo, &size_lblSysInfo)) {
+		if (!LibWin32Common::measureTextSize(hDlg, hFont, ts_sysInfo, &size_lblSysInfo)) {
 			// Start the total_widget_width.
 			total_widget_width = size_lblSysInfo.cx;
 		} else {
@@ -627,7 +725,7 @@ int RP_ShellPropSheetExt_Private::createHeaderRow(HWND hDlg, const POINT &pt_sta
 		ptSysInfo.y = curPt.y;
 
 		lblSysInfo = CreateWindowEx(WS_EX_NOPARENTNOTIFY | WS_EX_TRANSPARENT,
-			WC_STATIC, tSysInfo.c_str(),
+			WC_STATIC, ts_sysInfo.c_str(),
 			WS_CHILD | WS_VISIBLE | SS_CENTER,
 			ptSysInfo.x, ptSysInfo.y,
 			size_lblSysInfo.cx, size_lblSysInfo.cy,
@@ -658,27 +756,22 @@ int RP_ShellPropSheetExt_Private::createHeaderRow(HWND hDlg, const POINT &pt_sta
  * @param hDlg		[in] Parent dialog window. (for dialog unit mapping)
  * @param hWndTab	[in] Tab window. (for the actual control)
  * @param pt_start	[in] Starting position, in pixels.
- * @param idx		[in] Field index.
  * @param size		[in] Width and height for a single line label.
  * @param field		[in] RomFields::Field
+ * @param fieldIdx	[in] Field index
  * @param str		[in,opt] String data. (If nullptr, field data is used.)
  * @param pOutHWND	[out,opt] Retrieves the control's HWND.
  * @return Field height, in pixels.
  */
 int RP_ShellPropSheetExt_Private::initString(_In_ HWND hDlg, _In_ HWND hWndTab,
-	_In_ const POINT &pt_start, _In_ int idx, _In_ const SIZE &size,
-	_In_ const RomFields::Field &field, _In_ LPCTSTR str,
-	_Outptr_opt_ HWND *pOutHWND)
+	_In_ const POINT &pt_start, _In_ const SIZE &size,
+	_In_ const RomFields::Field &field, _In_ int fieldIdx,
+	_In_ LPCTSTR str, _Outptr_opt_ HWND *pOutHWND)
 {
 	if (pOutHWND) {
 		// Clear the output HWND initially.
 		*pOutHWND = nullptr;
 	}
-
-	assert(hDlg != nullptr);
-	assert(hWndTab != nullptr);
-	if (!hDlg || !hWndTab)
-		return 0;
 
 	// NOTE: libromdata uses Unix-style newlines.
 	// For proper display on Windows, we have to
@@ -728,7 +821,7 @@ int RP_ShellPropSheetExt_Private::initString(_In_ HWND hDlg, _In_ HWND hWndTab,
 				hFont = hFontBold;
 				isWarning = true;
 				// Set the font of the description control.
-				HWND hStatic = GetDlgItem(hWndTab, IDC_STATIC_DESC(idx));
+				HWND hStatic = GetDlgItem(hWndTab, IDC_STATIC_DESC(fieldIdx));
 				if (hStatic) {
 					SetWindowFont(hStatic, hFont, false);
 					setWarningControls.insert(hStatic);
@@ -741,7 +834,7 @@ int RP_ShellPropSheetExt_Private::initString(_In_ HWND hDlg, _In_ HWND hWndTab,
 	}
 
 	// Dialog item.
-	const HMENU cId = (HMENU)(INT_PTR)(IDC_RFT_STRING(idx));
+	const HMENU cId = (HMENU)(INT_PTR)(IDC_RFT_STRING(fieldIdx));
 	HWND hDlgItem;
 
 	if (field.type == RomFields::RFT_STRING &&
@@ -754,6 +847,8 @@ int RP_ShellPropSheetExt_Private::initString(_In_ HWND hDlg, _In_ HWND hWndTab,
 		MapDialogRect(hWndTab, &tmpRect);
 		RECT winRect;
 		GetClientRect(hWndTab, &winRect);
+		// NOTE: We need to move left by 1px.
+		OffsetRect(&winRect, -1, 0);
 
 		// There should be a maximum of one STRF_CREDITS per tab.
 		auto &tab = tabs[field.tabIdx];
@@ -807,7 +902,7 @@ int RP_ShellPropSheetExt_Private::initString(_In_ HWND hDlg, _In_ HWND hWndTab,
 			// Subclass multi-line EDIT controls to work around Enter/Escape issues.
 			// We're also subclassing single-line EDIT controls to disable the
 			// initial selection. (DLGC_HASSETSEL)
-			// Reference:  http://blogs.msdn.com/b/oldnewthing/archive/2007/08/20/4470527.aspx
+			// Reference: http://blogs.msdn.com/b/oldnewthing/archive/2007/08/20/4470527.aspx
 			// TODO: Error handling?
 			SUBCLASSPROC proc = (dwStyle & ES_MULTILINE)
 				? LibWin32Common::MultiLineEditProc
@@ -899,22 +994,14 @@ int RP_ShellPropSheetExt_Private::initString(_In_ HWND hDlg, _In_ HWND hWndTab,
  * @param hDlg		[in] Parent dialog window. (for dialog unit mapping)
  * @param hWndTab	[in] Tab window. (for the actual control)
  * @param pt_start	[in] Starting position, in pixels.
- * @param idx		[in] Field index.
  * @param field		[in] RomFields::Field
+ * @param fieldIdx	[in] Field index
  * @return Field height, in pixels.
  */
 int RP_ShellPropSheetExt_Private::initBitfield(HWND hDlg, HWND hWndTab,
-	const POINT &pt_start, int idx,
-	const RomFields::Field &field)
+	const POINT &pt_start,
+	const RomFields::Field &field, int fieldIdx)
 {
-	assert(hDlg != nullptr);
-	assert(hWndTab != nullptr);
-	assert(field.type == RomFields::RFT_BITFIELD);
-	if (!hDlg || !hWndTab)
-		return 0;
-	if (field.type != RomFields::RFT_BITFIELD)
-		return 0;
-
 	// Checkbox size.
 	// Reference: http://stackoverflow.com/questions/1164868/how-to-get-size-of-check-and-gap-in-check-box
 	RECT rect_chkbox = {0, 0, 12+4, 11};
@@ -934,6 +1021,8 @@ int RP_ShellPropSheetExt_Private::initBitfield(HWND hDlg, HWND hWndTab,
 	// Determine the available width for checkboxes.
 	RECT rectDlg;
 	GetClientRect(hWndTab, &rectDlg);
+	// NOTE: We need to move left by 1px.
+	OffsetRect(&rectDlg, -1, 0);
 	const int max_width = rectDlg.right - pt_start.x;
 
 	// Convert the bitfield description names to the
@@ -1059,7 +1148,7 @@ int RP_ShellPropSheetExt_Private::initBitfield(HWND hDlg, HWND hWndTab,
 			WC_BUTTON, tname.c_str(),
 			WS_CHILD | WS_TABSTOP | WS_VISIBLE | BS_CHECKBOX,
 			pt.x, pt.y, chk_w, rect_chkbox.bottom,
-			hWndTab, (HMENU)(INT_PTR)(IDC_RFT_BITFIELD(idx, bit)),
+			hWndTab, (HMENU)(INT_PTR)(IDC_RFT_BITFIELD(fieldIdx, bit)),
 			nullptr, nullptr);
 		SetWindowFont(hCheckBox, hFontDlg, false);
 
@@ -1141,24 +1230,16 @@ int RP_ShellPropSheetExt_Private::measureListDataString(HDC hDC, const tstring &
  * @param hDlg		[in] Parent dialog window. (for dialog unit mapping)
  * @param hWndTab	[in] Tab window. (for the actual control)
  * @param pt_start	[in] Starting position, in pixels.
- * @param idx		[in] Field index.
  * @param size		[in] Width and height for a default ListView.
  * @param doResize	[in] If true, resize the ListView to accomodate rows_visible.
  * @param field		[in] RomFields::Field
+ * @param fieldIdx	[in] Field index
  * @return Field height, in pixels.
  */
 int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
-	const POINT &pt_start, int idx, const SIZE &size, bool doResize,
-	const RomFields::Field &field)
+	const POINT &pt_start, const SIZE &size, bool doResize,
+	const RomFields::Field &field, int fieldIdx)
 {
-	assert(hDlg != nullptr);
-	assert(hWndTab != nullptr);
-	assert(field.type == RomFields::RFT_LISTDATA);
-	if (!hDlg || !hWndTab)
-		return 0;
-	if (field.type != RomFields::RFT_LISTDATA)
-		return 0;
-
 	const auto &listDataDesc = field.desc.list_data;
 	// NOTE: listDataDesc.names can be nullptr,
 	// which means we don't have any column headers.
@@ -1217,7 +1298,7 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 	if (!listDataDesc.names) {
 		lvsStyle |= LVS_NOCOLUMNHEADER;
 	}
-	const uint16_t dlgID = IDC_RFT_LISTDATA(idx);
+	const uint16_t dlgID = IDC_RFT_LISTDATA(fieldIdx);
 	HWND hListView = CreateWindowEx(WS_EX_NOPARENTNOTIFY | WS_EX_CLIENTEDGE,
 		WC_LISTVIEW, nullptr, lvsStyle,
 		pt_start.x, pt_start.y,
@@ -1319,7 +1400,8 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 
 	int lv_row_num = 0, data_row_num = 0;
 	int nl_max = 0;	// Highest number of newlines in any string.
-	for (auto iter = list_data->cbegin(); iter != list_data->cend(); ++iter, data_row_num++) {
+	const auto list_data_cend = list_data->cend();
+	for (auto iter = list_data->cbegin(); iter != list_data_cend; ++iter, data_row_num++) {
 		const vector<string> &data_row = *iter;
 		// FIXME: Skip even if we don't have checkboxes?
 		// (also check other UI frontends)
@@ -1350,11 +1432,14 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 
 			// Check newline counts in all strings to find nl_max.
 			const auto *const multi = field.data.list_data.data.multi;
-			for (auto iter_m = multi->cbegin(); iter_m != multi->cend(); ++iter_m) {
+			const auto multi_cend = multi->cend();
+			for (auto iter_m = multi->cbegin(); iter_m != multi_cend; ++iter_m) {
 				const RomFields::ListData_t &ld = iter_m->second;
-				for (auto iter_row = ld.cbegin(); iter_row != ld.cend(); ++iter_row) {
+				const auto ld_cend = ld.cend();
+				for (auto iter_row = ld.cbegin(); iter_row != ld_cend; ++iter_row) {
 					const auto &data_row = *iter_row;
-					for (auto iter_col = data_row.cbegin(); iter_col != data_row.cend(); ++iter_col) {
+					const auto data_row_cend = data_row.cend();
+					for (auto iter_col = data_row.cbegin(); iter_col != data_row_cend; ++iter_col) {
 						size_t prev_nl_pos = 0;
 						size_t cur_nl_pos;
 						int nl = 0;
@@ -1369,7 +1454,8 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 		} else {
 			// Single language.
 			int col = 0;
-			for (auto iter = data_row.cbegin(); iter != data_row.cend(); ++iter, col++) {
+			const auto data_row_cend = data_row.cend();
+			for (auto iter = data_row.cbegin(); iter != data_row_cend; ++iter, col++) {
 				tstring tstr = U82T_s(*iter);
 
 				int nl_count;
@@ -1425,10 +1511,11 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 			lvBgColor[1] = LibWin32Common::getAltRowColor_ARGB32();
 
 			// Add icons.
-			const auto &icons = field.data.list_data.mxd.icons;
 			uint8_t rowColorIdx = 0;
-			for (auto iter = icons->cbegin(); iter != icons->cend();
-				++iter, rowColorIdx = !rowColorIdx)
+			const auto &icons = field.data.list_data.mxd.icons;
+			const auto icons_cend = icons->cend();
+			for (auto iter = icons->cbegin(); iter != icons_cend;
+			     ++iter, rowColorIdx = !rowColorIdx)
 			{
 				int iImage = -1;
 				const rp_image *const icon = *iter;
@@ -1574,26 +1661,18 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
  * @param hDlg		[in] Parent dialog window. (for dialog unit mapping)
  * @param hWndTab	[in] Tab window. (for the actual control)
  * @param pt_start	[in] Starting position, in pixels.
- * @param idx		[in] Field index.
  * @param size		[in] Width and height for a single line label.
  * @param field		[in] RomFields::Field
+ * @param fieldIdx	[in] Field index
  * @return Field height, in pixels.
  */
 int RP_ShellPropSheetExt_Private::initDateTime(HWND hDlg, HWND hWndTab,
-	const POINT &pt_start, int idx, const SIZE &size,
-	const RomFields::Field &field)
+	const POINT &pt_start, const SIZE &size,
+	const RomFields::Field &field, int fieldIdx)
 {
-	assert(hDlg != nullptr);
-	assert(hWndTab != nullptr);
-	assert(field.type == RomFields::RFT_DATETIME);
-	if (!hDlg || !hWndTab)
-		return 0;
-	if (field.type != RomFields::RFT_DATETIME)
-		return 0;
-
 	if (field.data.date_time == -1) {
 		// Invalid date/time.
-		return initString(hDlg, hWndTab, pt_start, idx, size, field,
+		return initString(hDlg, hWndTab, pt_start, size, field, fieldIdx,
 			U82T_c(C_("RomDataView", "Unknown")));
 	}
 
@@ -1685,7 +1764,7 @@ int RP_ShellPropSheetExt_Private::initDateTime(HWND hDlg, HWND hWndTab,
 	}
 
 	// Initialize the string.
-	return initString(hDlg, hWndTab, pt_start, idx, size, field, dateTimeStr);
+	return initString(hDlg, hWndTab, pt_start, size, field, fieldIdx, dateTimeStr);
 }
 
 /**
@@ -1694,35 +1773,27 @@ int RP_ShellPropSheetExt_Private::initDateTime(HWND hDlg, HWND hWndTab,
  * @param hDlg		[in] Parent dialog window. (for dialog unit mapping)
  * @param hWndTab	[in] Tab window. (for the actual control)
  * @param pt_start	[in] Starting position, in pixels.
- * @param idx		[in] Field index.
  * @param size		[in] Width and height for a single line label.
  * @param field		[in] RomFields::Field
+ * @param fieldIdx	[in] Field index
  * @return Field height, in pixels.
  */
 int RP_ShellPropSheetExt_Private::initAgeRatings(HWND hDlg, HWND hWndTab,
-	const POINT &pt_start, int idx, const SIZE &size,
-	const RomFields::Field &field)
+	const POINT &pt_start, const SIZE &size,
+	const RomFields::Field &field, int fieldIdx)
 {
-	assert(hDlg != nullptr);
-	assert(hWndTab != nullptr);
-	assert(field.type == RomFields::RFT_AGE_RATINGS);
-	if (!hDlg || !hWndTab)
-		return 0;
-	if (field.type != RomFields::RFT_AGE_RATINGS)
-		return 0;
-
 	const RomFields::age_ratings_t *const age_ratings = field.data.age_ratings;
 	assert(age_ratings != nullptr);
 	if (!age_ratings) {
 		// No age ratings data.
-		return initString(hDlg, hWndTab, pt_start, idx, size, field,
+		return initString(hDlg, hWndTab, pt_start, size, field, fieldIdx,
 			U82T_c(C_("RomDataView", "ERROR")));
 	}
 
 	// Convert the age ratings field to a string.
 	string str = RomFields::ageRatingsDecode(age_ratings);
 	// Initialize the string field.
-	return initString(hDlg, hWndTab, pt_start, idx, size, field, U82T_s(str));
+	return initString(hDlg, hWndTab, pt_start, size, field, fieldIdx, U82T_s(str));
 }
 
 /**
@@ -1731,23 +1802,15 @@ int RP_ShellPropSheetExt_Private::initAgeRatings(HWND hDlg, HWND hWndTab,
  * @param hDlg		[in] Parent dialog window. (for dialog unit mapping)
  * @param hWndTab	[in] Tab window. (for the actual control)
  * @param pt_start	[in] Starting position, in pixels.
- * @param idx		[in] Field index.
  * @param size		[in] Width and height for a single line label.
  * @param field		[in] RomFields::Field
+ * @param fieldIdx	[in] Field index
  * @return Field height, in pixels.
  */
 int RP_ShellPropSheetExt_Private::initDimensions(HWND hDlg, HWND hWndTab,
-	const POINT &pt_start, int idx, const SIZE &size,
-	const RomFields::Field &field)
+	const POINT &pt_start, const SIZE &size,
+	const RomFields::Field &field, int fieldIdx)
 {
-	assert(hDlg != nullptr);
-	assert(hWndTab != nullptr);
-	assert(field.type == RomFields::RFT_DIMENSIONS);
-	if (!hDlg || !hWndTab)
-		return 0;
-	if (field.type != RomFields::RFT_DIMENSIONS)
-		return 0;
-
 	// TODO: 'x' or '×'? Using 'x' for now.
 	const int *const dimensions = field.data.dimensions;
 	TCHAR tbuf[64];
@@ -1764,7 +1827,7 @@ int RP_ShellPropSheetExt_Private::initDimensions(HWND hDlg, HWND hWndTab,
 	}
 
 	// Initialize the string field.
-	return initString(hDlg, hWndTab, pt_start, idx, size, field, tbuf);
+	return initString(hDlg, hWndTab, pt_start, size, field, fieldIdx, tbuf);
 }
 
 /**
@@ -1772,21 +1835,21 @@ int RP_ShellPropSheetExt_Private::initDimensions(HWND hDlg, HWND hWndTab,
  * @param hDlg		[in] Parent dialog window. (for dialog unit mapping)
  * @param hWndTab	[in] Tab window. (for the actual control)
  * @param pt_start	[in] Starting position, in pixels.
- * @param idx		[in] Field index.
  * @param size		[in] Width and height for a single line label.
  * @param field		[in] RomFields::Field
+ * @param fieldIdx	[in] Field index
  * @return Field height, in pixels.
  */
 int RP_ShellPropSheetExt_Private::initStringMulti(HWND hDlg, HWND hWndTab,
-	const POINT &pt_start, int idx, const SIZE &size,
-	const RomFields::Field &field)
+	const POINT &pt_start, const SIZE &size,
+	const RomFields::Field &field, int fieldIdx)
 {
 	// Mutli-language string.
 	// NOTE: The string contents won't be initialized here.
 	// They will be initialized separately, since the user will
 	// be able to change the displayed language.
 	HWND lblStringMulti = nullptr;
-	int field_cy = initString(hDlg, hWndTab, pt_start, idx, size, field,
+	int field_cy = initString(hDlg, hWndTab, pt_start, size, field, fieldIdx,
 		_T(""), &lblStringMulti);
 	if (lblStringMulti) {
 		vecStringMulti.emplace_back(std::make_pair(lblStringMulti, &field));
@@ -1886,7 +1949,8 @@ void RP_ShellPropSheetExt_Private::buildCboLanguageImageList(void)
 	};
 
 	HDC hdcIcon = GetDC(nullptr);
-	for (auto iter = set_lc.cbegin(); iter != set_lc.end(); ++iter) {
+	const auto set_lc_cend = set_lc.cend();
+	for (auto iter = set_lc.cbegin(); iter != set_lc_cend; ++iter) {
 		int col, row;
 		int ret = SystemRegion::getFlagPosition(*iter, &col, &row);
 		assert(ret == 0);
@@ -1941,8 +2005,9 @@ void RP_ShellPropSheetExt_Private::buildCboLanguageImageList(void)
 void RP_ShellPropSheetExt_Private::updateMulti(uint32_t user_lc)
 {
 	// RFT_STRING_MULTI
+	const auto vecStringMulti_cend = vecStringMulti.cend();
 	for (auto iter = vecStringMulti.cbegin();
-	     iter != vecStringMulti.cend(); ++iter)
+	     iter != vecStringMulti_cend; ++iter)
 	{
 		const HWND lblString = iter->first;
 		const RomFields::Field *const pField = iter->second;
@@ -1957,8 +2022,9 @@ void RP_ShellPropSheetExt_Private::updateMulti(uint32_t user_lc)
 		if (!cboLanguage) {
 			// Need to add all supported languages.
 			// TODO: Do we need to do this for all of them, or just one?
+			const auto pStr_multi_cend = pStr_multi->cend();
 			for (auto iter_sm = pStr_multi->cbegin();
-			     iter_sm != pStr_multi->cend(); ++iter_sm)
+			     iter_sm != pStr_multi_cend; ++iter_sm)
 			{
 				set_lc.insert(iter_sm->first);
 			}
@@ -1975,7 +2041,8 @@ void RP_ShellPropSheetExt_Private::updateMulti(uint32_t user_lc)
 	}
 
 	// RFT_LISTDATA_MULTI
-	for (auto iter = map_lvData.begin(); iter != map_lvData.end(); ++iter) {
+	const auto map_lvData_end = map_lvData.end();
+	for (auto iter = map_lvData.begin(); iter != map_lvData_end; ++iter) {
 		LvData_t &lvData = iter->second;
 		if (!lvData.hListView) {
 			// Not an RFT_LISTDATA_MULTI.
@@ -1995,8 +2062,9 @@ void RP_ShellPropSheetExt_Private::updateMulti(uint32_t user_lc)
 		if (!cboLanguage) {
 			// Need to add all supported languages.
 			// TODO: Do we need to do this for all of them, or just one?
+			const auto pListData_multi_cend = pListData_multi->cend();
 			for (auto iter_sm = pListData_multi->cbegin();
-			     iter_sm != pListData_multi->cend(); ++iter_sm)
+			     iter_sm != pListData_multi_cend; ++iter_sm)
 			{
 				set_lc.insert(iter_sm->first);
 			}
@@ -2037,16 +2105,20 @@ void RP_ShellPropSheetExt_Private::updateMulti(uint32_t user_lc)
 
 			auto iter_ld_row = pListData->cbegin();
 			auto iter_vvStr_row = vvStr.begin();
-			for (; iter_ld_row != pListData->cend() && iter_vvStr_row != vvStr.end();
+			const auto pListData_cend = pListData->cend();
+			const auto vvStr_end = vvStr.end();
+			for (; iter_ld_row != pListData_cend && iter_vvStr_row != vvStr_end;
 			     ++iter_ld_row, ++iter_vvStr_row)
 			{
 				const vector<string> &src_data_row = *iter_ld_row;
 				vector<tstring> &dest_data_row = *iter_vvStr_row;
 
+				int col = 0;
 				auto iter_sdr = src_data_row.cbegin();
 				auto iter_ddr = dest_data_row.begin();
-				int col = 0;
-				for (; iter_sdr != src_data_row.cend() && iter_ddr != dest_data_row.end();
+				const auto src_data_row_cend = src_data_row.cend();
+				const auto dest_data_row_end = dest_data_row.end();
+				for (; iter_sdr != src_data_row_cend && iter_ddr != dest_data_row_end;
 				     ++iter_sdr, ++iter_ddr, col++)
 				{
 					tstring tstr = U82T_s(*iter_sdr);
@@ -2083,7 +2155,8 @@ void RP_ShellPropSheetExt_Private::updateMulti(uint32_t user_lc)
 		SIZE maxSize = {0, 0};
 		vector<tstring> vec_lc_str;
 		vec_lc_str.reserve(set_lc.size());
-		for (auto iter = set_lc.cbegin(); iter != set_lc.cend(); ++iter) {
+		const auto set_lc_cend = set_lc.cend();
+		for (auto iter = set_lc.cbegin(); iter != set_lc_cend; ++iter) {
 			const uint32_t lc = *iter;
 			const char *lc_str = SystemRegion::getLocalizedLanguageName(lc);
 			if (lc_str) {
@@ -2164,7 +2237,8 @@ void RP_ShellPropSheetExt_Private::updateMulti(uint32_t user_lc)
 		cbItem.mask = CBEIF_TEXT | CBEIF_LPARAM | CBEIF_IMAGE | CBEIF_SELECTEDIMAGE;
 		cbItem.iItem = 0;
 		int iImage = 0;
-		for (; iter_str != vec_lc_str.cend(); ++iter_str, ++iter_lc, cbItem.iItem++, iImage++) {
+		const auto vec_lc_str_cend = vec_lc_str.cend();
+		for (; iter_str != vec_lc_str_cend; ++iter_str, ++iter_lc, cbItem.iItem++, iImage++) {
 			const uint32_t lc = *iter_lc;
 			cbItem.pszText = const_cast<LPTSTR>(iter_str->c_str());
 			cbItem.cchTextMax = static_cast<int>(iter_str->size());
@@ -2222,6 +2296,101 @@ void RP_ShellPropSheetExt_Private::updateMulti(uint32_t user_lc)
 }
 
 /**
+ * Update a field's value.
+ * This is called after running a ROM operation.
+ * @param fieldIdx Field index.
+ * @return 0 on success; non-zero on error.
+ */
+int RP_ShellPropSheetExt_Private::updateField(int fieldIdx)
+{
+	const RomFields *const pFields = romData->fields();
+	assert(pFields != nullptr);
+	if (!pFields) {
+		// No fields.
+		// TODO: Show an error?
+		return 1;
+	}
+
+	assert(fieldIdx >= 0);
+	assert(fieldIdx < pFields->count());
+	if (fieldIdx < 0 || fieldIdx >= pFields->count())
+		return 2;
+
+	const RomFields::Field *const field = pFields->at(fieldIdx);
+	assert(field != nullptr);
+	if (!field)
+		return 3;
+
+	// Get the tab dialog control the control is in.
+	assert(field->tabIdx >= 0);
+	assert(field->tabIdx < tabs.size());
+	if (field->tabIdx < 0 || field->tabIdx >= tabs.size())
+		return 4;
+	HWND hDlg = tabs[field->tabIdx].hDlg;
+
+	// Update the value widget(s).
+	int ret;
+	switch (field->type) {
+		case RomFields::RFT_INVALID:
+			assert(!"Cannot update an RFT_INVALID field.");
+			ret = 5;
+			break;
+		default:
+			assert(!"Unsupported field type.");
+			ret = 6;
+			break;
+
+		case RomFields::RFT_STRING: {
+			// HWND is a STATIC control.
+			HWND hLabel = GetDlgItem(hDlg, IDC_RFT_STRING(fieldIdx));
+			assert(hLabel != nullptr);
+			if (!hLabel) {
+				ret = 7;
+				break;
+			}
+
+			if (field->data.str && !field->data.str->empty()) {
+				const tstring ts_text = LibWin32Common::unix2dos(U82T_s(*field->data.str));
+				SetWindowText(hLabel, ts_text.c_str());
+			} else {
+				SetWindowText(hLabel, _T(""));
+			}
+			ret = 0;
+			break;
+		}
+
+		case RomFields::RFT_BITFIELD: {
+			// Multiple checkboxes with unique dialog IDs.
+
+			// Bits with a blank name aren't included, so we'll need to iterate
+			// over the bitfield description.
+			const auto &bitfieldDesc = field->desc.bitfield;
+			int count = (int)bitfieldDesc.names->size();
+			assert(count <= 32);
+			if (count > 32)
+				count = 32;
+
+			// Unlike GTK+ and KDE, we don't need to check bitfieldDesc.names to determine
+			// if a checkbox is present, since GetDlgItem() will return nullptr in that case.
+			uint32_t bitfield = field->data.bitfield;
+			int id = IDC_RFT_BITFIELD(fieldIdx, 0);
+			for (; count >= 0; count--, id++, bitfield >>= 1) {
+				HWND hCheckBox = GetDlgItem(hDlg, id);
+				if (!hCheckBox)
+					continue;
+
+				// Set the checkbox.
+				Button_SetCheck(hCheckBox, (bitfield & 1) ? BST_CHECKED : BST_UNCHECKED);
+			}
+			ret = 0;
+			break;
+		}
+	}
+
+	return ret;
+}
+
+/**
  * Initialize the bold font.
  * @param hFont Base font.
  */
@@ -2244,15 +2413,14 @@ void RP_ShellPropSheetExt_Private::initBoldFont(HFONT hFont)
 }
 
 /**
- * Initialize the dialog.
+ * Initialize the dialog. (hDlgSheet)
  * Called by WM_INITDIALOG.
- * @param hDlg Dialog window.
  */
-void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
+void RP_ShellPropSheetExt_Private::initDialog(void)
 {
-	assert(hDlg != nullptr);
+	assert(hDlgSheet != nullptr);
 	assert(romData != nullptr);
-	if (!hDlg || !romData) {
+	if (!hDlgSheet || !romData) {
 		// No dialog, or no ROM data loaded.
 		return;
 	}
@@ -2278,13 +2446,13 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 
 	// Dialog font and device context.
 	if (!hFontDlg) {
-		hFontDlg = GetWindowFont(hDlg);
+		hFontDlg = GetWindowFont(hDlgSheet);
 	}
-	AutoGetDC hDC(hDlg, hFontDlg);
+	AutoGetDC hDC(hDlgSheet, hFontDlg);
 
 	// Initialize the fonts.
 	initBoldFont(hFontDlg);
-	fontHandler.setWindow(hDlg);
+	fontHandler.setWindow(hDlgSheet);
 
 	// Convert the bitfield description names to the
 	// native Windows encoding once.
@@ -2298,9 +2466,8 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 
 	// tr: Field description label.
 	const char *const desc_label_fmt = C_("RomDataView", "%s:");
-	const auto iter_end = pFields->cend();
-	int idx = 0;	// needed for control IDs
-	for (auto iter = pFields->cbegin(); iter != iter_end; ++iter, idx++) {
+	const auto pFields_cend = pFields->cend();
+	for (auto iter = pFields->cbegin(); iter != pFields_cend; ++iter) {
 		const RomFields::Field &field = *iter;
 		if (!field.isValid) {
 			t_desc_text.emplace_back(tstring());
@@ -2345,14 +2512,14 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 	// Each static control is max_text_width pixels wide
 	// and 8 DLUs tall, plus 4 vertical DLUs for spacing.
 	RECT tmpRect = {0, 0, 0, 8+4};
-	MapDialogRect(hDlg, &tmpRect);
+	MapDialogRect(hDlgSheet, &tmpRect);
 	SIZE descSize = {max_text_width, tmpRect.bottom};
 
 	// Get the dialog margin.
 	// 7x7 DLU margin is recommended by the Windows UX guidelines.
 	// Reference: http://stackoverflow.com/questions/2118603/default-dialog-padding
 	RECT dlgMargin = {7, 7, 8, 8};
-	MapDialogRect(hDlg, &dlgMargin);
+	MapDialogRect(hDlgSheet, &dlgMargin);
 
 	// Get the dialog size.
 	// - fullDlgRect: Full dialog size
@@ -2360,7 +2527,7 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 	// FIXME: Vertical height is off by 3px on Win7...
 	// Verified with WinSpy++: expected 341x408, got 341x405.
 	RECT fullDlgRect, dlgRect;
-	GetClientRect(hDlg, &fullDlgRect);
+	GetClientRect(hDlgSheet, &fullDlgRect);
 	dlgRect = fullDlgRect;
 	// Adjust the rectangle for margins.
 	InflateRect(&dlgRect, -dlgMargin.left, -dlgMargin.top);
@@ -2376,7 +2543,7 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 
 	// Create the header row.
 	const SIZE header_size = {dlgSize.cx, descSize.cy};
-	const int headerH = createHeaderRow(hDlg, headerPt, header_size);
+	const int headerH = createHeaderRow(hDlgSheet, headerPt, header_size);
 	// Save the header rect for later.
 	rectHeader.left = headerPt.x;
 	rectHeader.top = headerPt.y;
@@ -2405,7 +2572,7 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 			WC_TABCONTROL, nullptr,
 			WS_CHILD | WS_TABSTOP | WS_VISIBLE,
 			dlgRect.left, dlgRect.top, dlgSize.cx, dlgSize.cy,
-			hDlg, (HMENU)(INT_PTR)IDC_TAB_WIDGET,
+			hDlgSheet, (HMENU)(INT_PTR)IDC_TAB_WIDGET,
 			nullptr, nullptr);
 		SetWindowFont(tabWidget, hFontDlg, false);
 		curTabIndex = 0;
@@ -2433,6 +2600,7 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 		// Update dlgSize.
 		dlgSize.cx = dlgRect.right - dlgRect.left;
 		dlgSize.cy = dlgRect.bottom - dlgRect.top;
+		iTabHeightOrig = dlgSize.cy;	// for MessageWidget
 		// Update dlg_value_width.
 		// FIXME: Results in 9px left, 8px right margins for RFT_LISTDATA.
 		dlg_value_width = dlgSize.cx - descSize.cx - dlgMargin.left - 1;
@@ -2450,7 +2618,7 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 			// Create a child dialog for the tab.
 			tab.hDlg = CreateDialog(HINST_THISCOMPONENT,
 				MAKEINTRESOURCE(IDD_SUBTAB_CHILD_DIALOG),
-				hDlg, SubtabDlgProc);
+				hDlgSheet, SubtabDlgProc);
 			SetWindowPos(tab.hDlg, nullptr,
 				dlgRect.left, dlgRect.top,
 				dlgSize.cx, dlgSize.cy,
@@ -2472,13 +2640,13 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 		tabCount = 1;
 		tabs.resize(1);
 		auto &tab = tabs[0];
-		tab.hDlg = hDlg;
+		tab.hDlg = hDlgSheet;
 		tab.curPt = headerPt;
 	}
 
-	idx = 0;	// needed for control IDs
+	int fieldIdx = 0;	// needed for control IDs
 	auto iter_desc = t_desc_text.cbegin();
-	for (auto iter = pFields->cbegin(); iter != iter_end; ++iter, ++iter_desc, idx++) {
+	for (auto iter = pFields->cbegin(); iter != pFields_cend; ++iter, ++iter_desc, fieldIdx++) {
 		assert(iter_desc != t_desc_text.cend());
 		const RomFields::Field &field = *iter;
 		if (!field.isValid)
@@ -2503,7 +2671,7 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 			WC_STATIC, iter_desc->c_str(),
 			WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | SS_LEFT,
 			tab.curPt.x, tab.curPt.y, descSize.cx, descSize.cy,
-			tab.hDlg, (HMENU)(INT_PTR)(IDC_STATIC_DESC(idx)),
+			tab.hDlg, (HMENU)(INT_PTR)(IDC_STATIC_DESC(fieldIdx)),
 			nullptr, nullptr);
 		SetWindowFont(hStatic, hFontDlg, false);
 
@@ -2519,11 +2687,11 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 
 			case RomFields::RFT_STRING:
 				// String data.
-				field_cy = initString(hDlg, tab.hDlg, pt_start, idx, size, field, nullptr);
+				field_cy = initString(hDlgSheet, tab.hDlg, pt_start, size, field, fieldIdx, nullptr);
 				break;
 			case RomFields::RFT_BITFIELD:
 				// Create checkboxes starting at the current point.
-				field_cy = initBitfield(hDlg, tab.hDlg, pt_start, idx, field);
+				field_cy = initBitfield(hDlgSheet, tab.hDlg, pt_start, field, fieldIdx);
 				break;
 			case RomFields::RFT_LISTDATA: {
 				// Create a ListView control.
@@ -2548,14 +2716,14 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 
 					// If this is the last RFT_LISTDATA in the tab,
 					// extend it vertically.
-					if (tabIdx + 1 == tabCount && idx == count-1) {
+					if (tabIdx + 1 == tabCount && fieldIdx == count-1) {
 						// Last tab, and last field.
 						doVBox = true;
 					} else {
 						// Check if the next field is on the next tab.
 						RomFields::const_iterator nextIter = iter;
 						++nextIter;
-						if (nextIter != iter_end && nextIter->tabIdx != tabIdx) {
+						if (nextIter != pFields_cend && nextIter->tabIdx != tabIdx) {
 							// Next field is on the next tab.
 							doVBox = true;
 						}
@@ -2574,7 +2742,7 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 					}
 				}
 
-				field_cy = initListData(hDlg, tab.hDlg, pt_ListData, idx, size, !doVBox, field);
+				field_cy = initListData(hDlgSheet, tab.hDlg, pt_ListData, size, !doVBox, field, fieldIdx);
 				if (field_cy > 0) {
 					// Add the extra row if necessary.
 					if (field.desc.list_data.flags & RomFields::RFT_LISTDATA_SEPARATE_ROW) {
@@ -2590,19 +2758,19 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 
 			case RomFields::RFT_DATETIME:
 				// Date/Time in Unix format.
-				field_cy = initDateTime(hDlg, tab.hDlg, pt_start, idx, size, field);
+				field_cy = initDateTime(hDlgSheet, tab.hDlg, pt_start, size, field, fieldIdx);
 				break;
 			case RomFields::RFT_AGE_RATINGS:
 				// Age Ratings field.
-				field_cy = initAgeRatings(hDlg, tab.hDlg, pt_start, idx, size, field);
+				field_cy = initAgeRatings(hDlgSheet, tab.hDlg, pt_start, size, field, fieldIdx);
 				break;
 			case RomFields::RFT_DIMENSIONS:
 				// Dimensions field.
-				field_cy = initDimensions(hDlg, tab.hDlg, pt_start, idx, size, field);
+				field_cy = initDimensions(hDlgSheet, tab.hDlg, pt_start, size, field, fieldIdx);
 				break;
 			case RomFields::RFT_STRING_MULTI:
 				// Multi-language string field.
-				field_cy = initStringMulti(hDlg, tab.hDlg, pt_start, idx, size, field);
+				field_cy = initStringMulti(hDlgSheet, tab.hDlg, pt_start, size, field, fieldIdx);
 				break;
 
 			default:
@@ -2629,10 +2797,479 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 	}
 
 	// Register for WTS session notifications. (Remote Desktop)
-	wts.registerSessionNotification(hDlg, NOTIFY_FOR_THIS_SESSION);
+	wts.registerSessionNotification(hDlgSheet, NOTIFY_FOR_THIS_SESSION);
 
 	// Window is fully initialized.
 	isFullyInit = true;
+}
+
+/**
+ * Adjust tabs for the message widget.
+ * Message widget must have been created first.
+ * @param bVisible True for visible; false for not.
+ */
+void RP_ShellPropSheetExt_Private::adjustTabsForMessageWidgetVisibility(bool bVisible)
+{
+	if (tabs.size() == 1) {
+		// Only one tab. Nothing to do here.
+		return;
+	}
+
+	// NOTE: IsWindowVisible(hMessageWidget) doesn't seem to be
+	// correct when this function is called, so we have to take
+	// the visibility as a parameter instead.
+	RECT rectMsgw;
+	GetClientRect(hMessageWidget, &rectMsgw);
+	int tab_h = iTabHeightOrig;
+	if (bVisible) {
+		tab_h -= rectMsgw.bottom;
+	}
+
+	std::for_each(tabs.cbegin(), tabs.cend(),
+		[tab_h](const tab &tab) {
+			RECT tabRect;
+			GetClientRect(tab.hDlg, &tabRect);
+			if (tabRect.bottom != tab_h) {
+				SetWindowPos(tab.hDlg, nullptr, 0, 0, tabRect.right, tab_h,
+					SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOZORDER);
+			}
+		}
+	);
+}
+
+/**
+ * Show the message widget.
+ * Message widget must have been created first.
+ * @param messageType Message type.
+ * @param lpszMsg Message.
+ */
+void RP_ShellPropSheetExt_Private::showMessageWidget(unsigned int messageType, const TCHAR *lpszMsg)
+{
+	assert(hMessageWidget != nullptr);
+	if (!hMessageWidget)
+		return;
+
+	// Set the message widget stuff.
+	SendMessage(hMessageWidget, WM_MSGW_SET_MESSAGE_TYPE, messageType, 0);
+	SetWindowText(hMessageWidget, lpszMsg);
+
+	adjustTabsForMessageWidgetVisibility(true);
+	ShowWindow(hMessageWidget, SW_SHOW);
+}
+
+/**
+ * An "Options" menu action was triggered.
+ * @param menuId Menu ID. (Options ID + IDM_OPTIONS_MENU_BASE)
+ */
+void RP_ShellPropSheetExt_Private::menuOptions_action_triggered(int menuId)
+{
+	if (menuId < IDM_OPTIONS_MENU_BASE) {
+		// Export to text or JSON.
+		const char *const rom_filename = romData->filename();
+		if (!rom_filename)
+			return;
+
+		bool toClipboard;
+		tstring ts_title, ts_filter;
+		const TCHAR *ts_default_ext = nullptr;
+		switch (menuId) {
+			case IDM_OPTIONS_MENU_EXPORT_TEXT:
+				toClipboard = false;
+				ts_title = U82T_c(C_("RomDataView", "Export to Text File"));
+				// tr: Text files filter. (Win32) [Use '|' instead of '\0'! gettext() doesn't support embedded nulls.]
+				ts_filter = U82T_c(C_("RomDataView", "Text Files (*.txt)|*.txt|All Files (*.*)|*.*||"));
+				ts_default_ext = _T(".txt");
+				break;
+			case IDM_OPTIONS_MENU_EXPORT_JSON:
+				toClipboard = false;
+				ts_title = U82T_c(C_("RomDataView", "Export to JSON File"));
+				// tr: JSON files filter. (Win32) [Use '|' instead of '\0'! gettext() doesn't support embedded nulls.]
+				ts_filter = U82T_c(C_("RomDataView", "JSON Files (*.json)|*.json|All Files (*.*)|*.*||"));
+				ts_default_ext = _T(".json");
+				break;
+			case IDM_OPTIONS_MENU_COPY_TEXT:
+			case IDM_OPTIONS_MENU_COPY_JSON:
+				toClipboard = true;
+				break;
+			default:
+				assert(!"Invalid action ID.");
+				return;
+		}
+
+		ofstream ofs;
+		tstring ts_out;
+
+		if (!toClipboard) {
+			if (ts_prevExportDir.empty()) {
+				ts_prevExportDir = U82T_c(rom_filename);
+
+				// Remove the filename portion.
+				size_t bspos = ts_prevExportDir.rfind(_T('\\'));
+				if (bspos != string::npos) {
+					if (bspos > 2) {
+						ts_prevExportDir.resize(bspos);
+					} else if (bspos == 2) {
+						ts_prevExportDir.resize(3);
+					}
+				}
+			}
+
+			tstring defaultFileName = ts_prevExportDir;
+			if (!defaultFileName.empty() && defaultFileName.at(defaultFileName.size()-1) != _T('\\')) {
+				defaultFileName += _T('\\');
+			}
+
+			// Get the base name of the ROM.
+			tstring rom_basename;
+			const char *const bspos = strrchr(rom_filename, '\\');
+			if (bspos) {
+				rom_basename = U82T_c(bspos+1);
+			} else {
+				rom_basename = U82T_c(rom_filename);
+			}
+			// Remove the extension, if present.
+			size_t extpos = rom_basename.rfind(_T('.'));
+			if (extpos != string::npos) {
+				rom_basename.resize(extpos);
+			}
+			defaultFileName += rom_basename + ts_default_ext;
+
+			const tstring tfilename = LibWin32Common::getSaveFileName(hDlgSheet,
+				ts_title.c_str(), ts_filter.c_str(), defaultFileName.c_str());
+			if (tfilename.empty())
+				return;
+
+			// Save the previous export directory.
+			ts_prevExportDir = tfilename;
+			size_t bspos2 = ts_prevExportDir.rfind(_T('\\'));
+			if (bspos2 != tstring::npos && bspos2 > 3) {
+				ts_prevExportDir.resize(bspos2);
+			}
+
+#ifdef __GNUC__
+			// FIXME: MinGW doesn't have wchar_t overloads.
+			ofs.open(T2U8(tfilename).c_str(), ofstream::out);
+#else /* !__GNUC__ */
+			ofs.open(tfilename.c_str(), ofstream::out);
+#endif /* __GNUC__ */
+			if (ofs.fail())
+				return;
+		}
+
+		// TODO: Optimize this such that we can pass ofstream or ostringstream
+		// to a factored-out function.
+
+		switch (menuId) {
+			case IDM_OPTIONS_MENU_EXPORT_TEXT: {
+				ofs << "== " << rp_sprintf(C_("RomDataView", "File: '%s'"), rom_filename) << '\n';
+				ROMOutput ro(romData, sel_lc());
+				ofs << ro;
+				ofs.flush();
+				break;
+			}
+			case IDM_OPTIONS_MENU_EXPORT_JSON: {
+				JSONROMOutput jsro(romData);
+				ofs << jsro << '\n';
+				ofs.flush();
+				break;
+			}
+			case IDM_OPTIONS_MENU_COPY_TEXT: {
+				// NOTE: Some fields may have embedded newlines,
+				// so we'll need to convert everything afterwards.
+				ostringstream oss;
+				oss << "== " << rp_sprintf(C_("RomDataView", "File: '%s'"), rom_filename) << '\n';
+				ROMOutput ro(romData, sel_lc());
+				oss << ro;
+				oss.flush();
+				ts_out = LibWin32Common::unix2dos(U82T_s(oss.str()));
+				break;
+			}
+			case IDM_OPTIONS_MENU_COPY_JSON: {
+				ostringstream oss;
+				JSONROMOutput jsro(romData);
+				jsro.setCrlf(true);
+				oss << jsro << '\n';
+				oss.flush();
+				ts_out = U82T_s(oss.str());
+				break;
+			}
+			default:
+				assert(!"Invalid action ID.");
+				return;
+		}
+
+		if (toClipboard) {
+			if (OpenClipboard(hDlgSheet)) {
+				EmptyClipboard();
+				HGLOBAL hglbCopy = GlobalAlloc(GMEM_MOVEABLE, (ts_out.size() + 1) * sizeof(TCHAR));
+				if (hglbCopy) {
+					LPTSTR lpszCopy = static_cast<LPTSTR>(GlobalLock(hglbCopy));
+					memcpy(lpszCopy, ts_out.data(), ts_out.size() * sizeof(TCHAR));
+					lpszCopy[ts_out.size()] = _T('\0');
+					GlobalUnlock(hglbCopy);
+					SetClipboardData(CF_UNICODETEXT, hglbCopy);
+				}
+				CloseClipboard();
+			}
+		}
+	} else {
+		// Run a ROM operation.
+		const int id = menuId - IDM_OPTIONS_MENU_BASE;
+		RomData::RomOpResult result;
+		int ret = romData->doRomOp(id, &result);
+		unsigned int messageType;
+		if (ret == 0) {
+			// ROM operation completed.
+			messageType = MB_ICONINFORMATION;
+
+			// Update fields.
+			std::for_each(result.fieldIdx.cbegin(), result.fieldIdx.cend(),
+				[this](int fieldIdx) {
+					this->updateField(fieldIdx);
+				}
+			);
+
+			// Update the RomOp menu entry in case it changed.
+			// NOTE: Assuming the RomOps vector order hasn't changed.
+			// TODO: Have RomData store the RomOps vector instead of
+			// rebuilding it here?
+			const vector<RomData::RomOps> ops = romData->romOps();
+			assert(id < (int)ops.size());
+			if (id < (int)ops.size()) {
+				const RomData::RomOps &op = ops[id];
+
+				UINT uFlags;
+				if (!(op.flags & RomData::RomOps::ROF_ENABLED)) {
+					uFlags = MF_BYCOMMAND | MF_STRING | MF_DISABLED;
+				} else {
+					uFlags = MF_BYCOMMAND | MF_STRING;
+				}
+				ModifyMenu(hMenuOptions, menuId, uFlags, menuId, U82T_c(op.desc.c_str()));
+			}
+		} else {
+			// An error occurred...
+			// TODO: Show an error message.
+			messageType = MB_ICONWARNING;
+		}
+
+		MessageBeep(messageType);
+		if (!result.msg.empty()) {
+			if (!hMessageWidget) {
+				// FIXME: Make sure this works if multiple tabs are present.
+				MessageWidgetRegister();
+
+				// Align to the bottom of the dialog and center-align the text.
+				// 7x7 DLU margin is recommended by the Windows UX guidelines.
+				// Reference: http://stackoverflow.com/questions/2118603/default-dialog-padding
+				RECT tmpRect = {7, 7, 8, 8};
+				MapDialogRect(hDlgSheet, &tmpRect);
+				RECT winRect;
+				GetClientRect(hDlgSheet, &winRect);
+				// NOTE: We need to move left by 1px.
+				OffsetRect(&winRect, -1, 0);
+
+				// Determine the position.
+				// TODO: Update on DPI change.
+				const int cySmIcon = GetSystemMetrics(SM_CYSMICON);
+				POINT ptMsgw; SIZE szMsgw;
+				szMsgw.cy = cySmIcon + 8;
+				ptMsgw.x = winRect.left + tmpRect.left;
+				ptMsgw.y = winRect.bottom - tmpRect.top - szMsgw.cy;
+				szMsgw.cx = winRect.right - winRect.left - (tmpRect.left * 2);
+
+				hMessageWidget = CreateWindowEx(
+					WS_EX_NOPARENTNOTIFY | WS_EX_TRANSPARENT,
+					WC_MESSAGEWIDGET, nullptr,
+					WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_CLIPCHILDREN,
+					ptMsgw.x, ptMsgw.y, szMsgw.cx, szMsgw.cy,
+					hDlgSheet, (HMENU)IDC_MESSAGE_WIDGET,
+					HINST_THISCOMPONENT, nullptr);
+				SetWindowFont(hMessageWidget, hFontDlg, false);
+			}
+
+			showMessageWidget(messageType, U82T_s(result.msg));
+		}
+	}
+}
+
+/**
+ * Dialog subclass procedure to intercept WM_COMMAND for the "Options" button.
+ * @param hWnd
+ * @param uMsg
+ * @param wParam
+ * @param lParam
+ * @param uIdSubclass
+ * @param dWRefData RP_ShellPropSheetExt_Private
+ */
+LRESULT CALLBACK RP_ShellPropSheetExt_Private::DialogSubclassProc(
+	HWND hWnd, UINT uMsg,
+	WPARAM wParam, LPARAM lParam,
+	UINT_PTR uIdSubclass, DWORD_PTR dwRefData)
+{
+	switch (uMsg) {
+		case WM_NCDESTROY:
+			// Remove the window subclass.
+			// Reference: https://blogs.msdn.microsoft.com/oldnewthing/20031111-00/?p=41883
+			RemoveWindowSubclass(hWnd, DialogSubclassProc, uIdSubclass);
+			break;
+
+		case WM_COMMAND:
+			if (HIWORD(wParam) == BN_CLICKED && LOWORD(wParam) == IDC_RP_OPTIONS) {
+				// Pop up the menu.
+				RP_ShellPropSheetExt_Private *const d = reinterpret_cast<RP_ShellPropSheetExt_Private*>(dwRefData);
+				assert(d->hBtnOptions != nullptr);
+				assert(d->hMenuOptions != nullptr);
+				if (!d->hBtnOptions || !d->hMenuOptions)
+					break;
+
+				// Get the absolute position of the "Options" button.
+				RECT rect_btnOptions;
+				GetWindowRect(d->hBtnOptions, &rect_btnOptions);
+				int id = TrackPopupMenu(d->hMenuOptions,
+					TPM_LEFTALIGN | TPM_BOTTOMALIGN | TPM_VERNEGANIMATION |
+						TPM_NONOTIFY | TPM_RETURNCMD,
+					rect_btnOptions.left, rect_btnOptions.top, 0,
+					hWnd, nullptr);
+				if (id != 0) {
+					d->menuOptions_action_triggered(id);
+				}
+				return TRUE;
+			}
+			break;
+
+		default:
+			break;
+	}
+
+	return DefSubclassProc(hWnd, uMsg, wParam, lParam);
+}
+
+/**
+ * Create the "Options" button in the parent window.
+ * Called by WM_INITDIALOG.
+ */
+void RP_ShellPropSheetExt_Private::createOptionsButton(void)
+{
+	assert(hDlgSheet != nullptr);
+	assert(romData != nullptr);
+	if (!hDlgSheet || !romData) {
+		// No dialog, or no ROM data loaded.
+		return;
+	}
+
+	HWND hWndParent = GetParent(hDlgSheet);
+	assert(hWndParent != nullptr);
+	if (!hWndParent) {
+		// No parent window...
+		return;
+	}
+
+	// is the "Options" button already present?
+	if (GetDlgItem(hWndParent, IDC_RP_OPTIONS) != nullptr) {
+		assert(!"IDC_RP_OPTIONS is already created.");
+		return;
+	}
+
+	// TODO: Verify RTL positioning.
+	HWND hBtnOK = GetDlgItem(hWndParent, IDOK);
+	HWND hTabControl = PropSheet_GetTabControl(hWndParent);
+	if (!hBtnOK || !hTabControl) {
+		return;
+	}
+
+	RECT rect_btnOK, rect_tabControl;
+	GetWindowRect(hBtnOK, &rect_btnOK);
+	GetWindowRect(hTabControl, &rect_tabControl);
+	MapWindowPoints(HWND_DESKTOP, hWndParent, (LPPOINT)&rect_btnOK, 2);
+	MapWindowPoints(HWND_DESKTOP, hWndParent, (LPPOINT)&rect_tabControl, 2);
+
+	// Create the "Options" button.
+	POINT ptBtn = {rect_tabControl.left, rect_btnOK.top};
+	const SIZE szBtn = {
+		rect_btnOK.right - rect_btnOK.left,
+		rect_btnOK.bottom - rect_btnOK.top
+	};
+
+	const bool isComCtl32_v610 = LibWin32Common::isComCtl32_v610();
+
+	tstring ts_caption;
+	LONG lStyle = WS_CHILD | WS_VISIBLE | WS_TABSTOP | WS_GROUP | BS_PUSHBUTTON | BS_CENTER;
+	if (isComCtl32_v610) {
+		// COMCTL32 is v6.10 or later. Use BS_SPLITBUTTON.
+		// (Windows Vista or later)
+		lStyle |= BS_SPLITBUTTON;
+		// tr: "Options" button.
+		ts_caption = U82T_c(C_("RomDataView", "Op&tions"));
+	} else {
+		// COMCTL32 is older than v6.10. Use a regular button.
+		// NOTE: The Unicode down arrow doesn't show on on Windows XP.
+		// Maybe we *should* use ownerdraw...
+		// tr: "Options" button. (WinXP version, with ellipsis.)
+		ts_caption = U82T_c(C_("RomDataView", "Op&tions..."));
+	}
+
+	hBtnOptions = CreateWindowEx(0, WC_BUTTON,
+		ts_caption.c_str(), lStyle,
+		ptBtn.x, ptBtn.y, szBtn.cx, szBtn.cy,
+		hWndParent, (HMENU)IDC_RP_OPTIONS, nullptr, nullptr);
+	SetWindowFont(hBtnOptions, hFontDlg, FALSE);
+
+	if (isComCtl32_v610) {
+		BUTTON_SPLITINFO bsi;
+		bsi.mask = BCSIF_STYLE;
+		bsi.uSplitStyle = BCSS_NOSPLIT;
+		Button_SetSplitInfo(hBtnOptions, &bsi);
+	}
+
+	// Fix up the tab order. ("Options" should be after "Apply".)
+	HWND hBtnApply = GetDlgItem(hWndParent, IDC_APPLY_BUTTON);
+	if (hBtnApply) {
+		SetWindowPos(hBtnOptions, hBtnApply,
+			0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
+	}
+
+	// Subclass the parent dialog so we can intercept WM_COMMAND.
+	SetWindowSubclass(hWndParent, DialogSubclassProc,
+		static_cast<UINT_PTR>(IDC_RP_OPTIONS),
+		reinterpret_cast<DWORD_PTR>(this));
+
+	// Create the menu.
+	hMenuOptions = CreatePopupMenu();
+
+	/** Standard actions. **/
+	static const struct {
+		const char *desc;
+		unsigned int id;
+	} stdacts[] = {
+		{NOP_C_("RomDataView|Options", "Export to Text"),	IDM_OPTIONS_MENU_EXPORT_TEXT},
+		{NOP_C_("RomDataView|Options", "Export to JSON"),	IDM_OPTIONS_MENU_EXPORT_JSON},
+		{NOP_C_("RomDataView|Options", "Copy as Text"),		IDM_OPTIONS_MENU_COPY_TEXT},
+		{NOP_C_("RomDataView|Options", "Copy as JSON"),		IDM_OPTIONS_MENU_COPY_JSON},
+		{nullptr, 0}
+	};
+
+	for (const auto *p = stdacts; p->desc != nullptr; p++) {
+		AppendMenu(hMenuOptions, MF_STRING, p->id,
+			U82T_c(dpgettext_expr(RP_I18N_DOMAIN, "RomDataView|Options", p->desc)));
+	}
+
+	/** ROM operations. **/
+	const vector<RomData::RomOps> ops = romData->romOps();
+	if (!ops.empty()) {
+		AppendMenu(hMenuOptions, MF_SEPARATOR, 0, nullptr);
+
+		unsigned int i = IDM_OPTIONS_MENU_BASE;
+		const auto ops_end = ops.cend();
+		for (auto iter = ops.cbegin(); iter != ops_end; ++iter, i++) {
+			UINT uFlags;
+			if (!(iter->flags & RomData::RomOps::ROF_ENABLED)) {
+				uFlags = MF_STRING | MF_DISABLED;
+			} else {
+				uFlags = MF_STRING;
+			}
+			AppendMenu(hMenuOptions, uFlags, i, U82T_c(iter->desc.c_str()));
+		}
+	}
 }
 
 /** RP_ShellPropSheetExt **/
@@ -2972,11 +3609,17 @@ INT_PTR RP_ShellPropSheetExt_Private::DlgProc_WM_NOTIFY(HWND hDlg, NMHDR *pHdr)
 			if (lblIcon) {
 				lblIcon->startAnimTimer();
 			}
+			if (hBtnOptions) {
+				ShowWindow(hBtnOptions, SW_SHOW);
+			}
 			break;
 
 		case PSN_KILLACTIVE:
 			if (lblIcon) {
 				lblIcon->stopAnimTimer();
+			}
+			if (hBtnOptions) {
+				ShowWindow(hBtnOptions, SW_HIDE);
 			}
 			break;
 
@@ -3054,6 +3697,13 @@ INT_PTR RP_ShellPropSheetExt_Private::DlgProc_WM_NOTIFY(HWND hDlg, NMHDR *pHdr)
 			break;
 		}
 
+		case MSGWN_CLOSED: {
+			// MessageWidget Close button was clicked.
+			adjustTabsForMessageWidgetVisibility(false);
+			ret = true;
+			break;
+		}
+
 		default:
 			break;
 	}
@@ -3082,9 +3732,8 @@ INT_PTR RP_ShellPropSheetExt_Private::DlgProc_WM_COMMAND(HWND hDlg, WPARAM wPara
 				break;
 
 			// NOTE: lParam also has the ComboBox HWND.
-			const int sel_idx = ComboBox_GetCurSel(cboLanguage);
-			if (sel_idx >= 0) {
-				const uint32_t lc = static_cast<uint32_t>(ComboBox_GetItemData(cboLanguage, sel_idx));
+			const uint32_t lc = sel_lc();
+			if (lc != 0) {
 				updateMulti(lc);
 			}
 			break;
@@ -3204,9 +3853,12 @@ INT_PTR CALLBACK RP_ShellPropSheetExt_Private::DlgProc(HWND hDlg, UINT uMsg, WPA
 			// Load the images.
 			d->loadImages();
 			// Initialize the dialog.
-			d->initDialog(hDlg);
+			d->initDialog();
 			// We can close the RomData's underlying IRpFile now.
 			d->romData->close();
+
+			// Create the "Options" button in the parent window.
+			d->createOptionsButton();
 
 			// Start the icon animation timer.
 			if (d->lblIcon) {

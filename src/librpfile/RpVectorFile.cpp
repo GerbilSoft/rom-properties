@@ -24,6 +24,9 @@ RpVectorFile::RpVectorFile()
 {
 	// Reserve at least 16 KB.
 	m_vector.reserve(16*1024);
+
+	// RpVectorFile is writable.
+	m_isWritable = true;
 }
 
 /**
@@ -140,6 +143,17 @@ off64_t RpVectorFile::tell(void)
 int RpVectorFile::truncate(off64_t size)
 {
 	m_vector.resize(size);
+	return 0;
+}
+
+/**
+ * Flush buffers.
+ * This operation only makes sense on writable files.
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int RpVectorFile::flush(void)
+{
+	// Ignore flush operations, since RpVectorFile is entirely in memory.
 	return 0;
 }
 

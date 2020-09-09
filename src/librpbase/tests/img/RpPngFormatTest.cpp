@@ -990,13 +990,15 @@ string RpPngFormatTest::test_case_suffix_generator(const ::testing::TestParamInf
 
 	// Replace all non-alphanumeric characters with '_'.
 	// See gtest-param-util.h::IsValidParamName().
-	for (auto iter = suffix.begin(); iter != suffix.end(); ++iter) {
-		// NOTE: Not checking for '_' because that
-		// wastes a branch.
-		if (!ISALNUM(*iter)) {
-			*iter = '_';
+	std::for_each(suffix.begin(), suffix.end(),
+		[](char &c) {
+			// NOTE: Not checking for '_' because that
+			// wastes a branch.
+			if (!ISALNUM(c)) {
+				c = '_';
+			}
 		}
-	}
+	);
 
 	return suffix;
 }

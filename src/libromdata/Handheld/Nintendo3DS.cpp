@@ -488,8 +488,9 @@ int Nintendo3DSPrivate::loadNCCH(int idx, NCCHReader **pOutNcchReader)
 
 			// Determine the content start position.
 			// Need to add all content chunk sizes, algined to 64 bytes.
+			const auto content_chunks_cend = content_chunks.cend();
 			for (auto iter = content_chunks.cbegin();
-			     iter != content_chunks.cend(); ++iter)
+			     iter != content_chunks_cend; ++iter)
 			{
 				const uint32_t cur_size = static_cast<uint32_t>(be64_to_cpu(iter->size));
 				if (be16_to_cpu(iter->index) == idx) {
@@ -558,8 +559,9 @@ int Nintendo3DSPrivate::loadNCCH(int idx, NCCHReader **pOutNcchReader)
 		// Check if this content is encrypted.
 		// If it is, we'll need to create a CIAReader.
 		N3DS_Ticket_t *ticket = nullptr;
+		const auto content_chunks_cend = content_chunks.cend();
 		for (auto iter = content_chunks.cbegin();
-		     iter != content_chunks.cend(); ++iter)
+		     iter != content_chunks_cend; ++iter)
 		{
 			const uint16_t content_index = be16_to_cpu(iter->index);
 			if (content_index == idx) {
@@ -2350,8 +2352,9 @@ int Nintendo3DS::loadFieldData(void)
 		// Process the contents.
 		// TODO: Content types?
 		int i = 0;
+		const auto content_chunks_cend = d->content_chunks.cend();
 		for (auto iter = d->content_chunks.cbegin();
-		     iter != d->content_chunks.cend(); ++iter, ++i)
+		     iter != content_chunks_cend; ++iter, ++i)
 		{
 			// Make sure the content exists first.
 			NCCHReader *pNcch = nullptr;
@@ -2932,6 +2935,7 @@ int Nintendo3DS::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size
 	// Add the URLs.
 	pExtURLs->resize(szdef_count * tdb_regions.size());
 	auto extURL_iter = pExtURLs->begin();
+	const auto tdb_regions_cend = tdb_regions.cend();
 	for (unsigned int i = 0; i < szdef_count; i++) {
 		// Current image type.
 		char imageTypeName[16];
@@ -2940,7 +2944,7 @@ int Nintendo3DS::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size
 
 		// Add the images.
 		for (auto tdb_iter = tdb_regions.cbegin();
-		     tdb_iter != tdb_regions.cend(); ++tdb_iter, ++extURL_iter)
+		     tdb_iter != tdb_regions_cend; ++tdb_iter, ++extURL_iter)
 		{
 			extURL_iter->url = d->getURL_GameTDB("3ds", imageTypeName, *tdb_iter, id4, ext);
 			extURL_iter->cache_key = d->getCacheKey_GameTDB("3ds", imageTypeName, *tdb_iter, id4, ext);

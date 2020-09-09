@@ -9,29 +9,56 @@
 #include "stdafx.h"
 #include "RomDataView.hpp"
 #include "RpQImageBackend.hpp"
+#include "MessageSound.hpp"
 
-// librpbase, librptexture
+// librpbase, librpfile, librptexture
+#include "librpbase/TextOut.hpp"
 using namespace LibRpBase;
+using LibRpFile::IRpFile;
 using LibRpTexture::rp_image;
 
 // libi18n
 #include "libi18n/i18n.h"
 
 // C++ STL classes.
+#include <fstream>
+#include <sstream>
 using std::array;
+using std::ofstream;
+using std::ostringstream;
 using std::set;
 using std::string;
+using std::unordered_map;
 using std::vector;
+
+// Qt includes.
+#include <QtGui/QClipboard>
 
 // Custom Qt widgets.
 #include "DragImageTreeWidget.hpp"
 
-// KAcceleratorManager
+// KDE4/KF5 includes.
 #if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
-# include <KAcceleratorManager>
+#  include <KAcceleratorManager>
+#  include <KWidgetsAddons/kpagewidget.h>
+#  define HAVE_KMESSAGEWIDGET 1
+#  define HAVE_KMESSAGEWIDGET_SETICON 1
+#  include <KWidgetsAddons/kmessagewidget.h>
 #else /* !QT_VERSION >= QT_VERSION_CHECK(5,0,0) */
-# include <kacceleratormanager.h>
+#  include <kacceleratormanager.h>
+#  include <kpagewidget.h>
+#  include <kdeversion.h>
+#  if (KDE_VERSION_MAJOR > 4) || (KDE_VERSION_MAJOR == 4 && KDE_VERSION_MINOR >= 7)
+#    define HAVE_KMESSAGEWIDGET 1
+#    include <kmessagewidget.h>
+#    if (KDE_VERSION_MAJOR > 4) || (KDE_VERSION_MAJOR == 4 && KDE_VERSION_MINOR >= 11)
+#      define HAVE_KMESSAGEWIDGET_SETICON 1
+#    endif
+#  endif
 #endif /* QT_VERSION >= QT_VERSION_CHECK(5,0,0) */
+
+// Uncomment to enable the automatic timeout for the ROM Operations KMessageWidget.
+//#define AUTO_TIMEOUT_MESSAGEWIDGET 1
 
 #include "ui_RomDataView.h"
 class RomDataViewPrivate
@@ -49,6 +76,22 @@ class RomDataViewPrivate
 	public:
 		Ui::RomDataView ui;
 
+		// "Options" button.
+		QPushButton *btnOptions;
+		QMenu *menuOptions;
+		int romOps_firstActionIndex;
+#if QT_VERSION < QT_VERSION_CHECK(5,0,0)
+		QSignalMapper *mapperOptionsMenu;
+#endif /* QT_VERSION < QT_VERSION_CHECK(5,0,0) */
+		QString prevExportDir;
+
+		enum StandardOptionID {
+			OPTION_EXPORT_TEXT = -1,
+			OPTION_EXPORT_JSON = -2,
+			OPTION_COPY_TEXT = -3,
+			OPTION_COPY_JSON = -4,
+		};
+
 		// Tab contents.
 		struct tab {
 			QVBoxLayout *vbox;
@@ -59,9 +102,27 @@ class RomDataViewPrivate
 		};
 		vector<tab> tabs;
 
+		// Mapping of field index to QObject*.
+		// For updateField().
+		unordered_map<int, QObject*> map_fieldIdx;
+
+#ifdef HAVE_KMESSAGEWIDGET
+		// KMessageWidget for ROM operation notifications.
+		KMessageWidget *messageWidget;
+#  ifdef AUTO_TIMEOUT_MESSAGEWIDGET
+		QTimer *tmrMessageWidget;
+#  endif /* AUTO_TIMEOUT_MESSAGEWIDGET */
+#endif /* HAVE_KMESSAGEWIDGET */
+
 		// Multi-language functionality.
 		uint32_t def_lc;
 		QComboBox *cboLanguage;
+
+		/**
+		 * Get the selected language code.
+		 * @return Selected language code, or 0 for none (default).
+		 */
+		inline uint32_t sel_lc(void) const;
 
 		// RFT_STRING_MULTI value labels.
 		typedef std::pair<QLabel*, const RomFields::Field*> Data_StringMulti_t;
@@ -73,6 +134,11 @@ class RomDataViewPrivate
 
 		// RomData object.
 		RomData *romData;
+
+		/**
+		 * Create the "Options" button in the parent window.
+		 */
+		void createOptionsButton(void);
 
 		/**
 		 * Initialize the header row widgets.
@@ -88,37 +154,47 @@ class RomDataViewPrivate
 
 		/**
 		 * Initialize a string field.
-		 * @param lblDesc	[in] Description label.
+		 * @param lblDesc	[in] Description label
 		 * @param field		[in] RomFields::Field
-		 * @param str		[in,opt] String data. (If nullptr, field data is used.)
+		 * @param fieldIdx	[in] Field index
+		 * @param str		[in,opt] String data (If nullptr, field data is used)
 		 * @return QLabel*, or nullptr on error.
 		 */
-		QLabel *initString(QLabel *lblDesc, const RomFields::Field &field, const QString *str = nullptr);
+		QLabel *initString(QLabel *lblDesc,
+			const RomFields::Field &field, int fieldIdx,
+			const QString *str = nullptr);
 
 		/**
 		 * Initialize a string field.
-		 * @param lblDesc	[in] Description label.
+		 * @param lblDesc	[in] Description label
 		 * @param field		[in] RomFields::Field
-		 * @param str		[in] String data.
+		 * @param fieldIdx	[in] Field index
+		 * @param str		[in] String data
 		 */
-		inline QLabel *initString(QLabel *lblDesc, const RomFields::Field &field, const QString &str)
+		inline QLabel *initString(QLabel *lblDesc,
+			const RomFields::Field &field, int fieldIdx,
+			const QString &str)
 		{
-			return initString(lblDesc, field, &str);
+			return initString(lblDesc, field, fieldIdx, &str);
 		}
 
 		/**
 		 * Initialize a bitfield.
-		 * @param lblDesc	[in] Description label.
+		 * @param lblDesc	[in] Description label
 		 * @param field		[in] RomFields::Field
+		 * @param fieldIdx	[in] Field index
 		 */
-		void initBitfield(QLabel *lblDesc, const RomFields::Field &field);
+		void initBitfield(QLabel *lblDesc,
+			const RomFields::Field &field, int fieldIdx);
 
 		/**
 		 * Initialize a list data field.
-		 * @param lblDesc	[in] Description label.
+		 * @param lblDesc	[in] Description label
 		 * @param field		[in] RomFields::Field
+		 * @param fieldIdx	[in] Field index
 		 */
-		void initListData(QLabel *lblDesc, const RomFields::Field &field);
+		void initListData(QLabel *lblDesc,
+			const RomFields::Field &field, int fieldIdx);
 
 		/**
 		 * Adjust an RFT_LISTDATA field if it's the last field in a tab.
@@ -128,37 +204,53 @@ class RomDataViewPrivate
 
 		/**
 		 * Initialize a Date/Time field.
-		 * @param lblDesc	[in] Description label.
+		 * @param lblDesc	[in] Description label
 		 * @param field		[in] RomFields::Field
+		 * @param fieldIdx	[in] Field index
 		 */
-		void initDateTime(QLabel *lblDesc, const RomFields::Field &field);
+		void initDateTime(QLabel *lblDesc,
+			const RomFields::Field &field, int fieldIdx);
 
 		/**
 		 * Initialize an Age Ratings field.
-		 * @param lblDesc	[in] Description label.
+		 * @param lblDesc	[in] Description label
 		 * @param field		[in] RomFields::Field
+		 * @param fieldIdx	[in] Field index
 		 */
-		void initAgeRatings(QLabel *lblDesc, const RomFields::Field &field);
+		void initAgeRatings(QLabel *lblDesc,
+			const RomFields::Field &field, int fieldIdx);
 
 		/**
 		 * Initialize a Dimensions field.
-		 * @param lblDesc	[in] Description label.
+		 * @param lblDesc	[in] Description label
 		 * @param field		[in] RomFields::Field
+		 * @param fieldIdx	[in] Field index
 		 */
-		void initDimensions(QLabel *lblDesc, const RomFields::Field &field);
+		void initDimensions(QLabel *lblDesc,
+			const RomFields::Field &field, int fieldIdx);
 
 		/**
 		 * Initialize a multi-language string field.
-		 * @param lblDesc	[in] Description label.
+		 * @param lblDesc	[in] Description label
 		 * @param field		[in] RomFields::Field
+		 * @param fieldIdx	[in] Field index
 		 */
-		void initStringMulti(QLabel *lblDesc, const RomFields::Field &field);
+		void initStringMulti(QLabel *lblDesc,
+			const RomFields::Field &field, int fieldIdx);
 
 		/**
 		 * Update all multi-language fields.
 		 * @param user_lc User-specified language code.
 		 */
 		void updateMulti(uint32_t user_lc);
+
+		/**
+		 * Update a field's value.
+		 * This is called after running a ROM operation.
+		 * @param fieldIdx Field index.
+		 * @return 0 on success; non-zero on error.
+		 */
+		int updateField(int fieldIdx);
 
 		/**
 		 * Initialize the display widgets.
@@ -172,6 +264,18 @@ class RomDataViewPrivate
 
 RomDataViewPrivate::RomDataViewPrivate(RomDataView *q, RomData *romData)
 	: q_ptr(q)
+	, btnOptions(nullptr)
+	, menuOptions(nullptr)
+	, romOps_firstActionIndex(-1)
+#if QT_VERSION < QT_VERSION_CHECK(5,0,0)
+	, mapperOptionsMenu(nullptr)
+#endif /* QT_VERSION < QT_VERSION_CHECK(5,0,0) */
+#ifdef HAVE_KMESSAGEWIDGET
+	, messageWidget(nullptr)
+#  ifdef AUTO_TIMEOUT_MESSAGEWIDGET
+	, tmrMessageWidget(nullptr)
+#  endif /* AUTO_TIMEOUT_MESSAGEWIDGET */
+#endif /* HAVE_KMESSAGEWIDGET */
 	, def_lc(0)
 	, cboLanguage(nullptr)
 	, romData(romData->ref())
@@ -186,6 +290,161 @@ RomDataViewPrivate::~RomDataViewPrivate()
 	ui.lblIcon->clearRp();
 	ui.lblBanner->clearRp();
 	UNREF(romData);
+}
+
+/**
+ * Get the selected language code.
+ * @return Selected language code, or 0 for none (default).
+ */
+inline uint32_t RomDataViewPrivate::sel_lc(void) const
+{
+	if (!cboLanguage) {
+		// No language dropdown...
+		return 0;
+	}
+
+	return cboLanguage->itemData(cboLanguage->currentIndex()).value<uint32_t>();
+}
+
+/**
+ * Find direct child widgets only.
+ * @param T Type.
+ */
+template<typename T>
+static inline T findDirectChild(QObject *obj, const QString &aName = QString())
+{
+#if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
+	return obj->findChild<T>(aName, Qt::FindDirectChildrenOnly);
+#else /* QT_VERSION < QT_VERSION_CHECK(5,0,0) */
+	foreach(QObject *child, obj->children()) {
+		T qchild = qobject_cast<T>(child);
+		if (qchild != nullptr) {
+			if (aName.isEmpty() || qchild->objectName() == aName) {
+				return qchild;
+			}
+		}
+	}
+	return nullptr;
+#endif /* QT_VERSION >= QT_VERSION_CHECK(5,0,0) */
+}
+
+/**
+ * Create the "Options" button in the parent window.
+ */
+void RomDataViewPrivate::createOptionsButton(void)
+{
+	assert(btnOptions == nullptr);
+	if (btnOptions)
+		return;
+
+	Q_Q(RomDataView);
+
+	// Parent should be a KPropertiesDialog.
+	QObject *const parent = q->parent();
+	assert(parent != nullptr);
+	if (!parent)
+		return;
+
+	// Parent should contain a KPageWidget.
+	// NOTE: Kubuntu 16.04 (Dolphin 15.12.3, KWidgetsAddons 5.18.0) has
+	// the QDialogButtonBox in the KPropertiesDialog, not the KPageWidget.
+	// NOTE 2: Newer frameworks with QDialogButtonBox in the KPageWidget
+	// also give it the object name "buttonbox". We'll leave out the name
+	// for compatibility purposes.
+	KPageWidget *const pageWidget = findDirectChild<KPageWidget*>(parent);
+
+	// Check for the QDialogButtonBox in the KPageWidget first.
+	QDialogButtonBox *btnBox = findDirectChild<QDialogButtonBox*>(pageWidget);
+	if (!btnBox) {
+		// Check in the KPropertiesDialog.
+		btnBox = findDirectChild<QDialogButtonBox*>(parent);
+	}
+	assert(btnBox != nullptr);
+	if (!btnBox)
+		return;
+
+	// Create the "Options" button.
+	// tr: "Options" button.
+	const QString s_options = U82Q(C_("RomDataView", "Op&tions"));
+	btnOptions = btnBox->addButton(s_options, QDialogButtonBox::ActionRole);
+	btnOptions->hide();
+
+	// Add a spacer to the QDialogButtonBox.
+	// This will ensure that the "Options" button is left-aligned.
+	QBoxLayout *const boxLayout = findDirectChild<QBoxLayout*>(btnBox);
+	if (boxLayout) {
+		// Find the index of the "Options" button.
+		const int count = boxLayout->count();
+		int idx = -1;
+		for (int i = 0; i < count; i++) {
+			if (boxLayout->itemAt(i)->widget() == btnOptions) {
+				idx = i;
+				break;
+			}
+		}
+
+		if (idx >= 0) {
+			boxLayout->insertStretch(idx+1, 1);
+		}
+	}
+
+	// Create the menu and (for Qt4) signal mapper.
+	// TODO: Signals.
+	menuOptions = new QMenu(s_options, q);
+	btnOptions->setMenu(menuOptions);
+
+#if QT_VERSION < QT_VERSION_CHECK(5,0,0)
+	mapperOptionsMenu = new QSignalMapper(q);
+	QObject::connect(mapperOptionsMenu, SIGNAL(mapped(int)),
+		q, SLOT(menuOptions_action_triggered(int)));
+#endif /* QT_VERSION < QT_VERSION_CHECK(5,0,0) */
+
+	/** Standard actions. **/
+	static const struct {
+		const char *desc;
+		int id;
+	} stdacts[] = {
+		{NOP_C_("RomDataView|Options", "Export to Text"),	OPTION_EXPORT_TEXT},
+		{NOP_C_("RomDataView|Options", "Export to JSON"),	OPTION_EXPORT_JSON},
+		{NOP_C_("RomDataView|Options", "Copy as Text"),		OPTION_COPY_TEXT},
+		{NOP_C_("RomDataView|Options", "Copy as JSON"),		OPTION_COPY_JSON},
+		{nullptr, 0}
+	};
+
+	for (const auto *p = stdacts; p->desc != nullptr; p++) {
+		QAction *const action = menuOptions->addAction(
+			U82Q(dpgettext_expr(RP_I18N_DOMAIN, "RomDataView|Options", p->desc)));
+#if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
+		QObject::connect(action, &QAction::triggered,
+			[q, p] { q->menuOptions_action_triggered(p->id); });
+#else /* QT_VERSION < QT_VERSION_CHECK(5,0,0) */
+		QObject::connect(action, SIGNAL(triggered()),
+			mapperOptionsMenu, SLOT(map()));
+		mapperOptionsMenu->setMapping(action, p->id);
+#endif /* QT_VERSION >= QT_VERSION_CHECK(5,0,0) */
+	}
+
+	/** ROM operations. **/
+	const vector<RomData::RomOps> ops = romData->romOps();
+	if (!ops.empty()) {
+		menuOptions->addSeparator();
+		romOps_firstActionIndex = menuOptions->children().count();
+
+		int i = 0;
+		const auto ops_end = ops.cend();
+		for (auto iter = ops.cbegin(); iter != ops_end; ++iter, i++) {
+			QAction *const action = menuOptions->addAction(U82Q(iter->desc));
+			action->setEnabled(!!(iter->flags & RomData::RomOps::ROF_ENABLED));
+#if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
+			QObject::connect(action, &QAction::triggered,
+				[q, i] { q->menuOptions_action_triggered(i); });
+#else /* QT_VERSION < QT_VERSION_CHECK(5,0,0) */
+			QObject::connect(action, SIGNAL(triggered()),
+				mapperOptionsMenu, SLOT(map()));
+			mapperOptionsMenu->setMapping(action, i);
+#endif /* QT_VERSION >= QT_VERSION_CHECK(5,0,0) */
+		}
+	}
 }
 
 /**
@@ -288,12 +547,15 @@ void RomDataViewPrivate::clearLayout(QLayout *layout)
 
 /**
  * Initialize a string field.
- * @param lblDesc	[in] Description label.
+ * @param lblDesc	[in] Description label
  * @param field		[in] RomFields::Field
- * @param str		[in,opt] String data. (If nullptr, field data is used.)
+ * @param fieldIdx	[in] Field index
+ * @param str		[in,opt] String data (If nullptr, field data is used)
  * @return QLabel*, or nullptr on error.
  */
-QLabel *RomDataViewPrivate::initString(QLabel *lblDesc, const RomFields::Field &field, const QString *str)
+QLabel *RomDataViewPrivate::initString(QLabel *lblDesc,
+	const RomFields::Field &field, int fieldIdx,
+	const QString *str)
 {
 	// String type.
 	Q_Q(RomDataView);
@@ -383,15 +645,18 @@ QLabel *RomDataViewPrivate::initString(QLabel *lblDesc, const RomFields::Field &
 		tab.form->addRow(lblDesc, lblString);
 	}
 
+	map_fieldIdx.insert(std::make_pair(fieldIdx, lblString));
 	return lblString;
 }
 
 /**
  * Initialize a bitfield.
- * @param lblDesc Description label.
- * @param field RomFields::Field
+ * @param lblDesc Description label
+ * @param field		[in] RomFields::Field
+ * @param fieldIdx	[in] Field index
  */
-void RomDataViewPrivate::initBitfield(QLabel *lblDesc, const RomFields::Field &field)
+void RomDataViewPrivate::initBitfield(QLabel *lblDesc,
+	const RomFields::Field &field, int fieldIdx)
 {
 	// Bitfield type. Create a grid of checkboxes.
 	Q_Q(RomDataView);
@@ -404,8 +669,8 @@ void RomDataViewPrivate::initBitfield(QLabel *lblDesc, const RomFields::Field &f
 	QGridLayout *gridLayout = new QGridLayout();
 	int row = 0, col = 0;
 	uint32_t bitfield = field.data.bitfield;
-	const auto iter_end = bitfieldDesc.names->cend();
-	for (auto iter = bitfieldDesc.names->cbegin(); iter != iter_end; ++iter, bitfield >>= 1) {
+	const auto names_cend = bitfieldDesc.names->cend();
+	for (auto iter = bitfieldDesc.names->cbegin(); iter != names_cend; ++iter, bitfield >>= 1) {
 		const string &name = *iter;
 		if (name.empty())
 			continue;
@@ -426,8 +691,8 @@ void RomDataViewPrivate::initBitfield(QLabel *lblDesc, const RomFields::Field &f
 		// Disable user modifications.
 		// TODO: Prevent the initial mousebutton down from working;
 		// otherwise, it shows a partial check mark.
-		QObject::connect(checkBox, SIGNAL(toggled(bool)),
-				 q, SLOT(bitfield_toggled_slot(bool)));
+		QObject::connect(checkBox, SIGNAL(clicked(bool)),
+				 q, SLOT(bitfield_clicked_slot(bool)));
 
 		gridLayout->addWidget(checkBox, row, col, 1, 1);
 		col++;
@@ -436,15 +701,19 @@ void RomDataViewPrivate::initBitfield(QLabel *lblDesc, const RomFields::Field &f
 			col = 0;
 		}
 	}
+
 	tabs[field.tabIdx].form->addRow(lblDesc, gridLayout);
+	map_fieldIdx.insert(std::make_pair(fieldIdx, gridLayout));
 }
 
 /**
  * Initialize a list data field.
- * @param lblDesc Description label.
- * @param field RomFields::Field
+ * @param lblDesc	[in] Description label
+ * @param field		[in] RomFields::Field
+ * @param fieldIdx	[in] Field index
  */
-void RomDataViewPrivate::initListData(QLabel *lblDesc, const RomFields::Field &field)
+void RomDataViewPrivate::initListData(QLabel *lblDesc,
+	const RomFields::Field &field, int fieldIdx)
 {
 	// ListData type. Create a QTreeWidget.
 	const auto &listDataDesc = field.desc.list_data;
@@ -487,6 +756,7 @@ void RomDataViewPrivate::initListData(QLabel *lblDesc, const RomFields::Field &f
 	assert(!(hasCheckboxes && hasIcons));
 	if (hasCheckboxes && hasIcons) {
 		// Both are set. This shouldn't happen...
+		delete lblDesc;
 		return;
 	}
 
@@ -494,6 +764,7 @@ void RomDataViewPrivate::initListData(QLabel *lblDesc, const RomFields::Field &f
 		assert(field.data.list_data.mxd.icons != nullptr);
 		if (!field.data.list_data.mxd.icons) {
 			// No icons vector...
+			delete lblDesc;
 			return;
 		}
 	}
@@ -583,7 +854,8 @@ void RomDataViewPrivate::initListData(QLabel *lblDesc, const RomFields::Field &f
 	}
 
 	unsigned int row = 0;	// for icons [TODO: Use iterator?]
-	for (auto iter = list_data->cbegin(); iter != list_data->cend(); ++iter, row++) {
+	const auto list_data_cend = list_data->cend();
+	for (auto iter = list_data->cbegin(); iter != list_data_cend; ++iter, row++) {
 		const vector<string> &data_row = *iter;
 		// FIXME: Skip even if we don't have checkboxes?
 		// (also check other UI frontends)
@@ -614,7 +886,8 @@ void RomDataViewPrivate::initListData(QLabel *lblDesc, const RomFields::Field &f
 
 		int col = 0;
 		uint32_t align = listDataDesc.alignment.data;
-		for (auto iter = data_row.cbegin(); iter != data_row.cend(); ++iter) {
+		const auto data_row_cend = data_row.cend();
+		for (auto iter = data_row.cbegin(); iter != data_row_cend; ++iter) {
 			if (!isMulti) {
 				treeWidgetItem->setData(col, Qt::DisplayRole, U82Q(*iter));
 			}
@@ -640,6 +913,7 @@ void RomDataViewPrivate::initListData(QLabel *lblDesc, const RomFields::Field &f
 		// Single row.
 		tabs[field.tabIdx].form->addRow(lblDesc, treeWidget);
 	}
+	map_fieldIdx.insert(std::make_pair(fieldIdx, treeWidget));
 
 	// Row height is recalculated when the window is first visible
 	// and/or the system theme is changed.
@@ -698,15 +972,17 @@ void RomDataViewPrivate::adjustListData(int tabIdx)
 
 /**
  * Initialize a Date/Time field.
- * @param lblDesc Description label.
- * @param field RomFields::Field
+ * @param lblDesc	[in] Description label
+ * @param field		[in] RomFields::Field
+ * @param fieldIdx	[in] Field index
  */
-void RomDataViewPrivate::initDateTime(QLabel *lblDesc, const RomFields::Field &field)
+void RomDataViewPrivate::initDateTime(QLabel *lblDesc,
+	const RomFields::Field &field, int fieldIdx)
 {
 	// Date/Time.
 	if (field.data.date_time == -1) {
 		// tr: Invalid date/time.
-		initString(lblDesc, field, U82Q(C_("RomDataView", "Unknown")));
+		initString(lblDesc, field, fieldIdx, U82Q(C_("RomDataView", "Unknown")));
 		return;
 	}
 
@@ -759,7 +1035,7 @@ void RomDataViewPrivate::initDateTime(QLabel *lblDesc, const RomFields::Field &f
 	}
 
 	if (!str.isEmpty()) {
-		initString(lblDesc, field, str);
+		initString(lblDesc, field, fieldIdx, str);
 	} else {
 		// Invalid date/time.
 		delete lblDesc;
@@ -768,51 +1044,37 @@ void RomDataViewPrivate::initDateTime(QLabel *lblDesc, const RomFields::Field &f
 
 /**
  * Initialize an Age Ratings field.
- * @param lblDesc Description label.
- * @param field RomFields::Field
+ * @param lblDesc	[in] Description label
+ * @param field		[in] RomFields::Field
+ * @param fieldIdx	[in] Field index
  */
-void RomDataViewPrivate::initAgeRatings(QLabel *lblDesc, const RomFields::Field &field)
+void RomDataViewPrivate::initAgeRatings(QLabel *lblDesc,
+	const RomFields::Field &field, int fieldIdx)
 {
 	// Age ratings.
-	Q_Q(RomDataView);
-	QLabel *lblAgeRatings = new QLabel(q);
-	lblAgeRatings->setAlignment(Qt::AlignLeft | Qt::AlignTop);
-	lblAgeRatings->setTextFormat(Qt::PlainText);
-	lblAgeRatings->setTextInteractionFlags(
-		Qt::TextSelectableByMouse | Qt::TextSelectableByKeyboard);
-	lblAgeRatings->setFocusPolicy(Qt::StrongFocus);
-
 	const RomFields::age_ratings_t *age_ratings = field.data.age_ratings;
 	assert(age_ratings != nullptr);
 	if (!age_ratings) {
 		// tr: No age ratings data.
-		lblAgeRatings->setText(U82Q(C_("RomDataView", "ERROR")));
-		tabs[field.tabIdx].form->addRow(lblDesc, lblAgeRatings);
+		initString(lblDesc, field, fieldIdx, U82Q(C_("RomDataView", "ERROR")));
 		return;
 	}
 
 	// Convert the age ratings field to a string.
-	QString str = U82Q(RomFields::ageRatingsDecode(age_ratings));
-	lblAgeRatings->setText(str);
-	tabs[field.tabIdx].form->addRow(lblDesc, lblAgeRatings);
+	const QString str = U82Q(RomFields::ageRatingsDecode(age_ratings));
+	initString(lblDesc, field, fieldIdx, str);
 }
 
 /**
  * Initialize a Dimensions field.
- * @param lblDesc Description label.
- * @param field RomFields::Field
+ * @param lblDesc Description label
+ * @param field		[in] RomFields::Field
+ * @param fieldIdx	[in] Field index
  */
-void RomDataViewPrivate::initDimensions(QLabel *lblDesc, const RomFields::Field &field)
+void RomDataViewPrivate::initDimensions(QLabel *lblDesc,
+	const RomFields::Field &field, int fieldIdx)
 {
 	// Dimensions.
-	Q_Q(RomDataView);
-	QLabel *lblDimensions = new QLabel(q);
-	lblDimensions->setAlignment(Qt::AlignLeft | Qt::AlignTop);
-	lblDimensions->setTextFormat(Qt::PlainText);
-	lblDimensions->setTextInteractionFlags(
-		Qt::TextSelectableByMouse | Qt::TextSelectableByKeyboard);
-	lblDimensions->setFocusPolicy(Qt::StrongFocus);
-
 	// TODO: 'x' or '×'? Using 'x' for now.
 	const int *const dimensions = field.data.dimensions;
 	char buf[64];
@@ -828,23 +1090,24 @@ void RomDataViewPrivate::initDimensions(QLabel *lblDesc, const RomFields::Field 
 		snprintf(buf, sizeof(buf), "%d", dimensions[0]);
 	}
 
-	lblDimensions->setText(QLatin1String(buf));
-	tabs[field.tabIdx].form->addRow(lblDesc, lblDimensions);
+	initString(lblDesc, field, fieldIdx, QString::fromLatin1(buf));
 }
 
 /**
  * Initialize a multi-language string field.
- * @param lblDesc	[in] Description label.
+ * @param lblDesc	[in] Description label
  * @param field		[in] RomFields::Field
+ * @param fieldIdx	[in] Field index
  */
-void RomDataViewPrivate::initStringMulti(QLabel *lblDesc, const RomFields::Field &field)
+void RomDataViewPrivate::initStringMulti(QLabel *lblDesc,
+	const RomFields::Field &field, int fieldIdx)
 {
 	// Mutli-language string.
 	// NOTE: The string contents won't be initialized here.
 	// They will be initialized separately, since the user will
 	// be able to change the displayed language.
 	QString qs_empty;
-	QLabel *const lblStringMulti = initString(lblDesc, field, &qs_empty);
+	QLabel *const lblStringMulti = initString(lblDesc, field, fieldIdx, &qs_empty);
 	if (lblStringMulti) {
 		vecStringMulti.emplace_back(std::make_pair(lblStringMulti, &field));
 	}
@@ -861,7 +1124,8 @@ void RomDataViewPrivate::updateMulti(uint32_t user_lc)
 	set<uint32_t> set_lc;
 
 	// RFT_STRING_MULTI
-	for (auto iter = vecStringMulti.cbegin(); iter != vecStringMulti.cend(); ++iter) {
+	const auto vecStringMulti_cend = vecStringMulti.cend();
+	for (auto iter = vecStringMulti.cbegin(); iter != vecStringMulti_cend; ++iter) {
 		QLabel *const lblString = iter->first;
 		const RomFields::Field *const pField = iter->second;
 		const auto *const pStr_multi = pField->data.str_multi;
@@ -875,8 +1139,9 @@ void RomDataViewPrivate::updateMulti(uint32_t user_lc)
 		if (!cboLanguage) {
 			// Need to add all supported languages.
 			// TODO: Do we need to do this for all of them, or just one?
+			const auto pStr_multi_cend = pStr_multi->cend();
 			for (auto iter_sm = pStr_multi->cbegin();
-			     iter_sm != pStr_multi->cend(); ++iter_sm)
+			     iter_sm != pStr_multi_cend; ++iter_sm)
 			{
 				set_lc.insert(iter_sm->first);
 			}
@@ -893,7 +1158,8 @@ void RomDataViewPrivate::updateMulti(uint32_t user_lc)
 	}
 
 	// RFT_LISTDATA_MULTI
-	for (auto iter = vecListDataMulti.cbegin(); iter != vecListDataMulti.cend(); ++iter) {
+	const auto vecListDataMulti_cend = vecListDataMulti.cend();
+	for (auto iter = vecListDataMulti.cbegin(); iter != vecListDataMulti_cend; ++iter) {
 		QTreeWidget *const treeWidget = iter->first;
 		const RomFields::Field *const pField = iter->second;
 		const auto *const pListData_multi = pField->data.list_data.data.multi;
@@ -907,8 +1173,9 @@ void RomDataViewPrivate::updateMulti(uint32_t user_lc)
 		if (!cboLanguage) {
 			// Need to add all supported languages.
 			// TODO: Do we need to do this for all of them, or just one?
+			const auto pListData_multi_cend = pListData_multi->cend();
 			for (auto iter_sm = pListData_multi->cbegin();
-			     iter_sm != pListData_multi->cend(); ++iter_sm)
+			     iter_sm != pListData_multi_cend; ++iter_sm)
 			{
 				set_lc.insert(iter_sm->first);
 			}
@@ -921,12 +1188,14 @@ void RomDataViewPrivate::updateMulti(uint32_t user_lc)
 			// Update the list.
 			const int rowCount = treeWidget->topLevelItemCount();
 			auto iter_listData = pListData->cbegin();
-			for (int row = 0; row < rowCount && iter_listData != pListData->cend(); row++, ++iter_listData) {
+			const auto pListData_cend = pListData->cend();
+			for (int row = 0; row < rowCount && iter_listData != pListData_cend; row++, ++iter_listData) {
 				QTreeWidgetItem *const treeWidgetItem = treeWidget->topLevelItem(row);
 
 				int col = 0;
+				const auto iter_listData_cend = iter_listData->cend();
 				for (auto iter_row = iter_listData->cbegin();
-				iter_row != iter_listData->cend(); ++iter_row, col++)
+				     iter_row != iter_listData_cend; ++iter_row, col++)
 				{
 					treeWidgetItem->setData(col, Qt::DisplayRole, U82Q(*iter_row));
 				}
@@ -959,7 +1228,8 @@ void RomDataViewPrivate::updateMulti(uint32_t user_lc)
 		};
 
 		int sel_idx = -1;
-		for (auto iter = set_lc.cbegin(); iter != set_lc.cend(); ++iter) {
+		const auto set_lc_cend = set_lc.cend();
+		for (auto iter = set_lc.cbegin(); iter != set_lc_cend; ++iter) {
 			const uint32_t lc = *iter;
 			const char *const name = SystemRegion::getLocalizedLanguageName(lc);
 			if (name) {
@@ -1012,6 +1282,118 @@ void RomDataViewPrivate::updateMulti(uint32_t user_lc)
 }
 
 /**
+ * Update a field's value.
+ * This is called after running a ROM operation.
+ * @param fieldIdx Field index.
+ * @return 0 on success; non-zero on error.
+ */
+int RomDataViewPrivate::updateField(int fieldIdx)
+{
+	const RomFields *const pFields = romData->fields();
+	assert(pFields != nullptr);
+	if (!pFields) {
+		// No fields.
+		// TODO: Show an error?
+		return 1;
+	}
+
+	assert(fieldIdx >= 0);
+	assert(fieldIdx < pFields->count());
+	if (fieldIdx < 0 || fieldIdx >= pFields->count())
+		return 2;
+
+	const RomFields::Field *const field = pFields->at(fieldIdx);
+	assert(field != nullptr);
+	if (!field)
+		return 3;
+
+	// Get the QObject*.
+	auto iter = map_fieldIdx.find(fieldIdx);
+	if (iter == map_fieldIdx.end()) {
+		// Not found.
+		return 4;
+	}
+
+	// Update the value widget(s).
+	int ret;
+	switch (field->type) {
+		case RomFields::RFT_INVALID:
+			assert(!"Cannot update an RFT_INVALID field.");
+			ret = 5;
+			break;
+		default:
+			assert(!"Unsupported field type.");
+			ret = 6;
+			break;
+
+		case RomFields::RFT_STRING: {
+			// QObject is a QLabel.
+			QLabel *const label = qobject_cast<QLabel*>(iter->second);
+			assert(label != nullptr);
+			if (!label) {
+				ret = 7;
+				break;
+			}
+
+			label->setText(field->data.str
+				? U82Q(*(field->data.str))
+				: QString());
+			ret = 0;
+			break;
+		}
+
+		case RomFields::RFT_BITFIELD: {
+			// QObject is a QGridLayout with QCheckBox widgets.
+			QGridLayout *const layout = qobject_cast<QGridLayout*>(iter->second);
+			assert(layout != nullptr);
+			if (!layout) {
+				ret = 8;
+				break;
+			}
+
+			// Bits with a blank name aren't included, so we'll need to iterate
+			// over the bitfield description.
+			const auto &bitfieldDesc = field->desc.bitfield;
+			int count = (int)bitfieldDesc.names->size();
+			assert(count <= 32);
+			if (count > 32)
+				count = 32;
+
+			uint32_t bitfield = field->data.bitfield;
+			const auto names_cend = bitfieldDesc.names->cend();
+			int layoutIdx = 0;
+			for (auto iter = bitfieldDesc.names->cbegin(); iter != names_cend; ++iter, bitfield >>= 1) {
+				const string &name = *iter;
+				if (name.empty())
+					continue;
+
+				// Get the widget.
+				QLayoutItem *const subLayoutItem = layout->itemAt(layoutIdx);
+				assert(subLayoutItem != nullptr);
+				if (!subLayoutItem)
+					break;
+
+				QCheckBox *const checkBox = qobject_cast<QCheckBox*>(subLayoutItem->widget());
+				assert(checkBox != nullptr);
+				if (!checkBox)
+					break;
+
+				const bool value = (bitfield & 1);
+				checkBox->setChecked(value);
+				checkBox->setProperty("RFT_BITFIELD_value", value);
+
+				// Next layout item.
+				layoutIdx++;
+			}
+			ret = 0;
+			break;
+		}
+	}
+
+	return ret;
+}
+
+/**
  * Initialize the display widgets.
  * If the widgets already exist, they will
  * be deleted and recreated.
@@ -1035,6 +1417,7 @@ void RomDataViewPrivate::initDisplayWidgets(void)
 		}
 	);
 	tabs.clear();
+	map_fieldIdx.clear();
 	ui.tabWidget->clear();
 	ui.tabWidget->hide();
 
@@ -1107,8 +1490,9 @@ void RomDataViewPrivate::initDisplayWidgets(void)
 
 	// Create the data widgets.
 	int prevTabIdx = 0;
-	const auto iter_end = pFields->cend();
-	for (auto iter = pFields->cbegin(); iter != iter_end; ++iter) {
+	const auto pFields_cend = pFields->cend();
+	int fieldIdx = 0;
+	for (auto iter = pFields->cbegin(); iter != pFields_cend; ++iter, fieldIdx++) {
 		const RomFields::Field &field = *iter;
 		if (!field.isValid)
 			continue;
@@ -1151,25 +1535,25 @@ void RomDataViewPrivate::initDisplayWidgets(void)
 				break;
 
 			case RomFields::RFT_STRING:
-				initString(lblDesc, field);
+				initString(lblDesc, field, fieldIdx);
 				break;
 			case RomFields::RFT_BITFIELD:
-				initBitfield(lblDesc, field);
+				initBitfield(lblDesc, field, fieldIdx);
 				break;
 			case RomFields::RFT_LISTDATA:
-				initListData(lblDesc, field);
+				initListData(lblDesc, field, fieldIdx);
 				break;
 			case RomFields::RFT_DATETIME:
-				initDateTime(lblDesc, field);
+				initDateTime(lblDesc, field, fieldIdx);
 				break;
 			case RomFields::RFT_AGE_RATINGS:
-				initAgeRatings(lblDesc, field);
+				initAgeRatings(lblDesc, field, fieldIdx);
 				break;
 			case RomFields::RFT_DIMENSIONS:
-				initDimensions(lblDesc, field);
+				initDimensions(lblDesc, field, fieldIdx);
 				break;
 			case RomFields::RFT_STRING_MULTI:
-				initStringMulti(lblDesc, field);
+				initStringMulti(lblDesc, field, fieldIdx);
 				break;
 		}
 	}
@@ -1202,7 +1586,8 @@ RomDataView::RomDataView(QWidget *parent)
 	Q_D(RomDataView);
 	d->ui.setupUi(this);
 
-	// No display widgets to initialize...
+	// Create the "Options" button in the parent window.
+	d->createOptionsButton();
 }
 
 RomDataView::RomDataView(RomData *romData, QWidget *parent)
@@ -1211,6 +1596,9 @@ RomDataView::RomDataView(RomData *romData, QWidget *parent)
 {
 	Q_D(RomDataView);
 	d->ui.setupUi(this);
+
+	// Create the "Options" button in the parent window.
+	d->createOptionsButton();
 
 	// Initialize the display widgets.
 	d->initDisplayWidgets();
@@ -1234,6 +1622,11 @@ void RomDataView::showEvent(QShowEvent *event)
 	Q_D(RomDataView);
 	d->ui.lblIcon->startAnimTimer();
 
+	// Show the "Options" button.
+	if (d->btnOptions) {
+		d->btnOptions->show();
+	}
+
 	// Pass the event to the superclass.
 	super::showEvent(event);
 }
@@ -1248,6 +1641,11 @@ void RomDataView::hideEvent(QHideEvent *event)
 	// Stop the icon animation.
 	Q_D(RomDataView);
 	d->ui.lblIcon->stopAnimTimer();
+
+	// Hide the "Options" button.
+	if (d->btnOptions) {
+		d->btnOptions->hide();
+	}
 
 	// Pass the event to the superclass.
 	super::hideEvent(event);
@@ -1327,7 +1725,7 @@ bool RomDataView::eventFilter(QObject *object, QEvent *event)
 /**
  * Disable user modification of RFT_BITFIELD checkboxes.
  */
-void RomDataView::bitfield_toggled_slot(bool checked)
+void RomDataView::bitfield_clicked_slot(bool checked)
 {
 	QAbstractButton *sender = qobject_cast<QAbstractButton*>(QObject::sender());
 	if (!sender)
@@ -1353,8 +1751,7 @@ void RomDataView::cboLanguage_currentIndexChanged_slot(int index)
 		return;
 	}
 
-	const uint32_t lc = d->cboLanguage->itemData(index).value<uint32_t>();
-	d->updateMulti(lc);
+	d->updateMulti(d->sel_lc());
 }
 
 /** Properties. **/
@@ -1400,4 +1797,202 @@ void RomDataView::setRomData(RomData *romData)
 	}
 
 	emit romDataChanged(romData);
+}
+
+/**
+ * An "Options" menu action was triggered.
+ * @param id Options ID.
+ */
+void RomDataView::menuOptions_action_triggered(int id)
+{
+	// IDs below 0 are for built-in actions.
+	// IDs >= 0 are for RomData-specific actions.
+	Q_D(RomDataView);
+
+	if (id < 0) {
+		// Export/copy to text or JSON.
+		const char *const rom_filename = d->romData->filename();
+		if (!rom_filename)
+			return;
+		QFileInfo fi(U82Q(rom_filename));
+
+		bool toClipboard;
+		QString s_title, s_filter;
+		QString s_default_ext;
+		switch (id) {
+			case RomDataViewPrivate::OPTION_EXPORT_TEXT:
+				toClipboard = false;
+				s_title = U82Q(C_("RomDataView", "Export to Text File"));
+				// tr: Text files filter. (Qt)
+				s_filter = U82Q(C_("RomDataView", "Text Files (*.txt);;All Files (*.*)"));
+				s_default_ext = QLatin1String(".txt");
+				break;
+			case RomDataViewPrivate::OPTION_EXPORT_JSON:
+				toClipboard = false;
+				s_title = U82Q(C_("RomDataView", "Export to JSON File"));
+				// tr: JSON files filter. (Qt)
+				s_filter = U82Q(C_("RomDataView", "JSON Files (*.json);;All Files (*.*)"));
+				s_default_ext = QLatin1String(".json");
+				break;
+			case RomDataViewPrivate::OPTION_COPY_TEXT:
+			case RomDataViewPrivate::OPTION_COPY_JSON:
+				toClipboard = true;
+				break;
+			default:
+				assert(!"Invalid action ID.");
+				return;
+		}
+
+		// TODO: QTextStream wrapper for ostream.
+		// For now, we'll use ofstream.
+		ofstream ofs;
+
+		if (!toClipboard) {
+			if (d->prevExportDir.isEmpty()) {
+				d->prevExportDir = fi.path();
+			}
+
+			QString defaultFileName = d->prevExportDir + QChar(L'/') + fi.completeBaseName() + s_default_ext;
+			QString out_filename = QFileDialog::getSaveFileName(this,
+				s_title, defaultFileName, s_filter);
+			if (out_filename.isEmpty())
+				return;
+
+			// Save the previous export directory.
+			QFileInfo fi2(out_filename);
+			d->prevExportDir = fi2.path();
+
+			ofs.open(out_filename.toUtf8().constData(), ofstream::out);
+			if (ofs.fail())
+				return;
+		}
+
+		// TODO: Optimize this such that we can pass ofstream or ostringstream
+		// to a factored-out function.
+
+		switch (id) {
+			case RomDataViewPrivate::OPTION_EXPORT_TEXT: {
+				ofs << "== " << rp_sprintf(C_("RomDataView", "File: '%s'"), rom_filename) << std::endl;
+				ROMOutput ro(d->romData, d->sel_lc());
+				ofs << ro;
+				break;
+			}
+			case RomDataViewPrivate::OPTION_EXPORT_JSON: {
+				JSONROMOutput jsro(d->romData);
+				ofs << jsro << std::endl;
+				break;
+			}
+			case RomDataViewPrivate::OPTION_COPY_TEXT: {
+				ostringstream oss;
+				oss << "== " << rp_sprintf(C_("RomDataView", "File: '%s'"), rom_filename) << std::endl;
+				ROMOutput ro(d->romData, d->sel_lc());
+				oss << ro;
+				QApplication::clipboard()->setText(U82Q(oss.str()));
+				break;
+			}
+			case RomDataViewPrivate::OPTION_COPY_JSON: {
+				ostringstream oss;
+				JSONROMOutput jsro(d->romData);
+				oss << jsro << std::endl;
+				QApplication::clipboard()->setText(U82Q(oss.str()));
+				break;
+			}
+			default:
+				assert(!"Invalid action ID.");
+				return;
+		}
+	} else if (d->romOps_firstActionIndex >= 0) {
+		// Run a ROM operation.
+		RomData::RomOpResult result;
+		int ret = d->romData->doRomOp(id, &result);
+		const QString qs_msg = U82Q(result.msg);
+		if (ret == 0) {
+			// ROM operation completed.
+
+			// Update fields.
+			std::for_each(result.fieldIdx.cbegin(), result.fieldIdx.cend(),
+				[d](int fieldIdx) {
+					d->updateField(fieldIdx);
+				}
+			);
+
+			// Update the RomOp menu entry in case it changed.
+			// NOTE: Assuming the RomOps vector order hasn't changed.
+			// TODO: Have RomData store the RomOps vector instead of
+			// rebuilding it here?
+			const vector<RomData::RomOps> ops = d->romData->romOps();
+			assert(id < (int)ops.size());
+			if (id < (int)ops.size()) {
+				const QObjectList &objList = d->menuOptions->children();
+				int actionIndex = d->romOps_firstActionIndex + id;
+				assert(actionIndex < objList.size());
+				if (actionIndex < objList.size()) {
+					QAction *const action = qobject_cast<QAction*>(objList.at(actionIndex));
+					if (action) {
+						const RomData::RomOps &op = ops[id];
+						action->setText(U82Q(op.desc));
+						action->setEnabled(!!(op.flags & RomData::RomOps::ROF_ENABLED));
+					}
+				}
+			}
+
+			// Show the message and play the sound.
+			const QString qs_msg = U82Q(result.msg);
+			MessageSound::play(QMessageBox::Information, qs_msg, this);
+		} else {
+			// An error occurred...
+			MessageSound::play(QMessageBox::Warning, qs_msg, this);
+		}
+
+#ifdef HAVE_KMESSAGEWIDGET
+		if (!qs_msg.isEmpty()) {
+			if (!d->messageWidget) {
+				d->messageWidget = new KMessageWidget(this);
+				d->messageWidget->setCloseButtonVisible(true);
+				d->messageWidget->setWordWrap(true);
+				d->ui.vboxLayout->addWidget(d->messageWidget);
+
+#  ifdef AUTO_TIMEOUT_MESSAGEWIDGET
+				d->tmrMessageWidget = new QTimer(this);
+				d->tmrMessageWidget->setSingleShot(true);
+				d->tmrMessageWidget->setInterval(10*1000);
+				connect(d->tmrMessageWidget, SIGNAL(timeout()),
+				        d->messageWidget, SLOT(animatedHide()));
+#    if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
+				// KMessageWidget::hideAnimationFinished was added in KF5.
+				// FIXME: This is after the animation *finished*, not when
+				// the Close button was clicked.
+				connect(d->messageWidget, &KMessageWidget::showAnimationFinished,
+				        d->tmrMessageWidget, static_cast<void (QTimer::*)()>(&QTimer::start));
+				connect(d->messageWidget, &KMessageWidget::hideAnimationFinished,
+				        d->tmrMessageWidget, &QTimer::stop);
+#    endif /* QT_VERSION >= QT_VERSION_CHECK(5,0,0) */
+#  endif /* AUTO_TIMEOUT_MESSAGEWIDGET */
+			}
+
+			if (ret == 0) {
+				d->messageWidget->setMessageType(KMessageWidget::Information);
+#  ifdef HAVE_KMESSAGEWIDGET_SETICON
+				d->messageWidget->setIcon(
+					d->messageWidget->style()->standardIcon(QStyle::SP_MessageBoxInformation));
+#  endif /* HAVE_KMESSAGEWIDGET_SETICON */
+			} else {
+				d->messageWidget->setMessageType(KMessageWidget::Warning);
+#  ifdef HAVE_KMESSAGEWIDGET_SETICON
+				d->messageWidget->setIcon(
+					d->messageWidget->style()->standardIcon(QStyle::SP_MessageBoxWarning));
+#  endif /* HAVE_KMESSAGEWIDGET_SETICON */
+			}
+			d->messageWidget->setText(qs_msg);
+			d->messageWidget->animatedShow();
+#if QT_VERSION < QT_VERSION_CHECK(5,0,0)
+#  ifdef AUTO_TIMEOUT_MESSAGEWIDGET
+			// KDE4's KMessageWidget doesn't have the "animation finished"
+			// signals, so we'll have to start the timer manually.
+			d->tmrMessageWidget->start();
+#  endif /* AUTO_TIMEOUT_MESSAGEWIDGET */
+#endif /* QT_VERSION < QT_VERSION_CHECK(5,0,0) */
+		}
+#endif /* HAVE_KMESSAGEWIDGET */
+	}
 }

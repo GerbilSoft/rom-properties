@@ -13,6 +13,7 @@
 #include <stdint.h>
 
 // C includes. (C++ namespace)
+#include <cerrno>
 #include <cstddef>	/* for size_t */
 
 // C++ includes.
@@ -49,6 +50,26 @@ class IRpFile : public RefBase
 		virtual bool isOpen(void) const = 0;
 
 		/**
+		 * Is the file compressed?
+		 * @return True if writable; false if not.
+		 */
+		inline bool isWritable(void) const
+		{
+			return m_isWritable;
+		}
+
+		/**
+		 * Is the file compressed?
+		 * If it is, then we're using a transparent decompression
+		 * wrapper, so it can't be written to easily.
+		 * @return True if compressed; false if not.
+		 */
+		inline bool isCompressed(void) const
+		{
+			return m_isCompressed;
+		}
+
+		/**
 		 * Get the last error.
 		 * @return Last POSIX error, or 0 if no error.
 		 */
@@ -65,6 +86,7 @@ class IRpFile : public RefBase
 			m_lastError = 0;
 		}
 
+	public:
 		/**
 		 * Close the file.
 		 */
@@ -72,8 +94,8 @@ class IRpFile : public RefBase
 
 		/**
 		 * Read data from the file.
-		 * @param ptr Output data buffer.
-		 * @param size Amount of data to read, in bytes.
+		 * @param ptr	[out] Output data buffer.
+		 * @param size	[in] Amount of data to read, in bytes.
 		 * @return Number of bytes read.
 		 */
 		ATTR_ACCESS_SIZE(write_only, 2, 3)
@@ -81,8 +103,8 @@ class IRpFile : public RefBase
 
 		/**
 		 * Write data to the file.
-		 * @param ptr Input data buffer.
-		 * @param size Amount of data to read, in bytes.
+		 * @param ptr	[in] Input data buffer.
+		 * @param size	[in] Amount of data to write, in bytes.
 		 * @return Number of bytes written.
 		 */
 		ATTR_ACCESS_SIZE(read_only, 2, 3)
@@ -90,7 +112,7 @@ class IRpFile : public RefBase
 
 		/**
 		 * Set the file position.
-		 * @param pos File position.
+		 * @param pos	[in] File position.
 		 * @return 0 on success; -1 on error.
 		 */
 		virtual int seek(off64_t pos) = 0;
@@ -116,6 +138,16 @@ class IRpFile : public RefBase
 		 */
 		virtual int truncate(off64_t size = 0) = 0;
 
+		/**
+		 * Flush buffers.
+		 * This operation only makes sense on writable files.
+		 * @return 0 on success; negative POSIX error code on error.
+		 */
+		virtual int flush(void)
+		{
+			return -ENOTSUP;
+		}
+
 	public:
 		/** File properties **/
 
@@ -130,6 +162,18 @@ class IRpFile : public RefBase
 		 * @return Filename. (May be empty if the filename is not available.)
 		 */
 		virtual std::string filename(void) const = 0;
+
+	public:
+		/** Extra functions **/
+
+		/**
+		 * Make the file writable.
+		 * @return 0 on success; negative POSIX error code on error.
+		 */
+		virtual int makeWritable(void)
+		{
+			return -ENOTSUP;
+		}
 
 	public:
 		/** Device file functions **/
@@ -172,10 +216,39 @@ class IRpFile : public RefBase
 		 * @param size	[in] Amount of data to read, in bytes.
 		 * @return Number of bytes read on success; 0 on seek or read error.
 		 */
-		size_t seekAndRead(off64_t pos, void *ptr, size_t size);
+		ATTR_ACCESS_SIZE(write_only, 3, 4)
+		inline size_t seekAndRead(off64_t pos, void *ptr, size_t size)
+		{
+			int ret = this->seek(pos);
+			if (ret != 0) {
+				// Seek error.
+				return 0;
+			}
+			return this->read(ptr, size);
+		}
+
+		/**
+		 * Seek to the specified address, then write data.
+		 * @param pos	[in] Requested seek address.
+		 * @param ptr	[in] Input data buffer.
+		 * @param size	[in] Amount of data to write, in bytes.
+		 * @return Number of bytes read on success; 0 on seek or read error.
+		 */
+		ATTR_ACCESS_SIZE(read_only, 3, 4)
+		inline size_t seekAndWrite(off64_t pos, const void *ptr, size_t size)
+		{
+			int ret = this->seek(pos);
+			if (ret != 0) {
+				// Seek error.
+				return 0;
+			}
+			return this->write(ptr, size);
+		}
 
 	protected:
 		int m_lastError;
+		bool m_isWritable;
+		bool m_isCompressed;
 };
 
 }

@@ -120,6 +120,9 @@ SET(librpbase_SRCS
 	RomFields.cpp
 	RomMetaData.cpp
 	SystemRegion.cpp
+	TextOut_common.cpp
+	TextOut_text.cpp
+	TextOut_json.cpp
 	img/RpImageLoader.cpp
 	img/RpPng.cpp
 	img/RpPngWriter.cpp
@@ -148,6 +151,7 @@ SET(librpbase_H
 	RomFields.hpp
 	RomMetaData.hpp
 	SystemRegion.hpp
+	TextOut.hpp
 	img/RpPng.hpp
 	img/RpPngWriter.hpp
 	img/APNG_dlopen.h
@@ -192,18 +196,19 @@ ENDIF(WIN32)
 
 IF(ENABLE_DECRYPTION)
 	SET(librpbase_CRYPTO_SRCS crypto/AesCipherFactory.cpp)
-	SET(librpbase_CRYPTO_H    crypto/IAesCipher.hpp)
+	SET(librpbase_CRYPTO_H    crypto/IAesCipher.hpp crypto/MD5.hpp)
 	IF(WIN32)
 		SET(librpbase_CRYPTO_OS_SRCS
 			crypto/AesCAPI.cpp
 			crypto/AesCAPI_NG.cpp
+			crypto/MD5Capi.cpp
 			)
 		SET(librpbase_CRYPTO_OS_H
 			crypto/AesCAPI.hpp
 			crypto/AesCAPI_NG.hpp
 			)
 	ELSE(WIN32)
-		SET(librpbase_CRYPTO_OS_SRCS crypto/AesNettle.cpp)
+		SET(librpbase_CRYPTO_OS_SRCS crypto/AesNettle.cpp crypto/MD5Nettle.cpp)
 		SET(librpbase_CRYPTO_OS_H    crypto/AesNettle.hpp)
 	ENDIF(WIN32)
 ENDIF(ENABLE_DECRYPTION)
@@ -298,20 +303,24 @@ TARGET_INCLUDE_DIRECTORIES(rpbase
 	PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>	# src
 		$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/..>	# src
 		$<BUILD_INTERFACE:${CMAKE_BINARY_DIR}>			# build
+		${RAPIDJSON_INCLUDE_DIRS}				# rapidjson
 	)
-IF(NOT ZLIB_LIBRARY)
-	MESSAGE(FATAL_ERROR "ZLIB_LIBRARY has not been set by CheckZLIB.cmake.")
-ENDIF(NOT ZLIB_LIBRARY)
-TARGET_LINK_LIBRARIES(rpbase PRIVATE ${ZLIB_LIBRARY})
-IF(MSVC)
-	TARGET_LINK_LIBRARIES(rpbase PRIVATE delayimp)
-ENDIF(MSVC)
 # Exclude from ALL builds.
 SET_TARGET_PROPERTIES(rpbase PROPERTIES EXCLUDE_FROM_ALL TRUE)
 # Make sure git_version.h is created before compiling this target.
 IF(TARGET git_version)
 	ADD_DEPENDENCIES(rpbase git_version)
 ENDIF(TARGET git_version)
+
+IF(MSVC)
+	# Delay-load implementation.
+	TARGET_LINK_LIBRARIES(rpbase PRIVATE delayimp)
+ENDIF(MSVC)
+
+IF(NOT ZLIB_LIBRARY)
+	MESSAGE(FATAL_ERROR "ZLIB_LIBRARY has not been set by CheckZLIB.cmake.")
+ENDIF(NOT ZLIB_LIBRARY)
+TARGET_LINK_LIBRARIES(rpbase PRIVATE ${ZLIB_LIBRARY})
 
 # Link in libdl if it's required for dlopen()
 # and we have a component that uses it.
@@ -358,6 +367,9 @@ IF(SCSI_LIBRARY)
 	# An extra library is needed for SCSI support.
 	TARGET_LINK_LIBRARIES(rpbase PRIVATE ${SCSI_LIBRARY})
 ENDIF(SCSI_LIBRARY)
+
+# rapidjson: Enable std::string support.
+ADD_DEFINITIONS(-DRAPIDJSON_HAS_STDSTRING)
 
 IF(ENABLE_NLS)
 	TARGET_LINK_LIBRARIES(rpbase PRIVATE i18n)

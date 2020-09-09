@@ -173,38 +173,38 @@ int u16_strcasecmp(const char16_t *wcs1, const char16_t *wcs2)
 #endif /* !RP_WIS16 */
 
 /**
- * sprintf()-style function for std::string.
+ * vsprintf()-style function for std::string.
  *
- * @param fmt Format string.
- * @param ... Arguments.
+ * @param fmt Format string
+ * @param ap Arguments
  * @return std::string
  */
-string rp_sprintf(const char *fmt, ...)
+string rp_vsprintf(const char *fmt, va_list ap)
 {
 	// Local buffer optimization to reduce memory allocation.
 	char locbuf[128];
-	va_list ap;
+	va_list ap_tmp;
+
 #if defined(_MSC_VER) && _MSC_VER < 1900
 	// MSVC 2013 and older isn't C99 compliant.
 	// Use the non-standard _vscprintf() to count characters.
-	va_start(ap, fmt);
-	int len = _vscprintf(fmt, ap);
-	va_end(ap);
+	va_copy(ap_tmp, ap);
+	int len = _vscprintf(fmt, ap_tmp);
+	va_end(ap_tmp);
+
 	if (len <= 0) {
 		// Nothing to format...
 		return string();
 	} else if (len < (int)sizeof(locbuf)) {
 		// The string fits in the local buffer.
-		va_start(ap, fmt);
 		vsnprintf(locbuf, sizeof(locbuf), fmt, ap);
-		va_end(ap);
 		return string(locbuf, len);
 	}
 #else
 	// C99-compliant vsnprintf().
-	va_start(ap, fmt);
-	int len = vsnprintf(locbuf, sizeof(locbuf), fmt, ap);
-	va_end(ap);
+	va_copy(ap_tmp, ap);
+	int len = vsnprintf(locbuf, sizeof(locbuf), fmt, ap_tmp);
+	va_end(ap_tmp);
 	if (len <= 0) {
 		// Nothing to format...
 		return string();
@@ -217,9 +217,7 @@ string rp_sprintf(const char *fmt, ...)
 	// Temporarily allocate a buffer large enough for the string,
 	// then call vsnprintf() again.
 	unique_ptr<char[]> buf(new char[len+1]);
-	va_start(ap, fmt);
 	int len2 = vsnprintf(buf.get(), len+1, fmt, ap);
-	va_end(ap);
 
 	string s_ret;
 	assert(len == len2);
@@ -231,44 +229,41 @@ string rp_sprintf(const char *fmt, ...)
 
 #if defined(_MSC_VER) || defined(__MINGW32__)
 /**
- * sprintf()-style function for std::string.
+ * vsprintf()-style function for std::string.
  * This version supports positional format string arguments.
  *
  * MSVCRT doesn't support positional arguments in the standard
  * printf() functions. Instead, it has printf_p().
  *
- * @param fmt Format string.
- * @param ... Arguments.
+ * @param fmt Format string
+ * @param ap Arguments
  * @return std::string
  */
-std::string rp_sprintf_p(const char *fmt, ...)
+std::string rp_vsprintf_p(const char *fmt, va_list ap)
 {
 	// Local buffer optimization to reduce memory allocation.
 	char locbuf[128];
-	va_list ap;
 
 	// _vsprintf_p() isn't C99 compliant.
 	// Use the non-standard _vscprintf_p() to count characters.
-	va_start(ap, fmt);
-	int len = _vscprintf_p(fmt, ap);
-	va_end(ap);
+	va_list ap_tmp;
+	va_copy(ap_tmp, ap);
+	int len = _vscprintf_p(fmt, ap_tmp);
+	va_end(ap_tmp);
+
 	if (len <= 0) {
 		// Nothing to format...
 		return string();
 	} else if (len < (int)sizeof(locbuf)) {
 		// The string fits in the local buffer.
-		va_start(ap, fmt);
 		_vsprintf_p(locbuf, sizeof(locbuf), fmt, ap);
-		va_end(ap);
 		return string(locbuf, len);
 	}
 
 	// Temporarily allocate a buffer large enough for the string,
 	// then call vsnprintf() again.
 	unique_ptr<char[]> buf(new char[len+1]);
-	va_start(ap, fmt);
 	int len2 = _vsprintf_p(buf.get(), len+1, fmt, ap);
-	va_end(ap);
 	assert(len == len2);
 	return (len == len2 ? string(buf.get(), len) : string());
 }

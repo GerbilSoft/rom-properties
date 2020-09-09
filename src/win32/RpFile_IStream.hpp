@@ -80,6 +80,13 @@ class RpFile_IStream : public LibRpFile::IRpFile
 		 */
 		int truncate(off64_t size = 0) final;
 
+		/**
+		 * Flush buffers.
+		 * This operation only makes sense on writable files.
+		 * @return 0 on success; negative POSIX error code on error.
+		 */
+		int flush(void) final;
+
 	public:
 		/** File properties. **/
 
@@ -94,6 +101,20 @@ class RpFile_IStream : public LibRpFile::IRpFile
 		 * @return Filename. (May be empty if the filename is not available.)
 		 */
 		std::string filename(void) const final;
+
+	public:
+		/** Extra functions **/
+
+		/**
+		 * Make the file writable.
+		 * @return 0 on success; negative POSIX error code on error.
+		 */
+		int makeWritable(void) final
+		{
+			// TODO: Actually do something here...
+			// For now, return 0 if writable; -ENOTSUP if not.
+			return (isWritable() ? 0 : -ENOTSUP);
+		}
 
 	protected:
 		IStream *m_pStream;

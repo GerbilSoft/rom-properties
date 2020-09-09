@@ -9,12 +9,17 @@
 #include "config.libwin32common.h"
 #include "WinUI.hpp"
 #include "AutoGetDC.hpp"
+
 #include <commctrl.h>
+#include <commdlg.h>
+#include <shlwapi.h>
 
 // C++ includes.
+#include <algorithm>
 #include <memory>
 #include <string>
 #include <unordered_set>
+using std::string;
 using std::unique_ptr;
 using std::unordered_set;
 using std::tstring;
@@ -195,6 +200,37 @@ COLORREF getAltRowColor(void)
 	return rgb.color;
 }
 
+/**
+ * Are we using COMCTL32.DLL v6.10 or later?
+ * @return True if it's v6.10 or later; false if not.
+ */
+bool isComCtl32_v610(void)
+{
+	// Check the COMCTL32.DLL version.
+	// TODO: Split this into libwin32common. (Also present in KeyManagerTab.)
+	HMODULE hComCtl32 = GetModuleHandle(_T("COMCTL32"));
+	assert(hComCtl32 != nullptr);
+
+	typedef HRESULT (CALLBACK *PFNDLLGETVERSION)(DLLVERSIONINFO *pdvi);
+	PFNDLLGETVERSION pfnDllGetVersion = nullptr;
+	if (!hComCtl32)
+		return false;
+
+	pfnDllGetVersion = (PFNDLLGETVERSION)GetProcAddress(hComCtl32, "DllGetVersion");
+	if (!pfnDllGetVersion)
+		return false;
+
+	bool ret = false;
+	DLLVERSIONINFO dvi;
+	dvi.cbSize = sizeof(dvi);
+	HRESULT hr = pfnDllGetVersion(&dvi);
+	if (SUCCEEDED(hr)) {
+		ret = dvi.dwMajorVersion > 6 ||
+			(dvi.dwMajorVersion == 6 && dvi.dwMinorVersion >= 10);
+	}
+	return ret;
+}
+
 /** Window procedure subclasses **/
 
 /**
@@ -302,6 +338,131 @@ LRESULT CALLBACK SingleLineEditProc(
 	}
 
 	return DefSubclassProc(hWnd, uMsg, wParam, lParam);
+}
+
+/**
+ * Get a filename using a File Name dialog.
+ *
+ * Depending on OS, this may use:
+ * - Vista+: IOpenFileDialog / IFileSaveDialog
+ * - XP: GetOpenFileName() / GetSaveFileName()
+ *
+ * @param bSave		[in] True for save; false for open.
+ * @param hWnd		[in] Owner.
+ * @param dlgTitle	[in] Dialog title.
+ * @param filterSpec	[in] Filter specification. (pipe-delimited)
+ * @param origFilename	[in,opt] Starting filename.
+ * @return Filename, or empty string on error.
+ */
+static tstring getFileName_int(bool bSave, HWND hWnd, const TCHAR *dlgTitle, const TCHAR *filterSpec, const TCHAR *origFilename)
+{
+	assert(dlgTitle != nullptr);
+	assert(filterSpec != nullptr);
+	tstring ts_ret;
+
+	if (0) {
+		// TODO: Implement IFileOpenDialog and IFileSaveDialog.
+		// This should support >MAX_PATH on Windows 10 v1607 and later.
+		// Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/bb776913%28v=vs.85%29.aspx?f=255&MSPPError=-2147217396
+		// Requires the following:
+		// - -DWINVER=0x0600
+		// - IFileDialogEvents object
+
+		// TODO: Move to libwin32common and implement everything there.
+	} else {
+		// GetOpenFileName() / GetSaveFileName()
+
+		// Convert filterSpec from pipe-delimited to NULL-deliminted.
+		// This is needed because Win32 file filters use embedded
+		// NULL characters, but gettext doesn't support that because
+		// it uses C strings.
+		tstring ts_filterSpec(filterSpec);
+		std::for_each(ts_filterSpec.begin(), ts_filterSpec.end(), [](TCHAR &p) {
+			if (p == _T('|')) {
+				p = _T('\0');
+			}
+		});
+
+		TCHAR tfilename[MAX_PATH];
+		tfilename[0] = 0;
+
+		OPENFILENAME ofn;
+		memset(&ofn, 0, sizeof(ofn));
+		ofn.lStructSize = sizeof(ofn);
+		ofn.hwndOwner = hWnd;
+		ofn.lpstrFilter = ts_filterSpec.c_str();
+		ofn.lpstrCustomFilter = nullptr;
+		ofn.lpstrFile = tfilename;
+		ofn.nMaxFile = _countof(tfilename);
+		ofn.lpstrTitle = dlgTitle;
+
+		// Check if the original filename is a directory or a file.
+		if (origFilename) {
+			DWORD dwAttrs = GetFileAttributes(origFilename);
+			if (dwAttrs != INVALID_FILE_ATTRIBUTES && (dwAttrs & FILE_ATTRIBUTE_DIRECTORY)) {
+				// It's a directory.
+				ofn.lpstrInitialDir = origFilename;
+			} else {
+				// Not a directory, or invalid.
+				// Assume it's a filename.
+				ofn.lpstrInitialDir = nullptr;
+				_tcscpy_s(tfilename, _countof(tfilename), origFilename);
+			}
+		}
+
+		// TODO: Make OFN_DONTADDTORECENT customizable?
+		BOOL bRet;
+		if (!bSave) {
+			ofn.Flags = OFN_DONTADDTORECENT | OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST | OFN_HIDEREADONLY;
+			bRet = GetOpenFileName(&ofn);
+		} else {
+			ofn.Flags = OFN_DONTADDTORECENT | OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY;
+			bRet = GetSaveFileName(&ofn);
+		}
+
+		if (bRet != 0 && tfilename[0] != _T('\0')) {
+			ts_ret = tfilename;
+		}
+	}
+
+	// Return the filename.
+	return ts_ret;
+}
+
+/**
+ * Get a filename using the Open File Name dialog.
+ *
+ * Depending on OS, this may use:
+ * - Vista+: IFileOpenDialog
+ * - XP: GetOpenFileName()
+ *
+ * @param hWnd		[in] Owner.
+ * @param dlgTitle	[in] Dialog title.
+ * @param filterSpec	[in] Filter specification. (pipe-delimited)
+ * @param origFilename	[in,opt] Starting filename.
+ * @return Filename, or empty string on error.
+ */
+tstring getOpenFileName(HWND hWnd, const TCHAR *dlgTitle, const TCHAR *filterSpec, const TCHAR *origFilename)
+{
+	return getFileName_int(false, hWnd, dlgTitle, filterSpec, origFilename);
+}
+
+/**
+ * Get a filename using the Save File Name dialog.
+ *
+ * Depending on OS, this may use:
+ * - Vista+: IFileSaveDialog
+ * - XP: GetSaveFileName()
+ *
+ * @param hWnd		[in] Owner.
+ * @param dlgTitle	[in] Dialog title.
+ * @param filterSpec	[in] Filter specification. (pipe-delimited)
+ * @param origFilename	[in,opt] Starting filename.
+ * @return Filename, or empty string on error.
+ */
+tstring getSaveFileName(HWND hWnd, const TCHAR *dlgTitle, const TCHAR *filterSpec, const TCHAR *origFilename)
+{
+	return getFileName_int(true, hWnd, dlgTitle, filterSpec, origFilename);
 }
 
 }

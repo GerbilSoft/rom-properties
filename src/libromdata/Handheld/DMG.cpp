@@ -1390,7 +1390,8 @@ int DMG::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
 
 		// Manually filter out characters that are rejected by CacheKeys.
 		img_filename.reserve(s_title.size() + 8);
-		for (auto iter = s_title.cbegin(); iter != s_title.cend(); ++iter) {
+		const auto s_title_cend = s_title.cend();
+		for (auto iter = s_title.cbegin(); iter != s_title_cend; ++iter) {
 			switch (*iter) {
 				case ':':
 				case '/':
@@ -1599,17 +1600,19 @@ int DMG::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
 	}
 
 	// Check for invalid characters and replace them with '_'.
-	for (auto iter = img_filename.begin(); iter != img_filename.end(); ++iter) {
-		switch (*iter) {
-			case '/':
-			case '*':
-			case '?':
-			case ':':
-				*iter = '_';
-			default:
-				break;
+	std::for_each(img_filename.begin(), img_filename.end(),
+		[](char &c) {
+			switch (c) {
+				case '/':
+				case '*':
+				case '?':
+				case ':':
+					c = '_';
+				default:
+					break;
+			}
 		}
-	}
+	);
 
 	RP_UNUSED(size);
 	vector<ImageSizeDef> sizeDefs = supportedImageSizes(imageType);

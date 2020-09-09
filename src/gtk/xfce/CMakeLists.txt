@@ -35,6 +35,11 @@ IF(GLib2_FOUND AND GObject2_FOUND AND GIO_FOUND AND GdkPixbuf2_FOUND AND GTK2_FO
 		MESSAGE(STATUS "ThunarX2 not found. Using the default extensions directory.")
 		SET(ThunarX2_EXTENSIONS_DIR "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/thunarx-2")
 	ENDIF(NOT ThunarX2_FOUND)
+
+	# LibCanberra and LibCanberraGtk2
+	# TODO: Add an OPTION() to allow the user to disable this?
+	FIND_PACKAGE(LibCanberra)
+	FIND_PACKAGE(LibCanberraGtk2)
 ELSE(GLib2_FOUND AND GObject2_FOUND AND GIO_FOUND AND GdkPixbuf2_FOUND AND GTK2_FOUND)
 	# GTK+ 2.x (or required dependencies) were not found.
 	# Disable the XFCE frontend.
@@ -89,6 +94,11 @@ SET(rom-properties-xfce_H
 	../gtk3/thunarx-mini.h
 	)
 
+IF(LibCanberra_FOUND AND LibCanberraGtk2_FOUND)
+	SET(rom-properties-xfce_SRCS ${rom-properties-xfce_SRCS} ../MessageSound.cpp)
+	SET(rom-properties-xfce_H    ${rom-properties-xfce_H}    ../MessageSound.hpp)
+ENDIF(LibCanberra_FOUND AND LibCanberraGtk2_FOUND)
+
 IF(ENABLE_PCH)
 	# Precompiled headers.
 	INCLUDE(PrecompiledHeader)
@@ -128,6 +138,11 @@ IF(BUILD_GTK2)
 	ENDIF(ENABLE_NLS)
 	TARGET_LINK_LIBRARIES(rom-properties-xfce PRIVATE GdkPixbuf2::gdkpixbuf2)
 	TARGET_LINK_LIBRARIES(rom-properties-xfce PUBLIC ${GTK2_LIBRARIES} GLib2::gio GLib2::gobject GLib2::glib)
+	IF(LibCanberra_FOUND AND LibCanberraGtk2_FOUND)
+		TARGET_LINK_LIBRARIES(rom-properties-xfce PRIVATE LibCanberra::libcanberra LibCanberra::gtk2)
+		TARGET_COMPILE_DEFINITIONS(rom-properties-xfce PRIVATE ENABLE_MESSAGESOUND)
+	ENDIF(LibCanberra_FOUND AND LibCanberraGtk2_FOUND)
+
 	# TODO: Move GTK2_DEFINITIONS to TARGET_COMPILE_DEFINITIONS.
 	# (Requires removing the "-D" switches.)
 	ADD_DEFINITIONS(${GTK2_DEFINITIONS})

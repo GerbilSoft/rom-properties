@@ -54,6 +54,7 @@ SET(libromdata_SRCS
 	Handheld/Nintendo3DSFirm.cpp
 	Handheld/Nintendo3DS_SMDH.cpp
 	Handheld/NintendoDS.cpp
+	Handheld/NintendoDS_ops.cpp
 	Handheld/PokemonMini.cpp
 	Handheld/PSP.cpp
 	Handheld/VirtualBoy.cpp
@@ -191,6 +192,7 @@ SET(libromdata_H
 	Handheld/Nintendo3DSFirm.hpp
 	Handheld/Nintendo3DS_SMDH.hpp
 	Handheld/NintendoDS.hpp
+	Handheld/NintendoDS_p.hpp
 	Handheld/PokemonMini.hpp
 	Handheld/PSP.hpp
 	Handheld/VirtualBoy.hpp
@@ -305,11 +307,17 @@ IF(ENABLE_DECRYPTION)
 		crypto/CtrKeyScrambler.cpp
 		crypto/N3DSVerifyKeys.cpp
 		crypto/KeyStoreUI.cpp
+
+		Handheld/ndscrypt.cpp
+		Handheld/nds_crc.cpp
 		)
 	SET(libromdata_CRYPTO_H
 		crypto/CtrKeyScrambler.hpp
 		crypto/N3DSVerifyKeys.hpp
 		crypto/KeyStoreUI.hpp
+
+		Handheld/ndscrypt.hpp
+		Handheld/nds_crc.hpp
 		)
 ENDIF(ENABLE_DECRYPTION)
 

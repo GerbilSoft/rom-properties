@@ -1322,7 +1322,8 @@ int RpPngWriter::write_tEXt(const kv_vector &kv)
 	// strdup() the strings.
 	unique_ptr<png_text[]> text(new png_text[kv.size()]);
 	png_text *pTxt = text.get();
-	for (auto iter = kv.cbegin(); iter != kv.cend(); ++iter, ++pTxt) {
+	const auto kv_cend = kv.cend();
+	for (auto iter = kv.cbegin(); iter != kv_cend; ++iter, ++pTxt) {
 		// Check if the string is ASCII, Latin-1, or other.
 		const string &value = iter->second;
 		const bool compress = (value.size() >= 40);	// same as Qt

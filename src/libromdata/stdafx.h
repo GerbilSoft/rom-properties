@@ -80,8 +80,9 @@
 #include "librpbase/RomData_p.hpp"
 
 // librpfile C++ headers
-#include "librpfile/IRpFile.hpp"
 #include "librpfile/FileSystem.hpp"
+#include "librpfile/IRpFile.hpp"
+#include "librpfile/RpFile.hpp"
 
 // librptexture C++ headers
 #include "librptexture/img/rp_image.hpp"

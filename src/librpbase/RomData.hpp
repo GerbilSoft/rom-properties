@@ -105,6 +105,19 @@ class RomData : public RefBase
 		 */
 		virtual void close(void);
 
+		/**
+		 * Get the filename that was loaded.
+		 * @return Filename, or nullptr on error.
+		 */
+		const char *filename(void) const;
+
+		/**
+		 * Is the file compressed? (transparent decompression)
+		 * If it is, then ROM operations won't be allowed.
+		 * @return True if compressed; false if not.
+		 */
+		bool isCompressed(void) const;
+
 	public:
 		/** ROM detection functions. **/
 
@@ -534,6 +547,57 @@ class RomData : public RefBase
 		 * @return True if the ROM image has "dangerous" permissions; false if not.
 		 */
 		virtual bool hasDangerousPermissions(void) const;
+
+	public:
+		struct RomOps {
+			std::string desc;	// Description (Use '&' for mnemonics)
+			uint32_t flags;		// Flags
+
+			enum RomOpsFlags {
+				ROF_ENABLED	= (1U << 0),	// Set to enable the ROM op
+			};
+
+			RomOps() { }
+			RomOps(const char *desc, uint32_t flags)
+				: desc(desc), flags(flags) { }
+		};
+
+		struct RomOpResult {
+			int status;			// Status. (0 == success; negative == POSIX error; positive == other error)
+			std::string msg;		// Status message. (optional)
+			std::vector<int> fieldIdx;	// Field indexes that were updated.
+		};
+
+		/**
+		 * Get the list of operations that can be performed on this ROM.
+		 * @return List of operations.
+		 */
+		std::vector<RomOps> romOps(void) const;
+
+		/**
+		 * Perform a ROM operation.
+		 * @param id		[in] Operation index.
+		 * @param pResult	[out,opt] Result. (For UI updates)
+		 * @return 0 on success; negative POSIX error code on error.
+		 */
+		int doRomOp(int id, RomOpResult *pResult);
+
+	protected:
+		/**
+		 * Get the list of operations that can be performed on this ROM.
+		 * Internal function; called by RomData::romOps().
+		 * @return List of operations.
+		 */
+		virtual std::vector<RomOps> romOps_int(void) const;
+
+		/**
+		 * Perform a ROM operation.
+		 * Internal function; called by RomData::doRomOp().
+		 * @param id		[in] Operation index.
+		 * @param pResult	[out,opt] Result. (For UI updates)
+		 * @return 0 on success; positive for "field updated" (subtract 1 for index); negative POSIX error code on error.
+		 */
+		virtual int doRomOp_int(int id, RomOpResult *pResult);
 };
 
 }

@@ -975,7 +975,9 @@ int KeyStoreUI::setKey(int sectIdx, int keyIdx, const string &value)
 		// Validate hex digits and convert to uppercase.
 		auto iter_src = value.cbegin();
 		auto iter_dest = new_value.begin();
-		for (; iter_src != value.cend() && iter_dest != new_value.end(); ++iter_src, ++iter_dest) {
+		const auto value_cend = value.cend();
+		const auto new_value_end = new_value.end();
+		for (; iter_src != value_cend && iter_dest != new_value_end; ++iter_src, ++iter_dest) {
 			char chr = *iter_src;
 			if (!ISXDIGIT(chr)) {
 				// Not a hex digit.
@@ -1272,11 +1274,11 @@ KeyStoreUI::ImportReturn KeyStoreUI::import3DSboot9bin(const char *filename)
 
 	// Key addresses and indexes.
 	static const KeyStoreUIPrivate::KeyBinAddress keyBinAddress[] = {
-		{0xD720, N3DSVerifyKeys::Key_Retail_SpiBoot},
+		{0x5720, N3DSVerifyKeys::Key_Retail_SpiBoot},
 		{0x59D0, N3DSVerifyKeys::Key_Retail_Slot0x2CKeyX},
 		{0x5A20, N3DSVerifyKeys::Key_Retail_Slot0x3DKeyX},
 
-		{0xD740, N3DSVerifyKeys::Key_Debug_SpiBoot},
+		{0x5740, N3DSVerifyKeys::Key_Debug_SpiBoot},
 		{0x5DD0, N3DSVerifyKeys::Key_Debug_Slot0x2CKeyX},
 		{0x5E20, N3DSVerifyKeys::Key_Debug_Slot0x3DKeyX},
 

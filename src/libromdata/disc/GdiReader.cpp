@@ -507,7 +507,8 @@ int GdiReader::readBlock(uint32_t blockIdx, void *ptr, int pos, size_t size)
 	// Find the block.
 	// TODO: Cache this lookup somewhere or something.
 	const GdiReaderPrivate::BlockRange *blockRange = nullptr;
-	for (auto iter = d->blockRanges.cbegin(); iter != d->blockRanges.cend(); ++iter) {
+	const auto blockRanges_cend = d->blockRanges.cend();
+	for (auto iter = d->blockRanges.cbegin(); iter != blockRanges_cend; ++iter) {
 		// NOTE: Using volatile because it can change in d->openTrack().
 		const volatile GdiReaderPrivate::BlockRange *const vbr = &(*iter);
 		if (blockIdx < vbr->blockStart) {

@@ -27,6 +27,7 @@
 #include <memory>
 #include <set>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 #else /* !__cplusplus */
@@ -72,11 +73,12 @@
 #include <QtGui/QPixmap>
 #include <QtGui/QValidator>
 
-// Was QtCore in Qt4; now QtWidgets in Qt5
+// Was QtGui in Qt4; now QtWidgets in Qt5
 #include <QApplication>
 #include <QCheckBox>
 #include <QComboBox>
 #include <QDialog>
+#include <QDialogButtonBox>
 #include <QFileDialog>
 #include <QHeaderView>
 #include <QLabel>
