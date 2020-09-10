@@ -410,7 +410,7 @@ const char *const *PSP::supportedFileExtensions_static(void)
 		".ziso", ".zso",		// ZISO
 #endif /* HAVE_LZ4 */
 
-		//".jiso", ".jso",	// JISO (TODO)
+		".jiso", ".jso",	// JISO (TODO)
 
 		nullptr
 	};
