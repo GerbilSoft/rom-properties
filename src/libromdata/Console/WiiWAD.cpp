@@ -623,12 +623,15 @@ uint32_t WiiWAD::supportedImageTypes(void) const
 {
 	RP_D(const WiiWAD);
 	uint32_t ret;
+#ifdef ENABLE_DECRYPTION
 	if (d->wibnData) {
 		ret = IMGBF_INT_ICON | IMGBF_INT_BANNER |
 		      IMGBF_EXT_COVER | IMGBF_EXT_COVER_3D |
 		      IMGBF_EXT_COVER_FULL |
 		      IMGBF_EXT_TITLE_SCREEN;
-	} else {
+	} else
+#endif /* ENABLE_DECRYPTION */
+	{
 		ret = IMGBF_EXT_COVER | IMGBF_EXT_COVER_3D |
 		      IMGBF_EXT_COVER_FULL |
 		      IMGBF_EXT_TITLE_SCREEN;
@@ -719,7 +722,7 @@ vector<RomData::ImageSizeDef> WiiWAD::supportedImageSizes(ImageType imageType) c
 
 	// TODO: DSiWare images.
 	switch (imageType) {
-		// TODO: Only return IMG_INT_* if a WiiWIBN is available.
+#ifdef ENABLE_DECRYPTION
 		case IMG_INT_ICON: {
 			if (d->wibnData) {
 				static const ImageSizeDef sz_INT_ICON[] = {
@@ -740,6 +743,7 @@ vector<RomData::ImageSizeDef> WiiWAD::supportedImageSizes(ImageType imageType) c
 			}
 			break;
 		}
+#endif /* ENABLE_DECRYPTION */
 
 		case IMG_EXT_COVER: {
 			static const ImageSizeDef sz_EXT_COVER[] = {
