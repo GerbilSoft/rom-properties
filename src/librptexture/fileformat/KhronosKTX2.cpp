@@ -65,13 +65,7 @@ class KhronosKTX2Private : public FileFormatPrivate
 		// Some textures may be stored upside-down due to
 		// the way GL texture coordinates are interpreted.
 		// Default without KTXorientation is HFlip=false, VFlip=true
-		uint8_t isFlipNeeded;
-		enum FlipBits : uint8_t {
-			FLIP_NONE	= 0,
-			FLIP_V		= (1U << 0),
-			FLIP_H		= (1U << 1),
-			FLIP_HV		= FLIP_H | FLIP_V,
-		};
+		rp_image::FlipOp flipOp;
 
 		// Mipmap offsets.
 		ao::uvector<KTX2_Mipmap_Index> mipmap_data;
@@ -106,7 +100,7 @@ class KhronosKTX2Private : public FileFormatPrivate
 
 KhronosKTX2Private::KhronosKTX2Private(KhronosKTX2 *q, IRpFile *file)
 	: super(q, file)
-	, isFlipNeeded(FLIP_V)
+	, flipOp(rp_image::FLIP_V)
 {
 	// Clear the KTX2 header struct.
 	memset(&ktx2Header, 0, sizeof(ktx2Header));
@@ -516,16 +510,13 @@ const rp_image *KhronosKTX2Private::loadImage(int mip)
 			break;
 	}
 
-	// Post-processing: Check if VFlip is needed.
-	// TODO: Handle HFlip too?
-	if (img && (isFlipNeeded & FLIP_V) && height > 1) {
+	// Post-processing: Check if a flip is needed.
+	if (img && (flipOp != rp_image::FLIP_NONE) && height > 1) {
 		// TODO: Assert that img dimensions match ktx2Header?
-		rp_image *flipimg = img->vflip();
+		rp_image *flipimg = img->flip(flipOp);
 		if (flipimg) {
-			// Swap the images.
-			std::swap(img, flipimg);
-			// Delete the original image.
-			delete flipimg;
+			delete img;
+			img = flipimg;
 		}
 	}
 
@@ -624,13 +615,13 @@ void KhronosKTX2Private::loadKeyValueData(void)
 			// - Y: du
 			// - Z: oi
 			const char *const v = k_end + 1;
-			isFlipNeeded = FLIP_NONE;
+			flipOp = rp_image::FLIP_NONE;
 
 			if (v[0] == 'l') {
-				isFlipNeeded = FLIP_H;
+				flipOp = rp_image::FLIP_H;
 			}
 			if (v[0] != '\0' && v[1] == 'u') {
-				isFlipNeeded |= FLIP_V;
+				flipOp = static_cast<rp_image::FlipOp>(flipOp | rp_image::FLIP_V);
 			}
 		}
 

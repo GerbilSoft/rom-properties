@@ -208,10 +208,18 @@ const rp_image *NintendoDSPrivate::loadIcon(void)
 					sizeof(nds_icon_title.dsi_icon_data[bmp]),
 					nds_icon_title.dsi_icon_pal[pal],
 					sizeof(nds_icon_title.dsi_icon_pal[pal]));
-				// TODO: Implement H-flip.
-				if (high_token & (1U << 7)) {
-					// V-flip is set.
-					rp_image *flipimg = img->vflip();
+				if (high_token & (3U << 6)) {
+					// At least one flip bit is set.
+					rp_image::FlipOp flipOp = rp_image::FLIP_NONE;
+					if (high_token & (1U << 6)) {
+						// H-flip
+						flipOp = rp_image::FLIP_H;
+					}
+					if (high_token & (1U << 7)) {
+						// V-flip
+						flipOp = static_cast<rp_image::FlipOp>(flipOp | rp_image::FLIP_V);
+					}
+					rp_image *flipimg = img->flip(flipOp);
 					delete img;
 					img = flipimg;
 				}

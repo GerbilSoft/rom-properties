@@ -65,13 +65,7 @@ class PowerVR3Private : public FileFormatPrivate
 		// Some textures may be stored upside-down due to
 		// the way GL texture coordinates are interpreted.
 		// Default without orientation metadata is HFlip=false, VFlip=false
-		uint8_t isFlipNeeded;
-		enum FlipBits : uint8_t {
-			FLIP_NONE	= 0,
-			FLIP_V		= (1U << 0),
-			FLIP_H		= (1U << 1),
-			FLIP_HV		= FLIP_H | FLIP_V,
-		};
+		rp_image::FlipOp flipOp;
 
 		// Metadata.
 		bool orientation_valid;
@@ -180,7 +174,7 @@ const struct PowerVR3Private::FmtLkup_t PowerVR3Private::fmtLkup_tbl_U32[] = {
 PowerVR3Private::PowerVR3Private(PowerVR3 *q, IRpFile *file)
 	: super(q, file)
 	, isByteswapNeeded(false)
-	, isFlipNeeded(FLIP_NONE)
+	, flipOp(rp_image::FLIP_NONE)
 	, orientation_valid(false)
 	, texDataStartAddr(0)
 {
@@ -605,24 +599,16 @@ const rp_image *PowerVR3Private::loadImage(int mip)
 		}
 	}
 
-	if (!img) {
-		// No image...
-		return nullptr;
-	}
-
 	// TODO: Handle sRGB.
 	// TODO: Handle premultiplied alpha, aside from DXT2 and DXT4.
 
-	// Post-processing: Check if VFlip is needed.
-	// TODO: Handle HFlip too?
-	if ((isFlipNeeded & FLIP_V) && height > 1) {
+	// Post-processing: Check if a flip is needed.
+	if (img && (flipOp != rp_image::FLIP_NONE) && height > 1) {
 		// TODO: Assert that img dimensions match ktxHeader?
-		rp_image *flipimg = img->vflip();
+		rp_image *flipimg = img->flip(flipOp);
 		if (flipimg) {
-			// Swap the images.
-			std::swap(img, flipimg);
-			// Delete the original image.
-			delete flipimg;
+			delete img;
+			img = flipimg;
 		}
 	}
 
@@ -695,14 +681,14 @@ int PowerVR3Private::loadPvr3Metadata(void)
 				orientation_valid = true;
 				p += sizeof(orientation);
 
-				// Set the flip bits.
+				// Set the flip operation.
 				// TODO: Z flip?
-				isFlipNeeded = 0;
+				flipOp = rp_image::FLIP_NONE;
 				if (orientation.x != 0) {
-					isFlipNeeded |= FLIP_H;
+					flipOp = rp_image::FLIP_H;
 				}
 				if (orientation.y != 0) {
-					isFlipNeeded |= FLIP_V;
+					flipOp = static_cast<rp_image::FlipOp>(flipOp | rp_image::FLIP_V);
 				}
 				break;
 			}

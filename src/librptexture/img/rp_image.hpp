@@ -449,15 +449,23 @@ class rp_image
 		 */
 		inline int apply_chroma_key(uint32_t key);
 
+		enum FlipOp : uint8_t {
+			FLIP_NONE	= 0,
+			FLIP_V		= (1U << 0),
+			FLIP_H		= (1U << 1),
+			FLIP_VH		= (FLIP_V | FLIP_H),
+		};
+
 		/**
-		 * Vertically flip the image.
+		 * Flip the image.
 		 *
 		 * This function returns a *new* image and leaves the
 		 * original image unmodified.
 		 *
-		 * @return Vertically-flipped image, or nullptr on error.
+		 * @param op Flip operation.
+		 * @return Flipped image, or nullptr on error.
 		 */
-		rp_image *vflip(void) const;
+		rp_image *flip(FlipOp op) const;
 
 		/**
 		 * Shrink image dimensions.

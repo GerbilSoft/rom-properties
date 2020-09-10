@@ -559,37 +559,117 @@ int rp_image::apply_chroma_key_cpp(uint32_t key)
 }
 
 /**
- * Vertically flip the image.
+ * Flip the image.
  *
  * This function returns a *new* image and leaves the
  * original image unmodified.
  *
- * @return Vertically-flipped image, or nullptr on error.
+ * @param op Flip operation.
+ * @return Flipped image, or nullptr on error.
  */
-rp_image *rp_image::vflip(void) const
+rp_image *rp_image::flip(FlipOp op) const
 {
-	RP_D(const rp_image);
-	rp_image_backend *const backend = d->backend;
-
-	const int height = backend->height;
-	assert(backend->width > 0 && height > 0);
-	if (backend->width <= 0 || height <= 0) {
+	assert(op >= FLIP_V);
+	assert(op <= FLIP_VH);
+	if (op == 0) {
+		// No-op...
+		return dup();
+	} else if (op < FLIP_V || op > FLIP_VH) {
+		// Not supported.
 		return nullptr;
 	}
 
+	RP_D(const rp_image);
+	rp_image_backend *const backend = d->backend;
 
-	rp_image *flipimg = new rp_image(backend->width, height, backend->format);
-	const uint8_t *src = static_cast<const uint8_t*>(backend->data());
-	uint8_t *dest = static_cast<uint8_t*>(flipimg->scanLine(height - 1));
+	const int width = backend->height;
+	const int height = backend->height;
+	assert(width > 0 && height > 0);
+	if (width <= 0 || height <= 0) {
+		return nullptr;
+	}
 
 	const int row_bytes = this->row_bytes();
-	const int src_stride = backend->stride;
-	const int dest_stride = flipimg->stride();
+	rp_image *flipimg = new rp_image(width, height, backend->format);
+	const uint8_t *src = static_cast<const uint8_t*>(backend->data());
+	uint8_t *dest;
+	if (op & FLIP_V) {
+		// Vertical flip: Destination starts at the bottom of the image.
+		dest = static_cast<uint8_t*>(flipimg->scanLine(height - 1));
+	} else {
+		// Not a vertical flip: Destination starts at the top of the image.
+		dest = static_cast<uint8_t*>(flipimg->bits());
+	}
 
-	for (int i = height; i > 0; i--) {
-		memcpy(dest, src, row_bytes);
-		src += src_stride;
-		dest -= dest_stride;
+	int src_stride = backend->stride;
+	int dest_stride = flipimg->stride();
+	if (op & FLIP_H) {
+		if (op & FLIP_V) {
+			// Vertical flip: Subtract the destination stride.
+			dest_stride = -dest_stride;
+		}
+
+		// Horizontal flip: Copy one pixel at a time.
+		// TODO: Improve performance by using pointer arithmetic.
+		// The algorithm gets ridiculously complicated and I couldn't
+		// get it right, so I'm not doing that right now.
+		switch (backend->format) {
+			default:
+				assert(!"rp_image format not supported for H-flip.");
+				delete flipimg;
+				return nullptr;
+
+			case rp_image::Format::CI8:
+				// 8-bit copy.
+				for (int y = height; y > 0; y--) {
+					int dx = 0;
+					for (int x = width-1; x >= 0; x--, dx++) {
+						dest[dx] = src[x];
+					}
+					src += src_stride;
+					dest += dest_stride;
+				}
+				break;
+
+			case rp_image::Format::ARGB32: {
+				// 32-bit copy.
+				const uint32_t *src32 = reinterpret_cast<const uint32_t*>(src);
+				uint32_t *dest32 = reinterpret_cast<uint32_t*>(dest);
+				src_stride /= sizeof(uint32_t);
+				dest_stride /= sizeof(uint32_t);
+
+				for (int y = height; y > 0; y--) {
+					int dx = 0;
+					for (int x = width-1; x >= 0; x--, dx++) {
+						dest32[dx] = src32[x];
+					}
+					src32 += src_stride;
+					dest32 += dest_stride;
+				}
+				break;
+			}
+		}
+	} else {
+		if (op & FLIP_V) {
+			// Vertical flip: Subtract the destination stride.
+			dest_stride = -dest_stride;
+		}
+
+		// Not a horizontal flip. Copy one line at a time.
+		for (int y = height; y > 0; y--) {
+			memcpy(dest, src, row_bytes);
+			src += src_stride;
+			dest += dest_stride;
+		}
+	}
+
+	// If CI8, copy the palette.
+	if (backend->format == Format::CI8) {
+		int entries = std::min(flipimg->palette_len(), d->backend->palette_len());
+		uint32_t *const dest_pal = flipimg->palette();
+		memcpy(dest_pal, d->backend->palette(), entries * sizeof(uint32_t));
+		// Palette is zero-initialized, so we don't need to
+		// zero remaining entries.
 	}
 
 	// If CI8, copy the palette.

@@ -60,13 +60,7 @@ class KhronosKTXPrivate : public FileFormatPrivate
 		// Some textures may be stored upside-down due to
 		// the way GL texture coordinates are interpreted.
 		// Default without KTXorientation is HFlip=false, VFlip=true
-		uint8_t isFlipNeeded;
-		enum FlipBits : uint8_t {
-			FLIP_NONE	= 0,
-			FLIP_V		= (1U << 0),
-			FLIP_H		= (1U << 1),
-			FLIP_HV		= FLIP_H | FLIP_V,
-		};
+		rp_image::FlipOp flipOp;
 
 		// Texture data start address.
 		unsigned int texDataStartAddr;
@@ -100,7 +94,7 @@ class KhronosKTXPrivate : public FileFormatPrivate
 KhronosKTXPrivate::KhronosKTXPrivate(KhronosKTX *q, IRpFile *file)
 	: super(q, file)
 	, isByteswapNeeded(false)
-	, isFlipNeeded(FLIP_V)
+	, flipOp(rp_image::FLIP_V)
 	, texDataStartAddr(0)
 	, img(nullptr)
 {
@@ -539,16 +533,13 @@ const rp_image *KhronosKTXPrivate::loadImage(void)
 			break;
 	}
 
-	// Post-processing: Check if VFlip is needed.
-	// TODO: Handle HFlip too?
-	if (img && (isFlipNeeded & FLIP_V) && height > 1) {
+	// Post-processing: Check if a flip is needed.
+	if (img && (flipOp != rp_image::FLIP_NONE) && height > 1) {
 		// TODO: Assert that img dimensions match ktxHeader?
-		rp_image *flipimg = img->vflip();
+		rp_image *flipimg = img->flip(flipOp);
 		if (flipimg) {
-			// Swap the images.
-			std::swap(img, flipimg);
-			// Delete the original image.
-			delete flipimg;
+			delete img;
+			img = flipimg;
 		}
 	}
 
@@ -649,20 +640,20 @@ void KhronosKTXPrivate::loadKeyValueData(void)
 
 			static const struct {
 				char str[7];
-				uint8_t flip;
+				rp_image::FlipOp flipOp;
 			} orientation_lkup_tbl[] = {
-				{{'S','=','r',',','T','=','d'}, FLIP_NONE},
-				{{'S','=','r',',','T','=','u'}, FLIP_V},
-				{{'S','=','l',',','T','=','d'}, FLIP_H},
-				{{'S','=','l',',','T','=','u'}, FLIP_HV},
+				{{'S','=','r',',','T','=','d'}, rp_image::FLIP_NONE},
+				{{'S','=','r',',','T','=','u'}, rp_image::FLIP_V},
+				{{'S','=','l',',','T','=','d'}, rp_image::FLIP_H},
+				{{'S','=','l',',','T','=','u'}, rp_image::FLIP_VH},
 
-				{"", 0}
+				{"", rp_image::FLIP_NONE}
 			};
 
 			for (const auto *p = orientation_lkup_tbl; p->str[0] != '\0'; p++) {
 				if (!strncmp(v, p->str, 7)) {
 					// Found a match.
-					isFlipNeeded = p->flip;
+					flipOp = p->flipOp;
 					break;
 				}
 			}
