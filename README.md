@@ -123,11 +123,14 @@ button.
 | Nintendo Virtual Boy          |       Yes      |    No    |       N/A       |       No       |
 | Nintendo Game Boy Advance     |       Yes      |    Yes   |       N/A       |      Title     |
 | Nintendo DS(i)                |       Yes      |    Yes   |       Icon      |  Covers, Box   |
+| Nintendo DSi TADs             |     Partial    |    No    |        No       |       No       |
 | Nintendo 3DS                  |       Yes      |    Yes   |       Icon      |  Covers, Box   |
 | Pokémon Mini                  |       Yes      |    Yes   |       N/A       |       No       |
 | Sony PlayStation Portable     |       Yes      |    Yes   |       Icon      |       No       |
 | Tiger game.com                |       Yes      |    Yes   |       Icon      |       No       |
 
+\* The Nintendo DSi TAD parser is very minimal. The format is similar to
+   Wii WAD, so it's mostly just that but with the correct system name.
 \* The PSP parser supports several compressed disc formats: CISOv1, CISOv2,
    ZISO, JISO, and DAX.
 
