@@ -78,14 +78,28 @@ public:
 	}
 };
 class SafeString {
-	const char* str;
+	const char *str;
+	size_t len;
 	bool quotes;
 	size_t width;
 public:
-	SafeString(const char* str, bool quotes = true, size_t width=0) :str(str), quotes(quotes), width(width) {}
-	SafeString(const string* str, bool quotes = true, size_t width=0) :quotes(quotes), width(width) {
-		this->str = (str ? str->c_str() : nullptr);
-	}
+	SafeString(const char *str, bool quotes = true, size_t width = 0)
+		: str(str)
+		, len(str ? strlen(str) : 0)
+		, quotes(quotes)
+		, width(width) { }
+
+	SafeString(const string *str, bool quotes = true, size_t width = 0)
+		: str(str ? str->c_str() : nullptr)
+		, len(str ? str->size() : 0)
+		, quotes(quotes)
+		, width(width) { }
+
+	SafeString(const string &str, bool quotes = true, size_t width = 0)
+		: str(str.c_str())
+		, len(str.size())
+		, quotes(quotes)
+		, width(width) { }
 
 private:
 	static string process(const SafeString& cp)
@@ -93,20 +107,20 @@ private:
 		// NOTE: We have to use a temporary string here because
 		// the caller might be using setw() for field padding.
 		// TODO: Try optimizing it out while preserving setw().
-
 		assert(cp.str != nullptr);
-		if (!cp.str) {
-			// nullptr string...
+		if (!cp.str || cp.len == 0) {
+			// nullptr or empty string.
 			return "''";
 		}
 
 		string escaped;
-		escaped.reserve(strlen(cp.str) + (cp.quotes ? 2 : 0));
+		escaped.reserve(cp.len + (cp.quotes ? 2 : 0));
 		if (cp.quotes) {
 			escaped += '\'';
 		}
 
-		for (const char *p = cp.str; *p != 0; p++) {
+		size_t n = cp.len;
+		for (const char *p = cp.str; n > 0; p++, n--) {
 			if (cp.width && *p == '\n') {
 				escaped += '\n';
 				escaped.append(cp.width + (cp.quotes ? 1 : 0), ' ');
@@ -439,7 +453,7 @@ public:
 					string str;
 					if (nl_count[row] == 0) {
 						// No newlines. Print the string directly.
-						str = SafeString(jt->c_str(), false);
+						str = SafeString(*jt, false);
 					} else if (linePos[col] == (unsigned int)string::npos) {
 						// End of string.
 					} else {
@@ -620,7 +634,7 @@ public:
 			// Get the string and update the text.
 			const string *const pStr = RomFields::getFromStringMulti(pStr_multi, field.def_lc, field.user_lc);
 			assert(pStr != nullptr);
-			os << SafeString((pStr ? pStr->c_str() : ""), true, field.width);
+			os << SafeString((pStr ? *pStr : ""), true, field.width);
 		} else {
 			// Empty string.
 			os << "''";
