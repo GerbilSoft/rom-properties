@@ -45,7 +45,6 @@ using std::vector;
 namespace LibRomData {
 
 ROMDATA_IMPL(WiiWAD)
-ROMDATA_IMPL_IMG(WiiWAD)
 
 class WiiWADPrivate : public RomDataPrivate
 {
@@ -155,6 +154,8 @@ WiiWADPrivate::~WiiWADPrivate()
  */
 string WiiWADPrivate::getGameInfo(void)
 {
+	// TODO: Check for DSi SRL.
+
 #ifdef ENABLE_DECRYPTION
 	// IMET header.
 	// TODO: Read on demand instead of always reading in the constructor.
@@ -522,11 +523,34 @@ const char *WiiWAD::systemName(unsigned int type) const
 	static_assert(SYSNAME_TYPE_MASK == 3,
 		"WiiWAD::systemName() array index optimization needs to be updated.");
 
-	static const char *const sysNames[4] = {
-		"Nintendo Wii", "Wii", "Wii", nullptr
-	};
+	const uint32_t tid_hi = be32_to_cpu(d->tmdHeader.title_id.hi);
+	const unsigned int sys_id = (tid_hi >> 16);
 
-	return sysNames[type & SYSNAME_TYPE_MASK];
+	// TODO: Enum for Nintendo system IDs.
+	type &= SYSNAME_TYPE_MASK;
+	switch (sys_id) {
+		default:
+		case 0:
+		case 1: {
+			// Wii
+			static const char *const sysNames_Wii[4] = {
+				"Nintendo Wii", "Wii", "Wii", nullptr
+			};
+			return sysNames_Wii[type];
+		}
+
+		case 3: {
+			// DSi
+			// TODO: iQue DSi for China?
+			static const char *const sysNames_DSi[4] = {
+				"Nintendo DSi", "DSi", "DSi", nullptr
+			};
+			return sysNames_DSi[type];
+		}
+	}
+
+	// Should not get here...
+	return nullptr;
 }
 
 /**
@@ -547,6 +571,7 @@ const char *const *WiiWAD::supportedFileExtensions_static(void)
 	static const char *const exts[] = {
 		".wad",		// Nintendo WAD Format
 		".bwf",		// BroadOn WAD Format
+		".tad",		// DSi TAD (similar to Nintendo WAD)
 
 		nullptr
 	};
@@ -569,6 +594,10 @@ const char *const *WiiWAD::supportedMimeTypes_static(void)
 		// Unofficial MIME types from FreeDesktop.org.
 		"application/x-wii-wad",
 
+		// Unofficial MIME types.
+		// TODO: Get these upstreamed on FreeDesktop.org.
+		"application/x-dsi-tad",
+
 		nullptr
 	};
 	return mimeTypes;
@@ -580,11 +609,31 @@ const char *const *WiiWAD::supportedMimeTypes_static(void)
  */
 uint32_t WiiWAD::supportedImageTypes_static(void)
 {
-	// TODO: Only return IMG_INT_* if a WiiWIBN is available.
 	return IMGBF_INT_ICON | IMGBF_INT_BANNER |
 	       IMGBF_EXT_COVER | IMGBF_EXT_COVER_3D |
 	       IMGBF_EXT_COVER_FULL |
 	       IMGBF_EXT_TITLE_SCREEN;
+}
+
+/**
+ * Get a bitfield of image types this class can retrieve.
+ * @return Bitfield of supported image types. (ImageTypesBF)
+ */
+uint32_t WiiWAD::supportedImageTypes(void) const
+{
+	RP_D(const WiiWAD);
+	uint32_t ret;
+	if (d->wibnData) {
+		ret = IMGBF_INT_ICON | IMGBF_INT_BANNER |
+		      IMGBF_EXT_COVER | IMGBF_EXT_COVER_3D |
+		      IMGBF_EXT_COVER_FULL |
+		      IMGBF_EXT_TITLE_SCREEN;
+	} else {
+		ret = IMGBF_EXT_COVER | IMGBF_EXT_COVER_3D |
+		      IMGBF_EXT_COVER_FULL |
+		      IMGBF_EXT_TITLE_SCREEN;
+	}
+	return ret;
 }
 
 /**
@@ -615,6 +664,81 @@ vector<RomData::ImageSizeDef> WiiWAD::supportedImageSizes_static(ImageType image
 			};
 			return vector<ImageSizeDef>(sz_INT_BANNER,
 				sz_INT_BANNER + ARRAY_SIZE(sz_INT_BANNER));
+		}
+
+		case IMG_EXT_COVER: {
+			static const ImageSizeDef sz_EXT_COVER[] = {
+				{nullptr, 160, 224, 0},
+			};
+			return vector<ImageSizeDef>(sz_EXT_COVER,
+				sz_EXT_COVER + ARRAY_SIZE(sz_EXT_COVER));
+		}
+		case IMG_EXT_COVER_3D: {
+			static const ImageSizeDef sz_EXT_COVER_3D[] = {
+				{nullptr, 176, 248, 0},
+			};
+			return vector<ImageSizeDef>(sz_EXT_COVER_3D,
+				sz_EXT_COVER_3D + ARRAY_SIZE(sz_EXT_COVER_3D));
+		}
+		case IMG_EXT_COVER_FULL: {
+			static const ImageSizeDef sz_EXT_COVER_FULL[] = {
+				{nullptr, 512, 340, 0},
+				{"HQ", 1024, 680, 1},
+			};
+			return vector<ImageSizeDef>(sz_EXT_COVER_FULL,
+				sz_EXT_COVER_FULL + ARRAY_SIZE(sz_EXT_COVER_FULL));
+		}
+		case IMG_EXT_TITLE_SCREEN: {
+			static const ImageSizeDef sz_EXT_TITLE_SCREEN[] = {
+				{nullptr, 192, 112, 0},
+			};
+			return vector<ImageSizeDef>(sz_EXT_TITLE_SCREEN,
+				sz_EXT_TITLE_SCREEN + ARRAY_SIZE(sz_EXT_TITLE_SCREEN));
+		}
+		default:
+			break;
+	}
+
+	// Unsupported image type.
+	return vector<ImageSizeDef>();
+}
+
+/**
+ * Get a list of all available image sizes for the specified image type.
+ *
+ * The first item in the returned vector is the "default" size.
+ * If the width/height is 0, then an image exists, but the size is unknown.
+ *
+ * @param imageType Image type.
+ * @return Vector of available image sizes, or empty vector if no images are available.
+ */
+vector<RomData::ImageSizeDef> WiiWAD::supportedImageSizes(ImageType imageType) const
+{
+	ASSERT_supportedImageSizes(imageType);
+	RP_D(const WiiWAD);
+
+	// TODO: DSiWare images.
+	switch (imageType) {
+		// TODO: Only return IMG_INT_* if a WiiWIBN is available.
+		case IMG_INT_ICON: {
+			if (d->wibnData) {
+				static const ImageSizeDef sz_INT_ICON[] = {
+					{nullptr, BANNER_WIBN_ICON_W, BANNER_WIBN_ICON_H, 0},
+				};
+				return vector<ImageSizeDef>(sz_INT_ICON,
+					sz_INT_ICON + ARRAY_SIZE(sz_INT_ICON));
+			}
+			break;
+		}
+		case IMG_INT_BANNER: {
+			if (d->wibnData) {
+				static const ImageSizeDef sz_INT_BANNER[] = {
+					{nullptr, BANNER_WIBN_IMAGE_W, BANNER_WIBN_IMAGE_H, 0},
+				};
+				return vector<ImageSizeDef>(sz_INT_BANNER,
+					sz_INT_BANNER + ARRAY_SIZE(sz_INT_BANNER));
+			}
+			break;
 		}
 
 		case IMG_EXT_COVER: {
@@ -731,9 +855,10 @@ int WiiWAD::loadFieldData(void)
 
 	// Title ID.
 	// TODO: Make sure the ticket title ID matches the TMD title ID.
+	const uint32_t tid_hi = be32_to_cpu(tmdHeader->title_id.hi);
+	const unsigned int sys_id = (tid_hi >> 16);	// If 3, this is a DSi TAD.
 	d->fields->addField_string(C_("WiiWAD", "Title ID"),
-		rp_sprintf("%08X-%08X",
-			be32_to_cpu(tmdHeader->title_id.hi),
+		rp_sprintf("%08X-%08X", tid_hi,
 			be32_to_cpu(tmdHeader->title_id.lo)));
 
 	// Game ID.
@@ -755,140 +880,142 @@ int WiiWAD::loadFieldData(void)
 	d->fields->addField_string(C_("WiiWAD", "Title Version"),
 		rp_sprintf("%u.%u (v%u)", title_version >> 8, title_version & 0xFF, title_version));
 
-	// Title ID constants.
-	const uint32_t tid_hi = be32_to_cpu(tmdHeader->title_id.hi);
-
-	// Region code.
-	unsigned int gcnRegion;
-	if (tid_hi == 0x00000001) {
-		// IOS and/or System Menu.
-		if (tmdHeader->title_id.lo == cpu_to_be32(0x00000002)) {
-			// System Menu.
-			const char *ver = WiiSystemMenuVersion::lookup(title_version);
-			if (ver) {
-				switch (ver[3]) {
-					case 'J':
-						gcnRegion = GCN_REGION_JPN;
-						break;
-					case 'U':
-						gcnRegion = GCN_REGION_USA;
-						break;
-					case 'E':
-						gcnRegion = GCN_REGION_EUR;
-						break;
-					case 'K':
-						gcnRegion = GCN_REGION_KOR;
-						break;
-					case 'C':
-						gcnRegion = GCN_REGION_CHN;
-						break;
-					case 'T':
-						gcnRegion = GCN_REGION_TWN;
-						break;
-					default:
-						gcnRegion = 255;
-						break;
+	// Wii-specific
+	unsigned int gcnRegion = ~0U;
+	const char id4_region = (char)tmdHeader->title_id.u8[7];
+	if (sys_id <= 1) {
+		// Region code
+		if (tid_hi == 0x00000001) {
+			// IOS and/or System Menu.
+			if (tmdHeader->title_id.lo == cpu_to_be32(0x00000002)) {
+				// System Menu.
+				const char *ver = WiiSystemMenuVersion::lookup(title_version);
+				if (ver) {
+					switch (ver[3]) {
+						case 'J':
+							gcnRegion = GCN_REGION_JPN;
+							break;
+						case 'U':
+							gcnRegion = GCN_REGION_USA;
+							break;
+						case 'E':
+							gcnRegion = GCN_REGION_EUR;
+							break;
+						case 'K':
+							gcnRegion = GCN_REGION_KOR;
+							break;
+						case 'C':
+							gcnRegion = GCN_REGION_CHN;
+							break;
+						case 'T':
+							gcnRegion = GCN_REGION_TWN;
+							break;
+						default:
+							gcnRegion = 255;
+							break;
+					}
+				} else {
+					gcnRegion = 255;
 				}
 			} else {
-				gcnRegion = 255;
+				// IOS, BC, or MIOS. No region.
+				gcnRegion = GCN_REGION_ALL;
 			}
 		} else {
-			// IOS, BC, or MIOS. No region.
-			gcnRegion = GCN_REGION_ALL;
-		}
-	} else {
-		gcnRegion = be16_to_cpu(tmdHeader->region_code);
-	}
-
-	bool isDefault;
-	const char id4_region = (char)tmdHeader->title_id.u8[7];
-	const char *const region =
-		GameCubeRegions::gcnRegionToString(gcnRegion, id4_region, &isDefault);
-	const char *const region_code_title = C_("RomData", "Region Code");
-	if (region) {
-		// Append the GCN region name (USA/JPN/EUR/KOR) if
-		// the ID4 value differs.
-		const char *suffix = nullptr;
-		if (!isDefault) {
-			suffix = GameCubeRegions::gcnRegionToAbbrevString(gcnRegion);
+			gcnRegion = be16_to_cpu(tmdHeader->region_code);
 		}
 
-		string s_region;
-		if (suffix) {
-			// tr: %1%s == full region name, %2$s == abbreviation
-			s_region = rp_sprintf_p(C_("WiiWAD", "%1$s (%2$s)"), region, suffix);
+		bool isDefault;
+		const char *const region =
+			GameCubeRegions::gcnRegionToString(gcnRegion, id4_region, &isDefault);
+		const char *const region_code_title = C_("RomData", "Region Code");
+		if (region) {
+			// Append the GCN region name (USA/JPN/EUR/KOR) if
+			// the ID4 value differs.
+			const char *suffix = nullptr;
+			if (!isDefault) {
+				suffix = GameCubeRegions::gcnRegionToAbbrevString(gcnRegion);
+			}
+
+			string s_region;
+			if (suffix) {
+				// tr: %1%s == full region name, %2$s == abbreviation
+				s_region = rp_sprintf_p(C_("WiiWAD", "%1$s (%2$s)"), region, suffix);
+			} else {
+				s_region = region;
+			}
+
+			d->fields->addField_string(region_code_title, s_region);
 		} else {
-			s_region = region;
+			d->fields->addField_string(region_code_title,
+				rp_sprintf(C_("RomData", "Unknown (0x%02X)"), gcnRegion));
 		}
 
-		d->fields->addField_string(region_code_title, s_region);
-	} else {
-		d->fields->addField_string(region_code_title,
-			rp_sprintf(C_("RomData", "Unknown (0x%02X)"), gcnRegion));
-	}
-
-	// Required IOS version.
-	const char *const ios_version_title = C_("WiiWAD", "IOS Version");
-	const uint32_t ios_lo = be32_to_cpu(tmdHeader->sys_version.lo);
-	if (tmdHeader->sys_version.hi == cpu_to_be32(0x00000001) &&
-	    ios_lo > 2 && ios_lo < 0x300)
-	{
-		// Standard IOS slot.
-		d->fields->addField_string(ios_version_title,
-			rp_sprintf("IOS%u", ios_lo));
-	} else if (tmdHeader->sys_version.id != 0) {
-		// Non-standard IOS slot.
-		// Print the full title ID.
-		d->fields->addField_string(ios_version_title,
-			rp_sprintf("%08X-%08X",
-				be32_to_cpu(tmdHeader->sys_version.hi),
-				be32_to_cpu(tmdHeader->sys_version.lo)));
-	}
-
-	// Access rights.
-	vector<string> *const v_access_rights_hdr = new vector<string>();
-	v_access_rights_hdr->reserve(2);
-	v_access_rights_hdr->emplace_back("AHBPROT");
-	v_access_rights_hdr->emplace_back(C_("WiiWAD", "DVD Video"));
-	d->fields->addField_bitfield(C_("WiiWAD", "Access Rights"),
-		v_access_rights_hdr, 0, be32_to_cpu(tmdHeader->access_rights));
-
-	if (tid_hi >= 0x00010000) {
-		// Get age rating(s).
-		// TODO: Combine with GameCube::addFieldData()'s code.
-		// Note that not all 16 fields are present on GCN,
-		// though the fields do match exactly, so no
-		// mapping is necessary.
-		RomFields::age_ratings_t age_ratings;
-		// Valid ratings: 0-1, 3-9
-		static const uint16_t valid_ratings = 0x3FB;
-
-		for (int i = static_cast<int>(age_ratings.size())-1; i >= 0; i--) {
-			if (!(valid_ratings & (1U << i))) {
-				// Rating is not applicable for GCN.
-				age_ratings[i] = 0;
-				continue;
-			}
-
-			// GCN ratings field:
-			// - 0x1F: Age rating.
-			// - 0x20: Has online play if set.
-			// - 0x80: Unused if set.
-			const uint8_t rvl_rating = tmdHeader->ratings[i];
-			if (rvl_rating & 0x80) {
-				// Rating is unused.
-				age_ratings[i] = 0;
-				continue;
-			}
-			// Set active | age value.
-			age_ratings[i] = RomFields::AGEBF_ACTIVE | (rvl_rating & 0x1F);
-
-			// Is "rating may change during online play" set?
-			if (rvl_rating & 0x20) {
-				age_ratings[i] |= RomFields::AGEBF_ONLINE_PLAY;
+		// Required IOS version)
+		if (sys_id <= 1) {
+			const char *const ios_version_title = C_("WiiWAD", "IOS Version");
+			const uint32_t ios_lo = be32_to_cpu(tmdHeader->sys_version.lo);
+			if (tmdHeader->sys_version.hi == cpu_to_be32(0x00000001) &&
+			    ios_lo > 2 && ios_lo < 0x300)
+			{
+				// Standard IOS slot.
+				d->fields->addField_string(ios_version_title,
+					rp_sprintf("IOS%u", ios_lo));
+			} else if (tmdHeader->sys_version.id != 0) {
+				// Non-standard IOS slot.
+				// Print the full title ID.
+				d->fields->addField_string(ios_version_title,
+					rp_sprintf("%08X-%08X",
+						be32_to_cpu(tmdHeader->sys_version.hi),
+						be32_to_cpu(tmdHeader->sys_version.lo)));
 			}
 		}
-		d->fields->addField_ageRatings(C_("RomData", "Age Ratings"), age_ratings);
+
+		// Access rights.
+		vector<string> *const v_access_rights_hdr = new vector<string>();
+		v_access_rights_hdr->reserve(2);
+		v_access_rights_hdr->emplace_back("AHBPROT");
+		v_access_rights_hdr->emplace_back(C_("WiiWAD", "DVD Video"));
+		d->fields->addField_bitfield(C_("WiiWAD", "Access Rights"),
+			v_access_rights_hdr, 0, be32_to_cpu(tmdHeader->access_rights));
+
+		if (sys_id == 1) {
+			// Get age rating(s).
+			// TODO: Combine with GameCube::addFieldData()'s code.
+			// Note that not all 16 fields are present on GCN,
+			// though the fields do match exactly, so no
+			// mapping is necessary.
+			RomFields::age_ratings_t age_ratings;
+			// Valid ratings: 0-1, 3-9
+			static const uint16_t valid_ratings = 0x3FB;
+
+			for (int i = static_cast<int>(age_ratings.size())-1; i >= 0; i--) {
+				if (!(valid_ratings & (1U << i))) {
+					// Rating is not applicable for GCN.
+					age_ratings[i] = 0;
+					continue;
+				}
+
+				// GCN ratings field:
+				// - 0x1F: Age rating.
+				// - 0x20: Has online play if set.
+				// - 0x80: Unused if set.
+				const uint8_t rvl_rating = tmdHeader->ratings[i];
+				if (rvl_rating & 0x80) {
+					// Rating is unused.
+					age_ratings[i] = 0;
+					continue;
+				}
+				// Set active | age value.
+				age_ratings[i] = RomFields::AGEBF_ACTIVE | (rvl_rating & 0x1F);
+
+				// Is "rating may change during online play" set?
+				if (rvl_rating & 0x20) {
+					age_ratings[i] |= RomFields::AGEBF_ONLINE_PLAY;
+				}
+			}
+			d->fields->addField_ageRatings(C_("RomData", "Age Ratings"), age_ratings);
+		}
 	}
 
 	// Encryption key.
@@ -919,32 +1046,32 @@ int WiiWAD::loadFieldData(void)
 	d->fields->addField_string(C_("WiiWAD", "Encryption Key"), keyName);
 
 #ifdef ENABLE_DECRYPTION
-	// Do we have a WIBN header?
-	// If so, we don't have IMET data.
-	if (d->wibnData) {
-		// Add the WIBN data.
-		const RomFields *const wibnFields = d->wibnData->fields();
-		assert(wibnFields != nullptr);
-		if (wibnFields) {
-			d->fields->addFields_romFields(wibnFields, 0);
+	// WIBN/IMET is Wii only.
+	// TODO: DSi SRL.
+	if (sys_id <= 1) {
+		// Do we have a WIBN header?
+		// If so, we don't have IMET data.
+		if (d->wibnData) {
+			// Add the WIBN data.
+			const RomFields *const wibnFields = d->wibnData->fields();
+			assert(wibnFields != nullptr);
+			if (wibnFields) {
+				d->fields->addFields_romFields(wibnFields, 0);
+			}
+		} else {
+			// No WIBN data.
+			// Get the IMET data if it's available.
+			RomFields::StringMultiMap_t *const pMap_bannerName = WiiCommon::getWiiBannerStrings(
+				&d->imet, gcnRegion, id4_region);
+			if (pMap_bannerName) {
+				// Add the field.
+				const uint32_t def_lc = NintendoLanguage::getWiiLanguageCode(
+					NintendoLanguage::getWiiLanguage());
+				d->fields->addField_string_multi(C_("WiiWAD", "Game Info"), pMap_bannerName, def_lc);
+			}
 		}
-	} else
-#endif /* ENABLE_DECRYPTION */
-	{
-		// No WIBN data.
-		// Get the IMET data if it's available.
-#ifdef ENABLE_DECRYPTION
-		// Get the string map.
-		RomFields::StringMultiMap_t *const pMap_bannerName = WiiCommon::getWiiBannerStrings(
-			&d->imet, gcnRegion, id4_region);
-		if (pMap_bannerName) {
-			// Add the field.
-			const uint32_t def_lc = NintendoLanguage::getWiiLanguageCode(
-				NintendoLanguage::getWiiLanguage());
-			d->fields->addField_string_multi(C_("WiiWAD", "Game Info"), pMap_bannerName, def_lc);
-		}
-#endif /* ENABLE_DECRYPTION */
 	}
+#endif /* ENABLE_DECRYPTION */
 
 	// Console ID.
 	// TODO: Hide the "0x" prefix?
