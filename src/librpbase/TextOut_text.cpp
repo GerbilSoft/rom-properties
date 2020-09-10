@@ -89,6 +89,12 @@ public:
 		, quotes(quotes)
 		, width(width) { }
 
+	SafeString(const char *str, size_t len, bool quotes = true, size_t width = 0)
+		: str(str)
+		, len(len)
+		, quotes(quotes)
+		, width(width) { }
+
 	SafeString(const string *str, bool quotes = true, size_t width = 0)
 		: str(str ? str->c_str() : nullptr)
 		, len(str ? str->size() : 0)
@@ -466,7 +472,7 @@ public:
 						} else {
 							// Found a newline.
 							// TODO: Update SafeString to take a length parameter instead of creating a temporary string.
-							str = SafeString(jt->substr(linePos[col], nl_pos - linePos[col]).c_str(), false);
+							str = SafeString(jt->c_str() + linePos[col], nl_pos - linePos[col], false);
 							linePos[col] = (unsigned int)(nl_pos + 1);
 							if (linePos[col] > (unsigned int)jt->size()) {
 								// End of string.
