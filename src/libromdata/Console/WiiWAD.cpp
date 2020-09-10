@@ -817,6 +817,31 @@ vector<RomData::ImageSizeDef> WiiWAD::supportedImageSizes(ImageType imageType) c
 }
 
 /**
+ * Get image processing flags.
+ *
+ * These specify post-processing operations for images,
+ * e.g. applying transparency masks.
+ *
+ * @param imageType Image type.
+ * @return Bitfield of ImageProcessingBF operations to perform.
+ */
+uint32_t WiiWAD::imgpf(ImageType imageType) const
+{
+	ASSERT_imgpf(imageType);
+
+#ifdef ENABLE_DECRYPTION
+	RP_D(const WiiWAD);
+	if (d->mainContent) {
+		// Get imgpf from the main content object.
+		return d->mainContent->imgpf(imageType);
+	}
+#endif /* ENABLE_DECRYPTION */
+
+	// No image processing flags here.
+	return 0;
+}
+
+/**
  * Load field data.
  * Called by RomData::fields() if the field data hasn't been loaded yet.
  * @return Number of fields read on success; negative POSIX error code on error.

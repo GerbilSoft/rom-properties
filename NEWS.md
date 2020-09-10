@@ -45,6 +45,7 @@
     * This fixes issue #249, reported by @Masamune3210.
   * WiiPartition: Fixed a potential memory corruption issue when reading
     a partial block from an unencrypted disc image.
+  * WiiWAD: Animated icons are now reported correctly by `rpcli`.
 
 * Other changes:
   * Linux: A system-wide cache directory (/usr/share/rom-properties/cache)
