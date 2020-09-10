@@ -2160,9 +2160,7 @@ void RP_ShellPropSheetExt_Private::updateMulti(uint32_t user_lc)
 			const uint32_t lc = *iter;
 			const char *lc_str = SystemRegion::getLocalizedLanguageName(lc);
 			if (lc_str) {
-				// NOTE: U82T_c() returns c_str(), which prevents
-				// the std::move() optimization from working.
-				vec_lc_str.emplace_back(utf8_to_utf16(lc_str));
+				vec_lc_str.emplace_back(U82T_c(lc_str));
 			} else {
 				// Invalid language code.
 				tstring s_lc;
