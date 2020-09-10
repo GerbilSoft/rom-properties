@@ -1235,18 +1235,32 @@ int WiiWAD::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) con
 	const RVL_TMD_Header *const tmdHeader = &d->tmdHeader;
 
 	// Check for a valid TID hi.
-	switch (be32_to_cpu(tmdHeader->title_id.hi)) {
-		case 0x00010000:
-		case 0x00010001:
-		case 0x00010002:
-		case 0x00010004:
-		case 0x00010005:
-		case 0x00010008:
-			// TID hi is valid.
+	const uint32_t tid_hi = be32_to_cpu(tmdHeader->title_id.hi);
+	const unsigned int sys_id = (tid_hi >> 16);
+	const char *sysDir;
+	switch (sys_id) {
+		case 1:	// Wii
+			// Check for a valid LOWORD.
+			switch (tid_hi & 0xFFFF) {
+				case 1:
+				case 2:
+				case 4:
+				case 5:
+				case 8:
+					// TID hi is valid.
+					break;
+				default:
+					// No GameTDB artwork is available.
+					return -ENOENT;
+			}
+			sysDir = "wii";
 			break;
-
+		case 3:
+			// TODO: DSiWare on GameTDB.
+			//sysDir = "ds";
+			return -ENOENT;
 		default:
-			// No GameTDB artwork is available.
+			// Unsupported system ID.
 			return -ENOENT;
 	}
 
@@ -1272,6 +1286,7 @@ int WiiWAD::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) con
 	// downloaded and none of these are available?
 
 	// Determine the image type name.
+	// TODO: Extend for DSiWare.
 	const char *imageTypeName_base;
 	const char *ext;
 	switch (imageType) {
@@ -1344,8 +1359,8 @@ int WiiWAD::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) con
 		for (auto tdb_iter = tdb_regions.cbegin();
 		     tdb_iter != tdb_regions_cend; ++tdb_iter, ++extURL_iter)
 		{
-			extURL_iter->url = d->getURL_GameTDB("wii", imageTypeName, *tdb_iter, id4, ext);
-			extURL_iter->cache_key = d->getCacheKey_GameTDB("wii", imageTypeName, *tdb_iter, id4, ext);
+			extURL_iter->url = d->getURL_GameTDB(sysDir, imageTypeName, *tdb_iter, id4, ext);
+			extURL_iter->cache_key = d->getCacheKey_GameTDB(sysDir, imageTypeName, *tdb_iter, id4, ext);
 			extURL_iter->width = szdefs_dl[i]->width;
 			extURL_iter->height = szdefs_dl[i]->height;
 			extURL_iter->high_res = (szdefs_dl[i]->index >= 2);
