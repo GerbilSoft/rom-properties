@@ -29,12 +29,13 @@ using LibRpTexture::rp_image;
 #include "librpbase/crypto/KeyManager.hpp"
 #include "disc/WiiPartition.hpp"	// for key information
 #ifdef ENABLE_DECRYPTION
-# include "librpbase/crypto/AesCipherFactory.hpp"
-# include "librpbase/crypto/IAesCipher.hpp"
-# include "librpbase/disc/CBCReader.hpp"
+#  include "librpbase/crypto/AesCipherFactory.hpp"
+#  include "librpbase/crypto/IAesCipher.hpp"
+#  include "librpbase/disc/CBCReader.hpp"
 // For sections delegated to other RomData subclasses.
-# include "librpbase/disc/PartitionFile.hpp"
-# include "WiiWIBN.hpp"
+#  include "librpbase/disc/PartitionFile.hpp"
+#  include "WiiWIBN.hpp"
+#  include "../Handheld/NintendoDS.hpp"
 #endif /* ENABLE_DECRYPTION */
 
 // C++ STL classes.
@@ -98,7 +99,7 @@ class WiiWADPrivate : public RomDataPrivate
 #ifdef ENABLE_DECRYPTION
 		// CBC reader for the main data area.
 		CBCReader *cbcReader;
-		WiiWIBN *wibnData;
+		RomData *mainContent;	// WiiWIBN or NintendoDS
 
 		// Main data headers.
 		Wii_IMET_t imet;	// NOTE: May be WIBN.
@@ -125,7 +126,7 @@ WiiWADPrivate::WiiWADPrivate(WiiWAD *q, IRpFile *file)
 	, data_size(0)
 #ifdef ENABLE_DECRYPTION
 	, cbcReader(nullptr)
-	, wibnData(nullptr)
+	, mainContent(nullptr)
 #endif /* ENABLE_DECRYPTION */
 	, key_idx(WiiPartition::Key_Max)
 	, key_status(KeyManager::VerifyResult::Unknown)
@@ -143,7 +144,7 @@ WiiWADPrivate::WiiWADPrivate(WiiWAD *q, IRpFile *file)
 WiiWADPrivate::~WiiWADPrivate()
 {
 #ifdef ENABLE_DECRYPTION
-	UNREF(wibnData);
+	UNREF(mainContent);
 	UNREF(cbcReader);
 #endif /* ENABLE_DECRYPTION */
 }
@@ -382,16 +383,21 @@ WiiWAD::WiiWAD(IRpFile *file)
 	// TODO: Verify some known data?
 	d->cbcReader = new CBCReader(d->file, d->data_offset, d->data_size, title_key, iv);
 
-	// Contents may be one of the following:
-	// - IMET header: Most common.
-	// - WIBN header: DLC titles.
-	size = d->cbcReader->read(&d->imet, sizeof(d->imet));
-	if (size == sizeof(d->imet)) {
-		// TODO: Create a WiiIMET subclass? (and also use it in GameCube)
-		if (d->imet.magic == cpu_to_be32(WII_IMET_MAGIC)) {
+	const uint32_t tid_hi = be32_to_cpu(d->tmdHeader.title_id.hi);
+	const unsigned int sys_id = (tid_hi >> 16);
+	if (sys_id != 3) {
+		// Wii: Contents may be one of the following:
+		// - IMET header: Most common.
+		// - WIBN header: DLC titles.
+		size = d->cbcReader->read(&d->imet, sizeof(d->imet));
+		if (size == sizeof(d->imet) &&
+		    d->imet.magic == cpu_to_be32(WII_IMET_MAGIC))
+		{
 			// This is an IMET header.
 			// TODO: Do something here?
-		} else if (d->imet.magic == cpu_to_be32(WII_WIBN_MAGIC)) {
+		} else if (size >= (offsetof(Wii_IMET_t, magic) + sizeof(d->imet.magic)) &&
+			   d->imet.magic == cpu_to_be32(WII_WIBN_MAGIC))
+		{
 			// This is a WIBN header.
 			// Create the PartitionFile and WiiWIBN subclass.
 			// NOTE: Not sure how big the WIBN data is, so we'll
@@ -404,14 +410,29 @@ WiiWAD::WiiWAD(IRpFile *file)
 				WiiWIBN *const wibn = new WiiWIBN(ptFile);
 				if (wibn->isOpen()) {
 					// Opened successfully.
-					d->wibnData = wibn;
+					d->mainContent = wibn;
 				} else {
 					// Unable to open the WiiWIBN.
-					wibn->unref();
+					UNREF(wibn);
 				}
 			}
-			ptFile->unref();
+			UNREF(ptFile);
 		}
+	} else {
+		// Nintendo DSi: Main content is an SRL.
+		PartitionFile *const ptFile = new PartitionFile(d->cbcReader, 0, d->data_size);
+		if (ptFile->isOpen()) {
+			// Open the NintendoDS.
+			NintendoDS *const srl = new NintendoDS(ptFile);
+			if (srl->isOpen()) {
+				// Opened successfully.
+				d->mainContent = srl;
+			} else {
+				// Unable to open the NintendoDS.
+				UNREF(srl);
+			}
+		}
+		UNREF(ptFile);
 	}
 #else /* !ENABLE_DECRYPTION */
 	// Cannot decrypt anything...
@@ -428,8 +449,8 @@ void WiiWAD::close(void)
 	RP_D(WiiWAD);
 
 	// Close any child RomData subclasses.
-	if (d->wibnData) {
-		d->wibnData->close();
+	if (d->mainContent) {
+		d->mainContent->close();
 	}
 
 	// Close associated files used with child RomData subclasses.
@@ -624,7 +645,7 @@ uint32_t WiiWAD::supportedImageTypes(void) const
 	RP_D(const WiiWAD);
 	uint32_t ret;
 #ifdef ENABLE_DECRYPTION
-	if (d->wibnData) {
+	if (d->mainContent) {
 		ret = IMGBF_INT_ICON | IMGBF_INT_BANNER |
 		      IMGBF_EXT_COVER | IMGBF_EXT_COVER_3D |
 		      IMGBF_EXT_COVER_FULL |
@@ -652,8 +673,8 @@ vector<RomData::ImageSizeDef> WiiWAD::supportedImageSizes_static(ImageType image
 {
 	ASSERT_supportedImageSizes(imageType);
 
+	// NOTE: Can't check for DSiWare here.
 	switch (imageType) {
-		// TODO: Only return IMG_INT_* if a WiiWIBN is available.
 		case IMG_INT_ICON: {
 			static const ImageSizeDef sz_INT_ICON[] = {
 				{nullptr, BANNER_WIBN_ICON_W, BANNER_WIBN_ICON_H, 0},
@@ -720,62 +741,75 @@ vector<RomData::ImageSizeDef> WiiWAD::supportedImageSizes(ImageType imageType) c
 	ASSERT_supportedImageSizes(imageType);
 	RP_D(const WiiWAD);
 
-	// TODO: DSiWare images.
-	switch (imageType) {
+	const uint32_t tid_hi = be32_to_cpu(d->tmdHeader.title_id.hi);
+	const unsigned int sys_id = (tid_hi >> 16);	// If 3, this is a DSi TAD.
+	if (sys_id != 3) {
+		// WiiWare
+		switch (imageType) {
 #ifdef ENABLE_DECRYPTION
-		case IMG_INT_ICON: {
-			if (d->wibnData) {
-				static const ImageSizeDef sz_INT_ICON[] = {
-					{nullptr, BANNER_WIBN_ICON_W, BANNER_WIBN_ICON_H, 0},
-				};
-				return vector<ImageSizeDef>(sz_INT_ICON,
-					sz_INT_ICON + ARRAY_SIZE(sz_INT_ICON));
+			case IMG_INT_ICON: {
+				if (d->mainContent) {
+					static const ImageSizeDef sz_INT_ICON[] = {
+						{nullptr, BANNER_WIBN_ICON_W, BANNER_WIBN_ICON_H, 0},
+					};
+					return vector<ImageSizeDef>(sz_INT_ICON,
+						sz_INT_ICON + ARRAY_SIZE(sz_INT_ICON));
+				}
+				break;
 			}
-			break;
-		}
-		case IMG_INT_BANNER: {
-			if (d->wibnData) {
-				static const ImageSizeDef sz_INT_BANNER[] = {
-					{nullptr, BANNER_WIBN_IMAGE_W, BANNER_WIBN_IMAGE_H, 0},
-				};
-				return vector<ImageSizeDef>(sz_INT_BANNER,
-					sz_INT_BANNER + ARRAY_SIZE(sz_INT_BANNER));
+			case IMG_INT_BANNER: {
+				if (d->mainContent) {
+					static const ImageSizeDef sz_INT_BANNER[] = {
+						{nullptr, BANNER_WIBN_IMAGE_W, BANNER_WIBN_IMAGE_H, 0},
+					};
+					return vector<ImageSizeDef>(sz_INT_BANNER,
+						sz_INT_BANNER + ARRAY_SIZE(sz_INT_BANNER));
+				}
+				break;
 			}
-			break;
-		}
 #endif /* ENABLE_DECRYPTION */
-
-		case IMG_EXT_COVER: {
-			static const ImageSizeDef sz_EXT_COVER[] = {
-				{nullptr, 160, 224, 0},
-			};
-			return vector<ImageSizeDef>(sz_EXT_COVER,
-				sz_EXT_COVER + ARRAY_SIZE(sz_EXT_COVER));
+			case IMG_EXT_COVER: {
+				static const ImageSizeDef sz_EXT_COVER[] = {
+					{nullptr, 160, 224, 0},
+				};
+				return vector<ImageSizeDef>(sz_EXT_COVER,
+					sz_EXT_COVER + ARRAY_SIZE(sz_EXT_COVER));
+			}
+			case IMG_EXT_COVER_3D: {
+				static const ImageSizeDef sz_EXT_COVER_3D[] = {
+					{nullptr, 176, 248, 0},
+				};
+				return vector<ImageSizeDef>(sz_EXT_COVER_3D,
+					sz_EXT_COVER_3D + ARRAY_SIZE(sz_EXT_COVER_3D));
+			}
+			case IMG_EXT_COVER_FULL: {
+				static const ImageSizeDef sz_EXT_COVER_FULL[] = {
+					{nullptr, 512, 340, 0},
+					{"HQ", 1024, 680, 1},
+				};
+				return vector<ImageSizeDef>(sz_EXT_COVER_FULL,
+					sz_EXT_COVER_FULL + ARRAY_SIZE(sz_EXT_COVER_FULL));
+			}
+			case IMG_EXT_TITLE_SCREEN: {
+				static const ImageSizeDef sz_EXT_TITLE_SCREEN[] = {
+					{nullptr, 192, 112, 0},
+				};
+				return vector<ImageSizeDef>(sz_EXT_TITLE_SCREEN,
+					sz_EXT_TITLE_SCREEN + ARRAY_SIZE(sz_EXT_TITLE_SCREEN));
+			}
+			default:
+				break;
 		}
-		case IMG_EXT_COVER_3D: {
-			static const ImageSizeDef sz_EXT_COVER_3D[] = {
-				{nullptr, 176, 248, 0},
-			};
-			return vector<ImageSizeDef>(sz_EXT_COVER_3D,
-				sz_EXT_COVER_3D + ARRAY_SIZE(sz_EXT_COVER_3D));
+	} else {
+		// DSiWare. Use the NintendoDS parser.
+#ifdef ENABLE_DECRYPTION
+		if (d->mainContent) {
+			return d->mainContent->supportedImageSizes(imageType);
+		} else
+#endif /* ENABLE_DECRYPTION */
+		{
+			return NintendoDS::supportedImageSizes_static(imageType);
 		}
-		case IMG_EXT_COVER_FULL: {
-			static const ImageSizeDef sz_EXT_COVER_FULL[] = {
-				{nullptr, 512, 340, 0},
-				{"HQ", 1024, 680, 1},
-			};
-			return vector<ImageSizeDef>(sz_EXT_COVER_FULL,
-				sz_EXT_COVER_FULL + ARRAY_SIZE(sz_EXT_COVER_FULL));
-		}
-		case IMG_EXT_TITLE_SCREEN: {
-			static const ImageSizeDef sz_EXT_TITLE_SCREEN[] = {
-				{nullptr, 192, 112, 0},
-			};
-			return vector<ImageSizeDef>(sz_EXT_TITLE_SCREEN,
-				sz_EXT_TITLE_SCREEN + ARRAY_SIZE(sz_EXT_TITLE_SCREEN));
-		}
-		default:
-			break;
 	}
 
 	// Unsupported image type.
@@ -803,7 +837,10 @@ int WiiWAD::loadFieldData(void)
 
 	// WAD headers are read in the constructor.
 	const RVL_TMD_Header *const tmdHeader = &d->tmdHeader;
+	const uint32_t tid_hi = be32_to_cpu(tmdHeader->title_id.hi);
+	const unsigned int sys_id = (tid_hi >> 16);	// If 3, this is a DSi TAD.
 	d->fields->reserve(12);	// Maximum of 12 fields.
+	d->fields->setTabName(0, (sys_id != 3 ? "WAD" : "TAD"));
 
 	if (d->key_status != KeyManager::VerifyResult::OK) {
 		// Unable to get the decryption key.
@@ -859,8 +896,6 @@ int WiiWAD::loadFieldData(void)
 
 	// Title ID.
 	// TODO: Make sure the ticket title ID matches the TMD title ID.
-	const uint32_t tid_hi = be32_to_cpu(tmdHeader->title_id.hi);
-	const unsigned int sys_id = (tid_hi >> 16);	// If 3, this is a DSi TAD.
 	d->fields->addField_string(C_("WiiWAD", "Title ID"),
 		rp_sprintf("%08X-%08X", tid_hi,
 			be32_to_cpu(tmdHeader->title_id.lo)));
@@ -1049,41 +1084,39 @@ int WiiWAD::loadFieldData(void)
 	}
 	d->fields->addField_string(C_("WiiWAD", "Encryption Key"), keyName);
 
-#ifdef ENABLE_DECRYPTION
-	// WIBN/IMET is Wii only.
-	// TODO: DSi SRL.
-	if (sys_id <= 1) {
-		// Do we have a WIBN header?
-		// If so, we don't have IMET data.
-		if (d->wibnData) {
-			// Add the WIBN data.
-			const RomFields *const wibnFields = d->wibnData->fields();
-			assert(wibnFields != nullptr);
-			if (wibnFields) {
-				d->fields->addFields_romFields(wibnFields, 0);
-			}
-		} else {
-			// No WIBN data.
-			// Get the IMET data if it's available.
-			RomFields::StringMultiMap_t *const pMap_bannerName = WiiCommon::getWiiBannerStrings(
-				&d->imet, gcnRegion, id4_region);
-			if (pMap_bannerName) {
-				// Add the field.
-				const uint32_t def_lc = NintendoLanguage::getWiiLanguageCode(
-					NintendoLanguage::getWiiLanguage());
-				d->fields->addField_string_multi(C_("WiiWAD", "Game Info"), pMap_bannerName, def_lc);
-			}
-		}
-	}
-#endif /* ENABLE_DECRYPTION */
-
 	// Console ID.
 	// TODO: Hide the "0x" prefix?
 	d->fields->addField_string_numeric(C_("WiiWAD", "Console ID"),
 		be32_to_cpu(d->ticket.console_id), RomFields::Base::Hex, 8,
 		RomFields::STRF_MONOSPACE);
 
-	// TODO: Decrypt content.bin to get the actual data.
+#ifdef ENABLE_DECRYPTION
+	// Do we have a main content object?
+	// If so, we don't have IMET data.
+	// TODO: Decrypt Wii content.bin for more stuff?
+	if (d->mainContent) {
+		// Add the main content data.
+		const RomFields *const mainContentFields = d->mainContent->fields();
+		assert(mainContentFields != nullptr);
+		if (mainContentFields) {
+			// For Wii, add the fields to the same tab.
+			// For DSi, add the fields to new tabs.
+			int tabOffset = (sys_id == 3 ? RomFields::TabOffset_AddTabs : 0);
+			d->fields->addFields_romFields(mainContentFields, tabOffset);
+		}
+	} else if (sys_id != 3) {
+		// No main content object.
+		// Get the IMET data if it's available.
+		RomFields::StringMultiMap_t *const pMap_bannerName = WiiCommon::getWiiBannerStrings(
+			&d->imet, gcnRegion, id4_region);
+		if (pMap_bannerName) {
+			// Add the field.
+			const uint32_t def_lc = NintendoLanguage::getWiiLanguageCode(
+				NintendoLanguage::getWiiLanguage());
+			d->fields->addField_string_multi(C_("WiiWAD", "Game Info"), pMap_bannerName, def_lc);
+		}
+	}
+#endif /* ENABLE_DECRYPTION */
 
 	// Finished reading the field data.
 	return static_cast<int>(d->fields->count());
@@ -1155,13 +1188,13 @@ int WiiWAD::loadInternalImage(ImageType imageType, const rp_image **pImage)
 	}
 
 #ifdef ENABLE_DECRYPTION
-	// Forward this call to the WiiWIBN object.
-	if (d->wibnData) {
-		return d->wibnData->loadInternalImage(imageType, pImage);
+	// Forward this call to the main content object.
+	if (d->mainContent) {
+		return d->mainContent->loadInternalImage(imageType, pImage);
 	}
 #endif /* ENABLE_DECRYPTION */
 
-	// No WiiWIBN object.
+	// No main content object.
 	*pImage = nullptr;
 	return -ENOENT;
 }
@@ -1177,14 +1210,14 @@ int WiiWAD::loadInternalImage(ImageType imageType, const rp_image **pImage)
 const IconAnimData *WiiWAD::iconAnimData(void) const
 {
 #ifdef ENABLE_DECRYPTION
-	// Forward this call to the WiiWIBN object.
+	// Forward this call to the main content object.
 	RP_D(const WiiWAD);
-	if (d->wibnData) {
-		return d->wibnData->iconAnimData();
+	if (d->mainContent) {
+		return d->mainContent->iconAnimData();
 	}
 #endif /* ENABLE_DECRYPTION */
 
-	// No WiiWIBN object.
+	// No main content object.
 	return nullptr;
 }
 
@@ -1208,30 +1241,35 @@ int WiiWAD::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) con
 	ASSERT_extURLs(imageType, pExtURLs);
 	pExtURLs->clear();
 
-	// Check if a WiiWIBN is present.
-	// If it is, this is a DLC WAD, so the title ID
-	// won't match anything on GameTDB.
+	// Check if the main content is present.
+	// If it is, and this is a Wii WAD, then this is a
+	// DLC WAD, so the title ID won't match anything on
+	// GameTDB.
 	RP_D(const WiiWAD);
 	if (!d->isValid || (int)d->wadType < 0) {
 		// WAD isn't valid.
 		return -EIO;
-	} else
+	}
+
+	const uint32_t tid_hi = be32_to_cpu(d->tmdHeader.title_id.hi);
+	const unsigned int sys_id = (tid_hi >> 16);
+	if (sys_id != 3) {
 #ifdef ENABLE_DECRYPTION
-	if (d->wibnData) {
-		// WiiWIBN is present.
-		// This means the boxart is not available on GameTDB,
-		// since it's a DLC WAD.
-		return -ENOENT;
-	} else
-#endif /* ENABLE_DECRYPTION */
-	{
-		// If the first letter of the ID4 is lowercase,
-		// that means it's a DLC title. GameTDB doesn't
-		// have artwork for DLC titles.
-		char sysID = be32_to_cpu(d->tmdHeader.title_id.lo) >> 24;
-		if (ISLOWER(sysID)) {
-			// It's lowercase.
+		if (d->mainContent) {
+			// Main content is present.
+			// The boxart is not available on GameTDB, since it's a DLC WAD.
 			return -ENOENT;
+		} else
+#endif /* ENABLE_DECRYPTION */
+		{
+			// If the first letter of the ID4 is lowercase,
+			// that means it's a DLC title. GameTDB doesn't
+			// have artwork for DLC titles.
+			const char firstID4 = be32_to_cpu(d->tmdHeader.title_id.lo) >> 24;
+			if (ISLOWER(firstID4)) {
+				// It's lowercase.
+				return -ENOENT;
+			}
 		}
 	}
 
@@ -1239,8 +1277,6 @@ int WiiWAD::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) con
 	const RVL_TMD_Header *const tmdHeader = &d->tmdHeader;
 
 	// Check for a valid TID hi.
-	const uint32_t tid_hi = be32_to_cpu(tmdHeader->title_id.hi);
-	const unsigned int sys_id = (tid_hi >> 16);
 	const char *sysDir;
 	switch (sys_id) {
 		case 1:	// Wii
