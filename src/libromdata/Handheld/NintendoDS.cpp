@@ -163,11 +163,21 @@ const rp_image *NintendoDSPrivate::loadIcon(void)
 	} else {
 		// Animated icon is present.
 
-		// Which bitmaps are used?
-		array<bool, IconAnimData::MAX_FRAMES> bmp_used;
-		bmp_used.fill(false);
+		// Maximum number of combinations based on bitmap index,
+		// palette index, and flip bits is 256. We don't want to
+		// reserve 256 images, so we'll use a map to determine
+		// which combinations go to which bitmap.
+
+		// dsi_icon_seq is limited to 64, so there's still a maximum
+		// of 64 possible bitmaps.
+
+		// Index: High byte of token.
+		// Value: Bitmap index. (0xFF for unused)
+		array<uint8_t, 256> arr_bmpUsed;
+		arr_bmpUsed.fill(0xFF);
 
 		// Parse the icon sequence.
+		uint8_t bmp_idx = 0;
 		int seq_idx;
 		for (seq_idx = 0; seq_idx < ARRAY_SIZE(nds_icon_title.dsi_icon_seq); seq_idx++) {
 			const uint16_t seq = le16_to_cpu(nds_icon_title.dsi_icon_seq[seq_idx]);
@@ -188,29 +198,34 @@ const rp_image *NintendoDSPrivate::loadIcon(void)
 			// of palette and bitmap. As a workaround, we'll make each
 			// combination a unique bitmap, which means we have a maximum
 			// of 64 bitmaps.
-			uint8_t bmp_pal_idx = ((seq >> 8) & 0x3F);
-			bmp_used[bmp_pal_idx] = true;
-			iconAnimData->seq_index[seq_idx] = bmp_pal_idx;
-			iconAnimData->delays[seq_idx].numer = static_cast<uint16_t>(delay);
-			iconAnimData->delays[seq_idx].denom = 60;
-			iconAnimData->delays[seq_idx].ms = delay * 1000 / 60;
-		}
-		iconAnimData->seq_count = seq_idx;
-
-		// Convert the required bitmaps.
-		for (unsigned int i = 0; i < static_cast<unsigned int>(bmp_used.size()); i++) {
-			if (bmp_used[i]) {
-				iconAnimData->count = i + 1;
-
-				const uint8_t bmp = (i & 7);
-				const uint8_t pal = (i >> 3) & 7;
-				iconAnimData->frames[i] = ImageDecoder::fromNDS_CI4(32, 32,
+			uint8_t high_token = (seq >> 8);
+			if (arr_bmpUsed[high_token] == 0xFF) {
+				// Not used yet. Create the bitmap.
+				const uint8_t bmp = (high_token & 7);
+				const uint8_t pal = (high_token >> 3) & 7;
+				rp_image *img = ImageDecoder::fromNDS_CI4(32, 32,
 					nds_icon_title.dsi_icon_data[bmp],
 					sizeof(nds_icon_title.dsi_icon_data[bmp]),
 					nds_icon_title.dsi_icon_pal[pal],
 					sizeof(nds_icon_title.dsi_icon_pal[pal]));
+				// TODO: Implement H-flip.
+				if (high_token & (1U << 7)) {
+					// V-flip is set.
+					rp_image *flipimg = img->vflip();
+					delete img;
+					img = flipimg;
+				}
+				iconAnimData->frames[bmp_idx] = img;
+				arr_bmpUsed[high_token] = bmp_idx;
+				bmp_idx++;
 			}
+			iconAnimData->seq_index[seq_idx] = arr_bmpUsed[high_token];
+			iconAnimData->delays[seq_idx].numer = static_cast<uint16_t>(delay);
+			iconAnimData->delays[seq_idx].denom = 60;
+			iconAnimData->delays[seq_idx].ms = delay * 1000 / 60;
 		}
+		iconAnimData->count = bmp_idx;
+		iconAnimData->seq_count = seq_idx;
 	}
 
 	// NOTE: We're not deleting iconAnimData even if we only have

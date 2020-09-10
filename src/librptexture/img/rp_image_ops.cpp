@@ -560,7 +560,7 @@ int rp_image::apply_chroma_key_cpp(uint32_t key)
  */
 rp_image *rp_image::vflip(void) const
 {
-	RP_D(rp_image);
+	RP_D(const rp_image);
 	rp_image_backend *const backend = d->backend;
 	const int height = backend->height;
 
@@ -584,7 +584,16 @@ rp_image *rp_image::vflip(void) const
 		dest -= dest_stride;
 	}
 
-	// Copy sBIT.
+	// If CI8, copy the palette.
+	if (backend->format == rp_image::Format::CI8) {
+		int entries = std::min(flipimg->palette_len(), backend->palette_len());
+		uint32_t *const dest_pal = flipimg->palette();
+		memcpy(dest_pal, backend->palette(), entries * sizeof(uint32_t));
+		// Palette is zero-initialized, so we don't need to
+		// zero remaining entries.
+	}
+
+	// Copy sBIT if it's set.
 	if (d->has_sBIT) {
 		flipimg->set_sBIT(&d->sBIT);
 	}
