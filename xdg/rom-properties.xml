@@ -366,6 +366,33 @@
     </magic>
   </mime-type>
 
+  <!-- WiiWAD -->
+  <!-- Wii WADs have 64-byte alignment; BroadOn WADs do not. -->
+  <!-- DSi debug TADs *usually* don't have 64-byte alignment. -->
+  <mime-type type="application/x-wii-wad">
+    <comment>Wii WAD package</comment>
+    <generic-icon name="application-x-executable"/>
+    <!-- Doom WAD has a priority of 80 for the file extension. -->
+    <magic priority="85">
+      <match type="string" value="Is\0\0" offset="4">
+        <match type="big32" value="0" offset="32"/>
+      </match>
+      <match type="string" value="ib\0\0" offset="4"/>
+      <match type="string" value="Bk\0\0" offset="4"/>
+    </magic>
+    <glob pattern="*.wad"/>
+  </mime-type>
+  <mime-type type="application/x-nintendo-dsi-tad">
+    <comment>Nintendo DSi TAD package</comment>
+    <generic-icon name="application-x-executable"/>
+    <magic priority="90">
+      <match type="string" value="Is\0\0" offset="4">
+        <match type="string" value="Root" offset="640"/>
+      </match>
+    </magic>
+    <glob pattern="*.tad"/>
+  </mime-type>
+
   <!-- WiiWIBN -->
   <mime-type type="application/x-wii-wibn">
     <comment>Wii save game banner file</comment>
