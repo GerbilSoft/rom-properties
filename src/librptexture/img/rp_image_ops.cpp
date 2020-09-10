@@ -28,9 +28,11 @@ namespace LibRpTexture {
 rp_image *rp_image::dup(void) const
 {
 	RP_D(const rp_image);
-	const int width = d->backend->width;
-	const int height = d->backend->height;
-	const rp_image::Format format = d->backend->format;
+	const rp_image_backend *const backend = d->backend;
+
+	const int width = backend->width;
+	const int height = backend->height;
+	const rp_image::Format format = backend->format;
 	assert(width > 0);
 	assert(height > 0);
 
@@ -43,14 +45,14 @@ rp_image *rp_image::dup(void) const
 	// Copy the image.
 	// NOTE: Using uint8_t* because stride is measured in bytes.
 	uint8_t *dest = static_cast<uint8_t*>(img->bits());
-	const uint8_t *src = static_cast<const uint8_t*>(d->backend->data());
+	const uint8_t *src = static_cast<const uint8_t*>(backend->data());
 	const int row_bytes = img->row_bytes();
 	const int dest_stride = img->stride();
-	const int src_stride = d->backend->stride;
+	const int src_stride = backend->stride;
 
 	if (src_stride == dest_stride) {
 		// Copy the entire image all at once.
-		size_t len = d->backend->data_len();
+		size_t len = backend->data_len();
 		memcpy(dest, src, len);
 	} else {
 		// Copy one line at a time.
@@ -63,9 +65,9 @@ rp_image *rp_image::dup(void) const
 
 	// If CI8, copy the palette.
 	if (format == rp_image::Format::CI8) {
-		int entries = std::min(img->palette_len(), d->backend->palette_len());
+		int entries = std::min(img->palette_len(), backend->palette_len());
 		uint32_t *const dest_pal = img->palette();
-		memcpy(dest_pal, d->backend->palette(), entries * sizeof(uint32_t));
+		memcpy(dest_pal, backend->palette(), entries * sizeof(uint32_t));
 		// Palette is zero-initialized, so we don't need to
 		// zero remaining entries.
 	}
@@ -85,23 +87,25 @@ rp_image *rp_image::dup(void) const
 rp_image *rp_image::dup_ARGB32(void) const
 {
 	RP_D(const rp_image);
-	if (d->backend->format == Format::ARGB32) {
+	const rp_image_backend *const backend = d->backend;
+
+	if (backend->format == Format::ARGB32) {
 		// Already in ARGB32.
 		// Do a direct dup().
 		return this->dup();
-	} else if (d->backend->format != Format::CI8) {
+	} else if (backend->format != Format::CI8) {
 		// Only CI8->ARGB32 is supported right now.
 		return nullptr;
 	}
 
-	const int width = d->backend->width;
-	const int height = d->backend->height;
+	const int width = backend->width;
+	const int height = backend->height;
 	assert(width > 0);
 	assert(height > 0);
 
 	// TODO: Handle palette length smaller than 256.
-	assert(d->backend->palette_len() == 256);
-	if (d->backend->palette_len() != 256) {
+	assert(backend->palette_len() == 256);
+	if (backend->palette_len() != 256) {
 		return nullptr;
 	}
 
@@ -114,10 +118,10 @@ rp_image *rp_image::dup_ARGB32(void) const
 
 	// Copy the image, converting from CI8 to ARGB32.
 	uint32_t *dest = static_cast<uint32_t*>(img->bits());
-	const uint8_t *src = static_cast<const uint8_t*>(d->backend->data());
-	const uint32_t *pal = d->backend->palette();
+	const uint8_t *src = static_cast<const uint8_t*>(backend->data());
+	const uint32_t *pal = backend->palette();
 	const int dest_adj = (img->stride() / 4) - width;
-	const int src_adj = d->backend->stride - width;
+	const int src_adj = backend->stride - width;
 
 	for (unsigned int y = static_cast<unsigned int>(height); y > 0; y--) {
 		// Convert up to 4 pixels per loop iteration.
@@ -166,8 +170,10 @@ rp_image *rp_image::squared(void) const
 	// Add extra transparent columns/rows before
 	// converting to HBITMAP.
 	RP_D(const rp_image);
-	const int width = d->backend->width;
-	const int height = d->backend->height;
+	const rp_image_backend *const backend = d->backend;
+
+	const int width = backend->width;
+	const int height = backend->height;
 	assert(width > 0);
 	assert(height > 0);
 	if (width <= 0 || height <= 0) {
@@ -183,7 +189,7 @@ rp_image *rp_image::squared(void) const
 	// Image needs adjustment.
 	// TODO: Native 8bpp support?
 	unique_ptr<rp_image> tmp_rp_image;
-	if (d->backend->format != rp_image::Format::ARGB32) {
+	if (backend->format != rp_image::Format::ARGB32) {
 		// Convert to ARGB32 first.
 		tmp_rp_image.reset(this->dup_ARGB32());
 	}
@@ -206,15 +212,14 @@ rp_image *rp_image::squared(void) const
 	int src_row_bytes;
 	if (!tmp_rp_image) {
 		// Not using a temporary image.
-		auto backend = d->backend;
 		src = static_cast<const uint8_t*>(backend->data());
 		src_stride = backend->stride;
 		src_row_bytes = this->row_bytes();
 	} else {
 		// Using a temporary image.
-		auto backend = tmp_rp_image->d_ptr->backend;
-		src = static_cast<const uint8_t*>(backend->data());
-		src_stride = backend->stride;
+		const rp_image_backend *const tmp_backend = tmp_rp_image->d_ptr->backend;
+		src = static_cast<const uint8_t*>(tmp_backend->data());
+		src_stride = tmp_backend->stride;
 		src_row_bytes = tmp_rp_image->row_bytes();
 	}
 
@@ -306,8 +311,10 @@ rp_image *rp_image::resized(int width, int height, Alignment alignment, uint32_t
 	}
 
 	RP_D(const rp_image);
-	const int orig_width = d->backend->width;
-	const int orig_height = d->backend->height;
+	const rp_image_backend *const backend = d->backend;
+
+	const int orig_width = backend->width;
+	const int orig_height = backend->height;
 	assert(orig_width > 0);
 	assert(orig_height > 0);
 	if (orig_width <= 0 || orig_height <= 0) {
@@ -320,7 +327,7 @@ rp_image *rp_image::resized(int width, int height, Alignment alignment, uint32_t
 		return this->dup();
 	}
 
-	const rp_image::Format format = d->backend->format;
+	const rp_image::Format format = backend->format;
 	rp_image *img = new rp_image(width, height, format);
 	if (!img->isValid()) {
 		// Image is invalid.
@@ -331,9 +338,9 @@ rp_image *rp_image::resized(int width, int height, Alignment alignment, uint32_t
 	// Copy the image.
 	// NOTE: Using uint8_t* because stride is measured in bytes.
 	uint8_t *dest = static_cast<uint8_t*>(img->bits());
-	const uint8_t *src = static_cast<const uint8_t*>(d->backend->data());
+	const uint8_t *src = static_cast<const uint8_t*>(backend->data());
 	const int dest_stride = img->stride();
-	const int src_stride = d->backend->stride;
+	const int src_stride = backend->stride;
 
 	// We want to copy the minimum of new vs. old width.
 	int row_bytes = std::min(width, orig_width);
@@ -475,9 +482,9 @@ rp_image *rp_image::resized(int width, int height, Alignment alignment, uint32_t
 
 	// If CI8, copy the palette.
 	if (format == rp_image::Format::CI8) {
-		int entries = std::min(img->palette_len(), d->backend->palette_len());
+		int entries = std::min(img->palette_len(), backend->palette_len());
 		uint32_t *const dest_pal = img->palette();
-		memcpy(dest_pal, d->backend->palette(), entries * sizeof(uint32_t));
+		memcpy(dest_pal, backend->palette(), entries * sizeof(uint32_t));
 		// Palette is zero-initialized, so we don't need to
 		// zero remaining entries.
 	}
@@ -508,6 +515,7 @@ int rp_image::apply_chroma_key_cpp(uint32_t key)
 {
 	RP_D(rp_image);
 	rp_image_backend *const backend = d->backend;
+
 	assert(backend->format == Format::ARGB32);
 	if (backend->format != Format::ARGB32) {
 		// ARGB32 only.
@@ -562,8 +570,8 @@ rp_image *rp_image::vflip(void) const
 {
 	RP_D(const rp_image);
 	rp_image_backend *const backend = d->backend;
-	const int height = backend->height;
 
+	const int height = backend->height;
 	assert(backend->width > 0 && height > 0);
 	if (backend->width <= 0 || height <= 0) {
 		return nullptr;
@@ -575,7 +583,7 @@ rp_image *rp_image::vflip(void) const
 	uint8_t *dest = static_cast<uint8_t*>(flipimg->scanLine(height - 1));
 
 	const int row_bytes = this->row_bytes();
-	const int src_stride = d->backend->stride;
+	const int src_stride = backend->stride;
 	const int dest_stride = flipimg->stride();
 
 	for (int i = height; i > 0; i--) {
