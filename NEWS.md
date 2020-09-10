@@ -24,9 +24,9 @@
     * Indicate the specific Security Data that's present.
   * Nintendo3DSFirm: Added some more homebrews and show sighax status.
   * DMG: Added support for ROMs with 512-byte copier headers.
-  * WiiWAD: Preliminary support for Nintendo DSi TAD packages. These have
-    the same basic format as WADs, including ticket and TMD, but the
-    contents are different.
+  * WiiWAD: Preliminary support for Nintendo DSi TAD packages as used by
+    DSi Nmenu. These have the same basic format as WADs, including ticket
+    and TMD, but the contents are different.
 
 * Bug fixes:
   * PlayStationDisc:
