@@ -22,6 +22,7 @@
 
 #include <stdint.h>
 #include "common.h"
+#include "nintendo_system_id.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -242,32 +243,6 @@ typedef struct _N3DS_CIA_Meta_Header_t {
 ASSERT_STRUCT(N3DS_CIA_Meta_Header_t, 0x400);
 
 /**
- * Title ID struct/union. (little-endian version)
- * TODO: Verify operation on big-endian systems.
- */
-typedef union _N3DS_TitleID_LE_t {
-	uint64_t id;
-	struct {
-		uint32_t lo;
-		uint32_t hi;
-	};
-} N3DS_TitleID_LE_t;
-ASSERT_STRUCT(N3DS_TitleID_LE_t, 8);
-
-/**
- * Title ID struct/union. (big-endian version)
- * TODO: Verify operation on big-endian systems.
- */
-typedef union _N3DS_TitleID_BE_t {
-	uint64_t id;
-	struct {
-		uint32_t hi;
-		uint32_t lo;
-	};
-} N3DS_TitleID_BE_t;
-ASSERT_STRUCT(N3DS_TitleID_BE_t, 8);
-
-/**
  * Nintendo 3DS cartridge and eMMC header. (NCSD)
  * This version does not have the 256-byte RSA-2048 signature.
  * Reference: https://3dbrew.org/wiki/NCSD
@@ -281,7 +256,7 @@ typedef struct _N3DS_NCSD_Header_NoSig_t {
 	// [0x100]
 	uint32_t magic;			// [0x100] 'NCSD' (big-endian)
 	uint32_t image_size;		// [0x104] Image size, in media units. (1 media unit = 512 bytes)
-	N3DS_TitleID_LE_t media_id;	// [0x108] Media ID.
+	Nintendo_TitleID_LE_t media_id;	// [0x108] Media ID.
 
 	// [0x110] eMMC-specific partition table.
 	struct {
@@ -411,7 +386,7 @@ typedef struct _N3DS_NCCH_Header_NoSig_t {
 	uint32_t magic;				// [0x100] 'NCCH' (big-endian)
 	uint32_t content_size;			// [0x104] Content size, in media units. (1 media unit = 512 bytes)
 	union {
-		N3DS_TitleID_LE_t title_id;	// [0x108] Title ID. (3dbrew lists this as "partition ID".)
+		Nintendo_TitleID_LE_t title_id;	// [0x108] Title ID. (3dbrew lists this as "partition ID".)
 		struct {
 			uint8_t reserved[6];	// [0x108]
 			uint16_t sysversion;	// [0x10E] System Update version for update partitions.
@@ -420,7 +395,7 @@ typedef struct _N3DS_NCCH_Header_NoSig_t {
 	char maker_code[2];			// [0x110] Maker code.
 	uint16_t version;			// [0x112] Version.
 	uint32_t fw96lock;			// [0x114] Used by FIRM 9.6.0-X to verify the content lock seed.
-	N3DS_TitleID_LE_t program_id;		// [0x118] Program ID.
+	Nintendo_TitleID_LE_t program_id;	// [0x118] Program ID.
 	uint8_t reserved1[0x10];		// [0x120]
 	uint8_t logo_region_hash[0x20];		// [0x130] Logo region SHA-256 hash. (SDK 5+)
 	char product_code[0x10];		// [0x150] ASCII product code, e.g. "CTR-P-CTAP"
@@ -583,7 +558,7 @@ typedef struct PACKED _N3DS_TMD_Header_t {
 	uint8_t signer_crl_version;	// [0x42]
 	uint8_t reserved1;		// [0x43]
 	uint64_t system_version;	// [0x44] Required system version.
-	N3DS_TitleID_BE_t title_id;	// [0x4C] Title ID.
+	Nintendo_TitleID_BE_t title_id;	// [0x4C] Title ID.
 	uint32_t title_type;		// [0x54] Title type.
 	uint16_t group_id;		// [0x58] Group ID.
 	uint32_t save_data_size;	// [0x4A] Save data size. (SRL: Public save data size)
@@ -719,7 +694,7 @@ typedef struct _N3DS_NCCH_ExHeader_ACI_t {
 	// [0x000]
 	// Reference: https://3dbrew.org/wiki/NCCH/Extended_Header#ARM11_Local_System_Capabilities
 	struct {
-		N3DS_TitleID_LE_t program_id;
+		Nintendo_TitleID_LE_t program_id;
 		uint32_t core_version;		// Title ID low of required FIRM.
 
 		// Flags:
@@ -914,7 +889,7 @@ typedef struct PACKED _N3DS_Ticket_t {
 	uint8_t reserved1;		// [0x08F]
 	uint64_t ticket_id;		// [0x090]
 	uint32_t console_id;		// [0x098] Console ID.
-	N3DS_TitleID_BE_t title_id;	// [0x09C] Title ID.
+	Nintendo_TitleID_BE_t title_id;	// [0x09C] Title ID.
 	uint8_t reserved2[2];		// [0x0A4]
 	uint16_t title_version;		// [0x0A6] ticket title version.
 	uint8_t reserved3[8];		// [0x0A8]
