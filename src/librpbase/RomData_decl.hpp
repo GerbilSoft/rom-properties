@@ -269,11 +269,23 @@ class klass : public LibRpBase::RomData { \
 		 * Perform a ROM operation. \
 		 * Internal function; called by RomData::doRomOp(). \
 		 * @param id		[in] Operation index. \
-		 * @param pResult	[out,opt] Result. (For UI updates) \
+		 * @param pParams	[in/out] Parameters and results. (for e.g. UI updates) \
 		 * @return 0 on success; negative POSIX error code on error.
 		 */ \
-		int doRomOp_int(int id, RomOpResult *pResult) final;
+		int doRomOp_int(int id, RomOpParams *pParams) final;
 
+/**
+ * RomData subclass function declaration for ROF_SAVE_FILE.
+ */
+#define ROMDATA_DECL_ROMOPS_SAVEFILE() \
+	protected: \
+		/** \
+		 * Get information about a Save File ROM operation. \
+		 * @param id	[in] Operation index. \
+		 * @param pSfi	[out] RomOpSaveFileInfo \
+		 * @return 0 on success; negative POSIX error code on error. \
+		 */ \
+		int romOpSaveFileInfo(int id, RomOpSaveFileInfo *pSfi) const final;
 /**
  * RomData subclass function declaration for closing the internal file handle.
  * Only needed if extra handling is needed, e.g. if multiple files are opened.

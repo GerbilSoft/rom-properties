@@ -3014,15 +3014,15 @@ void RP_ShellPropSheetExt_Private::menuOptions_action_triggered(int menuId)
 	} else {
 		// Run a ROM operation.
 		const int id = menuId - IDM_OPTIONS_MENU_BASE;
-		RomData::RomOpResult result;
-		int ret = romData->doRomOp(id, &result);
+		RomData::RomOpParams params;
+		int ret = romData->doRomOp(id, &params);
 		unsigned int messageType;
 		if (ret == 0) {
 			// ROM operation completed.
 			messageType = MB_ICONINFORMATION;
 
 			// Update fields.
-			std::for_each(result.fieldIdx.cbegin(), result.fieldIdx.cend(),
+			std::for_each(params.fieldIdx.cbegin(), params.fieldIdx.cend(),
 				[this](int fieldIdx) {
 					this->updateField(fieldIdx);
 				}
@@ -3052,7 +3052,7 @@ void RP_ShellPropSheetExt_Private::menuOptions_action_triggered(int menuId)
 		}
 
 		MessageBeep(messageType);
-		if (!result.msg.empty()) {
+		if (!params.msg.empty()) {
 			if (!hMessageWidget) {
 				// FIXME: Make sure this works if multiple tabs are present.
 				MessageWidgetRegister();
@@ -3086,7 +3086,7 @@ void RP_ShellPropSheetExt_Private::menuOptions_action_triggered(int menuId)
 				SetWindowFont(hMessageWidget, hFontDlg, false);
 			}
 
-			showMessageWidget(messageType, U82T_s(result.msg));
+			showMessageWidget(messageType, U82T_s(params.msg));
 		}
 	}
 }

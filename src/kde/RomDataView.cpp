@@ -1902,14 +1902,14 @@ void RomDataView::menuOptions_action_triggered(int id)
 		}
 	} else if (d->romOps_firstActionIndex >= 0) {
 		// Run a ROM operation.
-		RomData::RomOpResult result;
-		int ret = d->romData->doRomOp(id, &result);
-		const QString qs_msg = U82Q(result.msg);
+		RomData::RomOpParams params;
+		int ret = d->romData->doRomOp(id, &params);
+		const QString qs_msg = U82Q(params.msg);
 		if (ret == 0) {
 			// ROM operation completed.
 
 			// Update fields.
-			std::for_each(result.fieldIdx.cbegin(), result.fieldIdx.cend(),
+			std::for_each(params.fieldIdx.cbegin(), params.fieldIdx.cend(),
 				[d](int fieldIdx) {
 					d->updateField(fieldIdx);
 				}
@@ -1936,7 +1936,7 @@ void RomDataView::menuOptions_action_triggered(int id)
 			}
 
 			// Show the message and play the sound.
-			const QString qs_msg = U82Q(result.msg);
+			const QString qs_msg = U82Q(params.msg);
 			MessageSound::play(QMessageBox::Information, qs_msg, this);
 		} else {
 			// An error occurred...

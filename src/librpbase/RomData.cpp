@@ -935,17 +935,18 @@ vector<RomData::RomOp> RomData::romOps(void) const
 /**
  * Perform a ROM operation.
  * @param id		[in] Operation index.
- * @param pResult	[out,opt] Result. (For UI updates)
+ * @param pParams	[in/out] Parameters and results. (for e.g. UI updates)
  * @return 0 on success; negative POSIX error code on error.
  */
-int RomData::doRomOp(int id, RomOpResult *pResult)
+int RomData::doRomOp(int id, RomOpParams *pParams)
 {
 	RP_D(RomData);
 	// TODO: Function to retrieve only a single RomOp.
 	const vector<RomOp> v_ops = romOps_int();
 	assert(id >= 0);
 	assert(id < (int)v_ops.size());
-	if (id < 0 || id >= (int)v_ops.size()) {
+	assert(pParams != nullptr);
+	if (id < 0 || id >= (int)v_ops.size() || !pParams) {
 		return -EINVAL;
 	}
 
@@ -962,10 +963,8 @@ int RomData::doRomOp(int id, RomOpResult *pResult)
 			if (ret == 0) {
 				ret = -EIO;
 			}
-			if (pResult) {
-				pResult->status = ret;
-				pResult->msg = C_("RomData", "Unable to reopen the file for writing.");
-			}
+			pParams->status = ret;
+			pParams->msg = C_("RomData", "Unable to reopen the file for writing.");
 			UNREF(file);
 			return ret;
 		}
@@ -978,10 +977,8 @@ int RomData::doRomOp(int id, RomOpResult *pResult)
 		// Writable file is required.
 		if (d->file->isCompressed()) {
 			// Cannot write to a compressed file.
-			if (pResult) {
-				pResult->status = -EIO;
-				pResult->msg = C_("RomData", "Cannot perform this ROM operation on a compressed file.");
-			}
+			pParams->status = -EIO;
+			pParams->msg = C_("RomData", "Cannot perform this ROM operation on a compressed file.");
 			if (closeFileAfter) {
 				UNREF_AND_NULL_NOCHK(d->file);
 			}
@@ -993,10 +990,8 @@ int RomData::doRomOp(int id, RomOpResult *pResult)
 			int ret = d->file->makeWritable();
 			if (ret != 0) {
 				// Error making the file writable.
-				if (pResult) {
-					pResult->status = ret;
-					pResult->msg = C_("RomData", "Cannot perform this ROM operation on a read-only file.");
-				}
+				pParams->status = ret;
+				pParams->msg = C_("RomData", "Cannot perform this ROM operation on a read-only file.");
 				if (closeFileAfter) {
 					UNREF_AND_NULL_NOCHK(d->file);
 				}
@@ -1005,7 +1000,7 @@ int RomData::doRomOp(int id, RomOpResult *pResult)
 		}
 	}
 
-	int ret = doRomOp_int(id, pResult);
+	int ret = doRomOp_int(id, pParams);
 	if (closeFileAfter) {
 		UNREF_AND_NULL_NOCHK(d->file);
 	}
@@ -1027,17 +1022,15 @@ vector<RomData::RomOp> RomData::romOps_int(void) const
  * Perform a ROM operation.
  * Internal function; called by RomData::doRomOp().
  * @param id		[in] Operation index.
- * @param pResult	[out,opt] Result. (For UI updates)
+ * @param pParams	[in/out] Parameters and results. (for e.g. UI updates)
  * @return 0 on success; positive for "field updated" (subtract 1 for index); negative POSIX error code on error.
  */
-int RomData::doRomOp_int(int id, RomOpResult *pResult)
+int RomData::doRomOp_int(int id, RomOpParams *pParams)
 {
 	// Default implementation has no ROM operations.
 	RP_UNUSED(id);
-	if (pResult) {
-		pResult->status = -ENOTSUP;
-		pResult->msg = C_("RomData", "RomData object does not support any ROM operations.");
-	}
+	pParams->status = -ENOTSUP;
+	pParams->msg = C_("RomData", "RomData object does not support any ROM operations.");
 	return -ENOTSUP;
 }
 

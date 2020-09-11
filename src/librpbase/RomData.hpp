@@ -567,10 +567,13 @@ class RomData : public RefBase
 				: desc(desc), flags(flags) { }
 		};
 
-		struct RomOpResult {
+		struct RomOpParams {
+			/** OUT: Results **/
 			int status;			// Status. (0 == success; negative == POSIX error; positive == other error)
 			std::string msg;		// Status message. (optional)
 			std::vector<int> fieldIdx;	// Field indexes that were updated.
+
+			/** IN: Parameters **/
 		};
 
 		/**
@@ -582,10 +585,10 @@ class RomData : public RefBase
 		/**
 		 * Perform a ROM operation.
 		 * @param id		[in] Operation index.
-		 * @param pResult	[out,opt] Result. (For UI updates)
+		 * @param pParams	[in/out] Parameters and results. (for e.g. UI updates)
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
-		int doRomOp(int id, RomOpResult *pResult);
+		int doRomOp(int id, RomOpParams *pParams);
 
 	protected:
 		/**
@@ -599,10 +602,10 @@ class RomData : public RefBase
 		 * Perform a ROM operation.
 		 * Internal function; called by RomData::doRomOp().
 		 * @param id		[in] Operation index.
-		 * @param pResult	[out,opt] Result. (For UI updates)
+		 * @param pParams	[in/out] Parameters and results. (for e.g. UI updates)
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
-		virtual int doRomOp_int(int id, RomOpResult *pResult);
+		virtual int doRomOp_int(int id, RomOpParams *pParams);
 };
 
 }

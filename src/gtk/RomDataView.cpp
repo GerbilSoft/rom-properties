@@ -2724,13 +2724,13 @@ menuOptions_triggered_signal_handler(GtkMenuItem *menuItem,
 	} else {
 		// Run a ROM operation.
 		GtkMessageType messageType;
-		RomData::RomOpResult result;
-		int ret = page->romData->doRomOp(id, &result);
+		RomData::RomOpParams params;
+		int ret = page->romData->doRomOp(id, &params);
 		if (ret == 0) {
 			// ROM operation completed.
 
 			// Update fields.
-			std::for_each(result.fieldIdx.cbegin(), result.fieldIdx.cend(),
+			std::for_each(params.fieldIdx.cbegin(), params.fieldIdx.cend(),
 				[page](int fieldIdx) {
 					rom_data_view_update_field(page, fieldIdx);
 				}
@@ -2757,10 +2757,10 @@ menuOptions_triggered_signal_handler(GtkMenuItem *menuItem,
 		}
 
 #ifdef ENABLE_MESSAGESOUND
-		MessageSound::play(messageType, result.msg.c_str(), GTK_WIDGET(page));
+		MessageSound::play(messageType, params.msg.c_str(), GTK_WIDGET(page));
 #endif /* ENABLE_MESSAGESOUND */
 
-		if (!result.msg.empty()) {
+		if (!params.msg.empty()) {
 			// Show the MessageWidget.
 			if (!page->messageWidget) {
 				page->messageWidget = message_widget_new();
@@ -2769,7 +2769,7 @@ menuOptions_triggered_signal_handler(GtkMenuItem *menuItem,
 
 			MessageWidget *const messageWidget = MESSAGE_WIDGET(page->messageWidget);
 			message_widget_set_message_type(messageWidget, messageType);
-			message_widget_set_text(messageWidget, result.msg.c_str());
+			message_widget_set_text(messageWidget, params.msg.c_str());
 #ifdef AUTO_TIMEOUT_MESSAGEWIDGET
 			message_widget_show_with_timeout(messageWidget);
 #else /* AUTO_TIMEOUT_MESSAGEWIDGET */
