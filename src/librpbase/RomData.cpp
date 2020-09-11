@@ -695,7 +695,7 @@ int RomData::loadInternalImage(ImageType imageType, const rp_image **pImage)
 	} else if (imageType < IMG_INT_MIN || imageType > IMG_INT_MAX) {
 		// ImageType is out of range.
 		*pImage = nullptr;
-		return -ERANGE;
+		return -EINVAL;
 	}
 
 	// No images supported by the base class.
@@ -809,7 +809,7 @@ int RomData::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) co
 	assert(imageType >= IMG_EXT_MIN && imageType <= IMG_EXT_MAX);
 	if (imageType < IMG_EXT_MIN || imageType > IMG_EXT_MAX) {
 		// ImageType is out of range.
-		return -ERANGE;
+		return -EINVAL;
 	}
 	assert(pExtURLs != nullptr);
 	if (!pExtURLs) {
@@ -946,7 +946,7 @@ int RomData::doRomOp(int id, RomOpResult *pResult)
 	assert(id >= 0);
 	assert(id < (int)v_ops.size());
 	if (id < 0 || id >= (int)v_ops.size()) {
-		return -ERANGE;
+		return -EINVAL;
 	}
 
 	bool closeFileAfter;

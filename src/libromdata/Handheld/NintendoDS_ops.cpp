@@ -616,6 +616,10 @@ int NintendoDS::doRomOp_int(int id, RomOpResult *pResult)
 			break;
 		}
 #endif /* ENABLE_DECRYPTION */
+
+		default:
+			ret = -EINVAL;
+			break;
 	}
 
 	return ret;
