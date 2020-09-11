@@ -100,4 +100,17 @@ QUrl localizeQUrl(const QUrl &url);
  */
 LibRpFile::IRpFile *openQUrl(const QUrl &url, bool isThumbnail = false);
 
+/**
+ * Convert an RP file dialog filter to Qt.
+ *
+ * RP syntax: "Sega Mega Drive ROM images|*.gen;*.bin|All Files|*.*"
+ * Essentially the same as Windows, but with '|' instead of '\0'.
+ * Also, no terminator sequence is needed.
+ * The "(*.bin; *.srl)" part is added to the display name if needed.
+ *
+ * @param filter RP file dialog filter. (UTF-8, from gettext())
+ * @return Qt file dialog filter.
+ */
+QString rpFileDialogFilterToQt(const char *filter);
+
 #endif /* __ROMPROPERTIES_KDE_RPQT_HPP__ */

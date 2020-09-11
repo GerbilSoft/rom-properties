@@ -1816,22 +1816,23 @@ void RomDataView::menuOptions_action_triggered(int id)
 		QFileInfo fi(U82Q(rom_filename));
 
 		bool toClipboard;
-		QString s_title, s_filter;
-		QString s_default_ext;
+		QString qs_title;
+		const char *s_filter = nullptr;
+		QString qs_default_ext;
 		switch (id) {
 			case RomDataViewPrivate::OPTION_EXPORT_TEXT:
 				toClipboard = false;
-				s_title = U82Q(C_("RomDataView", "Export to Text File"));
-				// tr: Text files filter. (Qt)
-				s_filter = U82Q(C_("RomDataView", "Text Files (*.txt);;All Files (*.*)"));
-				s_default_ext = QLatin1String(".txt");
+				qs_title = U82Q(C_("RomDataView", "Export to Text File"));
+				// tr: Text files filter. (RP format)
+				s_filter = C_("RomDataView", "Text Files|*.txt|All Files|*.*");
+				qs_default_ext = QLatin1String(".txt");
 				break;
 			case RomDataViewPrivate::OPTION_EXPORT_JSON:
 				toClipboard = false;
-				s_title = U82Q(C_("RomDataView", "Export to JSON File"));
-				// tr: JSON files filter. (Qt)
-				s_filter = U82Q(C_("RomDataView", "JSON Files (*.json);;All Files (*.*)"));
-				s_default_ext = QLatin1String(".json");
+				qs_title = U82Q(C_("RomDataView", "Export to JSON File"));
+				// tr: JSON files filter. (RP format)
+				s_filter = C_("RomDataView", "JSON Files|*.json|All Files|*.*");
+				qs_default_ext = QLatin1String(".json");
 				break;
 			case RomDataViewPrivate::OPTION_COPY_TEXT:
 			case RomDataViewPrivate::OPTION_COPY_JSON:
@@ -1851,9 +1852,10 @@ void RomDataView::menuOptions_action_triggered(int id)
 				d->prevExportDir = fi.path();
 			}
 
-			QString defaultFileName = d->prevExportDir + QChar(L'/') + fi.completeBaseName() + s_default_ext;
+			QString defaultFileName = d->prevExportDir + QChar(L'/') + fi.completeBaseName() + qs_default_ext;
 			QString out_filename = QFileDialog::getSaveFileName(this,
-				s_title, defaultFileName, s_filter);
+				qs_title, defaultFileName,
+				rpFileDialogFilterToQt(s_filter));
 			if (out_filename.isEmpty())
 				return;
 

@@ -202,3 +202,76 @@ IRpFile *openQUrl(const QUrl &url, bool isThumbnail)
 
 	return file;
 }
+
+/**
+ * Convert an RP file dialog filter to Qt.
+ *
+ * RP syntax: "Sega Mega Drive ROM images|*.gen;*.bin|All Files|*.*"
+ * Essentially the same as Windows, but with '|' instead of '\0'.
+ * Also, no terminator sequence is needed.
+ * The "(*.bin; *.srl)" part is added to the display name if needed.
+ *
+ * @param filter RP file dialog filter. (UTF-8, from gettext())
+ * @return Qt file dialog filter.
+ */
+QString rpFileDialogFilterToQt(const char *filter)
+{
+	QString qs_ret;
+	assert(filter != nullptr && filter[0] != '\0');
+	if (!filter || filter[0] == '\0')
+		return qs_ret;
+
+	// Tokenize manually without using strtok_r(),
+	// since strtok_r() writes to the string.
+	QStringList parts;
+	int reserve = 0;
+	const char *last = filter;
+	do {
+		const char *p = strchr(last, '|');
+		if (!p) {
+			// Last token.
+			QString str = QString::fromUtf8(last);
+			reserve += str.size();
+			parts.append(str);
+			break;
+		}
+
+		// Not the last token.
+		QString str = QString::fromUtf8(last, p - last);
+		reserve += str.size();
+		parts.append(str);
+		last = p + 1;
+	} while (last != nullptr && *last != '\0');
+	assert(parts.size() % 2 == 0);
+	if (parts.size() % 2 != 0)
+		return qs_ret;
+
+	// On Qt, the "(*.bin)" portion of the display name is
+	// used as the actual filter.
+	// RP filter: "Sega Mega Drive ROM images|*.gen;*.bin|All Files|*.*"
+	// Qt filter: "Sega Mega Drive ROM images (*.gen *.bin);;All Files (*.*)"
+
+	// TODO: Remove the space between the name and the filter.
+	// KDE doesn't do this, but I'm not sure if Qt on Linux
+	// without KDE removes the filter portion from the display.
+
+	qs_ret.reserve(reserve + (parts.size() * 3));
+	const auto parts_cend = parts.cend();
+	for (auto iter = parts.cbegin(); iter != parts_cend; ) {
+		if (!qs_ret.isEmpty()) {
+			qs_ret += QLatin1String(";;");
+		}
+
+		// Display name.
+		qs_ret += *iter++;
+
+		// File filter.
+		qs_ret += QLatin1String(" (");
+		QString pattern = *iter++;
+		pattern.replace(QChar(L';'), QChar(L' '));
+		qs_ret += pattern;
+		qs_ret += QChar(L')');
+	}
+
+	return qs_ret;
+}

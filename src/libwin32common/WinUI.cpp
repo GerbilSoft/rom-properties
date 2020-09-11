@@ -9,6 +9,7 @@
 #include "config.libwin32common.h"
 #include "WinUI.hpp"
 #include "AutoGetDC.hpp"
+#include "MiniU82T.hpp"
 
 #include <commctrl.h>
 #include <commdlg.h>
@@ -23,6 +24,7 @@ using std::string;
 using std::unique_ptr;
 using std::unordered_set;
 using std::tstring;
+using std::vector;
 
 namespace LibWin32Common {
 
@@ -339,6 +341,79 @@ LRESULT CALLBACK SingleLineEditProc(
 }
 
 /**
+ * Convert an RP file dialog filter to Win32.
+ *
+ * RP syntax: "Sega Mega Drive ROM images|*.gen;*.bin|All Files|*.*"
+ * Essentially the same as Windows, but with '|' instead of '\0'.
+ * Also, no terminator sequence is needed.
+ * The "(*.bin; *.srl)" part is added to the display name if needed.
+ *
+ * @param filter RP file dialog filter. (UTF-8, from gettext())
+ * @return Win32 file dialog filter.
+ */
+static tstring rpFileDialogFilterToWin32(const char *filter)
+{
+	tstring ts_ret;
+	assert(filter != nullptr && filter[0] != '\0');
+	if (!filter || filter[0] == '\0')
+		return ts_ret;
+
+	// Tokenize manually without using strtok_r(),
+	// since strtok_r() writes to the string.
+	vector<tstring> parts;
+	size_t reserve = 0;
+	const char *last = filter;
+	do {
+		const char *p = strchr(last, '|');
+		if (!p) {
+			// Last token.
+			tstring tstr = U82T_c(last);
+			reserve += tstr.size();
+			parts.push_back(std::move(tstr));
+			break;
+		}
+
+		// Not the last token.
+		// NOTE: Need to make a temporary std::string...
+		string str(last, p - last);
+		reserve += str.size();
+		parts.push_back(U82T_s(str));
+		last = p + 1;
+	} while (last != nullptr && *last != '\0');
+	assert(parts.size() % 2 == 0);
+	if (parts.size() % 2 != 0)
+		return ts_ret;
+
+	// RP filter: "Sega Mega Drive ROM images|*.gen;*.bin|All Files|*.*"
+	// Windows filter: "Sega Mega Drive ROM images (*.gen; *.bin)\0*.gen;*.bin\0All Files (*.*)\0*.*\0\0"
+
+	// TODO: Remove the space between the name and the filter.
+	// KDE doesn't do this, but I'm not sure if Qt on Linux
+	// without KDE removes the filter portion from the display.
+
+	ts_ret.reserve(reserve + (parts.size() * 4));
+	const auto parts_cend = parts.cend();
+	for (auto iter = parts.cbegin(); iter != parts_cend; ) {
+		// Display name.
+		ts_ret += *iter++;
+
+		// File filter portion of the display name.
+		// TODO: Convert ";" to "; ".
+		ts_ret += _T(" (");
+		ts_ret += *iter;
+		ts_ret += _T(')');
+		ts_ret += _T('\0');
+
+		// File filter.
+		ts_ret += *iter++;
+		ts_ret += _T('\0');
+	}
+
+	ts_ret += _T('\0');
+	return ts_ret;
+}
+
+/**
  * Get a filename using a File Name dialog.
  *
  * Depending on OS, this may use:
@@ -348,11 +423,11 @@ LRESULT CALLBACK SingleLineEditProc(
  * @param bSave		[in] True for save; false for open.
  * @param hWnd		[in] Owner.
  * @param dlgTitle	[in] Dialog title.
- * @param filterSpec	[in] Filter specification. (pipe-delimited)
+ * @param filterSpec	[in] Filter specification. (RP format, UTF-8)
  * @param origFilename	[in,opt] Starting filename.
  * @return Filename, or empty string on error.
  */
-static tstring getFileName_int(bool bSave, HWND hWnd, const TCHAR *dlgTitle, const TCHAR *filterSpec, const TCHAR *origFilename)
+static tstring getFileName_int(bool bSave, HWND hWnd, const TCHAR *dlgTitle, const char *filterSpec, const TCHAR *origFilename)
 {
 	assert(dlgTitle != nullptr);
 	assert(filterSpec != nullptr);
@@ -367,17 +442,7 @@ static tstring getFileName_int(bool bSave, HWND hWnd, const TCHAR *dlgTitle, con
 		// - IFileDialogEvents object
 	} else {
 		// GetOpenFileName() / GetSaveFileName()
-
-		// Convert filterSpec from pipe-delimited to NULL-deliminted.
-		// This is needed because Win32 file filters use embedded
-		// NULL characters, but gettext doesn't support that because
-		// it uses C strings.
-		tstring ts_filterSpec(filterSpec);
-		std::for_each(ts_filterSpec.begin(), ts_filterSpec.end(), [](TCHAR &p) {
-			if (p == _T('|')) {
-				p = _T('\0');
-			}
-		});
+		tstring ts_filterSpec = rpFileDialogFilterToWin32(filterSpec);
 
 		TCHAR tfilename[MAX_PATH];
 		tfilename[0] = 0;
@@ -434,11 +499,11 @@ static tstring getFileName_int(bool bSave, HWND hWnd, const TCHAR *dlgTitle, con
  *
  * @param hWnd		[in] Owner.
  * @param dlgTitle	[in] Dialog title.
- * @param filterSpec	[in] Filter specification. (pipe-delimited)
+ * @param filterSpec	[in] Filter specification. (RP format, UTF-8)
  * @param origFilename	[in,opt] Starting filename.
  * @return Filename, or empty string on error.
  */
-tstring getOpenFileName(HWND hWnd, const TCHAR *dlgTitle, const TCHAR *filterSpec, const TCHAR *origFilename)
+tstring getOpenFileName(HWND hWnd, const TCHAR *dlgTitle, const char *filterSpec, const TCHAR *origFilename)
 {
 	return getFileName_int(false, hWnd, dlgTitle, filterSpec, origFilename);
 }
@@ -452,11 +517,11 @@ tstring getOpenFileName(HWND hWnd, const TCHAR *dlgTitle, const TCHAR *filterSpe
  *
  * @param hWnd		[in] Owner.
  * @param dlgTitle	[in] Dialog title.
- * @param filterSpec	[in] Filter specification. (pipe-delimited)
+ * @param filterSpec	[in] Filter specification. (RP format, UTF-8)
  * @param origFilename	[in,opt] Starting filename.
  * @return Filename, or empty string on error.
  */
-tstring getSaveFileName(HWND hWnd, const TCHAR *dlgTitle, const TCHAR *filterSpec, const TCHAR *origFilename)
+tstring getSaveFileName(HWND hWnd, const TCHAR *dlgTitle, const char *filterSpec, const TCHAR *origFilename)
 {
 	return getFileName_int(true, hWnd, dlgTitle, filterSpec, origFilename);
 }

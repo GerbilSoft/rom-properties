@@ -129,11 +129,11 @@ bool isComCtl32_v610(void);
  *
  * @param hWnd		[in] Owner.
  * @param dlgTitle	[in] Dialog title.
- * @param filterSpec	[in] Filter specification. (pipe-delimited)
+ * @param filterSpec	[in] Filter specification. (RP format, UTF-8)
  * @param origFilename	[in,opt] Starting filename.
  * @return Filename, or empty string on error.
  */
-std::tstring getOpenFileName(HWND hWnd, const TCHAR *dlgTitle, const TCHAR *filterSpec, const TCHAR *origFilename);
+std::tstring getOpenFileName(HWND hWnd, const TCHAR *dlgTitle, const char *filterSpec, const TCHAR *origFilename);
 
 /**
  * Get a filename using the Save File Name dialog.
@@ -144,11 +144,11 @@ std::tstring getOpenFileName(HWND hWnd, const TCHAR *dlgTitle, const TCHAR *filt
  *
  * @param hWnd		[in] Owner.
  * @param dlgTitle	[in] Dialog title.
- * @param filterSpec	[in] Filter specification. (pipe-delimited)
+ * @param filterSpec	[in] Filter specification. (RP format, UTF-8)
  * @param origFilename	[in,opt] Starting filename.
  * @return Filename, or empty string on error.
  */
-std::tstring getSaveFileName(HWND hWnd, const TCHAR *dlgTitle, const TCHAR *filterSpec, const TCHAR *origFilename);
+std::tstring getSaveFileName(HWND hWnd, const TCHAR *dlgTitle, const char *filterSpec, const TCHAR *origFilename);
 
 /** Window procedure subclasses **/
 

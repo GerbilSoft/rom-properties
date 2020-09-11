@@ -2869,21 +2869,22 @@ void RP_ShellPropSheetExt_Private::menuOptions_action_triggered(int menuId)
 			return;
 
 		bool toClipboard;
-		tstring ts_title, ts_filter;
+		tstring ts_title;
+		const char *s_filter = nullptr;
 		const TCHAR *ts_default_ext = nullptr;
 		switch (menuId) {
 			case IDM_OPTIONS_MENU_EXPORT_TEXT:
 				toClipboard = false;
 				ts_title = U82T_c(C_("RomDataView", "Export to Text File"));
-				// tr: Text files filter. (Win32) [Use '|' instead of '\0'! gettext() doesn't support embedded nulls.]
-				ts_filter = U82T_c(C_("RomDataView", "Text Files (*.txt)|*.txt|All Files (*.*)|*.*||"));
+				// tr: Text files filter. (RP format)
+				s_filter = C_("RomDataView", "Text Files|*.txt|All Files|*.*");
 				ts_default_ext = _T(".txt");
 				break;
 			case IDM_OPTIONS_MENU_EXPORT_JSON:
 				toClipboard = false;
 				ts_title = U82T_c(C_("RomDataView", "Export to JSON File"));
-				// tr: JSON files filter. (Win32) [Use '|' instead of '\0'! gettext() doesn't support embedded nulls.]
-				ts_filter = U82T_c(C_("RomDataView", "JSON Files (*.json)|*.json|All Files (*.*)|*.*||"));
+				// tr: JSON files filter. (RP format)
+				s_filter = C_("RomDataView", "JSON Files|*.json|All Files|*.*");
 				ts_default_ext = _T(".json");
 				break;
 			case IDM_OPTIONS_MENU_COPY_TEXT:
@@ -2934,7 +2935,7 @@ void RP_ShellPropSheetExt_Private::menuOptions_action_triggered(int menuId)
 			defaultFileName += rom_basename + ts_default_ext;
 
 			const tstring tfilename = LibWin32Common::getSaveFileName(hDlgSheet,
-				ts_title.c_str(), ts_filter.c_str(), defaultFileName.c_str());
+				ts_title.c_str(), s_filter, defaultFileName.c_str());
 			if (tfilename.empty())
 				return;
 
