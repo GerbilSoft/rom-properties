@@ -172,6 +172,43 @@ typedef enum {
 } RVL_Access_Rights_e;
 
 /**
+ * Wii content entry. (Stored after the TMD.)
+ * Reference: https://wiibrew.org/wiki/Title_metadata
+ */
+#pragma pack(1)
+typedef struct PACKED _RVL_Content_Entry {
+	uint32_t content_id;		// [0x000] Content ID
+	uint16_t index;			// [0x004] Index
+	uint16_t type;			// [0x006] Type (see RVL_Content_Type_e)
+	uint64_t size;			// [0x008] Size
+	uint8_t sha1_hash[20];		// [0x010] SHA-1 hash of the content (installed) or H3 table (disc).
+} RVL_Content_Entry;
+#pragma pack()
+ASSERT_STRUCT(RVL_Content_Entry, 0x24);
+
+/**
+ * Content type (bitfield)
+ */
+typedef enum {
+	RVL_CONTENT_TYPE_DEFAULT	= 0x0001,
+	RVL_CONTENT_TYPE_UNKNOWN_0x04	= 0x0004,
+
+	// Used for DLC titles.
+	RVL_CONTENT_TYPE_DATA		= 0x0008,
+	RVL_CONTENT_TYPE_UNKNOWN_0x10	= 0x0010,
+
+	// Seems to be used for WFS titles.
+	RVL_CONTENT_TYPE_MAYBE_WFS	= 0x0020,
+	RVL_CONTENT_TYPE_UNKNOWN_CT	= 0x0040,
+
+	// Seen in CoD:MW3 DLC.
+	RVL_CONTENT_TYPE_UNKNOWN_0x4000	= 0x4000,
+
+	// Seen in Pop Europe (WiiWare).
+	RVL_CONTENT_TYPE_UNKNOWN_0x8000	= 0x8000,
+} RVL_Content_Type_e;
+
+/**
  * Wii partition header.
  * Reference: https://wiibrew.org/wiki/Wii_Disc#Partition
  */

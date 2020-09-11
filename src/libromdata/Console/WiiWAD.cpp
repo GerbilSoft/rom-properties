@@ -85,6 +85,11 @@ class WiiWADPrivate : public RomDataPrivate
 		// FIXME: This is the same "meta" section as Nintendo WADs...
 		string wadName;
 
+		// TMD contents table.
+		ao::uvector<RVL_Content_Entry> tmdContentsTbl;
+		const RVL_Content_Entry *pBootContent;
+		uint32_t bootContentOffset;	// relative to start of data area
+
 		/**
 		 * Round a value to the next highest multiple of 64.
 		 * @param value Value.
@@ -124,6 +129,8 @@ WiiWADPrivate::WiiWADPrivate(WiiWAD *q, IRpFile *file)
 	, wadType(WadType::Unknown)
 	, data_offset(0)
 	, data_size(0)
+	, pBootContent(nullptr)
+	, bootContentOffset(0)
 #ifdef ENABLE_DECRYPTION
 	, cbcReader(nullptr)
 	, mainContent(nullptr)
@@ -239,8 +246,7 @@ WiiWAD::WiiWAD(IRpFile *file)
 	info.ext = nullptr;	// Not needed for WiiWAD.
 	info.szFile = d->file->size();
 	d->wadType = static_cast<WiiWADPrivate::WadType>(isRomSupported_static(&info));
-	d->isValid = ((int)d->wadType >= 0);
-	if (!d->isValid) {
+	if ((int)d->wadType < 0) {
 		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
@@ -293,7 +299,17 @@ WiiWAD::WiiWAD(IRpFile *file)
 		default:
 			assert(!"Should not get here...");
 			UNREF_AND_NULL_NOCHK(d->file);
+			d->wadType = WiiWADPrivate::WadType::Unknown;
 			return;
+	}
+
+	// Verify that the data section is within range for the file.
+	const off64_t data_end_offset = (off64_t)d->data_offset + (off64_t)d->data_size;
+	if (data_end_offset > d->file->size()) {
+		// Out of range.
+		UNREF_AND_NULL_NOCHK(d->file);
+		d->wadType = WiiWADPrivate::WadType::Unknown;
+		return;
 	}
 
 	// Read the ticket and TMD.
@@ -301,16 +317,64 @@ WiiWAD::WiiWAD(IRpFile *file)
 	size = d->file->seekAndRead(ticket_addr, &d->ticket, sizeof(d->ticket));
 	if (size != sizeof(d->ticket)) {
 		// Seek and/or read error.
-		d->isValid = false;
 		UNREF_AND_NULL_NOCHK(d->file);
+		d->wadType = WiiWADPrivate::WadType::Unknown;
 		return;
 	}
 	size = d->file->seekAndRead(tmd_addr, &d->tmdHeader, sizeof(d->tmdHeader));
 	if (size != sizeof(d->tmdHeader)) {
 		// Seek and/or read error.
-		d->isValid = false;
 		UNREF_AND_NULL_NOCHK(d->file);
+		d->wadType = WiiWADPrivate::WadType::Unknown;
 		return;
+	}
+
+	// Read the TMD contents table.
+	// FIXME: Is alignment needed?
+	d->tmdContentsTbl.resize(be16_to_cpu(d->tmdHeader.nbr_cont));
+	const size_t expCtTblSize = d->tmdContentsTbl.size() * sizeof(RVL_Content_Entry);
+	size = d->file->read(d->tmdContentsTbl.data(), expCtTblSize);
+	if (size == expCtTblSize) {
+		// Find the matching boot index.
+		// NOTE: Not byteswapping the index to save cycles.
+		const uint16_t boot_index_be = d->tmdHeader.boot_index;
+		const auto tmdContentsTbl_cend = d->tmdContentsTbl.cend();
+		uint32_t offset = 0;
+
+		const RVL_Content_Entry *pEntry = nullptr;
+		for (auto iter = d->tmdContentsTbl.cbegin(); iter != tmdContentsTbl_cend; ++iter) {
+			if (iter->index == boot_index_be) {
+				// Found the boot index.
+				pEntry = &(*iter);
+				break;
+			}
+
+			// TODO: 64-byte alignment on TADs?
+			// (TADs usually only have a single content...)
+			offset += static_cast<uint32_t>(be64_to_cpu(iter->size));
+			offset = WiiWADPrivate::toNext64(offset);
+		}
+
+		if (!pEntry) {
+			// No match. Use the first content.
+			pEntry = &d->tmdContentsTbl[0];
+			offset = 0;
+		}
+
+		// Found a match.
+		// Make sure it's within data_size.
+		const off64_t content_end_offset =
+			(off64_t)d->data_offset +
+			(off64_t)offset +
+			be64_to_cpu(pEntry->size);
+		if (content_end_offset <= data_end_offset) {
+			// In range. It's valid!
+			d->pBootContent = pEntry;
+			d->bootContentOffset = offset;
+		}
+	} else {
+		// Unable to read the content table.
+		d->tmdContentsTbl.clear();
 	}
 
 	// Determine the key index and debug vs. retail.
@@ -327,6 +391,9 @@ WiiWAD::WiiWAD(IRpFile *file)
 		}
 		d->key_idx = (WiiPartition::EncryptionKeys)idx;
 	}
+
+	// Main header is valid.
+	d->isValid = true;
 
 #ifdef ENABLE_DECRYPTION
 	// Initialize the CBC reader for the main data area.
@@ -373,11 +440,16 @@ WiiWAD::WiiWAD(IRpFile *file)
 	cipher->decrypt(title_key, sizeof(title_key));
 	delete cipher;
 
+	if (!d->pBootContent) {
+		// No boot content...
+		return;
+	}
+
 	// Data area IV:
 	// - First two bytes are the big-endian content index.
 	// - Remaining bytes are zero.
-	// - TODO: Read the TMD content table. For now, assuming index 0.
-	memset(iv, 0, sizeof(iv));
+	memcpy(iv, &d->pBootContent->index, sizeof(d->pBootContent->index));
+	memset(&iv[2], 0, sizeof(iv)-2);
 
 	// Create a CBC reader to decrypt the data section.
 	// TODO: Verify some known data?
@@ -389,7 +461,8 @@ WiiWAD::WiiWAD(IRpFile *file)
 		// Wii: Contents may be one of the following:
 		// - IMET header: Most common.
 		// - WIBN header: DLC titles.
-		size = d->cbcReader->read(&d->imet, sizeof(d->imet));
+		// FIXME: IMET seems to be off by 64 bytes...
+		size = d->cbcReader->seekAndRead(d->bootContentOffset, &d->imet, sizeof(d->imet));
 		if (size == sizeof(d->imet) &&
 		    d->imet.magic == cpu_to_be32(WII_IMET_MAGIC))
 		{
@@ -404,7 +477,7 @@ WiiWAD::WiiWAD(IRpFile *file)
 			// allow it to read the rest of the file.
 			PartitionFile *const ptFile = new PartitionFile(d->cbcReader,
 				offsetof(Wii_IMET_t, magic),
-				d->data_size - offsetof(Wii_IMET_t, magic));
+				be64_to_cpu(d->pBootContent->size) - offsetof(Wii_IMET_t, magic));
 			if (ptFile->isOpen()) {
 				// Open the WiiWIBN.
 				WiiWIBN *const wibn = new WiiWIBN(ptFile);
@@ -420,7 +493,8 @@ WiiWAD::WiiWAD(IRpFile *file)
 		}
 	} else {
 		// Nintendo DSi: Main content is an SRL.
-		PartitionFile *const ptFile = new PartitionFile(d->cbcReader, 0, d->data_size);
+		PartitionFile *const ptFile = new PartitionFile(d->cbcReader,
+			d->bootContentOffset, be64_to_cpu(d->pBootContent->size));
 		if (ptFile->isOpen()) {
 			// Open the NintendoDS.
 			NintendoDS *const srl = new NintendoDS(ptFile);
