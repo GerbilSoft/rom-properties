@@ -20,6 +20,15 @@
  */
 void MessageSound::play(GtkMessageType notificationType, const char *message, GtkWidget *parent)
 {
+	// Check if event sounds are enabled.
+	GtkSettings *const settings = gtk_settings_get_default();
+	gboolean bEnableEventSounds = false;
+	g_object_get(settings, "gtk-enable-event-sounds", &bEnableEventSounds, nullptr);
+	if (!bEnableEventSounds) {
+		// Event sounds are disabled.
+		return;
+	}
+
 	const char *event_id;
 	switch (notificationType) {
 		default:
