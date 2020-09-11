@@ -263,14 +263,14 @@ class klass : public LibRpBase::RomData { \
 		 * Internal function; called by RomData::romOps(). \
 		 * @return List of operations. \
 		 */ \
-		std::vector<RomOps> romOps_int(void) const final; \
+		std::vector<RomOp> romOps_int(void) const final; \
 		\
 		/** \
 		 * Perform a ROM operation. \
 		 * Internal function; called by RomData::doRomOp(). \
 		 * @param id		[in] Operation index. \
 		 * @param pResult	[out,opt] Result. (For UI updates) \
-		 * @return 0 on success; positive for "field updated" (subtract 1 for index); negative POSIX error code on error.
+		 * @return 0 on success; negative POSIX error code on error.
 		 */ \
 		int doRomOp_int(int id, RomOpResult *pResult) final;
 

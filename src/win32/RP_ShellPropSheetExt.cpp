@@ -3032,18 +3032,18 @@ void RP_ShellPropSheetExt_Private::menuOptions_action_triggered(int menuId)
 			// NOTE: Assuming the RomOps vector order hasn't changed.
 			// TODO: Have RomData store the RomOps vector instead of
 			// rebuilding it here?
-			const vector<RomData::RomOps> ops = romData->romOps();
+			const vector<RomData::RomOp> ops = romData->romOps();
 			assert(id < (int)ops.size());
 			if (id < (int)ops.size()) {
-				const RomData::RomOps &op = ops[id];
+				const RomData::RomOp &op = ops[id];
 
 				UINT uFlags;
-				if (!(op.flags & RomData::RomOps::ROF_ENABLED)) {
+				if (!(op.flags & RomData::RomOp::ROF_ENABLED)) {
 					uFlags = MF_BYCOMMAND | MF_STRING | MF_DISABLED;
 				} else {
 					uFlags = MF_BYCOMMAND | MF_STRING;
 				}
-				ModifyMenu(hMenuOptions, menuId, uFlags, menuId, U82T_c(op.desc.c_str()));
+				ModifyMenu(hMenuOptions, menuId, uFlags, menuId, U82T_c(op.desc));
 			}
 		} else {
 			// An error occurred...
@@ -3253,7 +3253,7 @@ void RP_ShellPropSheetExt_Private::createOptionsButton(void)
 	}
 
 	/** ROM operations. **/
-	const vector<RomData::RomOps> ops = romData->romOps();
+	const vector<RomData::RomOp> ops = romData->romOps();
 	if (!ops.empty()) {
 		AppendMenu(hMenuOptions, MF_SEPARATOR, 0, nullptr);
 
@@ -3261,12 +3261,12 @@ void RP_ShellPropSheetExt_Private::createOptionsButton(void)
 		const auto ops_end = ops.cend();
 		for (auto iter = ops.cbegin(); iter != ops_end; ++iter, i++) {
 			UINT uFlags;
-			if (!(iter->flags & RomData::RomOps::ROF_ENABLED)) {
+			if (!(iter->flags & RomData::RomOp::ROF_ENABLED)) {
 				uFlags = MF_STRING | MF_DISABLED;
 			} else {
 				uFlags = MF_STRING;
 			}
-			AppendMenu(hMenuOptions, uFlags, i, U82T_c(iter->desc.c_str()));
+			AppendMenu(hMenuOptions, uFlags, i, U82T_c(iter->desc));
 		}
 	}
 }

@@ -424,7 +424,7 @@ void RomDataViewPrivate::createOptionsButton(void)
 	}
 
 	/** ROM operations. **/
-	const vector<RomData::RomOps> ops = romData->romOps();
+	const vector<RomData::RomOp> ops = romData->romOps();
 	if (!ops.empty()) {
 		menuOptions->addSeparator();
 		romOps_firstActionIndex = menuOptions->children().count();
@@ -433,7 +433,7 @@ void RomDataViewPrivate::createOptionsButton(void)
 		const auto ops_end = ops.cend();
 		for (auto iter = ops.cbegin(); iter != ops_end; ++iter, i++) {
 			QAction *const action = menuOptions->addAction(U82Q(iter->desc));
-			action->setEnabled(!!(iter->flags & RomData::RomOps::ROF_ENABLED));
+			action->setEnabled(!!(iter->flags & RomData::RomOp::ROF_ENABLED));
 #if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
 			QObject::connect(action, &QAction::triggered,
 				[q, i] { q->menuOptions_action_triggered(i); });
@@ -1919,7 +1919,7 @@ void RomDataView::menuOptions_action_triggered(int id)
 			// NOTE: Assuming the RomOps vector order hasn't changed.
 			// TODO: Have RomData store the RomOps vector instead of
 			// rebuilding it here?
-			const vector<RomData::RomOps> ops = d->romData->romOps();
+			const vector<RomData::RomOp> ops = d->romData->romOps();
 			assert(id < (int)ops.size());
 			if (id < (int)ops.size()) {
 				const QObjectList &objList = d->menuOptions->children();
@@ -1928,9 +1928,9 @@ void RomDataView::menuOptions_action_triggered(int id)
 				if (actionIndex < objList.size()) {
 					QAction *const action = qobject_cast<QAction*>(objList.at(actionIndex));
 					if (action) {
-						const RomData::RomOps &op = ops[id];
+						const RomData::RomOp &op = ops[id];
 						action->setText(U82Q(op.desc));
-						action->setEnabled(!!(op.flags & RomData::RomOps::ROF_ENABLED));
+						action->setEnabled(!!(op.flags & RomData::RomOp::ROF_ENABLED));
 					}
 				}
 			}

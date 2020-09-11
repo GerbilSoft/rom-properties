@@ -183,11 +183,11 @@ const char *NintendoDSPrivate::getNDSSecureAreaString(void)
  * Internal function; called by RomData::romOps().
  * @return List of operations.
  */
-vector<RomData::RomOps> NintendoDS::romOps_int(void) const
+vector<RomData::RomOp> NintendoDS::romOps_int(void) const
 {
 	// Determine if the ROM is trimmed and/or encrypted.
 	// TODO: Cache the vector?
-	vector<RomOps> ops;
+	vector<RomOp> ops;
 #ifdef ENABLE_DECRYPTION
 	ops.resize(2);
 #else /* !ENABLE_DECRYPTION */
@@ -207,10 +207,10 @@ vector<RomData::RomOps> NintendoDS::romOps_int(void) const
 			// ROM is technically trimmed, but it's already a power of two.
 			// Cannot trim/untrim, so show the "Trim ROM" option but disabled.
 			showUntrim = false;
-			flags = 0;
+			flags = RomOp::ROF_REQ_WRITABLE;
 		} else {
 			showUntrim = !(total_used_rom_size < d->romSize);
-			flags = RomOps::ROF_ENABLED;
+			flags = RomOp::ROF_ENABLED | RomOp::ROF_REQ_WRITABLE;
 		}
 	} else {
 		// Empty ROM?
@@ -227,15 +227,15 @@ vector<RomData::RomOps> NintendoDS::romOps_int(void) const
 	switch (d->secArea) {
 		case NintendoDSPrivate::NDS_SECAREA_DECRYPTED:
 			showEncrypt = true;
-			flags = RomOps::ROF_ENABLED;
+			flags = RomOp::ROF_ENABLED | RomOp::ROF_REQ_WRITABLE;
 			break;
 		case NintendoDSPrivate::NDS_SECAREA_ENCRYPTED:
 			showEncrypt = false;
-			flags = RomOps::ROF_ENABLED;
+			flags = RomOp::ROF_ENABLED | RomOp::ROF_REQ_WRITABLE;
 			break;
 		default:
 			showEncrypt = false;
-			flags = 0;
+			flags = RomOp::ROF_REQ_WRITABLE;
 			break;
 	}
 	ops[1].desc = showEncrypt

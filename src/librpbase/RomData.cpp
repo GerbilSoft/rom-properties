@@ -911,58 +911,47 @@ bool RomData::hasDangerousPermissions(void) const
  * Get the list of operations that can be performed on this ROM.
  * @return List of operations.
  */
-vector<RomData::RomOps> RomData::romOps(void) const
+vector<RomData::RomOp> RomData::romOps(void) const
 {
 	RP_D(const RomData);
-	vector<RomData::RomOps> v_ret = romOps_int();
+	vector<RomOp> v_ops = romOps_int();
 
 	if (d->isCompressed) {
-		// Cannot run RomOps on a compressed file.
-		// Mark all options as disabled.
+		// Some RomOps can't be run on a compressed file.
+		// Disable those that can't.
 		// TODO: Indicate why they're disabled?
-		std::for_each(v_ret.begin(), v_ret.end(),
-			[](RomData::RomOps &op) {
-				op.flags &= ~RomOps::ROF_ENABLED;
+		std::for_each(v_ops.begin(), v_ops.end(),
+			[](RomData::RomOp &op) {
+				if (op.flags & RomOp::ROF_REQ_WRITABLE) {
+					op.flags &= ~RomOp::ROF_ENABLED;
+				}
 			}
 		);
 	}
 
-	return v_ret;
+	return v_ops;
 }
 
 /**
  * Perform a ROM operation.
  * @param id		[in] Operation index.
  * @param pResult	[out,opt] Result. (For UI updates)
- * @return 0 on success; positive for "field updated" (subtract 1 for index); negative POSIX error code on error.
+ * @return 0 on success; negative POSIX error code on error.
  */
 int RomData::doRomOp(int id, RomOpResult *pResult)
 {
 	RP_D(RomData);
+	// TODO: Function to retrieve only a single RomOp.
+	const vector<RomOp> v_ops = romOps_int();
+	assert(id >= 0);
+	assert(id < (int)v_ops.size());
+	if (id < 0 || id >= (int)v_ops.size()) {
+		return -ERANGE;
+	}
+
 	bool closeFileAfter;
 	if (d->file) {
 		closeFileAfter = false;
-		if (d->file->isCompressed()) {
-			// Cannot write to a compressed file.
-			if (pResult) {
-				pResult->status = -EIO;
-				pResult->msg = C_("RomData", "Cannot perform ROM operations on compressed files.");
-			}
-			return -EIO;
-		}
-
-		if (!d->file->isWritable()) {
-			// File is not writable. We'll need to reopen it.
-			int ret = d->file->makeWritable();
-			if (ret != 0) {
-				// Error making the file writable.
-				if (pResult) {
-					pResult->status = ret;
-					pResult->msg = C_("RomData", "Unable to write to the file.");
-				}
-				return ret;
-			}
-		}
 	} else {
 		// Reopen the file.
 		closeFileAfter = true;
@@ -983,6 +972,39 @@ int RomData::doRomOp(int id, RomOpResult *pResult)
 		d->file = file;
 	}
 
+	// If the ROM operation requires a writable file,
+	// make sure it's writable.
+	if (v_ops[id].flags & RomOp::ROF_REQ_WRITABLE) {
+		// Writable file is required.
+		if (d->file->isCompressed()) {
+			// Cannot write to a compressed file.
+			if (pResult) {
+				pResult->status = -EIO;
+				pResult->msg = C_("RomData", "Cannot perform this ROM operation on a compressed file.");
+			}
+			if (closeFileAfter) {
+				UNREF_AND_NULL_NOCHK(d->file);
+			}
+			return -EIO;
+		}
+
+		if (!d->file->isWritable()) {
+			// File is not writable. We'll need to reopen it.
+			int ret = d->file->makeWritable();
+			if (ret != 0) {
+				// Error making the file writable.
+				if (pResult) {
+					pResult->status = ret;
+					pResult->msg = C_("RomData", "Cannot perform this ROM operation on a read-only file.");
+				}
+				if (closeFileAfter) {
+					UNREF_AND_NULL_NOCHK(d->file);
+				}
+				return ret;
+			}
+		}
+	}
+
 	int ret = doRomOp_int(id, pResult);
 	if (closeFileAfter) {
 		UNREF_AND_NULL_NOCHK(d->file);
@@ -995,10 +1017,10 @@ int RomData::doRomOp(int id, RomOpResult *pResult)
  * Internal function; called by RomData::romOps().
  * @return List of operations.
  */
-vector<RomData::RomOps> RomData::romOps_int(void) const
+vector<RomData::RomOp> RomData::romOps_int(void) const
 {
 	// Default implementation has no ROM operations.
-	return vector<RomData::RomOps>();
+	return vector<RomData::RomOp>();
 }
 
 /**

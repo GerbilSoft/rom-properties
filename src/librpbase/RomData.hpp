@@ -549,16 +549,21 @@ class RomData : public RefBase
 		virtual bool hasDangerousPermissions(void) const;
 
 	public:
-		struct RomOps {
-			std::string desc;	// Description (Use '&' for mnemonics)
+		/**
+		 * ROM operation struct.
+		 * String fields are owned by the RomData subclass.
+		 */
+		struct RomOp {
+			const char *desc;	// Description (Use '&' for mnemonics)
 			uint32_t flags;		// Flags
 
 			enum RomOpsFlags {
-				ROF_ENABLED	= (1U << 0),	// Set to enable the ROM op
+				ROF_ENABLED		= (1U << 0),	// Set to enable the ROM op
+				ROF_REQ_WRITABLE	= (1U << 1),	// Requires a writable RomData
 			};
 
-			RomOps() { }
-			RomOps(const char *desc, uint32_t flags)
+			RomOp() { }
+			RomOp(const char *desc, uint32_t flags)
 				: desc(desc), flags(flags) { }
 		};
 
@@ -572,7 +577,7 @@ class RomData : public RefBase
 		 * Get the list of operations that can be performed on this ROM.
 		 * @return List of operations.
 		 */
-		std::vector<RomOps> romOps(void) const;
+		std::vector<RomOp> romOps(void) const;
 
 		/**
 		 * Perform a ROM operation.
@@ -588,14 +593,14 @@ class RomData : public RefBase
 		 * Internal function; called by RomData::romOps().
 		 * @return List of operations.
 		 */
-		virtual std::vector<RomOps> romOps_int(void) const;
+		virtual std::vector<RomOp> romOps_int(void) const;
 
 		/**
 		 * Perform a ROM operation.
 		 * Internal function; called by RomData::doRomOp().
 		 * @param id		[in] Operation index.
 		 * @param pResult	[out,opt] Result. (For UI updates)
-		 * @return 0 on success; positive for "field updated" (subtract 1 for index); negative POSIX error code on error.
+		 * @return 0 on success; negative POSIX error code on error.
 		 */
 		virtual int doRomOp_int(int id, RomOpResult *pResult);
 };

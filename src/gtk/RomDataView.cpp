@@ -1862,7 +1862,7 @@ rom_data_view_create_options_button(RomDataView *page)
 	}
 
 	/** ROM operations. **/
-	const vector<RomData::RomOps> ops = page->romData->romOps();
+	const vector<RomData::RomOp> ops = page->romData->romOps();
 	if (!ops.empty()) {
 		// FIXME: Not showing up properly with the KDE Breeze theme,
 		// though other separators *do* show up...
@@ -1873,9 +1873,9 @@ rom_data_view_create_options_button(RomDataView *page)
 		int i = 0;
 		const auto ops_end = ops.cend();
 		for (auto iter = ops.cbegin(); iter != ops_end; ++iter, i++) {
-			const string desc = convert_accel_to_gtk(iter->desc.c_str());
+			const string desc = convert_accel_to_gtk(iter->desc);
 			menuItem = gtk_menu_item_new_with_mnemonic(desc.c_str());
-			gtk_widget_set_sensitive(menuItem, !!(iter->flags & RomData::RomOps::ROF_ENABLED));
+			gtk_widget_set_sensitive(menuItem, !!(iter->flags & RomData::RomOp::ROF_ENABLED));
 			g_object_set_data(G_OBJECT(menuItem), "menuOptions_id", GINT_TO_POINTER(i));
 			g_signal_connect(menuItem, "activate", G_CALLBACK(menuOptions_triggered_signal_handler), page);
 			gtk_widget_show(menuItem);
@@ -2740,13 +2740,13 @@ menuOptions_triggered_signal_handler(GtkMenuItem *menuItem,
 			// NOTE: Assuming the RomOps vector order hasn't changed.
 			// TODO: Have RomData store the RomOps vector instead of
 			// rebuilding it here?
-			const vector<RomData::RomOps> ops = page->romData->romOps();
+			const vector<RomData::RomOp> ops = page->romData->romOps();
 			assert(id < (int)ops.size());
 			if (id < (int)ops.size()) {
-				const RomData::RomOps &op = ops[id];
-				const string desc = convert_accel_to_gtk(op.desc.c_str());
+				const RomData::RomOp &op = ops[id];
+				const string desc = convert_accel_to_gtk(op.desc);
 				gtk_menu_item_set_label(menuItem, desc.c_str());
-				gtk_widget_set_sensitive(GTK_WIDGET(menuItem), !!(op.flags & RomData::RomOps::ROF_ENABLED));
+				gtk_widget_set_sensitive(GTK_WIDGET(menuItem), !!(op.flags & RomData::RomOp::ROF_ENABLED));
 			}
 
 			messageType = GTK_MESSAGE_INFO;
