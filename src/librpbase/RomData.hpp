@@ -550,8 +550,17 @@ class RomData : public RefBase
 
 	public:
 		/**
+		 * ROF_SAVE_FILE information.
+		 * `const char*` fields are owned by the RomData subclass.
+		 */
+		struct RomOpSaveFileInfo {
+			const char *filter;		// Filename filter. (Windows style, with '|' delimiters.)
+			std::string def_filename;	// Default filename. (without path)
+		};
+
+		/**
 		 * ROM operation struct.
-		 * String fields are owned by the RomData subclass.
+		 * `const char*` fields are owned by the RomData subclass.
 		 */
 		struct RomOp {
 			const char *desc;	// Description (Use '&' for mnemonics)
@@ -560,11 +569,16 @@ class RomData : public RefBase
 			enum RomOpsFlags {
 				ROF_ENABLED		= (1U << 0),	// Set to enable the ROM op
 				ROF_REQ_WRITABLE	= (1U << 1),	// Requires a writable RomData
+				ROF_SAVE_FILE		= (1U << 2),	// Prompt to save a new file
 			};
+
+			const RomOpSaveFileInfo *psfi;	// If ROF_SAVE_FILE, has save file info.
 
 			RomOp() { }
 			RomOp(const char *desc, uint32_t flags)
-				: desc(desc), flags(flags) { }
+				: desc(desc), flags(flags), psfi(nullptr) { }
+			RomOp(const char *desc, uint32_t flags, const RomOpSaveFileInfo *psfi)
+				: desc(desc), flags(flags), psfi(psfi) { }
 		};
 
 		struct RomOpParams {
@@ -574,6 +588,11 @@ class RomData : public RefBase
 			std::vector<int> fieldIdx;	// Field indexes that were updated.
 
 			/** IN: Parameters **/
+			const char *save_filename;	// Filename for saving data.
+
+			RomOpParams()
+				: status(0)
+				, save_filename(nullptr) { }
 		};
 
 		/**

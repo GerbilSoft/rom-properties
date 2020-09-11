@@ -194,7 +194,7 @@ vector<RomData::RomOp> NintendoDS::romOps_int(void) const
 	ops.resize(1);
 #endif /* ENABLE_DECRYPTION */
 
-	RP_D(NintendoDS);
+	RP_D(const NintendoDS);
 	uint32_t flags;
 
 	// Trim/Untrim ROM

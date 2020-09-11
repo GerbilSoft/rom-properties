@@ -51,6 +51,7 @@ SET(libromdata_SRCS
 	Handheld/Lynx.cpp
 	Handheld/NGPC.cpp
 	Handheld/Nintendo3DS.cpp
+	Handheld/Nintendo3DS_ops.cpp
 	Handheld/Nintendo3DSFirm.cpp
 	Handheld/Nintendo3DS_SMDH.cpp
 	Handheld/NintendoDS.cpp
@@ -190,6 +191,7 @@ SET(libromdata_H
 	Handheld/Lynx.hpp
 	Handheld/NGPC.hpp
 	Handheld/Nintendo3DS.hpp
+	Handheld/Nintendo3DS_p.hpp
 	Handheld/Nintendo3DSFirm.hpp
 	Handheld/Nintendo3DS_SMDH.hpp
 	Handheld/NintendoDS.hpp
