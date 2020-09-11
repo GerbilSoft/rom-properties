@@ -87,8 +87,8 @@ class WiiWADPrivate : public RomDataPrivate
 
 		// TMD contents table.
 		ao::uvector<RVL_Content_Entry> tmdContentsTbl;
-		const RVL_Content_Entry *pBootContent;
-		uint32_t bootContentOffset;	// relative to start of data area
+		const RVL_Content_Entry *pIMETContent;
+		uint32_t imetContentOffset;	// relative to start of data area
 
 		/**
 		 * Round a value to the next highest multiple of 64.
@@ -129,8 +129,8 @@ WiiWADPrivate::WiiWADPrivate(WiiWAD *q, IRpFile *file)
 	, wadType(WadType::Unknown)
 	, data_offset(0)
 	, data_size(0)
-	, pBootContent(nullptr)
-	, bootContentOffset(0)
+	, pIMETContent(nullptr)
+	, imetContentOffset(0)
 #ifdef ENABLE_DECRYPTION
 	, cbcReader(nullptr)
 	, mainContent(nullptr)
@@ -335,42 +335,20 @@ WiiWAD::WiiWAD(IRpFile *file)
 	const size_t expCtTblSize = d->tmdContentsTbl.size() * sizeof(RVL_Content_Entry);
 	size = d->file->read(d->tmdContentsTbl.data(), expCtTblSize);
 	if (size == expCtTblSize) {
-		// Find the matching boot index.
-		// NOTE: Not byteswapping the index to save cycles.
-		const uint16_t boot_index_be = d->tmdHeader.boot_index;
-		const auto tmdContentsTbl_cend = d->tmdContentsTbl.cend();
-		uint32_t offset = 0;
+		// The first content has the IMET and/or WIBN,
+		// or for DSiWare TADs, the SRL.
+		if (!d->tmdContentsTbl.empty()) {
+			const RVL_Content_Entry *const pEntry = &d->tmdContentsTbl[0];
 
-		const RVL_Content_Entry *pEntry = nullptr;
-		for (auto iter = d->tmdContentsTbl.cbegin(); iter != tmdContentsTbl_cend; ++iter) {
-			if (iter->index == boot_index_be) {
-				// Found the boot index.
-				pEntry = &(*iter);
-				break;
+			// Make sure it's in range.
+			const off64_t content_end_offset =
+				(off64_t)d->data_offset +
+				be64_to_cpu(pEntry->size);
+			if (content_end_offset <= data_end_offset) {
+				// In range. It's valid!
+				d->pIMETContent = pEntry;
+				d->imetContentOffset = 0;
 			}
-
-			// TODO: 64-byte alignment on TADs?
-			// (TADs usually only have a single content...)
-			offset += static_cast<uint32_t>(be64_to_cpu(iter->size));
-			offset = WiiWADPrivate::toNext64(offset);
-		}
-
-		if (!pEntry) {
-			// No match. Use the first content.
-			pEntry = &d->tmdContentsTbl[0];
-			offset = 0;
-		}
-
-		// Found a match.
-		// Make sure it's within data_size.
-		const off64_t content_end_offset =
-			(off64_t)d->data_offset +
-			(off64_t)offset +
-			be64_to_cpu(pEntry->size);
-		if (content_end_offset <= data_end_offset) {
-			// In range. It's valid!
-			d->pBootContent = pEntry;
-			d->bootContentOffset = offset;
 		}
 	} else {
 		// Unable to read the content table.
@@ -440,7 +418,7 @@ WiiWAD::WiiWAD(IRpFile *file)
 	cipher->decrypt(title_key, sizeof(title_key));
 	delete cipher;
 
-	if (!d->pBootContent) {
+	if (!d->pIMETContent) {
 		// No boot content...
 		return;
 	}
@@ -448,7 +426,7 @@ WiiWAD::WiiWAD(IRpFile *file)
 	// Data area IV:
 	// - First two bytes are the big-endian content index.
 	// - Remaining bytes are zero.
-	memcpy(iv, &d->pBootContent->index, sizeof(d->pBootContent->index));
+	memcpy(iv, &d->pIMETContent->index, sizeof(d->pIMETContent->index));
 	memset(&iv[2], 0, sizeof(iv)-2);
 
 	// Create a CBC reader to decrypt the data section.
@@ -461,8 +439,7 @@ WiiWAD::WiiWAD(IRpFile *file)
 		// Wii: Contents may be one of the following:
 		// - IMET header: Most common.
 		// - WIBN header: DLC titles.
-		// FIXME: IMET seems to be off by 64 bytes...
-		size = d->cbcReader->seekAndRead(d->bootContentOffset, &d->imet, sizeof(d->imet));
+		size = d->cbcReader->seekAndRead(d->imetContentOffset, &d->imet, sizeof(d->imet));
 		if (size == sizeof(d->imet) &&
 		    d->imet.magic == cpu_to_be32(WII_IMET_MAGIC))
 		{
@@ -477,7 +454,7 @@ WiiWAD::WiiWAD(IRpFile *file)
 			// allow it to read the rest of the file.
 			PartitionFile *const ptFile = new PartitionFile(d->cbcReader,
 				offsetof(Wii_IMET_t, magic),
-				be64_to_cpu(d->pBootContent->size) - offsetof(Wii_IMET_t, magic));
+				be64_to_cpu(d->pIMETContent->size) - offsetof(Wii_IMET_t, magic));
 			if (ptFile->isOpen()) {
 				// Open the WiiWIBN.
 				WiiWIBN *const wibn = new WiiWIBN(ptFile);
@@ -490,11 +467,21 @@ WiiWAD::WiiWAD(IRpFile *file)
 				}
 			}
 			UNREF(ptFile);
+		} else {
+			// Sometimes the IMET header has a 64-byte offset.
+			// FIXME: Figure out why.
+			size = d->cbcReader->seekAndRead(d->imetContentOffset + 64, &d->imet, sizeof(d->imet));
+			if (size == sizeof(d->imet) &&
+			    d->imet.magic == cpu_to_be32(WII_IMET_MAGIC))
+			{
+				// This is an IMET header.
+				// TODO: Do something here?
+			}
 		}
 	} else {
 		// Nintendo DSi: Main content is an SRL.
 		PartitionFile *const ptFile = new PartitionFile(d->cbcReader,
-			d->bootContentOffset, be64_to_cpu(d->pBootContent->size));
+			d->imetContentOffset, be64_to_cpu(d->pIMETContent->size));
 		if (ptFile->isOpen()) {
 			// Open the NintendoDS.
 			NintendoDS *const srl = new NintendoDS(ptFile);
