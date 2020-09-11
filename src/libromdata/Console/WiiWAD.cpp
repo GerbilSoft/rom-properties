@@ -28,14 +28,14 @@ using LibRpTexture::rp_image;
 // Decryption.
 #include "librpbase/crypto/KeyManager.hpp"
 #include "disc/WiiPartition.hpp"	// for key information
+#include "WiiWIBN.hpp"
+#include "../Handheld/NintendoDS.hpp"
 #ifdef ENABLE_DECRYPTION
 #  include "librpbase/crypto/AesCipherFactory.hpp"
 #  include "librpbase/crypto/IAesCipher.hpp"
 #  include "librpbase/disc/CBCReader.hpp"
 // For sections delegated to other RomData subclasses.
 #  include "librpbase/disc/PartitionFile.hpp"
-#  include "WiiWIBN.hpp"
-#  include "../Handheld/NintendoDS.hpp"
 #endif /* ENABLE_DECRYPTION */
 
 // C++ STL classes.
@@ -748,7 +748,9 @@ vector<RomData::ImageSizeDef> WiiWAD::supportedImageSizes_static(ImageType image
 	ASSERT_supportedImageSizes(imageType);
 
 	// NOTE: Can't check for DSiWare here.
+	// TODO: Use WiiWIBN::supportedImageSizes_static() if decryption is enabled?
 	switch (imageType) {
+#ifdef ENABLE_DECRYPTION
 		case IMG_INT_ICON: {
 			static const ImageSizeDef sz_INT_ICON[] = {
 				{nullptr, BANNER_WIBN_ICON_W, BANNER_WIBN_ICON_H, 0},
@@ -763,6 +765,12 @@ vector<RomData::ImageSizeDef> WiiWAD::supportedImageSizes_static(ImageType image
 			return vector<ImageSizeDef>(sz_INT_BANNER,
 				sz_INT_BANNER + ARRAY_SIZE(sz_INT_BANNER));
 		}
+#else /* !ENABLE_DECRYPTION */
+		case IMG_INT_ICON:
+		case IMG_INT_BANNER: {
+			return WiiWIBN::supportedImageSizes_static();
+		}
+#endif /* ENABLE_DECRYPTION */
 
 		case IMG_EXT_COVER: {
 			static const ImageSizeDef sz_EXT_COVER[] = {
@@ -819,6 +827,7 @@ vector<RomData::ImageSizeDef> WiiWAD::supportedImageSizes(ImageType imageType) c
 	const unsigned int sys_id = (tid_hi >> 16);	// If 3, this is a DSi TAD.
 	if (sys_id != 3) {
 		// WiiWare
+		// TODO: Use d->mainContent->supportedImageSizes() if decryption is enabled?
 		switch (imageType) {
 #ifdef ENABLE_DECRYPTION
 			case IMG_INT_ICON: {
@@ -840,6 +849,11 @@ vector<RomData::ImageSizeDef> WiiWAD::supportedImageSizes(ImageType imageType) c
 						sz_INT_BANNER + ARRAY_SIZE(sz_INT_BANNER));
 				}
 				break;
+			}
+#else /* !ENABLE_DECRYPTION */
+			case IMG_INT_ICON:
+			case IMG_INT_BANNER: {
+				return WiiWIBN::supportedImageSizes_static();
 			}
 #endif /* ENABLE_DECRYPTION */
 			case IMG_EXT_COVER: {
