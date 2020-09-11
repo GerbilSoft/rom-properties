@@ -403,8 +403,8 @@ void RomDataViewPrivate::createOptionsButton(void)
 		const char *desc;
 		int id;
 	} stdacts[] = {
-		{NOP_C_("RomDataView|Options", "Export to Text"),	OPTION_EXPORT_TEXT},
-		{NOP_C_("RomDataView|Options", "Export to JSON"),	OPTION_EXPORT_JSON},
+		{NOP_C_("RomDataView|Options", "Export to Text..."),	OPTION_EXPORT_TEXT},
+		{NOP_C_("RomDataView|Options", "Export to JSON..."),	OPTION_EXPORT_JSON},
 		{NOP_C_("RomDataView|Options", "Copy as Text"),		OPTION_COPY_TEXT},
 		{NOP_C_("RomDataView|Options", "Copy as JSON"),		OPTION_COPY_JSON},
 		{nullptr, 0}

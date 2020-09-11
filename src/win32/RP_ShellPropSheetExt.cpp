@@ -3241,8 +3241,8 @@ void RP_ShellPropSheetExt_Private::createOptionsButton(void)
 		const char *desc;
 		unsigned int id;
 	} stdacts[] = {
-		{NOP_C_("RomDataView|Options", "Export to Text"),	IDM_OPTIONS_MENU_EXPORT_TEXT},
-		{NOP_C_("RomDataView|Options", "Export to JSON"),	IDM_OPTIONS_MENU_EXPORT_JSON},
+		{NOP_C_("RomDataView|Options", "Export to Text..."),	IDM_OPTIONS_MENU_EXPORT_TEXT},
+		{NOP_C_("RomDataView|Options", "Export to JSON..."),	IDM_OPTIONS_MENU_EXPORT_JSON},
 		{NOP_C_("RomDataView|Options", "Copy as Text"),		IDM_OPTIONS_MENU_COPY_TEXT},
 		{NOP_C_("RomDataView|Options", "Copy as JSON"),		IDM_OPTIONS_MENU_COPY_JSON},
 		{nullptr, 0}
