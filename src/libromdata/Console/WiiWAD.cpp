@@ -1382,6 +1382,7 @@ int WiiWAD::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) con
 		case 1:	// Wii
 			// Check for a valid LOWORD.
 			switch (tid_hi & 0xFFFF) {
+				case 0:
 				case 1:
 				case 2:
 				case 4:
