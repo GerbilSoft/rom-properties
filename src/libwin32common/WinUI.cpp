@@ -358,56 +358,53 @@ static tstring rpFileDialogFilterToWin32(const char *filter)
 	if (!filter || filter[0] == '\0')
 		return ts_ret;
 
+	// TODO: Get rid of the temporary std::string.
+	// (U82T_c() overload that takes a size?)
+	// (or, take a const TCHAR* filter)
+	string tmpstr;
+
 	// Tokenize manually without using strtok_r(),
 	// since strtok_r() writes to the string.
-	vector<tstring> parts;
-	size_t reserve = 0;
-	const char *last = filter;
+	ts_ret.reserve(strlen(filter) + 32);
+	const char *pLast = filter;
 	do {
-		const char *p = strchr(last, '|');
-		if (!p) {
-			// Last token.
-			tstring tstr = U82T_c(last);
-			reserve += tstr.size();
-			parts.push_back(std::move(tstr));
-			break;
+		// Separator 1: Between display name and pattern.
+		const char *const pSep1 = strchr(pLast, '|');
+		assert(pSep1 != nullptr);
+		if (!pSep1) {
+			// Cannot have the last token here...
+			return tstring();
 		}
 
-		// Not the last token.
-		// NOTE: Need to make a temporary std::string...
-		string str(last, p - last);
-		reserve += str.size();
-		parts.push_back(U82T_s(str));
-		last = p + 1;
-	} while (last != nullptr && *last != '\0');
-	assert(parts.size() % 2 == 0);
-	if (parts.size() % 2 != 0)
-		return ts_ret;
+		// Separator 2: Between pattern and next display name.
+		const char *const pSep2 = strchr(pSep1 + 1, '|');
 
-	// RP filter: "Sega Mega Drive ROM images|*.gen;*.bin|All Files|*.*"
-	// Windows filter: "Sega Mega Drive ROM images (*.gen; *.bin)\0*.gen;*.bin\0All Files (*.*)\0*.*\0\0"
+		// RP filter: "Sega Mega Drive ROM images|*.gen;*.bin|All Files|*.*"
+		// Windows filter: "Sega Mega Drive ROM images (*.gen; *.bin)\0*.gen;*.bin\0All Files (*.*)\0*.*\0\0"
 
-	// TODO: Remove the space between the name and the filter.
-	// KDE doesn't do this, but I'm not sure if Qt on Linux
-	// without KDE removes the filter portion from the display.
-
-	ts_ret.reserve(reserve + (parts.size() * 4));
-	const auto parts_cend = parts.cend();
-	for (auto iter = parts.cbegin(); iter != parts_cend; ) {
 		// Display name.
-		ts_ret += *iter++;
+		tmpstr.assign(pLast, pSep1 - pLast);
+		ts_ret += U82T_s(tmpstr);
 
 		// File filter portion of the display name.
 		// TODO: Convert ";" to "; ".
+		if (pSep2) {
+			tmpstr.assign(pSep1 + 1, pSep2 - pSep1 - 1);
+			pLast = pSep2 + 1;
+		} else {
+			tmpstr.assign(pSep1 + 1);
+			pLast = nullptr;
+		}
+		const tstring ts_tmpstr = U82T_s(tmpstr);
 		ts_ret += _T(" (");
-		ts_ret += *iter;
+		ts_ret += ts_tmpstr;
 		ts_ret += _T(')');
 		ts_ret += _T('\0');
 
 		// File filter.
-		ts_ret += *iter++;
+		ts_ret += ts_tmpstr;
 		ts_ret += _T('\0');
-	}
+	} while (pLast != nullptr && *pLast != '\0');
 
 	ts_ret += _T('\0');
 	return ts_ret;
