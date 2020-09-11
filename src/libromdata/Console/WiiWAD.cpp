@@ -755,7 +755,7 @@ vector<RomData::ImageSizeDef> WiiWAD::supportedImageSizes_static(ImageType image
 #else /* !ENABLE_DECRYPTION */
 		case IMG_INT_ICON:
 		case IMG_INT_BANNER: {
-			return WiiWIBN::supportedImageSizes_static();
+			return WiiWIBN::supportedImageSizes_static(imageType);
 		}
 #endif /* ENABLE_DECRYPTION */
 
@@ -840,7 +840,7 @@ vector<RomData::ImageSizeDef> WiiWAD::supportedImageSizes(ImageType imageType) c
 #else /* !ENABLE_DECRYPTION */
 			case IMG_INT_ICON:
 			case IMG_INT_BANNER: {
-				return WiiWIBN::supportedImageSizes_static();
+				return WiiWIBN::supportedImageSizes_static(imageType);
 			}
 #endif /* ENABLE_DECRYPTION */
 			case IMG_EXT_COVER: {
