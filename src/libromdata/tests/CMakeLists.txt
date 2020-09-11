@@ -137,6 +137,15 @@ FOREACH(test_image ${ImageDecoderTest_images})
 		)
 ENDFOREACH(test_image ${ImageDecoderTest_images})
 
+# Nintendo System ID test.
+ADD_EXECUTABLE(NintendoSystemIDTest NintendoSystemIDTest.cpp)
+TARGET_LINK_LIBRARIES(NintendoSystemIDTest PRIVATE rptest romdata rpbase)
+TARGET_LINK_LIBRARIES(NintendoSystemIDTest PRIVATE gtest)
+DO_SPLIT_DEBUG(NintendoSystemIDTest)
+SET_WINDOWS_SUBSYSTEM(NintendoSystemIDTest CONSOLE)
+SET_WINDOWS_ENTRYPOINT(NintendoSystemIDTest wmain OFF)
+ADD_TEST(NAME NintendoSystemIDTest COMMAND NintendoSystemIDTest)
+
 # SuperMagicDrive test.
 ADD_EXECUTABLE(SuperMagicDriveTest
 	utils/SuperMagicDriveTest.cpp

@@ -882,9 +882,9 @@ GameCube::GameCube(IRpFile *file)
 
 		// Determine the partition type.
 		// TODO: Identify channel partitions by the title ID high?
-		RVL_TitleID_t title_id;
-		size = d->file->seekAndRead(offsetof(RVL_Ticket, title_id), &title_id, sizeof(title_id));
-		if (size != sizeof(title_id)) {
+		Nintendo_TitleID_BE_t tid;
+		size = d->file->seekAndRead(offsetof(RVL_Ticket, title_id), &tid, sizeof(tid));
+		if (size != sizeof(tid)) {
 			// Error reading the title ID.
 			d->wiiPtbl.clear();
 			goto notSupported;
@@ -897,19 +897,20 @@ GameCube::GameCube(IRpFile *file)
 		pt.partition = new WiiPartition(d->discReader, pt.start, pt.size);
 
 		// TODO: Super Smash Bros. Brawl "Masterpieces" partitions.
-		if (title_id.lo == be32_to_cpu('UPD') ||	// IOS only
-		    title_id.lo == be32_to_cpu('UPE') ||	// USA region
-		    title_id.lo == be32_to_cpu('UPJ') ||	// JPN region
-		    title_id.lo == be32_to_cpu('UPP') ||	// EUR region
-		    title_id.lo == be32_to_cpu('UPK') ||	// KOR region
-		    title_id.lo == be32_to_cpu('UPC'))		// CHN region (maybe?)
+		// TODO: Check tid.hi?
+		if (tid.lo == be32_to_cpu('UPD') ||	// IOS only
+		    tid.lo == be32_to_cpu('UPE') ||	// USA region
+		    tid.lo == be32_to_cpu('UPJ') ||	// JPN region
+		    tid.lo == be32_to_cpu('UPP') ||	// EUR region
+		    tid.lo == be32_to_cpu('UPK') ||	// KOR region
+		    tid.lo == be32_to_cpu('UPC'))	// CHN region (maybe?)
 		{
 			// Update partition.
 			// TODO: What's the difference between the different title IDs?
 			// It might be region code, but what is 'UPD'?
 			pt.type = RVL_PT_UPDATE;
 			d->updatePartition = pt.partition;
-		} else if (title_id.lo == be32_to_cpu('INS')) {
+		} else if (tid.lo == be32_to_cpu('INS')) {
 			// Channel partition.
 			pt.type = RVL_PT_CHANNEL;
 		} else {

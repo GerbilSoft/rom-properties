@@ -14,6 +14,7 @@
 
 #include <stdint.h>
 #include "common.h"
+#include "nintendo_system_id.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -76,20 +77,6 @@ typedef struct _RVL_TimeLimit {
 ASSERT_STRUCT(RVL_TimeLimit, 2*sizeof(uint32_t));
 
 /**
- * Title ID struct/union.
- * TODO: Verify operation on big-endian systems.
- */
-typedef union _RVL_TitleID_t {
-	uint64_t id;
-	struct {
-		uint32_t hi;
-		uint32_t lo;
-	};
-	uint8_t u8[8];
-} RVL_TitleID_t;
-ASSERT_STRUCT(RVL_TitleID_t, sizeof(uint64_t));
-
-/**
  * Wii ticket.
  * Reference: https://wiibrew.org/wiki/Ticket
  */
@@ -107,7 +94,7 @@ typedef struct PACKED _RVL_Ticket {
 	uint8_t unknown1;		// [0x1CF] Unknown.
 	uint8_t ticket_id[0x08];	// [0x1D0] Ticket ID. (IV for title key decryption for console-specific titles.)
 	uint32_t console_id;		// [0x1D8] Console ID.
-	RVL_TitleID_t title_id;		// [0x1DC] Title ID. (IV used for AES-CBC encryption.)
+	Nintendo_TitleID_BE_t title_id;	// [0x1DC] Title ID. (IV used for AES-CBC encryption.)
 	uint8_t unknown2[2];		// [0x1E4] Unknown, mostly 0xFFFF.
 	uint8_t ticket_version[2];	// [0x1E6] Ticket version.
 	uint32_t permitted_titles_mask;	// [0x1E8] Permitted titles mask.
@@ -138,8 +125,8 @@ typedef struct PACKED _RVL_TMD_Header {
 	uint8_t ca_crl_version;		// [0x181] CA CRL version.
 	uint8_t signer_crl_version;	// [0x182] Signer CRL version.
 	uint8_t padding1;		// [0x183]
-	RVL_TitleID_t sys_version;	// [0x184] System version. (IOS title ID)
-	RVL_TitleID_t title_id;		// [0x18C] Title ID.
+	Nintendo_TitleID_BE_t sys_version;	// [0x184] System version. (IOS title ID)
+	Nintendo_TitleID_BE_t title_id;		// [0x18C] Title ID.
 	uint32_t title_type;		// [0x194] Title type.
 	uint16_t group_id;		// [0x198] Group ID.
 	uint16_t reserved1;		// [0x19A]

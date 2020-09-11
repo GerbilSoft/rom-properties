@@ -433,9 +433,7 @@ WiiWAD::WiiWAD(IRpFile *file)
 	// TODO: Verify some known data?
 	d->cbcReader = new CBCReader(d->file, d->data_offset, d->data_size, title_key, iv);
 
-	const uint32_t tid_hi = be32_to_cpu(d->tmdHeader.title_id.hi);
-	const unsigned int sys_id = (tid_hi >> 16);
-	if (sys_id != 3) {
+	if (d->tmdHeader.title_id.sysID != cpu_to_be16(3)) {
 		// Wii: Contents may be one of the following:
 		// - IMET header: Most common.
 		// - WIBN header: DLC titles.
@@ -605,12 +603,9 @@ const char *WiiWAD::systemName(unsigned int type) const
 	static_assert(SYSNAME_TYPE_MASK == 3,
 		"WiiWAD::systemName() array index optimization needs to be updated.");
 
-	const uint32_t tid_hi = be32_to_cpu(d->tmdHeader.title_id.hi);
-	const unsigned int sys_id = (tid_hi >> 16);
-
 	// TODO: Enum for Nintendo system IDs.
 	type &= SYSNAME_TYPE_MASK;
-	switch (sys_id) {
+	switch (be16_to_cpu(d->tmdHeader.title_id.sysID)) {
 		default:
 		case 0:
 		case 1: {
@@ -810,9 +805,7 @@ vector<RomData::ImageSizeDef> WiiWAD::supportedImageSizes(ImageType imageType) c
 	ASSERT_supportedImageSizes(imageType);
 	RP_D(const WiiWAD);
 
-	const uint32_t tid_hi = be32_to_cpu(d->tmdHeader.title_id.hi);
-	const unsigned int sys_id = (tid_hi >> 16);	// If 3, this is a DSi TAD.
-	if (sys_id != 3) {
+	if (d->tmdHeader.title_id.sysID != cpu_to_be16(3)) {
 		// WiiWare
 		// TODO: Use d->mainContent->supportedImageSizes() if decryption is enabled?
 		switch (imageType) {
@@ -937,10 +930,9 @@ int WiiWAD::loadFieldData(void)
 
 	// WAD headers are read in the constructor.
 	const RVL_TMD_Header *const tmdHeader = &d->tmdHeader;
-	const uint32_t tid_hi = be32_to_cpu(tmdHeader->title_id.hi);
-	const unsigned int sys_id = (tid_hi >> 16);	// If 3, this is a DSi TAD.
+	const uint16_t sys_id = be16_to_cpu(tmdHeader->title_id.sysID);
 	d->fields->reserve(12);	// Maximum of 12 fields.
-	d->fields->setTabName(0, (sys_id != 3 ? "WAD" : "TAD"));
+	d->fields->setTabName(0, (sys_id != NINTENDO_SYSID_TWL) ? "WAD" : "TAD");
 
 	if (d->key_status != KeyManager::VerifyResult::OK) {
 		// Unable to get the decryption key.
@@ -997,7 +989,8 @@ int WiiWAD::loadFieldData(void)
 	// Title ID.
 	// TODO: Make sure the ticket title ID matches the TMD title ID.
 	d->fields->addField_string(C_("WiiWAD", "Title ID"),
-		rp_sprintf("%08X-%08X", tid_hi,
+		rp_sprintf("%08X-%08X",
+			be32_to_cpu(tmdHeader->title_id.hi),
 			be32_to_cpu(tmdHeader->title_id.lo)));
 
 	// Game ID.
@@ -1022,7 +1015,8 @@ int WiiWAD::loadFieldData(void)
 	// Wii-specific
 	unsigned int gcnRegion = ~0U;
 	const char id4_region = (char)tmdHeader->title_id.u8[7];
-	if (sys_id <= 1) {
+	const uint32_t tid_hi = be32_to_cpu(tmdHeader->title_id.hi);
+	if (sys_id <= NINTENDO_SYSID_RVL) {
 		// Region code
 		if (tid_hi == 0x00000001) {
 			// IOS and/or System Menu.
@@ -1091,7 +1085,7 @@ int WiiWAD::loadFieldData(void)
 		}
 
 		// Required IOS version)
-		if (sys_id <= 1) {
+		if (sys_id <= NINTENDO_SYSID_RVL) {
 			const char *const ios_version_title = C_("WiiWAD", "IOS Version");
 			const uint32_t ios_lo = be32_to_cpu(tmdHeader->sys_version.lo);
 			if (tmdHeader->sys_version.hi == cpu_to_be32(0x00000001) &&
@@ -1118,7 +1112,7 @@ int WiiWAD::loadFieldData(void)
 		d->fields->addField_bitfield(C_("WiiWAD", "Access Rights"),
 			v_access_rights_hdr, 0, be32_to_cpu(tmdHeader->access_rights));
 
-		if (sys_id == 1) {
+		if (sys_id == NINTENDO_SYSID_RVL) {
 			// Get age rating(s).
 			// TODO: Combine with GameCube::addFieldData()'s code.
 			// Note that not all 16 fields are present on GCN,
@@ -1201,10 +1195,10 @@ int WiiWAD::loadFieldData(void)
 		if (mainContentFields) {
 			// For Wii, add the fields to the same tab.
 			// For DSi, add the fields to new tabs.
-			int tabOffset = (sys_id == 3 ? RomFields::TabOffset_AddTabs : 0);
+			int tabOffset = (sys_id == NINTENDO_SYSID_TWL ? RomFields::TabOffset_AddTabs : 0);
 			d->fields->addFields_romFields(mainContentFields, tabOffset);
 		}
-	} else if (sys_id != 3) {
+	} else if (sys_id != NINTENDO_SYSID_TWL) {
 		// No main content object.
 		// Get the IMET data if it's available.
 		RomFields::StringMultiMap_t *const pMap_bannerName = WiiCommon::getWiiBannerStrings(
@@ -1351,9 +1345,8 @@ int WiiWAD::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) con
 		return -EIO;
 	}
 
-	const uint32_t tid_hi = be32_to_cpu(d->tmdHeader.title_id.hi);
-	const unsigned int sys_id = (tid_hi >> 16);
-	if (sys_id != 3) {
+	const uint16_t sys_id = be16_to_cpu(d->tmdHeader.title_id.sysID);
+	if (sys_id != NINTENDO_SYSID_TWL) {
 #ifdef ENABLE_DECRYPTION
 		if (d->mainContent) {
 			// Main content is present.
@@ -1379,15 +1372,15 @@ int WiiWAD::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) con
 	// Check for a valid TID hi.
 	const char *sysDir;
 	switch (sys_id) {
-		case 1:	// Wii
+		case NINTENDO_SYSID_RVL:	// Wii
 			// Check for a valid LOWORD.
-			switch (tid_hi & 0xFFFF) {
-				case 0:
-				case 1:
-				case 2:
-				case 4:
-				case 5:
-				case 8:
+			switch (be16_to_cpu(d->tmdHeader.title_id.catID)) {
+				case NINTENDO_CATID_RVL_DISC:
+				case NINTENDO_CATID_RVL_DOWNLOADED:
+				case NINTENDO_CATID_RVL_SYSTEM:
+				case NINTENDO_CATID_RVL_DISC_WITH_CHANNEL:
+				case NINTENDO_CATID_RVL_DLC:
+				case NINTENDO_CATID_RVL_HIDDEN:
 					// TID hi is valid.
 					break;
 				default:
@@ -1396,7 +1389,7 @@ int WiiWAD::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) con
 			}
 			sysDir = "wii";
 			break;
-		case 3:
+		case NINTENDO_SYSID_TWL:
 			// TODO: DSiWare on GameTDB.
 			//sysDir = "ds";
 			return -ENOENT;

@@ -11,6 +11,7 @@
 
 #include <stdint.h>
 #include "common.h"
+#include "nintendo_system_id.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -160,22 +161,7 @@ typedef struct _NDS_RomHeader {
 		uint32_t modcrypt2_size;	// 0 for none
 
 		// 0x230
-		// TODO: Verify operation on big-endian.
-		union {
-			union {
-				uint64_t id;	// 64-bit Title ID.
-				struct {
-					uint32_t lo;	// Title ID low. (reversed game ID)
-					uint32_t hi;	// Title ID high.
-				};
-			} title_id;
-
-			struct {
-				uint8_t reserved4[4];	// Title ID low.
-				uint8_t filetype;	// See DSi_FileType.
-				uint8_t reserved5[3];	// 00 03 00
-			};
-		};
+		Nintendo_TitleID_LE_t title_id;	// [0x230] Title ID
 
 		// 0x238
 		uint32_t sd_public_sav_size;

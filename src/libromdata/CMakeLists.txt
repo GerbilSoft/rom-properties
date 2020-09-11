@@ -128,6 +128,7 @@ SET(libromdata_H
 	CopierFormats.h
 	cdrom_structs.h
 	iso_structs.h
+	nintendo_system_id.h
 
 	Console/Dreamcast.hpp
 	Console/DreamcastSave.hpp

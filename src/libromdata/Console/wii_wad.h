@@ -81,12 +81,12 @@ ASSERT_STRUCT(Wii_BWF_Header, 8*sizeof(uint32_t));
  * All fields are big-endian.
  */
 typedef struct _Wii_Content_Bin_Header {
-	RVL_TitleID_t title_id;		// [0x000] Title ID. (tid-hi is usually 0x00010001)
+	Nintendo_TitleID_BE_t title_id;	// [0x000] Title ID. (tid-hi is usually 0x00010001)
 	uint32_t partB_size;		// [0x008] Size of part B.
 	uint8_t md5_header[16];		// [0x00C] MD5 hash of the header.
 	uint8_t md5_icon[16];		// [0x01C] MD5 hash of the DECRYPTED icon.
 	uint8_t unknown_2[4];		// [0x02C]
-	RVL_TitleID_t tid_ref[2];	// [0x030] Title dependencies?
+	Nintendo_TitleID_BE_t tid_ref[2];	// [0x030] Title dependencies?
 } Wii_Content_Bin_Header;
 ASSERT_STRUCT(Wii_Content_Bin_Header, 64);
 

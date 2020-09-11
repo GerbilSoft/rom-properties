@@ -940,13 +940,14 @@ int NintendoDS::loadFieldData(void)
 	//   Reference: http://imrannazar.com/The-Smallest-NDS-File
 	// - Show IR cart and/or other accessories? (NAND ROM, etc.)
 	const char *nds_romType;
+	const uint16_t dsi_filetype = le16_to_cpu(romHeader->dsi.title_id.catID);
 	if (d->cia || ((romHeader->unitcode & NintendoDSPrivate::DS_HW_DSi) &&
-		romHeader->dsi.filetype != DSi_FTYPE_CARTRIDGE))
+		dsi_filetype != DSi_FTYPE_CARTRIDGE))
 	{
 		// DSiWare.
 		// TODO: Verify games that are available as both
 		// cartridge and DSiWare.
-		if (romHeader->dsi.filetype == DSi_FTYPE_DSiWARE) {
+		if (dsi_filetype == DSi_FTYPE_DSiWARE) {
 			nds_romType = "DSiWare";
 		} else {
 			nds_romType = "DSi System Software";
@@ -1153,7 +1154,6 @@ int NintendoDS::loadFieldData(void)
 		{0, nullptr}
 	};
 
-	const uint8_t dsi_filetype = romHeader->dsi.filetype;
 	const char *s_dsi_filetype = nullptr;
 	for (const auto *p = dsi_filetype_lkup_tbl; p->s_dsi_filetype != nullptr; p++) {
 		if (p->dsi_filetype == dsi_filetype) {
@@ -1469,12 +1469,17 @@ int NintendoDS::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size)
 		// This is either a prototype, a download demo, or homebrew.
 		// No external images are available.
 		return -ENOENT;
-	} else if ((d->romHeader.unitcode & NintendoDSPrivate::DS_HW_DSi) &&
-		    d->romHeader.dsi.filetype != DSi_FTYPE_CARTRIDGE)
-	{
-		// This is a DSi SRL that isn't a cartridge dump.
-		// No external images are available.
-		return -ENOENT;
+	}
+
+	if (d->romHeader.unitcode & NintendoDSPrivate::DS_HW_DSi) {
+		// Check for DSi SRLs that aren't cartridge dumps.
+		// TODO: Does GameTDB have DSiWare covers?
+		const uint16_t dsi_filetype = le16_to_cpu(d->romHeader.dsi.title_id.catID);
+		if (dsi_filetype != DSi_FTYPE_CARTRIDGE) {
+			// Not a cartridge dump.
+			// No external images are available.
+			return -ENOENT;
+		}
 	}
 
 	// Get the image sizes and sort them based on the

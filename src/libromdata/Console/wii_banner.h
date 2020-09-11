@@ -129,7 +129,7 @@ typedef enum {
  * All fields are in big-endian.
  */
 typedef struct _Wii_SaveGame_Header_t {
-	RVL_TitleID_t savegame_id;	// [0x000] Savegame ID (title ID)
+	Nintendo_TitleID_BE_t savegame_id;	// [0x000] Savegame ID (title ID)
 	uint32_t banner_size;		// [0x008] Size of banner+icons, with header. (max 0xF0A0)
 	uint8_t permissions;		// [0x00C] Permissions (See Wii_SaveGame_Perm_e.)
 	uint8_t unknown1;		// [0x00D]
