@@ -533,57 +533,94 @@ int Nintendo3DSPrivate::loadTicketAndTMD(void)
 	// Store the content start address.
 	mxh.content_start_addr = tmd_start + toNext64(tmd_size);
 
+	// Loaded the TMD header.
+	headers_loaded |= HEADER_TMD;
+
 	// Check if the CIA is DSiWare.
 	// NOTE: "WarioWare Touched!" has a manual, but no other
 	// DSiWare titles that I've seen do.
 	if (content_count <= 2 && !(headers_loaded & HEADER_SMDH) && !this->mainContent) {
-		const N3DS_Content_Chunk_Record_t *const chunk0 = &content_chunks[0];
-		const off64_t offset = mxh.content_start_addr;
-		const uint32_t length = static_cast<uint32_t>(be64_to_cpu(chunk0->size));
-		if (length >= 0x8000) {
-			// Attempt to open the SRL as if it's a new file.
-			// TODO: IRpFile implementation with offset/length, so we don't
-			// have to use both DiscReader and PartitionFile.
-
-			// Check if this content is encrypted.
-			// If it is, we'll need to create a CIAReader.
-			IDiscReader *srlReader = nullptr;
-			if (chunk0->type & cpu_to_be16(N3DS_CONTENT_CHUNK_ENCRYPTED)) {
-				// Content is encrypted.
-				srlReader = new CIAReader(this->file, offset, length,
-					&mxh.ticket, be16_to_cpu(chunk0->index));
-			} else {
-				// Content is NOT encrypted.
-				// Use a plain old DiscReader.
-				srlReader = new DiscReader(this->file, offset, length);
-			}
-
-			// TODO: Make IDiscReader derive from IRpFile.
-			// May need to add reference counting to IRpFile...
-			NintendoDS *srlData = nullptr;
-			if (srlReader->isOpen()) {
-				PartitionFile *const srlFile = new PartitionFile(srlReader, 0, length);
-				if (srlFile->isOpen()) {
-					// Create the NintendoDS object.
-					srlData = new NintendoDS(srlFile, true);
-				}
-				srlFile->unref();
-			}
-			srlReader->unref();
-
-			if (srlData && srlData->isOpen() && srlData->isValid()) {
-				// SRL opened successfully.
-				this->mainContent = srlData;
-			} else {
-				// Failed to open the SRL.
-				UNREF(srlData);
-			}
-		}
+		openSRL();
 	}
 
-	// Loaded the TMD header.
-	headers_loaded |= HEADER_TMD;
 	return 0;
+}
+
+/**
+ * Open the SRL if it isn't already opened.
+ * This operation only works for CIAs that contain an SRL.
+ * @return 0 on success; non-zero on error.
+ */
+int Nintendo3DSPrivate::openSRL(void)
+{
+	if (romType != RomType::CIA || content_chunks.empty()) {
+		return -ENOENT;
+	} else if (this->mainContent) {
+		// Something's already loaded.
+		if (this->mainContent->isOpen()) {
+			// File is still open.
+			// Return 0 if it's an SRL; -ENOENT otherwise.
+			return (!(headers_loaded & HEADER_SMDH) ? 0 : -ENOENT);
+		}
+		// File is no longer open.
+		// unref() and reopen it.
+		UNREF_AND_NULL(this->mainContent);
+	}
+
+	if (!this->file || !this->file->isOpen()) {
+		// Can't open the SRL.
+		return -EIO;
+	}
+
+	const N3DS_Content_Chunk_Record_t *const chunk0 = &content_chunks[0];
+	const off64_t offset = mxh.content_start_addr;
+	const uint32_t length = static_cast<uint32_t>(be64_to_cpu(chunk0->size));
+	if (length < 0x8000) {
+		return -ENOENT;
+	}
+
+	// Attempt to open the SRL as if it's a new file.
+	// TODO: IRpFile implementation with offset/length, so we don't
+	// have to use both DiscReader and PartitionFile.
+
+	// Check if this content is encrypted.
+	// If it is, we'll need to create a CIAReader.
+	IDiscReader *srlReader = nullptr;
+	if (chunk0->type & cpu_to_be16(N3DS_CONTENT_CHUNK_ENCRYPTED)) {
+		// Content is encrypted.
+		srlReader = new CIAReader(this->file, offset, length,
+			&mxh.ticket, be16_to_cpu(chunk0->index));
+	} else {
+		// Content is NOT encrypted.
+		// Use a plain old DiscReader.
+		srlReader = new DiscReader(this->file, offset, length);
+	}
+	if (!srlReader->isOpen()) {
+		// Unable to open the SRL reader.
+		srlReader->unref();
+		return -EIO;
+	}
+
+	// TODO: Make IDiscReader derive from IRpFile.
+	// May need to add reference counting to IRpFile...
+	NintendoDS *srlData = nullptr;
+	PartitionFile *const srlFile = new PartitionFile(srlReader, 0, length);
+	srlReader->unref();
+	if (srlFile->isOpen()) {
+		// Create the NintendoDS object.
+		srlData = new NintendoDS(srlFile, true);
+	}
+	srlFile->unref();
+
+	if (srlData && srlData->isOpen() && srlData->isValid()) {
+		// SRL opened successfully.
+		this->mainContent = srlData;
+	} else {
+		// Failed to open the SRL.
+		srlData->unref();
+	}
+
+	return (this->mainContent != nullptr ? 0 : -EIO);
 }
 
 /**

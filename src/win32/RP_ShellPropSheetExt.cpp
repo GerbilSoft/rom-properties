@@ -3012,83 +3012,105 @@ void RP_ShellPropSheetExt_Private::menuOptions_action_triggered(int menuId)
 				CloseClipboard();
 			}
 		}
+		return;
+	}
+
+	// Run a ROM operation.
+	// TODO: Don't keep rebuilding this vector...
+	vector<RomData::RomOp> ops = romData->romOps();
+	const int id = menuId - IDM_OPTIONS_MENU_BASE;
+	assert(id < (int)ops.size());
+	if (id >= (int)ops.size()) {
+		// ID is out of range.
+		return;
+	}
+
+	string s_save_filename;
+	RomData::RomOpParams params;
+	const RomData::RomOp *op = &ops[id];
+	if (op->flags & RomData::RomOp::ROF_SAVE_FILE) {
+		// Prompt for a save file.
+		// TODO: Initial directory? Using filename only right now.
+		tstring tstr = LibWin32Common::getSaveFileName(hDlgSheet,
+			U82T_c(op->sfi.title),
+			op->sfi.filter,
+			U82T_s(op->filename));
+		if (tstr.empty())
+			return;
+		s_save_filename = T2U8(tstr);
+		params.save_filename = s_save_filename.c_str();
+	}
+
+	int ret = romData->doRomOp(id, &params);
+	unsigned int messageType;
+	if (ret == 0) {
+		// ROM operation completed.
+		messageType = MB_ICONINFORMATION;
+
+		// Update fields.
+		std::for_each(params.fieldIdx.cbegin(), params.fieldIdx.cend(),
+			[this](int fieldIdx) {
+				this->updateField(fieldIdx);
+			}
+		);
+
+		// Update the RomOp menu entry in case it changed.
+		// NOTE: Assuming the RomOps vector order hasn't changed.
+		ops = romData->romOps();
+		assert(id < (int)ops.size());
+		if (id < (int)ops.size()) {
+			const RomData::RomOp &op = ops[id];
+
+			UINT uFlags;
+			if (!(op.flags & RomData::RomOp::ROF_ENABLED)) {
+				uFlags = MF_BYCOMMAND | MF_STRING | MF_DISABLED;
+			} else {
+				uFlags = MF_BYCOMMAND | MF_STRING;
+			}
+			ModifyMenu(hMenuOptions, menuId, uFlags, menuId, U82T_c(op.desc));
+		}
 	} else {
-		// Run a ROM operation.
-		const int id = menuId - IDM_OPTIONS_MENU_BASE;
-		RomData::RomOpParams params;
-		int ret = romData->doRomOp(id, &params);
-		unsigned int messageType;
-		if (ret == 0) {
-			// ROM operation completed.
-			messageType = MB_ICONINFORMATION;
+		// An error occurred...
+		// TODO: Show an error message.
+		messageType = MB_ICONWARNING;
+	}
 
-			// Update fields.
-			std::for_each(params.fieldIdx.cbegin(), params.fieldIdx.cend(),
-				[this](int fieldIdx) {
-					this->updateField(fieldIdx);
-				}
-			);
+	MessageBeep(messageType);
+	if (!params.msg.empty()) {
+		if (!hMessageWidget) {
+			// FIXME: Make sure this works if multiple tabs are present.
+			MessageWidgetRegister();
 
-			// Update the RomOp menu entry in case it changed.
-			// NOTE: Assuming the RomOps vector order hasn't changed.
-			// TODO: Have RomData store the RomOps vector instead of
-			// rebuilding it here?
-			const vector<RomData::RomOp> ops = romData->romOps();
-			assert(id < (int)ops.size());
-			if (id < (int)ops.size()) {
-				const RomData::RomOp &op = ops[id];
+			// Align to the bottom of the dialog and center-align the text.
+			// 7x7 DLU margin is recommended by the Windows UX guidelines.
+			// Reference: http://stackoverflow.com/questions/2118603/default-dialog-padding
+			RECT tmpRect = {7, 7, 8, 8};
+			MapDialogRect(hDlgSheet, &tmpRect);
+			RECT winRect;
+			GetClientRect(hDlgSheet, &winRect);
+			// NOTE: We need to move left by 1px.
+			OffsetRect(&winRect, -1, 0);
 
-				UINT uFlags;
-				if (!(op.flags & RomData::RomOp::ROF_ENABLED)) {
-					uFlags = MF_BYCOMMAND | MF_STRING | MF_DISABLED;
-				} else {
-					uFlags = MF_BYCOMMAND | MF_STRING;
-				}
-				ModifyMenu(hMenuOptions, menuId, uFlags, menuId, U82T_c(op.desc));
-			}
-		} else {
-			// An error occurred...
-			// TODO: Show an error message.
-			messageType = MB_ICONWARNING;
+			// Determine the position.
+			// TODO: Update on DPI change.
+			const int cySmIcon = GetSystemMetrics(SM_CYSMICON);
+			POINT ptMsgw; SIZE szMsgw;
+			szMsgw.cy = cySmIcon + 8;
+			ptMsgw.x = winRect.left + tmpRect.left;
+			ptMsgw.y = winRect.bottom - tmpRect.top - szMsgw.cy;
+			szMsgw.cx = winRect.right - winRect.left - (tmpRect.left * 2);
+
+			hMessageWidget = CreateWindowEx(
+				WS_EX_NOPARENTNOTIFY | WS_EX_TRANSPARENT,
+				WC_MESSAGEWIDGET, nullptr,
+				WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_CLIPCHILDREN,
+				ptMsgw.x, ptMsgw.y, szMsgw.cx, szMsgw.cy,
+				hDlgSheet, (HMENU)IDC_MESSAGE_WIDGET,
+				HINST_THISCOMPONENT, nullptr);
+			SetWindowFont(hMessageWidget, hFontDlg, false);
 		}
 
-		MessageBeep(messageType);
-		if (!params.msg.empty()) {
-			if (!hMessageWidget) {
-				// FIXME: Make sure this works if multiple tabs are present.
-				MessageWidgetRegister();
-
-				// Align to the bottom of the dialog and center-align the text.
-				// 7x7 DLU margin is recommended by the Windows UX guidelines.
-				// Reference: http://stackoverflow.com/questions/2118603/default-dialog-padding
-				RECT tmpRect = {7, 7, 8, 8};
-				MapDialogRect(hDlgSheet, &tmpRect);
-				RECT winRect;
-				GetClientRect(hDlgSheet, &winRect);
-				// NOTE: We need to move left by 1px.
-				OffsetRect(&winRect, -1, 0);
-
-				// Determine the position.
-				// TODO: Update on DPI change.
-				const int cySmIcon = GetSystemMetrics(SM_CYSMICON);
-				POINT ptMsgw; SIZE szMsgw;
-				szMsgw.cy = cySmIcon + 8;
-				ptMsgw.x = winRect.left + tmpRect.left;
-				ptMsgw.y = winRect.bottom - tmpRect.top - szMsgw.cy;
-				szMsgw.cx = winRect.right - winRect.left - (tmpRect.left * 2);
-
-				hMessageWidget = CreateWindowEx(
-					WS_EX_NOPARENTNOTIFY | WS_EX_TRANSPARENT,
-					WC_MESSAGEWIDGET, nullptr,
-					WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_CLIPCHILDREN,
-					ptMsgw.x, ptMsgw.y, szMsgw.cx, szMsgw.cy,
-					hDlgSheet, (HMENU)IDC_MESSAGE_WIDGET,
-					HINST_THISCOMPONENT, nullptr);
-				SetWindowFont(hMessageWidget, hFontDlg, false);
-			}
-
-			showMessageWidget(messageType, U82T_s(params.msg));
-		}
+		showMessageWidget(messageType, U82T_s(params.msg));
 	}
 }
 

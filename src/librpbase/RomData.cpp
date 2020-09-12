@@ -495,6 +495,16 @@ void RomData::close(void)
 }
 
 /**
+ * Get a reference to the internal file.
+ * @return Reference to file, or nullptr on error.
+ */
+IRpFile *RomData::ref_file(void)
+{
+	RP_D(RomData);
+	return (d->file ? d->file->ref() : nullptr);
+}
+
+/**
  * Get the filename that was loaded.
  * @return Filename, or nullptr on error.
  */

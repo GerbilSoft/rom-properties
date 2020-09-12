@@ -13,9 +13,10 @@
 #include "Nintendo3DS.hpp"
 #include "Nintendo3DS_p.hpp"
 
-// librpbase
+// librpbase, librpfile
 using LibRpBase::RomData;
 using LibRpBase::RomFields;
+using LibRpFile::IRpFile;
 
 // For sections delegated to other RomData subclasses.
 #include "NintendoDS.hpp"
@@ -46,9 +47,29 @@ vector<RomData::RomOp> Nintendo3DS::romOps_int(void) const
 	// Check for a DSi SRL.
 	NintendoDS *const srl = dynamic_cast<NintendoDS*>(d->mainContent);
 	if (srl) {
-		// TODO: Store a default filename.
-		const RomOpSaveFileInfo sfi = {"Nintendo DS SRL Files (*.srl)|*.srl||", string()};
-		RomOp op("E&xtract SRL...", RomOp::ROF_ENABLED, &sfi);
+		RomOp op("E&xtract SRL...", RomOp::ROF_ENABLED | RomOp::ROF_SAVE_FILE);
+		op.sfi.title = C_("Nintendo3DS|RomOps", "Extract Nintendo DS SRL File");
+		op.sfi.filter = C_("Nintendo3DS|RomOps", "Nintendo DS SRL Files|*.srl|application/x-nintendo-ds-rom;application/x-nintendo-dsi-rom");
+
+		// Get the basename and change the extension to ".srl".
+		// TODO: Split into another function?
+		if (!d->filename.empty()) {
+			const size_t slash_pos = d->filename.rfind(DIR_SEP_CHR);
+			if (slash_pos != string::npos) {
+				op.filename = d->filename.substr(slash_pos + 1);
+			} else {
+				op.filename = d->filename;
+			}
+
+			// Find the dot.
+			const size_t dot_pos = op.filename.rfind('.');
+			if (dot_pos != string::npos) {
+				// Remove the existing extension.
+				op.filename.resize(dot_pos);
+			}
+			op.filename += ".srl";
+		}
+
 		ops.emplace_back(std::move(op));
 	}
 
@@ -64,19 +85,10 @@ vector<RomData::RomOp> Nintendo3DS::romOps_int(void) const
  */
 int Nintendo3DS::doRomOp_int(int id, RomOpParams *pParams)
 {
-	RP_D(const Nintendo3DS);
+	RP_D(Nintendo3DS);
 
 	// Currently only one ROM operation.
 	if (id != 0) {
-		pParams->status = -EINVAL;
-		pParams->msg = C_("RomData", "ROM operation ID is invalid for this object.");
-		return -EINVAL;
-	}
-
-	// Check for a DSi SRL.
-	NintendoDS *const srl = dynamic_cast<NintendoDS*>(d->mainContent);
-	if (!srl) {
-		// Not a DSi SRL.
 		pParams->status = -EINVAL;
 		pParams->msg = C_("RomData", "ROM operation ID is invalid for this object.");
 		return -EINVAL;
@@ -89,11 +101,65 @@ int Nintendo3DS::doRomOp_int(int id, RomOpParams *pParams)
 		return -EINVAL;
 	}
 
+	// If the DSi SRL isn't open right now, make sure we close it later.
+	bool isAlreadyOpen = (d->mainContent && d->mainContent->isOpen());
+
+	// Check for a DSi SRL.
+	int ret = d->openSRL();
+	if (ret != 0) {
+		// Unable to open the SRL.
+		pParams->status = ret;
+		if (ret == -ENOENT) {
+			// Not a DSi SRL.
+			pParams->msg = C_("RomData", "ROM operation ID is invalid for this object.");
+		} else if (ret == -EIO) {
+			// Unable to open the DSi SRL.
+			pParams->msg = C_("Nintendo3DS", "Unable to open the SRL.");
+		} else {
+			// Unknown error...
+			pParams->msg = C_("Nintendo3DS", "An unknown error occurred attempting to open the SRL.");
+		}
+		return ret;
+	}
+
+	NintendoDS *const srl = dynamic_cast<NintendoDS*>(d->mainContent);
+	assert(srl != nullptr);
+	if (!srl) {
+		// This shouldn't have happened...
+		if (!isAlreadyOpen) {
+			d->mainContent->close();
+		}
+		pParams->status = -EIO;
+		pParams->msg = C_("Nintendo3DS", "Unable to open the SRL.");
+		return -EIO;
+	}
+
+	// Extract the SRL.
+	IRpFile *const file = srl->ref_file();
+	assert(file != nullptr);
+	if (!file) {
+		// No file...
+		if (!isAlreadyOpen) {
+			d->mainContent->close();
+		}
+		pParams->status = -EIO;
+		pParams->msg = C_("Nintendo3DS", "Unable to open the SRL.");
+		return -EIO;
+	}
+
 	// TODO: Extract the SRL.
 	// NOTE: May need to reopen the SRL.
 	pParams->status = -ENOTSUP;
 	pParams->msg = "TODO: Extract the SRL.";
-	return -EINVAL;
+
+	file->unref();
+
+	// Close the SRL if it wasn't previously opened.
+	if (!isAlreadyOpen) {
+		d->mainContent->close();
+	}
+
+	return pParams->status;
 }
 
 }

@@ -195,6 +195,13 @@ class Nintendo3DSPrivate : public LibRpBase::RomDataPrivate
 		int loadTicketAndTMD(void);
 
 		/**
+		 * Open the SRL if it isn't already opened.
+		 * This operation only works for CIAs that contain an SRL.
+		 * @return 0 on success; non-zero on error.
+		 */
+		int openSRL(void);
+
+		/**
 		 * Get the SMDH region code.
 		 * @return SMDH region code, or 0 if it could not be obtained.
 		 */

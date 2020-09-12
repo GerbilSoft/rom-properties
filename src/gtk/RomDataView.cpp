@@ -2619,13 +2619,15 @@ menuOptions_triggered_signal_handler(GtkMenuItem *menuItem,
 		ofstream ofs;
 
 		if (!toClipboard) {
-			GtkWidget *const dialog = gtk_file_chooser_dialog_new(s_title,
-				GTK_WINDOW(gtk_widget_get_toplevel(GTK_WIDGET(page))),
-				GTK_FILE_CHOOSER_ACTION_SAVE,
-				GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
-				GTK_STOCK_SAVE, GTK_RESPONSE_ACCEPT,
+			GtkWindow *const parent = GTK_WINDOW(gtk_widget_get_toplevel(GTK_WIDGET(page)));
+			GtkWidget *const dialog = gtk_file_chooser_dialog_new(
+				s_title,			// title
+				parent,				// parent
+				GTK_FILE_CHOOSER_ACTION_SAVE,	// action
+				_("Cancel"), GTK_RESPONSE_CANCEL,
+				_("Save"), GTK_RESPONSE_ACCEPT,
 				nullptr);
-			gtk_file_chooser_set_do_overwrite_confirmation(GTK_FILE_CHOOSER(dialog), true);
+			gtk_file_chooser_set_do_overwrite_confirmation(GTK_FILE_CHOOSER(dialog), TRUE);
 
 			// Set the filters.
 			rpFileDialogFilterToGtk(GTK_FILE_CHOOSER(dialog), s_filter);
@@ -2715,60 +2717,102 @@ menuOptions_triggered_signal_handler(GtkMenuItem *menuItem,
 				assert(!"Invalid action ID.");
 				return;
 		}
-	} else {
-		// Run a ROM operation.
-		GtkMessageType messageType;
-		RomData::RomOpParams params;
-		int ret = page->romData->doRomOp(id, &params);
-		if (ret == 0) {
-			// ROM operation completed.
+		return;
+	}
 
-			// Update fields.
-			std::for_each(params.fieldIdx.cbegin(), params.fieldIdx.cend(),
-				[page](int fieldIdx) {
-					rom_data_view_update_field(page, fieldIdx);
-				}
-			);
+	// Run a ROM operation.
+	// TODO: Don't keep rebuilding this vector...
+	vector<RomData::RomOp> ops = page->romData->romOps();
+	assert(id < (int)ops.size());
+	if (id >= (int)ops.size()) {
+		// ID is out of range.
+		return;
+	}
 
-			// Update the RomOp menu entry in case it changed.
-			// NOTE: Assuming the RomOps vector order hasn't changed.
-			// TODO: Have RomData store the RomOps vector instead of
-			// rebuilding it here?
-			const vector<RomData::RomOp> ops = page->romData->romOps();
-			assert(id < (int)ops.size());
-			if (id < (int)ops.size()) {
-				const RomData::RomOp &op = ops[id];
-				const string desc = convert_accel_to_gtk(op.desc);
-				gtk_menu_item_set_label(menuItem, desc.c_str());
-				gtk_widget_set_sensitive(GTK_WIDGET(menuItem), !!(op.flags & RomData::RomOp::ROF_ENABLED));
-			}
+	gchar *save_filename = nullptr;
+	RomData::RomOpParams params;
+	const RomData::RomOp *op = &ops[id];
+	if (op->flags & RomData::RomOp::ROF_SAVE_FILE) {
+		// Prompt for a save file.
+		GtkWindow *const parent = GTK_WINDOW(gtk_widget_get_toplevel(GTK_WIDGET(page)));
+		GtkWidget *const dialog = gtk_file_chooser_dialog_new(
+			op->sfi.title,			// title
+			parent,				// parent
+			GTK_FILE_CHOOSER_ACTION_SAVE,	// action
+			_("Cancel"), GTK_RESPONSE_CANCEL,
+			_("Save"), GTK_RESPONSE_ACCEPT,
+			nullptr);
+		gtk_file_chooser_set_do_overwrite_confirmation(GTK_FILE_CHOOSER(dialog), TRUE);
 
-			messageType = GTK_MESSAGE_INFO;
-		} else {
-			// An error occurred...
-			// TODO: Show an error message.
-			messageType = GTK_MESSAGE_WARNING;
+		// Set the filters.
+		rpFileDialogFilterToGtk(GTK_FILE_CHOOSER(dialog), op->sfi.filter);
+
+		// TODO: Initial directory? Using filename only right now.
+		if (!op->filename.empty()) {
+			gtk_file_chooser_set_current_name(
+				GTK_FILE_CHOOSER(dialog),
+				op->filename.c_str());
 		}
+
+		// TODO: Set default filename and directory.
+		gint res = gtk_dialog_run(GTK_DIALOG(dialog));
+		if (res != GTK_RESPONSE_ACCEPT)
+			return;
+
+		save_filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
+		gtk_widget_destroy(dialog);
+		params.save_filename = save_filename;
+	}
+
+	GtkMessageType messageType;
+	int ret = page->romData->doRomOp(id, &params);
+	g_free(save_filename);
+	if (ret == 0) {
+		// ROM operation completed.
+
+		// Update fields.
+		std::for_each(params.fieldIdx.cbegin(), params.fieldIdx.cend(),
+			[page](int fieldIdx) {
+				rom_data_view_update_field(page, fieldIdx);
+			}
+		);
+
+		// Update the RomOp menu entry in case it changed.
+		// NOTE: Assuming the RomOps vector order hasn't changed.
+		ops = page->romData->romOps();
+		assert(id < (int)ops.size());
+		if (id < (int)ops.size()) {
+			const RomData::RomOp &op = ops[id];
+			const string desc = convert_accel_to_gtk(op.desc);
+			gtk_menu_item_set_label(menuItem, desc.c_str());
+			gtk_widget_set_sensitive(GTK_WIDGET(menuItem), !!(op.flags & RomData::RomOp::ROF_ENABLED));
+		}
+
+		messageType = GTK_MESSAGE_INFO;
+	} else {
+		// An error occurred...
+		// TODO: Show an error message.
+		messageType = GTK_MESSAGE_WARNING;
+	}
 
 #ifdef ENABLE_MESSAGESOUND
-		MessageSound::play(messageType, params.msg.c_str(), GTK_WIDGET(page));
+	MessageSound::play(messageType, params.msg.c_str(), GTK_WIDGET(page));
 #endif /* ENABLE_MESSAGESOUND */
 
-		if (!params.msg.empty()) {
-			// Show the MessageWidget.
-			if (!page->messageWidget) {
-				page->messageWidget = message_widget_new();
-				gtk_box_pack_end(GTK_BOX(page), page->messageWidget, false, false, 0);
-			}
-
-			MessageWidget *const messageWidget = MESSAGE_WIDGET(page->messageWidget);
-			message_widget_set_message_type(messageWidget, messageType);
-			message_widget_set_text(messageWidget, params.msg.c_str());
-#ifdef AUTO_TIMEOUT_MESSAGEWIDGET
-			message_widget_show_with_timeout(messageWidget);
-#else /* AUTO_TIMEOUT_MESSAGEWIDGET */
-			gtk_widget_show(page->messageWidget);
-#endif /* AUTO_TIMEOUT_MESSAGEWIDGET */
+	if (!params.msg.empty()) {
+		// Show the MessageWidget.
+		if (!page->messageWidget) {
+			page->messageWidget = message_widget_new();
+			gtk_box_pack_end(GTK_BOX(page), page->messageWidget, false, false, 0);
 		}
+
+		MessageWidget *const messageWidget = MESSAGE_WIDGET(page->messageWidget);
+		message_widget_set_message_type(messageWidget, messageType);
+		message_widget_set_text(messageWidget, params.msg.c_str());
+#ifdef AUTO_TIMEOUT_MESSAGEWIDGET
+		message_widget_show_with_timeout(messageWidget);
+#else /* AUTO_TIMEOUT_MESSAGEWIDGET */
+		gtk_widget_show(page->messageWidget);
+#endif /* AUTO_TIMEOUT_MESSAGEWIDGET */
 	}
 }

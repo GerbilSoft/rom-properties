@@ -106,6 +106,12 @@ class RomData : public RefBase
 		virtual void close(void);
 
 		/**
+		 * Get a reference to the internal file.
+		 * @return Reference to file, or nullptr on error.
+		 */
+		LibRpFile::IRpFile *ref_file(void);
+
+		/**
 		 * Get the filename that was loaded.
 		 * @return Filename, or nullptr on error.
 		 */
@@ -554,6 +560,7 @@ class RomData : public RefBase
 		 * `const char*` fields are owned by the RomData subclass.
 		 */
 		struct RomOpSaveFileInfo {
+			const char *title;		// Dialog title.
 			const char *filter;		// Filename filter. (Windows style, with '|' delimiters.)
 			std::string def_filename;	// Default filename. (without path)
 		};
@@ -572,13 +579,22 @@ class RomData : public RefBase
 				ROF_SAVE_FILE		= (1U << 2),	// Prompt to save a new file
 			};
 
-			const RomOpSaveFileInfo *psfi;	// If ROF_SAVE_FILE, has save file info.
+			// Data depends on RomOpsFlags.
+			union {
+				// ROF_SAVE_FILE
+				struct {
+					const char *title;
+					const char *filter;
+				} sfi;
+			};
+
+			// Additional filename value.
+			// For ROF_SAVE_FILE, this is the default save filename.
+			std::string filename;
 
 			RomOp() { }
 			RomOp(const char *desc, uint32_t flags)
-				: desc(desc), flags(flags), psfi(nullptr) { }
-			RomOp(const char *desc, uint32_t flags, const RomOpSaveFileInfo *psfi)
-				: desc(desc), flags(flags), psfi(psfi) { }
+				: desc(desc), flags(flags) { }
 		};
 
 		struct RomOpParams {
