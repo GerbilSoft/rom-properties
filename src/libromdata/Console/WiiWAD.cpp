@@ -702,7 +702,8 @@ uint32_t WiiWAD::supportedImageTypes(void) const
 	uint32_t ret;
 #ifdef ENABLE_DECRYPTION
 	if (d->mainContent) {
-		ret = IMGBF_INT_ICON | IMGBF_INT_BANNER |
+		// TODO: Verify external types?
+		ret = d->mainContent->supportedImageTypes() |
 		      IMGBF_EXT_COVER | IMGBF_EXT_COVER_3D |
 		      IMGBF_EXT_COVER_FULL |
 		      IMGBF_EXT_TITLE_SCREEN;
