@@ -104,7 +104,7 @@ int Nintendo3DS::doRomOp_int(int id, RomOpParams *pParams)
 	}
 
 	// If the DSi SRL isn't open right now, make sure we close it later.
-	bool isAlreadyOpen = (d->mainContent && d->mainContent->isOpen());
+	bool wasMainContentOpen = (d->mainContent && d->mainContent->isOpen());
 
 	// Check for a DSi SRL.
 	int ret = d->openSRL();
@@ -128,7 +128,7 @@ int Nintendo3DS::doRomOp_int(int id, RomOpParams *pParams)
 	assert(srl != nullptr);
 	if (!srl) {
 		// This shouldn't have happened...
-		if (!isAlreadyOpen) {
+		if (!wasMainContentOpen) {
 			d->mainContent->close();
 		}
 		pParams->status = -EIO;
@@ -136,7 +136,7 @@ int Nintendo3DS::doRomOp_int(int id, RomOpParams *pParams)
 		return -EIO;
 	}
 
-	// Get the source SRL.
+	// Get the source file.
 	RpFile *destFile = nullptr;
 	IRpFile *const srcFile = srl->ref_file();
 	assert(srcFile != nullptr);
@@ -176,7 +176,7 @@ int Nintendo3DS::doRomOp_int(int id, RomOpParams *pParams)
 out:
 	UNREF(destFile);
 	UNREF(srcFile);
-	if (!isAlreadyOpen) {
+	if (!wasMainContentOpen) {
 		d->mainContent->close();
 	}
 	return pParams->status;
