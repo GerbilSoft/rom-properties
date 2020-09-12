@@ -379,6 +379,7 @@ static tstring rpFileDialogFilterToWin32(const char *filter)
 			free(tmpfilter);
 			return tstring();
 		}
+		const size_t lastpos = ts_ret.size();
 		ts_ret += U82T_c(token);
 
 		// Separator 2: Between pattern and MIME types.
@@ -390,10 +391,15 @@ static tstring rpFileDialogFilterToWin32(const char *filter)
 			return tstring();
 		}
 
+		// Don't append the pattern in parentheses if it's
+		// the same as the display name. (e.g. for specific
+		// files in KeyManagerTab)
 		const tstring ts_tmpstr = U82T_c(token);
-		ts_ret += _T(" (");
-		ts_ret += ts_tmpstr;
-		ts_ret += _T(')');
+		if (ts_ret.compare(lastpos, string::npos, ts_tmpstr) != 0) {
+			ts_ret += _T(" (");
+			ts_ret += ts_tmpstr;
+			ts_ret += _T(')');
+		}
 		ts_ret += _T('\0');
 
 		// File filter.
