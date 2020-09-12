@@ -9,6 +9,7 @@
 #include "stdafx.h"
 #include "RomDataView.hpp"
 #include "rp-gtk-enums.h"
+#include "RpGtk.hpp"
 
 // ENABLE_MESSAGESOUND is set by CMakeLists.txt.
 #ifdef ENABLE_MESSAGESOUND
@@ -2586,25 +2587,23 @@ menuOptions_triggered_signal_handler(GtkMenuItem *menuItem,
 			return;
 
 		bool toClipboard;
-		GtkFileFilter *filter = gtk_file_filter_new();
 		const char *s_title = nullptr;
 		const char *s_default_ext = nullptr;
+		const char *s_filter = nullptr;
 		switch (id) {
 			case OPTION_EXPORT_TEXT:
 				toClipboard = false;
 				s_title = C_("RomDataView", "Export to Text File");
 				s_default_ext = ".txt";
-				gtk_file_filter_set_name(filter, C_("RomDataView", "Text Files"));
-				gtk_file_filter_add_mime_type(filter, "text/plain");
-				gtk_file_filter_add_pattern(filter, "*.txt");
+				// tr: Text files filter. (RP format)
+				s_filter = C_("RomDataView", "Text Files|*.txt|All Files|*.*");
 				break;
 			case OPTION_EXPORT_JSON:
 				toClipboard = false;
 				s_title = C_("RomDataView", "Export to JSON File");
 				s_default_ext = ".json";
-				gtk_file_filter_set_name(filter, C_("RomDataView", "JSON Files"));
-				gtk_file_filter_add_mime_type(filter, "application/json");
-				gtk_file_filter_add_pattern(filter, "*.json");
+				// tr: JSON files filter. (RP format)
+				s_filter = C_("RomDataView", "JSON Files|*.json|All Files|*.*");
 				break;
 			case OPTION_COPY_TEXT:
 			case OPTION_COPY_JSON:
@@ -2629,12 +2628,7 @@ menuOptions_triggered_signal_handler(GtkMenuItem *menuItem,
 			gtk_file_chooser_set_do_overwrite_confirmation(GTK_FILE_CHOOSER(dialog), true);
 
 			// Set the filters.
-			gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dialog), filter);
-
-			filter = gtk_file_filter_new();
-			gtk_file_filter_set_name(filter, C_("RomDataView", "All Files"));
-			gtk_file_filter_add_pattern(filter, "*");
-			gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dialog), filter);
+			rpFileDialogFilterToGtk(GTK_FILE_CHOOSER(dialog), s_filter);
 
 			if (!page->prevExportDir) {
 				page->prevExportDir = g_path_get_dirname(rom_filename);
