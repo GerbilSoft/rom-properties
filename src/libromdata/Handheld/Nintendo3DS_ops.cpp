@@ -136,10 +136,6 @@ int Nintendo3DS::doRomOp_int(int id, RomOpParams *pParams)
 		return -EIO;
 	}
 
-	// SRL read buffer. (Will be allocated later.)
-#define SRL_BUFFER_SIZE (64*1024)
-	unique_ptr<uint8_t[]> buf;
-
 	// Get the source SRL.
 	RpFile *destFile = nullptr;
 	IRpFile *const srcFile = srl->ref_file();
@@ -162,42 +158,20 @@ int Nintendo3DS::doRomOp_int(int id, RomOpParams *pParams)
 	}
 
 	// Extract the file.
-	buf.reset(new uint8_t[SRL_BUFFER_SIZE]);
 	srcFile->rewind();
-	for (int64_t fileSize = srcFile->size(); fileSize > 0; fileSize -= SRL_BUFFER_SIZE) {
-		const size_t szRead = srcFile->read(buf.get(), SRL_BUFFER_SIZE);
-		if (szRead != SRL_BUFFER_SIZE &&
-		    (fileSize < SRL_BUFFER_SIZE && szRead != (size_t)fileSize))
-		{
-			// Short read.
-			int ret = -srcFile->lastError();
-			if (ret == 0) {
-				ret = -EIO;
-			}
-			// TODO: More useful message? (may need std::string)
-			pParams->status = ret;
-			pParams->msg = C_("Nintendo3DS", "A read error occurred while extracting the SRL.");
-			goto out;
-		}
-
-		const size_t szWrite = destFile->write(buf.get(), szRead);
-		if (szWrite != szRead) {
-			// Short write.
-			int ret = -destFile->lastError();
-			if (ret == 0) {
-				ret = -EIO;
-			}
-			// TODO: More useful message? (may need std::string)
-			pParams->status = ret;
-			pParams->msg = C_("Nintendo3DS", "A write error occurred while extracting the SRL.");
-			goto out;
-		}
+	ret = srcFile->copyTo(destFile, srcFile->size());
+	pParams->status = ret;
+	switch (ret) {
+		case 0:
+			pParams->msg = C_("Nintendo3DS", "SRL file extracted successfully.");
+			break;
+		case -EIO:
+			pParams->msg = C_("Nintendo3DS", "An I/O error occurred while extracting the SRL.");
+			break;
+		default:
+			pParams->msg = C_("Nintendo3DS", "An unknown error occurred while extracting the SRL.");
+			break;
 	}
-
-	// SRL extracted.
-	// TODO: Include the basename here? (may need std::string)
-	pParams->status = 0;
-	pParams->msg = "SRL file extracted successfully.";
 
 out:
 	UNREF(destFile);
