@@ -2596,14 +2596,14 @@ menuOptions_triggered_signal_handler(GtkMenuItem *menuItem,
 				s_title = C_("RomDataView", "Export to Text File");
 				s_default_ext = ".txt";
 				// tr: Text files filter. (RP format)
-				s_filter = C_("RomDataView", "Text Files|*.txt|All Files|*.*");
+				s_filter = C_("RomDataView", "Text Files|*.txt|text/plain|All Files|*.*|-");
 				break;
 			case OPTION_EXPORT_JSON:
 				toClipboard = false;
 				s_title = C_("RomDataView", "Export to JSON File");
 				s_default_ext = ".json";
 				// tr: JSON files filter. (RP format)
-				s_filter = C_("RomDataView", "JSON Files|*.json|All Files|*.*");
+				s_filter = C_("RomDataView", "JSON Files|*.json|application/json|All Files|*.*|-");
 				break;
 			case OPTION_COPY_TEXT:
 			case OPTION_COPY_JSON:

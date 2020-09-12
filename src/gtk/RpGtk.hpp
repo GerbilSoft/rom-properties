@@ -16,10 +16,11 @@ G_BEGIN_DECLS
 /**
  * Convert an RP file dialog filter to GTK+.
  *
- * RP syntax: "Sega Mega Drive ROM images|*.gen;*.bin|All Files|*.*"
- * Essentially the same as Windows, but with '|' instead of '\0'.
+ * RP syntax: "Sega Mega Drive ROM images|*.gen;*.bin|application/x-genesis-rom|All Files|*.*|-"
+ * Similar the same as Windows, but with '|' instead of '\0'.
  * Also, no terminator sequence is needed.
  * The "(*.bin; *.srl)" part is added to the display name if needed.
+ * A third segment provides for semicolon-separated MIME types. (May be "-" for 'any'.)
  *
  * NOTE: GTK+ doesn't use strings for file filters. Instead, it has
  * GtkFileFilter objects that are added to a GtkFileChooser.

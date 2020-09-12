@@ -343,10 +343,11 @@ LRESULT CALLBACK SingleLineEditProc(
 /**
  * Convert an RP file dialog filter to Win32.
  *
- * RP syntax: "Sega Mega Drive ROM images|*.gen;*.bin|All Files|*.*"
- * Essentially the same as Windows, but with '|' instead of '\0'.
+ * RP syntax: "Sega Mega Drive ROM images|*.gen;*.bin|application/x-genesis-rom|All Files|*.*|-"
+ * Similar the same as Windows, but with '|' instead of '\0'.
  * Also, no terminator sequence is needed.
  * The "(*.bin; *.srl)" part is added to the display name if needed.
+ * A third segment provides for semicolon-separated MIME types. (May be "-" for 'any'.)
  *
  * @param filter RP file dialog filter. (UTF-8, from gettext())
  * @return Win32 file dialog filter.
@@ -358,44 +359,38 @@ static tstring rpFileDialogFilterToWin32(const char *filter)
 	if (!filter || filter[0] == '\0')
 		return ts_ret;
 
-	// TODO: Get rid of the temporary std::string.
-	// (U82T_c() overload that takes a size?)
-	// (or, take a const TCHAR* filter)
-	string tmpstr;
+	// TODO: Change `filter` to `const TCHAR*` to eliminate
+	// some temporary strings?
 
-	// Tokenize manually without using strtok_r(),
-	// since strtok_r() writes to the string.
+	// Temporary string so we can use strtok_r().
+	char *const tmpfilter = strdup(filter);
+	assert(tmpfilter != nullptr);
+	char *saveptr = nullptr;
+
+	// First strtok_r() call.
 	ts_ret.reserve(strlen(filter) + 32);
-	const char *pLast = filter;
+	char *token = strtok_s(tmpfilter, "|", &saveptr);
 	do {
 		// Separator 1: Between display name and pattern.
-		const char *const pSep1 = strchr(pLast, '|');
-		assert(pSep1 != nullptr);
-		if (!pSep1) {
-			// Cannot have the last token here...
+		// (strtok_r() call was done in the previous iteration.)
+		assert(token != nullptr);
+		if (!token) {
+			// Missing token...
+			free(tmpfilter);
+			return tstring();
+		}
+		ts_ret += U82T_c(token);
+
+		// Separator 2: Between pattern and MIME types.
+		token = strtok_s(nullptr, "|", &saveptr);
+		assert(token != nullptr);
+		if (!token) {
+			// Missing token...
+			free(tmpfilter);
 			return tstring();
 		}
 
-		// Separator 2: Between pattern and next display name.
-		const char *const pSep2 = strchr(pSep1 + 1, '|');
-
-		// RP filter: "Sega Mega Drive ROM images|*.gen;*.bin|All Files|*.*"
-		// Windows filter: "Sega Mega Drive ROM images (*.gen; *.bin)\0*.gen;*.bin\0All Files (*.*)\0*.*\0\0"
-
-		// Display name.
-		tmpstr.assign(pLast, pSep1 - pLast);
-		ts_ret += U82T_s(tmpstr);
-
-		// File filter portion of the display name.
-		// TODO: Convert ";" to "; ".
-		if (pSep2) {
-			tmpstr.assign(pSep1 + 1, pSep2 - pSep1 - 1);
-			pLast = pSep2 + 1;
-		} else {
-			tmpstr.assign(pSep1 + 1);
-			pLast = nullptr;
-		}
-		const tstring ts_tmpstr = U82T_s(tmpstr);
+		const tstring ts_tmpstr = U82T_c(token);
 		ts_ret += _T(" (");
 		ts_ret += ts_tmpstr;
 		ts_ret += _T(')');
@@ -404,8 +399,18 @@ static tstring rpFileDialogFilterToWin32(const char *filter)
 		// File filter.
 		ts_ret += ts_tmpstr;
 		ts_ret += _T('\0');
-	} while (pLast != nullptr && *pLast != '\0');
 
+		// Separator 3: Between MIME types and the next display name.
+		// NOTE: May be missing if this is the end of the string
+		// and a MIME type isn't set.
+		// NOTE: Not used by Qt.
+		token = strtok_s(nullptr, "|", &saveptr);
+
+		// Next token.
+		token = strtok_s(nullptr, "|", &saveptr);
+	} while (token != nullptr);
+
+	free(tmpfilter);
 	ts_ret += _T('\0');
 	return ts_ret;
 }

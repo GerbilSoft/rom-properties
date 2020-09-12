@@ -1428,7 +1428,7 @@ void KeyManagerTabPrivate::importWiiKeysBin(void)
 		// tr: Wii keys.bin dialog title.
 		U82T_c(C_("KeyManagerTab", "Select Wii keys.bin File")),
 		// tr: Wii keys.bin file filter. (RP format)
-		C_("KeyManagerTab", "keys.bin|keys.bin|Binary Files|*.bin|All Files|*.*"),
+		C_("KeyManagerTab", "keys.bin|keys.bin|-|Binary Files|*.bin|application/octet-stream|All Files|*.*|-"),
 		ts_keyFileDir.c_str());
 	if (tfilename.empty())
 		return;
@@ -1454,7 +1454,7 @@ void KeyManagerTabPrivate::importWiiUOtpBin(void)
 		// tr: Wii U otp.bin dialog title.
 		U82T_c(C_("KeyManagerTab", "Select Wii U otp.bin File")),
 		// tr: Wii U otp.bin file filter. (RP format)
-		C_("KeyManagerTab", "otp.bin|otp.bin|Binary Files|*.bin|All Files|*.*"),
+		C_("KeyManagerTab", "otp.bin|otp.bin|-|Binary Files|*.bin|application/octet-stream|All Files|*.*|-"),
 		ts_keyFileDir.c_str());
 	if (tfilename.empty())
 		return;
@@ -1480,7 +1480,7 @@ void KeyManagerTabPrivate::import3DSboot9bin(void)
 		// tr: 3DS boot9.bin dialog title.
 		U82T_c(C_("KeyManagerTab", "Select 3DS boot9.bin File")),
 		// tr: 3DS boot9.bin file filter. (RP format)
-		C_("KeyManagerTab", "boot9.bin|boot9.bin|Binary Files|*.bin|All Files|*.*"),
+		C_("KeyManagerTab", "boot9.bin|boot9.bin|-|Binary Files|*.bin|application/octet-stream|All Files|*.*|-"),
 		ts_keyFileDir.c_str());
 	if (tfilename.empty())
 		return;
@@ -1506,7 +1506,7 @@ void KeyManagerTabPrivate::import3DSaeskeydb(void)
 		// tr: aeskeydb.bin dialog title.
 		U82T_c(C_("KeyManagerTab", "Select 3DS aeskeydb.bin File")),
 		// tr: aeskeydb.bin file filter. (RP format)
-		C_("KeyManagerTab", "aeskeydb.bin|aeskeydb.bin|Binary Files|*.bin|All Files|*.*"),
+		C_("KeyManagerTab", "aeskeydb.bin|aeskeydb.bin|-|Binary Files|*.bin|application/octet-stream|All Files|*.*|-"),
 		ts_keyFileDir.c_str());
 	if (tfilename.empty())
 		return;

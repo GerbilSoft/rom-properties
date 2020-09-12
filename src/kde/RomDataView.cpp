@@ -1817,22 +1817,22 @@ void RomDataView::menuOptions_action_triggered(int id)
 
 		bool toClipboard;
 		QString qs_title;
-		const char *s_filter = nullptr;
 		QString qs_default_ext;
+		const char *s_filter = nullptr;
 		switch (id) {
 			case RomDataViewPrivate::OPTION_EXPORT_TEXT:
 				toClipboard = false;
 				qs_title = U82Q(C_("RomDataView", "Export to Text File"));
-				// tr: Text files filter. (RP format)
-				s_filter = C_("RomDataView", "Text Files|*.txt|All Files|*.*");
 				qs_default_ext = QLatin1String(".txt");
+				// tr: Text files filter. (RP format)
+				s_filter = C_("RomDataView", "Text Files|*.txt|text/plain|All Files|*.*|-");
 				break;
 			case RomDataViewPrivate::OPTION_EXPORT_JSON:
 				toClipboard = false;
 				qs_title = U82Q(C_("RomDataView", "Export to JSON File"));
-				// tr: JSON files filter. (RP format)
-				s_filter = C_("RomDataView", "JSON Files|*.json|All Files|*.*");
 				qs_default_ext = QLatin1String(".json");
+				// tr: JSON files filter. (RP format)
+				s_filter = C_("RomDataView", "JSON Files|*.json|application/json|All Files|*.*|-");
 				break;
 			case RomDataViewPrivate::OPTION_COPY_TEXT:
 			case RomDataViewPrivate::OPTION_COPY_JSON:

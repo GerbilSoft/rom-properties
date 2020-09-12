@@ -2870,22 +2870,22 @@ void RP_ShellPropSheetExt_Private::menuOptions_action_triggered(int menuId)
 
 		bool toClipboard;
 		tstring ts_title;
-		const char *s_filter = nullptr;
 		const TCHAR *ts_default_ext = nullptr;
+		const char *s_filter = nullptr;
 		switch (menuId) {
 			case IDM_OPTIONS_MENU_EXPORT_TEXT:
 				toClipboard = false;
 				ts_title = U82T_c(C_("RomDataView", "Export to Text File"));
-				// tr: Text files filter. (RP format)
-				s_filter = C_("RomDataView", "Text Files|*.txt|All Files|*.*");
 				ts_default_ext = _T(".txt");
+				// tr: Text files filter. (RP format)
+				s_filter = C_("RomDataView", "Text Files|*.txt|text/plain|All Files|*.*|-");
 				break;
 			case IDM_OPTIONS_MENU_EXPORT_JSON:
 				toClipboard = false;
 				ts_title = U82T_c(C_("RomDataView", "Export to JSON File"));
-				// tr: JSON files filter. (RP format)
-				s_filter = C_("RomDataView", "JSON Files|*.json|All Files|*.*");
 				ts_default_ext = _T(".json");
+				// tr: JSON files filter. (RP format)
+				s_filter = C_("RomDataView", "JSON Files|*.json|application/json|All Files|*.*|-");
 				break;
 			case IDM_OPTIONS_MENU_COPY_TEXT:
 			case IDM_OPTIONS_MENU_COPY_JSON:
