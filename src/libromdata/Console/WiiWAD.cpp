@@ -10,10 +10,8 @@
 #include "librpbase/config.librpbase.h"
 
 #include "WiiWAD.hpp"
-#include "gcn_structs.h"
-#include "wii_structs.h"
-#include "wii_wad.h"
-#include "wii_banner.h"
+#include "WiiWAD_p.hpp"
+
 #include "data/NintendoLanguage.hpp"
 #include "data/WiiSystemMenuVersion.hpp"
 #include "GameCubeRegions.hpp"
@@ -24,12 +22,7 @@ using namespace LibRpBase;
 using LibRpFile::IRpFile;
 using LibRpTexture::rp_image;
 
-
 // Decryption.
-#include "librpbase/crypto/KeyManager.hpp"
-#include "disc/WiiPartition.hpp"	// for key information
-#include "WiiWIBN.hpp"
-#include "../Handheld/NintendoDS.hpp"
 #ifdef ENABLE_DECRYPTION
 #  include "librpbase/crypto/AesCipherFactory.hpp"
 #  include "librpbase/crypto/IAesCipher.hpp"
@@ -37,6 +30,10 @@ using LibRpTexture::rp_image;
 // For sections delegated to other RomData subclasses.
 #  include "librpbase/disc/PartitionFile.hpp"
 #endif /* ENABLE_DECRYPTION */
+
+// RomData subclasses.
+#include "WiiWIBN.hpp"
+#include "Handheld/NintendoDS.hpp"
 
 // C++ STL classes.
 using std::string;
@@ -46,81 +43,6 @@ using std::vector;
 namespace LibRomData {
 
 ROMDATA_IMPL(WiiWAD)
-
-class WiiWADPrivate : public RomDataPrivate
-{
-	public:
-		WiiWADPrivate(WiiWAD *q, IRpFile *file);
-		~WiiWADPrivate();
-
-	private:
-		typedef RomDataPrivate super;
-		RP_DISABLE_COPY(WiiWADPrivate)
-
-	public:
-		// WAD type.
-		enum class WadType {
-			Unknown	= -1,	// Unknown WAD type.
-
-			WAD	= 0,	// Standard WAD
-			BWF	= 1,	// BroadOn WAD
-
-			Max
-		};
-		WadType wadType;
-
-		// WAD structs.
-		union {
-			Wii_WAD_Header wad;
-			Wii_BWF_Header bwf;
-		} wadHeader;
-		RVL_Ticket ticket;
-		RVL_TMD_Header tmdHeader;
-
-		// Data offset and size.
-		uint32_t data_offset;
-		uint32_t data_size;
-
-		// Name. (BroadOn WADs only)
-		// FIXME: This is the same "meta" section as Nintendo WADs...
-		string wadName;
-
-		// TMD contents table.
-		ao::uvector<RVL_Content_Entry> tmdContentsTbl;
-		const RVL_Content_Entry *pIMETContent;
-		uint32_t imetContentOffset;	// relative to start of data area
-
-		/**
-		 * Round a value to the next highest multiple of 64.
-		 * @param value Value.
-		 * @return Next highest multiple of 64.
-		 */
-		template<typename T>
-		static inline T toNext64(T val)
-		{
-			return (val + (T)63) & ~((T)63);
-		}
-
-#ifdef ENABLE_DECRYPTION
-		// CBC reader for the main data area.
-		CBCReader *cbcReader;
-		RomData *mainContent;	// WiiWIBN or NintendoDS
-
-		// Main data headers.
-		Wii_IMET_t imet;	// NOTE: May be WIBN.
-#endif /* ENABLE_DECRYPTION */
-
-		// Key index.
-		WiiPartition::EncryptionKeys key_idx;
-		// Key status.
-		KeyManager::VerifyResult key_status;
-
-		/**
-		 * Get the game information string from the banner.
-		 * @return Game information string, or empty string on error.
-		 */
-		string getGameInfo(void);
-};
 
 /** WiiWADPrivate **/
 
@@ -144,6 +66,7 @@ WiiWADPrivate::WiiWADPrivate(WiiWAD *q, IRpFile *file)
 	memset(&tmdHeader, 0, sizeof(tmdHeader));
 
 #ifdef ENABLE_DECRYPTION
+	memset(dec_title_key, 0, sizeof(dec_title_key));
 	memset(&imet, 0, sizeof(imet));
 #endif /* ENABLE_DECRYPTION */
 }
@@ -200,6 +123,85 @@ string WiiWADPrivate::getGameInfo(void)
 	return string();
 #endif /* ENABLE_DECRYPTION */
 }
+
+#ifdef ENABLE_DECRYPTION
+/**
+ * Open the SRL if it isn't already opened.
+ * This operation only works for DSi TAD packages.
+ * @return 0 on success; non-zero on error.
+ */
+int WiiWADPrivate::openSRL(void)
+{
+	if (be16_to_cpu(tmdHeader.title_id.sysID) != NINTENDO_SYSID_TWL) {
+		// Not a DSi TAD package.
+		return -ENOENT;
+	} else if (mainContent) {
+		// Something's already loaded.
+		if (mainContent->isOpen()) {
+			// File is still open.
+			return 0;
+		}
+		// File is no longer open.
+		// unref() and reopen it.
+		UNREF_AND_NULL(mainContent);
+	}
+
+	if (!file || !file->isOpen()) {
+		// Can't open the SRL.
+		return -EIO;
+	}
+
+	assert(pIMETContent != nullptr);
+	if (!pIMETContent) {
+		return -EIO;
+	}
+
+	// If the CBCReader is closed, reopen it.
+	if (!cbcReader) {
+		// Data area IV:
+		// - First two bytes are the big-endian content index.
+		// - Remaining bytes are zero.
+		uint8_t iv[16];
+		memcpy(iv, &pIMETContent->index, sizeof(pIMETContent->index));
+		memset(&iv[2], 0, sizeof(iv)-2);
+
+		cbcReader = new CBCReader(file,
+			data_offset, data_size, dec_title_key, iv);
+		if (!cbcReader->isOpen()) {
+			// Unable to open a CBC reader.
+			int ret = -cbcReader->lastError();
+			if (ret == 0) {
+				ret = -EIO;
+			}
+			UNREF_AND_NULL(cbcReader);
+			return ret;
+		}
+	}
+
+	int ret = 0;
+	PartitionFile *const ptFile = new PartitionFile(cbcReader,
+		imetContentOffset, be64_to_cpu(pIMETContent->size));
+	if (ptFile->isOpen()) {
+		// Open the SRL..
+		NintendoDS *const srl = new NintendoDS(ptFile);
+		if (srl->isOpen()) {
+			// Opened successfully.
+			mainContent = srl;
+		} else {
+			// Unable to open the SRL.
+			ret = -EIO;
+			UNREF(srl);
+		}
+	} else {
+		ret = -ptFile->lastError();
+		if (ret != 0) {
+			ret = -EIO;
+		}
+	}
+	UNREF(ptFile);
+	return ret;
+}
+#endif /* ENABLE_DECRYPTION */
 
 /** WiiWAD **/
 
@@ -413,9 +415,8 @@ WiiWAD::WiiWAD(IRpFile *file)
 	cipher->setIV(iv, sizeof(iv));
 	
 	// Decrypt the title key.
-	uint8_t title_key[16];
-	memcpy(title_key, d->ticket.enc_title_key, sizeof(d->ticket.enc_title_key));
-	cipher->decrypt(title_key, sizeof(title_key));
+	memcpy(d->dec_title_key, d->ticket.enc_title_key, sizeof(d->ticket.enc_title_key));
+	cipher->decrypt(d->dec_title_key, sizeof(d->dec_title_key));
 	delete cipher;
 
 	if (!d->pIMETContent) {
@@ -431,7 +432,8 @@ WiiWAD::WiiWAD(IRpFile *file)
 
 	// Create a CBC reader to decrypt the data section.
 	// TODO: Verify some known data?
-	d->cbcReader = new CBCReader(d->file, d->data_offset, d->data_size, title_key, iv);
+	d->cbcReader = new CBCReader(d->file,
+		d->data_offset, d->data_size, d->dec_title_key, iv);
 
 	if (d->tmdHeader.title_id.sysID != cpu_to_be16(3)) {
 		// Wii: Contents may be one of the following:
@@ -478,20 +480,7 @@ WiiWAD::WiiWAD(IRpFile *file)
 		}
 	} else {
 		// Nintendo DSi: Main content is an SRL.
-		PartitionFile *const ptFile = new PartitionFile(d->cbcReader,
-			d->imetContentOffset, be64_to_cpu(d->pIMETContent->size));
-		if (ptFile->isOpen()) {
-			// Open the NintendoDS.
-			NintendoDS *const srl = new NintendoDS(ptFile);
-			if (srl->isOpen()) {
-				// Opened successfully.
-				d->mainContent = srl;
-			} else {
-				// Unable to open the NintendoDS.
-				UNREF(srl);
-			}
-		}
-		UNREF(ptFile);
+		d->openSRL();
 	}
 #else /* !ENABLE_DECRYPTION */
 	// Cannot decrypt anything...
@@ -607,8 +596,8 @@ const char *WiiWAD::systemName(unsigned int type) const
 	type &= SYSNAME_TYPE_MASK;
 	switch (be16_to_cpu(d->tmdHeader.title_id.sysID)) {
 		default:
-		case 0:
-		case 1: {
+		case NINTENDO_SYSID_IOS:
+		case NINTENDO_SYSID_RVL: {
 			// Wii
 			static const char *const sysNames_Wii[4] = {
 				"Nintendo Wii", "Wii", "Wii", nullptr
@@ -616,7 +605,7 @@ const char *WiiWAD::systemName(unsigned int type) const
 			return sysNames_Wii[type];
 		}
 
-		case 3: {
+		case NINTENDO_SYSID_TWL: {
 			// DSi
 			// TODO: iQue DSi for China?
 			static const char *const sysNames_DSi[4] = {

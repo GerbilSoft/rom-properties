@@ -38,6 +38,7 @@ SET(libromdata_SRCS
 	Console/WiiSave.cpp
 	Console/WiiU.cpp
 	Console/WiiWAD.cpp
+	Console/WiiWAD_ops.cpp
 	Console/WiiWIBN.cpp
 	Console/Xbox_XBE.cpp
 	Console/Xbox360_STFS.cpp
@@ -153,6 +154,7 @@ SET(libromdata_H
 	Console/WiiSave.hpp
 	Console/WiiU.hpp
 	Console/WiiWAD.hpp
+	Console/WiiWAD_p.hpp
 	Console/WiiWIBN.hpp
 	Console/Xbox_XBE.hpp
 	Console/Xbox360_STFS.hpp
