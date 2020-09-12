@@ -49,6 +49,7 @@ vector<RomData::RomOp> WiiWAD::romOps_int(void) const
 	op.sfi.title = C_("WiiWAD|RomOps", "Extract Nintendo DS SRL File");
 	op.sfi.filter = C_("WiiWAD|RomOps", "Nintendo DS SRL Files|*.srl|application/x-nintendo-ds-rom;application/x-nintendo-dsi-rom");
 
+#ifdef ENABLE_DECRYPTION
 	// Get the basename and change the extension to ".srl".
 	// TODO: Split into another function?
 	if (!d->filename.empty()) {
@@ -67,6 +68,9 @@ vector<RomData::RomOp> WiiWAD::romOps_int(void) const
 		}
 		op.filename += ".srl";
 	}
+#else /* !ENABLE_DECRYPTION */
+	op.sfi.flags &= ~RomOp::ROF_ENABLED;
+#endif /* ENABLE_DECRYPTION */
 
 	ops.emplace_back(std::move(op));
 	return ops;
@@ -104,6 +108,7 @@ int WiiWAD::doRomOp_int(int id, RomOpParams *pParams)
 		return -EINVAL;
 	}
 
+#ifdef ENABLE_DECRYPTION
 	// If the DSi SRL isn't open right now, make sure we close it later.
 	bool wasMainContentOpen = (d->mainContent && d->mainContent->isOpen());
 
@@ -181,6 +186,11 @@ out:
 		d->mainContent->close();
 	}
 	return pParams->status;
+#else /* !ENABLE_DECRYPTION */
+	pParams->status = -ENOTSUP;
+	pParams->msg = C_("RomData", "SRL extraction is not supported in NoCrypto builds.");
+	return -ENOTSUP;
+#endif /* ENABLE_DECRYPTION */
 }
 
 }
