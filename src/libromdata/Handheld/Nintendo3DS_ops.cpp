@@ -17,12 +17,14 @@
 using LibRpBase::RomData;
 using LibRpBase::RomFields;
 using LibRpFile::IRpFile;
+using LibRpFile::RpFile;
 
 // For sections delegated to other RomData subclasses.
 #include "NintendoDS.hpp"
 
 // C++ STL classes.
 using std::string;
+using std::unique_ptr;
 using std::vector;
 
 namespace LibRomData {
@@ -134,31 +136,75 @@ int Nintendo3DS::doRomOp_int(int id, RomOpParams *pParams)
 		return -EIO;
 	}
 
-	// Extract the SRL.
-	IRpFile *const file = srl->ref_file();
-	assert(file != nullptr);
-	if (!file) {
-		// No file...
-		if (!isAlreadyOpen) {
-			d->mainContent->close();
-		}
+	// SRL read buffer. (Will be allocated later.)
+#define SRL_BUFFER_SIZE (64*1024)
+	unique_ptr<uint8_t[]> buf;
+
+	// Get the source SRL.
+	RpFile *destFile = nullptr;
+	IRpFile *const srcFile = srl->ref_file();
+	assert(srcFile != nullptr);
+	if (!srcFile) {
+		// No source file...
+		// TODO: More useful message? (may need std::string)
 		pParams->status = -EIO;
 		pParams->msg = C_("Nintendo3DS", "Unable to open the SRL.");
-		return -EIO;
+		goto out;
 	}
 
-	// TODO: Extract the SRL.
-	// NOTE: May need to reopen the SRL.
-	pParams->status = -ENOTSUP;
-	pParams->msg = "TODO: Extract the SRL.";
+	// Create the output file.
+	destFile = new RpFile(pParams->save_filename, RpFile::FM_CREATE_WRITE);
+	if (!destFile->isOpen()) {
+		// TODO: More useful message? (may need std::string)
+		pParams->status = -destFile->lastError();
+		pParams->msg = C_("Nintendo3DS", "Could not open output SRL file.");
+		goto out;
+	}
 
-	file->unref();
+	// Extract the file.
+	buf.reset(new uint8_t[SRL_BUFFER_SIZE]);
+	srcFile->rewind();
+	for (int64_t fileSize = srcFile->size(); fileSize > 0; fileSize -= SRL_BUFFER_SIZE) {
+		const size_t szRead = srcFile->read(buf.get(), SRL_BUFFER_SIZE);
+		if (szRead != SRL_BUFFER_SIZE &&
+		    (fileSize < SRL_BUFFER_SIZE && szRead != (size_t)fileSize))
+		{
+			// Short read.
+			int ret = -srcFile->lastError();
+			if (ret == 0) {
+				ret = -EIO;
+			}
+			// TODO: More useful message? (may need std::string)
+			pParams->status = ret;
+			pParams->msg = C_("Nintendo3DS", "A read error occurred while extracting the SRL.");
+			goto out;
+		}
 
-	// Close the SRL if it wasn't previously opened.
+		const size_t szWrite = destFile->write(buf.get(), szRead);
+		if (szWrite != szRead) {
+			// Short write.
+			int ret = -destFile->lastError();
+			if (ret == 0) {
+				ret = -EIO;
+			}
+			// TODO: More useful message? (may need std::string)
+			pParams->status = ret;
+			pParams->msg = C_("Nintendo3DS", "A write error occurred while extracting the SRL.");
+			goto out;
+		}
+	}
+
+	// SRL extracted.
+	// TODO: Include the basename here? (may need std::string)
+	pParams->status = 0;
+	pParams->msg = "SRL file extracted successfully.";
+
+out:
+	UNREF(destFile);
+	UNREF(srcFile);
 	if (!isAlreadyOpen) {
 		d->mainContent->close();
 	}
-
 	return pParams->status;
 }
 
