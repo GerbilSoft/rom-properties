@@ -81,7 +81,6 @@ QStringList RpOverlayIconPlugin::getOverlays(const QUrl &item)
 	}
 
 	// Get the appropriate RomData class for this ROM.
-	// file is dup()'d by RomData.
 	RomData *const romData = RomDataFactory::create(file, RomDataFactory::RDA_HAS_DPOVERLAY);
 	file->unref();	// file is ref()'d by RomData.
 	if (!romData) {
@@ -94,6 +93,7 @@ QStringList RpOverlayIconPlugin::getOverlays(const QUrl &item)
 	if (romData->hasDangerousPermissions()) {
 		sl += QLatin1String("security-medium");
 	}
+	romData->unref();
 
 	return sl;
 }

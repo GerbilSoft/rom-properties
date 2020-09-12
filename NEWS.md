@@ -46,6 +46,8 @@
   * WiiPartition: Fixed a potential memory corruption issue when reading
     a partial block from an unencrypted disc image.
   * WiiWAD: Animated icons are now reported correctly by `rpcli`.
+  * KDE: Fixed a memory leak in the overlay icon handler. This has been
+    present since overlay icons were introduced in v1.4.
 
 * Other changes:
   * Linux: A system-wide cache directory (/usr/share/rom-properties/cache)
