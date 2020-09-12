@@ -440,24 +440,23 @@ static inline HRESULT getFileName_int_IFileDialog(tstring &ts_ret, bool bSave, H
 			return E_FAIL;
 
 		DWORD dwAttrs = GetFileAttributes(origFilename);
-		if (dwAttrs != INVALID_FILE_ATTRIBUTES) {
-			IShellItemPtr pFolder;
-			if (dwAttrs & FILE_ATTRIBUTE_DIRECTORY) {
-				// It's a directory.
-				hr = pfnSHCreateItemFromParsingName(origFilename, nullptr, IID_PPV_ARGS(&pFolder));
+		IShellItemPtr pFolder;
+		if (dwAttrs != INVALID_FILE_ATTRIBUTES && (dwAttrs & FILE_ATTRIBUTE_DIRECTORY)) {
+			// It's a directory.
+			hr = pfnSHCreateItemFromParsingName(origFilename, nullptr, IID_PPV_ARGS(&pFolder));
+			if (FAILED(hr))
+				return hr;
+		} else {
+			// It's a filename, or invalid. Get the directory portion,
+			// for IFileDialog::SetFolder(), then set the
+			// filename portion with IFileDialog::SetFileName().
+			const TCHAR *bs = _tcsrchr(origFilename, _T('\\'));
+			if (!bs) {
+				// No backslash. Use the whole filename.
+				hr = pFileDlg->SetFileName(origFilename);
 				if (FAILED(hr))
 					return hr;
 			} else {
-				// It's a filename. Get the directory portion,
-				// for IFileDialog::SetFolder(), then set the
-				// filename portion with IFileDialog::SetFileName().
-				const TCHAR *bs = _tcsrchr(origFilename, _T('\\'));
-				assert(bs != nullptr);
-				if (!bs) {
-					// No backslash...
-					return E_INVALIDARG;
-				}
-
 				// Set the filename.
 				hr = pFileDlg->SetFileName(bs + 1);
 				if (FAILED(hr))
@@ -652,19 +651,14 @@ static tstring getFileName_int(bool bSave, HWND hWnd,
 	// Check if the original filename is a directory or a file.
 	if (origFilename && origFilename[0] != _T('\0')) {
 		DWORD dwAttrs = GetFileAttributes(origFilename);
-		if (dwAttrs != INVALID_FILE_ATTRIBUTES) {
-			if (dwAttrs & FILE_ATTRIBUTE_DIRECTORY) {
-				// It's a directory.
-				ofn.lpstrInitialDir = origFilename;
-			} else {
-				// Not a directory, or invalid.
-				// Assume it's a filename.
-				ofn.lpstrInitialDir = nullptr;
-				_tcscpy_s(tfilename, _countof(tfilename), origFilename);
-			}
+		if (dwAttrs != INVALID_FILE_ATTRIBUTES && (dwAttrs & FILE_ATTRIBUTE_DIRECTORY)) {
+			// It's a directory.
+			ofn.lpstrInitialDir = origFilename;
 		} else {
-			// Invalid filename.
+			// Not a directory, or invalid.
+			// Assume it's a filename.
 			ofn.lpstrInitialDir = nullptr;
+			_tcscpy_s(tfilename, _countof(tfilename), origFilename);
 		}
 	}
 
