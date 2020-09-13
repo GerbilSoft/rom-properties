@@ -35,23 +35,31 @@ class IconAnimHelper
 			reset();
 		}
 
+		~IconAnimHelper()
+		{
+			UNREF(m_iconAnimData);
+		}
+
 	private:
 		RP_DISABLE_COPY(IconAnimHelper);
 
 	public:
 		/**
-		 * Set the iconAnimData.
+		 * Set the IconAnimData.
+		 * The iconAnimData() will be ref()'d.
 		 * @param iconAnimData New iconAnimData.
 		 */
 		void setIconAnimData(const IconAnimData *iconAnimData)
 		{
-			m_iconAnimData = iconAnimData;
+			UNREF(m_iconAnimData);
+			m_iconAnimData = iconAnimData->ref();
 			reset();
 		}
 
 		/**
-		 * Get the iconAnimData.
-		 * @return iconAnimData.
+		 * Get the IconAnimData.
+		 * The caller must take a ref() to the IconAnimData.
+		 * @return IconAnimData.
 		 */
 		const IconAnimData *iconAnimData(void) const
 		{

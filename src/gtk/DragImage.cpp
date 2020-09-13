@@ -81,6 +81,8 @@ struct _DragImage {
 					PIMGTYPE_destroy(frame);
 				}
 			});
+
+			UNREF(iconAnimData);
 		}
 	};
 	anim_vars *anim;
@@ -322,12 +324,16 @@ drag_image_set_icon_anim_data(DragImage *image, const LibRpBase::IconAnimData *i
 	}
 	auto *const anim = image->anim;
 
+	// NOTE: We're not checking if the image pointer matches the
+	// previously stored image, since the underlying image may
+	// have changed.
+	UNREF_AND_NULL(anim->iconAnimData);
+
 	if (!iconAnimData) {
 		if (anim->tmrIconAnim > 0) {
 			g_source_remove(anim->tmrIconAnim);
 			anim->tmrIconAnim = 0;
 		}
-		anim->iconAnimData = nullptr;
 
 		if (!image->img) {
 			gtk_image_clear(image->imageWidget);
@@ -337,10 +343,7 @@ drag_image_set_icon_anim_data(DragImage *image, const LibRpBase::IconAnimData *i
 		return false;
 	}
 
-	// Don't check if the data pointer matches the
-	// previously stored data, since the underlying
-	// data may have changed.
-	anim->iconAnimData = iconAnimData;
+	anim->iconAnimData = iconAnimData->ref();
 	return drag_image_update_pixmaps(image);
 }
 
@@ -360,7 +363,7 @@ drag_image_clear(DragImage *image)
 			g_source_remove(anim->tmrIconAnim);
 			anim->tmrIconAnim = 0;
 		}
-		anim->iconAnimData = nullptr;
+		UNREF_AND_NULL(anim->iconAnimData);
 	}
 
 	UNREF_AND_NULL(image->img);

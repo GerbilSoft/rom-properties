@@ -173,7 +173,10 @@ class DragImageLabel : public QLabel
 				, tmrIconAnim(nullptr)
 				, last_frame_number(0)
 				, anim_running(false) { }
-			~anim_vars() { delete tmrIconAnim; }
+			~anim_vars() {
+				UNREF(iconAnimData);
+				delete tmrIconAnim;
+			}
 		};
 		anim_vars *m_anim;
 };
