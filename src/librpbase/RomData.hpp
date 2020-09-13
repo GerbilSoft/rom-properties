@@ -106,6 +106,12 @@ class RomData : public RefBase
 		virtual void close(void);
 
 		/**
+		 * Get a reference to the internal file.
+		 * @return Reference to file, or nullptr on error.
+		 */
+		LibRpFile::IRpFile *ref_file(void);
+
+		/**
 		 * Get the filename that was loaded.
 		 * @return Filename, or nullptr on error.
 		 */
@@ -452,8 +458,8 @@ class RomData : public RefBase
 		/**
 		 * Get an internal image from the ROM.
 		 *
-		 * NOTE: The rp_image is owned by this object.
-		 * Do NOT delete this object until you're done using this rp_image.
+		 * The retrieved image must be ref()'d by the caller if the
+		 * caller stores it instead of using it immediately.
 		 *
 		 * @param imageType Image type to load.
 		 * @return Internal image, or nullptr if the ROM doesn't have one.
@@ -536,6 +542,9 @@ class RomData : public RefBase
 		 * Check imgpf for IMGPF_ICON_ANIMATED first to see if this
 		 * object has an animated icon.
 		 *
+		 * The retrieved IconAnimData must be ref()'d by the caller if the
+		 * caller stores it instead of using it immediately.
+		 *
 		 * @return Animated icon data, or nullptr if no animated icon is present.
 		 */
 		virtual const IconAnimData *iconAnimData(void) const;
@@ -549,38 +558,77 @@ class RomData : public RefBase
 		virtual bool hasDangerousPermissions(void) const;
 
 	public:
-		struct RomOps {
-			std::string desc;	// Description (Use '&' for mnemonics)
+		/**
+		 * ROF_SAVE_FILE information.
+		 * `const char*` fields are owned by the RomData subclass.
+		 */
+		struct RomOpSaveFileInfo {
+			const char *title;		// Dialog title.
+			const char *filter;		// Filename filter. (Windows style, with '|' delimiters.)
+			std::string def_filename;	// Default filename. (without path)
+		};
+
+		/**
+		 * ROM operation struct.
+		 * `const char*` fields are owned by the RomData subclass.
+		 */
+		struct RomOp {
+			const char *desc;	// Description (Use '&' for mnemonics)
 			uint32_t flags;		// Flags
 
 			enum RomOpsFlags {
-				ROF_ENABLED	= (1U << 0),	// Set to enable the ROM op
+				ROF_ENABLED		= (1U << 0),	// Set to enable the ROM op
+				ROF_REQ_WRITABLE	= (1U << 1),	// Requires a writable RomData
+				ROF_SAVE_FILE		= (1U << 2),	// Prompt to save a new file
 			};
 
-			RomOps() { }
-			RomOps(const char *desc, uint32_t flags)
-				: desc(desc), flags(flags) { }
+			// Data depends on RomOpsFlags.
+			union {
+				// ROF_SAVE_FILE
+				struct {
+					const char *title;	// Dialog title
+					const char *filter;	// File filter (RP format) [don't include "All Files"]
+					const char *ext;	// New file extension (with leading '.')
+				} sfi;
+			};
+
+			RomOp() { }
+			RomOp(const char *desc, uint32_t flags)
+				: desc(desc), flags(flags)
+			{
+				sfi.title = nullptr;
+				sfi.filter = nullptr;
+				sfi.ext = nullptr;
+			}
 		};
 
-		struct RomOpResult {
+		struct RomOpParams {
+			/** OUT: Results **/
 			int status;			// Status. (0 == success; negative == POSIX error; positive == other error)
 			std::string msg;		// Status message. (optional)
 			std::vector<int> fieldIdx;	// Field indexes that were updated.
+
+			/** IN: Parameters **/
+			const char *save_filename;	// Filename for saving data.
+
+			RomOpParams()
+				: status(0)
+				, save_filename(nullptr) { }
 		};
 
 		/**
 		 * Get the list of operations that can be performed on this ROM.
 		 * @return List of operations.
 		 */
-		std::vector<RomOps> romOps(void) const;
+		std::vector<RomOp> romOps(void) const;
 
 		/**
 		 * Perform a ROM operation.
 		 * @param id		[in] Operation index.
-		 * @param pResult	[out,opt] Result. (For UI updates)
+		 * @param pParams	[in/out] Parameters and results. (for e.g. UI updates)
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
-		int doRomOp(int id, RomOpResult *pResult);
+		int doRomOp(int id, RomOpParams *pParams);
 
 	protected:
 		/**
@@ -588,16 +636,16 @@ class RomData : public RefBase
 		 * Internal function; called by RomData::romOps().
 		 * @return List of operations.
 		 */
-		virtual std::vector<RomOps> romOps_int(void) const;
+		virtual std::vector<RomOp> romOps_int(void) const;
 
 		/**
 		 * Perform a ROM operation.
 		 * Internal function; called by RomData::doRomOp().
 		 * @param id		[in] Operation index.
-		 * @param pResult	[out,opt] Result. (For UI updates)
-		 * @return 0 on success; positive for "field updated" (subtract 1 for index); negative POSIX error code on error.
+		 * @param pParams	[in/out] Parameters and results. (for e.g. UI updates)
+		 * @return 0 on success; negative POSIX error code on error.
 		 */
-		virtual int doRomOp_int(int id, RomOpResult *pResult);
+		virtual int doRomOp_int(int id, RomOpParams *pParams);
 };
 
 }

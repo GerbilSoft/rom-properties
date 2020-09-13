@@ -107,4 +107,38 @@ const char *file_ext(const string &filename)
 	return &filename[dotpos];
 }
 
+/**
+ * Replace the file extension from a filename.
+ * @param filename	[in] Filename.
+ * @param ext		[in] New extension.
+ * @return Filename, with replaced extension.
+ */
+std::string replace_ext(const char *filename, const char *ext)
+{
+	if (!filename || filename[0] == '\0') {
+		// No filename...
+		return string();
+	}
+
+	string s_ret = filename;
+	size_t dotpos = s_ret.find_last_of('.');
+	size_t slashpos = s_ret.find_last_of(DIR_SEP_CHR);
+	if (dotpos == string::npos ||
+	    dotpos >= s_ret.size()-1 ||
+	    (slashpos != string::npos && dotpos <= slashpos))
+	{
+		// Invalid or missing file extension.
+		// Add the extension.
+		s_ret += ext;
+		return s_ret;
+	}
+
+	// Replace the file extension.
+	s_ret.resize(dotpos);
+	if (ext && ext[0] != '\0') {
+		s_ret += ext;
+	}
+	return s_ret;
+}
+
 } }

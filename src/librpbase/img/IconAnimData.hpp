@@ -9,6 +9,9 @@
 #ifndef __ROMPROPERTIES_LIBRPBASE_IMG_ICONANIMDATA_HPP__
 #define __ROMPROPERTIES_LIBRPBASE_IMG_ICONANIMDATA_HPP__
 
+#include "common.h"
+#include "RefBase.hpp"
+
 // C includes.
 #include <stdint.h>
 
@@ -16,16 +19,16 @@
 #include <cstring>
 
 // C++ includes.
+#include <algorithm>
 #include <array>
 #include <cstdio>
 
-namespace LibRpTexture {
-	class rp_image;
-}
+// librptexture
+#include "librptexture/img/rp_image.hpp"
 
 namespace LibRpBase {
 
-struct IconAnimData
+struct IconAnimData : public RefBase
 {
 	static const int MAX_FRAMES = 64;
 	static const int MAX_SEQUENCE = 64;
@@ -56,7 +59,9 @@ struct IconAnimData
 	// how many frames are actually here.
 	// NOTE: Frames may be nullptr, in which case
 	// the previous frame should be used.
-	std::array<const LibRpTexture::rp_image*, MAX_FRAMES> frames;
+	// NOTE 2: Frames stored here must be ref()'d.
+	// They will be automatically unref()'d in the destructor.
+	std::array<LibRpTexture::rp_image*, MAX_FRAMES> frames;
 
 	IconAnimData()
 		: count(0)
@@ -69,6 +74,43 @@ struct IconAnimData
 		// so create a dummy struct.
 		static const delay_t zero_delay = {0, 0, 0};
 		delays.fill(zero_delay);
+	}
+
+protected:
+	~IconAnimData()	// call unref() instead
+	{
+		std::for_each(frames.begin(), frames.end(),
+			[](LibRpTexture::rp_image *img) {
+				UNREF(img);
+			}
+		);
+	}
+
+private:
+	RP_DISABLE_COPY(IconAnimData);
+
+public:
+	inline IconAnimData *ref(void)
+	{
+		return RefBase::ref<IconAnimData>();
+	}
+
+	/**
+	 * Special case unref() function to allow
+	 * const IconAnimData* to be ref'd.
+	 */
+	inline const IconAnimData *ref(void) const
+	{
+		return const_cast<IconAnimData*>(this)->RefBase::ref<IconAnimData>();
+	}
+
+	/**
+	 * Special case unref() function to allow
+	 * const IconAnimData* to be unref'd.
+	 */
+	inline void unref(void) const
+	{
+		const_cast<IconAnimData*>(this)->RefBase::unref();
 	}
 };
 

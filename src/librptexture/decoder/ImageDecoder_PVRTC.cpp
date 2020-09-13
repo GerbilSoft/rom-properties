@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * ImageDecoder_PVRTC.cpp: Image decoding functions. (PVRTC)               *
  *                                                                         *
- * Copyright (c) 2019 by David Korth.                                      *
+ * Copyright (c) 2019-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -71,7 +71,7 @@ rp_image *fromPVRTC(int width, int height,
 	rp_image *const img = new rp_image(width, height, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
-		delete img;
+		img->unref();
 		return nullptr;
 	}
 
@@ -83,7 +83,7 @@ rp_image *fromPVRTC(int width, int height,
 	assert(size == expected_size_in);
 	if (size != expected_size_in) {
 		// Read error...
-		delete img;
+		img->unref();
 		return nullptr;
 	}
 
@@ -142,7 +142,7 @@ rp_image *fromPVRTCII(int width, int height,
 	rp_image *const img = new rp_image(width, height, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
-		delete img;
+		img->unref();
 		return nullptr;
 	}
 
@@ -154,7 +154,7 @@ rp_image *fromPVRTCII(int width, int height,
 	assert(size == expected_size_in);
 	if (size != expected_size_in) {
 		// Read error...
-		delete img;
+		img->unref();
 		return nullptr;
 	}
 

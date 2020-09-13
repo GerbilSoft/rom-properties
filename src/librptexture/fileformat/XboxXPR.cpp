@@ -157,7 +157,7 @@ XboxXPRPrivate::XboxXPRPrivate(XboxXPR *q, IRpFile *file)
 
 XboxXPRPrivate::~XboxXPRPrivate()
 {
-	delete img;
+	UNREF(img);
 }
 
 /**
@@ -522,7 +522,7 @@ const rp_image *XboxXPRPrivate::loadXboxXPR0Image(void)
 			width, height,
 			static_cast<uint8_t*>(imgunswz->bits()),
 			img->stride(), sizeof(uint32_t));
-		delete img;
+		img->unref();
 		img = imgunswz;
 		return imgunswz;
 	}

@@ -9,6 +9,7 @@
 #include "stdafx.h"
 #include "RomDataView.hpp"
 #include "rp-gtk-enums.h"
+#include "RpGtk.hpp"
 
 // ENABLE_MESSAGESOUND is set by CMakeLists.txt.
 #ifdef ENABLE_MESSAGESOUND
@@ -22,8 +23,7 @@
 // librpbase, librpfile, librptexture
 #include "librpbase/TextOut.hpp"
 using namespace LibRpBase;
-using LibRpFile::IRpFile;
-using LibRpFile::RpFile;
+using namespace LibRpFile;
 using LibRpTexture::rp_image;
 
 // libromdata
@@ -1845,8 +1845,8 @@ rom_data_view_create_options_button(RomDataView *page)
 		const char *desc;
 		int id;
 	} stdacts[] = {
-		{NOP_C_("RomDataView|Options", "Export to Text"),	OPTION_EXPORT_TEXT},
-		{NOP_C_("RomDataView|Options", "Export to JSON"),	OPTION_EXPORT_JSON},
+		{NOP_C_("RomDataView|Options", "Export to Text..."),	OPTION_EXPORT_TEXT},
+		{NOP_C_("RomDataView|Options", "Export to JSON..."),	OPTION_EXPORT_JSON},
 		{NOP_C_("RomDataView|Options", "Copy as Text"),		OPTION_COPY_TEXT},
 		{NOP_C_("RomDataView|Options", "Copy as JSON"),		OPTION_COPY_JSON},
 		{nullptr, 0}
@@ -1862,7 +1862,7 @@ rom_data_view_create_options_button(RomDataView *page)
 	}
 
 	/** ROM operations. **/
-	const vector<RomData::RomOps> ops = page->romData->romOps();
+	const vector<RomData::RomOp> ops = page->romData->romOps();
 	if (!ops.empty()) {
 		// FIXME: Not showing up properly with the KDE Breeze theme,
 		// though other separators *do* show up...
@@ -1873,9 +1873,9 @@ rom_data_view_create_options_button(RomDataView *page)
 		int i = 0;
 		const auto ops_end = ops.cend();
 		for (auto iter = ops.cbegin(); iter != ops_end; ++iter, i++) {
-			const string desc = convert_accel_to_gtk(iter->desc.c_str());
+			const string desc = convert_accel_to_gtk(iter->desc);
 			menuItem = gtk_menu_item_new_with_mnemonic(desc.c_str());
-			gtk_widget_set_sensitive(menuItem, !!(iter->flags & RomData::RomOps::ROF_ENABLED));
+			gtk_widget_set_sensitive(menuItem, !!(iter->flags & RomData::RomOp::ROF_ENABLED));
 			g_object_set_data(G_OBJECT(menuItem), "menuOptions_id", GINT_TO_POINTER(i));
 			g_signal_connect(menuItem, "activate", G_CALLBACK(menuOptions_triggered_signal_handler), page);
 			gtk_widget_show(menuItem);
@@ -2586,25 +2586,23 @@ menuOptions_triggered_signal_handler(GtkMenuItem *menuItem,
 			return;
 
 		bool toClipboard;
-		GtkFileFilter *filter = gtk_file_filter_new();
 		const char *s_title = nullptr;
 		const char *s_default_ext = nullptr;
+		const char *s_filter = nullptr;
 		switch (id) {
 			case OPTION_EXPORT_TEXT:
 				toClipboard = false;
 				s_title = C_("RomDataView", "Export to Text File");
 				s_default_ext = ".txt";
-				gtk_file_filter_set_name(filter, C_("RomDataView", "Text Files"));
-				gtk_file_filter_add_mime_type(filter, "text/plain");
-				gtk_file_filter_add_pattern(filter, "*.txt");
+				// tr: Text files filter. (RP format)
+				s_filter = C_("RomDataView", "Text Files|*.txt|text/plain|All Files|*.*|-");
 				break;
 			case OPTION_EXPORT_JSON:
 				toClipboard = false;
 				s_title = C_("RomDataView", "Export to JSON File");
 				s_default_ext = ".json";
-				gtk_file_filter_set_name(filter, C_("RomDataView", "JSON Files"));
-				gtk_file_filter_add_mime_type(filter, "application/json");
-				gtk_file_filter_add_pattern(filter, "*.json");
+				// tr: JSON files filter. (RP format)
+				s_filter = C_("RomDataView", "JSON Files|*.json|application/json|All Files|*.*|-");
 				break;
 			case OPTION_COPY_TEXT:
 			case OPTION_COPY_JSON:
@@ -2620,21 +2618,18 @@ menuOptions_triggered_signal_handler(GtkMenuItem *menuItem,
 		ofstream ofs;
 
 		if (!toClipboard) {
-			GtkWidget *const dialog = gtk_file_chooser_dialog_new(s_title,
-				GTK_WINDOW(gtk_widget_get_toplevel(GTK_WIDGET(page))),
-				GTK_FILE_CHOOSER_ACTION_SAVE,
-				GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
-				GTK_STOCK_SAVE, GTK_RESPONSE_ACCEPT,
+			GtkWindow *const parent = GTK_WINDOW(gtk_widget_get_toplevel(GTK_WIDGET(page)));
+			GtkWidget *const dialog = gtk_file_chooser_dialog_new(
+				s_title,			// title
+				parent,				// parent
+				GTK_FILE_CHOOSER_ACTION_SAVE,	// action
+				_("Cancel"), GTK_RESPONSE_CANCEL,
+				_("Save"), GTK_RESPONSE_ACCEPT,
 				nullptr);
-			gtk_file_chooser_set_do_overwrite_confirmation(GTK_FILE_CHOOSER(dialog), true);
+			gtk_file_chooser_set_do_overwrite_confirmation(GTK_FILE_CHOOSER(dialog), TRUE);
 
 			// Set the filters.
-			gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dialog), filter);
-
-			filter = gtk_file_filter_new();
-			gtk_file_filter_set_name(filter, C_("RomDataView", "All Files"));
-			gtk_file_filter_add_pattern(filter, "*");
-			gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dialog), filter);
+			rpFileDialogFilterToGtk(GTK_FILE_CHOOSER(dialog), s_filter);
 
 			if (!page->prevExportDir) {
 				page->prevExportDir = g_path_get_dirname(rom_filename);
@@ -2721,60 +2716,120 @@ menuOptions_triggered_signal_handler(GtkMenuItem *menuItem,
 				assert(!"Invalid action ID.");
 				return;
 		}
-	} else {
-		// Run a ROM operation.
-		GtkMessageType messageType;
-		RomData::RomOpResult result;
-		int ret = page->romData->doRomOp(id, &result);
-		if (ret == 0) {
-			// ROM operation completed.
+		return;
+	}
 
-			// Update fields.
-			std::for_each(result.fieldIdx.cbegin(), result.fieldIdx.cend(),
-				[page](int fieldIdx) {
-					rom_data_view_update_field(page, fieldIdx);
-				}
-			);
+	// Run a ROM operation.
+	// TODO: Don't keep rebuilding this vector...
+	vector<RomData::RomOp> ops = page->romData->romOps();
+	assert(id < (int)ops.size());
+	if (id >= (int)ops.size()) {
+		// ID is out of range.
+		return;
+	}
 
-			// Update the RomOp menu entry in case it changed.
-			// NOTE: Assuming the RomOps vector order hasn't changed.
-			// TODO: Have RomData store the RomOps vector instead of
-			// rebuilding it here?
-			const vector<RomData::RomOps> ops = page->romData->romOps();
-			assert(id < (int)ops.size());
-			if (id < (int)ops.size()) {
-				const RomData::RomOps &op = ops[id];
-				const string desc = convert_accel_to_gtk(op.desc.c_str());
-				gtk_menu_item_set_label(menuItem, desc.c_str());
-				gtk_widget_set_sensitive(GTK_WIDGET(menuItem), !!(op.flags & RomData::RomOps::ROF_ENABLED));
+	gchar *save_filename = nullptr;
+	RomData::RomOpParams params;
+	const RomData::RomOp *op = &ops[id];
+	if (op->flags & RomData::RomOp::ROF_SAVE_FILE) {
+		// Prompt for a save file.
+		GtkWindow *const parent = GTK_WINDOW(gtk_widget_get_toplevel(GTK_WIDGET(page)));
+		GtkWidget *const dialog = gtk_file_chooser_dialog_new(
+			op->sfi.title,			// title
+			parent,				// parent
+			GTK_FILE_CHOOSER_ACTION_SAVE,	// action
+			_("Cancel"), GTK_RESPONSE_CANCEL,
+			_("Save"), GTK_RESPONSE_ACCEPT,
+			nullptr);
+		gtk_file_chooser_set_do_overwrite_confirmation(GTK_FILE_CHOOSER(dialog), TRUE);
+
+		// Set the filters.
+		rpFileDialogFilterToGtk(GTK_FILE_CHOOSER(dialog), op->sfi.filter);
+
+		// Add the "All Files" filter.
+		GtkFileFilter *const allFilesFilter = gtk_file_filter_new();
+		// tr: "All Files" filter (GTK+ file filter)
+		gtk_file_filter_set_name(allFilesFilter, C_("RomData", "All Files"));
+		gtk_file_filter_add_pattern(allFilesFilter, "*");
+		gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dialog), allFilesFilter);
+
+		// Initial file and directory, based on the current file.
+		// NOTE: Not checking if it's a file or a directory. Assuming it's a file.
+		string initialFile = FileSystem::replace_ext(page->romData->filename(), op->sfi.ext);
+		if (!initialFile.empty()) {
+			// Split the directory and basename.
+			size_t slash_pos = initialFile.rfind(DIR_SEP_CHR);
+			if (slash_pos != string::npos) {
+				// Full path. Set the directory and filename separately.
+				gtk_file_chooser_set_current_name(GTK_FILE_CHOOSER(dialog), &initialFile[slash_pos + 1]);
+				initialFile.resize(slash_pos);
+				// FIXME: Do we need to prepend "file://"?
+				gtk_file_chooser_set_current_folder_uri(GTK_FILE_CHOOSER(dialog), initialFile.c_str());
+			} else {
+				// Not a full path. We can only set the filename.
+				gtk_file_chooser_set_current_name(GTK_FILE_CHOOSER(dialog), initialFile.c_str());
 			}
-
-			messageType = GTK_MESSAGE_INFO;
-		} else {
-			// An error occurred...
-			// TODO: Show an error message.
-			messageType = GTK_MESSAGE_WARNING;
 		}
+
+		// Prompt for a save file.
+		gint res = gtk_dialog_run(GTK_DIALOG(dialog));
+		if (res != GTK_RESPONSE_ACCEPT)
+			return;
+
+		save_filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
+		gtk_widget_destroy(dialog);
+		params.save_filename = save_filename;
+	}
+
+	GtkMessageType messageType;
+	int ret = page->romData->doRomOp(id, &params);
+	g_free(save_filename);
+	if (ret == 0) {
+		// ROM operation completed.
+
+		// Update fields.
+		std::for_each(params.fieldIdx.cbegin(), params.fieldIdx.cend(),
+			[page](int fieldIdx) {
+				rom_data_view_update_field(page, fieldIdx);
+			}
+		);
+
+		// Update the RomOp menu entry in case it changed.
+		// NOTE: Assuming the RomOps vector order hasn't changed.
+		ops = page->romData->romOps();
+		assert(id < (int)ops.size());
+		if (id < (int)ops.size()) {
+			const RomData::RomOp &op = ops[id];
+			const string desc = convert_accel_to_gtk(op.desc);
+			gtk_menu_item_set_label(menuItem, desc.c_str());
+			gtk_widget_set_sensitive(GTK_WIDGET(menuItem), !!(op.flags & RomData::RomOp::ROF_ENABLED));
+		}
+
+		messageType = GTK_MESSAGE_INFO;
+	} else {
+		// An error occurred...
+		// TODO: Show an error message.
+		messageType = GTK_MESSAGE_WARNING;
+	}
 
 #ifdef ENABLE_MESSAGESOUND
-		MessageSound::play(messageType, result.msg.c_str(), GTK_WIDGET(page));
+	MessageSound::play(messageType, params.msg.c_str(), GTK_WIDGET(page));
 #endif /* ENABLE_MESSAGESOUND */
 
-		if (!result.msg.empty()) {
-			// Show the MessageWidget.
-			if (!page->messageWidget) {
-				page->messageWidget = message_widget_new();
-				gtk_box_pack_end(GTK_BOX(page), page->messageWidget, false, false, 0);
-			}
-
-			MessageWidget *const messageWidget = MESSAGE_WIDGET(page->messageWidget);
-			message_widget_set_message_type(messageWidget, messageType);
-			message_widget_set_text(messageWidget, result.msg.c_str());
-#ifdef AUTO_TIMEOUT_MESSAGEWIDGET
-			message_widget_show_with_timeout(messageWidget);
-#else /* AUTO_TIMEOUT_MESSAGEWIDGET */
-			gtk_widget_show(page->messageWidget);
-#endif /* AUTO_TIMEOUT_MESSAGEWIDGET */
+	if (!params.msg.empty()) {
+		// Show the MessageWidget.
+		if (!page->messageWidget) {
+			page->messageWidget = message_widget_new();
+			gtk_box_pack_end(GTK_BOX(page), page->messageWidget, false, false, 0);
 		}
+
+		MessageWidget *const messageWidget = MESSAGE_WIDGET(page->messageWidget);
+		message_widget_set_message_type(messageWidget, messageType);
+		message_widget_set_text(messageWidget, params.msg.c_str());
+#ifdef AUTO_TIMEOUT_MESSAGEWIDGET
+		message_widget_show_with_timeout(messageWidget);
+#else /* AUTO_TIMEOUT_MESSAGEWIDGET */
+		gtk_widget_show(page->messageWidget);
+#endif /* AUTO_TIMEOUT_MESSAGEWIDGET */
 	}
 }

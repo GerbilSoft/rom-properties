@@ -194,7 +194,7 @@ Xbox360_XDBF_Private::~Xbox360_XDBF_Private()
 	// Delete any loaded images.
 	std::for_each(map_images.begin(), map_images.end(),
 		[](unordered_map<uint64_t, rp_image*>::value_type &iter) {
-			delete iter.second;
+			UNREF(iter.second);
 		}
 	);
 }

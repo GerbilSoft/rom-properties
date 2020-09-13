@@ -348,7 +348,7 @@ rp_image *RpPngPrivate::loadPng(png_structp png_ptr, png_infop info_ptr)
 	if (setjmp(png_jmpbuf(png_ptr))) {
 		// PNG read failed.
 		png_free(png_ptr, row_pointers);
-		delete img;
+		img->unref();
 		return nullptr;
 	}
 #endif
@@ -459,7 +459,7 @@ rp_image *RpPngPrivate::loadPng(png_structp png_ptr, png_infop info_ptr)
 	img = new rp_image(width, height, fmt);
 	if (!img->isValid()) {
 		// Could not allocate the image.
-		delete img;
+		img->unref();
 		return nullptr;
 	}
 
@@ -467,7 +467,7 @@ rp_image *RpPngPrivate::loadPng(png_structp png_ptr, png_infop info_ptr)
 	row_pointers = static_cast<const png_byte**>(
 		png_malloc(png_ptr, sizeof(const png_byte*) * height));
 	if (!row_pointers) {
-		delete img;
+		img->unref();
 		return nullptr;
 	}
 

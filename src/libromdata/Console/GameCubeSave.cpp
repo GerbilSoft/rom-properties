@@ -116,13 +116,8 @@ GameCubeSavePrivate::GameCubeSavePrivate(GameCubeSave *q, IRpFile *file)
 
 GameCubeSavePrivate::~GameCubeSavePrivate()
 {
-	delete img_banner;
-	if (iconAnimData) {
-		for (int i = iconAnimData->count-1; i >= 0; i--) {
-			delete iconAnimData->frames[i];
-		}
-		delete iconAnimData;
-	}
+	UNREF(img_banner);
+	UNREF(iconAnimData);
 }
 
 /**
@@ -1091,6 +1086,9 @@ int GameCubeSave::loadInternalImage(ImageType imageType, const rp_image **pImage
  *
  * Check imgpf for IMGPF_ICON_ANIMATED first to see if this
  * object has an animated icon.
+ *
+ * The retrieved IconAnimData must be ref()'d by the caller if the
+ * caller stores it instead of using it immediately.
  *
  * @return Animated icon data, or nullptr if no animated icon is present.
  */

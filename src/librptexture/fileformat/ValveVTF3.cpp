@@ -78,7 +78,7 @@ ValveVTF3Private::ValveVTF3Private(ValveVTF3 *q, IRpFile *file)
 
 ValveVTF3Private::~ValveVTF3Private()
 {
-	delete img;
+	UNREF(img);
 }
 
 /**

@@ -36,6 +36,7 @@ DragImageLabel::DragImageLabel(QWidget *parent, Qt::WindowFlags f)
 DragImageLabel::~DragImageLabel()
 {
 	delete m_anim;
+	UNREF(m_img);
 }
 
 /**
@@ -53,8 +54,12 @@ DragImageLabel::~DragImageLabel()
  */
 bool DragImageLabel::setRpImage(const rp_image *img)
 {
+	// NOTE: We're not checking if the image pointer matches the
+	// previously stored image, since the underlying image may
+	// have changed.
+	UNREF_AND_NULL(m_img);
+
 	if (!img) {
-		m_img = nullptr;
 		if (!m_anim || !m_anim->iconAnimData) {
 			this->clear();
 		} else {
@@ -63,10 +68,7 @@ bool DragImageLabel::setRpImage(const rp_image *img)
 		return false;
 	}
 
-	// Don't check if the image pointer matches the
-	// previously stored image, since the underlying
-	// image may have changed.
-	m_img = img;
+	m_img = img->ref();
 	return updatePixmaps();
 }
 
@@ -89,11 +91,15 @@ bool DragImageLabel::setIconAnimData(const IconAnimData *iconAnimData)
 		m_anim = new anim_vars();
 	}
 
+	// NOTE: We're not checking if the image pointer matches the
+	// previously stored image, since the underlying image may
+	// have changed.
+	UNREF_AND_NULL(m_anim->iconAnimData);
+
 	if (!iconAnimData) {
 		if (m_anim->tmrIconAnim) {
 			m_anim->tmrIconAnim->stop();
 		}
-		m_anim->iconAnimData = nullptr;
 		m_anim->anim_running = false;
 
 		if (!m_img) {
@@ -104,10 +110,7 @@ bool DragImageLabel::setIconAnimData(const IconAnimData *iconAnimData)
 		return false;
 	}
 
-	// Don't check if the data pointer matches the
-	// previously stored data, since the underlying
-	// data may have changed.
-	m_anim->iconAnimData = iconAnimData;
+	m_anim->iconAnimData = iconAnimData->ref();
 	return updatePixmaps();
 }
 
@@ -121,11 +124,11 @@ void DragImageLabel::clearRp(void)
 		if (m_anim->tmrIconAnim) {
 			m_anim->tmrIconAnim->stop();
 		}
-		m_anim->iconAnimData = nullptr;
 		m_anim->anim_running = false;
+		UNREF_AND_NULL(m_anim->iconAnimData);
 	}
 
-	m_img = nullptr;
+	UNREF_AND_NULL(m_img);
 	this->clear();
 }
 

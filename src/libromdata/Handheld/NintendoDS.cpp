@@ -52,12 +52,7 @@ NintendoDSPrivate::NintendoDSPrivate(NintendoDS *q, IRpFile *file, bool cia)
 
 NintendoDSPrivate::~NintendoDSPrivate()
 {
-	if (iconAnimData) {
-		for (int i = iconAnimData->count-1; i >= 0; i--) {
-			delete iconAnimData->frames[i];
-		}
-		delete iconAnimData;
-	}
+	UNREF(iconAnimData);
 }
 
 /**
@@ -219,8 +214,8 @@ const rp_image *NintendoDSPrivate::loadIcon(void)
 						// V-flip
 						flipOp = static_cast<rp_image::FlipOp>(flipOp | rp_image::FLIP_V);
 					}
-					rp_image *flipimg = img->flip(flipOp);
-					delete img;
+					rp_image *const flipimg = img->flip(flipOp);
+					img->unref();
 					img = flipimg;
 				}
 				iconAnimData->frames[bmp_idx] = img;
@@ -1411,6 +1406,9 @@ int NintendoDS::loadInternalImage(ImageType imageType, const rp_image **pImage)
  *
  * Check imgpf for IMGPF_ICON_ANIMATED first to see if this
  * object has an animated icon.
+ *
+ * The retrieved IconAnimData must be ref()'d by the caller if the
+ * caller stores it instead of using it immediately.
  *
  * @return Animated icon data, or nullptr if no animated icon is present.
  */

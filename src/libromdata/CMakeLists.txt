@@ -38,6 +38,7 @@ SET(libromdata_SRCS
 	Console/WiiSave.cpp
 	Console/WiiU.cpp
 	Console/WiiWAD.cpp
+	Console/WiiWAD_ops.cpp
 	Console/WiiWIBN.cpp
 	Console/Xbox_XBE.cpp
 	Console/Xbox360_STFS.cpp
@@ -51,6 +52,7 @@ SET(libromdata_SRCS
 	Handheld/Lynx.cpp
 	Handheld/NGPC.cpp
 	Handheld/Nintendo3DS.cpp
+	Handheld/Nintendo3DS_ops.cpp
 	Handheld/Nintendo3DSFirm.cpp
 	Handheld/Nintendo3DS_SMDH.cpp
 	Handheld/NintendoDS.cpp
@@ -152,6 +154,7 @@ SET(libromdata_H
 	Console/WiiSave.hpp
 	Console/WiiU.hpp
 	Console/WiiWAD.hpp
+	Console/WiiWAD_p.hpp
 	Console/WiiWIBN.hpp
 	Console/Xbox_XBE.hpp
 	Console/Xbox360_STFS.hpp
@@ -190,6 +193,7 @@ SET(libromdata_H
 	Handheld/Lynx.hpp
 	Handheld/NGPC.hpp
 	Handheld/Nintendo3DS.hpp
+	Handheld/Nintendo3DS_p.hpp
 	Handheld/Nintendo3DSFirm.hpp
 	Handheld/Nintendo3DS_SMDH.hpp
 	Handheld/NintendoDS.hpp

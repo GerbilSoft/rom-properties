@@ -10,6 +10,8 @@
 #define __ROMPROPERTIES_LIBRPTEXTURE_RP_IMAGE_HPP__
 
 #include "common.h"
+#include "RefBase.hpp"
+
 #include "librpcpu/byteorder.h"
 #include "librpcpu/cpu_dispatch.h"
 
@@ -52,7 +54,7 @@ ASSERT_STRUCT(argb32_t, 4);
 class rp_image_backend;
 
 class rp_image_private;
-class rp_image
+class rp_image : public RefBase
 {
 	public:
 		enum class Format {
@@ -84,13 +86,38 @@ class rp_image
 		 */
 		explicit rp_image(rp_image_backend *backend);
 
-		~rp_image();
+	protected:
+		~rp_image();	// call unref() instead
 
 	private:
 		RP_DISABLE_COPY(rp_image)
 	private:
 		friend class rp_image_private;
 		rp_image_private *const d_ptr;
+
+	public:
+		inline rp_image *ref(void)
+		{
+			return RefBase::ref<rp_image>();
+		}
+
+		/**
+		 * Special case unref() function to allow
+		 * const rp_image* to be ref'd.
+		 */
+		inline const rp_image *ref(void) const
+		{
+			return const_cast<rp_image*>(this)->RefBase::ref<rp_image>();
+		}
+
+		/**
+		 * Special case unref() function to allow
+		 * const rp_image* to be unref'd.
+		 */
+		inline void unref(void) const
+		{
+			const_cast<rp_image*>(this)->RefBase::unref();
+		}
 
 	public:
 		/**

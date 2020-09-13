@@ -16,7 +16,6 @@ using namespace LibRpTexture;
 
 // C++ STL classes.
 using std::string;
-using std::unique_ptr;
 
 // TCreateThumbnail is a templated class,
 // so we have to #include the .cpp file here.
@@ -52,11 +51,11 @@ HBITMAP CreateThumbnail::rpImageToImgClass(const rp_image *img) const
 	// Add extra transparent columns/rows before
 	// converting to HBITMAP.
 	// TODO: Disable this for RP_ExtractImage and RP_ThumbnailProvider?
-	unique_ptr<rp_image> tmp_img;
+	rp_image *tmp_img = nullptr;
 	if (!img->isSquare()) {
 		// Image is non-square.
-		tmp_img.reset(img->squared());
-		assert(tmp_img.get() != nullptr);
+		tmp_img = img->squared();
+		assert(tmp_img != nullptr);
 		if (tmp_img) {
 			const RpGdiplusBackend *const tmp_backend =
 				dynamic_cast<const RpGdiplusBackend*>(tmp_img->backend());
@@ -69,7 +68,9 @@ HBITMAP CreateThumbnail::rpImageToImgClass(const rp_image *img) const
 
 	// Convert to HBITMAP.
 	// TODO: Const-ness stuff.
-	return const_cast<RpGdiplusBackend*>(backend)->toHBITMAP_alpha();
+	HBITMAP hbmp = const_cast<RpGdiplusBackend*>(backend)->toHBITMAP_alpha();
+	UNREF(tmp_img);
+	return hbmp;
 }
 
 /**
@@ -82,7 +83,7 @@ HBITMAP CreateThumbnail::rpImageToImgClass(const rp_image *img) const
 HBITMAP CreateThumbnail::rescaleImgClass(const HBITMAP &imgClass, const ImgSize &sz, ScalingMethod method) const
 {
 	// Convert the HBITMAP to rp_image.
-	unique_ptr<rp_image> img(RpImageWin32::fromHBITMAP(imgClass));
+	rp_image *const img = RpImageWin32::fromHBITMAP(imgClass);
 	if (!img) {
 		// Error converting to rp_image.
 		return nullptr;
@@ -94,7 +95,9 @@ HBITMAP CreateThumbnail::rescaleImgClass(const HBITMAP &imgClass, const ImgSize 
 
 	// Resize the image.
 	const SIZE win_sz = {sz.width, sz.height};
-	return RpImageWin32::toHBITMAP_alpha(img.get(), win_sz, (method == ScalingMethod::Nearest));
+	HBITMAP hbmp = RpImageWin32::toHBITMAP_alpha(img, win_sz, (method == ScalingMethod::Nearest));
+	img->unref();
+	return hbmp;
 }
 
 /**
@@ -141,11 +144,11 @@ HBITMAP CreateThumbnailNoAlpha::rpImageToImgClass(const rp_image *img) const
 	// Windows doesn't like non-square icons.
 	// Add extra transparent columns/rows before
 	// converting to HBITMAP.
-	unique_ptr<rp_image> tmp_img;
+	rp_image *tmp_img = nullptr;
 	if (!img->isSquare()) {
 		// Image is non-square.
-		tmp_img.reset(img->squared());
-		assert(tmp_img.get() != nullptr);
+		tmp_img = img->squared();
+		assert(tmp_img != nullptr);
 		if (tmp_img) {
 			const RpGdiplusBackend *const tmp_backend =
 				dynamic_cast<const RpGdiplusBackend*>(tmp_img->backend());
@@ -163,8 +166,10 @@ HBITMAP CreateThumbnailNoAlpha::rpImageToImgClass(const rp_image *img) const
 	// so blend the image with COLOR_WINDOW. This works for the
 	// most part, at least with Windows Explorer, but the cached
 	// Thumbs.db images won't reflect color scheme changes.
-	return const_cast<RpGdiplusBackend*>(backend)->toHBITMAP(
+	HBITMAP hbmp = const_cast<RpGdiplusBackend*>(backend)->toHBITMAP(
 		LibWin32Common::GetSysColor_ARGB32(COLOR_WINDOW));
+	UNREF(tmp_img);
+	return hbmp;
 }
 
 /**
@@ -177,7 +182,7 @@ HBITMAP CreateThumbnailNoAlpha::rpImageToImgClass(const rp_image *img) const
 HBITMAP CreateThumbnailNoAlpha::rescaleImgClass(const HBITMAP &imgClass, const ImgSize &sz, ScalingMethod method) const
 {
 	// Convert the HBITMAP to rp_image.
-	unique_ptr<rp_image> img(RpImageWin32::fromHBITMAP(imgClass));
+	rp_image *const img = RpImageWin32::fromHBITMAP(imgClass);
 	if (!img) {
 		// Error converting to rp_image.
 		return nullptr;
@@ -191,7 +196,9 @@ HBITMAP CreateThumbnailNoAlpha::rescaleImgClass(const HBITMAP &imgClass, const I
 	// Resize the image.
 	// TODO: "nearest" parameter.
 	const SIZE win_sz = {sz.width, sz.height};
-	return RpImageWin32::toHBITMAP(img.get(),
+	HBITMAP hbmp = RpImageWin32::toHBITMAP(img,
 		LibWin32Common::GetSysColor_ARGB32(COLOR_WINDOW),
 		win_sz, (method == ScalingMethod::Nearest));
+	img->unref();
+	return hbmp;
 }

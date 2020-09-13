@@ -57,4 +57,68 @@ int IRpFile::ungetc(int c)
 	return this->seek(pos-1);
 }
 
+/**
+ * Copy data from this IRpFile to another IRpFile.
+ * Read/write positions must be set before calling this function.
+ * @param pDestFile	[in] Destination IRpFile.
+ * @param size		[in] Number of bytes to copy.
+ * @param pcbRead	[out,opt] Number of bytes read.
+ * @param pcbWritten	[out,opt] Number of bytes written.
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int IRpFile::copyTo(IRpFile *pDestFile, off64_t size,
+	off64_t *pcbRead, off64_t *pcbWritten)
+{
+	if (!pDestFile->isWritable()) {
+		// Destination is not writable.
+		return -EPERM;
+	}
+
+	int ret = 0;
+	off64_t cbReadTotal = 0;
+	off64_t cbWrittenTotal = 0;
+
+	// Read buffer.
+#define COPYTO_BUFFER_SIZE (64*1024)
+	uint8_t *buf = static_cast<uint8_t*>(malloc(COPYTO_BUFFER_SIZE));
+
+	// Copy the data.
+	for (; size > 0; size -= COPYTO_BUFFER_SIZE) {
+		size_t cbRead = this->read(buf, COPYTO_BUFFER_SIZE);
+		cbReadTotal += cbRead;
+		if (cbRead != COPYTO_BUFFER_SIZE &&
+		    (size < COPYTO_BUFFER_SIZE && cbRead != (size_t)size))
+		{
+			// Short read. We'll continue with a final write.
+			ret = -this->m_lastError;
+			if (ret == 0) {
+				ret = -EIO;
+			}
+			size = 0;
+			if (cbRead == 0)
+				break;
+		}
+
+		size_t cbWritten = pDestFile->write(buf, cbRead);
+		cbWrittenTotal += cbWritten;
+		if (cbWritten != cbRead) {
+			// Short write.
+			ret = -pDestFile->m_lastError;
+			if (ret == 0) {
+				ret = -EIO;
+			}
+			break;
+		}
+	}
+
+	if (pcbRead) {
+		*pcbRead = cbReadTotal;
+	}
+	if (pcbWritten) {
+		*pcbWritten = cbWrittenTotal;
+	}
+	free(buf);
+	return ret;
+}
+
 }

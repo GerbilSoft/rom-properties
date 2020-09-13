@@ -153,6 +153,7 @@ class RpPngFormatTest : public ::testing::TestWithParam<RpPngFormatTest_mode>
 		RpPngFormatTest()
 			: ::testing::TestWithParam<RpPngFormatTest_mode>()
 			, m_gzBmp(nullptr)
+			, m_img(nullptr)
 		{ }
 
 		void SetUp(void) final;
@@ -274,6 +275,9 @@ class RpPngFormatTest : public ::testing::TestWithParam<RpPngFormatTest_mode>
 		// Placed here so it can be freed by TearDown() if necessary.
 		gzFile m_gzBmp;
 
+		// Loaded image.
+		rp_image *m_img;
+
 	public:
 		/** Test case parameters. **/
 
@@ -373,6 +377,8 @@ void RpPngFormatTest::TearDown(void)
 		gzclose_r(m_gzBmp);
 		m_gzBmp = nullptr;
 	}
+
+	UNREF_AND_NULL(m_img);
 }
 
 /**
@@ -875,15 +881,15 @@ TEST_P(RpPngFormatTest, loadTest)
 	ASSERT_TRUE(png_mem_file->isOpen());
 
 	// Load the PNG image from memory.
-	unique_ptr<rp_image> img(RpImageLoader::load(png_mem_file.get()));
-	ASSERT_TRUE(img.get() != nullptr) << "RpImageLoader failed to load the image.";
+	m_img = RpImageLoader::load(png_mem_file.get());
+	ASSERT_NE(nullptr, m_img) << "RpImageLoader failed to load the image.";
 
 	// Check the rp_image parameters.
-	EXPECT_EQ((int)mode.ihdr.width, img->width()) << "rp_image width is incorrect.";
-	EXPECT_EQ((int)mode.ihdr.height, img->height()) << "rp_image height is incorrect.";
+	EXPECT_EQ((int)mode.ihdr.width, m_img->width()) << "rp_image width is incorrect.";
+	EXPECT_EQ((int)mode.ihdr.height, m_img->height()) << "rp_image height is incorrect.";
 
 	// Check the image format.
-	EXPECT_EQ(mode.rp_format, img->format()) << "rp_image format is incorrect.";
+	EXPECT_EQ(mode.rp_format, m_img->format()) << "rp_image format is incorrect.";
 
 	// Load and verify the bitmap headers.
 	BITMAPFILEHEADER bfh;
@@ -907,14 +913,14 @@ TEST_P(RpPngFormatTest, loadTest)
 
 	// Compare the image data.
 	const uint8_t *pBits = m_bmp_buf.data() + bfh.bfOffBits;
-	if (img->format() == rp_image::Format::ARGB32) {
+	if (m_img->format() == rp_image::Format::ARGB32) {
 		if (bih.biBitCount == 24 && bih.biCompression == BI_RGB) {
 			// Comparing an ARGB32 rp_image to a 24-bit RGB bitmap.
-			ASSERT_NO_FATAL_FAILURE(Compare_ARGB32_BMP24(img.get(), pBits));
+			ASSERT_NO_FATAL_FAILURE(Compare_ARGB32_BMP24(m_img, pBits));
 		} else if (bih.biBitCount == 32 && bih.biCompression == BI_BITFIELDS) {
 			// Comparing an ARGB32 rp_image to an ARGB32 bitmap.
 			// TODO: Check the bitfield masks?
-			ASSERT_NO_FATAL_FAILURE(Compare_ARGB32_BMP32(img.get(), pBits));
+			ASSERT_NO_FATAL_FAILURE(Compare_ARGB32_BMP32(m_img, pBits));
 		} else if (bih.biBitCount == 8 && bih.biCompression == BI_RGB) {
 			// Comparing an ARGB32 rp_image to a CI8 bitmap.
 			// NOTE: This should only happen if GDI+ decoded
@@ -923,17 +929,17 @@ TEST_P(RpPngFormatTest, loadTest)
 			// FIXME: This may fail on aligned architectures.
 			const uint32_t *pBmpPalette = reinterpret_cast<const uint32_t*>(
 				m_bmp_buf.data() + sizeof(BITMAPFILEHEADER) + bih.biSize);
-			ASSERT_NO_FATAL_FAILURE(Compare_ARGB32_BMP8(img.get(), pBits, pBmpPalette));
+			ASSERT_NO_FATAL_FAILURE(Compare_ARGB32_BMP8(m_img, pBits, pBmpPalette));
 		} else {
 			// Unsupported comparison.
 			ASSERT_TRUE(false) << "Image format comparison isn't supported.";
 		}
-	} else if (img->format() == rp_image::Format::CI8) {
+	} else if (m_img->format() == rp_image::Format::CI8) {
 		if (bih.biBitCount == 8 && bih.biCompression == BI_RGB) {
 			// 256-color image. Get the palette.
 			// NOTE: rp_image's palette length is always 256, which may be
 			// greater than the used colors in the BMP.
-			ASSERT_GE(img->palette_len(), (int)bih.biClrUsed)
+			ASSERT_GE(m_img->palette_len(), (int)bih.biClrUsed)
 				<< "BMP palette is larger than the rp_image palette.";
 
 			// NOTE: Palette has 32-bit entries, but the alpha channel is ignored.
@@ -941,25 +947,25 @@ TEST_P(RpPngFormatTest, loadTest)
 			const uint32_t *pBmpPalette = reinterpret_cast<const uint32_t*>(
 				m_bmp_buf.data() + sizeof(BITMAPFILEHEADER) + bih.biSize);
 			const tRNS_CI8_t *pBmpAlpha = (mode.has_bmp_tRNS ? &mode.bmp_tRNS : nullptr);
-			ASSERT_NO_FATAL_FAILURE(Compare_CI8_BMP8(img.get(), pBits,
+			ASSERT_NO_FATAL_FAILURE(Compare_CI8_BMP8(m_img, pBits,
 				pBmpPalette, pBmpAlpha, bih.biClrUsed));
 		} else if (bih.biBitCount == 32 && bih.biCompression == BI_BITFIELDS) {
 			// Comparing a CI8 rp_image to an ARGB32 bitmap.
 			// wine-1.9.18 loads xterm-256color.CI8.tRNS.png as CI8
 			// instead of as ARGB32 for some reason.
-			ASSERT_NO_FATAL_FAILURE(Compare_CI8_BMP32(img.get(), pBits));
+			ASSERT_NO_FATAL_FAILURE(Compare_CI8_BMP32(m_img, pBits));
 		} else if (bih.biBitCount == 1 && bih.biCompression == BI_RGB) {
 			// Monochrome bitmap.
 
 			// NOTE: The color table does have two colors, so we should
 			// compare it to the rp_image palette.
-			ASSERT_GE(img->palette_len(), (int)bih.biClrUsed)
+			ASSERT_GE(m_img->palette_len(), (int)bih.biClrUsed)
 				<< "BMP palette is larger than the rp_image palette.";
 
 			// 256-color image. Get the palette.
 			// NOTE: rp_image's palette length is always 256, which may be
 			// greater than the used colors in the BMP.
-			ASSERT_GE(img->palette_len(), (int)bih.biClrUsed)
+			ASSERT_GE(m_img->palette_len(), (int)bih.biClrUsed)
 				<< "BMP palette is larger than the rp_image palette.";
 
 			// NOTE: Palette has 32-bit entries, but the alpha channel is ignored.
@@ -967,7 +973,7 @@ TEST_P(RpPngFormatTest, loadTest)
 			const uint32_t *pBmpPalette = reinterpret_cast<const uint32_t*>(
 				m_bmp_buf.data() + sizeof(BITMAPFILEHEADER) + bih.biSize);
 			const tRNS_CI8_t *pBmpAlpha = (mode.has_bmp_tRNS ? &mode.bmp_tRNS : nullptr);
-			ASSERT_NO_FATAL_FAILURE(Compare_CI8_BMP1(img.get(), pBits,
+			ASSERT_NO_FATAL_FAILURE(Compare_CI8_BMP1(m_img, pBits,
 				pBmpPalette, pBmpAlpha, bih.biClrUsed));
 		} else {
 			// Unsupported comparison.

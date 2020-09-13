@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * ImageDecoder_GCN.cpp: Image decoding functions. (GameCube)              *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -49,7 +49,7 @@ rp_image *fromGcn16(PixelFormat px_format,
 	rp_image *const img = new rp_image(width, height, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
-		delete img;
+		img->unref();
 		return nullptr;
 	}
 
@@ -128,7 +128,7 @@ rp_image *fromGcn16(PixelFormat px_format,
 
 		default:
 			assert(!"Invalid pixel format for this function.");
-			delete img;
+			img->unref();
 			return nullptr;
 	}
 
@@ -173,7 +173,7 @@ rp_image *fromGcnCI8(int width, int height,
 	rp_image *const img = new rp_image(width, height, rp_image::Format::CI8);
 	if (!img->isValid()) {
 		// Could not allocate the image.
-		delete img;
+		img->unref();
 		return nullptr;
 	}
 
@@ -183,7 +183,7 @@ rp_image *fromGcnCI8(int width, int height,
 	assert(img->palette_len() >= 256);
 	if (img->palette_len() < 256) {
 		// Not enough colors...
-		delete img;
+		img->unref();
 		return nullptr;
 	}
 
@@ -273,7 +273,7 @@ rp_image *fromGcnI8(int width, int height,
 	assert(img->palette_len() >= 256);
 	if (img->palette_len() < 256) {
 		// Not enough colors...
-		delete img;
+		img->unref();
 		return nullptr;
 	}
 

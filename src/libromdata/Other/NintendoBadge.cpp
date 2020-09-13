@@ -74,7 +74,7 @@ class NintendoBadgePrivate : public RomDataPrivate
 		} badgeHeader;
 
 		// Decoded images.
-		array<rp_image*, static_cast<unsigned int>(BadgeIndex_PRBS::Max)> img;
+		array<rp_image*, static_cast<unsigned int>(BadgeIndex_PRBS::Max)> img_badges;
 
 		/**
 		 * Load the badge image.
@@ -118,14 +118,21 @@ NintendoBadgePrivate::NintendoBadgePrivate(NintendoBadge *q, IRpFile *file)
 	memset(&badgeHeader, 0, sizeof(badgeHeader));
 
 	// Clear the decoded images.
-	img.fill(nullptr);
+	img_badges.fill(nullptr);
 }
 
 NintendoBadgePrivate::~NintendoBadgePrivate()
 {
-	static_assert(static_cast<unsigned int>(BadgeIndex_PRBS::Max) == 4, "BadgeIndex_PRBS::Max != 4");
-	static_assert(static_cast<unsigned int>(BadgeIndex_PRBS::Max) == ARRAY_SIZE(img), "BadgeIndex_PRBS::Max != ARRAY_SIZE(img)");
-	std::for_each(img.begin(), img.end(), [](rp_image *pImg) { delete pImg; });
+	static_assert(static_cast<unsigned int>(BadgeIndex_PRBS::Max) == 4,
+		"BadgeIndex_PRBS::Max != 4");
+	static_assert(static_cast<unsigned int>(BadgeIndex_PRBS::Max) == ARRAY_SIZE(img_badges),
+		"BadgeIndex_PRBS::Max != ARRAY_SIZE(img)");
+
+	std::for_each(img_badges.begin(), img_badges.end(),
+		[](rp_image *img) {
+			UNREF(img);
+		}
+	);
 }
 
 /**
@@ -135,15 +142,15 @@ NintendoBadgePrivate::~NintendoBadgePrivate()
  */
 const rp_image *NintendoBadgePrivate::loadImage(int idx)
 {
-	assert(idx >= 0 || idx < (int)img.size());
-	if (idx < 0 || idx >= (int)img.size()) {
+	assert(idx >= 0 || idx < (int)img_badges.size());
+	if (idx < 0 || idx >= (int)img_badges.size()) {
 		// Invalid image index.
 		return nullptr;
 	}
 
-	if (img[idx]) {
+	if (img_badges[idx]) {
 		// Image has already been loaded.
-		return img[idx];
+		return img_badges[idx];
 	} else if (!this->file) {
 		// Can't load the image.
 		return nullptr;
@@ -234,6 +241,7 @@ const rp_image *NintendoBadgePrivate::loadImage(int idx)
 	const unsigned int badge_sz = badge_rgb_sz + badge_a4_sz;
 	auto badgeData = aligned_uptr<uint8_t>(16, badge_sz);
 
+	rp_image *img = nullptr;
 	if (!doMegaBadge) {
 		// Single badge.
 		size_t size = file->seekAndRead(start_addr, badgeData.get(), badge_sz);
@@ -244,21 +252,21 @@ const rp_image *NintendoBadgePrivate::loadImage(int idx)
 
 		// Convert to rp_image.
 		if (badge_a4_sz > 0) {
-			img[idx] = ImageDecoder::fromN3DSTiledRGB565_A4(
+			img = ImageDecoder::fromN3DSTiledRGB565_A4(
 				badge_dims, badge_dims,
 				reinterpret_cast<const uint16_t*>(badgeData.get()), badge_rgb_sz,
 				badgeData.get() + badge_rgb_sz, badge_a4_sz);
 		} else {
-			img[idx] = ImageDecoder::fromN3DSTiledRGB565(
+			img = ImageDecoder::fromN3DSTiledRGB565(
 				badge_dims, badge_dims,
 				reinterpret_cast<const uint16_t*>(badgeData.get()), badge_rgb_sz);
 		}
 
 		if (badgeType == BadgeType::CABS) {
 			// Need to crop the 64x64 image to 48x48.
-			rp_image *img48 = img[idx]->resized(48, 48);
-			delete img[idx];
-			img[idx] = img48;
+			rp_image *const img48 = img->resized(48, 48);
+			img->unref();
+			img = img48;
 		}
 	} else {
 		// Mega badge. Need to convert each 64x64 badge
@@ -270,19 +278,18 @@ const rp_image *NintendoBadgePrivate::loadImage(int idx)
 		const unsigned int mb_row_bytes = badge_dims * sizeof(uint32_t);
 
 		// Badges are stored vertically, then horizontally.
-		img[idx] = new rp_image(badge_dims * mb_width, badge_dims * mb_height, rp_image::Format::ARGB32);
+		img = new rp_image(badge_dims * mb_width, badge_dims * mb_height, rp_image::Format::ARGB32);
 		for (unsigned int y = 0; y < mb_height; y++) {
 			const unsigned int my = y*badge_dims;
 			for (unsigned int x = 0; x < mb_width; x++, start_addr += (0x2800+0xA00)) {
 				size_t size = file->seekAndRead(start_addr, badgeData.get(), badge_sz);
 				if (size != badge_sz) {
 					// Seek and/or read error.
-					delete img[idx];
-					img[idx] = nullptr;
+					img->unref();
 					return nullptr;
 				}
 
-				rp_image *mb_img = ImageDecoder::fromN3DSTiledRGB565_A4(
+				rp_image *const mb_img = ImageDecoder::fromN3DSTiledRGB565_A4(
 					badge_dims, badge_dims,
 					reinterpret_cast<const uint16_t*>(badgeData.get()), badge_rgb_sz,
 					badgeData.get() + badge_rgb_sz, badge_a4_sz);
@@ -292,20 +299,21 @@ const rp_image *NintendoBadgePrivate::loadImage(int idx)
 				const unsigned int mx = x*badge_dims;
 				for (int py = badge_dims-1; py >= 0; py--) {
 					const uint32_t *src = static_cast<const uint32_t*>(mb_img->scanLine(py));
-					uint32_t *dest = static_cast<uint32_t*>(img[idx]->scanLine(py+my)) + mx;
+					uint32_t *dest = static_cast<uint32_t*>(img->scanLine(py+my)) + mx;
 					memcpy(dest, src, mb_row_bytes);
 				}
 
-				delete mb_img;
+				mb_img->unref();
 			}
 		}
-
-		// Set the sBIT metadata.
-		static const rp_image::sBIT_t sBIT = {5,6,5,0,4};
-		img[idx]->set_sBIT(&sBIT);
 	}
 
-	return img[idx];
+	// Set the sBIT metadata.
+	static const rp_image::sBIT_t sBIT = {5,6,5,0,4};
+	img->set_sBIT(&sBIT);
+
+	img_badges[idx] = img;
+	return img;
 }
 
 /**

@@ -3,7 +3,7 @@
  * ImageDecoder_Linear.cpp: Image decoding functions. (Linear)             *
  * SSE2-optimized version.                                                 *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -284,10 +284,10 @@ rp_image *fromLinear16_sse2(PixelFormat px_format,
 	}
 
 	// Create an rp_image.
-	rp_image *img = new rp_image(width, height, rp_image::Format::ARGB32);
+	rp_image *const img = new rp_image(width, height, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
-		delete img;
+		img->unref();
 		return nullptr;
 	}
 
@@ -512,7 +512,7 @@ rp_image *fromLinear16_sse2(PixelFormat px_format,
 
 		default:
 			assert(!"Pixel format not supported.");
-			delete img;
+			img->unref();
 			return nullptr;
 	}
 

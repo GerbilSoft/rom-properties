@@ -90,7 +90,7 @@ GameCubeBNRPrivate::GameCubeBNRPrivate(GameCubeBNR *q, IRpFile *file)
 
 GameCubeBNRPrivate::~GameCubeBNRPrivate()
 {
-	delete img_banner;
+	UNREF(img_banner);
 }
 
 /**

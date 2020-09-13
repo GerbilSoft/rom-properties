@@ -30,6 +30,7 @@
 
 // C includes. (C++ namespace)
 #include <cassert>
+#include <cerrno>
 #include <cstring>
 #include <cinttypes>
 #include <stdint.h>
@@ -48,6 +49,7 @@
 
 // C includes.
 #include <assert.h>
+#include <errno.h>
 #include <inttypes.h>
 #include <string.h>
 #include <stdint.h>

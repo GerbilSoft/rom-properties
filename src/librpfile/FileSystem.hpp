@@ -133,6 +133,14 @@ static inline int delete_file(const std::string &filename)
 const char *file_ext(const std::string &filename);
 
 /**
+ * Replace the file extension from a filename.
+ * @param filename	[in] Filename.
+ * @param ext		[in] New extension.
+ * @return Filename, with replaced extension.
+ */
+std::string replace_ext(const char *filename, const char *ext);
+
+/**
  * Check if the specified file is a symbolic link.
  * @return True if the file is a symbolic link; false if not.
  */

@@ -202,3 +202,73 @@ IRpFile *openQUrl(const QUrl &url, bool isThumbnail)
 
 	return file;
 }
+
+/**
+ * Convert an RP file dialog filter to Qt.
+ *
+ * RP syntax: "Sega Mega Drive ROM images|*.gen;*.bin|application/x-genesis-rom|All Files|*.*|-"
+ * Similar the same as Windows, but with '|' instead of '\0'.
+ * Also, no terminator sequence is needed.
+ * The "(*.bin; *.srl)" part is added to the display name if needed.
+ * A third segment provides for semicolon-separated MIME types. (May be "-" for 'any'.)
+ *
+ * @param filter RP file dialog filter. (UTF-8, from gettext())
+ * @return Qt file dialog filter.
+ */
+QString rpFileDialogFilterToQt(const char *filter)
+{
+	QString qs_ret;
+	assert(filter != nullptr && filter[0] != '\0');
+	if (!filter || filter[0] == '\0')
+		return qs_ret;
+
+	// Temporary string so we can use strtok_r().
+	char *const tmpfilter = strdup(filter);
+	assert(tmpfilter != nullptr);
+	char *saveptr = nullptr;
+
+	// First strtok_r() call.
+	qs_ret.reserve(strlen(filter) + 32);
+	char *token = strtok_r(tmpfilter, "|", &saveptr);
+	do {
+		// Separator 1: Between display name and pattern.
+		// (strtok_r() call was done in the previous iteration.)
+		assert(token != nullptr);
+		if (!token) {
+			// Missing token...
+			free(tmpfilter);
+			return QString();
+		}
+		if (!qs_ret.isEmpty()) {
+			qs_ret += QLatin1String(";;");
+		}
+		qs_ret += QString::fromUtf8(token);
+
+		// Separator 2: Between pattern and MIME types.
+		token = strtok_r(nullptr, "|", &saveptr);
+		assert(token != nullptr);
+		if (!token) {
+			// Missing token...
+			free(tmpfilter);
+			return QString();
+		}
+
+		QString patterns = QString::fromUtf8(token);
+		patterns.replace(QChar(L';'), QChar(L' '));
+		qs_ret += QLatin1String(" (");
+		qs_ret += patterns;
+		qs_ret += QChar(L')');
+
+		// Separator 3: Between MIME types and the next display name.
+		// NOTE: May be missing if this is the end of the string
+		// and a MIME type isn't set.
+		// NOTE: Not used by Qt.
+		token = strtok_r(nullptr, "|", &saveptr);
+
+		// Next token.
+		token = strtok_r(nullptr, "|", &saveptr);
+	} while (token != nullptr);
+
+	free(tmpfilter);
+	return qs_ret;
+}

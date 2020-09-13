@@ -1545,7 +1545,7 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 						if (icon32) {
 							icon_resized = icon32->resized(szResize.cx, szResize.cy,
 								rp_image::AlignVCenter, lvBgColor[rowColorIdx]);
-							delete icon32;
+							icon32->unref();
 						}
 					}
 
@@ -1560,7 +1560,7 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 				HICON hIcon;
 				if (icon_resized) {
 					hIcon = RpImageWin32::toHICON(icon_resized);
-					delete icon_resized;
+					icon_resized->unref();
 				} else {
 					hIcon = RpImageWin32::toHICON(icon);
 				}
@@ -1908,7 +1908,8 @@ void RP_ShellPropSheetExt_Private::buildCboLanguageImageList(void)
 		f_res->unref();
 		return;
 	}
-	unique_ptr<rp_image> imgFlagsSheet(RpPng::loadUnchecked(f_res));
+
+	rp_image *const imgFlagsSheet = RpPng::loadUnchecked(f_res);
 	f_res->unref();
 	if (!imgFlagsSheet) {
 		// Unable to load the flags sprite sheet.
@@ -1923,6 +1924,7 @@ void RP_ShellPropSheetExt_Private::buildCboLanguageImageList(void)
 	    imgFlagsSheet->height() != (iconSize * SystemRegion::FLAGS_SPRITE_SHEET_ROWS))
 	{
 		// Incorrect size. We can't use it.
+		imgFlagsSheet->unref();
 		return;
 	}
 
@@ -1931,6 +1933,7 @@ void RP_ShellPropSheetExt_Private::buildCboLanguageImageList(void)
 	assert(himglFlags != nullptr);
 	if (!himglFlags) {
 		// Unable to create the ImageList.
+		imgFlagsSheet->unref();
 		return;
 	}
 
@@ -1991,6 +1994,7 @@ void RP_ShellPropSheetExt_Private::buildCboLanguageImageList(void)
 		}
 	}
 	ReleaseDC(nullptr, hdcIcon);
+	imgFlagsSheet->unref();
 
 	if (cboLanguage) {
 		// Set the new ImageList.
@@ -2869,22 +2873,23 @@ void RP_ShellPropSheetExt_Private::menuOptions_action_triggered(int menuId)
 			return;
 
 		bool toClipboard;
-		tstring ts_title, ts_filter;
+		tstring ts_title;
 		const TCHAR *ts_default_ext = nullptr;
+		const char *s_filter = nullptr;
 		switch (menuId) {
 			case IDM_OPTIONS_MENU_EXPORT_TEXT:
 				toClipboard = false;
 				ts_title = U82T_c(C_("RomDataView", "Export to Text File"));
-				// tr: Text files filter. (Win32) [Use '|' instead of '\0'! gettext() doesn't support embedded nulls.]
-				ts_filter = U82T_c(C_("RomDataView", "Text Files (*.txt)|*.txt|All Files (*.*)|*.*||"));
 				ts_default_ext = _T(".txt");
+				// tr: Text files filter. (RP format)
+				s_filter = C_("RomDataView", "Text Files|*.txt|text/plain|All Files|*.*|-");
 				break;
 			case IDM_OPTIONS_MENU_EXPORT_JSON:
 				toClipboard = false;
 				ts_title = U82T_c(C_("RomDataView", "Export to JSON File"));
-				// tr: JSON files filter. (Win32) [Use '|' instead of '\0'! gettext() doesn't support embedded nulls.]
-				ts_filter = U82T_c(C_("RomDataView", "JSON Files (*.json)|*.json|All Files (*.*)|*.*||"));
 				ts_default_ext = _T(".json");
+				// tr: JSON files filter. (RP format)
+				s_filter = C_("RomDataView", "JSON Files|*.json|application/json|All Files|*.*|-");
 				break;
 			case IDM_OPTIONS_MENU_COPY_TEXT:
 			case IDM_OPTIONS_MENU_COPY_JSON:
@@ -2934,7 +2939,7 @@ void RP_ShellPropSheetExt_Private::menuOptions_action_triggered(int menuId)
 			defaultFileName += rom_basename + ts_default_ext;
 
 			const tstring tfilename = LibWin32Common::getSaveFileName(hDlgSheet,
-				ts_title.c_str(), ts_filter.c_str(), defaultFileName.c_str());
+				ts_title.c_str(), s_filter, defaultFileName.c_str());
 			if (tfilename.empty())
 				return;
 
@@ -3011,83 +3016,117 @@ void RP_ShellPropSheetExt_Private::menuOptions_action_triggered(int menuId)
 				CloseClipboard();
 			}
 		}
+		return;
+	}
+
+	// Run a ROM operation.
+	// TODO: Don't keep rebuilding this vector...
+	vector<RomData::RomOp> ops = romData->romOps();
+	const int id = menuId - IDM_OPTIONS_MENU_BASE;
+	assert(id < (int)ops.size());
+	if (id >= (int)ops.size()) {
+		// ID is out of range.
+		return;
+	}
+
+	string s_save_filename;
+	RomData::RomOpParams params;
+	const RomData::RomOp *op = &ops[id];
+	if (op->flags & RomData::RomOp::ROF_SAVE_FILE) {
+		// Add the "All Files" filter.
+		string filter = op->sfi.filter;
+		if (!filter.empty()) {
+			// Make sure the last field isn't empty.
+			if (filter.at(filter.size()-1) == '|') {
+				filter += '-';
+			}
+			filter += '|';
+		}
+		// tr: "All Files" filter (RP format)
+		filter += C_("RomData", "All Files|*.*|-");
+
+		// Initial file and directory, based on the current file.
+		string initialFile = FileSystem::replace_ext(romData->filename(), op->sfi.ext);
+
+		// Prompt for a save file.
+		tstring tstr = LibWin32Common::getSaveFileName(hDlgSheet,
+			U82T_c(op->sfi.title), filter.c_str(), U82T_s(initialFile));
+		if (tstr.empty())
+			return;
+		s_save_filename = T2U8(tstr);
+		params.save_filename = s_save_filename.c_str();
+	}
+
+	int ret = romData->doRomOp(id, &params);
+	unsigned int messageType;
+	if (ret == 0) {
+		// ROM operation completed.
+		messageType = MB_ICONINFORMATION;
+
+		// Update fields.
+		std::for_each(params.fieldIdx.cbegin(), params.fieldIdx.cend(),
+			[this](int fieldIdx) {
+				this->updateField(fieldIdx);
+			}
+		);
+
+		// Update the RomOp menu entry in case it changed.
+		// NOTE: Assuming the RomOps vector order hasn't changed.
+		ops = romData->romOps();
+		assert(id < (int)ops.size());
+		if (id < (int)ops.size()) {
+			const RomData::RomOp &op = ops[id];
+
+			UINT uFlags;
+			if (!(op.flags & RomData::RomOp::ROF_ENABLED)) {
+				uFlags = MF_BYCOMMAND | MF_STRING | MF_DISABLED;
+			} else {
+				uFlags = MF_BYCOMMAND | MF_STRING;
+			}
+			ModifyMenu(hMenuOptions, menuId, uFlags, menuId, U82T_c(op.desc));
+		}
 	} else {
-		// Run a ROM operation.
-		const int id = menuId - IDM_OPTIONS_MENU_BASE;
-		RomData::RomOpResult result;
-		int ret = romData->doRomOp(id, &result);
-		unsigned int messageType;
-		if (ret == 0) {
-			// ROM operation completed.
-			messageType = MB_ICONINFORMATION;
+		// An error occurred...
+		// TODO: Show an error message.
+		messageType = MB_ICONWARNING;
+	}
 
-			// Update fields.
-			std::for_each(result.fieldIdx.cbegin(), result.fieldIdx.cend(),
-				[this](int fieldIdx) {
-					this->updateField(fieldIdx);
-				}
-			);
+	MessageBeep(messageType);
+	if (!params.msg.empty()) {
+		if (!hMessageWidget) {
+			// FIXME: Make sure this works if multiple tabs are present.
+			MessageWidgetRegister();
 
-			// Update the RomOp menu entry in case it changed.
-			// NOTE: Assuming the RomOps vector order hasn't changed.
-			// TODO: Have RomData store the RomOps vector instead of
-			// rebuilding it here?
-			const vector<RomData::RomOps> ops = romData->romOps();
-			assert(id < (int)ops.size());
-			if (id < (int)ops.size()) {
-				const RomData::RomOps &op = ops[id];
+			// Align to the bottom of the dialog and center-align the text.
+			// 7x7 DLU margin is recommended by the Windows UX guidelines.
+			// Reference: http://stackoverflow.com/questions/2118603/default-dialog-padding
+			RECT tmpRect = {7, 7, 8, 8};
+			MapDialogRect(hDlgSheet, &tmpRect);
+			RECT winRect;
+			GetClientRect(hDlgSheet, &winRect);
+			// NOTE: We need to move left by 1px.
+			OffsetRect(&winRect, -1, 0);
 
-				UINT uFlags;
-				if (!(op.flags & RomData::RomOps::ROF_ENABLED)) {
-					uFlags = MF_BYCOMMAND | MF_STRING | MF_DISABLED;
-				} else {
-					uFlags = MF_BYCOMMAND | MF_STRING;
-				}
-				ModifyMenu(hMenuOptions, menuId, uFlags, menuId, U82T_c(op.desc.c_str()));
-			}
-		} else {
-			// An error occurred...
-			// TODO: Show an error message.
-			messageType = MB_ICONWARNING;
+			// Determine the position.
+			// TODO: Update on DPI change.
+			const int cySmIcon = GetSystemMetrics(SM_CYSMICON);
+			POINT ptMsgw; SIZE szMsgw;
+			szMsgw.cy = cySmIcon + 8;
+			ptMsgw.x = winRect.left + tmpRect.left;
+			ptMsgw.y = winRect.bottom - tmpRect.top - szMsgw.cy;
+			szMsgw.cx = winRect.right - winRect.left - (tmpRect.left * 2);
+
+			hMessageWidget = CreateWindowEx(
+				WS_EX_NOPARENTNOTIFY | WS_EX_TRANSPARENT,
+				WC_MESSAGEWIDGET, nullptr,
+				WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_CLIPCHILDREN,
+				ptMsgw.x, ptMsgw.y, szMsgw.cx, szMsgw.cy,
+				hDlgSheet, (HMENU)IDC_MESSAGE_WIDGET,
+				HINST_THISCOMPONENT, nullptr);
+			SetWindowFont(hMessageWidget, hFontDlg, false);
 		}
 
-		MessageBeep(messageType);
-		if (!result.msg.empty()) {
-			if (!hMessageWidget) {
-				// FIXME: Make sure this works if multiple tabs are present.
-				MessageWidgetRegister();
-
-				// Align to the bottom of the dialog and center-align the text.
-				// 7x7 DLU margin is recommended by the Windows UX guidelines.
-				// Reference: http://stackoverflow.com/questions/2118603/default-dialog-padding
-				RECT tmpRect = {7, 7, 8, 8};
-				MapDialogRect(hDlgSheet, &tmpRect);
-				RECT winRect;
-				GetClientRect(hDlgSheet, &winRect);
-				// NOTE: We need to move left by 1px.
-				OffsetRect(&winRect, -1, 0);
-
-				// Determine the position.
-				// TODO: Update on DPI change.
-				const int cySmIcon = GetSystemMetrics(SM_CYSMICON);
-				POINT ptMsgw; SIZE szMsgw;
-				szMsgw.cy = cySmIcon + 8;
-				ptMsgw.x = winRect.left + tmpRect.left;
-				ptMsgw.y = winRect.bottom - tmpRect.top - szMsgw.cy;
-				szMsgw.cx = winRect.right - winRect.left - (tmpRect.left * 2);
-
-				hMessageWidget = CreateWindowEx(
-					WS_EX_NOPARENTNOTIFY | WS_EX_TRANSPARENT,
-					WC_MESSAGEWIDGET, nullptr,
-					WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_CLIPCHILDREN,
-					ptMsgw.x, ptMsgw.y, szMsgw.cx, szMsgw.cy,
-					hDlgSheet, (HMENU)IDC_MESSAGE_WIDGET,
-					HINST_THISCOMPONENT, nullptr);
-				SetWindowFont(hMessageWidget, hFontDlg, false);
-			}
-
-			showMessageWidget(messageType, U82T_s(result.msg));
-		}
+		showMessageWidget(messageType, U82T_s(params.msg));
 	}
 }
 
@@ -3240,8 +3279,8 @@ void RP_ShellPropSheetExt_Private::createOptionsButton(void)
 		const char *desc;
 		unsigned int id;
 	} stdacts[] = {
-		{NOP_C_("RomDataView|Options", "Export to Text"),	IDM_OPTIONS_MENU_EXPORT_TEXT},
-		{NOP_C_("RomDataView|Options", "Export to JSON"),	IDM_OPTIONS_MENU_EXPORT_JSON},
+		{NOP_C_("RomDataView|Options", "Export to Text..."),	IDM_OPTIONS_MENU_EXPORT_TEXT},
+		{NOP_C_("RomDataView|Options", "Export to JSON..."),	IDM_OPTIONS_MENU_EXPORT_JSON},
 		{NOP_C_("RomDataView|Options", "Copy as Text"),		IDM_OPTIONS_MENU_COPY_TEXT},
 		{NOP_C_("RomDataView|Options", "Copy as JSON"),		IDM_OPTIONS_MENU_COPY_JSON},
 		{nullptr, 0}
@@ -3253,7 +3292,7 @@ void RP_ShellPropSheetExt_Private::createOptionsButton(void)
 	}
 
 	/** ROM operations. **/
-	const vector<RomData::RomOps> ops = romData->romOps();
+	const vector<RomData::RomOp> ops = romData->romOps();
 	if (!ops.empty()) {
 		AppendMenu(hMenuOptions, MF_SEPARATOR, 0, nullptr);
 
@@ -3261,12 +3300,12 @@ void RP_ShellPropSheetExt_Private::createOptionsButton(void)
 		const auto ops_end = ops.cend();
 		for (auto iter = ops.cbegin(); iter != ops_end; ++iter, i++) {
 			UINT uFlags;
-			if (!(iter->flags & RomData::RomOps::ROF_ENABLED)) {
+			if (!(iter->flags & RomData::RomOp::ROF_ENABLED)) {
 				uFlags = MF_STRING | MF_DISABLED;
 			} else {
 				uFlags = MF_STRING;
 			}
-			AppendMenu(hMenuOptions, uFlags, i, U82T_c(iter->desc.c_str()));
+			AppendMenu(hMenuOptions, uFlags, i, U82T_c(iter->desc));
 		}
 	}
 }

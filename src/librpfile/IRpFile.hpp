@@ -245,6 +245,18 @@ class IRpFile : public RefBase
 			return this->write(ptr, size);
 		}
 
+		/**
+		 * Copy data from this IRpFile to another IRpFile.
+		 * Read/write positions must be set before calling this function.
+		 * @param pDestFile	[in] Destination IRpFile.
+		 * @param size		[in] Number of bytes to copy.
+		 * @param pcbRead	[out,opt] Number of bytes read.
+		 * @param pcbWritten	[out,opt] Number of bytes written.
+		 * @return 0 on success; negative POSIX error code on error.
+		 */
+		int copyTo(IRpFile *pDestFile, off64_t size,
+			off64_t *pcbRead = nullptr, off64_t *pcbWritten = nullptr);
+
 	protected:
 		int m_lastError;
 		bool m_isWritable;

@@ -3,7 +3,7 @@
  * ImageDecoder_Linear.cpp: Image decoding functions. (Linear)             *
  * Standard version. (C++ code only)                                       *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -66,10 +66,10 @@ rp_image *fromLinearCI4(PixelFormat px_format, bool msn_left,
 		return nullptr;
 
 	// Create an rp_image.
-	rp_image *img = new rp_image(width, height, rp_image::Format::CI8);
+	rp_image *const img = new rp_image(width, height, rp_image::Format::CI8);
 	if (!img->isValid()) {
 		// Could not allocate the image.
-		delete img;
+		img->unref();
 		return nullptr;
 	}
 	const int dest_stride_adj = img->stride() - img->width();
@@ -80,7 +80,7 @@ rp_image *fromLinearCI4(PixelFormat px_format, bool msn_left,
 	assert(img->palette_len() >= 16);
 	if (img->palette_len() < 16) {
 		// Not enough colors...
-		delete img;
+		img->unref();
 		return nullptr;
 	}
 
@@ -218,7 +218,7 @@ rp_image *fromLinearCI4(PixelFormat px_format, bool msn_left,
 
 		default:
 			assert(!"Invalid pixel format for this function.");
-			delete img;
+			img->unref();
 			return nullptr;
 	}
 	img->set_tr_idx(tr_idx);
@@ -300,10 +300,10 @@ rp_image *fromLinearCI8(PixelFormat px_format,
 	}
 
 	// Create an rp_image.
-	rp_image *img = new rp_image(width, height, rp_image::Format::CI8);
+	rp_image *const img = new rp_image(width, height, rp_image::Format::CI8);
 	if (!img->isValid()) {
 		// Could not allocate the image.
-		delete img;
+		img->unref();
 		return nullptr;
 	}
 
@@ -313,7 +313,7 @@ rp_image *fromLinearCI8(PixelFormat px_format,
 	assert(img->palette_len() >= 256);
 	if (img->palette_len() < 256) {
 		// Not enough colors...
-		delete img;
+		img->unref();
 		return nullptr;
 	}
 
@@ -439,7 +439,7 @@ rp_image *fromLinearCI8(PixelFormat px_format,
 
 		default:
 			assert(!"Invalid pixel format for this function.");
-			delete img;
+			img->unref();
 			return nullptr;
 	}
 	img->set_tr_idx(tr_idx);
@@ -492,10 +492,10 @@ rp_image *fromLinearMono(int width, int height,
 		return nullptr;
 
 	// Create an rp_image.
-	rp_image *img = new rp_image(width, height, rp_image::Format::CI8);
+	rp_image *const img = new rp_image(width, height, rp_image::Format::CI8);
 	if (!img->isValid()) {
 		// Could not allocate the image.
-		delete img;
+		img->unref();
 		return nullptr;
 	}
 	const int dest_stride_adj = img->stride() - img->width();
@@ -578,10 +578,10 @@ rp_image *fromLinear8(PixelFormat px_format,
 	}
 
 	// Create an rp_image.
-	rp_image *img = new rp_image(width, height, rp_image::Format::ARGB32);
+	rp_image *const img = new rp_image(width, height, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
-		delete img;
+		img->unref();
 		return nullptr;
 	}
 	const int dest_stride_adj = (img->stride() / sizeof(argb32_t)) - img->width();
@@ -623,7 +623,7 @@ rp_image *fromLinear8(PixelFormat px_format,
 
 		default:
 			assert(!"Unsupported 8-bit pixel format.");
-			delete img;
+			img->unref();
 			return nullptr;
 	}
 
@@ -675,10 +675,10 @@ rp_image *fromLinear16_cpp(PixelFormat px_format,
 	}
 
 	// Create an rp_image.
-	rp_image *img = new rp_image(width, height, rp_image::Format::ARGB32);
+	rp_image *const img = new rp_image(width, height, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
-		delete img;
+		img->unref();
 		return nullptr;
 	}
 	const int dest_stride_adj = (img->stride() / sizeof(argb32_t)) - img->width();
@@ -738,7 +738,7 @@ rp_image *fromLinear16_cpp(PixelFormat px_format,
 
 		default:
 			assert(!"Unsupported 16-bit pixel format.");
-			delete img;
+			img->unref();
 			return nullptr;
 	}
 
@@ -790,10 +790,10 @@ rp_image *fromLinear24_cpp(PixelFormat px_format,
 	}
 
 	// Create an rp_image.
-	rp_image *img = new rp_image(width, height, rp_image::Format::ARGB32);
+	rp_image *const img = new rp_image(width, height, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
-		delete img;
+		img->unref();
 		return nullptr;
 	}
 	const int dest_stride_adj = (img->stride() / sizeof(argb32_t)) - img->width();
@@ -835,7 +835,7 @@ rp_image *fromLinear24_cpp(PixelFormat px_format,
 
 		default:
 			assert(!"Unsupported 24-bit pixel format.");
-			delete img;
+			img->unref();
 			return nullptr;
 	}
 
@@ -891,10 +891,10 @@ rp_image *fromLinear32_cpp(PixelFormat px_format,
 	}
 
 	// Create an rp_image.
-	rp_image *img = new rp_image(width, height, rp_image::Format::ARGB32);
+	rp_image *const img = new rp_image(width, height, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
-		delete img;
+		img->unref();
 		return nullptr;
 	}
 	int dest_stride = img->stride();
@@ -1195,7 +1195,7 @@ rp_image *fromLinear32_cpp(PixelFormat px_format,
 
 		default:
 			assert(!"Unsupported 16-bit pixel format.");
-			delete img;
+			img->unref();
 			return nullptr;
 	}
 

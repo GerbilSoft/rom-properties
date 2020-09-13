@@ -14,7 +14,7 @@
 // librpbase, librpfile, librptexture
 #include "librpbase/TextOut.hpp"
 using namespace LibRpBase;
-using LibRpFile::IRpFile;
+using namespace LibRpFile;
 using LibRpTexture::rp_image;
 
 // libi18n
@@ -403,8 +403,8 @@ void RomDataViewPrivate::createOptionsButton(void)
 		const char *desc;
 		int id;
 	} stdacts[] = {
-		{NOP_C_("RomDataView|Options", "Export to Text"),	OPTION_EXPORT_TEXT},
-		{NOP_C_("RomDataView|Options", "Export to JSON"),	OPTION_EXPORT_JSON},
+		{NOP_C_("RomDataView|Options", "Export to Text..."),	OPTION_EXPORT_TEXT},
+		{NOP_C_("RomDataView|Options", "Export to JSON..."),	OPTION_EXPORT_JSON},
 		{NOP_C_("RomDataView|Options", "Copy as Text"),		OPTION_COPY_TEXT},
 		{NOP_C_("RomDataView|Options", "Copy as JSON"),		OPTION_COPY_JSON},
 		{nullptr, 0}
@@ -424,7 +424,7 @@ void RomDataViewPrivate::createOptionsButton(void)
 	}
 
 	/** ROM operations. **/
-	const vector<RomData::RomOps> ops = romData->romOps();
+	const vector<RomData::RomOp> ops = romData->romOps();
 	if (!ops.empty()) {
 		menuOptions->addSeparator();
 		romOps_firstActionIndex = menuOptions->children().count();
@@ -433,7 +433,7 @@ void RomDataViewPrivate::createOptionsButton(void)
 		const auto ops_end = ops.cend();
 		for (auto iter = ops.cbegin(); iter != ops_end; ++iter, i++) {
 			QAction *const action = menuOptions->addAction(U82Q(iter->desc));
-			action->setEnabled(!!(iter->flags & RomData::RomOps::ROF_ENABLED));
+			action->setEnabled(!!(iter->flags & RomData::RomOp::ROF_ENABLED));
 #if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
 			QObject::connect(action, &QAction::triggered,
 				[q, i] { q->menuOptions_action_triggered(i); });
@@ -1816,22 +1816,23 @@ void RomDataView::menuOptions_action_triggered(int id)
 		QFileInfo fi(U82Q(rom_filename));
 
 		bool toClipboard;
-		QString s_title, s_filter;
-		QString s_default_ext;
+		QString qs_title;
+		QString qs_default_ext;
+		const char *s_filter = nullptr;
 		switch (id) {
 			case RomDataViewPrivate::OPTION_EXPORT_TEXT:
 				toClipboard = false;
-				s_title = U82Q(C_("RomDataView", "Export to Text File"));
-				// tr: Text files filter. (Qt)
-				s_filter = U82Q(C_("RomDataView", "Text Files (*.txt);;All Files (*.*)"));
-				s_default_ext = QLatin1String(".txt");
+				qs_title = U82Q(C_("RomDataView", "Export to Text File"));
+				qs_default_ext = QLatin1String(".txt");
+				// tr: Text files filter. (RP format)
+				s_filter = C_("RomDataView", "Text Files|*.txt|text/plain|All Files|*.*|-");
 				break;
 			case RomDataViewPrivate::OPTION_EXPORT_JSON:
 				toClipboard = false;
-				s_title = U82Q(C_("RomDataView", "Export to JSON File"));
-				// tr: JSON files filter. (Qt)
-				s_filter = U82Q(C_("RomDataView", "JSON Files (*.json);;All Files (*.*)"));
-				s_default_ext = QLatin1String(".json");
+				qs_title = U82Q(C_("RomDataView", "Export to JSON File"));
+				qs_default_ext = QLatin1String(".json");
+				// tr: JSON files filter. (RP format)
+				s_filter = C_("RomDataView", "JSON Files|*.json|application/json|All Files|*.*|-");
 				break;
 			case RomDataViewPrivate::OPTION_COPY_TEXT:
 			case RomDataViewPrivate::OPTION_COPY_JSON:
@@ -1851,9 +1852,10 @@ void RomDataView::menuOptions_action_triggered(int id)
 				d->prevExportDir = fi.path();
 			}
 
-			QString defaultFileName = d->prevExportDir + QChar(L'/') + fi.completeBaseName() + s_default_ext;
+			QString defaultFileName = d->prevExportDir + QChar(L'/') + fi.completeBaseName() + qs_default_ext;
 			QString out_filename = QFileDialog::getSaveFileName(this,
-				s_title, defaultFileName, s_filter);
+				qs_title, defaultFileName,
+				rpFileDialogFilterToQt(s_filter));
 			if (out_filename.isEmpty())
 				return;
 
@@ -1900,98 +1902,133 @@ void RomDataView::menuOptions_action_triggered(int id)
 				assert(!"Invalid action ID.");
 				return;
 		}
-	} else if (d->romOps_firstActionIndex >= 0) {
-		// Run a ROM operation.
-		RomData::RomOpResult result;
-		int ret = d->romData->doRomOp(id, &result);
-		const QString qs_msg = U82Q(result.msg);
-		if (ret == 0) {
-			// ROM operation completed.
+		return;
+	}
 
-			// Update fields.
-			std::for_each(result.fieldIdx.cbegin(), result.fieldIdx.cend(),
-				[d](int fieldIdx) {
-					d->updateField(fieldIdx);
-				}
-			);
+	if (d->romOps_firstActionIndex < 0) {
+		// No ROM operations...
+		return;
+	}
 
-			// Update the RomOp menu entry in case it changed.
-			// NOTE: Assuming the RomOps vector order hasn't changed.
-			// TODO: Have RomData store the RomOps vector instead of
-			// rebuilding it here?
-			const vector<RomData::RomOps> ops = d->romData->romOps();
-			assert(id < (int)ops.size());
-			if (id < (int)ops.size()) {
-				const QObjectList &objList = d->menuOptions->children();
-				int actionIndex = d->romOps_firstActionIndex + id;
-				assert(actionIndex < objList.size());
-				if (actionIndex < objList.size()) {
-					QAction *const action = qobject_cast<QAction*>(objList.at(actionIndex));
-					if (action) {
-						const RomData::RomOps &op = ops[id];
-						action->setText(U82Q(op.desc));
-						action->setEnabled(!!(op.flags & RomData::RomOps::ROF_ENABLED));
-					}
+	// Run a ROM operation.
+	// TODO: Don't keep rebuilding this vector...
+	vector<RomData::RomOp> ops = d->romData->romOps();
+	assert(id < (int)ops.size());
+	if (id >= (int)ops.size()) {
+		// ID is out of range.
+		return;
+	}
+
+	QByteArray ba_save_filename;
+	RomData::RomOpParams params;
+	const RomData::RomOp *op = &ops[id];
+	if (op->flags & RomData::RomOp::ROF_SAVE_FILE) {
+		// Add "All Files" to the filter.
+		QString filter = rpFileDialogFilterToQt(op->sfi.filter);
+		if (!filter.isEmpty()) {
+			filter += QLatin1String(";;");
+		}
+		// tr: "All Files" filter (RP format)
+		filter += rpFileDialogFilterToQt(C_("RomData", "All Files|*|-"));
+
+		// Initial file and directory, based on the current file.
+		QString initialFile = U82Q(FileSystem::replace_ext(d->romData->filename(), op->sfi.ext));
+
+		// Prompt for a save file.
+		QString filename = QFileDialog::getSaveFileName(this,
+			U82Q(op->sfi.title), initialFile, filter);
+		if (filename.isEmpty())
+			return;
+		ba_save_filename = filename.toUtf8();
+		params.save_filename = ba_save_filename.constData();
+	}
+
+	int ret = d->romData->doRomOp(id, &params);
+	const QString qs_msg = U82Q(params.msg);
+	if (ret == 0) {
+		// ROM operation completed.
+
+		// Update fields.
+		std::for_each(params.fieldIdx.cbegin(), params.fieldIdx.cend(),
+			[d](int fieldIdx) {
+				d->updateField(fieldIdx);
+			}
+		);
+
+		// Update the RomOp menu entry in case it changed.
+		// NOTE: Assuming the RomOps vector order hasn't changed.
+		ops = d->romData->romOps();
+		assert(id < (int)ops.size());
+		if (id < (int)ops.size()) {
+			const QObjectList &objList = d->menuOptions->children();
+			int actionIndex = d->romOps_firstActionIndex + id;
+			assert(actionIndex < objList.size());
+			if (actionIndex < objList.size()) {
+				QAction *const action = qobject_cast<QAction*>(objList.at(actionIndex));
+				if (action) {
+					const RomData::RomOp &op = ops[id];
+					action->setText(U82Q(op.desc));
+					action->setEnabled(!!(op.flags & RomData::RomOp::ROF_ENABLED));
 				}
 			}
-
-			// Show the message and play the sound.
-			const QString qs_msg = U82Q(result.msg);
-			MessageSound::play(QMessageBox::Information, qs_msg, this);
-		} else {
-			// An error occurred...
-			MessageSound::play(QMessageBox::Warning, qs_msg, this);
 		}
+
+		// Show the message and play the sound.
+		const QString qs_msg = U82Q(params.msg);
+		MessageSound::play(QMessageBox::Information, qs_msg, this);
+	} else {
+		// An error occurred...
+		MessageSound::play(QMessageBox::Warning, qs_msg, this);
+	}
 
 #ifdef HAVE_KMESSAGEWIDGET
-		if (!qs_msg.isEmpty()) {
-			if (!d->messageWidget) {
-				d->messageWidget = new KMessageWidget(this);
-				d->messageWidget->setCloseButtonVisible(true);
-				d->messageWidget->setWordWrap(true);
-				d->ui.vboxLayout->addWidget(d->messageWidget);
+	if (!qs_msg.isEmpty()) {
+		if (!d->messageWidget) {
+			d->messageWidget = new KMessageWidget(this);
+			d->messageWidget->setCloseButtonVisible(true);
+			d->messageWidget->setWordWrap(true);
+			d->ui.vboxLayout->addWidget(d->messageWidget);
 
 #  ifdef AUTO_TIMEOUT_MESSAGEWIDGET
-				d->tmrMessageWidget = new QTimer(this);
-				d->tmrMessageWidget->setSingleShot(true);
-				d->tmrMessageWidget->setInterval(10*1000);
-				connect(d->tmrMessageWidget, SIGNAL(timeout()),
-				        d->messageWidget, SLOT(animatedHide()));
+			d->tmrMessageWidget = new QTimer(this);
+			d->tmrMessageWidget->setSingleShot(true);
+			d->tmrMessageWidget->setInterval(10*1000);
+			connect(d->tmrMessageWidget, SIGNAL(timeout()),
+				d->messageWidget, SLOT(animatedHide()));
 #    if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
-				// KMessageWidget::hideAnimationFinished was added in KF5.
-				// FIXME: This is after the animation *finished*, not when
-				// the Close button was clicked.
-				connect(d->messageWidget, &KMessageWidget::showAnimationFinished,
-				        d->tmrMessageWidget, static_cast<void (QTimer::*)()>(&QTimer::start));
-				connect(d->messageWidget, &KMessageWidget::hideAnimationFinished,
-				        d->tmrMessageWidget, &QTimer::stop);
+			// KMessageWidget::hideAnimationFinished was added in KF5.
+			// FIXME: This is after the animation *finished*, not when
+			// the Close button was clicked.
+			connect(d->messageWidget, &KMessageWidget::showAnimationFinished,
+				d->tmrMessageWidget, static_cast<void (QTimer::*)()>(&QTimer::start));
+			connect(d->messageWidget, &KMessageWidget::hideAnimationFinished,
+				d->tmrMessageWidget, &QTimer::stop);
 #    endif /* QT_VERSION >= QT_VERSION_CHECK(5,0,0) */
 #  endif /* AUTO_TIMEOUT_MESSAGEWIDGET */
-			}
+		}
 
-			if (ret == 0) {
-				d->messageWidget->setMessageType(KMessageWidget::Information);
+		if (ret == 0) {
+			d->messageWidget->setMessageType(KMessageWidget::Information);
 #  ifdef HAVE_KMESSAGEWIDGET_SETICON
-				d->messageWidget->setIcon(
-					d->messageWidget->style()->standardIcon(QStyle::SP_MessageBoxInformation));
+			d->messageWidget->setIcon(
+				d->messageWidget->style()->standardIcon(QStyle::SP_MessageBoxInformation));
 #  endif /* HAVE_KMESSAGEWIDGET_SETICON */
-			} else {
-				d->messageWidget->setMessageType(KMessageWidget::Warning);
+		} else {
+			d->messageWidget->setMessageType(KMessageWidget::Warning);
 #  ifdef HAVE_KMESSAGEWIDGET_SETICON
-				d->messageWidget->setIcon(
-					d->messageWidget->style()->standardIcon(QStyle::SP_MessageBoxWarning));
+			d->messageWidget->setIcon(
+				d->messageWidget->style()->standardIcon(QStyle::SP_MessageBoxWarning));
 #  endif /* HAVE_KMESSAGEWIDGET_SETICON */
-			}
-			d->messageWidget->setText(qs_msg);
-			d->messageWidget->animatedShow();
+		}
+		d->messageWidget->setText(qs_msg);
+		d->messageWidget->animatedShow();
 #if QT_VERSION < QT_VERSION_CHECK(5,0,0)
 #  ifdef AUTO_TIMEOUT_MESSAGEWIDGET
-			// KDE4's KMessageWidget doesn't have the "animation finished"
-			// signals, so we'll have to start the timer manually.
-			d->tmrMessageWidget->start();
+		// KDE4's KMessageWidget doesn't have the "animation finished"
+		// signals, so we'll have to start the timer manually.
+		d->tmrMessageWidget->start();
 #  endif /* AUTO_TIMEOUT_MESSAGEWIDGET */
 #endif /* QT_VERSION < QT_VERSION_CHECK(5,0,0) */
-		}
-#endif /* HAVE_KMESSAGEWIDGET */
 	}
+#endif /* HAVE_KMESSAGEWIDGET */
 }

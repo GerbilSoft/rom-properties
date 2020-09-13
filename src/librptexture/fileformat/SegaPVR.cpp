@@ -155,7 +155,7 @@ SegaPVRPrivate::SegaPVRPrivate(SegaPVR *q, IRpFile *file)
 
 SegaPVRPrivate::~SegaPVRPrivate()
 {
-	delete img;
+	UNREF(img);
 }
 
 #if SYS_BYTEORDER == SYS_BIG_ENDIAN
@@ -666,7 +666,7 @@ const rp_image *SegaPVRPrivate::loadPvrImage(void)
 					// Need to unswizzle the texture.
 					rp_image *const img_unswz = svr_unswizzle_16(img);
 					if (img_unswz) {
-						delete img;
+						img->unref();
 						img = img_unswz;
 					}
 				}
@@ -770,7 +770,7 @@ const rp_image *SegaPVRPrivate::loadPvrImage(void)
 				// Need to unswizzle the texture.
 				rp_image *const img_unswz = svr_unswizzle_4or8(img);
 				if (img_unswz) {
-					delete img;
+					img->unref();
 					img = img_unswz;
 				}
 			}
@@ -821,7 +821,7 @@ const rp_image *SegaPVRPrivate::loadPvrImage(void)
 				// Need to unswizzle the texture.
 				rp_image *const img_unswz = svr_unswizzle_4or8(img);
 				if (img_unswz) {
-					delete img;
+					img->unref();
 					img = img_unswz;
 				}
 			}
@@ -1018,7 +1018,7 @@ rp_image *SegaPVRPrivate::svr_unswizzle_4or8(const rp_image *img_swz)
 	rp_image *const img = new rp_image(width, height, img_swz->format());
 	if (!img->isValid()) {
 		// Could not allocate the image.
-		delete img;
+		img->unref();
 		return nullptr;
 	}
 
@@ -1026,7 +1026,7 @@ rp_image *SegaPVRPrivate::svr_unswizzle_4or8(const rp_image *img_swz)
 	assert(img_swz->stride() == width);
 	assert(img->stride() == width);
 	if (img_swz->stride() != width || img->stride() != width) {
-		delete img;
+		img->unref();
 		return nullptr;
 	}
 
@@ -1120,7 +1120,7 @@ rp_image *SegaPVRPrivate::svr_unswizzle_16(const rp_image *img_swz)
 	rp_image *const img = new rp_image(width, height, img_swz->format());
 	if (!img->isValid()) {
 		// Could not allocate the image.
-		delete img;
+		img->unref();
 		return nullptr;
 	}
 
@@ -1130,7 +1130,7 @@ rp_image *SegaPVRPrivate::svr_unswizzle_16(const rp_image *img_swz)
 	if (img_swz->stride()/sizeof(uint32_t) != width ||
 	    img->stride()/sizeof(uint32_t) != width)
 	{
-		delete img;
+		img->unref();
 		return nullptr;
 	}
 

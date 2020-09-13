@@ -237,6 +237,9 @@ class klass : public LibRpBase::RomData { \
 		 * Check imgpf for IMGPF_ICON_ANIMATED first to see if this \
 		 * object has an animated icon. \
 		 * \
+		 * The retrieved IconAnimData must be ref()'d by the caller if the \
+		 * caller stores it instead of using it immediately. \
+		 * \
 		 * @return Animated icon data, or nullptr if no animated icon is present. \
 		 */ \
 		const LibRpBase::IconAnimData *iconAnimData(void) const final;
@@ -263,16 +266,16 @@ class klass : public LibRpBase::RomData { \
 		 * Internal function; called by RomData::romOps(). \
 		 * @return List of operations. \
 		 */ \
-		std::vector<RomOps> romOps_int(void) const final; \
+		std::vector<RomOp> romOps_int(void) const final; \
 		\
 		/** \
 		 * Perform a ROM operation. \
 		 * Internal function; called by RomData::doRomOp(). \
 		 * @param id		[in] Operation index. \
-		 * @param pResult	[out,opt] Result. (For UI updates) \
-		 * @return 0 on success; positive for "field updated" (subtract 1 for index); negative POSIX error code on error.
+		 * @param pParams	[in/out] Parameters and results. (for e.g. UI updates) \
+		 * @return 0 on success; negative POSIX error code on error.
 		 */ \
-		int doRomOp_int(int id, RomOpResult *pResult) final;
+		int doRomOp_int(int id, RomOpParams *pParams) final;
 
 /**
  * RomData subclass function declaration for closing the internal file handle.

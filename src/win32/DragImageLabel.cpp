@@ -79,6 +79,7 @@ class DragImageLabelPrivate
 				std::for_each(iconFrames.cbegin(), iconFrames.cend(),
 					[](HBITMAP hbmp) { if (hbmp) { DeleteBitmap(hbmp); } }
 				);
+				UNREF(iconAnimData);
 			}
 		};
 		anim_vars *anim;
@@ -140,6 +141,8 @@ DragImageLabelPrivate::DragImageLabelPrivate(HWND hwndParent)
 DragImageLabelPrivate::~DragImageLabelPrivate()
 {
 	delete anim;
+	UNREF(img);
+
 	if (hbmpImg) {
 		DeleteBitmap(hbmpImg);
 	}
@@ -439,8 +442,12 @@ bool DragImageLabel::setRpImage(const rp_image *img)
 {
 	RP_D(DragImageLabel);
 
+	// NOTE: We're not checking if the image pointer matches the
+	// previously stored image, since the underlying image may
+	// have changed.
+	UNREF_AND_NULL(d->img);
+
 	if (!img) {
-		d->img = nullptr;
 		if (d->hbmpImg) {
 			DeleteBitmap(d->hbmpImg);
 			d->hbmpImg = nullptr;
@@ -452,10 +459,7 @@ bool DragImageLabel::setRpImage(const rp_image *img)
 		return false;
 	}
 
-	// Don't check if the image pointer matches the
-	// previously stored image, since the underlying
-	// image may have changed.
-	d->img = img;
+	d->img = img->ref();
 	return d->updateBitmaps();
 }
 
@@ -475,16 +479,23 @@ bool DragImageLabel::setRpImage(const rp_image *img)
 bool DragImageLabel::setIconAnimData(const IconAnimData *iconAnimData)
 {
 	RP_D(DragImageLabel);
+
 	if (!d->anim) {
 		d->anim = new DragImageLabelPrivate::anim_vars(d->hwndParent);
 	}
+	auto *const anim = d->anim;
+
+	// NOTE: We're not checking if the image pointer matches the
+	// previously stored image, since the underlying image may
+	// have changed.
+	UNREF_AND_NULL(anim->iconAnimData);
 
 	if (!iconAnimData) {
-		if (d->anim->animTimerID) {
-			KillTimer(d->hwndParent, d->anim->animTimerID);
-			d->anim->animTimerID = 0;
+		if (anim->animTimerID) {
+			KillTimer(d->hwndParent, anim->animTimerID);
+			anim->animTimerID = 0;
 		}
-		d->anim->iconAnimData = nullptr;
+		anim->iconAnimData = nullptr;
 
 		if (!d->img) {
 			if (d->hbmpImg) {
@@ -497,10 +508,7 @@ bool DragImageLabel::setIconAnimData(const IconAnimData *iconAnimData)
 		return false;
 	}
 
-	// Don't check if the data pointer matches the
-	// previously stored data, since the underlying
-	// data may have changed.
-	d->anim->iconAnimData = iconAnimData;
+	anim->iconAnimData = iconAnimData->ref();
 	return d->updateBitmaps();
 }
 
@@ -519,7 +527,7 @@ void DragImageLabel::clearRp(void)
 		d->anim->iconAnimData = nullptr;
 	}
 
-	d->img = nullptr;
+	UNREF_AND_NULL(d->img);
 	if (d->hbmpImg) {
 		DeleteBitmap(d->hbmpImg);
 		d->hbmpImg = nullptr;

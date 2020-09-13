@@ -274,7 +274,7 @@ rp_image *fromBC7(int width, int height,
 	rp_image *const img = new rp_image(width, height, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
-		delete img;
+		img->unref();
 		return nullptr;
 	}
 
@@ -332,7 +332,7 @@ rp_image *fromBC7(int width, int height,
 		const int mode = get_mode(static_cast<uint32_t>(lsb));
 		if (mode < 0) {
 			// Invalid mode.
-			delete img;
+			img->unref();
 			return nullptr;
 		}
 		rshift128(msb, lsb, mode+1);

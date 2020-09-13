@@ -1427,8 +1427,8 @@ void KeyManagerTabPrivate::importWiiKeysBin(void)
 	const tstring tfilename = LibWin32Common::getOpenFileName(hWndPropSheet,
 		// tr: Wii keys.bin dialog title.
 		U82T_c(C_("KeyManagerTab", "Select Wii keys.bin File")),
-		// tr: Wii keys.bin file filter. (Win32) [Use '|' instead of '\0'! gettext() doesn't support embedded nulls.]
-		U82T_c(C_("KeyManagerTab", "keys.bin|keys.bin|Binary Files (*.bin)|*.bin|All Files (*.*)|*.*||")),
+		// tr: Wii keys.bin file filter. (RP format)
+		C_("KeyManagerTab", "keys.bin|keys.bin|-|Binary Files|*.bin|application/octet-stream|All Files|*.*|-"),
 		ts_keyFileDir.c_str());
 	if (tfilename.empty())
 		return;
@@ -1453,8 +1453,8 @@ void KeyManagerTabPrivate::importWiiUOtpBin(void)
 	const tstring tfilename = LibWin32Common::getOpenFileName(hWndPropSheet,
 		// tr: Wii U otp.bin dialog title.
 		U82T_c(C_("KeyManagerTab", "Select Wii U otp.bin File")),
-		// tr: Wii U otp.bin file filter. (Win32) [Use '|' instead of '\0'! gettext() doesn't support embedded nulls.]
-		U82T_c(C_("KeyManagerTab", "otp.bin|otp.bin|Binary Files (*.bin)|*.bin|All Files (*.*)|*.*||")),
+		// tr: Wii U otp.bin file filter. (RP format)
+		C_("KeyManagerTab", "otp.bin|otp.bin|-|Binary Files|*.bin|application/octet-stream|All Files|*.*|-"),
 		ts_keyFileDir.c_str());
 	if (tfilename.empty())
 		return;
@@ -1479,8 +1479,8 @@ void KeyManagerTabPrivate::import3DSboot9bin(void)
 	const tstring tfilename = LibWin32Common::getOpenFileName(hWndPropSheet,
 		// tr: 3DS boot9.bin dialog title.
 		U82T_c(C_("KeyManagerTab", "Select 3DS boot9.bin File")),
-		// tr: 3DS boot9.bin file filter. (Win32) [Use '|' instead of '\0'! gettext() doesn't support embedded nulls.]
-		U82T_c(C_("KeyManagerTab", "boot9.bin|boot9.bin|Binary Files (*.bin)|*.bin|All Files (*.*)|*.*||")),
+		// tr: 3DS boot9.bin file filter. (RP format)
+		C_("KeyManagerTab", "boot9.bin|boot9.bin|-|Binary Files|*.bin|application/octet-stream|All Files|*.*|-"),
 		ts_keyFileDir.c_str());
 	if (tfilename.empty())
 		return;
@@ -1505,8 +1505,8 @@ void KeyManagerTabPrivate::import3DSaeskeydb(void)
 	const tstring tfilename = LibWin32Common::getOpenFileName(hWndPropSheet,
 		// tr: aeskeydb.bin dialog title.
 		U82T_c(C_("KeyManagerTab", "Select 3DS aeskeydb.bin File")),
-		// tr: aeskeydb.bin file filter. (Win32) [Use '|' instead of '\0'! gettext() doesn't support embedded nulls.]
-		U82T_c(C_("KeyManagerTab", "aeskeydb.bin|aeskeydb.bin|Binary Files (*.bin)|*.bin|All Files (*.*)|*.*||")),
+		// tr: aeskeydb.bin file filter. (RP format)
+		C_("KeyManagerTab", "aeskeydb.bin|aeskeydb.bin|-|Binary Files|*.bin|application/octet-stream|All Files|*.*|-"),
 		ts_keyFileDir.c_str());
 	if (tfilename.empty())
 		return;

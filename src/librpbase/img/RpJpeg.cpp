@@ -261,7 +261,7 @@ rp_image *RpJpeg::loadUnchecked(IRpFile *file)
 			// NOTE: buffer is allocated using JPEG allocation functions,
 			// so it's automatically freed when we destroy cinfo.
 			jpeg_destroy_decompress(&cinfo);
-			delete img;
+			img->unref();
 			return nullptr;
 		}
 	}
@@ -345,7 +345,7 @@ rp_image *RpJpeg::loadUnchecked(IRpFile *file)
 			if (!img->isValid()) {
 				// Could not allocate the image.
 				jpeg_destroy_decompress(&cinfo);
-				delete img;
+				img->unref();
 				return nullptr;
 			}
 
@@ -355,7 +355,7 @@ rp_image *RpJpeg::loadUnchecked(IRpFile *file)
 			if (!img_palette) {
 				// No palette...
 				jpeg_destroy_decompress(&cinfo);
-				delete img;
+				img->unref();
 				return nullptr;
 			}
 
@@ -395,7 +395,7 @@ rp_image *RpJpeg::loadUnchecked(IRpFile *file)
 			if (!img->isValid()) {
 				// Could not allocate the image.
 				jpeg_destroy_decompress(&cinfo);
-				delete img;
+				img->unref();
 				return nullptr;
 			}
 			break;
@@ -416,7 +416,7 @@ rp_image *RpJpeg::loadUnchecked(IRpFile *file)
 			if (!img->isValid()) {
 				// Could not allocate the image.
 				jpeg_destroy_decompress(&cinfo);
-				delete img;
+				img->unref();
 				return nullptr;
 			}
 			break;
@@ -435,7 +435,7 @@ rp_image *RpJpeg::loadUnchecked(IRpFile *file)
 			if (!img->isValid()) {
 				// Could not allocate the image.
 				jpeg_destroy_decompress(&cinfo);
-				delete img;
+				img->unref();
 				return nullptr;
 			}
 			break;
@@ -445,7 +445,7 @@ rp_image *RpJpeg::loadUnchecked(IRpFile *file)
 			// Unsupported colorspace.
 			assert(!"Colorspace is not supported.");
 			jpeg_destroy_decompress(&cinfo);
-			delete img;
+			img->unref();
 			return nullptr;
 	}
 
@@ -549,7 +549,7 @@ rp_image *RpJpeg::loadUnchecked(IRpFile *file)
 				assert(!"Unsupported JPEG colorspace.");
 				jpeg_finish_decompress(&cinfo);
 				jpeg_destroy_decompress(&cinfo);
-				delete img;
+				img->unref();
 				return nullptr;
 		}
 

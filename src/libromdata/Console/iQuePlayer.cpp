@@ -127,8 +127,8 @@ iQuePlayerPrivate::iQuePlayerPrivate(iQuePlayer *q, IRpFile *file)
 
 iQuePlayerPrivate::~iQuePlayerPrivate()
 {
-	delete img_thumbnail;
-	delete img_title;
+	UNREF(img_thumbnail);
+	UNREF(img_title);
 }
 
 /**

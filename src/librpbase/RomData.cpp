@@ -20,6 +20,7 @@ using std::string;
 using std::vector;
 
 // librpfile, librptexture
+#include "librptexture/img/rp_image.hpp"
 using LibRpFile::IRpFile;
 using LibRpFile::RpFile;
 using LibRpTexture::rp_image;
@@ -495,6 +496,16 @@ void RomData::close(void)
 }
 
 /**
+ * Get a reference to the internal file.
+ * @return Reference to file, or nullptr on error.
+ */
+IRpFile *RomData::ref_file(void)
+{
+	RP_D(RomData);
+	return (d->file ? d->file->ref() : nullptr);
+}
+
+/**
  * Get the filename that was loaded.
  * @return Filename, or nullptr on error.
  */
@@ -695,7 +706,7 @@ int RomData::loadInternalImage(ImageType imageType, const rp_image **pImage)
 	} else if (imageType < IMG_INT_MIN || imageType > IMG_INT_MAX) {
 		// ImageType is out of range.
 		*pImage = nullptr;
-		return -ERANGE;
+		return -EINVAL;
 	}
 
 	// No images supported by the base class.
@@ -752,8 +763,8 @@ const RomMetaData *RomData::metaData(void) const
 /**
  * Get an internal image from the ROM.
  *
- * NOTE: The rp_image is owned by this object.
- * Do NOT delete this object until you're done using this rp_image.
+ * The retrieved image must be ref()'d by the caller if the
+ * caller stores it instead of using it immediately.
  *
  * @param imageType Image type to load.
  * @return Internal image, or nullptr if the ROM doesn't have one.
@@ -809,7 +820,7 @@ int RomData::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) co
 	assert(imageType >= IMG_EXT_MIN && imageType <= IMG_EXT_MAX);
 	if (imageType < IMG_EXT_MIN || imageType > IMG_EXT_MAX) {
 		// ImageType is out of range.
-		return -ERANGE;
+		return -EINVAL;
 	}
 	assert(pExtURLs != nullptr);
 	if (!pExtURLs) {
@@ -888,6 +899,9 @@ const char *RomData::getImageTypeName(ImageType imageType) {
  * Check imgpf for IMGPF_ICON_ANIMATED first to see if this
  * object has an animated icon.
  *
+ * The retrieved IconAnimData must be ref()'d by the caller if the
+ * caller stores it instead of using it immediately.
+ *
  * @return Animated icon data, or nullptr if no animated icon is present.
  */
 const IconAnimData *RomData::iconAnimData(void) const
@@ -911,58 +925,48 @@ bool RomData::hasDangerousPermissions(void) const
  * Get the list of operations that can be performed on this ROM.
  * @return List of operations.
  */
-vector<RomData::RomOps> RomData::romOps(void) const
+vector<RomData::RomOp> RomData::romOps(void) const
 {
 	RP_D(const RomData);
-	vector<RomData::RomOps> v_ret = romOps_int();
+	vector<RomOp> v_ops = romOps_int();
 
 	if (d->isCompressed) {
-		// Cannot run RomOps on a compressed file.
-		// Mark all options as disabled.
+		// Some RomOps can't be run on a compressed file.
+		// Disable those that can't.
 		// TODO: Indicate why they're disabled?
-		std::for_each(v_ret.begin(), v_ret.end(),
-			[](RomData::RomOps &op) {
-				op.flags &= ~RomOps::ROF_ENABLED;
+		std::for_each(v_ops.begin(), v_ops.end(),
+			[](RomData::RomOp &op) {
+				if (op.flags & RomOp::ROF_REQ_WRITABLE) {
+					op.flags &= ~RomOp::ROF_ENABLED;
+				}
 			}
 		);
 	}
 
-	return v_ret;
+	return v_ops;
 }
 
 /**
  * Perform a ROM operation.
  * @param id		[in] Operation index.
- * @param pResult	[out,opt] Result. (For UI updates)
- * @return 0 on success; positive for "field updated" (subtract 1 for index); negative POSIX error code on error.
+ * @param pParams	[in/out] Parameters and results. (for e.g. UI updates)
+ * @return 0 on success; negative POSIX error code on error.
  */
-int RomData::doRomOp(int id, RomOpResult *pResult)
+int RomData::doRomOp(int id, RomOpParams *pParams)
 {
 	RP_D(RomData);
+	// TODO: Function to retrieve only a single RomOp.
+	const vector<RomOp> v_ops = romOps_int();
+	assert(id >= 0);
+	assert(id < (int)v_ops.size());
+	assert(pParams != nullptr);
+	if (id < 0 || id >= (int)v_ops.size() || !pParams) {
+		return -EINVAL;
+	}
+
 	bool closeFileAfter;
 	if (d->file) {
 		closeFileAfter = false;
-		if (d->file->isCompressed()) {
-			// Cannot write to a compressed file.
-			if (pResult) {
-				pResult->status = -EIO;
-				pResult->msg = C_("RomData", "Cannot perform ROM operations on compressed files.");
-			}
-			return -EIO;
-		}
-
-		if (!d->file->isWritable()) {
-			// File is not writable. We'll need to reopen it.
-			int ret = d->file->makeWritable();
-			if (ret != 0) {
-				// Error making the file writable.
-				if (pResult) {
-					pResult->status = ret;
-					pResult->msg = C_("RomData", "Unable to write to the file.");
-				}
-				return ret;
-			}
-		}
 	} else {
 		// Reopen the file.
 		closeFileAfter = true;
@@ -973,17 +977,44 @@ int RomData::doRomOp(int id, RomOpResult *pResult)
 			if (ret == 0) {
 				ret = -EIO;
 			}
-			if (pResult) {
-				pResult->status = ret;
-				pResult->msg = C_("RomData", "Unable to reopen the file for writing.");
-			}
+			pParams->status = ret;
+			pParams->msg = C_("RomData", "Unable to reopen the file for writing.");
 			UNREF(file);
 			return ret;
 		}
 		d->file = file;
 	}
 
-	int ret = doRomOp_int(id, pResult);
+	// If the ROM operation requires a writable file,
+	// make sure it's writable.
+	if (v_ops[id].flags & RomOp::ROF_REQ_WRITABLE) {
+		// Writable file is required.
+		if (d->file->isCompressed()) {
+			// Cannot write to a compressed file.
+			pParams->status = -EIO;
+			pParams->msg = C_("RomData", "Cannot perform this ROM operation on a compressed file.");
+			if (closeFileAfter) {
+				UNREF_AND_NULL_NOCHK(d->file);
+			}
+			return -EIO;
+		}
+
+		if (!d->file->isWritable()) {
+			// File is not writable. We'll need to reopen it.
+			int ret = d->file->makeWritable();
+			if (ret != 0) {
+				// Error making the file writable.
+				pParams->status = ret;
+				pParams->msg = C_("RomData", "Cannot perform this ROM operation on a read-only file.");
+				if (closeFileAfter) {
+					UNREF_AND_NULL_NOCHK(d->file);
+				}
+				return ret;
+			}
+		}
+	}
+
+	int ret = doRomOp_int(id, pParams);
 	if (closeFileAfter) {
 		UNREF_AND_NULL_NOCHK(d->file);
 	}
@@ -995,27 +1026,25 @@ int RomData::doRomOp(int id, RomOpResult *pResult)
  * Internal function; called by RomData::romOps().
  * @return List of operations.
  */
-vector<RomData::RomOps> RomData::romOps_int(void) const
+vector<RomData::RomOp> RomData::romOps_int(void) const
 {
 	// Default implementation has no ROM operations.
-	return vector<RomData::RomOps>();
+	return vector<RomData::RomOp>();
 }
 
 /**
  * Perform a ROM operation.
  * Internal function; called by RomData::doRomOp().
  * @param id		[in] Operation index.
- * @param pResult	[out,opt] Result. (For UI updates)
+ * @param pParams	[in/out] Parameters and results. (for e.g. UI updates)
  * @return 0 on success; positive for "field updated" (subtract 1 for index); negative POSIX error code on error.
  */
-int RomData::doRomOp_int(int id, RomOpResult *pResult)
+int RomData::doRomOp_int(int id, RomOpParams *pParams)
 {
 	// Default implementation has no ROM operations.
 	RP_UNUSED(id);
-	if (pResult) {
-		pResult->status = -ENOTSUP;
-		pResult->msg = C_("RomData", "RomData object does not support any ROM operations.");
-	}
+	pParams->status = -ENOTSUP;
+	pParams->msg = C_("RomData", "RomData object does not support any ROM operations.");
 	return -ENOTSUP;
 }
 

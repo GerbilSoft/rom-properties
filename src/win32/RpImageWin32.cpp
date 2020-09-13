@@ -428,7 +428,7 @@ rp_image *RpImageWin32::fromHBITMAP(HBITMAP hBitmap)
 	rp_image *const img = new rp_image(bm.bmWidth, height, format);
 	if (!img->isValid()) {
 		// Could not allocate the image.
-		delete img;
+		img->unref();
 		return nullptr;
 	}
 
@@ -467,16 +467,17 @@ HICON RpImageWin32::toHICON(HBITMAP hBitmap)
 	// NOTE: Windows doesn't seem to have any way to get
 	// direct access to the HBITMAP's pixels, so this step
 	// step is required. (GetDIBits() copies the pixels.)
-	unique_ptr<rp_image> img(fromHBITMAP(hBitmap));
+	rp_image *const img = fromHBITMAP(hBitmap);
 	if (!img) {
 		// Error converting to rp_image.
 		return nullptr;
 	}
 
 	// Convert the image to an icon mask.
-	HBITMAP hbmMask = toHBITMAP_mask(img.get());
+	HBITMAP hbmMask = toHBITMAP_mask(img);
 	if (!hbmMask) {
 		// Failed to create the icon mask.
+		img->unref();
 		return nullptr;
 	}
 
@@ -494,5 +495,6 @@ HICON RpImageWin32::toHICON(HBITMAP hBitmap)
 
 	// Delete the icon mask bitmap and we're done.
 	DeleteBitmap(hbmMask);
+	img->unref();
 	return hIcon;
 }

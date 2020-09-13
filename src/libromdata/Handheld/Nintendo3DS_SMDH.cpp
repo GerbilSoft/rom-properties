@@ -90,7 +90,7 @@ Nintendo3DS_SMDH_Private::Nintendo3DS_SMDH_Private(Nintendo3DS_SMDH *q, IRpFile 
 Nintendo3DS_SMDH_Private::~Nintendo3DS_SMDH_Private()
 {
 	// Delete any loaded icons.
-	std::for_each(img_icon.begin(), img_icon.end(), [](rp_image *pImg) { delete pImg; });
+	std::for_each(img_icon.begin(), img_icon.end(), [](rp_image *img) { UNREF(img); });
 }
 
 /**

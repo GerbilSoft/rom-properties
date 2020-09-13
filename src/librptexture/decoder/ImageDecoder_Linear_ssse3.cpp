@@ -3,7 +3,7 @@
  * ImageDecoder_Linear.cpp: Image decoding functions. (Linear)             *
  * SSSE3-optimized version.                                                *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -76,10 +76,10 @@ rp_image *fromLinear24_ssse3(PixelFormat px_format,
 	}
 
 	// Create an rp_image.
-	rp_image *img = new rp_image(width, height, rp_image::Format::ARGB32);
+	rp_image *const img = new rp_image(width, height, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
-		delete img;
+		img->unref();
 		return nullptr;
 	}
 	const int dest_stride_adj = (img->stride() / sizeof(argb32_t)) - img->width();
@@ -103,7 +103,7 @@ rp_image *fromLinear24_ssse3(PixelFormat px_format,
 			break;
 		default:
 			assert(!"Unsupported 24-bit pixel format.");
-			delete img;
+			img->unref();
 			return nullptr;
 	}
 
@@ -155,7 +155,7 @@ rp_image *fromLinear24_ssse3(PixelFormat px_format,
 
 			default:
 				assert(!"Unsupported 24-bit pixel format.");
-				delete img;
+				img->unref();
 				return nullptr;
 		} }
 
@@ -245,10 +245,10 @@ rp_image *fromLinear32_ssse3(PixelFormat px_format,
 	}
 
 	// Create an rp_image.
-	rp_image *img = new rp_image(width, height, rp_image::Format::ARGB32);
+	rp_image *const img = new rp_image(width, height, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
-		delete img;
+		img->unref();
 		return nullptr;
 	}
 
@@ -287,7 +287,7 @@ rp_image *fromLinear32_ssse3(PixelFormat px_format,
 	switch (px_format) {
 		case PXF_HOST_ARGB32:
 			assert(!"ARGB32 is handled separately.");
-			delete img;
+			img->unref();
 			return nullptr;
 		case PXF_HOST_xRGB32:
 			// TODO: Only apply the alpha mask instead of shuffling.
@@ -326,7 +326,7 @@ rp_image *fromLinear32_ssse3(PixelFormat px_format,
 
 		default:
 			assert(!"Unsupported 32-bit pixel format.");
-			delete img;
+			img->unref();
 			return nullptr;
 	}
 
@@ -393,7 +393,7 @@ rp_image *fromLinear32_ssse3(PixelFormat px_format,
 
 				default:
 					assert(!"Unsupported 32-bit alpha pixel format.");
-					delete img;
+					img->unref();
 					return nullptr;
 			} }
 
@@ -492,7 +492,7 @@ rp_image *fromLinear32_ssse3(PixelFormat px_format,
 
 				default:
 					assert(!"Unsupported 32-bit no-alpha pixel format.");
-					delete img;
+					img->unref();
 					return nullptr;
 			} }
 
