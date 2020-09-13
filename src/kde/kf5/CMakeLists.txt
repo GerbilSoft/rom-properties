@@ -228,6 +228,9 @@ ENDIF(BUILD_KF5)
 IF(BUILD_KF5)
 	# Process MIME types for the .desktop and .json files.
 	INCLUDE(ParseMimeTypes)
+	PARSE_MIME_TYPES(MIMETYPES_THUMBONLY
+		"${CMAKE_SOURCE_DIR}/xdg/mime.thumbnail.types"
+		)
 	PARSE_MIME_TYPES(MIMETYPES_ALL
 		"${CMAKE_SOURCE_DIR}/xdg/mime.thumbnail.types"
 		"${CMAKE_SOURCE_DIR}/xdg/mime.no-thumbnail.types"
@@ -236,8 +239,9 @@ IF(BUILD_KF5)
 		"${CMAKE_SOURCE_DIR}/xdg/mime.thumbnail.types"
 		"${CMAKE_SOURCE_DIR}/xdg/mime.no-thumbnail.types"
 		)
-	CONFIGURE_FILE(rom-properties-kf5.desktop.in rom-properties-kf5.desktop @ONLY)
-	CONFIGURE_FILE(rom-properties-kf5.json.in    rom-properties-kf5.json    @ONLY)
+	CONFIGURE_FILE(rom-properties-kf5.KPropertiesDialog.desktop.in rom-properties-kf5.KPropertiesDialog.desktop @ONLY)
+	CONFIGURE_FILE(rom-properties-kf5.ThumbCreator.desktop.in      rom-properties-kf5.ThumbCreator.desktop @ONLY)
+	CONFIGURE_FILE(rom-properties-kf5.json.in                      rom-properties-kf5.json    @ONLY)
 
 	# FIXME: Installing the main plugin into ${KF5_PRPD_PLUGIN_INSTALL_DIR}
 	# breaks thumbnails. We might need to make a KPropertiesDialog forwarder.
@@ -253,7 +257,8 @@ IF(BUILD_KF5)
 		LIBRARY DESTINATION "${KF5_KOVI_PLUGIN_INSTALL_DIR}"
 		COMPONENT "plugin"
 		)
-	INSTALL(FILES "${CMAKE_CURRENT_BINARY_DIR}/rom-properties-kf5.desktop"
+	INSTALL(FILES "${CMAKE_CURRENT_BINARY_DIR}/rom-properties-kf5.KPropertiesDialog.desktop"
+		      "${CMAKE_CURRENT_BINARY_DIR}/rom-properties-kf5.ThumbCreator.desktop"
 		DESTINATION "${SERVICES_INSTALL_DIR}"
 		COMPONENT "plugin"
 		)

@@ -53,6 +53,13 @@
   * WiiWAD: Animated icons are now reported correctly by `rpcli`.
   * KDE: Fixed a memory leak in the overlay icon handler. This has been
     present since overlay icons were introduced in v1.4.
+  * KDE: Split the .desktop files into one for ThumbCreator and one for
+    KPropertiesDialog. This fixes e.g. Windows EXE thumbnailing, which
+    is supported by another plugin on KDE, but not by rom-properties;
+    however, rom-properties *does* support EXE for properties functions.
+    With both ThumbCreator and KPropertiesDialog in one .desktop file,
+    all MIME types were taken over by rom-properties for ThumbCreator,
+    even if those types weren't supported.
 
 * Other changes:
   * Windows: MSVC 2012 is now the minimum required compiler version if

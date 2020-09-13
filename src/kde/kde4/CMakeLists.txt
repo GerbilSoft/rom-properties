@@ -112,10 +112,17 @@ ENDIF(BUILD_KDE4)
 #######################
 
 IF(BUILD_KDE4)
-	# Process MIME types for the .desktop file.
+	# Process MIME types for the .desktop files.
 	INCLUDE(ParseMimeTypes)
-	PARSE_MIME_TYPES(MIMETYPES_ALL "${CMAKE_SOURCE_DIR}/xdg/mime.thumbnail.types" "${CMAKE_SOURCE_DIR}/xdg/mime.no-thumbnail.types")
-	CONFIGURE_FILE(rom-properties-kde4.desktop.in rom-properties-kde4.desktop @ONLY)
+	PARSE_MIME_TYPES(MIMETYPES_THUMBONLY
+		"${CMAKE_SOURCE_DIR}/xdg/mime.thumbnail.types"
+		)
+	PARSE_MIME_TYPES(MIMETYPES_ALL
+		"${CMAKE_SOURCE_DIR}/xdg/mime.thumbnail.types"
+		"${CMAKE_SOURCE_DIR}/xdg/mime.no-thumbnail.types"
+		)
+	CONFIGURE_FILE(rom-properties-kde4.KPropertiesDialog.desktop.in rom-properties-kde4.KPropertiesDialog.desktop @ONLY)
+	CONFIGURE_FILE(rom-properties-kde4.ThumbCreator.desktop.in      rom-properties-kde4.ThumbCreator.desktop @ONLY)
 
 	# FIXME: KDE4's installation directories have the prefix
 	# hard-coded. This should be removed.
@@ -123,7 +130,8 @@ IF(BUILD_KDE4)
 		LIBRARY DESTINATION "${PLUGIN_INSTALL_DIR}"
 		COMPONENT "plugin"
 		)
-	INSTALL(FILES "${CMAKE_CURRENT_BINARY_DIR}/rom-properties-kde4.desktop"
+	INSTALL(FILES "${CMAKE_CURRENT_BINARY_DIR}/rom-properties-kde4.KPropertiesDialog.desktop"
+		      "${CMAKE_CURRENT_BINARY_DIR}/rom-properties-kde4.ThumbCreator.desktop"
 		DESTINATION "${SERVICES_INSTALL_DIR}"
 		COMPONENT "plugin"
 		)

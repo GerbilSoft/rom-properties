@@ -1,6 +1,4 @@
 {
-    "CacheThumbnail": true,
-    "IgnoreMaximumSize": true,
     "KPlugin": {
         "MimeTypes": [
 @MIMETYPES_ALL_JSON_ARRAY@
@@ -9,7 +7,6 @@
         "Description": "ROM Properties Page for KDE Frameworks 5",
         "ServiceTypes": [
             "KPropertiesDialog/Plugin",
-            "ThumbCreator"
         ]
     },
     "MimeType": "@MIMETYPES_ALL@",
