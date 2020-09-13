@@ -51,7 +51,7 @@ vector<RomData::RomOp> Nintendo3DS::romOps_int(void) const
 	if (srl) {
 		RomOp op("E&xtract SRL...", RomOp::ROF_ENABLED | RomOp::ROF_SAVE_FILE);
 		op.sfi.title = C_("Nintendo3DS|RomOps", "Extract Nintendo DS SRL File");
-		op.sfi.filter = C_("Nintendo3DS|RomOps", "Nintendo DS SRL Files|*.srl|application/x-nintendo-ds-rom;application/x-nintendo-dsi-rom");
+		op.sfi.filter = C_("Nintendo3DS|RomOps", "Nintendo DS SRL Files|*.srl;*.nds|application/x-nintendo-ds-rom;application/x-nintendo-dsi-rom");
 
 		// Get the basename and change the extension to ".srl".
 		// TODO: Split into another function?
