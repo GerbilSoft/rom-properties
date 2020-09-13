@@ -900,6 +900,7 @@ bool EXE::hasDangerousPermissions(void) const
 {
 	RP_D(const EXE);
 
+#ifdef ENABLE_XML
 	// PE executables only.
 	if (d->exeType != EXEPrivate::ExeType::PE &&
 	    d->exeType != EXEPrivate::ExeType::PE32PLUS)
@@ -910,6 +911,10 @@ bool EXE::hasDangerousPermissions(void) const
 
 	// Check the Windows manifest for requestedExecutionLevel == requireAdministrator.
 	return d->doesExeRequireAdministrator();
+#else /* !ENABLE_XML */
+	// Nothing to check here, since TinyXML2 is disabled...
+	return false;
+#endif /* ENABLE_XML */
 }
 
 }
