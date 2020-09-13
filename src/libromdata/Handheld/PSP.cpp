@@ -657,8 +657,36 @@ int PSP::loadMetaData(void)
 	d->metaData->reserve(3);	// Maximum of 3 metadata properties.
 
 	// Add the PVD metadata.
-	// TODO: PSP-specific metadata?
 	ISO::addMetaData_PVD(d->metaData, &d->pvd);
+
+	// Add the disc ID and/or title from UMD_DATA.BIN.
+	// The PVD title is useless in most cases.
+	// TODO: Split this into a separate function?
+	// Show UMD_DATA.BIN fields.
+	// FIXME: Figure out what the fields are.
+	// - '|'-terminated fields.
+	// - Field 0: Game ID
+	// - Field 1: Encryption key?
+	// - Field 2: Revision?
+	// - Field 3: Age rating?
+	IRpFile *const umdDataBin = d->isoPartition->open("/UMD_DATA.BIN");
+	if (umdDataBin->isOpen()) {
+		// Read up to 128 bytes.
+		char buf[129];
+		size_t size = umdDataBin->read(buf, sizeof(buf)-1);
+		buf[size] = 0;
+
+		// Find the first '|'.
+		const char *p = static_cast<const char*>(memchr(buf, '|', sizeof(buf)));
+		if (p) {
+			// Game ID field on UMD Video discs is the video title.
+			d->metaData->addMetaData_string(Property::Title,
+				latin1_to_utf8(buf, static_cast<int>(p - buf)));
+		}
+	}
+	UNREF(umdDataBin);
+
+	// TODO: More PSP-specific metadata?
 
 	// Finished reading the metadata.
 	return static_cast<int>(d->metaData->count());

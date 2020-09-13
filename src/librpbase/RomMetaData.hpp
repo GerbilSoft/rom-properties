@@ -156,6 +156,10 @@ class RomMetaData
 			Property::Property name;		// Property name.
 			PropertyType::PropertyType type;	// Property type.
 			union _data {
+				// intptr_t field to cover everything.
+				// Mainly used to reset the entire field.
+				intptr_t iptrvalue;
+
 				// Integer property
 				int ivalue;
 
@@ -216,6 +220,10 @@ class RomMetaData
 
 		/**
 		 * Add metadata from another RomMetaData object.
+		 *
+		 * If metadata properties with the same names already exist,
+		 * they will be overwritten.
+		 *
 		 * @param other Source RomMetaData object.
 		 * @return Metadata index of the last metadata added.
 		 */
@@ -223,9 +231,13 @@ class RomMetaData
 
 		/**
 		 * Add an integer metadata property.
+		 *
+		 * If a metadata property with the same name already exists,
+		 * it will be overwritten.
+		 *
 		 * @param name Metadata name.
 		 * @param val Integer value.
-		 * @return Metadata index.
+		 * @return Metadata index, or -1 on error.
 		 */
 		int addMetaData_integer(Property::Property name, int value);
 
@@ -233,33 +245,45 @@ class RomMetaData
 		 * Add an unsigned integer metadata property.
 		 * @param name Metadata name.
 		 * @param val Unsigned integer value.
-		 * @return Metadata index.
+		 * @return Metadata index, or -1 on error.
 		 */
 		int addMetaData_uint(Property::Property name, unsigned int value);
 
 		/**
 		 * Add a string metadata property.
+		 *
+		 * If a metadata property with the same name already exists,
+		 * it will be overwritten.
+		 *
 		 * @param name Metadata name.
 		 * @param str String value.
 		 * @param flags Formatting flags.
-		 * @return Metadata index.
+		 * @return Metadata index, or -1 on error.
 		 */
 		int addMetaData_string(Property::Property name, const char *str, unsigned int flags = 0);
 
 		/**
 		 * Add a string metadata property.
+		 *
+		 * If a metadata property with the same name already exists,
+		 * it will be overwritten.
+		 *
 		 * @param name Metadata name.
 		 * @param str String value.
 		 * @param flags Formatting flags.
-		 * @return Metadata index.
+		 * @return Metadata index, or -1 on error.
 		 */
 		int addMetaData_string(Property::Property name, const std::string &str, unsigned int flags = 0);
 
 		/**
 		 * Add a timestamp metadata property.
+		 *
+		 * If a metadata property with the same name already exists,
+		 * it will be overwritten.
+		 *
 		 * @param name Metadata name.
 		 * @param timestamp UNIX timestamp.
-		 * @return Metadata index.
+		 * @return Metadata index, or -1 on error.
 		 */
 		int addMetaData_timestamp(Property::Property name, time_t timestamp);
 };
