@@ -1,5 +1,6 @@
 {
     "KPlugin": {
+        "Name": "overlayiconplugin_rom-properties-kf5",
         "Description": "Overlay icon for rom-properties",
         "ServiceTypes": [
             "KOverlayIconPlugin"
