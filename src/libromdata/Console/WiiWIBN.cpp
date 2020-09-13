@@ -25,7 +25,7 @@ namespace LibRomData {
 ROMDATA_IMPL(WiiWIBN)
 ROMDATA_IMPL_IMG(WiiWIBN)
 
-class WiiWIBNPrivate : public RomDataPrivate
+class WiiWIBNPrivate final : public RomDataPrivate
 {
 	public:
 		WiiWIBNPrivate(WiiWIBN *q, IRpFile *file);

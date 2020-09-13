@@ -27,7 +27,7 @@ namespace tinyxml2 {
 namespace LibRomData {
 
 class EXE;
-class EXEPrivate : public LibRpBase::RomDataPrivate
+class EXEPrivate final : public LibRpBase::RomDataPrivate
 {
 	public:
 		EXEPrivate(EXE *q, LibRpFile::IRpFile *file);

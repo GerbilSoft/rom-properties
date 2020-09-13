@@ -21,7 +21,7 @@ namespace LibRomData {
 
 ROMDATA_IMPL(PlayStationEXE)
 
-class PlayStationEXEPrivate : public RomDataPrivate
+class PlayStationEXEPrivate final : public RomDataPrivate
 {
 	public:
 		PlayStationEXEPrivate(PlayStationEXE *q, IRpFile *file, uint32_t sp_override);

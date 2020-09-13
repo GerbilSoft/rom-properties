@@ -15,7 +15,7 @@
 // Qt includes.
 #include <QtCore/QByteArray>
 
-class RpQByteArrayFile : public LibRpFile::IRpFile
+class RpQByteArrayFile final : public LibRpFile::IRpFile
 {
 	public:
 		/**

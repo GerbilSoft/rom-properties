@@ -24,7 +24,7 @@ namespace LibRomData {
 
 ROMDATA_IMPL(VirtualBoy)
 
-class VirtualBoyPrivate : public RomDataPrivate
+class VirtualBoyPrivate final : public RomDataPrivate
 {
 	public:
 		VirtualBoyPrivate(VirtualBoy *q, IRpFile *file);

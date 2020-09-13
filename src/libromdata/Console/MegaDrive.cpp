@@ -30,7 +30,7 @@ namespace LibRomData {
 
 ROMDATA_IMPL(MegaDrive)
 
-class MegaDrivePrivate : public RomDataPrivate
+class MegaDrivePrivate final : public RomDataPrivate
 {
 	public:
 		MegaDrivePrivate(MegaDrive *q, IRpFile *file);

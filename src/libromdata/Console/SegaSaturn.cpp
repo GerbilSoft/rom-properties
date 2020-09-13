@@ -30,7 +30,7 @@ namespace LibRomData {
 
 ROMDATA_IMPL(SegaSaturn)
 
-class SegaSaturnPrivate : public RomDataPrivate
+class SegaSaturnPrivate final : public RomDataPrivate
 {
 	public:
 		SegaSaturnPrivate(SegaSaturn *q, IRpFile *file);

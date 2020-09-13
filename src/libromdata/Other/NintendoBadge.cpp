@@ -28,7 +28,7 @@ namespace LibRomData {
 ROMDATA_IMPL(NintendoBadge)
 ROMDATA_IMPL_IMG_TYPES(NintendoBadge)
 
-class NintendoBadgePrivate : public RomDataPrivate
+class NintendoBadgePrivate final : public RomDataPrivate
 {
 	public:
 		NintendoBadgePrivate(NintendoBadge *q, IRpFile *file);

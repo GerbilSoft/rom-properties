@@ -22,7 +22,7 @@ namespace LibRomData {
 
 ROMDATA_IMPL(N64)
 
-class N64Private : public RomDataPrivate
+class N64Private final : public RomDataPrivate
 {
 	public:
 		N64Private(N64 *q, IRpFile *file);

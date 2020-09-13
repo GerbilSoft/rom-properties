@@ -38,7 +38,7 @@ namespace LibRpTexture {
 
 FILEFORMAT_IMPL(KhronosKTX)
 
-class KhronosKTXPrivate : public FileFormatPrivate
+class KhronosKTXPrivate final : public FileFormatPrivate
 {
 	public:
 		KhronosKTXPrivate(KhronosKTX *q, IRpFile *file);

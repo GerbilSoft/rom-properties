@@ -22,7 +22,7 @@ namespace LibRomData {
 
 ROMDATA_IMPL(PokemonMini)
 
-class PokemonMiniPrivate : public RomDataPrivate
+class PokemonMiniPrivate final : public RomDataPrivate
 {
 	public:
 		PokemonMiniPrivate(PokemonMini *q, IRpFile *file);

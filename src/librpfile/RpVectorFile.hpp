@@ -16,7 +16,7 @@
 
 namespace LibRpFile {
 
-class RpVectorFile : public IRpFile
+class RpVectorFile final : public IRpFile
 {
 	public:
 		/**

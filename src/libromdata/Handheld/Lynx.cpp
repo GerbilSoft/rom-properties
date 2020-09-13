@@ -19,7 +19,7 @@ namespace LibRomData {
 
 ROMDATA_IMPL(Lynx)
 
-class LynxPrivate : public RomDataPrivate
+class LynxPrivate final : public RomDataPrivate
 {
 	public:
 		LynxPrivate(Lynx *q, IRpFile *file);

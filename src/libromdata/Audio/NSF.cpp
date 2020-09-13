@@ -22,7 +22,7 @@ namespace LibRomData {
 
 ROMDATA_IMPL(NSF)
 
-class NSFPrivate : public RomDataPrivate
+class NSFPrivate final : public RomDataPrivate
 {
 	public:
 		NSFPrivate(NSF *q, IRpFile *file);

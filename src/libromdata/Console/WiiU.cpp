@@ -34,7 +34,7 @@ namespace LibRomData {
 ROMDATA_IMPL(WiiU)
 ROMDATA_IMPL_IMG(WiiU)
 
-class WiiUPrivate : public RomDataPrivate
+class WiiUPrivate final : public RomDataPrivate
 {
 	public:
 		WiiUPrivate(WiiU *q, IRpFile *file);

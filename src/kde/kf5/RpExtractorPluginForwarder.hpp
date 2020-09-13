@@ -22,7 +22,7 @@
 
 namespace RomPropertiesKDE {
 
-class RpExtractorPluginForwarder : public KFileMetaData::ExtractorPlugin
+class RpExtractorPluginForwarder final : public KFileMetaData::ExtractorPlugin
 {
 	Q_OBJECT
 	Q_PLUGIN_METADATA(IID "org.kde.kf5.kfilemetadata.ExtractorPlugin")

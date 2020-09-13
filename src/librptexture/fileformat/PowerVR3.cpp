@@ -36,7 +36,7 @@ namespace LibRpTexture {
 
 FILEFORMAT_IMPL(PowerVR3)
 
-class PowerVR3Private : public FileFormatPrivate
+class PowerVR3Private final : public FileFormatPrivate
 {
 	public:
 		PowerVR3Private(PowerVR3 *q, IRpFile *file);

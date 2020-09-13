@@ -28,7 +28,7 @@ namespace LibRomData {
 ROMDATA_IMPL(PlayStationSave)
 ROMDATA_IMPL_IMG(PlayStationSave)
 
-class PlayStationSavePrivate : public RomDataPrivate
+class PlayStationSavePrivate final : public RomDataPrivate
 {
 	public:
 		PlayStationSavePrivate(PlayStationSave *q, IRpFile *file);

@@ -18,7 +18,7 @@
 
 namespace LibRpFile {
 
-class RpFile_windres : public RpMemFile
+class RpFile_windres final : public RpMemFile
 {
 	public:
 		/**

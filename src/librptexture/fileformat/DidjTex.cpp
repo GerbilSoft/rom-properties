@@ -41,7 +41,7 @@ FILEFORMAT_IMPL(DidjTex)
 DELAYLOAD_TEST_FUNCTION_IMPL0(zlibVersion);
 #endif /* _MSC_VER */
 
-class DidjTexPrivate : public FileFormatPrivate
+class DidjTexPrivate final : public FileFormatPrivate
 {
 	public:
 		DidjTexPrivate(DidjTex *q, IRpFile *file);

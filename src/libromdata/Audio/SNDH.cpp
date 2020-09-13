@@ -37,7 +37,7 @@ namespace LibRomData {
 
 ROMDATA_IMPL(SNDH)
 
-class SNDHPrivate : public RomDataPrivate
+class SNDHPrivate final : public RomDataPrivate
 {
 	public:
 		SNDHPrivate(SNDH *q, IRpFile *file);

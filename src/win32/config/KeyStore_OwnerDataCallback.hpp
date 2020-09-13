@@ -16,7 +16,7 @@
 #include "libwin32common/sdk/IOwnerDataCallback.hpp"
 
 class KeyStoreWin32;
-class KeyStore_OwnerDataCallback : public LibWin32Common::ComBase<IOwnerDataCallback>
+class KeyStore_OwnerDataCallback final : public LibWin32Common::ComBase<IOwnerDataCallback>
 {
 	public:
 		explicit KeyStore_OwnerDataCallback(const KeyStoreWin32 *keyStore);

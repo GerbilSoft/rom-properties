@@ -27,7 +27,7 @@ namespace LibRomData {
 
 ROMDATA_IMPL(SAP)
 
-class SAPPrivate : public RomDataPrivate
+class SAPPrivate final : public RomDataPrivate
 {
 	public:
 		SAPPrivate(SAP *q, IRpFile *file);

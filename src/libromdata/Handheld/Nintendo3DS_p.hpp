@@ -35,7 +35,7 @@ class NCCHReader;
 class Nintendo3DS_SMDH;
 class NintendoDS;
 
-class Nintendo3DSPrivate : public LibRpBase::RomDataPrivate
+class Nintendo3DSPrivate final : public LibRpBase::RomDataPrivate
 {
 	public:
 		Nintendo3DSPrivate(Nintendo3DS *q, LibRpFile::IRpFile *file);

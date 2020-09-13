@@ -28,7 +28,7 @@ namespace LibRpTexture {
 
 FILEFORMAT_IMPL(SegaPVR)
 
-class SegaPVRPrivate : public FileFormatPrivate
+class SegaPVRPrivate final : public FileFormatPrivate
 {
 	public:
 		SegaPVRPrivate(SegaPVR *q, IRpFile *file);

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * CreateThumbnail.hpp: TCreateThumbnail<HBITMAP> implementation.          *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -98,7 +98,7 @@ class CreateThumbnail : public LibRomData::TCreateThumbnail<HBITMAP>
  * This version does NOT use alpha transparency.
  * COLOR_WINDOW is used for the background.
  */
-class CreateThumbnailNoAlpha : public CreateThumbnail
+class CreateThumbnailNoAlpha final : public CreateThumbnail
 {
 	public:
 		CreateThumbnailNoAlpha() { }

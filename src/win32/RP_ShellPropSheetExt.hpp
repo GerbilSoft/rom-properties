@@ -34,7 +34,7 @@ extern "C" {
 class RP_ShellPropSheetExt_Private;
 
 class UUID_ATTR("{2443C158-DF7C-4352-B435-BC9F885FFD52}")
-RP_ShellPropSheetExt : public LibWin32Common::ComBase2<IShellExtInit, IShellPropSheetExt>
+RP_ShellPropSheetExt final : public LibWin32Common::ComBase2<IShellExtInit, IShellPropSheetExt>
 {
 	public:
 		RP_ShellPropSheetExt();

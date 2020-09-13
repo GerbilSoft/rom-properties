@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE)                              *
  * KeyStoreModel.hpp: QAbstractListModel for KeyStore.                     *
  *                                                                         *
- * Copyright (c) 2012-2018 by David Korth.                                 *
+ * Copyright (c) 2012-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -15,7 +15,7 @@
 class KeyStoreQt;
 
 class KeyStoreModelPrivate;
-class KeyStoreModel : public QAbstractItemModel
+class KeyStoreModel final : public QAbstractItemModel
 {
 	Q_OBJECT
 	Q_PROPERTY(KeyStoreQt* keyStore READ keyStore WRITE setKeyStore NOTIFY keyStoreChanged)

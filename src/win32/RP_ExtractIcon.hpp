@@ -28,7 +28,7 @@ namespace LibWin32Common {
 class RP_ExtractIcon_Private;
 
 class UUID_ATTR("{E51BC107-E491-4B29-A6A3-2A4309259802}")
-RP_ExtractIcon : public LibWin32Common::ComBase3<IPersistFile, IExtractIconW, IExtractIconA>
+RP_ExtractIcon final : public LibWin32Common::ComBase3<IPersistFile, IExtractIconW, IExtractIconA>
 {
 	public:
 		RP_ExtractIcon();

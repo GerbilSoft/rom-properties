@@ -28,7 +28,7 @@ namespace LibRomData {
 ROMDATA_IMPL(RpTextureWrapper)
 ROMDATA_IMPL_IMG_TYPES(RpTextureWrapper)
 
-class RpTextureWrapperPrivate : public RomDataPrivate
+class RpTextureWrapperPrivate final : public RomDataPrivate
 {
 	public:
 		RpTextureWrapperPrivate(RpTextureWrapper *q, IRpFile *file);

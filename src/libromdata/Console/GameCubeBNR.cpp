@@ -31,7 +31,7 @@ namespace LibRomData {
 ROMDATA_IMPL(GameCubeBNR)
 ROMDATA_IMPL_IMG(GameCubeBNR)
 
-class GameCubeBNRPrivate : public RomDataPrivate
+class GameCubeBNRPrivate final : public RomDataPrivate
 {
 	public:
 		GameCubeBNRPrivate(GameCubeBNR *q, IRpFile *file);

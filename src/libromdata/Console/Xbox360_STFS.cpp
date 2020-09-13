@@ -39,7 +39,7 @@ ROMDATA_IMPL_IMG_TYPES(Xbox360_STFS)
 // Workaround for RP_D() expecting the no-underscore naming convention.
 #define Xbox360_STFSPrivate Xbox360_STFS_Private
 
-class Xbox360_STFS_Private : public RomDataPrivate
+class Xbox360_STFS_Private final : public RomDataPrivate
 {
 	public:
 		Xbox360_STFS_Private(Xbox360_STFS *q, IRpFile *file);

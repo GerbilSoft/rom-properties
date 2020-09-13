@@ -24,7 +24,7 @@ namespace LibRomData {
 ROMDATA_IMPL(Amiibo)
 ROMDATA_IMPL_IMG(Amiibo)
 
-class AmiiboPrivate : public RomDataPrivate
+class AmiiboPrivate final : public RomDataPrivate
 {
 	public:
 		AmiiboPrivate(Amiibo *q, IRpFile *file);

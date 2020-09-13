@@ -34,7 +34,7 @@ namespace LibRomData {
 
 ROMDATA_IMPL(XboxDisc)
 
-class XboxDiscPrivate : public LibRpBase::RomDataPrivate
+class XboxDiscPrivate final : public RomDataPrivate
 {
 	public:
 		XboxDiscPrivate(XboxDisc *q, LibRpFile::IRpFile *file);

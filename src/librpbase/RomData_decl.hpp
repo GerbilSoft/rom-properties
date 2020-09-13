@@ -25,7 +25,7 @@
  */
 #define ROMDATA_DECL_BEGIN(klass) \
 class klass##Private; \
-class klass : public LibRpBase::RomData { \
+class klass final : public LibRpBase::RomData { \
 	public: \
 		explicit klass(LibRpFile::IRpFile *file); \
 	protected: \

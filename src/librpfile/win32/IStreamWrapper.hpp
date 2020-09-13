@@ -20,7 +20,7 @@
 
 namespace LibRpFile {
 
-class IStreamWrapper : public LibWin32Common::ComBase<IStream>
+class IStreamWrapper final : public LibWin32Common::ComBase<IStream>
 {
 	public:
 		/**

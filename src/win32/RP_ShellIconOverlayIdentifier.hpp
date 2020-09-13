@@ -28,7 +28,7 @@ namespace LibWin32Common {
 class RP_ShellIconOverlayIdentifier_Private;
 
 class UUID_ATTR("{02C6AF01-3C99-497D-B3FC-E38CE526786B}")
-RP_ShellIconOverlayIdentifier : public LibWin32Common::ComBase<IShellIconOverlayIdentifier>
+RP_ShellIconOverlayIdentifier final : public LibWin32Common::ComBase<IShellIconOverlayIdentifier>
 {
 	public:
 		RP_ShellIconOverlayIdentifier();

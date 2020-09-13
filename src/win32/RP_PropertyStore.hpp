@@ -28,7 +28,7 @@ namespace LibWin32Common {
 class RP_PropertyStore_Private;
 
 class UUID_ATTR("{4A1E3510-50BD-4B03-A801-E4C954F43B96}")
-RP_PropertyStore : public LibWin32Common::ComBase3<IInitializeWithStream, IPropertyStore, IPropertyStoreCapabilities>
+RP_PropertyStore final : public LibWin32Common::ComBase3<IInitializeWithStream, IPropertyStore, IPropertyStoreCapabilities>
 {
 	public:
 		RP_PropertyStore();

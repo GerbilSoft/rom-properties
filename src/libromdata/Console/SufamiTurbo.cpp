@@ -24,7 +24,7 @@ namespace LibRomData {
 ROMDATA_IMPL(SufamiTurbo)
 ROMDATA_IMPL_IMG(SufamiTurbo)
 
-class SufamiTurboPrivate : public RomDataPrivate
+class SufamiTurboPrivate final : public RomDataPrivate
 {
 	public:
 		SufamiTurboPrivate(SufamiTurbo *q, IRpFile *file);

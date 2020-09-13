@@ -13,7 +13,7 @@
 
 namespace LibRpFile {
 
-class DualFile : public IRpFile
+class DualFile final : public IRpFile
 {
 	public:
 		/**

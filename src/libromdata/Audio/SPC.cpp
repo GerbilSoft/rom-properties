@@ -24,7 +24,7 @@ namespace LibRomData {
 
 ROMDATA_IMPL(SPC)
 
-class SPCPrivate : public RomDataPrivate
+class SPCPrivate final : public RomDataPrivate
 {
 	public:
 		SPCPrivate(SPC *q, IRpFile *file);

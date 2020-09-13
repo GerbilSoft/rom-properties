@@ -22,7 +22,7 @@ namespace LibRomData {
 
 ROMDATA_IMPL(NGPC)
 
-class NGPCPrivate : public RomDataPrivate
+class NGPCPrivate final : public RomDataPrivate
 {
 	public:
 		NGPCPrivate(NGPC *q, IRpFile *file);

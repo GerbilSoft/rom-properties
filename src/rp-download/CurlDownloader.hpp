@@ -13,7 +13,7 @@
 
 namespace RpDownload {
 
-class CurlDownloader : public IDownloader
+class CurlDownloader final : public IDownloader
 {
 	public:
 		CurlDownloader();

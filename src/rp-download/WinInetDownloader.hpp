@@ -13,7 +13,7 @@
 
 namespace RpDownload {
 
-class WinInetDownloader : public IDownloader
+class WinInetDownloader final : public IDownloader
 {
 	public:
 		WinInetDownloader();

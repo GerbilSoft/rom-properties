@@ -25,7 +25,7 @@ namespace LibRomData {
 ROMDATA_IMPL(GameCom)
 ROMDATA_IMPL_IMG(GameCom)
 
-class GameComPrivate : public RomDataPrivate
+class GameComPrivate final : public RomDataPrivate
 {
 	public:
 		GameComPrivate(GameCom *q, IRpFile *file);

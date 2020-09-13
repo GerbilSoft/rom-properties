@@ -39,7 +39,7 @@ namespace LibRomData {
 
 ROMDATA_IMPL(PlayStationDisc)
 
-class PlayStationDiscPrivate : public LibRpBase::RomDataPrivate
+class PlayStationDiscPrivate final : public RomDataPrivate
 {
 	public:
 		PlayStationDiscPrivate(PlayStationDisc *q, LibRpFile::IRpFile *file);

@@ -38,7 +38,7 @@ namespace LibRomData {
 
 ROMDATA_IMPL(ISO)
 
-class ISOPrivate : public LibRpBase::RomDataPrivate
+class ISOPrivate final : public RomDataPrivate
 {
 	public:
 		ISOPrivate(ISO *q, LibRpFile::IRpFile *file);

@@ -23,7 +23,7 @@ namespace LibRomData {
 
 ROMDATA_IMPL(DreamcastSave)
 
-class DreamcastSavePrivate : public RomDataPrivate
+class DreamcastSavePrivate final : public RomDataPrivate
 {
 	public:
 		DreamcastSavePrivate(DreamcastSave *q, IRpFile *file);

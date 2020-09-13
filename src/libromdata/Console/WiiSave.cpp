@@ -36,7 +36,7 @@ namespace LibRomData {
 ROMDATA_IMPL(WiiSave)
 ROMDATA_IMPL_IMG(WiiSave)
 
-class WiiSavePrivate : public RomDataPrivate
+class WiiSavePrivate final : public RomDataPrivate
 {
 	public:
 		WiiSavePrivate(WiiSave *q, IRpFile *file);

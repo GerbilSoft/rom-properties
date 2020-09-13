@@ -29,7 +29,7 @@ namespace LibRomData {
 
 ROMDATA_IMPL(DMG)
 
-class DMGPrivate : public RomDataPrivate
+class DMGPrivate final : public RomDataPrivate
 {
 	public:
 		DMGPrivate(DMG *q, IRpFile *file);

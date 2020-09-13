@@ -12,7 +12,7 @@
 #include "libromdata/crypto/KeyStoreUI.hpp"
 #include "common.h"
 
-class KeyStoreWin32 : public LibRomData::KeyStoreUI
+class KeyStoreWin32 final : public LibRomData::KeyStoreUI
 {
 	public:
 		explicit KeyStoreWin32(HWND hWnd);

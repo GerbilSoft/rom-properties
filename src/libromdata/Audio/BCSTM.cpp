@@ -22,7 +22,7 @@ namespace LibRomData {
 
 ROMDATA_IMPL(BCSTM)
 
-class BCSTMPrivate : public RomDataPrivate
+class BCSTMPrivate final : public RomDataPrivate
 {
 	public:
 		BCSTMPrivate(BCSTM *q, IRpFile *file);

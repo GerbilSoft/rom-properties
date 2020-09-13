@@ -29,7 +29,7 @@ namespace LibRpFile {
 
 namespace LibRomData {
 
-class NintendoDSPrivate : public LibRpBase::RomDataPrivate
+class NintendoDSPrivate final : public LibRpBase::RomDataPrivate
 {
 	public:
 		NintendoDSPrivate(NintendoDS *q, LibRpFile::IRpFile *file, bool cia);

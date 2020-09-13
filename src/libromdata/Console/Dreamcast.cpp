@@ -39,7 +39,7 @@ namespace LibRomData {
 ROMDATA_IMPL(Dreamcast)
 ROMDATA_IMPL_IMG_TYPES(Dreamcast)
 
-class DreamcastPrivate : public RomDataPrivate
+class DreamcastPrivate final : public RomDataPrivate
 {
 	public:
 		DreamcastPrivate(Dreamcast *q, IRpFile *file);

@@ -44,7 +44,7 @@ namespace LibRomData {
 
 ROMDATA_IMPL(ELF)
 
-class ELFPrivate : public LibRpBase::RomDataPrivate
+class ELFPrivate final : public RomDataPrivate
 {
 	public:
 		ELFPrivate(ELF *q, LibRpFile::IRpFile *file);

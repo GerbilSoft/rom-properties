@@ -37,7 +37,7 @@ ROMDATA_IMPL_IMG_SIZES(Xbox360_XDBF)
 // Workaround for RP_D() expecting the no-underscore naming convention.
 #define Xbox360_XDBFPrivate Xbox360_XDBF_Private
 
-class Xbox360_XDBF_Private : public RomDataPrivate
+class Xbox360_XDBF_Private final : public RomDataPrivate
 {
 	public:
 		Xbox360_XDBF_Private(Xbox360_XDBF *q, IRpFile *file, bool cia);

@@ -42,7 +42,7 @@ namespace LibRpTexture {
  */
 #define FILEFORMAT_DECL_BEGIN(klass) \
 class klass##Private; \
-class klass : public LibRpTexture::FileFormat { \
+class klass final : public LibRpTexture::FileFormat { \
 	public: \
 		explicit klass(LibRpFile::IRpFile *file); \
 	protected: \

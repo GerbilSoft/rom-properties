@@ -11,7 +11,7 @@
 
 #include <QtCore/QTranslator>
 
-class GettextTranslator : public QTranslator
+class GettextTranslator final : public QTranslator
 {
 	Q_OBJECT
 

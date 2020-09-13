@@ -41,7 +41,7 @@ ROMDATA_IMPL_IMG(iQuePlayer)
 DELAYLOAD_TEST_FUNCTION_IMPL0(zlibVersion);
 #endif /* _MSC_VER */
 
-class iQuePlayerPrivate : public RomDataPrivate
+class iQuePlayerPrivate final : public RomDataPrivate
 {
 	public:
 		iQuePlayerPrivate(iQuePlayer *q, IRpFile *file);

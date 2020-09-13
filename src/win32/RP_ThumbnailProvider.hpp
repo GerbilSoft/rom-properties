@@ -34,7 +34,7 @@ namespace LibWin32Common {
 class RP_ThumbnailProvider_Private;
 
 class UUID_ATTR("{4723DF58-463E-4590-8F4A-8D9DD4F4355A}")
-RP_ThumbnailProvider : public LibWin32Common::ComBase2<IInitializeWithStream, IThumbnailProvider>
+RP_ThumbnailProvider final : public LibWin32Common::ComBase2<IInitializeWithStream, IThumbnailProvider>
 {
 	public:
 		RP_ThumbnailProvider();

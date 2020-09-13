@@ -34,7 +34,7 @@ namespace LibRpTexture {
 
 FILEFORMAT_IMPL(ValveVTF)
 
-class ValveVTFPrivate : public FileFormatPrivate
+class ValveVTFPrivate final : public FileFormatPrivate
 {
 	public:
 		ValveVTFPrivate(ValveVTF *q, IRpFile *file);

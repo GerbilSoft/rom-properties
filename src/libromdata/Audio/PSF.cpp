@@ -26,7 +26,7 @@ namespace LibRomData {
 
 ROMDATA_IMPL(PSF)
 
-class PSFPrivate : public RomDataPrivate
+class PSFPrivate final : public RomDataPrivate
 {
 	public:
 		PSFPrivate(PSF *q, IRpFile *file);

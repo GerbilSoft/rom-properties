@@ -30,7 +30,7 @@ namespace LibRomData {
 
 ROMDATA_IMPL(Nintendo3DSFirm)
 
-class Nintendo3DSFirmPrivate : public RomDataPrivate
+class Nintendo3DSFirmPrivate final : public RomDataPrivate
 {
 	public:
 		Nintendo3DSFirmPrivate(Nintendo3DSFirm *q, IRpFile *file);

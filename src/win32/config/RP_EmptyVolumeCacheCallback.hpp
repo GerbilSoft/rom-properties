@@ -20,7 +20,7 @@
 #include "common.h"
 #include "libwin32common/ComBase.hpp"
 
-class RP_EmptyVolumeCacheCallback : public LibWin32Common::ComBase<IEmptyVolumeCacheCallBack>
+class RP_EmptyVolumeCacheCallback final : public LibWin32Common::ComBase<IEmptyVolumeCacheCallBack>
 {
 	public:
 		explicit RP_EmptyVolumeCacheCallback(HWND hProgressBar);

@@ -16,7 +16,7 @@
 // (This was merged into ThumbCreator for KF5.)
 
 class RomThumbCreatorPrivate;
-class RomThumbCreator : public ThumbCreator
+class RomThumbCreator final : public ThumbCreator
 {
 	public:
 		RomThumbCreator();

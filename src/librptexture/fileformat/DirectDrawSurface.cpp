@@ -32,7 +32,7 @@ namespace LibRpTexture {
 
 FILEFORMAT_IMPL(DirectDrawSurface)
 
-class DirectDrawSurfacePrivate : public FileFormatPrivate
+class DirectDrawSurfacePrivate final : public FileFormatPrivate
 {
 	public:
 		DirectDrawSurfacePrivate(DirectDrawSurface *q, IRpFile *file);

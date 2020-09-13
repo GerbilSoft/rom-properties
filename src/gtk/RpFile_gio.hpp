@@ -13,7 +13,7 @@
 #include "librpfile/IRpFile.hpp"
 
 class RpFileGioPrivate;
-class RpFileGio : public LibRpFile::IRpFile
+class RpFileGio final : public LibRpFile::IRpFile
 {
 	public:
 		/**

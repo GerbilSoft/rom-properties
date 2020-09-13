@@ -32,7 +32,7 @@ ROMDATA_IMPL_IMG_SIZES(Nintendo3DS_SMDH)
 // Workaround for RP_D() expecting the no-underscore naming convention.
 #define Nintendo3DS_SMDHPrivate Nintendo3DS_SMDH_Private
 
-class Nintendo3DS_SMDH_Private : public RomDataPrivate
+class Nintendo3DS_SMDH_Private final : public RomDataPrivate
 {
 	public:
 		Nintendo3DS_SMDH_Private(Nintendo3DS_SMDH *q, IRpFile *file);

@@ -24,7 +24,7 @@ namespace LibRomData {
 ROMDATA_IMPL(GameBoyAdvance)
 ROMDATA_IMPL_IMG(GameBoyAdvance)
 
-class GameBoyAdvancePrivate : public RomDataPrivate
+class GameBoyAdvancePrivate final : public RomDataPrivate
 {
 	public:
 		GameBoyAdvancePrivate(GameBoyAdvance *q, IRpFile *file);

@@ -24,7 +24,7 @@ namespace LibRomData {
 
 ROMDATA_IMPL(VGM)
 
-class VGMPrivate : public RomDataPrivate
+class VGMPrivate final : public RomDataPrivate
 {
 	public:
 		VGMPrivate(VGM *q, IRpFile *file);

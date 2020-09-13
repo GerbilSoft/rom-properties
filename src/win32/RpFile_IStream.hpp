@@ -15,7 +15,7 @@
 // zlib
 struct z_stream_s;
 
-class RpFile_IStream : public LibRpFile::IRpFile
+class RpFile_IStream final : public LibRpFile::IRpFile
 {
 	public:
 		/**

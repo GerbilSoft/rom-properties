@@ -40,7 +40,7 @@ namespace LibRomData {
 ROMDATA_IMPL(PSP)
 ROMDATA_IMPL_IMG_TYPES(PSP)
 
-class PSPPrivate : public LibRpBase::RomDataPrivate
+class PSPPrivate final : public LibRpBase::RomDataPrivate
 {
 	public:
 		PSPPrivate(PSP *q, LibRpFile::IRpFile *file);

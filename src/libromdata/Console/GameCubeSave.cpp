@@ -28,7 +28,7 @@ namespace LibRomData {
 ROMDATA_IMPL(GameCubeSave)
 ROMDATA_IMPL_IMG(GameCubeSave)
 
-class GameCubeSavePrivate : public RomDataPrivate
+class GameCubeSavePrivate final : public RomDataPrivate
 {
 	public:
 		GameCubeSavePrivate(GameCubeSave *q, IRpFile *file);

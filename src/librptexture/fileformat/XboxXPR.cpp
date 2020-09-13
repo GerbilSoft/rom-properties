@@ -24,7 +24,7 @@ namespace LibRpTexture {
 
 FILEFORMAT_IMPL(XboxXPR)
 
-class XboxXPRPrivate : public FileFormatPrivate
+class XboxXPRPrivate final : public FileFormatPrivate
 {
 	public:
 		XboxXPRPrivate(XboxXPR *q, IRpFile *file);

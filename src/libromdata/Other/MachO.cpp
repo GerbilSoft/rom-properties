@@ -27,7 +27,7 @@ namespace LibRomData {
 
 ROMDATA_IMPL(MachO)
 
-class MachOPrivate : public LibRpBase::RomDataPrivate
+class MachOPrivate final : public RomDataPrivate
 {
 	public:
 		MachOPrivate(MachO *q, LibRpFile::IRpFile *file);

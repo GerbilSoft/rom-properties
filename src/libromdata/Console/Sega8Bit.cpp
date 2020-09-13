@@ -22,7 +22,7 @@ namespace LibRomData {
 
 ROMDATA_IMPL(Sega8Bit)
 
-class Sega8BitPrivate : public RomDataPrivate
+class Sega8BitPrivate final : public RomDataPrivate
 {
 	public:
 		Sega8BitPrivate(Sega8Bit *q, IRpFile *file);

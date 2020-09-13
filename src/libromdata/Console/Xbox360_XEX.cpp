@@ -50,7 +50,7 @@ ROMDATA_IMPL(Xbox360_XEX)
 // Workaround for RP_D() expecting the no-underscore naming convention.
 #define Xbox360_XEXPrivate Xbox360_XEX_Private
 
-class Xbox360_XEX_Private : public RomDataPrivate
+class Xbox360_XEX_Private final : public RomDataPrivate
 {
 	public:
 		Xbox360_XEX_Private(Xbox360_XEX *q, IRpFile *file);

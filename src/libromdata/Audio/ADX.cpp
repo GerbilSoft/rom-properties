@@ -22,7 +22,7 @@ namespace LibRomData {
 
 ROMDATA_IMPL(ADX)
 
-class ADXPrivate : public RomDataPrivate
+class ADXPrivate final : public RomDataPrivate
 {
 	public:
 		ADXPrivate(ADX *q, IRpFile *file);

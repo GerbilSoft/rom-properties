@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * ImageTypesTab.hpp: Image Types tab for rp-config.                       *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -12,7 +12,7 @@
 #include "ITab.hpp"
 
 class ImageTypesTabPrivate;
-class ImageTypesTab : public ITab
+class ImageTypesTab final : public ITab
 {
 	public:
 		ImageTypesTab();

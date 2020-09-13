@@ -22,7 +22,7 @@ namespace LibRomData {
 
 ROMDATA_IMPL(SID)
 
-class SIDPrivate : public RomDataPrivate
+class SIDPrivate final : public RomDataPrivate
 {
 	public:
 		SIDPrivate(SID *q, IRpFile *file);

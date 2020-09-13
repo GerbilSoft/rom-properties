@@ -26,7 +26,7 @@ namespace LibRomData {
 ROMDATA_IMPL(SNES)
 ROMDATA_IMPL_IMG(SNES)
 
-class SNESPrivate : public RomDataPrivate
+class SNESPrivate final : public RomDataPrivate
 {
 	public:
 		SNESPrivate(SNES *q, IRpFile *file);
