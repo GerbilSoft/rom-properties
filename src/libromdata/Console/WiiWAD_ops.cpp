@@ -69,7 +69,7 @@ vector<RomData::RomOp> WiiWAD::romOps_int(void) const
 		op.filename += ".srl";
 	}
 #else /* !ENABLE_DECRYPTION */
-	op.sfi.flags &= ~RomOp::ROF_ENABLED;
+	op.flags &= ~RomOp::ROF_ENABLED;
 #endif /* ENABLE_DECRYPTION */
 
 	ops.emplace_back(std::move(op));
