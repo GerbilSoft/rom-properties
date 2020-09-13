@@ -30,6 +30,8 @@
     DSi Nmenu. These have the same basic format as WADs, including ticket
     and TMD, but the contents are different.
   * WiiWAD: New ROM operation for extracting SRLs from DSi TAD packages.
+  * EXE: Show the "dangerous permissions" overlay for Windows executables
+    that have requestedExecutionLevel == requireAdministrator.
 
 * Bug fixes:
   * PlayStationDisc:

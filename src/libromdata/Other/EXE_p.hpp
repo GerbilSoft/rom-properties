@@ -19,6 +19,11 @@
 // Reference: http://andreoffringa.org/?q=uvector
 #include "uvector.h"
 
+// TinyXML2
+namespace tinyxml2 {
+	class XMLDocument;
+}
+
 namespace LibRomData {
 
 class EXE;
@@ -173,11 +178,33 @@ class EXEPrivate : public LibRpBase::RomDataPrivate
 		void addFields_PE(void);
 
 #ifdef ENABLE_XML
+	private:
+		/**
+		 * Load the Win32 manifest resource.
+		 *
+		 * The XML is loaded and parsed using the specified
+		 * TinyXML document.
+		 *
+		 * @param doc		[in/out] XML document.
+		 * @param ppResName	[out,opt] Pointer to receive the loaded resource name. (statically-allocated string)
+		 * @return 0 on success; negative POSIX error code on error.
+		 */
+		ATTR_ACCESS(read_write, 2)
+		ATTR_ACCESS(write_only, 3)
+		int loadWin32ManifestResource(tinyxml2::XMLDocument &doc, const char **ppResName = nullptr) const;
+
+	public:
 		/**
 		 * Add fields from the Win32 manifest resource.
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
 		int addFields_PE_Manifest(void);
+
+		/**
+		 * Is the requestedExecutionLevel set to requireAdministrator?
+		 * @return True if set; false if not or unable to determine.
+		 */
+		bool doesExeRequireAdministrator(void) const;
 #endif /* ENABLE_XML */
 };
 

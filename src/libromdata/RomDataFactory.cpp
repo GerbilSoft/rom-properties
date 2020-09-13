@@ -328,7 +328,7 @@ const RomDataFactoryPrivate::RomDataFns RomDataFactoryPrivate::romDataFns_header
 
 	// The following formats have 16-bit magic numbers,
 	// so they should go at the end of the address=0 section.
-	GetRomDataFns(EXE, ATTR_NONE),	// TODO: Thumbnailing on non-Windows platforms.
+	GetRomDataFns(EXE, ATTR_HAS_DPOVERLAY),	// TODO: Thumbnailing on non-Windows platforms.
 	GetRomDataFns(PlayStationSave, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA),
 
 	// NOTE: game.com may be at either 0 or 0x40000.

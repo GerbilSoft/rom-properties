@@ -891,4 +891,25 @@ int EXE::loadFieldData(void)
 	return static_cast<int>(d->fields->count());
 }
 
+/**
+ * Does this ROM image have "dangerous" permissions?
+ *
+ * @return True if the ROM image has "dangerous" permissions; false if not.
+ */
+bool EXE::hasDangerousPermissions(void) const
+{
+	RP_D(const EXE);
+
+	// PE executables only.
+	if (d->exeType != EXEPrivate::ExeType::PE &&
+	    d->exeType != EXEPrivate::ExeType::PE32PLUS)
+	{
+		// Not a PE executable.
+		return false;
+	}
+
+	// Check the Windows manifest for requestedExecutionLevel == requireAdministrator.
+	return d->doesExeRequireAdministrator();
+}
+
 }
