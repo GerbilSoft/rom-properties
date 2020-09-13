@@ -6,7 +6,7 @@
         "Name": "rom-properties-kf5",
         "Description": "ROM Properties Page for KDE Frameworks 5",
         "ServiceTypes": [
-            "KPropertiesDialog/Plugin",
+            "KPropertiesDialog/Plugin"
         ]
     },
     "MimeType": "@MIMETYPES_ALL@",
