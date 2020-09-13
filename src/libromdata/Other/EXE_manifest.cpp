@@ -398,8 +398,8 @@ bool EXEPrivate::doesExeRequireAdministrator(void) const
 #if defined(_MSC_VER) && defined(XML_IS_DLL)
 	// Delay load verification.
 	// TODO: Only if linked with /DELAYLOAD?
-	int ret = DelayLoad_test_TinyXML2();
-	if (ret != 0) {
+	int ret_dl = DelayLoad_test_TinyXML2();
+	if (ret_dl != 0) {
 		// Delay load failed.
 		return false;
 	}
