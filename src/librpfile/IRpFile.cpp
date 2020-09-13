@@ -117,6 +117,7 @@ int IRpFile::copyTo(IRpFile *pDestFile, off64_t size,
 	if (pcbWritten) {
 		*pcbWritten = cbWrittenTotal;
 	}
+	free(buf);
 	return ret;
 }
 
