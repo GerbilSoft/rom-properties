@@ -17,7 +17,7 @@
 // C includes. (C++ namespace)
 #include <cstdio>
 
-namespace LibRpBase { namespace Tests {
+namespace LibRpCpu { namespace Tests {
 
 class ByteswapTest : public ::testing::Test
 {
@@ -386,8 +386,8 @@ DO_ARRAY_32_unQWORD_BENCHMARK	(dispatch, true, "")
  */
 extern "C" int gtest_main(int argc, TCHAR *argv[])
 {
-	fprintf(stderr, "LibRpBase test suite: Byteswap tests.\n\n");
-	fprintf(stderr, "Benchmark iterations: %u\n", LibRpBase::Tests::ByteswapTest::BENCHMARK_ITERATIONS);
+	fprintf(stderr, "LibRpCpu test suite: Byteswap tests.\n\n");
+	fprintf(stderr, "Benchmark iterations: %u\n", LibRpCpu::Tests::ByteswapTest::BENCHMARK_ITERATIONS);
 	fflush(nullptr);
 
 	// coverity[fun_call_w_exception]: uncaught exceptions cause nonzero exit anyway, so don't warn.
