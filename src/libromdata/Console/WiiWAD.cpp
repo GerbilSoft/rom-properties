@@ -1225,6 +1225,7 @@ int WiiWAD::loadMetaData(void)
 		return -EIO;
 	}
 
+#ifdef ENABLE_DECRYPTION
 	if (be16_to_cpu(d->tmdHeader.title_id.sysID) == NINTENDO_SYSID_TWL) {
 		// DSi TAD package.
 		// Get the metadata from the SRL if it's available.
@@ -1239,6 +1240,7 @@ int WiiWAD::loadMetaData(void)
 			}
 		}
 	}
+#endif /* ENABLE_DECRYPTION */
 
 	// TODO: Game title from WIBN if it's available.
 
