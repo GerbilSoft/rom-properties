@@ -15,8 +15,9 @@
   * Nintendo3DS: New ROM operation for extracting SRLs from DSiWare CIAs.
 
 * New parsers:
-  * PSP: PlayStation Portable disc images. Supports ISO, CISOv1, CISOv2,
-    ZISO, JISO, and DAX. PARAM.SFO and firmware updates aren't parsed yet.
+  * PSP: PlayStation Portable disc images. Supports both PSP game and UMD
+    video discs in ISO, CISOv1, CISOv2, ZISO, JISO, and DAX formats.
+    * PARAM.SFO and firmware updates aren't parsed yet.
 
 * New parser features:
   * Dreamcast: Added metadata properties.

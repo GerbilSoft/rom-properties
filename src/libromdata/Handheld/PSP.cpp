@@ -51,6 +51,16 @@ class PSPPrivate : public LibRpBase::RomDataPrivate
 		RP_DISABLE_COPY(PSPPrivate)
 
 	public:
+		enum class DiscType {
+			Unknown	= -1,
+
+			PspGame		= 0,	// PSP game
+			UmdVideo	= 1,	// UMD video
+
+			Max
+		};
+		DiscType discType;
+
 		ISO_Primary_Volume_Descriptor pvd;
 
 		// IsoPartition
@@ -80,6 +90,7 @@ class PSPPrivate : public LibRpBase::RomDataPrivate
 
 PSPPrivate::PSPPrivate(PSP *q, IRpFile *file)
 	: super(q, file)
+	, discType(DiscType::Unknown)
 	, discReader(nullptr)
 	, isoPartition(nullptr)
 	, img_icon(nullptr)
@@ -113,10 +124,14 @@ const rp_image *PSPPrivate::loadIcon(void)
 	}
 
 	// Icon is located on disc as a regular PNG image.
-	IRpFile *const f_icon = isoPartition->open("/PSP_GAME/ICON0.PNG");
-	if (!f_icon->isOpen()) {
+	const char *const icon_filename =
+		(unlikely(discType == DiscType::UmdVideo)
+			? "/UMD_VIDEO/ICON0.PNG"
+			: "/PSP_GAME/ICON0.PNG");
+	IRpFile *const f_icon = isoPartition->open(icon_filename);
+	if (!f_icon || !f_icon->isOpen()) {
 		// Unable to open the icon file.
-		f_icon->unref();
+		UNREF(f_icon);
 		return nullptr;
 	}
 
@@ -241,8 +256,9 @@ PSP::PSP(IRpFile *file)
 	}
 
 	// Verify the system ID.
-	if (isRomSupported_static(&d->pvd) < 0) {
-		// Incorrect system ID..
+	d->discType = static_cast<PSPPrivate::DiscType>(isRomSupported_static(&d->pvd));
+	if ((int)d->discType < 0) {
+		// Incorrect system ID.
 		UNREF(discReader);
 		UNREF_AND_NULL_NOCHK(d->file);
 		return;
@@ -303,7 +319,7 @@ int PSP::isRomSupported_static(const DetectInfo *info)
 	{
 		// Either no detection information was specified,
 		// or the header is too small.
-		return -1;
+		return (int)PSPPrivate::DiscType::Unknown;
 	}
 
 	// Check if it's supported by the CISO reader.
@@ -311,11 +327,12 @@ int PSP::isRomSupported_static(const DetectInfo *info)
 		info->header.pData, info->header.size) >= 0)
 	{
 		// Supported by CISO.
-		return 0;
+		// NOTE: The constructor will determine the actual disc type.
+		return (int)PSPPrivate::DiscType::PspGame;
 	}
 
 	// Not a supported compressed disc image.
-	return -1;
+	return (int)PSPPrivate::DiscType::Unknown;
 }
 
 /**
@@ -326,21 +343,28 @@ int PSP::isRomSupported_static(const DetectInfo *info)
 int PSP::isRomSupported_static(
 	const ISO_Primary_Volume_Descriptor *pvd)
 {
+	PSPPrivate::DiscType discType = PSPPrivate::DiscType::Unknown;
+
 	assert(pvd != nullptr);
 	if (!pvd) {
 		// Bad.
-		return -1;
+		return (int)discType;
 	}
 
-	// PlayStation Portable discs have the system ID "PSP GAME".
+	// PlayStation Portable game discs have the system ID "PSP GAME".
+	// UMD video discs have the system ID "UMD VIDEO".
 	int pos = -1;
 	if (!strncmp(pvd->sysID, "PSP GAME ", 9)) {
+		discType = PSPPrivate::DiscType::PspGame;
 		pos = 9;
+	} else if (!strncmp(pvd->sysID, "UMD VIDEO ", 10)) {
+		discType = PSPPrivate::DiscType::UmdVideo;
+		pos = 10;
 	}
 
 	if (pos < 0) {
 		// Not valid.
-		return -1;
+		return (int)PSPPrivate::DiscType::Unknown;
 	}
 
 	// Make sure the rest of the system ID is either spaces or NULLs.
@@ -356,11 +380,11 @@ int PSP::isRomSupported_static(
 
 	if (isOK) {
 		// Valid PVD.
-		return 0;
+		return (int)discType;
 	}
 
 	// Not a PlayStation Portable disc.
-	return -1;
+	return (int)PSPPrivate::DiscType::Unknown;
 }
 
 /**
@@ -379,10 +403,11 @@ const char *PSP::systemName(unsigned int type) const
 	static_assert(SYSNAME_TYPE_MASK == 3,
 		"PSP::systemName() array index optimization needs to be updated.");
 
-	static const char *const sysNames[4] = {
-		"Sony PlayStation Portable", "PlayStation Portable", "PSP", nullptr
+	static const char *const sysNames[2][4] = {
+		{"Sony PlayStation Portable", "PlayStation Portable", "PSP", nullptr},
+		{"Universal Media Disc", "Universal Media Disc", "UMD", nullptr},
 	};
-	return sysNames[type & SYSNAME_TYPE_MASK];
+	return sysNames[(unsigned int)(d->discType) & 1][type & SYSNAME_TYPE_MASK];
 }
 
 /**
@@ -513,13 +538,13 @@ int PSP::loadFieldData(void)
 	} else if (!d->file || !d->file->isOpen()) {
 		// File isn't open.
 		return -EBADF;
-	} else if (!d->isValid) {
+	} else if (!d->isValid || (int)d->discType < 0) {
 		// Unknown disc type.
 		return -EIO;
 	}
 
 	d->fields->reserve(6);	// Maximum of 6 fields.
-	d->fields->setTabName(0, "PSP");
+	d->fields->setTabName(0, (unlikely(d->discType == PSPPrivate::DiscType::UmdVideo) ? "UMD" : "PSP"));
 
 	// Show UMD_DATA.BIN fields.
 	// FIXME: Figure out what the fields are.
@@ -538,7 +563,12 @@ int PSP::loadFieldData(void)
 		// Find the first '|'.
 		const char *p = static_cast<const char*>(memchr(buf, '|', sizeof(buf)));
 		if (p) {
-			d->fields->addField_string(C_("RomData", "Game ID"),
+			// Game ID field on UMD Video discs is the video title.
+			const char *const gameID_title =
+				(unlikely(d->discType == PSPPrivate::DiscType::UmdVideo)
+					? C_("RomData", "Game ID")
+					: C_("RomData", "Video Title"));
+			d->fields->addField_string(gameID_title,
 				latin1_to_utf8(buf, static_cast<int>(p - buf)));
 		}
 	}
@@ -601,7 +631,7 @@ int PSP::loadInternalImage(ImageType imageType, const rp_image **pImage)
 		IMG_INT_ICON,	// ourImageType
 		d->file,	// file
 		d->isValid,	// isValid
-		0,		// romType
+		d->discType,	// romType
 		d->img_icon,	// imgCache
 		d->loadIcon);	// func
 }
@@ -617,7 +647,7 @@ int PSP::loadMetaData(void)
 	if (d->metaData != nullptr) {
 		// Metadata *has* been loaded...
 		return 0;
-	} else if (!d->isValid) {
+	} else if (!d->isValid || (int)d->discType < 0) {
 		// Unknown disc image type.
 		return -EIO;
 	}

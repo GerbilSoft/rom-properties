@@ -132,8 +132,8 @@ button.
 \* The Nintendo DSi TAD parser supports development TADs that are normally
    imported using DSi Nmenu. It does not currently support DSi exports from
    retail systems.
-\* The PSP parser supports several compressed disc formats: CISOv1, CISOv2,
-   ZISO, JISO, and DAX.
+\* The PSP parser supports both PSP game and UMD video discs, as well as
+   several compressed disc formats: CISOv1, CISOv2, ZISO, JISO, and DAX.
 
 ### Texture Formats
 
