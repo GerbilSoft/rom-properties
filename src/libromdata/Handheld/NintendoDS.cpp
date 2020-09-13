@@ -54,7 +54,7 @@ NintendoDSPrivate::~NintendoDSPrivate()
 {
 	if (iconAnimData) {
 		for (int i = iconAnimData->count-1; i >= 0; i--) {
-			delete iconAnimData->frames[i];
+			UNREF(iconAnimData->frames[i]);
 		}
 		delete iconAnimData;
 	}
@@ -219,8 +219,8 @@ const rp_image *NintendoDSPrivate::loadIcon(void)
 						// V-flip
 						flipOp = static_cast<rp_image::FlipOp>(flipOp | rp_image::FLIP_V);
 					}
-					rp_image *flipimg = img->flip(flipOp);
-					delete img;
+					rp_image *const flipimg = img->flip(flipOp);
+					img->unref();
 					img = flipimg;
 				}
 				iconAnimData->frames[bmp_idx] = img;

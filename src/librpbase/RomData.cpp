@@ -20,6 +20,7 @@ using std::string;
 using std::vector;
 
 // librpfile, librptexture
+#include "librptexture/img/rp_image.hpp"
 using LibRpFile::IRpFile;
 using LibRpFile::RpFile;
 using LibRpTexture::rp_image;
@@ -762,8 +763,8 @@ const RomMetaData *RomData::metaData(void) const
 /**
  * Get an internal image from the ROM.
  *
- * NOTE: The rp_image is owned by this object.
- * Do NOT delete this object until you're done using this rp_image.
+ * The retrieved image must be ref()'d by the caller if the
+ * caller stores it instead of using it immediately.
  *
  * @param imageType Image type to load.
  * @return Internal image, or nullptr if the ROM doesn't have one.

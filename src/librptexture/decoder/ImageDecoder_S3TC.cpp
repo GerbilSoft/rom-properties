@@ -215,7 +215,7 @@ rp_image *fromDXT1_GCN(int width, int height,
 	rp_image *const img = new rp_image(width, height, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
-		delete img;
+		img->unref();
 		return nullptr;
 	}
 
@@ -301,7 +301,7 @@ static rp_image *T_fromDXT1(int width, int height,
 	rp_image *const img = new rp_image(physWidth, physHeight, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
-		delete img;
+		img->unref();
 		return nullptr;
 	}
 
@@ -390,7 +390,7 @@ rp_image *fromDXT2(int width, int height,
 
 	// Use fromDXT3(), then convert from premultiplied alpha
 	// to standard alpha.
-	rp_image *img = fromDXT3(width, height, img_buf, img_siz);
+	rp_image *const img = fromDXT3(width, height, img_buf, img_siz);
 	if (!img) {
 		return nullptr;
 	}
@@ -398,8 +398,8 @@ rp_image *fromDXT2(int width, int height,
 	// Un-premultiply the image.
 	int ret = img->un_premultiply();
 	if (ret != 0) {
-		delete img;
-		img = nullptr;
+		img->unref();
+		return nullptr;
 	}
 	return img;
 }
@@ -437,7 +437,7 @@ rp_image *fromDXT3(int width, int height,
 	rp_image *const img = new rp_image(physWidth, physHeight, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
-		delete img;
+		img->unref();
 		return nullptr;
 	}
 
@@ -507,7 +507,7 @@ rp_image *fromDXT4(int width, int height,
 
 	// Use fromDXT5(), then convert from premultiplied alpha
 	// to standard alpha.
-	rp_image *img = fromDXT5(width, height, img_buf, img_siz);
+	rp_image *const img = fromDXT5(width, height, img_buf, img_siz);
 	if (!img) {
 		return nullptr;
 	}
@@ -515,8 +515,8 @@ rp_image *fromDXT4(int width, int height,
 	// Un-premultiply the image.
 	int ret = img->un_premultiply();
 	if (ret != 0) {
-		delete img;
-		img = nullptr;
+		img->unref();
+		return nullptr;
 	}
 	return img;
 }
@@ -554,7 +554,7 @@ rp_image *fromDXT5(int width, int height,
 	rp_image *const img = new rp_image(physWidth, physHeight, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
-		delete img;
+		img->unref();
 		return nullptr;
 	}
 
@@ -641,7 +641,7 @@ rp_image *fromBC4(int width, int height,
 	rp_image *const img = new rp_image(physWidth, physHeight, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
-		delete img;
+		img->unref();
 		return nullptr;
 	}
 
@@ -729,7 +729,7 @@ rp_image *fromBC5(int width, int height,
 	rp_image *const img = new rp_image(physWidth, physHeight, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
-		delete img;
+		img->unref();
 		return nullptr;
 	}
 

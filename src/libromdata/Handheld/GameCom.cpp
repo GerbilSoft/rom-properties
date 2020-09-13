@@ -61,7 +61,7 @@ GameComPrivate::GameComPrivate(GameCom *q, IRpFile *file)
 
 GameComPrivate::~GameComPrivate()
 {
-	delete img_icon;
+	UNREF(img_icon);
 }
 
 /**
@@ -133,7 +133,7 @@ const rp_image *GameComPrivate::loadIcon(void)
 
 	// Create the icon.
 	// TODO: Split into an ImageDecoder function?
-	unique_ptr<rp_image> tmp_icon(new rp_image(GCOM_ICON_W, GCOM_ICON_H, rp_image::Format::CI8));
+	rp_image *const tmp_icon = new rp_image(GCOM_ICON_W, GCOM_ICON_H, rp_image::Format::CI8);
 
 	// Set the palette.
 	// NOTE: Index 0 is white; index 3 is black.
@@ -149,6 +149,7 @@ const rp_image *GameComPrivate::loadIcon(void)
 	assert(palette != nullptr);
 	assert(tmp_icon->palette_len() >= 4);
 	if (!palette || tmp_icon->palette_len() < 4) {
+		tmp_icon->unref();
 		return nullptr;
 	}
 	memcpy(palette, gcom_palette, sizeof(gcom_palette));
@@ -160,6 +161,7 @@ const rp_image *GameComPrivate::loadIcon(void)
 	size_t size = file->seekAndRead(icon_file_offset, icon_data.get(), icon_data_len);
 	if (size != icon_data_len) {
 		// Short read.
+		tmp_icon->unref();
 		return nullptr;
 	}
 
@@ -233,8 +235,8 @@ const rp_image *GameComPrivate::loadIcon(void)
 	tmp_icon->set_sBIT(&sBIT);
 
 	// Save and return the icon.
-	this->img_icon = tmp_icon.release();
-	return this->img_icon;
+	this->img_icon = tmp_icon;
+	return tmp_icon;
 }
 
 /** GameCom **/

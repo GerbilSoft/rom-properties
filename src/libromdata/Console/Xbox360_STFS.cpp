@@ -170,7 +170,7 @@ Xbox360_STFS_Private::~Xbox360_STFS_Private()
 	UNREF(xex);
 	UNREF(xexReader);
 
-	delete img_icon;
+	UNREF(img_icon);
 }
 
 /**

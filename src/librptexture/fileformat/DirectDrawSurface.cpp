@@ -487,7 +487,7 @@ DirectDrawSurfacePrivate::DirectDrawSurfacePrivate(DirectDrawSurface *q, IRpFile
 
 DirectDrawSurfacePrivate::~DirectDrawSurfacePrivate()
 {
-	delete img;
+	UNREF(img);
 }
 
 /**

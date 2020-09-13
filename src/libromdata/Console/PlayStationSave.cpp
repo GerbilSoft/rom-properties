@@ -91,10 +91,8 @@ PlayStationSavePrivate::PlayStationSavePrivate(PlayStationSave *q, IRpFile *file
 PlayStationSavePrivate::~PlayStationSavePrivate()
 {
 	if (iconAnimData) {
-		// This class owns all of the icons in iconAnimData, so we
-		// must delete all of them.
 		for (int i = iconAnimData->count-1; i >= 0; i--) {
-			delete iconAnimData->frames[i];
+			UNREF(iconAnimData->frames[i]);
 		}
 		delete iconAnimData;
 	}

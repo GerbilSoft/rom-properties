@@ -11,9 +11,6 @@
 #include "rp_image_p.hpp"
 #include "rp_image_backend.hpp"
 
-// C++ STL classes.
-using std::unique_ptr;
-
 // Workaround for RP_D() expecting the no-underscore, UpperCamelCase naming convention.
 #define rp_imagePrivate rp_image_private
 
@@ -109,10 +106,10 @@ rp_image *rp_image::dup_ARGB32(void) const
 		return nullptr;
 	}
 
-	rp_image *img = new rp_image(width, height, Format::ARGB32);
+	rp_image *const img = new rp_image(width, height, Format::ARGB32);
 	if (!img->isValid()) {
 		// Image is invalid. Something went wrong.
-		delete img;
+		img->unref();
 		return nullptr;
 	}
 
@@ -188,10 +185,10 @@ rp_image *rp_image::squared(void) const
 
 	// Image needs adjustment.
 	// TODO: Native 8bpp support?
-	unique_ptr<rp_image> tmp_rp_image;
+	rp_image *tmp_rp_image = nullptr;
 	if (backend->format != rp_image::Format::ARGB32) {
 		// Convert to ARGB32 first.
-		tmp_rp_image.reset(this->dup_ARGB32());
+		tmp_rp_image = this->dup_ARGB32();
 	}
 
 	// Create the squared image.
@@ -199,7 +196,8 @@ rp_image *rp_image::squared(void) const
 	rp_image *const sq_img = new rp_image(max_dim, max_dim, rp_image::Format::ARGB32);
 	if (!sq_img->isValid()) {
 		// Could not allocate the image.
-		delete sq_img;
+		sq_img->unref();
+		UNREF(tmp_rp_image);
 		return nullptr;
 	}
 
@@ -279,6 +277,7 @@ rp_image *rp_image::squared(void) const
 		sq_img->set_sBIT(&d->sBIT);
 	}
 
+	UNREF(tmp_rp_image);
 	return sq_img;
 }
 
@@ -328,10 +327,10 @@ rp_image *rp_image::resized(int width, int height, Alignment alignment, uint32_t
 	}
 
 	const rp_image::Format format = backend->format;
-	rp_image *img = new rp_image(width, height, format);
+	rp_image *const img = new rp_image(width, height, format);
 	if (!img->isValid()) {
 		// Image is invalid.
-		delete img;
+		img->unref();
 		return nullptr;
 	}
 
@@ -590,7 +589,7 @@ rp_image *rp_image::flip(FlipOp op) const
 	}
 
 	const int row_bytes = this->row_bytes();
-	rp_image *flipimg = new rp_image(width, height, backend->format);
+	rp_image *const flipimg = new rp_image(width, height, backend->format);
 	const uint8_t *src = static_cast<const uint8_t*>(backend->data());
 	uint8_t *dest;
 	if (op & FLIP_V) {
@@ -616,7 +615,7 @@ rp_image *rp_image::flip(FlipOp op) const
 		switch (backend->format) {
 			default:
 				assert(!"rp_image format not supported for H-flip.");
-				delete flipimg;
+				flipimg->unref();
 				return nullptr;
 
 			case rp_image::Format::CI8:

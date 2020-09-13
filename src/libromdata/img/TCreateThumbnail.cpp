@@ -179,11 +179,12 @@ ImgClass TCreateThumbnail<ImgClass>::getExternalImage(
 		// Attempt to load the image.
 		unique_RefBase<RpFile> file(new RpFile(cache_filename, RpFile::FM_OPEN_READ));
 		if (file->isOpen()) {
-			unique_ptr<rp_image> dl_img(RpImageLoader::load(file.get()));
+			rp_image *const dl_img = RpImageLoader::load(file.get());
 			if (dl_img && dl_img->isValid()) {
 				// Image loaded successfully.
 				file->close();
-				ImgClass ret_img = rpImageToImgClass(dl_img.get());
+				ImgClass ret_img = rpImageToImgClass(dl_img);
+				dl_img->unref();
 				if (isImgClassValid(ret_img)) {
 					// Image converted successfully.
 					if (pOutSize) {
@@ -202,6 +203,8 @@ ImgClass TCreateThumbnail<ImgClass>::getExternalImage(
 					// TODO: Transparency processing?
 					return ret_img;
 				}
+			} else {
+				UNREF(dl_img);
 			}
 		}
 	}

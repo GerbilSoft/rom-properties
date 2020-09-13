@@ -303,6 +303,12 @@ void ImageDecoderTest::TearDown(void)
 	}
 }
 
+struct RpImageUnrefDeleter {
+	void operator()(rp_image *img) {
+		UNREF(img);
+	}
+};
+
 /**
  * Compare two rp_image objects.
  * If either rp_image is CI8, a copy of the image
@@ -321,8 +327,8 @@ void ImageDecoderTest::Compare_RpImage(
 	ASSERT_EQ(pImgExpected->height(), pImgActual->height()) << "Image sizes don't match.";
 
 	// Ensure we delete temporary images if they're created.
-	unique_ptr<rp_image> tmpImg_expected;
-	unique_ptr<rp_image> tmpImg_actual;
+	unique_ptr<rp_image, RpImageUnrefDeleter> tmpImg_expected(nullptr, RpImageUnrefDeleter());
+	unique_ptr<rp_image, RpImageUnrefDeleter> tmpImg_actual(nullptr, RpImageUnrefDeleter());
 
 	switch (pImgExpected->format()) {
 		case rp_image::Format::ARGB32:
@@ -393,7 +399,7 @@ void ImageDecoderTest::decodeTest_internal(void)
 	// Load the PNG image.
 	unique_RefBase<RpMemFile> f_png(new RpMemFile(m_png_buf.data(), m_png_buf.size()));
 	ASSERT_TRUE(f_png->isOpen()) << "Could not create RpMemFile for the PNG image.";
-	unique_ptr<rp_image> img_png(RpImageLoader::load(f_png.get()));
+	unique_ptr<rp_image, RpImageUnrefDeleter> img_png(RpImageLoader::load(f_png.get()), RpImageUnrefDeleter());
 	ASSERT_TRUE(img_png != nullptr) << "Could not load the PNG image as rp_image.";
 	ASSERT_TRUE(img_png->isValid()) << "Could not load the PNG image as rp_image.";
 

@@ -95,7 +95,7 @@ PSPPrivate::~PSPPrivate()
 	UNREF(isoPartition);
 	UNREF(discReader);
 
-	delete img_icon;
+	UNREF(img_icon);
 }
 
 /**

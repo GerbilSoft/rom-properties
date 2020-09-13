@@ -458,8 +458,8 @@ class RomData : public RefBase
 		/**
 		 * Get an internal image from the ROM.
 		 *
-		 * NOTE: The rp_image is owned by this object.
-		 * Do NOT delete this object until you're done using this rp_image.
+		 * The retrieved image must be ref()'d by the caller if the
+		 * caller stores it instead of using it immediately.
 		 *
 		 * @param imageType Image type to load.
 		 * @return Internal image, or nullptr if the ROM doesn't have one.

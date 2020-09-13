@@ -76,6 +76,7 @@ class ImageDecoderLinearTest : public ::testing::TestWithParam<ImageDecoderLinea
 			: ::testing::TestWithParam<ImageDecoderLinearTest_mode>()
 			, m_img_buf(nullptr)
 			, m_img_buf_len(0)
+			, m_img(nullptr)
 		{ }
 
 		~ImageDecoderLinearTest()
@@ -84,16 +85,17 @@ class ImageDecoderLinearTest : public ::testing::TestWithParam<ImageDecoderLinea
 		}
 
 		void SetUp(void) final;
+		void TearDown(void) final;
 
 	public:
 		/**
 		 * Validate the pixels of an rp_image.
 		 * All pixels should match dest_pixel.
-		 * @param pImg		[in] rp_image.
+		 * @param img		[in] rp_image.
 		 * @param dest_pixel	[in] dest_pixel.
 		 */
 		static void Validate_RpImage(
-			const rp_image *pImg,
+			const rp_image *img,
 			const uint32_t dest_pixel);
 
 		// Number of iterations for benchmarks.
@@ -106,6 +108,9 @@ class ImageDecoderLinearTest : public ::testing::TestWithParam<ImageDecoderLinea
 		//ao::uvector<uint8_t> m_img_buf;
 		uint8_t *m_img_buf;
 		size_t m_img_buf_len;
+
+		// Image.
+		rp_image *m_img;
 
 	public:
 		/**
@@ -345,23 +350,32 @@ void ImageDecoderLinearTest::SetUp(void)
 }
 
 /**
+ * TearDown() function.
+ * Run after each test.
+ */
+void ImageDecoderLinearTest::TearDown(void)
+{
+	UNREF_AND_NULL(m_img);
+}
+
+/**
  * Validate the pixels of an rp_image.
  * All pixels should match dest_pixel.
- * @param pImg		[in] rp_image.
+ * @param img		[in] rp_image.
  * @param dest_pixel	[in] dest_pixel.
  */
 void ImageDecoderLinearTest::Validate_RpImage(
-	const rp_image *pImg,
+	const rp_image *img,
 	const uint32_t dest_pixel)
 {
-	ASSERT_TRUE(pImg->width() == 128);
-	ASSERT_TRUE(pImg->height() == 128);
-	ASSERT_TRUE(pImg->format() == rp_image::Format::ARGB32);
+	ASSERT_TRUE(img->width() == 128);
+	ASSERT_TRUE(img->height() == 128);
+	ASSERT_TRUE(img->format() == rp_image::Format::ARGB32);
 
-	const int width = pImg->width();
-	const int height = pImg->height();
+	const int width = img->width();
+	const int height = img->height();
 	for (int y = 0; y < height; y++) {
-		const uint32_t *px = static_cast<const uint32_t*>(pImg->scanLine(y));
+		const uint32_t *px = static_cast<const uint32_t*>(img->scanLine(y));
 		for (int x = 0; x < width; x++, px++) {
 			ASSERT_EQ(dest_pixel, *px);
 		}
@@ -377,27 +391,26 @@ TEST_P(ImageDecoderLinearTest, fromLinear_cpp_test)
 	const ImageDecoderLinearTest_mode &mode = GetParam();
 
 	// Decode the image.
-	unique_ptr<rp_image> pImg;
 	switch (mode.bpp) {
 		case 24:
 			// 24-bit image.
-			pImg.reset(ImageDecoder::fromLinear24_cpp(mode.src_pxf, 128, 128,
-				m_img_buf, static_cast<int>(m_img_buf_len), mode.stride));
+			m_img = ImageDecoder::fromLinear24_cpp(mode.src_pxf, 128, 128,
+				m_img_buf, static_cast<int>(m_img_buf_len), mode.stride);
 			break;
 
 		case 32:
 			// 32-bit image.
-			pImg.reset(ImageDecoder::fromLinear32_cpp(mode.src_pxf, 128, 128,
+			m_img = ImageDecoder::fromLinear32_cpp(mode.src_pxf, 128, 128,
 				reinterpret_cast<const uint32_t*>(m_img_buf),
-				static_cast<int>(m_img_buf_len), mode.stride));
+				static_cast<int>(m_img_buf_len), mode.stride);
 			break;
 
 		case 15:
 		case 16:
 			// 15/16-bit image.
-			pImg.reset(ImageDecoder::fromLinear16_cpp(mode.src_pxf, 128, 128,
+			m_img = ImageDecoder::fromLinear16_cpp(mode.src_pxf, 128, 128,
 				reinterpret_cast<const uint16_t*>(m_img_buf),
-				static_cast<int>(m_img_buf_len), mode.stride));
+				static_cast<int>(m_img_buf_len), mode.stride);
 			break;
 
 		default:
@@ -405,10 +418,10 @@ TEST_P(ImageDecoderLinearTest, fromLinear_cpp_test)
 			return;
 	}
 
-	ASSERT_TRUE(pImg.get() != nullptr);
+	ASSERT_TRUE(m_img != nullptr);
 
 	// Validate the image.
-	ASSERT_NO_FATAL_FAILURE(Validate_RpImage(pImg.get(), mode.dest_pixel));
+	ASSERT_NO_FATAL_FAILURE(Validate_RpImage(m_img, mode.dest_pixel));
 }
 
 /**
@@ -420,22 +433,23 @@ TEST_P(ImageDecoderLinearTest, fromLinear_cpp_benchmark)
 	const ImageDecoderLinearTest_mode &mode = GetParam();
 
 	// Decode the image.
-	unique_ptr<rp_image> pImg;
 	switch (mode.bpp) {
 		case 24:
 			// 24-bit image.
 			for (unsigned int i = BENCHMARK_ITERATIONS; i > 0; i--) {
-				pImg.reset(ImageDecoder::fromLinear24_cpp(mode.src_pxf, 128, 128,
-					m_img_buf, static_cast<int>(m_img_buf_len), mode.stride));
+				m_img = ImageDecoder::fromLinear24_cpp(mode.src_pxf, 128, 128,
+					m_img_buf, static_cast<int>(m_img_buf_len), mode.stride);
+				UNREF_AND_NULL(m_img);
 			}
 			break;
 
 		case 32:
 			// 32-bit image.
 			for (unsigned int i = BENCHMARK_ITERATIONS; i > 0; i--) {
-				pImg.reset(ImageDecoder::fromLinear32_cpp(mode.src_pxf, 128, 128,
+				m_img = ImageDecoder::fromLinear32_cpp(mode.src_pxf, 128, 128,
 					reinterpret_cast<const uint32_t*>(m_img_buf),
-					static_cast<int>(m_img_buf_len), mode.stride));
+					static_cast<int>(m_img_buf_len), mode.stride);
+				UNREF_AND_NULL(m_img);
 			}
 			break;
 
@@ -443,9 +457,10 @@ TEST_P(ImageDecoderLinearTest, fromLinear_cpp_benchmark)
 		case 16:
 			// 15/16-bit image.
 			for (unsigned int i = BENCHMARK_ITERATIONS; i > 0; i--) {
-				pImg.reset(ImageDecoder::fromLinear16_cpp(mode.src_pxf, 128, 128,
+				m_img = ImageDecoder::fromLinear16_cpp(mode.src_pxf, 128, 128,
 					reinterpret_cast<const uint16_t*>(m_img_buf),
-					static_cast<int>(m_img_buf_len), mode.stride));
+					static_cast<int>(m_img_buf_len), mode.stride);
+				UNREF_AND_NULL(m_img);
 			}
 			break;
 
@@ -470,7 +485,6 @@ TEST_P(ImageDecoderLinearTest, fromLinear_sse2_test)
 	const ImageDecoderLinearTest_mode &mode = GetParam();
 
 	// Decode the image.
-	unique_ptr<rp_image> pImg;
 	switch (mode.bpp) {
 		case 24:
 		case 32:
@@ -481,9 +495,9 @@ TEST_P(ImageDecoderLinearTest, fromLinear_sse2_test)
 		case 15:
 		case 16:
 			// 15/16-bit image.
-			pImg.reset(ImageDecoder::fromLinear16_sse2(mode.src_pxf, 128, 128,
+			m_img = ImageDecoder::fromLinear16_sse2(mode.src_pxf, 128, 128,
 				reinterpret_cast<const uint16_t*>(m_img_buf),
-				static_cast<int>(m_img_buf_len), mode.stride));
+				static_cast<int>(m_img_buf_len), mode.stride);
 			break;
 
 		default:
@@ -491,10 +505,10 @@ TEST_P(ImageDecoderLinearTest, fromLinear_sse2_test)
 			return;
 	}
 
-	ASSERT_TRUE(pImg.get() != nullptr);
+	ASSERT_TRUE(m_img != nullptr);
 
 	// Validate the image.
-	ASSERT_NO_FATAL_FAILURE(Validate_RpImage(pImg.get(), mode.dest_pixel));
+	ASSERT_NO_FATAL_FAILURE(Validate_RpImage(m_img, mode.dest_pixel));
 }
 
 /**
@@ -511,7 +525,6 @@ TEST_P(ImageDecoderLinearTest, fromLinear_sse2_benchmark)
 	const ImageDecoderLinearTest_mode &mode = GetParam();
 
 	// Decode the image.
-	unique_ptr<rp_image> pImg;
 	switch (mode.bpp) {
 		case 24:
 		case 32:
@@ -523,9 +536,10 @@ TEST_P(ImageDecoderLinearTest, fromLinear_sse2_benchmark)
 		case 16:
 			// 15/16-bit image.
 			for (unsigned int i = BENCHMARK_ITERATIONS; i > 0; i--) {
-				pImg.reset(ImageDecoder::fromLinear16_sse2(mode.src_pxf, 128, 128,
+				m_img = ImageDecoder::fromLinear16_sse2(mode.src_pxf, 128, 128,
 					reinterpret_cast<const uint16_t*>(m_img_buf),
-					static_cast<int>(m_img_buf_len), mode.stride));
+					static_cast<int>(m_img_buf_len), mode.stride);
+				UNREF_AND_NULL(m_img);
 			}
 			break;
 
@@ -551,19 +565,18 @@ TEST_P(ImageDecoderLinearTest, fromLinear_ssse3_test)
 	const ImageDecoderLinearTest_mode &mode = GetParam();
 
 	// Decode the image.
-	unique_ptr<rp_image> pImg;
 	switch (mode.bpp) {
 		case 24:
 			// 24-bit image.
-			pImg.reset(ImageDecoder::fromLinear24_ssse3(mode.src_pxf, 128, 128,
-				m_img_buf, static_cast<int>(m_img_buf_len), mode.stride));
+			m_img = ImageDecoder::fromLinear24_ssse3(mode.src_pxf, 128, 128,
+				m_img_buf, static_cast<int>(m_img_buf_len), mode.stride);
 			break;
 
 		case 32:
 			// 32-bit image.
-			pImg.reset(ImageDecoder::fromLinear32_ssse3(mode.src_pxf, 128, 128,
+			m_img = ImageDecoder::fromLinear32_ssse3(mode.src_pxf, 128, 128,
 				reinterpret_cast<const uint32_t*>(m_img_buf),
-				static_cast<int>(m_img_buf_len), mode.stride));
+				static_cast<int>(m_img_buf_len), mode.stride);
 			break;
 
 		case 15:
@@ -577,10 +590,10 @@ TEST_P(ImageDecoderLinearTest, fromLinear_ssse3_test)
 			return;
 	}
 
-	ASSERT_TRUE(pImg.get() != nullptr);
+	ASSERT_TRUE(m_img != nullptr);
 
 	// Validate the image.
-	ASSERT_NO_FATAL_FAILURE(Validate_RpImage(pImg.get(), mode.dest_pixel));
+	ASSERT_NO_FATAL_FAILURE(Validate_RpImage(m_img, mode.dest_pixel));
 }
 
 /**
@@ -597,22 +610,23 @@ TEST_P(ImageDecoderLinearTest, fromLinear_ssse3_benchmark)
 	const ImageDecoderLinearTest_mode &mode = GetParam();
 
 	// Decode the image.
-	unique_ptr<rp_image> pImg;
 	switch (mode.bpp) {
 		case 24:
 			// 24-bit image.
 			for (unsigned int i = BENCHMARK_ITERATIONS; i > 0; i--) {
-				pImg.reset(ImageDecoder::fromLinear24_ssse3(mode.src_pxf, 128, 128,
-					m_img_buf, static_cast<int>(m_img_buf_len), mode.stride));
+				m_img = ImageDecoder::fromLinear24_ssse3(mode.src_pxf, 128, 128,
+					m_img_buf, static_cast<int>(m_img_buf_len), mode.stride);
+				UNREF_AND_NULL(m_img);
 			}
 			break;
 
 		case 32:
 			// 32-bit image.
 			for (unsigned int i = BENCHMARK_ITERATIONS; i > 0; i--) {
-				pImg.reset(ImageDecoder::fromLinear32_ssse3(mode.src_pxf, 128, 128,
+				m_img = ImageDecoder::fromLinear32_ssse3(mode.src_pxf, 128, 128,
 					reinterpret_cast<const uint32_t*>(m_img_buf),
-					static_cast<int>(m_img_buf_len), mode.stride));
+					static_cast<int>(m_img_buf_len), mode.stride);
+				UNREF_AND_NULL(m_img);
 			}
 			break;
 
@@ -640,27 +654,26 @@ TEST_P(ImageDecoderLinearTest, fromLinear_dispatch_test)
 	const ImageDecoderLinearTest_mode &mode = GetParam();
 
 	// Decode the image.
-	unique_ptr<rp_image> pImg;
 	switch (mode.bpp) {
 		case 24:
 			// 24-bit image.
-			pImg.reset(ImageDecoder::fromLinear24(mode.src_pxf, 128, 128,
-				m_img_buf, static_cast<int>(m_img_buf_len), mode.stride));
+			m_img = ImageDecoder::fromLinear24(mode.src_pxf, 128, 128,
+				m_img_buf, static_cast<int>(m_img_buf_len), mode.stride);
 			break;
 
 		case 32:
 			// 32-bit image.
-			pImg.reset(ImageDecoder::fromLinear32(mode.src_pxf, 128, 128,
+			m_img = ImageDecoder::fromLinear32(mode.src_pxf, 128, 128,
 				reinterpret_cast<const uint32_t*>(m_img_buf),
-				static_cast<int>(m_img_buf_len), mode.stride));
+				static_cast<int>(m_img_buf_len), mode.stride);
 			break;
 
 		case 15:
 		case 16:
 			// 15/16-bit image.
-			pImg.reset(ImageDecoder::fromLinear16(mode.src_pxf, 128, 128,
+			m_img = ImageDecoder::fromLinear16(mode.src_pxf, 128, 128,
 				reinterpret_cast<const uint16_t*>(m_img_buf),
-				static_cast<int>(m_img_buf_len), mode.stride));
+				static_cast<int>(m_img_buf_len), mode.stride);
 			return;
 
 		default:
@@ -668,10 +681,10 @@ TEST_P(ImageDecoderLinearTest, fromLinear_dispatch_test)
 			return;
 	}
 
-	ASSERT_TRUE(pImg.get() != nullptr);
+	ASSERT_TRUE(m_img != nullptr);
 
 	// Validate the image.
-	ASSERT_NO_FATAL_FAILURE(Validate_RpImage(pImg.get(), mode.dest_pixel));
+	ASSERT_NO_FATAL_FAILURE(Validate_RpImage(m_img, mode.dest_pixel));
 }
 
 /**
@@ -683,22 +696,23 @@ TEST_P(ImageDecoderLinearTest, fromLinear_dispatch_benchmark)
 	const ImageDecoderLinearTest_mode &mode = GetParam();
 
 	// Decode the image.
-	unique_ptr<rp_image> pImg;
 	switch (mode.bpp) {
 		case 24:
 			// 24-bit image.
 			for (unsigned int i = BENCHMARK_ITERATIONS; i > 0; i--) {
-				pImg.reset(ImageDecoder::fromLinear24(mode.src_pxf, 128, 128,
-					m_img_buf, static_cast<int>(m_img_buf_len), mode.stride));
+				m_img = ImageDecoder::fromLinear24(mode.src_pxf, 128, 128,
+					m_img_buf, static_cast<int>(m_img_buf_len), mode.stride);
+				UNREF_AND_NULL(m_img);
 			}
 			break;
 
 		case 32:
 			// 32-bit image.
 			for (unsigned int i = BENCHMARK_ITERATIONS; i > 0; i--) {
-				pImg.reset(ImageDecoder::fromLinear32(mode.src_pxf, 128, 128,
+				m_img = ImageDecoder::fromLinear32(mode.src_pxf, 128, 128,
 					reinterpret_cast<const uint32_t*>(m_img_buf),
-					static_cast<int>(m_img_buf_len), mode.stride));
+					static_cast<int>(m_img_buf_len), mode.stride);
+				UNREF_AND_NULL(m_img);
 			}
 			break;
 
@@ -706,9 +720,10 @@ TEST_P(ImageDecoderLinearTest, fromLinear_dispatch_benchmark)
 		case 16:
 			// 15/16-bit image.
 			for (unsigned int i = BENCHMARK_ITERATIONS; i > 0; i--) {
-				pImg.reset(ImageDecoder::fromLinear16(mode.src_pxf, 128, 128,
+				m_img = ImageDecoder::fromLinear16(mode.src_pxf, 128, 128,
 					reinterpret_cast<const uint16_t*>(m_img_buf),
-					static_cast<int>(m_img_buf_len), mode.stride));
+					static_cast<int>(m_img_buf_len), mode.stride);
+				UNREF_AND_NULL(m_img);
 			}
 			break;
 

@@ -85,7 +85,7 @@ cairo_surface_t *CairoImageConv::rp_image_to_cairo_surface_t(const rp_image *img
 			// Mark the surface as dirty.
 			cairo_surface_mark_dirty(surface);
 			if (premultiply) {
-				delete img_prex;
+				img_prex->unref();
 			}
 			break;
 		}

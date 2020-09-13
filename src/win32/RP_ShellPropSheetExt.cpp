@@ -1545,7 +1545,7 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 						if (icon32) {
 							icon_resized = icon32->resized(szResize.cx, szResize.cy,
 								rp_image::AlignVCenter, lvBgColor[rowColorIdx]);
-							delete icon32;
+							icon32->unref();
 						}
 					}
 
@@ -1560,7 +1560,7 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 				HICON hIcon;
 				if (icon_resized) {
 					hIcon = RpImageWin32::toHICON(icon_resized);
-					delete icon_resized;
+					icon_resized->unref();
 				} else {
 					hIcon = RpImageWin32::toHICON(icon);
 				}
@@ -1908,7 +1908,8 @@ void RP_ShellPropSheetExt_Private::buildCboLanguageImageList(void)
 		f_res->unref();
 		return;
 	}
-	unique_ptr<rp_image> imgFlagsSheet(RpPng::loadUnchecked(f_res));
+
+	rp_image *const imgFlagsSheet = RpPng::loadUnchecked(f_res);
 	f_res->unref();
 	if (!imgFlagsSheet) {
 		// Unable to load the flags sprite sheet.
@@ -1923,6 +1924,7 @@ void RP_ShellPropSheetExt_Private::buildCboLanguageImageList(void)
 	    imgFlagsSheet->height() != (iconSize * SystemRegion::FLAGS_SPRITE_SHEET_ROWS))
 	{
 		// Incorrect size. We can't use it.
+		imgFlagsSheet->unref();
 		return;
 	}
 
@@ -1931,6 +1933,7 @@ void RP_ShellPropSheetExt_Private::buildCboLanguageImageList(void)
 	assert(himglFlags != nullptr);
 	if (!himglFlags) {
 		// Unable to create the ImageList.
+		imgFlagsSheet->unref();
 		return;
 	}
 
@@ -1991,6 +1994,7 @@ void RP_ShellPropSheetExt_Private::buildCboLanguageImageList(void)
 		}
 	}
 	ReleaseDC(nullptr, hdcIcon);
+	imgFlagsSheet->unref();
 
 	if (cboLanguage) {
 		// Set the new ImageList.

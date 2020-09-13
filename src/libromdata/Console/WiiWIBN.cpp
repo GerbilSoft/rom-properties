@@ -76,10 +76,10 @@ WiiWIBNPrivate::WiiWIBNPrivate(WiiWIBN *q, IRpFile *file)
 
 WiiWIBNPrivate::~WiiWIBNPrivate()
 {
-	delete img_banner;
+	UNREF(img_banner);
 	if (iconAnimData) {
 		for (int i = iconAnimData->count-1; i >= 0; i--) {
-			delete iconAnimData->frames[i];
+			UNREF(iconAnimData->frames[i]);
 		}
 		delete iconAnimData;
 	}

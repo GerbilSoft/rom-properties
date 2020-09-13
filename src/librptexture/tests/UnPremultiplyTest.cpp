@@ -43,7 +43,7 @@ class UnPremultiplyTest : public ::testing::Test
 
 		~UnPremultiplyTest()
 		{
-			delete m_img;
+			m_img->unref();
 		}
 
 	public:

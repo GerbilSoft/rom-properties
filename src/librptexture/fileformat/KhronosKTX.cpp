@@ -105,7 +105,7 @@ KhronosKTXPrivate::KhronosKTXPrivate(KhronosKTX *q, IRpFile *file)
 
 KhronosKTXPrivate::~KhronosKTXPrivate()
 {
-	delete img;
+	UNREF(img);
 }
 
 /**
@@ -536,9 +536,9 @@ const rp_image *KhronosKTXPrivate::loadImage(void)
 	// Post-processing: Check if a flip is needed.
 	if (img && (flipOp != rp_image::FLIP_NONE) && height > 1) {
 		// TODO: Assert that img dimensions match ktxHeader?
-		rp_image *flipimg = img->flip(flipOp);
+		rp_image *const flipimg = img->flip(flipOp);
 		if (flipimg) {
-			delete img;
+			img->unref();
 			img = flipimg;
 		}
 	}

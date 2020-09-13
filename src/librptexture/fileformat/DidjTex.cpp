@@ -92,7 +92,7 @@ DidjTexPrivate::DidjTexPrivate(DidjTex *q, IRpFile *file)
 
 DidjTexPrivate::~DidjTexPrivate()
 {
-	delete img;
+	UNREF(img);
 }
 
 /**

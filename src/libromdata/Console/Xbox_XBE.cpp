@@ -123,10 +123,10 @@ Xbox_XBE_Private::~Xbox_XBE_Private()
 	if (xtImage.isInit) {
 		if (!xtImage.isPng) {
 			// XPR0 image
-			xtImage.xpr0->unref();
+			UNREF(xtImage.xpr0);
 		} else {
 			// PNG image
-			delete xtImage.png;
+			UNREF(xtImage.png);
 		}
 	}
 
@@ -299,7 +299,7 @@ int Xbox_XBE_Private::initXPR0_xtImage(void)
 				xtImage.png = img;
 			} else {
 				// Unable to open the PNG image.
-				delete img;
+				img->unref();
 				ret = -EIO;
 			}
 		}
