@@ -184,7 +184,6 @@ ImgClass TCreateThumbnail<ImgClass>::getExternalImage(
 				// Image loaded successfully.
 				file->close();
 				ImgClass ret_img = rpImageToImgClass(dl_img);
-				dl_img->unref();
 				if (isImgClassValid(ret_img)) {
 					// Image converted successfully.
 					if (pOutSize) {
@@ -203,9 +202,8 @@ ImgClass TCreateThumbnail<ImgClass>::getExternalImage(
 					// TODO: Transparency processing?
 					return ret_img;
 				}
-			} else {
-				UNREF(dl_img);
 			}
+			UNREF(dl_img);
 		}
 	}
 
