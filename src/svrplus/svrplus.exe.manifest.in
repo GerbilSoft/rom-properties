@@ -28,7 +28,7 @@
 		<security>
 			<requestedPrivileges>
 				<requestedExecutionLevel
-					level="RequireAdministrator"
+					level="requireAdministrator"
 					uiAccess="false"
 				/>
 			</requestedPrivileges>
