@@ -140,6 +140,8 @@ DragImageLabelPrivate::DragImageLabelPrivate(HWND hwndParent)
 DragImageLabelPrivate::~DragImageLabelPrivate()
 {
 	delete anim;
+	UNREF(img);
+
 	if (hbmpImg) {
 		DeleteBitmap(hbmpImg);
 	}
@@ -439,8 +441,12 @@ bool DragImageLabel::setRpImage(const rp_image *img)
 {
 	RP_D(DragImageLabel);
 
+	// NOTE: We're not checking if the image pointer matches the
+	// previously stored image, since the underlying image may
+	// have changed.
+	UNREF_AND_NULL(d->img);
+
 	if (!img) {
-		d->img = nullptr;
 		if (d->hbmpImg) {
 			DeleteBitmap(d->hbmpImg);
 			d->hbmpImg = nullptr;
@@ -452,10 +458,7 @@ bool DragImageLabel::setRpImage(const rp_image *img)
 		return false;
 	}
 
-	// Don't check if the image pointer matches the
-	// previously stored image, since the underlying
-	// image may have changed.
-	d->img = img;
+	d->img = img->ref();
 	return d->updateBitmaps();
 }
 
@@ -519,7 +522,7 @@ void DragImageLabel::clearRp(void)
 		d->anim->iconAnimData = nullptr;
 	}
 
-	d->img = nullptr;
+	UNREF_AND_NULL(d->img);
 	if (d->hbmpImg) {
 		DeleteBitmap(d->hbmpImg);
 		d->hbmpImg = nullptr;

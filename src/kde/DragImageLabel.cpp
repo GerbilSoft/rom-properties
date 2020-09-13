@@ -36,6 +36,7 @@ DragImageLabel::DragImageLabel(QWidget *parent, Qt::WindowFlags f)
 DragImageLabel::~DragImageLabel()
 {
 	delete m_anim;
+	UNREF(m_img);
 }
 
 /**
@@ -53,8 +54,12 @@ DragImageLabel::~DragImageLabel()
  */
 bool DragImageLabel::setRpImage(const rp_image *img)
 {
+	// NOTE: We're not checking if the image pointer matches the
+	// previously stored image, since the underlying image may
+	// have changed.
+	UNREF_AND_NULL(m_img);
+
 	if (!img) {
-		m_img = nullptr;
 		if (!m_anim || !m_anim->iconAnimData) {
 			this->clear();
 		} else {
@@ -63,10 +68,7 @@ bool DragImageLabel::setRpImage(const rp_image *img)
 		return false;
 	}
 
-	// Don't check if the image pointer matches the
-	// previously stored image, since the underlying
-	// image may have changed.
-	m_img = img;
+	m_img = img->ref();
 	return updatePixmaps();
 }
 
@@ -125,7 +127,7 @@ void DragImageLabel::clearRp(void)
 		m_anim->anim_running = false;
 	}
 
-	m_img = nullptr;
+	UNREF_AND_NULL(m_img);
 	this->clear();
 }
 

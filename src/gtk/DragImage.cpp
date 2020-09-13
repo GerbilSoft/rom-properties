@@ -51,7 +51,7 @@ struct _DragImage {
 		int height;
 	} minimumImageSize;
 
-	// rp_image. (NOTE: Not owned by this object.)
+	// rp_image. [ref()'d]
 	const rp_image *img;
 
 	// Animated icon data.
@@ -137,6 +137,9 @@ drag_image_dispose(GObject *object)
 	// This will automatically unregister the timer.
 	delete image->anim;
 	image->anim = nullptr;
+
+	// Unreference the image.
+	UNREF_AND_NULL(image->img);
 
 	// Call the superclass dispose() function.
 	G_OBJECT_CLASS(drag_image_parent_class)->dispose(object);
@@ -277,8 +280,12 @@ drag_image_set_rp_image(DragImage *image, const LibRpTexture::rp_image *img)
 {
 	g_return_val_if_fail(IS_DRAG_IMAGE(image), false);
 
+	// NOTE: We're not checking if the image pointer matches the
+	// previously stored image, since the underlying image may
+	// have changed.
+	UNREF_AND_NULL(image->img);
+
 	if (!img) {
-		image->img = nullptr;
 		if (!image->anim || !image->anim->iconAnimData) {
 			gtk_image_clear(image->imageWidget);
 		} else {
@@ -287,10 +294,7 @@ drag_image_set_rp_image(DragImage *image, const LibRpTexture::rp_image *img)
 		return false;
 	}
 
-	// Don't check if the image pointer matches the
-	// previously stored image, since the underlying
-	// image may have changed.
-	image->img = img;
+	image->img = img->ref();
 	return drag_image_update_pixmaps(image);
 }
 
@@ -359,7 +363,7 @@ drag_image_clear(DragImage *image)
 		anim->iconAnimData = nullptr;
 	}
 
-	image->img = nullptr;
+	UNREF_AND_NULL(image->img);
 	gtk_image_clear(image->imageWidget);
 }
 
