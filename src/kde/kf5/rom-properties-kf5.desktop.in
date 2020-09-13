@@ -5,7 +5,7 @@ Name=ROM Properties Page
 ServiceTypes=KPropertiesDialog/Plugin,ThumbCreator
 
 # KDE service settings.
-X-KDE-Library=rom-properties-kf5
+X-KDE-Library=kf5/propertiesdialog/rom-properties-kf5
 X-KDE-ServiceTypes=KPropertiesDialog/Plugin,ThumbCreator
 X-KDE-Protocol=file
 X-KDE-Protocols=file,desktop

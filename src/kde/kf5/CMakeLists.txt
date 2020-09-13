@@ -58,15 +58,15 @@ IF(ECM_MODULE_PATH AND ECM_KDE_MODULE_DIR)
 
 		# Get the plugin directory and Qt prefix.
 		# Prefix will be removed from the plugin directory if necessary.
-		EXEC_PROGRAM(${QTPATHS} ARGS --plugin-dir OUTPUT_VARIABLE PLUGIN_INSTALL_DIR)
-		IF(NOT PLUGIN_INSTALL_DIR)
+		EXEC_PROGRAM(${QTPATHS} ARGS --plugin-dir OUTPUT_VARIABLE KF5_PLUGIN_INSTALL_DIR)
+		IF(NOT KF5_PLUGIN_INSTALL_DIR)
 			MESSAGE(FATAL_ERROR "`qtpaths` isn't working correctly.")
-		ENDIF(NOT PLUGIN_INSTALL_DIR)
+		ENDIF(NOT KF5_PLUGIN_INSTALL_DIR)
 		# FIXME: Mageia has the Qt path set to "/usr/lib64/qt5" instead of "/usr".
 		# Reference: https://github.com/GerbilSoft/rom-properties/issues/69
 		INCLUDE(ReplaceHardcodedPrefix)
-		REPLACE_HARDCODED_PREFIX(PLUGIN_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}")
-		SET(QT_PLUGIN_INSTALL_DIR "${PLUGIN_INSTALL_DIR}")
+		REPLACE_HARDCODED_PREFIX(KF5_PLUGIN_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}")
+		SET(QT_PLUGIN_INSTALL_DIR "${KF5_PLUGIN_INSTALL_DIR}")
 
 		# Find KF5. (TODO: Version?)
 		FIND_PACKAGE(KF5 ${REQUIRE_KF5} COMPONENTS KIO WidgetsAddons FileMetaData)
@@ -75,9 +75,9 @@ IF(ECM_MODULE_PATH AND ECM_KDE_MODULE_DIR)
 			SET(BUILD_KF5 OFF CACHE INTERNAL "Build the KDE Frameworks 5 plugin." FORCE)
 		ENDIF(NOT KF5KIO_FOUND OR NOT KF5WidgetsAddons_FOUND OR NOT KF5FileMetaData_FOUND)
 
-		# TODO: Can we get the subdirectory from KFileMetaData?
-		SET(KFMD_PLUGIN_INSTALL_DIR "${PLUGIN_INSTALL_DIR}/kf5/kfilemetadata")
-		SET(KFOV_PLUGIN_INSTALL_DIR "${PLUGIN_INSTALL_DIR}/kf5/overlayicon")
+		SET(KF5_PRPD_PLUGIN_INSTALL_DIR "${KF5_PLUGIN_INSTALL_DIR}/kf5/propertiesdialog")
+		SET(KF5_KFMD_PLUGIN_INSTALL_DIR "${KF5_PLUGIN_INSTALL_DIR}/kf5/kfilemetadata")
+		SET(KF5_KOVI_PLUGIN_INSTALL_DIR "${KF5_PLUGIN_INSTALL_DIR}/kf5/overlayicon")
 	ELSE()
 		# Qt5 not found.
 		SET(BUILD_KF5 OFF CACHE INTERNAL "Build the KDE Frameworks 5 plugin." FORCE)
@@ -86,6 +86,9 @@ ELSE()
 	# KF5 Extra CMake Modules not found.
 	SET(BUILD_KF5 OFF CACHE INTERNAL "Build the KDE Frameworks 5 plugin." FORCE)
 ENDIF()
+
+# Write the config.h file.
+CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/config.kf5.h.in" "${CMAKE_CURRENT_BINARY_DIR}/config.kf5.h")
 
 # Sources and headers. (common)
 STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-kf5_SRCS "${rom-properties-kde_SRCS}")
@@ -183,9 +186,7 @@ IF(BUILD_KF5)
 	SET_TARGET_PROPERTIES(kfilemetadata_rom-properties-kf5 PROPERTIES PREFIX "")
 	DO_SPLIT_DEBUG(kfilemetadata_rom-properties-kf5)
 	TARGET_LINK_LIBRARIES(kfilemetadata_rom-properties-kf5 KF5::KIOCore KF5::FileMetaData)
-	TARGET_COMPILE_DEFINITIONS(kfilemetadata_rom-properties-kf5
-		PRIVATE PLUGIN_INSTALL_DIR=\"${PLUGIN_INSTALL_DIR}\"
-		)
+
 	# Link in libdl if it's required for dlopen().
 	IF(CMAKE_DL_LIBS)
 		TARGET_LINK_LIBRARIES(kfilemetadata_rom-properties-kf5 ${CMAKE_DL_LIBS})
@@ -202,9 +203,7 @@ IF(BUILD_KF5)
 	SET_TARGET_PROPERTIES(overlayiconplugin_rom-properties-kf5 PROPERTIES PREFIX "")
 	DO_SPLIT_DEBUG(overlayiconplugin_rom-properties-kf5)
 	TARGET_LINK_LIBRARIES(overlayiconplugin_rom-properties-kf5 KF5::KIOCore KF5::KIOWidgets)
-	TARGET_COMPILE_DEFINITIONS(overlayiconplugin_rom-properties-kf5
-		PRIVATE PLUGIN_INSTALL_DIR=\"${PLUGIN_INSTALL_DIR}\"
-		)
+
 	# Link in libdl if it's required for dlopen().
 	IF(CMAKE_DL_LIBS)
 		TARGET_LINK_LIBRARIES(overlayiconplugin_rom-properties-kf5 ${CMAKE_DL_LIBS})
@@ -227,21 +226,29 @@ ENDIF(BUILD_KF5)
 #######################
 
 IF(BUILD_KF5)
-	# Process MIME types for the .desktop file.
+	# Process MIME types for the .desktop and .json files.
 	INCLUDE(ParseMimeTypes)
-	PARSE_MIME_TYPES(MIMETYPES_ALL "${CMAKE_SOURCE_DIR}/xdg/mime.thumbnail.types" "${CMAKE_SOURCE_DIR}/xdg/mime.no-thumbnail.types")
+	PARSE_MIME_TYPES(MIMETYPES_ALL
+		"${CMAKE_SOURCE_DIR}/xdg/mime.thumbnail.types"
+		"${CMAKE_SOURCE_DIR}/xdg/mime.no-thumbnail.types"
+		)
+	PARSE_MIME_TYPES_JSON(MIMETYPES_ALL_JSON_ARRAY "            "
+		"${CMAKE_SOURCE_DIR}/xdg/mime.thumbnail.types"
+		"${CMAKE_SOURCE_DIR}/xdg/mime.no-thumbnail.types"
+		)
 	CONFIGURE_FILE(rom-properties-kf5.desktop.in rom-properties-kf5.desktop @ONLY)
+	CONFIGURE_FILE(rom-properties-kf5.json.in    rom-properties-kf5.json    @ONLY)
 
 	INSTALL(TARGETS rom-properties-kf5
-		LIBRARY DESTINATION "${PLUGIN_INSTALL_DIR}"
+		LIBRARY DESTINATION "${KF5_PRPD_PLUGIN_INSTALL_DIR}"
 		COMPONENT "plugin"
 		)
 	INSTALL(TARGETS kfilemetadata_rom-properties-kf5
-		LIBRARY DESTINATION "${KFMD_PLUGIN_INSTALL_DIR}"
+		LIBRARY DESTINATION "${KF5_KFMD_PLUGIN_INSTALL_DIR}"
 		COMPONENT "plugin"
 		)
 	INSTALL(TARGETS overlayiconplugin_rom-properties-kf5
-		LIBRARY DESTINATION "${KFOV_PLUGIN_INSTALL_DIR}"
+		LIBRARY DESTINATION "${KF5_KOVI_PLUGIN_INSTALL_DIR}"
 		COMPONENT "plugin"
 		)
 	INSTALL(FILES "${CMAKE_CURRENT_BINARY_DIR}/rom-properties-kf5.desktop"
@@ -256,7 +263,7 @@ IF(BUILD_KF5)
 		GET_TARGET_PROPERTY(DEBUG_FILENAME rom-properties-kf5 PDB)
 		IF(DEBUG_FILENAME)
 			INSTALL(FILES "${DEBUG_FILENAME}"
-				DESTINATION "lib/debug/${CMAKE_INSTALL_PREFIX}/${PLUGIN_INSTALL_DIR}"
+				DESTINATION "lib/debug/${CMAKE_INSTALL_PREFIX}/${KF5_PRPD_PLUGIN_INSTALL_DIR}"
 				COMPONENT "debug"
 				)
 		ENDIF(DEBUG_FILENAME)
@@ -264,7 +271,7 @@ IF(BUILD_KF5)
 		GET_TARGET_PROPERTY(DEBUG_FILENAME kfilemetadata_rom-properties-kf5 PDB)
 		IF(DEBUG_FILENAME)
 			INSTALL(FILES "${DEBUG_FILENAME}"
-				DESTINATION "lib/debug/${CMAKE_INSTALL_PREFIX}/${KFMD_PLUGIN_INSTALL_DIR}"
+				DESTINATION "lib/debug/${CMAKE_INSTALL_PREFIX}/${KF5_KFMD_PLUGIN_INSTALL_DIR}"
 				COMPONENT "debug"
 				)
 		ENDIF(DEBUG_FILENAME)
@@ -272,7 +279,7 @@ IF(BUILD_KF5)
 		GET_TARGET_PROPERTY(DEBUG_FILENAME overlayiconplugin_rom-properties-kf5 PDB)
 		IF(DEBUG_FILENAME)
 			INSTALL(FILES "${DEBUG_FILENAME}"
-				DESTINATION "lib/debug/${CMAKE_INSTALL_PREFIX}/${KFOV_PLUGIN_INSTALL_DIR}"
+				DESTINATION "lib/debug/${CMAKE_INSTALL_PREFIX}/${KF5_KOVI_PLUGIN_INSTALL_DIR}"
 				COMPONENT "debug"
 				)
 		ENDIF(DEBUG_FILENAME)

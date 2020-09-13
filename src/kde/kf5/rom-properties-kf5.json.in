@@ -1,0 +1,21 @@
+{
+    "CacheThumbnail": true,
+    "IgnoreMaximumSize": true,
+    "KPlugin": {
+        "MimeTypes": [
+@MIMETYPES_ALL_JSON_ARRAY@
+        ],
+        "Name": "rom-properties-kf5",
+        "Description": "ROM Properties Page for KDE Frameworks 5",
+        "ServiceTypes": [
+            "KPropertiesDialog/Plugin",
+            "ThumbCreator"
+        ]
+    },
+    "MimeType": "@MIMETYPES_ALL@",
+    "X-KDE-Protocol": "file",
+    "X-KDE-Protocols": [
+        "file",
+        "desktop"
+    ]
+}

@@ -26,10 +26,8 @@ static QObject *createRomPropertiesPage(QWidget *w, QObject *parent, const QVari
 	return new RomPropertiesDialogPlugin(props, args);
 }
 
-K_PLUGIN_FACTORY(RomPropertiesDialogFactory, registerPlugin<RomPropertiesDialogPlugin>(QString(), createRomPropertiesPage);)
-#if QT_VERSION < 0x050000
-K_EXPORT_PLUGIN(RomPropertiesDialogFactory("rom-properties-kde"))
-#endif
+K_PLUGIN_FACTORY_WITH_JSON(RomPropertiesDialogFactory, "rom-properties-kf5.json",
+	registerPlugin<RomPropertiesDialogPlugin>(QString(), createRomPropertiesPage);)
 
 // automoc4 works correctly without any special handling.
 // automoc5 doesn't notice that K_PLUGIN_FACTORY() has a

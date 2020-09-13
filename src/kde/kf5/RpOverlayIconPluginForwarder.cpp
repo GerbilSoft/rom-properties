@@ -10,6 +10,8 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+#include "config.kf5.h"
+
 #include "RpOverlayIconPluginForwarder.hpp"
 #include "RpOverlayIconPlugin.hpp"
 #include "../RpQt.hpp"
@@ -24,6 +26,10 @@
 
 #include <kfileitem.h>
 
+#ifndef KF5_PRPD_PLUGIN_INSTALL_DIR
+#  error KF5_PRPD_PLUGIN_INSTALL_DIR is not set.
+#endif /* KF5_PRPD_PLUGIN_INSTALL_DIR */
+
 namespace RomPropertiesKDE {
 
 RpOverlayIconPluginForwarder::RpOverlayIconPluginForwarder(QObject *parent)
@@ -31,16 +37,13 @@ RpOverlayIconPluginForwarder::RpOverlayIconPluginForwarder(QObject *parent)
 	, hRpKdeSo(nullptr)
 	, fwd_plugin(nullptr)
 {
-#ifndef PLUGIN_INSTALL_DIR
-# error PLUGIN_INSTALL_DIR is not set.
-#endif
 	if (getuid() == 0 || geteuid() == 0) {
 		qCritical("*** overlayiconplugin_rom_properties_" RP_KDE_LOWER "%u does not support running as root.", QT_VERSION >> 16);
 		return;
 	}
 
 	// FIXME: Check the .desktop file?
-	QString pluginPath(QString::fromUtf8(PLUGIN_INSTALL_DIR));
+	QString pluginPath(QString::fromUtf8(KF5_PRPD_PLUGIN_INSTALL_DIR));
 	pluginPath += QLatin1String("/rom-properties-kf5.so");
 
 	// Attempt to load the plugin.

@@ -42,8 +42,8 @@ static const char *const RP_Extension_Path[RP_FE_MAX] = {
 #else
 	NULL,
 #endif
-#ifdef KF5_PLUGIN_INSTALL_DIR
-	KF5_PLUGIN_INSTALL_DIR "/rom-properties-kf5.so",
+#ifdef KF5_PRPD_PLUGIN_INSTALL_DIR
+	KF5_PRPD_PLUGIN_INSTALL_DIR "/rom-properties-kf5.so",
 #else
 	NULL,
 #endif

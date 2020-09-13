@@ -10,6 +10,8 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+#include "config.kf5.h"
+
 #include "RpExtractorPluginForwarder.hpp"
 #include "RpExtractorPlugin.hpp"
 #include "../RpQt.hpp"
@@ -26,6 +28,10 @@ using KFileMetaData::ExtractionResult;
 
 #include <kfileitem.h>
 
+#ifndef KF5_PRPD_PLUGIN_INSTALL_DIR
+#  error KF5_PRPD_PLUGIN_INSTALL_DIR is not set.
+#endif
+
 namespace RomPropertiesKDE {
 
 RpExtractorPluginForwarder::RpExtractorPluginForwarder(QObject *parent)
@@ -33,16 +39,13 @@ RpExtractorPluginForwarder::RpExtractorPluginForwarder(QObject *parent)
 	, hRpKdeSo(nullptr)
 	, fwd_plugin(nullptr)
 {
-#ifndef PLUGIN_INSTALL_DIR
-# error PLUGIN_INSTALL_DIR is not set.
-#endif
 	if (getuid() == 0 || geteuid() == 0) {
 		qCritical("*** kfilemetadata_rom_properties_" RP_KDE_LOWER "%u does not support running as root.", QT_VERSION >> 16);
 		return;
 	}
 
 	// FIXME: Check the .desktop file?
-	QString pluginPath(QString::fromUtf8(PLUGIN_INSTALL_DIR));
+	QString pluginPath(QString::fromUtf8(KF5_PRPD_PLUGIN_INSTALL_DIR));
 	pluginPath += QLatin1String("/rom-properties-kf5.so");
 
 	// Attempt to load the plugin.
