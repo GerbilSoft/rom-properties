@@ -55,6 +55,8 @@
     present since overlay icons were introduced in v1.4.
 
 * Other changes:
+  * Windows: MSVC 2012 is now the minimum required compiler version if
+    compiling without test suites; MSVC 2015 with test suites.
   * Linux: A system-wide cache directory (/usr/share/rom-properties/cache)
     is now supported. The primary use case is for systems that sandbox the
     thumbnailing process, which prevents rom-properties from downloading
