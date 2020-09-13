@@ -45,7 +45,7 @@ RpExtractorPluginForwarder::RpExtractorPluginForwarder(QObject *parent)
 	}
 
 	// FIXME: Check the .desktop file?
-	QString pluginPath(QString::fromUtf8(KF5_PRPD_PLUGIN_INSTALL_DIR));
+	QString pluginPath(QString::fromUtf8(KF5_PLUGIN_INSTALL_DIR));
 	pluginPath += QLatin1String("/rom-properties-kf5.so");
 
 	// Attempt to load the plugin.

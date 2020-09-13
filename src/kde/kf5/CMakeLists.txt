@@ -239,8 +239,10 @@ IF(BUILD_KF5)
 	CONFIGURE_FILE(rom-properties-kf5.desktop.in rom-properties-kf5.desktop @ONLY)
 	CONFIGURE_FILE(rom-properties-kf5.json.in    rom-properties-kf5.json    @ONLY)
 
+	# FIXME: Installing the main plugin into ${KF5_PRPD_PLUGIN_INSTALL_DIR}
+	# breaks thumbnails. We might need to make a KPropertiesDialog forwarder.
 	INSTALL(TARGETS rom-properties-kf5
-		LIBRARY DESTINATION "${KF5_PRPD_PLUGIN_INSTALL_DIR}"
+		LIBRARY DESTINATION "${KF5_PLUGIN_INSTALL_DIR}"
 		COMPONENT "plugin"
 		)
 	INSTALL(TARGETS kfilemetadata_rom-properties-kf5
@@ -263,7 +265,7 @@ IF(BUILD_KF5)
 		GET_TARGET_PROPERTY(DEBUG_FILENAME rom-properties-kf5 PDB)
 		IF(DEBUG_FILENAME)
 			INSTALL(FILES "${DEBUG_FILENAME}"
-				DESTINATION "lib/debug/${CMAKE_INSTALL_PREFIX}/${KF5_PRPD_PLUGIN_INSTALL_DIR}"
+				DESTINATION "lib/debug/${CMAKE_INSTALL_PREFIX}/${KF5_PLUGIN_INSTALL_DIR}"
 				COMPONENT "debug"
 				)
 		ENDIF(DEBUG_FILENAME)

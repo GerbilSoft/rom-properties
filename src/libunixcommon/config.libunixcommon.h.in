@@ -9,16 +9,16 @@
 #ifndef __ROMPROPERTIES_LIBUNIXCOMMON_CONFIG_H__
 #define __ROMPROPERTIES_LIBUNIXCOMMON_CONFIG_H__
 
-/* KDE4 plugin path. */
+/* KDE4 plugin path */
 #cmakedefine KDE4_PLUGIN_INSTALL_DIR "@KDE4_PLUGIN_INSTALL_DIR@"
 
-/* KF5 KPropertiesDialog plugin path. */
-#cmakedefine KF5_PRPD_PLUGIN_INSTALL_DIR "@KF5_PRPD_PLUGIN_INSTALL_DIR@"
+/* KF5 plugin path */
+#cmakedefine KF5_PLUGIN_INSTALL_DIR "@KF5_PLUGIN_INSTALL_DIR@"
 
-/* ThunarX2 extensions path. */
+/* ThunarX2 extensions path */
 #cmakedefine ThunarX2_EXTENSIONS_DIR "@ThunarX2_EXTENSIONS_DIR@"
 
-/* libnautilus-extension extensions path. */
+/* libnautilus-extension extensions path */
 #cmakedefine LibNautilusExtension_EXTENSION_DIR "@LibNautilusExtension_EXTENSION_DIR@"
 
 /* Define to 1 if you have the `getpwuid_r' function. */
