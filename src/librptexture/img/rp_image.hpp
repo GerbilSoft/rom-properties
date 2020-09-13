@@ -103,7 +103,7 @@ class rp_image : public RefBase
 
 		/**
 		 * Special case unref() function to allow
-		 * const rp_image to be ref'd.
+		 * const rp_image* to be ref'd.
 		 */
 		inline const rp_image *ref(void) const
 		{
@@ -112,7 +112,7 @@ class rp_image : public RefBase
 
 		/**
 		 * Special case unref() function to allow
-		 * const rp_image to be unref'd.
+		 * const rp_image* to be unref'd.
 		 */
 		inline void unref(void) const
 		{
