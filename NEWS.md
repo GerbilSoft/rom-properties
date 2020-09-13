@@ -12,6 +12,7 @@
     Area. These operations are available in the "Options" menu. Note that
     modifying the Secure Area requires having the Nintendo DS Blowfish key
     as `nds-blowfish.bin` in the ROM Properties configuration directory.
+  * Nintendo3DS: New ROM operation for extracting SRLs from DSiWare CIAs.
 
 * New parsers:
   * PSP: PlayStation Portable disc images. Supports ISO, CISOv1, CISOv2,
@@ -27,6 +28,7 @@
   * WiiWAD: Preliminary support for Nintendo DSi TAD packages as used by
     DSi Nmenu. These have the same basic format as WADs, including ticket
     and TMD, but the contents are different.
+  * WiiWAD: New ROM operation for extracting SRLs from DSi TAD packages.
 
 * Bug fixes:
   * PlayStationDisc:
