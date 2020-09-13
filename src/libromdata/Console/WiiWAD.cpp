@@ -1225,6 +1225,21 @@ int WiiWAD::loadMetaData(void)
 		return -EIO;
 	}
 
+	if (be16_to_cpu(d->tmdHeader.title_id.sysID) == NINTENDO_SYSID_TWL) {
+		// DSi TAD package.
+		// Get the metadata from the SRL if it's available.
+		if (d->mainContent) {
+			const RomMetaData *const srlMetaData = d->mainContent->metaData();
+			if (srlMetaData && !srlMetaData->empty()) {
+				// Create the metadata object.
+				d->metaData = new RomMetaData();
+
+				// Add the SRL metadata.
+				return d->metaData->addMetaData_metaData(srlMetaData) + 1;
+			}
+		}
+	}
+
 	// TODO: Game title from WIBN if it's available.
 
 	// NOTE: We can only get the title if the encryption key is valid.
