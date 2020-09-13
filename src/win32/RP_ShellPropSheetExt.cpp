@@ -3033,12 +3033,24 @@ void RP_ShellPropSheetExt_Private::menuOptions_action_triggered(int menuId)
 	RomData::RomOpParams params;
 	const RomData::RomOp *op = &ops[id];
 	if (op->flags & RomData::RomOp::ROF_SAVE_FILE) {
+		// Add the "All Files" filter.
+		string filter = op->sfi.filter;
+		if (!filter.empty()) {
+			// Make sure the last field isn't empty.
+			if (filter.at(filter.size()-1) == '|') {
+				filter += '-';
+			}
+			filter += '|';
+		}
+		// tr: "All Files" filter (RP format)
+		filter += C_("RomData", "All Files|*.*|-");
+
+		// Initial file and directory, based on the current file.
+		string initialFile = FileSystem::replace_ext(romData->filename(), op->sfi.ext);
+
 		// Prompt for a save file.
-		// TODO: Initial directory? Using filename only right now.
 		tstring tstr = LibWin32Common::getSaveFileName(hDlgSheet,
-			U82T_c(op->sfi.title),
-			op->sfi.filter,
-			U82T_s(op->filename));
+			U82T_c(op->sfi.title), filter.c_str(), U82T_s(initialFile));
 		if (tstr.empty())
 			return;
 		s_save_filename = T2U8(tstr);

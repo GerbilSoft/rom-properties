@@ -14,7 +14,7 @@
 // librpbase, librpfile, librptexture
 #include "librpbase/TextOut.hpp"
 using namespace LibRpBase;
-using LibRpFile::IRpFile;
+using namespace LibRpFile;
 using LibRpTexture::rp_image;
 
 // libi18n
@@ -1923,12 +1923,20 @@ void RomDataView::menuOptions_action_triggered(int id)
 	RomData::RomOpParams params;
 	const RomData::RomOp *op = &ops[id];
 	if (op->flags & RomData::RomOp::ROF_SAVE_FILE) {
+		// Add "All Files" to the filter.
+		QString filter = rpFileDialogFilterToQt(op->sfi.filter);
+		if (!filter.isEmpty()) {
+			filter += QLatin1String(";;");
+		}
+		// tr: "All Files" filter (RP format)
+		filter += rpFileDialogFilterToQt(C_("RomData", "All Files|*|-"));
+
+		// Initial file and directory, based on the current file.
+		QString initialFile = U82Q(FileSystem::replace_ext(d->romData->filename(), op->sfi.ext));
+
 		// Prompt for a save file.
-		// TODO: Initial directory? Using filename only right now.
 		QString filename = QFileDialog::getSaveFileName(this,
-			U82Q(op->sfi.title),
-			U82Q(op->filename),
-			rpFileDialogFilterToQt(op->sfi.filter));
+			U82Q(op->sfi.title), initialFile, filter);
 		if (filename.isEmpty())
 			return;
 		ba_save_filename = filename.toUtf8();

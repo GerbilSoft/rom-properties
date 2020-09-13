@@ -586,18 +586,20 @@ class RomData : public RefBase
 			union {
 				// ROF_SAVE_FILE
 				struct {
-					const char *title;
-					const char *filter;
+					const char *title;	// Dialog title
+					const char *filter;	// File filter (RP format) [don't include "All Files"]
+					const char *ext;	// New file extension (with leading '.')
 				} sfi;
 			};
 
-			// Additional filename value.
-			// For ROF_SAVE_FILE, this is the default save filename.
-			std::string filename;
-
 			RomOp() { }
 			RomOp(const char *desc, uint32_t flags)
-				: desc(desc), flags(flags) { }
+				: desc(desc), flags(flags)
+			{
+				sfi.title = nullptr;
+				sfi.filter = nullptr;
+				sfi.ext = nullptr;
+			}
 		};
 
 		struct RomOpParams {

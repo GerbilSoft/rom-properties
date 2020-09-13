@@ -47,28 +47,9 @@ vector<RomData::RomOp> WiiWAD::romOps_int(void) const
 
 	RomOp op("E&xtract SRL...", RomOp::ROF_ENABLED | RomOp::ROF_SAVE_FILE);
 	op.sfi.title = C_("WiiWAD|RomOps", "Extract Nintendo DS SRL File");
-	op.sfi.filter = C_("WiiWAD|RomOps", "Nintendo DS SRL Files|*.srl;*.nds|application/x-nintendo-ds-rom;application/x-nintendo-dsi-rom");
-
-#ifdef ENABLE_DECRYPTION
-	// Get the basename and change the extension to ".srl".
-	// TODO: Split into another function?
-	if (!d->filename.empty()) {
-		const size_t slash_pos = d->filename.rfind(DIR_SEP_CHR);
-		if (slash_pos != string::npos) {
-			op.filename = d->filename.substr(slash_pos + 1);
-		} else {
-			op.filename = d->filename;
-		}
-
-		// Find the dot.
-		const size_t dot_pos = op.filename.rfind('.');
-		if (dot_pos != string::npos) {
-			// Remove the existing extension.
-			op.filename.resize(dot_pos);
-		}
-		op.filename += ".srl";
-	}
-#else /* !ENABLE_DECRYPTION */
+	op.sfi.filter = C_("WiiWAD|RomOps", "Nintendo DS SRL Files|*.nds;*.srl|application/x-nintendo-ds-rom;application/x-nintendo-dsi-rom");
+	op.sfi.ext = ".nds";
+#ifndef ENABLE_DECRYPTION
 	op.flags &= ~RomOp::ROF_ENABLED;
 #endif /* ENABLE_DECRYPTION */
 

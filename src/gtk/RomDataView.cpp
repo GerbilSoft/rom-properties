@@ -23,8 +23,7 @@
 // librpbase, librpfile, librptexture
 #include "librpbase/TextOut.hpp"
 using namespace LibRpBase;
-using LibRpFile::IRpFile;
-using LibRpFile::RpFile;
+using namespace LibRpFile;
 using LibRpTexture::rp_image;
 
 // libromdata
@@ -2747,14 +2746,32 @@ menuOptions_triggered_signal_handler(GtkMenuItem *menuItem,
 		// Set the filters.
 		rpFileDialogFilterToGtk(GTK_FILE_CHOOSER(dialog), op->sfi.filter);
 
-		// TODO: Initial directory? Using filename only right now.
-		if (!op->filename.empty()) {
-			gtk_file_chooser_set_current_name(
-				GTK_FILE_CHOOSER(dialog),
-				op->filename.c_str());
+		// Add the "All Files" filter.
+		GtkFileFilter *const allFilesFilter = gtk_file_filter_new();
+		// tr: "All Files" filter (GTK+ file filter)
+		gtk_file_filter_set_name(allFilesFilter, C_("RomData", "All Files"));
+		gtk_file_filter_add_pattern(allFilesFilter, "*");
+		gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dialog), allFilesFilter);
+
+		// Initial file and directory, based on the current file.
+		// NOTE: Not checking if it's a file or a directory. Assuming it's a file.
+		string initialFile = FileSystem::replace_ext(page->romData->filename(), op->sfi.ext);
+		if (!initialFile.empty()) {
+			// Split the directory and basename.
+			size_t slash_pos = initialFile.rfind(DIR_SEP_CHR);
+			if (slash_pos != string::npos) {
+				// Full path. Set the directory and filename separately.
+				gtk_file_chooser_set_current_name(GTK_FILE_CHOOSER(dialog), &initialFile[slash_pos + 1]);
+				initialFile.resize(slash_pos);
+				// FIXME: Do we need to prepend "file://"?
+				gtk_file_chooser_set_current_folder_uri(GTK_FILE_CHOOSER(dialog), initialFile.c_str());
+			} else {
+				// Not a full path. We can only set the filename.
+				gtk_file_chooser_set_current_name(GTK_FILE_CHOOSER(dialog), initialFile.c_str());
+			}
 		}
 
-		// TODO: Set default filename and directory.
+		// Prompt for a save file.
 		gint res = gtk_dialog_run(GTK_DIALOG(dialog));
 		if (res != GTK_RESPONSE_ACCEPT)
 			return;

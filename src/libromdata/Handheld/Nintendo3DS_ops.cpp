@@ -46,35 +46,18 @@ vector<RomData::RomOp> Nintendo3DS::romOps_int(void) const
 		const_cast<Nintendo3DSPrivate*>(d)->loadTicketAndTMD();
 	}
 
+	RomOp op("E&xtract SRL...", RomOp::ROF_SAVE_FILE);
+	op.sfi.title = C_("Nintendo3DS|RomOps", "Extract Nintendo DS SRL File");
+	op.sfi.filter = C_("Nintendo3DS|RomOps", "Nintendo DS SRL Files|*.nds;*.srl|application/x-nintendo-ds-rom;application/x-nintendo-dsi-rom");
+	op.sfi.ext = ".nds";
+
 	// Check for a DSi SRL.
 	NintendoDS *const srl = dynamic_cast<NintendoDS*>(d->mainContent);
 	if (srl) {
-		RomOp op("E&xtract SRL...", RomOp::ROF_ENABLED | RomOp::ROF_SAVE_FILE);
-		op.sfi.title = C_("Nintendo3DS|RomOps", "Extract Nintendo DS SRL File");
-		op.sfi.filter = C_("Nintendo3DS|RomOps", "Nintendo DS SRL Files|*.srl;*.nds|application/x-nintendo-ds-rom;application/x-nintendo-dsi-rom");
-
-		// Get the basename and change the extension to ".srl".
-		// TODO: Split into another function?
-		if (!d->filename.empty()) {
-			const size_t slash_pos = d->filename.rfind(DIR_SEP_CHR);
-			if (slash_pos != string::npos) {
-				op.filename = d->filename.substr(slash_pos + 1);
-			} else {
-				op.filename = d->filename;
-			}
-
-			// Find the dot.
-			const size_t dot_pos = op.filename.rfind('.');
-			if (dot_pos != string::npos) {
-				// Remove the existing extension.
-				op.filename.resize(dot_pos);
-			}
-			op.filename += ".srl";
-		}
-
-		ops.emplace_back(std::move(op));
+		op.flags |= RomOp::ROF_ENABLED;
 	}
 
+	ops.emplace_back(std::move(op));
 	return ops;
 }
 
