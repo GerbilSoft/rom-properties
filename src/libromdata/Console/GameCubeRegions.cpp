@@ -163,8 +163,9 @@ const char *GameCubeRegions::gcnRegionToString(unsigned int gcnRegion, char idRe
  */
 const char *GameCubeRegions::gcnRegionToAbbrevString(unsigned int gcnRegion)
 {
-	static const char region_tbl[5][4] = {
-		"JPN", "USA", "EUR", "ALL", "KOR"
+	static const char region_tbl[7][4] = {
+		"JPN", "USA", "EUR", "ALL",
+		"KOR", "CHN", "TWN"
 	};
 	if (gcnRegion >= ARRAY_SIZE(region_tbl)) {
 		return nullptr;
