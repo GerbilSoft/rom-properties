@@ -1739,8 +1739,8 @@ rom_data_view_create_options_button(RomDataView *page)
 	// Next: GtkBox (or GtkVBox for GTK+ 2.x).
 	parent = gtk_widget_get_parent(parent);
 #if GTK_CHECK_VERSION(3,0,0)
-	assert(GTK_IS_BOX(parent) || GTK_IS_VBOX(parent));
-	if (!GTK_IS_BOX(parent) && !GTK_IS_VBOX(parent))
+	assert(GTK_IS_BOX(parent));
+	if (!GTK_IS_BOX(parent))
 		return;
 #else /* !GTK_CHECK_VERSION(3,0,0) */
 	assert(GTK_IS_VBOX(parent));
