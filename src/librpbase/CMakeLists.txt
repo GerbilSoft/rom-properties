@@ -305,6 +305,8 @@ TARGET_INCLUDE_DIRECTORIES(rpbase
 		$<BUILD_INTERFACE:${CMAKE_BINARY_DIR}>			# build
 		${RAPIDJSON_INCLUDE_DIRS}				# rapidjson
 	)
+ADD_DEFINITIONS(-DRAPIDJSON_HAS_STDSTRING)
+
 # Exclude from ALL builds.
 SET_TARGET_PROPERTIES(rpbase PROPERTIES EXCLUDE_FROM_ALL TRUE)
 # Make sure git_version.h is created before compiling this target.
