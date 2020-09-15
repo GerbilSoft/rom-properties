@@ -188,6 +188,10 @@ class RP_ShellPropSheetExt_Private
 		DragImageLabel *lblBanner;
 		DragImageLabel *lblIcon;
 
+		// Is the UI locale right-to-left?
+		// If so, this will be set to WS_EX_LAYOUTRTL.
+		DWORD dwExStyleRTL;
+
 		// Tab layout.
 		HWND tabWidget;
 		struct tab {
@@ -495,6 +499,7 @@ RP_ShellPropSheetExt_Private::RP_ShellPropSheetExt_Private(RP_ShellPropSheetExt 
 	, isFullyInit(false)
 	, lblBanner(nullptr)
 	, lblIcon(nullptr)
+	, dwExStyleRTL(0)
 	, tabWidget(nullptr)
 	, curTabIndex(0)
 	, hMessageWidget(nullptr)
@@ -505,6 +510,18 @@ RP_ShellPropSheetExt_Private::RP_ShellPropSheetExt_Private(RP_ShellPropSheetExt 
 {
 	// Initialize the alternate row color.
 	colorAltRow = LibWin32Common::getAltRowColor();
+
+	// Check for RTL.
+	// NOTE: Windows Explorer on Windows 7 seems to return 0 from GetProcessDefaultLayout(),
+	// even if an RTL language is in use. We'll check the taskbar layout instead.
+	// References:
+	// - https://stackoverflow.com/questions/10391669/how-to-detect-if-a-windows-installation-is-rtl
+	// - https://stackoverflow.com/a/10393376
+	HWND hTaskBar = FindWindow(_T("Shell_TrayWnd"), nullptr);
+	assert(hTaskBar != nullptr);
+	if (hTaskBar) {
+		dwExStyleRTL = static_cast<DWORD>(GetWindowLongPtr(hTaskBar, GWL_EXSTYLE)) & WS_EX_LAYOUTRTL;
+	}
 }
 
 RP_ShellPropSheetExt_Private::~RP_ShellPropSheetExt_Private()
@@ -867,7 +884,7 @@ int RP_ShellPropSheetExt_Private::initString(_In_ HWND hDlg, _In_ HWND hWndTab,
 		// - Verify behavior of LWS_TRANSPARENT.
 		// - Show below subtabs.
 #ifdef UNICODE
-		hDlgItem = CreateWindowEx(WS_EX_NOPARENTNOTIFY | WS_EX_TRANSPARENT,
+		hDlgItem = CreateWindowEx(WS_EX_NOPARENTNOTIFY | WS_EX_TRANSPARENT | dwExStyleRTL,
 			WC_LINK, str_nl.c_str(),
 			WS_CHILD | WS_TABSTOP | WS_VISIBLE,
 			0, 0, 0, 0,	// will be adjusted afterwards
@@ -894,7 +911,7 @@ int RP_ShellPropSheetExt_Private::initString(_In_ HWND hDlg, _In_ HWND hWndTab,
 				dwStyle = WS_CHILD | WS_TABSTOP | WS_VISIBLE | WS_CLIPSIBLINGS | ES_READONLY | ES_AUTOHSCROLL;
 			}
 
-			hDlgItem = CreateWindowEx(WS_EX_NOPARENTNOTIFY | WS_EX_TRANSPARENT,
+			hDlgItem = CreateWindowEx(WS_EX_NOPARENTNOTIFY | WS_EX_TRANSPARENT | dwExStyleRTL,
 				WC_EDIT, str_nl.c_str(), dwStyle,
 				0, 0, 0, 0,	// will be adjusted afterwards
 				hWndTab, cId, nullptr, nullptr);
@@ -944,7 +961,7 @@ int RP_ShellPropSheetExt_Private::initString(_In_ HWND hDlg, _In_ HWND hWndTab,
 			// Single line.
 			dwStyle = WS_CHILD | WS_TABSTOP | WS_VISIBLE | WS_CLIPSIBLINGS | ES_READONLY | ES_AUTOHSCROLL;
 		}
-		hDlgItem = CreateWindowEx(WS_EX_NOPARENTNOTIFY | WS_EX_TRANSPARENT,
+		hDlgItem = CreateWindowEx(WS_EX_NOPARENTNOTIFY | WS_EX_TRANSPARENT | dwExStyleRTL,
 			WC_EDIT, str_nl.c_str(), dwStyle,
 			pt_start.x, pt_start.y,
 			size.cx, field_cy,
@@ -1144,7 +1161,7 @@ int RP_ShellPropSheetExt_Private::initBitfield(HWND hDlg, HWND hWndTab,
 		}
 
 		// FIXME: Tab ordering?
-		HWND hCheckBox = CreateWindowEx(WS_EX_NOPARENTNOTIFY | WS_EX_TRANSPARENT,
+		HWND hCheckBox = CreateWindowEx(WS_EX_NOPARENTNOTIFY | WS_EX_TRANSPARENT | dwExStyleRTL,
 			WC_BUTTON, tname.c_str(),
 			WS_CHILD | WS_TABSTOP | WS_VISIBLE | BS_CHECKBOX,
 			pt.x, pt.y, chk_w, rect_chkbox.bottom,
@@ -1299,7 +1316,7 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 		lvsStyle |= LVS_NOCOLUMNHEADER;
 	}
 	const uint16_t dlgID = IDC_RFT_LISTDATA(fieldIdx);
-	HWND hListView = CreateWindowEx(WS_EX_NOPARENTNOTIFY | WS_EX_CLIENTEDGE,
+	HWND hListView = CreateWindowEx(WS_EX_NOPARENTNOTIFY | WS_EX_CLIENTEDGE | dwExStyleRTL,
 		WC_LISTVIEW, nullptr, lvsStyle,
 		pt_start.x, pt_start.y,
 		size.cx, size.cy,
@@ -2428,6 +2445,14 @@ void RP_ShellPropSheetExt_Private::initDialog(void)
 		return;
 	}
 
+	// Set the dialog to allow automatic right-to-left adjustment
+	// if the system is using an RTL language.
+	if (dwExStyleRTL != 0) {
+		LONG_PTR lpExStyle = GetWindowLongPtr(hDlgSheet, GWL_EXSTYLE);
+		lpExStyle |= WS_EX_LAYOUTRTL;
+		SetWindowLongPtr(hDlgSheet, GWL_EXSTYLE, lpExStyle);
+	}
+
 	// Get the fields.
 	const RomFields *const pFields = romData->fields();
 	assert(pFields != nullptr);
@@ -2571,7 +2596,7 @@ void RP_ShellPropSheetExt_Private::initDialog(void)
 
 		// Create the tab widget.
 		tabs.resize(tabCount);
-		tabWidget = CreateWindowEx(WS_EX_NOPARENTNOTIFY | WS_EX_TRANSPARENT,
+		tabWidget = CreateWindowEx(WS_EX_NOPARENTNOTIFY | WS_EX_TRANSPARENT | dwExStyleRTL,
 			WC_TABCONTROL, nullptr,
 			WS_CHILD | WS_TABSTOP | WS_VISIBLE,
 			dlgRect.left, dlgRect.top, dlgSize.cx, dlgSize.cy,
@@ -3117,7 +3142,7 @@ void RP_ShellPropSheetExt_Private::menuOptions_action_triggered(int menuId)
 			szMsgw.cx = winRect.right - winRect.left - (tmpRect.left * 2);
 
 			hMessageWidget = CreateWindowEx(
-				WS_EX_NOPARENTNOTIFY | WS_EX_TRANSPARENT,
+				WS_EX_NOPARENTNOTIFY | WS_EX_TRANSPARENT | dwExStyleRTL,
 				WC_MESSAGEWIDGET, nullptr,
 				WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_CLIPCHILDREN,
 				ptMsgw.x, ptMsgw.y, szMsgw.cx, szMsgw.cy,
@@ -3246,7 +3271,7 @@ void RP_ShellPropSheetExt_Private::createOptionsButton(void)
 		ts_caption = U82T_c(C_("RomDataView", "Op&tions..."));
 	}
 
-	hBtnOptions = CreateWindowEx(0, WC_BUTTON,
+	hBtnOptions = CreateWindowEx(dwExStyleRTL, WC_BUTTON,
 		ts_caption.c_str(), lStyle,
 		ptBtn.x, ptBtn.y, szBtn.cx, szBtn.cy,
 		hWndParent, (HMENU)IDC_RP_OPTIONS, nullptr, nullptr);

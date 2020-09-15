@@ -221,6 +221,28 @@ LRESULT CALLBACK ConfigDialogPrivate::subclassProc(
 {
 	switch (uMsg) {
 		case WM_SHOWWINDOW: {
+			// Check for RTL.
+			// NOTE: Windows Explorer on Windows 7 seems to return 0 from GetProcessDefaultLayout(),
+			// even if an RTL language is in use. We'll check the taskbar layout instead.
+			// References:
+			// - https://stackoverflow.com/questions/10391669/how-to-detect-if-a-windows-installation-is-rtl
+			// - https://stackoverflow.com/a/10393376
+			DWORD dwExStyleRTL = 0;
+			HWND hTaskBar = FindWindow(_T("Shell_TrayWnd"), nullptr);
+			assert(hTaskBar != nullptr);
+			if (hTaskBar) {
+				dwExStyleRTL = static_cast<DWORD>(GetWindowLongPtr(hTaskBar, GWL_EXSTYLE)) & WS_EX_LAYOUTRTL;
+			}
+
+			// Set the dialog to allow automatic right-to-left adjustment
+			// if the system is using an RTL language.
+			if (dwExStyleRTL != 0) {
+				// Set the dialog to allow automatic right-to-left adjustment.
+				LONG_PTR lpExStyle = GetWindowLongPtr(hWnd, GWL_EXSTYLE);
+				lpExStyle |= WS_EX_LAYOUTRTL;
+				SetWindowLongPtr(hWnd, GWL_EXSTYLE, lpExStyle);
+			}
+
 			// tr: Dialog title.
 			const tstring tsTitle = U82T_c(C_("ConfigDialog", "ROM Properties Page Configuration"));
 			SetWindowText(hWnd, tsTitle.c_str());
