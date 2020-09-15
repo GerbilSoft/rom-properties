@@ -592,6 +592,10 @@ QLabel *RomDataViewPrivate::initString(QLabel *lblDesc,
 	// Enable strong focus so we can tab into the label.
 	lblString->setFocusPolicy(Qt::StrongFocus);
 
+	// Allow the label to be shrunken horizontally.
+	// TODO: Scrolling.
+	lblString->setMinimumWidth(1);
+
 	// Check for any formatting options. (RFT_STRING only)
 	if (field.type == RomFields::RFT_STRING) {
 		// Monospace font?
