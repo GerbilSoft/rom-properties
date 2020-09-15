@@ -456,10 +456,9 @@ void
 drag_image_stop_anim_timer(DragImage *image)
 {
 	g_return_if_fail(IS_DRAG_IMAGE(image));
-	auto *const anim = image->anim;
-	g_return_if_fail(anim != nullptr);
 
-	if (anim->tmrIconAnim > 0) {
+	auto *const anim = image->anim;
+	if (anim && anim->tmrIconAnim > 0) {
 		g_source_remove(anim->tmrIconAnim);
 		anim->tmrIconAnim = 0;
 		anim->last_delay = 0;
