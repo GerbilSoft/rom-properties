@@ -1534,16 +1534,30 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 			for (auto iter = icons->cbegin(); iter != icons_cend;
 			     ++iter, rowColorIdx = !rowColorIdx)
 			{
+				bool needsUnref = false;
 				int iImage = -1;
-				const rp_image *const icon = *iter;
+				const rp_image *icon = *iter;
 				if (!icon) {
 					// No icon for this row.
 					lvData.vImageList.emplace_back(iImage);
 					continue;
 				}
 
+				if (dwExStyleRTL != 0) {
+					// WS_EX_LAYOUTRTL will flip bitmaps in the ListView.
+					// ILC_MIRROR mirrors the bitmaps if the process is mirrored,
+					// but we can't rely on that being the case, and this option
+					// was first introduced in Windows XP.
+					// We'll flip the image here to counteract it.
+					const rp_image *const flipimg = icon->flip(rp_image::FLIP_H);
+					assert(flipimg != nullptr);
+					if (flipimg) {
+						icon = flipimg;
+						needsUnref = true;
+					}
+				}
+
 				// Resize the icon, if necessary.
-				rp_image *icon_resized = nullptr;
 				if (resizeNeeded) {
 					SIZE szResize = {icon->width(), icon->height()};
 					szResize.cy = static_cast<LONG>(szResize.cy * factor);
@@ -1558,30 +1572,36 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 					// TODO: Handle theme changes?
 					// TODO: Error handling.
 					if (icon->format() != rp_image::Format::ARGB32) {
-						rp_image *const icon32 = icon->dup_ARGB32();
+						const rp_image *const icon32 = icon->dup_ARGB32();
 						if (icon32) {
-							icon_resized = icon32->resized(szResize.cx, szResize.cy,
-								rp_image::AlignVCenter, lvBgColor[rowColorIdx]);
-							icon32->unref();
+							if (needsUnref) {
+								icon->unref();
+							}
+							icon = icon32;
+							needsUnref = true;
 						}
 					}
 
-					// If the icon wasn't in ARGB32 format, it was resized above.
-					// If it was already in ARGB32 format, it will be resized here.
-					if (!icon_resized) {
-						icon_resized = icon->resized(szResize.cx, szResize.cy,
-							rp_image::AlignVCenter, lvBgColor[rowColorIdx]);
+					// Resize the icon.
+					const rp_image *const icon_resized = icon->resized(
+						szResize.cx, szResize.cy,
+						rp_image::AlignVCenter, lvBgColor[rowColorIdx]);
+					assert(icon_resized != nullptr);
+					if (icon_resized) {
+						if (needsUnref) {
+							icon->unref();
+						}
+						icon = icon_resized;
+						needsUnref = true;
 					}
 				}
 
-				HICON hIcon;
-				if (icon_resized) {
-					hIcon = RpImageWin32::toHICON(icon_resized);
-					icon_resized->unref();
-				} else {
-					hIcon = RpImageWin32::toHICON(icon);
+				HICON hIcon = RpImageWin32::toHICON(icon);
+				if (needsUnref) {
+					icon->unref();
 				}
 
+				assert(hIcon != nullptr);
 				if (hIcon) {
 					int idx = ImageList_AddIcon(himl, hIcon);
 					if (idx >= 0) {
@@ -1926,7 +1946,7 @@ void RP_ShellPropSheetExt_Private::buildCboLanguageImageList(void)
 		return;
 	}
 
-	rp_image *const imgFlagsSheet = RpPng::loadUnchecked(f_res);
+	rp_image *imgFlagsSheet = RpPng::loadUnchecked(f_res);
 	f_res->unref();
 	if (!imgFlagsSheet) {
 		// Unable to load the flags sprite sheet.
@@ -1943,6 +1963,20 @@ void RP_ShellPropSheetExt_Private::buildCboLanguageImageList(void)
 		// Incorrect size. We can't use it.
 		imgFlagsSheet->unref();
 		return;
+	}
+
+	if (dwExStyleRTL != 0) {
+		// WS_EX_LAYOUTRTL will flip bitmaps in the dropdown box.
+		// ILC_MIRROR mirrors the bitmaps if the process is mirrored,
+		// but we can't rely on that being the case, and this option
+		// was first introduced in Windows XP.
+		// We'll flip the image here to counteract it.
+		rp_image *const flipimg = imgFlagsSheet->flip(rp_image::FLIP_H);
+		assert(flipimg != nullptr);
+		if (flipimg) {
+			imgFlagsSheet->unref();
+			imgFlagsSheet = flipimg;
+		}
 	}
 
 	// Create the image list.
@@ -1978,6 +2012,11 @@ void RP_ShellPropSheetExt_Private::buildCboLanguageImageList(void)
 			// Icon not found. Use a blank icon to prevent issues.
 			col = 3;
 			row = 3;
+		}
+
+		if (dwExStyleRTL != 0) {
+			// Flag sprite sheet is flipped for RTL.
+			col = 3 - col;
 		}
 
 		// Create a DIB section for the sub-icon.
