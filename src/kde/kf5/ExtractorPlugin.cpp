@@ -1,6 +1,6 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (KDE)                              *
- * RpExtractorPlugin.cpp: KFileMetaData forwarder.                         *
+ * ROM Properties Page shell extension. (KF5)                              *
+ * ExtractorPlugin.cpp: KFileMetaData extractor plugin.                    *
  *                                                                         *
  * Qt's plugin system prevents a single shared library from exporting      *
  * multiple plugins, so this file acts as a KFileMetaData ExtractorPlugin, *
@@ -11,7 +11,7 @@
  ***************************************************************************/
 
 #include "stdafx.h"
-#include "RpExtractorPlugin.hpp"
+#include "ExtractorPlugin.hpp"
 
 // librpbase, librpfile
 using namespace LibRpBase;
@@ -25,19 +25,13 @@ using LibRomData::RomDataFactory;
 using std::string;
 using std::vector;
 
-// Qt includes.
-#include <QtCore/QStandardPaths>
-
 // KDE includes.
+#include <kfileitem.h>
 #include <kfilemetadata/extractorplugin.h>
 #include <kfilemetadata/properties.h>
 using KFileMetaData::ExtractorPlugin;
 using KFileMetaData::ExtractionResult;
 using namespace KFileMetaData::Property;
-
-#if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
-
-#include <kfileitem.h>
 
 namespace RomPropertiesKDE {
 
@@ -47,22 +41,22 @@ namespace RomPropertiesKDE {
  * rom-properties, and is called by a forwarder library.
  */
 extern "C" {
-	Q_DECL_EXPORT RpExtractorPlugin *PFN_CREATEEXTRACTORPLUGINKDE_FN(QObject *parent)
+	Q_DECL_EXPORT ExtractorPlugin *PFN_CREATEEXTRACTORPLUGINKDE_FN(QObject *parent)
 	{
 		if (getuid() == 0 || geteuid() == 0) {
 			qCritical("*** kfilemetadata_rom_properties_" RP_KDE_LOWER "%u does not support running as root.", QT_VERSION >> 16);
 			return nullptr;
 		}
 
-		return new RpExtractorPlugin(parent);
+		return new ExtractorPlugin(parent);
 	}
 }
 
-RpExtractorPlugin::RpExtractorPlugin(QObject *parent)
+ExtractorPlugin::ExtractorPlugin(QObject *parent)
 	: super(parent)
 { }
 
-QStringList RpExtractorPlugin::mimetypes(void) const
+QStringList ExtractorPlugin::mimetypes(void) const
 {
 	// Get the MIME types from RomDataFactory.
 	const vector<const char*> &vec_mimeTypes = RomDataFactory::supportedMimeTypes();
@@ -78,7 +72,7 @@ QStringList RpExtractorPlugin::mimetypes(void) const
 	return mimeTypes;
 }
 
-void RpExtractorPlugin::extract(ExtractionResult *result)
+void ExtractorPlugin::extract(ExtractionResult *result)
 {
 	// Attempt to open the ROM file.
 	IRpFile *const file = openQUrl(QUrl(result->inputUrl()), false);
@@ -166,5 +160,3 @@ void RpExtractorPlugin::extract(ExtractionResult *result)
 }
 
 }
-
-#endif /* QT_VERSION >= QT_VERSION_CHECK(5,0,0) */

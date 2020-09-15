@@ -110,14 +110,14 @@ SET(rom-properties-kf5_SRCS
 	${rom-properties-kf5_SRCS}
 	${rom-properties-kio5_SRCS}
 	${rom-properties-kf5_RCC_O}
-	RpExtractorPlugin.cpp
-	RpOverlayIconPlugin.cpp
 	RomPropertiesDialogPluginFactoryKF5.cpp
+	ExtractorPlugin.cpp
+	RpOverlayIconPlugin.cpp
 	)
 SET(rom-properties-kf5_H
 	${rom-properties-kf5_H}
 	${rom-properties-kio5_H}
-	RpExtractorPlugin.hpp
+	ExtractorPlugin.hpp
 	RpOverlayIconPlugin.hpp
 	)
 
@@ -178,18 +178,18 @@ IF(BUILD_KF5)
 		TARGET_INCLUDE_DIRECTORIES(rom-properties-kf5 PRIVATE ${PNG_INCLUDE_DIRS})
 	ENDIF(HAVE_PNG)
 
-	# RpExtractorPluginForwarder
+	# ExtractorPluginForwarder
 	ADD_LIBRARY(kfilemetadata_rom-properties-kf5 MODULE
-		RpExtractorPluginForwarder.cpp
-		RpExtractorPluginForwarder.hpp
+		ExtractorPluginForwarder.cpp
+		ExtractorPluginForwarder.hpp
 		)
 	SET_TARGET_PROPERTIES(kfilemetadata_rom-properties-kf5 PROPERTIES PREFIX "")
 	DO_SPLIT_DEBUG(kfilemetadata_rom-properties-kf5)
-	TARGET_LINK_LIBRARIES(kfilemetadata_rom-properties-kf5 KF5::KIOCore KF5::FileMetaData)
+	TARGET_LINK_LIBRARIES(kfilemetadata_rom-properties-kf5 PRIVATE KF5::KIOCore KF5::FileMetaData)
 
 	# Link in libdl if it's required for dlopen().
 	IF(CMAKE_DL_LIBS)
-		TARGET_LINK_LIBRARIES(kfilemetadata_rom-properties-kf5 ${CMAKE_DL_LIBS})
+		TARGET_LINK_LIBRARIES(kfilemetadata_rom-properties-kf5 PRIVATE ${CMAKE_DL_LIBS})
 	ENDIF(CMAKE_DL_LIBS)
 
 	# RpOverlayIconPluginForwarder
@@ -202,11 +202,11 @@ IF(BUILD_KF5)
 		)
 	SET_TARGET_PROPERTIES(overlayiconplugin_rom-properties-kf5 PROPERTIES PREFIX "")
 	DO_SPLIT_DEBUG(overlayiconplugin_rom-properties-kf5)
-	TARGET_LINK_LIBRARIES(overlayiconplugin_rom-properties-kf5 KF5::KIOCore KF5::KIOWidgets)
+	TARGET_LINK_LIBRARIES(overlayiconplugin_rom-properties-kf5 PRIVATE KF5::KIOCore KF5::KIOWidgets)
 
 	# Link in libdl if it's required for dlopen().
 	IF(CMAKE_DL_LIBS)
-		TARGET_LINK_LIBRARIES(overlayiconplugin_rom-properties-kf5 ${CMAKE_DL_LIBS})
+		TARGET_LINK_LIBRARIES(overlayiconplugin_rom-properties-kf5 PRIVATE ${CMAKE_DL_LIBS})
 	ENDIF(CMAKE_DL_LIBS)
 
 	# FIXME: Workaround for gcc-5.4.0 LTO bug.

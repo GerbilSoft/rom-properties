@@ -1,6 +1,6 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (KDE)                              *
- * RpExtractorPluginForwarder.cpp: KFileMetaData extractor forwarder.      *
+ * ROM Properties Page shell extension. (KF5)                              *
+ * ExtractorPluginForwarder.cpp: KFileMetaData extractor forwarder.        *
  *                                                                         *
  * Qt's plugin system prevents a single shared library from exporting      *
  * multiple plugins, so this file acts as a KFileMetaData ExtractorPlugin, *
@@ -12,21 +12,19 @@
 
 #include "config.kf5.h"
 
-#include "RpExtractorPluginForwarder.hpp"
-#include "RpExtractorPlugin.hpp"
+#include "ExtractorPluginForwarder.hpp"
+#include "ExtractorPlugin.hpp"
 #include "../RpQt.hpp"
 
 // C includes.
 #include <dlfcn.h>
 
 // KDE includes.
+#define SO_FILENAME "rom-properties-kf5.so"
+#include <kfileitem.h>
 #include <kfilemetadata/extractorplugin.h>
 using KFileMetaData::ExtractorPlugin;
 using KFileMetaData::ExtractionResult;
-
-#if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
-
-#include <kfileitem.h>
 
 #ifndef KF5_PRPD_PLUGIN_INSTALL_DIR
 #  error KF5_PRPD_PLUGIN_INSTALL_DIR is not set.
@@ -34,7 +32,7 @@ using KFileMetaData::ExtractionResult;
 
 namespace RomPropertiesKDE {
 
-RpExtractorPluginForwarder::RpExtractorPluginForwarder(QObject *parent)
+ExtractorPluginForwarder::ExtractorPluginForwarder(QObject *parent)
 	: super(parent)
 	, hRpKdeSo(nullptr)
 	, fwd_plugin(nullptr)
@@ -46,7 +44,7 @@ RpExtractorPluginForwarder::RpExtractorPluginForwarder(QObject *parent)
 
 	// FIXME: Check the .desktop file?
 	QString pluginPath(QString::fromUtf8(KF5_PLUGIN_INSTALL_DIR));
-	pluginPath += QLatin1String("/rom-properties-kf5.so");
+	pluginPath += QLatin1String("/" SO_FILENAME);
 
 	// Attempt to load the plugin.
 	hRpKdeSo = dlopen(pluginPath.toUtf8().constData(), RTLD_LOCAL|RTLD_LAZY);
@@ -66,10 +64,10 @@ RpExtractorPluginForwarder::RpExtractorPluginForwarder(QObject *parent)
 		return;
 	}
 
-	// Create an RpExtractorPlugin object.
+	// Create an ExtractorPlugin object.
 	fwd_plugin = pfn(this);
 	if (!fwd_plugin) {
-		// Unable to create an RpExtractorPlugin object.
+		// Unable to create an ExtractorPlugin object.
 		dlclose(hRpKdeSo);
 		hRpKdeSo = nullptr;
 		return;
@@ -79,10 +77,10 @@ RpExtractorPluginForwarder::RpExtractorPluginForwarder(QObject *parent)
 	// This *shouldn't* happen, but it's possible that our parent
 	// object enumerates child objects and does weird things.
 	connect(fwd_plugin, &QObject::destroyed,
-		this, &RpExtractorPluginForwarder::fwd_plugin_destroyed);
+		this, &ExtractorPluginForwarder::fwd_plugin_destroyed);
 }
 
-RpExtractorPluginForwarder::~RpExtractorPluginForwarder()
+ExtractorPluginForwarder::~ExtractorPluginForwarder()
 {
 	delete fwd_plugin;
 
@@ -92,7 +90,7 @@ RpExtractorPluginForwarder::~RpExtractorPluginForwarder()
 	}
 }
 
-QStringList RpExtractorPluginForwarder::mimetypes(void) const
+QStringList ExtractorPluginForwarder::mimetypes(void) const
 {
 	if (fwd_plugin) {
 		return fwd_plugin->mimetypes();
@@ -100,7 +98,7 @@ QStringList RpExtractorPluginForwarder::mimetypes(void) const
 	return QStringList();
 }
 
-void RpExtractorPluginForwarder::extract(ExtractionResult *result)
+void ExtractorPluginForwarder::extract(ExtractionResult *result)
 {
 	if (fwd_plugin) {
 		fwd_plugin->extract(result);
@@ -111,7 +109,7 @@ void RpExtractorPluginForwarder::extract(ExtractionResult *result)
  * fwd_plugin was destroyed.
  * @param obj
  */
-void RpExtractorPluginForwarder::fwd_plugin_destroyed(QObject *obj)
+void ExtractorPluginForwarder::fwd_plugin_destroyed(QObject *obj)
 {
 	if (obj == fwd_plugin) {
 		// Object matches.
@@ -121,5 +119,3 @@ void RpExtractorPluginForwarder::fwd_plugin_destroyed(QObject *obj)
 }
 
 }
-
-#endif /* QT_VERSION >= QT_VERSION_CHECK(5,0,0) */

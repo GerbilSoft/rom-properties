@@ -1,6 +1,6 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (KDE)                              *
- * RpExtractorPluginForwarder.hpp: KFileMetaData extractor forwarder.      *
+ * ROM Properties Page shell extension. (KF5)                              *
+ * ExtractorPlugin.hpp: KFileMetaData extractor plugin.                    *
  *                                                                         *
  * Qt's plugin system prevents a single shared library from exporting      *
  * multiple plugins, so this file acts as a KFileMetaData ExtractorPlugin, *
@@ -10,53 +10,36 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_KDE_EXTRACTORPLUGINFORWARDER_HPP__
-#define __ROMPROPERTIES_KDE_EXTRACTORPLUGINFORWARDER_HPP__
+#ifndef __ROMPROPERTIES_KDE_KF5_EXTRACTORPLUGIN_HPP__
+#define __ROMPROPERTIES_KDE_KF5_EXTRACTORPLUGIN_HPP__
 
-// FIXME: Test on KDE4.
 #include <QtCore/qglobal.h>
-
-#if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
-
 #include <kfilemetadata/extractorplugin.h>
 
 namespace RomPropertiesKDE {
 
-class RpExtractorPluginForwarder final : public KFileMetaData::ExtractorPlugin
+class ExtractorPlugin final : public ::KFileMetaData::ExtractorPlugin
 {
 	Q_OBJECT
-	Q_PLUGIN_METADATA(IID "org.kde.kf5.kfilemetadata.ExtractorPlugin")
 	Q_INTERFACES(KFileMetaData::ExtractorPlugin)
 
 	public:
-		explicit RpExtractorPluginForwarder(QObject *parent = nullptr);
-		virtual ~RpExtractorPluginForwarder();
+		explicit ExtractorPlugin(QObject *parent = nullptr);
 
 	private:
 		typedef KFileMetaData::ExtractorPlugin super;
-		Q_DISABLE_COPY(RpExtractorPluginForwarder);
+		Q_DISABLE_COPY(ExtractorPlugin);
 
 	public:
 		QStringList mimetypes(void) const final;
 		void extract(KFileMetaData::ExtractionResult *result) final;
-
-	private:
-		// rom-properties-kf5.so handle.
-		void *hRpKdeSo;
-
-		// Actual ExtractorPlugin.
-		KFileMetaData::ExtractorPlugin *fwd_plugin;
-
-	private slots:
-		/**
-		 * fwd_plugin was destroyed.
-		 * @param obj
-		 */
-		void fwd_plugin_destroyed(QObject *obj = nullptr);
 };
+
+// Exported function pointer to create a new RpExtractorPlugin.
+typedef ExtractorPlugin* (*pfn_createExtractorPluginKDE_t)(QObject *parent);
+#define PFN_CREATEEXTRACTORPLUGINKDE_FN createExtractorPluginKF5
+#define PFN_CREATEEXTRACTORPLUGINKDE_NAME "createExtractorPluginKF5"
 
 }
 
-#endif /* QT_VERSION >= QT_VERSION_CHECK(5,0,0) */
-
-#endif /* __ROMPROPERTIES_KDE_EXTRACTORPLUGINFORWARDER_HPP__ */
+#endif /* __ROMPROPERTIES_KDE_KF5_EXTRACTORPLUGIN_HPP__ */
