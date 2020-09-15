@@ -531,6 +531,7 @@ void RomFields::setTabName(int tabIdx, const char *name)
 		// Need to resize tabNames.
 		d->tabNames.resize(tabIdx+1);
 	}
+
 	d->tabNames[tabIdx] = (name ? name : "");
 }
 
@@ -626,11 +627,8 @@ vector<string> *RomFields::strArrayToVector(const char *const *strArray, size_t 
 
 	for (; count > 0; strArray++, count--) {
 		// nullptr will be handled as empty strings.
-		if (*strArray) {
-			pVec->emplace_back(*strArray);
-		} else {
-			pVec->emplace_back("");
-		}
+		const char* const str = *strArray;
+		pVec->emplace_back(str ? str : "");
 	}
 
 	return pVec;
@@ -659,11 +657,10 @@ vector<string> *RomFields::strArrayToVector_i18n(const char *msgctxt, const char
 
 	for (; count > 0; strArray++, count--) {
 		// nullptr will be handled as empty strings.
-		if (*strArray) {
-			pVec->emplace_back(dpgettext_expr(RP_I18N_DOMAIN, msgctxt, *strArray));
-		} else {
-			pVec->emplace_back("");
-		}
+		const char* const str = *strArray;
+		pVec->emplace_back(str
+			? dpgettext_expr(RP_I18N_DOMAIN, msgctxt, str)
+			: "");
 	}
 
 	return pVec;

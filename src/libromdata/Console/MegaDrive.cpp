@@ -107,7 +107,7 @@ class MegaDrivePrivate final : public RomDataPrivate
 		 * Discs don't have a vector table.
 		 * @return True if this is a disc; false if not.
 		 */
-		inline bool isDisc(void)
+		inline bool isDisc(void) const
 		{
 			int rfmt = romType & ROM_FORMAT_MASK;
 			return (rfmt == ROM_FORMAT_DISC_2048 ||

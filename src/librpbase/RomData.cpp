@@ -315,7 +315,14 @@ time_t RomDataPrivate::bcd_to_unix_time(const uint8_t *bcd_tm, size_t size)
 	// - tm_mon: 0 == January
 	struct tm bcdtime;
 
-	// TODO: Check for invalid BCD values.
+	// Check for invalid BCD values.
+	for (unsigned int i = 0; i < size; i++) {
+		if ((bcd_tm[i] & 0x0F) > 9 || (bcd_tm[i] & 0xF0) > 0x90) {
+			// Invalid BCD value.
+			return -1;
+		}
+	}
+
 	if (size >= 4) {
 		bcdtime.tm_year = ((bcd_tm[0] >> 4) * 1000) +
 				  ((bcd_tm[0] & 0x0F) * 100) +
@@ -544,6 +551,7 @@ const char *RomData::className(void) const
 RomData::FileType RomData::fileType(void) const
 {
 	RP_D(const RomData);
+	assert(d->fileType != FileType::Unknown);
 	return d->fileType;
 }
 
@@ -723,7 +731,7 @@ int RomData::loadInternalImage(ImageType imageType, const rp_image **pImage)
 int RomData::loadMetaData(void)
 {
 	// Not implemented for the base class.
-	return -ENOSYS;
+	return -ENOTSUP;
 }
 
 /**

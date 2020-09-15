@@ -956,21 +956,24 @@ void RomDataViewPrivate::adjustListData(int tabIdx)
 	}
 
 	QTreeWidget *const treeWidget = qobject_cast<QTreeWidget*>(liField->widget());
-	if (treeWidget) {
-		// Move the treeWidget to the QVBoxLayout.
-		int newRow = tab.vbox->count();
-		if (tab.lblCredits) {
-			newRow--;
-		}
-		assert(newRow >= 0);
-		tab.form->removeItem(liField);
-		tab.vbox->insertWidget(newRow, treeWidget, 999, Qt::Alignment());
-		delete liField;
-
-		// Unset this property to prevent the event filter from
-		// setting a fixed height.
-		treeWidget->setProperty("RFT_LISTDATA_rows_visible", 0);
+	if (!treeWidget) {
+		// Not a QTreeWidget.
+		return;
 	}
+
+	// Move the treeWidget to the QVBoxLayout.
+	int newRow = tab.vbox->count();
+	if (tab.lblCredits) {
+		newRow--;
+	}
+	assert(newRow >= 0);
+	tab.form->removeItem(liField);
+	tab.vbox->insertWidget(newRow, treeWidget, 999, Qt::Alignment());
+	delete liField;
+
+	// Unset this property to prevent the event filter from
+	// setting a fixed height.
+	treeWidget->setProperty("RFT_LISTDATA_rows_visible", QVariant());
 }
 
 /**
@@ -1057,14 +1060,11 @@ void RomDataViewPrivate::initAgeRatings(QLabel *lblDesc,
 	// Age ratings.
 	const RomFields::age_ratings_t *age_ratings = field.data.age_ratings;
 	assert(age_ratings != nullptr);
-	if (!age_ratings) {
-		// tr: No age ratings data.
-		initString(lblDesc, field, fieldIdx, U82Q(C_("RomDataView", "ERROR")));
-		return;
-	}
 
 	// Convert the age ratings field to a string.
-	const QString str = U82Q(RomFields::ageRatingsDecode(age_ratings));
+	const QString str = (age_ratings
+		? U82Q(RomFields::ageRatingsDecode(age_ratings))
+		: U82Q(C_("RomDataView", "ERROR")));
 	initString(lblDesc, field, fieldIdx, str);
 }
 
@@ -1153,11 +1153,7 @@ void RomDataViewPrivate::updateMulti(uint32_t user_lc)
 		// Get the string and update the text.
 		const string *const pStr = RomFields::getFromStringMulti(pStr_multi, def_lc, user_lc);
 		assert(pStr != nullptr);
-		if (pStr) {
-			lblString->setText(U82Q(*pStr));
-		} else {
-			lblString->setText(QString());
-		}
+		lblString->setText(pStr ? U82Q(*pStr) : QString());
 	}
 
 	// RFT_LISTDATA_MULTI
@@ -1338,9 +1334,11 @@ int RomDataViewPrivate::updateField(int fieldIdx)
 				break;
 			}
 
-			label->setText(field->data.str
-				? U82Q(*(field->data.str))
-				: QString());
+			if (field->data.str) {
+				label->setText(U82Q(*(field->data.str)));
+			} else {
+				label->clear();
+			}
 			ret = 0;
 			break;
 		}
@@ -1441,7 +1439,7 @@ void RomDataViewPrivate::initDisplayWidgets(void)
 		return;
 	}
 
-	// Create the QTabWidget.
+	// Initialize the QTabWidget.
 	Q_Q(RomDataView);
 	const int tabCount = pFields->tabCount();
 	if (tabCount > 1) {
@@ -1470,7 +1468,7 @@ void RomDataViewPrivate::initDisplayWidgets(void)
 		}
 	} else {
 		// No tabs.
-		// Don't create a QTabWidget, but simulate a single
+		// Don't initialize the QTabWidget, but simulate a single
 		// tab in tabs[] to make it easier to work with.
 		tabs.resize(1);
 		auto &tab = tabs[0];
@@ -1493,8 +1491,8 @@ void RomDataViewPrivate::initDisplayWidgets(void)
 
 	// Create the data widgets.
 	int prevTabIdx = 0;
-	const auto pFields_cend = pFields->cend();
 	int fieldIdx = 0;
+	const auto pFields_cend = pFields->cend();
 	for (auto iter = pFields->cbegin(); iter != pFields_cend; ++iter, fieldIdx++) {
 		const RomFields::Field &field = *iter;
 		if (!field.isValid)

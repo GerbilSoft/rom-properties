@@ -471,7 +471,6 @@ public:
 							linePos[col] = (unsigned int)string::npos;
 						} else {
 							// Found a newline.
-							// TODO: Update SafeString to take a length parameter instead of creating a temporary string.
 							str = SafeString(jt->c_str() + linePos[col], nl_pos - linePos[col], false);
 							linePos[col] = (unsigned int)(nl_pos + 1);
 							if (linePos[col] > (unsigned int)jt->size()) {

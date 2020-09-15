@@ -2002,8 +2002,8 @@ rom_data_view_update_display(RomDataView *page)
 	const char *const desc_label_fmt = C_("RomDataView", "%s:");
 
 	// Create the data widgets.
-	const auto pFields_cend = pFields->cend();
 	int fieldIdx = 0;
+	const auto pFields_cend = pFields->cend();
 	for (auto iter = pFields->cbegin(); iter != pFields_cend; ++iter, fieldIdx++) {
 		const RomFields::Field &field = *iter;
 		if (!field.isValid)

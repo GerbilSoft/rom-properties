@@ -40,7 +40,7 @@ ROMDATA_IMPL_IMG_SIZES(Xbox360_XDBF)
 class Xbox360_XDBF_Private final : public RomDataPrivate
 {
 	public:
-		Xbox360_XDBF_Private(Xbox360_XDBF *q, IRpFile *file, bool cia);
+		Xbox360_XDBF_Private(Xbox360_XDBF *q, IRpFile *file, bool xex);
 		virtual ~Xbox360_XDBF_Private();
 
 	private:
