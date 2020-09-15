@@ -1,6 +1,6 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (KDE)                              *
- * RpOverlayIconPluginForwarder.hpp: KOverlayIconPlugin forwarder.         *
+ * OverlayIconPluginForwarder.hpp: KOverlayIconPlugin forwarder.           *
  *                                                                         *
  * Qt's plugin system prevents a single shared library from exporting      *
  * multiple plugins, so this file acts as a KOverlayIconPlugin,            *
@@ -10,32 +10,28 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_KDE_OVERLAYICONPLUGINFORWARDER_HPP__
+#ifndef __ROMPROPERTIES_KDE_KF5_OVERLAYICONPLUGINFORWARDER_HPP__
 #define __ROMPROPERTIES_KDE_OVERLAYICONPLUGINFORWARDER_HPP__
 
-// FIXME: Test on KDE4.
 #include <QtCore/qglobal.h>
-
-#if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
-
 #include <KOverlayIconPlugin>
 
-namespace RomPropertiesKDE {
+namespace RomPropertiesKF5 {
 
-class RpOverlayIconPluginForwarder final : public KOverlayIconPlugin
+class OverlayIconPluginForwarder final : public KOverlayIconPlugin
 {
 	Q_OBJECT
 	// NOTE: KDE doesn't have a standard IID for KOverlayIconPlugin...
-	Q_PLUGIN_METADATA(IID "com.gerbilsoft.rom-properties.KOverlayIconPlugin" FILE "RpOverlayIconPluginForwarder.json")
+	Q_PLUGIN_METADATA(IID "com.gerbilsoft.rom-properties.KOverlayIconPlugin" FILE "OverlayIconPluginForwarder.json")
 	//Q_INTERFACES(KOverlayIconPlugin)
 
 	public:
-		explicit RpOverlayIconPluginForwarder(QObject *parent = nullptr);
-		virtual ~RpOverlayIconPluginForwarder();
+		explicit OverlayIconPluginForwarder(QObject *parent = nullptr);
+		virtual ~OverlayIconPluginForwarder();
 
 	private:
 		typedef KOverlayIconPlugin super;
-		Q_DISABLE_COPY(RpOverlayIconPluginForwarder);
+		Q_DISABLE_COPY(OverlayIconPluginForwarder);
 
 	public:
 		QStringList getOverlays(const QUrl &item) final;
@@ -56,7 +52,5 @@ class RpOverlayIconPluginForwarder final : public KOverlayIconPlugin
 };
 
 }
-
-#endif /* QT_VERSION >= QT_VERSION_CHECK(5,0,0) */
 
 #endif /* __ROMPROPERTIES_KDE_OVERLAYICONPLUGINFORWARDER_HPP__ */

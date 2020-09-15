@@ -1,6 +1,6 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (KDE)                              *
- * RpOverlayIconPluginForwarder.cpp: KOverlayIconPlugin forwarder.         *
+ * OverlayIconPluginForwarder.cpp: KOverlayIconPlugin forwarder.           *
  *                                                                         *
  * Qt's plugin system prevents a single shared library from exporting      *
  * multiple plugins, so this file acts as a KOverlayIconPlugin,            *
@@ -12,27 +12,24 @@
 
 #include "config.kf5.h"
 
-#include "RpOverlayIconPluginForwarder.hpp"
-#include "RpOverlayIconPlugin.hpp"
+#include "OverlayIconPluginForwarder.hpp"
+#include "OverlayIconPlugin.hpp"
 #include "../RpQt.hpp"
 
 // C includes.
 #include <dlfcn.h>
 
 // KDE includes.
-#include <KOverlayIconPlugin>
-
-#if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
-
 #include <kfileitem.h>
+#include <KOverlayIconPlugin>
 
 #ifndef KF5_PRPD_PLUGIN_INSTALL_DIR
 #  error KF5_PRPD_PLUGIN_INSTALL_DIR is not set.
 #endif /* KF5_PRPD_PLUGIN_INSTALL_DIR */
 
-namespace RomPropertiesKDE {
+namespace RomPropertiesKF5 {
 
-RpOverlayIconPluginForwarder::RpOverlayIconPluginForwarder(QObject *parent)
+OverlayIconPluginForwarder::OverlayIconPluginForwarder(QObject *parent)
 	: super(parent)
 	, hRpKdeSo(nullptr)
 	, fwd_plugin(nullptr)
@@ -64,10 +61,10 @@ RpOverlayIconPluginForwarder::RpOverlayIconPluginForwarder(QObject *parent)
 		return;
 	}
 
-	// Create an RpOverlayIconPlugin object.
+	// Create an OverlayIconPlugin object.
 	fwd_plugin = pfn(this);
 	if (!fwd_plugin) {
-		// Unable to create an RpOverlayIconPlugin object.
+		// Unable to create an OverlayIconPlugin object.
 		dlclose(hRpKdeSo);
 		hRpKdeSo = nullptr;
 		return;
@@ -77,10 +74,10 @@ RpOverlayIconPluginForwarder::RpOverlayIconPluginForwarder(QObject *parent)
 	// This *shouldn't* happen, but it's possible that our parent
 	// object enumerates child objects and does weird things.
 	connect(fwd_plugin, &QObject::destroyed,
-		this, &RpOverlayIconPluginForwarder::fwd_plugin_destroyed);
+		this, &OverlayIconPluginForwarder::fwd_plugin_destroyed);
 }
 
-RpOverlayIconPluginForwarder::~RpOverlayIconPluginForwarder()
+OverlayIconPluginForwarder::~OverlayIconPluginForwarder()
 {
 	delete fwd_plugin;
 
@@ -90,7 +87,7 @@ RpOverlayIconPluginForwarder::~RpOverlayIconPluginForwarder()
 	}
 }
 
-QStringList RpOverlayIconPluginForwarder::getOverlays(const QUrl &item)
+QStringList OverlayIconPluginForwarder::getOverlays(const QUrl &item)
 {
 	if (fwd_plugin) {
 		return fwd_plugin->getOverlays(item);
@@ -102,7 +99,7 @@ QStringList RpOverlayIconPluginForwarder::getOverlays(const QUrl &item)
  * fwd_plugin was destroyed.
  * @param obj
  */
-void RpOverlayIconPluginForwarder::fwd_plugin_destroyed(QObject *obj)
+void OverlayIconPluginForwarder::fwd_plugin_destroyed(QObject *obj)
 {
 	if (obj == fwd_plugin) {
 		// Object matches.
@@ -112,5 +109,3 @@ void RpOverlayIconPluginForwarder::fwd_plugin_destroyed(QObject *obj)
 }
 
 }
-
-#endif /* QT_VERSION >= QT_VERSION_CHECK(5,0,0) */

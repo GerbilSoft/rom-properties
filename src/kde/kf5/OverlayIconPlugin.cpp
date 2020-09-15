@@ -1,6 +1,6 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (KDE)                              *
- * RpOverlayIconPlugin.cpp: KOverlayIconPlugin.                            *
+ * OverlayIconPlugin.cpp: KOverlayIconPlugin.                              *
  *                                                                         *
  * Qt's plugin system prevents a single shared library from exporting      *
  * multiple plugins, so this file acts as a KOverlayIconPlugin,            *
@@ -11,7 +11,7 @@
  ***************************************************************************/
 
 #include "stdafx.h"
-#include "RpOverlayIconPlugin.hpp"
+#include "OverlayIconPlugin.hpp"
 
 // librpbase, librpfile
 using namespace LibRpBase;
@@ -29,17 +29,14 @@ using std::vector;
 #include <QtCore/QStandardPaths>
 
 // KDE includes.
+#include <kfileitem.h>
 #include <kfilemetadata/extractorplugin.h>
 #include <kfilemetadata/properties.h>
 using KFileMetaData::ExtractorPlugin;
 using KFileMetaData::ExtractionResult;
 using namespace KFileMetaData::Property;
 
-#if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
-
-#include <kfileitem.h>
-
-namespace RomPropertiesKDE {
+namespace RomPropertiesKF5 {
 
 /**
  * Factory method.
@@ -47,22 +44,22 @@ namespace RomPropertiesKDE {
  * rom-properties, and is called by a forwarder library.
  */
 extern "C" {
-	Q_DECL_EXPORT RpOverlayIconPlugin *PFN_CREATEOVERLAYICONPLUGINKDE_FN(QObject *parent)
+	Q_DECL_EXPORT OverlayIconPlugin *PFN_CREATEOVERLAYICONPLUGINKDE_FN(QObject *parent)
 	{
 		if (getuid() == 0 || geteuid() == 0) {
 			qCritical("*** overlayiconplugin_rom_properties_" RP_KDE_LOWER "%u does not support running as root.", QT_VERSION >> 16);
 			return nullptr;
 		}
 
-		return new RpOverlayIconPlugin(parent);
+		return new OverlayIconPlugin(parent);
 	}
 }
 
-RpOverlayIconPlugin::RpOverlayIconPlugin(QObject *parent)
+OverlayIconPlugin::OverlayIconPlugin(QObject *parent)
 	: super(parent)
 { }
 
-QStringList RpOverlayIconPlugin::getOverlays(const QUrl &item)
+QStringList OverlayIconPlugin::getOverlays(const QUrl &item)
 {
 	// TODO: Check for slow devices and/or cache this?
 	QStringList sl;
@@ -99,5 +96,3 @@ QStringList RpOverlayIconPlugin::getOverlays(const QUrl &item)
 }
 
 }
-
-#endif /* QT_VERSION >= QT_VERSION_CHECK(5,0,0) */

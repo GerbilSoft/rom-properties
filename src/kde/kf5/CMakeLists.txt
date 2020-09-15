@@ -112,13 +112,13 @@ SET(rom-properties-kf5_SRCS
 	${rom-properties-kf5_RCC_O}
 	RomPropertiesDialogPluginFactoryKF5.cpp
 	ExtractorPlugin.cpp
-	RpOverlayIconPlugin.cpp
+	OverlayIconPlugin.cpp
 	)
 SET(rom-properties-kf5_H
 	${rom-properties-kf5_H}
 	${rom-properties-kio5_H}
 	ExtractorPlugin.hpp
-	RpOverlayIconPlugin.hpp
+	OverlayIconPlugin.hpp
 	)
 
 IF(COMMAND QT5_WRAP_UI)
@@ -192,13 +192,13 @@ IF(BUILD_KF5)
 		TARGET_LINK_LIBRARIES(kfilemetadata_rom-properties-kf5 PRIVATE ${CMAKE_DL_LIBS})
 	ENDIF(CMAKE_DL_LIBS)
 
-	# RpOverlayIconPluginForwarder
+	# OverlayIconPluginForwarder
 	# TODO: Use kcoreaddons_add_plugin() for the JSON?
 	# https://github.com/owncloud/client/blob/master/shell_integration/dolphin/CMakeLists.txt
 	# TODO: Better name.
 	ADD_LIBRARY(overlayiconplugin_rom-properties-kf5 MODULE
-		RpOverlayIconPluginForwarder.cpp
-		RpOverlayIconPluginForwarder.hpp
+		OverlayIconPluginForwarder.cpp
+		OverlayIconPluginForwarder.hpp
 		)
 	SET_TARGET_PROPERTIES(overlayiconplugin_rom-properties-kf5 PROPERTIES PREFIX "")
 	DO_SPLIT_DEBUG(overlayiconplugin_rom-properties-kf5)

@@ -33,7 +33,7 @@ using KFileMetaData::ExtractorPlugin;
 using KFileMetaData::ExtractionResult;
 using namespace KFileMetaData::Property;
 
-namespace RomPropertiesKDE {
+namespace RomPropertiesKF5 {
 
 /**
  * Factory method.

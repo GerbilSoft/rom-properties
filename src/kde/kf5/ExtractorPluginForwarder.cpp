@@ -30,7 +30,7 @@ using KFileMetaData::ExtractionResult;
 #  error KF5_PRPD_PLUGIN_INSTALL_DIR is not set.
 #endif
 
-namespace RomPropertiesKDE {
+namespace RomPropertiesKF5 {
 
 ExtractorPluginForwarder::ExtractorPluginForwarder(QObject *parent)
 	: super(parent)

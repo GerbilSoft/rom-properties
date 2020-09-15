@@ -16,7 +16,7 @@
 #include <QtCore/qglobal.h>
 #include <kfilemetadata/extractorplugin.h>
 
-namespace RomPropertiesKDE {
+namespace RomPropertiesKF5 {
 
 class ExtractorPluginForwarder final : public ::KFileMetaData::ExtractorPlugin
 {
