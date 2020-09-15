@@ -141,12 +141,19 @@ int EXEPrivate::loadWin32ManifestResource(XMLDocument &doc, const char **ppResNa
 	xml[xml_size] = 0;
 
 	// Parse the XML.
+	// FIXME: TinyXML2 2.0.0 added XMLDocument::Clear().
+	// Ubuntu 14.04 has an older version that doesn't have it...
+	// Assuming the original document is empty.
+#if TINYXML2_MAJOR_VERSION >= 2
 	doc.Clear();
+#endif /* TINYXML2_MAJOR_VERSION >= 2 */
 	int xerr = doc.Parse(xml.get());
 	if (xerr != XML_SUCCESS) {
 		// Error parsing the manifest XML.
 		// TODO: Better error code.
+#if TINYXML2_MAJOR_VERSION >= 2
 		doc.Clear();
+#endif /* TINYXML2_MAJOR_VERSION >= 2 */
 		return -EIO;
 	}
 
@@ -155,7 +162,9 @@ int EXEPrivate::loadWin32ManifestResource(XMLDocument &doc, const char **ppResNa
 	if (!assembly) {
 		// No assembly element.
 		// TODO: Better error code.
+#if TINYXML2_MAJOR_VERSION >= 2
 		doc.Clear();
+#endif /* TINYXML2_MAJOR_VERSION >= 2 */
 		return -EIO;
 	}
 
@@ -173,7 +182,9 @@ int EXEPrivate::loadWin32ManifestResource(XMLDocument &doc, const char **ppResNa
 	{
 		// Incorrect assembly attributes.
 		// TODO: Better error code.
+#if TINYXML2_MAJOR_VERSION >= 2
 		doc.Clear();
+#endif /* TINYXML2_MAJOR_VERSION >= 2 */
 		return -EIO;
 	}
 
@@ -209,7 +220,9 @@ int EXEPrivate::addFields_PE_Manifest(void)
 	if (!assembly) {
 		// No assembly element.
 		// TODO: Better error code.
+#if TINYXML2_MAJOR_VERSION >= 2
 		doc.Clear();
+#endif /* TINYXML2_MAJOR_VERSION >= 2 */
 		return -EIO;
 	}
 
