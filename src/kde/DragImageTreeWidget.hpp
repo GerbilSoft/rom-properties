@@ -15,7 +15,7 @@
 
 #include <QTreeWidget>
 
-class DragImageTreeWidget final : public QTreeWidget
+class DragImageTreeWidget : public QTreeWidget
 {
 	Q_OBJECT
 

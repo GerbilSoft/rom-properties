@@ -20,7 +20,7 @@
  * rp_image data storage class.
  * This can be overridden for e.g. QImage or GDI+.
  */
-class RpQImageBackend final : public LibRpTexture::rp_image_backend
+class RpQImageBackend : public LibRpTexture::rp_image_backend
 {
 	public:
 		RpQImageBackend(int width, int height, LibRpTexture::rp_image::Format format);

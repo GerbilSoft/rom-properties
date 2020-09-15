@@ -22,7 +22,7 @@
 
 namespace RomPropertiesKDE {
 
-class RpOverlayIconPluginForwarder final : public KOverlayIconPlugin
+class RpOverlayIconPluginForwarder : public KOverlayIconPlugin
 {
 	Q_OBJECT
 	// NOTE: KDE doesn't have a standard IID for KOverlayIconPlugin...

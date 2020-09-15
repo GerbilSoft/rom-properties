@@ -12,7 +12,7 @@
 #include <QDialog>
 
 class ConfigDialogPrivate;
-class ConfigDialog final : public QDialog
+class ConfigDialog : public QDialog
 {
 	Q_OBJECT
 

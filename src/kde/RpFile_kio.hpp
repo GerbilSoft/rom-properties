@@ -27,7 +27,7 @@
 #include <QtCore/QUrl>
 
 class RpFileKioPrivate;
-class RpFileKio final : public QObject, public LibRpFile::IRpFile
+class RpFileKio : public QObject, public LibRpFile::IRpFile
 {
 	Q_OBJECT
 

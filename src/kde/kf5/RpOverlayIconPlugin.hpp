@@ -22,7 +22,7 @@
 
 namespace RomPropertiesKDE {
 
-class RpOverlayIconPlugin final : public KOverlayIconPlugin
+class RpOverlayIconPlugin : public KOverlayIconPlugin
 {
 	Q_OBJECT
 	//Q_INTERFACES(KOverlayIconPlugin)
