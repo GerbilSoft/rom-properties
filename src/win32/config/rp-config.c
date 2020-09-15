@@ -26,7 +26,7 @@
 #include <string.h>
 
 /**
- * rp_show_config_dialog() function pointer.
+ * rp_show_config_dialog() function pointer. (Win32 version)
  *
  * NOTE: This function pointer uses the same API as the function
  * expected by rundll32.exe.

@@ -41,15 +41,15 @@
  * @param maximum_size Maximum size.
  * @return 0 on success; non-zero on error.
  */
-typedef int (*PFN_RP_CREATE_THUMBNAIL)(const char *source_file, const char *output_file, int maximum_size);
+typedef int (RP_C_API *PFN_RP_CREATE_THUMBNAIL)(const char *source_file, const char *output_file, int maximum_size);
 
 /**
- * rp_show_config_dialog() function pointer.
+ * rp_show_config_dialog() function pointer. (Unix/Linux version)
  * @param argc
  * @param argv
  * @return 0 on success; non-zero on error.
  */
-typedef int (*PFN_RP_SHOW_CONFIG_DIALOG)(int argc, char *argv[]);
+typedef int (RP_C_API *PFN_RP_SHOW_CONFIG_DIALOG)(int argc, char *argv[]);
 
 // Are we running as rp-config?
 static bool is_rp_config = false;

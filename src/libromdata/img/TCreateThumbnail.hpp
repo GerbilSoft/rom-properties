@@ -62,7 +62,7 @@ typedef enum {
  * @param maximum_size Maximum size.
  * @return 0 on success; non-zero on error.
  */
-typedef int (*PFN_RP_CREATE_THUMBNAIL)(const char *source_file, const char *output_file, int maximum_size);
+typedef int (RP_C_API *PFN_RP_CREATE_THUMBNAIL)(const char *source_file, const char *output_file, int maximum_size);
 
 #ifdef __cplusplus
 }

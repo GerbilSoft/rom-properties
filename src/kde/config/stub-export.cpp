@@ -21,7 +21,7 @@
  * @return 0 on success; non-zero on error.
  */
 extern "C"
-Q_DECL_EXPORT int rp_show_config_dialog(int argc, char *argv[])
+Q_DECL_EXPORT int RP_C_API rp_show_config_dialog(int argc, char *argv[])
 {
 	if (getuid() == 0 || geteuid() == 0) {
 		qCritical("*** rom-properties-" RP_KDE_LOWER "%u does not support running as root.", QT_VERSION >> 16);

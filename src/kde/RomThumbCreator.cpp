@@ -264,7 +264,7 @@ ThumbCreator::Flags RomThumbCreator::flags(void) const
  * @return 0 on success; non-zero on error.
  */
 extern "C"
-Q_DECL_EXPORT int rp_create_thumbnail(const char *source_file, const char *output_file, int maximum_size)
+Q_DECL_EXPORT int RP_C_API rp_create_thumbnail(const char *source_file, const char *output_file, int maximum_size)
 {
 	// NOTE: TCreateThumbnail() has wrappers for opening the
 	// ROM file and getting RomData*, but we're doing it here

@@ -179,8 +179,8 @@ string CreateThumbnailPrivate::proxyForUrl(const string &url) const
 
 // NOTE: G_MODULE_EXPORT is a no-op on non-Windows platforms.
 #if !defined(_WIN32) && defined(__GNUC__) && __GNUC__ >= 4
-#undef G_MODULE_EXPORT
-#define G_MODULE_EXPORT __attribute__ ((visibility ("default")))
+#  undef G_MODULE_EXPORT
+#  define G_MODULE_EXPORT __attribute__ ((visibility ("default")))
 #endif
 
 /**
@@ -292,7 +292,7 @@ static int openFromFilenameOrURI(const char *source_file, IRpFile **pp_file, str
  * @return 0 on success; non-zero on error.
  */
 extern "C"
-G_MODULE_EXPORT int rp_create_thumbnail(const char *source_file, const char *output_file, int maximum_size)
+G_MODULE_EXPORT int RP_C_API rp_create_thumbnail(const char *source_file, const char *output_file, int maximum_size)
 {
 	// Some of this is based on the GNOME Thumbnailer skeleton project.
 	// https://github.com/hadess/gnome-thumbnailer-skeleton/blob/master/gnome-thumbnailer-skeleton.c
