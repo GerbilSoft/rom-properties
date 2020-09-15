@@ -60,6 +60,9 @@
     With both ThumbCreator and KPropertiesDialog in one .desktop file,
     all MIME types were taken over by rom-properties for ThumbCreator,
     even if those types weren't supported.
+  * XboxDisc: Fixed broken detection for some XGD3 discs, including
+    "2014 FIFA World Cup".
+    * This fixes issue #253, reported by @Masamune3210.
 
 * Other changes:
   * Windows: MSVC 2012 is now the minimum required compiler version if

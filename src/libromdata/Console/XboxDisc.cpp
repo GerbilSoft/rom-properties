@@ -530,7 +530,7 @@ int XboxDisc::isRomSupported_static(
 
 		// TODO: Verify that this works correctly.
 		if (!memcmp(&pvd->btime.full[8], xgd3_pvd_times[0], 9) ||
-		     memcmp(&pvd->btime.full[8], xgd3_pvd_times[1], 9))
+		    !memcmp(&pvd->btime.full[8], xgd3_pvd_times[1], 9))
 		{
 			// Found a match!
 			if (pWave) {
