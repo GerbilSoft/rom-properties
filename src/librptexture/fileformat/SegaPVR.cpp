@@ -1125,10 +1125,10 @@ rp_image *SegaPVRPrivate::svr_unswizzle_16(const rp_image *img_swz)
 	}
 
 	// Strides must be equal to the image width.
-	assert(img_swz->stride()/sizeof(uint32_t) == width);
-	assert(img->stride()/sizeof(uint32_t) == width);
-	if (img_swz->stride()/sizeof(uint32_t) != width ||
-	    img->stride()/sizeof(uint32_t) != width)
+	assert(img_swz->stride()/(int)sizeof(uint32_t) == width);
+	assert(img->stride()/(int)sizeof(uint32_t) == width);
+	if (img_swz->stride()/(int)sizeof(uint32_t) != width ||
+	    img->stride()/(int)sizeof(uint32_t) != width)
 	{
 		img->unref();
 		return nullptr;
