@@ -8,6 +8,7 @@
 
 #include "stdafx.h"
 #include "config.librpbase.h"
+
 #include "AboutTab.hpp"
 
 // librpbase
@@ -28,19 +29,18 @@ using std::string;
 
 // Other libraries.
 #ifdef HAVE_ZLIB
-# include <zlib.h>
+#  include <zlib.h>
 #endif
 #ifdef HAVE_PNG
-# include "librpbase/img/APNG_dlopen.h"
-# include <png.h>
+#  include "librpbase/img/APNG_dlopen.h"
+#  include <png.h>
 #endif
-#ifdef ENABLE_DECRYPTION
-# ifdef HAVE_NETTLE_VERSION_H
+// TODO: JPEG
+#if defined(ENABLE_DECRYPTION) && defined(HAVE_NETTLE_VERSION_H)
 #  include <nettle/version.h>
-# endif
 #endif
 #ifdef ENABLE_XML
-# include <tinyxml2.h>
+#  include <tinyxml2.h>
 #endif
 
 #include "ui_AboutTab.h"
@@ -229,6 +229,7 @@ void AboutTabPrivate::initCreditsTab(void)
 void AboutTabPrivate::initLibrariesTab(void)
 {
 	// lblLibraries is RichText.
+	char sVerBuf[64];
 
 	// NOTE: These strings can NOT be static.
 	// Otherwise, they won't be retranslated if the UI language
@@ -265,7 +266,7 @@ void AboutTabPrivate::initLibrariesTab(void)
 	sLibraries += rp_sprintf(sUsingDll, qtVersion.c_str());
 #endif /* QT_IS_STATIC */
 	sLibraries += BR
-		"Copyright (C) 1995-2019 The Qt Company Ltd. and/or its subsidiaries." BR
+		"Copyright (C) 1995-2020 The Qt Company Ltd. and/or its subsidiaries." BR
 		"<a href='https://www.qt.io/'>https://www.qt.io/</a>" BR;
 	// TODO: Check QT_VERSION at runtime?
 #if QT_VERSION >= QT_VERSION_CHECK(4,5,0)
@@ -394,16 +395,14 @@ void AboutTabPrivate::initLibrariesTab(void)
 #ifdef ENABLE_DECRYPTION
 	sLibraries += brbr;
 # ifdef HAVE_NETTLE_VERSION_H
-	char nettle_build_version[32];
-	snprintf(nettle_build_version, sizeof(nettle_build_version),
+	snprintf(sVerBuf, sizeof(sVerBuf),
 		"GNU Nettle %u.%u", NETTLE_VERSION_MAJOR, NETTLE_VERSION_MINOR);
-	sLibraries += rp_sprintf(sCompiledWith, nettle_build_version);
+	sLibraries += rp_sprintf(sCompiledWith, sVerBuf);
 #  ifdef HAVE_NETTLE_VERSION_FUNCTIONS
-	char nettle_runtime_version[32];
-	snprintf(nettle_runtime_version, sizeof(nettle_runtime_version),
+	snprintf(sVerBuf, sizeof(sVerBuf),
 		"GNU Nettle %u.%u", nettle_version_major(), nettle_version_minor());
 	sLibraries += br;
-	sLibraries += rp_sprintf(sUsingDll, nettle_runtime_version);
+	sLibraries += rp_sprintf(sUsingDll, sVerBuf);
 #  endif /* HAVE_NETTLE_VERSION_FUNCTIONS */
 	sLibraries += BR
 		"Copyright (C) 2001-2020 Niels Möller." BR
@@ -429,22 +428,47 @@ void AboutTabPrivate::initLibrariesTab(void)
 	/** TinyXML2 **/
 #ifdef ENABLE_XML
 	sLibraries += brbr;
-	char sXmlVersion[32];
-	snprintf(sXmlVersion, sizeof(sXmlVersion), "TinyXML2 %u.%u.%u",
+	snprintf(sVerBuf, sizeof(sVerBuf), "TinyXML2 %u.%u.%u",
 		TIXML2_MAJOR_VERSION, TIXML2_MINOR_VERSION,
 		TIXML2_PATCH_VERSION);
 
 #if defined(USE_INTERNAL_XML) && !defined(USE_INTERNAL_XML_DLL)
-	sLibraries += rp_sprintf(sIntCopyOf, sXmlVersion);
+	sLibraries += rp_sprintf(sIntCopyOf, sVerBuf);
 #else
 	// FIXME: Runtime version?
-	sLibraries += rp_sprintf(sCompiledWith, sXmlVersion);
+	sLibraries += rp_sprintf(sCompiledWith, sVerBuf);
 #endif
 	sLibraries += BR
-		"Copyright (C) 2000-2019 Lee Thomason" BR
+		"Copyright (C) 2000-2020 Lee Thomason" BR
 		"<a href='http://www.grinninglizard.com/'>http://www.grinninglizard.com/</a>" BR;
 	sLibraries += rp_sprintf(sLicense, "zlib license");
 #endif /* ENABLE_XML */
+
+	/** GNU gettext **/
+	// NOTE: glibc's libintl.h doesn't have the version information,
+	// so we're only printing this if we're using GNU gettext's version.
+#if defined(HAVE_GETTEXT) && defined(LIBINTL_VERSION)
+	if (LIBINTL_VERSION & 0xFF) {
+		snprintf(sVerBuf, sizeof(sVerBuf), "GNU gettext %u.%u.%u",
+			LIBINTL_VERSION >> 16,
+			(LIBINTL_VERSION >> 8) & 0xFF,
+			LIBINTL_VERSION & 0xFF);
+	} else {
+		snprintf(sVerBuf, sizeof(sVerBuf), "GNU gettext %u.%u",
+			LIBINTL_VERSION >> 16,
+			(LIBINTL_VERSION >> 8) & 0xFF);
+	}
+#  ifdef _WIN32
+	sLibraries += rp_sprintf(sIntCopyOf, sVerBuf);
+#  else /* _WIN32 */
+	// FIXME: Runtime version?
+	sLibraries += rp_sprintf(sCompiledWith, sVerBuf);
+#  endif /* _WIN32 */
+	sLibraries += BR
+		"Copyright (C) 1995-1997, 2000-2016, 2018-2020 Free Software Foundation, Inc." BR
+		"<a href='https://www.gnu.org/software/gettext/'>https://www.gnu.org/software/gettext/</a>" BR;
+	sLibraries += rp_sprintf(sLicense, "GNU LGPL v2.1+");
+#endif /* HAVE_GETTEXT && LIBINTL_VERSION */
 
 	// We're done building the string.
 	ui.lblLibraries->setText(U82Q(sLibraries));
