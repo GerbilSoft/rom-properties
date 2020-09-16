@@ -569,7 +569,9 @@ int MachO::loadFieldData(void)
 			// 0x00100000
 			"NoReexport", "PIE", "DeadStrip", "TLVDescriptors",
 			// 0x01000000
-			"NoHeapExec", "AppExtSafe"
+			"NoHeapExec", "AppExtSafe", "NListOutOfSync", "SimSupport",
+			// 0x10000000
+			nullptr, nullptr, nullptr, "DylibInCache",
 		};
 		vector<string> *const v_flags_bitfield_names = RomFields::strArrayToVector(
 			flags_bitfield_names, ARRAY_SIZE(flags_bitfield_names));
