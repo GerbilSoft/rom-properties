@@ -4148,22 +4148,6 @@ INT_PTR CALLBACK RP_ShellPropSheetExt_Private::DlgProc(HWND hDlg, UINT uMsg, WPA
 			break;
 		}
 
-		case WM_CTLCOLORSTATIC: {
-			auto *const d = static_cast<RP_ShellPropSheetExt_Private*>(GetProp(hDlg, D_PTR_PROP));
-			if (!d) {
-				// No RP_ShellPropSheetExt_Private. Can't do anything...
-				return false;
-			}
-
-			auto iter = d->setWarningControls.find(reinterpret_cast<HWND>(lParam));
-			if (iter != d->setWarningControls.end()) {
-				// Set the "Warning" color.
-				HDC hdc = reinterpret_cast<HDC>(wParam);
-				SetTextColor(hdc, RGB(255, 0, 0));
-			}
-			break;
-		}
-
 		case WM_WTSSESSION_CHANGE: {
 			auto *const d = static_cast<RP_ShellPropSheetExt_Private*>(GetProp(hDlg, D_PTR_PROP));
 			if (!d) {
@@ -4287,6 +4271,22 @@ INT_PTR CALLBACK RP_ShellPropSheetExt_Private::SubtabDlgProc(HWND hDlg, UINT uMs
 
 				default:
 					break;
+			}
+			break;
+		}
+
+		case WM_CTLCOLORSTATIC: {
+			auto *const d = static_cast<RP_ShellPropSheetExt_Private*>(GetProp(hDlg, D_PTR_PROP));
+			if (!d) {
+				// No RP_ShellPropSheetExt_Private. Can't do anything...
+				return false;
+			}
+
+			auto iter = d->setWarningControls.find(reinterpret_cast<HWND>(lParam));
+			if (iter != d->setWarningControls.end()) {
+				// Set the "Warning" color.
+				HDC hdc = reinterpret_cast<HDC>(wParam);
+				SetTextColor(hdc, RGB(255, 0, 0));
 			}
 			break;
 		}
