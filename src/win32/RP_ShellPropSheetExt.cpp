@@ -50,7 +50,6 @@ using std::set;
 using std::string;
 using std::unique_ptr;
 using std::unordered_map;
-using std::unordered_set;
 using std::wstring;
 using std::vector;
 
@@ -129,9 +128,6 @@ class RP_ShellPropSheetExt_Private
 		HFONT hFontDlg;		// Main dialog font.
 		HFONT hFontBold;	// Bold font.
 		FontHandler fontHandler;
-
-		// Controls with Warning formatting.
-		unordered_set<HWND> setWarningControls;
 
 		// ListView controls. (for toggling LVS_EX_DOUBLEBUFFER)
 		vector<HWND> hwndListViewControls;
@@ -874,7 +870,7 @@ int RP_ShellPropSheetExt_Private::initString(_In_ HWND hDlg, _In_ HWND hWndTab,
 				HWND hStatic = GetDlgItem(hWndTab, IDC_STATIC_DESC(fieldIdx));
 				if (hStatic) {
 					SetWindowFont(hStatic, hFont, false);
-					setWarningControls.insert(hStatic);
+					SetWindowLongPtr(hStatic, GWLP_USERDATA, static_cast<LONG_PTR>(RGB(255, 0, 0)));
 				}
 			}
 		} else if (field.desc.flags & RomFields::STRF_MONOSPACE) {
@@ -1025,7 +1021,7 @@ int RP_ShellPropSheetExt_Private::initString(_In_ HWND hDlg, _In_ HWND hWndTab,
 
 	// Save the control in the appropriate container, if necessary.
 	if (isWarning) {
-		setWarningControls.insert(hDlgItem);
+		SetWindowLongPtr(hDlgItem, GWLP_USERDATA, static_cast<LONG_PTR>(RGB(255, 0, 0)));
 	}
 	if (isMonospace) {
 		fontHandler.addMonoControl(hDlgItem);
@@ -4276,17 +4272,12 @@ INT_PTR CALLBACK RP_ShellPropSheetExt_Private::SubtabDlgProc(HWND hDlg, UINT uMs
 		}
 
 		case WM_CTLCOLORSTATIC: {
-			auto *const d = static_cast<RP_ShellPropSheetExt_Private*>(GetProp(hDlg, D_PTR_PROP));
-			if (!d) {
-				// No RP_ShellPropSheetExt_Private. Can't do anything...
-				return false;
-			}
-
-			auto iter = d->setWarningControls.find(reinterpret_cast<HWND>(lParam));
-			if (iter != d->setWarningControls.end()) {
-				// Set the "Warning" color.
+			const COLORREF color = static_cast<COLORREF>(GetWindowLongPtr(
+				reinterpret_cast<HWND>(lParam), GWLP_USERDATA));
+			if (color != 0) {
+				// Set the specified color.
 				HDC hdc = reinterpret_cast<HDC>(wParam);
-				SetTextColor(hdc, RGB(255, 0, 0));
+				SetTextColor(hdc, color);
 			}
 			break;
 		}
