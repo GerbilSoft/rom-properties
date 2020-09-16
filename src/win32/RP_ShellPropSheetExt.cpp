@@ -4192,7 +4192,6 @@ INT_PTR CALLBACK RP_ShellPropSheetExt_Private::DlgProc(HWND hDlg, UINT uMsg, WPA
 			}
 
 			// Forward the message to the active child dialog.
-			OutputDebugStringA("PARENT WINDOW is getting mousewheel\n");
 			SendMessage(d->tabs[d->curTabIndex].hDlg, uMsg, wParam, lParam);
 			return TRUE;
 		}
@@ -4355,7 +4354,6 @@ INT_PTR CALLBACK RP_ShellPropSheetExt_Private::SubtabDlgProc(HWND hDlg, UINT uMs
 
 		case WM_MOUSEWHEEL: {
 			// NOTE: All code paths return TRUE to prevent a stack overflow.
-			OutputDebugStringA("CHILD WINDOW is getting mousewheel\n");
 			if (LOWORD(wParam) != 0) {
 				// Some hotkey or mouse button is held down.
 				// Don't scroll the scrollbar.
