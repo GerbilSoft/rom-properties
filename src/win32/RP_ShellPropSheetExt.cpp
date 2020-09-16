@@ -3821,13 +3821,19 @@ INT_PTR RP_ShellPropSheetExt_Private::DlgProc_WM_NOTIFY(HWND hDlg, NMHDR *pHdr)
 
 		case TCN_SELCHANGE: {
 			// Tab change. Make sure this is the correct WC_TABCONTROL.
-			if (tabWidget != nullptr && tabWidget == pHdr->hwndFrom) {
-				// Tab widget. Show the selected tab.
-				int newTabIndex = TabCtrl_GetCurSel(tabWidget);
-				ShowWindow(tabs[curTabIndex].hDlg, SW_HIDE);
-				curTabIndex = newTabIndex;
-				ShowWindow(tabs[newTabIndex].hDlg, SW_SHOW);
-			}
+			if (!tabWidget || tabWidget != pHdr->hwndFrom)
+				break;
+
+			// Tab widget. Show the selected tab.
+			int newTabIndex = TabCtrl_GetCurSel(tabWidget);
+			ShowWindow(tabs[curTabIndex].hDlg, SW_HIDE);
+			curTabIndex = newTabIndex;
+			ShowWindow(tabs[newTabIndex].hDlg, SW_SHOW);
+
+			// FIXME: Remember per-tab focus, then set the focus to the
+			// last-focused control on the tab. Otherwise, wheel movement
+			// might affect the *previous* tab.
+			//SetFocus(tabs[newTabIndex].hDlg);
 			break;
 		}
 
@@ -4178,11 +4184,24 @@ INT_PTR CALLBACK RP_ShellPropSheetExt_Private::DlgProc(HWND hDlg, UINT uMsg, WPA
 			break;
 		}
 
+		case WM_MOUSEWHEEL: {
+			auto *const d = static_cast<RP_ShellPropSheetExt_Private*>(GetProp(hDlg, D_PTR_PROP));
+			if (!d) {
+				// No RP_ShellPropSheetExt_Private. Can't do anything...
+				return FALSE;
+			}
+
+			// Forward the message to the active child dialog.
+			OutputDebugStringA("PARENT WINDOW is getting mousewheel\n");
+			SendMessage(d->tabs[d->curTabIndex].hDlg, uMsg, wParam, lParam);
+			return TRUE;
+		}
+
 		default:
 			break;
 	}
 
-	return false; // Let system deal with other messages
+	return FALSE; // Let system deal with other messages
 }
 
 
@@ -4318,6 +4337,54 @@ INT_PTR CALLBACK RP_ShellPropSheetExt_Private::SubtabDlgProc(HWND hDlg, UINT uMs
 				case SB_THUMBPOSITION:
 					deltaY = HIWORD(wParam) - tab->scrollPos;
 					break;
+			}
+
+			// Make sure this doesn't go out of range.
+			int scrollPos = tab->scrollPos + deltaY;
+			if (scrollPos < 0) {
+				deltaY -= scrollPos;
+			} else if (scrollPos + d->dlgSize.cy > tab->curPt.y) {
+				deltaY -= (scrollPos + 1) - (tab->curPt.y - d->dlgSize.cy);
+			}
+
+			tab->scrollPos += deltaY;
+			SetScrollPos(hDlg, SB_VERT, tab->scrollPos, TRUE);
+			ScrollWindow(hDlg, 0, -deltaY, nullptr, nullptr);
+			return TRUE;
+		}
+
+		case WM_MOUSEWHEEL: {
+			// NOTE: All code paths return TRUE to prevent a stack overflow.
+			OutputDebugStringA("CHILD WINDOW is getting mousewheel\n");
+			if (LOWORD(wParam) != 0) {
+				// Some hotkey or mouse button is held down.
+				// Don't scroll the scrollbar.
+				return TRUE;
+			}
+
+			const int16_t wheel = HIWORD(wParam);
+			if (wheel == 0) {
+				// No movement...
+				return TRUE;
+			}
+
+			auto *const d = static_cast<RP_ShellPropSheetExt_Private*>(GetProp(hDlg, D_PTR_PROP));
+			auto *const tab = static_cast<RP_ShellPropSheetExt_Private::tab*>(GetProp(hDlg, TAB_PTR_PROP));
+			if (!d || !tab) {
+				// No RP_ShellPropSheetExt_Private or tab. Can't do anything...
+				return TRUE;
+			}
+
+			if (tab->curPt.y <= d->dlgSize.cy) {
+				// Tab height is less than the dialog size.
+				// No scrolling.
+				return TRUE;
+			}
+
+			// TODO: Handle multiples of WHEEL_DELTA?
+			int deltaY = d->lblDescHeight;
+			if (wheel > 0) {
+				deltaY = -deltaY;
 			}
 
 			// Make sure this doesn't go out of range.
