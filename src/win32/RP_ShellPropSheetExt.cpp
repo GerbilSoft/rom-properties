@@ -75,8 +75,6 @@ const CLSID CLSID_RP_ShellPropSheetExt =
 #define IDC_STATIC_DESC(idx)		(0x1000 + (idx))
 #define IDC_RFT_STRING(idx)		(0x1400 + (idx))
 #define IDC_RFT_LISTDATA(idx)		(0x1800 + (idx))
-// Date/Time acts like a string widget internally.
-#define IDC_RFT_DATETIME(idx)		IDC_RFT_STRING(idx)
 
 // Bitfield is last due to multiple controls per field.
 #define IDC_RFT_BITFIELD(idx, bit)	(0x7000 + ((idx) * 32) + (bit))
@@ -455,12 +453,12 @@ class RP_ShellPropSheetExt_Private
 
 		/**
 		 * Dialog subclass procedure to intercept WM_COMMAND for the "Options" button.
-		 * @param hWnd
-		 * @param uMsg
-		 * @param wParam
-		 * @param lParam
-		 * @param uIdSubclass
-		 * @param dWRefData RP_ShellPropSheetExt_Private
+		 * @param hWnd		Dialog handle
+		 * @param uMsg		Message
+		 * @param wParam	WPARAM
+		 * @param lParam	LPARAM
+		 * @param uIdSubclass	Subclass ID (usually the control ID)
+		 * @param dwRefData	RP_ShellPropSheetExt_Private*
 		 */
 		static LRESULT CALLBACK MainDialogSubclassProc(
 			HWND hWnd, UINT uMsg,
@@ -872,7 +870,7 @@ int RP_ShellPropSheetExt_Private::initString(_In_ HWND hDlg, _In_ HWND hWndTab,
 	}
 
 	// Dialog item.
-	const HMENU cId = (HMENU)(INT_PTR)(IDC_RFT_STRING(fieldIdx));
+	const uint16_t cId = IDC_RFT_STRING(fieldIdx);
 	HWND hDlgItem;
 
 	if (field.type == RomFields::RFT_STRING &&
@@ -909,7 +907,7 @@ int RP_ShellPropSheetExt_Private::initString(_In_ HWND hDlg, _In_ HWND hWndTab,
 			WC_LINK, str_nl.c_str(),
 			WS_CHILD | WS_TABSTOP | WS_VISIBLE,
 			0, 0, 0, 0,	// will be adjusted afterwards
-			hWndTab, cId, nullptr, nullptr);
+			hWndTab, (HMENU)(INT_PTR)cId, nullptr, nullptr);
 		if (!hDlgItem)
 #endif /* UNICODE */
 		{
@@ -935,7 +933,7 @@ int RP_ShellPropSheetExt_Private::initString(_In_ HWND hDlg, _In_ HWND hWndTab,
 			hDlgItem = CreateWindowEx(WS_EX_NOPARENTNOTIFY | WS_EX_TRANSPARENT | dwExStyleRTL,
 				WC_EDIT, str_nl.c_str(), dwStyle,
 				0, 0, 0, 0,	// will be adjusted afterwards
-				hWndTab, cId, nullptr, nullptr);
+				hWndTab, (HMENU)(INT_PTR)cId, nullptr, nullptr);
 
 			// Subclass multi-line EDIT controls to work around Enter/Escape issues.
 			// We're also subclassing single-line EDIT controls to disable the
@@ -946,7 +944,7 @@ int RP_ShellPropSheetExt_Private::initString(_In_ HWND hDlg, _In_ HWND hWndTab,
 				? LibWin32Common::MultiLineEditProc
 				: LibWin32Common::SingleLineEditProc;
 			SetWindowSubclass(hDlgItem, proc,
-				reinterpret_cast<UINT_PTR>(cId),
+				static_cast<UINT_PTR>(cId),
 				reinterpret_cast<DWORD_PTR>(GetParent(hDlgSheet)));
 		}
 
@@ -986,7 +984,7 @@ int RP_ShellPropSheetExt_Private::initString(_In_ HWND hDlg, _In_ HWND hWndTab,
 			WC_EDIT, str_nl.c_str(), dwStyle,
 			pt_start.x, pt_start.y,
 			size.cx, field_cy,
-			hWndTab, cId, nullptr, nullptr);
+			hWndTab, (HMENU)(INT_PTR)cId, nullptr, nullptr);
 		SetWindowFont(hDlgItem, hFont, false);
 
 		// Get the EDIT control margins.
@@ -1007,7 +1005,7 @@ int RP_ShellPropSheetExt_Private::initString(_In_ HWND hDlg, _In_ HWND hWndTab,
 			? LibWin32Common::MultiLineEditProc
 			: LibWin32Common::SingleLineEditProc;
 		SetWindowSubclass(hDlgItem, proc,
-			reinterpret_cast<UINT_PTR>(cId),
+			static_cast<UINT_PTR>(cId),
 			reinterpret_cast<DWORD_PTR>(GetParent(hDlgSheet)));
 	}
 
@@ -1185,11 +1183,12 @@ int RP_ShellPropSheetExt_Private::initBitfield(HWND hDlg, HWND hWndTab,
 		}
 
 		// FIXME: Tab ordering?
+		const uint16_t cId = IDC_RFT_BITFIELD(fieldIdx, bit);
 		HWND hCheckBox = CreateWindowEx(WS_EX_NOPARENTNOTIFY | WS_EX_TRANSPARENT | dwExStyleRTL,
 			WC_BUTTON, tname.c_str(),
 			WS_CHILD | WS_TABSTOP | WS_VISIBLE | BS_CHECKBOX,
 			pt.x, pt.y, chk_w, rect_chkbox.bottom,
-			hWndTab, (HMENU)(INT_PTR)(IDC_RFT_BITFIELD(fieldIdx, bit)),
+			hWndTab, (HMENU)(INT_PTR)cId,
 			nullptr, nullptr);
 		SetWindowFont(hCheckBox, hFontDlg, false);
 
@@ -1339,13 +1338,11 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 	if (!listDataDesc.names) {
 		lvsStyle |= LVS_NOCOLUMNHEADER;
 	}
-	const uint16_t dlgID = IDC_RFT_LISTDATA(fieldIdx);
+	const uint16_t cId = IDC_RFT_LISTDATA(fieldIdx);
 	HWND hListView = CreateWindowEx(WS_EX_NOPARENTNOTIFY | WS_EX_CLIENTEDGE | dwExStyleRTL,
 		WC_LISTVIEW, nullptr, lvsStyle,
-		pt_start.x, pt_start.y,
-		size.cx, size.cy,
-		hWndTab, (HMENU)(INT_PTR)(dlgID),
-		nullptr, nullptr);
+		pt_start.x, pt_start.y, size.cx, size.cy,
+		hWndTab, (HMENU)(INT_PTR)cId, nullptr, nullptr);
 	SetWindowFont(hListView, hFontDlg, false);
 	hwndListViewControls.emplace_back(hListView);
 
@@ -1649,7 +1646,7 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 
 	// Save the LvData_t.
 	// TODO: Verify that std::move() works here.
-	map_lvData.insert(std::make_pair(dlgID, std::move(lvData)));
+	map_lvData.insert(std::make_pair(cId, std::move(lvData)));
 
 	// Set the virtual list item count.
 	ListView_SetItemCountEx(hListView, lv_row_num,
@@ -2307,8 +2304,7 @@ void RP_ShellPropSheetExt_Private::updateMulti(uint32_t user_lc)
 			CBS_DROPDOWNLIST | WS_CHILD | WS_TABSTOP | WS_VISIBLE,
 			rectHeader.right - maxSize.cx, rectHeader.top,
 			maxSize.cx, iconSize*(8+1) + maxSize.cy - (maxSize.cy / 8),
-			hDlgSheet, (HMENU)(INT_PTR)IDC_CBO_LANGUAGE,
-			nullptr, nullptr);
+			hDlgSheet, (HMENU)(INT_PTR)IDC_CBO_LANGUAGE, nullptr, nullptr);
 		SetWindowFont(cboLanguage, hFontDlg, false);
 		SendMessage(cboLanguage, CBEM_SETIMAGELIST, 0, (LPARAM)himglFlags);
 
@@ -2662,8 +2658,7 @@ void RP_ShellPropSheetExt_Private::initDialog(void)
 			WC_TABCONTROL, nullptr,
 			WS_CHILD | WS_TABSTOP | WS_VISIBLE,
 			dlgRect.left, dlgRect.top, dlgSize.cx, dlgSize.cy,
-			hDlgSheet, (HMENU)(INT_PTR)IDC_TAB_WIDGET,
-			nullptr, nullptr);
+			hDlgSheet, (HMENU)(INT_PTR)IDC_TAB_WIDGET, nullptr, nullptr);
 		SetWindowFont(tabWidget, hFontDlg, false);
 
 		// Add tabs.
@@ -2784,8 +2779,7 @@ void RP_ShellPropSheetExt_Private::initDialog(void)
 			WC_STATIC, iter_desc->c_str(),
 			WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | SS_LEFT,
 			tab.curPt.x, tab.curPt.y, descSize.cx, descSize.cy,
-			tab.hDlg, (HMENU)(INT_PTR)(IDC_STATIC_DESC(fieldIdx)),
-			nullptr, nullptr);
+			tab.hDlg, (HMENU)(INT_PTR)IDC_STATIC_DESC(fieldIdx), nullptr, nullptr);
 		SetWindowFont(hStatic, hFontDlg, false);
 
 		// Create the value widget.
@@ -3262,12 +3256,12 @@ void RP_ShellPropSheetExt_Private::menuOptions_action_triggered(int menuId)
 
 /**
  * Dialog subclass procedure to intercept WM_COMMAND for the "Options" button.
- * @param hWnd
- * @param uMsg
- * @param wParam
- * @param lParam
- * @param uIdSubclass
- * @param dWRefData RP_ShellPropSheetExt_Private
+ * @param hWnd		Dialog handle
+ * @param uMsg		Message
+ * @param wParam	WPARAM
+ * @param lParam	LPARAM
+ * @param uIdSubclass	Subclass ID (usually the control ID)
+ * @param dwRefData	RP_ShellPropSheetExt_Private*
  */
 LRESULT CALLBACK RP_ShellPropSheetExt_Private::MainDialogSubclassProc(
 	HWND hWnd, UINT uMsg,
@@ -3820,12 +3814,8 @@ INT_PTR RP_ShellPropSheetExt_Private::DlgProc_WM_NOTIFY(HWND hDlg, NMHDR *pHdr)
 			int newTabIndex = TabCtrl_GetCurSel(tabWidget);
 			ShowWindow(tabs[curTabIndex].hDlg, SW_HIDE);
 			curTabIndex = newTabIndex;
-			ShowWindow(tabs[newTabIndex].hDlg, SW_SHOW);
-
-			// FIXME: Remember per-tab focus, then set the focus to the
-			// last-focused control on the tab. Otherwise, wheel movement
-			// might affect the *previous* tab.
-			//SetFocus(tabs[newTabIndex].hDlg);
+			auto &newTab = tabs[newTabIndex];
+			ShowWindow(newTab.hDlg, SW_SHOW);
 			break;
 		}
 
@@ -4243,7 +4233,7 @@ INT_PTR CALLBACK RP_ShellPropSheetExt_Private::SubtabDlgProc(HWND hDlg, UINT uMs
 			// The TAB_PTR_PROP property stored the pointer to the 
 			// RP_ShellPropSheetExt_Private::tab object.
 			RemoveProp(hDlg, RP_ShellPropSheetExtPrivate::TAB_PTR_PROP);
-			return TRUE;
+			break;
 		}
 
 		case WM_NOTIFY: {
