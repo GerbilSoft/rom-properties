@@ -26,11 +26,6 @@ class SystemsTabPrivate
 		RP_DISABLE_COPY(SystemsTabPrivate)
 
 	public:
-		// Property for "D pointer".
-		// This points to the SystemsTabPrivate object.
-		static const TCHAR D_PTR_PROP[];
-
-	public:
 		/**
 		 * Reset the configuration.
 		 */
@@ -82,10 +77,6 @@ SystemsTabPrivate::SystemsTabPrivate()
 	, hWndPropSheet(nullptr)
 	, changed(false)
 { }
-
-// Property for "D pointer".
-// This points to the SystemsTabPrivate object.
-const TCHAR SystemsTabPrivate::D_PTR_PROP[] = _T("SystemsTabPrivate");
 
 /**
  * Reset the configuration.
@@ -241,7 +232,7 @@ INT_PTR CALLBACK SystemsTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wParam,
 			d->hWndPropSheet = hDlg;
 
 			// Store the D object pointer with this particular page dialog.
-			SetProp(hDlg, D_PTR_PROP, reinterpret_cast<HANDLE>(d));
+			SetWindowLongPtr(hDlg, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(d));
 
 			// Populate the combo boxes.
 			HWND hwndDmgTs = GetDlgItem(hDlg, IDC_SYSTEMS_DMGTS_DMG);
@@ -261,17 +252,8 @@ INT_PTR CALLBACK SystemsTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wParam,
 			return TRUE;
 		}
 
-		case WM_DESTROY: {
-			// Remove the D_PTR_PROP property from the page. 
-			// The D_PTR_PROP property stored the pointer to the 
-			// SystemsTabPrivate object.
-			RemoveProp(hDlg, D_PTR_PROP);
-			return TRUE;
-		}
-
 		case WM_NOTIFY: {
-			SystemsTabPrivate *const d = static_cast<SystemsTabPrivate*>(
-				GetProp(hDlg, D_PTR_PROP));
+			auto *const d = reinterpret_cast<SystemsTabPrivate*>(GetWindowLongPtr(hDlg, GWLP_USERDATA));
 			if (!d) {
 				// No SystemsTabPrivate. Can't do anything...
 				return FALSE;
@@ -298,8 +280,7 @@ INT_PTR CALLBACK SystemsTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wParam,
 		}
 
 		case WM_COMMAND: {
-			SystemsTabPrivate *const d = static_cast<SystemsTabPrivate*>(
-				GetProp(hDlg, D_PTR_PROP));
+			auto *const d = reinterpret_cast<SystemsTabPrivate*>(GetWindowLongPtr(hDlg, GWLP_USERDATA));
 			if (!d) {
 				// No SystemsTabPrivate. Can't do anything...
 				return FALSE;
@@ -316,8 +297,7 @@ INT_PTR CALLBACK SystemsTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wParam,
 		}
 
 		case WM_RP_PROP_SHEET_RESET: {
-			SystemsTabPrivate *const d = static_cast<SystemsTabPrivate*>(
-				GetProp(hDlg, D_PTR_PROP));
+			auto *const d = reinterpret_cast<SystemsTabPrivate*>(GetWindowLongPtr(hDlg, GWLP_USERDATA));
 			if (!d) {
 				// No SystemsTabPrivate. Can't do anything...
 				return FALSE;
@@ -329,8 +309,7 @@ INT_PTR CALLBACK SystemsTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wParam,
 		}
 
 		case WM_RP_PROP_SHEET_DEFAULTS: {
-			SystemsTabPrivate *const d = static_cast<SystemsTabPrivate*>(
-				GetProp(hDlg, D_PTR_PROP));
+			auto *const d = reinterpret_cast<SystemsTabPrivate*>(GetWindowLongPtr(hDlg, GWLP_USERDATA));
 			if (!d) {
 				// No SystemsTabPrivate. Can't do anything...
 				return FALSE;

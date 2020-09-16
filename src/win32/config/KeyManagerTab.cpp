@@ -47,11 +47,6 @@ class KeyManagerTabPrivate
 		RP_DISABLE_COPY(KeyManagerTabPrivate)
 
 	public:
-		// Property for "D pointer".
-		// This points to the KeyManagerTabPrivate object.
-		static const TCHAR D_PTR_PROP[];
-
-	public:
 		/**
 		 * Initialize the UI.
 		 */
@@ -282,10 +277,6 @@ KeyManagerTabPrivate::~KeyManagerTabPrivate()
 		DeleteBrush(hbrAltRow);
 	}
 }
-
-// Property for "D pointer".
-// This points to the KeyManagerTabPrivate object.
-const TCHAR KeyManagerTabPrivate::D_PTR_PROP[] = _T("KeyManagerTabPrivate");
 
 /**
  * Initialize the UI.
@@ -569,7 +560,7 @@ INT_PTR CALLBACK KeyManagerTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 			d->hWndPropSheet = hDlg;
 
 			// Store the D object pointer with this particular page dialog.
-			SetProp(hDlg, D_PTR_PROP, reinterpret_cast<HANDLE>(d));
+			SetWindowLongPtr(hDlg, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(d));
 
 			// Initialize the UI.
 			d->initUI();
@@ -579,17 +570,8 @@ INT_PTR CALLBACK KeyManagerTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 			return true;
 		}
 
-		case WM_DESTROY: {
-			// Remove the D_PTR_PROP property from the page. 
-			// The D_PTR_PROP property stored the pointer to the 
-			// KeyManagerTabPrivate object.
-			RemoveProp(hDlg, D_PTR_PROP);
-			return true;
-		}
-
 		case WM_NOTIFY: {
-			KeyManagerTabPrivate *const d = static_cast<KeyManagerTabPrivate*>(
-				GetProp(hDlg, D_PTR_PROP));
+			auto *const d = reinterpret_cast<KeyManagerTabPrivate*>(GetWindowLongPtr(hDlg, GWLP_USERDATA));
 			if (!d) {
 				// No KeyManagerTabPrivate. Can't do anything...
 				return false;
@@ -637,8 +619,7 @@ INT_PTR CALLBACK KeyManagerTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 		}
 
 		case WM_COMMAND: {
-			KeyManagerTabPrivate *const d = static_cast<KeyManagerTabPrivate*>(
-				GetProp(hDlg, D_PTR_PROP));
+			auto *const d = reinterpret_cast<KeyManagerTabPrivate*>(GetWindowLongPtr(hDlg, GWLP_USERDATA));
 			if (!d) {
 				// No KeyManagerTabPrivate. Can't do anything...
 				return false;
@@ -686,8 +667,7 @@ INT_PTR CALLBACK KeyManagerTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 		}
 
 		case WM_RP_PROP_SHEET_RESET: {
-			KeyManagerTabPrivate *const d = static_cast<KeyManagerTabPrivate*>(
-				GetProp(hDlg, D_PTR_PROP));
+			auto *const d = reinterpret_cast<KeyManagerTabPrivate*>(GetWindowLongPtr(hDlg, GWLP_USERDATA));
 			if (!d) {
 				// No KeyManagerTabPrivate. Can't do anything...
 				return false;
@@ -701,8 +681,7 @@ INT_PTR CALLBACK KeyManagerTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 		case WM_SYSCOLORCHANGE:
 		case WM_THEMECHANGED: {
 			// Reinitialize the alternate row color.
-			KeyManagerTabPrivate *const d = static_cast<KeyManagerTabPrivate*>(
-				GetProp(hDlg, D_PTR_PROP));
+			auto *const d = reinterpret_cast<KeyManagerTabPrivate*>(GetWindowLongPtr(hDlg, GWLP_USERDATA));
 			if (d) {
 				// Reinitialize the alternate row color.
 				d->colorAltRow = LibWin32Common::getAltRowColor();
@@ -723,8 +702,7 @@ INT_PTR CALLBACK KeyManagerTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 			// SPI_GETFONTSMOOTHING or SPI_GETFONTSMOOTHINGTYPE,
 			// but that message isn't sent when previewing changes
 			// for ClearType. (It's sent when applying the changes.)
-			KeyManagerTabPrivate *const d = static_cast<KeyManagerTabPrivate*>(
-				GetProp(hDlg, D_PTR_PROP));
+			auto *const d = reinterpret_cast<KeyManagerTabPrivate*>(GetWindowLongPtr(hDlg, GWLP_USERDATA));
 			if (d) {
 				// Update the fonts.
 				d->fontHandler.updateFonts();
@@ -733,8 +711,7 @@ INT_PTR CALLBACK KeyManagerTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 		}
 
 		case WM_KEYSTORE_KEYCHANGED_IDX: {
-			KeyManagerTabPrivate *const d = static_cast<KeyManagerTabPrivate*>(
-				GetProp(hDlg, D_PTR_PROP));
+			auto *const d = reinterpret_cast<KeyManagerTabPrivate*>(GetWindowLongPtr(hDlg, GWLP_USERDATA));
 			if (!d) {
 				// No KeyManagerTabPrivate. Can't do anything...
 				return false;
@@ -750,8 +727,7 @@ INT_PTR CALLBACK KeyManagerTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 		}
 
 		case WM_KEYSTORE_ALLKEYSCHANGED: {
-			KeyManagerTabPrivate *const d = static_cast<KeyManagerTabPrivate*>(
-				GetProp(hDlg, D_PTR_PROP));
+			auto *const d = reinterpret_cast<KeyManagerTabPrivate*>(GetWindowLongPtr(hDlg, GWLP_USERDATA));
 			if (!d) {
 				// No KeyManagerTabPrivate. Can't do anything...
 				return false;
@@ -767,8 +743,7 @@ INT_PTR CALLBACK KeyManagerTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 		}
 
 		case WM_KEYSTORE_MODIFIED: {
-			KeyManagerTabPrivate *const d = static_cast<KeyManagerTabPrivate*>(
-				GetProp(hDlg, D_PTR_PROP));
+			auto *const d = reinterpret_cast<KeyManagerTabPrivate*>(GetWindowLongPtr(hDlg, GWLP_USERDATA));
 			if (!d) {
 				// No KeyManagerTabPrivate. Can't do anything...
 				return false;
@@ -780,8 +755,7 @@ INT_PTR CALLBACK KeyManagerTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 		}
 
 		case WM_WTSSESSION_CHANGE: {
-			KeyManagerTabPrivate *const d = static_cast<KeyManagerTabPrivate*>(
-				GetProp(hDlg, D_PTR_PROP));
+			auto *const d = reinterpret_cast<KeyManagerTabPrivate*>(GetWindowLongPtr(hDlg, GWLP_USERDATA));
 			if (!d) {
 				// No KeyManagerTabPrivate. Can't do anything...
 				return false;
@@ -810,8 +784,7 @@ INT_PTR CALLBACK KeyManagerTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 		}
 
 		case WM_DPICHANGED: {
-			KeyManagerTabPrivate *const d = static_cast<KeyManagerTabPrivate*>(
-				GetProp(hDlg, D_PTR_PROP));
+			auto *const d = reinterpret_cast<KeyManagerTabPrivate*>(GetWindowLongPtr(hDlg, GWLP_USERDATA));
 			if (!d) {
 				// No KeyManagerTabPrivate. Can't do anything...
 				return false;

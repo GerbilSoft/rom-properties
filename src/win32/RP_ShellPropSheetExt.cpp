@@ -104,10 +104,6 @@ class RP_ShellPropSheetExt_Private
 		RP_ShellPropSheetExt *const q_ptr;
 
 	public:
-		// Property for "D pointer".
-		// This points to the RP_ShellPropSheetExt_Private object.
-		static const TCHAR D_PTR_PROP[];
-
 		// Property for "tab pointer".
 		// This points to the RP_ShellPropSheetExt_Private::tab object.
 		static const TCHAR TAB_PTR_PROP[];
@@ -499,10 +495,6 @@ class RP_ShellPropSheetExt_Private
 };
 
 /** RP_ShellPropSheetExt_Private **/
-
-// Property for "D pointer".
-// This points to the ConfigDialogPrivate object.
-const TCHAR RP_ShellPropSheetExt_Private::D_PTR_PROP[] = _T("RP_ShellPropSheetExt_Private");
 
 // Property for "tab pointer".
 // This points to the RP_ShellPropSheetExt_Private::tab object.
@@ -2724,7 +2716,7 @@ void RP_ShellPropSheetExt_Private::initDialog(void)
 			swpFlags = SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_HIDEWINDOW;
 
 			// Store the D object pointer with this particular tab dialog.
-			SetProp(tab.hDlg, D_PTR_PROP, static_cast<HANDLE>(this));
+			SetWindowLongPtr(tab.hDlg, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(this));
 			// Store the D object pointer with this particular tab dialog.
 			SetProp(tab.hDlg, TAB_PTR_PROP, static_cast<HANDLE>(&tab));
 
@@ -2753,7 +2745,7 @@ void RP_ShellPropSheetExt_Private::initDialog(void)
 			SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_SHOWWINDOW);
 
 		// Store the D object pointer with this particular tab dialog.
-		SetProp(tab.hDlg, D_PTR_PROP, static_cast<HANDLE>(this));
+		SetWindowLongPtr(tab.hDlg, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(this));
 		// Store the D object pointer with this particular tab dialog.
 		SetProp(tab.hDlg, TAB_PTR_PROP, static_cast<HANDLE>(&tab));
 
@@ -3984,7 +3976,7 @@ INT_PTR CALLBACK RP_ShellPropSheetExt_Private::DlgProc(HWND hDlg, UINT uMsg, WPA
 			RP_ShellPropSheetExt_Private *const d = pExt->d_ptr;
 
 			// Store the D object pointer with this particular page dialog.
-			SetProp(hDlg, D_PTR_PROP, static_cast<HANDLE>(d));
+			SetWindowLongPtr(hDlg, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(d));
 			// Save handles for later.
 			d->hDlgSheet = hDlg;
 
@@ -4001,7 +3993,7 @@ INT_PTR CALLBACK RP_ShellPropSheetExt_Private::DlgProc(HWND hDlg, UINT uMsg, WPA
 		// FIXME: FBI's age rating is cut off on Windows
 		// if we don't adjust for WM_SHOWWINDOW.
 		case WM_SHOWWINDOW: {
-			auto *const d = static_cast<RP_ShellPropSheetExt_Private*>(GetProp(hDlg, D_PTR_PROP));
+			auto *const d = reinterpret_cast<RP_ShellPropSheetExt_Private*>(GetWindowLongPtr(hDlg, GWLP_USERDATA));
 			if (!d) {
 				// No RP_ShellPropSheetExt_Private. Can't do anything...
 				return false;
@@ -4051,25 +4043,16 @@ INT_PTR CALLBACK RP_ShellPropSheetExt_Private::DlgProc(HWND hDlg, UINT uMsg, WPA
 		}
 
 		case WM_DESTROY: {
-			auto *const d = static_cast<RP_ShellPropSheetExt_Private*>(GetProp(hDlg, D_PTR_PROP));
+			auto *const d = reinterpret_cast<RP_ShellPropSheetExt_Private*>(GetWindowLongPtr(hDlg, GWLP_USERDATA));
 			if (d && d->lblIcon) {
 				// Stop the animation timer.
 				d->lblIcon->stopAnimTimer();
 			}
-
-			// FIXME: Remove D_PTR_PROP from child windows.
-			// NOTE: WM_DESTROY is sent *before* child windows are destroyed.
-			// WM_NCDESTROY is sent *after*.
-
-			// Remove the D_PTR_PROP property from the page. 
-			// The D_PTR_PROP property stored the pointer to the 
-			// RP_ShellPropSheetExt_Private object.
-			RemoveProp(hDlg, RP_ShellPropSheetExtPrivate::D_PTR_PROP);
 			return true;
 		}
 
 		case WM_NOTIFY: {
-			auto *const d = static_cast<RP_ShellPropSheetExt_Private*>(GetProp(hDlg, D_PTR_PROP));
+			auto *const d = reinterpret_cast<RP_ShellPropSheetExt_Private*>(GetWindowLongPtr(hDlg, GWLP_USERDATA));
 			if (!d) {
 				// No RP_ShellPropSheetExt_Private. Can't do anything...
 				return false;
@@ -4079,7 +4062,7 @@ INT_PTR CALLBACK RP_ShellPropSheetExt_Private::DlgProc(HWND hDlg, UINT uMsg, WPA
 		}
 
 		case WM_COMMAND: {
-			auto *const d = static_cast<RP_ShellPropSheetExt_Private*>(GetProp(hDlg, D_PTR_PROP));
+			auto *const d = reinterpret_cast<RP_ShellPropSheetExt_Private*>(GetWindowLongPtr(hDlg, GWLP_USERDATA));
 			if (!d) {
 				// No RP_ShellPropSheetExt_Private. Can't do anything...
 				return false;
@@ -4089,7 +4072,7 @@ INT_PTR CALLBACK RP_ShellPropSheetExt_Private::DlgProc(HWND hDlg, UINT uMsg, WPA
 		}
 
 		case WM_PAINT: {
-			auto *const d = static_cast<RP_ShellPropSheetExt_Private*>(GetProp(hDlg, D_PTR_PROP));
+			auto *const d = reinterpret_cast<RP_ShellPropSheetExt_Private*>(GetWindowLongPtr(hDlg, GWLP_USERDATA));
 			if (!d) {
 				// No RP_ShellPropSheetExt_Private. Can't do anything...
 				return false;
@@ -4100,7 +4083,7 @@ INT_PTR CALLBACK RP_ShellPropSheetExt_Private::DlgProc(HWND hDlg, UINT uMsg, WPA
 		case WM_SYSCOLORCHANGE:
 		case WM_THEMECHANGED: {
 			// Reload the images.
-			auto *const d = static_cast<RP_ShellPropSheetExt_Private*>(GetProp(hDlg, D_PTR_PROP));
+			auto *const d = reinterpret_cast<RP_ShellPropSheetExt_Private*>(GetWindowLongPtr(hDlg, GWLP_USERDATA));
 			if (!d) {
 				// No RP_ShellPropSheetExt_Private. Can't do anything...
 				return false;
@@ -4142,7 +4125,7 @@ INT_PTR CALLBACK RP_ShellPropSheetExt_Private::DlgProc(HWND hDlg, UINT uMsg, WPA
 			// SPI_GETFONTSMOOTHING or SPI_GETFONTSMOOTHINGTYPE,
 			// but that message isn't sent when previewing changes
 			// for ClearType. (It's sent when applying the changes.)
-			auto *const d = static_cast<RP_ShellPropSheetExt_Private*>(GetProp(hDlg, D_PTR_PROP));
+			auto *const d = reinterpret_cast<RP_ShellPropSheetExt_Private*>(GetWindowLongPtr(hDlg, GWLP_USERDATA));
 			if (d) {
 				// Update the fonts.
 				d->fontHandler.updateFonts();
@@ -4151,7 +4134,7 @@ INT_PTR CALLBACK RP_ShellPropSheetExt_Private::DlgProc(HWND hDlg, UINT uMsg, WPA
 		}
 
 		case WM_WTSSESSION_CHANGE: {
-			auto *const d = static_cast<RP_ShellPropSheetExt_Private*>(GetProp(hDlg, D_PTR_PROP));
+			auto *const d = reinterpret_cast<RP_ShellPropSheetExt_Private*>(GetWindowLongPtr(hDlg, GWLP_USERDATA));
 			if (!d) {
 				// No RP_ShellPropSheetExt_Private. Can't do anything...
 				return false;
@@ -4185,7 +4168,7 @@ INT_PTR CALLBACK RP_ShellPropSheetExt_Private::DlgProc(HWND hDlg, UINT uMsg, WPA
 		}
 
 		case WM_MOUSEWHEEL: {
-			auto *const d = static_cast<RP_ShellPropSheetExt_Private*>(GetProp(hDlg, D_PTR_PROP));
+			auto *const d = reinterpret_cast<RP_ShellPropSheetExt_Private*>(GetWindowLongPtr(hDlg, GWLP_USERDATA));
 			if (!d) {
 				// No RP_ShellPropSheetExt_Private. Can't do anything...
 				return FALSE;
@@ -4231,7 +4214,7 @@ UINT CALLBACK RP_ShellPropSheetExt_Private::CallbackProc(HWND hWnd, UINT uMsg, L
 
 			// Release the property sheet extension object. This is called even 
 			// if the property page was never actually displayed.
-			RP_ShellPropSheetExt *const pExt = reinterpret_cast<RP_ShellPropSheetExt*>(ppsp->lParam);
+			auto *const pExt = reinterpret_cast<RP_ShellPropSheetExt*>(ppsp->lParam);
 			if (pExt) {
 				pExt->Release();
 			}
@@ -4256,12 +4239,9 @@ INT_PTR CALLBACK RP_ShellPropSheetExt_Private::SubtabDlgProc(HWND hDlg, UINT uMs
 {
 	switch (uMsg) {
 		case WM_DESTROY: {
-			// Remove the D_PTR_PROP and TAB_PTR_PROP properties from the page.
-			// The D_PTR_PROP property stored the pointer to the 
-			// RP_ShellPropSheetExt_Private object.
+			// Remove the TAB_PTR_PROP property from the page.
 			// The TAB_PTR_PROP property stored the pointer to the 
 			// RP_ShellPropSheetExt_Private::tab object.
-			RemoveProp(hDlg, RP_ShellPropSheetExtPrivate::D_PTR_PROP);
 			RemoveProp(hDlg, RP_ShellPropSheetExtPrivate::TAB_PTR_PROP);
 			return TRUE;
 		}
@@ -4301,7 +4281,7 @@ INT_PTR CALLBACK RP_ShellPropSheetExt_Private::SubtabDlgProc(HWND hDlg, UINT uMs
 		}
 
 		case WM_VSCROLL: {
-			auto *const d = static_cast<RP_ShellPropSheetExt_Private*>(GetProp(hDlg, D_PTR_PROP));
+			auto *const d = reinterpret_cast<RP_ShellPropSheetExt_Private*>(GetWindowLongPtr(hDlg, GWLP_USERDATA));
 			auto *const tab = static_cast<RP_ShellPropSheetExt_Private::tab*>(GetProp(hDlg, TAB_PTR_PROP));
 			if (!d || !tab) {
 				// No RP_ShellPropSheetExt_Private or tab. Can't do anything...
@@ -4366,7 +4346,7 @@ INT_PTR CALLBACK RP_ShellPropSheetExt_Private::SubtabDlgProc(HWND hDlg, UINT uMs
 				return TRUE;
 			}
 
-			auto *const d = static_cast<RP_ShellPropSheetExt_Private*>(GetProp(hDlg, D_PTR_PROP));
+			auto *const d = reinterpret_cast<RP_ShellPropSheetExt_Private*>(GetWindowLongPtr(hDlg, GWLP_USERDATA));
 			auto *const tab = static_cast<RP_ShellPropSheetExt_Private::tab*>(GetProp(hDlg, TAB_PTR_PROP));
 			if (!d || !tab) {
 				// No RP_ShellPropSheetExt_Private or tab. Can't do anything...

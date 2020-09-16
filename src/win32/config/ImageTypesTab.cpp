@@ -33,11 +33,6 @@ class ImageTypesTabPrivate : public TImageTypesConfig<HWND>
 		typedef TImageTypesConfig<HWND> super;
 		RP_DISABLE_COPY(ImageTypesTabPrivate)
 
-	public:
-		// Property for "D pointer".
-		// This points to the ImageTypesTabPrivate object.
-		static const TCHAR D_PTR_PROP[];
-
 	protected:
 		/** TImageTypesConfig functions. (protected) **/
 
@@ -165,10 +160,6 @@ ImageTypesTabPrivate::~ImageTypesTabPrivate()
 	// since it's only used when saving.
 	assert(tmp_conf_filename.empty());
 }
-
-// Property for "D pointer".
-// This points to the ImageTypesTabPrivate object.
-const TCHAR ImageTypesTabPrivate::D_PTR_PROP[] = _T("ImageTypesTabPrivate");
 
 /** TImageTypesConfig functions. (protected) **/
 
@@ -520,24 +511,15 @@ INT_PTR CALLBACK ImageTypesTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 			d->hWndPropSheet = hDlg;
 
 			// Store the D object pointer with this particular page dialog.
-			SetProp(hDlg, D_PTR_PROP, reinterpret_cast<HANDLE>(d));
+			SetWindowLongPtr(hDlg, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(d));
 
 			// Create the control grid.
 			d->createGrid();
 			return TRUE;
 		}
 
-		case WM_DESTROY: {
-			// Remove the D_PTR_PROP property from the page.
-			// The D_PTR_PROP property stored the pointer to the
-			// ImageTypesTabPrivate object.
-			RemoveProp(hDlg, D_PTR_PROP);
-			return TRUE;
-		}
-
 		case WM_NOTIFY: {
-			ImageTypesTabPrivate *const d = static_cast<ImageTypesTabPrivate*>(
-				GetProp(hDlg, D_PTR_PROP));
+			auto *const d = reinterpret_cast<ImageTypesTabPrivate*>(GetWindowLongPtr(hDlg, GWLP_USERDATA));
 			if (!d) {
 				// No ImageTypesTabPrivate. Can't do anything...
 				return FALSE;
@@ -578,8 +560,7 @@ INT_PTR CALLBACK ImageTypesTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 		}
 
 		case WM_COMMAND: {
-			ImageTypesTabPrivate *const d = static_cast<ImageTypesTabPrivate*>(
-				GetProp(hDlg, D_PTR_PROP));
+			auto *const d = reinterpret_cast<ImageTypesTabPrivate*>(GetWindowLongPtr(hDlg, GWLP_USERDATA));
 			if (!d) {
 				// No ImageTypesTabPrivate. Can't do anything...
 				return FALSE;
@@ -609,8 +590,7 @@ INT_PTR CALLBACK ImageTypesTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 		}
 
 		case WM_RP_PROP_SHEET_RESET: {
-			ImageTypesTabPrivate *const d = static_cast<ImageTypesTabPrivate*>(
-				GetProp(hDlg, D_PTR_PROP));
+			auto *const d = reinterpret_cast<ImageTypesTabPrivate*>(GetWindowLongPtr(hDlg, GWLP_USERDATA));
 			if (!d) {
 				// No ImageTypesTabPrivate. Can't do anything...
 				return FALSE;
@@ -622,8 +602,7 @@ INT_PTR CALLBACK ImageTypesTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 		}
 
 		case WM_RP_PROP_SHEET_DEFAULTS: {
-			ImageTypesTabPrivate *const d = static_cast<ImageTypesTabPrivate*>(
-				GetProp(hDlg, D_PTR_PROP));
+			auto *const d = reinterpret_cast<ImageTypesTabPrivate*>(GetWindowLongPtr(hDlg, GWLP_USERDATA));
 			if (!d) {
 				// No ImageTypesTabPrivate. Can't do anything...
 				return FALSE;

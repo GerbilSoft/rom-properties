@@ -76,11 +76,6 @@ class AboutTabPrivate
 		RP_DISABLE_COPY(AboutTabPrivate)
 
 	public:
-		// Property for "D pointer".
-		// This points to the AboutTabPrivate object.
-		static const TCHAR D_PTR_PROP[];
-
-	public:
 		/**
 		 * Dialog procedure.
 		 * @param hDlg
@@ -231,10 +226,6 @@ AboutTabPrivate::~AboutTabPrivate()
 	}
 }
 
-// Property for "D pointer".
-// This points to the AboutTabPrivate object.
-const TCHAR AboutTabPrivate::D_PTR_PROP[] = _T("AboutTabPrivate");
-
 /**
  * Dialog procedure.
  * @param hDlg
@@ -261,24 +252,15 @@ INT_PTR CALLBACK AboutTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, L
 			d->hWndPropSheet = hDlg;
 
 			// Store the D object pointer with this particular page dialog.
-			SetProp(hDlg, D_PTR_PROP, reinterpret_cast<HANDLE>(d));
+			SetWindowLongPtr(hDlg, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(d));
 
 			// Initialize the dialog.
 			d->init();
 			return TRUE;
 		}
 
-		case WM_DESTROY: {
-			// Remove the D_PTR_PROP property from the page. 
-			// The D_PTR_PROP property stored the pointer to the 
-			// AboutTabPrivate object.
-			RemoveProp(hDlg, D_PTR_PROP);
-			return TRUE;
-		}
-
 		case WM_NOTIFY: {
-			AboutTabPrivate *const d = static_cast<AboutTabPrivate*>(
-				GetProp(hDlg, D_PTR_PROP));
+			auto *const d = reinterpret_cast<AboutTabPrivate*>(GetWindowLongPtr(hDlg, GWLP_USERDATA));
 			if (!d) {
 				// No AboutTabPrivate. Can't do anything...
 				return FALSE;

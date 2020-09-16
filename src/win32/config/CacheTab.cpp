@@ -50,11 +50,6 @@ class CacheTabPrivate
 		RP_DISABLE_COPY(CacheTabPrivate)
 
 	public:
-		// Property for "D pointer".
-		// This points to the CacheTabPrivate object.
-		static const TCHAR D_PTR_PROP[];
-
-	public:
 		/**
 		 * Initialize the dialog.
 		 */
@@ -163,10 +158,6 @@ CacheTabPrivate::~CacheTabPrivate()
 		pImageList->Release();
 	}
 }
-
-// Property for "D pointer".
-// This points to the CacheTabPrivate object.
-const TCHAR CacheTabPrivate::D_PTR_PROP[] = _T("CacheTabPrivate");
 
 /**
  * Initialize the dialog.
@@ -807,24 +798,15 @@ INT_PTR CALLBACK CacheTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, L
 			d->hWndPropSheet = hDlg;
 
 			// Store the D object pointer with this particular page dialog.
-			SetProp(hDlg, D_PTR_PROP, reinterpret_cast<HANDLE>(d));
+			SetWindowLongPtr(hDlg, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(d));
 
 			// Initialize the dialog..
 			d->initDialog();
 			return TRUE;
 		}
 
-		case WM_DESTROY: {
-			// Remove the D_PTR_PROP property from the page. 
-			// The D_PTR_PROP property stored the pointer to the 
-			// CacheTabPrivate object.
-			RemoveProp(hDlg, D_PTR_PROP);
-			return TRUE;
-		}
-
 		case WM_NOTIFY: {
-			CacheTabPrivate *const d = static_cast<CacheTabPrivate*>(
-				GetProp(hDlg, D_PTR_PROP));
+			auto *const d = reinterpret_cast<CacheTabPrivate*>(GetWindowLongPtr(hDlg, GWLP_USERDATA));
 			if (!d) {
 				// No CacheTabPrivate. Can't do anything...
 				return FALSE;
@@ -844,8 +826,7 @@ INT_PTR CALLBACK CacheTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, L
 		}
 
 		case WM_COMMAND: {
-			CacheTabPrivate *const d = static_cast<CacheTabPrivate*>(
-				GetProp(hDlg, D_PTR_PROP));
+			auto *const d = reinterpret_cast<CacheTabPrivate*>(GetWindowLongPtr(hDlg, GWLP_USERDATA));
 			if (!d) {
 				// No CacheTabPrivate. Can't do anything...
 				return FALSE;
@@ -884,8 +865,7 @@ INT_PTR CALLBACK CacheTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, L
 		}
 
 		case WM_DEVICECHANGE: {
-			CacheTabPrivate *const d = static_cast<CacheTabPrivate*>(
-				GetProp(hDlg, D_PTR_PROP));
+			auto *const d = reinterpret_cast<CacheTabPrivate*>(GetWindowLongPtr(hDlg, GWLP_USERDATA));
 			if (!d || d->isVista) {
 				// No CacheTabPrivate, or using Vista+.
 				// Nothing to do here.
@@ -912,8 +892,7 @@ INT_PTR CALLBACK CacheTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, L
 		case WM_TIMER: {
 			if (wParam != TMRID_XP_DRIVE_UPDATE)
 				break;
-			CacheTabPrivate *const d = static_cast<CacheTabPrivate*>(
-				GetProp(hDlg, D_PTR_PROP));
+			auto *const d = reinterpret_cast<CacheTabPrivate*>(GetWindowLongPtr(hDlg, GWLP_USERDATA));
 			if (!d || d->isVista) {
 				// No CacheTabPrivate, or using Vista+.
 				// Nothing to do here.
@@ -928,8 +907,7 @@ INT_PTR CALLBACK CacheTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, L
 		}
 
 		case WM_WTSSESSION_CHANGE: {
-			CacheTabPrivate *const d = static_cast<CacheTabPrivate*>(
-				GetProp(hDlg, D_PTR_PROP));
+			auto *const d = reinterpret_cast<CacheTabPrivate*>(GetWindowLongPtr(hDlg, GWLP_USERDATA));
 			if (!d || d->isVista) {
 				// No CacheTabPrivate, or using Vista+.
 				// Nothing to do here.

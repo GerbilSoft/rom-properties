@@ -53,11 +53,6 @@ class ConfigDialogPrivate
 		RP_DISABLE_COPY(ConfigDialogPrivate)
 
 	public:
-		// Property for "D pointer".
-		// This points to the ConfigDialogPrivate object.
-		static const TCHAR D_PTR_PROP[];
-
-	public:
 		// Property sheet variables.
 #ifdef ENABLE_DECRYPTION
 		static const unsigned int TAB_COUNT = 6;
@@ -79,10 +74,6 @@ class ConfigDialogPrivate
 };
 
 /** ConfigDialogPrivate **/
-
-// Property for "D pointer".
-// This points to the ConfigDialogPrivate object.
-const TCHAR ConfigDialogPrivate::D_PTR_PROP[] = _T("ConfigDialogPrivate");
 
 ConfigDialogPrivate::ConfigDialogPrivate()
 {
