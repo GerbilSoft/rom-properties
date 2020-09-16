@@ -106,8 +106,12 @@ class RP_ShellPropSheetExt_Private
 
 	public:
 		// Property for "D pointer".
-		// This points to the ConfigDialogPrivate object.
+		// This points to the RP_ShellPropSheetExt_Private object.
 		static const TCHAR D_PTR_PROP[];
+
+		// Property for "tab pointer".
+		// This points to the RP_ShellPropSheetExt_Private::tab object.
+		static const TCHAR TAB_PTR_PROP[];
 
 	public:
 		// ROM filename.
@@ -198,13 +202,18 @@ class RP_ShellPropSheetExt_Private
 			HWND hDlg;		// Tab child dialog.
 			HWND lblCredits;	// Credits label.
 			POINT curPt;		// Current point.
+			int scrollPos;		// Scrolling position.
 
-			tab() : hDlg(nullptr), lblCredits(nullptr) {
+			tab() : hDlg(nullptr), lblCredits(nullptr), scrollPos(0) {
 				curPt.x = 0; curPt.y = 0;
 			}
 		};
 		vector<tab> tabs;
 		int curTabIndex;
+
+		// Sizes.
+		int lblDescHeight;	// Description label height.
+		SIZE dlgSize;		// Visible dialog size.
 
 		// MessageWidget for ROM operation notifications.
 		HWND hMessageWidget;
@@ -252,6 +261,21 @@ class RP_ShellPropSheetExt_Private
 		void loadImages(void);
 
 	private:
+		/**
+		 * Check if we need to use WS_EX_LAYOUTRTL.
+		 * TODO: Cache this value?
+		 * @return WS_EX_LAYOUTRTL if process is RTL; otherwise 0.
+		 */
+		static inline DWORD checkLayoutRTL(void)
+		{
+			// Set WS_EX_LAYOUTRTL if the process is RTL.
+			DWORD dwDefaultLayout;
+			const BOOL bRet = GetProcessDefaultLayout(&dwDefaultLayout);
+			return (unlikely(bRet && dwDefaultLayout == LAYOUT_RTL))
+				? WS_EX_LAYOUTRTL
+				: 0;
+		}
+
 		/**
 		 * Rescale an image to be as close to the required size as possible.
 		 * @param req_sz	[in] Required size.
@@ -446,7 +470,7 @@ class RP_ShellPropSheetExt_Private
 		 * @param uIdSubclass
 		 * @param dWRefData RP_ShellPropSheetExt_Private
 		 */
-		static LRESULT CALLBACK DialogSubclassProc(
+		static LRESULT CALLBACK MainDialogSubclassProc(
 			HWND hWnd, UINT uMsg,
 			WPARAM wParam, LPARAM lParam,
 			UINT_PTR uIdSubclass, DWORD_PTR dwRefData);
@@ -484,6 +508,10 @@ class RP_ShellPropSheetExt_Private
 // This points to the ConfigDialogPrivate object.
 const TCHAR RP_ShellPropSheetExt_Private::D_PTR_PROP[] = _T("RP_ShellPropSheetExt_Private");
 
+// Property for "tab pointer".
+// This points to the RP_ShellPropSheetExt_Private::tab object.
+const TCHAR RP_ShellPropSheetExt_Private::TAB_PTR_PROP[] = _T("RP_ShellPropSheetExt_Private::tab");
+
 RP_ShellPropSheetExt_Private::RP_ShellPropSheetExt_Private(RP_ShellPropSheetExt *q, string &&filename)
 	: q_ptr(q)
 	, filename(std::move(filename))
@@ -502,6 +530,7 @@ RP_ShellPropSheetExt_Private::RP_ShellPropSheetExt_Private(RP_ShellPropSheetExt 
 	, dwExStyleRTL(0)
 	, tabWidget(nullptr)
 	, curTabIndex(0)
+	, lblDescHeight(0)
 	, hMessageWidget(nullptr)
 	, iTabHeightOrig(0)
 	, def_lc(0)
@@ -510,6 +539,10 @@ RP_ShellPropSheetExt_Private::RP_ShellPropSheetExt_Private(RP_ShellPropSheetExt 
 {
 	// Initialize the alternate row color.
 	colorAltRow = LibWin32Common::getAltRowColor();
+
+	// Initialize other structs.
+	dlgSize.cx = 0;
+	dlgSize.cy = 0;
 
 	// Check for RTL.
 	// NOTE: Windows Explorer on Windows 7 seems to return 0 from GetProcessDefaultLayout(),
@@ -1130,6 +1163,9 @@ int RP_ShellPropSheetExt_Private::initBitfield(HWND hDlg, HWND hWndTab,
 		rect_subtract.bottom /= 2;
 	}
 	pt.y -= rect_subtract.bottom;
+
+	// WS_EX_LAYOUTRTL
+	const DWORD dwExStyleRTL = checkLayoutRTL();
 
 	row = 0; col = 0;
 	auto iter = tnames.cbegin();
@@ -2580,7 +2616,8 @@ void RP_ShellPropSheetExt_Private::initDialog(void)
 	// and 8 DLUs tall, plus 4 vertical DLUs for spacing.
 	RECT tmpRect = {0, 0, 0, 8+4};
 	MapDialogRect(hDlgSheet, &tmpRect);
-	SIZE descSize = {max_text_width, tmpRect.bottom};
+	const SIZE descSize = {max_text_width, tmpRect.bottom};
+	this->lblDescHeight = descSize.cy;
 
 	// Get the dialog margin.
 	// 7x7 DLU margin is recommended by the Windows UX guidelines.
@@ -2599,10 +2636,8 @@ void RP_ShellPropSheetExt_Private::initDialog(void)
 	// Adjust the rectangle for margins.
 	InflateRect(&dlgRect, -dlgMargin.left, -dlgMargin.top);
 	// Calculate the size for convenience purposes.
-	SIZE dlgSize = {
-		dlgRect.right - dlgRect.left,
-		dlgRect.bottom - dlgRect.top
-	};
+	dlgSize.cx = dlgRect.right - dlgRect.left;
+	dlgSize.cy = dlgRect.bottom - dlgRect.top;
 
 	// Current position.
 	POINT headerPt = {dlgRect.left, dlgRect.top};
@@ -2692,6 +2727,11 @@ void RP_ShellPropSheetExt_Private::initDialog(void)
 				swpFlags);
 			// Hide subsequent tabs.
 			swpFlags = SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_HIDEWINDOW;
+
+			// Store the D object pointer with this particular tab dialog.
+			SetProp(tab.hDlg, D_PTR_PROP, static_cast<HANDLE>(this));
+			// Store the D object pointer with this particular tab dialog.
+			SetProp(tab.hDlg, TAB_PTR_PROP, static_cast<HANDLE>(&tab));
 
 			// Current point should be equal to the margins.
 			// FIXME: On both WinXP and Win7, ths ends up with an
@@ -2855,6 +2895,26 @@ void RP_ShellPropSheetExt_Private::initDialog(void)
 			// Remove the description label.
 			DestroyWindow(hStatic);
 		}
+	}
+
+	// Update scrollbar settings.
+	// TODO: If a VScroll bar is added, adjust widths of RFT_LISTDATA.
+	// TODO: HScroll bar?
+	const auto tabs_cend = tabs.cend();
+	for (auto iter = tabs.cbegin(); iter != tabs_cend; ++iter) {
+		// Set scroll info.
+		// FIXME: Separate child dialog for no tabs.
+		const auto &tab = *iter;
+
+		// VScroll bar
+		SCROLLINFO si;
+		si.cbSize = sizeof(SCROLLINFO);
+		si.fMask = SIF_ALL;
+		si.nMin = 0;
+		si.nMax = tab.curPt.y - 2;	// max is exclusive
+		si.nPage = dlgSize.cy;
+		si.nPos = 0;
+		SetScrollInfo(tab.hDlg, SB_VERT, &si, TRUE);
 	}
 
 	// Initial update of RFT_MULTI_STRING fields.
@@ -3203,7 +3263,7 @@ void RP_ShellPropSheetExt_Private::menuOptions_action_triggered(int menuId)
  * @param uIdSubclass
  * @param dWRefData RP_ShellPropSheetExt_Private
  */
-LRESULT CALLBACK RP_ShellPropSheetExt_Private::DialogSubclassProc(
+LRESULT CALLBACK RP_ShellPropSheetExt_Private::MainDialogSubclassProc(
 	HWND hWnd, UINT uMsg,
 	WPARAM wParam, LPARAM lParam,
 	UINT_PTR uIdSubclass, DWORD_PTR dwRefData)
@@ -3212,13 +3272,13 @@ LRESULT CALLBACK RP_ShellPropSheetExt_Private::DialogSubclassProc(
 		case WM_NCDESTROY:
 			// Remove the window subclass.
 			// Reference: https://blogs.msdn.microsoft.com/oldnewthing/20031111-00/?p=41883
-			RemoveWindowSubclass(hWnd, DialogSubclassProc, uIdSubclass);
+			RemoveWindowSubclass(hWnd, MainDialogSubclassProc, uIdSubclass);
 			break;
 
 		case WM_COMMAND:
 			if (HIWORD(wParam) == BN_CLICKED && LOWORD(wParam) == IDC_RP_OPTIONS) {
 				// Pop up the menu.
-				RP_ShellPropSheetExt_Private *const d = reinterpret_cast<RP_ShellPropSheetExt_Private*>(dwRefData);
+				auto *const d = reinterpret_cast<RP_ShellPropSheetExt_Private*>(dwRefData);
 				assert(d->hBtnOptions != nullptr);
 				assert(d->hMenuOptions != nullptr);
 				if (!d->hBtnOptions || !d->hMenuOptions)
@@ -3331,7 +3391,7 @@ void RP_ShellPropSheetExt_Private::createOptionsButton(void)
 	}
 
 	// Subclass the parent dialog so we can intercept WM_COMMAND.
-	SetWindowSubclass(hWndParent, DialogSubclassProc,
+	SetWindowSubclass(hWndParent, MainDialogSubclassProc,
 		static_cast<UINT_PTR>(IDC_RP_OPTIONS),
 		reinterpret_cast<DWORD_PTR>(this));
 
@@ -3921,8 +3981,7 @@ INT_PTR CALLBACK RP_ShellPropSheetExt_Private::DlgProc(HWND hDlg, UINT uMsg, WPA
 		// FIXME: FBI's age rating is cut off on Windows
 		// if we don't adjust for WM_SHOWWINDOW.
 		case WM_SHOWWINDOW: {
-			RP_ShellPropSheetExt_Private *const d = static_cast<RP_ShellPropSheetExt_Private*>(
-				GetProp(hDlg, D_PTR_PROP));
+			auto *const d = static_cast<RP_ShellPropSheetExt_Private*>(GetProp(hDlg, D_PTR_PROP));
 			if (!d) {
 				// No RP_ShellPropSheetExt_Private. Can't do anything...
 				return false;
@@ -3972,8 +4031,7 @@ INT_PTR CALLBACK RP_ShellPropSheetExt_Private::DlgProc(HWND hDlg, UINT uMsg, WPA
 		}
 
 		case WM_DESTROY: {
-			RP_ShellPropSheetExt_Private *const d = static_cast<RP_ShellPropSheetExt_Private*>(
-				GetProp(hDlg, D_PTR_PROP));
+			auto *const d = static_cast<RP_ShellPropSheetExt_Private*>(GetProp(hDlg, D_PTR_PROP));
 			if (d && d->lblIcon) {
 				// Stop the animation timer.
 				d->lblIcon->stopAnimTimer();
@@ -3991,8 +4049,7 @@ INT_PTR CALLBACK RP_ShellPropSheetExt_Private::DlgProc(HWND hDlg, UINT uMsg, WPA
 		}
 
 		case WM_NOTIFY: {
-			RP_ShellPropSheetExt_Private *const d = static_cast<RP_ShellPropSheetExt_Private*>(
-				GetProp(hDlg, D_PTR_PROP));
+			auto *const d = static_cast<RP_ShellPropSheetExt_Private*>(GetProp(hDlg, D_PTR_PROP));
 			if (!d) {
 				// No RP_ShellPropSheetExt_Private. Can't do anything...
 				return false;
@@ -4002,8 +4059,7 @@ INT_PTR CALLBACK RP_ShellPropSheetExt_Private::DlgProc(HWND hDlg, UINT uMsg, WPA
 		}
 
 		case WM_COMMAND: {
-			RP_ShellPropSheetExt_Private *const d = static_cast<RP_ShellPropSheetExt_Private*>(
-				GetProp(hDlg, D_PTR_PROP));
+			auto *const d = static_cast<RP_ShellPropSheetExt_Private*>(GetProp(hDlg, D_PTR_PROP));
 			if (!d) {
 				// No RP_ShellPropSheetExt_Private. Can't do anything...
 				return false;
@@ -4013,8 +4069,7 @@ INT_PTR CALLBACK RP_ShellPropSheetExt_Private::DlgProc(HWND hDlg, UINT uMsg, WPA
 		}
 
 		case WM_PAINT: {
-			RP_ShellPropSheetExt_Private *const d = static_cast<RP_ShellPropSheetExt_Private*>(
-				GetProp(hDlg, D_PTR_PROP));
+			auto *const d = static_cast<RP_ShellPropSheetExt_Private*>(GetProp(hDlg, D_PTR_PROP));
 			if (!d) {
 				// No RP_ShellPropSheetExt_Private. Can't do anything...
 				return false;
@@ -4025,8 +4080,7 @@ INT_PTR CALLBACK RP_ShellPropSheetExt_Private::DlgProc(HWND hDlg, UINT uMsg, WPA
 		case WM_SYSCOLORCHANGE:
 		case WM_THEMECHANGED: {
 			// Reload the images.
-			RP_ShellPropSheetExt_Private *const d = static_cast<RP_ShellPropSheetExt_Private*>(
-				GetProp(hDlg, D_PTR_PROP));
+			auto *const d = static_cast<RP_ShellPropSheetExt_Private*>(GetProp(hDlg, D_PTR_PROP));
 			if (!d) {
 				// No RP_ShellPropSheetExt_Private. Can't do anything...
 				return false;
@@ -4068,8 +4122,7 @@ INT_PTR CALLBACK RP_ShellPropSheetExt_Private::DlgProc(HWND hDlg, UINT uMsg, WPA
 			// SPI_GETFONTSMOOTHING or SPI_GETFONTSMOOTHINGTYPE,
 			// but that message isn't sent when previewing changes
 			// for ClearType. (It's sent when applying the changes.)
-			RP_ShellPropSheetExt_Private *const d = static_cast<RP_ShellPropSheetExt_Private*>(
-				GetProp(hDlg, D_PTR_PROP));
+			auto *const d = static_cast<RP_ShellPropSheetExt_Private*>(GetProp(hDlg, D_PTR_PROP));
 			if (d) {
 				// Update the fonts.
 				d->fontHandler.updateFonts();
@@ -4078,8 +4131,7 @@ INT_PTR CALLBACK RP_ShellPropSheetExt_Private::DlgProc(HWND hDlg, UINT uMsg, WPA
 		}
 
 		case WM_CTLCOLORSTATIC: {
-			RP_ShellPropSheetExt_Private *const d = static_cast<RP_ShellPropSheetExt_Private*>(
-				GetProp(hDlg, D_PTR_PROP));
+			auto *const d = static_cast<RP_ShellPropSheetExt_Private*>(GetProp(hDlg, D_PTR_PROP));
 			if (!d) {
 				// No RP_ShellPropSheetExt_Private. Can't do anything...
 				return false;
@@ -4095,8 +4147,7 @@ INT_PTR CALLBACK RP_ShellPropSheetExt_Private::DlgProc(HWND hDlg, UINT uMsg, WPA
 		}
 
 		case WM_WTSSESSION_CHANGE: {
-			RP_ShellPropSheetExt_Private *const d = static_cast<RP_ShellPropSheetExt_Private*>(
-				GetProp(hDlg, D_PTR_PROP));
+			auto *const d = static_cast<RP_ShellPropSheetExt_Private*>(GetProp(hDlg, D_PTR_PROP));
 			if (!d) {
 				// No RP_ShellPropSheetExt_Private. Can't do anything...
 				return false;
@@ -4187,28 +4238,94 @@ UINT CALLBACK RP_ShellPropSheetExt_Private::CallbackProc(HWND hWnd, UINT uMsg, L
  */
 INT_PTR CALLBACK RP_ShellPropSheetExt_Private::SubtabDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-	// Propagate NM_CUSTOMDRAW to the parent dialog.
-	if (uMsg == WM_NOTIFY) {
-		const NMHDR *const pHdr = reinterpret_cast<const NMHDR*>(lParam);
-		switch (pHdr->code) {
-			case LVN_GETDISPINFO:
-			case NM_CUSTOMDRAW:
-			case LVN_ITEMCHANGING: {
-				// NOTE: Since this is a DlgProc, we can't simply return
-				// the CDRF code. It has to be set as DWLP_MSGRESULT.
-				// References:
-				// - https://stackoverflow.com/questions/40549962/c-winapi-listview-nm-customdraw-not-getting-cdds-itemprepaint
-				// - https://stackoverflow.com/a/40552426
-				INT_PTR result = SendMessage(GetParent(hDlg), uMsg, wParam, lParam);
-				SetWindowLongPtr(hDlg, DWLP_MSGRESULT, result);
-				return true;
+	switch (uMsg) {
+		case WM_DESTROY: {
+			// Remove the D_PTR_PROP and TAB_PTR_PROP properties from the page.
+			// The D_PTR_PROP property stored the pointer to the 
+			// RP_ShellPropSheetExt_Private object.
+			// The TAB_PTR_PROP property stored the pointer to the 
+			// RP_ShellPropSheetExt_Private::tab object.
+			RemoveProp(hDlg, RP_ShellPropSheetExtPrivate::D_PTR_PROP);
+			RemoveProp(hDlg, RP_ShellPropSheetExtPrivate::TAB_PTR_PROP);
+			return TRUE;
+		}
+
+		case WM_NOTIFY: {
+			// Propagate NM_CUSTOMDRAW to the parent dialog.
+			const NMHDR *const pHdr = reinterpret_cast<const NMHDR*>(lParam);
+			switch (pHdr->code) {
+				case LVN_GETDISPINFO:
+				case NM_CUSTOMDRAW:
+				case LVN_ITEMCHANGING: {
+					// NOTE: Since this is a DlgProc, we can't simply return
+					// the CDRF code. It has to be set as DWLP_MSGRESULT.
+					// References:
+					// - https://stackoverflow.com/questions/40549962/c-winapi-listview-nm-customdraw-not-getting-cdds-itemprepaint
+					// - https://stackoverflow.com/a/40552426
+					INT_PTR result = SendMessage(GetParent(hDlg), uMsg, wParam, lParam);
+					SetWindowLongPtr(hDlg, DWLP_MSGRESULT, result);
+					return TRUE;
+				}
+
+				default:
+					break;
+			}
+			break;
+		}
+
+		case WM_VSCROLL: {
+			auto *const d = static_cast<RP_ShellPropSheetExt_Private*>(GetProp(hDlg, D_PTR_PROP));
+			auto *const tab = static_cast<RP_ShellPropSheetExt_Private::tab*>(GetProp(hDlg, TAB_PTR_PROP));
+			if (!d || !tab) {
+				// No RP_ShellPropSheetExt_Private or tab. Can't do anything...
+				break;
 			}
 
-			default:
-				break;
+			// Check the operation and scroll there.
+			int deltaY = 0;
+			switch (LOWORD(wParam)) {
+				case SB_TOP:
+					deltaY = -tab->scrollPos;
+					break;
+				case SB_BOTTOM:
+					deltaY = tab->curPt.y - tab->scrollPos;
+					break;
+
+				case SB_LINEUP:
+					deltaY = -d->lblDescHeight;
+					break;
+				case SB_LINEDOWN:
+					deltaY = d->lblDescHeight;
+					break;
+
+				case SB_PAGEUP:
+					deltaY = -d->dlgSize.cy;
+					break;
+				case SB_PAGEDOWN:
+					deltaY = d->dlgSize.cy;
+					break;
+
+				case SB_THUMBTRACK:
+				case SB_THUMBPOSITION:
+					deltaY = HIWORD(wParam) - tab->scrollPos;
+					break;
+			}
+
+			// Make sure this doesn't go out of range.
+			int scrollPos = tab->scrollPos + deltaY;
+			if (scrollPos < 0) {
+				deltaY -= scrollPos;
+			} else if (scrollPos + d->dlgSize.cy > tab->curPt.y) {
+				deltaY -= (scrollPos + 1) - (tab->curPt.y - d->dlgSize.cy);
+			}
+
+			tab->scrollPos += deltaY;
+			SetScrollPos(hDlg, SB_VERT, tab->scrollPos, TRUE);
+			ScrollWindow(hDlg, 0, -deltaY, nullptr, nullptr);
+			return TRUE;
 		}
 	}
 
 	// Dummy callback procedure that does nothing.
-	return false; // Let system deal with other messages
+	return DefSubclassProc(hDlg, uMsg, wParam, lParam);
 }

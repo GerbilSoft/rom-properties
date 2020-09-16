@@ -58,7 +58,7 @@
 #define NOMINMAX 1
 //#define NOMSG 1
 #define NOOPENFILE 1
-#define NOSCROLL 1
+//#define NOSCROLL 1
 #define NOSERVICE 1
 //#define NOSOUND 1
 //#define NOTEXTMETRIC 1
