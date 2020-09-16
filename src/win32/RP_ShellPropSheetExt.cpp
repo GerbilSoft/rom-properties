@@ -2623,6 +2623,10 @@ void RP_ShellPropSheetExt_Private::initDialog(void)
 	dlgSize.cx = dlgRect.right - dlgRect.left;
 	dlgSize.cy = dlgRect.bottom - dlgRect.top;
 
+	// Increase the total widget width by half of the margin.
+	InflateRect(&dlgRect, dlgMargin.left/2, 0);
+	dlgSize.cx += dlgMargin.left - 1;
+
 	// Current position.
 	POINT headerPt = {dlgRect.left, dlgRect.top};
 	int dlg_value_width = dlgSize.cx - descSize.cx - 1;
@@ -2637,16 +2641,14 @@ void RP_ShellPropSheetExt_Private::initDialog(void)
 	rectHeader.bottom = headerPt.y + headerH;
 
 	// Adjust values for the tabs.
-	dlgRect.top += headerH;
-	dlgSize.cy -= headerH;
+	// TODO: Ratio instead of absolute 2px?
+	dlgRect.top += (headerH + 2);
+	dlgSize.cy -= (headerH + 2);
 	headerPt.y += headerH;
 
 	// Do we need to create a tab widget?
 	int tabCount = pFields->tabCount();
 	if (tabCount > 1) {
-		// Increase the tab widget width by half of the margin.
-		InflateRect(&dlgRect, dlgMargin.left/2, 0);
-		dlgSize.cx += dlgMargin.left - 1;
 		// TODO: Do this regardless of tabs?
 		// NOTE: Margin with this change on Win7 is now 9px left, 12px bottom.
 		dlgRect.bottom = fullDlgRect.bottom - dlgRect.left;
@@ -2730,6 +2732,9 @@ void RP_ShellPropSheetExt_Private::initDialog(void)
 		tabs.resize(1);
 		auto &tab = tabs[0];
 
+		// for MessageWidget
+		iTabHeightOrig = dlgSize.cy;
+
 		// Create a child dialog.
 		tab.hDlg = CreateDialog(HINST_THISCOMPONENT,
 			MAKEINTRESOURCE(IDD_SUBTAB_CHILD_DIALOG),
@@ -2744,12 +2749,10 @@ void RP_ShellPropSheetExt_Private::initDialog(void)
 		// Store the D object pointer with this particular tab dialog.
 		SetProp(tab.hDlg, TAB_PTR_PROP, static_cast<HANDLE>(&tab));
 
-		// Current point should be equal to the margins.
-		// FIXME: On both WinXP and Win7, ths ends up with an
-		// 8px left margin, and 6px top/right margins.
-		// (Bottom margin is 6px on WinXP, 7px on Win7.)
-		tab.curPt.x = dlgMargin.left/2;
-		tab.curPt.y = dlgMargin.top/2;
+		// We already have margins on the dialog position,
+		// so we shouldn't have margins here.
+		tab.curPt.x = 0;
+		tab.curPt.y = 0;
 	}
 
 	int fieldIdx = 0;	// needed for control IDs
@@ -2937,11 +2940,6 @@ void RP_ShellPropSheetExt_Private::initDialog(void)
  */
 void RP_ShellPropSheetExt_Private::adjustTabsForMessageWidgetVisibility(bool bVisible)
 {
-	if (tabs.size() == 1) {
-		// Only one tab. Nothing to do here.
-		return;
-	}
-
 	// NOTE: IsWindowVisible(hMessageWidget) doesn't seem to be
 	// correct when this function is called, so we have to take
 	// the visibility as a parameter instead.
@@ -3236,9 +3234,18 @@ void RP_ShellPropSheetExt_Private::menuOptions_action_triggered(int menuId)
 			const int cySmIcon = GetSystemMetrics(SM_CYSMICON);
 			POINT ptMsgw; SIZE szMsgw;
 			szMsgw.cy = cySmIcon + 8;
-			ptMsgw.x = winRect.left + tmpRect.left;
-			ptMsgw.y = winRect.bottom - tmpRect.top - szMsgw.cy;
-			szMsgw.cx = winRect.right - winRect.left - (tmpRect.left * 2);
+			ptMsgw.x = winRect.left;
+			ptMsgw.y = winRect.bottom - szMsgw.cy;
+			szMsgw.cx = winRect.right - winRect.left;
+			if (tabs.size() > 1) {
+				ptMsgw.x += tmpRect.left;
+				ptMsgw.y -= tmpRect.top;
+				szMsgw.cx -= (tmpRect.left * 2);
+			} else {
+				ptMsgw.x += (tmpRect.left / 2);
+				ptMsgw.y -= (tmpRect.top / 2);
+				szMsgw.cx -= tmpRect.left;
+			}
 
 			hMessageWidget = CreateWindowEx(
 				WS_EX_NOPARENTNOTIFY | WS_EX_TRANSPARENT | dwExStyleRTL,
