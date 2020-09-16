@@ -71,6 +71,8 @@
     is now supported. The primary use case is for systems that sandbox the
     thumbnailing process, which prevents rom-properties from downloading
     files from the Internet and from using the ~/.cache/ directory.
+  * Windows: Property dialogs now show vertical scrollbars if necessary.
+    This partially fixes issue #204, reported by @InternalLoss.
 
 ## v1.6.1 (released 2020/07/13)
 
