@@ -2677,7 +2677,6 @@ void RP_ShellPropSheetExt_Private::initDialog(void)
 			hDlgSheet, (HMENU)(INT_PTR)IDC_TAB_WIDGET,
 			nullptr, nullptr);
 		SetWindowFont(tabWidget, hFontDlg, false);
-		curTabIndex = 0;
 
 		// Add tabs.
 		// NOTE: Tabs must be added *before* calling TabCtrl_AdjustRect();
@@ -2742,13 +2741,32 @@ void RP_ShellPropSheetExt_Private::initDialog(void)
 		}
 	} else {
 		// No tabs.
-		// Don't create a WC_TABCONTROL, but simulate a single
-		// tab in tabs[] to make it easier to work with.
+		// Don't create a WC_TABCONTROL, but do create a
+		// child dialog in order to handle scrolling.
 		tabCount = 1;
 		tabs.resize(1);
 		auto &tab = tabs[0];
-		tab.hDlg = hDlgSheet;
-		tab.curPt = headerPt;
+
+		// Create a child dialog.
+		tab.hDlg = CreateDialog(HINST_THISCOMPONENT,
+			MAKEINTRESOURCE(IDD_SUBTAB_CHILD_DIALOG),
+			hDlgSheet, SubtabDlgProc);
+		SetWindowPos(tab.hDlg, nullptr,
+			dlgRect.left, dlgRect.top,
+			dlgSize.cx, dlgSize.cy,
+			SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_SHOWWINDOW);
+
+		// Store the D object pointer with this particular tab dialog.
+		SetProp(tab.hDlg, D_PTR_PROP, static_cast<HANDLE>(this));
+		// Store the D object pointer with this particular tab dialog.
+		SetProp(tab.hDlg, TAB_PTR_PROP, static_cast<HANDLE>(&tab));
+
+		// Current point should be equal to the margins.
+		// FIXME: On both WinXP and Win7, ths ends up with an
+		// 8px left margin, and 6px top/right margins.
+		// (Bottom margin is 6px on WinXP, 7px on Win7.)
+		tab.curPt.x = dlgMargin.left/2;
+		tab.curPt.y = dlgMargin.top/2;
 	}
 
 	int fieldIdx = 0;	// needed for control IDs
