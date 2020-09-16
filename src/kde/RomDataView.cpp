@@ -1464,7 +1464,7 @@ void RomDataViewPrivate::initDisplayWidgets(void)
 			tab.vbox->addLayout(tab.form, 1);
 
 			// Add the tab.
-			ui.tabWidget->addTab(widget, (name ? U82Q(name) : QString()));
+			ui.tabWidget->addTab(widget, U82Q(name));
 		}
 	} else {
 		// No tabs.

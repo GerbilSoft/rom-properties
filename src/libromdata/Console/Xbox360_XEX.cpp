@@ -490,6 +490,7 @@ const XEX2_Resource_Info *Xbox360_XEX_Private::getXdbfResInfo(const char *resour
 
 	XEX2_Resource_Info res;
 	res.vaddr = 0;
+	res.size = 0;
 	const XEX2_Resource_Info *p =
 		reinterpret_cast<const XEX2_Resource_Info*>(u8_data.data() + sizeof(uint32_t));
 	for (unsigned int i = 0; i < res_count; i++, p++) {

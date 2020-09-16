@@ -58,7 +58,7 @@ typedef uint64_t Elf64_Symndx;
  * ELF primary header.
  * These fields are identical for both 32-bit and 64-bit.
  */
-#define ELF_MAGIC '\177ELF'
+#define ELF_MAGIC 0x7F454C46U	// '\177ELF'
 typedef struct _Elf_PrimaryEhdr {
 	uint32_t e_magic;	// [0x000] '\x177ELF' (big-endian)
 	uint8_t e_class;	// [0x004] Bitness (see Elf_Bitness)

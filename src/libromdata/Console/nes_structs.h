@@ -45,8 +45,8 @@ extern "C" {
  *
  * NOTE: Strings are NOT null-terminated!
  */
-#define INES_MAGIC		'NES\x1A'
-#define INES_MAGIC_WIIU_VC	0x4E455300	// 'NES\x00'
+#define INES_MAGIC		0x4E45531AU	// 'NES\x1A'
+#define INES_MAGIC_WIIU_VC	0x4E455300U	// 'NES\x00'
 typedef struct _INES_RomHeader {
 	uint32_t magic;		// [0x000] 'NES\x1A' (big-endian)
 	uint8_t prg_banks;	// [0x004] # of 16 KB PRG ROM banks.
@@ -367,7 +367,7 @@ typedef enum {
  * All fields are in little-endian,
  * except for the magic number.
  */
-#define fwNES_MAGIC 'FDS\x1A'
+#define fwNES_MAGIC 0x4644531AU	// 'FDS\x1A'
 typedef struct _FDS_DiskHeader_fwNES {
 	uint32_t magic;		// [0x000] 'FDS\x1A' (big-endian)
 	uint8_t disk_sides;	// [0x004] Number of disk sides.

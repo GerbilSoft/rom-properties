@@ -139,7 +139,7 @@ void SystemsTab::loadDefaults(void)
 		isDefChanged = true;
 	}
 	if (d->ui.cboCGB->currentIndex() != idxCGB_default) {
-		d->ui.cboDMG->setCurrentIndex(idxCGB_default);
+		d->ui.cboCGB->setCurrentIndex(idxCGB_default);
 		isDefChanged = true;
 	}
 

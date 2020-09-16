@@ -25,7 +25,7 @@ extern "C" {
  * All fields are little-endian,
  * except for the magic number.
  */
-#define GBS_MAGIC 'GBS\x01'
+#define GBS_MAGIC 0x47425301U	// 'GBS\x01'
 typedef struct _GBS_Header {
 	uint32_t magic;			// [0x000] 'GBS\x01' (big-endian)
 					//         NOTE: \x01 is technically a version number.

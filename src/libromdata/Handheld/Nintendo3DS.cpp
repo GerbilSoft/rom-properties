@@ -617,7 +617,7 @@ int Nintendo3DSPrivate::openSRL(void)
 		this->mainContent = srlData;
 	} else {
 		// Failed to open the SRL.
-		srlData->unref();
+		UNREF(srlData);
 	}
 
 	return (this->mainContent != nullptr ? 0 : -EIO);

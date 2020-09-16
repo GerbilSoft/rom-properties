@@ -272,13 +272,13 @@ const RomDataFactoryPrivate::RomDataFns RomDataFactoryPrivate::romDataFns_magic[
 
 	// Audio
 	GetRomDataFns_addr(BRSTM, ATTR_HAS_METADATA, 0, 'RSTM'),
-	GetRomDataFns_addr(GBS, ATTR_HAS_METADATA, 0, 'GBS\x01'),
+	GetRomDataFns_addr(GBS, ATTR_HAS_METADATA, 0, 0x47425301),	// 'GBS\x01'
 	GetRomDataFns_addr(NSF, ATTR_HAS_METADATA, 0, 'NESM'),
 	GetRomDataFns_addr(SPC, ATTR_HAS_METADATA, 0, 'SNES'),
 	GetRomDataFns_addr(VGM, ATTR_HAS_METADATA, 0, 'Vgm '),
 
 	// Other
-	GetRomDataFns_addr(ELF, ATTR_NONE, 0, '\177ELF'),
+	GetRomDataFns_addr(ELF, ATTR_NONE, 0, 0x7F454C46),		// '\177ELF'
 
 	// Consoles: Xbox 360 STFS
 	// Moved here to prevent conflicts with the Nintendo DS ROM image

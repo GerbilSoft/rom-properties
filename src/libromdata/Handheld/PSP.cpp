@@ -165,7 +165,7 @@ RomData *PSPPrivate::openBootExe(void)
 	if (f_bootExe) {
 		RomData *const exeData = new ELF(f_bootExe);
 		f_bootExe->unref();
-		if (exeData && exeData->isValid()) {
+		if (exeData->isOpen() && exeData->isValid()) {
 			// Boot executable is open and valid.
 			bootExeData = exeData;
 			return exeData;

@@ -289,7 +289,7 @@ int Xbox_XBE_Private::initXPR0_xtImage(void)
 				xpr0->unref();
 				ret = -EIO;
 			}
-		} else if (magic == cpu_to_be32('\x89PNG')) {
+		} else if (magic == cpu_to_be32(0x89504E47U)) {	// '\x89PNG'
 			// PNG image.
 			rp_image *const img = RpPng::load(ptFile);
 			if (img->isValid()) {
