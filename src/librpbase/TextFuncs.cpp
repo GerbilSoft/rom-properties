@@ -447,6 +447,7 @@ std::string dos2unix(const char *str_dos, int len, int *lf_count)
 			str_unix += '\n';
 			str_dos++;
 			lf++;
+			len--;
 		} else {
 			str_unix += *str_dos;
 		}
