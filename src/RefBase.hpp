@@ -15,6 +15,9 @@
 // C includes. (C++ namespace)
 #include <cassert>
 
+// C++ includes.
+#include <type_traits>
+
 /**
  * Unreference a RefBase object if it's not NULL.
  */
