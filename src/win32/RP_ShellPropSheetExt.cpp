@@ -2546,9 +2546,6 @@ void RP_ShellPropSheetExt_Private::initDialog(void)
 	vector<tstring> t_desc_text;
 	t_desc_text.reserve(count);
 
-	// Temporary variable for measuring text size.
-	SIZE textSize;
-
 	// Tab count.
 	int tabCount = pFields->tabCount();
 	if (tabCount < 1) {
@@ -2572,18 +2569,23 @@ void RP_ShellPropSheetExt_Private::initDialog(void)
 			continue;
 		}
 
-		const tstring desc_text = U82T_s(rp_sprintf(
+		tstring desc_text = U82T_s(rp_sprintf(
 			desc_label_fmt, field.name.c_str()));
 
 		// Get the width of this specific entry.
 		// TODO: Use measureTextSize()?
-		if (field.desc.flags & RomFields::STRF_WARNING) {
+		SIZE textSize;
+		if (field.type == RomFields::RFT_STRING &&
+		    field.desc.flags & RomFields::STRF_WARNING)
+		{
 			// Label is bold. Use hFontBold.
 			HFONT hFontOrig = SelectFont(hDC, hFontBold);
 			GetTextExtentPoint32(hDC, desc_text.data(),
 				static_cast<int>(desc_text.size()), &textSize);
 			SelectFont(hDC, hFontOrig);
-		} else {
+		}
+		else
+		{
 			// Regular font.
 			GetTextExtentPoint32(hDC, desc_text.data(),
 				static_cast<int>(desc_text.size()), &textSize);
@@ -2604,6 +2606,7 @@ void RP_ShellPropSheetExt_Private::initDialog(void)
 	// Add additional spacing between the ':' and the field.
 	// TODO: Use measureTextSize()?
 	// TODO: Reduce to 1 space?
+	SIZE textSize;
 	GetTextExtentPoint32(hDC, _T("  "), 2, &textSize);
 	std::for_each(v_max_text_width.begin(), v_max_text_width.end(),
 		[&textSize](int &max_text_width) {
@@ -2704,7 +2707,7 @@ void RP_ShellPropSheetExt_Private::initDialog(void)
 		iTabHeightOrig = dlgSize.cy;	// for MessageWidget
 		// Update dlg_value_width.
 		// FIXME: Results in 9px left, 8px right margins for RFT_LISTDATA.
-		dlg_value_width_base -= dlgMargin.left;
+		dlg_value_width_base = dlgSize.cx - dlgMargin.left - 1;
 
 		// Create windows for each tab.
 		DWORD swpFlags = SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_SHOWWINDOW;
