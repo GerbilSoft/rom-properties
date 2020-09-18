@@ -315,13 +315,6 @@ string getCacheFilename(const char *pCacheKey)
 		return string();
 	}
 
-	// Make sure the cache directory is initialized.
-	const string &cache_dir = getCacheDirectory();
-	if (cache_dir.empty()) {
-		// Unable to get the cache directory.
-		return string();
-	}
-
 	// Filter the cache key.
 	string filteredCacheKey = pCacheKey;
 	int ret = filterCacheKey(filteredCacheKey);
@@ -330,13 +323,22 @@ string getCacheFilename(const char *pCacheKey)
 		return string();
 	}
 
-	// Get the cache filename.
-	// This is the cache directory plus the cache key.
-	string cacheFilename_user = cache_dir;
-	if (cacheFilename_user.at(cacheFilename_user.size()-1) != DIR_SEP_CHR) {
-		cacheFilename_user += DIR_SEP_CHR;
+	// Cache filename in the user's directory.
+	string cacheFilename_user;
+
+	// Make sure the cache directory is initialized.
+	// NOTE: May be empty if the cache directory isn't
+	// accessible, e.g. when running under bubblewrap.
+	const string &cache_dir = getCacheDirectory();
+	if (!cache_dir.empty()) {
+		// Get the cache filename.
+		// This is the cache directory plus the cache key.
+		cacheFilename_user = cache_dir;
+		if (cacheFilename_user.at(cacheFilename_user.size()-1) != DIR_SEP_CHR) {
+			cacheFilename_user += DIR_SEP_CHR;
+		}
+		cacheFilename_user += filteredCacheKey;
 	}
-	cacheFilename_user += filteredCacheKey;
 
 #ifdef DIR_INSTALL_CACHE
 	// If the requested file is in the system-wide cache directory,
@@ -351,7 +353,7 @@ string getCacheFilename(const char *pCacheKey)
 
 	if (!access(cacheFilename_sys.c_str(), R_OK)) {
 		// File is in the system-wide cache.
-		if (!access(cacheFilename_user.c_str(), R_OK)) {
+		if (!cacheFilename_user.empty() && !access(cacheFilename_user.c_str(), R_OK)) {
 			// File is also in the user's cache.
 			// User version overrides the system version.
 			return cacheFilename_user;
