@@ -2546,10 +2546,18 @@ void RP_ShellPropSheetExt_Private::initDialog(void)
 	vector<tstring> t_desc_text;
 	t_desc_text.reserve(count);
 
+	// Temporary variable for measuring text size.
+	SIZE textSize;
+
+	// Tab count.
+	int tabCount = pFields->tabCount();
+	if (tabCount < 1) {
+		tabCount = 1;
+	}
+
 	// Determine the maximum length of all field names.
 	// TODO: Line breaks?
-	int max_text_width = 0;
-	SIZE textSize;
+	vector<int> v_max_text_width(tabCount);
 
 	// tr: Field description label.
 	const char *const desc_label_fmt = C_("RomDataView", "%s:");
@@ -2581,8 +2589,12 @@ void RP_ShellPropSheetExt_Private::initDialog(void)
 				static_cast<int>(desc_text.size()), &textSize);
 		}
 
-		if (textSize.cx > max_text_width) {
-			max_text_width = textSize.cx;
+		assert(field.tabIdx >= 0);
+		assert(field.tabIdx < tabCount);
+		if (field.tabIdx >= 0 && field.tabIdx < tabCount) {
+			if (textSize.cx > v_max_text_width[field.tabIdx]) {
+				v_max_text_width[field.tabIdx] = textSize.cx;
+			}
 		}
 
 		// Save for later.
@@ -2593,14 +2605,18 @@ void RP_ShellPropSheetExt_Private::initDialog(void)
 	// TODO: Use measureTextSize()?
 	// TODO: Reduce to 1 space?
 	GetTextExtentPoint32(hDC, _T("  "), 2, &textSize);
-	max_text_width += textSize.cx;
+	std::for_each(v_max_text_width.begin(), v_max_text_width.end(),
+		[&textSize](int &max_text_width) {
+			max_text_width += textSize.cx;
+		}
+	);
 
 	// Create the ROM field widgets.
 	// Each static control is max_text_width pixels wide
 	// and 8 DLUs tall, plus 4 vertical DLUs for spacing.
 	RECT tmpRect = {0, 0, 0, 8+4};
 	MapDialogRect(hDlgSheet, &tmpRect);
-	const SIZE descSize = {max_text_width, tmpRect.bottom};
+	SIZE descSize = {0, tmpRect.bottom};
 	this->lblDescHeight = descSize.cy;
 
 	// Get the dialog margin.
@@ -2629,7 +2645,7 @@ void RP_ShellPropSheetExt_Private::initDialog(void)
 
 	// Current position.
 	POINT headerPt = {dlgRect.left, dlgRect.top};
-	int dlg_value_width = dlgSize.cx - descSize.cx - 1;
+	int dlg_value_width_base = dlgSize.cx - 1;
 
 	// Create the header row.
 	const SIZE header_size = {dlgSize.cx, descSize.cy};
@@ -2647,7 +2663,6 @@ void RP_ShellPropSheetExt_Private::initDialog(void)
 	headerPt.y += headerH;
 
 	// Do we need to create a tab widget?
-	int tabCount = pFields->tabCount();
 	if (tabCount > 1) {
 		// TODO: Do this regardless of tabs?
 		// NOTE: Margin with this change on Win7 is now 9px left, 12px bottom.
@@ -2689,7 +2704,7 @@ void RP_ShellPropSheetExt_Private::initDialog(void)
 		iTabHeightOrig = dlgSize.cy;	// for MessageWidget
 		// Update dlg_value_width.
 		// FIXME: Results in 9px left, 8px right margins for RFT_LISTDATA.
-		dlg_value_width = dlgSize.cx - descSize.cx - dlgMargin.left - 1;
+		dlg_value_width_base -= dlgMargin.left;
 
 		// Create windows for each tab.
 		DWORD swpFlags = SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_SHOWWINDOW;
@@ -2728,7 +2743,6 @@ void RP_ShellPropSheetExt_Private::initDialog(void)
 		// No tabs.
 		// Don't create a WC_TABCONTROL, but do create a
 		// child dialog in order to handle scrolling.
-		tabCount = 1;
 		tabs.resize(1);
 		auto &tab = tabs[0];
 
@@ -2777,6 +2791,9 @@ void RP_ShellPropSheetExt_Private::initDialog(void)
 		// Current tab.
 		auto &tab = tabs[tabIdx];
 
+		// Description width is based on the tab index.
+		descSize.cx = v_max_text_width[tabIdx];
+
 		// Create the static text widget. (FIXME: Disable mnemonics?)
 		HWND hStatic = CreateWindowEx(WS_EX_NOPARENTNOTIFY | WS_EX_TRANSPARENT,
 			WC_STATIC, iter_desc->c_str(),
@@ -2786,9 +2803,10 @@ void RP_ShellPropSheetExt_Private::initDialog(void)
 		SetWindowFont(hStatic, hFontDlg, false);
 
 		// Create the value widget.
+		const int descSize_cx = v_max_text_width[tabIdx];
 		int field_cy = descSize.cy;	// Default row size.
 		const POINT pt_start = {tab.curPt.x + descSize.cx, tab.curPt.y};
-		SIZE size = {dlg_value_width, field_cy};
+		SIZE size = {dlg_value_width_base - descSize.cx, field_cy};
 		switch (field.type) {
 			case RomFields::RFT_INVALID:
 				// No data here.
