@@ -1983,13 +1983,6 @@ rom_data_view_update_display(RomDataView *page)
 	// Per-tab row counts.
 	vector<int> tabRowCount(page->tabs->size());
 
-	// Use a GtkSizeGroup to ensure that the description
-	// labels on all tabs have the same width.
-	// NOTE: GtkSizeGroup automatically unreferences itself
-	// once all referenced widgets are deleted, so we don't
-	// need to manage it ourselves.
-	GtkSizeGroup *const size_group = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
-
 	// tr: Field description label.
 	const char *const desc_label_fmt = C_("RomDataView", "%s:");
 
@@ -2056,7 +2049,6 @@ rom_data_view_update_display(RomDataView *page)
 			GtkWidget *lblDesc = gtk_label_new(txt.c_str());
 			gtk_label_set_use_underline(GTK_LABEL(lblDesc), false);
 			gtk_widget_show(lblDesc);
-			gtk_size_group_add_widget(size_group, lblDesc);
 			page->vecDescLabels->emplace_back(lblDesc);
 
 			// Check if this is an RFT_STRING with warning set.
