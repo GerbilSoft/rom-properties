@@ -76,6 +76,9 @@ class RomDataViewPrivate
 	public:
 		Ui::RomDataView ui;
 
+		// RomData object.
+		RomData *romData;
+
 		// "Options" button.
 		QPushButton *btnOptions;
 		QMenu *menuOptions;
@@ -131,9 +134,6 @@ class RomDataViewPrivate
 		// RFT_LISTDATA_MULTI value QTreeWidgets.
 		typedef std::pair<QTreeWidget*, const RomFields::Field*> Data_ListDataMulti_t;
 		vector<Data_ListDataMulti_t> vecListDataMulti;
-
-		// RomData object.
-		RomData *romData;
 
 		/**
 		 * Create the "Options" button in the parent window.
@@ -264,6 +264,7 @@ class RomDataViewPrivate
 
 RomDataViewPrivate::RomDataViewPrivate(RomDataView *q, RomData *romData)
 	: q_ptr(q)
+	, romData(nullptr)
 	, btnOptions(nullptr)
 	, menuOptions(nullptr)
 	, romOps_firstActionIndex(-1)
@@ -278,8 +279,11 @@ RomDataViewPrivate::RomDataViewPrivate(RomDataView *q, RomData *romData)
 #endif /* HAVE_KMESSAGEWIDGET */
 	, def_lc(0)
 	, cboLanguage(nullptr)
-	, romData(romData->ref())
 {
+	if (romData) {
+		this->romData = romData->ref();
+	}
+
 	// Register RpQImageBackend.
 	// TODO: Static initializer somewhere?
 	rp_image::setBackendCreatorFn(RpQImageBackend::creator_fn);

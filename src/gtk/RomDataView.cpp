@@ -167,8 +167,8 @@ struct Data_ListDataMulti_t {
 struct _RomDataView {
 	super __parent__;
 
-	/* Timeouts */
-	guint		changed_idle;
+	RomData		*romData;	// ROM data
+	gchar		*uri;		// URI (GVfs)
 
 	// "Options" button.
 	GtkWidget	*btnOptions;
@@ -182,12 +182,6 @@ struct _RomDataView {
 	GtkWidget	*imgIcon;
 	GtkWidget	*imgBanner;
 
-	// URI. (GVfs)
-	gchar		*uri;
-
-	// ROM data.
-	RomData		*romData;
-
 	// Tab layout.
 	GtkWidget	*tabWidget;
 	struct tab {
@@ -198,6 +192,9 @@ struct _RomDataView {
 		tab() : vbox(nullptr), table(nullptr), lblCredits(nullptr) { }
 	};
 	vector<tab>	*tabs;
+
+	/* Timeouts */
+	guint		changed_idle;
 
 	// Mapping of field index to GtkWidget*.
 	// For rom_data_view_update_field().
@@ -337,24 +334,19 @@ set_label_format_type(GtkLabel *label, RpDescFormatType desc_format_type)
 static void
 rom_data_view_init(RomDataView *page)
 {
-	// No ROM data initially.
-	page->uri = nullptr;
-	page->romData = nullptr;
-	page->tabWidget = nullptr;
+	// g_object_new() guarantees that all values are initialized to 0.
+
+	// Initialize C++ objects.
 	page->tabs = new vector<RomDataView::tab>();
 	page->map_fieldIdx = new unordered_map<int, GtkWidget*>();
-	page->inhibit_checkbox_no_toggle = false;
 
-	page->messageWidget = nullptr;
-	page->desc_format_type = RP_DFT_XFCE;
-
-	page->def_lc = 0;
 	page->set_lc = new set<uint32_t>();
-	page->cboLanguage = nullptr;
-	page->lstoreLanguage = nullptr;
 	page->vecDescLabels = new vector<GtkWidget*>();
 	page->vecStringMulti = new vector<Data_StringMulti_t>();
 	page->vecListDataMulti = new vector<Data_ListDataMulti_t>();
+
+	// Default description format type.
+	page->desc_format_type = RP_DFT_XFCE;
 
 	/**
 	 * Base class is:
@@ -456,11 +448,7 @@ rom_data_view_dispose(GObject *object)
 static void
 rom_data_view_finalize(GObject *object)
 {
-	RomDataView *page = ROM_DATA_VIEW(object);
-
-	// Free the strings.
-	g_free(page->prevExportDir);
-	g_free(page->uri);
+	RomDataView *const page = ROM_DATA_VIEW(object);
 
 	// Delete the C++ objects.
 	delete page->tabs;
@@ -470,6 +458,10 @@ rom_data_view_finalize(GObject *object)
 	delete page->set_lc;
 	delete page->vecStringMulti;
 	delete page->vecListDataMulti;
+
+	// Free the strings.
+	g_free(page->prevExportDir);
+	g_free(page->uri);
 
 	// Unreference romData.
 	UNREF(page->romData);
@@ -505,7 +497,7 @@ rom_data_view_get_property(GObject	*object,
 			   GValue	*value,
 			   GParamSpec	*pspec)
 {
-	RomDataView *page = ROM_DATA_VIEW(object);
+	RomDataView *const page = ROM_DATA_VIEW(object);
 
 	switch (prop_id) {
 		case PROP_URI:
@@ -532,7 +524,7 @@ rom_data_view_set_property(GObject	*object,
 			   const GValue	*value,
 			   GParamSpec	*pspec)
 {
-	RomDataView *page = ROM_DATA_VIEW(object);
+	RomDataView *const page = ROM_DATA_VIEW(object);
 
 	switch (prop_id) {
 		case PROP_URI:
