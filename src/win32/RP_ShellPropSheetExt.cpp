@@ -2554,7 +2554,7 @@ void RP_ShellPropSheetExt_Private::initDialog(void)
 
 	// Determine the maximum length of all field names.
 	// TODO: Line breaks?
-	vector<int> v_max_text_width(tabCount);
+	unique_ptr<int[]> a_max_text_width(new int[tabCount]);
 
 	// tr: Field description label.
 	const char *const desc_label_fmt = C_("RomDataView", "%s:");
@@ -2594,8 +2594,8 @@ void RP_ShellPropSheetExt_Private::initDialog(void)
 		assert(field.tabIdx >= 0);
 		assert(field.tabIdx < tabCount);
 		if (field.tabIdx >= 0 && field.tabIdx < tabCount) {
-			if (textSize.cx > v_max_text_width[field.tabIdx]) {
-				v_max_text_width[field.tabIdx] = textSize.cx;
+			if (textSize.cx > a_max_text_width[field.tabIdx]) {
+				a_max_text_width[field.tabIdx] = textSize.cx;
 			}
 		}
 
@@ -2608,7 +2608,7 @@ void RP_ShellPropSheetExt_Private::initDialog(void)
 	// TODO: Reduce to 1 space?
 	SIZE textSize;
 	GetTextExtentPoint32(hDC, _T("  "), 2, &textSize);
-	std::for_each(v_max_text_width.begin(), v_max_text_width.end(),
+	std::for_each(a_max_text_width.begin(), a_max_text_width.end(),
 		[&textSize](int &max_text_width) {
 			max_text_width += textSize.cx;
 		}
@@ -2795,7 +2795,7 @@ void RP_ShellPropSheetExt_Private::initDialog(void)
 		auto &tab = tabs[tabIdx];
 
 		// Description width is based on the tab index.
-		descSize.cx = v_max_text_width[tabIdx];
+		descSize.cx = a_max_text_width[tabIdx];
 
 		// Create the static text widget. (FIXME: Disable mnemonics?)
 		HWND hStatic = CreateWindowEx(WS_EX_NOPARENTNOTIFY | WS_EX_TRANSPARENT,
