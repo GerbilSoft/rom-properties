@@ -2803,7 +2803,6 @@ void RP_ShellPropSheetExt_Private::initDialog(void)
 		SetWindowFont(hStatic, hFontDlg, false);
 
 		// Create the value widget.
-		const int descSize_cx = v_max_text_width[tabIdx];
 		int field_cy = descSize.cy;	// Default row size.
 		const POINT pt_start = {tab.curPt.x + descSize.cx, tab.curPt.y};
 		SIZE size = {dlg_value_width_base - descSize.cx, field_cy};
