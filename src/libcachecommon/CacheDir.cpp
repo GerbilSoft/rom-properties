@@ -44,20 +44,20 @@ static string cache_dir;
 static void initCacheDirectory(void)
 {
 	// Uses LibUnixCommon or LibWin32Common, depending on platform.
-
 	cache_dir = OS_NAMESPACE::getCacheDirectory();
-	if (!cache_dir.empty()) {
-		// Add a trailing slash if necessary.
-		if (cache_dir.at(cache_dir.size()-1) != DIR_SEP_CHR)
-			cache_dir += DIR_SEP_CHR;
+	if (cache_dir.empty())
+		return;
+
+	// Add a trailing slash if necessary.
+	if (cache_dir.at(cache_dir.size()-1) != DIR_SEP_CHR)
+		cache_dir += DIR_SEP_CHR;
 #ifdef _WIN32
-		// Append "rom-properties\\cache".
-		cache_dir += "rom-properties\\cache";
+	// Append "rom-properties\\cache".
+	cache_dir += "rom-properties\\cache";
 #else /* !_WIN32 */
-		// Append "rom-properties".
-		cache_dir += "rom-properties";
+	// Append "rom-properties".
+	cache_dir += "rom-properties";
 #endif /* _WIN32 */
-	}
 }
 
 /**
