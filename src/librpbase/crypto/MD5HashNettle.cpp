@@ -29,8 +29,7 @@ int MD5Hash::calcHash(uint8_t *pHash, size_t hash_len, const void *pData, size_t
 	assert(pHash != nullptr);
 	assert(hash_len == 16);
 	assert(pData != nullptr);
-	assert(len > 0);
-	if (!pHash || hash_len != 16 || !pData || len == 0) {
+	if (!pHash || hash_len != 16 || !pData) {
 		// Invalid parameters.
 		return -EINVAL;
 	}

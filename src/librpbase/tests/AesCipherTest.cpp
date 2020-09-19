@@ -711,7 +711,7 @@ AesDecryptTestSet(Nettle, true)
  */
 extern "C" int gtest_main(int argc, TCHAR *argv[])
 {
-	fprintf(stderr, "LibRpBase test suite: AesCipher tests.\n\n");
+	fprintf(stderr, "LibRpBase test suite: Crypto tests.\n\n");
 	fflush(nullptr);
 
 	// coverity[fun_call_w_exception]: uncaught exceptions cause nonzero exit anyway, so don't warn.
