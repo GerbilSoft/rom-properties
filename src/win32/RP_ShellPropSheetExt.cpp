@@ -2608,11 +2608,9 @@ void RP_ShellPropSheetExt_Private::initDialog(void)
 	// TODO: Reduce to 1 space?
 	SIZE textSize;
 	GetTextExtentPoint32(hDC, _T("  "), 2, &textSize);
-	std::for_each(a_max_text_width.begin(), a_max_text_width.end(),
-		[&textSize](int &max_text_width) {
-			max_text_width += textSize.cx;
-		}
-	);
+	for (int i = tabCount - 1; i >= 0; i--) {
+		a_max_text_width[i] += textSize.cx;
+	}
 
 	// Create the ROM field widgets.
 	// Each static control is max_text_width pixels wide
