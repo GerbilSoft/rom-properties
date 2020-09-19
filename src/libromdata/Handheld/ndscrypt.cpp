@@ -115,6 +115,7 @@ int ndscrypt_load_blowfish_bin(BlowfishKey bfkey)
 
 	// Read the file.
 	size_t size = f_blowfish->read(blowfish_data[bfkey], sizeof(blowfish_data[bfkey]));
+	f_blowfish->unref();
 	if (size != sizeof(blowfish_data[bfkey])) {
 		// Read error.
 		blowfish_data[bfkey][0] = 0;
@@ -122,7 +123,6 @@ int ndscrypt_load_blowfish_bin(BlowfishKey bfkey)
 		if (err == 0) {
 			err = EIO;
 		}
-		UNREF(f_blowfish);
 		return -err;
 	}
 
