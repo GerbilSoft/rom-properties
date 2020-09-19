@@ -191,6 +191,22 @@ class RpFile : public IRpFile
 		 */
 		int ata_identify_device(struct _ATA_RESP_IDENTIFY_DEVICE *pResp);
 
+		/**
+		 * ATA IDENTIFY PACKET DEVICE command. (via SCSI-ATA pass-through)
+		 * @param pResp Response buffer.
+		 * @return 0 on success, positive for SCSI sense key, negative for POSIX error code.
+		 */
+		int ata_identify_packet_device(struct _ATA_RESP_IDENTIFY_DEVICE *pResp);
+
+	private:
+		/**
+		 * ATA IDENTIFY (PACKET) DEVICE command. (internal function)
+		 * @param pResp Response buffer.
+		 * @param packet True for IDENTIFY PACKET DEVICE; false for IDENTIFY DEVICE.
+		 * @return 0 on success, positive for SCSI sense key, negative for POSIX error code.
+		 */
+		int ata_identify_device_int(struct _ATA_RESP_IDENTIFY_DEVICE *pResp, bool packet);
+
 	public:
 		/**
 		 * Is this a supported Kreon drive?

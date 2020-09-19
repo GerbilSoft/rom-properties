@@ -30,8 +30,9 @@ public:
 
 class AtaIdentifyDevice {
 	LibRpFile::RpFile *const file;
+	const bool packet;
 public:
-	explicit AtaIdentifyDevice(LibRpFile::RpFile *file);
+	explicit AtaIdentifyDevice(LibRpFile::RpFile *file, bool packet = false);
 	friend std::ostream& operator<<(std::ostream& os, const AtaIdentifyDevice& si);
 };
 

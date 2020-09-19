@@ -156,17 +156,25 @@ std::ostream& operator<<(std::ostream& os, const ScsiInquiry& si)
 
 /** AtaIdentifyDevice **/
 
-AtaIdentifyDevice::AtaIdentifyDevice(RpFile *file)
+AtaIdentifyDevice::AtaIdentifyDevice(RpFile *file, bool packet)
 	: file(file)
+	, packet(packet)
 { }
 
 std::ostream& operator<<(std::ostream& os, const AtaIdentifyDevice& si)
 {
 	ATA_RESP_IDENTIFY_DEVICE resp;
-	int ret = si.file->ata_identify_device(&resp);
+	int ret;
+	if (si.packet) {
+		ret = si.file->ata_identify_packet_device(&resp);
+	} else {
+		ret = si.file->ata_identify_device(&resp);
+	}
+
 	if (ret != 0) {
 		// TODO: Decode the error.
-		os << "-- " << rp_sprintf(C_("rpcli", "ATA IDENTIFY DEVICE failed: %08X"), ret) << endl;
+		os << "-- " << rp_sprintf(C_("rpcli", "ATA %s failed: %08X"),
+			(si.packet ? "IDENTIFY PACKET DEVICE" : "IDENTIFY DEVICE"), ret) << endl;
 		return os;
 	}
 
@@ -175,7 +183,7 @@ std::ostream& operator<<(std::ostream& os, const AtaIdentifyDevice& si)
 	// TODO: Trim spaces?
 	// TODO: i18n?
 	StreamStateSaver state(os);
-	os << "-- ATA IDENTIFY DEVICE data for: " << si.file->filename() << endl;
+	os << "-- ATA IDENTIFY " << (si.packet ? "PACKET " : "") << "DEVICE data for: " << si.file->filename() << endl;
 	os << "Model number:          " << latin1_to_utf8(resp.model_number, sizeof(resp.model_number)) << endl;
 	os << "Firmware version:      " << latin1_to_utf8(resp.firmware_revision, sizeof(resp.firmware_revision)) << endl;
 	os << "Serial number:         " << latin1_to_utf8(resp.serial_number, sizeof(resp.serial_number)) << endl;

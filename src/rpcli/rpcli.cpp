@@ -287,8 +287,9 @@ static void DoScsiInquiry(const char *filename, bool json)
  * Run an ATA IDENTIFY DEVICE command on a device.
  * @param filename Device filename
  * @param json Is program running in json mode?
+ * @param packet If true, use ATA IDENTIFY PACKET.
  */
-static void DoAtaIdentifyDevice(const char *filename, bool json)
+static void DoAtaIdentifyDevice(const char *filename, bool json, bool packet)
 {
 	cerr << "== " << rp_sprintf(C_("rpcli", "Opening device file '%s'..."), filename) << endl;
 	RpFile *const file = new RpFile(filename, RpFile::FM_OPEN_READ_GZ);
@@ -300,7 +301,7 @@ static void DoAtaIdentifyDevice(const char *filename, bool json)
 				// TODO: JSONAtaIdentifyDevice
 				//cout << JSONAtaIdentifyDevice(file) << endl;
 			} else {
-				cout << AtaIdentifyDevice(file) << endl;
+				cout << AtaIdentifyDevice(file, packet) << endl;
 			}
 		} else {
 			cerr << "-- " << C_("rpcli", "Not a device file") << endl;
@@ -359,6 +360,7 @@ int RP_C_API main(int argc, char *argv[])
 		cerr << C_("rpcli", "Special options for devices:") << endl;
 		cerr << "  -is:   " << C_("rpcli", "Run a SCSI INQUIRY command.") << endl;
 		cerr << "  -ia:   " << C_("rpcli", "Run an ATA IDENTIFY DEVICE command.") << endl;
+		cerr << "  -ip:   " << C_("rpcli", "Run an ATA IDENTIFY PACKET DEVICE command.") << endl;
 		cerr << endl;
 #endif /* RP_OS_SCSI_SUPPORTED */
 		cerr << C_("rpcli", "Examples:") << endl;
@@ -383,6 +385,7 @@ int RP_C_API main(int argc, char *argv[])
 #ifdef RP_OS_SCSI_SUPPORTED
 	bool inq_scsi = false;
 	bool inq_ata = false;
+	bool inq_ata_packet = false;
 #endif /* RP_OS_SCSI_SUPPORTED */
 	uint32_t languageCode = 0;
 	bool first = true;
@@ -459,12 +462,26 @@ int RP_C_API main(int argc, char *argv[])
 #ifdef RP_OS_SCSI_SUPPORTED
 			case 'i':
 				// These commands take precedence over the usual rpcli functionality.
-				if (argv[i][2] == 's') {
-					// SCSI INQUIRY command.
-					inq_scsi = true;
-				} else if (argv[i][2] == 'a') {
-					// ATA IDENTIFY DEVICE command.
-					inq_ata = true;
+				switch (argv[i][2]) {
+					case 's':
+						// SCSI INQUIRY command.
+						inq_scsi = true;
+						break;
+					case 'a':
+						// ATA IDENTIFY DEVICE command.
+						inq_ata = true;
+						break;
+					case 'p':
+						// ATA IDENTIFY PACKET DEVICE command.
+						inq_ata_packet = true;
+						break;
+					default:
+						if (argv[i][2] == '\0') {
+							cerr << C_("rpcli", "Warning: no inquiry request specified for '-i'") << endl;
+						} else {
+							cerr << rp_sprintf(C_("rpcli", "Warning: skipping unknown inquiry request '%c'"), argv[i][2]) << endl;
+						}
+						break;
 				}
 				break;
 #endif /* RP_OS_SCSI_SUPPORTED */
@@ -483,7 +500,10 @@ int RP_C_API main(int argc, char *argv[])
 				DoScsiInquiry(argv[i], json);
 			} else if (inq_ata) {
 				// ATA IDENTIFY DEVICE command.
-				DoAtaIdentifyDevice(argv[i], json);
+				DoAtaIdentifyDevice(argv[i], json, false);
+			} else if (inq_ata_packet) {
+				// ATA IDENTIFY PACKET DEVICE command.
+				DoAtaIdentifyDevice(argv[i], json, true);
 			} else
 #endif /* RP_OS_SCSI_SUPPORTED */
 			{
@@ -494,6 +514,7 @@ int RP_C_API main(int argc, char *argv[])
 #ifdef RP_OS_SCSI_SUPPORTED
 			inq_scsi = false;
 			inq_ata = false;
+			inq_ata_packet = false;
 #endif /* RP_OS_SCSI_SUPPORTED */
 			extract.clear();
 		}

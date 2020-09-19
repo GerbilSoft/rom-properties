@@ -535,6 +535,27 @@ int RpFile::scsi_inquiry(SCSI_RESP_INQUIRY_STD *pResp)
  */
 int RpFile::ata_identify_device(ATA_RESP_IDENTIFY_DEVICE *pResp)
 {
+	return ata_identify_device_int(pResp, false);
+}
+
+/**
+ * ATA IDENTIFY PACKET DEVICE command. (via SCSI-ATA pass-through)
+ * @param pResp Response buffer.
+ * @return 0 on success, positive for SCSI sense key, negative for POSIX error code.
+ */
+int RpFile::ata_identify_packet_device(ATA_RESP_IDENTIFY_DEVICE *pResp)
+{
+	return ata_identify_device_int(pResp, true);
+}
+
+/**
+ * ATA IDENTIFY (PACKET) DEVICE command. (internal function)
+ * @param pResp Response buffer.
+ * @param packet True for IDENTIFY PACKET DEVICE; false for IDENTIFY DEVICE.
+ * @return 0 on success, positive for SCSI sense key, negative for POSIX error code.
+ */
+int RpFile::ata_identify_device_int(struct _ATA_RESP_IDENTIFY_DEVICE *pResp, bool packet)
+{
 	// NOTE: Using ATA PASS THROUGH(16) instead of ATA PASS THROUGH(12)
 	// because the 12-byte version has the same OpCode as MMC BLANK.
 	SCSI_CDB_ATA_PASS_THROUGH_16 cdb;
@@ -551,7 +572,7 @@ int RpFile::ata_identify_device(ATA_RESP_IDENTIFY_DEVICE *pResp)
 	cdb.ata.LBA_mid = 0;
 	cdb.ata.LBA_high = 0;
 	cdb.ata.Device = 0;
-	cdb.ata.Command = ATA_CMD_IDENTIFY_DEVICE;
+	cdb.ata.Command = (packet ? ATA_CMD_IDENTIFY_PACKET_DEVICE : ATA_CMD_IDENTIFY_DEVICE);
 	cdb.Control = 0;
 
 	RP_D(RpFile);
