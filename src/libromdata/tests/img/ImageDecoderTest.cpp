@@ -1546,9 +1546,10 @@ INSTANTIATE_TEST_SUITE_P(PowerVR3, ImageDecoderTest,
 		//PowerVR3_IMAGE_TEST("brdfLUT"),				// TODO: R16fG16f
 		//PowerVR3_IMAGE_TEST("GnomeHorde-bigMushroom_texture"),	// FIXME: Failing (PVRTC-I 4bpp RGB)
 		//PowerVR3_IMAGE_TEST("GnomeHorde-fern"),			// FIXME: Failing (PVRTC-I 4bpp RGBA)
-		PowerVR3_IMAGE_TEST("Navigation3D-font")
+		PowerVR3_IMAGE_TEST("Navigation3D-font"),
 		//PowerVR3_IMAGE_TEST("Navigation3D-Road"),			// FIXME: Failing (LA88)
-		//PowerVR3_IMAGE_TEST("Satyr-Table"))				// FIXME: Failing (RGBA8888)
+		//PowerVR3_IMAGE_TEST("Satyr-Table"),				// FIXME: Failing (RGBA8888)
+		PowerVR3_IMAGE_TEST("text-fri")					// 32x16, caused rp_image::flip(FLIP_V) to break
 		)
 	, ImageDecoderTest::test_case_suffix_generator);
 #endif /* ENABLE_PVRTC */

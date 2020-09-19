@@ -581,7 +581,7 @@ rp_image *rp_image::flip(FlipOp op) const
 	RP_D(const rp_image);
 	rp_image_backend *const backend = d->backend;
 
-	const int width = backend->height;
+	const int width = backend->width;
 	const int height = backend->height;
 	assert(width > 0 && height > 0);
 	if (width <= 0 || height <= 0) {
