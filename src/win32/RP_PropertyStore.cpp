@@ -283,12 +283,11 @@ IFACEMETHODIMP RP_PropertyStore::Initialize(IStream *pstream, DWORD grfMode)
 		// and Ix should only accept PropertyType::Integer.
 		PROPVARIANT prop_var;
 		switch (conv.vtype) {
-			case VT_UI8: {
+			case VT_UI8:
 				// FIXME: 64-bit values?
 				assert(prop->type == PropertyType::Integer || prop->type == PropertyType::UnsignedInteger);
 				if (prop->type != PropertyType::Integer && prop->type != PropertyType::UnsignedInteger)
 					continue;
-
 				// NOTE: Converting duration from ms to 100ns.
 				if (prop->name == LibRpBase::Property::Duration) {
 					uint64_t duration_100ns = static_cast<uint64_t>(prop->data.uvalue) * 10000ULL;
@@ -300,12 +299,10 @@ IFACEMETHODIMP RP_PropertyStore::Initialize(IStream *pstream, DWORD grfMode)
 				d->prop_key.emplace_back(conv.pkey);
 				d->prop_val.emplace_back(prop_var);
 				break;
-			}
 			case VT_UI4:
 				assert(prop->type == PropertyType::Integer || prop->type == PropertyType::UnsignedInteger);
 				if (prop->type != PropertyType::Integer && prop->type != PropertyType::UnsignedInteger)
 					continue;
-
 				InitPropVariantFromUInt32(static_cast<uint32_t>(prop->data.uvalue), &prop_var);
 				d->prop_key.emplace_back(conv.pkey);
 				d->prop_val.emplace_back(prop_var);
@@ -328,7 +325,6 @@ IFACEMETHODIMP RP_PropertyStore::Initialize(IStream *pstream, DWORD grfMode)
 				assert(prop->type == PropertyType::Integer || prop->type == PropertyType::UnsignedInteger);
 				if (prop->type != PropertyType::Integer && prop->type != PropertyType::UnsignedInteger)
 					continue;
-
 				InitPropVariantFromUInt16(static_cast<uint16_t>(prop->data.uvalue), &prop_var);
 				d->prop_key.emplace_back(conv.pkey);
 				d->prop_val.emplace_back(prop_var);
@@ -343,22 +339,19 @@ IFACEMETHODIMP RP_PropertyStore::Initialize(IStream *pstream, DWORD grfMode)
 				d->prop_val.emplace_back(prop_var);
 				break;
 
-			case VT_I8: {
+			case VT_I8:
 				// FIXME: 64-bit values?
 				assert(prop->type == PropertyType::Integer || prop->type == PropertyType::UnsignedInteger);
 				if (prop->type != PropertyType::Integer && prop->type != PropertyType::UnsignedInteger)
 					continue;
-
 				InitPropVariantFromInt64(static_cast<int64_t>(prop->data.ivalue), &prop_var);
 				d->prop_key.emplace_back(conv.pkey);
 				d->prop_val.emplace_back(prop_var);
 				break;
-			}
 			case VT_I4:
 				assert(prop->type == PropertyType::Integer || prop->type == PropertyType::UnsignedInteger);
 				if (prop->type != PropertyType::Integer && prop->type != PropertyType::UnsignedInteger)
 					continue;
-
 				InitPropVariantFromInt32(static_cast<int32_t>(prop->data.ivalue), &prop_var);
 				d->prop_key.emplace_back(conv.pkey);
 				d->prop_val.emplace_back(prop_var);
@@ -367,7 +360,6 @@ IFACEMETHODIMP RP_PropertyStore::Initialize(IStream *pstream, DWORD grfMode)
 				assert(prop->type == PropertyType::Integer || prop->type == PropertyType::UnsignedInteger);
 				if (prop->type != PropertyType::Integer && prop->type != PropertyType::UnsignedInteger)
 					continue;
-
 				InitPropVariantFromInt16(static_cast<int16_t>(prop->data.ivalue), &prop_var);
 				d->prop_key.emplace_back(conv.pkey);
 				d->prop_val.emplace_back(prop_var);
@@ -376,7 +368,6 @@ IFACEMETHODIMP RP_PropertyStore::Initialize(IStream *pstream, DWORD grfMode)
 				assert(prop->type == PropertyType::Integer || prop->type == PropertyType::UnsignedInteger);
 				if (prop->type != PropertyType::Integer && prop->type != PropertyType::UnsignedInteger)
 					continue;
-
 				InitPropVariantFromInt8(static_cast<int8_t>(prop->data.ivalue), &prop_var);
 				d->prop_key.emplace_back(conv.pkey);
 				d->prop_val.emplace_back(prop_var);
@@ -398,7 +389,6 @@ IFACEMETHODIMP RP_PropertyStore::Initialize(IStream *pstream, DWORD grfMode)
 				assert(prop->type == PropertyType::String);
 				if (prop->type != PropertyType::String)
 					continue;
-
 				const wstring wstr = (prop->data.str ? U82W_s(*prop->data.str) : L"");
 				const wchar_t *vstr[] = {wstr.c_str()};
 				InitPropVariantFromStringVector(vstr, 1, &prop_var);
@@ -411,7 +401,6 @@ IFACEMETHODIMP RP_PropertyStore::Initialize(IStream *pstream, DWORD grfMode)
 				assert(prop->type == PropertyType::Timestamp);
 				if (prop->type != PropertyType::Timestamp)
 					continue;
-
 				// Date is stored as Unix time.
 				// Convert to FILETIME, then to VT_DATE.
 				// TODO: Verify timezone handling.
