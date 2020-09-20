@@ -175,7 +175,7 @@ IFACEMETHODIMP RP_ExtractIcon::GetIconLocation(UINT uFlags,
 	//
 	// TODO: Implement our own icon caching?
 	// TODO: Set pszIconFile[] and piIndex to something else?
-	pszIconFile[0] = 0;
+	pszIconFile[0] = L'\0';
 	*piIndex = 0;
 	*pwFlags = GIL_NOTFILENAME | GIL_DONTCACHE;
 	return S_OK;
