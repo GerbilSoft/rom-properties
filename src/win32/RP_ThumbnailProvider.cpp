@@ -95,15 +95,8 @@ IFACEMETHODIMP RP_ThumbnailProvider::Initialize(IStream *pstream, DWORD grfMode)
 	}
 
 	RP_D(RP_ThumbnailProvider);
-	if (d->file) {
-		// unref() the old file first.
-		IRpFile *const old_file = d->file;
-		d->file = file;
-		old_file->unref();
-	} else {
-		// No old file to unref().
-		d->file = file;
-	}
+	UNREF(d->file);
+	d->file = file;
 
 	// Save the IStream and grfMode.
 	d->pstream = pstream;
