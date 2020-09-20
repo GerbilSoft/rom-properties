@@ -10,19 +10,20 @@ video game ROM and disc images.
 [![Total alerts](https://img.shields.io/lgtm/alerts/g/GerbilSoft/rom-properties.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/GerbilSoft/rom-properties/alerts/)
 [![Language grade: C/C++](https://img.shields.io/lgtm/grade/cpp/g/GerbilSoft/rom-properties.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/GerbilSoft/rom-properties/context:cpp)
 
-## v1.6
+## v1.7
 
-This release adds a ton of new features, including a new online image database for Game Boy, Game Boy Color, Game Boy Advance, and Super NES title screens:
+This release adds a ton of new features, including "ROM operations", 3DS sighax
+detection, and support for PlayStation Portable disc images:
 
-![ROM images using title screens from the new online title screen database](doc/img/v1.6/rp.kde5.rpdb.png)
+![PlayStation Portable disc image](doc/img/v1.7/rp.kde5.PSP.png)
 
-Other new parsers in this release include PlayStation 1 and 2 disc images, and PlayStation 1 executable files.
-
-On Linux systems, the GTK+ 3.x UI frontends were all merged together into a single shared library. This reduces the number of packages, and it allows for non-default combinations of file browser and distribution, e.g. Thunar 1.8 on Ubuntu 18.04. (Linux Mint 19.3 uses this setup.)
+Other improvements in this release include several file handle leak fixes,
+addition of a vertical scrollbar on Windows property pages if needed, and
+improved ROM image detection for several supported formats.
 
 Translators needed; file an issue if you'd like to get started on a new translation, or submit a Pull Request if you have a translation ready to go.
 
-See [`NEWS.md`](NEWS.md) for a full list of changes in v1.6.
+See [`NEWS.md`](NEWS.md) for a full list of changes in v1.7.
 
 ## Feedback
 
@@ -36,13 +37,16 @@ Or use the Mibbit Web IRC client: http://mibbit.com/?server=irc.badnik.zone&chan
 
 Currently, the ROM Properties Page shell extension is compatible with the
 following platforms:
-* KDE 4.x
 * KDE Frameworks 5.x
 * XFCE (GTK+ 2.x)
 * GNOME and Unity (GTK+ 3.x)
 * MATE Desktop (1.18+; GTK+ 3.x)
 * Cinnamon Desktop
-* Windows XP (and later)
+* Windows 7 (and later)
+
+The following platforms are still compatible, but may not receive as much support:
+* KDE 4.x
+* Windows XP, Windows Vista
 
 On Windows, you will need the MSVC 2015-2019 runtime:
 * 32-bit: https://aka.ms/vs/16/release/vc_redist.x86.exe
@@ -53,8 +57,7 @@ For instructions on compiling from source, see doc/COMPILING.md .
 ### Linux
 
 Install the relevant .deb package, depending on what desktop environment you
-are using and what your CPU is. Note that you may want to install the KDE4
-package even if using KDE5, since many KDE programs still use the 4.x libraries.
+are using and what your CPU is.
 
 After installing, the plugin needs to be enabled in the Dolphin file browser:
 * Close all instances of Dolphin.
@@ -355,3 +358,6 @@ https://github.com/GerbilSoft/rom-properties/issues
   technical information, including XPR pixel formats.
 * [iQueBrew](http://www.iquebrew.org/index.php?title=Main_Page) for iQue Player
   technical information.
+* [maxcso](https://github.com/unknownbrackets/maxcso) for documentation on the
+  compressed formats used by unofficial Sony PlayStation Portable disc image
+  loaders.
