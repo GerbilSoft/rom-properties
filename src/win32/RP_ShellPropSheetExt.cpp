@@ -2936,6 +2936,15 @@ void RP_ShellPropSheetExt_Private::initDialog(void)
 		si.nPage = dlgSize.cy;
 		si.nPos = 0;
 		SetScrollInfo(tab.hDlg, SB_VERT, &si, TRUE);
+
+		// HScroll bar
+		// NOTE: ReactOS 0.4.13 is showing an HScroll bar, even though
+		// the child dialog doesn't have WS_HSCROLL set.
+		si.nMin = 0;
+		si.nMax = 1;
+		si.nPage = 2;
+		si.nPos = 0;
+		SetScrollInfo(tab.hDlg, SB_HORZ, &si, TRUE);
 	}
 
 	// Initial update of RFT_MULTI_STRING fields.
