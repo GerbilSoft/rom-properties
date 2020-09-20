@@ -5,7 +5,7 @@ CD /D "%~dp0"
 :: Packaging script for rom-properties, Windows version.
 :: Requires the following:
 :: - CMake 3.0.0 or later
-:: - MSVC 2010, 2012, 2013, 2015, or 2017 with 32-bit and 64-bit compilers
+:: - MSVC 2012, 2013, 2015, or 2017 with 32-bit and 64-bit compilers
 :: - Windows 7 SDK
 :: - zip.exe and unzip.exe in %PATH%
 ::
@@ -46,13 +46,6 @@ SET MSVC_VERSION=
 SET MSVC_YEAR=
 SET CMAKE_GENERATOR=
 SET CMAKE_TOOLSET=
-IF EXIST "%PRGFILES%\Microsoft Visual Studio 10.0\VC\bin\cl.exe" (
-	SET "MSVC_DIR=%PRGFILES%\Microsoft Visual Studio 10.0"
-	SET MSVC_VERSION=10.0
-	SET MSVC_YEAR=2010
-	SET "CMAKE_GENERATOR=10 2010"
-	SET CMAKE_TOOLSET=v100
-)
 IF EXIST "%PRGFILES%\Microsoft Visual Studio 11.0\VC\bin\cl.exe" (
 	SET "MSVC_DIR=%PRGFILES%\Microsoft Visual Studio 11.0"
 	SET MSVC_VERSION=11.0
@@ -98,7 +91,7 @@ IF EXIST "%PRGFILES%\Microsoft Visual Studio\2017\Enterprise\VC\Tools\MSVC\14.16
 
 IF "%CMAKE_GENERATOR%" == "" (
 	ECHO *** ERROR: Supported version of MSVC was not found.
-	ECHO Supported versions: 2010, 2012, 2013, 2015, 2017
+	ECHO Supported versions: 2012, 2013, 2015, 2017
 	PAUSE
 	EXIT /B 1
 )
