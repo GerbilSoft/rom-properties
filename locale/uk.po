@@ -26,7 +26,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rom-properties 1.6.1+\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
-"POT-Creation-Date: 2020-09-19 23:39-0400\n"
+"POT-Creation-Date: 2020-09-20 15:12-0400\n"
 "PO-Revision-Date: 2018-04-13 04:36+0200\n"
 "Last-Translator: Egor <egor@opensrc.club>\n"
 "Language-Team: none\n"
@@ -242,7 +242,7 @@ msgstr ""
 #: ../src/gtk/gtk3/RpNautilusProvider.cpp:130
 #: ../src/gtk/gtk3/RpThunarProvider.cpp:113
 #: ../src/kde/RomPropertiesDialogPlugin.cpp:62
-#: ../src/win32/RP_ShellPropSheetExt.cpp:3627
+#: ../src/win32/RP_ShellPropSheetExt.cpp:3636
 msgctxt "RomDataView"
 msgid "ROM Properties"
 msgstr ""
@@ -285,31 +285,31 @@ msgstr ""
 
 #. tr: "Options" button.
 #: ../src/gtk/RomDataView.cpp:1753 ../src/kde/RomDataView.cpp:372
-#: ../src/win32/RP_ShellPropSheetExt.cpp:3389
+#: ../src/win32/RP_ShellPropSheetExt.cpp:3398
 msgctxt "RomDataView"
 msgid "Op&tions"
 msgstr ""
 
 #: ../src/gtk/RomDataView.cpp:1840 ../src/kde/RomDataView.cpp:410
-#: ../src/win32/RP_ShellPropSheetExt.cpp:3431
+#: ../src/win32/RP_ShellPropSheetExt.cpp:3440
 msgctxt "RomDataView|Options"
 msgid "Export to Text..."
 msgstr ""
 
 #: ../src/gtk/RomDataView.cpp:1841 ../src/kde/RomDataView.cpp:411
-#: ../src/win32/RP_ShellPropSheetExt.cpp:3432
+#: ../src/win32/RP_ShellPropSheetExt.cpp:3441
 msgctxt "RomDataView|Options"
 msgid "Export to JSON..."
 msgstr ""
 
 #: ../src/gtk/RomDataView.cpp:1842 ../src/kde/RomDataView.cpp:412
-#: ../src/win32/RP_ShellPropSheetExt.cpp:3433
+#: ../src/win32/RP_ShellPropSheetExt.cpp:3442
 msgctxt "RomDataView|Options"
 msgid "Copy as Text"
 msgstr ""
 
 #: ../src/gtk/RomDataView.cpp:1843 ../src/kde/RomDataView.cpp:413
-#: ../src/win32/RP_ShellPropSheetExt.cpp:3434
+#: ../src/win32/RP_ShellPropSheetExt.cpp:3443
 msgctxt "RomDataView|Options"
 msgid "Copy as JSON"
 msgstr ""
@@ -323,27 +323,27 @@ msgid "%s:"
 msgstr ""
 
 #: ../src/gtk/RomDataView.cpp:2579 ../src/kde/RomDataView.cpp:1831
-#: ../src/win32/RP_ShellPropSheetExt.cpp:3022
+#: ../src/win32/RP_ShellPropSheetExt.cpp:3031
 msgctxt "RomDataView"
 msgid "Export to Text File"
 msgstr ""
 
 #. tr: Text files filter. (RP format)
 #: ../src/gtk/RomDataView.cpp:2582 ../src/kde/RomDataView.cpp:1834
-#: ../src/win32/RP_ShellPropSheetExt.cpp:3025
+#: ../src/win32/RP_ShellPropSheetExt.cpp:3034
 msgctxt "RomDataView"
 msgid "Text Files|*.txt|text/plain|All Files|*.*|-"
 msgstr ""
 
 #: ../src/gtk/RomDataView.cpp:2586 ../src/kde/RomDataView.cpp:1838
-#: ../src/win32/RP_ShellPropSheetExt.cpp:3029
+#: ../src/win32/RP_ShellPropSheetExt.cpp:3038
 msgctxt "RomDataView"
 msgid "Export to JSON File"
 msgstr ""
 
 #. tr: JSON files filter. (RP format)
 #: ../src/gtk/RomDataView.cpp:2589 ../src/kde/RomDataView.cpp:1841
-#: ../src/win32/RP_ShellPropSheetExt.cpp:3032
+#: ../src/win32/RP_ShellPropSheetExt.cpp:3041
 msgctxt "RomDataView"
 msgid "JSON Files|*.json|application/json|All Files|*.*|-"
 msgstr ""
@@ -358,8 +358,8 @@ msgstr ""
 
 #: ../src/gtk/RomDataView.cpp:2668 ../src/gtk/RomDataView.cpp:2680
 #: ../src/kde/RomDataView.cpp:1882 ../src/kde/RomDataView.cpp:1894
-#: ../src/win32/RP_ShellPropSheetExt.cpp:3108
-#: ../src/win32/RP_ShellPropSheetExt.cpp:3124
+#: ../src/win32/RP_ShellPropSheetExt.cpp:3117
+#: ../src/win32/RP_ShellPropSheetExt.cpp:3133
 #, c-format
 msgctxt "RomDataView"
 msgid "File: '%s'"
@@ -8632,13 +8632,13 @@ msgid "Systems"
 msgstr ""
 
 #. tr: "All Files" filter (RP format)
-#: ../src/win32/RP_ShellPropSheetExt.cpp:3186
+#: ../src/win32/RP_ShellPropSheetExt.cpp:3195
 msgctxt "RomData"
 msgid "All Files|*.*|-"
 msgstr ""
 
 #. tr: "Options" button. (WinXP version, with ellipsis.)
-#: ../src/win32/RP_ShellPropSheetExt.cpp:3395
+#: ../src/win32/RP_ShellPropSheetExt.cpp:3404
 msgctxt "RomDataView"
 msgid "Op&tions..."
 msgstr ""
