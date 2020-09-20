@@ -1,5 +1,7 @@
 # Changes
 
+## v1.8 (released 2020/??/??)
+
 ## v1.7 (released 2020/09/19)
 
 * New features:
