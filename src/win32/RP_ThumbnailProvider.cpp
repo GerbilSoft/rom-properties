@@ -117,7 +117,6 @@ IFACEMETHODIMP RP_ThumbnailProvider::GetThumbnail(UINT cx, HBITMAP *phbmp, WTS_A
 		return E_INVALIDARG;
 	}
 	*phbmp = nullptr;
-	*pdwAlpha = WTSAT_ARGB;
 
 	CreateThumbnail::GetThumbnailOutParams_t outParams;
 	outParams.retImg = nullptr;
@@ -129,6 +128,8 @@ IFACEMETHODIMP RP_ThumbnailProvider::GetThumbnail(UINT cx, HBITMAP *phbmp, WTS_A
 		}
 		return d->Fallback(cx, phbmp, pdwAlpha);
 	}
+
 	*phbmp = outParams.retImg;
+	*pdwAlpha = (outParams.sBIT.alpha > 0 ? WTSAT_ARGB : WTSAT_RGB);
 	return S_OK;
 }
