@@ -13,7 +13,9 @@ IF(NOT USE_INTERNAL_ZSTD)
 	ENDIF()
 
 	# Check for ZSTD.
-	FIND_PACKAGE(ZSTD)
+	# zstd-1.4.0 is required by minizip-2.10.0 because it uses
+	# ZSTD_compressStream2() and ZSTD_EndDirective.
+	FIND_PACKAGE(ZSTD 1.4.0)
 	IF(ZSTD_FOUND)
 		# Found system ZSTD.
 		SET(HAVE_ZSTD 1)
