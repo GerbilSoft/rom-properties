@@ -32,7 +32,6 @@ Build-Depends:
  libnemo-extension-dev,
  libbsd-dev,
  gettext,
- libzstd1-dev | libzstd-dev,
  liblz4-dev,
  liblzo2-dev,
  libcanberra-dev,

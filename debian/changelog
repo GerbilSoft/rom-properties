@@ -1,3 +1,11 @@
+rom-properties (1.7-1ppa1~xenial2) xenial; urgency=medium
+
+  * MiniZip 2.10.0 requires zstd-1.4.0. Use the internal copy of zstd.
+    Note that MiniZip is not currently used outside of test suites,
+    so this won't be installed as part of the package.
+
+ -- David Korth <gerbilsoft@gerbilsoft.com>  Sun, 20 Sep 2020 16:48:00 -0400
+
 rom-properties (1.7-1ppa1~xenial1) xenial; urgency=medium
 
   * 1.7 release.
