@@ -144,10 +144,10 @@ static inline HRESULT InitPropVariantFromUInt8(_In_ UCHAR uiVal, _Out_ PROPVARIA
 	ppropvar->bVal = uiVal;
 	return S_OK;
 }
-static inline HRESULT InitPropVariantFromInt8(_In_ UCHAR iVal, _Out_ PROPVARIANT *ppropvar)
+static inline HRESULT InitPropVariantFromInt8(_In_ CHAR iVal, _Out_ PROPVARIANT *ppropvar)
 {
 	ppropvar->vt = VT_I1;
-	ppropvar->bVal = iVal;
+	ppropvar->cVal = iVal;
 	return S_OK;
 }
 
