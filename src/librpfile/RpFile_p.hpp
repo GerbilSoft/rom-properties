@@ -29,31 +29,32 @@ using std::vector;
     (ZLIB_VER_MAJOR == 1 && ZLIB_VER_MINOR == 2 && ZLIB_VER_REVISION >= 4)
 // zlib-1.2.4 or later
 #else
-# define gzclose_r(file) gzclose(file)
-# define gzclose_w(file) gzclose(file)
+#  define gzclose_r(file) gzclose(file)
+#  define gzclose_w(file) gzclose(file)
 #endif
 
 #ifdef _WIN32
 // Windows SDK
-# include <windows.h>
-# include <winioctl.h>
-# include <io.h>
+#  include <windows.h>
+#  include <winioctl.h>
+#  include <io.h>
 #else /* !_WIN32 */
 // C includes. (C++ namespace)
-# include <cstdio>
+#  include <cstdio>
 #endif /* _WIN32 */
 
 // Windows uses INVALID_HANDLE_VALUE for invalid handles.
 // Other systems generally use nullptr.
 #ifndef _WIN32
-# define INVALID_HANDLE_VALUE nullptr
+#  define INVALID_HANDLE_VALUE nullptr
 #endif
 
 #ifdef RP_OS_SCSI_SUPPORTED
 // OS-specific headers for DeviceInfo.
-# if defined(__FreeBSD__) || defined(__DragonFly__)
-#  include <camlib.h>
-# endif /* __FreeBSD__ || __DragonFly__ */
+#  if defined(__FreeBSD__) || defined(__DragonFly__)
+#    define USING_FREEBSD_CAMLIB 1
+#    include <camlib.h>
+#  endif /* __FreeBSD__ || __DragonFly__ */
 #endif /* RP_OS_SCSI_SUPPORTED */
 
 namespace LibRpFile {
@@ -67,17 +68,15 @@ class RpFilePrivate
 		// to work around C2864 on MSVC.
 #ifdef _WIN32
 		typedef HANDLE FILE_TYPE;
-# define FILE_INIT INVALID_HANDLE_VALUE
 #else /* !_WIN32 */
 		typedef FILE *FILE_TYPE;
-# define FILE_INIT nullptr
 #endif /* _WIN32 */
 
 		RpFilePrivate(RpFile *q, const char *filename, RpFile::FileMode mode)
-			: q_ptr(q), file(FILE_INIT), filename(filename)
+			: q_ptr(q), file(INVALID_HANDLE_VALUE), filename(filename)
 			, mode(mode), gzfd(nullptr), gzsz(-1), devInfo(nullptr) { }
 		RpFilePrivate(RpFile *q, const string &filename, RpFile::FileMode mode)
-			: q_ptr(q), file(FILE_INIT), filename(filename)
+			: q_ptr(q), file(INVALID_HANDLE_VALUE), filename(filename)
 			, mode(mode), gzfd(nullptr), gzsz(-1), devInfo(nullptr) { }
 		~RpFilePrivate();
 
@@ -106,12 +105,10 @@ class RpFilePrivate
 			uint8_t *sector_cache;	// Sector cache.
 			uint32_t lba_cache;	// Last LBA cached.
 
-#ifdef RP_OS_SCSI_SUPPORTED
-			// OS-specific buffers.
-# if defined(__FreeBSD__) || defined(__DragonFly__)
+			// OS-specific variables.
+#ifdef USING_FREEBSD_CAMLIB
 			struct cam_device *cam;
-# endif /* __FreeBSD__ || __DragonFly__ */
-#endif /* RP_OS_SCSI_SUPPORTED */
+#endif /* USING_FREEBSD_CAMLIB */
 
 			DeviceInfo()
 				: device_pos(0)
@@ -120,24 +117,19 @@ class RpFilePrivate
 				, isKreonUnlocked(0)
 				, sector_cache(nullptr)
 				, lba_cache(~0U)
-			{
-#ifdef RP_OS_SCSI_SUPPORTED
-# if defined(__FreeBSD__) || defined(__DragonFly__)
-				cam = nullptr;
-# endif /* __FreeBSD__ || __DragonFly__ */
-#endif /* RP_OS_SCSI_SUPPORTED */
-			}
+#ifdef USING_FREEBSD_CAMLIB
+				, cam(nullptr)
+#endif /* USING_FREEBSD_CAMLIB */
+			{ }
 
 			~DeviceInfo()
 			{
 				delete[] sector_cache;
-#ifdef RP_OS_SCSI_SUPPORTED
-# if defined(__FreeBSD__) || defined(__DragonFly__)
+#ifdef USING_FREEBSD_CAMLIB
 				if (cam) {
 					cam_close_device(cam);
 				}
-# endif /* __FreeBSD__ || __DragonFly__ */
-#endif /* RP_OS_SCSI_SUPPORTED */
+#endif /* USING_FREEBSD_CAMLIB */
 			}
 
 			void alloc_sector_cache(void)
@@ -156,14 +148,12 @@ class RpFilePrivate
 				delete[] sector_cache;
 				sector_cache = nullptr;
 
-#ifdef RP_OS_SCSI_SUPPORTED
-# if defined(__FreeBSD__) || defined(__DragonFly__)
+#ifdef USING_FREEBSD_CAMLIB
 				if (cam) {
 					cam_close_device(cam);
 					cam = nullptr;
 				}
-# endif /* __FreeBSD__ || __DragonFly__ */
-#endif /* RP_OS_SCSI_SUPPORTED */
+#endif /* USING_FREEBSD_CAMLIB */
 			}
 		};
 
@@ -179,6 +169,9 @@ class RpFilePrivate
 		 * @param pdwCreationDisposition	[out] dwCreationDisposition
 		 * @return 0 on success; non-zero on error.
 		 */
+		ATTR_ACCESS(write_only, 2)
+		ATTR_ACCESS(write_only, 3)
+		ATTR_ACCESS(write_only, 4)
 		static inline int mode_to_win32(RpFile::FileMode mode,
 			DWORD *pdwDesiredAccess,
 			DWORD *pdwShareMode,
@@ -238,6 +231,7 @@ class RpFilePrivate
 		 * @return 0 on success, positive for SCSI sense key, negative for POSIX error code.
 		 */
 		ATTR_ACCESS_SIZE(read_only, 2, 3)
+		ATTR_ACCESS_SIZE(read_write, 4, 5)
 		int scsi_send_cdb(const void *cdb, uint8_t cdb_len,
 			void *data, size_t data_len,
 			ScsiDirection direction);
@@ -248,6 +242,8 @@ class RpFilePrivate
 		 * @param pSectorSize	[out,opt] If not NULL, retrieves the sector size, in bytes.
 		 * @return 0 on success, positive for SCSI sense key, negative for POSIX error code.
 		 */
+		ATTR_ACCESS(write_only, 2)
+		ATTR_ACCESS(write_only, 3)
 		int scsi_read_capacity(off64_t *pDeviceSize, uint32_t *pSectorSize = nullptr);
 
 		/**
