@@ -241,6 +241,31 @@ if(NOT LZ4_BUNDLED_MODE)
   endif(UNIX)
 endif(NOT LZ4_BUNDLED_MODE)
 
+# rom-properties: Install the LZ4 shared library in the package.
+IF(NOT SKIP_INSTALL_LIBRARIES)
+	INSTALL(TARGETS ${LZ4_LINK_LIBRARY}
+		#EXPORT lz4
+		RUNTIME DESTINATION "${INSTALL_BIN_DIR}"
+		#ARCHIVE DESTINATION "${INSTALL_LIB_DIR}"
+		FRAMEWORK DESTINATION "${INSTALL_LIB_DIR}")
+
+	IF(INSTALL_DEBUG AND BUILD_SHARED_LIBS)
+		# FIXME: Generator expression $<TARGET_PROPERTY:${_target},PDB> didn't work with CPack-3.6.1.
+		# TODO: Test on MinGW.
+		# FIXME: Generator PDB expression doesn't have the debug postfix for some reason,
+		# so cpack fails in debug builds if we get the PDB property.
+		INCLUDE(DirInstallPaths)
+		SET(PDB_FILENAME_D "$<TARGET_FILE_DIR:${LZ4_LINK_LIBRARY}>/lz4${CMAKE_DEBUG_POSTFIX}.pdb")
+		SET(PDB_FILENAME_R "$<TARGET_FILE_DIR:${LZ4_LINK_LIBRARY}>/lz4${CMAKE_RELEASE_POSTFIX}.pdb")
+		INSTALL(FILES "${PDB_FILENAME_D}" "${PDB_FILENAME_R}"
+			DESTINATION "${DIR_INSTALL_DLL_DEBUG}"
+			COMPONENT "debug"
+			)
+		UNSET(PDB_FILENAME_D)
+		UNSET(PDB_FILENAME_R)
+	ENDIF(INSTALL_DEBUG AND BUILD_SHARED_LIBS)
+ENDIF(NOT SKIP_INSTALL_LIBRARIES)
+
 # pkg-config
 set(PREFIX "${CMAKE_INSTALL_PREFIX}")
 

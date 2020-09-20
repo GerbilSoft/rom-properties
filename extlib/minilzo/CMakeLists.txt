@@ -11,7 +11,13 @@ IF(WIN32)
 	SET(LZO_RC_FILE minilzo-dll.rc)
 ENDIF(WIN32)
 
-ADD_LIBRARY(minilzo SHARED
+IF(BUILD_SHARED_LIBS)
+	SET(minilzo_LIB_TYPE SHARED)
+ELSE(BUILD_SHARED_LIBS)
+	SET(minilzo_LIB_TYPE STATIC)
+ENDIF(BUILD_SHARED_LIBS)
+
+ADD_LIBRARY(minilzo ${minilzo_LIB_TYPE}
 	minilzo.c minilzo.h
 	lzoconf.h lzodefs.h
 	${LZO_RC_FILE}
@@ -31,6 +37,30 @@ IF(WIN32)
 		INTERFACE "-D__LZO_EXPORT1=__declspec(dllimport)"
 		)
 ENDIF(WIN32)
+
+IF(NOT SKIP_INSTALL_LIBRARIES)
+	INSTALL(TARGETS minilzo
+		#EXPORT minilzo
+		RUNTIME DESTINATION "${INSTALL_BIN_DIR}"
+		#ARCHIVE DESTINATION "${INSTALL_LIB_DIR}"
+		FRAMEWORK DESTINATION "${INSTALL_LIB_DIR}")
+
+	IF(INSTALL_DEBUG AND BUILD_SHARED_LIBS)
+		# FIXME: Generator expression $<TARGET_PROPERTY:${_target},PDB> didn't work with CPack-3.6.1.
+		# TODO: Test on MinGW.
+		# FIXME: Generator PDB expression doesn't have the debug postfix for some reason,
+		# so cpack fails in debug builds if we get the PDB property.
+		INCLUDE(DirInstallPaths)
+		SET(PDB_FILENAME_D "$<TARGET_FILE_DIR:minilzo>/minilzo${CMAKE_DEBUG_POSTFIX}.pdb")
+		SET(PDB_FILENAME_R "$<TARGET_FILE_DIR:minilzo>/minilzo${CMAKE_RELEASE_POSTFIX}.pdb")
+		INSTALL(FILES "${PDB_FILENAME_D}" "${PDB_FILENAME_R}"
+			DESTINATION "${DIR_INSTALL_DLL_DEBUG}"
+			COMPONENT "debug"
+			)
+		UNSET(PDB_FILENAME_D)
+		UNSET(PDB_FILENAME_R)
+	ENDIF(INSTALL_DEBUG AND BUILD_SHARED_LIBS)
+ENDIF(NOT SKIP_INSTALL_LIBRARIES)
 
 # Unix: Add -fpic/-fPIC in order to use this static library in plugins.
 IF(UNIX AND NOT APPLE)
