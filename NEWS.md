@@ -1,6 +1,6 @@
 # Changes
 
-## v1.7 (released 2020/??/??)
+## v1.7 (released 2020/09/19)
 
 * New features:
   * An "Options" button is now present in the property page. The Options
