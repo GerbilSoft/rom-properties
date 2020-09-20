@@ -214,9 +214,14 @@ bool RomThumbCreator::create(const QString &path, int width, int height, QImage 
 	}
 
 	// Attempt to open the ROM file.
-	// NOTE: QUrl will truncate the filename if a '#' is present,
+	// NOTE: QUrl uses the following special characters as delimiters:
+	// - '?': query string
+	// - '#': anchor
 	// so we need to urlencode it first.
 	QString path_enc = path;
+#ifndef _WIN32
+	path_enc.replace(QChar(L'?'), QLatin1String("%3f"));
+#endif /* _WIN32 */
 	path_enc.replace(QChar(L'#'), QLatin1String("%23"));
 	QUrl path_url(path_enc);
 
