@@ -27,8 +27,10 @@ extern "C" {
 #endif
 
 // Capability bits used in the CPU type.
-#define CPU_ARCH_MASK	0xFF000000	/* mask for architecture bits */
-#define CPU_ARCH_ABI64	0x01000000	/* 64-bit ABI */
+#define CPU_ARCH_MASK		0xFF000000	/* mask for architecture bits */
+#define CPU_ARCH_ABI32		0x00000000	/* 32-bit ABI */
+#define CPU_ARCH_ABI64		0x01000000	/* 64-bit ABI */
+#define CPU_ARCH_ABI64_32	0x02000000	/* 64_32 ABI */
 
 // CPU type.
 typedef enum {
@@ -39,11 +41,14 @@ typedef enum {
 	CPU_TYPE_NS32332	= 5,
 	CPU_TYPE_MC680x0	= 6,
 	CPU_TYPE_I386		= 7,
+	CPU_TYPE_AMD64		= (CPU_TYPE_I386 | CPU_ARCH_ABI64),
 	CPU_TYPE_MIPS		= 8,
 	CPU_TYPE_NS32532	= 9,
 	CPU_TYPE_MC98000	= 10,
 	CPU_TYPE_HPPA		= 11,
 	CPU_TYPE_ARM		= 12,
+	CPU_TYPE_ARM64		= (CPU_TYPE_ARM | CPU_ARCH_ABI64),
+	CPU_TYPE_ARM64_32	= (CPU_TYPE_ARM | CPU_ARCH_ABI64_32),
 	CPU_TYPE_MC88000	= 13,
 	CPU_TYPE_SPARC		= 14,
 	CPU_TYPE_I860		= 15,

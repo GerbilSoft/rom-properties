@@ -503,18 +503,11 @@ int MachO::loadFieldData(void)
 
 		// TODO: Change addTab() behavior to set the first tab's name?
 		if (i == 0) {
-			if (s_cpu) {
-				d->fields->setTabName(i, s_cpu);
-			} else {
-				d->fields->setTabName(i,
-					rp_sprintf("0x%08X", machHeader->cputype).c_str());
-			}
+			d->fields->setTabName(i, s_cpu ? s_cpu :
+				rp_sprintf("0x%08X", machHeader->cputype).c_str());
 		} else {
-			if (s_cpu) {
-				d->fields->addTab(s_cpu);
-			} else {
-				d->fields->addTab(rp_sprintf("0x%08X", machHeader->cputype).c_str());
-			}
+			d->fields->addTab(s_cpu ? s_cpu :
+				rp_sprintf("0x%08X", machHeader->cputype).c_str());
 		}
 
 		// Executable format.
@@ -533,8 +526,7 @@ int MachO::loadFieldData(void)
 		} else {
 			// TODO: Show individual values.
 			// NOTE: This shouldn't happen...
-			d->fields->addField_string(format_title,
-				C_("RomData", "Unknown"));
+			d->fields->addField_string(format_title, C_("RomData", "Unknown"));
 		}
 
 		// CPU type.

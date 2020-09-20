@@ -19,32 +19,53 @@ namespace LibRomData {
  */
 const char *MachOData::lookup_cpu_type(uint32_t cputype)
 {
-	const unsigned int abi = (cputype >> 24) & 1;
+	const unsigned int abi = (cputype >> 24);
 	const unsigned int cpu = (cputype & 0xFFFFFF);
 
-	static const char *const cpu_tbl[2][19] = {
-		{
-			// 32-bit CPUs
-			nullptr, "VAX", nullptr, "ROMP",
-			"NS32032", "NS32332", "MC680x0", "i386",
-			"MIPS", "NS32532", "MC98000", "HPPA",
-			"ARM", "MC88000", "SPARC", "i860",
-			"Alpha", "RS/6000", "PowerPC"
-		},
-		{
-			// 64-bit CPUs
-			nullptr, nullptr, nullptr, nullptr,
-			nullptr, nullptr, nullptr, "amd64",
-			nullptr, nullptr, nullptr, nullptr,
-			"ARM64", nullptr, nullptr, nullptr,
-			nullptr, nullptr, "PowerPC 64"
-		}
+	static const char *const cpu_tbl_32[19] = {
+		// 32-bit CPUs
+		nullptr, "VAX", nullptr, "ROMP",
+		"NS32032", "NS32332", "MC680x0", "i386",
+		"MIPS", "NS32532", "MC98000", "HPPA",
+		"ARM", "MC88000", "SPARC", "i860",
+		"Alpha", "RS/6000", "PowerPC"
 	};
 
 	const char *s_cpu = nullptr;
-	if (cpu < ARRAY_SIZE(cpu_tbl[0])) {
-		s_cpu = cpu_tbl[abi][cpu];
-	}
+	switch (abi) {
+		case 0:
+			// 32-bit
+			if (cpu < ARRAY_SIZE(cpu_tbl_32)) {
+				s_cpu = cpu_tbl_32[cpu];
+			}
+			break;
+
+		case 1:
+			// 64-bit
+			switch (cpu) {
+				case CPU_TYPE_I386:
+					s_cpu = "amd64";
+					break;
+				case CPU_TYPE_ARM:
+					s_cpu = "arm64";
+					break;
+				case CPU_TYPE_POWERPC:
+					s_cpu = "PowerPC 64";
+					break;
+				default:
+					break;
+			}
+			break;
+
+		case 2:
+			if (cpu == CPU_TYPE_ARM) {
+				s_cpu = "arm64_32";
+			}
+			break;
+
+		default:
+			break;
+	};
 
 	return s_cpu;
 }
@@ -90,7 +111,7 @@ const char *MachOData::lookup_cpu_subtype(uint32_t cputype, uint32_t cpusubtype)
 
 		case CPU_TYPE_I386: {
 			// 32-bit
-			if (!abi) {
+			if (abi == 0) {
 				switch (cpusubtype & 0xF) {
 					default:
 						break;
