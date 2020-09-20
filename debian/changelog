@@ -1,3 +1,9 @@
+rom-properties (1.7-1ppa1~xenial1) xenial; urgency=medium
+
+  * 1.7 release.
+
+ -- David Korth <gerbilsoft@gerbilsoft.com>  Sun, 20 Sep 2020 15:50:25 -0400
+
 rom-properties (1.6-1ppa1~xenial4) xenial; urgency=medium
 
   * ImageDecoder: Fix ARM64 linkage and AMD64 compile errors as a result of
