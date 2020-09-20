@@ -3,6 +3,7 @@ CMAKE_MINIMUM_REQUIRED(VERSION 3.0)
 CMAKE_POLICY(SET CMP0048 NEW)
 
 # Read the project version.
+CONFIGURE_FILE(version.txt version.txt.tmp)
 FILE(STRINGS version.txt RP_VERSION_FILE)
 IF(NOT RP_VERSION_FILE)
 	MESSAGE(FATAL_ERROR "version.txt not found; cannot determine project version.")
