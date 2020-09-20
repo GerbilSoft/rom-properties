@@ -194,7 +194,8 @@ LONG RP_PropertyStore::RegisterFileType(RegKey &hkcr, RegKey *pHklm, LPCTSTR ext
 
 	if (pHklm) {
 		// Open the "PropertyHandlers" key.
-		RegKey hklm_PropertyHandlers(*pHklm, _T("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\PropertySystem\\PropertyHandlers"), KEY_READ, false);
+		// NOTE: This key might not exist on ReactOS, so we'll need to create it.
+		RegKey hklm_PropertyHandlers(*pHklm, _T("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\PropertySystem\\PropertyHandlers"), KEY_READ, true);
 		if (!hklm_PropertyHandlers.isOpen()) {
 			return hklm_PropertyHandlers.lOpenRes();
 		}
