@@ -338,10 +338,9 @@ rp_image *RpPngPrivate::loadPng(png_structp png_ptr, png_infop info_ptr)
 	const png_byte **row_pointers = nullptr;
 	rp_image *img = nullptr;
 
-#ifdef PNG_sBIT_SUPPORTED
 	bool has_sBIT = false;
 	png_color_8p png_sBIT = nullptr;
-#endif /* PNG_sBIT_SUPPORTED */
+	png_color_8 png_sBIT_fake;	// if sBIT isn't found
 
 #ifdef PNG_SETJMP_SUPPORTED
 	// WARNING: Do NOT initialize any C++ objects past this point!
@@ -382,6 +381,10 @@ rp_image *RpPngPrivate::loadPng(png_structp png_ptr, png_infop info_ptr)
 	// Read the sBIT chunk.
 	// TODO: Fake sBIT if the PNG doesn't have one?
 	has_sBIT = (png_get_sBIT(png_ptr, info_ptr, &png_sBIT) == PNG_INFO_sBIT);
+	assert(has_sBIT == (png_sBIT != nullptr));
+	if (!png_sBIT) {
+		has_sBIT = false;
+	}
 #endif /* PNG_sBIT_SUPPORTED */
 
 	// Check the color type.
@@ -396,36 +399,86 @@ rp_image *RpPngPrivate::loadPng(png_structp png_ptr, png_infop info_ptr)
 				// Expand to 8-bit grayscale.
 				png_set_expand_gray_1_2_4_to_8(png_ptr);
 			}
+			if (!has_sBIT) {
+				// NOTE: The gray field isn't used anywhere,
+				// so we also have to set the RGB fields.
+				const uint8_t bits = static_cast<uint8_t>(bit_depth > 8 ? 8 : bit_depth);
+				png_sBIT_fake.red = bits;
+				png_sBIT_fake.green = bits;
+				png_sBIT_fake.blue = bits;
+				png_sBIT_fake.gray = bits;
+				png_sBIT_fake.alpha = 0;
+			}
 			break;
+
 		case PNG_COLOR_TYPE_GRAY_ALPHA:
 			// Grayscale+Alpha is handled as ARGB32.
 			// QImage, gdk-pixbuf, cairo, and GDI+ don't support IA8.
 			// TODO: Does this work with 1, 2, and 4-bit grayscale?
 			fmt = rp_image::Format::ARGB32;
 			png_set_gray_to_rgb(png_ptr);
+			if (!has_sBIT) {
+				const uint8_t bits = static_cast<uint8_t>(bit_depth > 8 ? 8 : bit_depth);
+				png_sBIT_fake.red = 0;
+				png_sBIT_fake.green = 0;
+				png_sBIT_fake.blue = 0;
+				png_sBIT_fake.gray = 0;
+				png_sBIT_fake.alpha = bits;
+			}
 			break;
+
 		case PNG_COLOR_TYPE_PALETTE:
 			if (bit_depth < 8) {
 				// Expand to 8-bit pixels.
 				png_set_packing(png_ptr);
 			}
 			fmt = rp_image::Format::CI8;
+			if (!has_sBIT) {
+				// NOTE: Assuming 24-bit RGB for the palette.
+				const bool has_tRNS = (png_get_valid(png_ptr, info_ptr, PNG_INFO_tRNS) == PNG_INFO_tRNS);
+				png_sBIT_fake.red = 8;
+				png_sBIT_fake.green = 8;
+				png_sBIT_fake.blue = 8;
+				png_sBIT_fake.gray = 0;
+				png_sBIT_fake.alpha = (has_tRNS ? 8 : 0);
+			}
 			break;
-		case PNG_COLOR_TYPE_RGB:
+
+		case PNG_COLOR_TYPE_RGB: {
 			// 24-bit RGB.
 			fmt = rp_image::Format::ARGB32;
-			if (png_get_valid(png_ptr, info_ptr, PNG_INFO_tRNS) == PNG_INFO_tRNS) {
+			const bool has_tRNS = (png_get_valid(png_ptr, info_ptr, PNG_INFO_tRNS) == PNG_INFO_tRNS);
+			if (has_tRNS) {
 				// tRNS chunk is present. Use it as the alpha channel.
 				png_set_tRNS_to_alpha(png_ptr);
 			} else {
 				// 24-bit RGB with no transparency.
 				is24bit = true;
 			}
+			if (!has_sBIT) {
+				const uint8_t bits = static_cast<uint8_t>(bit_depth > 8 ? 8 : bit_depth);
+				png_sBIT_fake.red = bits;
+				png_sBIT_fake.green = bits;
+				png_sBIT_fake.blue = bits;
+				png_sBIT_fake.gray = 0;
+				png_sBIT_fake.alpha = (has_tRNS ? bits : 0);
+			}
 			break;
+		}
+
 		case PNG_COLOR_TYPE_RGB_ALPHA:
 			// 32-bit ARGB.
 			fmt = rp_image::Format::ARGB32;
+			if (!has_sBIT) {
+				const uint8_t bits = static_cast<uint8_t>(bit_depth > 8 ? 8 : bit_depth);
+				png_sBIT_fake.red = bits;
+				png_sBIT_fake.green = bits;
+				png_sBIT_fake.blue = bits;
+				png_sBIT_fake.gray = 0;
+				png_sBIT_fake.alpha = bits;
+			}
 			break;
+
 		default:
 			// Unsupported color type.
 			return nullptr;
@@ -489,9 +542,12 @@ rp_image *RpPngPrivate::loadPng(png_structp png_ptr, png_infop info_ptr)
 
 #ifdef PNG_sBIT_SUPPORTED
 	// Set the sBIT metadata.
-	if (has_sBIT && png_sBIT) {
-		// NOTE: rp_image::sBIT_t has the same format as png_color_8.
-		img->set_sBIT(reinterpret_cast<rp_image::sBIT_t*>(png_sBIT));
+	// NOTE: rp_image::sBIT_t has the same format as png_color_8.
+	if (has_sBIT) {
+		img->set_sBIT(reinterpret_cast<const rp_image::sBIT_t*>(png_sBIT));
+	} else {
+		// Use the fake sBIT.
+		img->set_sBIT(reinterpret_cast<const rp_image::sBIT_t*>(&png_sBIT_fake));
 	}
 #endif /* PNG_sBIT_SUPPORTED */
 
