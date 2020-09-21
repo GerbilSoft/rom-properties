@@ -70,7 +70,10 @@ class DragImageLabelPrivate
 				: m_hwndParent(hwndParent)
 				, iconAnimData(nullptr)
 				, animTimerID(0)
-				, last_frame_number(0) { }
+				, last_frame_number(0)
+			{
+				iconFrames.fill(nullptr);
+			}
 			~anim_vars()
 			{
 				if (animTimerID) {
