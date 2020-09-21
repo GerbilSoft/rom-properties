@@ -1,8 +1,12 @@
 # Changes
 
-## v1.8 (released 2020/??/??)
+## v1.7.1 (released 2020/09/21)
 
-## v1.7 (released 2020/09/19)
+* Bug fixes:
+  * Windows: Fixed a last-minute bug that caused field values in the property
+    page to sometimes be completely invisible.
+
+## v1.7 (released 2020/09/20)
 
 * New features:
   * An "Options" button is now present in the property page. The Options

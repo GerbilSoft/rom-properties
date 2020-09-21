@@ -2554,7 +2554,7 @@ void RP_ShellPropSheetExt_Private::initDialog(void)
 
 	// Determine the maximum length of all field names.
 	// TODO: Line breaks?
-	unique_ptr<int[]> a_max_text_width(new int[tabCount]);
+	unique_ptr<int[]> a_max_text_width(new int[tabCount]());
 
 	// tr: Field description label.
 	const char *const desc_label_fmt = C_("RomDataView", "%s:");
