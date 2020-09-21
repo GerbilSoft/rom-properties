@@ -87,13 +87,13 @@ class SparseDiscReader : public IDiscReader
 		 * instead.
 		 *
 		 * @param blockIdx	[in] Block index.
-		 * @param ptr		[out] Output data buffer.
 		 * @param pos		[in] Starting position. (Must be >= 0 and <= the block size!)
+		 * @param ptr		[out] Output data buffer.
 		 * @param size		[in] Amount of data to read, in bytes. (Must be <= the block size!)
 		 * @return Number of bytes read, or -1 if the block index is invalid.
 		 */
-		ATTR_ACCESS_SIZE(write_only, 3, 5)
-		virtual int readBlock(uint32_t blockIdx, void *ptr, int pos, size_t size);
+		ATTR_ACCESS_SIZE(write_only, 4, 5)
+		virtual int readBlock(uint32_t blockIdx, int pos, void *ptr, size_t size);
 };
 
 }
