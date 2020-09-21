@@ -50,16 +50,6 @@ RpMemFile::RpMemFile()
 { }
 
 /**
- * Is the file open?
- * This usually only returns false if an error occurred.
- * @return True if the file is open; false if it isn't.
- */
-bool RpMemFile::isOpen(void) const
-{
-	return (m_buf != nullptr);
-}
-
-/**
  * Close the file.
  */
 void RpMemFile::close(void)

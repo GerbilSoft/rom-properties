@@ -47,7 +47,10 @@ class RpMemFile : public IRpFile
 		 * This usually only returns false if an error occurred.
 		 * @return True if the file is open; false if it isn't.
 		 */
-		bool isOpen(void) const final;
+		bool isOpen(void) const final
+		{
+			return (m_buf != nullptr);
+		}
 
 		/**
 		 * Close the file.

@@ -30,25 +30,6 @@ RpVectorFile::RpVectorFile()
 }
 
 /**
- * Is the file open?
- * This usually only returns false if an error occurred.
- * @return True if the file is open; false if it isn't.
- */
-bool RpVectorFile::isOpen(void) const
-{
-	// RpVectorFile is always open.
-	return true;
-}
-
-/**
- * Close the file.
- */
-void RpVectorFile::close(void)
-{
-	// Not really useful...
-}
-
-/**
  * Read data from the file.
  * @param ptr Output data buffer.
  * @param size Amount of data to read, in bytes.
@@ -126,47 +107,7 @@ int RpVectorFile::seek(off64_t pos)
 	return 0;
 }
 
-/**
- * Get the file position.
- * @return File position, or -1 on error.
- */
-off64_t RpVectorFile::tell(void)
-{
-	return (off64_t)m_pos;
-}
-
-/**
- * Truncate the file.
- * @param size New size. (default is 0)
- * @return 0 on success; -1 on error.
- */
-int RpVectorFile::truncate(off64_t size)
-{
-	m_vector.resize(size);
-	return 0;
-}
-
-/**
- * Flush buffers.
- * This operation only makes sense on writable files.
- * @return 0 on success; negative POSIX error code on error.
- */
-int RpVectorFile::flush(void)
-{
-	// Ignore flush operations, since RpVectorFile is entirely in memory.
-	return 0;
-}
-
 /** File properties **/
-
-/**
- * Get the file size.
- * @return File size, or negative on error.
- */
-off64_t RpVectorFile::size(void)
-{
-	return m_vector.size();
-}
 
 /**
  * Get the filename.

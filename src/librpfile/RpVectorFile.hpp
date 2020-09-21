@@ -37,12 +37,19 @@ class RpVectorFile final : public IRpFile
 		 * This usually only returns false if an error occurred.
 		 * @return True if the file is open; false if it isn't.
 		 */
-		bool isOpen(void) const final;
+		bool isOpen(void) const final
+		{
+			// RpVectorFile is always open.
+			return true;
+		}
 
 		/**
 		 * Close the file.
 		 */
-		void close(void) final;
+		void close(void) final
+		{
+			// Not really useful...
+		}
 
 		/**
 		 * Read data from the file.
@@ -73,21 +80,32 @@ class RpVectorFile final : public IRpFile
 		 * Get the file position.
 		 * @return File position, or -1 on error.
 		 */
-		off64_t tell(void) final;
+		off64_t tell(void) final
+		{
+			return static_cast<off64_t>(m_pos);
+		}
 
 		/**
 		 * Truncate the file.
 		 * @param size New size. (default is 0)
 		 * @return 0 on success; -1 on error.
 		 */
-		int truncate(off64_t size = 0) final;
+		int truncate(off64_t size = 0) final
+		{
+			m_vector.resize(size);
+			return 0;
+		}
 
 		/**
 		 * Flush buffers.
 		 * This operation only makes sense on writable files.
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
-		int flush(void) final;
+		int flush(void) final
+		{
+			// Ignore flush operations, since RpVectorFile is entirely in memory.
+			return 0;
+		}
 
 	public:
 		/** File properties **/
@@ -96,7 +114,10 @@ class RpVectorFile final : public IRpFile
 		 * Get the file size.
 		 * @return File size, or negative on error.
 		 */
-		off64_t size(void) final;
+		off64_t size(void) final
+		{
+			return m_vector.size();
+		}
 
 		/**
 		 * Get the filename.
@@ -111,7 +132,10 @@ class RpVectorFile final : public IRpFile
 		 * Make the file writable.
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
-		int makeWritable(void) final { return 0; }
+		int makeWritable(void) final
+		{
+			return 0;
+		}
 
 	public:
 		/** RpVectorFile-specific functions **/
