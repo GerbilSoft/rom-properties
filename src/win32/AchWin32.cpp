@@ -18,6 +18,7 @@ using LibRpBase::Achievements;
 
 // C++ STL classes.
 using std::string;
+using std::unordered_map;
 
 class AchWin32Private
 {
@@ -35,6 +36,19 @@ class AchWin32Private
 		// doesn't support thread-safe statics.
 		static AchWin32 instance;
 		bool hasRegistered;
+
+		// Property for "NotifyIconData uID".
+		// This contains the uID set in NotifyIconData.
+		static const TCHAR NID_UID_PTR_PROP[];
+
+		// Timeout for the achievement popup. (in ms)
+		static const unsigned int ACHWIN32_TIMEOUT = 10U * 1000U;
+
+		// Window message for NOTIFYICONDATA.
+		static const unsigned int WM_ACHWIN32_NOTIFY = WM_USER + 69;	// nice
+
+		// Icon ID high word.
+		static const DWORD ACHWIN32_NID_UID_HI = 0x19840000;
 
 	public:
 		/**
@@ -54,10 +68,31 @@ class AchWin32Private
 		 */
 		int notifyFunc(const char *name, const char *desc);
 
+	private:
+		/**
+		 * RpAchNotifyWnd window procedure.
+		 * @param hWnd
+		 * @param uMsg
+		 * @param wParam
+		 * @param lParam
+		 */
+		static LRESULT CALLBACK RpAchNotifyWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+
 	public:
+		// Window class. (registered once)
 		ATOM atomWindowClass;
-		HWND hNotifyWnd;
+
+		// NOTE: Windows Explorer appears to create a new thread per
+		// properties dialog, and the thread (and this window) disappears
+		// when the associated properties dialog is closed. Hence, we'll
+		// need to use a map with thread IDs.
+		unordered_map<DWORD, HWND> map_tidToHWND;
+		unordered_map<HWND, DWORD> map_hWndToTID;
 };
+
+// Property for "NotifyIconData uID".
+// This contains the uID set in NotifyIconData.
+const TCHAR AchWin32Private::NID_UID_PTR_PROP[] = _T("AchWin32Private::NID_uID");
 
 /** AchWin32Private **/
 
@@ -68,15 +103,15 @@ AchWin32 AchWin32Private::instance;
 
 AchWin32Private::AchWin32Private()
 	: hasRegistered(false)
-	, hNotifyWnd(nullptr)
+	, atomWindowClass(0)
 {
-	// NOTE: Cannot register here because the static Achievements
-	// instance might not be fully initialized yet.
+	// NOTE: Cannot register with the Achievements class here because the
+	// static Achievements instance might not be fully initialized yet.
 
 	WNDCLASSEX wndClass;
 	wndClass.cbSize = sizeof(wndClass);
 	wndClass.style = CS_HREDRAW | CS_VREDRAW;
-	wndClass.lpfnWndProc = DefWindowProc;
+	wndClass.lpfnWndProc = RpAchNotifyWndProc;
 	wndClass.cbClsExtra = 0;
 	wndClass.cbWndExtra = 0;
 	wndClass.hInstance = HINST_THISCOMPONENT;
@@ -99,12 +134,21 @@ AchWin32Private::~AchWin32Private()
 		pAch->clearNotifyFunction(notifyFunc, reinterpret_cast<intptr_t>(this));
 	}
 
-	if (hNotifyWnd) {
-		DestroyWindow(hNotifyWnd);
-	}
+	// TODO: Verify that the threads are still valid.
+	std::for_each(map_tidToHWND.cbegin(), map_tidToHWND.cend(),
+		[](const auto &pair) {
+			// Zero out the user data to prevent WM_NCDESTROY from
+			// attempting to modify the maps.
+			HWND hWnd = pair.second;
+			SetWindowLongPtr(hWnd, GWLP_USERDATA, 0);
+
+			// Now destroy the window.
+			DestroyWindow(hWnd);
+		}
+	);
 
 	if (atomWindowClass > 0) {
-		UnregisterClass(_T("RpAchNotifyWnd"), HINST_THISCOMPONENT);
+		UnregisterClass(MAKEINTRESOURCE(atomWindowClass), HINST_THISCOMPONENT);
 	}
 }
 
@@ -117,7 +161,7 @@ AchWin32Private::~AchWin32Private()
  */
 int RP_C_API AchWin32Private::notifyFunc(intptr_t user_data, const char *name, const char *desc)
 {
-	AchWin32Private *const pAchWinP = reinterpret_cast<AchWin32Private*>(user_data);
+	auto *const pAchWinP = reinterpret_cast<AchWin32Private*>(user_data);
 	return pAchWinP->notifyFunc(name, desc);
 }
 
@@ -129,8 +173,14 @@ int RP_C_API AchWin32Private::notifyFunc(intptr_t user_data, const char *name, c
  */
 int AchWin32Private::notifyFunc(const char *name, const char *desc)
 {
-	// Create the notification window if it hasn't already been created.
-	if (!hNotifyWnd) {
+	// Get the notification window.
+	HWND hNotifyWnd;
+	const DWORD tid = GetCurrentThreadId();
+	auto iter = map_tidToHWND.find(tid);
+	if (iter != map_tidToHWND.end()) {
+		hNotifyWnd = iter->second;
+	} else {
+		// No notification window. We'll need to create it.
 		hNotifyWnd = CreateWindow(
 			_T("RpAchNotifyWnd"),	// lpClassName
 			_T("RpAchNotifyWnd"),	// lpWindowName
@@ -139,7 +189,9 @@ int AchWin32Private::notifyFunc(const char *name, const char *desc)
 			0, 0,			// nWidth, nHeight
 			nullptr, nullptr,	// hWndParent, hMenu
 			nullptr, this);		// hInstance, lpParam
-		DWORD dwErr = GetLastError();
+		SetWindowLongPtr(hNotifyWnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(this));
+		map_tidToHWND.emplace(std::make_pair(tid, hNotifyWnd));
+		map_hWndToTID.emplace(std::make_pair(hNotifyWnd, tid));
 	}
 
 	// FIXME: Notification window procedure.
@@ -149,11 +201,11 @@ int AchWin32Private::notifyFunc(const char *name, const char *desc)
 	NOTIFYICONDATA nid;
 	nid.cbSize = sizeof(NOTIFYICONDATA);
 	nid.hWnd = hNotifyWnd;
-	nid.uFlags = NIF_ICON | NIF_TIP /*| NIF_MESSAGE*/ | NIF_SHOWTIP;
-	nid.uCallbackMessage = 0;
+	nid.uFlags = NIF_ICON | NIF_TIP | NIF_MESSAGE | NIF_SHOWTIP;
+	nid.uCallbackMessage = WM_ACHWIN32_NOTIFY;
 	_tcscpy(nid.szTip, _T("rom-properties"));
-	nid.dwState = 0;
-	nid.dwStateMask = 0;
+	nid.dwState = NIS_HIDDEN;
+	nid.dwStateMask = NIS_HIDDEN;
 	nid.uVersion = NOTIFYICON_VERSION_4;
 
 	// FIXME: DPI-aware scaling for the icon size.
@@ -163,11 +215,21 @@ int AchWin32Private::notifyFunc(const char *name, const char *desc)
 	// FIXME: NIF_GUID returns error 1008...
 	// Win7: Use guidItem.
 	// Older: Use uID.
-	nid.uID = 1234;
+	const DWORD nid_uID = ACHWIN32_NID_UID_HI | tid;
+	nid.uID = nid_uID;
 	memset(&nid.guidItem, 0, sizeof(nid.guidItem));
 
 	BOOL bRet = Shell_NotifyIcon(NIM_ADD, &nid);
-	DWORD dwErr = GetLastError();
+	if (!bRet) {
+		// Error creating the shell icon.
+		// Delete the window and forget anything happened.
+		// WM_NCDESTROY will handle cleaning up the maps.
+		DestroyWindow(hNotifyWnd);
+		return -EIO;
+	}
+
+	// Set the notification uID property.
+	SetProp(hNotifyWnd, NID_UID_PTR_PROP, (HANDLE)(INT_PTR)nid_uID);
 
 	// uVersion must be set after the icon is added.
 	Shell_NotifyIcon(NIM_SETVERSION, &nid);
@@ -183,7 +245,7 @@ int AchWin32Private::notifyFunc(const char *name, const char *desc)
 	// TODO: Program name?
 	nid.uFlags = NIF_INFO;
 	nid.dwInfoFlags = NIIF_USER;
-	nid.uTimeout = 5000;	// NOTE: Only Win2000/XP.
+	nid.uTimeout = ACHWIN32_TIMEOUT;	// NOTE: Only Win2000/XP.
 
 	// Check the OS version to determine which icon to use.
 	// TODO: DPI awareness.
@@ -205,10 +267,74 @@ int AchWin32Private::notifyFunc(const char *name, const char *desc)
 	_tcsncpy(nid.szInfo, U82W_s(info), _countof(nid.szInfo));
 	nid.szInfo[_countof(nid.szInfo)] = _T('\0');
 
-	Shell_NotifyIcon(NIM_MODIFY, &nid);
+	bRet = Shell_NotifyIcon(NIM_MODIFY, &nid);
+	if (!bRet) {
+		// Error modifying the shell icon.
+		// Delete the shell icon and window, and forget anything happened.
+		// WM_NCDESTROY will handle cleaning these up.
+		DestroyWindow(hNotifyWnd);
+		return -EIO;
+	}
 
 	// NOTE: Not waiting for a response.
 	return 0;
+}
+
+/**
+ * RpAchNotifyWnd window procedure.
+ * @param hWnd
+ * @param uMsg
+ * @param wParam
+ * @param lParam
+ */
+LRESULT CALLBACK AchWin32Private::RpAchNotifyWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+	switch (uMsg) {
+		case WM_NCDESTROY: {
+			// Window is being destroyed.
+			const DWORD nid_uID = (DWORD)(INT_PTR)GetProp(hWnd, NID_UID_PTR_PROP);
+			if (nid_uID > 0) {
+				// Notification icon was set.
+				RemoveProp(hWnd, NID_UID_PTR_PROP);
+
+				// Make sure the notification icon is destroyed.
+				const DWORD tid = GetCurrentThreadId();
+				NOTIFYICONDATA nid;
+				nid.cbSize = sizeof(NOTIFYICONDATA);
+				nid.hWnd = hWnd;
+				nid.uFlags = 0;
+				nid.uID = ACHWIN32_NID_UID_HI | tid;
+				memset(&nid.guidItem, 0, sizeof(nid.guidItem));
+				nid.dwState = 0;
+				nid.dwStateMask = 0;
+				nid.uVersion = NOTIFYICON_VERSION;
+				// FIXME: This seems slow for some reason... (Win7)
+				Shell_NotifyIcon(NIM_DELETE, &nid);
+			}
+
+			// Remove the window from the maps.
+			auto *const d = reinterpret_cast<AchWin32Private*>(GetWindowLongPtr(hWnd, GWLP_USERDATA));
+			if (d) {
+				d->map_tidToHWND.erase(GetCurrentThreadId());
+				d->map_hWndToTID.erase(hWnd);
+			}
+			break;
+		}
+
+		case WM_ACHWIN32_NOTIFY: {
+			// TODO: Handle this.
+			char buf[256];
+			snprintf(buf, sizeof(buf), "RpAchNotifyWndProc: hWnd=%p uMsg=%04X wParam=%08llX lParam=%08llX\n",
+				hWnd, uMsg, wParam, lParam);
+			OutputDebugStringA(buf);
+			break;
+		}
+
+		default:
+			break;
+	}
+
+	return DefWindowProc(hWnd, uMsg, wParam, lParam);
 }
 
 /** AchWin32 **/
