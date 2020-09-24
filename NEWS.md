@@ -1,6 +1,6 @@
 # Changes
 
-## v1.8 (released 2020/??/??)
+## v1.7.2 (released 2020/09/24)
 
 * Bug fixes:
   * PlayStationDisc: Fix a crash when parsing discs that don't have SYSTEM.CNF
