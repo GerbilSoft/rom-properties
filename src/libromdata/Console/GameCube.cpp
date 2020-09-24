@@ -1335,12 +1335,16 @@ const char *GameCube::systemName(unsigned int type) const
 const char *const *GameCube::supportedFileExtensions_static(void)
 {
 	static const char *const exts[] = {
-		".gcm", ".rvm", ".wbfs",
-		".ciso", ".cso", ".tgc",
+		".gcm", ".rvm",
+		".wbfs",
+		".ciso", ".cso",
+		".tgc",
 		".dec",	// .iso.dec
+		".gcz",
 
 		// Partially supported. (Header only!)
 		".wia",
+		".rvz",	// based on WIA
 
 		// NOTE: May cause conflicts on Windows
 		// if fallback handling isn't working.
