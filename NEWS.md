@@ -2,6 +2,11 @@
 
 ## v1.8 (released 2020/??/??)
 
+* Bug fixes:
+  * PlayStationDisc: Fix a crash when parsing discs that don't have SYSTEM.CNF
+    but do have PSX.EXE.
+    * Fixes #258, reported by @TwilightSlick.
+
 ## v1.7.1 (released 2020/09/21)
 
 * Bug fixes:

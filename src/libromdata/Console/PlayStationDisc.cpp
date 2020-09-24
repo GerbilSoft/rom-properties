@@ -190,6 +190,8 @@ int PlayStationDiscPrivate::loadSystemCnf(IsoPartition *pt)
 				if (f_psx_exe) {
 					f_psx_exe->unref();
 				}
+				// Pretend that we did find SYSTEM.CNF.
+				return 0;
 			} else {
 				// Not found.
 				return -ENOENT;
