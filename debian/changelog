@@ -1,3 +1,11 @@
+rom-properties (1.7.2-1ppa2~bionic1) xenial; urgency=medium
+
+  * Build for Ubuntu 18.04 "Bionic" Beaver.
+
+    PPA version bumped to ensure it updates from previous versions.
+
+ -- David Korth <gerbilsoft@gerbilsoft.com>  Thu, 24 Sep 2020 19:22:37 -0400
+
 rom-properties (1.7.2-1ppa1~xenial1) xenial; urgency=medium
 
   * 1.7.2 release.
