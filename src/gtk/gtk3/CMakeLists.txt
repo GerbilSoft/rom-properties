@@ -15,10 +15,11 @@ PROJECT(rom-properties-gtk3 LANGUAGES C CXX)
 FIND_PACKAGE(GLib2 ${REQUIRE_GTK3} 2.26.0)
 FIND_PACKAGE(GObject2 ${REQUIRE_GTK3} 2.26.0)
 FIND_PACKAGE(GIO ${REQUIRE_GTK3} 2.26.0)
+FIND_PACKAGE(GIO-UNIX ${REQUIRE_GTK3} 2.26.0)
 FIND_PACKAGE(Cairo ${REQUIRE_GTK3})
 # GTK3 minimum is 3.10.0. (gtk_image_set_from_surface)
 FIND_PACKAGE(GTK3 3.10.0 ${REQUIRE_GTK3})
-IF(GLib2_FOUND AND GObject2_FOUND AND GIO_FOUND AND Cairo_FOUND AND GTK3_FOUND)
+IF(GLib2_FOUND AND GObject2_FOUND AND GIO_FOUND AND GIO-UNIX_FOUND AND Cairo_FOUND AND GTK3_FOUND)
 	# We're not going to have an explicit dependency on libnautilus-extension.
 	# It will be dlopen()'d at runtime based on which
 	# initialization function is called.
@@ -55,11 +56,11 @@ IF(GLib2_FOUND AND GObject2_FOUND AND GIO_FOUND AND Cairo_FOUND AND GTK3_FOUND)
 	# TODO: Add an OPTION() to allow the user to disable this?
 	FIND_PACKAGE(LibCanberra)
 	FIND_PACKAGE(LibCanberraGtk3)
-ELSE(GLib2_FOUND AND GObject2_FOUND AND GIO_FOUND AND Cairo_FOUND AND GTK3_FOUND)
+ELSE(GLib2_FOUND AND GObject2_FOUND AND GIO_FOUND AND GIO-UNIX_FOUND AND Cairo_FOUND AND GTK3_FOUND)
 	# GTK+ 3.x (or required dependencies) were not found.
 	# Disable the GNOME frontend.
 	SET(BUILD_GTK3 OFF CACHE INTERNAL "Build the GTK+ 3.x plugin." FORCE)
-ENDIF(GLib2_FOUND AND GObject2_FOUND AND GIO_FOUND AND Cairo_FOUND AND GTK3_FOUND)
+ENDIF(GLib2_FOUND AND GObject2_FOUND AND GIO_FOUND AND GIO-UNIX_FOUND AND Cairo_FOUND AND GTK3_FOUND)
 
 # Sources and headers. (GTK+ common)
 STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-gtk3_CSRCS  "${rom-properties-gtk_SRCS}")
@@ -189,7 +190,7 @@ IF(BUILD_GTK3)
 		TARGET_LINK_LIBRARIES(rom-properties-gtk3 PRIVATE i18n)
 	ENDIF(ENABLE_NLS)
 	TARGET_LINK_LIBRARIES(rom-properties-gtk3 PRIVATE Cairo::cairo)
-	TARGET_LINK_LIBRARIES(rom-properties-gtk3 PUBLIC Gtk3::gtk3 GLib2::gio GLib2::gobject GLib2::glib)
+	TARGET_LINK_LIBRARIES(rom-properties-gtk3 PUBLIC Gtk3::gtk3 GLib2::gio-unix GLib2::gio GLib2::gobject GLib2::glib)
 	IF(LibCanberra_FOUND AND LibCanberraGtk3_FOUND)
 		TARGET_LINK_LIBRARIES(rom-properties-gtk3 PRIVATE LibCanberra::libcanberra LibCanberra::gtk3)
 		TARGET_COMPILE_DEFINITIONS(rom-properties-gtk3 PRIVATE ENABLE_MESSAGESOUND)

@@ -21,10 +21,11 @@ ADD_DEFINITIONS(-DGLIB_DISABLE_DEPRECATION_WARNINGS)
 FIND_PACKAGE(GLib2 ${REQUIRE_GTK2} 2.26.0)
 FIND_PACKAGE(GObject2 ${REQUIRE_GTK2} 2.26.0)
 FIND_PACKAGE(GIO ${REQUIRE_GTK2} 2.26.0)
+FIND_PACKAGE(GIO-UNIX ${REQUIRE_GTK2} 2.26.0)
 FIND_PACKAGE(GdkPixbuf2 ${REQUIRE_GTK2})
 # GTK2 minimum is 2.0.0, so no version check is needed.
 FIND_PACKAGE(GTK2 ${REQUIRE_GTK2} COMPONENTS gtk)
-IF(GLib2_FOUND AND GObject2_FOUND AND GIO_FOUND AND GdkPixbuf2_FOUND AND GTK2_FOUND)
+IF(GLib2_FOUND AND GObject2_FOUND AND GIO_FOUND AND GIO-UNIX_FOUND AND GdkPixbuf2_FOUND AND GTK2_FOUND)
 	# We're not going to have an explicit dependency on libnautilus-extension.
 	# It will be dlopen()'d at runtime based on which
 	# initialization function is called.
@@ -40,11 +41,11 @@ IF(GLib2_FOUND AND GObject2_FOUND AND GIO_FOUND AND GdkPixbuf2_FOUND AND GTK2_FO
 	# TODO: Add an OPTION() to allow the user to disable this?
 	FIND_PACKAGE(LibCanberra)
 	FIND_PACKAGE(LibCanberraGtk2)
-ELSE(GLib2_FOUND AND GObject2_FOUND AND GIO_FOUND AND GdkPixbuf2_FOUND AND GTK2_FOUND)
+ELSE(GLib2_FOUND AND GObject2_FOUND AND GIO_FOUND AND GIO-UNIX_FOUND AND GdkPixbuf2_FOUND AND GTK2_FOUND)
 	# GTK+ 2.x (or required dependencies) were not found.
 	# Disable the XFCE frontend.
 	SET(BUILD_GTK2 OFF CACHE INTERNAL "Build the XFCE (GTK+ 2.x) plugin. (Thunar 1.7 and earlier)" FORCE)
-ENDIF(GLib2_FOUND AND GObject2_FOUND AND GIO_FOUND AND GdkPixbuf2_FOUND AND GTK2_FOUND)
+ENDIF(GLib2_FOUND AND GObject2_FOUND AND GIO_FOUND AND GIO-UNIX_FOUND AND GdkPixbuf2_FOUND AND GTK2_FOUND)
 
 # Sources and headers. (GTK+ common)
 STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-xfce_SRCS  "${rom-properties-gtk_SRCS}")
@@ -172,7 +173,7 @@ IF(BUILD_GTK2)
 		TARGET_LINK_LIBRARIES(rom-properties-xfce PRIVATE i18n)
 	ENDIF(ENABLE_NLS)
 	TARGET_LINK_LIBRARIES(rom-properties-xfce PRIVATE GdkPixbuf2::gdkpixbuf2)
-	TARGET_LINK_LIBRARIES(rom-properties-xfce PUBLIC ${GTK2_LIBRARIES} GLib2::gio GLib2::gobject GLib2::glib)
+	TARGET_LINK_LIBRARIES(rom-properties-xfce PUBLIC ${GTK2_LIBRARIES} GLib2::gio-unix GLib2::gio GLib2::gobject GLib2::glib)
 	IF(LibCanberra_FOUND AND LibCanberraGtk2_FOUND)
 		TARGET_LINK_LIBRARIES(rom-properties-xfce PRIVATE LibCanberra::libcanberra LibCanberra::gtk2)
 		TARGET_COMPILE_DEFINITIONS(rom-properties-xfce PRIVATE ENABLE_MESSAGESOUND)
