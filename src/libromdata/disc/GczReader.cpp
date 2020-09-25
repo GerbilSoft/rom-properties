@@ -174,19 +174,35 @@ GczReader::GczReader(IRpFile *file)
 		return;
 	}
 
-	// Uncompressed data size must be a multiple of the block size.
-	if (d->gczHeader.data_size % d->block_size != 0) {
-		// Not a multiple.
-		// COMMIT NOTE: Do this check for other sparse readers like CISO GCN?
-		UNREF_AND_NULL_NOCHK(m_file);
-		m_lastError = EIO;
-		return;
+	// Verify that if data size is a multiple of the block size, it matches
+	// num_blocks, or if not, num_blocks + 1.
+	if (d->gczHeader.data_size % d->block_size == 0) {
+		// Multiple of the block size.
+		if (((uint64_t)d->block_size * (uint64_t)d->gczHeader.num_blocks) != d->gczHeader.data_size) {
+			// Not a multiple.
+			UNREF_AND_NULL_NOCHK(m_file);
+			m_lastError = EIO;
+			return;
+		}
+		d->disc_size = d->gczHeader.data_size;
+	} else {
+		// Not a multiple of the block size.
+		// Round it up, then check.
+		const uint64_t disc_size = ALIGN_BYTES(d->block_size, d->gczHeader.data_size);
+		if (((uint64_t)d->block_size * (uint64_t)d->gczHeader.num_blocks) != disc_size) { 
+			// Incorrect size.
+			UNREF_AND_NULL_NOCHK(m_file);
+			m_lastError = EIO;
+			return;
+		}
+		d->disc_size = static_cast<off64_t>(disc_size);
 	}
 
 	// Make sure the number of blocks is in range.
 	// We should have at least one block, and at most 16 GB of data.
 	if (d->gczHeader.num_blocks == 0) {
 		// Zero blocks...
+		d->disc_size = 0;
 		UNREF_AND_NULL_NOCHK(m_file);
 		m_lastError = EIO;
 		return;
@@ -196,6 +212,7 @@ GczReader::GczReader(IRpFile *file)
 		static_cast<uint64_t>(d->gczHeader.block_size);
 	if (dataSizeCalc > 16ULL*1024ULL*1024ULL*1024ULL) {
 		// More than 16 GB...
+		d->disc_size = 0;
 		UNREF_AND_NULL_NOCHK(m_file);
 		m_lastError = EIO;
 		return;
@@ -212,6 +229,7 @@ GczReader::GczReader(IRpFile *file)
 		if (m_lastError == 0) {
 			m_lastError = EIO;
 		}
+		d->disc_size = 0;
 		UNREF_AND_NULL_NOCHK(m_file);
 		return;
 	}
@@ -224,13 +242,10 @@ GczReader::GczReader(IRpFile *file)
 		if (m_lastError == 0) {
 			m_lastError = EIO;
 		}
+		d->disc_size = 0;
 		UNREF_AND_NULL_NOCHK(m_file);
 		return;
 	}
-
-	// Use the disc size directly from the header.
-	// TODO: Verify it?
-	d->disc_size = d->gczHeader.data_size;
 
 	// Data offset is the current read position.
 	int64_t pos = m_file->tell();
@@ -242,6 +257,7 @@ GczReader::GczReader(IRpFile *file)
 		}
 		d->blockPointers.clear();
 		d->hashes.clear();
+		d->disc_size = 0;
 		UNREF_AND_NULL_NOCHK(m_file);
 		return;
 	}
@@ -298,11 +314,24 @@ int GczReader::isDiscSupported_static(const uint8_t *pHeader, size_t szHeader)
 		return -1;
 	}
 
-	// Uncompressed data size must be a multiple of the block size.
+	// Verify that if data size is a multiple of the block size, it matches
+	// num_blocks, or if not, num_blocks + 1.
 	const uint64_t data_size = le64_to_cpu(gczHeader->data_size);
-	if (data_size % block_size != 0) {
-		// Not a multiple.
-		return -1;
+	const uint32_t num_blocks = le32_to_cpu(gczHeader->num_blocks);
+	if (data_size % block_size == 0) {
+		// Multiple of the block size.
+		if (((uint64_t)block_size * (uint64_t)num_blocks) != data_size) {
+			// Not a multiple.
+			return -1;
+		}
+	} else {
+		// Not a multiple of the block size.
+		// Round it up, then check.
+		const uint64_t disc_size = ALIGN_BYTES(block_size, data_size);
+		if (((uint64_t)block_size * (uint64_t)num_blocks) != disc_size) { 
+			// Incorrect size.
+			return -1;
+		}
 	}
 
 	// This is a valid GCZ image.
@@ -382,6 +411,10 @@ int GczReader::readBlock(uint32_t blockIdx, int pos, void *ptr, size_t size)
 		return size;
 	}
 
+	// NOTE: If this is the last block, then we might have
+	// a short read. We'll allow it.
+	const bool isLastBlock = (blockIdx + 1 == d->blockPointers.size());
+
 	// Get the physical address first.
 	const uint64_t blockPointer = d->blockPointers[blockIdx];
 	const off64_t physBlockAddr = static_cast<off64_t>(blockPointer & ~GCZ_FLAG_BLOCK_NOT_COMPRESSED) + d->dataOffset;
@@ -404,8 +437,12 @@ int GczReader::readBlock(uint32_t blockIdx, int pos, void *ptr, size_t size)
 
 	if (!compressed) {
 		// Reading uncompressed data directly into the cache.
+		if (isLastBlock) {
+			memset(d->blockCache.data(), 0, d->blockCache.size());
+		}
+
 		size_t sz_read = m_file->seekAndRead(physBlockAddr, d->blockCache.data(), z_block_size);
-		if (sz_read != z_block_size) {
+		if (sz_read != z_block_size && !isLastBlock) {
 			// Seek and/or read error.
 			d->blockCacheIdx = ~0U;
 			m_lastError = m_file->lastError();
