@@ -6,6 +6,7 @@ CD /D "%~dp0"
 :: Requires the following:
 :: - CMake 3.0.0 or later
 :: - MSVC 2012, 2013, 2015, or 2017 with 32-bit and 64-bit compilers
+:: - MSVC 2019 with v141_xp toolchain is also supported.
 :: - Windows 7 SDK
 :: - zip.exe and unzip.exe in %PATH%
 ::
@@ -88,6 +89,27 @@ IF EXIST "%PRGFILES%\Microsoft Visual Studio\2017\Enterprise\VC\Tools\MSVC\14.16
 	SET "CMAKE_GENERATOR=15 2017"
 	SET CMAKE_TOOLSET=v141_xp
 )
+IF EXIST "%PRGFILES%\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.16.27023\bin\HostX86\x86\cl.exe" (
+	SET "MSVC_DIR=%PRGFILES%\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.16.27023"
+	SET MSVC_VERSION=14.16
+	SET MSVC_YEAR=2019
+	SET "CMAKE_GENERATOR=16 2019"
+	SET CMAKE_TOOLSET=v141_xp
+)
+IF EXIST "%PRGFILES%\Microsoft Visual Studio\2019\Professional\VC\Tools\MSVC\14.16.27023\bin\HostX86\x86\cl.exe" (
+	SET "MSVC_DIR=%PRGFILES%\Microsoft Visual Studio\2019\Professional\VC\Tools\MSVC\14.16.27023"
+	SET MSVC_VERSION=14.16
+	SET MSVC_YEAR=2019
+	SET "CMAKE_GENERATOR=16 2019"
+	SET CMAKE_TOOLSET=v141_xp
+)
+IF EXIST "%PRGFILES%\Microsoft Visual Studio\2019\Enterprise\VC\Tools\MSVC\14.16.27023\bin\HostX86\x86\cl.exe" (
+	SET "MSVC_DIR=%PRGFILES%\Microsoft Visual Studio\2019\Enterprise\VC\Tools\MSVC\14.16.27023"
+	SET MSVC_VERSION=14.16
+	SET MSVC_YEAR=2019
+	SET "CMAKE_GENERATOR=16 2019"
+	SET CMAKE_TOOLSET=v141_xp
+)
 
 IF "%CMAKE_GENERATOR%" == "" (
 	ECHO *** ERROR: Supported version of MSVC was not found.
@@ -102,11 +124,18 @@ ECHO.
 :: NOTE: This must be set here, since you can't use a variable
 :: set in a block within the same block. (It'll have the previous
 :: value for some reason.)
+SET MSVC_CL=
 IF "%MSVC_YEAR%" == "2017" (
 	SET "MSVC_CL=%MSVC_DIR%\bin\HostX86\x86\cl.exe"
 	SET "MSVC_CL64_CROSS=%MSVC_DIR%\bin\HostX86\x64\cl.exe"
 	SET "MSVC_CL64_NATIVE=%MSVC_DIR%\bin\HostX64\x64\cl.exe"
-) ELSE (
+)
+IF "%MSVC_YEAR%" == "2019" (
+	SET "MSVC_CL=%MSVC_DIR%\bin\HostX86\x86\cl.exe"
+	SET "MSVC_CL64_CROSS=%MSVC_DIR%\bin\HostX86\x64\cl.exe"
+	SET "MSVC_CL64_NATIVE=%MSVC_DIR%\bin\HostX64\x64\cl.exe"
+)
+IF "%MSVC_CL%" == "" (
 	SET "MSVC_CL=%MSVC_DIR%\VC\bin\cl.exe"
 	SET "MSVC_CL64_CROSS=%MSVC_DIR%\VC\bin\x86_amd64\cl.exe"
 	SET "MSVC_CL64_NATIVE=%MSVC_DIR%\VC\bin\amd64\cl.exe"
@@ -177,10 +206,10 @@ CMD /C "EXIT /B 0"
 
 :: Clear the packaging prefix.
 ECHO Clearing the pkg_windows directory...
-RMDIR /S /Q pkg_windows
-@IF ERRORLEVEL 1 EXIT /B %ERRORLEVEL%
-MKDIR pkg_windows
-@IF ERRORLEVEL 1 EXIT /B %ERRORLEVEL%
+::RMDIR /S /Q pkg_windows
+::@IF ERRORLEVEL 1 EXIT /B %ERRORLEVEL%
+::MKDIR pkg_windows
+::@IF ERRORLEVEL 1 EXIT /B %ERRORLEVEL%
 CHDIR pkg_windows
 @IF ERRORLEVEL 1 EXIT /B %ERRORLEVEL%
 
@@ -191,7 +220,11 @@ MKDIR build.i386
 @IF ERRORLEVEL 1 EXIT /B %ERRORLEVEL%
 PUSHD build.i386
 @IF ERRORLEVEL 1 EXIT /B %ERRORLEVEL%
-cmake ..\.. -G "Visual Studio %CMAKE_GENERATOR%" -DCMAKE_GENERATOR_TOOLSET=%CMAKE_TOOLSET% -DCMAKE_BUILD_TYPE=Release -DENABLE_JPEG=ON -DBUILD_TESTING=OFF -DSPLIT_DEBUG=ON
+IF "%MSVC_YEAR%" == "2019" (
+	cmake ..\.. -G "Visual Studio %CMAKE_GENERATOR%" -A Win32 -DCMAKE_GENERATOR_TOOLSET=%CMAKE_TOOLSET% -DCMAKE_BUILD_TYPE=Release -DENABLE_JPEG=ON -DBUILD_TESTING=OFF -DSPLIT_DEBUG=ON
+) ELSE (
+	cmake ..\.. -G "Visual Studio %CMAKE_GENERATOR%" -DCMAKE_GENERATOR_TOOLSET=%CMAKE_TOOLSET% -DCMAKE_BUILD_TYPE=Release -DENABLE_JPEG=ON -DBUILD_TESTING=OFF -DSPLIT_DEBUG=ON
+)
 @IF ERRORLEVEL 1 EXIT /B %ERRORLEVEL%
 cmake --build . --config Release
 @IF ERRORLEVEL 1 EXIT /B %ERRORLEVEL%
@@ -205,7 +238,11 @@ MKDIR build.amd64
 @IF ERRORLEVEL 1 EXIT /B %ERRORLEVEL%
 PUSHD build.amd64
 @IF ERRORLEVEL 1 EXIT /B %ERRORLEVEL%
-cmake ..\.. -G "Visual Studio %CMAKE_GENERATOR% Win64" -DCMAKE_GENERATOR_TOOLSET=%CMAKE_TOOLSET% -DCMAKE_BUILD_TYPE=Release -DENABLE_JPEG=ON -DBUILD_TESTING=OFF -DSPLIT_DEBUG=ON
+IF "%MSVC_YEAR%" == "2019" (
+	cmake ..\.. -G "Visual Studio %CMAKE_GENERATOR%" -A x64 -DCMAKE_GENERATOR_TOOLSET=%CMAKE_TOOLSET% -DCMAKE_BUILD_TYPE=Release -DENABLE_JPEG=ON -DBUILD_TESTING=OFF -DSPLIT_DEBUG=ON
+) ELSE (
+	cmake ..\.. -G "Visual Studio %CMAKE_GENERATOR% Win64" -DCMAKE_GENERATOR_TOOLSET=%CMAKE_TOOLSET% -DCMAKE_BUILD_TYPE=Release -DENABLE_JPEG=ON -DBUILD_TESTING=OFF -DSPLIT_DEBUG=ON
+)
 @IF ERRORLEVEL 1 EXIT /B %ERRORLEVEL%
 cmake --build . --config Release
 @IF ERRORLEVEL 1 EXIT /B %ERRORLEVEL%
