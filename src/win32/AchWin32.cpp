@@ -70,6 +70,13 @@ class AchWin32Private
 
 	private:
 		/**
+		 * Remove a window from tracking.
+		 * This also removes the notification icon.
+		 * @param hWnd
+		 */
+		static void removeWindowFromTracking(HWND hWnd);
+
+		/**
 		 * RpAchNotifyWnd window procedure.
 		 * @param hWnd
 		 * @param uMsg
@@ -281,6 +288,41 @@ int AchWin32Private::notifyFunc(const char *name, const char *desc)
 }
 
 /**
+ * Remove a window from tracking.
+ * This also removes the notification icon.
+ * @param hWnd
+ */
+void AchWin32Private::removeWindowFromTracking(HWND hWnd)
+{
+	const DWORD nid_uID = (DWORD)(INT_PTR)GetProp(hWnd, NID_UID_PTR_PROP);
+	if (nid_uID > 0) {
+		// Notification icon was set.
+		RemoveProp(hWnd, NID_UID_PTR_PROP);
+
+		// Make sure the notification icon is destroyed.
+		const DWORD tid = GetCurrentThreadId();
+		NOTIFYICONDATA nid;
+		nid.cbSize = sizeof(NOTIFYICONDATA);
+		nid.hWnd = hWnd;
+		nid.uFlags = 0;
+		nid.uID = ACHWIN32_NID_UID_HI | tid;
+		memset(&nid.guidItem, 0, sizeof(nid.guidItem));
+		nid.dwState = 0;
+		nid.dwStateMask = 0;
+		nid.uVersion = NOTIFYICON_VERSION;
+		// FIXME: This seems slow for some reason... (Win7)
+		Shell_NotifyIcon(NIM_DELETE, &nid);
+	}
+
+	// Remove the window from the maps.
+	auto *const d = reinterpret_cast<AchWin32Private*>(GetWindowLongPtr(hWnd, GWLP_USERDATA));
+	if (d) {
+		d->map_tidToHWND.erase(GetCurrentThreadId());
+		d->map_hWndToTID.erase(hWnd);
+	}
+}
+
+/**
  * RpAchNotifyWnd window procedure.
  * @param hWnd
  * @param uMsg
@@ -292,41 +334,21 @@ LRESULT CALLBACK AchWin32Private::RpAchNotifyWndProc(HWND hWnd, UINT uMsg, WPARA
 	switch (uMsg) {
 		case WM_NCDESTROY: {
 			// Window is being destroyed.
-			const DWORD nid_uID = (DWORD)(INT_PTR)GetProp(hWnd, NID_UID_PTR_PROP);
-			if (nid_uID > 0) {
-				// Notification icon was set.
-				RemoveProp(hWnd, NID_UID_PTR_PROP);
-
-				// Make sure the notification icon is destroyed.
-				const DWORD tid = GetCurrentThreadId();
-				NOTIFYICONDATA nid;
-				nid.cbSize = sizeof(NOTIFYICONDATA);
-				nid.hWnd = hWnd;
-				nid.uFlags = 0;
-				nid.uID = ACHWIN32_NID_UID_HI | tid;
-				memset(&nid.guidItem, 0, sizeof(nid.guidItem));
-				nid.dwState = 0;
-				nid.dwStateMask = 0;
-				nid.uVersion = NOTIFYICON_VERSION;
-				// FIXME: This seems slow for some reason... (Win7)
-				Shell_NotifyIcon(NIM_DELETE, &nid);
-			}
-
-			// Remove the window from the maps.
-			auto *const d = reinterpret_cast<AchWin32Private*>(GetWindowLongPtr(hWnd, GWLP_USERDATA));
-			if (d) {
-				d->map_tidToHWND.erase(GetCurrentThreadId());
-				d->map_hWndToTID.erase(hWnd);
-			}
+			removeWindowFromTracking(hWnd);
 			break;
 		}
 
 		case WM_ACHWIN32_NOTIFY: {
-			// TODO: Handle this.
-			char buf[256];
-			snprintf(buf, sizeof(buf), "RpAchNotifyWndProc: hWnd=%p uMsg=%04X wParam=%08llX lParam=%08llX\n",
-				hWnd, uMsg, wParam, lParam);
-			OutputDebugStringA(buf);
+			switch (LOWORD(lParam)) {
+				case NIN_BALLOONTIMEOUT:
+				case NIN_BALLOONUSERCLICK:
+					// Achievement popup was dismissed.
+					removeWindowFromTracking(hWnd);
+					break;
+
+				default:
+					break;
+			}
 			break;
 		}
 
