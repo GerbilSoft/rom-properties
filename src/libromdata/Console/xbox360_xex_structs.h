@@ -450,7 +450,8 @@ ASSERT_STRUCT(XEX2_Execution_ID, 24);
  * NOTE: This field is supposed to be 10 DWORDs,
  * but only 14 rating regions have been assigned.
  */
-typedef union _XEX2_Game_Ratings {
+#pragma pack(1)
+typedef union PACKED _XEX2_Game_Ratings {
 	uint8_t ratings[14];
 	struct {
 		uint8_t esrb;		// [0x000] See XEX2_Game_Ratings_ESRB_e
@@ -469,6 +470,7 @@ typedef union _XEX2_Game_Ratings {
 		uint8_t singapore;	// [0x00D]
 	};
 } XEX2_Game_Ratings;
+#pragma pack()
 ASSERT_STRUCT(XEX2_Game_Ratings, 14);
 
 /**

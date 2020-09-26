@@ -20,7 +20,8 @@ namespace LibRpTexture { namespace ImageDecoder {
 // ETC1 block format.
 // NOTE: Layout maps to on-disk format, which is big-endian.
 typedef union _etc1_block {
-	struct {
+#pragma pack(1)
+	struct PACKED {
 		// Base colors
 		// Byte layout:
 		// - diffbit == 0: 4 MSB == base 1, 4 LSB == base 2
@@ -62,6 +63,7 @@ typedef union _etc1_block {
 		uint16_t msb;
 		uint16_t lsb;
 	};
+#pragma pack()
 
 	struct {
 		// Planar mode has 3 colors in RGB676 format.

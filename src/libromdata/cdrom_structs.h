@@ -30,11 +30,13 @@ extern "C" {
  * MSF address.
  * Each value is encoded as BCD.
  */
-typedef struct _CDROM_MSF_t {
+#pragma pack(1)
+typedef struct PACKED _CDROM_MSF_t {
 	uint8_t min;
 	uint8_t sec;	// 60
 	uint8_t frame;	// 75
 } CDROM_MSF_t;
+#pragma pack()
 ASSERT_STRUCT(CDROM_MSF_t, 3);
 
 /**
