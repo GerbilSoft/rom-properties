@@ -135,7 +135,7 @@ string RomDataPrivate::getURL_RPDB(
 		url += region;
 		url += '/';
 	}
-	url += gameID;
+	url += gameID_urlencode;
 	url += ext;
 	return url;
 }
