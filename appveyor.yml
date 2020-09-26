@@ -1,5 +1,5 @@
 # AppVeyor configuration file.
-version: '1.7.2.{build}'
+version: '1.7.3.{build}'
 
 # Build worker image (VM template)
 image: Visual Studio 2015
