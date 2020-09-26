@@ -2,6 +2,9 @@
 
 ## v1.8 (released 2020/??/??)
 
+* New parser features:
+  * NGPC: Added external title screens using RPDB.
+
 ## v1.7.3 (released 2020/09/25)
 
 * Bug fixes:

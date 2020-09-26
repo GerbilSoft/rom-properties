@@ -33,6 +33,7 @@ or deleted.
 * https://amiibo.life/ - Images of Nintendo amiibo products.
 * https://rpdb.gerbilsoft.com/ - Title screen images for the following
   systems:
+  * Neo Geo Pocket (Color)
   * Nintendo Game Boy
   * Nintendo Game Boy Color
   * Nintendo Game Boy Advance

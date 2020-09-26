@@ -87,50 +87,50 @@ button.
 
 ### Game Consoles
 
-|           System          | Properties Tab | Metadata | Internal Images | External Scans |
-|:-------------------------:|:--------------:|:--------:|:---------------:|:--------------:|
-| NES                       |       Yes      |    No    |       N/A       |       No       |
+|           System          | Properties Tab | Metadata | Internal Images | External Images |
+|:-------------------------:|:--------------:|:--------:|:---------------:|:---------------:|
+| NES                       |       Yes      |    No    |       N/A       |        No       |
 | Super NES                 |       Yes      |    Yes   |       N/A       |      Title     |
-| Microsoft Xbox (XBE)      |       Yes      |    Yes   |       Icon      |       No       |
-| Microsoft Xbox 360 (XEX)  |       Yes      |    Yes   |       Icon      |       No       |
-| Microsoft Xbox 360 (STFS) |       Yes      |    Yes   |       Icon      |       No       |
-| Microsoft Xbox Game Discs |       Yes      |    Yes   |       Icon      |       No       |
-| Nintendo 64               |       Yes      |    Yes   |       N/A       |       No       |
-| iQue Player ticket files  |       Yes      |    Yes   |   Icon, Banner  |       No       |
-| Nintendo GameCube Discs   |       Yes      |    Yes   |      Banner     |  Disc, Covers  |
-| Nintendo GameCube Banners |       Yes      |    Yes   |      Banner     |       No       |
-| Nintendo GameCube Saves   |       Yes      |    Yes   |       Icon      |       N/A      |
-| Nintendo Wii Discs        |       Yes      |    Yes   |        No       |  Disc, Covers  |
-| Nintendo Wii WADs         |       Yes      |    Yes   |       Yes*      |  Title, Covers |
-| Nintendo Wii Saves        |       Yes      |    No    |       Yes       |       N/A      |
-| Nintendo Wii U            |       Yes      |    No    |        No       |  Disc, Covers  |
-| Sega 8-bit (SMS, GG)      |       Yes      |    Yes   |       N/A       |       No       |
-| Sega Mega Drive           |       Yes      |    No    |       N/A       |       No       |
-| Sega Dreamcast            |       Yes      |    Yes   |      Media      |       No       |
-| Sega Dreamcast Saves      |       Yes      |    Yes   |   Icon, Banner  |       No       |
-| Sega Saturn               |       Yes      |    Yes   |       N/A       |       No       |
-| Sony PlayStation Discs    |       Yes      |    No    |       N/A       |       No       |
-| Sony PlayStation EXEs     |       Yes      |    No    |       N/A       |       N/A      |
-| Sony PlayStation Saves    |       Yes      |    Yes   |       Icon      |       N/A      |
-| Sony PlayStation 2 Discs  |       Yes      |    Yes   |       N/A       |       No       |
+| Microsoft Xbox (XBE)      |       Yes      |    Yes   |       Icon      |        No       |
+| Microsoft Xbox 360 (XEX)  |       Yes      |    Yes   |       Icon      |        No       |
+| Microsoft Xbox 360 (STFS) |       Yes      |    Yes   |       Icon      |        No       |
+| Microsoft Xbox Game Discs |       Yes      |    Yes   |       Icon      |        No       |
+| Nintendo 64               |       Yes      |    Yes   |       N/A       |        No       |
+| iQue Player ticket files  |       Yes      |    Yes   |   Icon, Banner  |        No       |
+| Nintendo GameCube Discs   |       Yes      |    Yes   |      Banner     |   Disc, Covers  |
+| Nintendo GameCube Banners |       Yes      |    Yes   |      Banner     |        No       |
+| Nintendo GameCube Saves   |       Yes      |    Yes   |       Icon      |       N/A       |
+| Nintendo Wii Discs        |       Yes      |    Yes   |        No       |   Disc, Covers  |
+| Nintendo Wii WADs         |       Yes      |    Yes   |       Yes*      |  Title, Covers  |
+| Nintendo Wii Saves        |       Yes      |    No    |       Yes       |       N/A       |
+| Nintendo Wii U            |       Yes      |    No    |        No       |   Disc, Covers  |
+| Sega 8-bit (SMS, GG)      |       Yes      |    Yes   |       N/A       |        No       |
+| Sega Mega Drive           |       Yes      |    No    |       N/A       |        No       |
+| Sega Dreamcast            |       Yes      |    Yes   |      Media      |        No       |
+| Sega Dreamcast Saves      |       Yes      |    Yes   |   Icon, Banner  |        No       |
+| Sega Saturn               |       Yes      |    Yes   |       N/A       |        No       |
+| Sony PlayStation Discs    |       Yes      |    No    |       N/A       |        No       |
+| Sony PlayStation EXEs     |       Yes      |    No    |       N/A       |       N/A       |
+| Sony PlayStation Saves    |       Yes      |    Yes   |       Icon      |       N/A       |
+| Sony PlayStation 2 Discs  |       Yes      |    Yes   |       N/A       |        No       |
 
 \* Internal images are only present in Wii DLC WADs.
 
 ### Handhelds
 
-|             System            | Properties Tab | Metadata | Internal Images | External Scans |
-|:-----------------------------:|:--------------:|:--------:|:---------------:|:--------------:|
-| Atari Lynx                    |       Yes      |    No    |       N/A       |       No       |
-| Neo Geo Pocket (Color)        |       Yes      |    Yes   |       N/A       |       No       |
-| Nintendo Game Boy (Color)     |       Yes      |    Yes   |       N/A       |      Title     |
-| Nintendo Virtual Boy          |       Yes      |    No    |       N/A       |       No       |
-| Nintendo Game Boy Advance     |       Yes      |    Yes   |       N/A       |      Title     |
-| Nintendo DS(i)                |       Yes      |    Yes   |       Icon      |  Covers, Box   |
-| Nintendo DSi TADs*            |     Partial    |    No    |        No       |       No       |
-| Nintendo 3DS                  |       Yes      |    Yes   |       Icon      |  Covers, Box   |
-| Pokémon Mini                  |       Yes      |    Yes   |       N/A       |       No       |
-| Sony PlayStation Portable     |       Yes      |    Yes   |       Icon      |       No       |
-| Tiger game.com                |       Yes      |    Yes   |       Icon      |       No       |
+|             System            | Properties Tab | Metadata | Internal Images | External Images |
+|:-----------------------------:|:--------------:|:--------:|:---------------:|:---------------:|
+| Atari Lynx                    |       Yes      |    No    |       N/A       |        No       |
+| Neo Geo Pocket (Color)        |       Yes      |    Yes   |       N/A       |      Title      |
+| Nintendo Game Boy (Color)     |       Yes      |    Yes   |       N/A       |      Title      |
+| Nintendo Virtual Boy          |       Yes      |    No    |       N/A       |        No       |
+| Nintendo Game Boy Advance     |       Yes      |    Yes   |       N/A       |      Title      |
+| Nintendo DS(i)                |       Yes      |    Yes   |       Icon      |   Covers, Box   |
+| Nintendo DSi TADs*            |     Partial    |    No    |        No       |        No       |
+| Nintendo 3DS                  |       Yes      |    Yes   |       Icon      |   Covers, Box   |
+| Pokémon Mini                  |       Yes      |    Yes   |       N/A       |        No       |
+| Sony PlayStation Portable     |       Yes      |    Yes   |       Icon      |        No       |
+| Tiger game.com                |       Yes      |    Yes   |       Icon      |        No       |
 
 \* The Nintendo DSi TAD parser supports development TADs that are normally
    imported using DSi Nmenu. It does not currently support DSi exports from
