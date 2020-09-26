@@ -536,7 +536,7 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 		_sntprintf(full_url, _countof(full_url),
 			_T("https://amiibo.life/nfc/%.*s/image"),
 			static_cast<int>(filename_len), slash_pos+1);
-	} else if ((prefix_len == 3 && (!_tcsncmp(cache_key, _T("gba"), 3) || !_tcsncmp(cache_key, _T("ngp"), 3))) ||
+	} else if ((prefix_len == 3 && !_tcsncmp(cache_key, _T("gba"), 3)) ||
 		   (prefix_len == 2 && !_tcsncmp(cache_key, _T("gb"), 2)) ||
 		   (prefix_len == 4 && (!_tcsncmp(cache_key, _T("snes"), 4) || !_tcsncmp(cache_key, _T("ngpc"), 4)))) {
 		// Game Boy, Game Boy Color, Game Boy Advance, Super NES,

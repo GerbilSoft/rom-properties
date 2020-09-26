@@ -473,20 +473,6 @@ int NGPC::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
 			return -ENOENT;
 	}
 
-	// Console name.
-	const char *consoleAbbrev;
-	switch (d->romType) {
-		case NGPCPrivate::RomType::NGP:
-			consoleAbbrev = "ngp";
-			break;
-		case NGPCPrivate::RomType::NGPC:
-			consoleAbbrev = "ngpc";
-			break;
-		default:
-			assert(!"Invalid ROM type.");
-			return -EIO;
-	}
-
 	// Game ID and subdirectory.
 	// For game ID, RPDB uses "NEOPxxxx" for NGPC.
 	// TODO: Special cases for duplicates?
@@ -526,8 +512,8 @@ int NGPC::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
 	// Add the URLs.
 	pExtURLs->resize(1);
 	auto extURL_iter = pExtURLs->begin();
-	extURL_iter->url = d->getURL_RPDB(consoleAbbrev, imageTypeName, p_extra_subdir, game_id, ext);
-	extURL_iter->cache_key = d->getCacheKey_RPDB(consoleAbbrev, imageTypeName, p_extra_subdir, game_id, ext);
+	extURL_iter->url = d->getURL_RPDB("ngpc", imageTypeName, p_extra_subdir, game_id, ext);
+	extURL_iter->cache_key = d->getCacheKey_RPDB("ngpc", imageTypeName, p_extra_subdir, game_id, ext);
 	extURL_iter->width = sizeDefs[0].width;
 	extURL_iter->height = sizeDefs[0].height;
 	extURL_iter->high_res = (sizeDefs[0].index >= 2);
