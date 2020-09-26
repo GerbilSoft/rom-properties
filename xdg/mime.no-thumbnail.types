@@ -46,8 +46,6 @@ application/x-saturn-rom		# SegaSaturn
 
 # Handheld
 application/x-atari-lynx-rom		# Lynx
-application/x-neo-geo-pocket-rom	# NGPC
-application/x-neo-geo-pocket-color-rom	# NGPC
 application/x-nintendo-3ds-emmc		# Nintendo3DS
 application/x-nintendo-3ds-firm		# Nintendo3DSFirm
 application/x-pokemon-mini-rom		# PokemonMini

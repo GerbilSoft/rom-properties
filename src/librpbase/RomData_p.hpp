@@ -103,7 +103,7 @@ class RomDataPrivate
 		 * Get the RPDB URL for a given game.
 		 * @param system System name.
 		 * @param type Image type.
-		 * @param region Region name.
+		 * @param region Region name. (May be nullptr if no region is needed.)
 		 * @param gameID Game ID.
 		 * @param ext File extension, e.g. ".png" or ".jpg".
 		 * TODO: PAL multi-region selection?
@@ -118,7 +118,7 @@ class RomDataPrivate
 		 * Get the RPDB cache key for a given game.
 		 * @param system System name.
 		 * @param type Image type.
-		 * @param region Region name.
+		 * @param region Region name. (May be nullptr if no region is needed.)
 		 * @param gameID Game ID.
 		 * @param ext File extension, e.g. ".png" or ".jpg".
 		 * TODO: PAL multi-region selection?

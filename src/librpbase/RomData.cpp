@@ -110,7 +110,7 @@ string RomDataPrivate::getCacheKey_GameTDB(
  * Get the RPDB URL for a given game.
  * @param system System name.
  * @param type Image type.
- * @param region Region name.
+ * @param region Region name. (May be nullptr if no region is needed.)
  * @param gameID Game ID.
  * @param ext File extension, e.g. ".png" or ".jpg".
  * TODO: PAL multi-region selection?
@@ -123,15 +123,28 @@ string RomDataPrivate::getURL_RPDB(
 {
 	// Game ID may need to be urlencoded.
 	string gameID_urlencode = LibCacheCommon::urlencode(gameID);
-	return rp_sprintf("https://rpdb.gerbilsoft.com/%s/%s/%s/%s%s",
-		system, type, region, gameID_urlencode.c_str(), ext);
+
+	string url;
+	url.reserve(64+32);
+	url.assign("https://rpdb.gerbilsoft.com/");
+	url += system;
+	url += '/';
+	url += type;
+	url += '/';
+	if (region) {
+		url += region;
+		url += '/';
+	}
+	url += gameID;
+	url += ext;
+	return url;
 }
 
 /**
  * Get the RPDB cache key for a given game.
  * @param system System name.
  * @param type Image type.
- * @param region Region name.
+ * @param region Region name. (May be nullptr if no region is needed.)
  * @param gameID Game ID.
  * @param ext File extension, e.g. ".png" or ".jpg".
  * TODO: PAL multi-region selection?
@@ -142,8 +155,19 @@ string RomDataPrivate::getCacheKey_RPDB(
 	const char *region, const char *gameID,
 	const char *ext)
 {
-	return rp_sprintf("%s/%s/%s/%s%s",
-		system, type, region, gameID, ext);
+	string cacheKey;
+	cacheKey.reserve(64);
+	cacheKey  = system;
+	cacheKey += '/';
+	cacheKey += type;
+	cacheKey += '/';
+	if (region) {
+		cacheKey += region;
+		cacheKey += '/';
+	}
+	cacheKey += gameID;
+	cacheKey += ext;
+	return cacheKey;
 }
 
 /**
