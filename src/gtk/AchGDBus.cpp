@@ -37,20 +37,18 @@ class AchGDBusPrivate
 	public:
 		/**
 		 * Notification function. (static)
-		 * @param user_data User data. (this)
-		 * @param name Achievement name.
-		 * @param desc Achievement description.
+		 * @param user_data	[in] User data. (this)
+		 * @param id		[in] Achievement ID.
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
-		static int RP_C_API notifyFunc(intptr_t user_data, const char *name, const char *desc);
+		static int RP_C_API notifyFunc(intptr_t user_data, Achievements::ID id);
 
 		/**
 		 * Notification function. (non-static)
-		 * @param name Achievement name.
-		 * @param desc Achievement description.
+		 * @param id	[in] Achievement ID.
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
-		int notifyFunc(const char *name, const char *desc);
+		int notifyFunc(Achievements::ID id);
 };
 
 /** AchGDBusPrivate **/
@@ -77,25 +75,30 @@ AchGDBusPrivate::~AchGDBusPrivate()
 
 /**
  * Notification function. (static)
- * @param user_data User data. (this)
- * @param name Achievement name.
- * @param desc Achievement description.
+ * @param user_data	[in] User data. (this)
+ * @param id		[in] Achievement ID.
  * @return 0 on success; negative POSIX error code on error.
  */
-int RP_C_API AchGDBusPrivate::notifyFunc(intptr_t user_data, const char *name, const char *desc)
+int RP_C_API AchGDBusPrivate::notifyFunc(intptr_t user_data, Achievements::ID id)
 {
 	AchGDBusPrivate *const pAchGP = reinterpret_cast<AchGDBusPrivate*>(user_data);
-	return pAchGP->notifyFunc(name, desc);
+	return pAchGP->notifyFunc(id);
 }
 
 /**
  * Notification function. (non-static)
- * @param name Achievement name.
- * @param desc Achievement description.
+ * @param id	[in] Achievement ID.
  * @return 0 on success; negative POSIX error code on error.
  */
-int AchGDBusPrivate::notifyFunc(const char *name, const char *desc)
+int AchGDBusPrivate::notifyFunc(Achievements::ID id)
 {
+	assert((int)id >= 0);
+	assert(id < Achievements::ID::Max);
+	if ((int)id < 0 || id >= Achievements::ID::Max) {
+		// Invalid achievement ID.
+		return -EINVAL;
+	}
+
 	// Connect to the service using gdbus-codegen's generated code.
 	OrgFreedesktopNotifications *proxy = nullptr;
 	GError *error = nullptr;
@@ -113,12 +116,14 @@ int AchGDBusPrivate::notifyFunc(const char *name, const char *desc)
 		return -EIO;
 	}
 
+	Achievements *const pAch = Achievements::instance();
+
 	// Build the text.
 	// TODO: Better formatting?
 	string text = "<u>";
-	text += name;
+	text += pAch->getName(id);
 	text += "</u>\n";
-	text += desc;
+	text += pAch->getDescUnlocked(id);
 
 	// actions: as
 	static const gchar *const actions[] = { "", nullptr };
@@ -129,12 +134,13 @@ int AchGDBusPrivate::notifyFunc(const char *name, const char *desc)
 	GVariant *const hints = g_variant_builder_end(b);
 	g_variant_builder_unref(b);
 
+	const char *const s_summary = C_("Achievements", "Achievement Unlocked");
 	org_freedesktop_notifications_call_notify(
 		proxy,				// proxy
 		"rom-properties",		// app-name [s]
 		0,				// replaces_id [u]
 		"answer-correct",		// app_icon [s]
-		"Achievement Unlocked",		// summary [s]
+		s_summary,			// summary [s]
 		text.c_str(),			// body [s]
 		actions,			// actions [as]
 		hints,				// hints [a{sv}]

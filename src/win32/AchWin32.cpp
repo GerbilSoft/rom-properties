@@ -18,6 +18,7 @@ using LibRpBase::Achievements;
 
 // C++ STL classes.
 using std::string;
+using std::tstring;
 using std::unordered_map;
 
 class AchWin32Private
@@ -53,20 +54,18 @@ class AchWin32Private
 	public:
 		/**
 		 * Notification function. (static)
-		 * @param user_data User data. (this)
-		 * @param name Achievement name.
-		 * @param desc Achievement description.
+		 * @param user_data	[in] User data. (this)
+		 * @param id		[in] Achievement ID.
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
-		static int RP_C_API notifyFunc(intptr_t user_data, const char *name, const char *desc);
+		static int RP_C_API notifyFunc(intptr_t user_data, Achievements::ID id);
 
 		/**
 		 * Notification function. (non-static)
-		 * @param name Achievement name.
-		 * @param desc Achievement description.
+		 * @param id	[in] Achievement ID.
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
-		int notifyFunc(const char *name, const char *desc);
+		int notifyFunc(Achievements::ID id);
 
 	private:
 		/**
@@ -161,25 +160,30 @@ AchWin32Private::~AchWin32Private()
 
 /**
  * Notification function. (static)
- * @param user_data User data. (this)
- * @param name Achievement name.
- * @param desc Achievement description.
+ * @param user_data	[in] User data. (this)
+ * @param id		[in] Achievement ID.
  * @return 0 on success; negative POSIX error code on error.
  */
-int RP_C_API AchWin32Private::notifyFunc(intptr_t user_data, const char *name, const char *desc)
+int RP_C_API AchWin32Private::notifyFunc(intptr_t user_data, Achievements::ID id)
 {
 	auto *const pAchWinP = reinterpret_cast<AchWin32Private*>(user_data);
-	return pAchWinP->notifyFunc(name, desc);
+	return pAchWinP->notifyFunc(id);
 }
 
 /**
  * Notification function. (non-static)
- * @param name Achievement name.
- * @param desc Achievement description.
+ * @param id	[in] Achievement ID.
  * @return 0 on success; negative POSIX error code on error.
  */
-int AchWin32Private::notifyFunc(const char *name, const char *desc)
+int AchWin32Private::notifyFunc(Achievements::ID id)
 {
+	assert((int)id >= 0);
+	assert(id < Achievements::ID::Max);
+	if ((int)id < 0 || id >= Achievements::ID::Max) {
+		// Invalid achievement ID.
+		return -EINVAL;
+	}
+
 	// Get the notification window.
 	HWND hNotifyWnd;
 	const DWORD tid = GetCurrentThreadId();
@@ -241,11 +245,13 @@ int AchWin32Private::notifyFunc(const char *name, const char *desc)
 	// uVersion must be set after the icon is added.
 	Shell_NotifyIcon(NIM_SETVERSION, &nid);
 
+	Achievements *const pAch = Achievements::instance();
+
 	// Description text.
 	// TODO: Formatting?
-	string info = name;
+	string info = pAch->getName(id);
 	info += '\n';
-	info += desc;
+	info += pAch->getDescUnlocked(id);
 
 	// Show the balloon tip.
 	// TODO: Remove the icon after it disappears.
@@ -269,8 +275,10 @@ int AchWin32Private::notifyFunc(const char *name, const char *desc)
 		nid.hBalloonIcon = nullptr;
 	}
 
-	_tcsncpy(nid.szInfoTitle, _T("Achievement Unlocked"), _countof(nid.szInfoTitle));
+	const tstring ts_summary = U82T_c(C_("Achievements", "Achievement Unlocked"));
+	_tcsncpy(nid.szInfoTitle, ts_summary.c_str(), _countof(nid.szInfoTitle));
 	nid.szInfoTitle[_countof(nid.szInfoTitle)-1] = _T('\0');
+
 	_tcsncpy(nid.szInfo, U82W_s(info), _countof(nid.szInfo));
 	nid.szInfo[_countof(nid.szInfo)] = _T('\0');
 

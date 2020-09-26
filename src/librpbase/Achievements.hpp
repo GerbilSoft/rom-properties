@@ -11,6 +11,10 @@
 
 #include "common.h"
 
+namespace LibRpTexture {
+	class rp_image;
+}
+
 namespace LibRpBase {
 
 class AchievementsPrivate;
@@ -45,13 +49,33 @@ class Achievements
 
 	public:
 		/**
+		 * Achievement identifiers.
+		 */
+		enum class ID {
+			// Debug-encrypted file. (devkits)
+			ViewedDebugCryptedFile		= 0,
+
+			// Non-x86/x64 PE executable.
+			// Does not include Xbox 360 executables.
+			ViewedNonX86PE			= 1,
+
+			// BroadOn WAD file format for Wii.
+			ViewedBroadOnWADFile		= 2,
+
+			// Sonic & Knuckles locked on to Sonic & Knuckles
+			ViewedMegaDriveSKwithSK		= 3,
+
+			Max
+		};
+
+	public:
+		/**
 		 * Notification function.
-		 * @param user_data User data from registerNotifyFunction().
-		 * @param name Achievement name.
-		 * @param desc Achievement description.
+		 * @param user_data	[in] User data from registerNotifyFunction().
+		 * @param id		[in] Achievement ID.
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
-		typedef int (RP_C_API *NotifyFunc)(intptr_t user_data, const char *name, const char *desc);
+		typedef int (RP_C_API *NotifyFunc)(intptr_t user_data, ID id);
 
 		/**
 		 * Set the notification function.
@@ -74,32 +98,26 @@ class Achievements
 
 	public:
 		/**
-		 * Achievement identifiers.
-		 */
-		enum class ID {
-			// Debug-encrypted file. (devkits)
-			ViewedDebugCryptedFile		= 0,
-
-			// Non-x86/x64 PE executable.
-			// Does not include Xbox 360 executables.
-			ViewedNonX86PE			= 1,
-
-			// BroadOn WAD file format for Wii.
-			ViewedBroadOnWADFile		= 2,
-
-			// Sonic & Knuckles locked on to Sonic & Knuckles
-			ViewedMegaDriveSKwithSK		= 3,
-
-			Max
-		};
-
-		/**
 		 * Unlock an achievement.
 		 * @param id Achievement ID.
 		 * @param bit Bitfield index for AT_BITFIELD achievements. (-1 for none)
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
 		int unlock(ID id, int bit = -1);
+
+		/**
+		 * Get an achievement name. (localized)
+		 * @param id Achievement ID.
+		 * @return Achievement description, or nullptr on error.
+		 */
+		const char *getName(ID id) const;
+
+		/**
+		 * Get an unlocked achievement description. (localized)
+		 * @param id Achievement ID.
+		 * @return Unlocked achievement description, or nullptr on error.
+		 */
+		const char *getDescUnlocked(ID id) const;
 };
 
 }

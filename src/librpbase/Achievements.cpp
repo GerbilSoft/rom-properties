@@ -10,10 +10,12 @@
 #include "Achievements.hpp"
 #include "libi18n/i18n.h"
 
-// librpfile
+// librpfile, librptexture
 #include "librpfile/FileSystem.hpp"
 #include "librpfile/RpFile.hpp"
+#include "librptexture/img/rp_image.hpp"
 using namespace LibRpFile;
+using LibRpTexture::rp_image;
 
 // C++ STL classes.
 using std::string;
@@ -83,7 +85,7 @@ class AchievementsPrivate
 		// Array index is the ID.
 		struct AchInfo_t {
 			const char *name;	// Name (NOP_C_, translatable)
-			const char *desc;	// Description (NOP_C_, translatable)
+			const char *desc_unlk;	// Unlocked description (NOP_C_, translatable)
 			AchType type;		// Achievement type
 			uint8_t count;		// AT_COUNT: Number of times needed to unlock.
 						// AT_BITFIELD: Number of bits. (up to 64)
@@ -175,30 +177,22 @@ class AchievementsPrivate
 const struct AchievementsPrivate::AchInfo_t AchievementsPrivate::achInfo[] =
 {
 	{
-		// tr: ViewedDebugCryptedFile (name)
 		NOP_C_("Achievements", "You are now a developer!"),
-		// tr: ViewedDebugCryptedFile (description)
 		NOP_C_("Achievements", "Viewed a debug-encrypted file."),
 		AT_COUNT, 1
 	},
 	{
-		// tr: ViewedNonX86PE (name)
 		NOP_C_("Achievements", "Now you're playing with POWER!"),
-		// tr: ViewedNonX86PE (description)
 		NOP_C_("Achievements", "Viewed a non-x86/x64 Windows PE executable."),
 		AT_COUNT, 1
 	},
 	{
-		// tr: ViewedBroadOnWADFile (name)
 		NOP_C_("Achievements", "Insert Startup Disc"),
-		// tr: ViewedBroadOnWADFile (description)
 		NOP_C_("Achievements", "Viewed a BroadOn format Wii WAD file."),
 		AT_COUNT, 1
 	},
 	{
-		// tr: ViewedMegaDriveSKwithSK (name)
 		NOP_C_("Achievements", "Knuckles & Knuckles"),
-		// tr: ViewedMegaDriveSKwithSK (description)
 		NOP_C_("Achievements", "Viewed a copy of Sonic & Knuckles locked on to Sonic & Knuckles."),
 		AT_COUNT, 1
 	},
@@ -779,15 +773,54 @@ int Achievements::unlock(ID id, int bit)
 	d->save();
 
 	if (unlocked) {
+		// TODO: Get the icon.
+		const rp_image *icon = nullptr;
+
 		// Achievement unlocked!
 		if (d->notifyFunc) {
-			d->notifyFunc(d->user_data,
-				dpgettext_expr(RP_I18N_DOMAIN, "Achievements", achInfo->name),
-				dpgettext_expr(RP_I18N_DOMAIN, "Achievements", achInfo->desc));
+			d->notifyFunc(d->user_data, id);
 		}
 	}
 
 	return 0;
+}
+
+/**
+ * Get an achievement name. (localized)
+ * @param id Achievement ID.
+ * @return Achievement description, or nullptr on error.
+ */
+const char *Achievements::getName(ID id) const
+{
+	assert((int)id >= 0);
+	assert(id < ID::Max);
+	if ((int)id < 0 || id >= ID::Max) {
+		// Invalid achievement ID.
+		return nullptr;
+	}
+
+	RP_D(const Achievements);
+	const AchievementsPrivate::AchInfo_t *const achInfo = &d->achInfo[(int)id];
+	return dpgettext_expr(RP_I18N_DOMAIN, "Achievements", achInfo->name);
+}
+
+/**
+ * Get an unlocked achievement description. (localized)
+ * @param id Achievement ID.
+ * @return Unlocked achievement description, or nullptr on error.
+ */
+const char *Achievements::getDescUnlocked(ID id) const
+{
+	assert((int)id >= 0);
+	assert(id < ID::Max);
+	if ((int)id < 0 || id >= ID::Max) {
+		// Invalid achievement ID.
+		return nullptr;
+	}
+
+	RP_D(const Achievements);
+	const AchievementsPrivate::AchInfo_t *const achInfo = &d->achInfo[(int)id];
+	return dpgettext_expr(RP_I18N_DOMAIN, "Achievements", achInfo->desc_unlk);
 }
 
 }
