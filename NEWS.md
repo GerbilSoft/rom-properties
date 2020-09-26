@@ -1,6 +1,10 @@
 # Changes
 
-## v1.8 (released 2020/??/??)
+## v1.7.3 (released 2020/09/25)
+
+* Bug fixes:
+  * GameCube: Fix incorrect GCZ data size checks.
+    * This *really* fixes #262, reported by @Amnesia1000.
 
 ## v1.7.2 (released 2020/09/24)
 
