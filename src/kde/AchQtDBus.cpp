@@ -10,6 +10,9 @@
 #include "AchQtDBus.hpp"
 using LibRpBase::Achievements;
 
+// For R/B channel swapping.
+#include "byteorder.h"
+
 // QtDBus
 #include "notificationsinterface.h"
 
@@ -159,9 +162,21 @@ QImage AchQtDBusPrivate::loadSpriteSheet(int iconSize)
 			return imgAchSheet;
 		}
 	}
-	// Swap the R and B channels.
-	// TODO: Do this in place instead of creating a new QImage?
-	imgAchSheet = imgAchSheet.rgbSwapped();
+
+	// Swap the R and B channels in place.
+	// TODO: Qt 6.0 will have an in-place rgbSwap() function.
+	uint8_t *bits = imgAchSheet.bits();
+	int strideDiff = imgAchSheet.bytesPerLine() - (imgAchSheet.width() * sizeof(uint32_t));
+	for (int y = imgAchSheet.height()-1; y >= 0; y--) {
+		for (int x = imgAchSheet.width(); x >= 0; x--, bits += 4) {
+#if SYS_BYTEORDER == SYS_LIL_ENDIAN
+			std::swap(bits[0], bits[2]);
+#else /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
+			std::swap(bits[1], bits[3]);
+#endif
+		}
+		bits += strideDiff;
+	}
 
 	// Make sure the bitmap has the expected size.
 	assert(imgAchSheet.width() == (int)(iconSize * Achievements::ACH_SPRITE_SHEET_COLS));
