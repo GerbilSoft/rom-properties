@@ -151,6 +151,7 @@ PIMGTYPE AchGDBusPrivate::loadSpriteSheet(int iconSize)
 		}
 		bits += strideDiff;
 	}
+	PIMGTYPE_mark_dirty(imgAchSheet);
 #endif
 
 	// Sprite sheet is correct.

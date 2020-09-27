@@ -166,6 +166,21 @@ static inline uint8_t *PIMGTYPE_get_image_data(PIMGTYPE pImgType, size_t *pLen =
 }
 
 /**
+ * Mark a PIMGTYPE as dirty.
+ * This must be called after modifying the underlying image data.
+ * @param pImgType	[in] PIMGTYPE
+ */
+static inline void PIMGTYPE_mark_dirty(PIMGTYPE pImgType)
+{
+#ifdef RP_GTK_USE_CAIRO
+	cairo_surface_mark_dirty(pImgType);
+#else /* !RP_GTK_USE_CAIRO */
+	// Nothing to do here...
+	RP_UNUSED(pImgType);
+#endif
+}
+
+/**
  * Get the row stride of a PIMGTYPE.
  * @param pImgType PIMGTYPE
  * @return Row stride. (bytes per line)
