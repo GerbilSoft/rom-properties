@@ -237,10 +237,10 @@ const rp_image *AchWin32Private::loadSpriteSheet(int iconSize)
 	}
 
 	// Make sure the bitmap has the expected size.
-	assert(imgAchSheet->width() == (iconSize * Achievements::ACH_SPRITE_SHEET_COLS));
-	assert(imgAchSheet->height() == (iconSize * Achievements::ACH_SPRITE_SHEET_ROWS));
-	if (imgAchSheet->width() != (iconSize * Achievements::ACH_SPRITE_SHEET_COLS) ||
-	    imgAchSheet->height() != (iconSize * Achievements::ACH_SPRITE_SHEET_ROWS))
+	assert(imgAchSheet->width() == (int)(iconSize * Achievements::ACH_SPRITE_SHEET_COLS));
+	assert(imgAchSheet->height() == (int)(iconSize * Achievements::ACH_SPRITE_SHEET_ROWS));
+	if (imgAchSheet->width() != (int)(iconSize * Achievements::ACH_SPRITE_SHEET_COLS) ||
+	    imgAchSheet->height() != (int)(iconSize * Achievements::ACH_SPRITE_SHEET_ROWS))
 	{
 		// Incorrect size. We can't use it.
 		imgAchSheet->unref();
