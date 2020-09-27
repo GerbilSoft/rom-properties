@@ -372,7 +372,7 @@ int AchWin32Private::notifyFunc(Achievements::ID id)
 
 	// FIXME: Icon size. Using 32px for now.
 	HICON hBalloonIcon = nullptr;
-	const rp_image *const imgspr = loadSpriteSheet(32);
+	const rp_image *const imgspr = loadSpriteSheet(iconSize);
 	if (imgspr) {
 		// Determine row and column.
 		const int col = ((int)id % Achievements::ACH_SPRITE_SHEET_COLS);
