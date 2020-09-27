@@ -306,7 +306,7 @@ int AchievementsPrivate::save(void) const
 				p[0] = (i & 0xFF);
 				p[1] = (i >> 8) & 0xFF;
 				// uint8_t: Achievement type
-				p[2] = AT_COUNT;
+				p[2] = AT_BITFIELD;
 				// uint64_t: Bitfield
 				// NOTE: Writing a byte at a time to prevent alignment issues.
 				p += 3;
