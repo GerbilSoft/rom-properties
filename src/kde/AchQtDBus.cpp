@@ -145,9 +145,9 @@ QImage AchQtDBusPrivate::loadSpriteSheet(int iconSize)
 		return iter->second;
 	}
 
-	char filename[32];
-	snprintf(filename, sizeof(filename), ":/ach/ach-%dx%d.png", iconSize, iconSize);
-	QImage imgAchSheet(QString::fromLatin1(filename));
+	char ach_filename[32];
+	snprintf(ach_filename, sizeof(ach_filename), ":/ach/ach-%dx%d.png", iconSize, iconSize);
+	QImage imgAchSheet(QString::fromLatin1(ach_filename));
 	if (imgAchSheet.isNull()) {
 		// Invalid...
 		return imgAchSheet;
@@ -163,21 +163,6 @@ QImage AchQtDBusPrivate::loadSpriteSheet(int iconSize)
 		}
 	}
 
-	// Swap the R and B channels in place.
-	// TODO: Qt 6.0 will have an in-place rgbSwap() function.
-	uint8_t *bits = imgAchSheet.bits();
-	int strideDiff = imgAchSheet.bytesPerLine() - (imgAchSheet.width() * sizeof(uint32_t));
-	for (int y = imgAchSheet.height()-1; y >= 0; y--) {
-		for (int x = imgAchSheet.width(); x >= 0; x--, bits += 4) {
-#if SYS_BYTEORDER == SYS_LIL_ENDIAN
-			std::swap(bits[0], bits[2]);
-#else /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
-			std::swap(bits[1], bits[3]);
-#endif
-		}
-		bits += strideDiff;
-	}
-
 	// Make sure the bitmap has the expected size.
 	assert(imgAchSheet.width() == (int)(iconSize * Achievements::ACH_SPRITE_SHEET_COLS));
 	assert(imgAchSheet.height() == (int)(iconSize * Achievements::ACH_SPRITE_SHEET_ROWS));
@@ -186,6 +171,21 @@ QImage AchQtDBusPrivate::loadSpriteSheet(int iconSize)
 	{
 		// Incorrect size. We can't use it.
 		return QImage();
+	}
+
+	// Swap the R and B channels in place.
+	// TODO: Qt 6.0 will have an in-place rgbSwap() function.
+	uint8_t *bits = imgAchSheet.bits();
+	int strideDiff = imgAchSheet.bytesPerLine() - (imgAchSheet.width() * sizeof(uint32_t));
+	for (int y = imgAchSheet.height(); y > 0; y--) {
+		for (int x = imgAchSheet.width(); x > 0; x--, bits += 4) {
+#if SYS_BYTEORDER == SYS_LIL_ENDIAN
+			std::swap(bits[0], bits[2]);
+#else /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
+			std::swap(bits[1], bits[3]);
+#endif
+		}
+		bits += strideDiff;
 	}
 
 	// Sprite sheet is correct.
