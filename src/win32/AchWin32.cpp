@@ -235,7 +235,6 @@ const rp_image *AchWin32Private::loadSpriteSheet(int iconSize)
 		// Unable to load the achievements sprite sheet.
 		return nullptr;
 	}
-	const int achStride = imgAchSheet->stride() / sizeof(uint32_t);
 
 	// Make sure the bitmap has the expected size.
 	assert(imgAchSheet->width() == (iconSize * Achievements::ACH_SPRITE_SHEET_COLS));
