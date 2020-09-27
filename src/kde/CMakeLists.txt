@@ -57,6 +57,7 @@ SET(rom-properties-kde_UIS
 	)
 SET(rom-properties-kde_RCC_SRCS
 	../res/flags/flags.qrc
+	../res/ach/ach.qrc
 	)
 
 IF(ENABLE_DECRYPTION)
