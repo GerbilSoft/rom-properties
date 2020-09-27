@@ -35,9 +35,10 @@ cairo_surface_t *CairoImageConv::rp_image_to_cairo_surface_t(const rp_image *img
 	const int width = img->width();
 	const int height = img->height();
 	cairo_surface_t *surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
-	assert(surface != nullptr);
+	// cairo_image_surface_create() always returns a valid pointer.
 	assert(cairo_surface_status(surface) == CAIRO_STATUS_SUCCESS);
-	if (unlikely(!surface || cairo_surface_status(surface) != CAIRO_STATUS_SUCCESS)) {
+	if (unlikely(cairo_surface_status(surface) != CAIRO_STATUS_SUCCESS)) {
+		cairo_surface_destroy(surface);
 		return nullptr;
 	}
 
