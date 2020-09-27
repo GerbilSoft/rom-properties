@@ -40,8 +40,8 @@ using LibRomData::RomDataFactory;
 using LibRpTexture::rp_image;
 
 #ifdef _WIN32
-// libwin32common
-# include "libwin32common/RpWin32_sdk.h"
+#  include "libwin32common/RpWin32_sdk.h"
+#  include "librptexture/img/GdiplusHelper.hpp"
 #endif /* _WIN32 */
 
 #ifdef ENABLE_DECRYPTION
@@ -382,6 +382,16 @@ int RP_C_API main(int argc, char *argv[])
 	}
 	if (json) cout << "[\n";
 
+#ifdef _WIN32
+	// Initialize GDI+.
+	const ULONG_PTR gdipToken = GdiplusHelper::InitGDIPlus();
+	assert(gdipToken != 0);
+	if (gdipToken == 0) {
+		cerr << "*** ERROR: GDI+ initialization failed." << endl;
+		return -EIO;
+	}
+#endif /* _WIN32 */
+
 #ifdef RP_OS_SCSI_SUPPORTED
 	bool inq_scsi = false;
 	bool inq_ata = false;
@@ -520,5 +530,11 @@ int RP_C_API main(int argc, char *argv[])
 		}
 	}
 	if (json) cout << "]\n";
+
+#ifdef _WIN32
+	// Shut down GDI+.
+	GdiplusHelper::ShutdownGDIPlus(gdipToken);
+#endif /* _WIN32 */
+
 	return ret;
 }

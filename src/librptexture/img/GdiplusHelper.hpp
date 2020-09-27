@@ -38,35 +38,4 @@ class GdiplusHelper
 		static void ShutdownGDIPlus(ULONG_PTR gdipToken);
 };
 
-/**
- * Class that calls GdiplusHelper::InitGDIPlus() when initialized
- * and GdiplusHelper::ShutdownGDIPlus() when deleted.
- */
-class ScopedGdiplus
-{
-	public:
-		ScopedGdiplus()
-		{
-			m_gdipToken = GdiplusHelper::InitGDIPlus();
-		}
-
-		~ScopedGdiplus()
-		{
-			if (m_gdipToken != 0) {
-				GdiplusHelper::ShutdownGDIPlus(m_gdipToken);
-			}
-		}
-
-		bool isValid(void)
-		{
-			return (m_gdipToken != 0);
-		}
-
-	private:
-		RP_DISABLE_COPY(ScopedGdiplus);
-
-	protected:
-		ULONG_PTR m_gdipToken;
-};
-
 #endif /* __ROMPROPERTIES_LIBRPBASE_IMG_GDIPLUSHELPER_HPP__ */

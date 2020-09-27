@@ -209,7 +209,6 @@ class RpGdiplusBackend : public rp_image_backend
 		HBITMAP convBmpData_CI8(const Gdiplus::BitmapData *pBmpData);
 
 	protected:
-		ULONG_PTR m_gdipToken;
 		Gdiplus::Bitmap *m_pGdipBmp;
 
 		// BitmapData for locking.

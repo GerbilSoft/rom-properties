@@ -42,6 +42,14 @@ class AchWin32
 		 * @return AchWin32 instance.
 		 */
 		static AchWin32 *instance(void);
+
+	public:
+		/**
+		 * Are any achievement popups still active?
+		 * This is needed in order to determine if the DLL can be unloaded.
+		 * @return True if any popups are still active; false if not.
+		 */
+		bool isAnyPopupStillActive(void) const;
 };
 
 #endif /* __ROMPROPERTIES_KDE_ACHQTDBUS_HPP__ */

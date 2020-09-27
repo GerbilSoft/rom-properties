@@ -318,7 +318,6 @@ void AchWin32Private::removeWindowFromTracking(HWND hWnd)
 		nid.dwState = 0;
 		nid.dwStateMask = 0;
 		nid.uVersion = NOTIFYICON_VERSION;
-		// FIXME: This seems slow for some reason... (Win7)
 		Shell_NotifyIcon(NIM_DELETE, &nid);
 	}
 
@@ -398,4 +397,15 @@ AchWin32 *AchWin32::instance(void)
 	pAch->setNotifyFunction(AchWin32Private::notifyFunc, reinterpret_cast<intptr_t>(q->d_ptr));
 
 	return q;
+}
+
+/**
+ * Are any achievement popups still active?
+ * This is needed in order to determine if the DLL can be unloaded.
+ * @return True if any popups are still active; false if not.
+ */
+bool AchWin32::isAnyPopupStillActive(void) const
+{
+	RP_D(const AchWin32);
+	return (!d->map_tidToHWND.empty());
 }

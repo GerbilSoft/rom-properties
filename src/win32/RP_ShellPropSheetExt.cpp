@@ -53,9 +53,6 @@ using std::unordered_map;
 using std::wstring;
 using std::vector;
 
-// GDI+ scoped token.
-#include "librptexture/img/GdiplusHelper.hpp"
-
 // Windows 10 and later
 #ifndef DATE_MONTHDAY
 # define DATE_MONTHDAY 0x00000080
@@ -125,9 +122,6 @@ class RP_ShellPropSheetExt_Private
 
 		// ListView controls. (for toggling LVS_EX_DOUBLEBUFFER)
 		vector<HWND> hwndListViewControls;
-
-		// GDI+ token.
-		ScopedGdiplus gdipScope;
 
 		// Header row widgets.
 		HWND lblSysInfo;

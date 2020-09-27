@@ -41,9 +41,13 @@
 using LibWin32Common::RegKey;
 
 // rp_image backend registration.
+#include "librptexture/img/GdiplusHelper.hpp"
 #include "librptexture/img/RpGdiplusBackend.hpp"
 using LibRpTexture::RpGdiplusBackend;
 using LibRpTexture::rp_image;
+
+// GDI+ token.
+static ULONG_PTR gdipToken = 0;
 
 // For file extensions.
 #include "libromdata/RomDataFactory.hpp"
@@ -130,13 +134,24 @@ BOOL WINAPI DllMain(HINSTANCE hInstance, DWORD dwReason, LPVOID /*lpReserved*/)
  */
 STDAPI DllCanUnloadNow(void)
 {
-	if (!LibWin32Common::ComBase_isReferenced()) {
-		// Not referenced anywhere.
-		return S_OK;
+	if (LibWin32Common::ComBase_isReferenced()) {
+		// Referenced by a COM object.
+		return S_FALSE;
 	}
 
-	// Still in use...
-	return S_FALSE;
+	if (AchWin32::instance()->isAnyPopupStillActive()) {
+		// Achievement window is still visible.
+		return S_FALSE;
+	}
+
+	// Shut down GDI+ if it was initialized.
+	if (gdipToken != 0) {
+		GdiplusHelper::ShutdownGDIPlus(gdipToken);
+		gdipToken = 0;
+	}
+
+	// Not in use.
+	return S_OK;
 }
 
 /**
@@ -164,6 +179,15 @@ _Check_return_ STDAPI DllGetClassObject(_In_ REFCLSID rclsid, _In_ REFIID riid, 
 		return E_UNEXPECTED;
 	}
 #endif /* defined(_MSC_VER) && defined(ENABLE_NLS) */
+
+	// Initialize GDI+.
+	if (gdipToken == 0) {
+		gdipToken = GdiplusHelper::InitGDIPlus();
+		assert(gdipToken != 0);
+		if (gdipToken == 0) {
+			return E_OUTOFMEMORY;
+		}
+	}
 
 	// Check for supported classes.
 	HRESULT hr = CLASS_E_CLASSNOTAVAILABLE;

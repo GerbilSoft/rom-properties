@@ -29,7 +29,6 @@ namespace Gdiplus {
 	using std::max;
 }
 #include <gdiplus.h>
-#include "librptexture/img/GdiplusHelper.hpp"
 
 namespace LibRpBase {
 
@@ -48,14 +47,6 @@ rp_image *RpJpeg::loadUnchecked(IRpFile *file)
 {
 	if (!file)
 		return nullptr;
-
-	// Initialize GDI+.
-	// TODO: Don't init/shutdowno n every image.
-	ScopedGdiplus gdip;
-	if (!gdip.isValid()) {
-		// Failed to initialized GDI+.
-		return nullptr;
-	}
 
 	// Rewind the file.
 	file->rewind();
