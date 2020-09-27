@@ -13,9 +13,7 @@
 // librpfile, librptexture
 #include "librpfile/FileSystem.hpp"
 #include "librpfile/RpFile.hpp"
-#include "librptexture/img/rp_image.hpp"
 using namespace LibRpFile;
-using LibRpTexture::rp_image;
 
 // C++ STL classes.
 using std::string;
@@ -773,9 +771,6 @@ int Achievements::unlock(ID id, int bit)
 	d->save();
 
 	if (unlocked) {
-		// TODO: Get the icon.
-		const rp_image *icon = nullptr;
-
 		// Achievement unlocked!
 		if (d->notifyFunc) {
 			d->notifyFunc(d->user_data, id);
