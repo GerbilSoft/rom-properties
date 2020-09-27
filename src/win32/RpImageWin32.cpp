@@ -505,27 +505,27 @@ HICON RpImageWin32::toHICON(HBITMAP hBitmap)
  * @param imgSpriteSheet	[in] rp_image sprite sheet
  * @param x			[in] X pos
  * @param y			[in] Y pos
- * @param w			[in] Width
- * @param h			[in] Height
+ * @param width			[in] Width
+ * @param height		[in] Height
  * @param dpi			[in,opt] DPI value.
  * @return Sub-bitmap, or nullptr on error.
  */
-HBITMAP RpImageWin32::getSubBitmap(const rp_image *imgSpriteSheet, int x, int y, int w, int h, UINT dpi)
+HBITMAP RpImageWin32::getSubBitmap(const rp_image *imgSpriteSheet, int x, int y, int width, int height, UINT dpi)
 {
 	// TODO: CI8?
 	assert(imgSpriteSheet->format() == rp_image::Format::ARGB32);
 	if (imgSpriteSheet->format() != rp_image::Format::ARGB32)
 		return nullptr;
 
-	assert(x + w <= imgSpriteSheet->width());
-	assert(y + h <= imgSpriteSheet->height());
-	if (x + w > imgSpriteSheet->width() || y + h > imgSpriteSheet->height())
+	assert(x + width <= imgSpriteSheet->width());
+	assert(y + height <= imgSpriteSheet->height());
+	if (x + width > imgSpriteSheet->width() || y + height > imgSpriteSheet->height())
 		return nullptr;
 
 	const BITMAPINFOHEADER bmihDIBSection = {
 		sizeof(BITMAPINFOHEADER),	// biSize
-		w,		// biWidth
-		-h,		// biHeight (negative for right-side up)
+		width,		// biWidth
+		-height,	// biHeight (negative for right-side up)
 		1,		// biPlanes
 		32,		// biBitCount
 		BI_RGB,		// biCompression
@@ -555,14 +555,14 @@ HBITMAP RpImageWin32::getSubBitmap(const rp_image *imgSpriteSheet, int x, int y,
 	}
 
 	// Copy the icon from the sprite sheet.
-	const size_t rowBytes = w * sizeof(uint32_t);
+	const size_t rowBytes = width * sizeof(uint32_t);
 	const int srcStride = imgSpriteSheet->stride() / sizeof(uint32_t);
 	const uint32_t *pSrc = static_cast<const uint32_t*>(imgSpriteSheet->scanLine(y));
 	pSrc += x;
 	uint32_t *pDest = static_cast<uint32_t*>(pvBits);
-	for (UINT bmRow = h; bmRow > 0; bmRow--) {
+	for (UINT bmRow = height; bmRow > 0; bmRow--) {
 		memcpy(pDest, pSrc, rowBytes);
-		pDest += w;
+		pDest += width;
 		pSrc += srcStride;
 	}
 

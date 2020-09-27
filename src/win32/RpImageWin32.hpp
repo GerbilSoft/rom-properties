@@ -99,8 +99,8 @@ class RpImageWin32
 		 * @param imgSpriteSheet	[in] rp_image sprite sheet
 		 * @param x			[in] X pos
 		 * @param y			[in] Y pos
-		 * @param w			[in] Width
-		 * @param h			[in] Height
+		 * @param width			[in] Width
+		 * @param height		[in] Height
 		 * @param dpi			[in,opt] DPI value.
 		 * @return Sub-bitmap, or nullptr on error.
 		 */
