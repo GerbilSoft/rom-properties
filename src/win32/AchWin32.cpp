@@ -115,7 +115,6 @@ class AchWin32Private
 		// - Key: Icon size
 		// - Value: rp_image*
 		unordered_map<int, rp_image*> map_imgAchSheet;
-		int sheet_icon_size;
 };
 
 // Property for "NotifyIconData uID".
@@ -132,7 +131,6 @@ AchWin32 AchWin32Private::instance;
 AchWin32Private::AchWin32Private()
 	: hasRegistered(false)
 	, atomWindowClass(0)
-	, sheet_icon_size(0)
 {
 	// NOTE: Cannot register with the Achievements class here because the
 	// static Achievements instance might not be fully initialized yet.
