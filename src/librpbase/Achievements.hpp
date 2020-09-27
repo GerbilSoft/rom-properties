@@ -68,6 +68,10 @@ class Achievements
 			Max
 		};
 
+		// Achievements sprite sheet columns/rows.
+		static const unsigned int ACH_SPRITE_SHEET_COLS = 4;
+		static const unsigned int ACH_SPRITE_SHEET_ROWS = 4;
+
 	public:
 		/**
 		 * Notification function.

@@ -8,10 +8,18 @@
 
 #include "stdafx.h"
 #include "AchWin32.hpp"
+#include "RpImageWin32.hpp"
+#include "res/resource.h"
 
-// librpbase
+// librpbase, librpfile, librptexture
 #include "librpbase/TextFuncs_wchar.hpp"
+#include "librpbase/img/RpPng.hpp"
+#include "librpfile/win32/RpFile_windres.hpp"
+#include "librptexture/img/rp_image.hpp"
 using LibRpBase::Achievements;
+using LibRpBase::RpPng;
+using LibRpFile::RpFile_windres;
+using LibRpTexture::rp_image;
 
 // ROM icon.
 #include "config/PropSheetIcon.hpp"
@@ -50,6 +58,14 @@ class AchWin32Private
 
 		// Icon ID high word.
 		static const DWORD ACHWIN32_NID_UID_HI = 0x19840000;
+
+	public:
+		/**
+		 * Load the specified sprite sheet.
+		 * @param iconSize Icon size. (16, 24, 32, 64)
+		 * @return const rp_image*, or nullptr on error.
+		 */
+		const rp_image *loadSpriteSheet(int iconSize);
 
 	public:
 		/**
@@ -94,6 +110,12 @@ class AchWin32Private
 		// need to use a map with thread IDs.
 		unordered_map<DWORD, HWND> map_tidToHWND;
 		unordered_map<HWND, DWORD> map_hWndToTID;
+
+		// Sprite sheets.
+		// - Key: Icon size
+		// - Value: rp_image*
+		unordered_map<int, rp_image*> map_imgAchSheet;
+		int sheet_icon_size;
 };
 
 // Property for "NotifyIconData uID".
@@ -110,6 +132,7 @@ AchWin32 AchWin32Private::instance;
 AchWin32Private::AchWin32Private()
 	: hasRegistered(false)
 	, atomWindowClass(0)
+	, sheet_icon_size(0)
 {
 	// NOTE: Cannot register with the Achievements class here because the
 	// static Achievements instance might not be fully initialized yet.
@@ -156,6 +179,80 @@ AchWin32Private::~AchWin32Private()
 	if (atomWindowClass > 0) {
 		UnregisterClass(MAKEINTRESOURCE(atomWindowClass), HINST_THISCOMPONENT);
 	}
+
+	std::for_each(map_imgAchSheet.begin(), map_imgAchSheet.end(),
+		[](std::pair<int, rp_image*> pair) {
+			pair.second->unref();
+		}
+	);
+}
+
+/**
+ * Load the specified sprite sheet.
+ * @param iconSize Icon size. (16, 24, 32, 64)
+ * @return const rp_image*, or nullptr on error.
+ */
+const rp_image *AchWin32Private::loadSpriteSheet(int iconSize)
+{
+	assert(iconSize == 16 || iconSize == 24 || iconSize == 32 || iconSize == 64);
+	UINT resID;
+	switch (iconSize) {
+		case 16:
+			resID = IDP_ACH_16x16;
+			break;
+		case 24:
+			resID = IDP_ACH_24x24;
+			break;
+		case 32:
+			resID = IDP_ACH_32x32;
+			break;
+		case 64:
+			resID = IDP_ACH_64x64;
+			break;
+		default:
+			assert(!"Invalid icon size.");
+			return nullptr;
+	}
+
+	// Check if the sprite sheet is already loaded.
+	auto iter = map_imgAchSheet.find(iconSize);
+	if (iter != map_imgAchSheet.end()) {
+		// Sprite sheet is already loaded.
+		return iter->second;
+	}
+
+	// Load the achievements sprite sheet.
+	// TODO: Is premultiplied alpha needed?
+	// Reference: https://stackoverflow.com/questions/307348/how-to-draw-32-bit-alpha-channel-bitmaps
+	RpFile_windres *const f_res = new RpFile_windres(HINST_THISCOMPONENT, MAKEINTRESOURCE(resID), MAKEINTRESOURCE(RT_PNG));
+	if (!f_res->isOpen()) {
+		// Unable to open the resource.
+		f_res->unref();
+		return nullptr;
+	}
+
+	rp_image *const imgAchSheet = RpPng::loadUnchecked(f_res);
+	f_res->unref();
+	if (!imgAchSheet) {
+		// Unable to load the achievements sprite sheet.
+		return nullptr;
+	}
+	const int achStride = imgAchSheet->stride() / sizeof(uint32_t);
+
+	// Make sure the bitmap has the expected size.
+	assert(imgAchSheet->width() == (iconSize * Achievements::ACH_SPRITE_SHEET_COLS));
+	assert(imgAchSheet->height() == (iconSize * Achievements::ACH_SPRITE_SHEET_ROWS));
+	if (imgAchSheet->width() != (iconSize * Achievements::ACH_SPRITE_SHEET_COLS) ||
+	    imgAchSheet->height() != (iconSize * Achievements::ACH_SPRITE_SHEET_ROWS))
+	{
+		// Incorrect size. We can't use it.
+		imgAchSheet->unref();
+		return nullptr;
+	}
+
+	// Sprite sheet is correct.
+	map_imgAchSheet.emplace(std::make_pair(iconSize, imgAchSheet));
+	return imgAchSheet;
 }
 
 /**
@@ -259,21 +356,40 @@ int AchWin32Private::notifyFunc(Achievements::ID id)
 	nid.uFlags = NIF_INFO;
 	nid.dwInfoFlags = NIIF_USER;
 	nid.uTimeout = ACHWIN32_TIMEOUT;	// NOTE: Only Win2000/XP.
+	nid.hIcon = nullptr;
 
-	// Check the OS version to determine which icon to use.
+	// Check the OS version to determine which icon size to use.
 	// TODO: DPI awareness.
+	const UINT dpi = rp_GetDpiForWindow(hNotifyWnd);
+	int iconSize;
 	OSVERSIONINFO osvi;
 	osvi.dwOSVersionInfoSize = sizeof(osvi);
 	if (GetVersionEx(&osvi) && osvi.dwMajorVersion >= 6) {
 		// Windows Vista or later. Use the large icon.
 		nid.dwInfoFlags |= NIIF_LARGE_ICON;
-		nid.hIcon = nullptr;
-		nid.hBalloonIcon = psi->getLargeIcon();
+		iconSize = 32;
 	} else {
 		// Windows XP or earlier. Use the small icon.
-		nid.hIcon = psi->getSmallIcon();
-		nid.hBalloonIcon = nullptr;
+		iconSize = 16;
 	}
+
+	// FIXME: Icon size. Using 32px for now.
+	HICON hBalloonIcon = nullptr;
+	const rp_image *const imgspr = loadSpriteSheet(32);
+	if (imgspr) {
+		// Determine row and column.
+		const int col = ((int)id % Achievements::ACH_SPRITE_SHEET_COLS);
+		const int row = ((int)id / Achievements::ACH_SPRITE_SHEET_COLS);
+
+		// Extract the sub-icon.
+		HBITMAP hbmIcon = RpImageWin32::getSubBitmap(imgspr, col*iconSize, row*iconSize, iconSize, iconSize, dpi);
+		assert(hbmIcon != nullptr);
+		if (hbmIcon) {
+			hBalloonIcon = RpImageWin32::toHICON(hbmIcon);
+			DeleteBitmap(hbmIcon);
+		}
+	}
+	nid.hBalloonIcon = hBalloonIcon;
 
 	const tstring ts_summary = U82T_c(C_("Achievements", "Achievement Unlocked"));
 	_tcsncpy(nid.szInfoTitle, ts_summary.c_str(), _countof(nid.szInfoTitle));
@@ -289,6 +405,10 @@ int AchWin32Private::notifyFunc(Achievements::ID id)
 		// WM_NCDESTROY will handle cleaning these up.
 		DestroyWindow(hNotifyWnd);
 		return -EIO;
+	}
+
+	if (hBalloonIcon) {
+		DestroyIcon(hBalloonIcon);
 	}
 
 	// NOTE: Not waiting for a response.

@@ -1,0 +1,7 @@
+<RCC>
+  <qresource prefix="ach">
+    <file>ach-16x16.png</file>
+    <file>ach-24x24.png</file>
+    <file>ach-32x32.png</file>
+  </qresource>
+</RCC>

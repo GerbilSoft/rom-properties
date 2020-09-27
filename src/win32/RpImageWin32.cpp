@@ -498,3 +498,74 @@ HICON RpImageWin32::toHICON(HBITMAP hBitmap)
 	img->unref();
 	return hIcon;
 }
+
+/**
+ * Extract an HBITMAP sprite from an rp_image sprite sheet.
+ * Caller must delete the HBITMAP after use.
+ * @param imgSpriteSheet	[in] rp_image sprite sheet
+ * @param x			[in] X pos
+ * @param y			[in] Y pos
+ * @param w			[in] Width
+ * @param h			[in] Height
+ * @param dpi			[in,opt] DPI value.
+ * @return Sub-bitmap, or nullptr on error.
+ */
+HBITMAP RpImageWin32::getSubBitmap(const rp_image *imgSpriteSheet, int x, int y, int w, int h, UINT dpi)
+{
+	// TODO: CI8?
+	assert(imgSpriteSheet->format() == rp_image::Format::ARGB32);
+	if (imgSpriteSheet->format() != rp_image::Format::ARGB32)
+		return nullptr;
+
+	assert(x + w <= imgSpriteSheet->width());
+	assert(y + h <= imgSpriteSheet->height());
+	if (x + w > imgSpriteSheet->width() || y + h > imgSpriteSheet->height())
+		return nullptr;
+
+	const BITMAPINFOHEADER bmihDIBSection = {
+		sizeof(BITMAPINFOHEADER),	// biSize
+		w,		// biWidth
+		-h,		// biHeight (negative for right-side up)
+		1,		// biPlanes
+		32,		// biBitCount
+		BI_RGB,		// biCompression
+		0,		// biSizeImage
+		(LONG)dpi,	// biXPelsPerMeter
+		(LONG)dpi,	// biYPelsPerMeter
+		0,		// biClrUsed
+		0,		// biClrImportant
+	};
+
+	// Create a DIB section for the sub-icon.
+	void *pvBits;
+	HDC hDC = GetDC(nullptr);
+	HBITMAP hbmIcon = CreateDIBSection(
+		hDC,		// hdc
+		reinterpret_cast<const BITMAPINFO*>(&bmihDIBSection),	// pbmi
+		DIB_RGB_COLORS,	// usage
+		&pvBits,	// ppvBits
+		nullptr,	// hSection
+		0);		// offset
+
+	GdiFlush();	// TODO: Not sure if needed here...
+	assert(hbmIcon != nullptr);
+	if (!hbmIcon) {
+		ReleaseDC(nullptr, hDC);
+		return nullptr;
+	}
+
+	// Copy the icon from the sprite sheet.
+	const size_t rowBytes = w * sizeof(uint32_t);
+	const int srcStride = imgSpriteSheet->stride() / sizeof(uint32_t);
+	const uint32_t *pSrc = static_cast<const uint32_t*>(imgSpriteSheet->scanLine(y));
+	pSrc += x;
+	uint32_t *pDest = static_cast<uint32_t*>(pvBits);
+	for (UINT bmRow = h; bmRow > 0; bmRow--) {
+		memcpy(pDest, pSrc, rowBytes);
+		pDest += w;
+		pSrc += srcStride;
+	}
+
+	ReleaseDC(nullptr, hDC);
+	return hbmIcon;
+}

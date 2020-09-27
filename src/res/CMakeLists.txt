@@ -13,6 +13,10 @@ SET(RESOURCE_LIST
 	flags/flags-16x16.png
 	flags/flags-24x24.png
 	flags/flags-32x32.png
+	ach/ach-16x16.png
+	ach/ach-24x24.png
+	ach/ach-32x32.png
+	ach/ach-64x64.png
 	)
 COMPILE_GRESOURCES(GLIB_RESOURCE_SRC
 	XML_OUT

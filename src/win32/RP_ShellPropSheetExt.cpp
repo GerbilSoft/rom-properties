@@ -1963,7 +1963,6 @@ void RP_ShellPropSheetExt_Private::buildCboLanguageImageList(void)
 		// Unable to load the flags sprite sheet.
 		return;
 	}
-	const int flagStride = imgFlagsSheet->stride() / sizeof(uint32_t);
 
 	// Make sure the bitmap has the expected size.
 	assert(imgFlagsSheet->width() == (iconSize * SystemRegion::FLAGS_SPRITE_SHEET_COLS));
@@ -1999,21 +1998,6 @@ void RP_ShellPropSheetExt_Private::buildCboLanguageImageList(void)
 		return;
 	}
 
-	const BITMAPINFOHEADER bmihDIBSection = {
-		sizeof(BITMAPINFOHEADER),	// biSize
-		(LONG)iconSize,			// biWidth
-		-(LONG)iconSize,		// biHeight (negative for right-side up)
-		1,				// biPlanes
-		32,				// biBitCount
-		BI_RGB,				// biCompression
-		0,				// biSizeImage
-		(LONG)dpi,			// biXPelsPerMeter
-		(LONG)dpi,			// biYPelsPerMeter
-		0,				// biClrUsed
-		0,				// biClrImportant
-	};
-
-	HDC hdcIcon = GetDC(nullptr);
 	const auto set_lc_cend = set_lc.cend();
 	for (auto iter = set_lc.cbegin(); iter != set_lc_cend; ++iter) {
 		int col, row;
@@ -2030,37 +2014,15 @@ void RP_ShellPropSheetExt_Private::buildCboLanguageImageList(void)
 			col = 3 - col;
 		}
 
-		// Create a DIB section for the sub-icon.
-		void *pvBits;
-		HBITMAP hbmIcon = CreateDIBSection(
-			hdcIcon,	// hdc
-			reinterpret_cast<const BITMAPINFO*>(&bmihDIBSection),	// pbmi
-			DIB_RGB_COLORS,	// usage
-			&pvBits,	// ppvBits
-			nullptr,	// hSection
-			0);		// offset
-
-		GdiFlush();	// TODO: Not sure if needed here...
+		// Extract the sub-icon.
+		HBITMAP hbmIcon = RpImageWin32::getSubBitmap(imgFlagsSheet, col*iconSize, row*iconSize, iconSize, iconSize, dpi);
 		assert(hbmIcon != nullptr);
 		if (hbmIcon) {
-			// Copy the icon from the sprite sheet.
-			const size_t rowBytes = iconSize * sizeof(uint32_t);
-			const uint32_t *pSrc = static_cast<const uint32_t*>(imgFlagsSheet->scanLine(row * iconSize));
-			pSrc += (col * iconSize);
-			uint32_t *pDest = static_cast<uint32_t*>(pvBits);
-			for (UINT bmRow = iconSize; bmRow > 0; bmRow--) {
-				memcpy(pDest, pSrc, rowBytes);
-				pDest += iconSize;
-				pSrc += flagStride;
-			}
-
 			// Add the icon to the ImageList.
-			GdiFlush();
 			ImageList_Add(himglFlags, hbmIcon, nullptr);
 			DeleteBitmap(hbmIcon);
 		}
 	}
-	ReleaseDC(nullptr, hdcIcon);
 	imgFlagsSheet->unref();
 
 	if (cboLanguage) {
