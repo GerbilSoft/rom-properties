@@ -178,6 +178,7 @@ AchWin32Private::~AchWin32Private()
 		UnregisterClass(MAKEINTRESOURCE(atomWindowClass), HINST_THISCOMPONENT);
 	}
 
+	// Delete the achievements sprite sheets.
 	std::for_each(map_imgAchSheet.begin(), map_imgAchSheet.end(),
 		[](std::pair<int, rp_image*> pair) {
 			pair.second->unref();
