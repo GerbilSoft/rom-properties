@@ -282,8 +282,8 @@ int AchievementsPrivate::save(void) const
 				if (iter == mapAchData_count.end())
 					break;
 				// Found achievement data. Write it out.
-				buf.resize(buf.size()+4);
-				uint8_t *const p = &buf.data()[buf.size()-4];
+				buf.resize(buf.size()+3+1);
+				uint8_t *const p = &buf.data()[buf.size()-3-1];
 				// uint16_t: Achievement ID
 				p[0] = (i & 0xFF);
 				p[1] = (i >> 8) & 0xFF;
@@ -300,8 +300,8 @@ int AchievementsPrivate::save(void) const
 				if (iter == mapAchData_bitfield.end())
 					break;
 				// Found achievement data. Write it out.
-				buf.resize(buf.size()+4);
-				uint8_t *p = &buf.data()[buf.size()-4];
+				buf.resize(buf.size()+3+8);
+				uint8_t *p = &buf.data()[buf.size()-3-8];
 				// uint16_t: Achievement ID
 				p[0] = (i & 0xFF);
 				p[1] = (i >> 8) & 0xFF;
