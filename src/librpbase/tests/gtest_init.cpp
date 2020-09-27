@@ -23,8 +23,10 @@ using std::locale;
 
 #ifdef _WIN32
 // rp_image backend registration.
-#include "librptexture/img/RpGdiplusBackend.hpp"
-#include "librptexture/img/rp_image.hpp"
+#  include "libwin32common/RpWin32_sdk.h"
+#  include "librptexture/img/GdiplusHelper.hpp"
+#  include "librptexture/img/RpGdiplusBackend.hpp"
+#  include "librptexture/img/rp_image.hpp"
 using LibRpTexture::RpGdiplusBackend;
 using LibRpTexture::rp_image;
 #endif /* _WIN32 */
@@ -95,6 +97,14 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 	rp_secure_enable(param);
 
 #ifdef _WIN32
+	// Initialize GDI+.
+	const ULONG_PTR gdipToken = GdiplusHelper::InitGDIPlus();
+	assert(gdipToken != 0);
+	if (gdipToken == 0) {
+		fprintf(stderr, "*** ERROR: GDI+ initialization failed.\n");
+		return EXIT_FAILURE;
+	}
+
 	// Register RpGdiplusBackend.
 	// TODO: Static initializer somewhere?
 	rp_image::setBackendCreatorFn(RpGdiplusBackend::creator_fn);
@@ -109,5 +119,10 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 	locale::global(locale("C"));
 
 	// Call the actual main function.
-	return gtest_main(argc, argv);
+	int ret = gtest_main(argc, argv);
+#ifdef _WIN32
+	// Shut down GDI+.
+	GdiplusHelper::ShutdownGDIPlus(gdipToken);
+#endif /* _WIN32 */
+	return ret;
 }
