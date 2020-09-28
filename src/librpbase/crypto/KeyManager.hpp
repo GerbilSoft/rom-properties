@@ -51,6 +51,7 @@ class KeyManager : public ConfReader
 			IAesCipherInitErr	= 7,	// IAesCipher could not be created.
 			IAesCipherDecryptErr	= 8,	// IAesCipher::decrypt() failed.
 			WrongKey		= 9,	// The key did not decrypt the test string correctly.
+			IncrementingValues	= 10,	// Partition is incrementing value garbage.
 
 			Max
 		};

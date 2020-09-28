@@ -205,14 +205,6 @@ WiiPartitionPrivate::WiiPartitionPrivate(WiiPartition *q,
 	, sector_num(~0)
 #endif /* ENABLE_DECRYPTION */
 {
-	// NOTE: The discReader parameter is needed because
-	// WiiPartitionPrivate is created *before* the
-	// WiiPartition superclass's discReader field is set.
-	if ((cryptoMethod & WiiPartition::CM_MASK_ENCRYPTED) == WiiPartition::CM_UNENCRYPTED) {
-		// No encryption. (RVT-H)
-		verifyResult = KeyManager::VerifyResult::OK;
-	}
-
 	// Clear data set by GcnPartition in case the
 	// partition headers can't be read.
 	this->data_offset = -1;
@@ -402,7 +394,22 @@ KeyManager::VerifyResult WiiPartitionPrivate::initDecryption(void)
 		reinterpret_cast<const GCN_DiscHeader*>(sector_buf.data);
 	if (discHeader->magic_wii != cpu_to_be32(WII_MAGIC)) {
 		// Invalid disc header.
-		verifyResult = KeyManager::VerifyResult::WrongKey;
+
+		// NOTE: Debug discs may have incrementing values in update partitions.
+		static const uint8_t incr_vals[32] = {
+			0x00,0x00,0x00,0x00, 0x00,0x00,0x00,0x04,
+			0x00,0x00,0x00,0x08, 0x00,0x00,0x00,0x0C,
+			0x00,0x00,0x00,0x10, 0x00,0x00,0x00,0x14,
+			0x00,0x00,0x00,0x18, 0x00,0x00,0x00,0x1C,
+		};
+		if (!memcmp(sector_buf.data, incr_vals, sizeof(incr_vals))) {
+			// Found incrementing values.
+			verifyResult = KeyManager::VerifyResult::IncrementingValues;
+		} else {
+			// Not incrementing values.
+			// We probably have the wrong key.
+			verifyResult = KeyManager::VerifyResult::WrongKey;
+		}
 		return verifyResult;
 	}
 
@@ -541,6 +548,30 @@ WiiPartition::WiiPartition(IDiscReader *discReader, off64_t partition_offset,
 #ifdef ENABLE_DECRYPTION
 	d->pos_7C00 = 0;
 #endif /* ENABLE_DECRYPTION */
+
+	// Unencrypted discs don't need decryption.
+	if ((cryptoMethod & WiiPartition::CM_MASK_ENCRYPTED) == WiiPartition::CM_UNENCRYPTED) {
+		// No encryption. (RVT-H)
+
+		// NOTE: Debug discs may have incrementing values in update partitions.
+		static const uint8_t incr_vals[32] = {
+			0x00,0x00,0x00,0x00, 0x00,0x00,0x00,0x04,
+			0x00,0x00,0x00,0x08, 0x00,0x00,0x00,0x0C,
+			0x00,0x00,0x00,0x10, 0x00,0x00,0x00,0x14,
+			0x00,0x00,0x00,0x18, 0x00,0x00,0x00,0x1C,
+		};
+
+		uint8_t data[32];
+		size_t size = m_discReader->seekAndRead(d->partition_offset + d->data_offset, data, sizeof(data));
+		if (size == sizeof(incr_vals) && !memcmp(data, incr_vals, sizeof(incr_vals))) {
+			// Found incrementing values.
+			d->verifyResult = KeyManager::VerifyResult::IncrementingValues;
+		} else {
+			// Assume the disc is OK.
+			// TODO: Check for Wii magic?
+			d->verifyResult = KeyManager::VerifyResult::OK;
+		}
+	}
 
 	// Encryption will not be initialized until
 	// read() is called.

@@ -5,6 +5,10 @@
 * New parser features:
   * NGPC: Added external title screens using RPDB.
 
+* Bug fixes:
+  * GameCube: Detect incrementing values partitions in encrypted images.
+    * Fixes #269, reported by @Masamune3210.
+
 ## v1.7.3 (released 2020/09/25)
 
 * Bug fixes:

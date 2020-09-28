@@ -249,6 +249,8 @@ const char *KeyManager::verifyResultToString(VerifyResult res)
 		NOP_C_("KeyManager|VerifyResult", "AES decryption failed."),
 		// tr: VerifyResult::WrongKey
 		NOP_C_("KeyManager|VerifyResult", "The key in keys.conf is incorrect."),
+		// tr: VerifyResult::IncrementingValues
+		NOP_C_("KeyManager|VerifyResult", "The partition contains incrementing values."),
 	};
 	static_assert(ARRAY_SIZE(errTbl) == (int)KeyManager::VerifyResult::Max, "Update errTbl[].");
 
