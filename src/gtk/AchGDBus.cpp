@@ -206,10 +206,14 @@ int AchGDBusPrivate::notifyFunc(Achievements::ID id)
 
 	// Build the text.
 	// TODO: Better formatting?
+	char *s_achName = g_markup_escape_text(pAch->getName(id), -1);
+	char *s_achDescUnlocked = g_markup_escape_text(pAch->getDescUnlocked(id), -1);
 	string text = "<u>";
-	text += pAch->getName(id);
+	text += s_achName;
 	text += "</u>\n";
-	text += pAch->getDescUnlocked(id);
+	text += s_achDescUnlocked;
+	g_free(s_achName);
+	g_free(s_achDescUnlocked);
 
 	// actions: as
 	static const gchar *const actions[] = { "", nullptr };
