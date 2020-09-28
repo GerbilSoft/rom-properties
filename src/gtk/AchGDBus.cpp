@@ -216,7 +216,7 @@ int AchGDBusPrivate::notifyFunc(Achievements::ID id)
 	g_free(s_achDescUnlocked);
 
 	// actions: as
-	static const gchar *const actions[] = { "", nullptr };
+	static const gchar *const actions[] = { nullptr };
 
 	// hints: a{sv}
 	// NOTE: GDBus seems to take ownership of `hints`...
