@@ -13,6 +13,7 @@
 // C includes. (C++ namespace)
 #include <cassert>
 #include <cerrno>
+#include <cstdio>
 #include <cstring>
 #include <stdint.h>
 
