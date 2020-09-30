@@ -25,7 +25,8 @@ extern "C" {
  * All fields are little-endian.
  * NOTE: Strings are NOT null-terminated!
  */
-typedef struct _NDS_RomHeader {
+#pragma pack(1)
+typedef struct PACKED _NDS_RomHeader {
 	char title[12];
 	union {
 		char id6[6];	// Game code. (ID6)
@@ -187,6 +188,7 @@ typedef struct _NDS_RomHeader {
 		uint8_t rsa_sha1[0x80];		// RSA SHA1 signature on 0x000...0xDFF.
 	} dsi;
 } NDS_RomHeader;
+#pragma pack()
 ASSERT_STRUCT(NDS_RomHeader, 4096);
 
 /**

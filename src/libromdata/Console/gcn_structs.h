@@ -24,7 +24,8 @@ extern "C" {
  */
 #define GCN_MAGIC 0xC2339F3D
 #define WII_MAGIC 0x5D1C9EA3
-typedef struct _GCN_DiscHeader {
+#pragma pack(1)
+typedef struct PACKED _GCN_DiscHeader {
 	union {
 		char id6[6];	// [0x000] Game code. (ID6)
 		struct {
@@ -52,6 +53,7 @@ typedef struct _GCN_DiscHeader {
 
 	uint8_t reserved[2];		// [0x062] Reserved (alignment padding)
 } GCN_DiscHeader;
+#pragma pack()
 ASSERT_STRUCT(GCN_DiscHeader, 100);
 
 /**

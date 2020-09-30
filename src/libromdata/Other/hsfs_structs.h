@@ -44,7 +44,8 @@ ASSERT_STRUCT(HSFS_PVD_DateTime_t, 16);
 /**
  * HSFS Directory Entry date/time struct.
  */
-typedef struct _HSFS_Dir_DateTime_t {
+#pragma pack(1)
+typedef struct PACKED _HSFS_Dir_DateTime_t {
 	uint8_t year;		// Number of years since 1900.
 	uint8_t month;		// Month, from 1 to 12.
 	uint8_t day;		// Day, from 1 to 31.
@@ -52,6 +53,7 @@ typedef struct _HSFS_Dir_DateTime_t {
 	uint8_t minute;		// Minute, from 0 to 59.
 	uint8_t second;		// Second, from 0 to 59.
 } HSFS_Dir_DateTime_t;
+#pragma pack()
 ASSERT_STRUCT(HSFS_Dir_DateTime_t, 6);
 
 /**

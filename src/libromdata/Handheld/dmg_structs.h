@@ -26,7 +26,8 @@ extern "C" {
  * 
  * NOTE: Strings are NOT null-terminated!
  */
-typedef struct _DMG_RomHeader {
+#pragma pack(1)
+typedef struct PACKED _DMG_RomHeader {
 	uint8_t entry[4];
 	uint8_t nintendo[0x30];
 
@@ -64,6 +65,7 @@ typedef struct _DMG_RomHeader {
 	uint8_t header_checksum; // checked by bootrom
 	uint16_t rom_checksum;   // checked by no one
 } DMG_RomHeader;
+#pragma pack()
 ASSERT_STRUCT(DMG_RomHeader, 80);
 
 /**

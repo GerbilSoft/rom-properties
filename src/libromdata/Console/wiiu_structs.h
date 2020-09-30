@@ -23,7 +23,8 @@ extern "C" {
  * All fields are big-endian.
  * NOTE: Strings are NOT null-terminated!
  */
-typedef struct _WiiU_DiscHeader {
+#pragma pack(1)
+typedef struct PACKED _WiiU_DiscHeader {
 	union {
 		char id[10];		// WUP-P-xxxx
 		struct {
@@ -42,6 +43,7 @@ typedef struct _WiiU_DiscHeader {
 	char hyphen5;
 	char disc_number;	// Disc number, in ASCII. (TODO: Verify?)
 } WiiU_DiscHeader;
+#pragma pack()
 ASSERT_STRUCT(WiiU_DiscHeader, 22);
 
 // Secondary Wii U disc magic at 0x10000.

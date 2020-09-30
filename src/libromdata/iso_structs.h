@@ -85,7 +85,8 @@ ASSERT_STRUCT(uint32_lsb_msb_t, 8);
  * For an unspecified time, all text fields contain '0' (ASCII zero)
  * and tz_offset is binary zero.
  */
-typedef struct _ISO_PVD_DateTime_t {
+#pragma pack(1)
+typedef struct PACKED _ISO_PVD_DateTime_t {
 	union {
 		char full[16];
 		struct {
@@ -103,12 +104,14 @@ typedef struct _ISO_PVD_DateTime_t {
 	// Range: [-48 (GMT-1200), +52 (GMT+1300)]
 	int8_t tz_offset;
 } ISO_PVD_DateTime_t;
+#pragma pack()
 ASSERT_STRUCT(ISO_PVD_DateTime_t, 17);
 
 /**
  * ISO-9660 Directory Entry date/time struct.
  */
-typedef struct _ISO_Dir_DateTime_t {
+#pragma pack(1)
+typedef struct PACKED _ISO_Dir_DateTime_t {
 	uint8_t year;		// Number of years since 1900.
 	uint8_t month;		// Month, from 1 to 12.
 	uint8_t day;		// Day, from 1 to 31.
@@ -120,6 +123,7 @@ typedef struct _ISO_Dir_DateTime_t {
 	// Range: [-48 (GMT-1200), +52 (GMT+1300)]
 	int8_t tz_offset;
 } ISO_Dir_DateTime_t;
+#pragma pack()
 ASSERT_STRUCT(ISO_Dir_DateTime_t, 7);
 
 /**
@@ -154,11 +158,13 @@ typedef enum {
 /**
  * Volume descriptor header.
  */
-typedef struct _ISO_Volume_Descriptor_Header {
+#pragma pack(1)
+typedef struct PACKED _ISO_Volume_Descriptor_Header {
 	uint8_t type;		// Volume descriptor type code. (See ISO_Volume_Descriptor_Type.)
 	char identifier[5];	// (strA) "CD001"
 	uint8_t version;	// Volume descriptor version. (0x01)
 } ISO_Volume_Descriptor_Header;
+#pragma pack()
 ASSERT_STRUCT(ISO_Volume_Descriptor_Header, 7);
 
 /**
