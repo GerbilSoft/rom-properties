@@ -603,6 +603,8 @@ rom_data_view_set_uri(RomDataView	*page,
 	}
 
 	// URI has been changed.
+	// FIXME: If called from rom_data_view_set_property(), this might
+	// result in *two* notifications.
 	g_object_notify_by_pspec(G_OBJECT(page), properties[PROP_URI]);
 }
 
@@ -625,6 +627,8 @@ rom_data_view_set_desc_format_type(RomDataView *page, RpDescFormatType desc_form
 		return;
 	}
 
+	// FIXME: If called from rom_data_view_set_property(), this might
+	// result in *two* notifications.
 	page->desc_format_type = desc_format_type;
 	rom_data_view_desc_format_type_changed(page, desc_format_type);
 	g_object_notify_by_pspec(G_OBJECT(page), properties[PROP_DESC_FORMAT_TYPE]);
@@ -2207,6 +2211,8 @@ rom_data_view_load_rom_data(gpointer data)
 		// file is ref()'d by RomData.
 		RomData *const romData = RomDataFactory::create(file);
 		if (romData != page->romData) {
+			// FIXME: If called from rom_data_view_set_property(), this might
+			// result in *two* notifications.
 			page->romData = romData;
 			g_object_notify_by_pspec(G_OBJECT(page), properties[PROP_SHOWING_DATA]);
 		}

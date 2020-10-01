@@ -141,7 +141,7 @@ message_widget_init(MessageWidget *widget)
 	// Make this an HBox.
 	gtk_orientable_set_orientation(GTK_ORIENTABLE(widget), GTK_ORIENTATION_HORIZONTAL);
 	hbox = GTK_BOX(widget);
-#else
+#else /* !GTK_CHECK_VERSION(3,0,0) */
 	// Add a GtkEventBox for the inner color.
 	widget->evbox_inner = gtk_event_box_new();
 	gtk_widget_show(widget->evbox_inner);
@@ -256,6 +256,10 @@ void
 message_widget_set_text(MessageWidget *widget, const gchar *str)
 {
 	gtk_label_set_text(GTK_LABEL(widget->label), str);
+
+	// FIXME: If called from rom_data_view_set_property(), this might
+	// result in *two* notifications.
+	g_object_notify_by_pspec(G_OBJECT(widget), properties[PROP_TEXT]);
 }
 
 const gchar*
@@ -267,11 +271,6 @@ message_widget_get_text(MessageWidget *widget)
 void
 message_widget_set_message_type(MessageWidget *widget, GtkMessageType messageType)
 {
-	if (widget->messageType == messageType)
-		return;
-
-	widget->messageType = messageType;
-
 	// Update the icon.
 	// Background colors based on KMessageWidget.
 	struct IconInfo_t {
@@ -292,6 +291,9 @@ message_widget_set_message_type(MessageWidget *widget, GtkMessageType messageTyp
 		// Default to OTHER.
 		messageType = GTK_MESSAGE_OTHER;
 	}
+	if (widget->messageType == messageType)
+		return;
+	widget->messageType = messageType;
 
 	const IconInfo_t *const pIconInfo = &iconInfo[messageType];
 
@@ -339,6 +341,10 @@ message_widget_set_message_type(MessageWidget *widget, GtkMessageType messageTyp
 		gtk_widget_modify_bg(GTK_WIDGET(widget->evbox_inner), GTK_STATE_NORMAL, nullptr);
 #endif /* !GTK_CHECK_VERSION(3,0,0) */
 	}
+
+	// FIXME: If called from rom_data_view_set_property(), this might
+	// result in *two* notifications.
+	g_object_notify_by_pspec(G_OBJECT(widget), properties[PROP_MESSAGE_TYPE]);
 }
 
 GtkMessageType
