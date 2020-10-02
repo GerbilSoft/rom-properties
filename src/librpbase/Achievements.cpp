@@ -136,7 +136,7 @@ class AchievementsPrivate
 		// The header is followed by achievement data: (1-byte alignment, little-endian)
 		// - uint16_t: Achievement ID
 		// - uint8_t: Achievement type
-		// - varlenint: Timestmap obtained
+		// - varlenint: Timestamp the achievement was last updated
 		// - Data (uint8_t for AT_COUNT, varlenint for AT_BITFIELD)
 
 		// varlenint is a variable-length value using an encoding
