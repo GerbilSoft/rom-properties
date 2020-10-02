@@ -237,18 +237,13 @@ int AchGDBusPrivate::notifyFunc(Achievements::ID id)
 		subIcon = PIMGTYPE_get_subsurface(imgspr, col*iconSize, row*iconSize, iconSize, iconSize);
 		assert(subIcon != nullptr);
 
-		int width, height;
-		PIMGTYPE_get_size(subIcon, &width, &height);
-		assert(width > 0);
-		assert(height > 0);
-
 		size_t imgDataLen = 0;
 		const uint8_t *const pImgData = PIMGTYPE_get_image_data(subIcon, &imgDataLen);
 
 		GVariantBuilder b_image_data;
 		g_variant_builder_init(&b_image_data, G_VARIANT_TYPE("(iiibiiay)"));
-		g_variant_builder_add(&b_image_data, "i", width);
-		g_variant_builder_add(&b_image_data, "i", height);
+		g_variant_builder_add(&b_image_data, "i", iconSize);	// width
+		g_variant_builder_add(&b_image_data, "i", iconSize);	// height
 		g_variant_builder_add(&b_image_data, "i", PIMGTYPE_get_rowstride(subIcon));
 		g_variant_builder_add(&b_image_data, "b", TRUE);	// has_alpha
 		g_variant_builder_add(&b_image_data, "i", 8);		// 8 bits per *channel*
