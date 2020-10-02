@@ -101,10 +101,17 @@ class AchievementsPrivate
 		};
 
 		// Active achievement data.
-		// Two maps: One for boolean/count, one for bitfield.
+		struct AchData_t {
+			union {
+				uint8_t count;		// AT_COUNT
+				uint64_t bitfield;	// AT_BITFIELD
+			};
+			time_t timestamp;		// Time this achievement was last updated.
+		};
+
+		// Achievement map.
 		// TODO: Map vs. unordered_map for performance?
-		unordered_map<Achievements::ID, uint8_t, EnumClassHash> mapAchData_count;
-		unordered_map<Achievements::ID, uint64_t, EnumClassHash> mapAchData_bitfield;
+		unordered_map<Achievements::ID, AchData_t, EnumClassHash> mapAchData;
 
 		// Achievements filename and magic number.
 #if defined(NDEBUG) || defined(FORCE_OBFUSCATE)
@@ -129,7 +136,36 @@ class AchievementsPrivate
 		// The header is followed by achievement data: (1-byte alignment, little-endian)
 		// - uint16_t: Achievement ID
 		// - uint8_t: Achievement type
-		// - Data (uint8_t for AT_COUNT, uint64_t for AT_BITFIELD)
+		// - varlenint: Timestmap obtained
+		// - Data (uint8_t for AT_COUNT, varlenint for AT_BITFIELD)
+
+		// varlenint is a variable-length value using an encoding
+		// similar to MIDI variable-length values:
+		// - 7 bits per byte, starting with the least-significant bits.
+		// - Last byte has bit 7 clear.
+		// - All other bytes have bit 7 set.
+		// Examples:
+		// -      0x10 -> 10
+		// -      0x80 -> 80 01
+		// -     0x100 -> 80 02
+		// - 0xFFFFFFF -> FF FF FF 7F
+
+		/**
+		 * Append a uint64_t to an ao::uvector<> using varlenint format.
+		 * @param vec ao::uvector<>
+		 * @param val Value
+		 */
+		static void appendVarlenInt(ao::uvector<uint8_t> &vec, uint64_t val);
+
+		/**
+		 * Parse a varlenint value.
+		 * @param val	[out] Output value.
+		 * @param p	[in] Data pointer.
+		 * @param p_end	[in] End of data.
+		 * @return Number of bytes processed, or 0 on error.
+		 */
+		template<typename T>
+		static int parseVarlenInt(T &val, const uint8_t *p, const uint8_t *const p_end);
 
 		/**
 		 * Symmetric obfuscation function.
@@ -208,6 +244,61 @@ AchievementsPrivate::AchievementsPrivate()
 { }
 
 /**
+ * Append a uint64_t to an ao::uvector<> using varlenint format.
+ * @param vec ao::uvector<>
+ * @param val Value
+ */
+void AchievementsPrivate::appendVarlenInt(ao::uvector<uint8_t> &vec, uint64_t val)
+{
+	vec.reserve(vec.size() + 8);
+
+	while (val >= 0x80) {
+		vec.push_back(0x80U | (val & 0x7FU));
+		val >>= 7;
+	}
+
+	// Last byte.
+	// NOTE: Masking probably isn't needed here...
+	vec.push_back(val & 0x7FU);
+}
+
+/**
+ * Parse a varlenint value.
+ * @param val	[out] Output value.
+ * @param p	[in] Data pointer.
+ * @param p_end	[in] End of data.
+ * @return Number of bytes processed, or 0 on error.
+ */
+template<typename T>
+int AchievementsPrivate::parseVarlenInt(T &val, const uint8_t *p, const uint8_t *const p_end)
+{
+	int bytesParsed = 0;	// maximum: 5 for 32-bit, 10 for 64-bit
+	uint8_t shamt = 0;	// next shift amount
+	val = 0;
+
+	bool foundLastByte = false;
+	for (; p < p_end; p++, shamt += 7) {
+		if (shamt > sizeof(T)*8) {
+			// Shift amount is out of range.
+			return 0;
+		}
+
+		val |= static_cast<T>(*p & 0x7F) << shamt;
+		bytesParsed++;
+
+		if (!(*p & 0x80)) {
+			// Last byte.
+			foundLastByte = true;
+			break;
+		}
+	}
+
+	// If we found the last byte, this function succeeded.
+	// Otherwise, it failed.
+	return (foundLastByte ? bytesParsed : 0);
+}
+
+/**
  * Symmetric obfuscation function.
  * @param iv Initialization vector.
  * @param buf Data buffer.
@@ -272,48 +363,45 @@ int AchievementsPrivate::save(void) const
 	memcpy(header->magic, ACH_BIN_MAGIC, sizeof(header->magic));
 	header->length = 0;
 	header->crc32 = 0;
-	header->count = cpu_to_le32(static_cast<uint32_t>(mapAchData_count.size() + mapAchData_bitfield.size()));
+	header->count = cpu_to_le32(static_cast<uint32_t>(mapAchData.size()));
 
 	// Process all achievements in order of ID.
 	for (unsigned int i = 0; i < (int)Achievements::ID::Max; i++) {
+		auto iter = mapAchData.find((Achievements::ID)i);
+		if (iter == mapAchData.end())
+			continue;
+
 		switch (achInfo[i].type) {
 			case AT_COUNT: {
-				auto iter = mapAchData_count.find((Achievements::ID)i);
-				if (iter == mapAchData_count.end())
-					break;
-				// Found achievement data. Write it out.
-				buf.resize(buf.size()+3+1);
-				uint8_t *const p = &buf.data()[buf.size()-3-1];
+				buf.reserve(buf.size()+3+8+1);
+				buf.resize(buf.size()+3);
+				uint8_t *const p = &buf.data()[buf.size()-3];
 				// uint16_t: Achievement ID
 				p[0] = (i & 0xFF);
 				p[1] = (i >> 8) & 0xFF;
 				// uint8_t: Achievement type
 				p[2] = AT_COUNT;
+				// varlenint: Timestamp
+				appendVarlenInt(buf, iter->second.timestamp);
 				// uint8_t: Count
-				p[3] = iter->second;
+				buf.push_back(iter->second.count);
 				break;
 			}
 
 			case AT_BITFIELD: {
 				// TODO: NEEDS TESTING!!!
-				auto iter = mapAchData_bitfield.find((Achievements::ID)i);
-				if (iter == mapAchData_bitfield.end())
-					break;
-				// Found achievement data. Write it out.
-				buf.resize(buf.size()+3+8);
-				uint8_t *p = &buf.data()[buf.size()-3-8];
+				buf.reserve(buf.size()+3+8+8);
+				buf.resize(buf.size()+3);
+				uint8_t *p = &buf.data()[buf.size()-3];
 				// uint16_t: Achievement ID
 				p[0] = (i & 0xFF);
 				p[1] = (i >> 8) & 0xFF;
 				// uint8_t: Achievement type
 				p[2] = AT_BITFIELD;
-				// uint64_t: Bitfield
-				// NOTE: Writing a byte at a time to prevent alignment issues.
-				p += 3;
-				uint64_t val = iter->second;
-				for (unsigned int n = 8; n > 0; n--, val >>= 8, p++) {
-					*p = (val & 0xFF);
-				}
+				// varlenint: Timestamp
+				appendVarlenInt(buf, iter->second.timestamp);
+				// varlenint: Bitfield
+				appendVarlenInt(buf, iter->second.bitfield);
 				break;
 			}
 
@@ -413,8 +501,7 @@ int AchievementsPrivate::load(void)
 
 	// Clear loaded achievements.
 	loaded = false;
-	mapAchData_count.clear();
-	mapAchData_bitfield.clear();
+	mapAchData.clear();
 
 	// Load the achievements file in memory.
 	string filename = getFilename();
@@ -474,7 +561,6 @@ int AchievementsPrivate::load(void)
 
 	if (iv.u16[1] != (0xFFFF - iv.u16[0])) {
 		// Incorrect iv1.
-		printf("IV1 ERR\n");
 		return -EIO;
 	}
 
@@ -534,21 +620,41 @@ int AchievementsPrivate::load(void)
 			}
 		}
 
+		// Check for duplicates.
+		// If found, ignore this.
+		auto iter = mapAchData.find((Achievements::ID)id);
+		if (iter != mapAchData.end()) {
+			// Found a duplicate.
+			assert(!"Duplicate achievement found!");
+			ok = false;
+			break;
+		}
+
+		// Type byte.
+		const uint8_t type = p[2];
+
+		// Timestamp.
+		int64_t timestamp;
+		int bytesParsed = parseVarlenInt(timestamp, &p[3], p_end);
+		if (bytesParsed == 0) {
+			assert(!"Not enough bytes for the timestamp.");
+			ok = false;
+			break;
+		}
+
+		p += 3 + bytesParsed;
+		if (p >= p_end) {
+			assert(!"Not enough bytes for the achievement data.");
+			ok = false;
+			break;
+		}
+
 		// Check the type byte.
-		switch (p[2]) {
+		switch (type) {
 			case AT_COUNT: {
-				// Check for duplicates.
-				// If found, ignore this.
-				auto iter = mapAchData_count.find((Achievements::ID)id);
-				if (iter != mapAchData_count.end()) {
-					// Found a duplicate.
-					assert(!"Duplicate AT_COUNT achievement found!");
-					ok = false;
-					break;
-				}
-				// Save the achievement count.
-				mapAchData_count[(Achievements::ID)id] = p[3];
-				p += 4;
+				mapAchData[(Achievements::ID)id].timestamp = static_cast<time_t>(timestamp);
+				mapAchData[(Achievements::ID)id].count = *p;
+				p++;
 				break;
 			}
 
@@ -556,31 +662,20 @@ int AchievementsPrivate::load(void)
 				// TODO: NEEDS TESTING!!!
 				// Check for duplicates.
 				// If found, ignore this.
-				auto iter = mapAchData_bitfield.find((Achievements::ID)id);
-				if (iter != mapAchData_bitfield.end()) {
-					// Found a duplicate.
-					assert(!"Duplicate AT_BITFIELD achievement found!");
-					ok = false;
-					break;
-				}
-				// Make sure we have 8 bytes available.
-				if (p+3+8 >= p_end) {
-					// Out of range.
+
+				// Parse the bitfield as a varlenint.
+				uint64_t bitfield;
+				bytesParsed = parseVarlenInt(bitfield, p, p_end);
+				if (bytesParsed == 0) {
+					// Out of bytes.
 					assert(!"Not enough data bytes for AT_BITFIELD.");
 					ok = false;
 					break;
 				}
+				p += bytesParsed;
 
-				// Convert the uint64_t.
-				uint64_t val = 0;
-				p += 3;
-				for (unsigned int n = 8; n > 0; n--, p++) {
-					val <<= 8;
-					val |= *p;
-				}
-
-				// Save the achievement bitfield.
-				mapAchData_bitfield[(Achievements::ID)id] = val;
+				mapAchData[(Achievements::ID)id].timestamp = static_cast<time_t>(timestamp);
+				mapAchData[(Achievements::ID)id].bitfield = bitfield;
 				break;
 			}
 
@@ -594,10 +689,9 @@ int AchievementsPrivate::load(void)
 	}
 
 	if (!ok) {
-		// Error occurred while loading achievements.
+		// An error occurred while loading achievements.
 		loaded = false;
-		mapAchData_count.clear();
-		mapAchData_bitfield.clear();
+		mapAchData.clear();
 		return -EIO;
 	}
 
@@ -715,7 +809,7 @@ int Achievements::unlock(ID id, int bit)
 
 		case AchievementsPrivate::AT_COUNT: {
 			// Check if we've already reached the required count.
-			uint8_t count = d->mapAchData_count[id];
+			uint8_t count = d->mapAchData[id].count;
 			if (count >= achInfo->count) {
 				// Count has been reached.
 				// Achievement is already unlocked.
@@ -724,7 +818,8 @@ int Achievements::unlock(ID id, int bit)
 
 			// Increment the count.
 			count++;
-			d->mapAchData_count[id] = count;
+			d->mapAchData[id].count = count;
+			d->mapAchData[id].timestamp = time(nullptr);
 			if (count >= achInfo->count) {
 				// Achievement unlocked!
 				unlocked = true;
@@ -744,7 +839,7 @@ int Achievements::unlock(ID id, int bit)
 			// Check if we've already filled the bitfield.
 			// TODO: Verify 32-bit and 64-bit operation for values 32 and 64.
 			const uint64_t bf_filled = (1ULL << achInfo->count) - 1;
-			uint64_t bf_value = d->mapAchData_bitfield[id];
+			uint64_t bf_value = d->mapAchData[id].bitfield;
 			if (bf_value == bf_filled) {
 				// Bitfield is already filled.
 				// Achievement is already unlocked.
@@ -758,7 +853,8 @@ int Achievements::unlock(ID id, int bit)
 				return 0;
 			}
 
-			d->mapAchData_bitfield[id] = bf_new;
+			d->mapAchData[id].bitfield = bf_new;
+			d->mapAchData[id].timestamp = time(nullptr);
 			if (bf_new == bf_filled) {
 				// Achievement unlocked!
 				unlocked = true;
