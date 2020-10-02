@@ -494,7 +494,7 @@ int AchievementsPrivate::load(void)
 	const uint32_t data_len = le32_to_cpu(header->length);
 	if (data_len < sizeof(header->count) ||
 	    data_len >= ((1*1024*1024)-HeaderSizeMinusCount) ||
-	    data_len + HeaderSizeMinusCount < buf.size())
+	    data_len + HeaderSizeMinusCount > buf.size())
 	{
 		// Incorrect length.
 		return -EBADF;
