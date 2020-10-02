@@ -145,10 +145,10 @@ class AchievementsPrivate
 		// - Last byte has bit 7 clear.
 		// - All other bytes have bit 7 set.
 		// Examples:
-		// -      0x10 -> 10
-		// -      0x80 -> 80 01
-		// -     0x100 -> 80 02
-		// - 0xFFFFFFF -> FF FF FF 7F
+		// -       0x10 -> 10
+		// -       0x80 -> 80 01
+		// -      0x100 -> 80 02
+		// - 0x0FFFFFFF -> FF FF FF 7F
 
 		/**
 		 * Append a uint64_t to an ao::uvector<> using varlenint format.
