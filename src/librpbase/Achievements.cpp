@@ -128,9 +128,9 @@ class AchievementsPrivate
 		// All fields are in little-endian.
 		struct AchBinHeader {
 			char magic[8];		// [0x000] "RPACH10R" or "RPACH10D"
-			uint32_t length;	// [0x00C] Length of remainder of file, in bytes. [includes count]
-			uint32_t crc32;		// [0x010] CRC32 of remainder of file. [includes count]
-			uint32_t count;		// [0x008] Number of achievements.
+			uint32_t length;	// [0x008] Length of remainder of file, in bytes. [excludes CRC32; includes count]
+			uint32_t crc32;		// [0x00C] CRC32 of remainder of file. [includes count]
+			uint32_t count;		// [0x010] Number of achievements.
 		};
 
 		// The header is followed by achievement data: (1-byte alignment, little-endian)
