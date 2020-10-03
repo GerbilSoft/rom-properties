@@ -878,9 +878,9 @@ int Achievements::unlock(ID id, int bit)
 /**
  * Check if an achievement is unlocked.
  * @param id Achievement ID.
- * @return True if unlocked; false if not.
+ * @return UNIX time value if unlocked; -1 if not.
  */
-bool Achievements::isUnlocked(ID id) const
+time_t Achievements::isUnlocked(ID id) const
 {
 #if defined(_MSC_VER) && defined(ZLIB_IS_DLL)
 	// Delay load verification.
@@ -889,7 +889,7 @@ bool Achievements::isUnlocked(ID id) const
 		// Delay load failed.
 		// We won't be able to calculate CRC32s, so don't
 		// enable achievements at all.
-		return false;
+		return -1;
 	}
 #endif /* defined(_MSC_VER) && defined(ZLIB_IS_DLL) */
 
@@ -899,7 +899,7 @@ bool Achievements::isUnlocked(ID id) const
 	assert(id < ID::Max);
 	if ((int)id < 0 || id >= ID::Max) {
 		// Invalid achievement ID.
-		return false;
+		return -1;
 	}
 
 	// Make sure achievements have been loaded.
@@ -909,7 +909,7 @@ bool Achievements::isUnlocked(ID id) const
 	}
 
 	// Check the type.
-	bool unlocked = false;
+	time_t timestamp = -1;
 	const AchievementsPrivate::AchInfo_t *const achInfo = &d->achInfo[(int)id];
 	switch (achInfo->type) {
 		default:
@@ -920,8 +920,11 @@ bool Achievements::isUnlocked(ID id) const
 			// Check if we've already reached the required count.
 			auto iter = d->mapAchData.find(id);
 			if (iter != d->mapAchData.end()) {
-				uint8_t count = iter->second.count;
-				unlocked = (count >= achInfo->count);
+				const auto &ach = iter->second;
+				uint8_t count = ach.count;
+				if (count >= achInfo->count) {
+					timestamp = ach.timestamp;
+				}
 			}
 			break;
 		}
@@ -931,15 +934,17 @@ bool Achievements::isUnlocked(ID id) const
 			// TODO: Verify 32-bit and 64-bit operation for values 32 and 64.
 			auto iter = d->mapAchData.find(id);
 			if (iter != d->mapAchData.end()) {
+				const auto &ach = iter->second;
 				const uint64_t bf_filled = (1ULL << achInfo->count) - 1;
-				uint64_t bf_value = iter->second.bitfield;
-				unlocked = (bf_value == bf_filled);
+				if (ach.bitfield == bf_filled) {
+					timestamp = ach.timestamp;
+				}
 			}
 			break;
 		}
 	}
 
-	return unlocked;
+	return timestamp;
 }
 
 /**

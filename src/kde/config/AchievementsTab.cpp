@@ -105,7 +105,8 @@ void AchievementsTab::reset(void)
 	for (int i = 0; i < (int)Achievements::ID::Max; i++) {
 		// Is the achievement unlocked?
 		const Achievements::ID id = (Achievements::ID)i;
-		const bool unlocked = pAch->isUnlocked(id);
+		const time_t timestamp = pAch->isUnlocked(id);
+		const bool unlocked = (timestamp != -1);
 
 		// Determine row and column.
 		const int col = (i % Achievements::ACH_SPRITE_SHEET_COLS);
@@ -127,10 +128,17 @@ void AchievementsTab::reset(void)
 		treeWidgetItem->setIcon(0, QIcon(pxmSubIcon));
 		treeWidgetItem->setData(1, Qt::DisplayRole, s_ach);
 		treeWidgetItem->setData(1, Qt::UserRole, unlocked);
+		if (unlocked) {
+			treeWidgetItem->setData(2, Qt::DisplayRole, QDateTime::fromMSecsSinceEpoch(timestamp * 1000));
+		}
 	}
 
-	// Reduce the icon column size.
-	treeWidget->resizeColumnToContents(0);
+	// Set column stretch modes.
+	QHeaderView *const pHeader = treeWidget->header();
+	pHeader->setStretchLastSection(false);
+	pHeader->setSectionResizeMode(0, QHeaderView::ResizeToContents);
+	pHeader->setSectionResizeMode(1, QHeaderView::Stretch);
+	pHeader->setSectionResizeMode(2, QHeaderView::ResizeToContents);
 }
 
 /**

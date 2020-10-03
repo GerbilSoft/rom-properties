@@ -32,6 +32,11 @@
        <string>Achievement</string>
       </property>
      </column>
+     <column>
+      <property name="text">
+       <string>Unlock Time</string>
+      </property>
+     </column>
     </widget>
    </item>
   </layout>

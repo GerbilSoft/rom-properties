@@ -112,9 +112,9 @@ class Achievements
 		/**
 		 * Check if an achievement is unlocked.
 		 * @param id Achievement ID.
-		 * @return True if unlocked; false if not.
+		 * @return UNIX time value if unlocked; -1 if not.
 		 */
-		bool isUnlocked(ID id) const;
+		time_t isUnlocked(ID id) const;
 
 	public:
 		/**
