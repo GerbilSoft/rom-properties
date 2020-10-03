@@ -28,6 +28,7 @@ SET(rom-properties-kde_SRCS
 	config/SystemsTab.cpp
 	config/OptionsTab.cpp
 	config/AchievementsTab.cpp
+	config/AchievementsItemDelegate.cpp
 	config/AboutTab.cpp
 	)
 SET(rom-properties-kde_H
@@ -47,6 +48,7 @@ SET(rom-properties-kde_H
 	config/SystemsTab.cpp
 	config/OptionsTab.hpp
 	config/AchievementsTab.hpp
+	config/AchievementsItemDelegate.hpp
 	config/AboutTab.hpp
 	)
 SET(rom-properties-kde_UIS

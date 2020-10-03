@@ -8,6 +8,7 @@
 
 #include "stdafx.h"
 #include "AchievementsTab.hpp"
+#include "AchievementsItemDelegate.hpp"
 
 // librpbase
 #include "librpbase/Achievements.hpp"
@@ -34,6 +35,9 @@ AchievementsTab::AchievementsTab(QWidget *parent)
 {
 	Q_D(AchievementsTab);
 	d->ui.setupUi(this);
+
+	// Initialize the treeWidget's item delegate.
+	d->ui.treeWidget->setItemDelegate(new AchievementsItemDelegate(this));
 
 	// Load the achievements.
 	reset();
