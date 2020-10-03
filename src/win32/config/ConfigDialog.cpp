@@ -38,6 +38,7 @@ DELAYLOAD_TEST_FUNCTION_IMPL1(textdomain, nullptr);
 #include "SystemsTab.hpp"
 #include "OptionsTab.hpp"
 #include "CacheTab.hpp"
+#include "AchievementsTab.hpp"
 #ifdef ENABLE_DECRYPTION
 # include "KeyManagerTab.hpp"
 #endif /* ENABLE_DECRYPTION */
@@ -55,9 +56,9 @@ class ConfigDialogPrivate
 	public:
 		// Property sheet variables.
 #ifdef ENABLE_DECRYPTION
-		static const unsigned int TAB_COUNT = 6;
+		static const unsigned int TAB_COUNT = 7;
 #else
-		static const unsigned int TAB_COUNT = 5;
+		static const unsigned int TAB_COUNT = 6;
 #endif
 		array<ITab*, TAB_COUNT> tabs;
 		array<HPROPSHEETPAGE, TAB_COUNT> hpsp;
@@ -107,10 +108,13 @@ ConfigDialogPrivate::ConfigDialogPrivate()
 	// - https://www.codeproject.com/Articles/2408/Clean-Up-Handler
 	tabs[3] = new CacheTab();
 	hpsp[3] = tabs[3]->getHPropSheetPage();
+	// Achievements
+	tabs[4] = new AchievementsTab();
+	hpsp[4] = tabs[4]->getHPropSheetPage();
 #ifdef ENABLE_DECRYPTION
 	// Key Manager
-	tabs[4] = new KeyManagerTab();
-	hpsp[4] = tabs[4]->getHPropSheetPage();
+	tabs[5] = new KeyManagerTab();
+	hpsp[5] = tabs[5]->getHPropSheetPage();
 #endif /* ENABLE_DECRYPTION */
 
 	// About

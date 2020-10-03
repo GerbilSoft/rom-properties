@@ -60,6 +60,7 @@ SET(rom-properties-win32_SRCS
 	config/SystemsTab.cpp
 	config/OptionsTab.cpp
 	config/CacheTab.cpp
+	config/AchievementsTab.cpp
 	config/AboutTab.cpp
 	)
 SET(rom-properties-win32_H
@@ -88,6 +89,7 @@ SET(rom-properties-win32_H
 	config/SystemsTab.hpp
 	config/OptionsTab.hpp
 	config/CacheTab.hpp
+	config/AchievementsTab.hpp
 	config/AboutTab.hpp
 	res/resource.h
 	)

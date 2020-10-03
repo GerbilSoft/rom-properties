@@ -185,7 +185,6 @@ class AboutTabPrivate
 		void setTabContents(int index);
 
 	public:
-
 		/**
 		 * Initialize the dialog.
 		 */
@@ -1039,5 +1038,5 @@ void AboutTab::loadDefaults(void)
  */
 void AboutTab::save(void)
 {
-	// Nothing to load here...
+	// Nothing to save here...
 }
