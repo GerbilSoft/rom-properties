@@ -321,7 +321,7 @@ void AchievementsItemDelegate::paint(QPainter *painter,
 		painter->setPen(bgOption.palette.text().color());
 	}
 
-	// Draw the lines.
+	// Draw the text lines.
 	painter->setFont(fontName);
 	int i = 0;
 	auto iter_rect = v_rect.cbegin();
