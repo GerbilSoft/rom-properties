@@ -337,6 +337,9 @@ size_t Xbox360_XEX_Private::getOptHdrData(uint32_t header_id, uint32_t *pOut32)
 	if ((int)xexType < 0) {
 		// Invalid XEX type.
 		return 0;
+	} else if (!file) {
+		// File is closed. Can't read the optional header.
+		return 0;
 	}
 
 	// Get the entry.
@@ -538,6 +541,10 @@ CBCReader *Xbox360_XEX_Private::initPeReader(void)
 		return peReader;
 	}
 #endif /* ENABLE_LIBMSPACK */
+	if (!file) {
+		// File is closed. Can't initialize PE Reader.
+		return nullptr;
+	}
 
 	if (xexType <= XexType::Unknown || xexType >= XexType::Max) {
 		// Invalid XEX type.
@@ -2082,11 +2089,10 @@ int Xbox360_XEX::checkViewedAchievements(void) const
 		return 0;
 	}
 
-	// Initialize the PE reader.
-	if (!const_cast<Xbox360_XEX_Private*>(d)->initPeReader()) {
-		// Error initializing the PE reader.
-		return 0;
-	}
+	// keyInUse should have been initialized somewhere else.
+	// Initializing it here won't work because the file may
+	// have been closed already.
+	// TODO: Initialize the PE Reader in the constructor?
 
 	Achievements *const pAch = Achievements::instance();
 	int ret = 0;
