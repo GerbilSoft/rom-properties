@@ -18,9 +18,9 @@
 
 // C++ STL 
 
-#ifdef Q_OS_WIN
+#ifdef _WIN32
 #  include <windows.h>
-#endif /* Q_OS_WIN */
+#endif /* _WIN32 */
 
 class AchievementsItemDelegatePrivate
 {
@@ -38,7 +38,7 @@ class AchievementsItemDelegatePrivate
 		QFont fontName(const QWidget *widget = 0) const;
 		QFont fontDesc(const QWidget *widget = 0) const;
 
-#ifdef Q_OS_WIN
+#ifdef _WIN32
 		// Win32: Theming functions.
 	private:
 		// HACK: Mark this as mutable so const functions can update it.
@@ -47,21 +47,21 @@ class AchievementsItemDelegatePrivate
 	public:
 		bool isXPTheme(bool update = false) const;
 		bool isVistaTheme(void) const;
-#endif /* Q_OS_WIN */
+#endif /* _WIN32 */
 };
 
 /** AchievementsItemDelegatePrivate **/
 
 AchievementsItemDelegatePrivate::AchievementsItemDelegatePrivate(AchievementsItemDelegate *q)
 	: q_ptr(q)
-#ifdef Q_OS_WIN
+#ifdef _WIN32
 	, m_isXPTheme(false)
-#endif /* Q_OS_WIN */
+#endif /* _WIN32 */
 {
-#ifdef Q_OS_WIN
+#ifdef _WIN32
 	// Update the XP theming info.
 	isXPTheme(true);
-#endif /* Q_OS_WIN */
+#endif /* _WIN32 */
 }
 
 QFont AchievementsItemDelegatePrivate::fontName(const QWidget *widget) const
@@ -89,7 +89,7 @@ QFont AchievementsItemDelegatePrivate::fontDesc(const QWidget *widget) const
 	return font;
 }
 
-#ifdef Q_OS_WIN
+#ifdef _WIN32
 typedef bool (WINAPI *PtrIsAppThemed)(void);
 typedef bool (WINAPI *PtrIsThemeActive)(void);
 
@@ -146,7 +146,7 @@ bool AchievementsItemDelegatePrivate::isVistaTheme(void) const
 		QSysInfo::WindowsVersion >= QSysInfo::WV_VISTA &&
 		(QSysInfo::WindowsVersion & QSysInfo::WV_NT_based));
 }
-#endif /* Q_OS_WIN */
+#endif /* _WIN32 */
 
 /** AchievementsItemDelegate **/
 
@@ -154,11 +154,11 @@ AchievementsItemDelegate::AchievementsItemDelegate(QObject *parent)
 	: super(parent)
 	, d_ptr(new AchievementsItemDelegatePrivate(this))
 {
-#ifdef Q_OS_WIN
+#ifdef _WIN32
 	// Connect the "themeChanged" signal.
 	connect(qApp, SIGNAL(themeChanged()),
 		this, SLOT(themeChanged_slot()));
-#endif /* Q_OS_WIN */
+#endif /* _WIN32 */
 }
 
 AchievementsItemDelegate::~AchievementsItemDelegate()
@@ -302,7 +302,7 @@ void AchievementsItemDelegate::paint(QPainter *painter,
 	style->drawControl(QStyle::CE_ItemViewItem, &bgOption, painter, bgOption.widget);
 	bgOption.backgroundBrush = QBrush();
 
-#ifdef Q_OS_WIN
+#ifdef _WIN32
 	// Adjust the palette for Vista themes.
 	if (d->isVistaTheme()) {
 		// Vista theme uses a slightly different palette.
@@ -397,7 +397,7 @@ QSize AchievementsItemDelegate::sizeHint(const QStyleOptionViewItem &option,
  */
 void AchievementsItemDelegate::themeChanged_slot(void)
 {
-#ifdef Q_OS_WIN
+#ifdef _WIN32
 	// Update the XP theming info.
 	Q_D(AchievementsItemDelegate);
 	d->isXPTheme(true);
