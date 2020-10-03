@@ -222,7 +222,7 @@ void AchievementsItemDelegate::paint(QPainter *painter,
 
 	// Horizontal margins.
 	// Reference: http://doc.qt.io/qt-4.8/qitemdelegate.html#sizeHint
-	QStyle *style = bgOption.widget ? bgOption.widget->style() : QApplication::style();
+	QStyle *const style = bgOption.widget ? bgOption.widget->style() : QApplication::style();
 	//const int hmargin = style->pixelMetric(QStyle::PM_FocusFrameHMargin, &option) * 2;
 
 	// Reduce the text rectangle by the hmargin.
