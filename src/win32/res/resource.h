@@ -21,6 +21,10 @@
 #define IDP_ACH_24x24				312
 #define IDP_ACH_32x32				313
 #define IDP_ACH_64x64				314
+#define IDP_ACH_GRAY_16x16			321
+#define IDP_ACH_GRAY_24x24			322
+#define IDP_ACH_GRAY_32x32			323
+#define IDP_ACH_GRAY_64x64			324
 
 // Dialogs
 #define IDD_PROPERTY_SHEET                      100	/* Generic property sheet. */

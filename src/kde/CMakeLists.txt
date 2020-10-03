@@ -27,6 +27,7 @@ SET(rom-properties-kde_SRCS
 	config/ImageTypesTab.cpp
 	config/SystemsTab.cpp
 	config/OptionsTab.cpp
+	config/AchievementsTab.cpp
 	config/AboutTab.cpp
 	)
 SET(rom-properties-kde_H
@@ -45,6 +46,7 @@ SET(rom-properties-kde_H
 	config/ImageTypesTab.hpp
 	config/SystemsTab.cpp
 	config/OptionsTab.hpp
+	config/AchievementsTab.hpp
 	config/AboutTab.hpp
 	)
 SET(rom-properties-kde_UIS
@@ -53,6 +55,7 @@ SET(rom-properties-kde_UIS
 	config/ImageTypesTab.ui
 	config/SystemsTab.ui
 	config/OptionsTab.ui
+	config/AchievementsTab.ui
 	config/AboutTab.ui
 	)
 SET(rom-properties-kde_RCC_SRCS

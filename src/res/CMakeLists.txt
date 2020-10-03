@@ -17,6 +17,10 @@ SET(RESOURCE_LIST
 	ach/ach-24x24.png
 	ach/ach-32x32.png
 	ach/ach-64x64.png
+	ach/ach-gray-16x16.png
+	ach/ach-gray-24x24.png
+	ach/ach-gray-32x32.png
+	ach/ach-gray-64x64.png
 	)
 COMPILE_GRESOURCES(GLIB_RESOURCE_SRC
 	XML_OUT

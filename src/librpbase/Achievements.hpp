@@ -110,6 +110,14 @@ class Achievements
 		int unlock(ID id, int bit = -1);
 
 		/**
+		 * Check if an achievement is unlocked.
+		 * @param id Achievement ID.
+		 * @return True if unlocked; false if not.
+		 */
+		bool isUnlocked(ID id) const;
+
+	public:
+		/**
 		 * Get an achievement name. (localized)
 		 * @param id Achievement ID.
 		 * @return Achievement description, or nullptr on error.

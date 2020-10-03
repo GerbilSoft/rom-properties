@@ -34,9 +34,14 @@
        <string>&amp;Options</string>
       </attribute>
      </widget>
+     <widget class="AchievementsTab" name="tabAchievements">
+      <attribute name="title">
+       <string>&amp;Achievements</string>
+      </attribute>
+     </widget>
      <widget class="AboutTab" name="tabAbout">
       <attribute name="title">
-       <string>About</string>
+       <string>Abou&amp;t</string>
       </attribute>
      </widget>
     </widget>
@@ -88,6 +93,12 @@
    <class>SystemsTab</class>
    <extends>QWidget</extends>
    <header>config/SystemsTab.hpp</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>AchievementsTab</class>
+   <extends>QWidget</extends>
+   <header>config/AchievementsTab.hpp</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

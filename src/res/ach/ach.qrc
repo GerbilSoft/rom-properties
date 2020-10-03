@@ -3,5 +3,11 @@
     <file>ach-16x16.png</file>
     <file>ach-24x24.png</file>
     <file>ach-32x32.png</file>
+    <file>ach-64x64.png</file>
+
+    <file>ach-gray-16x16.png</file>
+    <file>ach-gray-24x24.png</file>
+    <file>ach-gray-32x32.png</file>
+    <file>ach-gray-64x64.png</file>
   </qresource>
 </RCC>

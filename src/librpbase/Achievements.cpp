@@ -772,8 +772,6 @@ void Achievements::clearNotifyFunction(NotifyFunc func, intptr_t user_data)
  */
 int Achievements::unlock(ID id, int bit)
 {
-	RP_D(Achievements);
-
 #if defined(_MSC_VER) && defined(ZLIB_IS_DLL)
 	// Delay load verification.
 	// TODO: Only if linked with /DELAYLOAD?
@@ -795,6 +793,7 @@ int Achievements::unlock(ID id, int bit)
 	}
 
 	// Make sure achievements have been loaded.
+	RP_D(Achievements);
 	if (!d->loaded) {
 		d->load();
 	}
@@ -874,6 +873,73 @@ int Achievements::unlock(ID id, int bit)
 	}
 
 	return 0;
+}
+
+/**
+ * Check if an achievement is unlocked.
+ * @param id Achievement ID.
+ * @return True if unlocked; false if not.
+ */
+bool Achievements::isUnlocked(ID id) const
+{
+#if defined(_MSC_VER) && defined(ZLIB_IS_DLL)
+	// Delay load verification.
+	// TODO: Only if linked with /DELAYLOAD?
+	if (DelayLoad_test_zlibVersion() != 0) {
+		// Delay load failed.
+		// We won't be able to calculate CRC32s, so don't
+		// enable achievements at all.
+		return false;
+	}
+#endif /* defined(_MSC_VER) && defined(ZLIB_IS_DLL) */
+
+	// If this achievement is bool/count, increment the value.
+	// If the value has hit the maximum, achievement is unlocked.
+	assert((int)id >= 0);
+	assert(id < ID::Max);
+	if ((int)id < 0 || id >= ID::Max) {
+		// Invalid achievement ID.
+		return false;
+	}
+
+	// Make sure achievements have been loaded.
+	RP_D(const Achievements);
+	if (!d->loaded) {
+		const_cast<AchievementsPrivate*>(d)->load();
+	}
+
+	// Check the type.
+	bool unlocked = false;
+	const AchievementsPrivate::AchInfo_t *const achInfo = &d->achInfo[(int)id];
+	switch (achInfo->type) {
+		default:
+			assert(!"Achievement type not supported.");
+			return -EINVAL;
+
+		case AchievementsPrivate::AT_COUNT: {
+			// Check if we've already reached the required count.
+			auto iter = d->mapAchData.find(id);
+			if (iter != d->mapAchData.end()) {
+				uint8_t count = iter->second.count;
+				unlocked = (count >= achInfo->count);
+			}
+			break;
+		}
+
+		case AchievementsPrivate::AT_BITFIELD: {
+			// Check if we've already filled the bitfield.
+			// TODO: Verify 32-bit and 64-bit operation for values 32 and 64.
+			auto iter = d->mapAchData.find(id);
+			if (iter != d->mapAchData.end()) {
+				const uint64_t bf_filled = (1ULL << achInfo->count) - 1;
+				uint64_t bf_value = iter->second.bitfield;
+				unlocked = (bf_value == bf_filled);
+			}
+			break;
+		}
+	}
+
+	return unlocked;
 }
 
 /**
