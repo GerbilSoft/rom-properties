@@ -604,12 +604,14 @@ int AchievementsPrivate::load(void)
 	for (; ok && p+3 < p_end && ach_count > 0; ach_count--) {
 		// Achievement ID.
 		const uint16_t id = p[0] | (p[1] << 8);
+		bool isIDok = true;
 		if (id >= (int)Achievements::ID::Max) {
 			// Invalid ID.
 			// NOTE: Allowing this in case the user is downgrading
 			// from a newer version that has more achievements.
 			// NOTE: We can't validate the type if the achievement ID is out of range.
 			assert(!"Achievement ID is out of range.");
+			isIDok = false;
 		} else {
 			// Make sure the type is correct.
 			if (achInfo[id].type != p[2]) {
@@ -652,16 +654,16 @@ int AchievementsPrivate::load(void)
 		// Check the type byte.
 		switch (type) {
 			case AT_COUNT: {
-				mapAchData[(Achievements::ID)id].timestamp = static_cast<time_t>(timestamp);
-				mapAchData[(Achievements::ID)id].count = *p;
+				if (isIDok) {
+					mapAchData[(Achievements::ID)id].timestamp = static_cast<time_t>(timestamp);
+					mapAchData[(Achievements::ID)id].count = *p;
+				}
 				p++;
 				break;
 			}
 
 			case AT_BITFIELD: {
 				// TODO: NEEDS TESTING!!!
-				// Check for duplicates.
-				// If found, ignore this.
 
 				// Parse the bitfield as a varlenint.
 				uint64_t bitfield;
@@ -674,8 +676,10 @@ int AchievementsPrivate::load(void)
 				}
 				p += bytesParsed;
 
-				mapAchData[(Achievements::ID)id].timestamp = static_cast<time_t>(timestamp);
-				mapAchData[(Achievements::ID)id].bitfield = bitfield;
+				if (isIDok) {
+					mapAchData[(Achievements::ID)id].timestamp = static_cast<time_t>(timestamp);
+					mapAchData[(Achievements::ID)id].bitfield = bitfield;
+				}
 				break;
 			}
 
