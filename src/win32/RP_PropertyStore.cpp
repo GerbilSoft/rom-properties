@@ -264,7 +264,7 @@ IFACEMETHODIMP RP_PropertyStore::Initialize(IStream *pstream, DWORD grfMode)
 		if (!prop)
 			continue;
 
-		if (prop->name <= 0 || prop->name >= ARRAY_SIZE(d->metaDataConv)) {
+		if (prop->name <= Property::Invalid || (int)prop->name >= ARRAY_SIZE(d->metaDataConv)) {
 			// FIXME: Should assert here, but Windows doesn't support
 			// certain properties...
 			continue;
@@ -272,7 +272,7 @@ IFACEMETHODIMP RP_PropertyStore::Initialize(IStream *pstream, DWORD grfMode)
 
 		// Convert from the RomMetaData property indexes to
 		// Windows property keys.
-		const RP_PropertyStore_Private::MetaDataConv &conv = d->metaDataConv[prop->name];
+		const RP_PropertyStore_Private::MetaDataConv &conv = d->metaDataConv[(int)prop->name];
 		if (!conv.pkey || conv.vtype == VT_EMPTY) {
 			// FIXME: Should assert here, but Windows doesn't support
 			// certain properties...

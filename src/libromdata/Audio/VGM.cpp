@@ -888,8 +888,8 @@ int VGM::loadMetaData(void)
 
 			// Array of GD3 tag indexes and properties.
 			struct gd3_tag_prop_tbl_t {
-				Property::Property prop;	// Metadata property index
-				GD3_TAG_ID idx;			// GD3 tag index
+				Property prop;	// Metadata property index
+				uint8_t idx;	// GD3 tag index (GD3_TAG_ID)
 			};
 
 			static const gd3_tag_prop_tbl_t gd3_tag_prop_tbl[] = {

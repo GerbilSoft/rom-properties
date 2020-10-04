@@ -35,7 +35,7 @@ class RomMetaDataPrivate
 		// Mapping of Property to metaData indexes.
 		// Index == Property
 		// Value == metaData index (-1 for none)
-		std::array<int8_t, Property::PropertyCount> map_metaData;
+		std::array<Property, (int)Property::PropertyCount> map_metaData;
 
 		/**
 		 * Deletes allocated strings in this->metaData.
@@ -43,20 +43,20 @@ class RomMetaDataPrivate
 		void delete_data(void);
 
 		// Property type mapping.
-		static const uint8_t PropertyTypeMap[];
+		static const PropertyType PropertyTypeMap[];
 
 		/**
 		 * Add or overwrite a Property.
 		 * @param name Property name.
 		 * @return Metadata property.
 		 */
-		RomMetaData::MetaData *addProperty(Property::Property name);
+		RomMetaData::MetaData *addProperty(Property name);
 };
 
 /** RomMetaDataPrivate **/
 
 // Property type mapping.
-const uint8_t RomMetaDataPrivate::PropertyTypeMap[] = {
+const PropertyType RomMetaDataPrivate::PropertyTypeMap[] = {
 	PropertyType::FirstPropertyType,	// first type is invalid
 
 	// Audio
@@ -149,9 +149,9 @@ const uint8_t RomMetaDataPrivate::PropertyTypeMap[] = {
 
 RomMetaDataPrivate::RomMetaDataPrivate()
 {
-	static_assert(ARRAY_SIZE(RomMetaDataPrivate::PropertyTypeMap) == Property::PropertyCount,
+	static_assert(ARRAY_SIZE(RomMetaDataPrivate::PropertyTypeMap) == (int)Property::PropertyCount,
 		      "PropertyTypeMap needs to be updated!");
-	map_metaData.fill(-1);
+	map_metaData.fill(Property::Invalid);
 }
 
 RomMetaDataPrivate::~RomMetaDataPrivate()
@@ -177,7 +177,7 @@ void RomMetaDataPrivate::delete_data(void)
 			continue;
 		}
 
-		switch (PropertyTypeMap[metaData.name]) {
+		switch (PropertyTypeMap[(int)metaData.name]) {
 			case PropertyType::Integer:
 			case PropertyType::UnsignedInteger:
 			case PropertyType::Timestamp:
@@ -202,7 +202,7 @@ void RomMetaDataPrivate::delete_data(void)
  * @param name Property name.
  * @return Metadata property.
  */
-RomMetaData::MetaData *RomMetaDataPrivate::addProperty(Property::Property name)
+RomMetaData::MetaData *RomMetaDataPrivate::addProperty(Property name)
 {
 	assert(name > Property::FirstProperty);
 	assert(name < Property::PropertyCount);
@@ -214,9 +214,9 @@ RomMetaData::MetaData *RomMetaDataPrivate::addProperty(Property::Property name)
 
 	// Check if this metadata property was already added.
 	RomMetaData::MetaData *pMetaData;
-	if (map_metaData[name] >= 0) {
+	if (map_metaData[(int)name] > Property::Invalid) {
 		// Already added. Overwrite it.
-		pMetaData = &metaData[map_metaData[name]];
+		pMetaData = &metaData[(int)map_metaData[(int)name]];
 		// If a string is present, delete it.
 		if (pMetaData->type == PropertyType::String) {
 			delete pMetaData->data.str;
@@ -234,8 +234,8 @@ RomMetaData::MetaData *RomMetaDataPrivate::addProperty(Property::Property name)
 		metaData.resize(idx+1);
 		pMetaData = &metaData[idx];
 		pMetaData->name = name;
-		pMetaData->type = static_cast<PropertyType::PropertyType>(PropertyTypeMap[name]);
-		map_metaData[name] = static_cast<int8_t>(idx);
+		pMetaData->type = static_cast<PropertyType>(PropertyTypeMap[(int)name]);
+		map_metaData[(int)name] = static_cast<Property>(idx);
 	}
 
 	return pMetaData;
@@ -387,7 +387,7 @@ int RomMetaData::addMetaData_metaData(const RomMetaData *other)
  * @param val Integer value.
  * @return Metadata index, or -1 on error.
  */
-int RomMetaData::addMetaData_integer(Property::Property name, int value)
+int RomMetaData::addMetaData_integer(Property name, int value)
 {
 	RP_D(RomMetaData);
 	MetaData *const pMetaData = d->addProperty(name);
@@ -404,7 +404,7 @@ int RomMetaData::addMetaData_integer(Property::Property name, int value)
 	}
 
 	pMetaData->data.ivalue = value;
-	return static_cast<int>(d->map_metaData[name]);
+	return static_cast<int>(d->map_metaData[(int)name]);
 }
 
 /**
@@ -417,7 +417,7 @@ int RomMetaData::addMetaData_integer(Property::Property name, int value)
  * @param val Unsigned integer value.
  * @return Metadata index, or -1 on error.
  */
-int RomMetaData::addMetaData_uint(Property::Property name, unsigned int value)
+int RomMetaData::addMetaData_uint(Property name, unsigned int value)
 {
 	RP_D(RomMetaData);
 	MetaData *const pMetaData = d->addProperty(name);
@@ -434,7 +434,7 @@ int RomMetaData::addMetaData_uint(Property::Property name, unsigned int value)
 	}
 
 	pMetaData->data.uvalue = value;
-	return static_cast<int>(d->map_metaData[name]);
+	return static_cast<int>(d->map_metaData[(int)name]);
 }
 
 /**
@@ -448,7 +448,7 @@ int RomMetaData::addMetaData_uint(Property::Property name, unsigned int value)
  * @param flags Formatting flags.
  * @return Metadata index, or -1 on error.
  */
-int RomMetaData::addMetaData_string(Property::Property name, const char *str, unsigned int flags)
+int RomMetaData::addMetaData_string(Property name, const char *str, unsigned int flags)
 {
 	if (!str || str[0] == '\0') {
 		// Ignore empty strings.
@@ -481,7 +481,7 @@ int RomMetaData::addMetaData_string(Property::Property name, const char *str, un
 	}
 
 	pMetaData->data.str = nstr;
-	return static_cast<int>(d->map_metaData[name]);
+	return static_cast<int>(d->map_metaData[(int)name]);
 }
 
 /**
@@ -495,7 +495,7 @@ int RomMetaData::addMetaData_string(Property::Property name, const char *str, un
  * @param flags Formatting flags.
  * @return Metadata index, or -1 on error.
  */
-int RomMetaData::addMetaData_string(Property::Property name, const string &str, unsigned int flags)
+int RomMetaData::addMetaData_string(Property name, const string &str, unsigned int flags)
 {
 	if (str.empty()) {
 		// Ignore empty strings.
@@ -531,7 +531,7 @@ int RomMetaData::addMetaData_string(Property::Property name, const string &str, 
 	}
 
 	pMetaData->data.str = nstr;
-	return static_cast<int>(d->map_metaData[name]);
+	return static_cast<int>(d->map_metaData[(int)name]);
 }
 
 /**
@@ -544,7 +544,7 @@ int RomMetaData::addMetaData_string(Property::Property name, const string &str, 
  * @param timestamp UNIX timestamp.
  * @return Metadata index, or -1 on error.
  */
-int RomMetaData::addMetaData_timestamp(Property::Property name, time_t timestamp)
+int RomMetaData::addMetaData_timestamp(Property name, time_t timestamp)
 {
 	RP_D(RomMetaData);
 	MetaData *const pMetaData = d->addProperty(name);
@@ -561,7 +561,7 @@ int RomMetaData::addMetaData_timestamp(Property::Property name, time_t timestamp
 	}
 
 	pMetaData->data.timestamp = timestamp;
-	return static_cast<int>(d->map_metaData[name]);
+	return static_cast<int>(d->map_metaData[(int)name]);
 }
 
 }

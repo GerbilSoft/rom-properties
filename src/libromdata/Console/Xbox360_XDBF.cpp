@@ -1536,7 +1536,7 @@ int Xbox360_XDBF::addFields_strings(LibRpBase::RomFields *fields) const
  * @param property Property
  * @return String, or empty string if not found.
  */
-string Xbox360_XDBF::getString(LibRpBase::Property::Property property) const
+string Xbox360_XDBF::getString(LibRpBase::Property property) const
 {
 	uint16_t string_id = 0;
 	switch (property) {

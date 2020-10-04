@@ -172,7 +172,7 @@ ASSERT_STRUCT(GD3_Header, 3*sizeof(uint32_t));
 /**
  * GD3 tag indexes
  */
-enum GD3_TAG_ID {
+typedef enum {
 	GD3_TAG_TRACK_NAME_EN		= 0,
 	GD3_TAG_TRACK_NAME_JP		= 1,
 	GD3_TAG_GAME_NAME_EN		= 2,
@@ -186,7 +186,7 @@ enum GD3_TAG_ID {
 	GD3_TAG_NOTES			= 10,
 
 	GD3_TAG_MAX
-};
+} GD3_TAG_ID;
 
 /**
  * VGM 1.10: SN76489 LFSR patterns.

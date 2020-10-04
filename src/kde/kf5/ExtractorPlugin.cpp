@@ -109,7 +109,7 @@ void ExtractorPlugin::extract(ExtractionResult *result)
 		// RomMetaData's property indexes match KFileMetaData.
 		// No conversion is necessary.
 		switch (prop->type) {
-			case LibRpBase::PropertyType::Integer: {
+			case PropertyType::Integer: {
 				int ivalue = prop->data.ivalue;
 				if (prop->name == LibRpBase::Property::Duration) {
 					// Duration needs to be converted from ms to seconds.
@@ -119,13 +119,13 @@ void ExtractorPlugin::extract(ExtractionResult *result)
 				break;
 			}
 
-			case LibRpBase::PropertyType::UnsignedInteger: {
+			case PropertyType::UnsignedInteger: {
 				result->add(static_cast<KFileMetaData::Property::Property>(prop->name),
 					    prop->data.uvalue);
 				break;
 			}
 
-			case LibRpBase::PropertyType::String: {
+			case PropertyType::String: {
 				const string *str = prop->data.str;
 				if (str) {
 					result->add(static_cast<KFileMetaData::Property::Property>(prop->name),
@@ -134,7 +134,7 @@ void ExtractorPlugin::extract(ExtractionResult *result)
 				break;
 			}
 
-			case LibRpBase::PropertyType::Timestamp: {
+			case PropertyType::Timestamp: {
 				// TODO: Verify timezone handling.
 				// NOTE: fromMSecsSinceEpoch() with TZ spec was added in Qt 5.2.
 				// Maybe write a wrapper function? (RomDataView uses this, too.)
