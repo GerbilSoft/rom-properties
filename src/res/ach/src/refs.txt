@@ -1,0 +1,7 @@
+PowerPC_logo.svg:
+- https://upload.wikimedia.org/wikipedia/commons/b/bc/PowerPC_logo.svg
+- https://commons.wikimedia.org/wiki/File:PowerPC_logo.svg
+
+Startupdisc002.png:
+- https://wiki.mariocube.com/images/e/e5/Startupdisc002.png
+- https://wiki.mariocube.com/index.php/Wii_Startup_Discs
