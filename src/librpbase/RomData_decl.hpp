@@ -278,6 +278,18 @@ class klass final : public LibRpBase::RomData { \
 		int doRomOp_int(int id, RomOpParams *pParams) final;
 
 /**
+ * RomData subclass function declaration for "viewed" achievements.
+ */
+#define ROMDATA_DECL_VIEWED_ACHIEVEMENTS() \
+	public: \
+		/** \
+		 * Check for "viewed" achievements. \
+		 * \
+		 * @return Number of achievements unlocked.
+		 */ \
+		int checkViewedAchievements(void) const final;
+
+/**
  * RomData subclass function declaration for closing the internal file handle.
  * Only needed if extra handling is needed, e.g. if multiple files are opened.
  */

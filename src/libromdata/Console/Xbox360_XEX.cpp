@@ -17,6 +17,7 @@
 #include "data/XboxPublishers.hpp"
 
 // librpbase, librpfile, librptexture
+#include "librpbase/Achievements.hpp"
 #include "librpbase/disc/CBCReader.hpp"
 #include "librpfile/RpMemFile.hpp"
 using namespace LibRpBase;
@@ -336,6 +337,9 @@ size_t Xbox360_XEX_Private::getOptHdrData(uint32_t header_id, uint32_t *pOut32)
 	if ((int)xexType < 0) {
 		// Invalid XEX type.
 		return 0;
+	} else if (!file) {
+		// File is closed. Can't read the optional header.
+		return 0;
 	}
 
 	// Get the entry.
@@ -537,6 +541,10 @@ CBCReader *Xbox360_XEX_Private::initPeReader(void)
 		return peReader;
 	}
 #endif /* ENABLE_LIBMSPACK */
+	if (!file) {
+		// File is closed. Can't initialize PE Reader.
+		return nullptr;
+	}
 
 	if (xexType <= XexType::Unknown || xexType >= XexType::Max) {
 		// Invalid XEX type.
@@ -1019,21 +1027,21 @@ void Xbox360_XEX_Private::convertGameRatings(
 	// Region conversion table:
 	// - Index: Xbox 360 region (-1 if not supported)
 	// - Value: RomFields::age_ratings_t region
-	static const int8_t region_conv[14] = {
-		RomFields::AGE_USA,
-		RomFields::AGE_EUROPE,
-		RomFields::AGE_FINLAND,
-		RomFields::AGE_PORTUGAL,
-		RomFields::AGE_ENGLAND,
-		RomFields::AGE_JAPAN,
-		RomFields::AGE_GERMANY,
-		RomFields::AGE_AUSTRALIA,
-		-1,	// TODO: NZ (usually the same as AU)
-		RomFields::AGE_SOUTH_KOREA,
-		-1,	// TODO: Brazil
-		-1,	// TODO: FPB?
-		RomFields::AGE_TAIWAN,
-		-1,	// TODO: Singapore
+	static const RomFields::AgeRatingsCountry region_conv[14] = {
+		RomFields::AgeRatingsCountry::USA,
+		RomFields::AgeRatingsCountry::Europe,
+		RomFields::AgeRatingsCountry::Finland,
+		RomFields::AgeRatingsCountry::Portugal,
+		RomFields::AgeRatingsCountry::England,
+		RomFields::AgeRatingsCountry::Japan,
+		RomFields::AgeRatingsCountry::Germany,
+		RomFields::AgeRatingsCountry::Australia,
+		RomFields::AgeRatingsCountry::Invalid,		// TODO: NZ (usually the same as AU)
+		RomFields::AgeRatingsCountry::SouthKorea,
+		RomFields::AgeRatingsCountry::Invalid,		// TODO: Brazil
+		RomFields::AgeRatingsCountry::Invalid,		// TODO: FPB?
+		RomFields::AgeRatingsCountry::Taiwan,
+		RomFields::AgeRatingsCountry::Invalid,		// TODO: Singapore
 	};
 
 	// Rating conversion table:
@@ -1048,27 +1056,27 @@ void Xbox360_XEX_Private::convertGameRatings(
 	//   - The value for "A" gets slot 0.
 	//   - The value for "B" gets slots 1 and 2.
 	static const int8_t region_values[14][16] = {
-		// AGE_USA (ESRB)
+		// USA (ESRB)
 		{3, 6, 6, 10, 10, 13, 13, 17, 17, 18, 18, 18, 18, 18, 18, -1},
-		// AGE_EUROPE (PEGI)
+		// Europe (PEGI)
 		{3, 4, 4, 4, 4, 12, 12, 12, 12, 12, 16, 16, 16, 16, 18, -1},
-		// AGE_FINLAND (PEGI-FI/MEKU)
+		// Finland (PEGI-FI/MEKU)
 		{3, 7, 7, 7, 7, 11, 11, 11, 11, 15, 15, 15, 15, 18, 18, -1},
-		// AGE_PORTUGAL (PEGI-PT)
+		// Portugal (PEGI-PT)
 		{4, 4, 6, 6, 12, 12, 12, 12, 12, 12, 16, 16, 16, 16, 18, -1},
-		// AGE_ENGLAND (BBFC)
+		// England (BBFC)
 		// TODO: How are Universal and PG handled for Nintendo?
 		{3, 3, 7, 7, 7, 7, 12, 12, 12, 12, 15, 15, 15, 16, 18, -1},
-		// AGE_JAPAN (CERO)
+		// Japan (CERO)
 		{0, 12, 12, 15, 15, 17, 17, 18, 18,    -1,-1,-1,-1,-1,-1,-1},
-		// AGE_GERMANY (USK)
+		// Germany (USK)
 		{0, 6, 6, 12, 12, 16, 16, 18, 18,      -1,-1,-1,-1,-1,-1,-1},
-		// AGE_AUSTRALIA (OFLC_AU)
+		// Australia (OFLC_AU)
 		// TODO: Is R18+ available on Xbox 360?
 		{0, 7, 7, 14, 14, 15, 15, -1,       -1,-1,-1,-1,-1,-1,-1,-1},
 		// TODO: NZ
 		{-1,-1,-1,-1,-1,-1,-1,-1,           -1,-1,-1,-1,-1,-1,-1,-1},
-		// AGE_SOUTH_KOREA (KMRB/GRB)
+		// South Korea (KMRB/GRB)
 		{0, 12, 12, 15, 15, 18, 18, -1,     -1,-1,-1,-1,-1,-1,-1,-1},
 
 		// TODO: Brazil
@@ -1083,8 +1091,8 @@ void Xbox360_XEX_Private::convertGameRatings(
 
 	// 14 ratings for Xbox 360 games.
 	for (unsigned int ridx = 0; ridx < 14; ridx++) {
-		const int8_t ar_idx = region_conv[ridx];
-		if (ar_idx < 0) {
+		const RomFields::AgeRatingsCountry ar_idx = region_conv[ridx];
+		if ((int)ar_idx < 0) {
 			// Not supported.
 			continue;
 		}
@@ -1101,7 +1109,7 @@ void Xbox360_XEX_Private::convertGameRatings(
 			continue;
 		}
 
-		age_ratings[ar_idx] = static_cast<uint8_t>(rf_val) | RomFields::AGEBF_ACTIVE;
+		age_ratings[(int)ar_idx] = static_cast<uint8_t>(rf_val) | RomFields::AGEBF_ACTIVE;
 	}
 }
 
@@ -2066,6 +2074,42 @@ int Xbox360_XEX::loadInternalImage(ImageType imageType, const rp_image **pImage)
 	}
 
 	return -ENOENT;
+}
+
+/**
+ * Check for "viewed" achievements.
+ *
+ * @return Number of achievements unlocked.
+ */
+int Xbox360_XEX::checkViewedAchievements(void) const
+{
+	RP_D(const Xbox360_XEX);
+	if (!d->isValid) {
+		// XEX is not valid.
+		return 0;
+	}
+
+	// keyInUse should have been initialized somewhere else.
+	// Initializing it here won't work because the file may
+	// have been closed already.
+	// TODO: Initialize the PE Reader in the constructor?
+
+	Achievements *const pAch = Achievements::instance();
+	int ret = 0;
+
+	if (d->keyInUse == 1) {
+		// Debug encryption.
+		pAch->unlock(Achievements::ID::ViewedDebugCryptedFile);
+		ret++;
+	}
+
+	// Check the EXE for achievements.
+	const EXE *exe = const_cast<Xbox360_XEX_Private*>(d)->initEXE();
+	if (exe) {
+		ret += exe->checkViewedAchievements();
+	}
+
+	return ret;
 }
 
 #ifdef ENABLE_DECRYPTION

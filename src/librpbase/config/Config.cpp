@@ -430,10 +430,12 @@ Config *Config::instance(void)
 {
 	// Initialize the singleton instance.
 	Config *const q = &ConfigPrivate::instance;
+
 	// Load the configuration if necessary.
 	q->load(false);
+
 	// Return the singleton instance.
-	return &ConfigPrivate::instance;
+	return q;
 }
 
 /** Image types **/
@@ -450,7 +452,7 @@ Config::ImgTypeResult Config::getImgTypePrio(const char *className, ImgTypePrio_
 	assert(className != nullptr);
 	assert(imgTypePrio != nullptr);
 	if (!className || !imgTypePrio) {
-		return IMGTR_ERR_INVALID_PARAMS;
+		return ImgTypeResult::ErrorInvalidParams;
 	}
 
 	// Find the class name in the map.
@@ -463,7 +465,7 @@ Config::ImgTypeResult Config::getImgTypePrio(const char *className, ImgTypePrio_
 		// Use the global defaults.
 		imgTypePrio->imgTypes = d->defImgTypePrio;
 		imgTypePrio->length = ARRAY_SIZE(d->defImgTypePrio);
-		return IMGTR_SUCCESS_DEFAULTS;
+		return ImgTypeResult::SuccessDefaults;
 	}
 
 	// Class name found.
@@ -477,19 +479,19 @@ Config::ImgTypeResult Config::getImgTypePrio(const char *className, ImgTypePrio_
 	if (len == 0 || idx >= d->vImgTypePrio.size() || idx + len > d->vImgTypePrio.size()) {
 		// Entry is invalid...
 		// TODO: Force a configuration reload?
-		return IMGTR_ERR_MAP_CORRUPTED;
+		return ImgTypeResult::ErrorMapCorrupted;
 	}
 
 	// Is the first entry RomData::IMG_DISABLED?
 	if (d->vImgTypePrio[idx] == static_cast<uint8_t>(RomData::IMG_DISABLED)) {
 		// Thumbnails are disabled for this class.
-		return IMGTR_DISABLED;
+		return ImgTypeResult::Disabled;
 	}
 
 	// Return the starting address and length.
 	imgTypePrio->imgTypes = &d->vImgTypePrio[idx];
 	imgTypePrio->length = len;
-	return IMGTR_SUCCESS;
+	return ImgTypeResult::Success;
 }
 
 /**

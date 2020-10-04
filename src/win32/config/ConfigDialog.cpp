@@ -33,11 +33,18 @@ using std::tstring;
 DELAYLOAD_TEST_FUNCTION_IMPL1(textdomain, nullptr);
 #endif /* defined(_MSC_VER) && defined(ENABLE_NLS) */
 
+// rp_image backend registration.
+#include "librptexture/img/GdiplusHelper.hpp"
+#include "librptexture/img/RpGdiplusBackend.hpp"
+using LibRpTexture::RpGdiplusBackend;
+using LibRpTexture::rp_image;
+
 // Property sheet tabs.
 #include "ImageTypesTab.hpp"
 #include "SystemsTab.hpp"
 #include "OptionsTab.hpp"
 #include "CacheTab.hpp"
+#include "AchievementsTab.hpp"
 #ifdef ENABLE_DECRYPTION
 # include "KeyManagerTab.hpp"
 #endif /* ENABLE_DECRYPTION */
@@ -55,9 +62,9 @@ class ConfigDialogPrivate
 	public:
 		// Property sheet variables.
 #ifdef ENABLE_DECRYPTION
-		static const unsigned int TAB_COUNT = 6;
+		static const unsigned int TAB_COUNT = 7;
 #else
-		static const unsigned int TAB_COUNT = 5;
+		static const unsigned int TAB_COUNT = 6;
 #endif
 		array<ITab*, TAB_COUNT> tabs;
 		array<HPROPSHEETPAGE, TAB_COUNT> hpsp;
@@ -107,22 +114,28 @@ ConfigDialogPrivate::ConfigDialogPrivate()
 	// - https://www.codeproject.com/Articles/2408/Clean-Up-Handler
 	tabs[3] = new CacheTab();
 	hpsp[3] = tabs[3]->getHPropSheetPage();
+	// Achievements
+	tabs[4] = new AchievementsTab();
+	hpsp[4] = tabs[4]->getHPropSheetPage();
 #ifdef ENABLE_DECRYPTION
 	// Key Manager
-	tabs[4] = new KeyManagerTab();
-	hpsp[4] = tabs[4]->getHPropSheetPage();
+	tabs[5] = new KeyManagerTab();
+	hpsp[5] = tabs[5]->getHPropSheetPage();
 #endif /* ENABLE_DECRYPTION */
 
 	// About
 	tabs[TAB_COUNT-1] = new AboutTab();
 	hpsp[TAB_COUNT-1] = tabs[TAB_COUNT-1]->getHPropSheetPage();
 
+	// "ROM chip" icon.
+	const PropSheetIcon *const psi = PropSheetIcon::instance();
+
 	// Create the property sheet.
 	psh.dwSize = sizeof(psh);
 	psh.dwFlags = PSH_USECALLBACK | PSH_NOCONTEXTHELP | PSH_USEHICON;
 	psh.hwndParent = nullptr;
 	psh.hInstance = HINST_THISCOMPONENT;
-	psh.hIcon = PropSheetIcon::getSmallIcon();	// Small icon only!
+	psh.hIcon = psi->getSmallIcon();	// Small icon only!
 	psh.pszCaption = nullptr;			// will be set in WM_SHOWWINDOW
 	psh.nPages = static_cast<UINT>(hpsp.size());
 	psh.nStartPage = 0;
@@ -178,7 +191,8 @@ int CALLBACK ConfigDialogPrivate::callbackProc(HWND hDlg, UINT uMsg, LPARAM lPar
 
 			// NOTE: PropertySheet's pszIcon only uses the small icon.
 			// Set the large icon here.
-			HICON hIcon = PropSheetIcon::getLargeIcon();
+			const PropSheetIcon *const psi = PropSheetIcon::instance();
+			HICON hIcon = psi->getLargeIcon();
 			if (hIcon) {
 				SendMessage(hDlg, WM_SETICON, ICON_BIG, reinterpret_cast<LPARAM>(hIcon));
 			}
@@ -464,12 +478,22 @@ int CALLBACK rp_show_config_dialog(
 		return EXIT_FAILURE;
 	}
 
+	// Initialize GDI+.
+	ULONG_PTR gdipToken = GdiplusHelper::InitGDIPlus();
+	assert(gdipToken != 0);
+	if (gdipToken == 0) {
+		return EXIT_FAILURE;
+	}
+
 	// Initialize i18n.
 	rp_i18n_init();
 
 	ConfigDialog *cfg = new ConfigDialog();
 	INT_PTR ret = cfg->exec();
 	delete cfg;
+
+	// Shut down GDI+.
+	GdiplusHelper::ShutdownGDIPlus(gdipToken);
 
 	// Uninitialize COM.
 	CoUninitialize();

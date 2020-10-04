@@ -11,11 +11,11 @@
 #include "tcharx.h"
 #include "common.h"
 
-// librpbase, librptexture, librpcpu
+// librpcpu, librpbase, librptexture
+#include "librpcpu/byteswap_rp.h"
 #include "librpbase/aligned_malloc.h"
 #include "librptexture/img/rp_image.hpp"
 #include "librptexture/decoder/ImageDecoder.hpp"
-#include "librpcpu/byteswap.h"
 
 // C includes.
 #include <stdint.h>

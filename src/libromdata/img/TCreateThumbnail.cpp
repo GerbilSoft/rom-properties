@@ -276,14 +276,14 @@ int TCreateThumbnail<ImgClass>::getThumbnail(const RomData *romData, int reqSize
 	Config::ImgTypePrio_t imgTypePrio;
 	Config::ImgTypeResult res = config->getImgTypePrio(romData->className(), &imgTypePrio);
 	switch (res) {
-		case Config::IMGTR_SUCCESS:
-		case Config::IMGTR_SUCCESS_DEFAULTS:
+		case Config::ImgTypeResult::Success:
+		case Config::ImgTypeResult::SuccessDefaults:
 			// Image type priority received successfully.
-			// IMGTR_SUCCESS_DEFAULTS indicates the returned
-			// data is the default priority, since a custom
-			// configuration was not found for this class.
+			// ImgTypeResult::SuccessDefaults indicates the returned
+			// data is the default priority, since a custom configuration
+			// was not found for this class.
 			break;
-		case Config::IMGTR_DISABLED:
+		case Config::ImgTypeResult::Disabled:
 			// Thumbnails are disabled for this class.
 			return RPCT_SOURCE_FILE_CLASS_DISABLED;
 		default:

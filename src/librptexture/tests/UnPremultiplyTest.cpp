@@ -14,7 +14,7 @@
 // librpbase, librptexture, librpcpu
 #include "librpbase/aligned_malloc.h"
 #include "librptexture/img/rp_image.hpp"
-#include "librpcpu/byteswap.h"
+#include "librpcpu/byteswap_rp.h"
 
 // C includes.
 #include <stdint.h>

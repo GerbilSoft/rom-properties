@@ -262,7 +262,7 @@ public:
 							continue;
 
 						Value rating_obj(kObjectType);
-						const char *const abbrev = RomFields::ageRatingAbbrev(j);
+						const char *const abbrev = RomFields::ageRatingAbbrev((RomFields::AgeRatingsCountry)j);
 						if (abbrev) {
 							rating_obj.AddMember("name", StringRef(abbrev), allocator);
 						} else {
@@ -271,7 +271,7 @@ public:
 							rating_obj.AddMember("name", j, allocator);
 						}
 
-						const string s_age_rating = RomFields::ageRatingDecode(j, rating);
+						const string s_age_rating = RomFields::ageRatingDecode((RomFields::AgeRatingsCountry)j, rating);
 						Value rating_val;
 						rating_val.SetString(s_age_rating, allocator);
 						rating_obj.AddMember("rating", rating_val, allocator);

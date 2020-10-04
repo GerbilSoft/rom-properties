@@ -92,6 +92,19 @@ class RpImageWin32
 		 * @return HICON, or nullptr on error.
 		 */
 		static HICON toHICON(HBITMAP hBitmap);
+
+		/**
+		 * Extract an HBITMAP sprite from an rp_image sprite sheet.
+		 * Caller must delete the HBITMAP after use.
+		 * @param imgSpriteSheet	[in] rp_image sprite sheet
+		 * @param x			[in] X pos
+		 * @param y			[in] Y pos
+		 * @param width			[in] Width
+		 * @param height		[in] Height
+		 * @param dpi			[in,opt] DPI value.
+		 * @return Sub-bitmap, or nullptr on error.
+		 */
+		static HBITMAP getSubBitmap(const LibRpTexture::rp_image *img, int x, int y, int w, int h, UINT dpi = 96);
 };
 
 #endif /* __ROMPROPERTIES_WIN32_RPIMAGEWIN32_HPP__ */

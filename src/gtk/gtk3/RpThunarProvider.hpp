@@ -9,7 +9,7 @@
 #ifndef __ROMPROPERTIES_GTK3_RPTHUNARPROVIDER_HPP__
 #define __ROMPROPERTIES_GTK3_RPTHUNARPROVIDER_HPP__
 
-#include "RpThunarPlugin.h"
+#include "RpThunarPlugin.hpp"
 
 G_BEGIN_DECLS
 

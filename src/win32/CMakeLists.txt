@@ -60,6 +60,7 @@ SET(rom-properties-win32_SRCS
 	config/SystemsTab.cpp
 	config/OptionsTab.cpp
 	config/CacheTab.cpp
+	config/AchievementsTab.cpp
 	config/AboutTab.cpp
 	)
 SET(rom-properties-win32_H
@@ -88,6 +89,7 @@ SET(rom-properties-win32_H
 	config/SystemsTab.hpp
 	config/OptionsTab.hpp
 	config/CacheTab.hpp
+	config/AchievementsTab.hpp
 	config/AboutTab.hpp
 	res/resource.h
 	)
@@ -126,6 +128,11 @@ IF(ENABLE_DECRYPTION)
 	ENDIF(MSVC)
 ENDIF(ENABLE_DECRYPTION)
 
+IF(ENABLE_ACHIEVEMENTS)
+	SET(rom-properties-win32_ACH_SRC AchWin32.cpp)
+	SET(rom-properties-win32_ACH_H AchWin32.hpp)
+ENDIF(ENABLE_ACHIEVEMENTS)
+
 IF(ENABLE_PCH)
 	# Precompiled headers.
 	INCLUDE(PrecompiledHeader)
@@ -162,6 +169,7 @@ ADD_LIBRARY(rom-properties SHARED
 	${rom-properties-win32_SRCS} ${rom-properties-win32_H}
 	${rom-properties-win32-PropKey_SRCS} ${rom-properties-win32-PropKey_H}
 	${rom-properties-win32_CRYPTO_SRCS} ${rom-properties-win32_CRYPTO_H}
+	${rom-properties-win32_ACH_SRC} ${rom-properties-win32_ACH_H}
 	${rom-properties-win32_RC}
 	)
 IF(ENABLE_PCH)

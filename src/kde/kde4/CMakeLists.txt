@@ -11,7 +11,7 @@ PROJECT(rom-properties-kde4 LANGUAGES CXX)
 # Find Qt4.
 SET(ENV{QT_SELECT} qt4)
 SET(QT4_NO_LINK_QTMAIN 1)
-FIND_PACKAGE(Qt4 4.6.0 ${REQUIRE_KDE4} COMPONENTS QtCore QtGui)
+FIND_PACKAGE(Qt4 4.6.0 ${REQUIRE_KDE4} COMPONENTS QtCore QtGui QtDBus)
 IF(QT4_FOUND)
 	# Make sure KDE4's CMake files don't create an uninstall rule.
 	SET(_kde4_uninstall_rule_created TRUE)
@@ -26,6 +26,12 @@ IF(QT4_FOUND)
 
 	# Get rid of the explicit C90 setting.
 	STRING(REPLACE "-std=iso9899:1990" "" CMAKE_C_FLAGS "${CMAKE_C_FLAGS}")
+
+	IF(ENABLE_ACHIEVEMENTS AND QT_QTDBUS_LIBRARY)
+		# QtDBus is used for notifications.
+		# TODO: Make notifications optional.
+		SET(HAVE_QtDBus_NOTIFY 1)
+	ENDIF(ENABLE_ACHIEVEMENTS AND QT_QTDBUS_LIBRARY)
 ELSE(QT4_FOUND)
 	# Qt4 not found.
 	SET(BUILD_KDE4 OFF CACHE INTERNAL "Build the KDE4 plugin." FORCE)
@@ -37,6 +43,9 @@ STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-kde4_H "${rom-properties-
 STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-kde4_UIS "${rom-properties-kde_UIS}")
 STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-kde4_RCC_SRCS "${rom-properties-kde_RCC_SRCS}")
 
+# Write the config.h file.
+CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/../config.kde.h.in" "${CMAKE_CURRENT_BINARY_DIR}/config.kde.h")
+
 # Sources and headers. (KDE4-specific)
 IF(QT4_FOUND)
 	QT4_ADD_RESOURCES(
@@ -44,10 +53,26 @@ IF(QT4_FOUND)
 		OPTIONS -no-compress
 		)
 ENDIF(QT4_FOUND)
+IF(HAVE_QtDBus_NOTIFY)
+	STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-kde4-notify_SRCS "${rom-properties-kde-notify_SRCS}")
+	STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-kde4-notify_H    "${rom-properties-kde-notify_H}")
+
+	# QtDBus wrappers
+	QT4_ADD_DBUS_INTERFACES(rom-properties-kde4_DBUS_IFACE_SRCS
+		"${CMAKE_CURRENT_SOURCE_DIR}/../../dbus/org.freedesktop.Notifications.xml"
+		)
+ENDIF(HAVE_QtDBus_NOTIFY)
+
 SET(rom-properties-kde4_SRCS
 	${rom-properties-kde4_SRCS}
+	${rom-properties-kde4-notify_SRCS}
+	${rom-properties-kde4_DBUS_IFACE_SRCS}
 	${rom-properties-kde4_RCC_O}
 	RomPropertiesDialogPluginFactoryKDE4.cpp
+	)
+SET(rom-properties-kde4_H
+	${rom-properties-kde4_H}
+	${rom-properties-kde4-notify_H}
 	)
 
 IF(COMMAND QT4_WRAP_UI)
@@ -97,6 +122,9 @@ IF(BUILD_KDE4)
 	TARGET_LINK_LIBRARIES(rom-properties-kde4 PUBLIC ${KDE4_KFILE_LIBRARY} ${KDE4_KDEUI_LIBRARY})
 	TARGET_LINK_LIBRARIES(rom-properties-kde4 PUBLIC Qt4::QtGui Qt4::QtCore)
 	TARGET_INCLUDE_DIRECTORIES(rom-properties-kde4 PUBLIC ${KDE4_INCLUDE_DIR})
+	IF(HAVE_QtDBus_NOTIFY)
+		TARGET_LINK_LIBRARIES(rom-properties-kde4 PUBLIC Qt4::QtDBus)
+	ENDIF(HAVE_QtDBus_NOTIFY)
 
 	# Add zlib and png directories for the About tab.
 	IF(HAVE_ZLIB)

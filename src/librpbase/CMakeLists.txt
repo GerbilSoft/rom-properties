@@ -123,6 +123,7 @@ SET(librpbase_SRCS
 	TextOut_common.cpp
 	TextOut_text.cpp
 	TextOut_json.cpp
+	Achievements.cpp
 	img/RpImageLoader.cpp
 	img/RpPng.cpp
 	img/RpPngWriter.cpp
@@ -152,6 +153,7 @@ SET(librpbase_H
 	RomMetaData.hpp
 	SystemRegion.hpp
 	TextOut.hpp
+	Achievements.hpp
 	img/RpPng.hpp
 	img/RpPngWriter.hpp
 	img/APNG_dlopen.h

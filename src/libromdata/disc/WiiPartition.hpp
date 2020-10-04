@@ -118,6 +118,7 @@ class WiiPartition : public GcnPartition
 			CAT_vWii = 5,		// vWii key (debug)
 
 			None = 6,		// No encryption (RVT-H)
+
 			Max
 		};
 

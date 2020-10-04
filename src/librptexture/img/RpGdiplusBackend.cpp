@@ -33,7 +33,6 @@ namespace LibRpTexture {
  */
 RpGdiplusBackend::RpGdiplusBackend(int width, int height, rp_image::Format format)
 	: super(width, height, format)
-	, m_gdipToken(0)
 	, m_pGdipBmp(nullptr)
 	, m_isLocked(false)
 	, m_bytesppShift(0)
@@ -47,12 +46,6 @@ RpGdiplusBackend::RpGdiplusBackend(int width, int height, rp_image::Format forma
 		// Image did not initialize successfully.
 		return;
 	}
-
-	// Initialize GDI+.
-	m_gdipToken = GdiplusHelper::InitGDIPlus();
-	assert(m_gdipToken != 0);
-	if (m_gdipToken == 0)
-		return;
 
 	// Initialize the Gdiplus bitmap.
 	switch (format) {
@@ -114,7 +107,6 @@ RpGdiplusBackend::RpGdiplusBackend(int width, int height, rp_image::Format forma
  */
 RpGdiplusBackend::RpGdiplusBackend(Gdiplus::Bitmap *pGdipBmp)
 	: super(0, 0, rp_image::Format::None)
-	, m_gdipToken(0)
 	, m_pGdipBmp(pGdipBmp)
 	, m_isLocked(false)
 	, m_bytesppShift(0)
@@ -125,15 +117,6 @@ RpGdiplusBackend::RpGdiplusBackend(Gdiplus::Bitmap *pGdipBmp)
 	assert(pGdipBmp != nullptr);
 	if (!pGdipBmp)
 		return;
-
-	// Initialize GDI+.
-	m_gdipToken = GdiplusHelper::InitGDIPlus();
-	assert(m_gdipToken != 0);
-	if (m_gdipToken == 0) {
-		delete m_pGdipBmp;
-		m_pGdipBmp = nullptr;
-		return;
-	}
 
 	// Check the pixel format.
 	m_gdipFmt = pGdipBmp->GetPixelFormat();
@@ -228,9 +211,6 @@ RpGdiplusBackend::~RpGdiplusBackend()
 	}
 
 	aligned_free(m_pImgBuf);
-	if (m_gdipToken != 0) {
-		GdiplusHelper::ShutdownGDIPlus(m_gdipToken);
-	}
 }
 
 /**

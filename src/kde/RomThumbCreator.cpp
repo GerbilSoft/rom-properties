@@ -7,8 +7,11 @@
  ***************************************************************************/
 
 #include "stdafx.h"
+#include "config.kde.h"
+
 #include "RomThumbCreator.hpp"
 #include "RpQImageBackend.hpp"
+#include "AchQtDBus.hpp"
 
 // librpbase, librptexture
 using namespace LibRpBase;
@@ -54,9 +57,11 @@ using std::unique_ptr;
 extern "C" {
 	Q_DECL_EXPORT ThumbCreator *new_creator()
 	{
-		// Register RpQImageBackend.
-		// TODO: Static initializer somewhere?
+		// Register RpQImageBackend and AchQtDBus.
 		rp_image::setBackendCreatorFn(RpQImageBackend::creator_fn);
+#if defined(ENABLE_ACHIEVEMENTS) && defined(HAVE_QtDBus_NOTIFY)
+		AchQtDBus::instance();
+#endif /* ENABLE_ACHIEVEMENTS && HAVE_QtDBus_NOTIFY */
 
 		return new RomThumbCreator();
 	}

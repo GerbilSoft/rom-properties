@@ -141,10 +141,10 @@ RomFields::~RomFields()
 /**
  * Get the abbreviation of an age rating organization.
  * (TODO: Full name function?)
- * @param country Rating country. (See AgeRatingCountry.)
+ * @param country Rating country.
  * @return Abbreviation, or nullptr if invalid.
  */
-const char *RomFields::ageRatingAbbrev(int country)
+const char *RomFields::ageRatingAbbrev(AgeRatingsCountry country)
 {
 	static const char abbrevs[][8] = {
 		"CERO", "ESRB", "",        "USK",
@@ -152,14 +152,14 @@ const char *RomFields::ageRatingAbbrev(int country)
 		"ACB",  "GRB",  "CGSRR",
 	};
 
-	assert(country >= 0 && country < ARRAY_SIZE(abbrevs));
-	if (country < 0 || country >= ARRAY_SIZE(abbrevs)) {
+	assert((int)country >= 0 && (int)country < ARRAY_SIZE(abbrevs));
+	if ((int)country < 0 || (int)country >= ARRAY_SIZE(abbrevs)) {
 		// Index is out of range.
 		return nullptr;
 	}
 
-	if (abbrevs[country][0] != 0) {
-		return abbrevs[country];
+	if (abbrevs[(int)country][0] != 0) {
+		return abbrevs[(int)country];
 	}
 	// Invalid country code.
 	return nullptr;
@@ -172,11 +172,11 @@ const char *RomFields::ageRatingAbbrev(int country)
  * NOTE: The returned string is in UTF-8 in order to
  * be able to use special characters.
  *
- * @param country Rating country. (See AgeRatingsCountry.)
+ * @param country Rating country.
  * @param rating Rating value.
  * @return Human-readable string, or empty string if the rating isn't active.
  */
-string RomFields::ageRatingDecode(int country, uint16_t rating)
+string RomFields::ageRatingDecode(AgeRatingsCountry country, uint16_t rating)
 {
 	if (!(rating & AGEBF_ACTIVE)) {
 		// Rating isn't active.
@@ -200,7 +200,7 @@ string RomFields::ageRatingDecode(int country, uint16_t rating)
 		// TODO: Verify these.
 		// TODO: Check for <= instead of exact matches?
 		switch (country) {
-			case AGE_JAPAN:
+			case AgeRatingsCountry::Japan:
 				switch (rating & RomFields::AGEBF_MIN_AGE_MASK) {
 					case 0:
 						s_rating = "A";
@@ -223,7 +223,7 @@ string RomFields::ageRatingDecode(int country, uint16_t rating)
 				}
 				break;
 
-			case AGE_USA:
+			case AgeRatingsCountry::USA:
 				switch (rating & RomFields::AGEBF_MIN_AGE_MASK) {
 					case 3:
 						s_rating = "eC";
@@ -249,7 +249,7 @@ string RomFields::ageRatingDecode(int country, uint16_t rating)
 				}
 				break;
 
-			case AGE_AUSTRALIA:
+			case AgeRatingsCountry::Australia:
 				switch (rating & RomFields::AGEBF_MIN_AGE_MASK) {
 					case 0:
 						s_rating = "G";
@@ -315,7 +315,7 @@ string RomFields::ageRatingsDecode(const age_ratings_t *age_ratings, bool newlin
 	string str;
 	str.reserve(64);
 	unsigned int ratings_count = 0;
-	for (int i = 0; i < static_cast<int>(age_ratings->size()); i++) {
+	for (unsigned int i = 0; i < static_cast<unsigned int>(age_ratings->size()); i++) {
 		const uint16_t rating = age_ratings->at(i);
 		if (!(rating & RomFields::AGEBF_ACTIVE))
 			continue;
@@ -330,7 +330,7 @@ string RomFields::ageRatingsDecode(const age_ratings_t *age_ratings, bool newlin
 			}
 		}
 
-		const char *const abbrev = RomFields::ageRatingAbbrev(i);
+		const char *const abbrev = RomFields::ageRatingAbbrev((AgeRatingsCountry)i);
 		if (abbrev) {
 			str += abbrev;
 		} else {
@@ -339,7 +339,7 @@ string RomFields::ageRatingsDecode(const age_ratings_t *age_ratings, bool newlin
 			str += rp_sprintf("%d", i);
 		}
 		str += '=';
-		str += ageRatingDecode(i, rating);
+		str += ageRatingDecode((AgeRatingsCountry)i, rating);
 		ratings_count++;
 	}
 

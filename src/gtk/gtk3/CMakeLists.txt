@@ -15,10 +15,11 @@ PROJECT(rom-properties-gtk3 LANGUAGES C CXX)
 FIND_PACKAGE(GLib2 ${REQUIRE_GTK3} 2.26.0)
 FIND_PACKAGE(GObject2 ${REQUIRE_GTK3} 2.26.0)
 FIND_PACKAGE(GIO ${REQUIRE_GTK3} 2.26.0)
+FIND_PACKAGE(GIO-UNIX ${REQUIRE_GTK3} 2.26.0)
 FIND_PACKAGE(Cairo ${REQUIRE_GTK3})
 # GTK3 minimum is 3.10.0. (gtk_image_set_from_surface)
 FIND_PACKAGE(GTK3 3.10.0 ${REQUIRE_GTK3})
-IF(GLib2_FOUND AND GObject2_FOUND AND GIO_FOUND AND Cairo_FOUND AND GTK3_FOUND)
+IF(GLib2_FOUND AND GObject2_FOUND AND GIO_FOUND AND GIO-UNIX_FOUND AND Cairo_FOUND AND GTK3_FOUND)
 	# We're not going to have an explicit dependency on libnautilus-extension.
 	# It will be dlopen()'d at runtime based on which
 	# initialization function is called.
@@ -55,17 +56,48 @@ IF(GLib2_FOUND AND GObject2_FOUND AND GIO_FOUND AND Cairo_FOUND AND GTK3_FOUND)
 	# TODO: Add an OPTION() to allow the user to disable this?
 	FIND_PACKAGE(LibCanberra)
 	FIND_PACKAGE(LibCanberraGtk3)
-ELSE(GLib2_FOUND AND GObject2_FOUND AND GIO_FOUND AND Cairo_FOUND AND GTK3_FOUND)
+ELSE(GLib2_FOUND AND GObject2_FOUND AND GIO_FOUND AND GIO-UNIX_FOUND AND Cairo_FOUND AND GTK3_FOUND)
 	# GTK+ 3.x (or required dependencies) were not found.
 	# Disable the GNOME frontend.
 	SET(BUILD_GTK3 OFF CACHE INTERNAL "Build the GTK+ 3.x plugin." FORCE)
-ENDIF(GLib2_FOUND AND GObject2_FOUND AND GIO_FOUND AND Cairo_FOUND AND GTK3_FOUND)
+ENDIF(GLib2_FOUND AND GObject2_FOUND AND GIO_FOUND AND GIO-UNIX_FOUND AND Cairo_FOUND AND GTK3_FOUND)
 
 # Sources and headers. (GTK+ common)
 STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-gtk3_CSRCS  "${rom-properties-gtk_SRCS}")
 STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-gtk3_CSRCS2 "${rom-properties-gtk3_SRCS}")
 STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-gtk3_CH     "${rom-properties-gtk_H}")
 STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-gtk3_CH2    "${rom-properties-gtk3_H}")
+
+IF(ENABLE_ACHIEVEMENTS)
+	STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-gtk3-notify_SRCS "${rom-properties-gtk-notify_SRCS}")
+	STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-gtk3-notify_H    "${rom-properties-gtk-notify_H}")
+
+	# D-Bus bindings for notifications.
+	# NOTE: This has to be in this file, not the GTK+ CMakeLists.txt.
+	SET(DBUS_XML_FILENAME "${CMAKE_CURRENT_SOURCE_DIR}/../../dbus/org.freedesktop.Notifications.xml")
+	ADD_CUSTOM_COMMAND(
+		OUTPUT Notifications.c Notifications.h
+		COMMAND "${GDBUS_CODEGEN}"
+			--generate-c-code Notifications
+			"${DBUS_XML_FILENAME}"
+		WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
+		DEPENDS "${DBUS_XML_FILENAME}"
+		VERBATIM
+		)
+
+	SET(rom-properties-gtk3-notify_SRCS
+		${rom-properties-gtk3-notify_SRCS}
+		${CMAKE_CURRENT_BINARY_DIR}/Notifications.c
+		)
+
+	# Disable unused parameter warnings in generated D-Bus sources.
+	INCLUDE(CheckCCompilerFlag)
+	CHECK_C_COMPILER_FLAG("-Wno-unused-parameter" CFLAG_Wno_unused_parameter)
+	IF(CFLAG_Wno_unused_parameter)
+		SET_SOURCE_FILES_PROPERTIES(${CMAKE_CURRENT_BINARY_DIR}/Notifications.c
+			APPEND_STRING PROPERTIES COMPILE_FLAGS " -Wno-unused-parameter ")
+	ENDIF(CFLAG_Wno_unused_parameter)
+ENDIF(ENABLE_ACHIEVEMENTS)
 
 # CPU-specific and optimized sources.
 IF(rom-properties-gtk3_SSSE3_SRCS)
@@ -91,22 +123,26 @@ IF(rom-properties-gtk3_SSSE3_SRCS)
 ENDIF()
 UNSET(arch)
 
+# Write the config.h file.
+CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/config.gtk3.h.in" "${CMAKE_CURRENT_BINARY_DIR}/config.gtk3.h")
+
 # Sources and headers. (GTK3-specific)
 SET(rom-properties-gtk3_SRCS
 	${rom-properties-gtk3_CSRCS} ${rom-properties-gtk3_CSRCS2}
+	${rom-properties-gtk3-notify_SRCS} ${rom-properties-gtk3-notify_H}
 	${rom-properties-gtk3_IFUNC_SRCS}
 	${rom-properties-gtk3_SSSE3_SRCS}
-	RpNautilusPlugin.c
+	RpNautilusPlugin.cpp
 	RpNautilusProvider.cpp
-	RpThunarPlugin.c
+	RpThunarPlugin.cpp
 	RpThunarProvider.cpp
 	is-supported.cpp
 	)
 SET(rom-properties-gtk3_H
 	${rom-properties-gtk3_CH} ${rom-properties-gtk3_CH2}
-	RpNautilusPlugin.h
+	RpNautilusPlugin.hpp
 	RpNautilusProvider.hpp
-	RpThunarPlugin.h
+	RpThunarPlugin.hpp
 	RpThunarProvider.hpp
 	is-supported.hpp
 	plugin-helper.h
@@ -154,7 +190,7 @@ IF(BUILD_GTK3)
 		TARGET_LINK_LIBRARIES(rom-properties-gtk3 PRIVATE i18n)
 	ENDIF(ENABLE_NLS)
 	TARGET_LINK_LIBRARIES(rom-properties-gtk3 PRIVATE Cairo::cairo)
-	TARGET_LINK_LIBRARIES(rom-properties-gtk3 PUBLIC Gtk3::gtk3 GLib2::gio GLib2::gobject GLib2::glib)
+	TARGET_LINK_LIBRARIES(rom-properties-gtk3 PUBLIC Gtk3::gtk3 GLib2::gio-unix GLib2::gio GLib2::gobject GLib2::glib)
 	IF(LibCanberra_FOUND AND LibCanberraGtk3_FOUND)
 		TARGET_LINK_LIBRARIES(rom-properties-gtk3 PRIVATE LibCanberra::libcanberra LibCanberra::gtk3)
 		TARGET_COMPILE_DEFINITIONS(rom-properties-gtk3 PRIVATE ENABLE_MESSAGESOUND)

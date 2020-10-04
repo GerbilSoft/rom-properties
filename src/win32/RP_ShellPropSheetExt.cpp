@@ -53,9 +53,6 @@ using std::unordered_map;
 using std::wstring;
 using std::vector;
 
-// GDI+ scoped token.
-#include "librptexture/img/GdiplusHelper.hpp"
-
 // Windows 10 and later
 #ifndef DATE_MONTHDAY
 # define DATE_MONTHDAY 0x00000080
@@ -126,9 +123,6 @@ class RP_ShellPropSheetExt_Private
 		// ListView controls. (for toggling LVS_EX_DOUBLEBUFFER)
 		vector<HWND> hwndListViewControls;
 
-		// GDI+ token.
-		ScopedGdiplus gdipScope;
-
 		// Header row widgets.
 		HWND lblSysInfo;
 		POINT ptSysInfo;
@@ -176,7 +170,7 @@ class RP_ShellPropSheetExt_Private
 		 * @param plvcd	[in/out] NMLVCUSTOMDRAW
 		 * @return Return value.
 		 */
-		inline int ListView_CustomDraw(NMLVCUSTOMDRAW *plvcd);
+		inline int ListView_CustomDraw(NMLVCUSTOMDRAW *plvcd) const;
 
 		// Banner and icon.
 		DragImageLabel *lblBanner;
@@ -312,16 +306,6 @@ class RP_ShellPropSheetExt_Private
 		int initBitfield(HWND hDlg, HWND hWndTab,
 			const POINT &pt_start,
 			const RomFields::Field &field, int fieldIdx);
-
-		/**
-		 * Measure the width of a ListData string.
-		 * This function handles newlines.
-		 * @param hDC           [in] HDC for text measurement.
-		 * @param tstr          [in] String to measure.
-		 * @param pNlCount      [out,opt] Newline count.
-		 * @return Width.
-		 */
-		static int measureListDataString(HDC hDC, const tstring &tstr, int *pNlCount = nullptr);
 
 		/**
 		 * Initialize a ListData field.
@@ -509,7 +493,7 @@ RP_ShellPropSheetExt_Private::RP_ShellPropSheetExt_Private(RP_ShellPropSheetExt 
 	, hFontBold(nullptr)
 	, fontHandler(nullptr)
 	, lblSysInfo(nullptr)
-	, colorAltRow(0)
+	, colorAltRow(LibWin32Common::getAltRowColor())
 	, isFullyInit(false)
 	, lblBanner(nullptr)
 	, lblIcon(nullptr)
@@ -523,10 +507,7 @@ RP_ShellPropSheetExt_Private::RP_ShellPropSheetExt_Private(RP_ShellPropSheetExt 
 	, cboLanguage(nullptr)
 	, himglFlags(nullptr)
 {
-	// Initialize the alternate row color.
-	colorAltRow = LibWin32Common::getAltRowColor();
-
-	// Initialize other structs.
+	// Initialize structs.
 	dlgSize.cx = 0;
 	dlgSize.cy = 0;
 
@@ -590,8 +571,6 @@ void RP_ShellPropSheetExt_Private::loadImages(void)
 	if (imgbf & RomData::IMGBF_INT_BANNER) {
 		// Get the banner.
 		const rp_image *const banner = romData->image(RomData::IMG_INT_BANNER);
-		assert(banner != nullptr);
-		assert(banner->isValid());
 		if (banner && banner->isValid()) {
 			if (!lblBanner) {
 				lblBanner = new DragImageLabel(hDlgSheet);
@@ -614,8 +593,6 @@ void RP_ShellPropSheetExt_Private::loadImages(void)
 	if (imgbf & RomData::IMGBF_INT_ICON) {
 		// Get the icon.
 		const rp_image *const icon = romData->image(RomData::IMG_INT_ICON);
-		assert(icon != nullptr);
-		assert(icon->isValid());
 		if (icon && icon->isValid()) {
 			if (!lblIcon) {
 				lblIcon = new DragImageLabel(hDlgSheet);
@@ -1208,64 +1185,6 @@ int RP_ShellPropSheetExt_Private::initBitfield(HWND hDlg, HWND hWndTab,
 }
 
 /**
- * Measure the width of a ListData string.
- * This function handles newlines.
- * @param hDC          [in] HDC for text measurement.
- * @param tstr         [in] String to measure.
- * @param pNlCount     [out,opt] Newline count.
- * @return Width.
- */
-int RP_ShellPropSheetExt_Private::measureListDataString(HDC hDC, const tstring &tstr, int *pNlCount)
-{
-	// TODO: Actual padding value?
-	static const int COL_WIDTH_PADDING = 8*2;
-
-	// Measured width.
-	int width = 0;
-
-	// Count newlines.
-	size_t prev_nl_pos = 0;
-	size_t cur_nl_pos;
-	int nl = 0;
-	while ((cur_nl_pos = tstr.find(_T('\n'), prev_nl_pos)) != tstring::npos) {
-		// Measure the width, plus padding on both sides.
-		//
-		// LVSCW_AUTOSIZE_USEHEADER doesn't work for entries with newlines.
-		// This allows us to set a good initial size, but it won't help if
-		// someone double-clicks the column splitter, triggering an automatic
-		// resize.
-		//
-		// TODO: Use ownerdraw instead? (WM_MEASUREITEM / WM_DRAWITEM)
-		// NOTE: Not using LibWin32Common::measureTextSize()
-		// because that does its own newline checks.
-		// TODO: Verify the values here.
-		SIZE textSize;
-		GetTextExtentPoint32(hDC, &tstr[prev_nl_pos], (int)(cur_nl_pos - prev_nl_pos), &textSize);
-		width = std::max<int>(width, textSize.cx + COL_WIDTH_PADDING);
-
-		nl++;
-		prev_nl_pos = cur_nl_pos + 1;
-	}
-
-	if (nl > 0) {
-		// Measure the last line.
-		// TODO: Verify the values here.
-		SIZE textSize;
-		GetTextExtentPoint32(hDC, &tstr[prev_nl_pos], (int)(tstr.size() - prev_nl_pos), &textSize);
-		width = std::max<int>(width, textSize.cx + COL_WIDTH_PADDING);
-	}
-
-	if (pNlCount) {
-		*pNlCount = nl;
-	}
-
-	// FIXME: Don't use LVSCW_AUTOSIZE_USEHEADER.
-	// LVS_OWNERDATA doesn't handle this properly. (only gets what's onscreen)
-	// TODO: Figure out the correct padding so the columns aren't truncated.
-	return (nl > 0 ? width : LVSCW_AUTOSIZE_USEHEADER);
-}
-
-/**
  * Initialize a ListData field.
  * @param hDlg		[in] Parent dialog window. (for dialog unit mapping)
  * @param hWndTab	[in] Tab window. (for the actual control)
@@ -1497,7 +1416,7 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 				tstring tstr = U82T_s(*iter);
 
 				int nl_count;
-				int width = measureListDataString(hDC, tstr, &nl_count);
+				int width = LibWin32Common::measureStringForListView(hDC, tstr, &nl_count);
 				if (col < colCount) {
 					col_width[col] = std::max(col_width[col], width);
 				}
@@ -1541,12 +1460,11 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 		assert(himl != nullptr);
 		if (himl) {
 			// NOTE: ListView uses LVSIL_SMALL for LVS_REPORT.
-			// TODO: The row highlight doesn't surround the empty area
-			// of the icon. LVS_OWNERDRAW is probably needed for that.
 			ListView_SetImageList(hListView, himl, LVSIL_SMALL);
-			uint32_t lvBgColor[2];
-			lvBgColor[0] = LibWin32Common::GetSysColor_ARGB32(COLOR_WINDOW);
-			lvBgColor[1] = LibWin32Common::getAltRowColor_ARGB32();
+			const uint32_t lvBgColor[2] = {
+				LibWin32Common::GetSysColor_ARGB32(COLOR_WINDOW),
+				LibWin32Common::getAltRowColor_ARGB32()
+			};
 
 			// Add icons.
 			uint8_t rowColorIdx = 0;
@@ -1941,26 +1859,26 @@ void RP_ShellPropSheetExt_Private::buildCboLanguageImageList(void)
 	// TODO: Adjust cboLanguage if necessary?
 	const UINT dpi = rp_GetDpiForWindow(hDlgSheet);
 	unsigned int iconSize;
-	uint16_t flagResource;
+	uint16_t resID;
 	if (dpi < 120) {
 		// [96,120) dpi: Use 16x16.
 		iconSize = 16;
-		flagResource = IDP_FLAGS_16x16;
+		resID = IDP_FLAGS_16x16;
 	} else if (dpi <= 144) {
 		// [120,144] dpi: Use 24x24.
 		// TODO: Maybe needs to be slightly higher?
 		iconSize = 24;
-		flagResource = IDP_FLAGS_24x24;
+		resID = IDP_FLAGS_24x24;
 	} else {
 		// >144dpi: Use 32x32.
 		iconSize = 32;
-		flagResource = IDP_FLAGS_32x32;
+		resID = IDP_FLAGS_32x32;
 	}
 
 	// Load the flags sprite sheet.
 	// TODO: Is premultiplied alpha needed?
 	// Reference: https://stackoverflow.com/questions/307348/how-to-draw-32-bit-alpha-channel-bitmaps
-	RpFile_windres *const f_res = new RpFile_windres(HINST_THISCOMPONENT, MAKEINTRESOURCE(flagResource), MAKEINTRESOURCE(RT_PNG));
+	RpFile_windres *const f_res = new RpFile_windres(HINST_THISCOMPONENT, MAKEINTRESOURCE(resID), MAKEINTRESOURCE(RT_PNG));
 	if (!f_res->isOpen()) {
 		// Unable to open the resource.
 		f_res->unref();
@@ -1973,7 +1891,6 @@ void RP_ShellPropSheetExt_Private::buildCboLanguageImageList(void)
 		// Unable to load the flags sprite sheet.
 		return;
 	}
-	const int flagStride = imgFlagsSheet->stride() / sizeof(uint32_t);
 
 	// Make sure the bitmap has the expected size.
 	assert(imgFlagsSheet->width() == (iconSize * SystemRegion::FLAGS_SPRITE_SHEET_COLS));
@@ -2009,21 +1926,6 @@ void RP_ShellPropSheetExt_Private::buildCboLanguageImageList(void)
 		return;
 	}
 
-	const BITMAPINFOHEADER bmihDIBSection = {
-		sizeof(BITMAPINFOHEADER),	// biSize
-		(LONG)iconSize,			// biWidth
-		-(LONG)iconSize,		// biHeight (negative for right-side up)
-		1,				// biPlanes
-		32,				// biBitCount
-		BI_RGB,				// biCompression
-		0,				// biSizeImage
-		(LONG)dpi,			// biXPelsPerMeter
-		(LONG)dpi,			// biYPelsPerMeter
-		0,				// biClrUsed
-		0,				// biClrImportant
-	};
-
-	HDC hdcIcon = GetDC(nullptr);
 	const auto set_lc_cend = set_lc.cend();
 	for (auto iter = set_lc.cbegin(); iter != set_lc_cend; ++iter) {
 		int col, row;
@@ -2040,37 +1942,15 @@ void RP_ShellPropSheetExt_Private::buildCboLanguageImageList(void)
 			col = 3 - col;
 		}
 
-		// Create a DIB section for the sub-icon.
-		void *pvBits;
-		HBITMAP hbmIcon = CreateDIBSection(
-			hdcIcon,	// hdc
-			reinterpret_cast<const BITMAPINFO*>(&bmihDIBSection),	// pbmi
-			DIB_RGB_COLORS,	// usage
-			&pvBits,	// ppvBits
-			nullptr,	// hSection
-			0);		// offset
-
-		GdiFlush();	// TODO: Not sure if needed here...
+		// Extract the sub-icon.
+		HBITMAP hbmIcon = RpImageWin32::getSubBitmap(imgFlagsSheet, col*iconSize, row*iconSize, iconSize, iconSize, dpi);
 		assert(hbmIcon != nullptr);
 		if (hbmIcon) {
-			// Copy the icon from the sprite sheet.
-			const size_t rowBytes = iconSize * sizeof(uint32_t);
-			const uint32_t *pSrc = static_cast<const uint32_t*>(imgFlagsSheet->scanLine(row * iconSize));
-			pSrc += (col * iconSize);
-			uint32_t *pDest = static_cast<uint32_t*>(pvBits);
-			for (UINT bmRow = iconSize; bmRow > 0; bmRow--) {
-				memcpy(pDest, pSrc, rowBytes);
-				pDest += iconSize;
-				pSrc += flagStride;
-			}
-
 			// Add the icon to the ImageList.
-			GdiFlush();
 			ImageList_Add(himglFlags, hbmIcon, nullptr);
 			DeleteBitmap(hbmIcon);
 		}
 	}
-	ReleaseDC(nullptr, hdcIcon);
 	imgFlagsSheet->unref();
 
 	if (cboLanguage) {
@@ -2203,7 +2083,7 @@ void RP_ShellPropSheetExt_Private::updateMulti(uint32_t user_lc)
 				     ++iter_sdr, ++iter_ddr, col++)
 				{
 					tstring tstr = U82T_s(*iter_sdr);
-					int width = measureListDataString(hDC, tstr);
+					int width = LibWin32Common::measureStringForListView(hDC, tstr);
 					if (col < colCount) {
 						col_width[col] = std::max(col_width[col], width);
 					}
@@ -2952,6 +2832,9 @@ void RP_ShellPropSheetExt_Private::initDialog(void)
 		def_lc = pFields->defaultLanguageCode();
 		updateMulti(0);
 	}
+
+	// Check for "viewed" achievements.
+	romData->checkViewedAchievements();
 
 	// Register for WTS session notifications. (Remote Desktop)
 	wts.registerSessionNotification(hDlgSheet, NOTIFY_FOR_THIS_SESSION);
@@ -3761,7 +3644,7 @@ inline BOOL RP_ShellPropSheetExtPrivate::ListView_GetDispInfo(NMLVDISPINFO *plvd
  * @param plvcd	[in/out] NMLVCUSTOMDRAW
  * @return Return value.
  */
-inline int RP_ShellPropSheetExt_Private::ListView_CustomDraw(NMLVCUSTOMDRAW *plvcd)
+inline int RP_ShellPropSheetExt_Private::ListView_CustomDraw(NMLVCUSTOMDRAW *plvcd) const
 {
 	int result = CDRF_DODEFAULT;
 	switch (plvcd->nmcd.dwDrawStage) {

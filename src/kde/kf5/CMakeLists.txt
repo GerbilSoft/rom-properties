@@ -30,7 +30,7 @@ IF(ECM_MODULE_PATH AND ECM_KDE_MODULE_DIR)
 
 	# Find Qt5.
 	SET(Qt5_NO_LINK_QTMAIN 1)
-	FIND_PACKAGE(Qt5 ${REQUIRE_KF5} COMPONENTS Core Gui Widgets)
+	FIND_PACKAGE(Qt5 ${REQUIRE_KF5} COMPONENTS Core Gui Widgets DBus)
 	IF(Qt5Core_FOUND AND Qt5Gui_FOUND AND Qt5Widgets_FOUND)
 		# NOTE: QT_PLUGIN_INSTALL_DIR is missing the 'qt5' directory.
 		# Use `qtpaths` instead to get the actual path.
@@ -78,6 +78,12 @@ IF(ECM_MODULE_PATH AND ECM_KDE_MODULE_DIR)
 		SET(KF5_PRPD_PLUGIN_INSTALL_DIR "${KF5_PLUGIN_INSTALL_DIR}/kf5/propertiesdialog")
 		SET(KF5_KFMD_PLUGIN_INSTALL_DIR "${KF5_PLUGIN_INSTALL_DIR}/kf5/kfilemetadata")
 		SET(KF5_KOVI_PLUGIN_INSTALL_DIR "${KF5_PLUGIN_INSTALL_DIR}/kf5/overlayicon")
+
+		IF(ENABLE_ACHIEVEMENTS AND Qt5DBus_FOUND)
+			# QtDBus is used for notifications.
+			# TODO: Make notifications optional.
+			SET(HAVE_QtDBus_NOTIFY 1)
+		ENDIF(ENABLE_ACHIEVEMENTS AND Qt5DBus_FOUND)
 	ELSE()
 		# Qt5 not found.
 		SET(BUILD_KF5 OFF CACHE INTERNAL "Build the KDE Frameworks 5 plugin." FORCE)
@@ -99,6 +105,9 @@ STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-kf5_RCC_SRCS "${rom-prope
 STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-kio5_SRCS "${rom-properties-kio_SRCS}")
 STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-kio5_H    "${rom-properties-kio_H}")
 
+# Write the config.h file.
+CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/../config.kde.h.in" "${CMAKE_CURRENT_BINARY_DIR}/config.kde.h")
+
 # Sources and headers. (KF5-specific)
 IF(Qt5Core_FOUND)
 	QT5_ADD_RESOURCES(
@@ -106,9 +115,21 @@ IF(Qt5Core_FOUND)
 		OPTIONS -no-compress
 		)
 ENDIF(Qt5Core_FOUND)
+IF(HAVE_QtDBus_NOTIFY)
+	STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-kf5-notify_SRCS "${rom-properties-kde-notify_SRCS}")
+	STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-kf5-notify_H    "${rom-properties-kde-notify_H}")
+
+	# QtDBus wrappers
+	QT5_ADD_DBUS_INTERFACES(rom-properties-kf5_DBUS_IFACE_SRCS
+		"${CMAKE_CURRENT_SOURCE_DIR}/../../dbus/org.freedesktop.Notifications.xml"
+		)
+ENDIF(HAVE_QtDBus_NOTIFY)
+
 SET(rom-properties-kf5_SRCS
 	${rom-properties-kf5_SRCS}
 	${rom-properties-kio5_SRCS}
+	${rom-properties-kf5-notify_SRCS}
+	${rom-properties-kf5_DBUS_IFACE_SRCS}
 	${rom-properties-kf5_RCC_O}
 	RomPropertiesDialogPluginFactoryKF5.cpp
 	ExtractorPlugin.cpp
@@ -117,6 +138,7 @@ SET(rom-properties-kf5_SRCS
 SET(rom-properties-kf5_H
 	${rom-properties-kf5_H}
 	${rom-properties-kio5_H}
+	${rom-properties-kf5-notify_H}
 	ExtractorPlugin.hpp
 	OverlayIconPlugin.hpp
 	)
@@ -169,6 +191,9 @@ IF(BUILD_KF5)
 	TARGET_LINK_LIBRARIES(rom-properties-kf5 PRIVATE ${ZLIB_LIBRARY})
 	TARGET_LINK_LIBRARIES(rom-properties-kf5 PUBLIC KF5::KIOCore KF5::KIOWidgets KF5::WidgetsAddons KF5::FileMetaData)
 	TARGET_LINK_LIBRARIES(rom-properties-kf5 PUBLIC Qt5::Widgets Qt5::Gui Qt5::Core)
+	IF(HAVE_QtDBus_NOTIFY)
+		TARGET_LINK_LIBRARIES(rom-properties-kf5 PUBLIC Qt5::DBus)
+	ENDIF(HAVE_QtDBus_NOTIFY)
 
 	# Add zlib and png directories for the About tab.
 	IF(HAVE_ZLIB)

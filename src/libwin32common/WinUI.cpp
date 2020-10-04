@@ -239,114 +239,65 @@ bool isComCtl32_v610(void)
 	return ret;
 }
 
-/** Window procedure subclasses **/
-
 /**
- * Subclass procedure for multi-line EDIT and RICHEDIT controls.
- * This procedure does the following:
- * - ENTER and ESCAPE are forwarded to the parent window.
- * - DLGC_HASSETSEL is masked.
- *
- * @param hWnd		Control handle.
- * @param uMsg		Message.
- * @param wParam	WPARAM
- * @param lParam	LPARAM
- * @param uIdSubclass	Subclass ID. (usually the control ID)
- * @param dwRefData	HWND of parent dialog to forward WM_COMMAND messages to.
+ * Measure the width of a string for ListView.
+ * This function handles newlines.
+ * @param hDC          [in] HDC for text measurement.
+ * @param tstr         [in] String to measure.
+ * @param pNlCount     [out,opt] Newline count.
+ * @return Width. (May return LVSCW_AUTOSIZE_USEHEADER if it's a single line.)
  */
-LRESULT CALLBACK MultiLineEditProc(
-	HWND hWnd, UINT uMsg,
-	WPARAM wParam, LPARAM lParam,
-	UINT_PTR uIdSubclass, DWORD_PTR dwRefData)
+int measureStringForListView(HDC hDC, const tstring &tstr, int *pNlCount)
 {
-	switch (uMsg) {
-		case WM_KEYDOWN: {
-			// Work around Enter/Escape issues.
-			// Reference: http://blogs.msdn.com/b/oldnewthing/archive/2007/08/20/4470527.aspx
-			if (!dwRefData) {
-				// No parent dialog...
-				break;
-			}
-			HWND hDlg = reinterpret_cast<HWND>(dwRefData);
+	// TODO: Actual padding value?
+	static const int COL_WIDTH_PADDING = 8*2;
 
-			switch (wParam) {
-				case VK_RETURN:
-					SendMessage(hDlg, WM_COMMAND, IDOK, 0);
-					return TRUE;
+	// Measured width.
+	int width = 0;
 
-				case VK_ESCAPE:
-					SendMessage(hDlg, WM_COMMAND, IDCANCEL, 0);
-					return TRUE;
+	// Count newlines.
+	size_t prev_nl_pos = 0;
+	size_t cur_nl_pos;
+	int nl = 0;
+	while ((cur_nl_pos = tstr.find(_T('\n'), prev_nl_pos)) != tstring::npos) {
+		// Measure the width, plus padding on both sides.
+		//
+		// LVSCW_AUTOSIZE_USEHEADER doesn't work for entries with newlines.
+		// This allows us to set a good initial size, but it won't help if
+		// someone double-clicks the column splitter, triggering an automatic
+		// resize.
+		//
+		// TODO: Use ownerdraw instead? (WM_MEASUREITEM / WM_DRAWITEM)
+		// NOTE: Not using LibWin32Common::measureTextSize()
+		// because that does its own newline checks.
+		// TODO: Verify the values here.
+		SIZE textSize;
+		GetTextExtentPoint32(hDC, &tstr[prev_nl_pos], (int)(cur_nl_pos - prev_nl_pos), &textSize);
+		width = std::max<int>(width, textSize.cx + COL_WIDTH_PADDING);
 
-				default:
-					break;
-			}
-			break;
-		}
-
-		case WM_GETDLGCODE: {
-			// Filter out DLGC_HASSETSEL.
-			// References:
-			// - https://stackoverflow.com/questions/20876045/cricheditctrl-selects-all-text-when-it-gets-focus
-			// - https://stackoverflow.com/a/20884852
-			const LRESULT code = DefSubclassProc(hWnd, uMsg, wParam, lParam);
-			return (code & ~(LRESULT)DLGC_HASSETSEL);
-		}
-
-		case WM_NCDESTROY:
-			// Remove the window subclass.
-			// Reference: https://blogs.msdn.microsoft.com/oldnewthing/20031111-00/?p=41883
-			RemoveWindowSubclass(hWnd, MultiLineEditProc, uIdSubclass);
-			break;
-
-		default:
-			break;
+		nl++;
+		prev_nl_pos = cur_nl_pos + 1;
 	}
 
-	return DefSubclassProc(hWnd, uMsg, wParam, lParam);
-}
-
-/**
- * Subclass procedure for single-line EDIT and RICHEDIT controls.
- * This procedure does the following:
- * - DLGC_HASSETSEL is masked.
- *
- * @param hWnd		Control handle.
- * @param uMsg		Message.
- * @param wParam	WPARAM
- * @param lParam	LPARAM
- * @param uIdSubclass	Subclass ID. (usually the control ID)
- * @param dwRefData	HWND of parent dialog to forward WM_COMMAND messages to.
- */
-LRESULT CALLBACK SingleLineEditProc(
-	HWND hWnd, UINT uMsg,
-	WPARAM wParam, LPARAM lParam,
-	UINT_PTR uIdSubclass, DWORD_PTR dwRefData)
-{
-	((void)dwRefData);
-
-	switch (uMsg) {
-		case WM_GETDLGCODE: {
-			// Filter out DLGC_HASSETSEL.
-			// References:
-			// - https://stackoverflow.com/questions/20876045/cricheditctrl-selects-all-text-when-it-gets-focus
-			// - https://stackoverflow.com/a/20884852
-			const LRESULT code = DefSubclassProc(hWnd, uMsg, wParam, lParam);
-			return (code & ~(LRESULT)DLGC_HASSETSEL);
-		}
-
-		case WM_NCDESTROY:
-			// Remove the window subclass.
-			// Reference: https://blogs.msdn.microsoft.com/oldnewthing/20031111-00/?p=41883
-			RemoveWindowSubclass(hWnd, MultiLineEditProc, uIdSubclass);
-			break;
-
-		default:
-			break;
+	if (nl > 0) {
+		// Measure the last line.
+		// TODO: Verify the values here.
+		SIZE textSize;
+		GetTextExtentPoint32(hDC, &tstr[prev_nl_pos], (int)(tstr.size() - prev_nl_pos), &textSize);
+		width = std::max<int>(width, textSize.cx + COL_WIDTH_PADDING);
 	}
 
-	return DefSubclassProc(hWnd, uMsg, wParam, lParam);
+	if (pNlCount) {
+		*pNlCount = nl;
+	}
+
+	// FIXME: Don't use LVSCW_AUTOSIZE_USEHEADER.
+	// LVS_OWNERDATA doesn't handle this properly. (only gets what's onscreen)
+	// TODO: Figure out the correct padding so the columns aren't truncated.
+	return (nl > 0 ? width : LVSCW_AUTOSIZE_USEHEADER);
 }
+
+/** File dialogs **/
 
 #ifdef UNICODE
 /**
@@ -712,6 +663,115 @@ tstring getOpenFileName(HWND hWnd, const TCHAR *dlgTitle, const char *filterSpec
 tstring getSaveFileName(HWND hWnd, const TCHAR *dlgTitle, const char *filterSpec, const TCHAR *origFilename)
 {
 	return getFileName_int(true, hWnd, dlgTitle, filterSpec, origFilename);
+}
+
+/** Window procedure subclasses **/
+
+/**
+ * Subclass procedure for multi-line EDIT and RICHEDIT controls.
+ * This procedure does the following:
+ * - ENTER and ESCAPE are forwarded to the parent window.
+ * - DLGC_HASSETSEL is masked.
+ *
+ * @param hWnd		Control handle.
+ * @param uMsg		Message.
+ * @param wParam	WPARAM
+ * @param lParam	LPARAM
+ * @param uIdSubclass	Subclass ID. (usually the control ID)
+ * @param dwRefData	HWND of parent dialog to forward WM_COMMAND messages to.
+ */
+LRESULT CALLBACK MultiLineEditProc(
+	HWND hWnd, UINT uMsg,
+	WPARAM wParam, LPARAM lParam,
+	UINT_PTR uIdSubclass, DWORD_PTR dwRefData)
+{
+	switch (uMsg) {
+		case WM_KEYDOWN: {
+			// Work around Enter/Escape issues.
+			// Reference: http://blogs.msdn.com/b/oldnewthing/archive/2007/08/20/4470527.aspx
+			if (!dwRefData) {
+				// No parent dialog...
+				break;
+			}
+			HWND hDlg = reinterpret_cast<HWND>(dwRefData);
+
+			switch (wParam) {
+				case VK_RETURN:
+					SendMessage(hDlg, WM_COMMAND, IDOK, 0);
+					return TRUE;
+
+				case VK_ESCAPE:
+					SendMessage(hDlg, WM_COMMAND, IDCANCEL, 0);
+					return TRUE;
+
+				default:
+					break;
+			}
+			break;
+		}
+
+		case WM_GETDLGCODE: {
+			// Filter out DLGC_HASSETSEL.
+			// References:
+			// - https://stackoverflow.com/questions/20876045/cricheditctrl-selects-all-text-when-it-gets-focus
+			// - https://stackoverflow.com/a/20884852
+			const LRESULT code = DefSubclassProc(hWnd, uMsg, wParam, lParam);
+			return (code & ~(LRESULT)DLGC_HASSETSEL);
+		}
+
+		case WM_NCDESTROY:
+			// Remove the window subclass.
+			// Reference: https://blogs.msdn.microsoft.com/oldnewthing/20031111-00/?p=41883
+			RemoveWindowSubclass(hWnd, MultiLineEditProc, uIdSubclass);
+			break;
+
+		default:
+			break;
+	}
+
+	return DefSubclassProc(hWnd, uMsg, wParam, lParam);
+}
+
+/**
+ * Subclass procedure for single-line EDIT and RICHEDIT controls.
+ * This procedure does the following:
+ * - DLGC_HASSETSEL is masked.
+ *
+ * @param hWnd		Control handle.
+ * @param uMsg		Message.
+ * @param wParam	WPARAM
+ * @param lParam	LPARAM
+ * @param uIdSubclass	Subclass ID. (usually the control ID)
+ * @param dwRefData	HWND of parent dialog to forward WM_COMMAND messages to.
+ */
+LRESULT CALLBACK SingleLineEditProc(
+	HWND hWnd, UINT uMsg,
+	WPARAM wParam, LPARAM lParam,
+	UINT_PTR uIdSubclass, DWORD_PTR dwRefData)
+{
+	((void)dwRefData);
+
+	switch (uMsg) {
+		case WM_GETDLGCODE: {
+			// Filter out DLGC_HASSETSEL.
+			// References:
+			// - https://stackoverflow.com/questions/20876045/cricheditctrl-selects-all-text-when-it-gets-focus
+			// - https://stackoverflow.com/a/20884852
+			const LRESULT code = DefSubclassProc(hWnd, uMsg, wParam, lParam);
+			return (code & ~(LRESULT)DLGC_HASSETSEL);
+		}
+
+		case WM_NCDESTROY:
+			// Remove the window subclass.
+			// Reference: https://blogs.msdn.microsoft.com/oldnewthing/20031111-00/?p=41883
+			RemoveWindowSubclass(hWnd, MultiLineEditProc, uIdSubclass);
+			break;
+
+		default:
+			break;
+	}
+
+	return DefSubclassProc(hWnd, uMsg, wParam, lParam);
 }
 
 }

@@ -43,7 +43,7 @@ using std::unique_ptr;
 class CreateThumbnailPrivate : public TCreateThumbnail<PIMGTYPE>
 {
 	public:
-		CreateThumbnailPrivate();
+		CreateThumbnailPrivate() { }
 
 	private:
 		typedef TCreateThumbnail<PIMGTYPE> super;
@@ -110,7 +110,10 @@ class CreateThumbnailPrivate : public TCreateThumbnail<PIMGTYPE>
 		 * @param pOutSize	[out] Pointer to ImgSize to store the image size.
 		 * @return 0 on success; non-zero on error.
 		 */
-		int getImgClassSize(const PIMGTYPE &imgClass, ImgSize *pOutSize) const final;
+		inline int getImgClassSize(const PIMGTYPE &imgClass, ImgSize *pOutSize) const final
+		{
+			return PIMGTYPE_get_size(imgClass, &pOutSize->width, &pOutSize->height);
+		}
 
 		/**
 		 * Get the proxy for the specified URL.
@@ -118,28 +121,6 @@ class CreateThumbnailPrivate : public TCreateThumbnail<PIMGTYPE>
 		 */
 		string proxyForUrl(const string &url) const final;
 };
-
-CreateThumbnailPrivate::CreateThumbnailPrivate()
-{ }
-
-/**
- * Get the size of the specified ImgClass.
- * @param imgClass	[in] ImgClass object.
- * @param pOutSize	[out] Pointer to ImgSize to store the image size.
- * @return 0 on success; non-zero on error.
- */
-int CreateThumbnailPrivate::getImgClassSize(const PIMGTYPE &imgClass, ImgSize *pOutSize) const
-{
-#ifdef RP_GTK_USE_CAIRO
-	// TODO: Verify that this is an image surface.
-	pOutSize->width = cairo_image_surface_get_width(imgClass);
-	pOutSize->height = cairo_image_surface_get_height(imgClass);
-#else /* !RP_GTK_USE_CAIRO */
-	pOutSize->width = gdk_pixbuf_get_width(imgClass);
-	pOutSize->height = gdk_pixbuf_get_height(imgClass);
-#endif
-	return 0;
-}
 
 /**
  * Get the proxy for the specified URL.
@@ -176,12 +157,6 @@ string CreateThumbnailPrivate::proxyForUrl(const string &url) const
 }
 
 /** CreateThumbnail **/
-
-// NOTE: G_MODULE_EXPORT is a no-op on non-Windows platforms.
-#if !defined(_WIN32) && defined(__GNUC__) && __GNUC__ >= 4
-#  undef G_MODULE_EXPORT
-#  define G_MODULE_EXPORT __attribute__ ((visibility ("default")))
-#endif
 
 /**
  * Open a file from a filename or URI.
@@ -464,13 +439,8 @@ G_MODULE_EXPORT int RP_C_API rp_create_thumbnail(const char *source_file, const 
 
 	// Initialize the row pointers.
 	row_pointers.reset(new const uint8_t*[outParams.thumbSize.height]);
-#ifdef RP_GTK_USE_CAIRO
-	pixels = cairo_image_surface_get_data(outParams.retImg);
-	rowstride = cairo_image_surface_get_stride(outParams.retImg);
-#else /* !RP_GTK_USE_CAIRO */
-	pixels = gdk_pixbuf_get_pixels(outParams.retImg);
-	rowstride = gdk_pixbuf_get_rowstride(outParams.retImg);
-#endif
+	pixels = PIMGTYPE_get_image_data(outParams.retImg);
+	rowstride = PIMGTYPE_get_rowstride(outParams.retImg);
 	for (int y = 0; y < outParams.thumbSize.height; y++, pixels += rowstride) {
 		row_pointers[y] = pixels;
 	}

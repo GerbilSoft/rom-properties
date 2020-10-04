@@ -27,6 +27,8 @@ SET(rom-properties-kde_SRCS
 	config/ImageTypesTab.cpp
 	config/SystemsTab.cpp
 	config/OptionsTab.cpp
+	config/AchievementsTab.cpp
+	config/AchievementsItemDelegate.cpp
 	config/AboutTab.cpp
 	)
 SET(rom-properties-kde_H
@@ -45,6 +47,8 @@ SET(rom-properties-kde_H
 	config/ImageTypesTab.hpp
 	config/SystemsTab.cpp
 	config/OptionsTab.hpp
+	config/AchievementsTab.hpp
+	config/AchievementsItemDelegate.hpp
 	config/AboutTab.hpp
 	)
 SET(rom-properties-kde_UIS
@@ -53,10 +57,12 @@ SET(rom-properties-kde_UIS
 	config/ImageTypesTab.ui
 	config/SystemsTab.ui
 	config/OptionsTab.ui
+	config/AchievementsTab.ui
 	config/AboutTab.ui
 	)
 SET(rom-properties-kde_RCC_SRCS
 	../res/flags/flags.qrc
+	../res/ach/ach.qrc
 	)
 
 IF(ENABLE_DECRYPTION)
@@ -84,6 +90,12 @@ IF(ENABLE_NLS)
 	SET(rom-properties-kde_SRCS ${rom-properties-kde_SRCS} GettextTranslator.cpp)
 	SET(rom-properties-kde_H    ${rom-properties-kde_H}    GettextTranslator.hpp)
 ENDIF(ENABLE_NLS)
+
+IF(ENABLE_ACHIEVEMENTS)
+	# D-Bus notification for achievements
+	SET(rom-properties-kde-notify_SRCS AchQtDBus.cpp)
+	SET(rom-properties-kde-notify_H    AchQtDBus.hpp)
+ENDIF(ENABLE_ACHIEVEMENTS)
 
 # RpFile_kio requires KDE Frameworks 5.
 # FIXME: Dolphin ends up hanging for some reason...

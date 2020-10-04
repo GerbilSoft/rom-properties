@@ -185,7 +185,6 @@ class AboutTabPrivate
 		void setTabContents(int index);
 
 	public:
-
 		/**
 		 * Initialize the dialog.
 		 */
@@ -535,7 +534,8 @@ void AboutTabPrivate::initProgramTitleText(void)
 	}
 
 	// Set the icon.
-	HICON hIcon = PropSheetIcon::get96Icon();
+	const PropSheetIcon *const psi = PropSheetIcon::instance();
+	HICON hIcon = psi->get96Icon();
 	if (hIcon) {
 		// Get the dialog margin.
 		// 7x7 DLU margin is recommended by the Windows UX guidelines.
@@ -1038,5 +1038,5 @@ void AboutTab::loadDefaults(void)
  */
 void AboutTab::save(void)
 {
-	// Nothing to load here...
+	// Nothing to save here...
 }

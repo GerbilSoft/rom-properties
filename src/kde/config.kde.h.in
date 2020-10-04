@@ -1,0 +1,18 @@
+/***************************************************************************
+ * ROM Properties Page shell extension. (KDE)                              *
+ * config.kde.h.in: KDE frontend configuration. (source file)              *
+ *                                                                         *
+ * Copyright (c) 2020 by David Korth.                                      *
+ * SPDX-License-Identifier: GPL-2.0-or-later                               *
+ ***************************************************************************/
+
+#ifndef __ROMPROPERTIES_KDE_CONFIG_H__
+#define __ROMPROPERTIES_KDE_CONFIG_H__
+
+/* Define to 1 if achievements are enabled. */
+#cmakedefine ENABLE_ACHIEVEMENTS 1
+
+/* Define to 1 if QtDBus should be used to send notifications. */
+#cmakedefine HAVE_QtDBus_NOTIFY 1
+
+#endif /* __ROMPROPERTIES_KDE_CONFIG_H__ */

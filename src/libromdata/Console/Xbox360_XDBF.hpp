@@ -60,7 +60,7 @@ ROMDATA_DECL_IMGINT()
 		 * @param property Property
 		 * @return String, or empty string if not found.
 		 */
-		std::string getString(LibRpBase::Property::Property property) const;
+		std::string getString(LibRpBase::Property property) const;
 
 ROMDATA_DECL_END()
 

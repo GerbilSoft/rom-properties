@@ -17,7 +17,7 @@
 
 #include "stdafx.h"
 #include "RpNautilusProvider.hpp"
-#include "RpNautilusPlugin.h"
+#include "RpNautilusPlugin.hpp"
 #include "is-supported.hpp"
 
 #include "../RomDataView.hpp"

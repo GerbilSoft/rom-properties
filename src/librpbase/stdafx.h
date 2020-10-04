@@ -63,10 +63,12 @@
 # include "libwin32common/RpWin32_sdk.h"
 #endif /* _WIN32 */
 
+// librpcpu
+#include "librpcpu/byteswap_rp.h"
+#include "librpcpu/bitstuff.h"
+
 // librpbase common headers
 #include "common.h"
-#include "byteswap.h"
-#include "bitstuff.h"
 #include "aligned_malloc.h"
 #include "librpcpu/cpu_dispatch.h"
 #include "ctypex.h"

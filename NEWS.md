@@ -2,6 +2,11 @@
 
 ## v1.8 (released 2020/??/??)
 
+* New features:
+  * An achievements system has been added. By viewing certain types of files
+    or performing certain actions, achievements can be unlocked. Achievements
+    can be viewed in rp-config.
+
 * New parser features:
   * NGPC: Added external title screens using RPDB.
 

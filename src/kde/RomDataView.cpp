@@ -7,9 +7,12 @@
  ***************************************************************************/
 
 #include "stdafx.h"
+#include "config.kde.h"
+
 #include "RomDataView.hpp"
 #include "RpQImageBackend.hpp"
 #include "MessageSound.hpp"
+#include "AchQtDBus.hpp"
 
 // librpbase, librpfile, librptexture
 #include "librpbase/TextOut.hpp"
@@ -78,6 +81,7 @@ class RomDataViewPrivate
 
 		// RomData object.
 		RomData *romData;
+		bool hasCheckedAchievements;
 
 		// "Options" button.
 		QPushButton *btnOptions;
@@ -265,6 +269,7 @@ class RomDataViewPrivate
 RomDataViewPrivate::RomDataViewPrivate(RomDataView *q, RomData *romData)
 	: q_ptr(q)
 	, romData(nullptr)
+	, hasCheckedAchievements(false)
 	, btnOptions(nullptr)
 	, menuOptions(nullptr)
 	, romOps_firstActionIndex(-1)
@@ -284,9 +289,11 @@ RomDataViewPrivate::RomDataViewPrivate(RomDataView *q, RomData *romData)
 		this->romData = romData->ref();
 	}
 
-	// Register RpQImageBackend.
-	// TODO: Static initializer somewhere?
+	// Register RpQImageBackend and AchQtDBus.
 	rp_image::setBackendCreatorFn(RpQImageBackend::creator_fn);
+#if defined(ENABLE_ACHIEVEMENTS) && defined(HAVE_QtDBus_NOTIFY)
+	AchQtDBus::instance();
+#endif /* ENABLE_ACHIEVEMENTS && HAVE_QtDBus_NOTIFY */
 }
 
 RomDataViewPrivate::~RomDataViewPrivate()
@@ -1630,6 +1637,12 @@ void RomDataView::showEvent(QShowEvent *event)
 	// Show the "Options" button.
 	if (d->btnOptions) {
 		d->btnOptions->show();
+	}
+
+	// Check for "viewed" achievements.
+	if (!d->hasCheckedAchievements) {
+		d->romData->checkViewedAchievements();
+		d->hasCheckedAchievements = true;
 	}
 
 	// Pass the event to the superclass.

@@ -22,6 +22,7 @@
 // librpbase, librpfile, librptexture
 #include "librpfile/DualFile.hpp"
 #include "librpfile/RelatedFile.hpp"
+#include "librpbase/Achievements.hpp"
 #include "librpbase/SystemRegion.hpp"
 using namespace LibRpBase;
 using namespace LibRpFile;
@@ -392,6 +393,7 @@ int GameCubePrivate::loadWiiPartitionTables(void)
 	}
 
 	// Done reading the partition tables.
+	wiiPtblLoaded = true;
 	return 0;
 }
 
@@ -1603,7 +1605,7 @@ int GameCube::loadFieldData(void)
 	/** Wii-specific fields. **/
 
 	// Load the Wii partition tables.
-	int wiiPtLoaded = d->loadWiiPartitionTables();
+	const int wiiPtLoaded = d->loadWiiPartitionTables();
 
 	// TMD fields.
 	if (d->gamePartition) {
@@ -1870,7 +1872,7 @@ int GameCube::loadFieldData(void)
 			if ((int)encKey >= 0 && (int)encKey < ARRAY_SIZE(wii_key_tbl)) {
 				s_key_name = dpgettext_expr(RP_I18N_DOMAIN, "GameCube|KeyIdx", wii_key_tbl[(int)encKey]);
 			} else {
-				// WiiPartition::ENCKEY_UNKNOWN
+				// WiiPartition::EncKey::Unknown
 				s_key_name = C_("RomData", "Unknown");
 			}
 			data_row.emplace_back(s_key_name);
@@ -2211,6 +2213,53 @@ int GameCube::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) c
 
 	// All URLs added.
 	return 0;
+}
+
+/**
+ * Check for "viewed" achievements.
+ *
+ * @return Number of achievements unlocked.
+ */
+int GameCube::checkViewedAchievements(void) const
+{
+	RP_D(const GameCube);
+	if (!d->isValid || ((d->discType & GameCubePrivate::DISC_SYSTEM_MASK) != GameCubePrivate::DISC_SYSTEM_WII)) {
+		// Disc is either not valid or is not Wii.
+		return 0;
+	}
+
+	Achievements *const pAch = Achievements::instance();
+	int ret = 0;
+
+	const int wiiPtLoaded = const_cast<GameCubePrivate*>(d)->loadWiiPartitionTables();
+	if (wiiPtLoaded == 0) {
+		// Wii partition tables loaded.
+		WiiPartition::EncKey encKey;
+		if ((d->discType & GameCubePrivate::DISC_FORMAT_MASK) == GameCubePrivate::DISC_FORMAT_NASOS) {
+			// NASOS disc image.
+			// If this would normally be an encrypted image, use encKeyReal().
+			encKey = (d->discHeader.disc_noCrypto == 0
+				? d->gamePartition->encKeyReal()
+				: d->gamePartition->encKey());
+		} else {
+			// Other disc image. Use encKey().
+			encKey = d->gamePartition->encKey();
+		}
+
+		switch (encKey) {
+			default:
+				break;
+			case WiiPartition::EncKey::RVT_Debug:
+			case WiiPartition::EncKey::RVT_Korean:
+			case WiiPartition::EncKey::CAT_vWii:
+				// Debug encryption.
+				pAch->unlock(Achievements::ID::ViewedDebugCryptedFile);
+				ret++;
+				break;
+		}
+	}
+
+	return ret;
 }
 
 }

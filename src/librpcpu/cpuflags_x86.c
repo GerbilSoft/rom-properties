@@ -6,7 +6,7 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "byteswap.h"
+#include "byteswap_rp.h"
 
 #if !defined(__i386__) && !defined(__amd64__) && !defined(__x86_64__) && \
     !defined(_M_IX86) && !defined(_M_X64)

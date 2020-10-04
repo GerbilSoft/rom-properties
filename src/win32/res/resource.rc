@@ -28,6 +28,16 @@ IDP_FLAGS_16x16	RT_PNG	"..\\..\\res\\flags\\flags-16x16.png"
 IDP_FLAGS_24x24	RT_PNG	"..\\..\\res\\flags\\flags-24x24.png"
 IDP_FLAGS_32x32	RT_PNG	"..\\..\\res\\flags\\flags-32x32.png"
 
+IDP_ACH_16x16	RT_PNG	"..\\..\\res\\ach\\ach-16x16.png"
+IDP_ACH_24x24	RT_PNG	"..\\..\\res\\ach\\ach-24x24.png"
+IDP_ACH_32x32	RT_PNG	"..\\..\\res\\ach\\ach-32x32.png"
+IDP_ACH_64x64	RT_PNG	"..\\..\\res\\ach\\ach-64x64.png"
+
+IDP_ACH_GRAY_16x16	RT_PNG	"..\\..\\res\\ach\\ach-gray-16x16.png"
+IDP_ACH_GRAY_24x24	RT_PNG	"..\\..\\res\\ach\\ach-gray-24x24.png"
+IDP_ACH_GRAY_32x32	RT_PNG	"..\\..\\res\\ach\\ach-gray-32x32.png"
+IDP_ACH_GRAY_64x64	RT_PNG	"..\\..\\res\\ach\\ach-gray-64x64.png"
+
 // TODO: The git version gets cut off on Windows 7, since it uses
 // a ListView instead of separate ListBox and Edit controls like
 // on Windows XP.
