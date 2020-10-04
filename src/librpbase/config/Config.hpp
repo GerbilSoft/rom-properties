@@ -59,12 +59,12 @@ class Config : public ConfReader
 	public:
 		/** Image types **/
 
-		enum ImgTypeResult {
-			IMGTR_ERR_MAP_CORRUPTED	= -2,	// Internal map is corrupted.
-			IMGTR_ERR_INVALID_PARAMS = -1,	// Invalid parameters.
-			IMGTR_SUCCESS		= 0,	// Image type priority data returned successfully.
-			IMGTR_SUCCESS_DEFAULTS	= 1,	// Custom configuration not defined; returning defaults.
-			IMGTR_DISABLED		= 2,	// Thumbnails are disabled for this class.
+		enum class ImgTypeResult {
+			ErrorMapCorrupted	= -2,	// Internal map is corrupted.
+			ErrorInvalidParams	= -1,	// Invalid parameters.
+			Success			= 0,	// Image type priority data returned successfully.
+			SuccessDefaults		= 1,	// Custom configuration not defined; returning defaults.
+			Disabled		= 2,	// Thumbnails are disabled for this class.
 		};
 
 		/**

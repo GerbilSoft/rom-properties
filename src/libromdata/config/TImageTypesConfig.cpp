@@ -148,18 +148,18 @@ bool TImageTypesConfig<ComboBox>::reset_int(bool loadDefaults)
 			Config::ImgTypeResult res = config->getImgTypePrio(sysData[sys].className, &imgTypePrio);
 			bool no_thumbs = false;
 			switch (res) {
-				case Config::IMGTR_SUCCESS:
+				case Config::ImgTypeResult::Success:
 					// Image type priority received successfully.
 					sysIsDefault[sys] = false;
 					break;
-				case Config::IMGTR_SUCCESS_DEFAULTS:
+				case Config::ImgTypeResult::SuccessDefaults:
 					// Image type priority received successfully.
-					// IMGTR_SUCCESS_DEFAULTS indicates the returned
-					// data is the default priority, since a custom
-					// configuration was not found for this class.
+					// ImgTypeResult::SuccessDefaults indicates the returned
+					// data is the default priority, since a custom configuration
+					// was not found for this class.
 					sysIsDefault[sys] = true;
 					break;
-				case Config::IMGTR_DISABLED:
+				case Config::ImgTypeResult::Disabled:
 					// Thumbnails are disabled for this class.
 					no_thumbs = true;
 					break;
