@@ -33,6 +33,12 @@ using std::tstring;
 DELAYLOAD_TEST_FUNCTION_IMPL1(textdomain, nullptr);
 #endif /* defined(_MSC_VER) && defined(ENABLE_NLS) */
 
+// rp_image backend registration.
+#include "librptexture/img/GdiplusHelper.hpp"
+#include "librptexture/img/RpGdiplusBackend.hpp"
+using LibRpTexture::RpGdiplusBackend;
+using LibRpTexture::rp_image;
+
 // Property sheet tabs.
 #include "ImageTypesTab.hpp"
 #include "SystemsTab.hpp"
@@ -472,12 +478,22 @@ int CALLBACK rp_show_config_dialog(
 		return EXIT_FAILURE;
 	}
 
+	// Initialize GDI+.
+	ULONG_PTR gdipToken = GdiplusHelper::InitGDIPlus();
+	assert(gdipToken != 0);
+	if (gdipToken == 0) {
+		return EXIT_FAILURE;
+	}
+
 	// Initialize i18n.
 	rp_i18n_init();
 
 	ConfigDialog *cfg = new ConfigDialog();
 	INT_PTR ret = cfg->exec();
 	delete cfg;
+
+	// Shut down GDI+.
+	GdiplusHelper::ShutdownGDIPlus(gdipToken);
 
 	// Uninitialize COM.
 	CoUninitialize();

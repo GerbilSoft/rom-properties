@@ -8,19 +8,28 @@
 
 #include "stdafx.h"
 #include "AchievementsTab.hpp"
+#include "RpImageWin32.hpp"
 #include "res/resource.h"
 
-// librpbase
+// librpbase, librpfile, librptexture
 #include "librpbase/Achievements.hpp"
+#include "librpbase/img/RpPng.hpp"
+#include "librpfile/win32/RpFile_windres.hpp"
+#include "librptexture/img/rp_image.hpp"
 using LibRpBase::Achievements;
+using LibRpBase::RpPng;
+using LibRpFile::RpFile_windres;
+using LibRpTexture::rp_image;
 
 // C++ STL classes.
 using std::tstring;
+using std::unique_ptr;
 
 class AchievementsTabPrivate
 {
 	public:
 		AchievementsTabPrivate();
+		~AchievementsTabPrivate();
 
 	private:
 		RP_DISABLE_COPY(AchievementsTabPrivate)
@@ -48,6 +57,9 @@ class AchievementsTabPrivate
 		HPROPSHEETPAGE hPropSheetPage;
 		HWND hWndPropSheet;
 
+		// Image list for achievement icons.
+		HIMAGELIST himglAch;
+
 	public:
 		/**
 		 * Update the ListView style.
@@ -65,7 +77,15 @@ class AchievementsTabPrivate
 AchievementsTabPrivate::AchievementsTabPrivate()
 	: hPropSheetPage(nullptr)
 	, hWndPropSheet(nullptr)
+	, himglAch(nullptr)
 { }
+
+AchievementsTabPrivate::~AchievementsTabPrivate()
+{
+	if (himglAch) {
+		ImageList_Destroy(himglAch);
+	}
+}
 
 /**
  * Dialog procedure.
@@ -177,9 +197,71 @@ void AchievementsTabPrivate::reset(void)
 
 	// Clear the ListView.
 	ListView_DeleteAllItems(hListView);
+	if (himglAch) {
+		ListView_SetImageList(hListView, nullptr, LVSIL_SMALL);
+		ImageList_Destroy(himglAch);
+	}
 
 	// Update the ListView style.
 	updateListViewStyle();
+
+	// Get the icon size for the current DPI.
+	// Reference: https://docs.microsoft.com/en-us/windows/win32/hidpi/high-dpi-desktop-application-development-on-windows
+	// TODO: Handle WM_DPICHANGED.
+	const UINT dpi = rp_GetDpiForWindow(hWndPropSheet);
+	unsigned int iconSize;
+	uint16_t resID, resID_gray;
+	if (dpi < 144) {
+		// [96,144) dpi: Use 32x32.
+		iconSize = 32;
+		resID = IDP_ACH_32x32;
+		resID_gray = IDP_ACH_GRAY_32x32;
+	} else {
+		// >144dpi: Use 64x64.
+		iconSize = 64;
+		resID = IDP_ACH_64x64;
+		resID_gray = IDP_ACH_GRAY_64x64;
+	}
+
+	// Load the sprite sheets.
+	rp_image *imgAchSheet = nullptr;
+	rp_image *imgAchGraySheet = nullptr;
+	RpFile_windres *f_res = new RpFile_windres(HINST_THISCOMPONENT, MAKEINTRESOURCE(resID), MAKEINTRESOURCE(RT_PNG));
+	if (f_res->isOpen()) {
+		imgAchSheet = RpPng::loadUnchecked(f_res);
+		assert(imgAchSheet != nullptr);
+		if (imgAchSheet) {
+			assert(imgAchSheet->width() == (int)(iconSize * Achievements::ACH_SPRITE_SHEET_COLS));
+			assert(imgAchSheet->height() == (int)(iconSize * Achievements::ACH_SPRITE_SHEET_ROWS));
+			if (imgAchSheet->width() != (int)(iconSize * Achievements::ACH_SPRITE_SHEET_COLS) ||
+			    imgAchSheet->height() != (int)(iconSize * Achievements::ACH_SPRITE_SHEET_ROWS))
+			{
+				UNREF_AND_NULL_NOCHK(imgAchSheet);
+			}
+		}
+	}
+	f_res->unref();
+	f_res = new RpFile_windres(HINST_THISCOMPONENT, MAKEINTRESOURCE(resID_gray), MAKEINTRESOURCE(RT_PNG));
+	if (f_res->isOpen()) {
+		imgAchGraySheet = RpPng::loadUnchecked(f_res);
+		if (imgAchGraySheet) {
+			assert(imgAchGraySheet->width() == (int)(iconSize * Achievements::ACH_SPRITE_SHEET_COLS));
+			assert(imgAchGraySheet->height() == (int)(iconSize * Achievements::ACH_SPRITE_SHEET_ROWS));
+			if (imgAchGraySheet->width() != (int)(iconSize * Achievements::ACH_SPRITE_SHEET_COLS) ||
+			    imgAchGraySheet->height() != (int)(iconSize * Achievements::ACH_SPRITE_SHEET_ROWS))
+			{
+				UNREF_AND_NULL_NOCHK(imgAchGraySheet);
+			}
+		}
+	}
+	f_res->unref();
+
+	if (imgAchSheet && imgAchGraySheet) {
+		// Create the image list.
+		himglAch = ImageList_Create(iconSize, iconSize, ILC_COLOR32,
+			(int)Achievements::ID::Max, (int)Achievements::ID::Max);
+		assert(himglAch != nullptr);
+	}
 
 	// Check if we need to set up columns.
 	int colCount = 0;
@@ -212,12 +294,45 @@ void AchievementsTabPrivate::reset(void)
 	// TODO: Copy over CustomDraw from RP_ShellPropSheetExt for newline handling?
 	// TODO: Icon/imagelist.
 	LVITEM item;
-	item.mask = LVIF_TEXT;
 	const Achievements *const pAch = Achievements::instance();
 	for (int i = 0; i < (int)Achievements::ID::Max; i++) {
 		const Achievements::ID id = (Achievements::ID)i;
 		const time_t timestamp = pAch->isUnlocked(id);
 		const bool unlocked = (timestamp != -1);
+
+		// Icon
+		const int col = i % Achievements::ACH_SPRITE_SHEET_COLS;
+		const int row = i / Achievements::ACH_SPRITE_SHEET_COLS;
+
+		// Extract the sub-icon.
+		HBITMAP hbmIcon = RpImageWin32::getSubBitmap(
+			unlocked ? imgAchSheet : imgAchGraySheet,
+			col*iconSize, row*iconSize, iconSize, iconSize, dpi);
+		assert(hbmIcon != nullptr);
+
+		bool bIconWasAdded = false;
+		if (hbmIcon) {
+			HICON hIcon = RpImageWin32::toHICON(hbmIcon);
+			assert(hIcon != nullptr);
+			if (hIcon) {
+				ImageList_AddIcon(himglAch, hIcon);
+				DestroyIcon(hIcon);
+				bIconWasAdded = true;
+			}
+			DeleteBitmap(hbmIcon);
+		}
+		if (!bIconWasAdded) {
+			// Add an empty icon.
+			const size_t icon_byte_count = iconSize * iconSize * sizeof(uint32_t);
+			unique_ptr<uint8_t[]> iconData(new uint8_t[icon_byte_count * 2]);
+			memset(&iconData[0], 0xFF, icon_byte_count);
+			memset(&iconData[icon_byte_count], 0xFF, icon_byte_count);
+			HICON hIcon = CreateIcon(HINST_THISCOMPONENT, iconSize, iconSize, 1, 1,
+				&iconData[0], &iconData[icon_byte_count]);
+			assert(hIcon != nullptr);
+			ImageList_AddIcon(himglAch, hIcon);
+			DestroyIcon(hIcon);
+		}
 
 		// Get the name and description.
 		tstring ts_ach = U82T_c(pAch->getName(id));
@@ -226,9 +341,11 @@ void AchievementsTabPrivate::reset(void)
 		ts_ach += U82T_c(pAch->getDescUnlocked(id));
 
 		// Column 0: Achievement
+		item.mask = LVIF_TEXT | LVIF_IMAGE;
 		item.iItem = i;
 		item.iSubItem = 0;
 		item.pszText = const_cast<LPTSTR>(ts_ach.c_str());
+		item.iImage = i;
 		ListView_InsertItem(hListView, &item);
 
 		// Column 1: Unlock time
@@ -264,10 +381,18 @@ void AchievementsTabPrivate::reset(void)
 			}
 		}
 
+		item.mask = LVIF_TEXT;
 		item.iSubItem = 1;
 		item.pszText = dateTimeStr;
 		ListView_SetItem(hListView, &item);
 	}
+
+	// NOTE: ListView uses LVSIL_SMALL for LVS_REPORT.
+	// TODO: The row highlight doesn't surround the empty area
+	// of the icon. LVS_OWNERDRAW is probably needed for that.
+	ListView_SetImageList(hListView, himglAch, LVSIL_SMALL);
+	UNREF(imgAchSheet);
+	UNREF(imgAchGraySheet);
 
 	// Auto-size the columns.
 	// TODO: Does it work with newlines when not using ownerdata?
