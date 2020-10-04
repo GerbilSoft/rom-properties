@@ -103,9 +103,7 @@ void AchievementsTab::reset(void)
 		return;
 	}
 
-	// TODO: Custom renderer to show the description in a smaller font.
-	const Achievements *pAch = Achievements::instance();
-
+	const Achievements *const pAch = Achievements::instance();
 	for (int i = 0; i < (int)Achievements::ID::Max; i++) {
 		// Is the achievement unlocked?
 		const Achievements::ID id = (Achievements::ID)i;
@@ -113,8 +111,8 @@ void AchievementsTab::reset(void)
 		const bool unlocked = (timestamp != -1);
 
 		// Determine row and column.
-		const int col = (i % Achievements::ACH_SPRITE_SHEET_COLS);
-		const int row = (i / Achievements::ACH_SPRITE_SHEET_COLS);
+		const int col = i % Achievements::ACH_SPRITE_SHEET_COLS;
+		const int row = i / Achievements::ACH_SPRITE_SHEET_COLS;
 
 		// Extract the sub-icon.
 		const QRect subRect(col*iconSize, row*iconSize, iconSize, iconSize);

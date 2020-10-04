@@ -1531,8 +1531,6 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 		assert(himl != nullptr);
 		if (himl) {
 			// NOTE: ListView uses LVSIL_SMALL for LVS_REPORT.
-			// TODO: The row highlight doesn't surround the empty area
-			// of the icon. LVS_OWNERDRAW is probably needed for that.
 			ListView_SetImageList(hListView, himl, LVSIL_SMALL);
 			uint32_t lvBgColor[2];
 			lvBgColor[0] = LibWin32Common::GetSysColor_ARGB32(COLOR_WINDOW);
@@ -1931,26 +1929,26 @@ void RP_ShellPropSheetExt_Private::buildCboLanguageImageList(void)
 	// TODO: Adjust cboLanguage if necessary?
 	const UINT dpi = rp_GetDpiForWindow(hDlgSheet);
 	unsigned int iconSize;
-	uint16_t flagResource;
+	uint16_t resID;
 	if (dpi < 120) {
 		// [96,120) dpi: Use 16x16.
 		iconSize = 16;
-		flagResource = IDP_FLAGS_16x16;
+		resID = IDP_FLAGS_16x16;
 	} else if (dpi <= 144) {
 		// [120,144] dpi: Use 24x24.
 		// TODO: Maybe needs to be slightly higher?
 		iconSize = 24;
-		flagResource = IDP_FLAGS_24x24;
+		resID = IDP_FLAGS_24x24;
 	} else {
 		// >144dpi: Use 32x32.
 		iconSize = 32;
-		flagResource = IDP_FLAGS_32x32;
+		resID = IDP_FLAGS_32x32;
 	}
 
 	// Load the flags sprite sheet.
 	// TODO: Is premultiplied alpha needed?
 	// Reference: https://stackoverflow.com/questions/307348/how-to-draw-32-bit-alpha-channel-bitmaps
-	RpFile_windres *const f_res = new RpFile_windres(HINST_THISCOMPONENT, MAKEINTRESOURCE(flagResource), MAKEINTRESOURCE(RT_PNG));
+	RpFile_windres *const f_res = new RpFile_windres(HINST_THISCOMPONENT, MAKEINTRESOURCE(resID), MAKEINTRESOURCE(RT_PNG));
 	if (!f_res->isOpen()) {
 		// Unable to open the resource.
 		f_res->unref();
