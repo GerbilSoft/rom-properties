@@ -162,7 +162,9 @@ static FARPROC WINAPI rp_dliNotifyHook(unsigned int dliNotify, PDelayLoadInfo pd
 
 // Set the delay-load notification hook.
 // NOTE: MSVC 2015 Update 3 makes this a const variable.
-// Reference: https://msdn.microsoft.com/en-us/library/b0084kay.aspx
+// References:
+// - https://docs.microsoft.com/en-us/cpp/build/reference/notification-hooks?view=vs-2019
+// - https://docs.microsoft.com/en-us/cpp/preprocessor/predefined-macros?view=vs-2019
 #if _MSC_VER > 1900 || (_MSC_VER == 1900 && _MSC_FULL_VER >= 190024210)
 const PfnDliHook __pfnDliNotifyHook2 = rp_dliNotifyHook;
 #else
