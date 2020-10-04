@@ -239,115 +239,6 @@ bool isComCtl32_v610(void)
 	return ret;
 }
 
-/** Window procedure subclasses **/
-
-/**
- * Subclass procedure for multi-line EDIT and RICHEDIT controls.
- * This procedure does the following:
- * - ENTER and ESCAPE are forwarded to the parent window.
- * - DLGC_HASSETSEL is masked.
- *
- * @param hWnd		Control handle.
- * @param uMsg		Message.
- * @param wParam	WPARAM
- * @param lParam	LPARAM
- * @param uIdSubclass	Subclass ID. (usually the control ID)
- * @param dwRefData	HWND of parent dialog to forward WM_COMMAND messages to.
- */
-LRESULT CALLBACK MultiLineEditProc(
-	HWND hWnd, UINT uMsg,
-	WPARAM wParam, LPARAM lParam,
-	UINT_PTR uIdSubclass, DWORD_PTR dwRefData)
-{
-	switch (uMsg) {
-		case WM_KEYDOWN: {
-			// Work around Enter/Escape issues.
-			// Reference: http://blogs.msdn.com/b/oldnewthing/archive/2007/08/20/4470527.aspx
-			if (!dwRefData) {
-				// No parent dialog...
-				break;
-			}
-			HWND hDlg = reinterpret_cast<HWND>(dwRefData);
-
-			switch (wParam) {
-				case VK_RETURN:
-					SendMessage(hDlg, WM_COMMAND, IDOK, 0);
-					return TRUE;
-
-				case VK_ESCAPE:
-					SendMessage(hDlg, WM_COMMAND, IDCANCEL, 0);
-					return TRUE;
-
-				default:
-					break;
-			}
-			break;
-		}
-
-		case WM_GETDLGCODE: {
-			// Filter out DLGC_HASSETSEL.
-			// References:
-			// - https://stackoverflow.com/questions/20876045/cricheditctrl-selects-all-text-when-it-gets-focus
-			// - https://stackoverflow.com/a/20884852
-			const LRESULT code = DefSubclassProc(hWnd, uMsg, wParam, lParam);
-			return (code & ~(LRESULT)DLGC_HASSETSEL);
-		}
-
-		case WM_NCDESTROY:
-			// Remove the window subclass.
-			// Reference: https://blogs.msdn.microsoft.com/oldnewthing/20031111-00/?p=41883
-			RemoveWindowSubclass(hWnd, MultiLineEditProc, uIdSubclass);
-			break;
-
-		default:
-			break;
-	}
-
-	return DefSubclassProc(hWnd, uMsg, wParam, lParam);
-}
-
-/**
- * Subclass procedure for single-line EDIT and RICHEDIT controls.
- * This procedure does the following:
- * - DLGC_HASSETSEL is masked.
- *
- * @param hWnd		Control handle.
- * @param uMsg		Message.
- * @param wParam	WPARAM
- * @param lParam	LPARAM
- * @param uIdSubclass	Subclass ID. (usually the control ID)
- * @param dwRefData	HWND of parent dialog to forward WM_COMMAND messages to.
- */
-LRESULT CALLBACK SingleLineEditProc(
-	HWND hWnd, UINT uMsg,
-	WPARAM wParam, LPARAM lParam,
-	UINT_PTR uIdSubclass, DWORD_PTR dwRefData)
-{
-	((void)dwRefData);
-
-	switch (uMsg) {
-		case WM_GETDLGCODE: {
-			// Filter out DLGC_HASSETSEL.
-			// References:
-			// - https://stackoverflow.com/questions/20876045/cricheditctrl-selects-all-text-when-it-gets-focus
-			// - https://stackoverflow.com/a/20884852
-			const LRESULT code = DefSubclassProc(hWnd, uMsg, wParam, lParam);
-			return (code & ~(LRESULT)DLGC_HASSETSEL);
-		}
-
-		case WM_NCDESTROY:
-			// Remove the window subclass.
-			// Reference: https://blogs.msdn.microsoft.com/oldnewthing/20031111-00/?p=41883
-			RemoveWindowSubclass(hWnd, MultiLineEditProc, uIdSubclass);
-			break;
-
-		default:
-			break;
-	}
-
-	return DefSubclassProc(hWnd, uMsg, wParam, lParam);
-}
-
 #ifdef UNICODE
 /**
  * Get a filename using IFileDialog.
@@ -712,6 +603,115 @@ tstring getOpenFileName(HWND hWnd, const TCHAR *dlgTitle, const char *filterSpec
 tstring getSaveFileName(HWND hWnd, const TCHAR *dlgTitle, const char *filterSpec, const TCHAR *origFilename)
 {
 	return getFileName_int(true, hWnd, dlgTitle, filterSpec, origFilename);
+}
+
+/** Window procedure subclasses **/
+
+/**
+ * Subclass procedure for multi-line EDIT and RICHEDIT controls.
+ * This procedure does the following:
+ * - ENTER and ESCAPE are forwarded to the parent window.
+ * - DLGC_HASSETSEL is masked.
+ *
+ * @param hWnd		Control handle.
+ * @param uMsg		Message.
+ * @param wParam	WPARAM
+ * @param lParam	LPARAM
+ * @param uIdSubclass	Subclass ID. (usually the control ID)
+ * @param dwRefData	HWND of parent dialog to forward WM_COMMAND messages to.
+ */
+LRESULT CALLBACK MultiLineEditProc(
+	HWND hWnd, UINT uMsg,
+	WPARAM wParam, LPARAM lParam,
+	UINT_PTR uIdSubclass, DWORD_PTR dwRefData)
+{
+	switch (uMsg) {
+		case WM_KEYDOWN: {
+			// Work around Enter/Escape issues.
+			// Reference: http://blogs.msdn.com/b/oldnewthing/archive/2007/08/20/4470527.aspx
+			if (!dwRefData) {
+				// No parent dialog...
+				break;
+			}
+			HWND hDlg = reinterpret_cast<HWND>(dwRefData);
+
+			switch (wParam) {
+				case VK_RETURN:
+					SendMessage(hDlg, WM_COMMAND, IDOK, 0);
+					return TRUE;
+
+				case VK_ESCAPE:
+					SendMessage(hDlg, WM_COMMAND, IDCANCEL, 0);
+					return TRUE;
+
+				default:
+					break;
+			}
+			break;
+		}
+
+		case WM_GETDLGCODE: {
+			// Filter out DLGC_HASSETSEL.
+			// References:
+			// - https://stackoverflow.com/questions/20876045/cricheditctrl-selects-all-text-when-it-gets-focus
+			// - https://stackoverflow.com/a/20884852
+			const LRESULT code = DefSubclassProc(hWnd, uMsg, wParam, lParam);
+			return (code & ~(LRESULT)DLGC_HASSETSEL);
+		}
+
+		case WM_NCDESTROY:
+			// Remove the window subclass.
+			// Reference: https://blogs.msdn.microsoft.com/oldnewthing/20031111-00/?p=41883
+			RemoveWindowSubclass(hWnd, MultiLineEditProc, uIdSubclass);
+			break;
+
+		default:
+			break;
+	}
+
+	return DefSubclassProc(hWnd, uMsg, wParam, lParam);
+}
+
+/**
+ * Subclass procedure for single-line EDIT and RICHEDIT controls.
+ * This procedure does the following:
+ * - DLGC_HASSETSEL is masked.
+ *
+ * @param hWnd		Control handle.
+ * @param uMsg		Message.
+ * @param wParam	WPARAM
+ * @param lParam	LPARAM
+ * @param uIdSubclass	Subclass ID. (usually the control ID)
+ * @param dwRefData	HWND of parent dialog to forward WM_COMMAND messages to.
+ */
+LRESULT CALLBACK SingleLineEditProc(
+	HWND hWnd, UINT uMsg,
+	WPARAM wParam, LPARAM lParam,
+	UINT_PTR uIdSubclass, DWORD_PTR dwRefData)
+{
+	((void)dwRefData);
+
+	switch (uMsg) {
+		case WM_GETDLGCODE: {
+			// Filter out DLGC_HASSETSEL.
+			// References:
+			// - https://stackoverflow.com/questions/20876045/cricheditctrl-selects-all-text-when-it-gets-focus
+			// - https://stackoverflow.com/a/20884852
+			const LRESULT code = DefSubclassProc(hWnd, uMsg, wParam, lParam);
+			return (code & ~(LRESULT)DLGC_HASSETSEL);
+		}
+
+		case WM_NCDESTROY:
+			// Remove the window subclass.
+			// Reference: https://blogs.msdn.microsoft.com/oldnewthing/20031111-00/?p=41883
+			RemoveWindowSubclass(hWnd, MultiLineEditProc, uIdSubclass);
+			break;
+
+		default:
+			break;
+	}
+
+	return DefSubclassProc(hWnd, uMsg, wParam, lParam);
 }
 
 }
