@@ -175,7 +175,7 @@ AchWin32Private::~AchWin32Private()
 	);
 
 	if (atomWindowClass > 0) {
-		UnregisterClass(MAKEINTRESOURCE(atomWindowClass), HINST_THISCOMPONENT);
+		UnregisterClass(MAKEINTATOM(atomWindowClass), HINST_THISCOMPONENT);
 	}
 
 	// Delete the achievements sprite sheets.

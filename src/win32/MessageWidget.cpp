@@ -458,6 +458,6 @@ void MessageWidgetRegister(void)
 void MessageWidgetUnregister(void)
 {
 	if (atom_messageWidget != 0) {
-		UnregisterClass(MAKEINTRESOURCE(atom_messageWidget), HINST_THISCOMPONENT);
+		UnregisterClass(MAKEINTATOM(atom_messageWidget), HINST_THISCOMPONENT);
 	}
 }
