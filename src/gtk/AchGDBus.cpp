@@ -139,20 +139,33 @@ PIMGTYPE AchGDBusPrivate::loadSpriteSheet(int iconSize)
 	// Cairo: Swap the R and B channels in place.
 	int width, height;
 	PIMGTYPE_get_size(imgAchSheet, &width, &height);
-	uint8_t *bits = PIMGTYPE_get_image_data(imgAchSheet);
-	int strideDiff = PIMGTYPE_get_rowstride(imgAchSheet) - (width * sizeof(uint32_t));
-	for (int y = height; y > 0; y--) {
-		for (int x = width; x > 0; x--, bits += 4) {
-#if SYS_BYTEORDER == SYS_LIL_ENDIAN
-			std::swap(bits[0], bits[2]);
-#else /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
-			std::swap(bits[1], bits[3]);
-#endif
+	uint32_t *bits = reinterpret_cast<uint32_t*>(PIMGTYPE_get_image_data(imgAchSheet));
+	int strideDiff = (PIMGTYPE_get_rowstride(imgAchSheet) / sizeof(uint32_t)) - width;
+	for (unsigned int y = (unsigned int)height; y > 0; y--) {
+		unsigned int x;
+		for (x = (unsigned int)width; x > 1; x -= 2) {
+			// Swap the R and B channels.
+			bits[0] = (bits[0] & 0xFF00FF00) |
+				 ((bits[0] & 0x00FF0000) >> 16) |
+				 ((bits[0] & 0x000000FF) << 16);
+			bits[1] = (bits[1] & 0xFF00FF00) |
+				 ((bits[1] & 0x00FF0000) >> 16) |
+				 ((bits[1] & 0x000000FF) << 16);
+			bits += 2;
 		}
+		if (x == 1) {
+			// Last pixel.
+			*bits = (*bits & 0xFF00FF00) |
+			       ((*bits & 0x00FF0000) >> 16) |
+			       ((*bits & 0x000000FF) << 16);
+			bits++;
+		}
+
+		// Next line.
 		bits += strideDiff;
 	}
 	PIMGTYPE_mark_dirty(imgAchSheet);
-#endif
+#endif /* RP_GTK_USE_CAIRO */
 
 	// Sprite sheet is correct.
 	map_imgAchSheet.emplace(std::make_pair(iconSize, imgAchSheet));
