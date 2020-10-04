@@ -203,12 +203,12 @@ rp_thumbnailer_class_init(RpThumbnailerClass *klass, gpointer class_data)
 		G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS | G_PARAM_CONSTRUCT_ONLY);
 
 	properties[PROP_CACHE_DIR] = g_param_spec_string(
-		"cache_dir", "cache_dir", "XDG cache directory.",
+		"cache-dir", "cache-dir", "XDG cache directory.",
 		NULL,
 		G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS | G_PARAM_CONSTRUCT_ONLY);
 
 	properties[PROP_PFN_RP_CREATE_THUMBNAIL] = g_param_spec_pointer(
-		"pfn_rp_create_thumbnail", "pfn_rp_create_thumbnail", "rp_create_thumbnail() function pointer.",
+		"pfn-rp-create-thumbnail", "pfn-rp-create-thumbnail", "rp_create_thumbnail() function pointer.",
 		G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS | G_PARAM_CONSTRUCT_ONLY);
 
 	properties[PROP_EXPORTED] = g_param_spec_boolean(
@@ -650,8 +650,8 @@ rp_thumbnailer_new(GDBusConnection *connection,
 {
 	return g_object_new(TYPE_RP_THUMBNAILER,
 		"connection", connection,
-		"cache_dir", cache_dir,
-		"pfn_rp_create_thumbnail", pfn_rp_create_thumbnail,
+		"cache-dir", cache_dir,
+		"pfn-rp-create-thumbnail", pfn_rp_create_thumbnail,
 		NULL);
 }
 
