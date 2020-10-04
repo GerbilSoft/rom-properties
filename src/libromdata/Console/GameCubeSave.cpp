@@ -378,8 +378,8 @@ const rp_image *GameCubeSavePrivate::loadIcon(void)
 			case CARD_ICON_RGB: {
 				// RGB5A3
 				static const unsigned int iconsize = CARD_ICON_W * CARD_ICON_H * 2;
-				iconAnimData->frames[i] = ImageDecoder::fromGcn16(ImageDecoder::PXF_RGB5A3,
-					CARD_ICON_W, CARD_ICON_H,
+				iconAnimData->frames[i] = ImageDecoder::fromGcn16(
+					ImageDecoder::PixelFormat::RGB5A3, CARD_ICON_W, CARD_ICON_H,
 					reinterpret_cast<const uint16_t*>(icondata.get() + iconaddr_cur),
 					iconsize);
 				iconaddr_cur += iconsize;
@@ -485,8 +485,8 @@ const rp_image *GameCubeSavePrivate::loadBanner(void)
 
 	if ((direntry.bannerfmt & CARD_BANNER_MASK) == CARD_BANNER_RGB) {
 		// Convert the banner from GCN RGB5A3 format to ARGB32.
-		img_banner = ImageDecoder::fromGcn16(ImageDecoder::PXF_RGB5A3,
-			CARD_BANNER_W, CARD_BANNER_H,
+		img_banner = ImageDecoder::fromGcn16(
+			ImageDecoder::PixelFormat::RGB5A3, CARD_BANNER_W, CARD_BANNER_H,
 			reinterpret_cast<const uint16_t*>(bannerbuf), bannersize);
 	} else {
 		// Read the palette data.

@@ -324,21 +324,24 @@ const rp_image *KhronosKTXPrivate::loadImage(void)
 	switch (ktxHeader.glFormat) {
 		case GL_RGB:
 			// 24-bit RGB.
-			img = ImageDecoder::fromLinear24(ImageDecoder::PXF_BGR888,
+			img = ImageDecoder::fromLinear24(
+				ImageDecoder::PixelFormat::BGR888,
 				ktxHeader.pixelWidth, height,
 				buf.get(), expected_size, stride);
 			break;
 
 		case GL_RGBA:
 			// 32-bit RGBA.
-			img = ImageDecoder::fromLinear32(ImageDecoder::PXF_ABGR8888,
+			img = ImageDecoder::fromLinear32(
+				ImageDecoder::PixelFormat::ABGR8888,
 				ktxHeader.pixelWidth, height,
 				reinterpret_cast<const uint32_t*>(buf.get()), expected_size, stride);
 			break;
 
 		case GL_LUMINANCE:
 			// 8-bit Luminance.
-			img = ImageDecoder::fromLinear8(ImageDecoder::PXF_L8,
+			img = ImageDecoder::fromLinear8(
+				ImageDecoder::PixelFormat::L8,
 				ktxHeader.pixelWidth, height,
 				buf.get(), expected_size, stride);
 			break;
@@ -346,7 +349,8 @@ const rp_image *KhronosKTXPrivate::loadImage(void)
 		case GL_RGB9_E5:
 			// Uncompressed "special" 32bpp formats.
 			// TODO: Does KTX handle GL_RGB9_E5 as compressed?
-			img = ImageDecoder::fromLinear32(ImageDecoder::PXF_RGB9_E5,
+			img = ImageDecoder::fromLinear32(
+				ImageDecoder::PixelFormat::RGB9_E5,
 				ktxHeader.pixelWidth, height,
 				reinterpret_cast<const uint32_t*>(buf.get()), expected_size, stride);
 			break;
@@ -521,7 +525,8 @@ const rp_image *KhronosKTXPrivate::loadImage(void)
 				case GL_RGB9_E5:
 					// Uncompressed "special" 32bpp formats.
 					// TODO: Does KTX handle GL_RGB9_E5 as compressed?
-					img = ImageDecoder::fromLinear32(ImageDecoder::PXF_RGB9_E5,
+					img = ImageDecoder::fromLinear32(
+						ImageDecoder::PixelFormat::RGB9_E5,
 						ktxHeader.pixelWidth, height,
 						reinterpret_cast<const uint32_t*>(buf.get()), expected_size);
 					break;

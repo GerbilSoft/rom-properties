@@ -101,7 +101,7 @@ rp_image *fromDreamcastSquareTwiddled16(PixelFormat px_format,
 	uint32_t *px_dest = static_cast<uint32_t*>(img->bits());
 	const int dest_stride_adj = (img->stride() / sizeof(uint32_t)) - img->width();
 	switch (px_format) {
-		case PXF_ARGB1555: {
+		case PixelFormat::ARGB1555: {
 			for (unsigned int y = 0; y < static_cast<unsigned int>(height); y++) {
 				for (unsigned int x = 0; x < static_cast<unsigned int>(width); x++) {
 					const unsigned int srcIdx = ((dc_tmap[x] << 1) | dc_tmap[y]);
@@ -116,7 +116,7 @@ rp_image *fromDreamcastSquareTwiddled16(PixelFormat px_format,
 			break;
 		}
 
-		case PXF_RGB565: {
+		case PixelFormat::RGB565: {
 			for (unsigned int y = 0; y < static_cast<unsigned int>(height); y++) {
 				for (unsigned int x = 0; x < static_cast<unsigned int>(width); x++) {
 					const unsigned int srcIdx = ((dc_tmap[x] << 1) | dc_tmap[y]);
@@ -131,7 +131,7 @@ rp_image *fromDreamcastSquareTwiddled16(PixelFormat px_format,
 			break;
 		}
 
-		case PXF_ARGB4444: {
+		case PixelFormat::ARGB4444: {
 			for (unsigned int y = 0; y < static_cast<unsigned int>(height); y++) {
 				for (unsigned int x = 0; x < static_cast<unsigned int>(width); x++) {
 					const unsigned int srcIdx = ((dc_tmap[x] << 1) | dc_tmap[y]);
@@ -225,7 +225,7 @@ rp_image *fromDreamcastVQ16(PixelFormat px_format,
 	// Convert the palette.
 	unique_ptr<uint32_t[]> palette(new uint32_t[pal_entry_count]);
 	switch (px_format) {
-		case PXF_ARGB1555: {
+		case PixelFormat::ARGB1555: {
 			for (unsigned int i = 0; i < static_cast<unsigned int>(pal_entry_count); i += 2) {
 				palette[i+0] = ARGB1555_to_ARGB32(pal_buf[i+0]);
 				palette[i+1] = ARGB1555_to_ARGB32(pal_buf[i+1]);
@@ -236,7 +236,7 @@ rp_image *fromDreamcastVQ16(PixelFormat px_format,
 			break;
 		}
 
-		case PXF_RGB565: {
+		case PixelFormat::RGB565: {
 			for (unsigned int i = 0; i < static_cast<unsigned int>(pal_entry_count); i += 2) {
 				palette[i+0] = RGB565_to_ARGB32(pal_buf[i+0]);
 				palette[i+1] = RGB565_to_ARGB32(pal_buf[i+1]);
@@ -247,7 +247,7 @@ rp_image *fromDreamcastVQ16(PixelFormat px_format,
 			break;
 		}
 
-		case PXF_ARGB4444: {
+		case PixelFormat::ARGB4444: {
 			for (unsigned int i = 0; i < static_cast<unsigned int>(pal_entry_count); i += 2) {
 				palette[i+0] = ARGB4444_to_ARGB32(pal_buf[i+0]);
 				palette[i+1] = ARGB4444_to_ARGB32(pal_buf[i+1]);

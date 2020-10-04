@@ -198,8 +198,8 @@ const rp_image *DidjTexPrivate::loadDidjTexImage(void)
 				return nullptr;
 			}
 
-			imgtmp = ImageDecoder::fromLinear16(ImageDecoder::PXF_RGB565,
-				width, height,
+			imgtmp = ImageDecoder::fromLinear16(
+				ImageDecoder::PixelFormat::RGB565, width, height,
 				reinterpret_cast<const uint16_t*>(uncompr_data.get()), img_siz);
 			break;
 		}
@@ -213,8 +213,8 @@ const rp_image *DidjTexPrivate::loadDidjTexImage(void)
 				return nullptr;
 			}
 
-			imgtmp = ImageDecoder::fromLinear16(ImageDecoder::PXF_RGBA4444,
-				width, height,
+			imgtmp = ImageDecoder::fromLinear16(
+				ImageDecoder::PixelFormat::RGBA4444, width, height,
 				reinterpret_cast<const uint16_t*>(uncompr_data.get()), img_siz);
 			break;
 		}
@@ -231,8 +231,8 @@ const rp_image *DidjTexPrivate::loadDidjTexImage(void)
 
 			const uint16_t *const pal_buf = reinterpret_cast<const uint16_t*>(uncompr_data.get());
 			const uint8_t *const img_buf = &uncompr_data.get()[pal_siz];
-			imgtmp = ImageDecoder::fromLinearCI8(ImageDecoder::PXF_RGB565,
-				width, height,
+			imgtmp = ImageDecoder::fromLinearCI8(
+				ImageDecoder::PixelFormat::RGB565, width, height,
 				img_buf, img_siz, pal_buf, pal_siz);
 			break;
 		}
@@ -249,8 +249,8 @@ const rp_image *DidjTexPrivate::loadDidjTexImage(void)
 
 			const uint16_t *const pal_buf = reinterpret_cast<const uint16_t*>(uncompr_data.get());
 			const uint8_t *const img_buf = &uncompr_data.get()[pal_siz];
-			imgtmp = ImageDecoder::fromLinearCI8(ImageDecoder::PXF_RGBA4444,
-				width, height,
+			imgtmp = ImageDecoder::fromLinearCI8(
+				ImageDecoder::PixelFormat::RGBA4444, width, height,
 				img_buf, img_siz, pal_buf, pal_siz);
 			break;
 		}
@@ -267,8 +267,8 @@ const rp_image *DidjTexPrivate::loadDidjTexImage(void)
 
 			const uint16_t *const pal_buf = reinterpret_cast<const uint16_t*>(uncompr_data.get());
 			const uint8_t *const img_buf = &uncompr_data.get()[pal_siz];
-			imgtmp = ImageDecoder::fromLinearCI4(ImageDecoder::PXF_RGB565, true,
-				width, height,
+			imgtmp = ImageDecoder::fromLinearCI4(
+				ImageDecoder::PixelFormat::RGB565, true, width, height,
 				img_buf, img_siz, pal_buf, pal_siz);
 			break;
 		}
@@ -285,8 +285,8 @@ const rp_image *DidjTexPrivate::loadDidjTexImage(void)
 
 			const uint16_t *const pal_buf = reinterpret_cast<const uint16_t*>(uncompr_data.get());
 			const uint8_t *const img_buf = &uncompr_data.get()[pal_siz];
-			imgtmp = ImageDecoder::fromLinearCI4(ImageDecoder::PXF_RGBA4444, true,
-				width, height,
+			imgtmp = ImageDecoder::fromLinearCI4(
+				ImageDecoder::PixelFormat::RGBA4444, true, width, height,
 				img_buf, img_siz, pal_buf, pal_siz);
 			break;
 		}

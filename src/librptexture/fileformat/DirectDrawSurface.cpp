@@ -73,8 +73,10 @@ class DirectDrawSurfacePrivate final : public FileFormatPrivate
 			uint32_t Bmask;
 			uint32_t Amask;
 			char desc[15];
-			uint8_t px_format;	// ImageDecoder::PixelFormat
+			ImageDecoder::PixelFormat px_format;	// ImageDecoder::PixelFormat
 		};
+		ASSERT_STRUCT(RGB_Format_Table_t, sizeof(uint32_t)*4 + 15 + 1);
+
 		static const RGB_Format_Table_t rgb_fmt_tbl_16[];	// 16-bit RGB
 		static const RGB_Format_Table_t rgb_fmt_tbl_24[];	// 24-bit RGB
 		static const RGB_Format_Table_t rgb_fmt_tbl_32[];	// 32-bit RGB
@@ -82,7 +84,7 @@ class DirectDrawSurfacePrivate final : public FileFormatPrivate
 		static const RGB_Format_Table_t rgb_fmt_tbl_alpha[];	// Alpha
 
 		// Image format identifiers.
-		uint8_t pxf_uncomp;	// Pixel format for uncompressed images. (If 0, compressed.)
+		ImageDecoder::PixelFormat pxf_uncomp;	// Pixel format for uncompressed images. (If 0, compressed.)
 		uint8_t bytespp;	// Bytes per pixel. (Uncompressed only; set to 0 for compressed.)
 		uint8_t dxgi_format;	// DXGI_FORMAT for compressed images. (If 0, uncompressed.)
 		uint8_t dxgi_alpha;	// DDS_DXT10_MISC_FLAGS2 - alpha format.
@@ -111,92 +113,92 @@ class DirectDrawSurfacePrivate final : public FileFormatPrivate
 // Supported 16-bit uncompressed RGB formats.
 const DirectDrawSurfacePrivate::RGB_Format_Table_t DirectDrawSurfacePrivate::rgb_fmt_tbl_16[] = {
 	// 5-bit per channel, plus alpha.
-	{0x7C00, 0x03E0, 0x001F, 0x8000, "ARGB1555", ImageDecoder::PXF_ARGB1555},
-	{0x001F, 0x03E0, 0x007C, 0x8000, "ABGR1555", ImageDecoder::PXF_ABGR1555},
-	{0xF800, 0x07C0, 0x003E, 0x0001, "RGBA5551", ImageDecoder::PXF_RGBA5551},
-	{0x003E, 0x03E0, 0x00F8, 0x0001, "BGRA5551", ImageDecoder::PXF_BGRA5551},
+	{0x7C00, 0x03E0, 0x001F, 0x8000, "ARGB1555", ImageDecoder::PixelFormat::ARGB1555},
+	{0x001F, 0x03E0, 0x007C, 0x8000, "ABGR1555", ImageDecoder::PixelFormat::ABGR1555},
+	{0xF800, 0x07C0, 0x003E, 0x0001, "RGBA5551", ImageDecoder::PixelFormat::RGBA5551},
+	{0x003E, 0x03E0, 0x00F8, 0x0001, "BGRA5551", ImageDecoder::PixelFormat::BGRA5551},
 
 	// 5-bit per RB channel, 6-bit per G channel, without alpha.
-	{0xF800, 0x07E0, 0x001F, 0x0000, "RGB565", ImageDecoder::PXF_RGB565},
-	{0x001F, 0x07E0, 0xF800, 0x0000, "BGR565", ImageDecoder::PXF_BGR565},
+	{0xF800, 0x07E0, 0x001F, 0x0000, "RGB565", ImageDecoder::PixelFormat::RGB565},
+	{0x001F, 0x07E0, 0xF800, 0x0000, "BGR565", ImageDecoder::PixelFormat::BGR565},
 
 	// 5-bit per channel, without alpha.
 	// (Technically 15-bit, but DDS usually lists it as 16-bit.)
-	{0x7C00, 0x03E0, 0x001F, 0x0000, "RGB555", ImageDecoder::PXF_RGB555},
-	{0x001F, 0x03E0, 0x7C00, 0x0000, "BGR555", ImageDecoder::PXF_BGR555},
+	{0x7C00, 0x03E0, 0x001F, 0x0000, "RGB555", ImageDecoder::PixelFormat::RGB555},
+	{0x001F, 0x03E0, 0x7C00, 0x0000, "BGR555", ImageDecoder::PixelFormat::BGR555},
 
 	// 4-bit per channel formats. (uncommon nowadays) (alpha)
-	{0x0F00, 0x00F0, 0x000F, 0xF000, "ARGB4444", ImageDecoder::PXF_ARGB4444},
-	{0x000F, 0x00F0, 0x0F00, 0xF000, "ABGR4444", ImageDecoder::PXF_ABGR4444},
-	{0xF000, 0x0F00, 0x00F0, 0x000F, "RGBA4444", ImageDecoder::PXF_RGBA4444},
-	{0x00F0, 0x0F00, 0xF000, 0x000F, "BGRA4444", ImageDecoder::PXF_BGRA4444},
+	{0x0F00, 0x00F0, 0x000F, 0xF000, "ARGB4444", ImageDecoder::PixelFormat::ARGB4444},
+	{0x000F, 0x00F0, 0x0F00, 0xF000, "ABGR4444", ImageDecoder::PixelFormat::ABGR4444},
+	{0xF000, 0x0F00, 0x00F0, 0x000F, "RGBA4444", ImageDecoder::PixelFormat::RGBA4444},
+	{0x00F0, 0x0F00, 0xF000, 0x000F, "BGRA4444", ImageDecoder::PixelFormat::BGRA4444},
 	// 4-bit per channel formats. (uncommon nowadays) (no alpha)
-	{0x0F00, 0x00F0, 0x000F, 0x0000, "xRGB4444", ImageDecoder::PXF_xRGB4444},
-	{0x000F, 0x00F0, 0x0F00, 0x0000, "xBGR4444", ImageDecoder::PXF_xBGR4444},
-	{0xF000, 0x0F00, 0x00F0, 0x0000, "RGBx4444", ImageDecoder::PXF_RGBx4444},
-	{0x00F0, 0x0F00, 0xF000, 0x0000, "BGRx4444", ImageDecoder::PXF_BGRx4444},
+	{0x0F00, 0x00F0, 0x000F, 0x0000, "xRGB4444", ImageDecoder::PixelFormat::xRGB4444},
+	{0x000F, 0x00F0, 0x0F00, 0x0000, "xBGR4444", ImageDecoder::PixelFormat::xBGR4444},
+	{0xF000, 0x0F00, 0x00F0, 0x0000, "RGBx4444", ImageDecoder::PixelFormat::RGBx4444},
+	{0x00F0, 0x0F00, 0xF000, 0x0000, "BGRx4444", ImageDecoder::PixelFormat::BGRx4444},
 
 	// Other uncommon 16-bit formats.
-	{0x00E0, 0x001C, 0x0003, 0xFF00, "ARGB8332", ImageDecoder::PXF_ARGB8332},
+	{0x00E0, 0x001C, 0x0003, 0xFF00, "ARGB8332", ImageDecoder::PixelFormat::ARGB8332},
 
 	// end
-	{0, 0, 0, 0, "", 0}
+	{0, 0, 0, 0, "", ImageDecoder::PixelFormat::Unknown}
 };
 
 // Supported 24-bit uncompressed RGB formats.
 const DirectDrawSurfacePrivate::RGB_Format_Table_t DirectDrawSurfacePrivate::rgb_fmt_tbl_24[] = {
-	{0x00FF0000, 0x0000FF00, 0x000000FF, 0x00000000, "RGB888", ImageDecoder::PXF_RGB888},
-	{0x000000FF, 0x0000FF00, 0x00FF0000, 0x00000000, "BGR888", ImageDecoder::PXF_BGR888},
+	{0x00FF0000, 0x0000FF00, 0x000000FF, 0x00000000, "RGB888", ImageDecoder::PixelFormat::RGB888},
+	{0x000000FF, 0x0000FF00, 0x00FF0000, 0x00000000, "BGR888", ImageDecoder::PixelFormat::BGR888},
 
 	// end
-	{0, 0, 0, 0, "", 0}
+	{0, 0, 0, 0, "", ImageDecoder::PixelFormat::Unknown}
 };
 
 // Supported 32-bit uncompressed RGB formats.
 const DirectDrawSurfacePrivate::RGB_Format_Table_t DirectDrawSurfacePrivate::rgb_fmt_tbl_32[] = {
 	// Alpha
-	{0x00FF0000, 0x0000FF00, 0x000000FF, 0xFF000000, "ARGB8888", ImageDecoder::PXF_ARGB8888},
-	{0x000000FF, 0x0000FF00, 0x00FF0000, 0xFF000000, "ABGR8888", ImageDecoder::PXF_ABGR8888},
-	{0x00FF0000, 0x0000FF00, 0x000000FF, 0x000000FF, "RGBA8888", ImageDecoder::PXF_RGBA8888},
-	{0x000000FF, 0x0000FF00, 0x00FF0000, 0x000000FF, "BGRA8888", ImageDecoder::PXF_BGRA8888},
+	{0x00FF0000, 0x0000FF00, 0x000000FF, 0xFF000000, "ARGB8888", ImageDecoder::PixelFormat::ARGB8888},
+	{0x000000FF, 0x0000FF00, 0x00FF0000, 0xFF000000, "ABGR8888", ImageDecoder::PixelFormat::ABGR8888},
+	{0x00FF0000, 0x0000FF00, 0x000000FF, 0x000000FF, "RGBA8888", ImageDecoder::PixelFormat::RGBA8888},
+	{0x000000FF, 0x0000FF00, 0x00FF0000, 0x000000FF, "BGRA8888", ImageDecoder::PixelFormat::BGRA8888},
 
 	// No alpha
-	{0x00FF0000, 0x0000FF00, 0x000000FF, 0x00000000, "xRGB8888", ImageDecoder::PXF_xRGB8888},
-	{0x000000FF, 0x0000FF00, 0x00FF0000, 0x00000000, "xBGR8888", ImageDecoder::PXF_xBGR8888},
-	{0x00FF0000, 0x0000FF00, 0x000000FF, 0x00000000, "RGBx8888", ImageDecoder::PXF_RGBx8888},
-	{0x000000FF, 0x0000FF00, 0x00FF0000, 0x00000000, "BGRx8888", ImageDecoder::PXF_BGRx8888},
+	{0x00FF0000, 0x0000FF00, 0x000000FF, 0x00000000, "xRGB8888", ImageDecoder::PixelFormat::xRGB8888},
+	{0x000000FF, 0x0000FF00, 0x00FF0000, 0x00000000, "xBGR8888", ImageDecoder::PixelFormat::xBGR8888},
+	{0x00FF0000, 0x0000FF00, 0x000000FF, 0x00000000, "RGBx8888", ImageDecoder::PixelFormat::RGBx8888},
+	{0x000000FF, 0x0000FF00, 0x00FF0000, 0x00000000, "BGRx8888", ImageDecoder::PixelFormat::BGRx8888},
 
 	// Uncommon 32-bit formats.
-	{0x0000FFFF, 0xFFFF0000, 0x00000000, 0x00000000, "G16R16", ImageDecoder::PXF_G16R16},
+	{0x0000FFFF, 0xFFFF0000, 0x00000000, 0x00000000, "G16R16", ImageDecoder::PixelFormat::G16R16},
 
-	{0x3FF00000, 0x000FFC00, 0x000003FF, 0xC0000000, "A2R10G10B10", ImageDecoder::PXF_A2R10G10B10},
-	{0x000003FF, 0x000FFC00, 0x3FF00000, 0xC0000000, "A2B10G10R10", ImageDecoder::PXF_A2B10G10R10},
+	{0x3FF00000, 0x000FFC00, 0x000003FF, 0xC0000000, "A2R10G10B10", ImageDecoder::PixelFormat::A2R10G10B10},
+	{0x000003FF, 0x000FFC00, 0x3FF00000, 0xC0000000, "A2B10G10R10", ImageDecoder::PixelFormat::A2B10G10R10},
 
 	// end
-	{0, 0, 0, 0, "", 0}
+	{0, 0, 0, 0, "", ImageDecoder::PixelFormat::Unknown}
 };
 
 // Supported luminance formats.
 const DirectDrawSurfacePrivate::RGB_Format_Table_t DirectDrawSurfacePrivate::rgb_fmt_tbl_luma[] = {
 	// 8-bit
-	{0x00FF, 0x0000, 0x0000, 0x0000, "L8",   ImageDecoder::PXF_L8},
-	{0x000F, 0x0000, 0x0000, 0x00F0, "A4L4", ImageDecoder::PXF_A4L4},
+	{0x00FF, 0x0000, 0x0000, 0x0000, "L8",   ImageDecoder::PixelFormat::L8},
+	{0x000F, 0x0000, 0x0000, 0x00F0, "A4L4", ImageDecoder::PixelFormat::A4L4},
 
 	// 16-bit
-	{0xFFFF, 0x0000, 0x0000, 0x0000, "L16",  ImageDecoder::PXF_L16},
-	{0x00FF, 0x0000, 0x0000, 0xFF00, "A8L8", ImageDecoder::PXF_A8L8},
+	{0xFFFF, 0x0000, 0x0000, 0x0000, "L16",  ImageDecoder::PixelFormat::L16},
+	{0x00FF, 0x0000, 0x0000, 0xFF00, "A8L8", ImageDecoder::PixelFormat::A8L8},
 
 	// end
-	{0, 0, 0, 0, "", 0}
+	{0, 0, 0, 0, "", ImageDecoder::PixelFormat::Unknown}
 };
 
 // Supported alpha formats.
 const DirectDrawSurfacePrivate::RGB_Format_Table_t DirectDrawSurfacePrivate::rgb_fmt_tbl_alpha[] = {
 	// 8-bit
-	{0x0000, 0x0000, 0x0000, 0x00FF, "A8", ImageDecoder::PXF_A8},
+	{0x0000, 0x0000, 0x0000, 0x00FF, "A8", ImageDecoder::PixelFormat::A8},
 
 	// end
-	{0, 0, 0, 0, "", 0}
+	{0, 0, 0, 0, "", ImageDecoder::PixelFormat::Unknown}
 };
 
 /**
@@ -276,12 +278,12 @@ const char *DirectDrawSurfacePrivate::getPixelFormatName(const DDS_PIXELFORMAT &
 int DirectDrawSurfacePrivate::updatePixelFormat(void)
 {
 	// This should only be called once.
-	assert(pxf_uncomp == 0);
+	assert(pxf_uncomp == ImageDecoder::PixelFormat::Unknown);
 	assert(bytespp == 0);
 	assert(dxgi_format == 0);
 	assert(dxgi_alpha == DDS_ALPHA_MODE_UNKNOWN);
 
-	pxf_uncomp = 0;
+	pxf_uncomp = ImageDecoder::PixelFormat::Unknown;
 	bytespp = 0;
 	dxgi_format = 0;
 	dxgi_alpha = DDS_ALPHA_MODE_STRAIGHT;	// assume a standard alpha channel
@@ -341,51 +343,51 @@ int DirectDrawSurfacePrivate::updatePixelFormat(void)
 
 			static const struct {
 				uint8_t dxgi_format;
-				uint8_t pxf_uncomp;
+				ImageDecoder::PixelFormat pxf_uncomp;
 				uint8_t bytespp;
 			} dx10_lkup_tbl[] = {
-				{DXGI_FORMAT_R10G10B10A2_TYPELESS,	ImageDecoder::PXF_A2B10G10R10, 4},
-				{DXGI_FORMAT_R10G10B10A2_UNORM,		ImageDecoder::PXF_A2B10G10R10, 4},
-				{DXGI_FORMAT_R10G10B10A2_UINT,		ImageDecoder::PXF_A2B10G10R10, 4},
+				{DXGI_FORMAT_R10G10B10A2_TYPELESS,	ImageDecoder::PixelFormat::A2B10G10R10, 4},
+				{DXGI_FORMAT_R10G10B10A2_UNORM,		ImageDecoder::PixelFormat::A2B10G10R10, 4},
+				{DXGI_FORMAT_R10G10B10A2_UINT,		ImageDecoder::PixelFormat::A2B10G10R10, 4},
 
-				{DXGI_FORMAT_R8G8B8A8_TYPELESS,		ImageDecoder::PXF_ABGR8888, 4},
-				{DXGI_FORMAT_R8G8B8A8_UNORM,		ImageDecoder::PXF_ABGR8888, 4},
-				{DXGI_FORMAT_R8G8B8A8_UNORM_SRGB,	ImageDecoder::PXF_ABGR8888, 4},
-				{DXGI_FORMAT_R8G8B8A8_UINT,		ImageDecoder::PXF_ABGR8888, 4},
-				{DXGI_FORMAT_R8G8B8A8_SNORM,		ImageDecoder::PXF_ABGR8888, 4},
-				{DXGI_FORMAT_R8G8B8A8_SINT,		ImageDecoder::PXF_ABGR8888, 4},
+				{DXGI_FORMAT_R8G8B8A8_TYPELESS,		ImageDecoder::PixelFormat::ABGR8888, 4},
+				{DXGI_FORMAT_R8G8B8A8_UNORM,		ImageDecoder::PixelFormat::ABGR8888, 4},
+				{DXGI_FORMAT_R8G8B8A8_UNORM_SRGB,	ImageDecoder::PixelFormat::ABGR8888, 4},
+				{DXGI_FORMAT_R8G8B8A8_UINT,		ImageDecoder::PixelFormat::ABGR8888, 4},
+				{DXGI_FORMAT_R8G8B8A8_SNORM,		ImageDecoder::PixelFormat::ABGR8888, 4},
+				{DXGI_FORMAT_R8G8B8A8_SINT,		ImageDecoder::PixelFormat::ABGR8888, 4},
 
-				{DXGI_FORMAT_R16G16_TYPELESS,		ImageDecoder::PXF_G16R16, 4},
-				{DXGI_FORMAT_R16G16_FLOAT,		ImageDecoder::PXF_G16R16, 4},
-				{DXGI_FORMAT_R16G16_UNORM,		ImageDecoder::PXF_G16R16, 4},
-				{DXGI_FORMAT_R16G16_UINT,		ImageDecoder::PXF_G16R16, 4},
-				{DXGI_FORMAT_R16G16_SNORM,		ImageDecoder::PXF_G16R16, 4},
-				{DXGI_FORMAT_R16G16_SINT,		ImageDecoder::PXF_G16R16, 4},
+				{DXGI_FORMAT_R16G16_TYPELESS,		ImageDecoder::PixelFormat::G16R16, 4},
+				{DXGI_FORMAT_R16G16_FLOAT,		ImageDecoder::PixelFormat::G16R16, 4},
+				{DXGI_FORMAT_R16G16_UNORM,		ImageDecoder::PixelFormat::G16R16, 4},
+				{DXGI_FORMAT_R16G16_UINT,		ImageDecoder::PixelFormat::G16R16, 4},
+				{DXGI_FORMAT_R16G16_SNORM,		ImageDecoder::PixelFormat::G16R16, 4},
+				{DXGI_FORMAT_R16G16_SINT,		ImageDecoder::PixelFormat::G16R16, 4},
 
-				{DXGI_FORMAT_R8G8_TYPELESS,		ImageDecoder::PXF_GR88, 2},
-				{DXGI_FORMAT_R8G8_UNORM,		ImageDecoder::PXF_GR88, 2},
-				{DXGI_FORMAT_R8G8_UINT,			ImageDecoder::PXF_GR88, 2},
-				{DXGI_FORMAT_R8G8_SNORM,		ImageDecoder::PXF_GR88, 2},
-				{DXGI_FORMAT_R8G8_SINT,			ImageDecoder::PXF_GR88, 2},
+				{DXGI_FORMAT_R8G8_TYPELESS,		ImageDecoder::PixelFormat::GR88, 2},
+				{DXGI_FORMAT_R8G8_UNORM,		ImageDecoder::PixelFormat::GR88, 2},
+				{DXGI_FORMAT_R8G8_UINT,			ImageDecoder::PixelFormat::GR88, 2},
+				{DXGI_FORMAT_R8G8_SNORM,		ImageDecoder::PixelFormat::GR88, 2},
+				{DXGI_FORMAT_R8G8_SINT,			ImageDecoder::PixelFormat::GR88, 2},
 
-				{DXGI_FORMAT_A8_UNORM,			ImageDecoder::PXF_A8, 1},
+				{DXGI_FORMAT_A8_UNORM,			ImageDecoder::PixelFormat::A8, 1},
 
-				{DXGI_FORMAT_R9G9B9E5_SHAREDEXP,	ImageDecoder::PXF_RGB9_E5, 4},
+				{DXGI_FORMAT_R9G9B9E5_SHAREDEXP,	ImageDecoder::PixelFormat::RGB9_E5, 4},
 
-				{DXGI_FORMAT_B5G6R5_UNORM,		ImageDecoder::PXF_RGB565, 2},
-				{DXGI_FORMAT_B5G5R5A1_UNORM,		ImageDecoder::PXF_ARGB1555, 2},
+				{DXGI_FORMAT_B5G6R5_UNORM,		ImageDecoder::PixelFormat::RGB565, 2},
+				{DXGI_FORMAT_B5G5R5A1_UNORM,		ImageDecoder::PixelFormat::ARGB1555, 2},
 
-				{DXGI_FORMAT_B8G8R8A8_UNORM,		ImageDecoder::PXF_ARGB8888, 4},
-				{DXGI_FORMAT_B8G8R8A8_TYPELESS,		ImageDecoder::PXF_ARGB8888, 4},
-				{DXGI_FORMAT_B8G8R8A8_UNORM_SRGB,	ImageDecoder::PXF_ARGB8888, 4},
+				{DXGI_FORMAT_B8G8R8A8_UNORM,		ImageDecoder::PixelFormat::ARGB8888, 4},
+				{DXGI_FORMAT_B8G8R8A8_TYPELESS,		ImageDecoder::PixelFormat::ARGB8888, 4},
+				{DXGI_FORMAT_B8G8R8A8_UNORM_SRGB,	ImageDecoder::PixelFormat::ARGB8888, 4},
 
-				{DXGI_FORMAT_B8G8R8X8_UNORM,		ImageDecoder::PXF_xRGB8888, 4},
-				{DXGI_FORMAT_B8G8R8X8_TYPELESS,		ImageDecoder::PXF_xRGB8888, 4},
-				{DXGI_FORMAT_B8G8R8X8_UNORM_SRGB,	ImageDecoder::PXF_xRGB8888, 4},
+				{DXGI_FORMAT_B8G8R8X8_UNORM,		ImageDecoder::PixelFormat::xRGB8888, 4},
+				{DXGI_FORMAT_B8G8R8X8_TYPELESS,		ImageDecoder::PixelFormat::xRGB8888, 4},
+				{DXGI_FORMAT_B8G8R8X8_UNORM_SRGB,	ImageDecoder::PixelFormat::xRGB8888, 4},
 
-				{DXGI_FORMAT_B4G4R4A4_UNORM,		ImageDecoder::PXF_ARGB4444, 2},
+				{DXGI_FORMAT_B4G4R4A4_UNORM,		ImageDecoder::PixelFormat::ARGB4444, 2},
 
-				{0, 0, 0}
+				{0, ImageDecoder::PixelFormat::Unknown, 0}
 			};
 
 			// If the dxgi_format is not listed in the table, we'll use it
@@ -473,7 +475,7 @@ DirectDrawSurfacePrivate::DirectDrawSurfacePrivate(DirectDrawSurface *q, IRpFile
 	: super(q, file)
 	, texDataStartAddr(0)
 	, img(nullptr)
-	, pxf_uncomp(0)
+	, pxf_uncomp(ImageDecoder::PixelFormat::Unknown)
 	, bytespp(0)
 	, dxgi_format(0)
 	, dxgi_alpha(DDS_ALPHA_MODE_UNKNOWN)
@@ -713,7 +715,7 @@ const rp_image *DirectDrawSurfacePrivate::loadImage(void)
 			case DXGI_FORMAT_R9G9B9E5_SHAREDEXP:
 				// RGB9_E5 (technically uncompressed...)
 				img = ImageDecoder::fromLinear32(
-					ImageDecoder::PXF_RGB9_E5,
+					ImageDecoder::PixelFormat::RGB9_E5,
 					ddsHeader.dwWidth, ddsHeader.dwHeight,
 					reinterpret_cast<const uint32_t*>(buf.get()),
 					expected_size);
@@ -725,9 +727,9 @@ const rp_image *DirectDrawSurfacePrivate::loadImage(void)
 		}
 	} else {
 		// Uncompressed linear image data.
-		assert(pxf_uncomp != 0);
+		assert(pxf_uncomp != ImageDecoder::PixelFormat::Unknown);
 		assert(bytespp != 0);
-		if (pxf_uncomp == 0 || bytespp == 0) {
+		if (pxf_uncomp == ImageDecoder::PixelFormat::Unknown || bytespp == 0) {
 			// Pixel format wasn't updated...
 			return nullptr;
 		}
@@ -770,16 +772,14 @@ const rp_image *DirectDrawSurfacePrivate::loadImage(void)
 			case sizeof(uint8_t):
 				// 8-bit image. (Usually luminance or alpha.)
 				img = ImageDecoder::fromLinear8(
-					(ImageDecoder::PixelFormat)pxf_uncomp,
-					ddsHeader.dwWidth, ddsHeader.dwHeight,
+					pxf_uncomp, ddsHeader.dwWidth, ddsHeader.dwHeight,
 					buf.get(), expected_size, stride);
 				break;
 
 			case sizeof(uint16_t):
 				// 16-bit RGB image.
 				img = ImageDecoder::fromLinear16(
-					(ImageDecoder::PixelFormat)pxf_uncomp,
-					ddsHeader.dwWidth, ddsHeader.dwHeight,
+					pxf_uncomp, ddsHeader.dwWidth, ddsHeader.dwHeight,
 					reinterpret_cast<const uint16_t*>(buf.get()),
 					expected_size, stride);
 				break;
@@ -787,16 +787,14 @@ const rp_image *DirectDrawSurfacePrivate::loadImage(void)
 			case 24/8:
 				// 24-bit RGB image.
 				img = ImageDecoder::fromLinear24(
-					(ImageDecoder::PixelFormat)pxf_uncomp,
-					ddsHeader.dwWidth, ddsHeader.dwHeight,
+					pxf_uncomp, ddsHeader.dwWidth, ddsHeader.dwHeight,
 					buf.get(), expected_size, stride);
 				break;
 
 			case sizeof(uint32_t):
 				// 32-bit RGB image.
 				img = ImageDecoder::fromLinear32(
-					(ImageDecoder::PixelFormat)pxf_uncomp,
-					ddsHeader.dwWidth, ddsHeader.dwHeight,
+					pxf_uncomp, ddsHeader.dwWidth, ddsHeader.dwHeight,
 					reinterpret_cast<const uint32_t*>(buf.get()),
 					expected_size, stride);
 				break;

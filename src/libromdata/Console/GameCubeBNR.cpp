@@ -116,7 +116,8 @@ const rp_image *GameCubeBNRPrivate::loadBanner(void)
 	}
 
 	// Convert the banner from GCN RGB5A3 format to ARGB32.
-	img_banner = ImageDecoder::fromGcn16(ImageDecoder::PXF_RGB5A3,
+	img_banner = ImageDecoder::fromGcn16(
+		ImageDecoder::PixelFormat::RGB5A3,
 		GCN_BANNER_IMAGE_W, GCN_BANNER_IMAGE_H,
 		bannerbuf.get(), GCN_BANNER_IMAGE_SIZE);
 	return img_banner;

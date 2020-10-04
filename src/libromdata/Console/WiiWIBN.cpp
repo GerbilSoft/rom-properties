@@ -144,7 +144,8 @@ const rp_image *WiiWIBNPrivate::loadIcon(void)
 		iconAnimData->delays[i].ms = ms_tbl[delay];
 
 		// Wii save icons are always RGB5A3.
-		iconAnimData->frames[i] = ImageDecoder::fromGcn16(ImageDecoder::PXF_RGB5A3,
+		iconAnimData->frames[i] = ImageDecoder::fromGcn16(
+			ImageDecoder::PixelFormat::RGB5A3,
 			BANNER_WIBN_ICON_W, BANNER_WIBN_ICON_H,
 			reinterpret_cast<const uint16_t*>(icondata.get() + iconaddr_cur),
 			BANNER_WIBN_ICON_SIZE);
@@ -202,7 +203,8 @@ const rp_image *WiiWIBNPrivate::loadBanner(void)
 	}
 
 	// Convert the banner from GCN RGB5A3 format to ARGB32.
-	img_banner = ImageDecoder::fromGcn16(ImageDecoder::PXF_RGB5A3,
+	img_banner = ImageDecoder::fromGcn16(
+		ImageDecoder::PixelFormat::RGB5A3,
 		BANNER_WIBN_IMAGE_W, BANNER_WIBN_IMAGE_H,
 		bannerbuf.get(), BANNER_WIBN_IMAGE_SIZE);
 	return img_banner;

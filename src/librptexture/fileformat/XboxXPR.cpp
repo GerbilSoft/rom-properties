@@ -334,82 +334,82 @@ const rp_image *XboxXPRPrivate::loadXboxXPR0Image(void)
 	static const struct {
 		uint8_t bpp;	// Bits per pixel (4, 8, 16, 32; 0 for invalid)
 				// TODO: Use a shift amount instead?
-		uint8_t pxf;	// ImageDecoder::PixelFormat
-		uint8_t dxtn;	// DXTn version (pxf must be PXF_UNKNOWN)
+		ImageDecoder::PixelFormat pxf;	// ImageDecoder::PixelFormat
+		uint8_t dxtn;	// DXTn version (pxf must be PixelFormat::Unknown)
 		bool swizzled;	// True if the format needs to be unswizzled
 				// DXTn is automatically unswizzled by the DXTn
 				// functions, so those should be false.
 	} mode_tbl[] = {
-		{ 8, ImageDecoder::PXF_L8,		0, true},	// 0x00: L8
-		{ 0, ImageDecoder::PXF_UNKNOWN,		0, true},	// 0x01: AL8 (TODO)
-		{16, ImageDecoder::PXF_ARGB1555, 	0, true},	// 0x02: ARGB1555
-		{16, ImageDecoder::PXF_RGB555,		0, true},	// 0x03: RGB555
-		{16, ImageDecoder::PXF_ARGB4444,	0, true},	// 0x04: ARGB4444
-		{16, ImageDecoder::PXF_RGB565,		0, true},	// 0x05: RGB565
-		{32, ImageDecoder::PXF_ARGB8888,	0, true},	// 0x06: ARGB8888
-		{32, ImageDecoder::PXF_xRGB8888,	0, true},	// 0x07: xRGB8888
-		{ 0, ImageDecoder::PXF_UNKNOWN,		0, false},	// 0x08: undefined
-		{ 0, ImageDecoder::PXF_UNKNOWN,		0, false},	// 0x09: undefined
-		{ 0, ImageDecoder::PXF_UNKNOWN,		0, false},	// 0x0A: undefined
-		{ 0, ImageDecoder::PXF_UNKNOWN,		0, true},	// 0x0B: P8 (TODO)
-		{ 4, ImageDecoder::PXF_UNKNOWN,		1, false},	// 0x0C: DXT1
-		{ 0, ImageDecoder::PXF_UNKNOWN,		0, false},	// 0x0D: undefined
-		{ 8, ImageDecoder::PXF_UNKNOWN,		2, false},	// 0x0E: DXT2
-		{ 8, ImageDecoder::PXF_UNKNOWN,		4, false},	// 0x0F: DXT4
+		{ 8, ImageDecoder::PixelFormat::L8,		0, true},	// 0x00: L8
+		{ 0, ImageDecoder::PixelFormat::Unknown,	0, true},	// 0x01: AL8 (TODO)
+		{16, ImageDecoder::PixelFormat::ARGB1555, 	0, true},	// 0x02: ARGB1555
+		{16, ImageDecoder::PixelFormat::RGB555,		0, true},	// 0x03: RGB555
+		{16, ImageDecoder::PixelFormat::ARGB4444,	0, true},	// 0x04: ARGB4444
+		{16, ImageDecoder::PixelFormat::RGB565,		0, true},	// 0x05: RGB565
+		{32, ImageDecoder::PixelFormat::ARGB8888,	0, true},	// 0x06: ARGB8888
+		{32, ImageDecoder::PixelFormat::xRGB8888,	0, true},	// 0x07: xRGB8888
+		{ 0, ImageDecoder::PixelFormat::Unknown,	0, false},	// 0x08: undefined
+		{ 0, ImageDecoder::PixelFormat::Unknown,	0, false},	// 0x09: undefined
+		{ 0, ImageDecoder::PixelFormat::Unknown,	0, false},	// 0x0A: undefined
+		{ 0, ImageDecoder::PixelFormat::Unknown,	0, true},	// 0x0B: P8 (TODO)
+		{ 4, ImageDecoder::PixelFormat::Unknown,	1, false},	// 0x0C: DXT1
+		{ 0, ImageDecoder::PixelFormat::Unknown,	0, false},	// 0x0D: undefined
+		{ 8, ImageDecoder::PixelFormat::Unknown,	2, false},	// 0x0E: DXT2
+		{ 8, ImageDecoder::PixelFormat::Unknown,	4, false},	// 0x0F: DXT4
 
-		{16, ImageDecoder::PXF_ARGB1555,	0, false},	// 0x10: Linear ARGB1555
-		{16, ImageDecoder::PXF_RGB565,		0, false},	// 0x11: Linear RGB565
-		{32, ImageDecoder::PXF_ARGB8888,	0, false},	// 0x12: Linear ARGB8888
-		{ 8, ImageDecoder::PXF_L8,		0, false},	// 0x13: Linear L8
-		{ 0, ImageDecoder::PXF_UNKNOWN,		0, false},	// 0x14: undefined
-		{ 0, ImageDecoder::PXF_UNKNOWN,		0, false},	// 0x15: undefined
-		{ 0, ImageDecoder::PXF_UNKNOWN,		0, false},	// 0x16: Linear R8B8 (TODO)
-		{ 0, ImageDecoder::PXF_UNKNOWN,		0, false},	// 0x17: Linear G8B8 (TODO)
-		{ 0, ImageDecoder::PXF_UNKNOWN,		0, false},	// 0x18: undefined
-		{ 8, ImageDecoder::PXF_A8,		0, true},	// 0x19: A8
-		{16, ImageDecoder::PXF_A8L8,		0, true},	// 0x1A: A8L8
-		{ 0, ImageDecoder::PXF_UNKNOWN,		0, false},	// 0x1B: Linear AL8 (TODO)
-		{16, ImageDecoder::PXF_RGB555,		0, false},	// 0x1C: Linear RGB555
-		{16, ImageDecoder::PXF_ARGB4444,	0, false},	// 0x1D: Linear ARGB4444
-		{32, ImageDecoder::PXF_xRGB8888,	0, false},	// 0x1E: Linear xRGB8888
-		{ 8, ImageDecoder::PXF_A8,		0, false},	// 0x1F: Linear A8
+		{16, ImageDecoder::PixelFormat::ARGB1555,	0, false},	// 0x10: Linear ARGB1555
+		{16, ImageDecoder::PixelFormat::RGB565,		0, false},	// 0x11: Linear RGB565
+		{32, ImageDecoder::PixelFormat::ARGB8888,	0, false},	// 0x12: Linear ARGB8888
+		{ 8, ImageDecoder::PixelFormat::L8,		0, false},	// 0x13: Linear L8
+		{ 0, ImageDecoder::PixelFormat::Unknown,	0, false},	// 0x14: undefined
+		{ 0, ImageDecoder::PixelFormat::Unknown,	0, false},	// 0x15: undefined
+		{ 0, ImageDecoder::PixelFormat::Unknown,	0, false},	// 0x16: Linear R8B8 (TODO)
+		{ 0, ImageDecoder::PixelFormat::Unknown,	0, false},	// 0x17: Linear G8B8 (TODO)
+		{ 0, ImageDecoder::PixelFormat::Unknown,	0, false},	// 0x18: undefined
+		{ 8, ImageDecoder::PixelFormat::A8,		0, true},	// 0x19: A8
+		{16, ImageDecoder::PixelFormat::A8L8,		0, true},	// 0x1A: A8L8
+		{ 0, ImageDecoder::PixelFormat::Unknown,	0, false},	// 0x1B: Linear AL8 (TODO)
+		{16, ImageDecoder::PixelFormat::RGB555,		0, false},	// 0x1C: Linear RGB555
+		{16, ImageDecoder::PixelFormat::ARGB4444,	0, false},	// 0x1D: Linear ARGB4444
+		{32, ImageDecoder::PixelFormat::xRGB8888,	0, false},	// 0x1E: Linear xRGB8888
+		{ 8, ImageDecoder::PixelFormat::A8,		0, false},	// 0x1F: Linear A8
 
-		{16, ImageDecoder::PXF_A8L8,		0, false},	// 0x20: Linear A8L8
-		{ 0, ImageDecoder::PXF_UNKNOWN,		0, false},	// 0x21: undefined
-		{ 0, ImageDecoder::PXF_UNKNOWN,		0, false},	// 0x22: undefined
-		{ 0, ImageDecoder::PXF_UNKNOWN,		0, false},	// 0x23: undefined
-		{ 0, ImageDecoder::PXF_UNKNOWN,		0, true},	// 0x24: YUY2 (TODO)
-		{ 0, ImageDecoder::PXF_UNKNOWN,		0, true},	// 0x25: YUY2 (TODO)
-		{ 0, ImageDecoder::PXF_UNKNOWN,		0, false},	// 0x26: undefined
-		{ 0, ImageDecoder::PXF_UNKNOWN,		0, true},	// 0x27: L6V5U5 (TODO)
-		{ 0, ImageDecoder::PXF_UNKNOWN,		0, true},	// 0x28: V8U8 (TODO)
-		{ 0, ImageDecoder::PXF_UNKNOWN,		0, true},	// 0x29: R8B8 (TODO)
-		{ 0, ImageDecoder::PXF_UNKNOWN,		0, true},	// 0x2A: D24S8 (TODO)
-		{ 0, ImageDecoder::PXF_UNKNOWN,		0, true},	// 0x2B: F24S8 (TODO)
-		{ 0, ImageDecoder::PXF_UNKNOWN,		0, true},	// 0x2C: D16 (TODO)
-		{ 0, ImageDecoder::PXF_UNKNOWN,		0, true},	// 0x2D: F16 (TODO)
-		{ 0, ImageDecoder::PXF_UNKNOWN,		0, false},	// 0x2E: Linear D24S8 (TODO)
-		{ 0, ImageDecoder::PXF_UNKNOWN,		0, false},	// 0x2F: Linear F24S8 (TODO)
+		{16, ImageDecoder::PixelFormat::A8L8,		0, false},	// 0x20: Linear A8L8
+		{ 0, ImageDecoder::PixelFormat::Unknown,	0, false},	// 0x21: undefined
+		{ 0, ImageDecoder::PixelFormat::Unknown,	0, false},	// 0x22: undefined
+		{ 0, ImageDecoder::PixelFormat::Unknown,	0, false},	// 0x23: undefined
+		{ 0, ImageDecoder::PixelFormat::Unknown,	0, true},	// 0x24: YUY2 (TODO)
+		{ 0, ImageDecoder::PixelFormat::Unknown,	0, true},	// 0x25: YUY2 (TODO)
+		{ 0, ImageDecoder::PixelFormat::Unknown,	0, false},	// 0x26: undefined
+		{ 0, ImageDecoder::PixelFormat::Unknown,	0, true},	// 0x27: L6V5U5 (TODO)
+		{ 0, ImageDecoder::PixelFormat::Unknown,	0, true},	// 0x28: V8U8 (TODO)
+		{ 0, ImageDecoder::PixelFormat::Unknown,	0, true},	// 0x29: R8B8 (TODO)
+		{ 0, ImageDecoder::PixelFormat::Unknown,	0, true},	// 0x2A: D24S8 (TODO)
+		{ 0, ImageDecoder::PixelFormat::Unknown,	0, true},	// 0x2B: F24S8 (TODO)
+		{ 0, ImageDecoder::PixelFormat::Unknown,	0, true},	// 0x2C: D16 (TODO)
+		{ 0, ImageDecoder::PixelFormat::Unknown,	0, true},	// 0x2D: F16 (TODO)
+		{ 0, ImageDecoder::PixelFormat::Unknown,	0, false},	// 0x2E: Linear D24S8 (TODO)
+		{ 0, ImageDecoder::PixelFormat::Unknown,	0, false},	// 0x2F: Linear F24S8 (TODO)
 
-		{ 0, ImageDecoder::PXF_UNKNOWN,		0, false},	// 0x30: Linear D16 (TODO)
-		{ 0, ImageDecoder::PXF_UNKNOWN,		0, false},	// 0x31: Linear F16 (TODO)
-		{16, ImageDecoder::PXF_L16,		0, true},	// 0x32: L16
-		{ 0, ImageDecoder::PXF_UNKNOWN,		0, true},	// 0x33: V16U16 (TODO)
-		{ 0, ImageDecoder::PXF_UNKNOWN,		0, false},	// 0x34: undefined
-		{ 0, ImageDecoder::PXF_L16,		0, false},	// 0x35: Linear L16
-		{ 0, ImageDecoder::PXF_UNKNOWN,		0, false},	// 0x36: Linear V16U16 (TODO)
-		{ 0, ImageDecoder::PXF_UNKNOWN,		0, false},	// 0x37: Linear L6V5U5 (TODO)
-		{16, ImageDecoder::PXF_RGBA5551,	0, true},	// 0x38: RGBA5551
-		{16, ImageDecoder::PXF_RGBA4444,	0, true},	// 0x39: RGBA4444
-		{32, ImageDecoder::PXF_ABGR8888,	0, true},	// 0x3A: QWVU8888 (same as ABGR8888)
-		{32, ImageDecoder::PXF_BGRA8888,	0, true},	// 0x3B: BGRA8888
-		{32, ImageDecoder::PXF_RGBA8888,	0, true},	// 0x3C: RGBA8888
-		{16, ImageDecoder::PXF_RGBA5551,	0, false},	// 0x3D: Linear RGBA5551
-		{16, ImageDecoder::PXF_RGBA4444,	0, false},	// 0x3E: Linear RGBA4444
-		{32, ImageDecoder::PXF_ABGR8888,	0, false},	// 0x3F: Linear ABGR8888
+		{ 0, ImageDecoder::PixelFormat::Unknown,	0, false},	// 0x30: Linear D16 (TODO)
+		{ 0, ImageDecoder::PixelFormat::Unknown,	0, false},	// 0x31: Linear F16 (TODO)
+		{16, ImageDecoder::PixelFormat::L16,		0, true},	// 0x32: L16
+		{ 0, ImageDecoder::PixelFormat::Unknown,	0, true},	// 0x33: V16U16 (TODO)
+		{ 0, ImageDecoder::PixelFormat::Unknown,	0, false},	// 0x34: undefined
+		{ 0, ImageDecoder::PixelFormat::L16,		0, false},	// 0x35: Linear L16
+		{ 0, ImageDecoder::PixelFormat::Unknown,	0, false},	// 0x36: Linear V16U16 (TODO)
+		{ 0, ImageDecoder::PixelFormat::Unknown,	0, false},	// 0x37: Linear L6V5U5 (TODO)
+		{16, ImageDecoder::PixelFormat::RGBA5551,	0, true},	// 0x38: RGBA5551
+		{16, ImageDecoder::PixelFormat::RGBA4444,	0, true},	// 0x39: RGBA4444
+		{32, ImageDecoder::PixelFormat::ABGR8888,	0, true},	// 0x3A: QWVU8888 (same as ABGR8888)
+		{32, ImageDecoder::PixelFormat::BGRA8888,	0, true},	// 0x3B: BGRA8888
+		{32, ImageDecoder::PixelFormat::RGBA8888,	0, true},	// 0x3C: RGBA8888
+		{16, ImageDecoder::PixelFormat::RGBA5551,	0, false},	// 0x3D: Linear RGBA5551
+		{16, ImageDecoder::PixelFormat::RGBA4444,	0, false},	// 0x3E: Linear RGBA4444
+		{32, ImageDecoder::PixelFormat::ABGR8888,	0, false},	// 0x3F: Linear ABGR8888
 
-		{32, ImageDecoder::PXF_BGRA8888,	0, false},	// 0x40: Linear BGRA8888
-		{32, ImageDecoder::PXF_RGBA8888,	0, false},	// 0x41: Linear RGBA8888
+		{32, ImageDecoder::PixelFormat::BGRA8888,	0, false},	// 0x40: Linear BGRA8888
+		{32, ImageDecoder::PixelFormat::RGBA8888,	0, false},	// 0x41: Linear RGBA8888
 	};
 
 	if (xpr0Header.pixel_format >= ARRAY_SIZE(mode_tbl)) {
@@ -462,20 +462,17 @@ const rp_image *XboxXPRPrivate::loadXboxXPR0Image(void)
 		switch (mode.bpp) {
 			case 8:
 				img = ImageDecoder::fromLinear8(
-					static_cast<ImageDecoder::PixelFormat>(mode.pxf),
-					width, height,
+					mode.pxf, width, height,
 					buf.get(), expected_size);
 				break;
 			case 16:
 				img = ImageDecoder::fromLinear16(
-					static_cast<ImageDecoder::PixelFormat>(mode.pxf),
-					width, height,
+					mode.pxf, width, height,
 					reinterpret_cast<const uint16_t*>(buf.get()), expected_size);
 				break;
 			case 32:
 				img = ImageDecoder::fromLinear32(
-					static_cast<ImageDecoder::PixelFormat>(mode.pxf),
-					width, height,
+					mode.pxf, width, height,
 					reinterpret_cast<const uint32_t*>(buf.get()), expected_size);
 				break;
 			case 0:

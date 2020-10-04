@@ -61,7 +61,7 @@ rp_image *fromGcn16(PixelFormat px_format,
 	uint32_t tileBuf[4*4];
 
 	switch (px_format) {
-		case PXF_RGB5A3: {
+		case PixelFormat::RGB5A3: {
 			for (unsigned int y = 0; y < tilesY; y++) {
 				for (unsigned int x = 0; x < tilesX; x++) {
 					// Convert each tile to ARGB32 manually.
@@ -84,7 +84,7 @@ rp_image *fromGcn16(PixelFormat px_format,
 			break;
 		}
 
-		case PXF_RGB565: {
+		case PixelFormat::RGB565: {
 			for (unsigned int y = 0; y < tilesY; y++) {
 				for (unsigned int x = 0; x < tilesX; x++) {
 					// Convert each tile to ARGB32 manually.
@@ -104,7 +104,7 @@ rp_image *fromGcn16(PixelFormat px_format,
 			break;
 		}
 
-		case PXF_IA8: {
+		case PixelFormat::IA8: {
 			for (unsigned int y = 0; y < tilesY; y++) {
 				for (unsigned int x = 0; x < tilesX; x++) {
 					// Convert each tile to ARGB32 manually.

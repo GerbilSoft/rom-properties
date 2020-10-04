@@ -345,8 +345,8 @@ const rp_image *KhronosKTX2Private::loadImage(int mip)
 		case VK_FORMAT_R8G8B8_UINT:
 		case VK_FORMAT_R8G8B8_SRGB:
 			// 24-bit RGB.
-			img = ImageDecoder::fromLinear24(ImageDecoder::PXF_BGR888,
-				width, height,
+			img = ImageDecoder::fromLinear24(
+				ImageDecoder::PixelFormat::BGR888, width, height,
 				buf.get(), expected_size, stride);
 			break;
 
@@ -354,8 +354,8 @@ const rp_image *KhronosKTX2Private::loadImage(int mip)
 		case VK_FORMAT_B8G8R8_UINT:
 		case VK_FORMAT_B8G8R8_SRGB:
 			// 24-bit RGB. (R/B swapped)
-			img = ImageDecoder::fromLinear24(ImageDecoder::PXF_RGB888,
-				width, height,
+			img = ImageDecoder::fromLinear24(
+				ImageDecoder::PixelFormat::RGB888, width, height,
 				buf.get(), expected_size, stride);
 			break;
 
@@ -363,8 +363,8 @@ const rp_image *KhronosKTX2Private::loadImage(int mip)
 		case VK_FORMAT_R8G8B8A8_UINT:
 		case VK_FORMAT_R8G8B8A8_SRGB:
 			// 32-bit RGBA.
-			img = ImageDecoder::fromLinear32(ImageDecoder::PXF_ABGR8888,
-				width, height,
+			img = ImageDecoder::fromLinear32(
+				ImageDecoder::PixelFormat::ABGR8888, width, height,
 				reinterpret_cast<const uint32_t*>(buf.get()), expected_size, stride);
 			break;
 
@@ -372,8 +372,8 @@ const rp_image *KhronosKTX2Private::loadImage(int mip)
 		case VK_FORMAT_B8G8R8A8_UINT:
 		case VK_FORMAT_B8G8R8A8_SRGB:
 			// 32-bit RGBA. (R/B swapped)
-			img = ImageDecoder::fromLinear32(ImageDecoder::PXF_ARGB8888,
-				width, height,
+			img = ImageDecoder::fromLinear32(
+				ImageDecoder::PixelFormat::ARGB8888, width, height,
 				reinterpret_cast<const uint32_t*>(buf.get()), expected_size, stride);
 			break;
 
@@ -382,15 +382,15 @@ const rp_image *KhronosKTX2Private::loadImage(int mip)
 		case VK_FORMAT_R8_SRGB:
 			// 8-bit (red).
 			// FIXME: Decode as red, not as L8.
-			img = ImageDecoder::fromLinear8(ImageDecoder::PXF_L8,
-				width, height,
+			img = ImageDecoder::fromLinear8(
+				ImageDecoder::PixelFormat::L8, width, height,
 				buf.get(), expected_size, stride);
 			break;
 
 		case VK_FORMAT_E5B9G9R9_UFLOAT_PACK32:
 			// Uncompressed "special" 32bpp formats.
-			img = ImageDecoder::fromLinear32(ImageDecoder::PXF_RGB9_E5,
-				width, height,
+			img = ImageDecoder::fromLinear32(
+				ImageDecoder::PixelFormat::RGB9_E5, width, height,
 				reinterpret_cast<const uint32_t*>(buf.get()), expected_size, stride);
 			break;
 
