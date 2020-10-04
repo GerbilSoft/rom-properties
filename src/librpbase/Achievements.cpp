@@ -278,7 +278,7 @@ int AchievementsPrivate::parseVarlenInt(T &val, const uint8_t *p, const uint8_t 
 
 	bool foundLastByte = false;
 	for (; p < p_end; p++, shamt += 7) {
-		if (shamt > sizeof(T)*8) {
+		if (shamt >= sizeof(T)*8) {
 			// Shift amount is out of range.
 			return 0;
 		}
