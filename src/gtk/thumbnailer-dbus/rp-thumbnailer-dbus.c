@@ -248,7 +248,7 @@ rp_thumbnailer_constructed(GObject *object)
 
 	// Connect signals to the relevant functions.
 	g_signal_connect(thumbnailer->skeleton, "handle-queue",
-			G_CALLBACK(rp_thumbnailer_queue), thumbnailer);
+		G_CALLBACK(rp_thumbnailer_queue), thumbnailer);
 	g_signal_connect(thumbnailer->skeleton, "handle-dequeue",
 		G_CALLBACK(rp_thumbnailer_dequeue), thumbnailer);
 		
