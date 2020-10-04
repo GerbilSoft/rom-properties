@@ -136,19 +136,21 @@ class RomFields
 
 		// Age Ratings indexes.
 		// These correspond to Wii and/or 3DS fields.
-		enum AgeRatingsCountry {
-			AGE_JAPAN	= 0,	// Japan (CERO)
-			AGE_USA		= 1,	// USA (ESRB)
-			AGE_GERMANY	= 3,	// Germany (USK)
-			AGE_EUROPE	= 4,	// Europe (PEGI)
-			AGE_FINLAND	= 5,	// Finland (MEKU)
-			AGE_PORTUGAL	= 6,	// Portugal (PEGI-PT)
-			AGE_ENGLAND	= 7,	// England (BBFC)
-			AGE_AUSTRALIA	= 8,	// Australia (ACB)
-			AGE_SOUTH_KOREA	= 9,	// South Korea (GRB, formerly KMRB)
-			AGE_TAIWAN	= 10,	// Taiwan (CGSRR)
+		enum class AgeRatingsCountry : int8_t {
+			Invalid		= -1,
 
-			AGE_MAX		= 16	// Maximum number of age rating fields
+			Japan		= 0,	// Japan (CERO)
+			USA		= 1,	// USA (ESRB)
+			Germany		= 3,	// Germany (USK)
+			Europe		= 4,	// Europe (PEGI)
+			Finland		= 5,	// Finland (MEKU)
+			Portugal	= 6,	// Portugal (PEGI-PT)
+			England		= 7,	// England (BBFC)
+			Australia	= 8,	// Australia (ACB)
+			SouthKorea	= 9,	// South Korea (GRB, formerly KMRB)
+			Taiwan		= 10,	// Taiwan (CGSRR)
+
+			Max		= 16	// Maximum number of age rating fields
 		};
 
 		// Age Ratings bitfields.
@@ -162,7 +164,7 @@ class RomFields
 		};
 
 		// Age Ratings type.
-		typedef std::array<uint16_t, AGE_MAX> age_ratings_t;
+		typedef std::array<uint16_t, (unsigned int)AgeRatingsCountry::Max> age_ratings_t;
 
 		// Text alignment for RFT_LISTDATA.
 		enum TextAlign : uint32_t {
@@ -334,20 +336,20 @@ class RomFields
 		/**
 		 * Get the abbreviation of an age rating organization.
 		 * (TODO: Full name function?)
-		 * @param country Rating country. (See AgeRatingsCountry.)
+		 * @param country Rating country.
 		 * @return Abbreviation, or nullptr if invalid.
 		 */
-		static const char *ageRatingAbbrev(int country);
+		static const char *ageRatingAbbrev(AgeRatingsCountry country);
 
 		/**
 		 * Decode an age rating into a human-readable string.
 		 * This does not include the name of the rating organization.
 		 *
-		 * @param country Rating country. (See AgeRatingsCountry.)
+		 * @param country Rating country.
 		 * @param rating Rating value.
 		 * @return Human-readable string, or empty string if the rating isn't active.
 		 */
-		static std::string ageRatingDecode(int country, uint16_t rating);
+		static std::string ageRatingDecode(AgeRatingsCountry country, uint16_t rating);
 
 		/**
 		 * Decode all age ratings into a human-readable string.
@@ -457,7 +459,7 @@ class RomFields
 		 */
 		static std::vector<std::string> *strArrayToVector_i18n(const char *msgctxt, const char *const *strArray, size_t count);
 
-		enum {
+		enum TabOffset {
 			TabOffset_Ignore = -1,
 			TabOffset_AddTabs = -2,
 		};
