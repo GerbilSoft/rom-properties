@@ -397,7 +397,7 @@ Q_DECL_EXPORT int RP_C_API rp_create_thumbnail(const char *source_file, const ch
 	// NOTE: KDE desktops don't urlencode spaces or non-ASCII characters.
 	// GTK+ desktops *do* urlencode spaces and non-ASCII characters.
 	// FIXME: Do we want to store the local URI or the original URI?
-	kv.emplace_back("Thumb::URI", localUrl.toString().toUtf8().constData());
+	kv.emplace_back("Thumb::URI", localUrl.toEncoded().constData());
 
 	// Write the tEXt chunks.
 	pngWriter->write_tEXt(kv);

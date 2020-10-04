@@ -13,6 +13,7 @@
 * Bug fixes:
   * GameCube: Detect incrementing values partitions in encrypted images.
     * Fixes #269, reported by @Masamune3210.
+  * KDE: Ensure the "Thumb::URI" value is urlencoded.
 
 ## v1.7.3 (released 2020/09/25)
 
