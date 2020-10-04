@@ -25,6 +25,10 @@ using LibRpTexture::rp_image;
 using std::tstring;
 using std::unique_ptr;
 
+// libwin32common
+#include "libwin32common/AutoGetDC.hpp"
+using LibWin32Common::AutoGetDC;
+
 class AchievementsTabPrivate
 {
 	public:
@@ -381,9 +385,9 @@ int AchievementsTabPrivate::ListView_CustomDraw(NMLVCUSTOMDRAW *plvcd) const
 			result = CDRF_NOTIFYITEMDRAW;
 			break;
 
-		case CDDS_ITEMPREPAINT: {
+		case CDDS_ITEMPREPAINT:
 			// Set the background color for alternating row colors.
-			if (plvcd->nmcd.dwItemSpec % 2) {
+			if (plvcd->nmcd.dwItemSpec % 2 != 0) {
 				// NOTE: plvcd->clrTextBk is set to 0xFF000000 here,
 				// not the actual default background color.
 				// FIXME: On Windows 7:
@@ -393,7 +397,6 @@ int AchievementsTabPrivate::ListView_CustomDraw(NMLVCUSTOMDRAW *plvcd) const
 				result = CDRF_NEWFONT;
 			}
 			break;
-		}
 
 		default:
 			break;
@@ -445,6 +448,12 @@ void AchievementsTabPrivate::reset(void)
 		ListView_InsertColumn(hListView, 1, &lvColumn);
 	}
 
+	// Maximum width for column 1.
+	// FIXME: Get auto-sizing working.
+	// FIXME: Newlines don't work in ListView on WinXP and wine-staging-5.18.
+	AutoGetDC hDC(hWndPropSheet, GetWindowFont(hWndPropSheet));
+	int col1Width = 0;
+
 	// Add the achievements.
 	// TODO: Copy over CustomDraw from RP_ShellPropSheetExt for newline handling?
 	LVITEM item;
@@ -459,6 +468,12 @@ void AchievementsTabPrivate::reset(void)
 		ts_ach += _T('\n');
 		// TODO: Locked description?
 		ts_ach += U82T_c(pAch->getDescUnlocked(id));
+
+		// Measure the text width.
+		int col1Width_cur = LibWin32Common::measureStringForListView(hDC, ts_ach);
+		if (col1Width_cur > col1Width) {
+			col1Width = col1Width_cur;
+		}
 
 		// Column 0: Achievement
 		item.mask = LVIF_TEXT | LVIF_IMAGE;
@@ -507,11 +522,23 @@ void AchievementsTabPrivate::reset(void)
 		ListView_SetItem(hListView, &item);
 	}
 
-	// Auto-size the columns.
-	// TODO: Does it work with newlines when not using ownerdata?
-	for (int i = 0; i < 2; i++) {
-		ListView_SetColumnWidth(hListView, i, LVSCW_AUTOSIZE_USEHEADER);
+	// Get the icon size for the current DPI.
+	// Reference: https://docs.microsoft.com/en-us/windows/win32/hidpi/high-dpi-desktop-application-development-on-windows
+	// TODO: Handle WM_DPICHANGED.
+	// TODO: Consolidate with updateImageList().
+	const UINT dpi = rp_GetDpiForWindow(hWndPropSheet);
+	unsigned int iconSize;
+	if (dpi < 144) {
+		// [96,144) dpi: Use 32x32.
+		iconSize = 32;
+	} else {
+		// >144dpi: Use 64x64.
+		iconSize = 64;
 	}
+
+	// Auto-size the columns.
+	ListView_SetColumnWidth(hListView, 0, iconSize + 4 + col1Width);
+	ListView_SetColumnWidth(hListView, 1, LVSCW_AUTOSIZE_USEHEADER);
 
 	// Update the ListView style.
 	// This will also update the icons.

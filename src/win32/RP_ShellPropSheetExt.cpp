@@ -170,7 +170,7 @@ class RP_ShellPropSheetExt_Private
 		 * @param plvcd	[in/out] NMLVCUSTOMDRAW
 		 * @return Return value.
 		 */
-		inline int ListView_CustomDraw(NMLVCUSTOMDRAW *plvcd);
+		inline int ListView_CustomDraw(NMLVCUSTOMDRAW *plvcd) const;
 
 		// Banner and icon.
 		DragImageLabel *lblBanner;
@@ -306,16 +306,6 @@ class RP_ShellPropSheetExt_Private
 		int initBitfield(HWND hDlg, HWND hWndTab,
 			const POINT &pt_start,
 			const RomFields::Field &field, int fieldIdx);
-
-		/**
-		 * Measure the width of a ListData string.
-		 * This function handles newlines.
-		 * @param hDC           [in] HDC for text measurement.
-		 * @param tstr          [in] String to measure.
-		 * @param pNlCount      [out,opt] Newline count.
-		 * @return Width.
-		 */
-		static int measureListDataString(HDC hDC, const tstring &tstr, int *pNlCount = nullptr);
 
 		/**
 		 * Initialize a ListData field.
@@ -503,7 +493,7 @@ RP_ShellPropSheetExt_Private::RP_ShellPropSheetExt_Private(RP_ShellPropSheetExt 
 	, hFontBold(nullptr)
 	, fontHandler(nullptr)
 	, lblSysInfo(nullptr)
-	, colorAltRow(0)
+	, colorAltRow(LibWin32Common::getAltRowColor())
 	, isFullyInit(false)
 	, lblBanner(nullptr)
 	, lblIcon(nullptr)
@@ -517,10 +507,7 @@ RP_ShellPropSheetExt_Private::RP_ShellPropSheetExt_Private(RP_ShellPropSheetExt 
 	, cboLanguage(nullptr)
 	, himglFlags(nullptr)
 {
-	// Initialize the alternate row color.
-	colorAltRow = LibWin32Common::getAltRowColor();
-
-	// Initialize other structs.
+	// Initialize structs.
 	dlgSize.cx = 0;
 	dlgSize.cy = 0;
 
@@ -1198,64 +1185,6 @@ int RP_ShellPropSheetExt_Private::initBitfield(HWND hDlg, HWND hWndTab,
 }
 
 /**
- * Measure the width of a ListData string.
- * This function handles newlines.
- * @param hDC          [in] HDC for text measurement.
- * @param tstr         [in] String to measure.
- * @param pNlCount     [out,opt] Newline count.
- * @return Width.
- */
-int RP_ShellPropSheetExt_Private::measureListDataString(HDC hDC, const tstring &tstr, int *pNlCount)
-{
-	// TODO: Actual padding value?
-	static const int COL_WIDTH_PADDING = 8*2;
-
-	// Measured width.
-	int width = 0;
-
-	// Count newlines.
-	size_t prev_nl_pos = 0;
-	size_t cur_nl_pos;
-	int nl = 0;
-	while ((cur_nl_pos = tstr.find(_T('\n'), prev_nl_pos)) != tstring::npos) {
-		// Measure the width, plus padding on both sides.
-		//
-		// LVSCW_AUTOSIZE_USEHEADER doesn't work for entries with newlines.
-		// This allows us to set a good initial size, but it won't help if
-		// someone double-clicks the column splitter, triggering an automatic
-		// resize.
-		//
-		// TODO: Use ownerdraw instead? (WM_MEASUREITEM / WM_DRAWITEM)
-		// NOTE: Not using LibWin32Common::measureTextSize()
-		// because that does its own newline checks.
-		// TODO: Verify the values here.
-		SIZE textSize;
-		GetTextExtentPoint32(hDC, &tstr[prev_nl_pos], (int)(cur_nl_pos - prev_nl_pos), &textSize);
-		width = std::max<int>(width, textSize.cx + COL_WIDTH_PADDING);
-
-		nl++;
-		prev_nl_pos = cur_nl_pos + 1;
-	}
-
-	if (nl > 0) {
-		// Measure the last line.
-		// TODO: Verify the values here.
-		SIZE textSize;
-		GetTextExtentPoint32(hDC, &tstr[prev_nl_pos], (int)(tstr.size() - prev_nl_pos), &textSize);
-		width = std::max<int>(width, textSize.cx + COL_WIDTH_PADDING);
-	}
-
-	if (pNlCount) {
-		*pNlCount = nl;
-	}
-
-	// FIXME: Don't use LVSCW_AUTOSIZE_USEHEADER.
-	// LVS_OWNERDATA doesn't handle this properly. (only gets what's onscreen)
-	// TODO: Figure out the correct padding so the columns aren't truncated.
-	return (nl > 0 ? width : LVSCW_AUTOSIZE_USEHEADER);
-}
-
-/**
  * Initialize a ListData field.
  * @param hDlg		[in] Parent dialog window. (for dialog unit mapping)
  * @param hWndTab	[in] Tab window. (for the actual control)
@@ -1487,7 +1416,7 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 				tstring tstr = U82T_s(*iter);
 
 				int nl_count;
-				int width = measureListDataString(hDC, tstr, &nl_count);
+				int width = LibWin32Common::measureStringForListView(hDC, tstr, &nl_count);
 				if (col < colCount) {
 					col_width[col] = std::max(col_width[col], width);
 				}
@@ -1532,9 +1461,10 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 		if (himl) {
 			// NOTE: ListView uses LVSIL_SMALL for LVS_REPORT.
 			ListView_SetImageList(hListView, himl, LVSIL_SMALL);
-			uint32_t lvBgColor[2];
-			lvBgColor[0] = LibWin32Common::GetSysColor_ARGB32(COLOR_WINDOW);
-			lvBgColor[1] = LibWin32Common::getAltRowColor_ARGB32();
+			const uint32_t lvBgColor[2] = {
+				LibWin32Common::GetSysColor_ARGB32(COLOR_WINDOW),
+				LibWin32Common::getAltRowColor_ARGB32()
+			};
 
 			// Add icons.
 			uint8_t rowColorIdx = 0;
@@ -2153,7 +2083,7 @@ void RP_ShellPropSheetExt_Private::updateMulti(uint32_t user_lc)
 				     ++iter_sdr, ++iter_ddr, col++)
 				{
 					tstring tstr = U82T_s(*iter_sdr);
-					int width = measureListDataString(hDC, tstr);
+					int width = LibWin32Common::measureStringForListView(hDC, tstr);
 					if (col < colCount) {
 						col_width[col] = std::max(col_width[col], width);
 					}
@@ -3714,7 +3644,7 @@ inline BOOL RP_ShellPropSheetExtPrivate::ListView_GetDispInfo(NMLVDISPINFO *plvd
  * @param plvcd	[in/out] NMLVCUSTOMDRAW
  * @return Return value.
  */
-inline int RP_ShellPropSheetExt_Private::ListView_CustomDraw(NMLVCUSTOMDRAW *plvcd)
+inline int RP_ShellPropSheetExt_Private::ListView_CustomDraw(NMLVCUSTOMDRAW *plvcd) const
 {
 	int result = CDRF_DODEFAULT;
 	switch (plvcd->nmcd.dwDrawStage) {

@@ -239,6 +239,66 @@ bool isComCtl32_v610(void)
 	return ret;
 }
 
+/**
+ * Measure the width of a string for ListView.
+ * This function handles newlines.
+ * @param hDC          [in] HDC for text measurement.
+ * @param tstr         [in] String to measure.
+ * @param pNlCount     [out,opt] Newline count.
+ * @return Width. (May return LVSCW_AUTOSIZE_USEHEADER if it's a single line.)
+ */
+int measureStringForListView(HDC hDC, const tstring &tstr, int *pNlCount)
+{
+	// TODO: Actual padding value?
+	static const int COL_WIDTH_PADDING = 8*2;
+
+	// Measured width.
+	int width = 0;
+
+	// Count newlines.
+	size_t prev_nl_pos = 0;
+	size_t cur_nl_pos;
+	int nl = 0;
+	while ((cur_nl_pos = tstr.find(_T('\n'), prev_nl_pos)) != tstring::npos) {
+		// Measure the width, plus padding on both sides.
+		//
+		// LVSCW_AUTOSIZE_USEHEADER doesn't work for entries with newlines.
+		// This allows us to set a good initial size, but it won't help if
+		// someone double-clicks the column splitter, triggering an automatic
+		// resize.
+		//
+		// TODO: Use ownerdraw instead? (WM_MEASUREITEM / WM_DRAWITEM)
+		// NOTE: Not using LibWin32Common::measureTextSize()
+		// because that does its own newline checks.
+		// TODO: Verify the values here.
+		SIZE textSize;
+		GetTextExtentPoint32(hDC, &tstr[prev_nl_pos], (int)(cur_nl_pos - prev_nl_pos), &textSize);
+		width = std::max<int>(width, textSize.cx + COL_WIDTH_PADDING);
+
+		nl++;
+		prev_nl_pos = cur_nl_pos + 1;
+	}
+
+	if (nl > 0) {
+		// Measure the last line.
+		// TODO: Verify the values here.
+		SIZE textSize;
+		GetTextExtentPoint32(hDC, &tstr[prev_nl_pos], (int)(tstr.size() - prev_nl_pos), &textSize);
+		width = std::max<int>(width, textSize.cx + COL_WIDTH_PADDING);
+	}
+
+	if (pNlCount) {
+		*pNlCount = nl;
+	}
+
+	// FIXME: Don't use LVSCW_AUTOSIZE_USEHEADER.
+	// LVS_OWNERDATA doesn't handle this properly. (only gets what's onscreen)
+	// TODO: Figure out the correct padding so the columns aren't truncated.
+	return (nl > 0 ? width : LVSCW_AUTOSIZE_USEHEADER);
+}
+
+/** File dialogs **/
+
 #ifdef UNICODE
 /**
  * Get a filename using IFileDialog.

@@ -121,6 +121,18 @@ static inline uint32_t GetSysColor_ARGB32(int nIndex)
 bool isComCtl32_v610(void);
 
 /**
+ * Measure the width of a string for ListView.
+ * This function handles newlines.
+ * @param hDC          [in] HDC for text measurement.
+ * @param tstr         [in] String to measure.
+ * @param pNlCount     [out,opt] Newline count.
+ * @return Width. (May return LVSCW_AUTOSIZE_USEHEADER if it's a single line.)
+ */
+int measureStringForListView(HDC hDC, const std::tstring &tstr, int *pNlCount = nullptr);
+
+/** File dialogs **/
+
+/**
  * Get a filename using the Open File Name dialog.
  *
  * Depending on OS, this may use:
