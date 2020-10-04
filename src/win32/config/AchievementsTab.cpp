@@ -144,7 +144,7 @@ INT_PTR CALLBACK AchievementsTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wP
 			}
 
 			NMHDR *const pHdr = reinterpret_cast<NMHDR*>(lParam);
-			if (pHdr->idFrom == IDC_ACHIEVEMENTS_LIST) {
+			if (pHdr->code == NM_CUSTOMDRAW && pHdr->idFrom == IDC_ACHIEVEMENTS_LIST) {
 				// NOTE: Since this is a DlgProc, we can't simply return
 				// the CDRF code. It has to be set as DWLP_MSGRESULT.
 				// References:
@@ -378,7 +378,6 @@ int AchievementsTabPrivate::ListView_CustomDraw(NMLVCUSTOMDRAW *plvcd) const
 	switch (plvcd->nmcd.dwDrawStage) {
 		case CDDS_PREPAINT:
 			// Request notifications for individual ListView items.
-			// FIXME: For some reason, enabling this breaks selecting the second item.
 			result = CDRF_NOTIFYITEMDRAW;
 			break;
 
