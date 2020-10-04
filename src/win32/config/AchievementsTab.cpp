@@ -57,6 +57,9 @@ class AchievementsTabPrivate
 		HPROPSHEETPAGE hPropSheetPage;
 		HWND hWndPropSheet;
 
+		// Alternate row color.
+		COLORREF colorAltRow;
+
 		// Image list for achievement icons.
 		HIMAGELIST himglAch;
 
@@ -65,6 +68,18 @@ class AchievementsTabPrivate
 		 * Update the ListView style.
 		 */
 		void updateListViewStyle(void);
+
+		/**
+		 * Update the ListView ImageList.
+		 */
+		void updateImageList(void);
+
+		/**
+		 * ListView CustomDraw function.
+		 * @param plvcd	[in/out] NMLVCUSTOMDRAW
+		 * @return Return value.
+		 */
+		int ListView_CustomDraw(NMLVCUSTOMDRAW *plvcd) const;
 
 		/**
 		 * Reset the configuration.
@@ -77,6 +92,7 @@ class AchievementsTabPrivate
 AchievementsTabPrivate::AchievementsTabPrivate()
 	: hPropSheetPage(nullptr)
 	, hWndPropSheet(nullptr)
+	, colorAltRow(0)
 	, himglAch(nullptr)
 { }
 
@@ -118,6 +134,28 @@ INT_PTR CALLBACK AchievementsTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wP
 			// Reset the configuration.
 			d->reset();
 			return TRUE;
+		}
+
+		case WM_NOTIFY: {
+			auto *const d = reinterpret_cast<AchievementsTabPrivate*>(GetWindowLongPtr(hDlg, GWLP_USERDATA));
+			if (!d) {
+				// No AchievementsTabPrivate. Can't do anything...
+				return false;
+			}
+
+			NMHDR *const pHdr = reinterpret_cast<NMHDR*>(lParam);
+			if (pHdr->idFrom == IDC_ACHIEVEMENTS_LIST) {
+				// NOTE: Since this is a DlgProc, we can't simply return
+				// the CDRF code. It has to be set as DWLP_MSGRESULT.
+				// References:
+				// - https://stackoverflow.com/questions/40549962/c-winapi-listview-nm-customdraw-not-getting-cdds-itemprepaint
+				// - https://stackoverflow.com/a/40552426
+				const int result = d->ListView_CustomDraw(reinterpret_cast<NMLVCUSTOMDRAW*>(pHdr));
+				SetWindowLongPtr(hDlg, DWLP_MSGRESULT, result);
+				return TRUE;
+			}
+
+			break;
 		}
 
 		case WM_SYSCOLORCHANGE:
@@ -182,28 +220,32 @@ void AchievementsTabPrivate::updateListViewStyle(void)
 		? LVS_EX_FULLROWSELECT | LVS_EX_DOUBLEBUFFER
 		: LVS_EX_DOUBLEBUFFER;
 	ListView_SetExtendedListViewStyle(hListView, lvsExStyle);
+
+	// If the alt row color changed, redo the ImageList.
+	COLORREF colorAltRow = LibWin32Common::getAltRowColor();
+	if (colorAltRow != this->colorAltRow) {
+		this->colorAltRow = colorAltRow;
+		updateImageList();
+	}
 }
 
 /**
- * Reset the configuration.
+ * Update the ListView ImageList.
  */
-void AchievementsTabPrivate::reset(void)
+void AchievementsTabPrivate::updateImageList(void)
 {
-	// Load achievements.
+	// Remove the current ImageList from the ListView.
 	HWND hListView = GetDlgItem(hWndPropSheet, IDC_ACHIEVEMENTS_LIST);
 	assert(hListView != nullptr);
 	if (!hListView)
 		return;
+	ListView_SetImageList(hListView, nullptr, LVSIL_SMALL);
 
-	// Clear the ListView.
-	ListView_DeleteAllItems(hListView);
-	if (himglAch) {
-		ListView_SetImageList(hListView, nullptr, LVSIL_SMALL);
+	if (!himglAch) {
+		// Delete the existing ImageList.
 		ImageList_Destroy(himglAch);
+		himglAch = nullptr;
 	}
-
-	// Update the ListView style.
-	updateListViewStyle();
 
 	// Get the icon size for the current DPI.
 	// Reference: https://docs.microsoft.com/en-us/windows/win32/hidpi/high-dpi-desktop-application-development-on-windows
@@ -227,40 +269,154 @@ void AchievementsTabPrivate::reset(void)
 	rp_image *imgAchSheet = nullptr;
 	rp_image *imgAchGraySheet = nullptr;
 	RpFile_windres *f_res = new RpFile_windres(HINST_THISCOMPONENT, MAKEINTRESOURCE(resID), MAKEINTRESOURCE(RT_PNG));
-	if (f_res->isOpen()) {
-		imgAchSheet = RpPng::loadUnchecked(f_res);
-		assert(imgAchSheet != nullptr);
-		if (imgAchSheet) {
-			assert(imgAchSheet->width() == (int)(iconSize * Achievements::ACH_SPRITE_SHEET_COLS));
-			assert(imgAchSheet->height() == (int)(iconSize * Achievements::ACH_SPRITE_SHEET_ROWS));
-			if (imgAchSheet->width() != (int)(iconSize * Achievements::ACH_SPRITE_SHEET_COLS) ||
-			    imgAchSheet->height() != (int)(iconSize * Achievements::ACH_SPRITE_SHEET_ROWS))
-			{
-				UNREF_AND_NULL_NOCHK(imgAchSheet);
-			}
-		}
+	assert(f_res != nullptr);
+	if (!f_res->isOpen()) {
+		f_res->unref();
+		return;
 	}
-	f_res->unref();
-	f_res = new RpFile_windres(HINST_THISCOMPONENT, MAKEINTRESOURCE(resID_gray), MAKEINTRESOURCE(RT_PNG));
-	if (f_res->isOpen()) {
-		imgAchGraySheet = RpPng::loadUnchecked(f_res);
-		if (imgAchGraySheet) {
-			assert(imgAchGraySheet->width() == (int)(iconSize * Achievements::ACH_SPRITE_SHEET_COLS));
-			assert(imgAchGraySheet->height() == (int)(iconSize * Achievements::ACH_SPRITE_SHEET_ROWS));
-			if (imgAchGraySheet->width() != (int)(iconSize * Achievements::ACH_SPRITE_SHEET_COLS) ||
-			    imgAchGraySheet->height() != (int)(iconSize * Achievements::ACH_SPRITE_SHEET_ROWS))
-			{
-				UNREF_AND_NULL_NOCHK(imgAchGraySheet);
-			}
-		}
-	}
-	f_res->unref();
 
-	if (imgAchSheet && imgAchGraySheet) {
-		// Create the image list.
-		himglAch = ImageList_Create(iconSize, iconSize, ILC_COLOR32,
-			(int)Achievements::ID::Max, (int)Achievements::ID::Max);
-		assert(himglAch != nullptr);
+	imgAchSheet = RpPng::loadUnchecked(f_res);
+	f_res->unref();
+	assert(imgAchSheet != nullptr);
+	if (!imgAchSheet)
+		return;
+	assert(imgAchSheet->width() == (int)(iconSize * Achievements::ACH_SPRITE_SHEET_COLS));
+	assert(imgAchSheet->height() == (int)(iconSize * Achievements::ACH_SPRITE_SHEET_ROWS));
+	if (imgAchSheet->width() != (int)(iconSize * Achievements::ACH_SPRITE_SHEET_COLS) ||
+	    imgAchSheet->height() != (int)(iconSize * Achievements::ACH_SPRITE_SHEET_ROWS))
+	{
+		imgAchSheet->unref();
+		return;
+	}
+
+	f_res = new RpFile_windres(HINST_THISCOMPONENT, MAKEINTRESOURCE(resID_gray), MAKEINTRESOURCE(RT_PNG));
+	assert(f_res != nullptr);
+	if (!f_res->isOpen()) {
+		f_res->unref();
+		imgAchSheet->unref();
+		return;
+	}
+
+	imgAchGraySheet = RpPng::loadUnchecked(f_res);
+	f_res->unref();
+	assert(imgAchGraySheet != nullptr);
+	if (!imgAchGraySheet) {
+		imgAchSheet->unref();
+		return;
+	}
+	assert(imgAchGraySheet->width() == (int)(iconSize * Achievements::ACH_SPRITE_SHEET_COLS));
+	assert(imgAchGraySheet->height() == (int)(iconSize * Achievements::ACH_SPRITE_SHEET_ROWS));
+	if (imgAchGraySheet->width() != (int)(iconSize * Achievements::ACH_SPRITE_SHEET_COLS) ||
+	    imgAchGraySheet->height() != (int)(iconSize * Achievements::ACH_SPRITE_SHEET_ROWS))
+	{
+		imgAchSheet->unref();
+		imgAchGraySheet->unref();
+		return;
+	}
+
+	// Create the image list.
+	himglAch = ImageList_Create(iconSize, iconSize, ILC_COLOR32,
+		(int)Achievements::ID::Max, (int)Achievements::ID::Max);
+	assert(himglAch != nullptr);
+
+	// Add icons.
+	const Achievements *const pAch = Achievements::instance();
+	for (int i = 0; i < (int)Achievements::ID::Max; i++) {
+		const Achievements::ID id = (Achievements::ID)i;
+		const time_t timestamp = pAch->isUnlocked(id);
+		const bool unlocked = (timestamp != -1);
+
+		const int col = i % Achievements::ACH_SPRITE_SHEET_COLS;
+		const int row = i / Achievements::ACH_SPRITE_SHEET_COLS;
+
+		// Extract the sub-icon.
+		HBITMAP hbmIcon = RpImageWin32::getSubBitmap(
+			unlocked ? imgAchSheet : imgAchGraySheet,
+			col*iconSize, row*iconSize, iconSize, iconSize, dpi);
+		assert(hbmIcon != nullptr);
+
+		// FIXME: Handle highlighting of alpha-transparent areas correctly.
+		bool bIconWasAdded = false;
+		if (hbmIcon) {
+			HICON hIcon = RpImageWin32::toHICON(hbmIcon);
+			assert(hIcon != nullptr);
+			if (hIcon) {
+				ImageList_AddIcon(himglAch, hIcon);
+				DestroyIcon(hIcon);
+				bIconWasAdded = true;
+			}
+			DeleteBitmap(hbmIcon);
+		}
+		if (!bIconWasAdded) {
+			// Add an empty icon.
+			const size_t icon_byte_count = iconSize * iconSize * sizeof(uint32_t);
+			unique_ptr<uint8_t[]> iconData(new uint8_t[icon_byte_count * 2]);
+			memset(&iconData[0], 0xFF, icon_byte_count);
+			memset(&iconData[icon_byte_count], 0xFF, icon_byte_count);
+			HICON hIcon = CreateIcon(HINST_THISCOMPONENT, iconSize, iconSize, 1, 1,
+				&iconData[0], &iconData[icon_byte_count]);
+			assert(hIcon != nullptr);
+			ImageList_AddIcon(himglAch, hIcon);
+			DestroyIcon(hIcon);
+		}
+	}
+
+	// NOTE: ListView uses LVSIL_SMALL for LVS_REPORT.
+	// TODO: The row highlight doesn't surround the empty area
+	// of the icon. LVS_OWNERDRAW is probably needed for that.
+	ListView_SetImageList(hListView, himglAch, LVSIL_SMALL);
+}
+
+/**
+ * ListView CustomDraw function.
+ * @param plvcd	[in/out] NMLVCUSTOMDRAW
+ * @return Return value.
+ */
+int AchievementsTabPrivate::ListView_CustomDraw(NMLVCUSTOMDRAW *plvcd) const
+{
+	int result = CDRF_DODEFAULT;
+	switch (plvcd->nmcd.dwDrawStage) {
+		case CDDS_PREPAINT:
+			// Request notifications for individual ListView items.
+			// FIXME: For some reason, enabling this breaks selecting the second item.
+			result = CDRF_NOTIFYITEMDRAW;
+			break;
+
+		case CDDS_ITEMPREPAINT: {
+			// Set the background color for alternating row colors.
+			if (plvcd->nmcd.dwItemSpec % 2) {
+				// NOTE: plvcd->clrTextBk is set to 0xFF000000 here,
+				// not the actual default background color.
+				// FIXME: On Windows 7:
+				// - Standard row colors are 19px high.
+				// - Alternate row colors are 17px high. (top and bottom lines ignored?)
+				plvcd->clrTextBk = colorAltRow;
+				result = CDRF_NEWFONT;
+			}
+			break;
+		}
+
+		default:
+			break;
+	}
+	return result;
+}
+
+/**
+ * Reset the configuration.
+ */
+void AchievementsTabPrivate::reset(void)
+{
+	// Load achievements.
+	HWND hListView = GetDlgItem(hWndPropSheet, IDC_ACHIEVEMENTS_LIST);
+	assert(hListView != nullptr);
+	if (!hListView)
+		return;
+
+	// Clear the ListView.
+	ListView_DeleteAllItems(hListView);
+	if (himglAch) {
+		ListView_SetImageList(hListView, nullptr, LVSIL_SMALL);
 	}
 
 	// Check if we need to set up columns.
@@ -292,47 +448,12 @@ void AchievementsTabPrivate::reset(void)
 
 	// Add the achievements.
 	// TODO: Copy over CustomDraw from RP_ShellPropSheetExt for newline handling?
-	// TODO: Icon/imagelist.
 	LVITEM item;
 	const Achievements *const pAch = Achievements::instance();
 	for (int i = 0; i < (int)Achievements::ID::Max; i++) {
 		const Achievements::ID id = (Achievements::ID)i;
 		const time_t timestamp = pAch->isUnlocked(id);
 		const bool unlocked = (timestamp != -1);
-
-		// Icon
-		const int col = i % Achievements::ACH_SPRITE_SHEET_COLS;
-		const int row = i / Achievements::ACH_SPRITE_SHEET_COLS;
-
-		// Extract the sub-icon.
-		HBITMAP hbmIcon = RpImageWin32::getSubBitmap(
-			unlocked ? imgAchSheet : imgAchGraySheet,
-			col*iconSize, row*iconSize, iconSize, iconSize, dpi);
-		assert(hbmIcon != nullptr);
-
-		bool bIconWasAdded = false;
-		if (hbmIcon) {
-			HICON hIcon = RpImageWin32::toHICON(hbmIcon);
-			assert(hIcon != nullptr);
-			if (hIcon) {
-				ImageList_AddIcon(himglAch, hIcon);
-				DestroyIcon(hIcon);
-				bIconWasAdded = true;
-			}
-			DeleteBitmap(hbmIcon);
-		}
-		if (!bIconWasAdded) {
-			// Add an empty icon.
-			const size_t icon_byte_count = iconSize * iconSize * sizeof(uint32_t);
-			unique_ptr<uint8_t[]> iconData(new uint8_t[icon_byte_count * 2]);
-			memset(&iconData[0], 0xFF, icon_byte_count);
-			memset(&iconData[icon_byte_count], 0xFF, icon_byte_count);
-			HICON hIcon = CreateIcon(HINST_THISCOMPONENT, iconSize, iconSize, 1, 1,
-				&iconData[0], &iconData[icon_byte_count]);
-			assert(hIcon != nullptr);
-			ImageList_AddIcon(himglAch, hIcon);
-			DestroyIcon(hIcon);
-		}
 
 		// Get the name and description.
 		tstring ts_ach = U82T_c(pAch->getName(id));
@@ -387,18 +508,15 @@ void AchievementsTabPrivate::reset(void)
 		ListView_SetItem(hListView, &item);
 	}
 
-	// NOTE: ListView uses LVSIL_SMALL for LVS_REPORT.
-	// TODO: The row highlight doesn't surround the empty area
-	// of the icon. LVS_OWNERDRAW is probably needed for that.
-	ListView_SetImageList(hListView, himglAch, LVSIL_SMALL);
-	UNREF(imgAchSheet);
-	UNREF(imgAchGraySheet);
-
 	// Auto-size the columns.
 	// TODO: Does it work with newlines when not using ownerdata?
 	for (int i = 0; i < 2; i++) {
 		ListView_SetColumnWidth(hListView, i, LVSCW_AUTOSIZE_USEHEADER);
 	}
+
+	// Update the ListView style.
+	// This will also update the icons.
+	updateListViewStyle();
 }
 
 /** AchievementsTab **/
