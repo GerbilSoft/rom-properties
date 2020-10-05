@@ -284,7 +284,7 @@ const char *const AmiiboDataPrivate::char_series_names[] = {
 	nullptr,				// 0x358
 	"Shovel Knight",			// 0x35C
 	"Final Fantasy",			// 0x360
-	nullptr,				// 0x364
+	"Dragon Quest",				// 0x364
 	nullptr,				// 0x368
 	nullptr,				// 0x36C
 	nullptr,				// 0x370
@@ -295,6 +295,11 @@ const char *const AmiiboDataPrivate::char_series_names[] = {
 	nullptr,				// 0x384
 	nullptr,				// 0x388
 	"Diablo",				// 0x38C
+	nullptr,				// 0x390
+	nullptr,				// 0x394
+	nullptr,				// 0x398
+	nullptr,				// 0x39C
+	"Persona",				// 0x3A0
 };
 
 // Character variants.
@@ -1181,6 +1186,9 @@ const AmiiboDataPrivate::char_id_t AmiiboDataPrivate::char_ids[] = {
 
 	// Final Fantasy (character series = 0x360)
 	AMIIBO_CHAR_ID_VAR(0x3600, "Cloud", ff_cloud_variants),
+
+	// Dragon Quest (character series = 0x364)
+	AMIIBO_CHAR_ID_ONE(0x3640, "Hero"),
 
 	// Cereal (character series = 0x374)
 	AMIIBO_CHAR_ID_VAR(0x3740, "Super Mario Cereal", cereal_smb_variants),
@@ -2267,6 +2275,16 @@ const AmiiboDataPrivate::amiibo_id_t AmiiboDataPrivate::amiibo_ids[] = {
 
 	// The Legend of Zelda: Link's Awakening Series [0x0399]
 	{  0, 0, "Link"},			// 0x0399
+
+	// Unused [0x039A-0x3A0]
+	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x039A,0x039B
+	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x039C,0x039D
+	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x039E,0x039F
+	{  0, 0, nullptr},			// 0x03A0
+
+	// SSBU: Wave 13 [0x03A1-0x03A2]
+	{ 83, 13, "Joker"},			// 0x03A1
+	{ 84, 13, "Hero"},			// 0x03A2
 };
 
 /** AmiiboData **/
@@ -2278,7 +2296,7 @@ const AmiiboDataPrivate::amiibo_id_t AmiiboDataPrivate::amiibo_ids[] = {
  */
 const char *AmiiboData::lookup_char_series_name(uint32_t char_id)
 {
-	static_assert(ARRAY_SIZE(AmiiboDataPrivate::char_series_names) == (0x38C/4)+1,
+	static_assert(ARRAY_SIZE(AmiiboDataPrivate::char_series_names) == (0x3A0/4)+1,
 		"char_series_names[] is out of sync with the amiibo ID list.");
 
 	const unsigned int series_id = (char_id >> 22) & 0x3FF;
@@ -2348,7 +2366,7 @@ const char *AmiiboData::lookup_amiibo_series_name(uint32_t amiibo_id)
 	// NOTE: gcc-6.3.0 is trying to interpret 0x035E+1 as a
 	// floating-point hex constant:
 	// error: unable to find numeric literal operator ‘operator""+1’
-	static_assert(ARRAY_SIZE(AmiiboDataPrivate::amiibo_ids) == ((0x0399)+1),
+	static_assert(ARRAY_SIZE(AmiiboDataPrivate::amiibo_ids) == ((0x03A2)+1),
 		"amiibo_ids[] is out of sync with the amiibo ID list.");
 
 	const unsigned int series_id = (amiibo_id >> 8) & 0xFF;
