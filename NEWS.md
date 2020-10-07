@@ -30,6 +30,11 @@
   * GameCube: Register the ".gcz" and ".rvz" file extensions on Windows.
     * Fixes #262, reported by @Amnesia1000.
 
+* Other changes:
+  * Xbox360_XEX: Removed the "Savegame ID" field. This seems to be 0 in all
+    tested games.
+    * Fixes #272, reported by @Masamune3210.
+
 ## v1.7.1 (released 2020/09/21)
 
 * Bug fixes:

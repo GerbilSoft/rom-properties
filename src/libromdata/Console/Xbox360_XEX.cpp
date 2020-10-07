@@ -1899,11 +1899,6 @@ int Xbox360_XEX::loadFieldData(void)
 			d->fields->addField_string(C_("RomData", "Publisher"), publisher);
 		}
 
-		// Savegame ID
-		d->fields->addField_string_numeric(C_("Xbox360_XEX", "Savegame ID"),
-			d->executionID.savegame_id,
-			RomFields::Base::Hex, 8, RomFields::STRF_MONOSPACE);
-
 		// Disc number
 		// NOTE: Not shown for single-disc games.
 		const char *const disc_number_title = C_("RomData", "Disc #");
