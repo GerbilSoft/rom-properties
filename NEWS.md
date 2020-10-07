@@ -14,6 +14,7 @@
   * GameCube: Detect incrementing values partitions in encrypted images.
     * Fixes #269, reported by @Masamune3210.
   * KDE: Ensure the "Thumb::URI" value is urlencoded.
+  * Fixed a potential crash when loading an invalid PNG image.
 
 ## v1.7.3 (released 2020/09/25)
 
