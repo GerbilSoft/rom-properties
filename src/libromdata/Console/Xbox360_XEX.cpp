@@ -1633,9 +1633,9 @@ int Xbox360_XEX::loadFieldData(void)
 	// NOTE: The magic number is NOT byteswapped in the constructor.
 	const XEX2_Header *const xex2Header = &d->xex2Header;
 
-	// Maximum of 15 fields, not including RomData subclasses.
+	// Maximum of 14 fields, not including RomData subclasses.
 	const char *const s_xexType = (d->xexType != Xbox360_XEX_Private::XexType::XEX1 ? "XEX2" : "XEX1");
-	d->fields->reserve(15);
+	d->fields->reserve(14);
 	d->fields->setTabName(0, s_xexType);
 
 	// Is the encryption key available?
