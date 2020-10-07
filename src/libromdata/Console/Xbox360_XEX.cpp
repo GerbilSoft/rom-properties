@@ -2032,20 +2032,14 @@ int Xbox360_XEX::loadMetaData(void)
 	d->metaData = new RomMetaData();
 	d->metaData->reserve(2);	// Maximum of 2 metadata properties.
 
-	// TODO: Have the RomMetaData object simply ignore empty strings?
-	// (If so, check all RomData subclasses and remove these checks.)
+	// NOTE: RomMetaData ignores empty strings, so we don't need to
+	// check for them here.
 
 	// Title
-	string title = xdbf->getString(Property::Title);
-	if (!title.empty()) {
-		d->metaData->addMetaData_string(Property::Title, title);
-	}
+	d->metaData->addMetaData_string(Property::Title, xdbf->getString(Property::Title));
 
 	// Publisher
-	const string publisher = d->getPublisher();
-	if (!publisher.empty()) {
-		d->metaData->addMetaData_string(Property::Publisher, publisher);
-	}
+	d->metaData->addMetaData_string(Property::Publisher, d->getPublisher());
 
 	// Finished reading the metadata.
 	return static_cast<int>(d->metaData->count());

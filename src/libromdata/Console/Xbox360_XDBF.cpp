@@ -1484,6 +1484,39 @@ int Xbox360_XDBF::loadFieldData(void)
 }
 
 /**
+ * Load metadata properties.
+ * Called by RomData::metaData() if the field data hasn't been loaded yet.
+ * @return Number of metadata properties read on success; negative POSIX error code on error.
+ */
+int Xbox360_XDBF::loadMetaData(void)
+{
+	RP_D(Xbox360_XDBF);
+	if (d->metaData != nullptr) {
+		// Metadata *has* been loaded...
+		return 0;
+	} else if (!d->file) {
+		// File isn't open.
+		return -EBADF;
+	} else if (!d->isValid) {
+		// XDBF file isn't valid.
+		return -EIO;
+	}
+
+	// Create the metadata object.
+	d->metaData = new RomMetaData();
+	d->metaData->reserve(1);	// Maximum of 1 metadata property.
+
+	// NOTE: RomMetaData ignores empty strings, so we don't need to
+	// check for them here.
+
+	// Title
+	d->metaData->addMetaData_string(Property::Title, getString(Property::Title));
+
+	// Finished reading the metadata.
+	return static_cast<int>(d->metaData->count());
+}
+
+/**
  * Load an internal image.
  * Called by RomData::image().
  * @param imageType	[in] Image type to load.

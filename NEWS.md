@@ -9,6 +9,7 @@
 
 * New parser features:
   * NGPC: Added external title screens using RPDB.
+  * Xbox360_XDBF: Added metadata extraction.
 
 * Bug fixes:
   * GameCube: Detect incrementing values partitions in encrypted images.
