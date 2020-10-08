@@ -26,9 +26,9 @@ extern "C" {
  * References:
  * - https://github.com/xenia-project/xenia/blob/HEAD/src/xenia/kernel/util/xdbf_utils.h
  * - https://github.com/xenia-project/xenia/blob/HEAD/src/xenia/kernel/util/xdbf_utils.cc
- * - https://free60project.github.io/wiki/XDBF.html
- * - https://free60project.github.io/wiki/GPD.html
- * - https://free60project.github.io/wiki/SPA.html
+ * - https://github.com/Free60Project/wiki/blob/master/docs/XDBF.md
+ * - https://github.com/Free60Project/wiki/blob/master/docs/GPD.md
+ * - https://github.com/Free60Project/wiki/blob/master/docs/SPA.md
  *
  * All fields are in big-endian.
  */
@@ -83,7 +83,20 @@ typedef enum {
 	XDBF_SPA_NAMESPACE_METADATA		= 1,	// Metadata
 	XDBF_SPA_NAMESPACE_IMAGE		= 2,	// Image (usually PNG format)
 	XDBF_SPA_NAMESPACE_STRING_TABLE		= 3,	// String table (ID == XDBF_Language_e)
+
+	/** GPD **/
+	XDBF_GPD_NAMESPACE_ACHIEVEMENT		= 1,	// Achievement
+	XDBF_GPD_NAMESPACE_IMAGE		= 2,	// Image (same as SPA)
+	XDBF_GPD_NAMESPACE_SETTING		= 3,
+	XDBF_GPD_NAMESPACE_TITLE		= 4,
+	XDBF_GPD_NAMESPACE_STRING		= 5,
+	XDBF_GPD_NAMESPACE_ACHIEVEMENT_SECURITY_GFWL	= 6,
+	XDBF_GPD_NAMESPACE_AVATAR_AWARD_360	= 6,
 } XDBF_Namespace_e;
+
+// Special entry IDs for Sync List and Sync Data. (GPD)
+#define XDBF_GPD_SYNC_LIST_ENTRY	0x0000000100000000U
+#define XDBF_GPD_SYNC_DATA_ENTRY	0x0000000200000000U
 
 /**
  * XSTC: Default language block.
@@ -189,10 +202,10 @@ ASSERT_STRUCT(XDBF_XACH_Header, 14);
 #pragma pack()
 
 /**
- * XDBF: XACH - Achievements table entry
+ * XDBF: XACH - Achievements table entry (SPA)
  * All fields are in big-endian.
  */
-typedef struct _XDBF_XACH_Entry {
+typedef struct _XDBF_XACH_Entry_SPA {
 	uint16_t achievement_id;	// [0x000] Achievement ID
 	uint16_t name_id;		// [0x002] Name ID (string table)
 	uint16_t unlocked_desc_id;	// [0x004] Unlocked description ID (string table)
@@ -200,10 +213,53 @@ typedef struct _XDBF_XACH_Entry {
 	uint32_t image_id;		// [0x008] Image ID
 	uint16_t gamerscore;		// [0x00C] Gamerscore
 	uint16_t unknown1;		// [0x00E]
-	uint32_t flags;			// [0x010] Flags (??)
+	uint32_t flags;			// [0x010] Flags (See XDBF_XACH_Flags_e)
 	uint32_t unknown2[4];		// [0x014]
-} XDBF_XACH_Entry;
-ASSERT_STRUCT(XDBF_XACH_Entry, 0x24);
+} XDBF_XACH_Entry_SPA;
+ASSERT_STRUCT(XDBF_XACH_Entry_SPA, 0x24);
+
+/**
+ * XDBF: XACH - Achievements table entry header (GPD)
+ * All fields are in big-endian.
+ */
+#pragma pack(1)
+typedef struct PACKED _XDBF_XACH_Entry_Header_GPD {
+	uint32_t size;			// [0x000] Struct size (0x1C)
+	uint32_t achievement_id;	// [0x004] Achievement ID
+	uint32_t image_id;		// [0x008] Image ID
+	uint32_t gamerscore;		// [0x00C] Gamerscore
+	uint32_t flags;			// [0x010] Flags (See XDBF_XACH_Flags_e)
+	uint64_t unlock_time;		// [0x014] Unlock time
+
+	// Following the struct are three UTF-16BE NULL-terminated strings,
+	// in the following order:
+	// - Name
+	// - Unlocked description
+	// - Locked description
+} XDBF_XACH_Entry_Header_GPD;
+ASSERT_STRUCT(XDBF_XACH_Entry_Header_GPD, 0x1C);
+#pragma pack()
+
+/**
+ * XDBF: XACH - Achievements flags.
+ */
+typedef enum {
+	// Achievement type
+	XDBF_XACH_TYPE_COMPLETION	= 1U,
+	XDBF_XACH_TYPE_LEVELING		= 2U,
+	XDBF_XACH_TYPE_UNLOCK		= 3U,
+	XDBF_XACH_TYPE_EVENT		= 4U,
+	XDBF_XACH_TYPE_TOURNAMENT	= 5U,
+	XDBF_XACH_TYPE_CHECKPOINT	= 6U,
+	XDBF_XACH_TYPE_OTHER		= 7U,
+	XDBF_XACH_TYPE_MASK		= 7U,
+
+	// Status
+	XDBF_XACH_STATUS_UNACHIEVED	= (1U << 4),	// Set if *not* achieved.
+	XDBF_XACH_STATUS_EARNED_ONLINE	= (1U << 16),
+	XDBF_XACH_STATUS_EARNED		= (1U << 17),
+	XDBF_XACH_STATUS_EDITED		= (1U << 20),	// ??
+} XDBF_XACH_Flags_e;
 
 /**
  * XDBF: XTHD - contains title information
