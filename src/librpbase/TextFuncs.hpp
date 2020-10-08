@@ -140,12 +140,12 @@ int u16_strcasecmp(const char16_t *wcs1, const char16_t *wcs2);
 #ifdef RP_WIS16
 static inline const char16_t *u16_memchr(const char16_t *wcs, char16_t c, size_t n)
 {
-	return reinterpret_cast<const wchar_t*>(
+	return reinterpret_cast<const char16_t*>(
 		wmemchr(reinterpret_cast<const wchar_t*>(wcs), c, n));
 }
 static inline char16_t *u16_memchr(char16_t *wcs, char16_t c, size_t n)
 {
-	return reinterpret_cast<wchar_t*>(
+	return reinterpret_cast<char16_t*>(
 		wmemchr(reinterpret_cast<wchar_t*>(wcs), c, n));
 }
 #else /* !RP_WIS16 */
