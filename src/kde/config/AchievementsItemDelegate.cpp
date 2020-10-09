@@ -16,7 +16,8 @@
 #include <QtGui/QFontMetrics>
 #include <QStyle>
 
-// C++ STL 
+// C++ STL includes.
+using std::vector;
 
 #ifdef _WIN32
 #  include <windows.h>
@@ -241,7 +242,7 @@ void AchievementsItemDelegate::paint(QPainter *painter,
 	int textHeight = 0;
 
 	// Text boundaries.
-	QVector<QRect> v_rect;
+	vector<QRect> v_rect;
 	v_rect.resize(sl.size());
 
 	for (int i = 0; i < sl.size(); i++) {
@@ -325,8 +326,8 @@ void AchievementsItemDelegate::paint(QPainter *painter,
 	painter->setFont(fontName);
 	int i = 0;
 	auto iter_rect = v_rect.cbegin();
-	const auto iter_sl_cend = sl.cend();
-	for (auto iter_sl = sl.cbegin(); iter_sl != iter_sl_cend; ++iter_sl, ++iter_rect, ++i) {
+	const auto sl_cend = sl.cend();
+	for (auto iter_sl = sl.cbegin(); iter_sl != sl_cend; ++iter_sl, ++iter_rect, ++i) {
 		if (i == 1) {
 			painter->setFont(fontDesc);
 		}
