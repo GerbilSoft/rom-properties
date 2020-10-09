@@ -220,6 +220,7 @@ void AchievementsItemDelegate::paint(QPainter *painter,
 #else /* QT_VERSION < QT_VERSION_CHECK(5,0,0) */
 	QStyleOptionViewItemV4 bgOption = option;
 #endif
+	// TODO: initStyleOption()?
 
 	// Horizontal margins.
 	// Reference: http://doc.qt.io/qt-4.8/qitemdelegate.html#sizeHint
@@ -362,10 +363,17 @@ QSize AchievementsItemDelegate::sizeHint(const QStyleOptionViewItem &option,
 	sl.append(s_ach.left(nl_pos));
 	sl.append(s_ach.mid(nl_pos + 1));
 
+#if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
+	const QStyleOptionViewItem &bgOption = option;
+#else /* QT_VERSION < QT_VERSION_CHECK(5,0,0) */
+	QStyleOptionViewItemV4 bgOption = option;
+#endif
+	// TODO: initStyleOption()?
+
 	// Get the fonts.
 	Q_D(const AchievementsItemDelegate);
-	QFont fontName = d->fontName(option.widget);
-	QFont fontDesc = d->fontDesc(option.widget);
+	QFont fontName = d->fontName(bgOption.widget);
+	QFont fontDesc = d->fontDesc(bgOption.widget);
 
 	QSize sz;
 	for (int i = 0; i < sl.size(); i++) {
