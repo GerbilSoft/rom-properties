@@ -10,6 +10,9 @@
 * New parser features:
   * NGPC: Added external title screens using RPDB.
   * Xbox360_XDBF: Added metadata extraction.
+  * Xbox360_XEX: System firmware XEXes use the XEX1 key. This is indicated
+    using the "Cardea Key" flag.
+    * Fixes #273, reported by @Masamune3210.
 
 * Bug fixes:
   * GameCube: Detect incrementing values partitions in encrypted images.
