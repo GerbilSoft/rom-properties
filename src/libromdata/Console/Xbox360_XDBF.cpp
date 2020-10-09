@@ -1731,7 +1731,8 @@ int Xbox360_XDBF::isRomSupported_static(const DetectInfo *info)
 	// SPA will have an XSRC or XSTC entry in the resource table.
 	const unsigned int tblSize = info->header.size - sizeof(*xdbfHeader);
 	const unsigned int entryCount = std::min(
-		be32_to_cpu(xdbfHeader->entry_count), (unsigned int)(tblSize / sizeof(XDBF_Entry)));
+		(unsigned int)be32_to_cpu(xdbfHeader->entry_count),
+		(unsigned int)(tblSize / sizeof(XDBF_Entry)));
 
 	const XDBF_Entry *entry =
 		reinterpret_cast<const XDBF_Entry*>(&info->header.pData[sizeof(*xdbfHeader)]);
