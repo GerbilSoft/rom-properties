@@ -326,8 +326,8 @@ void AchievementsItemDelegate::paint(QPainter *painter,
 	painter->setFont(fontName);
 	int i = 0;
 	auto iter_rect = v_rect.cbegin();
-	const auto sl_cend = sl.cend();
-	for (auto iter_sl = sl.cbegin(); iter_sl != sl_cend; ++iter_sl, ++iter_rect, ++i) {
+	const auto sl_end = sl.end();
+	for (auto iter_sl = sl.begin(); iter_sl != sl_end; ++iter_sl, ++iter_rect, ++i) {
 		if (i == 1) {
 			painter->setFont(fontDesc);
 		}
