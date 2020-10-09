@@ -136,8 +136,8 @@ void AchievementsTab::reset(void)
 	}
 
 	// Set column stretch modes.
-	QHeaderView *const pHeader = treeWidget->header();
 #if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
+	QHeaderView *const pHeader = treeWidget->header();
 	pHeader->setStretchLastSection(false);
 	pHeader->setSectionResizeMode(0, QHeaderView::ResizeToContents);
 	pHeader->setSectionResizeMode(1, QHeaderView::Stretch);

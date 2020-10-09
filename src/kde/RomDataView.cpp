@@ -911,12 +911,32 @@ void RomDataViewPrivate::initListData(QLabel *lblDesc,
 		}
 	}
 
-	if (!isMulti) {
-		// Resize the columns to fit the contents.
-		for (int i = 0; i < colCount; i++) {
-			treeWidget->resizeColumnToContents(i);
+	// Set up column sizing.
+#if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
+	if (listDataDesc.colsz != 0) {
+		// Explicit column sizing was specified.
+		// NOTE: RomFields' COLSZ_* enums match QHeaderView::ResizeMode.
+		QHeaderView *const pHeader = treeWidget->header();
+		assert(pHeader != nullptr);
+		if (pHeader) {
+			pHeader->setStretchLastSection(false);
+			uint32_t colsz = listDataDesc.colsz;
+			for (int i = 0; i < colCount; i++, colsz >>= 2) {
+				pHeader->setSectionResizeMode(i, (QHeaderView::ResizeMode)(colsz & 3));
+			}
 		}
-		treeWidget->resizeColumnToContents(colCount);
+	} else
+#endif /* QT_VERSION >= QT_VERSION_CHECK(5,0,0) */
+	{
+		// No explicit column sizing.
+		// Use default column sizing, but resize columns to contents initially.
+		if (!isMulti) {
+			// Resize the columns to fit the contents.
+			for (int i = 0; i < colCount; i++) {
+				treeWidget->resizeColumnToContents(i);
+			}
+			treeWidget->resizeColumnToContents(colCount);
+		}
 	}
 
 	if (listDataDesc.flags & RomFields::RFT_LISTDATA_SEPARATE_ROW) {
@@ -1215,9 +1235,25 @@ void RomDataViewPrivate::updateMulti(uint32_t user_lc)
 			// NOTE: Only done on first load.
 			if (!cboLanguage) {
 				const int colCount = treeWidget->columnCount();
-				for (int i = 0; i < colCount; i++) {
-					treeWidget->resizeColumnToContents(i);
+#if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
+				// Check if explicit column sizing was used.
+				// If so, only resize columns marked as "interactive".
+				QHeaderView *const pHeader = treeWidget->header();
+				assert(pHeader != nullptr);
+				if (pHeader && !pHeader->stretchLastSection()) {
+					for (int i = 0; i < colCount; i++) {
+						if (pHeader->sectionResizeMode(i) == QHeaderView::Interactive) {
+							treeWidget->resizeColumnToContents(i);
+						}
+					}
+				} else
+#endif /* QT_VERSION >= QT_VERSION_CHECK(5,0,0) */
+				{
+					for (int i = 0; i < colCount; i++) {
+						treeWidget->resizeColumnToContents(i);
+					}
 				}
+				// TODO: Not sure if this should be done for explicit column sizing.
 				treeWidget->resizeColumnToContents(colCount);
 			}
 		}

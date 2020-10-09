@@ -1095,7 +1095,8 @@ int Xbox360_XDBF_Private::addFields_achievements_SPA(void)
 	// Add the list data.
 	RomFields::AFLD_PARAMS params(RomFields::RFT_LISTDATA_SEPARATE_ROW |
 	                              RomFields::RFT_LISTDATA_ICONS |
-				      RomFields::RFT_LISTDATA_MULTI, 0);
+				      RomFields::RFT_LISTDATA_MULTI, 0,
+				      AFLD_ALIGN3(COLSZ_R, COLSZ_S, COLSZ_R));
 	params.headers = v_xach_col_names;
 	params.data.multi = mvv_xach;
 	params.def_lc = getDefaultLC();
@@ -1108,7 +1109,7 @@ int Xbox360_XDBF_Private::addFields_achievements_SPA(void)
 }
 
 /**
- * Add the Achievements RFT_LISTDATA field. (SPA)
+ * Add the Avatar Awards RFT_LISTDATA field. (SPA)
  * @return 0 on success; non-zero on error.
  */
 int Xbox360_XDBF_Private::addFields_avatarAwards_SPA(void)
@@ -1301,7 +1302,8 @@ int Xbox360_XDBF_Private::addFields_avatarAwards_SPA(void)
 	// one row due to achievements taking up all the space.
 	RomFields::AFLD_PARAMS params(RomFields::RFT_LISTDATA_SEPARATE_ROW |
 	                              RomFields::RFT_LISTDATA_ICONS |
-				      RomFields::RFT_LISTDATA_MULTI, 2);
+				      RomFields::RFT_LISTDATA_MULTI, 2,
+				      AFLD_ALIGN2(COLSZ_R, COLSZ_S));
 	params.headers = v_xgaa_col_names;
 	params.data.multi = mvv_xgaa;
 	params.mxd.icons = vv_icons;
@@ -1541,7 +1543,8 @@ int Xbox360_XDBF_Private::addFields_achievements_GPD(void)
 
 	// Add the list data.
 	RomFields::AFLD_PARAMS params(RomFields::RFT_LISTDATA_SEPARATE_ROW |
-	                              RomFields::RFT_LISTDATA_ICONS, 0);
+	                              RomFields::RFT_LISTDATA_ICONS, 0,
+				      AFLD_ALIGN3(COLSZ_R, COLSZ_S, COLSZ_R));
 	params.headers = v_xach_col_names;
 	params.data.single = vv_xach;
 	params.def_lc = getDefaultLC();

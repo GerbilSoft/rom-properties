@@ -1107,14 +1107,16 @@ rom_data_view_init_listdata(RomDataView *page,
 		GtkCellRenderer *const renderer = gtk_cell_renderer_toggle_new();
 		GtkTreeViewColumn *const column = gtk_tree_view_column_new_with_attributes(
 			"", renderer, "active", 0, nullptr);
-		gtk_tree_view_column_set_resizable(column, true);
+		gtk_tree_view_column_set_resizable(column, false);	// technically redundant?
+		gtk_tree_view_column_set_sizing(column, GTK_TREE_VIEW_COLUMN_AUTOSIZE);
 		gtk_tree_view_append_column(GTK_TREE_VIEW(treeView), column);
 	} else if (hasIcons) {
 		// Prepend an extra column for icons.
 		GtkCellRenderer *const renderer = gtk_cell_renderer_pixbuf_new();
 		GtkTreeViewColumn *const column = gtk_tree_view_column_new_with_attributes(
 			"", renderer, GTK_CELL_RENDERER_PIXBUF_PROPERTY, 0, nullptr);
-		gtk_tree_view_column_set_resizable(column, true);
+		gtk_tree_view_column_set_resizable(column, false);	// technically redundant?
+		gtk_tree_view_column_set_sizing(column, GTK_TREE_VIEW_COLUMN_AUTOSIZE);
 		gtk_tree_view_append_column(GTK_TREE_VIEW(treeView), column);
 	}
 
@@ -1133,14 +1135,16 @@ rom_data_view_init_listdata(RomDataView *page,
 	// Set up the column names.
 	uint32_t align_headers = listDataDesc.alignment.headers;
 	uint32_t align_data = listDataDesc.alignment.data;
-	for (int i = 0; i < colCount; i++, align_headers >>= 2, align_data >>= 2) {
+	uint32_t colsz = listDataDesc.colsz;
+	for (int i = 0; i < colCount; i++, align_headers >>= 2, align_data >>= 2, colsz >>= 2) {
+		const int listStore_idx = i+col_start;
+
 		// NOTE: Not skipping empty column names.
 		// TODO: Hide them.
 		GtkCellRenderer *const renderer = gtk_cell_renderer_text_new();
 		GtkTreeViewColumn *const column = gtk_tree_view_column_new_with_attributes(
 			(listDataDesc.names ? listDataDesc.names->at(i).c_str() : ""),
-			renderer, "text", i+col_start, nullptr);
-		gtk_tree_view_column_set_resizable(column, true);
+			renderer, "text", listStore_idx, nullptr);
 		gtk_tree_view_append_column(GTK_TREE_VIEW(treeView), column);
 
 		// Header alignment
@@ -1149,6 +1153,28 @@ rom_data_view_init_listdata(RomDataView *page,
 		const float data_xalign = align_tbl_xalign[align_data & 3];
 		const PangoAlignment data_alignment =
 			static_cast<PangoAlignment>(align_tbl_pango[align_data & 3]);
+
+		// Column sizing
+		// NOTE: We don't have direct equivalents to QHeaderView::ResizeMode.
+		switch (colsz & 3) {
+			case RomFields::ColSizing::COLSZ_INTERACTIVE:
+				gtk_tree_view_column_set_resizable(column, true);
+				gtk_tree_view_column_set_sizing(column, GTK_TREE_VIEW_COLUMN_GROW_ONLY);
+				break;
+			/*case RomFields::ColSizing::COLSZ_FIXED:
+				gtk_tree_view_column_set_resizable(column, true);
+				gtk_tree_view_column_set_sizing(column, FIXED);
+				break;*/
+			case RomFields::ColSizing::COLSZ_STRETCH:
+				gtk_tree_view_column_set_resizable(column, false);
+				gtk_tree_view_column_set_expand(column, true);
+				gtk_tree_view_column_set_sizing(column, GTK_TREE_VIEW_COLUMN_GROW_ONLY);
+				break;
+			case RomFields::ColSizing::COLSZ_RESIZETOCONTENTS:
+				gtk_tree_view_column_set_resizable(column, false);
+				gtk_tree_view_column_set_sizing(column, GTK_TREE_VIEW_COLUMN_AUTOSIZE);
+				break;
+		}
 
 		g_object_set(column, "alignment", header_xalign, nullptr);
 		g_object_set(renderer,

@@ -30,14 +30,23 @@ namespace LibRpTexture {
 
 namespace LibRpBase {
 
-// RFT_LISTDATA alignment macros.
-// - # indicates number of columns.
-// - Parameters are for columns 0, 1, 2, 3, etc.
-// - This does NOT include checkboxes or icons.
+// Text alignment macros.
 #define TXA_D	(RomFields::TextAlign::TXA_DEFAULT)
 #define TXA_L	(RomFields::TextAlign::TXA_LEFT)
 #define TXA_C	(RomFields::TextAlign::TXA_CENTER)
 #define TXA_R	(RomFields::TextAlign::TXA_RIGHT)
+
+// Column sizing macros.
+// Based on Qt5's QHeaderView::ResizeMode.
+#define COLSZ_I	(RomFields::ColSizing::COLSZ_INTERACTIVE)
+//#define COLSZ_F	(RomFields::ColSizing::COLSZ_FIXED)
+#define COLSZ_S	(RomFields::ColSizing::COLSZ_STRETCH)
+#define COLSZ_R	(RomFields::ColSizing::COLSZ_RESIZETOCONTENTS)
+
+// RFT_LISTDATA macros for both text alignment and column sizing.
+// - # indicates number of columns.
+// - Parameters are for columns 0, 1, 2, 3, etc.
+// - This does NOT include checkboxes or icons.
 #define AFLD_ALIGN1(a)				((a)&3U)
 #define AFLD_ALIGN2(a,b)			(AFLD_ALIGN1(a)|(((b)&3U)<<2U))
 #define AFLD_ALIGN3(a,b,c)			(AFLD_ALIGN2(a,b)|(((c)&3U)<<4U))
@@ -174,6 +183,15 @@ class RomFields
 			TXA_RIGHT	= 3,
 		};
 
+		// Column sizing for RFT_LISTDATA.
+		// Based on Qt5's QHeaderView::ResizeMode.
+		enum ColSizing : uint32_t {
+			COLSZ_INTERACTIVE	= 0,
+			//COLSZ_FIXED		= 2,
+			COLSZ_STRETCH		= 1,
+			COLSZ_RESIZETOCONTENTS	= 3,
+		};
+
 		// Typedefs for various containers.
 		typedef std::map<uint32_t, std::string> StringMultiMap_t;
 		typedef std::vector<std::vector<std::string> > ListData_t;
@@ -223,6 +241,9 @@ class RomFields
 						uint32_t headers;	// Header alignment
 						uint32_t data;		// Data alignment
 					} alignment;
+
+					// Column sizing.
+					uint32_t colsz;
 				} list_data;
 			} desc;
 
@@ -570,7 +591,7 @@ class RomFields
 		 */
 		struct AFLD_PARAMS {
 			AFLD_PARAMS()
-				: flags(0), rows_visible(0)
+				: flags(0), rows_visible(0), colsz(0)
 				, def_lc(0), headers(nullptr)
 			{
 				alignment.headers = 0;
@@ -578,8 +599,8 @@ class RomFields
 				data.single = nullptr;
 				mxd.icons = nullptr;
 			}
-			AFLD_PARAMS(unsigned int flags, int rows_visible)
-				: flags(flags), rows_visible(rows_visible)
+			AFLD_PARAMS(unsigned int flags, int rows_visible, uint32_t colsz = 0)
+				: flags(flags), rows_visible(rows_visible), colsz(colsz)
 				, def_lc(0), headers(nullptr)
 			{
 				alignment.headers = 0;
@@ -602,6 +623,9 @@ class RomFields
 				uint32_t headers;	// Header alignment
 				uint32_t data;		// Data alignment
 			} alignment;
+
+			// Column sizing.
+			uint32_t colsz;
 
 			// Default language code. (RFT_LISTDATA_MULTI)
 			uint32_t def_lc;
