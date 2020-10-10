@@ -173,6 +173,7 @@ void ListDataModelPrivate::clearData(void)
 			UNREF(img);
 		}
 	);
+	icons_rp.clear();
 }
 
 /**
