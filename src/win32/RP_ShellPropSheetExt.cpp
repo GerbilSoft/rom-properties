@@ -1545,6 +1545,12 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 		lvData.pField = &field;
 	}
 
+	// Sorting methods
+	// NOTE: lvData only contains the active language for RFT_LISTDATA_MULTI.
+	// TODO: Make it more like the KDE version?
+	lvData.sortingMethods = listDataDesc.col_attrs.sorting;
+	lvData.resetSortMap();	// TODO: Actual sorting stuff.
+
 	// Save the LvData.
 	// TODO: Verify that std::move() works here.
 	map_lvData.insert(std::make_pair(cId, std::move(lvData)));
@@ -2081,6 +2087,7 @@ void RP_ShellPropSheetExt_Private::updateMulti(uint32_t user_lc)
 				// TODO: Do this on system theme change?
 				// TODO: Add a flag for 'main data column' and adjust it to
 				// not exceed the viewport.
+				// FIXME: Way too wide for Gamerscore - maybe we need to do autosize for single-line...
 				for (int i = colCount-1; i >= 0; i--) {
 					ListView_SetColumnWidth(hListView, i, col_width[i]);
 				}
@@ -3567,25 +3574,34 @@ inline BOOL RP_ShellPropSheetExtPrivate::ListView_GetDispInfo(NMLVDISPINFO *plvd
 	auto iter_lvData = map_lvData.find(idFrom);
 	if (iter_lvData == map_lvData.end()) {
 		// ListView data not found...
-		return ret;
+		return false;
 	}
 	const LvData &lvData = iter_lvData->second;
 
+	assert(lvData.vvStr.size() == lvData.vSortMap.size());
+	if (lvData.vvStr.size() != lvData.vSortMap.size()) {
+		// Size mismatch!
+		return false;
+	}
+
+	// Get the real item number using the sort map.
+	int iItem = plvItem->iItem;
+	if (iItem >= 0 && iItem < static_cast<int>(lvData.vSortMap.size())) {
+		iItem = lvData.vSortMap[iItem];
+	} else {
+		// Out of range...
+		return false;
+	}
+
 	if (plvItem->mask & LVIF_TEXT) {
 		// Fill in text.
-		const auto &vvStr = lvData.vvStr;
+		const auto &row_data = lvData.vvStr[iItem];
 
-		// Is this row in range?
-		if (plvItem->iItem >= 0 && plvItem->iItem < static_cast<int>(vvStr.size())) {
-			// Get the row data.
-			const auto &row_data = vvStr.at(plvItem->iItem);
-
-			// Is the column in range?
-			if (plvItem->iSubItem >= 0 && plvItem->iSubItem < static_cast<int>(row_data.size())) {
-				// Return the string data.
-				_tcscpy_s(plvItem->pszText, plvItem->cchTextMax, row_data[plvItem->iSubItem].c_str());
-				ret = true;
-			}
+		// Is the column in range?
+		if (plvItem->iSubItem >= 0 && plvItem->iSubItem < static_cast<int>(row_data.size())) {
+			// Return the string data.
+			_tcscpy_s(plvItem->pszText, plvItem->cchTextMax, row_data[plvItem->iSubItem].c_str());
+			ret = true;
 		}
 	}
 
@@ -3602,18 +3618,21 @@ inline BOOL RP_ShellPropSheetExtPrivate::ListView_GetDispInfo(NMLVDISPINFO *plvd
 				plvItem->mask |= LVIF_STATE;
 				plvItem->stateMask = LVIS_STATEIMAGEMASK;
 				plvItem->state = INDEXTOSTATEIMAGEMASK(
-					((lvData.checkboxes & (1U << plvItem->iItem)) ? 2 : 1));
+					((lvData.checkboxes & (1U << iItem)) ? 2 : 1));
 				ret = true;
 			} else if (!lvData.vImageList.empty()) {
 				// We have an ImageList.
-				// Is this row in range?
-				if (plvItem->iItem >= 0 && plvItem->iItem < static_cast<int>(lvData.vImageList.size())) {
-					const int iImage = lvData.vImageList.at(plvItem->iItem);
-					if (iImage >= 0) {
-						// Set the ImageList index.
-						plvItem->iImage = iImage;
-						ret = true;
-					}
+				assert(lvData.vImageList.size() == lvData.vSortMap.size());
+				if (lvData.vImageList.size() != lvData.vSortMap.size()) {
+					// Size mismatch!
+					return false;
+				}
+
+				const int iImage = lvData.vImageList[iItem];
+				if (iImage >= 0) {
+					// Set the ImageList index.
+					plvItem->iImage = iImage;
+					ret = true;
 				}
 			}
 		}

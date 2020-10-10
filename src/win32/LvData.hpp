@@ -31,6 +31,10 @@ struct LvData {
 	uint32_t checkboxes;				// Checkboxes.
 	bool hasCheckboxes;				// True if checkboxes are valid.
 
+	// Sorting: key == display index, value == LvData_t index
+	std::vector<unsigned int> vSortMap;
+	uint32_t sortingMethods;			// Sorting methods.
+
 	// For RFT_LISTDATA_MULTI only!
 	HWND hListView;
 	const LibRpBase::RomFields::Field *pField;
@@ -38,6 +42,12 @@ struct LvData {
 	LvData()
 		: checkboxes(0), hasCheckboxes(false)
 		, hListView(nullptr), pField(nullptr) { }
+
+	/**
+	 * Reset the sorting map.
+	 * This uses the "default" sort.
+	 */
+	void resetSortMap(void);
 };
 
 #endif /* __ROMPROPERTIES_WIN32_RP_LVDATA_HPP__ */
