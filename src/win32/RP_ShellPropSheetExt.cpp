@@ -19,6 +19,7 @@
 #include "DragImageLabel.hpp"
 #include "FontHandler.hpp"
 #include "MessageWidget.hpp"
+#include "LvData.hpp"
 
 // libwin32common
 #include "libwin32common/AutoGetDC.hpp"
@@ -135,28 +136,10 @@ class RP_ShellPropSheetExt_Private
 		COLORREF colorAltRow;
 		bool isFullyInit;		// True if the window is fully initialized.
 
-		// ListView data struct.
-		// NOTE: Not making vImageList a pointer, since that adds
-		// significantly more complexity.
-		struct LvData_t {
-			vector<vector<tstring> > vvStr;	// String data.
-			vector<int> vImageList;		// ImageList indexes.
-			uint32_t checkboxes;		// Checkboxes.
-			bool hasCheckboxes;		// True if checkboxes are valid.
-
-			// For RFT_LISTDATA_MULTI only!
-			HWND hListView;
-			const RomFields::Field *pField;
-
-			LvData_t()
-				: checkboxes(0), hasCheckboxes(false)
-				, hListView(nullptr), pField(nullptr) { }
-		};
-
 		// ListView data.
 		// - Key: ListView dialog ID
-		// - Value: LvData_t.
-		unordered_map<uint16_t, LvData_t> map_lvData;
+		// - Value: LvData.
+		unordered_map<uint16_t, LvData> map_lvData;
 
 		/**
 		 * ListView GetDispInfo function.
@@ -1348,7 +1331,7 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 	// LVS_OWNERDATA.
 	vector<vector<tstring> > lvStringData;
 	lvStringData.reserve(list_data->size());
-	LvData_t lvData;
+	LvData lvData;
 	lvData.vvStr.reserve(list_data->size());
 	lvData.hasCheckboxes = hasCheckboxes;
 	if (hasIcons) {
@@ -1562,7 +1545,7 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 		lvData.pField = &field;
 	}
 
-	// Save the LvData_t.
+	// Save the LvData.
 	// TODO: Verify that std::move() works here.
 	map_lvData.insert(std::make_pair(cId, std::move(lvData)));
 
@@ -2004,7 +1987,7 @@ void RP_ShellPropSheetExt_Private::updateMulti(uint32_t user_lc)
 	// RFT_LISTDATA_MULTI
 	const auto map_lvData_end = map_lvData.end();
 	for (auto iter = map_lvData.begin(); iter != map_lvData_end; ++iter) {
-		LvData_t &lvData = iter->second;
+		LvData &lvData = iter->second;
 		if (!lvData.hListView) {
 			// Not an RFT_LISTDATA_MULTI.
 			continue;
@@ -3586,7 +3569,7 @@ inline BOOL RP_ShellPropSheetExtPrivate::ListView_GetDispInfo(NMLVDISPINFO *plvd
 		// ListView data not found...
 		return ret;
 	}
-	const LvData_t &lvData = iter_lvData->second;
+	const LvData &lvData = iter_lvData->second;
 
 	if (plvItem->mask & LVIF_TEXT) {
 		// Fill in text.
