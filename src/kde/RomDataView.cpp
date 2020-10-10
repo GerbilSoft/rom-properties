@@ -1545,6 +1545,14 @@ void RomDataViewPrivate::initDisplayWidgets(void)
 		adjustListData(static_cast<int>(tabs.size()-1));
 	}
 
+	// Add vertical spacers to each QFormLayout.
+	// This is mostly needed for e.g. DSi and 3DS permissions.
+	std::for_each(tabs.cbegin(), tabs.cend(),
+		[](const tab &tab) {
+			tab.form->addItem(new QSpacerItem(0, 0));
+		}
+	);
+
 	// Close the file.
 	// Keeping the file open may prevent the user from
 	// changing the file.
