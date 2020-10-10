@@ -915,6 +915,104 @@ rom_data_view_init_bitfield(RomDataView *page,
 }
 
 /**
+ * RFT_LISTDATA sorting function for COLSORT_NOCASE (case-insensitive).
+ * @param model
+ * @param a
+ * @param b
+ * @param userdata Column ID
+ * @return -1, 0, or 1.
+ */
+static gint
+sort_RFT_LISTDATA_nocase(GtkTreeModel *model, GtkTreeIter *a, GtkTreeIter *b, gpointer userdata)
+{
+	RP_UNUSED(userdata);
+	gint ret = 0;
+
+	// Get the text and do a case-insensitive string comparison.
+	// Reference: https://en.wikibooks.org/wiki/GTK%2B_By_Example/Tree_View/Sorting
+	gchar *text1, *text2;
+	gtk_tree_model_get(model, a, GPOINTER_TO_INT(userdata), &text1, -1);
+	gtk_tree_model_get(model, b, GPOINTER_TO_INT(userdata), &text2, -1);
+        if (!text1 || !text2) {
+		if (!text1 && !text2) {
+			// Both strings are NULL.
+			// Handle this as if they're equal.
+		} else {
+			// Only one string is NULL.
+			// That will be sorted before the other string.
+			ret = (!text1 ? -1 : 1);
+		}
+	} else {
+		// Use glib's string collation function.
+		// TODO: Maybe precompute collation values with g_utf8_collate_key()?
+		ret = g_utf8_collate(text1, text2);
+	}
+
+	g_free(text1);
+	g_free(text2);
+	return ret;
+}
+
+/**
+ * RFT_LISTDATA sorting function for COLSORT_NUMERIC.
+ * @param model
+ * @param a
+ * @param b
+ * @param userdata Column ID
+ * @return -1, 0, or 1.
+ */
+static gint
+sort_RFT_LISTDATA_numeric(GtkTreeModel *model, GtkTreeIter *a, GtkTreeIter *b, gpointer userdata)
+{
+	RP_UNUSED(userdata);
+
+	// Get the text and do a numeric comparison.
+	// Reference: https://en.wikibooks.org/wiki/GTK%2B_By_Example/Tree_View/Sorting
+	gchar *text1, *text2;
+	gtk_tree_model_get(model, a, GPOINTER_TO_INT(userdata), &text1, -1);
+	gtk_tree_model_get(model, b, GPOINTER_TO_INT(userdata), &text2, -1);
+
+	// Handle NULL strings as if they're 0.
+	// TODO: Allow arbitrary bases?
+	gint64 val1, val2;
+	gchar *endptr1 = (gchar*)"", *endptr2 = (gchar*)"";
+	val1 = (text1 ? g_ascii_strtoll(text1, &endptr1, 10) : 0);
+	val2 = (text2 ? g_ascii_strtoll(text2, &endptr2, 10) : 0);
+
+	// If the values match, do a case-insensitive string comparison
+	// if the strings didn't fully convert to numbers.
+	gint ret = 0;
+	if (val1 == val2) {
+		if (*endptr1 == '\0' && *endptr2 == '\0') {
+			// Both strings are numbers.
+			// No need to do a string comparison.
+		} else if (!text1 || !text2) {
+			if (!text1 && !text2) {
+				// Both strings are NULL.
+				// Handle this as if they're equal.
+			} else {
+				// Only one string is NULL.
+				// That will be sorted before the other string.
+				ret = (!text1 ? -1 : 1);
+			}
+		} else {
+			// Use glib's string collation function.
+			// TODO: Maybe precompute collation values with g_utf8_collate_key()?
+			ret = g_utf8_collate(text1, text2);
+		}
+	} else if (val1 < val2) {
+		ret = -1;
+	} else /*if (val1 > val2)*/ {
+		ret = 1;
+	}
+
+	g_free(text1);
+	g_free(text2);
+	return ret;
+}
+
+
+/**
  * Initialize a list data field.
  * @param page		[in] RomDataView object
  * @param field		[in] RomFields::Field
@@ -1084,8 +1182,11 @@ rom_data_view_init_listdata(RomDataView *page,
 	gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(widget), GTK_SHADOW_IN);
 	gtk_widget_show(widget);
 
+	// Sort proxy model for the GtkListStore.
+	GtkTreeModel *sortProxy = gtk_tree_model_sort_new_with_model(GTK_TREE_MODEL(listStore));
+
 	// Create the GtkTreeView.
-	GtkWidget *treeView = gtk_tree_view_new_with_model(GTK_TREE_MODEL(listStore));
+	GtkWidget *treeView = gtk_tree_view_new_with_model(GTK_TREE_MODEL(sortProxy));
 	gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(treeView),
 		(listDataDesc.names != nullptr));
 	gtk_widget_show(treeView);
@@ -1136,15 +1237,16 @@ rom_data_view_init_listdata(RomDataView *page,
 	uint32_t align_headers = listDataDesc.col_attrs.align_headers;
 	uint32_t align_data = listDataDesc.col_attrs.align_data;
 	uint32_t sizing = listDataDesc.col_attrs.sizing;
-	for (int i = 0; i < colCount; i++, align_headers >>= 2, align_data >>= 2, sizing >>= 2) {
-		const int listStore_idx = i+col_start;
+	uint32_t sorting = listDataDesc.col_attrs.sorting;
+	for (int i = 0; i < colCount; i++, align_headers >>= 2, align_data >>= 2, sizing >>= 2, sorting >>= 2) {
+		const int col_idx = i+col_start;
 
 		// NOTE: Not skipping empty column names.
 		// TODO: Hide them.
 		GtkCellRenderer *const renderer = gtk_cell_renderer_text_new();
 		GtkTreeViewColumn *const column = gtk_tree_view_column_new_with_attributes(
 			(listDataDesc.names ? listDataDesc.names->at(i).c_str() : ""),
-			renderer, "text", listStore_idx, nullptr);
+			renderer, "text", col_idx, nullptr);
 		gtk_tree_view_append_column(GTK_TREE_VIEW(treeView), column);
 
 		// Header alignment
@@ -1153,6 +1255,11 @@ rom_data_view_init_listdata(RomDataView *page,
 		const float data_xalign = align_tbl_xalign[align_data & 3];
 		const PangoAlignment data_alignment =
 			static_cast<PangoAlignment>(align_tbl_pango[align_data & 3]);
+
+		g_object_set(column, "alignment", header_xalign, nullptr);
+		g_object_set(renderer,
+			"xalign", data_xalign,
+			"alignment", data_alignment, nullptr);
 
 		// Column sizing
 		// NOTE: We don't have direct equivalents to QHeaderView::ResizeMode.
@@ -1176,10 +1283,43 @@ rom_data_view_init_listdata(RomDataView *page,
 				break;
 		}
 
-		g_object_set(column, "alignment", header_xalign, nullptr);
-		g_object_set(renderer,
-			"xalign", data_xalign,
-			"alignment", data_alignment, nullptr);
+		// Enable sorting.
+		gtk_tree_view_column_set_sort_column_id(column, col_idx);
+		gtk_tree_view_column_set_clickable(column, TRUE);
+
+		// Check what we should use for sorting.
+		// NOTE: We're setting the sorting functions on the proxy model.
+		// That way, it won't affect the underlying data, which ensures
+		// that RFT_LISTDATA_MULTI is still handled correctly.
+		switch (sorting & 3) {
+			default:
+				// Unsupported. We'll use standard sorting.
+				assert(!"Unsupported sorting method.");
+				// fall-through
+			case RomFields::COLSORT_STANDARD:
+				// Standard sorting.
+				break;
+			case RomFields::COLSORT_NOCASE:
+				// Case-insensitive sorting.
+				gtk_tree_sortable_set_sort_func(GTK_TREE_SORTABLE(sortProxy),
+					col_idx, sort_RFT_LISTDATA_nocase,
+					GINT_TO_POINTER(col_idx), nullptr);
+				break;
+			case RomFields::COLSORT_NUMERIC:
+				// Numeric sorting. (case-insensitive)
+				gtk_tree_sortable_set_sort_func(GTK_TREE_SORTABLE(sortProxy),
+					col_idx, sort_RFT_LISTDATA_numeric,
+					GINT_TO_POINTER(col_idx), nullptr);
+				break;
+		}
+	}
+
+	// Set the default sorting column.
+	// NOTE: sort_dir maps directly to GTK_SORT_ASCENDING/GTK_SORT_DESCENDING.
+	if (listDataDesc.col_attrs.sort_col >= 0) {
+		gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(sortProxy),
+			listDataDesc.col_attrs.sort_col+col_start,
+			static_cast<GtkSortType>(listDataDesc.col_attrs.sort_dir));
 	}
 
 	// Set a minimum height for the scroll area.

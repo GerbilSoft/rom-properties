@@ -43,6 +43,10 @@ namespace LibRpBase {
 #define COLSZ_S	(RomFields::ColSizing::COLSZ_STRETCH)
 #define COLSZ_R	(RomFields::ColSizing::COLSZ_RESIZETOCONTENTS)
 
+// Column sorting macros.
+#define COLSORT_STD	(RomFields::ColSorting::COLSORT_STANDARD)
+#define COLSORT_NUM	(RomFields::ColSorting::COLSORT_NUMERIC)
+
 // RFT_LISTDATA macros for both text alignment and column sizing.
 // - # indicates number of columns.
 // - Parameters are for columns 0, 1, 2, 3, etc.
@@ -192,6 +196,14 @@ class RomFields
 			COLSZ_RESIZETOCONTENTS	= 3,
 		};
 
+		// Column sorting for RFT_LISTDATA.
+		enum ColSorting : uint32_t {
+			COLSORT_STANDARD	= 0,	// Standard sort
+			COLSORT_NOCASE		= 1,	// Case-insensitive sort
+			COLSORT_NUMERIC		= 2,	// Numeric sort
+			//COLSORT_3		= 3,
+		};
+
 		// RFT_LISTDATA per-column attributes.
 		// Up to 16 columns can be specified using
 		// two bits each, with the two LSBs indicating
@@ -202,6 +214,9 @@ class RomFields
 			uint32_t align_headers;	// Header alignment
 			uint32_t align_data;	// Data alignment
 			uint32_t sizing;	// Column sizing
+			uint32_t sorting;	// Column sorting
+			int8_t  sort_col;	// Default sort column. (-1 for none)
+			uint8_t sort_dir;	// Sort direction. (0 == down [ascending], 1 == up [descending])
 		};
 
 		// Typedefs for various containers.
@@ -595,9 +610,15 @@ class RomFields
 				: flags(0), rows_visible(0)
 				, def_lc(0), headers(nullptr)
 			{
+				// NOTE: We can't add a constructor to ListDataColAttrs_t
+				// because it's stored in a union above.
 				col_attrs.align_headers = 0;
 				col_attrs.align_data = 0;
 				col_attrs.sizing = 0;
+				col_attrs.sorting = 0;
+				col_attrs.sort_col = -1;
+				col_attrs.sort_dir = 0;
+
 				data.single = nullptr;
 				mxd.icons = nullptr;
 			}
@@ -605,9 +626,15 @@ class RomFields
 				: flags(flags), rows_visible(rows_visible)
 				, def_lc(0), headers(nullptr)
 			{
+				// NOTE: We can't add a constructor to ListDataColAttrs_t
+				// because it's stored in a union above.
 				col_attrs.align_headers = 0;
 				col_attrs.align_data = 0;
 				col_attrs.sizing = 0;
+				col_attrs.sorting = 0;
+				col_attrs.sort_col = -1;
+				col_attrs.sort_dir = 0;
+
 				data.single = nullptr;
 				mxd.icons = nullptr;
 			}
