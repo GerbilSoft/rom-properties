@@ -22,6 +22,7 @@ SET(rom-properties-kde_SRCS
 	DragImageTreeView.cpp
 	MessageSound.cpp
 	ListDataModel.cpp
+	ListDataSortProxyModel.cpp
 	config/stub-export.cpp
 	config/ConfigDialog.cpp
 	config/ITab.cpp
@@ -44,6 +45,7 @@ SET(rom-properties-kde_H
 	DragImageTreeView.hpp
 	MessageSound.hpp
 	ListDataModel.hpp
+	ListDataSortProxyModel.hpp
 	config/ConfigDialog.hpp
 	config/ITab.hpp
 	config/ImageTypesTab.hpp

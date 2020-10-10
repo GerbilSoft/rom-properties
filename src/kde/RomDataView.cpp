@@ -40,6 +40,7 @@ using std::vector;
 // Custom Qt widgets.
 #include "DragImageTreeView.hpp"
 #include "ListDataModel.hpp"
+#include "ListDataSortProxyModel.hpp"
 
 // KDE4/KF5 includes.
 #if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
@@ -820,7 +821,8 @@ void RomDataViewPrivate::initListData(QLabel *lblDesc,
 	// Item models.
 	// TODO: Subclass QSortFilterProxyModel for custom sorting methods.
 	ListDataModel *const listModel = new ListDataModel(q);
-	QSortFilterProxyModel *const proxyModel = new QSortFilterProxyModel(q);
+	ListDataSortProxyModel *const proxyModel = new ListDataSortProxyModel(q);
+	proxyModel->setSortingMethods(listDataDesc.col_attrs.sorting);
 	proxyModel->setSourceModel(listModel);
 	treeView->setModel(proxyModel);
 
