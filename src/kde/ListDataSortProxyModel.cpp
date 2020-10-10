@@ -47,34 +47,34 @@ qlonglong ListDataSortProxyModel::parseQString(const QString &str, bool *pbAllNu
 
 /**
  * Numeric comparison function.
- * @param text1
- * @param text2
- * @return True if text1 < text2
+ * @param strA
+ * @param strB
+ * @return True if strA < strB
  */
-bool ListDataSortProxyModel::doNumericCompare(const QString &text1, const QString &text2)
+bool ListDataSortProxyModel::doNumericCompare(const QString &strA, const QString &strB)
 {
-	if (text1.isEmpty() && text2.isEmpty()) {
+	if (strA.isEmpty() && strB.isEmpty()) {
 		// Both strings are empty.
 		return false;
 	}
 
-	bool ok1 = false, ok2 = false;
-	qlonglong val1 = parseQString(text1, &ok1);
-	qlonglong val2 = parseQString(text2, &ok2);
+	bool okA = false, okB = false;
+	qlonglong valA = parseQString(strA, &okA);
+	qlonglong valB = parseQString(strB, &okB);
 
-	if (val1 == val2) {
+	if (valA == valB) {
 		// Values are identical.
-		if (ok1 && !ok2) {
+		if (okA && !okB) {
 			// Second string is not fully numeric.
-			// text1 < text2
+			// strA < strB
 			return true;
 		} else {
-			// Other cases: text1 >= text2
+			// Other cases: strA >= strB
 			return false;
 		}
 	}
 
-	return (val1 < val2);
+	return (valA < valB);
 }
 
 /**
@@ -104,16 +104,16 @@ bool ListDataSortProxyModel::lessThan(const QModelIndex &source_left, const QMod
 			break;
 		case RomFields::COLSORT_NOCASE: {
 			// Case-insensitive sorting.
-			QString text1 = source_left.data().toString();
-			QString text2 = source_right.data().toString();
-			bRet = (QString::compare(text1, text2, Qt::CaseInsensitive) < 0);
+			QString strA = source_left.data().toString();
+			QString strB = source_right.data().toString();
+			bRet = (QString::compare(strA, strB, Qt::CaseInsensitive) < 0);
 			break;
 		}
 		case RomFields::COLSORT_NUMERIC: {
 			// Numeric sorting.
-			QString text1 = source_left.data().toString();
-			QString text2 = source_right.data().toString();
-			bRet = doNumericCompare(text1, text2);
+			QString strA = source_left.data().toString();
+			QString strB = source_right.data().toString();
+			bRet = doNumericCompare(strA, strB);
 			break;
 		}
 	}

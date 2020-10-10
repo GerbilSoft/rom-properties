@@ -42,11 +42,11 @@ class ListDataSortProxyModel : public QSortFilterProxyModel
 
 		/**
 		 * Numeric comparison function.
-		 * @param text1
-		 * @param text2
-		 * @return True if text1 < text2
+		 * @param strA
+		 * @param strB
+		 * @return True if strA < strB
 		 */
-		static bool doNumericCompare(const QString &text1, const QString &text2);
+		static bool doNumericCompare(const QString &strA, const QString &strB);
 
 	public:
 		/**

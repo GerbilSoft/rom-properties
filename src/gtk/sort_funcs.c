@@ -19,29 +19,29 @@
 gint sort_RFT_LISTDATA_nocase(GtkTreeModel *model, GtkTreeIter *a, GtkTreeIter *b, G_GNUC_UNUSED gpointer userdata)
 {
 	gint ret = 0;
-	gchar *text1, *text2;
+	gchar *strA, *strB;
 
 	// Get the text and do a case-insensitive string comparison.
 	// Reference: https://en.wikibooks.org/wiki/GTK%2B_By_Example/Tree_View/Sorting
-	gtk_tree_model_get(model, a, GPOINTER_TO_INT(userdata), &text1, -1);
-	gtk_tree_model_get(model, b, GPOINTER_TO_INT(userdata), &text2, -1);
-        if (!text1 || !text2) {
-		if (!text1 && !text2) {
+	gtk_tree_model_get(model, a, GPOINTER_TO_INT(userdata), &strA, -1);
+	gtk_tree_model_get(model, b, GPOINTER_TO_INT(userdata), &strB, -1);
+        if (!strA || !strB) {
+		if (!strA && !strB) {
 			// Both strings are NULL.
 			// Handle this as if they're equal.
 		} else {
 			// Only one string is NULL.
 			// That will be sorted before the other string.
-			ret = (!text1 ? -1 : 1);
+			ret = (!strA ? -1 : 1);
 		}
 	} else {
 		// Use glib's string collation function.
 		// TODO: Maybe precompute collation values with g_utf8_collate_key()?
-		ret = g_utf8_collate(text1, text2);
+		ret = g_utf8_collate(strA, strB);
 	}
 
-	g_free(text1);
-	g_free(text2);
+	g_free(strA);
+	g_free(strB);
 	return ret;
 }
 
@@ -51,53 +51,53 @@ gint sort_RFT_LISTDATA_nocase(GtkTreeModel *model, GtkTreeIter *a, GtkTreeIter *
  * @param a
  * @param b
  * @param userdata Column ID
- * @return -1, 0, or 1.
+ * @return -1, 0, or 1 (like strcmp())
  */
 gint sort_RFT_LISTDATA_numeric(GtkTreeModel *model, GtkTreeIter *a, GtkTreeIter *b, G_GNUC_UNUSED gpointer userdata)
 {
 	gint ret = 0;
 
-	gchar *text1, *text2;
-	gint64 val1, val2;
-	gchar *endptr1 = (gchar*)"", *endptr2 = (gchar*)"";
+	gchar *strA, *strB;
+	gint64 valA, valB;
+	gchar *endptrA = (gchar*)"", *endptrB = (gchar*)"";
 
 	// Get the text and do a numeric comparison.
 	// Reference: https://en.wikibooks.org/wiki/GTK%2B_By_Example/Tree_View/Sorting
-	gtk_tree_model_get(model, a, GPOINTER_TO_INT(userdata), &text1, -1);
-	gtk_tree_model_get(model, b, GPOINTER_TO_INT(userdata), &text2, -1);
+	gtk_tree_model_get(model, a, GPOINTER_TO_INT(userdata), &strA, -1);
+	gtk_tree_model_get(model, b, GPOINTER_TO_INT(userdata), &strB, -1);
 
 	// Handle NULL strings as if they're 0.
 	// TODO: Allow arbitrary bases?
-	val1 = (text1 ? g_ascii_strtoll(text1, &endptr1, 10) : 0);
-	val2 = (text2 ? g_ascii_strtoll(text2, &endptr2, 10) : 0);
+	valA = (strA ? g_ascii_strtoll(strA, &endptrA, 10) : 0);
+	valB = (strB ? g_ascii_strtoll(strB, &endptrB, 10) : 0);
 
 	// If the values match, do a case-insensitive string comparison
 	// if the strings didn't fully convert to numbers.
-	if (val1 == val2) {
-		if (*endptr1 == '\0' && *endptr2 == '\0') {
+	if (valA == valB) {
+		if (*endptrA == '\0' && *endptrB == '\0') {
 			// Both strings are numbers.
 			// No need to do a string comparison.
-		} else if (!text1 || !text2) {
-			if (!text1 && !text2) {
+		} else if (!strA || !strB) {
+			if (!strA && !strB) {
 				// Both strings are NULL.
 				// Handle this as if they're equal.
 			} else {
 				// Only one string is NULL.
 				// That will be sorted before the other string.
-				ret = (!text1 ? -1 : 1);
+				ret = (!strA ? -1 : 1);
 			}
 		} else {
 			// Use glib's string collation function.
 			// TODO: Maybe precompute collation values with g_utf8_collate_key()?
-			ret = g_utf8_collate(text1, text2);
+			ret = g_utf8_collate(strA, strB);
 		}
-	} else if (val1 < val2) {
+	} else if (valA < valB) {
 		ret = -1;
-	} else /*if (val1 > val2)*/ {
+	} else /*if (valA > valB)*/ {
 		ret = 1;
 	}
 
-	g_free(text1);
-	g_free(text2);
+	g_free(strA);
+	g_free(strB);
 	return ret;
 }
