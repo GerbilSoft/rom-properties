@@ -52,6 +52,13 @@ class ListDataModelPrivate
 		// Points to an element in lc_data.
 		const vector<QString> *pData;
 
+		// Qt::ItemFlags
+		Qt::ItemFlags itemFlags;
+
+		// Checkboxes.
+		uint32_t checkboxes;
+		bool hasCheckboxes;
+
 		// Text alignment.
 		uint32_t align_headers;
 		uint32_t align_data;
@@ -63,9 +70,10 @@ class ListDataModelPrivate
 		/**
 		 * Convert a single language from RFT_LISTDATA or RFT_LISTDATA_MULTI to vector<QString>.
 		 * @param list_data Single language RFT_LISTDATA data.
+		 * @param hasCheckboxes If true, skip empty rows.
 		 * @return vector<QString>.
 		 */
-		static vector<QString> convertListDataToVector(const RomFields::ListData_t *list_data);
+		static vector<QString> convertListDataToVector(const RomFields::ListData_t *list_data, bool hasCheckboxes);
 
 	public:
 		/**
@@ -102,15 +110,21 @@ ListDataModelPrivate::ListDataModelPrivate(ListDataModel *q)
 	, columnCount(0)
 	, rowCount(0)
 	, pData(nullptr)
+	, itemFlags(Qt::NoItemFlags)
+	, checkboxes(0)
+	, hasCheckboxes(false)
+	, align_headers(0)
+	, align_data(0)
 	, lc('en')
 { }
 
 /**
  * Convert a single language from RFT_LISTDATA or RFT_LISTDATA_MULTI to vector<QString>.
  * @param list_data Single language RFT_LISTDATA data.
+ * @param hasCheckboxes If true, skip empty rows.
  * @return vector<QString>.
  */
-vector<QString> ListDataModelPrivate::convertListDataToVector(const RomFields::ListData_t *list_data)
+vector<QString> ListDataModelPrivate::convertListDataToVector(const RomFields::ListData_t *list_data, bool hasCheckboxes)
 {
 	vector<QString> data;
 	if (!list_data || list_data->empty()) {
@@ -125,15 +139,10 @@ vector<QString> ListDataModelPrivate::convertListDataToVector(const RomFields::L
 	const auto list_data_cend = list_data->cend();
 	for (auto iter = list_data->cbegin(); iter != list_data_cend; ++iter) {
 		const vector<string> &data_row = *iter;
-		// FIXME: Skip even if we don't have checkboxes?
-		// (also check other UI frontends)
-		/*
 		if (hasCheckboxes && data_row.empty()) {
 			// Skip this row.
-			checkboxes >>= 1;
 			continue;
 		}
-		*/
 
 		// Add item text.
 		assert((int)data_row.size() == columnCount);
@@ -298,12 +307,30 @@ QVariant ListDataModel::data(const QModelIndex& index, int role) const
 			// Qt::Alignment
 			return d->align_tbl[((d->align_data >> (column * RomFields::TXA_BITS)) & RomFields::TXA_MASK)];
 
+		case Qt::CheckStateRole:
+			if (column != 0 || !d->hasCheckboxes)
+				break;
+			return (d->checkboxes & (1U << row)) ? Qt::Checked : Qt::Unchecked;
+
 		default:
 			break;
 	}
 
 	// Default value.
 	return QVariant();
+}
+
+Qt::ItemFlags ListDataModel::flags(const QModelIndex& index) const
+{
+	Q_D(const ListDataModel);
+	if (!index.isValid() || !d->pData)
+		return Qt::NoItemFlags;
+	const int row = index.row();
+	const int column = index.column();
+	if (row < 0 || row >= d->rowCount || column < 0 || column >= d->columnCount)
+		return Qt::NoItemFlags;
+
+	return d->itemFlags;
 }
 
 QVariant ListDataModel::headerData(int section, Qt::Orientation orientation, int role) const
@@ -360,6 +387,9 @@ void ListDataModel::setField(const RomFields::Field *pField)
 		d->headers.clear();
 		d->map_data.clear();
 		d->pData = nullptr;
+		d->itemFlags = Qt::NoItemFlags;
+		d->checkboxes = 0;
+		d->hasCheckboxes = false;
 		d->align_headers = 0;
 		d->align_data = 0;
 	}
@@ -370,6 +400,16 @@ void ListDataModel::setField(const RomFields::Field *pField)
 	}
 
 	const auto &listDataDesc = pField->desc.list_data;
+
+	// Validate flags.
+	// Cannot have both checkboxes and icons.
+	const bool hasCheckboxes = !!(listDataDesc.flags & RomFields::RFT_LISTDATA_CHECKBOXES);
+	const bool hasIcons = !!(listDataDesc.flags & RomFields::RFT_LISTDATA_ICONS);
+	assert(!(hasCheckboxes && hasIcons));
+	if (hasCheckboxes && hasIcons) {
+		// Both are set. This shouldn't happen...
+		return;
+	}
 
 	// Single language ListData_t.
 	// For RFT_LISTDATA_MULTI, this is only used for row and column count.
@@ -398,6 +438,14 @@ void ListDataModel::setField(const RomFields::Field *pField)
 		return;
 	}
 
+	if (hasIcons) {
+		assert(pField->data.list_data.mxd.icons != nullptr);
+		if (!pField->data.list_data.mxd.icons) {
+			// No icons vector...
+			return;
+		}
+	}
+
 	// Copy alignment values.
 	d->align_headers = listDataDesc.col_attrs.align_headers;
 	d->align_data = listDataDesc.col_attrs.align_data;
@@ -424,6 +472,19 @@ void ListDataModel::setField(const RomFields::Field *pField)
 	d->columnCount = columnCount;
 	endInsertColumns();
 
+	// Checkboxes.
+	if (hasCheckboxes) {
+		d->checkboxes = pField->data.list_data.mxd.checkboxes;
+		d->hasCheckboxes = true;
+	}
+
+	// Set Qt::ItemFlags.
+	if (hasIcons) {
+		d->itemFlags = Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsDragEnabled;
+	} else {
+		d->itemFlags = Qt::ItemIsEnabled | Qt::ItemIsSelectable;
+	}
+
 	// Add the row data.
 	int rowCount;
 	if (isMulti) {
@@ -437,7 +498,7 @@ void ListDataModel::setField(const RomFields::Field *pField)
 		for (; iter != multi_cend; ++iter) {
 			assert(static_cast<int>(iter->second.size()) == rowCount);
 			auto pair = d->map_data.emplace(std::make_pair(iter->first,
-				d->convertListDataToVector(&iter->second)));
+				d->convertListDataToVector(&iter->second, hasCheckboxes)));
 			if (!d->pData && iter->first == d->lc) {
 				d->pData = &(pair.first->second);
 			}
@@ -451,13 +512,20 @@ void ListDataModel::setField(const RomFields::Field *pField)
 	} else {
 		// RFT_LISTDATA: Single language.
 		rowCount = static_cast<int>(list_data->size());
-		auto pair = d->map_data.emplace(std::make_pair(0, d->convertListDataToVector(list_data)));
+		auto pair = d->map_data.emplace(std::make_pair(0,
+			d->convertListDataToVector(list_data, hasCheckboxes)));
 		d->pData = &(pair.first->second);
 	}
 
 	if (d->pData) {
 		beginInsertRows(QModelIndex(), 0, (rowCount - 1));
-		d->rowCount = rowCount;
+
+		// NOTE: We may have skipped empty rows if checkboxes are enabled.
+		if (likely(!hasCheckboxes)) {
+			d->rowCount = rowCount;
+		} else {
+			d->rowCount = static_cast<int>(d->pData->size() / d->columnCount);
+		}
 		endInsertRows();
 	}
 }

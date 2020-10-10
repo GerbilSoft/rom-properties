@@ -797,8 +797,6 @@ void RomDataViewPrivate::initListData(QLabel *lblDesc,
 
 	Q_Q(RomDataView);
 	QTreeView *treeView;
-	static const Qt::ItemFlags itemFlagsNormal = Qt::ItemIsEnabled | Qt::ItemIsSelectable;
-	static const Qt::ItemFlags itemFlagsIcon = Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsDragEnabled;
 	if (hasIcons) {
 		treeView = new DragImageTreeView(q);
 		treeView->setDragEnabled(true);
@@ -850,41 +848,12 @@ void RomDataViewPrivate::initListData(QLabel *lblDesc,
 	}
 
 #if 0
-	// Add the row data.
-	// NOTE: For RFT_STRING_MULTI, we're only adding placeholder rows.
-	uint32_t checkboxes = 0;
-	if (hasCheckboxes) {
-		checkboxes = field.data.list_data.mxd.checkboxes;
-	}
-
 	unsigned int row = 0;	// for icons [TODO: Use iterator?]
 	const auto list_data_cend = list_data->cend();
 	for (auto iter = list_data->cbegin(); iter != list_data_cend; ++iter, row++) {
 		const vector<string> &data_row = *iter;
-		// FIXME: Skip even if we don't have checkboxes?
-		// (also check other UI frontends)
-		if (hasCheckboxes && data_row.empty()) {
-			// Skip this row.
-			checkboxes >>= 1;
-			continue;
-		}
-
 		QList<QStandardItem*> subItems;
 		subItems.reserve(colCount);
-
-		// Add item text.
-		uint32_t align = listDataDesc.col_attrs.align_data;
-		const auto data_row_cend = data_row.cend();
-		for (auto iter = data_row.cbegin(); iter != data_row_cend; ++iter) {
-			QStandardItem *const subItem = new QStandardItem();
-			subItem->setFlags(itemFlagsNormal);
-			if (!isMulti) {
-				subItem->setData(U82Q(*iter), Qt::DisplayRole);
-			}
-			subItem->setTextAlignment(static_cast<Qt::Alignment>(align_tbl[align & RomFields::TXA_MASK]));
-			subItems.append(subItem);
-			align >>= RomFields::TXA_BITS;
-		}
 
 		if (hasCheckboxes) {
 			// The checkbox will only show up if setCheckState()
