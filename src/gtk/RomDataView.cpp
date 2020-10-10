@@ -1272,6 +1272,7 @@ rom_data_view_init_listdata(RomDataView *page,
 				gtk_tree_view_column_set_sizing(column, FIXED);
 				break;*/
 			case RomFields::ColSizing::COLSZ_STRETCH:
+				// TODO: Wordwrapping and/or text elision?
 				gtk_tree_view_column_set_resizable(column, false);
 				gtk_tree_view_column_set_expand(column, true);
 				gtk_tree_view_column_set_sizing(column, GTK_TREE_VIEW_COLUMN_GROW_ONLY);
