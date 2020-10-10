@@ -1100,7 +1100,7 @@ int Xbox360_XDBF_Private::addFields_achievements_SPA(void)
 	params.data.multi = mvv_xach;
 	params.def_lc = getDefaultLC();
 	// TODO: Header alignment?
-	params.col_attrs.align_headers	= 0;
+	params.col_attrs.align_headers	= AFLD_ALIGN3(TXA_D, TXA_D, TXA_C);
 	params.col_attrs.align_data	= AFLD_ALIGN3(TXA_L, TXA_L, TXA_C);
 	params.col_attrs.sizing		= AFLD_ALIGN3(COLSZ_R, COLSZ_S, COLSZ_R);
 	params.col_attrs.sorting	= AFLD_ALIGN3(COLSORT_NUM, COLSORT_STD, COLSORT_NUM);
@@ -1554,7 +1554,7 @@ int Xbox360_XDBF_Private::addFields_achievements_GPD(void)
 	params.data.single = vv_xach;
 	params.def_lc = getDefaultLC();
 	// TODO: Header alignment?
-	params.col_attrs.align_headers	= 0;
+	params.col_attrs.align_headers	= AFLD_ALIGN3(TXA_D, TXA_D, TXA_C);
 	params.col_attrs.align_data	= AFLD_ALIGN3(TXA_L, TXA_L, TXA_C);
 	params.col_attrs.sizing		= AFLD_ALIGN3(COLSZ_R, COLSZ_S, COLSZ_R);
 	params.col_attrs.sorting	= AFLD_ALIGN3(COLSORT_NUM, COLSORT_STD, COLSORT_NUM);
