@@ -57,7 +57,6 @@
 #include <QtCore/QMimeData>
 #include <QtCore/QSignalMapper>
 #include <QtCore/QSettings>
-#include <QtCore/QSortFilterProxyModel>
 #include <QtCore/QString>
 #include <QtCore/QTimer>
 #include <QtCore/QTranslator>
@@ -75,6 +74,9 @@
 #include <QtGui/QStandardItem>
 #include <QtGui/QStandardItemModel>
 #include <QtGui/QValidator>
+
+// Was QtGui in Qt4; now QtCore in Qt5
+#include <QSortFilterProxyModel>
 
 // Was QtGui in Qt4; now QtWidgets in Qt5
 #include <QApplication>
