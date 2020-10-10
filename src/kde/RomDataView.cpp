@@ -816,10 +816,12 @@ void RomDataViewPrivate::initListData(QLabel *lblDesc,
 	// while others might take up three or more.
 	treeView->setUniformRowHeights(false);
 
-	// Standard item model.
+	// Item models.
+	// TODO: Subclass QSortFilterProxyModel for custom sorting methods.
 	QStandardItemModel *const itemModel = new QStandardItemModel(q);
-	// TODO: Proxy model for sorting.
-	treeView->setModel(itemModel);
+	QSortFilterProxyModel *const proxyModel = new QSortFilterProxyModel(q);
+	proxyModel->setSourceModel(itemModel);
+	treeView->setModel(proxyModel);
 
 	// Format table.
 	// All values are known to fit in uint8_t.
@@ -945,6 +947,14 @@ void RomDataViewPrivate::initListData(QLabel *lblDesc,
 			}
 			treeView->resizeColumnToContents(colCount);
 		}
+	}
+
+	// Enable sorting.
+	// NOTE: sort_dir maps directly to Qt::SortOrder.
+	treeView->setSortingEnabled(true);
+	if (listDataDesc.col_attrs.sort_col >= 0) {
+		treeView->sortByColumn(listDataDesc.col_attrs.sort_col,
+			static_cast<Qt::SortOrder>(listDataDesc.col_attrs.sort_dir));
 	}
 
 	if (listDataDesc.flags & RomFields::RFT_LISTDATA_SEPARATE_ROW) {
@@ -1223,12 +1233,17 @@ void RomDataViewPrivate::updateMulti(uint32_t user_lc)
 		const auto *const pListData = RomFields::getFromListDataMulti(pListData_multi, def_lc, user_lc);
 		assert(pListData != nullptr);
 		if (pListData != nullptr) {
-			// Update the list.
-			QStandardItemModel *const itemModel = qobject_cast<QStandardItemModel*>(treeView->model());
+			QSortFilterProxyModel *const proxyModel = qobject_cast<QSortFilterProxyModel*>(treeView->model());
+			assert(proxyModel != nullptr);
+			if (!proxyModel)
+				continue;
+
+			QStandardItemModel *const itemModel = qobject_cast<QStandardItemModel*>(proxyModel->sourceModel());
 			assert(itemModel != nullptr);
 			if (!itemModel)
 				continue;
 
+			// Update the list.
 			const int rowCount = itemModel->rowCount();
 			auto iter_listData = pListData->cbegin();
 			const auto pListData_cend = pListData->cend();

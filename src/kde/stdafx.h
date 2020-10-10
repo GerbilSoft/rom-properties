@@ -57,6 +57,7 @@
 #include <QtCore/QMimeData>
 #include <QtCore/QSignalMapper>
 #include <QtCore/QSettings>
+#include <QtCore/QSortFilterProxyModel>
 #include <QtCore/QString>
 #include <QtCore/QTimer>
 #include <QtCore/QTranslator>
