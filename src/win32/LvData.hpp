@@ -59,6 +59,25 @@ struct LvData {
 
 private:
 	/**
+	 * Numeric comparison function.
+	 * @param strA
+	 * @param strB
+	 * @return -1, 0, or 1 (like strcmp())
+	 */
+	static int doNumericCompare(LPCTSTR strA, LPCTSTR strB);
+
+	/**
+	 * Numeric comparison function.
+	 * @param strA
+	 * @param strB
+	 * @return -1, 0, or 1 (like strcmp())
+	 */
+	static inline int doNumericCompare(const std::tstring &strA, const std::tstring &strB)
+	{
+		return doNumericCompare(strA.c_str(), strB.c_str());
+	}
+
+	/**
 	 * Do a sort.
 	 * This does NOT adjust the Header control.
 	 * @param column Sort column.

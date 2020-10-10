@@ -83,6 +83,51 @@ BOOL LvData::toggleSortColumn(int iSubItem)
 }
 
 /**
+ * Numeric comparison function.
+ * @param strA
+ * @param strB
+ * @return -1, 0, or 1 (like strcmp())
+ */
+int LvData::doNumericCompare(LPCTSTR strA, LPCTSTR strB)
+{
+	int ret = 0;
+
+	// Handle NULL strings as if they're 0.
+	// TODO: Allow arbitrary bases?
+	// FIXME: Locale-independent functions.
+	TCHAR *endptrA = (TCHAR*)_T(""), *endptrB = (TCHAR*)_T("");
+	long long valA = (strA ? _tcstoll(strA, &endptrA, 10) : 0);
+	long long valB = (strB ? _tcstoll(strB, &endptrB, 10) : 0);
+
+	// If the values match, do a case-insensitive string comparison
+	// if the strings didn't fully convert to numbers.
+	if (valA == valB) {
+		if (*endptrA == _T('\0') && *endptrB == _T('\0')) {
+			// Both strings are numbers.
+			// No need to do a string comparison.
+		} else if (!strA || !strB) {
+			if (!strA && !strB) {
+				// Both strings are NULL.
+				// Handle this as if they're equal.
+			} else {
+				// Only one string is NULL.
+				// That will be sorted before the other string.
+				ret = (!strA ? -1 : 1);
+			}
+		} else {
+			// Do a string comparison.
+			ret = _tcscmp(strA, strB);
+		}
+	} else if (valA < valB) {
+		ret = -1;
+	} else /*if (valA > valB)*/ {
+		ret = 1;
+	}
+
+	return ret;
+}
+
+/**
  * Do a sort.
  * This does NOT adjust the Header control.
  * @param column Sort column.
@@ -90,11 +135,10 @@ BOOL LvData::toggleSortColumn(int iSubItem)
  */
 void LvData::doSort(int column, RomFields::ColSortOrder direction)
 {
-	// TODO: Reset the sort map?
-	auto compar = [this, column](int a, int b) -> bool {
-		// TODO: Case-insensitive and numeric sorts.
-		// For now, doing standard sorts only.
+	const RomFields::ColSorting method = static_cast<RomFields::ColSorting>(
+		(sortingMethods >> (column * RomFields::COLSORT_BITS)) & RomFields::COLSORT_MASK);
 
+	auto compar = [this, column, method](int a, int b) -> bool {
 		// TODO: Do we need these checks?
 		assert(a >= 0);
 		assert(a < (int)vvStr.size());
@@ -116,14 +160,38 @@ void LvData::doSort(int column, RomFields::ColSortOrder direction)
 		const tstring &strA = rowA[column];
 		const tstring &strB = rowB[column];
 
-		// TODO: Case-insensitive and numeric sorts.
-		return (strA.compare(strB) < 0);
+		bool bRet;
+		switch (method) {
+			default:
+				// Unsupported. We'll use standard sorting.
+				assert(!"Unsupported sorting method.");
+				// fall-through
+			case RomFields::COLSORT_STANDARD:
+				// Standard sorting.
+				bRet = (strA.compare(strB) < 0);
+				break;
+			case RomFields::COLSORT_NOCASE: {
+				// Case-insensitive sorting.
+				bRet = (CompareString(LOCALE_USER_DEFAULT,
+					LINGUISTIC_IGNORECASE,
+					strA.data(), static_cast<int>(strA.size()),
+					strB.data(), static_cast<int>(strB.size())) == CSTR_LESS_THAN);
+				break;
+			}
+			case RomFields::COLSORT_NUMERIC: {
+				// Numeric sorting.
+				bRet = (doNumericCompare(strA, strB) < 0);
+				break;
+			}
+		}
+		return bRet;
 	};
 
 	assert(column >= 0);
 	if (column < 0)
 		return;
 
+	// TODO: Reset the sort map?
 	switch (direction) {
 		default:
 			assert(!"Invalid sort direction.");
