@@ -149,6 +149,13 @@ class RP_ShellPropSheetExt_Private
 		inline BOOL ListView_GetDispInfo(NMLVDISPINFO *plvdi);
 
 		/**
+		 * ListView ColumnClick function.
+		 * @param plv	[in] NMLISTVIEW (only iSubItem is significant)
+		 * @return TRUE if handled; FALSE if not.
+		 */
+		inline BOOL ListView_ColumnClick(const NMLISTVIEW *plv);
+
+		/**
 		 * ListView CustomDraw function.
 		 * @param plvcd	[in/out] NMLVCUSTOMDRAW
 		 * @return Return value.
@@ -1233,10 +1240,9 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 
 	// Create a ListView widget.
 	// NOTE: Separate row option is handled by the caller.
-	// TODO: Enable sorting?
 	// TODO: Optimize by not using OR?
 	DWORD lvsStyle = WS_CHILD | WS_VISIBLE | WS_TABSTOP | LVS_ALIGNLEFT |
-	                 LVS_REPORT | LVS_SINGLESEL | LVS_NOSORTHEADER | LVS_OWNERDATA;
+	                 LVS_REPORT | LVS_SINGLESEL | LVS_OWNERDATA;
 	if (!listDataDesc.names) {
 		lvsStyle |= LVS_NOCOLUMNHEADER;
 	}
@@ -3569,19 +3575,18 @@ inline BOOL RP_ShellPropSheetExtPrivate::ListView_GetDispInfo(NMLVDISPINFO *plvd
 	// TODO: Assertions for row/column indexes.
 	LVITEM *const plvItem = &plvdi->item;
 	const unsigned int idFrom = static_cast<unsigned int>(plvdi->hdr.idFrom);
-	bool ret = false;
 
 	auto iter_lvData = map_lvData.find(idFrom);
 	if (iter_lvData == map_lvData.end()) {
 		// ListView data not found...
-		return false;
+		return FALSE;
 	}
 	const LvData &lvData = iter_lvData->second;
 
 	assert(lvData.vvStr.size() == lvData.vSortMap.size());
 	if (lvData.vvStr.size() != lvData.vSortMap.size()) {
 		// Size mismatch!
-		return false;
+		return FALSE;
 	}
 
 	// Get the real item number using the sort map.
@@ -3590,8 +3595,10 @@ inline BOOL RP_ShellPropSheetExtPrivate::ListView_GetDispInfo(NMLVDISPINFO *plvd
 		iItem = lvData.vSortMap[iItem];
 	} else {
 		// Out of range...
-		return false;
+		return FALSE;
 	}
+
+	BOOL bRet = FALSE;
 
 	if (plvItem->mask & LVIF_TEXT) {
 		// Fill in text.
@@ -3601,7 +3608,7 @@ inline BOOL RP_ShellPropSheetExtPrivate::ListView_GetDispInfo(NMLVDISPINFO *plvd
 		if (plvItem->iSubItem >= 0 && plvItem->iSubItem < static_cast<int>(row_data.size())) {
 			// Return the string data.
 			_tcscpy_s(plvItem->pszText, plvItem->cchTextMax, row_data[plvItem->iSubItem].c_str());
-			ret = true;
+			bRet = TRUE;
 		}
 	}
 
@@ -3619,26 +3626,49 @@ inline BOOL RP_ShellPropSheetExtPrivate::ListView_GetDispInfo(NMLVDISPINFO *plvd
 				plvItem->stateMask = LVIS_STATEIMAGEMASK;
 				plvItem->state = INDEXTOSTATEIMAGEMASK(
 					((lvData.checkboxes & (1U << iItem)) ? 2 : 1));
-				ret = true;
+				bRet = TRUE;
 			} else if (!lvData.vImageList.empty()) {
 				// We have an ImageList.
 				assert(lvData.vImageList.size() == lvData.vSortMap.size());
 				if (lvData.vImageList.size() != lvData.vSortMap.size()) {
 					// Size mismatch!
-					return false;
+					return FALSE;
 				}
 
 				const int iImage = lvData.vImageList[iItem];
 				if (iImage >= 0) {
 					// Set the ImageList index.
 					plvItem->iImage = iImage;
-					ret = true;
+					bRet = TRUE;
 				}
 			}
 		}
 	}
 
-	return ret;
+	return bRet;
+}
+
+/**
+ * ListView ColumnClick function.
+ * @param plv	[in] NMLISTVIEW (only iSubItem is significant)
+ * @return TRUE if handled; FALSE if not.
+ */
+inline BOOL RP_ShellPropSheetExt_Private::ListView_ColumnClick(const NMLISTVIEW *plv)
+{
+	// NOTE: GTK+ and Qt use "down" to indicate "ascending".
+	// Windows uses "up" to indicate "ascending".
+	// NOTE 2: According to MSDN, HDF_SORTUP/HDF_SORTDOWN are
+	// supported starting with COMMCTRL 6.00 (WinXP).
+	const unsigned int idFrom = static_cast<unsigned int>(plv->hdr.idFrom);
+
+	// Get the ListView data.
+	auto iter_lvData = map_lvData.find(idFrom);
+	if (iter_lvData == map_lvData.end()) {
+		// ListView data not found...
+		return false;
+	}
+	LvData &lvData = iter_lvData->second;
+	return lvData.toggleSortColumn(plv->iSubItem);
 }
 
 /**
@@ -3739,11 +3769,20 @@ INT_PTR RP_ShellPropSheetExt_Private::DlgProc_WM_NOTIFY(HWND hDlg, NMHDR *pHdr)
 		}
 
 		case LVN_GETDISPINFO: {
-			// Get data for an LVS_OWNERDRAW ListView.
+			// Get data for an LVS_OWNERDATA ListView.
 			if ((pHdr->idFrom & 0xFC00) != IDC_RFT_LISTDATA(0))
 				break;
 
 			ret = ListView_GetDispInfo(reinterpret_cast<NMLVDISPINFO*>(pHdr));
+			break;
+		}
+
+		case LVN_COLUMNCLICK: {
+			// Column header was clicked.
+			if ((pHdr->idFrom & 0xFC00) != IDC_RFT_LISTDATA(0))
+				break;
+
+			ret = ListView_ColumnClick(reinterpret_cast<const NMLISTVIEW*>(pHdr));
 			break;
 		}
 
@@ -4160,6 +4199,7 @@ INT_PTR CALLBACK RP_ShellPropSheetExt_Private::SubtabDlgProc(HWND hDlg, UINT uMs
 			const NMHDR *const pHdr = reinterpret_cast<const NMHDR*>(lParam);
 			switch (pHdr->code) {
 				case LVN_GETDISPINFO:
+				case LVN_COLUMNCLICK:
 				case NM_CUSTOMDRAW:
 				case LVN_ITEMCHANGING: {
 					// NOTE: Since this is a DlgProc, we can't simply return

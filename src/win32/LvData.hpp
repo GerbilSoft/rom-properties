@@ -48,6 +48,23 @@ struct LvData {
 	 * This uses the "default" sort.
 	 */
 	void resetSortMap(void);
+
+	/**
+	 * Toggle a sort column.
+	 * Usually called in response to LVN_COLUMNCLICK.
+	 * @param iSubItem Column number.
+	 * @return TRUE if handled; FALSE if not.
+	 */
+	BOOL toggleSortColumn(int iSubItem);
+
+private:
+	/**
+	 * Do a sort.
+	 * This does NOT adjust the Header control.
+	 * @param column Sort column.
+	 * @param direction Sort direction.
+	 */
+	void doSort(int column, LibRpBase::RomFields::ColSortOrder direction);
 };
 
 #endif /* __ROMPROPERTIES_WIN32_RP_LVDATA_HPP__ */
