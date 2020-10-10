@@ -13,7 +13,7 @@
 #include <stdint.h>
 
 // Qt includes.
-#include <QtCore/QSortFilterProxyModel>
+#include <QSortFilterProxyModel>
 
 class ListDataSortProxyModelPrivate;
 class ListDataSortProxyModel : public QSortFilterProxyModel
