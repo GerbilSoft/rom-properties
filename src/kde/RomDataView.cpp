@@ -39,6 +39,7 @@ using std::vector;
 
 // Custom Qt widgets.
 #include "DragImageTreeView.hpp"
+#include "ListDataModel.hpp"
 
 // KDE4/KF5 includes.
 #if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
@@ -136,7 +137,9 @@ class RomDataViewPrivate
 		vector<Data_StringMulti_t> vecStringMulti;
 
 		// RFT_LISTDATA_MULTI value QTreeViews.
-		typedef std::pair<QTreeView*, const RomFields::Field*> Data_ListDataMulti_t;
+		// NOTE: The ListDataModel* is kept here too because the QTreeView
+		// might have a QSortFilterProxyModel.
+		typedef std::pair<QTreeView*, ListDataModel*> Data_ListDataMulti_t;
 		vector<Data_ListDataMulti_t> vecListDataMulti;
 
 		/**
@@ -804,6 +807,8 @@ void RomDataViewPrivate::initListData(QLabel *lblDesc,
 		// TODO: Get multi-image drag & drop working.
 		//treeWidget->setSelectionMode(QAbstractItemView::ExtendedSelection);
 		treeView->setSelectionMode(QAbstractItemView::SingleSelection);
+		// TODO: Ideal icon size? Using 32x32 for now.
+		treeView->setIconSize(QSize(32, 32));
 	} else {
 		treeView = new QTreeView(q);
 		treeView->setSelectionMode(QAbstractItemView::SingleSelection);
@@ -818,53 +823,33 @@ void RomDataViewPrivate::initListData(QLabel *lblDesc,
 
 	// Item models.
 	// TODO: Subclass QSortFilterProxyModel for custom sorting methods.
-	QStandardItemModel *const itemModel = new QStandardItemModel(q);
+	ListDataModel *const listModel = new ListDataModel(q);
 	QSortFilterProxyModel *const proxyModel = new QSortFilterProxyModel(q);
-	proxyModel->setSourceModel(itemModel);
+	proxyModel->setSourceModel(listModel);
 	treeView->setModel(proxyModel);
 
-	// Format table.
-	// All values are known to fit in uint8_t.
-	// NOTE: Need to include AlignVCenter.
-	static const uint8_t align_tbl[4] = {
-		// Order: TXA_D, TXA_L, TXA_C, TXA_R
-		Qt::AlignLeft | Qt::AlignVCenter,
-		Qt::AlignLeft | Qt::AlignVCenter,
-		Qt::AlignCenter,
-		Qt::AlignRight | Qt::AlignVCenter,
-	};
+	// Add the field data to the ListDataModel.
+	listModel->setField(&field);
 
-	// Set up the column names.
-	itemModel->setColumnCount(colCount);
+	// Set up column and header visibility.
 	if (listDataDesc.names) {
 		QStringList columnNames;
 		columnNames.reserve(colCount);
 		uint32_t align = listDataDesc.col_attrs.align_headers;
-		auto iter = listDataDesc.names->cbegin();
-		for (int col = 0; col < colCount; col++, ++iter, align >>= RomFields::TXA_BITS) {
-			// FIXME: QHeaderView text alignment.
-			const QString name = U82Q(*iter);
-			QStandardItem *const headerItem = new QStandardItem(name);
-			headerItem->setTextAlignment(static_cast<Qt::Alignment>(align_tbl[align & RomFields::TXA_MASK]));
-			itemModel->setHorizontalHeaderItem(col, headerItem);
-
-			if (name.isEmpty()) {
+		int col = 0;
+		const auto names_cend = listDataDesc.names->cend();
+		for (auto iter = listDataDesc.names->cbegin(); iter != names_cend && col < colCount; ++iter, col++) {
+			if (iter->empty()) {
 				// Don't show this column.
 				treeView->setColumnHidden(col, true);
 			}
 		}
-		itemModel->setHorizontalHeaderLabels(columnNames);
 	} else {
 		// Hide the header.
 		treeView->header()->hide();
 	}
 
-	if (hasIcons) {
-		// TODO: Ideal icon size?
-		// Using 32x32 for now.
-		treeView->setIconSize(QSize(32, 32));
-	}
-
+#if 0
 	// Add the row data.
 	// NOTE: For RFT_STRING_MULTI, we're only adding placeholder rows.
 	uint32_t checkboxes = 0;
@@ -920,6 +905,7 @@ void RomDataViewPrivate::initListData(QLabel *lblDesc,
 		// Add the subitems.
 		itemModel->appendRow(subItems);
 	}
+#endif
 
 	// Set up column sizing.
 #if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
@@ -977,7 +963,7 @@ void RomDataViewPrivate::initListData(QLabel *lblDesc,
 	treeView->installEventFilter(q);
 
 	if (isMulti) {
-		vecListDataMulti.emplace_back(std::make_pair(treeView, &field));
+		vecListDataMulti.emplace_back(std::make_pair(treeView, listModel));
 	}
 }
 
@@ -1209,84 +1195,48 @@ void RomDataViewPrivate::updateMulti(uint32_t user_lc)
 	const auto vecListDataMulti_cend = vecListDataMulti.cend();
 	for (auto iter = vecListDataMulti.cbegin(); iter != vecListDataMulti_cend; ++iter) {
 		QTreeView *const treeView = iter->first;
-		const RomFields::Field *const pField = iter->second;
-		const auto *const pListData_multi = pField->data.list_data.data.multi;
-		assert(pListData_multi != nullptr);
-		assert(!pListData_multi->empty());
-		if (!pListData_multi || pListData_multi->empty()) {
-			// Invalid RFT_LISTDATA_MULTI...
-			continue;
-		}
+		ListDataModel *const listModel = iter->second;
 
-		if (!cboLanguage) {
-			// Need to add all supported languages.
-			// TODO: Do we need to do this for all of them, or just one?
-			const auto pListData_multi_cend = pListData_multi->cend();
-			for (auto iter_sm = pListData_multi->cbegin();
-			     iter_sm != pListData_multi_cend; ++iter_sm)
-			{
-				set_lc.insert(iter_sm->first);
-			}
-		}
-
-		// Get the ListData_t.
-		const auto *const pListData = RomFields::getFromListDataMulti(pListData_multi, def_lc, user_lc);
-		assert(pListData != nullptr);
-		if (pListData != nullptr) {
-			QSortFilterProxyModel *const proxyModel = qobject_cast<QSortFilterProxyModel*>(treeView->model());
-			assert(proxyModel != nullptr);
-			if (!proxyModel)
-				continue;
-
-			QStandardItemModel *const itemModel = qobject_cast<QStandardItemModel*>(proxyModel->sourceModel());
-			assert(itemModel != nullptr);
-			if (!itemModel)
-				continue;
-
-			// Update the list.
-			const int rowCount = itemModel->rowCount();
-			auto iter_listData = pListData->cbegin();
-			const auto pListData_cend = pListData->cend();
-			for (int row = 0; row < rowCount && iter_listData != pListData_cend; row++, ++iter_listData) {
-				int col = 0;
-				const auto iter_listData_cend = iter_listData->cend();
-				for (auto iter_row = iter_listData->cbegin();
-				     iter_row != iter_listData_cend; ++iter_row, col++)
-				{
-					QStandardItem *const item = itemModel->item(row, col);
-					assert(item != nullptr);
-					if (!item)
-						continue;
-
-					item->setData(U82Q(*iter_row), Qt::DisplayRole);
-				}
-			}
-
-			// Resize the columns to fit the contents.
-			// NOTE: Only done on first load.
+		if (listModel != nullptr) {
 			if (!cboLanguage) {
-				const int colCount = treeView->model()->columnCount();
-#if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
-				// Check if explicit column sizing was used.
-				// If so, only resize columns marked as "interactive".
-				QHeaderView *const pHeader = treeView->header();
-				assert(pHeader != nullptr);
-				if (pHeader && !pHeader->stretchLastSection()) {
-					for (int i = 0; i < colCount; i++) {
-						if (pHeader->sectionResizeMode(i) == QHeaderView::Interactive) {
-							treeView->resizeColumnToContents(i);
-						}
+				// Need to add all supported languages.
+				// TODO: Do we need to do this for all of them, or just one?
+				vector<uint32_t> vec_lc = listModel->getLCs();
+				std::for_each(vec_lc.cbegin(), vec_lc.cend(),
+					[&set_lc](uint32_t lc) {
+						set_lc.insert(lc);
 					}
-				} else
-#endif /* QT_VERSION >= QT_VERSION_CHECK(5,0,0) */
-				{
-					for (int i = 0; i < colCount; i++) {
+				);
+			}
+
+			// Set the language code.
+			listModel->setLC(def_lc, user_lc);
+		}
+
+		// Resize the columns to fit the contents.
+		// NOTE: Only done on first load.
+		if (!cboLanguage) {
+			const int colCount = treeView->model()->columnCount();
+#if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
+			// Check if explicit column sizing was used.
+			// If so, only resize columns marked as "interactive".
+			QHeaderView *const pHeader = treeView->header();
+			assert(pHeader != nullptr);
+			if (pHeader && !pHeader->stretchLastSection()) {
+				for (int i = 0; i < colCount; i++) {
+					if (pHeader->sectionResizeMode(i) == QHeaderView::Interactive) {
 						treeView->resizeColumnToContents(i);
 					}
 				}
-				// TODO: Not sure if this should be done for explicit column sizing.
-				treeView->resizeColumnToContents(colCount);
+			} else
+#endif /* QT_VERSION >= QT_VERSION_CHECK(5,0,0) */
+			{
+				for (int i = 0; i < colCount; i++) {
+					treeView->resizeColumnToContents(i);
+				}
 			}
+			// TODO: Not sure if this should be done for explicit column sizing.
+			treeView->resizeColumnToContents(colCount);
 		}
 	}
 
