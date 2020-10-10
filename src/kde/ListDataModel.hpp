@@ -22,6 +22,7 @@ class ListDataModel : public QAbstractListModel
 	typedef QAbstractListModel super;
 
 	Q_PROPERTY(uint32_t lc READ lc WRITE setLC NOTIFY lcChanged)
+	Q_PROPERTY(QSize iconSize READ iconSize WRITE setIconSize NOTIFY iconSizeChanged)
 
 	public:
 		explicit ListDataModel(QObject *parent = 0);
@@ -79,12 +80,37 @@ class ListDataModel : public QAbstractListModel
 		 */
 		std::vector<uint32_t> getLCs(void) const;
 
+		/**
+		 * Set the icon size.
+		 * @param iconSize Icon size.
+		 */
+		void setIconSize(const QSize &iconSize);
+
+		/**
+		 * Set the icon size.
+		 * @param width Icon width.
+		 * @param height Icon height.
+		 */
+		void setIconSize(int width, int height);
+
+		/**
+		 * Get the icon size.
+		 * @return Icon size.
+		 */
+		QSize iconSize(void) const;
+
 	signals:
 		/**
 		 * Language code has changed.
 		 * @param lc Language code.
 		 */
 		void lcChanged(uint32_t lc);
+
+		/**
+		 * Icon size has changed.
+		 * @param iconSize Icon size.
+		 */
+		void iconSizeChanged(const QSize &iconSize);
 };
 
 #endif /* __MCRECOVER_MEMCARDMODEL_HPP__ */

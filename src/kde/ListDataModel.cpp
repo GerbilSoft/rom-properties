@@ -9,9 +9,11 @@
 #include <stdafx.h>
 #include "ListDataModel.hpp"
 
-// librpbase
+// librpbase, librptexture
 #include "librpbase/RomFields.hpp"
+#include "librptexture/img/rp_image.hpp"
 using LibRpBase::RomFields;
+using LibRpTexture::rp_image;
 
 // C++ STL classes.
 using std::set;
@@ -25,6 +27,7 @@ class ListDataModelPrivate
 {
 	public:
 		explicit ListDataModelPrivate(ListDataModel *q);
+		~ListDataModelPrivate();
 
 	protected:
 		ListDataModel *const q_ptr;
@@ -55,18 +58,35 @@ class ListDataModelPrivate
 		// Qt::ItemFlags
 		Qt::ItemFlags itemFlags;
 
+		// Text alignment.
+		uint32_t align_headers;
+		uint32_t align_data;
+
 		// Checkboxes.
 		uint32_t checkboxes;
 		bool hasCheckboxes;
 
-		// Text alignment.
-		uint32_t align_headers;
-		uint32_t align_data;
+		// Icons.
+		// NOTE: References to rp_image* are kept in case
+		// the icon size is changed.
+		std::vector<QPixmap> icons;
+		std::vector<const rp_image*> icons_rp;
+		QSize iconSize;
 
 		// Current language code.
 		uint32_t lc;
 
 	public:
+		/**
+		 * Clear all internal data.
+		 */
+		void clearData(void);
+
+		/**
+		 * Update the icons pixmap vector.
+		 */
+		void updateIconPixmaps(void);
+
 		/**
 		 * Convert a single language from RFT_LISTDATA or RFT_LISTDATA_MULTI to vector<QString>.
 		 * @param list_data Single language RFT_LISTDATA data.
@@ -111,12 +131,79 @@ ListDataModelPrivate::ListDataModelPrivate(ListDataModel *q)
 	, rowCount(0)
 	, pData(nullptr)
 	, itemFlags(Qt::NoItemFlags)
-	, checkboxes(0)
-	, hasCheckboxes(false)
 	, align_headers(0)
 	, align_data(0)
+	, checkboxes(0)
+	, hasCheckboxes(false)
+	, iconSize(QSize(32, 32))
 	, lc('en')
-{ }
+{
+	// TODO: Better default icon size?
+}
+
+ListDataModelPrivate::~ListDataModelPrivate()
+{
+	// Unreference rp_images.
+	std::for_each(icons_rp.cbegin(), icons_rp.cend(),
+		[](const rp_image *img) {
+			UNREF(img);
+		}
+	);
+}
+
+/**
+ * Clear all internal data.
+ */
+void ListDataModelPrivate::clearData(void)
+{
+	headers.clear();
+	map_data.clear();
+	pData = nullptr;
+	itemFlags = Qt::NoItemFlags;
+	checkboxes = 0;
+	hasCheckboxes = false;
+	align_headers = 0;
+	align_data = 0;
+
+	// Clear icons.
+	icons.clear();
+	// Unreference rp_images.
+	std::for_each(icons_rp.cbegin(), icons_rp.cend(),
+		[](const rp_image *img) {
+			UNREF(img);
+		}
+	);
+}
+
+/**
+ * Update the icons pixmap vector.
+ */
+void ListDataModelPrivate::updateIconPixmaps(void)
+{
+	icons.clear();
+	icons.reserve(icons_rp.size());
+
+	const auto icons_rp_cend = icons_rp.cend();
+	for (auto iter = icons_rp.cbegin(); iter != icons_rp_cend; ++iter) {
+		const rp_image *const img = *iter;
+		if (!img) {
+			icons.emplace_back(QPixmap());
+			continue;
+		}
+
+		QPixmap pixmap = QPixmap::fromImage(rpToQImage(img));
+
+		// Do we need to resize the icon?
+		if (img->width() != iconSize.width() ||
+		    img->height() != iconSize.height())
+		{
+			// Resize is needed.
+			pixmap = pixmap.scaled(iconSize, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+		}
+
+		icons.emplace_back(pixmap);
+	}
+}
 
 /**
  * Convert a single language from RFT_LISTDATA or RFT_LISTDATA_MULTI to vector<QString>.
@@ -299,10 +386,6 @@ QVariant ListDataModel::data(const QModelIndex& index, int role) const
 		case Qt::DisplayRole:
 			return d->pData->at((row * d->columnCount) + column);
 
-		case Qt::DecorationRole:
-			// TODO
-			break;
-
 		case Qt::TextAlignmentRole:
 			// Qt::Alignment
 			return d->align_tbl[((d->align_data >> (column * RomFields::TXA_BITS)) & RomFields::TXA_MASK)];
@@ -311,6 +394,13 @@ QVariant ListDataModel::data(const QModelIndex& index, int role) const
 			if (column != 0 || !d->hasCheckboxes)
 				break;
 			return (d->checkboxes & (1U << row)) ? Qt::Checked : Qt::Unchecked;
+
+		case Qt::DecorationRole:
+			if (column != 0 || d->icons.empty())
+				break;
+			if (row <= (int)d->icons.size())
+				return d->icons[row];
+			break;
 
 		default:
 			break;
@@ -384,14 +474,7 @@ void ListDataModel::setField(const RomFields::Field *pField)
 			endRemoveColumns();
 		}
 
-		d->headers.clear();
-		d->map_data.clear();
-		d->pData = nullptr;
-		d->itemFlags = Qt::NoItemFlags;
-		d->checkboxes = 0;
-		d->hasCheckboxes = false;
-		d->align_headers = 0;
-		d->align_data = 0;
+		d->clearData();
 	}
 
 	if (!pField) {
@@ -517,6 +600,21 @@ void ListDataModel::setField(const RomFields::Field *pField)
 		d->pData = &(pair.first->second);
 	}
 
+	if (hasIcons) {
+		// Icons.
+		// NOTE: Icons are the same for all languages.
+		// Also, we can assume all rows are present, since
+		// icons and checkboxes are mutually exclusive.
+		d->icons.reserve(rowCount);
+		const auto icons_cend = pField->data.list_data.mxd.icons->cend();
+		for (auto iter = pField->data.list_data.mxd.icons->cbegin(); iter != icons_cend; ++iter) {
+			const rp_image *const icon = *iter;
+			d->icons_rp.emplace_back(icon ? icon->ref() : nullptr);
+		}
+		// Update the icons pixmap vector.
+		d->updateIconPixmaps();
+	}
+
 	if (d->pData) {
 		beginInsertRows(QModelIndex(), 0, (rowCount - 1));
 
@@ -592,4 +690,62 @@ vector<uint32_t> ListDataModel::getLCs(void) const
 		vec.emplace_back(iter->first);
 	}
 	return vec;
+}
+
+/**
+ * Set the icon size.
+ * @param iconSize Icon size.
+ */
+void ListDataModel::setIconSize(const QSize &iconSize)
+{
+	Q_D(ListDataModel);
+	if (d->iconSize == iconSize) {
+		// Same icon size.
+		return;
+	}
+
+	d->iconSize = iconSize;
+	if (!d->icons_rp.empty()) {
+		d->updateIconPixmaps();
+		QModelIndex indexFirst = createIndex(0, 0);
+		QModelIndex indexLast = createIndex(d->rowCount-1, 0);
+		emit dataChanged(indexFirst, indexLast);
+	}
+
+	emit iconSizeChanged(d->iconSize);
+}
+
+/**
+ * Set the icon size.
+ * @param width Icon width.
+ * @param height Icon height.
+ */
+void ListDataModel::setIconSize(int width, int height)
+{
+	Q_D(ListDataModel);
+	if (d->iconSize.width() == width && d->iconSize.height() == height) {
+		// Same icon size.
+		return;
+	}
+
+	d->iconSize.setWidth(width);
+	d->iconSize.setHeight(height);
+	if (!d->icons_rp.empty()) {
+		d->updateIconPixmaps();
+		QModelIndex indexFirst = createIndex(0, 0);
+		QModelIndex indexLast = createIndex(d->rowCount-1, 0);
+		emit dataChanged(indexFirst, indexLast);
+	}
+
+	emit iconSizeChanged(d->iconSize);
+}
+
+/**
+ * Get the icon size.
+ * @return Icon size.
+ */
+QSize ListDataModel::iconSize(void) const
+{
+	Q_D(const ListDataModel);
+	return d->iconSize;
 }

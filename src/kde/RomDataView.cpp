@@ -805,8 +805,6 @@ void RomDataViewPrivate::initListData(QLabel *lblDesc,
 		// TODO: Get multi-image drag & drop working.
 		//treeWidget->setSelectionMode(QAbstractItemView::ExtendedSelection);
 		treeView->setSelectionMode(QAbstractItemView::SingleSelection);
-		// TODO: Ideal icon size? Using 32x32 for now.
-		treeView->setIconSize(QSize(32, 32));
 	} else {
 		treeView = new QTreeView(q);
 		treeView->setSelectionMode(QAbstractItemView::SingleSelection);
@@ -826,6 +824,14 @@ void RomDataViewPrivate::initListData(QLabel *lblDesc,
 	proxyModel->setSourceModel(listModel);
 	treeView->setModel(proxyModel);
 
+	if (hasIcons) {
+		// TODO: Ideal icon size? Using 32x32 for now.
+		// NOTE: QTreeView's iconSize only applies to QIcon, not QPixmap.
+		const QSize iconSize(32, 32);
+		treeView->setIconSize(iconSize);
+		listModel->setIconSize(iconSize);
+	}
+
 	// Add the field data to the ListDataModel.
 	listModel->setField(&field);
 
@@ -833,7 +839,6 @@ void RomDataViewPrivate::initListData(QLabel *lblDesc,
 	if (listDataDesc.names) {
 		QStringList columnNames;
 		columnNames.reserve(colCount);
-		uint32_t align = listDataDesc.col_attrs.align_headers;
 		int col = 0;
 		const auto names_cend = listDataDesc.names->cend();
 		for (auto iter = listDataDesc.names->cbegin(); iter != names_cend && col < colCount; ++iter, col++) {
@@ -846,35 +851,6 @@ void RomDataViewPrivate::initListData(QLabel *lblDesc,
 		// Hide the header.
 		treeView->header()->hide();
 	}
-
-#if 0
-	unsigned int row = 0;	// for icons [TODO: Use iterator?]
-	const auto list_data_cend = list_data->cend();
-	for (auto iter = list_data->cbegin(); iter != list_data_cend; ++iter, row++) {
-		const vector<string> &data_row = *iter;
-		QList<QStandardItem*> subItems;
-		subItems.reserve(colCount);
-
-		if (hasCheckboxes) {
-			// The checkbox will only show up if setCheckState()
-			// is called at least once, regardless of value.
-			QStandardItem *const subItem = subItems[0];
-			subItem->setCheckState((checkboxes & 1) ? Qt::Checked : Qt::Unchecked);
-			checkboxes >>= 1;
-		} else if (hasIcons) {
-			const rp_image *const icon = field.data.list_data.mxd.icons->at(row);
-			if (icon) {
-				QStandardItem *const subItem = subItems[0];
-				subItem->setIcon(QIcon(QPixmap::fromImage(rpToQImage(icon))));
-				subItem->setData(QVariant::fromValue((void*)icon), DragImageTreeView::RpImageRole);
-				subItem->setFlags(itemFlagsIcon);
-			}
-		}
-
-		// Add the subitems.
-		itemModel->appendRow(subItems);
-	}
-#endif
 
 	// Set up column sizing.
 #if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
