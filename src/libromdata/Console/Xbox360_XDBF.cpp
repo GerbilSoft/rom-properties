@@ -1105,7 +1105,7 @@ int Xbox360_XDBF_Private::addFields_achievements_SPA(void)
 	params.col_attrs.sizing		= AFLD_ALIGN3(COLSZ_R, COLSZ_S, COLSZ_R);
 	params.col_attrs.sorting	= AFLD_ALIGN3(COLSORT_NUM, COLSORT_STD, COLSORT_NUM);
 	params.col_attrs.sort_col	= 0;	// ID
-	params.col_attrs.sort_dir	= 0;	// down (ascending)
+	params.col_attrs.sort_dir	= RomFields::COLSORTORDER_ASCENDING;
 	params.mxd.icons = vv_icons;
 	fields->addField_listData(C_("Xbox360_XDBF", "Achievements"), &params);
 	return 0;
@@ -1310,7 +1310,7 @@ int Xbox360_XDBF_Private::addFields_avatarAwards_SPA(void)
 	params.col_attrs.sizing		= AFLD_ALIGN2(COLSZ_R, COLSZ_S);
 	params.col_attrs.sorting	= AFLD_ALIGN2(COLSORT_NUM, COLSORT_STD);
 	params.col_attrs.sort_col	= 0;	// ID
-	params.col_attrs.sort_dir	= 0;	// down (ascending)
+	params.col_attrs.sort_dir	= RomFields::COLSORTORDER_ASCENDING;
 	params.data.multi = mvv_xgaa;
 	params.mxd.icons = vv_icons;
 	fields->addField_listData(C_("Xbox360_XDBF", "Avatar Awards"), &params);
@@ -1559,7 +1559,7 @@ int Xbox360_XDBF_Private::addFields_achievements_GPD(void)
 	params.col_attrs.sizing		= AFLD_ALIGN3(COLSZ_R, COLSZ_S, COLSZ_R);
 	params.col_attrs.sorting	= AFLD_ALIGN3(COLSORT_NUM, COLSORT_STD, COLSORT_NUM);
 	params.col_attrs.sort_col	= 0;	// ID
-	params.col_attrs.sort_dir	= 0;	// down (ascending)
+	params.col_attrs.sort_dir	= RomFields::COLSORTORDER_ASCENDING;
 	params.mxd.icons = vv_icons;
 	fields->addField_listData(C_("Xbox360_XDBF", "Achievements"), &params);
 	return 0;

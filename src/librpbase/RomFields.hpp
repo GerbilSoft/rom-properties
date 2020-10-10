@@ -213,6 +213,13 @@ class RomFields
 			COLSORT_MASK		= 3U,
 		};
 
+		// Column sort order.
+		// Maps to GtkSortType and Qt::SortOrder.
+		enum ColSortOrder : uint8_t {
+			COLSORTORDER_ASCENDING	= 0U,
+			COLSORTORDER_DESCENDING	= 1U,
+		};
+
 		// RFT_LISTDATA per-column attributes.
 		// Up to 16 columns can be specified using
 		// two bits each, with the two LSBs indicating
@@ -225,7 +232,7 @@ class RomFields
 			uint32_t sizing;	// Column sizing
 			uint32_t sorting;	// Column sorting
 			int8_t  sort_col;	// Default sort column. (-1 for none)
-			uint8_t sort_dir;	// Sort direction. (0 == down [ascending], 1 == up [descending])
+			ColSortOrder sort_dir;	// Sort order.
 		};
 
 		// Typedefs for various containers.
@@ -626,7 +633,7 @@ class RomFields
 				col_attrs.sizing = 0;
 				col_attrs.sorting = 0;
 				col_attrs.sort_col = -1;
-				col_attrs.sort_dir = 0;
+				col_attrs.sort_dir = COLSORTORDER_ASCENDING;
 
 				data.single = nullptr;
 				mxd.icons = nullptr;
@@ -642,7 +649,7 @@ class RomFields
 				col_attrs.sizing = 0;
 				col_attrs.sorting = 0;
 				col_attrs.sort_col = -1;
-				col_attrs.sort_dir = 0;
+				col_attrs.sort_dir = COLSORTORDER_ASCENDING;
 
 				data.single = nullptr;
 				mxd.icons = nullptr;
