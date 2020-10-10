@@ -817,7 +817,7 @@ void RomDataViewPrivate::initListData(QLabel *lblDesc,
 	treeView->setUniformRowHeights(false);
 
 	// Standard item model.
-	QStandardItemModel *const itemModel = new QStandardItemModel();
+	QStandardItemModel *const itemModel = new QStandardItemModel(q);
 	// TODO: Proxy model for sorting.
 	treeView->setModel(itemModel);
 
