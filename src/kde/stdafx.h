@@ -71,6 +71,8 @@
 #include <QtGui/QMouseEvent>
 #include <QtGui/QPainter>
 #include <QtGui/QPixmap>
+#include <QtGui/QStandardItem>
+#include <QtGui/QStandardItemModel>
 #include <QtGui/QValidator>
 
 // Was QtGui in Qt4; now QtWidgets in Qt5
@@ -89,6 +91,8 @@
 #include <QStyle>
 #include <QStyledItemDelegate>
 #include <QTreeWidget>
+#include <QTreeWidgetItem>
+#include <QTreeView>
 #include <QWidget>
 
 #include <QFormLayout>

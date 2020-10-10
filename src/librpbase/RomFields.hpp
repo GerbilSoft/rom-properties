@@ -181,27 +181,36 @@ class RomFields
 
 		// Text alignment for RFT_LISTDATA.
 		enum TextAlign : uint32_t {
-			TXA_DEFAULT	= 0,	// OS default
-			TXA_LEFT	= 1,
-			TXA_CENTER	= 2,
-			TXA_RIGHT	= 3,
+			TXA_DEFAULT	= 0U,	// OS default
+			TXA_LEFT	= 1U,
+			TXA_CENTER	= 2U,
+			TXA_RIGHT	= 3U,
+
+			TXA_BITS	= 2U,
+			TXA_MASK	= 3U,
 		};
 
 		// Column sizing for RFT_LISTDATA.
 		// Based on Qt5's QHeaderView::ResizeMode.
 		enum ColSizing : uint32_t {
-			COLSZ_INTERACTIVE	= 0,
-			//COLSZ_FIXED		= 2,
-			COLSZ_STRETCH		= 1,
-			COLSZ_RESIZETOCONTENTS	= 3,
+			COLSZ_INTERACTIVE	= 0U,
+			//COLSZ_FIXED		= 2U,
+			COLSZ_STRETCH		= 1U,
+			COLSZ_RESIZETOCONTENTS	= 3U,
+
+			COLSZ_BITS		= 2U,
+			COLSZ_MASK		= 3U,
 		};
 
 		// Column sorting for RFT_LISTDATA.
 		enum ColSorting : uint32_t {
-			COLSORT_STANDARD	= 0,	// Standard sort
-			COLSORT_NOCASE		= 1,	// Case-insensitive sort
-			COLSORT_NUMERIC		= 2,	// Numeric sort
-			//COLSORT_3		= 3,
+			COLSORT_STANDARD	= 0U,	// Standard sort
+			COLSORT_NOCASE		= 1U,	// Case-insensitive sort
+			COLSORT_NUMERIC		= 2U,	// Numeric sort
+			//COLSORT_3		= 3U,
+
+			COLSORT_BITS		= 2U,
+			COLSORT_MASK		= 3U,
 		};
 
 		// RFT_LISTDATA per-column attributes.

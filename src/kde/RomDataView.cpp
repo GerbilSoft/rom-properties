@@ -38,7 +38,7 @@ using std::vector;
 #include <QtGui/QClipboard>
 
 // Custom Qt widgets.
-#include "DragImageTreeWidget.hpp"
+#include "DragImageTreeView.hpp"
 
 // KDE4/KF5 includes.
 #if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
@@ -135,8 +135,8 @@ class RomDataViewPrivate
 		typedef std::pair<QLabel*, const RomFields::Field*> Data_StringMulti_t;
 		vector<Data_StringMulti_t> vecStringMulti;
 
-		// RFT_LISTDATA_MULTI value QTreeWidgets.
-		typedef std::pair<QTreeWidget*, const RomFields::Field*> Data_ListDataMulti_t;
+		// RFT_LISTDATA_MULTI value QTreeViews.
+		typedef std::pair<QTreeView*, const RomFields::Field*> Data_ListDataMulti_t;
 		vector<Data_ListDataMulti_t> vecListDataMulti;
 
 		/**
@@ -729,7 +729,7 @@ void RomDataViewPrivate::initBitfield(QLabel *lblDesc,
 void RomDataViewPrivate::initListData(QLabel *lblDesc,
 	const RomFields::Field &field, int fieldIdx)
 {
-	// ListData type. Create a QTreeWidget.
+	// ListData type. Create a QTreeView.
 	const auto &listDataDesc = field.desc.list_data;
 	// NOTE: listDataDesc.names can be nullptr,
 	// which means we don't have any column headers.
@@ -793,29 +793,33 @@ void RomDataViewPrivate::initListData(QLabel *lblDesc,
 	}
 
 	Q_Q(RomDataView);
-	QTreeWidget *treeWidget;
-	Qt::ItemFlags itemFlags;
+	QTreeView *treeView;
+	static const Qt::ItemFlags itemFlagsNormal = Qt::ItemIsEnabled | Qt::ItemIsSelectable;
+	static const Qt::ItemFlags itemFlagsIcon = Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsDragEnabled;
 	if (hasIcons) {
-		treeWidget = new DragImageTreeWidget(q);
-		treeWidget->setDragEnabled(true);
-		treeWidget->setDefaultDropAction(Qt::CopyAction);
-		treeWidget->setDragDropMode(QAbstractItemView::InternalMove);
-		itemFlags = Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsDragEnabled;
+		treeView = new DragImageTreeView(q);
+		treeView->setDragEnabled(true);
+		treeView->setDefaultDropAction(Qt::CopyAction);
+		treeView->setDragDropMode(QAbstractItemView::InternalMove);
 		// TODO: Get multi-image drag & drop working.
 		//treeWidget->setSelectionMode(QAbstractItemView::ExtendedSelection);
-		treeWidget->setSelectionMode(QAbstractItemView::SingleSelection);
+		treeView->setSelectionMode(QAbstractItemView::SingleSelection);
 	} else {
-		treeWidget = new QTreeWidget(q);
-		itemFlags = Qt::ItemIsEnabled | Qt::ItemIsSelectable;
-		treeWidget->setSelectionMode(QAbstractItemView::SingleSelection);
+		treeView = new QTreeView(q);
+		treeView->setSelectionMode(QAbstractItemView::SingleSelection);
 	}
-	treeWidget->setRootIsDecorated(false);
-	treeWidget->setAlternatingRowColors(true);
+	treeView->setRootIsDecorated(false);
+	treeView->setAlternatingRowColors(true);
 
 	// DISABLED uniform row heights.
 	// Some Xbox 360 achievements take up two lines,
 	// while others might take up three or more.
-	treeWidget->setUniformRowHeights(false);
+	treeView->setUniformRowHeights(false);
+
+	// Standard item model.
+	QStandardItemModel *const itemModel = new QStandardItemModel();
+	// TODO: Proxy model for sorting.
+	treeView->setModel(itemModel);
 
 	// Format table.
 	// All values are known to fit in uint8_t.
@@ -829,35 +833,34 @@ void RomDataViewPrivate::initListData(QLabel *lblDesc,
 	};
 
 	// Set up the column names.
-	treeWidget->setColumnCount(colCount);
+	itemModel->setColumnCount(colCount);
 	if (listDataDesc.names) {
 		QStringList columnNames;
 		columnNames.reserve(colCount);
-		QTreeWidgetItem *const header = treeWidget->headerItem();
 		uint32_t align = listDataDesc.col_attrs.align_headers;
 		auto iter = listDataDesc.names->cbegin();
-		for (int col = 0; col < colCount; col++, ++iter, align >>= 2) {
-			header->setTextAlignment(col, align_tbl[align & 3]);
+		for (int col = 0; col < colCount; col++, ++iter, align >>= RomFields::TXA_BITS) {
+			// FIXME: QHeaderView text alignment.
+			const QString name = U82Q(*iter);
+			QStandardItem *const headerItem = new QStandardItem(name);
+			headerItem->setTextAlignment(static_cast<Qt::Alignment>(align_tbl[align & RomFields::TXA_MASK]));
+			itemModel->setHorizontalHeaderItem(col, headerItem);
 
-			const string &name = *iter;
-			if (!name.empty()) {
-				columnNames.append(U82Q(name));
-			} else {
+			if (name.isEmpty()) {
 				// Don't show this column.
-				columnNames.append(QString());
-				treeWidget->setColumnHidden(col, true);
+				treeView->setColumnHidden(col, true);
 			}
 		}
-		treeWidget->setHeaderLabels(columnNames);
+		itemModel->setHorizontalHeaderLabels(columnNames);
 	} else {
 		// Hide the header.
-		treeWidget->header()->hide();
+		treeView->header()->hide();
 	}
 
 	if (hasIcons) {
 		// TODO: Ideal icon size?
 		// Using 32x32 for now.
-		treeWidget->setIconSize(QSize(32, 32));
+		treeView->setIconSize(QSize(32, 32));
 	}
 
 	// Add the row data.
@@ -879,36 +882,41 @@ void RomDataViewPrivate::initListData(QLabel *lblDesc,
 			continue;
 		}
 
-		QTreeWidgetItem *const treeWidgetItem = new QTreeWidgetItem(treeWidget);
+		QList<QStandardItem*> subItems;
+		subItems.reserve(colCount);
+
+		// Add item text.
+		uint32_t align = listDataDesc.col_attrs.align_data;
+		const auto data_row_cend = data_row.cend();
+		for (auto iter = data_row.cbegin(); iter != data_row_cend; ++iter) {
+			QStandardItem *const subItem = new QStandardItem();
+			subItem->setFlags(itemFlagsNormal);
+			if (!isMulti) {
+				subItem->setData(U82Q(*iter), Qt::DisplayRole);
+			}
+			subItem->setTextAlignment(static_cast<Qt::Alignment>(align_tbl[align & RomFields::TXA_MASK]));
+			subItems.append(subItem);
+			align >>= RomFields::TXA_BITS;
+		}
+
 		if (hasCheckboxes) {
 			// The checkbox will only show up if setCheckState()
 			// is called at least once, regardless of value.
-			treeWidgetItem->setCheckState(0, (checkboxes & 1) ? Qt::Checked : Qt::Unchecked);
+			QStandardItem *const subItem = subItems[0];
+			subItem->setCheckState((checkboxes & 1) ? Qt::Checked : Qt::Unchecked);
 			checkboxes >>= 1;
 		} else if (hasIcons) {
 			const rp_image *const icon = field.data.list_data.mxd.icons->at(row);
 			if (icon) {
-				treeWidgetItem->setIcon(0, QIcon(
-					QPixmap::fromImage(rpToQImage(icon))));
-				treeWidgetItem->setData(0, DragImageTreeWidget::RpImageRole,
-					QVariant::fromValue((void*)icon));
+				QStandardItem *const subItem = subItems[0];
+				subItem->setIcon(QIcon(QPixmap::fromImage(rpToQImage(icon))));
+				subItem->setData(QVariant::fromValue((void*)icon), DragImageTreeView::RpImageRole);
+				subItem->setFlags(itemFlagsIcon);
 			}
 		}
 
-		// Set item flags.
-		treeWidgetItem->setFlags(itemFlags);
-
-		int col = 0;
-		uint32_t align = listDataDesc.col_attrs.align_data;
-		const auto data_row_cend = data_row.cend();
-		for (auto iter = data_row.cbegin(); iter != data_row_cend; ++iter) {
-			if (!isMulti) {
-				treeWidgetItem->setData(col, Qt::DisplayRole, U82Q(*iter));
-			}
-			treeWidgetItem->setTextAlignment(col, align_tbl[align & 3]);
-			col++;
-			align >>= 2;
-		}
+		// Add the subitems.
+		itemModel->appendRow(subItems);
 	}
 
 	// Set up column sizing.
@@ -916,13 +924,13 @@ void RomDataViewPrivate::initListData(QLabel *lblDesc,
 	if (listDataDesc.col_attrs.sizing != 0) {
 		// Explicit column sizing was specified.
 		// NOTE: RomFields' COLSZ_* enums match QHeaderView::ResizeMode.
-		QHeaderView *const pHeader = treeWidget->header();
+		QHeaderView *const pHeader = treeView->header();
 		assert(pHeader != nullptr);
 		if (pHeader) {
 			pHeader->setStretchLastSection(false);
 			uint32_t sizing = listDataDesc.col_attrs.sizing;
-			for (int i = 0; i < colCount; i++, sizing >>= 2) {
-				pHeader->setSectionResizeMode(i, (QHeaderView::ResizeMode)(sizing & 3));
+			for (int i = 0; i < colCount; i++, sizing >>= RomFields::COLSZ_BITS) {
+				pHeader->setSectionResizeMode(i, (QHeaderView::ResizeMode)(sizing & RomFields::COLSZ_MASK));
 			}
 		}
 	} else
@@ -933,33 +941,33 @@ void RomDataViewPrivate::initListData(QLabel *lblDesc,
 		if (!isMulti) {
 			// Resize the columns to fit the contents.
 			for (int i = 0; i < colCount; i++) {
-				treeWidget->resizeColumnToContents(i);
+				treeView->resizeColumnToContents(i);
 			}
-			treeWidget->resizeColumnToContents(colCount);
+			treeView->resizeColumnToContents(colCount);
 		}
 	}
 
 	if (listDataDesc.flags & RomFields::RFT_LISTDATA_SEPARATE_ROW) {
 		// Separate rows.
 		tabs[field.tabIdx].form->addRow(lblDesc);
-		tabs[field.tabIdx].form->addRow(treeWidget);
+		tabs[field.tabIdx].form->addRow(treeView);
 	} else {
 		// Single row.
-		tabs[field.tabIdx].form->addRow(lblDesc, treeWidget);
+		tabs[field.tabIdx].form->addRow(lblDesc, treeView);
 	}
-	map_fieldIdx.insert(std::make_pair(fieldIdx, treeWidget));
+	map_fieldIdx.insert(std::make_pair(fieldIdx, treeView));
 
 	// Row height is recalculated when the window is first visible
 	// and/or the system theme is changed.
 	// TODO: Set an actual default number of rows, or let Qt handle it?
 	// (Windows uses 5.)
-	treeWidget->setProperty("RFT_LISTDATA_rows_visible", listDataDesc.rows_visible);
+	treeView->setProperty("RFT_LISTDATA_rows_visible", listDataDesc.rows_visible);
 
 	// Install the event filter.
-	treeWidget->installEventFilter(q);
+	treeView->installEventFilter(q);
 
 	if (isMulti) {
-		vecListDataMulti.emplace_back(std::make_pair(treeWidget, &field));
+		vecListDataMulti.emplace_back(std::make_pair(treeView, &field));
 	}
 }
 
@@ -986,25 +994,25 @@ void RomDataViewPrivate::adjustListData(int tabIdx)
 		return;
 	}
 
-	QTreeWidget *const treeWidget = qobject_cast<QTreeWidget*>(liField->widget());
-	if (!treeWidget) {
-		// Not a QTreeWidget.
+	QTreeView *const treeView = qobject_cast<QTreeView*>(liField->widget());
+	if (!treeView) {
+		// Not a QTreeView.
 		return;
 	}
 
-	// Move the treeWidget to the QVBoxLayout.
+	// Move the treeView to the QVBoxLayout.
 	int newRow = tab.vbox->count();
 	if (tab.lblCredits) {
 		newRow--;
 	}
 	assert(newRow >= 0);
 	tab.form->removeItem(liField);
-	tab.vbox->insertWidget(newRow, treeWidget, 999, Qt::Alignment());
+	tab.vbox->insertWidget(newRow, treeView, 999, Qt::Alignment());
 	delete liField;
 
 	// Unset this property to prevent the event filter from
 	// setting a fixed height.
-	treeWidget->setProperty("RFT_LISTDATA_rows_visible", QVariant());
+	treeView->setProperty("RFT_LISTDATA_rows_visible", QVariant());
 }
 
 /**
@@ -1190,7 +1198,7 @@ void RomDataViewPrivate::updateMulti(uint32_t user_lc)
 	// RFT_LISTDATA_MULTI
 	const auto vecListDataMulti_cend = vecListDataMulti.cend();
 	for (auto iter = vecListDataMulti.cbegin(); iter != vecListDataMulti_cend; ++iter) {
-		QTreeWidget *const treeWidget = iter->first;
+		QTreeView *const treeView = iter->first;
 		const RomFields::Field *const pField = iter->second;
 		const auto *const pListData_multi = pField->data.list_data.data.multi;
 		assert(pListData_multi != nullptr);
@@ -1216,45 +1224,53 @@ void RomDataViewPrivate::updateMulti(uint32_t user_lc)
 		assert(pListData != nullptr);
 		if (pListData != nullptr) {
 			// Update the list.
-			const int rowCount = treeWidget->topLevelItemCount();
+			QStandardItemModel *const itemModel = qobject_cast<QStandardItemModel*>(treeView->model());
+			assert(itemModel != nullptr);
+			if (!itemModel)
+				continue;
+
+			const int rowCount = itemModel->rowCount();
 			auto iter_listData = pListData->cbegin();
 			const auto pListData_cend = pListData->cend();
 			for (int row = 0; row < rowCount && iter_listData != pListData_cend; row++, ++iter_listData) {
-				QTreeWidgetItem *const treeWidgetItem = treeWidget->topLevelItem(row);
-
 				int col = 0;
 				const auto iter_listData_cend = iter_listData->cend();
 				for (auto iter_row = iter_listData->cbegin();
 				     iter_row != iter_listData_cend; ++iter_row, col++)
 				{
-					treeWidgetItem->setData(col, Qt::DisplayRole, U82Q(*iter_row));
+					QStandardItem *const item = itemModel->item(row, col);
+					assert(item != nullptr);
+					if (!item)
+						continue;
+
+					item->setData(U82Q(*iter_row), Qt::DisplayRole);
 				}
 			}
 
 			// Resize the columns to fit the contents.
 			// NOTE: Only done on first load.
 			if (!cboLanguage) {
-				const int colCount = treeWidget->columnCount();
+				const int colCount = treeView->model()->columnCount();
 #if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
 				// Check if explicit column sizing was used.
 				// If so, only resize columns marked as "interactive".
-				QHeaderView *const pHeader = treeWidget->header();
+				QHeaderView *const pHeader = treeView->header();
 				assert(pHeader != nullptr);
 				if (pHeader && !pHeader->stretchLastSection()) {
 					for (int i = 0; i < colCount; i++) {
 						if (pHeader->sectionResizeMode(i) == QHeaderView::Interactive) {
-							treeWidget->resizeColumnToContents(i);
+							treeView->resizeColumnToContents(i);
 						}
 					}
 				} else
 #endif /* QT_VERSION >= QT_VERSION_CHECK(5,0,0) */
 				{
 					for (int i = 0; i < colCount; i++) {
-						treeWidget->resizeColumnToContents(i);
+						treeView->resizeColumnToContents(i);
 					}
 				}
 				// TODO: Not sure if this should be done for explicit column sizing.
-				treeWidget->resizeColumnToContents(colCount);
+				treeView->resizeColumnToContents(colCount);
 			}
 		}
 	}
@@ -1727,22 +1743,23 @@ bool RomDataView::eventFilter(QObject *object, QEvent *event)
 			return false;
 	}
 
-	// Make sure this is a QTreeWidget.
-	QTreeWidget *const treeWidget = qobject_cast<QTreeWidget*>(object);
-	if (!treeWidget) {
-		// Not a QTreeWidget.
+	// Make sure this is a QTreeView.
+	QTreeView *const treeView = qobject_cast<QTreeView*>(object);
+	if (!treeView) {
+		// Not a QTreeView.
 		return false;
 	}
 
 	// Get the requested minimum number of rows.
-	// Recalculate the row heights for this QTreeWidget.
-	const int rows_visible = treeWidget->property("RFT_LISTDATA_rows_visible").toInt();
+	// Recalculate the row heights for this QTreeView.
+	const int rows_visible = treeView->property("RFT_LISTDATA_rows_visible").toInt();
 	if (rows_visible <= 0) {
-		// This QTreeWidget doesn't have a fixed number of rows.
+		// This QTreeView doesn't have a fixed number of rows.
 		// Let Qt decide how to manage its layout.
 		return false;
 	}
 
+#if 0
 	// Get the height of the first item.
 	QTreeWidgetItem *const treeWidgetItem = treeWidget->topLevelItem(0);
 	assert(treeWidgetItem != nullptr);
@@ -1769,6 +1786,7 @@ bool RomDataView::eventFilter(QObject *object, QEvent *event)
 	// Set the QTreeWidget height.
 	treeWidget->setMinimumHeight(height);
 	treeWidget->setMaximumHeight(height);
+#endif
 
 	// Allow the event to propagate.
 	return false;
