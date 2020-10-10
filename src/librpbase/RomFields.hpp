@@ -192,6 +192,18 @@ class RomFields
 			COLSZ_RESIZETOCONTENTS	= 3,
 		};
 
+		// RFT_LISTDATA per-column attributes.
+		// Up to 16 columns can be specified using
+		// two bits each, with the two LSBs indicating
+		// column 0, next two bits column 1, etc.
+		// See the TextAlign enum.
+		struct ListDataColAttrs_t {
+			// TODO: Reduce to uint16_t?
+			uint32_t align_headers;	// Header alignment
+			uint32_t align_data;	// Data alignment
+			uint32_t sizing;	// Column sizing
+		};
+
 		// Typedefs for various containers.
 		typedef std::map<uint32_t, std::string> StringMultiMap_t;
 		typedef std::vector<std::vector<std::string> > ListData_t;
@@ -231,19 +243,8 @@ class RomFields
 					// If a name is nullptr, that field is skipped.
 					const std::vector<std::string> *names;
 
-					// Column text alignment.
-					// Up to 16 columns can be specified using
-					// two bits each, with the two LSBs indicating
-					// column 0, next two bits column 1, etc.
-					// See the TextAlign enum.
-					struct {
-						// TODO: Reduce to uint16_t?
-						uint32_t headers;	// Header alignment
-						uint32_t data;		// Data alignment
-					} alignment;
-
-					// Column sizing.
-					uint32_t colsz;
+					// Per-column attributes.
+					ListDataColAttrs_t col_attrs;
 				} list_data;
 			} desc;
 
@@ -591,20 +592,22 @@ class RomFields
 		 */
 		struct AFLD_PARAMS {
 			AFLD_PARAMS()
-				: flags(0), rows_visible(0), colsz(0)
+				: flags(0), rows_visible(0)
 				, def_lc(0), headers(nullptr)
 			{
-				alignment.headers = 0;
-				alignment.data = 0;
+				col_attrs.align_headers = 0;
+				col_attrs.align_data = 0;
+				col_attrs.sizing = 0;
 				data.single = nullptr;
 				mxd.icons = nullptr;
 			}
-			AFLD_PARAMS(unsigned int flags, int rows_visible, uint32_t colsz = 0)
-				: flags(flags), rows_visible(rows_visible), colsz(colsz)
+			AFLD_PARAMS(unsigned int flags, int rows_visible)
+				: flags(flags), rows_visible(rows_visible)
 				, def_lc(0), headers(nullptr)
 			{
-				alignment.headers = 0;
-				alignment.data = 0;
+				col_attrs.align_headers = 0;
+				col_attrs.align_data = 0;
+				col_attrs.sizing = 0;
 				data.single = nullptr;
 				mxd.icons = nullptr;
 			}
@@ -613,19 +616,8 @@ class RomFields
 			unsigned int flags;
 			int rows_visible;
 
-			// Column text alignment.
-			// Up to 16 columns can be specified using
-			// two bits each, with the two LSBs indicating
-			// column 0, next two bits column 1, etc.
-			// See the TextAlign enum.
-			struct {
-				// TODO: Reduce to uint16_t?
-				uint32_t headers;	// Header alignment
-				uint32_t data;		// Data alignment
-			} alignment;
-
-			// Column sizing.
-			uint32_t colsz;
+			// Per-column attributes.
+			ListDataColAttrs_t col_attrs;
 
 			// Default language code. (RFT_LISTDATA_MULTI)
 			uint32_t def_lc;

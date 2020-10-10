@@ -1133,10 +1133,10 @@ rom_data_view_init_listdata(RomDataView *page,
 	};
 
 	// Set up the column names.
-	uint32_t align_headers = listDataDesc.alignment.headers;
-	uint32_t align_data = listDataDesc.alignment.data;
-	uint32_t colsz = listDataDesc.colsz;
-	for (int i = 0; i < colCount; i++, align_headers >>= 2, align_data >>= 2, colsz >>= 2) {
+	uint32_t align_headers = listDataDesc.col_attrs.align_headers;
+	uint32_t align_data = listDataDesc.col_attrs.align_data;
+	uint32_t sizing = listDataDesc.col_attrs.sizing;
+	for (int i = 0; i < colCount; i++, align_headers >>= 2, align_data >>= 2, sizing >>= 2) {
 		const int listStore_idx = i+col_start;
 
 		// NOTE: Not skipping empty column names.
@@ -1156,7 +1156,7 @@ rom_data_view_init_listdata(RomDataView *page,
 
 		// Column sizing
 		// NOTE: We don't have direct equivalents to QHeaderView::ResizeMode.
-		switch (colsz & 3) {
+		switch (sizing & 3) {
 			case RomFields::ColSizing::COLSZ_INTERACTIVE:
 				gtk_tree_view_column_set_resizable(column, true);
 				gtk_tree_view_column_set_sizing(column, GTK_TREE_VIEW_COLUMN_GROW_ONLY);

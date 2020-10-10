@@ -1095,14 +1095,14 @@ int Xbox360_XDBF_Private::addFields_achievements_SPA(void)
 	// Add the list data.
 	RomFields::AFLD_PARAMS params(RomFields::RFT_LISTDATA_SEPARATE_ROW |
 	                              RomFields::RFT_LISTDATA_ICONS |
-				      RomFields::RFT_LISTDATA_MULTI, 0,
-				      AFLD_ALIGN3(COLSZ_R, COLSZ_S, COLSZ_R));
+				      RomFields::RFT_LISTDATA_MULTI, 0);
 	params.headers = v_xach_col_names;
 	params.data.multi = mvv_xach;
 	params.def_lc = getDefaultLC();
 	// TODO: Header alignment?
-	params.alignment.headers = 0;
-	params.alignment.data = AFLD_ALIGN3(TXA_L, TXA_L, TXA_C);
+	params.col_attrs.align_headers = 0;
+	params.col_attrs.align_data = AFLD_ALIGN3(TXA_L, TXA_L, TXA_C);
+	params.col_attrs.sizing = AFLD_ALIGN3(COLSZ_R, COLSZ_S, COLSZ_R);
 	params.mxd.icons = vv_icons;
 	fields->addField_listData(C_("Xbox360_XDBF", "Achievements"), &params);
 	return 0;
@@ -1302,9 +1302,9 @@ int Xbox360_XDBF_Private::addFields_avatarAwards_SPA(void)
 	// one row due to achievements taking up all the space.
 	RomFields::AFLD_PARAMS params(RomFields::RFT_LISTDATA_SEPARATE_ROW |
 	                              RomFields::RFT_LISTDATA_ICONS |
-				      RomFields::RFT_LISTDATA_MULTI, 2,
-				      AFLD_ALIGN2(COLSZ_R, COLSZ_S));
+				      RomFields::RFT_LISTDATA_MULTI, 2);
 	params.headers = v_xgaa_col_names;
+	params.col_attrs.sizing = AFLD_ALIGN2(COLSZ_R, COLSZ_S);
 	params.data.multi = mvv_xgaa;
 	params.mxd.icons = vv_icons;
 	fields->addField_listData(C_("Xbox360_XDBF", "Avatar Awards"), &params);
@@ -1543,14 +1543,14 @@ int Xbox360_XDBF_Private::addFields_achievements_GPD(void)
 
 	// Add the list data.
 	RomFields::AFLD_PARAMS params(RomFields::RFT_LISTDATA_SEPARATE_ROW |
-	                              RomFields::RFT_LISTDATA_ICONS, 0,
-				      AFLD_ALIGN3(COLSZ_R, COLSZ_S, COLSZ_R));
+	                              RomFields::RFT_LISTDATA_ICONS, 0);
 	params.headers = v_xach_col_names;
 	params.data.single = vv_xach;
 	params.def_lc = getDefaultLC();
 	// TODO: Header alignment?
-	params.alignment.headers = 0;
-	params.alignment.data = AFLD_ALIGN3(TXA_L, TXA_L, TXA_C);
+	params.col_attrs.align_headers = 0;
+	params.col_attrs.align_data = AFLD_ALIGN3(TXA_L, TXA_L, TXA_C);
+	params.col_attrs.sizing = AFLD_ALIGN3(COLSZ_R, COLSZ_S, COLSZ_R);
 	params.mxd.icons = vv_icons;
 	fields->addField_listData(C_("Xbox360_XDBF", "Achievements"), &params);
 	return 0;

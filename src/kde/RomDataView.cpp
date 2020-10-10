@@ -834,7 +834,7 @@ void RomDataViewPrivate::initListData(QLabel *lblDesc,
 		QStringList columnNames;
 		columnNames.reserve(colCount);
 		QTreeWidgetItem *const header = treeWidget->headerItem();
-		uint32_t align = listDataDesc.alignment.headers;
+		uint32_t align = listDataDesc.col_attrs.align_headers;
 		auto iter = listDataDesc.names->cbegin();
 		for (int col = 0; col < colCount; col++, ++iter, align >>= 2) {
 			header->setTextAlignment(col, align_tbl[align & 3]);
@@ -899,7 +899,7 @@ void RomDataViewPrivate::initListData(QLabel *lblDesc,
 		treeWidgetItem->setFlags(itemFlags);
 
 		int col = 0;
-		uint32_t align = listDataDesc.alignment.data;
+		uint32_t align = listDataDesc.col_attrs.align_data;
 		const auto data_row_cend = data_row.cend();
 		for (auto iter = data_row.cbegin(); iter != data_row_cend; ++iter) {
 			if (!isMulti) {
@@ -913,16 +913,16 @@ void RomDataViewPrivate::initListData(QLabel *lblDesc,
 
 	// Set up column sizing.
 #if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
-	if (listDataDesc.colsz != 0) {
+	if (listDataDesc.col_attrs.sizing != 0) {
 		// Explicit column sizing was specified.
 		// NOTE: RomFields' COLSZ_* enums match QHeaderView::ResizeMode.
 		QHeaderView *const pHeader = treeWidget->header();
 		assert(pHeader != nullptr);
 		if (pHeader) {
 			pHeader->setStretchLastSection(false);
-			uint32_t colsz = listDataDesc.colsz;
-			for (int i = 0; i < colCount; i++, colsz >>= 2) {
-				pHeader->setSectionResizeMode(i, (QHeaderView::ResizeMode)(colsz & 3));
+			uint32_t sizing = listDataDesc.col_attrs.sizing;
+			for (int i = 0; i < colCount; i++, sizing >>= 2) {
+				pHeader->setSectionResizeMode(i, (QHeaderView::ResizeMode)(sizing & 3));
 			}
 		}
 	} else
