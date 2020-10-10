@@ -1631,12 +1631,6 @@ void RomDataView::hideEvent(QHideEvent *event)
 	super::hideEvent(event);
 }
 
-/**
- * Event filter for recalculating RFT_LISTDATA row heights.
- * @param object QObject.
- * @param event Event.
- * @return True to filter the event; false to pass it through.
- */
 bool RomDataView::eventFilter(QObject *object, QEvent *event)
 {
 	// Check the event type.
@@ -1669,34 +1663,27 @@ bool RomDataView::eventFilter(QObject *object, QEvent *event)
 		return false;
 	}
 
-#if 0
 	// Get the height of the first item.
-	QTreeWidgetItem *const treeWidgetItem = treeWidget->topLevelItem(0);
-	assert(treeWidgetItem != nullptr);
-	if (!treeWidgetItem) {
-		// No items...
-		return false;
-	}
-
-	QRect rect = treeWidget->visualItemRect(treeWidgetItem);
+	QAbstractItemModel *const model = treeView->model();
+	QRect rect = treeView->visualRect(model->index(0, 0));
 	if (rect.height() <= 0) {
-		// Item has no height?!
+		// Item has no height?
 		return false;
 	}
 
 	// Multiply the height by the requested number of visible rows.
 	int height = rect.height() * rows_visible;
 	// Add the header.
-	if (treeWidget->header()->isVisibleTo(treeWidget)) {
-		height += treeWidget->header()->height();
+	QHeaderView *const header = treeView->header();
+	if (header && header->isVisibleTo(treeView)) {
+		height += header->height();
 	}
-	// Add QTreeWidget borders.
-	height += (treeWidget->frameWidth() * 2);
+	// Add QTreeView borders.
+	height += (treeView->frameWidth() * 2);
 
-	// Set the QTreeWidget height.
-	treeWidget->setMinimumHeight(height);
-	treeWidget->setMaximumHeight(height);
-#endif
+	// Set the QTreeView height.
+	treeView->setMinimumHeight(height);
+	treeView->setMaximumHeight(height);
 
 	// Allow the event to propagate.
 	return false;
