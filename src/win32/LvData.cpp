@@ -96,8 +96,8 @@ int LvData::doNumericCompare(LPCTSTR strA, LPCTSTR strB)
 	// TODO: Allow arbitrary bases?
 	// FIXME: Locale-independent functions.
 	TCHAR *endptrA = (TCHAR*)_T(""), *endptrB = (TCHAR*)_T("");
-	long long valA = (strA ? _tcstoll(strA, &endptrA, 10) : 0);
-	long long valB = (strB ? _tcstoll(strB, &endptrB, 10) : 0);
+	int64_t valA = (strA ? _tcstoi64(strA, &endptrA, 10) : 0);
+	int64_t valB = (strB ? _tcstoi64(strB, &endptrB, 10) : 0);
 
 	// If the values match, do a case-insensitive string comparison
 	// if the strings didn't fully convert to numbers.
