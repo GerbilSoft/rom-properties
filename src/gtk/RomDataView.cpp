@@ -1237,7 +1237,10 @@ rom_data_view_init_listdata(RomDataView *page,
 	uint32_t align_data = listDataDesc.col_attrs.align_data;
 	uint32_t sizing = listDataDesc.col_attrs.sizing;
 	uint32_t sorting = listDataDesc.col_attrs.sorting;
-	for (int i = 0; i < colCount; i++, align_headers >>= 2, align_data >>= 2, sizing >>= 2, sorting >>= 2) {
+	for (int i = 0; i < colCount; i++, align_headers >>= RomFields::TXA_BITS,
+	     align_data >>= RomFields::TXA_BITS,
+	     sizing >>= RomFields::COLSZ_BITS, sorting >>= RomFields::COLSORT_BITS)
+	{
 		const int col_idx = i+col_start;
 
 		// NOTE: Not skipping empty column names.
@@ -1249,11 +1252,11 @@ rom_data_view_init_listdata(RomDataView *page,
 		gtk_tree_view_append_column(GTK_TREE_VIEW(treeView), column);
 
 		// Header alignment
-		const float header_xalign = align_tbl_xalign[align_headers & 3];
+		const float header_xalign = align_tbl_xalign[align_headers & RomFields::TXA_MASK];
 		// Data alignment
-		const float data_xalign = align_tbl_xalign[align_data & 3];
+		const float data_xalign = align_tbl_xalign[align_data & RomFields::TXA_MASK];
 		const PangoAlignment data_alignment =
-			static_cast<PangoAlignment>(align_tbl_pango[align_data & 3]);
+			static_cast<PangoAlignment>(align_tbl_pango[align_data & RomFields::TXA_MASK]);
 
 		g_object_set(column, "alignment", header_xalign, nullptr);
 		g_object_set(renderer,
@@ -1262,7 +1265,7 @@ rom_data_view_init_listdata(RomDataView *page,
 
 		// Column sizing
 		// NOTE: We don't have direct equivalents to QHeaderView::ResizeMode.
-		switch (sizing & 3) {
+		switch (sizing & RomFields::COLSZ_MASK) {
 			case RomFields::ColSizing::COLSZ_INTERACTIVE:
 				gtk_tree_view_column_set_resizable(column, true);
 				gtk_tree_view_column_set_sizing(column, GTK_TREE_VIEW_COLUMN_GROW_ONLY);
@@ -1291,7 +1294,7 @@ rom_data_view_init_listdata(RomDataView *page,
 		// NOTE: We're setting the sorting functions on the proxy model.
 		// That way, it won't affect the underlying data, which ensures
 		// that RFT_LISTDATA_MULTI is still handled correctly.
-		switch (sorting & 3) {
+		switch (sorting & RomFields::COLSORT_MASK) {
 			default:
 				// Unsupported. We'll use standard sorting.
 				assert(!"Unsupported sorting method.");
@@ -1315,7 +1318,7 @@ rom_data_view_init_listdata(RomDataView *page,
 	}
 
 	// Set the default sorting column.
-	// NOTE: sort_dir maps directly to GTK_SORT_ASCENDING/GTK_SORT_DESCENDING.
+	// NOTE: sort_dir maps directly to GtkSortType.
 	if (listDataDesc.col_attrs.sort_col >= 0) {
 		gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(sortProxy),
 			listDataDesc.col_attrs.sort_col+col_start,

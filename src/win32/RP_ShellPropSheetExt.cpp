@@ -1305,9 +1305,9 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 	LVCOLUMN lvColumn;
 	if (listDataDesc.names) {
 		auto iter = listDataDesc.names->cbegin();
-		for (int i = 0; i < colCount; ++iter, i++, align >>= 2) {
+		for (int i = 0; i < colCount; ++iter, i++, align >>= RomFields::TXA_BITS) {
 			lvColumn.mask = LVCF_TEXT | LVCF_FMT;
-			lvColumn.fmt = align_tbl[align & 3];
+			lvColumn.fmt = align_tbl[align & RomFields::TXA_MASK];
 
 			const string &str = *iter;
 			if (!str.empty()) {
@@ -1327,8 +1327,8 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 		}
 	} else {
 		lvColumn.mask = LVCF_FMT;
-		for (int i = 0; i < colCount; i++, align >>= 2) {
-			lvColumn.fmt = align_tbl[align & 3];
+		for (int i = 0; i < colCount; i++, align >>= RomFields::TXA_BITS) {
+			lvColumn.fmt = align_tbl[align & RomFields::TXA_MASK];
 			ListView_InsertColumn(hListView, i, &lvColumn);
 			col_width[i] = LVSCW_AUTOSIZE_USEHEADER;
 		}
