@@ -1141,7 +1141,6 @@ rom_data_view_init_listdata(RomDataView *page,
 		} else if (hasIcons) {
 			// Icon column.
 			const rp_image *const icon = field.data.list_data.mxd.icons->at(row);
-			assert(icon != nullptr);
 			if (icon) {
 				PIMGTYPE pixbuf = rp_image_to_PIMGTYPE(icon);
 				if (pixbuf) {
