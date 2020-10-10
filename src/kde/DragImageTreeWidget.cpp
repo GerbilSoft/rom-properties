@@ -81,7 +81,7 @@ void DragImageTreeWidget::startDrag(Qt::DropActions supportedActions)
 		pngData->unref();
 
 		// Save the icon.
-		if (!dragIcon.isNull()) {
+		if (dragIcon.isNull()) {
 			dragIcon = item->icon(0);
 		}
 
