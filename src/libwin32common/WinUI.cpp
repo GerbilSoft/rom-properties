@@ -764,7 +764,7 @@ LRESULT CALLBACK SingleLineEditProc(
 		case WM_NCDESTROY:
 			// Remove the window subclass.
 			// Reference: https://blogs.msdn.microsoft.com/oldnewthing/20031111-00/?p=41883
-			RemoveWindowSubclass(hWnd, MultiLineEditProc, uIdSubclass);
+			RemoveWindowSubclass(hWnd, SingleLineEditProc, uIdSubclass);
 			break;
 
 		default:
