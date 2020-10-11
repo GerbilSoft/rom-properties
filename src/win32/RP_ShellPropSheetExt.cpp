@@ -156,6 +156,13 @@ class RP_ShellPropSheetExt_Private
 		inline BOOL ListView_ColumnClick(const NMLISTVIEW *plv);
 
 		/**
+		 * Header DividerDblClick function.
+		 * @param phd	[in] NMHEADER
+		 * @return TRUE if handled; FALSE if not.
+		 */
+		inline BOOL Header_DividerDblClick(const NMHEADER *phd);
+
+		/**
 		 * ListView CustomDraw function.
 		 * @param plvcd	[in/out] NMLVCUSTOMDRAW
 		 * @return Return value.
@@ -1275,14 +1282,6 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 		colCount = (int)list_data->at(0).size();
 	}
 
-	// Column widths.
-	// LVSCW_AUTOSIZE_USEHEADER doesn't work for entries with newlines.
-	// TODO: Use ownerdraw instead? (WM_MEASUREITEM / WM_DRAWITEM)
-	unique_ptr<int[]> col_widths(new int[colCount]);
-	for (int i = colCount-1; i >= 0; i--) {
-		col_widths[i] = LVSCW_AUTOSIZE_USEHEADER;
-	}
-
 	// Format table.
 	// All values are known to fit in uint8_t.
 	static const uint8_t align_tbl[4] = {
@@ -1341,7 +1340,11 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 	LvData lvData;
 	lvData.vvStr.reserve(list_data->size());
 	lvData.hasCheckboxes = hasCheckboxes;
-	if (hasIcons) {
+	lvData.col_widths.resize(colCount);
+	if (hasCheckboxes) {
+		// TODO: Better calculation?
+		lvData.col0sizeadj = GetSystemMetrics(SM_CXMENUCHECK) + GetSystemMetrics(SM_CXEDGE);
+	} else if (hasIcons) {
 		lvData.vImageList.reserve(list_data->size());
 	}
 
@@ -1408,7 +1411,7 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 				int nl_count;
 				int width = LibWin32Common::measureStringForListView(hDC, tstr, &nl_count);
 				if (col < colCount) {
-					col_widths[col] = std::max(col_widths[col], width);
+					lvData.col_widths[col] = std::max(lvData.col_widths[col], width);
 				}
 				nl_max = std::max(nl_max, nl_count);
 
@@ -1434,6 +1437,8 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 		// TODO: Handle this better.
 		// FIXME: This only works if the RFT_LISTDATA has icons.
 		const int px = rp_AdjustSizeForDpi(32, rp_GetDpiForWindow(hDlg));
+		lvData.col0sizeadj = px;
+
 		SIZE sizeListIcon = {px, px};
 		bool resizeNeeded = false;
 		float factor = 1.0f;
@@ -1563,13 +1568,8 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 		lvData.resetSortMap();
 	}
 
-	// Save the LvData.
-	// TODO: Verify that std::move() works here.
-	map_lvData.insert(std::make_pair(cId, std::move(lvData)));
-
-	// Set the virtual list item count.
-	ListView_SetItemCountEx(hListView, lv_row_num,
-		LVSICF_NOINVALIDATEALL | LVSICF_NOSCROLL);
+	// Adjust column 0 width.
+	lvData.col_widths[0] += lvData.col0sizeadj;
 
 	if (!isMulti) {
 		// Resize all of the columns.
@@ -1578,9 +1578,17 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 		// not exceed the viewport.
 		// NOTE: Must count up; otherwise, XDBF Gamerscore ends up being too wide.
 		for (int i = 0; i < colCount; i++) {
-			ListView_SetColumnWidth(hListView, i, col_widths[i]);
+			ListView_SetColumnWidth(hListView, i, lvData.col_widths[i]);
 		}
 	}
+
+	// Save the LvData.
+	// TODO: Verify that std::move() works here.
+	map_lvData.insert(std::make_pair(cId, std::move(lvData)));
+
+	// Set the virtual list item count.
+	ListView_SetItemCountEx(hListView, lv_row_num,
+		LVSICF_NOINVALIDATEALL | LVSICF_NOSCROLL);
 
 	// Get the dialog margin.
 	// 7x7 DLU margin is recommended by the Windows UX guidelines.
@@ -1626,6 +1634,11 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 		// TODO: Can't handle this if no items are present.
 		cy = size.cy;
 	}
+
+	// Subclass the parent dialog so we can intercept HDN_DIVIDERDBLCLICK.
+	SetWindowSubclass(hListView, LibWin32Common::ListViewNoDividerDblClickSubclassProc,
+		static_cast<UINT_PTR>(cId),
+		reinterpret_cast<DWORD_PTR>(this));
 
 	// TODO: Skip this if cy == size.cy?
 	SetWindowPos(hListView, nullptr, 0, 0, size.cx, cy,
@@ -2052,12 +2065,8 @@ void RP_ShellPropSheetExt_Private::updateMulti(uint32_t user_lc)
 			}
 
 			// Column widths.
-			// LVSCW_AUTOSIZE_USEHEADER doesn't work for entries with newlines.
-			// TODO: Use ownerdraw instead? (WM_MEASUREITEM / WM_DRAWITEM)
-			unique_ptr<int[]> col_widths(new int[colCount]);
-			for (int i = 0; i < colCount; i++) {
-				col_widths[i] = LVSCW_AUTOSIZE_USEHEADER;
-			}
+			lvData.col_widths.clear();
+			lvData.col_widths.resize(colCount);
 
 			// Dialog font and device context.
 			// NOTE: Using the parent dialog's font.
@@ -2087,11 +2096,14 @@ void RP_ShellPropSheetExt_Private::updateMulti(uint32_t user_lc)
 					tstring tstr = U82T_s(*iter_sdr);
 					int width = LibWin32Common::measureStringForListView(hDC, tstr);
 					if (col < colCount) {
-						col_widths[col] = std::max(col_widths[col], width);
+						lvData.col_widths[col] = std::max(lvData.col_widths[col], width);
 					}
 					*iter_ddr = std::move(tstr);
 				}
 			}
+
+			// Add the column 0 size adjustment.
+			lvData.col_widths[0] += lvData.col0sizeadj;
 
 			// Resize the columns to fit the contents.
 			// NOTE: Only done on first load.
@@ -2102,7 +2114,7 @@ void RP_ShellPropSheetExt_Private::updateMulti(uint32_t user_lc)
 				// not exceed the viewport.
 				// NOTE: Must count up; otherwise, XDBF Gamerscore ends up being too wide.
 				for (int i = 0; i < colCount; i++) {
-					ListView_SetColumnWidth(hListView, i, col_widths[i]);
+					ListView_SetColumnWidth(hListView, i, lvData.col_widths[i]);
 				}
 			}
 
@@ -3672,10 +3684,50 @@ inline BOOL RP_ShellPropSheetExt_Private::ListView_ColumnClick(const NMLISTVIEW 
 	auto iter_lvData = map_lvData.find(idFrom);
 	if (iter_lvData == map_lvData.end()) {
 		// ListView data not found...
-		return false;
+		return FALSE;
 	}
 	LvData &lvData = iter_lvData->second;
 	return lvData.toggleSortColumn(plv->iSubItem);
+}
+
+/**
+ * Header DividerDblClick function.
+ * @param phd	[in] NMHEADER
+ * @return TRUE if handled; FALSE if not.
+ */
+inline BOOL RP_ShellPropSheetExt_Private::Header_DividerDblClick(const NMHEADER *phd)
+{
+	// Button should always be 0. (left button)
+	if (phd->iButton != 0) {
+		// Not the left button.
+		return FALSE;
+	}
+
+	// NOTE: We need to get the dialog ID of the ListView, not the Header.
+	HWND hHeader = phd->hdr.hwndFrom;
+	HWND hListView = GetParent(hHeader);
+	assert(hListView != nullptr);
+	if (!hListView)
+		return FALSE;
+	const unsigned int idFrom = static_cast<unsigned int>(GetDlgCtrlID(hListView));
+
+	// Get the ListView data.
+	auto iter_lvData = map_lvData.find(idFrom);
+	if (iter_lvData == map_lvData.end()) {
+		// ListView data not found...
+		return FALSE;
+	}
+	LvData &lvData = iter_lvData->second;
+
+	// Adjust the specified column.
+	assert(phd->iItem < static_cast<int>(lvData.col_widths.size()));
+	if (phd->iItem < static_cast<int>(lvData.col_widths.size())) {
+		ListView_SetColumnWidth(hListView, phd->iItem, lvData.col_widths[phd->iItem]);
+		return TRUE;
+	}
+
+	// Not handled...
+	return FALSE;
 }
 
 /**
@@ -3720,7 +3772,7 @@ inline int RP_ShellPropSheetExt_Private::ListView_CustomDraw(NMLVCUSTOMDRAW *plv
  */
 INT_PTR RP_ShellPropSheetExt_Private::DlgProc_WM_NOTIFY(HWND hDlg, NMHDR *pHdr)
 {
-	INT_PTR ret = false;
+	INT_PTR ret = FALSE;
 
 	switch (pHdr->code) {
 		case PSN_SETACTIVE:
@@ -3793,6 +3845,14 @@ INT_PTR RP_ShellPropSheetExt_Private::DlgProc_WM_NOTIFY(HWND hDlg, NMHDR *pHdr)
 			break;
 		}
 
+		case HDN_DIVIDERDBLCLICK: {
+			// Header divider was double-clicked.
+			// NOTE: We can't check idFrom here because this is the
+			// Header control sending the notification, not the ListView.
+			ret = Header_DividerDblClick(reinterpret_cast<const NMHEADER*>(pHdr));
+			break;
+		}
+
 		case NM_CUSTOMDRAW: {
 			// Custom drawing notification.
 			if ((pHdr->idFrom & 0xFC00) != IDC_RFT_LISTDATA(0))
@@ -3818,7 +3878,7 @@ INT_PTR RP_ShellPropSheetExt_Private::DlgProc_WM_NOTIFY(HWND hDlg, NMHDR *pHdr)
 			if ((pHdr->idFrom & 0xFC00) != IDC_RFT_LISTDATA(0))
 				break;
 
-			NMLISTVIEW *const pnmlv = reinterpret_cast<NMLISTVIEW*>(pHdr);
+			const NMLISTVIEW *const pnmlv = reinterpret_cast<const NMLISTVIEW*>(pHdr);
 			const unsigned int state = (pnmlv->uOldState ^ pnmlv->uNewState) & LVIS_STATEIMAGEMASK;
 			// Set result to true if the state difference is non-zero (i.e. it's changed).
 			SetWindowLongPtr(hDlg, DWLP_MSGRESULT, (state != 0));
@@ -4207,6 +4267,7 @@ INT_PTR CALLBACK RP_ShellPropSheetExt_Private::SubtabDlgProc(HWND hDlg, UINT uMs
 			switch (pHdr->code) {
 				case LVN_GETDISPINFO:
 				case LVN_COLUMNCLICK:
+				case HDN_DIVIDERDBLCLICK:
 				case NM_CUSTOMDRAW:
 				case LVN_ITEMCHANGING: {
 					// NOTE: Since this is a DlgProc, we can't simply return

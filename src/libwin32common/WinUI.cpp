@@ -279,22 +279,17 @@ int measureStringForListView(HDC hDC, const tstring &tstr, int *pNlCount)
 		prev_nl_pos = cur_nl_pos + 1;
 	}
 
-	if (nl > 0) {
-		// Measure the last line.
-		// TODO: Verify the values here.
-		SIZE textSize;
-		GetTextExtentPoint32(hDC, &tstr[prev_nl_pos], (int)(tstr.size() - prev_nl_pos), &textSize);
-		width = std::max<int>(width, textSize.cx + COL_WIDTH_PADDING);
-	}
+	// Measure the last line.
+	// TODO: Verify the values here.
+	SIZE textSize;
+	GetTextExtentPoint32(hDC, &tstr[prev_nl_pos], (int)(tstr.size() - prev_nl_pos), &textSize);
+	width = std::max<int>(width, textSize.cx + COL_WIDTH_PADDING);
 
 	if (pNlCount) {
 		*pNlCount = nl;
 	}
 
-	// FIXME: Don't use LVSCW_AUTOSIZE_USEHEADER.
-	// LVS_OWNERDATA doesn't handle this properly. (only gets what's onscreen)
-	// TODO: Figure out the correct padding so the columns aren't truncated.
-	return (nl > 0 ? width : LVSCW_AUTOSIZE_USEHEADER);
+	return width;
 }
 
 /** File dialogs **/
@@ -766,6 +761,44 @@ LRESULT CALLBACK SingleLineEditProc(
 			// Reference: https://blogs.msdn.microsoft.com/oldnewthing/20031111-00/?p=41883
 			RemoveWindowSubclass(hWnd, SingleLineEditProc, uIdSubclass);
 			break;
+
+		default:
+			break;
+	}
+
+	return DefSubclassProc(hWnd, uMsg, wParam, lParam);
+}
+
+/**
+ * Subclass procedure for ListView controls to disable HDN_DIVIDERDBLCLICK handling.
+ * @param hWnd		Dialog handle
+ * @param uMsg		Message
+ * @param wParam	WPARAM
+ * @param lParam	LPARAM
+ * @param uIdSubclass	Subclass ID (usually the control ID)
+ * @param dwRefData	RP_ShellPropSheetExt_Private*
+ */
+LRESULT CALLBACK ListViewNoDividerDblClickSubclassProc(
+	HWND hWnd, UINT uMsg,
+	WPARAM wParam, LPARAM lParam,
+	UINT_PTR uIdSubclass, DWORD_PTR dwRefData)
+{
+	switch (uMsg) {
+		case WM_NCDESTROY:
+			// Remove the window subclass.
+			// Reference: https://blogs.msdn.microsoft.com/oldnewthing/20031111-00/?p=41883
+			RemoveWindowSubclass(hWnd, ListViewNoDividerDblClickSubclassProc, uIdSubclass);
+			break;
+
+		case WM_NOTIFY: {
+			const NMHDR *const pHdr = reinterpret_cast<const NMHDR*>(lParam);
+			if (pHdr->code == HDN_DIVIDERDBLCLICK) {
+				// Send the notification to the parent control,
+				// and ignore it here.
+				return SendMessage(GetParent(hWnd), uMsg, wParam, lParam);
+			}
+			break;
+		}
 
 		default:
 			break;

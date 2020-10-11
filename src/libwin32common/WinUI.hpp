@@ -200,6 +200,20 @@ LRESULT CALLBACK SingleLineEditProc(
 	WPARAM wParam, LPARAM lParam,
 	UINT_PTR uIdSubclass, DWORD_PTR dwRefData);
 
+/**
+ * Subclass procedure for ListView controls to disable HDN_DIVIDERDBLCLICK handling.
+ * @param hWnd		Dialog handle
+ * @param uMsg		Message
+ * @param wParam	WPARAM
+ * @param lParam	LPARAM
+ * @param uIdSubclass	Subclass ID (usually the control ID)
+ * @param dwRefData	RP_ShellPropSheetExt_Private*
+ */
+LRESULT CALLBACK ListViewNoDividerDblClickSubclassProc(
+	HWND hWnd, UINT uMsg,
+	WPARAM wParam, LPARAM lParam,
+	UINT_PTR uIdSubclass, DWORD_PTR dwRefData);
+
 }
 
 #endif /* __ROMPROPERTIES_LIBWIN32COMMON_WINUICOMMON_HPP__ */
