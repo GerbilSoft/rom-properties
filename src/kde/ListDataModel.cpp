@@ -717,31 +717,6 @@ void ListDataModel::setIconSize(const QSize &iconSize)
 }
 
 /**
- * Set the icon size.
- * @param width Icon width.
- * @param height Icon height.
- */
-void ListDataModel::setIconSize(int width, int height)
-{
-	Q_D(ListDataModel);
-	if (d->iconSize.width() == width && d->iconSize.height() == height) {
-		// Same icon size.
-		return;
-	}
-
-	d->iconSize.setWidth(width);
-	d->iconSize.setHeight(height);
-	if (!d->icons_rp.empty()) {
-		d->updateIconPixmaps();
-		QModelIndex indexFirst = createIndex(0, 0);
-		QModelIndex indexLast = createIndex(d->rowCount-1, 0);
-		emit dataChanged(indexFirst, indexLast);
-	}
-
-	emit iconSizeChanged(d->iconSize);
-}
-
-/**
  * Get the icon size.
  * @return Icon size.
  */

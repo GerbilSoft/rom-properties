@@ -91,7 +91,10 @@ class ListDataModel : public QAbstractListModel
 		 * @param width Icon width.
 		 * @param height Icon height.
 		 */
-		void setIconSize(int width, int height);
+		inline void setIconSize(int width, int height)
+		{
+			setIconSize(QSize(width, height));
+		}
 
 		/**
 		 * Get the icon size.
