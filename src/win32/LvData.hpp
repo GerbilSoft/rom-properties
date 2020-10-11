@@ -50,6 +50,13 @@ struct LvData {
 	void resetSortMap(void);
 
 	/**
+	 * Set the initial sorting setting.
+	 * @param column Column.
+	 * @param direction Direction.
+	 */
+	void setInitialSort(int column, LibRpBase::RomFields::ColSortOrder direction);
+
+	/**
 	 * Toggle a sort column.
 	 * Usually called in response to LVN_COLUMNCLICK.
 	 * @param iSubItem Column number.

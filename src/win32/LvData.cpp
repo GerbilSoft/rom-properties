@@ -29,6 +29,52 @@ void LvData::resetSortMap(void)
 }
 
 /**
+ * Set the initial sorting setting.
+ * @param column Column.
+ * @param direction Direction.
+ */
+void LvData::setInitialSort(int column, RomFields::ColSortOrder direction)
+{
+	// Get the Header control.
+	HWND hHeader = ListView_GetHeader(hListView);
+	assert(hHeader != nullptr);
+	if (!hHeader) {
+		// No Header control...
+		return;
+	}
+
+	assert(column >= 0);
+	if (column < 0) {
+		// Invalid column...
+		// TODO: Validate upper bound?
+		resetSortMap();
+		return;
+	}
+
+	// Update the header item.
+	HDITEM hdi;
+	Header_GetItem(hHeader, column, &hdi);
+	switch (direction) {
+		default:
+			assert(!"Invalid sort direction.");
+			// fall-through
+		case RomFields::COLSORTORDER_ASCENDING:
+			hdi.fmt |= HDF_SORTUP;
+			break;
+		case RomFields::COLSORTORDER_DESCENDING:
+			hdi.fmt |= HDF_SORTDOWN;
+			break;
+	}
+	Header_SetItem(hHeader, column, &hdi);
+
+	// Initialize the sort map.
+	resetSortMap();
+
+	// Sort the ListView data.
+	doSort(column, direction);
+}
+
+/**
  * Toggle a sort column.
  * Usually called in response to LVN_COLUMNCLICK.
  * @param iSubItem Column number.

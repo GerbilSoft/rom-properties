@@ -1555,7 +1555,12 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 	// NOTE: lvData only contains the active language for RFT_LISTDATA_MULTI.
 	// TODO: Make it more like the KDE version?
 	lvData.sortingMethods = listDataDesc.col_attrs.sorting;
-	lvData.resetSortMap();	// TODO: Actual sorting stuff.
+	if (listDataDesc.col_attrs.sort_col >= 0) {
+		lvData.setInitialSort(listDataDesc.col_attrs.sort_col, listDataDesc.col_attrs.sort_dir);
+	} else {
+		// Reset the sort map to unsorted defaults.
+		lvData.resetSortMap();
+	}
 
 	// Save the LvData.
 	// TODO: Verify that std::move() works here.
