@@ -1571,6 +1571,10 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 	// Adjust column 0 width.
 	lvData.col_widths[0] += lvData.col0sizeadj;
 
+	// Set the last column to LVSCW_AUTOSIZE_USEHEADER.
+	// FIXME: This doesn't account for the vertical scrollbar...
+	//lvData.col_widths[lvData.col_widths.size()-1] = LVSCW_AUTOSIZE_USEHEADER
+
 	if (!isMulti) {
 		// Resize all of the columns.
 		// TODO: Do this on system theme change?
