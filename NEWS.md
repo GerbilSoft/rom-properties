@@ -6,8 +6,8 @@
   * An achievements system has been added. By viewing certain types of files
     or performing certain actions, achievements can be unlocked. Achievements
     can be viewed in rp-config.
-  * Enabled sorting on all ListView fields.
-  * Improved automatic column sizing on all platforms.
+  * Enabled sorting on all RFT_LISTDATA fields.
+  * Improved automatic column sizing in RFT_LISTDATA fields on all platforms.
     * Windows: Significantly improved column sizing by overriding ListView's
       default sizing function, which doesn't work properly for strings that
       have multiple lines.
