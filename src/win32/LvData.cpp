@@ -12,8 +12,59 @@
 // librpbase
 using LibRpBase::RomFields;
 
+// libwin32common
+#include "libwin32common/AutoGetDC.hpp"
+using LibWin32Common::AutoGetDC;
+
 // C++ STL classes.
 using std::tstring;
+using std::vector;
+
+/** Strings **/
+
+/**
+ * Measure column widths.
+ * This measures all column widths and doesn't use
+ * LVSCW_AUTOSIZE_USEHEADER.
+ *
+ * For RFT_LISTDATA_MULTI, this uses the currently-loaded
+ * string data.
+ *
+ * @param p_nl_max	[out,opt] Maximum number of newlines found in all entries.
+ * @return Column widths.
+ */
+vector<int> LvData::measureColumnWidths(int *p_nl_max) const
+{
+	vector<int> col_widths;
+	int nl_max = 0;
+	if (!vvStr.empty()) {
+		col_widths.resize(vvStr[0].size());
+	}
+
+	AutoGetDC hDC(hListView);
+
+	const auto vvStr_cend = vvStr.cend();
+	for (auto iter_vvStr = vvStr.cbegin(); iter_vvStr != vvStr_cend; ++iter_vvStr) {
+		const auto &data_row = *iter_vvStr;
+		col_widths.resize(data_row.size());
+
+		int col = 0;
+		const auto data_row_cend = data_row.cend();
+		for (auto iter = data_row.cbegin(); iter != data_row_cend; ++iter, col++) {
+			int nl_count = 0;
+			int width = LibWin32Common::measureStringForListView(hDC, *iter, &nl_count);
+			col_widths[col] = std::max(col_widths[col], width);
+			nl_max = std::max(nl_max, nl_count);
+		}
+	}
+
+	if (p_nl_max) {
+		*p_nl_max = nl_max;
+	}
+	return col_widths;
+}
+
+/** Sorting **/
 
 /**
  * Reset the sorting map.

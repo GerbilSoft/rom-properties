@@ -43,6 +43,25 @@ struct LvData {
 		: checkboxes(0), hasCheckboxes(false)
 		, hListView(nullptr), pField(nullptr) { }
 
+public:
+	/** Strings **/
+
+	/**
+	 * Measure column widths.
+	 * This measures all column widths and doesn't use
+	 * LVSCW_AUTOSIZE_USEHEADER.
+	 *
+	 * For RFT_LISTDATA_MULTI, this uses the currently-loaded
+	 * string data.
+	 *
+	 * @param p_nl_max	[out,opt] Maximum number of newlines found in all entries.
+	 * @return Column widths.
+	 */
+	std::vector<int> measureColumnWidths(int *p_nl_max) const;
+
+public:
+	/** Sorting **/
+
 	/**
 	 * Reset the sorting map.
 	 * This uses the "default" sort.
