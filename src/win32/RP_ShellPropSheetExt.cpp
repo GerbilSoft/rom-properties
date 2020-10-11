@@ -2102,7 +2102,7 @@ void RP_ShellPropSheetExt_Private::updateMulti(uint32_t user_lc)
 				// not exceed the viewport.
 				// NOTE: Must count up; otherwise, XDBF Gamerscore ends up being too wide.
 				for (int i = 0; i < colCount; i++) {
-					ListView_SetColumnWidth(hListView, i, col_width[i]);
+					ListView_SetColumnWidth(hListView, i, col_widths[i]);
 				}
 			}
 
