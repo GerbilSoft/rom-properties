@@ -1282,6 +1282,25 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 		colCount = (int)list_data->at(0).size();
 	}
 
+	// NOTE: We're converting the strings for use with
+	// LVS_OWNERDATA.
+	vector<vector<tstring> > lvStringData;
+	lvStringData.reserve(list_data->size());
+	LvData lvData;
+	lvData.vvStr.reserve(list_data->size());
+	lvData.hasCheckboxes = hasCheckboxes;
+	lvData.col_widths.resize(colCount);
+	if (hasCheckboxes) {
+		// TODO: Better calculation?
+		lvData.col0sizeadj = GetSystemMetrics(SM_CXMENUCHECK) + GetSystemMetrics(SM_CXEDGE);
+	} else if (hasIcons) {
+		lvData.vImageList.reserve(list_data->size());
+	}
+
+	// Dialog font and device context.
+	// NOTE: Using the parent dialog's font.
+	AutoGetDC hDC(hListView, hFontDlg);
+
 	// Format table.
 	// All values are known to fit in uint8_t.
 	static const uint8_t align_tbl[4] = {
@@ -1296,7 +1315,7 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 	LVCOLUMN lvColumn;
 	if (listDataDesc.names) {
 		auto iter = listDataDesc.names->cbegin();
-		for (int i = 0; i < colCount; ++iter, i++, align >>= RomFields::TXA_BITS) {
+		for (int col = 0; col < colCount; ++iter, col++, align >>= RomFields::TXA_BITS) {
 			lvColumn.mask = LVCF_TEXT | LVCF_FMT;
 			lvColumn.fmt = align_tbl[align & RomFields::TXA_MASK];
 
@@ -1304,15 +1323,16 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 			if (!str.empty()) {
 				// NOTE: pszText is LPTSTR, not LPCTSTR...
 				const tstring tstr = U82T_s(str);
+				lvData.col_widths[col] = LibWin32Common::measureStringForListView(hDC, tstr);
 				lvColumn.pszText = const_cast<LPTSTR>(tstr.c_str());
-				ListView_InsertColumn(hListView, i, &lvColumn);
+				ListView_InsertColumn(hListView, col, &lvColumn);
 			} else {
 				// Don't show this column.
 				// FIXME: Zero-width column is a bad hack...
 				lvColumn.pszText = _T("");
 				lvColumn.mask |= LVCF_WIDTH;
 				lvColumn.cx = 0;
-				ListView_InsertColumn(hListView, i, &lvColumn);
+				ListView_InsertColumn(hListView, col, &lvColumn);
 			}
 		}
 	} else {
@@ -1323,29 +1343,10 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 		}
 	}
 
-	// Dialog font and device context.
-	// NOTE: Using the parent dialog's font.
-	AutoGetDC hDC(hListView, hFontDlg);
-
 	// Add the row data.
 	uint32_t checkboxes = 0;
 	if (hasCheckboxes) {
 		checkboxes = field.data.list_data.mxd.checkboxes;
-	}
-
-	// NOTE: We're converting the strings for use with
-	// LVS_OWNERDATA.
-	vector<vector<tstring> > lvStringData;
-	lvStringData.reserve(list_data->size());
-	LvData lvData;
-	lvData.vvStr.reserve(list_data->size());
-	lvData.hasCheckboxes = hasCheckboxes;
-	lvData.col_widths.resize(colCount);
-	if (hasCheckboxes) {
-		// TODO: Better calculation?
-		lvData.col0sizeadj = GetSystemMetrics(SM_CXMENUCHECK) + GetSystemMetrics(SM_CXEDGE);
-	} else if (hasIcons) {
-		lvData.vImageList.reserve(list_data->size());
 	}
 
 	int lv_row_num = 0;
@@ -2076,6 +2077,19 @@ void RP_ShellPropSheetExt_Private::updateMulti(uint32_t user_lc)
 			// NOTE: Using the parent dialog's font.
 			AutoGetDC hDC(hListView, hFontDlg);
 
+			if (listDataDesc.names) {
+				// Measure header text widths.
+				auto iter = listDataDesc.names->cbegin();
+				for (int col = 0; col < colCount; ++iter, col++) {
+					const string &str = *iter;
+					if (str.empty())
+						continue;
+
+					const tstring tstr = U82T_s(str);
+					lvData.col_widths[col] = LibWin32Common::measureStringForListView(hDC, tstr);
+				}
+			}
+
 			// Get the ListView data vector for LVS_OWNERDATA.
 			vector<vector<tstring> > &vvStr = lvData.vvStr;
 
@@ -2109,8 +2123,12 @@ void RP_ShellPropSheetExt_Private::updateMulti(uint32_t user_lc)
 			// Add the column 0 size adjustment.
 			lvData.col_widths[0] += lvData.col0sizeadj;
 
+			// Set the last column to LVSCW_AUTOSIZE_USEHEADER.
+			// FIXME: This doesn't account for the vertical scrollbar...
+			//lvData.col_widths[lvData.col_widths.size()-1] = LVSCW_AUTOSIZE_USEHEADER;
+
 			// Resize the columns to fit the contents.
-			// NOTE: Only done on first load.
+			// NOTE: Only done on first load. (TODO: Maybe we should do it every time?)
 			// TODO: Need to measure text...
 			if (!cboLanguage) {
 				// TODO: Do this on system theme change?
