@@ -1278,7 +1278,10 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 	// Column widths.
 	// LVSCW_AUTOSIZE_USEHEADER doesn't work for entries with newlines.
 	// TODO: Use ownerdraw instead? (WM_MEASUREITEM / WM_DRAWITEM)
-	unique_ptr<int[]> col_width(new int[colCount]);
+	unique_ptr<int[]> col_widths(new int[colCount]);
+	for (int i = colCount-1; i >= 0; i--) {
+		col_widths[i] = LVSCW_AUTOSIZE_USEHEADER;
+	}
 
 	// Format table.
 	// All values are known to fit in uint8_t.
@@ -1312,14 +1315,12 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 				lvColumn.cx = 0;
 				ListView_InsertColumn(hListView, i, &lvColumn);
 			}
-			col_width[i] = LVSCW_AUTOSIZE_USEHEADER;
 		}
 	} else {
 		lvColumn.mask = LVCF_FMT;
 		for (int i = 0; i < colCount; i++, align >>= RomFields::TXA_BITS) {
 			lvColumn.fmt = align_tbl[align & RomFields::TXA_MASK];
 			ListView_InsertColumn(hListView, i, &lvColumn);
-			col_width[i] = LVSCW_AUTOSIZE_USEHEADER;
 		}
 	}
 
@@ -1407,7 +1408,7 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 				int nl_count;
 				int width = LibWin32Common::measureStringForListView(hDC, tstr, &nl_count);
 				if (col < colCount) {
-					col_width[col] = std::max(col_width[col], width);
+					col_widths[col] = std::max(col_widths[col], width);
 				}
 				nl_max = std::max(nl_max, nl_count);
 
@@ -1577,7 +1578,7 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 		// not exceed the viewport.
 		// NOTE: Must count up; otherwise, XDBF Gamerscore ends up being too wide.
 		for (int i = 0; i < colCount; i++) {
-			ListView_SetColumnWidth(hListView, i, col_width[i]);
+			ListView_SetColumnWidth(hListView, i, col_widths[i]);
 		}
 	}
 
@@ -2053,9 +2054,9 @@ void RP_ShellPropSheetExt_Private::updateMulti(uint32_t user_lc)
 			// Column widths.
 			// LVSCW_AUTOSIZE_USEHEADER doesn't work for entries with newlines.
 			// TODO: Use ownerdraw instead? (WM_MEASUREITEM / WM_DRAWITEM)
-			unique_ptr<int[]> col_width(new int[colCount]);
+			unique_ptr<int[]> col_widths(new int[colCount]);
 			for (int i = 0; i < colCount; i++) {
-				col_width[i] = LVSCW_AUTOSIZE_USEHEADER;
+				col_widths[i] = LVSCW_AUTOSIZE_USEHEADER;
 			}
 
 			// Dialog font and device context.
@@ -2086,7 +2087,7 @@ void RP_ShellPropSheetExt_Private::updateMulti(uint32_t user_lc)
 					tstring tstr = U82T_s(*iter_sdr);
 					int width = LibWin32Common::measureStringForListView(hDC, tstr);
 					if (col < colCount) {
-						col_width[col] = std::max(col_width[col], width);
+						col_widths[col] = std::max(col_widths[col], width);
 					}
 					*iter_ddr = std::move(tstr);
 				}
