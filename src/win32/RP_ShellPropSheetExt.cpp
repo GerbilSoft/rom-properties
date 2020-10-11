@@ -1575,6 +1575,7 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 		// TODO: Do this on system theme change?
 		// TODO: Add a flag for 'main data column' and adjust it to
 		// not exceed the viewport.
+		// NOTE: Must count up; otherwise, XDBF Gamerscore ends up being too wide.
 		for (int i = 0; i < colCount; i++) {
 			ListView_SetColumnWidth(hListView, i, col_width[i]);
 		}
@@ -2098,8 +2099,8 @@ void RP_ShellPropSheetExt_Private::updateMulti(uint32_t user_lc)
 				// TODO: Do this on system theme change?
 				// TODO: Add a flag for 'main data column' and adjust it to
 				// not exceed the viewport.
-				// FIXME: Way too wide for Gamerscore - maybe we need to do autosize for single-line...
-				for (int i = colCount-1; i >= 0; i--) {
+				// NOTE: Must count up; otherwise, XDBF Gamerscore ends up being too wide.
+				for (int i = 0; i < colCount; i++) {
 					ListView_SetColumnWidth(hListView, i, col_width[i]);
 				}
 			}

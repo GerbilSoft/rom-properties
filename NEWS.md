@@ -19,6 +19,8 @@
     * Fixes #269, reported by @Masamune3210.
   * KDE: Ensure the "Thumb::URI" value is urlencoded.
   * Fixed a potential crash when loading an invalid PNG image.
+  * Windows: Fixed a column sizing issue that caused XDBF Gamerscore columns
+    to be too wide.
 
 ## v1.7.3 (released 2020/09/25)
 
