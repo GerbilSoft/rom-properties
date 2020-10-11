@@ -1344,10 +1344,10 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 		lvData.vImageList.reserve(list_data->size());
 	}
 
-	int lv_row_num = 0, data_row_num = 0;
+	int lv_row_num = 0;
 	int nl_max = 0;	// Highest number of newlines in any string.
 	const auto list_data_cend = list_data->cend();
-	for (auto iter = list_data->cbegin(); iter != list_data_cend; ++iter, data_row_num++) {
+	for (auto iter = list_data->cbegin(); iter != list_data_cend; ++iter) {
 		const vector<string> &data_row = *iter;
 		// FIXME: Skip even if we don't have checkboxes?
 		// (also check other UI frontends)
