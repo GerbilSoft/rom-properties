@@ -462,5 +462,6 @@ void MessageWidgetUnregister(void)
 {
 	if (atom_messageWidget != 0) {
 		UnregisterClass(MAKEINTATOM(atom_messageWidget), HINST_THISCOMPONENT);
+		atom_messageWidget = 0;
 	}
 }

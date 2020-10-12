@@ -435,5 +435,6 @@ void LanguageComboBoxUnregister(void)
 {
 	if (atom_languageComboBox != 0) {
 		UnregisterClass(MAKEINTATOM(atom_languageComboBox), HINST_THISCOMPONENT);
+		atom_languageComboBox = 0;
 	}
 }
