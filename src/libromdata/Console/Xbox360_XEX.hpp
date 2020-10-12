@@ -28,7 +28,7 @@ ROMDATA_DECL_VIEWED_ACHIEVEMENTS()
 		// NOTE: XEX2 debug key is all zeroes,
 		// so it's not included here.
 		enum EncryptionKeys {
-			Key_XEX1,
+			Key_XEX1,	// aka Cardea
 			Key_XEX2,
 
 			Key_Max

@@ -48,6 +48,17 @@ class Xbox360_XDBF_Private final : public RomDataPrivate
 		RP_DISABLE_COPY(Xbox360_XDBF_Private)
 
 	public:
+		// XDBF type.
+		enum class XDBFType {
+			Unknown	= -1,	// Unknown XDBF type.
+
+			SPA	= 0,	// XEX resource
+			GPD	= 1,	// Game Profile Data
+
+			Max
+		};
+		XDBFType xdbfType;
+
 		// Internal icon.
 		// Points to an rp_image within map_images.
 		const rp_image *img_icon;
@@ -103,20 +114,29 @@ class Xbox360_XDBF_Private final : public RomDataPrivate
 		 */
 		int initStrTblIndexes(void);
 
+	private:
 		/**
-		 * Load a string table.
+		 * Load a string table. (SPA only)
 		 * @param langID Language ID.
 		 * @return Pointer to string table on success; nullptr on error.
 		 */
-		const ao::uvector<char> *loadStringTable(XDBF_Language_e langID);
+		const ao::uvector<char> *loadStringTable_SPA(XDBF_Language_e langID);
 
+	public:
 		/**
-		 * Get a string from a string table.
+		 * Get a string from a string table. (SPA)
 		 * @param langID Language ID.
 		 * @param string_id String ID.
 		 * @return String, or empty string on error.
 		 */
-		string loadString(XDBF_Language_e langID, uint16_t string_id);
+		string loadString_SPA(XDBF_Language_e langID, uint16_t string_id);
+
+		/**
+		 * Get a string from the resource table. (GPD)
+		 * @param string_id String ID.
+		 * @return String, or empty string on error.
+		 */
+		string loadString_GPD(uint16_t string_id);
 
 		/**
 		 * Get the language ID to use for the title fields.
@@ -150,30 +170,101 @@ class Xbox360_XDBF_Private final : public RomDataPrivate
 		 */
 		const char *getTitleType(void) const;
 
+	private:
 		/**
-		 * Add string fields.
+		 * Add string fields. (SPA)
 		 * @param fields RomFields*
 		 * @return 0 on success; non-zero on error.
 		 */
-		int addFields_strings(RomFields *fields) const;
+		int addFields_strings_SPA(RomFields *fields) const;
 
 		/**
-		 * Add the Achievements RFT_LISTDATA field.
+		 * Add the Achievements RFT_LISTDATA field. (SPA)
 		 * @return 0 on success; non-zero on error.
 		 */
-		int addFields_achievements(void);
+		int addFields_achievements_SPA(void);
 
 		/**
-		 * Add the Avatar Awards RFT_LISTDATA field.
+		 * Add the Avatar Awards RFT_LISTDATA field. (SPA)
 		 * @return 0 on success; non-zero on error.
 		 */
-		int addFields_avatarAwards(void);
+		int addFields_avatarAwards_SPA(void);
+
+	private:
+		/**
+		 * Add string fields. (GPD)
+		 * @param fields RomFields*
+		 * @return 0 on success; non-zero on error.
+		 */
+		int addFields_strings_GPD(RomFields *fields) const;
+
+		/**
+		 * Add the Achievements RFT_LISTDATA field. (GPD)
+		 * @return 0 on success; non-zero on error.
+		 */
+		int addFields_achievements_GPD(void);
+
+	public:
+		/**
+		 * Add string fields. (SPA)
+		 * @param fields RomFields*
+		 * @return 0 on success; non-zero on error.
+		 */
+		inline int addFields_strings(RomFields *fields) const
+		{
+			int ret = 0;
+			switch (xdbfType) {
+				case XDBFType::SPA:
+					ret = addFields_strings_SPA(fields);
+					break;
+				case XDBFType::GPD:
+					ret = addFields_strings_GPD(fields);
+					break;
+				default:
+					break;
+			}
+			return ret;
+		}
+
+		/**
+		 * Add the Achievements RFT_LISTDATA field. (SPA)
+		 * @return 0 on success; non-zero on error.
+		 */
+		inline int addFields_achievements(void)
+		{
+			int ret = 0;
+			switch (xdbfType) {
+				case XDBFType::SPA:
+					ret = addFields_achievements_SPA();
+					break;
+				case XDBFType::GPD:
+					ret = addFields_achievements_GPD();
+					break;
+				default:
+					break;
+			}
+			return ret;
+		}
+
+		/**
+		 * Add the Avatar Awards RFT_LISTDATA field. (SPA)
+		 * @return 0 on success; non-zero on error.
+		 */
+		inline int addFields_avatarAwards(void)
+		{
+			if (xdbfType == XDBFType::SPA) {
+				return addFields_avatarAwards_SPA();
+			}
+			// TODO: Find a GPD file with avatar awards.
+			return 0;
+		}
 };
 
 /** Xbox360_XDBF_Private **/
 
 Xbox360_XDBF_Private::Xbox360_XDBF_Private(Xbox360_XDBF *q, IRpFile *file, bool xex)
 	: super(q, file)
+	, xdbfType(XDBFType::Unknown)
 	, img_icon(nullptr)
 	, data_offset(0)
 	, m_langID(XDBF_LANGUAGE_UNKNOWN)
@@ -229,7 +320,7 @@ const XDBF_Entry *Xbox360_XDBF_Private::findResource(uint16_t namespace_id, uint
 }
 
 /**
- * Determine what languages are available.
+ * Determine what languages are available. (SPA only)
  * This initializes the strTblIndexes array.
  * @return 0 on success; negative POSIX error code on error.
  */
@@ -237,6 +328,11 @@ int Xbox360_XDBF_Private::initStrTblIndexes(void)
 {
 	// Clear the array first.
 	strTblIndexes.fill(-1);
+
+	if (xdbfType != XDBFType::SPA) {
+		// Not SPA. No string tables.
+		return 0;
+	}
 
 	if (entryTable.empty()) {
 		// Entry table isn't loaded...
@@ -271,11 +367,11 @@ int Xbox360_XDBF_Private::initStrTblIndexes(void)
 }
 
 /**
- * Load a string table.
+ * Load a string table. (SPA only)
  * @param langID Language ID.
  * @return Pointer to string table on success; nullptr on error.
  */
-const ao::uvector<char> *Xbox360_XDBF_Private::loadStringTable(XDBF_Language_e langID)
+const ao::uvector<char> *Xbox360_XDBF_Private::loadStringTable_SPA(XDBF_Language_e langID)
 {
 	assert(langID >= 0);
 	assert(langID < XDBF_LANGUAGE_MAX);
@@ -344,12 +440,12 @@ const ao::uvector<char> *Xbox360_XDBF_Private::loadStringTable(XDBF_Language_e l
 }
 
 /**
- * Get a string from a string table.
+ * Get a string from a string table. (SPA)
  * @param langID Language ID.
  * @param string_id String ID.
  * @return String, or empty string on error.
  */
-string Xbox360_XDBF_Private::loadString(XDBF_Language_e langID, uint16_t string_id)
+string Xbox360_XDBF_Private::loadString_SPA(XDBF_Language_e langID, uint16_t string_id)
 {
 	string ret;
 
@@ -361,7 +457,7 @@ string Xbox360_XDBF_Private::loadString(XDBF_Language_e langID, uint16_t string_
 	// Get the string table.
 	const ao::uvector<char> *vec = strTbls[langID];
 	if (!vec) {
-		vec = loadStringTable(langID);
+		vec = loadStringTable_SPA(langID);
 		if (!vec) {
 			// Unable to load the string table.
 			return ret;
@@ -408,6 +504,83 @@ string Xbox360_XDBF_Private::loadString(XDBF_Language_e langID, uint16_t string_
 }
 
 /**
+ * Get a string from the resource table. (GPD)
+ * @param string_id String ID.
+ * @return String, or empty string on error.
+ */
+string Xbox360_XDBF_Private::loadString_GPD(uint16_t string_id)
+{
+	string ret;
+
+	if (entryTable.empty()) {
+		// Entry table isn't loaded...
+		return ret;
+	}
+
+	// Can we load the string?
+	if (!file || !isValid) {
+		// Can't load the string.
+		return ret;
+	}
+
+#if SYS_BYTEORDER == SYS_LIL_ENDIAN
+	// Byteswap the ID to make it easier to find things.
+	string_id = cpu_to_be16(string_id);
+#endif /* SYS_BYTEORDER == SYS_LIL_ENDIAN */
+
+	// TODO: Optimize by creating an unordered_map of IDs to strings?
+	// Might not be a good optimization if we don't have that many strings...
+
+	// NOTE: GPDs only have one language, so not using RFT_STRING_MULTI here.
+
+	// GPD doesn't have string tables.
+	// Instead, each string is its own entry in the main resource table.
+	const auto entryTable_cend = entryTable.cend();
+	for (auto iter = entryTable.cbegin(); iter != entryTable_cend; ++iter) {
+		if (iter->namespace_id != cpu_to_be16(XDBF_GPD_NAMESPACE_STRING)) {
+			// Not a string.
+			continue;
+		}
+
+		// Check for Sync List or Sync Data entry.
+		if (iter->resource_id == cpu_to_be64(XDBF_GPD_SYNC_LIST_ENTRY) ||
+		    iter->resource_id == cpu_to_be64(XDBF_GPD_SYNC_DATA_ENTRY))
+		{
+			// Skip this entry.
+			continue;
+		}
+
+		const uint32_t addr = be32_to_cpu(iter->offset) + this->data_offset;
+		uint32_t length = be32_to_cpu(iter->length);
+		// Sanity check: Length must be > 2 but <= 4096 bytes,
+		// and must be divisible by 2.
+		assert(length > 2);
+		assert(length <= 4096);
+		assert(length % 2 == 0);
+		if (length < 2 || length > 4096 || length % 2 != 0)
+			continue;
+
+		// Length includes the NULL terminator, so remove it.
+		// NOTE: Some GPD files only have one NULL byte if the string
+		// is at the end of the file, though length specifies two.
+		length -= 2;
+
+		// Read the string.
+		unique_ptr<char16_t[]> sbuf(new char16_t[length / 2]);
+		size_t size = file->seekAndRead(addr, sbuf.get(), length);
+		if (size != length) {
+			// Seek and/or read error.
+			continue;
+		}
+
+		// Convert from UTF-16BE.
+		ret = utf16be_to_utf8(sbuf.get(), length / 2);
+	}
+
+	return ret;
+}
+
+/**
  * Get the language ID to use for the title fields.
  * @return XDBF language ID.
  */
@@ -420,6 +593,11 @@ XDBF_Language_e Xbox360_XDBF_Private::getLanguageID(void) const
 		return m_langID;
 	}
 
+	if (xdbfType != XDBFType::SPA) {
+		// No language ID for GPD.
+		return XDBF_LANGUAGE_UNKNOWN;
+	}
+
 	// Non-const pointer.
 	Xbox360_XDBF_Private *const ncthis = const_cast<Xbox360_XDBF_Private*>(this);
 
@@ -428,7 +606,7 @@ XDBF_Language_e Xbox360_XDBF_Private::getLanguageID(void) const
 	if (langID > XDBF_LANGUAGE_UNKNOWN && langID < XDBF_LANGUAGE_MAX) {
 		// System language obtained.
 		// Make sure the string table exists.
-		if (ncthis->loadStringTable(langID) != nullptr) {
+		if (ncthis->loadStringTable_SPA(langID) != nullptr) {
 			// String table loaded.
 			ncthis->m_langID = langID;
 			return langID;
@@ -477,7 +655,7 @@ XDBF_Language_e Xbox360_XDBF_Private::getLanguageID(void) const
 
 		// Default language obtained.
 		// Make sure the string table exists.
-		if (ncthis->loadStringTable(langID_xstc) != nullptr) {
+		if (ncthis->loadStringTable_SPA(langID_xstc) != nullptr) {
 			// String table loaded.
 			ncthis->m_langID = langID_xstc;
 			return langID_xstc;
@@ -486,7 +664,7 @@ XDBF_Language_e Xbox360_XDBF_Private::getLanguageID(void) const
 
 	// One last time: Try using English as a fallback language.
 	if (langID != XDBF_LANGUAGE_ENGLISH && langID_xstc != XDBF_LANGUAGE_ENGLISH) {
-		if (ncthis->loadStringTable(XDBF_LANGUAGE_ENGLISH) != nullptr) {
+		if (ncthis->loadStringTable_SPA(XDBF_LANGUAGE_ENGLISH) != nullptr) {
 			// String table loaded.
 			ncthis->m_langID = XDBF_LANGUAGE_ENGLISH;
 			return XDBF_LANGUAGE_ENGLISH;
@@ -653,19 +831,21 @@ const char *Xbox360_XDBF_Private::getTitleType(void) const
 	return nullptr;
 }
 
+/** addFields: SPA **/
+
 /**
- * Add the various XDBF string fields.
+ * Add the various XDBF string fields. (SPA)
  * @param fields RomFields*
  * @return 0 on success; non-zero on error.
  */
-int Xbox360_XDBF_Private::addFields_strings(RomFields *fields) const
+int Xbox360_XDBF_Private::addFields_strings_SPA(RomFields *fields) const
 {
 	// Title: Check if English is valid.
 	// If it is, we'll de-duplicate the fields.
 	// NOTE: English is language 1, so we can start the loop at 2 (Japanese).
 	string title_en;
 	if (strTblIndexes[XDBF_LANGUAGE_ENGLISH] >= 0) {
-		title_en = const_cast<Xbox360_XDBF_Private*>(this)->loadString(
+		title_en = const_cast<Xbox360_XDBF_Private*>(this)->loadString_SPA(
 			XDBF_LANGUAGE_ENGLISH, XDBF_ID_TITLE);
 	}
 	bool dedupe_titles = !title_en.empty();
@@ -681,7 +861,7 @@ int Xbox360_XDBF_Private::addFields_strings(RomFields *fields) const
 			continue;
 		}
 
-		string title_lang = const_cast<Xbox360_XDBF_Private*>(this)->loadString(
+		string title_lang = const_cast<Xbox360_XDBF_Private*>(this)->loadString_SPA(
 			(XDBF_Language_e)langID, XDBF_ID_TITLE);
 		if (title_lang.empty()) {
 			// Title is not available for this language.
@@ -728,10 +908,10 @@ int Xbox360_XDBF_Private::addFields_strings(RomFields *fields) const
 }
 
 /**
- * Add the Achievements RFT_LISTDATA field.
+ * Add the Achievements RFT_LISTDATA field. (SPA)
  * @return 0 on success; non-zero on error.
  */
-int Xbox360_XDBF_Private::addFields_achievements(void)
+int Xbox360_XDBF_Private::addFields_achievements_SPA(void)
 {
 	if (entryTable.empty()) {
 		// Entry table isn't loaded...
@@ -756,10 +936,10 @@ int Xbox360_XDBF_Private::addFields_achievements(void)
 	const uint32_t length = be32_to_cpu(entry->length);
 	// Sanity check:
 	// - Size must be at least sizeof(XDBF_XACH_Header).
-	// - Size must be a maximum of sizeof(XDBF_XACH_Header) + (sizeof(XDBF_XACH_Entry) * 512).
+	// - Size must be a maximum of sizeof(XDBF_XACH_Header) + (sizeof(XDBF_XACH_Entry_SPA) * 512).
 	static const unsigned int XACH_MAX_COUNT = 512;
 	static const uint32_t XACH_MIN_SIZE = (uint32_t)sizeof(XDBF_XACH_Header);
-	static const uint32_t XACH_MAX_SIZE = XACH_MIN_SIZE + (uint32_t)(sizeof(XDBF_XACH_Entry) * XACH_MAX_COUNT);
+	static const uint32_t XACH_MAX_SIZE = XACH_MIN_SIZE + (uint32_t)(sizeof(XDBF_XACH_Entry_SPA) * XACH_MAX_COUNT);
 	assert(length > XACH_MIN_SIZE);
 	assert(length <= XACH_MAX_SIZE);
 	if (length < XACH_MIN_SIZE || length > XACH_MAX_SIZE) {
@@ -792,14 +972,14 @@ int Xbox360_XDBF_Private::addFields_achievements(void)
 		// Too many entries.
 		// Reduce it to XACH_MAX_COUNT.
 		xach_count = XACH_MAX_COUNT;
-	} else if (xach_count > ((length - sizeof(XDBF_XACH_Header)) / sizeof(XDBF_XACH_Entry))) {
+	} else if (xach_count > ((length - sizeof(XDBF_XACH_Header)) / sizeof(XDBF_XACH_Entry_SPA))) {
 		// Entry count is too high.
-		xach_count = ((length - sizeof(XDBF_XACH_Header)) / sizeof(XDBF_XACH_Entry));
+		xach_count = ((length - sizeof(XDBF_XACH_Header)) / sizeof(XDBF_XACH_Entry_SPA));
 	}
 
-	const XDBF_XACH_Entry *p =
-		reinterpret_cast<const XDBF_XACH_Entry*>(xach_buf.get() + sizeof(*hdr));
-	const XDBF_XACH_Entry *const p_end = p + xach_count;
+	const XDBF_XACH_Entry_SPA *p =
+		reinterpret_cast<const XDBF_XACH_Entry_SPA*>(xach_buf.get() + sizeof(*hdr));
+	const XDBF_XACH_Entry_SPA *const p_end = p + xach_count;
 
 	// Icons don't have their own column name; they're considered
 	// a virtual column, much like checkboxes.
@@ -852,10 +1032,10 @@ int Xbox360_XDBF_Private::addFields_achievements(void)
 			data_row.emplace_back(s_achievement_id);
 
 			// Title.
-			string desc = loadString((XDBF_Language_e)langID, name_id);
+			string desc = loadString_SPA((XDBF_Language_e)langID, name_id);
 			if (desc.empty() && langID != XDBF_LANGUAGE_ENGLISH) {
 				// String not found in this language. Try English.
-				desc = loadString(XDBF_LANGUAGE_ENGLISH, name_id);
+				desc = loadString_SPA(XDBF_LANGUAGE_ENGLISH, name_id);
 			}
 
 			// Description.
@@ -865,10 +1045,10 @@ int Xbox360_XDBF_Private::addFields_achievements(void)
 							? locked_desc_id
 							: unlocked_desc_id;
 
-			string lck_desc = loadString((XDBF_Language_e)langID, desc_id);
+			string lck_desc = loadString_SPA((XDBF_Language_e)langID, desc_id);
 			if (lck_desc.empty() && langID != XDBF_LANGUAGE_ENGLISH) {
 				// String not found in this language. Try English.
-				lck_desc = loadString(XDBF_LANGUAGE_ENGLISH, desc_id);
+				lck_desc = loadString_SPA(XDBF_LANGUAGE_ENGLISH, desc_id);
 			}
 
 			if (!lck_desc.empty()) {
@@ -920,18 +1100,22 @@ int Xbox360_XDBF_Private::addFields_achievements(void)
 	params.data.multi = mvv_xach;
 	params.def_lc = getDefaultLC();
 	// TODO: Header alignment?
-	params.alignment.headers = 0;
-	params.alignment.data = AFLD_ALIGN3(TXA_L, TXA_L, TXA_C);
+	params.col_attrs.align_headers	= AFLD_ALIGN3(TXA_D, TXA_D, TXA_C);
+	params.col_attrs.align_data	= AFLD_ALIGN3(TXA_L, TXA_L, TXA_C);
+	params.col_attrs.sizing		= AFLD_ALIGN3(COLSZ_R, COLSZ_S, COLSZ_R);
+	params.col_attrs.sorting	= AFLD_ALIGN3(COLSORT_NUM, COLSORT_STD, COLSORT_NUM);
+	params.col_attrs.sort_col	= 0;	// ID
+	params.col_attrs.sort_dir	= RomFields::COLSORTORDER_ASCENDING;
 	params.mxd.icons = vv_icons;
 	fields->addField_listData(C_("Xbox360_XDBF", "Achievements"), &params);
 	return 0;
 }
 
 /**
- * Add the Achievements RFT_LISTDATA field.
+ * Add the Avatar Awards RFT_LISTDATA field. (SPA)
  * @return 0 on success; non-zero on error.
  */
-int Xbox360_XDBF_Private::addFields_avatarAwards(void)
+int Xbox360_XDBF_Private::addFields_avatarAwards_SPA(void)
 {
 	if (entryTable.empty()) {
 		// Entry table isn't loaded...
@@ -1059,10 +1243,10 @@ int Xbox360_XDBF_Private::addFields_avatarAwards(void)
 			data_row.emplace_back(s_avatar_award_id);
 
 			// Title.
-			string desc = loadString((XDBF_Language_e)langID, name_id);
+			string desc = loadString_SPA((XDBF_Language_e)langID, name_id);
 			if (desc.empty() && langID != XDBF_LANGUAGE_ENGLISH) {
 				// String not found in this language. Try English.
-				desc = loadString(XDBF_LANGUAGE_ENGLISH, name_id);
+				desc = loadString_SPA(XDBF_LANGUAGE_ENGLISH, name_id);
 			}
 
 			// Description.
@@ -1072,10 +1256,10 @@ int Xbox360_XDBF_Private::addFields_avatarAwards(void)
 							? locked_desc_id
 							: unlocked_desc_id;
 
-			string lck_desc = loadString((XDBF_Language_e)langID, desc_id);
+			string lck_desc = loadString_SPA((XDBF_Language_e)langID, desc_id);
 			if (lck_desc.empty() && langID != XDBF_LANGUAGE_ENGLISH) {
 				// String not found in this language. Try English.
-				lck_desc = loadString(XDBF_LANGUAGE_ENGLISH, desc_id);
+				lck_desc = loadString_SPA(XDBF_LANGUAGE_ENGLISH, desc_id);
 			}
 
 			if (!lck_desc.empty()) {
@@ -1123,9 +1307,261 @@ int Xbox360_XDBF_Private::addFields_avatarAwards(void)
 	                              RomFields::RFT_LISTDATA_ICONS |
 				      RomFields::RFT_LISTDATA_MULTI, 2);
 	params.headers = v_xgaa_col_names;
+	params.col_attrs.sizing		= AFLD_ALIGN2(COLSZ_R, COLSZ_S);
+	params.col_attrs.sorting	= AFLD_ALIGN2(COLSORT_NUM, COLSORT_STD);
+	params.col_attrs.sort_col	= 0;	// ID
+	params.col_attrs.sort_dir	= RomFields::COLSORTORDER_ASCENDING;
 	params.data.multi = mvv_xgaa;
 	params.mxd.icons = vv_icons;
 	fields->addField_listData(C_("Xbox360_XDBF", "Avatar Awards"), &params);
+	return 0;
+}
+
+/** addFields(): GPD **/
+
+/**
+ * Add the various XDBF string fields. (GPD)
+ * @param fields RomFields*
+ * @return 0 on success; non-zero on error.
+ */
+int Xbox360_XDBF_Private::addFields_strings_GPD(RomFields *fields) const
+{
+	if (entryTable.empty()) {
+		// Entry table isn't loaded...
+		return 1;
+	}
+
+	// Can we load the achievements?
+	if (!file || !isValid) {
+		// Can't load the achievements.
+		return 2;
+	}
+
+	// NOTE: GPDs only have one language, so not using RFT_STRING_MULTI here.
+
+	// Title: Check if English is valid.
+	// If it is, we'll de-duplicate the fields.
+	// NOTE: English is language 1, so we can start the loop at 2 (Japanese).
+	string title_en;
+	if (strTblIndexes[XDBF_LANGUAGE_ENGLISH] >= 0) {
+		title_en = const_cast<Xbox360_XDBF_Private*>(this)->loadString_SPA(
+			XDBF_LANGUAGE_ENGLISH, XDBF_ID_TITLE);
+	}
+	bool dedupe_titles = !title_en.empty();
+
+	// Title fields.
+	RomFields::StringMultiMap_t *const pMap_title = new RomFields::StringMultiMap_t();
+	if (!title_en.empty()) {
+		pMap_title->insert(std::make_pair('en', title_en));
+	}
+	for (int langID = XDBF_LANGUAGE_JAPANESE; langID < XDBF_LANGUAGE_MAX; langID++) {
+		if (strTblIndexes[langID] < 0) {
+			// This language is not available.
+			continue;
+		}
+
+		string title_lang = const_cast<Xbox360_XDBF_Private*>(this)->loadString_SPA(
+			(XDBF_Language_e)langID, XDBF_ID_TITLE);
+		if (title_lang.empty()) {
+			// Title is not available for this language.
+			continue;
+		}
+
+		if (dedupe_titles) {
+			// Is the title the same as the English title?
+			// TODO: Avoid converting the string before this check?
+			if (title_lang == title_en) {
+				// Same title. Skip it.
+				continue;
+			}
+		}
+
+		const uint32_t lc = XboxLanguage::getXbox360LanguageCode(langID);
+		assert(lc != 0);
+		if (lc == 0)
+			continue;
+
+		pMap_title->insert(std::make_pair(lc, std::move(title_lang)));
+	}
+
+	// Title
+	const char *const s_title_title = C_("RomData", "Title");
+	string s_title = const_cast<Xbox360_XDBF_Private*>(this)->loadString_GPD(XDBF_ID_TITLE);
+	if (!s_title.empty()) {
+		fields->addField_string(s_title_title, s_title);
+	} else {
+		fields->addField_string(s_title_title, C_("RomData", "Unknown"));
+	}
+
+	// TODO: More string resources in GPD files?
+
+	// All fields added successfully.
+	return 0;
+}
+
+/**
+ * Add the Achievements RFT_LISTDATA field. (SPA)
+ * @return 0 on success; non-zero on error.
+ */
+int Xbox360_XDBF_Private::addFields_achievements_GPD(void)
+{
+	if (entryTable.empty()) {
+		// Entry table isn't loaded...
+		return 1;
+	}
+
+	// Can we load the achievements?
+	if (!file || !isValid) {
+		// Can't load the achievements.
+		return 2;
+	}
+
+	// NOTE: GPDs only have one language, so not using RFT_LISTDATA_MULTI here.
+	// TODO: Optimal reservation values?
+
+	// Icons don't have their own column name; they're considered
+	// a virtual column, much like checkboxes.
+
+	// Columns
+	static const char *const xach_col_names[] = {
+		NOP_C_("Xbox360_XDBF|Achievements", "ID"),
+		NOP_C_("Xbox360_XDBF|Achievements", "Description"),
+		NOP_C_("Xbox360_XDBF|Achievements", "Gamerscore"),
+	};
+	vector<string> *const v_xach_col_names = RomFields::strArrayToVector_i18n(
+		"Xbox360_XDBF|Achievements", xach_col_names, ARRAY_SIZE(xach_col_names));
+
+	RomFields::ListData_t *vv_xach = new RomFields::ListData_t();
+	auto vv_icons = new RomFields::ListDataIcons_t();
+	vv_xach->reserve(16);
+	vv_icons->reserve(16);
+
+	// GPD doesn't have an achievements table.
+	// Instead, each achievement is its own entry in the main resource table.
+#define XACH_GPD_BUF_LEN 4096
+	unique_ptr<uint8_t[]> buf(new uint8_t[XACH_GPD_BUF_LEN]);
+	const XDBF_XACH_Entry_Header_GPD *const p =
+		reinterpret_cast<const XDBF_XACH_Entry_Header_GPD*>(buf.get());
+	const auto entryTable_cend = entryTable.cend();
+	for (auto iter = entryTable.cbegin(); iter != entryTable_cend; ++iter) {
+		if (iter->namespace_id != cpu_to_be16(XDBF_GPD_NAMESPACE_ACHIEVEMENT)) {
+			// Not an achievement.
+			continue;
+		}
+
+		// Check for Sync List or Sync Data entry.
+		if (iter->resource_id == cpu_to_be64(XDBF_GPD_SYNC_LIST_ENTRY) ||
+		    iter->resource_id == cpu_to_be64(XDBF_GPD_SYNC_DATA_ENTRY))
+		{
+			// Skip this entry.
+			continue;
+		}
+
+		const uint32_t addr = be32_to_cpu(iter->offset) + this->data_offset;
+		const uint32_t length = be32_to_cpu(iter->length);
+		// Sanity check: Achievement shouldn't be more than sizeof(buf).
+		assert(length <= XACH_GPD_BUF_LEN);
+		if (length > XACH_GPD_BUF_LEN)
+			continue;
+
+		// Read the achievement.
+		size_t size = file->seekAndRead(addr, buf.get(), length);
+		if (size != length) {
+			// Seek and/or read error.
+			continue;
+		}
+
+		// Verify achievement header size.
+		assert(be32_to_cpu(p->size) == sizeof(*p));
+		if (be32_to_cpu(p->size) != sizeof(*p)) {
+			// Incorrect achievement header size.
+			continue;
+		}
+
+		// Icon.
+		// TODO: Grayscale version if locked?
+		// NOTE: Most GPDs don't have achievement icons...
+		vv_icons->push_back(loadImage(be32_to_cpu(p->image_id)));
+
+		// TODO: Localized numeric formatting?
+		char s_achievement_id[16];
+		snprintf(s_achievement_id, sizeof(s_achievement_id), "%u", be32_to_cpu(p->achievement_id));
+		char s_gamerscore[16];
+		snprintf(s_gamerscore, sizeof(s_gamerscore), "%u", be32_to_cpu(p->gamerscore));
+
+		// Get the strings.
+		const char16_t *pTitle = nullptr, *pUnlockedDesc = nullptr, *pLockedDesc = nullptr;
+		const char16_t *pstr = reinterpret_cast<const char16_t*>(&buf[sizeof(*p)]);
+		const char16_t *const pstr_end = reinterpret_cast<const char16_t*>(&buf[length]);
+
+		// Find the first NULL.
+		const char16_t *pNull = u16_memchr(pstr, 0, (pstr_end - pstr));
+		if (pNull) {
+			pTitle = pstr;
+			// Find the second NULL.
+			pstr = pNull + 1;
+			if (pstr < pstr_end) {
+				pNull = u16_memchr(pstr, 0, (pstr_end - pstr));
+				if (pNull) {
+					pUnlockedDesc = pstr;
+					// Find the third NULL.
+					pstr = pNull + 1;
+					if (pstr < pstr_end) {
+						pNull = u16_memchr(pstr, 0, (pstr_end - pstr));
+						if (pNull) {
+							pLockedDesc = pstr;
+						}
+					}
+				}
+			}
+		}
+
+		// TODO: Verify flags for achievement unlocked status.
+		// For now, assuming all achievements are unlocked.
+		string desc;
+		if (pTitle) {
+			desc = utf16be_to_utf8(pTitle, -1);
+		}
+		if (pUnlockedDesc) {
+			if (!desc.empty()) {
+				desc += '\n';
+			}
+			desc += utf16be_to_utf8(pUnlockedDesc, -1);
+		}
+
+		// Add to RFT_LISTDATA.
+		vector<string> data_row;
+		data_row.reserve(3);
+		data_row.emplace_back(s_achievement_id);
+		data_row.emplace_back(std::move(desc));
+		data_row.emplace_back(s_gamerscore);
+		vv_xach->emplace_back(std::move(data_row));
+	}
+
+	// FIXME: Figure out why Dolphin segfaults if the list is empty.
+	if (vv_xach->empty()) {
+		// No achievements.
+		delete v_xach_col_names;
+		delete vv_xach;
+		delete vv_icons;
+		return -ENOENT;
+	}
+
+	// Add the list data.
+	RomFields::AFLD_PARAMS params(RomFields::RFT_LISTDATA_SEPARATE_ROW |
+	                              RomFields::RFT_LISTDATA_ICONS, 0);
+	params.headers = v_xach_col_names;
+	params.data.single = vv_xach;
+	params.def_lc = getDefaultLC();
+	// TODO: Header alignment?
+	params.col_attrs.align_headers	= AFLD_ALIGN3(TXA_D, TXA_D, TXA_C);
+	params.col_attrs.align_data	= AFLD_ALIGN3(TXA_L, TXA_L, TXA_C);
+	params.col_attrs.sizing		= AFLD_ALIGN3(COLSZ_R, COLSZ_S, COLSZ_R);
+	params.col_attrs.sorting	= AFLD_ALIGN3(COLSORT_NUM, COLSORT_STD, COLSORT_NUM);
+	params.col_attrs.sort_col	= 0;	// ID
+	params.col_attrs.sort_dir	= RomFields::COLSORTORDER_ASCENDING;
+	params.mxd.icons = vv_icons;
+	fields->addField_listData(C_("Xbox360_XDBF", "Achievements"), &params);
 	return 0;
 }
 
@@ -1200,10 +1636,11 @@ void Xbox360_XDBF::init(void)
 	RP_D(Xbox360_XDBF);
 
 	// Read the Xbox360_XDBF header.
+	// NOTE: Reading 512 bytes so we can detect SPA vs. GPD.
+	uint8_t header[512];
 	d->file->rewind();
-	size_t size = d->file->read(&d->xdbfHeader, sizeof(d->xdbfHeader));
-	if (size != sizeof(d->xdbfHeader)) {
-		d->xdbfHeader.magic = 0;
+	size_t size = d->file->read(header, sizeof(header));
+	if (size != sizeof(header)) {
 		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
@@ -1211,17 +1648,21 @@ void Xbox360_XDBF::init(void)
 	// Check if this file is supported.
 	DetectInfo info;
 	info.header.addr = 0;
-	info.header.size = sizeof(d->xdbfHeader);
-	info.header.pData = reinterpret_cast<const uint8_t*>(&d->xdbfHeader);
+	info.header.size = sizeof(header);
+	info.header.pData = header;
 	info.ext = nullptr;	// Not needed for XDBF.
 	info.szFile = 0;	// Not needed for XDBF.
-	d->isValid = (isRomSupported_static(&info) >= 0);
+	d->xdbfType = static_cast<Xbox360_XDBF_Private::XDBFType>(isRomSupported_static(&info));
+	d->isValid = ((int)d->xdbfType >= 0);
 
 	if (!d->isValid) {
 		d->xdbfHeader.magic = 0;
 		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
+
+	// Copy the XDBF header.
+	memcpy(&d->xdbfHeader, header, sizeof(d->xdbfHeader));
 
 #if SYS_BYTEORDER == SYS_LIL_ENDIAN
 	// Byteswap the header for little-endian systems.
@@ -1249,9 +1690,10 @@ void Xbox360_XDBF::init(void)
 	}
 
 	// Read the entry table.
+	// TODO: For GPD, is it possible to have holes in the entry table?
 	const size_t entry_table_sz = d->xdbfHeader.entry_table_length * sizeof(XDBF_Entry);
 	d->entryTable.resize(d->xdbfHeader.entry_table_length);
-	size = d->file->read(d->entryTable.data(), entry_table_sz);
+	size = d->file->seekAndRead(sizeof(d->xdbfHeader), d->entryTable.data(), entry_table_sz);
 	if (size != entry_table_sz) {
 		// Read error.
 		d->entryTable.clear();
@@ -1279,25 +1721,52 @@ int Xbox360_XDBF::isRomSupported_static(const DetectInfo *info)
 	assert(info->header.addr == 0);
 	if (!info || !info->header.pData ||
 	    info->header.addr != 0 ||
-	    info->header.size < sizeof(XDBF_Entry))
+	    info->header.size < 512)
 	{
 		// Either no detection information was specified,
 		// or the header is too small.
-		return -1;
+		return static_cast<int>(Xbox360_XDBF_Private::XDBFType::Unknown);
 	}
 
 	// Check for XDBF.
 	const XDBF_Header *const xdbfHeader =
 		reinterpret_cast<const XDBF_Header*>(info->header.pData);
-	if (xdbfHeader->magic == cpu_to_be32(XDBF_MAGIC) &&
-	    xdbfHeader->version == cpu_to_be32(XDBF_VERSION))
+	if (xdbfHeader->magic != cpu_to_be32(XDBF_MAGIC) ||
+	    xdbfHeader->version != cpu_to_be32(XDBF_VERSION))
 	{
-		// We have an XDBF file.
-		return 0;
+		// Not an XDBF file.
+		return static_cast<int>(Xbox360_XDBF_Private::XDBFType::Unknown);
 	}
 
-	// Not supported.
-	return -1;
+	// We have an XDBF file.
+	// Check if it's SPA or GPD.
+	// SPA will have an XSRC or XSTC entry in the resource table.
+	const unsigned int tblSize = info->header.size - sizeof(*xdbfHeader);
+	const unsigned int entryCount = std::min(
+		(unsigned int)be32_to_cpu(xdbfHeader->entry_count),
+		(unsigned int)(tblSize / sizeof(XDBF_Entry)));
+
+	const XDBF_Entry *entry =
+		reinterpret_cast<const XDBF_Entry*>(&info->header.pData[sizeof(*xdbfHeader)]);
+	const XDBF_Entry *const entry_end = entry + entryCount;
+	for (; entry < entry_end; ++entry) {
+		if (be16_to_cpu(entry->namespace_id) != XDBF_SPA_NAMESPACE_METADATA)
+			continue;
+
+		// Check if it's XSTC or XSRC.
+		const uint64_t resource_id = be64_to_cpu(entry->resource_id);
+		if (resource_id == XDBF_XSTC_MAGIC ||
+			resource_id == XDBF_XSRC_MAGIC)
+		{
+			// Found XSTC or XSRC.
+			// This is an SPA XDBF file.
+			return static_cast<int>(Xbox360_XDBF_Private::XDBFType::SPA);
+		}
+	}
+
+	// XSTC or XSRC were not found.
+	// Assume this is a GPD XDBF file.
+	return static_cast<int>(Xbox360_XDBF_Private::XDBFType::GPD);
 }
 
 /**
@@ -1343,7 +1812,7 @@ const char *const *Xbox360_XDBF::supportedFileExtensions_static(void)
 	static const char *const exts[] = {
 		".xdbf",
 		".spa",		// XEX XDBF files
-		//".gpd",	// Gamer Profile Data
+		".gpd",		// Gamer Profile Data
 
 		nullptr
 	};
@@ -1443,8 +1912,8 @@ int Xbox360_XDBF::loadFieldData(void)
 	} else if (!d->file || !d->file->isOpen()) {
 		// File isn't open.
 		return -EBADF;
-	} else if (!d->isValid) {
-		// XDBF file isn't valid.
+	} else if (!d->isValid || (int)d->xdbfType < 0) {
+		// Unknown XDBF type.
 		return -EIO;
 	}
 
@@ -1484,6 +1953,39 @@ int Xbox360_XDBF::loadFieldData(void)
 }
 
 /**
+ * Load metadata properties.
+ * Called by RomData::metaData() if the field data hasn't been loaded yet.
+ * @return Number of metadata properties read on success; negative POSIX error code on error.
+ */
+int Xbox360_XDBF::loadMetaData(void)
+{
+	RP_D(Xbox360_XDBF);
+	if (d->metaData != nullptr) {
+		// Metadata *has* been loaded...
+		return 0;
+	} else if (!d->file) {
+		// File isn't open.
+		return -EBADF;
+	} else if (!d->isValid) {
+		// XDBF file isn't valid.
+		return -EIO;
+	}
+
+	// Create the metadata object.
+	d->metaData = new RomMetaData();
+	d->metaData->reserve(1);	// Maximum of 1 metadata property.
+
+	// NOTE: RomMetaData ignores empty strings, so we don't need to
+	// check for them here.
+
+	// Title
+	d->metaData->addMetaData_string(Property::Title, getString(Property::Title));
+
+	// Finished reading the metadata.
+	return static_cast<int>(d->metaData->count());
+}
+
+/**
  * Load an internal image.
  * Called by RomData::image().
  * @param imageType	[in] Image type to load.
@@ -1507,8 +2009,8 @@ int Xbox360_XDBF::loadInternalImage(ImageType imageType, const rp_image **pImage
 		// File isn't open.
 		*pImage = nullptr;
 		return -EBADF;
-	} else if (!d->isValid) {
-		// SMDH file isn't valid.
+	} else if (!d->isValid || (int)d->xdbfType < 0) {
+		// XDBF file isn't valid.
 		*pImage = nullptr;
 		return -EIO;
 	}
@@ -1553,9 +2055,20 @@ string Xbox360_XDBF::getString(LibRpBase::Property property) const
 		return string();
 	}
 
-	RP_D(const Xbox360_XDBF);
-	return const_cast<Xbox360_XDBF_Private*>(d)->loadString(
-		d->getLanguageID(), string_id);
+	RP_D(Xbox360_XDBF);
+	string s_ret;
+	switch (d->xdbfType) {
+		default:
+			assert(!"Unsupported XDBF type.");
+			break;
+		case Xbox360_XDBF_Private::XDBFType::SPA:
+			s_ret = d->loadString_SPA(d->getLanguageID(), string_id);
+			break;
+		case Xbox360_XDBF_Private::XDBFType::GPD:
+			s_ret = d->loadString_GPD(string_id);
+			break;
+	}
+	return s_ret;
 }
 
 }

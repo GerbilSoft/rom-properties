@@ -130,6 +130,12 @@ bool isComCtl32_v610(void);
  */
 int measureStringForListView(HDC hDC, const std::tstring &tstr, int *pNlCount = nullptr);
 
+/**
+ * Is the system using an RTL language?
+ * @return WS_EX_LAYOUTRTL if the system is using RTL; 0 if not.
+ */
+DWORD isSystemRTL(void);
+
 /** File dialogs **/
 
 /**
@@ -196,6 +202,20 @@ LRESULT CALLBACK MultiLineEditProc(
  * @param dwRefData	HWND of parent dialog to forward WM_COMMAND messages to.
  */
 LRESULT CALLBACK SingleLineEditProc(
+	HWND hWnd, UINT uMsg,
+	WPARAM wParam, LPARAM lParam,
+	UINT_PTR uIdSubclass, DWORD_PTR dwRefData);
+
+/**
+ * Subclass procedure for ListView controls to disable HDN_DIVIDERDBLCLICK handling.
+ * @param hWnd		Dialog handle
+ * @param uMsg		Message
+ * @param wParam	WPARAM
+ * @param lParam	LPARAM
+ * @param uIdSubclass	Subclass ID (usually the control ID)
+ * @param dwRefData	RP_ShellPropSheetExt_Private*
+ */
+LRESULT CALLBACK ListViewNoDividerDblClickSubclassProc(
 	HWND hWnd, UINT uMsg,
 	WPARAM wParam, LPARAM lParam,
 	UINT_PTR uIdSubclass, DWORD_PTR dwRefData);

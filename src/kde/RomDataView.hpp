@@ -68,9 +68,9 @@ class RomDataView : public QWidget
 
 		/**
 		 * The RFT_MULTI_STRING language was changed.
-		 * @param index Index.
+		 * @param lc Language code.
 		 */
-		void cboLanguage_currentIndexChanged_slot(int index);
+		void cboLanguage_lcChanged_slot(uint32_t lc);
 
 	public:
 		/** Properties. **/

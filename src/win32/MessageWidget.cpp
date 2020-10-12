@@ -271,17 +271,20 @@ void MessageWidgetPrivate::paint(void)
 	EndPaint(hWnd, &ps);
 }
 
+/** MessageWidget **/
+
 static LRESULT CALLBACK
 MessageWidgetWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
+	// FIXME: Don't use GWLP_USERDATA; use extra window bytes?
 	switch (uMsg) {
-		case WM_CREATE: {
+		case WM_NCCREATE: {
 			MessageWidgetPrivate *const d = new MessageWidgetPrivate(hWnd);
 			SetWindowLongPtr(hWnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(d));
 			break;
 		}
 
-		case WM_DESTROY: {
+		case WM_NCDESTROY: {
 			MessageWidgetPrivate *const d = reinterpret_cast<MessageWidgetPrivate*>(
 				GetWindowLongPtr(hWnd, GWLP_USERDATA));
 			delete d;
@@ -459,5 +462,6 @@ void MessageWidgetUnregister(void)
 {
 	if (atom_messageWidget != 0) {
 		UnregisterClass(MAKEINTATOM(atom_messageWidget), HINST_THISCOMPONENT);
+		atom_messageWidget = 0;
 	}
 }

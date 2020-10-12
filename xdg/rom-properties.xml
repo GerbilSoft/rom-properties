@@ -433,6 +433,7 @@
     <sub-class-of type="application/octet-stream"/>
     <generic-icon name="application-octet-stream"/>
     <glob pattern="*.xdbf"/>
+    <glob pattern="*.gpd"/>
     <magic priority="50">
       <match value="XDBF" type="string" offset="0"/>
     </magic>

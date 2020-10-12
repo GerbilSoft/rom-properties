@@ -30,14 +30,27 @@ namespace LibRpTexture {
 
 namespace LibRpBase {
 
-// RFT_LISTDATA alignment macros.
-// - # indicates number of columns.
-// - Parameters are for columns 0, 1, 2, 3, etc.
-// - This does NOT include checkboxes or icons.
+// Text alignment macros.
 #define TXA_D	(RomFields::TextAlign::TXA_DEFAULT)
 #define TXA_L	(RomFields::TextAlign::TXA_LEFT)
 #define TXA_C	(RomFields::TextAlign::TXA_CENTER)
 #define TXA_R	(RomFields::TextAlign::TXA_RIGHT)
+
+// Column sizing macros.
+// Based on Qt5's QHeaderView::ResizeMode.
+#define COLSZ_I	(RomFields::ColSizing::COLSZ_INTERACTIVE)
+//#define COLSZ_F	(RomFields::ColSizing::COLSZ_FIXED)
+#define COLSZ_S	(RomFields::ColSizing::COLSZ_STRETCH)
+#define COLSZ_R	(RomFields::ColSizing::COLSZ_RESIZETOCONTENTS)
+
+// Column sorting macros.
+#define COLSORT_STD	(RomFields::ColSorting::COLSORT_STANDARD)
+#define COLSORT_NUM	(RomFields::ColSorting::COLSORT_NUMERIC)
+
+// RFT_LISTDATA macros for both text alignment and column sizing.
+// - # indicates number of columns.
+// - Parameters are for columns 0, 1, 2, 3, etc.
+// - This does NOT include checkboxes or icons.
 #define AFLD_ALIGN1(a)				((a)&3U)
 #define AFLD_ALIGN2(a,b)			(AFLD_ALIGN1(a)|(((b)&3U)<<2U))
 #define AFLD_ALIGN3(a,b,c)			(AFLD_ALIGN2(a,b)|(((c)&3U)<<4U))
@@ -168,10 +181,58 @@ class RomFields
 
 		// Text alignment for RFT_LISTDATA.
 		enum TextAlign : uint32_t {
-			TXA_DEFAULT	= 0,	// OS default
-			TXA_LEFT	= 1,
-			TXA_CENTER	= 2,
-			TXA_RIGHT	= 3,
+			TXA_DEFAULT	= 0U,	// OS default
+			TXA_LEFT	= 1U,
+			TXA_CENTER	= 2U,
+			TXA_RIGHT	= 3U,
+
+			TXA_BITS	= 2U,
+			TXA_MASK	= 3U,
+		};
+
+		// Column sizing for RFT_LISTDATA.
+		// Based on Qt5's QHeaderView::ResizeMode.
+		enum ColSizing : uint32_t {
+			COLSZ_INTERACTIVE	= 0U,
+			//COLSZ_FIXED		= 2U,
+			COLSZ_STRETCH		= 1U,
+			COLSZ_RESIZETOCONTENTS	= 3U,
+
+			COLSZ_BITS		= 2U,
+			COLSZ_MASK		= 3U,
+		};
+
+		// Column sorting for RFT_LISTDATA.
+		enum ColSorting : uint32_t {
+			COLSORT_STANDARD	= 0U,	// Standard sort
+			COLSORT_NOCASE		= 1U,	// Case-insensitive sort
+			COLSORT_NUMERIC		= 2U,	// Numeric sort
+			//COLSORT_3		= 3U,
+
+			COLSORT_BITS		= 2U,
+			COLSORT_MASK		= 3U,
+		};
+
+		// Column sort order.
+		// Maps to GtkSortType and Qt::SortOrder.
+		enum ColSortOrder : uint8_t {
+			COLSORTORDER_ASCENDING	= 0U,
+			COLSORTORDER_DESCENDING	= 1U,
+		};
+
+		// RFT_LISTDATA per-column attributes.
+		// Up to 16 columns can be specified using
+		// two bits each, with the two LSBs indicating
+		// column 0, next two bits column 1, etc.
+		// See the TextAlign enum.
+		struct ListDataColAttrs_t {
+			// TODO: Reduce to uint16_t?
+			uint32_t align_headers;	// Header alignment
+			uint32_t align_data;	// Data alignment
+			uint32_t sizing;	// Column sizing
+			uint32_t sorting;	// Column sorting
+			int8_t  sort_col;	// Default sort column. (-1 for none)
+			ColSortOrder sort_dir;	// Sort order.
 		};
 
 		// Typedefs for various containers.
@@ -213,16 +274,8 @@ class RomFields
 					// If a name is nullptr, that field is skipped.
 					const std::vector<std::string> *names;
 
-					// Column text alignment.
-					// Up to 16 columns can be specified using
-					// two bits each, with the two LSBs indicating
-					// column 0, next two bits column 1, etc.
-					// See the TextAlign enum.
-					struct {
-						// TODO: Reduce to uint16_t?
-						uint32_t headers;	// Header alignment
-						uint32_t data;		// Data alignment
-					} alignment;
+					// Per-column attributes.
+					ListDataColAttrs_t col_attrs;
 				} list_data;
 			} desc;
 
@@ -573,8 +626,15 @@ class RomFields
 				: flags(0), rows_visible(0)
 				, def_lc(0), headers(nullptr)
 			{
-				alignment.headers = 0;
-				alignment.data = 0;
+				// NOTE: We can't add a constructor to ListDataColAttrs_t
+				// because it's stored in a union above.
+				col_attrs.align_headers = 0;
+				col_attrs.align_data = 0;
+				col_attrs.sizing = 0;
+				col_attrs.sorting = 0;
+				col_attrs.sort_col = -1;
+				col_attrs.sort_dir = COLSORTORDER_ASCENDING;
+
 				data.single = nullptr;
 				mxd.icons = nullptr;
 			}
@@ -582,8 +642,15 @@ class RomFields
 				: flags(flags), rows_visible(rows_visible)
 				, def_lc(0), headers(nullptr)
 			{
-				alignment.headers = 0;
-				alignment.data = 0;
+				// NOTE: We can't add a constructor to ListDataColAttrs_t
+				// because it's stored in a union above.
+				col_attrs.align_headers = 0;
+				col_attrs.align_data = 0;
+				col_attrs.sizing = 0;
+				col_attrs.sorting = 0;
+				col_attrs.sort_col = -1;
+				col_attrs.sort_dir = COLSORTORDER_ASCENDING;
+
 				data.single = nullptr;
 				mxd.icons = nullptr;
 			}
@@ -592,16 +659,8 @@ class RomFields
 			unsigned int flags;
 			int rows_visible;
 
-			// Column text alignment.
-			// Up to 16 columns can be specified using
-			// two bits each, with the two LSBs indicating
-			// column 0, next two bits column 1, etc.
-			// See the TextAlign enum.
-			struct {
-				// TODO: Reduce to uint16_t?
-				uint32_t headers;	// Header alignment
-				uint32_t data;		// Data alignment
-			} alignment;
+			// Per-column attributes.
+			ListDataColAttrs_t col_attrs;
 
 			// Default language code. (RFT_LISTDATA_MULTI)
 			uint32_t def_lc;

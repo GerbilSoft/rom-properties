@@ -19,8 +19,11 @@ SET(rom-properties-kde_SRCS
 	RpQImageBackend.cpp
 	DragImageLabel.cpp
 	RpQByteArrayFile.cpp
-	DragImageTreeWidget.cpp
+	DragImageTreeView.cpp
 	MessageSound.cpp
+	ListDataModel.cpp
+	ListDataSortProxyModel.cpp
+	LanguageComboBox.cpp
 	config/stub-export.cpp
 	config/ConfigDialog.cpp
 	config/ITab.cpp
@@ -40,8 +43,11 @@ SET(rom-properties-kde_H
 	QImageData_qt4.hpp
 	DragImageLabel.hpp
 	RpQByteArrayFile.hpp
-	DragImageTreeWidget.hpp
+	DragImageTreeView.hpp
 	MessageSound.hpp
+	ListDataModel.hpp
+	ListDataSortProxyModel.hpp
+	LanguageComboBox.hpp
 	config/ConfigDialog.hpp
 	config/ITab.hpp
 	config/ImageTypesTab.hpp

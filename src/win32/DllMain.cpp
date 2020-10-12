@@ -36,6 +36,8 @@
 #include "RP_ShellIconOverlayIdentifier.hpp"
 
 #include "AchWin32.hpp"
+#include "MessageWidget.hpp"
+#include "LanguageComboBox.hpp"
 
 // libwin32common
 using LibWin32Common::RegKey;
@@ -143,6 +145,10 @@ STDAPI DllCanUnloadNow(void)
 		// Achievement window is still visible.
 		return S_FALSE;
 	}
+
+	// Unregister window classes.
+	MessageWidgetUnregister();
+	LanguageComboBoxUnregister();
 
 	// Shut down GDI+ if it was initialized.
 	if (gdipToken != 0) {

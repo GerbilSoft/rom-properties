@@ -108,7 +108,7 @@ class Xbox360_XEX_Private final : public RomDataPrivate
 		// Encryption key in use.
 		// If fileFormatInfo indicates the PE is encrypted:
 		// - -1: Unknown
-		// -  0: Retail
+		// -  0: Retail (may be either XEX1 or XEX2)
 		// -  1: Debug
 		// NOTE: We can't use EncryptionKeys because the debug key
 		// is all zeroes, so we're not handling it here.
@@ -607,11 +607,23 @@ CBCReader *Xbox360_XEX_Private::initPeReader(void)
 		keyData[1].key = zero16;
 		keyData[1].length = 16;
 
+		// Determine which retail key to use.
+		const uint32_t image_flags = (xexType != Xbox360_XEX_Private::XexType::XEX1)
+			? be32_to_cpu(secInfo.xex2.image_flags)
+			: be32_to_cpu(secInfo.xex1.image_flags);
+		// TODO: Xeika key?
+		int xex_keyIdx;
+		if (unlikely(image_flags & XEX2_IMAGE_FLAG_CARDEA_KEY)) {
+			xex_keyIdx = 0;	// XEX1
+		} else {
+			xex_keyIdx = 1;	// XEX2
+		}
+
 		// Try to load the XEX key.
 		// TODO: Show a warning if it didn't work.
 		KeyManager::VerifyResult verifyResult = keyManager->getAndVerify(
-			EncryptionKeyNames[(int)this->xexType], &keyData[0],
-			EncryptionKeyVerifyData[(int)this->xexType], 16);
+			EncryptionKeyNames[xex_keyIdx], &keyData[0],
+			EncryptionKeyVerifyData[xex_keyIdx], 16);
 		if (verifyResult != KeyManager::VerifyResult::OK) {
 			// An error occurred while loading the XEX key.
 			// Start with the all-zero key used on devkits.
@@ -1638,6 +1650,13 @@ int Xbox360_XEX::loadFieldData(void)
 	d->fields->reserve(14);
 	d->fields->setTabName(0, s_xexType);
 
+	// Image flags.
+	// NOTE: Same for both XEX1 and XEX2 according to Xenia.
+	// TODO: Show image flags as-is?
+	uint32_t image_flags = (d->xexType != Xbox360_XEX_Private::XexType::XEX1)
+		? be32_to_cpu(d->secInfo.xex2.image_flags)
+		: be32_to_cpu(d->secInfo.xex1.image_flags);
+
 	// Is the encryption key available?
 	bool noKeyAvailable = false;
 	if (d->initPeReader() != nullptr) {
@@ -1656,8 +1675,15 @@ int Xbox360_XEX::loadFieldData(void)
 		// FIXME: xextool can detect the encryption keys for
 		// delta patches. Figure out how to do that here.
 		if (!(d->xex2Header.module_flags & XEX2_MODULE_FLAG_PATCH_DELTA)) {
+			// TODO: Xeika key?
+			const char *s_xexKeyID;
+			if (unlikely(image_flags & XEX2_IMAGE_FLAG_CARDEA_KEY)) {
+				s_xexKeyID = "XEX1";
+			} else {
+				s_xexKeyID = "XEX2";
+			}
 			d->fields->addField_string(C_("RomData", "Warning"),
-				rp_sprintf(C_("Xbox360_XEX", "The Xbox 360 %s encryption key is not available."), s_xexType),
+				rp_sprintf(C_("Xbox360_XEX", "The Xbox 360 %s encryption key is not available."), s_xexKeyID),
 				RomFields::STRF_WARNING);
 		}
 	}
@@ -1717,13 +1743,6 @@ int Xbox360_XEX::loadFieldData(void)
 		"Xbox360_XEX", module_flags_tbl, ARRAY_SIZE(module_flags_tbl));
 	d->fields->addField_bitfield(C_("Xbox360_XEX", "Module Flags"),
 		v_module_flags, 4, xex2Header->module_flags);
-
-	// Image flags.
-	// NOTE: Same for both XEX1 and XEX2 according to Xenia.
-	// TODO: Show image flags as-is?
-	uint32_t image_flags = (d->xexType != Xbox360_XEX_Private::XexType::XEX1)
-		? be32_to_cpu(d->secInfo.xex2.image_flags)
-		: be32_to_cpu(d->secInfo.xex1.image_flags);
 
 	// Media types
 	// NOTE: Using a string instead of a bitfield because very rarely
@@ -2032,20 +2051,14 @@ int Xbox360_XEX::loadMetaData(void)
 	d->metaData = new RomMetaData();
 	d->metaData->reserve(2);	// Maximum of 2 metadata properties.
 
-	// TODO: Have the RomMetaData object simply ignore empty strings?
-	// (If so, check all RomData subclasses and remove these checks.)
+	// NOTE: RomMetaData ignores empty strings, so we don't need to
+	// check for them here.
 
 	// Title
-	string title = xdbf->getString(Property::Title);
-	if (!title.empty()) {
-		d->metaData->addMetaData_string(Property::Title, title);
-	}
+	d->metaData->addMetaData_string(Property::Title, xdbf->getString(Property::Title));
 
 	// Publisher
-	const string publisher = d->getPublisher();
-	if (!publisher.empty()) {
-		d->metaData->addMetaData_string(Property::Publisher, publisher);
-	}
+	d->metaData->addMetaData_string(Property::Publisher, d->getPublisher());
 
 	// Finished reading the metadata.
 	return static_cast<int>(d->metaData->count());

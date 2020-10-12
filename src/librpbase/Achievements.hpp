@@ -34,7 +34,7 @@ class Achievements
 		RP_DISABLE_COPY(Achievements)
 	private:
 		friend class AchievementsPrivate;
-		AchievementsPrivate *const d_ptr;
+		AchievementsPrivate *d_ptr;
 
 	public:
 		/**

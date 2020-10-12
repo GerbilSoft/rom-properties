@@ -24,25 +24,33 @@ namespace LibWin32Common {
 class AutoGetDC
 {
 	public:
+		inline AutoGetDC(HWND hWnd)
+			: hWnd(hWnd)
+			, bAdjFont(false)
+		{
+			assert(hWnd != nullptr);
+			hDC = GetDC(hWnd);
+		}
+
 		inline AutoGetDC(HWND hWnd, HFONT hFont)
 			: hWnd(hWnd)
+			, bAdjFont(true)
 		{
 			assert(hWnd != nullptr);
 			assert(hFont != nullptr);
-			if (hWnd) {
-				hDC = GetDC(hWnd);
-				hFontOrig = (hDC ? SelectFont(hDC, hFont) : nullptr);
-			} else {
-				hDC = nullptr;
-				hFontOrig = nullptr;
-			}
+			hDC = GetDC(hWnd);
+			hFontOrig = (hDC ? SelectFont(hDC, hFont) : nullptr);
 		}
 
 		inline ~AutoGetDC() {
-			if (hDC) {
-				SelectFont(hDC, hFontOrig);
-				ReleaseDC(hWnd, hDC);
+			if (!hDC) {
+				return;
 			}
+
+			if (bAdjFont) {
+				SelectFont(hDC, hFontOrig);
+			}
+			ReleaseDC(hWnd, hDC);
 		}
 
 		inline operator HDC() {
@@ -58,6 +66,7 @@ class AutoGetDC
 		HWND hWnd;
 		HDC hDC;
 		HFONT hFontOrig;
+		bool bAdjFont;
 };
 
 }

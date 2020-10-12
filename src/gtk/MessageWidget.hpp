@@ -27,7 +27,7 @@ typedef struct _MessageWidget	MessageWidget;
 GType		message_widget_get_type		(void) G_GNUC_CONST G_GNUC_INTERNAL;
 void		message_widget_register_type	(GtkWidget *widget) G_GNUC_INTERNAL;
 
-GtkWidget	*message_widget_new		(void) G_GNUC_INTERNAL G_GNUC_MALLOC;
+GtkWidget	*message_widget_new		(void) G_GNUC_MALLOC;
 
 void		message_widget_set_text		(MessageWidget *widget, const gchar *str);
 const gchar*	message_widget_get_text		(MessageWidget *widget);

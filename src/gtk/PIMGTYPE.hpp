@@ -140,13 +140,19 @@ static inline bool PIMGTYPE_size_check(PIMGTYPE pImgType, int width, int height)
 #endif /* RP_GTK_USE_CAIRO */
 }
 
+#ifdef __cplusplus
+#  define PIMGTYPE_EQ_NULLPTR = nullptr
+#else /* !__cplusplus */
+#  define PIMGTYPE_EQ_NULLPTR
+#endif /* __cplusplus */
+
 /**
  * Get a pointer to the raw image data of a PIMGTYPE.
  * @param pImgType	[in] PIMGTYPE
  * @param pLen		[out,opt] Length of the image data.
  * @return Pointer to the raw image data.
  */
-static inline uint8_t *PIMGTYPE_get_image_data(PIMGTYPE pImgType, size_t *pLen = nullptr)
+static inline uint8_t *PIMGTYPE_get_image_data(PIMGTYPE pImgType, size_t *pLen PIMGTYPE_EQ_NULLPTR)
 {
 	// TODO: Verify if the last row is a complete row.
 

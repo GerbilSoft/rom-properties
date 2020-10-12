@@ -753,10 +753,8 @@ int RomFields::addFields_romFields(const RomFields *other, int tabOffset)
 				field_dest.desc.list_data.names = (field_src.desc.list_data.names
 						? new vector<string>(*(field_src.desc.list_data.names))
 						: nullptr);
-				field_dest.desc.list_data.alignment.headers =
-					field_src.desc.list_data.alignment.headers;
-				field_dest.desc.list_data.alignment.data =
-					field_src.desc.list_data.alignment.data;
+				field_dest.desc.list_data.col_attrs =
+					field_src.desc.list_data.col_attrs;
 				if (field_src.desc.list_data.flags & RFT_LISTDATA_MULTI) {
 					field_dest.data.list_data.data.multi = (field_src.data.list_data.data.multi
 						? new ListDataMultiMap_t(*(field_src.data.list_data.data.multi))
@@ -1083,8 +1081,7 @@ int RomFields::addField_listData(const char *name, const AFLD_PARAMS *params)
 		field.desc.list_data.rows_visible = 0;
 	}
 	field.desc.list_data.names = params->headers;
-	field.desc.list_data.alignment.headers = params->alignment.headers;
-	field.desc.list_data.alignment.data = params->alignment.data;
+	field.desc.list_data.col_attrs = params->col_attrs;
 
 	if (flags & RFT_LISTDATA_MULTI) {
 		field.data.list_data.data.multi = params->data.multi;

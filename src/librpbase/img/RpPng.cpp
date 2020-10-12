@@ -347,7 +347,7 @@ rp_image *RpPngPrivate::loadPng(png_structp png_ptr, png_infop info_ptr)
 	if (setjmp(png_jmpbuf(png_ptr))) {
 		// PNG read failed.
 		png_free(png_ptr, row_pointers);
-		img->unref();
+		UNREF(img);
 		return nullptr;
 	}
 #endif

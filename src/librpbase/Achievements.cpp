@@ -715,6 +715,7 @@ Achievements::Achievements()
 Achievements::~Achievements()
 {
 	delete d_ptr;
+	d_ptr = nullptr;
 }
 
 /**
@@ -746,8 +747,10 @@ Achievements *Achievements::instance(void)
 void Achievements::setNotifyFunction(NotifyFunc func, intptr_t user_data)
 {
 	RP_D(Achievements);
-	d->notifyFunc = func;
-	d->user_data = user_data;
+	if (d) {
+		d->notifyFunc = func;
+		d->user_data = user_data;
+	}
 }
 
 /**
@@ -762,7 +765,7 @@ void Achievements::setNotifyFunction(NotifyFunc func, intptr_t user_data)
 void Achievements::clearNotifyFunction(NotifyFunc func, intptr_t user_data)
 {
 	RP_D(Achievements);
-	if (d->notifyFunc == func && d->user_data == user_data) {
+	if (d && d->notifyFunc == func && d->user_data == user_data) {
 		d->notifyFunc = nullptr;
 		d->user_data = 0;
 	}

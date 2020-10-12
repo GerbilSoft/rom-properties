@@ -6,14 +6,29 @@
   * An achievements system has been added. By viewing certain types of files
     or performing certain actions, achievements can be unlocked. Achievements
     can be viewed in rp-config.
+  * Enabled sorting on all RFT_LISTDATA fields.
+  * Improved automatic column sizing in RFT_LISTDATA fields on all platforms.
+    * Windows: Significantly improved column sizing by overriding ListView's
+      default sizing function, which doesn't work properly for strings that
+      have multiple lines.
 
 * New parser features:
   * NGPC: Added external title screens using RPDB.
+  * Xbox360_XDBF:
+    * Added metadata extraction.
+    * Added (partial) support for GPD files. Avatar Awards aren't parsed
+      in GPD files at the moment.
+  * Xbox360_XEX: System firmware XEXes use the XEX1 key. This is indicated
+    using the "Cardea Key" flag.
+    * Fixes #273, reported by @Masamune3210.
 
 * Bug fixes:
   * GameCube: Detect incrementing values partitions in encrypted images.
     * Fixes #269, reported by @Masamune3210.
   * KDE: Ensure the "Thumb::URI" value is urlencoded.
+  * Fixed a potential crash when loading an invalid PNG image.
+  * Windows: Fixed a column sizing issue that caused XDBF Gamerscore columns
+    to be too wide.
 
 ## v1.7.3 (released 2020/09/25)
 

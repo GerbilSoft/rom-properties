@@ -169,6 +169,22 @@ int u16_strcasecmp(const char16_t *wcs1, const char16_t *wcs2)
 
 	return ((int)towupper(*wcs1) - (int)towupper(*wcs2));
 }
+
+/**
+ * char16_t memchr().
+ * @param wcs 16-bit string.
+ * @param c Character to search for.
+ * @param n Size of wcs.
+ * @return Pointer to c within wcs, or nullptr if not found.
+ */
+const char16_t *u16_memchr(const char16_t *wcs, char16_t c, size_t n)
+{
+	for (; n > 0; wcs++, n--) {
+		if (*wcs == c)
+			return wcs;
+	}
+	return nullptr;
+}
 #endif /* !RP_WIS16 */
 
 /**
