@@ -12,8 +12,11 @@
 // librpbase
 #include "librpbase/RomFields.hpp"
 
-// Qt includes.
+// Qt includes
 #include <QtCore/QAbstractListModel>
+
+// C++ includes
+#include <set>
 
 class ListDataModelPrivate;
 class ListDataModel : public QAbstractListModel
@@ -73,12 +76,12 @@ class ListDataModel : public QAbstractListModel
 		/**
 		 * Get all supported language codes.
 		 *
-		 * If this is not showing RFT_LISTDATA_MULTI, an empty vector
+		 * If this is not showing RFT_LISTDATA_MULTI, an empty set
 		 * will be returned.
 		 *
 		 * @return Supported language codes.
 		 */
-		std::vector<uint32_t> getLCs(void) const;
+		std::set<uint32_t> getLCs(void) const;
 
 		/**
 		 * Set the icon size.

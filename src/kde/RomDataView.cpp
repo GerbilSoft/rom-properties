@@ -41,6 +41,7 @@ using std::vector;
 #include "DragImageTreeView.hpp"
 #include "ListDataModel.hpp"
 #include "ListDataSortProxyModel.hpp"
+#include "LanguageComboBox.hpp"
 
 // KDE4/KF5 includes.
 #if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
@@ -125,13 +126,7 @@ class RomDataViewPrivate
 
 		// Multi-language functionality.
 		uint32_t def_lc;
-		QComboBox *cboLanguage;
-
-		/**
-		 * Get the selected language code.
-		 * @return Selected language code, or 0 for none (default).
-		 */
-		inline uint32_t sel_lc(void) const;
+		LanguageComboBox *cboLanguage;
 
 		// RFT_STRING_MULTI value labels.
 		typedef std::pair<QLabel*, const RomFields::Field*> Data_StringMulti_t;
@@ -305,20 +300,6 @@ RomDataViewPrivate::~RomDataViewPrivate()
 	ui.lblIcon->clearRp();
 	ui.lblBanner->clearRp();
 	UNREF(romData);
-}
-
-/**
- * Get the selected language code.
- * @return Selected language code, or 0 for none (default).
- */
-inline uint32_t RomDataViewPrivate::sel_lc(void) const
-{
-	if (!cboLanguage) {
-		// No language dropdown...
-		return 0;
-	}
-
-	return cboLanguage->itemData(cboLanguage->currentIndex()).value<uint32_t>();
 }
 
 /**
@@ -1148,12 +1129,8 @@ void RomDataViewPrivate::updateMulti(uint32_t user_lc)
 			if (!cboLanguage) {
 				// Need to add all supported languages.
 				// TODO: Do we need to do this for all of them, or just one?
-				vector<uint32_t> vec_lc = listModel->getLCs();
-				std::for_each(vec_lc.cbegin(), vec_lc.cend(),
-					[&set_lc](uint32_t lc) {
-						set_lc.insert(lc);
-					}
-				);
+				const set<uint32_t> list_set_lc = listModel->getLCs();
+				set_lc.insert(list_set_lc.cbegin(), list_set_lc.cend());
 			}
 
 			// Set the language code.
@@ -1190,68 +1167,32 @@ void RomDataViewPrivate::updateMulti(uint32_t user_lc)
 	if (!cboLanguage && set_lc.size() > 1) {
 		// Create the language combobox.
 		Q_Q(RomDataView);
-		cboLanguage = new QComboBox(q);
+		cboLanguage = new LanguageComboBox(q);
 		cboLanguage->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Fixed);
 		ui.hboxHeaderRow->addWidget(cboLanguage);
 
-		// Sprite sheets. (32x32, 24x24, 16x16)
-		const QPixmap spriteSheets[3] = {
-			QPixmap(QLatin1String(":/flags/flags-32x32.png")),
-			QPixmap(QLatin1String(":/flags/flags-24x24.png")),
-			QPixmap(QLatin1String(":/flags/flags-16x16.png")),
-		};
+		// Set the languages.
+		cboLanguage->setLCs(set_lc);
 
-		int sel_idx = -1;
-		const auto set_lc_cend = set_lc.cend();
-		for (auto iter = set_lc.cbegin(); iter != set_lc_cend; ++iter) {
-			const uint32_t lc = *iter;
-			const char *const name = SystemRegion::getLocalizedLanguageName(lc);
-			if (name) {
-				cboLanguage->addItem(U82Q(name), lc);
-			} else {
-				QString s_lc;
-				s_lc.reserve(4);
-				for (uint32_t tmp_lc = lc; tmp_lc != 0; tmp_lc <<= 8) {
-					ushort chr = (ushort)(tmp_lc >> 24);
-					if (chr != 0) {
-						s_lc += QChar(chr);
-					}
-				}
-				cboLanguage->addItem(s_lc, lc);
-			}
-			int cur_idx = cboLanguage->count()-1;
-
-			// Flag icon.
-			int col, row;
-			if (!SystemRegion::getFlagPosition(lc, &col, &row)) {
-				// Found a matching icon.
-				QIcon flag_icon;
-				flag_icon.addPixmap(spriteSheets[0].copy(col*32, row*32, 32, 32));
-				flag_icon.addPixmap(spriteSheets[1].copy(col*24, row*24, 24, 24));
-				flag_icon.addPixmap(spriteSheets[2].copy(col*16, row*16, 16, 16));
-				cboLanguage->setItemIcon(cur_idx, flag_icon);
-			}
-
-			// Save the default index:
-			// - ROM-default language code.
-			// - English if it's not available.
-			if (lc == def_lc) {
-				// Select this item.
-				sel_idx = cur_idx;
-			} else if (lc == 'en') {
-				// English. Select this item if def_lc hasn't been found yet.
-				if (sel_idx < 0) {
-					sel_idx = cur_idx;
-				}
+		// Select the default language.
+		uint32_t lc_to_set = 0;
+		if (set_lc.find(def_lc) != set_lc.end()) {
+			// def_lc was found.
+			lc_to_set = def_lc;
+		} else if (set_lc.find('en') != set_lc.end()) {
+			// 'en' was found.
+			lc_to_set = 'en';
+		} else {
+			// Unknown. Select the first language.
+			if (!set_lc.empty()) {
+				lc_to_set = *(set_lc.cbegin());
 			}
 		}
-
-		// Set the current index.
-		cboLanguage->setCurrentIndex(sel_idx);
+		cboLanguage->setSelectedLC(lc_to_set);
 
 		// Connect the signal after everything's been initialized.
-		QObject::connect(cboLanguage, SIGNAL(currentIndexChanged(int)),
-		                 q, SLOT(cboLanguage_currentIndexChanged_slot(int)));
+		QObject::connect(cboLanguage, SIGNAL(lcChanged(uint32_t)),
+		                 q, SLOT(cboLanguage_lcChanged_slot(uint32_t)));
 	}
 }
 
@@ -1720,17 +1661,12 @@ void RomDataView::bitfield_clicked_slot(bool checked)
 
 /**
  * The RFT_MULTI_STRING language was changed.
- * @param lc Language code. (Cast to uint32_t)
+ * @param lc Language code.
  */
-void RomDataView::cboLanguage_currentIndexChanged_slot(int index)
+void RomDataView::cboLanguage_lcChanged_slot(uint32_t lc)
 {
 	Q_D(RomDataView);
-	if (index < 0) {
-		// Invalid index...
-		return;
-	}
-
-	d->updateMulti(d->sel_lc());
+	d->updateMulti(lc);
 }
 
 /** Properties. **/
@@ -1851,10 +1787,11 @@ void RomDataView::menuOptions_action_triggered(int id)
 		// TODO: Optimize this such that we can pass ofstream or ostringstream
 		// to a factored-out function.
 
+		const uint32_t sel_lc = (d->cboLanguage ? d->cboLanguage->selectedLC() : 0);
 		switch (id) {
 			case RomDataViewPrivate::OPTION_EXPORT_TEXT: {
 				ofs << "== " << rp_sprintf(C_("RomDataView", "File: '%s'"), rom_filename) << std::endl;
-				ROMOutput ro(d->romData, d->sel_lc());
+				ROMOutput ro(d->romData, sel_lc);
 				ofs << ro;
 				break;
 			}
@@ -1866,7 +1803,7 @@ void RomDataView::menuOptions_action_triggered(int id)
 			case RomDataViewPrivate::OPTION_COPY_TEXT: {
 				ostringstream oss;
 				oss << "== " << rp_sprintf(C_("RomDataView", "File: '%s'"), rom_filename) << std::endl;
-				ROMOutput ro(d->romData, d->sel_lc());
+				ROMOutput ro(d->romData, sel_lc);
 				oss << ro;
 				QApplication::clipboard()->setText(U82Q(oss.str()));
 				break;

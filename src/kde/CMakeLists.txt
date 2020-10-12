@@ -23,6 +23,7 @@ SET(rom-properties-kde_SRCS
 	MessageSound.cpp
 	ListDataModel.cpp
 	ListDataSortProxyModel.cpp
+	LanguageComboBox.cpp
 	config/stub-export.cpp
 	config/ConfigDialog.cpp
 	config/ITab.cpp
@@ -46,6 +47,7 @@ SET(rom-properties-kde_H
 	MessageSound.hpp
 	ListDataModel.hpp
 	ListDataSortProxyModel.hpp
+	LanguageComboBox.hpp
 	config/ConfigDialog.hpp
 	config/ITab.hpp
 	config/ImageTypesTab.hpp

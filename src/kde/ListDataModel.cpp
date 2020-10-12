@@ -15,7 +15,7 @@
 using LibRpBase::RomFields;
 using LibRpTexture::rp_image;
 
-// C++ STL classes.
+// C++ STL classes
 using std::set;
 using std::string;
 using std::unordered_map;
@@ -665,32 +665,31 @@ uint32_t ListDataModel::lc(void) const
 /**
  * Get all supported language codes.
  *
- * If this is not showing RFT_LISTDATA_MULTI, an empty vector
+ * If this is not showing RFT_LISTDATA_MULTI, an empty set
  * will be returned.
  *
  * @return Supported language codes.
  */
-vector<uint32_t> ListDataModel::getLCs(void) const
+set<uint32_t> ListDataModel::getLCs(void) const
 {
 	Q_D(const ListDataModel);
-	vector<uint32_t> vec;
+	set<uint32_t> set_lc;
 
 	if (d->map_data.empty()) {
-		return vec;
+		return set_lc;
 	} else if (d->map_data.size() == 1) {
 		// Check if the map has a single language with lc == 0.
 		if (d->map_data.cbegin()->first == 0) {
 			// lc == 0.
-			return vec;
+			return set_lc;
 		}
 	}
 
-	vec.reserve(d->map_data.size());
 	const auto map_data_cend = d->map_data.cend();
 	for (auto iter = d->map_data.cbegin(); iter != map_data_cend; ++iter) {
-		vec.emplace_back(iter->first);
+		set_lc.insert(iter->first);
 	}
-	return vec;
+	return set_lc;
 }
 
 /**
