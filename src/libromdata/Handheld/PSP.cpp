@@ -484,8 +484,8 @@ vector<RomData::ImageSizeDef> PSP::supportedImageSizes(ImageType imageType) cons
 	ASSERT_supportedImageSizes(imageType);
 
 	RP_D(const PSP);
-	if (!d->isValid || imageType != IMG_INT_MEDIA) {
-		// Only IMG_INT_MEDIA is supported.
+	if (!d->isValid || imageType != IMG_INT_ICON) {
+		// Only IMG_INT_ICON is supported.
 		return vector<ImageSizeDef>();
 	}
 
