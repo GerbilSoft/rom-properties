@@ -130,6 +130,12 @@ bool isComCtl32_v610(void);
  */
 int measureStringForListView(HDC hDC, const std::tstring &tstr, int *pNlCount = nullptr);
 
+/**
+ * Is the system using an RTL language?
+ * @return WS_EX_LAYOUTRTL if the system is using RTL; 0 if not.
+ */
+DWORD isSystemRTL(void);
+
 /** File dialogs **/
 
 /**

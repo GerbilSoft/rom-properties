@@ -292,6 +292,27 @@ int measureStringForListView(HDC hDC, const tstring &tstr, int *pNlCount)
 	return width;
 }
 
+/**
+ * Is the system using an RTL language?
+ * @return WS_EX_LAYOUTRTL if the system is using RTL; 0 if not.
+ */
+DWORD isSystemRTL(void)
+{
+	// Check for RTL.
+	// NOTE: Windows Explorer on Windows 7 seems to return 0 from GetProcessDefaultLayout(),
+	// even if an RTL language is in use. We'll check the taskbar layout instead.
+	// TODO: What if Explorer isn't running?
+	// References:
+	// - https://stackoverflow.com/questions/10391669/how-to-detect-if-a-windows-installation-is-rtl
+	// - https://stackoverflow.com/a/10393376
+	DWORD dwRet = 0;
+	HWND hTaskBar = FindWindow(_T("Shell_TrayWnd"), nullptr);
+	if (hTaskBar) {
+		dwRet = static_cast<DWORD>(GetWindowLongPtr(hTaskBar, GWL_EXSTYLE)) & WS_EX_LAYOUTRTL;
+	}
+	return dwRet;
+}
+
 /** File dialogs **/
 
 #ifdef UNICODE

@@ -33,22 +33,10 @@ class LanguageComboBoxPrivate
 		LanguageComboBoxPrivate(HWND hWnd)
 			: hWnd(hWnd)
 			, himglFlags(nullptr)
-			, dwExStyleRTL(0)
+			, dwExStyleRTL(LibWin32Common::isSystemRTL())
 		{
 			minSize.cx = 0;
 			minSize.cy = 0;
-
-			// Check for RTL.
-			// NOTE: Windows Explorer on Windows 7 seems to return 0 from GetProcessDefaultLayout(),
-			// even if an RTL language is in use. We'll check the taskbar layout instead.
-			// References:
-			// - https://stackoverflow.com/questions/10391669/how-to-detect-if-a-windows-installation-is-rtl
-			// - https://stackoverflow.com/a/10393376
-			HWND hTaskBar = FindWindow(_T("Shell_TrayWnd"), nullptr);
-			assert(hTaskBar != nullptr);
-			if (hTaskBar) {
-				dwExStyleRTL = static_cast<DWORD>(GetWindowLongPtr(hTaskBar, GWL_EXSTYLE)) & WS_EX_LAYOUTRTL;
-			}
 		}
 
 		~LanguageComboBoxPrivate()
