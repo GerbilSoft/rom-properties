@@ -29,11 +29,7 @@ LanguageComboBox::LanguageComboBox(QWidget *parent)
 void LanguageComboBox::setLCs(const std::set<uint32_t> &set_lc)
 {
 	// Check the LC of the selected index.
-	uint32_t sel_lc = 0;
-	int cur_idx = this->currentIndex();
-	if (cur_idx >= 0) {
-		sel_lc = this->itemData(cur_idx).toUInt();
-	}
+	const uint32_t sel_lc = selectedLC();
 
 	// Clear the QComboBox and repopulate it.
 	this->clear();
@@ -46,8 +42,9 @@ void LanguageComboBox::setLCs(const std::set<uint32_t> &set_lc)
 	};
 
 	int sel_idx = -1;
+	int cur_idx = 0;
 	const auto set_lc_cend = set_lc.cend();
-	for (auto iter = set_lc.cbegin(); iter != set_lc_cend; ++iter) {
+	for (auto iter = set_lc.cbegin(); iter != set_lc_cend; ++iter, cur_idx++) {
 		const uint32_t lc = *iter;
 		const char *const name = SystemRegion::getLocalizedLanguageName(lc);
 		if (name) {
@@ -63,7 +60,6 @@ void LanguageComboBox::setLCs(const std::set<uint32_t> &set_lc)
 			}
 			this->addItem(s_lc, lc);
 		}
-		cur_idx = this->count()-1;
 
 		// Flag icon.
 		int col, row;
