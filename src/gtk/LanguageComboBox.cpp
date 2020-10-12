@@ -173,6 +173,7 @@ language_combo_box_set_property(GObject	*object,
 
 /**
  * Set the language codes.
+ * @param widget LanguageComboBox
  * @param lcs_array 0-terminated array of language codes.
  */
 void
@@ -269,6 +270,7 @@ language_combo_box_set_lcs(LanguageComboBox *widget, const uint32_t *lcs_array)
 /**
  * Get the set of language codes.
  * Caller must g_free() the returned array.
+ * @param widget LanguageComboBox
  * @return 0-terminated array of language codes, or nullptr if none.
  */
 uint32_t*
@@ -308,6 +310,7 @@ language_combo_box_get_lcs(LanguageComboBox *widget)
 
 /**
  * Clear the language codes.
+ * @param widget LanguageComboBox
  */
 void
 language_combo_box_clear_lcs(LanguageComboBox *widget)
@@ -327,6 +330,7 @@ language_combo_box_clear_lcs(LanguageComboBox *widget)
  * NOTE: This function will return true if the LC was found,
  * even if it was already selected.
  *
+ * @param widget LanguageComboBox
  * @param lc Language code. (0 to unselect)
  * @return True if set; false if LC was not found.
  */
@@ -379,6 +383,7 @@ language_combo_box_set_selected_lc(LanguageComboBox *widget, uint32_t lc)
 
 /**
  * Get the selected language code.
+ * @param widget LanguageComboBox
  * @return Selected language code. (0 if none)
  */
 uint32_t
@@ -397,7 +402,7 @@ language_combo_box_get_selected_lc(LanguageComboBox *widget)
 
 /**
  * Internal signal handler for GtkComboBox "changed".
- * @param widget
+ * @param widget LanguageComboBox
  * @param user_data
  */
 static void
