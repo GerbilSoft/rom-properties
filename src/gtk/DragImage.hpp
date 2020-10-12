@@ -41,7 +41,7 @@ typedef struct _DragImage	DragImage;
 GType		drag_image_get_type		(void) G_GNUC_CONST G_GNUC_INTERNAL;
 void		drag_image_register_type	(GtkWidget *widget) G_GNUC_INTERNAL;
 
-GtkWidget	*drag_image_new			(void) G_GNUC_INTERNAL G_GNUC_MALLOC;
+GtkWidget	*drag_image_new			(void) G_GNUC_MALLOC;
 
 // TODO: Make these properties?
 
