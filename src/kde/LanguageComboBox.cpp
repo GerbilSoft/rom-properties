@@ -31,7 +31,7 @@ void LanguageComboBox::setLCs(const std::set<uint32_t> &set_lc)
 	// Check the LC of the selected index.
 	uint32_t sel_lc = 0;
 	int cur_idx = this->currentIndex();
-	if (cur_idx < 0) {
+	if (cur_idx >= 0) {
 		sel_lc = this->itemData(cur_idx).toUInt();
 	}
 
