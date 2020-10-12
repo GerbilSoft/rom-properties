@@ -50,7 +50,11 @@ class LanguageComboBox : public QComboBox
 
 		/**
 		 * Set the selected language code.
-		 * @param lc Language code.
+		 *
+		 * NOTE: This function will return true if the LC was found,
+		 * even if it was already selected.
+		 *
+		 * @param lc Language code. (0 to unselect)
 		 * @return True if set; false if LC was not found.
 		 */
 		bool setSelectedLC(uint32_t lc);

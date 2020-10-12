@@ -118,11 +118,24 @@ void LanguageComboBox::clearLCs()
 
 /**
  * Set the selected language code.
- * @param lc Language code.
+ *
+ * NOTE: This function will return true if the LC was found,
+ * even if it was already selected.
+ *
+ * @param lc Language code. (0 to unselect)
  * @return True if set; false if LC was not found.
  */
 bool LanguageComboBox::setSelectedLC(uint32_t lc)
 {
+	if (lc == 0) {
+		// Unselect the selected LC.
+		if (this->currentIndex() != -1) {
+			this->setCurrentIndex(-1);
+			emit lcChanged(0);
+		}
+		return true;
+	}
+
 	int index = this->findData(lc);
 	if (index >= 0) {
 		if (index != this->currentIndex()) {

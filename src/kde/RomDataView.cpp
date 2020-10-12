@@ -1176,10 +1176,11 @@ void RomDataViewPrivate::updateMulti(uint32_t user_lc)
 
 		// Select the default language.
 		uint32_t lc_to_set = 0;
-		if (set_lc.find(def_lc) != set_lc.end()) {
+		const auto set_lc_end = set_lc.end();
+		if (set_lc.find(def_lc) != set_lc_end) {
 			// def_lc was found.
 			lc_to_set = def_lc;
-		} else if (set_lc.find('en') != set_lc.end()) {
+		} else if (set_lc.find('en') != set_lc_end) {
 			// 'en' was found.
 			lc_to_set = 'en';
 		} else {
