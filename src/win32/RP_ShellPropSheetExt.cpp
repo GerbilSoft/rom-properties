@@ -2715,7 +2715,7 @@ void RP_ShellPropSheetExt_Private::showMessageWidget(unsigned int messageType, c
 		return;
 
 	// Set the message widget stuff.
-	SendMessage(hMessageWidget, WM_MSGW_SET_MESSAGE_TYPE, messageType, 0);
+	MessageWidget_SetMessageType(hMessageWidget, messageType);
 	SetWindowText(hMessageWidget, lpszMsg);
 
 	adjustTabsForMessageWidgetVisibility(true);
