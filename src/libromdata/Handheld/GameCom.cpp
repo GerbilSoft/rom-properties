@@ -23,7 +23,6 @@ using std::vector;
 namespace LibRomData {
 
 ROMDATA_IMPL(GameCom)
-ROMDATA_IMPL_IMG(GameCom)
 
 class GameComPrivate final : public RomDataPrivate
 {
@@ -75,6 +74,9 @@ const rp_image *GameComPrivate::loadIcon(void)
 		return img_icon;
 	} else if (!this->file || !this->isValid) {
 		// Can't load the icon.
+		return nullptr;
+	} else if (!(romHeader.flags & GCOM_FLAG_HAS_ICON)) {
+		// ROM doesn't have an icon.
 		return nullptr;
 	}
 
@@ -408,6 +410,19 @@ const char *const *GameCom::supportedMimeTypes_static(void)
 }
 
 /**
+ * Get a bitfield of image types this object can retrieve.
+ * @return Bitfield of supported image types. (ImageTypesBF)
+ */
+uint32_t GameCom::supportedImageTypes(void) const
+{
+	RP_D(const GameCom);
+	if (d->isValid && (d->romHeader.flags & GCOM_FLAG_HAS_ICON)) {
+		return IMGBF_INT_ICON;
+	}
+	return 0;
+}
+
+/**
  * Get a bitfield of image types this class can retrieve.
  * @return Bitfield of supported image types. (ImageTypesBF)
  */
@@ -421,16 +436,40 @@ uint32_t GameCom::supportedImageTypes_static(void)
  * @param imageType Image type.
  * @return Vector of available image sizes, or empty vector if no images are available.
  */
+vector<RomData::ImageSizeDef> GameCom::supportedImageSizes(ImageType imageType) const
+{
+	ASSERT_supportedImageSizes(imageType);
+
+	RP_D(const GameCom);
+	if (!d->isValid || imageType != IMG_INT_MEDIA ||
+	    !(d->romHeader.flags & GCOM_FLAG_HAS_ICON))
+	{
+		// Only IMG_INT_ICON is supported,
+		// and/or the ROM doesn't have an icon.
+		return vector<ImageSizeDef>();
+	}
+
+	static const ImageSizeDef sz_INT_ICON[] = {
+		{nullptr, GCOM_ICON_W, GCOM_ICON_H, 0},
+	};
+	return vector<ImageSizeDef>(sz_INT_ICON,
+		sz_INT_ICON + ARRAY_SIZE(sz_INT_ICON));
+}
+
+/**
+ * Get a list of all available image sizes for the specified image type.
+ * @param imageType Image type.
+ * @return Vector of available image sizes, or empty vector if no images are available.
+ */
 vector<RomData::ImageSizeDef> GameCom::supportedImageSizes_static(ImageType imageType)
 {
 	ASSERT_supportedImageSizes(imageType);
 
 	if (imageType != IMG_INT_ICON) {
-		// Only icons are supported.
+		// Only IMG_INT_ICON is supported.
 		return vector<ImageSizeDef>();
 	}
 
-	// game.com ROM images have 64x64 icons.
 	static const ImageSizeDef sz_INT_ICON[] = {
 		{nullptr, GCOM_ICON_W, GCOM_ICON_H, 0},
 	};
@@ -452,10 +491,14 @@ uint32_t GameCom::imgpf(ImageType imageType) const
 	ASSERT_imgpf(imageType);
 
 	switch (imageType) {
-		case IMG_INT_ICON:
-		case IMG_INT_BANNER:
-			// Use nearest-neighbor scaling.
-			return IMGPF_RESCALE_NEAREST;
+		case IMG_INT_ICON: {
+			RP_D(const GameCom);
+			if (d->isValid && (d->romHeader.flags & GCOM_FLAG_HAS_ICON)) {
+				// Use nearest-neighbor scaling.
+				return IMGPF_RESCALE_NEAREST;
+			}
+			break;
+		}
 		default:
 			break;
 	}
@@ -551,14 +594,28 @@ int GameCom::loadMetaData(void)
 int GameCom::loadInternalImage(ImageType imageType, const rp_image **pImage)
 {
 	ASSERT_loadInternalImage(imageType, pImage);
+
 	RP_D(GameCom);
-	ROMDATA_loadInternalImage_single(
-		IMG_INT_ICON,	// ourImageType
-		d->file,	// file
-		d->isValid,	// isValid
-		0,		// romType
-		d->img_icon,	// imgCache
-		d->loadIcon);	// func
+	if (imageType != IMG_INT_ICON) {
+		*pImage = nullptr;
+		return -ENOENT;
+	} else if (d->img_icon != nullptr) {
+		*pImage = d->img_icon;
+		return 0;
+	} else if (!(d->romHeader.flags & GCOM_FLAG_HAS_ICON)) {
+		// ROM doesn't have an icon.
+		*pImage = nullptr;
+		return -ENOENT;
+	} else if (!d->file) {
+		*pImage = nullptr;
+		return -EBADF;
+	} else if (!d->isValid) {
+		*pImage = nullptr;
+		return -EIO;
+	}
+
+	*pImage = d->loadIcon();
+	return (*pImage != nullptr ? 0 : -EIO);
 }
 
 }

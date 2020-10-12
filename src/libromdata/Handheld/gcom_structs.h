@@ -42,9 +42,9 @@ extern "C" {
 typedef struct PACKED _Gcom_RomHeader {
 	uint8_t rom_size;		// [0x000] ROM size?
 	uint8_t entry_point_bank;	// [0x001] Entry point: Bank number.
-	uint16_t entry_point;		// [0x002] Entry point.
-	uint8_t unknown1;		// [0x004] Unknown.
-	char sys_id[9];			// [0x005] System identifier.
+	uint16_t entry_point;		// [0x002] Entry point
+	uint8_t flags;			// [0x004] Flags (See Gcom_Flags_e)
+	char sys_id[9];			// [0x005] System identifier
 
 	struct {
 		/**
@@ -68,6 +68,14 @@ typedef struct PACKED _Gcom_RomHeader {
 } Gcom_RomHeader;
 #pragma pack()
 ASSERT_STRUCT(Gcom_RomHeader, 32);
+
+/**
+ * game.com: Flags
+ */
+typedef enum {
+	GCOM_FLAG_HAS_ICON	= (1U << 1),	// Icon is present
+	GCOM_FLAG_ICON_RLE	= (1U << 3),	// Icon is RLE-compressed
+} Gcom_Flags_e;
 
 #ifdef __cplusplus
 }
