@@ -20,6 +20,7 @@
 #include "FontHandler.hpp"
 #include "MessageWidget.hpp"
 #include "LvData.hpp"
+#include "LanguageComboBox.hpp"
 
 // libwin32common
 #include "libwin32common/AutoGetDC.hpp"
@@ -32,10 +33,7 @@ using LibWin32Common::WTSSessionNotification;
 
 // librpbase, librpfile, librptexture, libromdata
 #include "librpbase/RomFields.hpp"
-#include "librpbase/SystemRegion.hpp"
 #include "librpbase/TextOut.hpp"
-#include "librpbase/img/RpPng.hpp"
-#include "librpfile/win32/RpFile_windres.hpp"
 using namespace LibRpBase;
 using namespace LibRpFile;
 using LibRpTexture::rp_image;
@@ -204,26 +202,6 @@ class RP_ShellPropSheetExt_Private
 		uint32_t def_lc;	// Default language code from RomFields.
 		set<uint32_t> set_lc;	// Set of supported language codes.
 		HWND cboLanguage;
-		HIMAGELIST himglFlags;
-
-		/**
-		 * Get the selected language code.
-		 * @return Selected language code, or 0 for none (default).
-		 */
-		inline uint32_t sel_lc(void) const
-		{
-			uint32_t lc = 0;
-			if (!cboLanguage) {
-				// No language dropdown...
-				return lc;
-			}
-
-			const int sel_idx = ComboBox_GetCurSel(cboLanguage);
-			if (sel_idx >= 0) {
-				lc = static_cast<uint32_t>(ComboBox_GetItemData(cboLanguage, sel_idx));
-			}
-			return lc;
-		}
 
 		// RFT_STRING_MULTI value labels.
 		typedef std::pair<HWND, const RomFields::Field*> Data_StringMulti_t;
@@ -379,11 +357,6 @@ class RP_ShellPropSheetExt_Private
 			const RomFields::Field &field, int fieldIdx);
 
 		/**
-		 * Build the cboLanguage image list.
-		 */
-		void buildCboLanguageImageList(void);
-
-		/**
 		 * Update all multi-language fields.
 		 * @param user_lc User-specified language code.
 		 */
@@ -502,7 +475,6 @@ RP_ShellPropSheetExt_Private::RP_ShellPropSheetExt_Private(RP_ShellPropSheetExt 
 	, iTabHeightOrig(0)
 	, def_lc(0)
 	, cboLanguage(nullptr)
-	, himglFlags(nullptr)
 {
 	// Initialize structs.
 	dlgSize.cx = 0;
@@ -534,14 +506,6 @@ RP_ShellPropSheetExt_Private::~RP_ShellPropSheetExt_Private()
 
 	// Unreference the RomData object.
 	UNREF(romData);
-
-	// Destroy the flags ImageList.
-	if (cboLanguage) {
-		SendMessage(cboLanguage, CBEM_SETIMAGELIST, 0, (LPARAM)nullptr);
-	}
-	if (himglFlags) {
-		ImageList_Destroy(himglFlags);
-	}
 
 	// Delete the fonts.
 	if (hFontBold) {
@@ -1854,132 +1818,6 @@ int RP_ShellPropSheetExt_Private::initStringMulti(HWND hDlg, HWND hWndTab,
 }
 
 /**
- * Build the cboLanguage image list.
- */
-void RP_ShellPropSheetExt_Private::buildCboLanguageImageList(void)
-{
-	if (cboLanguage) {
-		// Removing the existing ImageList first.
-		SendMessage(cboLanguage, CBEM_SETIMAGELIST, 0, (LPARAM)nullptr);
-	}
-	if (himglFlags) {
-		// Deleting the existing ImageList first.
-		ImageList_Destroy(himglFlags);
-		himglFlags = nullptr;
-	}
-
-	if (vecStringMulti.empty() || set_lc.size() <= 1) {
-		// No multi-language string fields, or not enough
-		// languages for cboLanguage.
-		return;
-	}
-
-	// Get the icon size for the current DPI.
-	// Reference: https://docs.microsoft.com/en-us/windows/win32/hidpi/high-dpi-desktop-application-development-on-windows
-	// TODO: Adjust cboLanguage if necessary?
-	const UINT dpi = rp_GetDpiForWindow(hDlgSheet);
-	unsigned int iconSize;
-	uint16_t resID;
-	if (dpi < 120) {
-		// [96,120) dpi: Use 16x16.
-		iconSize = 16;
-		resID = IDP_FLAGS_16x16;
-	} else if (dpi <= 144) {
-		// [120,144] dpi: Use 24x24.
-		// TODO: Maybe needs to be slightly higher?
-		iconSize = 24;
-		resID = IDP_FLAGS_24x24;
-	} else {
-		// >144dpi: Use 32x32.
-		iconSize = 32;
-		resID = IDP_FLAGS_32x32;
-	}
-
-	// Load the flags sprite sheet.
-	// TODO: Is premultiplied alpha needed?
-	// Reference: https://stackoverflow.com/questions/307348/how-to-draw-32-bit-alpha-channel-bitmaps
-	RpFile_windres *const f_res = new RpFile_windres(HINST_THISCOMPONENT, MAKEINTRESOURCE(resID), MAKEINTRESOURCE(RT_PNG));
-	if (!f_res->isOpen()) {
-		// Unable to open the resource.
-		f_res->unref();
-		return;
-	}
-
-	rp_image *imgFlagsSheet = RpPng::loadUnchecked(f_res);
-	f_res->unref();
-	if (!imgFlagsSheet) {
-		// Unable to load the flags sprite sheet.
-		return;
-	}
-
-	// Make sure the bitmap has the expected size.
-	assert(imgFlagsSheet->width() == (iconSize * SystemRegion::FLAGS_SPRITE_SHEET_COLS));
-	assert(imgFlagsSheet->height() == (iconSize * SystemRegion::FLAGS_SPRITE_SHEET_ROWS));
-	if (imgFlagsSheet->width() != (iconSize * SystemRegion::FLAGS_SPRITE_SHEET_COLS) ||
-	    imgFlagsSheet->height() != (iconSize * SystemRegion::FLAGS_SPRITE_SHEET_ROWS))
-	{
-		// Incorrect size. We can't use it.
-		imgFlagsSheet->unref();
-		return;
-	}
-
-	if (dwExStyleRTL != 0) {
-		// WS_EX_LAYOUTRTL will flip bitmaps in the dropdown box.
-		// ILC_MIRROR mirrors the bitmaps if the process is mirrored,
-		// but we can't rely on that being the case, and this option
-		// was first introduced in Windows XP.
-		// We'll flip the image here to counteract it.
-		rp_image *const flipimg = imgFlagsSheet->flip(rp_image::FLIP_H);
-		assert(flipimg != nullptr);
-		if (flipimg) {
-			imgFlagsSheet->unref();
-			imgFlagsSheet = flipimg;
-		}
-	}
-
-	// Create the image list.
-	himglFlags = ImageList_Create(iconSize, iconSize, ILC_COLOR32, 13, 16);
-	assert(himglFlags != nullptr);
-	if (!himglFlags) {
-		// Unable to create the ImageList.
-		imgFlagsSheet->unref();
-		return;
-	}
-
-	const auto set_lc_cend = set_lc.cend();
-	for (auto iter = set_lc.cbegin(); iter != set_lc_cend; ++iter) {
-		int col, row;
-		int ret = SystemRegion::getFlagPosition(*iter, &col, &row);
-		assert(ret == 0);
-		if (ret != 0) {
-			// Icon not found. Use a blank icon to prevent issues.
-			col = 3;
-			row = 3;
-		}
-
-		if (dwExStyleRTL != 0) {
-			// Flag sprite sheet is flipped for RTL.
-			col = 3 - col;
-		}
-
-		// Extract the sub-icon.
-		HBITMAP hbmIcon = RpImageWin32::getSubBitmap(imgFlagsSheet, col*iconSize, row*iconSize, iconSize, iconSize, dpi);
-		assert(hbmIcon != nullptr);
-		if (hbmIcon) {
-			// Add the icon to the ImageList.
-			ImageList_Add(himglFlags, hbmIcon, nullptr);
-			DeleteBitmap(hbmIcon);
-		}
-	}
-	imgFlagsSheet->unref();
-
-	if (cboLanguage) {
-		// Set the new ImageList.
-		SendMessage(cboLanguage, CBEM_SETIMAGELIST, 0, (LPARAM)himglFlags);
-	}
-}
-
-/**
  * Update all multi-language fields.
  * @param user_lc User-specified language code.
  */
@@ -2147,123 +1985,78 @@ void RP_ShellPropSheetExt_Private::updateMulti(uint32_t user_lc)
 
 	if (!cboLanguage && set_lc.size() > 1) {
 		// Create the language combobox.
+		// FIXME: May need to create this after the header row
+		// in order to preserve tab order. Need to check the
+		// KDE and GTK+ versions, too.
+		// NOTE: We won't have the correct position or size until LCs are set.
 
-		// Get the language strings and determine the
-		// maximum width.
-		SIZE maxSize = {0, 0};
-		vector<tstring> vec_lc_str;
-		vec_lc_str.reserve(set_lc.size());
-		const auto set_lc_cend = set_lc.cend();
-		for (auto iter = set_lc.cbegin(); iter != set_lc_cend; ++iter) {
-			const uint32_t lc = *iter;
-			const char *lc_str = SystemRegion::getLocalizedLanguageName(lc);
-			if (lc_str) {
-				vec_lc_str.emplace_back(U82T_c(lc_str));
-			} else {
-				// Invalid language code.
-				tstring s_lc;
-				s_lc.reserve(4);
-				for (uint32_t tmp_lc = lc; tmp_lc != 0; tmp_lc <<= 8) {
-					TCHAR chr = (TCHAR)(tmp_lc >> 24);
-					if (chr != 0) {
-						s_lc += chr;
-					}
-				}
-				vec_lc_str.emplace_back(std::move(s_lc));
-			}
-
-			const tstring &tstr = vec_lc_str.at(vec_lc_str.size()-1);
-			SIZE size;
-			if (!LibWin32Common::measureTextSize(hDlgSheet, hFontDlg, tstr.c_str(), &size)) {
-				maxSize.cx = std::max(maxSize.cx, size.cx);
-				maxSize.cy = std::max(maxSize.cy, size.cy);
-			}
-		}
-
-		// TODO:
-		// - Per-monitor DPI scaling (both v1 and v2)
-		// - Handle WM_DPICHANGED.
-		// Reference: https://docs.microsoft.com/en-us/windows/win32/hidpi/high-dpi-desktop-application-development-on-windows
+		// NOTE: We need to initialize combobox height to iconSize * 8 in order
+		// to allow up to 8 entries to be displayed at once.
 		const UINT dpi = rp_GetDpiForWindow(hDlgSheet);
-		unsigned int iconSize;
-		unsigned int iconMargin;
+		int iconSize;
 		if (dpi < 120) {
 			// [96,120) dpi: Use 16x16.
 			iconSize = 16;
-			iconMargin = 2;
 		} else if (dpi <= 144) {
 			// [120,144] dpi: Use 24x24.
 			// TODO: Maybe needs to be slightly higher?
 			iconSize = 24;
-			iconMargin = 3;
 		} else {
 			// >144dpi: Use 32x32.
 			iconSize = 32;
-			iconMargin = 4;
 		}
 
-		// Add iconSize + iconMargin for the icon.
-		maxSize.cx += iconSize + iconMargin;
+		// Calculate text height.
+		SIZE textSize;
+		if (LibWin32Common::measureTextSize(hDlgSheet, hFontDlg, _T("Ay"), &textSize) != 0) {
+			// Error getting text height.
+			textSize.cy = 0;
+		}
 
-		// Add vertical scrollbar width and CXEDGE.
-		// Reference: http://ntcoder.com/2013/10/07/mfc-resize-ccombobox-drop-down-list-based-on-contents/
-		maxSize.cx += rp_GetSystemMetricsForDpi(SM_CXVSCROLL, dpi);
-		maxSize.cx += (rp_GetSystemMetricsForDpi(SM_CXEDGE, dpi) * 4);
-
-		// Create the combobox.
-		// FIXME: May need to create this after the header row
-		// in order to preserve tab order. Need to check the
-		// KDE and GTK+ versions, too.
-		// ComboBoxEx was introduced in MSIE 3.0.
-		// NOTE: Height is based on icon size.
+		LanguageComboBoxRegister();
 		cboLanguage = CreateWindowEx(WS_EX_NOPARENTNOTIFY,
-			WC_COMBOBOXEX, nullptr,
+			WC_LANGUAGECOMBOBOX, nullptr,
 			CBS_DROPDOWNLIST | WS_CHILD | WS_TABSTOP | WS_VISIBLE,
-			rectHeader.right - maxSize.cx, rectHeader.top,
-			maxSize.cx, iconSize*(8+1) + maxSize.cy - (maxSize.cy / 8),
+			0, 0, 0, (iconSize * 8) + textSize.cy - (textSize.cy / 8),
 			hDlgSheet, (HMENU)(INT_PTR)IDC_CBO_LANGUAGE, nullptr, nullptr);
 		SetWindowFont(cboLanguage, hFontDlg, false);
-		SendMessage(cboLanguage, CBEM_SETIMAGELIST, 0, (LPARAM)himglFlags);
 
-		// Add the strings.
-		auto iter_str = vec_lc_str.cbegin();
-		auto iter_lc = set_lc.cbegin();
-		int sel_idx = -1;
-		COMBOBOXEXITEM cbItem;
-		cbItem.mask = CBEIF_TEXT | CBEIF_LPARAM | CBEIF_IMAGE | CBEIF_SELECTEDIMAGE;
-		cbItem.iItem = 0;
-		int iImage = 0;
-		const auto vec_lc_str_cend = vec_lc_str.cend();
-		for (; iter_str != vec_lc_str_cend; ++iter_str, ++iter_lc, cbItem.iItem++, iImage++) {
-			const uint32_t lc = *iter_lc;
-			cbItem.pszText = const_cast<LPTSTR>(iter_str->c_str());
-			cbItem.cchTextMax = static_cast<int>(iter_str->size());
-			cbItem.lParam = static_cast<LPARAM>(lc);
-			cbItem.iImage = iImage;
-			cbItem.iSelectedImage = iImage;
+		// Set the languages.
+		// NOTE: LanguageComboBox uses a 0-terminated array, so we'll
+		// need to convert the std::set<> to an std::vector<>.
+		vector<uint32_t> vec_lc;
+		vec_lc.reserve(set_lc.size() + 1);
+		std::for_each(set_lc.cbegin(), set_lc.cend(),
+			[&vec_lc](uint32_t lc) {
+				vec_lc.emplace_back(lc);
+			}
+		);
+		vec_lc.emplace_back(0);
+		LanguageComboBox_SetLCs(cboLanguage, vec_lc.data());
 
-			// Insert the item.
-			SendMessage(cboLanguage, CBEM_INSERTITEM, 0, (LPARAM)&cbItem);
+		// Get the minimum size for the combobox.
+		LPARAM minSize = LanguageComboBox_GetMinSize(cboLanguage);
+		SetWindowPos(cboLanguage, nullptr,
+			rectHeader.right - GET_X_LPARAM(minSize), rectHeader.top,
+			GET_X_LPARAM(minSize), GET_Y_LPARAM(minSize),
+			SWP_NOOWNERZORDER | SWP_NOZORDER);
 
-			// Save the default index:
-			// - ROM-default language code.
-			// - English if it's not available.
-			if (lc == def_lc) {
-				// Select this item.
-				sel_idx = static_cast<int>(cbItem.iItem);
-			} else if (lc == 'en') {
-				// English. Select this item if def_lc hasn't been found yet.
-				if (sel_idx < 0) {
-					sel_idx = static_cast<int>(cbItem.iItem);
-				}
+		// Select the default language.
+		uint32_t lc_to_set = 0;
+		const auto set_lc_end = set_lc.end();
+		if (set_lc.find(def_lc) != set_lc_end) {
+			// def_lc was found.
+			lc_to_set = def_lc;
+		} else if (set_lc.find('en') != set_lc_end) {
+			// 'en' was found.
+			lc_to_set = 'en';
+		} else {
+			// Unknown. Select the first language.
+			if (!set_lc.empty()) {
+				lc_to_set = *(set_lc.cbegin());
 			}
 		}
-
-		// Build the ImageList.
-		buildCboLanguageImageList();
-
-		// Set the current index.
-		ComboBox_SetCurSel(cboLanguage, sel_idx);
+		LanguageComboBox_SetSelectedLC(cboLanguage, lc_to_set);
 
 		// Get the dialog margin.
 		// 7x7 DLU margin is recommended by the Windows UX guidelines.
@@ -2272,7 +2065,7 @@ void RP_ShellPropSheetExt_Private::updateMulti(uint32_t user_lc)
 		MapDialogRect(hDlgSheet, &dlgMargin);
 
 		// Adjust the header row.
-		const int adj = (maxSize.cx + dlgMargin.left) / 2;
+		const int adj = (GET_X_LPARAM(minSize) + dlgMargin.left) / 2;
 		if (lblSysInfo) {
 			ptSysInfo.x -= adj;
 			SetWindowPos(lblSysInfo, nullptr, ptSysInfo.x, ptSysInfo.y, 0, 0,
@@ -3034,8 +2827,11 @@ void RP_ShellPropSheetExt_Private::menuOptions_action_triggered(int menuId)
 
 		switch (menuId) {
 			case IDM_OPTIONS_MENU_EXPORT_TEXT: {
+				const uint32_t lc = cboLanguage
+					? LanguageComboBox_GetSelectedLC(cboLanguage)
+					: 0;
 				ofs << "== " << rp_sprintf(C_("RomDataView", "File: '%s'"), rom_filename) << '\n';
-				ROMOutput ro(romData, sel_lc());
+				ROMOutput ro(romData, lc);
 				ofs << ro;
 				ofs.flush();
 				break;
@@ -3049,9 +2845,12 @@ void RP_ShellPropSheetExt_Private::menuOptions_action_triggered(int menuId)
 			case IDM_OPTIONS_MENU_COPY_TEXT: {
 				// NOTE: Some fields may have embedded newlines,
 				// so we'll need to convert everything afterwards.
+				const uint32_t lc = cboLanguage
+					? LanguageComboBox_GetSelectedLC(cboLanguage)
+					: 0;
 				ostringstream oss;
 				oss << "== " << rp_sprintf(C_("RomDataView", "File: '%s'"), rom_filename) << '\n';
-				ROMOutput ro(romData, sel_lc());
+				ROMOutput ro(romData, lc);
 				oss << ro;
 				oss.flush();
 				ts_out = LibWin32Common::unix2dos(U82T_s(oss.str()));
@@ -3942,8 +3741,9 @@ INT_PTR RP_ShellPropSheetExt_Private::DlgProc_WM_COMMAND(HWND hDlg, WPARAM wPara
 			if (LOWORD(wParam) != IDC_CBO_LANGUAGE)
 				break;
 
-			// NOTE: lParam also has the ComboBox HWND.
-			const uint32_t lc = sel_lc();
+			// Get the LC.
+			// TODO: Custom WM_NOTIFY message with the LC?
+			const uint32_t lc = LanguageComboBox_GetSelectedLC(cboLanguage);
 			if (lc != 0) {
 				updateMulti(lc);
 			}

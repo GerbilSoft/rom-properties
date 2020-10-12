@@ -53,6 +53,7 @@ SET(rom-properties-win32_SRCS
 	FontHandler.cpp
 	MessageWidget.cpp
 	LvData.cpp
+	LanguageComboBox.cpp
 	config/ConfigDialog.cpp
 	config/PropSheetIcon.cpp
 	config/RP_EmptyVolumeCacheCallback.cpp
@@ -83,6 +84,7 @@ SET(rom-properties-win32_H
 	FontHandler.hpp
 	MessageWidget.hpp
 	LvData.hpp
+	LanguageComboBox.hpp
 	config/ConfigDialog.hpp
 	config/PropSheetIcon.hpp
 	config/RP_EmptyVolumeCacheCallback.hpp
