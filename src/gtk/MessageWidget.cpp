@@ -16,7 +16,6 @@ typedef enum {
 	PROP_MESSAGE_TYPE,
 	PROP_LAST
 } MessageWidgetPropID;
-static GParamSpec *properties[PROP_LAST];
 
 static void	message_widget_dispose	(GObject	*object);
 static void	message_widget_finalize	(GObject	*object);
@@ -51,11 +50,14 @@ typedef GtkEventBox super;
 // MessageWidget class.
 struct _MessageWidgetClass {
 	superclass __parent__;
+
+	GParamSpec *properties[PROP_LAST];
 };
 
 // MessageWidget instance.
 struct _MessageWidget {
 	super __parent__;
+
 #if !GTK_CHECK_VERSION(3,0,0)
 	GtkWidget *evbox_inner;
 	GtkWidget *hbox;
@@ -85,18 +87,18 @@ message_widget_class_init(MessageWidgetClass *klass)
 
 	/** Properties **/
 
-	properties[PROP_TEXT] = g_param_spec_string(
+	klass->properties[PROP_TEXT] = g_param_spec_string(
 		"text", "Text", "Text displayed on the MessageWidget.",
 		nullptr,
 		(GParamFlags)(G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
-	properties[PROP_MESSAGE_TYPE] = g_param_spec_enum(
+	klass->properties[PROP_MESSAGE_TYPE] = g_param_spec_enum(
 		"message-type", "Message Type", "Message type.",
 		GTK_TYPE_MESSAGE_TYPE, GTK_MESSAGE_OTHER,
 		(GParamFlags)(G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
 	// Install the properties.
-	g_object_class_install_properties(gobject_class, PROP_LAST, properties);
+	g_object_class_install_properties(gobject_class, PROP_LAST, klass->properties);
 
 #if GTK_CHECK_VERSION(3,0,0)
 	// Initialize MessageWidget CSS.
@@ -259,7 +261,8 @@ message_widget_set_text(MessageWidget *widget, const gchar *str)
 
 	// FIXME: If called from rom_data_view_set_property(), this might
 	// result in *two* notifications.
-	g_object_notify_by_pspec(G_OBJECT(widget), properties[PROP_TEXT]);
+	MessageWidgetClass *const klass = MESSAGE_WIDGET_GET_CLASS(widget);
+	g_object_notify_by_pspec(G_OBJECT(widget), klass->properties[PROP_TEXT]);
 }
 
 const gchar*
@@ -344,7 +347,8 @@ message_widget_set_message_type(MessageWidget *widget, GtkMessageType messageTyp
 
 	// FIXME: If called from rom_data_view_set_property(), this might
 	// result in *two* notifications.
-	g_object_notify_by_pspec(G_OBJECT(widget), properties[PROP_MESSAGE_TYPE]);
+	MessageWidgetClass *const klass = MESSAGE_WIDGET_GET_CLASS(widget);
+	g_object_notify_by_pspec(G_OBJECT(widget), klass->properties[PROP_MESSAGE_TYPE]);
 }
 
 GtkMessageType
