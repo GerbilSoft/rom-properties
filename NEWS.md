@@ -14,7 +14,10 @@
 
 * New parser features:
   * NGPC: Added external title screens using RPDB.
-  * Xbox360_XDBF: Added metadata extraction.
+  * Xbox360_XDBF:
+    * Added metadata extraction.
+    * Added (partial) support for GPD files. Avatar Awards aren't parsed
+      in GPD files at the moment.
   * Xbox360_XEX: System firmware XEXes use the XEX1 key. This is indicated
     using the "Cardea Key" flag.
     * Fixes #273, reported by @Masamune3210.
