@@ -111,4 +111,14 @@
 #  define strtok_r(str, delim, saveptr) strtok_s(str, delim, saveptr)
 #endif
 
+/** ssize_t **/
+
+#ifdef _MSC_VER
+#  ifdef _WIN64
+typedef __int64 ssize_t;
+#  else /* !_WIN64 */
+typedef int ssize_t;
+#  endif /* _WIN64 */
+#endif /* _MSC_VER */
+
 #endif /* __C99_COMPAT_MSVCRT_H__ */

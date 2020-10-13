@@ -402,8 +402,8 @@ const rp_image *GameComPrivate::loadIconRLE(void)
 	// Decompress the RLE data.
 	static const size_t icon_data_len = (GCOM_ICON_W * GCOM_ICON_H) / 4;
 	unique_ptr<uint8_t[]> icon_data(new uint8_t[icon_data_len]);
-	size = rle_decompress(icon_data.get(), icon_data_len, icon_rle_data.get(), icon_rle_data_max_len);
-	if (size != icon_data_len) {
+	ssize_t ssize = rle_decompress(icon_data.get(), icon_data_len, icon_rle_data.get(), icon_rle_data_max_len);
+	if (ssize != icon_data_len) {
 		// Decompression failed.
 		return nullptr;
 	}
