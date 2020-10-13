@@ -21,6 +21,9 @@
   * Xbox360_XEX: System firmware XEXes use the XEX1 key. This is indicated
     using the "Cardea Key" flag.
     * Fixes #273, reported by @Masamune3210.
+  * GameCom: Added support for RLE-compressed icons. "Game.com Internet"
+    and "Tiger Web Link" are the only two titles known to use them.
+    * Fixes #278, reported by @simontime.
 
 * Bug fixes:
   * GameCube: Detect incrementing values partitions in encrypted images.

@@ -46,9 +46,44 @@ class GameComPrivate final : public RomDataPrivate
 		 * @return Icon, or nullptr on error.
 		 */
 		const rp_image *loadIcon(void);
+
+	protected:
+		static const uint32_t gcom_palette[4];
+
+		/**
+		 * Decompress game.com RLE data.
+		 *
+		 * NOTE: The ROM header does *not* indicate how much data is
+		 * available, so we'll keep going until we're out of either
+		 * output or input buffer.
+		 *
+		 * @param pOut		[out] Output buffer.
+		 * @param out_len	[in] Output buffer length.
+		 * @param pIn		[in] Input buffer.
+		 * @param in_len	[in] Input buffer length.
+		 * @return Decoded data length on success; negative POSIX error code on error.
+		 */
+		static ssize_t rle_decompress(uint8_t *pOut, size_t out_len, const uint8_t *pIn, size_t in_len);
+
+		/**
+		 * Load an RLE-compressed icon.
+		 * This is called from loadIcon().
+		 * @return Icon, or nullptr on error.
+		 */
+		const rp_image *loadIconRLE(void);
 };
 
 /** GameComPrivate **/
+
+// Palette.
+// NOTE: Index 0 is white; index 3 is black.
+// TODO: Use colors closer to the original screen?
+const uint32_t GameComPrivate::gcom_palette[4] = {
+	0xFFFFFFFF,
+	0xFFC0C0C0,
+	0xFF808080,
+	0xFF000000,
+};
 
 GameComPrivate::GameComPrivate(GameCom *q, IRpFile *file)
 	: super(q, file)
@@ -78,6 +113,11 @@ const rp_image *GameComPrivate::loadIcon(void)
 	} else if (!(romHeader.flags & GCOM_FLAG_HAS_ICON)) {
 		// ROM doesn't have an icon.
 		return nullptr;
+	}
+
+	if (romHeader.flags & GCOM_FLAG_ICON_RLE) {
+		// Icon is RLE-compressed.
+		return loadIconRLE();
 	}
 
 	// Icon is 64x64.
@@ -136,16 +176,6 @@ const rp_image *GameComPrivate::loadIcon(void)
 	// Create the icon.
 	// TODO: Split into an ImageDecoder function?
 	rp_image *const tmp_icon = new rp_image(GCOM_ICON_W, GCOM_ICON_H, rp_image::Format::CI8);
-
-	// Set the palette.
-	// NOTE: Index 0 is white; index 3 is black.
-	// TODO: Use colors closer to the original screen?
-	static const uint32_t gcom_palette[4] = {
-		0xFFFFFFFF,
-		0xFFC0C0C0,
-		0xFF808080,
-		0xFF000000,
-	};
 
 	uint32_t *const palette = tmp_icon->palette();
 	assert(palette != nullptr);
@@ -228,6 +258,195 @@ const rp_image *GameComPrivate::loadIcon(void)
 				pSrc += GCOM_ICON_W;
 				pDestBase += dest_stride;
 			}
+		}
+	}
+
+	// Set the sBIT metadata.
+	// TODO: Use grayscale instead of RGB.
+	static const rp_image::sBIT_t sBIT = {2,2,2,0,0};
+	tmp_icon->set_sBIT(&sBIT);
+
+	// Save and return the icon.
+	this->img_icon = tmp_icon;
+	return tmp_icon;
+}
+
+/**
+ * Decompress game.com RLE data.
+ *
+ * NOTE: The ROM header does *not* indicate how much data is
+ * available, so we'll keep going until we're out of either
+ * output or input buffer.
+ *
+ * @param pOut		[out] Output buffer.
+ * @param out_len	[in] Output buffer length.
+ * @param pIn		[in] Input buffer.
+ * @param in_len	[in] Input buffer length.
+ * @return Decoded data length on success; negative POSIX error code on error.
+ */
+ssize_t GameComPrivate::rle_decompress(uint8_t *pOut, size_t out_len, const uint8_t *pIn, size_t in_len)
+{
+	assert(pOut != nullptr);
+	assert(out_len > 0);
+	assert(pIn != nullptr);
+	assert(in_len > 0);
+	if (!pOut || out_len == 0 || !pIn || in_len == 0) {
+		return -EINVAL;
+	}
+
+	uint8_t const *pOut_orig = pOut;
+	uint8_t const *pOut_end = pOut + out_len;
+	const uint8_t *const pIn_end = pIn + in_len;
+
+	while (pIn < pIn_end && pOut < pOut_end) {
+		uint16_t count = 0;
+
+		if (pIn[0] == 0xC0) {
+			// 16-bit RLE:
+			// - pIn[2],pIn[1]: 16-bit count (LE)
+			// - pIn[3]: Data byte
+			if (pIn + 3 >= pIn_end) {
+				// Input buffer overflow!
+				return -EIO;
+			}
+			count = (pIn[2] << 8) | pIn[1];
+			if (pOut + count > pOut_end) {
+				// Output buffer overflow!
+				return -EIO;
+			}
+			memset(pOut, pIn[3], count);
+			pIn += 4;
+		} else if (pIn[0] > 0xC0) {
+			// 6-bit RLE:
+			// - pIn[0]: 6-bit count (low 6 bits)
+			// - pIn[1]: Data byte
+			if (pIn + 1 >= pIn_end) {
+				// Input buffer overflow!
+				return -EIO;
+			}
+			count = pIn[0] & 0x3F;
+			if (pOut + count > pOut_end) {
+				// Output buffer overflow!
+				return -EIO;
+			}
+			memset(pOut, pIn[1], count);
+			pIn += 2;
+		} else {
+			// Regular data byte.
+			*pOut++ = *pIn++;
+		}
+
+		// Output buffer: Add bytes for 6-bit and 16-bit RLE.
+		pOut += count;
+	}
+
+	return (pOut - pOut_orig);
+}
+
+/**
+ * Load an RLE-compressed icon.
+ * This is called from loadIcon().
+ * @return Icon, or nullptr on error.
+ */
+const rp_image *GameComPrivate::loadIconRLE(void)
+{
+	// Checks were already done in loadIcon().
+	assert(romHeader.flags & GCOM_FLAG_ICON_RLE);
+
+	const off64_t fileSize = this->file->size();
+	uint8_t bank_number = romHeader.icon.bank;
+	unsigned int bank_offset = bank_number * GCOM_ICON_BANK_SIZE_RLE;
+	unsigned int bank_adj = 0;
+	if (bank_offset > 256*1024) {
+		// Check if the ROM is 0.8 MB or 1.8 MB.
+		// These ROMs are incorrectly dumped, but we can usually
+		// get the icon by subtracting 256 KB.
+		if (fileSize == 768*1024 || fileSize == 1792*1024) {
+			bank_adj = 256*1024;
+			bank_offset -= bank_adj;
+		}
+	}
+
+	// If the bank number is past the end of the ROM, it may be underdumped.
+	if (bank_offset > fileSize) {
+		// If the bank number is more than 2x the filesize,
+		// and it's over the 1 MB mark, forget it.
+		if (bank_offset > (fileSize * 2) && bank_offset > 1048576) {
+			// Completely out of range.
+			return nullptr;
+		}
+		// Get the lowest power of two size and mask the bank number.
+		unsigned int lz = (1U << uilog2(static_cast<unsigned int>(fileSize)));
+		bank_number &= ((lz / GCOM_ICON_BANK_SIZE_RLE) - 1);
+		bank_offset = (bank_number * GCOM_ICON_BANK_SIZE_RLE) - bank_adj;
+	}
+
+	// Icon is stored at bank_offset + ((x << 8) | y).
+	// Up to 4 bytes per pixel for the most extreme RLE test case.
+	static const size_t icon_rle_data_max_len = GCOM_ICON_W * GCOM_ICON_H * 4;
+	unique_ptr<uint8_t[]> icon_rle_data(new uint8_t[icon_rle_data_max_len]);
+	unsigned int icon_file_offset = bank_offset + ((romHeader.icon.x << 8) | (romHeader.icon.y));
+	if (icon_file_offset >= GCOM_ICON_RLE_BANK_LOAD_OFFSET) {
+		// Not sure why this is needed...
+		icon_file_offset -= GCOM_ICON_RLE_BANK_LOAD_OFFSET;
+	}
+	size_t size = file->seekAndRead(icon_file_offset, icon_rle_data.get(), icon_rle_data_max_len);
+	if (size == 0) {
+		// No data...
+		return nullptr;
+	} else if (size < icon_rle_data_max_len) {
+		// Zero out the remaining area.
+		memset(&icon_rle_data[size], 0, icon_rle_data_max_len - size);
+	}
+
+	// Decompress the RLE data.
+	static const size_t icon_data_len = (GCOM_ICON_W * GCOM_ICON_H) / 4;
+	unique_ptr<uint8_t[]> icon_data(new uint8_t[icon_data_len]);
+	size = rle_decompress(icon_data.get(), icon_data_len, icon_rle_data.get(), icon_rle_data_max_len);
+	if (size != icon_data_len) {
+		// Decompression failed.
+		return nullptr;
+	}
+
+	// Create the icon.
+	// TODO: Split into an ImageDecoder function?
+	rp_image *const tmp_icon = new rp_image(GCOM_ICON_W, GCOM_ICON_H, rp_image::Format::CI8);
+
+	uint32_t *const palette = tmp_icon->palette();
+	assert(palette != nullptr);
+	assert(tmp_icon->palette_len() >= 4);
+	if (!palette || tmp_icon->palette_len() < 4) {
+		tmp_icon->unref();
+		return nullptr;
+	}
+	memcpy(palette, gcom_palette, sizeof(gcom_palette));
+
+	// NOTE: The image is vertically mirrored and rotated 270 degrees.
+	// Because of this, we can't use scanline pointer adjustment for
+	// the destination image. Each pixel address will be calculated
+	// manually.
+
+	// NOTE 2: Due to RLE compression, the icon is *always* aligned
+	// on a byte boundary in the decompressed data. We won't need
+	// to do manual realignment.
+	uint8_t *pDestBase = static_cast<uint8_t*>(tmp_icon->bits());
+	int dest_stride = tmp_icon->stride();
+
+	const uint8_t *pSrc = icon_data.get();
+	for (unsigned int x = 0; x < GCOM_ICON_W; x++) {
+		uint8_t *pDest = pDestBase + x;
+		for (unsigned int y = 0; y < GCOM_ICON_H; y += 4, pSrc++) {
+			uint8_t px2bpp = *pSrc;
+			pDest[dest_stride*3] = px2bpp & 0x03;
+			px2bpp >>= 2;
+			pDest[dest_stride*2] = px2bpp & 0x03;
+			px2bpp >>= 2;
+			pDest[dest_stride*1] = px2bpp & 0x03;
+			px2bpp >>= 2;
+			pDest[0] = px2bpp;
+
+			// Next group of pixels.
+			pDest += (dest_stride*4);
 		}
 	}
 

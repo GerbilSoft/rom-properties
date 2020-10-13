@@ -24,6 +24,10 @@ extern "C" {
 #define GCOM_ICON_W 64
 #define GCOM_ICON_H 64
 
+// RLE-compressed icons have a different bank size.
+#define GCOM_ICON_BANK_SIZE_RLE 0x2000
+#define GCOM_ICON_RLE_BANK_LOAD_OFFSET 0x6000
+
 // NOTE: The official game.com emulator requires the header to be at 0x40000.
 // Some ROMs have the header at 0, though.
 #define GCOM_HEADER_ADDRESS 0x40000
@@ -54,6 +58,10 @@ typedef struct PACKED _Gcom_RomHeader {
 		 * number and the icon's (x,y) coordinates.
 		 *
 		 * NOTE: Bitmaps are rotated 270 degrees and vertically flipped.
+		 *
+		 * NOTE 2: If RLE compression is enabled, the start address of
+		 * the RLE-compressed data is calculated differently:
+		 * (bank * 0x2000) | ((x << 8) | y)
 		 */
 
 		uint8_t bank;	// [0x00E] Bank number. (16 KB; 256x256)
