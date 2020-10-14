@@ -12,8 +12,10 @@
 /* Property identifiers */
 typedef enum {
 	PROP_0,
+
 	PROP_TEXT,
 	PROP_MESSAGE_TYPE,
+
 	PROP_LAST
 } MessageWidgetPropID;
 

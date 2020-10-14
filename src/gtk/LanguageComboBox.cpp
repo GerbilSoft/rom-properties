@@ -19,13 +19,16 @@ using std::string;
 /* Property identifiers */
 typedef enum {
 	PROP_0,
+
 	PROP_SELECTED_LC,
+
 	PROP_LAST
 } LanguageComboBoxPropID;
 
 /* Signal identifiers */
 typedef enum {
 	SIGNAL_LC_CHANGED,	// Language code was changed.
+
 	SIGNAL_LAST
 } LanguageComboBoxSignalID;
 

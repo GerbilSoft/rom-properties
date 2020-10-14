@@ -73,9 +73,11 @@ static inline GtkWidget *gtk_tree_view_column_get_button(GtkTreeViewColumn *tree
 /* Property identifiers */
 typedef enum {
 	PROP_0,
+
 	PROP_URI,
 	PROP_DESC_FORMAT_TYPE,
 	PROP_SHOWING_DATA,
+
 	PROP_LAST
 } RomDataViewPropID;
 

@@ -35,12 +35,6 @@ G_STMT_START { \
 	} \
 } G_STMT_END
 
-/* Signal identifiers */
-enum RpThumbnailerSignals {
-	SIGNAL_SHUTDOWN,	// RpThumbnailer has been idle for long enough and should exit.
-	SIGNAL_LAST
-};
-
 /* Property identifiers. */
 enum RpThumbnailerProperties {
 	PROP_0,
@@ -51,6 +45,13 @@ enum RpThumbnailerProperties {
 	PROP_EXPORTED,
 
 	PROP_LAST
+};
+
+/* Signal identifiers */
+enum RpThumbnailerSignals {
+	SIGNAL_SHUTDOWN,	// RpThumbnailer has been idle for long enough and should exit.
+
+	SIGNAL_LAST
 };
 
 // Internal functions.
