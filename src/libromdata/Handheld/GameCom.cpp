@@ -221,6 +221,7 @@ const rp_image *GameComPrivate::loadIcon(void)
 		dest_stride = tmp_icon->stride();
 	}
 
+	// Convert 2bpp to 8bpp.
 	const uint8_t *pSrc = icon_data.get();
 	const unsigned int Ytotal = GCOM_ICON_H + iconYalign;
 	for (unsigned int x = 0; x < GCOM_ICON_W; x++) {
@@ -299,7 +300,7 @@ ssize_t GameComPrivate::rle_decompress(uint8_t *pOut, size_t out_len, const uint
 	const uint8_t *const pIn_end = pIn + in_len;
 
 	while (pIn < pIn_end && pOut < pOut_end) {
-		uint16_t count = 0;
+		unsigned int count = 0;
 
 		if (pIn[0] == 0xC0) {
 			// 16-bit RLE:
@@ -382,8 +383,9 @@ const rp_image *GameComPrivate::loadIconRLE(void)
 	}
 
 	// Icon is stored at bank_offset + ((x << 8) | y).
-	// Up to 4 bytes per pixel for the most extreme RLE test case.
-	static const size_t icon_rle_data_max_len = GCOM_ICON_W * GCOM_ICON_H * 4;
+	// Up to 4 bytes per 4 pixels for the most extreme RLE test case.
+	// (effectively 8bpp, though usually much less)
+	static const size_t icon_rle_data_max_len = GCOM_ICON_W * GCOM_ICON_H;
 	unique_ptr<uint8_t[]> icon_rle_data(new uint8_t[icon_rle_data_max_len]);
 	unsigned int icon_file_offset = bank_offset + ((romHeader.icon.x << 8) | (romHeader.icon.y));
 	if (icon_file_offset >= GCOM_ICON_RLE_BANK_LOAD_OFFSET) {
@@ -399,7 +401,7 @@ const rp_image *GameComPrivate::loadIconRLE(void)
 		memset(&icon_rle_data[size], 0, icon_rle_data_max_len - size);
 	}
 
-	// Decompress the RLE data.
+	// Decompress the RLE data. (2bpp)
 	static const size_t icon_data_len = (GCOM_ICON_W * GCOM_ICON_H) / 4;
 	unique_ptr<uint8_t[]> icon_data(new uint8_t[icon_data_len]);
 	ssize_t ssize = rle_decompress(icon_data.get(), icon_data_len, icon_rle_data.get(), icon_rle_data_max_len);
@@ -427,11 +429,12 @@ const rp_image *GameComPrivate::loadIconRLE(void)
 	// manually.
 
 	// NOTE 2: Due to RLE compression, the icon is *always* aligned
-	// on a byte boundary in the decompressed data. We won't need
+	// on a byte boundary in the decompressed data, so we won't need
 	// to do manual realignment.
 	uint8_t *pDestBase = static_cast<uint8_t*>(tmp_icon->bits());
 	int dest_stride = tmp_icon->stride();
 
+	// Convert 2bpp to 8bpp.
 	const uint8_t *pSrc = icon_data.get();
 	for (unsigned int x = 0; x < GCOM_ICON_W; x++) {
 		uint8_t *pDest = pDestBase + x;
