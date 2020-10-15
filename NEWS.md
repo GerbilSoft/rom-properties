@@ -11,6 +11,7 @@
     * Windows: Significantly improved column sizing by overriding ListView's
       default sizing function, which doesn't work properly for strings that
       have multiple lines.
+    * GTK+: Combined the icon/checkbox column with column 0.
 
 * New parser features:
   * NGPC: Added external title screens using RPDB.
