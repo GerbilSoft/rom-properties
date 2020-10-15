@@ -780,7 +780,7 @@ void RomDataViewPrivate::initListData(QLabel *lblDesc,
 	if (colCount <= 0) {
 		// No columns...
 		delete lblDesc;
-		return nullptr;
+		return;
 	}
 
 	Q_Q(RomDataView);
