@@ -776,6 +776,12 @@ void RomDataViewPrivate::initListData(QLabel *lblDesc,
 		// Use the first row.
 		colCount = static_cast<int>(list_data->at(0).size());
 	}
+	assert(colCount > 0);
+	if (colCount <= 0) {
+		// No columns...
+		delete lblDesc;
+		return nullptr;
+	}
 
 	Q_Q(RomDataView);
 	QTreeView *treeView;

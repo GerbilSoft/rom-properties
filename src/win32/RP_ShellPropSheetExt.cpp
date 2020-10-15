@@ -1233,6 +1233,11 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 		// Use the first row.
 		colCount = (int)list_data->at(0).size();
 	}
+	assert(colCount > 0);
+	if (colCount <= 0) {
+		// No columns...
+		return 0;
+	}
 
 	// NOTE: We're converting the strings for use with
 	// LVS_OWNERDATA.

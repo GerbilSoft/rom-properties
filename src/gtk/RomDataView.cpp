@@ -990,6 +990,11 @@ rom_data_view_init_listdata(RomDataView *page,
 		// Use the first row.
 		colCount = static_cast<int>(list_data->at(0).size());
 	}
+	assert(colCount > 0);
+	if (colCount <= 0) {
+		// No columns...
+		return nullptr;
+	}
 
 	GtkListStore *listStore;
 	int listStore_col_start;
@@ -1153,10 +1158,11 @@ rom_data_view_init_listdata(RomDataView *page,
 		GtkTreeViewColumn *const column = gtk_tree_view_column_new();
 		gtk_tree_view_column_set_title(column,
 			(listDataDesc.names ? listDataDesc.names->at(i).c_str() : ""));
-		if (i == 0 && col0_renderer != nullptr) {
+		if (col0_renderer != nullptr) {
 			// Prepend the icon/checkbox renderer.
 			gtk_tree_view_column_pack_start(column, col0_renderer, FALSE);
 			gtk_tree_view_column_add_attribute(column, col0_renderer, col0_attr_name, 0);
+			col0_renderer = nullptr;
 		}
 		gtk_tree_view_column_pack_start(column, renderer, TRUE);
 		gtk_tree_view_column_add_attribute(column, renderer, "text", listStore_col_idx);
@@ -1228,6 +1234,12 @@ rom_data_view_init_listdata(RomDataView *page,
 					GINT_TO_POINTER(listStore_col_idx), nullptr);
 				break;
 		}
+	}
+
+	assert(col0_renderer == nullptr);
+	if (col0_renderer) {
+		// This should've been assigned to a GtkTreeViewColumn...
+		g_object_unref(col0_renderer);
 	}
 
 	// Set the default sorting column.
