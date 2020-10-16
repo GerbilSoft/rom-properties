@@ -33,6 +33,7 @@
   * Fixed a potential crash when loading an invalid PNG image.
   * Windows: Fixed a column sizing issue that caused XDBF Gamerscore columns
     to be too wide.
+  * Xbox360_STFS: Fixed a crash that happened in some cases.
 
 ## v1.7.3 (released 2020/09/25)
 
