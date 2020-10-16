@@ -2,18 +2,14 @@
 Encoding=UTF-8
 Type=Service
 Name=ROM Properties Page
-ServiceTypes=KPropertiesDialog/Plugin,ThumbCreator
+ServiceTypes=KPropertiesDialog/Plugin
 
 # KDE service settings.
 X-KDE-Library=rom-properties-kde4
-X-KDE-ServiceTypes=KPropertiesDialog/Plugin,ThumbCreator
+X-KDE-ServiceTypes=KPropertiesDialog/Plugin
 X-KDE-Protocol=file
 X-KDE-Protocols=file,desktop
 
 # Supported MIME types.
-# For KDE, both thumbnailable and non-thumbnailable types are listed.
+# For KDE KPropertiesDialog, both thumbnailable and non-thumbnailable types are listed.
 MimeType=@MIMETYPES_ALL@
-
-# ThumbCreator settings.
-CacheThumbnail=true
-IgnoreMaximumSize=true
