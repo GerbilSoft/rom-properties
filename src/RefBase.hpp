@@ -63,7 +63,7 @@ class RefBase
 		inline T *ref(void)
 		{
 			ATOMIC_INC_FETCH(&m_ref_cnt);
-			return (T*)this;
+			return static_cast<T*>(this);
 		}
 
 		/**
