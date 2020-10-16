@@ -104,7 +104,6 @@ class Xbox360_STFS_Private final : public RomDataPrivate
 
 	public:
 		// XEX executable.
-		DiscReader *xexReader;
 		Xbox360_XEX *xex;
 
 		// File table.
@@ -156,7 +155,6 @@ Xbox360_STFS_Private::Xbox360_STFS_Private(Xbox360_STFS *q, IRpFile *file)
 	, stfsType(StfsType::Unknown)
 	, img_icon(nullptr)
 	, headers_loaded(0)
-	, xexReader(nullptr)
 	, xex(nullptr)
 {
 	// Clear the headers.
@@ -168,8 +166,6 @@ Xbox360_STFS_Private::Xbox360_STFS_Private(Xbox360_STFS *q, IRpFile *file)
 Xbox360_STFS_Private::~Xbox360_STFS_Private()
 {
 	UNREF(xex);
-	UNREF(xexReader);
-
 	UNREF(img_icon);
 }
 
@@ -516,9 +512,6 @@ Xbox360_XEX *Xbox360_STFS_Private::openDefaultXex(void)
 			Xbox360_XEX *const xex_tmp = new Xbox360_XEX(xexFile_tmp);
 			if (xex_tmp->isOpen()) {
 				this->xex = xex_tmp;
-				this->xexReader = discReader;
-				// We don't need to keep the DiscReader reference.
-				UNREF_AND_NULL_NOCHK(discReader);
 			} else {
 				xex_tmp->unref();
 			}
@@ -598,7 +591,6 @@ void Xbox360_STFS::close(void)
 	if (d->xex) {
 		d->xex->close();
 	}
-	UNREF_AND_NULL(d->xexReader);
 
 	// Call the superclass function.
 	super::close();

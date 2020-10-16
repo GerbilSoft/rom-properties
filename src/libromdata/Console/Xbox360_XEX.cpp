@@ -1920,9 +1920,8 @@ int Xbox360_XEX::loadFieldData(void)
 
 		// Disc number
 		// NOTE: Not shown for single-disc games.
-		const char *const disc_number_title = C_("RomData", "Disc #");
 		if (d->executionID.disc_number != 0 && d->executionID.disc_count > 1) {
-			d->fields->addField_string(disc_number_title,
+			d->fields->addField_string(C_("RomData", "Disc #"),
 				// tr: Disc X of Y (for multi-disc games)
 				rp_sprintf_p(C_("RomData|Disc", "%1$u of %2$u"),
 					d->executionID.disc_number,
