@@ -144,6 +144,7 @@ const XboxPublishersPrivate::ThirdPartyEntry XboxPublishersPrivate::thirdPartyLi
 	{'VV',	"Vivendi Universal Games"},
 	{'WE',	"Wanadoo Edition"},
 	{'WR',	"Warner Bros. Interactive Entertainment"},
+	{'XA',	"Xbox Live Arcade"},
 	{'XI',	"XPEC Entertainment and Idea Factory"},
 	{'XK',	"Xbox kiosk disk"},
 	{'XL',	"Xbox special bundled or live demo disk"},
