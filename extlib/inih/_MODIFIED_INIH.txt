@@ -1,9 +1,9 @@
-This copy of inih-r51 is a modified version of the original.
+This copy of inih-r52 is a modified version of the original.
 
-commit 75fe6b1a03d99a9728b9924f9af30729e51357c2
-Fix #107 (ugh, I thought changing from strncpy was a bad idea)
+commit 1e80a47dffbda813604f0913e2ad68c7054c14e4
+Add INI_CUSTOM_ALLOCATOR to allow using a custom memory allocator (#119)
 
-Tag: r51
+Tag: r52
 
 The following changes have been made to the original:
 
@@ -15,5 +15,5 @@ The following changes have been made to the original:
 
 - The Meson build scripts have been removed.
 
-To obtain the original inih-r51, visit:
+To obtain the original inih-r52, visit:
 https://github.com/benhoyt/inih
