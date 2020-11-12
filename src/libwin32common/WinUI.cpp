@@ -444,15 +444,6 @@ static inline HRESULT getFileName_int_IFileDialog(tstring &ts_ret, bool bSave, H
 		}
 	}
 
-	// TODO: Use SetDefaultFolder instead?
-	// FIXME: Need to convert tsKeyFileDir to IShellItem.
-	// SHCreateItemFromParsingName()?
-	// Alternatively, rely on Windows' built-in folder memory.
-	/*
-	hr = pFileDlg->SetFolder(pFolder);
-	if (FAILED(hr))
-		return hr;
-	*/
 	hr = pFileDlg->SetTitle(dlgTitle);
 	if (FAILED(hr))
 		return hr;
