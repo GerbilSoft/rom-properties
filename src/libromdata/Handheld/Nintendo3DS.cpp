@@ -2438,6 +2438,7 @@ int Nintendo3DS::loadInternalImage(ImageType imageType, const rp_image **pImage)
 		case Nintendo3DSPrivate::RomType::Unknown:
 		case Nintendo3DSPrivate::RomType::eMMC:
 			// Cannot get external images for eMMC and unknown ROM types.
+			*pImage = nullptr;
 			return -ENOENT;
 
 		case Nintendo3DSPrivate::RomType::CIA:
@@ -2461,6 +2462,7 @@ int Nintendo3DS::loadInternalImage(ImageType imageType, const rp_image **pImage)
 
 	if (!d->mainContent) {
 		// No main content...
+		*pImage = nullptr;
 		return -ENOENT;
 	}
 
