@@ -25,6 +25,7 @@
   * GameCom: Added support for RLE-compressed icons. "Game.com Internet"
     and "Tiger Web Link" are the only two titles known to use them.
     * Fixes #278, reported by @simontime.
+  * MegaDrive: Handle the 'W' region code as used by EverDrive OS ROMs.
 
 * Bug fixes:
   * GameCube: Detect incrementing values partitions in encrypted images.
