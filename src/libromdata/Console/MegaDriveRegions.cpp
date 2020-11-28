@@ -47,6 +47,10 @@ unsigned int MegaDriveRegions::parseRegionCodes(const char *region_codes, int si
 		} else if (code >= 'A' && code <= 'F') {
 			// Letter code from 'A' to 'F'.
 			ret = (code - 'A') + 10;
+		} else if (code == 'W') {
+			// "Worldwide". Used by EverDrive OS ROMs.
+			ret = MD_REGION_JAPAN | MD_REGION_ASIA |
+			      MD_REGION_USA | MD_REGION_EUROPE;
 		}
 	} else if (region_codes[0] < 16) {
 		// Hex code not mapped to ASCII.
