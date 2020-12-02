@@ -65,11 +65,11 @@ class ISOPrivate final : public RomDataPrivate
 		} pvd;
 
 		// Sector size.
-		// Usually 2048 or 2352.
+		// Usually 2048 or 2352. (2448 if subchannels are present)
 		unsigned int sector_size;
 
 		// Sector offset.
-		// Usually 0 (for 2048) or 16 (for 2352).
+		// Usually 0 (for 2048) or 16 (for 2352 or 2448).
 		unsigned int sector_offset;
 
 		// UDF version.
@@ -431,26 +431,31 @@ ISO::ISO(IRpFile *file)
 		d->sector_size = ISO_SECTOR_SIZE_MODE1_COOKED;
 		d->sector_offset = ISO_DATA_OFFSET_MODE1_COOKED;
 	} else {
-		// Try again using 2352-byte sectors.
+		// Try again using raw sectors: 2352, 2448
+		static const unsigned int sector_sizes[] = {2352, 2448, 0};
 		CDROM_2352_Sector_t sector;
-		size = d->file->seekAndRead(ISO_PVD_ADDRESS_2352, &sector, sizeof(sector));
-		if (size != sizeof(sector)) {
-			// Seek and/or read error.
-			UNREF_AND_NULL_NOCHK(d->file);
-			return;
+
+		for (const unsigned int *p = sector_sizes; *p != 0; p++) {
+			size_t size = d->file->seekAndRead(*p * ISO_PVD_LBA, &sector, sizeof(sector));
+			if (size != sizeof(sector)) {
+				// Unable to read the PVD.
+				UNREF_AND_NULL_NOCHK(d->file);
+				return;
+			}
+
+			const uint8_t *const pData = cdromSectorDataPtr(&sector);
+			d->discType = static_cast<ISOPrivate::DiscType>(ISO::checkPVD(pData));
+			if (d->discType > ISOPrivate::DiscType::Unknown) {
+				// Found the correct sector size.
+				memcpy(&d->pvd, pData, sizeof(d->pvd));
+				d->sector_size = *p;
+				d->sector_offset = (sector.mode == 2 ? ISO_DATA_OFFSET_MODE2_XA : ISO_DATA_OFFSET_MODE1_RAW);
+				break;
+			}
 		}
 
-		// Copy the PVD from the sector.
-		// NOTE: Sector user data area position depends on the sector mode.
-		memcpy(&d->pvd, cdromSectorDataPtr(&sector), sizeof(d->pvd));
-
-		d->discType = d->checkPVD();
-		if (d->discType > ISOPrivate::DiscType::Unknown) {
-			// Found the PVD using 2352-byte sectors.
-			d->sector_size = ISO_SECTOR_SIZE_MODE1_RAW;
-			d->sector_offset = (sector.mode == 2 ? ISO_DATA_OFFSET_MODE2_XA : ISO_DATA_OFFSET_MODE1_RAW);
-		} else {
-			// Not a PVD.
+		if (d->sector_size == 0) {
+			// Could not find a valid PVD.
 			UNREF_AND_NULL_NOCHK(d->file);
 			return;
 		}

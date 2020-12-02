@@ -453,28 +453,35 @@ RomData *RomDataFactoryPrivate::checkISO(IRpFile *file)
 		return nullptr;
 	}
 
-	const ISO_Primary_Volume_Descriptor *pvd;
+	const ISO_Primary_Volume_Descriptor *pvd = nullptr;
 	int discType = ISO::checkPVD(sector.m1.data);
+	printf("discType for 2048: %d\n", discType);
 	if (discType >= 0) {
-		// Found a Mode 1 PVD.
+		// Found a PVD with 2048-byte sectors.
 		pvd = reinterpret_cast<const ISO_Primary_Volume_Descriptor*>(sector.m1.data);
 	} else {
-		// Check for a CD file system with 2352-byte sectors.
-		size_t size = file->seekAndRead(ISO_PVD_ADDRESS_2352, &sector, sizeof(sector));
-		if (size != sizeof(sector)) {
-			// Unable to read the PVD.
-			return nullptr;
-		}
+		// Check for a PVD with 2352-byte or 2448-byte sectors.
+		static const unsigned int sector_sizes[] = {2352, 2448, 0};
 
-		const uint8_t *const pData = cdromSectorDataPtr(&sector);
-		discType = ISO::checkPVD(pData);
-		if (discType >= 0) {
-			// Found a Mode 2 PVD.
-			pvd = reinterpret_cast<const ISO_Primary_Volume_Descriptor*>(pData);
-		} else {
-			// Not a supported disc.
-			return nullptr;
+		for (const unsigned int *p = sector_sizes; *p != 0; p++) {
+			size_t size = file->seekAndRead(*p * ISO_PVD_LBA, &sector, sizeof(sector));
+			if (size != sizeof(sector)) {
+				// Unable to read the PVD.
+				return nullptr;
+			}
+
+			const uint8_t *const pData = cdromSectorDataPtr(&sector);
+			if (ISO::checkPVD(pData) >= 0) {
+				// Found the correct sector size.
+				pvd = reinterpret_cast<const ISO_Primary_Volume_Descriptor*>(pData);
+				break;
+			}
 		}
+	}
+
+	if (!pvd) {
+		// Unable to get the PVD.
+		return nullptr;
 	}
 
 	// Xbox / Xbox 360

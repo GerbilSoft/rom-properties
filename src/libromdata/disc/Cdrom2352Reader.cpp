@@ -25,7 +25,7 @@ namespace LibRomData {
 
 class Cdrom2352ReaderPrivate : public SparseDiscReaderPrivate {
 	public:
-		Cdrom2352ReaderPrivate(Cdrom2352Reader *q);
+		Cdrom2352ReaderPrivate(Cdrom2352Reader *q, unsigned int physBlockSize = 2352);
 
 	private:
 		typedef SparseDiscReaderPrivate super;
@@ -36,7 +36,8 @@ class Cdrom2352ReaderPrivate : public SparseDiscReaderPrivate {
 		static const uint8_t CDROM_2352_MAGIC[12];
 
 		// Physical block size.
-		static const unsigned int physBlockSize = 2352;
+		// Supported block sizes: 2352 (raw), 2448 (raw+subchan)
+		unsigned int physBlockSize;
 
 		// Number of 2352-byte blocks.
 		unsigned int blockCount;
@@ -48,25 +49,42 @@ class Cdrom2352ReaderPrivate : public SparseDiscReaderPrivate {
 const uint8_t Cdrom2352ReaderPrivate::CDROM_2352_MAGIC[12] =
 	{0x00,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0x00};
 
-Cdrom2352ReaderPrivate::Cdrom2352ReaderPrivate(Cdrom2352Reader *q)
+Cdrom2352ReaderPrivate::Cdrom2352ReaderPrivate(Cdrom2352Reader *q, unsigned int physBlockSize)
 	: super(q)
+	, physBlockSize(physBlockSize)
 	, blockCount(0)
 { }
 
 /** Cdrom2352Reader **/
 
 Cdrom2352Reader::Cdrom2352Reader(IRpFile *file)
-	: super(new Cdrom2352ReaderPrivate(this), file)
+	: super(new Cdrom2352ReaderPrivate(this, 2352), file)
+{
+	init();
+}
+
+Cdrom2352Reader::Cdrom2352Reader(IRpFile *file, unsigned int physBlockSize)
+	: super(new Cdrom2352ReaderPrivate(this, physBlockSize), file)
+{
+	init();
+}
+
+/**
+ * Common initialization function.
+ */
+void Cdrom2352Reader::init(void)
 {
 	if (!m_file) {
 		// File could not be ref()'d.
 		return;
 	}
 
+	RP_D(Cdrom2352Reader);
+
 	// Check the disc size.
-	// Should be a multiple of 2352.
+	// Should be a multiple of the physical block size.
 	const off64_t fileSize = m_file->size();
-	if (fileSize <= 0 || fileSize % 2352 != 0) {
+	if (fileSize <= 0 || fileSize % d->physBlockSize != 0) {
 		// Invalid disc size.
 		UNREF_AND_NULL_NOCHK(m_file);
 		m_lastError = EIO;
@@ -75,10 +93,9 @@ Cdrom2352Reader::Cdrom2352Reader(IRpFile *file)
 
 	// Disc parameters.
 	// NOTE: A 32-bit block count allows for ~8 TiB with 2048-byte sectors.
-	RP_D(Cdrom2352Reader);
-	d->blockCount = static_cast<unsigned int>(fileSize / 2352);
-	d->block_size = 2048;
-	d->disc_size = fileSize / 2352 * 2048;
+	d->blockCount = static_cast<unsigned int>(fileSize / 2352LL);
+	d->block_size = 2048U;
+	d->disc_size = fileSize / (off64_t)d->physBlockSize * 2048LL;
 
 	// Reset the disc position.
 	d->pos = 0;
@@ -176,6 +193,8 @@ int Cdrom2352Reader::readBlock(uint32_t blockIdx, int pos, void *ptr, size_t siz
 	// NOTE: We need to read the entire 2352-byte block in order to
 	// determine the data offset, since Mode 1 and Mode 2 XA have different
 	// sector layouts.
+	// NOTE 2: No changes neeed for 2448-byte mode, since subchannels are
+	// stored *after* the 2352-byte sector data.
 	CDROM_2352_Sector_t sector;
 	size_t sz_read = m_file->seekAndRead(physBlockAddr, &sector, sizeof(sector));
 	m_lastError = m_file->lastError();

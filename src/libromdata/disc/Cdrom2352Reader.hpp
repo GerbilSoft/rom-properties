@@ -21,15 +21,34 @@ class Cdrom2352Reader : public LibRpBase::SparseDiscReader
 		 * Construct a Cdrom2352Reader with the specified file.
 		 * The file is ref()'d, so the original file can be
 		 * unref()'d by the caller afterwards.
+		 *
+		 * Defaults to 2352-byte sectors.
+		 *
 		 * @param file File to read from.
 		 */
 		explicit Cdrom2352Reader(LibRpFile::IRpFile *file);
+
+		/**
+		 * Construct a Cdrom2352Reader with the specified file.
+		 * The file is ref()'d, so the original file can be
+		 * unref()'d by the caller afterwards.
+		 *
+		 * @param file File to read from.
+		 * @param physBlockSize Sector size. (2352, 2446)
+		 */
+		explicit Cdrom2352Reader(LibRpFile::IRpFile *file, unsigned int physBlockSize);
 
 	private:
 		typedef SparseDiscReader super;
 		RP_DISABLE_COPY(Cdrom2352Reader)
 	private:
 		friend class Cdrom2352ReaderPrivate;
+
+	private:
+		/**
+		 * Common initialization function.
+		 */
+		void init(void);
 
 	public:
 		/** Disc image detection functions. **/

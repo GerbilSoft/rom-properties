@@ -50,17 +50,6 @@ class PlayStationDiscPrivate final : public RomDataPrivate
 		RP_DISABLE_COPY(PlayStationDiscPrivate)
 
 	public:
-		// Disc type.
-		enum class DiscType {
-			Unknown	= -1,
-
-			Iso2048	= 0,	// CD (2048-byte scetors) or DVD
-			Iso2352	= 1,	// CD (2352-byte sectors)
-
-			Max
-		};
-		DiscType discType;
-
 		ISO_Primary_Volume_Descriptor pvd;
 
 		// SYSTEM.CNF contents
@@ -121,7 +110,6 @@ class PlayStationDiscPrivate final : public RomDataPrivate
 
 PlayStationDiscPrivate::PlayStationDiscPrivate(PlayStationDisc *q, IRpFile *file)
 	: super(q, file)
-	, discType(DiscType::Unknown)
 	, discReader(nullptr)
 	, isoPartition(nullptr)
 	, bootExeData(nullptr)
@@ -327,7 +315,6 @@ PlayStationDisc::PlayStationDisc(IRpFile *file)
 	}
 
 	IDiscReader *discReader = nullptr;
-	PlayStationDiscPrivate::DiscType discType = PlayStationDiscPrivate::DiscType::Unknown;
 
 	// Check for a PVD with 2048-byte sectors.
 	size_t size = d->file->seekAndRead(ISO_PVD_ADDRESS_2048, &d->pvd, sizeof(d->pvd));
@@ -337,27 +324,26 @@ PlayStationDisc::PlayStationDisc(IRpFile *file)
 	}
 	if (ISO::checkPVD(reinterpret_cast<const uint8_t*>(&d->pvd)) >= 0) {
 		// Disc has 2048-byte sectors.
-		discType = PlayStationDiscPrivate::DiscType::Iso2048;
 		discReader = new DiscReader(d->file);
 	} else {
-		// Check for a PVD with 2352-byte sectors.
+		// Check for a PVD with 2352-byte or 2448-byte sectors.
+		static const unsigned int sector_sizes[] = {2352, 2448, 0};
 		CDROM_2352_Sector_t sector;
-		size_t size = d->file->seekAndRead(ISO_PVD_ADDRESS_2352, &sector, sizeof(sector));
-		if (size != sizeof(sector)) {
-			UNREF_AND_NULL_NOCHK(d->file);
-			return;
-		}
 
-		const uint8_t *const pData = cdromSectorDataPtr(&sector);
-		if (ISO::checkPVD(sector.m2xa_f1.data) >= 0) {
-			// Disc has 2352-byte sectors.
-			memcpy(&d->pvd, pData, sizeof(d->pvd));
-			discType = PlayStationDiscPrivate::DiscType::Iso2352;
-			discReader = new Cdrom2352Reader(d->file);
-		} else {
-			// Valid PVD not found.
-			UNREF_AND_NULL_NOCHK(d->file);
-			return;
+		for (const unsigned int *p = sector_sizes; *p != 0; p++) {
+			size_t size = d->file->seekAndRead(*p * ISO_PVD_LBA, &sector, sizeof(sector));
+			if (size != sizeof(d->pvd)) {
+				UNREF_AND_NULL_NOCHK(d->file);
+				return;
+			}
+
+			const uint8_t *const pData = cdromSectorDataPtr(&sector);
+			if (ISO::checkPVD(pData) >= 0) {
+				// Found the correct sector size.
+				memcpy(&d->pvd, pData, sizeof(d->pvd));
+				discReader = new Cdrom2352Reader(d->file, *p);
+				break;
+			}
 		}
 	}
 
@@ -468,7 +454,6 @@ PlayStationDisc::PlayStationDisc(IRpFile *file)
 	}
 
 	// Disc image is ready.
-	d->discType = discType;
 	d->consoleType = consoleType;
 	d->discReader = discReader;
 	d->isoPartition = isoPartition;
@@ -522,7 +507,7 @@ int PlayStationDisc::isRomSupported_static(
 	assert(pvd != nullptr);
 	if (!pvd) {
 		// Bad.
-		return static_cast<int>(PlayStationDiscPrivate::DiscType::Unknown);
+		return -1;
 	}
 
 	// PlayStation 1 and 2 discs have the system ID "PLAYSTATION".
@@ -542,7 +527,7 @@ int PlayStationDisc::isRomSupported_static(
 
 	if (pos < 0) {
 		// Not valid.
-		return static_cast<int>(PlayStationDiscPrivate::DiscType::Unknown);
+		return -1;
 	}
 
 	// Make sure the rest of the system ID is either spaces or NULLs.
@@ -558,12 +543,12 @@ int PlayStationDisc::isRomSupported_static(
 
 	if (isOK) {
 		// Valid PVD.
-		// Caller will need to check for 2048 vs. 2352.
+		// Caller will need to check for the sector size.
 		return 0;
 	}
 
 	// Not a PlayStation 1 or 2 disc.
-	return static_cast<int>(PlayStationDiscPrivate::DiscType::Unknown);
+	return -1;
 }
 
 /**
@@ -667,7 +652,7 @@ int PlayStationDisc::loadFieldData(void)
 	} else if (!d->file || !d->file->isOpen()) {
 		// File isn't open.
 		return -EBADF;
-	} else if (!d->isValid || (int)d->discType < 0) {
+	} else if (!d->isValid) {
 		// Unknown disc type.
 		return -EIO;
 	}
