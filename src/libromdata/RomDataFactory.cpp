@@ -455,7 +455,6 @@ RomData *RomDataFactoryPrivate::checkISO(IRpFile *file)
 
 	const ISO_Primary_Volume_Descriptor *pvd = nullptr;
 	int discType = ISO::checkPVD(sector.m1.data);
-	printf("discType for 2048: %d\n", discType);
 	if (discType >= 0) {
 		// Found a PVD with 2048-byte sectors.
 		pvd = reinterpret_cast<const ISO_Primary_Volume_Descriptor*>(sector.m1.data);
