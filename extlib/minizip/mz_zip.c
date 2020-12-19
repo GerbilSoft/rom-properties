@@ -187,6 +187,16 @@ static int32_t mz_zip_search_zip64_eocd(void *stream, const int64_t end_central_
     return err;
 }
 
+/* Get PKWARE traditional encryption verifier */
+static uint16_t mz_zip_get_pk_verify(uint32_t dos_date, uint64_t crc, uint16_t flag)
+{
+    /* Info-ZIP modification to ZipCrypto format: if bit 3 of the general 
+     * purpose bit flag is set, it uses high byte of 16-bit File Time. */
+    if (flag & MZ_ZIP_FLAG_DATA_DESCRIPTOR)
+        return ((dos_date >> 16) & 0xff) << 8 | ((dos_date >> 8) & 0xff);
+    return ((crc >> 16) & 0xff) << 8 | ((crc >> 24) & 0xff);
+}
+
 /* Get info about the current file in the zip file */
 static int32_t mz_zip_entry_read_header(void *stream, uint8_t local, mz_zip_file *file_info, void *file_extra_stream) {
     uint64_t ntfs_time = 0;
@@ -239,6 +249,12 @@ static int32_t mz_zip_entry_read_header(void *stream, uint8_t local, mz_zip_file
         }
         if (err == MZ_OK)
             err = mz_stream_read_uint32(stream, &file_info->crc);
+#ifdef HAVE_PKCRYPT
+        if (err == MZ_OK && file_info->flag & MZ_ZIP_FLAG_ENCRYPTED) {
+            /* Use dos_date from header instead of derived from time in zip extensions */
+            file_info->pk_verify = mz_zip_get_pk_verify(dos_date, file_info->crc, file_info->flag);
+        }
+#endif
         if (err == MZ_OK) {
             err = mz_stream_read_uint32(stream, &value32);
             file_info->compressed_size = value32;
@@ -658,8 +674,9 @@ static int32_t mz_zip_entry_write_header(void *stream, uint8_t local, mz_zip_fil
             if ((file_info->flag & MZ_ZIP_FLAG_ENCRYPTED) && (file_info->aes_version))
                 version_needed = 51;
 #endif
-#ifdef HAVE_LZMA
-            if (file_info->compression_method == MZ_COMPRESS_METHOD_LZMA)
+#if defined(HAVE_LZMA) || defined(HAVE_LIBCOMP)
+            if ((file_info->compression_method == MZ_COMPRESS_METHOD_LZMA) ||
+                (file_info->compression_method == MZ_COMPRESS_METHOD_XZ))
                 version_needed = 63;
 #endif
         }
@@ -1224,7 +1241,7 @@ static int32_t mz_zip_recover_cd(void *handle) {
             mz_stream_seek(zip->stream, local_file_info.compressed_size, MZ_SEEK_CUR);
         }
 
-        while (1) {
+        for (;;) {
             /* Search for the next local header */
             err = mz_stream_find(zip->stream, (const void *)local_header_magic, sizeof(local_header_magic),
                     INT64_MAX, &next_header_pos);
@@ -1267,6 +1284,8 @@ static int32_t mz_zip_recover_cd(void *handle) {
                     }
 
                     compressed_end_pos = descriptor_pos;
+                } else if (eof) {
+                    compressed_end_pos = next_header_pos;
                 } else if (local_file_info.flag & MZ_ZIP_FLAG_DATA_DESCRIPTOR) {
                     /* Wrong local file entry found, keep searching */
                     next_header_pos += 1;
@@ -1619,6 +1638,9 @@ static int32_t mz_zip_entry_open_int(void *handle, uint8_t raw, int16_t compress
 #ifdef HAVE_LZMA
     case MZ_COMPRESS_METHOD_LZMA:
 #endif
+#if defined(HAVE_LZMA) || defined(HAVE_LIBCOMP)
+    case MZ_COMPRESS_METHOD_XZ:
+#endif
 #ifdef HAVE_ZSTD
     case MZ_COMPRESS_METHOD_ZSTD:
 #endif
@@ -1657,23 +1679,8 @@ static int32_t mz_zip_entry_open_int(void *handle, uint8_t raw, int16_t compress
 #endif
         {
 #ifdef HAVE_PKCRYPT
-            uint8_t verify1 = 0;
-            uint8_t verify2 = 0;
-
-            /* Info-ZIP modification to ZipCrypto format: */
-            /* If bit 3 of the general purpose bit flag is set, it uses high byte of 16-bit File Time. */
-
-            if (zip->file_info.flag & MZ_ZIP_FLAG_DATA_DESCRIPTOR) {
-                uint32_t dos_date = 0;
-
-                dos_date = mz_zip_time_t_to_dos_date(zip->file_info.modified_date);
-
-                verify1 = (uint8_t)((dos_date >> 16) & 0xff);
-                verify2 = (uint8_t)((dos_date >> 8) & 0xff);
-            } else {
-                verify1 = (uint8_t)((zip->file_info.crc >> 16) & 0xff);
-                verify2 = (uint8_t)((zip->file_info.crc >> 24) & 0xff);
-            }
+            uint8_t verify1 = (uint8_t)((zip->file_info.pk_verify >> 8) & 0xff);
+            uint8_t verify2 = (uint8_t)((zip->file_info.pk_verify) & 0xff);
 
             mz_stream_pkcrypt_create(&zip->crypt_stream);
             mz_stream_pkcrypt_set_password(zip->crypt_stream, password);
@@ -1702,9 +1709,20 @@ static int32_t mz_zip_entry_open_int(void *handle, uint8_t raw, int16_t compress
         else if (zip->file_info.compression_method == MZ_COMPRESS_METHOD_BZIP2)
             mz_stream_bzip_create(&zip->compress_stream);
 #endif
+#ifdef HAVE_LIBCOMP
+        else if (zip->file_info.compression_method == MZ_COMPRESS_METHOD_XZ) {
+            mz_stream_libcomp_create(&zip->compress_stream);
+            mz_stream_set_prop_int64(zip->compress_stream, MZ_STREAM_PROP_COMPRESS_METHOD,
+                zip->file_info.compression_method);
+        }
+#endif
 #ifdef HAVE_LZMA
-        else if (zip->file_info.compression_method == MZ_COMPRESS_METHOD_LZMA)
+        else if (zip->file_info.compression_method == MZ_COMPRESS_METHOD_LZMA ||
+                 zip->file_info.compression_method == MZ_COMPRESS_METHOD_XZ) {
             mz_stream_lzma_create(&zip->compress_stream);
+            mz_stream_set_prop_int64(zip->compress_stream, MZ_STREAM_PROP_COMPRESS_METHOD,
+                zip->file_info.compression_method);
+        }
 #endif
 #ifdef HAVE_ZSTD
         else if (zip->file_info.compression_method == MZ_COMPRESS_METHOD_ZSTD)
@@ -1721,7 +1739,9 @@ static int32_t mz_zip_entry_open_int(void *handle, uint8_t raw, int16_t compress
             int32_t set_end_of_stream = 0;
 
 #ifndef HAVE_LIBCOMP
-            if (zip->entry_raw || zip->file_info.compression_method == MZ_COMPRESS_METHOD_STORE || zip->file_info.flag & MZ_ZIP_FLAG_ENCRYPTED)
+            if (zip->entry_raw ||
+                zip->file_info.compression_method == MZ_COMPRESS_METHOD_STORE ||
+                zip->file_info.flag & MZ_ZIP_FLAG_ENCRYPTED)
 #endif
             {
                 max_total_in = zip->file_info.compressed_size;
@@ -1737,6 +1757,7 @@ static int32_t mz_zip_entry_open_int(void *handle, uint8_t raw, int16_t compress
 
             switch (zip->file_info.compression_method) {
             case MZ_COMPRESS_METHOD_LZMA:
+            case MZ_COMPRESS_METHOD_XZ:
                 set_end_of_stream = (zip->file_info.flag & MZ_ZIP_FLAG_LZMA_EOS_MARKER);
                 break;
             case MZ_COMPRESS_METHOD_ZSTD:
@@ -1906,8 +1927,9 @@ int32_t mz_zip_entry_write_open(void *handle, const mz_zip_file *file_info, int1
         if (compress_level == 1)
             zip->file_info.flag |= MZ_ZIP_FLAG_DEFLATE_SUPER_FAST;
     }
-#ifdef HAVE_LZMA
-    else if (zip->file_info.compression_method == MZ_COMPRESS_METHOD_LZMA)
+#if defined(HAVE_LZMA) || defined(HAVE_LIBCOMP)
+    else if (zip->file_info.compression_method == MZ_COMPRESS_METHOD_LZMA ||
+             zip->file_info.compression_method == MZ_COMPRESS_METHOD_XZ)
         zip->file_info.flag |= MZ_ZIP_FLAG_LZMA_EOS_MARKER;
 #endif
 
@@ -1923,15 +1945,22 @@ int32_t mz_zip_entry_write_open(void *handle, const mz_zip_file *file_info, int1
 
     mz_stream_get_prop_int64(zip->stream, MZ_STREAM_PROP_DISK_NUMBER, &disk_number);
     zip->file_info.disk_number = (uint32_t)disk_number;
-
     zip->file_info.disk_offset = mz_stream_tell(zip->stream);
+
+    if (zip->file_info.flag & MZ_ZIP_FLAG_ENCRYPTED) {
+#ifdef HAVE_PKCRYPT
+        /* Pre-calculated CRC value is required for PKWARE traditional encryption */
+        uint32_t dos_date = mz_zip_time_t_to_dos_date(zip->file_info.modified_date);
+        zip->file_info.pk_verify = mz_zip_get_pk_verify(dos_date, zip->file_info.crc, zip->file_info.flag);
+#endif
+#ifdef HAVE_WZAES
+        if (zip->file_info.aes_version && zip->file_info.aes_encryption_mode == 0)
+            zip->file_info.aes_encryption_mode = MZ_AES_ENCRYPTION_MODE_256;
+#endif
+    }
+
     zip->file_info.crc = 0;
     zip->file_info.compressed_size = 0;
-
-#ifdef HAVE_WZAES
-    if (zip->file_info.aes_version && zip->file_info.aes_encryption_mode == 0)
-        zip->file_info.aes_encryption_mode = MZ_AES_ENCRYPTION_MODE_256;
-#endif
 
     if ((compress_level == 0) || (is_dir))
         zip->file_info.compression_method = MZ_COMPRESS_METHOD_STORE;
@@ -2650,6 +2679,34 @@ int32_t mz_zip_path_compare(const char *path1, const char *path2, uint8_t ignore
         return (int32_t)(tolower(*path1) - tolower(*path2));
 
     return (int32_t)(*path1 - *path2);
+}
+
+/***************************************************************************/
+
+const char* mz_zip_get_compression_method_string(int32_t compression_method)
+{
+    const char *method = "?";
+    switch (compression_method) {
+    case MZ_COMPRESS_METHOD_STORE:
+        method = "stored";
+        break;
+    case MZ_COMPRESS_METHOD_DEFLATE:
+        method = "deflate";
+        break;
+    case MZ_COMPRESS_METHOD_BZIP2:
+        method = "bzip2";
+        break;
+    case MZ_COMPRESS_METHOD_LZMA:
+        method = "lzma";
+        break;
+    case MZ_COMPRESS_METHOD_XZ:
+        method = "xz";
+        break;
+    case MZ_COMPRESS_METHOD_ZSTD:
+        method = "zstd";
+        break;
+    }
+    return method;
 }
 
 /***************************************************************************/

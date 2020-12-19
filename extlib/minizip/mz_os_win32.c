@@ -19,7 +19,7 @@
 // Define it ourselves if it isn't available.
 #include <winioctl.h>
 #ifndef FSCTL_GET_REPARSE_POINT
-# define FSCTL_GET_REPARSE_POINT CTL_CODE(FILE_DEVICE_FILE_SYSTEM, 42, METHOD_BUFFERED, FILE_ANY_ACCESS)
+#  define FSCTL_GET_REPARSE_POINT CTL_CODE(FILE_DEVICE_FILE_SYSTEM, 42, METHOD_BUFFERED, FILE_ANY_ACCESS)
 #endif
 
 /***************************************************************************/
@@ -148,7 +148,11 @@ int32_t mz_os_rename(const char *source_path, const char *target_path) {
     }
 
     if (err == MZ_OK) {
+#ifdef MZ_WINRT_API
+        result = MoveFileExW(source_path_wide, target_path_wide, MOVEFILE_WRITE_THROUGH);
+#else
         result = MoveFileW(source_path_wide, target_path_wide);
+#endif
         if (result == 0)
             err = MZ_EXIST_ERROR;
     }
@@ -214,7 +218,7 @@ int64_t mz_os_get_file_size(const char *path) {
     if (path_wide == NULL)
         return MZ_PARAM_ERROR;
 #ifdef MZ_WINRT_API
-    handle = CreateFile2W(path_wide, GENERIC_READ, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+    handle = CreateFile2(path_wide, GENERIC_READ, 0, OPEN_EXISTING, NULL);
 #else
     handle = CreateFileW(path_wide, GENERIC_READ, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 #endif
@@ -287,7 +291,7 @@ int32_t mz_os_set_file_date(const char *path, time_t modified_date, time_t acces
         return MZ_PARAM_ERROR;
 
 #ifdef MZ_WINRT_API
-    handle = CreateFile2W(path_wide, GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);
+    handle = CreateFile2(path_wide, GENERIC_READ | GENERIC_WRITE, 0, OPEN_EXISTING, NULL);
 #else
     handle = CreateFileW(path_wide, GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);
 #endif
@@ -501,7 +505,15 @@ int32_t mz_os_make_symlink(const char *path, const char *target_path) {
     if (path == NULL)
         return MZ_PARAM_ERROR;
 
+#ifdef MZ_WINRT_API
+    MEMORY_BASIC_INFORMATION mbi;
+    memset(&mbi, 0, sizeof(mbi));
+    VirtualQuery(VirtualQuery, &mbi, sizeof(mbi));
+    kernel32_mod = (HMODULE)mbi.AllocationBase;
+#else
     kernel32_mod = GetModuleHandleW(L"kernel32.dll");
+#endif
+
     if (kernel32_mod == NULL)
         return MZ_SUPPORT_ERROR;
 
@@ -576,8 +588,20 @@ int32_t mz_os_read_symlink(const char *path, char *target_path, int32_t max_targ
     if (path_wide == NULL)
         return MZ_PARAM_ERROR;
 
+#ifdef MZ_WINRT_API
+    CREATEFILE2_EXTENDED_PARAMETERS extended_params;
+    memset(&extended_params, 0, sizeof(extended_params));
+    extended_params.dwSize = sizeof(extended_params);
+    extended_params.dwFileAttributes = FILE_ATTRIBUTE_NORMAL;
+    extended_params.dwFileFlags = FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT;
+    extended_params.dwSecurityQosFlags = SECURITY_ANONYMOUS;
+    extended_params.lpSecurityAttributes = NULL;
+    extended_params.hTemplateFile = NULL;
+    handle = CreateFile2(path_wide, FILE_READ_EA, FILE_SHARE_READ | FILE_SHARE_WRITE, OPEN_EXISTING, &extended_params);
+#else
     handle = CreateFileW(path_wide, FILE_READ_EA, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING,
         FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT, NULL);
+#endif
 
     if (handle == INVALID_HANDLE_VALUE) {
         mz_os_unicode_string_delete(&path_wide);

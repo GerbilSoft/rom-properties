@@ -14,7 +14,8 @@
 /***************************************************************************/
 
 /* MZ_VERSION */
-#define MZ_VERSION                      ("2.10.0")
+#define MZ_VERSION                      ("2.10.5")
+#define MZ_VERSION_BUILD                (21005)
 
 /* MZ_ERROR */
 #define MZ_OK                           (0)  /* zlib */
@@ -64,6 +65,7 @@
 #define MZ_COMPRESS_METHOD_BZIP2        (12)
 #define MZ_COMPRESS_METHOD_LZMA         (14)
 #define MZ_COMPRESS_METHOD_ZSTD         (93)
+#define MZ_COMPRESS_METHOD_XZ           (95)
 #define MZ_COMPRESS_METHOD_AES          (99)
 
 #define MZ_COMPRESS_LEVEL_DEFAULT       (-1)
@@ -158,14 +160,13 @@
 #include <string.h> /* memset, strncpy, strlen */
 #include <limits.h>
 
-// rom-properties: FIXME: This breaks on MSVC 2013.
-#if 0 // rom-properties
-#if defined(HAVE_STDINT_H) || \
-   (defined(__has_include) && __has_include(<stdint.h>))
+#if defined(HAVE_STDINT_H)
 #  include <stdint.h>
+#elif defined(__has_include)
+#  if __has_include(<stdint.h>)
+#    include <stdint.h>
+#  endif
 #endif
-#endif // rom-properties
-#include <stdint.h>
 
 #ifndef __INT8_TYPE__
 typedef signed char        int8_t;
@@ -192,14 +193,13 @@ typedef unsigned int       uint32_t;
 typedef unsigned long long uint64_t;
 #endif
 
-// rom-properties: FIXME: This breaks on MSVC 2013.
-#if 0 // rom-properties
-#if defined(HAVE_INTTYPES_H) || \
-   (defined(__has_include) && __has_include(<inttypes.h>))
+#if defined(HAVE_INTTYPES_H)
 #  include <inttypes.h>
+#elif defined(__has_include)
+#  if __has_include(<inttypes.h>)
+#    include <inttypes.h>
+#  endif
 #endif
-#endif // rom-properties
-#include <inttypes.h>
 
 #ifndef PRId8
 #  define PRId8  "hhd"

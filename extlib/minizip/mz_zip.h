@@ -49,6 +49,7 @@ typedef struct mz_zip_file_s {
     uint16_t zip64;                     /* zip64 extension mode */
     uint16_t aes_version;               /* winzip aes extension if not 0 */
     uint8_t  aes_encryption_mode;       /* winzip aes encryption mode */
+    uint16_t pk_verify;                 /* pkware encryption verifier */
 
 } mz_zip_file, mz_zip_entry;
 
@@ -74,19 +75,19 @@ int32_t mz_zip_get_comment(void *handle, const char **comment);
 /* Get a pointer to the global comment */
 
 int32_t mz_zip_set_comment(void *handle, const char *comment);
-/* Set the global comment used for writing zip file */
+/* Sets the global comment used for writing zip file */
 
 int32_t mz_zip_get_version_madeby(void *handle, uint16_t *version_madeby);
 /* Get the version made by */
 
 int32_t mz_zip_set_version_madeby(void *handle, uint16_t version_madeby);
-/* Set the version made by used for writing zip file */
+/* Sets the version made by used for writing zip file */
 
 int32_t mz_zip_set_recover(void *handle, uint8_t recover);
-/* Set the ability to recover the central dir by reading local file headers */
+/* Sets the ability to recover the central dir by reading local file headers */
 
 int32_t mz_zip_set_data_descriptor(void *handle, uint8_t data_descriptor);
-/* Set the use of data descriptor flag when writing zip entries */
+/* Sets the use of data descriptor flag when writing zip entries */
 
 int32_t mz_zip_get_stream(void *handle, void **stream);
 /* Get a pointer to the stream used to open */
@@ -239,6 +240,12 @@ int32_t  mz_zip_unix_to_ntfs_time(time_t unix_time, uint64_t *ntfs_time);
 
 int32_t  mz_zip_path_compare(const char *path1, const char *path2, uint8_t ignore_case);
 /* Compare two paths without regard to slashes */
+
+/***************************************************************************/
+
+const
+char*    mz_zip_get_compression_method_string(int32_t compression_method);
+/* Gets a string representing the compression method */
 
 /***************************************************************************/
 

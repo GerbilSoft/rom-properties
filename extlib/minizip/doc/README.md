@@ -1,7 +1,10 @@
 # Minizip Documentation  <!-- omit in toc -->
 
+### Table of Contents
+
 - [API](#api)
 - [Limitations](#limitations)
+- [Xcode Instructions](#xcode-instructions)
 - [Zlib Configuration](#zlib-configuration)
 - [Upgrading from 1.x](#upgrading-from-1x)
 - [Security Considerations](#security-considerations)
@@ -52,6 +55,13 @@ The zip reader and writer interface provides support for extended hash algorithm
 * Windows Explorer zip extraction utility does not support disk splitting. [1](https://stackoverflow.com/questions/31286707/the-same-volume-can-not-be-used-as-both-the-source-and-destination)
 * macOS archive utility does not properly support ZIP files over 4GB. [1](http://web.archive.org/web/20140331005235/http://www.springyarchiver.com/blog/topic/topic/203) [2](https://bitinn.net/10716/)
 
+## Xcode Instructions
+
+To create an Xcode project with CMake use:
+```
+cmake -G Xcode .
+```
+
 ## Zlib Configuration
 
 By default, if zlib is not found, it will be pulled as an external project and installed. This requires [Git](https://git-scm.com/) to be installed and available to your command interpreter.
@@ -64,7 +74,7 @@ By default, if zlib is not found, it will be pulled as an external project and i
 To compile using zlib-ng use the following cmake args:
 
 ```
--DZLIB_REPOSITORY=https://github.com/Dead2/zlib-ng -DZLIB_TAG=develop
+-DZLIB_REPOSITORY=https://github.com/zlib-ng/zlib-ng -DZLIB_TAG=develop
 ```
 **Compiling and Installing Zlib (Windows)**
 
@@ -93,7 +103,7 @@ instance, some #defines will have to be set as they have changed.
 
 |1.x|2.x|Description|
 |-|-|:-|
-||HAVE_ZLIB|Compile with ZLIB library. Older verisons of Minizip required ZLIB. It is now possible to alternatively compile only using liblzma library.|
+||HAVE_ZLIB|Compile with ZLIB library. Older versions of Minizip required ZLIB. It is now possible to alternatively compile only using liblzma library.|
 ||HAVE_LZMA|Compile with LZMA support.|
 |HAVE_BZIP2|HAVE_BZIP2|Compile with BZIP2 library support.|
 |HAVE_APPLE_COMPRESSION|HAVE_LIBCOMP|Compile using Apple Compression library.|
