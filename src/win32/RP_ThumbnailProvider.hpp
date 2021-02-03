@@ -2,15 +2,16 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * RP_ThumbnailProvider.hpp: IThumbnailProvider implementation.            *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #ifndef __ROMPROPERTIES_WIN32_RP_THUMBNAILPROVIDER_HPP__
 #define __ROMPROPERTIES_WIN32_RP_THUMBNAILPROVIDER_HPP__
 
+// librpbase
 #include "librpbase/config.librpbase.h"
-#include "librpbase/common.h"
+#include "common.h"
 
 // Reference: http://www.codeproject.com/Articles/338268/COM-in-C
 #include "libwin32common/ComBase.hpp"
@@ -33,7 +34,7 @@ namespace LibWin32Common {
 class RP_ThumbnailProvider_Private;
 
 class UUID_ATTR("{4723DF58-463E-4590-8F4A-8D9DD4F4355A}")
-RP_ThumbnailProvider : public LibWin32Common::ComBase2<IInitializeWithStream, IThumbnailProvider>
+RP_ThumbnailProvider final : public LibWin32Common::ComBase2<IInitializeWithStream, IThumbnailProvider>
 {
 	public:
 		RP_ThumbnailProvider();

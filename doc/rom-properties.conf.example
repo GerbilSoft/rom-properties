@@ -41,3 +41,24 @@ DownloadHighResScans=true
 ; Prefer the internal icon if the file browser requests
 ; a small (48x48 or lower) thumbnail preview.
 UseIntIconForSmallSizes=true
+
+; Store file origin info for downloaded images from
+; online databases.
+StoreFileOriginInfo=true
+
+[Options]
+; Enable thumbnailing on "slow" filesystems.
+EnableThumbnailOnNetworkFS=false
+
+; Show an overlay icon if a ROM image has "dangerous" permissions.
+; Currently only implemented in the KDE UI frontend.
+ShowDangerousPermissionsOverlayIcon=true
+
+[DMGTitleScreenMode]
+; Determine which title screenshot to use for different types
+; of Game Boy games: DMG (original), SGB (Super), CGB (Color).
+; Key = ROM type
+; Value = Screenshot to use
+CGB=CGB
+DMG=DMG
+SGB=SGB

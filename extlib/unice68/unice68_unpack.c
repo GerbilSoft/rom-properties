@@ -45,6 +45,9 @@ typedef struct {
   dreg_t d0,d1,d2,d3,d4,d5,d6,d7;
   areg_t srcbuf,srcend,dstbuf,dstend;
   int overflow;
+
+  // rom-properties: explicit srcbuf/dstbuf end pointers
+  areg_t srcendexp,dstendexp;
 } all_regs_t;
 
 #define ICE_MAGIC 0x49434521 /* 'ICE!' */
@@ -189,10 +192,18 @@ static int ice_decrunch(all_regs_t *R)
   }
   csize = getinfo(R);
   R->srcend = R->a5 = R->a0 - 8 + csize;
+  if (R->srcend > R->srcendexp) {
+    // Calculated source end is out of bounds.
+    return -1;
+  }
   R->d0 = dsize = getinfo(R);
   R->a6 = R->a4 = R->a1;
   R->a6 += R->d0;
   R->dstend = R->a3 = R->a6;
+  if (R->dstend > R->dstendexp) {
+    // Calculated destination end is out of bounds.
+    return -1;
+  }
 
   R->d7 = *(--R->a5);
   normal_bytes(R);
@@ -514,7 +525,7 @@ int unice68_depacked_size(const void * buffer, int * p_csize)
   return dsize;
 }
 
-int unice68_depacker(void * dest, const void * src)
+int unice68_depacker(void * dst, size_t dstsz, const void * src, size_t srcsz)
 {
   all_regs_t allregs;
 
@@ -535,8 +546,12 @@ int unice68_depacker(void * dest, const void * src)
     allregs.a7 = 0;
 
   allregs.a0 = (areg_t)src;
-  allregs.a1 = dest;
+  allregs.a1 = dst;
   allregs.overflow = 0;
+
+  // rom-properties: explicit srcbuf/dstbuf end pointers
+  allregs.srcendexp = (areg_t)src + srcsz;
+  allregs.dstendexp = (areg_t)dst + dstsz;
 
   return ice_decrunch(&allregs);
 }

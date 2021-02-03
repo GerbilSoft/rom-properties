@@ -2,12 +2,12 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * ImageDecoder_ifunc.cpp: ImageDecoder IFUNC resolution functions.        *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #include "stdafx.h"
-#include "cpu_dispatch.h"
+#include "librpcpu/cpu_dispatch.h"
 
 #ifdef RP_HAS_IFUNC
 

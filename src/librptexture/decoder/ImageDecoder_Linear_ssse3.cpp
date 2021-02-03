@@ -3,7 +3,7 @@
  * ImageDecoder_Linear.cpp: Image decoding functions. (Linear)             *
  * SSSE3-optimized version.                                                *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -76,10 +76,10 @@ rp_image *fromLinear24_ssse3(PixelFormat px_format,
 	}
 
 	// Create an rp_image.
-	rp_image *img = new rp_image(width, height, rp_image::FORMAT_ARGB32);
+	rp_image *const img = new rp_image(width, height, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
-		delete img;
+		img->unref();
 		return nullptr;
 	}
 	const int dest_stride_adj = (img->stride() / sizeof(argb32_t)) - img->width();
@@ -95,15 +95,15 @@ rp_image *fromLinear24_ssse3(PixelFormat px_format,
 	// Determine the byte shuffle mask.
 	__m128i shuf_mask;
 	switch (px_format) {
-		case PXF_RGB888:
+		case PixelFormat::RGB888:
 			shuf_mask = _mm_setr_epi8(0,1,2,-1, 3,4,5,-1, 6,7,8,-1, 9,10,11,-1);
 			break;
-		case PXF_BGR888:
+		case PixelFormat::BGR888:
 			shuf_mask = _mm_setr_epi8(2,1,0,-1, 5,4,3,-1, 8,7,6,-1, 11,10,9,-1);
 			break;
 		default:
 			assert(!"Unsupported 24-bit pixel format.");
-			delete img;
+			img->unref();
 			return nullptr;
 	}
 
@@ -135,7 +135,7 @@ rp_image *fromLinear24_ssse3(PixelFormat px_format,
 		// Remaining pixels.
 		if (x > 0) {
 		switch (px_format) {
-			case PXF_RGB888:
+			case PixelFormat::RGB888:
 				for (; x > 0; x--, px_dest++, img_buf += 3) {
 					px_dest->b = img_buf[0];
 					px_dest->g = img_buf[1];
@@ -144,7 +144,7 @@ rp_image *fromLinear24_ssse3(PixelFormat px_format,
 				}
 				break;
 
-			case PXF_BGR888:
+			case PixelFormat::BGR888:
 				for (; x > 0; x--, px_dest++, img_buf += 3) {
 					px_dest->b = img_buf[2];
 					px_dest->g = img_buf[1];
@@ -155,7 +155,7 @@ rp_image *fromLinear24_ssse3(PixelFormat px_format,
 
 			default:
 				assert(!"Unsupported 24-bit pixel format.");
-				delete img;
+				img->unref();
 				return nullptr;
 		} }
 
@@ -193,9 +193,9 @@ rp_image *fromLinear32_ssse3(PixelFormat px_format,
 	// FIXME: Add support for these formats.
 	// For now, redirect back to the C++ version.
 	switch (px_format) {
-		case PXF_A2R10G10B10:
-		case PXF_A2B10G10R10:
-		case PXF_RGB9_E5:
+		case PixelFormat::A2R10G10B10:
+		case PixelFormat::A2B10G10R10:
+		case PixelFormat::RGB9_E5:
 			return fromLinear32_cpp(px_format, width, height, img_buf, img_siz, stride);
 
 		default:
@@ -213,7 +213,7 @@ rp_image *fromLinear32_ssse3(PixelFormat px_format,
 		return nullptr;
 	}
 
-	if (px_format == PXF_BGR888_ABGR7888) {
+	if (px_format == PixelFormat::BGR888_ABGR7888) {
 		// Not supported right now.
 		// Use the C++ version.
 		return fromLinear32_cpp(px_format, width, height, img_buf, img_siz, stride);
@@ -234,10 +234,10 @@ rp_image *fromLinear32_ssse3(PixelFormat px_format,
 		src_stride_adj = (stride / bytespp) - width;
 	} else {
 		// Calculate stride and make sure it's a multiple of 16.
-		// Exception: If the pixel format is PXF_HOST_ARGB32,
+		// Exception: If the pixel format is PixelFormat::Host_ARGB32,
 		// we're using memcpy(), so alignment isn't required.
 		stride = width * bytespp;
-		if (unlikely((stride % 16 != 0) && px_format != PXF_HOST_ARGB32)) {
+		if (unlikely((stride % 16 != 0) && px_format != PixelFormat::Host_ARGB32)) {
 			// Unaligned stride.
 			// Use the C++ version.
 			return fromLinear32_cpp(px_format, width, height, img_buf, img_siz, stride);
@@ -245,14 +245,14 @@ rp_image *fromLinear32_ssse3(PixelFormat px_format,
 	}
 
 	// Create an rp_image.
-	rp_image *img = new rp_image(width, height, rp_image::FORMAT_ARGB32);
+	rp_image *const img = new rp_image(width, height, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
-		delete img;
+		img->unref();
 		return nullptr;
 	}
 
-	if (px_format == PXF_HOST_ARGB32) {
+	if (px_format == PixelFormat::Host_ARGB32) {
 		// Host-endian ARGB32.
 		// We can directly copy the image data without conversions.
 		if (stride == img->stride()) {
@@ -285,48 +285,48 @@ rp_image *fromLinear32_ssse3(PixelFormat px_format,
 	__m128i shuf_mask;
 	bool has_alpha;
 	switch (px_format) {
-		case PXF_HOST_ARGB32:
+		case PixelFormat::Host_ARGB32:
 			assert(!"ARGB32 is handled separately.");
-			delete img;
+			img->unref();
 			return nullptr;
-		case PXF_HOST_xRGB32:
+		case PixelFormat::Host_xRGB32:
 			// TODO: Only apply the alpha mask instead of shuffling.
 			shuf_mask = _mm_setr_epi8(0,1,2,3, 4,5,6,7, 8,9,10,11, 12,13,14,15);
 			has_alpha = false;
 			break;
 
-		case PXF_HOST_RGBA32:
-		case PXF_HOST_RGBx32:
+		case PixelFormat::Host_RGBA32:
+		case PixelFormat::Host_RGBx32:
 			shuf_mask = _mm_setr_epi8(1,2,3,0, 5,6,7,4, 9,10,11,8, 13,14,15,12);
-			has_alpha = (px_format == PXF_HOST_RGBA32);
+			has_alpha = (px_format == PixelFormat::Host_RGBA32);
 			break;
 
-		case PXF_SWAP_ARGB32:
-		case PXF_SWAP_xRGB32:
+		case PixelFormat::Swap_ARGB32:
+		case PixelFormat::Swap_xRGB32:
 			shuf_mask = _mm_setr_epi8(3,2,1,0, 7,6,5,4, 11,10,9,8, 15,14,13,12);
-			has_alpha = (px_format == PXF_SWAP_ARGB32);
+			has_alpha = (px_format == PixelFormat::Swap_ARGB32);
 			break;
 
-		case PXF_SWAP_RGBA32:
-		case PXF_SWAP_RGBx32:
+		case PixelFormat::Swap_RGBA32:
+		case PixelFormat::Swap_RGBx32:
 			shuf_mask = _mm_setr_epi8(2,1,0,3, 6,5,4,7, 10,9,8,11, 14,13,12,15);
-			has_alpha = (px_format == PXF_SWAP_RGBA32);
+			has_alpha = (px_format == PixelFormat::Swap_RGBA32);
 			break;
 
-		case PXF_G16R16:
+		case PixelFormat::G16R16:
 			// NOTE: Truncates to G8R8.
 			shuf_mask = _mm_setr_epi8(-1,3,1,-1, -1,7,5,-1, -1,11,9,-1, -1,15,13,-1);
 			has_alpha = false;
 			break;
 
-		case PXF_RABG8888:
+		case PixelFormat::RABG8888:
 			shuf_mask = _mm_setr_epi8(1,0,3,2, 5,4,7,6, 9,8,11,10, 13,12,15,14);
 			has_alpha = true;
 			break;
 
 		default:
 			assert(!"Unsupported 32-bit pixel format.");
-			delete img;
+			img->unref();
 			return nullptr;
 	}
 
@@ -360,7 +360,7 @@ rp_image *fromLinear32_ssse3(PixelFormat px_format,
 			// Remaining pixels.
 			if (x > 0) {
 			switch (px_format) {
-				case PXF_HOST_RGBA32:
+				case PixelFormat::Host_RGBA32:
 					// Host-endian RGBA32.
 					// Pixel copy is needed, with shifting.
 					for (; x > 0; x--) {
@@ -370,7 +370,7 @@ rp_image *fromLinear32_ssse3(PixelFormat px_format,
 					}
 					break;
 
-				case PXF_SWAP_ARGB32:
+				case PixelFormat::Swap_ARGB32:
 					// Byteswapped ARGB32.
 					// Pixel copy is needed, with byteswapping.
 					for (; x > 0; x--) {
@@ -380,7 +380,7 @@ rp_image *fromLinear32_ssse3(PixelFormat px_format,
 					}
 					break;
 
-				case PXF_SWAP_RGBA32:
+				case PixelFormat::Swap_RGBA32:
 					// Byteswapped ABGR32.
 					// Pixel copy is needed, with shifting.
 					for (; x > 0; x--) {
@@ -393,7 +393,7 @@ rp_image *fromLinear32_ssse3(PixelFormat px_format,
 
 				default:
 					assert(!"Unsupported 32-bit alpha pixel format.");
-					delete img;
+					img->unref();
 					return nullptr;
 			} }
 
@@ -441,7 +441,7 @@ rp_image *fromLinear32_ssse3(PixelFormat px_format,
 			// Remaining pixels.
 			if (x > 0) {
 			switch (px_format) {
-				case PXF_HOST_xRGB32:
+				case PixelFormat::Host_xRGB32:
 					// Host-endian XRGB32.
 					// Pixel copy is needed, with alpha channel masking.
 					for (; x > 0; x--) {
@@ -451,7 +451,7 @@ rp_image *fromLinear32_ssse3(PixelFormat px_format,
 					}
 					break;
 
-				case PXF_HOST_RGBx32:
+				case PixelFormat::Host_RGBx32:
 					// Host-endian RGBx32.
 					// Pixel copy is needed, with a right shift.
 					for (; x > 0; x--) {
@@ -461,7 +461,7 @@ rp_image *fromLinear32_ssse3(PixelFormat px_format,
 					}
 					break;
 
-				case PXF_SWAP_xRGB32:
+				case PixelFormat::Swap_xRGB32:
 					// Byteswapped XRGB32.
 					// Pixel copy is needed, with byteswapping and alpha channel masking.
 					for (; x > 0; x--) {
@@ -471,7 +471,7 @@ rp_image *fromLinear32_ssse3(PixelFormat px_format,
 					}
 					break;
 
-				case PXF_SWAP_RGBx32:
+				case PixelFormat::Swap_RGBx32:
 					// Byteswapped RGBx32.
 					// Pixel copy is needed, with byteswapping and a right shift.
 					for (; x > 0; x--) {
@@ -481,7 +481,7 @@ rp_image *fromLinear32_ssse3(PixelFormat px_format,
 					}
 					break;
 
-				case PXF_G16R16:
+				case PixelFormat::G16R16:
 					// G16R16.
 					for (; x > 0; x--) {
 						*px_dest = G16R16_to_ARGB32(le32_to_cpu(*img_buf));
@@ -492,7 +492,7 @@ rp_image *fromLinear32_ssse3(PixelFormat px_format,
 
 				default:
 					assert(!"Unsupported 32-bit no-alpha pixel format.");
-					delete img;
+					img->unref();
 					return nullptr;
 			} }
 
@@ -502,7 +502,7 @@ rp_image *fromLinear32_ssse3(PixelFormat px_format,
 		}
 
 		// Set the sBIT metadata.
-		if (unlikely(px_format == PXF_G16R16)) {
+		if (unlikely(px_format == PixelFormat::G16R16)) {
 			static const rp_image::sBIT_t sBIT_G16R16 = {8,8,1,0,0};
 			img->set_sBIT(&sBIT_G16R16);
 		} else {

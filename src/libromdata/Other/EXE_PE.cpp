@@ -49,11 +49,11 @@ int EXEPrivate::loadPESectionTable(void)
 	uint32_t section_table_start = le32_to_cpu(mz.e_lfanew);
 	uint32_t SizeOfHeaders;
 	switch (exeType) {
-		case EXE_TYPE_PE:
+		case ExeType::PE:
 			section_table_start += sizeof(IMAGE_NT_HEADERS32);
 			SizeOfHeaders = le32_to_cpu(hdr.pe.OptionalHeader.opt32.SizeOfHeaders);
 			break;
-		case EXE_TYPE_PE32PLUS:
+		case ExeType::PE32PLUS:
 			section_table_start += sizeof(IMAGE_NT_HEADERS64);
 			SizeOfHeaders = le32_to_cpu(hdr.pe.OptionalHeader.opt64.SizeOfHeaders);
 			break;
@@ -110,7 +110,8 @@ uint32_t EXEPrivate::pe_vaddr_to_paddr(uint32_t vaddr, uint32_t size)
 		}
 	}
 
-	for (auto iter = pe_sections.cbegin(); iter != pe_sections.cend(); ++iter) {
+	const auto pe_sections_cend = pe_sections.cend();
+	for (auto iter = pe_sections.cbegin(); iter != pe_sections_cend; ++iter) {
 		if (iter->VirtualAddress <= vaddr) {
 			if ((iter->VirtualAddress + iter->SizeOfRawData) >= (vaddr+size)) {
 				// Found the section. Adjust the address.
@@ -138,7 +139,7 @@ int EXEPrivate::loadPEResourceTypes(void)
 	} else if (!isValid) {
 		// Unknown executable type.
 		return -EIO;
-	} else if (exeType != EXE_TYPE_PE && exeType != EXE_TYPE_PE32PLUS) {
+	} else if (exeType != ExeType::PE && exeType != ExeType::PE32PLUS) {
 		// Unsupported executable type.
 		return -ENOTSUP;
 	}
@@ -179,8 +180,7 @@ int EXEPrivate::loadPEResourceTypes(void)
 	if (!rsrcReader->isOpen()) {
 		// Failed to open the .rsrc section.
 		int err = rsrcReader->lastError();
-		delete rsrcReader;
-		rsrcReader = nullptr;
+		UNREF_AND_NULL_NOCHK(rsrcReader);
 		return (err != 0 ? err : -EIO);
 	}
 
@@ -213,10 +213,10 @@ int EXEPrivate::findPERuntimeDLL(string &refDesc, string &refLink)
 	IMAGE_DATA_DIRECTORY dataDir;
 	bool is64 = false;
 	switch (exeType) {
-		case EXE_TYPE_PE:
+		case ExeType::PE:
 			dataDir = hdr.pe.OptionalHeader.opt32.DataDirectory[IMAGE_DATA_DIRECTORY_IMPORT_TABLE];
 			break;
-		case EXE_TYPE_PE32PLUS:
+		case ExeType::PE32PLUS:
 			dataDir = hdr.pe.OptionalHeader.opt64.DataDirectory[IMAGE_DATA_DIRECTORY_IMPORT_TABLE];
 			is64 = true;
 			break;
@@ -246,6 +246,10 @@ int EXEPrivate::findPERuntimeDLL(string &refDesc, string &refLink)
 	if (dataDir.Size < sizeof(IMAGE_IMPORT_DIRECTORY)) {
 		// Not enough space for the import table...
 		return -ENOENT;
+	} else if (dataDir.Size > 4*1024*1024) {
+		// Import table is larger than 4 MB...
+		// This might be data corruption.
+		return -EIO;
 	}
 
 	// Load the import directory table.
@@ -289,14 +293,19 @@ int EXEPrivate::findPERuntimeDLL(string &refDesc, string &refLink)
 	// NOTE: Since the DLL names are NULL-terminated, we'll have to guess
 	// with the last one. It's unlikely that it'll be at EOF, but we'll
 	// allow for 'short reads'.
-	const size_t dll_size_min = dll_vaddr_high - dll_vaddr_low + 1;
+	const uint32_t dll_size_min = dll_vaddr_high - dll_vaddr_low + 1;
+	if (dll_size_min > 1*1024*1024) {
+		// More than 1 MB of DLL names is highly unlikely.
+		// There's probably some corruption in the import table.
+		return -EIO;
+	}
 	uint32_t dll_paddr = pe_vaddr_to_paddr(dll_vaddr_low, dll_size_min);
 	if (dll_paddr == 0) {
 		// Invalid VAs...
 		return -ENOENT;
 	}
 
-	const size_t dll_size_max = dll_size_min + 260;	// MAX_PATH
+	const uint32_t dll_size_max = dll_size_min + 260;	// MAX_PATH
 	unique_ptr<char[]> dll_name_data(new char[dll_size_max]);
 	size_t dll_size_read = file->seekAndRead(dll_paddr, reinterpret_cast<uint8_t*>(dll_name_data.get()), dll_size_max);
 	if (dll_size_read < dll_size_min || dll_size_read > dll_size_max) {
@@ -343,7 +352,8 @@ int EXEPrivate::findPERuntimeDLL(string &refDesc, string &refLink)
 
 	// Check all of the DLL names.
 	bool found = false;
-	for (auto iter = set_dll_vaddrs.cbegin(); iter != set_dll_vaddrs.cend() && !found; ++iter) {
+	const auto set_dll_vaddrs_cend = set_dll_vaddrs.cend();
+	for (auto iter = set_dll_vaddrs.cbegin(); iter != set_dll_vaddrs_cend && !found; ++iter) {
 		uint32_t vaddr = *iter;
 		assert(vaddr >= dll_vaddr_low);
 		assert(vaddr <= dll_vaddr_high);
@@ -421,6 +431,7 @@ int EXEPrivate::findPERuntimeDLL(string &refDesc, string &refLink)
 		}
 
 		// Check for MSVCRT.DLL.
+		// FIXME: This is used by both 5.0 and 6.0.
 		if (!strcmp(dll_name, "msvcrt.dll")) {
 			// NOTE: Conflict between MSVC 6.0 and the "system" MSVCRT.
 			// TODO: Other heuristics to figure this out. (Check for msvcp60.dll?)
@@ -477,7 +488,7 @@ void EXEPrivate::addFields_PE(void)
 	uint16_t subsystem_ver_major, subsystem_ver_minor;
 	uint16_t dll_flags;
 	bool dotnet;
-	if (exeType == EXEPrivate::EXE_TYPE_PE) {
+	if (exeType == EXEPrivate::ExeType::PE) {
 		os_ver_major = le16_to_cpu(hdr.pe.OptionalHeader.opt32.MajorOperatingSystemVersion);
 		os_ver_minor = le16_to_cpu(hdr.pe.OptionalHeader.opt32.MinorOperatingSystemVersion);
 		subsystem_ver_major = le16_to_cpu(hdr.pe.OptionalHeader.opt32.MajorSubsystemVersion);
@@ -486,7 +497,7 @@ void EXEPrivate::addFields_PE(void)
 		// TODO: Check VirtualAddress, Size, or both?
 		// 'file' checks VirtualAddress.
 		dotnet = (hdr.pe.OptionalHeader.opt32.DataDirectory[IMAGE_DATA_DIRECTORY_CLR_HEADER].Size != 0);
-	} else /*if (exeType == EXEPrivate::EXE_TYPE_PE32PLUS)*/ {
+	} else /*if (exeType == EXEPrivate::ExeType::PE32PLUS)*/ {
 		os_ver_major = le16_to_cpu(hdr.pe.OptionalHeader.opt64.MajorOperatingSystemVersion);
 		os_ver_minor = le16_to_cpu(hdr.pe.OptionalHeader.opt64.MinorOperatingSystemVersion);
 		subsystem_ver_major = le16_to_cpu(hdr.pe.OptionalHeader.opt64.MajorSubsystemVersion);
@@ -525,9 +536,11 @@ void EXEPrivate::addFields_PE(void)
 		NOP_C_("EXE|Subsystem", "Windows"),
 		// tr: IMAGE_SUBSYSTEM_WINDOWS_CUI
 		NOP_C_("EXE|Subsystem", "Console"),
+		// Unused...
 		nullptr,
 		// tr: IMAGE_SUBSYSTEM_OS2_CUI
 		NOP_C_("EXE|Subsystem", "OS/2 Console"),
+		// Unused...
 		nullptr,
 		// tr: IMAGE_SUBSYSTEM_POSIX_CUI
 		NOP_C_("EXE|Subsystem", "POSIX Console"),
@@ -548,12 +561,24 @@ void EXEPrivate::addFields_PE(void)
 	};
 
 	// Subsystem name and version.
-	fields->addField_string(C_("EXE", "Subsystem"),
-		rp_sprintf("%s %u.%u",
-			(pe_subsystem < ARRAY_SIZE(subsysNames)
-				? dpgettext_expr(RP_I18N_DOMAIN, "EXE|Subsystem", subsysNames[pe_subsystem])
-				: C_("RomData", "Unknown")),
-			subsystem_ver_major, subsystem_ver_minor));
+	string subsystem_name;
+	if (pe_subsystem < ARRAY_SIZE(subsysNames) && subsysNames[pe_subsystem] != nullptr) {
+		subsystem_name = rp_sprintf("%s %u.%u",
+			dpgettext_expr(RP_I18N_DOMAIN, "EXE|Subsystem", subsysNames[pe_subsystem]),
+			subsystem_ver_major, subsystem_ver_minor);
+	} else {
+		const char *const s_unknown = C_("RomData", "Unknown");
+		if (pe_subsystem == IMAGE_SUBSYSTEM_UNKNOWN) {
+			subsystem_name = rp_sprintf("%s %u.%u",
+				s_unknown,
+				subsystem_ver_major, subsystem_ver_minor);
+		} else {
+			subsystem_name = rp_sprintf("%s (%u) %u.%u",
+				s_unknown, pe_subsystem,
+				subsystem_ver_major, subsystem_ver_minor);
+		}
+	}
+	fields->addField_string(C_("EXE", "Subsystem"), subsystem_name);
 
 	// PE flags. (characteristics)
 	// NOTE: Only important flags will be listed.

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * WbfsReader.cpp: WBFS disc image reader.                                 *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -11,8 +11,9 @@
 #include "librpbase/disc/SparseDiscReader_p.hpp"
 #include "libwbfs.h"
 
-// librpbase
+// librpbase, librpfile
 using namespace LibRpBase;
+using LibRpFile::IRpFile;
 
 namespace LibRomData {
 
@@ -33,9 +34,6 @@ class WbfsReaderPrivate : public SparseDiscReaderPrivate {
 		const be16_t *wlba_table;	// Pointer to m_wbfs_disc->disc->header->wlba_table.
 
 		/** WBFS functions. **/
-
-		// WBFS magic number.
-		static const uint8_t WBFS_MAGIC[4];
 
 		/**
 		 * Read the WBFS header.
@@ -73,13 +71,10 @@ class WbfsReaderPrivate : public SparseDiscReaderPrivate {
 		 * @param disc wbfs_disc_t struct.
 		 * @return Non-sparse size, in bytes.
 		 */
-		int64_t getWbfsDiscSize(const wbfs_disc_t *disc) const;
+		off64_t getWbfsDiscSize(const wbfs_disc_t *disc) const;
 };
 
 /** WbfsReaderPrivate **/
-
-// WBFS magic number.
-const uint8_t WbfsReaderPrivate::WBFS_MAGIC[4] = {'W','B','F','S'};
 
 WbfsReaderPrivate::WbfsReaderPrivate(WbfsReader *q)
 	: super(q)
@@ -137,7 +132,7 @@ wbfs_t *WbfsReaderPrivate::readWbfsHeader(void)
 	}
 
 	// Check the WBFS magic.
-	if (memcmp(&head->magic, WBFS_MAGIC, sizeof(WBFS_MAGIC)) != 0) {
+	if (head->magic != cpu_to_be32(WBFS_MAGIC)) {
 		// Invalid WBFS magic.
 		// TODO: Better error code?
 		free(head);
@@ -165,7 +160,7 @@ wbfs_t *WbfsReaderPrivate::readWbfsHeader(void)
 		free(p);
 		return nullptr;
 	}
-	p->hd_sec_sz = (1 << head->hd_sec_sz_s);
+	p->hd_sec_sz = (1U << head->hd_sec_sz_s);
 	p->hd_sec_sz_s = head->hd_sec_sz_s;
 	p->n_hd_sec = be32_to_cpu(head->n_hd_sec);	// TODO: Use file size?
 
@@ -203,7 +198,7 @@ wbfs_t *WbfsReaderPrivate::readWbfsHeader(void)
 
 	// WBFS sector size.
 	p->wbfs_sec_sz_s = head->wbfs_sec_sz_s;
-	p->wbfs_sec_sz = (1 << head->wbfs_sec_sz_s);
+	p->wbfs_sec_sz = (1U << head->wbfs_sec_sz_s);
 
 	// Disc size.
 	p->n_wbfs_sec = p->n_wii_sec >> (p->wbfs_sec_sz_s - p->wii_sec_sz_s);
@@ -320,7 +315,7 @@ void WbfsReaderPrivate::closeWbfsDisc(wbfs_disc_t *disc)
  * @param disc wbfs_disc_t struct.
  * @return Non-sparse size, in bytes.
  */
-int64_t WbfsReaderPrivate::getWbfsDiscSize(const wbfs_disc_t *disc) const
+off64_t WbfsReaderPrivate::getWbfsDiscSize(const wbfs_disc_t *disc) const
 {
 	// Find the last block that's used on the disc.
 	// NOTE: This is in WBFS blocks, not Wii blocks.
@@ -332,7 +327,7 @@ int64_t WbfsReaderPrivate::getWbfsDiscSize(const wbfs_disc_t *disc) const
 	}
 
 	// lastBlock+1 * WBFS block size == filesize.
-	return (static_cast<int64_t>(lastBlock) + 1) * static_cast<int64_t>(p->wbfs_sec_sz);
+	return (static_cast<off64_t>(lastBlock) + 1) * static_cast<off64_t>(p->wbfs_sec_sz);
 }
 
 /** WbfsReader **/
@@ -350,8 +345,7 @@ WbfsReader::WbfsReader(IRpFile *file)
 	d->m_wbfs = d->readWbfsHeader();
 	if (!d->m_wbfs) {
 		// Error reading the WBFS header.
-		m_file->unref();
-		m_file = nullptr;
+		UNREF_AND_NULL_NOCHK(m_file);
 		m_lastError = EIO;
 		return;
 	}
@@ -362,8 +356,7 @@ WbfsReader::WbfsReader(IRpFile *file)
 		// Error opening the WBFS disc.
 		d->freeWbfsHeader(d->m_wbfs);
 		d->m_wbfs = nullptr;
-		m_file->unref();
-		m_file = nullptr;
+		UNREF_AND_NULL_NOCHK(m_file);
 		m_lastError = EIO;
 		return;
 	}
@@ -389,7 +382,7 @@ int WbfsReader::isDiscSupported_static(const uint8_t *pHeader, size_t szHeader)
 		return -1;
 
 	const wbfs_head_t *head = reinterpret_cast<const wbfs_head_t*>(pHeader);
-	if (memcmp(&head->magic, WbfsReaderPrivate::WBFS_MAGIC, sizeof(WbfsReaderPrivate::WBFS_MAGIC)) != 0) {
+	if (head->magic != cpu_to_be32(WBFS_MAGIC)) {
 		// Incorrect magic number.
 		return -1;
 	}
@@ -425,10 +418,10 @@ int WbfsReader::isDiscSupported(const uint8_t *pHeader, size_t szHeader) const
  * @param blockIdx	[in] Block index.
  * @return Physical address. (0 == empty block; -1 == invalid block index)
  */
-int64_t WbfsReader::getPhysBlockAddr(uint32_t blockIdx) const
+off64_t WbfsReader::getPhysBlockAddr(uint32_t blockIdx) const
 {
 	// Make sure the block index is in range.
-	RP_D(WbfsReader);
+	RP_D(const WbfsReader);
 	assert(blockIdx < d->m_wbfs_disc->p->n_wbfs_sec_per_disc);
 	if (blockIdx >= d->m_wbfs_disc->p->n_wbfs_sec_per_disc) {
 		// Out of range.
@@ -443,7 +436,7 @@ int64_t WbfsReader::getPhysBlockAddr(uint32_t blockIdx) const
 	}
 
 	// Convert to a physical block address and return.
-	return (static_cast<int64_t>(physBlockIdx) * d->block_size);
+	return (static_cast<off64_t>(physBlockIdx) * d->block_size);
 }
 
 }

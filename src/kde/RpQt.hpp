@@ -1,23 +1,37 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (KDE4/KDE5)                        *
+ * ROM Properties Page shell extension. (KDE4/KF5)                         *
  * RpQt.hpp: Qt wrappers for some libromdata functionality.                *
  *                                                                         *
- * Copyright (c) 2016 by David Korth.                                      *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #ifndef __ROMPROPERTIES_KDE_RPQT_HPP__
 #define __ROMPROPERTIES_KDE_RPQT_HPP__
 
-#include <string>
-
+namespace LibRpFile {
+	class IRpFile;
+}
 namespace LibRpTexture {
 	class rp_image;
 }
 
+// C++ includes.
+#include <string>
+
 // Qt includes.
 #include <QtCore/QString>
+#include <QtCore/QUrl>
 #include <QtGui/QImage>
+
+// KDE Frameworks prefix. (KDE4/KF5)
+#if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
+# define RP_KDE_UPPER "KF"
+# define RP_KDE_LOWER "kf"
+#else /* !QT_VERSION >= QT_VERSION_CHECK(5,0,0) */
+# define RP_KDE_UPPER "KDE"
+# define RP_KDE_LOWER "kde"
+#endif /* QT_VERSION >= QT_VERSION_CHECK(5,0,0) */
 
 /** Text conversion. **/
 
@@ -65,5 +79,39 @@ static inline QString U82Q(const char *str, int len = -1)
  * @return QImage.
  */
 QImage rpToQImage(const LibRpTexture::rp_image *image);
+
+/**
+ * Localize a QUrl.
+ * This function automatically converts certain URL schemes, e.g. desktop:/, to local paths.
+ *
+ * @param qUrl QUrl.
+ * @return Localize QUrl, or empty QUrl on error.
+ */
+QUrl localizeQUrl(const QUrl &url);
+
+/**
+ * Open a QUrl as an IRpFile. (read-only)
+ * This function automatically converts certain URL schemes, e.g. desktop:/, to local paths.
+ *
+ * @param qUrl QUrl.
+ * @param isThumbnail If true, this file is being used for thumbnailing. Handle "bad FS" checking.
+ *
+ * @return IRpFile, or nullptr on error.
+ */
+LibRpFile::IRpFile *openQUrl(const QUrl &url, bool isThumbnail = false);
+
+/**
+ * Convert an RP file dialog filter to Qt.
+ *
+ * RP syntax: "Sega Mega Drive ROM images|*.gen;*.bin|application/x-genesis-rom|All Files|*.*|-"
+ * Similar the same as Windows, but with '|' instead of '\0'.
+ * Also, no terminator sequence is needed.
+ * The "(*.bin; *.srl)" part is added to the display name if needed.
+ * A third segment provides for semicolon-separated MIME types. (May be "-" for 'any'.)
+ *
+ * @param filter RP file dialog filter. (UTF-8, from gettext())
+ * @return Qt file dialog filter.
+ */
+QString rpFileDialogFilterToQt(const char *filter);
 
 #endif /* __ROMPROPERTIES_KDE_RPQT_HPP__ */

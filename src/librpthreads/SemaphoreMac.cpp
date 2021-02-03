@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpthreads)                     *
  * SemaphoreMac.cpp: Mac OS X semaphore implementation.                    *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -18,7 +18,7 @@
 // - https://developer.apple.com/library/content/documentation/Darwin/Conceptual/KernelProgramming/synchronization/synchronization.html
 // - https://gist.github.com/kazupon/3843288
 
-namespace LibRpBase {
+namespace LibRpThreads {
 
 class Semaphore
 {
@@ -73,7 +73,9 @@ inline Semaphore::Semaphore(int count)
 	kern_return_t ret = semaphore_create(mach_task_self(), &m_sem, SYNC_POLICY_FIFO, count);
 	assert(ret == KERN_SUCCESS);
 	assert(m_sem != 0);
+
 	// FIXME: Do something if an error occurred here...
+	((void)ret);
 }
 
 /**

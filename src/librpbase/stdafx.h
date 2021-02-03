@@ -9,6 +9,9 @@
 #ifndef __ROMPROPERTIES_LIBRPBASE_STDAFX_H__
 #define __ROMPROPERTIES_LIBRPBASE_STDAFX_H__
 
+// time_r.h needs to be here due to *_r() issues on MinGW-w64.
+#include "time_r.h"
+
 #ifdef __cplusplus
 /** C++ **/
 
@@ -24,6 +27,7 @@
 
 // C++ includes.
 #include <algorithm>
+#include <array>
 #include <iomanip>
 #include <limits>
 #include <memory>
@@ -59,22 +63,26 @@
 # include "libwin32common/RpWin32_sdk.h"
 #endif /* _WIN32 */
 
+// librpcpu
+#include "librpcpu/byteswap_rp.h"
+#include "librpcpu/bitstuff.h"
+
 // librpbase common headers
 #include "common.h"
-#include "byteswap.h"
-#include "bitstuff.h"
 #include "aligned_malloc.h"
-#include "cpu_dispatch.h"
+#include "librpcpu/cpu_dispatch.h"
 #include "ctypex.h"
 
 #ifdef __cplusplus
 // librpbase C++ headers
 #include "TextFuncs.hpp"
-#include "file/RpFile.hpp"
 
 // Uninitialized vector class.
 // Reference: http://andreoffringa.org/?q=uvector
 #include "uvector.h"
+
+// librpfile C++ headers
+#include "librpfile/RpFile.hpp"
 #endif /* !__cplusplus */
 
 #endif /* __ROMPROPERTIES_LIBRPBASE_STDAFX_H__ */

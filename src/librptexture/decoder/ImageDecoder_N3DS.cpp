@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * ImageDecoder_GCN.cpp: Image decoding functions. (Nintendo 3DS)          *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -55,10 +55,10 @@ rp_image *fromN3DSTiledRGB565(int width, int height,
 		return nullptr;
 
 	// Create an rp_image.
-	rp_image *img = new rp_image(width, height, rp_image::FORMAT_ARGB32);
+	rp_image *const img = new rp_image(width, height, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
-		delete img;
+		img->unref();
 		return nullptr;
 	}
 
@@ -72,7 +72,6 @@ rp_image *fromN3DSTiledRGB565(int width, int height,
 	for (unsigned int y = 0; y < tilesY; y++) {
 		for (unsigned int x = 0; x < tilesX; x++) {
 			// Convert each tile to ARGB32 manually.
-			// TODO: Optimize using pointers instead of indexes?
 			for (unsigned int i = 0; i < 8*8; i += 2, img_buf += 2) {
 				tileBuf[N3DS_tile_order[i+0]] = RGB565_to_ARGB32(le16_to_cpu(img_buf[0]));
 				tileBuf[N3DS_tile_order[i+1]] = RGB565_to_ARGB32(le16_to_cpu(img_buf[1]));
@@ -130,10 +129,10 @@ rp_image *fromN3DSTiledRGB565_A4(int width, int height,
 	const unsigned int tilesY = static_cast<unsigned int>(height / 8);
 
 	// Create an rp_image.
-	rp_image *img = new rp_image(width, height, rp_image::FORMAT_ARGB32);
+	rp_image *const img = new rp_image(width, height, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
-		delete img;
+		img->unref();
 		return nullptr;
 	}
 
@@ -143,7 +142,6 @@ rp_image *fromN3DSTiledRGB565_A4(int width, int height,
 	for (unsigned int y = 0; y < tilesY; y++) {
 		for (unsigned int x = 0; x < tilesX; x++) {
 			// Convert each tile to ARGB32 manually.
-			// TODO: Optimize using pointers instead of indexes?
 			// FIXME: Nybble ordering for A4?
 			// Assuming LeftLSN, same as NDS CI4.
 			for (unsigned int i = 0; i < 8*8; i += 2, img_buf += 2, alpha_buf++) {

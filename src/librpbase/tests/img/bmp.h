@@ -54,6 +54,7 @@ typedef struct tagBITMAPFILEHEADER {
 	uint16_t bfReserved2;
 	uint32_t bfOffBits;
 } BITMAPFILEHEADER;
+ASSERT_STRUCT(BITMAPFILEHEADER, BITMAPFILEHEADER_SIZE);
 #pragma pack()
 
 /**
@@ -61,7 +62,7 @@ typedef struct tagBITMAPFILEHEADER {
  * All fields are little-endian.
  * Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/dd183375(v=vs.85).aspx
  */
-typedef struct PACKED tagBITMAPINFOHEADER {
+typedef struct tagBITMAPINFOHEADER {
 	uint32_t biSize;
 	int32_t  biWidth;
 	int32_t  biHeight;
@@ -74,6 +75,7 @@ typedef struct PACKED tagBITMAPINFOHEADER {
 	uint32_t biClrUsed;
 	uint32_t biClrImportant;
 } BITMAPINFOHEADER;
+ASSERT_STRUCT(BITMAPINFOHEADER, BITMAPINFOHEADER_SIZE);
 
 // biCompression
 #define BI_RGB		0

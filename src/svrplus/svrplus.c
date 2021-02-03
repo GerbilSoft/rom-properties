@@ -2,8 +2,8 @@
  * ROM Properties Page shell extension installer. (svrplus)                *
  * svrplus.c: Win32 installer for rom-properties.                          *
  *                                                                         *
- * Copyright (c) 2017-2019 by Egor.                                        *
- * Copyright (c) 2017-2019 by David Korth.                                 *
+ * Copyright (c) 2017-2021 by Egor.                                        *
+ * Copyright (c) 2017-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -18,9 +18,14 @@
 // MSVCRT-specific
 #include <process.h>
 
+// stdbool
+#include "stdboolx.h"
+
 // libwin32common
 #include "libwin32common/RpWin32_sdk.h"
-#include "libwin32common/secoptions.h"
+
+// librpsecure
+#include "librpsecure/os-secure.h"
 
 // Additional Windows headers.
 #include <windowsx.h>
@@ -38,29 +43,6 @@
 #ifndef _MAX_ULTOSTR_BASE10_COUNT
 #define _MAX_ULTOSTR_BASE10_COUNT  (10 + 1)
 #endif
-
-/**
- * Number of elements in an array.
- * (from librpbase/common.h)
- *
- * Includes a static check for pointers to make sure
- * a dynamically-allocated array wasn't specified.
- * Reference: http://stackoverflow.com/questions/8018843/macro-definition-array-size
- */
-#define ARRAY_SIZE(x) \
-	((int)(((sizeof(x) / sizeof(x[0]))) / \
-		(size_t)(!(sizeof(x) % sizeof(x[0])))))
-
-// TODO: Move to our own stdboolx.h file.
-#ifndef __cplusplus
-# if defined(_MSC_VER) && _MSC_VER >= 1800
-#  include <stdbool.h>
-# else
-typedef unsigned char bool;
-#  define true 1
-#  define false 0
-# endif
-#endif /* __cplusplus */
 
 // File paths
 static const TCHAR str_rp32path[] = _T("i386\\rom-properties.dll");
@@ -112,8 +94,8 @@ static RECT rectStatus1_icon;
 static void ShowStatusMessage(HWND hDlg, const TCHAR *line1, const TCHAR *line2, UINT uType)
 {
 	HICON hIcon;
-	int sw_status;
 	const RECT *rect;
+	int sw_status;
 
 	HWND const hStaticIcon = GetDlgItem(hDlg, IDC_STATIC_ICON);
 	HWND const hStatus1 = GetDlgItem(hDlg, IDC_STATIC_STATUS1);
@@ -256,7 +238,7 @@ static bool CheckMsvc(bool is64)
 {
 	// Determine the MSVCRT DLL name.
 	TCHAR msvcrt_path[MAX_PATH];
-	int ret = GetSystemDirFilePath(msvcrt_path, ARRAY_SIZE(msvcrt_path), _T("msvcp140.dll"), is64);
+	int ret = GetSystemDirFilePath(msvcrt_path, _countof(msvcrt_path), _T("msvcp140.dll"), is64);
 	if (ret <= 0) {
 		// Unable to get the path.
 		// Assume the file exists.
@@ -300,15 +282,16 @@ typedef enum {
 static InstallServerResult InstallServer(bool isUninstall, bool is64, HANDLE *pHandle, DWORD *pErrorCode)
 {
 	TCHAR regsvr32_path[MAX_PATH];
-	TCHAR args[14 + MAX_PATH + 4 + 3 + ARRAY_SIZE(str_rp64path)] = _T("regsvr32.exe \"");
+	TCHAR args[14 + MAX_PATH + 4 + 3 + _countof(str_rp64path)] = _T("regsvr32.exe \"");
 	DWORD szModuleFn;
 	TCHAR *bs;
 
 	STARTUPINFO si;
 	PROCESS_INFORMATION pi;
+	BOOL bRet;
 
 	// Determine the REGSVR32 path.
-	int ret = GetSystemDirFilePath(regsvr32_path, ARRAY_SIZE(regsvr32_path), _T("regsvr32.exe"), is64);
+	int ret = GetSystemDirFilePath(regsvr32_path, _countof(regsvr32_path), _T("regsvr32.exe"), is64);
 	if (ret <= 0) {
 		// Unable to get the path.
 		return ISR_FATAL_ERROR;
@@ -333,20 +316,32 @@ static InstallServerResult InstallServer(bool isUninstall, bool is64, HANDLE *pH
 
 	// Remove the EXE filename, then append the DLL relative path.
 	bs[1] = 0;
-	_tcscat_s(args, ARRAY_SIZE(args), is64 ? str_rp64path : str_rp32path);
+	_tcscat_s(args, _countof(args), is64 ? str_rp64path : str_rp32path);
 	if (!fileExists(&args[14])) {
 		// File not found.
 		return ISR_FILE_NOT_FOUND;
 	}
 
 	// Append /s (silent) key, and optionally append /u (uninstall) key.
-	_tcscat_s(args, ARRAY_SIZE(args), isUninstall ? _T("\" /s /u") : _T("\" /s"));
+	_tcscat_s(args, _countof(args), isUninstall ? _T("\" /s /u") : _T("\" /s"));
 
 	memset(&si, 0, sizeof(si));
 	memset(&pi, 0, sizeof(pi));
 	si.cb = sizeof(si);
 
-	if (!CreateProcess(regsvr32_path, args, NULL, NULL, FALSE, 0, NULL, NULL, &si, &pi)) {
+	bRet = CreateProcess(
+		regsvr32_path,		// lpApplicationName
+		args,			// lpCommandLine
+		NULL,			// lpProcessAttributes
+		NULL,			// lpThreadAttributes
+		FALSE,			// bInheritHandles
+		CREATE_NO_WINDOW,	// dwCreationFlags
+		NULL,			// lpEnvironment
+		NULL,			// lpCurrentDirectory
+		&si,			// lpStartupInfo
+		&pi);			// lpProcessInformation
+
+	if (!bRet) {
 		if (pErrorCode) {
 			*pErrorCode = GetLastError();
 		}
@@ -371,13 +366,19 @@ static InstallServerResult InstallServer(bool isUninstall, bool is64, HANDLE *pH
 static InstallServerResult InstallServerEnd(HANDLE handle, DWORD *pErrorCode)
 {
 	DWORD status;
+	BOOL bRet;
 
 	if (!handle) {
 		return ISR_FATAL_ERROR;
 	}
 
-	GetExitCodeProcess(handle, &status);
+	bRet = GetExitCodeProcess(handle, &status);
 	CloseHandle(handle);
+	if (!bRet) {
+		// GetExitCodeProcess() failed.
+		// Assume the process is still active.
+		return ISR_PROCESS_STILL_ACTIVE;
+	}
 
 	switch (status) {
 		case STILL_ACTIVE:
@@ -447,7 +448,7 @@ static void InstallServerErrorMsg(
 			_tcscat_s(sErrBuf, cchErrBuf, _T(" is missing."));
 			break;
 		case ISR_CREATEPROCESS_FAILED:
-			_ultot_s(errorCode, ultot_buf, ARRAY_SIZE(ultot_buf), 10);
+			_ultot_s(errorCode, ultot_buf, _countof(ultot_buf), 10);
 			_tcscpy_s(sErrBuf, cchErrBuf, _T("Could not start REGSVR32.exe. (Err:"));
 			_tcscat_s(sErrBuf, cchErrBuf, ultot_buf);
 			_tcscat_s(sErrBuf, cchErrBuf, _T(")"));
@@ -481,7 +482,7 @@ static void InstallServerErrorMsg(
 					_tcscat_s(sErrBuf, cchErrBuf, _T("() returned an error."));
 					break;
 				default:
-					_ultot_s(errorCode, ultot_buf, ARRAY_SIZE(ultot_buf), 10);
+					_ultot_s(errorCode, ultot_buf, _countof(ultot_buf), 10);
 					_tcscpy_s(sErrBuf, cchErrBuf, _T("REGSVR32 failed: Unknown exit code: "));
 					_tcscat_s(sErrBuf, cchErrBuf, ultot_buf);
 					break;
@@ -583,10 +584,10 @@ static void InstallProcEnd(struct InstallParams *p)
 
 	if (g_is64bit) {
 		InstallServerErrorMsg(p->res64, p->errorCode64,
-				p->isUninstall, true, msg64, ARRAY_SIZE(msg64));
+				p->isUninstall, true, msg64, _countof(msg64));
 	}
 	InstallServerErrorMsg(p->res32, p->errorCode32,
-			p->isUninstall, false, msg32, ARRAY_SIZE(msg32));
+			p->isUninstall, false, msg32, _countof(msg32));
 
 	if (p->res32 == ISR_OK && p->res64 == ISR_OK) {
 		// DLL(s) registered successfully.
@@ -620,16 +621,16 @@ static void InstallProcEnd(struct InstallParams *p)
 
 		if (p->res32 != ISR_OK) {
 			if (g_is64bit) {
-				_tcscpy_s(msg2, ARRAY_SIZE(msg2), BULLET _T(" 32-bit: "));
+				_tcscpy_s(msg2, _countof(msg2), BULLET _T(" 32-bit: "));
 			}
-			_tcscat_s(msg2, ARRAY_SIZE(msg2), msg32);
+			_tcscat_s(msg2, _countof(msg2), msg32);
 		}
 		if (p->res64 != ISR_OK) {
 			if (msg2[0] != _T('\0')) {
-				_tcscat_s(msg2, ARRAY_SIZE(msg2), _T("\n"));
+				_tcscat_s(msg2, _countof(msg2), _T("\n"));
 			}
-			_tcscat_s(msg2, ARRAY_SIZE(msg2), BULLET _T(" 64-bit: "));
-			_tcscat_s(msg2, ARRAY_SIZE(msg2), msg64);
+			_tcscat_s(msg2, _countof(msg2), BULLET _T(" 64-bit: "));
+			_tcscat_s(msg2, _countof(msg2), msg64);
 		}
 
 		ShowStatusMessage(p->hWnd, msg1, msg2, MB_ICONSTOP);
@@ -686,7 +687,6 @@ static void InitDialog(HWND hDlg)
 	MapWindowPoints(HWND_DESKTOP, hDlg, (LPPOINT)&rectStatus1_noIcon, 2);
 
 	// Adjust the left boundary for the icon.
-	// FIXME: Assuming 16x16 icons. May need larger for HiDPI.
 	rectStatus1_icon = rectStatus1_noIcon;
 	rectStatus1_icon.left += szIcon.cx + (szIcon.cx / 5);
 
@@ -859,7 +859,7 @@ static INT_PTR CALLBACK DialogProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM l
 				case NM_CLICK:
 				case NM_RETURN: {
 					const NMLINK *pNMLink;
-					int ret;
+					INT_PTR ret;
 
 					if (pHdr->idFrom != IDC_STATIC_STATUS2)
 						break;
@@ -870,16 +870,16 @@ static INT_PTR CALLBACK DialogProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM l
 					// - https://msdn.microsoft.com/en-us/library/windows/desktop/bb762153(v=vs.85).aspx
 					// - https://blogs.msdn.microsoft.com/oldnewthing/20061108-05/?p=29083
 					pNMLink = (const NMLINK*)pHdr;
-					ret = (int)(INT_PTR)ShellExecute(NULL, _T("open"), pNMLink->item.szUrl, NULL, NULL, SW_SHOW);
+					ret = (INT_PTR)ShellExecute(NULL, _T("open"), pNMLink->item.szUrl, NULL, NULL, SW_SHOW);
 					if (ret <= 32) {
 						// ShellExecute() failed.
 						TCHAR err[128];
 						TCHAR itot_buf[_MAX_ITOSTR_BASE10_COUNT];
-						_itot_s(ret, itot_buf, ARRAY_SIZE(itot_buf), 10);
-						_tcscpy_s(err, ARRAY_SIZE(err),
+						_itot_s((int)ret, itot_buf, _countof(itot_buf), 10);
+						_tcscpy_s(err, _countof(err),
 							_T("Could not open the URL.\n\n")
 							_T("Win32 error code: "));
-						_tcscat_s(err, ARRAY_SIZE(err), itot_buf);
+						_tcscat_s(err, _countof(err), itot_buf);
 						MessageBox(hDlg, err, _T("Could not open URL"), MB_ICONERROR);
 					}
 					return TRUE;
@@ -1007,10 +1007,14 @@ int CALLBACK wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 	typedef BOOL (WINAPI *PFNISWOW64PROCESS)(HANDLE hProcess, PBOOL Wow64Process);
 	PFNISWOW64PROCESS pfnIsWow64Process;
 #endif /* !_WIN64 */
-	((void)hPrevInstance);
 
 	// Set Win32 security options.
-	secoptions_init();
+	rp_secure_param_t param;
+	param.bHighSec = FALSE;
+	rp_secure_enable(param);
+
+	// Unused parameters. (Win16 baggage)
+	((void)hPrevInstance);
 
 	// Check if another instance of svrplus is already running.
 	// References:
@@ -1050,6 +1054,7 @@ int CALLBACK wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 	} else {
 		BOOL bWow;
 		if (!pfnIsWow64Process(GetCurrentProcess(), &bWow)) {
+			CloseHandle(hSingleInstanceMutex);
 			DebugBreak();
 			return EXIT_FAILURE;
 		}

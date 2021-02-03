@@ -2,12 +2,13 @@
  * ROM Properties Page shell extension. (libromdata/tests)                 *
  * CtrKeyScramblerTest.cpp: CtrKeyScrambler class test.                    *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 // Google Test
 #include "gtest/gtest.h"
+#include "tcharx.h"
 
 #include "librpbase/TextFuncs.hpp"
 
@@ -208,7 +209,7 @@ static const uint8_t test_CtrScramble[16] = {
 	0x1B,0xBB,0x85,0x34,0x0E,0x5B,0x70,0xE4
 };
 
-INSTANTIATE_TEST_CASE_P(ctrScrambleTest, CtrKeyScramblerTest,
+INSTANTIATE_TEST_SUITE_P(ctrScrambleTest, CtrKeyScramblerTest,
 	::testing::Values(
 		CtrKeyScramblerTest_mode(test_CtrScramble, test_KeyX, test_KeyY)
 	));
@@ -217,7 +218,7 @@ INSTANTIATE_TEST_CASE_P(ctrScrambleTest, CtrKeyScramblerTest,
 /**
  * Test suite main function.
  */
-extern "C" int gtest_main(int argc, char *argv[])
+extern "C" int gtest_main(int argc, TCHAR *argv[])
 {
 	fprintf(stderr, "LibRomData test suite: CtrKeyScrambler tests.\n\n");
 	fflush(nullptr);

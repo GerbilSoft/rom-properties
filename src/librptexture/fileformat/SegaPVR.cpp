@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * SegaPVR.cpp: Sega PVR texture reader.                                   *
  *                                                                         *
- * Copyright (c) 2017-2019 by David Korth.                                 *
+ * Copyright (c) 2017-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -12,10 +12,9 @@
 
 #include "pvr_structs.h"
 
-// librpbase
-#include "librpbase/bitstuff.h"
-using LibRpBase::IRpFile;
+// librpbase, librpfile
 using LibRpBase::RomFields;
+using LibRpFile::IRpFile;
 
 // librptexture
 #include "img/rp_image.hpp"
@@ -29,7 +28,7 @@ namespace LibRpTexture {
 
 FILEFORMAT_IMPL(SegaPVR)
 
-class SegaPVRPrivate : public FileFormatPrivate
+class SegaPVRPrivate final : public FileFormatPrivate
 {
 	public:
 		SegaPVRPrivate(SegaPVR *q, IRpFile *file);
@@ -40,19 +39,23 @@ class SegaPVRPrivate : public FileFormatPrivate
 		RP_DISABLE_COPY(SegaPVRPrivate)
 
 	public:
-		enum PVRType {
-			PVR_TYPE_UNKNOWN	= -1,	// Unknown image type.
-			PVR_TYPE_PVR		= 0,	// Dreamcast PVR
-			PVR_TYPE_GVR		= 1,	// GameCube GVR
-			PVR_TYPE_SVR		= 2,	// PlayStation 2 SVR
-			PVR_TYPE_PVRX		= 3,	// Xbox PVRX (TODO)
+		enum class PVRType {
+			Unknown = -1,
 
-			PVR_TYPE_MAX
+			PVR	= 0,	// Dreamcast PVR
+			GVR	= 1,	// GameCube GVR
+			SVR	= 2,	// PlayStation 2 SVR
+			PVRX	= 3,	// Xbox PVRX (TODO)
+
+			Max
 		};
+		PVRType pvrType;
 
-		// PVR type.
-		int pvrType;
+		// MIME type table.
+		// Ordering matches PVRType.
+		static const char *const mimeType_tbl[];
 
+	public:
 		// PVR header.
 		PVR_Header pvrHeader;
 
@@ -125,9 +128,22 @@ class SegaPVRPrivate : public FileFormatPrivate
 
 /** SegaPVRPrivate **/
 
+// MIME type table.
+// Ordering matches PVRType.
+const char *const SegaPVRPrivate::mimeType_tbl[] = {
+	// Unofficial MIME types.
+	// TODO: Get these upstreamed on FreeDesktop.org.
+	"image/x-sega-pvr",
+	"image/x-sega-gvr",
+	"image/x-sega-svr",
+	"image/x-sega-pvrx",
+
+	nullptr
+};
+
 SegaPVRPrivate::SegaPVRPrivate(SegaPVR *q, IRpFile *file)
 	: super(q, file)
-	, pvrType(PVR_TYPE_UNKNOWN)
+	, pvrType(PVRType::Unknown)
 	, gbix_len(0)
 	, gbix(0)
 	, img(nullptr)
@@ -139,7 +155,7 @@ SegaPVRPrivate::SegaPVRPrivate(SegaPVR *q, IRpFile *file)
 
 SegaPVRPrivate::~SegaPVRPrivate()
 {
-	delete img;
+	UNREF(img);
 }
 
 #if SYS_BYTEORDER == SYS_BIG_ENDIAN
@@ -193,13 +209,13 @@ const char *SegaPVRPrivate::pixelFormatName(void) const
 		nullptr,
 	};
 
-	static const char *const *const pxfmt_tbl_ptrs[PVR_TYPE_MAX] = {
+	static const char *const *const pxfmt_tbl_ptrs[(int)PVRType::Max] = {
 		pxfmt_tbl_pvr,
 		pxfmt_tbl_gvr,
 		pxfmt_tbl_pvr,	// SVR
 		pxfmt_tbl_pvrx,
 	};
-	static const uint8_t pxfmt_tbl_sizes[PVR_TYPE_MAX] = {
+	static const uint8_t pxfmt_tbl_sizes[(int)PVRType::Max] = {
 		static_cast<uint8_t>(ARRAY_SIZE(pxfmt_tbl_pvr)),
 		static_cast<uint8_t>(ARRAY_SIZE(pxfmt_tbl_gvr)),
 		static_cast<uint8_t>(ARRAY_SIZE(pxfmt_tbl_pvr)),	// SVR
@@ -210,12 +226,12 @@ const char *SegaPVRPrivate::pixelFormatName(void) const
 	uint8_t px_format;
 	switch (pvrType) {
 		default:
-		case PVR_TYPE_PVR:
-		case PVR_TYPE_SVR:
-		case PVR_TYPE_PVRX:	// TODO
+		case PVRType::PVR:
+		case PVRType::SVR:
+		case PVRType::PVRX:	// TODO
 			px_format = pvrHeader.pvr.px_format;
 			break;
-		case PVR_TYPE_GVR:
+		case PVRType::GVR:
 			px_format = pvrHeader.gvr.px_format;
 			break;
 	}
@@ -224,9 +240,9 @@ const char *SegaPVRPrivate::pixelFormatName(void) const
 	// Maybe we should use the image data type instead?
 	// For now, we'll end up returning nullptr here.
 	const char *pxfmt = nullptr;
-	if (pvrType >= 0 && pvrType < PVR_TYPE_MAX) {
-		const char *const *const p_pxfmt_tbl = pxfmt_tbl_ptrs[pvrType];
-		const uint8_t pxfmt_tbl_sz = pxfmt_tbl_sizes[pvrType];
+	if ((int)pvrType >= 0 && pvrType < PVRType::Max) {
+		const char *const *const p_pxfmt_tbl = pxfmt_tbl_ptrs[(int)pvrType];
+		const uint8_t pxfmt_tbl_sz = pxfmt_tbl_sizes[(int)pvrType];
 
 		if (px_format < pxfmt_tbl_sz) {
 			pxfmt = p_pxfmt_tbl[px_format];
@@ -303,13 +319,13 @@ const char *SegaPVRPrivate::imageDataTypeName(void) const
 		nullptr
 	};
 
-	static const char *const *const idt_tbl_ptrs[PVR_TYPE_MAX] = {
+	static const char *const *const idt_tbl_ptrs[(int)PVRType::Max] = {
 		idt_tbl_pvr,
 		idt_tbl_gvr,
 		idt_tbl_svr,
 		idt_tbl_pvrx,
 	};
-	static const uint8_t idt_tbl_sizes[PVR_TYPE_MAX] = {
+	static const uint8_t idt_tbl_sizes[(int)PVRType::Max] = {
 		static_cast<uint8_t>(ARRAY_SIZE(idt_tbl_pvr)),
 		static_cast<uint8_t>(ARRAY_SIZE(idt_tbl_gvr)),
 		static_cast<uint8_t>(ARRAY_SIZE(idt_tbl_svr)),
@@ -321,23 +337,23 @@ const char *SegaPVRPrivate::imageDataTypeName(void) const
 	uint8_t img_data_type;
 	switch (pvrType) {
 		default:
-		case SegaPVRPrivate::PVR_TYPE_PVR:
-		case SegaPVRPrivate::PVR_TYPE_SVR:
-		case SegaPVRPrivate::PVR_TYPE_PVRX:	// TODO
+		case SegaPVRPrivate::PVRType::PVR:
+		case SegaPVRPrivate::PVRType::SVR:
+		case SegaPVRPrivate::PVRType::PVRX:	// TODO
 			img_data_type = pvrHeader.pvr.img_data_type;
 			break;
-		case SegaPVRPrivate::PVR_TYPE_GVR:
+		case SegaPVRPrivate::PVRType::GVR:
 			img_data_type = pvrHeader.gvr.img_data_type;
 			break;
 	}
 
 	// NOTE: For GameCube, this is essentially the pixel format.
 	const char *idt = nullptr;
-	if (pvrType >= 0 && pvrType < SegaPVRPrivate::PVR_TYPE_MAX) {
-		const char *const *const p_idt_tbl = idt_tbl_ptrs[pvrType];
-		const uint8_t idt_tbl_sz = idt_tbl_sizes[pvrType];
+	if ((int)pvrType >= 0 && pvrType < SegaPVRPrivate::PVRType::Max) {
+		const char *const *const p_idt_tbl = idt_tbl_ptrs[(int)pvrType];
+		const uint8_t idt_tbl_sz = idt_tbl_sizes[(int)pvrType];
 
-		if (pvrType == SegaPVRPrivate::PVR_TYPE_SVR) {
+		if (pvrType == SegaPVRPrivate::PVRType::SVR) {
 			// SVR image data type.
 			if (img_data_type >= SVR_IMG_MIN && img_data_type <= SVR_IMG_MAX) {
 				idt = idt_tbl_svr[img_data_type - SVR_IMG_MIN];
@@ -364,7 +380,8 @@ const rp_image *SegaPVRPrivate::loadPvrImage(void)
 		return img;
 	} else if (!file || !file->isOpen()) {
 		// File isn't open.
-	} else if (pvrType != PVR_TYPE_PVR && pvrType != PVR_TYPE_SVR) {
+		return nullptr;
+	} else if (pvrType != PVRType::PVR && pvrType != PVRType::SVR) {
 		// Wrong PVR type for this function.
 		return nullptr;
 	}
@@ -424,12 +441,19 @@ const rp_image *SegaPVRPrivate::loadPvrImage(void)
 					return nullptr;
 			}
 
-			// Get the log2 of the texture width.
-			// FIXME: Make sure it's a power of two.
+			// Make sure this is in fact a square textuer.
 			assert(pvrHeader.width == pvrHeader.height);
-			if (pvrHeader.width != pvrHeader.height)
+			if (pvrHeader.width != pvrHeader.height) {
 				return nullptr;
+			}
 
+			// Make sure the texture width is a power of two.
+			assert(isPow2(pvrHeader.width));
+			if (!isPow2(pvrHeader.width)) {
+				return nullptr;
+			}
+
+			// Get the log2 of the texture width.
 			unsigned int len = uilog2(pvrHeader.width);
 			for (unsigned int size = 1; len > 0; len--, size <<= 1) {
 				mipmap_size += std::max((size*size*bpp)>>3, 1U);
@@ -442,8 +466,8 @@ const rp_image *SegaPVRPrivate::loadPvrImage(void)
 			break;
 	}
 
-	// SVR palette size.
-	size_t svr_pal_buf_sz = 0;
+	// SVR palette buffer.
+	ao::uvector<uint8_t> svr_pal_buf;
 
 	// Determine the image size.
 	switch (pvrHeader.pvr.img_data_type) {
@@ -498,9 +522,8 @@ const rp_image *SegaPVRPrivate::loadPvrImage(void)
 			// Small VQ images have up to 1024 palette entries based on width,
 			// and the image data is 2bpp.
 			// Skip the palette, since that's handled later.
-			const unsigned int pal_siz =
-				ImageDecoder::calcDreamcastSmallVQPaletteEntries_WithMipmaps(pvrHeader.width) * 2;
-			mipmap_size += pal_siz;
+			svr_pal_buf.resize(ImageDecoder::calcDreamcastSmallVQPaletteEntries_WithMipmaps(pvrHeader.width) * 2);
+			mipmap_size += svr_pal_buf.size();
 			expected_size = ((pvrHeader.width * pvrHeader.height) / 4);
 			break;
 		}
@@ -516,16 +539,16 @@ const rp_image *SegaPVRPrivate::loadPvrImage(void)
 			// for the palette format. Use pixel format instead.
 			switch (pvrHeader.pvr.px_format) {
 				case SVR_PX_BGR5A3:
-					svr_pal_buf_sz = 16*2;
+					svr_pal_buf.resize(16*2);
 					break;
 				case SVR_PX_BGR888_ABGR7888:
-					svr_pal_buf_sz = 16*4;
+					svr_pal_buf.resize(16*4);
 					break;
 				default:
 					assert(!"Unsupported pixel format for SVR.");
 					return nullptr;
 			}
-			mipmap_size = svr_pal_buf_sz;
+			mipmap_size = svr_pal_buf.size();
 			expected_size = ((pvrHeader.width * pvrHeader.height) / 2);
 			break;
 		}
@@ -541,16 +564,16 @@ const rp_image *SegaPVRPrivate::loadPvrImage(void)
 			// for the palette format. Use pixel format instead.
 			switch (pvrHeader.pvr.px_format) {
 				case SVR_PX_BGR5A3:
-					svr_pal_buf_sz = 256*2;
+					svr_pal_buf.resize(256*2);
 					break;
 				case SVR_PX_BGR888_ABGR7888:
-					svr_pal_buf_sz = 256*4;
+					svr_pal_buf.resize(256*4);
 					break;
 				default:
 					assert(!"Unsupported pixel format for SVR.");
 					return nullptr;
 			}
-			mipmap_size = svr_pal_buf_sz;
+			mipmap_size = svr_pal_buf.size();
 			expected_size = (pvrHeader.width * pvrHeader.height);
 			break;
 		}
@@ -592,20 +615,20 @@ const rp_image *SegaPVRPrivate::loadPvrImage(void)
 	bool is32bit = false;
 	switch (pvrHeader.pvr.px_format) {
 		case PVR_PX_ARGB1555:
-			px_format = ImageDecoder::PXF_ARGB1555;
+			px_format = ImageDecoder::PixelFormat::ARGB1555;
 			break;
 		case PVR_PX_RGB565:
-			px_format = ImageDecoder::PXF_RGB565;
+			px_format = ImageDecoder::PixelFormat::RGB565;
 			break;
 		case PVR_PX_ARGB4444:
-			px_format = ImageDecoder::PXF_ARGB4444;
+			px_format = ImageDecoder::PixelFormat::ARGB4444;
 			break;
 		case SVR_PX_BGR5A3:
 			// TODO: Verify that this works for SVR.
-			px_format = ImageDecoder::PXF_BGR5A3;
+			px_format = ImageDecoder::PixelFormat::BGR5A3;
 			break;
 		case SVR_PX_BGR888_ABGR7888:
-			px_format = ImageDecoder::PXF_BGR888_ABGR7888;
+			px_format = ImageDecoder::PixelFormat::BGR888_ABGR7888;
 			is32bit = true;
 			break;
 		default:
@@ -643,7 +666,7 @@ const rp_image *SegaPVRPrivate::loadPvrImage(void)
 					// Need to unswizzle the texture.
 					rp_image *const img_unswz = svr_unswizzle_16(img);
 					if (img_unswz) {
-						delete img;
+						img->unref();
 						img = img_unswz;
 					}
 				}
@@ -701,11 +724,8 @@ const rp_image *SegaPVRPrivate::loadPvrImage(void)
 		case PVR_IMG_SMALL_VQ_MIPMAP: {
 			// Small VQ images have up to 1024 palette entries based on width.
 			// This is stored before the mipmaps, so we need to read it manually.
-			const unsigned int pal_siz =
-				ImageDecoder::calcDreamcastSmallVQPaletteEntries_WithMipmaps(pvrHeader.width) * 2;
-			unique_ptr<uint16_t[]> pal_buf(new uint16_t[pal_siz/2]);
-			size = file->seekAndRead(pvrDataStart, pal_buf.get(), pal_siz);
-			if (size != pal_siz) {
+			size = file->seekAndRead(pvrDataStart, svr_pal_buf.data(), svr_pal_buf.size());
+			if (size != svr_pal_buf.size()) {
 				// Read error.
 				break;
 			}
@@ -713,7 +733,8 @@ const rp_image *SegaPVRPrivate::loadPvrImage(void)
 			img = ImageDecoder::fromDreamcastVQ16(px_format,
 				true, true,
 				pvrHeader.width, pvrHeader.height,
-				buf.get(), expected_size, pal_buf.get(), pal_siz);
+				buf.get(), expected_size,
+				reinterpret_cast<const uint16_t*>(svr_pal_buf.data()), svr_pal_buf.size());
 			break;
 		}
 
@@ -721,16 +742,15 @@ const rp_image *SegaPVRPrivate::loadPvrImage(void)
 		case SVR_IMG_INDEX4_BGR5A3_SQUARE:
 		case SVR_IMG_INDEX4_ABGR8_RECTANGLE:
 		case SVR_IMG_INDEX4_ABGR8_SQUARE: {
-			assert(svr_pal_buf_sz != 0);
-			if (svr_pal_buf_sz == 0) {
+			assert(!svr_pal_buf.empty());
+			if (svr_pal_buf.empty()) {
 				// Invalid palette buffer size.
 				return nullptr;
 			}
 
 			// Palette is located immediately after the PVR header.
-			unique_ptr<uint8_t[]> pal_buf(new uint8_t[svr_pal_buf_sz]);
-			size = file->seekAndRead(pvrDataStart, pal_buf.get(), svr_pal_buf_sz);
-			if (size != svr_pal_buf_sz) {
+			size = file->seekAndRead(pvrDataStart, svr_pal_buf.data(), svr_pal_buf.size());
+			if (size != svr_pal_buf.size()) {
 				// Seek and/or read error.
 				return nullptr;
 			}
@@ -743,14 +763,14 @@ const rp_image *SegaPVRPrivate::loadPvrImage(void)
 			img = ImageDecoder::fromLinearCI4(px_format, false,
 				pvrHeader.width, pvrHeader.height,
 				buf.get(), expected_size,
-				pal_buf.get(), svr_pal_buf_sz);
+				svr_pal_buf.data(), svr_pal_buf.size());
 
 			// Puyo Tools: Minimum swizzle size for 4-bit is 128x128.
 			if (pvrHeader.width >= 128 && pvrHeader.height >= 128) {
 				// Need to unswizzle the texture.
 				rp_image *const img_unswz = svr_unswizzle_4or8(img);
 				if (img_unswz) {
-					delete img;
+					img->unref();
 					img = img_unswz;
 				}
 			}
@@ -761,16 +781,15 @@ const rp_image *SegaPVRPrivate::loadPvrImage(void)
 		case SVR_IMG_INDEX8_BGR5A3_SQUARE:
 		case SVR_IMG_INDEX8_ABGR8_RECTANGLE:
 		case SVR_IMG_INDEX8_ABGR8_SQUARE: {
-			assert(svr_pal_buf_sz != 0);
-			if (svr_pal_buf_sz == 0) {
+			assert(!svr_pal_buf.empty());
+			if (svr_pal_buf.empty()) {
 				// Invalid palette buffer size.
 				return nullptr;
 			}
 
 			// Palette is located immediately after the PVR header.
-			unique_ptr<uint8_t[]> pal_buf(new uint8_t[svr_pal_buf_sz]);
-			size = file->seekAndRead(pvrDataStart, pal_buf.get(), svr_pal_buf_sz);
-			if (size != svr_pal_buf_sz) {
+			size = file->seekAndRead(pvrDataStart, svr_pal_buf.data(), svr_pal_buf.size());
+			if (size != svr_pal_buf.size()) {
 				// Seek and/or read error.
 				return nullptr;
 			}
@@ -795,14 +814,14 @@ const rp_image *SegaPVRPrivate::loadPvrImage(void)
 			img = ImageDecoder::fromLinearCI8(px_format,
 				pvrHeader.width, pvrHeader.height,
 				buf.get(), expected_size,
-				pal_buf.get(), svr_pal_buf_sz);
+				svr_pal_buf.data(), svr_pal_buf.size());
 
 			// Puyo Tools: Minimum swizzle size for 8-bit is 128x64.
 			if (pvrHeader.width >= 128 && pvrHeader.height >= 64) {
 				// Need to unswizzle the texture.
 				rp_image *const img_unswz = svr_unswizzle_4or8(img);
 				if (img_unswz) {
-					delete img;
+					img->unref();
 					img = img_unswz;
 				}
 			}
@@ -826,7 +845,7 @@ const rp_image *SegaPVRPrivate::loadGvrImage(void)
 	if (img) {
 		// Image has already been loaded.
 		return img;
-	} else if (!this->file || this->pvrType != PVR_TYPE_GVR) {
+	} else if (!this->file || this->pvrType != PVRType::GVR) {
 		// Can't load the image.
 		return nullptr;
 	}
@@ -912,20 +931,23 @@ const rp_image *SegaPVRPrivate::loadGvrImage(void)
 
 		case GVR_IMG_IA8:
 			// FIXME: Untested.
-			img = ImageDecoder::fromGcn16(ImageDecoder::PXF_IA8,
+			img = ImageDecoder::fromGcn16(
+				ImageDecoder::PixelFormat::IA8,
 				pvrHeader.width, pvrHeader.height,
 				reinterpret_cast<uint16_t*>(buf), expected_size);
 			break;
 
 		case GVR_IMG_RGB565:
 			// FIXME: Untested.
-			img = ImageDecoder::fromGcn16(ImageDecoder::PXF_RGB565,
+			img = ImageDecoder::fromGcn16(
+				ImageDecoder::PixelFormat::RGB565,
 				pvrHeader.width, pvrHeader.height,
 				reinterpret_cast<uint16_t*>(buf), expected_size);
 			break;
 
 		case GVR_IMG_RGB5A3:
-			img = ImageDecoder::fromGcn16(ImageDecoder::PXF_RGB5A3,
+			img = ImageDecoder::fromGcn16(
+				ImageDecoder::PixelFormat::RGB5A3,
 				pvrHeader.width, pvrHeader.height,
 				reinterpret_cast<uint16_t*>(buf), expected_size);
 			break;
@@ -978,9 +1000,9 @@ rp_image *SegaPVRPrivate::svr_unswizzle_4or8(const rp_image *img_swz)
 	// Only CI8 formats are supported here.
 	assert(img_swz != nullptr);
 	assert(img_swz->isValid());
-	assert(img_swz->format() == rp_image::FORMAT_CI8);
+	assert(img_swz->format() == rp_image::Format::CI8);
 	if (!img_swz || !img_swz->isValid() ||
-	    img_swz->format() != rp_image::FORMAT_CI8)
+	    img_swz->format() != rp_image::Format::CI8)
 	{
 		return nullptr;
 	}
@@ -999,7 +1021,7 @@ rp_image *SegaPVRPrivate::svr_unswizzle_4or8(const rp_image *img_swz)
 	rp_image *const img = new rp_image(width, height, img_swz->format());
 	if (!img->isValid()) {
 		// Could not allocate the image.
-		delete img;
+		img->unref();
 		return nullptr;
 	}
 
@@ -1007,7 +1029,7 @@ rp_image *SegaPVRPrivate::svr_unswizzle_4or8(const rp_image *img_swz)
 	assert(img_swz->stride() == width);
 	assert(img->stride() == width);
 	if (img_swz->stride() != width || img->stride() != width) {
-		delete img;
+		img->unref();
 		return nullptr;
 	}
 
@@ -1080,9 +1102,9 @@ rp_image *SegaPVRPrivate::svr_unswizzle_16(const rp_image *img_swz)
 	// Only ARGB32 formats are supported here.
 	assert(img_swz != nullptr);
 	assert(img_swz->isValid());
-	assert(img_swz->format() == rp_image::FORMAT_ARGB32);
+	assert(img_swz->format() == rp_image::Format::ARGB32);
 	if (!img_swz || !img_swz->isValid() ||
-	    img_swz->format() != rp_image::FORMAT_ARGB32)
+	    img_swz->format() != rp_image::Format::ARGB32)
 	{
 		return nullptr;
 	}
@@ -1101,17 +1123,17 @@ rp_image *SegaPVRPrivate::svr_unswizzle_16(const rp_image *img_swz)
 	rp_image *const img = new rp_image(width, height, img_swz->format());
 	if (!img->isValid()) {
 		// Could not allocate the image.
-		delete img;
+		img->unref();
 		return nullptr;
 	}
 
 	// Strides must be equal to the image width.
-	assert(img_swz->stride()/sizeof(uint32_t) == width);
-	assert(img->stride()/sizeof(uint32_t) == width);
-	if (img_swz->stride()/sizeof(uint32_t) != width ||
-	    img->stride()/sizeof(uint32_t) != width)
+	assert(img_swz->stride()/(int)sizeof(uint32_t) == width);
+	assert(img->stride()/(int)sizeof(uint32_t) == width);
+	if (img_swz->stride()/(int)sizeof(uint32_t) != width ||
+	    img->stride()/(int)sizeof(uint32_t) != width)
 	{
-		delete img;
+		img->unref();
 		return nullptr;
 	}
 
@@ -1182,8 +1204,7 @@ SegaPVR::SegaPVR(IRpFile *file)
 	d->file->rewind();
 	size_t sz_header = d->file->read(header, sizeof(header));
 	if (sz_header < 32) {
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
 
@@ -1194,12 +1215,11 @@ SegaPVR::SegaPVR(IRpFile *file)
 	info.header.pData = header;
 	info.ext = nullptr;	// Not needed for PVR.
 	info.szFile = file->size();
-	d->pvrType = isRomSupported_static(&info);
-	d->isValid = (d->pvrType >= 0);
+	d->pvrType = static_cast<SegaPVRPrivate::PVRType>(isRomSupported_static(&info));
+	d->isValid = ((int)d->pvrType >= 0);
 
 	if (!d->isValid) {
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
 
@@ -1215,7 +1235,7 @@ SegaPVR::SegaPVR(IRpFile *file)
 		// GBIX length is *always* in little-endian.
 		d->gbix_len = 8 + le32_to_cpu(gbixHeader->length);
 
-		if (d->pvrType == SegaPVRPrivate::PVR_TYPE_GVR) {
+		if (d->pvrType == SegaPVRPrivate::PVRType::GVR) {
 			// GameCube. GBIX is in big-endian.
 			d->gbix = be32_to_cpu(gbixHeader->index);
 		} else {
@@ -1230,9 +1250,8 @@ SegaPVR::SegaPVR(IRpFile *file)
 		assert(d->gbix_len <= 128);
 		if (d->gbix_len < 4 || d->gbix_len > 128 || (d->gbix_len > (sz_header-8))) {
 			// Invalid GBIX header.
-			d->file->unref();
-			d->file = nullptr;
-			d->pvrType = SegaPVRPrivate::PVR_TYPE_UNKNOWN;
+			UNREF_AND_NULL_NOCHK(d->file);
+			d->pvrType = SegaPVRPrivate::PVRType::Unknown;
 			d->isValid = false;
 			return;
 		}
@@ -1248,14 +1267,14 @@ SegaPVR::SegaPVR(IRpFile *file)
 
 	// Byteswap the fields if necessary.
 	switch (d->pvrType) {
-		case SegaPVRPrivate::PVR_TYPE_PVR:
-		case SegaPVRPrivate::PVR_TYPE_SVR:
-		case SegaPVRPrivate::PVR_TYPE_PVRX:
+		case SegaPVRPrivate::PVRType::PVR:
+		case SegaPVRPrivate::PVRType::SVR:
+		case SegaPVRPrivate::PVRType::PVRX:
 			// Little-endian.
 			d->byteswap_pvr(&d->pvrHeader);
 			break;
 
-		case SegaPVRPrivate::PVR_TYPE_GVR:
+		case SegaPVRPrivate::PVRType::GVR:
 			// Big-endian.
 			d->byteswap_gvr(&d->pvrHeader);
 			break;
@@ -1263,9 +1282,8 @@ SegaPVR::SegaPVR(IRpFile *file)
 		default:
 			// Should not get here...
 			assert(!"Invalid PVR type.");
-			d->file->unref();
-			d->file = nullptr;
-			d->pvrType = SegaPVRPrivate::PVR_TYPE_UNKNOWN;
+			UNREF_AND_NULL_NOCHK(d->file);
+			d->pvrType = SegaPVRPrivate::PVRType::Unknown;
 			d->isValid = false;
 			break;
 	}
@@ -1273,6 +1291,12 @@ SegaPVR::SegaPVR(IRpFile *file)
 	// Cache the dimensions for the FileFormat base class.
 	d->dimensions[0] = d->pvrHeader.width;
 	d->dimensions[1] = d->pvrHeader.height;
+
+	// Set the MIME type.
+	// Set the MIME type.
+	if ((int)d->pvrType < ARRAY_SIZE(d->mimeType_tbl)-1) {
+		d->mimeType = d->mimeType_tbl[(int)d->pvrType];
+	}
 }
 
 /**
@@ -1332,6 +1356,7 @@ int SegaPVR::isRomSupported_static(const DetectInfo *info)
 	}
 
 	// Check the PVR header magic.
+	SegaPVRPrivate::PVRType pvrType;
 	if (pvrHeader->magic == cpu_to_be32(PVR_MAGIC_PVRT)) {
 		// Sega Dreamcast PVR.
 		if ((pvrHeader->pvr.px_format >= SVR_PX_MIN &&
@@ -1340,21 +1365,23 @@ int SegaPVR::isRomSupported_static(const DetectInfo *info)
 		     pvrHeader->pvr.img_data_type <= SVR_IMG_MAX))
 		{
 			// Pixel format and/or image data type is SVR.
-			return SegaPVRPrivate::PVR_TYPE_SVR;
+			pvrType = SegaPVRPrivate::PVRType::SVR;
+		} else {
+			// All other types are PVR.
+			pvrType = SegaPVRPrivate::PVRType::PVR;
 		}
-
-		// All other types are PVR.
-		return SegaPVRPrivate::PVR_TYPE_PVR;
 	} else if (pvrHeader->magic == cpu_to_be32(PVR_MAGIC_GVRT)) {
 		// GameCube GVR.
-		return SegaPVRPrivate::PVR_TYPE_GVR;
+		pvrType = SegaPVRPrivate::PVRType::GVR;
 	} else if (pvrHeader->magic == cpu_to_be32(PVR_MAGIC_PVRX)) {
 		// Xbox PVRX.
-		return SegaPVRPrivate::PVR_TYPE_PVRX;
+		pvrType = SegaPVRPrivate::PVRType::PVRX;
+	} else {
+		// Unknown.
+		pvrType = SegaPVRPrivate::PVRType::Unknown;
 	}
 
-	// Not supported.
-	return -1;
+	return static_cast<int>(pvrType);
 }
 
 /** Class-specific functions that can be used even if isValid() is false. **/
@@ -1396,17 +1423,7 @@ const char *const *SegaPVR::supportedFileExtensions_static(void)
  */
 const char *const *SegaPVR::supportedMimeTypes_static(void)
 {
-	static const char *const mimeTypes[] = {
-		// Unofficial MIME types.
-		// TODO: Get these upstreamed on FreeDesktop.org.
-		"image/x-sega-pvr",
-		"image/x-sega-gvr",
-		"image/x-sega-pvrx",
-		"image/x-sega-svr",
-
-		nullptr
-	};
-	return mimeTypes;
+	return SegaPVRPrivate::mimeType_tbl;
 }
 
 /** Property accessors **/
@@ -1421,14 +1438,14 @@ const char *SegaPVR::textureFormatName(void) const
 	if (!d->isValid)
 		return nullptr;
 
-	static const char *const sysNames[SegaPVRPrivate::PVR_TYPE_MAX] = {
+	static const char *const sysNames[(int)SegaPVRPrivate::PVRType::Max] = {
 		"Sega Dreamcast PVR",
 		"Sega GVR for GameCube",
 		"Sega SVR for PlayStation 2",
 		"Sega PVRX for Xbox",
 	};
 
-	unsigned int idx = d->pvrType;
+	unsigned int idx = static_cast<unsigned int>(d->pvrType);
 	if (idx >= ARRAY_SIZE(sysNames)) {
 		// Invalid index...
 		idx = 0;
@@ -1444,7 +1461,7 @@ const char *SegaPVR::textureFormatName(void) const
 const char *SegaPVR::pixelFormat(void) const
 {
 	RP_D(const SegaPVR);
-	if (!d->isValid || d->pvrType < 0) {
+	if (!d->isValid || (int)d->pvrType < 0) {
 		// Not supported.
 		return nullptr;
 	}
@@ -1470,12 +1487,12 @@ const char *SegaPVR::pixelFormat(void) const
 		uint8_t val;
 		switch (d->pvrType) {
 			default:
-			case SegaPVRPrivate::PVR_TYPE_PVR:
-			case SegaPVRPrivate::PVR_TYPE_SVR:
-			case SegaPVRPrivate::PVR_TYPE_PVRX:	// TODO
+			case SegaPVRPrivate::PVRType::PVR:
+			case SegaPVRPrivate::PVRType::SVR:
+			case SegaPVRPrivate::PVRType::PVRX:	// TODO
 				val = d->pvrHeader.pvr.px_format;
 				break;
-			case SegaPVRPrivate::PVR_TYPE_GVR:
+			case SegaPVRPrivate::PVRType::GVR:
 				val = d->pvrHeader.gvr.img_data_type;
 				break;
 		}
@@ -1518,7 +1535,7 @@ int SegaPVR::getFields(LibRpBase::RomFields *fields) const
 		return 0;
 
 	RP_D(SegaPVR);
-	if (!d->isValid || d->pvrType < 0) {
+	if (!d->isValid || (int)d->pvrType < 0) {
 		// Unknown PVR image type.
 		return -EIO;
 	}
@@ -1527,7 +1544,7 @@ int SegaPVR::getFields(LibRpBase::RomFields *fields) const
 	fields->reserve(initial_count + 2);	// Maximum of 2 fields. (TODO)
 
 	// Image data type (for non-GCN)
-	if (d->pvrType != SegaPVRPrivate::PVR_TYPE_GVR) {
+	if (d->pvrType != SegaPVRPrivate::PVRType::GVR) {
 		// Only if pxfmt is *not* nullptr.
 		const char *pxfmt = d->pixelFormatName();
 		if (pxfmt != nullptr) {
@@ -1541,7 +1558,7 @@ int SegaPVR::getFields(LibRpBase::RomFields *fields) const
 	// Global index (if present)
 	if (d->gbix_len > 0) {
 		fields->addField_string_numeric(C_("SegaPVR", "Global Index"),
-			d->gbix, RomFields::FB_DEC, 0);
+			d->gbix, RomFields::Base::Dec, 0);
 	}
 
 	// Finished reading the field data.
@@ -1585,11 +1602,11 @@ const rp_image *SegaPVR::mipmap(int mip) const
 	// Load the image.
 	const rp_image *img = nullptr;
 	switch (d->pvrType) {
-		case SegaPVRPrivate::PVR_TYPE_PVR:
-		case SegaPVRPrivate::PVR_TYPE_SVR:
+		case SegaPVRPrivate::PVRType::PVR:
+		case SegaPVRPrivate::PVRType::SVR:
 			img = const_cast<SegaPVRPrivate*>(d)->loadPvrImage();
 			break;
-		case SegaPVRPrivate::PVR_TYPE_GVR:
+		case SegaPVRPrivate::PVRType::GVR:
 			img = const_cast<SegaPVRPrivate*>(d)->loadGvrImage();
 			break;
 		default:

@@ -2,15 +2,17 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * EXE.cpp: DOS/Windows executable reader.                                 *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #include "stdafx.h"
 #include "EXE.hpp"
 
-// librpbase
+// librpbase, librpfile
+#include "librpbase/Achievements.hpp"
 using namespace LibRpBase;
+using LibRpFile::IRpFile;
 
 // C++ STL classes.
 using std::string;
@@ -42,7 +44,7 @@ const char *const EXEPrivate::NE_TargetOSes[6] = {
 
 EXEPrivate::EXEPrivate(EXE *q, IRpFile *file)
 	: super(q, file)
-	, exeType(EXE_TYPE_UNKNOWN)
+	, exeType(ExeType::Unknown)
 	, rsrcReader(nullptr)
 	, pe_subsystem(IMAGE_SUBSYSTEM_UNKNOWN)
 {
@@ -53,7 +55,7 @@ EXEPrivate::EXEPrivate(EXE *q, IRpFile *file)
 
 EXEPrivate::~EXEPrivate()
 {
-	delete rsrcReader;
+	UNREF(rsrcReader);
 }
 
 /**
@@ -163,17 +165,24 @@ void EXEPrivate::addFields_VS_VERSION_INFO(const VS_FIXEDFILEINFO *pVsFfi, const
 		NOP_C_("EXE|FileType", "Font"),
 		// tr: VFT_VXD
 		NOP_C_("EXE|FileType", "Virtual Device Driver"),
+		// Type 6 is unknown...
 		nullptr,
 		// tr: VFT_STATIC_LIB
 		NOP_C_("EXE|FileType", "Static Library"),
 	};
 	const char *const fileType_title = C_("EXE", "File Type");
-	if (pVsFfi->dwFileType < ARRAY_SIZE(fileTypes_tbl)) {
+	if (pVsFfi->dwFileType < ARRAY_SIZE(fileTypes_tbl) &&
+	    fileTypes_tbl[pVsFfi->dwFileType] != nullptr)
+	{
 		fields->addField_string(fileType_title,
 			dpgettext_expr(RP_I18N_DOMAIN, "EXE|FileType", fileTypes_tbl[pVsFfi->dwFileType]));
 	} else {
-		fields->addField_string(fileType_title,
-			rp_sprintf(C_("RomData", "Unknown (0x%08X)"), pVsFfi->dwFileType));
+		if (pVsFfi->dwFileType == VFT_UNKNOWN) {
+			fields->addField_string(fileType_title, C_("RomData", "Unknown"));
+		} else {
+			fields->addField_string(fileType_title,
+				rp_sprintf(C_("RomData", "Unknown (0x%08X)"), pVsFfi->dwFileType));
+		}
 	}
 
 	// File subtype.
@@ -279,26 +288,27 @@ void EXEPrivate::addFields_VS_VERSION_INFO(const VS_FIXEDFILEINFO *pVsFfi, const
 	// random due to unordered_map<>.
 	// TODO: Show certain entries as their own fields?
 	const auto &st = pVsSfi->begin()->second;
-	auto vv_data = new vector<vector<string> >(st.size());
+	auto vv_data = new RomFields::ListData_t(st.size());
 	for (size_t i = 0; i < st.size(); i++) {
 		const auto &st_row = st.at(i);
 		auto &data_row = vv_data->at(i);
 		data_row.reserve(2);
-		data_row.push_back(st_row.first);
-		data_row.push_back(st_row.second);
+		data_row.emplace_back(st_row.first);
+		data_row.emplace_back(st_row.second);
 	}
 
 	// Fields.
 	static const char *const field_names[] = {
-		"Key", "Value"
+		NOP_C_("EXE|StringFileInfo", "Key"),
+		NOP_C_("EXE|StringFileInfo", "Value"),
 	};
-	vector<string> *const v_field_names = RomFields::strArrayToVector(
-		field_names, ARRAY_SIZE(field_names));
+	vector<string> *const v_field_names = RomFields::strArrayToVector_i18n(
+		"EXE|StringFileInfo", field_names, ARRAY_SIZE(field_names));
 
 	// Add the StringFileInfo.
 	RomFields::AFLD_PARAMS params;
 	params.headers = v_field_names;
-	params.list_data = vv_data;
+	params.data.single = vv_data;
 	fields->addField_listData("StringFileInfo", &params);
 }
 
@@ -389,7 +399,8 @@ EXE::EXE(IRpFile *file)
 	// d->fileType will be set later.
 	RP_D(EXE);
 	d->className = "EXE";
-	d->fileType = FTYPE_UNKNOWN;
+	d->mimeType = "application/x-ms-dos-executable";	// unofficial (TODO: More types?)
+	d->fileType = FileType::Unknown;
 
 	if (!d->file) {
 		// Could not ref() the file handle.
@@ -399,8 +410,10 @@ EXE::EXE(IRpFile *file)
 	// Read the DOS MZ header.
 	d->file->rewind();
 	size_t size = d->file->read(&d->mz, sizeof(d->mz));
-	if (size != sizeof(d->mz))
+	if (size != sizeof(d->mz)) {
+		UNREF_AND_NULL_NOCHK(d->file);
 		return;
+	}
 
 	// Check if this executable is supported.
 	DetectInfo info;
@@ -413,6 +426,7 @@ EXE::EXE(IRpFile *file)
 
 	if (!d->isValid) {
 		// Not an MZ executable.
+		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
 
@@ -426,9 +440,9 @@ EXE::EXE(IRpFile *file)
 	if (le16_to_cpu(d->mz.e_lfarlc) < 0x40 ||
 	    d->mz.e_magic == cpu_to_be16('ZM')) {
 		// MS-DOS executable.
-		d->exeType = EXEPrivate::EXE_TYPE_MZ;
+		d->exeType = EXEPrivate::ExeType::MZ;
 		// TODO: Check for MS-DOS device drivers?
-		d->fileType = FTYPE_EXECUTABLE;
+		d->fileType = FileType::Executable;
 		return;
 	}
 
@@ -438,7 +452,7 @@ EXE::EXE(IRpFile *file)
 	uint32_t hdr_addr = le32_to_cpu(d->mz.e_lfanew);
 	if (hdr_addr < sizeof(d->mz) || hdr_addr >= (d->file->size() - sizeof(d->hdr))) {
 		// PE header address is out of range.
-		d->exeType = EXEPrivate::EXE_TYPE_MZ;
+		d->exeType = EXEPrivate::ExeType::MZ;
 		return;
 	}
 
@@ -447,13 +461,13 @@ EXE::EXE(IRpFile *file)
 		// Seek and/or read error.
 		// TODO: Check the signature first instead of
 		// depending on the full union being available?
-		d->exeType = EXEPrivate::EXE_TYPE_UNKNOWN;
+		d->exeType = EXEPrivate::ExeType::Unknown;
 		d->isValid = false;
 		return;
 	}
 
 	// Check the signature.
-	// FIXME: MSVC handles 'PE\0\0' as 0x00504500,
+	// NOTE: MSVC handles 'PE\0\0' as 0x00504500,
 	// probably due to the embedded NULL bytes.
 	if (d->hdr.pe.Signature == cpu_to_be32(0x50450000) /*'PE\0\0'*/) {
 		// This is a PE executable.
@@ -461,16 +475,16 @@ EXE::EXE(IRpFile *file)
 		// (.NET is checked in loadFieldData().)
 		switch (le16_to_cpu(d->hdr.pe.OptionalHeader.Magic)) {
 			case IMAGE_NT_OPTIONAL_HDR32_MAGIC:
-				d->exeType = EXEPrivate::EXE_TYPE_PE;
+				d->exeType = EXEPrivate::ExeType::PE;
 				d->pe_subsystem = le16_to_cpu(d->hdr.pe.OptionalHeader.opt32.Subsystem);
 				break;
 			case IMAGE_NT_OPTIONAL_HDR64_MAGIC:
-				d->exeType = EXEPrivate::EXE_TYPE_PE32PLUS;
+				d->exeType = EXEPrivate::ExeType::PE32PLUS;
 				d->pe_subsystem = le16_to_cpu(d->hdr.pe.OptionalHeader.opt64.Subsystem);
 				break;
 			default:
 				// Unsupported PE executable.
-				d->exeType = EXEPrivate::EXE_TYPE_UNKNOWN;
+				d->exeType = EXEPrivate::ExeType::Unknown;
 				d->isValid = false;
 				return;
 		}
@@ -479,30 +493,30 @@ EXE::EXE(IRpFile *file)
 		const uint16_t pe_flags = le16_to_cpu(d->hdr.pe.FileHeader.Characteristics);
 		if (pe_flags & IMAGE_FILE_DLL) {
 			// DLL file.
-			d->fileType = FTYPE_DLL;
+			d->fileType = FileType::DLL;
 		} else {
 			switch (d->pe_subsystem) {
 				case IMAGE_SUBSYSTEM_NATIVE:
 					// TODO: IMAGE_SUBSYSTEM_NATIVE may be either a
 					// device driver or boot-time executable.
 					// Need to check some other flag...
-					d->fileType = FTYPE_EXECUTABLE;
+					d->fileType = FileType::Executable;
 					break;
 				case IMAGE_SUBSYSTEM_EFI_BOOT_SERVICE_DRIVER:
 				case IMAGE_SUBSYSTEM_EFI_RUNTIME_DRIVER:
-					d->fileType = FTYPE_DEVICE_DRIVER;
+					d->fileType = FileType::DeviceDriver;
 					break;
 				case IMAGE_SUBSYSTEM_EFI_ROM:
-					d->fileType = FTYPE_ROM_IMAGE;
+					d->fileType = FileType::ROM_Image;
 					break;
 				default:
-					d->fileType = FTYPE_EXECUTABLE;
+					d->fileType = FileType::Executable;
 					break;
 			}
 		}
 	} else if (d->hdr.ne.sig == cpu_to_be16('NE') /* 'NE' */) {
 		// New Executable.
-		d->exeType = EXEPrivate::EXE_TYPE_NE;
+		d->exeType = EXEPrivate::ExeType::NE;
 
 		// Check if this is a resource library.
 		// (All segment size values are 0.)
@@ -510,54 +524,54 @@ EXE::EXE(IRpFile *file)
 		// FIXME: ULFONT.FON has non-zero values.
 
 		// Check 0x10-0x1F for all 0s.
-		const uint32_t *res0chk = reinterpret_cast<const uint32_t*>(&d->hdr.ne.InitHeapSize);
+		const uint32_t *const res0chk = reinterpret_cast<const uint32_t*>(&d->hdr.ne.InitHeapSize);
 		if (res0chk[0] == 0 && res0chk[1] == 0 &&
 		    res0chk[2] == 0 && res0chk[3] == 0)
 		{
 			// This is a resource library.
 			// May be a font (.FON) or an icon library (.ICL, moricons.dll).
 			// TODO: Check the version resource if it's present?
-			d->fileType = FTYPE_RESOURCE_LIBRARY;
+			d->fileType = FileType::ResourceLibrary;
 			return;
 		}
 
 		// TODO: Distinguish between DLL and driver?
 		if (d->hdr.ne.ApplFlags & NE_DLL) {
-			d->fileType = FTYPE_DLL;
+			d->fileType = FileType::DLL;
 		} else {
-			d->fileType = FTYPE_EXECUTABLE;
+			d->fileType = FileType::Executable;
 		}
 	} else if (d->hdr.le.sig == cpu_to_be16('LE') ||
 		   d->hdr.le.sig == cpu_to_be16('LX'))
 	{
 		// Linear Executable.
 		if (d->hdr.le.sig == cpu_to_be16('LE')) {
-			d->exeType = EXEPrivate::EXE_TYPE_LE;
+			d->exeType = EXEPrivate::ExeType::LE;
 		} else /*if (d->hdr.le.sig == cpu_to_be16('LX'))*/ {
-			d->exeType = EXEPrivate::EXE_TYPE_LX;
+			d->exeType = EXEPrivate::ExeType::LX;
 		}
 
 		// TODO: Check byteorder flags and adjust as necessary.
 		if (d->hdr.le.targOS == cpu_to_le16(NE_OS_WIN386)) {
 			// LE VxD
-			d->fileType = FTYPE_DEVICE_DRIVER;
+			d->fileType = FileType::DeviceDriver;
 		} else if (d->hdr.le.module_type_flags & cpu_to_le32(LE_MODULE_IS_DLL)) {
 			// LE DLL
-			d->fileType = FTYPE_DLL;
+			d->fileType = FileType::DLL;
 		} else {
 			// LE EXE
-			d->fileType = FTYPE_EXECUTABLE;
+			d->fileType = FileType::Executable;
 		}
 	} else if (d->hdr.sig16 == cpu_to_be16('W3') /* 'W3' */) {
 		// W3 executable. (Collection of LE executables.)
 		// Only used by WIN386.EXE.
 		// TODO: Check for W4. (Compressed version of W3 used by Win9x.)
-		d->exeType = EXEPrivate::EXE_TYPE_W3;
-		d->fileType = FTYPE_EXECUTABLE;
+		d->exeType = EXEPrivate::ExeType::W3;
+		d->fileType = FileType::Executable;
 	} else {
 		// Unrecognized secondary header.
-		d->exeType = EXEPrivate::EXE_TYPE_MZ;
-		d->fileType = FTYPE_EXECUTABLE;
+		d->exeType = EXEPrivate::ExeType::MZ;
+		d->fileType = FileType::Executable;
 		return;
 	}
 }
@@ -580,7 +594,7 @@ int EXE::isRomSupported_static(const DetectInfo *info)
 	{
 		// Either no detection information was specified,
 		// or the header is too small.
-		return -1;
+		return static_cast<int>(EXEPrivate::ExeType::Unknown);
 	}
 
 	const IMAGE_DOS_HEADER *const pMZ =
@@ -593,11 +607,11 @@ int EXE::isRomSupported_static(const DetectInfo *info)
 	if (pMZ->e_magic == 'ZM' || pMZ->e_magic == 'MZ') {
 		// This is a DOS "MZ" executable.
 		// Specific subtypes are checked later.
-		return EXEPrivate::EXE_TYPE_MZ;
+		return static_cast<int>(EXEPrivate::ExeType::MZ);
 	}
 
 	// Not supported.
-	return -1;
+	return static_cast<int>(EXEPrivate::ExeType::Unknown);
 }
 
 /**
@@ -638,7 +652,7 @@ const char *EXE::systemName(unsigned int type) const
 	};
 
 	switch (d->exeType) {
-		case EXEPrivate::EXE_TYPE_MZ: {
+		case EXEPrivate::ExeType::MZ: {
 			// DOS executable.
 			static const char *const sysNames_DOS[4] = {
 				"Microsoft MS-DOS", "MS-DOS", "DOS", nullptr
@@ -646,7 +660,7 @@ const char *EXE::systemName(unsigned int type) const
 			return sysNames_DOS[type & SYSNAME_TYPE_MASK];
 		}
 
-		case EXEPrivate::EXE_TYPE_NE: {
+		case EXEPrivate::ExeType::NE: {
 			// New Executable.
 			if (d->hdr.ne.targOS > NE_OS_BOSS) {
 				// Check for Phar Lap 286 extenders.
@@ -667,8 +681,8 @@ const char *EXE::systemName(unsigned int type) const
 			return sysNames_NE[d->hdr.ne.targOS][type & SYSNAME_TYPE_MASK];
 		}
 
-		case EXEPrivate::EXE_TYPE_LE:
-		case EXEPrivate::EXE_TYPE_LX: {
+		case EXEPrivate::ExeType::LE:
+		case EXEPrivate::ExeType::LX: {
 			// Linear Executable.
 			// TODO: Some DOS extenders have the target OS set to OS/2.
 			// Check 'file' msdos magic.
@@ -680,14 +694,14 @@ const char *EXE::systemName(unsigned int type) const
 			return nullptr;
 		}
 
-		case EXEPrivate::EXE_TYPE_W3: {
+		case EXEPrivate::ExeType::W3: {
 			// W3 executable. (Collection of LE executables.)
 			// Only used by WIN386.EXE.
 			return sysNames_Windows[type & SYSNAME_TYPE_MASK];
 		}
 
-		case EXEPrivate::EXE_TYPE_PE:
-		case EXEPrivate::EXE_TYPE_PE32PLUS: {
+		case EXEPrivate::ExeType::PE:
+		case EXEPrivate::ExeType::PE32PLUS: {
 			// Portable Executable.
 			// TODO: Also used by older SkyOS and BeOS, and HX for DOS.
 			switch (d->pe_subsystem) {
@@ -813,7 +827,7 @@ int EXE::loadFieldData(void)
 	} else if (!d->file || !d->file->isOpen()) {
 		// File isn't open.
 		return -EBADF;
-	} else if (!d->isValid || d->exeType < 0) {
+	} else if (!d->isValid || (int)d->exeType < 0) {
 		// Unknown ROM image type.
 		return -EIO;
 	}
@@ -827,38 +841,38 @@ int EXE::loadFieldData(void)
 
 	// Executable type.
 	// NOTE: Not translatable.
-	static const char *const exeTypes[EXEPrivate::EXE_TYPE_LAST] = {
-		"MS-DOS Executable",		// EXE_TYPE_MZ
-		"16-bit New Executable",	// EXE_TYPE_NE
-		"Mixed-Mode Linear Executable",	// EXE_TYPE_LE
-		"Windows/386 Kernel",		// EXE_TYPE_W3
-		"32-bit Linear Executable",	// EXE_TYPE_LX
-		"32-bit Portable Executable",	// EXE_TYPE_PE
-		"64-bit Portable Executable",	// EXE_TYPE_PE32PLUS
+	static const char *const exeTypes[(int)EXEPrivate::ExeType::Max] = {
+		"MS-DOS Executable",		// ExeType::MZ
+		"16-bit New Executable",	// ExeType::NE
+		"Mixed-Mode Linear Executable",	// ExeType::LE
+		"Windows/386 Kernel",		// ExeType::W3
+		"32-bit Linear Executable",	// ExeType::LX
+		"32-bit Portable Executable",	// ExeType::PE
+		"64-bit Portable Executable",	// ExeType::PE32PLUS
 	};
 	const char *const type_title = C_("EXE", "Type");
-	if (d->exeType >= EXEPrivate::EXE_TYPE_MZ && d->exeType < EXEPrivate::EXE_TYPE_LAST) {
-		d->fields->addField_string(type_title, exeTypes[d->exeType]);
+	if (d->exeType >= EXEPrivate::ExeType::MZ && d->exeType < EXEPrivate::ExeType::Max) {
+		d->fields->addField_string(type_title, exeTypes[(int)d->exeType]);
 	} else {
 		d->fields->addField_string(type_title, C_("EXE", "Unknown"));
 	}
 
 	switch (d->exeType) {
-		case EXEPrivate::EXE_TYPE_MZ:
+		case EXEPrivate::ExeType::MZ:
 			d->addFields_MZ();
 			break;
 
-		case EXEPrivate::EXE_TYPE_NE:
+		case EXEPrivate::ExeType::NE:
 			d->addFields_NE();
 			break;
 
-		case EXEPrivate::EXE_TYPE_LE:
-		case EXEPrivate::EXE_TYPE_LX:
+		case EXEPrivate::ExeType::LE:
+		case EXEPrivate::ExeType::LX:
 			d->addFields_LE();
 			break;
 
-		case EXEPrivate::EXE_TYPE_PE:
-		case EXEPrivate::EXE_TYPE_PE32PLUS:
+		case EXEPrivate::ExeType::PE:
+		case EXEPrivate::ExeType::PE32PLUS:
 			d->addFields_PE();
 			break;
 
@@ -868,7 +882,7 @@ int EXE::loadFieldData(void)
 	}
 
 	// Add MZ tab for non-MZ executables
-	if (d->exeType != EXEPrivate::EXE_TYPE_MZ) {
+	if (d->exeType != EXEPrivate::ExeType::MZ) {
 		// NOTE: This doesn't actually create a separate tab for non-implemented types.
 		d->fields->addTab("MZ");
 		d->addFields_MZ();
@@ -876,6 +890,91 @@ int EXE::loadFieldData(void)
 
 	// Finished reading the field data.
 	return static_cast<int>(d->fields->count());
+}
+
+/**
+ * Does this ROM image have "dangerous" permissions?
+ *
+ * @return True if the ROM image has "dangerous" permissions; false if not.
+ */
+bool EXE::hasDangerousPermissions(void) const
+{
+	RP_D(const EXE);
+
+#ifdef ENABLE_XML
+	// PE executables only.
+	if (d->exeType != EXEPrivate::ExeType::PE &&
+	    d->exeType != EXEPrivate::ExeType::PE32PLUS)
+	{
+		// Not a PE executable.
+		return false;
+	}
+
+	// Check the Windows manifest for requestedExecutionLevel == requireAdministrator.
+	return d->doesExeRequireAdministrator();
+#else /* !ENABLE_XML */
+	// Nothing to check here, since TinyXML2 is disabled...
+	return false;
+#endif /* ENABLE_XML */
+}
+
+/**
+ * Check for "viewed" achievements.
+ *
+ * @return Number of achievements unlocked.
+ */
+int EXE::checkViewedAchievements(void) const
+{
+	RP_D(const EXE);
+	if (!d->isValid) {
+		// EXE is not valid.
+		return 0;
+	}
+
+	// Checking for PE and PE32+ only, and only for
+	// Windows GUI and console programs.
+	switch (d->exeType) {
+		case EXEPrivate::ExeType::PE:
+			// Check for .NET.
+			if (d->hdr.pe.OptionalHeader.opt32.DataDirectory[IMAGE_DATA_DIRECTORY_CLR_HEADER].Size != 0) {
+				// It's .NET. Ignore this.
+				return 0;
+			}
+			break;
+		case EXEPrivate::ExeType::PE32PLUS:
+			if (d->hdr.pe.OptionalHeader.opt64.DataDirectory[IMAGE_DATA_DIRECTORY_CLR_HEADER].Size != 0) {
+				// It's .NET. Ignore this.
+				return 0;
+			}
+			break;
+		default:
+			return 0;
+	}
+
+	switch (d->pe_subsystem) {
+		case IMAGE_SUBSYSTEM_WINDOWS_GUI:
+		case IMAGE_SUBSYSTEM_WINDOWS_CUI:
+			break;
+		default:
+			return 0;
+	}
+
+	// Machine type should NOT be x86, amd64, CIL (.NET),
+	// or big-endian PPC (Xbox 360).
+	switch (le16_to_cpu(d->hdr.pe.FileHeader.Machine)) {
+		case IMAGE_FILE_MACHINE_I386:
+		case IMAGE_FILE_MACHINE_AMD64:
+		case IMAGE_FILE_MACHINE_CEE:
+		case IMAGE_FILE_MACHINE_POWERPCBE:
+			return 0;
+		default:
+			break;
+	}
+
+	// Achievement unlocked!
+	Achievements *const pAch = Achievements::instance();
+	pAch->unlock(Achievements::ID::ViewedNonX86PE);
+	return 1;
 }
 
 }

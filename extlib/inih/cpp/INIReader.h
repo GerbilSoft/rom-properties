@@ -2,15 +2,15 @@
 
 // SPDX-License-Identifier: BSD-3-Clause
 
-// Copyright (C) 2009-2019, Ben Hoyt
+// Copyright (C) 2009-2020, Ben Hoyt
 
 // inih and INIReader are released under the New BSD license (see LICENSE.txt).
 // Go to the project home page for more info:
 //
 // https://github.com/benhoyt/inih
 
-#ifndef __INIREADER_H__
-#define __INIREADER_H__
+#ifndef INIREADER_H
+#define INIREADER_H
 
 #include <map>
 #include <string>
@@ -70,4 +70,4 @@ private:
                             const char* value);
 };
 
-#endif  // __INIREADER_H__
+#endif  // INIREADER_H

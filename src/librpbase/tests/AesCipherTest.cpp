@@ -2,16 +2,22 @@
  * ROM Properties Page shell extension. (librpbase/tests)                  *
  * AesCipherTest.cpp: AesCipher class test.                                *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 // Google Test
 #include "gtest/gtest.h"
+#include "tcharx.h"
 
 // AesCipher
-#include "../crypto/AesCipherFactory.hpp"
 #include "../crypto/IAesCipher.hpp"
+#ifdef _WIN32
+# include "../crypto/AesCAPI.hpp"
+# include "../crypto/AesCAPI_NG.hpp"
+#else /* !_WIN32 */
+# include "../crypto/AesNettle.hpp"
+#endif /* _WIN32 */
 
 // C includes. (C++ namespace)
 #include <cstdio>
@@ -27,21 +33,31 @@ using std::vector;
 
 namespace LibRpBase { namespace Tests {
 
+typedef IAesCipher* (*PFNCREATEIAESCIPHER)(void);
+
 struct AesCipherTest_mode
 {
+	// Cipher class.
+	PFNCREATEIAESCIPHER pfnCreateIAesCipher;
+	bool isRequired;	// True if this test is required to pass.
+
 	// Cipher settings.
 	IAesCipher::ChainingMode chainingMode;
 	size_t key_len;
 
 	// Cipher text.
 	const uint8_t *cipherText;	// Cipher text.
-	size_t cipherText_len;	// Cipher text length, in bytes.
+	size_t cipherText_len;		// Cipher text length, in bytes.
 
 	AesCipherTest_mode(
+		PFNCREATEIAESCIPHER pfnCreateIAesCipher,
+		bool isRequired,
 		IAesCipher::ChainingMode chainingMode,
 		size_t key_len,
 		const uint8_t *cipherText, size_t cipherText_len)
-		: chainingMode(chainingMode)
+		: pfnCreateIAesCipher(pfnCreateIAesCipher)
+		, isRequired(isRequired)
+		, chainingMode(chainingMode)
 		, key_len(key_len)
 		, cipherText(cipherText), cipherText_len(cipherText_len)
 	{ }
@@ -54,13 +70,13 @@ inline ::std::ostream& operator<<(::std::ostream& os, const AesCipherTest_mode& 
 {
 	const char *cm_str;
 	switch (mode.chainingMode) {
-		case IAesCipher::CM_ECB:
+		case IAesCipher::ChainingMode::ECB:
 			cm_str = "ECB";
 			break;
-		case IAesCipher::CM_CBC:
+		case IAesCipher::ChainingMode::CBC:
 			cm_str = "CBC";
 			break;
-		case IAesCipher::CM_CTR:
+		case IAesCipher::ChainingMode::CTR:
 			cm_str = "CTR";
 			break;
 		default:
@@ -206,17 +222,25 @@ void AesCipherTest::CompareByteArrays(
  */
 void AesCipherTest::SetUp(void)
 {
-	m_cipher = AesCipherFactory::create();
+	const AesCipherTest_mode &mode = GetParam();
+	m_cipher = mode.pfnCreateIAesCipher();
 	ASSERT_TRUE(m_cipher != nullptr);
-	ASSERT_TRUE(m_cipher->isInit());
 
-	static bool printed_impl = false;
-	if (!printed_impl) {
+	static PFNCREATEIAESCIPHER pfnLastCreateIAesCipher = nullptr;
+	if (pfnLastCreateIAesCipher != mode.pfnCreateIAesCipher) {
 		// Print the AesCipher implementation name.
 		const char *name = m_cipher->name();
 		ASSERT_TRUE(name != nullptr);
 		printf("AesCipher implementation: %s\n", name);
-		printed_impl = true;
+		pfnLastCreateIAesCipher = mode.pfnCreateIAesCipher;
+
+		if (!mode.isRequired && !m_cipher->isInit()) {
+			printf("This implementation is not supported on this system; skipping tests.\n");
+		}
+	}
+
+	if (mode.isRequired) {
+		ASSERT_TRUE(m_cipher->isInit());
 	}
 }
 
@@ -232,26 +256,32 @@ void AesCipherTest::TearDown(void)
 
 /**
  * Run an AesCipher decryption test.
+ * setIV() is called first, then the data is decrypted.
+ *
  * This version sets the key before the chaining mode.
  */
-TEST_P(AesCipherTest, decryptTest_keyThenChaining)
+TEST_P(AesCipherTest, decryptTest_setIV_keyThenChaining)
 {
 	const AesCipherTest_mode &mode = GetParam();
 	ASSERT_TRUE(mode.key_len == 16 || mode.key_len == 24 || mode.key_len == 32);
+
+	if (!mode.isRequired && !m_cipher->isInit()) {
+		return;
+	}
 
 	// Set the cipher settings.
 	EXPECT_EQ(0, m_cipher->setKey(aes_key, mode.key_len));
 	EXPECT_EQ(0, m_cipher->setChainingMode(mode.chainingMode));
 
 	switch (mode.chainingMode) {
-		case IAesCipher::CM_CBC:
-		case IAesCipher::CM_CTR:
+		case IAesCipher::ChainingMode::CBC:
+		case IAesCipher::ChainingMode::CTR:
 			// CBC requires an initialization vector.
 			// CTR requires an initial counter value.
 			EXPECT_EQ(0, m_cipher->setIV(aes_iv, sizeof(aes_iv)));
 			break;
 
-		case IAesCipher::CM_ECB:
+		case IAesCipher::ChainingMode::ECB:
 		default:
 			// ECB doesn't use an initialization vector.
 			// setIV() should fail.
@@ -260,8 +290,7 @@ TEST_P(AesCipherTest, decryptTest_keyThenChaining)
 	}
 
 	// Decrypt the data.
-	vector<uint8_t> buf(mode.cipherText_len);
-	memcpy(buf.data(), mode.cipherText, mode.cipherText_len);
+	vector<uint8_t> buf(mode.cipherText, mode.cipherText + mode.cipherText_len);
 	EXPECT_EQ(buf.size(), m_cipher->decrypt(buf.data(), buf.size()));
 
 	// Compare the buffer to the known plaintext.
@@ -271,26 +300,32 @@ TEST_P(AesCipherTest, decryptTest_keyThenChaining)
 
 /**
  * Run an AesCipher decryption test.
+ * setIV() is called first, then the data is decrypted.
+ *
  * This version sets the chaining mode before the key.
  */
-TEST_P(AesCipherTest, decryptTest_chainingThenKey)
+TEST_P(AesCipherTest, decryptTest_setIV_chainingThenKey)
 {
 	const AesCipherTest_mode &mode = GetParam();
 	ASSERT_TRUE(mode.key_len == 16 || mode.key_len == 24 || mode.key_len == 32);
+
+	if (!mode.isRequired && !m_cipher->isInit()) {
+		return;
+	}
 
 	// Set the cipher settings.
 	EXPECT_EQ(0, m_cipher->setChainingMode(mode.chainingMode));
 	EXPECT_EQ(0, m_cipher->setKey(aes_key, mode.key_len));
 
 	switch (mode.chainingMode) {
-		case IAesCipher::CM_CBC:
-		case IAesCipher::CM_CTR:
+		case IAesCipher::ChainingMode::CBC:
+		case IAesCipher::ChainingMode::CTR:
 			// CBC requires an initialization vector.
 			// CTR requires an initial counter value.
 			EXPECT_EQ(0, m_cipher->setIV(aes_iv, sizeof(aes_iv)));
 			break;
 
-		case IAesCipher::CM_ECB:
+		case IAesCipher::ChainingMode::ECB:
 		default:
 			// ECB doesn't use an initialization vector.
 			// setIV() should fail.
@@ -299,9 +334,181 @@ TEST_P(AesCipherTest, decryptTest_chainingThenKey)
 	}
 
 	// Decrypt the data.
-	vector<uint8_t> buf(mode.cipherText_len);
-	memcpy(buf.data(), mode.cipherText, mode.cipherText_len);
+	vector<uint8_t> buf(mode.cipherText, mode.cipherText + mode.cipherText_len);
 	EXPECT_EQ(buf.size(), m_cipher->decrypt(buf.data(), buf.size()));
+
+	// Compare the buffer to the known plaintext.
+	CompareByteArrays(reinterpret_cast<const uint8_t*>(test_string),
+		buf.data(), buf.size(), "plaintext data");
+}
+
+/**
+ * Run an AesCipher decryption test.
+ * setIV() is called first, then the data is decrypted.
+ *
+ * This version is similar to chainingThenKey, but it decrypts
+ * one 16-byte block at a time in order to test IV chaining
+ * when using CBC and CTR.
+ */
+TEST_P(AesCipherTest, decryptTest_setIV_blockAtATime)
+{
+	const AesCipherTest_mode &mode = GetParam();
+	ASSERT_TRUE(mode.key_len == 16 || mode.key_len == 24 || mode.key_len == 32);
+
+	if (!mode.isRequired && !m_cipher->isInit()) {
+		return;
+	}
+
+	// Set the cipher settings.
+	EXPECT_EQ(0, m_cipher->setChainingMode(mode.chainingMode));
+	EXPECT_EQ(0, m_cipher->setKey(aes_key, mode.key_len));
+
+	switch (mode.chainingMode) {
+		case IAesCipher::ChainingMode::CBC:
+		case IAesCipher::ChainingMode::CTR:
+			// CBC requires an initialization vector.
+			// CTR requires an initial counter value.
+			EXPECT_EQ(0, m_cipher->setIV(aes_iv, sizeof(aes_iv)));
+			break;
+
+		case IAesCipher::ChainingMode::ECB:
+		default:
+			// ECB doesn't use an initialization vector.
+			// setIV() should fail.
+			EXPECT_NE(0, m_cipher->setIV(aes_iv, sizeof(aes_iv)));
+			break;
+	}
+
+	// Decrypt one 16-byte block at a time.
+	vector<uint8_t> buf(mode.cipherText, mode.cipherText + mode.cipherText_len);
+	for (size_t i = 0; i < buf.size(); i += 16U) {
+		EXPECT_EQ(16U, m_cipher->decrypt(&buf[i], 16U));
+	}
+
+	// Compare the buffer to the known plaintext.
+	CompareByteArrays(reinterpret_cast<const uint8_t*>(test_string),
+		buf.data(), buf.size(), "plaintext data");
+}
+
+/**
+ * Run an AesCipher decryption test.
+ * The four-parameter decrypt() function is used first,
+ * which sets the IV. (ECB is not tested here.)
+ *
+ * This version sets the key before the chaining mode.
+ */
+TEST_P(AesCipherTest, decryptTest_fourParam_keyThenChaining)
+{
+	const AesCipherTest_mode &mode = GetParam();
+	ASSERT_TRUE(mode.key_len == 16 || mode.key_len == 24 || mode.key_len == 32);
+
+	if (!mode.isRequired && !m_cipher->isInit()) {
+		return;
+	}
+
+	// Set the cipher settings.
+	EXPECT_EQ(0, m_cipher->setKey(aes_key, mode.key_len));
+	EXPECT_EQ(0, m_cipher->setChainingMode(mode.chainingMode));
+
+	switch (mode.chainingMode) {
+		case IAesCipher::ChainingMode::CBC:
+		case IAesCipher::ChainingMode::CTR:
+			break;
+
+		case IAesCipher::ChainingMode::ECB:
+		default:
+			// Not supported here.
+			return;
+	}
+
+	// Decrypt the data.
+	vector<uint8_t> buf(mode.cipherText, mode.cipherText + mode.cipherText_len);
+	EXPECT_EQ(buf.size(), m_cipher->decrypt(buf.data(), buf.size(), aes_iv, sizeof(aes_iv)));
+
+	// Compare the buffer to the known plaintext.
+	CompareByteArrays(reinterpret_cast<const uint8_t*>(test_string),
+		buf.data(), buf.size(), "plaintext data");
+}
+
+/**
+ * Run an AesCipher decryption test.
+ * The four-parameter decrypt() function is used first,
+ * which sets the IV. (ECB is not tested here.)
+ *
+ * This version sets the chaining mode before the key.
+ */
+TEST_P(AesCipherTest, decryptTest_fourParam_chainingThenKey)
+{
+	const AesCipherTest_mode &mode = GetParam();
+	ASSERT_TRUE(mode.key_len == 16 || mode.key_len == 24 || mode.key_len == 32);
+
+	if (!mode.isRequired && !m_cipher->isInit()) {
+		return;
+	}
+
+	// Set the cipher settings.
+	EXPECT_EQ(0, m_cipher->setChainingMode(mode.chainingMode));
+	EXPECT_EQ(0, m_cipher->setKey(aes_key, mode.key_len));
+
+	switch (mode.chainingMode) {
+		case IAesCipher::ChainingMode::CBC:
+		case IAesCipher::ChainingMode::CTR:
+			break;
+
+		case IAesCipher::ChainingMode::ECB:
+		default:
+			// Not supported here.
+			return;
+	}
+
+	// Decrypt the data.
+	vector<uint8_t> buf(mode.cipherText, mode.cipherText + mode.cipherText_len);
+	EXPECT_EQ(buf.size(), m_cipher->decrypt(buf.data(), buf.size(), aes_iv, sizeof(aes_iv)));
+
+	// Compare the buffer to the known plaintext.
+	CompareByteArrays(reinterpret_cast<const uint8_t*>(test_string),
+		buf.data(), buf.size(), "plaintext data");
+}
+
+/**
+ * Run an AesCipher decryption test.
+ * The four-parameter decrypt() function is used first,
+ * which sets the IV. (ECB is not tested here.)
+ *
+ * This version is similar to chainingThenKey, but it decrypts
+ * one 16-byte block at a time in order to test IV chaining
+ * when using CBC and CTR.
+ */
+TEST_P(AesCipherTest, decryptTest_fourParam_blockAtATime)
+{
+	const AesCipherTest_mode &mode = GetParam();
+	ASSERT_TRUE(mode.key_len == 16 || mode.key_len == 24 || mode.key_len == 32);
+
+	if (!mode.isRequired && !m_cipher->isInit()) {
+		return;
+	}
+
+	// Set the cipher settings.
+	EXPECT_EQ(0, m_cipher->setChainingMode(mode.chainingMode));
+	EXPECT_EQ(0, m_cipher->setKey(aes_key, mode.key_len));
+
+	switch (mode.chainingMode) {
+		case IAesCipher::ChainingMode::CBC:
+		case IAesCipher::ChainingMode::CTR:
+			break;
+
+		case IAesCipher::ChainingMode::ECB:
+		default:
+			// Not supported here.
+			return;
+	}
+
+	// Decrypt one 16-byte block at a time.
+	vector<uint8_t> buf(mode.cipherText, mode.cipherText + mode.cipherText_len);
+	EXPECT_EQ(16U, m_cipher->decrypt(&buf[0], 16, aes_iv, sizeof(aes_iv)));
+	for (size_t i = 16U; i < buf.size(); i += 16U) {
+		EXPECT_EQ(16U, m_cipher->decrypt(&buf[i], 16U));
+	}
 
 	// Compare the buffer to the known plaintext.
 	CompareByteArrays(reinterpret_cast<const uint8_t*>(test_string),
@@ -324,13 +531,13 @@ string AesCipherTest::test_case_suffix_generator(const ::testing::TestParamInfo<
 
 	const char *cm_str;
 	switch (info.param.chainingMode) {
-		case IAesCipher::CM_ECB:
+		case IAesCipher::ChainingMode::ECB:
 			cm_str = "ECB";
 			break;
-		case IAesCipher::CM_CBC:
+		case IAesCipher::ChainingMode::CBC:
 			cm_str = "CBC";
 			break;
-		case IAesCipher::CM_CTR:
+		case IAesCipher::ChainingMode::CTR:
 			cm_str = "CTR";
 			break;
 		default:
@@ -442,48 +649,69 @@ static const uint8_t aes256ctr_ciphertext[64] = {
 	0xBA,0x23,0xD4,0x70,0x25,0x74,0xDB,0x8F
 };
 
-INSTANTIATE_TEST_CASE_P(AesDecryptTest, AesCipherTest,
-	::testing::Values(
-		AesCipherTest_mode(IAesCipher::CM_ECB, 16,
-			aes128ecb_ciphertext,
-			sizeof(aes128ecb_ciphertext)),
-		AesCipherTest_mode(IAesCipher::CM_ECB, 24,
-			aes192ecb_ciphertext,
-			sizeof(aes192ecb_ciphertext)),
-		AesCipherTest_mode(IAesCipher::CM_ECB, 32,
-			aes256ecb_ciphertext,
-			sizeof(aes256ecb_ciphertext)),
-
-		AesCipherTest_mode(IAesCipher::CM_CBC, 16,
-			aes128cbc_ciphertext,
-			sizeof(aes128cbc_ciphertext)),
-		AesCipherTest_mode(IAesCipher::CM_CBC, 24,
-			aes192cbc_ciphertext,
-			sizeof(aes192cbc_ciphertext)),
-		AesCipherTest_mode(IAesCipher::CM_CBC, 32,
-			aes256cbc_ciphertext,
-			sizeof(aes256cbc_ciphertext)),
-
-		AesCipherTest_mode(IAesCipher::CM_CTR, 16,
-			aes128ctr_ciphertext,
-			sizeof(aes128ctr_ciphertext)),
-		AesCipherTest_mode(IAesCipher::CM_CTR, 24,
-			aes192ctr_ciphertext,
-			sizeof(aes192ctr_ciphertext)),
-		AesCipherTest_mode(IAesCipher::CM_CTR, 32,
-			aes256ctr_ciphertext,
-			sizeof(aes256ctr_ciphertext))
-		)
-
+#define AesDecryptTestSet(klass, isRequired) \
+static IAesCipher *createIAesCipher_##klass(void) { \
+	return new Aes##klass(); \
+} \
+INSTANTIATE_TEST_SUITE_P(AesDecryptTest_##klass, AesCipherTest, \
+	::testing::Values( \
+		AesCipherTest_mode(createIAesCipher_##klass, (isRequired), \
+			IAesCipher::ChainingMode::ECB, 16, \
+			aes128ecb_ciphertext, \
+			sizeof(aes128ecb_ciphertext)), \
+		AesCipherTest_mode(createIAesCipher_##klass, (isRequired), \
+			IAesCipher::ChainingMode::ECB, 24, \
+			aes192ecb_ciphertext, \
+			sizeof(aes192ecb_ciphertext)), \
+		AesCipherTest_mode(createIAesCipher_##klass, (isRequired), \
+			IAesCipher::ChainingMode::ECB, 32, \
+			aes256ecb_ciphertext, \
+			sizeof(aes256ecb_ciphertext)), \
+		\
+		AesCipherTest_mode(createIAesCipher_##klass, (isRequired), \
+			IAesCipher::ChainingMode::CBC, 16, \
+			aes128cbc_ciphertext, \
+			sizeof(aes128cbc_ciphertext)), \
+		AesCipherTest_mode(createIAesCipher_##klass, (isRequired), \
+			IAesCipher::ChainingMode::CBC, 24, \
+			aes192cbc_ciphertext, \
+			sizeof(aes192cbc_ciphertext)), \
+		AesCipherTest_mode(createIAesCipher_##klass, (isRequired), \
+			IAesCipher::ChainingMode::CBC, 32, \
+			aes256cbc_ciphertext, \
+			sizeof(aes256cbc_ciphertext)), \
+		\
+		AesCipherTest_mode(createIAesCipher_##klass, (isRequired), \
+			IAesCipher::ChainingMode::CTR, 16, \
+			aes128ctr_ciphertext, \
+			sizeof(aes128ctr_ciphertext)), \
+		AesCipherTest_mode(createIAesCipher_##klass, (isRequired), \
+			IAesCipher::ChainingMode::CTR, 24, \
+			aes192ctr_ciphertext, \
+			sizeof(aes192ctr_ciphertext)), \
+		AesCipherTest_mode(createIAesCipher_##klass, (isRequired), \
+			IAesCipher::ChainingMode::CTR, 32, \
+			aes256ctr_ciphertext, \
+			sizeof(aes256ctr_ciphertext)) \
+		) \
+	\
 	, AesCipherTest::test_case_suffix_generator);
+
+#ifdef _WIN32
+AesDecryptTestSet(CAPI, true)
+AesDecryptTestSet(CAPI_NG, false)
+#else /* !_WIN32 */
+AesDecryptTestSet(Nettle, true)
+#endif /* _WIN32 */
+
 } }
 
 /**
  * Test suite main function.
  */
-extern "C" int gtest_main(int argc, char *argv[])
+extern "C" int gtest_main(int argc, TCHAR *argv[])
 {
-	fprintf(stderr, "LibRpBase test suite: AesCipher tests.\n\n");
+	fprintf(stderr, "LibRpBase test suite: Crypto tests.\n\n");
 	fflush(nullptr);
 
 	// coverity[fun_call_w_exception]: uncaught exceptions cause nonzero exit anyway, so don't warn.

@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * ImageDecoder_S3TC.cpp: Image decoding functions. (S3TC)                 *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #include "stdafx.h"
-#include "config.librpbase.h"
 
 #include "ImageDecoder.hpp"
 #include "ImageDecoder_p.hpp"
@@ -61,9 +60,9 @@ static FORCEINLINE uint64_t extract48(const dxt5_alpha *RESTRICT data)
 
 // decode_DXTn_tile_color_palette flags.
 enum DXTn_Palette_Flags {
-	DXTn_PALETTE_BIG_ENDIAN		= (1 << 0),
-	DXTn_PALETTE_COLOR3_ALPHA	= (1 << 1),	// GL_COMPRESSED_RGBA_S3TC_DXT1_EXT
-	DXTn_PALETTE_COLOR0_LE_COLOR1	= (1 << 2),	// Assume color0 <= color1. (DXT2/DXT3)
+	DXTn_PALETTE_BIG_ENDIAN		= (1U << 0),
+	DXTn_PALETTE_COLOR3_ALPHA	= (1U << 1),	// GL_COMPRESSED_RGBA_S3TC_DXT1_EXT
+	DXTn_PALETTE_COLOR0_LE_COLOR1	= (1U << 2),	// Assume color0 <= color1. (DXT2/DXT3)
 };
 
 /**
@@ -213,10 +212,10 @@ rp_image *fromDXT1_GCN(int width, int height,
 		return nullptr;
 
 	// Create an rp_image.
-	rp_image *img = new rp_image(width, height, rp_image::FORMAT_ARGB32);
+	rp_image *const img = new rp_image(width, height, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
-		delete img;
+		img->unref();
 		return nullptr;
 	}
 
@@ -284,32 +283,33 @@ static rp_image *T_fromDXT1(int width, int height,
 	assert(img_buf != nullptr);
 	assert(width > 0);
 	assert(height > 0);
+
+	// DXT1 uses 4x4 tiles, but some container formats allow
+	// the last tile to be cut off, so round up for the
+	// physical tile size.
+	const int physWidth = ALIGN_BYTES(4, width);
+	const int physHeight = ALIGN_BYTES(4, height);
+
 	assert(img_siz >= ((width * height) / 2));
 	if (!img_buf || width <= 0 || height <= 0 ||
-	    img_siz < ((width * height) / 2))
+	    img_siz < ((physWidth * physHeight) / 2))
 	{
 		return nullptr;
 	}
 
-	// DXT1 uses 4x4 tiles.
-	assert(width % 4 == 0);
-	assert(height % 4 == 0);
-	if (width % 4 != 0 || height % 4 != 0)
-		return nullptr;
-
 	// Create an rp_image.
-	rp_image *img = new rp_image(width, height, rp_image::FORMAT_ARGB32);
+	rp_image *const img = new rp_image(physWidth, physHeight, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
-		delete img;
+		img->unref();
 		return nullptr;
 	}
 
 	const dxt1_block *dxt1_src = reinterpret_cast<const dxt1_block*>(img_buf);
 
 	// Calculate the total number of tiles.
-	const unsigned int tilesX = static_cast<unsigned int>(width / 4);
-	const unsigned int tilesY = static_cast<unsigned int>(height / 4);
+	const unsigned int tilesX = static_cast<unsigned int>(physWidth / 4);
+	const unsigned int tilesY = static_cast<unsigned int>(physHeight / 4);
 
 	// Temporary tile buffer.
 	uint32_t tileBuf[4*4];
@@ -329,6 +329,11 @@ static rp_image *T_fromDXT1(int width, int height,
 		// Blit the tile to the main image buffer.
 		ImageDecoderPrivate::BlitTile<uint32_t, 4, 4>(img, tileBuf, x, y);
 	} }
+
+	if (width < physWidth || height < physHeight) {
+		// Shrink the image.
+		img->shrink(width, height);
+	}
 
 	// Set the sBIT metadata.
 	static const rp_image::sBIT_t sBIT = {8,8,8,0,1};
@@ -374,7 +379,7 @@ rp_image *fromDXT1_A1(int width, int height,
  * Convert a DXT2 image to rp_image.
  * @param width Image width.
  * @param height Image height.
- * @param img_buf DXT5 image buffer.
+ * @param img_buf DXT2 image buffer.
  * @param img_siz Size of image data. [must be >= (w*h)]
  * @return rp_image, or nullptr on error.
  */
@@ -385,7 +390,7 @@ rp_image *fromDXT2(int width, int height,
 
 	// Use fromDXT3(), then convert from premultiplied alpha
 	// to standard alpha.
-	rp_image *img = fromDXT3(width, height, img_buf, img_siz);
+	rp_image *const img = fromDXT3(width, height, img_buf, img_siz);
 	if (!img) {
 		return nullptr;
 	}
@@ -393,8 +398,8 @@ rp_image *fromDXT2(int width, int height,
 	// Un-premultiply the image.
 	int ret = img->un_premultiply();
 	if (ret != 0) {
-		delete img;
-		img = nullptr;
+		img->unref();
+		return nullptr;
 	}
 	return img;
 }
@@ -403,7 +408,7 @@ rp_image *fromDXT2(int width, int height,
  * Convert a DXT3 image to rp_image.
  * @param width Image width.
  * @param height Image height.
- * @param img_buf DXT5 image buffer.
+ * @param img_buf DXT3 image buffer.
  * @param img_siz Size of image data. [must be >= (w*h)]
  * @return rp_image, or nullptr on error.
  */
@@ -414,24 +419,25 @@ rp_image *fromDXT3(int width, int height,
 	assert(img_buf != nullptr);
 	assert(width > 0);
 	assert(height > 0);
-	assert(img_siz >= (width * height));
+
+	// DXT3 uses 4x4 tiles, but some container formats allow
+	// the last tile to be cut off, so round up for the
+	// physical tile size.
+	const int physWidth = ALIGN_BYTES(4, width);
+	const int physHeight = ALIGN_BYTES(4, height);
+
+	assert(img_siz >= (physWidth * physHeight));
 	if (!img_buf || width <= 0 || height <= 0 ||
-	    img_siz < (width * height))
+	    img_siz < (physWidth * physHeight))
 	{
 		return nullptr;
 	}
 
-	// DXT3 uses 4x4 tiles.
-	assert(width % 4 == 0);
-	assert(height % 4 == 0);
-	if (width % 4 != 0 || height % 4 != 0)
-		return nullptr;
-
 	// Create an rp_image.
-	rp_image *img = new rp_image(width, height, rp_image::FORMAT_ARGB32);
+	rp_image *const img = new rp_image(physWidth, physHeight, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
-		delete img;
+		img->unref();
 		return nullptr;
 	}
 
@@ -444,8 +450,8 @@ rp_image *fromDXT3(int width, int height,
 	const dxt3_block *dxt3_src = reinterpret_cast<const dxt3_block*>(img_buf);
 
 	// Calculate the total number of tiles.
-	const unsigned int tilesX = static_cast<unsigned int>(width / 4);
-	const unsigned int tilesY = static_cast<unsigned int>(height / 4);
+	const unsigned int tilesX = static_cast<unsigned int>(physWidth / 4);
+	const unsigned int tilesY = static_cast<unsigned int>(physHeight / 4);
 
 	// Temporary tile buffer.
 	uint32_t tileBuf[4*4];
@@ -473,6 +479,11 @@ rp_image *fromDXT3(int width, int height,
 		ImageDecoderPrivate::BlitTile<uint32_t, 4, 4>(img, tileBuf, x, y);
 	} }
 
+	if (width < physWidth || height < physHeight) {
+		// Shrink the image.
+		img->shrink(width, height);
+	}
+
 	// Set the sBIT metadata.
 	static const rp_image::sBIT_t sBIT = {8,8,8,0,4};
 	img->set_sBIT(&sBIT);
@@ -485,7 +496,7 @@ rp_image *fromDXT3(int width, int height,
  * Convert a DXT4 image to rp_image.
  * @param width Image width.
  * @param height Image height.
- * @param img_buf DXT5 image buffer.
+ * @param img_buf DXT4 image buffer.
  * @param img_siz Size of image data. [must be >= (w*h)]
  * @return rp_image, or nullptr on error.
  */
@@ -496,7 +507,7 @@ rp_image *fromDXT4(int width, int height,
 
 	// Use fromDXT5(), then convert from premultiplied alpha
 	// to standard alpha.
-	rp_image *img = fromDXT5(width, height, img_buf, img_siz);
+	rp_image *const img = fromDXT5(width, height, img_buf, img_siz);
 	if (!img) {
 		return nullptr;
 	}
@@ -504,8 +515,8 @@ rp_image *fromDXT4(int width, int height,
 	// Un-premultiply the image.
 	int ret = img->un_premultiply();
 	if (ret != 0) {
-		delete img;
-		img = nullptr;
+		img->unref();
+		return nullptr;
 	}
 	return img;
 }
@@ -525,24 +536,25 @@ rp_image *fromDXT5(int width, int height,
 	assert(img_buf != nullptr);
 	assert(width > 0);
 	assert(height > 0);
-	assert(img_siz >= (width * height));
+
+	// DXT5 uses 4x4 tiles, but some container formats allow
+	// the last tile to be cut off, so round up for the
+	// physical tile size.
+	const int physWidth = ALIGN_BYTES(4, width);
+	const int physHeight = ALIGN_BYTES(4, height);
+
+	assert(img_siz >= (physWidth * physHeight));
 	if (!img_buf || width <= 0 || height <= 0 ||
-	    img_siz < (width * height))
+	    img_siz < (physWidth * physHeight))
 	{
 		return nullptr;
 	}
 
-	// DXT5 uses 4x4 tiles.
-	assert(width % 4 == 0);
-	assert(height % 4 == 0);
-	if (width % 4 != 0 || height % 4 != 0)
-		return nullptr;
-
 	// Create an rp_image.
-	rp_image *img = new rp_image(width, height, rp_image::FORMAT_ARGB32);
+	rp_image *const img = new rp_image(physWidth, physHeight, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
-		delete img;
+		img->unref();
 		return nullptr;
 	}
 
@@ -555,8 +567,8 @@ rp_image *fromDXT5(int width, int height,
 	const dxt5_block *dxt5_src = reinterpret_cast<const dxt5_block*>(img_buf);
 
 	// Calculate the total number of tiles.
-	const unsigned int tilesX = static_cast<unsigned int>(width / 4);
-	const unsigned int tilesY = static_cast<unsigned int>(height / 4);
+	const unsigned int tilesX = static_cast<unsigned int>(physWidth / 4);
+	const unsigned int tilesY = static_cast<unsigned int>(physHeight / 4);
 
 	// Temporary tile buffer.
 	uint32_t tileBuf[4*4];
@@ -583,6 +595,11 @@ rp_image *fromDXT5(int width, int height,
 		ImageDecoderPrivate::BlitTile<uint32_t, 4, 4>(img, tileBuf, x, y);
 	} }
 
+	if (width < physWidth || height < physHeight) {
+		// Shrink the image.
+		img->shrink(width, height);
+	}
+
 	// Set the sBIT metadata.
 	static const rp_image::sBIT_t sBIT = {8,8,8,0,8};
 	img->set_sBIT(&sBIT);
@@ -606,24 +623,25 @@ rp_image *fromBC4(int width, int height,
 	assert(img_buf != nullptr);
 	assert(width > 0);
 	assert(height > 0);
+
+	// BC4 uses 4x4 tiles, but some container formats allow
+	// the last tile to be cut off, so round up for the
+	// physical tile size.
+	const int physWidth = ALIGN_BYTES(4, width);
+	const int physHeight = ALIGN_BYTES(4, height);
+
 	assert(img_siz >= ((width * height) / 2));
 	if (!img_buf || width <= 0 || height <= 0 ||
-	    img_siz < ((width * height) / 2))
+	    img_siz < ((physWidth * physHeight) / 2))
 	{
 		return nullptr;
 	}
 
-	// BC4 uses 4x4 tiles.
-	assert(width % 4 == 0);
-	assert(height % 4 == 0);
-	if (width % 4 != 0 || height % 4 != 0)
-		return nullptr;
-
 	// Create an rp_image.
-	rp_image *img = new rp_image(width, height, rp_image::FORMAT_ARGB32);
+	rp_image *const img = new rp_image(physWidth, physHeight, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
-		delete img;
+		img->unref();
 		return nullptr;
 	}
 
@@ -635,8 +653,8 @@ rp_image *fromBC4(int width, int height,
 	const bc4_block *bc4_src = reinterpret_cast<const bc4_block*>(img_buf);
 
 	// Calculate the total number of tiles.
-	const unsigned int tilesX = static_cast<unsigned int>(width / 4);
-	const unsigned int tilesY = static_cast<unsigned int>(height / 4);
+	const unsigned int tilesX = static_cast<unsigned int>(physWidth / 4);
+	const unsigned int tilesY = static_cast<unsigned int>(physHeight / 4);
 
 	// Temporary tile buffer.
 	uint32_t tileBuf[4*4];
@@ -663,6 +681,11 @@ rp_image *fromBC4(int width, int height,
 		ImageDecoderPrivate::BlitTile<uint32_t, 4, 4>(img, tileBuf, x, y);
 	} }
 
+	if (width < physWidth || height < physHeight) {
+		// Shrink the image.
+		img->shrink(width, height);
+	}
+
 	// Set the sBIT metadata.
 	// NOTE: We have to set '1' for the empty Green and Blue channels,
 	// since libpng complains if it's set to '0'.
@@ -688,24 +711,25 @@ rp_image *fromBC5(int width, int height,
 	assert(img_buf != nullptr);
 	assert(width > 0);
 	assert(height > 0);
+
+	// BC5 uses 4x4 tiles, but some container formats allow
+	// the last tile to be cut off, so round up for the
+	// physical tile size.
+	const int physWidth = ALIGN_BYTES(4, width);
+	const int physHeight = ALIGN_BYTES(4, height);
+
 	assert(img_siz >= (width * height));
 	if (!img_buf || width <= 0 || height <= 0 ||
-	    img_siz < (width * height))
+	    img_siz < (physWidth * physHeight))
 	{
 		return nullptr;
 	}
 
-	// BC4 uses 4x4 tiles.
-	assert(width % 4 == 0);
-	assert(height % 4 == 0);
-	if (width % 4 != 0 || height % 4 != 0)
-		return nullptr;
-
 	// Create an rp_image.
-	rp_image *img = new rp_image(width, height, rp_image::FORMAT_ARGB32);
+	rp_image *const img = new rp_image(physWidth, physHeight, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
-		delete img;
+		img->unref();
 		return nullptr;
 	}
 
@@ -747,6 +771,11 @@ rp_image *fromBC5(int width, int height,
 		ImageDecoderPrivate::BlitTile<uint32_t, 4, 4>(img, tileBuf, x, y);
 	} }
 
+	if (width < physWidth || height < physHeight) {
+		// Shrink the image.
+		img->shrink(width, height);
+	}
+
 	// Set the sBIT metadata.
 	// NOTE: We have to set '1' for the empty Blue channel,
 	// since libpng complains if it's set to '0'.
@@ -766,8 +795,8 @@ rp_image *fromBC5(int width, int height,
 int fromRed8ToL8(rp_image *img)
 {
 	assert(img != nullptr);
-	assert(img->format() == rp_image::FORMAT_ARGB32);
-	if (!img || img->format() != rp_image::FORMAT_ARGB32)
+	assert(img->format() == rp_image::Format::ARGB32);
+	if (!img || img->format() != rp_image::Format::ARGB32)
 		return -EINVAL;
 
 	// TODO: Optimize with SSE2/SSSE3?
@@ -805,8 +834,8 @@ int fromRed8ToL8(rp_image *img)
 int fromRG8ToLA8(rp_image *img)
 {
 	assert(img != nullptr);
-	assert(img->format() == rp_image::FORMAT_ARGB32);
-	if (!img || img->format() != rp_image::FORMAT_ARGB32)
+	assert(img->format() == rp_image::Format::ARGB32);
+	if (!img || img->format() != rp_image::Format::ARGB32)
 		return -EINVAL;
 
 	// TODO: Optimize with SSE2/SSSE3?

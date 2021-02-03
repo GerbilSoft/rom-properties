@@ -2,21 +2,19 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * xbox_xbe_structs.h: Microsoft Xbox executable data structures.          *
  *                                                                         *
- * Copyright (c) 2019 by David Korth.                                      *
+ * Copyright (c) 2019-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #ifndef __ROMPROPERTIES_LIBROMDATA_CONSOLE_XBOX_XBE_STRUCTS_H__
 #define __ROMPROPERTIES_LIBROMDATA_CONSOLE_XBOX_XBE_STRUCTS_H__
 
-#include "librpbase/common.h"
 #include <stdint.h>
+#include "common.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-#pragma pack(1)
 
 /**
  * Microsoft Xbox executable header.
@@ -41,7 +39,7 @@ extern "C" {
 #define XBE_ENTRY_POINT_KEY_DEBUG	0x94859D4B
 #define XBE_KERNEL_THUNK_KEY_RETAIL	0x5B6D40B6
 #define XBE_KERNEL_THUNK_KEY_DEBUG	0xEFB1F152
-typedef struct PACKED _XBE_Header {
+typedef struct _XBE_Header {
 	uint32_t magic;				// [0x000] 'XBEH'
 	uint8_t signature[256];			// [0x004] RSA-2048 digital signature
 	uint32_t base_address;			// [0x104] Base address (usually 0x00010000)
@@ -99,10 +97,10 @@ typedef enum {
 
 /**
  * XBE: Title ID
- * Contains two characters and a 16-bit number.
+ * Contains a two-character company ID and a 16-bit game ID.
  * NOTE: Struct positioning only works with the original LE32 value.
  */
-typedef union PACKED _XBE_Title_ID {
+typedef union _XBE_Title_ID {
 	struct {
 		uint16_t u16;
 		char b;
@@ -118,7 +116,7 @@ ASSERT_STRUCT(XBE_Title_ID, sizeof(uint32_t));
  *
  * All fields are in little-endian.
  */
-typedef struct PACKED _XBE_Certificate {
+typedef struct _XBE_Certificate {
 	uint32_t size;				// [0x000] Size of certificate
 	uint32_t timestamp;			// [0x004] UNIX timestamp
 	XBE_Title_ID title_id;			// [0x008] Title ID
@@ -171,7 +169,7 @@ typedef enum {
  *
  * All fields are in little-endian.
  */
-typedef struct PACKED _XBE_Section_Header {
+typedef struct _XBE_Section_Header {
 	uint32_t flags;			// [0x000] Section flags (See XBE_Section_Flags_e)
 	uint32_t vaddr;			// [0x004] Virtual load address for this section
 	uint32_t vsize;			// [0x008] Size of this section
@@ -203,7 +201,7 @@ typedef enum {
  *
  * All fields are in little-endian.
  */
-typedef struct PACKED _XBE_Library_Version {
+typedef struct _XBE_Library_Version {
 	char name[8];			// [0x000] Library name
 	uint16_t version_major;		// [0x008] Major version number
 	uint16_t version_minor;		// [0x00A] Minor version number
@@ -227,7 +225,7 @@ typedef enum {
  *
  * All fields are in little-endian.
  */
-typedef struct PACKED _XBE_TLS {
+typedef struct _XBE_TLS {
 	uint32_t data_start_address;	// [0x000]
 	uint32_t data_end_address;	// [0x004]
 	uint32_t tls_index_address;	// [0x008]
@@ -235,9 +233,7 @@ typedef struct PACKED _XBE_TLS {
 	uint32_t size_zero_fill;	// [0x010]
 	uint32_t characteristics;	// [0x014]
 } XBE_TLS;
-ASSERT_STRUCT(XBE_TLS, 0x18);
-
-#pragma pack()
+ASSERT_STRUCT(XBE_TLS, 6*sizeof(uint32_t));
 
 #ifdef __cplusplus
 }

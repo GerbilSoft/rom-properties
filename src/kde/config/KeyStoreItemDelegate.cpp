@@ -2,30 +2,22 @@
  * ROM Properties Page shell extension. (KDE)                              *
  * KeyStoreItemDelegate.cpp: KeyStore item delegate for QListView.         *
  *                                                                         *
- * Copyright (c) 2013-2017 by David Korth.                                 *
+ * Copyright (c) 2013-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 // References:
 // - https://stackoverflow.com/questions/26614678/validating-user-input-in-a-qtableview
 // - https://stackoverflow.com/a/26614960
+#include "stdafx.h"
 #include "KeyStoreItemDelegate.hpp"
 #include "KeyStoreModel.hpp"
-
-// C includes. (C++ namespace)
-#include <cassert>
-
-// Qt includes.
-#include <QtGui/QPainter>
-#include <QtGui/QValidator>
-#include <QApplication>
-#include <QLineEdit>
 
 #if QT_VERSION > 0x050000
 // Qt5 deprecated QStyleOptionViewItemV4 in favor of
 // plain old QStyleOptionViewItem. However, for Qt4
-// compatibility, we still need to use V4.
-#define QStyleOptionViewItemV4 QStyleOptionViewItem
+// compatibility, we still need to use V4 here.
+# define QStyleOptionViewItemV4 QStyleOptionViewItem
 #endif
 
 KeyStoreItemDelegate::KeyStoreItemDelegate(QObject *parent)
@@ -112,7 +104,7 @@ void KeyStoreItemDelegate::paint(QPainter *painter,
 	const QStyleOptionViewItem &option,
 	const QModelIndex &index) const
 {
-	if (!index.isValid() || index.column() != KeyStoreModel::COL_ISVALID) {
+	if (!index.isValid() || index.column() != (int)KeyStoreModel::Column::IsValid) {
 		// Index is invalid, or this isn't the "Is Valid?" column.
 		// Use the default paint().
 		super::paint(painter, option, index);

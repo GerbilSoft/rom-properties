@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * SNDH.hpp: Atari ST SNDH audio reader.                                   *
  *                                                                         *
- * Copyright (c) 2018-2019 by David Korth.                                 *
+ * Copyright (c) 2018-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -14,8 +14,9 @@
 
 #include "SNDH.hpp"
 
-// librpbase
+// librpbase, librpfile
 using namespace LibRpBase;
+using LibRpFile::IRpFile;
 
 // unice68
 #ifdef ENABLE_UNICE68
@@ -36,7 +37,7 @@ namespace LibRomData {
 
 ROMDATA_IMPL(SNDH)
 
-class SNDHPrivate : public RomDataPrivate
+class SNDHPrivate final : public RomDataPrivate
 {
 	public:
 		SNDHPrivate(SNDH *q, IRpFile *file);
@@ -133,10 +134,9 @@ string SNDHPrivate::readStrFromBuffer(const uint8_t **p, const uint8_t *p_end, b
 		// It's ASCII-compatible, but control characters and high-bit characters
 		// are different compared to Latin-1 and other code pages.
 		// Reference: https://en.wikipedia.org/wiki/Atari_ST_character_set
-		string ret = atariST_to_utf8(reinterpret_cast<const char*>(*p), (int)(s_end-*p));
-		// Skip the string, then add one for the NULL terminator.
+		const uint8_t *const p_old = *p;
 		*p = s_end + 1;
-		return ret;
+		return atariST_to_utf8(reinterpret_cast<const char*>(p_old), (int)(s_end-p_old));
 	}
 
 	// Empty string.
@@ -199,12 +199,13 @@ SNDHPrivate::TagData SNDHPrivate::parseTags(void)
 	const uint32_t *const pData32 = reinterpret_cast<const uint32_t*>(header.get());
 	if (pData32[0] == cpu_to_be32('ICE!') || pData32[0] == cpu_to_be32('Ice!')) {
 		// Packed with ICE.
+		// FIXME: Return an error if unpacking fails.
 #ifdef ENABLE_UNICE68
 		// Decompress the data.
 		// FIXME: unice68_depacker() only supports decompressing the entire file.
 		// Add a variant that supports buffer sizes.
-		const int64_t fileSize = file->size();
-		if (fileSize <= 0) {
+		const off64_t fileSize = file->size();
+		if (fileSize < 16) {
 			return tags;
 		}
 		unique_ptr<uint8_t[]> inbuf(new uint8_t[fileSize]);
@@ -212,12 +213,13 @@ SNDHPrivate::TagData SNDHPrivate::parseTags(void)
 		if (sz != (size_t)fileSize) {
 			return tags;
 		}
-		int reqSize = unice68_depacked_size(inbuf.get(), nullptr);
+		int inbufsz = static_cast<int>(sz);
+		int reqSize = unice68_depacked_size(inbuf.get(), &inbufsz);
 		if (reqSize <= 0) {
 			return tags;
 		}
 		header.reset(new uint8_t[reqSize+1]);
-		int ret = unice68_depacker(header.get(), inbuf.get());
+		int ret = unice68_depacker(header.get(), reqSize, inbuf.get(), fileSize);
 		if (ret != 0) {
 			return tags;
 		}
@@ -360,7 +362,7 @@ SNDHPrivate::TagData SNDHPrivate::parseTags(void)
 						// An error occured.
 						break;
 					}
-					tags.subtune_names.push_back(std::move(str));
+					tags.subtune_names.emplace_back(std::move(str));
 
 					if (p_str > p_next) {
 						// This string is the farthest ahead so far.
@@ -402,7 +404,10 @@ SNDHPrivate::TagData SNDHPrivate::parseTags(void)
 
 				const uint16_t *p_tbl = reinterpret_cast<const uint16_t*>(p + 4);
 				tags.subtune_lengths.resize(subtunes);
-				for (auto iter = tags.subtune_lengths.begin(); iter != tags.subtune_lengths.end(); ++iter, p_tbl++) {
+				const auto tags_subtune_lengths_end = tags.subtune_lengths.end();
+				for (auto iter = tags.subtune_lengths.begin();
+				     iter != tags_subtune_lengths_end; ++iter, p_tbl++)
+				{
 					*iter = be16_to_cpu(*p_tbl);
 				}
 
@@ -411,7 +416,6 @@ SNDHPrivate::TagData SNDHPrivate::parseTags(void)
 			}
 
 			case 'FLAG': {
-				// TODO: Optimize this!
 				// TODO: This is non-standard.
 				// Observed variants: (after the tag)
 				// - Two bytes, and a NULL terminator.
@@ -608,7 +612,8 @@ SNDH::SNDH(IRpFile *file)
 {
 	RP_D(SNDH);
 	d->className = "SNDH";
-	d->fileType = FTYPE_AUDIO_FILE;
+	d->mimeType = "audio/x-sndh";	// unofficial, not on fd.o
+	d->fileType = FileType::AudioFile;
 
 	if (!d->file) {
 		// Could not ref() the file handle.
@@ -626,8 +631,7 @@ SNDH::SNDH(IRpFile *file)
 	// ICE-compressed SNDH files are really small.
 	// - Lowe_Al/Kings_Quest_II.sndh: 453 bytes.
 	if (size < 12) {
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
 
@@ -641,9 +645,7 @@ SNDH::SNDH(IRpFile *file)
 	d->isValid = (isRomSupported_static(&info) >= 0);
 
 	if (!d->isValid) {
-		d->file->unref();
-		d->file = nullptr;
-		return;
+		UNREF_AND_NULL_NOCHK(d->file);
 	}
 }
 
@@ -896,20 +898,21 @@ int SNDH::loadFieldData(void)
 		// TODO: Hide the third column if there are names but all zero durations?
 		uint64_t duration_total = 0;
 
-		const size_t count = std::max(tags.subtune_names.size(), tags.subtune_lengths.size());
-		auto vv_subtune_list = new vector<vector<string> >(count);
-		auto dest_iter = vv_subtune_list->begin();
 		unsigned int idx = 0;
-		for (; dest_iter != vv_subtune_list->end(); ++dest_iter, idx++) {
+		const size_t count = std::max(tags.subtune_names.size(), tags.subtune_lengths.size());
+		auto vv_subtune_list = new RomFields::ListData_t(count);
+		auto dest_iter = vv_subtune_list->begin();
+		const auto vv_subtune_list_end = vv_subtune_list->end();
+		for (; dest_iter != vv_subtune_list_end; ++dest_iter, idx++) {
 			vector<string> &data_row = *dest_iter;
 			data_row.reserve(col_count);	// 2 or 3 fields per row.
 
-			data_row.push_back(rp_sprintf("%u", idx+1));	// NOTE: First subtune is 1, not 0.
+			data_row.emplace_back(rp_sprintf("%u", idx+1));	// NOTE: First subtune is 1, not 0.
 			if (has_SN) {
 				if (idx < tags.subtune_names.size()) {
-					data_row.push_back(tags.subtune_names.at(idx));
+					data_row.emplace_back(tags.subtune_names.at(idx));
 				} else {
-					data_row.push_back(string());
+					data_row.emplace_back("");
 				}
 			}
 
@@ -921,9 +924,9 @@ int SNDH::loadFieldData(void)
 					duration_total += duration;
 					const unsigned int min = duration / 60;
 					const unsigned int sec = duration % 60;
-					data_row.push_back(rp_sprintf("%u:%02u", min, sec));
+					data_row.emplace_back(rp_sprintf("%u:%02u", min, sec));
 				} else {
-					data_row.push_back(string());
+					data_row.emplace_back("");
 				}
 			}
 		}
@@ -953,7 +956,7 @@ int SNDH::loadFieldData(void)
 
 			RomFields::AFLD_PARAMS params;
 			params.headers = v_subtune_list_hdr;
-			params.list_data = vv_subtune_list;
+			params.data.single = vv_subtune_list;
 			d->fields->addField_listData(C_("SNDH", "Subtune List"), &params);
 		}
 	} else if (tags.subtune_names.empty() && tags.subtune_lengths.size() == 1) {

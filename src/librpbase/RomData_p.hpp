@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * RomData_p.hpp: ROM data base class. (PRIVATE CLASS)                     *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -21,13 +21,15 @@
 #include "RomFields.hpp"
 #include "RomMetaData.hpp"
 
+namespace LibRpFile {
+	class IRpFile;
+}
 namespace LibRpTexture {
 	class rp_image;
 }
 
 namespace LibRpBase {
 
-class IRpFile;
 class RomFields;
 class RomMetaData;
 
@@ -40,7 +42,7 @@ class RomDataPrivate
 		 * @param q RomData class.
 		 * @param file ROM file.
 		 */
-		RomDataPrivate(RomData *q, IRpFile *file);
+		RomDataPrivate(RomData *q, LibRpFile::IRpFile *file);
 
 		virtual ~RomDataPrivate();
 
@@ -51,16 +53,18 @@ class RomDataPrivate
 		RomData *const q_ptr;
 
 	public:
-		volatile int ref_cnt;		// Reference count.
 		bool isValid;			// Subclass must set this to true if the ROM is valid.
-		IRpFile *file;			// Open file.
+		bool isCompressed;		// True if the file is compressed. (transparent decompression)
+		LibRpFile::IRpFile *file;	// Open file.
+		std::string filename;		// Copy of the filename.
 		RomFields *const fields;	// ROM fields. (NOTE: allocated by the base class)
 		RomMetaData *metaData;		// ROM metadata. (NOTE: nullptr initially.)
 
-		// Class name for user configuration. (ASCII) (default is nullptr)
-		const char *className;
-		// File type. (default is FTYPE_ROM_IMAGE)
-		RomData::FileType fileType;
+	public:
+		/** These fields must be set by RomData subclasses in their constructors. **/
+		const char *className;		// Class name for user configuration. (ASCII) (default is nullptr)
+		const char *mimeType;		// MIME type. (ASCII) (default is nullptr)
+		RomData::FileType fileType;	// File type. (default is FileType::ROM_Image)
 
 	public:
 		/** Convenience functions. **/
@@ -91,6 +95,36 @@ class RomDataPrivate
 		 * @return GameTDB cache key.
 		 */
 		static std::string getCacheKey_GameTDB(
+			const char *system, const char *type,
+			const char *region, const char *gameID,
+			const char *ext);
+
+		/**
+		 * Get the RPDB URL for a given game.
+		 * @param system System name.
+		 * @param type Image type.
+		 * @param region Region name. (May be nullptr if no region is needed.)
+		 * @param gameID Game ID.
+		 * @param ext File extension, e.g. ".png" or ".jpg".
+		 * TODO: PAL multi-region selection?
+		 * @return RPDB URL.
+		 */
+		static std::string getURL_RPDB(
+			const char *system, const char *type,
+			const char *region, const char *gameID,
+			const char *ext);
+
+		/**
+		 * Get the RPDB cache key for a given game.
+		 * @param system System name.
+		 * @param type Image type.
+		 * @param region Region name. (May be nullptr if no region is needed.)
+		 * @param gameID Game ID.
+		 * @param ext File extension, e.g. ".png" or ".jpg".
+		 * TODO: PAL multi-region selection?
+		 * @return RPDB cache key.
+		 */
+		static std::string getCacheKey_RPDB(
 			const char *system, const char *type,
 			const char *region, const char *gameID,
 			const char *ext);

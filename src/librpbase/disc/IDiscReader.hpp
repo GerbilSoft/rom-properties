@@ -2,14 +2,12 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * IDiscReader.hpp: Disc reader interface.                                 *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #ifndef __ROMPROPERTIES_LIBRPBASE_IDISCREADER_HPP__
 #define __ROMPROPERTIES_LIBRPBASE_IDISCREADER_HPP__
-
-#include "../common.h"
 
 // C includes.
 #include <stdint.h>
@@ -17,19 +15,32 @@
 // C includes. (C++ namespace)
 #include <cstddef>
 
+// common macros
+#include "common.h"
+#include "RefBase.hpp"
+
+namespace LibRpFile {
+	class IRpFile;
+}
+
 namespace LibRpBase {
 
-class IRpFile;
-class IDiscReader
+class IDiscReader : public RefBase
 {
 	protected:
-		IDiscReader(IRpFile *file);
-		IDiscReader(IDiscReader *discReader);
-	public:
-		virtual ~IDiscReader();
+		explicit IDiscReader(LibRpFile::IRpFile *file);
+		explicit IDiscReader(IDiscReader *discReader);
+	protected:
+		virtual ~IDiscReader();	// call unref() instead
 
 	private:
 		RP_DISABLE_COPY(IDiscReader)
+
+	public:
+		inline IDiscReader *ref(void)
+		{
+			return RefBase::ref<IDiscReader>();
+		}
 
 	public:
 		/** Disc image detection functions. **/
@@ -74,6 +85,7 @@ class IDiscReader
 		 * @param size Amount of data to read, in bytes.
 		 * @return Number of bytes read.
 		 */
+		ATTR_ACCESS_SIZE(write_only, 2, 3)
 		virtual size_t read(void *ptr, size_t size) = 0;
 
 		/**
@@ -81,7 +93,7 @@ class IDiscReader
 		 * @param pos disc image position.
 		 * @return 0 on success; -1 on error.
 		 */
-		virtual int seek(int64_t pos) = 0;
+		virtual int seek(off64_t pos) = 0;
 
 		/**
 		 * Seek to the beginning of the file.
@@ -95,13 +107,13 @@ class IDiscReader
 		 * Get the disc image position.
 		 * @return Disc image position on success; -1 on error.
 		 */
-		virtual int64_t tell(void) = 0;
+		virtual off64_t tell(void) = 0;
 
 		/**
 		 * Get the disc image size.
 		 * @return Disc image size, or -1 on error.
 		 */
-		virtual int64_t size(void) = 0;
+		virtual off64_t size(void) = 0;
 
 	public:
 		/** Convenience functions implemented for all IRpFile classes. **/
@@ -113,7 +125,8 @@ class IDiscReader
 		 * @param size	[in] Amount of data to read, in bytes.
 		 * @return Number of bytes read on success; 0 on seek or read error.
 		 */
-		size_t seekAndRead(int64_t pos, void *ptr, size_t size);
+		ATTR_ACCESS_SIZE(write_only, 3, 4)
+		size_t seekAndRead(off64_t pos, void *ptr, size_t size);
 
 	public:
 		/** Device file functions **/
@@ -128,7 +141,7 @@ class IDiscReader
 		// Subclasses may have an underlying file, or may
 		// stack another IDiscReader object.
 		union {
-			IRpFile *m_file;
+			LibRpFile::IRpFile *m_file;
 			IDiscReader *m_discReader;
 		};
 		bool m_hasDiscReader;

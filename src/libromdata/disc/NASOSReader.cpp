@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * NASOSReader.hpp: GameCube/Wii NASOS (.iso.dec) disc image reader.       *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -15,8 +15,9 @@
 #include "librpbase/disc/SparseDiscReader_p.hpp"
 #include "nasos_gcn.h"
 
-// librpbase
+// librpbase, librpfile
 using namespace LibRpBase;
+using LibRpFile::IRpFile;
 
 namespace LibRomData {
 
@@ -36,10 +37,13 @@ class NASOSReaderPrivate : public SparseDiscReaderPrivate {
 			NASOSHeader_WIIx wiix;
 		} header;
 
-		enum DiscType {
-			DT_UNKNOWN = 0,
-			DT_GCML = 1,
-			DT_WIIx = 2,
+		enum class DiscType {
+			Unknown	= -1,
+
+			GCML	= 0,
+			WIIx	= 1,
+
+			Max
 		};
 		DiscType discType;
 
@@ -58,7 +62,7 @@ class NASOSReaderPrivate : public SparseDiscReaderPrivate {
 
 NASOSReaderPrivate::NASOSReaderPrivate(NASOSReader *q)
 	: super(q)
-	, discType(DT_UNKNOWN)
+	, discType(DiscType::Unknown)
 	, blockMapShift(0)
 {
 	// Clear the NASOSHeader structs.
@@ -81,8 +85,7 @@ NASOSReader::NASOSReader(IRpFile *file)
 	size_t sz = m_file->read(&d->header, sizeof(d->header));
 	if (sz != sizeof(d->header)) {
 		// Error reading the NASOS header.
-		m_file->unref();
-		m_file = nullptr;
+		UNREF_AND_NULL_NOCHK(m_file);
 		m_lastError = EIO;
 		return;
 	}
@@ -92,7 +95,7 @@ NASOSReader::NASOSReader(IRpFile *file)
 	// TODO: Check the actual disc header magic?
 	unsigned int blockMapStart, blockCount;
 	if (d->header.nasos.magic == cpu_to_be32(NASOS_MAGIC_GCML)) {
-		d->discType = NASOSReaderPrivate::DT_GCML;
+		d->discType = NASOSReaderPrivate::DiscType::GCML;
 		d->block_size = 2048;			// NOTE: Not stored in the header.
 		blockMapStart = sizeof(d->header.gcml);
 		blockCount = NASOS_GCML_BlockCount;	// NOTE: Not stored in the header.
@@ -100,7 +103,7 @@ NASOSReader::NASOSReader(IRpFile *file)
 	} else if ((d->header.nasos.magic == cpu_to_be32(NASOS_MAGIC_WII5)) ||
 		   (d->header.nasos.magic == cpu_to_be32(NASOS_MAGIC_WII9)))
 	{
-		d->discType = NASOSReaderPrivate::DT_WIIx;
+		d->discType = NASOSReaderPrivate::DiscType::WIIx;
 		d->block_size = 1024;	// TODO: Is this stored in the header?
 		blockMapStart = sizeof(d->header.wiix);
 		// TODO: Verify against WII5 (0x460900) and WII9 (0x7ED380).
@@ -108,8 +111,7 @@ NASOSReader::NASOSReader(IRpFile *file)
 		d->blockMapShift = 8;
 	} else {
 		// Invalid magic.
-		m_file->unref();
-		m_file = nullptr;
+		UNREF_AND_NULL_NOCHK(m_file);
 		m_lastError = EIO;
 		return;
 	}
@@ -124,14 +126,13 @@ NASOSReader::NASOSReader(IRpFile *file)
 	if (sz != sz_blockMap) {
 		// Error reading the block map.
 		d->blockMap.clear();
-		m_file->unref();
-		m_file = nullptr;
+		UNREF_AND_NULL_NOCHK(m_file);
 		m_lastError = EIO;
 		return;
 	}
 
 	// Disc size is based on the block map size.
-	d->disc_size = static_cast<int64_t>(d->blockMap.size()) * d->block_size;
+	d->disc_size = static_cast<off64_t>(d->blockMap.size()) * d->block_size;
 
 	// Reset the disc position.
 	d->pos = 0;
@@ -186,10 +187,10 @@ int NASOSReader::isDiscSupported(const uint8_t *pHeader, size_t szHeader) const
  * @param blockIdx	[in] Block index.
  * @return Physical address. (0 == empty block; -1 == invalid block index)
  */
-int64_t NASOSReader::getPhysBlockAddr(uint32_t blockIdx) const
+off64_t NASOSReader::getPhysBlockAddr(uint32_t blockIdx) const
 {
 	// Make sure the block index is in range.
-	RP_D(NASOSReader);
+	RP_D(const NASOSReader);
 	assert(blockIdx < d->blockMap.size());
 	if (blockIdx >= d->blockMap.size()) {
 		// Out of range.
@@ -204,7 +205,7 @@ int64_t NASOSReader::getPhysBlockAddr(uint32_t blockIdx) const
 	}
 
 	// Adjust to bytes and return.
-	return static_cast<int64_t>(physBlockAddr) << d->blockMapShift;
+	return static_cast<off64_t>(physBlockAddr) << d->blockMapShift;
 }
 
 }

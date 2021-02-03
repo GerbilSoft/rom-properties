@@ -94,7 +94,7 @@ HBITMAP RpImageWin32::toHBITMAP_mask(const rp_image *image)
 
 	// AND mask: Parse the original image.
 	switch (image->format()) {
-		case rp_image::FORMAT_CI8: {
+		case rp_image::Format::CI8: {
 			// Get the transparent color index.
 			int tr_idx = image->tr_idx();
 			if (tr_idx >= 0) {
@@ -141,7 +141,7 @@ HBITMAP RpImageWin32::toHBITMAP_mask(const rp_image *image)
 			break;
 		}
 
-		case rp_image::FORMAT_ARGB32: {
+		case rp_image::Format::ARGB32: {
 			// Find all pixels with a 0 alpha channel.
 			memset(pvBits, 0xFF, icon_sz);
 			uint8_t *dest = pvBits;
@@ -380,12 +380,12 @@ rp_image *RpImageWin32::fromHBITMAP(HBITMAP hBitmap)
 			assert(!"fromHBITMAP() doesn't support 8bpp yet.");
 			return nullptr;
 #if 0
-			format = rp_image::FORMAT_CI8;
+			format = rp_image::Format::CI8;
 			copy_len = bm.bmWidth;
 			break;
 #endif
 		case 32:
-			format = rp_image::FORMAT_ARGB32;
+			format = rp_image::Format::ARGB32;
 			copy_len = bm.bmWidth * 4;
 			break;
 		default:
@@ -428,7 +428,7 @@ rp_image *RpImageWin32::fromHBITMAP(HBITMAP hBitmap)
 	rp_image *const img = new rp_image(bm.bmWidth, height, format);
 	if (!img->isValid()) {
 		// Could not allocate the image.
-		delete img;
+		img->unref();
 		return nullptr;
 	}
 
@@ -465,18 +465,19 @@ HICON RpImageWin32::toHICON(HBITMAP hBitmap)
 	// Temporarily convert the HBITMAP to rp_image
 	// in order to create an icon mask.
 	// NOTE: Windows doesn't seem to have any way to get
-	// direct access to the HBITAMP's pixels, so this step
+	// direct access to the HBITMAP's pixels, so this step
 	// step is required. (GetDIBits() copies the pixels.)
-	unique_ptr<rp_image> img(fromHBITMAP(hBitmap));
+	rp_image *const img = fromHBITMAP(hBitmap);
 	if (!img) {
 		// Error converting to rp_image.
 		return nullptr;
 	}
 
 	// Convert the image to an icon mask.
-	HBITMAP hbmMask = toHBITMAP_mask(img.get());
+	HBITMAP hbmMask = toHBITMAP_mask(img);
 	if (!hbmMask) {
 		// Failed to create the icon mask.
+		img->unref();
 		return nullptr;
 	}
 
@@ -494,5 +495,77 @@ HICON RpImageWin32::toHICON(HBITMAP hBitmap)
 
 	// Delete the icon mask bitmap and we're done.
 	DeleteBitmap(hbmMask);
+	img->unref();
 	return hIcon;
+}
+
+/**
+ * Extract an HBITMAP sprite from an rp_image sprite sheet.
+ * Caller must delete the HBITMAP after use.
+ * @param imgSpriteSheet	[in] rp_image sprite sheet
+ * @param x			[in] X pos
+ * @param y			[in] Y pos
+ * @param width			[in] Width
+ * @param height		[in] Height
+ * @param dpi			[in,opt] DPI value.
+ * @return Sub-bitmap, or nullptr on error.
+ */
+HBITMAP RpImageWin32::getSubBitmap(const rp_image *imgSpriteSheet, int x, int y, int width, int height, UINT dpi)
+{
+	// TODO: CI8?
+	assert(imgSpriteSheet->format() == rp_image::Format::ARGB32);
+	if (imgSpriteSheet->format() != rp_image::Format::ARGB32)
+		return nullptr;
+
+	assert(x + width <= imgSpriteSheet->width());
+	assert(y + height <= imgSpriteSheet->height());
+	if (x + width > imgSpriteSheet->width() || y + height > imgSpriteSheet->height())
+		return nullptr;
+
+	const BITMAPINFOHEADER bmihDIBSection = {
+		sizeof(BITMAPINFOHEADER),	// biSize
+		width,		// biWidth
+		-height,	// biHeight (negative for right-side up)
+		1,		// biPlanes
+		32,		// biBitCount
+		BI_RGB,		// biCompression
+		0,		// biSizeImage
+		(LONG)dpi,	// biXPelsPerMeter
+		(LONG)dpi,	// biYPelsPerMeter
+		0,		// biClrUsed
+		0,		// biClrImportant
+	};
+
+	// Create a DIB section for the sub-icon.
+	void *pvBits;
+	HDC hDC = GetDC(nullptr);
+	HBITMAP hbmIcon = CreateDIBSection(
+		hDC,		// hdc
+		reinterpret_cast<const BITMAPINFO*>(&bmihDIBSection),	// pbmi
+		DIB_RGB_COLORS,	// usage
+		&pvBits,	// ppvBits
+		nullptr,	// hSection
+		0);		// offset
+
+	GdiFlush();	// TODO: Not sure if needed here...
+	assert(hbmIcon != nullptr);
+	if (!hbmIcon) {
+		ReleaseDC(nullptr, hDC);
+		return nullptr;
+	}
+
+	// Copy the icon from the sprite sheet.
+	const size_t rowBytes = width * sizeof(uint32_t);
+	const int srcStride = imgSpriteSheet->stride() / sizeof(uint32_t);
+	const uint32_t *pSrc = static_cast<const uint32_t*>(imgSpriteSheet->scanLine(y));
+	pSrc += x;
+	uint32_t *pDest = static_cast<uint32_t*>(pvBits);
+	for (UINT bmRow = height; bmRow > 0; bmRow--) {
+		memcpy(pDest, pSrc, rowBytes);
+		pDest += width;
+		pSrc += srcStride;
+	}
+
+	ReleaseDC(nullptr, hDC);
+	return hbmIcon;
 }

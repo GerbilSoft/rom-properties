@@ -1,37 +1,23 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (KDE4/KDE5)                        *
+ * ROM Properties Page shell extension. (KDE4/KF5)                         *
  * DragImageLabel.cpp: Drag & Drop image label.                            *
  *                                                                         *
- * Copyright (c) 2019 by David Korth.                                      *
+ * Copyright (c) 2019-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 // Reference: https://doc.qt.io/qt-5/dnd.html
-
+#include "stdafx.h"
 #include "DragImageLabel.hpp"
-#include "RpQt.hpp"
 #include "RpQByteArrayFile.hpp"
 
-// librpbase
+// librpbase, librptexture
 #include "librpbase/img/IconAnimData.hpp"
 #include "librpbase/img/IconAnimHelper.hpp"
-#include "librpbase/img/RpPngWriter.hpp"
 using LibRpBase::IconAnimData;
 using LibRpBase::IconAnimHelper;
 using LibRpBase::RpPngWriter;
-
-// librptexture
-#include "librptexture/img/rp_image.hpp"
 using LibRpTexture::rp_image;
-
-// C includes. (C++ namespace)
-#include <cassert>
-
-// Qt includes.
-#include <QApplication>
-#include <QDrag>
-#include <QMimeData>
-#include <QMouseEvent>
 
 DragImageLabel::DragImageLabel(const QString &text, QWidget *parent, Qt::WindowFlags f)
 	: super(text, parent, f)
@@ -50,6 +36,7 @@ DragImageLabel::DragImageLabel(QWidget *parent, Qt::WindowFlags f)
 DragImageLabel::~DragImageLabel()
 {
 	delete m_anim;
+	UNREF(m_img);
 }
 
 /**
@@ -67,8 +54,12 @@ DragImageLabel::~DragImageLabel()
  */
 bool DragImageLabel::setRpImage(const rp_image *img)
 {
+	// NOTE: We're not checking if the image pointer matches the
+	// previously stored image, since the underlying image may
+	// have changed.
+	UNREF_AND_NULL(m_img);
+
 	if (!img) {
-		m_img = nullptr;
 		if (!m_anim || !m_anim->iconAnimData) {
 			this->clear();
 		} else {
@@ -77,10 +68,7 @@ bool DragImageLabel::setRpImage(const rp_image *img)
 		return false;
 	}
 
-	// Don't check if the image pointer matches the
-	// previously stored image, since the underlying
-	// image may have changed.
-	m_img = img;
+	m_img = img->ref();
 	return updatePixmaps();
 }
 
@@ -103,11 +91,15 @@ bool DragImageLabel::setIconAnimData(const IconAnimData *iconAnimData)
 		m_anim = new anim_vars();
 	}
 
+	// NOTE: We're not checking if the image pointer matches the
+	// previously stored image, since the underlying image may
+	// have changed.
+	UNREF_AND_NULL(m_anim->iconAnimData);
+
 	if (!iconAnimData) {
 		if (m_anim->tmrIconAnim) {
 			m_anim->tmrIconAnim->stop();
 		}
-		m_anim->iconAnimData = nullptr;
 		m_anim->anim_running = false;
 
 		if (!m_img) {
@@ -118,10 +110,7 @@ bool DragImageLabel::setIconAnimData(const IconAnimData *iconAnimData)
 		return false;
 	}
 
-	// Don't check if the data pointer matches the
-	// previously stored data, since the underlying
-	// data may have changed.
-	m_anim->iconAnimData = iconAnimData;
+	m_anim->iconAnimData = iconAnimData->ref();
 	return updatePixmaps();
 }
 
@@ -135,11 +124,11 @@ void DragImageLabel::clearRp(void)
 		if (m_anim->tmrIconAnim) {
 			m_anim->tmrIconAnim->stop();
 		}
-		m_anim->iconAnimData = nullptr;
 		m_anim->anim_running = false;
+		UNREF_AND_NULL(m_anim->iconAnimData);
 	}
 
-	m_img = nullptr;
+	UNREF_AND_NULL(m_img);
 	this->clear();
 }
 
@@ -336,6 +325,7 @@ void DragImageLabel::mouseMoveEvent(QMouseEvent *event)
 
 	if (!pngWriter->isOpen()) {
 		// Unable to open the PNG writer.
+		delete pngWriter;
 		pngData->unref();
 		return;
 	}
@@ -345,12 +335,14 @@ void DragImageLabel::mouseMoveEvent(QMouseEvent *event)
 	int pwRet = pngWriter->write_IHDR();
 	if (pwRet != 0) {
 		// Error writing the PNG image...
+		delete pngWriter;
 		pngData->unref();
 		return;
 	}
 	pwRet = pngWriter->write_IDAT();
 	if (pwRet != 0) {
 		// Error writing the PNG image...
+		delete pngWriter;
 		pngData->unref();
 		return;
 	}
@@ -373,10 +365,14 @@ void DragImageLabel::mouseMoveEvent(QMouseEvent *event)
 		}
 	} else {
 		// Not animated. Use the QLabel pixmap directly.
+#if QT_VERSION >= QT_VERSION_CHECK(5,15,0)
+		drag->setPixmap(this->pixmap(Qt::ReturnByValue));
+#else /* QT_VERSION < QT_VERSION_CHECK(5,15,0) */
 		const QPixmap *const qpxm = this->pixmap();
 		if (qpxm) {
 			drag->setPixmap(*qpxm);
 		}
+#endif /* QT_VERSION >= QT_VERSION_CHECK(5,15,0) */
 	}
 
 	drag->exec(Qt::CopyAction);

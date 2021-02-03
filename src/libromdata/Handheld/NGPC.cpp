@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * NGPC.cpp: Neo Geo Pocket (Color) ROM reader.                            *
  *                                                                         *
- * Copyright (c) 2019 by David Korth.                                      *
+ * Copyright (c) 2019-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -10,8 +10,9 @@
 #include "NGPC.hpp"
 #include "ngpc_structs.h"
 
-// librpbase
+// librpbase, librpfile
 using namespace LibRpBase;
+using LibRpFile::IRpFile;
 
 // C++ STL classes.
 using std::string;
@@ -20,8 +21,9 @@ using std::vector;
 namespace LibRomData {
 
 ROMDATA_IMPL(NGPC)
+ROMDATA_IMPL_IMG(NGPC)
 
-class NGPCPrivate : public RomDataPrivate
+class NGPCPrivate final : public RomDataPrivate
 {
 	public:
 		NGPCPrivate(NGPC *q, IRpFile *file);
@@ -34,14 +36,19 @@ class NGPCPrivate : public RomDataPrivate
 		/** RomFields **/
 
 		// ROM type.
-		enum NGPC_RomType {
-			ROM_UNKNOWN	= -1,	// Unknown ROM type.
-			ROM_NGP		= 0,	// Neo Geo Pocket
-			ROM_NGPC	= 1,	// Neo Geo Pocket Color
+		enum class RomType {
+			Unknown	= -1,
 
-			ROM_MAX
+			NGP	= 0,	// Neo Geo Pocket
+			NGPC	= 1,	// Neo Geo Pocket Color
+
+			Max
 		};
-		int romType;
+		RomType romType;
+
+		// MIME type table.
+		// Ordering matches RomType.
+		static const char *const mimeType_tbl[];
 
 	public:
 		// ROM header.
@@ -50,11 +57,19 @@ class NGPCPrivate : public RomDataPrivate
 
 /** NGPCPrivate **/
 
-/** Internal ROM data. **/
+// MIME type table.
+// Ordering matches RomType.
+const char *const NGPCPrivate::mimeType_tbl[] = {
+	// Unofficial MIME types from FreeDesktop.org.
+	"application/x-neo-geo-pocket-rom",
+	"application/x-neo-geo-pocket-color-rom",
+
+	nullptr
+};
 
 NGPCPrivate::NGPCPrivate(NGPC *q, IRpFile *file)
 	: super(q, file)
-	, romType(ROM_UNKNOWN)
+	, romType(RomType::Unknown)
 {
 	// Clear the various structs.
 	memset(&romHeader, 0, sizeof(romHeader));
@@ -93,8 +108,7 @@ NGPC::NGPC(IRpFile *file)
 	d->file->rewind();
 	size_t size = d->file->read(&d->romHeader, sizeof(d->romHeader));
 	if (size != sizeof(d->romHeader)) {
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
 
@@ -105,12 +119,17 @@ NGPC::NGPC(IRpFile *file)
 	info.header.pData = reinterpret_cast<const uint8_t*>(&d->romHeader);
 	info.ext = nullptr;	// Not needed for NGPC.
 	info.szFile = 0;	// Not needed for NGPC.
-	d->romType = isRomSupported_static(&info);
-	d->isValid = (d->romType >= 0);
+	d->romType = static_cast<NGPCPrivate::RomType>(isRomSupported_static(&info));
+	d->isValid = ((int)d->romType >= 0);
 
 	if (!d->isValid) {
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
+		return;
+	}
+
+	// Set the MIME type.
+	if ((int)d->romType < ARRAY_SIZE(d->mimeType_tbl)-1) {
+		d->mimeType = d->mimeType_tbl[(int)d->romType];
 	}
 }
 
@@ -132,8 +151,10 @@ int NGPC::isRomSupported_static(const DetectInfo *info)
 	{
 		// Either no detection information was specified,
 		// or the header is too small.
-		return -1;
+		return static_cast<int>(NGPCPrivate::RomType::Unknown);
 	}
+
+	NGPCPrivate::RomType romType = NGPCPrivate::RomType::Unknown;
 
 	// Check the copyright/license string.
 	const NGPC_RomHeader *const romHeader =
@@ -145,17 +166,18 @@ int NGPC::isRomSupported_static(const DetectInfo *info)
 		// Check the machine type.
 		switch (romHeader->machine_type) {
 			case NGPC_MACHINETYPE_MONOCHROME:
-				return NGPCPrivate::ROM_NGP;
+				romType = NGPCPrivate::RomType::NGP;
+				break;
 			case NGPC_MACHINETYPE_COLOR:
-				return NGPCPrivate::ROM_NGPC;
+				romType = NGPCPrivate::RomType::NGPC;
+				break;
 			default:
 				// Invalid.
 				break;
 		}
 	}
 
-	// Not supported.
-	return -1;
+	return static_cast<int>(romType);
 }
 
 /**
@@ -173,7 +195,7 @@ const char *NGPC::systemName(unsigned int type) const
 	// ignore the region selection.
 	static_assert(SYSNAME_TYPE_MASK == 3,
 		"NGPC::systemName() array index optimization needs to be updated.");
-	static_assert(NGPCPrivate::ROM_MAX == 2,
+	static_assert((int)NGPCPrivate::RomType::Max == 2,
 		"NGPC::systemName() array index optimization needs to be updated.");
 
 	// Bits 0-1: Type. (long, short, abbreviation)
@@ -184,8 +206,8 @@ const char *NGPC::systemName(unsigned int type) const
 	};
 
 	// NOTE: This might return an incorrect system name if
-	// d->romType is ROM_TYPE_UNKNOWN.
-	return sysNames[d->romType & 1][type & SYSNAME_TYPE_MASK];
+	// d->romType is RomType::TYPE_UNKNOWN.
+	return sysNames[(int)d->romType & 1][type & SYSNAME_TYPE_MASK];
 }
 
 /**
@@ -223,14 +245,69 @@ const char *const *NGPC::supportedFileExtensions_static(void)
  */
 const char *const *NGPC::supportedMimeTypes_static(void)
 {
-	static const char *const mimeTypes[] = {
-		// Unofficial MIME types from FreeDesktop.org.
-		"application/x-neo-geo-pocket-rom",
-		"application/x-neo-geo-pocket-color-rom",
+	return NGPCPrivate::mimeType_tbl;
+}
 
-		nullptr
-	};
-	return mimeTypes;
+/**
+ * Get a bitfield of image types this class can retrieve.
+ * @return Bitfield of supported image types. (ImageTypesBF)
+ */
+uint32_t NGPC::supportedImageTypes_static(void)
+{
+	return IMGBF_EXT_TITLE_SCREEN;
+}
+
+/**
+ * Get a list of all available image sizes for the specified image type.
+ * @param imageType Image type.
+ * @return Vector of available image sizes, or empty vector if no images are available.
+ */
+vector<RomData::ImageSizeDef> NGPC::supportedImageSizes_static(ImageType imageType)
+{
+	ASSERT_supportedImageSizes(imageType);
+
+	switch (imageType) {
+		case IMG_EXT_TITLE_SCREEN: {
+			static const ImageSizeDef sz_EXT_TITLE_SCREEN[] = {
+				{nullptr, 160, 152, 0},
+			};
+			return vector<ImageSizeDef>(sz_EXT_TITLE_SCREEN,
+				sz_EXT_TITLE_SCREEN + ARRAY_SIZE(sz_EXT_TITLE_SCREEN));
+		}
+		default:
+			break;
+	}
+
+	// Unsupported image type.
+	return vector<ImageSizeDef>();
+}
+
+/**
+ * Get image processing flags.
+ *
+ * These specify post-processing operations for images,
+ * e.g. applying transparency masks.
+ *
+ * @param imageType Image type.
+ * @return Bitfield of ImageProcessingBF operations to perform.
+ */
+uint32_t NGPC::imgpf(ImageType imageType) const
+{
+	ASSERT_imgpf(imageType);
+
+	uint32_t ret = 0;
+	switch (imageType) {
+		case IMG_EXT_TITLE_SCREEN:
+			// Use nearest-neighbor scaling when resizing.
+			ret = IMGPF_RESCALE_NEAREST;
+			break;
+
+		default:
+			// GameTDB's Nintendo DS cover scans have alpha transparency.
+			// Hence, no image processing is required.
+			break;
+	}
+	return ret;
 }
 
 /**
@@ -247,7 +324,7 @@ int NGPC::loadFieldData(void)
 	} else if (!d->file || !d->file->isOpen()) {
 		// File isn't open.
 		return -EBADF;
-	} else if (!d->isValid || d->romType < 0) {
+	} else if (!d->isValid || (int)d->romType < 0) {
 		// Unknown ROM image type.
 		return -EIO;
 	}
@@ -268,7 +345,7 @@ int NGPC::loadFieldData(void)
 
 	// Revision
 	d->fields->addField_string_numeric(C_("RomData", "Revision"),
-		romHeader->version, RomFields::FB_DEC, 2);
+		romHeader->version, RomFields::Base::Dec, 2);
 
 	// System
 	static const char *const system_bitfield_names[] = {
@@ -278,12 +355,12 @@ int NGPC::loadFieldData(void)
 		system_bitfield_names, ARRAY_SIZE(system_bitfield_names));
 	d->fields->addField_bitfield(C_("NGPC", "System"),
 		v_system_bitfield_names, 0,
-			(d->romType == NGPCPrivate::ROM_NGPC ? 3 : 1));
+			(d->romType == NGPCPrivate::RomType::NGPC ? 3 : 1));
 
 	// Entry point
 	const uint32_t entry_point = le32_to_cpu(romHeader->entry_point);
 	d->fields->addField_string_numeric(C_("NGPC", "Entry Point"),
-		entry_point, RomFields::FB_HEX, 8, RomFields::STRF_MONOSPACE);
+		entry_point, RomFields::Base::Hex, 8, RomFields::STRF_MONOSPACE);
 
 	// Debug enabled?
 	const char *s_debug = nullptr;
@@ -322,7 +399,7 @@ int NGPC::loadMetaData(void)
 	} else if (!d->file) {
 		// File isn't open.
 		return -EBADF;
-	} else if (!d->isValid || d->romType < 0) {
+	} else if (!d->isValid || (int)d->romType < 0) {
 		// Unknown ROM image type.
 		return -EIO;
 	}
@@ -342,6 +419,107 @@ int NGPC::loadMetaData(void)
 
 	// Finished reading the metadata.
 	return static_cast<int>(d->metaData->count());
+}
+
+/**
+ * Get a list of URLs for an external image type.
+ *
+ * A thumbnail size may be requested from the shell.
+ * If the subclass supports multiple sizes, it should
+ * try to get the size that most closely matches the
+ * requested size.
+ *
+ * @param imageType	[in]     Image type.
+ * @param pExtURLs	[out]    Output vector.
+ * @param size		[in,opt] Requested image size. This may be a requested
+ *                               thumbnail size in pixels, or an ImageSizeType
+ *                               enum value.
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int NGPC::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
+{
+	ASSERT_extURLs(imageType, pExtURLs);
+	pExtURLs->clear();
+
+	RP_D(const NGPC);
+	if (!d->isValid || (int)d->romType < 0) {
+		// ROM image isn't valid.
+		return -EIO;
+	}
+
+	// NOTE: We only have one size for NGPC right now.
+	RP_UNUSED(size);
+	vector<ImageSizeDef> sizeDefs = supportedImageSizes(imageType);
+	assert(sizeDefs.size() == 1);
+	if (sizeDefs.empty()) {
+		// No image sizes.
+		return -ENOENT;
+	}
+
+	// NOTE: RPDB's title screen database only has one size.
+	// There's no need to check image sizes, but we need to
+	// get the image size for the extURLs struct.
+
+	// Determine the image type name.
+	const char *imageTypeName;
+	const char *ext;
+	switch (imageType) {
+		case IMG_EXT_TITLE_SCREEN:
+			imageTypeName = "title";
+			ext = ".png";
+			break;
+		default:
+			// Unsupported image type.
+			return -ENOENT;
+	}
+
+	// Game ID and subdirectory.
+	// For game ID, RPDB uses "NEOPxxxx" for NGPC.
+	// TODO: Special cases for duplicates?
+	const uint16_t id_code = (d->romHeader.id_code[1] << 8) | d->romHeader.id_code[0];
+	const char *p_extra_subdir = nullptr;
+	char extra_subdir[12];
+	char game_id[13];	// original size is 12
+
+	switch (id_code) {
+		default:
+			// No special handling for tihs game.
+			snprintf(game_id, sizeof(game_id), "NEOP%04X", id_code);
+			break;
+
+		case 0x0000:	// Homebrew
+		case 0x1234:	// Some samples
+			// Use the game ID as the extra subdirectory,
+			// and the ROM title as the game ID.
+			memcpy(game_id, d->romHeader.title, sizeof(d->romHeader.title));
+			game_id[sizeof(game_id)-1] = '\0';
+			// Trim spaces from the game ID.
+			for (int i = (int)sizeof(game_id)-2; i > 0; i--) {
+				if (game_id[i] != '\0' && game_id[i] != ' ')
+					break;
+				game_id[i] = '\0';
+			}
+			if (game_id[0] == '\0') {
+				// Title is empty.
+				return -ENOENT;
+			}
+
+			snprintf(extra_subdir, sizeof(extra_subdir), "NEOP%04X", id_code);
+			p_extra_subdir = extra_subdir;
+			break;
+	}
+
+	// Add the URLs.
+	pExtURLs->resize(1);
+	auto extURL_iter = pExtURLs->begin();
+	extURL_iter->url = d->getURL_RPDB("ngpc", imageTypeName, p_extra_subdir, game_id, ext);
+	extURL_iter->cache_key = d->getCacheKey_RPDB("ngpc", imageTypeName, p_extra_subdir, game_id, ext);
+	extURL_iter->width = sizeDefs[0].width;
+	extURL_iter->height = sizeDefs[0].height;
+	extURL_iter->high_res = (sizeDefs[0].index >= 2);
+
+	// All URLs added.
+	return 0;
 }
 
 }

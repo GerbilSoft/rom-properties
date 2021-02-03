@@ -108,7 +108,7 @@ AesCAPI_NG_Private::AesCAPI_NG_Private()
 	, pbKeyObject(nullptr)
 	, cbKeyObject(0)
 	, key_len(0)
-	, chainingMode(IAesCipher::CM_ECB)
+	, chainingMode(IAesCipher::ChainingMode::ECB)
 {
 	// Clear the key and IV.
 	memset(key, 0, sizeof(key));
@@ -354,10 +354,8 @@ int AesCAPI_NG::setKey(const uint8_t *RESTRICT pKey, size_t size)
 		// Destroy the old key.
 		d->pBCryptDestroyKey(hOldKey);
 	}
-	if (pbOldKeyObject != nullptr) {
-		// Delete the old key blob.
-		free(pbOldKeyObject);
-	}
+	// Delete the old key blob.
+	free(pbOldKeyObject);
 
 	// Save the key data.
 	memcpy(d->key, pKey, size);
@@ -388,12 +386,12 @@ int AesCAPI_NG::setChainingMode(ChainingMode mode)
 	const wchar_t *szMode;
 	ULONG cbMode;
 	switch (mode) {
-		case CM_ECB:
-		case CM_CTR:	// implemented using ECB
+		case ChainingMode::ECB:
+		case ChainingMode::CTR:	// implemented using ECB
 			szMode = BCRYPT_CHAIN_MODE_ECB;
 			cbMode = sizeof(BCRYPT_CHAIN_MODE_ECB);
 			break;
-		case CM_CBC:
+		case ChainingMode::CBC:
 			szMode = BCRYPT_CHAIN_MODE_CBC;
 			cbMode = sizeof(BCRYPT_CHAIN_MODE_CBC);
 			break;
@@ -434,7 +432,7 @@ int AesCAPI_NG::setIV(const uint8_t *RESTRICT pIV, size_t size)
 	} else if (!d->hBcryptDll || !d->hAesAlg) {
 		// Algorithm is not available.
 		return -EBADF;
-	} else if (d->chainingMode < CM_CBC || d->chainingMode > CM_CTR) {
+	} else if (d->chainingMode < ChainingMode::CBC || d->chainingMode >= ChainingMode::Max) {
 		// This chaining mode doesn't have an IV or counter.
 		return -EINVAL;
 	}
@@ -508,7 +506,7 @@ size_t AesCAPI_NG::decrypt(uint8_t *RESTRICT pData, size_t size)
 
 	ULONG cbResult;
 	switch (d->chainingMode) {
-		case CM_ECB:
+		case ChainingMode::ECB:
 			status = d->pBCryptDecrypt(d->hKey,
 						pData, (ULONG)size,
 						nullptr,
@@ -517,7 +515,7 @@ size_t AesCAPI_NG::decrypt(uint8_t *RESTRICT pData, size_t size)
 						&cbResult, 0);
 			break;
 
-		case CM_CBC:
+		case ChainingMode::CBC:
 			status = d->pBCryptDecrypt(d->hKey,
 						pData, (ULONG)size,
 						nullptr,
@@ -526,7 +524,7 @@ size_t AesCAPI_NG::decrypt(uint8_t *RESTRICT pData, size_t size)
 						&cbResult, 0);
 			break;
 
-		case CM_CTR: {
+		case ChainingMode::CTR: {
 			// CTR isn't supported by CryptoAPI-NG directly.
 			// Need to decrypt each block manually.
 

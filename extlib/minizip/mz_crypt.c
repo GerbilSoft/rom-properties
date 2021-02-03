@@ -1,8 +1,7 @@
 /* mz_crypt.c -- Crypto/hash functions
-   Version 2.9.1, November 15, 2019
    part of the MiniZip project
 
-   Copyright (C) 2010-2019 Nathan Moinvaziri
+   Copyright (C) 2010-2020 Nathan Moinvaziri
      https://github.com/nmoinvaz/minizip
 
    This program is distributed under the terms of the same license as zlib.
@@ -15,7 +14,7 @@
 
 #if defined(HAVE_ZLIB)
 #  include "zlib.h"
-#  if defined(ZLIBNG_VERNUM)
+#  if defined(ZLIBNG_VERNUM) && !defined(ZLIB_COMPAT)
 #    include "zlib-ng.h"
 #  endif
 #elif defined(HAVE_LZMA)
@@ -41,8 +40,7 @@
 
 /***************************************************************************/
 
-uint32_t mz_crypt_crc32_update(uint32_t value, const uint8_t *buf, int32_t size)
-{
+uint32_t mz_crypt_crc32_update(uint32_t value, const uint8_t *buf, int32_t size) {
 #if defined(HAVE_ZLIB)
     return (uint32_t)ZLIB_PREFIX(crc32)((z_crc_t)value, buf, (uInt)size);
 #elif defined(HAVE_LZMA)
@@ -95,8 +93,7 @@ uint32_t mz_crypt_crc32_update(uint32_t value, const uint8_t *buf, int32_t size)
     };
     value = ~value;
 
-    while (size > 0)
-    {
+    while (size > 0) {
         value = (value >> 8) ^ crc32_table[(value ^ *buf) & 0xFF];
 
         buf += 1;
@@ -109,8 +106,7 @@ uint32_t mz_crypt_crc32_update(uint32_t value, const uint8_t *buf, int32_t size)
 
 #ifndef MZ_ZIP_NO_ENCRYPTION
 int32_t  mz_crypt_pbkdf2(uint8_t *password, int32_t password_length, uint8_t *salt,
-    int32_t salt_length, int32_t iteration_count, uint8_t *key, int32_t key_length)
-{
+    int32_t salt_length, int32_t iteration_count, uint8_t *key, int32_t key_length) {
     void *hmac1 = NULL;
     void *hmac2 = NULL;
     void *hmac3 = NULL;
@@ -143,8 +139,7 @@ int32_t  mz_crypt_pbkdf2(uint8_t *password, int32_t password_length, uint8_t *sa
 
     block_count = 1 + ((uint16_t)key_length - 1) / MZ_HASH_SHA1_SIZE;
 
-    for (i = 0; (err == MZ_OK) && (i < block_count); i += 1)
-    {
+    for (i = 0; (err == MZ_OK) && (i < block_count); i += 1) {
         memset(ux, 0, sizeof(ux));
 
         err = mz_crypt_hmac_copy(hmac2, hmac3);
@@ -156,8 +151,7 @@ int32_t  mz_crypt_pbkdf2(uint8_t *password, int32_t password_length, uint8_t *sa
         uu[2] = (uint8_t)((i + 1) >> 8);
         uu[3] = (uint8_t)(i + 1);
 
-        for (j = 0, k = 4; j < iteration_count; j += 1)
-        {
+        for (j = 0, k = 4; j < iteration_count; j += 1) {
             err = mz_crypt_hmac_update(hmac3, uu, k);
             if (err == MZ_OK)
                 err = mz_crypt_hmac_end(hmac3, uu, sizeof(uu));

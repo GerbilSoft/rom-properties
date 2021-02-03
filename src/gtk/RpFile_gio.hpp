@@ -2,18 +2,18 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * RpFile_gio.hpp: IRpFile implementation using GIO/GVfs.                  *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #ifndef __ROMPROPERTIES_GTK_RPFILE_GIO_HPP__
 #define __ROMPROPERTIES_GTK_RPFILE_GIO_HPP__
 
-// librpbase
-#include "librpbase/file/IRpFile.hpp"
+// librpfile
+#include "librpfile/IRpFile.hpp"
 
 class RpFileGioPrivate;
-class RpFileGio : public LibRpBase::IRpFile
+class RpFileGio final : public LibRpFile::IRpFile
 {
 	public:
 		/**
@@ -21,15 +21,15 @@ class RpFileGio : public LibRpBase::IRpFile
 		 * NOTE: Files are always opened as read-only in binary mode.
 		 * @param uri GVfs URI.
 		 */
-		RpFileGio(const char *uri);
-		RpFileGio(const std::string &uri);
+		explicit RpFileGio(const char *uri);
+		explicit RpFileGio(const std::string &uri);
 	private:
 		void init(void);
 	protected:
 		virtual ~RpFileGio();	// call unref() instead
 
 	private:
-		typedef LibRpBase::IRpFile super;
+		typedef LibRpFile::IRpFile super;
 		RP_DISABLE_COPY(RpFileGio)
 	protected:
 		friend class RpFileGioPrivate;
@@ -54,6 +54,7 @@ class RpFileGio : public LibRpBase::IRpFile
 		 * @param size Amount of data to read, in bytes.
 		 * @return Number of bytes read.
 		 */
+		ATTR_ACCESS_SIZE(write_only, 2, 3)
 		size_t read(void *ptr, size_t size) final;
 
 		/**
@@ -63,6 +64,7 @@ class RpFileGio : public LibRpBase::IRpFile
 		 * @param size Amount of data to read, in bytes.
 		 * @return Number of bytes written.
 		 */
+		ATTR_ACCESS_SIZE(read_only, 2, 3)
 		size_t write(const void *ptr, size_t size) final;
 
 		/**
@@ -70,13 +72,13 @@ class RpFileGio : public LibRpBase::IRpFile
 		 * @param pos File position.
 		 * @return 0 on success; -1 on error.
 		 */
-		int seek(int64_t pos) final;
+		int seek(off64_t pos) final;
 
 		/**
 		 * Get the file position.
 		 * @return File position, or -1 on error.
 		 */
-		int64_t tell(void) final;
+		off64_t tell(void) final;
 
 		/**
 		 * Truncate the file.
@@ -84,7 +86,7 @@ class RpFileGio : public LibRpBase::IRpFile
 		 * @param size New size. (default is 0)
 		 * @return 0 on success; -1 on error.
 		 */
-		int truncate(int64_t size = 0) final;
+		int truncate(off64_t size = 0) final;
 
 	public:
 		/** File properties **/
@@ -93,7 +95,7 @@ class RpFileGio : public LibRpBase::IRpFile
 		 * Get the file size.
 		 * @return File size, or negative on error.
 		 */
-		int64_t size(void) final;
+		off64_t size(void) final;
 
 		/**
 		 * Get the filename.

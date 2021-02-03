@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * GdiReader.hpp: GD-ROM reader for Dreamcast GDI images.                  *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -13,9 +13,10 @@
 #include "../cdrom_structs.h"
 #include "IsoPartition.hpp"
 
-// librpbase
-#include "librpbase/file/RelatedFile.hpp"
+// librpbase, librpfile
+#include "librpfile/RelatedFile.hpp"
 using namespace LibRpBase;
+using namespace LibRpFile;
 
 // Other RomData subclasses
 #include "Other/ISO.hpp"
@@ -49,10 +50,9 @@ class GdiReaderPrivate : public SparseDiscReaderPrivate {
 		struct BlockRange {
 			unsigned int blockStart;	// First LBA.
 			unsigned int blockEnd;		// Last LBA. (inclusive) (0 if the file hasn't been opened yet)
-			uint16_t sectorSize;		// 2048 or 2352
+			uint16_t sectorSize;		// 2048 or 2352 (TODO: Make this a bool?)
 			uint8_t trackNumber;		// 01 through 99
 			uint8_t reserved;
-			// TODO: Mode1/Mode2 designation? (bool to indicate 2352?)
 			// TODO: Data vs. audio?
 			string filename;		// Relative to the .gdi file. Cleared on error.
 			IRpFile *file;
@@ -104,9 +104,7 @@ void GdiReaderPrivate::close(void)
 {
 	std::for_each(blockRanges.begin(), blockRanges.end(),
 		[](BlockRange &blockRange) {
-			if (blockRange.file) {
-				blockRange.file->unref();
-			}
+			UNREF(blockRange.file);
 		}
 	);
 	blockRanges.clear();
@@ -114,10 +112,7 @@ void GdiReaderPrivate::close(void)
 
 	// GDI file.
 	RP_Q(GdiReader);
-	if (q->m_file) {
-		q->m_file->unref();
-		q->m_file = nullptr;
-	}
+	UNREF_AND_NULL(q->m_file);
 }
 
 /**
@@ -277,7 +272,7 @@ int GdiReaderPrivate::openTrack(int trackNumber)
 	}
 
 	// Open the related file.
-	IRpFile *file = FileSystem::openRelatedFile(filename.c_str(), basename.c_str(), ext.c_str());
+	IRpFile *const file = FileSystem::openRelatedFile(filename.c_str(), basename.c_str(), ext.c_str());
 	if (!file) {
 		// Unable to open the file.
 		// TODO: Return the actual error.
@@ -285,7 +280,7 @@ int GdiReaderPrivate::openTrack(int trackNumber)
 	}
 
 	// File opened. Get its size and calculate the end block.
-	const int64_t fileSize = file->size();
+	const off64_t fileSize = file->size();
 	if (fileSize <= 0) {
 		// Empty or invalid file...
 		file->unref();
@@ -320,11 +315,10 @@ GdiReader::GdiReader(IRpFile *file)
 	d->filename = m_file->filename();
 
 	// GDI file should be 4k or less.
-	int64_t fileSize = m_file->size();
+	const off64_t fileSize = m_file->size();
 	if (fileSize <= 0 || fileSize > 4096) {
 		// Invalid GDI file size.
-		m_file->unref();
-		m_file = nullptr;
+		UNREF_AND_NULL_NOCHK(m_file);
 		m_lastError = EIO;
 		return;
 	}
@@ -336,8 +330,7 @@ GdiReader::GdiReader(IRpFile *file)
 	size_t size = m_file->read(gdibuf.get(), gdisize);
 	if (size != gdisize) {
 		// Read error.
-		m_file->unref();
-		m_file = nullptr;
+		UNREF_AND_NULL_NOCHK(m_file);
 		m_lastError = EIO;
 		return;
 	}
@@ -467,7 +460,7 @@ int GdiReader::isDiscSupported(const uint8_t *pHeader, size_t szHeader) const
  * @param blockIdx	[in] Block index.
  * @return Physical block address. (-1 due to not being implemented)
  */
-int64_t GdiReader::getPhysBlockAddr(uint32_t blockIdx) const
+off64_t GdiReader::getPhysBlockAddr(uint32_t blockIdx) const
 {
 	RP_UNUSED(blockIdx);
 	assert(!"GdiReader::getPhysBlockAddr() is not implemented.");
@@ -481,12 +474,12 @@ int64_t GdiReader::getPhysBlockAddr(uint32_t blockIdx) const
  * For a full block, set pos = 0 and size = block_size.
  *
  * @param blockIdx	[in] Block index.
- * @param ptr		[out] Output data buffer.
  * @param pos		[in] Starting position. (Must be >= 0 and <= the block size!)
+ * @param ptr		[out] Output data buffer.
  * @param size		[in] Amount of data to read, in bytes. (Must be <= the block size!)
  * @return Number of bytes read, or -1 if the block index is invalid.
  */
-int GdiReader::readBlock(uint32_t blockIdx, void *ptr, int pos, size_t size)
+int GdiReader::readBlock(uint32_t blockIdx, int pos, void *ptr, size_t size)
 {
 	// Read 'size' bytes of block 'blockIdx', starting at 'pos'.
 	// NOTE: This can only be called by SparseDiscReader,
@@ -496,10 +489,10 @@ int GdiReader::readBlock(uint32_t blockIdx, void *ptr, int pos, size_t size)
 	assert(size <= d->block_size);
 	assert(blockIdx < d->blockCount);
 	// TODO: Make sure overflow doesn't occur.
-	assert((int64_t)(pos + size) <= (int64_t)d->block_size);
+	assert((off64_t)(pos + size) <= (off64_t)d->block_size);
 	if (pos < 0 || pos >= static_cast<int>(d->block_size) ||
 		size > d->block_size ||
-		static_cast<int64_t>(pos + size) > static_cast<int64_t>(d->block_size) ||
+		static_cast<off64_t>(pos + size) > static_cast<off64_t>(d->block_size) ||
 	    blockIdx >= d->blockCount)
 	{
 		// pos+size is out of range.
@@ -514,7 +507,8 @@ int GdiReader::readBlock(uint32_t blockIdx, void *ptr, int pos, size_t size)
 	// Find the block.
 	// TODO: Cache this lookup somewhere or something.
 	const GdiReaderPrivate::BlockRange *blockRange = nullptr;
-	for (auto iter = d->blockRanges.cbegin(); iter != d->blockRanges.cend(); ++iter) {
+	const auto blockRanges_cend = d->blockRanges.cend();
+	for (auto iter = d->blockRanges.cbegin(); iter != blockRanges_cend; ++iter) {
 		// NOTE: Using volatile because it can change in d->openTrack().
 		const volatile GdiReaderPrivate::BlockRange *const vbr = &(*iter);
 		if (blockIdx < vbr->blockStart) {
@@ -552,15 +546,27 @@ int GdiReader::readBlock(uint32_t blockIdx, void *ptr, int pos, size_t size)
 		return 0;
 	}
 
-	// Go to the block.
-	int64_t phys_pos = (static_cast<int64_t>(blockIdx - blockRange->blockStart) * blockRange->sectorSize) + pos;
+	// Read the full block.
+	off64_t phys_pos = (static_cast<off64_t>(blockIdx - blockRange->blockStart) * blockRange->sectorSize);
 	if (blockRange->sectorSize == 2352) {
-		// FIXME: Read the whole block so we can determine if this is Mode 1 or Mode 2.
-		// Mode 1 data starts at byte 16; Mode 2 data starts at byte 24.
-		phys_pos += 16;
+		// 2352-byte sectors.
+		// TODO: Handle audio tracks properly?
+		CDROM_2352_Sector_t sector;
+		size_t sz_read = blockRange->file->seekAndRead(phys_pos, &sector, sizeof(sector));
+		m_lastError = blockRange->file->lastError();
+		if (sz_read != sizeof(sector)) {
+			// Read error.
+			return -1;
+		}
+
+		// NOTE: Sector user data area position depends on the sector mode.
+		const uint8_t *const data = cdromSectorDataPtr(&sector);
+		memcpy(ptr, &data[pos], size);
+		return size;
 	}
+
+	// 2048-byte sectors.
 	size_t sz_read = blockRange->file->seekAndRead(phys_pos, ptr, size);
-	m_lastError = blockRange->file->lastError();
 	return (sz_read > 0 ? (int)sz_read : -1);
 }
 
@@ -642,14 +648,13 @@ ISO *GdiReader::openIsoRomData(int trackNumber)
 	ISO *isoData = nullptr;
 
 	PartitionFile *const isoFile = new PartitionFile(this,
-		static_cast<int64_t>(lba_start) * 2048,
-		static_cast<int64_t>(lba_size) * 2048);
+		static_cast<off64_t>(lba_start) * 2048,
+		static_cast<off64_t>(lba_size) * 2048);
 	if (isoFile->isOpen()) {
 		isoData = new ISO(isoFile);
 		if (!isoData->isOpen()) {
 			// Unable to open ISO object.
-			isoData->unref();
-			isoData = nullptr;
+			UNREF_AND_NULL_NOCHK(isoData);
 		}
 	}
 	isoFile->unref();

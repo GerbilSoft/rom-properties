@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * rp_image.hpp: Image class.                                              *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -10,15 +10,17 @@
 #define __ROMPROPERTIES_LIBRPTEXTURE_RP_IMAGE_HPP__
 
 #include "common.h"
-#include "byteorder.h"
-#include "cpu_dispatch.h"
+#include "RefBase.hpp"
+
+#include "librpcpu/byteorder.h"
+#include "librpcpu/cpu_dispatch.h"
 
 // C includes.
 #include <stddef.h>	/* size_t */
 #include <stdint.h>
 
 #if defined(RP_CPU_I386) || defined(RP_CPU_AMD64)
-# include "librpbase/cpuflags_x86.h"
+# include "librpcpu/cpuflags_x86.h"
 # define RP_IMAGE_HAS_SSE2 1
 # define RP_IMAGE_HAS_SSE41 1
 #endif
@@ -52,15 +54,15 @@ ASSERT_STRUCT(argb32_t, 4);
 class rp_image_backend;
 
 class rp_image_private;
-class rp_image
+class rp_image : public RefBase
 {
 	public:
-		enum Format {
-			FORMAT_NONE,		// No image.
-			FORMAT_CI8,		// Color index, 8-bit palette.
-			FORMAT_ARGB32,		// 32-bit ARGB.
+		enum class Format {
+			None,	// No image.
+			CI8,	// Color index, 8-bit palette.
+			ARGB32,	// 32-bit ARGB.
 
-			FORMAT_MAX		// End of Format.
+			Max
 		};
 
 		/**
@@ -84,13 +86,38 @@ class rp_image
 		 */
 		explicit rp_image(rp_image_backend *backend);
 
-		~rp_image();
+	protected:
+		~rp_image();	// call unref() instead
 
 	private:
 		RP_DISABLE_COPY(rp_image)
 	private:
 		friend class rp_image_private;
 		rp_image_private *const d_ptr;
+
+	public:
+		inline rp_image *ref(void)
+		{
+			return RefBase::ref<rp_image>();
+		}
+
+		/**
+		 * Special case unref() function to allow
+		 * const rp_image* to be ref'd.
+		 */
+		inline const rp_image *ref(void) const
+		{
+			return const_cast<rp_image*>(this)->RefBase::ref<rp_image>();
+		}
+
+		/**
+		 * Special case unref() function to allow
+		 * const rp_image* to be unref'd.
+		 */
+		inline void unref(void) const
+		{
+			const_cast<rp_image*>(this)->RefBase::unref();
+		}
 
 	public:
 		/**
@@ -449,15 +476,31 @@ class rp_image
 		 */
 		inline int apply_chroma_key(uint32_t key);
 
+		enum FlipOp : uint8_t {
+			FLIP_NONE	= 0,
+			FLIP_V		= (1U << 0),
+			FLIP_H		= (1U << 1),
+			FLIP_VH		= (FLIP_V | FLIP_H),
+		};
+
 		/**
-		 * Vertically flip the image.
+		 * Flip the image.
 		 *
 		 * This function returns a *new* image and leaves the
 		 * original image unmodified.
 		 *
-		 * @return Vertically-flipped image, or nullptr on error.
+		 * @param op Flip operation.
+		 * @return Flipped image, or nullptr on error.
 		 */
-		rp_image *vflip(void) const;
+		rp_image *flip(FlipOp op) const;
+
+		/**
+		 * Shrink image dimensions.
+		 * @param width New width.
+		 * @param height New height.
+		 * @return 0 on success; negative POSIX error code on error.
+		 */
+		int shrink(int width, int height);
 };
 
 /**

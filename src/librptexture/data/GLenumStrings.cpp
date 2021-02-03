@@ -25,7 +25,7 @@ class GLenumStringsPrivate
 		// NOTE: Must be sorted by id.
 		// NOTE: Leaving the "GL_" prefix off of the strings.
 		#define STRTBL_ENTRY(x) {GL_##x, #x}
-		struct StrTbl {
+		struct StrTbl_t {
 			unsigned int id;
 			const char *str;
 		};
@@ -41,7 +41,7 @@ class GLenumStringsPrivate
 		/**
 		 * OpenGL enumerations.
 		 */
-		static const StrTbl glEnum_tbl[];
+		static const StrTbl_t glEnum_tbl[];
 };
 
 /** GLenumStringsPrivate **/
@@ -54,8 +54,8 @@ class GLenumStringsPrivate
  */
 int RP_C_API GLenumStringsPrivate::compar(const void *a, const void *b)
 {
-	unsigned int id1 = static_cast<const StrTbl*>(a)->id;
-	unsigned int id2 = static_cast<const StrTbl*>(b)->id;
+	unsigned int id1 = static_cast<const StrTbl_t*>(a)->id;
+	unsigned int id2 = static_cast<const StrTbl_t*>(b)->id;
 	if (id1 < id2) return -1;
 	if (id1 > id2) return 1;
 	return 0;
@@ -64,7 +64,7 @@ int RP_C_API GLenumStringsPrivate::compar(const void *a, const void *b)
 /**
  * OpenGL enumerations.
  */
-const GLenumStringsPrivate::StrTbl GLenumStringsPrivate::glEnum_tbl[] = {
+const GLenumStringsPrivate::StrTbl_t GLenumStringsPrivate::glEnum_tbl[] = {
 	STRTBL_ENTRY(BYTE),
 	STRTBL_ENTRY(UNSIGNED_BYTE),
 	STRTBL_ENTRY(SHORT),
@@ -321,12 +321,12 @@ const GLenumStringsPrivate::StrTbl GLenumStringsPrivate::glEnum_tbl[] = {
 const char *GLenumStrings::lookup_glEnum(unsigned int glEnum)
 {
 	// Do a binary search.
-	const GLenumStringsPrivate::StrTbl key = {glEnum, nullptr};
-	const GLenumStringsPrivate::StrTbl *res =
-		static_cast<const GLenumStringsPrivate::StrTbl*>(bsearch(&key,
+	const GLenumStringsPrivate::StrTbl_t key = {glEnum, nullptr};
+	const GLenumStringsPrivate::StrTbl_t *res =
+		static_cast<const GLenumStringsPrivate::StrTbl_t*>(bsearch(&key,
 			GLenumStringsPrivate::glEnum_tbl,
 			ARRAY_SIZE(GLenumStringsPrivate::glEnum_tbl)-1,
-			sizeof(GLenumStringsPrivate::StrTbl),
+			sizeof(GLenumStringsPrivate::StrTbl_t),
 			GLenumStringsPrivate::compar));
 
 	return (res ? res->str : 0);

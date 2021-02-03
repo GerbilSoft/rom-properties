@@ -3,44 +3,61 @@
  * rpcli.cpp: Command-line interface for properties.                       *
  *                                                                         *
  * Copyright (c) 2016-2018 by Egor.                                        *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #include "stdafx.h"
 #include "config.rpcli.h"
 
-// librpbase
+// OS-specific security options.
+#include "rpcli_secure.h"
+
+// librpbase, librpcpu
+#include "librpcpu/byteswap_rp.h"
 #include "librpbase/config.librpbase.h"
-#include "librpbase/byteswap.h"
 #include "librpbase/RomData.hpp"
 #include "librpbase/SystemRegion.hpp"
+#include "librpbase/TextFuncs.hpp"
+#include "librpbase/img/RpPng.hpp"
+#include "librpbase/img/IconAnimData.hpp"
+#include "librpbase/TextOut.hpp"
 #include "libi18n/i18n.h"
 using namespace LibRpBase;
 
+// librpfile
+#include "librpfile/config.librpfile.h"
+#include "librpfile/FileSystem.hpp"
+#include "librpfile/RpFile.hpp"
+using namespace LibRpFile;
+
 // libromdata
-#include "librpbase/TextFuncs.hpp"
-#include "librpbase/file/RpFile.hpp"
-#include "librpbase/img/RpPng.hpp"
-#include "librpbase/img/IconAnimData.hpp"
 #include "libromdata/RomDataFactory.hpp"
-using namespace LibRomData;
+using LibRomData::RomDataFactory;
 
 // librptexture
 #include "librptexture/img/rp_image.hpp"
 using LibRpTexture::rp_image;
 
 #ifdef _WIN32
-// libwin32common
-# include "libwin32common/RpWin32_sdk.h"
-# include "libwin32common/secoptions.h"
+#  include "libwin32common/RpWin32_sdk.h"
+#  include "librptexture/img/GdiplusHelper.hpp"
 #endif /* _WIN32 */
 
-#include "properties.hpp"
 #ifdef ENABLE_DECRYPTION
 # include "verifykeys.hpp"
 #endif /* ENABLE_DECRYPTION */
 #include "device.hpp"
+
+// OS-specific userdirs
+#ifdef _WIN32
+# include "libwin32common/userdirs.hpp"
+# define OS_NAMESPACE LibWin32Common
+#else
+# include "libunixcommon/userdirs.hpp"
+# define OS_NAMESPACE LibUnixCommon
+#endif
+#include "tcharx.h"
 
 // C includes.
 #include <stdlib.h>
@@ -73,8 +90,11 @@ DELAYLOAD_TEST_FUNCTION_IMPL1(textdomain, nullptr);
 #endif /* defined(_MSC_VER) && defined(ENABLE_NLS) */
 
 struct ExtractParam {
-	int image_type; // Image Type. -1 = iconAnimData, MUST be between -1 and IMG_INT_MAX
-	const char* filename; // Target filename. Can be null due to argv[argc]
+	const char* filename;	// Target filename. Can be null due to argv[argc]
+	int image_type;		// Image Type. -1 = iconAnimData, MUST be between -1 and IMG_INT_MAX
+
+	ExtractParam(const char *filename, int image_type)
+		: filename(filename), image_type(image_type) { }
 };
 
 /**
@@ -84,11 +104,12 @@ struct ExtractParam {
 */
 static void ExtractImages(const RomData *romData, vector<ExtractParam>& extract) {
 	int supported = romData->supportedImageTypes();
-	for (auto it = extract.begin(); it != extract.end(); ++it) {
+	const auto extract_cend = extract.cend();
+	for (auto it = extract.cbegin(); it != extract_cend; ++it) {
 		if (!it->filename) continue;
 		bool found = false;
 		
-		if (it->image_type >= 0 && supported & (1 << it->image_type)) {
+		if (it->image_type >= 0 && supported & (1U << it->image_type)) {
 			// normal image
 			auto image = romData->image((RomData::ImageType)it->image_type);
 			if (image && image->isValid()) {
@@ -148,8 +169,9 @@ static void ExtractImages(const RomData *romData, vector<ExtractParam>& extract)
  * @param filename ROM filename
  * @param json Is program running in json mode?
  * @param extract Vector of image extraction parameters
+ * @param languageCode Language code. (0 for default)
  */
-static void DoFile(const char *filename, bool json, vector<ExtractParam>& extract)
+static void DoFile(const char *filename, bool json, vector<ExtractParam>& extract, uint32_t languageCode = 0)
 {
 	cerr << "== " << rp_sprintf(C_("rpcli", "Reading file '%s'..."), filename) << endl;
 	RpFile *const file = new RpFile(filename, RpFile::FM_OPEN_READ_GZ);
@@ -158,9 +180,9 @@ static void DoFile(const char *filename, bool json, vector<ExtractParam>& extrac
 		if (romData && romData->isValid()) {
 			if (json) {
 				cerr << "-- " << C_("rpcli", "Outputting JSON data") << endl;
-				cout << JSONROMOutput(romData) << endl;
+				cout << JSONROMOutput(romData, languageCode) << endl;
 			} else {
-				cout << ROMOutput(romData) << endl;
+				cout << ROMOutput(romData, languageCode) << endl;
 			}
 
 			ExtractImages(romData, extract);
@@ -169,9 +191,7 @@ static void DoFile(const char *filename, bool json, vector<ExtractParam>& extrac
 			if (json) cout << "{\"error\":\"rom is not supported\"}" << endl;
 		}
 
-		if (romData) {
-			romData->unref();
-		}
+		UNREF(romData);
 	} else {
 		cerr << "-- " << rp_sprintf(C_("rpcli", "Couldn't open file: %s"), strerror(file->lastError())) << endl;
 		if (json) cout << "{\"error\":\"couldn't open file\",\"code\":" << file->lastError() << "}" << endl;
@@ -216,6 +236,22 @@ static void PrintSystemRegion(void)
 	cout << endl;
 }
 
+/**
+ * Print pathname information.
+ */
+static void PrintPathnames(void)
+{
+	cout << rp_sprintf("User's home directory:   ") << OS_NAMESPACE::getHomeDirectory() << endl;
+	cout << rp_sprintf("User's cache directory:  ") << OS_NAMESPACE::getCacheDirectory() << endl;
+	cout << rp_sprintf("User's config directory: ") << OS_NAMESPACE::getConfigDirectory() << endl;
+	cout << endl;
+	cout << rp_sprintf("RP cache directory:      ") << FileSystem::getCacheDirectory() << endl;
+	cout << rp_sprintf("RP config directory:     ") << FileSystem::getConfigDirectory() << endl;
+
+	// Extra line. (TODO: Only if multiple commands are specified.)
+	cout << endl;
+}
+
 #ifdef RP_OS_SCSI_SUPPORTED
 /**
  * Run a SCSI INQUIRY command on a device.
@@ -251,8 +287,9 @@ static void DoScsiInquiry(const char *filename, bool json)
  * Run an ATA IDENTIFY DEVICE command on a device.
  * @param filename Device filename
  * @param json Is program running in json mode?
+ * @param packet If true, use ATA IDENTIFY PACKET.
  */
-static void DoAtaIdentifyDevice(const char *filename, bool json)
+static void DoAtaIdentifyDevice(const char *filename, bool json, bool packet)
 {
 	cerr << "== " << rp_sprintf(C_("rpcli", "Opening device file '%s'..."), filename) << endl;
 	RpFile *const file = new RpFile(filename, RpFile::FM_OPEN_READ_GZ);
@@ -264,7 +301,7 @@ static void DoAtaIdentifyDevice(const char *filename, bool json)
 				// TODO: JSONAtaIdentifyDevice
 				//cout << JSONAtaIdentifyDevice(file) << endl;
 			} else {
-				cout << AtaIdentifyDevice(file) << endl;
+				cout << AtaIdentifyDevice(file, packet) << endl;
 			}
 		} else {
 			cerr << "-- " << C_("rpcli", "Not a device file") << endl;
@@ -280,10 +317,8 @@ static void DoAtaIdentifyDevice(const char *filename, bool json)
 
 int RP_C_API main(int argc, char *argv[])
 {
-#ifdef _WIN32
-	// Set Win32 security options.
-	secoptions_init();
-#endif /* _WIN32 */
+	// Enable security options.
+	rpcli_do_security_options();
 
 	// Set the C and C++ locales.
 	locale::global(locale(""));
@@ -309,20 +344,23 @@ int RP_C_API main(int argc, char *argv[])
 
 	if(argc < 2){
 #ifdef ENABLE_DECRYPTION
-		cerr << C_("rpcli", "Usage: rpcli [-k] [-c] [-j] [[-x[b]N outfile]... [-a apngoutfile] filename]...") << endl;
+		cerr << C_("rpcli", "Usage: rpcli [-k] [-c] [-p] [-j] [-l lang] [[-x[b]N outfile]... [-a apngoutfile] filename]...") << endl;
 		cerr << "  -k:   " << C_("rpcli", "Verify encryption keys in keys.conf.") << endl;
 #else /* !ENABLE_DECRYPTION */
-		cerr << C_("rpcli", "Usage: rpcli [-j] [[-x[b]N outfile]... [-a apngoutfile] filename]...") << endl;
+		cerr << C_("rpcli", "Usage: rpcli [-c] [-p] [-j] [-l lang] [[-x[b]N outfile]... [-a apngoutfile] filename]...") << endl;
 #endif /* ENABLE_DECRYPTION */
 		cerr << "  -c:   " << C_("rpcli", "Print system region information.") << endl;
+		cerr << "  -p:   " << C_("rpcli", "Print system path information.") << endl;
 		cerr << "  -j:   " << C_("rpcli", "Use JSON output format.") << endl;
+		cerr << "  -l:   " << C_("rpcli", "Retrieve the specified language from the ROM image.") << endl;
 		cerr << "  -xN:  " << C_("rpcli", "Extract image N to outfile in PNG format.") << endl;
 		cerr << "  -a:   " << C_("rpcli", "Extract the animated icon to outfile in APNG format.") << endl;
 		cerr << endl;
 #ifdef RP_OS_SCSI_SUPPORTED
-		cerr << "Special options for devices:" << endl;
+		cerr << C_("rpcli", "Special options for devices:") << endl;
 		cerr << "  -is:   " << C_("rpcli", "Run a SCSI INQUIRY command.") << endl;
 		cerr << "  -ia:   " << C_("rpcli", "Run an ATA IDENTIFY DEVICE command.") << endl;
+		cerr << "  -ip:   " << C_("rpcli", "Run an ATA IDENTIFY PACKET DEVICE command.") << endl;
 		cerr << endl;
 #endif /* RP_OS_SCSI_SUPPORTED */
 		cerr << C_("rpcli", "Examples:") << endl;
@@ -344,10 +382,22 @@ int RP_C_API main(int argc, char *argv[])
 	}
 	if (json) cout << "[\n";
 
+#ifdef _WIN32
+	// Initialize GDI+.
+	const ULONG_PTR gdipToken = GdiplusHelper::InitGDIPlus();
+	assert(gdipToken != 0);
+	if (gdipToken == 0) {
+		cerr << "*** ERROR: GDI+ initialization failed." << endl;
+		return -EIO;
+	}
+#endif /* _WIN32 */
+
 #ifdef RP_OS_SCSI_SUPPORTED
 	bool inq_scsi = false;
 	bool inq_ata = false;
+	bool inq_ata_packet = false;
 #endif /* RP_OS_SCSI_SUPPORTED */
+	uint32_t languageCode = 0;
 	bool first = true;
 	int ret = 0;
 	for (int i = 1; i < argc; i++){
@@ -364,42 +414,84 @@ int RP_C_API main(int argc, char *argv[])
 				break;
 			}
 #endif /* ENABLE_DECRYPTION */
-			case 'c': {
+			case 'c':
 				// Print the system region information.
 				PrintSystemRegion();
 				break;
+			case 'p':
+				// Print pathnames.
+				PrintPathnames();
+				break;
+			case 'l': {
+				// Language code.
+				// NOTE: Actual language may be immediately after 'l',
+				// or it might be a completely separate argument.
+				// NOTE 2: Allowing multiple language codes, since the
+				// language code affects files specified *after* it.
+				const char *s_lang;
+				if (argv[i][2] == '\0') {
+					// Separate argument.
+					s_lang = argv[i+1];
+					i++;
+				} else {
+					// Same argument.
+					s_lang = &argv[i][2];
+				}
+
+				// Parse the language code.
+				uint32_t lc = 0;
+				int pos;
+				for (pos = 0; pos < 4 && s_lang[pos] != '\0'; pos++) {
+					lc <<= 8;
+					lc |= (uint8_t)s_lang[pos];
+				}
+				if (pos == 4 && s_lang[pos] != '\0') {
+					// Invalid language code.
+					cerr << rp_sprintf(C_("rpcli", "Warning: ignoring invalid language code '%s'"), s_lang) << endl;
+					break;
+				}
+
+				// Language code set.
+				languageCode = lc;
+				break;
 			}
 			case 'x': {
-				ExtractParam ep;
 				long num = atol(argv[i] + 2);
 				if (num<RomData::IMG_INT_MIN || num>RomData::IMG_INT_MAX) {
 					cerr << rp_sprintf(C_("rpcli", "Warning: skipping unknown image type %ld"), num) << endl;
 					i++; continue;
 				}
-				ep.image_type = num;
-				ep.filename = argv[++i];
-				extract.push_back(ep);
+				extract.emplace_back(ExtractParam(argv[++i], num));
 				break;
 			}
-			case 'a': {
-				ExtractParam ep;
-				ep.image_type = -1;
-				ep.filename = argv[++i];
-				extract.push_back(ep);
+			case 'a':
+				extract.emplace_back(ExtractParam(argv[++i], -1));
 				break;
-			}
 			case 'j': // do nothing
 				break;
 #ifdef RP_OS_SCSI_SUPPORTED
 			case 'i':
-				// TODO: Check if a SCSI implementation is available for this OS?
 				// These commands take precedence over the usual rpcli functionality.
-				if (argv[i][2] == 's') {
-					// SCSI INQUIRY command.
-					inq_scsi = true;
-				} else if (argv[i][2] == 'a') {
-					// ATA IDENTIFY DEVICE command.
-					inq_ata = true;
+				switch (argv[i][2]) {
+					case 's':
+						// SCSI INQUIRY command.
+						inq_scsi = true;
+						break;
+					case 'a':
+						// ATA IDENTIFY DEVICE command.
+						inq_ata = true;
+						break;
+					case 'p':
+						// ATA IDENTIFY PACKET DEVICE command.
+						inq_ata_packet = true;
+						break;
+					default:
+						if (argv[i][2] == '\0') {
+							cerr << C_("rpcli", "Warning: no inquiry request specified for '-i'") << endl;
+						} else {
+							cerr << rp_sprintf(C_("rpcli", "Warning: skipping unknown inquiry request '%c'"), argv[i][2]) << endl;
+						}
+						break;
 				}
 				break;
 #endif /* RP_OS_SCSI_SUPPORTED */
@@ -407,8 +499,7 @@ int RP_C_API main(int argc, char *argv[])
 				cerr << rp_sprintf(C_("rpcli", "Warning: skipping unknown switch '%c'"), argv[i][1]) << endl;
 				break;
 			}
-		}
-		else{
+		} else {
 			if (first) first = false;
 			else if (json) cout << "," << endl;
 
@@ -419,21 +510,31 @@ int RP_C_API main(int argc, char *argv[])
 				DoScsiInquiry(argv[i], json);
 			} else if (inq_ata) {
 				// ATA IDENTIFY DEVICE command.
-				DoAtaIdentifyDevice(argv[i], json);
+				DoAtaIdentifyDevice(argv[i], json, false);
+			} else if (inq_ata_packet) {
+				// ATA IDENTIFY PACKET DEVICE command.
+				DoAtaIdentifyDevice(argv[i], json, true);
 			} else
 #endif /* RP_OS_SCSI_SUPPORTED */
 			{
 				// Regular file.
-				DoFile(argv[i], json, extract);
+				DoFile(argv[i], json, extract, languageCode);
 			}
 
 #ifdef RP_OS_SCSI_SUPPORTED
 			inq_scsi = false;
 			inq_ata = false;
+			inq_ata_packet = false;
 #endif /* RP_OS_SCSI_SUPPORTED */
 			extract.clear();
 		}
 	}
 	if (json) cout << "]\n";
+
+#ifdef _WIN32
+	// Shut down GDI+.
+	GdiplusHelper::ShutdownGDIPlus(gdipToken);
+#endif /* _WIN32 */
+
 	return ret;
 }

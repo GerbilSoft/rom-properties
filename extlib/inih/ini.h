@@ -2,7 +2,7 @@
 
 SPDX-License-Identifier: BSD-3-Clause
 
-Copyright (C) 2009-2019, Ben Hoyt
+Copyright (C) 2009-2020, Ben Hoyt
 
 inih is released under the New BSD license (see LICENSE.txt). Go to the project
 home page for more info:
@@ -11,8 +11,8 @@ https://github.com/benhoyt/inih
 
 */
 
-#ifndef __INI_H__
-#define __INI_H__
+#ifndef INI_H
+#define INI_H
 
 /* Make this header file easier to include in C++ code */
 #ifdef __cplusplus
@@ -28,9 +28,9 @@ extern "C" {
 
 /* rom-properties: using stdcall for internal functions */
 #ifdef _MSC_VER
-# define INIHCALL __cdecl
+#  define INIHCALL __cdecl
 #else
-# define INIHCALL
+#  define INIHCALL
 #endif
 
 /* Typedef for prototype of handler function. */
@@ -148,8 +148,17 @@ int ini_parse_string(const char* string, ini_handler handler, void* user);
 #define INI_ALLOW_NO_VALUE 0
 #endif
 
+/* Nonzero to use custom ini_malloc, ini_free, and ini_realloc memory
+   allocation functions (INI_USE_STACK must also be 0). These functions must
+   have the same signatures as malloc/free/realloc and behave in a similar
+   way. ini_realloc is only needed if INI_ALLOW_REALLOC is set. */
+#ifndef INI_CUSTOM_ALLOCATOR
+#define INI_CUSTOM_ALLOCATOR 0
+#endif
+
+
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* __INI_H__ */
+#endif /* INI_H */

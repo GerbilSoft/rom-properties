@@ -10,7 +10,21 @@
 #define __ROMPROPERTIES_WIN32_RESOURCE_H__
 
 /** Icons. **/
-#define IDI_KEY_VALID           201
+#define IDI_KEY_VALID				201
+
+/** PNG images. **/
+#define RT_PNG					0x4E50	/* 'PN', byteswapped */
+#define IDP_FLAGS_16x16				301
+#define IDP_FLAGS_24x24				302
+#define IDP_FLAGS_32x32				303
+#define IDP_ACH_16x16				311
+#define IDP_ACH_24x24				312
+#define IDP_ACH_32x32				313
+#define IDP_ACH_64x64				314
+#define IDP_ACH_GRAY_16x16			321
+#define IDP_ACH_GRAY_24x24			322
+#define IDP_ACH_GRAY_32x32			323
+#define IDP_ACH_GRAY_64x64			324
 
 // Dialogs
 #define IDD_PROPERTY_SHEET                      100	/* Generic property sheet. */
@@ -35,6 +49,7 @@
 // Custom property sheet controls.
 #define IDC_RP_RESET                            13431
 #define IDC_RP_DEFAULTS                         13432
+#define IDC_RP_OPTIONS                          13433
 
 // "Reset" and "Defaults" messages.
 // The parent PropertySheet doesn't store any user data, so we can't
@@ -75,62 +90,72 @@
 #define KeyStore_Modified(hWnd)					(void)SNDMSG(hWnd,WM_KEYSTORE_MODIFIED,0,0)
 
 /** Configuration dialog **/
-#define IDD_CONFIG_IMAGETYPES                   110
-#define IDD_CONFIG_OPTIONS                      111
-#define IDD_CONFIG_CACHE                        112
-#define IDD_CONFIG_CACHE_XP                     113
-#define IDD_CONFIG_KEYMANAGER                   114
-#define IDD_CONFIG_ABOUT                        115
+#define IDD_CONFIG_IMAGETYPES			110
+#define IDD_CONFIG_SYSTEMS			111
+#define IDD_CONFIG_OPTIONS			112
+#define IDD_CONFIG_CACHE			113
+#define IDD_CONFIG_CACHE_XP			114
+#define IDD_CONFIG_ACHIEVEMENTS			115
+#define IDD_CONFIG_KEYMANAGER			116
+#define IDD_CONFIG_ABOUT			117
 
 // Image type priorities.
-#define IDC_IMAGETYPES_DESC1                    40001
-#define IDC_IMAGETYPES_DESC2                    40002
-#define IDC_IMAGETYPES_CREDITS                  40003
+#define IDC_IMAGETYPES_DESC1			40001
+#define IDC_IMAGETYPES_DESC2			40002
+#define IDC_IMAGETYPES_CREDITS			40003
 #define IDC_IMAGETYPES_VIEWPORT_OUTER		40010
 #define IDC_IMAGETYPES_VIEWPORT_INNER		40011
 
+// Systems
+#define IDC_SYSTEMS_DMGTS_DMG			40101
+#define IDC_SYSTEMS_DMGTS_SGB			40102
+#define IDC_SYSTEMS_DMGTS_CGB			40103
+
 // Options
-#define IDC_EXTIMGDL				40101
-#define IDC_INTICONSMALL			40102
-#define IDC_HIGHRESDL				40103
-#define IDC_STOREFILEORIGININFO			40104
-#define IDC_DANGEROUSPERMISSIONS		40105
-#define IDC_ENABLETHUMBNAILONNETWORKFS		40106
+#define IDC_EXTIMGDL				40201
+#define IDC_INTICONSMALL			40202
+#define IDC_HIGHRESDL				40203
+#define IDC_STOREFILEORIGININFO			40204
+#define IDC_DANGEROUSPERMISSIONS		40205
+#define IDC_ENABLETHUMBNAILONNETWORKFS		40206
 
 // Thumbnail cache
-#define IDC_CACHE_DESCRIPTION                   40201
-#define IDC_CACHE_CLEAR_SYS_THUMBS              40202
-#define IDC_CACHE_CLEAR_RP_DL                   40203
-#define IDC_CACHE_STATUS                        40204
-#define IDC_CACHE_PROGRESS                      40205
-#define IDC_CACHE_XP_FIND_DRIVES                40206
-#define IDC_CACHE_XP_FIND_PATH                  40207
-#define IDC_CACHE_XP_DRIVES                     40208
-#define IDC_CACHE_XP_PATH                       40209
-#define IDC_CACHE_XP_BROWSE                     40210
-#define IDC_CACHE_XP_CLEAR_SYS_THUMBS           40211
+#define IDC_CACHE_DESCRIPTION			40301
+#define IDC_CACHE_CLEAR_SYS_THUMBS		40302
+#define IDC_CACHE_CLEAR_RP_DL			40303
+#define IDC_CACHE_STATUS			40304
+#define IDC_CACHE_PROGRESS			40305
+#define IDC_CACHE_XP_FIND_DRIVES		40306
+#define IDC_CACHE_XP_FIND_PATH			40307
+#define IDC_CACHE_XP_DRIVES			40308
+#define IDC_CACHE_XP_PATH			40309
+#define IDC_CACHE_XP_BROWSE			40310
+#define IDC_CACHE_XP_CLEAR_SYS_THUMBS		40311
+
+// Achievements
+#define IDC_ACHIEVEMENTS_LIST			40401
 
 // FIXME: Only if ENABLE_DECRYPTION, but we can't include config.librpbase.h.
 #if 1
 // Key Manager
-#define IDC_KEYMANAGER_LIST                     40301
-#define IDC_KEYMANAGER_EDIT                     40302
-#define IDC_KEYMANAGER_IMPORT                   40303
+#define IDC_KEYMANAGER_LIST			40501
+#define IDC_KEYMANAGER_EDIT			40502
+#define IDC_KEYMANAGER_IMPORT			40503
 
 // Key Manager: "Import" menu
-#define IDR_KEYMANAGER_IMPORT                   30301
-#define IDM_KEYMANAGER_IMPORT_WII_KEYS_BIN      30302
-#define IDM_KEYMANAGER_IMPORT_WIIU_OTP_BIN      30303
-#define IDM_KEYMANAGER_IMPORT_3DS_BOOT9_BIN     30304
-#define IDM_KEYMANAGER_IMPORT_3DS_AESKEYDB      30305
+#define IDR_KEYMANAGER_IMPORT			30501
+#define IDM_KEYMANAGER_IMPORT_WII_KEYS_BIN	30502
+#define IDM_KEYMANAGER_IMPORT_WIIU_OTP_BIN	30503
+#define IDM_KEYMANAGER_IMPORT_3DS_BOOT9_BIN	30504
+#define IDM_KEYMANAGER_IMPORT_3DS_AESKEYDB	30505
 #endif
 
 // About
-#define IDC_ABOUT_ICON                          40401
-#define IDC_ABOUT_LINE1                         40402
-#define IDC_ABOUT_LINE2                         40403
-#define IDC_ABOUT_VERSION                       40404
-#define IDC_ABOUT_TABCONTROL                    40405
-#define IDC_ABOUT_RICHEDIT                      40406
+#define IDC_ABOUT_ICON				40501
+#define IDC_ABOUT_LINE1				40502
+#define IDC_ABOUT_LINE2				40503
+#define IDC_ABOUT_VERSION			40504
+#define IDC_ABOUT_TABCONTROL			40505
+#define IDC_ABOUT_RICHEDIT			40506
 
 #endif /* __ROMPROPERTIES_WIN32_RESOURCE_H__ */

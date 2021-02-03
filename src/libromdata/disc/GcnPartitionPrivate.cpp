@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * GcnPartitionPrivate.cpp: GameCube partition private class.              *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -18,7 +18,7 @@ using LibRpBase::IDiscReader;
 namespace LibRomData {
 
 GcnPartitionPrivate::GcnPartitionPrivate(GcnPartition *q,
-	int64_t partition_offset, int64_t data_size, uint8_t offsetShift)
+	off64_t partition_offset, off64_t data_size, uint8_t offsetShift)
 	: q_ptr(q)
 	, partition_offset(partition_offset)
 	, data_offset(-1)	// -1 == invalid
@@ -144,7 +144,7 @@ int GcnPartitionPrivate::loadFst(void)
 	}
 
 	// Seek to the beginning of the FST.
-	ret = q->seek(static_cast<int64_t>(bootBlock.fst_offset) << offsetShift);
+	ret = q->seek(static_cast<off64_t>(bootBlock.fst_offset) << offsetShift);
 	if (ret != 0) {
 		// Seek failed.
 		return -q->m_lastError;
@@ -153,23 +153,18 @@ int GcnPartitionPrivate::loadFst(void)
 	// Read the FST.
 	// TODO: Eliminate the extra copy?
 	uint32_t fstData_len = bootBlock.fst_size << offsetShift;
-	uint8_t *fstData = static_cast<uint8_t*>(malloc(fstData_len));
-	if (!fstData) {
-		// malloc() failed.
-		q->m_lastError = ENOMEM;
-		return -ENOMEM;
-	}
+	uint8_t *const fstData = new uint8_t[fstData_len];
 	size_t size = q->read(fstData, fstData_len);
 	if (size != fstData_len) {
 		// Short read.
-		free(fstData);
+		delete[] fstData;
 		q->m_lastError = EIO;
 		return -EIO;
 	}
 
 	// Create the GcnFst.
 	GcnFst *const gcnFst = new GcnFst(fstData, fstData_len, offsetShift);
-	free(fstData);	// TODO: Eliminate the extra copy?
+	delete[] fstData;	// TODO: Eliminate the extra copy?
 	if (gcnFst->hasErrors()) {
 		// FST has errors.
 		delete gcnFst;

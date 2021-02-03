@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * iQuePlayer.cpp: iQue Player .cmd reader.                                *
  *                                                                         *
- * Copyright (c) 2019 by David Korth.                                      *
+ * Copyright (c) 2019-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -12,8 +12,9 @@
 #include "iQuePlayer.hpp"
 #include "ique_player_structs.h"
 
-// librpbase, librptexture
+// librpbase, librpfile, librptexture
 using namespace LibRpBase;
+using LibRpFile::IRpFile;
 using namespace LibRpTexture;
 
 // for memmem() if it's not available in <string.h>
@@ -40,7 +41,7 @@ ROMDATA_IMPL_IMG(iQuePlayer)
 DELAYLOAD_TEST_FUNCTION_IMPL0(zlibVersion);
 #endif /* _MSC_VER */
 
-class iQuePlayerPrivate : public RomDataPrivate
+class iQuePlayerPrivate final : public RomDataPrivate
 {
 	public:
 		iQuePlayerPrivate(iQuePlayer *q, IRpFile *file);
@@ -52,12 +53,15 @@ class iQuePlayerPrivate : public RomDataPrivate
 
 	public:
 		// File type.
-		enum FileType {
-			FT_IQUE_UNKNOWN	= -1,	// Unknown ROM type.
-			FT_IQUE_CMD	= 0,	// .cmd file (content metadata)
-			FT_IQUE_DAT	= 1,	// .dat file (ticket)
+		enum class IQueFileType {
+			Unknown	= -1,	// Unknown ROM type.
+
+			CMD	= 0,	// .cmd file (content metadata)
+			DAT	= 1,	// .dat file (ticket)
+
+			Max
 		};
-		int fileType;
+		IQueFileType iQueFileType;
 
 		// .cmd structs.
 		iQuePlayer_contentDesc contentDesc;
@@ -89,7 +93,7 @@ class iQuePlayerPrivate : public RomDataPrivate
 		 * @param byteswap	[in] If true, byteswap before decoding if needed.
 		 * @return Image, or nullptr on error.
 		 */
-		rp_image *loadImage(int64_t address, size_t z_size, size_t unz_size,
+		rp_image *loadImage(off64_t address, size_t z_size, size_t unz_size,
 			ImageDecoder::PixelFormat px_format, int w, int h, bool byteswap);
 
 	public:
@@ -111,7 +115,7 @@ class iQuePlayerPrivate : public RomDataPrivate
 
 iQuePlayerPrivate::iQuePlayerPrivate(iQuePlayer *q, IRpFile *file)
 	: super(q, file)
-	, fileType(FT_IQUE_UNKNOWN)
+	, iQueFileType(IQueFileType::Unknown)
 	, img_thumbnail(nullptr)
 	, img_title(nullptr)
 {
@@ -123,8 +127,8 @@ iQuePlayerPrivate::iQuePlayerPrivate(iQuePlayer *q, IRpFile *file)
 
 iQuePlayerPrivate::~iQuePlayerPrivate()
 {
-	delete img_thumbnail;
-	delete img_title;
+	UNREF(img_thumbnail);
+	UNREF(img_title);
 }
 
 /**
@@ -140,10 +144,10 @@ int iQuePlayerPrivate::getTitleAndISBN(string &title, string &isbn)
 	static const size_t title_buf_sz = IQUE_PLAYER_BBCONTENTMETADATAHEAD_ADDRESS - sizeof(contentDesc);
 	std::unique_ptr<char[]> title_buf(new char[title_buf_sz]);
 
-	const int64_t title_addr = sizeof(contentDesc) +
+	const off64_t title_addr = sizeof(contentDesc) +
 		be16_to_cpu(contentDesc.thumb_image_size) +
 		be16_to_cpu(contentDesc.title_image_size);
-	if (title_addr >= (int64_t)title_buf_sz) {
+	if (title_addr >= (off64_t)title_buf_sz) {
 		// Out of range.
 		return 1;
 	}
@@ -170,7 +174,7 @@ int iQuePlayerPrivate::getTitleAndISBN(string &title, string &isbn)
 	if (p_end && p_end > p) {
 		// Found the UTF-8 BOM.
 		// Convert from GB2312 to UTF-8.
-		title = cpN_to_utf8(CP_GB2312, p, p_end - p);
+		title = cpN_to_utf8(CP_GB2312, p, static_cast<int>(p_end - p));
 
 		// Adjust p to point to the next string.
 		p = p_end + 3;
@@ -179,7 +183,7 @@ int iQuePlayerPrivate::getTitleAndISBN(string &title, string &isbn)
 		p_end = static_cast<const char*>(memchr(p, '\0', title_buf_sz));
 		if (p_end && p_end > p) {
 			// Convert from GB2312 to UTF-8.
-			title = cpN_to_utf8(CP_GB2312, p, p_end - p);
+			title = cpN_to_utf8(CP_GB2312, p, static_cast<int>(p_end - p));
 
 			// Adjust p to point to the next string.
 			p = p_end + 1;
@@ -198,7 +202,7 @@ int iQuePlayerPrivate::getTitleAndISBN(string &title, string &isbn)
 	p_end = static_cast<const char*>(memchr(p, '\0', isbn_buf_sz));
 	if (p_end && p_end > p) {
 		// Convert from ASCII (well, Latin-1) to UTF-8.
-		isbn = latin1_to_utf8(p, p_end - p);
+		isbn = latin1_to_utf8(p, static_cast<int>(p_end - p));
 	}
 
 	// TODO: There might be other fields with NULL or UTF-8 BOM separators.
@@ -217,10 +221,10 @@ int iQuePlayerPrivate::getTitleAndISBN(string &title, string &isbn)
  * @param byteswap	[in] If true, byteswap before decoding if needed.
  * @return Image, or nullptr on error.
  */
-rp_image *iQuePlayerPrivate::loadImage(int64_t address, size_t z_size, size_t unz_size,
+rp_image *iQuePlayerPrivate::loadImage(off64_t address, size_t z_size, size_t unz_size,
 	ImageDecoder::PixelFormat px_format, int w, int h, bool byteswap)
 {
-	assert(address >= static_cast<int64_t>(sizeof(contentDesc)));
+	assert(address >= static_cast<off64_t>(sizeof(contentDesc)));
 	assert(z_size != 0);
 	assert(unz_size > z_size);
 	assert(unz_size == static_cast<size_t>(w * h * 2));
@@ -265,7 +269,7 @@ rp_image *iQuePlayerPrivate::loadImage(int64_t address, size_t z_size, size_t un
 	strm.avail_in = static_cast<uInt>(z_size);
 	strm.next_in = z_buf.get();
 
-	strm.avail_out = unz_size;
+	strm.avail_out = static_cast<uInt>(unz_size);
 	strm.next_out = reinterpret_cast<Bytef*>(img_buf.get());
 
 	ret = inflate(&strm, Z_FINISH);
@@ -285,7 +289,7 @@ rp_image *iQuePlayerPrivate::loadImage(int64_t address, size_t z_size, size_t un
 
 	// Convert the image.
 	return ImageDecoder::fromLinear16(px_format,
-		w, h, img_buf.get(), unz_size);
+		w, h, img_buf.get(), static_cast<int>(unz_size));
 }
 
 /**
@@ -303,7 +307,7 @@ const rp_image *iQuePlayerPrivate::loadThumbnailImage(void)
 	}
 
 	// Get the thumbnail address and size.
-	static const int64_t thumb_addr = sizeof(contentDesc);
+	static const off64_t thumb_addr = sizeof(contentDesc);
 	const size_t z_thumb_size = be16_to_cpu(contentDesc.thumb_image_size);
 	if (z_thumb_size > 0x4000) {
 		// Out of range.
@@ -312,7 +316,8 @@ const rp_image *iQuePlayerPrivate::loadThumbnailImage(void)
 
 	// Load the image.
 	img_thumbnail = loadImage(thumb_addr, z_thumb_size, IQUE_PLAYER_THUMB_SIZE,
-		ImageDecoder::PXF_RGBA5551, IQUE_PLAYER_THUMB_W, IQUE_PLAYER_THUMB_H, true);
+		ImageDecoder::PixelFormat::RGBA5551,
+		IQUE_PLAYER_THUMB_W, IQUE_PLAYER_THUMB_H, true);
 	return img_thumbnail;
 }
 
@@ -332,7 +337,7 @@ const rp_image *iQuePlayerPrivate::loadTitleImage(void)
 	}
 
 	// Get the thumbnail address and size.
-	const int64_t title_addr = sizeof(contentDesc) + be16_to_cpu(contentDesc.thumb_image_size);
+	const off64_t title_addr = sizeof(contentDesc) + be16_to_cpu(contentDesc.thumb_image_size);
 	const size_t z_title_size = be16_to_cpu(contentDesc.title_image_size);
 	if (z_title_size > 0x10000) {
 		// Out of range.
@@ -342,12 +347,14 @@ const rp_image *iQuePlayerPrivate::loadTitleImage(void)
 	// Load the image.
 	// NOTE: Using A8L8 format, not IA8, which is GameCube-specific.
 	// TODO: Add ImageDecoder::fromLinear16() support for IA8 later.
-#if SYS_BYTEORDER == SYS_BIG_ENDIAN
+#if SYS_BYTEORDER == SYS_LIL_ENDIAN
 	img_title = loadImage(title_addr, z_title_size, IQUE_PLAYER_TITLE_SIZE,
-		ImageDecoder::PXF_L8A8, IQUE_PLAYER_TITLE_W, IQUE_PLAYER_TITLE_H, false);
-#else
+		ImageDecoder::PixelFormat::A8L8,
+		IQUE_PLAYER_TITLE_W, IQUE_PLAYER_TITLE_H, false);
+#else /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
 	img_title = loadImage(title_addr, z_title_size, IQUE_PLAYER_TITLE_SIZE,
-		ImageDecoder::PXF_A8L8, IQUE_PLAYER_TITLE_W, IQUE_PLAYER_TITLE_H, false);
+		ImageDecoder::PixelFormat::L8A8,
+		IQUE_PLAYER_TITLE_W, IQUE_PLAYER_TITLE_H, false);
 #endif
 	return img_title;
 }
@@ -372,7 +379,7 @@ iQuePlayer::iQuePlayer(IRpFile *file)
 {
 	RP_D(iQuePlayer);
 	d->className = "iQuePlayer";
-	d->fileType = FTYPE_METADATA_FILE;
+	d->fileType = FileType::MetadataFile;
 
 	if (!d->file) {
 		// Could not ref() the file handle.
@@ -381,13 +388,12 @@ iQuePlayer::iQuePlayer(IRpFile *file)
 
 	// Check the filesize.
 	// TODO: Identify CMD vs. Ticket and display ticket-specific information?
-	const int64_t filesize = file->size();
+	const off64_t filesize = file->size();
 	if (filesize != IQUE_PLAYER_CMD_FILESIZE &&
 	    filesize != IQUE_PLAYER_DAT_FILESIZE)
 	{
 		// Incorrect filesize.
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
 
@@ -395,8 +401,7 @@ iQuePlayer::iQuePlayer(IRpFile *file)
 	d->file->rewind();
 	size_t size = d->file->read(&d->contentDesc, sizeof(d->contentDesc));
 	if (size != sizeof(d->contentDesc)) {
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
 
@@ -407,12 +412,11 @@ iQuePlayer::iQuePlayer(IRpFile *file)
 	info.header.pData = reinterpret_cast<const uint8_t*>(&d->contentDesc);
 	info.ext = nullptr;	// Not needed for iQuePlayer.
 	info.szFile = filesize;
-	d->fileType = isRomSupported_static(&info);
-	d->isValid = (d->fileType >= 0);
+	d->iQueFileType = static_cast<iQuePlayerPrivate::IQueFileType>(isRomSupported_static(&info));
+	d->isValid = ((int)d->iQueFileType >= 0);
 
 	if (!d->isValid) {
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
 
@@ -420,22 +424,24 @@ iQuePlayer::iQuePlayer(IRpFile *file)
 	size = d->file->seekAndRead(IQUE_PLAYER_BBCONTENTMETADATAHEAD_ADDRESS,
 		&d->bbContentMetaDataHead, sizeof(d->bbContentMetaDataHead));
 	if (size != sizeof(d->bbContentMetaDataHead)) {
-		d->fileType = iQuePlayerPrivate::FT_IQUE_UNKNOWN;
+		d->iQueFileType = iQuePlayerPrivate::IQueFileType::Unknown;
 		d->isValid = false;
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
 
 	// If this is a ticket, read the BBTicketHead.
-	if (d->fileType == iQuePlayerPrivate::FT_IQUE_DAT) {
+	if (d->iQueFileType == iQuePlayerPrivate::IQueFileType::DAT) {
+		d->mimeType = "application/x-ique-dat";		// unofficial, not on fd.o
 		size = d->file->seekAndRead(IQUE_PLAYER_BBTICKETHEAD_ADDRESS,
 			&d->bbTicketHead, sizeof(d->bbTicketHead));
 		if (size != sizeof(d->bbTicketHead)) {
 			// Unable to read the ticket header.
 			// Handle it as a content metadata file.
-			d->fileType = iQuePlayerPrivate::FT_IQUE_CMD;
+			d->iQueFileType = iQuePlayerPrivate::IQueFileType::CMD;
 		}
+	} else {
+		d->mimeType = "application/x-ique-cmd";		// unofficial, not on fd.o
 	}
 }
 
@@ -457,14 +463,14 @@ int iQuePlayer::isRomSupported_static(const DetectInfo *info)
 	{
 		// Either no detection information was specified,
 		// or the header is too small.
-		return -1;
+		return static_cast<int>(iQuePlayerPrivate::IQueFileType::Unknown);
 	}
 
 	if (info->szFile != IQUE_PLAYER_CMD_FILESIZE &&
 	    info->szFile != IQUE_PLAYER_DAT_FILESIZE)
 	{
 		// Incorrect filesize.
-		return -1;
+		return static_cast<int>(iQuePlayerPrivate::IQueFileType::Unknown);
 	}
 
 	const iQuePlayer_contentDesc *const contentDesc =
@@ -473,17 +479,17 @@ int iQuePlayer::isRomSupported_static(const DetectInfo *info)
 	// Check the magic number.
 	// NOTE: This technically isn't a "magic number",
 	// but it appears to be the same for all iQue .cmd files.
+	iQuePlayerPrivate::IQueFileType iQueFileType = iQuePlayerPrivate::IQueFileType::Unknown;
 	if (!memcmp(contentDesc->magic, IQUE_PLAYER_MAGIC, sizeof(contentDesc->magic))) {
 		// Magic number matches.
 		if (info->szFile == IQUE_PLAYER_DAT_FILESIZE) {
-			return iQuePlayerPrivate::FT_IQUE_DAT;
+			iQueFileType = iQuePlayerPrivate::IQueFileType::DAT;
 		} else /*if (info->szFile == IQUE_PLAYER_CMD_FILESIZE)*/ {
-			return iQuePlayerPrivate::FT_IQUE_CMD;
+			iQueFileType = iQuePlayerPrivate::IQueFileType::CMD;
 		}
 	}
 
-	// Not supported.
-	return -1;
+	return (int)iQueFileType;
 }
 
 /**
@@ -647,7 +653,7 @@ int iQuePlayer::loadFieldData(void)
 	} else if (!d->file || !d->file->isOpen()) {
 		// File isn't open.
 		return -EBADF;
-	} else if (!d->isValid || d->fileType < 0) {
+	} else if (!d->isValid || (int)d->iQueFileType < 0) {
 		// Unknown ROM image type.
 		return -EIO;
 	}
@@ -679,14 +685,14 @@ int iQuePlayer::loadFieldData(void)
 		rp_sprintf("%08X", be32_to_cpu(bbContentMetaDataHead->content_id)),
 		RomFields::STRF_MONOSPACE);
 
-	if (d->fileType == iQuePlayerPrivate::FT_IQUE_DAT) {
+	if (d->iQueFileType == iQuePlayerPrivate::IQueFileType::DAT) {
 		// Ticket-specific fields.
 		const iQuePlayer_BbTicketHead *const bbTicketHead = &d->bbTicketHead;
 
 		// Console ID.
 		// TODO: Hide the "0x" prefix?
 		d->fields->addField_string_numeric(C_("iQuePlayer", "Console ID"),
-			be32_to_cpu(bbTicketHead->bbId), RomFields::FB_HEX, 8,
+			be32_to_cpu(bbTicketHead->bbId), RomFields::Base::Hex, 8,
 			RomFields::STRF_MONOSPACE);
 	}
 
@@ -722,7 +728,7 @@ int iQuePlayer::loadMetaData(void)
 	} else if (!d->file) {
 		// File isn't open.
 		return -EBADF;
-	} else if (!d->isValid || d->fileType < 0) {
+	} else if (!d->isValid || (int)d->iQueFileType < 0) {
 		// Unknown ROM image type.
 		return -EIO;
 	}
@@ -787,7 +793,7 @@ int iQuePlayer::loadInternalImage(ImageType imageType, const rp_image **pImage)
 	if (!d->file) {
 		// File isn't open.
 		return -EBADF;
-	} else if (!d->isValid || d->fileType < 0) {
+	} else if (!d->isValid || (int)d->iQueFileType < 0) {
 		// Save file isn't valid.
 		return -EIO;
 	}

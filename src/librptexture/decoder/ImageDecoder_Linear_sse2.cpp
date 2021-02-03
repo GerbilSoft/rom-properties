@@ -3,7 +3,7 @@
  * ImageDecoder_Linear.cpp: Image decoding functions. (Linear)             *
  * SSE2-optimized version.                                                 *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -236,14 +236,14 @@ rp_image *fromLinear16_sse2(PixelFormat px_format,
 	// FIXME: Add support for these formats.
 	// For now, redirect back to the C++ version.
 	switch (px_format) {
-		case PXF_ARGB8332:
-		case PXF_RGB5A3:
-		case PXF_IA8:
-		case PXF_BGR555_PS1:
-		case PXF_BGR5A3:
-		case PXF_L16:
-		case PXF_A8L8:	// TODO: SSSE3
-		case PXF_L8A8:	// TODO: SSSE3
+		case PixelFormat::ARGB8332:
+		case PixelFormat::RGB5A3:
+		case PixelFormat::IA8:
+		case PixelFormat::BGR555_PS1:
+		case PixelFormat::BGR5A3:
+		case PixelFormat::L16:
+		case PixelFormat::A8L8:	// TODO: SSSE3
+		case PixelFormat::L8A8:	// TODO: SSSE3
 			return fromLinear16_cpp(px_format, width, height, img_buf, img_siz, stride);
 
 		default:
@@ -284,10 +284,10 @@ rp_image *fromLinear16_sse2(PixelFormat px_format,
 	}
 
 	// Create an rp_image.
-	rp_image *img = new rp_image(width, height, rp_image::FORMAT_ARGB32);
+	rp_image *const img = new rp_image(width, height, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
-		delete img;
+		img->unref();
 		return nullptr;
 	}
 
@@ -339,7 +339,7 @@ rp_image *fromLinear16_sse2(PixelFormat px_format,
 
 	// Macro for 16-bit formats with no alpha channel.
 #define fromLinear16_convert(fmt, sBIT, Rshift_W, Gshift_W, Bshift_W, Rbits, Gbits, Bbits, isBGR, Rmask, Gmask, Bmask) \
-		case PXF_##fmt: { \
+		case PixelFormat::fmt: { \
 			for (unsigned int y = (unsigned int)height; y > 0; y--) { \
 				/* Process 8 pixels per iteration using SSE2. */ \
 				unsigned int x = (unsigned int)width; \
@@ -365,7 +365,7 @@ rp_image *fromLinear16_sse2(PixelFormat px_format,
 
 	// Macro for 16-bit formats with an alpha channel.
 #define fromLinear16A_convert(fmt, sBIT, Ashift_W, Rshift_W, Gshift_W, Bshift_W, Abits, Rbits, Gbits, Bbits, isBGR, Amask, Rmask, Gmask, Bmask) \
-		case PXF_##fmt: { \
+		case PixelFormat::fmt: { \
 			for (unsigned int y = (unsigned int)height; y > 0; y--) { \
 				/* Process 8 pixels per iteration using SSE2. */ \
 				unsigned int x = (unsigned int)width; \
@@ -417,7 +417,7 @@ rp_image *fromLinear16_sse2(PixelFormat px_format,
 		fromLinear16_convert(BGR555, sBIT_RGB555, 3, 6, 7, 5, 5, 5, true,  Mask555_Lo5, Mask555_Mid5, Mask555_Hi5);
 
 		/** RG88 **/
-		case PXF_RG88: {
+		case PixelFormat::RG88: {
 			// Components are already 8-bit, so we need to
 			// expand them to DWORD and add the alpha channel.
 			__m128i reg_zero = _mm_setzero_si128();
@@ -464,7 +464,7 @@ rp_image *fromLinear16_sse2(PixelFormat px_format,
 		}
 
 		/** GR88 **/
-		case PXF_GR88: {
+		case PixelFormat::GR88: {
 			// Components are already 8-bit, so we need to
 			// expand them to DWORD and add the alpha channel.
 			for (unsigned int y = static_cast<unsigned int>(height); y > 0; y--) {
@@ -512,7 +512,7 @@ rp_image *fromLinear16_sse2(PixelFormat px_format,
 
 		default:
 			assert(!"Pixel format not supported.");
-			delete img;
+			img->unref();
 			return nullptr;
 	}
 

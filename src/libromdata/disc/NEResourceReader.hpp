@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * NEResourceReader.hpp: New Executable resource reader.                   *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -27,7 +27,7 @@ class NEResourceReader : public IResourceReader
 		 * @param rsrc_tbl_addr Resource table start address.
 		 * @param rsrc_tbl_size Resource table size.
 		 */
-		NEResourceReader(LibRpBase::IRpFile *file, uint32_t rsrc_tbl_addr, uint32_t rsrc_tbl_size);
+		NEResourceReader(LibRpFile::IRpFile *file, uint32_t rsrc_tbl_addr, uint32_t rsrc_tbl_size);
 		virtual ~NEResourceReader();
 
 	private:
@@ -46,6 +46,7 @@ class NEResourceReader : public IResourceReader
 		 * @param size Amount of data to read, in bytes.
 		 * @return Number of bytes read.
 		 */
+		ATTR_ACCESS_SIZE(write_only, 2, 3)
 		size_t read(void *ptr, size_t size) final;
 
 		/**
@@ -53,13 +54,13 @@ class NEResourceReader : public IResourceReader
 		 * @param pos Partition position.
 		 * @return 0 on success; -1 on error.
 		 */
-		int seek(int64_t pos) final;
+		int seek(off64_t pos) final;
 
 		/**
 		 * Get the partition position.
 		 * @return Partition position on success; -1 on error.
 		 */
-		int64_t tell(void) final;
+		off64_t tell(void) final;
 
 		/**
 		 * Get the data size.
@@ -67,7 +68,7 @@ class NEResourceReader : public IResourceReader
 		 * and it's adjusted to exclude hashes.
 		 * @return Data size, or -1 on error.
 		 */
-		int64_t size(void) final;
+		off64_t size(void) final;
 
 	public:
 		/** IPartition **/
@@ -77,7 +78,7 @@ class NEResourceReader : public IResourceReader
 		 * This size includes the partition header and hashes.
 		 * @return Partition size, or -1 on error.
 		 */
-		int64_t partition_size(void) const final;
+		off64_t partition_size(void) const final;
 
 		/**
 		 * Get the used partition size.
@@ -85,7 +86,7 @@ class NEResourceReader : public IResourceReader
 		 * but does not include "empty" sectors.
 		 * @return Used partition size, or -1 on error.
 		 */
-		int64_t partition_size_used(void) const final;
+		off64_t partition_size_used(void) const final;
 
 	public:
 		/** IResourceReader functions. **/
@@ -97,7 +98,7 @@ class NEResourceReader : public IResourceReader
 		 * @param lang Language ID. (-1 for "first entry")
 		 * @return IRpFile*, or nullptr on error.
 		 */
-		LibRpBase::IRpFile *open(uint16_t type, int id, int lang) final;
+		LibRpFile::IRpFile *open(uint16_t type, int id, int lang) final;
 
 		/**
 		 * Load a VS_VERSION_INFO resource.

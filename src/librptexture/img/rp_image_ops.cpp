@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * rp_image_ops.cpp: Image class. (operations)                             *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -25,9 +25,11 @@ namespace LibRpTexture {
 rp_image *rp_image::dup(void) const
 {
 	RP_D(const rp_image);
-	const int width = d->backend->width;
-	const int height = d->backend->height;
-	const rp_image::Format format = d->backend->format;
+	const rp_image_backend *const backend = d->backend;
+
+	const int width = backend->width;
+	const int height = backend->height;
+	const rp_image::Format format = backend->format;
 	assert(width > 0);
 	assert(height > 0);
 
@@ -40,14 +42,14 @@ rp_image *rp_image::dup(void) const
 	// Copy the image.
 	// NOTE: Using uint8_t* because stride is measured in bytes.
 	uint8_t *dest = static_cast<uint8_t*>(img->bits());
-	const uint8_t *src = static_cast<const uint8_t*>(d->backend->data());
+	const uint8_t *src = static_cast<const uint8_t*>(backend->data());
 	const int row_bytes = img->row_bytes();
 	const int dest_stride = img->stride();
-	const int src_stride = d->backend->stride;
+	const int src_stride = backend->stride;
 
 	if (src_stride == dest_stride) {
 		// Copy the entire image all at once.
-		size_t len = d->backend->data_len();
+		size_t len = backend->data_len();
 		memcpy(dest, src, len);
 	} else {
 		// Copy one line at a time.
@@ -59,10 +61,10 @@ rp_image *rp_image::dup(void) const
 	}
 
 	// If CI8, copy the palette.
-	if (format == rp_image::FORMAT_CI8) {
-		int entries = std::min(img->palette_len(), d->backend->palette_len());
+	if (format == rp_image::Format::CI8) {
+		int entries = std::min(img->palette_len(), backend->palette_len());
 		uint32_t *const dest_pal = img->palette();
-		memcpy(dest_pal, d->backend->palette(), entries * sizeof(uint32_t));
+		memcpy(dest_pal, backend->palette(), entries * sizeof(uint32_t));
 		// Palette is zero-initialized, so we don't need to
 		// zero remaining entries.
 	}
@@ -82,39 +84,41 @@ rp_image *rp_image::dup(void) const
 rp_image *rp_image::dup_ARGB32(void) const
 {
 	RP_D(const rp_image);
-	if (d->backend->format == FORMAT_ARGB32) {
+	const rp_image_backend *const backend = d->backend;
+
+	if (backend->format == Format::ARGB32) {
 		// Already in ARGB32.
 		// Do a direct dup().
 		return this->dup();
-	} else if (d->backend->format != FORMAT_CI8) {
+	} else if (backend->format != Format::CI8) {
 		// Only CI8->ARGB32 is supported right now.
 		return nullptr;
 	}
 
-	const int width = d->backend->width;
-	const int height = d->backend->height;
+	const int width = backend->width;
+	const int height = backend->height;
 	assert(width > 0);
 	assert(height > 0);
 
 	// TODO: Handle palette length smaller than 256.
-	assert(d->backend->palette_len() == 256);
-	if (d->backend->palette_len() != 256) {
+	assert(backend->palette_len() == 256);
+	if (backend->palette_len() != 256) {
 		return nullptr;
 	}
 
-	rp_image *img = new rp_image(width, height, FORMAT_ARGB32);
+	rp_image *const img = new rp_image(width, height, Format::ARGB32);
 	if (!img->isValid()) {
 		// Image is invalid. Something went wrong.
-		delete img;
+		img->unref();
 		return nullptr;
 	}
 
 	// Copy the image, converting from CI8 to ARGB32.
 	uint32_t *dest = static_cast<uint32_t*>(img->bits());
-	const uint8_t *src = static_cast<const uint8_t*>(d->backend->data());
-	const uint32_t *pal = d->backend->palette();
+	const uint8_t *src = static_cast<const uint8_t*>(backend->data());
+	const uint32_t *pal = backend->palette();
 	const int dest_adj = (img->stride() / 4) - width;
-	const int src_adj = d->backend->stride - width;
+	const int src_adj = backend->stride - width;
 
 	for (unsigned int y = static_cast<unsigned int>(height); y > 0; y--) {
 		// Convert up to 4 pixels per loop iteration.
@@ -163,8 +167,10 @@ rp_image *rp_image::squared(void) const
 	// Add extra transparent columns/rows before
 	// converting to HBITMAP.
 	RP_D(const rp_image);
-	const int width = d->backend->width;
-	const int height = d->backend->height;
+	const rp_image_backend *const backend = d->backend;
+
+	const int width = backend->width;
+	const int height = backend->height;
 	assert(width > 0);
 	assert(height > 0);
 	if (width <= 0 || height <= 0) {
@@ -172,34 +178,53 @@ rp_image *rp_image::squared(void) const
 		return nullptr;
 	}
 
-	rp_image *sq_img = nullptr;
 	if (width == height) {
 		// Image is already square. dup() it.
 		return this->dup();
-	} else if (width > height) {
-		// Image is wider. Add rows to the top and bottom.
-		// TODO: 8bpp support?
-		assert(d->backend->format == rp_image::FORMAT_ARGB32);
-		if (d->backend->format != rp_image::FORMAT_ARGB32) {
-			// Cannot resize this image.
-			// Use dup() instead.
-			return this->dup();
-		}
-		sq_img = new rp_image(width, width, rp_image::FORMAT_ARGB32);
-		if (!sq_img->isValid()) {
-			// Could not allocate the image.
-			delete sq_img;
-			return nullptr;
-		}
+	}
 
+	// Image needs adjustment.
+	// TODO: Native 8bpp support?
+	rp_image *tmp_rp_image = nullptr;
+	if (backend->format != rp_image::Format::ARGB32) {
+		// Convert to ARGB32 first.
+		tmp_rp_image = this->dup_ARGB32();
+	}
+
+	// Create the squared image.
+	const int max_dim = std::max(width, height);
+	rp_image *const sq_img = new rp_image(max_dim, max_dim, rp_image::Format::ARGB32);
+	if (!sq_img->isValid()) {
+		// Could not allocate the image.
+		sq_img->unref();
+		UNREF(tmp_rp_image);
+		return nullptr;
+	}
+
+	// NOTE: Using uint8_t* because stride is measured in bytes.
+	uint8_t *dest = static_cast<uint8_t*>(sq_img->bits());
+	const int dest_stride = sq_img->stride();
+
+	const uint8_t *src;
+	int src_stride;
+	int src_row_bytes;
+	if (!tmp_rp_image) {
+		// Not using a temporary image.
+		src = static_cast<const uint8_t*>(backend->data());
+		src_stride = backend->stride;
+		src_row_bytes = this->row_bytes();
+	} else {
+		// Using a temporary image.
+		const rp_image_backend *const tmp_backend = tmp_rp_image->d_ptr->backend;
+		src = static_cast<const uint8_t*>(tmp_backend->data());
+		src_stride = tmp_backend->stride;
+		src_row_bytes = tmp_rp_image->row_bytes();
+	}
+
+	if (width > height) {
+		// Image is wider. Add rows to the top and bottom.
 		const int addToTop = (width-height)/2;
 		const int addToBottom = addToTop + ((width-height)%2);
-
-		// NOTE: Using uint8_t* because stride is measured in bytes.
-		uint8_t *dest = static_cast<uint8_t*>(sq_img->bits());
-		const uint8_t *src = static_cast<const uint8_t*>(d->backend->data());
-		const int dest_stride = sq_img->stride();
-		const int src_stride = d->backend->stride;
 
 		// Clear the top rows.
 		memset(dest, 0, addToTop * dest_stride);
@@ -216,21 +241,8 @@ rp_image *rp_image::squared(void) const
 		// Clear the bottom rows.
 		// NOTE: Last row may not be the full stride.
 		memset(dest, 0, ((addToBottom-1) * dest_stride) + sq_img->row_bytes());
-	} else if (width < height) {
+	} else /*if (width < height)*/ {
 		// Image is taller. Add columns to the left and right.
-		// TODO: 8bpp support?
-		assert(d->backend->format == rp_image::FORMAT_ARGB32);
-		if (d->backend->format != rp_image::FORMAT_ARGB32) {
-			// Cannot resize this image.
-			// Use dup() instead.
-			return this->dup();
-		}
-		sq_img = new rp_image(height, height, rp_image::FORMAT_ARGB32);
-		if (!sq_img->isValid()) {
-			// Could not allocate the image.
-			delete sq_img;
-			return nullptr;
-		}
 
 		// NOTE: Mega Man Gold amiibo is "shifting" by 1px when
 		// refreshing in Win7. (switching from icon to thumbnail)
@@ -238,15 +250,8 @@ rp_image *rp_image::squared(void) const
 		const int addToLeft = (height-width)/2;
 		const int addToRight = addToLeft + ((height-width)%2);
 
-		// NOTE: Using uint8_t* because stride is measured in bytes.
-		uint8_t *dest = static_cast<uint8_t*>(sq_img->bits());
-
 		// "Blanking" area is right border, potential unused space from stride, then left border.
-		const uint8_t *src = static_cast<const uint8_t*>(d->backend->data());
-		const int src_row_bytes = this->row_bytes();	// Source row bytes.
 		const int dest_blanking = sq_img->stride() - src_row_bytes;
-		const int dest_stride = sq_img->stride();
-		const int src_stride = d->backend->stride;
 
 		// Clear the left part of the first row.
 		memset(dest, 0, addToLeft * sizeof(uint32_t));
@@ -272,6 +277,7 @@ rp_image *rp_image::squared(void) const
 		sq_img->set_sBIT(&d->sBIT);
 	}
 
+	UNREF(tmp_rp_image);
 	return sq_img;
 }
 
@@ -304,8 +310,10 @@ rp_image *rp_image::resized(int width, int height, Alignment alignment, uint32_t
 	}
 
 	RP_D(const rp_image);
-	const int orig_width = d->backend->width;
-	const int orig_height = d->backend->height;
+	const rp_image_backend *const backend = d->backend;
+
+	const int orig_width = backend->width;
+	const int orig_height = backend->height;
 	assert(orig_width > 0);
 	assert(orig_height > 0);
 	if (orig_width <= 0 || orig_height <= 0) {
@@ -318,24 +326,24 @@ rp_image *rp_image::resized(int width, int height, Alignment alignment, uint32_t
 		return this->dup();
 	}
 
-	const rp_image::Format format = d->backend->format;
-	rp_image *img = new rp_image(width, height, format);
+	const rp_image::Format format = backend->format;
+	rp_image *const img = new rp_image(width, height, format);
 	if (!img->isValid()) {
 		// Image is invalid.
-		delete img;
+		img->unref();
 		return nullptr;
 	}
 
 	// Copy the image.
 	// NOTE: Using uint8_t* because stride is measured in bytes.
 	uint8_t *dest = static_cast<uint8_t*>(img->bits());
-	const uint8_t *src = static_cast<const uint8_t*>(d->backend->data());
+	const uint8_t *src = static_cast<const uint8_t*>(backend->data());
 	const int dest_stride = img->stride();
-	const int src_stride = d->backend->stride;
+	const int src_stride = backend->stride;
 
 	// We want to copy the minimum of new vs. old width.
 	int row_bytes = std::min(width, orig_width);
-	if (format == rp_image::FORMAT_ARGB32) {
+	if (format == rp_image::Format::ARGB32) {
 		row_bytes *= sizeof(uint32_t);
 	}
 
@@ -381,7 +389,7 @@ rp_image *rp_image::resized(int width, int height, Alignment alignment, uint32_t
 
 				// If this is ARGB32, set the background color of the top half.
 				// TODO: Optimize this.
-				if (format == rp_image::FORMAT_ARGB32 && bgColor != 0x00000000) {
+				if (format == rp_image::Format::ARGB32 && bgColor != 0x00000000) {
 					for (unsigned int y = (height - orig_height) / 2; y > 0; y--) {
 						uint32_t *dest32 = reinterpret_cast<uint32_t*>(dest);
 						for (unsigned int x = width; x > 0; x--) {
@@ -400,7 +408,7 @@ rp_image *rp_image::resized(int width, int height, Alignment alignment, uint32_t
 
 				// If this is ARGB32, set the background color of the blank area.
 				// TODO: Optimize this.
-				if (format == rp_image::FORMAT_ARGB32 && bgColor != 0x00000000) {
+				if (format == rp_image::Format::ARGB32 && bgColor != 0x00000000) {
 					for (unsigned int y = (height - orig_height); y > 0; y--) {
 						uint32_t *dest32 = reinterpret_cast<uint32_t*>(dest);
 						for (unsigned int x = width; x > 0; x--) {
@@ -427,7 +435,7 @@ rp_image *rp_image::resized(int width, int height, Alignment alignment, uint32_t
 	}
 
 	// If the image is taller, we may need to clear the bottom section.
-	if (height > orig_height && format == rp_image::FORMAT_ARGB32) {
+	if (height > orig_height && format == rp_image::Format::ARGB32) {
 		switch (alignment & AlignVertical_Mask) {
 			default:
 			case AlignTop:
@@ -472,10 +480,10 @@ rp_image *rp_image::resized(int width, int height, Alignment alignment, uint32_t
 	}
 
 	// If CI8, copy the palette.
-	if (format == rp_image::FORMAT_CI8) {
-		int entries = std::min(img->palette_len(), d->backend->palette_len());
+	if (format == rp_image::Format::CI8) {
+		int entries = std::min(img->palette_len(), backend->palette_len());
 		uint32_t *const dest_pal = img->palette();
-		memcpy(dest_pal, d->backend->palette(), entries * sizeof(uint32_t));
+		memcpy(dest_pal, backend->palette(), entries * sizeof(uint32_t));
 		// Palette is zero-initialized, so we don't need to
 		// zero remaining entries.
 	}
@@ -506,8 +514,9 @@ int rp_image::apply_chroma_key_cpp(uint32_t key)
 {
 	RP_D(rp_image);
 	rp_image_backend *const backend = d->backend;
-	assert(backend->format == FORMAT_ARGB32);
-	if (backend->format != FORMAT_ARGB32) {
+
+	assert(backend->format == Format::ARGB32);
+	if (backend->format != Format::ARGB32) {
 		// ARGB32 only.
 		return -EINVAL;
 	}
@@ -549,45 +558,146 @@ int rp_image::apply_chroma_key_cpp(uint32_t key)
 }
 
 /**
- * Vertically flip the image.
+ * Flip the image.
  *
  * This function returns a *new* image and leaves the
  * original image unmodified.
  *
- * @return Vertically-flipped image, or nullptr on error.
+ * @param op Flip operation.
+ * @return Flipped image, or nullptr on error.
  */
-rp_image *rp_image::vflip(void) const
+rp_image *rp_image::flip(FlipOp op) const
 {
-	RP_D(rp_image);
-	rp_image_backend *const backend = d->backend;
-	const int height = backend->height;
-
-	assert(backend->width > 0 && height > 0);
-	if (backend->width <= 0 || height <= 0) {
+	assert(op >= FLIP_V);
+	assert(op <= FLIP_VH);
+	if (op == 0) {
+		// No-op...
+		return dup();
+	} else if (op < FLIP_V || op > FLIP_VH) {
+		// Not supported.
 		return nullptr;
 	}
 
+	RP_D(const rp_image);
+	rp_image_backend *const backend = d->backend;
 
-	rp_image *flipimg = new rp_image(backend->width, height, backend->format);
-	const uint8_t *src = static_cast<const uint8_t*>(backend->data());
-	uint8_t *dest = static_cast<uint8_t*>(flipimg->scanLine(height - 1));
-
-	const int row_bytes = this->row_bytes();
-	const int src_stride = d->backend->stride;
-	const int dest_stride = flipimg->stride();
-
-	for (int i = height; i > 0; i--) {
-		memcpy(dest, src, row_bytes);
-		src += src_stride;
-		dest -= dest_stride;
+	const int width = backend->width;
+	const int height = backend->height;
+	assert(width > 0 && height > 0);
+	if (width <= 0 || height <= 0) {
+		return nullptr;
 	}
 
-	// Copy sBIT.
+	const int row_bytes = this->row_bytes();
+	rp_image *const flipimg = new rp_image(width, height, backend->format);
+	const uint8_t *src = static_cast<const uint8_t*>(backend->data());
+	uint8_t *dest;
+	if (op & FLIP_V) {
+		// Vertical flip: Destination starts at the bottom of the image.
+		dest = static_cast<uint8_t*>(flipimg->scanLine(height - 1));
+	} else {
+		// Not a vertical flip: Destination starts at the top of the image.
+		dest = static_cast<uint8_t*>(flipimg->bits());
+	}
+
+	int src_stride = backend->stride;
+	int dest_stride = flipimg->stride();
+	if (op & FLIP_H) {
+		if (op & FLIP_V) {
+			// Vertical flip: Subtract the destination stride.
+			dest_stride = -dest_stride;
+		}
+
+		// Horizontal flip: Copy one pixel at a time.
+		// TODO: Improve performance by using pointer arithmetic.
+		// The algorithm gets ridiculously complicated and I couldn't
+		// get it right, so I'm not doing that right now.
+		switch (backend->format) {
+			default:
+				assert(!"rp_image format not supported for H-flip.");
+				flipimg->unref();
+				return nullptr;
+
+			case rp_image::Format::CI8:
+				// 8-bit copy.
+				for (int y = height; y > 0; y--) {
+					int dx = 0;
+					for (int x = width-1; x >= 0; x--, dx++) {
+						dest[dx] = src[x];
+					}
+					src += src_stride;
+					dest += dest_stride;
+				}
+				break;
+
+			case rp_image::Format::ARGB32: {
+				// 32-bit copy.
+				const uint32_t *src32 = reinterpret_cast<const uint32_t*>(src);
+				uint32_t *dest32 = reinterpret_cast<uint32_t*>(dest);
+				src_stride /= sizeof(uint32_t);
+				dest_stride /= sizeof(uint32_t);
+
+				for (int y = height; y > 0; y--) {
+					int dx = 0;
+					for (int x = width-1; x >= 0; x--, dx++) {
+						dest32[dx] = src32[x];
+					}
+					src32 += src_stride;
+					dest32 += dest_stride;
+				}
+				break;
+			}
+		}
+	} else {
+		if (op & FLIP_V) {
+			// Vertical flip: Subtract the destination stride.
+			dest_stride = -dest_stride;
+		}
+
+		// Not a horizontal flip. Copy one line at a time.
+		for (int y = height; y > 0; y--) {
+			memcpy(dest, src, row_bytes);
+			src += src_stride;
+			dest += dest_stride;
+		}
+	}
+
+	// If CI8, copy the palette.
+	if (backend->format == Format::CI8) {
+		int entries = std::min(flipimg->palette_len(), d->backend->palette_len());
+		uint32_t *const dest_pal = flipimg->palette();
+		memcpy(dest_pal, d->backend->palette(), entries * sizeof(uint32_t));
+		// Palette is zero-initialized, so we don't need to
+		// zero remaining entries.
+	}
+
+	// If CI8, copy the palette.
+	if (backend->format == rp_image::Format::CI8) {
+		int entries = std::min(flipimg->palette_len(), backend->palette_len());
+		uint32_t *const dest_pal = flipimg->palette();
+		memcpy(dest_pal, backend->palette(), entries * sizeof(uint32_t));
+		// Palette is zero-initialized, so we don't need to
+		// zero remaining entries.
+	}
+
+	// Copy sBIT if it's set.
 	if (d->has_sBIT) {
 		flipimg->set_sBIT(&d->sBIT);
 	}
 
 	return flipimg;
+}
+
+/**
+ * Shrink image dimensions.
+ * @param width New width.
+ * @param height New height.
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int rp_image::shrink(int width, int height)
+{
+	RP_D(rp_image);
+	return d->backend->shrink(width, height);
 }
 
 }

@@ -1,4 +1,12 @@
-PROJECT(librpbase)
+# rom-properties base library
+CMAKE_MINIMUM_REQUIRED(VERSION 3.0)
+CMAKE_POLICY(SET CMP0048 NEW)
+IF(POLICY CMP0063)
+	# CMake 3.3: Enable symbol visibility presets for all
+	# target types, including static libraries and executables.
+	CMAKE_POLICY(SET CMP0063 NEW)
+ENDIF(POLICY CMP0063)
+PROJECT(librpbase LANGUAGES C CXX)
 
 IF(NOT WIN32)
 	# Non-Windows library checks.
@@ -15,7 +23,7 @@ IF(NOT WIN32)
 	ENDIF(NOT Iconv_IS_BUILT_IN)
 
 	IF(ENABLE_DECRYPTION)
-		FIND_PACKAGE(Nettle REQUIRED)
+		FIND_PACKAGE(NETTLE REQUIRED)
 		SET(HAVE_NETTLE ${NETTLE_FOUND})
 		IF(HAVE_NETTLE)
 			# Check if this is Nettle 3.x.
@@ -61,28 +69,30 @@ ELSE(NOT WIN32)
 		LANGUAGE C)
 ENDIF(NOT WIN32)
 
-IF(APPLE)
-	CHECK_SYMBOL_EXISTS(fsetxattr "sys/xattr.h" HAVE_FSETXATTR_MAC)
-ELSEIF(NOT WIN32)
-	CHECK_SYMBOL_EXISTS(fsetxattr "sys/xattr.h" HAVE_FSETXATTR_LINUX)
-	CHECK_SYMBOL_EXISTS(extattr_set_fd "sys/extattr.h" HAVE_EXTATTR_SET_FD)
-ENDIF()
-
-# Check for reentrant C library functions.
+# Check for reentrant time functions.
+# NOTE: May be _gmtime32_s() or _gmtime64_s() on MSVC 2005+.
+# The "inline" part will detect that.
 INCLUDE(CheckSymbolExistsOrInline)
-# putenv(), setenv(), and related.
-# setenv() is preferred, so if it's found, skip everything else.
-# FIXME: putenv() and setenv() aren't likely to be inline functions, but
-# CHECK_SYMBOL_EXISTS() complains due to the embedded double-quotes.
-CHECK_SYMBOL_EXISTS_OR_INLINE(putenv "stdlib.h" "putenv(\"abc123=def456\");" HAVE_PUTENV)
-CHECK_SYMBOL_EXISTS_OR_INLINE(setenv "stdlib.h" "setenv(\"abc123\", \"def456\", 1);" HAVE_SETENV)
-# Windows-specific: Unicode only.
-# NOTE: These may be inline functions on MinGW.
-CHECK_SYMBOL_EXISTS_OR_INLINE(_wputenv "stdlib.h" "_wputenv(L\"abc123=def456\");" HAVE__WPUTENV)
-CHECK_SYMBOL_EXISTS_OR_INLINE(_wputenv_s "stdlib.h" "_wputenv_s(L\"abc123\", \"def456\");" HAVE__WPUTENV_S)
+CHECK_SYMBOL_EXISTS_OR_INLINE(gmtime_r "time.h" "time_t tm; gmtime_r(&tm, NULL);" HAVE_GMTIME_R)
+IF(NOT HAVE_GMTIME_R)
+	CHECK_SYMBOL_EXISTS_OR_INLINE(gmtime_s "time.h" "time_t tm; gmtime_s(NULL, &tm);" HAVE_GMTIME_S)
+ENDIF(NOT HAVE_GMTIME_R)
+CHECK_SYMBOL_EXISTS_OR_INLINE(localtime_r "time.h" "time_t tm; localtime_r(&tm, NULL);" HAVE_LOCALTIME_R)
+IF(NOT HAVE_LOCALTIME_R)
+	CHECK_SYMBOL_EXISTS_OR_INLINE(localtime_s "time.h" "time_t tm; localtime_s(NULL, &tm);" HAVE_LOCALTIME_S)
+ENDIF(NOT HAVE_LOCALTIME_R)
 
-# Check for C headers.
-CHECK_INCLUDE_FILES("features.h" HAVE_FEATURES_H)
+# Other time functions.
+CHECK_SYMBOL_EXISTS_OR_INLINE(timegm "time.h" "struct tm tm; time_t x = timegm(&tm);" HAVE_TIMEGM)
+IF(NOT HAVE_TIMEGM)
+	# NOTE: MSVCRT's _mkgmtime64() has a range of [1970/01/01, 3000/12/31].
+	# glibc and boost both support arbitrary ranges.
+	CHECK_SYMBOL_EXISTS_OR_INLINE(_mkgmtime "time.h" "struct tm tm; time_t x = _mkgmtime(&tm);" HAVE__MKGMTIME)
+	CHECK_SYMBOL_EXISTS_OR_INLINE(_mkgmtime64 "time.h" "struct tm tm; time_t x = _mkgmtime64(&tm);" HAVE__MKGMTIME64)
+ENDIF(NOT HAVE_TIMEGM)
+IF(NOT HAVE_TIMEGM AND NOT HAVE__MKGMTIME AND NOT HAVE__MKGMTIME64)
+	SET(USE_BOOST_TIMEGM 1)
+ENDIF(NOT HAVE_TIMEGM AND NOT HAVE__MKGMTIME AND NOT HAVE__MKGMTIME64)
 
 # Check for unordered_map::reserve and unordered_set::reserve.
 SET(OLD_CMAKE_REQUIRED_INCLUDES ${CMAKE_REQUIRED_INCLUDES})
@@ -103,7 +113,6 @@ UNSET(OLD_CMAKE_REQUIRED_INCLUDES)
 
 # Sources.
 SET(librpbase_SRCS
-	byteswap.c
 	TextFuncs.cpp
 	TextFuncs_libc.c
 	TextFuncs_conv.cpp
@@ -111,12 +120,10 @@ SET(librpbase_SRCS
 	RomFields.cpp
 	RomMetaData.cpp
 	SystemRegion.cpp
-	file/IRpFile.cpp
-	file/RpMemFile.cpp
-	file/FileSystem_common.cpp
-	file/RelatedFile.cpp
-	file/scsi/RpFile_Kreon.cpp
-	file/scsi/RpFile_scsi.cpp
+	TextOut_common.cpp
+	TextOut_text.cpp
+	TextOut_json.cpp
+	Achievements.cpp
 	img/RpImageLoader.cpp
 	img/RpPng.cpp
 	img/RpPngWriter.cpp
@@ -134,12 +141,8 @@ SET(librpbase_SRCS
 	)
 # Headers.
 SET(librpbase_H
-	byteorder.h
-	byteswap.h
-	common.h
 	uvector.h
 	aligned_malloc.h
-	ctypex.h
 	TextFuncs.hpp
 	TextFuncs_wchar.hpp
 	TextFuncs_libc.h
@@ -149,16 +152,8 @@ SET(librpbase_H
 	RomFields.hpp
 	RomMetaData.hpp
 	SystemRegion.hpp
-	bitstuff.h
-	file/IRpFile.hpp
-	file/RpFile.hpp
-	file/RpFile_p.hpp
-	file/RpMemFile.hpp
-	file/FileSystem.hpp
-	file/RelatedFile.hpp
-	file/scsi/ata_protocol.h
-	file/scsi/scsi_protocol.h
-	file/scsi/scsi_ata_cmds.h
+	TextOut.hpp
+	Achievements.hpp
 	img/RpPng.hpp
 	img/RpPngWriter.hpp
 	img/APNG_dlopen.h
@@ -176,6 +171,11 @@ SET(librpbase_H
 	config/AboutTabText.hpp
 	)
 
+# timegm.c for systems that don't have timegm() or 64-bit _mkgmtime().
+IF(USE_BOOST_TIMEGM)
+	SET(librpbase_SRCS ${librpbase_SRCS} timegm.c)
+ENDIF(USE_BOOST_TIMEGM)
+
 IF(NOT USE_INTERNAL_PNG OR (USE_INTERNAL_PNG AND USE_INTERNAL_PNG_DLL))
 	SET(librpbase_SRCS ${librpbase_SRCS} img/APNG_dlopen.c)
 	SET(librpbase_NEEDS_DL 1)
@@ -189,83 +189,29 @@ ELSEIF(JPEG_FOUND)
 	SET(librpbase_H ${librpbase_H} img/RpJpeg.hpp)
 ENDIF()
 
-# SCSI implementation for Kreon disc drive support.
 IF(WIN32)
-	SET(librpbase_SRCS ${librpbase_SRCS} file/scsi/RpFile_scsi_win32.cpp)
-	SET(RP_OS_SCSI_SUPPORTED 1)
-ELSEIF(CMAKE_SYSTEM_NAME STREQUAL "Linux")
-	SET(librpbase_SRCS ${librpbase_SRCS} file/scsi/RpFile_scsi_linux.cpp)
-	SET(RP_OS_SCSI_SUPPORTED 1)
-ELSEIF(CMAKE_SYSTEM_NAME STREQUAL "FreeBSD" OR CMAKE_SYSTEM_NAME STREQUAL "Dragonfly")
-	# FIXME: Not working properly. (SCSI ILLEGAL REQUEST errors)
-	# NOTE: The file is still needed for rereadDeviceSizeOS().
-	SET(librpbase_SRCS ${librpbase_SRCS} file/scsi/RpFile_scsi_freebsd.cpp)
-
-	IF(0) # FIXME
-	# TODO: Check for header files. CHECK_INCLUDE_FILE() doesn't work
-	# properly because these header files use FILE*, so we need to
-	# #include <stdio.h>.
-	INCLUDE(CheckIncludeFile)
-	INCLUDE(CheckLibraryExists)
-	#CHECK_INCLUDE_FILE("camlib.h" HAVE_CAMLIB_H)
-	#CHECK_INCLUDE_FILE("cam/scsi/scsi_message.h" HAVE_CAM_SCSI_SCSI_MESSAGE_H)
-	#CHECK_INCLUDE_FILE("cam/scsi/scsi_pass.h" HAVE_CAM_SCSI_SCSI_PASS_H)
-	CHECK_LIBRARY_EXISTS(cam "cam_open_pass" "" HAVE_LIBCAM)
-	IF(HAVE_LIBCAM)
-		SET(SCSI_LIBRARY cam)
-		SET(RP_OS_SCSI_SUPPORTED 1)
-	ENDIF()
-	ENDIF(0) # FIXME
-ELSEIF(CMAKE_SYSTEM_NAME STREQUAL "NetBSD" OR CMAKE_SYSTEM_NAME STREQUAL "OpenBSD")
-	SET(librpbase_SRCS ${librpbase_SRCS} file/scsi/RpFile_scsi_netbsd.cpp)
-	SET(RP_OS_SCSI_SUPPORTED 1)
-ELSE()
-	# Dummy implementation for RpFile::rereadDeviceSizeOS().
-	SET(librpbase_SRCS ${librpbase_SRCS} file/scsi/RpFile_scsi_dummy.cpp)
-ENDIF()
-
-IF(WIN32)
-	SET(librpbase_OS_SRCS
-		TextFuncs_win32.cpp
-		file/win32/FileSystem_win32.cpp
-		file/win32/RpFile_win32.cpp
-		file/win32/IStreamWrapper.cpp
-		)
-	SET(librpbase_OS_H
-		TextFuncs_wchar.hpp
-		file/win32/IStreamWrapper.hpp
-		)
+	SET(librpbase_OS_SRCS TextFuncs_win32.cpp)
+	SET(librpbase_OS_H    TextFuncs_wchar.hpp)
 ELSE(WIN32)
-	SET(librpbase_OS_SRCS
-		TextFuncs_iconv.cpp
-		file/FileSystem_posix.cpp
-		file/RpFile_stdio.cpp
-		)
+	SET(librpbase_OS_SRCS TextFuncs_iconv.cpp)
 ENDIF(WIN32)
 
 IF(ENABLE_DECRYPTION)
-	SET(librpbase_CRYPTO_SRCS
-		crypto/AesCipherFactory.cpp
-		)
-	SET(librpbase_CRYPTO_H
-		crypto/IAesCipher.hpp
-		)
+	SET(librpbase_CRYPTO_SRCS crypto/AesCipherFactory.cpp)
+	SET(librpbase_CRYPTO_H    crypto/IAesCipher.hpp crypto/MD5Hash.hpp)
 	IF(WIN32)
 		SET(librpbase_CRYPTO_OS_SRCS
 			crypto/AesCAPI.cpp
 			crypto/AesCAPI_NG.cpp
+			crypto/MD5HashCAPI.cpp
 			)
 		SET(librpbase_CRYPTO_OS_H
 			crypto/AesCAPI.hpp
 			crypto/AesCAPI_NG.hpp
 			)
 	ELSE(WIN32)
-		SET(librpbase_CRYPTO_OS_SRCS
-			crypto/AesNettle.cpp
-			)
-		SET(librpbase_CRYPTO_OS_H
-			crypto/AesNettle.hpp
-			)
+		SET(librpbase_CRYPTO_OS_SRCS crypto/AesNettle.cpp crypto/MD5HashNettle.cpp)
+		SET(librpbase_CRYPTO_OS_H    crypto/AesNettle.hpp)
 	ENDIF(WIN32)
 ENDIF(ENABLE_DECRYPTION)
 
@@ -282,20 +228,6 @@ ENDIF(CMAKE_COMPILER_IS_GNUCXX)
 
 # CPU-specific and optimized sources.
 IF(CPU_i386 OR CPU_amd64)
-	SET(librpbase_CPU_SRCS cpuflags_x86.c)
-	SET(librpbase_CPU_H cpuflags_x86.h)
-
-	# MSVC does not support MMX intrinsics in 64-bit builds.
-	# Reference: https://msdn.microsoft.com/en-us/library/08x3t697(v=vs.110).aspx
-	#
-	# amd64 CPUs support SSE2 as a minimum anyway, so there's
-	# no point in building MMX code for 64-bit.
-	IF(CPU_i386)
-		SET(librpbase_MMX_SRCS byteswap_mmx.c)
-	ENDIF(CPU_i386)
-
-	SET(librpbase_SSE2_SRCS byteswap_sse2.c)
-	SET(librpbase_SSSE3_SRCS byteswap_ssse3.c)
 	IF(JPEG_FOUND AND NOT WIN32)
 		SET(librpbase_SSSE3_SRCS
 			${librpbase_SSSE3_SRCS}
@@ -303,39 +235,12 @@ IF(CPU_i386 OR CPU_amd64)
 			)
 	ENDIF(JPEG_FOUND AND NOT WIN32)
 
-	# IFUNC requires glibc.
-	# We're not checking for glibc here, but we do have preprocessor
-	# checks, so even if this does get compiled on a non-glibc system,
-	# it won't do anything.
-	# TODO: Might be supported on other Unix-like operating systems...
-	IF(UNIX AND NOT APPLE)
-		SET(librpbase_IFUNC_SRCS byteswap_ifunc.c)
-		# Disable LTO on the IFUNC files if LTO is known to be broken.
-		IF(GCC_5xx_LTO_ISSUES)
-			SET_SOURCE_FILES_PROPERTIES(${librpbase_IFUNC_SRCS}
-				APPEND_STRING PROPERTIES COMPILE_FLAGS " -fno-lto ")
-		ENDIF(GCC_5xx_LTO_ISSUES)
-	ENDIF(UNIX AND NOT APPLE)
-
 	IF(MSVC AND NOT CMAKE_CL_64)
-		SET(SSE2_FLAG "/arch:SSE2")
 		SET(SSSE3_FLAG "/arch:SSE2")
 	ELSEIF(NOT MSVC)
 		# TODO: Other compilers?
-		SET(MMX_FLAG "-mmmx")
-		SET(SSE2_FLAG "-msse2")
 		SET(SSSE3_FLAG "-mssse3")
 	ENDIF()
-
-	IF(MMX_FLAG)
-		SET_SOURCE_FILES_PROPERTIES(${librpbase_MMX_SRCS}
-			APPEND_STRING PROPERTIES COMPILE_FLAGS " ${MMX_FLAG} ")
-	ENDIF(MMX_FLAG)
-
-	IF(SSE2_FLAG)
-		SET_SOURCE_FILES_PROPERTIES(${librpbase_SSE2_SRCS}
-			APPEND_STRING PROPERTIES COMPILE_FLAGS " ${SSE2_FLAG} ")
-	ENDIF(SSE2_FLAG)
 
 	IF(SSSE3_FLAG)
 		SET_SOURCE_FILES_PROPERTIES(${librpbase_SSSE3_SRCS}
@@ -357,16 +262,8 @@ IF(NOT HAVE_MSVC_ALIGNED_MALLOC AND NOT HAVE_ALIGNED_ALLOC AND NOT HAVE_POSIX_ME
 	MESSAGE(FATAL_ERROR "System does not have an aligned malloc() function.")
 ENDIF()
 
-# gcc byteswapping intrinsics.
-IF(NOT MSVC)
-	CHECK_C_SOURCE_COMPILES("int main(int argc, char *argv[]) { return __builtin_bswap16((unsigned short)argc); }" HAVE___BUILTIN_BSWAP16)
-	CHECK_C_SOURCE_COMPILES("int main(int argc, char *argv[]) { return __builtin_bswap32((unsigned int)argc); }" HAVE___BUILTIN_BSWAP32)
-	CHECK_C_SOURCE_COMPILES("int main(int argc, char *argv[]) { return __builtin_bswap64((unsigned long long)argc); }" HAVE___BUILTIN_BSWAP64)
-ENDIF(NOT MSVC)
-
 # Write the config.h files.
 CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/config.librpbase.h.in" "${CMAKE_CURRENT_BINARY_DIR}/config.librpbase.h")
-CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/config.byteswap.h.in" "${CMAKE_CURRENT_BINARY_DIR}/config.byteswap.h")
 
 IF(ENABLE_PCH)
 	# Precompiled headers.
@@ -387,10 +284,6 @@ ADD_LIBRARY(rpbase STATIC
 	${librpbase_OS_SRCS} ${librpbase_OS_H}
 	${librpbase_CRYPTO_SRCS} ${librpbase_CRYPTO_H}
 	${librpbase_CRYPTO_OS_SRCS} ${librpbase_CRYPTO_OS_H}
-	${librpbase_CPU_SRCS} ${librpbase_CPU_H}
-	${librpbase_IFUNC_SRCS}
-	${librpbase_MMX_SRCS}
-	${librpbase_SSE2_SRCS}
 	${librpbase_SSSE3_SRCS}
 	)
 IF(ENABLE_PCH)
@@ -412,20 +305,26 @@ TARGET_INCLUDE_DIRECTORIES(rpbase
 	PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>	# src
 		$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/..>	# src
 		$<BUILD_INTERFACE:${CMAKE_BINARY_DIR}>			# build
+		${RAPIDJSON_INCLUDE_DIRS}				# rapidjson
 	)
-IF(NOT ZLIB_LIBRARY)
-	MESSAGE(FATAL_ERROR "ZLIB_LIBRARY has not been set by CheckZLIB.cmake.")
-ENDIF(NOT ZLIB_LIBRARY)
-TARGET_LINK_LIBRARIES(rpbase PRIVATE ${ZLIB_LIBRARY})
-IF(MSVC)
-	TARGET_LINK_LIBRARIES(rpbase PRIVATE delayimp)
-ENDIF(MSVC)
+ADD_DEFINITIONS(-DRAPIDJSON_HAS_STDSTRING)
+
 # Exclude from ALL builds.
 SET_TARGET_PROPERTIES(rpbase PROPERTIES EXCLUDE_FROM_ALL TRUE)
 # Make sure git_version.h is created before compiling this target.
 IF(TARGET git_version)
 	ADD_DEPENDENCIES(rpbase git_version)
 ENDIF(TARGET git_version)
+
+IF(MSVC)
+	# Delay-load implementation.
+	TARGET_LINK_LIBRARIES(rpbase PRIVATE delayimp)
+ENDIF(MSVC)
+
+IF(NOT ZLIB_LIBRARY)
+	MESSAGE(FATAL_ERROR "ZLIB_LIBRARY has not been set by CheckZLIB.cmake.")
+ENDIF(NOT ZLIB_LIBRARY)
+TARGET_LINK_LIBRARIES(rpbase PRIVATE ${ZLIB_LIBRARY})
 
 # Link in libdl if it's required for dlopen()
 # and we have a component that uses it.
@@ -434,7 +333,7 @@ IF(librpbase_NEEDS_DL AND CMAKE_DL_LIBS)
 ENDIF(librpbase_NEEDS_DL AND CMAKE_DL_LIBS)
 
 # Other libraries.
-TARGET_LINK_LIBRARIES(rpbase PRIVATE rptexture inih rpthreads)
+TARGET_LINK_LIBRARIES(rpbase PRIVATE rpcpu rpfile rptexture rpfile inih rpthreads cachecommon)
 IF(Iconv_LIBRARY AND NOT Iconv_IS_BUILT_IN)
 	TARGET_LINK_LIBRARIES(rpbase PRIVATE Iconv::Iconv)
 ENDIF(Iconv_LIBRARY AND NOT Iconv_IS_BUILT_IN)
@@ -472,6 +371,9 @@ IF(SCSI_LIBRARY)
 	# An extra library is needed for SCSI support.
 	TARGET_LINK_LIBRARIES(rpbase PRIVATE ${SCSI_LIBRARY})
 ENDIF(SCSI_LIBRARY)
+
+# rapidjson: Enable std::string support.
+ADD_DEFINITIONS(-DRAPIDJSON_HAS_STDSTRING)
 
 IF(ENABLE_NLS)
 	TARGET_LINK_LIBRARIES(rpbase PRIVATE i18n)

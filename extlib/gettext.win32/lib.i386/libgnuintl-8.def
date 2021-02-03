@@ -1,85 +1,76 @@
 EXPORTS
-    __imp_libintl_version @1 DATA
-    __printf__ @2
-    _nl_expand_alias @3
-    _nl_explode_name @4
-    _nl_find_domain @5
-    _nl_find_msg @6
-    _nl_language_preferences_default @7
-    _nl_load_domain @8
-    _nl_locale_name @9
-    _nl_locale_name_canonicalize @10
-    _nl_locale_name_default @11
-    _nl_locale_name_environ @12
-    _nl_locale_name_from_win32_LANGID @13
-    _nl_locale_name_from_win32_LCID @14
-    _nl_locale_name_posix @15
-    _nl_locale_name_thread @16
-    _nl_locale_name_thread_unsafe @17
-    _nl_log_untranslated @18
-    _nl_make_l10nflist @19
-    _nl_msg_cat_cntr @20 DATA
-    _nl_normalize_codeset @21
-    _nl_state_lock @22 DATA
-    bind_textdomain_codeset @23
-    bindtextdomain @24
-    dcgettext @25
-    dcngettext @26
-    dgettext @27
-    dngettext @28
-    gettext @29
-    libintl_asprintf @30
-    libintl_bind_textdomain_codeset @31
-    libintl_bindtextdomain @32
-    libintl_dcgettext @33
-    libintl_dcigettext @34
-    libintl_dcngettext @35
-    libintl_dgettext @36
-    libintl_dngettext @37
-    libintl_fprintf @38
-    libintl_gettext @39
-    libintl_gettext_extract_plural @40
-    libintl_gettext_free_exp @41
-    libintl_gettext_germanic_plural @42 DATA
-    libintl_gettextparse @43
-    libintl_hash_string @44
-    libintl_lock_destroy_func @45
-    libintl_lock_init_func @46
-    libintl_lock_lock_func @47
-    libintl_lock_unlock_func @48
-    libintl_ngettext @49
-    libintl_nl_current_default_domain @50 DATA
-    libintl_nl_default_default_domain @51 DATA
-    libintl_nl_default_dirname @52 DATA
-    libintl_nl_domain_bindings @53 DATA
-    libintl_once_func @54
-    libintl_recursive_lock_destroy_func @55
-    libintl_recursive_lock_init_func @56
-    libintl_recursive_lock_lock_func @57
-    libintl_recursive_lock_unlock_func @58
-    libintl_relocate @59
-    libintl_relocate2 @60
-    libintl_rwlock_destroy_func @61
-    libintl_rwlock_init_func @62
-    libintl_rwlock_rdlock_func @63
-    libintl_rwlock_unlock_func @64
-    libintl_rwlock_wrlock_func @65
-    libintl_set_relocation_prefix @66
-    libintl_setlocale @67
-    libintl_snprintf @68
-    libintl_sprintf @69
-    libintl_textdomain @70
-    libintl_vasnprintf @71
-    libintl_vasprintf @72
-    libintl_version @73 DATA
-    libintl_vfprintf @74
-    libintl_vprintf @75
-    libintl_vsnprintf @76
-    libintl_vsprintf @77
-    locale_charset @78
-    ngettext @79
-    textdomain @80
-    xmax @81
-    xsum @82
-    xsum3 @83
-    xsum4 @84
+    __imp_libintl_version DATA
+    __printf__
+    _imp__gl_get_setlocale_null_lock DATA
+    _nl_expand_alias
+    _nl_explode_name
+    _nl_find_domain
+    _nl_find_msg
+    _nl_language_preferences_default
+    _nl_load_domain
+    _nl_locale_name
+    _nl_locale_name_canonicalize
+    _nl_locale_name_default
+    _nl_locale_name_environ
+    _nl_locale_name_from_win32_LANGID
+    _nl_locale_name_from_win32_LCID
+    _nl_locale_name_posix
+    _nl_locale_name_thread
+    _nl_locale_name_thread_unsafe
+    _nl_log_untranslated
+    _nl_make_l10nflist
+    _nl_msg_cat_cntr DATA
+    _nl_normalize_codeset
+    _nl_state_lock DATA
+    bind_textdomain_codeset
+    bindtextdomain
+    dcgettext
+    dcngettext
+    dgettext
+    dngettext
+    gettext
+    gl_get_setlocale_null_lock
+    libintl_asprintf
+    libintl_bind_textdomain_codeset
+    libintl_bindtextdomain
+    libintl_dcgettext
+    libintl_dcigettext
+    libintl_dcngettext
+    libintl_dgettext
+    libintl_dngettext
+    libintl_fprintf
+    libintl_gettext
+    libintl_gettext_extract_plural
+    libintl_gettext_free_exp
+    libintl_gettext_germanic_plural DATA
+    libintl_gettextparse
+    libintl_hash_string
+    libintl_ngettext
+    libintl_nl_current_default_domain DATA
+    libintl_nl_default_default_domain DATA
+    libintl_nl_default_dirname DATA
+    libintl_nl_domain_bindings DATA
+    libintl_relocate
+    libintl_relocate2
+    libintl_set_relocation_prefix
+    libintl_setlocale
+    libintl_snprintf
+    libintl_sprintf
+    libintl_textdomain
+    libintl_vasnprintf
+    libintl_vasprintf
+    libintl_version DATA
+    libintl_vfprintf
+    libintl_vprintf
+    libintl_vsnprintf
+    libintl_vsprintf
+    libintl_wbindtextdomain
+    locale_charset
+    ngettext
+    setlocale_null
+    setlocale_null_r
+    textdomain
+    xmax
+    xsum
+    xsum3
+    xsum4

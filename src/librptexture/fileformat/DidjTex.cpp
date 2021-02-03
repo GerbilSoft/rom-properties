@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * DidjTex.hpp: Leapster Didj .tex reader.                                 *
  *                                                                         *
- * Copyright (c) 2019 by David Korth.                                      *
+ * Copyright (c) 2019-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -12,10 +12,10 @@
 
 #include "didj_tex_structs.h"
 
-// librpbase
-using LibRpBase::IRpFile;
+// librpbase, librpfile
 using LibRpBase::rp_sprintf;
 using LibRpBase::RomFields;
+using LibRpFile::IRpFile;
 
 // librptexture
 #include "img/rp_image.hpp"
@@ -41,7 +41,7 @@ FILEFORMAT_IMPL(DidjTex)
 DELAYLOAD_TEST_FUNCTION_IMPL0(zlibVersion);
 #endif /* _MSC_VER */
 
-class DidjTexPrivate : public FileFormatPrivate
+class DidjTexPrivate final : public FileFormatPrivate
 {
 	public:
 		DidjTexPrivate(DidjTex *q, IRpFile *file);
@@ -52,16 +52,15 @@ class DidjTexPrivate : public FileFormatPrivate
 		RP_DISABLE_COPY(DidjTexPrivate)
 
 	public:
-		enum TexType {
-			TEX_TYPE_UNKNOWN	= -1,	// Unknown image type.
-			TEX_TYPE_TEX		= 0,	// .tex
-			TEX_TYPE_TEXS		= 1,	// .texs (multiple .tex, concatenated)
+		enum class TexType {
+			Unknown		= -1,
 
-			TEX_TYPE_MAX
+			TEX		= 0,	// .tex
+			TEXS		= 1,	// .texs (multiple .tex, concatenated)
+
+			Max
 		};
-
-		// .tex type.
-		int texType;
+		TexType texType;
 
 		// .tex header.
 		Didj_Tex_Header texHeader;
@@ -83,7 +82,7 @@ class DidjTexPrivate : public FileFormatPrivate
 
 DidjTexPrivate::DidjTexPrivate(DidjTex *q, IRpFile *file)
 	: super(q, file)
-	, texType(TEX_TYPE_UNKNOWN)
+	, texType(TexType::Unknown)
 	, img(nullptr)
 {
 	// Clear the structs and arrays.
@@ -93,7 +92,7 @@ DidjTexPrivate::DidjTexPrivate(DidjTex *q, IRpFile *file)
 
 DidjTexPrivate::~DidjTexPrivate()
 {
-	delete img;
+	UNREF(img);
 }
 
 /**
@@ -199,8 +198,8 @@ const rp_image *DidjTexPrivate::loadDidjTexImage(void)
 				return nullptr;
 			}
 
-			imgtmp = ImageDecoder::fromLinear16(ImageDecoder::PXF_RGB565,
-				width, height,
+			imgtmp = ImageDecoder::fromLinear16(
+				ImageDecoder::PixelFormat::RGB565, width, height,
 				reinterpret_cast<const uint16_t*>(uncompr_data.get()), img_siz);
 			break;
 		}
@@ -214,8 +213,8 @@ const rp_image *DidjTexPrivate::loadDidjTexImage(void)
 				return nullptr;
 			}
 
-			imgtmp = ImageDecoder::fromLinear16(ImageDecoder::PXF_RGBA4444,
-				width, height,
+			imgtmp = ImageDecoder::fromLinear16(
+				ImageDecoder::PixelFormat::RGBA4444, width, height,
 				reinterpret_cast<const uint16_t*>(uncompr_data.get()), img_siz);
 			break;
 		}
@@ -232,8 +231,8 @@ const rp_image *DidjTexPrivate::loadDidjTexImage(void)
 
 			const uint16_t *const pal_buf = reinterpret_cast<const uint16_t*>(uncompr_data.get());
 			const uint8_t *const img_buf = &uncompr_data.get()[pal_siz];
-			imgtmp = ImageDecoder::fromLinearCI8(ImageDecoder::PXF_RGB565,
-				width, height,
+			imgtmp = ImageDecoder::fromLinearCI8(
+				ImageDecoder::PixelFormat::RGB565, width, height,
 				img_buf, img_siz, pal_buf, pal_siz);
 			break;
 		}
@@ -250,8 +249,8 @@ const rp_image *DidjTexPrivate::loadDidjTexImage(void)
 
 			const uint16_t *const pal_buf = reinterpret_cast<const uint16_t*>(uncompr_data.get());
 			const uint8_t *const img_buf = &uncompr_data.get()[pal_siz];
-			imgtmp = ImageDecoder::fromLinearCI8(ImageDecoder::PXF_RGBA4444,
-				width, height,
+			imgtmp = ImageDecoder::fromLinearCI8(
+				ImageDecoder::PixelFormat::RGBA4444, width, height,
 				img_buf, img_siz, pal_buf, pal_siz);
 			break;
 		}
@@ -268,8 +267,8 @@ const rp_image *DidjTexPrivate::loadDidjTexImage(void)
 
 			const uint16_t *const pal_buf = reinterpret_cast<const uint16_t*>(uncompr_data.get());
 			const uint8_t *const img_buf = &uncompr_data.get()[pal_siz];
-			imgtmp = ImageDecoder::fromLinearCI4(ImageDecoder::PXF_RGB565, true,
-				width, height,
+			imgtmp = ImageDecoder::fromLinearCI4(
+				ImageDecoder::PixelFormat::RGB565, true, width, height,
 				img_buf, img_siz, pal_buf, pal_siz);
 			break;
 		}
@@ -286,8 +285,8 @@ const rp_image *DidjTexPrivate::loadDidjTexImage(void)
 
 			const uint16_t *const pal_buf = reinterpret_cast<const uint16_t*>(uncompr_data.get());
 			const uint8_t *const img_buf = &uncompr_data.get()[pal_siz];
-			imgtmp = ImageDecoder::fromLinearCI4(ImageDecoder::PXF_RGBA4444, true,
-				width, height,
+			imgtmp = ImageDecoder::fromLinearCI4(
+				ImageDecoder::PixelFormat::RGBA4444, true, width, height,
 				img_buf, img_siz, pal_buf, pal_siz);
 			break;
 		}
@@ -320,6 +319,7 @@ DidjTex::DidjTex(IRpFile *file)
 	: super(new DidjTexPrivate(this, file))
 {
 	RP_D(DidjTex);
+	d->mimeType = "image/x-didj-texture";	// unofficial, not on fd.o [TODO: .texs?]
 
 	if (!d->file) {
 		// Could not ref() the file handle.
@@ -330,8 +330,7 @@ DidjTex::DidjTex(IRpFile *file)
 	d->file->rewind();
 	size_t size = d->file->read(&d->texHeader, sizeof(d->texHeader));
 	if (size != sizeof(d->texHeader)) {
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
 
@@ -342,43 +341,37 @@ DidjTex::DidjTex(IRpFile *file)
 	    d->texHeader.num_images != cpu_to_le32(1))
 	{
 		// Incorrect values.
-		d->isValid = false;
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
 
 	// NOTE: If this is a .texs, then multiple textures are present,
 	// stored as concatenated .tex files.
 	// We're only reading the first texture right now.
-	const int64_t filesize = d->file->size();
+	const off64_t filesize = d->file->size();
 	const string filename = file->filename();
 	const char *pExt = nullptr;
 	if (!filename.empty()) {
-		pExt = LibRpBase::FileSystem::file_ext(filename);
+		pExt = LibRpFile::FileSystem::file_ext(filename);
 	}
 
-	const int64_t our_size = static_cast<int64_t>(le32_to_cpu(d->texHeader.compr_size) + sizeof(d->texHeader));
+	const off64_t our_size = static_cast<off64_t>(le32_to_cpu(d->texHeader.compr_size) + sizeof(d->texHeader));
 	if (pExt && !strcasecmp(pExt, ".texs")) {
 		// .texs - allow the total filesize to be larger than the compressed size.
 		if (our_size > filesize) {
 			// Incorrect compressed filesize.
-			d->isValid = false;
-			d->file->unref();
-			d->file = nullptr;
+			UNREF_AND_NULL_NOCHK(d->file);
 			return;
 		}
-		d->texType = DidjTexPrivate::TEX_TYPE_TEXS;
+		d->texType = DidjTexPrivate::TexType::TEXS;
 	} else {
 		// .tex - total filesize must be equal to compressed size plus header size.
 		if (our_size != filesize) {
 			// Incorrect compressed filesize.
-			d->isValid = false;
-			d->file->unref();
-			d->file = nullptr;
+			UNREF_AND_NULL_NOCHK(d->file);
 			return;
 		}
-		d->texType = DidjTexPrivate::TEX_TYPE_TEX;
+		d->texType = DidjTexPrivate::TexType::TEX;
 	}
 
 	// Looks like it's valid.
@@ -447,11 +440,11 @@ const char *const *DidjTex::supportedMimeTypes_static(void)
 const char *DidjTex::textureFormatName(void) const
 {
 	RP_D(const DidjTex);
-	if (!d->isValid || d->texType < 0)
+	if (!d->isValid || (int)d->texType < 0)
 		return nullptr;
 
 	// TODO: Use an array?
-	return (d->texType == DidjTexPrivate::TEX_TYPE_TEXS
+	return (d->texType == DidjTexPrivate::TexType::TEXS
 		? "Leapster Didj .texs"
 		: "Leapster Didj .tex");
 }
@@ -463,7 +456,7 @@ const char *DidjTex::textureFormatName(void) const
 const char *DidjTex::pixelFormat(void) const
 {
 	RP_D(const DidjTex);
-	if (!d->isValid || d->texType < 0) {
+	if (!d->isValid || (int)d->texType < 0) {
 		// Not supported.
 		return nullptr;
 	}
@@ -521,7 +514,7 @@ int DidjTex::getFields(RomFields *fields) const
 		return 0;
 
 	RP_D(DidjTex);
-	if (!d->isValid || d->texType < 0) {
+	if (!d->isValid || (int)d->texType < 0) {
 		// Not valid.
 		return -EIO;
 	}
@@ -550,7 +543,7 @@ int DidjTex::getFields(RomFields *fields) const
 const rp_image *DidjTex::image(void) const
 {
 	RP_D(const DidjTex);
-	if (!d->isValid || d->texType < 0) {
+	if (!d->isValid || (int)d->texType < 0) {
 		// Unknown file type.
 		return nullptr;
 	}

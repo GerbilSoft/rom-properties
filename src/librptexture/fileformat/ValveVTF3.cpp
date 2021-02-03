@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * ValveVTF3.hpp: Valve VTF3 (PS3) image reader.                           *
  *                                                                         *
- * Copyright (c) 2017-2019 by David Korth.                                 *
+ * Copyright (c) 2017-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -12,9 +12,9 @@
 
 #include "vtf3_structs.h"
 
-// librpbase
-using LibRpBase::IRpFile;
+// librpbase, librpfile
 using LibRpBase::RomFields;
+using LibRpFile::IRpFile;
 
 // librptexture
 #include "img/rp_image.hpp"
@@ -24,7 +24,7 @@ namespace LibRpTexture {
 
 FILEFORMAT_IMPL(ValveVTF3)
 
-class ValveVTF3Private : public FileFormatPrivate
+class ValveVTF3Private final : public FileFormatPrivate
 {
 	public:
 		ValveVTF3Private(ValveVTF3 *q, IRpFile *file);
@@ -49,7 +49,7 @@ class ValveVTF3Private : public FileFormatPrivate
 
 #if SYS_BYTEORDER == SYS_BIG_ENDIAN
 		/**
-		 * Byteswap a float. (TODO: Move to byteswap.h?)
+		 * Byteswap a float. (TODO: Move to byteswap_rp.h?)
 		 * @param f Float to byteswap.
 		 * @return Byteswapped flaot.
 		 */
@@ -78,7 +78,7 @@ ValveVTF3Private::ValveVTF3Private(ValveVTF3 *q, IRpFile *file)
 
 ValveVTF3Private::~ValveVTF3Private()
 {
-	delete img;
+	UNREF(img);
 }
 
 /**
@@ -193,6 +193,7 @@ ValveVTF3::ValveVTF3(IRpFile *file)
 	: super(new ValveVTF3Private(this, file))
 {
 	RP_D(ValveVTF3);
+	d->mimeType = "image/x-vtf3";	// unofficial, not on fd.o
 
 	if (!d->file) {
 		// Could not ref() the file handle.
@@ -203,17 +204,14 @@ ValveVTF3::ValveVTF3(IRpFile *file)
 	d->file->rewind();
 	size_t size = d->file->read(&d->vtf3Header, sizeof(d->vtf3Header));
 	if (size != sizeof(d->vtf3Header)) {
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
 
 	// Verify the VTF magic.
 	if (d->vtf3Header.signature != cpu_to_be32(VTF3_SIGNATURE)) {
 		// Incorrect magic.
-		d->isValid = false;
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
 

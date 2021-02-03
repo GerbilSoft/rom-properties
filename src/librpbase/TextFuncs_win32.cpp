@@ -49,7 +49,7 @@ static char16_t *W32U_mbs_to_UTF16(const char *mbs, unsigned int codepage, DWORD
 	if (cchWcs <= 0)
 		return nullptr;
 
-	wchar_t *wcs = static_cast<wchar_t*>(malloc(cchWcs * sizeof(wchar_t)));
+	wchar_t *const wcs = static_cast<wchar_t*>(malloc(cchWcs * sizeof(wchar_t)));
 	MultiByteToWideChar(codepage, dwFlags, mbs, -1, wcs, cchWcs);
 	return reinterpret_cast<char16_t*>(wcs);
 }
@@ -71,7 +71,7 @@ static char16_t *W32U_mbs_to_UTF16(const char *mbs, int cbMbs,
 	if (cchWcs <= 0)
 		return nullptr;
 
-	wchar_t *wcs = static_cast<wchar_t*>(malloc(cchWcs * sizeof(wchar_t)));
+	wchar_t *const wcs = static_cast<wchar_t*>(malloc(cchWcs * sizeof(wchar_t)));
 	MultiByteToWideChar(codepage, dwFlags, mbs, cbMbs, wcs, cchWcs);
 
 	if (cchWcs_ret)
@@ -91,7 +91,7 @@ static char *W32U_UTF16_to_mbs(const char16_t *wcs, unsigned int codepage)
 	if (cbMbs <= 0)
 		return nullptr;
  
-	char *mbs = static_cast<char*>(malloc(cbMbs));
+	char *const mbs = static_cast<char*>(malloc(cbMbs));
 	WideCharToMultiByte(codepage, 0, reinterpret_cast<const wchar_t*>(wcs), -1, mbs, cbMbs, nullptr, nullptr);
 	return mbs;
 }
@@ -112,7 +112,7 @@ static char *W32U_UTF16_to_mbs(const char16_t *wcs, int cchWcs,
 	if (cbMbs <= 0)
 		return nullptr;
 
-	char *mbs = static_cast<char*>(malloc(cbMbs));
+	char *const mbs = static_cast<char*>(malloc(cbMbs));
 	WideCharToMultiByte(codepage, 0, reinterpret_cast<const wchar_t*>(wcs), cchWcs, mbs, cbMbs, nullptr, nullptr);
 
 	if (cbMbs_ret)

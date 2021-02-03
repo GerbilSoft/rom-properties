@@ -1,0 +1,24 @@
+/***************************************************************************
+ * ROM Properties Page shell extension. (KF5)                              *
+ * config.kf5.h.in: KDE Frameworks 5 configuration. (source file)          *
+ *                                                                         *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
+ * SPDX-License-Identifier: GPL-2.0-or-later                               *
+ ***************************************************************************/
+
+#ifndef __ROMPROPERTIES_KDE_KF5_CONFIG_H__
+#define __ROMPROPERTIES_KDE_KF5_CONFIG_H__
+
+/* KF5 plugin path */
+#cmakedefine KF5_PLUGIN_INSTALL_DIR "@KF5_PLUGIN_INSTALL_DIR@"
+
+/* KF5 KPropertiesDialog plugin path */
+#cmakedefine KF5_PRPD_PLUGIN_INSTALL_DIR "@KF5_PRPD_PLUGIN_INSTALL_DIR@"
+
+/* KF5 KFileMetaData plugin path */
+#cmakedefine KF5_KFMD_PLUGIN_INSTALL_DIR "@KF5_KFMD_PLUGIN_INSTALL_DIR@"
+
+/* KF5 KOverlayIcon plugin path */
+#cmakedefine KF5_KOVI_PLUGIN_INSTALL_DIR "@KF5_KOVI_PLUGIN_INSTALL_DIR@"
+
+#endif /* __ROMPROPERTIES_KDE_KF5_CONFIG_H__ */

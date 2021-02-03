@@ -15,18 +15,21 @@
 extern "C" {
 #endif
 
-#pragma pack(1)
+// STFS uses 4 KB blocks.
+#define STFS_BLOCK_SIZE 4096
 
 /**
  * Microsoft Xbox 360 content package header.
- * Reference: https://free60project.github.io/wiki/STFS.html
+ * References:
+ * - https://free60project.github.io/wiki/STFS.html
+ * - https://github.com/Free60Project/wiki/blob/master/STFS.md
  * 
  * All fields are in big-endian.
  */
 #define STFS_MAGIC_CON  'CON '	// Package signed by a console.
 #define STFS_MAGIC_PIRS 'PIRS'	// Package signed by Microsoft from a non-Xbox Live source, e.g. System Update.
 #define STFS_MAGIC_LIVE 'LIVE'	// Package signed by Microsoft from an Xbox Live source, e.g. a title update.
-typedef struct PACKED _STFS_Package_Header {
+typedef struct _STFS_Package_Header {
 	uint32_t magic;			// [0x000] 'CON ', 'PIRS', or 'LIVE'
 
 	union {
@@ -35,7 +38,7 @@ typedef struct PACKED _STFS_Package_Header {
 			uint16_t pubkey_cert_size;	// [0x004] Public key certificate size
 			uint8_t console_id[5];		// [0x006] Certificate owner Console ID
 			char part_number[20];		// [0x00B] Certificate owner Part Number
-			uint8_t console_type;		// [0x01F] Certificate owner Console Type (1 for devkit, 2 for retail) [TODO enum]
+			uint8_t console_type;		// [0x01F] Certificate owner Console Type (see STFS_Console_Type_e)
 			char datestamp[8];		// [0x020] Certificate date of generation
 			uint32_t pub_exponent;		// [0x028] Public exponent
 			uint8_t pub_modulus[0x80];	// [0x02C] Public modulus
@@ -52,6 +55,14 @@ typedef struct PACKED _STFS_Package_Header {
 ASSERT_STRUCT(STFS_Package_Header, 0x22C);
 
 /**
+ * Console type.
+ */
+typedef enum {
+	STFS_CONSOLE_TYPE_DEBUG		= 1,
+	STFS_CONSOLE_TYPE_RETAIL	= 2,
+} STFS_Console_Type_e;
+
+/**
  * STFS: License entry.
  * All fields are in big-endian.
  */
@@ -66,31 +77,33 @@ ASSERT_STRUCT(STFS_License_Entry, 16);
  * STFS: Volume descriptor
  * All fields are in big-endian.
  */
+#pragma pack(1)
 typedef struct PACKED _STFS_Volume_Descriptor {
 	uint8_t size;				// [0x000] Size (0x24)
 	uint8_t reserved;			// [0x001]
 	uint8_t block_separation;		// [0x002]
-	uint16_t file_table_block_count;	// [0x003]
-	uint8_t file_table_block_number[3];	// [0x005] 24-bit integer
+	int16_t file_table_block_count;		// [0x003] File table block count. (BE16)
+	uint8_t file_table_block_number[3];	// [0x005] File table block number. (BE24)
 	uint8_t top_hash_table_hash[0x14];	// [0x008]
 	uint32_t total_alloc_block_count;	// [0x01C]
 	uint32_t total_unalloc_block_count;	// [0x020]
 } STFS_Volume_Descriptor;
 ASSERT_STRUCT(STFS_Volume_Descriptor, 0x24);
+#pragma pack()
 
 /**
  * SVOD: Volume descriptor
  * All fields are in big-endian.
  */
-typedef struct PACKED _SVOD_Volume_Descriptor {
+typedef struct _SVOD_Volume_Descriptor {
 	uint8_t size;				// [0x000] Size (0x24)
 	uint8_t block_cache_element_count;	// [0x001]
 	uint8_t worker_thread_processor;	// [0x002]
 	uint8_t worker_thread_priority;		// [0x003]
 	uint8_t hash[0x14];			// [0x004]
 	uint8_t device_features;		// [0x018]
-	uint8_t data_block_count[3];		// [0x019] 24-bit integer
-	uint8_t data_block_offset[3];		// [0x01C] 24-bit integer
+	uint8_t data_block_count[3];		// [0x019] (BE24)
+	uint8_t data_block_offset[3];		// [0x01C] (BE24)
 	uint8_t reserved[5];			// [0x01F]
 } SVOD_Volume_Descriptor;
 ASSERT_STRUCT(SVOD_Volume_Descriptor, 0x24);
@@ -103,6 +116,8 @@ ASSERT_STRUCT(SVOD_Volume_Descriptor, 0x24);
  *
  * All fields are in big-endian.
  */
+#define STFS_METADATA_ADDRESS 0x22C
+#pragma pack(1)
 typedef struct PACKED _STFS_Package_Metadata {
 	STFS_License_Entry license_entries[16];	// [0x22C] License entries
 	uint8_t header_sha1[0x14];		// [0x32C] Header SHA1 (from 0x344 to first hash table)
@@ -150,6 +165,7 @@ typedef struct PACKED _STFS_Package_Metadata {
 	uint8_t transfer_flags;				// [0x1711] Transfer flags (See STFS_Transfer_Flags_e)
 } STFS_Package_Metadata;
 ASSERT_STRUCT(STFS_Package_Metadata, 0x1712-0x22C);
+#pragma pack()
 
 /**
  * STFS: Thumbnail data.
@@ -159,26 +175,27 @@ ASSERT_STRUCT(STFS_Package_Metadata, 0x1712-0x22C);
  *
  * All fields are in big-endian.
  */
-typedef struct PACKED _STFS_Package_Thumbnails {
+#define STFS_THUMBNAILS_ADDRESS 0x1712
+typedef struct _STFS_Package_Thumbnails {
 	// Thumbnail sizes are 0x4000 for v0, 0x3D00 for v2.
 	uint32_t thumbnail_image_size;			// [0x1712] Thumbnail image size
 	uint32_t title_thumbnail_image_size;		// [0x1716] Title thumbnail image size
 
+	// Thumbnail image format is PNG.
 	union {
 		struct {
 			// Metadata v0
 			uint8_t thumbnail_image[0x4000];		// [0x171A] Thumbnail image
 			uint8_t title_thumbnail_image[0x4000];		// [0x571A] Title thumbnail image
-		} mdv0_thumbnail;
+		} mdv0;
 		struct {
 			// Metadata v2
 			uint8_t thumbnail_image[0x3D00];		// [0x171A] Thumbnail image
 			char16_t display_name_extra[6][0x40];		// [0x541A] Additional display names
 			uint8_t title_thumbnail_image[0x3D00];		// [0x571A] Title thumbnail image
 			char16_t display_description_extra[6][0x40];	// [0x941A] Additional display descriptions
-		} mdv2_thumbnail;
+		} mdv2;
 	};
-	// TODO: Figure out the thumbnail image format.
 } STFS_Package_Thumbnails;
 ASSERT_STRUCT(STFS_Package_Thumbnails, 0x971A-0x1712);
 
@@ -231,15 +248,29 @@ typedef enum {
 
 	// Bitfield values.
 	// FIXME: This doesn't seem right...
-	STFS_TRANSFER_FLAG_BIT_DEEP_LINK_SUPPORTED	= (1 << 2),
-	STFS_TRANSFER_FLAG_BIT_DISABLE_NETWORK_STORAGE	= (1 << 3),
-	STFS_TRANSFER_FLAG_BIT_KINECT_ENABLED		= (1 << 4),
-	STFS_TRANSFER_FLAG_BIT_MOVE_ONLY_TRANSFER	= (1 << 5),
-	STFS_TRANSFER_FLAG_BIT_DEVICE_TRANSFER		= (1 << 6),
-	STFS_TRANSFER_FLAG_BIT_PROFILE_TRANSFER		= (1 << 7),
+	STFS_TRANSFER_FLAG_BIT_DEEP_LINK_SUPPORTED	= (1U << 2),
+	STFS_TRANSFER_FLAG_BIT_DISABLE_NETWORK_STORAGE	= (1U << 3),
+	STFS_TRANSFER_FLAG_BIT_KINECT_ENABLED		= (1U << 4),
+	STFS_TRANSFER_FLAG_BIT_MOVE_ONLY_TRANSFER	= (1U << 5),
+	STFS_TRANSFER_FLAG_BIT_DEVICE_TRANSFER		= (1U << 6),
+	STFS_TRANSFER_FLAG_BIT_PROFILE_TRANSFER		= (1U << 7),
 } STFS_Transfer_Flags_e;
 
-#pragma pack()
+/**
+ * STFS: Directory entry.
+ */
+typedef struct _STFS_DirEntry_t {
+	char filename[0x28];		// [0x000] Filename, NULL-terminated.
+	uint8_t flags_len;		// [0x028] Flags, plus filename length. (mask with 0x3F)
+	uint8_t blocks[3];		// [0x029] Blocks. (LE24)
+	uint8_t blocks2[3];		// [0x02B] Copy of blocks. (LE24)
+	uint8_t block_number[3];	// [0x02F] Starting block number. (LE24)
+	int16_t path;			// [0x032] Path indicator. (BE16)
+	uint32_t filesize;		// [0x034] Filesize. (BE32)
+	int32_t update_time;		// [0x038] Update time. (BE32; FAT format)
+	int32_t access_time;		// [0x03C] ACcess time. (BE32; FAT format)
+} STFS_DirEntry_t;
+ASSERT_STRUCT(STFS_DirEntry_t, 0x40);
 
 #ifdef __cplusplus
 }

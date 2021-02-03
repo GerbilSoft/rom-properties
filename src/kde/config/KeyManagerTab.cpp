@@ -2,35 +2,22 @@
  * ROM Properties Page shell extension. (KDE)                              *
  * KeyManagerTab.cpp: Key Manager tab for rp-config.                       *
  *                                                                         *
- * Copyright (c) 2016-2017 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+#include "stdafx.h"
 #include "KeyManagerTab.hpp"
-#include "RpQt.hpp"
 
 // librpbase
-#include "librpbase/TextFuncs.hpp"
 using namespace LibRpBase;
-
-// libi18n
-#include "libi18n/i18n.h"
 
 #include "KeyStoreQt.hpp"
 #include "KeyStoreModel.hpp"
 #include "KeyStoreItemDelegate.hpp"
 
-// C includes. (C++ namespace)
-#include <cassert>
-
-// C++ includes.
-#include <string>
+// C++ STL classes.
 using std::string;
-
-// Qt includes.
-#include <QFileDialog>
-#include <QLocale>
-#include <QMenu>
 
 // KDE includes.
 #include <kmessagewidget.h>
@@ -130,7 +117,7 @@ void KeyManagerTabPrivate::showKeyImportReturnStatus(
 	// TODO: Thread-safe strerror()?
 
 	switch (iret.status) {
-		case KeyStoreQt::Import_InvalidParams:
+		case KeyStoreQt::ImportStatus::InvalidParams:
 		default:
 			msg = C_("KeyManagerTab",
 				"An invalid parameter was passed to the key importer.\n"
@@ -139,7 +126,7 @@ void KeyManagerTabPrivate::showKeyImportReturnStatus(
 			icon = QStyle::SP_MessageBoxCritical;
 			break;
 
-		case KeyStoreQt::Import_OpenError:
+		case KeyStoreQt::ImportStatus::OpenError:
 			if (iret.error_code != 0) {
 				msg = rp_sprintf_p(C_("KeyManagerTab",
 					// tr: %1$s == filename, %2$s == error message
@@ -156,7 +143,7 @@ void KeyManagerTabPrivate::showKeyImportReturnStatus(
 			icon = QStyle::SP_MessageBoxCritical;
 			break;
 
-		case KeyStoreQt::Import_ReadError:
+		case KeyStoreQt::ImportStatus::ReadError:
 			// TODO: Error code for short reads.
 			if (iret.error_code != 0) {
 				msg = rp_sprintf_p(C_("KeyManagerTab",
@@ -174,7 +161,7 @@ void KeyManagerTabPrivate::showKeyImportReturnStatus(
 			icon = QStyle::SP_MessageBoxCritical;
 			break;
 
-		case KeyStoreQt::Import_InvalidFile:
+		case KeyStoreQt::ImportStatus::InvalidFile:
 			msg = rp_sprintf_p(C_("KeyManagerTab",
 				// tr: %1$s == filename, %2$s == type of file
 				"The file '%1$s' is not a valid %2$s file."),
@@ -184,7 +171,7 @@ void KeyManagerTabPrivate::showKeyImportReturnStatus(
 			icon = QStyle::SP_MessageBoxWarning;
 			break;
 
-		case KeyStoreQt::Import_NoKeysImported:
+		case KeyStoreQt::ImportStatus::NoKeysImported:
 			msg = rp_sprintf(C_("KeyManagerTab",
 				// tr: %s == filename
 				"No keys were imported from '%s'."),
@@ -194,7 +181,7 @@ void KeyManagerTabPrivate::showKeyImportReturnStatus(
 			showKeyStats = true;
 			break;
 
-		case KeyStoreQt::Import_KeysImported: {
+		case KeyStoreQt::ImportStatus::KeysImported: {
 			const unsigned int keyCount = iret.keysImportedVerify + iret.keysImportedNoVerify;
 			msg = rp_sprintf_p(NC_("KeyManagerTab",
 				// tr: %1$s == number of keys (formatted), %2$u == filename
@@ -408,8 +395,9 @@ void KeyManagerTab::on_actionImportWiiKeysBin_triggered(void)
 		// tr: Wii keys.bin dialog title.
 		U82Q(C_("KeyManagerTab", "Select Wii keys.bin File")),
 		d->keyFileDir,	// dir
-		// tr: Wii keys.bin file filter. (Qt)
-		U82Q(C_("KeyManagerTab", "keys.bin (keys.bin);;Binary Files (*.bin);;All Files (*.*)")));
+		// tr: Wii keys.bin file filter. (RP format)
+		rpFileDialogFilterToQt(
+			C_("KeyManagerTab", "keys.bin|keys.bin|-|Binary Files|*.bin|application/octet-stream|All Files|*.*|-")));
 	if (filename.isEmpty())
 		return;
 	d->keyFileDir = QFileInfo(filename).canonicalPath();
@@ -428,8 +416,9 @@ void KeyManagerTab::on_actionImportWiiUOtpBin_triggered(void)
 		// tr: Wii U otp.bin dialog title.
 		U82Q(C_("KeyManagerTab", "Select Wii U otp.bin File")),
 		d->keyFileDir,	// dir
-		// tr: Wii U otp.bin file filter. (Qt)
-		U82Q(C_("KeyManagerTab", "otp.bin (otp.bin);;Binary Files (*.bin);;All Files (*.*)")));
+		// tr: Wii U otp.bin file filter. (RP format)
+		rpFileDialogFilterToQt(
+			C_("KeyManagerTab", "otp.bin|otp.bin|-|Binary Files|*.bin|application/octet-stream|All Files|*.*|-")));
 	if (filename.isEmpty())
 		return;
 	d->keyFileDir = QFileInfo(filename).canonicalPath();
@@ -448,8 +437,9 @@ void KeyManagerTab::on_actionImport3DSboot9bin_triggered(void)
 		// tr: 3DS boot9.bin dialog title.
 		U82Q(C_("KeyManagerTab", "Select 3DS boot9.bin File")),
 		d->keyFileDir,	// dir
-		// tr: 3DS boot9.bin file filter. (Qt)
-		U82Q(C_("KeyManagerTab", "boot9.bin (boot9.bin);;Binary Files (*.bin);;All Files (*.*)")));
+		// tr: 3DS boot9.bin file filter. (RP format)
+		rpFileDialogFilterToQt(
+			C_("KeyManagerTab", "boot9.bin|boot9.bin|-|Binary Files|*.bin|application/octet-stream|All Files|*.*|-")));
 	if (filename.isEmpty())
 		return;
 	d->keyFileDir = QFileInfo(filename).canonicalPath();
@@ -468,8 +458,9 @@ void KeyManagerTab::on_actionImport3DSaeskeydb_triggered(void)
 		// tr: 3DS aeskeydb.bin dialog title.
 		U82Q(C_("KeyManagerTab", "Select 3DS aeskeydb.bin File")),
 		d->keyFileDir,	// dir
-		// tr: 3DS aeskeydb.bin file filter. (Qt)
-		U82Q(C_("KeyManagerTab", "aeskeydb.bin (aeskeydb.bin);;Binary Files (*.bin);;All Files (*.*)")));
+		// tr: 3DS aeskeydb.bin file filter. (RP format)
+		rpFileDialogFilterToQt(
+			C_("KeyManagerTab", "aeskeydb.bin|aeskeydb.bin|-|Binary Files|*.bin|application/octet-stream|All Files|*.*|-")));
 	if (filename.isEmpty())
 		return;
 	d->keyFileDir = QFileInfo(filename).canonicalPath();

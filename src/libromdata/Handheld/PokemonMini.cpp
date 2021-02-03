@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * PokemonMini.cpp: Pokémon Mini ROM reader.                               *
  *                                                                         *
- * Copyright (c) 2019 by David Korth.                                      *
+ * Copyright (c) 2019-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -10,8 +10,9 @@
 #include "PokemonMini.hpp"
 #include "pkmnmini_structs.h"
 
-// librpbase
+// librpbase, librpfile
 using namespace LibRpBase;
+using LibRpFile::IRpFile;
 
 // C++ STL classes.
 using std::string;
@@ -21,7 +22,7 @@ namespace LibRomData {
 
 ROMDATA_IMPL(PokemonMini)
 
-class PokemonMiniPrivate : public RomDataPrivate
+class PokemonMiniPrivate final : public RomDataPrivate
 {
 	public:
 		PokemonMiniPrivate(PokemonMini *q, IRpFile *file);
@@ -47,7 +48,7 @@ PokemonMiniPrivate::PokemonMiniPrivate(PokemonMini *q, IRpFile *file)
 /** PokemonMini **/
 
 /**
- * Read a Nintendo Game Boy Advance ROM image.
+ * Read a Pokémon Mini ROM image.
  *
  * A ROM image must be opened by the caller. The file handle
  * will be ref()'d and must be kept open in order to load
@@ -64,6 +65,7 @@ PokemonMini::PokemonMini(IRpFile *file)
 {
 	RP_D(PokemonMini);
 	d->className = "PokemonMini";
+	d->mimeType = "application/x-pokemon-mini-rom";	// unofficial, not on fd.o
 
 	if (!d->file) {
 		// Could not ref() the file handle.
@@ -73,8 +75,7 @@ PokemonMini::PokemonMini(IRpFile *file)
 	// Read the ROM header.
 	size_t size = d->file->seekAndRead(POKEMONMINI_HEADER_ADDRESS, &d->romHeader, sizeof(d->romHeader));
 	if (size != sizeof(d->romHeader)) {
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
 
@@ -88,8 +89,7 @@ PokemonMini::PokemonMini(IRpFile *file)
 	d->isValid = (isRomSupported_static(&info) >= 0);
 
 	if (!d->isValid) {
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 	}
 }
 
@@ -121,9 +121,7 @@ int PokemonMini::isRomSupported_static(const DetectInfo *info)
 		reinterpret_cast<const PokemonMini_RomHeader*>(&info->header.pData[info->header.addr - POKEMONMINI_HEADER_ADDRESS]);
 
 	// Check the header magic.
-	if (romHeader->pm_magic != be16_to_cpu(POKEMONMINI_PM_MAGIC) &&
-	    romHeader->pm_magic != be16_to_cpu(POKEMONMINI_MN_MAGIC))
-	{
+	if (romHeader->pm_magic != be16_to_cpu(POKEMONMINI_MN_MAGIC)) {
 		// Incorrect magic.
 		return -1;
 	}
@@ -179,9 +177,8 @@ const char *PokemonMini::systemName(unsigned int type) const
  */
 const char *const *PokemonMini::supportedFileExtensions_static(void)
 {
-	// TODO
 	static const char *const exts[] = {
-		".bin",
+		".min",
 
 		nullptr
 	};
@@ -254,7 +251,7 @@ int PokemonMini::loadFieldData(void)
 			: '_');
 	}
 	id4[4] = 0;
-	d->fields->addField_string(C_("PokemonMini", "Game ID"), latin1_to_utf8(id4, 4));
+	d->fields->addField_string(C_("RomData", "Game ID"), latin1_to_utf8(id4, 4));
 
 	// Vector table.
 	static const char *const vectors_names[PokemonMini_IRQ_MAX] = {
@@ -305,59 +302,58 @@ int PokemonMini::loadFieldData(void)
 	static const uint8_t vec_empty_ff[6] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
 	static const uint8_t vec_empty_00[6] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 
-	auto vv_vectors = new vector<vector<string> >(ARRAY_SIZE(vectors_names));
+	auto vv_vectors = new RomFields::ListData_t(ARRAY_SIZE(vectors_names));
 	uint32_t pc = 0x2100 + offsetof(PokemonMini_RomHeader, irqs);
 	for (unsigned int i = 0; i < ARRAY_SIZE(vectors_names); i++, pc += 6) {
 		auto &data_row = vv_vectors->at(i);
 		data_row.reserve(3);
 
 		// # (decimal)
-		data_row.push_back(rp_sprintf("%u", i));
+		data_row.emplace_back(rp_sprintf("%u", i));
 
 		// Vector name
-		data_row.push_back(vectors_names[i]);
+		data_row.emplace_back(vectors_names[i]);
 
 		// Address
-		string address;
+		string s_address;
 		if (!memcmp(&romHeader->irqs[i][0], vec_prefix, sizeof(vec_prefix))) {
 			// Standard vector jump opcode.
 			uint32_t offset = (romHeader->irqs[i][5] << 8) | romHeader->irqs[i][4];
 			offset += pc + 3 + 3 - 1;
-			address = rp_sprintf("0x%04X", offset);
+			s_address = rp_sprintf("0x%04X", offset);
 		} else if (romHeader->irqs[i][0] == 0xF3) {
 			// JMPW without MOV U.
 			// Seen in some homebrew.
 			uint32_t offset = (romHeader->irqs[i][2] << 8) | romHeader->irqs[i][1];
 			offset += pc + 3 - 1;
-			address = rp_sprintf("0x%04X", offset);
+			s_address = rp_sprintf("0x%04X", offset);
 		} else if (!memcmp(&romHeader->irqs[i][0], vec_empty_ff, sizeof(vec_empty_ff)) ||
 			   !memcmp(&romHeader->irqs[i][0], vec_empty_00, sizeof(vec_empty_00))) {
 			// Empty vector.
-			address = C_("PokemonMini|VectorTable", "None");
+			s_address = C_("RomData|VectorTable", "None");
 		} else {
 			// Not a standard jump opcode.
 			// Show the hexdump.
-			// TODO: Use something other than rp_sprintf()?
-			address = rp_sprintf("%02X %02X %02X %02X %02X %02X",
+			s_address = rp_sprintf("%02X %02X %02X %02X %02X %02X",
 				romHeader->irqs[i][0], romHeader->irqs[i][1],
 				romHeader->irqs[i][2], romHeader->irqs[i][3],
 				romHeader->irqs[i][4], romHeader->irqs[i][5]);
 		}
-		data_row.push_back(address);
+		data_row.emplace_back(std::move(s_address));
 	}
 
 	static const char *const vectors_headers[] = {
-		NOP_C_("PokemonMini|VectorTable", "#"),
-		NOP_C_("PokemonMini|VectorTable", "Vector"),
-		NOP_C_("PokemonMini|VectorTable", "Address"),
+		NOP_C_("RomData|VectorTable", "#"),
+		NOP_C_("RomData|VectorTable", "Vector"),
+		NOP_C_("RomData|VectorTable", "Address"),
 	};
 	vector<string> *const v_vectors_headers = RomFields::strArrayToVector_i18n(
-		"PokemonMini|VectorTable", vectors_headers, ARRAY_SIZE(vectors_headers));
+		"RomData|VectorTable", vectors_headers, ARRAY_SIZE(vectors_headers));
 
 	RomFields::AFLD_PARAMS params(RomFields::RFT_LISTDATA_SEPARATE_ROW, 8);
 	params.headers = v_vectors_headers;
-	params.list_data = vv_vectors;
-	d->fields->addField_listData(C_("PokemonMini", "Vector Table"), &params);
+	params.data.single = vv_vectors;
+	d->fields->addField_listData(C_("RomData", "Vector Table"), &params);
 
 	// Finished reading the field data.
 	return static_cast<int>(d->fields->count());

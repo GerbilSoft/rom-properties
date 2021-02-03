@@ -76,10 +76,12 @@ macro(combine_arguments _variable)
   set(${_variable} "${_result}")
 endmacro()
 
-function(export_all_flags _filename)
+function(export_all_flags _filename _lang)
+  STRING(TOUPPER "${CMAKE_BUILD_TYPE}" TMP_BUILD_TYPE)
   set(_include_directories "$<TARGET_PROPERTY:${_target},INCLUDE_DIRECTORIES>")
   set(_compile_definitions "$<TARGET_PROPERTY:${_target},COMPILE_DEFINITIONS>")
-  set(_compile_flags "$<TARGET_PROPERTY:${_target},COMPILE_FLAGS>")
+  set(_compile_flags "${CMAKE_${_lang}_FLAGS} ${CMAKE_${_lang}_FLAGS_${TMP_BUILD_TYPE}}")
+  set(_compile_flags "${_compile_flags} $<TARGET_PROPERTY:${_target},COMPILE_FLAGS>")
   set(_compile_options "$<TARGET_PROPERTY:${_target},COMPILE_OPTIONS>")
   set(_include_directories "$<$<BOOL:${_include_directories}>:-I$<JOIN:${_include_directories},\n-I>\n>")
   set(_compile_definitions "$<$<BOOL:${_compile_definitions}>:-D$<JOIN:${_compile_definitions},\n-D>\n>")
@@ -178,22 +180,27 @@ function(add_precompiled_header _target _input)
     set(_output_cxx "${_outdir}/.c++")
     set(_output_c "${_outdir}/.c")
 
-    set(_pch_flags_file "${_pch_binary_dir}/compile_flags.rsp")
-    export_all_flags("${_pch_flags_file}")
-    set(_compiler_FLAGS "@${_pch_flags_file}")
-    add_custom_command(
+    set(_pch_CXX_flags_file "${_pch_binary_dir}/compile_flags_CXX.rsp")
+    export_all_flags("${_pch_CXX_flags_file}" CXX)
+    set(_compiler_CXX_FLAGS "@${_pch_CXX_flags_file}")
+
+    set(_pch_C_flags_file "${_pch_binary_dir}/compile_flags_C.rsp")
+    export_all_flags("${_pch_C_flags_file}" C)
+    set(_compiler_C_FLAGS "@${_pch_C_flags_file}")
+
+    add_custom_command(VERBATIM
       OUTPUT "${_pchfile}"
       COMMAND "${CMAKE_COMMAND}" -E copy "${_pch_header}" "${_pchfile}"
       DEPENDS "${_pch_header}"
       COMMENT "Updating ${_name}")
-    add_custom_command(
+    add_custom_command(VERBATIM
       OUTPUT "${_output_cxx}"
-      COMMAND "${CMAKE_CXX_COMPILER}" ${_compiler_FLAGS} -x c++-header -o "${_output_cxx}" "${_pchfile}"
+      COMMAND "${CMAKE_CXX_COMPILER}" ${_compiler_CXX_FLAGS} -x c++-header -o "${_output_cxx}" "${_pchfile}"
       DEPENDS "${_pchfile}" "${_pch_flags_file}"
       COMMENT "Precompiling ${_name} for ${_target} (C++)")
-    add_custom_command(
+    add_custom_command(VERBATIM
       OUTPUT "${_output_c}"
-      COMMAND "${CMAKE_C_COMPILER}" ${_compiler_FLAGS} -x c-header -o "${_output_c}" "${_pchfile}"
+      COMMAND "${CMAKE_C_COMPILER}" ${_compiler_C_FLAGS} -x c-header -o "${_output_c}" "${_pchfile}"
       DEPENDS "${_pchfile}" "${_pch_flags_file}"
       COMMENT "Precompiling ${_name} for ${_target} (C)")
 

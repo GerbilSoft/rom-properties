@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * GameBoyAdvance.hpp: Nintendo Game Boy Advance ROM reader.               *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -11,8 +11,9 @@
 #include "data/NintendoPublishers.hpp"
 #include "gba_structs.h"
 
-// librpbase
+// librpbase, librpfile
 using namespace LibRpBase;
+using LibRpFile::IRpFile;
 
 // C++ STL classes.
 using std::string;
@@ -21,8 +22,9 @@ using std::vector;
 namespace LibRomData {
 
 ROMDATA_IMPL(GameBoyAdvance)
+ROMDATA_IMPL_IMG(GameBoyAdvance)
 
-class GameBoyAdvancePrivate : public RomDataPrivate
+class GameBoyAdvancePrivate final : public RomDataPrivate
 {
 	public:
 		GameBoyAdvancePrivate(GameBoyAdvance *q, IRpFile *file);
@@ -32,28 +34,62 @@ class GameBoyAdvancePrivate : public RomDataPrivate
 		RP_DISABLE_COPY(GameBoyAdvancePrivate)
 
 	public:
-		enum RomType {
-			ROM_UNKNOWN		= -1,	// Unknown ROM type.
-			ROM_GBA			= 0,	// Standard GBA ROM.
-			ROM_GBA_PASSTHRU	= 1,	// Unlicensed GBA pass-through cartridge.
-			ROM_NDS_EXP		= 2,	// Non-bootable NDS expansion ROM.
-		};
+		enum class RomType {
+			Unknown	= -1,
 
-		// ROM type.
-		int romType;
+			GBA		= 0,	// Standard GBA ROM.
+			GBA_PassThru	= 1,	// Unlicensed GBA pass-through cartridge.
+			NDS_Expansion	= 2,	// Non-bootable NDS expansion ROM.
+
+			Max
+		};
+		RomType romType;
 
 		// ROM header.
 		GBA_RomHeader romHeader;
+
+	public:
+		/**
+		 * Get the publisher.
+		 * @return Publisher, or "Unknown (xxx)" if unknown.
+		 */
+		string getPublisher(void) const;
 };
 
 /** GameBoyAdvancePrivate **/
 
 GameBoyAdvancePrivate::GameBoyAdvancePrivate(GameBoyAdvance *q, IRpFile *file)
 	: super(q, file)
-	, romType(ROM_UNKNOWN)
+	, romType(RomType::Unknown)
 {
 	// Clear the ROM header struct.
 	memset(&romHeader, 0, sizeof(romHeader));
+}
+
+/**
+ * Get the publisher.
+ * @return Publisher, or "Unknown (xxx)" if unknown.
+ */
+string GameBoyAdvancePrivate::getPublisher(void) const
+{
+	const char *const publisher = NintendoPublishers::lookup(romHeader.company);
+	string s_publisher;
+	if (publisher) {
+		s_publisher = publisher;
+	} else {
+		if (ISALNUM(romHeader.company[0]) &&
+		    ISALNUM(romHeader.company[1]))
+		{
+			s_publisher = rp_sprintf(C_("RomData", "Unknown (%.2s)"),
+				romHeader.company);
+		} else {
+			s_publisher = rp_sprintf(C_("RomData", "Unknown (%02X %02X)"),
+				static_cast<uint8_t>(romHeader.company[0]),
+				static_cast<uint8_t>(romHeader.company[1]));
+		}
+	}
+
+	return s_publisher;
 }
 
 /** GameBoyAdvance **/
@@ -76,6 +112,7 @@ GameBoyAdvance::GameBoyAdvance(IRpFile *file)
 {
 	RP_D(GameBoyAdvance);
 	d->className = "GameBoyAdvance";
+	d->mimeType = "application/x-gba-rom";	// unofficial
 
 	if (!d->file) {
 		// Could not ref() the file handle.
@@ -86,8 +123,7 @@ GameBoyAdvance::GameBoyAdvance(IRpFile *file)
 	d->file->rewind();
 	size_t size = d->file->read(&d->romHeader, sizeof(d->romHeader));
 	if (size != sizeof(d->romHeader)) {
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
 
@@ -98,12 +134,11 @@ GameBoyAdvance::GameBoyAdvance(IRpFile *file)
 	info.header.pData = reinterpret_cast<const uint8_t*>(&d->romHeader);
 	info.ext = nullptr;	// Not needed for GBA.
 	info.szFile = 0;	// Not needed for GBA.
-	d->romType = isRomSupported_static(&info);
+	d->romType = static_cast<GameBoyAdvancePrivate::RomType>(isRomSupported_static(&info));
 
-	d->isValid = (d->romType >= 0);
+	d->isValid = ((int)d->romType >= 0);
 	if (!d->isValid) {
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 	}
 }
 
@@ -123,7 +158,7 @@ int GameBoyAdvance::isRomSupported_static(const DetectInfo *info)
 	{
 		// Either no detection information was specified,
 		// or the header is too small.
-		return -1;
+		return static_cast<int>(GameBoyAdvancePrivate::RomType::Unknown);
 	}
 
 	// Check the first 16 bytes of the Nintendo logo.
@@ -132,11 +167,13 @@ int GameBoyAdvance::isRomSupported_static(const DetectInfo *info)
 		0x3D, 0x84, 0x82, 0x0A, 0x84, 0xE4, 0x09, 0xAD
 	};
 
+	GameBoyAdvancePrivate::RomType romType = GameBoyAdvancePrivate::RomType::Unknown;
+
 	const GBA_RomHeader *const gba_header =
 		reinterpret_cast<const GBA_RomHeader*>(info->header.pData);
 	if (!memcmp(gba_header->nintendo_logo, nintendo_gba_logo, sizeof(nintendo_gba_logo))) {
 		// Nintendo logo is present at the correct location.
-		return GameBoyAdvancePrivate::ROM_GBA;
+		romType = GameBoyAdvancePrivate::RomType::GBA;
 	} else if (gba_header->fixed_96h == 0x96 && gba_header->device_type == 0x00) {
 		// This may be an expansion cartridge for a DS game.
 		// These cartridges don't have the logo data, so they
@@ -157,16 +194,15 @@ int GameBoyAdvance::isRomSupported_static(const DetectInfo *info)
 			// The entry point for expansion cartridges is 0xFFFFFFFF.
 			if (gba_header->entry_point == cpu_to_le32(0xFFFFFFFF)) {
 				// This is a Nintendo DS expansion cartridge.
-				return GameBoyAdvancePrivate::ROM_NDS_EXP;
+				romType = GameBoyAdvancePrivate::RomType::NDS_Expansion;
 			} else {
 				// This is an unlicensed pass-through cartridge.
-				return GameBoyAdvancePrivate::ROM_GBA_PASSTHRU;
+				romType = GameBoyAdvancePrivate::RomType::GBA_PassThru;
 			}
 		}
 	}
 
-	// Not supported.
-	return -1;
+	return static_cast<int>(romType);
 }
 
 /**
@@ -244,6 +280,68 @@ const char *const *GameBoyAdvance::supportedMimeTypes_static(void)
 }
 
 /**
+ * Get a bitfield of image types this class can retrieve.
+ * @return Bitfield of supported image types. (ImageTypesBF)
+ */
+uint32_t GameBoyAdvance::supportedImageTypes_static(void)
+{
+	return IMGBF_EXT_TITLE_SCREEN;
+}
+
+/**
+ * Get a list of all available image sizes for the specified image type.
+ * @param imageType Image type.
+ * @return Vector of available image sizes, or empty vector if no images are available.
+ */
+vector<RomData::ImageSizeDef> GameBoyAdvance::supportedImageSizes_static(ImageType imageType)
+{
+	ASSERT_supportedImageSizes(imageType);
+
+	switch (imageType) {
+		case IMG_EXT_TITLE_SCREEN: {
+			static const ImageSizeDef sz_EXT_TITLE_SCREEN[] = {
+				{nullptr, 240, 160, 0},
+			};
+			return vector<ImageSizeDef>(sz_EXT_TITLE_SCREEN,
+				sz_EXT_TITLE_SCREEN + ARRAY_SIZE(sz_EXT_TITLE_SCREEN));
+		}
+		default:
+			break;
+	}
+
+	// Unsupported image type.
+	return vector<ImageSizeDef>();
+}
+
+/**
+ * Get image processing flags.
+ *
+ * These specify post-processing operations for images,
+ * e.g. applying transparency masks.
+ *
+ * @param imageType Image type.
+ * @return Bitfield of ImageProcessingBF operations to perform.
+ */
+uint32_t GameBoyAdvance::imgpf(ImageType imageType) const
+{
+	ASSERT_imgpf(imageType);
+
+	uint32_t ret = 0;
+	switch (imageType) {
+		case IMG_EXT_TITLE_SCREEN:
+			// Use nearest-neighbor scaling when resizing.
+			ret = IMGPF_RESCALE_NEAREST;
+			break;
+
+		default:
+			// GameTDB's Nintendo DS cover scans have alpha transparency.
+			// Hence, no image processing is required.
+			break;
+	}
+	return ret;
+}
+
+/**
  * Load field data.
  * Called by RomData::fields() if the field data hasn't been loaded yet.
  * @return Number of fields read on success; negative POSIX error code on error.
@@ -257,20 +355,20 @@ int GameBoyAdvance::loadFieldData(void)
 	} else if (!d->file) {
 		// File isn't open.
 		return -EBADF;
-	} else if (!d->isValid || d->romType < 0) {
+	} else if (!d->isValid || (int)d->romType < 0) {
 		// Unknown ROM image type.
 		return -EIO;
 	}
 
-	// GBA ROM header.
+	// GBA ROM header
 	const GBA_RomHeader *const romHeader = &d->romHeader;
 	d->fields->reserve(7);	// Maximum of 7 fields.
 
-	// Game title.
+	// Title
 	d->fields->addField_string(C_("RomData", "Title"),
-		latin1_to_utf8(romHeader->title, sizeof(romHeader->title)));
+		cpN_to_utf8(437, romHeader->title, sizeof(romHeader->title)));
 
-	// Game ID.
+	// Game ID
 	// Replace any non-printable characters with underscores.
 	// (Action Replay has ID6 "\0\0\0\001".)
 	char id6[7];
@@ -280,36 +378,20 @@ int GameBoyAdvance::loadFieldData(void)
 			: '_');
 	}
 	id6[6] = 0;
-	d->fields->addField_string(C_("GameBoyAdvance", "Game ID"), latin1_to_utf8(id6, 6));
+	d->fields->addField_string(C_("RomData", "Game ID"), latin1_to_utf8(id6, 6));
 
-	// Look up the publisher.
-	const char *const publisher = NintendoPublishers::lookup(romHeader->company);
-	string s_publisher;
-	if (publisher) {
-		s_publisher = publisher;
-	} else {
-		if (ISALNUM(romHeader->company[0]) &&
-		    ISALNUM(romHeader->company[1]))
-		{
-			s_publisher = rp_sprintf(C_("GameBoyAdvance", "Unknown (%.2s)"),
-				romHeader->company);
-		} else {
-			s_publisher = rp_sprintf(C_("GameBoyAdvance", "Unknown (%02X %02X)"),
-				static_cast<uint8_t>(romHeader->company[0]),
-				static_cast<uint8_t>(romHeader->company[1]));
-		}
-	}
-	d->fields->addField_string(C_("RomData", "Publisher"), s_publisher);
+	// Publisher
+	d->fields->addField_string(C_("RomData", "Publisher"), d->getPublisher());
 
-	// ROM version.
+	// ROM version
 	d->fields->addField_string_numeric(C_("RomData", "Revision"),
-		romHeader->rom_version, RomFields::FB_DEC, 2);
+		romHeader->rom_version, RomFields::Base::Dec, 2);
 
-	// Entry point.
+	// Entry point
 	const char *const entry_point_title = C_("GameBoyAdvance", "Entry Point");
 	switch (d->romType) {
-		case GameBoyAdvancePrivate::ROM_GBA:
-		case GameBoyAdvancePrivate::ROM_GBA_PASSTHRU:
+		case GameBoyAdvancePrivate::RomType::GBA:
+		case GameBoyAdvancePrivate::RomType::GBA_PassThru:
 			if (romHeader->entry_point_bytes[3] == 0xEA) {
 				// Unconditional branch instruction.
 				// NOTE: Due to pipelining, the actual branch is 2 words
@@ -320,7 +402,7 @@ int GameBoyAdvance::loadFieldData(void)
 					entry_point |= 0xFC000000;
 				}
 				d->fields->addField_string_numeric(entry_point_title,
-					entry_point, RomFields::FB_HEX, 8,
+					entry_point, RomFields::Base::Hex, 8,
 					RomFields::STRF_MONOSPACE);
 			} else {
 				// Non-standard entry point instruction.
@@ -330,7 +412,7 @@ int GameBoyAdvance::loadFieldData(void)
 			}
 			break;
 
-		case GameBoyAdvancePrivate::ROM_NDS_EXP:
+		case GameBoyAdvancePrivate::RomType::NDS_Expansion:
 			// Not bootable.
 			d->fields->addField_string(entry_point_title,
 				C_("GameBoyAdvance", "Not bootable (Nintendo DS expansion)"));
@@ -345,7 +427,7 @@ int GameBoyAdvance::loadFieldData(void)
 
 	// Debugging enabled?
 	// Reference: https://problemkaputt.de/gbatek.htm#gbacartridgeheader
-	if (d->romType == GameBoyAdvancePrivate::ROM_GBA) {
+	if (d->romType == GameBoyAdvancePrivate::RomType::GBA) {
 		const uint8_t debug_enable = romHeader->nintendo_logo[0x9C-4];
 		d->fields->addField_string(C_("GameBoyAdvance", "Enable Debug"),
 			(debug_enable & 0xA5) == 0xA5
@@ -357,6 +439,139 @@ int GameBoyAdvance::loadFieldData(void)
 
 	// Finished reading the field data.
 	return static_cast<int>(d->fields->count());
+}
+
+/**
+ * Load metadata properties.
+ * Called by RomData::metaData() if the field data hasn't been loaded yet.
+ * @return Number of metadata properties read on success; negative POSIX error code on error.
+ */
+int GameBoyAdvance::loadMetaData(void)
+{
+	RP_D(GameBoyAdvance);
+	if (d->metaData != nullptr) {
+		// Metadata *has* been loaded...
+		return 0;
+	} else if (!d->file) {
+		// File isn't open.
+		return -EBADF;
+	} else if (!d->isValid || (int)d->romType < 0) {
+		// Unknown ROM image type.
+		return -EIO;
+	}
+
+	// Create the metadata object.
+	d->metaData = new RomMetaData();
+	d->metaData->reserve(1);	// Maximum of 1 metadata property.
+
+	// GBA ROM header
+	const GBA_RomHeader *const romHeader = &d->romHeader;
+
+	// Title
+	d->metaData->addMetaData_string(Property::Title,
+		cpN_to_utf8(437, romHeader->title, sizeof(romHeader->title)),
+		RomMetaData::STRF_TRIM_END);
+
+	// Publisher
+	d->metaData->addMetaData_string(Property::Publisher, d->getPublisher());
+
+	// Finished reading the metadata.
+	return static_cast<int>(d->metaData->count());
+}
+
+/**
+ * Get a list of URLs for an external image type.
+ *
+ * A thumbnail size may be requested from the shell.
+ * If the subclass supports multiple sizes, it should
+ * try to get the size that most closely matches the
+ * requested size.
+ *
+ * @param imageType	[in]     Image type.
+ * @param pExtURLs	[out]    Output vector.
+ * @param size		[in,opt] Requested image size. This may be a requested
+ *                               thumbnail size in pixels, or an ImageSizeType
+ *                               enum value.
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int GameBoyAdvance::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
+{
+	ASSERT_extURLs(imageType, pExtURLs);
+	pExtURLs->clear();
+
+	// Check for GBA ROMs that don't have external images.
+	RP_D(const GameBoyAdvance);
+	if (!d->isValid || (int)d->romType < 0) {
+		// ROM image isn't valid.
+		return -EIO;
+	} else if (!memcmp(d->romHeader.id4, "AGBJ", 4) ||
+	           !memcmp(d->romHeader.id4, "    ", 4) ||
+	           !memcmp(d->romHeader.id4, "____", 4))
+	{
+		// This is a prototype.
+		// No external images are available.
+		// TODO: CRC32-based images?
+		return -ENOENT;
+	} else if (d->romType == GameBoyAdvancePrivate::RomType::NDS_Expansion) {
+		// This is a Nintendo DS expansion cartridge.
+		// No external images are available.
+		return -ENOENT;
+	}
+
+	// NOTE: We only have one size for GBA right now.
+	RP_UNUSED(size);
+	vector<ImageSizeDef> sizeDefs = supportedImageSizes(imageType);
+	assert(sizeDefs.size() == 1);
+	if (sizeDefs.empty()) {
+		// No image sizes.
+		return -ENOENT;
+	}
+
+	// NOTE: RPDB's title screen database only has one size.
+	// There's no need to check image sizes, but we need to
+	// get the image size for the extURLs struct.
+
+	// Determine the image type name.
+	const char *imageTypeName;
+	const char *ext;
+	switch (imageType) {
+		case IMG_EXT_TITLE_SCREEN:
+			imageTypeName = "title";
+			ext = ".png";
+			break;
+		default:
+			// Unsupported image type.
+			return -ENOENT;
+	}
+
+	// Game ID. (RPDB uses ID6 for Game Boy Advance.)
+	// The ID6 cannot have non-printable characters.
+	char id6[7];
+	for (int i = ARRAY_SIZE(d->romHeader.id6)-1; i >= 0; i--) {
+		if (!ISPRINT(d->romHeader.id6[i])) {
+			// Non-printable character found.
+			return -ENOENT;
+		}
+		id6[i] = d->romHeader.id6[i];
+	}
+	// NULL-terminated ID6 is needed for the
+	// RPDB URL functions.
+	id6[6] = 0;
+
+	// Region code is id6[3].
+	const char region_code[2] = {id6[3], '\0'};
+
+	// Add the URLs.
+	pExtURLs->resize(1);
+	auto extURL_iter = pExtURLs->begin();
+	extURL_iter->url = d->getURL_RPDB("gba", imageTypeName, region_code, id6, ext);
+	extURL_iter->cache_key = d->getCacheKey_RPDB("gba", imageTypeName, region_code, id6, ext);
+	extURL_iter->width = sizeDefs[0].width;
+	extURL_iter->height = sizeDefs[0].height;
+	extURL_iter->high_res = (sizeDefs[0].index >= 2);
+
+	// All URLs added.
+	return 0;
 }
 
 }

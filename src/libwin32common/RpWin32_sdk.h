@@ -40,7 +40,7 @@
 //#define NOSYSMETRICS 1
 //#define NOMENUS 1
 #define NOICONS 1
-#define NOKEYSTATES 1
+//#define NOKEYSTATES 1
 #define NOSYSCOMMANDS 1
 //#define NORASTEROPS 1
 //#define NOSHOWWINDOW 1
@@ -48,7 +48,7 @@
 //#define NOCLIPBOARD 1
 //#define NOCOLOR 1
 //#define NOCTLMGR 1
-#define NODRAWTEXT 1
+//#define NODRAWTEXT 1
 //#define NOGDI 1
 //#define NOKERNEL 1
 //#define NONLS 1
@@ -58,7 +58,7 @@
 #define NOMINMAX 1
 //#define NOMSG 1
 #define NOOPENFILE 1
-#define NOSCROLL 1
+//#define NOSCROLL 1
 #define NOSERVICE 1
 //#define NOSOUND 1
 //#define NOTEXTMETRIC 1
@@ -82,6 +82,16 @@
 #  define tstring string
 # endif /* _UNICODE */
 #endif /* defined(__cplusplus) && !defined(tstring) */
+
+#ifndef WM_DPICHANGED
+# define WM_DPICHANGED 0x2E0
+#endif
+#ifndef WM_DPICHANGED_BEFOREPARENT
+# define WM_DPICHANGED_BEFOREPARENT 0x2E2
+#endif
+#ifndef WM_DPICHANGED_AFTERPARENT
+# define WM_DPICHANGED_AFTERPARENT 0x2E3
+#endif
 
 #if defined(__GNUC__) && defined(__MINGW32__) && _WIN32_WINNT < 0x0502 && defined(__cplusplus)
 /**
@@ -129,6 +139,9 @@ static inline ULONG InterlockedDecrement(ULONG volatile *Addend)
 #endif
 #ifndef _Outptr_result_nullonfailure_
 # define _Outptr_result_nullonfailure_
+#endif
+#ifndef _Outptr_opt_
+# define _Outptr_opt_
 #endif
 
 // FIXME: _Check_return_ on MSYS2/MinGW-w64 (gcc-9.2.0-2, MinGW-w64 7.0.0.5524.2346384e-1) fails:

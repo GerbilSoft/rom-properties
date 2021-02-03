@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata/tests)                 *
  * GcnFstTest.cpp: GameCube/Wii FST test.                                  *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -11,15 +11,16 @@
 
 // Google Test
 #include "gtest/gtest.h"
+#include "tcharx.h"
 
 // MiniZip
 #include <zlib.h>
 #include "mz_zip.h"
 #include "mz_compat.h"
 
-// librpbase
+// librpbase, librpfile
 #include "librpbase/TextFuncs.hpp"
-#include "librpbase/file/FileSystem.hpp"
+#include "librpfile/FileSystem.hpp"
 using namespace LibRpBase;
 
 // libromdata
@@ -35,7 +36,7 @@ using LibRomData::GcnFst;
 #include "FstPrint.hpp"
 
 // C includes. (C++ namespace)
-#include "librpbase/ctypex.h"
+#include "ctypex.h"
 
 // C++ includes.
 #include <sstream>
@@ -361,7 +362,8 @@ void GcnFstTest::checkNoDuplicateFilenames(const char *subdir)
 	}
 
 	// Check subdirectories.
-	for (auto iter = subdirs.cbegin(); iter != subdirs.cend(); ++iter) {
+	const auto subdirs_cend = subdirs.cend();
+	for (auto iter = subdirs.cbegin(); iter != subdirs_cend; ++iter) {
 		string path = subdir;
 		if (!path.empty() && path[path.size()-1] != '/') {
 			path += '/';
@@ -541,7 +543,7 @@ std::vector<GcnFstTest_mode> GcnFstTest::ReadTestCasesFromDisk(uint8_t offsetShi
 			// NOTE: Filename might not be NULL-terminated,
 			// so use the explicit length.
 			GcnFstTest_mode mode(string(filename, file_info.size_filename), offsetShift);
-			files.push_back(mode);
+			files.emplace_back(mode);
 		}
 
 		// Next file.
@@ -569,28 +571,30 @@ string GcnFstTest::test_case_suffix_generator(const ::testing::TestParamInfo<Gcn
 
 	// Replace all non-alphanumeric characters with '_'.
 	// See gtest-param-util.h::IsValidParamName().
-	for (auto iter = suffix.begin(); iter != suffix.end(); ++iter) {
-		// NOTE: Not checking for '_' because that
-		// wastes a branch.
-		if (!ISALNUM(*iter)) {
-			*iter = '_';
+	std::for_each(suffix.begin(), suffix.end(),
+		[](char &c) {
+			// NOTE: Not checking for '_' because that
+			// wastes a branch.
+			if (!ISALNUM(c)) {
+				c = '_';
+			}
 		}
-	}
+	);
 
 	return suffix;
 }
 
-INSTANTIATE_TEST_CASE_P(GameCube, GcnFstTest,
+INSTANTIATE_TEST_SUITE_P(GameCube, GcnFstTest,
 	testing::ValuesIn(GcnFstTest::ReadTestCasesFromDisk(0))
 	, GcnFstTest::test_case_suffix_generator);
 
-INSTANTIATE_TEST_CASE_P(Wii, GcnFstTest,
+INSTANTIATE_TEST_SUITE_P(Wii, GcnFstTest,
 	testing::ValuesIn(GcnFstTest::ReadTestCasesFromDisk(2))
 	, GcnFstTest::test_case_suffix_generator);
 
 } }
 
-extern "C" int gtest_main(int argc, char *argv[])
+extern "C" int gtest_main(int argc, TCHAR *argv[])
 {
 	fprintf(stderr, "LibRomData test suite: GcnFst tests.\n\n");
 	fflush(nullptr);

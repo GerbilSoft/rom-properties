@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * VGM.hpp: VGM audio reader.                                              *
  *                                                                         *
- * Copyright (c) 2018-2019 by David Korth.                                 *
+ * Copyright (c) 2018-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -10,8 +10,9 @@
 #include "VGM.hpp"
 #include "vgm_structs.h"
 
-// librpbase
+// librpbase, librpfile
 using namespace LibRpBase;
+using LibRpFile::IRpFile;
 
 // C++ STL classes.
 using std::array;
@@ -23,7 +24,7 @@ namespace LibRomData {
 
 ROMDATA_IMPL(VGM)
 
-class VGMPrivate : public RomDataPrivate
+class VGMPrivate final : public RomDataPrivate
 {
 	public:
 		VGMPrivate(VGM *q, IRpFile *file);
@@ -151,7 +152,6 @@ VGMPrivate::gd3_tags_t *VGMPrivate::loadGD3(unsigned int addr)
 	gd3_tags_t *gd3_tags = new gd3_tags_t;
 
 	// Convert from NULL-terminated strings to gd3_tags_t.
-	// TODO: Optimize on systems where wchar_t functions are 16-bit?
 	size_t tag_idx = 0;
 	const char16_t *start = gd3.get();
 	const char16_t *const endptr = start + length16;
@@ -190,7 +190,8 @@ VGM::VGM(IRpFile *file)
 {
 	RP_D(VGM);
 	d->className = "VGM";
-	d->fileType = FTYPE_AUDIO_FILE;
+	d->mimeType = "audio/x-vgm";	// unofficial
+	d->fileType = FileType::AudioFile;
 
 	if (!d->file) {
 		// Could not ref() the file handle.
@@ -201,8 +202,7 @@ VGM::VGM(IRpFile *file)
 	d->file->rewind();
 	size_t size = d->file->read(&d->vgmHeader, sizeof(d->vgmHeader));
 	if (size != sizeof(d->vgmHeader)) {
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
 
@@ -216,9 +216,7 @@ VGM::VGM(IRpFile *file)
 	d->isValid = (isRomSupported_static(&info) >= 0);
 
 	if (!d->isValid) {
-		d->file->unref();
-		d->file = nullptr;
-		return;
+		UNREF_AND_NULL_NOCHK(d->file);
 	}
 }
 
@@ -493,7 +491,7 @@ int VGM::loadFieldData(void)
 
 		d->fields->addField_string_numeric(
 			rp_sprintf(C_("VGM", "%s LFSR pattern"), chip_name).c_str(),
-			lfsr_feedback, RomFields::FB_HEX, 4, RomFields::STRF_MONOSPACE);
+			lfsr_feedback, RomFields::Base::Hex, 4, RomFields::STRF_MONOSPACE);
 		d->fields->addField_string_numeric(
 			rp_sprintf(C_("VGM", "%s LFSR width"), chip_name).c_str(),
 			lfsr_width);
@@ -565,7 +563,7 @@ int VGM::loadFieldData(void)
 				d->fields->addField_string_numeric(
 					rp_sprintf(C_("VGM", "%s IF reg"), "Sega PCM").c_str(),
 					le32_to_cpu(vgmHeader->sega_pcm_if_reg),
-					RomFields::FB_HEX, 8, RomFields::STRF_MONOSPACE);
+					RomFields::Base::Hex, 8, RomFields::STRF_MONOSPACE);
 			}
 		}
 
@@ -890,8 +888,8 @@ int VGM::loadMetaData(void)
 
 			// Array of GD3 tag indexes and properties.
 			struct gd3_tag_prop_tbl_t {
-				Property::Property prop;	// Metadata property index
-				GD3_TAG_ID idx;			// GD3 tag index
+				Property prop;	// Metadata property index
+				uint8_t idx;	// GD3 tag index (GD3_TAG_ID)
 			};
 
 			static const gd3_tag_prop_tbl_t gd3_tag_prop_tbl[] = {

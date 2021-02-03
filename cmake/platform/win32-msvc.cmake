@@ -29,8 +29,9 @@ ENDIF(ENABLE_OLDWINCOMPAT)
 # No ANSI support.
 
 # Subsystem and minimum Windows version:
-# - If 32-bit: 5.01
-# - If 64-bit: 5.02
+# - If i386: 5.01
+# - If amd64: 5.02
+# - If arm or arm64: 6.02
 # ROM Properties does NOT support ANSI Windows.
 # MSVC 2010's minimum supported target OS is XP SP2.
 # MSVC 2012 and later has a minimum subsystem value of 5.01.
@@ -43,13 +44,18 @@ ENDIF(ENABLE_OLDWINCOMPAT)
 # NOTE: MS_ENH_RSA_AES_PROV is only available starting with
 # Windows XP. Because we're actually using some XP-specific
 # functionality now, the minimum version is now Windows XP.
-IF(CMAKE_CL_64)
-	# 64-bit, Unicode Windows only. (MSVC)
-	# (There is no 64-bit ANSI Windows.)
+IF(CPU_amd64)
+	# amd64 (64-bit), Unicode Windows only. (MSVC)
+	# (There is no amd64 ANSI Windows.)
 	# Minimum target version is Windows Server 2003 / XP 64-bit.
 	SET(RP_WIN32_SUBSYSTEM_VERSION "5.02")
-ELSE(CMAKE_CL_64)
-	# 32-bit, Unicode Windows only.
+ELSEIF(CPU_arm OR CPU_arm64)
+	# ARM (32-bit or 64-bit), Unicode windows only. (MSVC)
+	# (There is no ARM ANSI Windows.)
+	# Minimum target version is Windows 8.
+	SET(RP_WIN32_SUBSYSTEM_VERSION "6.02")
+ELSEIF(CPU_i386)
+	# i386 (32-bit), Unicode Windows only.
 	# Minimum target version is Windows XP,
 	# unless ENABLE_OLDWINCOMPAT is set.
 	# NOTE: MSVC 2012+ doesn't support lower than 5.01.
@@ -59,7 +65,9 @@ ELSE(CMAKE_CL_64)
 	ELSE(ENABLE_OLDWINCOMPAT)
 		SET(RP_WIN32_SUBSYSTEM_VERSION "5.01")
 	ENDIF(ENABLE_OLDWINCOMPAT)
-ENDIF(CMAKE_CL_64)
+ELSE()
+	MESSAGE(FATAL_ERROR "Unsupported CPU.")
+ENDIF()
 SET(RP_LINKER_FLAGS_WIN32_EXE "/SUBSYSTEM:WINDOWS,${RP_WIN32_SUBSYSTEM_VERSION}")
 SET(RP_LINKER_FLAGS_CONSOLE_EXE "/SUBSYSTEM:CONSOLE,${RP_WIN32_SUBSYSTEM_VERSION}")
 UNSET(RP_WIN32_SUBSYSTEM_VERSION)

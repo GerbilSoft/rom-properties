@@ -2,21 +2,17 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * GdkImageConv.cpp: Helper functions to convert from rp_image to GDK.     *
  *                                                                         *
- * Copyright (c) 2017-2019 by David Korth.                                 *
+ * Copyright (c) 2017-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+#include "stdafx.h"
 #include "GdkImageConv.hpp"
 
-// C includes.
-#include <stdint.h>
-
-// C includes. (C++ namespace)
-#include <cassert>
-#include <cstring>
+// C++ STL classes.
+using std::array;
 
 // librptexture
-#include "librptexture/img/rp_image.hpp"
 using LibRpTexture::rp_image;
 
 /**
@@ -44,7 +40,7 @@ GdkPixbuf *GdkImageConv::rp_image_to_GdkPixbuf_cpp(const rp_image *img)
 	const int dest_stride_adj = (gdk_pixbuf_get_rowstride(pixbuf) / sizeof(*px_dest)) - width;
 
 	switch (img->format()) {
-		case rp_image::FORMAT_ARGB32: {
+		case rp_image::Format::ARGB32: {
 			// Copy the image data.
 			const uint32_t *img_buf = static_cast<const uint32_t*>(img->bits());
 			const int src_stride_adj = (img->stride() / sizeof(uint32_t)) - width;
@@ -77,7 +73,7 @@ GdkPixbuf *GdkImageConv::rp_image_to_GdkPixbuf_cpp(const rp_image *img)
 			break;
 		}
 
-		case rp_image::FORMAT_CI8: {
+		case rp_image::Format::CI8: {
 			const uint32_t *src_pal = img->palette();
 			const int src_pal_len = img->palette_len();
 			assert(src_pal != nullptr);
@@ -86,7 +82,7 @@ GdkPixbuf *GdkImageConv::rp_image_to_GdkPixbuf_cpp(const rp_image *img)
 				break;
 
 			// Get the palette.
-			uint32_t palette[256];
+			array<uint32_t, 256> palette;
 			int i;
 			for (i = 0; i < src_pal_len; i += 2, src_pal += 2) {
 				// Swap the R and B channels in the palette.
@@ -106,8 +102,8 @@ GdkPixbuf *GdkImageConv::rp_image_to_GdkPixbuf_cpp(const rp_image *img)
 
 			// Zero out the rest of the palette if the new
 			// palette is larger than the old palette.
-			if (src_pal_len < ARRAY_SIZE(palette)) {
-				memset(&palette[src_pal_len], 0, (ARRAY_SIZE(palette) - src_pal_len) * sizeof(uint32_t));
+			if (src_pal_len < (int)palette.size()) {
+				memset(&palette[src_pal_len], 0, (palette.size() - src_pal_len) * sizeof(uint32_t));
 			}
 
 			// Copy the image data.

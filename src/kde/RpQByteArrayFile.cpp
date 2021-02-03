@@ -2,18 +2,14 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * RpQByteArrayFile.cpp: IRpFile implementation using a QByteArray.        *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+#include "stdafx.h"
 #include "RpQByteArrayFile.hpp"
 
-// C includes. (C++ namespace)
-#include <cerrno>
-#include <cstring>
-
-// C++ includes.
-#include <string>
+// C++ STL classes.
 using std::string;
 
 /**
@@ -62,7 +58,7 @@ size_t RpQByteArrayFile::read(void *ptr, size_t size)
 
 	// Check if size is in bounds.
 	// NOTE: Need to use a signed comparison here.
-	if (static_cast<int64_t>(m_pos) > (static_cast<int64_t>(m_byteArray.size()) - static_cast<int64_t>(size))) {
+	if (static_cast<off64_t>(m_pos) > (static_cast<off64_t>(m_byteArray.size()) - static_cast<off64_t>(size))) {
 		// Not enough data.
 		// Copy whatever's left in the buffer.
 		size = m_byteArray.size() - m_pos;
@@ -89,7 +85,7 @@ size_t RpQByteArrayFile::write(const void *ptr, size_t size)
 	}
 
 	// Do we need to expand the QByteArray?
-	int64_t req_size = static_cast<int64_t>(m_byteArray.size()) + size;
+	off64_t req_size = static_cast<off64_t>(m_byteArray.size()) + size;
 	if (req_size < 0) {
 		// Overflow...
 		return 0;
@@ -110,7 +106,7 @@ size_t RpQByteArrayFile::write(const void *ptr, size_t size)
  * @param pos File position.
  * @return 0 on success; -1 on error.
  */
-int RpQByteArrayFile::seek(int64_t pos)
+int RpQByteArrayFile::seek(off64_t pos)
 {
 	// NOTE: m_pos is size_t, since it's referring to
 	// a position within a memory buffer.
@@ -129,9 +125,9 @@ int RpQByteArrayFile::seek(int64_t pos)
  * Get the file position.
  * @return File position, or -1 on error.
  */
-int64_t RpQByteArrayFile::tell(void)
+off64_t RpQByteArrayFile::tell(void)
 {
-	return (int64_t)m_pos;
+	return (off64_t)m_pos;
 }
 
 /**
@@ -139,7 +135,7 @@ int64_t RpQByteArrayFile::tell(void)
  * @param size New size. (default is 0)
  * @return 0 on success; -1 on error.
  */
-int RpQByteArrayFile::truncate(int64_t size)
+int RpQByteArrayFile::truncate(off64_t size)
 {
 	m_byteArray.resize(size);
 	return 0;
@@ -151,7 +147,7 @@ int RpQByteArrayFile::truncate(int64_t size)
  * Get the file size.
  * @return File size, or negative on error.
  */
-int64_t RpQByteArrayFile::size(void)
+off64_t RpQByteArrayFile::size(void)
 {
 	return m_byteArray.size();
 }

@@ -13,16 +13,8 @@
 // C includes.
 #include <stdlib.h>
 
-// TODO: Move to our own stdboolx.h file.
-#ifndef __cplusplus
-# if defined(_MSC_VER) && _MSC_VER >= 1800
-#  include <stdbool.h>
-# else
-typedef unsigned char bool;
-#  define true 1
-#  define false 0
-# endif
-#endif /* __cplusplus */
+// stdbool
+#include "stdboolx.h"
 
 // ImageBase for GetModuleFileName().
 // Reference: https://blogs.msdn.microsoft.com/oldnewthing/20041025-00/?p=37483
@@ -34,6 +26,13 @@ EXTERN_C IMAGE_DOS_HEADER __ImageBase;
 static const TCHAR rp_subdir[] = _T("i386\\");
 #elif defined(__amd64__) || defined(_M_X64)
 static const TCHAR rp_subdir[] = _T("amd64\\");
+#elif defined(__ia64__) || defined(_M_IA64)
+static const TCHAR rp_subdir[] = _T("ia64\\");
+#elif defined(__aarch64__) || defined(_M_ARM64)
+static const TCHAR rp_subdir[] = _T("arm64\\");
+#elif defined(__arm__) || defined(__thumb__) || \
+      defined(_M_ARM) || defined(_M_ARMT)
+static const TCHAR rp_subdir[] = _T("arm\\");
 #else
 # error Unsupported CPU architecture.
 #endif
@@ -47,13 +46,23 @@ static HMODULE WINAPI rp_loadLibrary(LPCSTR pszModuleName)
 {
 	// We only want to handle DLLs included with rom-properties.
 	// System DLLs should be handled normally.
-	// DLL whitelist: First byte is an explicit length.
-	static const char prefix_whitelist[][16] = {
-		"\x05" "zlib1",
-		"\x06" "libpng",
-		"\x04" "jpeg",
-		"\x08" "tinyxml2",
-		"\x0C" "libgnuintl-8",
+	static const char *const dll_whitelist[] = {
+#ifdef NDEBUG
+		"zlib1.dll",
+		"libpng16.dll",
+		"tinyxml2.dll",
+		"zstd.dll",
+		"lz4.dll",
+		"minilzo.dll",
+#else /* !NDEBUG */
+		"zlib1d.dll",
+		"libpng16d.dll",
+		"tinyxml2d.dll",
+		"zstdd.dll",
+		"lz4d.dll",
+		"minilzod.dll",
+#endif /* NDEBUG */
+		"libgnuintl-8.dll",
 	};
 
 	TCHAR dll_fullpath[MAX_PATH+64];
@@ -67,10 +76,8 @@ static HMODULE WINAPI rp_loadLibrary(LPCSTR pszModuleName)
 	unsigned int i;
 	bool match = false;
 
-	for (i = 0; i < _countof(prefix_whitelist); i++) {
-		if (!strncasecmp(pszModuleName, &prefix_whitelist[i][1],
-		     (unsigned int)prefix_whitelist[i][0]))
-		{
+	for (i = 0; i < _countof(dll_whitelist); i++) {
+		if (!strcasecmp(pszModuleName, dll_whitelist[i])) {
 			// Found a match.
 			match = true;
 			break;
@@ -155,7 +162,9 @@ static FARPROC WINAPI rp_dliNotifyHook(unsigned int dliNotify, PDelayLoadInfo pd
 
 // Set the delay-load notification hook.
 // NOTE: MSVC 2015 Update 3 makes this a const variable.
-// Reference: https://msdn.microsoft.com/en-us/library/b0084kay.aspx
+// References:
+// - https://docs.microsoft.com/en-us/cpp/build/reference/notification-hooks?view=vs-2019
+// - https://docs.microsoft.com/en-us/cpp/preprocessor/predefined-macros?view=vs-2019
 #if _MSC_VER > 1900 || (_MSC_VER == 1900 && _MSC_FULL_VER >= 190024210)
 const PfnDliHook __pfnDliNotifyHook2 = rp_dliNotifyHook;
 #else

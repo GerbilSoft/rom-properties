@@ -10,10 +10,12 @@
 #include "ImageTypesTab.hpp"
 #include "res/resource.h"
 
-// librpbase
+// librpbase, librpfile
 using namespace LibRpBase;
+using namespace LibRpFile;
 
 // C++ STL classes.
+using std::array;
 using std::tstring;
 
 // TImageTypesConfig is a templated class,
@@ -30,11 +32,6 @@ class ImageTypesTabPrivate : public TImageTypesConfig<HWND>
 	private:
 		typedef TImageTypesConfig<HWND> super;
 		RP_DISABLE_COPY(ImageTypesTabPrivate)
-
-	public:
-		// Property for "D pointer".
-		// This points to the ImageTypesTabPrivate object.
-		static const TCHAR D_PTR_PROP[];
 
 	protected:
 		/** TImageTypesConfig functions. (protected) **/
@@ -164,10 +161,6 @@ ImageTypesTabPrivate::~ImageTypesTabPrivate()
 	assert(tmp_conf_filename.empty());
 }
 
-// Property for "D pointer".
-// This points to the ImageTypesTabPrivate object.
-const TCHAR ImageTypesTabPrivate::D_PTR_PROP[] = _T("ImageTypesTabPrivate");
-
 /** TImageTypesConfig functions. (protected) **/
 
 /**
@@ -208,7 +201,7 @@ void ImageTypesTabPrivate::createGridLabels(void)
 	// Determine the size of the largest image type label.
 	// NOTE: Keeping heights of each label in order to
 	// vertically-align labels on the bottom.
-	int h_lbl[IMG_TYPE_COUNT];
+	array<int, IMG_TYPE_COUNT> h_lbl;
 	SIZE sz_lblImageType = {0, 0};
 	for (int i = IMG_TYPE_COUNT-1; i >= 0; i--) {
 		if (i == RomData::IMG_INT_MEDIA) {
@@ -321,8 +314,7 @@ void ImageTypesTabPrivate::createComboBox(unsigned int cbid)
 	if (!validateSysImageType(sys, imageType))
 		return;
 
-	// Get the font of the parent dialog.
-	// TODO: Cache this?
+	// Get the parent dialog's font.
 	HFONT hFontDlg = GetWindowFont(GetParent(hWndPropSheet));
 	assert(hFontDlg != nullptr);
 	if (!hFontDlg) {
@@ -371,29 +363,14 @@ void ImageTypesTabPrivate::addComboBoxStrings(unsigned int cbid, int max_prio)
 	if (!cboImageType)
 		return;
 
-	// Dropdown strings.
-	// NOTE: One more string than the total number of image types,
-	// since we have a string for "No".
-	static const char s_values[][4] = {
-		NOP_C_("ImageTypesTab|Values", "No"),
-		NOP_C_("ImageTypesTab|Values", "1"),
-		NOP_C_("ImageTypesTab|Values", "2"),
-		NOP_C_("ImageTypesTab|Values", "3"),
-		NOP_C_("ImageTypesTab|Values", "4"),
-		NOP_C_("ImageTypesTab|Values", "5"),
-		NOP_C_("ImageTypesTab|Values", "6"),
-		NOP_C_("ImageTypesTab|Values", "7"),
-		NOP_C_("ImageTypesTab|Values", "8"),
-		NOP_C_("ImageTypesTab|Values", "9"),
-		NOP_C_("ImageTypesTab|Values", "10"),
-	};
-	static_assert(ARRAY_SIZE(s_values) == IMG_TYPE_COUNT+1, "s_values[] is the wrong size.");
-
 	// NOTE: Need to add one more than the total number,
 	// since "No" counts as an entry.
-	for (int i = 0; i <= max_prio; i++) {
-		ComboBox_AddString(cboImageType, U82T_c(
-			dpgettext_expr(RP_I18N_DOMAIN, "ImageTypesTab|Values", s_values[i])));
+	assert(max_prio <= IMG_TYPE_COUNT);
+	ComboBox_AddString(cboImageType, U82T_c(C_("ImageTypesTab|Values", "No")));
+	for (int i = 1; i <= max_prio; i++) {
+		TCHAR buf[16];
+		_sntprintf(buf, _countof(buf), _T("%d"), i);
+		ComboBox_AddString(cboImageType, buf);
 	}
 	ComboBox_SetCurSel(cboImageType, 0);
 }
@@ -417,8 +394,7 @@ void ImageTypesTabPrivate::finishComboBoxes(void)
 	if (!lblCredits)
 		return;
 
-	SetWindowPos(lblCredits,
-		cboImageType_lastAdded ? cboImageType_lastAdded : hWndPropSheet,
+	SetWindowPos(lblCredits, cboImageType_lastAdded,
 		0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
 	cboImageType_lastAdded = nullptr;
 }
@@ -437,6 +413,15 @@ int ImageTypesTabPrivate::saveStart(void)
 	if (!filename) {
 		// No configuration filename...
 		return -ENOENT;
+	}
+
+	// Make sure the configuration directory exists.
+	// NOTE: The filename portion MUST be kept in config_path,
+	// since the last component is ignored by rmkdir().
+	int ret = FileSystem::rmkdir(filename);
+	if (ret != 0) {
+		// rmkdir() failed.
+		return -EIO;
 	}
 
 	// Store the configuration filename.
@@ -526,24 +511,15 @@ INT_PTR CALLBACK ImageTypesTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 			d->hWndPropSheet = hDlg;
 
 			// Store the D object pointer with this particular page dialog.
-			SetProp(hDlg, D_PTR_PROP, reinterpret_cast<HANDLE>(d));
+			SetWindowLongPtr(hDlg, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(d));
 
 			// Create the control grid.
 			d->createGrid();
 			return TRUE;
 		}
 
-		case WM_DESTROY: {
-			// Remove the D_PTR_PROP property from the page.
-			// The D_PTR_PROP property stored the pointer to the
-			// ImageTypesTabPrivate object.
-			RemoveProp(hDlg, D_PTR_PROP);
-			return TRUE;
-		}
-
 		case WM_NOTIFY: {
-			ImageTypesTabPrivate *const d = static_cast<ImageTypesTabPrivate*>(
-				GetProp(hDlg, D_PTR_PROP));
+			auto *const d = reinterpret_cast<ImageTypesTabPrivate*>(GetWindowLongPtr(hDlg, GWLP_USERDATA));
 			if (!d) {
 				// No ImageTypesTabPrivate. Can't do anything...
 				return FALSE;
@@ -584,8 +560,7 @@ INT_PTR CALLBACK ImageTypesTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 		}
 
 		case WM_COMMAND: {
-			ImageTypesTabPrivate *const d = static_cast<ImageTypesTabPrivate*>(
-				GetProp(hDlg, D_PTR_PROP));
+			auto *const d = reinterpret_cast<ImageTypesTabPrivate*>(GetWindowLongPtr(hDlg, GWLP_USERDATA));
 			if (!d) {
 				// No ImageTypesTabPrivate. Can't do anything...
 				return FALSE;
@@ -615,8 +590,7 @@ INT_PTR CALLBACK ImageTypesTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 		}
 
 		case WM_RP_PROP_SHEET_RESET: {
-			ImageTypesTabPrivate *const d = static_cast<ImageTypesTabPrivate*>(
-				GetProp(hDlg, D_PTR_PROP));
+			auto *const d = reinterpret_cast<ImageTypesTabPrivate*>(GetWindowLongPtr(hDlg, GWLP_USERDATA));
 			if (!d) {
 				// No ImageTypesTabPrivate. Can't do anything...
 				return FALSE;
@@ -628,8 +602,7 @@ INT_PTR CALLBACK ImageTypesTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 		}
 
 		case WM_RP_PROP_SHEET_DEFAULTS: {
-			ImageTypesTabPrivate *const d = static_cast<ImageTypesTabPrivate*>(
-				GetProp(hDlg, D_PTR_PROP));
+			auto *const d = reinterpret_cast<ImageTypesTabPrivate*>(GetWindowLongPtr(hDlg, GWLP_USERDATA));
 			if (!d) {
 				// No ImageTypesTabPrivate. Can't do anything...
 				return FALSE;

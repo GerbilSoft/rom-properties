@@ -1,6 +1,225 @@
 # Changes
 
-## v1.5 (released 2020/??/??)
+## v1.8 (released 2020/??/??)
+
+* New features:
+  * An achievements system has been added. By viewing certain types of files
+    or performing certain actions, achievements can be unlocked. Achievements
+    can be viewed in rp-config.
+  * Enabled sorting on all RFT_LISTDATA fields.
+  * Improved automatic column sizing in RFT_LISTDATA fields on all platforms.
+    * Windows: Significantly improved column sizing by overriding ListView's
+      default sizing function, which doesn't work properly for strings that
+      have multiple lines.
+    * GTK+: Combined the icon/checkbox column with column 0.
+
+* New parser features:
+  * NGPC: Added external title screens using RPDB.
+  * Xbox360_XDBF:
+    * Added metadata extraction.
+    * Added (partial) support for GPD files. Avatar Awards aren't parsed
+      in GPD files at the moment.
+  * Xbox360_XEX: System firmware XEXes use the XEX1 key. This is indicated
+    using the "Cardea Key" flag.
+    * Fixes #273, reported by @Masamune3210.
+  * GameCom: Added support for RLE-compressed icons. "Game.com Internet"
+    and "Tiger Web Link" are the only two titles known to use them.
+    * Fixes #278, reported by @simontime.
+  * MegaDrive: Handle the 'W' region code as used by EverDrive OS ROMs.
+
+* Bug fixes:
+  * GameCube: Detect incrementing values partitions in encrypted images.
+    * Fixes #269, reported by @Masamune3210.
+  * KDE: Ensure the "Thumb::URI" value is urlencoded.
+  * Fixed a potential crash when loading an invalid PNG image.
+  * Windows: Fixed a column sizing issue that caused XDBF Gamerscore columns
+    to be too wide.
+  * Xbox360_STFS: Fixed a crash that happened in some cases.
+
+## v1.7.3 (released 2020/09/25)
+
+* Bug fixes:
+  * GameCube: Fix incorrect GCZ data size checks.
+    * This *really* fixes #262, reported by @Amnesia1000.
+
+## v1.7.2 (released 2020/09/24)
+
+* Bug fixes:
+  * PlayStationDisc: Fix a crash when parsing discs that don't have SYSTEM.CNF
+    but do have PSX.EXE.
+    * Fixes #258, reported by @TwilightSlick.
+  * GameCube: Register the ".gcz" and ".rvz" file extensions on Windows.
+    * Fixes #262, reported by @Amnesia1000.
+
+* Other changes:
+  * Xbox360_XEX: Removed the "Savegame ID" field. This seems to be 0 in all
+    tested games.
+    * Fixes #272, reported by @Masamune3210.
+
+## v1.7.1 (released 2020/09/21)
+
+* Bug fixes:
+  * Windows: Fixed a last-minute bug that caused field values in the property
+    page to sometimes be completely invisible.
+    * This bug was reported by @Whovian9369.
+
+## v1.7 (released 2020/09/20)
+
+* New features:
+  * An "Options" button is now present in the property page. The Options
+    button allows for exporting the ROM properties in text and JSON format,
+    using the same mechanism as rpcli's output.
+  * A new "ROM operations" subsystem allows for certain operations to be
+    performed on supported ROM images. Currently, Nintendo DS supports
+    trimming and untrimming ROMs, and encrypting and decrypting the Secure
+    Area. These operations are available in the "Options" menu. Note that
+    modifying the Secure Area requires having the Nintendo DS Blowfish key
+    as `nds-blowfish.bin` in the ROM Properties configuration directory.
+  * Nintendo3DS: New ROM operation for extracting SRLs from DSiWare CIAs.
+
+* New parsers:
+  * PSP: PlayStation Portable disc images. Supports both PSP game and UMD
+    video discs in ISO, CISOv1, CISOv2, ZISO, JISO, and DAX formats.
+    * PARAM.SFO and firmware updates aren't parsed yet.
+
+* New parser features:
+  * Dreamcast: Added metadata properties.
+  * NintendoDS:
+    * Use the full title in metadata properties if available.
+    * Indicate the specific Security Data that's present.
+  * Nintendo3DSFirm: Added some more homebrews and show sighax status.
+  * DMG: Added support for ROMs with 512-byte copier headers.
+  * WiiWAD: Preliminary support for Nintendo DSi TAD packages as used by
+    DSi Nmenu. These have the same basic format as WADs, including ticket
+    and TMD, but the contents are different.
+  * WiiWAD: New ROM operation for extracting SRLs from DSi TAD packages.
+  * EXE: Show the "dangerous permissions" overlay for Windows executables
+    that have requestedExecutionLevel == requireAdministrator.
+
+* Bug fixes:
+  * PlayStationDisc:
+    * Allow discs that lack SYSTEM.CNF if they have PSX.EXE.
+    * Handle boot filenames with two backslashes.
+  * KDE: Fix thumbnailing of files with '#' and/or '?' in their filenames.
+  * Win32: Default InfoTip value incorrectly used PreviewDetails.
+  * Win32: Register PreviewDetails and InfoTip per extension instead of
+    using a ProgID. Using a ProgID breaks .cmd files on Windows 8.
+    * This fixes issue #242, reported by @mariomadproductions.
+  * DMG: SRAM bank size is 8 KB, not 16 KB.
+    * This fixes issue #246, reported by @Icesythe7.
+  * PlayStationDisc: Fix a file handle leak.
+    * This fixes issue #247, reported by @Masamune3210.
+  * IsoPartition, XDVDFSPartition: Fix some more file handle leaks.
+    * This fixes issue #249, reported by @Masamune3210.
+  * WiiPartition: Fixed a potential memory corruption issue when reading
+    a partial block from an unencrypted disc image.
+  * WiiWAD: Animated icons are now reported correctly by `rpcli`.
+  * KDE: Fixed a memory leak in the overlay icon handler. This has been
+    present since overlay icons were introduced in v1.4.
+  * KDE: Split the .desktop files into one for ThumbCreator and one for
+    KPropertiesDialog. This fixes e.g. Windows EXE thumbnailing, which
+    is supported by another plugin on KDE, but not by rom-properties;
+    however, rom-properties *does* support EXE for properties functions.
+    With both ThumbCreator and KPropertiesDialog in one .desktop file,
+    all MIME types were taken over by rom-properties for ThumbCreator,
+    even if those types weren't supported.
+  * XboxDisc: Fixed broken detection for some XGD3 discs, including
+    "2014 FIFA World Cup".
+    * This fixes issue #253, reported by @Masamune3210.
+
+* Other changes:
+  * Windows: MSVC 2012 is now the minimum required compiler version if
+    compiling without test suites; MSVC 2015 with test suites.
+  * Linux: A system-wide cache directory (/usr/share/rom-properties/cache)
+    is now supported. The primary use case is for systems that sandbox the
+    thumbnailing process, which prevents rom-properties from downloading
+    files from the Internet and from using the ~/.cache/ directory.
+  * Windows: Property dialogs now show vertical scrollbars if necessary.
+    This partially fixes issue #204, reported by @InternalLoss.
+
+## v1.6.1 (released 2020/07/13)
+
+* Bug fixes:
+  * Windows: Fixed a guaranteed crash when viewing the "ROM Properties" tab.
+    Fixes issue #236.
+  * Downloads: Make sure Unicode sequences are properly escaped.
+  * Windows XP: Added a workaround for RPDB not connecting over https due to
+    WinInet.dll not supporting SNI.
+
+* Other changes:
+  * Windows: The rp-download User-Agent string now includes the OS version
+    number.
+
+## v1.6 (released 2020/07/12)
+
+* New parsers:
+  * PlayStationDisc: New parser for PS1 and PS2 disc images.
+  * PlayStationEXE: Basic parser for PS1 executables.
+
+* New parser features:
+  * Xbox360_XEX: Handle delta patches somewhat differently. We can't check the
+    encryption key right now, so skip that check. Also skip reading the EXE
+    and XDBF sections, since we don't have the full executable in a delta patch.
+  * Xbox360_STFS: Partial support for handling the embedded default.xex and/or
+    default.xexp file using the Xbox360_XEX class.
+  * Added external title screen images using the official ROM Properties online
+    database server.
+    * Supported systems: Game Boy (original, Color, Advance), Super NES
+  * Game Boy Advance: Added metadata properties for Title and Publisher.
+    (Same as Game Boy and Game Boy Color.)
+  * NES: Added more (unused) mappers for TNES format.
+  * GameCube: Added support for more formats:
+    * Split .wbfs/.wbf1 files
+    * GCZ compressed images
+    * RVZ compressed images (header only; similar to WIA)
+  * SNES: Significantly improved detection for ROM images with headers that
+    don't quite match the specification. Added SPC7110 and other custom chip
+    detection.
+  * SNES: Added metadata properties.
+  * SufamiTurbo: New parser for Sufami Turbo mini-carts for Super Famicom.
+    This could have been part of SNES, but the header is completely different
+    and is always located at $0000.
+  * ISO: Added support for High Sierra Format CDs.
+  * Cdrom2352Reader: Mode 2 sectors are now read correctly.
+  * WiiSave: Show permissions as if they're Unix-style permissions, and show
+    the "No Copy from NAND" flag.
+  * WiiU: Get the GameTDB region code for boxart from the game ID.
+  * XboxPublishers: New publishers lookup class for Xbox and Xbox 360.
+  * GameCube: Detect more types of standalone update partitions.
+
+* Bug fixes:
+  * WiiWAD: Fix DLC icons no longer working after updating CBCReader to update
+    its internal position correctly, which was needed for Xbox 360 XDBF files.
+  * RP_ExtractImage: Fix crash with dangling shortcut files. This bug was
+    reported by @Midou36O.
+  * Nintendo3DS: Show the issuer for CCI images. This was shown for CIAs, but
+    we forgot to add it for CCI.
+  * XboxDisc: Fixed an incorrect double-unreference when opening original Xbox
+    ISO images that have a `default.xbe` file that isn't readable by the
+    XboxXBE parser. (Issue #219; reported by @cfas1)
+  * Nintendo3DS: CVer CIAs have an 8-byte meta section.
+  * iQuePlayer: Fixed file type identification issues.
+  * KhronosKTX: Fixed preview of textures with more than one array element.
+  * GTK+ 3.x (Nautilus) UI frontends: Fixed a minor memory leak that leaked a
+    file URI every time a File Properties dialog was opened.
+  * D-Bus Thumbnailer (XFCE): Fixed an incorrect MimeTypes key that broke
+    thumbnailing on systems that use tumblerd. This was broken starting
+    with v1.4.
+  * EXE: Fixed crashes for VFT_UNKNOWN and IMAGE_SUBSYSTEM_UNKNOWN.
+    The latter case occurs with Wine's built-in DLLs.
+
+* Other changes:
+  * Split file handling and CPU/byteorder code from librpbase into two
+    libraries: librpfile and librpcpu.
+  * The MATE, Cinnamon, and XFCE (GTK+ 3.x) plugins have all been merged
+    into the GNOME plugin, and it is now named "gtk3". Among other things,
+    this makes it possible to use the Ubuntu 18.04 "Bionic" packages on
+    Linux Mint 19.3, which has an Ubuntu 18.04 base but uses the GTK+ 3.x
+    version of Thunar.
+  * KeyManager: Added full support for Wii U devkit otp.bin files, as well as
+    debug Korean and vWii keys.
+
+## v1.5 (released 2020/03/13)
 
 * New features:
   * Improved support for FreeBSD and DragonFly BSD:
@@ -18,11 +237,33 @@
     file browser.
   * Cached files now contain origin information indicating the URL they were
     downloaded from. This can be disabled in rp-config if it isn't wanted.
-  * The GTK+ frontends now support GVfs for network transparency.
-  * KDE frontend: Icons can now be dragged and dropped from the property tab
-    to another file browser window to extract them. This includes the icon,
-    banner, and icons from ListView widgets.
-    * Drag & drop support for Win32 and GTK+ may be implemented before release.
+  * The GTK+ UI frontends now support GVfs for network transparency.
+  * KDE and GTK+ UI frontends: Icons can now be dragged and dropped from the
+    property tab to another file browser window to extract them. This includes
+    the icon, banner, and (KDE only) icons from ListView widgets.
+    * Drag & drop support for Windows will be implemented in a future release.
+    * Note that the dragged images don't have filenames yet, so either they
+      will be extracted with generic filenames, or you will be prompted to
+      enter a filename.
+    * Note that Thunar doesn't seem to be accepting the dropped image data.
+      This will be resolved in a future release.
+  * Downloading functionality for online databases has been split out of the
+    DLL and into a separate executable. This will allow the downloading to be
+    handled in a lower privilege environment.
+    * Windows: On Vista and later, rp-download runs as a low-integrity process.
+    * Added other security functionality for rp-download and rpcli:
+      * Linux: AppArmor profiles, libseccomp
+      * OpenBSD: pledge() [and tame() for old versions]
+    * AppArmor profiles for rp-stub will be added in a future release.
+  * Windows: The online database code has been rewritten to use WinInet
+    directly instead of urlmon, which reduces overhead.
+  * The UI frontends now show a dropdown box to select the language if the
+    ROM image has multiple translations for e.g. the game title.
+  * Linux: Thumbnailers now write the "Thumb::Image::Width" and
+    "Thumb::Image::Height" properties where applicable. These represent the
+    size of the original image that was thumbnailed.
+  * GTK+ 3.x: Don't premultiply the image before saving it as a PNG image.
+    Premultiplication is only needed when displaying the image using Cairo.
 
 * New parsers:
   * DidjTex: Leapster Didj .tex and .texs texture files. For .texs, currently
@@ -30,6 +271,7 @@
   * PowerVR3: PowerVR 3.0.0 textures. Used mainly by iOS applications. Not
     related to Sega Dreamcast PVR format.
   * PokemonMini: Pokémon Mini ROM images.
+  * KhronosKTX2: Khronos KTX 2.0 texture format. (based on draft18)
 
 * New parser features:
   * WiiWAD, iQuePlayer: Display the console IDs from tickets. This is usually
@@ -37,6 +279,7 @@
   * KhronosKTX: Added support for BPTC (BC7) texture compression.
   * amiibo: Updated the internal database to be current as of 2020/01/11.
     Added some missing entries and fixed a few incorrect entries.
+  * Xbox360_STFS: Title thumbnail images are now displayed as internal icons.
 
 * New compressed texture formats:
   * PowerVR Texture Compression. Supports PVRTC-I 2bpp and 4bpp in PowerVR
@@ -52,9 +295,6 @@
 
 * Bug fixes:
   * Fixed misdetection of NCCH sections if keys are missing.
-  * GameCube I8 image decoder: The palette was being generated incorrectly.
-    This has been fixed, though since I8 images are uncommon, this probably
-    didn't cause too many problems.
   * GameCube I8 image decoder: The palette was being generated incorrectly.
     This has been fixed, though since I8 images are uncommon, this probably
     didn't cause too many problems.
@@ -78,8 +318,49 @@
   * CurlDownloader: Use a case-insensitive check for HTTP headers.
     cURL provides headers in lowercase when accessing an HTTP/2 server.
     This fixes handling of mtimes and content length.
-  * UrlmonDownloader: Handle ERROR_INSUFFICIENT_BUFFER for the cache info
-    entry correctly. Otherwise, we won't get the mtime.
+  * Fixed some CBC decryption issues on Windows XP. This mostly affected
+    decrypting Xbox 360 executables.
+  * Nintendo3DS: Fixed decryption of games where the title ID does not
+    match the program ID. This seems to show up in Traditional Chinese
+    releases that use a Japanese region code instead of Taiwan.
+  * rpcli JSON output: Fixed RFT_LISTDATA commas, RFT_DIMENSIONS format,
+    and external image URLs format. Also escaped double-quotes properly.
+  * Linux: Added the "application/x-cso" MIME type for GameCube .ciso
+    format on Linux. (Note that this technically refers to a different
+    format, but GameCube .ciso is incorrectly identified as this.)
+  * GameCube: Calculate the used partition size correctly for unencrypted
+    Wii RVT-H Reader disc images.
+  * EXE: VS_VERSION_INFO resources in 16-bit Windows executables are now
+    displayed correctly if they're encoded using a code page other than
+    Windows-1252.
+  * Fixed GameTDB downloads for CHN and TWN region games. (Nintendo DS,
+    Nintendo 3DS, GameCube, Wii)
+  * MegaDrive: Fixed region code detection for locked-on ROMs. Previously,
+    it would use the base ROM region code for both.
+  * MachO: Fixed CPU subtype detection for 486SX.
+  * KDE frontends: Disabled automatic mnemonics on checkboxes used to show
+    bitfield values, e.g. region codes and hardware support.
+  * S3TC, BC7: Images with sizes that aren't a multiple of the 4x4 tile size
+    can now be decoded. It is assumed that an extra tile is present, and this
+    tile will be truncated to match the specified dimensions.
+    This bug was reported by @HyperPolygon64.
+  * GameCube: Fixed handling of NDDEMO's game ID. Instead of reporting no
+    fields due to the NULL byte, change it to an underscore.
+  * Linux: Fixed an off-by-one in the shared library search function that
+    could cause rp-config to fail if e.g. using a GTK+ (either 2.x or 3.x)
+    desktop environment with only the KDE4 UI frontend installed.
+  * GameCube: Region ID 'I' is Italy ("IT"), not Netherlands ("NL"). This may
+    have affected GameTDB downloads.
+  * KDE thumbnails: Fixed an incorrect "Thumb::MTime" entry in some cases.
+    The entry was being saved as "Thumb::Size", which resulted in two
+    "Thumb::Size" entries.
+  * Windows: Fixed incorrect file extension registration of Mach-O dylibs
+    and bundles. (".dylib.bundle" was registered instead of ".dylib" and
+    ".bundle" as separate extensions.)
+  * KDE: Fixed vertical sizing of RFT_LISTDATA fields in some cases, e.g.
+    Nintendo3DS.
+  * rp_image::squared(): Added (non-optimal) CI8 support; fixed a potential
+    memory corruption issue for images that are taller than they are wide.
 
 * Other changes:
   * Removed the internal copy of libjpeg-turbo. On Windows, gdiplus is now
@@ -90,6 +371,8 @@
     available.
   * MegaDrive: Do a quick check of the 32X security code to verify that a
     32X ROM is in fact for 32X.
+  * Renamed the KDE5 frontend to KF5 to match upstream branding guidelines.
+  * rpcli: Always use the localized system name that matches the ROM image.
 
 ## v1.4.3 (released 2019/09/16)
 

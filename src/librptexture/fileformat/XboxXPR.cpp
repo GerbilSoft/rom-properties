@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * XboxXPR.cpp: Microsoft Xbox XPR0 texture reader.                        *
  *                                                                         *
- * Copyright (c) 2019 by David Korth.                                      *
+ * Copyright (c) 2019-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -12,9 +12,9 @@
 
 #include "xbox_xpr_structs.h"
 
-// librpbase
-using LibRpBase::IRpFile;
+// librpbase, librpfile
 using LibRpBase::rp_sprintf;
+using LibRpFile::IRpFile;
 
 // librptexture
 #include "img/rp_image.hpp"
@@ -24,7 +24,7 @@ namespace LibRpTexture {
 
 FILEFORMAT_IMPL(XboxXPR)
 
-class XboxXPRPrivate : public FileFormatPrivate
+class XboxXPRPrivate final : public FileFormatPrivate
 {
 	public:
 		XboxXPRPrivate(XboxXPR *q, IRpFile *file);
@@ -35,17 +35,16 @@ class XboxXPRPrivate : public FileFormatPrivate
 		RP_DISABLE_COPY(XboxXPRPrivate)
 
 	public:
-		enum XPRType {
-			XPR_TYPE_UNKNOWN	= -1,	// Unknown image type.
-			XPR_TYPE_XPR0		= 0,	// XPR0
-			XPR_TYPE_XPR1		= 1,	// XPR1 (archive)
-			XPR_TYPE_XPR2		= 2,	// XPR2 (archive)
+		enum class XPRType {
+			Unknown = -1,
 
-			XPR_TYPE_MAX
+			XPR0	= 0,	// XPR0
+			XPR1	= 1,	// XPR1 (archive)
+			XPR2	= 2,	// XPR2 (archive)
+
+			Max
 		};
-
-		// XPR type.
-		int xprType;
+		XPRType xprType;
 
 		// XPR0 header.
 		Xbox_XPR0_Header xpr0Header;
@@ -148,7 +147,7 @@ class XboxXPRPrivate : public FileFormatPrivate
 
 XboxXPRPrivate::XboxXPRPrivate(XboxXPR *q, IRpFile *file)
 	: super(q, file)
-	, xprType(XPR_TYPE_UNKNOWN)
+	, xprType(XPRType::Unknown)
 	, img(nullptr)
 {
 	// Clear the structs and arrays.
@@ -158,7 +157,7 @@ XboxXPRPrivate::XboxXPRPrivate(XboxXPR *q, IRpFile *file)
 
 XboxXPRPrivate::~XboxXPRPrivate()
 {
-	delete img;
+	UNREF(img);
 }
 
 /**
@@ -335,82 +334,82 @@ const rp_image *XboxXPRPrivate::loadXboxXPR0Image(void)
 	static const struct {
 		uint8_t bpp;	// Bits per pixel (4, 8, 16, 32; 0 for invalid)
 				// TODO: Use a shift amount instead?
-		uint8_t pxf;	// ImageDecoder::PixelFormat
-		uint8_t dxtn;	// DXTn version (pxf must be PXF_UNKNOWN)
+		ImageDecoder::PixelFormat pxf;	// ImageDecoder::PixelFormat
+		uint8_t dxtn;	// DXTn version (pxf must be PixelFormat::Unknown)
 		bool swizzled;	// True if the format needs to be unswizzled
 				// DXTn is automatically unswizzled by the DXTn
 				// functions, so those should be false.
 	} mode_tbl[] = {
-		{ 8, ImageDecoder::PXF_L8,		0, true},	// 0x00: L8
-		{ 0, ImageDecoder::PXF_UNKNOWN,		0, true},	// 0x01: AL8 (TODO)
-		{16, ImageDecoder::PXF_ARGB1555, 	0, true},	// 0x02: ARGB1555
-		{16, ImageDecoder::PXF_RGB555,		0, true},	// 0x03: RGB555
-		{16, ImageDecoder::PXF_ARGB4444,	0, true},	// 0x04: ARGB4444
-		{16, ImageDecoder::PXF_RGB565,		0, true},	// 0x05: RGB565
-		{32, ImageDecoder::PXF_ARGB8888,	0, true},	// 0x06: ARGB8888
-		{32, ImageDecoder::PXF_xRGB8888,	0, true},	// 0x07: xRGB8888
-		{ 0, ImageDecoder::PXF_UNKNOWN,		0, false},	// 0x08: undefined
-		{ 0, ImageDecoder::PXF_UNKNOWN,		0, false},	// 0x09: undefined
-		{ 0, ImageDecoder::PXF_UNKNOWN,		0, false},	// 0x0A: undefined
-		{ 0, ImageDecoder::PXF_UNKNOWN,		0, true},	// 0x0B: P8 (TODO)
-		{ 4, ImageDecoder::PXF_UNKNOWN,		1, false},	// 0x0C: DXT1
-		{ 0, ImageDecoder::PXF_UNKNOWN,		0, false},	// 0x0D: undefined
-		{ 8, ImageDecoder::PXF_UNKNOWN,		2, false},	// 0x0E: DXT2
-		{ 8, ImageDecoder::PXF_UNKNOWN,		4, false},	// 0x0F: DXT4
+		{ 8, ImageDecoder::PixelFormat::L8,		0, true},	// 0x00: L8
+		{ 0, ImageDecoder::PixelFormat::Unknown,	0, true},	// 0x01: AL8 (TODO)
+		{16, ImageDecoder::PixelFormat::ARGB1555, 	0, true},	// 0x02: ARGB1555
+		{16, ImageDecoder::PixelFormat::RGB555,		0, true},	// 0x03: RGB555
+		{16, ImageDecoder::PixelFormat::ARGB4444,	0, true},	// 0x04: ARGB4444
+		{16, ImageDecoder::PixelFormat::RGB565,		0, true},	// 0x05: RGB565
+		{32, ImageDecoder::PixelFormat::ARGB8888,	0, true},	// 0x06: ARGB8888
+		{32, ImageDecoder::PixelFormat::xRGB8888,	0, true},	// 0x07: xRGB8888
+		{ 0, ImageDecoder::PixelFormat::Unknown,	0, false},	// 0x08: undefined
+		{ 0, ImageDecoder::PixelFormat::Unknown,	0, false},	// 0x09: undefined
+		{ 0, ImageDecoder::PixelFormat::Unknown,	0, false},	// 0x0A: undefined
+		{ 0, ImageDecoder::PixelFormat::Unknown,	0, true},	// 0x0B: P8 (TODO)
+		{ 4, ImageDecoder::PixelFormat::Unknown,	1, false},	// 0x0C: DXT1
+		{ 0, ImageDecoder::PixelFormat::Unknown,	0, false},	// 0x0D: undefined
+		{ 8, ImageDecoder::PixelFormat::Unknown,	2, false},	// 0x0E: DXT2
+		{ 8, ImageDecoder::PixelFormat::Unknown,	4, false},	// 0x0F: DXT4
 
-		{16, ImageDecoder::PXF_ARGB1555,	0, false},	// 0x10: Linear ARGB1555
-		{16, ImageDecoder::PXF_RGB565,		0, false},	// 0x11: Linear RGB565
-		{32, ImageDecoder::PXF_ARGB8888,	0, false},	// 0x12: Linear ARGB8888
-		{ 8, ImageDecoder::PXF_L8,		0, false},	// 0x13: Linear L8
-		{ 0, ImageDecoder::PXF_UNKNOWN,		0, false},	// 0x14: undefined
-		{ 0, ImageDecoder::PXF_UNKNOWN,		0, false},	// 0x15: undefined
-		{ 0, ImageDecoder::PXF_UNKNOWN,		0, false},	// 0x16: Linear R8B8 (TODO)
-		{ 0, ImageDecoder::PXF_UNKNOWN,		0, false},	// 0x17: Linear G8B8 (TODO)
-		{ 0, ImageDecoder::PXF_UNKNOWN,		0, false},	// 0x18: undefined
-		{ 8, ImageDecoder::PXF_A8,		0, true},	// 0x19: A8
-		{16, ImageDecoder::PXF_A8L8,		0, true},	// 0x1A: A8L8
-		{ 0, ImageDecoder::PXF_UNKNOWN,		0, false},	// 0x1B: Linear AL8 (TODO)
-		{16, ImageDecoder::PXF_RGB555,		0, false},	// 0x1C: Linear RGB555
-		{16, ImageDecoder::PXF_ARGB4444,	0, false},	// 0x1D: Linear ARGB4444
-		{32, ImageDecoder::PXF_xRGB8888,	0, false},	// 0x1E: Linear xRGB8888
-		{ 8, ImageDecoder::PXF_A8,		0, false},	// 0x1F: Linear A8
+		{16, ImageDecoder::PixelFormat::ARGB1555,	0, false},	// 0x10: Linear ARGB1555
+		{16, ImageDecoder::PixelFormat::RGB565,		0, false},	// 0x11: Linear RGB565
+		{32, ImageDecoder::PixelFormat::ARGB8888,	0, false},	// 0x12: Linear ARGB8888
+		{ 8, ImageDecoder::PixelFormat::L8,		0, false},	// 0x13: Linear L8
+		{ 0, ImageDecoder::PixelFormat::Unknown,	0, false},	// 0x14: undefined
+		{ 0, ImageDecoder::PixelFormat::Unknown,	0, false},	// 0x15: undefined
+		{ 0, ImageDecoder::PixelFormat::Unknown,	0, false},	// 0x16: Linear R8B8 (TODO)
+		{ 0, ImageDecoder::PixelFormat::Unknown,	0, false},	// 0x17: Linear G8B8 (TODO)
+		{ 0, ImageDecoder::PixelFormat::Unknown,	0, false},	// 0x18: undefined
+		{ 8, ImageDecoder::PixelFormat::A8,		0, true},	// 0x19: A8
+		{16, ImageDecoder::PixelFormat::A8L8,		0, true},	// 0x1A: A8L8
+		{ 0, ImageDecoder::PixelFormat::Unknown,	0, false},	// 0x1B: Linear AL8 (TODO)
+		{16, ImageDecoder::PixelFormat::RGB555,		0, false},	// 0x1C: Linear RGB555
+		{16, ImageDecoder::PixelFormat::ARGB4444,	0, false},	// 0x1D: Linear ARGB4444
+		{32, ImageDecoder::PixelFormat::xRGB8888,	0, false},	// 0x1E: Linear xRGB8888
+		{ 8, ImageDecoder::PixelFormat::A8,		0, false},	// 0x1F: Linear A8
 
-		{16, ImageDecoder::PXF_A8L8,		0, false},	// 0x20: Linear A8L8
-		{ 0, ImageDecoder::PXF_UNKNOWN,		0, false},	// 0x21: undefined
-		{ 0, ImageDecoder::PXF_UNKNOWN,		0, false},	// 0x22: undefined
-		{ 0, ImageDecoder::PXF_UNKNOWN,		0, false},	// 0x23: undefined
-		{ 0, ImageDecoder::PXF_UNKNOWN,		0, true},	// 0x24: YUY2 (TODO)
-		{ 0, ImageDecoder::PXF_UNKNOWN,		0, true},	// 0x25: YUY2 (TODO)
-		{ 0, ImageDecoder::PXF_UNKNOWN,		0, false},	// 0x26: undefined
-		{ 0, ImageDecoder::PXF_UNKNOWN,		0, true},	// 0x27: L6V5U5 (TODO)
-		{ 0, ImageDecoder::PXF_UNKNOWN,		0, true},	// 0x28: V8U8 (TODO)
-		{ 0, ImageDecoder::PXF_UNKNOWN,		0, true},	// 0x29: R8B8 (TODO)
-		{ 0, ImageDecoder::PXF_UNKNOWN,		0, true},	// 0x2A: D24S8 (TODO)
-		{ 0, ImageDecoder::PXF_UNKNOWN,		0, true},	// 0x2B: F24S8 (TODO)
-		{ 0, ImageDecoder::PXF_UNKNOWN,		0, true},	// 0x2C: D16 (TODO)
-		{ 0, ImageDecoder::PXF_UNKNOWN,		0, true},	// 0x2D: F16 (TODO)
-		{ 0, ImageDecoder::PXF_UNKNOWN,		0, false},	// 0x2E: Linear D24S8 (TODO)
-		{ 0, ImageDecoder::PXF_UNKNOWN,		0, false},	// 0x2F: Linear F24S8 (TODO)
+		{16, ImageDecoder::PixelFormat::A8L8,		0, false},	// 0x20: Linear A8L8
+		{ 0, ImageDecoder::PixelFormat::Unknown,	0, false},	// 0x21: undefined
+		{ 0, ImageDecoder::PixelFormat::Unknown,	0, false},	// 0x22: undefined
+		{ 0, ImageDecoder::PixelFormat::Unknown,	0, false},	// 0x23: undefined
+		{ 0, ImageDecoder::PixelFormat::Unknown,	0, true},	// 0x24: YUY2 (TODO)
+		{ 0, ImageDecoder::PixelFormat::Unknown,	0, true},	// 0x25: YUY2 (TODO)
+		{ 0, ImageDecoder::PixelFormat::Unknown,	0, false},	// 0x26: undefined
+		{ 0, ImageDecoder::PixelFormat::Unknown,	0, true},	// 0x27: L6V5U5 (TODO)
+		{ 0, ImageDecoder::PixelFormat::Unknown,	0, true},	// 0x28: V8U8 (TODO)
+		{ 0, ImageDecoder::PixelFormat::Unknown,	0, true},	// 0x29: R8B8 (TODO)
+		{ 0, ImageDecoder::PixelFormat::Unknown,	0, true},	// 0x2A: D24S8 (TODO)
+		{ 0, ImageDecoder::PixelFormat::Unknown,	0, true},	// 0x2B: F24S8 (TODO)
+		{ 0, ImageDecoder::PixelFormat::Unknown,	0, true},	// 0x2C: D16 (TODO)
+		{ 0, ImageDecoder::PixelFormat::Unknown,	0, true},	// 0x2D: F16 (TODO)
+		{ 0, ImageDecoder::PixelFormat::Unknown,	0, false},	// 0x2E: Linear D24S8 (TODO)
+		{ 0, ImageDecoder::PixelFormat::Unknown,	0, false},	// 0x2F: Linear F24S8 (TODO)
 
-		{ 0, ImageDecoder::PXF_UNKNOWN,		0, false},	// 0x30: Linear D16 (TODO)
-		{ 0, ImageDecoder::PXF_UNKNOWN,		0, false},	// 0x31: Linear F16 (TODO)
-		{16, ImageDecoder::PXF_L16,		0, true},	// 0x32: L16
-		{ 0, ImageDecoder::PXF_UNKNOWN,		0, true},	// 0x33: V16U16 (TODO)
-		{ 0, ImageDecoder::PXF_UNKNOWN,		0, false},	// 0x34: undefined
-		{ 0, ImageDecoder::PXF_L16,		0, false},	// 0x35: Linear L16
-		{ 0, ImageDecoder::PXF_UNKNOWN,		0, false},	// 0x36: Linear V16U16 (TODO)
-		{ 0, ImageDecoder::PXF_UNKNOWN,		0, false},	// 0x37: Linear L6V5U5 (TODO)
-		{16, ImageDecoder::PXF_RGBA5551,	0, true},	// 0x38: RGBA5551
-		{16, ImageDecoder::PXF_RGBA4444,	0, true},	// 0x39: RGBA4444
-		{32, ImageDecoder::PXF_ABGR8888,	0, true},	// 0x3A: QWVU8888 (same as ABGR8888)
-		{32, ImageDecoder::PXF_BGRA8888,	0, true},	// 0x3B: BGRA8888
-		{32, ImageDecoder::PXF_RGBA8888,	0, true},	// 0x3C: RGBA8888
-		{16, ImageDecoder::PXF_RGBA5551,	0, false},	// 0x3D: Linear RGBA5551
-		{16, ImageDecoder::PXF_RGBA4444,	0, false},	// 0x3E: Linear RGBA4444
-		{32, ImageDecoder::PXF_ABGR8888,	0, false},	// 0x3F: Linear ABGR8888
+		{ 0, ImageDecoder::PixelFormat::Unknown,	0, false},	// 0x30: Linear D16 (TODO)
+		{ 0, ImageDecoder::PixelFormat::Unknown,	0, false},	// 0x31: Linear F16 (TODO)
+		{16, ImageDecoder::PixelFormat::L16,		0, true},	// 0x32: L16
+		{ 0, ImageDecoder::PixelFormat::Unknown,	0, true},	// 0x33: V16U16 (TODO)
+		{ 0, ImageDecoder::PixelFormat::Unknown,	0, false},	// 0x34: undefined
+		{ 0, ImageDecoder::PixelFormat::L16,		0, false},	// 0x35: Linear L16
+		{ 0, ImageDecoder::PixelFormat::Unknown,	0, false},	// 0x36: Linear V16U16 (TODO)
+		{ 0, ImageDecoder::PixelFormat::Unknown,	0, false},	// 0x37: Linear L6V5U5 (TODO)
+		{16, ImageDecoder::PixelFormat::RGBA5551,	0, true},	// 0x38: RGBA5551
+		{16, ImageDecoder::PixelFormat::RGBA4444,	0, true},	// 0x39: RGBA4444
+		{32, ImageDecoder::PixelFormat::ABGR8888,	0, true},	// 0x3A: QWVU8888 (same as ABGR8888)
+		{32, ImageDecoder::PixelFormat::BGRA8888,	0, true},	// 0x3B: BGRA8888
+		{32, ImageDecoder::PixelFormat::RGBA8888,	0, true},	// 0x3C: RGBA8888
+		{16, ImageDecoder::PixelFormat::RGBA5551,	0, false},	// 0x3D: Linear RGBA5551
+		{16, ImageDecoder::PixelFormat::RGBA4444,	0, false},	// 0x3E: Linear RGBA4444
+		{32, ImageDecoder::PixelFormat::ABGR8888,	0, false},	// 0x3F: Linear ABGR8888
 
-		{32, ImageDecoder::PXF_BGRA8888,	0, false},	// 0x40: Linear BGRA8888
-		{32, ImageDecoder::PXF_RGBA8888,	0, false},	// 0x41: Linear RGBA8888
+		{32, ImageDecoder::PixelFormat::BGRA8888,	0, false},	// 0x40: Linear BGRA8888
+		{32, ImageDecoder::PixelFormat::RGBA8888,	0, false},	// 0x41: Linear RGBA8888
 	};
 
 	if (xpr0Header.pixel_format >= ARRAY_SIZE(mode_tbl)) {
@@ -463,20 +462,17 @@ const rp_image *XboxXPRPrivate::loadXboxXPR0Image(void)
 		switch (mode.bpp) {
 			case 8:
 				img = ImageDecoder::fromLinear8(
-					static_cast<ImageDecoder::PixelFormat>(mode.pxf),
-					width, height,
+					mode.pxf, width, height,
 					buf.get(), expected_size);
 				break;
 			case 16:
 				img = ImageDecoder::fromLinear16(
-					static_cast<ImageDecoder::PixelFormat>(mode.pxf),
-					width, height,
+					mode.pxf, width, height,
 					reinterpret_cast<const uint16_t*>(buf.get()), expected_size);
 				break;
 			case 32:
 				img = ImageDecoder::fromLinear32(
-					static_cast<ImageDecoder::PixelFormat>(mode.pxf),
-					width, height,
+					mode.pxf, width, height,
 					reinterpret_cast<const uint32_t*>(buf.get()), expected_size);
 				break;
 			case 0:
@@ -518,12 +514,12 @@ const rp_image *XboxXPRPrivate::loadXboxXPR0Image(void)
 
 		// Assuming img is ARGB32, since we're converting it
 		// from either a 16-bit or 32-bit ARGB format.
-		rp_image *const imgunswz = new rp_image(width, height, rp_image::FORMAT_ARGB32);
+		rp_image *const imgunswz = new rp_image(width, height, rp_image::Format::ARGB32);
 		unswizzle_box(static_cast<const uint8_t*>(img->bits()),
 			width, height,
 			static_cast<uint8_t*>(imgunswz->bits()),
 			img->stride(), sizeof(uint32_t));
-		delete img;
+		img->unref();
 		img = imgunswz;
 		return imgunswz;
 	}
@@ -550,6 +546,7 @@ XboxXPR::XboxXPR(IRpFile *file)
 	: super(new XboxXPRPrivate(this, file))
 {
 	RP_D(XboxXPR);
+	d->mimeType = "image/x-xbox-xpr0";	// unofficial, not on fd.o [TODO: xpr1/xpr2?]
 
 	if (!d->file) {
 		// Could not ref() the file handle.
@@ -560,31 +557,29 @@ XboxXPR::XboxXPR(IRpFile *file)
 	d->file->rewind();
 	size_t size = d->file->read(&d->xpr0Header, sizeof(d->xpr0Header));
 	if (size != sizeof(d->xpr0Header)) {
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
 
 	// Verify the XPR0 magic.
 	if (d->xpr0Header.magic == cpu_to_be32(XBOX_XPR0_MAGIC)) {
 		// This is an XPR0 image.
-		d->xprType = XboxXPRPrivate::XPR_TYPE_XPR0;
+		d->xprType = XboxXPRPrivate::XPRType::XPR0;
 		d->isValid = true;
 	} else if (d->xpr0Header.magic == cpu_to_be32(XBOX_XPR1_MAGIC)) {
 		// This is an XPR1 archive.
-		d->xprType = XboxXPRPrivate::XPR_TYPE_XPR1;
+		d->xprType = XboxXPRPrivate::XPRType::XPR1;
 		// NOT SUPPORTED YET
 		d->isValid = false;
 	} else if (d->xpr0Header.magic == cpu_to_be32(XBOX_XPR2_MAGIC)) {
 		// This is an XPR2 archive.
-		d->xprType = XboxXPRPrivate::XPR_TYPE_XPR2;
+		d->xprType = XboxXPRPrivate::XPRType::XPR2;
 		// NOT SUPPORTED YET
 		d->isValid = false;
 	}
 
 	if (!d->isValid) {
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
 
@@ -665,7 +660,7 @@ const char *XboxXPR::textureFormatName(void) const
 const char *XboxXPR::pixelFormat(void) const
 {
 	RP_D(const XboxXPR);
-	if (!d->isValid || d->xprType < 0) {
+	if (!d->isValid || (int)d->xprType < 0) {
 		// Not supported.
 		return nullptr;
 	}
@@ -768,7 +763,7 @@ int XboxXPR::getFields(LibRpBase::RomFields *fields) const
 		return 0;
 
 	RP_D(XboxXPR);
-	if (!d->isValid || d->xprType < 0) {
+	if (!d->isValid || (int)d->xprType < 0) {
 		// Unknown XPR image type.
 		return -EIO;
 	}
@@ -780,13 +775,13 @@ int XboxXPR::getFields(LibRpBase::RomFields *fields) const
 	static const char type_tbl[][8] = {
 		"XPR0", "XPR1", "XPR2"
 	};
-	if (d->xprType > XboxXPRPrivate::XPR_TYPE_UNKNOWN &&
-	    d->xprType < ARRAY_SIZE(type_tbl))
+	if (d->xprType > XboxXPRPrivate::XPRType::Unknown &&
+	    (int)d->xprType < ARRAY_SIZE(type_tbl))
 	{
-		fields->addField_string(C_("XboxXPR", "Type"), type_tbl[d->xprType]);
+		fields->addField_string(C_("XboxXPR", "Type"), type_tbl[(int)d->xprType]);
 	} else {
 		fields->addField_string(C_("XboxXPR", "Type"),
-			rp_sprintf(C_("RomData", "Unknown (%d)"), d->xprType));
+			rp_sprintf(C_("RomData", "Unknown (%d)"), (int)d->xprType));
 	}
 
 	// Finished reading the field data.
@@ -805,7 +800,7 @@ int XboxXPR::getFields(LibRpBase::RomFields *fields) const
 const rp_image *XboxXPR::image(void) const
 {
 	RP_D(const XboxXPR);
-	if (!d->isValid || d->xprType < 0) {
+	if (!d->isValid || (int)d->xprType < 0) {
 		// Unknown file type.
 		return nullptr;
 	}

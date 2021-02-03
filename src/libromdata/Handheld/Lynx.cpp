@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * Lynx.hpp: Atari Lynx ROM reader.                                        *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * Copyright (c) 2017-2018 by Egor.                                        *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
@@ -11,14 +11,15 @@
 #include "Lynx.hpp"
 #include "lnx_structs.h"
 
-// librpbase
+// librpbase, librpfile
 using namespace LibRpBase;
+using LibRpFile::IRpFile;
 
 namespace LibRomData {
 
 ROMDATA_IMPL(Lynx)
 
-class LynxPrivate : public RomDataPrivate
+class LynxPrivate final : public RomDataPrivate
 {
 	public:
 		LynxPrivate(Lynx *q, IRpFile *file);
@@ -61,6 +62,7 @@ Lynx::Lynx(IRpFile *file)
 {
 	RP_D(Lynx);
 	d->className = "Lynx";
+	d->mimeType = "application/x-atari-lynx-rom";	// unofficial
 
 	if (!d->file) {
 		// Could not ref() the file handle.
@@ -74,8 +76,7 @@ Lynx::Lynx(IRpFile *file)
 	uint8_t header[0x40];
 	size_t size = d->file->read(header, sizeof(header));
 	if (size != sizeof(header)) {
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
 
@@ -92,8 +93,7 @@ Lynx::Lynx(IRpFile *file)
 		// Save the header for later.
 		memcpy(&d->romHeader, header, sizeof(d->romHeader));
 	} else {
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 	}
 }
 

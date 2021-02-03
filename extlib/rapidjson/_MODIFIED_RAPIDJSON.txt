@@ -1,0 +1,24 @@
+This copy of rapidjson-1.1.0 is a modified version of the original.
+
+The following changes have been made to the original:
+
+- Disabled INSTALL() rules.
+
+- Disabled ccache.
+
+- Disabled some options for enabling unit tests and other
+  settings that aren't necessary for rom-properties.
+
+- cmake_minimum_required() is disabled, since it interfered with
+  policies set by the main build infrastructure.
+
+- Removed examples, test suites, and test data.
+
+- Removed jsonchecker, which uses the JSON license.
+
+- prettywriter.h: Added an option to use CRLF newlines, which is needed
+  on Windows when copying JSON data to the clipboard.
+
+To obtain the original rapidjson-1.1.0, visit:
+https://rapidjson.org/
+https://github.com/Tencent/rapidjson

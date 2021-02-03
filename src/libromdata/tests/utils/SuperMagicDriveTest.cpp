@@ -2,12 +2,13 @@
  * ROM Properties Page shell extension. (libromdata/tests)                 *
  * SuperMagicDriveTest.cpp: SuperMagicDrive class test.                    *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 // Google Test
 #include "gtest/gtest.h"
+#include "tcharx.h"
 
 // SuperMagicDrive
 #include "libromdata/utils/SuperMagicDrive.hpp"
@@ -15,10 +16,6 @@
 
 // C includes. (C++ namespace)
 #include <cstdio>
-
-// C++ includes.
-#include <memory>
-using std::unique_ptr;
 
 // zlib
 #define CHUNK 4096
@@ -330,7 +327,7 @@ TEST_F(SuperMagicDriveTest, decodeBlock_dispatch_benchmark)
 /**
  * Test suite main function.
  */
-extern "C" int gtest_main(int argc, char *argv[])
+extern "C" int gtest_main(int argc, TCHAR *argv[])
 {
 	fprintf(stderr, "LibRomData test suite: SuperMagicDrive tests.\n\n");
 	fprintf(stderr, "Benchmark iterations: %u\n", LibRomData::Tests::SuperMagicDriveTest::BENCHMARK_ITERATIONS);

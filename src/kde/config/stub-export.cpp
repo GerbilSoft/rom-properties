@@ -2,21 +2,14 @@
  * ROM Properties Page shell extension. (KDE)                              *
  * stub-export.cpp: Exported function for the rp-config stub.              *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+#include "stdafx.h"
 #include "ConfigDialog.hpp"
 
-// C includes.
-#include <stdlib.h>
-#include <unistd.h>
-
-// Qt includes.
-#include <QApplication>
-
 // i18n
-#include "libi18n/i18n.h"
 #ifdef ENABLE_NLS
 # include "../GettextTranslator.hpp"
 #endif
@@ -28,10 +21,10 @@
  * @return 0 on success; non-zero on error.
  */
 extern "C"
-Q_DECL_EXPORT int rp_show_config_dialog(int argc, char *argv[])
+Q_DECL_EXPORT int RP_C_API rp_show_config_dialog(int argc, char *argv[])
 {
 	if (getuid() == 0 || geteuid() == 0) {
-		qCritical("*** rom-properties-kde%u does not support running as root.", QT_VERSION >> 16);
+		qCritical("*** rom-properties-" RP_KDE_LOWER "%u does not support running as root.", QT_VERSION >> 16);
 		return EXIT_FAILURE;
 	}
 
@@ -46,7 +39,7 @@ Q_DECL_EXPORT int rp_show_config_dialog(int argc, char *argv[])
 #else
 		// Hardcode the value in case the user upgrades to Qt 5.6 later.
 		// http://doc.qt.io/qt-5/qt.html#ApplicationAttribute-enum
-		QApplication::setAttribute((Qt::ApplicationAttribute)13, true);
+		QApplication::setAttribute(static_cast<Qt::ApplicationAttribute>(13), true);
 #endif /* QT_VERSION >= 0x050600 */
 #endif /* QT_VERSION >= 0x050000 */
 		// Create the QApplication.

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata/tests)                 *
  * GcnFstPrint.cpp: GameCube/Wii FST printer.                              *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -30,9 +30,11 @@ using std::ostream;
 using std::ostringstream;
 using std::string;
 
+// librpsecure
+#include "librpsecure/os-secure.h"
+
 #ifdef _WIN32
 # include "libwin32common/RpWin32_sdk.h"
-# include "libwin32common/secoptions.h"
 # include <io.h>
 # include "librpbase/TextFuncs.hpp"
 # include "librpbase/TextFuncs_wchar.hpp"
@@ -41,9 +43,12 @@ using std::u16string;
 
 int RP_C_API main(int argc, char *argv[])
 {
+	// Set OS-specific security options.
+	// TODO: Non-Windows syscall stuff.
 #ifdef _WIN32
-	// Set Win32 security options.
-	secoptions_init();
+	rp_secure_param_t param;
+	param.bHighSec = FALSE;
+	rp_secure_enable(param);
 #endif /* _WIN32 */
 
 	// Set the C and C++ locales.
@@ -84,7 +89,7 @@ int RP_C_API main(int argc, char *argv[])
 
 	// Make sure the FST is less than 16 MB.
 	fseeko(f, 0, SEEK_END);
-	int64_t filesize = ftello(f);
+	off64_t filesize = ftello(f);
 	if (filesize > (16*1024*1024)) {
 		puts(C_("GcnFstPrint", "ERROR: FST is too big. (Maximum of 16 MB.)"));
 		fclose(f);
@@ -93,13 +98,7 @@ int RP_C_API main(int argc, char *argv[])
 	fseeko(f, 0, SEEK_SET);
 
 	// Read the FST into memory.
-	uint8_t *fstData = static_cast<uint8_t*>(malloc(filesize));
-	if (!fstData) {
-		printf(C_("GcnFstPrint", "ERROR: malloc(%u) failed."), static_cast<unsigned int>(filesize));
-		putchar('\n');
-		fclose(f);
-		return EXIT_FAILURE;
-	}
+	uint8_t *const fstData = new uint8_t[filesize];
 	size_t rd_size = fread(fstData, 1, filesize, f);
 	fclose(f);
 	if (rd_size != static_cast<size_t>(filesize)) {

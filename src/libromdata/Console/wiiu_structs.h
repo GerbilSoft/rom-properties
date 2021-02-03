@@ -2,21 +2,19 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * wiiu_structs.h: Nintendo Wii U data structures.                         *
  *                                                                         *
- * Copyright (c) 2016 by David Korth.                                      *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #ifndef __ROMPROPERTIES_LIBROMDATA_WIIU_STRUCTS_H__
 #define __ROMPROPERTIES_LIBROMDATA_WIIU_STRUCTS_H__
 
-#include "librpbase/common.h"
 #include <stdint.h>
+#include "common.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-#pragma pack(1)
 
 /**
  * Nintendo Wii U disc header.
@@ -25,6 +23,7 @@ extern "C" {
  * All fields are big-endian.
  * NOTE: Strings are NOT null-terminated!
  */
+#pragma pack(1)
 typedef struct PACKED _WiiU_DiscHeader {
 	union {
 		char id[10];		// WUP-P-xxxx
@@ -44,12 +43,11 @@ typedef struct PACKED _WiiU_DiscHeader {
 	char hyphen5;
 	char disc_number;	// Disc number, in ASCII. (TODO: Verify?)
 } WiiU_DiscHeader;
+#pragma pack()
 ASSERT_STRUCT(WiiU_DiscHeader, 22);
 
 // Secondary Wii U disc magic at 0x10000.
 #define WIIU_SECONDARY_MAGIC 0xCC549EB9
-
-#pragma pack()
 
 #ifdef __cplusplus
 }

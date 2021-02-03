@@ -2,17 +2,19 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * Xbox_XBE.cpp: Microsoft Xbox executable reader.                         *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #include "stdafx.h"
 #include "Xbox_XBE.hpp"
 #include "xbox_xbe_structs.h"
+#include "data/XboxPublishers.hpp"
 
-// librpbase
+// librpbase, librpfile
 #include "librpbase/img/RpPng.hpp"
 using namespace LibRpBase;
+using LibRpFile::IRpFile;
 
 // librptexture
 #include "librptexture/fileformat/XboxXPR.hpp"
@@ -35,7 +37,7 @@ ROMDATA_IMPL(Xbox_XBE)
 // Workaround for RP_D() expecting the no-underscore naming convention.
 #define Xbox_XBEPrivate Xbox_XBE_Private
 
-class Xbox_XBE_Private : public RomDataPrivate
+class Xbox_XBE_Private final : public RomDataPrivate
 {
 	public:
 		Xbox_XBE_Private(Xbox_XBE *q, IRpFile *file);
@@ -91,6 +93,12 @@ class Xbox_XBE_Private : public RomDataPrivate
 		 * @return EXE object on success; nullptr on error.
 		 */
 		const EXE *initEXE(void);
+
+		/**
+		 * Get the publisher.
+		 * @return Publisher.
+		 */
+		string getPublisher(void) const;
 };
 
 /** Xbox_XBE_Private **/
@@ -110,21 +118,19 @@ Xbox_XBE_Private::Xbox_XBE_Private(Xbox_XBE *q, IRpFile *file)
 
 Xbox_XBE_Private::~Xbox_XBE_Private()
 {
-	if (pe_exe) {
-		pe_exe->unref();
-	}
+	UNREF(pe_exe);
 
 	if (xtImage.isInit) {
 		if (!xtImage.isPng) {
 			// XPR0 image
-			xtImage.xpr0->unref();
+			UNREF(xtImage.xpr0);
 		} else {
 			// PNG image
-			delete xtImage.png;
+			UNREF(xtImage.png);
 		}
 	}
 
-	delete discReader;
+	UNREF(discReader);
 }
 
 /**
@@ -247,7 +253,7 @@ int Xbox_XBE_Private::initXPR0_xtImage(void)
 		DiscReader *const discReader_tmp = new DiscReader(this->file);
 		if (!discReader_tmp->isOpen()) {
 			// Unable to open the DiscReader.
-			delete discReader_tmp;
+			discReader_tmp->unref();
 			return -EIO;
 		}
 		discReader = discReader_tmp;
@@ -283,7 +289,7 @@ int Xbox_XBE_Private::initXPR0_xtImage(void)
 				xpr0->unref();
 				ret = -EIO;
 			}
-		} else if (magic == cpu_to_be32('\x89PNG')) {
+		} else if (magic == cpu_to_be32(0x89504E47U)) {	// '\x89PNG'
 			// PNG image.
 			rp_image *const img = RpPng::load(ptFile);
 			if (img->isValid()) {
@@ -293,7 +299,7 @@ int Xbox_XBE_Private::initXPR0_xtImage(void)
 				xtImage.png = img;
 			} else {
 				// Unable to open the PNG image.
-				delete img;
+				img->unref();
 				ret = -EIO;
 			}
 		}
@@ -325,7 +331,7 @@ const EXE *Xbox_XBE_Private::initEXE(void)
 	}
 
 	// EXE is located at (pe_base_address - base_address).
-	const int64_t fileSize = file->size();
+	const off64_t fileSize = file->size();
 	const uint32_t exe_address =
 		le32_to_cpu(xbeHeader.pe_base_address) -
 		le32_to_cpu(xbeHeader.base_address);
@@ -339,9 +345,10 @@ const EXE *Xbox_XBE_Private::initEXE(void)
 		DiscReader *const discReader_tmp = new DiscReader(this->file);
 		if (!discReader_tmp->isOpen()) {
 			// Unable to open the DiscReader.
-			delete discReader_tmp;
+			discReader_tmp->unref();
 			return nullptr;
 		}
+		discReader = discReader_tmp;
 	}
 
 	// Open the EXE file.
@@ -366,6 +373,35 @@ const EXE *Xbox_XBE_Private::initEXE(void)
 	return this->pe_exe;
 }
 
+/**
+ * Get the publisher.
+ * @return Publisher.
+ */
+string Xbox_XBE_Private::getPublisher(void) const
+{
+	uint16_t pub_id = ((unsigned int)xbeCertificate.title_id.a << 8) |
+	                  ((unsigned int)xbeCertificate.title_id.b);
+	const char *const publisher = XboxPublishers::lookup(pub_id);
+	if (publisher) {
+		return publisher;
+	}
+
+	// Unknown publisher.
+	if (ISALNUM(xbeCertificate.title_id.a) &&
+	    ISALNUM(xbeCertificate.title_id.b))
+	{
+		// Publisher ID is alphanumeric.
+		return rp_sprintf(C_("RomData", "Unknown (%c%c)"),
+			xbeCertificate.title_id.a,
+			xbeCertificate.title_id.b);
+	}
+
+	// Publisher ID is not alphanumeric.
+	return rp_sprintf(C_("RomData", "Unknown (%02X %02X)"),
+		static_cast<uint8_t>(xbeCertificate.title_id.a),
+		static_cast<uint8_t>(xbeCertificate.title_id.b));
+}
+
 /** Xbox_XBE **/
 
 /**
@@ -387,7 +423,8 @@ Xbox_XBE::Xbox_XBE(IRpFile *file)
 	// This class handles executables.
 	RP_D(Xbox_XBE);
 	d->className = "Xbox_XBE";
-	d->fileType = FTYPE_EXECUTABLE;
+	d->mimeType = "application/x-xbox-executable";	// unofficial, not on fd.o
+	d->fileType = FileType::Executable;
 
 	if (!d->file) {
 		// Could not ref() the file handle.
@@ -399,8 +436,7 @@ Xbox_XBE::Xbox_XBE(IRpFile *file)
 	size_t size = d->file->read(&d->xbeHeader, sizeof(d->xbeHeader));
 	if (size != sizeof(d->xbeHeader)) {
 		d->xbeHeader.magic = 0;
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
 
@@ -415,8 +451,7 @@ Xbox_XBE::Xbox_XBE(IRpFile *file)
 
 	if (!d->isValid) {
 		d->xbeHeader.magic = 0;
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
 
@@ -454,8 +489,7 @@ void Xbox_XBE::close(void)
 		}
 	}
 
-	delete d->discReader;
-	d->discReader = nullptr;
+	UNREF_AND_NULL(d->discReader);
 
 	// Call the superclass function.
 	super::close();
@@ -696,8 +730,8 @@ int Xbox_XBE::loadFieldData(void)
 		return 0;
 	}
 
-	// Maximum of 11 fields.
-	d->fields->reserve(11);
+	// Maximum of 12 fields.
+	d->fields->reserve(12);
 	d->fields->setTabName(0, "XBE");
 
 	// Game name
@@ -754,6 +788,9 @@ int Xbox_XBE::loadFieldData(void)
 			tid_str.c_str(),
 			le16_to_cpu(xbeCertificate->title_id.u16)),
 		RomFields::STRF_MONOSPACE);
+
+	// Publisher
+	d->fields->addField_string(C_("RomData", "Publisher"), d->getPublisher());
 
 	// Timestamp
 	// TODO: time_t is signed, so values greater than 2^31-1 may be negative.
@@ -871,13 +908,16 @@ int Xbox_XBE::loadMetaData(void)
 
 	// Create the metadata object.
 	d->metaData = new RomMetaData();
-	d->metaData->reserve(1);	// Maximum of 1 metadata property.
+	d->metaData->reserve(2);	// Maximum of 2 metadata properties.
 
 	const XBE_Certificate *const xbeCertificate = &d->xbeCertificate;
 
 	// Title
 	d->metaData->addMetaData_string(Property::Title,
 		utf16le_to_utf8(xbeCertificate->title_name, ARRAY_SIZE(xbeCertificate->title_name)));
+
+	// Publisher
+	d->metaData->addMetaData_string(Property::Publisher, d->getPublisher());
 
 	// Finished reading the metadata.
 	return static_cast<int>(d->metaData->count());

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * macho_structs.h: Mach-O executable structures.                          *
  *                                                                         *
- * Copyright (c) 2019 by David Korth.                                      *
+ * Copyright (c) 2019-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -19,18 +19,18 @@
 #ifndef __ROMPROPERTIES_LIBROMDATA_OTHER_MACHO_STRUCTS_H__
 #define __ROMPROPERTIES_LIBROMDATA_OTHER_MACHO_STRUCTS_H__
 
-#include "librpbase/common.h"
 #include <stdint.h>
+#include "common.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#pragma pack(1)
-
 // Capability bits used in the CPU type.
-#define CPU_ARCH_MASK	0xFF000000	/* mask for architecture bits */
-#define CPU_ARCH_ABI64	0x01000000	/* 64-bit ABI */
+#define CPU_ARCH_MASK		0xFF000000	/* mask for architecture bits */
+#define CPU_ARCH_ABI32		0x00000000	/* 32-bit ABI */
+#define CPU_ARCH_ABI64		0x01000000	/* 64-bit ABI */
+#define CPU_ARCH_ABI64_32	0x02000000	/* 64_32 ABI */
 
 // CPU type.
 typedef enum {
@@ -41,11 +41,14 @@ typedef enum {
 	CPU_TYPE_NS32332	= 5,
 	CPU_TYPE_MC680x0	= 6,
 	CPU_TYPE_I386		= 7,
+	CPU_TYPE_AMD64		= (CPU_TYPE_I386 | CPU_ARCH_ABI64),
 	CPU_TYPE_MIPS		= 8,
 	CPU_TYPE_NS32532	= 9,
 	CPU_TYPE_MC98000	= 10,
 	CPU_TYPE_HPPA		= 11,
 	CPU_TYPE_ARM		= 12,
+	CPU_TYPE_ARM64		= (CPU_TYPE_ARM | CPU_ARCH_ABI64),
+	CPU_TYPE_ARM64_32	= (CPU_TYPE_ARM | CPU_ARCH_ABI64_32),
 	CPU_TYPE_MC88000	= 13,
 	CPU_TYPE_SPARC		= 14,
 	CPU_TYPE_I860		= 15,
@@ -233,7 +236,7 @@ typedef enum {
 #define MH_CIGAM	0xCEFAEDFE	/* 32-bit, byteswapped */
 #define MH_MAGIC_64	0xFEEDFACF	/* 64-bit, host-endian */
 #define MH_CIGAM_64	0xCFFAEDFE	/* 64-bit, byteswapped */
-typedef struct PACKED _mach_header {
+typedef struct _mach_header {
 	uint32_t magic;		// [0x000] mach magic number identifier
 	uint32_t cputype;	// [0x004] cpu specifier (see cpu_type_t)
 	uint32_t cpusubtype;	// [0x008] machine specifier (see cpu_subtype_*_t)
@@ -243,7 +246,7 @@ typedef struct PACKED _mach_header {
 	uint32_t flags;		// [0x018] flags
 	//uint32_t reserved;	// [0x01C] reserved (64-bit only)
 } mach_header;
-ASSERT_STRUCT(mach_header, 28);
+ASSERT_STRUCT(mach_header, 7*sizeof(uint32_t));
 
 // Filetype field.
 typedef enum {
@@ -255,6 +258,11 @@ typedef enum {
 	MH_DYLIB	= 0x6,	// dynamically bound shared library file
 	MH_DYLINKER	= 0x7,	// dynamic link editor
 	MH_BUNDLE	= 0x8,	// dynamically bound bundle file
+	MH_DYLIB_STUB	= 0x9,  // shared library stub for static
+				//  linking only, no section contents
+	MH_DSYM		= 0xa,	// companion file with only debug
+				//   sections
+	MH_KEXT_BUNDLE	= 0xb,	// x86_64 kexts
 } mh_filetype_t;
 
 // Flags field. (bitfield)
@@ -274,27 +282,30 @@ typedef enum {
 				// references prebound
 
 	// Flags from `file`'s magic listing.
-	MH_SPLIT_SEGS			= 0x20,
-	MH_LAZY_INIT			= 0x40,
-	MH_TWOLEVEL			= 0x80,
-	MH_FORCE_FLAT			= 0x100,
-	MH_NOMULTIDEFS			= 0x200,
-	MH_NOFIXPREBINDING		= 0x400,
-	MH_PREBINDABLE			= 0x800,
-	MH_ALLMODSBOUND			= 0x1000,
-	MH_SUBSECTIONS_VIA_SYMBOLS	= 0x2000,
-	MH_CANONICAL			= 0x4000,
-	MH_WEAK_DEFINES			= 0x8000,
-	MH_BINDS_TO_WEAK		= 0x10000,
-	MH_ALLOW_STACK_EXECUTION	= 0x20000,
-	MH_ROOT_SAFE			= 0x40000,
-	MH_SETUID_SAFE			= 0x80000,
-	MH_NO_REEXPORTED_DYLIBS		= 0x100000,
-	MH_PIE				= 0x200000,
-	MH_DEAD_STRIPPABLE_DYLIB	= 0x400000,
-	MH_HAS_TLV_DESCRIPTORS		= 0x800000,
-	MH_NO_HEAP_EXECUTION		= 0x1000000,
-	MH_APP_EXTENSION_SAFE		= 0x2000000,
+	MH_SPLIT_SEGS				=       0x20,
+	MH_LAZY_INIT				=       0x40,
+	MH_TWOLEVEL				=       0x80,
+	MH_FORCE_FLAT				=      0x100,
+	MH_NOMULTIDEFS				=      0x200,
+	MH_NOFIXPREBINDING			=      0x400,
+	MH_PREBINDABLE				=      0x800,
+	MH_ALLMODSBOUND				=     0x1000,
+	MH_SUBSECTIONS_VIA_SYMBOLS		=     0x2000,
+	MH_CANONICAL				=     0x4000,
+	MH_WEAK_DEFINES				=     0x8000,
+	MH_BINDS_TO_WEAK			=    0x10000,
+	MH_ALLOW_STACK_EXECUTION		=    0x20000,
+	MH_ROOT_SAFE				=    0x40000,
+	MH_SETUID_SAFE				=    0x80000,
+	MH_NO_REEXPORTED_DYLIBS			=   0x100000,
+	MH_PIE					=   0x200000,
+	MH_DEAD_STRIPPABLE_DYLIB		=   0x400000,
+	MH_HAS_TLV_DESCRIPTORS			=   0x800000,
+	MH_NO_HEAP_EXECUTION			=  0x1000000,
+	MH_APP_EXTENSION_SAFE			=  0x2000000,
+	MH_NLIST_OUTOFSYNC_WITH_DYLDINFO	=  0x4000000,
+	MH_SIM_SUPPORT				=  0x8000000,
+	MH_DYLIB_IN_CACHE			= 0x80000000,
 } mh_flags_t;
 
 /**
@@ -303,20 +314,20 @@ typedef enum {
  */
 #define FAT_MAGIC	0xCAFEBABE
 
-typedef struct PACKED _fat_header {
+typedef struct _fat_header {
 	uint32_t magic;		/* FAT_MAGIC */
 	uint32_t nfat_arch;	/* number of structs that follow */
 } fat_header;
+ASSERT_STRUCT(fat_header, 2*sizeof(uint32_t));
 
-typedef struct PACKED _fat_arch {
+typedef struct _fat_arch {
 	uint32_t cputype;	/* cpu specifier (int) */
 	uint32_t cpusubtype;	/* machine specifier (int) */
 	uint32_t offset;	/* file offset to this object file */
 	uint32_t size;		/* size of this object file */
 	uint32_t align;		/* alignment as a power of 2 */
 } fat_arch;
-
-#pragma pack()
+ASSERT_STRUCT(fat_arch, 5*sizeof(uint32_t));
 
 #ifdef __cplusplus
 }

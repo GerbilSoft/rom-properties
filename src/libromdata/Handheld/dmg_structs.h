@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * dmg_structs.h: Game Boy (DMG/CGB/SGB) data structures.                  *
  *                                                                         *
- * Copyright (c) 2016 by David Korth.                                      *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * Copyright (c) 2016 by Egor.                                             *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
@@ -10,14 +10,12 @@
 #ifndef __ROMPROPERTIES_LIBROMDATA_DMG_STRUCTS_H__
 #define __ROMPROPERTIES_LIBROMDATA_DMG_STRUCTS_H__
 
-#include "librpbase/common.h"
 #include <stdint.h>
+#include "common.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-#pragma pack(1)
 
 /**
  * Game Boy ROM header.
@@ -28,6 +26,7 @@ extern "C" {
  * 
  * NOTE: Strings are NOT null-terminated!
  */
+#pragma pack(1)
 typedef struct PACKED _DMG_RomHeader {
 	uint8_t entry[4];
 	uint8_t nintendo[0x30];
@@ -66,6 +65,7 @@ typedef struct PACKED _DMG_RomHeader {
 	uint8_t header_checksum; // checked by bootrom
 	uint16_t rom_checksum;   // checked by no one
 } DMG_RomHeader;
+#pragma pack()
 ASSERT_STRUCT(DMG_RomHeader, 80);
 
 /**
@@ -106,7 +106,7 @@ ASSERT_STRUCT(GBX_Footer, 64);
  */
 typedef enum {
 	// Nintendo
-	GBX_MAPPER_ROM_ONLY		= 'ROM\0',
+	GBX_MAPPER_ROM_ONLY		= 0x524F4D00U,	// 'ROM\0'
 	GBX_MAPPER_MBC1			= 'MBC1',
 	GBX_MAPPER_MBC2			= 'MBC2',
 	GBX_MAPPER_MBC3			= 'MBC3',
@@ -122,18 +122,16 @@ typedef enum {
 	GBX_MAPPER_TAMA5		= 'TAM5',
 
 	// Unlicensed
-	GBX_MAPPER_BBD			= 'BBD\0',
+	GBX_MAPPER_BBD			= 0x42424400U,	// 'BBD\0'
 	GBX_MAPPER_HITEK		= 'HITK',
 	GBX_MAPPER_SINTAX		= 'SNTX',
 	GBX_MAPPER_NT_OLDER_TYPE_1	= 'NTO1',
 	GBX_MAPPER_NT_OLDER_TYPE_2	= 'NTO2',
-	GBX_MAPPER_NT_NEWER		= 'NTN\0',
+	GBX_MAPPER_NT_NEWER		= 0x4E544E00,	// 'NTN\0'
 	GBX_MAPPER_LI_CHENG		= 'LICH',
 	GBX_MAPPER_LAST_BIBLE		= 'LBMC',
 	GBX_MAPPER_LIEBAO		= 'LIBA',
 } GBX_Mapper_e;
-
-#pragma pack()
 
 #ifdef __cplusplus
 }

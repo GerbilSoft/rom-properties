@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * config.librpbase.h.in: LibRpBase configuration. (source file)           *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -51,9 +51,6 @@
 
 /* Define to 1 if `struct lconv` has wchar_t fields. */
 #cmakedefine HAVE_STRUCT_LCONV_WCHAR_T 1
-
-/* Define to 1 if you have the <features.h> header file. */
-#cmakedefine HAVE_FEATURES_H 1
 
 /* Define to 1 if decryption should be enabled. */
 #cmakedefine ENABLE_DECRYPTION 1
@@ -106,28 +103,31 @@
 /* Define to 1 if iconv() is defined in libiconv. */
 #cmakedefine HAVE_ICONV_LIBICONV 1
 
-/** putenv() and related **/
+/** Time functions **/
 
-/* Define to 1 if you have the `putenv` function. */
-#cmakedefine HAVE_PUTENV 1
+/* Define to 1 if you have the `gmtime_r` function. */
+#cmakedefine HAVE_GMTIME_R 1
 
-/* Define to 1 if you have the `setenv` function. */
-#cmakedefine HAVE_SETENV 1
+/* Define to 1 if you have the `gmtime_s` function. */
+#cmakedefine HAVE_GMTIME_S 1
 
-/* Define to 1 if you have the `_wputenv` function. */
-#cmakedefine HAVE__WPUTENV 1
+/* Define to 1 if you have the `localtime_r' function. */
+#cmakedefine HAVE_LOCALTIME_R 1
 
-/* Define to 1 if you have the `_wputenv_s` function. */
-#cmakedefine HAVE__WPUTENV_S 1
+/* Define to 1 if you have the `localtime_s' function. */
+#cmakedefine HAVE_LOCALTIME_S 1
 
-/* Define to 1 if you have the Linux `fsetxattr` function. */
-#cmakedefine HAVE_FSETXATTR_LINUX 1
+/* Define to 1 if you have the `timegm' function. */
+#cmakedefine HAVE_TIMEGM 1
 
-/* Define to 1 if you have the Mac OS X `fsetxattr` function. */
-#cmakedefine HAVE_FSETXATTR_MAC 1
+/* Define to 1 if you have the `_mkgmtime' function. */
+#cmakedefine HAVE__MKGMTIME 1
 
-/* Define to 1 if you have the FreeBSD `extattr_set_fd` function. */
-#cmakedefine HAVE_EXTATTR_SET_FD 1
+/* Define to 1 if you have the `_mkgmtime32' function. */
+#cmakedefine HAVE__MKGMTIME32 1
+
+/* Define to 1 if you have the `_mkgmtime64' function. */
+#cmakedefine HAVE__MKGMTIME64 1
 
 /** C++ standard library **/
 
@@ -136,10 +136,5 @@
 
 /* Define to 1 if you have the `unordered_set::reserve` function. */
 #cmakedefine HAVE_UNORDERED_SET_RESERVE 1
-
-/** Other miscellaneous functionality **/
-
-/* Define to 1 if support for SCSI commands is implemented for this operating system. */
-#cmakedefine RP_OS_SCSI_SUPPORTED 1
 
 #endif /* __ROMPROPERTIES_LIBRPBASE_CONFIG_H__ */

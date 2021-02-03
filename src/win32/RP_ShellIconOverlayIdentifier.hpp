@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * RP_ShellIconOverlayIdentifier.cpp: IShellIconOverlayIdentifier          *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -11,7 +11,7 @@
 
 // librpbase
 #include "librpbase/config.librpbase.h"
-#include "librpbase/common.h"
+#include "common.h"
 
 // Reference: http://www.codeproject.com/Articles/338268/COM-in-C
 #include "libwin32common/ComBase.hpp"
@@ -28,7 +28,7 @@ namespace LibWin32Common {
 class RP_ShellIconOverlayIdentifier_Private;
 
 class UUID_ATTR("{02C6AF01-3C99-497D-B3FC-E38CE526786B}")
-RP_ShellIconOverlayIdentifier : public LibWin32Common::ComBase<IShellIconOverlayIdentifier>
+RP_ShellIconOverlayIdentifier final : public LibWin32Common::ComBase<IShellIconOverlayIdentifier>
 {
 	public:
 		RP_ShellIconOverlayIdentifier();

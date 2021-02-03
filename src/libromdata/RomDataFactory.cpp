@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * RomDataFactory.cpp: RomData factory class.                              *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -12,9 +12,10 @@
 
 #include "RomDataFactory.hpp"
 
-// librpbase
-#include "librpbase/file/RelatedFile.hpp"
+// librpbase, librpfile
+#include "librpfile/RelatedFile.hpp"
 using namespace LibRpBase;
+using namespace LibRpFile;
 
 // librpthreads
 #include "librpthreads/pthread_once.h"
@@ -39,10 +40,12 @@ using std::vector;
 #include "Console/MegaDrive.hpp"
 #include "Console/N64.hpp"
 #include "Console/NES.hpp"
+#include "Console/PlayStationEXE.hpp"
 #include "Console/PlayStationSave.hpp"
 #include "Console/Sega8Bit.hpp"
 #include "Console/SegaSaturn.hpp"
 #include "Console/SNES.hpp"
+#include "Console/SufamiTurbo.hpp"
 #include "Console/WiiSave.hpp"
 #include "Console/WiiU.hpp"
 #include "Console/WiiWAD.hpp"
@@ -52,9 +55,11 @@ using std::vector;
 #include "Console/Xbox360_XDBF.hpp"
 #include "Console/Xbox360_XEX.hpp"
 
-// Special handling for Xbox discs.
+// Special handling for Xbox and PlayStation discs.
+#include "cdrom_structs.h"
 #include "iso_structs.h"
 #include "Console/XboxDisc.hpp"
+#include "Console/PlayStationDisc.hpp"
 #include "disc/xdvdfs_structs.h"
 
 // RomData subclasses: Handhelds
@@ -68,6 +73,7 @@ using std::vector;
 #include "Handheld/Nintendo3DS_SMDH.hpp"
 #include "Handheld/NintendoDS.hpp"
 #include "Handheld/PokemonMini.hpp"
+#include "Handheld/PSP.hpp"
 #include "Handheld/VirtualBoy.hpp"
 
 // RomData subclasses: Audio
@@ -130,7 +136,7 @@ class RomDataFactoryPrivate
 		 * @param klass Class name.
 		 */
 		template<typename klass>
-		static LibRpBase::RomData *RomData_ctor(LibRpBase::IRpFile *file)
+		static LibRpBase::RomData *RomData_ctor(LibRpFile::IRpFile *file)
 		{
 			return new klass(file);
 		}
@@ -237,31 +243,42 @@ pthread_once_t RomDataFactoryPrivate::once_mimeTypes = PTHREAD_ONCE_INIT;
 // TODO: Add support for multiple magic numbers per class.
 const RomDataFactoryPrivate::RomDataFns RomDataFactoryPrivate::romDataFns_magic[] = {
 	// Consoles
+	GetRomDataFns_addr(PlayStationEXE, 0, 0, 'PS-X'),
+	GetRomDataFns_addr(SufamiTurbo, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 8, 'FC-A'),	// Less common than "BAND"
 	GetRomDataFns_addr(WiiWIBN, ATTR_HAS_THUMBNAIL, 0, 'WIBN'),
 	GetRomDataFns_addr(Xbox_XBE, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'XBEH'),
-	GetRomDataFns_addr(Xbox360_XDBF, ATTR_HAS_THUMBNAIL, 0, 'XDBF'),
+	GetRomDataFns_addr(Xbox360_XDBF, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'XDBF'),
 	GetRomDataFns_addr(Xbox360_XEX, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'XEX1'),
 	GetRomDataFns_addr(Xbox360_XEX, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'XEX2'),
 
 	// Handhelds
-	GetRomDataFns_addr(DMG, ATTR_HAS_METADATA, 0x104, 0xCEED6666),
-	GetRomDataFns_addr(GameBoyAdvance, ATTR_NONE, 0x04, 0x24FFAE51),
+	GetRomDataFns_addr(DMG, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0x104, 0xCEED6666),
+	GetRomDataFns_addr(DMG, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0x304, 0xCEED6666),	// headered
+	GetRomDataFns_addr(GameBoyAdvance, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0x04, 0x24FFAE51),
 	GetRomDataFns_addr(Lynx, ATTR_NONE, 0, 'LYNX'),
-	GetRomDataFns_addr(NGPC, ATTR_HAS_METADATA, 12, ' SNK'),
+	GetRomDataFns_addr(NGPC, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 12, ' SNK'),
 	GetRomDataFns_addr(Nintendo3DSFirm, ATTR_NONE, 0, 'FIRM'),
 	GetRomDataFns_addr(Nintendo3DS_SMDH, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'SMDH'),
 	GetRomDataFns_addr(NintendoDS, ATTR_HAS_THUMBNAIL | ATTR_HAS_DPOVERLAY | ATTR_HAS_METADATA, 0xC0, 0x24FFAE51),
 	GetRomDataFns_addr(NintendoDS, ATTR_HAS_THUMBNAIL | ATTR_HAS_DPOVERLAY | ATTR_HAS_METADATA, 0xC0, 0xC8604FE2),
+	GetRomDataFns_addr(PSP, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'CISO'),
+#ifdef HAVE_LZ4
+	GetRomDataFns_addr(PSP, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'ZISO'),
+#endif /* HAVE_LZ4 */
+#ifdef HAVE_LZO
+	GetRomDataFns_addr(PSP, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'JISO'),
+#endif /* HAVE_LZO */
+	GetRomDataFns_addr(PSP, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 0x44415800),	// 'DAX\0'
 
 	// Audio
 	GetRomDataFns_addr(BRSTM, ATTR_HAS_METADATA, 0, 'RSTM'),
-	GetRomDataFns_addr(GBS, ATTR_HAS_METADATA, 0, 'GBS\x01'),
+	GetRomDataFns_addr(GBS, ATTR_HAS_METADATA, 0, 0x47425301),	// 'GBS\x01'
 	GetRomDataFns_addr(NSF, ATTR_HAS_METADATA, 0, 'NESM'),
 	GetRomDataFns_addr(SPC, ATTR_HAS_METADATA, 0, 'SNES'),
 	GetRomDataFns_addr(VGM, ATTR_HAS_METADATA, 0, 'Vgm '),
 
 	// Other
-	GetRomDataFns_addr(ELF, ATTR_NONE, 0, '\177ELF'),
+	GetRomDataFns_addr(ELF, ATTR_NONE, 0, 0x7F454C46),		// '\177ELF'
 
 	// Consoles: Xbox 360 STFS
 	// Moved here to prevent conflicts with the Nintendo DS ROM image
@@ -279,15 +296,15 @@ const RomDataFactoryPrivate::RomDataFns RomDataFactoryPrivate::romDataFns_magic[
 const RomDataFactoryPrivate::RomDataFns RomDataFactoryPrivate::romDataFns_header[] = {
 	// Consoles
 	GetRomDataFns(Dreamcast, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA | ATTR_SUPPORTS_DEVICES),
-	GetRomDataFns(DreamcastSave, ATTR_HAS_THUMBNAIL),
+	GetRomDataFns(DreamcastSave, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA),
 	GetRomDataFns(GameCube, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA | ATTR_SUPPORTS_DEVICES),
 	GetRomDataFns(GameCubeBNR, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA),
 	GetRomDataFns(GameCubeSave, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA),
 	GetRomDataFns(iQuePlayer, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA),
 	GetRomDataFns(MegaDrive, ATTR_SUPPORTS_DEVICES),	// ATTR_SUPPORTS_DEVICES for Sega CD
-	GetRomDataFns(N64, ATTR_NONE | ATTR_HAS_METADATA),
+	GetRomDataFns(N64, ATTR_HAS_METADATA),
 	GetRomDataFns(NES, ATTR_NONE),
-	GetRomDataFns(SNES, ATTR_NONE),
+	GetRomDataFns(SNES, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA),
 	GetRomDataFns(SegaSaturn, ATTR_NONE | ATTR_HAS_METADATA | ATTR_SUPPORTS_DEVICES),
 	GetRomDataFns(WiiSave, ATTR_HAS_THUMBNAIL),
 	GetRomDataFns(WiiU, ATTR_HAS_THUMBNAIL | ATTR_SUPPORTS_DEVICES),
@@ -311,7 +328,7 @@ const RomDataFactoryPrivate::RomDataFns RomDataFactoryPrivate::romDataFns_header
 
 	// The following formats have 16-bit magic numbers,
 	// so they should go at the end of the address=0 section.
-	GetRomDataFns(EXE, ATTR_NONE),	// TODO: Thumbnailing on non-Windows platforms.
+	GetRomDataFns(EXE, ATTR_HAS_DPOVERLAY),	// TODO: Thumbnailing on non-Windows platforms.
 	GetRomDataFns(PlayStationSave, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA),
 
 	// NOTE: game.com may be at either 0 or 0x40000.
@@ -328,9 +345,9 @@ const RomDataFactoryPrivate::RomDataFns RomDataFactoryPrivate::romDataFns_header
 	// Last chance: ISO-9660 disc images.
 	// NOTE: This might include some console-specific disc images
 	// that don't have an identifying boot sector at 0x0000.
-	// NOTE: Keeping the same address, since ISO only checks the file extension.
+	// NOTE: Keeping the same address as the previous entry, since ISO only checks the file extension.
 	// NOTE: ATTR_HAS_THUMBNAIL is needed for Xbox 360.
-	GetRomDataFns_addr(ISO, ATTR_HAS_THUMBNAIL | ATTR_SUPPORTS_DEVICES | ATTR_CHECK_ISO, 0x40000, 0x20),
+	GetRomDataFns_addr(ISO, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA | ATTR_SUPPORTS_DEVICES | ATTR_CHECK_ISO, 0x40000, 0x20),
 
 	{nullptr, nullptr, nullptr, nullptr, ATTR_NONE, 0, 0}
 };
@@ -362,10 +379,10 @@ RomData *RomDataFactoryPrivate::openDreamcastVMSandVMI(IRpFile *file)
 	// VMS files are always a multiple of 512 bytes,
 	// or 160 bytes for some monochrome ICONDATA_VMS.
 	// VMI files are always 108 bytes;
-	int64_t filesize = file->size();
+	off64_t filesize = file->size();
 	bool has_dc_vms = (filesize % DC_VMS_BLOCK_SIZE == 0) ||
 			  (filesize == DC_VMS_ICONDATA_MONO_MINSIZE);
-	bool has_dc_vmi = (filesize == DC_VMI_Header_SIZE);
+	bool has_dc_vmi = (filesize == sizeof(DC_VMI_Header));
 	if (!(has_dc_vms ^ has_dc_vmi)) {
 		// Can't be none or both...
 		return nullptr;
@@ -428,19 +445,46 @@ RomData *RomDataFactoryPrivate::openDreamcastVMSandVMI(IRpFile *file)
  */
 RomData *RomDataFactoryPrivate::checkISO(IRpFile *file)
 {
-	// Check for specific disc file systems.
-	// TODO: 2352-byte sector handling?
-	ISO_Primary_Volume_Descriptor pvd;
-	size_t size = file->seekAndRead(ISO_PVD_ADDRESS_2048, &pvd, sizeof(pvd));
-	if (size != sizeof(pvd)) {
+	// Check for a CD file system with 2048-byte sectors.
+	CDROM_2352_Sector_t sector;
+	size_t size = file->seekAndRead(ISO_PVD_ADDRESS_2048, &sector.m1.data, sizeof(sector.m1.data));
+	if (size != sizeof(sector.m1.data)) {
 		// Unable to read the PVD.
 		return nullptr;
 	}
 
-	// Try various game disc file systems.
+	const ISO_Primary_Volume_Descriptor *pvd = nullptr;
+	int discType = ISO::checkPVD(sector.m1.data);
+	if (discType >= 0) {
+		// Found a PVD with 2048-byte sectors.
+		pvd = reinterpret_cast<const ISO_Primary_Volume_Descriptor*>(sector.m1.data);
+	} else {
+		// Check for a PVD with 2352-byte or 2448-byte sectors.
+		static const unsigned int sector_sizes[] = {2352, 2448, 0};
+
+		for (const unsigned int *p = sector_sizes; *p != 0; p++) {
+			size_t size = file->seekAndRead(*p * ISO_PVD_LBA, &sector, sizeof(sector));
+			if (size != sizeof(sector)) {
+				// Unable to read the PVD.
+				return nullptr;
+			}
+
+			const uint8_t *const pData = cdromSectorDataPtr(&sector);
+			if (ISO::checkPVD(pData) >= 0) {
+				// Found the correct sector size.
+				pvd = reinterpret_cast<const ISO_Primary_Volume_Descriptor*>(pData);
+				break;
+			}
+		}
+	}
+
+	if (!pvd) {
+		// Unable to get the PVD.
+		return nullptr;
+	}
 
 	// Xbox / Xbox 360
-	bool mayBeXbox = (XboxDisc::isRomSupported_static(&pvd) >= 0);
+	bool mayBeXbox = (XboxDisc::isRomSupported_static(pvd) >= 0);
 	if (!mayBeXbox) {
 		// This might be an extracted XDVDFS.
 		// Check for the magic number at the base offset.
@@ -462,6 +506,28 @@ RomData *RomDataFactoryPrivate::checkISO(IRpFile *file)
 		RomData *const romData = new XboxDisc(file);
 		if (romData->isValid()) {
 			// Got an Xbox disc.
+			return romData;
+		}
+		romData->unref();
+	}
+
+	// PlayStation 1 and 2
+	if (PlayStationDisc::isRomSupported_static(pvd) >= 0) {
+		// This might be a PS1 or PS2 disc.
+		RomData *const romData = new PlayStationDisc(file);
+		if (romData->isValid()) {
+			// Got a PS1 or PS2 disc.
+			return romData;
+		}
+		romData->unref();
+	}
+
+	// PlayStation Portable
+	if (PSP::isRomSupported_static(pvd) >= 0) {
+		// This might be a PSP disc.
+		RomData *const romData = new PSP(file);
+		if (romData->isValid()) {
+			// Got a PSP disc.
 			return romData;
 		}
 		romData->unref();
@@ -566,7 +632,6 @@ RomData *RomDataFactory::create(IRpFile *file, unsigned int attrs)
 		// TODO: Verify alignment restrictions.
 		assert(fns->address % 4 == 0);
 		assert(fns->address + sizeof(uint32_t) <= sizeof(header.u32));
-		// FIXME: Fix strict aliasing warnings on Ubuntu 14.04.
 		uint32_t magic = header.u32[fns->address/4];
 		if (be32_to_cpu(magic) == fns->size) {
 			// Found a matching magic number.
@@ -599,6 +664,7 @@ RomData *RomDataFactory::create(IRpFile *file, unsigned int attrs)
 	// Check other RomData subclasses that take a header,
 	// but don't have a simple 32-bit magic number check.
 	fns = &RomDataFactoryPrivate::romDataFns_header[0];
+	bool checked_exts = false;
 	for (; fns->supportedFileExtensions != nullptr; fns++) {
 		if ((fns->attrs & attrs) != attrs) {
 			// This RomData subclass doesn't have the
@@ -610,37 +676,43 @@ RomData *RomDataFactory::create(IRpFile *file, unsigned int attrs)
 		    fns->size > info.header.size)
 		{
 			// Header address has changed.
+			if (!checked_exts) {
+				// Check the file extension to reduce overhead
+				// for file types that don't use this.
+				// TODO: Don't hard-code this.
+				// Use a pointer to supportedFileExtensions_static() instead?
+				static const char *const exts[] = {
+					".bin",		/* generic .bin */
+					".sms",		/* Sega Master System */
+					".gg",		/* Game Gear */
+					".tgc",		/* game.com */
+					".iso",		/* ISO-9660 */
+					".img",		/* CCD/IMG */
+					".xiso",	/* Xbox disc image */
+					".min",		/* Pokémon Mini */
+					nullptr
+				};
 
-			// Check the file extension to reduce overhead
-			// for file types that don't use this.
-			// TODO: Don't hard-code this.
-			// Use a pointer to supportedFileExtensions_static() instead?
-			static const char *const exts[] = {
-				".bin",		/* generic .bin */
-				".sms",		/* Sega Master System */
-				".gg",		/* Game Gear */
-				".tgc",		/* game.com */
-				".iso",		/* ISO-9660 */
-				".xiso",	/* Xbox disc image */
-				nullptr
-			};
-
-			if (info.ext == nullptr) {
-				// No file extension...
-				break;
-			}
-
-			// Check for a matching extension.
-			bool found = false;
-			for (const char *const *ext = exts; *ext != nullptr; ext++) {
-				if (!strcasecmp(info.ext, *ext)) {
-					// Found a match!
-					found = true;
+				if (info.ext == nullptr) {
+					// No file extension...
+					break;
 				}
-			}
-			if (!found) {
-				// No match.
-				break;
+
+				// Check for a matching extension.
+				bool found = false;
+				for (const char *const *ext = exts; *ext != nullptr; ext++) {
+					if (!strcasecmp(info.ext, *ext)) {
+						// Found a match!
+						found = true;
+					}
+				}
+				if (!found) {
+					// No match.
+					break;
+				}
+
+				// File extensions have been checked.
+				checked_exts = true;
 			}
 
 			// Read the new header data.
@@ -655,7 +727,7 @@ RomData *RomDataFactory::create(IRpFile *file, unsigned int attrs)
 
 			// Make sure the file is big enough to
 			// have this header.
-			if ((static_cast<int64_t>(fns->address) + fns->size) > info.szFile)
+			if ((static_cast<off64_t>(fns->address) + fns->size) > info.szFile)
 				continue;
 
 			// Read the header data.
@@ -790,7 +862,7 @@ void RomDataFactoryPrivate::init_supportedFileExtensions(void)
 				} else {
 					// First time encountering this extension.
 					map_exts[*sys_exts] = fns->attrs;
-					vec_exts.push_back(RomDataFactory::ExtInfo(
+					vec_exts.emplace_back(RomDataFactory::ExtInfo(
 						*sys_exts, fns->attrs));
 				}
 			}
@@ -810,15 +882,17 @@ void RomDataFactoryPrivate::init_supportedFileExtensions(void)
 			} else {
 				// First time encountering this extension.
 				map_exts[ext] = FFF_ATTRS;
-				vec_exts.push_back(RomDataFactory::ExtInfo(ext, FFF_ATTRS));
+				vec_exts.emplace_back(RomDataFactory::ExtInfo(ext, FFF_ATTRS));
 			}
 		}
 	);
 
 	// Make sure the vector's attributes fields are up to date.
-	for (auto iter = vec_exts.begin(); iter != vec_exts.end(); ++iter) {
-		iter->attrs = map_exts[iter->ext];
-	}
+	std::for_each(vec_exts.begin(), vec_exts.end(),
+		[&map_exts](RomDataFactory::ExtInfo &extInfo) {
+			extInfo.attrs = map_exts[extInfo.ext];
+		}
+	);
 }
 
 /**
@@ -875,7 +949,7 @@ void RomDataFactoryPrivate::init_supportedMimeTypes(void)
 				auto iter = set_mimeTypes.find(*sys_mimeTypes);
 				if (iter == set_mimeTypes.end()) {
 					set_mimeTypes.insert(*sys_mimeTypes);
-					vec_mimeTypes.push_back(*sys_mimeTypes);
+					vec_mimeTypes.emplace_back(*sys_mimeTypes);
 				}
 			}
 		}
@@ -888,7 +962,7 @@ void RomDataFactoryPrivate::init_supportedMimeTypes(void)
 			auto iter = set_mimeTypes.find(mimeType);
 			if (iter == set_mimeTypes.end()) {
 				set_mimeTypes.insert(mimeType);
-				vec_mimeTypes.push_back(mimeType);
+				vec_mimeTypes.emplace_back(mimeType);
 			}
 		}
 	);

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * elf_structs.h: Executable and Linkable Format structures.               *
  *                                                                         *
- * Copyright (c) 2017 by David Korth.                                      *
+ * Copyright (c) 2017-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -15,14 +15,12 @@
 #ifndef __ROMPROPERTIES_LIBROMDATA_ELF_STRUCTS_H__
 #define __ROMPROPERTIES_LIBROMDATA_ELF_STRUCTS_H__
 
-#include "librpbase/common.h"
 #include <stdint.h>
+#include "common.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-#pragma pack(1)
 
 // Type for a 16-bit quantity.
 typedef uint16_t Elf32_Half;
@@ -60,8 +58,8 @@ typedef uint64_t Elf64_Symndx;
  * ELF primary header.
  * These fields are identical for both 32-bit and 64-bit.
  */
-#define ELF_MAGIC '\177ELF'
-typedef struct PACKED _Elf_PrimaryEhdr {
+#define ELF_MAGIC 0x7F454C46U	// '\177ELF'
+typedef struct _Elf_PrimaryEhdr {
 	uint32_t e_magic;	// [0x000] '\x177ELF' (big-endian)
 	uint8_t e_class;	// [0x004] Bitness (see Elf_Bitness)
 	uint8_t e_data;		// [0x005] Endianness (see Elf_Endianness)
@@ -153,6 +151,7 @@ typedef enum {
 	EM_MIPS		= 8,	/* MIPS R3000 big-endian */
 	EM_S370		= 9,	/* IBM System/370 */
 	EM_MIPS_RS3_LE	= 10,	/* MIPS R3000 little-endian */
+	EM_OLD_SPARCV9	= 11,	/* SPARC v9 (deprecated) */
 				/* reserved 11-14 */
 	EM_PARISC	= 15,	/* HPPA */
 				/* reserved 16 */
@@ -166,18 +165,35 @@ typedef enum {
 	EM_V800		= 36,	/* NEC V800 series */
 	EM_FR20		= 37,	/* Fujitsu FR20 */
 	EM_RH32		= 38,	/* TRW RH-32 */
-	EM_RCE		= 39,	/* Motorola RCE */
+	EM_MCORE	= 39,	/* Motorola M*Core */
+	EM_RCE		= 39,	/* old name for M*Core */
 	EM_ARM		= 40,	/* ARM */
-	EM_FAKE_ALPHA	= 41,	/* Digital Alpha */
+	EM_OLD_ALPHA	= 41,	/* DEC Alpha */
 	EM_SH		= 42,	/* Hitachi SH */
 	EM_SPARCV9	= 43,	/* SPARC v9 64-bit */
+
+	EM_ARC		= 45,	/* ARC cores */
+	EM_COLDFIRE	= 52,	/* Motorola Coldfire */
+	EM_AVR		= 83,	/* Atmel AVR 8-bit microcontroller */
+	EM_M32R		= 88,	/* Renesas M32R (formerly Mitsubishi M32R) */
+	EM_MSP430	= 105,	/* TI msp430 micro controller */
+	EM_BLACKFIN	= 106,	/* ADI Blackfin */
+	EM_M16C		= 117,	/* Renesas M16C */
+	EM_M32C		= 120,	/* Renesas M32C */
+	EM_Z80		= 220,	/* Zilog Z80 */
+	EM_RISCV	= 243,	/* RISC-V */
+
+	EM_AVR_OLD	= 0x1057,	/* Atmel AVR 8-bit microcontroller (unofficial) */
+	EM_ALPHA	= 0x9026,	/* DEC Alpha (unofficial) */
+	EM_CYGNUS_M32R	= 0x9041,	/* Renesas M32R (unofficial) (formerly Mitsubishi M32R) */
+	EM_M32C_OLD	= 0xFEB0,	/* Renesas M32C and M16C (unofficial) */
 } Elf_Machine;
 
 /**
  * ELF 32-bit header.
  * Contains Elf_PrimaryEhdr and fields for 32-bit executables.
  */
-typedef struct PACKED _Elf32_Ehdr {
+typedef struct _Elf32_Ehdr {
 	// Primary header. (Same as Elf_PrimaryEhdr)
 	char e_magic[4];	// [0x000] "\x7FELF"
 	uint8_t e_class;	// [0x004] Bitness (see Elf_Bitness)
@@ -208,7 +224,7 @@ ASSERT_STRUCT(Elf32_Ehdr, 52);
  * ELF 64-bit header.
  * Contains Elf_PrimaryEhdr and fields for 64-bit executables.
  */
-typedef struct PACKED _Elf64_Ehdr {
+typedef struct _Elf64_Ehdr {
 	// Primary header. (Same as Elf_PrimaryEhdr)
 	char e_magic[4];	// [0x000] "\x7FELF"
 	uint8_t e_class;	// [0x004] Bitness (see Elf_Bitness)
@@ -238,7 +254,7 @@ ASSERT_STRUCT(Elf64_Ehdr, 64);
 /**
  * ELF 32-bit program header.
  */
-typedef struct PACKED _Elf32_Phdr {
+typedef struct _Elf32_Phdr {
 	Elf32_Word p_type;	// [0x000] Program header type (see Elf_Phdr_Type)
 	Elf32_Off  p_offset;	// [0x004] Offset of segment from the beginning of the file
 	Elf32_Addr p_vaddr;	// [0x008] Virtual address
@@ -253,7 +269,7 @@ ASSERT_STRUCT(Elf32_Phdr, 32);
 /**
  * ELF 64-bit program header.
  */
-typedef struct PACKED _Elf64_Phdr {
+typedef struct _Elf64_Phdr {
 	Elf64_Word  p_type;	// [0x000] Program header type (see Elf_Phdr_Type)
 	Elf64_Word  p_flags;	// [0x004] Flags
 	Elf64_Off   p_offset;	// [0x008] Offset of segment from the beginning of the file
@@ -306,7 +322,7 @@ ASSERT_STRUCT(Elf32_Shdr, 40);
 /**
  * ELF 64-bit section header.
  */
-typedef struct {
+typedef struct _Elf64_Shdr {
 	Elf64_Word  sh_name;		/* [0x000] Section name (string tbl index) */
 	Elf64_Word  sh_type;		/* [0x004] Section type */
 	Elf64_Xword sh_flags;		/* [0x008] Section flags */
@@ -599,8 +615,6 @@ typedef enum {
 	DF_1_STUB	= 0x04000000,
 	DF_1_PIE	= 0x08000000,
 } Elf_DT_FLAGS_1;
-
-#pragma pack()
 
 #ifdef __cplusplus
 }

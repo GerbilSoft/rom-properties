@@ -14,7 +14,6 @@
 
 // C++ STL classes.
 using std::string;
-using std::unique_ptr;
 using std::unordered_map;
 
 #include "RomData.hpp"
@@ -83,6 +82,9 @@ class ConfigPrivate : public ConfReaderPrivate
 		bool downloadHighResScans;
 		bool storeFileOriginInfo;
 
+		// DMG title screen mode. [index is ROM type]
+		Config::DMG_TitleScreen_Mode dmgTSMode[Config::DMG_TitleScreen_Mode::DMG_TS_MAX];
+
 		// Other options.
 		bool showDangerousPermissionsOverlayIcon;
 		bool enableThumbnailOnNetworkFS;
@@ -126,6 +128,7 @@ ConfigPrivate::ConfigPrivate()
 	, enableThumbnailOnNetworkFS(false)
 {
 	// NOTE: Configuration is also initialized in the reset() function.
+	memset(dmgTSMode, 0, sizeof(dmgTSMode));
 }
 
 /**
@@ -149,6 +152,12 @@ void ConfigPrivate::reset(void)
 	useIntIconForSmallSizes = true;
 	downloadHighResScans = true;
 	storeFileOriginInfo = true;
+
+	// DMG title screen mode.
+	dmgTSMode[Config::DMG_TitleScreen_Mode::DMG_TS_DMG] = Config::DMG_TitleScreen_Mode::DMG_TS_DMG;
+	dmgTSMode[Config::DMG_TitleScreen_Mode::DMG_TS_SGB] = Config::DMG_TitleScreen_Mode::DMG_TS_SGB;
+	dmgTSMode[Config::DMG_TitleScreen_Mode::DMG_TS_CGB] = Config::DMG_TitleScreen_Mode::DMG_TS_CGB;
+
 	// Overlay icon
 	showDangerousPermissionsOverlayIcon = true;
 	// Enable thumbnail and metadata on network FS
@@ -203,6 +212,35 @@ int ConfigPrivate::processConfigLine(const char *section, const char *name, cons
 		} else {
 			// TODO: Show a warning or something?
 		}
+	} else if (!strcasecmp(section, "DMGTitleScreenMode")) {
+		// DMG title screen mode.
+		Config::DMG_TitleScreen_Mode dmg_key, dmg_value;
+
+		// Parse the key.
+		if (!strcasecmp(name, "DMG")) {
+			dmg_key = Config::DMG_TitleScreen_Mode::DMG_TS_DMG;
+		} else if (!strcasecmp(name, "SGB")) {
+			dmg_key = Config::DMG_TitleScreen_Mode::DMG_TS_SGB;
+		} else if (!strcasecmp(name, "CGB")) {
+			dmg_key = Config::DMG_TitleScreen_Mode::DMG_TS_CGB;
+		} else {
+			// Invalid key.
+			return 1;
+		}
+
+		// Parse the value.
+		if (!strcasecmp(value, "DMG")) {
+			dmg_value = Config::DMG_TitleScreen_Mode::DMG_TS_DMG;
+		} else if (!strcasecmp(value, "SGB")) {
+			dmg_value = Config::DMG_TitleScreen_Mode::DMG_TS_SGB;
+		} else if (!strcasecmp(value, "CGB")) {
+			dmg_value = Config::DMG_TitleScreen_Mode::DMG_TS_CGB;
+		} else {
+			// Invalid value.
+			return 1;
+		}
+
+		dmgTSMode[dmg_key] = dmg_value;
 	} else if (!strcasecmp(section, "Options")) {
 		// Options.
 		bool *param;
@@ -334,11 +372,11 @@ int ConfigPrivate::processConfigLine(const char *section, const char *name, cons
 			}
 
 			// Check for duplicates.
-			if (imgbf & (1 << imgType)) {
+			if (imgbf & (1U << imgType)) {
 				// Duplicate image type!
 				continue;
 			}
-			imgbf |= (1 << imgType);
+			imgbf |= (1U << imgType);
 
 			// Add the image type.
 			// Maximum of 32 due to imgbf width.
@@ -360,7 +398,8 @@ int ConfigPrivate::processConfigLine(const char *section, const char *name, cons
 		if (count > 0) {
 			// Convert the class name to lowercase.
 			string className(name);
-			std::transform(className.begin(), className.end(), className.begin(), ::tolower);
+			std::transform(className.begin(), className.end(), className.begin(),
+				[](unsigned char c) { return std::tolower(c); });
 
 			// Add the class name information to the map.
 			uint32_t keyIdx = static_cast<uint32_t>(vStartPos);
@@ -391,13 +430,15 @@ Config *Config::instance(void)
 {
 	// Initialize the singleton instance.
 	Config *const q = &ConfigPrivate::instance;
+
 	// Load the configuration if necessary.
 	q->load(false);
+
 	// Return the singleton instance.
-	return &ConfigPrivate::instance;
+	return q;
 }
 
-/** Image types. **/
+/** Image types **/
 
 /**
  * Get the image type priority data for the specified class name.
@@ -411,7 +452,7 @@ Config::ImgTypeResult Config::getImgTypePrio(const char *className, ImgTypePrio_
 	assert(className != nullptr);
 	assert(imgTypePrio != nullptr);
 	if (!className || !imgTypePrio) {
-		return IMGTR_ERR_INVALID_PARAMS;
+		return ImgTypeResult::ErrorInvalidParams;
 	}
 
 	// Find the class name in the map.
@@ -424,7 +465,7 @@ Config::ImgTypeResult Config::getImgTypePrio(const char *className, ImgTypePrio_
 		// Use the global defaults.
 		imgTypePrio->imgTypes = d->defImgTypePrio;
 		imgTypePrio->length = ARRAY_SIZE(d->defImgTypePrio);
-		return IMGTR_SUCCESS_DEFAULTS;
+		return ImgTypeResult::SuccessDefaults;
 	}
 
 	// Class name found.
@@ -438,19 +479,19 @@ Config::ImgTypeResult Config::getImgTypePrio(const char *className, ImgTypePrio_
 	if (len == 0 || idx >= d->vImgTypePrio.size() || idx + len > d->vImgTypePrio.size()) {
 		// Entry is invalid...
 		// TODO: Force a configuration reload?
-		return IMGTR_ERR_MAP_CORRUPTED;
+		return ImgTypeResult::ErrorMapCorrupted;
 	}
 
 	// Is the first entry RomData::IMG_DISABLED?
 	if (d->vImgTypePrio[idx] == static_cast<uint8_t>(RomData::IMG_DISABLED)) {
 		// Thumbnails are disabled for this class.
-		return IMGTR_DISABLED;
+		return ImgTypeResult::Disabled;
 	}
 
 	// Return the starting address and length.
 	imgTypePrio->imgTypes = &d->vImgTypePrio[idx];
 	imgTypePrio->length = len;
-	return IMGTR_SUCCESS;
+	return ImgTypeResult::Success;
 }
 
 /**
@@ -469,7 +510,7 @@ void Config::getDefImgTypePrio(ImgTypePrio_t *imgTypePrio) const
 	}
 }
 
-/** Download options. **/
+/** Download options **/
 
 /**
  * Should we download images from external databases?
@@ -515,6 +556,30 @@ bool Config::storeFileOriginInfo(void) const
 	RP_D(const Config);
 	return d->storeFileOriginInfo;
 }
+
+/** DMG title screen mode **/
+
+/**
+ * Which title screen should we use for the specified DMG ROM type?
+ * @param romType DMG ROM type.
+ * @return Title screen to use.
+ */
+Config::DMG_TitleScreen_Mode Config::dmgTitleScreenMode(DMG_TitleScreen_Mode romType) const
+{
+	assert(romType >= DMG_TitleScreen_Mode::DMG_TS_DMG);
+	assert(romType <  DMG_TitleScreen_Mode::DMG_TS_MAX);
+	if (romType <  DMG_TitleScreen_Mode::DMG_TS_DMG ||
+	    romType >= DMG_TitleScreen_Mode::DMG_TS_MAX)
+	{
+		// Invalid ROM type. Return DMG.
+		return DMG_TitleScreen_Mode::DMG_TS_DMG;
+	}
+
+	RP_D(const Config);
+	return d->dmgTSMode[romType];
+}
+
+/** Other options **/
 
 /**
  * Show an overlay icon for "dangerous" permissions?

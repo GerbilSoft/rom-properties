@@ -505,7 +505,7 @@ LONG RegKey::enumSubKeys(list<tstring> &lstSubKeys)
 		// Add the subkey name to the return vector.
 		// cchName contains the number of characters in the
 		// subkey name, NOT including the NULL terminator.
-		lstSubKeys.push_back(tstring(szName.get(), cchName));
+		lstSubKeys.emplace_back(tstring(szName.get(), cchName));
 	}
 
 	return ERROR_SUCCESS;
@@ -598,7 +598,7 @@ LONG RegKey::RegisterFileType(LPCTSTR fileType, RegKey **pHkey_Assoc)
 LONG RegKey::RegisterComObject(REFCLSID rclsid, LPCTSTR progID, LPCTSTR description)
 {
 	TCHAR szClsid[40];
-	LONG lResult = StringFromGUID2(rclsid, szClsid, sizeof(szClsid)/sizeof(szClsid[0]));
+	LONG lResult = StringFromGUID2(rclsid, szClsid, _countof(szClsid));
 	if (lResult <= 0)
 		return ERROR_INVALID_PARAMETER;
 
@@ -636,8 +636,7 @@ LONG RegKey::RegisterComObject(REFCLSID rclsid, LPCTSTR progID, LPCTSTR descript
 	// TODO: Get this once and save it?
 	// TODO: Duplicated from win32/. Consolidate the two?
 	TCHAR dll_filename[MAX_PATH];
-	DWORD dwResult = GetModuleFileName(HINST_THISCOMPONENT,
-		dll_filename, sizeof(dll_filename)/sizeof(dll_filename[0]));
+	DWORD dwResult = GetModuleFileName(HINST_THISCOMPONENT, dll_filename, _countof(dll_filename));
 	if (dwResult == 0 || GetLastError() != ERROR_SUCCESS) {
 		// Cannot get the DLL filename.
 		// TODO: Windows XP doesn't SetLastError() if the
@@ -676,7 +675,7 @@ LONG RegKey::RegisterComObject(REFCLSID rclsid, LPCTSTR progID, LPCTSTR descript
 LONG RegKey::RegisterApprovedExtension(REFCLSID rclsid, LPCTSTR description)
 {
 	TCHAR szClsid[40];
-	LONG lResult = StringFromGUID2(rclsid, szClsid, sizeof(szClsid)/sizeof(szClsid[0]));
+	LONG lResult = StringFromGUID2(rclsid, szClsid, _countof(szClsid));
 	if (lResult <= 0)
 		return ERROR_INVALID_PARAMETER;
 
@@ -701,8 +700,10 @@ LONG RegKey::RegisterApprovedExtension(REFCLSID rclsid, LPCTSTR description)
  */
 LONG RegKey::UnregisterComObject(REFCLSID rclsid, LPCTSTR progID)
 {
+	((void)progID);
+
 	TCHAR szClsid[40];
-	LONG lResult = StringFromGUID2(rclsid, szClsid, sizeof(szClsid)/sizeof(szClsid[0]));
+	LONG lResult = StringFromGUID2(rclsid, szClsid, _countof(szClsid));
 	if (lResult <= 0)
 		return ERROR_INVALID_PARAMETER;
 

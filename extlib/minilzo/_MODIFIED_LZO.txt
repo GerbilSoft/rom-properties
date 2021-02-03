@@ -1,0 +1,11 @@
+This copy of MiniLZO-2.10.0 is a modified version of the original.
+
+Original source archive:
+http://www.oberhumer.com/opensource/lzo/download/minilzo-2.10.tar.gz
+
+The following changes have been made to the original:
+
+- Added CMakeLists.txt.
+
+To obtain the original MiniLZO-2.10.0, visit:
+http://www.oberhumer.com/opensource/lzo/

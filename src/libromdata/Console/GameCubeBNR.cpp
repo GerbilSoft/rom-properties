@@ -2,29 +2,36 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * GameCubeBNR.cpp: Nintendo GameCube banner reader.                       *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #include "stdafx.h"
 #include "GameCubeBNR.hpp"
-#include "gcn_banner.h"
 #include "data/NintendoLanguage.hpp"
 
-// librpbase, librptexture
+#include "gcn_banner.h"
+#include "gcn_structs.h"
+
+// librpbase, librpfile, librptexture
 using namespace LibRpBase;
+using LibRpFile::IRpFile;
 using namespace LibRpTexture;
 
 // C++ STL classes.
 using std::string;
 using std::vector;
 
+// Uninitialized vector class.
+// Reference: http://andreoffringa.org/?q=uvector
+#include "uvector.h"
+
 namespace LibRomData {
 
 ROMDATA_IMPL(GameCubeBNR)
 ROMDATA_IMPL_IMG(GameCubeBNR)
 
-class GameCubeBNRPrivate : public RomDataPrivate
+class GameCubeBNRPrivate final : public RomDataPrivate
 {
 	public:
 		GameCubeBNRPrivate(GameCubeBNR *q, IRpFile *file);
@@ -36,14 +43,15 @@ class GameCubeBNRPrivate : public RomDataPrivate
 
 	public:
 		// Banner type.
-		enum RomType {
-			BANNER_UNKNOWN	= -1,	// Unknown banner type.
-			BANNER_BNR1	= 0,	// BNR1 (US/JP)
-			BANNER_BNR2	= 1,	// BNR2 (EU)
-		};
+		enum class BannerType {
+			Unknown	= -1,
 
-		// Banner type.
-		int bannerType;
+			BNR1	= 0,	// BNR1 (US/JP)
+			BNR2	= 1,	// BNR2 (EU)
+
+			Max
+		};
+		BannerType bannerType;
 
 		// Internal images.
 		rp_image *img_banner;
@@ -51,7 +59,7 @@ class GameCubeBNRPrivate : public RomDataPrivate
 		// Banner comments.
 		// - If BNR1: 1 item.
 		// - If BNR2: 6 items.
-		gcn_banner_comment_t *comments;
+		ao::uvector<gcn_banner_comment_t> comments;
 
 	public:
 		/**
@@ -59,25 +67,34 @@ class GameCubeBNRPrivate : public RomDataPrivate
 		 * @return Banner, or nullptr on error.
 		 */
 		const rp_image *loadBanner(void);
+
+		/**
+		 * Get a game information string for the specified comment.
+		 *
+		 * This is used for addField_gameInfo().
+		 *
+		 * @param comment gcn_banner_comment_t*
+		 * @param gcnRegion GameCube region for BNR1 encoding.
+		 * @return Game information string, or empty string on error.
+		 */
+		static string getGameInfoString(const gcn_banner_comment_t *comment, uint32_t gcnRegion);
 };
 
 /** GameCubeBNRPrivate **/
 
 GameCubeBNRPrivate::GameCubeBNRPrivate(GameCubeBNR *q, IRpFile *file)
 	: super(q, file)
-	, bannerType(BANNER_UNKNOWN)
+	, bannerType(BannerType::Unknown)
 	, img_banner(nullptr)
-	, comments(nullptr)
 { }
 
 GameCubeBNRPrivate::~GameCubeBNRPrivate()
 {
-	delete img_banner;
-	delete[] comments;
+	UNREF(img_banner);
 }
 
 /**
- * Load the save file's banner.
+ * Load the banner image.
  * @return Banner, or nullptr on error.
  */
 const rp_image *GameCubeBNRPrivate::loadBanner(void)
@@ -99,10 +116,92 @@ const rp_image *GameCubeBNRPrivate::loadBanner(void)
 	}
 
 	// Convert the banner from GCN RGB5A3 format to ARGB32.
-	img_banner = ImageDecoder::fromGcn16(ImageDecoder::PXF_RGB5A3,
+	img_banner = ImageDecoder::fromGcn16(
+		ImageDecoder::PixelFormat::RGB5A3,
 		GCN_BANNER_IMAGE_W, GCN_BANNER_IMAGE_H,
 		bannerbuf.get(), GCN_BANNER_IMAGE_SIZE);
 	return img_banner;
+}
+
+/**
+ * Get a game information string for the specified comment.
+ *
+ * This is used for addField_gameInfo().
+ *
+ * @param comment gcn_banner_comment_t*
+ * @param gcnRegion GameCube region for BNR1 encoding.
+ * @return Game information string, or empty string on error.
+ */
+string GameCubeBNRPrivate::getGameInfoString(const gcn_banner_comment_t *comment, uint32_t gcnRegion)
+{
+	// Game info string.
+	string s_gameInfo;
+	s_gameInfo.reserve(sizeof(gcn_banner_comment_t) + 8);
+
+	// Game name.
+	if (comment->gamename_full[0] != '\0') {
+		size_t field_len = strnlen(comment->gamename_full, sizeof(comment->gamename_full));
+		s_gameInfo.append(comment->gamename_full, field_len);
+		s_gameInfo += '\n';
+	} else if (comment->gamename[0] != '\0') {
+		size_t field_len = strnlen(comment->gamename, sizeof(comment->gamename));
+		s_gameInfo.append(comment->gamename, field_len);
+		s_gameInfo += '\n';
+	}
+
+	// Company.
+	// NOTE: This usually has an extra newline at the end,
+	// which causes it to show an extra line between the
+	// company name and the game description.
+	if (comment->company_full[0] != '\0') {
+		size_t field_len = strnlen(comment->company_full, sizeof(comment->company_full));
+		s_gameInfo.append(comment->company_full, field_len);
+		s_gameInfo += '\n';
+	} else if (comment->company[0] != '\0') {
+		size_t field_len = strnlen(comment->company, sizeof(comment->company));
+		s_gameInfo.append(comment->company, field_len);
+		s_gameInfo += '\n';
+	}
+
+	// Game description.
+	if (comment->gamedesc[0] != '\0') {
+		// Add a second newline if necessary.
+		if (!s_gameInfo.empty()) {
+			s_gameInfo += '\n';
+		}
+
+		size_t field_len = strnlen(comment->gamedesc, sizeof(comment->gamedesc));
+		s_gameInfo.append(comment->gamedesc, field_len);
+	}
+
+	// Remove trailing newlines.
+	// TODO: Optimize this by using a `for` loop and counter. (maybe ptr)
+	while (!s_gameInfo.empty() && s_gameInfo[s_gameInfo.size()-1] == '\n') {
+		s_gameInfo.resize(s_gameInfo.size()-1);
+	}
+
+	if (!s_gameInfo.empty()) {
+		// Convert from cp1252 or Shift-JIS.
+		switch (gcnRegion) {
+			case GCN_REGION_USA:
+			case GCN_REGION_EUR:
+			case GCN_REGION_ALL:	// TODO: Assume JP?
+			default:
+				// USA/PAL uses cp1252.
+				s_gameInfo = cp1252_to_utf8(s_gameInfo);
+				break;
+
+			case GCN_REGION_JPN:
+			case GCN_REGION_KOR:
+			case GCN_REGION_CHN:
+			case GCN_REGION_TWN:
+				// Japan uses Shift-JIS.
+				s_gameInfo = cp1252_sjis_to_utf8(s_gameInfo);
+				break;
+		}
+	}
+
+	return s_gameInfo;
 }
 
 /** GameCubeBNR **/
@@ -128,7 +227,8 @@ GameCubeBNR::GameCubeBNR(IRpFile *file)
 	// settings as GameCube.
 	RP_D(GameCubeBNR);
 	d->className = "GameCube";
-	d->fileType = FTYPE_BANNER_FILE;
+	d->mimeType = "application/x-gamecube-bnr";	// unofficial, not on fd.o
+	d->fileType = FileType::BannerFile;
 
 	if (!d->file) {
 		// Could not ref() the file handle.
@@ -140,8 +240,7 @@ GameCubeBNR::GameCubeBNR(IRpFile *file)
 	d->file->rewind();
 	size_t size = d->file->read(&bnr_magic, sizeof(bnr_magic));
 	if (size != sizeof(bnr_magic)) {
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
 
@@ -152,12 +251,11 @@ GameCubeBNR::GameCubeBNR(IRpFile *file)
 	info.header.pData = reinterpret_cast<const uint8_t*>(&bnr_magic);
 	info.ext = nullptr;	// Not needed for GameCube banner files.
 	info.szFile = d->file->size();
-	d->bannerType = isRomSupported_static(&info);
-	d->isValid = (d->bannerType >= 0);
+	d->bannerType = static_cast<GameCubeBNRPrivate::BannerType>(isRomSupported_static(&info));
+	d->isValid = ((int)d->bannerType >= 0);
 
 	if (!d->isValid) {
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
 
@@ -168,11 +266,11 @@ GameCubeBNR::GameCubeBNR(IRpFile *file)
 			// Unknown banner type.
 			num = 0;
 			break;
-		case GameCubeBNRPrivate::BANNER_BNR1:
+		case GameCubeBNRPrivate::BannerType::BNR1:
 			// US/JP: One comment.
 			num = 1;
 			break;
-		case GameCubeBNRPrivate::BANNER_BNR2:
+		case GameCubeBNRPrivate::BannerType::BNR2:
 			// PAL: Six comments.
 			num = 6;
 			break;
@@ -180,13 +278,12 @@ GameCubeBNR::GameCubeBNR(IRpFile *file)
 
 	if (num > 0) {
 		// Read the comments.
-		d->comments = new gcn_banner_comment_t[num];
+		d->comments.resize(num);
 		const size_t expSize = sizeof(gcn_banner_comment_t) * num;
-		size = file->seekAndRead(offsetof(gcn_banner_bnr1_t, comment), d->comments, expSize);
+		size = file->seekAndRead(offsetof(gcn_banner_bnr1_t, comment), d->comments.data(), expSize);
 		if (size != expSize) {
 			// Seek and/or read error.
-			delete[] d->comments;
-			d->comments = nullptr;
+			d->comments.clear();
 		}
 	}
 }
@@ -209,23 +306,24 @@ int GameCubeBNR::isRomSupported_static(const DetectInfo *info)
 	{
 		// Either no detection information was specified,
 		// or the header is too small.
-		return -1;
+		return static_cast<int>(GameCubeBNRPrivate::BannerType::Unknown);
 	}
 
 	const uint32_t bnr_magic = be32_to_cpu(
 		*(reinterpret_cast<const uint32_t*>(info->header.pData)));
 
+	GameCubeBNRPrivate::BannerType bannerType = GameCubeBNRPrivate::BannerType::Unknown;
 	switch (bnr_magic) {
 		case GCN_BANNER_MAGIC_BNR1:
-			if (info->szFile >= (int64_t)sizeof(gcn_banner_bnr1_t)) {
+			if (info->szFile >= (off64_t)sizeof(gcn_banner_bnr1_t)) {
 				// This is BNR1.
-				return GameCubeBNRPrivate::BANNER_BNR1;
+				bannerType = GameCubeBNRPrivate::BannerType::BNR1;
 			}
 			break;
 		case GCN_BANNER_MAGIC_BNR2:
-			if (info->szFile >= (int64_t)sizeof(gcn_banner_bnr2_t)) {
+			if (info->szFile >= (off64_t)sizeof(gcn_banner_bnr2_t)) {
 				// This is BNR2.
-				return GameCubeBNRPrivate::BANNER_BNR2;
+				bannerType = GameCubeBNRPrivate::BannerType::BNR2;
 			}
 			// TODO: If size is >= BNR1 but not BNR2, handle as BNR1?
 			break;
@@ -233,8 +331,7 @@ int GameCubeBNR::isRomSupported_static(const DetectInfo *info)
 			break;
 	}
 
-	// Not suported.
-	return -1;
+	return static_cast<int>(bannerType);
 }
 
 /**
@@ -378,78 +475,155 @@ int GameCubeBNR::loadFieldData(void)
 	} else if (!d->file || !d->file->isOpen()) {
 		// File isn't open.
 		return -EBADF;
-	} else if (!d->isValid || d->bannerType < 0) {
+	} else if (!d->isValid || (int)d->bannerType < 0) {
 		// Unknown banner file type.
 		return -EIO;
 	}
 
-	// Get the comment.
-	const gcn_banner_comment_t *comment = getComment();
-	if (!comment) {
-		// No comment...
+	if (d->comments.empty()) {
+		// Banner comment data wasn't loaded...
 		return static_cast<int>(d->fields->count());
 	}
 	d->fields->reserve(3);	// Maximum of 3 fields.
 
 	// TODO: Show both full and normal?
 	// Currently showing full if it's there; otherwise, normal.
-	const char *const game_name_title = C_("GameCubeBNR", "Game Name");
-	const char *const company_title = C_("GameCubeBNR", "Company");
-	const char *const description_title = C_("GameCubeBNR", "Description");
+	const char *const s_game_name_title = C_("GameCubeBNR", "Game Name");
+	const char *const s_company_title = C_("GameCubeBNR", "Company");
+	const char *const s_description_title = C_("GameCubeBNR", "Description");
 
-	if (d->bannerType == GameCubeBNRPrivate::BANNER_BNR1) {
+	if (d->bannerType == GameCubeBNRPrivate::BannerType::BNR1) {
 		// BNR1: Assuming Shift-JIS with cp1252 fallback.
+		// The language is either English or Japanese, so we're
+		// using RFT_STRING here.
+
 		// TODO: Improve Shift-JIS detection to eliminate the
 		// false positive with Metroid Prime. (GM8E01)
 
+		// Only one banner comment.
+		const gcn_banner_comment_t &comment = d->comments.at(0);
+
 		// Game name.
-		if (comment->gamename_full[0] != '\0') {
-			d->fields->addField_string(game_name_title,
-				cp1252_sjis_to_utf8(comment->gamename_full, sizeof(comment->gamename_full)));
-		} else if (comment->gamename[0] != '\0') {
-			d->fields->addField_string(game_name_title,
-				cp1252_sjis_to_utf8(comment->gamename, sizeof(comment->gamename)));
+		if (comment.gamename_full[0] != '\0') {
+			d->fields->addField_string(s_game_name_title,
+				cp1252_sjis_to_utf8(comment.gamename_full, sizeof(comment.gamename_full)));
+		} else if (comment.gamename[0] != '\0') {
+			d->fields->addField_string(s_game_name_title,
+				cp1252_sjis_to_utf8(comment.gamename, sizeof(comment.gamename)));
 		}
 
 		// Company.
-		if (comment->company_full[0] != '\0') {
-			d->fields->addField_string(company_title,
-				cp1252_sjis_to_utf8(comment->company_full, sizeof(comment->company_full)));
-		} else if (comment->company[0] != '\0') {
-			d->fields->addField_string(company_title,
-				cp1252_sjis_to_utf8(comment->company, sizeof(comment->company)));
+		if (comment.company_full[0] != '\0') {
+			d->fields->addField_string(s_company_title,
+				cp1252_sjis_to_utf8(comment.company_full, sizeof(comment.company_full)));
+		} else if (comment.company[0] != '\0') {
+			d->fields->addField_string(s_company_title,
+				cp1252_sjis_to_utf8(comment.company, sizeof(comment.company)));
 		}
 
 		// Game description.
-		if (comment->gamedesc[0] != '\0') {
-			d->fields->addField_string(description_title,
-				cp1252_sjis_to_utf8(comment->gamedesc, sizeof(comment->gamedesc)));
+		if (comment.gamedesc[0] != '\0') {
+			d->fields->addField_string(s_description_title,
+				cp1252_sjis_to_utf8(comment.gamedesc, sizeof(comment.gamedesc)));
 		}
 	} else {
 		// BNR2: Assuming cp1252.
+		// Multiple languages may be present, so we're using
+		// RFT_STRING_MULTI here.
 
-		// Game name.
-		if (comment->gamename_full[0] != '\0') {
-			d->fields->addField_string(game_name_title,
-				cp1252_to_utf8(comment->gamename_full, sizeof(comment->gamename_full)));
-		} else if (comment->gamename[0] != '\0') {
-			d->fields->addField_string(game_name_title,
-				cp1252_to_utf8(comment->gamename, sizeof(comment->gamename)));
+		// Check if English is valid.
+		// If it is, we'll de-duplicate fields.
+		const gcn_banner_comment_t &comment_en = d->comments.at(GCN_PAL_LANG_ENGLISH);
+		bool dedupe_titles = (comment_en.gamename_full[0] != '\0') ||
+		                     (comment_en.gamename[0] != '\0');
+
+		// Fields.
+		RomFields::StringMultiMap_t *const pMap_gamename = new RomFields::StringMultiMap_t();
+		RomFields::StringMultiMap_t *const pMap_company = new RomFields::StringMultiMap_t();
+		RomFields::StringMultiMap_t *const pMap_gamedesc = new RomFields::StringMultiMap_t();
+		for (int langID = 0; langID < GCN_PAL_LANG_MAX; langID++) {
+			const gcn_banner_comment_t &comment = d->comments.at(langID);
+
+			// Check for empty strings first.
+			if (comment.gamename_full[0] == '\0' &&
+			    comment.gamename[0] == '\0' &&
+			    comment.company_full[0] == '\0' &&
+			    comment.company[0] == '\0' &&
+			    comment.gamedesc[0] == '\0')
+			{
+				// Strings are empty.
+				continue;
+			}
+
+			if (dedupe_titles && langID != GCN_PAL_LANG_ENGLISH) {
+				// Check if the comments match English.
+				if (!strncmp(comment.gamename_full, comment_en.gamename_full,
+				             ARRAY_SIZE(comment_en.gamename_full)) &&
+				    !strncmp(comment.gamename, comment_en.gamename,
+				             ARRAY_SIZE(comment_en.gamename)) &&
+				    !strncmp(comment.company_full, comment_en.company_full,
+				             ARRAY_SIZE(comment_en.company_full)) &&
+				    !strncmp(comment.company, comment_en.company,
+				             ARRAY_SIZE(comment_en.company)) &&
+				    !strncmp(comment.gamedesc, comment_en.gamedesc,
+				             ARRAY_SIZE(comment_en.gamedesc)))
+				{
+					// All fields match English.
+					continue;
+				}
+			}
+
+			const uint32_t lc = NintendoLanguage::getGcnPalLanguageCode(langID);
+			assert(lc != 0);
+			if (lc == 0)
+				continue;
+
+			// Game name.
+			if (comment.gamename_full[0] != '\0') {
+				pMap_gamename->insert(std::make_pair(lc,
+					cp1252_to_utf8(comment.gamename_full,
+					ARRAY_SIZE(comment.gamename_full))));
+			} else if (comment.gamename[0] != '\0') {
+				pMap_gamename->insert(std::make_pair(lc,
+					cp1252_to_utf8(comment.gamename,
+					ARRAY_SIZE(comment.gamename))));
+			}
+
+			// Company.
+			if (comment.company_full[0] != '\0') {
+				pMap_company->insert(std::make_pair(lc,
+					cp1252_to_utf8(comment.company_full,
+					ARRAY_SIZE(comment.company_full))));
+			} else if (comment.company[0] != '\0') {
+				pMap_company->insert(std::make_pair(lc,
+					cp1252_to_utf8(comment.company,
+					ARRAY_SIZE(comment.company))));
+			}
+
+			// Game description.
+			if (comment.gamedesc[0] != '\0') {
+				pMap_gamedesc->insert(std::make_pair(lc,
+					cp1252_to_utf8(comment.gamedesc,
+					ARRAY_SIZE(comment.gamedesc))));
+			}
 		}
 
-		// Company.
-		if (comment->company_full[0] != '\0') {
-			d->fields->addField_string(company_title,
-				cp1252_to_utf8(comment->company_full, sizeof(comment->company_full)));
-		} else if (comment->company[0] != '\0') {
-			d->fields->addField_string(company_title,
-				cp1252_to_utf8(comment->company, sizeof(comment->company)));
+		const uint32_t def_lc = NintendoLanguage::getGcnPalLanguageCode(
+			NintendoLanguage::getGcnPalLanguage());
+		if (!pMap_gamename->empty()) {
+			d->fields->addField_string_multi(s_game_name_title, pMap_gamename, def_lc);
+		} else {
+			delete pMap_gamename;
 		}
-
-		// Game description.
-		if (comment->gamedesc[0] != '\0') {
-			d->fields->addField_string(description_title,
-				cp1252_to_utf8(comment->gamedesc, sizeof(comment->gamedesc)));
+		if (!pMap_company->empty()) {
+			d->fields->addField_string_multi(s_company_title, pMap_company, def_lc);
+		} else {
+			delete pMap_company;
+		}
+		if (!pMap_gamedesc->empty()) {
+			d->fields->addField_string_multi(s_description_title, pMap_gamedesc, def_lc);
+		} else {
+			delete pMap_gamedesc;
 		}
 	}
 
@@ -471,15 +645,14 @@ int GameCubeBNR::loadMetaData(void)
 	} else if (!d->file) {
 		// File isn't open.
 		return -EBADF;
-	} else if (!d->isValid || d->bannerType < 0) {
+	} else if (!d->isValid || (int)d->bannerType < 0) {
 		// Unknown banner file type.
 		return -EIO;
 	}
 
-	// Get the comment.
-	const gcn_banner_comment_t *const comment = getComment();
-	if (!comment) {
-		// No comment...
+	assert(!d->comments.empty());
+	if (d->comments.empty()) {
+		// No comments...
 		return 0;
 	}
 
@@ -492,65 +665,90 @@ int GameCubeBNR::loadMetaData(void)
 	// FIXME: Prince of Persia: The Sands of Time has a full game name in
 	// company_full[], and an empty gamename_full[].
 
-	if (d->bannerType == GameCubeBNRPrivate::BANNER_BNR1) {
+	if (d->bannerType == GameCubeBNRPrivate::BannerType::BNR1) {
 		// BNR1: Assuming Shift-JIS with cp1252 fallback.
 		// TODO: Improve Shift-JIS detection to eliminate the
 		// false positive with Metroid Prime. (GM8E01)
+		const gcn_banner_comment_t &comment = d->comments.at(0);
 
 		// Game name.
-		if (comment->gamename_full[0] != '\0') {
+		if (comment.gamename_full[0] != '\0') {
 			d->metaData->addMetaData_string(Property::Title,
-				cp1252_sjis_to_utf8(comment->gamename_full, sizeof(comment->gamename_full)));
-		} else if (comment->gamename[0] != '\0') {
+				cp1252_sjis_to_utf8(comment.gamename_full, sizeof(comment.gamename_full)));
+		} else if (comment.gamename[0] != '\0') {
 			d->metaData->addMetaData_string(Property::Title,
-				cp1252_sjis_to_utf8(comment->gamename, sizeof(comment->gamename)));
+				cp1252_sjis_to_utf8(comment.gamename, sizeof(comment.gamename)));
 		}
 
 		// Company.
-		if (comment->company_full[0] != '\0') {
+		if (comment.company_full[0] != '\0') {
 			d->metaData->addMetaData_string(Property::Publisher,
-				cp1252_sjis_to_utf8(comment->company_full, sizeof(comment->company_full)));
-		} else if (comment->company[0] != '\0') {
+				cp1252_sjis_to_utf8(comment.company_full, sizeof(comment.company_full)));
+		} else if (comment.company[0] != '\0') {
 			d->metaData->addMetaData_string(Property::Publisher,
-				cp1252_sjis_to_utf8(comment->company, sizeof(comment->company)));
+				cp1252_sjis_to_utf8(comment.company, sizeof(comment.company)));
 		}
 
 		// Game description.
-		if (comment->gamedesc[0] != '\0') {
+		if (comment.gamedesc[0] != '\0') {
 			// TODO: Property::Comment is assumed to be user-added
 			// on KDE Dolphin 18.08.1. Needs a description property.
 			// Also needs verification on Windows.
 			d->metaData->addMetaData_string(Property::Subject,
-				cp1252_sjis_to_utf8(comment->gamedesc, sizeof(comment->gamedesc)));
+				cp1252_sjis_to_utf8(comment.gamedesc, sizeof(comment.gamedesc)));
 		}
 	} else {
 		// BNR2: Assuming cp1252.
+		int idx = NintendoLanguage::getGcnPalLanguage();
+		assert(idx >= 0);
+		assert(idx < (int)d->comments.size());
+		if (idx < 0 || idx >= (int)d->comments.size()) {
+			// Out of range. Default to English.
+			idx = GCN_PAL_LANG_ENGLISH;
+		}
+
+		// If all of the language-specific fields are empty,
+		// revert to English.
+		if (idx != GCN_PAL_LANG_ENGLISH) {
+			const gcn_banner_comment_t &comment = d->comments.at(idx);
+			if (comment.gamename[0] == 0 &&
+			    comment.company[0] == 0 &&
+			    comment.gamename_full[0] == 0 &&
+			    comment.company_full[0] == 0 &&
+			    comment.gamedesc[0] == 0)
+			{
+				// Revert to English.
+				idx = GCN_PAL_LANG_ENGLISH;
+			}
+		}
+
+		const gcn_banner_comment_t &comment = d->comments.at(idx);
 
 		// Game name.
-		if (comment->gamename_full[0] != '\0') {
+		if (comment.gamename_full[0] != '\0') {
 			d->metaData->addMetaData_string(Property::Title,
-				cp1252_to_utf8(comment->gamename_full, sizeof(comment->gamename_full)));
-		} else if (comment->gamename[0] != '\0') {
+				cp1252_to_utf8(comment.gamename_full, sizeof(comment.gamename_full)));
+		} else if (comment.gamename[0] != '\0') {
 			d->metaData->addMetaData_string(Property::Title,
-				cp1252_to_utf8(comment->gamename, sizeof(comment->gamename)));
+				cp1252_to_utf8(comment.gamename, sizeof(comment.gamename)));
 		}
 
 		// Company.
-		if (comment->company_full[0] != '\0') {
+		if (comment.company_full[0] != '\0') {
 			d->metaData->addMetaData_string(Property::Publisher,
-				cp1252_to_utf8(comment->company_full, sizeof(comment->company_full)));
-		} else if (comment->company[0] != '\0') {
+				cp1252_to_utf8(comment.company_full, sizeof(comment.company_full)));
+		} else if (comment.company[0] != '\0') {
 			d->metaData->addMetaData_string(Property::Publisher,
-				cp1252_to_utf8(comment->company, sizeof(comment->company)));
+				cp1252_to_utf8(comment.company, sizeof(comment.company)));
 		}
 
 		// Game description.
-		if (comment->gamedesc[0] != '\0') {
+		if (comment.gamedesc[0] != '\0') {
 			// TODO: Property::Comment is assumed to be user-added
 			// on KDE Dolphin 18.08.1. Needs a description property.
 			// Also needs verification on Windows.
 			d->metaData->addMetaData_string(Property::Subject,
-				cp1252_to_utf8(comment->gamedesc, sizeof(comment->gamedesc)));
+				cp1252_to_utf8(comment.gamedesc, sizeof(comment.gamedesc)));
 		}
 	}
 
@@ -568,87 +766,114 @@ int GameCubeBNR::loadMetaData(void)
 int GameCubeBNR::loadInternalImage(ImageType imageType, const rp_image **pImage)
 {
 	ASSERT_loadInternalImage(imageType, pImage);
-
-	if (imageType != IMG_INT_BANNER) {
-		// Only IMG_INT_BANNER is supported by GameCubeBNR.
-		*pImage = nullptr;
-		return -ENOENT;
-	}
-
 	RP_D(GameCubeBNR);
-	if (d->img_banner) {
-		// Banner is loaded.
-		*pImage = d->img_banner;
-		return 0;
-	}
-
-	if (!d->file) {
-		// File isn't open.
-		return -EBADF;
-	} else if (!d->isValid || d->bannerType < 0) {
-		// Banner file isn't valid.
-		return -EIO;
-	}
-
-	// Load the image.
-	// TODO: -ENOENT if the file doesn't actually have an icon/banner.
-	*pImage = d->loadBanner();
-	return (*pImage != nullptr ? 0 : -EIO);
+	ROMDATA_loadInternalImage_single(
+		IMG_INT_BANNER,	// ourImageType
+		d->file,	// file
+		d->isValid,	// isValid
+		d->bannerType,	// romType
+		d->img_banner,	// imgCache
+		d->loadBanner);	// func
 }
 
 /** GameCubeBNR accessors. **/
 
 /**
- * Get the gcn_banner_comment_t.
+ * Add a field for the GameCube banner.
  *
- * For BNR2, this returns the comment that most closely
- * matches the system language.
+ * This adds an RFT_STRING field for BNR1, and
+ * RFT_STRING_MULTI for BNR2.
  *
- * return gcn_banner_comment_t, or nullptr on error.
+ * @param fields RomFields*
+ * @param gcnRegion GameCube region for BNR1 encoding.
+ * @return 0 on success; negative POSIX error code on error.
  */
-const gcn_banner_comment_t *GameCubeBNR::getComment(void) const
+int GameCubeBNR::addField_gameInfo(LibRpBase::RomFields *fields, uint32_t gcnRegion) const
 {
 	RP_D(const GameCubeBNR);
-	assert(d->comments != nullptr);
-	if (!d->comments) {
+	assert(!d->comments.empty());
+	if (d->comments.empty()) {
 		// No comments available...
-		return nullptr;
+		return -ENOENT;
 	}
 
-	const gcn_banner_comment_t *comment;
-	switch (d->bannerType) {
-		default:
-			// Unknown banner type.
-			comment = nullptr;
-			break;
+	// Fields are not necessarily null-terminated.
+	// NOTE: We're converting from cp1252 or Shift-JIS
+	// *after* concatenating all the strings, which is
+	// why we're using strnlen() here.
 
-		case GameCubeBNRPrivate::BANNER_BNR1:
-			// US/JP: One comment.
-			comment = d->comments;
-			break;
+	// NOTE: Using GameCube for the translation context,
+	// since this function is used by GameCube, not GameCubeBNR.
+	const char *const game_info_title = C_("GameCube", "Game Info");
 
-		case GameCubeBNRPrivate::BANNER_BNR2: {
-			// PAL: Six comments.
-			// Get the system language.
-			const int lang = NintendoLanguage::getGcnPalLanguage();
-			comment = &d->comments[lang];
+	if (d->bannerType == GameCubeBNRPrivate::BannerType::BNR1) {
+		// BNR1: Assuming Shift-JIS with cp1252 fallback.
+		// The language is either English or Japanese, so we're
+		// using RFT_STRING here.
 
-			// If all of the language-specific fields are empty,
-			// revert to English.
-			if (comment->gamename[0] == 0 &&
-			    comment->company[0] == 0 &&
-			    comment->gamename_full[0] == 0 &&
-			    comment->company_full[0] == 0 &&
-			    comment->gamedesc[0] == 0)
-			{
-				// Revert to English.
-				comment = &d->comments[GCN_PAL_LANG_ENGLISH];
+		// TODO: Improve Shift-JIS detection to eliminate the
+		// false positive with Metroid Prime. (GM8E01)
+
+		// Only one banner comment.
+		const gcn_banner_comment_t *const comment = &d->comments[0];
+
+		// Get the game info string.
+		string s_gameInfo = d->getGameInfoString(comment, gcnRegion);
+
+		// Add the field.
+		fields->addField_string(game_info_title, s_gameInfo);
+	} else {
+		// BNR2: Assuming cp1252.
+		// Multiple languages may be present, so we're using
+		// RFT_STRING_MULTI here.
+
+		// Check if English is valid.
+		// If it is, we'll de-duplicate fields.
+		const gcn_banner_comment_t &comment_en = d->comments[GCN_PAL_LANG_ENGLISH];
+		bool dedupe_titles = (comment_en.gamename_full[0] != '\0') ||
+		                     (comment_en.gamename[0] != '\0');
+
+		// Fields.
+		RomFields::StringMultiMap_t *const pMap_gameinfo = new RomFields::StringMultiMap_t();
+		for (int langID = 0; langID < GCN_PAL_LANG_MAX; langID++) {
+			const gcn_banner_comment_t &comment = d->comments[langID];
+			if (dedupe_titles && langID != GCN_PAL_LANG_ENGLISH) {
+				// Check if the comments match English.
+				if (!strncmp(comment.gamename_full, comment_en.gamename_full,
+				             ARRAY_SIZE(comment_en.gamename_full)) &&
+				    !strncmp(comment.gamename, comment_en.gamename,
+				             ARRAY_SIZE(comment_en.gamename)) &&
+				    !strncmp(comment.company_full, comment_en.company_full,
+				             ARRAY_SIZE(comment_en.company_full)) &&
+				    !strncmp(comment.company, comment_en.company,
+				             ARRAY_SIZE(comment_en.company)) &&
+				    !strncmp(comment.gamedesc, comment_en.gamedesc,
+				             ARRAY_SIZE(comment_en.gamedesc)))
+				{
+					// All fields match English.
+					continue;
+				}
 			}
-			break;
+
+			const uint32_t lc = NintendoLanguage::getGcnPalLanguageCode(langID);
+			assert(lc != 0);
+			if (lc == 0)
+				continue;
+
+			// Get the game info string.
+			// TODO: Always use GCN_REGION_EUR here instead of gcnRegion?
+			string s_gameInfo = d->getGameInfoString(&d->comments[langID], gcnRegion);
+			pMap_gameinfo->insert(std::make_pair(lc, std::move(s_gameInfo)));
 		}
+
+		// Add the field.
+		const uint32_t def_lc = NintendoLanguage::getGcnPalLanguageCode(
+			NintendoLanguage::getGcnPalLanguage());
+		fields->addField_string_multi(game_info_title, pMap_gameinfo, def_lc);
 	}
 
-	return comment;
+	// Game information field added successfully.
+	return 0;
 }
 
 }

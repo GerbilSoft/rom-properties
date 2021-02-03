@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * SID.hpp: SID audio reader.                                              *
  *                                                                         *
- * Copyright (c) 2018-2019 by David Korth.                                 *
+ * Copyright (c) 2018-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -10,8 +10,9 @@
 #include "SID.hpp"
 #include "sid_structs.h"
 
-// librpbase
+// librpbase, librpfile
 using namespace LibRpBase;
+using LibRpFile::IRpFile;
 
 // C++ STL classes.
 using std::string;
@@ -21,7 +22,7 @@ namespace LibRomData {
 
 ROMDATA_IMPL(SID)
 
-class SIDPrivate : public RomDataPrivate
+class SIDPrivate final : public RomDataPrivate
 {
 	public:
 		SIDPrivate(SID *q, IRpFile *file);
@@ -65,7 +66,8 @@ SID::SID(IRpFile *file)
 {
 	RP_D(SID);
 	d->className = "SID";
-	d->fileType = FTYPE_AUDIO_FILE;
+	d->mimeType = "audio/prs.sid";	// official
+	d->fileType = FileType::AudioFile;
 
 	if (!d->file) {
 		// Could not ref() the file handle.
@@ -76,8 +78,7 @@ SID::SID(IRpFile *file)
 	d->file->rewind();
 	size_t size = d->file->read(&d->sidHeader, sizeof(d->sidHeader));
 	if (size != sizeof(d->sidHeader)) {
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
 
@@ -91,9 +92,7 @@ SID::SID(IRpFile *file)
 	d->isValid = (isRomSupported_static(&info) >= 0);
 
 	if (!d->isValid) {
-		d->file->unref();
-		d->file = nullptr;
-		return;
+		UNREF_AND_NULL_NOCHK(d->file);
 	}
 }
 
@@ -266,17 +265,17 @@ int SID::loadFieldData(void)
 	// Load address.
 	d->fields->addField_string_numeric(C_("SID", "Load Address"),
 		be16_to_cpu(sidHeader->loadAddress),
-		RomFields::FB_HEX, 4, RomFields::STRF_MONOSPACE);
+		RomFields::Base::Hex, 4, RomFields::STRF_MONOSPACE);
 
 	// Init address.
 	d->fields->addField_string_numeric(C_("SID", "Init Address"),
 		be16_to_cpu(sidHeader->initAddress),
-		RomFields::FB_HEX, 4, RomFields::STRF_MONOSPACE);
+		RomFields::Base::Hex, 4, RomFields::STRF_MONOSPACE);
 
 	// Play address.
 	d->fields->addField_string_numeric(C_("SID", "Play Address"),
 		be16_to_cpu(sidHeader->playAddress),
-		RomFields::FB_HEX, 4, RomFields::STRF_MONOSPACE);
+		RomFields::Base::Hex, 4, RomFields::STRF_MONOSPACE);
 
 	// Number of songs.
 	d->fields->addField_string_numeric(C_("RomData|Audio", "# of Songs"),

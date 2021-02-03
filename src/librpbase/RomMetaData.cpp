@@ -6,7 +6,7 @@
  * a generic list, RomMetaData stores specific properties that can be used *
  * by the desktop environment's indexer.                                   *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -15,7 +15,6 @@
 
 // C++ STL classes.
 using std::string;
-using std::unique_ptr;
 using std::vector;
 
 namespace LibRpBase {
@@ -33,19 +32,31 @@ class RomMetaDataPrivate
 		// ROM field structs.
 		vector<RomMetaData::MetaData> metaData;
 
+		// Mapping of Property to metaData indexes.
+		// Index == Property
+		// Value == metaData index (-1 for none)
+		std::array<Property, (int)Property::PropertyCount> map_metaData;
+
 		/**
 		 * Deletes allocated strings in this->metaData.
 		 */
 		void delete_data(void);
 
 		// Property type mapping.
-		static const uint8_t PropertyTypeMap[];
+		static const PropertyType PropertyTypeMap[];
+
+		/**
+		 * Add or overwrite a Property.
+		 * @param name Property name.
+		 * @return Metadata property.
+		 */
+		RomMetaData::MetaData *addProperty(Property name);
 };
 
 /** RomMetaDataPrivate **/
 
 // Property type mapping.
-const uint8_t RomMetaDataPrivate::PropertyTypeMap[] = {
+const PropertyType RomMetaDataPrivate::PropertyTypeMap[] = {
 	PropertyType::FirstPropertyType,	// first type is invalid
 
 	// Audio
@@ -138,8 +149,9 @@ const uint8_t RomMetaDataPrivate::PropertyTypeMap[] = {
 
 RomMetaDataPrivate::RomMetaDataPrivate()
 {
-	static_assert(ARRAY_SIZE(RomMetaDataPrivate::PropertyTypeMap) == Property::PropertyCount,
+	static_assert(ARRAY_SIZE(RomMetaDataPrivate::PropertyTypeMap) == (int)Property::PropertyCount,
 		      "PropertyTypeMap needs to be updated!");
+	map_metaData.fill(Property::Invalid);
 }
 
 RomMetaDataPrivate::~RomMetaDataPrivate()
@@ -153,9 +165,8 @@ RomMetaDataPrivate::~RomMetaDataPrivate()
 void RomMetaDataPrivate::delete_data(void)
 {
 	// Delete all of the allocated strings in this->metaData.
-	for (auto iter = this->metaData.begin();
-	     iter != this->metaData.end(); ++iter)
-	{
+	const auto metaData_end = metaData.end();
+	for (auto iter = this->metaData.begin(); iter != metaData_end; ++iter) {
 		RomMetaData::MetaData &metaData = *iter;
 
 		assert(metaData.name > Property::FirstProperty);
@@ -166,7 +177,7 @@ void RomMetaDataPrivate::delete_data(void)
 			continue;
 		}
 
-		switch (PropertyTypeMap[metaData.name]) {
+		switch (PropertyTypeMap[(int)metaData.name]) {
 			case PropertyType::Integer:
 			case PropertyType::UnsignedInteger:
 			case PropertyType::Timestamp:
@@ -184,6 +195,50 @@ void RomMetaDataPrivate::delete_data(void)
 
 	// Clear the metadata vector.
 	this->metaData.clear();
+}
+
+/**
+ * Add or overwrite a Property.
+ * @param name Property name.
+ * @return Metadata property.
+ */
+RomMetaData::MetaData *RomMetaDataPrivate::addProperty(Property name)
+{
+	assert(name > Property::FirstProperty);
+	assert(name < Property::PropertyCount);
+	if (name <= Property::FirstProperty ||
+	    name >= Property::PropertyCount)
+	{
+		return nullptr;
+	}
+
+	// Check if this metadata property was already added.
+	RomMetaData::MetaData *pMetaData;
+	if (map_metaData[(int)name] > Property::Invalid) {
+		// Already added. Overwrite it.
+		pMetaData = &metaData[(int)map_metaData[(int)name]];
+		// If a string is present, delete it.
+		if (pMetaData->type == PropertyType::String) {
+			delete pMetaData->data.str;
+			pMetaData->data.str = nullptr;
+		}
+	} else {
+		// Not added yet. Create a new one.
+		assert(metaData.size() < 128);
+		if (metaData.size() >= 128) {
+			// Can't add any more properties...
+			return nullptr;
+		}
+
+		size_t idx = metaData.size();
+		metaData.resize(idx+1);
+		pMetaData = &metaData[idx];
+		pMetaData->name = name;
+		pMetaData->type = static_cast<PropertyType>(PropertyTypeMap[(int)name]);
+		map_metaData[(int)name] = static_cast<Property>(idx);
+	}
+
+	return pMetaData;
 }
 
 /** RomMetaData **/
@@ -254,6 +309,10 @@ void RomMetaData::reserve(int n)
 
 /**
  * Add metadata from another RomMetaData object.
+ *
+ * If metadata properties with the same names already exist,
+ * they will be overwritten.
+ *
  * @param other Source RomMetaData object.
  * @return Metadata index of the last metadata added.
  */
@@ -272,38 +331,40 @@ int RomMetaData::addMetaData_metaData(const RomMetaData *other)
 	d->metaData.reserve(d->metaData.size() + other->count());
 
 	for (int i = 0; i < other->count(); i++) {
-		const MetaData *src = other->prop(i);
-		if (!src)
+		const MetaData *const pSrc = other->prop(i);
+		if (!pSrc)
 			continue;
 
-		size_t idx = d->metaData.size();
-		d->metaData.resize(idx+1);
-		MetaData &metaData = d->metaData.at(idx);
-		metaData.name = src->name;
-
-		assert(metaData.name > Property::FirstProperty);
-		assert(metaData.name < Property::PropertyCount);
-		if (metaData.name <= Property::FirstProperty ||
-		    metaData.name >= Property::PropertyCount)
+		assert(pSrc->name > Property::FirstProperty);
+		assert(pSrc->name < Property::PropertyCount);
+		if (pSrc->name <= Property::FirstProperty ||
+		    pSrc->name >= Property::PropertyCount)
 		{
 			continue;
 		}
 
-		metaData.type = src->type;
-		switch (metaData.type) {
+		MetaData *const pDest = d->addProperty(pSrc->name);
+		assert(pDest != nullptr);
+		if (!pDest)
+			break;
+		assert(pDest->type == pSrc->type);
+		if (pDest->type != pSrc->type)
+			continue;	// TODO: Should be break?
+
+		switch (pSrc->type) {
 			case PropertyType::Integer:
-				metaData.data.ivalue = src->data.ivalue;
+				pDest->data.ivalue = pSrc->data.ivalue;
 				break;
 			case PropertyType::UnsignedInteger:
-				metaData.data.uvalue = src->data.uvalue;
+				pDest->data.uvalue = pSrc->data.uvalue;
 				break;
 			case PropertyType::String:
 				// TODO: Don't add a property if the string value is nullptr?
-				assert(src->data.str != nullptr);
-				metaData.data.str = (src->data.str ? new string(*src->data.str) : nullptr);
+				assert(pSrc->data.str != nullptr);
+				pDest->data.str = (pSrc->data.str ? new string(*pSrc->data.str) : nullptr);
 				break;
 			case PropertyType::Timestamp:
-				metaData.data.timestamp = src->data.timestamp;
+				pDest->data.timestamp = pSrc->data.timestamp;
 				break;
 			default:
 				// ERROR!
@@ -318,167 +379,189 @@ int RomMetaData::addMetaData_metaData(const RomMetaData *other)
 
 /**
  * Add an integer metadata property.
+ *
+ * If a metadata property with the same name already exists,
+ * it will be overwritten.
+ *
  * @param name Metadata name.
  * @param val Integer value.
- * @return Metadata index.
+ * @return Metadata index, or -1 on error.
  */
-int RomMetaData::addMetaData_integer(Property::Property name, int value)
+int RomMetaData::addMetaData_integer(Property name, int value)
 {
-	assert(name > Property::FirstProperty);
-	assert(name < Property::PropertyCount);
-	if (name <= Property::FirstProperty ||
-	    name >= Property::PropertyCount)
-	{
+	RP_D(RomMetaData);
+	MetaData *const pMetaData = d->addProperty(name);
+	assert(pMetaData != nullptr);
+	if (!pMetaData)
+		return -1;
+
+	// Make sure this is an integer property.
+	assert(pMetaData->type == PropertyType::Integer);
+	if (pMetaData->type != PropertyType::Integer) {
+		// TODO: Delete the property in this case?
+		pMetaData->data.iptrvalue = 0;
 		return -1;
 	}
 
-	// Make sure this is an integer property.
-	assert(RomMetaDataPrivate::PropertyTypeMap[name] == PropertyType::Integer);
-	if (RomMetaDataPrivate::PropertyTypeMap[name] != PropertyType::Integer)
-		return -1;
-
-	RP_D(RomMetaData);
-	size_t idx = d->metaData.size();
-	d->metaData.resize(idx+1);
-	MetaData &metaData = d->metaData.at(idx);
-
-	metaData.name = name;
-	metaData.type = PropertyType::Integer;
-	metaData.data.ivalue = value;
-	return static_cast<int>(idx);
+	pMetaData->data.ivalue = value;
+	return static_cast<int>(d->map_metaData[(int)name]);
 }
 
 /**
  * Add an unsigned integer metadata property.
+ *
+ * If a metadata property with the same name already exists,
+ * it will be overwritten.
+ *
  * @param name Metadata name.
  * @param val Unsigned integer value.
- * @return Metadata index.
+ * @return Metadata index, or -1 on error.
  */
-int RomMetaData::addMetaData_uint(Property::Property name, unsigned int value)
+int RomMetaData::addMetaData_uint(Property name, unsigned int value)
 {
-	assert(name > Property::FirstProperty);
-	assert(name < Property::PropertyCount);
-	if (name <= Property::FirstProperty ||
-	    name >= Property::PropertyCount)
-	{
+	RP_D(RomMetaData);
+	MetaData *const pMetaData = d->addProperty(name);
+	assert(pMetaData != nullptr);
+	if (!pMetaData)
+		return -1;
+
+	// Make sure this is an unsigned integer property.
+	assert(pMetaData->type == PropertyType::UnsignedInteger);
+	if (pMetaData->type != PropertyType::UnsignedInteger) {
+		// TODO: Delete the property in this case?
+		pMetaData->data.iptrvalue = 0;
 		return -1;
 	}
 
-	// Make sure this is an integer property.
-	assert(RomMetaDataPrivate::PropertyTypeMap[name] == PropertyType::UnsignedInteger);
-	if (RomMetaDataPrivate::PropertyTypeMap[name] != PropertyType::UnsignedInteger)
-		return -1;
-
-	RP_D(RomMetaData);
-	size_t idx = d->metaData.size();
-	d->metaData.resize(idx+1);
-	MetaData &metaData = d->metaData.at(idx);
-
-	metaData.name = name;
-	metaData.type = PropertyType::UnsignedInteger;
-	metaData.data.uvalue = value;
-	return static_cast<int>(idx);
+	pMetaData->data.uvalue = value;
+	return static_cast<int>(d->map_metaData[(int)name]);
 }
 
 /**
  * Add a string metadata property.
+ *
+ * If a metadata property with the same name already exists,
+ * it will be overwritten.
+ *
  * @param name Metadata name.
  * @param str String value.
  * @param flags Formatting flags.
- * @return Metadata index.
+ * @return Metadata index, or -1 on error.
  */
-int RomMetaData::addMetaData_string(Property::Property name, const char *str, unsigned int flags)
+int RomMetaData::addMetaData_string(Property name, const char *str, unsigned int flags)
 {
-	assert(name > Property::FirstProperty);
-	assert(name < Property::PropertyCount);
-	if (name <= Property::FirstProperty || name >= Property::PropertyCount)
+	if (!str || str[0] == '\0') {
+		// Ignore empty strings.
 		return -1;
+	}
 
-	// Make sure this is an integer property.
-	assert(RomMetaDataPrivate::PropertyTypeMap[name] == PropertyType::String);
-	if (RomMetaDataPrivate::PropertyTypeMap[name] != PropertyType::String)
-		return -1;
-
-	RP_D(RomMetaData);
-	size_t idx = d->metaData.size();
-	d->metaData.resize(idx+1);
-	MetaData &metaData = d->metaData.at(idx);
-
-	string *const nstr = (str ? new string(str) : nullptr);
-	metaData.name = name;
-	metaData.type = PropertyType::String;
-	metaData.data.str = nstr;
-
+	string *const nstr = new string(str);
 	// Trim the string if requested.
 	if (nstr && (flags & STRF_TRIM_END)) {
 		trimEnd(*nstr);
 	}
-	return static_cast<int>(idx);
+	if (nstr->empty()) {
+		// String is now empty. Ignore it.
+		delete nstr;
+		return -1;
+	}
+
+	RP_D(RomMetaData);
+	MetaData *const pMetaData = d->addProperty(name);
+	assert(pMetaData != nullptr);
+	if (!pMetaData)
+		return -1;
+
+	// Make sure this is a string property.
+	assert(pMetaData->type == PropertyType::String);
+	if (pMetaData->type != PropertyType::String) {
+		// TODO: Delete the property in this case?
+		pMetaData->data.iptrvalue = 0;
+		return -1;
+	}
+
+	pMetaData->data.str = nstr;
+	return static_cast<int>(d->map_metaData[(int)name]);
 }
 
 /**
  * Add a string metadata property.
+ *
+ * If a metadata property with the same name already exists,
+ * it will be overwritten.
+ *
  * @param name Metadata name.
  * @param str String value.
  * @param flags Formatting flags.
- * @return Metadata index.
+ * @return Metadata index, or -1 on error.
  */
-int RomMetaData::addMetaData_string(Property::Property name, const string &str, unsigned int flags)
+int RomMetaData::addMetaData_string(Property name, const string &str, unsigned int flags)
 {
-	assert(name > Property::FirstProperty);
-	assert(name < Property::PropertyCount);
-	if (name <= Property::FirstProperty || name >= Property::PropertyCount)
+	if (str.empty()) {
+		// Ignore empty strings.
 		return -1;
+	}
 
-	// Make sure this is an integer property.
-	assert(RomMetaDataPrivate::PropertyTypeMap[name] == PropertyType::String);
-	if (RomMetaDataPrivate::PropertyTypeMap[name] != PropertyType::String)
-		return -1;
-
-	RP_D(RomMetaData);
-	size_t idx = d->metaData.size();
-	d->metaData.resize(idx+1);
-	MetaData &metaData = d->metaData.at(idx);
-
-	string *const nstr = (!str.empty() ? new string(str) : nullptr);
-	metaData.name = name;
-	metaData.type = PropertyType::String;
-	metaData.data.str = nstr;
-
+	string *const nstr = new string(str);
 	// Trim the string if requested.
 	if (nstr && (flags & STRF_TRIM_END)) {
 		trimEnd(*nstr);
 	}
-	return static_cast<int>(idx);
+	if (nstr->empty()) {
+		// String is now empty. Ignore it.
+		delete nstr;
+		return -1;
+	}
+
+	RP_D(RomMetaData);
+	MetaData *const pMetaData = d->addProperty(name);
+	assert(pMetaData != nullptr);
+	if (!pMetaData) {
+		delete nstr;
+		return -1;
+	}
+
+	// Make sure this is a string property.
+	assert(pMetaData->type == PropertyType::String);
+	if (pMetaData->type != PropertyType::String) {
+		// TODO: Delete the property in this case?
+		pMetaData->data.iptrvalue = 0;
+		delete nstr;
+		return -1;
+	}
+
+	pMetaData->data.str = nstr;
+	return static_cast<int>(d->map_metaData[(int)name]);
 }
 
 /**
  * Add a timestamp metadata property.
+ *
+ * If a metadata property with the same name already exists,
+ * it will be overwritten.
+ *
  * @param name Metadata name.
  * @param timestamp UNIX timestamp.
- * @return Metadata index.
+ * @return Metadata index, or -1 on error.
  */
-int RomMetaData::addMetaData_timestamp(Property::Property name, time_t timestamp)
+int RomMetaData::addMetaData_timestamp(Property name, time_t timestamp)
 {
-	assert(name > Property::FirstProperty);
-	assert(name < Property::PropertyCount);
-	if (name <= Property::FirstProperty || name >= Property::PropertyCount)
+	RP_D(RomMetaData);
+	MetaData *const pMetaData = d->addProperty(name);
+	assert(pMetaData != nullptr);
+	if (!pMetaData)
 		return -1;
 
 	// Make sure this is a timestamp property.
-	assert(RomMetaDataPrivate::PropertyTypeMap[name] == PropertyType::Timestamp);
-	if (RomMetaDataPrivate::PropertyTypeMap[name] != PropertyType::Timestamp)
+	assert(pMetaData->type == PropertyType::Timestamp);
+	if (pMetaData->type != PropertyType::Timestamp) {
+		// TODO: Delete the property in this case?
+		pMetaData->data.iptrvalue = 0;
 		return -1;
+	}
 
-	RP_D(RomMetaData);
-	size_t idx = d->metaData.size();
-	d->metaData.resize(idx+1);
-	MetaData &metaData = d->metaData.at(idx);
-
-	metaData.name = name;
-	metaData.type = PropertyType::Timestamp;
-	metaData.data.timestamp = timestamp;
-	return static_cast<int>(idx);
+	pMetaData->data.timestamp = timestamp;
+	return static_cast<int>(d->map_metaData[(int)name]);
 }
 
 }

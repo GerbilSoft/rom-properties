@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * CIAReader.cpp: Nintendo 3DS CIA reader.                                 *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -10,7 +10,7 @@
 #include "librpbase/config.librpbase.h"
 #include "CIAReader.hpp"
 
-// librpbase
+// librpbase, librpfile
 #include "librpbase/disc/CBCReader.hpp"
 #ifdef ENABLE_DECRYPTION
 # include "librpbase/crypto/AesCipherFactory.hpp"
@@ -19,6 +19,7 @@
 # include "../crypto/N3DSVerifyKeys.hpp"
 #endif /* ENABLE_DECRYPTION */
 using namespace LibRpBase;
+using LibRpFile::IRpFile;
 
 namespace LibRomData {
 
@@ -26,7 +27,7 @@ class CIAReaderPrivate
 {
 	public:
 		CIAReaderPrivate(CIAReader *q,
-			int64_t content_offset, uint32_t content_length,
+			off64_t content_offset, uint32_t content_length,
 			const N3DS_Ticket_t *ticket,
 			uint16_t tmd_content_index);
 		~CIAReaderPrivate();
@@ -50,7 +51,7 @@ class CIAReaderPrivate
 /** CIAReaderPrivate **/
 
 CIAReaderPrivate::CIAReaderPrivate(CIAReader *q,
-	int64_t content_offset, uint32_t content_length,
+	off64_t content_offset, uint32_t content_length,
 	const N3DS_Ticket_t *ticket, uint16_t tmd_content_index)
 	: q_ptr(q)
 	, cbcReader(nullptr)
@@ -129,7 +130,7 @@ CIAReaderPrivate::CIAReaderPrivate(CIAReader *q,
 	KeyManager::VerifyResult res = N3DSVerifyKeys::loadKeyNormal(&keyNormal,
 		keyNormal_name, keyX_name, keyY_name,
 		keyNormal_verify, keyX_verify, keyY_verify);
-	if (res == KeyManager::VERIFY_OK) {
+	if (res == KeyManager::VerifyResult::OK) {
 		// Create a cipher to decrypt the title key.
 		IAesCipher *cipher = AesCipherFactory::create();
 
@@ -139,7 +140,7 @@ CIAReaderPrivate::CIAReaderPrivate(CIAReader *q,
 		// - Keyslot: 0x3D
 		// - Chaining mode: CBC
 		// - IV: Title ID (little-endian)
-		cipher->setChainingMode(IAesCipher::CM_CBC);
+		cipher->setChainingMode(IAesCipher::ChainingMode::CBC);
 		cipher->setKey(keyNormal.u8, sizeof(keyNormal.u8));
 		// CIA IV is the title ID in big-endian.
 		// The ticket title ID is already in big-endian,
@@ -166,20 +167,18 @@ CIAReaderPrivate::CIAReaderPrivate(CIAReader *q,
 		// Unable to get the CIA encryption keys.
 		// TODO: Set an error.
 		//verifyResult = res;
-		q->m_file->unref();
-		q->m_file = nullptr;
+		UNREF_AND_NULL_NOCHK(q->m_file);
 	}
 #else /* !ENABLE_DECRYPTION */
 	// Cannot decrypt the CIA.
 	// TODO: Set an error.
-	q->m_file->unref();
-	q->m_file = nullptr;
+	UNREF_AND_NULL_NOCHK(q->m_file);
 #endif /* ENABLE_DECRYPTION */
 }
 
 CIAReaderPrivate::~CIAReaderPrivate()
 {
-	delete cbcReader;
+	UNREF(cbcReader);
 }
 
 /** CIAReader **/
@@ -197,7 +196,7 @@ CIAReaderPrivate::~CIAReaderPrivate()
  * @param tmd_content_index	[in,opt] TMD content index for decryption.
  */
 CIAReader::CIAReader(IRpFile *file,
-		int64_t content_offset, uint32_t content_length,
+		off64_t content_offset, uint32_t content_length,
 		const N3DS_Ticket_t *ticket,
 		uint16_t tmd_content_index)
 	: super(file)
@@ -245,7 +244,7 @@ size_t CIAReader::read(void *ptr, size_t size)
  * @param pos Partition position.
  * @return 0 on success; -1 on error.
  */
-int CIAReader::seek(int64_t pos)
+int CIAReader::seek(off64_t pos)
 {
 	RP_D(CIAReader);
 	assert(m_file != nullptr);
@@ -267,7 +266,7 @@ int CIAReader::seek(int64_t pos)
  * Get the partition position.
  * @return Partition position on success; -1 on error.
  */
-int64_t CIAReader::tell(void)
+off64_t CIAReader::tell(void)
 {
 	RP_D(const CIAReader);
 	assert(m_file != nullptr);
@@ -277,7 +276,7 @@ int64_t CIAReader::tell(void)
 		return -1;
 	}
 
-	int64_t ret = d->cbcReader->tell();
+	off64_t ret = d->cbcReader->tell();
 	m_lastError = d->cbcReader->lastError();
 	return ret;
 }
@@ -288,7 +287,7 @@ int64_t CIAReader::tell(void)
  * and it's adjusted to exclude hashes.
  * @return Data size, or -1 on error.
  */
-int64_t CIAReader::size(void)
+off64_t CIAReader::size(void)
 {
 	RP_D(const CIAReader);
 	assert(m_file != nullptr);
@@ -299,7 +298,7 @@ int64_t CIAReader::size(void)
 		return -1;
 	}
 
-	int64_t ret = d->cbcReader->size();
+	off64_t ret = d->cbcReader->size();
 	m_lastError = d->cbcReader->lastError();
 	return ret;
 }
@@ -311,7 +310,7 @@ int64_t CIAReader::size(void)
  * This size includes the partition header and hashes.
  * @return Partition size, or -1 on error.
  */
-int64_t CIAReader::partition_size(void) const
+off64_t CIAReader::partition_size(void) const
 {
 	// TODO: Handle errors.
 	RP_D(const CIAReader);
@@ -324,7 +323,7 @@ int64_t CIAReader::partition_size(void) const
  * but does not include "empty" sectors.
  * @return Used partition size, or -1 on error.
  */
-int64_t CIAReader::partition_size_used(void) const
+off64_t CIAReader::partition_size_used(void) const
 {
 	// NOTE: For CIAReader, this is the same as partition_size().
 	// TODO: Handle errors.

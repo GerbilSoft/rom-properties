@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * vgm_structs.h: VGM audio data structures.                               *
  *                                                                         *
- * Copyright (c) 2018 by David Korth.                                      *
+ * Copyright (c) 2018-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -13,14 +13,12 @@
 #ifndef __ROMPROPERTIES_LIBROMDATA_AUDIO_VGM_STRUCTS_H__
 #define __ROMPROPERTIES_LIBROMDATA_AUDIO_VGM_STRUCTS_H__
 
-#include "librpbase/common.h"
+#include "common.h"
 #include <stdint.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-#pragma pack(1)
 
 /**
  * Video Game Music Format.
@@ -35,7 +33,7 @@ extern "C" {
 #define VGM_CLK_FLAG_ALTMODE	(1U << 31)	/* alternate mode for some sound chips */
 #define VGM_CLK_FLAG_DUALCHIP	(1U << 30)	/* dual-chip mode for some sound chips */
 #define PSG_T6W28 (VGM_CLK_FLAG_ALTMODE | VGM_CLK_FLAG_DUALCHIP)
-typedef struct PACKED _VGM_Header {
+typedef struct _VGM_Header {
 	uint32_t magic;		// [0x000] "Vgm "
 	uint32_t eof_offset;	// [0x004] Offset: End of file.
 	uint32_t version;	// [0x008] Version number, in BCD.
@@ -164,17 +162,17 @@ ASSERT_STRUCT(VGM_Header, 232);
  * GD3 header
  */
 #define GD3_MAGIC 'Gd3 '
-typedef struct PACKED _GD3_Header {
+typedef struct _GD3_Header {
 	uint32_t magic;		// [0x000] "Gd3 "
 	uint32_t version;	// [0x004] Version number, in BCD. (v1.00)
 	uint32_t length;	// [0x008] Length of the GD3 data.
 } GD3_Header;
-ASSERT_STRUCT(GD3_Header, 12);
+ASSERT_STRUCT(GD3_Header, 3*sizeof(uint32_t));
 
 /**
  * GD3 tag indexes
  */
-enum GD3_TAG_ID {
+typedef enum {
 	GD3_TAG_TRACK_NAME_EN		= 0,
 	GD3_TAG_TRACK_NAME_JP		= 1,
 	GD3_TAG_GAME_NAME_EN		= 2,
@@ -188,7 +186,7 @@ enum GD3_TAG_ID {
 	GD3_TAG_NOTES			= 10,
 
 	GD3_TAG_MAX
-};
+} GD3_TAG_ID;
 
 /**
  * VGM 1.10: SN76489 LFSR patterns.
@@ -213,10 +211,10 @@ typedef enum {
  * NOTE: This is a bitfield.
  */
 typedef enum {
-	VGM_FLAG_SN76489_FREQ0_0x400	= (1 << 0),	// Frequency 0 is 0x400
-	VGM_FLAG_SN76489_OUTPUT_NEGATE	= (1 << 1),	// Negate output
-	VGM_FLAG_SN76489_STEREO		= (1 << 2),	// Stereo enable (0 == enabled)
-	VGM_FLAG_SN76489_CLOCK_DIV8	= (1 << 3),	// /8 Clock Divider (0 == enabled)
+	VGM_FLAG_SN76489_FREQ0_0x400	= (1U << 0),	// Frequency 0 is 0x400
+	VGM_FLAG_SN76489_OUTPUT_NEGATE	= (1U << 1),	// Negate output
+	VGM_FLAG_SN76489_STEREO		= (1U << 2),	// Stereo enable (0 == enabled)
+	VGM_FLAG_SN76489_CLOCK_DIV8	= (1U << 3),	// /8 Clock Divider (0 == enabled)
 } VGM_Flags_SN76489_e;
 
 /**
@@ -239,10 +237,10 @@ typedef enum {
  * NOTE: This is a bitfield.
  */
 typedef enum {
-	VGM_AY8910_FLAG_LEGACY_OUTPUT	= (1 << 0),
-	VGM_AY8910_FLAG_SINGLE_OUTPUT	= (1 << 1),
-	VGM_AY8910_FLAG_DISCRETE_OUTPUT	= (1 << 2),
-	VGM_AY8910_FLAG_RAW_OUTPUT	= (1 << 3),
+	VGM_AY8910_FLAG_LEGACY_OUTPUT	= (1U << 0),
+	VGM_AY8910_FLAG_SINGLE_OUTPUT	= (1U << 1),
+	VGM_AY8910_FLAG_DISCRETE_OUTPUT	= (1U << 2),
+	VGM_AY8910_FLAG_RAW_OUTPUT	= (1U << 3),
 } VGM_AY8910_Flags_e;
 
 /**
@@ -256,8 +254,8 @@ typedef enum {
 	VGM_OKIM6258_FLAG_CLKDIV_768	= 1,
 	VGM_OKIM6258_FLAG_CLKDIV_512	= 2,	// also 3
 
-	VGM_OKIM6258_FLAG_ADPCM_BITS	= (1 << 2),	// 0 == 4-bit ADPCM; 1 == 3-bit ADPCM
-	VGM_OKIM6258_FLAG_10_12_BIT	= (1 << 3),	// 0 == 10-bit output; 1 == 12-bit output
+	VGM_OKIM6258_FLAG_ADPCM_BITS	= (1U << 2),	// 0 == 4-bit ADPCM; 1 == 3-bit ADPCM
+	VGM_OKIM6258_FLAG_10_12_BIT	= (1U << 3),	// 0 == 10-bit output; 1 == 12-bit output
 } VGM_OKIM6258_Flags_e;
 
 /**
@@ -266,9 +264,9 @@ typedef enum {
  * NOTE: This is a bitfield.
  */
 typedef enum {
-	VGM_K054539_FLAG_REVERSE_STEREO		= (1 << 0),	// Reverse stereo. (1=ON; 0=OFF)
-	VGM_K054539_FLAG_DISABLE_REVERB		= (1 << 1),	// Disable reverb.
-	VGM_K054539_FLAG_UPDATE_AT_KEY_ON	= (1 << 2),	// Update at KeyOn.
+	VGM_K054539_FLAG_REVERSE_STEREO		= (1U << 0),	// Reverse stereo. (1=ON; 0=OFF)
+	VGM_K054539_FLAG_DISABLE_REVERB		= (1U << 1),	// Disable reverb.
+	VGM_K054539_FLAG_UPDATE_AT_KEY_ON	= (1U << 2),	// Update at KeyOn.
 } VGM_K054539_Flags_e;
 
 /**
@@ -285,25 +283,27 @@ typedef enum {
  * Indicates additional chip clocks and volumes for
  * systems with multiples of the same chips.
  */
-typedef struct PACKED _VGM_170_ExtraHeader {
+typedef struct _VGM_170_ExtraHeader {
 	uint32_t chpclock_offset;	// [0x000] Offset to chip clocks.
 	uint32_t chpvol_offset;		// [0x004] Offset to chip volumes.
 } VGM_170_ExtraHeader;
-ASSERT_STRUCT(VGM_170_ExtraHeader, 8);
+ASSERT_STRUCT(VGM_170_ExtraHeader, 2*sizeof(uint32_t));
 
 /**
  * VGM 1.70: Chip Clock entry.
  */
+#pragma pack(1)
 typedef struct PACKED _VGM_170_ChipClock {
 	uint8_t chip_id;		// [0x000] Chip ID.
 	uint32_t clock_rate;		// [0x001] Clock rate.
 } VGM_170_ChipClock;
 ASSERT_STRUCT(VGM_170_ChipClock, 5);
+#pragma pack()
 
 /**
  * VGM 1.70: Chip Volume entry.
  */
-typedef struct PACKED _VGM_170_ChipVolume {
+typedef struct _VGM_170_ChipVolume {
 	uint8_t chip_id;	// [0x000] Chip ID.
 				// If bit 7 is set, it's the volume for a paired chip,
 				// e.g. the AY- part of the YM2203.
@@ -315,8 +315,6 @@ typedef struct PACKED _VGM_170_ChipVolume {
 				// multiplied by ((value & 0x7FFF) / 0x0100).
 } VGM_170_ChipVolume;
 ASSERT_STRUCT(VGM_170_ChipVolume, 4);
-
-#pragma pack()
 
 #ifdef __cplusplus
 }

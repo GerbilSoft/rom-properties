@@ -133,8 +133,8 @@
  * instead of as a standalone program.
  */
 #include "pngcheck.hpp"
-#include "../../file/IRpFile.hpp"
-using LibRpBase::IRpFile;
+#include "librpfile/IRpFile.hpp"
+using LibRpFile::IRpFile;
 
 #if 0
 // C includes.
@@ -4745,8 +4745,10 @@ FIXME: add support for decompressing/printing zTXt
     if (no_err(kMinorError)) {
       if (fpOut != NULL) {
         putlong(fpOut, sz);
+#if 0 /* rom-properties */
         (void)fwrite(chunkid, 1, 4, fpOut);
         (void)fwrite(buffer, 1, toread, fpOut);
+#endif /* rom-properties */
       }
 
       while (sz > toread) {
@@ -4755,8 +4757,10 @@ FIXME: add support for decompressing/printing zTXt
         toread = (sz > BS)? BS:sz;
 
         data_read = (int)fp->read(buffer, toread);
+#if 0 /* rom-properties */
         if (fpOut != NULL)
           (void)fwrite(buffer, 1, data_read, fpOut);
+#endif /* rom-properties */
 
         if (data_read != toread) {
           printf("%s  EOF while reading %s%sdata\n",

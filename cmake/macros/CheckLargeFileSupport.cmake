@@ -18,11 +18,15 @@
 # - LFS_FOUND_FSEEKI64: Set to 1 if LFS is supported using _fseeki64().
 # - LFS_DEFINITIONS: Preprocessor macros required for large file support, if any.
 
+# Additional variables are set based on the existance of types:
+# - SIZEOF_OFF_T: sizeof(off_t), if available.
+# - SIZEOF_OFF64_T: sizeof(off64_t), if available.
+
 # TODO: Use _fseeki64() and _ftelli64() on MinGW to avoid
 # the use of wrapper functions?
 
 FUNCTION(CHECK_LARGE_FILE_SUPPORT)
-	IF(NOT DEFINED LFS_FOUND)
+	IF(NOT DEFINED LFS_FOUND OR NOT DEFINED CHECKED_OFF_T)
 		# NOTE: ${CMAKE_MODULE_PATH} has two directories, macros/ and libs/,
 		# so we have to configure this manually.
 		SET(LFS_SOURCE_PATH "${CMAKE_SOURCE_DIR}/cmake/macros")
@@ -51,21 +55,18 @@ FUNCTION(CHECK_LARGE_FILE_SUPPORT)
 				MESSAGE(STATUS "Checking if Large File Support is available - yes")
 			ELSE()
 				# Try adding LFS macros.
-				SET(TMP_LFS_DEFINITIONS -D_LARGEFILE_SOURCE=1 -D_LARGEFILE64_SOURCE=1 -D_FILE_OFFSET_BITS=64)
+				SET(TMP_LFS_DEFINITIONS_BITS -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64)
 				TRY_COMPILE(TMP_LFS_FOUND "${CMAKE_BINARY_DIR}"
 					"${LFS_SOURCE_PATH}/LargeFileSupport_fseeko.c"
-					COMPILE_DEFINITIONS ${TMP_LFS_DEFINITIONS})
+					COMPILE_DEFINITIONS ${TMP_LFS_DEFINITIONS_BITS})
 				IF(TMP_LFS_FOUND)
 					# LFS macros work.
 					MESSAGE(STATUS "Checking if Large File Support is available - yes, using LFS macros")
 					SET(TMP_LFS_FOUND_FSEEKO 1)
-					# NOTE: COMPILE_DEFINITIONS requires a semicolon-separated list;
-					# CFLAGS reqiures space-separated.
-					STRING(REPLACE ";" " " TMP_LFS_DEFINITIONS "${TMP_LFS_DEFINITIONS}")
+					SET(TMP_LFS_DEFINITIONS "${TMP_LFS_DEFINITIONS_BITS}")
 				ELSE()
 					# LFS macros failed.
 					MESSAGE(STATUS "Checking if Large File Support is available - no")
-					UNSET(TMP_LFS_DEFINITIONS)
 				ENDIF()
 			ENDIF()
 		ENDIF()
@@ -73,6 +74,23 @@ FUNCTION(CHECK_LARGE_FILE_SUPPORT)
 		SET(LFS_FOUND ${TMP_LFS_FOUND} CACHE INTERNAL "Is Large File Support available?")
 		SET(LFS_FOUND_FSEEKO ${TMP_LFS_FOUND_FSEEKO} CACHE INTERNAL "Large File Support is available using LFS macros")
 		SET(LFS_FOUND_FSEEKI64 ${TMP_LFS_FOUND_FSEEKI64} CACHE INTERNAL "Large File Support is available using MSVC non-standard functions")
+
+		# Check for off_t and off64_t.
+		INCLUDE(CheckTypeSize)
+		SET(CMAKE_REQUIRED_INCLUDES "unistd.h")
+		SET(CMAKE_REQUIRED_DEFINITIONS ${TMP_LFS_DEFINITIONS})
+		CHECK_TYPE_SIZE("off_t" OFF_T)
+		# off64_t requires -D_LARGEFILE64_SOURCE.
+		SET(CMAKE_REQUIRED_DEFINITIONS "${TMP_LFS_DEFINITIONS};-D_LARGEFILE64_SOURCE")
+		CHECK_TYPE_SIZE("off64_t" OFF64_T)
+		IF(HAVE_OFF64_T)
+			SET(TMP_LFS_DEFINITIONS "${CMAKE_REQUIRED_DEFINITIONS}")
+		ENDIF(HAVE_OFF64_T)
+		SET(CHECKED_OFF_T "1" CACHE INTERNAL "off_t/off64_t were checked")
+
+		# NOTE: COMPILE_DEFINITIONS requires a semicolon-separated list;
+		# CFLAGS reqiures space-separated.
+		STRING(REPLACE ";" " " TMP_LFS_DEFINITIONS "${TMP_LFS_DEFINITIONS}")
 		SET(LFS_DEFINITIONS "${TMP_LFS_DEFINITIONS}" CACHE INTERNAL "Definitions required for Large File Support")
 	ENDIF()
 ENDFUNCTION(CHECK_LARGE_FILE_SUPPORT)

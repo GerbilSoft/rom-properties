@@ -284,7 +284,7 @@ const char *const AmiiboDataPrivate::char_series_names[] = {
 	nullptr,				// 0x358
 	"Shovel Knight",			// 0x35C
 	"Final Fantasy",			// 0x360
-	nullptr,				// 0x364
+	"Dragon Quest",				// 0x364
 	nullptr,				// 0x368
 	nullptr,				// 0x36C
 	nullptr,				// 0x370
@@ -295,6 +295,11 @@ const char *const AmiiboDataPrivate::char_series_names[] = {
 	nullptr,				// 0x384
 	nullptr,				// 0x388
 	"Diablo",				// 0x38C
+	nullptr,				// 0x390
+	nullptr,				// 0x394
+	nullptr,				// 0x398
+	nullptr,				// 0x39C
+	"Persona",				// 0x3A0
 };
 
 // Character variants.
@@ -752,7 +757,6 @@ const AmiiboDataPrivate::char_id_t AmiiboDataPrivate::char_ids[] = {
 	AMIIBO_CHAR_ID_ONE(0x02ED, "Biskit"),
 	AMIIBO_CHAR_ID_ONE(0x02EE, "Bones"),
 	AMIIBO_CHAR_ID_ONE(0x02EF, "Portia"),
-	AMIIBO_CHAR_ID_ONE(0x02F0, "Joan"),
 	AMIIBO_CHAR_ID_ONE(0x02F0, "Walker"),
 	AMIIBO_CHAR_ID_ONE(0x02F1, "Daisy"),
 	AMIIBO_CHAR_ID_ONE(0x02F2, "Cookie"),
@@ -763,7 +767,6 @@ const AmiiboDataPrivate::char_id_t AmiiboDataPrivate::char_ids[] = {
 	AMIIBO_CHAR_ID_ONE(0x02FA, "Benjamin"),
 	AMIIBO_CHAR_ID_ONE(0x02FB, "Cherry"),
 	AMIIBO_CHAR_ID_ONE(0x02FC, "Shep"),
-	AMIIBO_CHAR_ID_ONE(0x0307, "Bill"),
 	AMIIBO_CHAR_ID_ONE(0x0307, "Bill"),
 	AMIIBO_CHAR_ID_ONE(0x0308, "Joey"),
 	AMIIBO_CHAR_ID_ONE(0x0309, "Pate"),
@@ -926,7 +929,6 @@ const AmiiboDataPrivate::char_id_t AmiiboDataPrivate::char_ids[] = {
 	AMIIBO_CHAR_ID_ONE(0x0453, "Keaton"),
 	AMIIBO_CHAR_ID_ONE(0x0454, "Celia"),
 	AMIIBO_CHAR_ID_ONE(0x045F, "Aurora"),
-	AMIIBO_CHAR_ID_ONE(0x0460, "Joan"),
 	AMIIBO_CHAR_ID_ONE(0x0460, "Roald"),
 	AMIIBO_CHAR_ID_ONE(0x0461, "Cube"),
 	AMIIBO_CHAR_ID_ONE(0x0462, "Hopper"),
@@ -980,7 +982,7 @@ const AmiiboDataPrivate::char_id_t AmiiboDataPrivate::char_ids[] = {
 	AMIIBO_CHAR_ID_ONE(0x04B4, "Spike"),
 	AMIIBO_CHAR_ID_ONE(0x04B6, "Hornsby"),
 	AMIIBO_CHAR_ID_ONE(0x04B9, "Merengue"),
-	// FIXME: MSVC 2010 interprets \xA9e as 2718 because
+	// NOTE: MSVC 2010 interprets \xA9e as 2718 because
 	// it's too dumb to realize \x takes *two* nybbles.
 	AMIIBO_CHAR_ID_ONE(0x04BA, "Ren\303\251e"),
 	AMIIBO_CHAR_ID_ONE(0x04C5, "Vesta"),
@@ -1042,7 +1044,7 @@ const AmiiboDataPrivate::char_id_t AmiiboDataPrivate::char_ids[] = {
 	AMIIBO_CHAR_ID_VAR(0x05C0, "Samus", metroid_samus_variants),
 	AMIIBO_CHAR_ID_ONE(0x05C1, "Metroid"),
 	AMIIBO_CHAR_ID_ONE(0x05C2, "Ridley"),
-	//AMIIBO_CHAR_ID_ONE(0x05C3, "Dark Samus"),
+	AMIIBO_CHAR_ID_ONE(0x05C3, "Dark Samus"),
 
 	// F-Zero (character series = 0x060)
 	AMIIBO_CHAR_ID_ONE(0x0600, "Captain Falcon"),
@@ -1182,6 +1184,9 @@ const AmiiboDataPrivate::char_id_t AmiiboDataPrivate::char_ids[] = {
 	// Final Fantasy (character series = 0x360)
 	AMIIBO_CHAR_ID_VAR(0x3600, "Cloud", ff_cloud_variants),
 
+	// Dragon Quest (character series = 0x364)
+	AMIIBO_CHAR_ID_ONE(0x3640, "Hero"),
+
 	// Cereal (character series = 0x374)
 	AMIIBO_CHAR_ID_VAR(0x3740, "Super Mario Cereal", cereal_smb_variants),
 
@@ -1190,7 +1195,7 @@ const AmiiboDataPrivate::char_id_t AmiiboDataPrivate::char_ids[] = {
 
 	// Castlevania (character series = 0x37C)
 	AMIIBO_CHAR_ID_ONE(0x37C0, "Simon"),
-	//AMIIBO_CHAR_ID_ONE(0x37C1, "Richter"),
+	AMIIBO_CHAR_ID_ONE(0x37C1, "Richter"),
 
 	// Jikkyou Powerful Pro Baseball (character series = 0x380)
 	// FIXME: All of these have character variant = 0x01.
@@ -1307,12 +1312,12 @@ const AmiiboDataPrivate::amiibo_id_t AmiiboDataPrivate::amiibo_ids[] = {
 	{ 25, 3, "Shulk"},		// 0x002B
 	{ 34, 4, "Ness"},		// 0x002C
 	{ 45, 6, "Mr. Game & Watch"},	// 0x002D
-	{ 54, 9, "R.O.B. (Famicom)"},	// 0x002E (FIXME: Localized release numbers.)
+	{ 54, 9, "R.O.B. (Famicom)"},	// 0x002E (TODO: Localized release numbers.)
 	{ 47, 6, "Duck Hunt"},		// 0x002F
 	{ 26, 3, "Sonic"},		// 0x0030
 	{ 27, 3, "Mega Man"},		// 0x0031
 	{ 35, 4, "Pac-Man"},		// 0x0032
-	{ 46, 6, "R.O.B. (NES)"},	// 0x0033 (FIXME: Localized release numbers.)
+	{ 46, 6, "R.O.B. (NES)"},	// 0x0033 (TODO: Localized release numbers.)
 
 	// SMB: Wave 1 [0x0034-0x0039]
 	{  1, 1, "Mario"},		// 0x0034
@@ -1368,7 +1373,7 @@ const AmiiboDataPrivate::amiibo_id_t AmiiboDataPrivate::amiibo_ids[] = {
 	{ 23, 1, "Cheri"},		// 0x005A
 	{ 24, 1, "Kyle"},		// 0x005B
 	{ 25, 1, "Al"},			// 0x005C
-	// FIXME: MSVC 2010 interprets \xA9e as 2718 because
+	// NOTE: MSVC 2010 interprets \xA9e as 2718 because
 	// it's too dumb to realize \x takes *two* nybbles.
 	{ 26, 1, "Ren\303\251e"},	// 0x005D
 	{ 27, 1, "Lopez"},		// 0x005E
@@ -2222,8 +2227,8 @@ const AmiiboDataPrivate::amiibo_id_t AmiiboDataPrivate::amiibo_ids[] = {
 	{ 65, 11, "Wolf"},			// 0x037E
 	{ 64, 11, "Ridley"},			// 0x037F
 
-	// Unused [0x0380]
-	{  0, 0, nullptr},			// 0x0380
+	// SSBU: Wave 12 [0x0380]
+	{ 81, 13, "Dark Samus"},		// 0x0380
 
 	// SSBU: Wave 12 [0x0381]
 	{ 67, 12, "Ice Climbers"},		// 0x0381
@@ -2241,9 +2246,7 @@ const AmiiboDataPrivate::amiibo_id_t AmiiboDataPrivate::amiibo_ids[] = {
 	{ 72, 13, "Ken"},			// 0x0389
 	{ 75, 13, "Snake"},			// 0x038A
 	{ 78, 13, "Simon"},			// 0x038B
-
-	// Unused [0x038C]
-	{  0, 0, nullptr},			// 0x038C
+	{ 82, 13, "Richter"},			// 0x038C
 
 	// SSBU: Wave 12 [0x038D]
 	{ 68, 12, "Piranha Plant"},		// 0x038D
@@ -2269,6 +2272,16 @@ const AmiiboDataPrivate::amiibo_id_t AmiiboDataPrivate::amiibo_ids[] = {
 
 	// The Legend of Zelda: Link's Awakening Series [0x0399]
 	{  0, 0, "Link"},			// 0x0399
+
+	// Unused [0x039A-0x3A0]
+	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x039A,0x039B
+	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x039C,0x039D
+	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x039E,0x039F
+	{  0, 0, nullptr},			// 0x03A0
+
+	// SSBU: Wave 13 [0x03A1-0x03A2]
+	{ 83, 13, "Joker"},			// 0x03A1
+	{ 84, 13, "Hero"},			// 0x03A2
 };
 
 /** AmiiboData **/
@@ -2280,7 +2293,7 @@ const AmiiboDataPrivate::amiibo_id_t AmiiboDataPrivate::amiibo_ids[] = {
  */
 const char *AmiiboData::lookup_char_series_name(uint32_t char_id)
 {
-	static_assert(ARRAY_SIZE(AmiiboDataPrivate::char_series_names) == (0x38C/4)+1,
+	static_assert(ARRAY_SIZE(AmiiboDataPrivate::char_series_names) == (0x3A0/4)+1,
 		"char_series_names[] is out of sync with the amiibo ID list.");
 
 	const unsigned int series_id = (char_id >> 22) & 0x3FF;
@@ -2347,10 +2360,10 @@ const char *AmiiboData::lookup_char_name(uint32_t char_id)
  */
 const char *AmiiboData::lookup_amiibo_series_name(uint32_t amiibo_id)
 {
-	// FIXME: gcc-6.3.0 is trying to interpret 0x035E+1 as a
+	// NOTE: gcc-6.3.0 is trying to interpret 0x035E+1 as a
 	// floating-point hex constant:
 	// error: unable to find numeric literal operator ‘operator""+1’
-	static_assert(ARRAY_SIZE(AmiiboDataPrivate::amiibo_ids) == ((0x0399)+1),
+	static_assert(ARRAY_SIZE(AmiiboDataPrivate::amiibo_ids) == ((0x03A2)+1),
 		"amiibo_ids[] is out of sync with the amiibo ID list.");
 
 	const unsigned int series_id = (amiibo_id >> 8) & 0xFF;

@@ -2,21 +2,23 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * ISO.cpp: ISO-9660 disc image parser.                                    *
  *                                                                         *
- * Copyright (c) 2019 by David Korth.                                      *
+ * Copyright (c) 2019-2020 by David Korth.                                 *
+ * Copyright (c) 2020 by Egor.                                             *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #include "stdafx.h"
 #include "ISO.hpp"
-#include "../iso_structs.h"
 
-// librpbase
-#include "librpbase/common.h"
-#include "librpbase/byteswap.h"
+#include "../cdrom_structs.h"
+#include "../iso_structs.h"
+#include "hsfs_structs.h"
+
+// librpbase, librpfile, librpcpu
 #include "librpbase/TextFuncs.hpp"
-#include "librpbase/file/IRpFile.hpp"
 #include "libi18n/i18n.h"
 using namespace LibRpBase;
+using LibRpFile::IRpFile;
 
 // C includes. (C++ namespace)
 #include <cassert>
@@ -34,25 +36,40 @@ namespace LibRomData {
 
 ROMDATA_IMPL(ISO)
 
-class ISOPrivate : public LibRpBase::RomDataPrivate
+class ISOPrivate final : public RomDataPrivate
 {
 	public:
-		ISOPrivate(ISO *q, LibRpBase::IRpFile *file);
+		ISOPrivate(ISO *q, LibRpFile::IRpFile *file);
 
 	private:
 		typedef RomDataPrivate super;
 		RP_DISABLE_COPY(ISOPrivate)
 
 	public:
-		// ISO primary volume descriptor.
-		ISO_Primary_Volume_Descriptor pvd;
+		// Disc type.
+		enum class DiscType {
+			Unknown = -1,
+
+			ISO9660 = 0,
+			HighSierra = 1,
+
+			Max
+		};
+		DiscType discType;
+
+		// Primary volume descriptor.
+		union {
+			ISO_Primary_Volume_Descriptor iso;	// ISO-9660
+			HSFS_Primary_Volume_Descriptor hsfs;	// High Sierra
+			uint8_t data[ISO_SECTOR_SIZE_MODE1_COOKED];
+		} pvd;
 
 		// Sector size.
-		// Usually 2048 or 2352.
+		// Usually 2048 or 2352. (2448 if subchannels are present)
 		unsigned int sector_size;
 
 		// Sector offset.
-		// Usually 0 (for 2048) or 16 (for 2352).
+		// Usually 0 (for 2048) or 16 (for 2352 or 2448).
 		unsigned int sector_offset;
 
 		// UDF version.
@@ -76,12 +93,64 @@ class ISOPrivate : public LibRpBase::RomDataPrivate
 			// which doesn't take an ISO_PVD_DateTime_t struct.
 			return RomDataPrivate::pvd_time_to_unix_time(pvd_time->full, pvd_time->tz_offset);
 		}
+
+		/**
+		 * Convert an HSFS PVD timestamp to UNIX time.
+		 * @param pvd_time PVD timestamp
+		 * @return UNIX time, or -1 if invalid or not set.
+		 */
+		static inline time_t pvd_time_to_unix_time(const HSFS_PVD_DateTime_t *pvd_time)
+		{
+			// Wrapper for RomData::pvd_time_to_unix_time(),
+			// which doesn't take an HSFS_PVD_DateTime_t struct.
+			return RomDataPrivate::pvd_time_to_unix_time(pvd_time->full, 0);
+		}
+
+		/**
+		 * Add fields common to HSFS and ISO-9660 (except timestamps)
+		 * @param pvd PVD
+		 */
+		template<typename T>
+		void addPVDCommon(const T *pvd);
+
+		/**
+		 * Add timestamp fields from PVD
+		 * @param pvd PVD
+		 */
+		template<typename T>
+		void addPVDTimestamps(const T *pvd);
+
+		/**
+		 * Add metadata properties common to HSFS and ISO-9660 (except timestamps)
+		 * @param metaData RomMetaData object.
+		 * @param pvd PVD
+		 */
+		template<typename T>
+		static void addPVDCommon_metaData(RomMetaData *metaData, const T *pvd);
+
+		/**
+		 * Add timestamp metadata properties from PVD
+		 * @param metaData RomMetaData object.
+		 * @param pvd PVD
+		 */
+		template<typename T>
+		static void addPVDTimestamps_metaData(RomMetaData *metaData, const T *pvd);
+
+		/**
+		 * Check the PVD and determine its type.
+		 * @return DiscType value. (DiscType::Unknown if not valid)
+		 */
+		inline DiscType checkPVD(void) const
+		{
+			return static_cast<DiscType>(ISO::checkPVD(pvd.data));
+		}
 };
 
 /** ISOPrivate **/
 
 ISOPrivate::ISOPrivate(ISO *q, IRpFile *file)
 	: super(q, file)
+	, discType(DiscType::Unknown)
 	, sector_size(0)
 	, sector_offset(0)
 	, s_udf_version(nullptr)
@@ -100,8 +169,8 @@ void ISOPrivate::checkVolumeDescriptors(void)
 	// TODO: Boot record?
 
 	// Starting address.
-	int64_t addr = (ISO_PVD_LBA * sector_size) + sector_offset;
-	const int64_t maxaddr = 0x100 * sector_size;
+	off64_t addr = (ISO_PVD_LBA * static_cast<off64_t>(sector_size)) + sector_offset;
+	const off64_t maxaddr = 0x100 * static_cast<off64_t>(sector_size);
 
 	ISO_Volume_Descriptor_Header deschdr;
 	bool foundVDT = false;
@@ -178,6 +247,143 @@ void ISOPrivate::checkVolumeDescriptors(void)
 	// TODO: More descriptors?
 }
 
+/**
+ * Add fields common to HSFS and ISO-9660 (except timestamps)
+ * @param pvd PVD
+ */
+template<typename T>
+void ISOPrivate::addPVDCommon(const T *pvd)
+{
+	// System ID
+	fields->addField_string(C_("ISO", "System ID"),
+		latin1_to_utf8(pvd->sysID, sizeof(pvd->sysID)),
+		RomFields::STRF_TRIM_END);
+
+	// Volume ID
+	fields->addField_string(C_("ISO", "Volume ID"),
+		latin1_to_utf8(pvd->volID, sizeof(pvd->volID)),
+		RomFields::STRF_TRIM_END);
+
+	// Size of volume
+	fields->addField_string(C_("ISO", "Volume Size"),
+		formatFileSize(
+			static_cast<off64_t>(pvd->volume_space_size.he) *
+			static_cast<off64_t>(pvd->logical_block_size.he)));
+
+	// TODO: Show block size?
+
+	// Disc number
+	if (pvd->volume_seq_number.he != 0 && pvd->volume_set_size.he > 1) {
+		const char *const disc_number_title = C_("RomData", "Disc #");
+		fields->addField_string(disc_number_title,
+			// tr: Disc X of Y (for multi-disc games)
+			rp_sprintf_p(C_("RomData|Disc", "%1$u of %2$u"),
+				pvd->volume_seq_number.he,
+				pvd->volume_set_size.he));
+	}
+
+	// Volume set ID
+	fields->addField_string(C_("ISO", "Volume Set"),
+		latin1_to_utf8(pvd->volume_set_id, sizeof(pvd->volume_set_id)),
+		RomFields::STRF_TRIM_END);
+
+	// Publisher
+	fields->addField_string(C_("ISO", "Publisher"),
+		latin1_to_utf8(pvd->publisher, sizeof(pvd->publisher)),
+		RomFields::STRF_TRIM_END);
+
+	// Data Preparer
+	fields->addField_string(C_("ISO", "Data Preparer"),
+		latin1_to_utf8(pvd->data_preparer, sizeof(pvd->data_preparer)),
+		RomFields::STRF_TRIM_END);
+
+	// Application
+	fields->addField_string(C_("ISO", "Application"),
+		latin1_to_utf8(pvd->application, sizeof(pvd->application)),
+		RomFields::STRF_TRIM_END);
+
+	// Copyright file
+	fields->addField_string(C_("ISO", "Copyright File"),
+		latin1_to_utf8(pvd->copyright_file, sizeof(pvd->copyright_file)),
+		RomFields::STRF_TRIM_END);
+
+	// Abstract file
+	fields->addField_string(C_("ISO", "Abstract File"),
+		latin1_to_utf8(pvd->abstract_file, sizeof(pvd->abstract_file)),
+		RomFields::STRF_TRIM_END);
+}
+
+/**
+ * Add timestamp fields from PVD
+ * @param pvd PVD
+ */
+template<typename T>
+void ISOPrivate::addPVDTimestamps(const T *pvd)
+{
+	// TODO: Show the original timezone?
+	// For now, converting to UTC and showing as local time.
+
+	// Volume creation time
+	fields->addField_dateTime(C_("ISO", "Creation Time"),
+		pvd_time_to_unix_time(&pvd->btime),
+		RomFields::RFT_DATETIME_HAS_DATE |
+		RomFields::RFT_DATETIME_HAS_TIME);
+
+	// Volume modification time
+	fields->addField_dateTime(C_("ISO", "Modification Time"),
+		pvd_time_to_unix_time(&pvd->mtime),
+		RomFields::RFT_DATETIME_HAS_DATE |
+		RomFields::RFT_DATETIME_HAS_TIME);
+
+	// Volume expiration time
+	fields->addField_dateTime(C_("ISO", "Expiration Time"),
+		pvd_time_to_unix_time(&pvd->exptime),
+		RomFields::RFT_DATETIME_HAS_DATE |
+		RomFields::RFT_DATETIME_HAS_TIME);
+
+	// Volume effective time
+	fields->addField_dateTime(C_("ISO", "Effective Time"),
+		pvd_time_to_unix_time(&pvd->efftime),
+		RomFields::RFT_DATETIME_HAS_DATE |
+		RomFields::RFT_DATETIME_HAS_TIME);
+}
+
+/**
+ * Add fields common to HSFS and ISO-9660 (except timestamps)
+ * @param metaData RomMetaData object.
+ * @param pvd PVD
+ */
+template<typename T>
+void ISOPrivate::addPVDCommon_metaData(RomMetaData *metaData, const T *pvd)
+{
+	// TODO: More properties?
+
+	// Title
+	metaData->addMetaData_string(Property::Title,
+		latin1_to_utf8(pvd->volID, sizeof(pvd->volID)),
+		RomMetaData::STRF_TRIM_END);
+
+	// Publisher
+	metaData->addMetaData_string(Property::Publisher,
+		latin1_to_utf8(pvd->publisher, sizeof(pvd->publisher)),
+		RomFields::STRF_TRIM_END);
+}
+
+/**
+ * Add metadata properties common to HSFS and ISO-9660 (except timestamps)
+ * @param metaData RomMetaData object.
+ * @param pvd PVD
+ */
+template<typename T>
+void ISOPrivate::addPVDTimestamps_metaData(RomMetaData *metaData, const T *pvd)
+{
+	// TODO: More properties?
+
+	// Volume creation time
+	metaData->addMetaData_timestamp(Property::CreationDate,
+		pvd_time_to_unix_time(&pvd->btime));
+}
+
 /** ISO **/
 
 /**
@@ -199,7 +405,8 @@ ISO::ISO(IRpFile *file)
 	// This class handles disc images.
 	RP_D(ISO);
 	d->className = "ISO";
-	d->fileType = FTYPE_DISC_IMAGE;
+	d->mimeType = "application/x-cd-image";	// unofficial [TODO: Others?]
+	d->fileType = FileType::DiscImage;
 
 	if (!d->file) {
 		// Could not ref() the file handle.
@@ -211,43 +418,45 @@ ISO::ISO(IRpFile *file)
 		&d->pvd, sizeof(d->pvd));
 	if (size != sizeof(d->pvd)) {
 		// Seek and/or read error.
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
 
 	// Check if the PVD is valid.
 	// NOTE: Not using isRomSupported_static(), since this function
 	// only checks the file extension.
-	if (d->pvd.header.type == ISO_VDT_PRIMARY &&
-	    d->pvd.header.version == ISO_VD_VERSION &&
-	    !memcmp(d->pvd.header.identifier, ISO_VD_MAGIC, sizeof(d->pvd.header.identifier)))
-	{
+	d->discType = d->checkPVD();
+	if (d->discType > ISOPrivate::DiscType::Unknown) {
 		// Found the PVD using 2048-byte sectors.
 		d->sector_size = ISO_SECTOR_SIZE_MODE1_COOKED;
 		d->sector_offset = ISO_DATA_OFFSET_MODE1_COOKED;
 	} else {
-		// Try again using 2352-byte sectors.
-		size = d->file->seekAndRead(ISO_PVD_ADDRESS_2352 + ISO_DATA_OFFSET_MODE1_RAW,
-			&d->pvd, sizeof(d->pvd));
-		if (size != sizeof(d->pvd)) {
-			// Seek and/or read error.
-			d->file->unref();
-			d->file = nullptr;
-			return;
+		// Try again using raw sectors: 2352, 2448
+		static const unsigned int sector_sizes[] = {2352, 2448, 0};
+		CDROM_2352_Sector_t sector;
+
+		for (const unsigned int *p = sector_sizes; *p != 0; p++) {
+			size_t size = d->file->seekAndRead(*p * ISO_PVD_LBA, &sector, sizeof(sector));
+			if (size != sizeof(sector)) {
+				// Unable to read the PVD.
+				UNREF_AND_NULL_NOCHK(d->file);
+				return;
+			}
+
+			const uint8_t *const pData = cdromSectorDataPtr(&sector);
+			d->discType = static_cast<ISOPrivate::DiscType>(ISO::checkPVD(pData));
+			if (d->discType > ISOPrivate::DiscType::Unknown) {
+				// Found the correct sector size.
+				memcpy(&d->pvd, pData, sizeof(d->pvd));
+				d->sector_size = *p;
+				d->sector_offset = (sector.mode == 2 ? ISO_DATA_OFFSET_MODE2_XA : ISO_DATA_OFFSET_MODE1_RAW);
+				break;
+			}
 		}
 
-		if (d->pvd.header.type == ISO_VDT_PRIMARY &&
-		    d->pvd.header.version == ISO_VD_VERSION &&
-		    !memcmp(d->pvd.header.identifier, ISO_VD_MAGIC, sizeof(d->pvd.header.identifier)))
-		{
-			// Found the PVD using 2352-byte sectors.
-			d->sector_size = ISO_SECTOR_SIZE_MODE1_RAW;
-			d->sector_offset = ISO_DATA_OFFSET_MODE1_RAW;
-		} else {
-			// Not a PVD.
-			d->file->unref();
-			d->file = nullptr;
+		if (d->sector_size == 0) {
+			// Could not find a valid PVD.
+			UNREF_AND_NULL_NOCHK(d->file);
 			return;
 		}
 	}
@@ -256,10 +465,55 @@ ISO::ISO(IRpFile *file)
 	d->isValid = true;
 
 	// Check for additional volume descriptors.
-	d->checkVolumeDescriptors();
+	if (d->discType == ISOPrivate::DiscType::ISO9660) {
+		d->checkVolumeDescriptors();
+	}
 }
 
 /** ROM detection functions. **/
+
+/**
+ * Check for a valid PVD.
+ * @param data Potential PVD. (Must be 2048 bytes)
+ * @return DiscType if valid; -1 if not.
+ */
+int ISO::checkPVD(const uint8_t *data)
+{
+	// Check for an ISO-9660 PVD.
+	const ISO_Primary_Volume_Descriptor *const pvd_iso =
+		reinterpret_cast<const ISO_Primary_Volume_Descriptor*>(data);
+	if (pvd_iso->header.type == ISO_VDT_PRIMARY && pvd_iso->header.version == ISO_VD_VERSION &&
+	    !memcmp(pvd_iso->header.identifier, ISO_VD_MAGIC, sizeof(pvd_iso->header.identifier)))
+	{
+		// This is an ISO-9660 PVD.
+		return static_cast<int>(ISOPrivate::DiscType::ISO9660);
+	}
+
+	// Check for a High Sierra PVD.
+	const HSFS_Primary_Volume_Descriptor *const pvd_hsfs =
+		reinterpret_cast<const HSFS_Primary_Volume_Descriptor*>(data);
+	if (pvd_hsfs->header.type == ISO_VDT_PRIMARY && pvd_hsfs->header.version == HSFS_VD_VERSION &&
+	    !memcmp(pvd_hsfs->header.identifier, HSFS_VD_MAGIC, sizeof(pvd_hsfs->header.identifier)))
+	{
+		// This is a High Sierra PVD.
+		return static_cast<int>(ISOPrivate::DiscType::HighSierra);
+	}
+
+	// Not supported.
+	return static_cast<int>(ISOPrivate::DiscType::Unknown);
+}
+
+/**
+ * Add metadata properties from an ISO-9660 PVD.
+ * Convenience function for other classes.
+ * @param metaData RomMetaData object.
+ * @param pvd ISO-9660 PVD.
+ */
+void ISO::addMetaData_PVD(RomMetaData *metaData, const struct _ISO_Primary_Volume_Descriptor *pvd)
+{
+	ISOPrivate::addPVDCommon_metaData(metaData, pvd);
+	ISOPrivate::addPVDTimestamps_metaData(metaData, pvd);
+}
 
 /**
  * Is a ROM image supported by this class?
@@ -305,11 +559,16 @@ const char *ISO::systemName(unsigned int type) const
 		"ISO::systemName() array index optimization needs to be updated.");
 
 	// TODO: UDF, HFS, others?
-	static const char *const sysNames[4] = {
-		"ISO-9660", "ISO", "ISO", nullptr
+	static const char *const sysNames[2][4] = {
+		{"ISO-9660", "ISO", "ISO", nullptr},
+		{"High Sierra Format", "High Sierra", "HSF", nullptr},
 	};
 
-	return sysNames[type & SYSNAME_TYPE_MASK];
+	unsigned int sysID = 0;
+	if (d->discType == ISOPrivate::DiscType::HighSierra) {
+		sysID = 1;
+	}
+	return sysNames[sysID][type & SYSNAME_TYPE_MASK];
 }
 
 /**
@@ -329,9 +588,12 @@ const char *const *ISO::supportedFileExtensions_static(void)
 {
 	static const char *const exts[] = {
 		".iso",		// ISO
+		".iso9660",	// ISO (listed in shared-mime-info)
 		".bin",		// BIN (2352-byte)
 		".xiso",	// Xbox ISO image
+		".img",		// CCD/IMG
 		// TODO: More?
+		// TODO: Is there a separate extension for High Sierra?
 
 		nullptr
 	};
@@ -351,11 +613,12 @@ const char *const *ISO::supportedFileExtensions_static(void)
 const char *const *ISO::supportedMimeTypes_static(void)
 {
 	static const char *const mimeTypes[] = {
-		// Unofficial MIME types from FreeDesktop.org..
-		"application/x-iso9660-image",
+		// Unofficial MIME types from FreeDesktop.org.
 		"application/x-cd-image",
+		"application/x-iso9660-image",
 
 		// TODO: BIN (2352)?
+		// TODO: Is there a separate MIME for High Sierra?
 		nullptr
 	};
 	return mimeTypes;
@@ -380,107 +643,45 @@ int ISO::loadFieldData(void)
 		return -EIO;
 	}
 
-	// ISO-9660 Primary Volume Descriptor.
-	// TODO: Other descriptors?
-	const ISO_Primary_Volume_Descriptor *const pvd = &d->pvd;
 	d->fields->reserve(16);	// Maximum of 16 fields.
 
 	// NOTE: All fields are space-padded. (0x20, ' ')
 	// TODO: ascii_to_utf8()?
 
-	// ISO-9660 PVD
-	d->fields->setTabName(0, C_("ISO", "ISO-9660 PVD"));
+	switch (d->discType) {
+		case ISOPrivate::DiscType::ISO9660:
+			// ISO-9660
+			d->fields->setTabName(0, C_("ISO", "ISO-9660 PVD"));
 
-	// System ID
-	d->fields->addField_string(C_("ISO", "System ID"),
-		latin1_to_utf8(pvd->sysID, sizeof(pvd->sysID)),
-		RomFields::STRF_TRIM_END);
-	
-	// Volume ID
-	d->fields->addField_string(C_("ISO", "Volume ID"),
-		latin1_to_utf8(pvd->volID, sizeof(pvd->volID)),
-		RomFields::STRF_TRIM_END);
+			// PVD common fields (ISO-9660, High Sierra)
+			d->addPVDCommon(&d->pvd.iso);
 
-	// Size of volume
-	d->fields->addField_string(C_("ISO", "Volume Size"),
-		formatFileSize(
-			static_cast<int64_t>(pvd->volume_space_size.he) *
-			static_cast<int64_t>(pvd->logical_block_size.he)));
+			// Bibliographic file
+			d->fields->addField_string(C_("ISO", "Bibliographic File"),
+				latin1_to_utf8(d->pvd.iso.bibliographic_file, sizeof(d->pvd.iso.bibliographic_file)),
+				RomFields::STRF_TRIM_END);
 
-	// TODO: Show block size?
+			// Timestamps
+			d->addPVDTimestamps(&d->pvd.iso);
+			break;
 
-	// Disc number
-	if (pvd->volume_seq_number.he != 0 && pvd->volume_set_size.he > 1) {
-		const char *const disc_number_title = C_("RomData", "Disc #");
-		d->fields->addField_string(disc_number_title,
-			// tr: Disc X of Y (for multi-disc games)
-			rp_sprintf_p(C_("RomData|Disc", "%1$u of %2$u"),
-				pvd->volume_seq_number.he,
-				pvd->volume_set_size.he));
+		case ISOPrivate::DiscType::HighSierra:
+			// High Sierra
+			d->fields->setTabName(0, C_("ISO", "High Sierra PVD"));
+
+			// PVD common fields (ISO-9660, High Sierra)
+			d->addPVDCommon(&d->pvd.hsfs);
+
+			// Timestamps
+			d->addPVDTimestamps(&d->pvd.hsfs);
+			break;
+
+		default:
+			// Should not get here...
+			assert(!"Invalid ISO disc type.");
+			d->fields->setTabName(0, "ISO");
+			break;
 	}
-
-	// Volume set ID
-	d->fields->addField_string(C_("ISO", "Volume Set"),
-		latin1_to_utf8(pvd->volume_set_id, sizeof(pvd->volume_set_id)),
-		RomFields::STRF_TRIM_END);
-
-	// Publisher
-	d->fields->addField_string(C_("ISO", "Publisher"),
-		latin1_to_utf8(pvd->publisher, sizeof(pvd->publisher)),
-		RomFields::STRF_TRIM_END);
-
-	// Data Preparer
-	d->fields->addField_string(C_("ISO", "Data Preparer"),
-		latin1_to_utf8(pvd->data_preparer, sizeof(pvd->data_preparer)),
-		RomFields::STRF_TRIM_END);
-
-	// Application
-	d->fields->addField_string(C_("ISO", "Application"),
-		latin1_to_utf8(pvd->application, sizeof(pvd->application)),
-		RomFields::STRF_TRIM_END);
-
-	// Copyright file
-	d->fields->addField_string(C_("ISO", "Copyright File"),
-		latin1_to_utf8(pvd->copyright_file, sizeof(pvd->copyright_file)),
-		RomFields::STRF_TRIM_END);
-
-	// Abstract file
-	d->fields->addField_string(C_("ISO", "Abstract File"),
-		latin1_to_utf8(pvd->abstract_file, sizeof(pvd->abstract_file)),
-		RomFields::STRF_TRIM_END);
-
-	// Bibliographic file
-	d->fields->addField_string(C_("ISO", "Bibliographic File"),
-		latin1_to_utf8(pvd->bibliographic_file, sizeof(pvd->bibliographic_file)),
-		RomFields::STRF_TRIM_END);
-
-	/** Timestamps **/
-	// TODO: Show the original timezone?
-	// For now, converting to UTC and showing as local time.
-
-	// Volume creation time
-	d->fields->addField_dateTime(C_("ISO", "Creation Time"),
-		d->pvd_time_to_unix_time(&pvd->btime),
-		RomFields::RFT_DATETIME_HAS_DATE |
-		RomFields::RFT_DATETIME_HAS_TIME);
-
-	// Volume modification time
-	d->fields->addField_dateTime(C_("ISO", "Modification Time"),
-		d->pvd_time_to_unix_time(&pvd->mtime),
-		RomFields::RFT_DATETIME_HAS_DATE |
-		RomFields::RFT_DATETIME_HAS_TIME);
-
-	// Volume expiration time
-	d->fields->addField_dateTime(C_("ISO", "Expiration Time"),
-		d->pvd_time_to_unix_time(&pvd->exptime),
-		RomFields::RFT_DATETIME_HAS_DATE |
-		RomFields::RFT_DATETIME_HAS_TIME);
-
-	// Volume effective time
-	d->fields->addField_dateTime(C_("ISO", "Effective Time"),
-		d->pvd_time_to_unix_time(&pvd->efftime),
-		RomFields::RFT_DATETIME_HAS_DATE |
-		RomFields::RFT_DATETIME_HAS_TIME);
 
 	if (d->s_udf_version) {
 		// UDF version.
@@ -492,6 +693,47 @@ int ISO::loadFieldData(void)
 
 	// Finished reading the field data.
 	return static_cast<int>(d->fields->count());
+}
+
+/**
+ * Load metadata properties.
+ * Called by RomData::metaData() if the field data hasn't been loaded yet.
+ * @return Number of metadata properties read on success; negative POSIX error code on error.
+ */
+int ISO::loadMetaData(void)
+{
+	RP_D(ISO);
+	if (d->metaData != nullptr) {
+		// Metadata *has* been loaded...
+		return 0;
+	} else if (!d->isValid || (int)d->discType < 0) {
+		// Unknown disc image type.
+		return -EIO;
+	}
+
+	// Create the metadata object.
+	d->metaData = new RomMetaData();
+	d->metaData->reserve(3);	// Maximum of 3 metadata properties.
+
+	switch (d->discType) {
+		default:
+		case ISOPrivate::DiscType::Unknown:
+			assert(!"Unknown disc type.");
+			break;
+
+		case ISOPrivate::DiscType::ISO9660:
+			d->addPVDCommon_metaData(d->metaData, &d->pvd.iso);
+			d->addPVDTimestamps_metaData(d->metaData, &d->pvd.iso);
+			break;
+
+		case ISOPrivate::DiscType::HighSierra:
+			d->addPVDCommon_metaData(d->metaData, &d->pvd.hsfs);
+			d->addPVDTimestamps_metaData(d->metaData, &d->pvd.hsfs);
+			break;
+	}
+
+	// Finished reading the metadata.
+	return static_cast<int>(d->metaData->count());
 }
 
 }

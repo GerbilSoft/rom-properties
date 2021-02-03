@@ -11,15 +11,24 @@ rvl-common=
 # Korean common key. This is used by Korean games.
 rvl-korean=
 
+# vWii common key. This is used by vWii-specific titles.
+wup-starbuck-vwii-common=
+
+# RVT-R debug key. This is used by development systems
+# for prototype RVT-R discs.
+rvt-debug=
+
+# RVT-R Korean debug key. Not known to be used...
+rvt-korean=
+
+# vWii debug common key. Not known to be used...
+cat-starbuck-vwii-common=
+
 # SD keys. These are used to decrypt save files
 # that have been copied to an SD card.
 rvl-sd-aes=
 rvl-sd-iv=
 rvl-sd-md5=
-
-# RVT-R debug key. This is used by development systems
-# for prototype RVT-R discs.
-rvt-debug=
 
 ######## Nintendo 3DS ########
 
@@ -98,3 +107,8 @@ ctr-dev-Slot0x3DKeyNormal-2=
 ctr-dev-Slot0x3DKeyNormal-3=
 ctr-dev-Slot0x3DKeyNormal-4=
 ctr-dev-Slot0x3DKeyNormal-5=
+
+######## Microsoft Xbox 360 ########
+
+xbox360-xex1=
+xbox360-xex2=

@@ -29,7 +29,7 @@ class WiiUDataPrivate {
 		 * These games have the same publisher in all regions.
 		 * ID4 region byte is 'x'. (Not '\0' due to MSVC issues.)
 		 *
-		 * Reference: http://www.gametdb.com/WiiU/List
+		 * Reference: https://www.gametdb.com/WiiU/List
 		 */
 		static const WiiUDiscPublisher disc_publishers_noregion[];
 
@@ -38,7 +38,7 @@ class WiiUDataPrivate {
 		 * These games have different publishers in different regions.
 		 * ID4 region byte is the original region.
 		 *
-		 * Reference: http://www.gametdb.com/WiiU/List
+		 * Reference: https://www.gametdb.com/WiiU/List
 		 */
 		static const WiiUDiscPublisher disc_publishers_region[];
 
@@ -58,7 +58,7 @@ class WiiUDataPrivate {
  * These games have the same publisher in all regions.
  * ID4 region byte is 'x'. (Not '\0' due to MSVC issues.)
  *
- * Reference: http://www.gametdb.com/WiiU/List
+ * Reference: https://www.gametdb.com/WiiU/List
  */
 const WiiUDataPrivate::WiiUDiscPublisher WiiUDataPrivate::disc_publishers_noregion[] = {
 	{'AAFx', '0001'},	// Bayonetta
@@ -157,7 +157,7 @@ const WiiUDataPrivate::WiiUDiscPublisher WiiUDataPrivate::disc_publishers_noregi
 	{'APUx', '00C8'},	// Sangokushi 12 with Power-Up Kit
 	{'APWx', '00AF'},	// Kamen Rider: Battride War II (Premium TV & Movie Sound Edition)
 	{'APZx', '00WR'},	// LEGO Dimensions
-	{'AQUx', '0001'},	// Bayonetta 2 (TODO: Standalone or bundled?)
+	{'AQUx', '0001'},	// Bayonetta 2
 	{'ARBx', '0041'},	// Rabbids Land
 	{'ARDx', '0001'},	// Super Mario 3D World
 	{'ARKx', '0001'},	// Donkey Kong Country: Tropical Freeze
@@ -230,7 +230,7 @@ const WiiUDataPrivate::WiiUDiscPublisher WiiUDataPrivate::disc_publishers_noregi
 	{'BLKx', '006V'},	// Legend of Kay Anniversary
 	{'BLTx', '00AF'},	// Gotouchi Tetsudou: Gotouchi Chara to Nihon Zenkoku no Tabi
 	{'BMSx', '00VZ'},	// Monster High: New Ghoul in School
-	{'BPCx', '0001'},	// Bayonetta 2 (TODO: Standalone or bundled?)
+	{'BPCx', '0001'},	// Bayonetta 2 (Special Edition)
 	{'BPEx', '0052'},	// The Peanuts Movie: Snoopy's Grand Adventure
 	{'BPMx', '00AF'},	// Pac-Man and the Ghostly Adventures 2
 	{'BR5x', '00JX'},	// FAST Racing NEO
@@ -269,7 +269,7 @@ const WiiUDataPrivate::WiiUDiscPublisher WiiUDataPrivate::disc_publishers_noregi
  * These games have different publishers in different regions.
  * ID4 region byte is the original region.
  *
- * Reference: http://www.gametdb.com/WiiU/List
+ * Reference: https://www.gametdb.com/WiiU/List
  */
 const WiiUDataPrivate::WiiUDiscPublisher WiiUDataPrivate::disc_publishers_region[] = {
 	{'ABEE', '00G9'},	// Ben 10: Omniverse (NTSC-U)

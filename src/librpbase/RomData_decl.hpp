@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * RomData_decl.hpp: ROM data base class. (Subclass macros)                *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * Copyright (c) 2016-2018 by Egor.                                        *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
@@ -14,6 +14,9 @@
 # error RomData_decl.hpp should only be included by RomData.hpp
 #endif
 
+// for loadInternalImage() implementation macros
+#include <cerrno>
+
 /** Macros for RomData subclasses. **/
 
 /**
@@ -22,9 +25,9 @@
  */
 #define ROMDATA_DECL_BEGIN(klass) \
 class klass##Private; \
-class klass : public LibRpBase::RomData { \
+class klass final : public LibRpBase::RomData { \
 	public: \
-		explicit klass(LibRpBase::IRpFile *file); \
+		explicit klass(LibRpFile::IRpFile *file); \
 	protected: \
 		virtual ~klass() { } \
 	private: \
@@ -234,6 +237,9 @@ class klass : public LibRpBase::RomData { \
 		 * Check imgpf for IMGPF_ICON_ANIMATED first to see if this \
 		 * object has an animated icon. \
 		 * \
+		 * The retrieved IconAnimData must be ref()'d by the caller if the \
+		 * caller stores it instead of using it immediately. \
+		 * \
 		 * @return Animated icon data, or nullptr if no animated icon is present. \
 		 */ \
 		const LibRpBase::IconAnimData *iconAnimData(void) const final;
@@ -249,6 +255,39 @@ class klass : public LibRpBase::RomData { \
 		 * @return True if the ROM image has "dangerous" permissions; false if not. \
 		 */ \
 		bool hasDangerousPermissions(void) const final;
+
+/**
+ * RomData subclass function declaration for indicating ROM operations are possible.
+ */
+#define ROMDATA_DECL_ROMOPS() \
+	protected: \
+		/** \
+		 * Get the list of operations that can be performed on this ROM. \
+		 * Internal function; called by RomData::romOps(). \
+		 * @return List of operations. \
+		 */ \
+		std::vector<RomOp> romOps_int(void) const final; \
+		\
+		/** \
+		 * Perform a ROM operation. \
+		 * Internal function; called by RomData::doRomOp(). \
+		 * @param id		[in] Operation index. \
+		 * @param pParams	[in/out] Parameters and results. (for e.g. UI updates) \
+		 * @return 0 on success; negative POSIX error code on error.
+		 */ \
+		int doRomOp_int(int id, RomOpParams *pParams) final;
+
+/**
+ * RomData subclass function declaration for "viewed" achievements.
+ */
+#define ROMDATA_DECL_VIEWED_ACHIEVEMENTS() \
+	public: \
+		/** \
+		 * Check for "viewed" achievements. \
+		 * \
+		 * @return Number of achievements unlocked.
+		 */ \
+		int checkViewedAchievements(void) const final;
 
 /**
  * RomData subclass function declaration for closing the internal file handle.
@@ -350,45 +389,75 @@ std::vector<RomData::ImageSizeDef> klass::supportedImageSizes(ImageType imageTyp
 /** Assertion macros. **/
 
 #define ASSERT_supportedImageSizes(imageType) do { \
-	assert(imageType >= IMG_INT_MIN && imageType <= IMG_EXT_MAX); \
-	if (imageType < IMG_INT_MIN || imageType > IMG_EXT_MAX) { \
+	assert((imageType) >= IMG_INT_MIN && (imageType) <= IMG_EXT_MAX); \
+	if ((imageType) < IMG_INT_MIN || (imageType) > IMG_EXT_MAX) { \
 		/* ImageType is out of range. */ \
 		return vector<ImageSizeDef>(); \
 	} \
 } while (0)
 
 #define ASSERT_imgpf(imageType) do { \
-	assert(imageType >= IMG_INT_MIN && imageType <= IMG_EXT_MAX); \
-	if (imageType < IMG_INT_MIN || imageType > IMG_EXT_MAX) { \
+	assert((imageType) >= IMG_INT_MIN && (imageType) <= IMG_EXT_MAX); \
+	if ((imageType) < IMG_INT_MIN || (imageType) > IMG_EXT_MAX) { \
 		/* ImageType is out of range. */ \
 		return 0; \
 	} \
 } while (0)
 
 #define ASSERT_loadInternalImage(imageType, pImage) do { \
-	assert(imageType >= IMG_INT_MIN && imageType <= IMG_INT_MAX); \
-	assert(pImage != nullptr); \
-	if (!pImage) { \
+	assert((imageType) >= IMG_INT_MIN && (imageType) <= IMG_INT_MAX); \
+	assert((pImage) != nullptr); \
+	if (!(pImage)) { \
 		/* Invalid parameters. */ \
 		return -EINVAL; \
-	} else if (imageType < IMG_INT_MIN || imageType > IMG_INT_MAX) { \
+	} else if ((imageType) < IMG_INT_MIN || (imageType) > IMG_INT_MAX) { \
 		/* ImageType is out of range. */ \
-		*pImage = nullptr; \
+		*(pImage) = nullptr; \
 		return -ERANGE; \
 	} \
 } while (0)
 
 #define ASSERT_extURLs(imageType, pExtURLs) do { \
-	assert(imageType >= IMG_EXT_MIN && imageType <= IMG_EXT_MAX); \
-	if (imageType < IMG_EXT_MIN || imageType > IMG_EXT_MAX) { \
+	assert((imageType) >= IMG_EXT_MIN && (imageType) <= IMG_EXT_MAX); \
+	if ((imageType) < IMG_EXT_MIN || (imageType) > IMG_EXT_MAX) { \
 		/* ImageType is out of range. */ \
 		return -ERANGE; \
 	} \
-	assert(pExtURLs != nullptr); \
-	if (!pExtURLs) { \
+	assert((pExtURLs) != nullptr); \
+	if (!(pExtURLs)) { \
 		/* No vector. */ \
 		return -EINVAL; \
 	} \
+} while (0)
+
+/**
+ * loadInternalImage() implementation for RomData subclasses
+ * with only a single type of internal image.
+ *
+ * @param ourImageType	Internal image type.
+ * @param file		IRpFile pointer to check.
+ * @param isValid	isValid value to check. (must be true)
+ * @param romType	RomType value to check. (must be >= 0; specify 0 if N/A)
+ * @param imgCache	Cached image pointer to check. (Specify nullptr if N/A)
+ * @param func		Function to load the image.
+ */
+#define ROMDATA_loadInternalImage_single(ourImageType, file, isValid, romType, imgCache, func) do { \
+	if ((imageType) != (ourImageType)) { \
+		*(pImage) = nullptr; \
+		return -ENOENT; \
+	} else if ((imgCache) != nullptr) { \
+		*(pImage) = (imgCache); \
+		return 0; \
+	} else if (!(file)) { \
+		*(pImage) = nullptr; \
+		return -EBADF; \
+	} else if (!(isValid) || ((int)(romType)) < 0) { \
+		*(pImage) = nullptr; \
+		return -EIO; \
+	} \
+	\
+	*(pImage) = (func)(); \
+	return (*(pImage) != nullptr ? 0 : -EIO); \
 } while (0)
 
 #endif /* __ROMPROPERTIES_LIBRPBASE_ROMDATA_DECL_HPP__ */

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * SegaSaturn.hpp: Sega Saturn disc image reader.                          *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -12,8 +12,9 @@
 #include "saturn_structs.h"
 #include "cdrom_structs.h"
 
-// librpbase
+// librpbase, librpfile
 using namespace LibRpBase;
+using LibRpFile::IRpFile;
 
 // CD-ROM reader
 #include "disc/Cdrom2352Reader.hpp"
@@ -23,14 +24,13 @@ using namespace LibRpBase;
 
 // C++ STL classes.
 using std::string;
-using std::unique_ptr;
 using std::vector;
 
 namespace LibRomData {
 
 ROMDATA_IMPL(SegaSaturn)
 
-class SegaSaturnPrivate : public RomDataPrivate
+class SegaSaturnPrivate final : public RomDataPrivate
 {
 	public:
 		SegaSaturnPrivate(SegaSaturn *q, IRpFile *file);
@@ -44,29 +44,29 @@ class SegaSaturnPrivate : public RomDataPrivate
 
 		// Peripherals. (RFT_BITFIELD)
 		enum Saturn_Peripherals_Bitfield {
-			SATURN_IOBF_CONTROL_PAD		= (1 << 0),	// Standard control pad
-			SATURN_IOBF_ANALOG_CONTROLLER	= (1 << 1),	// Analog controller
-			SATURN_IOBF_MOUSE		= (1 << 2),	// Mouse
-			SATURN_IOBF_KEYBOARD		= (1 << 3),	// Keyboard
-			SATURN_IOBF_STEERING		= (1 << 4),	// Steering controller
-			SATURN_IOBF_MULTITAP		= (1 << 5),	// Multi-Tap
-			SATURN_IOBF_LIGHT_GUN		= (1 << 6),	// Light Gun
-			SATURN_IOBF_RAM_CARTRIDGE	= (1 << 7),	// RAM Cartridge
-			SATURN_IOBF_3D_CONTROLLER	= (1 << 8),	// 3D Controller
-			SATURN_IOBF_LINK_CABLE		= (1 << 9),	// Link Cable
-			SATURN_IOBF_NETLINK		= (1 << 10),	// NetLink
-			SATURN_IOBF_PACHINKO		= (1 << 11),	// Pachinko Controller
-			SATURN_IOBF_FDD			= (1 << 12),	// Floppy Disk Drive
-			SATURN_IOBF_ROM_CARTRIDGE	= (1 << 13),	// ROM Cartridge
-			SATURN_IOBF_MPEG_CARD		= (1 << 14),	// MPEG Card
+			SATURN_IOBF_CONTROL_PAD		= (1U <<  0),	// Standard control pad
+			SATURN_IOBF_ANALOG_CONTROLLER	= (1U <<  1),	// Analog controller
+			SATURN_IOBF_MOUSE		= (1U <<  2),	// Mouse
+			SATURN_IOBF_KEYBOARD		= (1U <<  3),	// Keyboard
+			SATURN_IOBF_STEERING		= (1U <<  4),	// Steering controller
+			SATURN_IOBF_MULTITAP		= (1U <<  5),	// Multi-Tap
+			SATURN_IOBF_LIGHT_GUN		= (1U <<  6),	// Light Gun
+			SATURN_IOBF_RAM_CARTRIDGE	= (1U <<  7),	// RAM Cartridge
+			SATURN_IOBF_3D_CONTROLLER	= (1U <<  8),	// 3D Controller
+			SATURN_IOBF_LINK_CABLE		= (1U <<  9),	// Link Cable
+			SATURN_IOBF_NETLINK		= (1U << 10),	// NetLink
+			SATURN_IOBF_PACHINKO		= (1U << 11),	// Pachinko Controller
+			SATURN_IOBF_FDD			= (1U << 12),	// Floppy Disk Drive
+			SATURN_IOBF_ROM_CARTRIDGE	= (1U << 13),	// ROM Cartridge
+			SATURN_IOBF_MPEG_CARD		= (1U << 14),	// MPEG Card
 		};
 
 		// Region code.
 		enum SaturnRegion {
-			SATURN_REGION_JAPAN	= (1 << 0),
-			SATURN_REGION_TAIWAN	= (1 << 1),
-			SATURN_REGION_USA	= (1 << 2),
-			SATURN_REGION_EUROPE	= (1 << 3),
+			SATURN_REGION_JAPAN	= (1U << 0),
+			SATURN_REGION_TAIWAN	= (1U << 1),
+			SATURN_REGION_USA	= (1U << 2),
+			SATURN_REGION_EUROPE	= (1U << 3),
 		};
 
 		/** Internal ROM data. **/
@@ -88,14 +88,15 @@ class SegaSaturnPrivate : public RomDataPrivate
 		static unsigned int parseRegionCodes(const char *region_codes, int size);
 
 	public:
-		enum DiscType {
-			DISC_UNKNOWN		= -1,	// Unknown ROM type.
-			DISC_ISO_2048		= 0,	// ISO-9660, 2048-byte sectors.
-			DISC_ISO_2352		= 1,	// ISO-9660, 2352-byte sectors.
-		};
+		enum class DiscType {
+			Unknown	= -1,
 
-		// Disc type.
-		int discType;
+			Iso2048	= 0,	// ISO-9660, 2048-byte sectors.
+			Iso2352	= 1,	// ISO-9660, 2352-byte sectors.
+
+			Max
+		};
+		DiscType discType;
 
 		// Disc header.
 		Saturn_IP0000_BIN_t discHeader;
@@ -121,7 +122,7 @@ class SegaSaturnPrivate : public RomDataPrivate
 
 SegaSaturnPrivate::SegaSaturnPrivate(SegaSaturn *q, IRpFile *file)
 	: super(q, file)
-	, discType(DISC_UNKNOWN)
+	, discType(DiscType::Unknown)
 	, saturn_region(0)
 {
 	// Clear the disc header struct.
@@ -304,7 +305,8 @@ SegaSaturn::SegaSaturn(IRpFile *file)
 	// This class handles disc images.
 	RP_D(SegaSaturn);
 	d->className = "SegaSaturn";
-	d->fileType = FTYPE_DISC_IMAGE;
+	d->mimeType = "application/x-saturn-rom";	// unofficial
+	d->fileType = FileType::DiscImage;
 
 	if (!d->file) {
 		// Could not ref() the file handle.
@@ -317,8 +319,7 @@ SegaSaturn::SegaSaturn(IRpFile *file)
 	d->file->rewind();
 	size_t size = d->file->read(&sector, sizeof(sector));
 	if (size != sizeof(sector)) {
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
 
@@ -329,34 +330,27 @@ SegaSaturn::SegaSaturn(IRpFile *file)
 	info.header.pData = reinterpret_cast<const uint8_t*>(&sector);
 	info.ext = nullptr;	// Not needed for SegaSaturn.
 	info.szFile = 0;	// Not needed for SegaSaturn.
-	d->discType = isRomSupported_static(&info);
-
-	if (d->discType < 0) {
-		d->file->unref();
-		d->file = nullptr;
-		return;
-	}
+	d->discType = static_cast<SegaSaturnPrivate::DiscType>(isRomSupported_static(&info));
 
 	switch (d->discType) {
-		case SegaSaturnPrivate::DISC_ISO_2048:
+		case SegaSaturnPrivate::DiscType::Iso2048:
 			// 2048-byte sectors.
 			// TODO: Determine session start address.
 			memcpy(&d->discHeader, &sector, sizeof(d->discHeader));
 			if (d->file->size() <= 64*1024) {
 				// 64 KB is way too small for a Dreamcast disc image.
 				// We'll assume this is IP.bin.
-				d->fileType = FTYPE_BOOT_SECTOR;
+				d->fileType = FileType::BootSector;
 			}
 			break;
-		case SegaSaturnPrivate::DISC_ISO_2352:
+		case SegaSaturnPrivate::DiscType::Iso2352:
 			// 2352-byte sectors.
-			// FIXME: Assuming Mode 1.
+			// Assuming Mode 1. (TODO: Check for Mode 2.)
 			memcpy(&d->discHeader, &sector.m1.data, sizeof(d->discHeader));
 			break;
 		default:
 			// Unsupported.
-			d->file->unref();
-			d->file = nullptr;
+			UNREF_AND_NULL_NOCHK(d->file);
 			return;
 	}
 	d->isValid = true;
@@ -382,7 +376,7 @@ int SegaSaturn::isRomSupported_static(const DetectInfo *info)
 	{
 		// Either no detection information was specified,
 		// or the header is too small.
-		return -1;
+		return static_cast<int>(SegaSaturnPrivate::DiscType::Unknown);
 	}
 
 	// Check for Sega Saturn HW and Maker ID.
@@ -392,7 +386,7 @@ int SegaSaturn::isRomSupported_static(const DetectInfo *info)
 	if (!memcmp(ip0000_bin->hw_id, SATURN_IP0000_BIN_HW_ID, sizeof(ip0000_bin->hw_id))) {
 		// Found HW ID at 0x0000.
 		// This is a 2048-byte sector image.
-		return SegaSaturnPrivate::DISC_ISO_2048;
+		return static_cast<int>(SegaSaturnPrivate::DiscType::Iso2048);
 	}
 
 	// 0x0010: 2352-byte sectors;
@@ -403,14 +397,14 @@ int SegaSaturn::isRomSupported_static(const DetectInfo *info)
 		if (Cdrom2352Reader::isDiscSupported_static(info->header.pData, info->header.size) >= 0) {
 			// Found CD-ROM sync bytes.
 			// This is a 2352-byte sector image.
-			return SegaSaturnPrivate::DISC_ISO_2352;
+			return static_cast<int>(SegaSaturnPrivate::DiscType::Iso2352);
 		}
 	}
 
 	// TODO: Check for other formats, including CDI and NRG?
 
 	// Not supported.
-	return -1;
+	return static_cast<int>(SegaSaturnPrivate::DiscType::Unknown);
 }
 
 /**
@@ -499,7 +493,7 @@ int SegaSaturn::loadFieldData(void)
 	} else if (!d->file) {
 		// File isn't open.
 		return -EBADF;
-	} else if (!d->isValid || d->discType < 0) {
+	} else if (!d->isValid || (int)d->discType < 0) {
 		// Unknown ROM image type.
 		return -EIO;
 	}
@@ -622,7 +616,7 @@ int SegaSaturn::loadMetaData(void)
 	} else if (!d->file) {
 		// File isn't open.
 		return -EBADF;
-	} else if (!d->isValid || d->discType < 0) {
+	} else if (!d->isValid || (int)d->discType < 0) {
 		// Unknown disc image type.
 		return -EIO;
 	}

@@ -11,8 +11,8 @@ matrix:
       compiler: clang
 
 # Build dependencies. (Linux)
-# NOTE: KF5 and MATE (GTK3) are not available on Ubuntu 14.04,
-# so we can't build the KDE5 or MATE plugins.
+# NOTE: KF5 is not available on Ubuntu 14.04,
+# so we can't build the KF5 plugin.
 addons:
   apt:
     packages:
@@ -30,6 +30,14 @@ addons:
       - libnautilus-extension-dev
       - libbsd-dev
       - gettext
+      - libnemo-extension-dev
+      - libseccomp-dev
+      #- libzstd-dev
+      - liblz4-dev
+      - liblzo2-dev
+      - libcanberra-dev
+      - libcanberra-gtk-dev
+      - libcanberra-gtk3-dev
 
 # Run the build script.
 script: ./travis.sh

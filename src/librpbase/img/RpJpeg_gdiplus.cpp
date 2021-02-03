@@ -2,17 +2,18 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * RpJpeg_gdiplus.cpp: JPEG image handler. (GDI+ version)                  *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #include "stdafx.h"
 #include "RpJpeg.hpp"
 
-#include "file/IRpFile.hpp"
-#include "file/win32/IStreamWrapper.hpp"
-using LibRpBase::IRpFile;
-using LibRpBase::IStreamWrapper;
+// librpfile
+#include "librpfile/IRpFile.hpp"
+#include "librpfile/win32/IStreamWrapper.hpp"
+using LibRpFile::IRpFile;
+using LibRpFile::IStreamWrapper;
 
 // librptexture
 #include "librptexture/img/rp_image.hpp"
@@ -28,7 +29,6 @@ namespace Gdiplus {
 	using std::max;
 }
 #include <gdiplus.h>
-#include "librptexture/img/GdiplusHelper.hpp"
 
 namespace LibRpBase {
 
@@ -47,14 +47,6 @@ rp_image *RpJpeg::loadUnchecked(IRpFile *file)
 {
 	if (!file)
 		return nullptr;
-
-	// Initialize GDI+.
-	// TODO: Don't init/shutdowno n every image.
-	ScopedGdiplus gdip;
-	if (!gdip.isValid()) {
-		// Failed to initialized GDI+.
-		return nullptr;
-	}
 
 	// Rewind the file.
 	file->rewind();

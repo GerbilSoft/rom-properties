@@ -2,15 +2,16 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * RpTextureWrapper.hpp: librptexture file format wrapper.                 *
  *                                                                         *
- * Copyright (c) 2019 by David Korth.                                      *
+ * Copyright (c) 2019-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #include "stdafx.h"
 #include "RpTextureWrapper.hpp"
 
-// librpbase
+// librpbase, librpfile
 using namespace LibRpBase;
+using LibRpFile::IRpFile;
 
 // librptexture
 #include "librptexture/FileFormatFactory.hpp"
@@ -27,7 +28,7 @@ namespace LibRomData {
 ROMDATA_IMPL(RpTextureWrapper)
 ROMDATA_IMPL_IMG_TYPES(RpTextureWrapper)
 
-class RpTextureWrapperPrivate : public RomDataPrivate
+class RpTextureWrapperPrivate final : public RomDataPrivate
 {
 	public:
 		RpTextureWrapperPrivate(RpTextureWrapper *q, IRpFile *file);
@@ -51,9 +52,7 @@ RpTextureWrapperPrivate::RpTextureWrapperPrivate(RpTextureWrapper *q, IRpFile *f
 
 RpTextureWrapperPrivate::~RpTextureWrapperPrivate()
 {
-	if (texture) {
-		texture->unref();
-	}
+	UNREF(texture);
 }
 
 /** RpTextureWrapper **/
@@ -77,7 +76,7 @@ RpTextureWrapper::RpTextureWrapper(IRpFile *file)
 	// This class handles texture files.
 	RP_D(RpTextureWrapper);
 	d->className = "RpTextureWrapper";
-	d->fileType = FTYPE_TEXTURE_FILE;
+	d->fileType = FileType::TextureFile;
 
 	if (!d->file) {
 		// Could not ref() the file handle.
@@ -88,13 +87,32 @@ RpTextureWrapper::RpTextureWrapper(IRpFile *file)
 	d->texture = FileFormatFactory::create(d->file);
 	if (!d->texture) {
 		// Not a valid texture.
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
 
+	d->mimeType = d->texture->mimeType();
 	d->isValid = true;
 }
+
+/**
+ * Close the opened file.
+ */
+void RpTextureWrapper::close(void)
+{
+	RP_D(RpTextureWrapper);
+
+	// NOTE: Don't delete these. They have rp_image objects
+	// that may be used by the UI later.
+	if (d->texture) {
+		d->texture->close();
+	}
+
+	// Call the superclass function.
+	super::close();
+}
+
+/** ROM detection functions. **/
 
 /**
  * Is a ROM image supported by this class?
@@ -333,25 +351,14 @@ int RpTextureWrapper::loadMetaData(void)
 int RpTextureWrapper::loadInternalImage(ImageType imageType, const rp_image **pImage)
 {
 	ASSERT_loadInternalImage(imageType, pImage);
-
 	RP_D(RpTextureWrapper);
-	if (imageType != IMG_INT_IMAGE) {
-		// Only IMG_INT_IMAGE is supported by PVR.
-		*pImage = nullptr;
-		return -ENOENT;
-	} else if (!d->file) {
-		// File isn't open.
-		*pImage = nullptr;
-		return -EBADF;
-	} else if (!d->isValid) {
-		// Unknown file type.
-		*pImage = nullptr;
-		return -EIO;
-	}
-
-	// Load the image.
-	*pImage = d->texture->image();
-	return (*pImage != nullptr ? 0 : -EIO);
+	ROMDATA_loadInternalImage_single(
+		IMG_INT_IMAGE,		// ourImageType
+		d->file,		// file
+		d->isValid,		// isValid
+		0,			// romType
+		nullptr,		// imgCache
+		d->texture->image);	// func
 }
 
 }

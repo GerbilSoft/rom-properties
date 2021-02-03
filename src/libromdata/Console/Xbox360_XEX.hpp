@@ -21,13 +21,14 @@ ROMDATA_DECL_METADATA()
 ROMDATA_DECL_IMGSUPPORT()
 ROMDATA_DECL_IMGPF()
 ROMDATA_DECL_IMGINT()
+ROMDATA_DECL_VIEWED_ACHIEVEMENTS()
 
 	public:
 		// Encryption key indexes.
 		// NOTE: XEX2 debug key is all zeroes,
 		// so it's not included here.
 		enum EncryptionKeys {
-			Key_XEX1,
+			Key_XEX1,	// aka Cardea
 			Key_XEX2,
 
 			Key_Max

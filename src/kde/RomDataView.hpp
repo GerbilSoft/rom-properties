@@ -1,8 +1,8 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (KDE4/KDE5)                        *
+ * ROM Properties Page shell extension. (KDE4/KF5)                         *
  * RomDataView.hpp: RomData viewer.                                        *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -64,7 +64,13 @@ class RomDataView : public QWidget
 		/**
 		 * Disable user modification of RFT_BITFIELD checkboxes.
 		 */
-		void bitfield_toggled_slot(bool checked);
+		void bitfield_clicked_slot(bool checked);
+
+		/**
+		 * The RFT_MULTI_STRING language was changed.
+		 * @param lc Language code.
+		 */
+		void cboLanguage_lcChanged_slot(uint32_t lc);
 
 	public:
 		/** Properties. **/
@@ -90,6 +96,13 @@ class RomDataView : public QWidget
 		 * @param romData New RomData object.
 		 */
 		void romDataChanged(LibRpBase::RomData *romData);
+
+	private slots:
+		/**
+		 * An "Options" menu action was triggered.
+		 * @param id Options ID.
+		 */
+		void menuOptions_action_triggered(int id);
 };
 
 #endif /* __ROMPROPERTIES_KDE_ROMDATAVIEW_HPP__ */

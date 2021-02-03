@@ -1,0 +1,15 @@
+This copy of zstd-1.4.5 is a modified version of the original.
+
+commit b706286adbba780006a47ef92df0ad7a785666b6
+Merge pull request #2154 from facebook/dev
+
+Tag: v1.4.5
+
+The following changes have been made to the original:
+
+- Only the lib/ subdirectory is included.
+
+- Added the Win32 resource file to the DLL build.
+
+To obtain the original zstd-1.4.5, visit:
+https://github.com/facebook/zstd

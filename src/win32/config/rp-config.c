@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * rp-config.c: Configuration stub.                                        *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -12,15 +12,13 @@
  * invokes a function to show the configuration dialog.
  */
 #include "config.version.h"
-
-// LibRomData
-// NOTE: We're not linking to LibRomData, so we can only
-// use things that are defined in the headers.
-#include "librpbase/common.h"
+#include "common.h"
 
 // libwin32common
 #include "libwin32common/RpWin32_sdk.h"
-#include "libwin32common/secoptions.h"
+
+// librpsecure
+#include "librpsecure/os-secure.h"
 
 // C includes.
 #include <locale.h>
@@ -28,7 +26,7 @@
 #include <string.h>
 
 /**
- * rp_show_config_dialog() function pointer.
+ * rp_show_config_dialog() function pointer. (Win32 version)
  *
  * NOTE: This function pointer uses the same API as the function
  * expected by rundll32.exe.
@@ -46,6 +44,13 @@ typedef int (CALLBACK *PFNRPSHOWCONFIGDIALOG)(HWND hWnd, HINSTANCE hInstance, LP
 static const TCHAR rp_subdir[] = _T("i386\\");
 #elif defined(__amd64__) || defined(_M_X64)
 static const TCHAR rp_subdir[] = _T("amd64\\");
+#elif defined(__ia64__) || defined(_M_IA64)
+static const TCHAR rp_subdir[] = _T("ia64\\");
+#elif defined(__aarch64__) || defined(_M_ARM64)
+static const TCHAR rp_subdir[] = _T("arm64\\");
+#elif defined(__arm__) || defined(__thumb__) || \
+      defined(_M_ARM) || defined(_M_ARMT)
+static const TCHAR rp_subdir[] = _T("arm\\");
 #else
 # error Unsupported CPU architecture.
 #endif
@@ -109,10 +114,13 @@ int CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 
 	static const TCHAR prg_title[] = _T("ROM Properties Page Configuration");
 
-	RP_UNUSED(hPrevInstance);
+	// Set OS-specific security options.
+	rp_secure_param_t param;
+	param.bHighSec = FALSE;
+	rp_secure_enable(param);
 
-	// Set Win32 security options.
-	secoptions_init();
+	// Unused parameters. (Win16 baggage)
+	RP_UNUSED(hPrevInstance);
 
 	// Check if another instance of rp-config is already running.
 	// References:

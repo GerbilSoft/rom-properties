@@ -46,7 +46,7 @@ class Config : public ConfReader
 		static Config *instance(void);
 
 	public:
-		/** Image types. **/
+		/** Image types **/
 
 		// Image type priority data.
 		struct ImgTypePrio_t {
@@ -57,14 +57,14 @@ class Config : public ConfReader
 		// TODO: Function to get image type priority for a specified class.
 
 	public:
-		/** Image types. **/
+		/** Image types **/
 
-		enum ImgTypeResult {
-			IMGTR_ERR_MAP_CORRUPTED	= -2,	// Internal map is corrupted.
-			IMGTR_ERR_INVALID_PARAMS = -1,	// Invalid parameters.
-			IMGTR_SUCCESS		= 0,	// Image type priority data returned successfully.
-			IMGTR_SUCCESS_DEFAULTS	= 1,	// Custom configuration not defined; returning defaults.
-			IMGTR_DISABLED		= 2,	// Thumbnails are disabled for this class.
+		enum class ImgTypeResult {
+			ErrorMapCorrupted	= -2,	// Internal map is corrupted.
+			ErrorInvalidParams	= -1,	// Invalid parameters.
+			Success			= 0,	// Image type priority data returned successfully.
+			SuccessDefaults		= 1,	// Custom configuration not defined; returning defaults.
+			Disabled		= 2,	// Thumbnails are disabled for this class.
 		};
 
 		/**
@@ -84,7 +84,7 @@ class Config : public ConfReader
 		 */
 		void getDefImgTypePrio(ImgTypePrio_t *imgTypePrio) const;
 
-		/** Download options. **/
+		/** Download options **/
 
 		/**
 		 * Should we download images from external databases?
@@ -114,6 +114,23 @@ class Config : public ConfReader
 		 * @return True if we should; false if not.
 		 */
 		bool storeFileOriginInfo(void) const;
+
+		/** DMG title screen mode **/
+
+		enum DMG_TitleScreen_Mode : uint8_t {
+			DMG_TS_DMG,	// Use DMG mode title screens.
+			DMG_TS_SGB,	// Use SGB mode title screens if available.
+			DMG_TS_CGB,	// Use CGB mode title screens if available.
+
+			DMG_TS_MAX
+		};
+
+		/**
+		 * Which title screen should we use for the specified DMG ROM type?
+		 * @param romType DMG ROM type.
+		 * @return Title screen to use.
+		 */
+		DMG_TitleScreen_Mode dmgTitleScreenMode(DMG_TitleScreen_Mode romType) const;
 
 		/** Other options **/
 

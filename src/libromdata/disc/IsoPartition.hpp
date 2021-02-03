@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * IsoPartition.hpp: ISO-9660 partition reader.                            *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -11,10 +11,6 @@
 
 #include "librpbase/disc/IPartition.hpp"
 //#include "librpbase/disc/IFst.hpp"
-
-namespace LibRpBase {
-	class IRpFile;
-}
 
 namespace LibRomData {
 
@@ -32,8 +28,9 @@ class IsoPartition : public LibRpBase::IPartition
 		 * @param partition_offset Partition start offset.
 		 * @param iso_start_offset ISO start offset, in blocks. (If -1, uses heuristics.)
 		 */
-		IsoPartition(IDiscReader *discReader, int64_t partition_offset, int iso_start_offset = -1);
-		virtual ~IsoPartition();
+		IsoPartition(IDiscReader *discReader, off64_t partition_offset, int iso_start_offset = -1);
+	protected:
+		virtual ~IsoPartition();	// call unref() instead
 
 	private:
 		typedef IPartition super;
@@ -52,6 +49,7 @@ class IsoPartition : public LibRpBase::IPartition
 		 * @param size Amount of data to read, in bytes.
 		 * @return Number of bytes read.
 		 */
+		ATTR_ACCESS_SIZE(write_only, 2, 3)
 		size_t read(void *ptr, size_t size) override;
 
 		/**
@@ -59,13 +57,13 @@ class IsoPartition : public LibRpBase::IPartition
 		 * @param pos Partition position.
 		 * @return 0 on success; -1 on error.
 		 */
-		int seek(int64_t pos) override;
+		int seek(off64_t pos) override;
 
 		/**
 		 * Get the partition position.
 		 * @return Partition position on success; -1 on error.
 		 */
-		int64_t tell(void) override;
+		off64_t tell(void) override;
 
 		/**
 		 * Get the data size.
@@ -73,7 +71,7 @@ class IsoPartition : public LibRpBase::IPartition
 		 * and it's adjusted to exclude hashes.
 		 * @return Data size, or -1 on error.
 		 */
-		int64_t size(void) final;
+		off64_t size(void) final;
 
 	public:
 		/** IPartition **/
@@ -83,7 +81,7 @@ class IsoPartition : public LibRpBase::IPartition
 		 * This size includes the partition header and hashes.
 		 * @return Partition size, or -1 on error.
 		 */
-		int64_t partition_size(void) const final;
+		off64_t partition_size(void) const final;
 
 		/**
 		 * Get the used partition size.
@@ -91,7 +89,7 @@ class IsoPartition : public LibRpBase::IPartition
 		 * but does not include "empty" sectors.
 		 * @return Used partition size, or -1 on error.
 		 */
-		int64_t partition_size_used(void) const final;
+		off64_t partition_size_used(void) const final;
 
 	public:
 		/** IFst wrapper functions. **/
@@ -136,7 +134,14 @@ class IsoPartition : public LibRpBase::IPartition
 		 * @param filename Filename.
 		 * @return IRpFile*, or nullptr on error.
 		 */
-		LibRpBase::IRpFile *open(const char *filename);
+		LibRpFile::IRpFile *open(const char *filename);
+
+		/**
+		 * Get a file's timestamp.
+		 * @param filename Filename.
+		 * @return Timestamp, or -1 on error.
+		 */
+		time_t get_mtime(const char *filename);
 };
 
 }

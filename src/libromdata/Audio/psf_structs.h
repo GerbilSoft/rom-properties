@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * psf_structs.h: PSF audio data structures.                               *
  *                                                                         *
- * Copyright (c) 2018 by David Korth.                                      *
+ * Copyright (c) 2018-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -16,14 +16,12 @@
 #ifndef __ROMPROPERTIES_LIBROMDATA_AUDIO_PSF_STRUCTS_H__
 #define __ROMPROPERTIES_LIBROMDATA_AUDIO_PSF_STRUCTS_H__
 
-#include "librpbase/common.h"
+#include "common.h"
 #include <stdint.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-#pragma pack(1)
 
 /**
  * Portable Sound Format.
@@ -31,7 +29,7 @@ extern "C" {
  */
 #define PSF_MAGIC "PSF"
 #define PSF_TAG_MAGIC "[TAG]"
-typedef struct PACKED _PSF_Header {
+typedef struct _PSF_Header {
 	char magic[3];			// [0x000] "PSF"
 	uint8_t version;		// [0x003] Version. Identifies the system. (See PSF_Version_e.)
 	uint32_t reserved_size;		// [0x004] Size of reserved area. (R)
@@ -54,8 +52,6 @@ typedef enum {
 	PSF_VERSION_SNES		= 0x23,	// SNSF
 	PSF_VERSION_QSOUND		= 0x41,	// QSF
 } PSF_Version_e;
-
-#pragma pack()
 
 #ifdef __cplusplus
 }

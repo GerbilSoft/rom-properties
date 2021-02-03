@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * DMG.hpp: Virtual Boy ROM reader.                                        *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * Copyright (c) 2016-2018 by Egor.                                        *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
@@ -12,8 +12,9 @@
 #include "data/NintendoPublishers.hpp"
 #include "vb_structs.h"
 
-// librpbase
+// librpbase, librpfile
 using namespace LibRpBase;
+using LibRpFile::IRpFile;
 
 // C++ STL classes.
 using std::string;
@@ -23,7 +24,7 @@ namespace LibRomData {
 
 ROMDATA_IMPL(VirtualBoy)
 
-class VirtualBoyPrivate : public RomDataPrivate
+class VirtualBoyPrivate final : public RomDataPrivate
 {
 	public:
 		VirtualBoyPrivate(VirtualBoy *q, IRpFile *file);
@@ -123,6 +124,7 @@ VirtualBoy::VirtualBoy(IRpFile *file)
 {
 	RP_D(VirtualBoy);
 	d->className = "VirtualBoy";
+	d->mimeType = "application/x-virtual-boy-rom";	// unofficial
 
 	if (!d->file) {
 		// Could not ref() the file handle.
@@ -130,13 +132,12 @@ VirtualBoy::VirtualBoy(IRpFile *file)
 	}
 
 	// Seek to the beginning of the header.
-	const int64_t filesize = d->file->size();
+	const off64_t filesize = d->file->size();
 	// File must be at least 0x220 bytes,
 	// and cannot be larger than 16 MB.
 	if (filesize < 0x220 || filesize > (16*1024*1024)) {
 		// File size is out of range.
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
 
@@ -145,8 +146,7 @@ VirtualBoy::VirtualBoy(IRpFile *file)
 	d->file->seek(header_addr);
 	size_t size = d->file->read(&d->romHeader, sizeof(d->romHeader));
 	if (size != sizeof(d->romHeader)) {
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
 
@@ -160,8 +160,7 @@ VirtualBoy::VirtualBoy(IRpFile *file)
 	d->isValid = (isRomSupported(&info) >= 0);
 
 	if (!d->isValid) {
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 	}
 }
 
@@ -354,7 +353,7 @@ int VirtualBoy::loadFieldData(void)
 	// Game ID and publisher.
 	string id6(romHeader->gameid, sizeof(romHeader->gameid));
 	id6.append(romHeader->publisher, sizeof(romHeader->publisher));
-	d->fields->addField_string(C_("VirtualBoy", "Game ID"), latin1_to_utf8(id6));
+	d->fields->addField_string(C_("RomData", "Game ID"), latin1_to_utf8(id6));
 
 	// Look up the publisher.
 	const char *const publisher = NintendoPublishers::lookup(romHeader->publisher);
@@ -365,10 +364,10 @@ int VirtualBoy::loadFieldData(void)
 		if (ISALNUM(romHeader->publisher[0]) &&
 		    ISALNUM(romHeader->publisher[1]))
 		{
-			s_publisher = rp_sprintf(C_("VirtualBoy", "Unknown (%.2s)"),
+			s_publisher = rp_sprintf(C_("RomData", "Unknown (%.2s)"),
 				romHeader->publisher);
 		} else {
-			s_publisher = rp_sprintf(C_("VirtualBoy", "Unknown (%02X %02X)"),
+			s_publisher = rp_sprintf(C_("RomData", "Unknown (%02X %02X)"),
 				static_cast<uint8_t>(romHeader->publisher[0]),
 				static_cast<uint8_t>(romHeader->publisher[1]));
 		}
@@ -377,7 +376,7 @@ int VirtualBoy::loadFieldData(void)
 
 	// Revision
 	d->fields->addField_string_numeric(C_("RomData", "Revision"),
-		romHeader->version, RomFields::FB_DEC, 2);
+		romHeader->version, RomFields::Base::Dec, 2);
 
 	// Region
 	const char *s_region;

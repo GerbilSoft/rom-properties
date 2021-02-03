@@ -2,19 +2,20 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * KeyStoreUI.cpp: Key store UI base class.                                *
  *                                                                         *
- * Copyright (c) 2012-2019 by David Korth.                                 *
+ * Copyright (c) 2012-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #include "stdafx.h"
 #include "KeyStoreUI.hpp"
 
-// librpbase
+// librpbase, librpfile
 #include "librpbase/crypto/KeyManager.hpp"
 #include "librpbase/crypto/IAesCipher.hpp"
 #include "librpbase/crypto/AesCipherFactory.hpp"
-#include "librpbase/file/RpFile.hpp"
+#include "librpfile/RpFile.hpp"
 using namespace LibRpBase;
+using namespace LibRpFile;
 
 // libromdata
 #include "../disc/WiiPartition.hpp"
@@ -123,11 +124,11 @@ class KeyStoreUIPrivate
 
 	public:
 		// Section enumeration.
-		enum SectionIDs {
-			Section_WiiPartition = 0,
-			Section_CtrKeyScrambler,
-			Section_N3DSVerifyKeys,
-			Section_Xbox360_XEX,
+		enum class SectionID {
+			WiiPartition	= 0,
+			CtrKeyScrambler	= 1,
+			N3DSVerifyKeys	= 2,
+			Xbox360_XEX	= 3,
 		};
 
 		struct KeyBinAddress {
@@ -143,7 +144,7 @@ class KeyStoreUIPrivate
 		 * @param len		[in] Length of buf.
 		 * @return Key import status.
 		 */
-		KeyStoreUI::ImportReturn importKeysFromBlob(int sectIdx,
+		KeyStoreUI::ImportReturn importKeysFromBlob(SectionID sectIdx,
 			const KeyBinAddress *kba, const uint8_t *buf, unsigned int len);
 
 		/**
@@ -210,7 +211,7 @@ KeyStoreUIPrivate::KeyStoreUIPrivate(KeyStoreUI *q)
 	// Make sure the cipher is usable.
 	if (cipher->isInit()) {
 		// Set the cipher parameters.
-		cipher->setChainingMode(IAesCipher::CM_ECB);
+		cipher->setChainingMode(IAesCipher::ChainingMode::ECB);
 	} else {
 		// Cipher is not usable.
 		// We won't be able to verify keys.
@@ -260,7 +261,7 @@ KeyStoreUIPrivate::KeyStoreUIPrivate(KeyStoreUI *q)
 			key.name = latin1_to_utf8(keyName, -1);
 
 			// Key is empty initially.
-			key.status = KeyStoreUI::Key::Status_Empty;
+			key.status = KeyStoreUI::Key::Status::Empty;
 			key.modified = false;
 
 			// Allow kanji for twl-scrambler.
@@ -330,7 +331,7 @@ void KeyStoreUIPrivate::reset(void)
 			// if it isn't valid.
 			KeyManager::VerifyResult res = keyManager->get(keyName, &keyData);
 			switch (res) {
-				case KeyManager::VERIFY_OK:
+				case KeyManager::VerifyResult::OK:
 					// Convert the key to a string.
 					assert(keyData.key != nullptr);
 					assert(keyData.length > 0);
@@ -351,17 +352,17 @@ void KeyStoreUIPrivate::reset(void)
 							pKey->value.clear();
 							hasChanged = true;
 						}
-						pKey->status = KeyStoreUI::Key::Status_NotAKey;
+						pKey->status = KeyStoreUI::Key::Status::NotAKey;
 					}
 					break;
 
-				case KeyManager::VERIFY_KEY_INVALID:
+				case KeyManager::VerifyResult::KeyInvalid:
 					// Key is invalid. (i.e. not in the correct format)
 					if (!pKey->value.empty()) {
 						pKey->value.clear();
 						hasChanged = true;
 					}
-					pKey->status = KeyStoreUI::Key::Status_NotAKey;
+					pKey->status = KeyStoreUI::Key::Status::NotAKey;
 					break;
 
 				default:
@@ -370,7 +371,7 @@ void KeyStoreUIPrivate::reset(void)
 						pKey->value.clear();
 						hasChanged = true;
 					}
-					pKey->status = KeyStoreUI::Key::Status_Empty;
+					pKey->status = KeyStoreUI::Key::Status::Empty;
 					break;
 			}
 
@@ -454,28 +455,28 @@ inline int KeyStoreUIPrivate::idxToSectKey(int idx, int *pSectIdx, int *pKeyIdx)
  * @return Key import status.
  */
 KeyStoreUI::ImportReturn KeyStoreUIPrivate::importKeysFromBlob(
-	int sectIdx, const KeyBinAddress *kba, const uint8_t *buf, unsigned int len)
+	SectionID sectIdx, const KeyBinAddress *kba, const uint8_t *buf, unsigned int len)
 {
-	KeyStoreUI::ImportReturn iret = {0, 0, 0, 0, 0, 0, 0, 0};
+	KeyStoreUI::ImportReturn iret = {KeyStoreUI::ImportStatus::InvalidParams, 0, 0, 0, 0, 0, 0, 0};
 
-	assert(sectIdx >= 0);
-	assert(sectIdx < static_cast<int>(sections.size()));
+	assert((int)sectIdx >= 0);
+	assert((int)sectIdx < static_cast<int>(sections.size()));
 	assert(kba != nullptr);
 	assert(buf != nullptr);
 	assert(len != 0);
-	if (sectIdx < 0 || sectIdx >= static_cast<int>(sections.size()) ||
+	if ((int)sectIdx < 0 || (int)sectIdx >= static_cast<int>(sections.size()) ||
 	    !kba || !buf || len == 0)
 	{
-		iret.status = KeyStoreUI::Import_InvalidParams;
+		iret.status = KeyStoreUI::ImportStatus::InvalidParams;
 		return iret;
 	}
 
 	RP_Q(KeyStoreUI);
 	bool wereKeysImported = false;
-	const int keyIdxStart = sections[sectIdx].keyIdxStart;
+	const int keyIdxStart = sections[(int)sectIdx].keyIdxStart;
 	for (; kba->keyIdx >= 0; kba++) {
 		KeyStoreUI::Key *const pKey = &keys[keyIdxStart + kba->keyIdx];
-		if (pKey->status == KeyStoreUI::Key::Status_OK) {
+		if (pKey->status == KeyStoreUI::Key::Status::OK) {
 			// Key is already OK. Don't bother with it.
 			iret.keysExist++;
 			continue;
@@ -489,7 +490,7 @@ KeyStoreUI::ImportReturn KeyStoreUIPrivate::importKeysFromBlob(
 		const uint8_t *const keyData = &buf[kba->address];
 
 		// Check if the key in the binary file is correct.
-		const uint8_t *const verifyData = encKeyFns[sectIdx].pfnVerifyData(kba->keyIdx);
+		const uint8_t *const verifyData = encKeyFns[(int)sectIdx].pfnVerifyData(kba->keyIdx);
 		assert(verifyData != nullptr);
 		if (!verifyData) {
 			// Can't verify this key...
@@ -497,11 +498,11 @@ KeyStoreUI::ImportReturn KeyStoreUIPrivate::importKeysFromBlob(
 			const string new_value = binToHexStr(keyData, 16);
 			if (pKey->value != new_value) {
 				pKey->value = new_value;
-				pKey->status = KeyStoreUI::Key::Status_Unknown;
+				pKey->status = KeyStoreUI::Key::Status::Unknown;
 				pKey->modified = true;
 				iret.keysImportedNoVerify++;
 				wereKeysImported = true;
-				emit q->keyChanged_int(sectIdx, kba->keyIdx);
+				emit q->keyChanged_int((int)sectIdx, kba->keyIdx);
 				emit q->keyChanged_int(keyIdxStart + kba->keyIdx);
 			} else {
 				// No change.
@@ -517,11 +518,11 @@ KeyStoreUI::ImportReturn KeyStoreUIPrivate::importKeysFromBlob(
 			const string new_value = binToHexStr(keyData, 16);
 			if (pKey->value != new_value) {
 				pKey->value = binToHexStr(keyData, 16);
-				pKey->status = KeyStoreUI::Key::Status_OK;
+				pKey->status = KeyStoreUI::Key::Status::OK;
 				pKey->modified = true;
 				iret.keysImportedVerify++;
 				wereKeysImported = true;
-				emit q->keyChanged_int(sectIdx, kba->keyIdx);
+				emit q->keyChanged_int((int)sectIdx, kba->keyIdx);
 				emit q->keyChanged_int(keyIdxStart + kba->keyIdx);
 			} else {
 				// No change.
@@ -538,8 +539,8 @@ KeyStoreUI::ImportReturn KeyStoreUIPrivate::importKeysFromBlob(
 		emit q->modified_int();
 	}
 	iret.status = (wereKeysImported
-		? KeyStoreUI::Import_KeysImported
-		: KeyStoreUI::Import_NoKeysImported);
+		? KeyStoreUI::ImportStatus::KeysImported
+		: KeyStoreUI::ImportStatus::NoKeysImported);
 	return iret;
 }
 
@@ -557,17 +558,17 @@ int KeyStoreUIPrivate::getAesKeyDB_key(u128_t *pKey) const
 	}
 
 	// Get the CTR scrambler constant.
-	const Section &sectScrambler = sections[Section_CtrKeyScrambler];
+	const Section &sectScrambler = sections[(int)SectionID::CtrKeyScrambler];
 	const KeyStoreUI::Key &ctr_scrambler = keys[sectScrambler.keyIdxStart + CtrKeyScrambler::Key_Ctr_Scrambler];
-	if (ctr_scrambler.status != KeyStoreUI::Key::Status_OK) {
+	if (ctr_scrambler.status != KeyStoreUI::Key::Status::OK) {
 		// Key is not correct.
 		return -ENOENT;
 	}
 
 	// Get Slot0x2CKeyX.
-	const Section &sectN3DS = sections[Section_N3DSVerifyKeys];
+	const Section &sectN3DS = sections[(int)SectionID::N3DSVerifyKeys];
 	const KeyStoreUI::Key &key_slot0x2CKeyX = keys[sectN3DS.keyIdxStart + N3DSVerifyKeys::Key_Retail_Slot0x2CKeyX];
-	if (key_slot0x2CKeyX.status != KeyStoreUI::Key::Status_OK) {
+	if (key_slot0x2CKeyX.status != KeyStoreUI::Key::Status::OK) {
 		// Key is not correct.
 		return -ENOENT;
 	}
@@ -686,19 +687,19 @@ void KeyStoreUIPrivate::verifyKey(int sectIdx, int keyIdx)
 	KeyStoreUI::Key &key = keys[idx];
 	if (key.value.empty()) {
 		// Empty key.
-		key.status = KeyStoreUI::Key::Status_Empty;
+		key.status = KeyStoreUI::Key::Status::Empty;
 		return;
 	} else if (key.value.size() != 16 && key.value.size() % 2 != 0) {
 		// Invalid length.
 		// TODO: Support keys that aren't 128-bit.
-		key.status = KeyStoreUI::Key::Status_NotAKey;
+		key.status = KeyStoreUI::Key::Status::NotAKey;
 		return;
 	}
 
 	if (!cipher) {
 		// Cipher is unavailable.
 		// Cannot verify the key.
-		key.status = KeyStoreUI::Key::Status_Unknown;
+		key.status = KeyStoreUI::Key::Status::Unknown;
 		return;
 	}
 
@@ -706,7 +707,7 @@ void KeyStoreUIPrivate::verifyKey(int sectIdx, int keyIdx)
 	const uint8_t *const verifyData = encKeyFns[sectIdx].pfnVerifyData(keyIdx);
 	if (!verifyData) {
 		// No key verification data is available.
-		key.status = KeyStoreUI::Key::Status_Unknown;
+		key.status = KeyStoreUI::Key::Status::Unknown;
 		return;
 	}
 
@@ -716,7 +717,7 @@ void KeyStoreUIPrivate::verifyKey(int sectIdx, int keyIdx)
 	int ret = KeyManager::hexStringToBytes(key.value.c_str(), keyBytes, sizeof(keyBytes));
 	if (ret != 0) {
 		// Invalid character(s) encountered.
-		key.status = KeyStoreUI::Key::Status_NotAKey;
+		key.status = KeyStoreUI::Key::Status::NotAKey;
 		return;
 	}
 
@@ -724,10 +725,10 @@ void KeyStoreUIPrivate::verifyKey(int sectIdx, int keyIdx)
 	ret = verifyKeyData(keyBytes, verifyData, sizeof(keyBytes));
 	if (ret == 0) {
 		// Decrypted data is correct.
-		key.status = KeyStoreUI::Key::Status_OK;
+		key.status = KeyStoreUI::Key::Status::OK;
 	} else {
 		// Decrypted data is wrong.
-		key.status = KeyStoreUI::Key::Status_Incorrect;
+		key.status = KeyStoreUI::Key::Status::Incorrect;
 	}
 }
 
@@ -934,6 +935,10 @@ int KeyStoreUI::setKey(int sectIdx, int keyIdx, const string &value)
 	if (idx < 0)
 		return -ERANGE;
 
+	// Expected key length, in hex digits.
+	// TODO: Support more than 128-bit keys.
+	static const size_t expected_key_len = 16*2;
+
 	// If allowKanji is true, check if the key is kanji
 	// and convert it to UTF-16LE hexadecimal.
 	Key &key = d->keys[idx];
@@ -942,11 +947,19 @@ int KeyStoreUI::setKey(int sectIdx, int keyIdx, const string &value)
 		// Convert kanji to hexadecimal if needed.
 		// NOTE: convertKanjiToHex() returns an empty string on error,
 		// so if the original string is empty, don't do anything.
+		// NOTE 2: convertKanjiToHex() only errors if the string is
+		// non-ASCII and cannot be converted properly, so valid hex
+		// strings will always return the original string.
 		if (!value.empty()) {
 			string convKey = d->convertKanjiToHex(value);
 			if (convKey.empty()) {
 				// Invalid kanji key.
 				return -EINVAL;
+			}
+
+			// Truncate the key if necessary.
+			if (convKey.size() > expected_key_len) {
+				convKey.resize(expected_key_len);
 			}
 			new_value = convKey;
 		}
@@ -954,14 +967,23 @@ int KeyStoreUI::setKey(int sectIdx, int keyIdx, const string &value)
 
 	if (new_value.empty()) {
 		// Hexadecimal only.
-		// TODO: Validate it here? We're already
-		// using a validator in the UI...
-		new_value = value;
-		// Convert ASCII characters to uppercase.
-		for (auto iter = new_value.begin(); iter != new_value.end(); ++iter) {
-			if ((unsigned int)*iter < 128) {
-				*iter = toupper(*iter);
+		// NOTE: We only want up to expected_key_len.
+		new_value.resize(unlikely(value.size() > expected_key_len)
+			? expected_key_len
+			: value.size());
+
+		// Validate hex digits and convert to uppercase.
+		auto iter_src = value.cbegin();
+		auto iter_dest = new_value.begin();
+		const auto value_cend = value.cend();
+		const auto new_value_end = new_value.end();
+		for (; iter_src != value_cend && iter_dest != new_value_end; ++iter_src, ++iter_dest) {
+			char chr = *iter_src;
+			if (!ISXDIGIT(chr)) {
+				// Not a hex digit.
+				return -EINVAL;
 			}
+			*iter_dest = TOUPPER(chr);
 		}
 	}
 
@@ -990,57 +1012,21 @@ int KeyStoreUI::setKey(int sectIdx, int keyIdx, const string &value)
  */
 int KeyStoreUI::setKey(int idx, const string &value)
 {
+	// Convert to section/key index format first.
+	// NOTE: The other setKey() overload converts it
+	// back to flat index format. Maybe we should
+	// make a third (protected) function that takes
+	// all three...
 	RP_D(KeyStoreUI);
-	assert(idx >= 0);
-	assert(idx < static_cast<int>(d->keys.size()));
-	if (idx < 0 || idx >= static_cast<int>(d->keys.size()))
-		return -ERANGE;
-
-	Key &key = d->keys[idx];
-	string new_value;
-	if (key.allowKanji) {
-		// Convert kanji to hexadecimal if needed.
-		// NOTE: convertKanjiToHex() returns an empty string on error,
-		// so if the original string is empty, don't do anything.
-		if (!value.empty()) {
-			string convKey = KeyStoreUIPrivate::convertKanjiToHex(value);
-			if (convKey.empty()) {
-				// Invalid kanji key.
-				return -EINVAL;
-			}
-			new_value = convKey;
-		}
-	} else {
-		// Hexadecimal only.
-		// TODO: Validate it here? We're already
-		// using a validator in the UI...
-		new_value = value;
-		// Convert ASCII characters to uppercase.
-		for (auto iter = new_value.begin(); iter != new_value.end(); ++iter) {
-			if ((unsigned int)*iter < 128) {
-				*iter = toupper(*iter);
-			}
-		}
+	int sectIdx = -1, keyIdx = -1;
+	int ret = d->idxToSectKey(idx, &sectIdx, &keyIdx);
+	assert(ret == 0);
+	assert(sectIdx >= 0);
+	assert(keyIdx >= 0);
+	if (ret == 0 && sectIdx >= 0 && keyIdx >= 0) {
+		return setKey(sectIdx, keyIdx, value);
 	}
-
-	if (key.value != new_value) {
-		key.value = new_value;
-		key.modified = true;
-		int sectIdx = -1, keyIdx = -1;
-		int ret = d->idxToSectKey(idx, &sectIdx, &keyIdx);
-		assert(ret == 0);
-		assert(sectIdx >= 0);
-		assert(keyIdx >= 0);
-		if (ret == 0 && sectIdx >= 0 && keyIdx >= 0) {
-			// Verify the key.
-			d->verifyKey(sectIdx, keyIdx);
-			emit keyChanged_int(sectIdx, keyIdx);
-		}
-		emit keyChanged_int(idx);
-		d->changed = true;
-		emit modified_int();
-	}
-	return 0;
+	return -ERANGE;
 }
 
 /**
@@ -1078,19 +1064,19 @@ bool KeyStoreUI::hasChanged(void) const
  */
 KeyStoreUI::ImportReturn KeyStoreUI::importWiiKeysBin(const char *filename)
 {
-	ImportReturn iret = {0, 0, 0, 0, 0, 0, 0, 0};
+	ImportReturn iret = {ImportStatus::InvalidParams, 0, 0, 0, 0, 0, 0, 0};
 
-	unique_IRpFile<RpFile> file(new RpFile(filename, RpFile::FM_OPEN_READ));
+	unique_RefBase<RpFile> file(new RpFile(filename, RpFile::FM_OPEN_READ));
 	if (!file->isOpen()) {
 		// TODO: file->lastError()?
-		iret.status = Import_OpenError;
+		iret.status = ImportStatus::OpenError;
 		iret.error_code = static_cast<uint8_t>(file->lastError());
 		return iret;
 	}
 
 	// File must be 1,024 bytes.
 	if (file->size() != 1024) {
-		iret.status = Import_InvalidFile;
+		iret.status = ImportStatus::InvalidFile;
 		return iret;
 	}
 
@@ -1100,7 +1086,7 @@ KeyStoreUI::ImportReturn KeyStoreUI::importWiiKeysBin(const char *filename)
 	if (size != 1024) {
 		// Read error.
 		// TODO: file->lastError()?
-		iret.status = Import_ReadError;
+		iret.status = ImportStatus::ReadError;
 		iret.error_code = static_cast<uint8_t>(file->lastError());
 		return iret;
 	}
@@ -1111,7 +1097,7 @@ KeyStoreUI::ImportReturn KeyStoreUI::importWiiKeysBin(const char *filename)
 	static const char BackupMii_magic[] = "BackupMii v1";
 	if (memcmp(buf, BackupMii_magic, sizeof(BackupMii_magic)-1) != 0) {
 		// TODO: Check for v0.
-		iret.status = Import_InvalidFile;
+		iret.status = ImportStatus::InvalidFile;
 		return iret;
 	}
 
@@ -1128,7 +1114,7 @@ KeyStoreUI::ImportReturn KeyStoreUI::importWiiKeysBin(const char *filename)
 
 	// Import the keys.
 	RP_D(KeyStoreUI);
-	return d->importKeysFromBlob(KeyStoreUIPrivate::Section_WiiPartition,
+	return d->importKeysFromBlob(KeyStoreUIPrivate::SectionID::WiiPartition,
 		keyBinAddress, buf, sizeof(buf));
 }
 
@@ -1139,18 +1125,18 @@ KeyStoreUI::ImportReturn KeyStoreUI::importWiiKeysBin(const char *filename)
  */
 KeyStoreUI::ImportReturn KeyStoreUI::importWiiUOtpBin(const char *filename)
 {
-	ImportReturn iret = {0, 0, 0, 0, 0, 0, 0, 0};
+	ImportReturn iret = {ImportStatus::InvalidParams, 0, 0, 0, 0, 0, 0, 0};
 
-	unique_IRpFile<RpFile> file(new RpFile(filename, RpFile::FM_OPEN_READ));
+	unique_RefBase<RpFile> file(new RpFile(filename, RpFile::FM_OPEN_READ));
 	if (!file->isOpen()) {
-		iret.status = Import_OpenError;
+		iret.status = ImportStatus::OpenError;
 		iret.error_code = static_cast<uint8_t>(file->lastError());
 		return iret;
 	}
 
 	// File must be 1,024 bytes.
 	if (file->size() != 1024) {
-		iret.status = Import_InvalidFile;
+		iret.status = ImportStatus::InvalidFile;
 		return iret;
 	}
 
@@ -1159,7 +1145,7 @@ KeyStoreUI::ImportReturn KeyStoreUI::importWiiUOtpBin(const char *filename)
 	size_t size = file->read(buf, sizeof(buf));
 	if (size != 1024) {
 		// Read error.
-		iret.status = Import_ReadError;
+		iret.status = ImportStatus::ReadError;
 		iret.error_code = static_cast<uint8_t>(file->lastError());
 		return iret;
 	}
@@ -1167,25 +1153,36 @@ KeyStoreUI::ImportReturn KeyStoreUI::importWiiUOtpBin(const char *filename)
 
 	// Verify the vWii Boot1 hash.
 	// TODO: Are there multiple variants of vWii Boot1?
-	static const uint8_t vWii_Boot1_hash[20] = {
+	bool isDebug;
+	static const uint8_t vWii_Boot1_hash_retail[20] = {
 		0xF8,0xB1,0x8E,0xC3,0xFE,0x26,0xB9,0xB1,
 		0x1A,0xD4,0xA4,0xED,0xD3,0xB7,0xA0,0x31,
 		0x11,0x9A,0x79,0xF8
 	};
-	if (memcmp(buf, vWii_Boot1_hash, sizeof(vWii_Boot1_hash)-1) != 0) {
-		iret.status = Import_InvalidFile;
+	static const uint8_t vWii_Boot1_hash_debug[20] = {
+		0x9C,0x43,0x35,0x08,0x0C,0xC7,0x57,0x4F,
+		0xCD,0xDE,0x85,0xBF,0x21,0xF6,0xC9,0x7C,
+		0x6C,0xAF,0xC1,0xDB
+	};
+	if (!memcmp(&buf[0], vWii_Boot1_hash_retail, sizeof(vWii_Boot1_hash_retail))) {
+		// Retail Boot1 hash matches.
+		isDebug = false;
+	} else if (!memcmp(&buf[0], vWii_Boot1_hash_debug, sizeof(vWii_Boot1_hash_debug))) {
+		// Debug Boot1 hash matches.
+		isDebug = true;
+	} else {
+		// Not a match.
+		iret.status = ImportStatus::InvalidFile;
 		return iret;
 	}
 
 	// Key addresses and indexes.
 	// TODO:
-	// - Verify if Wii debug keys are present in otp.bin from CAT-R units.
 	// - SD keys are not present in otp.bin.
-	static const KeyStoreUIPrivate::KeyBinAddress keyBinAddress[] = {
+	static const KeyStoreUIPrivate::KeyBinAddress keyBinAddress_retail[] = {
 		{0x014, WiiPartition::Key_Rvl_Common},
-		{0x014, WiiPartition::Key_Rvt_Debug},
 		{0x348, WiiPartition::Key_Rvl_Korean},
-		{0x0D0, WiiPartition::Key_Wup_vWii_Common},
+		{0x0D0, WiiPartition::Key_Wup_Starbuck_vWii_Common},
 
 		// TODO: Import Wii U keys.
 #if 0
@@ -1196,10 +1193,27 @@ KeyStoreUI::ImportReturn KeyStoreUI::importWiiUOtpBin(const char *filename)
 		{0, -1}
 	};
 
+	static const KeyStoreUIPrivate::KeyBinAddress keyBinAddress_debug[] = {
+		{0x014, WiiPartition::Key_Rvt_Debug},
+		{0x348, WiiPartition::Key_Rvt_Korean},
+		{0x0D0, WiiPartition::Key_Cat_Starbuck_vWii_Common},
+
+		// TODO: Import Wii U keys.
+#if 0
+		{0x090, /* Wii U ancast key */},
+		{0x0E0, /* Wii U common key */},
+#endif
+
+		{0, -1}
+	};
+
+	const KeyStoreUIPrivate::KeyBinAddress *const kba =
+		(likely(!isDebug) ? keyBinAddress_retail : keyBinAddress_debug);
+
 	// Import the keys.
 	RP_D(KeyStoreUI);
-	return d->importKeysFromBlob(KeyStoreUIPrivate::Section_WiiPartition,
-		keyBinAddress, buf, sizeof(buf));
+	return d->importKeysFromBlob(KeyStoreUIPrivate::SectionID::WiiPartition,
+		kba, buf, sizeof(buf));
 }
 
 /**
@@ -1209,11 +1223,11 @@ KeyStoreUI::ImportReturn KeyStoreUI::importWiiUOtpBin(const char *filename)
  */
 KeyStoreUI::ImportReturn KeyStoreUI::import3DSboot9bin(const char *filename)
 {
-	ImportReturn iret = {0, 0, 0, 0, 0, 0, 0, 0};
+	ImportReturn iret = {ImportStatus::InvalidParams, 0, 0, 0, 0, 0, 0, 0};
 
-	unique_IRpFile<RpFile> file(new RpFile(filename, RpFile::FM_OPEN_READ));
+	unique_RefBase<RpFile> file(new RpFile(filename, RpFile::FM_OPEN_READ));
 	if (!file->isOpen()) {
-		iret.status = Import_OpenError;
+		iret.status = ImportStatus::OpenError;
 		iret.error_code = static_cast<uint8_t>(file->lastError());
 		return iret;
 	}
@@ -1221,9 +1235,9 @@ KeyStoreUI::ImportReturn KeyStoreUI::import3DSboot9bin(const char *filename)
 	// File may be:
 	// - 65,536 bytes: Unprotected + Protected boot9
 	// - 32,768 bytes: Protected boot9
-	const int64_t fileSize = file->size();
+	const off64_t fileSize = file->size();
 	if (fileSize != 65536 && fileSize != 32768) {
-		iret.status = Import_InvalidFile;
+		iret.status = ImportStatus::InvalidFile;
 		return iret;
 	}
 
@@ -1234,7 +1248,7 @@ KeyStoreUI::ImportReturn KeyStoreUI::import3DSboot9bin(const char *filename)
 		int ret = file->seek(32768);
 		if (ret != 0) {
 			// Seek error.
-			iret.status = Import_ReadError;
+			iret.status = ImportStatus::ReadError;
 			iret.error_code = static_cast<uint8_t>(file->lastError());
 			return iret;
 		}
@@ -1242,7 +1256,7 @@ KeyStoreUI::ImportReturn KeyStoreUI::import3DSboot9bin(const char *filename)
 	size_t size = file->read(buf.get(), 32768);
 	if (size != 32768) {
 		// Read error.
-		iret.status = Import_ReadError;
+		iret.status = ImportStatus::ReadError;
 		iret.error_code = static_cast<uint8_t>(file->lastError());
 		return iret;
 	}
@@ -1254,14 +1268,17 @@ KeyStoreUI::ImportReturn KeyStoreUI::import3DSboot9bin(const char *filename)
 	const uint32_t crc = crc32(0, buf.get(), 32768);
 	if (crc != 0x9D50A525) {
 		// Incorrect CRC32.
-		iret.status = Import_InvalidFile;
+		iret.status = ImportStatus::InvalidFile;
 		return iret;
 	}
 
 	// Key addresses and indexes.
 	static const KeyStoreUIPrivate::KeyBinAddress keyBinAddress[] = {
+		{0x5720, N3DSVerifyKeys::Key_Retail_SpiBoot},
 		{0x59D0, N3DSVerifyKeys::Key_Retail_Slot0x2CKeyX},
 		{0x5A20, N3DSVerifyKeys::Key_Retail_Slot0x3DKeyX},
+
+		{0x5740, N3DSVerifyKeys::Key_Debug_SpiBoot},
 		{0x5DD0, N3DSVerifyKeys::Key_Debug_Slot0x2CKeyX},
 		{0x5E20, N3DSVerifyKeys::Key_Debug_Slot0x3DKeyX},
 
@@ -1270,7 +1287,7 @@ KeyStoreUI::ImportReturn KeyStoreUI::import3DSboot9bin(const char *filename)
 
 	// Import the keys.
 	RP_D(KeyStoreUI);
-	return d->importKeysFromBlob(KeyStoreUIPrivate::Section_N3DSVerifyKeys,
+	return d->importKeysFromBlob(KeyStoreUIPrivate::SectionID::N3DSVerifyKeys,
 		keyBinAddress, buf.get(), 32768);
 }
 
@@ -1281,19 +1298,19 @@ KeyStoreUI::ImportReturn KeyStoreUI::import3DSboot9bin(const char *filename)
  */
 KeyStoreUI::ImportReturn KeyStoreUI::import3DSaeskeydb(const char *filename)
 {
-	ImportReturn iret = {0, 0, 0, 0, 0, 0, 0, 0};
+	ImportReturn iret = {ImportStatus::InvalidParams, 0, 0, 0, 0, 0, 0, 0};
 
-	unique_IRpFile<RpFile> file(new RpFile(filename, RpFile::FM_OPEN_READ));
+	unique_RefBase<RpFile> file(new RpFile(filename, RpFile::FM_OPEN_READ));
 	if (!file->isOpen()) {
-		iret.status = Import_OpenError;
+		iret.status = ImportStatus::OpenError;
 		iret.error_code = static_cast<uint8_t>(file->lastError());
 		return iret;
 	}
 
 	// File must be <= 64 KB and a multiple of 32 bytes.
-	const int64_t fileSize = file->size();
+	const off64_t fileSize = file->size();
 	if (fileSize == 0 || fileSize > 65536 || (fileSize % 32 != 0)) {
-		iret.status = Import_InvalidFile;
+		iret.status = ImportStatus::InvalidFile;
 		return iret;
 	}
 
@@ -1302,7 +1319,7 @@ KeyStoreUI::ImportReturn KeyStoreUI::import3DSaeskeydb(const char *filename)
 	size_t size = file->read(buf.get(), static_cast<size_t>(fileSize));
 	if (size != static_cast<size_t>(fileSize)) {
 		// Read error.
-		iret.status = Import_ReadError;
+		iret.status = ImportStatus::ReadError;
 		iret.error_code = static_cast<uint8_t>(file->lastError());
 		return iret;
 	}
@@ -1313,7 +1330,7 @@ KeyStoreUI::ImportReturn KeyStoreUI::import3DSaeskeydb(const char *filename)
 	// - Decrypt9WIP: isDevkitKey == 0 for retail, non-zero for debug
 	// - SafeB9SInstaller: keyUnitType == 0 for ALL units, 1 for retail only, 2 for debug only
 	// To prevent issues, we'll check both retail and debug for all keys.
-	typedef struct PACKED _AesKeyInfo {
+	typedef struct _AesKeyInfo {
 		uint8_t slot;		// keyslot, 0x00...0x3F 
 		char type;		// type 'X' / 'Y' / 'N' for normalKey / 'I' for IV
 		char id[10];		// key ID for special keys, all zero for standard keys
@@ -1322,6 +1339,7 @@ KeyStoreUI::ImportReturn KeyStoreUI::import3DSaeskeydb(const char *filename)
 		uint8_t isEncrypted;	// if non-zero, key is encrypted using Slot0x2C, with KeyY = 0
 		uint8_t key[16];
 	} AesKeyInfo;
+	ASSERT_STRUCT(AesKeyInfo, 32);
 
 	// Slot0x2CKeyX is needed to decrypt keys if the
 	// aeskeydb.bin file is encrypted.
@@ -1331,13 +1349,13 @@ KeyStoreUI::ImportReturn KeyStoreUI::import3DSaeskeydb(const char *filename)
 	if (d->getAesKeyDB_key(&aeskeydb_key) == 0) {
 		// TODO: Support for debug-encrypted aeskeydb.bin?
 		cipher.reset(AesCipherFactory::create());
-		cipher->setChainingMode(IAesCipher::CM_CTR);
+		cipher->setChainingMode(IAesCipher::ChainingMode::CTR);
 		cipher->setKey(aeskeydb_key.u8, sizeof(aeskeydb_key.u8));
 	}
 
 	AesKeyInfo *aesKey = reinterpret_cast<AesKeyInfo*>(buf.get());
 	const AesKeyInfo *const aesKeyEnd = reinterpret_cast<const AesKeyInfo*>(buf.get() + fileSize);
-	const int keyIdxStart = d->sections[KeyStoreUIPrivate::Section_N3DSVerifyKeys].keyIdxStart;
+	const int keyIdxStart = d->sections[(int)KeyStoreUIPrivate::SectionID::N3DSVerifyKeys].keyIdxStart;
 	bool wereKeysImported = false;
 	do {
 		// Check if this is a supported keyslot.
@@ -1488,7 +1506,7 @@ KeyStoreUI::ImportReturn KeyStoreUI::import3DSaeskeydb(const char *filename)
 		bool keyChecked = false;
 		for (int i = keyCount; i > 0; i--, pKeyIdx++) {
 			Key *const pKey = &d->keys[keyIdxStart + *pKeyIdx];
-			if (pKey->status == Key::Status_OK) {
+			if (pKey->status == Key::Status::OK) {
 				// Key is already OK. Don't bother with it.
 				iret.keysExist++;
 				keyChecked = true;
@@ -1505,11 +1523,11 @@ KeyStoreUI::ImportReturn KeyStoreUI::import3DSaeskeydb(const char *filename)
 					const string new_value = d->binToHexStr(aesKey->key, sizeof(aesKey->key));
 					if (pKey->value != new_value) {
 						pKey->value = new_value;
-						pKey->status = KeyStoreUI::Key::Status_OK;
+						pKey->status = KeyStoreUI::Key::Status::OK;
 						pKey->modified = true;
 						iret.keysImportedVerify++;
 						wereKeysImported = true;
-						emit keyChanged_int(KeyStoreUIPrivate::Section_N3DSVerifyKeys, *pKeyIdx);
+						emit keyChanged_int((int)KeyStoreUIPrivate::SectionID::N3DSVerifyKeys, *pKeyIdx);
 						emit keyChanged_int(keyIdxStart + *pKeyIdx);
 					} else {
 						// No change.
@@ -1526,11 +1544,11 @@ KeyStoreUI::ImportReturn KeyStoreUI::import3DSaeskeydb(const char *filename)
 				const string new_value = d->binToHexStr(aesKey->key, sizeof(aesKey->key));
 				if (pKey->value != new_value) {
 					pKey->value = new_value;
-					pKey->status = KeyStoreUI::Key::Status_Unknown;
+					pKey->status = KeyStoreUI::Key::Status::Unknown;
 					pKey->modified = true;
 					iret.keysImportedNoVerify++;
 					wereKeysImported = true;
-					emit keyChanged_int(KeyStoreUIPrivate::Section_N3DSVerifyKeys, *pKeyIdx);
+					emit keyChanged_int((int)KeyStoreUIPrivate::SectionID::N3DSVerifyKeys, *pKeyIdx);
 					emit keyChanged_int(keyIdxStart + *pKeyIdx);
 				} else {
 					// No change.
@@ -1552,8 +1570,8 @@ KeyStoreUI::ImportReturn KeyStoreUI::import3DSaeskeydb(const char *filename)
 		emit modified_int();
 	}
 	iret.status = (wereKeysImported
-		? KeyStoreUI::Import_KeysImported
-		: KeyStoreUI::Import_NoKeysImported);
+		? KeyStoreUI::ImportStatus::KeysImported
+		: KeyStoreUI::ImportStatus::NoKeysImported);
 	return iret;
 }
 

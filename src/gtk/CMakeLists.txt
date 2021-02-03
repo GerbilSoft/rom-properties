@@ -1,6 +1,12 @@
-PROJECT(gtk)
-
-# GTK+ frontends for rom-properties.
+# GTK+ UI frontends
+CMAKE_MINIMUM_REQUIRED(VERSION 3.0)
+CMAKE_POLICY(SET CMP0048 NEW)
+IF(POLICY CMP0063)
+	# CMake 3.3: Enable symbol visibility presets for all
+	# target types, including static libraries and executables.
+	CMAKE_POLICY(SET CMP0063 NEW)
+ENDIF(POLICY CMP0063)
+PROJECT(rom-properties-gtk LANGUAGES C CXX)
 
 INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/src)
 
@@ -35,16 +41,27 @@ ENDIF(CPU_i386 OR CPU_amd64)
 # Sources and headers.
 SET(rom-properties-gtk_SRCS
 	RomDataView.cpp
+	DragImage.cpp
 	CreateThumbnail.cpp
+	PIMGTYPE.cpp
 	rp-gtk-enums.c
 	RpFile_gio.cpp
+	MessageWidget.cpp
+	RpGtk.cpp
+	sort_funcs.c
+	LanguageComboBox.cpp
 	)
 SET(rom-properties-gtk_H
 	RomDataView.hpp
+	DragImage.hpp
 	GdkImageConv.hpp
 	PIMGTYPE.hpp
 	rp-gtk-enums.h
 	RpFile_gio.hpp
+	MessageWidget.hpp
+	RpGtk.hpp
+	sort_funcs.h
+	LanguageComboBox.hpp
 	)
 
 # GTK2 sources and headers.
@@ -52,8 +69,14 @@ SET(rom-properties-gtk2_SRCS GdkImageConv.cpp)
 SET(rom-properties-gtk2_H GdkImageConv.hpp)
 
 # GTK3 sources and headers.
-SET(rom-properties-gtk3_SRCS CairoImageConv.cpp PIMGTYPE.cpp)
+SET(rom-properties-gtk3_SRCS CairoImageConv.cpp)
 SET(rom-properties-gtk3_H CairoImageConv.hpp)
+
+IF(ENABLE_ACHIEVEMENTS)
+	# D-Bus notification for achievements
+	SET(rom-properties-gtk-notify_SRCS AchGDBus.cpp)
+	SET(rom-properties-gtk-notify_H    AchGDBus.hpp)
+ENDIF(ENABLE_ACHIEVEMENTS)
 
 # Common libraries required for both GTK+ 2.x and 3.x.
 FIND_PACKAGE(GLib2 2.26.0)
@@ -63,27 +86,17 @@ IF(GLib2_FOUND AND GObject2_FOUND)
 	FIND_PACKAGE(GdkPixbuf2)
 	IF(NOT GdkPixbuf2_FOUND)
 		# Cannot build GTK2 frontends.
-		SET(BUILD_GTK2 OFF CACHE INTERNAL "Check for GTK+ 2.x." FORCE)
-		SET(BUILD_XFCE OFF CACHE INTERNAL "Build the XFCE (GTK+ 2.x) plugin. (Thunar 1.7 and earlier)" FORCE)
+		SET(BUILD_GTK2 OFF CACHE INTERNAL "Build the GTK+ 2.x plugin." FORCE)
 	ENDIF(NOT GdkPixbuf2_FOUND)
 	FIND_PACKAGE(Cairo)
 	IF(NOT Cairo_FOUND)
 		# Cannot build GTK3 frontends.
-		SET(BUILD_GTK3 OFF CACHE INTERNAL "Check for GTK+ 3.x." FORCE)
-		SET(BUILD_GNOME OFF CACHE INTERNAL "Build the GNOME (GTK+ 3.x) plugin." FORCE)
-		SET(BUILD_XFCE3 OFF CACHE INTERNAL "Build the XFCE (GTK+ 3.x) plugin. (Thunar 1.8 and later)" FORCE)
-		SET(BUILD_MATE OFF CACHE INTERNAL "Build the MATE (GTK+ 3.x) plugin." FORCE)
-		SET(BUILD_CINNAMON OFF CACHE INTERNAL "Build the Cinnamon (GTK+ 3.x) plugin." FORCE)
+		SET(BUILD_GTK3 OFF CACHE INTERNAL "Build the GTK+ 3.x plugin." FORCE)
 	ENDIF(NOT Cairo_FOUND)
 ELSE(GLib2_FOUND AND GObject2_FOUND)
 	# Cannot build any GTK+ frontends.
-	SET(BUILD_GTK2 OFF CACHE INTERNAL "Check for GTK+ 2.x." FORCE)
-	SET(BUILD_GTK3 OFF CACHE INTERNAL "Check for GTK+ 3.x." FORCE)
-	SET(BUILD_XFCE OFF CACHE INTERNAL "Build the XFCE (GTK+ 2.x) plugin. (Thunar 1.7 and earlier)" FORCE)
-	SET(BUILD_XFCE3 OFF CACHE INTERNAL "Build the XFCE (GTK+ 3.x) plugin. (Thunar 1.8 and later)" FORCE)
-	SET(BUILD_GNOME OFF CACHE INTERNAL "Build the GNOME (GTK+ 3.x) plugin." FORCE)
-	SET(BUILD_MATE OFF CACHE INTERNAL "Build the MATE (GTK+ 3.x) plugin." FORCE)
-	SET(BUILD_CINNAMON OFF CACHE INTERNAL "Build the Cinnamon (GTK+ 3.x) plugin." FORCE)
+	SET(BUILD_GTK2 OFF CACHE INTERNAL "Build the GTK+ 2.x plugin." FORCE)
+	SET(BUILD_GTK3 OFF CACHE INTERNAL "Check for GTK+ 3.x plugin." FORCE)
 ENDIF(GLib2_FOUND AND GObject2_FOUND)
 
 # Build GTK+ 2.x frontends.
@@ -93,12 +106,8 @@ IF(BUILD_GTK2)
 	IF(GTK2_FOUND)
 		ADD_SUBDIRECTORY(xfce)
 	ELSE(GTK2_FOUND)
-		SET(BUILD_GTK2 OFF CACHE INTERNAL "Check for GTK+ 2.x." FORCE)
-		SET(BUILD_XFCE OFF CACHE INTERNAL "Build the XFCE (GTK+ 2.x) plugin. (Thunar 1.7 and earlier)" FORCE)
+		SET(BUILD_GTK2 OFF CACHE INTERNAL "Build the GTK+ 2.x plugin." FORCE)
 	ENDIF(GTK2_FOUND)
-ELSE(BUILD_GTK2)
-	# No GTK2 builds.
-	SET(BUILD_XFCE OFF CACHE INTERNAL "Build the XFCE (GTK+ 2.x) plugin. (Thunar 1.7 and earlier)" FORCE)
 ENDIF(BUILD_GTK2)
 
 # Build GTK+ 3.x frontends.
@@ -106,37 +115,25 @@ IF(BUILD_GTK3)
 	# GTK3 minimum is 3.10.0. (gtk_image_set_from_surface)
 	FIND_PACKAGE(GTK3 3.10.0 ${REQUIRE_GTK3})
 	IF(GTK3_FOUND)
-		ADD_SUBDIRECTORY(gnome)
-		ADD_SUBDIRECTORY(xfce3)
-		ADD_SUBDIRECTORY(mate)
-		ADD_SUBDIRECTORY(cinnamon)
+		ADD_SUBDIRECTORY(gtk3)
 
-		IF(BUILD_GNOME OR BUILD_MATE OR BUILD_CINNAMON)
-			# Process the .thumbnailer file.
-			INCLUDE(DirInstallPaths)
-			CONFIGURE_FILE(rom-properties.thumbnailer.in rom-properties.thumbnailer)
-			INSTALL(FILES "${CMAKE_CURRENT_BINARY_DIR}/rom-properties.thumbnailer"
-				DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/thumbnailers"
-				COMPONENT "plugin"
-				)
-		ENDIF(BUILD_GNOME OR BUILD_MATE OR BUILD_CINNAMON)
+		# Process the .thumbnailer file.
+		INCLUDE(DirInstallPaths)
+		INCLUDE(ParseMimeTypes)
+		PARSE_MIME_TYPES(MIMETYPES_THUMBONLY "${CMAKE_SOURCE_DIR}/xdg/mime.thumbnail.types")
+		CONFIGURE_FILE(rom-properties.thumbnailer.in rom-properties.thumbnailer @ONLY)
+		INSTALL(FILES "${CMAKE_CURRENT_BINARY_DIR}/rom-properties.thumbnailer"
+			DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/thumbnailers"
+			COMPONENT "plugin"
+			)
 	ELSE(GTK3_FOUND)
-		SET(BUILD_GTK3 OFF CACHE INTERNAL "Check for GTK+ 3.x." FORCE)
-		SET(BUILD_GNOME OFF CACHE INTERNAL "Build the GNOME (GTK+ 3.x) plugin." FORCE)
-		SET(BUILD_XFCE3 OFF CACHE INTERNAL "Build the XFCE (GTK+ 3.x) plugin. (Thunar 1.8 and later)" FORCE)
-		SET(BUILD_MATE OFF CACHE INTERNAL "Build the MATE (GTK+ 3.x) plugin." FORCE)
-		SET(BUILD_CINNAMON OFF CACHE INTERNAL "Build the Cinnamon (GTK+ 3.x) plugin." FORCE)
+		SET(BUILD_GTK3 OFF CACHE INTERNAL "Build the GTK+ 3.x plugin." FORCE)
 	ENDIF(GTK3_FOUND)
-ELSE(BUILD_GTK3)
-	# No GTK3 builds.
-	SET(BUILD_GNOME OFF CACHE INTERNAL "Build the GNOME (GTK+ 3.x) plugin." FORCE)
-	SET(BUILD_XFCE3 OFF CACHE INTERNAL "Build the XFCE (GTK+ 3.x) plugin. (Thunar 1.8 and later)" FORCE)
-	SET(BUILD_MATE OFF CACHE INTERNAL "Build the MATE (GTK+ 3.x) plugin." FORCE)
-	SET(BUILD_CINNAMON OFF CACHE INTERNAL "Build the Cinnamon (GTK+ 3.x) plugin." FORCE)
 ENDIF(BUILD_GTK3)
 
-# Build the D-Bus thumbnailer if building an XFCE plugin.
-IF(BUILD_XFCE OR BUILD_XFCE3)
-	SET(BUILD_THUMBNAILER_DBUS ON CACHE INTERNAL "Build the D-Bus thumbnailer" FORCE)
+# Build the D-Bus thumbnailer.
+# Required for XFCE.
+IF(BUILD_GTK2 OR BUILD_GTK3)
+	SET(BUILD_THUMBNAILER_DBUS ON CACHE INTERNAL "Build the D-Bus thumbnailer." FORCE)
 	ADD_SUBDIRECTORY(thumbnailer-dbus)
-ENDIF(BUILD_XFCE OR BUILD_XFCE3)
+ENDIF(BUILD_GTK2 OR BUILD_GTK3)

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * XDVDFSPartition.hpp: Microsoft Xbox XDVDFS partition reader.            *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -10,10 +10,6 @@
 #define __ROMPROPERTIES_LIBROMDATA_DISC_XDVDFSPARTITION_HPP__
 
 #include "librpbase/disc/IPartition.hpp"
-
-namespace LibRpBase {
-	class IRpFile;
-}
 
 // C includes. (C++ namespace)
 #include <ctime>
@@ -34,8 +30,9 @@ class XDVDFSPartition : public LibRpBase::IPartition
 		 * @param partition_offset Partition start offset.
 		 * @param partition_size Partition size.
 		 */
-		XDVDFSPartition(IDiscReader *discReader, int64_t partition_offset, int64_t partition_size);
-		virtual ~XDVDFSPartition();
+		XDVDFSPartition(IDiscReader *discReader, off64_t partition_offset, off64_t partition_size);
+	protected:
+		virtual ~XDVDFSPartition();	// call unref() instead
 
 	private:
 		typedef IPartition super;
@@ -54,6 +51,7 @@ class XDVDFSPartition : public LibRpBase::IPartition
 		 * @param size Amount of data to read, in bytes.
 		 * @return Number of bytes read.
 		 */
+		ATTR_ACCESS_SIZE(write_only, 2, 3)
 		size_t read(void *ptr, size_t size) override;
 
 		/**
@@ -61,13 +59,13 @@ class XDVDFSPartition : public LibRpBase::IPartition
 		 * @param pos Partition position.
 		 * @return 0 on success; -1 on error.
 		 */
-		int seek(int64_t pos) override;
+		int seek(off64_t pos) override;
 
 		/**
 		 * Get the partition position.
 		 * @return Partition position on success; -1 on error.
 		 */
-		int64_t tell(void) override;
+		off64_t tell(void) override;
 
 		/**
 		 * Get the data size.
@@ -75,7 +73,7 @@ class XDVDFSPartition : public LibRpBase::IPartition
 		 * and it's adjusted to exclude hashes.
 		 * @return Data size, or -1 on error.
 		 */
-		int64_t size(void) final;
+		off64_t size(void) final;
 
 	public:
 		/** IPartition **/
@@ -85,7 +83,7 @@ class XDVDFSPartition : public LibRpBase::IPartition
 		 * This size includes the partition header and hashes.
 		 * @return Partition size, or -1 on error.
 		 */
-		int64_t partition_size(void) const final;
+		off64_t partition_size(void) const final;
 
 		/**
 		 * Get the used partition size.
@@ -93,7 +91,7 @@ class XDVDFSPartition : public LibRpBase::IPartition
 		 * but does not include "empty" sectors.
 		 * @return Used partition size, or -1 on error.
 		 */
-		int64_t partition_size_used(void) const final;
+		off64_t partition_size_used(void) const final;
 
 	public:
 		/** IFst wrapper functions. **/
@@ -138,7 +136,7 @@ class XDVDFSPartition : public LibRpBase::IPartition
 		 * @param filename Filename.
 		 * @return IRpFile*, or nullptr on error.
 		 */
-		LibRpBase::IRpFile *open(const char *filename);
+		LibRpFile::IRpFile *open(const char *filename);
 
 	public:
 		/** XDVDFSPartition **/

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * CisoGcnReader.hpp: GameCube/Wii CISO disc image reader.                 *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -15,8 +15,9 @@
 #include "librpbase/disc/SparseDiscReader_p.hpp"
 #include "ciso_gcn.h"
 
-// librpbase
+// librpbase, librpfile
 using namespace LibRpBase;
+using LibRpFile::IRpFile;
 
 // C++ STL classes.
 using std::array;
@@ -74,8 +75,7 @@ CisoGcnReader::CisoGcnReader(IRpFile *file)
 	size_t sz = m_file->read(&d->cisoHeader, sizeof(d->cisoHeader));
 	if (sz != sizeof(d->cisoHeader)) {
 		// Error reading the CISO header.
-		m_file->unref();
-		m_file = nullptr;
+		UNREF_AND_NULL_NOCHK(m_file);
 		m_lastError = EIO;
 		return;
 	}
@@ -83,8 +83,7 @@ CisoGcnReader::CisoGcnReader(IRpFile *file)
 	// Verify the CISO header.
 	if (d->cisoHeader.magic != cpu_to_be32(CISO_MAGIC)) {
 		// Invalid magic.
-		m_file->unref();
-		m_file = nullptr;
+		UNREF_AND_NULL_NOCHK(m_file);
 		m_lastError = EIO;
 		return;
 	}
@@ -100,8 +99,7 @@ CisoGcnReader::CisoGcnReader(IRpFile *file)
 		// If the block size is 0x18, then this is
 		// actually a PSP CISO, and this field is
 		// the CISO header size.
-		m_file->unref();
-		m_file = nullptr;
+		UNREF_AND_NULL_NOCHK(m_file);
 		m_lastError = EIO;
 		return;
 	}
@@ -121,15 +119,14 @@ CisoGcnReader::CisoGcnReader(IRpFile *file)
 				break;
 			default:
 				// Invalid entry.
-				m_file->unref();
-				m_file = nullptr;
+				UNREF_AND_NULL_NOCHK(m_file);
 				m_lastError = EIO;
 				return;
 		}
 	}
 
 	// Calculate the disc size based on the highest logical block index.
-	d->disc_size = (static_cast<int64_t>(d->maxLogicalBlockUsed) + 1) * static_cast<int64_t>(d->block_size);
+	d->disc_size = (static_cast<off64_t>(d->maxLogicalBlockUsed) + 1) * static_cast<off64_t>(d->block_size);
 
 	// Reset the disc position.
 	d->pos = 0;
@@ -192,11 +189,11 @@ int CisoGcnReader::isDiscSupported(const uint8_t *pHeader, size_t szHeader) cons
  * @param blockIdx	[in] Block index.
  * @return Physical address. (0 == empty block; -1 == invalid block index)
  */
-int64_t CisoGcnReader::getPhysBlockAddr(uint32_t blockIdx) const
+off64_t CisoGcnReader::getPhysBlockAddr(uint32_t blockIdx) const
 {
 	// Make sure the block index is in range.
 	// TODO: Check against maxLogicalBlockUsed?
-	RP_D(CisoGcnReader);
+	RP_D(const CisoGcnReader);
 	assert(blockIdx < d->blockMap.size());
 	if (blockIdx >= d->blockMap.size()) {
 		// Out of range.
@@ -211,8 +208,8 @@ int64_t CisoGcnReader::getPhysBlockAddr(uint32_t blockIdx) const
 	}
 
 	// Convert to a physical block address and return.
-	return static_cast<int64_t>(sizeof(d->cisoHeader)) +
-		(static_cast<int64_t>(physBlockIdx) * d->block_size);
+	return static_cast<off64_t>(sizeof(d->cisoHeader)) +
+	      (static_cast<off64_t>(physBlockIdx) * d->block_size);
 }
 
 }

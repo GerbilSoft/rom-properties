@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * ImageDecoder_BC7.cpp: Image decoding functions. (BC7)                   *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #include "stdafx.h"
-#include "config.librpbase.h"
 
 #include "ImageDecoder.hpp"
 #include "ImageDecoder_p.hpp"
@@ -253,28 +252,29 @@ rp_image *fromBC7(int width, int height,
 	assert(img_buf != nullptr);
 	assert(width > 0);
 	assert(height > 0);
+
+	// BC7 uses 4x4 tiles, but some container formats allow
+	// the last tile to be cut off, so round up for the
+	// physical tile size.
+	const int physWidth = ALIGN_BYTES(4, width);
+	const int physHeight = ALIGN_BYTES(4, height);
+
 	assert(img_siz >= (width * height));
 	if (!img_buf || width <= 0 || height <= 0 ||
-	    img_siz < (width * height))
+	    img_siz < (physWidth * physHeight))
 	{
 		return nullptr;
 	}
 
-	// BC7 uses 4x4 tiles.
-	assert(width % 4 == 0);
-	assert(height % 4 == 0);
-	if (width % 4 != 0 || height % 4 != 0)
-		return nullptr;
-
 	// Calculate the total number of tiles.
-	const unsigned int tilesX = (unsigned int)(width / 4);
-	const unsigned int tilesY = (unsigned int)(height / 4);
+	const unsigned int tilesX = static_cast<unsigned int>(physWidth / 4);
+	const unsigned int tilesY = static_cast<unsigned int>(physHeight / 4);
 
 	// Create an rp_image.
-	rp_image *const img = new rp_image(width, height, rp_image::FORMAT_ARGB32);
+	rp_image *const img = new rp_image(width, height, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
-		delete img;
+		img->unref();
 		return nullptr;
 	}
 
@@ -297,7 +297,9 @@ rp_image *fromBC7(int width, int height,
 	// Anchor indexes.
 	// Subset 0 is always anchored at 0.
 	// Other subsets depend on subset count and partition number.
-	uint8_t anchor_index[3];
+	// NOTE: Index 3 is invalid. It's present here for alignment
+	// and because the subset index is 2-bit.
+	uint8_t anchor_index[4];
 	anchor_index[0] = 0;
 
 	for (unsigned int y = 0; y < tilesY; y++) {
@@ -305,12 +307,13 @@ rp_image *fromBC7(int width, int height,
 		/** BEGIN: Temporary values. **/
 
 		// Endpoints.
-		// - [6]: Individual endpoints.
+		// - [8]: Individual endpoints.
 		// - [4]: RGBx components. (idx3 is unused)
-		// TODO: Align to 32-bit.
+		// NOTE: Endpoints 6 and 7 are never used.
+		// They're kept here because the subset index is 2-bit.
 		union {
-			uint8_t   u8[6][4];
-			uint32_t u32[6];
+			uint8_t   u8[8][4];
+			uint32_t u32[8];
 		} endpoints;
 
 		// Alpha components.
@@ -329,7 +332,7 @@ rp_image *fromBC7(int width, int height,
 		const int mode = get_mode(static_cast<uint32_t>(lsb));
 		if (mode < 0) {
 			// Invalid mode.
-			delete img;
+			img->unref();
 			return nullptr;
 		}
 		rshift128(msb, lsb, mode+1);
@@ -556,6 +559,7 @@ rp_image *fromBC7(int width, int height,
 		uint32_t subsetData = subset;
 		for (unsigned int i = 0; i < 16; i++, subsetData >>= 2) {
 			const uint8_t subset_idx = subsetData & 3;
+			assert(subset_idx != 3);
 			uint8_t data_idx;
 			if (i == anchor_index[subset_idx]) {
 				// This is an anchor index.
@@ -675,6 +679,11 @@ rp_image *fromBC7(int width, int height,
 		ImageDecoderPrivate::BlitTile<uint32_t, 4, 4>(img,
 			reinterpret_cast<const uint32_t*>(&tileBuf[0]), x, y);
 	} }
+
+	if (width < physWidth || height < physHeight) {
+		// Shrink the image.
+		img->shrink(width, height);
+	}
 
 	// Set the sBIT metadata.
 	img->set_sBIT(&sBIT);

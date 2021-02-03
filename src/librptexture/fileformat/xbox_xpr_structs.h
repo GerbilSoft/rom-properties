@@ -2,21 +2,19 @@
  * ROM Properties Page shell extension. (librptexture)                      *
  * xbox_xpr0_structs.h: Microsoft Xbox XPR0 texture format data structures. *
  *                                                                          *
- * Copyright (c) 2019 by David Korth.                                       *
+ * Copyright (c) 2019-2020 by David Korth.                                  *
  * SPDX-License-Identifier: GPL-2.0-or-later                                *
  ****************************************************************************/
 
 #ifndef __ROMPROPERTIES_LIBRPTEXTURE_FILEFORMAT_XBOX_XPR0_STRUCTS_H__
 #define __ROMPROPERTIES_LIBRPTEXTURE_FILEFORMAT_XBOX_XPR0_STRUCTS_H__
 
-#include "librpbase/common.h"
 #include <stdint.h>
+#include "common.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-#pragma pack(1)
 
 /**
  * Microsoft Xbox XPR0: File header.
@@ -27,7 +25,7 @@ extern "C" {
 #define XBOX_XPR0_MAGIC 'XPR0'
 #define XBOX_XPR1_MAGIC 'XPR1'
 #define XBOX_XPR2_MAGIC 'XPR2'
-typedef struct PACKED _Xbox_XPR0_Header {
+typedef struct _Xbox_XPR0_Header {
 	uint32_t magic;		// [0x000] 'XPR0'
 	uint32_t filesize;	// [0x004] Size of the entire file
 	uint32_t data_offset;	// [0x008] Offset to image data
@@ -118,8 +116,6 @@ typedef enum {
 
 	XPR0_PIXEL_FORMAT_VERTEXDATA	= 0x64,
 } XPR0_Pixel_Format_e;
-
-#pragma pack()
 
 #ifdef __cplusplus
 }

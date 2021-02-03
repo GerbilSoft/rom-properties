@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * ADX.hpp: CRI ADX audio reader.                                          *
  *                                                                         *
- * Copyright (c) 2018-2019 by David Korth.                                 *
+ * Copyright (c) 2018-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -10,8 +10,9 @@
 #include "ADX.hpp"
 #include "adx_structs.h"
 
-// librpbase
+// librpbase, librpfile
 using namespace LibRpBase;
+using LibRpFile::IRpFile;
 
 // C++ STL classes.
 using std::ostringstream;
@@ -21,7 +22,7 @@ namespace LibRomData {
 
 ROMDATA_IMPL(ADX)
 
-class ADXPrivate : public RomDataPrivate
+class ADXPrivate final : public RomDataPrivate
 {
 	public:
 		ADXPrivate(ADX *q, IRpFile *file);
@@ -67,7 +68,8 @@ ADX::ADX(IRpFile *file)
 {
 	RP_D(ADX);
 	d->className = "ADX";
-	d->fileType = FTYPE_AUDIO_FILE;
+	d->mimeType = "audio/x-adx";	// unofficial, not on fd.o
+	d->fileType = FileType::AudioFile;
 
 	if (!d->file) {
 		// Could not ref() the file handle.
@@ -80,8 +82,7 @@ ADX::ADX(IRpFile *file)
 	d->file->rewind();
 	size_t size = d->file->read(header, sizeof(header));
 	if (size != sizeof(header)) {
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
 
@@ -95,8 +96,7 @@ ADX::ADX(IRpFile *file)
 	d->isValid = (isRomSupported_static(&info) >= 0);
 
 	if (!d->isValid) {
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
 

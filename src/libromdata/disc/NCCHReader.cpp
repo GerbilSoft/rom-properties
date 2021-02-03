@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * NCCHReader.cpp: Nintendo 3DS NCCH reader.                               *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -11,12 +11,13 @@
 
 #include "NCCHReader.hpp"
 
-// librpbase
+// librpbase, librpfile
 #ifdef ENABLE_DECRYPTION
 #include "librpbase/crypto/AesCipherFactory.hpp"
 #include "librpbase/crypto/IAesCipher.hpp"
 #endif /* ENABLE_DECRYPTION */
 using namespace LibRpBase;
+using LibRpFile::IRpFile;
 
 // CIA Reader.
 #include "disc/CIAReader.hpp"
@@ -28,14 +29,15 @@ namespace LibRomData {
 
 NCCHReaderPrivate::NCCHReaderPrivate(NCCHReader *q,
 	uint8_t media_unit_shift,
-	int64_t ncch_offset, uint32_t ncch_length)
+	off64_t ncch_offset, uint32_t ncch_length)
 	: q_ptr(q)
 	, ncch_offset(ncch_offset)
 	, ncch_length(ncch_length)
 	, media_unit_shift(media_unit_shift)
 	, pos(0)
 	, headers_loaded(0)
-	, verifyResult(KeyManager::VERIFY_UNKNOWN)
+	, verifyResult(KeyManager::VerifyResult::Unknown)
+	, nonNcchContentType(NonNCCHContentType::Unknown)
 #ifdef ENABLE_DECRYPTION
 	, tid_be(0)
 	, cipher(nullptr)
@@ -56,7 +58,7 @@ NCCHReaderPrivate::NCCHReaderPrivate(NCCHReader *q,
 		// Read error.
 		// NOTE: readFromROM() sets q->m_lastError.
 		// TODO: Better verifyResult?
-		verifyResult = KeyManager::VERIFY_WRONG_KEY;
+		verifyResult = KeyManager::VerifyResult::WrongKey;
 		closeFileOrDiscReader();
 		return;
 	}
@@ -68,8 +70,8 @@ NCCHReaderPrivate::NCCHReaderPrivate(NCCHReader *q,
 		if (ncch_header.hdr.magic == cpu_to_be32('NDHT')) {
 			// NDHT. (DS Whitelist)
 			// 0004800F-484E4841
-			verifyResult = KeyManager::VERIFY_OK;
-			nonNcchContentType = NONCCH_NDHT;
+			verifyResult = KeyManager::VerifyResult::OK;
+			nonNcchContentType = NonNCCHContentType::NDHT;
 			closeFileOrDiscReader();
 			return;
 		}
@@ -78,11 +80,11 @@ NCCHReaderPrivate::NCCHReaderPrivate(NCCHReader *q,
 		if (magic_narc == cpu_to_be32('NARC')) {
 			// NARC. (TWL Version Data)
 			// 0004800F-484E4C41
-			verifyResult = KeyManager::VERIFY_OK;
-			nonNcchContentType = NONCCH_NARC;
+			verifyResult = KeyManager::VerifyResult::OK;
+			nonNcchContentType = NonNCCHContentType::NARC;
 		} else {
 			// TODO: Better verifyResult? (May be DSiWare...)
-			verifyResult = KeyManager::VERIFY_WRONG_KEY;
+			verifyResult = KeyManager::VerifyResult::WrongKey;
 			if (q->m_lastError == 0) {
 				q->m_lastError = EIO;
 			}
@@ -96,18 +98,18 @@ NCCHReaderPrivate::NCCHReaderPrivate(NCCHReader *q,
 #ifdef ENABLE_DECRYPTION
 	// Byteswap the title ID. (It's used for the AES counter.)
 	// FIXME: Verify this on big-endian.
-	tid_be = __swab64(ncch_header.hdr.program_id.id);
+	tid_be = __swab64(ncch_header.hdr.title_id.id);
 
 	// Determine the keyset to use.
 	// NOTE: Assuming Retail by default. Will fall back to
 	// Debug if ExeFS header decryption fails.
 	verifyResult = N3DSVerifyKeys::loadNCCHKeys(ncch_keys, &ncch_header, N3DS_TICKET_TITLEKEY_ISSUER_RETAIL);
-	if (verifyResult != KeyManager::VERIFY_OK) {
+	if (verifyResult != KeyManager::VerifyResult::OK) {
 		// Failed to load the keyset.
 		// Try debug keys instead.
 		verifyResult = N3DSVerifyKeys::loadNCCHKeys(ncch_keys, &ncch_header,
 			N3DS_TICKET_TITLEKEY_ISSUER_DEBUG);
-		if (verifyResult != KeyManager::VERIFY_OK) {
+		if (verifyResult != KeyManager::VerifyResult::OK) {
 			// Debug keys didn't work.
 			// Zero out the keys.
 			memset(ncch_keys, 0, sizeof(ncch_keys));
@@ -122,13 +124,13 @@ NCCHReaderPrivate::NCCHReaderPrivate(NCCHReader *q,
 	// Decryption is not available, so only NoCrypto is allowed.
 	if (!(ncch_header.hdr.flags[N3DS_NCCH_FLAG_BIT_MASKS] & N3DS_NCCH_BIT_MASK_NoCrypto)) {
 		// Unsupported.
-		verifyResult = KeyManager::VERIFY_NO_SUPPORT;
+		verifyResult = KeyManager::VerifyResult::NoSupport;
 		q->m_lastError = EIO;
 		closeFileOrDiscReader();
 		return;
 	}
 	// No decryption is required.
-	verifyResult = KeyManager::VERIFY_OK;
+	verifyResult = KeyManager::VerifyResult::OK;
 #endif /* ENABLE_DECRYPTION */
 
 	// Load the ExeFS header.
@@ -154,7 +156,7 @@ NCCHReaderPrivate::NCCHReaderPrivate(NCCHReader *q,
 		// Initialize the AES cipher.
 		// TODO: Check for errors.
 		cipher = AesCipherFactory::create();
-		cipher->setChainingMode(IAesCipher::CM_CTR);
+		cipher->setChainingMode(IAesCipher::ChainingMode::CTR);
 		u128_t ctr;
 
 		if (headers_loaded & HEADER_EXEFS) {
@@ -189,7 +191,7 @@ NCCHReaderPrivate::NCCHReaderPrivate(NCCHReader *q,
 				// TODO: Consolidate this code.
 				verifyResult = N3DSVerifyKeys::loadNCCHKeys(ncch_keys, &ncch_header,
 					N3DS_TICKET_TITLEKEY_ISSUER_DEBUG);
-				if (verifyResult != KeyManager::VERIFY_OK) {
+				if (verifyResult != KeyManager::VerifyResult::OK) {
 					// Failed to load the keyset.
 					// Zero out the keys.
 					memset(ncch_keys, 0, sizeof(ncch_keys));
@@ -253,7 +255,7 @@ NCCHReaderPrivate::NCCHReaderPrivate(NCCHReader *q,
 		const uint32_t logo_region_size = le32_to_cpu(ncch_header.hdr.logo_region_size) << media_unit_shift;
 		if (logo_region_size > 0) {
 			const uint32_t logo_region_offset = le32_to_cpu(ncch_header.hdr.logo_region_offset) << media_unit_shift;
-			encSections.push_back(EncSection(
+			encSections.emplace_back(EncSection(
 				logo_region_offset,	// Address within NCCH.
 				logo_region_offset,		// Counter base address.
 				logo_region_size,
@@ -261,7 +263,7 @@ NCCHReaderPrivate::NCCHReaderPrivate(NCCHReader *q,
 		}
 
 		// ExHeader
-		encSections.push_back(EncSection(
+		encSections.emplace_back(EncSection(
 			sizeof(N3DS_NCCH_Header_t),	// Address within NCCH.
 			sizeof(N3DS_NCCH_Header_t),	// Counter base address.
 			le32_to_cpu(ncch_header.hdr.exheader_size),
@@ -269,7 +271,7 @@ NCCHReaderPrivate::NCCHReaderPrivate(NCCHReader *q,
 
 		if (headers_loaded & HEADER_EXEFS) {
 			// ExeFS header
-			encSections.push_back(EncSection(
+			encSections.emplace_back(EncSection(
 				exefs_offset,	// Address within NCCH.
 				exefs_offset,	// Counter base address.
 				sizeof(N3DS_ExeFS_Header_t),
@@ -291,7 +293,7 @@ NCCHReaderPrivate::NCCHReaderPrivate(NCCHReader *q,
 					keyIdx = 1;
 				}
 
-				encSections.push_back(EncSection(
+				encSections.emplace_back(EncSection(
 					exefs_offset + sizeof(exefs_header) +	// Address within NCCH.
 						le32_to_cpu(file_header->offset),
 					exefs_offset,				// Counter base address.
@@ -303,7 +305,7 @@ NCCHReaderPrivate::NCCHReaderPrivate(NCCHReader *q,
 		// RomFS
 		if (ncch_header.hdr.romfs_size != cpu_to_le32(0)) {
 			const uint32_t romfs_offset = (le32_to_cpu(ncch_header.hdr.romfs_offset) << media_unit_shift);
-			encSections.push_back(EncSection(
+			encSections.emplace_back(EncSection(
 				romfs_offset,	// Address within NCCH.
 				romfs_offset,	// Counter base address.
 				(le32_to_cpu(ncch_header.hdr.romfs_size) << media_unit_shift),
@@ -374,7 +376,7 @@ size_t NCCHReaderPrivate::readFromROM(uint32_t offset, void *ptr, size_t size)
 	}
 
 	// Seek to the start of the data and read it.
-	const int64_t phys_addr = ncch_offset + offset;
+	const off64_t phys_addr = ncch_offset + offset;
 	size_t sz_read;
 	if (q->m_hasDiscReader) {
 		sz_read = q->m_discReader->seekAndRead(phys_addr, ptr, size);
@@ -436,7 +438,7 @@ int NCCHReaderPrivate::loadExHeader(void)
 
 	// Load the ExHeader.
 	// ExHeader is stored immediately after the main header.
-	int64_t prev_pos = q->tell();
+	const off64_t prev_pos = q->tell();
 	q->m_lastError = 0;
 	size_t size = q->seekAndRead(sizeof(N3DS_NCCH_Header_t),
 				     &ncch_exheader, exheader_length);
@@ -498,7 +500,7 @@ int NCCHReaderPrivate::loadExHeader(void)
  * @param ncch_length		[in] NCCH length, in bytes.
  */
 NCCHReader::NCCHReader(IRpFile *file, uint8_t media_unit_shift,
-		int64_t ncch_offset, uint32_t ncch_length)
+		off64_t ncch_offset, uint32_t ncch_length)
 	: super(file)
 	, d_ptr(new NCCHReaderPrivate(this, media_unit_shift, ncch_offset, ncch_length))
 { }
@@ -518,7 +520,7 @@ NCCHReader::NCCHReader(IRpFile *file, uint8_t media_unit_shift,
  * @param tmd_content_index	[in,opt] TMD content index for CIA decryption.
  */
 NCCHReader::NCCHReader(CIAReader *ciaReader, uint8_t media_unit_shift,
-		int64_t ncch_offset, uint32_t ncch_length)
+		off64_t ncch_offset, uint32_t ncch_length)
 	: super(ciaReader)
 	, d_ptr(new NCCHReaderPrivate(this, media_unit_shift, ncch_offset, ncch_length))
 { }
@@ -526,13 +528,6 @@ NCCHReader::NCCHReader(CIAReader *ciaReader, uint8_t media_unit_shift,
 NCCHReader::~NCCHReader()
 {
 	delete d_ptr;
-
-	if (m_hasDiscReader) {
-		// Delete the IDiscReader, since it's
-		// most likely a temporary CIAReader.
-		// TODO: Use reference counting?
-		delete m_discReader;
-	}
 }
 
 /** IDiscReader **/
@@ -565,7 +560,7 @@ size_t NCCHReader::read(void *ptr, size_t size)
 
 	// Make sure d->pos + size <= d->ncch_length.
 	// If it isn't, we'll do a short read.
-	if (d->pos + static_cast<int64_t>(size) >= d->ncch_length) {
+	if (d->pos + static_cast<off64_t>(size) >= d->ncch_length) {
 		size = static_cast<size_t>(d->ncch_length - d->pos);
 	}
 
@@ -657,7 +652,7 @@ size_t NCCHReader::read(void *ptr, size_t size)
  * @param pos Partition position.
  * @return 0 on success; -1 on error.
  */
-int NCCHReader::seek(int64_t pos)
+int NCCHReader::seek(off64_t pos)
 {
 	RP_D(NCCHReader);
 	assert(isOpen());
@@ -683,7 +678,7 @@ int NCCHReader::seek(int64_t pos)
  * Get the partition position.
  * @return Partition position on success; -1 on error.
  */
-int64_t NCCHReader::tell(void)
+off64_t NCCHReader::tell(void)
 {
 	RP_D(const NCCHReader);
 	assert(isOpen());
@@ -701,11 +696,11 @@ int64_t NCCHReader::tell(void)
  * and it's adjusted to exclude hashes.
  * @return Data size, or -1 on error.
  */
-int64_t NCCHReader::size(void)
+off64_t NCCHReader::size(void)
 {
 	// TODO: Errors?
 	RP_D(const NCCHReader);
-	const int64_t ret = d->ncch_length - sizeof(N3DS_NCCH_Header_t);
+	const off64_t ret = d->ncch_length - sizeof(N3DS_NCCH_Header_t);
 	return (ret >= 0 ? ret : 0);
 }
 
@@ -716,7 +711,7 @@ int64_t NCCHReader::size(void)
  * This size includes the partition header and hashes.
  * @return Partition size, or -1 on error.
  */
-int64_t NCCHReader::partition_size(void) const
+off64_t NCCHReader::partition_size(void) const
 {
 	// TODO: Errors?
 	RP_D(const NCCHReader);
@@ -729,7 +724,7 @@ int64_t NCCHReader::partition_size(void) const
  * but does not include "empty" sectors.
  * @return Used partition size, or -1 on error.
  */
-int64_t NCCHReader::partition_size_used(void) const
+off64_t NCCHReader::partition_size_used(void) const
 {
 	// TODO: Errors?
 	// NOTE: For NCCHReader, this is the same as partition_size().
@@ -932,11 +927,11 @@ const char *NCCHReader::contentType(void) const
 		// Check if this is another content type.
 		RP_D(const NCCHReader);
 		switch (d->nonNcchContentType) {
-			case NCCHReaderPrivate::NONCCH_NDHT:
+			case NCCHReaderPrivate::NonNCCHContentType::NDHT:
 				// NDHT (DS Whitelist)
 				content_type = "NDHT";
 				break;
-			case NCCHReaderPrivate::NONCCH_NARC:
+			case NCCHReaderPrivate::NonNCCHContentType::NARC:
 				// NARC (TWL Version Data)
 				content_type = "NARC";
 				break;
@@ -1028,7 +1023,7 @@ IRpFile *NCCHReader::open(int section, const char *filename)
 		le32_to_cpu(file_header->offset);
 	const uint32_t size = le32_to_cpu(file_header->size);
 	if (offset >= d->ncch_length ||
-	    (static_cast<int64_t>(offset) + size) > d->ncch_length)
+	    (static_cast<off64_t>(offset) + size) > d->ncch_length)
 	{
 		// File offset/size is out of bounds.
 		m_lastError = EIO;	// TODO: Better error code?
@@ -1053,7 +1048,7 @@ IRpFile *NCCHReader::open(int section, const char *filename)
  *
  * @return IRpFile*, or nullptr on error.
  */
-LibRpBase::IRpFile *NCCHReader::openLogo(void)
+LibRpFile::IRpFile *NCCHReader::openLogo(void)
 {
 	RP_D(const NCCHReader);
 	assert(isOpen());

@@ -1,33 +1,88 @@
-PROJECT(rom-properties-xfce)
+# GTK+ 2.x UI frontend for:
+# - Thunar 1.6 (XFCE)
+CMAKE_MINIMUM_REQUIRED(VERSION 3.0)
+CMAKE_POLICY(SET CMP0048 NEW)
+IF(POLICY CMP0063)
+	# CMake 3.3: Enable symbol visibility presets for all
+	# target types, including static libraries and executables.
+	CMAKE_POLICY(SET CMP0063 NEW)
+ENDIF(POLICY CMP0063)
+PROJECT(rom-properties-xfce LANGUAGES C CXX)
 
-# XFCE (Thunar) frontend for rom-properties.
+# Disable glib deprecation warnings.
+# - GTypeDebugFlags is deprecated as of glib-2.36.
+# - GTimeVal is deprecated as of glib-2.62.
+# GTK+ 2.x uses both of these, and since it's unlikely that
+# GTK+ 2.x will ever be updated to use the non-deprecated
+# versions, simply remove the deprecation warning.
+ADD_DEFINITIONS(-DGLIB_DISABLE_DEPRECATION_WARNINGS)
 
 # Find packages.
-FIND_PACKAGE(GLib2 ${REQUIRE_XFCE} 2.26.0)
-FIND_PACKAGE(GObject2 ${REQUIRE_XFCE} 2.26.0)
-FIND_PACKAGE(GIO ${REQUIRE_XFCE} 2.26.0)
-FIND_PACKAGE(GdkPixbuf2 ${REQUIRE_XFCE})
+FIND_PACKAGE(GLib2 ${REQUIRE_GTK2} 2.26.0)
+FIND_PACKAGE(GObject2 ${REQUIRE_GTK2} 2.26.0)
+FIND_PACKAGE(GIO ${REQUIRE_GTK2} 2.26.0)
+FIND_PACKAGE(GIO-UNIX ${REQUIRE_GTK2} 2.26.0)
+FIND_PACKAGE(GdkPixbuf2 ${REQUIRE_GTK2})
 # GTK2 minimum is 2.0.0, so no version check is needed.
-FIND_PACKAGE(GTK2 ${REQUIRE_XFCE} COMPONENTS gtk)
-IF(GLib2_FOUND AND GObject2_FOUND AND GIO_FOUND AND GdkPixbuf2_FOUND AND GTK2_FOUND)
-	# Find the ThunarX 2 library.
-	FIND_PACKAGE(ThunarX2 ${REQUIRE_XFCE})
+FIND_PACKAGE(GTK2 ${REQUIRE_GTK2} COMPONENTS gtk)
+IF(GLib2_FOUND AND GObject2_FOUND AND GIO_FOUND AND GIO-UNIX_FOUND AND GdkPixbuf2_FOUND AND GTK2_FOUND)
+	# We're not going to have an explicit dependency on libnautilus-extension.
+	# It will be dlopen()'d at runtime based on which
+	# initialization function is called.
+
+	# ThunarX2 (XFCE)
+	FIND_PACKAGE(ThunarX2)
 	IF(NOT ThunarX2_FOUND)
-		# ThunarX 2 was not found.
-		# Disable the XFCE frontend.
-		SET(BUILD_XFCE OFF CACHE INTERNAL "Build the XFCE (GTK+ 2.x) plugin. (Thunar 1.7 and earlier)" FORCE)
+		MESSAGE(STATUS "ThunarX2 not found. Using the default extensions directory.")
+		SET(ThunarX2_EXTENSIONS_DIR "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/thunarx-2")
 	ENDIF(NOT ThunarX2_FOUND)
-ELSE(GLib2_FOUND AND GObject2_FOUND AND GIO_FOUND AND GdkPixbuf2_FOUND AND GTK2_FOUND)
+
+	# LibCanberra and LibCanberraGtk2
+	# TODO: Add an OPTION() to allow the user to disable this?
+	FIND_PACKAGE(LibCanberra)
+	FIND_PACKAGE(LibCanberraGtk2)
+ELSE(GLib2_FOUND AND GObject2_FOUND AND GIO_FOUND AND GIO-UNIX_FOUND AND GdkPixbuf2_FOUND AND GTK2_FOUND)
 	# GTK+ 2.x (or required dependencies) were not found.
 	# Disable the XFCE frontend.
-	SET(BUILD_XFCE OFF CACHE INTERNAL "Build the XFCE (GTK+ 2.x) plugin. (Thunar 1.7 and earlier)" FORCE)
-ENDIF(GLib2_FOUND AND GObject2_FOUND AND GIO_FOUND AND GdkPixbuf2_FOUND AND GTK2_FOUND)
+	SET(BUILD_GTK2 OFF CACHE INTERNAL "Build the XFCE (GTK+ 2.x) plugin. (Thunar 1.7 and earlier)" FORCE)
+ENDIF(GLib2_FOUND AND GObject2_FOUND AND GIO_FOUND AND GIO-UNIX_FOUND AND GdkPixbuf2_FOUND AND GTK2_FOUND)
 
 # Sources and headers. (GTK+ common)
 STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-xfce_SRCS  "${rom-properties-gtk_SRCS}")
 STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-xfce_SRCS2 "${rom-properties-gtk2_SRCS}")
 STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-xfce_H     "${rom-properties-gtk_H}")
 STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-xfce_H2    "${rom-properties-gtk2_H}")
+
+IF(ENABLE_ACHIEVEMENTS)
+	STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-xfce-notify_SRCS "${rom-properties-gtk-notify_SRCS}")
+	STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-xfce-notify_H    "${rom-properties-gtk-notify_H}")
+
+	# D-Bus bindings for notifications.
+	# NOTE: This has to be in this file, not the GTK+ CMakeLists.txt.
+	SET(DBUS_XML_FILENAME "${CMAKE_CURRENT_SOURCE_DIR}/../../dbus/org.freedesktop.Notifications.xml")
+	ADD_CUSTOM_COMMAND(
+		OUTPUT Notifications.c Notifications.h
+		COMMAND "${GDBUS_CODEGEN}"
+			--generate-c-code Notifications
+			"${DBUS_XML_FILENAME}"
+		WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
+		DEPENDS "${DBUS_XML_FILENAME}"
+		VERBATIM
+		)
+
+	SET(rom-properties-xfce-notify_SRCS
+		${rom-properties-xfce-notify_SRCS}
+		${CMAKE_CURRENT_BINARY_DIR}/Notifications.c
+		)
+
+	# Disable unused parameter warnings in generated D-Bus sources.
+	INCLUDE(CheckCCompilerFlag)
+	CHECK_C_COMPILER_FLAG("-Wno-unused-parameter" CFLAG_Wno_unused_parameter)
+	IF(CFLAG_Wno_unused_parameter)
+		SET_SOURCE_FILES_PROPERTIES(${CMAKE_CURRENT_BINARY_DIR}/Notifications.c
+			APPEND_STRING PROPERTIES COMPILE_FLAGS " -Wno-unused-parameter ")
+	ENDIF(CFLAG_Wno_unused_parameter)
+ENDIF(ENABLE_ACHIEVEMENTS)
 
 # CPU-specific and optimized sources.
 IF(rom-properties-gtk2_SSSE3_SRCS)
@@ -53,25 +108,53 @@ IF(rom-properties-gtk2_SSSE3_SRCS)
 ENDIF()
 UNSET(arch)
 
+# Write the config.h file.
+CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/config.xfce.h.in" "${CMAKE_CURRENT_BINARY_DIR}/config.xfce.h")
+
 # Sources and headers. (XFCE-specific)
 SET(rom-properties-xfce_SRCS
 	${rom-properties-xfce_SRCS} ${rom-properties-xfce_SRCS2}
+	${rom-properties-xfce-notify_SRCS} ${rom-properties-xfce-notify_H}
 	${rom-properties-xfce_IFUNC_SRCS}
 	${rom-properties-xfce_SSSE3_SRCS}
-	rom-properties-plugin.c
-	rom-properties-provider.cpp
-	rom-properties-page.cpp
+	../gtk3/RpThunarPlugin.cpp
+	../gtk3/RpThunarProvider.cpp
+	../gtk3/is-supported.cpp
 	)
 SET(rom-properties-xfce_H
 	${rom-properties-xfce_H} ${rom-properties-xfce_H2}
-	rom-properties-provider.hpp
-	rom-properties-page.hpp
+	../gtk3/RpThunarPlugin.hpp
+	../gtk3/RpThunarProvider.hpp
+	../gtk3/is-supported.hpp
+	../gtk3/plugin-helper.h
+	../gtk3/thunarx-mini.h
 	)
 
-IF(BUILD_XFCE)
+IF(LibCanberra_FOUND AND LibCanberraGtk2_FOUND)
+	SET(rom-properties-xfce_SRCS ${rom-properties-xfce_SRCS} ../MessageSound.cpp)
+	SET(rom-properties-xfce_H    ${rom-properties-xfce_H}    ../MessageSound.hpp)
+ENDIF(LibCanberra_FOUND AND LibCanberraGtk2_FOUND)
+
+IF(ENABLE_PCH)
+	# Precompiled headers.
+	INCLUDE(PrecompiledHeader)
+	SET(rom-properties-xfce_PCH_C ../stdafx.c)
+	SET(rom-properties-xfce_PCH_CXX ../stdafx.cpp)
+	SET(rom-properties-xfce_PCH_SRC ${rom-properties-xfce_PCH_C} ${rom-properties-xfce_PCH_CXX})
+	SET(rom-properties-xfce_PCH_H ../stdafx.h)
+ENDIF(ENABLE_PCH)
+
+IF(BUILD_GTK2)
 	ADD_LIBRARY(rom-properties-xfce MODULE
+		${rom-properties-xfce_PCH_SRC} ${rom-properties-xfce_PCH_H}
 		${rom-properties-xfce_SRCS}
 		)
+	IF(ENABLE_PCH)
+		ADD_PRECOMPILED_HEADER(rom-properties-xfce ${rom-properties-xfce_PCH_H}
+			SOURCE_C ${rom-properties-xfce_PCH_C}
+			SOURCE_CXX ${rom-properties-xfce_PCH_CXX}
+			)
+	ENDIF(ENABLE_PCH)
 	SET_TARGET_PROPERTIES(rom-properties-xfce PROPERTIES PREFIX "")
 	DO_SPLIT_DEBUG(rom-properties-xfce)
 	TARGET_INCLUDE_DIRECTORIES(rom-properties-xfce
@@ -84,26 +167,31 @@ IF(BUILD_XFCE)
 		)
 	TARGET_INCLUDE_DIRECTORIES(rom-properties-xfce PUBLIC ${GTK2_INCLUDE_DIRS})
 
-	TARGET_LINK_LIBRARIES(rom-properties-xfce PRIVATE cachemgr romdata rpbase)
+	TARGET_LINK_LIBRARIES(rom-properties-xfce PRIVATE glibresources)
+	TARGET_LINK_LIBRARIES(rom-properties-xfce PRIVATE rpcpu romdata rpfile rpbase)
 	IF(ENABLE_NLS)
 		TARGET_LINK_LIBRARIES(rom-properties-xfce PRIVATE i18n)
 	ENDIF(ENABLE_NLS)
-	TARGET_LINK_LIBRARIES(rom-properties-xfce PUBLIC Xfce::thunarx-2)
 	TARGET_LINK_LIBRARIES(rom-properties-xfce PRIVATE GdkPixbuf2::gdkpixbuf2)
-	TARGET_LINK_LIBRARIES(rom-properties-xfce PUBLIC ${GTK2_LIBRARIES} GLib2::gio GLib2::gobject GLib2::glib)
+	TARGET_LINK_LIBRARIES(rom-properties-xfce PUBLIC ${GTK2_LIBRARIES} GLib2::gio-unix GLib2::gio GLib2::gobject GLib2::glib)
+	IF(LibCanberra_FOUND AND LibCanberraGtk2_FOUND)
+		TARGET_LINK_LIBRARIES(rom-properties-xfce PRIVATE LibCanberra::libcanberra LibCanberra::gtk2)
+		TARGET_COMPILE_DEFINITIONS(rom-properties-xfce PRIVATE ENABLE_MESSAGESOUND)
+	ENDIF(LibCanberra_FOUND AND LibCanberraGtk2_FOUND)
+
 	# TODO: Move GTK2_DEFINITIONS to TARGET_COMPILE_DEFINITIONS.
 	# (Requires removing the "-D" switches.)
 	ADD_DEFINITIONS(${GTK2_DEFINITIONS})
 	TARGET_COMPILE_DEFINITIONS(rom-properties-xfce
-		PRIVATE G_LOG_DOMAIN=\"rom-properties-xfce\"
+		PRIVATE RP_UI_GTK2_XFCE
 		)
-ENDIF(BUILD_XFCE)
+ENDIF(BUILD_GTK2)
 
 #######################
 # Install the plugin. #
 #######################
 
-IF(BUILD_XFCE)
+IF(BUILD_GTK2)
 	# FIXME: ${ThunarX2_EXTENSIONS_DIR} always uses the system prefix.
 	# This should be adjusted to ${CMAKE_INSTALL_PREFIX}.
 	INSTALL(TARGETS rom-properties-xfce
@@ -122,4 +210,4 @@ IF(BUILD_XFCE)
 				)
 		ENDIF(DEBUG_FILENAME)
 	ENDIF(INSTALL_DEBUG)
-ENDIF(BUILD_XFCE)
+ENDIF(BUILD_GTK2)

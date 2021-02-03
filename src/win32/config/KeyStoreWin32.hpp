@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * KeyStoreWin32.hpp: Key store object for Windows.                        *
  *                                                                         *
- * Copyright (c) 2012-2018 by David Korth.                                 *
+ * Copyright (c) 2012-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -10,9 +10,9 @@
 #define __ROMPROPERTIES_WIN32_CONFIG_KEYSTOREWIN32_HPP__
 
 #include "libromdata/crypto/KeyStoreUI.hpp"
-#include "librpbase/common.h"
+#include "common.h"
 
-class KeyStoreWin32 : public LibRomData::KeyStoreUI
+class KeyStoreWin32 final : public LibRomData::KeyStoreUI
 {
 	public:
 		explicit KeyStoreWin32(HWND hWnd);

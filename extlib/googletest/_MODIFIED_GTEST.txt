@@ -1,4 +1,4 @@
-This copy of googletest-1.8.1 is a modified version of the original.
+This copy of googletest-1.10.0 is a modified version of the original.
 
 The following changes have been made to the original:
 
@@ -15,4 +15,5 @@ The following changes have been made to the original:
 - Removed test suites, scripts, and Xcode projects in order to reduce
   warnings on LGTM.
 
-To obtain the original googletest-1.8.1, visit https://github.com/google/googletest .
+To obtain the original googletest-1.10.0, visit:
+https://github.com/google/googletest

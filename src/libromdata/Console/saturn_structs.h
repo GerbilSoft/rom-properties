@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * saturn_structs.h: Sega Saturn data structures.                          *
  *                                                                         *
- * Copyright (c) 2017-2018 by David Korth.                                 *
+ * Copyright (c) 2017-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -16,14 +16,12 @@
  * - https://www.gamefaqs.com/saturn/916393-sega-saturn/faqs/26021
  */
 
-#include "librpbase/common.h"
+#include "common.h"
 #include <stdint.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-#pragma pack(1)
 
 /**
  * IP0000.BIN
@@ -33,7 +31,7 @@ extern "C" {
  */
 #define SATURN_IP0000_BIN_HW_ID		"SEGA SEGASATURN "
 #define SATURN_IP0000_BIN_MAKER_ID	"SEGA ENTERPRISES"
-typedef struct PACKED _Saturn_IP0000_BIN_t {
+typedef struct _Saturn_IP0000_BIN_t {
 	char hw_id[16];			// "SEGA SEGASATURN "
 	char maker_id[16];		// Sega:  "SEGA ENTERPRISES"
 					// Other: "SEGA TP T-999   "
@@ -81,8 +79,6 @@ typedef enum {
 	SATURN_IO_ROM_CARTRIDGE		= 'R',
 	SATURN_IO_MPEG_CARD		= 'P',
 } Saturn_Peripherals;
-
-#pragma pack()
 
 #ifdef __cplusplus
 }

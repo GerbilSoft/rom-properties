@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libi18n)                          *
  * i18n.c: Internationalization support code.                              *
  *                                                                         *
- * Copyright (c) 2017-2019 by David Korth.                                 *
+ * Copyright (c) 2017-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -20,17 +20,7 @@
 # include "libwin32common/RpWin32_sdk.h"
 #endif
 
-/**
- * Number of elements in an array.
- * (from librpbase/common.h)
- *
- * Includes a static check for pointers to make sure
- * a dynamically-allocated array wasn't specified.
- * Reference: http://stackoverflow.com/questions/8018843/macro-definition-array-size
- */
-#define ARRAY_SIZE(x) \
-	((int)(((sizeof(x) / sizeof(x[0]))) / \
-		(size_t)(!(sizeof(x) % sizeof(x[0])))))
+#include "common.h"
 
 #ifdef _WIN32
 // Architecture name.
@@ -52,17 +42,10 @@ int rp_i18n_init(void)
 {
 	// Windows: Use the application-specific locale directory.
 	DWORD dwResult, dwAttrs;
-	int ret;
 	TCHAR tpathname[MAX_PATH+16];
-#ifndef UNICODE
-	wchar_t wpathname[MAX_PATH+16];
-#else
-# define wpathname tpathname
-#endif
-	char u8pathname[MAX_PATH+16];
 
 	TCHAR *bs;
-	const char *base;
+	LPCTSTR base;
 
 	// Get the current module filename.
 	// NOTE: Delay-load only supports ANSI module names.
@@ -119,25 +102,12 @@ int rp_i18n_init(void)
 
 	// Found the locale subdirectory.
 	// Bind the gettext domain.
-	// NOTE: The bundled copy of gettext supports UTF-8 paths.
-	// Results with other versions may vary.
-
-#ifndef UNICODE
-	// Convert the pathname from ANSI to UTF-16 first.
-	ret = MultiByteToWideChar(CP_ACP, 0, tpathname, -1, wpathname, ARRAY_SIZE(wpathname));
-	if (ret <= 0) {
-		// Error converting the pathname.
-		return -1;
-	}
-#endif /* !UNICODE */
-	// Convert the pathname from UTF-16 to UTF-8.
-	ret = WideCharToMultiByte(CP_UTF8, 0, wpathname, -1, u8pathname, ARRAY_SIZE(u8pathname), NULL, NULL);
-	if (ret <= 0) {
-		// Error converting the pathname.
-		return -1;
-	}
-
-	base = bindtextdomain(RP_I18N_DOMAIN, u8pathname);
+	// NOTE: gettext-0.21 supports Unicode paths using wbindtextdomain().
+#ifdef UNICODE
+	base = wbindtextdomain(RP_I18N_DOMAIN, tpathname);
+#else /* !UNICODE */
+	base = bindtextdomain(RP_I18N_DOMAIN, tpathname);
+#endif /* UNICODE */
 	if (!base) {
 		// bindtextdomain() failed.
 		return -1;

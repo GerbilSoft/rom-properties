@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * Cdrom2352Reader.hpp: CD-ROM reader for 2352-byte sector images.         *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -10,10 +10,6 @@
 #define __ROMPROPERTIES_LIBROMDATA_DISC_CDROM2352READER_HPP__
 
 #include "librpbase/disc/SparseDiscReader.hpp"
-
-namespace LibRpBase {
-	class IRpFile;
-}
 
 namespace LibRomData {
 
@@ -25,15 +21,34 @@ class Cdrom2352Reader : public LibRpBase::SparseDiscReader
 		 * Construct a Cdrom2352Reader with the specified file.
 		 * The file is ref()'d, so the original file can be
 		 * unref()'d by the caller afterwards.
+		 *
+		 * Defaults to 2352-byte sectors.
+		 *
 		 * @param file File to read from.
 		 */
-		explicit Cdrom2352Reader(LibRpBase::IRpFile *file);
+		explicit Cdrom2352Reader(LibRpFile::IRpFile *file);
+
+		/**
+		 * Construct a Cdrom2352Reader with the specified file.
+		 * The file is ref()'d, so the original file can be
+		 * unref()'d by the caller afterwards.
+		 *
+		 * @param file File to read from.
+		 * @param physBlockSize Sector size. (2352, 2446)
+		 */
+		explicit Cdrom2352Reader(LibRpFile::IRpFile *file, unsigned int physBlockSize);
 
 	private:
 		typedef SparseDiscReader super;
 		RP_DISABLE_COPY(Cdrom2352Reader)
 	private:
 		friend class Cdrom2352ReaderPrivate;
+
+	private:
+		/**
+		 * Common initialization function.
+		 */
+		void init(void);
 
 	public:
 		/** Disc image detection functions. **/
@@ -63,7 +78,22 @@ class Cdrom2352Reader : public LibRpBase::SparseDiscReader
 		 * @param blockIdx	[in] Block index.
 		 * @return Physical address. (0 == empty block; -1 == invalid block index)
 		 */
-		int64_t getPhysBlockAddr(uint32_t blockIdx) const final;
+		off64_t getPhysBlockAddr(uint32_t blockIdx) const final;
+
+		/**
+		 * Read the specified block.
+		 *
+		 * This can read either a full block or a partial block.
+		 * For a full block, set pos = 0 and size = block_size.
+		 *
+		 * @param blockIdx	[in] Block index.
+		 * @param pos		[in] Starting position. (Must be >= 0 and <= the block size!)
+		 * @param ptr		[out] Output data buffer.
+		 * @param size		[in] Amount of data to read, in bytes. (Must be <= the block size!)
+		 * @return Number of bytes read, or -1 if the block index is invalid.
+		 */
+		ATTR_ACCESS_SIZE(write_only, 4, 5)
+		int readBlock(uint32_t blockIdx, int pos, void *ptr, size_t size) final;
 };
 
 }

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * CIAReader.hpp: Nintendo 3DS CIA reader.                                 *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -13,10 +13,6 @@
 
 // librpbase
 #include "librpbase/disc/IPartition.hpp"
-
-namespace LibRpBase {
-	class IRpFile;
-}
 
 namespace LibRomData {
 
@@ -36,11 +32,12 @@ class CIAReader : public LibRpBase::IPartition
 		 * @param ticket		[in,opt] Ticket for decryption. (nullptr if NoCrypto)
 		 * @param tmd_content_index	[in,opt] TMD content index for decryption.
 		 */
-		CIAReader(LibRpBase::IRpFile *file,
-			int64_t content_offset, uint32_t content_length,
+		CIAReader(LibRpFile::IRpFile *file,
+			off64_t content_offset, uint32_t content_length,
 			const N3DS_Ticket_t *ticket,
 			uint16_t tmd_content_index);
-		virtual ~CIAReader();
+	protected:
+		virtual ~CIAReader();	// call unref() instead
 
 	private:
 		typedef IPartition super;
@@ -59,6 +56,7 @@ class CIAReader : public LibRpBase::IPartition
 		 * @param size Amount of data to read, in bytes.
 		 * @return Number of bytes read.
 		 */
+		ATTR_ACCESS_SIZE(write_only, 2, 3)
 		size_t read(void *ptr, size_t size) final;
 
 		/**
@@ -66,13 +64,13 @@ class CIAReader : public LibRpBase::IPartition
 		 * @param pos Partition position.
 		 * @return 0 on success; -1 on error.
 		 */
-		int seek(int64_t pos) final;
+		int seek(off64_t pos) final;
 
 		/**
 		 * Get the partition position.
 		 * @return Partition position on success; -1 on error.
 		 */
-		int64_t tell(void) final;
+		off64_t tell(void) final;
 
 		/**
 		 * Get the data size.
@@ -80,7 +78,7 @@ class CIAReader : public LibRpBase::IPartition
 		 * and it's adjusted to exclude hashes.
 		 * @return Data size, or -1 on error.
 		 */
-		int64_t size(void) final;
+		off64_t size(void) final;
 
 	public:
 		/** IPartition **/
@@ -90,7 +88,7 @@ class CIAReader : public LibRpBase::IPartition
 		 * This size includes the partition header and hashes.
 		 * @return Partition size, or -1 on error.
 		 */
-		int64_t partition_size(void) const final;
+		off64_t partition_size(void) const final;
 
 		/**
 		 * Get the used partition size.
@@ -98,7 +96,7 @@ class CIAReader : public LibRpBase::IPartition
 		 * but does not include "empty" sectors.
 		 * @return Used partition size, or -1 on error.
 		 */
-		int64_t partition_size_used(void) const final;
+		off64_t partition_size_used(void) const final;
 };
 
 }

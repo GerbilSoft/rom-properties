@@ -1,0 +1,24 @@
+/***************************************************************************
+ * ROM Properties Page shell extension. (rp-download)                      *
+ * config.rp-download.h.in: rp-download configuration. (source file)       *
+ *                                                                         *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
+ * SPDX-License-Identifier: GPL-2.0-or-later                               *
+ ***************************************************************************/
+
+#ifndef __ROMPROPERTIES_RP_DOWNLOAD_CONFIG_H__
+#define __ROMPROPERTIES_RP_DOWNLOAD_CONFIG_H__
+
+/* Define to 1 if you have the Linux `fsetxattr` function. */
+#cmakedefine HAVE_FSETXATTR_LINUX 1
+
+/* Define to 1 if you have the Mac OS X `fsetxattr` function. */
+#cmakedefine HAVE_FSETXATTR_MAC 1
+
+/* Define to 1 if you have the FreeBSD `extattr_set_fd` function. */
+#cmakedefine HAVE_EXTATTR_SET_FD 1
+
+/* Define to 1 if you have the `statx` function. */
+#cmakedefine HAVE_STATX 1
+
+#endif /* __ROMPROPERTIES_RP_DOWNLOAD_CONFIG_H__ */

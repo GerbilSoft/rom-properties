@@ -116,7 +116,7 @@
   <!-- Dreamcast -->
   <mime-type type="application/x-dreamcast-rom">
     <comment>Dreamcast disc image</comment>
-    <sub-class-of type="application/x-raw-disk-image"/>
+    <sub-class-of type="application/x-cd-image"/>
     <generic-icon name="application-x-cd-image"/>
     <alias type="application/x-dreamcast-iso-image"/>
     <glob pattern="*.iso"/>
@@ -127,7 +127,7 @@
   </mime-type>
   <mime-type type="application/x-dreamcast-cuesheet">
     <comment>Dreamcast cuesheet</comment>
-    <sub-class-of type="application/x-raw-disk-image"/>
+    <sub-class-of type="application/x-cd-image"/>
     <generic-icon name="application-x-cd-image"/>
     <glob pattern="*.gdi"/>
   </mime-type>
@@ -158,7 +158,7 @@
   <!-- GameCube -->
   <mime-type type="application/x-gamecube-rom">
     <comment>GameCube disc image</comment>
-    <sub-class-of type="application/x-raw-disk-image"/>
+    <sub-class-of type="application/x-cd-image"/>
     <generic-icon name="application-x-cd-image"/>
     <alias type="application/x-gamecube-iso-image"/>
     <glob pattern="*.iso"/>
@@ -166,7 +166,7 @@
     <glob pattern="*.ciso"/>
     <magic priority="50">
       <match value="0xc2339f3d" type="big32" offset="28"/>
-      <match value="CISO" type="string" offset="4">
+      <match value="CISO" type="string" offset="0">
         <match value="0xc2339f3d" type="big32" offset="32796"/>
       </match>
       <match value="WBFS" type="string" offset="0">
@@ -178,7 +178,7 @@
   <!--
   <mime-type type="application/x-gamecube-tgc">
     <comment>GameCube embedded disc image</comment>
-    <sub-class-of type="application/x-raw-disk-image"/>
+    <sub-class-of type="application/x-cd-image"/>
     <generic-icon name="application-x-cd-image"/>
     <glob pattern="*.tgc"/>
     <magic priority="50">
@@ -188,25 +188,50 @@
   -->
   <mime-type type="application/x-wii-rom">
     <comment>Wii disc image</comment>
-    <sub-class-of type="application/x-raw-disk-image"/>
+    <sub-class-of type="application/x-cd-image"/>
     <generic-icon name="application-x-cd-image"/>
     <alias type="application/x-wii-iso-image"/>
     <alias type="application/x-wbfs"/>
-    <alias type="application/x-wia"/>
     <glob pattern="*.iso"/>
     <glob pattern="*.gcm"/>
     <glob pattern="*.ciso"/>
     <glob pattern="*.rvm"/>
-    <glob pattern="*.wia"/>
     <magic priority="50">
       <match value="0x5d1c9ea3" type="big32" offset="24"/>
-      <match value="CISO" type="string" offset="4">
+      <match value="CISO" type="string" offset="0">
         <match value="0x5d1c9ea3" type="big32" offset="32792"/>
       </match>
       <match value="WBFS" type="string" offset="0">
         <match value="0x5d1c9ea3" type="big32" offset="536"/>
       </match>
       <match value="WII\001DISC" type="string" offset="0"/>
+    </magic>
+  </mime-type>
+  <mime-type type="application/x-gcz-image">
+    <comment>Compressed GameCube/Wii disc image</comment>
+    <sub-class-of type="application/x-gamecube-rom"/>
+    <generic-icon name="application-x-cd-image"/>
+    <glob pattern="*.gcz"/>
+    <magic priority="50">
+      <match value="0xb10bc001" type="big32" offset="0"/>
+    </magic>
+  </mime-type>
+  <mime-type type="application/x-wia">
+    <comment>Compressed GameCube/Wii disc image</comment>
+    <sub-class-of type="application/x-wii-rom"/>
+    <generic-icon name="application-x-cd-image"/>
+    <glob pattern="*.wia"/>
+    <magic priority="50">
+      <match value="WIA\x01" type="string" offset="0"/>
+    </magic>
+  </mime-type>
+  <mime-type type="application/x-rvz-image">
+    <comment>Compressed GameCube/Wii disc image</comment>
+    <sub-class-of type="application/x-wii-rom"/>
+    <generic-icon name="application-x-cd-image"/>
+    <glob pattern="*.rvz"/>
+    <magic priority="50">
+      <match value="RVZ\x01" type="string" offset="0"/>
     </magic>
   </mime-type>
 
@@ -235,6 +260,26 @@
     <magic priority="90">
       <match value="DATELGC_SAVE" type="string" offset="0"/>
     </magic>
+  </mime-type>
+
+  <!-- MegaDrive -->
+  <mime-type type="application/x-sega-cd-rom">
+    <!-- Translate this to Mega-CD if the console was known as such in your locale
+         Should be Mega-CD in all but en_US, Mexico, Canada and Brazil: https://en.wikipedia.org/wiki/Sega_CD -->
+    <comment>Sega CD 32X disc image</comment>
+    <sub-class-of type="application/x-cd-image"/>
+    <generic-icon name="application-x-cd-image"/>
+    <!-- Also matches the application/x-genesis-rom magic values, hence the higher priority -->
+    <!-- FIXME: Verify the "SEGA 32X" header and priority values. -->
+    <magic priority="70">
+      <match type="string" value="SEGADISCSYSTEM" offset="0">
+        <match type="string" value="SEGA 32X" offset="256"/>
+      </match>
+      <match type="string" value="SEGADISCSYSTEM" offset="16">
+        <match type="string" value="SEGA 32X" offset="272"/>
+      </match>
+    </magic>
+    <glob pattern="*.iso"/>
   </mime-type>
 
   <!-- NES -->
@@ -267,6 +312,16 @@
     </magic>
   </mime-type>
 
+  <!-- PlayStationEXE -->
+  <mime-type type="application/x-ps1-executable">
+    <comment>PlayStation executable</comment>
+    <sub-class-of type="application/octet-stream"/>
+    <generic-icon name="application-octet-stream"/>
+    <magic priority="50">
+      <match value="PS-X EXE" type="string" offset="0"/>
+    </magic>
+  </mime-type>
+
   <!-- PlayStationSave -->
   <mime-type type="application/x-ps1-save">
     <comment>PlayStation save file</comment>
@@ -285,10 +340,21 @@
     </magic>
   </mime-type>
 
+  <!-- SufamiTurbo (handled as SNES, sort of) -->
+  <mime-type type="application/x-sufami-turbo-rom">
+    <comment>Sufami Turbo ROM</comment>
+    <sub-class-of type="application/vnd.nintendo.snes.rom"/>
+    <generic-icon name="application-x-executable"/>
+    <glob pattern="*.st"/>
+    <magic priority="50">
+      <match value="BANDAI SFC-ADX" type="string" offset="0"/>
+    </magic>
+  </mime-type>
+
   <!-- WiiU -->
   <mime-type type="application/x-wii-u-rom">
     <comment>Wii U disc image</comment>
-    <sub-class-of type="application/x-raw-disk-image"/>
+    <sub-class-of type="application/x-cd-image"/>
     <generic-icon name="application-x-cd-image"/>
     <alias type="application/x-wii-u-iso-image"/>
     <glob pattern="*.iso"/>
@@ -297,6 +363,44 @@
     <magic priority="50">
       <match value="WUP-" type="string" offset="0"/>
       <match value="WUX0\x2E\xD0\x99\x10" type="string" offset="0"/>
+    </magic>
+  </mime-type>
+
+  <!-- WiiWAD -->
+  <!-- Wii WADs have 64-byte alignment; BroadOn WADs do not. -->
+  <!-- DSi debug TADs *usually* don't have 64-byte alignment. -->
+  <mime-type type="application/x-wii-wad">
+    <comment>Wii WAD package</comment>
+    <generic-icon name="application-x-executable"/>
+    <!-- Doom WAD has a priority of 80 for the file extension. -->
+    <magic priority="85">
+      <match type="string" value="Is\0\0" offset="4">
+        <match type="big32" value="0" offset="32"/>
+      </match>
+      <match type="string" value="ib\0\0" offset="4"/>
+      <match type="string" value="Bk\0\0" offset="4"/>
+    </magic>
+    <glob pattern="*.wad"/>
+  </mime-type>
+  <mime-type type="application/x-nintendo-dsi-tad">
+    <comment>Nintendo DSi TAD package</comment>
+    <generic-icon name="application-x-executable"/>
+    <magic priority="90">
+      <match type="string" value="Is\0\0" offset="4">
+        <match type="string" value="Root" offset="640"/>
+      </match>
+    </magic>
+    <glob pattern="*.tad"/>
+  </mime-type>
+
+  <!-- WiiWIBN -->
+  <mime-type type="application/x-wii-wibn">
+    <comment>Wii save game banner file</comment>
+    <!-- FIXME: Better icon. -->
+    <sub-class-of type="application/octet-stream"/>
+    <generic-icon name="application-octet-stream"/>
+    <magic priority="50">
+      <match value="WIBN" type="string" offset="0"/>
     </magic>
   </mime-type>
 
@@ -313,10 +417,9 @@
 
   <!-- Xbox360_STFS -->
   <mime-type type="application/x-xbox360-stfs">
-    <comment>Xbox 360 executable</comment>
-    <!-- TODO: Generic package type? -->
-    <sub-class-of type="application/x-executable"/>
-    <generic-icon name="application-x-executable"/>
+    <comment>Xbox 360 package</comment>
+    <sub-class-of type="application/x-archive"/>
+    <generic-icon name="package-x-generic"/>
     <magic priority="50">
       <match value="CON " type="string" offset="0"/>
       <match value="LIVE" type="string" offset="0"/>
@@ -330,6 +433,7 @@
     <sub-class-of type="application/octet-stream"/>
     <generic-icon name="application-octet-stream"/>
     <glob pattern="*.xdbf"/>
+    <glob pattern="*.gpd"/>
     <magic priority="50">
       <match value="XDBF" type="string" offset="0"/>
     </magic>
@@ -344,6 +448,19 @@
     <magic priority="50">
       <match value="XEX1" type="string" offset="0"/>
       <match value="XEX2" type="string" offset="0"/>
+    </magic>
+  </mime-type>
+  <mime-type type="application/x-xbox360-patch">
+    <comment>Xbox 360 patch</comment>
+    <sub-class-of type="application/x-executable"/>
+    <generic-icon name="application-x-executable"/>
+    <glob pattern="*.xexp"/>
+    <magic priority="50">
+      <match value="XEX2" type="string" offset="0">
+        <match value="0x10" mask="0x70" type="byte" offset="7"/>
+        <match value="0x20" mask="0x70" type="byte" offset="7"/>
+        <match value="0x40" mask="0x70" type="byte" offset="7"/>
+      </match>
     </magic>
   </mime-type>
 
@@ -408,7 +525,8 @@
   </mime-type>
   <mime-type type="application/x-nintendo-3ds-cia">
     <comment>Nintendo 3DS installable archive</comment>
-    <generic-icon name="application-x-archive"/>
+    <sub-class-of type="application/x-archive"/>
+    <generic-icon name="package-x-generic"/>
     <glob pattern="*.cia"/>
   </mime-type>
   <mime-type type="application/x-nintendo-3ds-ncch">
@@ -470,14 +588,49 @@
     </magic>
   </mime-type>
 
-  <!-- WiiWIBN -->
-  <mime-type type="application/x-wii-wibn">
-    <comment>Wii save game banner file</comment>
-    <!-- FIXME: Better icon. -->
-    <sub-class-of type="application/octet-stream"/>
-    <generic-icon name="application-octet-stream"/>
+  <!-- PSP -->
+  <mime-type type="application/x-psp-ciso-image">
+    <comment>PlayStation Portable CISO disc image</comment>
+    <sub-class-of type="application/x-cd-image"/>
+    <generic-icon name="application-x-cd-image"/>
+    <glob pattern="*.cso"/>
     <magic priority="50">
-      <match value="WIBN" type="string" offset="0"/>
+      <match value="CISO" type="string" offset="0">
+        <!--<match value="0" type="little32" offset="8"/>-->
+        <match value="0x18" type="little32" offset="8"/>
+      </match>
+    </magic>
+  </mime-type>
+  <mime-type type="application/x-psp-dax-image">
+    <comment>PlayStation Portable DAX disc image</comment>
+    <sub-class-of type="application/x-cd-image"/>
+    <generic-icon name="application-x-cd-image"/>
+    <glob pattern="*.dax"/>
+    <magic priority="50">
+      <match value="0x41445800" type="big32" offset="0"/>
+    </magic>
+  </mime-type>
+  <mime-type type="application/x-psp-jiso-image">
+    <comment>PlayStation Portable JISO disc image</comment>
+    <sub-class-of type="application/x-cd-image"/>
+    <generic-icon name="application-x-cd-image"/>
+    <glob pattern="*.jso"/>
+    <magic priority="50">
+      <match value="JISO" type="string" offset="0">
+        <!-- TODO: Verify this. -->
+        <match value="0x30" type="little32" offset="32"/>
+      </match>
+    </magic>
+  </mime-type>
+  <mime-type type="application/x-psp-ziso-image">
+    <comment>PlayStation Portable ZISO disc image</comment>
+    <sub-class-of type="application/x-cd-image"/>
+    <generic-icon name="application-x-cd-image"/>
+    <glob pattern="*.zso"/>
+    <magic priority="50">
+      <match value="ZISO" type="string" offset="0">
+        <match value="0x18" type="little32" offset="8"/>
+      </match>
     </magic>
   </mime-type>
 
@@ -493,6 +646,25 @@
 
   <!-- Mach-O -->
   <!-- FIXME: Using the standard MIME types breaks KDE. -->
+  <mime-type type="application/x-mach-object">
+    <comment>Mach-O object file</comment>
+    <sub-class-of type="application/x-object"/>
+    <generic-icon name="x-office-document"/>
+    <magic priority="50">
+      <match value="0xFEEDFACE" type="big32" offset="0">
+        <match value="1" type="big32" offset="12"/>
+      </match>
+      <match value="0xFEEDFACF" type="big32" offset="0">
+        <match value="1" type="big32" offset="12"/>
+      </match>
+      <match value="0xFEEDFACE" type="little32" offset="0">
+        <match value="1" type="little32" offset="12"/>
+      </match>
+      <match value="0xFEEDFACF" type="little32" offset="0">
+        <match value="1" type="little32" offset="12"/>
+      </match>
+    </magic>
+  </mime-type>
   <mime-type type="application/x-mach-executable">
     <comment>Mach-O executable</comment>
     <sub-class-of type="application/x-executable"/>
@@ -563,7 +735,7 @@
   <mime-type type="application/x-mach-bundle">
     <comment>Mach-O bundle</comment>
     <sub-class-of type="application/x-archive"/>
-    <generic-icon name="application-x-archive"/>
+    <generic-icon name="package-x-generic"/>
     <glob pattern="*.bundle"/>
     <magic priority="50">
       <match value="0xFEEDFACE" type="big32" offset="0">
@@ -632,6 +804,22 @@
   -->
 
   <!-- *** Texture *** -->
+
+  <!-- KhronosKTX2 -->
+  <!-- NOTE: Upstream has KTX1. -->
+  <mime-type type="image/ktx2">
+    <comment>Khronos KTX2 texture image</comment>
+    <sub-class-of type="image/x-generic"/>
+    <glob pattern="*.ktx2"/>
+    <generic-icon name="image-x-generic"/>
+    <magic priority="80">
+      <match type="big32" value="0xAB4B5458" offset="0">
+        <match type="big32" value="0x203230BB" offset="4">
+          <match type="big32" value="0x0D0A1A0A" offset="8"/>
+        </match>
+      </match>
+    </magic>
+  </mime-type>
 
   <!-- SegaPVR -->
   <!-- FIXME: libmirage-gbi.xml is overriding this. -->
@@ -737,6 +925,32 @@
     <glob pattern="*.xpr"/>
     <magic priority="75">
       <match value="XPR2" type="string" offset="0"/>
+    </magic>
+  </mime-type>
+
+  <!-- Not supported by rom-properties, but useful to have anyway. -->
+
+  <!-- IPS patches -->
+  <mime-type type="application/x-ips-patch">
+    <comment>IPS patch file</comment>
+    <sub-class-of type="application/x-patch"/>
+    <generic-icon name="text-x-patch"/>
+    <glob pattern="*.ips"/>
+    <magic priority="50">
+      <match value="PATCH" type="string" offset="0"/>
+    </magic>
+  </mime-type>
+
+  <!-- BasisLZ texture -->
+  <mime-type type="image/basis">
+    <comment>BasisLZ texture image</comment>
+    <sub-class-of type="image/x-generic"/>
+    <glob pattern="*.basis"/>
+    <generic-icon name="image-x-generic"/>
+    <magic priority="80">
+      <match type="little16" value="0x4273" offset="0">
+        <match type="little16" value="0x4D" offset="4"/>
+      </match>
     </magic>
   </mime-type>
 </mime-info>

@@ -3,7 +3,7 @@
  * TextFuncs_wchar.hpp: wchar_t text conversion macros.                    *
  * Generally only used on Windows.                                         *
  *                                                                         *
- * Copyright (c) 2009-2017 by David Korth.                                 *
+ * Copyright (c) 2009-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -24,7 +24,7 @@
 
 // Make sure TextFuncs.hpp was included.
 #include "librpbase/TextFuncs.hpp"
-#include "librpbase/common.h"
+#include "common.h"
 
 #ifdef _WIN32
 # include <tchar.h>

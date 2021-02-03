@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * TextFuncs.hpp: Text encoding functions.                                 *
  *                                                                         *
- * Copyright (c) 2009-2019 by David Korth.                                 *
+ * Copyright (c) 2009-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -11,19 +11,14 @@
 
 // System byteorder is needed for conversions from UTF-16.
 // Conversions to UTF-16 always use host-endian.
-#include "byteorder.h"
+#include "librpcpu/byteorder.h"
 
-// printf()-style function attribute.
-#ifndef ATTR_PRINTF
-# ifdef __GNUC__
-#  define ATTR_PRINTF(fmt, args) __attribute__((format(printf, fmt, args)))
-# else
-#  define ATTR_PRINTF(fmt, args)
-# endif
-#endif /* ATTR_PRINTF */
+// Common definitions, including function attributes.
+#include "common.h"
 
 // C includes.
 #include <stddef.h>	/* size_t */
+#include <stdarg.h>
 
 // C++ includes.
 #include <string>
@@ -59,6 +54,7 @@ size_t u16_strlen(const char16_t *wcs);
  * @return Length of wcs, in characters.
  */
 #ifdef RP_WIS16
+ATTR_ACCESS_SIZE(read_only, 1, 2)
 static inline size_t u16_strnlen(const char16_t *wcs, size_t maxlen)
 {
 	return wcsnlen(reinterpret_cast<const wchar_t*>(wcs), maxlen);
@@ -92,26 +88,73 @@ char16_t *u16_strdup(const char16_t *wcs);
 static inline int u16_strcmp(const char16_t *wcs1, const char16_t *wcs2)
 {
 	return wcscmp(reinterpret_cast<const wchar_t*>(wcs1),
-		      reinterpret_cast<const wchar_t*>(wcs2));
+	              reinterpret_cast<const wchar_t*>(wcs2));
 }
 #else /* !RP_WIS16 */
 int u16_strcmp(const char16_t *wcs1, const char16_t *wcs2);
 #endif /* RP_WIS16 */
 
 /**
- * char16_t strcmp().
+ * char16_t strncmp().
  * @param wcs1 16-bit string 1.
  * @param wcs2 16-bit string 2.
- * @return strcmp() result.
+ * @return strncmp() result.
+ */
+#ifdef RP_WIS16
+ATTR_ACCESS_SIZE(read_only, 1, 3)
+ATTR_ACCESS_SIZE(read_only, 2, 3)
+static inline int u16_strncmp(const char16_t *wcs1, const char16_t *wcs2, size_t n)
+{
+	return wcsncmp(reinterpret_cast<const wchar_t*>(wcs1),
+	               reinterpret_cast<const wchar_t*>(wcs2), n);
+}
+#else /* !RP_WIS16 */
+ATTR_ACCESS_SIZE(read_only, 1, 3)
+ATTR_ACCESS_SIZE(read_only, 2, 3)
+int u16_strncmp(const char16_t *wcs1, const char16_t *wcs2, size_t n);
+#endif /* RP_WIS16 */
+
+/**
+ * char16_t strcasecmp().
+ * @param wcs1 16-bit string 1.
+ * @param wcs2 16-bit string 2.
+ * @return strcasecmp() result.
  */
 #ifdef RP_WIS16
 static inline int u16_strcasecmp(const char16_t *wcs1, const char16_t *wcs2)
 {
 	return wcscasecmp(reinterpret_cast<const wchar_t*>(wcs1),
-			  reinterpret_cast<const wchar_t*>(wcs2));
+	                  reinterpret_cast<const wchar_t*>(wcs2));
 }
 #else /* !RP_WIS16 */
 int u16_strcasecmp(const char16_t *wcs1, const char16_t *wcs2);
+#endif /* RP_WIS16 */
+
+/**
+ * char16_t memchr().
+ * @param wcs 16-bit string.
+ * @param c Character to search for.
+ * @param n Size of wcs.
+ * @return Pointer to c within wcs, or nullptr if not found.
+ */
+#ifdef RP_WIS16
+static inline const char16_t *u16_memchr(const char16_t *wcs, char16_t c, size_t n)
+{
+	return reinterpret_cast<const char16_t*>(
+		wmemchr(reinterpret_cast<const wchar_t*>(wcs), c, n));
+}
+static inline char16_t *u16_memchr(char16_t *wcs, char16_t c, size_t n)
+{
+	return reinterpret_cast<char16_t*>(
+		wmemchr(reinterpret_cast<wchar_t*>(wcs), c, n));
+}
+#else /* !RP_WIS16 */
+const char16_t *u16_memchr(const char16_t *wcs, char16_t c, size_t n);
+static inline char16_t *u16_memchr(char16_t *wcs, char16_t c, size_t n)
+{
+	return const_cast<char16_t*>(
+		u16_memchr(const_cast<const char16_t*>(wcs), c, n));
+}
 #endif /* RP_WIS16 */
 
 /** Text conversion functions **/
@@ -139,7 +182,7 @@ int u16_strcasecmp(const char16_t *wcs1, const char16_t *wcs2);
 typedef enum {
 	// Enable cp1252 fallback if the text fails to
 	// decode using the specified code page.
-	TEXTCONV_FLAG_CP1252_FALLBACK		= (1 << 0),
+	TEXTCONV_FLAG_CP1252_FALLBACK		= (1U << 0),
 } TextConv_Flags_e;
 
 /**
@@ -571,13 +614,31 @@ std::string petscii_to_utf8(const char *str, int len, bool shifted = false);
 /** sprintf() **/
 
 /**
- * sprintf()-style function for std::string.
+ * vsprintf()-style function for std::string.
  *
- * @param fmt Format string.
- * @param ... Arguments.
+ * @param fmt Format string
+ * @param ap Arguments
  * @return std::string
  */
-std::string rp_sprintf(const char *fmt, ...) ATTR_PRINTF(1, 2);
+ATTR_PRINTF(1, 0)
+std::string rp_vsprintf(const char *fmt, va_list ap);
+
+/**
+ * sprintf()-style function for std::string.
+ *
+ * @param fmt Format string
+ * @param ... Arguments
+ * @return std::string
+ */
+ATTR_PRINTF(1, 2)
+static inline std::string rp_sprintf(const char *fmt, ...)
+{
+	va_list ap;
+	va_start(ap, fmt);
+	std::string s_ret = rp_vsprintf(fmt, ap);
+	va_end(ap);
+	return s_ret;
+}
 
 #if defined(_MSC_VER) || defined(__MINGW32__)
 /**
@@ -587,15 +648,51 @@ std::string rp_sprintf(const char *fmt, ...) ATTR_PRINTF(1, 2);
  * MSVCRT doesn't support positional arguments in the standard
  * printf() functions. Instead, it has printf_p().
  *
- * @param fmt Format string.
- * @param ... Arguments.
- * @return std::string.
+ * @param fmt Format string
+ * @param ap Arguments
+ * @return std::string
  */
-std::string rp_sprintf_p(const char *fmt, ...) ATTR_PRINTF(1, 2);
+ATTR_PRINTF(1, 0)
+std::string rp_vsprintf_p(const char *fmt, va_list ap);
+
+/**
+ * sprintf()-style function for std::string.
+ * This version supports positional format string arguments.
+ *
+ * MSVCRT doesn't support positional arguments in the standard
+ * printf() functions. Instead, it has printf_p().
+ *
+ * @param fmt Format string
+ * @param ... Arguments
+ * @return std::string
+ */
+ATTR_PRINTF(1, 2)
+static inline std::string rp_sprintf_p(const char *fmt, ...)
+{
+	va_list ap;
+	va_start(ap, fmt);
+	std::string s_ret = rp_vsprintf_p(fmt, ap);
+	va_end(ap);
+	return s_ret;
+}
+
 #else /* !_MSC_VER && !__MINGW32__ */
+
 // glibc supports positional format string arguments
 // in the standard printf() functions.
-#define rp_sprintf_p(fmt, ...) rp_sprintf(fmt, ##__VA_ARGS__)
+static inline std::string rp_vsprintf_p(const char *fmt, va_list ap)
+{
+	return rp_vsprintf(fmt, ap);
+}
+
+static inline std::string rp_sprintf_p(const char *fmt, ...)
+{
+	va_list ap;
+	va_start(ap, fmt);
+	std::string s_ret = rp_vsprintf(fmt, ap);
+	va_end(ap);
+	return s_ret;
+}
 #endif /* _MSC_VER && __MINGW32__ */
 
 /** Other useful text functions **/
@@ -605,7 +702,18 @@ std::string rp_sprintf_p(const char *fmt, ...) ATTR_PRINTF(1, 2);
  * @param fileSize File size.
  * @return Formatted file size.
  */
-std::string formatFileSize(int64_t fileSize);
+std::string formatFileSize(off64_t fileSize);
+
+/**
+ * Format a file size, in KiB.
+ *
+ * This function expects the size to be a multiple of 1024,
+ * so it doesn't do any fractional rounding or printing.
+ *
+ * @param size File size.
+ * @return Formatted file size.
+ */
+std::string formatFileSizeKiB(unsigned int size);
 
 /**
  * Remove trailing spaces from a string.

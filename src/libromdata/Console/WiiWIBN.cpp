@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * WiiWIBN.hpp: Nintendo Wii save file banner reader.                      *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -11,8 +11,9 @@
 #include "gcn_card.h"
 #include "wii_banner.h"
 
-// librpbase, librptexture
+// librpbase, librpfile, librptexture
 using namespace LibRpBase;
+using LibRpFile::IRpFile;
 using namespace LibRpTexture;
 
 // C++ STL classes.
@@ -24,7 +25,7 @@ namespace LibRomData {
 ROMDATA_IMPL(WiiWIBN)
 ROMDATA_IMPL_IMG(WiiWIBN)
 
-class WiiWIBNPrivate : public RomDataPrivate
+class WiiWIBNPrivate final : public RomDataPrivate
 {
 	public:
 		WiiWIBNPrivate(WiiWIBN *q, IRpFile *file);
@@ -75,13 +76,8 @@ WiiWIBNPrivate::WiiWIBNPrivate(WiiWIBN *q, IRpFile *file)
 
 WiiWIBNPrivate::~WiiWIBNPrivate()
 {
-	delete img_banner;
-	if (iconAnimData) {
-		for (int i = iconAnimData->count-1; i >= 0; i--) {
-			delete iconAnimData->frames[i];
-		}
-		delete iconAnimData;
-	}
+	UNREF(img_banner);
+	UNREF(iconAnimData);
 }
 
 /**
@@ -148,7 +144,8 @@ const rp_image *WiiWIBNPrivate::loadIcon(void)
 		iconAnimData->delays[i].ms = ms_tbl[delay];
 
 		// Wii save icons are always RGB5A3.
-		iconAnimData->frames[i] = ImageDecoder::fromGcn16(ImageDecoder::PXF_RGB5A3,
+		iconAnimData->frames[i] = ImageDecoder::fromGcn16(
+			ImageDecoder::PixelFormat::RGB5A3,
 			BANNER_WIBN_ICON_W, BANNER_WIBN_ICON_H,
 			reinterpret_cast<const uint16_t*>(icondata.get() + iconaddr_cur),
 			BANNER_WIBN_ICON_SIZE);
@@ -206,7 +203,8 @@ const rp_image *WiiWIBNPrivate::loadBanner(void)
 	}
 
 	// Convert the banner from GCN RGB5A3 format to ARGB32.
-	img_banner = ImageDecoder::fromGcn16(ImageDecoder::PXF_RGB5A3,
+	img_banner = ImageDecoder::fromGcn16(
+		ImageDecoder::PixelFormat::RGB5A3,
 		BANNER_WIBN_IMAGE_W, BANNER_WIBN_IMAGE_H,
 		bannerbuf.get(), BANNER_WIBN_IMAGE_SIZE);
 	return img_banner;
@@ -235,7 +233,8 @@ WiiWIBN::WiiWIBN(IRpFile *file)
 	// settings as WiiSave.
 	RP_D(WiiWIBN);
 	d->className = "WiiSave";
-	d->fileType = FTYPE_BANNER_FILE;
+	d->mimeType = "application/x-wii-wibn";	// unofficial, not on fd.o
+	d->fileType = FileType::BannerFile;
 
 	if (!d->file) {
 		// Could not ref() the file handle.
@@ -246,8 +245,7 @@ WiiWIBN::WiiWIBN(IRpFile *file)
 	d->file->rewind();
 	size_t size = d->file->read(&d->wibnHeader, sizeof(d->wibnHeader));
 	if (size != sizeof(d->wibnHeader)) {
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
 
@@ -261,8 +259,7 @@ WiiWIBN::WiiWIBN(IRpFile *file)
 	d->isValid = (isRomSupported_static(&info) >= 0);
 
 	if (!d->isValid) {
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 	}
 }
 
@@ -575,6 +572,9 @@ int WiiWIBN::loadInternalImage(ImageType imageType, const rp_image **pImage)
  * Check imgpf for IMGPF_ICON_ANIMATED first to see if this
  * object has an animated icon.
  *
+ * The retrieved IconAnimData must be ref()'d by the caller if the
+ * caller stores it instead of using it immediately.
+ *
  * @return Animated icon data, or nullptr if no animated icon is present.
  */
 const IconAnimData *WiiWIBN::iconAnimData(void) const
@@ -601,6 +601,16 @@ const IconAnimData *WiiWIBN::iconAnimData(void) const
 
 	// Return the icon animation data.
 	return d->iconAnimData;
+}
+
+/**
+ * Is the NoCopy flag set?
+ * @return True if set; false if not.
+ */
+bool WiiWIBN::isNoCopyFlagSet(void) const
+{
+	RP_D(const WiiWIBN);
+	return !!(d->wibnHeader.flags & cpu_to_be32(BANNER_WIBN_FLAGS_NOCOPY));
 }
 
 }

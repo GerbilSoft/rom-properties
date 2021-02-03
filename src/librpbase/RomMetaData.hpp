@@ -15,6 +15,9 @@
 
 #include "common.h"
 
+// C includes.
+#include <stdint.h>
+
 // C includes. (C++ namespace)
 #include <ctime>
 
@@ -23,121 +26,118 @@
 
 namespace LibRpBase {
 
-namespace Property {
-	// Properties.
-	// This matches KFileMetaData::Property.
-	enum Property {
-		FirstProperty = 0,
-		Empty = 0,
+// Properties.
+// This matches KFileMetaData::Property.
+enum class Property : int8_t {
+	Invalid = -1,
+	FirstProperty = 0,
+	Empty = 0,
 
-		// Audio
-		BitRate,	// integer: kbit/sec
-		Channels,	// integer: channels
-		Duration,	// integer: duration, in milliseconds
-		Genre,		// string
-		SampleRate,	// integer: Hz
-		TrackNumber,	// unsigned integer: track number
-		ReleaseYear,	// unsigned integer: year
-		Comment,	// string: comment
-		Artist,		// string: artist
-		Album,		// string: album
-		AlbumArtist,	// string: album artist
-		Composer,	// string: composer
-		Lyricist,	// string: lyricist
+	// Audio
+	BitRate,	// integer: kbit/sec
+	Channels,	// integer: channels
+	Duration,	// integer: duration, in milliseconds
+	Genre,		// string
+	SampleRate,	// integer: Hz
+	TrackNumber,	// unsigned integer: track number
+	ReleaseYear,	// unsigned integer: year
+	Comment,	// string: comment
+	Artist,		// string: artist
+	Album,		// string: album
+	AlbumArtist,	// string: album artist
+	Composer,	// string: composer
+	Lyricist,	// string: lyricist
 
-		// Document
-		Author,		// string: author
-		Title,		// string: title
-		Subject,	// string: subject
-		Generator,	// string: application used to create this file
-		PageCount,	// integer: page count
-		WordCount,	// integer: word count
-		LineCount,	// integer: line count
-		Language,	// string: language
-		Copyright,	// string: copyright
-		Publisher,	// string: publisher
-		CreationDate,	// timestamp: creation date
-		Keywords,	// FIXME: What's the type?
+	// Document
+	Author,		// string: author
+	Title,		// string: title
+	Subject,	// string: subject
+	Generator,	// string: application used to create this file
+	PageCount,	// integer: page count
+	WordCount,	// integer: word count
+	LineCount,	// integer: line count
+	Language,	// string: language
+	Copyright,	// string: copyright
+	Publisher,	// string: publisher
+	CreationDate,	// timestamp: creation date
+	Keywords,	// FIXME: What's the type?
 
-		// Media
-		Width,		// integer: width, in pixels
-		Height,		// integer: height, in pixels
-		AspectRatio,	// FIXME: Float?
-		FrameRate,	// integer: number of frames per second
+	// Media
+	Width,		// integer: width, in pixels
+	Height,		// integer: height, in pixels
+	AspectRatio,	// FIXME: Float?
+	FrameRate,	// integer: number of frames per second
 
-		// Images
-		ImageMake,			// string
-		ImageModel,			// string
-		ImageDateTime,			// FIXME
-		ImageOrientation,		// FIXME
-		PhotoFlash,			// FIXME
-		PhotoPixelXDimension,		// FIXME
-		PhotoPixelYDimension,		// FIXME
-		PhotoDateTimeOriginal,		// FIXME
-		PhotoFocalLength,		// FIXME
-		PhotoFocalLengthIn35mmFilm,	// FIXME
-		PhotoExposureTime,		// FIXME
-		PhotoFNumber,			// FIXME
-		PhotoApertureValue,		// FIXME
-		PhotoExposureBiasValue,		// FIXME
-		PhotoWhiteBalance,		// FIXME
-		PhotoMeteringMode,		// FIXME
-		PhotoISOSpeedRatings,		// FIXME
-		PhotoSaturation,		// FIXME
-		PhotoSharpness,			// FIXME
-		PhotoGpsLatitude,		// FIXME
-		PhotoGpsLongitude,		// FIXME
-		PhotoGpsAltitude,		// FIXME
+	// Images
+	ImageMake,			// string
+	ImageModel,			// string
+	ImageDateTime,			// FIXME
+	ImageOrientation,		// FIXME
+	PhotoFlash,			// FIXME
+	PhotoPixelXDimension,		// FIXME
+	PhotoPixelYDimension,		// FIXME
+	PhotoDateTimeOriginal,		// FIXME
+	PhotoFocalLength,		// FIXME
+	PhotoFocalLengthIn35mmFilm,	// FIXME
+	PhotoExposureTime,		// FIXME
+	PhotoFNumber,			// FIXME
+	PhotoApertureValue,		// FIXME
+	PhotoExposureBiasValue,		// FIXME
+	PhotoWhiteBalance,		// FIXME
+	PhotoMeteringMode,		// FIXME
+	PhotoISOSpeedRatings,		// FIXME
+	PhotoSaturation,		// FIXME
+	PhotoSharpness,			// FIXME
+	PhotoGpsLatitude,		// FIXME
+	PhotoGpsLongitude,		// FIXME
+	PhotoGpsAltitude,		// FIXME
 
-		// Translations
-		TranslationUnitsTotal,			// FIXME
-		TranslationUnitsWithTranslation,	// FIXME
-		TranslationUnitsWithDraftTranslation,	// FIXME
-		TranslationLastAuthor,			// FIXME
-		TranslationLastUpDate,			// FIXME
-		TranslationTemplateDate,		// FIXME
+	// Translations
+	TranslationUnitsTotal,			// FIXME
+	TranslationUnitsWithTranslation,	// FIXME
+	TranslationUnitsWithDraftTranslation,	// FIXME
+	TranslationLastAuthor,			// FIXME
+	TranslationLastUpDate,			// FIXME
+	TranslationTemplateDate,		// FIXME
 
-		// Origin
-		OriginUrl,		// string: origin URL
-		OriginEmailSubject,	// string: subject of origin email
-		OriginEmailSender,	// string: sender of origin email
-		OriginEmailMessageId,	// string: message ID of origin email
+	// Origin
+	OriginUrl,		// string: origin URL
+	OriginEmailSubject,	// string: subject of origin email
+	OriginEmailSender,	// string: sender of origin email
+	OriginEmailMessageId,	// string: message ID of origin email
 
-		// Audio
-		DiscNumber,		// integer: disc number of multi-disc set
-		Location,		// string: location where audio was recorded
-		Performer,		// string: (lead) performer
-		Ensemble,		// string: ensemble
-		Arranger,		// string: arranger
-		Conductor,		// string: conductor
-		Opus,			// string: opus
+	// Audio
+	DiscNumber,		// integer: disc number of multi-disc set
+	Location,		// string: location where audio was recorded
+	Performer,		// string: (lead) performer
+	Ensemble,		// string: ensemble
+	Arranger,		// string: arranger
+	Conductor,		// string: conductor
+	Opus,			// string: opus
 
-		// Other
-		Label,			// string: label
-		Compilation,		// string: compilation
-		License,		// string: license information
+	// Other
+	Label,			// string: label
+	Compilation,		// string: compilation
+	License,		// string: license information
 
-		// TODO: More fields.
-		PropertyCount,
-		LastProperty = PropertyCount-1,
-	};
-}
+	// TODO: More fields.
+	PropertyCount,
+	LastProperty = PropertyCount-1,
+};
 
-namespace PropertyType {
-	// Property types.
-	enum PropertyType {
-		FirstPropertyType = 0,
-		Invalid = 0,
+// Property types.
+enum class PropertyType : uint8_t {
+	FirstPropertyType = 0,
+	Invalid = 0,
 
-		Integer,		// Integer type
-		UnsignedInteger,	// Unsigned integer type
-		String,			// String type (UTF-8)
-		Timestamp,		// UNIX timestamp
+	Integer,		// Integer type
+	UnsignedInteger,	// Unsigned integer type
+	String,			// String type (UTF-8)
+	Timestamp,		// UNIX timestamp
 
-		PropertyTypeCount,
-		LastPropertyType = PropertyTypeCount-1,
-	};
-}
+	PropertyTypeCount,
+	LastPropertyType = PropertyTypeCount-1,
+};
 
 class RomMetaDataPrivate;
 class RomMetaData
@@ -147,15 +147,20 @@ class RomMetaData
 		// NOTE: These have the same values as RomFields::StringFormat.
 		enum StringFormat {
 			// Trim spaces from the end of strings.
-			STRF_TRIM_END	= (1 << 3),
+			STRF_TRIM_END	= (1U << 3),
 		};
 
 		// ROM metadata struct.
 		// Dynamically allocated.
 		struct MetaData {
-			Property::Property name;		// Property name.
-			PropertyType::PropertyType type;	// Property type.
+			Property name;		// Property name.
+			PropertyType type;	// Property type.
+
 			union _data {
+				// intptr_t field to cover everything.
+				// Mainly used to reset the entire field.
+				intptr_t iptrvalue;
+
 				// Integer property
 				int ivalue;
 
@@ -216,6 +221,10 @@ class RomMetaData
 
 		/**
 		 * Add metadata from another RomMetaData object.
+		 *
+		 * If metadata properties with the same names already exist,
+		 * they will be overwritten.
+		 *
 		 * @param other Source RomMetaData object.
 		 * @return Metadata index of the last metadata added.
 		 */
@@ -223,45 +232,61 @@ class RomMetaData
 
 		/**
 		 * Add an integer metadata property.
+		 *
+		 * If a metadata property with the same name already exists,
+		 * it will be overwritten.
+		 *
 		 * @param name Metadata name.
 		 * @param val Integer value.
-		 * @return Metadata index.
+		 * @return Metadata index, or -1 on error.
 		 */
-		int addMetaData_integer(Property::Property name, int value);
+		int addMetaData_integer(Property name, int value);
 
 		/**
 		 * Add an unsigned integer metadata property.
 		 * @param name Metadata name.
 		 * @param val Unsigned integer value.
-		 * @return Metadata index.
+		 * @return Metadata index, or -1 on error.
 		 */
-		int addMetaData_uint(Property::Property name, unsigned int value);
+		int addMetaData_uint(Property name, unsigned int value);
 
 		/**
 		 * Add a string metadata property.
+		 *
+		 * If a metadata property with the same name already exists,
+		 * it will be overwritten.
+		 *
 		 * @param name Metadata name.
 		 * @param str String value.
 		 * @param flags Formatting flags.
-		 * @return Metadata index.
+		 * @return Metadata index, or -1 on error.
 		 */
-		int addMetaData_string(Property::Property name, const char *str, unsigned int flags = 0);
+		int addMetaData_string(Property name, const char *str, unsigned int flags = 0);
 
 		/**
 		 * Add a string metadata property.
+		 *
+		 * If a metadata property with the same name already exists,
+		 * it will be overwritten.
+		 *
 		 * @param name Metadata name.
 		 * @param str String value.
 		 * @param flags Formatting flags.
-		 * @return Metadata index.
+		 * @return Metadata index, or -1 on error.
 		 */
-		int addMetaData_string(Property::Property name, const std::string &str, unsigned int flags = 0);
+		int addMetaData_string(Property name, const std::string &str, unsigned int flags = 0);
 
 		/**
 		 * Add a timestamp metadata property.
+		 *
+		 * If a metadata property with the same name already exists,
+		 * it will be overwritten.
+		 *
 		 * @param name Metadata name.
 		 * @param timestamp UNIX timestamp.
-		 * @return Metadata index.
+		 * @return Metadata index, or -1 on error.
 		 */
-		int addMetaData_timestamp(Property::Property name, time_t timestamp);
+		int addMetaData_timestamp(Property name, time_t timestamp);
 };
 
 }

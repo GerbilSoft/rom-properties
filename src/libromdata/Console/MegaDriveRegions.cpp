@@ -47,6 +47,10 @@ unsigned int MegaDriveRegions::parseRegionCodes(const char *region_codes, int si
 		} else if (code >= 'A' && code <= 'F') {
 			// Letter code from 'A' to 'F'.
 			ret = (code - 'A') + 10;
+		} else if (code == 'W') {
+			// "Worldwide". Used by EverDrive OS ROMs.
+			ret = MD_REGION_JAPAN | MD_REGION_ASIA |
+			      MD_REGION_USA | MD_REGION_EUROPE;
 		}
 	} else if (region_codes[0] < 16) {
 		// Hex code not mapped to ASCII.
@@ -116,15 +120,15 @@ MegaDriveRegions::MD_BrandingRegion MegaDriveRegions::getBrandingRegion(unsigned
 		case MD_REGION_JAPAN | MD_REGION_ASIA:
 			// Japan/Asia. Use Japanese branding,
 			// except for South Korea.
-			return (cc == 'KR' ? MD_BREGION_SOUTH_KOREA : MD_BREGION_JAPAN);
+			return (cc == 'KR' ? MD_BrandingRegion::South_Korea : MD_BrandingRegion::Japan);
 
 		case MD_REGION_USA:
 			// USA. May be Brazilian.
-			return (cc == 'BR' ? MD_BREGION_BRAZIL : MD_BREGION_USA);
+			return (cc == 'BR' ? MD_BrandingRegion::Brazil : MD_BrandingRegion::USA);
 
 		case MD_REGION_EUROPE:
 			// Europe.
-			return MD_BREGION_EUROPE;
+			return MD_BrandingRegion::Europe;
 
 		default:
 			// Multi-region ROM.
@@ -133,7 +137,7 @@ MegaDriveRegions::MD_BrandingRegion MegaDriveRegions::getBrandingRegion(unsigned
 
 	// Multi-region ROM.
 	// Determine the system's branding region.
-	MD_BrandingRegion md_bregion = MD_BREGION_UNKNOWN;
+	MD_BrandingRegion md_bregion = MD_BrandingRegion::Unknown;
 
 	switch (cc) {
 		// Japanese region
@@ -148,11 +152,11 @@ MegaDriveRegions::MD_BrandingRegion MegaDriveRegions::getBrandingRegion(unsigned
 		case 'TW':	// Taiwan
 		case 'PH':	// Philippines
 			// TODO: Add more countries that used JP branding?
-			md_bregion = MD_BREGION_JAPAN;
+			md_bregion = MD_BrandingRegion::Japan;
 			break;
 
 		case 'KR':	// South Korea
-			md_bregion = MD_BREGION_SOUTH_KOREA;
+			md_bregion = MD_BrandingRegion::South_Korea;
 			break;
 
 		case 'US':	// USA
@@ -185,36 +189,36 @@ MegaDriveRegions::MD_BrandingRegion MegaDriveRegions::getBrandingRegion(unsigned
 		case 'UM':	// United States Minor Outlying Islands
 			// TODO: Verify that all of these countries
 			// use USA branding.
-			md_bregion = MD_BREGION_USA;
+			md_bregion = MD_BrandingRegion::USA;
 			break;
 
 		case 'BR':	// Brazil
-			md_bregion = MD_BREGION_BRAZIL;
+			md_bregion = MD_BrandingRegion::Brazil;
 			break;
 
 		default:
 			// Assume everything else is Europe.
-			md_bregion = MD_BREGION_EUROPE;
+			md_bregion = MD_BrandingRegion::Europe;
 			break;
 	}
 
 	// Check for a matching BREGION.
 	switch (md_bregion) {
-		case MD_BREGION_JAPAN:
-		case MD_BREGION_SOUTH_KOREA:
+		case MD_BrandingRegion::Japan:
+		case MD_BrandingRegion::South_Korea:
 			if (md_region & (MD_REGION_JAPAN | MD_REGION_ASIA)) {
 				return md_bregion;
 			}
 			break;
 
-		case MD_BREGION_USA:
-		case MD_BREGION_BRAZIL:
+		case MD_BrandingRegion::USA:
+		case MD_BrandingRegion::Brazil:
 			if (md_region & MD_REGION_USA) {
 				return md_bregion;
 			}
 			break;
 
-		case MD_BREGION_EUROPE:
+		case MD_BrandingRegion::Europe:
 			if (md_region & MD_REGION_EUROPE) {
 				return md_bregion;
 			}
@@ -229,17 +233,17 @@ MegaDriveRegions::MD_BrandingRegion MegaDriveRegions::getBrandingRegion(unsigned
 	if (md_region & (MD_REGION_JAPAN | MD_REGION_ASIA)) {
 		// Japan/Asia. Use Japanese branding,
 		// except for South Korea.
-		return (cc == 'KR' ? MD_BREGION_SOUTH_KOREA : MD_BREGION_JAPAN);
+		return (cc == 'KR' ? MD_BrandingRegion::South_Korea : MD_BrandingRegion::Japan);
 	} else if (md_region & MD_REGION_USA) {
 		// USA. May be Brazilian.
-		return (cc == 'BR' ? MD_BREGION_BRAZIL : MD_BREGION_USA);
+		return (cc == 'BR' ? MD_BrandingRegion::Brazil : MD_BrandingRegion::USA);
 	} else if (md_region & MD_REGION_EUROPE) {
 		// Europe.
-		return MD_BREGION_EUROPE;
+		return MD_BrandingRegion::Europe;
 	}
 
 	// Still no region! Default to Japan.
-	return MD_BREGION_JAPAN;
+	return MD_BrandingRegion::Japan;
 }
 
 }

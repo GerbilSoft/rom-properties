@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * WiiSave.cpp: Nintendo Wii save game file reader.                        *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -11,8 +11,9 @@
 #include "gcn_card.h"
 #include "wii_banner.h"
 
-// librpbase, librptexture
+// librpbase, librpfile, librptexture
 using namespace LibRpBase;
+using LibRpFile::IRpFile;
 using LibRpTexture::rp_image;
 
 // Decryption.
@@ -26,8 +27,8 @@ using LibRpTexture::rp_image;
 #endif /* ENABLE_DECRYPTION */
 
 // C++ STL classes.
+using std::array;
 using std::string;
-using std::unique_ptr;
 using std::vector;
 
 namespace LibRomData {
@@ -35,7 +36,7 @@ namespace LibRomData {
 ROMDATA_IMPL(WiiSave)
 ROMDATA_IMPL_IMG(WiiSave)
 
-class WiiSavePrivate : public RomDataPrivate
+class WiiSavePrivate final : public RomDataPrivate
 {
 	public:
 		WiiSavePrivate(WiiSave *q, IRpFile *file);
@@ -72,9 +73,9 @@ class WiiSavePrivate : public RomDataPrivate
 		WiiWIBN *wibnData;
 #endif /* ENABLE_DECRYPTION */
 		// Key indexes. (0 == AES, 1 == IV)
-		WiiPartition::EncryptionKeys key_idx[2];
+		std::array<WiiPartition::EncryptionKeys, 2> key_idx;
 		// Key status.
-		KeyManager::VerifyResult key_status[2];
+		std::array<KeyManager::VerifyResult, 2> key_status;
 };
 
 /** WiiSavePrivate **/
@@ -96,20 +97,15 @@ WiiSavePrivate::WiiSavePrivate(WiiSave *q, IRpFile *file)
 	memset(&svHeader, 0, sizeof(svHeader));
 	memset(&bkHeader, 0, sizeof(bkHeader));
 
-	key_idx[0] = WiiPartition::Key_Max;	// SD AES key
-	key_status[0] = KeyManager::VERIFY_UNKNOWN;
-
-	key_idx[1] = WiiPartition::Key_Max;	// SD IV
-	key_status[1] = KeyManager::VERIFY_UNKNOWN;
+	key_idx.fill(WiiPartition::Key_Max);
+	key_status.fill(KeyManager::VerifyResult::Unknown);
 }
 
 WiiSavePrivate::~WiiSavePrivate()
 {
 #ifdef ENABLE_DECRYPTION
-	if (wibnData) {
-		wibnData->unref();
-	}
-	delete cbcReader;
+	UNREF(wibnData);
+	UNREF(cbcReader);
 #endif /* ENABLE_DECRYPTION */
 }
 
@@ -132,7 +128,8 @@ WiiSave::WiiSave(IRpFile *file)
 	// This class handles application packages.
 	RP_D(WiiSave);
 	d->className = "WiiSave";
-	d->fileType = FTYPE_SAVE_FILE;
+	d->mimeType = "application/x-wii-save";	// unofficial, not on fd.o
+	d->fileType = FileType::SaveFile;
 
 	if (!d->file) {
 		// Could not ref() the file handle.
@@ -156,8 +153,7 @@ WiiSave::WiiSave(IRpFile *file)
 	d->file->rewind();
 	size_t size = d->file->read(svData.get(), svSizeTotal);
 	if (size < svSizeMin) {
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	} else if (size > svSizeTotal) {
 		// NOTE: Shouldn't happen...
@@ -181,8 +177,7 @@ WiiSave::WiiSave(IRpFile *file)
 	if (d->bkHeader.magic != cpu_to_be16(WII_BK_MAGIC)) {
 		// Bk header not found.
 		d->isValid = false;
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
 
@@ -207,7 +202,7 @@ WiiSave::WiiSave(IRpFile *file)
 	// Key verification data.
 	// TODO: Move out of WiiPartition and into WiiVerifyKeys?
 	KeyManager::KeyData_t keyData[2];
-	for (unsigned int i = 0; i < ARRAY_SIZE(d->key_idx); i++) {
+	for (size_t i = 0; i < d->key_idx.size(); i++) {
 		const char *const keyName = WiiPartition::encryptionKeyName_static(d->key_idx[i]);
 		const uint8_t *const verifyData = WiiPartition::encryptionVerifyData_static(d->key_idx[i]);
 		assert(keyName != nullptr);
@@ -218,8 +213,8 @@ WiiSave::WiiSave(IRpFile *file)
 		d->key_status[i] = keyManager->getAndVerify(keyName, &keyData[i], verifyData, 16);
 	}
 
-	if ((d->key_status[0] == KeyManager::VERIFY_OK) &&
-	    (d->key_status[1] == KeyManager::VERIFY_OK))
+	if ((d->key_status[0] == KeyManager::VerifyResult::OK) &&
+	    (d->key_status[1] == KeyManager::VerifyResult::OK))
 	{
 		// Create a CBC reader to decrypt the banner and icon.
 		// TODO: Verify some known data?
@@ -266,8 +261,8 @@ WiiSave::WiiSave(IRpFile *file)
 	}
 #else /* !ENABLE_DECRYPTION */
 	// Cannot decrypt anything...
-	d->key_status[0] = KeyManager::VERIFY_NO_SUPPORT;
-	d->key_status[1] = KeyManager::VERIFY_NO_SUPPORT;
+	d->key_status[0] = KeyManager::VerifyResult::NoSupport;
+	d->key_status[1] = KeyManager::VerifyResult::NoSupport;
 #endif /* ENABLE_DECRYPTION */
 }
 
@@ -285,8 +280,7 @@ void WiiSave::close(void)
 	}
 
 	// Close associated files used with child RomData subclasses.
-	delete d->cbcReader;
-	d->cbcReader = nullptr;
+	UNREF_AND_NULL(d->cbcReader);
 #endif /* ENABLE_DECRYPTION */
 
 	// Call the superclass function.
@@ -479,7 +473,7 @@ int WiiSave::loadFieldData(void)
 	// Wii save and backup headers.
 	const Wii_SaveGame_Header_t *const svHeader = &d->svHeader;
 	const Wii_Bk_Header_t *const bkHeader = &d->bkHeader;
-	d->fields->reserve(4);	// Maximum of 4 fields.
+	d->fields->reserve(5);	// Maximum of 5 fields.
 
 	// Check if the headers are valid.
 	// TODO: Do this in the constructor instead?
@@ -507,17 +501,43 @@ int WiiSave::loadFieldData(void)
 		{
 			// Print the game ID.
 			// TODO: Is the publisher code available anywhere?
-			d->fields->addField_string(C_("WiiSave", "Game ID"),
+			d->fields->addField_string(C_("RomData", "Game ID"),
 				latin1_to_utf8(bkHeader->id4, sizeof(bkHeader->id4)));
 		}
 	}
 
-	// Permissions. (TODO)
+	// Permissions.
 	if (isSvValid) {
-		d->fields->addField_string_numeric(C_("WiiSave", "Permissions"),
-			svHeader->permissions,
-			RomFields::FB_HEX, 2, RomFields::STRF_MONOSPACE);
+		// Unix-style permissions field.
+		char s_perms[] = "----------";
+		uint8_t perms = svHeader->permissions;
+		for (char *p = &s_perms[1]; p < s_perms + sizeof(s_perms); p += 3, perms <<= 2) {
+			if (perms & 0x20) {
+				p[0] = 'r';
+			}
+			if (perms & 0x10) {
+				p[1] = 'w';
+			}
+		}
+
+		d->fields->addField_string(C_("WiiSave", "Permissions"), s_perms,
+			RomFields::STRF_MONOSPACE);
 	}
+
+#ifdef ENABLE_DECRYPTION
+	// NoCopy? (separate from permissions)
+	if (d->wibnData) {
+		// Flags bitfield.
+		static const char *const flags_names[] = {
+			NOP_C_("WiiSave|Flags", "No Copy from NAND"),
+		};
+		vector<string> *const v_flags_names = RomFields::strArrayToVector_i18n(
+			"WiiSave|Flags", flags_names, ARRAY_SIZE(flags_names));
+		const uint32_t flags = (d->wibnData->isNoCopyFlagSet() ? 1 : 0);
+		d->fields->addField_bitfield(C_("WiiSave", "Flags"),
+			v_flags_names, 3, flags);
+	}
+#endif /* ENABLE_DECRYPTION */
 
 	// MAC address.
 	if (isBkValid) {
@@ -564,6 +584,9 @@ int WiiSave::loadInternalImage(ImageType imageType, const rp_image **pImage)
  *
  * Check imgpf for IMGPF_ICON_ANIMATED first to see if this
  * object has an animated icon.
+ *
+ * The retrieved IconAnimData must be ref()'d by the caller if the
+ * caller stores it instead of using it immediately.
  *
  * @return Animated icon data, or nullptr if no animated icon is present.
  */

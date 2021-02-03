@@ -14,15 +14,16 @@
 // is checked in librpbase, not rpcli.
 #ifdef RP_OS_SCSI_SUPPORTED
 
-// librpbase
+// librpbase, librpfile
 #include "librpbase/TextFuncs.hpp"
-#include "librpbase/file/RpFile.hpp"
 #include "libi18n/i18n.h"
+#include "librpfile/RpFile.hpp"
 using namespace LibRpBase;
+using LibRpFile::RpFile;
 
 // SCSI and ATA protocols.
-#include "librpbase/file/scsi/scsi_protocol.h"
-#include "librpbase/file/scsi/ata_protocol.h"
+#include "librpfile/scsi/scsi_protocol.h"
+#include "librpfile/scsi/ata_protocol.h"
 
 // C++ includes.
 #include <iomanip>
@@ -155,17 +156,25 @@ std::ostream& operator<<(std::ostream& os, const ScsiInquiry& si)
 
 /** AtaIdentifyDevice **/
 
-AtaIdentifyDevice::AtaIdentifyDevice(RpFile *file)
+AtaIdentifyDevice::AtaIdentifyDevice(RpFile *file, bool packet)
 	: file(file)
+	, packet(packet)
 { }
 
 std::ostream& operator<<(std::ostream& os, const AtaIdentifyDevice& si)
 {
 	ATA_RESP_IDENTIFY_DEVICE resp;
-	int ret = si.file->ata_identify_device(&resp);
+	int ret;
+	if (si.packet) {
+		ret = si.file->ata_identify_packet_device(&resp);
+	} else {
+		ret = si.file->ata_identify_device(&resp);
+	}
+
 	if (ret != 0) {
 		// TODO: Decode the error.
-		os << "-- " << rp_sprintf(C_("rpcli", "ATA IDENTIFY DEVICE failed: %08X"), ret) << endl;
+		os << "-- " << rp_sprintf(C_("rpcli", "ATA %s failed: %08X"),
+			(si.packet ? "IDENTIFY PACKET DEVICE" : "IDENTIFY DEVICE"), ret) << endl;
 		return os;
 	}
 
@@ -174,7 +183,7 @@ std::ostream& operator<<(std::ostream& os, const AtaIdentifyDevice& si)
 	// TODO: Trim spaces?
 	// TODO: i18n?
 	StreamStateSaver state(os);
-	os << "-- ATA IDENTIFY DEVICE data for: " << si.file->filename() << endl;
+	os << "-- ATA IDENTIFY " << (si.packet ? "PACKET " : "") << "DEVICE data for: " << si.file->filename() << endl;
 	os << "Model number:          " << latin1_to_utf8(resp.model_number, sizeof(resp.model_number)) << endl;
 	os << "Firmware version:      " << latin1_to_utf8(resp.firmware_revision, sizeof(resp.firmware_revision)) << endl;
 	os << "Serial number:         " << latin1_to_utf8(resp.serial_number, sizeof(resp.serial_number)) << endl;

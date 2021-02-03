@@ -33,7 +33,6 @@ namespace LibRpTexture {
  */
 RpGdiplusBackend::RpGdiplusBackend(int width, int height, rp_image::Format format)
 	: super(width, height, format)
-	, m_gdipToken(0)
 	, m_pGdipBmp(nullptr)
 	, m_isLocked(false)
 	, m_bytesppShift(0)
@@ -48,19 +47,13 @@ RpGdiplusBackend::RpGdiplusBackend(int width, int height, rp_image::Format forma
 		return;
 	}
 
-	// Initialize GDI+.
-	m_gdipToken = GdiplusHelper::InitGDIPlus();
-	assert(m_gdipToken != 0);
-	if (m_gdipToken == 0)
-		return;
-
 	// Initialize the Gdiplus bitmap.
 	switch (format) {
-		case rp_image::FORMAT_CI8:
+		case rp_image::Format::CI8:
 			m_gdipFmt = PixelFormat8bppIndexed;
 			m_bytesppShift = 0;
 			break;
-		case rp_image::FORMAT_ARGB32:
+		case rp_image::Format::ARGB32:
 			m_gdipFmt = PixelFormat32bppARGB;
 			m_bytesppShift = 2;
 			break;
@@ -75,7 +68,7 @@ RpGdiplusBackend::RpGdiplusBackend(int width, int height, rp_image::Format forma
 	if (doInitialLock() != 0)
 		return;
 
-	if (this->format == rp_image::FORMAT_CI8) {
+	if (this->format == rp_image::Format::CI8) {
 		// Initialize the palette.
 		// Note that Gdiplus::Image doesn't support directly
 		// modifying the palette, so we have to copy our
@@ -113,8 +106,7 @@ RpGdiplusBackend::RpGdiplusBackend(int width, int height, rp_image::Format forma
  * @param pGdipBmp Gdiplus::Bitmap.
  */
 RpGdiplusBackend::RpGdiplusBackend(Gdiplus::Bitmap *pGdipBmp)
-	: super(0, 0, rp_image::FORMAT_NONE)
-	, m_gdipToken(0)
+	: super(0, 0, rp_image::Format::None)
 	, m_pGdipBmp(pGdipBmp)
 	, m_isLocked(false)
 	, m_bytesppShift(0)
@@ -126,33 +118,24 @@ RpGdiplusBackend::RpGdiplusBackend(Gdiplus::Bitmap *pGdipBmp)
 	if (!pGdipBmp)
 		return;
 
-	// Initialize GDI+.
-	m_gdipToken = GdiplusHelper::InitGDIPlus();
-	assert(m_gdipToken != 0);
-	if (m_gdipToken == 0) {
-		delete m_pGdipBmp;
-		m_pGdipBmp = nullptr;
-		return;
-	}
-
 	// Check the pixel format.
 	m_gdipFmt = pGdipBmp->GetPixelFormat();
 	switch (m_gdipFmt) {
 		case PixelFormat8bppIndexed:
-			this->format = rp_image::FORMAT_CI8;
+			this->format = rp_image::Format::CI8;
 			m_bytesppShift = 0;
 			break;
 
 		case PixelFormat24bppRGB:
 		case PixelFormat32bppRGB:
 			// TODO: Is conversion needed?
-			this->format = rp_image::FORMAT_ARGB32;
+			this->format = rp_image::Format::ARGB32;
 			m_gdipFmt = PixelFormat32bppRGB;
 			m_bytesppShift = 2;
 			break;
 
 		case PixelFormat32bppARGB:
-			this->format = rp_image::FORMAT_ARGB32;
+			this->format = rp_image::Format::ARGB32;
 			m_bytesppShift = 2;
 			break;
 
@@ -169,7 +152,7 @@ RpGdiplusBackend::RpGdiplusBackend(Gdiplus::Bitmap *pGdipBmp)
 	this->height = pGdipBmp->GetHeight();
 
 	// If the image has a palette, load it.
-	if (this->format == rp_image::FORMAT_CI8) {
+	if (this->format == rp_image::Format::CI8) {
 		// 256-color palette.
 		size_t gdipPalette_sz = sizeof(Gdiplus::ColorPalette) + (sizeof(Gdiplus::ARGB)*255);
 		m_pGdipPalette = (Gdiplus::ColorPalette*)malloc(gdipPalette_sz);
@@ -228,9 +211,6 @@ RpGdiplusBackend::~RpGdiplusBackend()
 	}
 
 	aligned_free(m_pImgBuf);
-	if (m_gdipToken != 0) {
-		GdiplusHelper::ShutdownGDIPlus(m_gdipToken);
-	}
 }
 
 /**
@@ -250,7 +230,7 @@ int RpGdiplusBackend::doInitialLock(void)
 		this->width = 0;
 		this->height = 0;
 		this->stride = 0;
-		this->format = rp_image::FORMAT_NONE;
+		this->format = rp_image::Format::None;
 		return -1;
 	}
 	return 0;
@@ -310,6 +290,43 @@ int RpGdiplusBackend::palette_len(void) const
 	if (!m_pGdipPalette)
 		return 0;
 	return static_cast<int>(m_pGdipPalette->Count);
+}
+
+/**
+ * Shrink image dimensions.
+ * @param width New width.
+ * @param height New height.
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int RpGdiplusBackend::shrink(int width, int height)
+{
+	assert(width > 0);
+	assert(height > 0);
+	assert(this->width > 0);
+	assert(this->height > 0);
+	assert(width <= this->width);
+	assert(height <= this->height);
+	if (width <= 0 || height <= 0 ||
+	    this->width <= 0 || this->height <= 0 ||
+	    width > this->width || height > this->height)
+	{
+		return -EINVAL;
+	}
+
+	// TODO: Is there a way to resize the Gdiplus::Bitmap in place?
+	// NOTE: Lock() locks a region, so maybe we could use that, but
+	// Gdiplus::Bitmap to HBITMAP conversion uses the whole image...
+	Gdiplus::Status status = this->unlock();
+	if (status != Gdiplus::Status::Ok) {
+		return -EIO;
+	}
+
+	Gdiplus::Bitmap *const pGdipBmp_old = m_pGdipBmp;
+	m_pGdipBmp = pGdipBmp_old->Clone(0, 0, width, height, m_gdipFmt);
+	delete pGdipBmp_old;
+
+	status = this->lock();
+	return (status == Gdiplus::Status::Ok ? 0 : -EIO);
 }
 
 /**
@@ -408,7 +425,7 @@ Gdiplus::Bitmap *RpGdiplusBackend::dup_ARGB32(void) const
 	Gdiplus::Status status;
 
 	switch (this->format) {
-		case rp_image::FORMAT_CI8: {
+		case rp_image::Format::CI8: {
 			// FIXME: Since adding custom stride, Bitmap::Clone() seems to
 			// automatically replace CI8 color 8 with white.
 			// Hence, we have to manually copy the image for CI8.
@@ -466,7 +483,7 @@ Gdiplus::Bitmap *RpGdiplusBackend::dup_ARGB32(void) const
 			break;
 		}
 
-		case rp_image::FORMAT_ARGB32:
+		case rp_image::Format::ARGB32:
 			status = const_cast<RpGdiplusBackend*>(this)->unlock();
 			assert(status == Gdiplus::Status::Ok);
 			if (status != Gdiplus::Status::Ok) {
@@ -525,7 +542,7 @@ HBITMAP RpGdiplusBackend::toHBITMAP(uint32_t bgColor, const SIZE &size, bool nea
 {
 	// TODO: Check for errors?
 	unique_ptr<Gdiplus::Bitmap> pTmpBmp;
-	if (this->format == rp_image::FORMAT_CI8) {
+	if (this->format == rp_image::Format::CI8) {
 		// Copy the local palette to the GDI+ image.
 		m_pGdipBmp->SetPalette(m_pGdipPalette);
 		// TODO: Optimize has_translucent_palette_entries().
@@ -630,11 +647,11 @@ HBITMAP RpGdiplusBackend::toHBITMAP_alpha(void)
 	// Convert to HBITMAP.
 	HBITMAP hBitmap = nullptr;
 	switch (this->format) {
-		case rp_image::FORMAT_ARGB32:
+		case rp_image::Format::ARGB32:
 			hBitmap = convBmpData_ARGB32(&m_gdipBmpData);
 			break;
 
-		case rp_image::FORMAT_CI8: {
+		case rp_image::Format::CI8: {
 			// Always convert to ARGB32.
 			// Windows will end up doing this anyway,
 			// and it doesn't really like CI8+alpha.
@@ -670,7 +687,7 @@ HBITMAP RpGdiplusBackend::toHBITMAP_alpha(const SIZE &size, bool nearest)
 	Gdiplus::Status status = Gdiplus::Status::GenericError;
 
 	unique_ptr<Gdiplus::Bitmap> pTmpBmp;
-	if (this->format == rp_image::FORMAT_CI8) {
+	if (this->format == rp_image::Format::CI8) {
 		// Convert to ARGB32. Otherwise, translucent and/or
 		// transparent entries won't show up correctly.
 		// NOTE: dup_ARGB32() copies the palette to the
@@ -881,7 +898,7 @@ HBITMAP RpGdiplusBackend::convBmpData_CI8(const Gdiplus::BitmapData *pBmpData)
 	// Copy the data from the GDI+ bitmap to the HBITMAP directly.
 	// HBITMAP stride is a multiple of 4.
 	const size_t row_bytes = pBmpData->Width;
-	const int hbmp_stride = ALIGN_BYTES(4, row_bytes);
+	const int hbmp_stride = ALIGN_BYTES(4, (size_t)row_bytes);
 	const int gdip_stride = pBmpData->Stride;
 	if (hbmp_stride == gdip_stride) {
 		// Copy the entire image all at once.

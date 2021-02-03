@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * lnx_structs.h: Atari Lynx data structures.                              *
  *                                                                         *
- * Copyright (c) 2016 by David Korth.                                      *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * Copyright (c) 2017 by Egor.                                             *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
@@ -10,14 +10,12 @@
 #ifndef __ROMPROPERTIES_LIBROMDATA_LNX_STRUCTS_H__
 #define __ROMPROPERTIES_LIBROMDATA_LNX_STRUCTS_H__
 
-#include "librpbase/common.h"
 #include <stdint.h>
+#include "common.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-#pragma pack(1)
 
 /**
  * Atari Lynx ROM header.
@@ -31,7 +29,7 @@ extern "C" {
  * NOTE: Strings are NOT null-terminated!
  */
 #define LYNX_MAGIC 'LYNX'
-typedef struct PACKED _Lynx_RomHeader {
+typedef struct _Lynx_RomHeader {
 	uint32_t magic;			// [0x000] 'LYNX' (big-endian)
 	uint16_t page_size_bank0;	// [0x004]
 	uint16_t page_size_bank1;	// [0x006]
@@ -49,8 +47,6 @@ typedef enum {
 	LYNX_ROTATE_LEFT	= 1,
 	LYNX_ROTATE_RIGHT	= 2,
 } Lynx_Rotation;
-
-#pragma pack()
 
 #ifdef __cplusplus
 }

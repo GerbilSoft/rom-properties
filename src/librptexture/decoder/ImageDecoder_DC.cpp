@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * ImageDecoder_DC.cpp: Image decoding functions. (Dreamcast)              *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -90,10 +90,10 @@ rp_image *fromDreamcastSquareTwiddled16(PixelFormat px_format,
 	initDreamcastTwiddleMap();
 
 	// Create an rp_image.
-	rp_image *img = new rp_image(width, height, rp_image::FORMAT_ARGB32);
+	rp_image *const img = new rp_image(width, height, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
-		delete img;
+		img->unref();
 		return nullptr;
 	}
 
@@ -101,7 +101,7 @@ rp_image *fromDreamcastSquareTwiddled16(PixelFormat px_format,
 	uint32_t *px_dest = static_cast<uint32_t*>(img->bits());
 	const int dest_stride_adj = (img->stride() / sizeof(uint32_t)) - img->width();
 	switch (px_format) {
-		case PXF_ARGB1555: {
+		case PixelFormat::ARGB1555: {
 			for (unsigned int y = 0; y < static_cast<unsigned int>(height); y++) {
 				for (unsigned int x = 0; x < static_cast<unsigned int>(width); x++) {
 					const unsigned int srcIdx = ((dc_tmap[x] << 1) | dc_tmap[y]);
@@ -116,7 +116,7 @@ rp_image *fromDreamcastSquareTwiddled16(PixelFormat px_format,
 			break;
 		}
 
-		case PXF_RGB565: {
+		case PixelFormat::RGB565: {
 			for (unsigned int y = 0; y < static_cast<unsigned int>(height); y++) {
 				for (unsigned int x = 0; x < static_cast<unsigned int>(width); x++) {
 					const unsigned int srcIdx = ((dc_tmap[x] << 1) | dc_tmap[y]);
@@ -131,7 +131,7 @@ rp_image *fromDreamcastSquareTwiddled16(PixelFormat px_format,
 			break;
 		}
 
-		case PXF_ARGB4444: {
+		case PixelFormat::ARGB4444: {
 			for (unsigned int y = 0; y < static_cast<unsigned int>(height); y++) {
 				for (unsigned int x = 0; x < static_cast<unsigned int>(width); x++) {
 					const unsigned int srcIdx = ((dc_tmap[x] << 1) | dc_tmap[y]);
@@ -148,7 +148,7 @@ rp_image *fromDreamcastSquareTwiddled16(PixelFormat px_format,
 
 		default:
 			assert(!"Invalid pixel format for this function.");
-			delete img;
+			img->unref();
 			return nullptr;
 	}
 
@@ -215,17 +215,17 @@ rp_image *fromDreamcastVQ16(PixelFormat px_format,
 	initDreamcastTwiddleMap();
 
 	// Create an rp_image.
-	rp_image *img = new rp_image(width, height, rp_image::FORMAT_ARGB32);
+	rp_image *const img = new rp_image(width, height, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
-		delete img;
+		img->unref();
 		return nullptr;
 	}
 
 	// Convert the palette.
 	unique_ptr<uint32_t[]> palette(new uint32_t[pal_entry_count]);
 	switch (px_format) {
-		case PXF_ARGB1555: {
+		case PixelFormat::ARGB1555: {
 			for (unsigned int i = 0; i < static_cast<unsigned int>(pal_entry_count); i += 2) {
 				palette[i+0] = ARGB1555_to_ARGB32(pal_buf[i+0]);
 				palette[i+1] = ARGB1555_to_ARGB32(pal_buf[i+1]);
@@ -236,7 +236,7 @@ rp_image *fromDreamcastVQ16(PixelFormat px_format,
 			break;
 		}
 
-		case PXF_RGB565: {
+		case PixelFormat::RGB565: {
 			for (unsigned int i = 0; i < static_cast<unsigned int>(pal_entry_count); i += 2) {
 				palette[i+0] = RGB565_to_ARGB32(pal_buf[i+0]);
 				palette[i+1] = RGB565_to_ARGB32(pal_buf[i+1]);
@@ -247,7 +247,7 @@ rp_image *fromDreamcastVQ16(PixelFormat px_format,
 			break;
 		}
 
-		case PXF_ARGB4444: {
+		case PixelFormat::ARGB4444: {
 			for (unsigned int i = 0; i < static_cast<unsigned int>(pal_entry_count); i += 2) {
 				palette[i+0] = ARGB4444_to_ARGB32(pal_buf[i+0]);
 				palette[i+1] = ARGB4444_to_ARGB32(pal_buf[i+1]);
@@ -260,7 +260,7 @@ rp_image *fromDreamcastVQ16(PixelFormat px_format,
 
 		default:
 			assert(!"Invalid pixel format for this function.");
-			delete img;
+			img->unref();
 			return nullptr;
 	}
 
@@ -275,7 +275,7 @@ rp_image *fromDreamcastVQ16(PixelFormat px_format,
 		assert(srcIdx < (unsigned int)img_siz);
 		if (srcIdx >= static_cast<unsigned int>(img_siz)) {
 			// Out of bounds.
-			delete img;
+			img->unref();
 			return nullptr;
 		}
 
@@ -290,7 +290,7 @@ rp_image *fromDreamcastVQ16(PixelFormat px_format,
 				// Palette index is out of bounds.
 				// NOTE: This can only happen with SmallVQ,
 				// since VQ always has 1024 palette entries.
-				delete img;
+				img->unref();
 				return nullptr;
 			}
 		}

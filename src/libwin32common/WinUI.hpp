@@ -76,13 +76,6 @@ static inline int measureTextSizeLink(HWND hWnd, HFONT hFont, const std::tstring
 }
 
 /**
- * Determine the monospaced font to use.
- * @param plfFontMono Pointer to LOGFONT to store the font name in.
- * @return 0 on success; negative POSIX error code on error.
- */
-int findMonospacedFont(LOGFONT *plfFontMono);
-
-/**
  * Get the alternate row color for ListViews.
  *
  * This function should be called on ListView creation
@@ -121,6 +114,60 @@ static inline uint32_t GetSysColor_ARGB32(int nIndex)
 	       ((color >> 16) & 0xFF);
 }
 
+/**
+ * Are we using COMCTL32.DLL v6.10 or later?
+ * @return True if it's v6.10 or later; false if not.
+ */
+bool isComCtl32_v610(void);
+
+/**
+ * Measure the width of a string for ListView.
+ * This function handles newlines.
+ * @param hDC          [in] HDC for text measurement.
+ * @param tstr         [in] String to measure.
+ * @param pNlCount     [out,opt] Newline count.
+ * @return Width. (May return LVSCW_AUTOSIZE_USEHEADER if it's a single line.)
+ */
+int measureStringForListView(HDC hDC, const std::tstring &tstr, int *pNlCount = nullptr);
+
+/**
+ * Is the system using an RTL language?
+ * @return WS_EX_LAYOUTRTL if the system is using RTL; 0 if not.
+ */
+DWORD isSystemRTL(void);
+
+/** File dialogs **/
+
+/**
+ * Get a filename using the Open File Name dialog.
+ *
+ * Depending on OS, this may use:
+ * - Vista+: IFileOpenDialog
+ * - XP: GetOpenFileName()
+ *
+ * @param hWnd		[in] Owner.
+ * @param dlgTitle	[in] Dialog title.
+ * @param filterSpec	[in] Filter specification. (RP format, UTF-8)
+ * @param origFilename	[in,opt] Starting filename.
+ * @return Filename, or empty string on error.
+ */
+std::tstring getOpenFileName(HWND hWnd, const TCHAR *dlgTitle, const char *filterSpec, const TCHAR *origFilename);
+
+/**
+ * Get a filename using the Save File Name dialog.
+ *
+ * Depending on OS, this may use:
+ * - Vista+: IFileSaveDialog
+ * - XP: GetSaveFileName()
+ *
+ * @param hWnd		[in] Owner.
+ * @param dlgTitle	[in] Dialog title.
+ * @param filterSpec	[in] Filter specification. (RP format, UTF-8)
+ * @param origFilename	[in,opt] Starting filename.
+ * @return Filename, or empty string on error.
+ */
+std::tstring getSaveFileName(HWND hWnd, const TCHAR *dlgTitle, const char *filterSpec, const TCHAR *origFilename);
+
 /** Window procedure subclasses **/
 
 /**
@@ -155,6 +202,20 @@ LRESULT CALLBACK MultiLineEditProc(
  * @param dwRefData	HWND of parent dialog to forward WM_COMMAND messages to.
  */
 LRESULT CALLBACK SingleLineEditProc(
+	HWND hWnd, UINT uMsg,
+	WPARAM wParam, LPARAM lParam,
+	UINT_PTR uIdSubclass, DWORD_PTR dwRefData);
+
+/**
+ * Subclass procedure for ListView controls to disable HDN_DIVIDERDBLCLICK handling.
+ * @param hWnd		Dialog handle
+ * @param uMsg		Message
+ * @param wParam	WPARAM
+ * @param lParam	LPARAM
+ * @param uIdSubclass	Subclass ID (usually the control ID)
+ * @param dwRefData	RP_ShellPropSheetExt_Private*
+ */
+LRESULT CALLBACK ListViewNoDividerDblClickSubclassProc(
 	HWND hWnd, UINT uMsg,
 	WPARAM wParam, LPARAM lParam,
 	UINT_PTR uIdSubclass, DWORD_PTR dwRefData);

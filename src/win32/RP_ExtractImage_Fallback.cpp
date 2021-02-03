@@ -11,8 +11,9 @@
 #include "RP_ExtractImage.hpp"
 #include "RP_ExtractImage_p.hpp"
 
-// librpbase, libwin32common
+// librpbase, librpfile, libwin32common
 using namespace LibRpBase;
+using namespace LibRpFile;
 using LibWin32Common::RegKey;
 
 // C++ STL classes.
@@ -92,7 +93,7 @@ HRESULT RP_ExtractImage_Private::Fallback_int(RegKey &hkey_Assoc, HBITMAP *phBmp
 	wchar_t szPathBuffer[MAX_PATH];	// NOTE: Not actually used.
 	DWORD dwPriority = IEIT_PRIORITY_NORMAL;
 	DWORD dwFlags = this->dwFlags;
-	hr = pExtractImage->GetLocation(szPathBuffer, ARRAY_SIZE(szPathBuffer),
+	hr = pExtractImage->GetLocation(szPathBuffer, _countof(szPathBuffer),
 		&dwPriority, &rgSize, dwRecClrDepth, &dwFlags);
 	if (FAILED(hr) && hr != E_PENDING) {
 		// Failed to get the image location.

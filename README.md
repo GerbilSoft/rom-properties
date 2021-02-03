@@ -6,19 +6,24 @@ video game ROM and disc images.
 [![License: GPL v2](https://img.shields.io/badge/License-GPL%20v2-blue.svg)](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html)<br>
 [![Travis Build Status](https://travis-ci.org/GerbilSoft/rom-properties.svg?branch=master)](https://travis-ci.org/GerbilSoft/rom-properties)
 [![AppVeyor Build status](https://ci.appveyor.com/api/projects/status/5lk15ct43jtmhejs/branch/master?svg=true)](https://ci.appveyor.com/project/GerbilSoft/rom-properties/branch/master)
-[![Coverity Scan Build Status](https://scan.coverity.com/projects/10146/badge.svg)](https://scan.coverity.com/projects/10146)
+[![Coverity Scan Build Status](https://scan.coverity.com/projects/10146/badge.svg)](https://scan.coverity.com/projects/10146)<br>
+[![Total alerts](https://img.shields.io/lgtm/alerts/g/GerbilSoft/rom-properties.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/GerbilSoft/rom-properties/alerts/)
+[![Language grade: C/C++](https://img.shields.io/lgtm/grade/cpp/g/GerbilSoft/rom-properties.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/GerbilSoft/rom-properties/context:cpp)
 
-## v1.4 - The Metadata and Xbox release
+## v1.7
 
-This release was originally focused on adding metadata for file browsers, but it ended up expanding to lots of things, including Xbox and Xbox 360 disc images and executables.
+This release adds a ton of new features, including "ROM operations", 3DS sighax
+detection, and support for PlayStation Portable disc images:
 
-![Xbawks is HUEG](doc/img/v1.4/rp.kde5.XboxDisc.png)
+![PlayStation Portable disc image](doc/img/v1.7/rp.kde5.PSP.png)
 
-Other file formats added in this release include Wii WADs, encrypted Wii save files, Mach-O binaries, Neo Geo Pocket (Color) ROM images, and iQue Player metadata and ticket files.
+Other improvements in this release include several file handle leak fixes,
+addition of a vertical scrollbar on Windows property pages if needed, and
+improved ROM image detection for several supported formats.
 
 Translators needed; file an issue if you'd like to get started on a new translation, or submit a Pull Request if you have a translation ready to go.
 
-See [`NEWS.md`](NEWS.md) for a full list of changes in v1.4.
+See [`NEWS.md`](NEWS.md) for a full list of changes in v1.7.
 
 ## Feedback
 
@@ -32,13 +37,16 @@ Or use the Mibbit Web IRC client: http://mibbit.com/?server=irc.badnik.zone&chan
 
 Currently, the ROM Properties Page shell extension is compatible with the
 following platforms:
-* KDE 4.x
 * KDE Frameworks 5.x
-* XFCE (GTK+ 2.x)
+* XFCE (GTK+ 2.x, GTK+ 3.x)
 * GNOME and Unity (GTK+ 3.x)
 * MATE Desktop (1.18+; GTK+ 3.x)
 * Cinnamon Desktop
-* Windows XP (and later)
+* Windows 7 (and later)
+
+The following platforms are still compatible, but may not receive as much support:
+* KDE 4.x
+* Windows XP, Windows Vista
 
 On Windows, you will need the MSVC 2015-2019 runtime:
 * 32-bit: https://aka.ms/vs/16/release/vc_redist.x86.exe
@@ -49,8 +57,7 @@ For instructions on compiling from source, see doc/COMPILING.md .
 ### Linux
 
 Install the relevant .deb package, depending on what desktop environment you
-are using and what your CPU is. Note that you may want to install the KDE4
-package even if using KDE5, since many KDE programs still use the 4.x libraries.
+are using and what your CPU is.
 
 After installing, the plugin needs to be enabled in the Dolphin file browser:
 * Close all instances of Dolphin.
@@ -80,45 +87,56 @@ button.
 
 ### Game Consoles
 
-|           System          | Properties Tab | Metadata | Internal Images | External Scans |
-|:-------------------------:|:--------------:|:--------:|:---------------:|:--------------:|
-| NES                       |       Yes      |    No    |       N/A       |       No       |
-| Super NES                 |       Yes      |    No    |       N/A       |       No       |
-| Microsoft Xbox (XBE)      |       Yes      |    Yes   |       Icon      |       No       |
-| Microsoft Xbox 360 (XEX)  |       Yes      |    Yes   |       Icon      |       No       |
-| Microsoft Xbox 360 (STFS) |       Yes      |    Yes   |        No       |       No       |
-| Microsoft Xbox Game Discs |       Yes      |    Yes   |       Icon      |       No       |
-| Nintendo 64               |       Yes      |    Yes   |       N/A       |       No       |
-| iQue Player ticket files  |       Yes      |    Yes   |   Icon, Banner  |       No       |
-| Nintendo GameCube Discs   |       Yes      |    Yes   |      Banner     |  Disc, Covers  |
-| Nintendo GameCube Banners |       Yes      |    Yes   |      Banner     |       No       |
-| Nintendo GameCube Saves   |       Yes      |    Yes   |       Icon      |       N/A      |
-| Nintendo Wii Discs        |       Yes      |    Yes   |        No       |  Disc, Covers  |
-| Nintendo Wii WADs         |       Yes      |    Yes   |       Yes*      |  Title, Covers |
-| Nintendo Wii Saves        |       Yes      |    No    |       Yes       |       N/A      |
-| Nintendo Wii U            |       Yes      |    No    |        No       |  Disc, Covers  |
-| Sega 8-bit (SMS, GG)      |       Yes      |    Yes   |       N/A       |       No       |
-| Sega Mega Drive           |       Yes      |    No    |       N/A       |       No       |
-| Sega Dreamcast            |       Yes      |    Yes   |      Media      |       No       |
-| Sega Dreamcast Saves      |       Yes      |    No    |   Icon, Banner  |       No       |
-| Sega Saturn               |       Yes      |    Yes   |       N/A       |       No       |
-| Sony PlayStation Saves    |       Yes      |    Yes   |       Icon      |       N/A      |
+|           System          | Properties Tab | Metadata | Internal Images | External Images |
+|:-------------------------:|:--------------:|:--------:|:---------------:|:---------------:|
+| NES                       |       Yes      |    No    |       N/A       |        No       |
+| Super NES                 |       Yes      |    Yes   |       N/A       |      Title     |
+| Microsoft Xbox (XBE)      |       Yes      |    Yes   |       Icon      |        No       |
+| Microsoft Xbox 360 (XEX)  |       Yes      |    Yes   |       Icon      |        No       |
+| Microsoft Xbox 360 (STFS) |       Yes      |    Yes   |       Icon      |        No       |
+| Microsoft Xbox Game Discs |       Yes      |    Yes   |       Icon      |        No       |
+| Nintendo 64               |       Yes      |    Yes   |       N/A       |        No       |
+| iQue Player ticket files  |       Yes      |    Yes   |   Icon, Banner  |        No       |
+| Nintendo GameCube Discs   |       Yes      |    Yes   |      Banner     |   Disc, Covers  |
+| Nintendo GameCube Banners |       Yes      |    Yes   |      Banner     |        No       |
+| Nintendo GameCube Saves   |       Yes      |    Yes   |       Icon      |       N/A       |
+| Nintendo Wii Discs        |       Yes      |    Yes   |        No       |   Disc, Covers  |
+| Nintendo Wii WADs         |       Yes      |    Yes   |       Yes*      |  Title, Covers  |
+| Nintendo Wii Saves        |       Yes      |    No    |       Yes       |       N/A       |
+| Nintendo Wii U            |       Yes      |    No    |        No       |   Disc, Covers  |
+| Sega 8-bit (SMS, GG)      |       Yes      |    Yes   |       N/A       |        No       |
+| Sega Mega Drive           |       Yes      |    No    |       N/A       |        No       |
+| Sega Dreamcast            |       Yes      |    Yes   |      Media      |        No       |
+| Sega Dreamcast Saves      |       Yes      |    Yes   |   Icon, Banner  |        No       |
+| Sega Saturn               |       Yes      |    Yes   |       N/A       |        No       |
+| Sony PlayStation Discs    |       Yes      |    No    |       N/A       |        No       |
+| Sony PlayStation EXEs     |       Yes      |    No    |       N/A       |       N/A       |
+| Sony PlayStation Saves    |       Yes      |    Yes   |       Icon      |       N/A       |
+| Sony PlayStation 2 Discs  |       Yes      |    Yes   |       N/A       |        No       |
 
 \* Internal images are only present in Wii DLC WADs.
 
 ### Handhelds
 
-|             System            | Properties Tab | Metadata | Internal Images | External Scans |
-|:-----------------------------:|:--------------:|:--------:|:---------------:|:--------------:|
-| Atari Lynx                    |       Yes      |    No    |       N/A       |       No       |
-| Neo Geo Pocket (Color)        |       Yes      |    Yes   |       N/A       |       No       |
-| Nintendo Game Boy (Color)     |       Yes      |    Yes   |       N/A       |       No       |
-| Nintendo Virtual Boy          |       Yes      |    No    |       N/A       |       No       |
-| Nintendo Game Boy Advance     |       Yes      |    No    |       N/A       |       No       |
-| Nintendo DS(i)                |       Yes      |    Yes   |       Icon      |  Covers, Box   |
-| Nintendo 3DS                  |       Yes      |    Yes   |       Icon      |  Covers, Box   |
-| Pokémon Mini                  |       Yes      |    Yes   |       N/A       |       No       |
-| Tiger game.com                |       Yes      |    Yes   |       Icon      |       No       |
+|             System            | Properties Tab | Metadata | Internal Images | External Images |
+|:-----------------------------:|:--------------:|:--------:|:---------------:|:---------------:|
+| Atari Lynx                    |       Yes      |    No    |       N/A       |        No       |
+| Neo Geo Pocket (Color)        |       Yes      |    Yes   |       N/A       |      Title      |
+| Nintendo Game Boy (Color)     |       Yes      |    Yes   |       N/A       |      Title      |
+| Nintendo Virtual Boy          |       Yes      |    No    |       N/A       |        No       |
+| Nintendo Game Boy Advance     |       Yes      |    Yes   |       N/A       |      Title      |
+| Nintendo DS(i)                |       Yes      |    Yes   |       Icon      |   Covers, Box   |
+| Nintendo DSi TADs*            |     Partial    |    No    |        No       |        No       |
+| Nintendo 3DS                  |       Yes      |    Yes   |       Icon      |   Covers, Box   |
+| Pokémon Mini                  |       Yes      |    Yes   |       N/A       |        No       |
+| Sony PlayStation Portable     |       Yes      |    Yes   |       Icon      |        No       |
+| Tiger game.com                |       Yes      |    Yes   |       Icon      |        No       |
+
+\* The Nintendo DSi TAD parser supports development TADs that are normally
+   imported using DSi Nmenu. It does not currently support DSi exports from
+   retail systems.
+\* The PSP parser supports both PSP game and UMD video discs, as well as
+   several compressed disc formats: CISOv1, CISOv2, ZISO, JISO, and DAX.
 
 ### Texture Formats
 
@@ -126,6 +144,7 @@ button.
 |:-----------------------------:|:--------------:|:--------:|:---------------:|:--------------:|
 | Leapster Didj .tex textures   |       Yes      |    Yes   |      Image      |       N/A      |
 | Khronos KTX Textures          |       Yes      |    Yes   |      Image      |       N/A      |
+| Khronos KTX2 Textures         |       Yes      |    Yes   |      Image      |       N/A      |
 | Microsoft DirectDraw Surface  |       Yes      |    Yes   |      Image      |       N/A      |
 | Microsoft Xbox XPR Textures   |       Yes      |    Yes   |      Image      |       N/A      |
 | PowerVR 3.0.0 Textures        |       Yes      |    Yes   |      Image      |       N/A      |
@@ -143,11 +162,11 @@ button.
 * Nintendo 3DS: Tiled and twiddled RGB565
 * GameCube: Tiled RGB5A3 and CI8 with RGB5A3 palette
 * S3TC: DXT1, DXT2, DXT3, DXT4, DXT5, BC4, and BC5 codecs.
-  * Supported file formats: DDS, KTX, VTF, VTF3, XPR
+  * Supported file formats: DDS, KTX, KTX2, VTF, VTF3, XPR
   * GameCube 2x2-tiled DXT1 is supported in GVR texture files.
-* BC7: Supported in DDS, KTX, and PowerVR 3.0.0 texture files.
+* BC7: Supported in DDS, KTX, KTX2, and PowerVR 3.0.0 texture files.
   * The implementation is somewhat slow. (Contributions welcome.)
-* PVRTC: Supported in DDS, KTX, and PowerVR 3.0.0 texture files.
+* PVRTC: Supported in DDS, KTX, KTX2, and PowerVR 3.0.0 texture files.
   * PVRTC-II: Partially supported. The hard transition flag and images
     that aren't a multiple of the tile size are not supported.
 
@@ -173,7 +192,7 @@ button.
 |             System             | Properties Tab | Metadata | Internal Images | External Scans |
 |:------------------------------:|:--------------:|:--------:|:---------------:|:--------------:|
 | Executable and Linkable Format |       Yes      |    No    |       N/A       |       N/A      |
-| ISO-9660 Disc Images           |       Yes      |    No    |        No       |       N/A      |
+| ISO-9660 Disc Images           |       Yes      |   Yes    |        No       |       N/A      |
 | Mach-O Binaries                |       Yes      |    No    |       N/A       |       N/A      |
 | Nintendo amiibo                |       Yes      |    No    |       N/A       |      Media     |
 | Nintendo Badge Arcade          |       Yes      |    No    |      Image      |       N/A      |
@@ -210,7 +229,8 @@ program, `rp-config.exe`.
 
 Downloaded images are cached to the following directory:
 * Linux: `~/.cache/rom-properties/`
-* Windows: `%LOCALAPPDATA%\rom-properties\cache`
+* Windows XP: `%LOCALAPPDATA%\rom-properties\cache`
+* Windows Vista+: `%USERPROFILE%\AppData\LocalLow\rom-properties\cache`
 
 The directory structure matches the source site, so e.g. a disc image of
 Super Smash Bros. Brawl would be downloaded to
@@ -251,6 +271,13 @@ In this example, both keys are AES-128, so the hexadecimal strings should be
 
 NOTE: If a key is incorrect, any properties dialog that uses the key to
 decrypt data will show an error message instead of the data in question.
+
+### Nintendo DS Secure Area
+
+To encrypt or decrypt the Nintendo DS Secure Area, the Blowfish key must be
+named `nds-blowfish.bin` and placed in the same directory as `keys.conf`.
+
+MD5sum: `c08c5afd9c6d9530817cd2033e3864d7`
 
 ## Unsupported File?
 
@@ -311,6 +338,8 @@ https://github.com/GerbilSoft/rom-properties/issues
   Information on Atari Lynx cartridge format.
 * [Khronos KTX File Format Specification](https://www.khronos.org/opengles/sdk/tools/KTX/file_format_spec/):
   Information on the Khornos KTX texture file format.
+* [Khronos KTX 2.0 File Format Specification](http://github.khronos.org/KTX-Specification/):
+  Information on the Khornos KTX 2.0 texture file format.
 * [Valve Texture Format](https://developer.valvesoftware.com/wiki/Valve_Texture_Format):
   Information on the Valve VTF texture file format.
 * [nocash SNES hardware specifications](http://problemkaputt.de/fullsnes.htm):
@@ -329,3 +358,6 @@ https://github.com/GerbilSoft/rom-properties/issues
   technical information, including XPR pixel formats.
 * [iQueBrew](http://www.iquebrew.org/index.php?title=Main_Page) for iQue Player
   technical information.
+* [maxcso](https://github.com/unknownbrackets/maxcso) for documentation on the
+  compressed formats used by unofficial Sony PlayStation Portable disc image
+  loaders.

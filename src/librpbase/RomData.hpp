@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * RomData.hpp: ROM data base class.                                       *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -10,6 +10,7 @@
 #define __ROMPROPERTIES_LIBRPBASE_ROMDATA_HPP__
 
 #include "common.h"
+#include "RefBase.hpp"
 #include "RomData_decl.hpp"
 
 // C includes.
@@ -20,19 +21,21 @@
 #include <string>
 #include <vector>
 
+namespace LibRpFile {
+	class IRpFile;
+}
 namespace LibRpTexture {
 	class rp_image;
 }
 
 namespace LibRpBase {
 
-class IRpFile;
 class RomFields;
 class RomMetaData;
 struct IconAnimData;
 
 class RomDataPrivate;
-class RomData
+class RomData : public RefBase
 {
 	protected:
 		/**
@@ -48,7 +51,7 @@ class RomData
 		 *
 		 * @param file ROM file.
 		 */
-		explicit RomData(IRpFile *file);
+		explicit RomData(LibRpFile::IRpFile *file);
 
 		/**
 		 * ROM data base class.
@@ -79,17 +82,10 @@ class RomData
 		RomDataPrivate *const d_ptr;
 
 	public:
-		/**
-		 * Take a reference to this RomData* object.
-		 * @return this
-		 */
-		RomData *ref(void);
-
-		/**
-		 * Unreference this RomData* object.
-		 * If ref_cnt reaches 0, the RomData* object is deleted.
-		 */
-		void unref(void);
+		inline RomData *ref(void)
+		{
+			return RefBase::ref<RomData>();
+		}
 
 	public:
 		/**
@@ -109,6 +105,25 @@ class RomData
 		 */
 		virtual void close(void);
 
+		/**
+		 * Get a reference to the internal file.
+		 * @return Reference to file, or nullptr on error.
+		 */
+		LibRpFile::IRpFile *ref_file(void);
+
+		/**
+		 * Get the filename that was loaded.
+		 * @return Filename, or nullptr on error.
+		 */
+		const char *filename(void) const;
+
+		/**
+		 * Is the file compressed? (transparent decompression)
+		 * If it is, then ROM operations won't be allowed.
+		 * @return True if compressed; false if not.
+		 */
+		bool isCompressed(void) const;
+
 	public:
 		/** ROM detection functions. **/
 
@@ -123,7 +138,7 @@ class RomData
 				const uint8_t *pData;	// Data.
 			} header;		// ROM header.
 			const char *ext;	// File extension, including leading '.'
-			int64_t szFile;		// File size. (Required for certain types.)
+			off64_t szFile;		// File size. (Required for certain types.)
 		};
 
 		/**
@@ -149,14 +164,14 @@ class RomData
 			 *   on the current system locale.
 			 */
 
-			SYSNAME_TYPE_LONG		= (0 << 0),
-			SYSNAME_TYPE_SHORT		= (1 << 0),
-			SYSNAME_TYPE_ABBREVIATION	= (2 << 0),
-			SYSNAME_TYPE_MASK		= (3 << 0),
+			SYSNAME_TYPE_LONG		= (0U << 0),
+			SYSNAME_TYPE_SHORT		= (1U << 0),
+			SYSNAME_TYPE_ABBREVIATION	= (2U << 0),
+			SYSNAME_TYPE_MASK		= (3U << 0),
 
-			SYSNAME_REGION_GENERIC		= (0 << 2),
-			SYSNAME_REGION_ROM_LOCAL	= (1 << 2),
-			SYSNAME_REGION_MASK		= (1 << 2),
+			SYSNAME_REGION_GENERIC		= (0U << 2),
+			SYSNAME_REGION_ROM_LOCAL	= (1U << 2),
+			SYSNAME_REGION_MASK		= (1U << 2),
 		};
 
 	protected:
@@ -191,38 +206,39 @@ class RomData
 		 */
 		const char *className(void) const;
 
-		enum FileType {
-			FTYPE_UNKNOWN = 0,
+		enum class FileType {
+			Unknown = 0,
 
-			FTYPE_ROM_IMAGE,		// ROM image
-			FTYPE_DISC_IMAGE,		// Optical disc image
-			FTYPE_SAVE_FILE,		// Save file
-			FTYPE_EMBEDDED_DISC_IMAGE,	// "Embedded" disc image, e.g. GameCube TGC
-			FTYPE_APPLICATION_PACKAGE,	// Application package, e.g. WAD, CIA
-			FTYPE_NFC_DUMP,			// NFC dump, e.g. amiibo
-			FTYPE_DISK_IMAGE,		// Floppy and/or hard disk image
-			FTYPE_EXECUTABLE,		// Executable, e.g. EXE
-			FTYPE_DLL,			// Dynamic Link Library
-			FTYPE_DEVICE_DRIVER,		// Device driver
-			FTYPE_RESOURCE_LIBRARY,		// Resource library
-			FTYPE_ICON_FILE,		// Icon file, e.g. SMDH.
-			FTYPE_BANNER_FILE,		// Banner file, e.g. GameCube opening.bnr.
-			FTYPE_HOMEBREW,			// Homebrew application, e.g. 3DSX.
-			FTYPE_EMMC_DUMP,		// eMMC dump
-			FTYPE_CONTAINER_FILE,		// Container file, e.g. NCCH.
-			FTYPE_FIRMWARE_BINARY,		// Firmware binary, e.g. 3DS FIRM.
-			FTYPE_TEXTURE_FILE,		// Texture file, e.g. Sega PVR.
-			FTYPE_RELOCATABLE_OBJECT,	// Relocatable Object File (*.o)
-			FTYPE_SHARED_LIBRARY,		// Shared Library (similar to DLLs)
-			FTYPE_CORE_DUMP,		// Core Dump
-			FTYPE_AUDIO_FILE,		// Audio file
-			FTYPE_BOOT_SECTOR,		// Boot sector
-			FTYPE_BUNDLE,			// Bundle (Mac OS X)
-			FTYPE_RESOURCE_FILE,		// Resource file
-			FTYPE_PARTITION,		// Partition
-			FTYPE_METADATA_FILE,		// Metadata File
+			ROM_Image,		// ROM image
+			DiscImage,		// Optical disc image
+			SaveFile,		// Save file
+			EmbeddedDiscImage,	// "Embedded" disc image, e.g. GameCube TGC
+			ApplicationPackage,	// Application package, e.g. WAD, CIA
+			NFC_Dump,		// NFC dump, e.g. amiibo
+			DiskImage,		// Floppy and/or hard disk image
+			Executable,		// Executable, e.g. EXE
+			DLL,			// Dynamic Link Library
+			DeviceDriver,		// Device driver
+			ResourceLibrary,	// Resource library
+			IconFile,		// Icon file, e.g. SMDH.
+			BannerFile,		// Banner file, e.g. GameCube opening.bnr.
+			Homebrew,		// Homebrew application, e.g. 3DSX.
+			eMMC_Dump,		// eMMC dump
+			ContainerFile,		// Container file, e.g. NCCH.
+			FirmwareBinary,		// Firmware binary, e.g. 3DS FIRM.
+			TextureFile,		// Texture file, e.g. Sega PVR.
+			RelocatableObject,	// Relocatable Object File (*.o)
+			SharedLibrary,		// Shared Library (similar to DLLs)
+			CoreDump,		// Core Dump
+			AudioFile,		// Audio file
+			BootSector,		// Boot sector
+			Bundle,			// Bundle (Mac OS X)
+			ResourceFile,		// Resource file
+			Partition,		// Partition
+			MetadataFile,		// Metadata File
+			PatchFile,		// Patch File
 
-			FTYPE_LAST			// End of FileType.
+			Max
 		};
 
 		/**
@@ -236,6 +252,12 @@ class RomData
 		 * @return General file type as a string, or nullptr if unknown.
 		 */
 		const char *fileType_string(void) const;
+
+		/**
+		 * Get the file's MIME type.
+		 * @return MIME type, or nullptr if unknown.
+		 */
+		const char *mimeType(void) const;
 
 		// TODO:
 		// - List of supported systems.
@@ -308,19 +330,19 @@ class RomData
 		 */
 		enum ImageTypeBF {
 			// Internal images are contained with the ROM or disc image.
-			IMGBF_INT_ICON   = (1 << IMG_INT_ICON),		// Internal icon, e.g. DS launcher icon
-			IMGBF_INT_BANNER = (1 << IMG_INT_BANNER),	// Internal banner, e.g. GameCube discs
-			IMGBF_INT_MEDIA  = (1 << IMG_INT_MEDIA),	// Internal media scan, e.g. Dreamcast discs
-			IMGBF_INT_IMAGE  = (1 << IMG_INT_IMAGE),	// Internal image, e.g. PVR images.
+			IMGBF_INT_ICON   = (1U << IMG_INT_ICON),	// Internal icon, e.g. DS launcher icon
+			IMGBF_INT_BANNER = (1U << IMG_INT_BANNER),	// Internal banner, e.g. GameCube discs
+			IMGBF_INT_MEDIA  = (1U << IMG_INT_MEDIA),	// Internal media scan, e.g. Dreamcast discs
+			IMGBF_INT_IMAGE  = (1U << IMG_INT_IMAGE),	// Internal image, e.g. PVR images.
 
 			// External images are downloaded from websites,
 			// such as GameTDB.
-			IMGBF_EXT_MEDIA      = (1 << IMG_EXT_MEDIA),      // External media scan, e.g. GameTDB
-			IMGBF_EXT_COVER      = (1 << IMG_EXT_COVER),      // External cover scan
-			IMGBF_EXT_COVER_3D   = (1 << IMG_EXT_COVER_3D),   // External cover scan (3D version)
-			IMGBF_EXT_COVER_FULL = (1 << IMG_EXT_COVER_FULL), // External cover scan (front and back)
-			IMGBF_EXT_BOX	     = (1 << IMG_EXT_BOX),        // External box scan (cover + outer box)
-			IMGBF_EXT_TITLE_SCREEN = (1 << IMG_EXT_TITLE_SCREEN), // External title screen
+			IMGBF_EXT_MEDIA      = (1U << IMG_EXT_MEDIA),      // External media scan, e.g. GameTDB
+			IMGBF_EXT_COVER      = (1U << IMG_EXT_COVER),      // External cover scan
+			IMGBF_EXT_COVER_3D   = (1U << IMG_EXT_COVER_3D),   // External cover scan (3D version)
+			IMGBF_EXT_COVER_FULL = (1U << IMG_EXT_COVER_FULL), // External cover scan (front and back)
+			IMGBF_EXT_BOX	     = (1U << IMG_EXT_BOX),        // External box scan (cover + outer box)
+			IMGBF_EXT_TITLE_SCREEN = (1U << IMG_EXT_TITLE_SCREEN), // External title screen
 		};
 
 		/**
@@ -333,18 +355,23 @@ class RomData
 		 * Image processing flags.
 		 */
 		enum ImageProcessingBF {
-			IMGPF_CDROM_120MM	= (1 << 0),	// Apply a 120mm CD-ROM transparency mask.
-			IMGPF_CDROM_80MM	= (1 << 1),	// Apply an 80mm CD-ROM transparency mask.
+			IMGPF_CDROM_120MM	= (1U << 0),	// Apply a 120mm CD-ROM transparency mask.
+			IMGPF_CDROM_80MM	= (1U << 1),	// Apply an 80mm CD-ROM transparency mask.
 
 			// If the image needs to be resized, use
 			// nearest neighbor if the new size is an
 			// integer multiple of the old size.
-			IMGPF_RESCALE_NEAREST	= (1 << 2),
+			IMGPF_RESCALE_NEAREST	= (1U << 2),
 
 			// File supports animated icons.
 			// Call iconAnimData() to get the animated
 			// icon frames and control information.
-			IMGPF_ICON_ANIMATED	= (1 << 3),
+			IMGPF_ICON_ANIMATED	= (1U << 3),
+
+			// Image should be rescaled to an 8:7 aspect ratio.
+			// This is for Super NES, and only applies to images
+			// with 256px and 512px widths.
+			IMGPF_RESCALE_ASPECT_8to7	= (1U << 4),
 		};
 
 		struct ImageSizeDef {
@@ -431,8 +458,8 @@ class RomData
 		/**
 		 * Get an internal image from the ROM.
 		 *
-		 * NOTE: The rp_image is owned by this object.
-		 * Do NOT delete this object until you're done using this rp_image.
+		 * The retrieved image must be ref()'d by the caller if the
+		 * caller stores it instead of using it immediately.
 		 *
 		 * @param imageType Image type to load.
 		 * @return Internal image, or nullptr if the ROM doesn't have one.
@@ -499,6 +526,7 @@ class RomData
 		 * @param size Size of HTML data.
 		 * @return Image URL, or empty string if not found or not supported.
 		 */
+		ATTR_ACCESS_SIZE(read_only, 2, 3)
 		virtual std::string scrapeImageURL(const char *html, size_t size) const;
 
 		/**
@@ -514,6 +542,9 @@ class RomData
 		 * Check imgpf for IMGPF_ICON_ANIMATED first to see if this
 		 * object has an animated icon.
 		 *
+		 * The retrieved IconAnimData must be ref()'d by the caller if the
+		 * caller stores it instead of using it immediately.
+		 *
 		 * @return Animated icon data, or nullptr if no animated icon is present.
 		 */
 		virtual const IconAnimData *iconAnimData(void) const;
@@ -525,6 +556,103 @@ class RomData
 		 * @return True if the ROM image has "dangerous" permissions; false if not.
 		 */
 		virtual bool hasDangerousPermissions(void) const;
+
+	public:
+		/**
+		 * ROF_SAVE_FILE information.
+		 * `const char*` fields are owned by the RomData subclass.
+		 */
+		struct RomOpSaveFileInfo {
+			const char *title;		// Dialog title.
+			const char *filter;		// Filename filter. (Windows style, with '|' delimiters.)
+			std::string def_filename;	// Default filename. (without path)
+		};
+
+		/**
+		 * ROM operation struct.
+		 * `const char*` fields are owned by the RomData subclass.
+		 */
+		struct RomOp {
+			const char *desc;	// Description (Use '&' for mnemonics)
+			uint32_t flags;		// Flags
+
+			enum RomOpsFlags {
+				ROF_ENABLED		= (1U << 0),	// Set to enable the ROM op
+				ROF_REQ_WRITABLE	= (1U << 1),	// Requires a writable RomData
+				ROF_SAVE_FILE		= (1U << 2),	// Prompt to save a new file
+			};
+
+			// Data depends on RomOpsFlags.
+			union {
+				// ROF_SAVE_FILE
+				struct {
+					const char *title;	// Dialog title
+					const char *filter;	// File filter (RP format) [don't include "All Files"]
+					const char *ext;	// New file extension (with leading '.')
+				} sfi;
+			};
+
+			RomOp() { }
+			RomOp(const char *desc, uint32_t flags)
+				: desc(desc), flags(flags)
+			{
+				sfi.title = nullptr;
+				sfi.filter = nullptr;
+				sfi.ext = nullptr;
+			}
+		};
+
+		struct RomOpParams {
+			/** OUT: Results **/
+			int status;			// Status. (0 == success; negative == POSIX error; positive == other error)
+			std::string msg;		// Status message. (optional)
+			std::vector<int> fieldIdx;	// Field indexes that were updated.
+
+			/** IN: Parameters **/
+			const char *save_filename;	// Filename for saving data.
+
+			RomOpParams()
+				: status(0)
+				, save_filename(nullptr) { }
+		};
+
+		/**
+		 * Get the list of operations that can be performed on this ROM.
+		 * @return List of operations.
+		 */
+		std::vector<RomOp> romOps(void) const;
+
+		/**
+		 * Perform a ROM operation.
+		 * @param id		[in] Operation index.
+		 * @param pParams	[in/out] Parameters and results. (for e.g. UI updates)
+		 * @return 0 on success; negative POSIX error code on error.
+		 */
+		int doRomOp(int id, RomOpParams *pParams);
+
+	protected:
+		/**
+		 * Get the list of operations that can be performed on this ROM.
+		 * Internal function; called by RomData::romOps().
+		 * @return List of operations.
+		 */
+		virtual std::vector<RomOp> romOps_int(void) const;
+
+		/**
+		 * Perform a ROM operation.
+		 * Internal function; called by RomData::doRomOp().
+		 * @param id		[in] Operation index.
+		 * @param pParams	[in/out] Parameters and results. (for e.g. UI updates)
+		 * @return 0 on success; negative POSIX error code on error.
+		 */
+		virtual int doRomOp_int(int id, RomOpParams *pParams);
+
+	public:
+		/**
+		 * Check for "viewed" achievements.
+		 * @return Number of achievements unlocked.
+		 */
+		virtual int checkViewedAchievements(void) const;
 };
 
 }

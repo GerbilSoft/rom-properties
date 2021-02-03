@@ -11,8 +11,9 @@
 #include "RP_ThumbnailProvider.hpp"
 #include "RpImageWin32.hpp"
 
-// librpbase, librptexture
+// librpbase, librpfile, librptexture
 using namespace LibRpBase;
+using LibRpFile::IRpFile;
 using LibRpTexture::rp_image;
 
 // RpFile_IStream
@@ -40,9 +41,7 @@ RP_ThumbnailProvider_Private::~RP_ThumbnailProvider_Private()
 {
 	// pstream is owned by file,
 	// so don't Release() it here.
-	if (file) {
-		file->unref();
-	}
+	UNREF(file);
 }
 
 /** RP_ThumbnailProvider **/
@@ -61,15 +60,19 @@ RP_ThumbnailProvider::~RP_ThumbnailProvider()
 
 IFACEMETHODIMP RP_ThumbnailProvider::QueryInterface(REFIID riid, LPVOID *ppvObj)
 {
-#pragma warning(push)
-#pragma warning(disable: 4365 4838)
+#ifdef _MSC_VER
+# pragma warning(push)
+# pragma warning(disable: 4365 4838)
+#endif /* _MSC_VER */
 	static const QITAB rgqit[] = {
 		QITABENT(RP_ThumbnailProvider, IInitializeWithStream),
 		QITABENT(RP_ThumbnailProvider, IThumbnailProvider),
 		{ 0, 0 }
 	};
-#pragma warning(pop)
-	return LibWin32Common::pfnQISearch(this, rgqit, riid, ppvObj);
+#ifdef _MSC_VER
+# pragma warning(pop)
+#endif /* _MSC_VER */
+	return LibWin32Common::rp_QISearch(this, rgqit, riid, ppvObj);
 }
 
 /** IInitializeWithStream **/
@@ -92,15 +95,8 @@ IFACEMETHODIMP RP_ThumbnailProvider::Initialize(IStream *pstream, DWORD grfMode)
 	}
 
 	RP_D(RP_ThumbnailProvider);
-	if (d->file) {
-		// unref() the old file first.
-		IRpFile *const old_file = d->file;
-		d->file = file;
-		old_file->unref();
-	} else {
-		// No old file to unref().
-		d->file = file;
-	}
+	UNREF(d->file);
+	d->file = file;
 
 	// Save the IStream and grfMode.
 	d->pstream = pstream;
@@ -121,12 +117,19 @@ IFACEMETHODIMP RP_ThumbnailProvider::GetThumbnail(UINT cx, HBITMAP *phbmp, WTS_A
 		return E_INVALIDARG;
 	}
 	*phbmp = nullptr;
-	*pdwAlpha = WTSAT_ARGB;
 
-	int ret = d->thumbnailer.getThumbnail(d->file, cx, *phbmp);
-	if (ret != 0 || !*phbmp) {
+	CreateThumbnail::GetThumbnailOutParams_t outParams;
+	outParams.retImg = nullptr;
+	int ret = d->thumbnailer.getThumbnail(d->file, cx, &outParams);
+	if (ret != 0 || !outParams.retImg) {
 		// ROM is not supported. Use the fallback.
+		if (outParams.retImg) {
+			DeleteBitmap(outParams.retImg);
+		}
 		return d->Fallback(cx, phbmp, pdwAlpha);
 	}
+
+	*phbmp = outParams.retImg;
+	*pdwAlpha = (outParams.sBIT.alpha > 0 ? WTSAT_ARGB : WTSAT_RGB);
 	return S_OK;
 }

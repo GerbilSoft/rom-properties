@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * ConfReader_p.hpp: Configuration reader base class.(Private class)       *
  *                                                                         *
- * Copyright (c) 2016-2017 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -10,7 +10,7 @@
 #define __ROMPROPERTIES_LIBRPBASE_CONFIG_CONFREADER_P_HPP__
 
 #include "librpbase/config.librpbase.h"
-#include "librpbase/common.h"
+#include "common.h"
 
 // librpthreads
 #include "librpthreads/Mutex.hpp"
@@ -39,7 +39,7 @@ class ConfReaderPrivate
 
 	public:
 		// load() mutex.
-		Mutex mtxLoad;
+		LibRpThreads::Mutex mtxLoad;
 
 		// Configuration filename.
 		const char *const conf_rel_filename;	// from ctor

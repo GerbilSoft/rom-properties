@@ -3,7 +3,7 @@
  * Xbox360_XDBF.hpp: Microsoft Xbox 360 game resource reader.              *
  * Handles XDBF files and sections.                                        *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -18,6 +18,7 @@ namespace LibRomData {
 
 class Xbox360_XDBF_Private;
 ROMDATA_DECL_BEGIN(Xbox360_XDBF)
+ROMDATA_DECL_METADATA()
 ROMDATA_DECL_IMGSUPPORT()
 ROMDATA_DECL_IMGPF()
 ROMDATA_DECL_IMGINT()
@@ -37,7 +38,7 @@ ROMDATA_DECL_IMGINT()
 		 * @param file Open XDBF file and/or section.
 		 * @param xex If true, hide fields that are displayed separately in XEX executables.
 		 */
-		explicit Xbox360_XDBF(LibRpBase::IRpFile *file, bool xex);
+		explicit Xbox360_XDBF(LibRpFile::IRpFile *file, bool xex);
 
 	private:
 		/**
@@ -60,7 +61,7 @@ ROMDATA_DECL_IMGINT()
 		 * @param property Property
 		 * @return String, or empty string if not found.
 		 */
-		std::string getString(LibRpBase::Property::Property property) const;
+		std::string getString(LibRpBase::Property property) const;
 
 ROMDATA_DECL_END()
 

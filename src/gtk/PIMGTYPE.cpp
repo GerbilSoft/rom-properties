@@ -2,14 +2,18 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * PIMGTYPE.hpp: PIMGTYPE typedef and wrapper functions.                   *
  *                                                                         *
- * Copyright (c) 2017-2019 by David Korth.                                 *
+ * Copyright (c) 2017-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+#include "stdafx.h"
 #include "PIMGTYPE.hpp"
 
-// C includes. (C++ namespace)
-#include <cassert>
+// glib resources
+// NOTE: glib-compile-resources doesn't have extern "C".
+G_BEGIN_DECLS
+#include "glibresources.h"
+G_END_DECLS
 
 #ifdef RP_GTK_USE_CAIRO
 /**
@@ -62,3 +66,140 @@ PIMGTYPE PIMGTYPE_scale(PIMGTYPE pImgType, int width, int height, bool bilinear)
 	return surface;
 }
 #endif /* RP_GTK_USE_CAIRO */
+
+#ifdef RP_GTK_USE_CAIRO
+typedef struct _PIMGTYPE_CairoReadFunc_State_t {
+	const uint8_t *buf;
+	size_t size;
+	size_t pos;
+} PIMGTYPE_CairoReadFunc_State_t;
+
+/**
+ * cairo_read_func_t for cairo_image_surface_create_from_png_stream()
+ * @param closure	[in] PIMGTYPE_CairoReadFunc_State_t
+ * @param data		[out] Data buffer.
+ * @param length	[in] Data to read.
+ * @return CAIRO_STATUS_SUCCESS on success; CAIRO_STATUS_READ_ERROR on error.
+ */
+static cairo_status_t PIMGTYPE_CairoReadFunc(void *closure, unsigned char *data, unsigned int length)
+{
+	PIMGTYPE_CairoReadFunc_State_t *const d =
+		static_cast<PIMGTYPE_CairoReadFunc_State_t*>(closure);
+	if (d->pos + length > d->size) {
+		// Out of bounds.
+		return CAIRO_STATUS_READ_ERROR;
+	}
+	memcpy(data, &d->buf[d->pos], length);
+	d->pos += length;
+	return CAIRO_STATUS_SUCCESS;
+}
+#else /* !RP_GTK_USE_CAIRO */
+// Mapping of data pointers to GBytes* objects for unreference.
+static std::unordered_map<const void*, GBytes*> map_gbytes_unref;
+
+/**
+ * GDestroyNotify for g_memory_input_stream_new_from_data().
+ * @param data Data pointer from GBytes.
+ */
+static void gbytes_destroy_notify(gpointer data)
+{
+	auto iter = map_gbytes_unref.find(const_cast<const void*>(data));
+	if (iter != map_gbytes_unref.end()) {
+		GBytes *const pBytes = iter->second;
+		map_gbytes_unref.erase(iter);
+		g_bytes_unref(pBytes);
+	}
+}
+#endif /* RP_GTK_USE_CAIRO */
+
+/**
+ * Load a PNG image from our glibresources.
+ * @param filename Filename within glibresources.
+ * @return PIMGTYPE, or nullptr if not found.
+ */
+PIMGTYPE PIMGTYPE_load_png_from_gresource(const char *filename)
+{
+	GBytes *const pBytes = g_resource_lookup_data(_get_resource(), filename,
+		G_RESOURCE_LOOKUP_FLAGS_NONE, nullptr);
+	if (!pBytes) {
+		// Not found.
+		return nullptr;
+	}
+
+#ifdef RP_GTK_USE_CAIRO
+	PIMGTYPE_CairoReadFunc_State_t state;
+	state.buf = static_cast<const uint8_t*>(g_bytes_get_data(pBytes, &state.size));
+	state.pos = 0;
+
+	PIMGTYPE surface = cairo_image_surface_create_from_png_stream(
+		PIMGTYPE_CairoReadFunc, &state);
+	if (surface && cairo_surface_status(surface) != CAIRO_STATUS_SUCCESS) {
+		cairo_surface_destroy(surface);
+		surface = nullptr;
+	}
+
+	g_bytes_unref(pBytes);
+	return surface;
+#else /* !RP_GTK_USE_CAIRO */
+	// glib-2.34.0 has g_memory_input_stream_new_from_bytes().
+	// We'll use g_memory_input_stream_new_from_data() for compatibility.
+	gsize size;
+	const void *pData = g_bytes_get_data(pBytes, &size);
+	GInputStream *const stream = g_memory_input_stream_new_from_data(
+		pData, size, gbytes_destroy_notify);
+	PIMGTYPE pixbuf = gdk_pixbuf_new_from_stream(stream, nullptr, nullptr);
+	g_object_unref(stream);
+	return pixbuf;
+#endif /* RP_GTK_USE_CAIRO */
+}
+
+/**
+ * Copy a subsurface from another PIMGTYPE.
+ * @param pImgType	[in] PIMGTYPE
+ * @param x		[in] X position
+ * @param y		[in] Y position
+ * @param width		[in] Width
+ * @param height	[in] Height
+ * @return Subsurface, or nullptr on error.
+ */
+PIMGTYPE PIMGTYPE_get_subsurface(PIMGTYPE pImgType, int x, int y, int width, int height)
+{
+#ifdef RP_GTK_USE_CAIRO
+	// NOTE: cairo_surface_create_for_rectangle() creates a *view* within
+	// the original surface. This sort-of worked for flag icons, but it
+	// fails for achievement icons because we can't get the raw data.
+	cairo_surface_t *surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
+	// cairo_image_surface_create() always returns a valid pointer.
+	assert(cairo_surface_status(surface) == CAIRO_STATUS_SUCCESS);
+	if (unlikely(cairo_surface_status(surface) != CAIRO_STATUS_SUCCESS)) {
+		cairo_surface_destroy(surface);
+		return nullptr;
+	}
+
+	cairo_t *cr = cairo_create(surface);
+	if (unlikely(cairo_status(cr) != CAIRO_STATUS_SUCCESS)) {
+		cairo_destroy(cr);
+		cairo_surface_destroy(surface);
+		return nullptr;
+	}
+
+	// Reference: https://lists.cairographics.org/archives/cairo/2007-June/010877.html
+	cairo_set_source_surface(cr, pImgType, -x, -y);
+	cairo_rectangle(cr, 0, 0, width, height);
+	cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);	// copy alpha directly
+	cairo_fill(cr);
+
+	cairo_destroy(cr);
+	return surface;
+#else /* !RP_GTK_USE_CAIRO */
+	PIMGTYPE surface = gdk_pixbuf_new(
+		gdk_pixbuf_get_colorspace(pImgType),
+		gdk_pixbuf_get_has_alpha(pImgType),
+		gdk_pixbuf_get_bits_per_sample(pImgType),
+		width, height);
+	if (surface) {
+		gdk_pixbuf_copy_area(pImgType, x, y, width, height, surface, 0, 0);
+	}
+	return surface;
+#endif /* RP_GTK_USE_CAIRO */
+}

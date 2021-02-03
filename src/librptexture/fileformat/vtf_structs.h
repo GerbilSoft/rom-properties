@@ -2,21 +2,19 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * vtf_structs.h: Valve VTF texture format data structures.                *
  *                                                                         *
- * Copyright (c) 2017 by David Korth.                                      *
+ * Copyright (c) 2017-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #ifndef __ROMPROPERTIES_LIBRPTEXTURE_FILEFORMAT_VTF_STRUCTS_H__
 #define __ROMPROPERTIES_LIBRPTEXTURE_FILEFORMAT_VTF_STRUCTS_H__
 
-#include "librpbase/common.h"
 #include <stdint.h>
+#include "common.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-#pragma pack(1)
 
 /**
  * Valve VTF: File header.
@@ -28,6 +26,7 @@ extern "C" {
 #define VTF_SIGNATURE 'VTF\0'
 #define VTF_VERSION_MAJOR 7
 #define VTF_VERSION_MINOR 2
+#pragma pack(1)
 typedef struct PACKED _VTFHEADER {
 	uint32_t signature;		// 'VTF\0' (big-endian)
 	uint32_t version[2];		// Version number. (current version is 7.2)
@@ -61,6 +60,7 @@ typedef struct PACKED _VTFHEADER {
 } VTFHEADER;
 // FIXME: Not sure if 72 is correct.
 ASSERT_STRUCT(VTFHEADER, 72);
+#pragma pack()
 
 /**
  * Image format.
@@ -97,8 +97,6 @@ typedef enum {
 
 	VTF_IMAGE_FORMAT_MAX
 } VTF_IMAGE_FORMAT;
-
-#pragma pack()
 
 #ifdef __cplusplus
 }

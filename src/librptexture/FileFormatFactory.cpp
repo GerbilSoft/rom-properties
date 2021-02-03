@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * FileFormatFactory.cpp: FileFormat factory class.                        *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -12,8 +12,9 @@
 #include "FileFormatFactory.hpp"
 #include "fileformat/FileFormat.hpp"
 
-// librpbase
+// librpbase, librpfile
 using namespace LibRpBase;
+using LibRpFile::IRpFile;
 
 // C++ STL classes.
 using std::string;
@@ -24,6 +25,7 @@ using std::vector;
 #include "fileformat/DidjTex.hpp"
 #include "fileformat/DirectDrawSurface.hpp"
 #include "fileformat/KhronosKTX.hpp"
+#include "fileformat/KhronosKTX2.hpp"
 #include "fileformat/PowerVR3.hpp"
 #include "fileformat/SegaPVR.hpp"
 #include "fileformat/ValveVTF.hpp"
@@ -64,7 +66,7 @@ class FileFormatFactoryPrivate
 		 * @param klass Class name.
 		 */
 		template<typename klass>
-		static FileFormat *FileFormat_ctor(LibRpBase::IRpFile *file)
+		static FileFormat *FileFormat_ctor(LibRpFile::IRpFile *file)
 		{
 			return new klass(file);
 		}
@@ -88,7 +90,6 @@ class FileFormatFactoryPrivate
 // TODO: Add support for multiple magic numbers per class.
 const FileFormatFactoryPrivate::FileFormatFns FileFormatFactoryPrivate::FileFormatFns_magic[] = {
 	GetFileFormatFns(DirectDrawSurface, 'DDS '),
-	GetFileFormatFns(KhronosKTX, (uint32_t)'\xABKTX'),
 	GetFileFormatFns(PowerVR3, 'PVR\x03'),
 	GetFileFormatFns(PowerVR3, '\x03RVP'),
 	GetFileFormatFns(SegaPVR, 'PVRT'),
@@ -134,7 +135,7 @@ FileFormat *FileFormatFactory::create(IRpFile *file)
 
 	// Read the file's magic number.
 	// TODO: Special case for TGA?
-	uint32_t magic;
+	uint32_t magic[2];
 	file->rewind();
 	size_t size = file->read(&magic, sizeof(magic));
 	if (size != sizeof(magic)) {
@@ -142,9 +143,32 @@ FileFormat *FileFormatFactory::create(IRpFile *file)
 		return nullptr;
 	}
 
+	// Special check for Khronos KTX, which has the same
+	// 32-bit magic number for two completely different versions.
+	if (magic[0] == cpu_to_be32('\xABKTX')) {
+		FileFormat *fileFormat = nullptr;
+		if (magic[1] == cpu_to_be32(' 11\xBB')) {
+			// KTX 1.1
+			fileFormat = new KhronosKTX(file);
+		} else if (magic[1] == cpu_to_be32(' 20\xBB')) {
+			// KTX 2.0
+			fileFormat = new KhronosKTX2(file);
+		}
+
+		if (fileFormat) {
+			if (fileFormat->isValid()) {
+				// FileFormat subclass obtained.
+				return fileFormat;
+			}
+
+			// Not actually supported.
+			fileFormat->unref();
+		}
+	}
+
 #if SYS_BYTEORDER == SYS_LIL_ENDIAN
 	// Magic number needs to be in host-endian.
-	magic = be32_to_cpu(magic);
+	magic[0] = be32_to_cpu(magic[0]);
 #endif /* SYS_BYTEORDER == SYS_LIL_ENDIAN */
 
 	// Check FileFormat subclasses that take a header at 0
@@ -153,7 +177,7 @@ FileFormat *FileFormatFactory::create(IRpFile *file)
 		&FileFormatFactoryPrivate::FileFormatFns_magic[0];
 	for (; fns->supportedFileExtensions != nullptr; fns++) {
 		// Check the magic number.
-		if (magic == fns->magic) {
+		if (magic[0] == fns->magic) {
 			// Found a matching magic number.
 			// TODO: Implement fns->isTextureSupported.
 			/*if (fns->isTextureSupported(&info) >= 0)*/ {
@@ -206,7 +230,7 @@ vector<const char*> FileFormatFactory::supportedFileExtensions(void)
 			auto iter = set_exts.find(*sys_exts);
 			if (iter == set_exts.end()) {
 				set_exts.insert(*sys_exts);
-				vec_exts.push_back(*sys_exts);
+				vec_exts.emplace_back(*sys_exts);
 			}
 		}
 	}
@@ -248,7 +272,7 @@ vector<const char*> FileFormatFactory::supportedMimeTypes(void)
 			auto iter = set_mimeTypes.find(*sys_mimeTypes);
 			if (iter == set_mimeTypes.end()) {
 				set_mimeTypes.insert(*sys_mimeTypes);
-				vec_mimeTypes.push_back(*sys_mimeTypes);
+				vec_mimeTypes.emplace_back(*sys_mimeTypes);
 			}
 		}
 	}

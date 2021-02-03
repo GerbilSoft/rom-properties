@@ -15,9 +15,10 @@
 #include <propkey.h>
 #include <propvarutil.h>
 
-// librpbase, libromdata
+// librpbase, librpfile, libromdata
 #include "librpbase/RomMetaData.hpp"
 using namespace LibRpBase;
+using LibRpFile::IRpFile;
 using LibRomData::RomDataFactory;
 
 // libwin32common
@@ -143,10 +144,10 @@ static inline HRESULT InitPropVariantFromUInt8(_In_ UCHAR uiVal, _Out_ PROPVARIA
 	ppropvar->bVal = uiVal;
 	return S_OK;
 }
-static inline HRESULT InitPropVariantFromInt8(_In_ UCHAR iVal, _Out_ PROPVARIANT *ppropvar)
+static inline HRESULT InitPropVariantFromInt8(_In_ CHAR iVal, _Out_ PROPVARIANT *ppropvar)
 {
 	ppropvar->vt = VT_I1;
-	ppropvar->bVal = iVal;
+	ppropvar->cVal = iVal;
 	return S_OK;
 }
 
@@ -159,15 +160,11 @@ RP_PropertyStore_Private::RP_PropertyStore_Private()
 
 RP_PropertyStore_Private::~RP_PropertyStore_Private()
 {
-	if (romData) {
-		romData->unref();
-	}
+	UNREF(romData);
 
 	// pstream is owned by file,
 	// so don't Release() it here.
-	if (file) {
-		file->unref();
-	}
+	UNREF(file);
 
 	// Clear property variants.
 	std::for_each(prop_val.begin(), prop_val.end(),
@@ -191,16 +188,20 @@ RP_PropertyStore::~RP_PropertyStore()
 
 IFACEMETHODIMP RP_PropertyStore::QueryInterface(REFIID riid, LPVOID *ppvObj)
 {
-#pragma warning(push)
-#pragma warning(disable: 4365 4838)
+#ifdef _MSC_VER
+# pragma warning(push)
+# pragma warning(disable: 4365 4838)
+#endif /* _MSC_VER */
 	static const QITAB rgqit[] = {
 		QITABENT(RP_PropertyStore, IInitializeWithStream),
 		QITABENT(RP_PropertyStore, IPropertyStore),
 		QITABENT(RP_PropertyStore, IPropertyStoreCapabilities),
 		{ 0, 0 }
 	};
-#pragma warning(pop)
-	return LibWin32Common::pfnQISearch(this, rgqit, riid, ppvObj);
+#ifdef _MSC_VER
+# pragma warning(pop)
+#endif /* _MSC_VER */
+	return LibWin32Common::rp_QISearch(this, rgqit, riid, ppvObj);
 }
 
 /** IInitializeWithStream **/
@@ -263,7 +264,7 @@ IFACEMETHODIMP RP_PropertyStore::Initialize(IStream *pstream, DWORD grfMode)
 		if (!prop)
 			continue;
 
-		if (prop->name <= 0 || prop->name >= ARRAY_SIZE(d->metaDataConv)) {
+		if (prop->name <= Property::Invalid || (int)prop->name >= ARRAY_SIZE(d->metaDataConv)) {
 			// FIXME: Should assert here, but Windows doesn't support
 			// certain properties...
 			continue;
@@ -271,7 +272,7 @@ IFACEMETHODIMP RP_PropertyStore::Initialize(IStream *pstream, DWORD grfMode)
 
 		// Convert from the RomMetaData property indexes to
 		// Windows property keys.
-		const RP_PropertyStore_Private::MetaDataConv &conv = d->metaDataConv[prop->name];
+		const RP_PropertyStore_Private::MetaDataConv &conv = d->metaDataConv[(int)prop->name];
 		if (!conv.pkey || conv.vtype == VT_EMPTY) {
 			// FIXME: Should assert here, but Windows doesn't support
 			// certain properties...
@@ -282,12 +283,11 @@ IFACEMETHODIMP RP_PropertyStore::Initialize(IStream *pstream, DWORD grfMode)
 		// and Ix should only accept PropertyType::Integer.
 		PROPVARIANT prop_var;
 		switch (conv.vtype) {
-			case VT_UI8: {
+			case VT_UI8:
 				// FIXME: 64-bit values?
 				assert(prop->type == PropertyType::Integer || prop->type == PropertyType::UnsignedInteger);
 				if (prop->type != PropertyType::Integer && prop->type != PropertyType::UnsignedInteger)
 					continue;
-
 				// NOTE: Converting duration from ms to 100ns.
 				if (prop->name == LibRpBase::Property::Duration) {
 					uint64_t duration_100ns = static_cast<uint64_t>(prop->data.uvalue) * 10000ULL;
@@ -296,18 +296,16 @@ IFACEMETHODIMP RP_PropertyStore::Initialize(IStream *pstream, DWORD grfMode)
 					// Use the value as-is.
 					InitPropVariantFromUInt64(static_cast<uint64_t>(prop->data.uvalue), &prop_var);
 				}
-				d->prop_key.push_back(conv.pkey);
-				d->prop_val.push_back(prop_var);
+				d->prop_key.emplace_back(conv.pkey);
+				d->prop_val.emplace_back(prop_var);
 				break;
-			}
 			case VT_UI4:
 				assert(prop->type == PropertyType::Integer || prop->type == PropertyType::UnsignedInteger);
 				if (prop->type != PropertyType::Integer && prop->type != PropertyType::UnsignedInteger)
 					continue;
-
 				InitPropVariantFromUInt32(static_cast<uint32_t>(prop->data.uvalue), &prop_var);
-				d->prop_key.push_back(conv.pkey);
-				d->prop_val.push_back(prop_var);
+				d->prop_key.emplace_back(conv.pkey);
+				d->prop_val.emplace_back(prop_var);
 
 				// Special handling for image dimensions.
 				switch (prop->name) {
@@ -327,10 +325,9 @@ IFACEMETHODIMP RP_PropertyStore::Initialize(IStream *pstream, DWORD grfMode)
 				assert(prop->type == PropertyType::Integer || prop->type == PropertyType::UnsignedInteger);
 				if (prop->type != PropertyType::Integer && prop->type != PropertyType::UnsignedInteger)
 					continue;
-
 				InitPropVariantFromUInt16(static_cast<uint16_t>(prop->data.uvalue), &prop_var);
-				d->prop_key.push_back(conv.pkey);
-				d->prop_val.push_back(prop_var);
+				d->prop_key.emplace_back(conv.pkey);
+				d->prop_val.emplace_back(prop_var);
 				break;
 			case VT_UI1:
 				assert(prop->type == PropertyType::Integer || prop->type == PropertyType::UnsignedInteger);
@@ -338,47 +335,42 @@ IFACEMETHODIMP RP_PropertyStore::Initialize(IStream *pstream, DWORD grfMode)
 					continue;
 
 				InitPropVariantFromUInt8(static_cast<uint8_t>(prop->data.uvalue), &prop_var);
-				d->prop_key.push_back(conv.pkey);
-				d->prop_val.push_back(prop_var);
+				d->prop_key.emplace_back(conv.pkey);
+				d->prop_val.emplace_back(prop_var);
 				break;
 
-			case VT_I8: {
+			case VT_I8:
 				// FIXME: 64-bit values?
 				assert(prop->type == PropertyType::Integer || prop->type == PropertyType::UnsignedInteger);
 				if (prop->type != PropertyType::Integer && prop->type != PropertyType::UnsignedInteger)
 					continue;
-
 				InitPropVariantFromInt64(static_cast<int64_t>(prop->data.ivalue), &prop_var);
-				d->prop_key.push_back(conv.pkey);
-				d->prop_val.push_back(prop_var);
+				d->prop_key.emplace_back(conv.pkey);
+				d->prop_val.emplace_back(prop_var);
 				break;
-			}
 			case VT_I4:
 				assert(prop->type == PropertyType::Integer || prop->type == PropertyType::UnsignedInteger);
 				if (prop->type != PropertyType::Integer && prop->type != PropertyType::UnsignedInteger)
 					continue;
-
 				InitPropVariantFromInt32(static_cast<int32_t>(prop->data.ivalue), &prop_var);
-				d->prop_key.push_back(conv.pkey);
-				d->prop_val.push_back(prop_var);
+				d->prop_key.emplace_back(conv.pkey);
+				d->prop_val.emplace_back(prop_var);
 				break;
 			case VT_I2:
 				assert(prop->type == PropertyType::Integer || prop->type == PropertyType::UnsignedInteger);
 				if (prop->type != PropertyType::Integer && prop->type != PropertyType::UnsignedInteger)
 					continue;
-
 				InitPropVariantFromInt16(static_cast<int16_t>(prop->data.ivalue), &prop_var);
-				d->prop_key.push_back(conv.pkey);
-				d->prop_val.push_back(prop_var);
+				d->prop_key.emplace_back(conv.pkey);
+				d->prop_val.emplace_back(prop_var);
 				break;
 			case VT_I1:
 				assert(prop->type == PropertyType::Integer || prop->type == PropertyType::UnsignedInteger);
 				if (prop->type != PropertyType::Integer && prop->type != PropertyType::UnsignedInteger)
 					continue;
-
 				InitPropVariantFromInt8(static_cast<int8_t>(prop->data.ivalue), &prop_var);
-				d->prop_key.push_back(conv.pkey);
-				d->prop_val.push_back(prop_var);
+				d->prop_key.emplace_back(conv.pkey);
+				d->prop_val.emplace_back(prop_var);
 				break;
 
 			case VT_BSTR:
@@ -387,8 +379,8 @@ IFACEMETHODIMP RP_PropertyStore::Initialize(IStream *pstream, DWORD grfMode)
 					continue;
 				if (prop->data.str) {
 					InitPropVariantFromString(U82W_s(*prop->data.str), &prop_var);
-					d->prop_key.push_back(conv.pkey);
-					d->prop_val.push_back(prop_var);
+					d->prop_key.emplace_back(conv.pkey);
+					d->prop_val.emplace_back(prop_var);
 				}
 				break;
 
@@ -397,12 +389,11 @@ IFACEMETHODIMP RP_PropertyStore::Initialize(IStream *pstream, DWORD grfMode)
 				assert(prop->type == PropertyType::String);
 				if (prop->type != PropertyType::String)
 					continue;
-
 				const wstring wstr = (prop->data.str ? U82W_s(*prop->data.str) : L"");
 				const wchar_t *vstr[] = {wstr.c_str()};
 				InitPropVariantFromStringVector(vstr, 1, &prop_var);
-				d->prop_key.push_back(conv.pkey);
-				d->prop_val.push_back(prop_var);
+				d->prop_key.emplace_back(conv.pkey);
+				d->prop_val.emplace_back(prop_var);
 				break;
 			}
 
@@ -410,15 +401,14 @@ IFACEMETHODIMP RP_PropertyStore::Initialize(IStream *pstream, DWORD grfMode)
 				assert(prop->type == PropertyType::Timestamp);
 				if (prop->type != PropertyType::Timestamp)
 					continue;
-
 				// Date is stored as Unix time.
 				// Convert to FILETIME, then to VT_DATE.
 				// TODO: Verify timezone handling.
 				FILETIME ft;
 				UnixTimeToFileTime(prop->data.timestamp, &ft);
 				InitPropVariantFromFileTime(&ft, &prop_var);
-				d->prop_key.push_back(conv.pkey);
-				d->prop_val.push_back(prop_var);
+				d->prop_key.emplace_back(conv.pkey);
+				d->prop_val.emplace_back(prop_var);
 				break;
 			}
 
@@ -433,12 +423,12 @@ IFACEMETHODIMP RP_PropertyStore::Initialize(IStream *pstream, DWORD grfMode)
 	// Special handling for System.Image.Dimensions.
 	if (dimensions.cx != 0 && dimensions.cy != 0) {
 		wchar_t buf[64];
-		swprintf(buf, ARRAY_SIZE(buf), L"%ldx%ld", dimensions.cx, dimensions.cy);
+		swprintf(buf, _countof(buf), L"%ldx%ld", dimensions.cx, dimensions.cy);
 
 		PROPVARIANT prop_var;
 		InitPropVariantFromString(buf, &prop_var);
-		d->prop_key.push_back(&PKEY_Image_Dimensions);
-		d->prop_val.push_back(prop_var);
+		d->prop_key.emplace_back(&PKEY_Image_Dimensions);
+		d->prop_val.emplace_back(prop_var);
 	}
 
 	return S_OK;

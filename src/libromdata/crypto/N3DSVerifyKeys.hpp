@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * N3DSVerifyKeys.hpp: Nintendo 3DS key verification data.                 *
  *                                                                         *
- * Copyright (c) 2016-2017 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -14,8 +14,10 @@
 #error This file should only be compiled if decryption is enabled.
 #endif /* !ENABLE_DECRYPTION */
 
-#include "librpbase/common.h"
-#include "librpbase/byteswap.h"
+#include "common.h"
+
+// librpcpu
+#include "librpcpu/byteswap_rp.h"
 
 #include "librpbase/crypto/KeyManager.hpp"
 #include "../Handheld/n3ds_structs.h"
@@ -98,6 +100,7 @@ class N3DSVerifyKeys
 		// Encryption key indexes.
 		enum EncryptionKeys {
 			// Retail
+			Key_Retail_SpiBoot,
 			Key_Retail_Slot0x18KeyX,
 			Key_Retail_Slot0x1BKeyX,
 			Key_Retail_Slot0x25KeyX,
@@ -117,6 +120,7 @@ class N3DSVerifyKeys
 			Key_Retail_Slot0x3DKeyNormal_5,
 
 			// Debug
+			Key_Debug_SpiBoot,
 			Key_Debug_FixedCryptoKey,
 			Key_Debug_Slot0x18KeyX,
 			Key_Debug_Slot0x1BKeyX,

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * SAP.cpp: Atari 8-bit SAP audio reader.                                  *
  *                                                                         *
- * Copyright (c) 2018-2019 by David Korth.                                 *
+ * Copyright (c) 2018-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -12,8 +12,9 @@
 #include "stdafx.h"
 #include "SAP.hpp"
 
-// librpbase
+// librpbase, librpfile
 using namespace LibRpBase;
+using LibRpFile::IRpFile;
 
 // C++ STL classes.
 using std::pair;
@@ -26,7 +27,7 @@ namespace LibRomData {
 
 ROMDATA_IMPL(SAP)
 
-class SAPPrivate : public RomDataPrivate
+class SAPPrivate final : public RomDataPrivate
 {
 	public:
 		SAPPrivate(SAP *q, IRpFile *file);
@@ -271,15 +272,15 @@ SAPPrivate::TagData SAPPrivate::parseTags(void)
 		// NOTE: String encoding is the common subset of ASCII and ATASCII.
 		// TODO: ascii_to_utf8()?
 		// TODO: Check for duplicate keywords?
-		enum KeywordType {
-			KT_UNKNOWN = 0,
+		enum class KeywordType {
+			Unknown = 0,
 
-			KT_BOOL,	// bool: Keyword presence sets the value to true.
-			KT_UINT16_DEC,	// uint16 dec: Parameter is a decimal uint16_t.
-			KT_UINT16_HEX,	// uint16 hex: Parameter is a hexadecimal uint16_t.
-			KT_CHAR,	// char: Parameter is a single character.
-			KT_STRING,	// string: Parameter is a string, enclosed in double-quotes.
-			KT_TIME_LOOP,	// time+loop: Parameter is a duration, plus an optional "LOOP" setting.
+			Bool,		// bool: Keyword presence sets the value to true.
+			UInt16_Dec,	// uint16 dec: Parameter is a decimal uint16_t.
+			UInt16_Hex,	// uint16 hex: Parameter is a hexadecimal uint16_t.
+			Char,		// char: Parameter is a single character.
+			String,		// string: Parameter is a string, enclosed in double-quotes.
+			TimeLoop,	// time+loop: Parameter is a duration, plus an optional "LOOP" setting.
 		};
 		struct KeywordDef {
 			const char *keyword;	// Keyword, e.g. "AUTHOR".
@@ -288,23 +289,23 @@ SAPPrivate::TagData SAPPrivate::parseTags(void)
 		};
 
 		const KeywordDef kwds[] = {
-			{"AUTHOR",	KT_STRING,	&tags.author},
-			{"NAME",	KT_STRING,	&tags.name},
-			{"DATE",	KT_STRING,	&tags.date},
-			{"SONGS",	KT_UINT16_DEC,	&tags.songs},
-			{"DEFSONG",	KT_UINT16_DEC,	&tags.def_song},
-			{"STEREO",	KT_BOOL,	&tags.stereo},
-			{"NTSC",	KT_BOOL,	&tags.ntsc},
-			{"TYPE",	KT_CHAR,	&tags.type},
-			{"FASTPLAY",	KT_UINT16_DEC,	&tags.fastplay},
-			{"INIT",	KT_UINT16_HEX,	&tags.init_addr},
-			{"MUSIC",	KT_UINT16_HEX,	&tags.music_addr},
-			{"PLAYER",	KT_UINT16_HEX,	&tags.player_addr},
-			{"COVOX",	KT_UINT16_HEX,	&tags.covox_addr},
+			{"AUTHOR",	KeywordType::String,		&tags.author},
+			{"NAME",	KeywordType::String,		&tags.name},
+			{"DATE",	KeywordType::String,		&tags.date},
+			{"SONGS",	KeywordType::UInt16_Dec,	&tags.songs},
+			{"DEFSONG",	KeywordType::UInt16_Dec,	&tags.def_song},
+			{"STEREO",	KeywordType::Bool,		&tags.stereo},
+			{"NTSC",	KeywordType::Bool,		&tags.ntsc},
+			{"TYPE",	KeywordType::Char,		&tags.type},
+			{"FASTPLAY",	KeywordType::UInt16_Dec,	&tags.fastplay},
+			{"INIT",	KeywordType::UInt16_Hex,	&tags.init_addr},
+			{"MUSIC",	KeywordType::UInt16_Hex,	&tags.music_addr},
+			{"PLAYER",	KeywordType::UInt16_Hex,	&tags.player_addr},
+			{"COVOX",	KeywordType::UInt16_Hex,	&tags.covox_addr},
 			// TIME is handled separately.
-			{"TIME",	KT_TIME_LOOP,	nullptr},
+			{"TIME",	KeywordType::TimeLoop,		nullptr},
 
-			{nullptr, KT_UNKNOWN, nullptr}
+			{nullptr, KeywordType::Unknown, nullptr}
 		};
 
 		// TODO: Show errors for unsupported tags?
@@ -320,12 +321,12 @@ SAPPrivate::TagData SAPPrivate::parseTags(void)
 					assert(!"Unsupported keyword type.");
 					break;
 
-				case KT_BOOL:
+				case KeywordType::Bool:
 					// Presence of this keyword sets the value to true.
 					*(static_cast<bool*>(kwd->ptr)) = true;
 					break;
 
-				case KT_UINT16_DEC: {
+				case KeywordType::UInt16_Dec: {
 					// Decimal value.
 					if (!params)
 						break;
@@ -338,7 +339,7 @@ SAPPrivate::TagData SAPPrivate::parseTags(void)
 					break;
 				}
 
-				case KT_UINT16_HEX: {
+				case KeywordType::UInt16_Hex: {
 					// Hexadecimal value.
 					if (!params)
 						break;
@@ -351,7 +352,7 @@ SAPPrivate::TagData SAPPrivate::parseTags(void)
 					break;
 				}
 
-				case KT_CHAR: {
+				case KeywordType::Char: {
 					// Character.
 					if (!params)
 						break;
@@ -363,7 +364,7 @@ SAPPrivate::TagData SAPPrivate::parseTags(void)
 					break;
 				}
 
-				case KT_STRING: {
+				case KeywordType::String: {
 					// String value.
 					if (!params)
 						break;
@@ -386,7 +387,7 @@ SAPPrivate::TagData SAPPrivate::parseTags(void)
 					break;
 				}
 
-				case KT_TIME_LOOP: {
+				case KeywordType::TimeLoop: {
 					// Duration, plus optional "LOOP" keyword.
 					// TODO: Verify that we don't go over the song count?
 					if (tags.durations.empty()) {
@@ -398,7 +399,7 @@ SAPPrivate::TagData SAPPrivate::parseTags(void)
 					bool loop_flag;
 					if (!durationToMsLoop(params, &duration, &loop_flag)) {
 						// Parsed successfully.
-						tags.durations.push_back(std::make_pair(duration, loop_flag));
+						tags.durations.emplace_back(std::make_pair(duration, loop_flag));
 					}
 					break;
 				}
@@ -434,7 +435,8 @@ SAP::SAP(IRpFile *file)
 {
 	RP_D(SAP);
 	d->className = "SAP";
-	d->fileType = FTYPE_AUDIO_FILE;
+	d->mimeType = "audio/x-sap";	// unofficial
+	d->fileType = FileType::AudioFile;
 
 	if (!d->file) {
 		// Could not ref() the file handle.
@@ -446,8 +448,7 @@ SAP::SAP(IRpFile *file)
 	d->file->rewind();
 	size_t size = d->file->read(buf, sizeof(buf));
 	if (size != sizeof(buf)) {
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
 
@@ -461,9 +462,7 @@ SAP::SAP(IRpFile *file)
 	d->isValid = (isRomSupported_static(&info) >= 0);
 
 	if (!d->isValid) {
-		d->file->unref();
-		d->file = nullptr;
-		return;
+		UNREF_AND_NULL_NOCHK(d->file);
 	}
 }
 
@@ -622,15 +621,15 @@ int SAP::loadFieldData(void)
 	// Flags: NTSC/PAL, Stereo
 	static const char *const flags_names[] = {
 		// tr: PAL is default; if set, the file is for NTSC.
-		NOP_C_("SAP|Flags", "NTSC"),
+		"NTSC",
 		NOP_C_("SAP|Flags", "Stereo"),
 	};
 	vector<string> *const v_flags_names = RomFields::strArrayToVector_i18n(
 		"SAP|Flags", flags_names, ARRAY_SIZE(flags_names));
 	// TODO: Use a bitfield in tags?
 	uint32_t flags = 0;
-	if (tags.ntsc)   flags |= (1 << 0);
-	if (tags.stereo) flags |= (1 << 1);
+	if (tags.ntsc)   flags |= (1U << 0);
+	if (tags.stereo) flags |= (1U << 1);
 	d->fields->addField_bitfield(C_("SAP", "Flags"),
 		v_flags_names, 0, flags);
 
@@ -663,35 +662,36 @@ int SAP::loadFieldData(void)
 		case 'B': case 'D': case 'S':
 			d->fields->addField_string_numeric(C_("SAP", "Init Address"),
 				tags.init_addr,
-				RomFields::FB_HEX, 4, RomFields::STRF_MONOSPACE);
+				RomFields::Base::Hex, 4, RomFields::STRF_MONOSPACE);
 			break;
 
 		case 'C':
 			d->fields->addField_string_numeric(C_("SAP", "Music Address"),
 				tags.music_addr,
-				RomFields::FB_HEX, 4, RomFields::STRF_MONOSPACE);
+				RomFields::Base::Hex, 4, RomFields::STRF_MONOSPACE);
 			break;
 	}
 
 	// Player address.
 	d->fields->addField_string_numeric(C_("SAP", "Player Address"),
 		tags.player_addr,
-		RomFields::FB_HEX, 4, RomFields::STRF_MONOSPACE);
+		RomFields::Base::Hex, 4, RomFields::STRF_MONOSPACE);
 
 	// COVOX address. (if non-zero)
 	if (tags.covox_addr != 0) {
 		d->fields->addField_string_numeric(C_("SAP", "COVOX Address"),
 			tags.covox_addr,
-			RomFields::FB_HEX, 4, RomFields::STRF_MONOSPACE);
+			RomFields::Base::Hex, 4, RomFields::STRF_MONOSPACE);
 	}
 
 	// Song list.
 	if (!tags.durations.empty()) {
-		auto song_list = new vector<vector<string> >(tags.durations.size());
+		unsigned int song_num = 0;
+		auto song_list = new RomFields::ListData_t(tags.durations.size());
 		auto src_iter = tags.durations.cbegin();
 		auto dest_iter = song_list->begin();
-		unsigned int song_num = 0;
-		for ( ; dest_iter != song_list->end(); ++src_iter, ++dest_iter, song_num++) {
+		const auto song_list_end = song_list->end();
+		for ( ; dest_iter != song_list_end; ++src_iter, ++dest_iter, song_num++) {
 			vector<string> &data_row = *dest_iter;
 			data_row.reserve(3);	// 3 fields per row.
 
@@ -701,9 +701,9 @@ int SAP::loadFieldData(void)
 			const uint32_t min = (duration / 1000) / 60;
 			const uint32_t sec = (duration / 1000) % 60;
 			const uint32_t ms =  (duration % 1000);
-			data_row.push_back(rp_sprintf("%u", song_num));
-			data_row.push_back(rp_sprintf("%u:%02u.%03u", min, sec, ms));
-			data_row.push_back(src_iter->second
+			data_row.emplace_back(rp_sprintf("%u", song_num));
+			data_row.emplace_back(rp_sprintf("%u:%02u.%03u", min, sec, ms));
+			data_row.emplace_back(src_iter->second
 				? C_("SAP|SongList|Looping", "Yes")
 				: C_("SAP|SongList|Looping", "No"));
 		}
@@ -718,7 +718,7 @@ int SAP::loadFieldData(void)
 
 		RomFields::AFLD_PARAMS params;
 		params.headers = v_song_list_hdr;
-		params.list_data = song_list;
+		params.data.single = song_list;
 		d->fields->addField_listData(C_("SAP", "Song List"), &params);
 	}
 

@@ -4,7 +4,7 @@
  * This class is a "null" interface that simply passes calls down to       *
  * libc's stdio functions.                                                 *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -15,7 +15,6 @@
 
 namespace LibRpBase {
 
-class IRpFile;
 class DiscReader : public IDiscReader
 {
 	public:
@@ -25,7 +24,7 @@ class DiscReader : public IDiscReader
 		 * unref()'d by the caller afterwards.
 		 * @param file File to read from.
 		 */
-		explicit DiscReader(IRpFile *file);
+		explicit DiscReader(LibRpFile::IRpFile *file);
 
 		/**
 		 * Construct a DiscReader with the specified file.
@@ -35,7 +34,9 @@ class DiscReader : public IDiscReader
 		 * @param offset Starting offset.
 		 * @param length Disc length. (-1 for "until end of file")
 		 */
-		DiscReader(IRpFile *file, int64_t offset, int64_t length);
+		explicit DiscReader(LibRpFile::IRpFile *file, off64_t offset, off64_t length);
+	protected:
+		virtual ~DiscReader() { };	// call unref() instead
 
 	private:
 		typedef IDiscReader super;
@@ -67,6 +68,7 @@ class DiscReader : public IDiscReader
 		 * @param size Amount of data to read, in bytes.
 		 * @return Number of bytes read.
 		 */
+		ATTR_ACCESS_SIZE(write_only, 2, 3)
 		size_t read(void *ptr, size_t size) override;
 
 		/**
@@ -74,24 +76,24 @@ class DiscReader : public IDiscReader
 		 * @param pos Disc image position.
 		 * @return 0 on success; -1 on error.
 		 */
-		int seek(int64_t pos) override;
+		int seek(off64_t pos) override;
 
 		/**
 		 * Get the disc image position.
 		 * @return Disc image position on success; -1 on error.
 		 */
-		int64_t tell(void) final;
+		off64_t tell(void) final;
 
 		/**
 		 * Get the disc image size.
 		 * @return Disc image size, or -1 on error.
 		 */
-		int64_t size(void) override;
+		off64_t size(void) override;
 
 	protected:
 		// Offset/length. Useful for e.g. GameCube TGC.
-		int64_t m_offset;
-		int64_t m_length;
+		off64_t m_offset;
+		off64_t m_length;
 };
 
 }

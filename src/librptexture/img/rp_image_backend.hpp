@@ -42,6 +42,15 @@ class rp_image_backend
 		bool has_translucent_palette_entries(void) const;
 
 	public:
+		/**
+		 * Shrink image dimensions.
+		 * @param width New width.
+		 * @param height New height.
+		 * @return 0 on success; negative POSIX error code on error.
+		 */
+		virtual int shrink(int width, int height) = 0;
+
+	public:
 		int width;
 		int height;
 		int stride;

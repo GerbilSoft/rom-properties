@@ -14,11 +14,15 @@
 // librpbase
 using namespace LibRpBase;
 
+// libwin32common
+#include "libwin32common/SubclassWindow.h"
+
 // Property sheet icon.
 // Extracted from imageres.dll or shell32.dll.
 #include "PropSheetIcon.hpp"
 
 // C++ STL classes.
+using std::array;
 using std::tstring;
 
 #include "libi18n/config.libi18n.h"
@@ -29,10 +33,18 @@ using std::tstring;
 DELAYLOAD_TEST_FUNCTION_IMPL1(textdomain, nullptr);
 #endif /* defined(_MSC_VER) && defined(ENABLE_NLS) */
 
+// rp_image backend registration.
+#include "librptexture/img/GdiplusHelper.hpp"
+#include "librptexture/img/RpGdiplusBackend.hpp"
+using LibRpTexture::RpGdiplusBackend;
+using LibRpTexture::rp_image;
+
 // Property sheet tabs.
 #include "ImageTypesTab.hpp"
+#include "SystemsTab.hpp"
 #include "OptionsTab.hpp"
 #include "CacheTab.hpp"
+#include "AchievementsTab.hpp"
 #ifdef ENABLE_DECRYPTION
 # include "KeyManagerTab.hpp"
 #endif /* ENABLE_DECRYPTION */
@@ -48,19 +60,14 @@ class ConfigDialogPrivate
 		RP_DISABLE_COPY(ConfigDialogPrivate)
 
 	public:
-		// Property for "D pointer".
-		// This points to the ConfigDialogPrivate object.
-		static const TCHAR D_PTR_PROP[];
-
-	public:
 		// Property sheet variables.
 #ifdef ENABLE_DECRYPTION
-		static const unsigned int TAB_COUNT = 5;
+		static const unsigned int TAB_COUNT = 7;
 #else
-		static const unsigned int TAB_COUNT = 4;
+		static const unsigned int TAB_COUNT = 6;
 #endif
-		ITab *tabs[TAB_COUNT];
-		HPROPSHEETPAGE hpsp[TAB_COUNT];
+		array<ITab*, TAB_COUNT> tabs;
+		array<HPROPSHEETPAGE, TAB_COUNT> hpsp;
 		PROPSHEETHEADER psh;
 
 		// Property Sheet callback.
@@ -74,10 +81,6 @@ class ConfigDialogPrivate
 };
 
 /** ConfigDialogPrivate **/
-
-// Property for "D pointer".
-// This points to the ConfigDialogPrivate object.
-const TCHAR ConfigDialogPrivate::D_PTR_PROP[] = _T("ConfigDialogPrivate");
 
 ConfigDialogPrivate::ConfigDialogPrivate()
 {
@@ -99,35 +102,44 @@ ConfigDialogPrivate::ConfigDialogPrivate()
 	// Image type priority.
 	tabs[0] = new ImageTypesTab();
 	hpsp[0] = tabs[0]->getHPropSheetPage();
-	// Download configuration.
-	tabs[1] = new OptionsTab();
+	// Systems
+	tabs[1] = new SystemsTab();
 	hpsp[1] = tabs[1]->getHPropSheetPage();
-	// Thumbnail cache.
+	// Options
+	tabs[2] = new OptionsTab();
+	hpsp[2] = tabs[2]->getHPropSheetPage();
+	// Thumbnail cache
 	// References:
 	// - http://stackoverflow.com/questions/23677175/clean-windows-thumbnail-cache-programmatically
 	// - https://www.codeproject.com/Articles/2408/Clean-Up-Handler
-	tabs[2] = new CacheTab();
-	hpsp[2] = tabs[2]->getHPropSheetPage();
-#ifdef ENABLE_DECRYPTION
-	// Key Manager.
-	tabs[3] = new KeyManagerTab();
+	tabs[3] = new CacheTab();
 	hpsp[3] = tabs[3]->getHPropSheetPage();
+	// Achievements
+	tabs[4] = new AchievementsTab();
+	hpsp[4] = tabs[4]->getHPropSheetPage();
+#ifdef ENABLE_DECRYPTION
+	// Key Manager
+	tabs[5] = new KeyManagerTab();
+	hpsp[5] = tabs[5]->getHPropSheetPage();
 #endif /* ENABLE_DECRYPTION */
 
-	// About.
+	// About
 	tabs[TAB_COUNT-1] = new AboutTab();
 	hpsp[TAB_COUNT-1] = tabs[TAB_COUNT-1]->getHPropSheetPage();
+
+	// "ROM chip" icon.
+	const PropSheetIcon *const psi = PropSheetIcon::instance();
 
 	// Create the property sheet.
 	psh.dwSize = sizeof(psh);
 	psh.dwFlags = PSH_USECALLBACK | PSH_NOCONTEXTHELP | PSH_USEHICON;
 	psh.hwndParent = nullptr;
 	psh.hInstance = HINST_THISCOMPONENT;
-	psh.hIcon = PropSheetIcon::getSmallIcon();	// Small icon only!
+	psh.hIcon = psi->getSmallIcon();	// Small icon only!
 	psh.pszCaption = nullptr;			// will be set in WM_SHOWWINDOW
-	psh.nPages = ARRAY_SIZE(hpsp);
+	psh.nPages = static_cast<UINT>(hpsp.size());
 	psh.nStartPage = 0;
-	psh.phpage = hpsp;
+	psh.phpage = hpsp.data();
 	psh.pfnCallback = this->callbackProc;
 	psh.hbmWatermark = nullptr;
 	psh.hplWatermark = nullptr;
@@ -138,9 +150,8 @@ ConfigDialogPrivate::ConfigDialogPrivate()
 
 ConfigDialogPrivate::~ConfigDialogPrivate()
 {
-	for (int i = ARRAY_SIZE(tabs)-1; i >= 0; i--) {
-		delete tabs[i];
-	}
+	// Delete the tabs.
+	std::for_each(tabs.begin(), tabs.end(), [](ITab *pTab) { delete pTab; });
 }
 
 /**
@@ -155,10 +166,21 @@ int CALLBACK ConfigDialogPrivate::callbackProc(HWND hDlg, UINT uMsg, LPARAM lPar
 	switch (uMsg) {
 		case PSCB_INITIALIZED: {
 			// Property sheet has been initialized.
+
 			// Add the system menu and minimize box.
 			LONG style = GetWindowLong(hDlg, GWL_STYLE);
 			style |= WS_MINIMIZEBOX | WS_SYSMENU;
 			SetWindowLong(hDlg, GWL_STYLE, style);
+
+			// Restore the default system menu.
+			// Not only is this needed to restore the default entries,
+			// it's needed to make the Minimize button work on Windows 8.1
+			// and Windows 10 (and possibly Windows 8.0 as well).
+			// References:
+			// - http://ntcoder.com/bab/2008/03/27/making-a-property-sheet-window-resizable/
+			// - https://www.experts-exchange.com/articles/1521/Using-a-Property-Sheet-as-your-Main-Window.html
+			GetSystemMenu(hDlg, false);
+			GetSystemMenu(hDlg, true);
 
 			// Remove the context help box.
 			// NOTE: Setting WS_MINIMIZEBOX does this,
@@ -169,7 +191,8 @@ int CALLBACK ConfigDialogPrivate::callbackProc(HWND hDlg, UINT uMsg, LPARAM lPar
 
 			// NOTE: PropertySheet's pszIcon only uses the small icon.
 			// Set the large icon here.
-			HICON hIcon = PropSheetIcon::getLargeIcon();
+			const PropSheetIcon *const psi = PropSheetIcon::instance();
+			HICON hIcon = psi->getLargeIcon();
 			if (hIcon) {
 				SendMessage(hDlg, WM_SETICON, ICON_BIG, reinterpret_cast<LPARAM>(hIcon));
 			}
@@ -203,6 +226,14 @@ LRESULT CALLBACK ConfigDialogPrivate::subclassProc(
 {
 	switch (uMsg) {
 		case WM_SHOWWINDOW: {
+			// Check for RTL.
+			if (LibWin32Common::isSystemRTL() != 0) {
+				// Set the dialog to allow automatic right-to-left adjustment.
+				LONG_PTR lpExStyle = GetWindowLongPtr(hWnd, GWL_EXSTYLE);
+				lpExStyle |= WS_EX_LAYOUTRTL;
+				SetWindowLongPtr(hWnd, GWL_EXSTYLE, lpExStyle);
+			}
+
 			// tr: Dialog title.
 			const tstring tsTitle = U82T_c(C_("ConfigDialog", "ROM Properties Page Configuration"));
 			SetWindowText(hWnd, tsTitle.c_str());
@@ -220,6 +251,7 @@ LRESULT CALLBACK ConfigDialogPrivate::subclassProc(
 				break;
 			}
 
+			// TODO: Verify RTL positioning.
 			HWND hBtnOK = GetDlgItem(hWnd, IDOK);
 			HWND hBtnCancel = GetDlgItem(hWnd, IDCANCEL);
 			HWND hTabControl = PropSheet_GetTabControl(hWnd);
@@ -320,7 +352,7 @@ LRESULT CALLBACK ConfigDialogPrivate::subclassProc(
 						SendMessage(hwndPropSheet, WM_RP_PROP_SHEET_DEFAULTS, 0, 0);
 					}
 
-					// KDE5 System Settings keeps focus on the "Defaults" button,
+					// KDE Plasma 5's System Settings keeps focus on the "Defaults" button,
 					// so we'll leave the focus as-is.
 
 					// Don't continue processing. Otherwise, weird things
@@ -432,12 +464,22 @@ int CALLBACK rp_show_config_dialog(
 		return EXIT_FAILURE;
 	}
 
+	// Initialize GDI+.
+	ULONG_PTR gdipToken = GdiplusHelper::InitGDIPlus();
+	assert(gdipToken != 0);
+	if (gdipToken == 0) {
+		return EXIT_FAILURE;
+	}
+
 	// Initialize i18n.
 	rp_i18n_init();
 
 	ConfigDialog *cfg = new ConfigDialog();
 	INT_PTR ret = cfg->exec();
 	delete cfg;
+
+	// Shut down GDI+.
+	GdiplusHelper::ShutdownGDIPlus(gdipToken);
 
 	// Uninitialize COM.
 	CoUninitialize();

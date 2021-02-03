@@ -2,15 +2,15 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * pvr3_structs.h: PowerVR 3.0.0 texture format data structures.           *
  *                                                                         *
- * Copyright (c) 2019 by David Korth.                                      *
- * SPDX-License-Identifier: GPL-2.0-or-later                                *
+ * Copyright (c) 2019-2020 by David Korth.                                 *
+ * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #ifndef __ROMPROPERTIES_LIBRPTEXTURE_FILEFORMAT_PVR3_STRUCTS_H__
 #define __ROMPROPERTIES_LIBRPTEXTURE_FILEFORMAT_PVR3_STRUCTS_H__
 
-#include "librpbase/common.h"
 #include <stdint.h>
+#include "common.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -63,8 +63,8 @@ ASSERT_STRUCT(PowerVR3_Header, 52);
  * PowerVR3 flags.
  */
 typedef enum {
-	PVR3_FLAG_COMPRESSED		= (1 << 0),	// File is compressed.
-	PVR3_FLAG_PREMULTIPLIED		= (1 << 1),	// Pre-multiplied alpha.
+	PVR3_FLAG_COMPRESSED	= (1U << 0),	// File is compressed.
+	PVR3_FLAG_PREMULTIPLIED	= (1U << 1),	// Pre-multiplied alpha.
 } PowerVR3_Flags_t;
 
 /**
@@ -170,11 +170,12 @@ typedef enum {
 /**
  * Metadata block header.
  */
-typedef struct PACKED _PowerVR3_Metadata_Block_Header_t {
+typedef struct _PowerVR3_Metadata_Block_Header_t {
 	uint32_t fourCC;
 	uint32_t key;
 	uint32_t size;
 } PowerVR3_Metadata_Block_Header_t;
+ASSERT_STRUCT(PowerVR3_Metadata_Block_Header_t, 3*sizeof(uint32_t));
 
 /**
  * Metadata keys for PowerVR3 fourCC.
@@ -191,11 +192,14 @@ typedef enum {
 /**
  * PowerVR3 Metadata: Orientation struct.
  */
+#pragma pack(1)
 typedef struct PACKED _PowerVR3_Metadata_Orientation_t {
 	uint8_t x;	// 0 == increases to the right; 1 == increases to the left
 	uint8_t y;	// 0 == increases downwards; 1 == increases upwards
 	uint8_t z;	// 0 == increases inwards; 1 == increases outwards
 } PowerVR3_Metadata_Orientation;
+#pragma pack()
+ASSERT_STRUCT(PowerVR3_Metadata_Orientation, 3);
 
 #ifdef __cplusplus
 }

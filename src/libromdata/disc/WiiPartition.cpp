@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * WiiPartition.hpp: Wii partition reader.                                 *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -12,13 +12,14 @@
 #include "WiiPartition.hpp"
 #include "Console/wii_structs.h"
 
-// librpbase
+// librpbase, librpfile
 #include "librpbase/crypto/KeyManager.hpp"
 #ifdef ENABLE_DECRYPTION
 # include "librpbase/crypto/IAesCipher.hpp"
 # include "librpbase/crypto/AesCipherFactory.hpp"
 #endif /* ENABLE_DECRYPTION */
 using namespace LibRpBase;
+using LibRpFile::IRpFile;
 
 // C++ STL classes.
 using std::unique_ptr;
@@ -33,8 +34,8 @@ namespace LibRomData {
 class WiiPartitionPrivate : public GcnPartitionPrivate
 {
 	public:
-		WiiPartitionPrivate(WiiPartition *q, int64_t data_size,
-			int64_t partition_offset, WiiPartition::CryptoMethod cryptoMethod);
+		WiiPartitionPrivate(WiiPartition *q, off64_t data_size,
+			off64_t partition_offset, WiiPartition::CryptoMethod cryptoMethod);
 		virtual ~WiiPartitionPrivate();
 
 	private:
@@ -66,13 +67,30 @@ class WiiPartitionPrivate : public GcnPartitionPrivate
 	public:
 		// Decrypted read position. (0x7C00 bytes out of 0x8000)
 		// NOTE: Actual read position if ((cryptoMethod & CM_MASK_SECTOR) == CM_32K).
-		int64_t pos_7C00;
+		off64_t pos_7C00;
 
 		// Decrypted sector cache.
 		// NOTE: Actual data starts at 0x400.
 		// Hashes and the sector IV are stored first.
 		uint32_t sector_num;				// Sector number.
-		uint8_t sector_buf[SECTOR_SIZE_ENCRYPTED];	// Decrypted sector data.
+		union EncSector_t {
+			struct {
+				// NOTE: &hashes.H2[7][4], when encrypted, is the sector IV.
+				struct {
+					uint8_t H0[31][20];
+					uint8_t pad_H0[20];
+					uint8_t H1[8][20];
+					uint8_t pad_H1[32];
+					uint8_t H2[8][20];
+					uint8_t pad_H2[32];
+				} hashes;
+				uint8_t data[SECTOR_SIZE_DECRYPTED];
+			};
+			uint8_t fulldata[SECTOR_SIZE_ENCRYPTED];
+		};
+		ASSERT_STRUCT(EncSector_t, SECTOR_SIZE_ENCRYPTED);
+		static_assert(offsetof(EncSector_t, hashes.H2) + (7*20) + 4 == 0x3D0, "IV location is wrong");
+		EncSector_t sector_buf;	// Decrypted sector data.
 
 		/**
 		 * Read and decrypt a sector.
@@ -114,13 +132,17 @@ const char *const WiiPartitionPrivate::EncryptionKeyNames[WiiPartition::Key_Max]
 	// Retail
 	"rvl-common",
 	"rvl-korean",
-	"wup-vwii-common",
-	"rvl-sd-aes",
-	"rvl-sd-iv",
-	"rvl-sd-md5",
+	"wup-starbuck-vwii-common",
 
 	// Debug
 	"rvt-debug",
+	"rvt-korean",
+	"cat-starbuck-vwii-common",
+
+	// SD card (TODO: Retail vs. Debug?)
+	"rvl-sd-aes",
+	"rvl-sd-iv",
+	"rvl-sd-md5",
 };
 
 const uint8_t WiiPartitionPrivate::EncryptionKeyVerifyData[WiiPartition::Key_Max][16] = {
@@ -132,9 +154,24 @@ const uint8_t WiiPartitionPrivate::EncryptionKeyVerifyData[WiiPartition::Key_Max
 	// rvl-korean
 	{0x98,0x1C,0xD4,0x51,0x17,0xF2,0x23,0xB6,
 	 0xC8,0x84,0x4A,0x97,0xA6,0x93,0xF2,0xE3},
-	// wup-vwii-common
+	// wup-starbuck-vwii-common
 	{0x04,0xF1,0x33,0x3F,0xF8,0x05,0x7B,0x8F,
 	 0xA7,0xF1,0xED,0x6E,0xAC,0x23,0x33,0xFA},
+
+	/** Debug **/
+
+	// rvt-debug
+	{0x22,0xC4,0x2C,0x5B,0xCB,0xFE,0x75,0xAC,
+	 0xEB,0xC3,0x6B,0xAF,0x90,0xB3,0xB4,0xF5},
+	// rvt-korean
+	{0x31,0x81,0xF2,0xCA,0xFE,0x70,0x58,0xCB,
+	 0x3C,0x0F,0xB9,0x9D,0x2D,0x45,0x74,0xDA},
+	// cat-starbuck-vwii-common
+	{0x0B,0xFB,0x83,0x83,0x38,0xCB,0x1A,0x83,
+	 0x5E,0x1C,0xEC,0xCA,0xDC,0x5D,0xF1,0xFA},
+
+	/** SD card (TODO: Retail vs. Debug?) **/
+
 	// rvl-sd-aes
 	{0x8C,0x1C,0xBA,0x01,0x02,0xB9,0x6F,0x65,
 	 0x24,0x7C,0x85,0x3C,0x0F,0x3B,0x8C,0x37},
@@ -144,44 +181,30 @@ const uint8_t WiiPartitionPrivate::EncryptionKeyVerifyData[WiiPartition::Key_Max
 	// rvl-sd-md5
 	{0xF8,0xE1,0x8D,0x89,0x06,0xC7,0x21,0x32,
 	 0x9D,0xE0,0x14,0x19,0x30,0xC3,0x88,0x1F},
-
-	/** Debug **/
-
-	// rvt-debug
-	{0x22,0xC4,0x2C,0x5B,0xCB,0xFE,0x75,0xAC,
-	 0xEB,0xC3,0x6B,0xAF,0x90,0xB3,0xB4,0xF5},
 };
 #endif /* ENABLE_DECRYPTION */
 
 WiiPartitionPrivate::WiiPartitionPrivate(WiiPartition *q,
-		int64_t data_size, int64_t partition_offset,
+		off64_t data_size, off64_t partition_offset,
 		WiiPartition::CryptoMethod cryptoMethod)
 	: super(q, partition_offset, data_size, 2)
 #ifdef ENABLE_DECRYPTION
-	, verifyResult(KeyManager::VERIFY_UNKNOWN)
-	, encKey(WiiPartition::ENCKEY_UNKNOWN)
-	, encKeyReal(WiiPartition::ENCKEY_UNKNOWN)
+	, verifyResult(KeyManager::VerifyResult::Unknown)
+	, encKey(WiiPartition::EncKey::Unknown)
+	, encKeyReal(WiiPartition::EncKey::Unknown)
 	, cryptoMethod(cryptoMethod)
 	, pos_7C00(-1)
 	, sector_num(~0)
 	, aes_title(nullptr)
 #else /* !ENABLE_DECRYPTION */
-	, verifyResult(KeyManager::VERIFY_NO_SUPPORT)
-	, encKey(WiiPartition::ENCKEY_UNKNOWN)
-	, encKeyReal(WiiPartition::ENCKEY_UNKNOWN)
+	, verifyResult(KeyManager::VerifyResult::NoSupport)
+	, encKey(WiiPartition::EncKey::Unknown)
+	, encKeyReal(WiiPartition::EncKey::Unknown)
 	, cryptoMethod(cryptoMethod)
 	, pos_7C00(-1)
 	, sector_num(~0)
 #endif /* ENABLE_DECRYPTION */
 {
-	// NOTE: The discReader parameter is needed because
-	// WiiPartitionPrivate is created *before* the
-	// WiiPartition superclass's discReader field is set.
-	if ((cryptoMethod & WiiPartition::CM_MASK_ENCRYPTED) == WiiPartition::CM_UNENCRYPTED) {
-		// No encryption. (RVT-H)
-		verifyResult = KeyManager::VERIFY_OK;
-	}
-
 	// Clear data set by GcnPartition in case the
 	// partition headers can't be read.
 	this->data_offset = -1;
@@ -200,13 +223,13 @@ WiiPartitionPrivate::WiiPartitionPrivate(WiiPartition *q,
  */
 void WiiPartitionPrivate::getEncKey(void)
 {
-	if (encKey > WiiPartition::ENCKEY_UNKNOWN) {
+	if (encKey > WiiPartition::EncKey::Unknown) {
 		// Encryption key has already been determined.
 		return;
 	}
 
-	encKey = WiiPartition::ENCKEY_UNKNOWN;
-	encKeyReal = WiiPartition::ENCKEY_UNKNOWN;
+	encKey = WiiPartition::EncKey::Unknown;
+	encKeyReal = WiiPartition::EncKey::Unknown;
 	if (partition_size < 0) {
 		// Error loading the partition header.
 		return;
@@ -219,21 +242,26 @@ void WiiPartitionPrivate::getEncKey(void)
 	static const char issuer_rvt[] = "Root-CA00000002-XS00000006";
 	if (!memcmp(partitionHeader.ticket.signature_issuer, issuer_rvt, sizeof(issuer_rvt))) {
 		// Debug issuer. Use the debug key for keyIdx == 0.
-		if (keyIdx == 0) {
-			encKeyReal = WiiPartition::ENCKEY_DEBUG;
+		// NOTE: vWii common key shouldn't be used for discs,
+		// but we'll allow it anyway...
+		if (keyIdx <= 2) {
+			encKeyReal = static_cast<WiiPartition::EncKey>(
+				(int)WiiPartition::EncKey::RVT_Debug + keyIdx);
 		}
 	} else {
 		// Assuming Retail issuer.
-		// NOTE: vWii common key cannot be used for discs.
-		if (keyIdx <= 1) {
+		// NOTE: vWii common key shouldn't be used for discs,
+		// but we'll allow it anyway...
+		if (keyIdx <= 2) {
 			// keyIdx maps to encKey directly for retail.
-			encKeyReal = static_cast<WiiPartition::EncKey>(keyIdx);
+			encKeyReal = static_cast<WiiPartition::EncKey>(
+				(int)WiiPartition::EncKey::RVL_Common + keyIdx);
 		}
 	}
 
 	if ((cryptoMethod & WiiPartition::CM_MASK_ENCRYPTED) == WiiPartition::CM_UNENCRYPTED) {
 		// Not encrypted.
-		encKey = WiiPartition::ENCKEY_NONE;
+		encKey = WiiPartition::EncKey::None;
 	} else {
 		// Encrypted.
 		encKey = encKeyReal;
@@ -247,7 +275,7 @@ void WiiPartitionPrivate::getEncKey(void)
  */
 KeyManager::VerifyResult WiiPartitionPrivate::initDecryption(void)
 {
-	if (verifyResult != KeyManager::VERIFY_UNKNOWN) {
+	if (verifyResult != KeyManager::VerifyResult::Unknown) {
 		// Decryption has already been initialized.
 		return verifyResult;
 	}
@@ -261,37 +289,39 @@ KeyManager::VerifyResult WiiPartitionPrivate::initDecryption(void)
 
 	// Determine the required encryption key.
 	getEncKey();
-	if (encKey <= WiiPartition::ENCKEY_UNKNOWN) {
+	if (encKey <= WiiPartition::EncKey::Unknown) {
 		// Invalid encryption key index.
-		// Use VERIFY_KEY_NOT_FOUND here.
-		// This condition is indicated by VERIFY_KEY_NOT_FOUND
-		// and a key index ENCKEY_UNKNOWN.
-		verifyResult = KeyManager::VERIFY_KEY_NOT_FOUND;
+		// Use VerifyResult::KeyNotFound here.
+		// This condition is indicated by VerifyResult::KeyNotFound
+		// and a key index EncKey::Unknown.
+		verifyResult = KeyManager::VerifyResult::KeyNotFound;
 		return verifyResult;
 	}
 
 	// Determine the encryption key to use.
 	WiiPartition::EncryptionKeys keyIdx;
 	switch (encKey) {
-		case WiiPartition::ENCKEY_COMMON:
-			// Wii common key.
+		case WiiPartition::EncKey::RVL_Common:
 			keyIdx = WiiPartition::Key_Rvl_Common;
 			break;
-		case WiiPartition::ENCKEY_KOREAN:
-			// Korean key.
+		case WiiPartition::EncKey::RVL_Korean:
 			keyIdx = WiiPartition::Key_Rvl_Korean;
 			break;
-		case WiiPartition::ENCKEY_VWII:
-			// vWii common key.
-			keyIdx = WiiPartition::Key_Wup_vWii_Common;
+		case WiiPartition::EncKey::WUP_vWii:
+			keyIdx = WiiPartition::Key_Wup_Starbuck_vWii_Common;
 			break;
-		case WiiPartition::ENCKEY_DEBUG:
-			// Debug key. (RVT-R)
+		case WiiPartition::EncKey::RVT_Debug:
 			keyIdx = WiiPartition::Key_Rvt_Debug;
+			break;
+		case WiiPartition::EncKey::RVT_Korean:
+			keyIdx = WiiPartition::Key_Rvt_Korean;
+			break;
+		case WiiPartition::EncKey::CAT_vWii:
+			keyIdx = WiiPartition::Key_Cat_Starbuck_vWii_Common;
 			break;
 		default:
 			// Unknown key...
-			verifyResult = KeyManager::VERIFY_KEY_NOT_FOUND;
+			verifyResult = KeyManager::VerifyResult::KeyNotFound;
 			return verifyResult;
 	}
 
@@ -299,7 +329,7 @@ KeyManager::VerifyResult WiiPartitionPrivate::initDecryption(void)
 	unique_ptr<IAesCipher> cipher(AesCipherFactory::create());
 	if (!cipher || !cipher->isInit()) {
 		// Error initializing the cipher.
-		verifyResult = KeyManager::VERFIY_IAESCIPHER_INIT_ERR;
+		verifyResult = KeyManager::VerifyResult::IAesCipherInitErr;
 		return verifyResult;
 	}
 
@@ -308,17 +338,17 @@ KeyManager::VerifyResult WiiPartitionPrivate::initDecryption(void)
 	verifyResult = keyManager->getAndVerify(
 		WiiPartitionPrivate::EncryptionKeyNames[keyIdx], &keyData,
 		WiiPartitionPrivate::EncryptionKeyVerifyData[keyIdx], 16);
-	if (verifyResult != KeyManager::VERIFY_OK) {
+	if (verifyResult != KeyManager::VerifyResult::OK) {
 		// An error occurred loading while the common key.
 		return verifyResult;
 	}
 
 	// Load the common key. (CBC mode)
 	int ret = cipher->setKey(keyData.key, keyData.length);
-	ret |= cipher->setChainingMode(IAesCipher::CM_CBC);
+	ret |= cipher->setChainingMode(IAesCipher::ChainingMode::CBC);
 	if (ret != 0) {
 		// Error initializing the cipher.
-		verifyResult = KeyManager::VERFIY_IAESCIPHER_INIT_ERR;
+		verifyResult = KeyManager::VerifyResult::IAesCipherInitErr;
 		return verifyResult;
 	}
 
@@ -333,14 +363,14 @@ KeyManager::VerifyResult WiiPartitionPrivate::initDecryption(void)
 	memcpy(title_key, partitionHeader.ticket.enc_title_key, sizeof(title_key));
 	if (cipher->decrypt(title_key, sizeof(title_key), iv, sizeof(iv)) != sizeof(title_key)) {
 		// Error decrypting the title key.
-		verifyResult = KeyManager::VERIFY_IAESCIPHER_DECRYPT_ERR;
+		verifyResult = KeyManager::VerifyResult::IAesCipherDecryptErr;
 		return verifyResult;
 	}
 
 	// Set the title key in the AES cipher.
 	if (cipher->setKey(title_key, sizeof(title_key)) != 0) {
 		// Error initializing the cipher.
-		verifyResult = KeyManager::VERFIY_IAESCIPHER_INIT_ERR;
+		verifyResult = KeyManager::VerifyResult::IAesCipherInitErr;
 		return verifyResult;
 	}
 
@@ -354,22 +384,37 @@ KeyManager::VerifyResult WiiPartitionPrivate::initDecryption(void)
 		// Error reading sector 0.
 		delete aes_title;
 		aes_title = nullptr;
-		verifyResult = KeyManager::VERIFY_IAESCIPHER_DECRYPT_ERR;
+		verifyResult = KeyManager::VerifyResult::IAesCipherDecryptErr;
 		return verifyResult;
 	}
 
 	// Verify that this is a Wii partition.
 	// If it isn't, the key is probably wrong.
-	const GCN_DiscHeader *discHeader =
-		reinterpret_cast<const GCN_DiscHeader*>(&sector_buf[SECTOR_SIZE_DECRYPTED_OFFSET]);
+	const GCN_DiscHeader *const discHeader =
+		reinterpret_cast<const GCN_DiscHeader*>(sector_buf.data);
 	if (discHeader->magic_wii != cpu_to_be32(WII_MAGIC)) {
 		// Invalid disc header.
-		verifyResult = KeyManager::VERIFY_WRONG_KEY;
+
+		// NOTE: Debug discs may have incrementing values in update partitions.
+		static const uint8_t incr_vals[32] = {
+			0x00,0x00,0x00,0x00, 0x00,0x00,0x00,0x04,
+			0x00,0x00,0x00,0x08, 0x00,0x00,0x00,0x0C,
+			0x00,0x00,0x00,0x10, 0x00,0x00,0x00,0x14,
+			0x00,0x00,0x00,0x18, 0x00,0x00,0x00,0x1C,
+		};
+		if (!memcmp(sector_buf.data, incr_vals, sizeof(incr_vals))) {
+			// Found incrementing values.
+			verifyResult = KeyManager::VerifyResult::IncrementingValues;
+		} else {
+			// Not incrementing values.
+			// We probably have the wrong key.
+			verifyResult = KeyManager::VerifyResult::WrongKey;
+		}
 		return verifyResult;
 	}
 
 	// Cipher initialized.
-	verifyResult = KeyManager::VERIFY_OK;
+	verifyResult = KeyManager::VerifyResult::OK;
 	return verifyResult;
 }
 #endif /* ENABLE_DECRYPTION */
@@ -408,8 +453,8 @@ int WiiPartitionPrivate::readSector(uint32_t sector_num)
 	// NOTE: This function doesn't check verifyResult,
 	// since it's called by initDecryption() before
 	// verifyResult is set.
-	int64_t sector_addr = partition_offset + data_offset;
-	sector_addr += (static_cast<int64_t>(sector_num) * SECTOR_SIZE_ENCRYPTED);
+	off64_t sector_addr = partition_offset + data_offset;
+	sector_addr += (static_cast<off64_t>(sector_num) * SECTOR_SIZE_ENCRYPTED);
 
 	int ret = q->m_discReader->seek(sector_addr);
 	if (ret != 0) {
@@ -417,8 +462,8 @@ int WiiPartitionPrivate::readSector(uint32_t sector_num)
 		return ret;
 	}
 
-	size_t sz = q->m_discReader->read(sector_buf, sizeof(sector_buf));
-	if (sz != SECTOR_SIZE_ENCRYPTED) {
+	size_t sz = q->m_discReader->read(&sector_buf, sizeof(sector_buf));
+	if (sz != sizeof(sector_buf)) {
 		// sector_buf may be invalid.
 		this->sector_num = ~0;
 		q->m_lastError = EIO;
@@ -428,8 +473,8 @@ int WiiPartitionPrivate::readSector(uint32_t sector_num)
 #ifdef ENABLE_DECRYPTION
 	if (isCrypted) {
 		// Decrypt the sector.
-		if (aes_title->decrypt(&sector_buf[SECTOR_SIZE_DECRYPTED_OFFSET], SECTOR_SIZE_DECRYPTED,
-		    &sector_buf[0x3D0], 16) != SECTOR_SIZE_DECRYPTED)
+		if (aes_title->decrypt(sector_buf.data, sizeof(sector_buf.data),
+		    &sector_buf.hashes.H2[7][4], 16) != SECTOR_SIZE_DECRYPTED)
 		{
 			// sector_buf may be invalid.
 			this->sector_num = ~0;
@@ -457,28 +502,28 @@ int WiiPartitionPrivate::readSector(uint32_t sector_num)
  * @param partition_size	[in] Calculated partition size. Used if the size in the header is 0.
  * @param cryptoMethod		[in] Crypto method.
  */
-WiiPartition::WiiPartition(IDiscReader *discReader, int64_t partition_offset,
-		int64_t partition_size, CryptoMethod cryptoMethod)
+WiiPartition::WiiPartition(IDiscReader *discReader, off64_t partition_offset,
+		off64_t partition_size, CryptoMethod cryptoMethod)
 	: super(new WiiPartitionPrivate(this, discReader->size(),
 		partition_offset, cryptoMethod), discReader)
 {
 	// q->m_lastError is handled by GcnPartitionPrivate's constructor.
-	if (!discReader || !discReader->isOpen()) {
-		this->m_discReader = nullptr;
+	if (!m_discReader || !m_discReader->isOpen()) {
+		UNREF_AND_NULL(m_discReader);
 		return;
 	}
 
 	// Read the partition header.
 	RP_D(WiiPartition);
-	if (discReader->seek(partition_offset) != 0) {
-		m_lastError = discReader->lastError();
-		this->m_discReader = nullptr;
+	if (m_discReader->seek(partition_offset) != 0) {
+		m_lastError = m_discReader->lastError();
+		UNREF_AND_NULL_NOCHK(m_discReader);
 		return;
 	}
-	size_t size = discReader->read(&d->partitionHeader, sizeof(d->partitionHeader));
+	size_t size = m_discReader->read(&d->partitionHeader, sizeof(d->partitionHeader));
 	if (size != sizeof(d->partitionHeader)) {
 		m_lastError = EIO;
-		this->m_discReader = nullptr;
+		UNREF_AND_NULL_NOCHK(m_discReader);
 		return;
 	}
 
@@ -486,13 +531,13 @@ WiiPartition::WiiPartition(IDiscReader *discReader, int64_t partition_offset,
 	if (d->partitionHeader.ticket.signature_type != cpu_to_be32(RVL_SIGNATURE_TYPE_RSA2048)) {
 		// TODO: Better error?
 		m_lastError = EIO;
-		this->m_discReader = nullptr;
+		UNREF_AND_NULL_NOCHK(m_discReader);
 		return;
 	}
 
 	// Save important data.
-	d->data_offset = static_cast<int64_t>(be32_to_cpu(d->partitionHeader.data_offset)) << 2;
-	d->data_size   = static_cast<int64_t>(be32_to_cpu(d->partitionHeader.data_size)) << 2;
+	d->data_offset = static_cast<off64_t>(be32_to_cpu(d->partitionHeader.data_offset)) << 2;
+	d->data_size   = static_cast<off64_t>(be32_to_cpu(d->partitionHeader.data_size)) << 2;
 	if (d->data_size == 0) {
 		// NoCrypto RVT-H images sometimes have this set to 0.
 		// Use the calculated partition size.
@@ -503,6 +548,30 @@ WiiPartition::WiiPartition(IDiscReader *discReader, int64_t partition_offset,
 #ifdef ENABLE_DECRYPTION
 	d->pos_7C00 = 0;
 #endif /* ENABLE_DECRYPTION */
+
+	// Unencrypted discs don't need decryption.
+	if ((cryptoMethod & WiiPartition::CM_MASK_ENCRYPTED) == WiiPartition::CM_UNENCRYPTED) {
+		// No encryption. (RVT-H)
+
+		// NOTE: Debug discs may have incrementing values in update partitions.
+		static const uint8_t incr_vals[32] = {
+			0x00,0x00,0x00,0x00, 0x00,0x00,0x00,0x04,
+			0x00,0x00,0x00,0x08, 0x00,0x00,0x00,0x0C,
+			0x00,0x00,0x00,0x10, 0x00,0x00,0x00,0x14,
+			0x00,0x00,0x00,0x18, 0x00,0x00,0x00,0x1C,
+		};
+
+		uint8_t data[32];
+		size_t size = m_discReader->seekAndRead(d->partition_offset + d->data_offset, data, sizeof(data));
+		if (size == sizeof(incr_vals) && !memcmp(data, incr_vals, sizeof(incr_vals))) {
+			// Found incrementing values.
+			d->verifyResult = KeyManager::VerifyResult::IncrementingValues;
+		} else {
+			// Assume the disc is OK.
+			// TODO: Check for Wii magic?
+			d->verifyResult = KeyManager::VerifyResult::OK;
+		}
+	}
 
 	// Encryption will not be initialized until
 	// read() is called.
@@ -539,7 +608,7 @@ size_t WiiPartition::read(void *ptr, size_t size)
 
 	// Make sure d->pos_7C00 + size <= d->data_size.
 	// If it isn't, we'll do a short read.
-	if (d->pos_7C00 + static_cast<int64_t>(size) >= d->data_size) {
+	if (d->pos_7C00 + static_cast<off64_t>(size) >= d->data_size) {
 		size = static_cast<size_t>(d->data_size - d->pos_7C00);
 	}
 
@@ -561,7 +630,7 @@ size_t WiiPartition::read(void *ptr, size_t size)
 			d->readSector(blockStart);
 
 			// Copy data from the sector.
-			memcpy(ptr8, &d->sector_buf[blockStartOffset], read_sz);
+			memcpy(ptr8, &d->sector_buf.fulldata[blockStartOffset], read_sz);
 
 			// Starting block read.
 			size -= read_sz;
@@ -582,7 +651,7 @@ size_t WiiPartition::read(void *ptr, size_t size)
 			d->readSector(blockStart);
 
 			// Copy data from the sector.
-			memcpy(ptr8, d->sector_buf, SECTOR_SIZE_ENCRYPTED);
+			memcpy(ptr8, d->sector_buf.fulldata, SECTOR_SIZE_ENCRYPTED);
 		}
 
 		// Check if we still have data left. (not a full block)
@@ -595,7 +664,7 @@ size_t WiiPartition::read(void *ptr, size_t size)
 			d->readSector(blockEnd);
 
 			// Copy data from the sector.
-			memcpy(ptr8, &d->sector_buf[blockStartOffset], size);
+			memcpy(ptr8, d->sector_buf.fulldata, size);
 
 			ret += size;
 			d->pos_7C00 += size;
@@ -605,17 +674,17 @@ size_t WiiPartition::read(void *ptr, size_t size)
 #ifdef ENABLE_DECRYPTION
 			// Make sure decryption is initialized.
 			switch (d->verifyResult) {
-				case KeyManager::VERIFY_UNKNOWN:
+				case KeyManager::VerifyResult::Unknown:
 					// Attempt to initialize decryption.
-					if (d->initDecryption() != KeyManager::VERIFY_OK) {
+					if (d->initDecryption() != KeyManager::VerifyResult::OK) {
 						// Decryption could not be initialized.
 						// TODO: Better error?
 						m_lastError = EIO;
-						return -m_lastError;
+						return 0;
 					}
 					break;
 
-				case KeyManager::VERIFY_OK:
+				case KeyManager::VerifyResult::OK:
 					// Decryption is initialized.
 					break;
 
@@ -623,7 +692,7 @@ size_t WiiPartition::read(void *ptr, size_t size)
 					// Decryption failed to initialize.
 					// TODO: Better error?
 					m_lastError = EIO;
-					return -m_lastError;
+					return 0;
 			}
 #else /* !ENABLE_DECRYPTION */
 			// Decryption is not enabled.
@@ -647,7 +716,7 @@ size_t WiiPartition::read(void *ptr, size_t size)
 			d->readSector(blockStart);
 
 			// Copy data from the sector.
-			memcpy(ptr8, &d->sector_buf[SECTOR_SIZE_DECRYPTED_OFFSET + blockStartOffset], read_sz);
+			memcpy(ptr8, &d->sector_buf.data[blockStartOffset], read_sz);
 
 			// Starting block read.
 			size -= read_sz;
@@ -668,7 +737,7 @@ size_t WiiPartition::read(void *ptr, size_t size)
 			d->readSector(blockStart);
 
 			// Copy data from the sector.
-			memcpy(ptr8, &d->sector_buf[SECTOR_SIZE_DECRYPTED_OFFSET], SECTOR_SIZE_DECRYPTED);
+			memcpy(ptr8, d->sector_buf.data, SECTOR_SIZE_DECRYPTED);
 		}
 
 		// Check if we still have data left. (not a full block)
@@ -681,7 +750,7 @@ size_t WiiPartition::read(void *ptr, size_t size)
 			d->readSector(blockEnd);
 
 			// Copy data from the sector.
-			memcpy(ptr8, &d->sector_buf[SECTOR_SIZE_DECRYPTED_OFFSET], size);
+			memcpy(ptr8, d->sector_buf.data, size);
 
 			ret += size;
 			d->pos_7C00 += size;
@@ -697,7 +766,7 @@ size_t WiiPartition::read(void *ptr, size_t size)
  * @param pos Partition position.
  * @return 0 on success; -1 on error.
  */
-int WiiPartition::seek(int64_t pos)
+int WiiPartition::seek(off64_t pos)
 {
 	RP_D(WiiPartition);
 	assert(m_discReader != nullptr);
@@ -724,7 +793,7 @@ int WiiPartition::seek(int64_t pos)
  * Get the partition position.
  * @return Partition position on success; -1 on error.
  */
-int64_t WiiPartition::tell(void)
+off64_t WiiPartition::tell(void)
 {
 	RP_D(const WiiPartition);
 	assert(m_discReader != nullptr);
@@ -735,6 +804,36 @@ int64_t WiiPartition::tell(void)
 	}
 
 	return d->pos_7C00;
+}
+
+/**
+ * Get the used partition size.
+ * This size includes the partition header and hashes,
+ * but does not include "empty" sectors.
+ * @return Used partition size, or -1 on error.
+ */
+off64_t WiiPartition::partition_size_used(void) const
+{
+	// Get the FST used size from GcnPartition.
+	off64_t size = super::partition_size_used();
+	if (size <= 0) {
+		// Error retrieving the FST used size.
+		return size;
+	}
+
+	// Add the data offset from the partition header.
+	RP_D(const WiiPartition);
+	size += (static_cast<off64_t>(be32_to_cpu(d->partitionHeader.data_offset)) << 2);
+
+	// Are sectors hashed?
+	if ((d->cryptoMethod & WiiPartition::CM_MASK_SECTOR) == CM_1K_31K) {
+		// Partition has hashed sectors.
+		// Multiply the FST used size by 32/31 to adjust for the difference.
+		size = (size * 32) / 31;
+	}
+
+	// We're done here.
+	return size;
 }
 
 /** WiiPartition **/

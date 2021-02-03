@@ -1,0 +1,9 @@
+<RCC>
+  <qresource prefix="flags">
+    <!-- Flag icons are from twemoji-12.1.4. -->
+    <!-- https://github.com/twitter/twemoji -->
+    <file>flags-16x16.png</file>
+    <file>flags-24x24.png</file>
+    <file>flags-32x32.png</file>
+  </qresource>
+</RCC>

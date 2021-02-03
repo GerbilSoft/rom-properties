@@ -47,34 +47,23 @@
 
 #endif /* __cplusplus */
 
-#if 0
-// MSVC intrinsics
-#if defined(_MSC_VER) && _MSC_VER >= 1400
-# include <intrin.h>
-#endif
-
-// libwin32common
-#ifdef _WIN32
-# include "libwin32common/RpWin32_sdk.h"
-#endif /* _WIN32 */
-#endif
-
 // libi18n
 #include "libi18n/i18n.h"
 
 // librpbase common headers
-#include "librpbase/common.h"
-#include "librpbase/byteswap.h"
-#include "librpbase/bitstuff.h"
+#include "common.h"
+#include "ctypex.h"
 #include "librpbase/aligned_malloc.h"
-#include "librpbase/ctypex.h"
+#include "librpbase/time_r.h"
+
+// librpcpu
+#include "librpcpu/byteswap_rp.h"
+#include "librpcpu/bitstuff.h"
 
 #ifdef __cplusplus
 // librpbase C++ headers
 #include "librpbase/RomData.hpp"
 #include "librpbase/TextFuncs.hpp"
-#include "librpbase/file/IRpFile.hpp"
-#include "librpbase/file/FileSystem.hpp"
 #include "librpbase/img/IconAnimData.hpp"
 
 // Uninitialized vector class.
@@ -89,6 +78,11 @@
 
 // RomData private headers
 #include "librpbase/RomData_p.hpp"
+
+// librpfile C++ headers
+#include "librpfile/FileSystem.hpp"
+#include "librpfile/IRpFile.hpp"
+#include "librpfile/RpFile.hpp"
 
 // librptexture C++ headers
 #include "librptexture/img/rp_image.hpp"

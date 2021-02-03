@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * spc_structs.h: SPC audio data structures.                               *
  *                                                                         *
- * Copyright (c) 2018-2019 by David Korth.                                 *
+ * Copyright (c) 2018-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -12,7 +12,7 @@
 #ifndef __ROMPROPERTIES_LIBROMDATA_AUDIO_SPC_STRUCTS_H__
 #define __ROMPROPERTIES_LIBROMDATA_AUDIO_SPC_STRUCTS_H__
 
-#include "librpbase/common.h"
+#include "common.h"
 #include <stdint.h>
 
 #ifdef __cplusplus

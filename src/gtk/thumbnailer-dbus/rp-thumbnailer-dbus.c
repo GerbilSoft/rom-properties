@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (D-Bus Thumbnailer)                *
  * rp-thumbnailer-dbus.c: D-Bus thumbnailer service.                       *
  *                                                                         *
- * Copyright (c) 2017-2019 by David Korth.                                 *
+ * Copyright (c) 2017-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -12,7 +12,7 @@
  */
 
 #include "rp-thumbnailer-dbus.h"
-#include "librpbase/common.h"
+#include "common.h"
 
 #include <glib-object.h>
 #include "SpecializedThumbnailer1.h"
@@ -35,16 +35,6 @@ G_STMT_START { \
 	} \
 } G_STMT_END
 
-/* Signal identifiers */
-enum RpThumbnailerSignals {
-	SIGNAL_0,
-
-	// RpThumbnailer has been idle for long enough and should exit.
-	SIGNAL_SHUTDOWN,
-
-	SIGNAL_LAST
-};
-
 /* Property identifiers. */
 enum RpThumbnailerProperties {
 	PROP_0,
@@ -55,6 +45,13 @@ enum RpThumbnailerProperties {
 	PROP_EXPORTED,
 
 	PROP_LAST
+};
+
+/* Signal identifiers */
+enum RpThumbnailerSignals {
+	SIGNAL_SHUTDOWN,	// RpThumbnailer has been idle for long enough and should exit.
+
+	SIGNAL_LAST
 };
 
 // Internal functions.
@@ -84,11 +81,13 @@ static gboolean	rp_thumbnailer_queue		(OrgFreedesktopThumbnailsSpecializedThumbn
 						 RpThumbnailer	*thumbnailer);
 static gboolean	rp_thumbnailer_dequeue		(OrgFreedesktopThumbnailsSpecializedThumbnailer1 *skeleton,
 						 GDBusMethodInvocation *invocation,
-						 guint		 handle,
+						 guint32	 handle,
 						 RpThumbnailer	*thumbnailer);
 
 struct _RpThumbnailerClass {
 	GObjectClass __parent__;
+
+	GParamSpec *properties[PROP_LAST];
 	guint signal_ids[SIGNAL_LAST];
 };
 
@@ -97,19 +96,10 @@ struct _RpThumbnailerClass {
 // Thumbnail request information.
 struct request_info {
 	gchar *uri;
-	guint handle;
+	guint32 handle;
 	bool large;	// False for 'normal' (128x128); true for 'large' (256x256)
 	bool urgent;	// 'urgent' value
 };
-
-static void request_info_free(gpointer data, G_GNUC_UNUSED gpointer user_data)
-{
-	if (data) {
-		struct request_info *const req = (struct request_info*)data;
-		g_free(req->uri);
-		g_free(req);
-	}
-}
 
 struct _RpThumbnailer {
 	GObject __parent__;
@@ -125,10 +115,10 @@ struct _RpThumbnailer {
 	guint idle_process;
 
 	// Last handle value.
-	guint last_handle;
+	guint32 last_handle;
 
 	// Request queue.
-	GQueue *request_queue;	// element is struct request_info*
+	GQueue request_queue;	// element is struct request_info*
 
 	/** Properties. **/
 
@@ -149,10 +139,10 @@ struct _RpThumbnailer {
 // NOTE: We can't use G_DEFINE_DYNAMIC_TYPE() here because
 // that requires a GTypeModule, which we don't have.
 
-static void	rp_thumbnailer_class_init	(gpointer g_class, gpointer class_data);
-static void	rp_thumbnailer_init		(GTypeInstance *instance, gpointer g_class);
+static void	rp_thumbnailer_class_init	(RpThumbnailerClass *klass, gpointer class_data);
+static void	rp_thumbnailer_init		(RpThumbnailer *instance, gpointer g_class);
 
-static gpointer rp_thumbnailer_parent_class = NULL;
+static gpointer	rp_thumbnailer_parent_class = NULL;
 
 GType
 rp_thumbnailer_get_type(void)
@@ -160,16 +150,16 @@ rp_thumbnailer_get_type(void)
 	static GType rp_thumbnailer_type_id = 0;
 	if (!rp_thumbnailer_type_id) {
 		static const GTypeInfo g_define_type_info = {
-			sizeof(RpThumbnailerClass),	// class_size
-			NULL,				// base_init
-			NULL,				// base_finalize
-			rp_thumbnailer_class_init,	// class_init
-			NULL,				// class_finalize
-			NULL,				// class_data
-			sizeof(RpThumbnailer),		// instance_size
-			0,				// n_preallocs
-			rp_thumbnailer_init,		// instance_init
-			NULL				// value_table
+			sizeof(RpThumbnailerClass),			// class_size
+			NULL,						// base_init
+			NULL,						// base_finalize
+			(GClassInitFunc)rp_thumbnailer_class_init,	// class_init
+			NULL,						// class_finalize
+			NULL,						// class_data
+			sizeof(RpThumbnailer),				// instance_size
+			0,						// n_preallocs
+			(GInstanceInitFunc)rp_thumbnailer_init,		// instance_init
+			NULL						// value_table
 		};
 		rp_thumbnailer_type_id = g_type_register_static(G_TYPE_OBJECT,
 							"RpThumbnailer",
@@ -182,63 +172,58 @@ rp_thumbnailer_get_type(void)
 /** End type information. **/
 
 static void
-rp_thumbnailer_class_init(gpointer g_class, gpointer class_data)
+rp_thumbnailer_class_init(RpThumbnailerClass *klass, gpointer class_data)
 {
-	RP_UNUSED(class_data);	// TODO: Store this somewhere?
-	rp_thumbnailer_parent_class = g_type_class_peek_parent(g_class);
+	RP_UNUSED(class_data);
+	rp_thumbnailer_parent_class = g_type_class_peek_parent(klass);
 
-	GObjectClass *const gobject_class = G_OBJECT_CLASS(g_class);
+	GObjectClass *const gobject_class = G_OBJECT_CLASS(klass);
 	gobject_class->dispose = rp_thumbnailer_dispose;
 	gobject_class->finalize = rp_thumbnailer_finalize;
 	gobject_class->constructed = rp_thumbnailer_constructed;
 	gobject_class->get_property = rp_thumbnailer_get_property;
 	gobject_class->set_property = rp_thumbnailer_set_property;
 
-	RpThumbnailerClass *const klass = (RpThumbnailerClass*)gobject_class;
+	/** Properties **/
 
-	// Register signals.
-	klass->signal_ids[SIGNAL_0] = 0;
+	klass->properties[PROP_CONNECTION] = g_param_spec_object(
+		"connection", "connection", "D-Bus connection.",
+		G_TYPE_DBUS_CONNECTION,
+		G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS | G_PARAM_CONSTRUCT_ONLY);
+
+	klass->properties[PROP_CACHE_DIR] = g_param_spec_string(
+		"cache-dir", "cache-dir", "XDG cache directory.",
+		NULL,
+		G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS | G_PARAM_CONSTRUCT_ONLY);
+
+	klass->properties[PROP_PFN_RP_CREATE_THUMBNAIL] = g_param_spec_pointer(
+		"pfn-rp-create-thumbnail", "pfn-rp-create-thumbnail", "rp_create_thumbnail() function pointer.",
+		G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS | G_PARAM_CONSTRUCT_ONLY);
+
+	klass->properties[PROP_EXPORTED] = g_param_spec_boolean(
+		"exported", "exported", "Is the D-Bus object exported?",
+		false,
+		G_PARAM_READABLE | G_PARAM_STATIC_STRINGS);
+
+	// Install the properties.
+	g_object_class_install_properties(gobject_class, PROP_LAST, klass->properties);
+
+	/** Signals **/
 
 	// RpThumbnailer has been idle for long enough and should exit.
 	klass->signal_ids[SIGNAL_SHUTDOWN] = g_signal_new("shutdown",
 		TYPE_RP_THUMBNAILER, G_SIGNAL_RUN_LAST,
 		0, NULL, NULL, NULL,
 		G_TYPE_NONE, 0);
-
-	// Register properties.
-	g_object_class_install_property(gobject_class, PROP_CONNECTION,
-		g_param_spec_object("connection", "connection", "D-Bus connection.",
-			G_TYPE_DBUS_CONNECTION, (GParamFlags)(G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY)));
-	g_object_class_install_property(gobject_class, PROP_CACHE_DIR,
-		g_param_spec_string("cache_dir", "cache_dir", "XDG cache directory.",
-			NULL, (GParamFlags)(G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY)));
-	g_object_class_install_property(gobject_class, PROP_PFN_RP_CREATE_THUMBNAIL,
-		g_param_spec_pointer("pfn_rp_create_thumbnail", "pfn_rp_create_thumbnail",
-			"rp_create_thumbnail() function pointer.",
-			(GParamFlags)(G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY)));
-	g_object_class_install_property(gobject_class, PROP_EXPORTED,
-		g_param_spec_boolean("exported", "exported", "Is the D-Bus object exported?",
-			false, G_PARAM_READABLE));
 }
 
 static void
-rp_thumbnailer_init(GTypeInstance *instance, gpointer g_class)
+rp_thumbnailer_init(RpThumbnailer *thumbnailer, gpointer g_class)
 {
+	// g_object_new() guarantees that all values are initialized to 0.
+	// Nothing to do here.
+	RP_UNUSED(thumbnailer);
 	RP_UNUSED(g_class);
-	RpThumbnailer *const thumbnailer = (RpThumbnailer*)instance;
-
-	thumbnailer->skeleton = NULL;
-	thumbnailer->shutdown_emitted = false;
-	thumbnailer->timeout_id = 0;
-	thumbnailer->idle_process = 0;
-	thumbnailer->last_handle = 0;
-	thumbnailer->request_queue = g_queue_new();
-
-	/** Properties. **/
-	thumbnailer->connection = NULL;
-	thumbnailer->cache_dir = NULL;
-	thumbnailer->pfn_rp_create_thumbnail = NULL;
-	thumbnailer->exported = false;
 }
 
 static void
@@ -255,21 +240,23 @@ rp_thumbnailer_constructed(GObject *object)
 		g_critical("Error exporting RpThumbnailer on session bus: %s", error->message);
 		g_error_free(error);
 		thumbnailer->exported = false;
-	} else {
-		// Connect signals to the relevant functions.
-		g_signal_connect(thumbnailer->skeleton, "handle-queue",
-			G_CALLBACK(rp_thumbnailer_queue), thumbnailer);
-		g_signal_connect(thumbnailer->skeleton, "handle-dequeue",
-			G_CALLBACK(rp_thumbnailer_dequeue), thumbnailer);
-		
-		// Make sure we shut down after inactivity.
-		thumbnailer->timeout_id = g_timeout_add_seconds(SHUTDOWN_TIMEOUT_SECONDS,
-			(GSourceFunc)rp_thumbnailer_timeout, thumbnailer);
-
-		// Object is exported.
-		thumbnailer->exported = true;
-		g_object_notify(G_OBJECT(thumbnailer), "exported");
+		return;
 	}
+
+	// Connect signals to the relevant functions.
+	g_signal_connect(thumbnailer->skeleton, "handle-queue",
+		G_CALLBACK(rp_thumbnailer_queue), thumbnailer);
+	g_signal_connect(thumbnailer->skeleton, "handle-dequeue",
+		G_CALLBACK(rp_thumbnailer_dequeue), thumbnailer);
+		
+	// Make sure we shut down after inactivity.
+	thumbnailer->timeout_id = g_timeout_add_seconds(SHUTDOWN_TIMEOUT_SECONDS,
+		(GSourceFunc)rp_thumbnailer_timeout, thumbnailer);
+
+	// Object is exported.
+	thumbnailer->exported = true;
+	RpThumbnailerClass *const klass = RP_THUMBNAILER_GET_CLASS(thumbnailer);
+	g_object_notify_by_pspec(G_OBJECT(thumbnailer), klass->properties[PROP_EXPORTED]);
 }
 
 static void
@@ -289,6 +276,9 @@ rp_thumbnailer_dispose(GObject *object)
 		thumbnailer->idle_process = 0;
 	}
 
+	// No longer exported.
+	thumbnailer->exported = false;
+
 	// Call the superclass dispose() function.
 	G_OBJECT_CLASS(rp_thumbnailer_parent_class)->dispose(object);
 }
@@ -303,8 +293,14 @@ rp_thumbnailer_finalize(GObject *object)
 	}
 
 	// Delete any remaining requests and free the queue.
-	g_queue_foreach(thumbnailer->request_queue, request_info_free, 0);
-	g_queue_free(thumbnailer->request_queue);
+	for (GList *p = thumbnailer->request_queue.head; p != NULL; p = p->next) {
+		if (p->data) {
+			struct request_info *const req = (struct request_info*)p->data;
+			g_free(req->uri);
+			g_free(req);
+		}
+	}
+	g_queue_clear(&thumbnailer->request_queue);
 
 	/** Properties. **/
 	g_free(thumbnailer->cache_dir);
@@ -362,22 +358,20 @@ rp_thumbnailer_set_property(GObject *object,
 
 	switch (prop_id) {
 		case PROP_CONNECTION: {
-			GDBusConnection *const old_connection = thumbnailer->connection;
+			if (thumbnailer->connection) {
+				g_object_unref(thumbnailer->connection);
+			}
+
 			GDBusConnection *const connection = (GDBusConnection*)g_value_get_object(value);
-			// TODO: Atomic exchange?
-			thumbnailer->connection = (connection
+			thumbnailer->connection = (G_IS_DBUS_CONNECTION(connection)
 				? (GDBusConnection*)g_object_ref(connection)
 				: NULL);
-			if (old_connection) {
-				g_object_unref(old_connection);
-			}
 			break;
 		}
 
 		case PROP_CACHE_DIR: {
-			gchar *old_cache_dir = thumbnailer->cache_dir;
+			g_free(thumbnailer->cache_dir);
 			thumbnailer->cache_dir = g_value_dup_string(value);
-			g_free(old_cache_dir);
 			break;
 		}
 
@@ -434,8 +428,7 @@ rp_thumbnailer_queue(OrgFreedesktopThumbnailsSpecializedThumbnailer1 *skeleton,
 	}
 
 	// Queue the URI for processing.
-	// TODO: Handle 'flavor', 'urgent', etc.
-	guint handle = ++thumbnailer->last_handle;
+	guint32 handle = ++thumbnailer->last_handle;
 	if (G_UNLIKELY(handle == 0)) {
 		// Overflow. Increment again so we
 		// don't return a handle of 0.
@@ -444,16 +437,16 @@ rp_thumbnailer_queue(OrgFreedesktopThumbnailsSpecializedThumbnailer1 *skeleton,
 
 	// Add the URI to the queue.
 	// NOTE: Currently handling all flavors that aren't "large" as "normal".
-	struct request_info *req = g_malloc(sizeof(struct request_info));
+	struct request_info *const req = g_malloc(sizeof(struct request_info));
 	req->uri = g_strdup(uri);
 	req->handle = handle;
 	req->large = flavor && (g_ascii_strcasecmp(flavor, "large") == 0);
 	req->urgent = urgent;
-	g_queue_push_tail(thumbnailer->request_queue, req);
+	// TODO Put 'urgent' requests at the front of the queue?
+	g_queue_push_tail(&thumbnailer->request_queue, req);
 
 	// Make sure the idle process is started.
-	// TODO: Make it multi-threaded?
-	// FIXME: Atomic compare and/or mutex if multi-threaded.
+	// TODO: Make it multi-threaded? (needs atomic compare and/or mutex...)
 	if (thumbnailer->idle_process == 0) {
 		thumbnailer->idle_process = g_idle_add((GSourceFunc)rp_thumbnailer_process, thumbnailer);
 	}
@@ -473,7 +466,7 @@ rp_thumbnailer_queue(OrgFreedesktopThumbnailsSpecializedThumbnailer1 *skeleton,
 static gboolean
 rp_thumbnailer_dequeue(OrgFreedesktopThumbnailsSpecializedThumbnailer1 *skeleton,
 	GDBusMethodInvocation *invocation,
-	guint handle,
+	guint32 handle,
 	RpThumbnailer *thumbnailer)
 {
 	g_dbus_async_return_val_if_fail(IS_RP_THUMBNAILER(thumbnailer), invocation, false);
@@ -492,7 +485,7 @@ static gboolean
 rp_thumbnailer_timeout(RpThumbnailer *thumbnailer)
 {
 	g_return_val_if_fail(IS_RP_THUMBNAILER(thumbnailer), false);
-	if (!g_queue_is_empty(thumbnailer->request_queue)) {
+	if (!g_queue_is_empty(&thumbnailer->request_queue)) {
 		// Still processing stuff.
 		return true;
 	}
@@ -515,7 +508,6 @@ rp_thumbnailer_process(RpThumbnailer *thumbnailer)
 {
 	g_return_val_if_fail(IS_RP_THUMBNAILER(thumbnailer), FALSE);
 
-	GChecksum *md5 = NULL;
 	const gchar *md5_string;	// owned by md5 object
 	const struct request_info *req;	// request info from the map
 	gchar *cache_filename = NULL;	// cache filename (g_strdup_printf())
@@ -524,7 +516,7 @@ rp_thumbnailer_process(RpThumbnailer *thumbnailer)
 	int ret;
 
 	// Process one thumbnail.
-	req = (struct request_info*)g_queue_pop_head(thumbnailer->request_queue);
+	req = (struct request_info*)g_queue_pop_head(&thumbnailer->request_queue);
 	if (req == NULL) {
 		// Nothing in the queue.
 		goto cleanup;
@@ -578,18 +570,14 @@ rp_thumbnailer_process(RpThumbnailer *thumbnailer)
 	}
 
 	// Reference: https://specifications.freedesktop.org/thumbnail-spec/thumbnail-spec-latest.html
-	// NOTE: glib-2.34 has g_compute_checksum_for_bytes().
-	md5 = g_checksum_new(G_CHECKSUM_MD5);
-	if (!md5) {
-		// Cannot allocate an MD5...
-		// TODO: Test for this early.
+	md5_string = g_compute_checksum_for_data(G_CHECKSUM_MD5, (const guchar*)req->uri, strlen(req->uri));
+	if (!md5_string) {
+		// Cannot compute the checksum...
 		org_freedesktop_thumbnails_specialized_thumbnailer1_emit_error(
 			thumbnailer->skeleton, req->handle, req->uri,
-			0, "g_checksum_new() does not support MD5.");
+			0, "g_compute_checksum_for_data() failed.");
 		goto finished;
 	}
-	g_checksum_update(md5, (const guchar*)req->uri, strlen(req->uri));
-	md5_string = g_checksum_get_string(md5);
 
 	// Append the MD5.
 	pos2 = snprintf(&cache_filename[pos], cache_filename_sz - pos, "/%s.png", md5_string);
@@ -624,11 +612,14 @@ finished:
 
 cleanup:
 	// Free allocated things.
-	g_checksum_free(md5);
 	g_free(cache_filename);
 
+	// req was allocated using g_malloc() before it was
+	// added to the queue. We'll need to free it here.
+	g_free((gpointer)req);
+
 	// Return TRUE if we still have more thumbnails queued.
-	const bool isEmpty = g_queue_is_empty(thumbnailer->request_queue);
+	const bool isEmpty = g_queue_is_empty(&thumbnailer->request_queue);
 	if (isEmpty) {
 		// Clear the idle process.
 		// FIXME: Atomic compare and/or mutex? (assuming multi-threaded...)
@@ -657,8 +648,8 @@ rp_thumbnailer_new(GDBusConnection *connection,
 {
 	return g_object_new(TYPE_RP_THUMBNAILER,
 		"connection", connection,
-		"cache_dir", cache_dir,
-		"pfn_rp_create_thumbnail", pfn_rp_create_thumbnail,
+		"cache-dir", cache_dir,
+		"pfn-rp-create-thumbnail", pfn_rp_create_thumbnail,
 		NULL);
 }
 

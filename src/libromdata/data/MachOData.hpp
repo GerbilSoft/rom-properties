@@ -2,14 +2,14 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * MachOData.hpp: Mach-O executable format data.                           *
  *                                                                         *
- * Copyright (c) 2019 by David Korth.                                      *
+ * Copyright (c) 2020 by David Korth.                                      *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #ifndef __ROMPROPERTIES_LIBROMDATA_DATA_MACHODATA_HPP__
 #define __ROMPROPERTIES_LIBROMDATA_DATA_MACHODATA_HPP__
 
-#include "librpbase/common.h"
+#include "common.h"
 
 // C includes.
 #include <stdint.h>

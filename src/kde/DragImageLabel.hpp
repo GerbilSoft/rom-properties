@@ -1,8 +1,8 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (KDE4/KDE5)                        *
+ * ROM Properties Page shell extension. (KDE4/KF5)                         *
  * DragImageLabel.hpp: Drag & Drop image label.                            *
  *                                                                         *
- * Copyright (c) 2019 by David Korth.                                      *
+ * Copyright (c) 2019-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -23,8 +23,8 @@ namespace LibRpTexture {
 #include <array>
 
 // Qt includes.
+#include <QtCore/QTimer>
 #include <QLabel>
-#include <QTimer>
 
 class DragImageLabel : public QLabel
 {
@@ -169,10 +169,14 @@ class DragImageLabel : public QLabel
 			bool anim_running;		// Animation is running.
 
 			anim_vars()
-				: tmrIconAnim(nullptr)
+				: iconAnimData(nullptr)
+				, tmrIconAnim(nullptr)
 				, last_frame_number(0)
 				, anim_running(false) { }
-			~anim_vars() { delete tmrIconAnim; }
+			~anim_vars() {
+				UNREF(iconAnimData);
+				delete tmrIconAnim;
+			}
 		};
 		anim_vars *m_anim;
 };

@@ -1,8 +1,7 @@
 /* mz_strm.h -- Stream interface
-   Version 2.9.1, November 15, 2019
    part of the MiniZip project
 
-   Copyright (C) 2010-2019 Nathan Moinvaziri
+   Copyright (C) 2010-2020 Nathan Moinvaziri
      https://github.com/nmoinvaz/minizip
 
    This program is distributed under the terms of the same license as zlib.
@@ -27,7 +26,7 @@ extern "C" {
 #define MZ_STREAM_PROP_DISK_SIZE            (7)
 #define MZ_STREAM_PROP_DISK_NUMBER          (8)
 #define MZ_STREAM_PROP_COMPRESS_LEVEL       (9)
-#define MZ_STREAM_PROP_COMPRESS_ALGORITHM   (10)
+#define MZ_STREAM_PROP_COMPRESS_METHOD      (10)
 #define MZ_STREAM_PROP_COMPRESS_WINDOW      (11)
 
 /***************************************************************************/
@@ -51,8 +50,7 @@ typedef int32_t (*mz_stream_find_cb)           (void *stream, const void *find, 
 
 /***************************************************************************/
 
-typedef struct mz_stream_vtbl_s
-{
+typedef struct mz_stream_vtbl_s {
     mz_stream_open_cb           open;
     mz_stream_is_open_cb        is_open;
     mz_stream_read_cb           read;

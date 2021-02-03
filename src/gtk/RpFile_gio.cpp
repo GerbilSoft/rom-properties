@@ -2,13 +2,14 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * RpFile_gio.cpp: IRpFile implementation using GIO/GVfs.                  *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+#include "stdafx.h"
 #include "RpFile_gio.hpp"
 
-#include <glib.h>
+// gio
 #include <gio/gio.h>
 
 // C++ STL classes.
@@ -17,9 +18,9 @@ using std::string;
 class RpFileGioPrivate
 {
 	public:
-		RpFileGioPrivate(const char *uri)
+		explicit RpFileGioPrivate(const char *uri)
 			: stream(nullptr), uri(uri) { }
-		RpFileGioPrivate(const string &uri)
+		explicit RpFileGioPrivate(const string &uri)
 			: stream(nullptr), uri(uri) { }
 		~RpFileGioPrivate();
 
@@ -184,7 +185,6 @@ size_t RpFileGio::read(void *ptr, size_t size)
 			// No GError...
 			m_lastError = EIO;
 		}
-		g_error_free(err);
 		ret = 0;
 	}
 
@@ -212,7 +212,7 @@ size_t RpFileGio::write(const void *ptr, size_t size)
  * @param pos File position.
  * @return 0 on success; -1 on error.
  */
-int RpFileGio::seek(int64_t pos)
+int RpFileGio::seek(off64_t pos)
 {
 	RP_D(RpFileGio);
 	if (!d->stream) {
@@ -233,7 +233,6 @@ int RpFileGio::seek(int64_t pos)
 			// No GError...
 			m_lastError = EIO;
 		}
-		g_error_free(err);
 		ret = -1;
 	}
 
@@ -244,7 +243,7 @@ int RpFileGio::seek(int64_t pos)
  * Get the file position.
  * @return File position, or -1 on error.
  */
-int64_t RpFileGio::tell(void)
+off64_t RpFileGio::tell(void)
 {
 	RP_D(RpFileGio);
 	if (!d->stream) {
@@ -260,7 +259,7 @@ int64_t RpFileGio::tell(void)
  * @param size New size. (default is 0)
  * @return 0 on success; -1 on error.
  */
-int RpFileGio::truncate(int64_t size)
+int RpFileGio::truncate(off64_t size)
 {
 	// Not supported.
 	// TODO: Writable RpFileGio?
@@ -275,7 +274,7 @@ int RpFileGio::truncate(int64_t size)
  * Get the file size.
  * @return File size, or negative on error.
  */
-int64_t RpFileGio::size(void)
+off64_t RpFileGio::size(void)
 {
 	RP_D(RpFileGio);
 	if (!d->stream) {

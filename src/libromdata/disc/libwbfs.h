@@ -5,12 +5,12 @@
 #define LIBWBFS_H
 
 #ifdef _MSC_VER
-#pragma warning(push)
-#pragma warning(disable:4200)
+# pragma warning(push)
+# pragma warning(disable:4200)
 #endif
 
-#include "librpbase/common.h"
 #include <stdint.h>
+#include "common.h"
 
 #ifdef __cplusplus
    extern "C" {
@@ -98,15 +98,14 @@ typedef struct wbfs_disc_s
         int i;		  		  // disc index in the wbfs header (disc_table)
 } wbfs_disc_t;
 
-// Not used here.
-//#define WBFS_MAGIC (('W'<<24)|('B'<<16)|('F'<<8)|('S'))
+#define WBFS_MAGIC (('W'<<24)|('B'<<16)|('F'<<8)|('S'))
 
 #ifdef __cplusplus
    }
 #endif /* __cplusplus */
 
 #ifdef _MSC_VER
-#pragma warning(pop)
+# pragma warning(pop)
 #endif
 
 #endif

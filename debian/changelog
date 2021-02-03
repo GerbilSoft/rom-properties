@@ -1,3 +1,66 @@
+rom-properties (1.7.3-1ppa1~xenial1) xenial; urgency=medium
+
+  * 1.7.3 release.
+
+ -- David Korth <gerbilsoft@gerbilsoft.com>  Fri, 25 Sep 2020 21:59:12 -0400
+
+rom-properties (1.7.2-1ppa1~xenial1) xenial; urgency=medium
+
+  * 1.7.2 release.
+
+ -- David Korth <gerbilsoft@gerbilsoft.com>  Thu, 24 Sep 2020 18:04:46 -0400
+
+rom-properties (1.7-1ppa1~xenial3) xenial; urgency=medium
+
+  * Rebuild with files not marked as executable. (VM issue)
+
+ -- David Korth <gerbilsoft@gerbilsoft.com>  Sun, 20 Sep 2020 17:45:22 -0400
+
+rom-properties (1.7-1ppa1~xenial2) xenial; urgency=medium
+
+  * MiniZip 2.10.0 requires zstd-1.4.0. Use the internal copy of zstd.
+    Note that MiniZip is not currently used outside of test suites,
+    so this won't be installed as part of the package.
+
+ -- David Korth <gerbilsoft@gerbilsoft.com>  Sun, 20 Sep 2020 16:48:00 -0400
+
+rom-properties (1.7-1ppa1~xenial1) xenial; urgency=medium
+
+  * 1.7 release.
+
+ -- David Korth <gerbilsoft@gerbilsoft.com>  Sun, 20 Sep 2020 15:50:25 -0400
+
+rom-properties (1.6-1ppa1~xenial4) xenial; urgency=medium
+
+  * ImageDecoder: Fix ARM64 linkage and AMD64 compile errors as a result of
+    the IFUNC fixes.
+
+ -- David Korth <gerbilsoft@gerbilsoft.com>  Sun, 12 Jul 2020 15:54:10 -0400
+
+rom-properties (1.6-1ppa1~xenial3) xenial; urgency=medium
+
+  * ImageDecoder: Another attempt to fix ARM64 IFUNC build issues...
+
+ -- David Korth <gerbilsoft@gerbilsoft.com>  Sun, 12 Jul 2020 15:39:18 -0400
+
+rom-properties (1.6-1ppa1~xenial2) xenial; urgency=medium
+
+  * ImageDecoder: Attempt to fix ARM64 IFUNC build issues on Launchpad.
+
+ -- David Korth <gerbilsoft@gerbilsoft.com>  Sun, 12 Jul 2020 15:25:59 -0400
+
+rom-properties (1.6-1ppa1~xenial1) xenial; urgency=medium
+
+  * 1.6 release.
+
+ -- David Korth <gerbilsoft@gerbilsoft.com>  Sun, 12 Jul 2020 14:42:17 -0400
+
+rom-properties (1.5-1ppa1~xenial1) xenial; urgency=medium
+
+  * 1.5 release.
+
+ -- David Korth <gerbilsoft@gerbilsoft.com>  Fri, 13 Mar 2020 01:28:44 -0400
+
 rom-properties (1.4-1ppa1~xenial1) xenial; urgency=medium
 
   * 1.4 release.

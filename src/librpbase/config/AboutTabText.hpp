@@ -2,14 +2,14 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * AboutTabText.hpp: About tab for rp-config. (Common text)                *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #ifndef __ROMPROPERTIES_LIBRPBASE_CONFIG_ABOUTTABTEXT_HPP__
 #define __ROMPROPERTIES_LIBRPBASE_CONFIG_ABOUTTABTEXT_HPP__
 
-#include "../common.h"
+#include "common.h"
 
 namespace LibRpBase {
 
@@ -32,17 +32,17 @@ class AboutTabText {
 	public:
 		/** Credits **/
 
-		enum CreditType_t {
-			CT_CONTINUE = 0,	// Continue previous type.
-			CT_DEVELOPER,		// Developer
-			CT_CONTRIBUTOR,		// Contributor
-			CT_TRANSLATOR,		// Translator (TODO)
+		enum class CreditType {
+			Continue = 0,	// Continue previous type.
+			Developer,	// Developer
+			Contributor,	// Contributor
+			Translator,	// Translator (TODO)
 
-			CT_MAX
+			Max
 		};
 
 		struct CreditsData_t {
-			CreditType_t type;
+			CreditType type;
 			const char *name;
 			const char *url;
 			const char *linkText;

@@ -26,5 +26,5 @@ FIND_LIBRARY_PKG_CONFIG(LibCajaExtension
 IF(LibCajaExtension_FOUND AND NOT LibCajaExtension_EXTENSION_DIR)
 	MESSAGE(WARNING "LibCajaExtension_EXTENSION_DIR is not set; using defaults.")
 	INCLUDE(DirInstallPaths)
-	SET(LibCajaExtension_EXTENSION_DIR "${DIR_INSTALL_LIB}/caja/extensions-2.0" CACHE INTERNAL "LibCajaExtension_EXTENSION_DIR")
+	SET(LibCajaExtension_EXTENSION_DIR "${CMAKE_INSTALL_PREFIX}/${DIR_INSTALL_LIB}/caja/extensions-2.0" CACHE INTERNAL "LibCajaExtension_EXTENSION_DIR")
 ENDIF(LibCajaExtension_FOUND AND NOT LibCajaExtension_EXTENSION_DIR)

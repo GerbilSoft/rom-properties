@@ -10,8 +10,9 @@
 #include "OptionsTab.hpp"
 #include "res/resource.h"
 
-// librpbase
-using LibRpBase::Config;
+// librpbase, librpfile
+using namespace LibRpBase;
+using namespace LibRpFile;
 
 // C++ STL classes.
 using std::tstring;
@@ -23,11 +24,6 @@ class OptionsTabPrivate
 
 	private:
 		RP_DISABLE_COPY(OptionsTabPrivate)
-
-	public:
-		// Property for "D pointer".
-		// This points to the OptionsTabPrivate object.
-		static const TCHAR D_PTR_PROP[];
 
 	protected:
 		/**
@@ -109,10 +105,6 @@ OptionsTabPrivate::OptionsTabPrivate()
 	, hWndPropSheet(nullptr)
 	, changed(false)
 { }
-
-// Property for "D pointer".
-// This points to the OptionsTabPrivate object.
-const TCHAR OptionsTabPrivate::D_PTR_PROP[] = _T("OptionsTabPrivate");
 
 /**
  * Reset the configuration.
@@ -212,23 +204,34 @@ void OptionsTabPrivate::save(void)
 		return;
 	}
 
+	// Make sure the configuration directory exists.
+	// NOTE: The filename portion MUST be kept in config_path,
+	// since the last component is ignored by rmkdir().
+	int ret = FileSystem::rmkdir(filename);
+	if (ret != 0) {
+		// rmkdir() failed.
+		return;
+	}
+
+	const tstring tfilename = U82T_c(filename);
+
 	const TCHAR *btstr = bstCheckedToBoolString(IsDlgButtonChecked(hWndPropSheet, IDC_EXTIMGDL));
-	WritePrivateProfileString(_T("Downloads"), _T("ExtImageDownload"), btstr, U82T_c(filename));
+	WritePrivateProfileString(_T("Downloads"), _T("ExtImageDownload"), btstr, tfilename.c_str());
 
 	btstr = bstCheckedToBoolString(IsDlgButtonChecked(hWndPropSheet, IDC_INTICONSMALL));
-	WritePrivateProfileString(_T("Downloads"), _T("UseIntIconForSmallSizes"), btstr, U82T_c(filename));
+	WritePrivateProfileString(_T("Downloads"), _T("UseIntIconForSmallSizes"), btstr, tfilename.c_str());
 
 	btstr = bstCheckedToBoolString(IsDlgButtonChecked(hWndPropSheet, IDC_HIGHRESDL));
-	WritePrivateProfileString(_T("Downloads"), _T("DownloadHighResScans"), btstr, U82T_c(filename));
+	WritePrivateProfileString(_T("Downloads"), _T("DownloadHighResScans"), btstr, tfilename.c_str());
 
 	btstr = bstCheckedToBoolString(IsDlgButtonChecked(hWndPropSheet, IDC_STOREFILEORIGININFO));
-	WritePrivateProfileString(_T("Downloads"), _T("StoreFileOriginInfo"), btstr, U82T_c(filename));
+	WritePrivateProfileString(_T("Downloads"), _T("StoreFileOriginInfo"), btstr, tfilename.c_str());
 
 	btstr = bstCheckedToBoolString(IsDlgButtonChecked(hWndPropSheet, IDC_DANGEROUSPERMISSIONS));
-	WritePrivateProfileString(_T("Options"), _T("ShowDangerousPermissionsOverlayIcon"), btstr, U82T_c(filename));
+	WritePrivateProfileString(_T("Options"), _T("ShowDangerousPermissionsOverlayIcon"), btstr, tfilename.c_str());
 
 	btstr = bstCheckedToBoolString(IsDlgButtonChecked(hWndPropSheet, IDC_ENABLETHUMBNAILONNETWORKFS));
-	WritePrivateProfileString(_T("Options"), _T("EnableThumbnailOnNetworkFS"), btstr, U82T_c(filename));
+	WritePrivateProfileString(_T("Options"), _T("EnableThumbnailOnNetworkFS"), btstr, tfilename.c_str());
 
 	// No longer changed.
 	changed = false;
@@ -260,24 +263,15 @@ INT_PTR CALLBACK OptionsTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wParam,
 			d->hWndPropSheet = hDlg;
 
 			// Store the D object pointer with this particular page dialog.
-			SetProp(hDlg, D_PTR_PROP, reinterpret_cast<HANDLE>(d));
+			SetWindowLongPtr(hDlg, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(d));
 
 			// Reset the configuration.
 			d->reset();
 			return TRUE;
 		}
 
-		case WM_DESTROY: {
-			// Remove the D_PTR_PROP property from the page. 
-			// The D_PTR_PROP property stored the pointer to the 
-			// OptionsTabPrivate object.
-			RemoveProp(hDlg, D_PTR_PROP);
-			return TRUE;
-		}
-
 		case WM_NOTIFY: {
-			OptionsTabPrivate *const d = static_cast<OptionsTabPrivate*>(
-				GetProp(hDlg, D_PTR_PROP));
+			auto *const d = reinterpret_cast<OptionsTabPrivate*>(GetWindowLongPtr(hDlg, GWLP_USERDATA));
 			if (!d) {
 				// No OptionsTabPrivate. Can't do anything...
 				return FALSE;
@@ -304,8 +298,7 @@ INT_PTR CALLBACK OptionsTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wParam,
 		}
 
 		case WM_COMMAND: {
-			OptionsTabPrivate *const d = static_cast<OptionsTabPrivate*>(
-				GetProp(hDlg, D_PTR_PROP));
+			auto *const d = reinterpret_cast<OptionsTabPrivate*>(GetWindowLongPtr(hDlg, GWLP_USERDATA));
 			if (!d) {
 				// No OptionsTabPrivate. Can't do anything...
 				return FALSE;
@@ -322,8 +315,7 @@ INT_PTR CALLBACK OptionsTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wParam,
 		}
 
 		case WM_RP_PROP_SHEET_RESET: {
-			OptionsTabPrivate *const d = static_cast<OptionsTabPrivate*>(
-				GetProp(hDlg, D_PTR_PROP));
+			auto *const d = reinterpret_cast<OptionsTabPrivate*>(GetWindowLongPtr(hDlg, GWLP_USERDATA));
 			if (!d) {
 				// No OptionsTabPrivate. Can't do anything...
 				return FALSE;
@@ -335,8 +327,7 @@ INT_PTR CALLBACK OptionsTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wParam,
 		}
 
 		case WM_RP_PROP_SHEET_DEFAULTS: {
-			OptionsTabPrivate *const d = static_cast<OptionsTabPrivate*>(
-				GetProp(hDlg, D_PTR_PROP));
+			auto *const d = reinterpret_cast<OptionsTabPrivate*>(GetWindowLongPtr(hDlg, GWLP_USERDATA));
 			if (!d) {
 				// No OptionsTabPrivate. Can't do anything...
 				return FALSE;

@@ -12,9 +12,17 @@
 #include <errno.h>
 #include <stdlib.h>
 
+// Some errors aren't present in various SDKs.
+#ifndef ERROR_IMAGE_SUBSYSTEM_NOT_PRESENT	// not present in MinGW-w64 4.0.6
+# define ERROR_IMAGE_SUBSYSTEM_NOT_PRESENT 308
+#endif
+#ifndef ERROR_DISK_RESOURCES_EXHAUSTED		// not present in Windows 7 SDK
+# define ERROR_DISK_RESOURCES_EXHAUSTED 314
+#endif
+
 typedef struct _errmap {
-        DWORD w32;	// Win32 error code.
-        int posix;	// POSIX error code.
+        uint16_t w32;	// Win32 error code.
+        uint16_t posix;	// POSIX error code.
 } errmap;
 
 static const errmap w32_to_posix[] = {
@@ -43,13 +51,14 @@ static const errmap w32_to_posix[] = {
 	{ERROR_READ_FAULT,		EIO       },  // 30
 	{ERROR_GEN_FAILURE,		EIO       },  // 31
 #ifdef ETXTBSY
-	// ETXTBSY is not defined in MinGW-w64 4.0.6.
+	// MinGW-w64 4.0.6 doesn't have ETXTBSY.
 	{ERROR_SHARING_VIOLATION,	ETXTBSY   },  // 32 (TODO)
 #endif
-	{ERROR_LOCK_VIOLATION,		EACCES    },  // BAD33
+	{ERROR_LOCK_VIOLATION,		EACCES    },  // 33
 	{ERROR_HANDLE_DISK_FULL,	ENOSPC    },  // 39
 	{ERROR_NOT_SUPPORTED,		ENOTSUP   },  // 50
-#ifdef ENOTUNIQ /* MSVC 2015 doesn't have ENOTUNIQ. */
+#ifdef ENOTUNIQ
+	// MSVC 2015 doesn't have ENOTUNIQ.
 	{ERROR_DUP_NAME,		ENOTUNIQ  },  // 52
 #endif
 	{ERROR_BAD_NETPATH,		ENOENT    },  // 53
@@ -83,15 +92,10 @@ static const errmap w32_to_posix[] = {
 	{ERROR_FILENAME_EXCED_RANGE,	ENOENT    },  // 206
 	{ERROR_NESTING_NOT_ALLOWED,	EAGAIN    },  // 215
 	{ERROR_EXE_MACHINE_TYPE_MISMATCH, ENOEXEC },  // 216
-#ifdef ERROR_IMAGE_SUBSYSTEM_NOT_PRESENT
-	// ERROR_IMAGE_SUBSYSTEM_NOT_PRESENT is not defined in MinGW-w64 4.0.6.
 	{ERROR_IMAGE_SUBSYSTEM_NOT_PRESENT, ENOEXEC}, // 308
-#endif
-#ifdef ERROR_DISK_RESOURCES_EXHAUSTED
-	// ERROR_DISK_RESOURCES_EXHAUSTED is not defined in the Windows 7 SDK.
 	{ERROR_DISK_RESOURCES_EXHAUSTED, ENOSPC   },  // 314
-#endif
 	{ERROR_INVALID_ADDRESS,		EFAULT    },  // 487
+	{ERROR_NO_UNICODE_TRANSLATION,	EILSEQ    },  // 1113
 	{ERROR_IO_DEVICE,		EIO       },  // 1117
 	{ERROR_NOT_ENOUGH_QUOTA,	ENOMEM    }   // 1816
 };
@@ -122,8 +126,8 @@ static const errmap w32_to_posix[] = {
  */
 static int RP_C_API errmap_compar(const void *a, const void *b)
 {
-	const DWORD err1 = ((const errmap*)a)->w32;
-	const DWORD err2 = ((const errmap*)b)->w32;
+	const uint16_t err1 = ((const errmap*)a)->w32;
+	const uint16_t err2 = ((const errmap*)b)->w32;
 	if (err1 < err2) return -1;
 	if (err1 > err2) return 1;
 	return 0;
@@ -136,12 +140,20 @@ static int RP_C_API errmap_compar(const void *a, const void *b)
  */
 int w32err_to_posix(DWORD w32err)
 {
+	errmap key;
+	const errmap *entry;
+
+	if (w32err > UINT16_MAX) {
+		// Error code table is limited to uint16_t.
+		return EINVAL;
+	}
+
 	// Check the error code table.
-	const errmap key = {w32err, 0};
-	const errmap *const entry = (const errmap*)(bsearch(&key,
-			w32_to_posix,
-			sizeof(w32_to_posix)/sizeof(w32_to_posix[0]),
-			sizeof(errmap), errmap_compar));
+	key.w32 = (uint16_t)w32err;
+	key.posix = 0;
+	entry = (const errmap*)(bsearch(&key,
+		w32_to_posix, _countof(w32_to_posix),
+		sizeof(errmap), errmap_compar));
 	if (entry) {
 		// Found an error code.
 		return entry->posix;

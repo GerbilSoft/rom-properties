@@ -59,6 +59,13 @@ if(HAVE_OFF64_T)
 endif()
 set(CMAKE_REQUIRED_DEFINITIONS) # clear variable
 
+# rom-properties: 32-bit MSVC gets messed up here due to /Gz.
+# TODO: Use check_symbol_exists() instead?
+if(MSVC)
+   set(OLD_CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS}")
+   set(CMAKE_REQUIRED_FLAGS "/Gd")
+endif(MSVC)
+
 #
 # Check for fseeko
 #
@@ -66,6 +73,12 @@ check_function_exists(fseeko HAVE_FSEEKO)
 if(NOT HAVE_FSEEKO)
     add_definitions(-DNO_FSEEKO)
 endif()
+
+# rom-properties
+if(MSVC)
+   set(CMAKE_REQUIRED_FLAGS "${OLD_CMAKE_REQUIRED_FLAGS}")
+   unset(OLD_CMAKE_REQUIRED_FLAGS)
+endif(MSVC)
 
 #
 # Check for unistd.h
@@ -228,6 +241,9 @@ add_definitions(${ZLIB_DEFINITIONS})
 # rom-properties: Set target definitions and include directories.
 IF(BUILD_SHARED_LIBS)
 	target_compile_definitions(zlib PUBLIC -DZLIB_CONST)
+	IF(NOT WIN32)
+		target_compile_definitions(zlib PRIVATE -DHAVE_HIDDEN)
+	ENDIF(NOT WIN32)
 	TARGET_INCLUDE_DIRECTORIES(zlib
 		PUBLIC  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>

@@ -1,8 +1,8 @@
 # AppVeyor configuration file.
-version: '1.4.0.{build}'
+version: '1.7.3.{build}'
 
 # Build worker image (VM template)
-image: Visual Studio 2013
+image: Visual Studio 2015
 
 # scripts that are called at very beginning, before repo cloning
 init:
@@ -22,32 +22,51 @@ only_commits:
     - extlib/**/*
     - src/**/*
 
-platform:
-  - x86
-  - x64
-
-configuration:
-  - Debug
-  - Release
-
 environment:
-  NASM_URL: http://www.nasm.us/pub/nasm/releasebuilds/2.12.02/win64/nasm-2.12.02-installer-x64.exe
+  matrix:
+    - platform: x86
+      configuration: Debug
+      compiler: msvc2015
 
-# Install NASM, then run CMake.
+    - platform: x86
+      configuration: Release
+      compiler: msvc2015
+
+    - platform: x64
+      configuration: Debug
+      compiler: msvc2015
+
+    - platform: x64
+      configuration: Release
+      compiler: msvc2015
+
+    - platform: x86
+      configuration: Debug
+      compiler: mingw-w64
+
+    - platform: x64
+      configuration: Debug
+      compiler: mingw-w64
+
+# Run CMake with optional features turned off initially.
 before_build:
-  # TODO: Remove after https://github.com/appveyor/ci/issues/1426 is fixed
-  - set "PATH=C:\Program Files\Git\mingw64\bin;%PATH%"
-  - curl -L -o nasminst.exe "%NASM_URL%"
-  - start /wait nasminst /S
   - cd %APPVEYOR_BUILD_FOLDER%
-  - appveyor.cmd
+  - appveyor.cmd OFF
 
+# Build once with optional features turned off,
+# then build again with optional features turned on.
 build_script:
-  - cd %APPVEYOR_BUILD_FOLDER%
-  - msbuild ALL_BUILD.vcxproj
+  - cd %APPVEYOR_BUILD_FOLDER%\build
+  - cmake --build . --config %configuration%
+  - cd ..
+  - appveyor.cmd ON
+  - cd %APPVEYOR_BUILD_FOLDER%\build
+  - cmake --build . --config %configuration%
 
 test_script:
-  - cd %APPVEYOR_BUILD_FOLDER%
-  - ctest -V -C %CONFIGURATION%
+  - cd %APPVEYOR_BUILD_FOLDER%\build
+  - ctest -V -C %configuration%
 
-# TODO: Automatic packaging?
+after_test:
+  - cd %APPVEYOR_BUILD_FOLDER%\build
+  - ..\appveyor-artifacts.cmd

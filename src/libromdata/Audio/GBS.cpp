@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * GBS.hpp: GBS audio reader.                                              *
  *                                                                         *
- * Copyright (c) 2018-2019 by David Korth.                                 *
+ * Copyright (c) 2018-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -10,8 +10,9 @@
 #include "GBS.hpp"
 #include "gbs_structs.h"
 
-// librpbase
+// librpbase, librpfile
 using namespace LibRpBase;
+using LibRpFile::IRpFile;
 
 // C++ STL classes.
 using std::string;
@@ -65,7 +66,8 @@ GBS::GBS(IRpFile *file)
 {
 	RP_D(GBS);
 	d->className = "GBS";
-	d->fileType = FTYPE_AUDIO_FILE;
+	d->mimeType = "audio/x-gbs";	// unofficial
+	d->fileType = FileType::AudioFile;
 
 	if (!d->file) {
 		// Could not ref() the file handle.
@@ -76,8 +78,7 @@ GBS::GBS(IRpFile *file)
 	d->file->rewind();
 	size_t size = d->file->read(&d->gbsHeader, sizeof(d->gbsHeader));
 	if (size != sizeof(d->gbsHeader)) {
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
 
@@ -91,9 +92,7 @@ GBS::GBS(IRpFile *file)
 	d->isValid = (isRomSupported_static(&info) >= 0);
 
 	if (!d->isValid) {
-		d->file->unref();
-		d->file = nullptr;
-		return;
+		UNREF_AND_NULL_NOCHK(d->file);
 	}
 }
 
@@ -253,22 +252,22 @@ int GBS::loadFieldData(void)
 	// Load address.
 	d->fields->addField_string_numeric(C_("GBS", "Load Address"),
 		le16_to_cpu(gbsHeader->load_address),
-		RomFields::FB_HEX, 4, RomFields::STRF_MONOSPACE);
+		RomFields::Base::Hex, 4, RomFields::STRF_MONOSPACE);
 
 	// Init address.
 	d->fields->addField_string_numeric(C_("GBS", "Init Address"),
 		le16_to_cpu(gbsHeader->init_address),
-		RomFields::FB_HEX, 4, RomFields::STRF_MONOSPACE);
+		RomFields::Base::Hex, 4, RomFields::STRF_MONOSPACE);
 
 	// Play address.
 	d->fields->addField_string_numeric(C_("GBS", "Play Address"),
 		le16_to_cpu(gbsHeader->play_address),
-		RomFields::FB_HEX, 4, RomFields::STRF_MONOSPACE);
+		RomFields::Base::Hex, 4, RomFields::STRF_MONOSPACE);
 
 	// Play address.
 	d->fields->addField_string_numeric(C_("GBS", "Stack Pointer"),
 		le16_to_cpu(gbsHeader->stack_pointer),
-		RomFields::FB_HEX, 4, RomFields::STRF_MONOSPACE);
+		RomFields::Base::Hex, 4, RomFields::STRF_MONOSPACE);
 
 	// TODO: Timer modulo and control?
 

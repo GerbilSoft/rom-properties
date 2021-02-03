@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * RP_PropertyStore.hpp: IPropertyStore implementation.                    *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -11,7 +11,7 @@
 
 // librpbase
 #include "librpbase/config.librpbase.h"
-#include "librpbase/common.h"
+#include "common.h"
 
 // Reference: http://www.codeproject.com/Articles/338268/COM-in-C
 #include "libwin32common/ComBase.hpp"
@@ -28,7 +28,7 @@ namespace LibWin32Common {
 class RP_PropertyStore_Private;
 
 class UUID_ATTR("{4A1E3510-50BD-4B03-A801-E4C954F43B96}")
-RP_PropertyStore : public LibWin32Common::ComBase3<IInitializeWithStream, IPropertyStore, IPropertyStoreCapabilities>
+RP_PropertyStore final : public LibWin32Common::ComBase3<IInitializeWithStream, IPropertyStore, IPropertyStoreCapabilities>
 {
 	public:
 		RP_PropertyStore();
@@ -46,6 +46,25 @@ RP_PropertyStore : public LibWin32Common::ComBase3<IInitializeWithStream, IPrope
 		// IUnknown
 		IFACEMETHODIMP QueryInterface(REFIID riid, LPVOID *ppvObj) final;
 
+	private:
+		/**
+		 * Get the PreviewDetails string.
+		 * @return PreviewDetails string.
+		 */
+		static std::tstring GetPreviewDetailsString();
+
+		/**
+		 * Get the InfoTip string.
+		 * @return InfoTip string.
+		 */
+		static std::tstring GetInfoTipString();
+
+		/**
+		 * Get the FullDetails string.
+		 * @return FullDetails string.
+		 */
+		static std::tstring GetFullDetailsString();
+
 	public:
 		/**
 		 * Register the COM object.
@@ -55,11 +74,12 @@ RP_PropertyStore : public LibWin32Common::ComBase3<IInitializeWithStream, IPrope
 
 		/**
 		 * Register the file type handler.
-		 * @param hklm HKEY_LOCAL_MACHINE or user-specific root.
+		 * @param hkcr HKEY_CLASSES_ROOT or user-specific classes root.
+		 * @param pHklm HKEY_LOCAL_MACHINE or user-specific root, or nullptr to skip.
 		 * @param ext File extension, including the leading dot.
 		 * @return ERROR_SUCCESS on success; Win32 error code on error.
 		 */
-		static LONG RegisterFileType(LibWin32Common::RegKey &hklm, LPCTSTR ext);
+		static LONG RegisterFileType(LibWin32Common::RegKey &hkcr, LibWin32Common::RegKey *pHklm, LPCTSTR ext);
 
 		/**
 		 * Unregister the COM object.
@@ -69,11 +89,12 @@ RP_PropertyStore : public LibWin32Common::ComBase3<IInitializeWithStream, IPrope
 
 		/**
 		 * Unregister the file type handler.
-		 * @param hklm HKEY_LOCAL_MACHINE or user-specific root.
+		 * @param hkcr HKEY_CLASSES_ROOT or user-specific classes root.
+		 * @param pHklm HKEY_LOCAL_MACHINE or user-specific root, or nullptr to skip.
 		 * @param ext File extension, including the leading dot.
 		 * @return ERROR_SUCCESS on success; Win32 error code on error.
 		 */
-		static LONG UnregisterFileType(LibWin32Common::RegKey &hklm, LPCTSTR ext);
+		static LONG UnregisterFileType(LibWin32Common::RegKey &hkcr, LibWin32Common::RegKey *pHklm, LPCTSTR ext);
 
 	public:
 		// IInitializeWithStream

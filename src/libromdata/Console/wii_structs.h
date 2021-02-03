@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * wii_structs.h: Nintendo Wii data structures.                            *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -12,14 +12,13 @@
 #ifndef __ROMPROPERTIES_LIBROMDATA_WII_STRUCTS_H__
 #define __ROMPROPERTIES_LIBROMDATA_WII_STRUCTS_H__
 
-#include "librpbase/common.h"
 #include <stdint.h>
+#include "common.h"
+#include "nintendo_system_id.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-#pragma pack(1)
 
 // 34-bit value stored in uint32_t.
 // The value must be lshifted by 2.
@@ -35,12 +34,13 @@ typedef uint32_t uint34_rshift2_t;
  * All fields are big-endian.
  */
 #define RVL_VolumeGroupTable_ADDRESS 0x40000
-typedef struct PACKED _RVL_VolumeGroupTable {
+typedef struct _RVL_VolumeGroupTable {
 	struct {
 		uint32_t count;		// Number of partitions in this volume group.
 		uint34_rshift2_t addr;	// Start address of this table, rshifted by 2.
 	} vg[4];
 } RVL_VolumeGroupTable;
+ASSERT_STRUCT(RVL_VolumeGroupTable, 2*4*sizeof(uint32_t));
 
 /**
  * Wii partition table entry.
@@ -49,16 +49,17 @@ typedef struct PACKED _RVL_VolumeGroupTable {
  *
  * All fields are big-endian.
  */
-typedef struct PACKED _RVL_PartitionTableEntry {
+typedef struct _RVL_PartitionTableEntry {
 	uint34_rshift2_t addr;	// Start address of this partition, rshifted by 2.
 	uint32_t type;		// Type of partition. (0 == Game, 1 == Update, 2 == Channel Installer, other = title ID)
 } RVL_PartitionTableEntry;
+ASSERT_STRUCT(RVL_PartitionTableEntry, 2*sizeof(uint32_t));
 
-enum RVL_PartitionType {
+typedef enum {
 	RVL_PT_GAME	= 0,
 	RVL_PT_UPDATE	= 1,
 	RVL_PT_CHANNEL	= 2,
-};
+} RVL_PartitionType;
 
 // Wii ticket constants.
 #define RVL_SIGNATURE_TYPE_RSA2048 0x10001
@@ -69,30 +70,17 @@ enum RVL_PartitionType {
  * Time limit structs for Wii ticket.
  * Reference: https://wiibrew.org/wiki/Ticket
  */
-typedef struct PACKED _RVL_TimeLimit {
+typedef struct _RVL_TimeLimit {
 	uint32_t enable;	// 1 == enable; 0 == disable
 	uint32_t seconds;	// Time limit, in seconds.
 } RVL_TimeLimit;
-ASSERT_STRUCT(RVL_TimeLimit, 8);
-
-/**
- * Title ID struct/union.
- * TODO: Verify operation on big-endian systems.
- */
-typedef union PACKED _RVL_TitleID_t {
-	uint64_t id;
-	struct {
-		uint32_t hi;
-		uint32_t lo;
-	};
-	uint8_t u8[8];
-} RVL_TitleID_t;
-ASSERT_STRUCT(RVL_TitleID_t, 8);
+ASSERT_STRUCT(RVL_TimeLimit, 2*sizeof(uint32_t));
 
 /**
  * Wii ticket.
  * Reference: https://wiibrew.org/wiki/Ticket
  */
+#pragma pack(1)
 typedef struct PACKED _RVL_Ticket {
 	uint32_t signature_type;	// [0x000] Always 0x10001 for RSA-2048.
 	uint8_t signature[0x100];	// [0x004] Signature.
@@ -106,7 +94,7 @@ typedef struct PACKED _RVL_Ticket {
 	uint8_t unknown1;		// [0x1CF] Unknown.
 	uint8_t ticket_id[0x08];	// [0x1D0] Ticket ID. (IV for title key decryption for console-specific titles.)
 	uint32_t console_id;		// [0x1D8] Console ID.
-	RVL_TitleID_t title_id;		// [0x1DC] Title ID. (IV used for AES-CBC encryption.)
+	Nintendo_TitleID_BE_t title_id;	// [0x1DC] Title ID. (IV used for AES-CBC encryption.)
 	uint8_t unknown2[2];		// [0x1E4] Unknown, mostly 0xFFFF.
 	uint8_t ticket_version[2];	// [0x1E6] Ticket version.
 	uint32_t permitted_titles_mask;	// [0x1E8] Permitted titles mask.
@@ -119,11 +107,13 @@ typedef struct PACKED _RVL_Ticket {
 	RVL_TimeLimit time_limits[8];	// [0x264] Time limits.
 } RVL_Ticket;
 ASSERT_STRUCT(RVL_Ticket, 0x2A4);
+#pragma pack()
 
 /**
  * Wii TMD header.
  * Reference: https://wiibrew.org/wiki/Tmd_file_structure
  */
+#pragma pack(1)
 typedef struct PACKED _RVL_TMD_Header {
 	uint32_t signature_type;	// [0x000] Always 0x10001 for RSA-2048.
 	uint8_t signature[0x100];	// [0x004] Signature.
@@ -135,8 +125,8 @@ typedef struct PACKED _RVL_TMD_Header {
 	uint8_t ca_crl_version;		// [0x181] CA CRL version.
 	uint8_t signer_crl_version;	// [0x182] Signer CRL version.
 	uint8_t padding1;		// [0x183]
-	RVL_TitleID_t sys_version;	// [0x184] System version. (IOS title ID)
-	RVL_TitleID_t title_id;		// [0x18C] Title ID.
+	Nintendo_TitleID_BE_t sys_version;	// [0x184] System version. (IOS title ID)
+	Nintendo_TitleID_BE_t title_id;		// [0x18C] Title ID.
 	uint32_t title_type;		// [0x194] Title type.
 	uint16_t group_id;		// [0x198] Group ID.
 	uint16_t reserved1;		// [0x19A]
@@ -158,20 +148,58 @@ typedef struct PACKED _RVL_TMD_Header {
 	// Following this header is a variable-length content table.
 } RVL_TMD_Header;
 ASSERT_STRUCT(RVL_TMD_Header, 0x1E4);
+#pragma pack()
 
 /**
  * Access rights.
  */
 typedef enum {
-	RVL_ACCESS_RIGHTS_AHBPROT	= (1 << 0),
-	RVL_ACCESS_RIGHTS_DVD_VIDEO	= (1 << 1),
+	RVL_ACCESS_RIGHTS_AHBPROT	= (1U << 0),
+	RVL_ACCESS_RIGHTS_DVD_VIDEO	= (1U << 1),
 } RVL_Access_Rights_e;
+
+/**
+ * Wii content entry. (Stored after the TMD.)
+ * Reference: https://wiibrew.org/wiki/Title_metadata
+ */
+#pragma pack(1)
+typedef struct PACKED _RVL_Content_Entry {
+	uint32_t content_id;		// [0x000] Content ID
+	uint16_t index;			// [0x004] Index
+	uint16_t type;			// [0x006] Type (see RVL_Content_Type_e)
+	uint64_t size;			// [0x008] Size
+	uint8_t sha1_hash[20];		// [0x010] SHA-1 hash of the content (installed) or H3 table (disc).
+} RVL_Content_Entry;
+#pragma pack()
+ASSERT_STRUCT(RVL_Content_Entry, 0x24);
+
+/**
+ * Content type (bitfield)
+ */
+typedef enum {
+	RVL_CONTENT_TYPE_DEFAULT	= 0x0001,
+	RVL_CONTENT_TYPE_UNKNOWN_0x04	= 0x0004,
+
+	// Used for DLC titles.
+	RVL_CONTENT_TYPE_DATA		= 0x0008,
+	RVL_CONTENT_TYPE_UNKNOWN_0x10	= 0x0010,
+
+	// Seems to be used for WFS titles.
+	RVL_CONTENT_TYPE_MAYBE_WFS	= 0x0020,
+	RVL_CONTENT_TYPE_UNKNOWN_CT	= 0x0040,
+
+	// Seen in CoD:MW3 DLC.
+	RVL_CONTENT_TYPE_UNKNOWN_0x4000	= 0x4000,
+
+	// Seen in Pop Europe (WiiWare).
+	RVL_CONTENT_TYPE_UNKNOWN_0x8000	= 0x8000,
+} RVL_Content_Type_e;
 
 /**
  * Wii partition header.
  * Reference: https://wiibrew.org/wiki/Wii_Disc#Partition
  */
-typedef struct PACKED _RVL_PartitionHeader {
+typedef struct _RVL_PartitionHeader {
 	RVL_Ticket ticket;			// [0x000]
 	uint32_t tmd_size;			// [0x2A4] TMD size.
 	uint34_rshift2_t tmd_offset;		// [0x2A8] TMD offset, rshifted by 2.
@@ -188,15 +216,15 @@ ASSERT_STRUCT(RVL_PartitionHeader, 0x8000);
  * Country indexes in RVL_RegionSetting.ratings[].
  */
 typedef enum {
-	RVL_RATING_JAPAN = 0,		// CERO
-	RVL_RATING_USA = 1,		// ESRB
-	RVL_RATING_GERMANY = 3,		// USK
-	RVL_RATING_PEGI = 4,		// PEGI
-	RVL_RATING_FINLAND = 5,		// MEKU?
-	RVL_RATING_PORTUGAL = 6,	// Modified PEGI
-	RVL_RATING_BRITAIN = 7,		// BBFC
-	RVL_RATING_AUSTRALIA = 8,	// AGCB
-	RVL_RATING_SOUTH_KOREA = 9,	// GRB
+	RVL_RATING_JAPAN		= 0,	// CERO
+	RVL_RATING_USA			= 1,	// ESRB
+	RVL_RATING_GERMANY		= 3,	// USK
+	RVL_RATING_PEGI			= 4,	// PEGI
+	RVL_RATING_FINLAND		= 5,	// MEKU?
+	RVL_RATING_PORTUGAL		= 6,	// Modified PEGI
+	RVL_RATING_BRITAIN		= 7,	// BBFC
+	RVL_RATING_AUSTRALIA		= 8,	// AGCB
+	RVL_RATING_SOUTH_KOREA		= 9,	// GRB
 } RVL_RegionSetting_RatingCountry;
 
 /**
@@ -206,11 +234,11 @@ typedef enum {
 #define RVL_RegionSetting_ADDRESS 0x4E000
 typedef struct PACKED _RVL_RegionSetting {
 	uint32_t region_code;	// Region code. (See GCN_Region_Code.)
-	uint8_t reserved[12];
+	uint32_t disc_count;	// Number of game discs.
+	uint8_t reserved[8];
 	uint8_t ratings[0x10];	// Country-specific age ratings.
 } RVL_RegionSetting;
-
-#pragma pack()
+ASSERT_STRUCT(RVL_RegionSetting, 32);
 
 #ifdef __cplusplus
 }

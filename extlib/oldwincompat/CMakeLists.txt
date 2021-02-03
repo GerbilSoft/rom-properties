@@ -1,8 +1,8 @@
-PROJECT(oldwincompat C)
 # Compatibility library for older versions of Windows.
 # References:
 # - https://stackoverflow.com/questions/19516796/visual-studio-2012-win32-project-targeting-windows-2000/53548116
 # - https://stackoverflow.com/a/53548116
+PROJECT(oldwincompat LANGUAGES C)
 
 IF(NOT MSVC)
 	MESSSAGE(FATAL_ERROR "liboldwincompat only supports MSVC right now.")

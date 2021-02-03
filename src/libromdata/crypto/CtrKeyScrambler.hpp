@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * CtrKeyScrambler.hpp: Nintendo 3DS key scrambler.                        *
  *                                                                         *
- * Copyright (c) 2016-2017 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -14,7 +14,7 @@
 #error This file should only be included if decryption is enabled.
 #endif /* ENABLE_DECRYPTION */
 
-#include "librpbase/common.h"
+#include "common.h"
 
 // for u128_t
 #include "N3DSVerifyKeys.hpp"

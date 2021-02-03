@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * Amiibo.cpp: Nintendo amiibo NFC dump reader.                            *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -11,8 +11,9 @@
 #include "nfp_structs.h"
 #include "data/AmiiboData.hpp"
 
-// librpbase
+// librpbase, librpfile
 using namespace LibRpBase;
+using LibRpFile::IRpFile;
 
 // C++ STL classes.
 using std::string;
@@ -23,7 +24,7 @@ namespace LibRomData {
 ROMDATA_IMPL(Amiibo)
 ROMDATA_IMPL_IMG(Amiibo)
 
-class AmiiboPrivate : public RomDataPrivate
+class AmiiboPrivate final : public RomDataPrivate
 {
 	public:
 		AmiiboPrivate(Amiibo *q, IRpFile *file);
@@ -96,7 +97,8 @@ Amiibo::Amiibo(IRpFile *file)
 	// This class handles NFC dumps.
 	RP_D(Amiibo);
 	d->className = "Amiibo";
-	d->fileType = FTYPE_NFC_DUMP;
+	d->mimeType = "application/x-nintendo-amiibo";	// unofficial, not on fd.o
+	d->fileType = FileType::NFC_Dump;
 
 	if (!d->file) {
 		// Could not ref() the file handle.
@@ -126,8 +128,7 @@ Amiibo::Amiibo(IRpFile *file)
 
 		default:
 			// Unsupported file size.
-			d->file->unref();
-			d->file = nullptr;
+			UNREF_AND_NULL_NOCHK(d->file);
 			return;
 	}
 
@@ -141,8 +142,7 @@ Amiibo::Amiibo(IRpFile *file)
 	d->isValid = (isRomSupported_static(&info) >= 0);
 
 	if (!d->isValid) {
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 	}
 }
 

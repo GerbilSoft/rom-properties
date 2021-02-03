@@ -26,7 +26,7 @@ class RP_MultiCreator
 };
 
 template <class comObj, class creatorClass = RP_MultiCreator<comObj> >
-class RP_ClassFactory : public LibWin32Common::ComBase<IClassFactory>, public creatorClass
+class RP_ClassFactory final : public LibWin32Common::ComBase<IClassFactory>, public creatorClass
 {
 	public:
 		RP_ClassFactory() { }
@@ -44,20 +44,18 @@ class RP_ClassFactory : public LibWin32Common::ComBase<IClassFactory>, public cr
 				return E_POINTER;
 			}
 
-			if (!LibWin32Common::pfnQISearch) {
-				// QISearch() could not be loaded.
-				*ppvObject = nullptr;
-				return E_UNEXPECTED;
-			}
-
-#pragma warning(push)
-#pragma warning(disable: 4365 4838)
+#ifdef _MSC_VER
+# pragma warning(push)
+# pragma warning(disable: 4365 4838)
+#endif /* _MSC_VER */
 			static const QITAB rgqit[] = {
 				QITABENT(RP_ClassFactory, IClassFactory),
 				{ 0, 0 }
 			};
-#pragma warning(pop)
-			return LibWin32Common::pfnQISearch(this, rgqit, riid, ppvObject);
+#ifdef _MSC_VER
+# pragma warning(pop)
+#endif /* _MSC_VER */
+			return LibWin32Common::rp_QISearch(this, rgqit, riid, ppvObject);
 		}
 
 		/** IClassFactory **/

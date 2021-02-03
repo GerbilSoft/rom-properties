@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * ImageDecoder_PVRTC.cpp: Image decoding functions. (PVRTC)               *
  *                                                                         *
- * Copyright (c) 2019 by David Korth.                                      *
+ * Copyright (c) 2019-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -68,10 +68,10 @@ rp_image *fromPVRTC(int width, int height,
 	}
 
 	// Create an rp_image.
-	rp_image *img = new rp_image(width, height, rp_image::FORMAT_ARGB32);
+	rp_image *const img = new rp_image(width, height, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
-		delete img;
+		img->unref();
 		return nullptr;
 	}
 
@@ -83,7 +83,7 @@ rp_image *fromPVRTC(int width, int height,
 	assert(size == expected_size_in);
 	if (size != expected_size_in) {
 		// Read error...
-		delete img;
+		img->unref();
 		return nullptr;
 	}
 
@@ -116,8 +116,19 @@ rp_image *fromPVRTCII(int width, int height,
 	assert(width > 0);
 	assert(height > 0);
 
+	// PVRTC-II uses 4x4 tiles (4bpp) or 8x4 tiles (2bpp), but
+	// PVRTC-II allows the last tile to be cut off, so round
+	// up for the physical tile size.
+	int physWidth;
+	if ((mode & PVRTC_BPP_MASK) == PVRTC_2BPP) {
+		physWidth = ALIGN_BYTES(8, width);
+	} else {
+		physWidth = ALIGN_BYTES(4, width);
+	}
+	const int physHeight = ALIGN_BYTES(4, height);
+
 	// Expected size to be read by the PowerVR Native SDK.
-	const uint32_t expected_size_in = ((width * height) /
+	const uint32_t expected_size_in = ((physWidth * physHeight) /
 		(((mode & PVRTC_BPP_MASK) == PVRTC_2BPP) ? 4 : 2));
 
 	assert(img_siz >= static_cast<int>(expected_size_in));
@@ -127,48 +138,32 @@ rp_image *fromPVRTCII(int width, int height,
 		return nullptr;
 	}
 
-	// FIXME: PVRTC-II supports non-power-of-two textures,
-	// including sizes that aren't a multiple of the tile size,
-	// in which case, we'll need to adjust it. For now, we'll
-	// keep the assertion in here.
-
-	// PVRTC-II 2bpp uses 8x4 tiles.
-	// PVRTC-II 4bpp uses 4x4 tiles.
-	if ((mode & PVRTC_BPP_MASK) == PVRTC_2BPP) {
-		// PVRTC 2bpp
-		assert(width % 8 == 0);
-		assert(height % 4 == 0);
-		if (width % 8 != 0 || height % 4 != 0)
-			return nullptr;
-	} else {
-		// PVRTC 4bpp
-		assert(width % 4 == 0);
-		assert(height % 4 == 0);
-		if (width % 4 != 0 || height % 4 != 0)
-			return nullptr;
-	}
-
 	// Create an rp_image.
-	rp_image *img = new rp_image(width, height, rp_image::FORMAT_ARGB32);
+	rp_image *const img = new rp_image(width, height, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
-		delete img;
+		img->unref();
 		return nullptr;
 	}
 
 	// Use the PowerVR Native SDK to decompress the texture.
 	// Return value is the size of the *input* data that was decompressed.
 	// TODO: Row padding?
-	uint32_t size = pvr::PVRTDecompressPVRTCII(img_buf, ((mode & PVRTC_BPP_MASK) == PVRTC_2BPP), width, height,
-		static_cast<uint8_t*>(img->bits()));
+	uint32_t size = pvr::PVRTDecompressPVRTCII(img_buf, ((mode & PVRTC_BPP_MASK) == PVRTC_2BPP),
+		physWidth, physHeight, static_cast<uint8_t*>(img->bits()));
 	assert(size == expected_size_in);
 	if (size != expected_size_in) {
 		// Read error...
-		delete img;
+		img->unref();
 		return nullptr;
 	}
 
 	// TODO: If !has_alpha, make sure the alpha channel is all 0xFF.
+
+	if (width < physWidth || height < physHeight) {
+		// Shrink the image.
+		img->shrink(width, height);
+	}
 
 	// Set the sBIT metadata.
 	// NOTE: Assuming PVRTC-II always has alpha for now.

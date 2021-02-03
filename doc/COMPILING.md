@@ -4,27 +4,26 @@
 
 On Debian/Ubuntu, you will need build-essential and the following development
 packages:
-* All: cmake libcurl-dev zlib1g-dev libpng-dev libjpeg-dev nettle-dev pkg-config libtinyxml2-dev libbsd-dev mesa-common-dev gettext
+* All: cmake libcurl-dev zlib1g-dev libpng-dev libjpeg-dev nettle-dev pkg-config libtinyxml2-dev libbsd-dev gettext libseccomp-dev
+* Optional decompression: libzstd-dev liblz4-dev liblzo2-dev
 * KDE 4.x: libqt4-dev kdelibs5-dev
 * KDE 5.x: qtbase5-dev qttools5-dev-tools extra-cmake-modules libkf5kio-dev libkf5widgetsaddons-dev libkf5filemetadata-dev
-* XFCE (GTK+ 2.x): libglib2.0-dev libgtk2.0-dev libgdk-pixbuf2.0-dev libthunarx-2-dev
-* XFCE (GTK+ 3.x): libglib2.0-dev libgtk-3-dev libcairo2-dev libthunarx-3-dev
-* GNOME: libglib2.0-dev libgtk-3-dev libcairo2-dev libnautilus-extension-dev
-* MATE: libglib2.0-dev libgtk-3-dev libcairo2-dev libcaja-extension-dev
-* Cinnamon: libglib2.0-dev libgtk-3-dev libcairo2-dev libnemo-extension-dev
+* XFCE (GTK+ 2.x): libglib2.0-dev libgtk2.0-dev libgdk-pixbuf2.0-dev libthunarx-2-dev libcanberra-dev libcanberra-gtk-dev
+* XFCE (GTK+ 3.x): libglib2.0-dev libgtk-3-dev libcairo2-dev libthunarx-3-dev libcanberra-dev libcanberra-gtk3-dev
+* GNOME, MATE, Cinnamon: libglib2.0-dev libgtk-3-dev libcairo2-dev libnautilus-extension-dev libcanberra-dev libcanberra-gtk3-dev
 
 NOTE: libkf5kio-dev was called kio-dev prior to Ubuntu 18.04.
 
-On Red Hat/Fedora, you will need to install "C Development Tools and Libraries"
-and the following development packages:
-* All: cmake libcurl-devel zlib-devel libpng-devel libjpeg-turbo-devel nettle-devel tinyxml2-devel libbsd-devel mesa-libGL-devel gettext
+On Red Hat, Fedora, OpenSUSE, and other RPM-based distributions, you will need
+to install "C Development Tools and Libraries" and the following development
+packages:
+* All: cmake libcurl-devel zlib-devel libpng16-devel libjpeg-turbo-devel nettle-devel tinyxml2-devel libbsd-devel gettext-tools libseccomp-devel
+* Optional decompression: libzstd-devel lz4-devel lzo-devel
 * KDE 4.x: qt-devel kdelibs-devel
 * KDE 5.x: qt5-qtbase-devel qt5-qttools extra-cmake-modules kf5-kio-devel kf5-kwidgetsaddons-devel kf5-kfilemetadata-devel
 * XFCE (GTK+ 2.x): glib2-devel gtk2-devel gdk-pixbuf2-devel Thunar-devel
 * XFCE (GTK+ 3.x): glib2-devel gtk3-devel cairo-devel Thunar-devel
-* GNOME: glib2-devel gtk3-devel cairo-devel nautilus-devel
-* MATE: glib2-devel gtk3-devel cairo-devel caja-devel
-* Cinnamon: glib2-devel gtk3-devel cairo-devel nemo-devel
+* GNOME, MATE, Cinnamon: glib2-devel gtk3-devel cairo-devel nautilus-devel libcanberra-devel
 
 NOTE: XFCE's Thunar file browser requires the Tumbler D-Bus daemon to be
 installed in order to create thumbnails.
@@ -38,14 +37,16 @@ if they decide not to allow both ThunarX2 and ThunarX3 to be installed
 side-by-side.
 
 Clone the repository, then:
-* cd rom-properties
-* mkdir build
-* cd build
-* cmake .. -DCMAKE_INSTALL_PREFIX=/usr
-* make
-* sudo make install
-* (KDE 4.x) kbuildsycoca4 --noincremental
-* (KDE 5.x) kbuildsycoca5 --noincremental
+```
+$ cd rom-properties
+$ mkdir build
+$ cd build
+$ cmake .. -DCMAKE_INSTALL_PREFIX=/usr
+$ make
+$ sudo make install
+(KDE 4.x) $ kbuildsycoca4 --noincremental
+(KDE 5.x) $ kbuildsycoca5 --noincremental
+```
 
 NOTE: Neither KDE 4.x nor KDE 5.x will find the rom-properties plugin if it's
 installed in /usr/local/. It must be installed in /usr/.
@@ -81,7 +82,8 @@ the directory above the top-level source directory.
 ## Windows
 
 The Windows version requires one of the following compilers: (minimum versions)
-* Microsoft Visual C++ 2010 with the Windows 7 SDK
+* Microsoft Visual C++ 2012 with the Windows 7 SDK
+  * For test suites, MSVC 2015 or later is required.
 * gcc-4.5 with MinGW-w64
   * The MinGW build is currently somewhat broken, so MSVC is preferred.
     (The property page icon doesn't show up sometimes for Nintendo DS
@@ -93,15 +95,30 @@ project uses the CMake build system.
 
 Clone the repository, then open an MSVC or MinGW command prompt and run the
 following commands from your rom-properties repository directory:
-* mkdir build
-* cd build
-* cmake .. -G "Visual Studio 15 2017"
-* make
-* cd src\win32
-* regsvr32 rom-properties.dll
+
+MSVC 2010-2017:
+```
+mkdir build
+cd build
+cmake .. -G "Visual Studio 15 2017 Win64"
+cmake --build . --config Release
+```
 
 Replace "Visual Studio 15 2017" with the version of Visual Studio you have
-installed. Add "Win64" after the year for a 64-bit version.
+installed. Leave out "Win64" to build a 32-bit version.
+
+MSVC 2019:
+```
+mkdir build
+cd build
+cmake .. -G "Visual Studio 16 2019" -A "x64"
+cmake --build . --config Release
+```
+
+Replace "x64" with "Win32" to build a 32-bit version.
+
+After building, you will need to run `regsvr32 rom-properties.dll` from
+the `build\bin\Release` directory as Administrator.
 
 Caveats:
 * Registering rom-properties.dll hard-codes the full path in the registry.

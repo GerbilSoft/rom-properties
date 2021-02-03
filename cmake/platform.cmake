@@ -18,23 +18,50 @@ IF(NOT HAVE_STDINT_H)
 ENDIF(NOT HAVE_STDINT_H)
 
 # CPU architecture.
-# TODO: Verify cross-compile functionality.
-# TODO: ARM/ARM64 is untested.
-STRING(TOLOWER "${CMAKE_SYSTEM_PROCESSOR}" arch)
-IF(arch MATCHES "^(i.|x)86$|^x86_64$|^amd64$")
-	IF(CMAKE_CL_64 OR ("${CMAKE_SIZEOF_VOID_P}" EQUAL 8))
-		SET(CPU_amd64 1)
-	ELSE()
+IF(MSVC AND _MSVC_C_ARCHITECTURE_FAMILY)
+	# Check the MSVC architecture.
+	# Set CMAKE_SYSTEM_PROCESSOR to match, since it doesn't get
+	# set to the target architecture correctly.
+	# TODO: Verify 32-bit.
+	IF(_MSVC_C_ARCHITECTURE_FAMILY MATCHES "^[iI]?[xX3]86$")
 		SET(CPU_i386 1)
+		SET(CMAKE_SYSTEM_PROCESSOR "x86")
+	ELSEIF(_MSVC_C_ARCHITECTURE_FAMILY MATCHES "^[xX]64$")
+		SET(CPU_amd64 1)
+		SET(CMAKE_SYSTEM_PROCESSOR "AMD64")
+	ELSEIF(_MSVC_C_ARCHITECTURE_FAMILY MATCHES "[iI][aA]64")
+		SET(CPU_ia64 1)
+		SET(CMAKE_SYSTEM_PROCESSOR "IA64")
+	ELSEIF(_MSVC_C_ARCHITECTURE_FAMILY STREQUAL "ARM")
+		SET(CPU_arm 1)
+		SET(CMAKE_SYSTEM_PROCESSOR "ARM")
+	ELSEIF(_MSVC_C_ARCHITECTURE_FAMILY STREQUAL "ARM64")
+		SET(CPU_arm64 1)
+		SET(CMAKE_SYSTEM_PROCESSOR "ARM64")
+	ELSE()
+		MESSAGE(FATAL_ERROR "Unsupported value for _MSVC_C_ARCHITECTURE_FAMILY: ${_MSVC_C_ARCHITECTURE_FAMILY}")
 	ENDIF()
-ELSEIF(arch STREQUAL "ia64")
-	SET(CPU_ia64 1)
-ELSEIF(arch STREQUAL "arm")
-	SET(CPU_arm 1)
-ELSEIF(arch STREQUAL "aarch64")
-	SET(CPU_arm64 1)
+ELSE()
+	# TODO: Verify cross-compile functionality.
+	# TODO: ARM/ARM64 is untested.
+	STRING(TOLOWER "${CMAKE_SYSTEM_PROCESSOR}" arch)
+	IF(arch MATCHES "^(i.|x)86$|^x86_64$|^amd64$")
+		IF(CMAKE_CL_64 OR ("${CMAKE_SIZEOF_VOID_P}" EQUAL 8))
+			SET(CPU_amd64 1)
+		ELSE()
+			SET(CPU_i386 1)
+		ENDIF()
+	ELSEIF(arch STREQUAL "ia64")
+		SET(CPU_ia64 1)
+	ELSEIF(arch STREQUAL "arm" OR arch STREQUAL "aarch64")
+		IF(CMAKE_CL_64 OR ("${CMAKE_SIZEOF_VOID_P}" EQUAL 8))
+			SET(CPU_arm64 1)
+		ELSE()
+			SET(CPU_arm 1)
+		ENDIF()
+	ENDIF()
+	UNSET(arch)
 ENDIF()
-UNSET(arch)
 
 # Common flag variables:
 # [common]
@@ -186,7 +213,6 @@ IF(WIN32)
 		UNSET(UNICODE_FLAG)
 	ELSE(MSVC)
 		# MinGW does not automatically prepend an underscore.
-		# TODO: Does ARM Windows have a leading underscore?
 		# TODO: _setargv for MinGW.
 
 		# NOTE: MinGW uses separate crt*.o files for Unicode
@@ -196,15 +222,11 @@ IF(WIN32)
 			STRING(SUBSTRING "${_entrypoint}" 1 -1 _entrypoint)
 		ENDIF()
 
-		IF(CPU_i386 OR CPU_amd64)
-			IF(CMAKE_SIZEOF_VOID_P EQUAL 4)
-				SET(ENTRY_POINT "_${_entrypoint}CRTStartup")
-			ELSE()
-				SET(ENTRY_POINT "${_entrypoint}CRTStartup")
-			ENDIF()
-		ELSE()
+		IF(CPU_i386)
+			SET(ENTRY_POINT "_${_entrypoint}CRTStartup")
+		ELSE(CPU_i386)
 			SET(ENTRY_POINT "${_entrypoint}CRTStartup")
-		ENDIF(CPU_i386 OR CPU_amd64)
+		ENDIF(CPU_i386)
 		SET(ENTRY_POINT_FLAG "-Wl,-e,${ENTRY_POINT}")
 		UNSET(SETARGV_FLAG)
 	ENDIF(MSVC)

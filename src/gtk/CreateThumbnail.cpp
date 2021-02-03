@@ -2,23 +2,14 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * CreateThumbnail.cpp: Thumbnail creator for wrapper programs.            *
  *                                                                         *
- * Copyright (c) 2017-2019 by David Korth.                                 *
+ * Copyright (c) 2017-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-// librpbase
-#include "librpbase/common.h"
-#include "librpbase/RomData.hpp"
-#include "librpbase/file/FileSystem.hpp"
-#include "librpbase/file/RpFile.hpp"
-#include "librpbase/img/RpPngWriter.hpp"
+#include "stdafx.h"
+
+// librpbase, librptexture
 using namespace LibRpBase;
-
-// RpFileGio
-#include "RpFile_gio.hpp"
-
-// librptexture
-#include "librptexture/img/rp_image.hpp"
 using LibRpTexture::rp_image;
 
 // libromdata
@@ -30,23 +21,9 @@ using LibRomData::RomDataFactory;
 #include "libromdata/img/TCreateThumbnail.cpp"
 using LibRomData::TCreateThumbnail;
 
-// C includes. (C++ namespace)
-#include <cinttypes>
-#include <cstdio>
-#include <cstring>
-
-// C++ includes.
-#include <memory>
-#include <string>
+// C++ STL classes.
 using std::string;
 using std::unique_ptr;
-
-// glib
-#include <glib.h>
-#include <glib-object.h>
-
-// PIMGTYPE
-#include "PIMGTYPE.hpp"
 
 // GTK+ major version.
 // We can't simply use GTK_MAJOR_VERSION because
@@ -66,14 +43,11 @@ using std::unique_ptr;
 class CreateThumbnailPrivate : public TCreateThumbnail<PIMGTYPE>
 {
 	public:
-		CreateThumbnailPrivate();
+		CreateThumbnailPrivate() { }
 
 	private:
 		typedef TCreateThumbnail<PIMGTYPE> super;
 		RP_DISABLE_COPY(CreateThumbnailPrivate)
-
-	private:
-		GProxyResolver *proxy_resolver;
 
 	public:
 		/** TCreateThumbnail functions. **/
@@ -83,34 +57,52 @@ class CreateThumbnailPrivate : public TCreateThumbnail<PIMGTYPE>
 		 * @param img rp_image
 		 * @return ImgClass
 		 */
-		PIMGTYPE rpImageToImgClass(const rp_image *img) const final;
+		inline PIMGTYPE rpImageToImgClass(const rp_image *img) const final
+		{
+			// NOTE: Don't premultiply the image when using Cairo,
+			// since the image data is going directly to PNG.
+			return rp_image_to_PIMGTYPE(img, false);
+		}
 
 		/**
 		 * Wrapper function to check if an ImgClass is valid.
 		 * @param imgClass ImgClass
 		 * @return True if valid; false if not.
 		 */
-		bool isImgClassValid(const PIMGTYPE &imgClass) const final;
+		bool isImgClassValid(const PIMGTYPE &imgClass) const final
+		{
+			return (imgClass != nullptr);
+		}
 
 		/**
 		 * Wrapper function to get a "null" ImgClass.
 		 * @return "Null" ImgClass.
 		 */
-		PIMGTYPE getNullImgClass(void) const final;
+		inline PIMGTYPE getNullImgClass(void) const final
+		{
+			return nullptr;
+		}
 
 		/**
 		 * Free an ImgClass object.
 		 * @param imgClass ImgClass object.
 		 */
-		void freeImgClass(PIMGTYPE &imgClass) const final;
+		inline void freeImgClass(PIMGTYPE &imgClass) const final
+		{
+			PIMGTYPE_destroy(imgClass);
+		}
 
 		/**
-		 * Rescale an ImgClass using nearest-neighbor scaling.
+		 * Rescale an ImgClass using the specified scaling method.
 		 * @param imgClass ImgClass object.
 		 * @param sz New size.
+		 * @param method Scaling method.
 		 * @return Rescaled ImgClass.
 		 */
-		PIMGTYPE rescaleImgClass(const PIMGTYPE &imgClass, const ImgSize &sz) const final;
+		inline PIMGTYPE rescaleImgClass(const PIMGTYPE &imgClass, const ImgSize &sz, ScalingMethod method = ScalingMethod::Nearest) const final
+		{
+			return PIMGTYPE_scale(imgClass, sz.width, sz.height, (method == ScalingMethod::Bilinear));
+		}
 
 		/**
 		 * Get the size of the specified ImgClass.
@@ -118,7 +110,10 @@ class CreateThumbnailPrivate : public TCreateThumbnail<PIMGTYPE>
 		 * @param pOutSize	[out] Pointer to ImgSize to store the image size.
 		 * @return 0 on success; non-zero on error.
 		 */
-		int getImgClassSize(const PIMGTYPE &imgClass, ImgSize *pOutSize) const final;
+		inline int getImgClassSize(const PIMGTYPE &imgClass, ImgSize *pOutSize) const final
+		{
+			return PIMGTYPE_get_size(imgClass, &pOutSize->width, &pOutSize->height);
+		}
 
 		/**
 		 * Get the proxy for the specified URL.
@@ -127,87 +122,22 @@ class CreateThumbnailPrivate : public TCreateThumbnail<PIMGTYPE>
 		string proxyForUrl(const string &url) const final;
 };
 
-CreateThumbnailPrivate::CreateThumbnailPrivate()
-	: proxy_resolver(g_proxy_resolver_get_default())
-{ }
-
-/**
- * Wrapper function to convert rp_image* to ImgClass.
- * @param img rp_image
- * @return ImgClass.
- */
-PIMGTYPE CreateThumbnailPrivate::rpImageToImgClass(const rp_image *img) const
-{
-	return rp_image_to_PIMGTYPE(img);
-}
-
-/**
- * Wrapper function to check if an ImgClass is valid.
- * @param imgClass ImgClass
- * @return True if valid; false if not.
- */
-bool CreateThumbnailPrivate::isImgClassValid(const PIMGTYPE &imgClass) const
-{
-	return (imgClass != nullptr);
-}
-
-/**
- * Wrapper function to get a "null" ImgClass.
- * @return "Null" ImgClass.
- */
-PIMGTYPE CreateThumbnailPrivate::getNullImgClass(void) const
-{
-	return nullptr;
-}
-
-/**
- * Free an ImgClass object.
- * @param imgClass ImgClass object.
- */
-void CreateThumbnailPrivate::freeImgClass(PIMGTYPE &imgClass) const
-{
-	PIMGTYPE_destroy(imgClass);
-}
-
-/**
- * Rescale an ImgClass using nearest-neighbor scaling.
- * @param imgClass ImgClass object.
- * @param sz New size.
- * @return Rescaled ImgClass.
- */
-PIMGTYPE CreateThumbnailPrivate::rescaleImgClass(const PIMGTYPE &imgClass, const ImgSize &sz) const
-{
-	// TODO: Interpolation option?
-	return PIMGTYPE_scale(imgClass, sz.width, sz.height, false);
-}
-
-/**
- * Get the size of the specified ImgClass.
- * @param imgClass	[in] ImgClass object.
- * @param pOutSize	[out] Pointer to ImgSize to store the image size.
- * @return 0 on success; non-zero on error.
- */
-int CreateThumbnailPrivate::getImgClassSize(const PIMGTYPE &imgClass, ImgSize *pOutSize) const
-{
-#ifdef RP_GTK_USE_CAIRO
-	// TODO: Verify that this is an image surface.
-	pOutSize->width = cairo_image_surface_get_width(imgClass);
-	pOutSize->height = cairo_image_surface_get_height(imgClass);
-#else /* !RP_GTK_USE_CAIRO */
-	pOutSize->width = gdk_pixbuf_get_width(imgClass);
-	pOutSize->height = gdk_pixbuf_get_height(imgClass);
-#endif
-	return 0;
-}
-
 /**
  * Get the proxy for the specified URL.
  * @return Proxy, or empty string if no proxy is needed.
  */
 string CreateThumbnailPrivate::proxyForUrl(const string &url) const
 {
-	// TODO: Optimizations.
 	// TODO: Support multiple proxies?
+	string ret;
+
+	GProxyResolver *const proxy_resolver = g_proxy_resolver_get_default();
+	assert(proxy_resolver != nullptr);
+	if (!proxy_resolver) {
+		// Default proxy resolver is not available...
+		return ret;
+	}
+
 	gchar **proxies = g_proxy_resolver_lookup(proxy_resolver,
 		url.c_str(), nullptr, nullptr);
 	gchar *proxy = nullptr;
@@ -219,18 +149,115 @@ string CreateThumbnailPrivate::proxyForUrl(const string &url) const
 		}
 	}
 
-	string ret = (proxy ? string(proxy, -1) : string());
+	if (proxy) {
+		ret.assign(proxy);
+	}
 	g_strfreev(proxies);
 	return ret;
 }
 
 /** CreateThumbnail **/
 
-// NOTE: G_MODULE_EXPORT is a no-op on non-Windows platforms.
-#if !defined(_WIN32) && defined(__GNUC__) && __GNUC__ >= 4
-#undef G_MODULE_EXPORT
-#define G_MODULE_EXPORT __attribute__ ((visibility ("default")))
-#endif
+/**
+ * Open a file from a filename or URI.
+ * @param source_file	[in] Source filename or URI.
+ * @param pp_file	[out] Opened file.
+ * @param s_uri		[out] Normalized URI. (file:/ for a filename, etc.)
+ * @return 0 on success; RPCT error code on error.
+ */
+static int openFromFilenameOrURI(const char *source_file, IRpFile **pp_file, string &s_uri)
+{
+	// NOTE: Not checking these in Release builds.
+	assert(source_file != nullptr);
+	assert(pp_file != nullptr);
+
+	*pp_file = nullptr;
+	s_uri.clear();
+	const bool enableThumbnailOnNetworkFS = Config::instance()->enableThumbnailOnNetworkFS();
+
+	IRpFile *file = nullptr;
+	char *const uri_scheme = g_uri_parse_scheme(source_file);
+	if (uri_scheme != nullptr) {
+		// This is a URI.
+		s_uri = source_file;
+		g_free(uri_scheme);
+		// Check if it's a local filename.
+		gchar *const source_filename = g_filename_from_uri(source_file, nullptr, nullptr);
+		if (source_filename) {
+			// It's a local filename.
+			// Check if it's on a "bad" filesystem.
+			if (FileSystem::isOnBadFS(source_filename, enableThumbnailOnNetworkFS)) {
+				// It's on a "bad" filesystem.
+				g_free(source_filename);
+				return RPCT_SOURCE_FILE_BAD_FS;
+			}
+
+			// Open the file using RpFile.
+			file = new RpFile(source_filename, RpFile::FM_OPEN_READ_GZ);
+			g_free(source_filename);
+		} else {
+			// Not a local filename.
+			if (!enableThumbnailOnNetworkFS) {
+				// Thumbnailing on network file systems is disabled.
+				return RPCT_SOURCE_FILE_BAD_FS;
+			}
+
+			// Open the file using RpFileGio.
+			file = new RpFileGio(source_file);
+		}
+	} else {
+		// This is a filename.
+		// Note that for everything except the URI, we can use relative paths
+		// as well as absolute paths, so the absolute path conversion is only
+		// needed to get the URI for the thumbnail.
+
+		// Check if it's on a "bad" filesystem.
+		if (FileSystem::isOnBadFS(source_file, enableThumbnailOnNetworkFS)) {
+			// It's on a "bad" filesystem.
+			return RPCT_SOURCE_FILE_BAD_FS;
+		}
+
+		// Check fi we have an absolute or relative path.
+		if (g_path_is_absolute(source_file)) {
+			// We have an absolute path.
+			gchar *const source_uri = g_filename_to_uri(source_file, nullptr, nullptr);
+			if (source_uri) {
+				s_uri = source_uri;
+				g_free(source_uri);
+			}
+		} else {
+			// We have a relative path.
+			// Convert the filename to an absolute path.
+			GFile *curdir = g_file_new_for_path(".");
+			if (curdir) {
+				GFile *abspath = g_file_resolve_relative_path(curdir, source_file);
+				if (abspath) {
+					gchar *const source_uri = g_file_get_uri(abspath);
+					if (source_uri) {
+						s_uri = source_uri;
+						g_free(source_uri);
+					}
+					g_object_unref(abspath);
+				}
+				g_object_unref(curdir);
+			}
+		}
+
+		// Open the file using RpFile.
+		file = new RpFile(source_file, RpFile::FM_OPEN_READ_GZ);
+	}
+
+	if (file && file->isOpen()) {
+		// File has been opened successfully.
+		*pp_file = file;
+		return 0;
+	}
+
+	// File was not opened.
+	// TODO: Actual error code?
+	UNREF(file);
+	return RPCT_SOURCE_FILE_ERROR;
+}
 
 /**
  * Thumbnail creator function for wrapper programs.
@@ -240,7 +267,7 @@ string CreateThumbnailPrivate::proxyForUrl(const string &url) const
  * @return 0 on success; non-zero on error.
  */
 extern "C"
-G_MODULE_EXPORT int rp_create_thumbnail(const char *source_file, const char *output_file, int maximum_size)
+G_MODULE_EXPORT int RP_C_API rp_create_thumbnail(const char *source_file, const char *output_file, int maximum_size)
 {
 	// Some of this is based on the GNOME Thumbnailer skeleton project.
 	// https://github.com/hadess/gnome-thumbnailer-skeleton/blob/master/gnome-thumbnailer-skeleton.c
@@ -260,125 +287,40 @@ G_MODULE_EXPORT int rp_create_thumbnail(const char *source_file, const char *out
 	// ROM file and getting RomData*, but we're doing it here
 	// in order to return better error codes.
 
-	// Is this a URI or a filename?
-	char *source_uri = nullptr;
-	char *source_filename = nullptr;
-	bool free_source_uri = false;
-	bool free_source_filename = false;
-
-	char *const uri_scheme = g_uri_parse_scheme(source_file);
-	if (uri_scheme != nullptr) {
-		// This is a URI.
-		source_uri = const_cast<char*>(source_file);
-		g_free(uri_scheme);
-		// Check if it's a local filename.
-		source_filename = g_filename_from_uri(source_file, nullptr, nullptr);
-		if (source_filename) {
-			// It's a local filename.
-			free_source_filename = true;
-		}
-	} else {
-		// This is a filename.
-		source_filename = const_cast<char*>(source_file);
-
-		// We might have a relative path.
-		// If so, it needs to be converted to an absolute path.
-		if (g_path_is_absolute(source_file)) {
-			// We have an absolute path.
-			source_uri = g_filename_to_uri(source_file, nullptr, nullptr);
-		} else {
-			// We have a relative path.
-			// Convert the filename to an absolute path.
-			GFile *curdir = g_file_new_for_path(".");
-			if (curdir) {
-				GFile *abspath = g_file_resolve_relative_path(curdir, source_file);
-				if (abspath) {
-					source_uri = g_file_get_uri(abspath);
-					g_object_unref(abspath);
-				}
-				g_object_unref(curdir);
-			}
-		}
-		free_source_uri = true;
-	}
-
-	// Check for "bad" file systems.
-	if (source_filename) {
-		const Config *const config = Config::instance();
-		if (FileSystem::isOnBadFS(source_filename, config->enableThumbnailOnNetworkFS())) {
-			// This file is on a "bad" file system.
-			if (free_source_uri) {
-				g_free(source_uri);
-			}
-			if (free_source_filename) {
-				g_free(source_filename);
-			}
-			return RPCT_SOURCE_FILE_BAD_FS;
-		}
-	}
-
 	// Attempt to open the ROM file.
-	IRpFile *file;
-	if (source_filename) {
-		// Local file. Use RpFile.
-		file = new RpFile(source_filename, RpFile::FM_OPEN_READ_GZ);
-	} else {
-		// Not a local file. Use RpFileGio.
-		file = new RpFileGio(source_uri);
+	IRpFile *file = nullptr;
+	string s_uri;
+	int ret = openFromFilenameOrURI(source_file, &file, s_uri);
+	if (ret != 0) {
+		// Error opening the file.
+		return ret;
 	}
-
-	if (!file->isOpen()) {
-		// Could not open the file.
-		file->unref();
-		if (free_source_uri) {
-			g_free(source_uri);
-		}
-		if (free_source_filename) {
-			g_free(source_filename);
-		}
-		return RPCT_SOURCE_FILE_ERROR;
-	}
+	assert(file != nullptr);
 
 	// Get the appropriate RomData class for this ROM.
 	// RomData class *must* support at least one image type.
-	RomData *romData = RomDataFactory::create(file, RomDataFactory::RDA_HAS_THUMBNAIL);
+	RomData *const romData = RomDataFactory::create(file, RomDataFactory::RDA_HAS_THUMBNAIL);
 	file->unref();	// file is ref()'d by RomData.
 	if (!romData) {
 		// ROM is not supported.
-		if (free_source_uri) {
-			g_free(source_uri);
-		}
-		if (free_source_filename) {
-			g_free(source_filename);
-		}
 		return RPCT_SOURCE_FILE_NOT_SUPPORTED;
 	}
 
 	// Create the thumbnail.
 	// TODO: If image is larger than maximum_size, resize down.
 	unique_ptr<CreateThumbnailPrivate> d(new CreateThumbnailPrivate());
-	PIMGTYPE ret_img = nullptr;
-	rp_image::sBIT_t sBIT;
-	int ret = d->getThumbnail(romData, maximum_size, ret_img, &sBIT);
-
-	if (ret != 0 || !d->isImgClassValid(ret_img)) {
+	CreateThumbnailPrivate::GetThumbnailOutParams_t outParams;
+	ret = d->getThumbnail(romData, maximum_size, &outParams);
+	if (ret != 0 || !d->isImgClassValid(outParams.retImg)) {
 		// No image.
-		if (ret_img) {
-			d->freeImgClass(ret_img);
+		if (outParams.retImg) {
+			d->freeImgClass(outParams.retImg);
 		}
 		romData->unref();
-		if (free_source_uri) {
-			g_free(source_uri);
-		}
-		if (free_source_filename) {
-			g_free(source_filename);
-		}
 		return RPCT_SOURCE_FILE_NO_IMAGE;
 	}
 
 	// Save the image using RpPngWriter.
-	TCreateThumbnail<PIMGTYPE>::ImgSize imgSz;
-	d->getImgClassSize(ret_img, &imgSz);
 	unique_ptr<const uint8_t*[]> row_pointers;
 	guchar *pixels;
 	int rowstride;
@@ -389,13 +331,14 @@ G_MODULE_EXPORT int rp_create_thumbnail(const char *source_file, const char *out
 	char mtime_str[32];
 	char szFile_str[32];
 	GFile *f_src = nullptr;
-	gchar *content_type = nullptr;
+	const char *mimeType;
 
 	// gdk-pixbuf doesn't support CI8, so we'll assume all
 	// images are ARGB32. (Well, ABGR32, but close enough.)
 	// TODO: Verify channels, etc.?
 	unique_ptr<RpPngWriter> pngWriter(new RpPngWriter(output_file,
-		imgSz.width, imgSz.height, rp_image::FORMAT_ARGB32));
+		outParams.thumbSize.width, outParams.thumbSize.height,
+		rp_image::Format::ARGB32));
 	if (!pngWriter->isOpen()) {
 		// Could not open the PNG writer.
 		ret = RPCT_OUTPUT_FILE_FAILED;
@@ -411,12 +354,12 @@ G_MODULE_EXPORT int rp_create_thumbnail(const char *source_file, const char *out
 	kv.reserve(5);
 
 	// Software.
-	kv.push_back(std::make_pair("Software", "ROM Properties Page shell extension (GTK" GTK_MAJOR_STR ")"));
+	kv.emplace_back("Software", "ROM Properties Page shell extension (GTK" GTK_MAJOR_STR ")");
 
 	// Modification time and file size.
 	mtime_str[0] = 0;
 	szFile_str[0] = 0;
-	f_src = g_file_new_for_uri(source_uri);
+	f_src = g_file_new_for_uri(s_uri.c_str());
 	if (f_src) {
 		GError *error = nullptr;
 		GFileInfo *const fi_src = g_file_query_info(f_src,
@@ -444,25 +387,27 @@ G_MODULE_EXPORT int rp_create_thumbnail(const char *source_file, const char *out
 
 	// Modification time.
 	if (mtime_str[0] != 0) {
-		kv.push_back(std::make_pair("Thumb::MTime", mtime_str));
+		kv.emplace_back("Thumb::MTime", mtime_str);
 	}
 
 	// MIME type.
-	// TODO: Get this directly from the D-Bus call or similar?
-	// FIXME: Handle URIs?
-	content_type = g_content_type_guess(source_uri, nullptr, 0, nullptr);
-	if (content_type) {
-		gchar *const mime_type = g_content_type_get_mime_type(content_type);
-		if (mime_type) {
-			kv.push_back(std::make_pair("Thumb::Mimetype", mime_type));
-			g_free(mime_type);
-		}
-		g_free(content_type);
+	mimeType = romData->mimeType();
+	if (mimeType) {
+		kv.emplace_back("Thumb::Mimetype", mimeType);
 	}
 
 	// File size.
 	if (szFile_str[0] != 0) {
-		kv.push_back(std::make_pair("Thumb::Size", szFile_str));
+		kv.emplace_back("Thumb::Size", szFile_str);
+	}
+
+	// Original image dimensions.
+	if (outParams.fullSize.width > 0 && outParams.fullSize.height > 0) {
+		char imgdim_str[16];
+		snprintf(imgdim_str, sizeof(imgdim_str), "%d", outParams.fullSize.width);
+		kv.emplace_back("Thumb::Image::Width", imgdim_str);
+		snprintf(imgdim_str, sizeof(imgdim_str), "%d", outParams.fullSize.height);
+		kv.emplace_back("Thumb::Image::Height", imgdim_str);
 	}
 
 	// URI.
@@ -473,7 +418,7 @@ G_MODULE_EXPORT int rp_create_thumbnail(const char *source_file, const char *out
 	// References:
 	// - https://bugs.kde.org/show_bug.cgi?id=393015
 	// - https://specifications.freedesktop.org/thumbnail-spec/thumbnail-spec-latest.html
-	kv.push_back(std::make_pair("Thumb::URI", source_uri));
+	kv.emplace_back("Thumb::URI", s_uri.c_str());
 
 	// Write the tEXt chunks.
 	pngWriter->write_tEXt(kv);
@@ -482,7 +427,7 @@ G_MODULE_EXPORT int rp_create_thumbnail(const char *source_file, const char *out
 
 	// If sBIT wasn't found, all fields will be 0.
 	// RpPngWriter will ignore sBIT in this case.
-	pwRet = pngWriter->write_IHDR(&sBIT);
+	pwRet = pngWriter->write_IHDR(&outParams.sBIT);
 	if (pwRet != 0) {
 		// Error writing IHDR.
 		// TODO: Unlink the PNG image.
@@ -493,15 +438,10 @@ G_MODULE_EXPORT int rp_create_thumbnail(const char *source_file, const char *out
 	/** IDAT chunk. **/
 
 	// Initialize the row pointers.
-	row_pointers.reset(new const uint8_t*[imgSz.height]);
-#ifdef RP_GTK_USE_CAIRO
-	pixels = cairo_image_surface_get_data(ret_img);
-	rowstride = cairo_image_surface_get_stride(ret_img);
-#else /* !RP_GTK_USE_CAIRO */
-	pixels = gdk_pixbuf_get_pixels(ret_img);
-	rowstride = gdk_pixbuf_get_rowstride(ret_img);
-#endif
-	for (int y = 0; y < imgSz.height; y++, pixels += rowstride) {
+	row_pointers.reset(new const uint8_t*[outParams.thumbSize.height]);
+	pixels = PIMGTYPE_get_image_data(outParams.retImg);
+	rowstride = PIMGTYPE_get_rowstride(outParams.retImg);
+	for (int y = 0; y < outParams.thumbSize.height; y++, pixels += rowstride) {
 		row_pointers[y] = pixels;
 	}
 
@@ -522,13 +462,7 @@ G_MODULE_EXPORT int rp_create_thumbnail(const char *source_file, const char *out
 	}
 
 cleanup:
-	d->freeImgClass(ret_img);
+	d->freeImgClass(outParams.retImg);
 	romData->unref();
-	if (free_source_uri) {
-		g_free(source_uri);
-	}
-	if (free_source_filename) {
-		g_free(source_filename);
-	}
 	return ret;
 }

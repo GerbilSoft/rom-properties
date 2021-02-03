@@ -2,12 +2,13 @@
  * ROM Properties Page shell extension. (librpbase/tests)                  *
  * RpImageLoaderTest.cpp: RpImageLoader class test.                        *
  *                                                                         *
- * Copyright (c) 2016 by David Korth.                                      *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 // Google Test
 #include "gtest/gtest.h"
+#include "tcharx.h"
 
 // zlib
 #include <zlib.h>
@@ -19,7 +20,7 @@
  * Test suite main function.
  * Called by gtest_init.c.
  */
-extern "C" int gtest_main(int argc, char *argv[])
+extern "C" int gtest_main(int argc, TCHAR *argv[])
 {
 	fprintf(stderr, "LibRpBase test suite: RpImageLoader tests.\n\n");
 	fflush(nullptr);

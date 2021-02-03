@@ -2,21 +2,19 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * pkmnmini_structs.h: Pokémon Mini data structures.                       *
  *                                                                         *
- * Copyright (c) 2019 by David Korth.                                      *
+ * Copyright (c) 2019-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #ifndef __ROMPROPERTIES_LIBROMDATA_HANDHELD_PKMNMINI_STRUCTS_H__
 #define __ROMPROPERTIES_LIBROMDATA_HANDHELD_PKMNMINI_STRUCTS_H__
 
-#include "librpbase/common.h"
 #include <stdint.h>
+#include "common.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-#pragma pack(1)
 
 /**
  * Pokémon Mini ROM header.
@@ -32,10 +30,9 @@ extern "C" {
  * NOTE: Strings are NOT null-terminated!
  */
 #define POKEMONMINI_HEADER_ADDRESS 0x2100
-#define POKEMONMINI_PM_MAGIC 'PM'	// Documents say it has 'PM',
-#define POKEMONMINI_MN_MAGIC 'MN'	// but my test images have 'MN'...
+#define POKEMONMINI_MN_MAGIC 'MN'
 #define POKEMONMINI_2P_MAGIC '2P'
-typedef struct PACKED _PokemonMini_RomHeader {
+typedef struct _PokemonMini_RomHeader {
 	uint16_t pm_magic;	// [0x000] 'PM' or 'MN'
 	uint8_t irqs[27][6];	// [0x002] IRQs. (See PokemonMini_IRQ_e for descriptions.)
 	char nintendo[8];	// [0x0A4] "NINTENDO"
@@ -77,8 +74,6 @@ typedef enum {
 
 	PokemonMini_IRQ_MAX			= 27
 } PokemonMini_IRQ_e;
-
-#pragma pack()
 
 #ifdef __cplusplus
 }

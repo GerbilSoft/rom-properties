@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * ConfReader.hpp: Configuration reader base class.                        *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -10,12 +10,14 @@
 #include "ConfReader.hpp"
 #include "ConfReader_p.hpp"
 
-// librpbase
-#include "file/FileSystem.hpp"
+// librpbase, librpfile, librpthreads
 #include "TextFuncs.hpp"
 #ifdef _WIN32
 # include "TextFuncs_wchar.hpp"
 #endif
+#include "librpfile/FileSystem.hpp"
+using namespace LibRpFile;
+using LibRpThreads::MutexLocker;
 
 namespace LibRpBase {
 
@@ -133,16 +135,6 @@ int ConfReader::load(bool force)
 				d->conf_filename += DIR_SEP_CHR;
 			}
 			d->conf_filename += d->conf_rel_filename;
-		}
-
-		// Make sure the configuration directory exists.
-		// NOTE: The filename portion MUST be kept in config_path,
-		// since the last component is ignored by rmkdir().
-		int ret = FileSystem::rmkdir(d->conf_filename);
-		if (ret != 0) {
-			// rmkdir() failed.
-			d->conf_filename.clear();
-			return -ENOENT;
 		}
 	} else if (!force && d->conf_was_found) {
 		// Check if the keys.conf timestamp has changed.

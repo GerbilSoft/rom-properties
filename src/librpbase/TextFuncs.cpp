@@ -2,14 +2,13 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * TextFuncs.cpp: Text encoding functions.                                 *
  *                                                                         *
- * Copyright (c) 2009-2019 by David Korth.                                 *
+ * Copyright (c) 2009-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #include "stdafx.h"
 #include "config.librpbase.h"
 #include "TextFuncs.hpp"
-#include "byteswap.h"
 
 // libi18n
 #include "libi18n/i18n.h"
@@ -105,7 +104,7 @@ size_t u16_strnlen(const char16_t *wcs, size_t maxlen)
 char16_t *u16_strdup(const char16_t *wcs)
 {
 	size_t len = u16_strlen(wcs)+1;	// includes terminator
-	char16_t *ret = (char16_t*)malloc(len*sizeof(*wcs));
+	char16_t *const ret = static_cast<char16_t*>(malloc(len * sizeof(*wcs)));
 	memcpy(ret, wcs, len*sizeof(*wcs));
 	return ret;
 }
@@ -130,6 +129,29 @@ int u16_strcmp(const char16_t *wcs1, const char16_t *wcs2)
 }
 
 /**
+ * char16_t strncmp().
+ * @param wcs1 16-bit string 1.
+ * @param wcs2 16-bit string 2.
+ * @return strncmp() result.
+ */
+int u16_strncmp(const char16_t *wcs1, const char16_t *wcs2, size_t n)
+{
+	// References:
+	// - http://stackoverflow.com/questions/20004458/optimized-strcmp-implementation
+	// - http://clc-wiki.net/wiki/C_standard_library%3astring.h%3astrcmp
+	while (n > 0 && *wcs1 && (*wcs1 == *wcs2)) {
+		wcs1++;
+		wcs2++;
+		n--;
+	}
+
+	if (n == 0) {
+		return 0;
+	}
+	return ((int)*wcs1 - (int)*wcs2);
+}
+
+/**
  * char16_t strcasecmp().
  * @param wcs1 16-bit string 1.
  * @param wcs2 16-bit string 2.
@@ -147,41 +169,57 @@ int u16_strcasecmp(const char16_t *wcs1, const char16_t *wcs2)
 
 	return ((int)towupper(*wcs1) - (int)towupper(*wcs2));
 }
+
+/**
+ * char16_t memchr().
+ * @param wcs 16-bit string.
+ * @param c Character to search for.
+ * @param n Size of wcs.
+ * @return Pointer to c within wcs, or nullptr if not found.
+ */
+const char16_t *u16_memchr(const char16_t *wcs, char16_t c, size_t n)
+{
+	for (; n > 0; wcs++, n--) {
+		if (*wcs == c)
+			return wcs;
+	}
+	return nullptr;
+}
 #endif /* !RP_WIS16 */
 
 /**
- * sprintf()-style function for std::string.
+ * vsprintf()-style function for std::string.
  *
- * @param fmt Format string.
- * @param ... Arguments.
+ * @param fmt Format string
+ * @param ap Arguments
  * @return std::string
  */
-string rp_sprintf(const char *fmt, ...)
+string rp_vsprintf(const char *fmt, va_list ap)
 {
 	// Local buffer optimization to reduce memory allocation.
 	char locbuf[128];
-	va_list ap;
+	va_list ap_tmp;
+
 #if defined(_MSC_VER) && _MSC_VER < 1900
 	// MSVC 2013 and older isn't C99 compliant.
 	// Use the non-standard _vscprintf() to count characters.
-	va_start(ap, fmt);
-	int len = _vscprintf(fmt, ap);
-	va_end(ap);
+	va_copy(ap_tmp, ap);
+	int len = _vscprintf(fmt, ap_tmp);
+	va_end(ap_tmp);
+
 	if (len <= 0) {
 		// Nothing to format...
 		return string();
 	} else if (len < (int)sizeof(locbuf)) {
 		// The string fits in the local buffer.
-		va_start(ap, fmt);
 		vsnprintf(locbuf, sizeof(locbuf), fmt, ap);
-		va_end(ap);
 		return string(locbuf, len);
 	}
 #else
 	// C99-compliant vsnprintf().
-	va_start(ap, fmt);
-	int len = vsnprintf(locbuf, sizeof(locbuf), fmt, ap);
-	va_end(ap);
+	va_copy(ap_tmp, ap);
+	int len = vsnprintf(locbuf, sizeof(locbuf), fmt, ap_tmp);
+	va_end(ap_tmp);
 	if (len <= 0) {
 		// Nothing to format...
 		return string();
@@ -194,53 +232,53 @@ string rp_sprintf(const char *fmt, ...)
 	// Temporarily allocate a buffer large enough for the string,
 	// then call vsnprintf() again.
 	unique_ptr<char[]> buf(new char[len+1]);
-	va_start(ap, fmt);
 	int len2 = vsnprintf(buf.get(), len+1, fmt, ap);
-	va_end(ap);
+
+	string s_ret;
 	assert(len == len2);
-	return (len == len2 ? string(buf.get(), len) : string());
+	if (len == len2) {
+		s_ret.assign(buf.get(), len);
+	}
+	return s_ret;
 }
 
 #if defined(_MSC_VER) || defined(__MINGW32__)
 /**
- * sprintf()-style function for std::string.
+ * vsprintf()-style function for std::string.
  * This version supports positional format string arguments.
  *
  * MSVCRT doesn't support positional arguments in the standard
  * printf() functions. Instead, it has printf_p().
  *
- * @param fmt Format string.
- * @param ... Arguments.
+ * @param fmt Format string
+ * @param ap Arguments
  * @return std::string
  */
-std::string rp_sprintf_p(const char *fmt, ...)
+std::string rp_vsprintf_p(const char *fmt, va_list ap)
 {
 	// Local buffer optimization to reduce memory allocation.
 	char locbuf[128];
-	va_list ap;
 
 	// _vsprintf_p() isn't C99 compliant.
 	// Use the non-standard _vscprintf_p() to count characters.
-	va_start(ap, fmt);
-	int len = _vscprintf_p(fmt, ap);
-	va_end(ap);
+	va_list ap_tmp;
+	va_copy(ap_tmp, ap);
+	int len = _vscprintf_p(fmt, ap_tmp);
+	va_end(ap_tmp);
+
 	if (len <= 0) {
 		// Nothing to format...
 		return string();
 	} else if (len < (int)sizeof(locbuf)) {
 		// The string fits in the local buffer.
-		va_start(ap, fmt);
 		_vsprintf_p(locbuf, sizeof(locbuf), fmt, ap);
-		va_end(ap);
 		return string(locbuf, len);
 	}
 
 	// Temporarily allocate a buffer large enough for the string,
 	// then call vsnprintf() again.
 	unique_ptr<char[]> buf(new char[len+1]);
-	va_start(ap, fmt);
 	int len2 = _vsprintf_p(buf.get(), len+1, fmt, ap);
-	va_end(ap);
 	assert(len == len2);
 	return (len == len2 ? string(buf.get(), len) : string());
 }
@@ -248,7 +286,7 @@ std::string rp_sprintf_p(const char *fmt, ...)
 
 /** Other useful text functions **/
 
-static inline int calc_frac_part(int64_t size, int64_t mask)
+static inline int calc_frac_part(off64_t size, off64_t mask)
 {
 	float f = static_cast<float>(size & (mask - 1)) / static_cast<float>(mask);
 	int frac_part = static_cast<int>(f * 1000.0f);
@@ -266,7 +304,7 @@ static inline int calc_frac_part(int64_t size, int64_t mask)
  * @param size File size.
  * @return Formatted file size.
  */
-string formatFileSize(int64_t size)
+string formatFileSize(off64_t size)
 {
 	const char *suffix;
 	// frac_part is always 0 to 100.
@@ -370,6 +408,20 @@ string formatFileSize(int64_t size)
 }
 
 /**
+ * Format a file size, in KiB.
+ *
+ * This function expects the size to be a multiple of 1024,
+ * so it doesn't do any fractional rounding or printing.
+ *
+ * @param size File size.
+ * @return Formatted file size.
+ */
+std::string formatFileSizeKiB(unsigned int size)
+{
+	return rp_sprintf("%u %s", (size / 1024), C_("TextFuncs|FileSize", "KiB"));
+}
+
+/**
  * Remove trailing spaces from a string.
  * NOTE: This modifies the string *in place*.
  * @param str String.
@@ -400,7 +452,7 @@ std::string dos2unix(const char *str_dos, int len, int *lf_count)
 	// TODO: Optimize this!
 	string str_unix;
 	if (len < 0) {
-		len = strlen(str_dos);
+		len = static_cast<int>(strlen(str_dos));
 	}
 	str_unix.reserve(len);
 
@@ -410,6 +462,7 @@ std::string dos2unix(const char *str_dos, int len, int *lf_count)
 			str_unix += '\n';
 			str_dos++;
 			lf++;
+			len--;
 		} else {
 			str_unix += *str_dos;
 		}
@@ -448,10 +501,11 @@ string formatSampleAsTime(unsigned int sample, unsigned int rate)
 		return "#DIV/0!";
 	}
 
+	assert(rate < 21474836);	// debug assert on overflow
 	const unsigned int cs_frames = (sample % rate);
 	if (cs_frames != 0) {
 		// Calculate centiseconds.
-		cs = static_cast<unsigned int>(((float)cs_frames / (float)rate) * 100);
+		cs = (cs_frames * 100) / rate;
 	} else {
 		// No centiseconds.
 		cs = 0;
@@ -475,11 +529,13 @@ string formatSampleAsTime(unsigned int sample, unsigned int rate)
  */
 unsigned int convSampleToMs(unsigned int sample, unsigned int rate)
 {
-	const unsigned int ms_frames = (sample % rate);
 	unsigned int sec, ms;
+
+	assert(rate < 2147483);		// debug assert on overflow
+	const unsigned int ms_frames = (sample % rate);
 	if (ms_frames != 0) {
 		// Calculate milliseconds.
-		ms = static_cast<unsigned int>(((float)ms_frames / (float)rate) * 1000);
+		ms = (ms_frames * 1000) / rate;
 	} else {
 		// No milliseconds.
 		ms = 0;

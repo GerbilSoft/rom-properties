@@ -1,28 +1,24 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (KDE4/KDE5)                        *
+ * ROM Properties Page shell extension. (KDE4/KF5)                         *
  * RomThumbCreator.cpp: Thumbnail creator.                                 *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "RomThumbCreator.hpp"
-#include "RpQt.hpp"
-#include "RpQImageBackend.hpp"
+#include "stdafx.h"
+#include "config.kde.h"
 
-// librpbase
-#include "librpbase/RomData.hpp"
-#include "librpbase/TextFuncs.hpp"
-#include "librpbase/file/FileSystem.hpp"
-#include "librpbase/img/RpPngWriter.hpp"
+#include "RomThumbCreator.hpp"
+#include "RpQImageBackend.hpp"
+#include "AchQtDBus.hpp"
+
+// librpbase, librptexture
 using namespace LibRpBase;
+using LibRpTexture::rp_image;
 
 // RpFileKio
 #include "RpFile_kio.hpp"
-
-// librptexture
-#include "librptexture/img/rp_image.hpp"
-using LibRpTexture::rp_image;
 
 // libromdata
 #include "libromdata/RomDataFactory.hpp"
@@ -33,33 +29,9 @@ using LibRomData::RomDataFactory;
 #include "libromdata/img/TCreateThumbnail.cpp"
 using LibRomData::TCreateThumbnail;
 
-// C includes.
-#include <unistd.h>
-
-// C includes. (C++ namespace)
-#include <cassert>
-#include <cinttypes>
-
-// C++ includes.
-#include <memory>
-#include <string>
+// C++ STL classes.
 using std::string;
 using std::unique_ptr;
-
-// Qt includes.
-#include <QtCore/QDateTime>
-#include <QtCore/QDir>
-#include <QtCore/QFileInfo>
-#include <QtCore/QUrl>
-#include <QtGui/QImage>
-
-#if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
-# include <QtCore/QMimeDatabase>
-# include <QtCore/QStandardPaths>
-#else
-# include <QtGui/QDesktopServices>
-# include <kmimetype.h>
-#endif
 
 // KDE protocol manager.
 // Used to find the KDE proxy settings.
@@ -72,7 +44,7 @@ using std::unique_ptr;
 # define QT_MAJOR_STR "5"
 #elif QT_VERSION >= QT_VERSION_CHECK(4,0,0)
 # define QT_MAJOR_STR "4"
-#else
+#else /* QT_VERSION < QT_VERSION_CHECK(4,0,0) */
 # error Qt is too old.
 #endif
 
@@ -85,9 +57,11 @@ using std::unique_ptr;
 extern "C" {
 	Q_DECL_EXPORT ThumbCreator *new_creator()
 	{
-		// Register RpQImageBackend.
-		// TODO: Static initializer somewhere?
+		// Register RpQImageBackend and AchQtDBus.
 		rp_image::setBackendCreatorFn(RpQImageBackend::creator_fn);
+#if defined(ENABLE_ACHIEVEMENTS) && defined(HAVE_QtDBus_NOTIFY)
+		AchQtDBus::instance();
+#endif /* ENABLE_ACHIEVEMENTS && HAVE_QtDBus_NOTIFY */
 
 		return new RomThumbCreator();
 	}
@@ -110,34 +84,65 @@ class RomThumbCreatorPrivate : public TCreateThumbnail<QImage>
 		 * @param img rp_image
 		 * @return ImgClass
 		 */
-		QImage rpImageToImgClass(const rp_image *img) const final;
+		inline QImage rpImageToImgClass(const rp_image *img) const final
+		{
+			return rpToQImage(img);
+		}
 
 		/**
 		 * Wrapper function to check if an ImgClass is valid.
 		 * @param imgClass ImgClass
 		 * @return True if valid; false if not.
 		 */
-		bool isImgClassValid(const QImage &imgClass) const final;
+		inline bool isImgClassValid(const QImage &imgClass) const final
+		{
+			return !imgClass.isNull();
+		}
 
 		/**
 		 * Wrapper function to get a "null" ImgClass.
 		 * @return "Null" ImgClass.
 		 */
-		QImage getNullImgClass(void) const final;
+		inline QImage getNullImgClass(void) const final
+		{
+			return QImage();
+		}
 
 		/**
 		 * Free an ImgClass object.
 		 * @param imgClass ImgClass object.
 		 */
-		void freeImgClass(QImage &imgClass) const final;
+		inline void freeImgClass(QImage &imgClass) const final
+		{
+			// Nothing to do here...
+			Q_UNUSED(imgClass)
+		}
 
 		/**
-		 * Rescale an ImgClass using nearest-neighbor scaling.
+		 * Rescale an ImgClass using the specified scaling method.
 		 * @param imgClass ImgClass object.
 		 * @param sz New size.
+		 * @param method Scaling method.
 		 * @return Rescaled ImgClass.
 		 */
-		QImage rescaleImgClass(const QImage &imgClass, const ImgSize &sz) const final;
+		inline QImage rescaleImgClass(const QImage &imgClass, const ImgSize &sz, ScalingMethod method = ScalingMethod::Nearest) const final
+		{
+			Qt::TransformationMode mode;
+			switch (method) {
+				case ScalingMethod::Nearest:
+					mode = Qt::FastTransformation;
+					break;
+				case ScalingMethod::Bilinear:
+					mode = Qt::SmoothTransformation;
+					break;
+				default:
+					assert(!"Invalid scaling method.");
+					mode = Qt::FastTransformation;
+					break;
+			}
+
+			return imgClass.scaled(sz.width, sz.height, Qt::IgnoreAspectRatio, mode);
+		}
 
 		/**
 		 * Get the size of the specified ImgClass.
@@ -145,7 +150,12 @@ class RomThumbCreatorPrivate : public TCreateThumbnail<QImage>
 		 * @param pOutSize	[out] Pointer to ImgSize to store the image size.
 		 * @return 0 on success; non-zero on error.
 		 */
-		int getImgClassSize(const QImage &imgClass, ImgSize *pOutSize) const final;
+		int getImgClassSize(const QImage &imgClass, ImgSize *pOutSize) const final
+		{
+			pOutSize->width = imgClass.width();
+			pOutSize->height = imgClass.height();
+			return 0;
+		}
 
 		/**
 		 * Get the proxy for the specified URL.
@@ -155,70 +165,6 @@ class RomThumbCreatorPrivate : public TCreateThumbnail<QImage>
 };
 
 /** RomThumbCreatorPrivate **/
-
-/**
- * Wrapper function to convert rp_image* to ImgClass.
- * @param img rp_image
- * @return ImgClass.
- */
-QImage RomThumbCreatorPrivate::rpImageToImgClass(const rp_image *img) const
-{
-	return rpToQImage(img);
-}
-
-/**
- * Wrapper function to check if an ImgClass is valid.
- * @param imgClass ImgClass
- * @return True if valid; false if not.
- */
-bool RomThumbCreatorPrivate::isImgClassValid(const QImage &imgClass) const
-{
-	return !imgClass.isNull();
-}
-
-/**
- * Wrapper function to get a "null" ImgClass.
- * @return "Null" ImgClass.
- */
-QImage RomThumbCreatorPrivate::getNullImgClass(void) const
-{
-	return QImage();
-}
-
-/**
- * Free an ImgClass object.
- * @param imgClass ImgClass object.
- */
-void RomThumbCreatorPrivate::freeImgClass(QImage &imgClass) const
-{
-	// Nothing to do here...
-	Q_UNUSED(imgClass)
-}
-
-/**
- * Rescale an ImgClass using nearest-neighbor scaling.
- * @param imgClass ImgClass object.
- * @param sz New size.
- * @return Rescaled ImgClass.
- */
-QImage RomThumbCreatorPrivate::rescaleImgClass(const QImage &imgClass, const ImgSize &sz) const
-{
-	return imgClass.scaled(sz.width, sz.height,
-		Qt::KeepAspectRatio, Qt::FastTransformation);
-}
-
-/**
- * Get the size of the specified ImgClass.
- * @param imgClass	[in] ImgClass object.
- * @param pOutSize	[out] Pointer to ImgSize to store the image size.
- * @return 0 on success; non-zero on error.
- */
-int RomThumbCreatorPrivate::getImgClassSize(const QImage &imgClass, ImgSize *pOutSize) const
-{
-	pOutSize->width = imgClass.width();
-	pOutSize->height = imgClass.height();
-	return 0;
-}
 
 /**
  * Get the proxy for the specified URL.
@@ -268,71 +214,35 @@ RomThumbCreator::~RomThumbCreator()
 bool RomThumbCreator::create(const QString &path, int width, int height, QImage &img)
 {
 	Q_UNUSED(height);
-
-	// Check if the source filename is a URI.
-	QUrl url(path);
-	QFileInfo fi_src;
-	QString qs_source_filename;
-	if (url.scheme().isEmpty()) {
-		// No scheme. This is a plain old filename.
-		fi_src = QFileInfo(path);
-		qs_source_filename = fi_src.absoluteFilePath();
-		url = QUrl::fromLocalFile(qs_source_filename);
-	} else if (url.isLocalFile()) {
-		// "file://" scheme. This is a local file.
-		qs_source_filename = url.toLocalFile();
-		fi_src = QFileInfo(qs_source_filename);
-		url = QUrl::fromLocalFile(fi_src.absoluteFilePath());
-	} else if (url.scheme() == QLatin1String("desktop")) {
-		// Desktop folder.
-		// KFileItem::localPath() isn't working for "desktop:/" here,
-		// so handle it manually.
-		// TODO: Also handle "trash:/"?
-#if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
-		qs_source_filename = QStandardPaths::locate(QStandardPaths::DesktopLocation, url.path());
-#else /* QT_VERSION < QT_VERSION_CHECK(5,0,0) */
-		// TODO: Is the extra slash necessary?
-		qs_source_filename = QDesktopServices::storageLocation(QDesktopServices::DesktopLocation);
-		qs_source_filename += QChar(L'/');
-		qs_source_filename += url.path();
-#endif /* QT_VERSION >= QT_VERSION_CHECK(5,0,0) */
-		fi_src = QFileInfo(qs_source_filename);
-		url = QUrl::fromLocalFile(fi_src.absoluteFilePath());
-	} else {
-		// Has a scheme that isn't "file://".
-		// This is probably a remote file.
-	}
-
-	if (!qs_source_filename.isEmpty()) {
-		// Check for "bad" file systems.
-		const Config *const config = Config::instance();
-		if (FileSystem::isOnBadFS(qs_source_filename.toUtf8().constData(), config->enableThumbnailOnNetworkFS())) {
-			// This file is on a "bad" file system.
-			return false;
-		}
+	if (path.isEmpty()) {
+		return false;
 	}
 
 	// Attempt to open the ROM file.
-	IRpFile *file = nullptr;
-	if (!qs_source_filename.isEmpty()) {
-		// Local file. Use RpFile.
-		file = new RpFile(
-			QDir::toNativeSeparators(qs_source_filename).toUtf8().constData(),
-			RpFile::FM_OPEN_READ_GZ);
-	} else {
-#ifdef HAVE_RPFILE_KIO
-		// Not a local file. Use RpFileKio.
-		file = new RpFileKio(url);
-#else /* !HAVE_RPFILE_KIO */
-		// RpFileKio is not available.
+	// NOTE: QUrl uses the following special characters as delimiters:
+	// - '?': query string
+	// - '#': anchor
+	// so we need to urlencode it first.
+	QString path_enc = path;
+#ifndef _WIN32
+	path_enc.replace(QChar(L'?'), QLatin1String("%3f"));
+#endif /* _WIN32 */
+	path_enc.replace(QChar(L'#'), QLatin1String("%23"));
+	QUrl path_url(path_enc);
+
+	IRpFile *const file = openQUrl(path_url, true);
+	if (!file) {
 		return false;
-#endif /* HAVE_RPFILE_KIO */
 	}
 
 	// Assuming width and height are the same.
 	// TODO: What if they aren't?
 	Q_D(RomThumbCreator);
-	int ret = d->getThumbnail(file, width, img);
+	RomThumbCreatorPrivate::GetThumbnailOutParams_t outParams;
+	int ret = d->getThumbnail(file, width, &outParams);
+	if (ret == 0) {
+		img = outParams.retImg;
+	}
 	return (ret == 0);
 }
 
@@ -357,14 +267,14 @@ ThumbCreator::Flags RomThumbCreator::flags(void) const
  * @return 0 on success; non-zero on error.
  */
 extern "C"
-Q_DECL_EXPORT int rp_create_thumbnail(const char *source_file, const char *output_file, int maximum_size)
+Q_DECL_EXPORT int RP_C_API rp_create_thumbnail(const char *source_file, const char *output_file, int maximum_size)
 {
 	// NOTE: TCreateThumbnail() has wrappers for opening the
 	// ROM file and getting RomData*, but we're doing it here
 	// in order to return better error codes.
 
 	if (getuid() == 0 || geteuid() == 0) {
-		qCritical("*** rom-properties-kde%u does not support running as root.", QT_VERSION >> 16);
+		qCritical("*** " RP_KDE_LOWER "%u does not support running as root.", QT_VERSION >> 16);
 		return RPCT_RUNNING_AS_ROOT;
 	}
 
@@ -372,80 +282,17 @@ Q_DECL_EXPORT int rp_create_thumbnail(const char *source_file, const char *outpu
 	// TODO: Static initializer somewhere?
 	rp_image::setBackendCreatorFn(RpQImageBackend::creator_fn);
 
-	// Check if the source filename is a URI.
-	QUrl url(QString::fromUtf8(source_file));
-	QFileInfo fi_src;
-	QString qs_source_filename;
-	if (url.scheme().isEmpty()) {
-		// No scheme. This is a plain old filename.
-		fi_src = QFileInfo(QString::fromUtf8(source_file));
-		qs_source_filename = fi_src.absoluteFilePath();
-		url = QUrl::fromLocalFile(qs_source_filename);
-	} else if (url.isLocalFile()) {
-		// "file://" scheme. This is a local file.
-		qs_source_filename = url.toLocalFile();
-		fi_src = QFileInfo(qs_source_filename);
-		url = QUrl::fromLocalFile(fi_src.absoluteFilePath());
-	} else if (url.scheme() == QLatin1String("desktop")) {
-		// Desktop folder.
-		// KFileItem::localPath() isn't working for "desktop:/" here,
-		// so handle it manually.
-		// TODO: Also handle "trash:/"?
-#if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
-		qs_source_filename = QStandardPaths::locate(QStandardPaths::DesktopLocation, url.path());
-#else /* QT_VERSION < QT_VERSION_CHECK(5,0,0) */
-		// TODO: Is the extra slash necessary?
-		qs_source_filename = QDesktopServices::storageLocation(QDesktopServices::DesktopLocation);
-		qs_source_filename += QChar(L'/');
-		qs_source_filename += url.path();
-#endif /* QT_VERSION >= QT_VERSION_CHECK(5,0,0) */
-		fi_src = QFileInfo(qs_source_filename);
-		url = QUrl::fromLocalFile(fi_src.absoluteFilePath());
-	} else {
-		// Has a scheme that isn't "file://".
-		// This is probably a remote file.
-	}
-
-	if (!url.isValid() || url.isEmpty()) {
-		// Empty URL...
-		return RPCT_SOURCE_FILE_ERROR;
-	}
-
-	// Check for "bad" file systems.
-	if (!qs_source_filename.isEmpty()) {
-		const Config *const config = Config::instance();
-		if (FileSystem::isOnBadFS(source_file, config->enableThumbnailOnNetworkFS())) {
-			// This file is on a "bad" file system.
-			return RPCT_SOURCE_FILE_BAD_FS;
-		}
-	}
-
 	// Attempt to open the ROM file.
-	IRpFile *file = nullptr;
-	if (!qs_source_filename.isEmpty()) {
-		// Local file. Use RpFile.
-		file = new RpFile(
-			QDir::toNativeSeparators(qs_source_filename).toUtf8().constData(),
-			RpFile::FM_OPEN_READ_GZ);
-	} else {
-#ifdef HAVE_RPFILE_KIO
-		// Not a local file. Use RpFileKio.
-		file = new RpFileKio(url);
-#else /* !HAVE_RPFILE_KIO */
-		// RpFileKio is not available.
-		return RPCT_SOURCE_FILE_ERROR;
-#endif /* HAVE_RPFILE_KIO */
-	}
-
-	if (!file->isOpen()) {
+	QUrl localUrl = localizeQUrl(QUrl(QString::fromUtf8(source_file)));
+	IRpFile *const file = openQUrl(localUrl, true);
+	if (!file) {
 		// Could not open the file.
-		file->unref();
 		return RPCT_SOURCE_FILE_ERROR;
 	}
 
 	// Get the appropriate RomData class for this ROM.
 	// RomData class *must* support at least one image type.
-	RomData *romData = RomDataFactory::create(file, RomDataFactory::RDA_HAS_THUMBNAIL);
+	RomData *const romData = RomDataFactory::create(file, RomDataFactory::RDA_HAS_THUMBNAIL);
 	file->unref();	// file is ref()'d by RomData.
 	if (!romData) {
 		// ROM is not supported.
@@ -455,19 +302,18 @@ Q_DECL_EXPORT int rp_create_thumbnail(const char *source_file, const char *outpu
 	// Create the thumbnail.
 	// TODO: If image is larger than maximum_size, resize down.
 	RomThumbCreatorPrivate *const d = new RomThumbCreatorPrivate();
-	QImage ret_img;
-	rp_image::sBIT_t sBIT;
-	int ret = d->getThumbnail(romData, maximum_size, ret_img, &sBIT);
+	RomThumbCreatorPrivate::GetThumbnailOutParams_t outParams;
+	int ret = d->getThumbnail(romData, maximum_size, &outParams);
 	delete d;
 
-	if (ret != 0 || ret_img.isNull()) {
+	if (ret != 0 || outParams.retImg.isNull()) {
 		// No image.
 		romData->unref();
 		return RPCT_SOURCE_FILE_NO_IMAGE;
 	}
 
 	// Save the image using RpPngWriter.
-	const int height = ret_img.height();
+	const int height = outParams.retImg.height();
 
 	/** tEXt chunks. **/
 	// NOTE: These are written before IHDR in order to put the
@@ -482,12 +328,12 @@ Q_DECL_EXPORT int rp_create_thumbnail(const char *source_file, const char *outpu
 
 	// Determine the image format.
 	rp_image::Format format;
-	switch (ret_img.format()) {
+	switch (outParams.retImg.format()) {
 		case QImage::Format_Indexed8:
-			format = rp_image::FORMAT_CI8;
+			format = rp_image::Format::CI8;
 			break;
 		case QImage::Format_ARGB32:
-			format = rp_image::FORMAT_ARGB32;
+			format = rp_image::Format::ARGB32;
 			break;
 		default:
 			// Unsupported...
@@ -497,7 +343,7 @@ Q_DECL_EXPORT int rp_create_thumbnail(const char *source_file, const char *outpu
 	}
 
 	RpPngWriter *pngWriter = new RpPngWriter(output_file,
-		ret_img.width(), height, format);
+		outParams.retImg.width(), height, format);
 	if (!pngWriter->isOpen()) {
 		// Could not open the PNG writer.
 		delete pngWriter;
@@ -506,46 +352,52 @@ Q_DECL_EXPORT int rp_create_thumbnail(const char *source_file, const char *outpu
 	}
 
 	// Software.
-	static const char sw[] = "ROM Properties Page shell extension (KDE" QT_MAJOR_STR ")";
-	kv.push_back(std::make_pair("Software", sw));
+	static const char sw[] = "ROM Properties Page shell extension (" RP_KDE_UPPER QT_MAJOR_STR ")";
+	kv.emplace_back("Software", sw);
 
-	// Modification time.
-	int64_t mtime = fi_src.lastModified().toMSecsSinceEpoch() / 1000;
-	if (mtime > 0) {
-		kv.push_back(std::make_pair("Thumb::Size", rp_sprintf("%" PRId64, mtime)));
+	// Local filename.
+	QString qs_source_filename;
+	if (localUrl.scheme().isEmpty() || localUrl.isLocalFile()) {
+		qs_source_filename = localUrl.toLocalFile();
+	}
+
+	// FIXME: Local files only. Figure out how to handle this for remote.
+	if (!qs_source_filename.isEmpty()) {
+		QFileInfo fi_src(qs_source_filename);
+
+		// Modification time.
+		int64_t mtime = fi_src.lastModified().toMSecsSinceEpoch() / 1000;
+		if (mtime > 0) {
+			kv.emplace_back("Thumb::MTime", rp_sprintf("%" PRId64, mtime));
+		}
+
+		// File size.
+		off64_t szFile = fi_src.size();
+		if (szFile > 0) {
+			kv.emplace_back("Thumb::Size", rp_sprintf("%" PRId64, szFile));
+		}
 	}
 
 	// MIME type.
-	// TODO: If using RpFileKio, use KIO::FileJob::mimetype().
-#if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
-	// Use QMimeDatabase for Qt5.
-	// TODO: Verify if KIO works.
-	QMimeDatabase mimeDatabase;
-	QMimeType mimeType = mimeDatabase.mimeTypeForUrl(url);
-	kv.push_back(std::make_pair("Thumb::Mimetype",
-		string(mimeType.name().toUtf8().constData())));
-#else /* QT_VERSION < QT_VERSION_CHECK(5,0,0) */
-	// Use KMimeType for Qt4.
-	if (!qs_source_filename.isEmpty()) {
-		KMimeType::Ptr mimeType = KMimeType::findByPath(qs_source_filename, 0, true);
-		if (mimeType) {
-			kv.push_back(std::make_pair("Thumb::Mimetype",
-				string(mimeType->name().toUtf8().constData())));
-		}
+	const char *const mimeType = romData->mimeType();
+	if (mimeType) {
+		kv.emplace_back("Thumb::Mimetype", mimeType);
 	}
-#endif
 
-	// File size.
-	int64_t szFile = fi_src.size();
-	if (szFile > 0) {
-		kv.push_back(std::make_pair("Thumb::Size", rp_sprintf("%" PRId64, szFile)));
+	// Original image dimensions.
+	if (outParams.fullSize.width > 0 && outParams.fullSize.height > 0) {
+		char imgdim_str[16];
+		snprintf(imgdim_str, sizeof(imgdim_str), "%d", outParams.fullSize.width);
+		kv.emplace_back("Thumb::Image::Width", imgdim_str);
+		snprintf(imgdim_str, sizeof(imgdim_str), "%d", outParams.fullSize.height);
+		kv.emplace_back("Thumb::Image::Height", imgdim_str);
 	}
 
 	// URI.
 	// NOTE: KDE desktops don't urlencode spaces or non-ASCII characters.
-	// GTK+ desktops do urlencode spaces and non-ASCII characters.
-	kv.push_back(std::make_pair("Thumb::URI",
-		string(url.toString().toUtf8().constData())));
+	// GTK+ desktops *do* urlencode spaces and non-ASCII characters.
+	// FIXME: Do we want to store the local URI or the original URI?
+	kv.emplace_back("Thumb::URI", localUrl.toEncoded().constData());
 
 	// Write the tEXt chunks.
 	pngWriter->write_tEXt(kv);
@@ -555,11 +407,11 @@ Q_DECL_EXPORT int rp_create_thumbnail(const char *source_file, const char *outpu
 	// CI8 palette.
 	// This will be an empty vector if the image isn't CI8.
 	// RpPngWriter will ignore the palette arguments in that case.
-	QVector<QRgb> colorTable = ret_img.colorTable();
+	QVector<QRgb> colorTable = outParams.retImg.colorTable();
 
 	// If sBIT wasn't found, all fields will be 0.
 	// RpPngWriter will ignore sBIT in this case.
-	int pwRet = pngWriter->write_IHDR(&sBIT,
+	int pwRet = pngWriter->write_IHDR(&outParams.sBIT,
 		colorTable.constData(), colorTable.size());
 	if (pwRet != 0) {
 		// Error writing IHDR.
@@ -573,8 +425,8 @@ Q_DECL_EXPORT int rp_create_thumbnail(const char *source_file, const char *outpu
 
 	// Initialize the row pointers.
 	unique_ptr<const uint8_t*[]> row_pointers(new const uint8_t*[height]);
-	const uint8_t *bits = ret_img.bits();
-	const int bytesPerLine = ret_img.bytesPerLine();
+	const uint8_t *bits = outParams.retImg.bits();
+	const int bytesPerLine = outParams.retImg.bytesPerLine();
 	for (int y = 0; y < height; y++, bits += bytesPerLine) {
 		row_pointers[y] = bits;
 	}

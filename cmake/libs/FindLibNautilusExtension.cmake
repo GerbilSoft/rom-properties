@@ -26,5 +26,5 @@ FIND_LIBRARY_PKG_CONFIG(LibNautilusExtension
 IF(LibNautilusExtension_FOUND AND NOT LibNautilusExtension_EXTENSION_DIR)
 	MESSAGE(WARNING "LibNautilusExtension_EXTENSION_DIR is not set; using defaults.")
 	INCLUDE(DirInstallPaths)
-	SET(LibNautilusExtension_EXTENSION_DIR "${DIR_INSTALL_LIB}/nautilus/extensions-3.0" CACHE INTERNAL "LibNautilusExtension_EXTENSION_DIR")
+	SET(LibNautilusExtension_EXTENSION_DIR "${CMAKE_INSTALL_PREFIX}/${DIR_INSTALL_LIB}/nautilus/extensions-3.0" CACHE INTERNAL "LibNautilusExtension_EXTENSION_DIR")
 ENDIF(LibNautilusExtension_FOUND AND NOT LibNautilusExtension_EXTENSION_DIR)

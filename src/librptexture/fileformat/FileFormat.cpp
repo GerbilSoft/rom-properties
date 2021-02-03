@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * FileFormat.cpp: Texture file format base class.                         *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -10,8 +10,8 @@
 #include "FileFormat.hpp"
 #include "FileFormat_p.hpp"
 
-// librpbase
-using LibRpBase::IRpFile;
+// librpfile
+using LibRpFile::IRpFile;
 
 // librpthreads
 #include "librpthreads/Atomics.h"
@@ -31,6 +31,7 @@ FileFormatPrivate::FileFormatPrivate(FileFormat *q, IRpFile *file)
 	, ref_cnt(1)
 	, isValid(false)
 	, file(nullptr)
+	, mimeType(nullptr)
 {
 	// Clear the arrays.
 	memset(dimensions, 0, sizeof(dimensions));
@@ -44,9 +45,7 @@ FileFormatPrivate::FileFormatPrivate(FileFormat *q, IRpFile *file)
 FileFormatPrivate::~FileFormatPrivate()
 {
 	// Unreference the file.
-	if (this->file) {
-		this->file->unref();
-	}
+	UNREF(this->file);
 }
 
 /** FileFormat **/
@@ -58,31 +57,6 @@ FileFormat::FileFormat(FileFormatPrivate *d)
 FileFormat::~FileFormat()
 {
 	delete d_ptr;
-}
-
-/**
- * Take a reference to this FileFormat* object.
- * @return this
- */
-FileFormat *FileFormat::ref(void)
-{
-	RP_D(FileFormat);
-	ATOMIC_INC_FETCH(&d->ref_cnt);
-	return this;
-}
-
-/**
- * Unreference this FileFormat* object.
- * If ref_cnt reaches 0, the FileFormat* object is deleted.
- */
-void FileFormat::unref(void)
-{
-	RP_D(FileFormat);
-	assert(d->ref_cnt > 0);
-	if (ATOMIC_DEC_FETCH(&d->ref_cnt) <= 0) {
-		// All references removed.
-		delete this;
-	}
 }
 
 /**
@@ -112,13 +86,20 @@ void FileFormat::close(void)
 {
 	// Unreference the file.
 	RP_D(FileFormat);
-	if (d->file) {
-		d->file->unref();
-		d->file = nullptr;
-	}
+	UNREF_AND_NULL(d->file);
 }
 
 /** Property accessors **/
+
+/**
+ * Get the file's MIME type.
+ * @return MIME type, or nullptr if unknown.
+ */
+const char *FileFormat::mimeType(void) const
+{
+	RP_D(const FileFormat);
+	return d->mimeType;
+}
 
 /**
  * Get the image width.

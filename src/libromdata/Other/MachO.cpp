@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * MachO.cpp: Mach-O executable format.                                    *
  *                                                                         *
- * Copyright (c) 2019 by David Korth.                                      *
+ * Copyright (c) 2019-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -11,8 +11,9 @@
 #include "data/MachOData.hpp"
 #include "macho_structs.h"
 
-// librpbase
+// librpbase, librpfile
 using namespace LibRpBase;
+using LibRpFile::IRpFile;
 
 // C++ STL classes.
 using std::string;
@@ -26,10 +27,10 @@ namespace LibRomData {
 
 ROMDATA_IMPL(MachO)
 
-class MachOPrivate : public LibRpBase::RomDataPrivate
+class MachOPrivate final : public RomDataPrivate
 {
 	public:
-		MachOPrivate(MachO *q, LibRpBase::IRpFile *file);
+		MachOPrivate(MachO *q, LibRpFile::IRpFile *file);
 
 	private:
 		typedef RomDataPrivate super;
@@ -37,43 +38,47 @@ class MachOPrivate : public LibRpBase::RomDataPrivate
 
 	public:
 		// Executable format.
-		enum Exec_Format {
-			EXEC_FORMAT_UNKNOWN	= -1,
-			EXEC_FORMAT_MACH	= 0,
-			EXEC_FORMAT_FAT		= 1,
+		enum class Exec_Format {
+			Unknown	= -1,
+
+			Mach	= 0,
+			Fat	= 1,
+
+			Max
 		};
-		int execFormat;
+		Exec_Format execFormat;
 
 		// Mach-O format.
-		enum Mach_Format {
-			MACH_FORMAT_UNKNOWN	= -1,
-			MACH_FORMAT_32LSB	= 0,
-			MACH_FORMAT_64LSB	= 1,
-			MACH_FORMAT_32MSB	= 2,
-			MACH_FORMAT_64MSB	= 3,
+		enum class Mach_Format : int8_t {
+			Unknown = -1,
+
+			_32LSB	= 0,
+			_64LSB	= 1,
+			_32MSB	= 2,
+			_64MSB	= 3,
+
+			Max,
 
 			// Host/swap endian formats.
 
 #if SYS_BYTEORDER == SYS_LIL_ENDIAN
-			MACH_FORMAT_32HOST	= MACH_FORMAT_32LSB,
-			MACH_FORMAT_64HOST	= MACH_FORMAT_64LSB,
-			MACH_FORMAT_32SWAP	= MACH_FORMAT_32MSB,
-			MACH_FORMAT_64SWAP	= MACH_FORMAT_64MSB,
+			_32HOST	= _32LSB,
+			_64HOST	= _64LSB,
+			_32SWAP	= _32MSB,
+			_64SWAP	= _64MSB,
 #else /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
-			MACH_FORMAT_32HOST	= MACH_FORMAT_32MSB,
-			MACH_FORMAT_64HOST	= MACH_FORMAT_64MSB,
-			MACH_FORMAT_32SWAP	= MACH_FORMAT_32LSB,
-			MACH_FORMAT_64SWAP	= MACH_FORMAT_64LSB,
+			_32HOST	= _32MSB,
+			_64HOST	= _64MSB,
+			_32SWAP	= _32LSB,
+			_64SWAP	= _64LSB,
 #endif
-
-			MACHO_FORMAT_MAX
 		};
 
 		// Maximum number of Mach-O headers to read.
 		#define MAX_MACH_HEADERS 16U
 
 		// Mach-O formats and headers.
-		vector<int8_t> machFormats;
+		vector<Mach_Format> machFormats;
 		ao::uvector<mach_header> machHeaders;
 
 		/**
@@ -81,14 +86,14 @@ class MachOPrivate : public LibRpBase::RomDataPrivate
 		 * @param magic Magic number as read directly from disk.
 		 * @return Mach_Format value.
 		 */
-		static int checkMachMagicNumber(uint32_t magic);
+		static Mach_Format checkMachMagicNumber(uint32_t magic);
 };
 
 /** MachOPrivate **/
 
 MachOPrivate::MachOPrivate(MachO *q, IRpFile *file)
 	: super(q, file)
-	, execFormat(EXEC_FORMAT_UNKNOWN)
+	, execFormat(Exec_Format::Unknown)
 { }
 
 /**
@@ -96,24 +101,24 @@ MachOPrivate::MachOPrivate(MachO *q, IRpFile *file)
  * @param magic Magic number as read directly from disk.
  * @return Mach_Format value.
  */
-int MachOPrivate::checkMachMagicNumber(uint32_t magic)
+MachOPrivate::Mach_Format MachOPrivate::checkMachMagicNumber(uint32_t magic)
 {
 	// NOTE: Checking in order of Mac OS X usage as of 2019.
-	int ret = MACH_FORMAT_UNKNOWN;
+	Mach_Format machFormat = Mach_Format::Unknown;
 	if (magic == cpu_to_le32(MH_MAGIC_64)) {
 		// LE64 magic number.
-		ret = MACH_FORMAT_64LSB;
+		machFormat = Mach_Format::_64LSB;
 	} else if (magic == cpu_to_le32(MH_MAGIC)) {
 		// LE32 magic number.
-		ret = MACH_FORMAT_32LSB;
+		machFormat = Mach_Format::_32LSB;
 	} else if (magic == cpu_to_be32(MH_MAGIC)) {
 		// BE32 magic number.
-		ret = MACH_FORMAT_32MSB;
+		machFormat = Mach_Format::_32MSB;
 	} else if (magic == cpu_to_be32(MH_MAGIC_64)) {
 		// BE64 magic number.
-		ret = MACH_FORMAT_64MSB;
+		machFormat = Mach_Format::_64MSB;
 	}
-	return ret;
+	return machFormat;
 }
 
 /** MachO **/
@@ -138,7 +143,7 @@ MachO::MachO(IRpFile *file)
 	// d->fileType will be set later.
 	RP_D(MachO);
 	d->className = "MachO";
-	d->fileType = FTYPE_UNKNOWN;
+	d->fileType = FileType::Unknown;
 
 	if (!d->file) {
 		// Could not ref() the file handle.
@@ -153,8 +158,7 @@ MachO::MachO(IRpFile *file)
 	d->file->rewind();
 	size_t size = d->file->read(header, sizeof(header));
 	if (size != sizeof(header)) {
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
 
@@ -165,20 +169,20 @@ MachO::MachO(IRpFile *file)
 	info.header.pData = header;
 	info.ext = nullptr;	// Not needed for ELF.
 	info.szFile = 0;	// Not needed for ELF.
-	d->execFormat = isRomSupported_static(&info);
+	d->execFormat = static_cast<MachOPrivate::Exec_Format>(isRomSupported_static(&info));
 
 	// Load the Mach header.
 	switch (d->execFormat) {
-		case MachOPrivate::EXEC_FORMAT_MACH:
+		case MachOPrivate::Exec_Format::Mach:
 			// Standard Mach executable.
 			d->machFormats.resize(1);
 			d->machHeaders.resize(1);
 			memcpy(&d->machHeaders[0], header, sizeof(mach_header));
 			d->machFormats[0] = d->checkMachMagicNumber(d->machHeaders[0].magic);
-			d->isValid = (d->machFormats[0] >= 0);
+			d->isValid = ((int)d->machFormats[0] >= 0);
 			break;
 
-		case MachOPrivate::EXEC_FORMAT_FAT: {
+		case MachOPrivate::Exec_Format::Fat: {
 			// Read up to 16 architectures.
 			const fat_header *const fatHeader =
 				reinterpret_cast<const fat_header*>(info.header.pData);
@@ -225,32 +229,32 @@ MachO::MachO(IRpFile *file)
 	}
 
 	if (!d->isValid) {
-		d->execFormat = MachOPrivate::EXEC_FORMAT_UNKNOWN;
+		d->execFormat = MachOPrivate::Exec_Format::Unknown;
 		d->machFormats.clear();
 		d->machHeaders.clear();
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
 
 	// Swap endianness if needed.
 	assert(d->machFormats.size() == d->machHeaders.size());
 	auto hdrIter = d->machHeaders.begin();
+	const auto machFormats_cend = d->machFormats.cend();
 	for (auto fmtIter = d->machFormats.cbegin();
-	     fmtIter != d->machFormats.cend(); ++fmtIter, ++hdrIter)
+	     fmtIter != machFormats_cend; ++fmtIter, ++hdrIter)
 	{
 		switch (*fmtIter) {
 			default:
 				// Invalid format. Continue anyway...
 				break;
 
-			case MachOPrivate::MACH_FORMAT_32HOST:
-			case MachOPrivate::MACH_FORMAT_64HOST:
+			case MachOPrivate::Mach_Format::_32HOST:
+			case MachOPrivate::Mach_Format::_64HOST:
 				// Host-endian. Nothing to do.
 				break;
 
-			case MachOPrivate::MACH_FORMAT_32SWAP:
-			case MachOPrivate::MACH_FORMAT_64SWAP: {
+			case MachOPrivate::Mach_Format::_32SWAP:
+			case MachOPrivate::Mach_Format::_64SWAP: {
 				// Swapped endian.
 				// NOTE: Not swapping the magic number.
 				mach_header *const machHeader = &(*hdrIter);
@@ -265,24 +269,50 @@ MachO::MachO(IRpFile *file)
 		}
 	}
 
-	// Determine the file type.
+	// Determine the file and MIME types.
 	// NOTE: This assumes all architectures have the same file type.
 	static const uint8_t fileTypes_tbl[] = {
-		FTYPE_UNKNOWN,			// 0
-		FTYPE_RELOCATABLE_OBJECT,	// MH_OBJECT
-		FTYPE_EXECUTABLE,		// MH_EXECUTE
-		FTYPE_EXECUTABLE,		// MH_PRELOAD (TODO: Special FTYPE?)
-		FTYPE_SHARED_LIBRARY,		// MH_FVMLIB: "Fixed VM" library file. (TODO: Add a separate FTYPE?)
-		FTYPE_CORE_DUMP,		// MH_CORE
-		FTYPE_SHARED_LIBRARY,		// MH_DYLIB
-		FTYPE_UNKNOWN,			// MH_DYLINKER (TODO)
-		FTYPE_BUNDLE,			// MH_BUNDLE
+		(uint8_t)FileType::Unknown,		// 0
+		(uint8_t)FileType::RelocatableObject,	// MH_OBJECT
+		(uint8_t)FileType::Executable,		// MH_EXECUTE
+		(uint8_t)FileType::SharedLibrary,	// MH_FVMLIB: "Fixed VM" library file. (TODO: Add a separate FTYPE?)
+		(uint8_t)FileType::CoreDump,		// MH_CORE
+		(uint8_t)FileType::Executable,		// MH_PRELOAD (TODO: Special FTYPE?)
+		(uint8_t)FileType::SharedLibrary,	// MH_DYLIB
+		(uint8_t)FileType::Unknown,		// MH_DYLINKER (TODO)
+		(uint8_t)FileType::Bundle,		// MH_BUNDLE
+		(uint8_t)FileType::Unknown,		// MH_DYLIB_STUB (TODO)
+		(uint8_t)FileType::Unknown,		// MH_DSYM (TODO)
+		(uint8_t)FileType::Unknown,		// MH_KEXT_BUNDLE (TODO)
+	};
+	static const char *const mimeTypes_tbl[] = {
+		nullptr,				// 0
+		"application/x-mach-object",		// MH_OBJECT
+		"application/x-mach-executable",	// MH_EXECUTE
+		"application/x-mach-sharedlib",		// MH_FVMLIB: "Fixed VM" library file. (TODO: Add a separate FTYPE?)
+		"application/x-mach-core",		// MH_CORE
+		"application/x-mach-executable",	// MH_PRELOAD (TODO: Special FTYPE?)
+		"application/x-mach-sharedlib",		// MH_DYLIB
+		nullptr,				// MH_DYLINKER (TODO)
+		"application/x-mach-bundle",		// MH_BUNDLE
+		nullptr,				// MH_DYLIB_STUB (TODO)
+		nullptr,				// MH_DSYM (TODO)
+		nullptr,				// MH_KEXT_BUNDLE (TODO)
 	};
 
-	// d->fileType is set to FTYPE_UNKNOWN above, so only set it
+	// d->fileType is set to FileType::Unknown above, so only set it
 	// if the filetype is known.
+	bool mimeIsSet = false;
+	if (d->execFormat == MachOPrivate::Exec_Format::Fat) {
+		// Fat binary.
+		d->mimeType = "application/x-mach-fat-binary";
+		mimeIsSet = true;
+	}
 	if (d->machHeaders[0].filetype < ARRAY_SIZE(fileTypes_tbl)) {
 		d->fileType = static_cast<RomData::FileType>(fileTypes_tbl[d->machHeaders[0].filetype]);
+		if (!mimeIsSet) {
+			d->mimeType = mimeTypes_tbl[d->machHeaders[0].filetype];
+		}
 	}
 }
 
@@ -308,7 +338,7 @@ int MachO::isRomSupported_static(const DetectInfo *info)
 	{
 		// Either no detection information was specified,
 		// or the header is too small.
-		return -1;
+		return static_cast<int>(MachOPrivate::Exec_Format::Unknown);
 	}
 
 	const uint32_t *const pu32 =
@@ -316,6 +346,7 @@ int MachO::isRomSupported_static(const DetectInfo *info)
 
 	// Check the magic number.
 	// NOTE: Checking in order of Mac OS X usage as of 2019.
+	MachOPrivate::Exec_Format execFormat;
 	if (pu32[0] == cpu_to_be32(FAT_MAGIC)) {
 		// Universal binary.
 		// Note that this is the same magic number as Java classes,
@@ -324,17 +355,22 @@ int MachO::isRomSupported_static(const DetectInfo *info)
 		// per executable.
 		if (be32_to_cpu(pu32[1]) <= 16) {
 			// Mach-O universal binary.
-			return MachOPrivate::EXEC_FORMAT_FAT;
+			execFormat = MachOPrivate::Exec_Format::Fat;
+		} else {
+			// Not supported.
+			execFormat = MachOPrivate::Exec_Format::Unknown;
 		}
 	} else if (MachOPrivate::checkMachMagicNumber(pu32[0]) !=
-		   MachOPrivate::MACH_FORMAT_UNKNOWN)
+		   MachOPrivate::Mach_Format::Unknown)
 	{
 		// Mach-O executable.
-		return MachOPrivate::EXEC_FORMAT_MACH;
+		execFormat = MachOPrivate::Exec_Format::Mach;
+	} else {
+		// Not supported.
+		execFormat = MachOPrivate::Exec_Format::Unknown;
 	}
 
-	// Not supported.
-	return MachOPrivate::EXEC_FORMAT_UNKNOWN;
+	return static_cast<int>(execFormat);
 }
 
 /**
@@ -380,7 +416,7 @@ const char *const *MachO::supportedFileExtensions_static(void)
 		//".",		// FIXME: Does this work for files with no extension?
 		".bin",
 		".so",		// Shared libraries. (TODO: Versioned .so files.)
-		".dylib"	// Dynamic libraries. (TODO: Versioned .dylib files.)
+		".dylib",	// Dynamic libraries. (TODO: Versioned .dylib files.)
 		".bundle",	// Bundles.
 		// TODO: More?
 
@@ -410,12 +446,12 @@ const char *const *MachO::supportedMimeTypes_static(void)
 		// standard definitions. Hence, we're using our
 		// own types.
 
-		// TODO: Upstream the Mach-O definitions.
-
+		"application/x-mach-object",
 		"application/x-mach-executable",
 		"application/x-mach-sharedlib",
 		"application/x-mach-core",
 		"application/x-mach-bundle",
+		"application/x-mach-fat-binary",
 
 		nullptr
 	};
@@ -453,31 +489,25 @@ int MachO::loadFieldData(void)
 	d->fields->reserve(4*n_tabs);
 	d->fields->reserveTabs(n_tabs);
 
-	auto fmtIter = d->machFormats.cbegin();
 	int i = 0;
+	auto fmtIter = d->machFormats.cbegin();
+	const auto machHeaders_cend = d->machHeaders.cend();
 	for (auto hdrIter = d->machHeaders.cbegin();
-	     hdrIter != d->machHeaders.cend(); ++hdrIter, ++fmtIter, i++)
+	     hdrIter != machHeaders_cend; ++hdrIter, ++fmtIter, i++)
 	{
 		const mach_header *const machHeader = &(*hdrIter);
-		const int machFormat = *fmtIter;
+		const MachOPrivate::Mach_Format machFormat = *fmtIter;
 
 		// Use the CPU name for the tab title.
 		const char *const s_cpu = MachOData::lookup_cpu_type(machHeader->cputype);
 
 		// TODO: Change addTab() behavior to set the first tab's name?
 		if (i == 0) {
-			if (s_cpu) {
-				d->fields->setTabName(i, s_cpu);
-			} else {
-				d->fields->setTabName(i,
-					rp_sprintf("0x%08X", machHeader->cputype).c_str());
-			}
+			d->fields->setTabName(i, s_cpu ? s_cpu :
+				rp_sprintf("0x%08X", machHeader->cputype).c_str());
 		} else {
-			if (s_cpu) {
-				d->fields->addTab(s_cpu);
-			} else {
-				d->fields->addTab(rp_sprintf("0x%08X", machHeader->cputype).c_str());
-			}
+			d->fields->addTab(s_cpu ? s_cpu :
+				rp_sprintf("0x%08X", machHeader->cputype).c_str());
 		}
 
 		// Executable format.
@@ -488,16 +518,15 @@ int MachO::loadFieldData(void)
 			NOP_C_("RomData|ExecType", "64-bit Big-Endian"),
 		};
 		const char *const format_title = C_("MachO", "Format");
-		if (machFormat > MachOPrivate::MACH_FORMAT_UNKNOWN &&
-		    machFormat < ARRAY_SIZE(exec_type_tbl))
+		if (machFormat > MachOPrivate::Mach_Format::Unknown &&
+		    (int)machFormat < ARRAY_SIZE(exec_type_tbl))
 		{
 			d->fields->addField_string(format_title,
-				dpgettext_expr(RP_I18N_DOMAIN, "RomData|ExecType", exec_type_tbl[machFormat]));
+				dpgettext_expr(RP_I18N_DOMAIN, "RomData|ExecType", exec_type_tbl[(int)machFormat]));
 		} else {
 			// TODO: Show individual values.
 			// NOTE: This shouldn't happen...
-			d->fields->addField_string(format_title,
-				C_("RomData", "Unknown"));
+			d->fields->addField_string(format_title, C_("RomData", "Unknown"));
 		}
 
 		// CPU type.
@@ -532,7 +561,9 @@ int MachO::loadFieldData(void)
 			// 0x00100000
 			"NoReexport", "PIE", "DeadStrip", "TLVDescriptors",
 			// 0x01000000
-			"NoHeapExec", "AppExtSafe"
+			"NoHeapExec", "AppExtSafe", "NListOutOfSync", "SimSupport",
+			// 0x10000000
+			nullptr, nullptr, nullptr, "DylibInCache",
 		};
 		vector<string> *const v_flags_bitfield_names = RomFields::strArrayToVector(
 			flags_bitfield_names, ARRAY_SIZE(flags_bitfield_names));

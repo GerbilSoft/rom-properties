@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * Nintendo3DSFirm.hpp: Nintendo 3DS firmware reader.                      *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -11,8 +11,9 @@
 #include "n3ds_firm_structs.h"
 #include "data/Nintendo3DSFirmData.hpp"
 
-// librpbase
+// librpbase, librpfile
 using namespace LibRpBase;
+using LibRpFile::IRpFile;
 
 // for memmem() if it's not available in <string.h>
 #include "librpbase/TextFuncs_libc.h"
@@ -29,7 +30,7 @@ namespace LibRomData {
 
 ROMDATA_IMPL(Nintendo3DSFirm)
 
-class Nintendo3DSFirmPrivate : public RomDataPrivate
+class Nintendo3DSFirmPrivate final : public RomDataPrivate
 {
 	public:
 		Nintendo3DSFirmPrivate(Nintendo3DSFirm *q, IRpFile *file);
@@ -73,7 +74,8 @@ Nintendo3DSFirm::Nintendo3DSFirm(IRpFile *file)
 {
 	RP_D(Nintendo3DSFirm);
 	d->className = "Nintendo3DSFirm";
-	d->fileType = FTYPE_FIRMWARE_BINARY;
+	d->mimeType = "application/x-nintendo-3ds-firm";	// unofficial, not on fd.o
+	d->fileType = FileType::FirmwareBinary;
 
 	if (!d->file) {
 		// Could not ref() the file handle.
@@ -84,8 +86,7 @@ Nintendo3DSFirm::Nintendo3DSFirm(IRpFile *file)
 	d->file->rewind();
 	size_t size = d->file->read(&d->firmHeader, sizeof(d->firmHeader));
 	if (size != sizeof(d->firmHeader)) {
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
 
@@ -99,8 +100,7 @@ Nintendo3DSFirm::Nintendo3DSFirm(IRpFile *file)
 	d->isValid = (isRomSupported_static(&info) >= 0);
 
 	if (!d->isValid) {
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 	}
 }
 
@@ -153,7 +153,7 @@ const char *Nintendo3DSFirm::systemName(unsigned int type) const
 		"Nintendo3DSFirm::systemName() array index optimization needs to be updated.");
 
 	// Bits 0-1: Type. (long, short, abbreviation)
-	// TODO: *New* Nintendo 3DS for N3DS-exclusive titles.
+	// TODO: *New* Nintendo 3DS for N3DS-exclusive titles; iQue for China.
 	static const char *const sysNames[4] = {
 		"Nintendo 3DS", "Nintendo 3DS", "3DS", nullptr
 	};
@@ -228,7 +228,7 @@ int Nintendo3DSFirm::loadFieldData(void)
 
 	// Nintendo 3DS firmware binary header.
 	const N3DS_FIRM_Header_t *const firmHeader = &d->firmHeader;
-	d->fields->reserve(5);	// Maximum of 5 fields.
+	d->fields->reserve(6);	// Maximum of 6 fields.
 
 	// Read the firmware binary.
 	unique_ptr<uint8_t[]> firmBuf;
@@ -320,29 +320,35 @@ int Nintendo3DSFirm::loadFieldData(void)
 			unsigned int searchlen;	// Search string length, without the NULL terminator.
 		};
 		static const Arm9VerStr_t arm9VerStr[] = {
-			{"Luma3DS", "Luma3DS v", 9},
-			{"GodMode9", "GodMode9 Explorer v", 19},
-			{"Decrypt9WIP", "Decrypt9WIP (", 13},
-			{"Hourglass9", "Hourglass9 v", 12},
+			{"Luma3DS",		"Luma3DS v", 9},
+			{"GodMode9",		"GodMode9 Explorer v", 19},	// Older versions
+			{"GodMode9",		"GodMode9 v", 10},		// Newer versions (v1.9.1; TODO check for first one?)
+			{"Decrypt9WIP",		"Decrypt9WIP (", 13},
+			{"Hourglass9",		"Hourglass9 v", 12},
+			{"ntrboot_flasher",	"ntrboot_flasher: %s", 19},	// version info isn't hard-coded
+			{"SafeB9SInstaller",	"SafeB9SInstaller v", 18},
+			{"OpenFirmInstaller",	"OpenFirmInstaller v", 19},
+			{"fastboot3DS",		"fastboot3DS v", 13},
+
+			{nullptr, nullptr, 0}
 		};
 
 		const char *arm9VerStr_title = nullptr;
 		string s_verstr;
-		for (unsigned int i = 0; i < ARRAY_SIZE(arm9VerStr); i++) {
+		for (const Arm9VerStr_t *p = arm9VerStr; p->title != nullptr; p++) {
 			const char *verstr = static_cast<const char*>(memmem(
-				firmBuf.get(), szFile, arm9VerStr[i].searchstr, arm9VerStr[i].searchlen));
+				firmBuf.get(), szFile, p->searchstr, p->searchlen));
 			if (!verstr)
 				continue;
 
-			arm9VerStr_title = arm9VerStr[i].title;
+			arm9VerStr_title = p->title;
 
 			// Version does NOT include the 'v' character.
-			verstr += arm9VerStr[i].searchlen;
+			verstr += p->searchlen;
 			const char *end = (const char*)firmBuf.get() + szFile;
 			int count = 0;
-			while (verstr < end && verstr[count] != 0 &&
-			       !ISSPACE(verstr[count]) && verstr[count] != ')' &&
-			       count < 32)
+			while (verstr < end && count < 32 && verstr[count] != 0 &&
+			       !ISSPACE(verstr[count]) && verstr[count] != ')')
 			{
 				count++;
 			}
@@ -358,6 +364,44 @@ int Nintendo3DSFirm::loadFieldData(void)
 			break;
 		}
 
+		// Sighax status.
+		// TODO: If it's SPI, we need to decrypt the FIRM contents.
+		// Reference: https://github.com/TuxSH/firmtool/blob/master/firmtool/__main__.py
+		const uint32_t first4 = be32_to_cpu(*(reinterpret_cast<const uint32_t*>(firmHeader->signature)));
+		struct SighaxStatus_t {
+			uint32_t first4;
+			const char *status;
+		};
+		static const SighaxStatus_t sighaxStatus[] = {
+			{0xB6724531,	"NAND retail"},		// SciresM
+			{0x6EFF209C,	"NAND retail"},		// sighax.com
+			{0x88697CDC,	"NAND devkit"},		// SciresM
+
+			{0x6CF52F89,	"NCSD retail"},
+			{0x53CB0E4E,	"NCSD devkit"},
+
+			{0x37E96B10,	"SPI retail"},
+			{0x18722BC7,	"SPI devkit"},
+
+			{0, nullptr}
+		};
+
+		const char *s_sighax_status = nullptr;
+		for (const SighaxStatus_t *p = sighaxStatus; p->first4 != 0; p++) {
+			if (p->first4 == first4) {
+				s_sighax_status = p->status;
+				break;
+			}
+		}
+
+		if (s_sighax_status) {
+			// Sighaxed. Assume it's ARM9 homebrew.
+			firmBinDesc = C_("Nintendo3DSFirm", "ARM9 Homebrew");
+		} else {
+			// Not sighaxed.
+			s_sighax_status = C_("Nintendo3DSFirm", "Not sighaxed");
+		}
+
 		// Add the firmware type field.
 		d->fields->addField_string(C_("Nintendo3DSFirm", "Type"),
 			(firmBinDesc ? firmBinDesc : C_("RomData", "Unknown")));
@@ -370,6 +414,8 @@ int Nintendo3DSFirm::loadFieldData(void)
 		if (!s_verstr.empty()) {
 			d->fields->addField_string(C_("RomData", "Version"), s_verstr);
 		}
+
+		d->fields->addField_string(C_("Nintendo3DSFirm", "Sighax Status"), s_sighax_status);
 	} else {
 		// Add the firmware type field.
 		d->fields->addField_string(C_("Nintendo3DSFirm", "Type"),
@@ -379,11 +425,11 @@ int Nintendo3DSFirm::loadFieldData(void)
 	// Entry Points
 	if (arm11_entrypoint != 0) {
 		d->fields->addField_string_numeric(C_("Nintendo3DSFirm", "ARM11 Entry Point"),
-			arm11_entrypoint, RomFields::FB_HEX, 8, RomFields::STRF_MONOSPACE);
+			arm11_entrypoint, RomFields::Base::Hex, 8, RomFields::STRF_MONOSPACE);
 	}
 	if (arm9_entrypoint != 0) {
 		d->fields->addField_string_numeric(C_("Nintendo3DSFirm", "ARM9 Entry Point"),
-			arm9_entrypoint, RomFields::FB_HEX, 8, RomFields::STRF_MONOSPACE);
+			arm9_entrypoint, RomFields::Base::Hex, 8, RomFields::STRF_MONOSPACE);
 	}
 
 	// Finished reading the field data.

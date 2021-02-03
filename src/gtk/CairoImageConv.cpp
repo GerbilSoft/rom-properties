@@ -6,29 +6,22 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+#include "stdafx.h"
 #include "CairoImageConv.hpp"
 
-// C includes.
-#include <stdint.h>
-
-// C includes. (C++ namespace)
-#include <cassert>
-#include <cstring>
-
-// C++ includes.
-#include <memory>
-using std::unique_ptr;
+// C++ STL classes.
+using std::array;
 
 // librptexture
-#include "librptexture/img/rp_image.hpp"
 using LibRpTexture::rp_image;
 
 /**
  * Convert an rp_image to cairo_surface_t.
- * @param img	[in] rp_image.
+ * @param img		[in] rp_image.
+ * @param premultiply	[in] If true, premultiply. Needed for display; NOT needed for PNG.
  * @return GdkPixbuf, or nullptr on error.
  */
-cairo_surface_t *CairoImageConv::rp_image_to_cairo_surface_t(const rp_image *img)
+cairo_surface_t *CairoImageConv::rp_image_to_cairo_surface_t(const rp_image *img, bool premultiply)
 {
 	assert(img != nullptr);
 	if (unlikely(!img || !img->isValid()))
@@ -42,9 +35,10 @@ cairo_surface_t *CairoImageConv::rp_image_to_cairo_surface_t(const rp_image *img
 	const int width = img->width();
 	const int height = img->height();
 	cairo_surface_t *surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
-	assert(surface != nullptr);
+	// cairo_image_surface_create() always returns a valid pointer.
 	assert(cairo_surface_status(surface) == CAIRO_STATUS_SUCCESS);
-	if (unlikely(!surface || cairo_surface_status(surface) != CAIRO_STATUS_SUCCESS)) {
+	if (unlikely(cairo_surface_status(surface) != CAIRO_STATUS_SUCCESS)) {
+		cairo_surface_destroy(surface);
 		return nullptr;
 	}
 
@@ -52,11 +46,17 @@ cairo_surface_t *CairoImageConv::rp_image_to_cairo_surface_t(const rp_image *img
 	assert(px_dest != nullptr);
 
 	switch (img->format()) {
-		case rp_image::FORMAT_ARGB32: {
-			// Premultiply the image first.
-			// TODO: Combined dup()/premultiply() function?
-			unique_ptr<rp_image> img_prex(img->dup());
-			img_prex->premultiply();
+		case rp_image::Format::ARGB32: {
+			const rp_image *img_prex;
+			if (premultiply) {
+				// Premultiply the image first.
+				// TODO: Combined dup()/premultiply() function?
+				img_prex = img->dup();
+				const_cast<rp_image*>(img_prex)->premultiply();
+			} else {
+				// No premultiplication.
+				img_prex = img;
+			}
 
 			// Copy the image data.
 			int dest_stride = cairo_image_surface_get_stride(surface);
@@ -85,11 +85,14 @@ cairo_surface_t *CairoImageConv::rp_image_to_cairo_surface_t(const rp_image *img
 
 			// Mark the surface as dirty.
 			cairo_surface_mark_dirty(surface);
+			if (premultiply) {
+				img_prex->unref();
+			}
 			break;
 		}
 
-		case rp_image::FORMAT_CI8: {
-			const uint32_t *palette = img->palette();
+		case rp_image::Format::CI8: {
+			const uint32_t *const palette = img->palette();
 			const int palette_len = img->palette_len();
 			assert(palette != nullptr);
 			assert(palette_len > 0);
@@ -98,13 +101,19 @@ cairo_surface_t *CairoImageConv::rp_image_to_cairo_surface_t(const rp_image *img
 				break;
 
 			// Premultiply the palette.
-			uint32_t pal_prex[256];
-			for (int i = 0; i < palette_len; i++) {
-				pal_prex[i] = rp_image::premultiply_pixel(palette[i]);
-			}
-			if (palette_len < 256) {
-				// Clear the rest of the palette.
-				memset(&pal_prex[palette_len], 0, (256-palette_len)*sizeof(uint32_t));
+			std::array<uint32_t, 256> pal_prex;
+			const uint32_t *pal_toUse;
+			if (premultiply) {
+				for (int i = 0; i < palette_len; i++) {
+					pal_prex[i] = rp_image::premultiply_pixel(palette[i]);
+				}
+				if (palette_len < (int)pal_prex.size()) {
+					// Clear the rest of the palette.
+					memset(&pal_prex[palette_len], 0, (pal_prex.size() - palette_len) * sizeof(uint32_t));
+				}
+				pal_toUse = pal_prex.data();
+			} else {
+				pal_toUse = palette;
 			}
 
 			// Copy the image data.
@@ -115,16 +124,16 @@ cairo_surface_t *CairoImageConv::rp_image_to_cairo_surface_t(const rp_image *img
 			for (unsigned int y = (unsigned int)height; y > 0; y--) {
 				unsigned int x;
 				for (x = (unsigned int)width; x > 3; x -= 4) {
-					px_dest[0] = pal_prex[img_buf[0]];
-					px_dest[1] = pal_prex[img_buf[1]];
-					px_dest[2] = pal_prex[img_buf[2]];
-					px_dest[3] = pal_prex[img_buf[3]];
+					px_dest[0] = pal_toUse[img_buf[0]];
+					px_dest[1] = pal_toUse[img_buf[1]];
+					px_dest[2] = pal_toUse[img_buf[2]];
+					px_dest[3] = pal_toUse[img_buf[3]];
 					px_dest += 4;
 					img_buf += 4;
 				}
 				for (; x > 0; x--, px_dest++, img_buf++) {
 					// Last pixels.
-					*px_dest = pal_prex[*img_buf];
+					*px_dest = pal_toUse[*img_buf];
 					px_dest++;
 					img_buf++;
 				}

@@ -3,7 +3,7 @@
  * NCCHReader_p.hpp: Nintendo 3DS NCCH reader.                             *
  * Private class declaration.                                              *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -14,8 +14,8 @@
 #include "NCCHReader.hpp"
 
 // librpbase
-#include "librpbase/byteswap.h"
 #include "librpbase/crypto/KeyManager.hpp"
+
 #ifdef ENABLE_DECRYPTION
 #include "../crypto/CtrKeyScrambler.hpp"
 #include "../crypto/N3DSVerifyKeys.hpp"
@@ -39,7 +39,7 @@ class NCCHReaderPrivate
 {
 	public:
 		NCCHReaderPrivate(NCCHReader *q, uint8_t media_unit_shift,
-			int64_t ncch_offset, uint32_t ncch_length);
+			off64_t ncch_offset, uint32_t ncch_length);
 		~NCCHReaderPrivate();
 
 	private:
@@ -49,7 +49,7 @@ class NCCHReaderPrivate
 
 	public:
 		// NCCH offsets.
-		const int64_t ncch_offset;	// NCCH start offset, in bytes.
+		const off64_t ncch_offset;	// NCCH start offset, in bytes.
 		const uint32_t ncch_length;	// NCCH length, in bytes.
 		const uint8_t media_unit_shift;
 
@@ -62,9 +62,9 @@ class NCCHReaderPrivate
 		// Loaded headers.
 		enum HeadersPresent {
 			HEADER_NONE	= 0,
-			HEADER_NCCH	= (1 << 0),
-			HEADER_EXHEADER	= (1 << 1),
-			HEADER_EXEFS	= (1 << 2),
+			HEADER_NCCH	= (1U << 0),
+			HEADER_EXHEADER	= (1U << 1),
+			HEADER_EXEFS	= (1U << 2),
 		};
 		uint32_t headers_loaded;	// HeadersPresent
 
@@ -82,10 +82,13 @@ class NCCHReaderPrivate
 		// We won't extract any information from them,
 		// other than the type and the fact that they're
 		// not encrypted.
-		enum NonNCCHContentType {
-			NONCCH_UNKNOWN	= 0,
-			NONCCH_NDHT,
-			NONCCH_NARC,
+		enum class NonNCCHContentType {
+			Unknown	= 0,
+
+			NDHT,	// Nintendo DS Cart Whitelist
+			NARC,	// Nintendo Archive
+
+			Max
 		};
 		NonNCCHContentType nonNcchContentType;
 
@@ -158,6 +161,7 @@ class NCCHReaderPrivate
 
 		// Are we using debug keys?
 		bool isDebug;
+#endif /* ENABLE_DECRYPTION */
 
 		/**
 		 * Close the file and/or IDiscReader.
@@ -166,17 +170,11 @@ class NCCHReaderPrivate
 		{
 			RP_Q(NCCHReader);
 			if (q->m_hasDiscReader) {
-				// Delete the IDiscReader, since it's
-				// most likely a temporary CIAReader.
-				// TODO: Use reference counting?
-				delete q->m_discReader;
-				q->m_discReader = nullptr;
+				UNREF_AND_NULL_NOCHK(q->m_discReader);
 			} else if (q->m_file) {
-				q->m_file->unref();
-				q->m_file = nullptr;
+				UNREF_AND_NULL_NOCHK(q->m_file);
 			}
 		}
-#endif /* ENABLE_DECRYPTION */
 };
 
 }

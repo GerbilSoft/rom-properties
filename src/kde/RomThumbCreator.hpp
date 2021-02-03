@@ -1,8 +1,8 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (KDE4/KDE5)                        *
+ * ROM Properties Page shell extension. (KDE4/KF5)                         *
  * RomThumbCreator.hpp: Thumbnail creator.                                 *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -13,7 +13,7 @@
 #include <kio/thumbcreator.h>
 
 // TODO: ThumbCreatorV2 on KDE4 for user configuration?
-// (This was merged into ThumbCreator for KDE5.)
+// (This was merged into ThumbCreator for KF5.)
 
 class RomThumbCreatorPrivate;
 class RomThumbCreator : public ThumbCreator

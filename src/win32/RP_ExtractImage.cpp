@@ -11,8 +11,9 @@
 #include "RP_ExtractImage.hpp"
 #include "RpImageWin32.hpp"
 
-// librpbase, librptexture, libromdata
+// librpbase, librpfile, librptexture, libromdata
 using namespace LibRpBase;
+using namespace LibRpFile;
 using LibRpTexture::rp_image;
 using LibRomData::RomDataFactory;
 
@@ -37,9 +38,7 @@ RP_ExtractImage_Private::RP_ExtractImage_Private()
 
 RP_ExtractImage_Private::~RP_ExtractImage_Private()
 {
-	if (romData) {
-		romData->unref();
-	}
+	UNREF(romData);
 }
 
 /** RP_ExtractImage **/
@@ -58,17 +57,21 @@ RP_ExtractImage::~RP_ExtractImage()
 
 IFACEMETHODIMP RP_ExtractImage::QueryInterface(REFIID riid, LPVOID *ppvObj)
 {
-#pragma warning(push)
-#pragma warning(disable: 4365 4838)
+#ifdef _MSC_VER
+# pragma warning(push)
+# pragma warning(disable: 4365 4838)
+#endif /* _MSC_VER */
 	static const QITAB rgqit[] = {
 		QITABENT(RP_ExtractImage, IPersist),
 		QITABENT(RP_ExtractImage, IPersistFile),
 		QITABENT(RP_ExtractImage, IExtractImage),
 		QITABENT(RP_ExtractImage, IExtractImage2),
-		{ 0 }
+		{ 0, 0 }
 	};
-#pragma warning(pop)
-	return LibWin32Common::pfnQISearch(this, rgqit, riid, ppvObj);
+#ifdef _MSC_VER
+# pragma warning(pop)
+#endif /* _MSC_VER */
+	return LibWin32Common::rp_QISearch(this, rgqit, riid, ppvObj);
 }
 
 /** IPersistFile **/
@@ -94,10 +97,7 @@ IFACEMETHODIMP RP_ExtractImage::Load(LPCOLESTR pszFileName, DWORD dwMode)
 
 	// If we already have a RomData object, unref() it first.
 	RP_D(RP_ExtractImage);
-	if (d->romData) {
-		d->romData->unref();
-		d->romData = nullptr;
-	}
+	UNREF_AND_NULL(d->romData);
 
 	// pszFileName is the file being worked on.
 	// TODO: If the file was already loaded, don't reload it.
@@ -113,7 +113,9 @@ IFACEMETHODIMP RP_ExtractImage::Load(LPCOLESTR pszFileName, DWORD dwMode)
 	// Attempt to open the ROM file.
 	RpFile *const file = new RpFile(d->filename, RpFile::FM_OPEN_READ_GZ);
 	if (!file->isOpen()) {
+		// Unable to open the file.
 		file->unref();
+		return E_FAIL;
 	}
 
 	// Get the appropriate RomData class for this ROM.
@@ -156,6 +158,9 @@ IFACEMETHODIMP RP_ExtractImage::GetLocation(LPWSTR pszPathBuffer,
 	DWORD cchMax, DWORD *pdwPriority, const SIZE *prgSize,
 	DWORD dwRecClrDepth, DWORD *pdwFlags)
 {
+	((void)pszPathBuffer);
+	((void)cchMax);
+
 	// TODO: If the image is cached on disk, return a filename.
 	if (!prgSize || !pdwFlags) {
 		// Invalid arguments.
@@ -220,11 +225,17 @@ IFACEMETHODIMP RP_ExtractImage::Extract(HBITMAP *phBmpImage)
 
 	// ROM is supported. Get the image.
 	// NOTE: Using width only. (TODO: both width/height?)
-	int ret = d->thumbnailer.getThumbnail(d->romData, d->rgSize.cx, *phBmpImage);
-	if (ret != 0 || !*phBmpImage) {
+	CreateThumbnail::GetThumbnailOutParams_t outParams;
+	outParams.retImg = nullptr;
+	int ret = d->thumbnailer.getThumbnail(d->romData, d->rgSize.cx, &outParams);
+	if (ret != 0 || !outParams.retImg) {
 		// ROM is not supported. Use the fallback.
+		if (outParams.retImg) {
+			DeleteBitmap(outParams.retImg);
+		}
 		return d->Fallback(phBmpImage);
 	}
+	*phBmpImage = outParams.retImg;
 	return S_OK;
 }
 

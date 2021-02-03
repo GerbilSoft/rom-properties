@@ -24,14 +24,16 @@ ROMDATA_DECL_IMGINT()
 		/** GameCubeBNR accessors. **/
 
 		/**
-		 * Get the gcn_banner_comment_t.
+		 * Add a field for the GameCube banner.
 		 *
-		 * For BNR2, this returns the comment that most closely
-		 * matches the system language.
+		 * This adds an RFT_STRING field for BNR1, and
+		 * RFT_STRING_MULTI for BNR2.
 		 *
-		 * return gcn_banner_comment_t, or nullptr on error.
+		 * @param fields RomFields*
+		 * @param gcnRegion GameCube region for BNR1 encoding.
+		 * @return 0 on success; negative POSIX error code on error.
 		 */
-		const gcn_banner_comment_t *getComment(void) const;
+		int addField_gameInfo(LibRpBase::RomFields *fields, uint32_t gcnRegion) const;
 
 ROMDATA_DECL_END()
 

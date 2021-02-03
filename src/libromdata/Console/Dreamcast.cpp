@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * Dreamcast.hpp: Sega Dreamcast disc image reader.                        *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -13,12 +13,13 @@
 #include "dc_structs.h"
 #include "cdrom_structs.h"
 
-// librpbase, librptexture
+// librpbase, librpfile
 using namespace LibRpBase;
-using namespace LibRpTexture;
+using namespace LibRpFile;
 
 // librptexture
 #include "librptexture/fileformat/SegaPVR.hpp"
+using LibRpTexture::rp_image;
 using LibRpTexture::SegaPVR;
 
 // DiscReader
@@ -31,7 +32,6 @@ using LibRpTexture::SegaPVR;
 
 // C++ STL classes.
 using std::string;
-using std::unique_ptr;
 using std::vector;
 
 namespace LibRomData {
@@ -39,7 +39,7 @@ namespace LibRomData {
 ROMDATA_IMPL(Dreamcast)
 ROMDATA_IMPL_IMG_TYPES(Dreamcast)
 
-class DreamcastPrivate : public RomDataPrivate
+class DreamcastPrivate final : public RomDataPrivate
 {
 	public:
 		DreamcastPrivate(Dreamcast *q, IRpFile *file);
@@ -50,15 +50,18 @@ class DreamcastPrivate : public RomDataPrivate
 		RP_DISABLE_COPY(DreamcastPrivate)
 
 	public:
-		enum DiscType {
-			DISC_UNKNOWN		= -1,	// Unknown disc image type.
-			DISC_ISO_2048		= 0,	// ISO-9660, 2048-byte sectors.
-			DISC_ISO_2352		= 1,	// ISO-9660, 2352-byte sectors.
-			DISC_GDI		= 2,	// GD-ROM cuesheet
-		};
+		enum class DiscType {
+			Unknown	= -1,
 
-		// Disc type and reader.
-		int discType;
+			Iso2048	= 0,	// ISO-9660, 2048-byte sectors.
+			Iso2352	= 1,	// ISO-9660, 2352-byte sectors.
+			GDI	= 2,	// GD-ROM cuesheet
+
+			Max
+		};
+		DiscType discType;
+
+		// Disc reader.
 		union {
 			IDiscReader *discReader;
 			GdiReader *gdiReader;
@@ -108,7 +111,7 @@ class DreamcastPrivate : public RomDataPrivate
 
 DreamcastPrivate::DreamcastPrivate(Dreamcast *q, IRpFile *file)
 	: super(q, file)
-	, discType(DISC_UNKNOWN)
+	, discType(DiscType::Unknown)
 	, discReader(nullptr)
 	, isoPartition(nullptr)
 	, iso_start_offset(-1)
@@ -120,12 +123,9 @@ DreamcastPrivate::DreamcastPrivate(Dreamcast *q, IRpFile *file)
 
 DreamcastPrivate::~DreamcastPrivate()
 {
-	if (pvrData) {
-		pvrData->unref();
-	}
-
-	delete discReader;
-	delete isoPartition;
+	UNREF(pvrData);
+	UNREF(isoPartition);
+	UNREF(discReader);
 }
 
 /**
@@ -171,7 +171,7 @@ const rp_image *DreamcastPrivate::load0GDTEX(void)
 
 	// Create the ISO-9660 file system reader if it isn't already opened.
 	if (!isoPartition) {
-		if (discType == DISC_GDI) {
+		if (discType == DiscType::GDI) {
 			// Open track 3 as ISO-9660.
 			isoPartition = gdiReader->openIsoPartition(3);
 		} else {
@@ -181,8 +181,7 @@ const rp_image *DreamcastPrivate::load0GDTEX(void)
 		}
 		if (!isoPartition->isOpen()) {
 			// Unable to open the ISO-9660 partition.
-			delete isoPartition;
-			isoPartition = nullptr;
+			UNREF_AND_NULL_NOCHK(isoPartition);
 			return nullptr;
 		}
 	}
@@ -297,7 +296,7 @@ Dreamcast::Dreamcast(IRpFile *file)
 	// This class handles disc images.
 	RP_D(Dreamcast);
 	d->className = "Dreamcast";
-	d->fileType = FTYPE_DISC_IMAGE;
+	d->fileType = FileType::DiscImage;
 
 	if (!d->file) {
 		// Could not ref() the file handle.
@@ -311,8 +310,7 @@ Dreamcast::Dreamcast(IRpFile *file)
 	d->file->rewind();
 	size_t size = d->file->read(&sector, sizeof(sector));
 	if (size == 0 || size > sizeof(sector)) {
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
 
@@ -324,37 +322,39 @@ Dreamcast::Dreamcast(IRpFile *file)
 	const string filename = file->filename();
 	info.ext = FileSystem::file_ext(filename);
 	info.szFile = 0;	// Not needed for Dreamcast.
-	d->discType = isRomSupported_static(&info);
+	d->discType = static_cast<DreamcastPrivate::DiscType>(isRomSupported_static(&info));
 
-	if (d->discType < 0) {
-		d->file->unref();
-		d->file = nullptr;
+	if ((int)d->discType < 0) {
+		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
 
 	switch (d->discType) {
-		case DreamcastPrivate::DISC_ISO_2048:
+		case DreamcastPrivate::DiscType::Iso2048:
 			// 2048-byte sectors.
 			// TODO: Determine session start address.
+			d->mimeType = "application/x-dreamcast-rom";	// unofficial, not on fd.o
 			memcpy(&d->discHeader, &sector, sizeof(d->discHeader));
 			d->iso_start_offset = -1;
 			d->discReader = new DiscReader(d->file);
 			if (d->file->size() <= 64*1024) {
 				// 64 KB is way too small for a Dreamcast disc image.
 				// We'll assume this is IP.bin.
-				d->fileType = FTYPE_BOOT_SECTOR;
+				d->fileType = FileType::BootSector;
 			}
 			break;
 
-		case DreamcastPrivate::DISC_ISO_2352:
+		case DreamcastPrivate::DiscType::Iso2352: {
 			// 2352-byte sectors.
-			// FIXME: Assuming Mode 1.
-			memcpy(&d->discHeader, &sector.m1.data, sizeof(d->discHeader));
+			d->mimeType = "application/x-dreamcast-rom";	// unofficial, not on fd.o
+			const uint8_t *const data = cdromSectorDataPtr(&sector);
+			memcpy(&d->discHeader, data, sizeof(d->discHeader));
 			d->discReader = new Cdrom2352Reader(d->file);
 			d->iso_start_offset = static_cast<int>(cdrom_msf_to_lba(&sector.msf));
 			break;
+		}
 
-		case DreamcastPrivate::DISC_GDI: {
+		case DreamcastPrivate::DiscType::GDI: {
 			// GD-ROM cuesheet.
 			// iso_start_offset isn't used for GDI.
 			d->gdiReader = new GdiReader(d->file);
@@ -362,14 +362,13 @@ Dreamcast::Dreamcast(IRpFile *file)
 			const int lba_track03 = d->gdiReader->startingLBA(3);
 			if (lba_track03 < 0) {
 				// Error getting the track 03 LBA.
-				delete d->gdiReader;
-				d->file->unref();
-				d->gdiReader = nullptr;
-				d->file = nullptr;
+				UNREF_AND_NULL_NOCHK(d->gdiReader);
+				UNREF_AND_NULL_NOCHK(d->file);
 				return;
 			}
 			// TODO: Don't hard-code 2048?
 			d->gdiReader->seekAndRead(lba_track03*2048, &d->discHeader, sizeof(d->discHeader));
+			d->mimeType = "application/x-dreamcast-cuesheet";	// unofficial, not on fd.o
 			break;
 		}
 
@@ -389,15 +388,9 @@ void Dreamcast::close(void)
 	RP_D(Dreamcast);
 
 	// Close any child RomData subclasses.
-	if (d->pvrData) {
-		d->pvrData->unref();
-		d->pvrData = nullptr;
-	}
-
-	delete d->discReader;
-	delete d->isoPartition;
-	d->discReader = nullptr;
-	d->isoPartition = nullptr;
+	UNREF_AND_NULL(d->pvrData);
+	UNREF_AND_NULL(d->isoPartition);
+	UNREF_AND_NULL(d->discReader);
 
 	// Call the superclass function.
 	super::close();
@@ -419,7 +412,7 @@ int Dreamcast::isRomSupported_static(const DetectInfo *info)
 	{
 		// Either no detection information was specified,
 		// or the header is too small.
-		return -1;
+		return static_cast<int>(DreamcastPrivate::DiscType::Unknown);
 	}
 
 	if (info->ext && info->ext[0] != 0) {
@@ -429,7 +422,7 @@ int Dreamcast::isRomSupported_static(const DetectInfo *info)
 			// Check the first line.
 			if (GdiReader::isDiscSupported_static(info->header.pData, info->header.size) >= 0) {
 				// This is a supported GD-ROM cuesheet.
-				return DreamcastPrivate::DISC_GDI;
+				return static_cast<int>(DreamcastPrivate::DiscType::GDI);
 			}
 		}
 	}
@@ -437,39 +430,49 @@ int Dreamcast::isRomSupported_static(const DetectInfo *info)
 	// For files that aren't cuesheets, check for a minimum file size.
 	if (info->header.size < sizeof(CDROM_2352_Sector_t)) {
 		// Header is too small.
-		return -1;
+		return static_cast<int>(DreamcastPrivate::DiscType::Unknown);
 	}
 
 	// Check for Dreamcast HW and Maker ID.
 
-	// 0x0000: 2048-byte sectors.
-	const DC_IP0000_BIN_t *ip0000_bin = reinterpret_cast<const DC_IP0000_BIN_t*>(info->header.pData);
-	if (!memcmp(ip0000_bin->hw_id, DC_IP0000_BIN_HW_ID, sizeof(ip0000_bin->hw_id)) &&
-	    !memcmp(ip0000_bin->maker_id, DC_IP0000_BIN_MAKER_ID, sizeof(ip0000_bin->maker_id)))
-	{
-		// Found HW and Maker IDs at 0x0000.
-		// This is a 2048-byte sector image.
-		return DreamcastPrivate::DISC_ISO_2048;
+	// Try 2048-byte sectors. (IP0000.bin located at 0x0000.)
+	if (info->header.size >= 2048) {
+		const DC_IP0000_BIN_t *ip0000_bin = reinterpret_cast<const DC_IP0000_BIN_t*>(info->header.pData);
+		if (!memcmp(ip0000_bin->hw_id, DC_IP0000_BIN_HW_ID, sizeof(ip0000_bin->hw_id)) &&
+		    !memcmp(ip0000_bin->maker_id, DC_IP0000_BIN_MAKER_ID, sizeof(ip0000_bin->maker_id)))
+		{
+			// Found HW and Maker IDs at 0x0000.
+			// This is a 2048-byte sector image.
+			return static_cast<int>(DreamcastPrivate::DiscType::Iso2048);
+		}
 	}
 
-	// 0x0010: 2352-byte sectors;
-	ip0000_bin = reinterpret_cast<const DC_IP0000_BIN_t*>(&info->header.pData[0x10]);
-	if (!memcmp(ip0000_bin->hw_id, DC_IP0000_BIN_HW_ID, sizeof(ip0000_bin->hw_id)) &&
-	    !memcmp(ip0000_bin->maker_id, DC_IP0000_BIN_MAKER_ID, sizeof(ip0000_bin->maker_id)))
+	// Try 2352-byte sectors.
+	if (info->header.size >= 2352 &&
+	    Cdrom2352Reader::isDiscSupported_static(info->header.pData, info->header.size) >= 0)
 	{
-		// Found HW and Maker IDs at 0x0010.
-		// Verify the sync bytes.
-		if (Cdrom2352Reader::isDiscSupported_static(info->header.pData, info->header.size) >= 0) {
-			// Found CD-ROM sync bytes.
+		// Sync bytes are valid.
+		const CDROM_2352_Sector_t *const sector =
+			reinterpret_cast<const CDROM_2352_Sector_t*>(info->header.pData);
+
+		// Get the user data area. (Offset depends on Mode 1 vs. Mode 2 XA.)
+		const uint8_t *const data = cdromSectorDataPtr(sector);
+
+		// Check IP0000.bin.
+		const DC_IP0000_BIN_t *ip0000_bin = reinterpret_cast<const DC_IP0000_BIN_t*>(data);
+		if (!memcmp(ip0000_bin->hw_id, DC_IP0000_BIN_HW_ID, sizeof(ip0000_bin->hw_id)) &&
+		    !memcmp(ip0000_bin->maker_id, DC_IP0000_BIN_MAKER_ID, sizeof(ip0000_bin->maker_id)))
+		{
+			// Found HW and Maker IDs.
 			// This is a 2352-byte sector image.
-			return DreamcastPrivate::DISC_ISO_2352;
+			return static_cast<int>(DreamcastPrivate::DiscType::Iso2352);
 		}
 	}
 
 	// TODO: Check for other formats, including CDI and NRG?
 
 	// Not supported.
-	return -1;
+	return static_cast<int>(DreamcastPrivate::DiscType::Unknown);
 }
 
 /**
@@ -578,8 +581,11 @@ vector<RomData::ImageSizeDef> Dreamcast::supportedImageSizes(ImageType imageType
 
 	// TODO: Actually check the PVR.
 	// Assuming 256x256 for now.
-	static const ImageSizeDef sz_INT_MEDIA[] = {{nullptr, 256, 256, 0}};
-	return vector<ImageSizeDef>(sz_INT_MEDIA, sz_INT_MEDIA + 1);
+	static const ImageSizeDef sz_INT_MEDIA[] = {
+		{nullptr, 256, 256, 0}
+	};
+	return vector<ImageSizeDef>(sz_INT_MEDIA,
+		sz_INT_MEDIA + ARRAY_SIZE(sz_INT_MEDIA));
 }
 
 /**
@@ -597,8 +603,11 @@ vector<RomData::ImageSizeDef> Dreamcast::supportedImageSizes_static(ImageType im
 	}
 
 	// NOTE: Assuming the PVR is 256x256.
-	static const ImageSizeDef sz_INT_MEDIA[] = {{nullptr, 256, 256, 0}};
-	return vector<ImageSizeDef>(sz_INT_MEDIA, sz_INT_MEDIA + 1);
+	static const ImageSizeDef sz_INT_MEDIA[] = {
+		{nullptr, 256, 256, 0}
+	};
+	return vector<ImageSizeDef>(sz_INT_MEDIA,
+		sz_INT_MEDIA + ARRAY_SIZE(sz_INT_MEDIA));
 }
 
 /**
@@ -615,7 +624,7 @@ int Dreamcast::loadFieldData(void)
 	} else if (!d->file) {
 		// File isn't open.
 		return -EBADF;
-	} else if (!d->isValid || d->discType < 0) {
+	} else if (!d->isValid || (int)d->discType < 0) {
 		// Unknown disc image type.
 		return -EIO;
 	}
@@ -800,7 +809,7 @@ int Dreamcast::loadFieldData(void)
 	// NOTE: Only done here because the ISO-9660 fields
 	// are used for field info only.
 	// TODO: Get from GdiReader for GDI.
-	if (d->discType == DreamcastPrivate::DISC_GDI) {
+	if (d->discType == DreamcastPrivate::DiscType::GDI) {
 		// Open track 3 as ISO-9660.
 		ISO *const isoData = d->gdiReader->openIsoRomData(3);
 		if (isoData) {
@@ -852,7 +861,7 @@ int Dreamcast::loadMetaData(void)
 	} else if (!d->file) {
 		// File isn't open.
 		return -EBADF;
-	} else if (!d->isValid || d->discType < 0) {
+	} else if (!d->isValid || (int)d->discType < 0) {
 		// Unknown disc image type.
 		return -EIO;
 	}
@@ -897,25 +906,14 @@ int Dreamcast::loadMetaData(void)
 int Dreamcast::loadInternalImage(ImageType imageType, const rp_image **pImage)
 {
 	ASSERT_loadInternalImage(imageType, pImage);
-
 	RP_D(Dreamcast);
-	if (imageType != IMG_INT_MEDIA) {
-		// Only IMG_INT_MEDIA is supported by Dreamcast.
-		*pImage = nullptr;
-		return -ENOENT;
-	} else if (!d->file) {
-		// File isn't open.
-		*pImage = nullptr;
-		return -EBADF;
-	} else if (!d->isValid || d->discType < 0) {
-		// PVR image isn't valid.
-		*pImage = nullptr;
-		return -EIO;
-	}
-
-	// Load the image.
-	*pImage = d->load0GDTEX();
-	return (*pImage != nullptr ? 0 : -EIO);
+	ROMDATA_loadInternalImage_single(
+		IMG_INT_MEDIA,	// ourImageType
+		d->file,	// file
+		d->isValid,	// isValid
+		d->discType,	// romType
+		nullptr,	// imgCache
+		d->load0GDTEX);	// func
 }
 
 }

@@ -1,4 +1,12 @@
-PROJECT(librptexture)
+# rom-properties texture decoding library
+CMAKE_MINIMUM_REQUIRED(VERSION 3.0)
+CMAKE_POLICY(SET CMP0048 NEW)
+IF(POLICY CMP0063)
+	# CMake 3.3: Enable symbol visibility presets for all
+	# target types, including static libraries and executables.
+	CMAKE_POLICY(SET CMP0063 NEW)
+ENDIF(POLICY CMP0063)
+PROJECT(librptexture LANGUAGES CXX)
 
 # Sources.
 SET(librptexture_SRCS
@@ -23,6 +31,7 @@ SET(librptexture_SRCS
 	fileformat/DidjTex.cpp
 	fileformat/DirectDrawSurface.cpp
 	fileformat/KhronosKTX.cpp
+	fileformat/KhronosKTX2.cpp
 	fileformat/PowerVR3.cpp
 	fileformat/SegaPVR.cpp
 	fileformat/ValveVTF.cpp
@@ -31,6 +40,7 @@ SET(librptexture_SRCS
 
 	data/DX10Formats.cpp
 	data/GLenumStrings.cpp
+	data/VkEnumStrings.cpp
 	)
 # Headers.
 SET(librptexture_H
@@ -50,6 +60,7 @@ SET(librptexture_H
 	fileformat/DidjTex.hpp
 	fileformat/DirectDrawSurface.hpp
 	fileformat/KhronosKTX.hpp
+	fileformat/KhronosKTX2.hpp
 	fileformat/PowerVR3.hpp
 	fileformat/SegaPVR.hpp
 	fileformat/ValveVTF.hpp
@@ -59,6 +70,7 @@ SET(librptexture_H
 	fileformat/dds_structs.h
 	fileformat/didj_tex_structs.h
 	fileformat/ktx_structs.h
+	fileformat/ktx_structs.h
 	fileformat/pvr_structs.h
 	fileformat/pvr3_structs.h
 	fileformat/vtf_structs.h
@@ -66,9 +78,11 @@ SET(librptexture_H
 	fileformat/xbox_xpr_structs.h
 
 	fileformat/gl_defs.h
+	fileformat/vk_defs.h
 
 	data/DX10Formats.hpp
 	data/GLenumStrings.hpp
+	data/VkEnumStrings.hpp
 	)
 
 IF(WIN32)
@@ -119,14 +133,15 @@ IF(CPU_i386 OR CPU_amd64)
 		ENDIF(GCC_5xx_LTO_ISSUES)
 	ENDIF(UNIX AND NOT APPLE)
 
-	IF(MSVC AND NOT CMAKE_CL_64)
+	IF(MSVC AND CPU_i386)
 		SET(SSE2_FLAG "/arch:SSE2")
 		SET(SSSE3_FLAG "/arch:SSE2")
 		SET(SSE41_FLAG "/arch:SSE2")
 	ELSEIF(NOT MSVC)
-		# TODO: Other compilers?
-		SET(MMX_FLAG "-mmmx")
-		SET(SSE2_FLAG "-msse2")
+		IF(CPU_i386)
+			SET(MMX_FLAG "-mmmx")
+			SET(SSE2_FLAG "-msse2")
+		ENDIF(CPU_i386)
 		SET(SSSE3_FLAG "-mssse3")
 		SET(SSE41_FLAG "-msse4.1")
 	ENDIF()
@@ -188,7 +203,7 @@ INCLUDE(SetMSVCDebugPath)
 SET_MSVC_DEBUG_PATH(rptexture)
 
 # TODO: More public/private library stuff.
-TARGET_LINK_LIBRARIES(rptexture PUBLIC rpbase)
+TARGET_LINK_LIBRARIES(rptexture PUBLIC rpcpu rpfile)
 TARGET_LINK_LIBRARIES(rptexture PRIVATE rpthreads)
 
 # Include paths:
@@ -212,6 +227,7 @@ SET_TARGET_PROPERTIES(rptexture PROPERTIES EXCLUDE_FROM_ALL TRUE)
 IF(NOT ZLIB_LIBRARY)
 	MESSAGE(FATAL_ERROR "ZLIB_LIBRARY has not been set by CheckZLIB.cmake.")
 ENDIF(NOT ZLIB_LIBRARY)
+TARGET_INCLUDE_DIRECTORIES(rptexture PRIVATE ${ZLIB_INCLUDE_DIRS})
 TARGET_LINK_LIBRARIES(rptexture PRIVATE ${ZLIB_LIBRARY})
 
 # PowerVR Native SDK

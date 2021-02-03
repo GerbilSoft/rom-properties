@@ -10,8 +10,9 @@
 #include "CacheTab.hpp"
 #include "res/resource.h"
 
-// librpbase, libwin32common
+// librpbase, librpfile, libwin32common
 using namespace LibRpBase;
+using namespace LibRpFile;
 using LibWin32Common::RegKey;
 using LibWin32Common::WTSSessionNotification;
 
@@ -31,9 +32,9 @@ __CRT_UUID_DECL(IEmptyVolumeCache, __MSABI_LONG(0x8fce5227), 0x04da, 0x11d1, 0xa
 #endif
 
 // C++ STL classes.
+using std::list;
 using std::pair;
 using std::string;
-using std::vector;
 using std::wstring;
 
 // Timer ID for the XP drive update procedure.
@@ -47,11 +48,6 @@ class CacheTabPrivate
 
 	private:
 		RP_DISABLE_COPY(CacheTabPrivate)
-
-	public:
-		// Property for "D pointer".
-		// This points to the CacheTabPrivate object.
-		static const TCHAR D_PTR_PROP[];
 
 	public:
 		/**
@@ -79,10 +75,10 @@ class CacheTabPrivate
 		/**
 		 * Recursively scan a directory for files.
 		 * @param path	[in] Path to scan.
-		 * @param rvec	[in/out] Return vector for filenames and attributes.
+		 * @param rlist	[in/out] Return list for filenames and attributes.
 		 * @return 0 on success; non-zero on error.
 		 */
-		int recursiveScan(const TCHAR *path, vector<pair<tstring, DWORD> > &rvec);
+		int recursiveScan(const TCHAR *path, list<pair<tstring, DWORD> > &rlist);
 
 		/**
 		 * Clear the rom-properties cache.
@@ -162,10 +158,6 @@ CacheTabPrivate::~CacheTabPrivate()
 		pImageList->Release();
 	}
 }
-
-// Property for "D pointer".
-// This points to the CacheTabPrivate object.
-const TCHAR CacheTabPrivate::D_PTR_PROP[] = _T("CacheTabPrivate");
 
 /**
  * Initialize the dialog.
@@ -385,7 +377,7 @@ int CacheTabPrivate::clearThumbnailCacheVista(void)
 	TCHAR szDrivePath[4] = _T("X:\\");
 	unsigned int driveCount = 0;
 	for (unsigned int bit = 0; bit < 26; bit++) {
-		const uint32_t mask = (1 << bit);
+		const uint32_t mask = (1U << bit);
 		if (!(driveLetters & mask))
 			continue;
 		szDrivePath[0] = _T('A') + bit;
@@ -477,7 +469,7 @@ int CacheTabPrivate::clearThumbnailCacheVista(void)
 	pCallback->m_baseProgress = 0;
 	unsigned int clearCount = 0;	// Number of drives actually cleared. (S_OK)
 	for (unsigned int bit = 0; bit < 26; bit++) {
-		const uint32_t mask = (1 << bit);
+		const uint32_t mask = (1U << bit);
 		if (!(driveLetters & mask))
 			continue;
 
@@ -562,10 +554,10 @@ int CacheTabPrivate::clearThumbnailCacheVista(void)
 /**
  * Recursively scan a directory for image files.
  * @param path	[in] Path to scan.
- * @param rvec	[in/out] Return vector for filenames and attributes.
+ * @param rlist	[in/out] Return list for filenames and attributes.
  * @return 0 on success; non-zero on error.
  */
-int CacheTabPrivate::recursiveScan(const TCHAR *path, vector<pair<tstring, DWORD> > &rvec)
+int CacheTabPrivate::recursiveScan(const TCHAR *path, list<pair<tstring, DWORD> > &rlist)
 {
 	tstring findFilter(path);
 	findFilter += _T("\\*");
@@ -623,12 +615,12 @@ int CacheTabPrivate::recursiveScan(const TCHAR *path, vector<pair<tstring, DWORD
 		// If this is a directory, recursively scan it, then add it.
 		if (findFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
 			// Recursively scan it.
-			recursiveScan(fullFileName.c_str(), rvec);
+			recursiveScan(fullFileName.c_str(), rlist);
 		}
 
 		// Add the filename and attributes.
-		// FIXME: Test emplace_back on MSVC 2010.
-		rvec.emplace_back(std::make_pair(std::move(fullFileName), findFileData.dwFileAttributes));
+		// NOTE: emplace_back() doesn't support implicit std::make_pair on MSVC 2010.
+		rlist.emplace_back(std::make_pair(std::move(fullFileName), findFileData.dwFileAttributes));
 	} while (FindNextFile(hFindFile, &findFileData));
 	FindClose(hFindFile);
 
@@ -656,7 +648,8 @@ int CacheTabPrivate::clearRomPropertiesCache(void)
 	// Sanity check: Must be at least 8 characters.
 	const string cacheDir = FileSystem::getCacheDirectory();
 	size_t bscount = 0;
-	for (auto iter = cacheDir.cbegin(); iter != cacheDir.cend(); ++iter) {
+	const auto cacheDir_cend = cacheDir.cend();
+	for (auto iter = cacheDir.cbegin(); iter != cacheDir_cend; ++iter) {
 		if (*iter == L'\\')
 			bscount++;
 	}
@@ -694,10 +687,10 @@ int CacheTabPrivate::clearRomPropertiesCache(void)
 	SendMessage(hProgressBar, PBM_SETPOS, 0, 0);
 
 	// Recursively scan the cache directory.
-	// TODO: Do we really want to store everything in a vector? (Wastes memory.)
+	// TODO: Do we really want to store everything in a list? (Wastes memory.)
 	// Maybe do a simple counting scan first, then delete.
-	vector<pair<tstring, DWORD> > rvec;
-	int ret = recursiveScan(cacheDirT.c_str(), rvec);
+	list<pair<tstring, DWORD> > rlist;
+	int ret = recursiveScan(cacheDirT.c_str(), rlist);
 	if (ret != 0) {
 		// Non-image file found.
 		SetWindowText(hStatusLabel, U82T_c(C_("CacheTab", "ERROR: rom-properties cache has unexpected files. Not clearing it.")));
@@ -710,7 +703,7 @@ int CacheTabPrivate::clearRomPropertiesCache(void)
 		SendMessage(hProgressBar, PBM_SETSTATE, PBST_ERROR, 0);
 		MessageBeep(MB_ICONERROR);
 		return 0;
-	} else if (rvec.empty()) {
+	} else if (rlist.empty()) {
 		// Nothing to do!
 		SetWindowText(hStatusLabel, U82T_c(C_("CacheTab", "rom-properties cache is empty. Nothing to do.")));
 		SendMessage(hProgressBar, PBM_SETRANGE, 0, MAKELONG(0, 1));
@@ -723,11 +716,12 @@ int CacheTabPrivate::clearRomPropertiesCache(void)
 	}
 
 	// Delete all of the files and subdirectories.
-	SendMessage(hProgressBar, PBM_SETRANGE32, 0, rvec.size());
+	SendMessage(hProgressBar, PBM_SETRANGE32, 0, rlist.size());
 	SendMessage(hProgressBar, PBM_SETPOS, 2, 0);
 	unsigned int count = 0;
 	unsigned int dirErrs = 0, fileErrs = 0;
-	for (auto iter = rvec.cbegin(); iter != rvec.cend(); ++iter) {
+	const auto rlist_cend = rlist.cend();
+	for (auto iter = rlist.cbegin(); iter != rlist_cend; ++iter) {
 		if (iter->second & FILE_ATTRIBUTE_DIRECTORY) {
 			// Remove the directory.
 			BOOL bRet = RemoveDirectory(iter->first.c_str());
@@ -804,24 +798,15 @@ INT_PTR CALLBACK CacheTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, L
 			d->hWndPropSheet = hDlg;
 
 			// Store the D object pointer with this particular page dialog.
-			SetProp(hDlg, D_PTR_PROP, reinterpret_cast<HANDLE>(d));
+			SetWindowLongPtr(hDlg, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(d));
 
 			// Initialize the dialog..
 			d->initDialog();
 			return TRUE;
 		}
 
-		case WM_DESTROY: {
-			// Remove the D_PTR_PROP property from the page. 
-			// The D_PTR_PROP property stored the pointer to the 
-			// CacheTabPrivate object.
-			RemoveProp(hDlg, D_PTR_PROP);
-			return TRUE;
-		}
-
 		case WM_NOTIFY: {
-			CacheTabPrivate *const d = static_cast<CacheTabPrivate*>(
-				GetProp(hDlg, D_PTR_PROP));
+			auto *const d = reinterpret_cast<CacheTabPrivate*>(GetWindowLongPtr(hDlg, GWLP_USERDATA));
 			if (!d) {
 				// No CacheTabPrivate. Can't do anything...
 				return FALSE;
@@ -841,8 +826,7 @@ INT_PTR CALLBACK CacheTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, L
 		}
 
 		case WM_COMMAND: {
-			CacheTabPrivate *const d = static_cast<CacheTabPrivate*>(
-				GetProp(hDlg, D_PTR_PROP));
+			auto *const d = reinterpret_cast<CacheTabPrivate*>(GetWindowLongPtr(hDlg, GWLP_USERDATA));
 			if (!d) {
 				// No CacheTabPrivate. Can't do anything...
 				return FALSE;
@@ -881,8 +865,7 @@ INT_PTR CALLBACK CacheTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, L
 		}
 
 		case WM_DEVICECHANGE: {
-			CacheTabPrivate *const d = static_cast<CacheTabPrivate*>(
-				GetProp(hDlg, D_PTR_PROP));
+			auto *const d = reinterpret_cast<CacheTabPrivate*>(GetWindowLongPtr(hDlg, GWLP_USERDATA));
 			if (!d || d->isVista) {
 				// No CacheTabPrivate, or using Vista+.
 				// Nothing to do here.
@@ -909,8 +892,7 @@ INT_PTR CALLBACK CacheTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, L
 		case WM_TIMER: {
 			if (wParam != TMRID_XP_DRIVE_UPDATE)
 				break;
-			CacheTabPrivate *const d = static_cast<CacheTabPrivate*>(
-				GetProp(hDlg, D_PTR_PROP));
+			auto *const d = reinterpret_cast<CacheTabPrivate*>(GetWindowLongPtr(hDlg, GWLP_USERDATA));
 			if (!d || d->isVista) {
 				// No CacheTabPrivate, or using Vista+.
 				// Nothing to do here.
@@ -925,8 +907,7 @@ INT_PTR CALLBACK CacheTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, L
 		}
 
 		case WM_WTSSESSION_CHANGE: {
-			CacheTabPrivate *const d = static_cast<CacheTabPrivate*>(
-				GetProp(hDlg, D_PTR_PROP));
+			auto *const d = reinterpret_cast<CacheTabPrivate*>(GetWindowLongPtr(hDlg, GWLP_USERDATA));
 			if (!d || d->isVista) {
 				// No CacheTabPrivate, or using Vista+.
 				// Nothing to do here.

@@ -1,0 +1,98 @@
+# MIME types for rom-properties.
+# These MIME types *do* have thumbnails, so they should be included
+# in all of the .desktop and .thumbnailer files. files.
+
+# NOTES:
+# - all/all doesn't work; use application/octet-stream.
+#   - TODO: Remove application/octet-stream and only use more-specific types?
+# - MS CAB is listed for Nintendo Badge Arcade .cab files.
+# - model/x.stl-binary and image/x-3ds are listed for Nintendo 3DS files.
+# - Non-thumbnailable MIME types are only listed in KDE .desktop files.
+
+# Generic
+application/octet-stream
+application/x-cd-image
+application/x-iso9660-image
+application/x-raw-disk-image
+
+# Console
+application/x-dreamcast-rom		# Dreamcast
+application/x-dreamcast-iso-image	# Dreamcast
+application/x-dreamcast-cuesheet	# Dreamcast
+application/x-dc-rom			# Dreamcast
+application/x-dreamcast-vms		# DreamcastSave
+application/x-dreamcast-vms-info	# DreamcastSave
+application/x-dreamcast-dci		# DreamcastSave
+application/x-gamecube-rom		# GameCube
+application/x-gamecube-iso-image	# GameCube
+application/x-gamecube-tgc		# GameCube
+application/x-wii-rom			# GameCube
+application/x-wii-iso-image		# GameCube
+application/x-wbfs			# GameCube
+application/x-wia			# GameCube
+application/x-cso			# GameCube
+application/x-nasos-image		# GameCube
+application/x-gcz-image			# GameCube
+application/x-rvz-image			# GameCube
+application/x-gamecube-bnr		# GameCubeBNR
+application/x-gamecube-save		# GameCubeSave
+application/x-ique-dat			# iQuePlayer
+application/x-ique-cmd			# iQuePlayer
+application/x-ps1-save			# PlayStationSave
+application/x-saturn-rom		# SegaSaturn
+application/vnd.nintendo.snes.rom	# SNES
+application/x-snes-rom			# SNES
+application/x-sufami-turbo-rom		# SufamiTurbo
+application/x-wii-save			# WiiSave
+application/x-wii-u-rom			# WiiU
+application/x-nintendo-dsi-tad		# WiiWAD
+application/x-wii-wad			# WiiWAD
+application/x-wii-wibn			# WiiWIBN
+application/x-xbox-executable		# Xbox_XBE
+application/x-xbox360-stfs		# Xbox360_STFS
+application/x-xbox360-xdbf		# Xbox360_XDBF
+application/x-xbox360-executable	# Xbox360_XEX
+application/x-xbox360-patch		# Xbox360_XEX
+
+# Handheld
+application/x-gameboy-rom		# DMG
+application/x-gameboy-color-rom		# DMG
+application/x-gba-rom			# GameBoyAdvance
+application/x-game-com-rom		# GameCom
+application/x-neo-geo-pocket-rom	# NGPC
+application/x-neo-geo-pocket-color-rom	# NGPC
+application/x-nintendo-3ds-3dsx		# Nintendo3DS
+application/x-nintendo-3ds-rom		# Nintendo3DS
+model/x.stl-binary			# Nintendo3DS (?)
+image/x-3ds				# Nintendo3DS (?)
+application/x-nintendo-3ds-cia		# Nintendo3DS
+application/x-nintendo-3ds-ncch		# Nintendo3DS
+application/x-nintendo-3ds-smdh		# Nintendo3DS_SMDH
+application/x-nintendo-ds-rom		# NintendoDS
+application/x-nintendo-dsi-rom		# NintendoDS
+application/x-psp-ciso-image		# PSP
+application/x-psp-dax-image		# PSP
+application/x-psp-jiso-image		# PSP
+application/x-psp-ziso-image		# PSP
+
+# Other
+application/x-nintendo-amiibo		# Amiibo
+application/x-nintendo-badge		# NintendoBadge
+application/vnd.ms-cab-compressed	# NintendoBadge
+application/x-nintendo-badge-set	# NintendoBadge
+
+# Texture
+image/x-didj-texture			# DidjTex
+image/vnd.ms-dds			# DirectDrawSurface
+image/x-dds				# DirectDrawSurface
+image/ktx				# KhronosKTX
+image/ktx2				# KhronosKTX2
+image/x-pvr				# PowerVR3
+image/x-sega-pvr			# SegaPVR
+image/x-sega-gvr			# SegaPVR
+image/x-sega-svr			# SegaPVR
+image/x-sega-pvrx			# SegaPVR
+image/vnd.valve.source.texture		# ValveVTF
+image/x-vtf				# ValveVTF
+image/x-vtf3				# ValveVTF3
+image/x-xbox-xpr0			# XboxXPR

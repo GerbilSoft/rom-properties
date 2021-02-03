@@ -2,14 +2,14 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * SystemRegion.hpp: Get the system country code.                          *
  *                                                                         *
- * Copyright (c) 2016 by David Korth.                                      *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #ifndef __ROMPROPERTIES_LIBRPBASE_SYSTEMREGION_HPP__
 #define __ROMPROPERTIES_LIBRPBASE_SYSTEMREGION_HPP__
 
-#include "librpbase/common.h"
+#include "common.h"
 
 // C includes.
 #include <stdint.h>
@@ -48,6 +48,30 @@ class SystemRegion
 		 * @return ISO-639 language code as a uint32_t, or 0 on error.
 		 */
 		static uint32_t getLanguageCode(void);
+
+		/**
+		 * Get a localized name for a language code.
+		 * Localized means in that language's language,
+		 * e.g. 'es' -> "Español".
+		 * @param lc Language code.
+		 * @return Localized name, or nullptr if not found.
+		 */
+		static const char *getLocalizedLanguageName(uint32_t lc);
+
+		// Flag sprite sheet columns/rows.
+		static const unsigned int FLAGS_SPRITE_SHEET_COLS = 4;
+		static const unsigned int FLAGS_SPRITE_SHEET_ROWS = 4;
+
+		/**
+		 * Get the position of a language code's flag icon in the flags sprite sheet.
+		 * @param lc	[in] Language code.
+		 * @param pCol	[out] Pointer to store the column value. (-1 if not found)
+		 * @param pRow	[out] Pointer to store the row value. (-1 if not found)
+		 * @return 0 on success; negative POSIX error code on error.
+		 */
+		ATTR_ACCESS(write_only, 2)
+		ATTR_ACCESS(write_only, 3)
+		static int getFlagPosition(uint32_t lc, int *pCol, int *pRow);
 };
 
 }

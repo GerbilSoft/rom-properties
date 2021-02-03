@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * CreateThumbnail.hpp: TCreateThumbnail<HBITMAP> implementation.          *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -40,27 +40,37 @@ class CreateThumbnail : public LibRomData::TCreateThumbnail<HBITMAP>
 		 * @param imgClass ImgClass
 		 * @return True if valid; false if not.
 		 */
-		bool isImgClassValid(const HBITMAP &imgClass) const final;
+		inline bool isImgClassValid(const HBITMAP &imgClass) const final
+		{
+			return (imgClass != nullptr);
+		}
 
 		/**
 		 * Wrapper function to get a "null" ImgClass.
 		 * @return "Null" ImgClass.
 		 */
-		HBITMAP getNullImgClass(void) const final;
+		inline HBITMAP getNullImgClass(void) const final
+		{
+			return nullptr;
+		}
 
 		/**
 		 * Free an ImgClass object.
 		 * @param imgClass ImgClass object.
 		 */
-		void freeImgClass(HBITMAP &imgClass) const final;
+		inline void freeImgClass(HBITMAP &imgClass) const final
+		{
+			DeleteBitmap(imgClass);
+		}
 
 		/**
-		 * Rescale an ImgClass using nearest-neighbor scaling.
+		 * Rescale an ImgClass using the specified scaling method.
 		 * @param imgClass ImgClass object.
 		 * @param sz New size.
+		 * @param method Scaling method.
 		 * @return Rescaled ImgClass.
 		 */
-		HBITMAP rescaleImgClass(const HBITMAP &imgClass, const ImgSize &sz) const override;
+		HBITMAP rescaleImgClass(const HBITMAP &imgClass, const ImgSize &sz, ScalingMethod method = ScalingMethod::Nearest) const override;
 
 		/**
 		 * Get the size of the specified ImgClass.
@@ -74,7 +84,13 @@ class CreateThumbnail : public LibRomData::TCreateThumbnail<HBITMAP>
 		 * Get the proxy for the specified URL.
 		 * @return Proxy, or empty string if no proxy is needed.
 		 */
-		std::string proxyForUrl(const std::string &url) const final;
+		inline std::string proxyForUrl(const std::string &url) const final
+		{
+			// rp-download uses WinInet on Windows, which
+			// always uses the system proxy.
+			((void)url);
+			return std::string();
+		}
 };
 
 /**
@@ -82,7 +98,7 @@ class CreateThumbnail : public LibRomData::TCreateThumbnail<HBITMAP>
  * This version does NOT use alpha transparency.
  * COLOR_WINDOW is used for the background.
  */
-class CreateThumbnailNoAlpha : public CreateThumbnail
+class CreateThumbnailNoAlpha final : public CreateThumbnail
 {
 	public:
 		CreateThumbnailNoAlpha() { }
@@ -102,12 +118,13 @@ class CreateThumbnailNoAlpha : public CreateThumbnail
 		HBITMAP rpImageToImgClass(const LibRpTexture::rp_image *img) const final;
 
 		/**
-		 * Rescale an ImgClass using nearest-neighbor scaling.
+		 * Rescale an ImgClass using the specified scaling method.
 		 * @param imgClass ImgClass object.
 		 * @param sz New size.
+		 * @param method Scaling method.
 		 * @return Rescaled ImgClass.
 		 */
-		HBITMAP rescaleImgClass(const HBITMAP &imgClass, const ImgSize &sz) const final;
+		HBITMAP rescaleImgClass(const HBITMAP &imgClass, const ImgSize &sz, ScalingMethod method = ScalingMethod::Nearest) const final;
 };
 
 #endif /* __ROMPROPERTIES_WIN32_CREATETHUMBNAIL_HPP__ */

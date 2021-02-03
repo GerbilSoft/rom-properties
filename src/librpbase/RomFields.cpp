@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * RomFields.cpp: ROM fields class.                                        *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -15,6 +15,7 @@
 #include "librpthreads/Atomics.h"
 
 // C++ STL classes.
+using std::map;
 using std::string;
 using std::unique_ptr;
 using std::vector;
@@ -41,6 +42,11 @@ class RomFieldsPrivate
 		// Tab names.
 		vector<string> tabNames;
 
+		// Default language code.
+		// Set by the first call to addField_string_multi()
+		// and/or addField_listData with RFT_LISTDATA_MULTI.
+		uint32_t def_lc;
+
 		/**
 		 * Delete allocated objects in this->fields.
 		 * The vector will be cleared afterwards.
@@ -52,6 +58,7 @@ class RomFieldsPrivate
 
 RomFieldsPrivate::RomFieldsPrivate()
 	: tabIdx(0)
+	, def_lc(0)
 { }
 
 RomFieldsPrivate::~RomFieldsPrivate()
@@ -88,13 +95,20 @@ void RomFieldsPrivate::delete_data(void)
 					break;
 				case RomFields::RFT_LISTDATA:
 					delete const_cast<vector<string>*>(field.desc.list_data.names);
-					delete const_cast<vector<vector<string> >*>(field.data.list_data.data);
+					if (field.desc.list_data.flags & RomFields::RFT_LISTDATA_MULTI) {
+						delete const_cast<RomFields::ListDataMultiMap_t*>(field.data.list_data.data.multi);
+					} else {
+						delete const_cast<RomFields::ListData_t*>(field.data.list_data.data.single);
+					}
 					if (field.desc.list_data.flags & RomFields::RFT_LISTDATA_ICONS) {
-						delete const_cast<vector<const rp_image*>*>(field.data.list_data.mxd.icons);
+						delete const_cast<RomFields::ListDataIcons_t*>(field.data.list_data.mxd.icons);
 					}
 					break;
 				case RomFields::RFT_AGE_RATINGS:
 					delete const_cast<RomFields::age_ratings_t*>(field.data.age_ratings);
+					break;
+				case RomFields::RFT_STRING_MULTI:
+					delete const_cast<RomFields::StringMultiMap_t*>(field.data.str_multi);
 					break;
 				default:
 					// ERROR!
@@ -127,26 +141,25 @@ RomFields::~RomFields()
 /**
  * Get the abbreviation of an age rating organization.
  * (TODO: Full name function?)
- * @param country Rating country. (See AgeRatingCountry.)
+ * @param country Rating country.
  * @return Abbreviation, or nullptr if invalid.
  */
-const char *RomFields::ageRatingAbbrev(int country)
+const char *RomFields::ageRatingAbbrev(AgeRatingsCountry country)
 {
-	static const char abbrevs[16][8] = {
+	static const char abbrevs[][8] = {
 		"CERO", "ESRB", "",        "USK",
 		"PEGI", "MEKU", "PEGI-PT", "BBFC",
-		"ACB",  "GRB",  "CGSRR",   "",
-		"",     "",     "",        "",
+		"ACB",  "GRB",  "CGSRR",
 	};
 
-	assert(country >= 0 && country < ARRAY_SIZE(abbrevs));
-	if (country < 0 || country >= ARRAY_SIZE(abbrevs)) {
+	assert((int)country >= 0 && (int)country < ARRAY_SIZE(abbrevs));
+	if ((int)country < 0 || (int)country >= ARRAY_SIZE(abbrevs)) {
 		// Index is out of range.
 		return nullptr;
 	}
 
-	if (abbrevs[country][0] != 0) {
-		return abbrevs[country];
+	if (abbrevs[(int)country][0] != 0) {
+		return abbrevs[(int)country];
 	}
 	// Invalid country code.
 	return nullptr;
@@ -159,11 +172,11 @@ const char *RomFields::ageRatingAbbrev(int country)
  * NOTE: The returned string is in UTF-8 in order to
  * be able to use special characters.
  *
- * @param country Rating country. (See AgeRatingsCountry.)
+ * @param country Rating country.
  * @param rating Rating value.
  * @return Human-readable string, or empty string if the rating isn't active.
  */
-string RomFields::ageRatingDecode(int country, uint16_t rating)
+string RomFields::ageRatingDecode(AgeRatingsCountry country, uint16_t rating)
 {
 	if (!(rating & AGEBF_ACTIVE)) {
 		// Rating isn't active.
@@ -187,7 +200,7 @@ string RomFields::ageRatingDecode(int country, uint16_t rating)
 		// TODO: Verify these.
 		// TODO: Check for <= instead of exact matches?
 		switch (country) {
-			case AGE_JAPAN:
+			case AgeRatingsCountry::Japan:
 				switch (rating & RomFields::AGEBF_MIN_AGE_MASK) {
 					case 0:
 						s_rating = "A";
@@ -210,7 +223,7 @@ string RomFields::ageRatingDecode(int country, uint16_t rating)
 				}
 				break;
 
-			case AGE_USA:
+			case AgeRatingsCountry::USA:
 				switch (rating & RomFields::AGEBF_MIN_AGE_MASK) {
 					case 3:
 						s_rating = "eC";
@@ -236,7 +249,7 @@ string RomFields::ageRatingDecode(int country, uint16_t rating)
 				}
 				break;
 
-			case AGE_AUSTRALIA:
+			case AgeRatingsCountry::Australia:
 				switch (rating & RomFields::AGEBF_MIN_AGE_MASK) {
 					case 0:
 						s_rating = "G";
@@ -302,7 +315,7 @@ string RomFields::ageRatingsDecode(const age_ratings_t *age_ratings, bool newlin
 	string str;
 	str.reserve(64);
 	unsigned int ratings_count = 0;
-	for (int i = 0; i < static_cast<int>(age_ratings->size()); i++) {
+	for (unsigned int i = 0; i < static_cast<unsigned int>(age_ratings->size()); i++) {
 		const uint16_t rating = age_ratings->at(i);
 		if (!(rating & RomFields::AGEBF_ACTIVE))
 			continue;
@@ -317,7 +330,7 @@ string RomFields::ageRatingsDecode(const age_ratings_t *age_ratings, bool newlin
 			}
 		}
 
-		const char *const abbrev = RomFields::ageRatingAbbrev(i);
+		const char *const abbrev = RomFields::ageRatingAbbrev((AgeRatingsCountry)i);
 		if (abbrev) {
 			str += abbrev;
 		} else {
@@ -326,7 +339,7 @@ string RomFields::ageRatingsDecode(const age_ratings_t *age_ratings, bool newlin
 			str += rp_sprintf("%d", i);
 		}
 		str += '=';
-		str += ageRatingDecode(i, rating);
+		str += ageRatingDecode((AgeRatingsCountry)i, rating);
 		ratings_count++;
 	}
 
@@ -337,6 +350,83 @@ string RomFields::ageRatingsDecode(const age_ratings_t *age_ratings, bool newlin
 
 	return str;
 }
+
+/** Multi-language convenience functions. **/
+
+/**
+ * Get a string from an RFT_STRING_MULTI field.
+ * @param pStr_multi StringMultiMap_t*
+ * @param def_lc Default language code.
+ * @param user_lc User-specified language code.
+ * @return Pointer to string, or nullptr if not found.
+ */
+const string *RomFields::getFromStringMulti(const StringMultiMap_t *pStr_multi, uint32_t def_lc, uint32_t user_lc)
+{
+	assert(pStr_multi != nullptr);
+	assert(!pStr_multi->empty());
+	if (pStr_multi->empty()) {
+		return nullptr;
+	}
+
+	if (user_lc != 0) {
+		// Search for the user-specified lc first.
+		auto iter_sm = pStr_multi->find(user_lc);
+		if (iter_sm != pStr_multi->end()) {
+			// Found the user-specified lc.
+			return &(iter_sm->second);
+		}
+	}
+
+	if (def_lc != user_lc) {
+		// Search for the ROM-default lc.
+		auto iter_sm = pStr_multi->find(def_lc);
+		if (iter_sm != pStr_multi->end()) {
+			// Found the ROM-default lc.
+			return &(iter_sm->second);
+		}
+	}
+
+	// Not found. Return the first entry.
+	return &(pStr_multi->cbegin()->second);
+}
+
+/**
+ * Get ListData_t from an RFT_LISTDATA_MULTI field.
+ * @param pListData_multi ListDataMultiMap_t*
+ * @param def_lc Default language code.
+ * @param user_lc User-specified language code.
+ * @return Pointer to ListData_t, or nullptr if not found.
+ */
+const RomFields::ListData_t *RomFields::getFromListDataMulti(const ListDataMultiMap_t *pListData_multi, uint32_t def_lc, uint32_t user_lc)
+{
+	assert(pListData_multi != nullptr);
+	assert(!pListData_multi->empty());
+	if (pListData_multi->empty()) {
+		return nullptr;
+	}
+
+	if (user_lc != 0) {
+		// Search for the user-specified lc first.
+		auto iter_ldm = pListData_multi->find(user_lc);
+		if (iter_ldm != pListData_multi->end()) {
+			// Found the user-specified lc.
+			return &(iter_ldm->second);
+		}
+	}
+
+	if (def_lc != user_lc) {
+		// Search for the ROM-default lc.
+		auto iter_ldm = pListData_multi->find(def_lc);
+		if (iter_ldm != pListData_multi->end()) {
+			// Found the ROM-default lc.
+			return &(iter_ldm->second);
+		}
+	}
+
+	// Not found. Return the first entry.
+	return &(pListData_multi->cbegin()->second);
+}
+
 
 /** Field accessors. **/
 
@@ -351,11 +441,21 @@ int RomFields::count(void) const
 }
 
 /**
+ * Is this RomFields empty?
+ * @return True if empty; false if not.
+ */
+bool RomFields::empty(void) const
+{
+	RP_D(const RomFields);
+	return d->fields.empty();
+}
+
+/**
  * Get a ROM field.
  * @param idx Field index.
  * @return ROM field, or nullptr if the index is invalid.
  */
-const RomFields::Field *RomFields::field(int idx) const
+const RomFields::Field *RomFields::at(int idx) const
 {
 	RP_D(const RomFields);
 	if (idx < 0 || idx >= static_cast<int>(d->fields.size()))
@@ -364,13 +464,23 @@ const RomFields::Field *RomFields::field(int idx) const
 }
 
 /**
- * Is this RomFields empty?
- * @return True if empty; false if not.
+ * Get a const iterator pointing to the beginning of the RomFields.
+ * @return Const iterator.
  */
-bool RomFields::empty(void) const
+RomFields::const_iterator RomFields::cbegin(void) const
 {
 	RP_D(const RomFields);
-	return d->fields.empty();
+	return d->fields.cbegin();
+}
+
+/**
+ * Get a const iterator pointing to the end of the RomFields.
+ * @return Const iterator.
+ */
+RomFields::const_iterator RomFields::cend(void) const
+{
+	RP_D(const RomFields);
+	return d->fields.cend();
 }
 
 /** Convenience functions for RomData subclasses. **/
@@ -421,6 +531,7 @@ void RomFields::setTabName(int tabIdx, const char *name)
 		// Need to resize tabNames.
 		d->tabNames.resize(tabIdx+1);
 	}
+
 	d->tabNames[tabIdx] = (name ? name : "");
 }
 
@@ -432,7 +543,7 @@ void RomFields::setTabName(int tabIdx, const char *name)
 int RomFields::addTab(const char *name)
 {
 	RP_D(RomFields);
-	d->tabNames.push_back(name);
+	d->tabNames.emplace_back(name);
 	d->tabIdx = static_cast<int>(d->tabNames.size() - 1);
 	return d->tabIdx;
 }
@@ -474,6 +585,16 @@ const char *RomFields::tabName(int tabIdx) const
 	return d->tabNames[tabIdx].c_str();
 }
 
+/**
+ * Get the default language code for RFT_STRING_MULTI and RFT_LISTDATA_MULTI.
+ * @return Default language code, or 0 if not set.
+ */
+uint32_t RomFields::defaultLanguageCode(void) const
+{
+	RP_D(const RomFields);
+	return d->def_lc;
+}
+
 /** Fields **/
 
 /**
@@ -493,23 +614,21 @@ void RomFields::reserve(int n)
  * Convert an array of char strings to a vector of std::string.
  * This can be used for addField_bitfield() and addField_listData().
  * @param strArray Array of strings.
- * @param count Number of strings, or -1 for a NULL-terminated array.
- * NOTE: The array will be terminated at NULL regardless of count,
- * so a -1 count is only useful if the size isn't known.
+ * @param count Number of strings. (nullptrs will be handled as empty strings)
  * @return Allocated std::vector<std::string>.
  */
-vector<string> *RomFields::strArrayToVector(const char *const *strArray, int count)
+vector<string> *RomFields::strArrayToVector(const char *const *strArray, size_t count)
 {
 	vector<string> *pVec = new vector<string>();
-	if (count < 0) {
-		count = std::numeric_limits<int>::max();
-	} else {
-		pVec->reserve(count);
+	assert(count > 0);
+	if (count == 0) {
+		return pVec;
 	}
 
-	for (; strArray != nullptr && count > 0; strArray++, count--) {
+	for (; count > 0; strArray++, count--) {
 		// nullptr will be handled as empty strings.
-		pVec->push_back(*strArray ? *strArray : string());
+		const char* const str = *strArray;
+		pVec->emplace_back(str ? str : "");
 	}
 
 	return pVec;
@@ -520,12 +639,10 @@ vector<string> *RomFields::strArrayToVector(const char *const *strArray, int cou
  * This can be used for addField_bitfield() and addField_listData().
  * @param msgctxt i18n context.
  * @param strArray Array of strings.
- * @param count Number of strings, or -1 for a NULL-terminated array.
- * NOTE: The array will be terminated at NULL regardless of count,
- * so a -1 count is only useful if the size isn't known.
+ * @param count Number of strings. (nullptrs will be handled as empty strings)
  * @return Allocated std::vector<std::string>.
  */
-vector<string> *RomFields::strArrayToVector_i18n(const char *msgctxt, const char *const *strArray, int count)
+vector<string> *RomFields::strArrayToVector_i18n(const char *msgctxt, const char *const *strArray, size_t count)
 {
 #ifndef ENABLE_NLS
 	// Mark msgctxt as unused here.
@@ -533,19 +650,17 @@ vector<string> *RomFields::strArrayToVector_i18n(const char *msgctxt, const char
 #endif /* ENABLE_NLS */
 
 	vector<string> *pVec = new vector<string>();
-	if (count < 0) {
-		count = std::numeric_limits<int>::max();
-	} else {
-		pVec->reserve(count);
+	assert(count > 0);
+	if (count == 0) {
+		return pVec;
 	}
 
-	for (; strArray != nullptr && count > 0; strArray++, count--) {
+	for (; count > 0; strArray++, count--) {
 		// nullptr will be handled as empty strings.
-		if (*strArray) {
-			pVec->push_back(dpgettext_expr(RP_I18N_DOMAIN, msgctxt, *strArray));
-		} else {
-			pVec->push_back(string());
-		}
+		const char* const str = *strArray;
+		pVec->emplace_back(str
+			? dpgettext_expr(RP_I18N_DOMAIN, msgctxt, str)
+			: "");
 	}
 
 	return pVec;
@@ -595,8 +710,14 @@ int RomFields::addFields_romFields(const RomFields *other, int tabOffset)
 		d->tabIdx = static_cast<int>(d->tabNames.size() - 1);
 	}
 
+	// Copy the default language code if it hasn't been set yet.
+	if (d->def_lc == 0) {
+		d->def_lc = other->d_ptr->def_lc;
+	}
+
+	const auto other_fields_cend = other->d_ptr->fields.cend();
 	for (auto old_iter = other->d_ptr->fields.cbegin();
-	     old_iter != other->d_ptr->fields.cend(); ++old_iter)
+	     old_iter != other_fields_cend; ++old_iter)
 	{
 		size_t idx = d->fields.size();
 		d->fields.resize(idx+1);
@@ -632,17 +753,21 @@ int RomFields::addFields_romFields(const RomFields *other, int tabOffset)
 				field_dest.desc.list_data.names = (field_src.desc.list_data.names
 						? new vector<string>(*(field_src.desc.list_data.names))
 						: nullptr);
-				field_dest.desc.list_data.alignment.headers =
-					field_src.desc.list_data.alignment.headers;
-				field_dest.desc.list_data.alignment.data =
-					field_src.desc.list_data.alignment.data;
-				field_dest.data.list_data.data = (field_src.data.list_data.data
-						? new vector<vector<string> >(*(field_src.data.list_data.data))
+				field_dest.desc.list_data.col_attrs =
+					field_src.desc.list_data.col_attrs;
+				if (field_src.desc.list_data.flags & RFT_LISTDATA_MULTI) {
+					field_dest.data.list_data.data.multi = (field_src.data.list_data.data.multi
+						? new ListDataMultiMap_t(*(field_src.data.list_data.data.multi))
 						: nullptr);
+				} else {
+					field_dest.data.list_data.data.single = (field_src.data.list_data.data.single
+						? new ListData_t(*(field_src.data.list_data.data.single))
+						: nullptr);
+				}
 				if (field_src.desc.list_data.flags & RFT_LISTDATA_ICONS) {
 					// Icons: Copy the icon vector if set.
 					field_dest.data.list_data.mxd.icons = (field_src.data.list_data.mxd.icons
-						? new vector<const rp_image*>(*(field_src.data.list_data.mxd.icons))
+						? new ListDataIcons_t(*(field_src.data.list_data.mxd.icons))
 						: nullptr);
 				} else {
 					// No icons. Copy checkboxes.
@@ -660,6 +785,11 @@ int RomFields::addFields_romFields(const RomFields *other, int tabOffset)
 				break;
 			case RFT_DIMENSIONS:
 				memcpy(field_dest.data.dimensions, field_src.data.dimensions, sizeof(field_src.data.dimensions));
+				break;
+			case RFT_STRING_MULTI:
+				field_dest.data.str_multi = (field_src.data.str_multi
+					? new StringMultiMap_t(*(field_src.data.str_multi))
+					: nullptr);
 				break;
 
 			default:
@@ -757,14 +887,14 @@ int RomFields::addField_string_numeric(const char *name, uint32_t val, Base base
 
 	const char *fmtstr;
 	switch (base) {
-		case FB_DEC:
+		case Base::Dec:
 		default:
 			fmtstr = "%0*u";
 			break;
-		case FB_HEX:
+		case Base::Hex:
 			fmtstr = (!(flags & STRF_HEX_LOWER)) ? "0x%0*X" : "0x%0*x";
 			break;
-		case FB_OCT:
+		case Base::Oct:
 			fmtstr = "0%0*o";
 			break;
 	}
@@ -951,10 +1081,18 @@ int RomFields::addField_listData(const char *name, const AFLD_PARAMS *params)
 		field.desc.list_data.rows_visible = 0;
 	}
 	field.desc.list_data.names = params->headers;
-	field.desc.list_data.alignment.headers = params->alignment.headers;
-	field.desc.list_data.alignment.data = params->alignment.data;
+	field.desc.list_data.col_attrs = params->col_attrs;
 
-	field.data.list_data.data = params->list_data;
+	if (flags & RFT_LISTDATA_MULTI) {
+		field.data.list_data.data.multi = params->data.multi;
+		// Copy the default language code if it hasn't been set yet.
+		if (d->def_lc == 0) {
+			d->def_lc = params->def_lc;
+		}
+	} else {
+		field.data.list_data.data.single = params->data.single;
+	}
+
 	if (flags & RFT_LISTDATA_CHECKBOXES) {
 		field.data.list_data.mxd.checkboxes = params->mxd.checkboxes;
 	} else if (flags & RFT_LISTDATA_ICONS) {
@@ -1051,6 +1189,40 @@ int RomFields::addField_dimensions(const char *name, int dimX, int dimY, int dim
 	field.data.dimensions[0] = dimX;
 	field.data.dimensions[1] = dimY;
 	field.data.dimensions[2] = dimZ;
+	field.tabIdx = d->tabIdx;
+	field.isValid = true;
+	return static_cast<int>(idx);
+}
+
+/**
+ * Add a multi-language string.
+ * NOTE: This object takes ownership of the map.
+ * @param name Field name.
+ * @param str_multi Map of strings with language codes.
+ * @param def_lc Default language code if no languages match.
+ * @param flags Formatting flags.
+ * @return Field index, or -1 on error.
+ */
+int RomFields::addField_string_multi(const char *name, const StringMultiMap_t *str_multi, uint32_t def_lc, unsigned int flags)
+{
+	assert(name != nullptr);
+	if (!name)
+		return -1;
+
+	// RFT_STRING_MULTI
+	RP_D(RomFields);
+	size_t idx = d->fields.size();
+	d->fields.resize(idx+1);
+	Field &field = d->fields.at(idx);
+
+	if (d->def_lc == 0) {
+		d->def_lc = def_lc;
+	}
+
+	field.name = name;
+	field.type = RFT_STRING_MULTI;
+	field.desc.flags = flags;
+	field.data.str_multi = (str_multi ? str_multi : nullptr);
 	field.tabIdx = d->tabIdx;
 	field.isValid = true;
 	return static_cast<int>(idx);

@@ -1,4 +1,12 @@
-PROJECT(rp-thumbnailer-dbus)
+# D-Bus Thumbnailer for rom-properties
+CMAKE_MINIMUM_REQUIRED(VERSION 3.0)
+CMAKE_POLICY(SET CMP0048 NEW)
+IF(POLICY CMP0063)
+	# CMake 3.3: Enable symbol visibility presets for all
+	# target types, including static libraries and executables.
+	CMAKE_POLICY(SET CMP0063 NEW)
+ENDIF(POLICY CMP0063)
+PROJECT(thumbnailer-dbus LANGUAGES C CXX)
 
 # Find packages.
 FIND_PACKAGE(GLib2 ${REQUIRE_XFCE} 2.26.0)
@@ -15,13 +23,14 @@ ELSE(GLib2_FOUND AND GObject2_FOUND AND GIO_FOUND AND GIO-UNIX_FOUND)
 ENDIF(GLib2_FOUND AND GObject2_FOUND AND GIO_FOUND AND GIO-UNIX_FOUND)
 
 # D-Bus bindings for the thumbnailer.
+SET(DBUS_XML_FILENAME "${CMAKE_CURRENT_SOURCE_DIR}/../../dbus/org.freedesktop.thumbnails.SpecializedThumbnailer1.xml")
 ADD_CUSTOM_COMMAND(
 	OUTPUT SpecializedThumbnailer1.c SpecializedThumbnailer1.h
 	COMMAND "${GDBUS_CODEGEN}"
 		--generate-c-code SpecializedThumbnailer1
-		"${CMAKE_CURRENT_SOURCE_DIR}/org.freedesktop.thumbnails.SpecializedThumbnailer1.xml"
+		"${DBUS_XML_FILENAME}"
 	WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
-	DEPENDS org.freedesktop.thumbnails.SpecializedThumbnailer1.xml
+	DEPENDS "${DBUS_XML_FILENAME}"
 	VERBATIM
 	)
 
@@ -36,10 +45,12 @@ ENDIF(CFLAG_Wno_unused_parameter)
 SET(rp-thumbnailer-dbus_SRCS
 	rp-thumbnailer-dbus.c
 	rp-thumbnailer-main.cpp
+	rptsecure.c
 	${CMAKE_CURRENT_BINARY_DIR}/SpecializedThumbnailer1.c
 	)
 SET(rp-thumbnailer-dbus_H
 	rp-thumbnailer-dbus.h
+	rptsecure.h
 	${CMAKE_CURRENT_BINARY_DIR}/SpecializedThumbnailer1.h
 	)
 
@@ -63,7 +74,7 @@ IF(BUILD_THUMBNAILER_DBUS)
 			$<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src>
 			$<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/src>
 		)
-	TARGET_LINK_LIBRARIES(rp-thumbnailer-dbus unixcommon)
+	TARGET_LINK_LIBRARIES(rp-thumbnailer-dbus unixcommon rpsecure)
 	TARGET_LINK_LIBRARIES(rp-thumbnailer-dbus GLib2::gio-unix GLib2::gio GLib2::gobject GLib2::glib)
 	# Link in libdl if it's required for dlopen().
 	IF(CMAKE_DL_LIBS)
@@ -111,7 +122,13 @@ IF(BUILD_THUMBNAILER_DBUS)
 	ELSE()
 		SET(THUMBNAIL_DEST_DIR "share/thumbnailers")
 	ENDIF()
-	INSTALL(FILES "${CMAKE_CURRENT_SOURCE_DIR}/com.gerbilsoft.rom-properties.SpecializedThumbnailer1.thumbnailer"
+
+	# Process the .thumbnailer file.
+	INCLUDE(ParseMimeTypes)
+	PARSE_MIME_TYPES(MIMETYPES_THUMBONLY "${CMAKE_SOURCE_DIR}/xdg/mime.thumbnail.types")
+	CONFIGURE_FILE(com.gerbilsoft.rom-properties.SpecializedThumbnailer1.thumbnailer.in
+	               com.gerbilsoft.rom-properties.SpecializedThumbnailer1.thumbnailer @ONLY)
+	INSTALL(FILES "${CMAKE_CURRENT_BINARY_DIR}/com.gerbilsoft.rom-properties.SpecializedThumbnailer1.thumbnailer"
 		RENAME com.gerbilsoft.rom-properties.SpecializedThumbnailer1.service
 		DESTINATION "${THUMBNAIL_DEST_DIR}"
 		COMPONENT "plugin"

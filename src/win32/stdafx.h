@@ -26,17 +26,22 @@
 #include "libwin32common/sdk/windowsx_ts.h"
 #include "libwin32common/sdk/commctrl_ts.h"
 
-// Subclass functions for compatibility with older Windows.
-#include "libwin32common/SubclassWindow.h"
-
 // Additional Windows headers.
 #include <olectl.h>
-#include <shlobj.h>
 #include <shellapi.h>
-#include <shlwapi.h>
 #include <shlwapi.h>
 #include <commdlg.h>
 #include <objidl.h>
+
+// FIXME: shlobj.h on MinGW-w64 on AppVeyor doesn't properly inline a few
+// functions when building in C mode, resulting in multiple definition errors.
+// C:/mingw-w64/x86_64-7.2.0-posix-seh-rt_v5-rev1
+// - FreeIDListArray
+// - FreeKnownFolderDefinitionFields
+// - IDListContainerIsConsistent
+#if defined(_MSC_VER) || defined(__cplusplus)
+# include <shlobj.h>
+#endif /* _MSC_VER || __cplusplus */
 
 // Native COM support. (C++ only!)
 #ifdef __cplusplus
@@ -67,6 +72,7 @@
 #include <list>
 #include <memory>
 #include <numeric>
+#include <set>
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
@@ -85,6 +91,7 @@
 #endif /* __cplusplus */
 
 // libwin32common C headers
+#include "libwin32common/HiDPI.h"
 #include "libwin32common/w32time.h"
 #include "libwin32common/sdk/GUID_fn.h"
 
@@ -100,7 +107,7 @@
 #include "libi18n/i18n.h"
 
 // librpbase common headers
-#include "librpbase/common.h"
+#include "common.h"
 
 #ifdef __cplusplus
 // librpbase C++ headers
@@ -108,9 +115,11 @@
 #include "librpbase/TextFuncs.hpp"
 #include "librpbase/TextFuncs_wchar.hpp"
 #include "librpbase/config/Config.hpp"
-#include "librpbase/file/IRpFile.hpp"
-#include "librpbase/file/RpFile.hpp"
-#include "librpbase/file/FileSystem.hpp"
+
+// librpfile C++ headers
+#include "librpfile/IRpFile.hpp"
+#include "librpfile/RpFile.hpp"
+#include "librpfile/FileSystem.hpp"
 
 // librptexture C++ headers
 #include "librptexture/img/rp_image.hpp"

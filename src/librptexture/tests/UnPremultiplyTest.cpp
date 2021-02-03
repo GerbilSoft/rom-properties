@@ -2,22 +2,19 @@
  * ROM Properties Page shell extension. (librptexture/tests)               *
  * UnPremutiplyTest.cpp: Test un_premultiply().                            *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 // Google Test
 #include "gtest/gtest.h"
+#include "tcharx.h"
+#include "common.h"
 
-// librpbase
-#include "librpbase/common.h"
-#include "librpbase/byteswap.h"
-#include "librpbase/TextFuncs.hpp"
-//#include "librpbase/uvector.h"
+// librpbase, librptexture, librpcpu
 #include "librpbase/aligned_malloc.h"
-
-// librptexture
 #include "librptexture/img/rp_image.hpp"
+#include "librpcpu/byteswap_rp.h"
 
 // C includes.
 #include <stdint.h>
@@ -27,9 +24,7 @@
 #include <cstring>
 
 // C++ includes.
-#include <memory>
 #include <string>
-using std::unique_ptr;
 using std::string;
 
 namespace LibRpTexture { namespace Tests {
@@ -38,7 +33,7 @@ class UnPremultiplyTest : public ::testing::Test
 {
 	protected:
 		UnPremultiplyTest()
-			: m_img(new rp_image(512, 512, rp_image::FORMAT_ARGB32))
+			: m_img(new rp_image(512, 512, rp_image::Format::ARGB32))
 		{
 			// Initialize the image with non-zero data.
 			size_t sz = m_img->row_bytes() * (m_img->height() - 1);
@@ -48,12 +43,12 @@ class UnPremultiplyTest : public ::testing::Test
 
 		~UnPremultiplyTest()
 		{
-			delete m_img;
+			m_img->unref();
 		}
 
 	public:
 		// Number of iterations for benchmarks.
-		static const unsigned int BENCHMARK_ITERATIONS = 10000;
+		static const unsigned int BENCHMARK_ITERATIONS = 1000;
 
 		// Image.
 		rp_image *m_img;
@@ -118,7 +113,7 @@ TEST_F(UnPremultiplyTest, premultiply_cpp)
  * Test suite main function.
  * Called by gtest_init.cpp.
  */
-extern "C" int gtest_main(int argc, char *argv[])
+extern "C" int gtest_main(int argc, TCHAR *argv[])
 {
 	fprintf(stderr, "LibRpTexture test suite: rp_image::un_premultiply() tests.\n\n");
 	fprintf(stderr, "Benchmark iterations: %u\n",

@@ -2,20 +2,20 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * PartitionFile.hpp: IRpFile implementation for IPartition.               *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #ifndef __ROMPROPERTIES_LIBRPBASE_DISC_PARTITIONFILE_HPP__
 #define __ROMPROPERTIES_LIBRPBASE_DISC_PARTITIONFILE_HPP__
 
-#include "../file/IRpFile.hpp"
+#include "librpfile/IRpFile.hpp"
 
 namespace LibRpBase {
 
 class IDiscReader;
 
-class PartitionFile : public IRpFile
+class PartitionFile : public LibRpFile::IRpFile
 {
 	public:
 		/**
@@ -25,9 +25,9 @@ class PartitionFile : public IRpFile
 		 * @param offset	[in] File starting offset.
 		 * @param size		[in] File size.
 		 */
-		PartitionFile(IDiscReader *partition, int64_t offset, int64_t size);
+		PartitionFile(IDiscReader *partition, off64_t offset, off64_t size);
 	protected:
-		virtual ~PartitionFile() { }	// call unref() instead
+		virtual ~PartitionFile();	// call unref() instead
 
 	private:
 		typedef IRpFile super;
@@ -52,6 +52,7 @@ class PartitionFile : public IRpFile
 		 * @param size Amount of data to read, in bytes.
 		 * @return Number of bytes read.
 		 */
+		ATTR_ACCESS_SIZE(write_only, 2, 3)
 		size_t read(void *ptr, size_t size) final;
 
 		/**
@@ -61,6 +62,7 @@ class PartitionFile : public IRpFile
 		 * @param size Amount of data to read, in bytes.
 		 * @return Number of bytes written.
 		 */
+		ATTR_ACCESS_SIZE(read_only, 2, 3)
 		size_t write(const void *ptr, size_t size) final;
 
 		/**
@@ -68,20 +70,20 @@ class PartitionFile : public IRpFile
 		 * @param pos File position.
 		 * @return 0 on success; -1 on error.
 		 */
-		int seek(int64_t pos) final;
+		int seek(off64_t pos) final;
 
 		/**
 		 * Get the file position.
 		 * @return File position, or -1 on error.
 		 */
-		int64_t tell(void) final;
+		off64_t tell(void) final;
 
 		/**
 		 * Truncate the file.
 		 * @param size New size. (default is 0)
 		 * @return 0 on success; -1 on error.
 		 */
-		int truncate(int64_t size = 0) final;
+		int truncate(off64_t size = 0) final;
 
 	public:
 		/** File properties. **/
@@ -90,7 +92,7 @@ class PartitionFile : public IRpFile
 		 * Get the file size.
 		 * @return File size, or negative on error.
 		 */
-		int64_t size(void) final;
+		off64_t size(void) final;
 
 		/**
 		 * Get the filename.
@@ -100,9 +102,9 @@ class PartitionFile : public IRpFile
 
 	protected:
 		IDiscReader *m_partition;
-		int64_t m_offset;	// File starting offset.
-		int64_t m_size;		// File size.
-		int64_t m_pos;		// Current position.
+		off64_t m_offset;	// File starting offset.
+		off64_t m_size;		// File size.
+		off64_t m_pos;		// Current position.
 };
 
 }

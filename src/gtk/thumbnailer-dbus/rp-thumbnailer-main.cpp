@@ -2,14 +2,17 @@
  * ROM Properties Page shell extension. (GNOME)                            *
  * rp-thumbnailer-main.cpp: D-Bus thumbnailerer service: main()            *
  *                                                                         *
- * Copyright (c) 2017-2019 by David Korth.                                 *
+ * Copyright (c) 2017-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "librpbase/common.h"
+#include "common.h"
 #include "libunixcommon/userdirs.hpp"
 #include "libunixcommon/dll-search.h"
 #include "rp-thumbnailer-dbus.h"
+
+// OS-specific security options.
+#include "rptsecure.h"
 
 // C includes. (C++ namespace)
 #include <cstdarg>
@@ -24,9 +27,6 @@ using std::string;
 
 // Shutdown request.
 static bool stop_main_loop = false;
-
-// rp_create_thumbnail() function pointer.
-static PFN_RP_CREATE_THUMBNAIL pfn_rp_create_thumbnail = nullptr;
 
 // Cache directory.
 static string cache_dir;
@@ -123,6 +123,9 @@ int main(int argc, char *argv[])
 		return EXIT_FAILURE;
 	}
 
+	// Enable security options.
+	rpt_do_security_options();
+
 #if !GLIB_CHECK_VERSION(2,36,0)
 	// g_type_init() is automatic as of glib-2.36.0
 	// and is marked deprecated.
@@ -142,7 +145,8 @@ int main(int argc, char *argv[])
 	}
 
 	// Attempt to open a ROM Properties Page library.
-	void *pDll = NULL;
+	void *pDll = nullptr;
+	PFN_RP_CREATE_THUMBNAIL pfn_rp_create_thumbnail = nullptr;
 	int ret = rp_dll_search("rp_create_thumbnail", &pDll, (void**)&pfn_rp_create_thumbnail, fnDebug);
 	if (ret != 0) {
 		return EXIT_FAILURE;

@@ -16,6 +16,9 @@
 #include "librpbase/config/AboutTabText.hpp"
 using namespace LibRpBase;
 
+// libwin32common
+#include "libwin32common/SubclassWindow.h"
+
 // Property sheet icon.
 // Extracted from imageres.dll or shell32.dll.
 #include "PropSheetIcon.hpp"
@@ -71,11 +74,6 @@ class AboutTabPrivate
 
 	private:
 		RP_DISABLE_COPY(AboutTabPrivate)
-
-	public:
-		// Property for "D pointer".
-		// This points to the AboutTabPrivate object.
-		static const TCHAR D_PTR_PROP[];
 
 	public:
 		/**
@@ -187,7 +185,6 @@ class AboutTabPrivate
 		void setTabContents(int index);
 
 	public:
-
 		/**
 		 * Initialize the dialog.
 		 */
@@ -228,10 +225,6 @@ AboutTabPrivate::~AboutTabPrivate()
 	}
 }
 
-// Property for "D pointer".
-// This points to the AboutTabPrivate object.
-const TCHAR AboutTabPrivate::D_PTR_PROP[] = _T("AboutTabPrivate");
-
 /**
  * Dialog procedure.
  * @param hDlg
@@ -258,24 +251,15 @@ INT_PTR CALLBACK AboutTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, L
 			d->hWndPropSheet = hDlg;
 
 			// Store the D object pointer with this particular page dialog.
-			SetProp(hDlg, D_PTR_PROP, reinterpret_cast<HANDLE>(d));
+			SetWindowLongPtr(hDlg, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(d));
 
 			// Initialize the dialog.
 			d->init();
 			return TRUE;
 		}
 
-		case WM_DESTROY: {
-			// Remove the D_PTR_PROP property from the page. 
-			// The D_PTR_PROP property stored the pointer to the 
-			// AboutTabPrivate object.
-			RemoveProp(hDlg, D_PTR_PROP);
-			return TRUE;
-		}
-
 		case WM_NOTIFY: {
-			AboutTabPrivate *const d = static_cast<AboutTabPrivate*>(
-				GetProp(hDlg, D_PTR_PROP));
+			auto *const d = reinterpret_cast<AboutTabPrivate*>(GetWindowLongPtr(hDlg, GWLP_USERDATA));
 			if (!d) {
 				// No AboutTabPrivate. Can't do anything...
 				return FALSE;
@@ -291,7 +275,7 @@ INT_PTR CALLBACK AboutTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, L
 					ENLINK *pENLink = reinterpret_cast<ENLINK*>(pHdr);
 					if (pENLink->msg == WM_LBUTTONUP) {
 						TCHAR urlbuf[256];
-						if ((pENLink->chrg.cpMax - pENLink->chrg.cpMin) >= ARRAY_SIZE(urlbuf)) {
+						if ((pENLink->chrg.cpMax - pENLink->chrg.cpMin) >= _countof(urlbuf)) {
 							// URL is too big.
 							break;
 						}
@@ -299,7 +283,7 @@ INT_PTR CALLBACK AboutTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, L
 						range.chrg = pENLink->chrg;
 						range.lpstrText = urlbuf;
 						LRESULT lResult = SendMessage(pHdr->hwndFrom, EM_GETTEXTRANGE, 0, (LPARAM)&range);
-						if (lResult > 0 && lResult < ARRAY_SIZE(urlbuf)) {
+						if (lResult > 0 && lResult < _countof(urlbuf)) {
 							ShellExecute(nullptr, _T("open"), urlbuf, nullptr, nullptr, SW_SHOW);
 						}
 					}
@@ -550,7 +534,8 @@ void AboutTabPrivate::initProgramTitleText(void)
 	}
 
 	// Set the icon.
-	HICON hIcon = PropSheetIcon::get96Icon();
+	const PropSheetIcon *const psi = PropSheetIcon::instance();
+	HICON hIcon = psi->get96Icon();
 	if (hIcon) {
 		// Get the dialog margin.
 		// 7x7 DLU margin is recommended by the Windows UX guidelines.
@@ -615,7 +600,7 @@ void AboutTabPrivate::initCreditsTab(void)
 	// FIXME: Figure out how to get links to work without
 	// resorting to manually adding CFE_LINK data...
 	// NOTE: Copyright is NOT localized.
-	sCredits += "Copyright (c) 2016-2019 by David Korth." RTF_BR;
+	sCredits += "Copyright (c) 2016-2020 by David Korth." RTF_BR;
 	sCredits += RTF_BR;
 	sCredits += rp_sprintf(
 		// tr: %s is the name of the license.
@@ -628,11 +613,11 @@ void AboutTabPrivate::initCreditsTab(void)
 		sCredits += "https://www.gnu.org/licenses/gpl-2.0.html";
 	}
 
-	AboutTabText::CreditType_t lastCreditType = AboutTabText::CT_CONTINUE;
+	AboutTabText::CreditType lastCreditType = AboutTabText::CreditType::Continue;
 	for (const AboutTabText::CreditsData_t *creditsData = &AboutTabText::CreditsData[0];
-	     creditsData->type < AboutTabText::CT_MAX; creditsData++)
+	     creditsData->type < AboutTabText::CreditType::Max; creditsData++)
 	{
-		if (creditsData->type != AboutTabText::CT_CONTINUE &&
+		if (creditsData->type != AboutTabText::CreditType::Continue &&
 		    creditsData->type != lastCreditType)
 		{
 			// New credit type.
@@ -640,18 +625,18 @@ void AboutTabPrivate::initCreditsTab(void)
 			sCredits += "\\b ";
 
 			switch (creditsData->type) {
-				case AboutTabText::CT_DEVELOPER:
+				case AboutTabText::CreditType::Developer:
 					sCredits += rtfEscape(C_("AboutTab|Credits", "Developers:"));
 					break;
-				case AboutTabText::CT_CONTRIBUTOR:
+				case AboutTabText::CreditType::Contributor:
 					sCredits += rtfEscape(C_("AboutTab|Credits", "Contributors:"));
 					break;
-				case AboutTabText::CT_TRANSLATOR:
+				case AboutTabText::CreditType::Translator:
 					sCredits += rtfEscape(C_("AboutTab|Credits", "Translators:"));
 					break;
 
-				case AboutTabText::CT_CONTINUE:
-				case AboutTabText::CT_MAX:
+				case AboutTabText::CreditType::Continue:
+				case AboutTabText::CreditType::Max:
 				default:
 					assert(!"Invalid credit type.");
 					break;
@@ -695,55 +680,98 @@ void AboutTabPrivate::initCreditsTab(void)
  */
 void AboutTabPrivate::initLibrariesTab(void)
 {
+	char sVerBuf[64];
+
 	sLibraries.clear();
 	sLibraries.reserve(8192);
 
 	// RTF starting sequence.
 	sLibraries = RTF_START;
 
+	// NOTE: These strings can NOT be static.
+	// Otherwise, they won't be retranslated if the UI language
+	// is changed at runtime.
+
+	// tr: Using an internal copy of a library.
+	const char *const sIntCopyOf = C_("AboutTab|Libraries", "Internal copy of %s.");
+	// tr: Compiled with a specific version of an external library.
+	const char *const sCompiledWith = C_("AboutTab|Libraries", "Compiled with %s.");
+	// tr: Using an external library, e.g. libpcre.so
+	const char *const sUsingDll = C_("AboutTab|Libraries", "Using %s.");
+	// tr: License: (libraries with only a single license)
+	const char *const sLicense = C_("AboutTab|Libraries", "License: %s");
+	// tr: Licenses: (libraries with multiple licenses)
+	const char *const sLicenses = C_("AboutTab|Libraries", "Licenses: %s");
+
 	// NOTE: We're only showing the "compiled with" version here,
 	// since the DLLs are delay-loaded and might not be available.
 
 	/** zlib **/
 #ifdef HAVE_ZLIB
-	sLibraries += "Compiled with zlib " ZLIB_VERSION "." RTF_BR
+	sLibraries += rp_sprintf(sCompiledWith, "zlib " ZLIB_VERSION) + RTF_BR
 		"Copyright (C) 1995-2017 Jean-loup Gailly and Mark Adler." RTF_BR
-		"https://zlib.net/" RTF_BR
-		"License: zlib license";
+		"https://zlib.net/" RTF_BR;
+	sLibraries += rp_sprintf(sLicense, "zlib license");
 #endif /* HAVE_ZLIB */
 
 	/** libpng **/
 	// FIXME: Use png_get_copyright().
 	// FIXME: Check for APNG.
 #ifdef HAVE_PNG
-	sLibraries += RTF_BR RTF_BR
-		"Compiled with libpng " PNG_LIBPNG_VER_STRING "." RTF_BR
+	sLibraries += RTF_BR RTF_BR;
+	sLibraries += rp_sprintf(sCompiledWith, "libpng " PNG_LIBPNG_VER_STRING) + RTF_BR
 		"libpng version 1.6.37 - April 14, 2019" RTF_BR
 		"Copyright (c) 2018-2019 Cosmin Truta" RTF_BR
 		"Copyright (c) 1998-2002,2004,2006-2018 Glenn Randers-Pehrson" RTF_BR
 		"Copyright (c) 1996-1997 Andreas Dilger" RTF_BR
 		"Copyright (c) 1995-1996 Guy Eric Schalnat, Group 42, Inc." RTF_BR
-		"http://www.libpng.org/pub/png/libpng.html" RTF_BR
-		"License: libpng license";
+		"http://www.libpng.org/pub/png/libpng.html" RTF_BR;
+	sLibraries += rp_sprintf(sLicense, "libpng license");
 #endif /* HAVE_PNG */
 
 	/** TinyXML2 **/
 #ifdef ENABLE_XML
-	char sXmlVersion[24];
-	snprintf(sXmlVersion, sizeof(sXmlVersion), "TinyXML2 %u.%u.%u",
+	snprintf(sVerBuf, sizeof(sVerBuf), "TinyXML2 %u.%u.%u",
 		TIXML2_MAJOR_VERSION,
 		TIXML2_MINOR_VERSION,
 		TIXML2_PATCH_VERSION);
 
 	// FIXME: Runtime version?
-	sLibraries += RTF_BR RTF_BR "Compiled with ";
-	sLibraries += sXmlVersion;
-	sLibraries += '.';
-	sLibraries += RTF_BR
+	sLibraries += RTF_BR RTF_BR;
+	sLibraries += rp_sprintf(sCompiledWith, sVerBuf);
+	sLibraries += "." RTF_BR
 		"Copyright (C) 2000-2019 Lee Thomason" RTF_BR
-		"http://www.grinninglizard.com/" RTF_BR
-		"License: zlib license";
+		"http://www.grinninglizard.com/" RTF_BR;
+	sLibraries += rp_sprintf(sLicense, "zlib license");
 #endif /* ENABLE_XML */
+
+	/** GNU gettext **/
+	// NOTE: glibc's libintl.h doesn't have the version information,
+	// so we're only printing this if we're using GNU gettext's version.
+#if defined(HAVE_GETTEXT) && defined(LIBINTL_VERSION)
+	if (LIBINTL_VERSION & 0xFF) {
+		snprintf(sVerBuf, sizeof(sVerBuf), "GNU gettext %u.%u.%u",
+			LIBINTL_VERSION >> 16,
+			(LIBINTL_VERSION >> 8) & 0xFF,
+			LIBINTL_VERSION & 0xFF);
+	} else {
+		snprintf(sVerBuf, sizeof(sVerBuf), "GNU gettext %u.%u",
+			LIBINTL_VERSION >> 16,
+			(LIBINTL_VERSION >> 8) & 0xFF);
+	}
+
+	sLibraries += RTF_BR RTF_BR;
+#  ifdef _WIN32
+	sLibraries += rp_sprintf(sIntCopyOf, sVerBuf);
+#  else /* _WIN32 */
+	// FIXME: Runtime version?
+	sLibraries += rp_sprintf(sCompiledWith, sVerBuf);
+#  endif /* _WIN32 */
+	sLibraries += RTF_BR
+		"Copyright (C) 1995-1997, 2000-2016, 2018-2020 Free Software Foundation, Inc." RTF_BR
+		"https://www.gnu.org/software/gettext/" RTF_BR;
+	sLibraries += rp_sprintf(sLicense, "GNU LGPL v2.1+");
+#endif /* HAVE_GETTEXT && LIBINTL_VERSION */
 
 	sLibraries += "}";
 
@@ -1010,5 +1038,5 @@ void AboutTab::loadDefaults(void)
  */
 void AboutTab::save(void)
 {
-	// Nothing to load here...
+	// Nothing to save here...
 }

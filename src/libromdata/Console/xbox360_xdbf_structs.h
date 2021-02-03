@@ -2,23 +2,19 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * xbox360_xdbf_structs.h: Microsoft Xbox 360 game resource structures.    *
  *                                                                         *
- * Copyright (c) 2019 by David Korth.                                      *
+ * Copyright (c) 2019-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #ifndef __ROMPROPERTIES_LIBROMDATA_CONSOLE_XBOX360_XDBF_STRUCTS_H__
 #define __ROMPROPERTIES_LIBROMDATA_CONSOLE_XBOX360_XDBF_STRUCTS_H__
 
-#include "librpbase/common.h"
 #include <stdint.h>
+#include "common.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-#pragma pack(1)
-
-// TODO: In addition to the main game info, handle achievements?
 
 // NOTE: Entries begin after all headers:
 // - XDBF_Header
@@ -30,15 +26,15 @@ extern "C" {
  * References:
  * - https://github.com/xenia-project/xenia/blob/HEAD/src/xenia/kernel/util/xdbf_utils.h
  * - https://github.com/xenia-project/xenia/blob/HEAD/src/xenia/kernel/util/xdbf_utils.cc
- * - https://free60project.github.io/wiki/XDBF.html
- * - https://free60project.github.io/wiki/GPD.html
- * - https://free60project.github.io/wiki/SPA.html
+ * - https://github.com/Free60Project/wiki/blob/master/docs/XDBF.md
+ * - https://github.com/Free60Project/wiki/blob/master/docs/GPD.md
+ * - https://github.com/Free60Project/wiki/blob/master/docs/SPA.md
  *
  * All fields are in big-endian.
  */
 #define XDBF_MAGIC 'XDBF'
 #define XDBF_VERSION 0x10000
-typedef struct PACKED _XDBF_Header {
+typedef struct _XDBF_Header {
 	uint32_t magic;				// [0x000] 'XDBF'
 	uint32_t version;			// [0x004] Version (0x10000)
 	uint32_t entry_table_length;		// [0x008] Entry table length, in number of entries
@@ -46,7 +42,7 @@ typedef struct PACKED _XDBF_Header {
 	uint32_t free_space_table_length;	// [0x010] Free space table length, in number of entries
 	uint32_t free_space_table_count;	// [0x014] Free space table entry count (# of used entries)
 } XDBF_Header;
-ASSERT_STRUCT(XDBF_Header, 0x18);
+ASSERT_STRUCT(XDBF_Header, 6*sizeof(uint32_t));
 
 // Title resource ID.
 // This resource ID contains the game title in each language-specific string table.
@@ -59,21 +55,25 @@ ASSERT_STRUCT(XDBF_Header, 0x18);
  * XDBF entry
  * All fields are in big-endian.
  */
+#pragma pack(1)
 typedef struct PACKED _XDBF_Entry {
 	uint16_t namespace_id;		// [0x000] See XDBF_Namespace_e
 	uint64_t resource_id;		// [0x002] ID
 	uint32_t offset;		// [0x00A] Offset specifier
 	uint32_t length;		// [0x00E] Length
 } XDBF_Entry;
+ASSERT_STRUCT(XDBF_Entry, 18);
+#pragma pack()
 
 /**
  * XDBG free space table entry
  * All fields are in big-endian.
  */
-typedef struct PACKED _XDBF_Free_Space_Entry {
+typedef struct _XDBF_Free_Space_Entry {
 	uint32_t offset;		// [0x000] Offset specifier
 	uint32_t length;		// [0x004] Length
 } XDBF_Free_Space_Entry;
+ASSERT_STRUCT(XDBF_Free_Space_Entry, 2*sizeof(uint32_t));
 
 /**
  * XDBF: Namespace IDs
@@ -83,7 +83,20 @@ typedef enum {
 	XDBF_SPA_NAMESPACE_METADATA		= 1,	// Metadata
 	XDBF_SPA_NAMESPACE_IMAGE		= 2,	// Image (usually PNG format)
 	XDBF_SPA_NAMESPACE_STRING_TABLE		= 3,	// String table (ID == XDBF_Language_e)
+
+	/** GPD **/
+	XDBF_GPD_NAMESPACE_ACHIEVEMENT		= 1,	// Achievement
+	XDBF_GPD_NAMESPACE_IMAGE		= 2,	// Image (same as SPA)
+	XDBF_GPD_NAMESPACE_SETTING		= 3,
+	XDBF_GPD_NAMESPACE_TITLE		= 4,
+	XDBF_GPD_NAMESPACE_STRING		= 5,
+	XDBF_GPD_NAMESPACE_ACHIEVEMENT_SECURITY_GFWL	= 6,
+	XDBF_GPD_NAMESPACE_AVATAR_AWARD_360	= 6,
 } XDBF_Namespace_e;
+
+// Special entry IDs for Sync List and Sync Data. (GPD)
+#define XDBF_GPD_SYNC_LIST_ENTRY	0x0000000100000000U
+#define XDBF_GPD_SYNC_DATA_ENTRY	0x0000000200000000U
 
 /**
  * XSTC: Default language block.
@@ -93,7 +106,7 @@ typedef enum {
  */
 #define XDBF_XSTC_MAGIC 'XSTC'
 #define XDBF_XSTC_VERSION 1
-typedef struct PACKED _XDBF_Default_Language {
+typedef struct _XDBF_XSTC {
 	uint32_t magic;			// [0x000] 'XSTC'
 	uint32_t version;		// [0x004] Version (1)
 	uint32_t size;			// [0x008] sizeof(XDBF_XSTC) - sizeof(uint32_t)
@@ -105,15 +118,19 @@ ASSERT_STRUCT(XDBF_XSTC, 4*sizeof(uint32_t));
  * XDBF: Language IDs
  */
 typedef enum {
-	XDBF_LANGUAGE_UNKNOWN	= 0,
-	XDBF_LANGUAGE_ENGLISH	= 1,
-	XDBF_LANGUAGE_JAPANESE	= 2,
-	XDBF_LANGUAGE_GERMAN	= 3,
-	XDBF_LANGUAGE_FRENCH	= 4,
-	XDBF_LANGUAGE_SPANISH	= 5,
-	XDBF_LANGUAGE_ITALIAN	= 6,
-	XDBF_LANGUAGE_KOREAN	= 7,
-	XDBF_LANGUAGE_CHINESE	= 8,
+	XDBF_LANGUAGE_UNKNOWN		= 0,
+	XDBF_LANGUAGE_ENGLISH		= 1,
+	XDBF_LANGUAGE_JAPANESE		= 2,
+	XDBF_LANGUAGE_GERMAN		= 3,
+	XDBF_LANGUAGE_FRENCH		= 4,
+	XDBF_LANGUAGE_SPANISH		= 5,
+	XDBF_LANGUAGE_ITALIAN		= 6,
+	XDBF_LANGUAGE_KOREAN		= 7,
+	XDBF_LANGUAGE_CHINESE_TRAD	= 8,	// Traditional Chinese
+	XDBF_LANGUAGE_PORTUGUESE	= 9,
+	XDBF_LANGUAGE_CHINESE_SIMP	= 10,	// Simplified Chinese
+	XDBF_LANGUAGE_POLISH		= 11,
+	XDBF_LANGUAGE_RUSSIAN		= 12,
 
 	XDBF_LANGUAGE_MAX
 } XDBF_Language_e;
@@ -129,6 +146,7 @@ typedef enum {
  */
 #define XDBF_XSTR_MAGIC 'XSTR'
 #define XDBF_XSTR_VERSION 1
+#pragma pack(1)
 typedef struct PACKED _XDBF_XSTR_Header {
 	uint32_t magic;		// [0x000] 'XSTR'
 	uint32_t version;	// [0x004] Version (1)
@@ -136,16 +154,17 @@ typedef struct PACKED _XDBF_XSTR_Header {
 	uint16_t string_count;	// [0x00C] String count
 } XDBF_XSTR_Header;
 ASSERT_STRUCT(XDBF_XSTR_Header, 14);
+#pragma pack()
 
 /**
  * XDBF: String table entry header
  * All fields are in big-endian.
  */
-typedef struct PACKED _XDBF_XSTR_Entry_Header {
+typedef struct _XDBF_XSTR_Entry_Header {
 	uint16_t string_id;	// [0x000] ID
 	uint16_t length;	// [0x002] String length (NOT NULL-terminated)
 } XDBF_XSTR_Entry_Header;
-ASSERT_STRUCT(XDBF_XSTR_Entry_Header, sizeof(uint32_t));
+ASSERT_STRUCT(XDBF_XSTR_Entry_Header, 2*sizeof(uint16_t));
 
 /**
  * XDBF: Title ID
@@ -153,7 +172,7 @@ ASSERT_STRUCT(XDBF_XSTR_Entry_Header, sizeof(uint32_t));
  * NOTE: Struct positioning only works with the original BE32 value.
  * TODO: Combine with XEX2 version.
  */
-typedef union PACKED _XDBF_Title_ID {
+typedef union _XDBF_Title_ID {
 	struct {
 		char c[2];
 		uint16_t u16;
@@ -168,6 +187,7 @@ ASSERT_STRUCT(XDBF_Title_ID, sizeof(uint32_t));
  */
 #define XDBF_XACH_MAGIC 'XACH'
 #define XDBF_XACH_VERSION 1
+#pragma pack(1)
 typedef struct PACKED _XDBF_XACH_Header {
 	uint32_t magic;		// [0x000] 'XACH'
 	uint32_t version;	// [0x004] Version (1)
@@ -179,12 +199,13 @@ typedef struct PACKED _XDBF_XACH_Header {
 	// of XDBF_XACH_Entry.
 } XDBF_XACH_Header;
 ASSERT_STRUCT(XDBF_XACH_Header, 14);
+#pragma pack()
 
 /**
- * XDBF: XACH - Achievements table entry
+ * XDBF: XACH - Achievements table entry (SPA)
  * All fields are in big-endian.
  */
-typedef struct PACKED _XDBF_XACH_Entry {
+typedef struct _XDBF_XACH_Entry_SPA {
 	uint16_t achievement_id;	// [0x000] Achievement ID
 	uint16_t name_id;		// [0x002] Name ID (string table)
 	uint16_t unlocked_desc_id;	// [0x004] Unlocked description ID (string table)
@@ -192,10 +213,53 @@ typedef struct PACKED _XDBF_XACH_Entry {
 	uint32_t image_id;		// [0x008] Image ID
 	uint16_t gamerscore;		// [0x00C] Gamerscore
 	uint16_t unknown1;		// [0x00E]
-	uint32_t flags;			// [0x010] Flags (??)
+	uint32_t flags;			// [0x010] Flags (See XDBF_XACH_Flags_e)
 	uint32_t unknown2[4];		// [0x014]
-} XDBF_XACH_Entry;
-ASSERT_STRUCT(XDBF_XACH_Entry, 0x24);
+} XDBF_XACH_Entry_SPA;
+ASSERT_STRUCT(XDBF_XACH_Entry_SPA, 0x24);
+
+/**
+ * XDBF: XACH - Achievements table entry header (GPD)
+ * All fields are in big-endian.
+ */
+#pragma pack(1)
+typedef struct PACKED _XDBF_XACH_Entry_Header_GPD {
+	uint32_t size;			// [0x000] Struct size (0x1C)
+	uint32_t achievement_id;	// [0x004] Achievement ID
+	uint32_t image_id;		// [0x008] Image ID
+	uint32_t gamerscore;		// [0x00C] Gamerscore
+	uint32_t flags;			// [0x010] Flags (See XDBF_XACH_Flags_e)
+	uint64_t unlock_time;		// [0x014] Unlock time
+
+	// Following the struct are three UTF-16BE NULL-terminated strings,
+	// in the following order:
+	// - Name
+	// - Unlocked description
+	// - Locked description
+} XDBF_XACH_Entry_Header_GPD;
+ASSERT_STRUCT(XDBF_XACH_Entry_Header_GPD, 0x1C);
+#pragma pack()
+
+/**
+ * XDBF: XACH - Achievements flags.
+ */
+typedef enum {
+	// Achievement type
+	XDBF_XACH_TYPE_COMPLETION	= 1U,
+	XDBF_XACH_TYPE_LEVELING		= 2U,
+	XDBF_XACH_TYPE_UNLOCK		= 3U,
+	XDBF_XACH_TYPE_EVENT		= 4U,
+	XDBF_XACH_TYPE_TOURNAMENT	= 5U,
+	XDBF_XACH_TYPE_CHECKPOINT	= 6U,
+	XDBF_XACH_TYPE_OTHER		= 7U,
+	XDBF_XACH_TYPE_MASK		= 7U,
+
+	// Status
+	XDBF_XACH_STATUS_UNACHIEVED	= (1U << 4),	// Set if *not* achieved.
+	XDBF_XACH_STATUS_EARNED_ONLINE	= (1U << 16),
+	XDBF_XACH_STATUS_EARNED		= (1U << 17),
+	XDBF_XACH_STATUS_EDITED		= (1U << 20),	// ??
+} XDBF_XACH_Flags_e;
 
 /**
  * XDBF: XTHD - contains title information
@@ -203,7 +267,7 @@ ASSERT_STRUCT(XDBF_XACH_Entry, 0x24);
  */
 #define XDBF_XTHD_MAGIC 'XTHD'
 #define XDBF_XTHD_VERSION 1
-typedef struct PACKED _XDBF_XTHD {
+typedef struct _XDBF_XTHD {
 	uint32_t magic;		// [0x000] 'XTHD'
 	uint32_t version;	// [0x004] Version (1)
 	uint32_t size;		// [0x008] Size (might be 0?)
@@ -215,7 +279,7 @@ typedef struct PACKED _XDBF_XTHD {
 		uint16_t build;
 		uint16_t revision;
 	} title_version;	// [0x014] Title version
-	uint32_t unknown[4];	// [0x018]
+	uint32_t unknown[4];	// [0x01C]
 } XDBF_XTHD;
 ASSERT_STRUCT(XDBF_XTHD, 0x2C);
 
@@ -235,6 +299,7 @@ typedef enum {
  */
 #define XDBF_XGAA_MAGIC 'XGAA'
 #define XDBF_XGAA_VERSION 1
+#pragma pack(1)
 typedef struct PACKED _XDBF_XGAA_Header {
 	uint32_t magic;		// [0x000] 'XGAA'
 	uint32_t version;	// [0x004] Version (1)
@@ -244,12 +309,13 @@ typedef struct PACKED _XDBF_XGAA_Header {
 	// of XDBF_XGAA_Entry.
 } XDBF_XGAA_Header;
 ASSERT_STRUCT(XDBF_XGAA_Header, 14);
+#pragma pack()
 
 /**
  * XDBF: XGAA - Avatar award entry
  * All fields are in big-endian.
  */
-typedef struct PACKED _XDBF_XGAA_Entry {
+typedef struct _XDBF_XGAA_Entry {
 	uint32_t unk_0x000;		// [0x000] ???
 	uint16_t avatar_award_id;	// [0x004] Avatar award ID
 	uint16_t unk_0x006;		// [0x006] ???
@@ -275,7 +341,7 @@ ASSERT_STRUCT(XDBF_XGAA_Entry, 36);
  */
 #define XDBF_XSRC_MAGIC 'XSRC'
 #define XDBF_XSRC_VERSION 1
-typedef struct PACKED _XDBF_XSRC_Header {
+typedef struct _XDBF_XSRC_Header {
 	uint32_t magic;		// [0x000] 'XSRC'
 	uint32_t version;	// [0x004] Version (1)
 	uint32_t size;		// [0x008] Size of entire struct, including gzipped data.
@@ -290,13 +356,11 @@ ASSERT_STRUCT(XDBF_XSRC_Header, 4*sizeof(uint32_t));
  * XDBF: XSRC - second header, stored after the filename.
  * All fields are in big-endian.
  */
-typedef struct PACKED _XDBF_XSRC_Header2 {
+typedef struct _XDBF_XSRC_Header2 {
 	uint32_t uncompressed_size;	// [0x000] Uncompressed data size
 	uint32_t compressed_size;	// [0x004] Compressed data size
 } XDBF_XSRC_Header2;
 ASSERT_STRUCT(XDBF_XSRC_Header2, 2*sizeof(uint32_t));
-
-#pragma pack()
 
 #ifdef __cplusplus
 }

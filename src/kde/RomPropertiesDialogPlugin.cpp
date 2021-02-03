@@ -1,8 +1,8 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (KDE4/KDE5)                        *
+ * ROM Properties Page shell extension. (KDE4/KF5)                         *
  * RomPropertiesDialogPlugin.cpp: KPropertiesDialogPlugin.                 *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -14,38 +14,23 @@
  * - https://github.com/KDE/calligra-history/blob/5e323f11f11ec487e1ef801d61bb322944f454a5/libs/main/kodocinfopropspage.desktop
  */
 
+#include "stdafx.h"
 #include "RomPropertiesDialogPlugin.hpp"
 #include "RomDataView.hpp"
-#include "RpQt.hpp"
 
-// librpbase
-#include "librpbase/RomData.hpp"
-#include "librpbase/file/RpFile.hpp"
+// librpbase, librpfile
 using LibRpBase::RomData;
-using LibRpBase::IRpFile;
-using LibRpBase::RpFile;
-
-// RpFileKio
-#include "RpFile_kio.hpp"
-
-// libi18n
-#include "libi18n/i18n.h"
+using LibRpFile::IRpFile;
 
 // libromdata
 #include "libromdata/RomDataFactory.hpp"
 using LibRomData::RomDataFactory;
 
-// C includes.
-#include <unistd.h>
-
-// Qt includes.
-#include <QtCore/QFileInfo>
-
 RomPropertiesDialogPlugin::RomPropertiesDialogPlugin(KPropertiesDialog *props, const QVariantList&)
 	: super(props)
 {
 	if (getuid() == 0 || geteuid() == 0) {
-		qCritical("*** rom-properties-kde%u does not support running as root.", QT_VERSION >> 16);
+		qCritical("*** rom-properties-" RP_KDE_LOWER "%u does not support running as root.", QT_VERSION >> 16);
 		return;
 	}
 
@@ -56,33 +41,10 @@ RomPropertiesDialogPlugin::RomPropertiesDialogPlugin(KPropertiesDialog *props, c
 		return;
 	}
 
-	// Get the local path if it's available. This is needed in order to
-	// support files on the local file system that don't have a file:/
-	// URL, e.g. desktop:/.
-	// References:
-	// - https://bugs.kde.org/show_bug.cgi?id=392100
-	// - https://cgit.kde.org/kio.git/commit/?id=7d6e4965dfcd7fc12e8cba7b1506dde22de5d2dd
-	// TODO: https://cgit.kde.org/kdenetwork-filesharing.git/commit/?id=abf945afd4f08d80cdc53c650d80d300f245a73d
-	// (and other uses) [use mostLocalPath()]
-	IRpFile *file = nullptr;
-	const KFileItem &fileItem = items.at(0);
-	const QString filename = fileItem.localPath();
-	if (!filename.isEmpty()) {
-		// Got a local path. Use RpFile.
-		file = new RpFile(Q2U8(filename), RpFile::FM_OPEN_READ_GZ);
-	} else {
-#ifdef HAVE_RPFILE_KIO
-		// Not a local file. Use RpFileKio.
-		file = new RpFileKio(fileItem.url());
-#else /* !HAVE_RPFILE_KIO */
-		// RpFileKio is not available.
-		return;
-#endif /* HAVE_RPFILE_KIO */
-	}
-
-	if (!file->isOpen()) {
+	// Attempt to open the ROM file.
+	IRpFile *const file = openQUrl(items.at(0).url(), false);
+	if (!file) {
 		// Unable to open the file.
-		file->unref();
 		return;
 	}
 
@@ -108,6 +70,3 @@ RomPropertiesDialogPlugin::RomPropertiesDialogPlugin(KPropertiesDialog *props, c
 	// We don't need to hold on to it.
 	romData->unref();
 }
-
-RomPropertiesDialogPlugin::~RomPropertiesDialogPlugin()
-{ }

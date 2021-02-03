@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * ELF.cpp: Executable and Linkable Format reader.                         *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -11,8 +11,9 @@
 #include "data/ELFData.hpp"
 #include "elf_structs.h"
 
-// librpbase
+// librpbase, librpfile
 using namespace LibRpBase;
+using LibRpFile::IRpFile;
 
 // cinttypes was added in MSVC 2013.
 // For older versions, we'll need to manually define PRIX64.
@@ -43,10 +44,10 @@ namespace LibRomData {
 
 ROMDATA_IMPL(ELF)
 
-class ELFPrivate : public LibRpBase::RomDataPrivate
+class ELFPrivate final : public RomDataPrivate
 {
 	public:
-		ELFPrivate(ELF *q, LibRpBase::IRpFile *file);
+		ELFPrivate(ELF *q, LibRpFile::IRpFile *file);
 
 	private:
 		typedef RomDataPrivate super;
@@ -54,32 +55,33 @@ class ELFPrivate : public LibRpBase::RomDataPrivate
 
 	public:
 		// ELF format.
-		enum Elf_Format {
-			ELF_FORMAT_UNKNOWN	= -1,
-			ELF_FORMAT_32LSB	= 0,
-			ELF_FORMAT_64LSB	= 1,
-			ELF_FORMAT_32MSB	= 2,
-			ELF_FORMAT_64MSB	= 3,
+		enum class Elf_Format {
+			Unknown	= -1,
+
+			_32LSB	= 0,
+			_64LSB	= 1,
+			_32MSB	= 2,
+			_64MSB	= 3,
+
+			Max,
 
 			// Host/swap endian formats.
 
 #if SYS_BYTEORDER == SYS_LIL_ENDIAN
 			#define ELFDATAHOST ELFDATA2LSB
-			ELF_FORMAT_32HOST	= ELF_FORMAT_32LSB,
-			ELF_FORMAT_64HOST	= ELF_FORMAT_64LSB,
-			ELF_FORMAT_32SWAP	= ELF_FORMAT_32MSB,
-			ELF_FORMAT_64SWAP	= ELF_FORMAT_64MSB,
+			_32HOST	= _32LSB,
+			_64HOST	= _64LSB,
+			_32SWAP	= _32MSB,
+			_64SWAP	= _64MSB,
 #else /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
 			#define ELFDATAHOST ELFDATA2MSB
-			ELF_FORMAT_32HOST	= ELF_FORMAT_32MSB,
-			ELF_FORMAT_64HOST	= ELF_FORMAT_64MSB,
-			ELF_FORMAT_32SWAP	= ELF_FORMAT_32LSB,
-			ELF_FORMAT_64SWAP	= ELF_FORMAT_64LSB,
+			_32HOST	= _32MSB,
+			_64HOST	= _64MSB,
+			_32SWAP	= _32LSB,
+			_64SWAP	= _64LSB,
 #endif
-
-			ELF_FORMAT_MAX
 		};
-		int elfFormat;
+		Elf_Format elfFormat;
 
 		// ELF header.
 		union {
@@ -90,7 +92,7 @@ class ELFPrivate : public LibRpBase::RomDataPrivate
 
 		// Header location and size.
 		struct hdr_info_t {
-			int64_t addr;
+			off64_t addr;
 			uint64_t size;
 		};
 
@@ -165,7 +167,7 @@ class ELFPrivate : public LibRpBase::RomDataPrivate
 
 ELFPrivate::ELFPrivate(ELF *q, IRpFile *file)
 	: super(q, file)
-	, elfFormat(ELF_FORMAT_UNKNOWN)
+	, elfFormat(Elf_Format::Unknown)
 	, hasCheckedPH(false)
 	, isPie(false)
 	, isWiiU(false)
@@ -227,17 +229,17 @@ int ELFPrivate::checkProgramHeaders(void)
 	// PIE executables have a PT_INTERP header.
 	// Shared libraries do not.
 	// (NOTE: glibc's libc.so.6 *does* have PT_INTERP...)
-	int64_t e_phoff;
+	off64_t e_phoff;
 	unsigned int e_phnum;
 	unsigned int phsize;
 	uint8_t phbuf[sizeof(Elf64_Phdr)];
 
 	if (Elf_Header.primary.e_class == ELFCLASS64) {
-		e_phoff = static_cast<int64_t>(Elf_Header.elf64.e_phoff);
+		e_phoff = static_cast<off64_t>(Elf_Header.elf64.e_phoff);
 		e_phnum = Elf_Header.elf64.e_phnum;
 		phsize = sizeof(Elf64_Phdr);
 	} else {
-		e_phoff = static_cast<int64_t>(Elf_Header.elf32.e_phoff);
+		e_phoff = static_cast<off64_t>(Elf_Header.elf32.e_phoff);
 		e_phnum = Elf_Header.elf32.e_phnum;
 		phsize = sizeof(Elf32_Phdr);
 	}
@@ -281,7 +283,7 @@ int ELFPrivate::checkProgramHeaders(void)
 				// NOTE: Interpreter should be NULL-terminated.
 				if (info.size <= 256) {
 					char buf[256];
-					const int64_t prevoff = file->tell();
+					const off64_t prevoff = file->tell();
 					size = file->seekAndRead(info.addr, buf, info.size);
 					if (size != info.size) {
 						// Seek and/or read error.
@@ -336,17 +338,17 @@ int ELFPrivate::checkSectionHeaders(void)
 	hasCheckedSH = true;
 
 	// Read the section headers.
-	int64_t e_shoff;
+	off64_t e_shoff;
 	unsigned int e_shnum;
 	unsigned int shsize;
 	uint8_t shbuf[sizeof(Elf64_Shdr)];
 
 	if (Elf_Header.primary.e_class == ELFCLASS64) {
-		e_shoff = static_cast<int64_t>(Elf_Header.elf64.e_shoff);
+		e_shoff = static_cast<off64_t>(Elf_Header.elf64.e_shoff);
 		e_shnum = Elf_Header.elf64.e_shnum;
 		shsize = sizeof(Elf64_Shdr);
 	} else {
-		e_shoff = static_cast<int64_t>(Elf_Header.elf32.e_shoff);
+		e_shoff = static_cast<off64_t>(Elf_Header.elf32.e_shoff);
 		e_shnum = Elf_Header.elf32.e_shnum;
 		shsize = sizeof(Elf32_Shdr);
 	}
@@ -383,7 +385,7 @@ int ELFPrivate::checkSectionHeaders(void)
 			continue;
 
 		// Get the note address and size.
-		int64_t int_addr;
+		off64_t int_addr;
 		uint64_t int_size;
 		if (Elf_Header.primary.e_class == ELFCLASS64) {
 			const Elf64_Shdr *const shdr = reinterpret_cast<const Elf64_Shdr*>(shbuf);
@@ -414,7 +416,7 @@ int ELFPrivate::checkSectionHeaders(void)
 		}
 
 		uint8_t buf[256];
-		const int64_t prevoff = file->tell();
+		const off64_t prevoff = file->tell();
 		size = file->seekAndRead(int_addr, buf, int_size);
 		if (size != int_size) {
 			// Seek and/or read error.
@@ -751,7 +753,7 @@ ELF::ELF(IRpFile *file)
 	// d->fileType will be set later.
 	RP_D(ELF);
 	d->className = "ELF";
-	d->fileType = FTYPE_UNKNOWN;
+	d->fileType = FileType::Unknown;
 
 	if (!d->file) {
 		// Could not ref() the file handle.
@@ -764,8 +766,7 @@ ELF::ELF(IRpFile *file)
 	d->file->rewind();
 	size_t size = d->file->read(&d->Elf_Header, sizeof(d->Elf_Header));
 	if (size != sizeof(d->Elf_Header)) {
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
 
@@ -776,13 +777,12 @@ ELF::ELF(IRpFile *file)
 	info.header.pData = reinterpret_cast<const uint8_t*>(&d->Elf_Header);
 	info.ext = nullptr;	// Not needed for ELF.
 	info.szFile = 0;	// Not needed for ELF.
-	d->elfFormat = isRomSupported_static(&info);
+	d->elfFormat = static_cast<ELFPrivate::Elf_Format>(isRomSupported_static(&info));
 
-	d->isValid = (d->elfFormat >= 0);
+	d->isValid = ((int)d->elfFormat >= 0);
 	if (!d->isValid) {
 		// Not an ELF executable.
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
 
@@ -792,17 +792,16 @@ ELF::ELF(IRpFile *file)
 			// Should not get here...
 			assert(!"Should not get here...");
 			d->isValid = false;
-			d->elfFormat = ELFPrivate::ELF_FORMAT_UNKNOWN;
-			d->file->unref();
-			d->file = nullptr;
+			d->elfFormat = ELFPrivate::Elf_Format::Unknown;
+			UNREF_AND_NULL_NOCHK(d->file);
 			return;
 
-		case ELFPrivate::ELF_FORMAT_32HOST:
-		case ELFPrivate::ELF_FORMAT_64HOST:
+		case ELFPrivate::Elf_Format::_32HOST:
+		case ELFPrivate::Elf_Format::_64HOST:
 			// Host-endian. Nothing to do.
 			break;
 
-		case ELFPrivate::ELF_FORMAT_32SWAP: {
+		case ELFPrivate::Elf_Format::_32SWAP: {
 			// 32-bit, swapped endian.
 			// NOTE: Not swapping the magic number.
 			Elf32_Ehdr *const elf32 = &d->Elf_Header.elf32;
@@ -822,7 +821,7 @@ ELF::ELF(IRpFile *file)
 			break;
 		}
 
-		case ELFPrivate::ELF_FORMAT_64SWAP: {
+		case ELFPrivate::Elf_Format::_64SWAP: {
 			// 64-bit, swapped endian.
 			// NOTE: Not swapping the magic number.
 			Elf64_Ehdr *const elf64 = &d->Elf_Header.elf64;
@@ -849,7 +848,7 @@ ELF::ELF(IRpFile *file)
 	// Is this a Wii U executable?
 	if (primary->e_osabi == ELFOSABI_CAFEOS &&
 	    primary->e_osabiversion == 0xFE &&
-	    d->elfFormat == ELFPrivate::ELF_FORMAT_32MSB &&
+	    d->elfFormat == ELFPrivate::Elf_Format::_32MSB &&
 	    primary->e_machine == EM_PPC)
 	{
 		// OS ABI and version is 0xCAFE.
@@ -862,11 +861,12 @@ ELF::ELF(IRpFile *file)
 		switch (primary->e_type) {
 			default:
 				// Should not happen...
-				d->fileType = FTYPE_UNKNOWN;
+				d->fileType = FileType::Unknown;
 				break;
 			case 0xFE01:
 				// This matches some homebrew software.
-				d->fileType = FTYPE_EXECUTABLE;
+				d->fileType = FileType::Executable;
+				d->mimeType = "application/x-executable";	// unofficial
 				break;
 		}
 	} else {
@@ -875,26 +875,58 @@ ELF::ELF(IRpFile *file)
 		d->checkProgramHeaders();
 		d->checkSectionHeaders();
 
-		// Determine the file type.
+		// Determine the file and MIME types.
+		// NOTE: All of these MIME types are present on FreeDesktop.org,
+		// but they're technically "unofficial".
 		switch (d->Elf_Header.primary.e_type) {
 			default:
 				// Should not happen...
-				d->fileType = FTYPE_UNKNOWN;
+				d->fileType = FileType::Unknown;
 				break;
 			case ET_REL:
-				d->fileType = FTYPE_RELOCATABLE_OBJECT;
+				d->fileType = FileType::RelocatableObject;
+				d->mimeType = "application/x-object";
 				break;
 			case ET_EXEC:
-				d->fileType = FTYPE_EXECUTABLE;
+				d->fileType = FileType::Executable;
+				d->mimeType = "application/x-executable";
 				break;
 			case ET_DYN:
 				// This may either be a shared library or a
 				// position-independent executable.
-				d->fileType = (d->isPie ? FTYPE_EXECUTABLE : FTYPE_SHARED_LIBRARY);
+				if (d->isPie) {
+					d->fileType = FileType::Executable;
+					d->mimeType = "application/x-executable";
+				} else {
+					d->fileType = FileType::SharedLibrary;
+					d->mimeType = "application/x-sharedlib";
+				}
 				break;
 			case ET_CORE:
-				d->fileType = FTYPE_CORE_DUMP;
+				d->fileType = FileType::CoreDump;
+				d->mimeType = "application/x-core";
 				break;
+
+			// Special cases
+			case 0xFF80: {
+				// PS2 IOP Relocatable Executable
+				// This is basically a shared library.
+				// TODO: Use something like "isWiiU"?
+				const uint32_t e_flags = d->Elf_Header.elf32.e_flags;
+				if (d->elfFormat == ELFPrivate::Elf_Format::_32LSB &&
+				    primary->e_machine == EM_MIPS &&
+				    !(e_flags & 0x20) /* O32 */ &&
+				    (e_flags >> 28) == 0 /* MIPS-I */)
+				{
+					// This is likely for PS2 IOP.
+					d->fileType = FileType::SharedLibrary;
+					d->mimeType = "application/x-sharedlib";
+				} else {
+					// Unknown type...
+					d->fileType = FileType::Unknown;
+				}
+				break;
+			}
 		}
 	}
 }
@@ -917,11 +949,8 @@ int ELF::isRomSupported_static(const DetectInfo *info)
 	{
 		// Either no detection information was specified,
 		// or the header is too small.
-		return -1;
+		return static_cast<int>(ELFPrivate::Elf_Format::Unknown);
 	}
-
-	// TODO: Use 32-bit and/or 16-bit reads to improve performance.
-	// (Manual vectorization.)
 
 	const Elf_PrimaryEhdr *const pHdr =
 		reinterpret_cast<const Elf_PrimaryEhdr*>(info->header.pData);
@@ -929,22 +958,26 @@ int ELF::isRomSupported_static(const DetectInfo *info)
 	// Check the magic number.
 	if (pHdr->e_magic != cpu_to_be32(ELF_MAGIC)) {
 		// Invalid magic.
-		return -1;
+		return static_cast<int>(ELFPrivate::Elf_Format::Unknown);
 	}
 
 	// Verify the bitness and endianness fields.
+	ELFPrivate::Elf_Format elfFormat;
 	switch (pHdr->e_data) {
 		case ELFDATA2LSB:
 			// Little-endian.
 			switch (pHdr->e_class) {
 				case ELFCLASS32:
 					// 32-bit LSB.
-					return ELFPrivate::ELF_FORMAT_32LSB;
+					elfFormat = ELFPrivate::Elf_Format::_32LSB;
+					break;
 				case ELFCLASS64:
 					// 64-bit LSB.
-					return ELFPrivate::ELF_FORMAT_64LSB;
+					elfFormat = ELFPrivate::Elf_Format::_64LSB;
+					break;
 				default:
 					// Unknown bitness.
+					elfFormat = ELFPrivate::Elf_Format::Unknown;
 					break;
 			}
 			break;
@@ -954,23 +987,26 @@ int ELF::isRomSupported_static(const DetectInfo *info)
 			switch (pHdr->e_class) {
 				case ELFCLASS32:
 					// 32-bit MSB.
-					return ELFPrivate::ELF_FORMAT_32MSB;
+					elfFormat = ELFPrivate::Elf_Format::_32MSB;
+					break;
 				case ELFCLASS64:
 					// 64-bit MSB.
-					return ELFPrivate::ELF_FORMAT_64MSB;
+					elfFormat = ELFPrivate::Elf_Format::_64MSB;
+					break;
 				default:
 					// Unknown bitness.
+					elfFormat = ELFPrivate::Elf_Format::Unknown;
 					break;
 			}
 			break;
 
 		default:
 			// Unknown endianness.
+			elfFormat = ELFPrivate::Elf_Format::Unknown;
 			break;
 	}
 
-	// Not supported.
-	return -1;
+	return static_cast<int>(elfFormat);
 }
 
 /**
@@ -1054,6 +1090,7 @@ const char *const *ELF::supportedMimeTypes_static(void)
 {
 	static const char *const mimeTypes[] = {
 		// Unofficial MIME types from FreeDesktop.org.
+		"application/x-object",
 		"application/x-executable",
 		"application/x-sharedlib",
 		"application/x-core",
@@ -1084,7 +1121,7 @@ int ELF::loadFieldData(void)
 
 	// Primary ELF header.
 	const Elf_PrimaryEhdr *const primary = &d->Elf_Header.primary;
-	d->fields->reserve(10);	// Maximum of 11 fields.
+	d->fields->reserve(12);	// Maximum of 12 fields. [3 for machine subtype] [TODO verify this]
 
 	d->fields->reserveTabs(2);
 	d->fields->setTabName(0, "ELF");
@@ -1099,18 +1136,17 @@ int ELF::loadFieldData(void)
 		NOP_C_("RomData|ExecType", "64-bit Big-Endian"),
 	};
 	const char *const format_title = C_("ELF", "Format");
-	if (d->elfFormat > ELFPrivate::ELF_FORMAT_UNKNOWN &&
-	    d->elfFormat < ARRAY_SIZE(exec_type_tbl))
+	if (d->elfFormat > ELFPrivate::Elf_Format::Unknown &&
+	    (int)d->elfFormat < ARRAY_SIZE(exec_type_tbl))
 	{
 		d->fields->addField_string(format_title,
-			dpgettext_expr(RP_I18N_DOMAIN, "RomData|ExecType", exec_type_tbl[d->elfFormat]));
+			dpgettext_expr(RP_I18N_DOMAIN, "RomData|ExecType", exec_type_tbl[(int)d->elfFormat]));
 	}
 	else
 	{
 		// TODO: Show individual values.
 		// NOTE: This shouldn't happen...
-		d->fields->addField_string(format_title,
-			C_("RomData", "Unknown"));
+		d->fields->addField_string(format_title, C_("RomData", "Unknown"));
 	}
 
 	// CPU.
@@ -1120,16 +1156,22 @@ int ELF::loadFieldData(void)
 		d->fields->addField_string(cpu_title, cpu);
 	} else {
 		d->fields->addField_string(cpu_title,
-			rp_sprintf(C_("ELF", "Unknown (0x%04X)"), primary->e_machine));
+			rp_sprintf(C_("RomData", "Unknown (0x%04X)"), primary->e_machine));
 	}
 
 	// CPU flags.
 	// TODO: Needs testing.
-	const Elf32_Word flags = (primary->e_class == ELFCLASS64
-			? d->Elf_Header.elf64.e_flags
-			: d->Elf_Header.elf32.e_flags);
+	// TODO: Add more information from the following binutils ELF headers:
+	// - i370.h, frv.h, h8.h, ia64.h, iq2000.h, lm32.h, m68hc11.h, mep.h,
+	// - mn10300.h, mt.h, nds32.h, nfp.h, nios2.h, or1k.h, pj.h, ppc.h,
+	// - ppc64.h, rl78.h, rx.h, s390.h, score.h, sparc.h, tic6x.h, v850.h,
+	// - vax.h, visium.h, xgate.h, xtensa.h
+	Elf32_Word e_flags = (primary->e_class == ELFCLASS64
+		? d->Elf_Header.elf64.e_flags
+		: d->Elf_Header.elf32.e_flags);
 	switch (primary->e_machine) {
 		case EM_68K: {
+			// binutils: include/elf/m68k.h
 			if (primary->e_class != ELFCLASS32) {
 				// M68K is 32-bit only.
 				break;
@@ -1139,12 +1181,14 @@ int ELF::loadFieldData(void)
 			// NOTE: `file` can show both 68000 and CPU32
 			// at the same time, but that doesn't make sense.
 			const char *m68k_insn;
-			if (d->Elf_Header.elf32.e_flags == 0) {
+			if (e_flags == 0) {
 				m68k_insn = "68020";
-			} else if (d->Elf_Header.elf32.e_flags & 0x01000000) {
+			} else if (e_flags & 0x01000000) {
 				m68k_insn = "68000";
-			} else if (d->Elf_Header.elf32.e_flags & 0x00810000) {
+			} else if ((e_flags & 0x00810000) == 0x00810000) {
 				m68k_insn = "CPU32";
+			} else if (e_flags & 0x02000000) {
+				m68k_insn = "Fido";
 			} else {
 				m68k_insn = nullptr;
 			}
@@ -1179,19 +1223,12 @@ int ELF::loadFieldData(void)
 				NOP_C_("ELF|SPARC_MM", "Invalid"),
 			};
 			d->fields->addField_string(C_("ELF", "Memory Ordering"),
-				dpgettext_expr(RP_I18N_DOMAIN, "ELF|SPARC_MM", sparc_mm[flags & 3]));
+				dpgettext_expr(RP_I18N_DOMAIN, "ELF|SPARC_MM", sparc_mm[e_flags & 3]));
 
-			// SPARC CPU flags.
+			// SPARC CPU flags. (rshifted by 8)
 			static const char *const sparc_flags_names[] = {
-				// 0x1-0x8
-				nullptr, nullptr, nullptr, nullptr,
-				// 0x10-0x80
-				nullptr, nullptr, nullptr, nullptr,
 				// 0x100-0x800
-				NOP_C_("ELF|SPARCFlags", "SPARC V8+"),
-				NOP_C_("ELF|SPARCFlags", "UltraSPARC I"),
-				NOP_C_("ELF|SPARCFlags", "HaL R1"),
-				NOP_C_("ELF|SPARCFlags", "UltraSPARC III"),
+				"SPARC V8+", "UltraSPARC I", "HaL R1", "UltraSPARC III",
 				// 0x1000-0x8000
 				nullptr, nullptr, nullptr, nullptr,
 				// 0x10000-0x80000
@@ -1204,7 +1241,7 @@ int ELF::loadFieldData(void)
 			vector<string> *const v_sparc_flags_names = RomFields::strArrayToVector_i18n(
 				"ELF|SPARCFlags", sparc_flags_names, ARRAY_SIZE(sparc_flags_names));
 			d->fields->addField_bitfield(C_("ELF", "CPU Flags"),
-				v_sparc_flags_names, 4, flags);
+				v_sparc_flags_names, 4, (e_flags >> 8));
 			break;
 		}
 
@@ -1213,7 +1250,7 @@ int ELF::loadFieldData(void)
 			// 32-bit: O32 vs. N32
 			if (primary->e_class == ELFCLASS32) {
 				d->fields->addField_string(C_("ELF", "MIPS ABI"),
-					(d->Elf_Header.elf32.e_flags & 0x20) ? "N32" : "O32");
+					(e_flags & 0x20) ? "N32" : "O32");
 			}
 
 			// MIPS architecture level.
@@ -1222,7 +1259,7 @@ int ELF::loadFieldData(void)
 				"MIPS-V", "MIPS32", "MIPS64", "MIPS32 rel2",
 				"MIPS64 rel2", "MIPS32 rel6", "MIPS64 rel6"
 			};
-			const unsigned int level = (flags >> 28);
+			const unsigned int level = (e_flags >> 28);
 			const char *const cpu_level_title = C_("ELF", "CPU Level");
 			if (level < ARRAY_SIZE(mips_levels)) {
 				d->fields->addField_string(cpu_level_title, mips_levels[level]);
@@ -1232,35 +1269,66 @@ int ELF::loadFieldData(void)
 			}
 
 			// MIPS CPU flags.
+			// NOTE: Shifting ASE flags from bits 24-27 to bits 12-15.
+			const unsigned int mips_cpu_flags = (e_flags & 0xFFF) | ((e_flags >> 12) & 0xF000);
 			static const char *const mips_flags_names[] = {
 				// 0x1-0x8
 				NOP_C_("ELF|MIPSFlags", "No Reorder"),
-				NOP_C_("ELF|MIPSFlags", "PIC"),
-				NOP_C_("ELF|MIPSFlags", "CPIC"),
-				NOP_C_("ELF|MIPSFlags", "XGOT"),
+				"PIC", "CPIC", "XGOT",
 				// 0x10-0x80
-				NOP_C_("ELF|MIPSFlags", "64-bit Whirl"),
-				NOP_C_("ELF|MIPSFlags", "ABI2"),
-				NOP_C_("ELF|MIPSFlags", "ABI ON32"),
-				nullptr,
+				"UCODE", "ABI2", "ABI ON32",
+				NOP_C_("ELF|MIPSFlags", "Options First"),
 				// 0x100-0x400
+				"32-bit", "FP64", "NaN 2008",
 				nullptr,
-				NOP_C_("ELF|MIPSFlags", "FP64"),
-				NOP_C_("ELF|MIPSFlags", "NaN 2008"),
+				// 0x1000-0x8000 (shifted from 0x01000000-0x08000000)
+				nullptr, "MicroMIPS", "MIPS-16", "MDMX",
 			};
 			vector<string> *const v_mips_flags_names = RomFields::strArrayToVector_i18n(
 				"ELF|MIPSFlags", mips_flags_names, ARRAY_SIZE(mips_flags_names));
 			d->fields->addField_bitfield(C_("ELF", "CPU Flags"),
-				v_mips_flags_names, 4, (flags & ~0xF0000000));
+				v_mips_flags_names, 4, mips_cpu_flags);
 			break;
 		}
 
 		case EM_PARISC: {
-			// Flags indicate PA-RISC version.
-			d->fields->addField_string(C_("ELF", "PA-RISC Version"),
-				rp_sprintf("%s%s",
-					(flags >> 16 == 0x0214) ? "2.0" : "1.0",
-					(flags & 0x0008) ? " (LP64)" : ""));
+			// binutils: include/elf/hppa.h
+
+			// PA-RISC version.
+			string parisc_version;
+			parisc_version.reserve(12);
+			switch (e_flags & 0xFFFF) {
+				default:
+				case 0x020B:
+					parisc_version = "1.0";
+					break;
+				case 0x0210:
+					parisc_version = "1.1";
+					break;
+				case 0x0214:
+					parisc_version = "2.0";
+					break;
+			}
+			if (e_flags & 0x0008) {
+				parisc_version += " (LP64)";
+			}
+			d->fields->addField_string(C_("ELF", "PA-RISC Version"), parisc_version);
+
+			// PA-RISC CPU flags.
+			static const char *const parisc_flags_names[] = {
+				// 0x1-0x8
+				NOP_C_("ELF|PARISCFlags", "Trap NULL"),
+				"EXT", "LSB",
+				NOP_C_("ELF|PARISCFlags", "Wide"),
+				// 0x10-0x40
+				NOP_C_("ELF|PARISCFlags", "No KABP"),
+				nullptr,
+				NOP_C_("ELF|PARISCFlags", "Lazy Swap"),
+			};
+			vector<string> *const v_parisc_flags_names = RomFields::strArrayToVector_i18n(
+				"ELF|PARISCFlags", parisc_flags_names, ARRAY_SIZE(parisc_flags_names));
+			d->fields->addField_bitfield(C_("ELF", "CPU Flags"),
+				v_parisc_flags_names, 4, ((e_flags >> 16) & 0x7F));
 			break;
 		}
 
@@ -1271,35 +1339,344 @@ int ELF::loadFieldData(void)
 			}
 
 			// ARM EABI
-			string arm_eabi;
-			switch (d->Elf_Header.elf32.e_flags >> 24) {
-				case 0x04:
-					arm_eabi = "EABI4";
+			string arm_eabi = rp_sprintf("EABI%u", (e_flags >> 24));
+			if (e_flags & 0x00800000) {
+				arm_eabi += " BE8";
+			}
+			if (e_flags & 0x00400000) {
+				arm_eabi += " LE8";
+			}
+			d->fields->addField_string(C_("ELF", "ARM EABI"), arm_eabi);
+
+			// ARM CPU flags.
+			// NOTE: Most of these are deprecated. (pre-EABI)
+			static const char *const arm_flags_names[] = {
+				// 0x1-0x8
+				"RelExec", nullptr, "Interwork", "APCS 26",
+				// 0x10-0x80
+				NOP_C_("ELF|ARMFlags", "APCS Float"),
+				"PIC",
+				NOP_C_("ELF|ARMFlags", "Align8"),
+				NOP_C_("ELF|ARMFlags", "New ABI"),
+				// 0x100-0x800
+				NOP_C_("ELF|ARMFlags", "Old ABI"),
+				NOP_C_("ELF|ARMFlags", "Soft Float"),
+				NOP_C_("ELF|ARMFlags", "VFP Float"),
+				NOP_C_("ELF|ARMFlags", "Maverick Float"),
+			};
+			vector<string> *const v_arm_flags_names = RomFields::strArrayToVector_i18n(
+				"ELF|ARMFlags", arm_flags_names, ARRAY_SIZE(arm_flags_names));
+			d->fields->addField_bitfield(C_("ELF", "CPU Flags"),
+				v_arm_flags_names, 4, (e_flags & 0xFFF));
+			break;
+		}
+
+		case EM_OLD_ALPHA:
+		case EM_ALPHA: {
+			// binutils: include/elf/alpha.h
+
+			// Alpha CPU flags.
+			static const char *const alpha_flags_names[] = {
+				// 0x1-0x2
+				NOP_C_("ELF|AlphaFlags", "Addresses <= 2GB"),
+				NOP_C_("ELF|AlphaFlags", "Relaxed Code Movement"),
+			};
+			vector<string> *const v_alpha_flags_names = RomFields::strArrayToVector_i18n(
+				"ELF|AlphaFlags", alpha_flags_names, ARRAY_SIZE(alpha_flags_names));
+			d->fields->addField_bitfield(C_("ELF", "CPU Flags"),
+				v_alpha_flags_names, 2, (e_flags & 0x03));
+			break;
+		}
+
+		case EM_SH: {
+			// binutils: include/elf/sh.h
+
+			// CPU subtypes.
+			static const char *const superh_cpu_subtype_tbl[] = {
+				// 0-15
+				nullptr, "SH-1", "SH-2", "SH-3",
+				"SH-DSP", "SH3-DSP", "SH4AL-DSP", nullptr,
+				"SH-3E", "SH-4", "SH-5", "SH-2E",
+				"SH-4A", "SH-2A", nullptr, nullptr,
+
+				// 16-24
+				"SH-4 (No FPU)", "SH-4A (No FPU)", "SH-4 (No MMU or FPU)", "SH-2A (No FPU)",
+				"SH-3 (No MMU)", "SH-2A/SH-4 (No FPU)", "SH-2A/SH-3 (No FPU)", "SH-2A/SH-4",
+				"SH-2A/SH-3E",
+			};
+			const char *s_cpu_subtype = nullptr;
+			const uint8_t cpu_subtype = (e_flags & 0x1F);
+			if (cpu_subtype < ARRAY_SIZE(superh_cpu_subtype_tbl)) {
+				s_cpu_subtype = superh_cpu_subtype_tbl[cpu_subtype];
+			}
+			if (s_cpu_subtype) {
+				d->fields->addField_string(C_("ELF", "CPU Subtype"), s_cpu_subtype);
+			}
+
+			// SuperH CPU flags. (rshifted by 8)
+			static const char *const superh_flags_names[] = {
+				// 0x100-0x800
+				"PIC", nullptr, nullptr, nullptr,
+
+				// 0x1000-0x8000
+				nullptr, nullptr, nullptr, "FDPIC",
+			};
+			vector<string> *const v_superh_flags_names = RomFields::strArrayToVector(
+				superh_flags_names, ARRAY_SIZE(superh_flags_names));
+			d->fields->addField_bitfield(C_("ELF", "CPU Flags"),
+				v_superh_flags_names, 2, (e_flags >> 8));
+			break;
+		}
+
+		case EM_ARC: {
+			// binutils: include/elf/arc.h
+			// TODO: Other ARC variants?
+
+			// CPU subtypes.
+			static const char *const arc_cpu_subtypes[] = {
+				nullptr, nullptr, "ARC600", "ARC700",
+				"ARC601", "ARCv2EM", "ARCv2HS",
+			};
+			const uint8_t cpu_subtype = (e_flags & 0xFF);
+			const char *s_cpu_subtype = nullptr;
+			if (cpu_subtype < ARRAY_SIZE(arc_cpu_subtypes)) {
+				s_cpu_subtype = arc_cpu_subtypes[cpu_subtype];
+			}
+			if (s_cpu_subtype) {
+				d->fields->addField_string(C_("ELF", "CPU Subtype"), s_cpu_subtype);
+			}
+
+			// ARC Linux specific ABIs.
+			const uint8_t arc_linux_osabi = (e_flags >> 8) & 0x0F;
+			if (arc_linux_osabi != 1 && arc_linux_osabi <= 4) {
+				d->fields->addField_string(C_("ELF", "Linux OSABI"),
+					rp_sprintf("ARC Linux OSABI v%u", arc_linux_osabi));
+			}
+
+			// ARC CPU flags. (rshifted by 8)
+			static const char *const arc_flags_names[] = {
+				// 0x100
+				"PIC",
+			};
+			vector<string> *const v_arc_flags_names = RomFields::strArrayToVector(
+				arc_flags_names, ARRAY_SIZE(arc_flags_names));
+			d->fields->addField_bitfield(C_("ELF", "CPU Flags"),
+				v_arc_flags_names, 1, ((e_flags >> 8) & 1));
+			break;
+		}
+
+		case EM_COLDFIRE: {
+			// binutils: include/elf/m68k.h
+			if (primary->e_class != ELFCLASS32) {
+				// M68K is 32-bit only.
+				break;
+			}
+
+			// Instruction set.
+			// Top 24 bits should be either 0 or 0x00008000.
+			const uint32_t top24 = (e_flags & 0xFFFFFF00);
+			if (top24 != 0 && top24 != 0x00008000) {
+				// Incorrect flags.
+				break;
+			}
+
+			// ISA
+			static const char *const cf_isa_tbl[] = {
+				nullptr,
+				"ISA A (no div)", "ISA A", "ISA A+",
+				"ISA B (no USP)", "ISA B",
+				"ISA C", "ISA C (no div)",
+			};
+			const char *cf_isa = nullptr;
+			const uint8_t cf_isa_flags = (e_flags & 0x0F);
+			if (cf_isa_flags < ARRAY_SIZE(cf_isa_tbl)) {
+				cf_isa = cf_isa_tbl[cf_isa_flags];
+			}
+
+			// MAC
+			static const char *const cf_mac_tbl[] = {
+				nullptr, "MAC", "EMAC", "EMAC_B"
+			};
+			const char *cf_mac = nullptr;
+			const uint8_t cf_mac_flags = ((e_flags >> 4) & 0x03);
+			if (cf_mac_flags < ARRAY_SIZE(cf_mac_tbl)) {
+				cf_mac = cf_mac_tbl[cf_mac_flags];
+			}
+
+			string s_cf_isa;
+			if (cf_isa) {
+				s_cf_isa.assign(cf_isa);
+			}
+			if (cf_mac) {
+				if (s_cf_isa.empty()) {
+					s_cf_isa.assign(cf_mac);
+				} else {
+					s_cf_isa += " (";
+					s_cf_isa += cf_mac;
+					s_cf_isa += ')';
+				}
+			}
+
+			if (!s_cf_isa.empty()) {
+				d->fields->addField_string(C_("ELF", "ColdFire ISA"), s_cf_isa);
+			}
+			break;
+		}
+
+		case EM_AVR:
+		case EM_AVR_OLD: {
+			// NOTE: Using a heuristic instead of a lookup table.
+			char s_avr_subtype[16];
+			const uint8_t avr_subtype = (e_flags & 0xFF);
+			if (avr_subtype < 10) {
+				snprintf(s_avr_subtype, sizeof(s_avr_subtype), "AVR%u", avr_subtype);
+			} else if (avr_subtype < 100) {
+				snprintf(s_avr_subtype, sizeof(s_avr_subtype), "AVR%u.%u",
+					avr_subtype / 10, avr_subtype % 10);
+			} else if (avr_subtype == 100) {
+				strcpy(s_avr_subtype, "AVR Tiny");
+			} else if (avr_subtype < 110) {
+				snprintf(s_avr_subtype, sizeof(s_avr_subtype), "XMEGA%u",
+					(avr_subtype % 100));
+			} else {
+				s_avr_subtype[0] = '\0';
+			}
+
+			if (s_avr_subtype[0] != '\0') {
+				d->fields->addField_string(C_("ELF", "CPU Subtype"), s_avr_subtype);
+			}
+			break;
+		}
+
+		case EM_M32R:
+		case EM_CYGNUS_M32R: {
+			// binutils: include/elf/m32r.h
+			static const char *const m32r_insn_set_tbl[] = {
+				"m32r", "m32rx", "m32r2", nullptr
+			};
+			const char *const m32r_insn_set = m32r_insn_set_tbl[(e_flags >> 28) & 0x03];
+			if (m32r_insn_set) {
+				d->fields->addField_string(C_("ELF", "Instruction Set"), m32r_insn_set);
+			}
+
+			// M32R new instructions field.
+			static const char *const m32r_flags_names[] = {
+				// 0x1-0x8
+				"Parallel", "m32rx", "Bit Insns", "FP Insns",
+			};
+			vector<string> *const v_m32r_flags_names = RomFields::strArrayToVector_i18n(
+				"ELF|M32RFlags", m32r_flags_names, ARRAY_SIZE(m32r_flags_names));
+			d->fields->addField_bitfield(C_("ELF", "M32R New Insns"),
+				v_m32r_flags_names, 4, ((e_flags >> 16) & 0x0FFF));
+
+			// TODO: 4-bit m32r ignore to check field? (0x0000000F)
+			break;
+		}
+
+		case EM_MSP430: {
+			// binutils: include/elf/msp430.h
+			// NOTE: Using a heuristic instead of a lookup table.
+			char s_msp430_subtype[16];
+			const uint8_t msp430_subtype = (e_flags & 0xFF);
+			if (msp430_subtype == 45) {
+				strcpy(s_msp430_subtype, "MSP430X");
+			} else if (msp430_subtype == 110) {
+				strcpy(s_msp430_subtype, "MSP430x11x1");
+			} else if (msp430_subtype <= 54) {
+				snprintf(s_msp430_subtype, sizeof(s_msp430_subtype), "MSP430x%u", msp430_subtype);
+			} else {
+				s_msp430_subtype[0] = '\0';
+			}
+
+			if (s_msp430_subtype[0] != '\0') {
+				d->fields->addField_string(C_("ELF", "CPU Subtype"), s_msp430_subtype);
+			}
+			break;
+		}
+
+		case EM_BLACKFIN: {
+			// binutils: include/elf/bfin.h
+
+			// Blackfin CPU flags.
+			static const char *const blackfin_flags_names[] = {
+				// 0x1-0x8
+				"PIC", "FDPIC", nullptr, nullptr,
+				// 0x10-0x20
+				NOP_C_("ELF|BlackfinFlags", "Code in L1"),
+				NOP_C_("ELF|BlackfinFlags", "Data in L1"),
+			};
+			vector<string> *const v_blackfin_flags_names = RomFields::strArrayToVector_i18n(
+				"ELF|BlackfinFlags", blackfin_flags_names, ARRAY_SIZE(blackfin_flags_names));
+			d->fields->addField_bitfield(C_("ELF", "CPU Flags"),
+				v_blackfin_flags_names, 2, (e_flags & 0x33));
+			break;
+		}
+
+		case EM_M16C:
+		case EM_M32C:
+		case EM_M32C_OLD: {
+			// binutils: include/elf/m32c.h
+			// NOTE: This might only be valid for EM_M32C_OLD.
+			const char *m32c_subtype;
+			switch (e_flags & 0x7F) {
+				case 0x75:
+					m32c_subtype = "M16C";
 					break;
-				case 0x05:
-					arm_eabi = "EABI5";
+				case 0x78:
+					m32c_subtype = "M32C";
 					break;
 				default:
+					m32c_subtype = nullptr;
 					break;
 			}
-
-			if (d->Elf_Header.elf32.e_flags & 0x00800000) {
-				if (!arm_eabi.empty()) {
-					arm_eabi += ' ';
-				}
-				arm_eabi += "BE8";
+			if (m32c_subtype) {
+				d->fields->addField_string(C_("ELF", "CPU Subtype"), m32c_subtype);
 			}
+			break;
+		}
 
-			if (d->Elf_Header.elf32.e_flags & 0x00400000) {
-				if (!arm_eabi.empty()) {
-					arm_eabi += ' ';
-				}
-				arm_eabi += "LE8";
-			}
+		case EM_Z80: {
+			// binutils: include/elf/z80.h
+			static const char *const z80_insn_set_tbl[] = {
+				nullptr, "Z80", "Z180", "R800",
+				"eZ80 (Z80 mode)", "Sharp LR35902",
+			};
 
-			if (!arm_eabi.empty()) {
-				d->fields->addField_string(C_("ELF", "ARM EABI"), arm_eabi);
+			const char *z80_insn_set = nullptr;
+			e_flags &= 0xFF;
+			if (e_flags < ARRAY_SIZE(z80_insn_set_tbl)) {
+				z80_insn_set = z80_insn_set_tbl[e_flags];
+			} else if (e_flags == 0x84) {
+				z80_insn_set = "eZ80 (ADL mode)";
 			}
+			if (z80_insn_set) {
+				d->fields->addField_string(C_("ELF", "Instruction Set"), z80_insn_set);
+			}
+			break;
+		}
+
+		case EM_RISCV: {
+			// binutils: include/elf/riscv.h
+
+			// Floating-point ABI in use.
+			static const char *const riscv_fpabi_tbl[] = {
+				NOP_C_("ELF|RISCVFPABI", "Soft-Float"),
+				NOP_C_("ELF|RISCVFPABI", "Single-Float"),
+				NOP_C_("ELF|RISCVFPABI", "Double-Float"),
+				NOP_C_("ELF|RISCVFPABI", "Quad-Float"),
+			};
+			d->fields->addField_string(C_("ELF", "Floating-Point ABI"),
+				dpgettext_expr(RP_I18N_DOMAIN, "ELF|RISCVFPABI", riscv_fpabi_tbl[((e_flags & 0x0006) >> 1)]));
+
+			// RISC-V CPU flags.
+			static const char *const riscv_flags_names[] = {
+				// 0x1-0x8
+				"RVC", nullptr, nullptr, "RV32E",
+			};
+			vector<string> *const v_riscv_flags_names = RomFields::strArrayToVector(
+				riscv_flags_names, ARRAY_SIZE(riscv_flags_names));
+			d->fields->addField_bitfield(C_("ELF", "CPU Flags"),
+				v_riscv_flags_names, 2, (e_flags & 0x0F));
 			break;
 		}
 
@@ -1325,7 +1702,7 @@ int ELF::loadFieldData(void)
 	}
 
 	// Linkage. (Executables only)
-	if (d->fileType == FTYPE_EXECUTABLE) {
+	if (d->fileType == FileType::Executable) {
 		d->fields->addField_string(C_("ELF", "Linkage"),
 			d->pt_dynamic.addr != 0
 				? C_("ELF|Linkage", "Dynamic")
@@ -1346,7 +1723,7 @@ int ELF::loadFieldData(void)
 	// Also indicates PIE.
 	// NOTE: Formatting using 8 digits, since 64-bit executables
 	// usually have entry points within the first 4 GB.
-	if (d->fileType == FTYPE_EXECUTABLE) {
+	if (d->fileType == FileType::Executable) {
 		string entry_point;
 		if (primary->e_class == ELFCLASS64) {
 			entry_point = rp_sprintf("0x%08" PRIX64, d->Elf_Header.elf64.e_entry);

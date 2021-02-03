@@ -171,8 +171,11 @@ static inline void codePageToEncName(char *enc_name, size_t len, unsigned int cp
 	// Check for "special" code pages.
 	switch (cp) {
 		case CP_ACP:
+			// TODO: Get the system code page.
+			// Assuming cp1252 for now.
+			snprintf(enc_name, len, "CP1252");
+			break;
 		case CP_LATIN1:
-			// NOTE: Handling "ANSI" as Latin-1 for now.
 			snprintf(enc_name, len, "LATIN1");
 			break;
 		case CP_UTF8:
@@ -235,7 +238,8 @@ string cpN_to_utf8(unsigned int cp, const char *str, int len, unsigned int flags
 		if (cp == CP_SJIS) {
 			// libiconv's cp932 maps Shift-JIS 8160 to U+301C. This is expected
 			// behavior for Shift-JIS, but cp932 should map it to U+FF5E.
-			for (auto p = ret.begin(); p != ret.end(); ++p) {
+			const auto ret_end = ret.end();
+			for (auto p = ret.begin(); p != ret_end; ++p) {
 				if ((uint8_t)p[0] == 0xE3 && (uint8_t)p[1] == 0x80 && (uint8_t)p[2] == 0x9C) {
 					// Found a wave dash.
 					p[0] = (uint8_t)0xEF;
@@ -301,12 +305,12 @@ u16string cpN_to_utf16(unsigned int cp, const char *str, int len, unsigned int f
 		if (cp == CP_SJIS) {
 			// libiconv's cp932 maps Shift-JIS 8160 to U+301C. This is expected
 			// behavior for Shift-JIS, but cp932 should map it to U+FF5E.
-			for (auto p = ret.begin(); p != ret.end(); ++p) {
-				if (*p == 0x301C) {
+			std::for_each(ret.begin(), ret.end(), [](char16_t &p) {
+				if (p == 0x301C) {
 					// Found a wave dash.
-					*p = (char16_t)0xFF5E;
+					p = (char16_t)0xFF5E;
 				}
-			}
+			});
 		}
 #endif /* HAVE_ICONV_LIBICONV */
 	}

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * PartitionFile.hpp: IRpFile implementation for IPartition.               *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -22,18 +22,25 @@ namespace LibRpBase {
  * @param offset	[in] File starting offset.
  * @param size		[in] File size.
  */
-PartitionFile::PartitionFile(IDiscReader *partition, int64_t offset, int64_t size)
+PartitionFile::PartitionFile(IDiscReader *partition, off64_t offset, off64_t size)
 	: super()
-	, m_partition(partition)
 	, m_offset(offset)
 	, m_size(size)
 	, m_pos(0)
 {
-	if (!partition) {
+	if (partition) {
+		m_partition = partition->ref();
+	} else {
+		m_partition = nullptr;
 		m_lastError = EBADF;
 	}
 
 	// TODO: Reference counting?
+}
+
+PartitionFile::~PartitionFile()
+{
+	UNREF(m_partition);
 }
 
 /**
@@ -51,7 +58,7 @@ bool PartitionFile::isOpen(void) const
  */
 void PartitionFile::close(void)
 {
-	m_partition = nullptr;
+	UNREF_AND_NULL(m_partition);
 }
 
 /**
@@ -68,7 +75,7 @@ size_t PartitionFile::read(void *ptr, size_t size)
 	}
 
 	// Check if size is in bounds.
-	if (m_pos > m_size - static_cast<int64_t>(size)) {
+	if (m_pos > m_size - static_cast<off64_t>(size)) {
 		// Not enough data.
 		// Copy whatever's left in the file.
 		size = static_cast<size_t>(m_size - m_pos);
@@ -118,7 +125,7 @@ size_t PartitionFile::write(const void *ptr, size_t size)
  * @param pos File position.
  * @return 0 on success; -1 on error.
  */
-int PartitionFile::seek(int64_t pos)
+int PartitionFile::seek(off64_t pos)
 {
 	if (!m_partition) {
 		m_lastError = EBADF;
@@ -140,7 +147,7 @@ int PartitionFile::seek(int64_t pos)
  * Get the file position.
  * @return File position, or -1 on error.
  */
-int64_t PartitionFile::tell(void)
+off64_t PartitionFile::tell(void)
 {
 	if (!m_partition) {
 		m_lastError = EBADF;
@@ -155,7 +162,7 @@ int64_t PartitionFile::tell(void)
  * @param size New size. (default is 0)
  * @return 0 on success; -1 on error.
  */
-int PartitionFile::truncate(int64_t size)
+int PartitionFile::truncate(off64_t size)
 {
 	// Not supported.
 	RP_UNUSED(size);
@@ -169,7 +176,7 @@ int PartitionFile::truncate(int64_t size)
  * Get the file size.
  * @return File size, or negative on error.
  */
-int64_t PartitionFile::size(void)
+off64_t PartitionFile::size(void)
 {
 	if (!m_partition) {
 		m_lastError = EBADF;

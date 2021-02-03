@@ -35,13 +35,21 @@
 #endif /* HAVE_RP_PROPERTYSTORE_DEPS */
 #include "RP_ShellIconOverlayIdentifier.hpp"
 
+#include "AchWin32.hpp"
+#include "MessageWidget.hpp"
+#include "LanguageComboBox.hpp"
+
 // libwin32common
 using LibWin32Common::RegKey;
 
 // rp_image backend registration.
+#include "librptexture/img/GdiplusHelper.hpp"
 #include "librptexture/img/RpGdiplusBackend.hpp"
 using LibRpTexture::RpGdiplusBackend;
 using LibRpTexture::rp_image;
+
+// GDI+ token.
+static ULONG_PTR gdipToken = 0;
 
 // For file extensions.
 #include "libromdata/RomDataFactory.hpp"
@@ -50,12 +58,13 @@ using LibRomData::RomDataFactory;
 // C++ STL classes.
 using std::list;
 using std::string;
-using std::unique_ptr;
 using std::vector;
 using std::wstring;
 
-extern TCHAR dll_filename[];
-TCHAR dll_filename[MAX_PATH];
+extern "C" {
+	extern TCHAR dll_filename[];
+	TCHAR dll_filename[MAX_PATH];
+}
 
 // Program ID for COM object registration.
 extern const TCHAR RP_ProgID[];
@@ -84,7 +93,7 @@ BOOL WINAPI DllMain(HINSTANCE hInstance, DWORD dwReason, LPVOID /*lpReserved*/)
 			// Get the DLL filename.
 			SetLastError(ERROR_SUCCESS);
 			DWORD dwResult = GetModuleFileName(hInstance,
-				dll_filename, ARRAY_SIZE(dll_filename));
+				dll_filename, _countof(dll_filename));
 			if (dwResult == 0 || GetLastError() != ERROR_SUCCESS) {
 				// Cannot get the DLL filename.
 				// TODO: Windows XP doesn't SetLastError() if the
@@ -101,9 +110,11 @@ BOOL WINAPI DllMain(HINSTANCE hInstance, DWORD dwReason, LPVOID /*lpReserved*/)
 			DisableThreadLibraryCalls(hInstance);
 #endif /* !defined(_MSC_VER) || defined(_DLL) */
 
-			// Register RpGdiplusBackend.
-			// TODO: Static initializer somewhere?
+			// Register RpGdiplusBackend and AchWin32.
 			rp_image::setBackendCreatorFn(RpGdiplusBackend::creator_fn);
+#if defined(ENABLE_ACHIEVEMENTS)
+			AchWin32::instance();
+#endif /* ENABLE_ACHIEVEMENTS */
 			break;
 		}
 
@@ -125,7 +136,28 @@ BOOL WINAPI DllMain(HINSTANCE hInstance, DWORD dwReason, LPVOID /*lpReserved*/)
  */
 STDAPI DllCanUnloadNow(void)
 {
-	return (LibWin32Common::ComBase_isReferenced() ? S_FALSE : S_OK);
+	if (LibWin32Common::ComBase_isReferenced()) {
+		// Referenced by a COM object.
+		return S_FALSE;
+	}
+
+	if (AchWin32::instance()->isAnyPopupStillActive()) {
+		// Achievement window is still visible.
+		return S_FALSE;
+	}
+
+	// Unregister window classes.
+	MessageWidgetUnregister();
+	LanguageComboBoxUnregister();
+
+	// Shut down GDI+ if it was initialized.
+	if (gdipToken != 0) {
+		GdiplusHelper::ShutdownGDIPlus(gdipToken);
+		gdipToken = 0;
+	}
+
+	// Not in use.
+	return S_OK;
 }
 
 /**
@@ -154,28 +186,38 @@ _Check_return_ STDAPI DllGetClassObject(_In_ REFCLSID rclsid, _In_ REFIID riid, 
 	}
 #endif /* defined(_MSC_VER) && defined(ENABLE_NLS) */
 
-	// Check for supported classes.
-	HRESULT hr = E_FAIL;
-#define CHECK_INTERFACE(Interface) \
-	if (IsEqualIID(rclsid, CLSID_##Interface)) { \
-		/* Create a new class factory for this Interface. */ \
-		RP_ClassFactory<Interface> *pCF = new RP_ClassFactory<Interface>(); \
-		hr = pCF->QueryInterface(riid, ppv); \
-		pCF->Release(); \
+	// Initialize GDI+.
+	if (gdipToken == 0) {
+		gdipToken = GdiplusHelper::InitGDIPlus();
+		assert(gdipToken != 0);
+		if (gdipToken == 0) {
+			return E_OUTOFMEMORY;
+		}
 	}
-	CHECK_INTERFACE(RP_ExtractIcon)
-	else CHECK_INTERFACE(RP_ExtractImage)
-	else CHECK_INTERFACE(RP_ShellPropSheetExt)
-	else CHECK_INTERFACE(RP_ThumbnailProvider)
+
+	// Check for supported classes.
+	HRESULT hr = CLASS_E_CLASSNOTAVAILABLE;
+	try {
+#define CHECK_INTERFACE(Interface) \
+		if (IsEqualIID(rclsid, CLSID_##Interface)) { \
+			/* Create a new class factory for this Interface. */ \
+			RP_ClassFactory<Interface> *pCF = new RP_ClassFactory<Interface>(); \
+			hr = pCF->QueryInterface(riid, ppv); \
+			pCF->Release(); \
+		}
+
+		CHECK_INTERFACE(RP_ExtractIcon)
+		else CHECK_INTERFACE(RP_ExtractImage)
+		else CHECK_INTERFACE(RP_ShellPropSheetExt)
+		else CHECK_INTERFACE(RP_ThumbnailProvider)
 #ifdef HAVE_RP_PROPERTYSTORE_DEPS
-	else CHECK_INTERFACE(RP_PropertyStore)
+		else CHECK_INTERFACE(RP_PropertyStore)
 #endif /* HAVE_RP_PROPERTYSTORE_DEPS */
 #ifdef ENABLE_OVERLAY_ICON_HANDLER
-	else CHECK_INTERFACE(RP_ShellIconOverlayIdentifier)
+		else CHECK_INTERFACE(RP_ShellIconOverlayIdentifier)
 #endif /* ENABLE_OVERLAY_ICON_HANDLER */
-	else {
-		// Class not available.
-		hr = CLASS_E_CLASSNOTAVAILABLE;
+	} catch (const std::bad_alloc&) {
+		hr = E_OUTOFMEMORY;
 	}
 
 	if (hr != S_OK) {
@@ -221,24 +263,33 @@ static LONG RegisterFileType(RegKey &hkcr, RegKey *pHklm, const RomDataFactory::
 	lResult = RP_ShellPropSheetExt::UnregisterFileType(hkcr, t_ext.c_str());
 	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
 
-	// Register as "OpenWithProgids/rom-properties".
-	// This is needed for RP_PropertyStore.
-	RegKey hkey_ext(hkcr, t_ext.c_str(), KEY_READ|KEY_WRITE, true);
-	if (!hkey_ext.isOpen())
-		return SELFREG_E_CLASS;
-	RegKey hkey_OpenWithProgids(hkey_ext, _T("OpenWithProgids"), KEY_READ|KEY_WRITE, true);
-	if (!hkey_ext.isOpen())
-		return SELFREG_E_CLASS;
-	hkey_OpenWithProgids.write(RP_ProgID, nullptr);
-	hkey_OpenWithProgids.close();
+	// If "OpenWithProgids/rom-properties" is set, remove it.
+	// We're setting RP_PropertyStore settings per file extension
+	// to prevent issues opening .cmd files on some versions of
+	// Windows 10. (Works on Win7 SP1 and Win10 LTSC 1809...)
+	RegKey hkey_ext(hkcr, t_ext.c_str(), KEY_READ|KEY_WRITE, false);
+	if (hkey_ext.isOpen()) {
+		RegKey hkey_OpenWithProgids(hkey_ext, _T("OpenWithProgids"), KEY_READ|KEY_WRITE, false);
+		if (hkey_OpenWithProgids.isOpen()) {
+			hkey_OpenWithProgids.deleteValue(RP_ProgID);
+			if (hkey_OpenWithProgids.isKeyEmpty()) {
+				// OpenWithProgids is empty. Delete it.
+				hkey_OpenWithProgids.close();
+				hkey_ext.deleteSubKey(_T("OpenWithProgids"));
+			}
+		}
+	}
 	hkey_ext.close();
 
 #ifdef HAVE_RP_PROPERTYSTORE_DEPS
 	// Register the property store handler.
-	if (pHklm && (extInfo.attrs & RomDataFactory::RDA_HAS_METADATA)) {
-		lResult = RP_PropertyStore::RegisterFileType(*pHklm, t_ext.c_str());
+	if (extInfo.attrs & RomDataFactory::RDA_HAS_METADATA) {
+		lResult = RP_PropertyStore::RegisterFileType(hkcr, pHklm, t_ext.c_str());
 		if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
 	}
+#else /* HAVE_RP_PROPERTYSTORE_DEPS */
+	// MinGW-w64: Suppress pHklm warnings, since it's unused.
+	((void)pHklm);
 #endif /* HAVE_RP_PROPERTYSTORE_DEPS */
 
 	if (extInfo.attrs & RomDataFactory::RDA_HAS_THUMBNAIL) {
@@ -312,10 +363,11 @@ static LONG UnregisterFileType(RegKey &hkcr, RegKey *pHklm, const RomDataFactory
 	lResult = RP_ThumbnailProvider::UnregisterFileType(hkcr, t_ext.c_str());
 	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
 #ifdef HAVE_RP_PROPERTYSTORE_DEPS
-	if (pHklm) {
-		lResult = RP_PropertyStore::UnregisterFileType(*pHklm, t_ext.c_str());
-		if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
-	}
+	lResult = RP_PropertyStore::UnregisterFileType(hkcr, pHklm, t_ext.c_str());
+	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
+#else /* HAVE_RP_PROPERTYSTORE_DEPS */
+	// MinGW-w64: Suppress pHklm warnings, since it's unused.
+	((void)pHklm);
 #endif /* HAVE_RP_PROPERTYSTORE_DEPS */
 
 	// Delete keys if they're empty.
@@ -394,10 +446,10 @@ static tstring GetUserFileAssoc(const tstring &sid, const char *ext)
 	// - UserChoice: 11 characters
 	// - Extra: 16 characters
 	TCHAR regPath[288];
-	int len = _sntprintf_s(regPath, ARRAY_SIZE(regPath),
+	int len = _sntprintf_s(regPath, _countof(regPath),
 		_T("%s\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\FileExts\\%s\\UserChoice"),
 		sid.c_str(), U82T_c(ext));
-	if (len <= 0 || len >= ARRAY_SIZE(regPath)) {
+	if (len <= 0 || len >= _countof(regPath)) {
 		// Buffer isn't large enough...
 		return tstring();
 	}
@@ -584,11 +636,27 @@ static inline bool process_HKU_subkey(const tstring& subKey)
 }
 
 /**
+ * Check if the DLL is located in %SystemRoot%.
+ * @return True if it is; false if it isn't.
+ */
+static inline bool checkDirectory(void)
+{
+	TCHAR szWinPath[MAX_PATH];
+	UINT len = GetWindowsDirectory(szWinPath, _countof(szWinPath));
+	return !_tcsnicmp(szWinPath, dll_filename, len);
+}
+
+/**
  * Register the DLL.
  */
 STDAPI DllRegisterServer(void)
 {
 	LONG lResult;
+
+	if (checkDirectory()) {
+		// DLL is in %SystemRoot%. This isn't allowed.
+		return E_FAIL;
+	}
 
 	// Register the COM objects.
 	lResult = RP_ExtractIcon::RegisterCLSID();
@@ -626,46 +694,38 @@ STDAPI DllRegisterServer(void)
 	RegKey hklm(HKEY_LOCAL_MACHINE, nullptr, KEY_READ, false);
 	if (!hklm.isOpen()) return SELFREG_E_CLASS;
 
-	// Create a ProgID.
-	RegKey hkey_progID(HKEY_CLASSES_ROOT, RP_ProgID, KEY_READ|KEY_WRITE, true);
-	if (!hkey_progID.isOpen()) return SELFREG_E_CLASS;
-	// Delete the default value, since we don't want to override
-	// the default file type description.
-	hkey_progID.deleteValue(nullptr);
+	// Remove the ProgID if it exists, since we aren't using it anymore.
+	hkcr.deleteSubKey(RP_ProgID);
 
-	// Register the classes with the ProgID.
-	// NOTE: Skipping RP_PropertyStore.
-	lResult = RP_ExtractIcon::RegisterFileType(hkcr, RP_ProgID);
-	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
-	lResult = RP_ExtractImage::RegisterFileType(hkcr, RP_ProgID);
-	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
-	lResult = RP_ThumbnailProvider::RegisterFileType(hkcr, RP_ProgID);
-	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
-
-	// Register all supported file types and associate them with our ProgID.
+	// Register all supported file extensions.
 	const vector<RomDataFactory::ExtInfo> &vec_exts = RomDataFactory::supportedFileExtensions();
-	for (auto ext_iter = vec_exts.cbegin(); ext_iter != vec_exts.cend(); ++ext_iter) {
+	const auto vec_exts_cend = vec_exts.cend();
+	const auto user_SIDs_cend = user_SIDs.cend();
+	for (auto ext_iter = vec_exts.cbegin(); ext_iter != vec_exts_cend; ++ext_iter) {
 		// Register the file type handlers for this file extension globally.
 		lResult = RegisterFileType(hkcr, &hklm, *ext_iter);
 		if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
 
 		// Register user file types if necessary.
-		for (auto sid_iter = user_SIDs.cbegin(); sid_iter != user_SIDs.cend(); ++sid_iter) {
+		for (auto sid_iter = user_SIDs.cbegin(); sid_iter != user_SIDs_cend; ++sid_iter) {
 			lResult = RegisterUserFileType(*sid_iter, *ext_iter);
 			if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
 		}
 	}
 
-	// NOTE: "*.vxd" was accidentally used in LibRomData::EXE.
-	// Manually deleting it here.
+	// NOTE: Some extensions were accidentally registered in previous versions:
+	// - LibRomData::EXE: "*.vxd"
+	// - LibRomData::MachO: ".dylib.bundle" [v1.4]
+	// These extensions will be explicitly deleted here.
 	// NOTE: Ignoring any errors to prevent `regsvr32` from failing.
 	hkcr.deleteSubKey(_T("*.vxd"));
-	for (auto sid_iter = user_SIDs.cbegin(); sid_iter != user_SIDs.cend(); ++sid_iter) {
+	hkcr.deleteSubKey(_T(".dylib.bundle"));
+	for (auto sid_iter = user_SIDs.cbegin(); sid_iter != user_SIDs_cend; ++sid_iter) {
 		TCHAR regPath[288];
-		int len = _sntprintf_s(regPath, ARRAY_SIZE(regPath),
+		int len = _sntprintf_s(regPath, _countof(regPath),
 			_T("%s\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\FileExts"),
 			sid_iter->c_str());
-		if (len <= 0 || len >= ARRAY_SIZE(regPath)) {
+		if (len <= 0 || len >= _countof(regPath)) {
 			// Buffer isn't large enough...
 			continue;
 		}
@@ -674,6 +734,7 @@ STDAPI DllRegisterServer(void)
 		if (!hkuvxd.isOpen() || hkuvxd.lOpenRes() == ERROR_FILE_NOT_FOUND)
 			continue;
 		hkuvxd.deleteSubKey(_T("*.vxd"));
+		hkuvxd.deleteSubKey(_T(".dylib.bundle"));
 	}
 
 	// Register RP_ShellPropSheetExt for all file types.
@@ -733,39 +794,35 @@ STDAPI DllUnregisterServer(void)
 	RegKey hklm(HKEY_LOCAL_MACHINE, nullptr, KEY_READ, false);
 	if (!hklm.isOpen()) return SELFREG_E_CLASS;
 
-	// Unregister the classes from the ProgID.
-	// NOTE: Skipping RP_PropertyStore.
-	lResult = RP_ExtractIcon::UnregisterFileType(hkcr, RP_ProgID);
-	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
-	lResult = RP_ExtractImage::UnregisterFileType(hkcr, RP_ProgID);
-	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
-	lResult = RP_ThumbnailProvider::UnregisterFileType(hkcr, RP_ProgID);
-	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
-
 	// Unegister all supported file types.
-	vector<RomDataFactory::ExtInfo> vec_exts = RomDataFactory::supportedFileExtensions();
-	for (auto ext_iter = vec_exts.cbegin(); ext_iter != vec_exts.cend(); ++ext_iter) {
+	const vector<RomDataFactory::ExtInfo> vec_exts = RomDataFactory::supportedFileExtensions();
+	const auto vec_exts_cend = vec_exts.cend();
+	const auto user_SIDs_cend = user_SIDs.cend();
+	for (auto ext_iter = vec_exts.cbegin(); ext_iter != vec_exts_cend; ++ext_iter) {
 		// Unregister the file type handlers for this file extension globally.
 		lResult = UnregisterFileType(hkcr, &hklm, *ext_iter);
 		if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
 
 		// Unregister user file types if necessary.
-		for (auto sid_iter = user_SIDs.cbegin(); sid_iter != user_SIDs.cend(); ++sid_iter) {
+		for (auto sid_iter = user_SIDs.cbegin(); sid_iter != user_SIDs_cend; ++sid_iter) {
 			lResult = UnregisterUserFileType(*sid_iter, *ext_iter);
 			if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
 		}
 	}
 
-	// NOTE: "*.vxd" was accidentally used in LibRomData::EXE.
-	// Manually deleting it here.
+	// NOTE: Some extensions were accidentally registered in previous versions:
+	// - LibRomData::EXE: "*.vxd"
+	// - LibRomData::MachO: ".dylib.bundle" [v1.4]
+	// These extensions will be explicitly deleted here.
 	// NOTE: Ignoring any errors to prevent `regsvr32` from failing.
 	hkcr.deleteSubKey(_T("*.vxd"));
-	for (auto sid_iter = user_SIDs.cbegin(); sid_iter != user_SIDs.cend(); ++sid_iter) {
+	hkcr.deleteSubKey(_T(".dylib.bundle"));
+	for (auto sid_iter = user_SIDs.cbegin(); sid_iter != user_SIDs_cend; ++sid_iter) {
 		TCHAR regPath[288];
-		int len = _sntprintf_s(regPath, ARRAY_SIZE(regPath),
+		int len = _sntprintf_s(regPath, _countof(regPath),
 			_T("%s\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\FileExts"),
 			sid_iter->c_str());
-		if (len <= 0 || len >= ARRAY_SIZE(regPath)) {
+		if (len <= 0 || len >= _countof(regPath)) {
 			// Buffer isn't large enough...
 			continue;
 		}
@@ -774,6 +831,7 @@ STDAPI DllUnregisterServer(void)
 		if (!hkuvxd.isOpen() || hkuvxd.lOpenRes() == ERROR_FILE_NOT_FOUND)
 			continue;
 		hkuvxd.deleteSubKey(_T("*.vxd"));
+		hkcr.deleteSubKey(_T(".dylib.bundle"));
 	}
 
 	// Unregister RP_ShellPropSheetExt for all file types.
@@ -785,13 +843,8 @@ STDAPI DllUnregisterServer(void)
 	lResult = RP_ShellPropSheetExt::UnregisterFileType(hkcr, _T("Drive"));
 	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
 
-	// Remove the ProgID if it's empty.
-	RegKey hkey_progID(hkcr, RP_ProgID, KEY_READ|KEY_WRITE, false);
-	if (hkey_progID.isOpen() && hkey_progID.isKeyEmpty()) {
-		// No subkeys. Delete this key.
-		hkey_progID.close();
-		hkcr.deleteSubKey(RP_ProgID);
-	}
+	// Remove the ProgID.
+	hkcr.deleteSubKey(RP_ProgID);
 
 	// Notify the shell that file associations have changed.
 	// Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/cc144148(v=vs.85).aspx

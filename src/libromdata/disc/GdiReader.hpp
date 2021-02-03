@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * GdiReader.hpp: GD-ROM reader for Dreamcast GDI images.                  *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -10,10 +10,6 @@
 #define __ROMPROPERTIES_LIBROMDATA_DISC_GDIREADER_HPP__
 
 #include "librpbase/disc/SparseDiscReader.hpp"
-
-namespace LibRpBase {
-	class IRpFile;
-}
 
 namespace LibRomData {
 
@@ -30,7 +26,7 @@ class GdiReader : public LibRpBase::SparseDiscReader
 		 * unref()'d by the caller afterwards.
 		 * @param file File to read from.
 		 */
-		explicit GdiReader(LibRpBase::IRpFile *file);
+		explicit GdiReader(LibRpFile::IRpFile *file);
 
 	private:
 		typedef SparseDiscReader super;
@@ -47,6 +43,7 @@ class GdiReader : public LibRpBase::SparseDiscReader
 		 * @param szHeader Size of header.
 		 * @return Class-specific disc format ID (>= 0) if supported; -1 if not.
 		 */
+		ATTR_ACCESS_SIZE(read_only, 1, 2)
 		static int isDiscSupported_static(const uint8_t *pHeader, size_t szHeader);
 
 		/**
@@ -55,6 +52,7 @@ class GdiReader : public LibRpBase::SparseDiscReader
 		 * @param szHeader Size of header.
 		 * @return Class-specific disc format ID (>= 0) if supported; -1 if not.
 		 */
+		ATTR_ACCESS_SIZE(read_only, 2, 3)
 		int isDiscSupported(const uint8_t *pHeader, size_t szHeader) const final;
 
 	protected:
@@ -68,7 +66,7 @@ class GdiReader : public LibRpBase::SparseDiscReader
 		 * @param blockIdx	[in] Block index.
 		 * @return Physical block address. (-1 due to not being implemented)
 		 */
-		int64_t getPhysBlockAddr(uint32_t blockIdx) const final;
+		off64_t getPhysBlockAddr(uint32_t blockIdx) const final;
 
 		/**
 		 * Read the specified block.
@@ -77,12 +75,13 @@ class GdiReader : public LibRpBase::SparseDiscReader
 		 * For a full block, set pos = 0 and size = block_size.
 		 *
 		 * @param blockIdx	[in] Block index.
-		 * @param ptr		[out] Output data buffer.
 		 * @param pos		[in] Starting position. (Must be >= 0 and <= the block size!)
+		 * @param ptr		[out] Output data buffer.
 		 * @param size		[in] Amount of data to read, in bytes. (Must be <= the block size!)
 		 * @return Number of bytes read, or -1 if the block index is invalid.
 		 */
-		int readBlock(uint32_t blockIdx, void *ptr, int pos, size_t size) final;
+		ATTR_ACCESS_SIZE(write_only, 4, 5)
+		int readBlock(uint32_t blockIdx, int pos, void *ptr, size_t size) final;
 
 	public:
 		/** GDI-specific functions. **/

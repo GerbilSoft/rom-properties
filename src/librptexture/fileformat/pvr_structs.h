@@ -2,21 +2,19 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * pvr_structs.h: Sega PVR image format data structures.                   *
  *                                                                         *
- * Copyright (c) 2017-2019 by David Korth.                                 *
+ * Copyright (c) 2017-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #ifndef __ROMPROPERTIES_LIBRPTEXTURE_FILEFORMAT_PVR_STRUCTS_H__
 #define __ROMPROPERTIES_LIBRPTEXTURE_FILEFORMAT_PVR_STRUCTS_H__
 
-#include "librpbase/common.h"
 #include <stdint.h>
+#include "common.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-#pragma pack(1)
 
 /**
  * References:
@@ -33,7 +31,7 @@ extern "C" {
  */
 #define PVR_MAGIC_GBIX 'GBIX'
 #define PVR_MAGIC_GCIX 'GCIX'
-typedef struct PACKED _PVR_GBIX_Header {
+typedef struct _PVR_GBIX_Header {
 	uint32_t magic;		// [0x000] 'GBIX' (or 'GCIX' in Wii games)
 	uint32_t length;	// [0x004] Length of GBIX header. (***ALWAYS*** little-endian!)
 	uint32_t index;		// [0x008] Global index.
@@ -42,7 +40,7 @@ typedef struct PACKED _PVR_GBIX_Header {
 	// It usually does, so length == 8.
 	// Otherwise, length == 4.
 } PVR_GBIX_Header;
-ASSERT_STRUCT(PVR_GBIX_Header, 12);
+ASSERT_STRUCT(PVR_GBIX_Header, 3*sizeof(uint32_t));
 
 /**
  * Common PVR header.
@@ -52,7 +50,7 @@ ASSERT_STRUCT(PVR_GBIX_Header, 12);
 #define PVR_MAGIC_PVRT 'PVRT'
 #define PVR_MAGIC_GVRT 'GVRT'
 #define PVR_MAGIC_PVRX 'PVRX'
-typedef struct PACKED _PVR_Header {
+typedef struct _PVR_Header {
 	uint32_t magic;		// [0x000] 'PVRT', 'GVRT', or 'PVRX'
 	uint32_t length;	// [0x004] Length of the file, starting at px_format.
 	union {
@@ -157,8 +155,6 @@ typedef enum {
 	GVR_IMG_CI8		= 0x09,
 	GVR_IMG_DXT1		= 0x0E,
 } GVR_Image_Data_Type_t;
-
-#pragma pack()
 
 #ifdef __cplusplus
 }

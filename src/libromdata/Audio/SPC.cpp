@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * SPC.hpp: SPC audio reader.                                              *
  *                                                                         *
- * Copyright (c) 2018-2019 by David Korth.                                 *
+ * Copyright (c) 2018-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -10,8 +10,9 @@
 #include "SPC.hpp"
 #include "spc_structs.h"
 
-// librpbase
+// librpbase, librpfile
 using namespace LibRpBase;
+using LibRpFile::IRpFile;
 
 // C++ STL classes.
 using std::string;
@@ -23,7 +24,7 @@ namespace LibRomData {
 
 ROMDATA_IMPL(SPC)
 
-class SPCPrivate : public RomDataPrivate
+class SPCPrivate final : public RomDataPrivate
 {
 	public:
 		SPCPrivate(SPC *q, IRpFile *file);
@@ -144,7 +145,7 @@ class SPCPrivate : public RomDataPrivate
 			{
 				val_t val((unsigned int)strs.size());
 				val.isStrIdx = true;
-				strs.push_back(str);
+				strs.emplace_back(str);
 				map.insert(std::make_pair(key, val));
 			}
 
@@ -184,8 +185,6 @@ SPCPrivate::SPCPrivate(SPC *q, IRpFile *file)
 SPCPrivate::TagData SPCPrivate::parseTags(void)
 {
 	TagData kv;
-	// TODO: BEFORE REAL COMMIT, reserve space
-	// also for other parseTags e.g. in PSF
 
 	if (spcHeader.has_id666 != 26) {
 		// No ID666 tags.
@@ -267,27 +266,22 @@ SPCPrivate::TagData SPCPrivate::parseTags(void)
 		// Text version.
 
 		// Dump date. (MM/DD/YYYY; also allowing MM-DD-YYYY)
+		// Convert to UNIX time.
 		// NOTE: Might not be NULL-terminated...
 		// TODO: Untested.
 		char dump_date[11];
 		memcpy(dump_date, id666->text.dump_date, sizeof(dump_date));
 		dump_date[sizeof(dump_date)-1] = '\0';
 
-		unsigned int month, day, year;
-		int s = sscanf("%02u/%02u/%04u", dump_date, &month, &day, &year);
+		struct tm ymdtime;
+		char chr;
+		int s = sscanf("%02u/%02u/%04u%c", dump_date, &ymdtime.tm_mon, &ymdtime.tm_mday, &ymdtime.tm_year, &chr);
 		if (s != 3) {
-			s = sscanf("%02u-%02u-%04u", dump_date, &month, &day, &year);
+			s = sscanf("%02u-%02u-%04u%c", dump_date, &ymdtime.tm_mon, &ymdtime.tm_mday, &ymdtime.tm_year, &chr);
 		}
 		if (s == 3) {
-			// Convert to Unix time.
-			// NOTE: struct tm has some oddities:
-			// - tm_year: year - 1900
-			// - tm_mon: 0 == January
-			struct tm ymdtime;
-
-			ymdtime.tm_year = year - 1900;
-			ymdtime.tm_mon  = month - 1;
-			ymdtime.tm_mday = day;
+			ymdtime.tm_year -= 1900;	// year - 1900
+			ymdtime.tm_mon--;		// 0 == January
 
 			// Time portion is empty.
 			ymdtime.tm_hour = 0;
@@ -461,13 +455,13 @@ SPCPrivate::TagData SPCPrivate::parseTags(void)
 				}
 
 				// Get the integer value.
-				// TODO: Use le32_to_cpu()?
 				if (data[i] == SPC_xID6_ITEM_DUMP_DATE) {
 					// Convert from BCD to Unix time.
 					kv.insertTimestamp(static_cast<SPC_xID6_Item_e>(data[i]),
 						bcd_to_unix_time(&data[i+4], 4));
 				} else {
 					// Regular integer.
+					// TODO: Use le32_to_cpu()?
 					const unsigned int uival =  data[i+4] |
 								   (data[i+5] <<  8) |
 								   (data[i+6] << 16) |
@@ -505,7 +499,8 @@ SPC::SPC(IRpFile *file)
 {
 	RP_D(SPC);
 	d->className = "SPC";
-	d->fileType = FTYPE_AUDIO_FILE;
+	d->mimeType = "audio/x-spc";	// unofficial
+	d->fileType = FileType::AudioFile;
 
 	if (!d->file) {
 		// Could not ref() the file handle.
@@ -516,8 +511,7 @@ SPC::SPC(IRpFile *file)
 	d->file->rewind();
 	size_t size = d->file->read(&d->spcHeader, sizeof(d->spcHeader));
 	if (size != sizeof(d->spcHeader)) {
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
 
@@ -531,9 +525,7 @@ SPC::SPC(IRpFile *file)
 	d->isValid = (isRomSupported_static(&info) >= 0);
 
 	if (!d->isValid) {
-		d->file->unref();
-		d->file = nullptr;
-		return;
+		UNREF_AND_NULL_NOCHK(d->file);
 	}
 }
 
@@ -846,8 +838,8 @@ int SPC::loadMetaData(void)
 	auto kv = d->parseTags();
 	if (kv.empty()) {
 		// No tags.
-		// TODO: Return 0 instead of -EIO?
-		return -EIO;
+		// TODO: Return 0 instead of -ENOENT?
+		return -ENOENT;
 	}
 
 	// Create the metadata object.

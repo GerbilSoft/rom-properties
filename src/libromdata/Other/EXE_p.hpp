@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * EXE_p.hpp: DOS/Windows executable reader. (Private class)               *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -19,13 +19,18 @@
 // Reference: http://andreoffringa.org/?q=uvector
 #include "uvector.h"
 
+// TinyXML2
+namespace tinyxml2 {
+	class XMLDocument;
+}
+
 namespace LibRomData {
 
 class EXE;
-class EXEPrivate : public LibRpBase::RomDataPrivate
+class EXEPrivate final : public LibRpBase::RomDataPrivate
 {
 	public:
-		EXEPrivate(EXE *q, LibRpBase::IRpFile *file);
+		EXEPrivate(EXE *q, LibRpFile::IRpFile *file);
 		~EXEPrivate();
 
 	private:
@@ -34,20 +39,20 @@ class EXEPrivate : public LibRpBase::RomDataPrivate
 
 	public:
 		// Executable type.
-		enum ExeType {
-			EXE_TYPE_UNKNOWN = -1,	// Unknown EXE type.
+		enum class ExeType {
+			Unknown = -1,	// Unknown EXE type.
 
-			EXE_TYPE_MZ = 0,	// DOS MZ
-			EXE_TYPE_NE,		// 16-bit New Executable
-			EXE_TYPE_LE,		// Mixed 16/32-bit Linear Executable
-			EXE_TYPE_W3,		// Collection of LE executables (WIN386.EXE)
-			EXE_TYPE_LX,		// 32-bit Linear Executable
-			EXE_TYPE_PE,		// 32-bit Portable Executable
-			EXE_TYPE_PE32PLUS,	// 64-bit Portable Executable
+			MZ = 0,		// DOS MZ
+			NE,		// 16-bit New Executable
+			LE,		// Mixed 16/32-bit Linear Executable
+			W3,		// Collection of LE executables (WIN386.EXE)
+			LX,		// 32-bit Linear Executable
+			PE,		// 32-bit Portable Executable
+			PE32PLUS,	// 64-bit Portable Executable
 
-			EXE_TYPE_LAST
+			Max
 		};
-		int exeType;
+		ExeType exeType;
 
 	public:
 		// DOS MZ header.
@@ -55,10 +60,10 @@ class EXEPrivate : public LibRpBase::RomDataPrivate
 
 		// Secondary header.
 		#pragma pack(1)
-		union PACKED {
+		union {
 			uint32_t sig32;
 			uint16_t sig16;
-			struct PACKED {
+			struct {
 				uint32_t Signature;
 				IMAGE_FILE_HEADER FileHeader;
 				union {
@@ -173,11 +178,33 @@ class EXEPrivate : public LibRpBase::RomDataPrivate
 		void addFields_PE(void);
 
 #ifdef ENABLE_XML
+	private:
+		/**
+		 * Load the Win32 manifest resource.
+		 *
+		 * The XML is loaded and parsed using the specified
+		 * TinyXML document.
+		 *
+		 * @param doc		[in/out] XML document.
+		 * @param ppResName	[out,opt] Pointer to receive the loaded resource name. (statically-allocated string)
+		 * @return 0 on success; negative POSIX error code on error.
+		 */
+		ATTR_ACCESS(read_write, 2)
+		ATTR_ACCESS(write_only, 3)
+		int loadWin32ManifestResource(tinyxml2::XMLDocument &doc, const char **ppResName = nullptr) const;
+
+	public:
 		/**
 		 * Add fields from the Win32 manifest resource.
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
 		int addFields_PE_Manifest(void);
+
+		/**
+		 * Is the requestedExecutionLevel set to requireAdministrator?
+		 * @return True if set; false if not or unable to determine.
+		 */
+		bool doesExeRequireAdministrator(void) const;
 #endif /* ENABLE_XML */
 };
 

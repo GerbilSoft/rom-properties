@@ -6,19 +6,12 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+#include "stdafx.h"
 #include "KeyStoreModel.hpp"
 #include "KeyStoreQt.hpp"
-#include "RpQt.hpp"
 
-// libi18n
-#include "libi18n/i18n.h"
-
-// Qt includes.
-#include <QtGui/QFont>
-#include <QtGui/QFontMetrics>
-#include <QtGui/QPixmap>
-#include <QApplication>
-#include <QStyle>
+// C++ STL classes.
+using std::array;
 
 /** KeyStoreModelPrivate **/
 
@@ -49,7 +42,7 @@ class KeyStoreModelPrivate
 			QFont fntMonospace;
 			QSize szValueHint;	// Size hint for the value column.
 
-			// Pixmaps for COL_ISVALID.
+			// Pixmaps for Column::IsValid.
 			// TODO: Hi-DPI support.
 			static const int pxmIsValid_width = 16;
 			static const int pxmIsValid_height = 16;
@@ -68,7 +61,7 @@ class KeyStoreModelPrivate
 		int sectCount;
 
 		// Translated column names.
-		QString columnNames[3];
+		array<QString, 3> columnNames;
 };
 
 // Windows-style LOWORD()/HIWORD()/MAKELONG() functions.
@@ -118,7 +111,7 @@ void KeyStoreModelPrivate::style_t::init(void)
 	szValueHint = fm.size(Qt::TextSingleLine,
 		QLatin1String("0123456789ABCDEF0123456789ABCDEF "));
 
-	// Initialize the COL_ISVALID pixmaps.
+	// Initialize the Column::IsValid pixmaps.
 	// TODO: Handle SP_MessageBoxQuestion on non-Windows systems,
 	// which usually have an 'i' icon here (except for GNOME).
 	QStyle *const style = QApplication::style();
@@ -184,9 +177,9 @@ int KeyStoreModel::columnCount(const QModelIndex& parent) const
 		return 0;
 	}
 
-	// NOTE: We have to return COL_MAX for everything.
+	// NOTE: We have to return Column::Max for everything.
 	// Otherwise, it acts a bit wonky.
-	return COL_MAX;
+	return (int)Column::Max;
 }
 
 QModelIndex KeyStoreModel::index(int row, int column, const QModelIndex& parent) const
@@ -270,9 +263,9 @@ QVariant KeyStoreModel::data(const QModelIndex& index, int role) const
 	switch (role) {
 		case Qt::DisplayRole:
 			switch (index.column()) {
-				case COL_KEY_NAME:
+				case (int)Column::KeyName:
 					return U82Q(key->name);
-				case COL_VALUE:
+				case (int)Column::Value:
 					return U82Q(key->value);
 				default:
 					break;
@@ -281,7 +274,7 @@ QVariant KeyStoreModel::data(const QModelIndex& index, int role) const
 
 		case Qt::EditRole:
 			switch (index.column()) {
-				case COL_VALUE:
+				case (int)Column::Value:
 					return U82Q(key->value);
 				default:
 					break;
@@ -290,24 +283,24 @@ QVariant KeyStoreModel::data(const QModelIndex& index, int role) const
 
 		case Qt::DecorationRole:
 			// Images must use Qt::DecorationRole.
-			// FIXME: Add a QStyledItemDelegate to center-align the icon.
+			// TODO: Add a QStyledItemDelegate to center-align the icon.
 			switch (index.column()) {
-				case COL_ISVALID:
+				case (int)Column::IsValid:
 					switch (key->status) {
 						default:
-						case KeyStoreQt::Key::Status_Unknown:
+						case KeyStoreQt::Key::Status::Unknown:
 							// Unknown...
 							return d->style.pxmIsValid_unknown;
-						case KeyStoreQt::Key::Status_NotAKey:
+						case KeyStoreQt::Key::Status::NotAKey:
 							// The key data is not in the correct format.
 							return d->style.pxmIsValid_invalid;
-						case KeyStoreQt::Key::Status_Empty:
+						case KeyStoreQt::Key::Status::Empty:
 							// Empty key.
 							break;
-						case KeyStoreQt::Key::Status_Incorrect:
+						case KeyStoreQt::Key::Status::Incorrect:
 							// Key is incorrect.
 							return d->style.pxmIsValid_invalid;
-						case KeyStoreQt::Key::Status_OK:
+						case KeyStoreQt::Key::Status::OK:
 							// Key is correct.
 							return d->style.pxmIsValid_good;
 					}
@@ -327,7 +320,7 @@ QVariant KeyStoreModel::data(const QModelIndex& index, int role) const
 
 		case Qt::FontRole:
 			switch (index.column()) {
-				case COL_VALUE:
+				case (int)Column::Value:
 					// The key value should use a monospace font.
 					return d->style.fntMonospace;
 
@@ -338,10 +331,10 @@ QVariant KeyStoreModel::data(const QModelIndex& index, int role) const
 
 		case Qt::SizeHintRole:
 			switch (index.column()) {
-				case COL_VALUE:
+				case (int)Column::Value:
 					// Use the monospace size hint.
 					return d->style.szValueHint;
-				case COL_ISVALID:
+				case (int)Column::IsValid:
 					// Increase row height by 4px.
 					return QSize(d->style.pxmIsValid_width,
 						(d->style.pxmIsValid_height + 4));
@@ -376,8 +369,8 @@ bool KeyStoreModel::setData(const QModelIndex& index, const QVariant& value, int
 
 	// Key index.
 
-	// Only COL_VALUE can be edited, and only text.
-	if (index.column() != COL_VALUE || role != Qt::EditRole)
+	// Only Column::Value can be edited, and only text.
+	if (index.column() != (int)Column::Value || role != Qt::EditRole)
 		return false;
 
 	// Edit the value.
@@ -391,7 +384,7 @@ Qt::ItemFlags KeyStoreModel::flags(const QModelIndex &index) const
 {
 	Q_D(const KeyStoreModel);
 	if (!d->keyStore || !index.isValid())
-		return 0;
+		return Qt::ItemFlags();
 
 	// Check the internal ID.
 	const uint32_t id = (uint32_t)index.internalId();
@@ -402,7 +395,7 @@ Qt::ItemFlags KeyStoreModel::flags(const QModelIndex &index) const
 
 	// Key index.
 	switch (index.column()) {
-		case COL_VALUE:
+		case (int)Column::Value:
 			// Value can be edited.
 			return Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsEditable;
 		default:
@@ -416,12 +409,13 @@ QVariant KeyStoreModel::headerData(int section, Qt::Orientation orientation, int
 	Q_UNUSED(orientation);
 
 	switch (role) {
-		case Qt::DisplayRole:
-			if (section >= 0 && section <= 2) {
-				RP_D(const KeyStoreModel);
+		case Qt::DisplayRole: {
+			RP_D(const KeyStoreModel);
+			if (section >= 0 && section < (int)d->columnNames.size()) {
 				return d->columnNames[section];
 			}
 			break;
+		}
 
 		case Qt::TextAlignmentRole:
 			// Center-align the text.
@@ -547,7 +541,7 @@ void KeyStoreModel::keyStore_keyChanged_slot(int sectIdx, int keyIdx)
 {
 	const uint32_t parent_id = MAKELONG(sectIdx, 0xFFFF);
 	QModelIndex qmi_left = createIndex(keyIdx, 0, parent_id);
-	QModelIndex qmi_right = createIndex(keyIdx, COL_MAX-1, parent_id);
+	QModelIndex qmi_right = createIndex(keyIdx, (int)Column::Max-1, parent_id);
 	emit dataChanged(qmi_left, qmi_right);
 }
 
@@ -562,7 +556,7 @@ void KeyStoreModel::keyStore_allKeysChanged_slot(void)
 
 	// TODO: Enumerate all child keys too?
 	QModelIndex qmi_left = createIndex(0, 0);
-	QModelIndex qmi_right = createIndex(d->sectCount-1, COL_MAX-1);
+	QModelIndex qmi_right = createIndex(d->sectCount-1, (int)Column::Max-1);
 	emit dataChanged(qmi_left, qmi_right);
 }
 

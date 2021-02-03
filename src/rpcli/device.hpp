@@ -10,28 +10,29 @@
 #ifndef __ROMPROPERTIES_RPCLI_DEVICE_HPP__
 #define __ROMPROPERTIES_RPCLI_DEVICE_HPP__
 
-#include "librpbase/config.librpbase.h"
+#include "librpfile/config.librpfile.h"
 
 // NOTE: We can't check in CMake beacuse RP_OS_SCSI_SUPPORTED
 // is checked in librpbase, not rpcli.
 #ifdef RP_OS_SCSI_SUPPORTED
 
 #include <ostream>
-namespace LibRpBase {
+namespace LibRpFile {
 	class RpFile;
 }
 
 class ScsiInquiry {
-	LibRpBase::RpFile *const file;
+	LibRpFile::RpFile *const file;
 public:
-	explicit ScsiInquiry(LibRpBase::RpFile *file);
+	explicit ScsiInquiry(LibRpFile::RpFile *file);
 	friend std::ostream& operator<<(std::ostream& os, const ScsiInquiry& si);
 };
 
 class AtaIdentifyDevice {
-	LibRpBase::RpFile *const file;
+	LibRpFile::RpFile *const file;
+	const bool packet;
 public:
-	explicit AtaIdentifyDevice(LibRpBase::RpFile *file);
+	explicit AtaIdentifyDevice(LibRpFile::RpFile *file, bool packet = false);
 	friend std::ostream& operator<<(std::ostream& os, const AtaIdentifyDevice& si);
 };
 

@@ -6,6 +6,9 @@ The following changes have been made to the original:
 
 - CMakeLists.txt has been modified to disable installation.
 
+- unice68_depacker() now takes explicit size parameters in order to
+  prevent buffer overflows.
+
 To obtain the original unice68-2.0.0.690, visit:
 - https://sourceforge.net/projects/sc68/
 - https://sourceforge.net/projects/sc68/files/unice68/

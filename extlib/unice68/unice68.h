@@ -11,6 +11,9 @@
 #ifndef UNICE68_H
 #define UNICE68_H
 
+// size_t
+#include <stddef.h>
+
 #ifndef UNICE68_EXTERN
 # ifdef __cplusplus
 #   define UNICE68_EXTERN extern "C"
@@ -116,7 +119,9 @@ UNICE68_API
  *   already allocated and large enough.
  *
  * @param  dst   output (destination) buffer (uncompressed data).
+ * @param  dstsz output (destination) buffer size.
  * @param  src   input  (source)      buffer (compressed data).
+ * @param  srcsz input  (source)      buffer size.
  *
  * @return error code
  * @retval 0     succcess
@@ -126,7 +131,7 @@ UNICE68_API
  *          compressed and uncompressed data. Anyway this has not been tested
  *          and you are encouraged to add guard bands.
  */
-int unice68_depacker(void * dst, const void * src);
+int unice68_depacker(void * dst, size_t dstsz, const void * src, size_t srcsz);
 
 UNICE68_API
 /**

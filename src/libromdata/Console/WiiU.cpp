@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * WiiU.cpp: Nintendo Wii U disc image reader.                             *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -14,9 +14,11 @@
 #include "wiiu_structs.h"
 #include "gcn_structs.h"
 #include "data/WiiUData.hpp"
+#include "GameCubeRegions.hpp"
 
-// librpbase
+// librpbase, librpfile
 using namespace LibRpBase;
+using LibRpFile::IRpFile;
 
 // DiscReader
 #include "librpbase/disc/DiscReader.hpp"
@@ -25,7 +27,6 @@ using namespace LibRpBase;
 
 // C++ STL classes.
 using std::string;
-using std::unique_ptr;
 using std::vector;
 
 namespace LibRomData {
@@ -33,7 +34,7 @@ namespace LibRomData {
 ROMDATA_IMPL(WiiU)
 ROMDATA_IMPL_IMG(WiiU)
 
-class WiiUPrivate : public RomDataPrivate
+class WiiUPrivate final : public RomDataPrivate
 {
 	public:
 		WiiUPrivate(WiiU *q, IRpFile *file);
@@ -44,15 +45,17 @@ class WiiUPrivate : public RomDataPrivate
 		RP_DISABLE_COPY(WiiUPrivate)
 
 	public:
-		enum DiscType {
-			DISC_UNKNOWN = -1,	// Unknown disc type
+		enum class DiscType {
+			Unknown	= -1,
 
-			DISC_FORMAT_WUD = 0,	// Wii U disc image (uncompressed)
-			DISC_FORMAT_WUX = 1,	// WUX (compressed)
+			WUD	= 0,	// Wii U disc image (uncompressed)
+			WUX	= 1,	// WUX (compressed)
+
+			Max
 		};
+		DiscType discType;
 
-		// Disc type and reader.
-		int discType;
+		// Disc reader.
 		IDiscReader *discReader;
 
 		// Disc header.
@@ -63,7 +66,7 @@ class WiiUPrivate : public RomDataPrivate
 
 WiiUPrivate::WiiUPrivate(WiiU *q, IRpFile *file)
 	: super(q, file)
-	, discType(DISC_UNKNOWN)
+	, discType(DiscType::Unknown)
 	, discReader(nullptr)
 {
 	// Clear the discHeader struct.
@@ -72,7 +75,7 @@ WiiUPrivate::WiiUPrivate(WiiU *q, IRpFile *file)
 
 WiiUPrivate::~WiiUPrivate()
 {
-	delete discReader;
+	UNREF(discReader);
 }
 
 /** WiiU **/
@@ -96,7 +99,8 @@ WiiU::WiiU(IRpFile *file)
 	// This class handles disc images.
 	RP_D(WiiU);
 	d->className = "WiiU";
-	d->fileType = FTYPE_DISC_IMAGE;
+	d->mimeType = "application/x-wii-u-rom";	// unofficial, not on fd.o
+	d->fileType = FileType::DiscImage;
 
 	if (!d->file) {
 		// Could not ref() the file handle.
@@ -112,8 +116,7 @@ WiiU::WiiU(IRpFile *file)
 	d->file->rewind();
 	size_t size = d->file->read(header, sizeof(header));
 	if (size != sizeof(header)) {
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
 
@@ -124,55 +127,41 @@ WiiU::WiiU(IRpFile *file)
 	info.header.pData = header;
 	info.ext = nullptr;	// Not needed for Wii U.
 	info.szFile = d->file->size();
-	d->discType = isRomSupported_static(&info);
-	if (d->discType < 0) {
-		// Disc image is invalid.
-		d->file->unref();
-		d->file = nullptr;
-		return;
-	}
+	d->discType = static_cast<WiiUPrivate::DiscType>(isRomSupported_static(&info));
 
 	// Create an IDiscReader.
 	switch (d->discType) {
-		case WiiUPrivate::DISC_FORMAT_WUD:
+		case WiiUPrivate::DiscType::WUD:
 			d->discReader = new DiscReader(d->file);
 			break;
-		case WiiUPrivate::DISC_FORMAT_WUX:
+		case WiiUPrivate::DiscType::WUX:
 			d->discReader = new WuxReader(d->file);
 			break;
-		case WiiUPrivate::DISC_UNKNOWN:
+		case WiiUPrivate::DiscType::Unknown:
 		default:
-			d->fileType = FTYPE_UNKNOWN;
-			d->discType = WiiUPrivate::DISC_UNKNOWN;
+			// Disc image is invalid.
+			d->fileType = FileType::Unknown;
+			d->discType = WiiUPrivate::DiscType::Unknown;
+			UNREF_AND_NULL_NOCHK(d->file);
 			break;
 	}
 
-	if (!d->discReader->isOpen()) {
+	if (!d->discReader || !d->discReader->isOpen()) {
 		// Error opening the DiscReader.
-		delete d->discReader;
-		d->discReader = nullptr;
-		d->fileType = FTYPE_UNKNOWN;
-		d->discType = WiiUPrivate::DISC_UNKNOWN;
-		return;
-	}
-
-	if (d->discType < 0) {
-		// Nothing else to do here.
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL(d->discReader);
+		d->fileType = FileType::Unknown;
+		d->discType = WiiUPrivate::DiscType::Unknown;
 		return;
 	}
 
 	// Re-read the disc header for WUX.
-	if (d->discType > WiiUPrivate::DISC_FORMAT_WUD) {
+	if (d->discType > WiiUPrivate::DiscType::WUD) {
 		size = d->discReader->seekAndRead(0, header, sizeof(header));
 		if (size != sizeof(header)) {
 			// Seek and/or read error.
-			delete d->discReader;
-			d->file->unref();
-			d->discReader = nullptr;
-			d->file = nullptr;
-			d->discType = WiiUPrivate::DISC_UNKNOWN;
+			UNREF_AND_NULL_NOCHK(d->discReader);
+			UNREF_AND_NULL_NOCHK(d->file);
+			d->discType = WiiUPrivate::DiscType::Unknown;
 			return;
 		}
 	}
@@ -182,11 +171,9 @@ WiiU::WiiU(IRpFile *file)
 	size = d->discReader->seekAndRead(0x10000, &disc_magic, sizeof(disc_magic));
 	if (size != sizeof(disc_magic)) {
 		// Seek and/or read error.
-		delete d->discReader;
-		d->file->unref();
-		d->discReader = nullptr;
-		d->file = nullptr;
-		d->discType = WiiUPrivate::DISC_UNKNOWN;
+		UNREF_AND_NULL_NOCHK(d->discReader);
+		UNREF_AND_NULL_NOCHK(d->file);
+		d->discType = WiiUPrivate::DiscType::Unknown;
 		return;
 	}
 
@@ -198,11 +185,9 @@ WiiU::WiiU(IRpFile *file)
 		memcpy(&d->discHeader, header, sizeof(d->discHeader));
 	} else {
 		// No match.
-		delete d->discReader;
-		d->file->unref();
-		d->discReader = nullptr;
-		d->file = nullptr;
-		d->discType = WiiUPrivate::DISC_UNKNOWN;
+		UNREF_AND_NULL_NOCHK(d->discReader);
+		UNREF_AND_NULL_NOCHK(d->file);
+		d->discType = WiiUPrivate::DiscType::Unknown;
 		return;
 	}
 }
@@ -228,7 +213,7 @@ int WiiU::isRomSupported_static(const DetectInfo *info)
 		// or the header is too small.
 		// szFile: Partition table is at 0x18000, so we
 		// need to have at least 0x20000.
-		return -1;
+		return static_cast<int>(WiiUPrivate::DiscType::Unknown);
 	}
 
 	// Check for WUX magic numbers.
@@ -239,7 +224,7 @@ int WiiU::isRomSupported_static(const DetectInfo *info)
 		// WUX header detected.
 		// TODO: Also check for other Wii U magic numbers if WUX is found.
 		// TODO: Verify block size?
-		return WiiUPrivate::DISC_FORMAT_WUX;
+		return static_cast<int>(WiiUPrivate::DiscType::WUX);
 	}
 
 	// Game ID must start with "WUP-".
@@ -248,7 +233,7 @@ int WiiU::isRomSupported_static(const DetectInfo *info)
 	const WiiU_DiscHeader *const wiiu_header = reinterpret_cast<const WiiU_DiscHeader*>(info->header.pData);
 	if (memcmp(wiiu_header->id, "WUP-", 4) != 0) {
 		// Not Wii U.
-		return -1;
+		return static_cast<int>(WiiUPrivate::DiscType::Unknown);
 	}
 
 	// Check hyphens.
@@ -260,7 +245,7 @@ int WiiU::isRomSupported_static(const DetectInfo *info)
 	    wiiu_header->hyphen5 != '-')
 	{
 		// Missing hyphen.
-		return -1;
+		return static_cast<int>(WiiUPrivate::DiscType::Unknown);
 	}
 
 	// Check for GCN/Wii magic numbers.
@@ -270,11 +255,11 @@ int WiiU::isRomSupported_static(const DetectInfo *info)
 	{
 		// GameCube and/or Wii magic is present.
 		// This is not a Wii U disc image.
-		return -1;
+		return static_cast<int>(WiiUPrivate::DiscType::Unknown);
 	}
 
 	// Disc header is valid.
-	return WiiUPrivate::DISC_FORMAT_WUD;
+	return static_cast<int>(WiiUPrivate::DiscType::WUD);
 }
 
 /**
@@ -438,7 +423,7 @@ int WiiU::loadFieldData(void)
 	} else if (!d->file || !d->file->isOpen()) {
 		// File isn't open.
 		return -EBADF;
-	} else if (!d->isValid) {
+	} else if (!d->isValid || (int)d->discType < 0) {
 		// Disc image isn't valid.
 		return -EIO;
 	}
@@ -447,7 +432,7 @@ int WiiU::loadFieldData(void)
 	d->fields->reserve(4);	// Maximum of 4 fields.
 
 	// Game ID.
-	d->fields->addField_string(C_("WiiU", "Game ID"),
+	d->fields->addField_string(C_("RomData", "Game ID"),
 		latin1_to_utf8(d->discHeader.id, sizeof(d->discHeader.id)));
 
 	// Publisher.
@@ -472,9 +457,9 @@ int WiiU::loadFieldData(void)
 		if (ISALNUM(publisher_code[0]) && ISALNUM(publisher_code[1]) &&
 		    ISALNUM(publisher_code[2]) && ISALNUM(publisher_code[3]))
 		{
-			s_publisher = rp_sprintf(C_("WiiU", "Unknown (%.4s)"), publisher_code);
+			s_publisher = rp_sprintf(C_("RomData", "Unknown (%.4s)"), publisher_code);
 		} else {
-			s_publisher = rp_sprintf(C_("WiiU", "Unknown (%02X %02X %02X %02X)"),
+			s_publisher = rp_sprintf(C_("RomData", "Unknown (%02X %02X %02X %02X)"),
 				static_cast<uint8_t>(publisher_code[0]),
 				static_cast<uint8_t>(publisher_code[1]),
 				static_cast<uint8_t>(publisher_code[2]),
@@ -526,7 +511,7 @@ int WiiU::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
 	pExtURLs->clear();
 
 	RP_D(const WiiU);
-	if (!d->isValid) {
+	if (!d->isValid || (int)d->discType < 0) {
 		// Disc image isn't valid.
 		return -EIO;
 	}
@@ -591,10 +576,9 @@ int WiiU::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
 	}
 
 	// Determine the GameTDB region code(s).
-	// TODO: Wii U version. (Figure out the region code field...)
-	//vector<const char*> tdb_regions = d->gcnRegionToGameTDB(d->gcnRegion, d->discHeader.id4[3]);
-	vector<const char*> tdb_regions;
-	tdb_regions.push_back("US");
+	// TODO: Figure out the actual Wii U region code.
+	// Using the game ID for now.
+	vector<const char*> tdb_regions = GameCubeRegions::gcnRegionToGameTDB(~0U, d->discHeader.id4[3]);
 
 	// Game ID.
 	// Replace any non-printable characters with underscores.
@@ -629,6 +613,7 @@ int WiiU::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
 	// Add the URLs.
 	pExtURLs->resize(szdef_count * tdb_regions.size());
 	auto extURL_iter = pExtURLs->begin();
+	const auto tdb_regions_cend = tdb_regions.cend();
 	for (unsigned int i = 0; i < szdef_count; i++) {
 		// Current image type.
 		char imageTypeName[16];
@@ -637,7 +622,7 @@ int WiiU::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
 
 		// Add the images.
 		for (auto tdb_iter = tdb_regions.cbegin();
-		     tdb_iter != tdb_regions.cend(); ++tdb_iter, ++extURL_iter)
+		     tdb_iter != tdb_regions_cend; ++tdb_iter, ++extURL_iter)
 		{
 			extURL_iter->url = d->getURL_GameTDB("wiiu", imageTypeName, *tdb_iter, id6, ext);
 			extURL_iter->cache_key = d->getCacheKey_GameTDB("wiiu", imageTypeName, *tdb_iter, id6, ext);

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * ImageDecoder_p.hpp: Image decoding functions. (PRIVATE CLASS)           *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -10,7 +10,6 @@
 #define __ROMPROPERTIES_LIBRPTEXTURE_DECODER_IMAGEDECODER_P_HPP__
 
 #include "common.h"
-#include "byteswap.h"
 #include "../img/rp_image.hpp"
 
 // C includes. (C++ namespace)
@@ -79,10 +78,10 @@ inline void ImageDecoderPrivate::BlitTile(
 {
 	switch (sizeof(pixel)) {
 		case 4:
-			assert(img->format() == rp_image::FORMAT_ARGB32);
+			assert(img->format() == rp_image::Format::ARGB32);
 			break;
 		case 1:
-			assert(img->format() == rp_image::FORMAT_CI8);
+			assert(img->format() == rp_image::Format::CI8);
 			break;
 		default:
 			assert(!"Unsupported sizeof(pixel).");
@@ -119,7 +118,7 @@ inline void ImageDecoderPrivate::BlitTile_CI4_LeftLSN(
 	unsigned int tileX, unsigned int tileY)
 {
 	static_assert(tileW % 2 == 0, "Tile width must be a multiple of 2.");
-	assert(img->format() == rp_image::FORMAT_CI8);
+	assert(img->format() == rp_image::Format::CI8);
 	assert(img->width() % 2 == 0);
 
 	// Go to the first pixel for this tile.

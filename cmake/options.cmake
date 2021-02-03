@@ -24,20 +24,13 @@ IF(UNIX AND NOT APPLE)
 	# NOTE: OPTION() only supports BOOL values.
 	# Reference: https://cmake.org/pipermail/cmake/2016-October/064342.html
 	OPTION_UI(KDE4 "Build the KDE4 plugin.")
-	OPTION_UI(KDE5 "Build the KDE5 plugin.")
-	OPTION_UI(XFCE "Build the XFCE (GTK+ 2.x) plugin. (Thunar 1.7 and earlier)")
-	OPTION_UI(XFCE3 "Build the XFCE (GTK+ 3.x) plugin. (Thunar 1.8 and later)")
-	OPTION_UI(GNOME "Build the GNOME (GTK+ 3.x) plugin.")
-	OPTION_UI(MATE "Build the MATE (GTK+ 3.x) plugin.")
-	OPTION_UI(CINNAMON "Build the Cinnamon (GTK+ 3.x) plugin.")
+	OPTION_UI(KF5 "Build the KDE Frameworks 5 plugin.")
+	OPTION_UI(XFCE "Build the XFCE (GTK+ 2.x) plugin.")
+	OPTION_UI(GTK3 "Build the GTK+ 3.x plugin.")
 
-	# Set BUILD_GTK2 and/or BUILD_GTK3 depending on frontends.
-	SET(BUILD_GTK2 ${BUILD_XFCE} CACHE INTERNAL "Check for GTK+ 2.x." FORCE)
-	IF(BUILD_GNOME OR BUILD_XFCE3 OR BUILD_MATE OR BUILD_CINNAMON)
-		SET(BUILD_GTK3 ON CACHE INTERNAL "Check for GTK+ 3.x." FORCE)
-	ELSE()
-		SET(BUILD_GTK3 OFF CACHE INTERNAL "Check for GTK+ 3.x." FORCE)
-	ENDIF()
+	# NOTE: The GTK+ 2.x plugin is XFCE only right now.
+	SET(BUILD_GTK2 "${BUILD_XFCE}")
+	SET(REQUIRE_GTK2 "${REQUIRE_XFCE}")
 
 	# QT_SELECT must be unset before compiling.
 	UNSET(ENV{QT_SELECT})
@@ -47,18 +40,27 @@ ENDIF()
 
 OPTION(BUILD_CLI "Build the `rpcli` command line program." ON)
 
-# ZLIB, libpng
+# ZLIB, libpng, XML, zstd
 # Internal versions are always used on Windows.
+OPTION(ENABLE_XML "Enable XML parsing for e.g. Windows manifests." ON)
+OPTION(ENABLE_ZSTD "Enable ZSTD decompression. (Required for some unit tests.)" ON)
+OPTION(ENABLE_LZ4 "Enable LZ4 decompression. (Required for some PSP disc formats.)" ON)
+OPTION(ENABLE_LZO "Enable LZO decompression. (Required for some PSP disc formats.)" ON)
+
 IF(WIN32)
 	SET(USE_INTERNAL_ZLIB ON)
 	SET(USE_INTERNAL_PNG ON)
-	OPTION(ENABLE_XML "Enable XML parsing for e.g. Windows manifests." ON)
-	SET(USE_INTERNAL_XML ON)
+	SET(USE_INTERNAL_XML ${ENABLE_XML})
+	SET(USE_INTERNAL_ZSTD ${ENABLE_ZSTD})
+	SET(USE_INTERNAL_LZ4 ${ENABLE_LZ4})
+	SET(USE_INTERNAL_LZO ${ENABLE_LZO})
 ELSE(WIN32)
 	OPTION(USE_INTERNAL_ZLIB "Use the internal copy of zlib." OFF)
 	OPTION(USE_INTERNAL_PNG "Use the internal copy of libpng." OFF)
-	OPTION(ENABLE_XML "Enable XML parsing for e.g. Windows manifests." ON)
 	OPTION(USE_INTERNAL_XML "Use the internal copy of TinyXML2." OFF)
+	OPTION(USE_INTERNAL_ZSTD "Use the internal copy of zstd." OFF)
+	OPTION(USE_INTERNAL_LZ4 "Use the internal copy of LZ4." OFF)
+	OPTION(USE_INTERNAL_LZO "Use the internal copy of LZO." OFF)
 ENDIF()
 
 # TODO: If APNG export is added, verify that system libpng
@@ -124,3 +126,13 @@ IF(WIN32 AND MSVC)
 ELSE(WIN32 AND MSVC)
 	SET(ENABLE_OLDWINCOMPAT OFF)
 ENDIF(WIN32 AND MSVC)
+
+# Linux security options.
+IF(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+	OPTION(INSTALL_APPARMOR "Install AppArmor profiles." ON)
+ELSE(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+	SET(INSTALL_APPARMOR OFF)
+ENDIF(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+
+# Achievements. (TODO: "AUTO" option?)
+OPTION(ENABLE_ACHIEVEMENTS "Enable achievement pop-ups." ON)

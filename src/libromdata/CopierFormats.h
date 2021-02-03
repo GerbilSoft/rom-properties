@@ -2,14 +2,15 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * CopierFormats.h: Various ROM copier formats.                            *
  *                                                                         *
- * Copyright (c) 2016 by David Korth.                                      *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #ifndef __ROMPROPERTIES_LIBROMDATA_COPIERFORMATS_H__
 #define __ROMPROPERTIES_LIBROMDATA_COPIERFORMATS_H__
 
-#include "librpbase/common.h"
+#include <stdint.h>
+#include "common.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -23,8 +24,7 @@ extern "C" {
  * - http://cgfm2.emuviews.com/txt/smdtech.txt
  * - http://wiki.superfamicom.org/snes/show/Super+Wild+Card
  */
-#pragma pack(1)
-typedef struct PACKED SMD_Header {
+typedef struct SMD_Header {
 	union {
 		// Console-specific parameters.
 		struct {
@@ -35,16 +35,17 @@ typedef struct PACKED SMD_Header {
 		struct {
 			uint16_t pages;		// Number of 8 KB pages. (LE16)
 			uint8_t emulation_mode;	// Emulation mode. (See SMC_EmulationMode)
+			uint8_t unused;		// Unused
 		} smc;
 		// TODO: Magic Griffin parameters.
 	};
-	uint8_t reserved1[5];		// Reserved. (Should be 0.)
+	uint8_t reserved1[4];		// Reserved. (Should be 0.)
 	uint8_t id[2];			// Should be {0xAA 0xBB}.
 	// NOTE: file_type is only valid if id is correct.
 	uint8_t file_type;		// File type. (See SMD_FileType)
 	uint8_t reserved2[501];		// Reserved. (Should be 0.)
 } SMD_Header;
-#pragma pack()
+ASSERT_STRUCT(SMD_Header, 512);
 
 /**
  * SMD file data types.
@@ -64,7 +65,7 @@ typedef enum {
 typedef enum {
 	// If 1, this file is part of a multi-file set and
 	// it isn't the last file in the set.
-	SMD_SF_MULTI_FILE = (1 << 6),
+	SMD_SF_MULTI_FILE = (1U << 6),
 } SMD_StatusFlags;
 
 /**
@@ -74,33 +75,33 @@ typedef enum {
 typedef enum {
 	// If 1, enable external cartridge memory image at
 	// bank $20-$5F, $A0-$DF in System Mode 2, 3.
-	SMC_EM_EXT_CART_MEMORY = (1 << 0),
+	SMC_EM_EXT_CART_MEMORY = (1U << 0),
 
 	// 0 == run in Mode 3; 1 == run in Mode 2.
-	SMC_EM_B1_MODE_3 = (0 << 1),
-	SMC_EM_B1_MODE_2 = (1 << 1),
+	SMC_EM_B1_MODE_3 = (0U << 1),
+	SMC_EM_B1_MODE_2 = (1U << 1),
 
 	// 00 = SRAM off; 01 == 16 KB; 10 == 64 KB; 11 == 256 KB
-	SMC_EM_SRAM_OFF   = (0 << 2),
-	SMC_EM_SRAM_16KB  = (1 << 2),
-	SMC_EM_SRAM_64KB  = (2 << 2),
-	SMC_EM_SRAM_256KB = (3 << 2),
-	SMC_EM_SRAM_MASK  = (3 << 2),
+	SMC_EM_SRAM_OFF   = (0U << 2),
+	SMC_EM_SRAM_16KB  = (1U << 2),
+	SMC_EM_SRAM_64KB  = (2U << 2),
+	SMC_EM_SRAM_256KB = (3U << 2),
+	SMC_EM_SRAM_MASK  = (3U << 2),
 
 	// 0 == Mode 20; 1 == Mode 21 (DRAM mapping)
-	SMC_EM_MODE_20 = (0 << 4),
-	SMC_EM_MODE_21 = (1 << 4),
+	SMC_EM_MODE_20 = (0U << 4),
+	SMC_EM_MODE_21 = (1U << 4),
 
 	// 0 == Mode 1; 1 == Mode 2 (SRAM mapping)
-	SMC_EM_B5_MODE_1 = (0 << 5),
-	SMC_EM_B5_MODE_2 = (1 << 5),
+	SMC_EM_B5_MODE_1 = (0U << 5),
+	SMC_EM_B5_MODE_2 = (1U << 5),
 
 	// If 1, this file is part of a multi-file set and
 	// it isn't the last file in the set.
-	SMC_EM_MULTI_FILE = (1 << 6),
+	SMC_EM_MULTI_FILE = (1U << 6),
 
 	// 1 == Mode 0 (jump to $8000)
-	SMC_EM_MODE_0 = (1 << 7),
+	SMC_EM_MODE_0 = (1U << 7),
 } SMC_EmulationMode;
 
 /**

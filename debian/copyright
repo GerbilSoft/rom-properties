@@ -10,11 +10,24 @@ License: GPL-2+
 Comment:
 
 Files:
+ cmake/macros/GCR_CMake/*
+Copyright: 2015-2019, Makman2 <makman@alice.de>
+License: GPL-3
+Comment:
+
+Files:
  src/librpbase/uvector.h
 Copyright:
  2013, André Offringa
 License: GPL-3
 Comment:
+
+Files:
+ src/librpbase/timegm.c
+Copyright:
+ (C) Copyright Howard Hinnant
+ (C) Copyright 2010-2011 Vicente J. Botet Escriba
+License: BSL-1.0
 
 Files:
  src/libromdata/DMG.cpp
@@ -105,6 +118,11 @@ Copyright: (c) 1995-2019 GNU gettext authors
 License: GPL-3+
 
 Files:
+ src/libi18n/gettext.h
+Copyright: (c) 1995-2018 GNU gettext authors
+License: LGPL-2.1+
+
+Files:
  extlib/unice68/*
 Copyright: (c) 1998-2016 Benjamin Gerard
 License: GPL-3+
@@ -124,6 +142,56 @@ Files:
  extlib/PowerVR/*
 Copyright: (c) Imagination Technologies Ltd.
 License: MIT
+
+Files:
+ extlib/rapidjson/*
+Copyright: Copyright (C) 2015 THL A29 Limited, a Tencent company, and Milo Yip.
+License: MIT
+
+Files:
+ extlib/zstd/*
+Copyright: 2016-present, Facebook, Inc.
+License: BSD-3-clause
+
+Files:
+ extlib/lz4/*
+Copyright: Copyright (C) Yann Collet 2011-present
+License: GPL-2+
+
+Files:
+ extlib/lz4/lib/*
+Copyright: Copyright (C) Yann Collet 2011-present
+License: BSD-2-clause
+
+Files:
+ extlib/minilzo/*
+Copyright: Copyright (C) 1996-2017 Markus Franz Xaver Johannes Oberhumer
+License: GPL-2+
+
+License: BSD-2-clause
+ All rights reserved.
+ .
+ Redistribution and use in source and binary forms, with or without
+ modification, are permitted provided that the following conditions are
+ met:
+ .
+ 1. Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+ 2. Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+ .
+ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
+ IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+ TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+ PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+ OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 License: BSD-3-clause
  Redistribution and use in source and binary forms, with or without
@@ -191,7 +259,7 @@ License: GPL-2
  GNU General Public License for more details.
  .
  You should have received a copy of the GNU General Public License
- along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ along with this program.  If not, see <https://www.gnu.org/licenses/>.
  .
  On Debian systems, the complete text of the GNU General Public License
  version 2 can be found in '/usr/share/common-licenses/GPL-2'.
@@ -208,7 +276,7 @@ License: GPL-2+
  GNU General Public License for more details.
  .
  You should have received a copy of the GNU General Public License
- along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ along with this program.  If not, see <https://www.gnu.org/licenses/>.
  .
  On Debian systems, the complete text of the GNU General Public License
  version 2 can be found in '/usr/share/common-licenses/GPL-2'.
@@ -224,7 +292,7 @@ License: GPL-3
  GNU General Public License for more details.
  .
  You should have received a copy of the GNU General Public License
- along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ along with this program.  If not, see <https://www.gnu.org/licenses/>.
  .
  On Debian systems, the complete text of the GNU General Public License
  version 3 can be found in '/usr/share/common-licenses/GPL-3'.
@@ -241,7 +309,7 @@ License: GPL-3+
  GNU General Public License for more details.
  .
  You should have received a copy of the GNU General Public License
- along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ along with this program.  If not, see <https://www.gnu.org/licenses/>.
  .
  On Debian systems, the complete text of the GNU General Public License
  version 3 can be found in '/usr/share/common-licenses/GPL-3'.
@@ -249,15 +317,32 @@ License: GPL-3+
 License: LGPL-2.1
  This program is free software; you can redistribute it and/or modify
  it under the terms of the GNU Lesser General Public License version 2.1
- as poublished by the Free Software Foundation.
+ as published by the Free Software Foundation.
  .
  This program is distributed in the hope that it will be useful,
  but WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  GNU General Public License for more details.
  .
- You should have received a copy of the GNU General Public License
- along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ You should have received a copy of the GNU Lesser General Public License
+ along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ .
+ On Debian systems, the complete text of the GNU Lesser General Public
+ License version 2.1 can be found in '/usr/share/common-licenses/LGPL-2.1'.
+
+License: LGPL-2.1+
+ This program is free software; you can redistribute it and/or modify
+ it under the terms of the GNU Lesser General Public License as published
+ by the Free Software Foundation; either version 2.1 of the License, or
+ (at your option) any later version.
+ .
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+ .
+ You should have received a copy of the GNU Lesser General Public License
+ along with this program.  If not, see <https://www.gnu.org/licenses/>.
  .
  On Debian systems, the complete text of the GNU Lesser General Public
  License version 2.1 can be found in '/usr/share/common-licenses/LGPL-2.1'.
@@ -498,3 +583,28 @@ License: MIT
  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  THE SOFTWARE.
+
+License: BSL-1.0
+ Boost Software License - Version 1.0 - August 17th, 2003
+ .
+ Permission is hereby granted, free of charge, to any person or organization
+ obtaining a copy of the software and accompanying documentation covered by
+ this license (the "Software") to use, reproduce, display, distribute,
+ execute, and transmit the Software, and to prepare derivative works of the
+ Software, and to permit third-parties to whom the Software is furnished to
+ do so, all subject to the following:
+ .
+ The copyright notices in the Software and this entire statement, including
+ the above license grant, this restriction and the following disclaimer,
+ must be included in all copies of the Software, in whole or in part, and
+ all derivative works of the Software, unless such copies or derivative
+ works are solely in the form of machine-executable object code generated by
+ a source language processor.
+ .
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
+ SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
+ FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
+ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ DEALINGS IN THE SOFTWARE.

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * GameCom.hpp: Tiger game.com ROM reader.                                 *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -10,8 +10,9 @@
 #include "GameCom.hpp"
 #include "gcom_structs.h"
 
-// librpbase, librptexture
+// librpbase, librpfile, librptexture
 using namespace LibRpBase;
+using LibRpFile::IRpFile;
 using LibRpTexture::rp_image;
 
 // C++ STL classes.
@@ -22,9 +23,8 @@ using std::vector;
 namespace LibRomData {
 
 ROMDATA_IMPL(GameCom)
-ROMDATA_IMPL_IMG(GameCom)
 
-class GameComPrivate : public RomDataPrivate
+class GameComPrivate final : public RomDataPrivate
 {
 	public:
 		GameComPrivate(GameCom *q, IRpFile *file);
@@ -39,20 +39,55 @@ class GameComPrivate : public RomDataPrivate
 		Gcom_RomHeader romHeader;
 
 		// Icon.
-		rp_image *icon;
+		rp_image *img_icon;
 
 		/**
 		 * Load the icon.
 		 * @return Icon, or nullptr on error.
 		 */
 		const rp_image *loadIcon(void);
+
+	protected:
+		static const uint32_t gcom_palette[4];
+
+		/**
+		 * Decompress game.com RLE data.
+		 *
+		 * NOTE: The ROM header does *not* indicate how much data is
+		 * available, so we'll keep going until we're out of either
+		 * output or input buffer.
+		 *
+		 * @param pOut		[out] Output buffer.
+		 * @param out_len	[in] Output buffer length.
+		 * @param pIn		[in] Input buffer.
+		 * @param in_len	[in] Input buffer length.
+		 * @return Decoded data length on success; negative POSIX error code on error.
+		 */
+		static ssize_t rle_decompress(uint8_t *pOut, size_t out_len, const uint8_t *pIn, size_t in_len);
+
+		/**
+		 * Load an RLE-compressed icon.
+		 * This is called from loadIcon().
+		 * @return Icon, or nullptr on error.
+		 */
+		const rp_image *loadIconRLE(void);
 };
 
 /** GameComPrivate **/
 
+// Palette.
+// NOTE: Index 0 is white; index 3 is black.
+// TODO: Use colors closer to the original screen?
+const uint32_t GameComPrivate::gcom_palette[4] = {
+	0xFFFFFFFF,
+	0xFFC0C0C0,
+	0xFF808080,
+	0xFF000000,
+};
+
 GameComPrivate::GameComPrivate(GameCom *q, IRpFile *file)
 	: super(q, file)
-	, icon(nullptr)
+	, img_icon(nullptr)
 {
 	// Clear the ROM header struct.
 	memset(&romHeader, 0, sizeof(romHeader));
@@ -60,7 +95,7 @@ GameComPrivate::GameComPrivate(GameCom *q, IRpFile *file)
 
 GameComPrivate::~GameComPrivate()
 {
-	delete icon;
+	UNREF(img_icon);
 }
 
 /**
@@ -69,12 +104,20 @@ GameComPrivate::~GameComPrivate()
  */
 const rp_image *GameComPrivate::loadIcon(void)
 {
-	if (icon) {
+	if (img_icon) {
 		// Icon has already been loaded.
-		return icon;
+		return img_icon;
 	} else if (!this->file || !this->isValid) {
 		// Can't load the icon.
 		return nullptr;
+	} else if (!(romHeader.flags & GCOM_FLAG_HAS_ICON)) {
+		// ROM doesn't have an icon.
+		return nullptr;
+	}
+
+	if (romHeader.flags & GCOM_FLAG_ICON_RLE) {
+		// Icon is RLE-compressed.
+		return loadIconRLE();
 	}
 
 	// Icon is 64x64.
@@ -86,7 +129,7 @@ const rp_image *GameComPrivate::loadIcon(void)
 		return nullptr;
 	}
 
-	const int64_t fileSize = this->file->size();
+	const off64_t fileSize = this->file->size();
 	uint8_t bank_number = romHeader.icon.bank;
 	unsigned int bank_offset = bank_number * GCOM_ICON_BANK_SIZE;
 	unsigned int bank_adj = 0;
@@ -109,7 +152,7 @@ const rp_image *GameComPrivate::loadIcon(void)
 			return nullptr;
 		}
 		// Get the lowest power of two size and mask the bank number.
-		unsigned int lz = (1 << uilog2(static_cast<unsigned int>(fileSize)));
+		unsigned int lz = (1U << uilog2(static_cast<unsigned int>(fileSize)));
 		bank_number &= ((lz / GCOM_ICON_BANK_SIZE) - 1);
 		bank_offset = (bank_number * GCOM_ICON_BANK_SIZE) - bank_adj;
 	}
@@ -132,22 +175,13 @@ const rp_image *GameComPrivate::loadIcon(void)
 
 	// Create the icon.
 	// TODO: Split into an ImageDecoder function?
-	unique_ptr<rp_image> tmp_icon(new rp_image(GCOM_ICON_W, GCOM_ICON_H, rp_image::FORMAT_CI8));
-
-	// Set the palette.
-	// NOTE: Index 0 is white; index 3 is black.
-	// TODO: Use colors closer to the original screen?
-	static const uint32_t gcom_palette[4] = {
-		0xFFFFFFFF,
-		0xFFC0C0C0,
-		0xFF808080,
-		0xFF000000,
-	};
+	rp_image *const tmp_icon = new rp_image(GCOM_ICON_W, GCOM_ICON_H, rp_image::Format::CI8);
 
 	uint32_t *const palette = tmp_icon->palette();
 	assert(palette != nullptr);
 	assert(tmp_icon->palette_len() >= 4);
 	if (!palette || tmp_icon->palette_len() < 4) {
+		tmp_icon->unref();
 		return nullptr;
 	}
 	memcpy(palette, gcom_palette, sizeof(gcom_palette));
@@ -159,6 +193,7 @@ const rp_image *GameComPrivate::loadIcon(void)
 	size_t size = file->seekAndRead(icon_file_offset, icon_data.get(), icon_data_len);
 	if (size != icon_data_len) {
 		// Short read.
+		tmp_icon->unref();
 		return nullptr;
 	}
 
@@ -186,6 +221,7 @@ const rp_image *GameComPrivate::loadIcon(void)
 		dest_stride = tmp_icon->stride();
 	}
 
+	// Convert 2bpp to 8bpp.
 	const uint8_t *pSrc = icon_data.get();
 	const unsigned int Ytotal = GCOM_ICON_H + iconYalign;
 	for (unsigned int x = 0; x < GCOM_ICON_W; x++) {
@@ -232,8 +268,199 @@ const rp_image *GameComPrivate::loadIcon(void)
 	tmp_icon->set_sBIT(&sBIT);
 
 	// Save and return the icon.
-	this->icon = tmp_icon.release();
-	return this->icon;
+	this->img_icon = tmp_icon;
+	return tmp_icon;
+}
+
+/**
+ * Decompress game.com RLE data.
+ *
+ * NOTE: The ROM header does *not* indicate how much data is
+ * available, so we'll keep going until we're out of either
+ * output or input buffer.
+ *
+ * @param pOut		[out] Output buffer.
+ * @param out_len	[in] Output buffer length.
+ * @param pIn		[in] Input buffer.
+ * @param in_len	[in] Input buffer length.
+ * @return Decoded data length on success; negative POSIX error code on error.
+ */
+ssize_t GameComPrivate::rle_decompress(uint8_t *pOut, size_t out_len, const uint8_t *pIn, size_t in_len)
+{
+	assert(pOut != nullptr);
+	assert(out_len > 0);
+	assert(pIn != nullptr);
+	assert(in_len > 0);
+	if (!pOut || out_len == 0 || !pIn || in_len == 0) {
+		return -EINVAL;
+	}
+
+	uint8_t const *pOut_orig = pOut;
+	uint8_t const *pOut_end = pOut + out_len;
+	const uint8_t *const pIn_end = pIn + in_len;
+
+	while (pIn < pIn_end && pOut < pOut_end) {
+		unsigned int count = 0;
+
+		if (pIn[0] == 0xC0) {
+			// 16-bit RLE:
+			// - pIn[2],pIn[1]: 16-bit count (LE)
+			// - pIn[3]: Data byte
+			if (pIn + 3 >= pIn_end) {
+				// Input buffer overflow!
+				return -EIO;
+			}
+			count = (pIn[2] << 8) | pIn[1];
+			if (pOut + count > pOut_end) {
+				// Output buffer overflow!
+				return -EIO;
+			}
+			memset(pOut, pIn[3], count);
+			pIn += 4;
+		} else if (pIn[0] > 0xC0) {
+			// 6-bit RLE:
+			// - pIn[0]: 6-bit count (low 6 bits)
+			// - pIn[1]: Data byte
+			if (pIn + 1 >= pIn_end) {
+				// Input buffer overflow!
+				return -EIO;
+			}
+			count = pIn[0] & 0x3F;
+			if (pOut + count > pOut_end) {
+				// Output buffer overflow!
+				return -EIO;
+			}
+			memset(pOut, pIn[1], count);
+			pIn += 2;
+		} else {
+			// Regular data byte.
+			*pOut++ = *pIn++;
+		}
+
+		// Output buffer: Add bytes for 6-bit and 16-bit RLE.
+		pOut += count;
+	}
+
+	return (pOut - pOut_orig);
+}
+
+/**
+ * Load an RLE-compressed icon.
+ * This is called from loadIcon().
+ * @return Icon, or nullptr on error.
+ */
+const rp_image *GameComPrivate::loadIconRLE(void)
+{
+	// Checks were already done in loadIcon().
+	assert(romHeader.flags & GCOM_FLAG_ICON_RLE);
+
+	const off64_t fileSize = this->file->size();
+	uint8_t bank_number = romHeader.icon.bank;
+	unsigned int bank_offset = bank_number * GCOM_ICON_BANK_SIZE_RLE;
+	unsigned int bank_adj = 0;
+	if (bank_offset > 256*1024) {
+		// Check if the ROM is 0.8 MB or 1.8 MB.
+		// These ROMs are incorrectly dumped, but we can usually
+		// get the icon by subtracting 256 KB.
+		if (fileSize == 768*1024 || fileSize == 1792*1024) {
+			bank_adj = 256*1024;
+			bank_offset -= bank_adj;
+		}
+	}
+
+	// If the bank number is past the end of the ROM, it may be underdumped.
+	if (bank_offset > fileSize) {
+		// If the bank number is more than 2x the filesize,
+		// and it's over the 1 MB mark, forget it.
+		if (bank_offset > (fileSize * 2) && bank_offset > 1048576) {
+			// Completely out of range.
+			return nullptr;
+		}
+		// Get the lowest power of two size and mask the bank number.
+		unsigned int lz = (1U << uilog2(static_cast<unsigned int>(fileSize)));
+		bank_number &= ((lz / GCOM_ICON_BANK_SIZE_RLE) - 1);
+		bank_offset = (bank_number * GCOM_ICON_BANK_SIZE_RLE) - bank_adj;
+	}
+
+	// Icon is stored at bank_offset + ((x << 8) | y).
+	// Up to 4 bytes per 4 pixels for the most extreme RLE test case.
+	// (effectively 8bpp, though usually much less)
+	static const size_t icon_rle_data_max_len = GCOM_ICON_W * GCOM_ICON_H;
+	unique_ptr<uint8_t[]> icon_rle_data(new uint8_t[icon_rle_data_max_len]);
+	unsigned int icon_file_offset = bank_offset + ((romHeader.icon.x << 8) | (romHeader.icon.y));
+	if (icon_file_offset >= GCOM_ICON_RLE_BANK_LOAD_OFFSET) {
+		// Not sure why this is needed...
+		icon_file_offset -= GCOM_ICON_RLE_BANK_LOAD_OFFSET;
+	}
+	size_t size = file->seekAndRead(icon_file_offset, icon_rle_data.get(), icon_rle_data_max_len);
+	if (size == 0) {
+		// No data...
+		return nullptr;
+	} else if (size < icon_rle_data_max_len) {
+		// Zero out the remaining area.
+		memset(&icon_rle_data[size], 0, icon_rle_data_max_len - size);
+	}
+
+	// Decompress the RLE data. (2bpp)
+	static const size_t icon_data_len = (GCOM_ICON_W * GCOM_ICON_H) / 4;
+	unique_ptr<uint8_t[]> icon_data(new uint8_t[icon_data_len]);
+	ssize_t ssize = rle_decompress(icon_data.get(), icon_data_len, icon_rle_data.get(), icon_rle_data_max_len);
+	if (ssize != icon_data_len) {
+		// Decompression failed.
+		return nullptr;
+	}
+
+	// Create the icon.
+	// TODO: Split into an ImageDecoder function?
+	rp_image *const tmp_icon = new rp_image(GCOM_ICON_W, GCOM_ICON_H, rp_image::Format::CI8);
+
+	uint32_t *const palette = tmp_icon->palette();
+	assert(palette != nullptr);
+	assert(tmp_icon->palette_len() >= 4);
+	if (!palette || tmp_icon->palette_len() < 4) {
+		tmp_icon->unref();
+		return nullptr;
+	}
+	memcpy(palette, gcom_palette, sizeof(gcom_palette));
+
+	// NOTE: The image is vertically mirrored and rotated 270 degrees.
+	// Because of this, we can't use scanline pointer adjustment for
+	// the destination image. Each pixel address will be calculated
+	// manually.
+
+	// NOTE 2: Due to RLE compression, the icon is *always* aligned
+	// on a byte boundary in the decompressed data, so we won't need
+	// to do manual realignment.
+	uint8_t *pDestBase = static_cast<uint8_t*>(tmp_icon->bits());
+	int dest_stride = tmp_icon->stride();
+
+	// Convert 2bpp to 8bpp.
+	const uint8_t *pSrc = icon_data.get();
+	for (unsigned int x = 0; x < GCOM_ICON_W; x++) {
+		uint8_t *pDest = pDestBase + x;
+		for (unsigned int y = 0; y < GCOM_ICON_H; y += 4, pSrc++) {
+			uint8_t px2bpp = *pSrc;
+			pDest[dest_stride*3] = px2bpp & 0x03;
+			px2bpp >>= 2;
+			pDest[dest_stride*2] = px2bpp & 0x03;
+			px2bpp >>= 2;
+			pDest[dest_stride*1] = px2bpp & 0x03;
+			px2bpp >>= 2;
+			pDest[0] = px2bpp;
+
+			// Next group of pixels.
+			pDest += (dest_stride*4);
+		}
+	}
+
+	// Set the sBIT metadata.
+	// TODO: Use grayscale instead of RGB.
+	static const rp_image::sBIT_t sBIT = {2,2,2,0,0};
+	tmp_icon->set_sBIT(&sBIT);
+
+	// Save and return the icon.
+	this->img_icon = tmp_icon;
+	return tmp_icon;
 }
 
 /** GameCom **/
@@ -256,6 +483,7 @@ GameCom::GameCom(IRpFile *file)
 {
 	RP_D(GameCom);
 	d->className = "GameCom";
+	d->mimeType = "application/x-game-com-rom";	// unofficial, not on fd.o
 
 	if (!d->file) {
 		// Could not ref() the file handle.
@@ -292,8 +520,7 @@ GameCom::GameCom(IRpFile *file)
 
 	if (!d->isValid) {
 		// Still not valid.
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 	}
 }
 
@@ -405,6 +632,19 @@ const char *const *GameCom::supportedMimeTypes_static(void)
 }
 
 /**
+ * Get a bitfield of image types this object can retrieve.
+ * @return Bitfield of supported image types. (ImageTypesBF)
+ */
+uint32_t GameCom::supportedImageTypes(void) const
+{
+	RP_D(const GameCom);
+	if (d->isValid && (d->romHeader.flags & GCOM_FLAG_HAS_ICON)) {
+		return IMGBF_INT_ICON;
+	}
+	return 0;
+}
+
+/**
  * Get a bitfield of image types this class can retrieve.
  * @return Bitfield of supported image types. (ImageTypesBF)
  */
@@ -418,16 +658,40 @@ uint32_t GameCom::supportedImageTypes_static(void)
  * @param imageType Image type.
  * @return Vector of available image sizes, or empty vector if no images are available.
  */
+vector<RomData::ImageSizeDef> GameCom::supportedImageSizes(ImageType imageType) const
+{
+	ASSERT_supportedImageSizes(imageType);
+
+	RP_D(const GameCom);
+	if (!d->isValid || imageType != IMG_INT_MEDIA ||
+	    !(d->romHeader.flags & GCOM_FLAG_HAS_ICON))
+	{
+		// Only IMG_INT_ICON is supported,
+		// and/or the ROM doesn't have an icon.
+		return vector<ImageSizeDef>();
+	}
+
+	static const ImageSizeDef sz_INT_ICON[] = {
+		{nullptr, GCOM_ICON_W, GCOM_ICON_H, 0},
+	};
+	return vector<ImageSizeDef>(sz_INT_ICON,
+		sz_INT_ICON + ARRAY_SIZE(sz_INT_ICON));
+}
+
+/**
+ * Get a list of all available image sizes for the specified image type.
+ * @param imageType Image type.
+ * @return Vector of available image sizes, or empty vector if no images are available.
+ */
 vector<RomData::ImageSizeDef> GameCom::supportedImageSizes_static(ImageType imageType)
 {
 	ASSERT_supportedImageSizes(imageType);
 
 	if (imageType != IMG_INT_ICON) {
-		// Only icons are supported.
+		// Only IMG_INT_ICON is supported.
 		return vector<ImageSizeDef>();
 	}
 
-	// game.com ROM images have 64x64 icons.
 	static const ImageSizeDef sz_INT_ICON[] = {
 		{nullptr, GCOM_ICON_W, GCOM_ICON_H, 0},
 	};
@@ -449,10 +713,14 @@ uint32_t GameCom::imgpf(ImageType imageType) const
 	ASSERT_imgpf(imageType);
 
 	switch (imageType) {
-		case IMG_INT_ICON:
-		case IMG_INT_BANNER:
-			// Use nearest-neighbor scaling.
-			return IMGPF_RESCALE_NEAREST;
+		case IMG_INT_ICON: {
+			RP_D(const GameCom);
+			if (d->isValid && (d->romHeader.flags & GCOM_FLAG_HAS_ICON)) {
+				// Use nearest-neighbor scaling.
+				return IMGPF_RESCALE_NEAREST;
+			}
+			break;
+		}
 		default:
 			break;
 	}
@@ -490,14 +758,14 @@ int GameCom::loadFieldData(void)
 		RomFields::STRF_TRIM_END);
 
 	// Game ID.
-	d->fields->addField_string_numeric(C_("GameCom", "Game ID"),
+	d->fields->addField_string_numeric(C_("RomData", "Game ID"),
 		le16_to_cpu(romHeader->game_id),
-		RomFields::FB_HEX, 4, RomFields::STRF_MONOSPACE);
+		RomFields::Base::Hex, 4, RomFields::STRF_MONOSPACE);
 
 	// Entry point.
 	d->fields->addField_string_numeric(C_("GameCom", "Entry Point"),
 		le16_to_cpu(romHeader->entry_point),
-		RomFields::FB_HEX, 4, RomFields::STRF_MONOSPACE);
+		RomFields::Base::Hex, 4, RomFields::STRF_MONOSPACE);
 
 	// Finished reading the field data.
 	return static_cast<int>(d->fields->count());
@@ -551,25 +819,23 @@ int GameCom::loadInternalImage(ImageType imageType, const rp_image **pImage)
 
 	RP_D(GameCom);
 	if (imageType != IMG_INT_ICON) {
-		// Only IMG_INT_ICON is supported by PS1.
 		*pImage = nullptr;
 		return -ENOENT;
-	} else if (d->icon) {
-		// Image has already been loaded.
-		*pImage = d->icon;
+	} else if (d->img_icon != nullptr) {
+		*pImage = d->img_icon;
 		return 0;
+	} else if (!(d->romHeader.flags & GCOM_FLAG_HAS_ICON)) {
+		// ROM doesn't have an icon.
+		*pImage = nullptr;
+		return -ENOENT;
 	} else if (!d->file) {
-		// File isn't open.
 		*pImage = nullptr;
 		return -EBADF;
 	} else if (!d->isValid) {
-		// Save file isn't valid.
 		*pImage = nullptr;
 		return -EIO;
 	}
 
-	// Load the icon.
-	// TODO: -ENOENT if the file doesn't actually have an icon.
 	*pImage = d->loadIcon();
 	return (*pImage != nullptr ? 0 : -EIO);
 }

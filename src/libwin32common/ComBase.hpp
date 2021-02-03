@@ -22,19 +22,19 @@
 
 namespace LibWin32Common {
 
-// QISearch() [shlwapi.dll]
-extern PFNQISEARCH pfnQISearch;
-
-// IsThemeActive() [uxtheme.dll]
-typedef BOOL (STDAPICALLTYPE* PFNISTHEMEACTIVE)(void);
-extern PFNISTHEMEACTIVE pfnIsThemeActive;
+// Manipulate the global COM reference count.
+void incRpGlobalRefCount(void);
+void decRpGlobalRefCount(void);
 
 // References of all objects.
 extern volatile ULONG RP_ulTotalRefCount;
 
-// Manipulate the global COM reference count.
-void incRpGlobalRefCount(void);
-void decRpGlobalRefCount(void);
+// QISearch() [our own implementation]
+HRESULT WINAPI rp_QISearch(_Inout_ void *that, _In_ LPCQITAB pqit, _In_ REFIID riid, _COM_Outptr_ void **ppv);
+
+// IsThemeActive() [uxtheme.dll]
+typedef BOOL (STDAPICALLTYPE* PFNISTHEMEACTIVE)(void);
+extern PFNISTHEMEACTIVE pfnIsThemeActive;
 
 /**
  * Is an RP_ComBase object referenced?

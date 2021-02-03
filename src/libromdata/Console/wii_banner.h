@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * wii_banner.h: Nintendo Wii banner structures.                           *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -10,7 +10,7 @@
 #define __ROMPROPERTIES_LIBROMDATA_WII_BANNER_H__
 
 #include <stdint.h>
-#include "librpbase/common.h"
+#include "common.h"
 
 // for Title ID
 #include "wii_structs.h"
@@ -18,8 +18,6 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-#pragma pack(1)
 
 /**
  * WIBN (Wii Banner)
@@ -60,7 +58,7 @@ extern "C" {
  * All fields are in big-endian.
  */
 #define WII_WIBN_MAGIC 'WIBN'
-typedef struct PACKED _Wii_WIBN_Header_t {
+typedef struct _Wii_WIBN_Header_t {
 	uint32_t magic;			// [0x000] 'WIBN'
 	uint32_t flags;			// [0x004] Flags. (See Wii_WIBN_Flags_e.)
 	uint16_t iconspeed;		// [0x008] Similar to GCN.
@@ -74,8 +72,8 @@ ASSERT_STRUCT(Wii_WIBN_Header_t, 160);
  * Wii save game flags.
  */
 typedef enum {
-	WII_WIBN_FLAG_NO_COPY		= (1 << 0),	// Cannot copy from NAND normally.
-	WII_WIBN_FLAG_ICON_BOUNCE	= (1 << 4),	// Icon animation "bounces" instead of looping.
+	WII_WIBN_FLAG_NO_COPY		= (1U << 0),	// Cannot copy from NAND normally.
+	WII_WIBN_FLAG_ICON_BOUNCE	= (1U << 4),	// Icon animation "bounces" instead of looping.
 } Wii_WIBN_Flags_e;
 
 // IMET magic number.
@@ -119,6 +117,8 @@ typedef enum {
 	WII_LANG_DUTCH		= 6,
 	// 7 and 8 are unknown. (Chinese?)
 	WII_LANG_KOREAN		= 9,
+
+	WII_LANG_MAX
 } Wii_Language_ID;
 
 /**
@@ -128,15 +128,32 @@ typedef enum {
  *
  * All fields are in big-endian.
  */
-typedef struct PACKED _Wii_SaveGame_Header_t {
-	RVL_TitleID_t savegame_id;	// [0x000] Savegame ID (title ID)
+typedef struct _Wii_SaveGame_Header_t {
+	Nintendo_TitleID_BE_t savegame_id;	// [0x000] Savegame ID (title ID)
 	uint32_t banner_size;		// [0x008] Size of banner+icons, with header. (max 0xF0A0)
-	uint8_t permissions;		// [0x00C] Permissions (???)
+	uint8_t permissions;		// [0x00C] Permissions (See Wii_SaveGame_Perm_e.)
 	uint8_t unknown1;		// [0x00D]
 	uint8_t md5_header[16];		// [0x00E] MD5 of plaintext header, with md5 blanker applied
 	uint8_t unknown2[2];		// [0x01E]
 } Wii_SaveGame_Header_t;
 ASSERT_STRUCT(Wii_SaveGame_Header_t, 32);
+
+/**
+ * Wii save game permissions.
+ * Similar to Unix permissions, except there's no Execute bit.
+ */
+typedef enum {
+	Wii_SaveGame_Perm_User_Read	= 0x20,
+	Wii_SaveGame_Perm_User_Write	= 0x10,
+	Wii_SaveGame_Perm_Group_Read	= 0x08,
+	Wii_SaveGame_Perm_Group_Write	= 0x04,
+	Wii_SaveGame_Perm_Other_Read	= 0x02,
+	Wii_SaveGame_Perm_Other_Write	= 0x01,
+
+	Wii_SaveGame_Perm_Mask_User	= 0x30,
+	Wii_SaveGame_Perm_Mask_Group	= 0x0C,
+	Wii_SaveGame_Perm_Mask_Other	= 0x03,
+} Wii_SaveGame_Perm_e;
 
 /**
  * Wii save game Bk (backup) header.
@@ -148,7 +165,7 @@ ASSERT_STRUCT(Wii_SaveGame_Header_t, 32);
 #define WII_BK_SIZE 0x70
 #define WII_BK_MAGIC 'Bk'
 #define WII_BK_VERSION 0x0001
-typedef struct PACKED _Wii_Bk_Header_t {
+typedef struct _Wii_Bk_Header_t {
 	union {
 		struct {
 			uint32_t size;		// [0x000] Size of the header. (0x070)
@@ -178,7 +195,7 @@ ASSERT_STRUCT(Wii_Bk_Header_t, 0x70+0x10);
  * All fields are in big-endian.
  */
 #define WII_SAVEGAME_FILEHEADER_MAGIC 0x03ADF17E
-typedef struct PACKED _Wii_SaveGame_FileHeader_t {
+typedef struct _Wii_SaveGame_FileHeader_t {
 	uint32_t magic;		// [0x000] Magic. (0x03ADF17E)
 	uint32_t size;		// [0x004] Size of file.
 	uint8_t permissions;	// [0x008] Permissions. (???)
@@ -189,8 +206,6 @@ typedef struct PACKED _Wii_SaveGame_FileHeader_t {
 	uint8_t unknown[0x20];	// [0x060]
 } Wii_SaveGame_FileHeader_t;
 ASSERT_STRUCT(Wii_SaveGame_FileHeader_t, 0x80);
-
-#pragma pack()
 
 #ifdef __cplusplus
 }

@@ -3,6 +3,13 @@ path_classifiers:
     - "/src/*/tests/"
   docs:
     - /doc/
+  extlib:
+    - exclude: /extlib/
 
 queries:
   - exclude: cpp/fixme-comment
+
+extraction:
+  cpp:
+    configure:
+      command: cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=ON

@@ -2,15 +2,17 @@
  * ROM Properties Page shell extension. (libromdata/tests)                 *
  * ImageDecoderTest.cpp: ImageDecoder class test.                          *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #include "config.librpbase.h"
 #include "config.libromdata.h"
+#include "config.librptexture.h"
 
 // Google Test
 #include "gtest/gtest.h"
+#include "tcharx.h"
 
 // zlib and libpng
 #include <zlib.h>
@@ -28,13 +30,14 @@
 #define gzclose_w(file) gzclose(file)
 #endif
 
-// librpbase
-#include "librpbase/common.h"
-#include "librpbase/file/RpFile.hpp"
-#include "librpbase/file/RpMemFile.hpp"
-#include "librpbase/file/FileSystem.hpp"
+// librpbase, librpfile
+#include "common.h"
 #include "librpbase/img/RpImageLoader.hpp"
+#include "librpfile/RpFile.hpp"
+#include "librpfile/RpMemFile.hpp"
+#include "librpfile/FileSystem.hpp"
 using namespace LibRpBase;
+using namespace LibRpFile;
 
 // librptexture
 #include "librptexture/img/rp_image.hpp"
@@ -58,7 +61,7 @@ using namespace LibRpTexture;
 #include <stdlib.h>
 
 // C includes. (C++ namespace)
-#include "librpbase/ctypex.h"
+#include "ctypex.h"
 #include <cstring>
 
 // C++ includes.
@@ -108,8 +111,8 @@ struct ImageDecoderTest_mode
 };
 
 // Maximum file size for images.
-static const size_t MAX_DDS_IMAGE_FILESIZE = 4*1024*1024;
-static const size_t MAX_PNG_IMAGE_FILESIZE = 2*1024*1024;
+static const size_t MAX_DDS_IMAGE_FILESIZE = 12*1024*1024;
+static const size_t MAX_PNG_IMAGE_FILESIZE =  2*1024*1024;
 
 class ImageDecoderTest : public ::testing::TestWithParam<ImageDecoderTest_mode>
 {
@@ -198,11 +201,11 @@ inline ::std::ostream& operator<<(::std::ostream& os, const ImageDecoderTest_mod
 inline void ImageDecoderTest::replace_slashes(string &path)
 {
 #ifdef _WIN32
-	for (auto iter = path.begin(); iter != path.end(); ++iter) {
-		if (*iter == '/') {
-			*iter = '\\';
+	std::for_each(path.begin(), path.end(), [](char &p) {
+		if (p == '/') {
+			p = '\\';
 		}
-	}
+	});
 #else
 	// Nothing to do here...
 	RP_UNUSED(path);
@@ -269,7 +272,7 @@ void ImageDecoderTest::SetUp(void)
 	path.resize(18);	// Back to "ImageDecoder_data/".
 	path += mode.png_filename;
 	replace_slashes(path);
-	unique_IRpFile<RpFile> file(new RpFile(path, RpFile::FM_OPEN_READ));
+	unique_RefBase<RpFile> file(new RpFile(path, RpFile::FM_OPEN_READ));
 	ASSERT_TRUE(file->isOpen()) << "Error loading PNG image file: " <<
 		mode.png_filename << " - " << strerror(file->lastError());
 
@@ -291,21 +294,20 @@ void ImageDecoderTest::SetUp(void)
  */
 void ImageDecoderTest::TearDown(void)
 {
-	if (m_romData) {
-		m_romData->unref();
-		m_romData = nullptr;
-	}
-
-	if (m_f_dds) {
-		m_f_dds->unref();
-		m_f_dds = nullptr;
-	}
+	UNREF_AND_NULL(m_romData);
+	UNREF_AND_NULL(m_f_dds);
 
 	if (m_gzDds) {
 		gzclose_r(m_gzDds);
 		m_gzDds = nullptr;
 	}
 }
+
+struct RpImageUnrefDeleter {
+	void operator()(rp_image *img) {
+		UNREF(img);
+	}
+};
 
 /**
  * Compare two rp_image objects.
@@ -325,15 +327,15 @@ void ImageDecoderTest::Compare_RpImage(
 	ASSERT_EQ(pImgExpected->height(), pImgActual->height()) << "Image sizes don't match.";
 
 	// Ensure we delete temporary images if they're created.
-	unique_ptr<rp_image> tmpImg_expected;
-	unique_ptr<rp_image> tmpImg_actual;
+	unique_ptr<rp_image, RpImageUnrefDeleter> tmpImg_expected(nullptr, RpImageUnrefDeleter());
+	unique_ptr<rp_image, RpImageUnrefDeleter> tmpImg_actual(nullptr, RpImageUnrefDeleter());
 
 	switch (pImgExpected->format()) {
-		case rp_image::FORMAT_ARGB32:
+		case rp_image::Format::ARGB32:
 			// No conversion needed.
 			break;
 
-		case rp_image::FORMAT_CI8:
+		case rp_image::Format::CI8:
 			// Convert to ARGB32.
 			tmpImg_expected.reset(pImgExpected->dup_ARGB32());
 			ASSERT_TRUE(tmpImg_expected != nullptr);
@@ -347,11 +349,11 @@ void ImageDecoderTest::Compare_RpImage(
 	}
 
 	switch (pImgActual->format()) {
-		case rp_image::FORMAT_ARGB32:
+		case rp_image::Format::ARGB32:
 			// No conversion needed.
 			break;
 
-		case rp_image::FORMAT_CI8:
+		case rp_image::Format::CI8:
 			// Convert to ARGB32.
 			tmpImg_actual.reset(pImgActual->dup_ARGB32());
 			ASSERT_TRUE(tmpImg_actual != nullptr);
@@ -395,9 +397,9 @@ void ImageDecoderTest::decodeTest_internal(void)
 	const ImageDecoderTest_mode &mode = GetParam();
 
 	// Load the PNG image.
-	unique_IRpFile<RpMemFile> f_png(new RpMemFile(m_png_buf.data(), m_png_buf.size()));
+	unique_RefBase<RpMemFile> f_png(new RpMemFile(m_png_buf.data(), m_png_buf.size()));
 	ASSERT_TRUE(f_png->isOpen()) << "Could not create RpMemFile for the PNG image.";
-	unique_ptr<rp_image> img_png(RpImageLoader::load(f_png.get()));
+	unique_ptr<rp_image, RpImageUnrefDeleter> img_png(RpImageLoader::load(f_png.get()), RpImageUnrefDeleter());
 	ASSERT_TRUE(img_png != nullptr) << "Could not load the PNG image as rp_image.";
 	ASSERT_TRUE(img_png->isValid()) << "Could not load the PNG image as rp_image.";
 
@@ -427,6 +429,12 @@ void ImageDecoderTest::decodeTest_internal(void)
 		// TODO: Use .zktx format instead of .ktx.gz.
 		// NOTE: Using RpTextureWrapper.
 		filetype = "KTX";
+		m_romData = new RpTextureWrapper(m_f_dds);
+	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-8, 8, ".ktx2.gz")) {
+		// Khronos KTX2 image
+		// TODO: Use .zktx2 format instead of .ktx2.gz.
+		// NOTE: Using RpTextureWrapper.
+		filetype = "KTX2";
 		m_romData = new RpTextureWrapper(m_f_dds);
 	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-11, 11, ".ps3.vtf.gz")) {
 		// Valve Texture File (PS3)
@@ -538,12 +546,17 @@ void ImageDecoderTest::decodeBenchmark_internal(void)
 		   !mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".svr.gz")) {
 		// PVR/GVR/SVR image
 		// NOTE: Using RpTextureWrapper.
+		// NOTE: May be PowerVR3.
 		fn_ctor = [](IRpFile *file) { return new RpTextureWrapper(file); };
 	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".ktx.gz")) {
 		// Khronos KTX image
 		// TODO: Use .zktx format instead of .ktx.gz?
 		// NOTE: Using RpTextureWrapper.
-		// NOTE: May be PowerVR3.
+		fn_ctor = [](IRpFile *file) { return new RpTextureWrapper(file); };
+	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-8, 8, ".ktx2.gz")) {
+		// Khronos KTX image
+		// TODO: Use .zktx2 format instead of .ktx2.gz?
+		// NOTE: Using RpTextureWrapper.
 		fn_ctor = [](IRpFile *file) { return new RpTextureWrapper(file); };
 	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-11, 11, ".ps3.vtf.gz")) {
 		// Valve Texture File (PS3)
@@ -608,8 +621,7 @@ void ImageDecoderTest::decodeBenchmark_internal(void)
 		const rp_image *const img_dds = m_romData->image(mode.imgType);
 		ASSERT_TRUE(img_dds != nullptr) << "Could not load the source image as rp_image.";
 
-		m_romData->unref();
-		m_romData = nullptr;
+		UNREF_AND_NULL_NOCHK(m_romData);
 	}
 }
 
@@ -632,13 +644,15 @@ string ImageDecoderTest::test_case_suffix_generator(const ::testing::TestParamIn
 
 	// Replace all non-alphanumeric characters with '_'.
 	// See gtest-param-util.h::IsValidParamName().
-	for (auto iter = suffix.begin(); iter != suffix.end(); ++iter) {
-		// NOTE: Not checking for '_' because that
-		// wastes a branch.
-		if (!ISALNUM(*iter)) {
-			*iter = '_';
+	std::for_each(suffix.begin(), suffix.end(),
+		[](char &c) {
+			// NOTE: Not checking for '_' because that
+			// wastes a branch.
+			if (!ISALNUM(c)) {
+				c = '_';
+			}
 		}
-	}
+	);
 
 	// Append the image type to allow checking multiple types
 	// of images in the same file.
@@ -660,7 +674,7 @@ string ImageDecoderTest::test_case_suffix_generator(const ::testing::TestParamIn
 // Test cases.
 
 // DirectDrawSurface tests. (S3TC)
-INSTANTIATE_TEST_CASE_P(DDS_S3TC, ImageDecoderTest,
+INSTANTIATE_TEST_SUITE_P(DDS_S3TC, ImageDecoderTest,
 	::testing::Values(
 		ImageDecoderTest_mode(
 			"S3TC/dxt1-rgb.dds.gz",
@@ -698,7 +712,7 @@ INSTANTIATE_TEST_CASE_P(DDS_S3TC, ImageDecoderTest,
 	, ImageDecoderTest::test_case_suffix_generator);
 
 // DirectDrawSurface tests. (Uncompressed 16-bit RGB)
-INSTANTIATE_TEST_CASE_P(DDS_RGB16, ImageDecoderTest,
+INSTANTIATE_TEST_SUITE_P(DDS_RGB16, ImageDecoderTest,
 	::testing::Values(
 		ImageDecoderTest_mode(
 			"RGB/RGB565.dds.gz",
@@ -709,7 +723,7 @@ INSTANTIATE_TEST_CASE_P(DDS_RGB16, ImageDecoderTest,
 	, ImageDecoderTest::test_case_suffix_generator);
 
 // DirectDrawSurface tests. (Uncompressed 16-bit ARGB)
-INSTANTIATE_TEST_CASE_P(DDS_ARGB16, ImageDecoderTest,
+INSTANTIATE_TEST_SUITE_P(DDS_ARGB16, ImageDecoderTest,
 	::testing::Values(
 		ImageDecoderTest_mode(
 			"ARGB/ARGB1555.dds.gz",
@@ -723,7 +737,7 @@ INSTANTIATE_TEST_CASE_P(DDS_ARGB16, ImageDecoderTest,
 	, ImageDecoderTest::test_case_suffix_generator);
 
 // DirectDrawSurface tests. (Uncompressed 15-bit RGB)
-INSTANTIATE_TEST_CASE_P(DDS_RGB15, ImageDecoderTest,
+INSTANTIATE_TEST_SUITE_P(DDS_RGB15, ImageDecoderTest,
 	::testing::Values(
 		ImageDecoderTest_mode(
 			"RGB/RGB565.dds.gz",
@@ -731,7 +745,7 @@ INSTANTIATE_TEST_CASE_P(DDS_RGB15, ImageDecoderTest,
 	, ImageDecoderTest::test_case_suffix_generator);
 
 // DirectDrawSurface tests. (Uncompressed 24-bit RGB)
-INSTANTIATE_TEST_CASE_P(DDS_RGB24, ImageDecoderTest,
+INSTANTIATE_TEST_SUITE_P(DDS_RGB24, ImageDecoderTest,
 	::testing::Values(
 		ImageDecoderTest_mode(
 			"RGB/RGB888.dds.gz",
@@ -739,7 +753,7 @@ INSTANTIATE_TEST_CASE_P(DDS_RGB24, ImageDecoderTest,
 	, ImageDecoderTest::test_case_suffix_generator);
 
 // DirectDrawSurface tests. (Uncompressed 32-bit RGB)
-INSTANTIATE_TEST_CASE_P(DDS_RGB32, ImageDecoderTest,
+INSTANTIATE_TEST_SUITE_P(DDS_RGB32, ImageDecoderTest,
 	::testing::Values(
 		ImageDecoderTest_mode(
 			"RGB/xRGB8888.dds.gz",
@@ -755,7 +769,7 @@ INSTANTIATE_TEST_CASE_P(DDS_RGB32, ImageDecoderTest,
 	, ImageDecoderTest::test_case_suffix_generator);
 
 // DirectDrawSurface tests. (Uncompressed 32-bit ARGB)
-INSTANTIATE_TEST_CASE_P(DDS_ARGB32, ImageDecoderTest,
+INSTANTIATE_TEST_SUITE_P(DDS_ARGB32, ImageDecoderTest,
 	::testing::Values(
 		// 32-bit
 		ImageDecoderTest_mode(
@@ -775,7 +789,7 @@ INSTANTIATE_TEST_CASE_P(DDS_ARGB32, ImageDecoderTest,
 	, ImageDecoderTest::test_case_suffix_generator);
 
 // DirectDrawSurface tests. (Luminance)
-INSTANTIATE_TEST_CASE_P(DDS_Luma, ImageDecoderTest,
+INSTANTIATE_TEST_SUITE_P(DDS_Luma, ImageDecoderTest,
 	::testing::Values(
 		ImageDecoderTest_mode(
 			"Luma/L8.dds.gz",
@@ -792,7 +806,7 @@ INSTANTIATE_TEST_CASE_P(DDS_Luma, ImageDecoderTest,
 	, ImageDecoderTest::test_case_suffix_generator);
 
 // DirectDrawSurface tests. (Alpha)
-INSTANTIATE_TEST_CASE_P(DDS_Alpha, ImageDecoderTest,
+INSTANTIATE_TEST_SUITE_P(DDS_Alpha, ImageDecoderTest,
 	::testing::Values(
 		ImageDecoderTest_mode(
 			"Alpha/A8.dds.gz",
@@ -800,7 +814,7 @@ INSTANTIATE_TEST_CASE_P(DDS_Alpha, ImageDecoderTest,
 	, ImageDecoderTest::test_case_suffix_generator);
 
 // PVR tests. (square twiddled)
-INSTANTIATE_TEST_CASE_P(PVR_SqTwiddled, ImageDecoderTest,
+INSTANTIATE_TEST_SUITE_P(PVR_SqTwiddled, ImageDecoderTest,
 	::testing::Values(
 		ImageDecoderTest_mode(
 			"PVR/bg_00.pvr.gz",
@@ -808,7 +822,7 @@ INSTANTIATE_TEST_CASE_P(PVR_SqTwiddled, ImageDecoderTest,
 	, ImageDecoderTest::test_case_suffix_generator);
 
 // PVR tests. (VQ)
-INSTANTIATE_TEST_CASE_P(PVR_VQ, ImageDecoderTest,
+INSTANTIATE_TEST_SUITE_P(PVR_VQ, ImageDecoderTest,
 	::testing::Values(
 		ImageDecoderTest_mode(
 			"PVR/mr_128k_huti.pvr.gz",
@@ -816,7 +830,7 @@ INSTANTIATE_TEST_CASE_P(PVR_VQ, ImageDecoderTest,
 	, ImageDecoderTest::test_case_suffix_generator);
 
 // PVR tests. (Small VQ)
-INSTANTIATE_TEST_CASE_P(PVR_SmallVQ, ImageDecoderTest,
+INSTANTIATE_TEST_SUITE_P(PVR_SmallVQ, ImageDecoderTest,
 	::testing::Values(
 		ImageDecoderTest_mode(
 			"PVR/drumfuta1.pvr.gz",
@@ -830,7 +844,7 @@ INSTANTIATE_TEST_CASE_P(PVR_SmallVQ, ImageDecoderTest,
 	, ImageDecoderTest::test_case_suffix_generator);
 
 // GVR tests. (RGB5A3)
-INSTANTIATE_TEST_CASE_P(GVR_RGB5A3, ImageDecoderTest,
+INSTANTIATE_TEST_SUITE_P(GVR_RGB5A3, ImageDecoderTest,
 	::testing::Values(
 		ImageDecoderTest_mode(
 			"GVR/zanki_sonic.gvr.gz",
@@ -838,7 +852,7 @@ INSTANTIATE_TEST_CASE_P(GVR_RGB5A3, ImageDecoderTest,
 	, ImageDecoderTest::test_case_suffix_generator);
 
 // GVR tests. (DXT1, S3TC)
-INSTANTIATE_TEST_CASE_P(GVR_DXT1_S3TC, ImageDecoderTest,
+INSTANTIATE_TEST_SUITE_P(GVR_DXT1_S3TC, ImageDecoderTest,
 	::testing::Values(
 		ImageDecoderTest_mode(
 			"GVR/paldam_off.gvr.gz",
@@ -852,7 +866,10 @@ INSTANTIATE_TEST_CASE_P(GVR_DXT1_S3TC, ImageDecoderTest,
 	, ImageDecoderTest::test_case_suffix_generator);
 
 // KTX tests.
-INSTANTIATE_TEST_CASE_P(KTX, ImageDecoderTest,
+#define KTX_IMAGE_TEST(file) ImageDecoderTest_mode( \
+			"KTX/" file ".ktx.gz", \
+			"KTX/" file ".png")
+INSTANTIATE_TEST_SUITE_P(KTX, ImageDecoderTest,
 	::testing::Values(
 		// RGB reference image.
 		ImageDecoderTest_mode(
@@ -881,28 +898,15 @@ INSTANTIATE_TEST_CASE_P(KTX, ImageDecoderTest,
 			"KTX/luminance.png"),
 
 		// ETC1
-		ImageDecoderTest_mode(
-			"KTX/etc1.ktx.gz",
-			"KTX/etc1.png"),
-
+		KTX_IMAGE_TEST("etc1"),
 		// ETC2
-		ImageDecoderTest_mode(
-			"KTX/etc2-rgb.ktx.gz",
-			"KTX/etc2-rgb.png"),
-		ImageDecoderTest_mode(
-			"KTX/etc2-rgba1.ktx.gz",
-			"KTX/etc2-rgba1.png"),
-		ImageDecoderTest_mode(
-			"KTX/etc2-rgba8.ktx.gz",
-			"KTX/etc2-rgba8.png"),
+		KTX_IMAGE_TEST("etc2-rgb"),
+		KTX_IMAGE_TEST("etc2-rgba1"),
+		KTX_IMAGE_TEST("etc2-rgba8"),
 
 		// BGR888 (Hi Corp)
-		ImageDecoderTest_mode(
-			"KTX/hi_mark.ktx.gz",
-			"KTX/hi_mark.png"),
-		ImageDecoderTest_mode(
-			"KTX/hi_mark_sq.ktx.gz",
-			"KTX/hi_mark_sq.png"),
+		KTX_IMAGE_TEST("hi_mark"),
+		KTX_IMAGE_TEST("hi_mark_sq"),
 
 		// RGBA reference image.
 		ImageDecoderTest_mode(
@@ -911,8 +915,25 @@ INSTANTIATE_TEST_CASE_P(KTX, ImageDecoderTest,
 
 	, ImageDecoderTest::test_case_suffix_generator);
 
+// KTX2 tests.
+#define KTX2_IMAGE_TEST(file) ImageDecoderTest_mode( \
+			"KTX2/" file ".ktx2.gz", \
+			"KTX2/" file ".png")
+INSTANTIATE_TEST_SUITE_P(KTX2, ImageDecoderTest,
+	::testing::Values(
+		KTX2_IMAGE_TEST("cubemap_yokohama_bc3_unorm"),
+		KTX2_IMAGE_TEST("cubemap_yokohama_etc2_unorm"),
+		KTX2_IMAGE_TEST("orient-down-metadata-u"),
+		KTX2_IMAGE_TEST("orient-up-metadata-u"),
+		KTX2_IMAGE_TEST("pattern_02_bc2"),
+		KTX2_IMAGE_TEST("rgba-reference-u"),
+		KTX2_IMAGE_TEST("rgb-mipmap-reference-u"),
+		KTX2_IMAGE_TEST("texturearray_bc3_unorm"),
+		KTX2_IMAGE_TEST("texturearray_etc2_unorm"))
+	, ImageDecoderTest::test_case_suffix_generator);
+
 // Valve VTF tests. (all formats)
-INSTANTIATE_TEST_CASE_P(VTF, ImageDecoderTest,
+INSTANTIATE_TEST_SUITE_P(VTF, ImageDecoderTest,
 	::testing::Values(
 		// NOTE: VTF channel ordering is usually backwards from ImageDecoder.
 
@@ -990,7 +1011,7 @@ INSTANTIATE_TEST_CASE_P(VTF, ImageDecoderTest,
 	, ImageDecoderTest::test_case_suffix_generator);
 
 // Valve VTF tests. (S3TC)
-INSTANTIATE_TEST_CASE_P(VTF_S3TC, ImageDecoderTest,
+INSTANTIATE_TEST_SUITE_P(VTF_S3TC, ImageDecoderTest,
 	::testing::Values(
 		ImageDecoderTest_mode(
 			"VTF/DXT1.vtf.gz",
@@ -1007,7 +1028,7 @@ INSTANTIATE_TEST_CASE_P(VTF_S3TC, ImageDecoderTest,
 	, ImageDecoderTest::test_case_suffix_generator);
 
 // Valve VTF3 tests. (S3TC)
-INSTANTIATE_TEST_CASE_P(VTF3_S3TC, ImageDecoderTest,
+INSTANTIATE_TEST_SUITE_P(VTF3_S3TC, ImageDecoderTest,
 	::testing::Values(
 		ImageDecoderTest_mode(
 			"VTF3/elevator_screen_broken_normal.ps3.vtf.gz",
@@ -1019,7 +1040,7 @@ INSTANTIATE_TEST_CASE_P(VTF3_S3TC, ImageDecoderTest,
 
 // Test images from texture-compressor.
 // Reference: https://github.com/TimvanScherpenzeel/texture-compressor
-INSTANTIATE_TEST_CASE_P(TCtest, ImageDecoderTest,
+INSTANTIATE_TEST_SUITE_P(TCtest, ImageDecoderTest,
 	::testing::Values(
 		ImageDecoderTest_mode(
 			"tctest/example-etc1.ktx.gz",
@@ -1030,7 +1051,7 @@ INSTANTIATE_TEST_CASE_P(TCtest, ImageDecoderTest,
 	, ImageDecoderTest::test_case_suffix_generator);
 
 // texture-compressor tests. (S3TC)
-INSTANTIATE_TEST_CASE_P(TCtest_S3TC, ImageDecoderTest,
+INSTANTIATE_TEST_SUITE_P(TCtest_S3TC, ImageDecoderTest,
 	::testing::Values(
 		ImageDecoderTest_mode(
 			"tctest/example-dxt1.dds.gz",
@@ -1043,8 +1064,9 @@ INSTANTIATE_TEST_CASE_P(TCtest_S3TC, ImageDecoderTest,
 			"tctest/example-dxt5.s3tc.dds.png"))
 	, ImageDecoderTest::test_case_suffix_generator);
 
+#ifdef ENABLE_PVRTC
 // texture-compressor tests. (PVRTC)
-INSTANTIATE_TEST_CASE_P(TCtest_PVRTC, ImageDecoderTest,
+INSTANTIATE_TEST_SUITE_P(TCtest_PVRTC, ImageDecoderTest,
 	::testing::Values(
 		ImageDecoderTest_mode(
 			"tctest/example-pvrtc1.pvr.gz",
@@ -1056,10 +1078,10 @@ INSTANTIATE_TEST_CASE_P(TCtest_PVRTC, ImageDecoderTest,
 			"tctest/example-pvrtc2-4bpp.pvr.gz",
 			"tctest/example-pvrtc2-4bpp.pvr.png"))
 	, ImageDecoderTest::test_case_suffix_generator);
-
+#endif /* ENABLE_PVRTC */
 
 // BC7 tests.
-INSTANTIATE_TEST_CASE_P(BC7, ImageDecoderTest,
+INSTANTIATE_TEST_SUITE_P(BC7, ImageDecoderTest,
 	::testing::Values(
 		ImageDecoderTest_mode(
 			"BC7/w5_grass200_abd_a.dds.gz",
@@ -1093,7 +1115,7 @@ INSTANTIATE_TEST_CASE_P(BC7, ImageDecoderTest,
 			"SMDH/" file ".smdh.gz", \
 			"SMDH/" file ".png", \
 			RomData::IMG_INT_ICON)
-INSTANTIATE_TEST_CASE_P(SMDH, ImageDecoderTest,
+INSTANTIATE_TEST_SUITE_P(SMDH, ImageDecoderTest,
 	::testing::Values(
 		SMDH_TEST("0004001000020000"),
 		SMDH_TEST("0004001000020100"),
@@ -1130,7 +1152,7 @@ INSTANTIATE_TEST_CASE_P(SMDH, ImageDecoderTest,
 			"GCI/" file ".banner.png", \
 			RomData::IMG_INT_BANNER)
 
-INSTANTIATE_TEST_CASE_P(GCI_Icon_1, ImageDecoderTest,
+INSTANTIATE_TEST_SUITE_P(GCI_Icon_1, ImageDecoderTest,
 	::testing::Values(
 		GCI_ICON_TEST("01-D43E-ZELDA"),
 		GCI_ICON_TEST("01-G2ME-MetroidPrime2"),
@@ -1183,7 +1205,7 @@ INSTANTIATE_TEST_CASE_P(GCI_Icon_1, ImageDecoderTest,
 		GCI_ICON_TEST("8P-GFZE-f_zero.dat"))
 	, ImageDecoderTest::test_case_suffix_generator);
 
-INSTANTIATE_TEST_CASE_P(GCI_Icon_2, ImageDecoderTest,
+INSTANTIATE_TEST_SUITE_P(GCI_Icon_2, ImageDecoderTest,
 	::testing::Values(
 		GCI_ICON_TEST("8P-GM2E-rep0000010000C900002497A48E.dat"),
 		GCI_ICON_TEST("8P-GM2E-super_monkey_ball_2.dat"),
@@ -1203,7 +1225,7 @@ INSTANTIATE_TEST_CASE_P(GCI_Icon_2, ImageDecoderTest,
 
 // NOTE: Some files don't have banners. They're left in the list for
 // consistency, but are commented out.
-INSTANTIATE_TEST_CASE_P(GCI_Banner_1, ImageDecoderTest,
+INSTANTIATE_TEST_SUITE_P(GCI_Banner_1, ImageDecoderTest,
 	::testing::Values(
 		GCI_BANNER_TEST("01-D43E-ZELDA"),
 		GCI_BANNER_TEST("01-G2ME-MetroidPrime2"),
@@ -1256,7 +1278,7 @@ INSTANTIATE_TEST_CASE_P(GCI_Banner_1, ImageDecoderTest,
 		GCI_BANNER_TEST("8P-GFZE-f_zero.dat"))
 	, ImageDecoderTest::test_case_suffix_generator);
 
-INSTANTIATE_TEST_CASE_P(GCI_Banner_2, ImageDecoderTest,
+INSTANTIATE_TEST_SUITE_P(GCI_Banner_2, ImageDecoderTest,
 	::testing::Values(
 		GCI_BANNER_TEST("8P-GM2E-rep0000010000C900002497A48E.dat"),
 		GCI_BANNER_TEST("8P-GM2E-super_monkey_ball_2.dat"),
@@ -1275,7 +1297,7 @@ INSTANTIATE_TEST_CASE_P(GCI_Banner_2, ImageDecoderTest,
 	, ImageDecoderTest::test_case_suffix_generator);
 
 // VMS tests.
-INSTANTIATE_TEST_CASE_P(VMS, ImageDecoderTest,
+INSTANTIATE_TEST_SUITE_P(VMS, ImageDecoderTest,
 	::testing::Values(
 		ImageDecoderTest_mode(
 			"Misc/BIOS002.VMS.gz",
@@ -1288,7 +1310,7 @@ INSTANTIATE_TEST_CASE_P(VMS, ImageDecoderTest,
 	, ImageDecoderTest::test_case_suffix_generator);
 
 // PSV tests.
-INSTANTIATE_TEST_CASE_P(PSV, ImageDecoderTest,
+INSTANTIATE_TEST_SUITE_P(PSV, ImageDecoderTest,
 	::testing::Values(
 		ImageDecoderTest_mode(
 			"Misc/BASCUS-94228535059524F.PSV.gz",
@@ -1308,7 +1330,7 @@ INSTANTIATE_TEST_CASE_P(PSV, ImageDecoderTest,
 			"NDS/" file ".header-icon.png", \
 			RomData::IMG_INT_ICON)
 
-INSTANTIATE_TEST_CASE_P(NDS, ImageDecoderTest,
+INSTANTIATE_TEST_SUITE_P(NDS, ImageDecoderTest,
 	::testing::Values(
 		NDS_ICON_TEST("A2DE01"),
 		NDS_ICON_TEST("A3YE8P"),
@@ -1352,7 +1374,7 @@ INSTANTIATE_TEST_CASE_P(NDS, ImageDecoderTest,
 			"Misc/" file ".icon.png", \
 			RomData::IMG_INT_ICON), \
 			BADGE_IMAGE_ONLY_TEST(file)
-INSTANTIATE_TEST_CASE_P(NintendoBadge, ImageDecoderTest,
+INSTANTIATE_TEST_SUITE_P(NintendoBadge, ImageDecoderTest,
 	::testing::Values(
 		BADGE_ICON_IMAGE_TEST("MroKrt8.cab"),
 		BADGE_IMAGE_ONLY_TEST("MroKrt8_Chara_Luigi000.prb"),
@@ -1371,7 +1393,7 @@ INSTANTIATE_TEST_CASE_P(NintendoBadge, ImageDecoderTest,
 #define SVR_IMAGE_TEST(file) ImageDecoderTest_mode( \
 			"SVR/" file ".svr.gz", \
 			"SVR/" file ".png")
-INSTANTIATE_TEST_CASE_P(SVR_1, ImageDecoderTest,
+INSTANTIATE_TEST_SUITE_P(SVR_1, ImageDecoderTest,
 	::testing::Values(
 		SVR_IMAGE_TEST("1channel_01"),
 		SVR_IMAGE_TEST("1channel_02"),
@@ -1425,7 +1447,7 @@ INSTANTIATE_TEST_CASE_P(SVR_1, ImageDecoderTest,
 		//SVR_IMAGE_TEST("c_toy_k01"))
 	, ImageDecoderTest::test_case_suffix_generator);
 
-INSTANTIATE_TEST_CASE_P(SVR_2, ImageDecoderTest,
+INSTANTIATE_TEST_SUITE_P(SVR_2, ImageDecoderTest,
 	::testing::Values(
 		SVR_IMAGE_TEST("c_toy_k02"),
 		SVR_IMAGE_TEST("c_toy_k03"),
@@ -1479,7 +1501,7 @@ INSTANTIATE_TEST_CASE_P(SVR_2, ImageDecoderTest,
 		SVR_IMAGE_TEST("kin_copdwaku2"))
 	, ImageDecoderTest::test_case_suffix_generator);
 
-INSTANTIATE_TEST_CASE_P(SVR_3, ImageDecoderTest,
+INSTANTIATE_TEST_SUITE_P(SVR_3, ImageDecoderTest,
 	::testing::Values(
 		SVR_IMAGE_TEST("kin_doglass1"),
 		SVR_IMAGE_TEST("kin_dolabel2"),
@@ -1504,7 +1526,7 @@ INSTANTIATE_TEST_CASE_P(SVR_3, ImageDecoderTest,
 #define DidjTex_IMAGE_TEST(file) ImageDecoderTest_mode( \
 			"DidjTex/" file ".tex", \
 			"DidjTex/" file ".png")
-INSTANTIATE_TEST_CASE_P(DidjTex, ImageDecoderTest,
+INSTANTIATE_TEST_SUITE_P(DidjTex, ImageDecoderTest,
 	::testing::Values(
 		DidjTex_IMAGE_TEST("LeftArrow"),
 		DidjTex_IMAGE_TEST("LightOff"),
@@ -1514,20 +1536,23 @@ INSTANTIATE_TEST_CASE_P(DidjTex, ImageDecoderTest,
 		DidjTex_IMAGE_TEST("Zone1Act1Icon"))
 	, ImageDecoderTest::test_case_suffix_generator);
 
+#ifdef ENABLE_PVRTC
 // PowerVR3 tests.
 #define PowerVR3_IMAGE_TEST(file) ImageDecoderTest_mode( \
 			"PowerVR3/" file ".pvr.gz", \
 			"PowerVR3/" file ".pvr.png")
-INSTANTIATE_TEST_CASE_P(PowerVR3, ImageDecoderTest,
+INSTANTIATE_TEST_SUITE_P(PowerVR3, ImageDecoderTest,
 	::testing::Values(
 		//PowerVR3_IMAGE_TEST("brdfLUT"),				// TODO: R16fG16f
 		//PowerVR3_IMAGE_TEST("GnomeHorde-bigMushroom_texture"),	// FIXME: Failing (PVRTC-I 4bpp RGB)
 		//PowerVR3_IMAGE_TEST("GnomeHorde-fern"),			// FIXME: Failing (PVRTC-I 4bpp RGBA)
-		PowerVR3_IMAGE_TEST("Navigation3D-font")
+		PowerVR3_IMAGE_TEST("Navigation3D-font"),
 		//PowerVR3_IMAGE_TEST("Navigation3D-Road"),			// FIXME: Failing (LA88)
-		//PowerVR3_IMAGE_TEST("Satyr-Table"))				// FIXME: Failing (RGBA8888)
+		//PowerVR3_IMAGE_TEST("Satyr-Table"),				// FIXME: Failing (RGBA8888)
+		PowerVR3_IMAGE_TEST("text-fri")					// 32x16, caused rp_image::flip(FLIP_V) to break
 		)
 	, ImageDecoderTest::test_case_suffix_generator);
+#endif /* ENABLE_PVRTC */
 
 } }
 
@@ -1535,7 +1560,7 @@ INSTANTIATE_TEST_CASE_P(PowerVR3, ImageDecoderTest,
  * Test suite main function.
  * Called by gtest_init.cpp.
  */
-extern "C" int gtest_main(int argc, char *argv[])
+extern "C" int gtest_main(int argc, TCHAR *argv[])
 {
 	fprintf(stderr, "LibRomData test suite: ImageDecoder tests.\n\n");
 	fprintf(stderr, "Benchmark iterations: %u (%u for BC7)\n",

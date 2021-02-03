@@ -1,4 +1,12 @@
-PROJECT(svrplus C)
+# Windows DLL registration frontend
+CMAKE_MINIMUM_REQUIRED(VERSION 3.0)
+CMAKE_POLICY(SET CMP0048 NEW)
+IF(POLICY CMP0063)
+	# CMake 3.3: Enable symbol visibility presets for all
+	# target types, including static libraries and executables.
+	CMAKE_POLICY(SET CMP0063 NEW)
+ENDIF(POLICY CMP0063)
+PROJECT(svrplus LANGUAGES C)
 
 # Create the manifest file.
 CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/svrplus.exe.manifest.in" "${CMAKE_CURRENT_BINARY_DIR}/svrplus.exe.manifest" @ONLY)
@@ -22,6 +30,7 @@ SET_WINDOWS_SUBSYSTEM(svrplus WIN32)
 SET_WINDOWS_NO_MANIFEST(svrplus)
 SET_WINDOWS_ENTRYPOINT(svrplus wWinMain OFF)
 
+TARGET_LINK_LIBRARIES(svrplus PRIVATE rpsecure)
 TARGET_LINK_LIBRARIES(svrplus PRIVATE comctl32)
 TARGET_INCLUDE_DIRECTORIES(svrplus
 	PUBLIC	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>		# svrplus

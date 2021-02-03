@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * RpJpeg.cpp: JPEG image handler.                                         *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -11,24 +11,22 @@
 
 #include "RpJpeg.hpp"
 #include "RpJpeg_p.hpp"
-#include "../file/IRpFile.hpp"
+#include "librpfile/IRpFile.hpp"
 
 // libi18n
 #include "libi18n/i18n.h"
 
-// librptexture
+// librpfile, librptexture
+using LibRpFile::IRpFile;
 using LibRpTexture::rp_image;
 using LibRpTexture::argb32_t;
 
 #ifdef RPJPEG_HAS_SSSE3
-# include "librpbase/cpuflags_x86.h"
+# include "librpcpu/cpuflags_x86.h"
 #endif /* RPJPEG_HAS_SSSE3 */
 
 // C includes. (C++ namespace)
 #include <csetjmp>
-
-// C++ STL classes.
-using std::unique_ptr;
 
 #ifdef _WIN32
 // For OutputDebugStringA().
@@ -263,7 +261,7 @@ rp_image *RpJpeg::loadUnchecked(IRpFile *file)
 			// NOTE: buffer is allocated using JPEG allocation functions,
 			// so it's automatically freed when we destroy cinfo.
 			jpeg_destroy_decompress(&cinfo);
-			delete img;
+			img->unref();
 			return nullptr;
 		}
 	}
@@ -343,11 +341,11 @@ rp_image *RpJpeg::loadUnchecked(IRpFile *file)
 			}
 
 			// Create the image.
-			img = new rp_image(cinfo.output_width, cinfo.output_height, rp_image::FORMAT_CI8);
+			img = new rp_image(cinfo.output_width, cinfo.output_height, rp_image::Format::CI8);
 			if (!img->isValid()) {
 				// Could not allocate the image.
 				jpeg_destroy_decompress(&cinfo);
-				delete img;
+				img->unref();
 				return nullptr;
 			}
 
@@ -357,7 +355,7 @@ rp_image *RpJpeg::loadUnchecked(IRpFile *file)
 			if (!img_palette) {
 				// No palette...
 				jpeg_destroy_decompress(&cinfo);
-				delete img;
+				img->unref();
 				return nullptr;
 			}
 
@@ -393,11 +391,11 @@ rp_image *RpJpeg::loadUnchecked(IRpFile *file)
 				return nullptr;
 			}
 
-			img = new rp_image(cinfo.image_width, cinfo.image_height, rp_image::FORMAT_ARGB32);
+			img = new rp_image(cinfo.image_width, cinfo.image_height, rp_image::Format::ARGB32);
 			if (!img->isValid()) {
 				// Could not allocate the image.
 				jpeg_destroy_decompress(&cinfo);
-				delete img;
+				img->unref();
 				return nullptr;
 			}
 			break;
@@ -414,11 +412,11 @@ rp_image *RpJpeg::loadUnchecked(IRpFile *file)
 				return nullptr;
 			}
 
-			img = new rp_image(cinfo.image_width, cinfo.image_height, rp_image::FORMAT_ARGB32);
+			img = new rp_image(cinfo.image_width, cinfo.image_height, rp_image::Format::ARGB32);
 			if (!img->isValid()) {
 				// Could not allocate the image.
 				jpeg_destroy_decompress(&cinfo);
-				delete img;
+				img->unref();
 				return nullptr;
 			}
 			break;
@@ -433,11 +431,11 @@ rp_image *RpJpeg::loadUnchecked(IRpFile *file)
 				return nullptr;
 			}
 
-			img = new rp_image(cinfo.image_width, cinfo.image_height, rp_image::FORMAT_ARGB32);
+			img = new rp_image(cinfo.image_width, cinfo.image_height, rp_image::Format::ARGB32);
 			if (!img->isValid()) {
 				// Could not allocate the image.
 				jpeg_destroy_decompress(&cinfo);
-				delete img;
+				img->unref();
 				return nullptr;
 			}
 			break;
@@ -447,7 +445,7 @@ rp_image *RpJpeg::loadUnchecked(IRpFile *file)
 			// Unsupported colorspace.
 			assert(!"Colorspace is not supported.");
 			jpeg_destroy_decompress(&cinfo);
-			delete img;
+			img->unref();
 			return nullptr;
 	}
 
@@ -551,7 +549,7 @@ rp_image *RpJpeg::loadUnchecked(IRpFile *file)
 				assert(!"Unsupported JPEG colorspace.");
 				jpeg_finish_decompress(&cinfo);
 				jpeg_destroy_decompress(&cinfo);
-				delete img;
+				img->unref();
 				return nullptr;
 		}
 

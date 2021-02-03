@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * resource.rc: Win32 resource script. (Common resources)                  *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -22,6 +22,21 @@ ISOLATIONAWARE_MANIFEST_RESOURCE_ID	RT_MANIFEST	"res\\rom-properties.dll.manifes
 
 /** Icons. **/
 IDI_KEY_VALID	ICON	"res\\dialog-ok-apply.ico"
+
+/** PNG images. **/
+IDP_FLAGS_16x16	RT_PNG	"..\\..\\res\\flags\\flags-16x16.png"
+IDP_FLAGS_24x24	RT_PNG	"..\\..\\res\\flags\\flags-24x24.png"
+IDP_FLAGS_32x32	RT_PNG	"..\\..\\res\\flags\\flags-32x32.png"
+
+IDP_ACH_16x16	RT_PNG	"..\\..\\res\\ach\\ach-16x16.png"
+IDP_ACH_24x24	RT_PNG	"..\\..\\res\\ach\\ach-24x24.png"
+IDP_ACH_32x32	RT_PNG	"..\\..\\res\\ach\\ach-32x32.png"
+IDP_ACH_64x64	RT_PNG	"..\\..\\res\\ach\\ach-64x64.png"
+
+IDP_ACH_GRAY_16x16	RT_PNG	"..\\..\\res\\ach\\ach-gray-16x16.png"
+IDP_ACH_GRAY_24x24	RT_PNG	"..\\..\\res\\ach\\ach-gray-24x24.png"
+IDP_ACH_GRAY_32x32	RT_PNG	"..\\..\\res\\ach\\ach-gray-32x32.png"
+IDP_ACH_GRAY_64x64	RT_PNG	"..\\..\\res\\ach\\ach-gray-64x64.png"
 
 // TODO: The git version gets cut off on Windows 7, since it uses
 // a ListView instead of separate ListBox and Edit controls like
@@ -48,7 +63,7 @@ BEGIN
 			VALUE "FileDescription", "ROM Properties Page shell extension\0"
 			VALUE "FileVersion", "rom-properties " Win32_RC_FileVersion "\0"
 			VALUE "InternalName", "rom-properties\0"
-			VALUE "LegalCopyright", "Copyright (c) 2016-2018 by David Korth.\0"
+			VALUE "LegalCopyright", "Copyright (c) 2016-2020 by David Korth.\0"
 			//VALUE "LegalTrademarks", "\0"
 			//VALUE "OriginalFilename", "\0"
 			//VALUE "PrivateBuild", "\0"
@@ -86,7 +101,7 @@ END
  */
 LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
 IDD_SUBTAB_CHILD_DIALOG DIALOGEX 0, 0, 16, 16
-STYLE DS_3DLOOK | DS_CONTROL | DS_SHELLFONT | WS_VISIBLE | WS_CHILDWINDOW | WS_TABSTOP
+STYLE DS_3DLOOK | DS_CONTROL | DS_SHELLFONT | WS_VISIBLE | WS_CHILDWINDOW | WS_TABSTOP | WS_CLIPCHILDREN | WS_VSCROLL
 EXSTYLE WS_EX_NOPARENTNOTIFY | WS_EX_TRANSPARENT | WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", FW_NORMAL, 0, 0
 BEGIN

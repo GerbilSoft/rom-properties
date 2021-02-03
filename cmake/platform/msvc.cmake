@@ -13,13 +13,20 @@ ENDIF()
 #   probably cause a linker error.
 # - C4024: 'function': different types for formal and actual parameter n
 # - C4047: 'function': 'parameter' differs in levels of indirection from 'argument'
-SET(RP_C_FLAGS_COMMON "/nologo /wd4355 /wd4482 /we4013 /we4024 /we4047 -D_CRT_SECURE_NO_WARNINGS -D_CRT_SECURE_NO_DEPRECATE -D_CRT_NONSTDC_NO_DEPRECATE")
+SET(RP_C_FLAGS_COMMON "/nologo /wd4355 /wd4482 /we4013 /we4024 /we4047")
 SET(RP_CXX_FLAGS_COMMON "${RP_C_FLAGS_COMMON} -D_SILENCE_TR1_NAMESPACE_DEPRECATION_WARNING")
+ADD_DEFINITIONS(-D_CRT_SECURE_NO_WARNINGS -D_CRT_SECURE_NO_DEPRECATE -D_CRT_NONSTDC_NO_DEPRECATE)
 # NOTE: /TSAWARE is automatically set for Windows 2000 and later. (as of at least Visual Studio .NET 2003)
 # NOTE 2: /TSAWARE is not applicable for DLLs.
 SET(RP_EXE_LINKER_FLAGS_COMMON "/NOLOGO /DYNAMICBASE /NXCOMPAT /LARGEADDRESSAWARE")
 SET(RP_SHARED_LINKER_FLAGS_COMMON "${RP_EXE_LINKER_FLAGS_COMMON}")
 SET(RP_MODULE_LINKER_FLAGS_COMMON "${RP_EXE_LINKER_FLAGS_COMMON}")
+
+# Enable /EHsc if it isn't enabled already.
+# Default in most cases; not enabled for MSVC 2019 on ARM or ARM64.
+IF(NOT CMAKE_CXX_FLAGS MATCHES "/EHsc")
+	SET(RP_CXX_FLAGS_COMMON "${RP_CXX_FLAGS_COMMON} /EHsc")
+ENDIF(NOT CMAKE_CXX_FLAGS MATCHES "/EHsc")
 
 # Test for MSVC-specific compiler flags.
 # /utf-8 was added in MSVC 2015.

@@ -1,0 +1,15 @@
+/***************************************************************************
+ * ROM Properties Page shell extension. (GTK+ 3.x)                         *
+ * config.gtk3.h.in: GTK+ 3.x frontend configuration. (source file)        *
+ *                                                                         *
+ * Copyright (c) 2017-2020 by David Korth.                                 *
+ * SPDX-License-Identifier: GPL-2.0-or-later                               *
+ ***************************************************************************/
+
+#ifndef __ROMPROPERTIES_GTK_GNOME_CONFIG_H__
+#define __ROMPROPERTIES_GTK_GNOME_CONFIG_H__
+
+/* Define to 1 if achievements are enabled. */
+#cmakedefine ENABLE_ACHIEVEMENTS 1
+
+#endif /* __ROMPROPERTIES_GTK_GNOME_CONFIG_H__ */

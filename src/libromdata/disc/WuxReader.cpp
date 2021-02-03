@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * WuxReader.cpp: Wii U .wux disc image reader.                            *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -14,8 +14,9 @@
 #include "librpbase/disc/SparseDiscReader_p.hpp"
 #include "wux_structs.h"
 
-// librpbase
+// librpbase, librpfile
 using namespace LibRpBase;
+using LibRpFile::IRpFile;
 
 // C++ STL classes.
 using std::array;
@@ -40,7 +41,7 @@ class WuxReaderPrivate : public SparseDiscReaderPrivate {
 
 		// Data start position.
 		// Starts immediately after the index table.
-		int64_t dataOffset;
+		off64_t dataOffset;
 };
 
 /** WuxReaderPrivate **/
@@ -69,8 +70,7 @@ WuxReader::WuxReader(IRpFile *file)
 	size_t sz = m_file->read(&d->wuxHeader, sizeof(d->wuxHeader));
 	if (sz != sizeof(d->wuxHeader)) {
 		// Error reading the .wux header.
-		m_file->unref();
-		m_file = nullptr;
+		UNREF_AND_NULL_NOCHK(m_file);
 		m_lastError = EIO;
 		return;
 	}
@@ -80,8 +80,7 @@ WuxReader::WuxReader(IRpFile *file)
 	    d->wuxHeader.magic[1] != cpu_to_le32(WUX_MAGIC_1))
 	{
 		// Invalid magic.
-		m_file->unref();
-		m_file = nullptr;
+		UNREF_AND_NULL_NOCHK(m_file);
 		m_lastError = EIO;
 		return;
 	}
@@ -94,18 +93,16 @@ WuxReader::WuxReader(IRpFile *file)
 	    d->block_size < WUX_BLOCK_SIZE_MIN || d->block_size > WUX_BLOCK_SIZE_MAX)
 	{
 		// Block size is out of range.
-		m_file->unref();
-		m_file = nullptr;
+		UNREF_AND_NULL_NOCHK(m_file);
 		m_lastError = EIO;
 		return;
 	}
 
 	// Read the index table.
-	d->disc_size = static_cast<int64_t>(le64_to_cpu(d->wuxHeader.uncompressedSize));
+	d->disc_size = static_cast<off64_t>(le64_to_cpu(d->wuxHeader.uncompressedSize));
 	if (d->disc_size < 0 || d->disc_size > 50LL*1024*1024*1024) {
 		// Disc size is out of range.
-		m_file->unref();
-		m_file = nullptr;
+		UNREF_AND_NULL_NOCHK(m_file);
 		m_lastError = EIO;
 		return;
 	}
@@ -119,8 +116,7 @@ WuxReader::WuxReader(IRpFile *file)
 		// Read error.
 		d->idxTbl.clear();
 		d->disc_size = 0;
-		m_file->unref();
-		m_file = nullptr;
+		UNREF_AND_NULL_NOCHK(m_file);
 		m_lastError = EIO;
 		return;
 	}
@@ -190,10 +186,10 @@ int WuxReader::isDiscSupported(const uint8_t *pHeader, size_t szHeader) const
  * @param blockIdx	[in] Block index.
  * @return Physical address. (0 == empty block; -1 == invalid block index)
  */
-int64_t WuxReader::getPhysBlockAddr(uint32_t blockIdx) const
+off64_t WuxReader::getPhysBlockAddr(uint32_t blockIdx) const
 {
 	// Make sure the block index is in range.
-	RP_D(WuxReader);
+	RP_D(const WuxReader);
 	assert(blockIdx < d->idxTbl.size());
 	if (blockIdx >= d->idxTbl.size()) {
 		// Out of range.
@@ -206,7 +202,7 @@ int64_t WuxReader::getPhysBlockAddr(uint32_t blockIdx) const
 	const uint32_t physBlockIdx = le32_to_cpu(d->idxTbl[blockIdx]);
 
 	// Convert to a physical block address and return.
-	return d->dataOffset + (static_cast<int64_t>(physBlockIdx) * d->block_size);
+	return d->dataOffset + (static_cast<off64_t>(physBlockIdx) * d->block_size);
 }
 
 }

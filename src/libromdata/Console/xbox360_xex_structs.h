@@ -15,8 +15,6 @@
 extern "C" {
 #endif
 
-#pragma pack(1)
-
 /**
  * Microsoft Xbox 360 executable header.
  * References:
@@ -29,7 +27,7 @@ extern "C" {
  */
 #define XEX1_MAGIC 'XEX1'
 #define XEX2_MAGIC 'XEX2'
-typedef struct PACKED _XEX2_Header {
+typedef struct _XEX2_Header {
 	uint32_t magic;			// [0x000] 'XEX2' or 'XEX1'
 	uint32_t module_flags;		// [0x004] See XEX2_Flags_e
 	uint32_t pe_offset;		// [0x008] PE data offset
@@ -37,40 +35,42 @@ typedef struct PACKED _XEX2_Header {
 	uint32_t sec_info_offset;	// [0x010] Security info offset (See XEX2_Security_Info)
 	uint32_t opt_header_count;	// [0x014] Optional header count
 } XEX2_Header;
-ASSERT_STRUCT(XEX2_Header, 24);
+ASSERT_STRUCT(XEX2_Header, 6*sizeof(uint32_t));
 
 /**
  * XEX2: Module flags
  */
 typedef enum {
-	XEX2_MODULE_FLAG_TITLE			= (1 << 0),
-	XEX2_MODULE_FLAG_EXPORTS_TO_TITLE	= (1 << 1),
-	XEX2_MODULE_FLAG_SYSTEM_DEBUGGER	= (1 << 2),
-	XEX2_MODULE_FLAG_DLL_MODULE		= (1 << 3),
-	XEX2_MODULE_FLAG_MODULE_PATCH		= (1 << 4),
-	XEX2_MODULE_FLAG_PATCH_FULL		= (1 << 5),
-	XEX2_MODULE_FLAG_PATCH_DELTA		= (1 << 6),
-	XEX2_MODULE_FLAG_USER_MODE		= (1 << 7),
+	XEX2_MODULE_FLAG_TITLE			= (1U << 0),
+	XEX2_MODULE_FLAG_EXPORTS_TO_TITLE	= (1U << 1),
+	XEX2_MODULE_FLAG_SYSTEM_DEBUGGER	= (1U << 2),
+	XEX2_MODULE_FLAG_DLL_MODULE		= (1U << 3),
+	XEX2_MODULE_FLAG_MODULE_PATCH		= (1U << 4),
+	XEX2_MODULE_FLAG_PATCH_FULL		= (1U << 5),
+	XEX2_MODULE_FLAG_PATCH_DELTA		= (1U << 6),
+	XEX2_MODULE_FLAG_USER_MODE		= (1U << 7),
 } XEX2_Module_Flags_e;
 
 /**
  * XEX1: Security info.
+ * NOTE: XEX1 is only used on early preproduction XDKs.
+ *
  * All fields are in big-endian.
  */
-typedef struct PACKED _XEX1_Security_Info {
-	// TODO: Verify some of these fields.
-	uint32_t header_size;		// [0x000] Header size [should be at least sizeof(XEX2_Security_Info)]
+typedef struct _XEX1_Security_Info {
+	uint32_t header_size;		// [0x000] Header size [should be at least sizeof(XEX1_Security_Info)]
 	uint32_t image_size;		// [0x004] Image size (slightly larger than the .xex file)
 	uint8_t rsa_signature[0x100];	// [0x008] RSA-2048 signature
-	uint8_t unk_0x108[40];		// [0x108]
+	uint8_t image_sha1[0x14];	// [0x108] SHA-1 of the entire image?
+	uint8_t import_table_sha1[0x14]; // [0x11C] Import table SHA-1
 	uint32_t load_address;		// [0x130] Load address
 	uint8_t title_key[0x10];	// [0x134] AES-128 title key (encrypted)
 	uint8_t xgd2_media_id[0x10];	// [0x144] XGD2 media ID (TODO: Verify?)
 	uint32_t region_code;		// [0x154] Region code (See XEX2_Region_Code_e)
-	uint32_t unk_0x158;		// [0x158]
-	uint32_t unk_0x15C_vaddr;	// [0x15C] Some virtual address
+	uint32_t image_flags;		// [0x158] Image flags (See XEX2_Image_Flags_e)
+	uint32_t export_table;		// [0x15C] Export table offset (0 if none)
 	uint32_t allowed_media_types;	// [0x160] Allowed media types (See XEX2_Media_Types_e)
-	uint32_t page_descriptor_count;	// [0x164] Page descriptor count (these follow XEX2_Security_Info) [VERIFY?]
+	uint32_t page_descriptor_count;	// [0x164] Page descriptor count (these follow XEX2_Security_Info)
 } XEX1_Security_Info;
 ASSERT_STRUCT(XEX1_Security_Info, 0x168);
 
@@ -78,7 +78,7 @@ ASSERT_STRUCT(XEX1_Security_Info, 0x168);
  * XEX2: Security info
  * All fields are in big-endian.
  */
-typedef struct PACKED _XEX2_Security_Info {
+typedef struct _XEX2_Security_Info {
 	uint32_t header_size;		// [0x000] Header size [should be at least sizeof(XEX2_Security_Info)]
 	uint32_t image_size;		// [0x004] Image size (slightly larger than the .xex file)
 	uint8_t rsa_signature[0x100];	// [0x008] RSA-2048 signature
@@ -102,24 +102,24 @@ ASSERT_STRUCT(XEX2_Security_Info, 0x184);
  * XEX2: Image flags
  */
 typedef enum {
-	XEX2_IMAGE_FLAG_MANUFACTURING_UTILITY		= (1 <<  1),
-	XEX2_IMAGE_FLAG_MANUFACTURING_SUPPORT_TOOLS	= (1 <<  2),
-	XEX2_IMAGE_FLAG_XGD2_MEDIA_ONLY			= (1 <<  3),	// Must be on a retail disc.
-	XEX2_IMAGE_FLAG_CARDEA_KEY			= (1 <<  8),
-	XEX2_IMAGE_FLAG_XEIKA_KEY			= (1 <<  9),
-	XEX2_IMAGE_FLAG_USERMODE_TITLE			= (1 << 10),
-	XEX2_IMAGE_FLAG_USERMODE_SYSTEM			= (1 << 11),
-	XEX2_IMAGE_FLAG_ORANGE0				= (1 << 12),
-	XEX2_IMAGE_FLAG_ORANGE1				= (1 << 13),
-	XEX2_IMAGE_FLAG_ORANGE2				= (1 << 14),
-	XEX2_IMAGE_FLAG_IPTV_SIGNUP_APPLICATION		= (1 << 16),
-	XEX2_IMAGE_FLAG_IPTV_TITLE_APPLICATION		= (1 << 17),
-	XEX2_IMAGE_FLAG_KEYVAULT_PRIVILEGES_REQUIRED	= (1 << 26),
-	XEX2_IMAGE_FLAG_ONLINE_ACTIVATION_REQUIRED	= (1 << 27),
-	XEX2_IMAGE_FLAG_PAGE_SIZE_4KB			= (1 << 28),	// Default is 64 KB.
-	XEX2_IMAGE_FLAG_REGION_FREE			= (1 << 29),
-	XEX2_IMAGE_FLAG_REVOCATION_CHECK_OPTIONAL	= (1 << 30),
-	XEX2_IMAGE_FLAG_REVOCATION_CHECK_REQUIRED	= (1 << 31),
+	XEX2_IMAGE_FLAG_MANUFACTURING_UTILITY		= (1U <<  1),
+	XEX2_IMAGE_FLAG_MANUFACTURING_SUPPORT_TOOLS	= (1U <<  2),
+	XEX2_IMAGE_FLAG_XGD2_MEDIA_ONLY			= (1U <<  3),	// Must be on a retail disc.
+	XEX2_IMAGE_FLAG_CARDEA_KEY			= (1U <<  8),
+	XEX2_IMAGE_FLAG_XEIKA_KEY			= (1U <<  9),
+	XEX2_IMAGE_FLAG_USERMODE_TITLE			= (1U << 10),
+	XEX2_IMAGE_FLAG_USERMODE_SYSTEM			= (1U << 11),
+	XEX2_IMAGE_FLAG_ORANGE0				= (1U << 12),
+	XEX2_IMAGE_FLAG_ORANGE1				= (1U << 13),
+	XEX2_IMAGE_FLAG_ORANGE2				= (1U << 14),
+	XEX2_IMAGE_FLAG_IPTV_SIGNUP_APPLICATION		= (1U << 16),
+	XEX2_IMAGE_FLAG_IPTV_TITLE_APPLICATION		= (1U << 17),
+	XEX2_IMAGE_FLAG_KEYVAULT_PRIVILEGES_REQUIRED	= (1U << 26),
+	XEX2_IMAGE_FLAG_ONLINE_ACTIVATION_REQUIRED	= (1U << 27),
+	XEX2_IMAGE_FLAG_PAGE_SIZE_4KB			= (1U << 28),	// Default is 64 KB.
+	XEX2_IMAGE_FLAG_REGION_FREE			= (1U << 29),
+	XEX2_IMAGE_FLAG_REVOCATION_CHECK_OPTIONAL	= (1U << 30),
+	XEX2_IMAGE_FLAG_REVOCATION_CHECK_REQUIRED	= (1U << 31),
 } XEX2_Image_Flags_e;
 
 /**
@@ -127,23 +127,23 @@ typedef enum {
  * NOTE: Might be ignored if XEX2_IMAGE_FLAG_XGD2_MEDIA_ONLY is set.
  */
 typedef enum {
-	XEX2_MEDIA_TYPE_HARDDISK		= (1 <<  0),
-	XEX2_MEDIA_TYPE_XGD1			= (1 <<  1),
-	XEX2_MEDIA_TYPE_DVD_CD			= (1 <<  2),
-	XEX2_MEDIA_TYPE_DVD_5			= (1 <<  3),
-	XEX2_MEDIA_TYPE_DVD_9			= (1 <<  4),
-	XEX2_MEDIA_TYPE_SYSTEM_FLASH		= (1 <<  5),
-	XEX2_MEDIA_TYPE_MEMORY_UNIT		= (1 <<  7),
-	XEX2_MEDIA_TYPE_USB_MASS_STORAGE_DEVICE	= (1 <<  8),
-	XEX2_MEDIA_TYPE_NETWORK			= (1 <<  9),
-	XEX2_MEDIA_TYPE_DIRECT_FROM_MEMORY	= (1 << 10),
-	XEX2_MEDIA_TYPE_RAM_DRIVE		= (1 << 11),
-	XEX2_MEDIA_TYPE_SVOD			= (1 << 12),
-	XEX2_MEDIA_TYPE_INSECURE_PACKAGE	= (1 << 24),
-	XEX2_MEDIA_TYPE_SAVEGAME_PACKAGE	= (1 << 25),
-	XEX2_MEDIA_TYPE_LOCALLY_SIGNED_PACKAGE	= (1 << 26),
-	XEX2_MEDIA_TYPE_LIVE_SIGNED_PACKAGE	= (1 << 27),
-	XEX2_MEDIA_TYPE_XBOX_PACKAGE		= (1 << 28),
+	XEX2_MEDIA_TYPE_HARDDISK		= (1U <<  0),
+	XEX2_MEDIA_TYPE_XGD1			= (1U <<  1),
+	XEX2_MEDIA_TYPE_DVD_CD			= (1U <<  2),
+	XEX2_MEDIA_TYPE_DVD_5			= (1U <<  3),
+	XEX2_MEDIA_TYPE_DVD_9			= (1U <<  4),
+	XEX2_MEDIA_TYPE_SYSTEM_FLASH		= (1U <<  5),
+	XEX2_MEDIA_TYPE_MEMORY_UNIT		= (1U <<  7),
+	XEX2_MEDIA_TYPE_USB_MASS_STORAGE_DEVICE	= (1U <<  8),
+	XEX2_MEDIA_TYPE_NETWORK			= (1U <<  9),
+	XEX2_MEDIA_TYPE_DIRECT_FROM_MEMORY	= (1U << 10),
+	XEX2_MEDIA_TYPE_RAM_DRIVE		= (1U << 11),
+	XEX2_MEDIA_TYPE_SVOD			= (1U << 12),
+	XEX2_MEDIA_TYPE_INSECURE_PACKAGE	= (1U << 24),
+	XEX2_MEDIA_TYPE_SAVEGAME_PACKAGE	= (1U << 25),
+	XEX2_MEDIA_TYPE_LOCALLY_SIGNED_PACKAGE	= (1U << 26),
+	XEX2_MEDIA_TYPE_LIVE_SIGNED_PACKAGE	= (1U << 27),
+	XEX2_MEDIA_TYPE_XBOX_PACKAGE		= (1U << 28),
 } XEX2_Media_Types_e;
 
 /**
@@ -173,7 +173,7 @@ typedef enum {
  *
  * All fields are in big-endian.
  */
-typedef struct PACKED _XEX2_Optional_Header_Tbl {
+typedef struct _XEX2_Optional_Header_Tbl {
 	uint32_t header_id;	// [0x000] Header ID. (See XEX2_Optional_Header_e.)
 	uint32_t offset;	// [0x004] Data/offset, depending on the low byte of Header ID:
 				// - 0x00: Field contains a 32-bit value.
@@ -184,6 +184,7 @@ typedef struct PACKED _XEX2_Optional_Header_Tbl {
 				//   a struct, and the first DWORD of the struct
 				//   contains its size, in bytes.
 } XEX2_Optional_Header_Tbl;
+ASSERT_STRUCT(XEX2_Optional_Header_Tbl, 2*sizeof(uint32_t));
 
 /**
  * XEX2 optional header IDs
@@ -232,7 +233,7 @@ typedef enum {
  *
  * All fields are in big-endian.
  */
-typedef struct PACKED _XEX2_Resource_Info {
+typedef struct _XEX2_Resource_Info {
 	char resource_id[8];	// [0x000] Resource ID. This is usually the
 				//         title ID as a hex string.
 	uint32_t vaddr;		// [0x00C] Virtual address.
@@ -247,7 +248,7 @@ ASSERT_STRUCT(XEX2_Resource_Info, 4*sizeof(uint32_t));
  * XEX2: File format info (0x3FF)
  * All fields are in big-endian.
  */
-typedef struct PACKED _XEX2_File_Format_Info {
+typedef struct _XEX2_File_Format_Info {
 	uint32_t size;			// [0x000] Structure size
 	uint16_t encryption_type;	// [0x004] Encryption type (See XEX2_Encryption_Type_e)
 	uint16_t compression_type;	// [0x006] Compression type (See XEX2_Compression_Type_e)
@@ -287,7 +288,7 @@ typedef enum {
  *
  * All fields are in big-endian.
  */
-typedef struct PACKED _XEX2_Compression_Basic_Info {
+typedef struct _XEX2_Compression_Basic_Info {
 	uint32_t data_size;	// [0x000] Number of valid data bytes.
 	uint32_t zero_size;	// [0x004] Number of zero bytes to be inserted after the data bytes.
 } XEX2_Compression_Basic_Info;
@@ -308,7 +309,7 @@ ASSERT_STRUCT(XEX2_Compression_Basic_Info, 2*sizeof(uint32_t));
  *
  * All fields are in big-endian.
  */
-typedef struct PACKED _XEX2_Compression_Normal_Info {
+typedef struct _XEX2_Compression_Normal_Info {
 	uint32_t block_size;	// [0x000] Compressed block size.
 	uint8_t sha1_hash[20];	// [0x004] SHA-1 hash.
 } XEX2_Compression_Normal_Info;
@@ -325,7 +326,7 @@ ASSERT_STRUCT(XEX2_Compression_Normal_Info, 24);
  *
  * All fields are in big-endian.
  */
-typedef struct PACKED _XEX2_Compression_Normal_Header {
+typedef struct _XEX2_Compression_Normal_Header {
 	uint32_t window_size;				// [0x000] LZX compression window size.
 	XEX2_Compression_Normal_Info first_block;	// [0x004] First block information.
 } XEX2_Compression_Normal_Header;
@@ -335,7 +336,7 @@ ASSERT_STRUCT(XEX2_Compression_Normal_Header, sizeof(uint32_t) + 24);
  * XEX2: Import libraries (0x103FF)
  * All fields are in big-endian.
  */
-typedef struct PACKED _XEX2_Import_Libraries_Header {
+typedef struct _XEX2_Import_Libraries_Header {
 	uint32_t size;		// [0x000] Size of the library header
 	uint32_t str_tbl_size;	// [0x004] String table size, in bytes
 	uint32_t str_tbl_count;	// [0x008] Number of string table entries
@@ -352,7 +353,7 @@ ASSERT_STRUCT(XEX2_Import_Libraries_Header, 3*sizeof(uint32_t));
  *
  * All fields are in big-endian.
  */
-typedef struct PACKED _XEX2_Import_Library_Entry {
+typedef struct _XEX2_Import_Library_Entry {
 	uint32_t size;			// [0x000] Size of entry
 	uint8_t next_import_digest[20];	// [0x004] SHA1 of the *next* entry?
 	uint32_t id;			// [0x018] Library ID
@@ -370,7 +371,7 @@ ASSERT_STRUCT(XEX2_Import_Library_Entry, 0x28);
  * XEX2: Checksum and timestamp (0x18002)
  * All fields are in big-endian.
  */
-typedef struct PACKED _XEX2_Checksum_Timestamp {
+typedef struct _XEX2_Checksum_Timestamp {
 	uint32_t checksum;	// [0x000] Checksum (???)
 	uint32_t filetime;	// [0x004] Timestamp (UNIX time)
 } XEX2_Checksum_Timestamp;
@@ -380,7 +381,7 @@ ASSERT_STRUCT(XEX2_Checksum_Timestamp, 2*sizeof(uint32_t));
  * XEX2: TLS info (0x20104)
  * All fields are in big-endian.
  */
-typedef struct PACKED _XEX2_TLS_Info {
+typedef struct _XEX2_TLS_Info {
 	uint32_t slot_count;		// [0x000]
 	uint32_t raw_data_address;	// [0x004]
 	uint32_t data_size;		// [0x008]
@@ -392,45 +393,45 @@ ASSERT_STRUCT(XEX2_TLS_Info, 4*sizeof(uint32_t));
  * XEX2: System flags (0x30000)
  */
 typedef enum {
-	XEX2_SYSTEM_FLAG_NO_FORCED_REBOOT			= (1 <<  0),
-	XEX2_SYSTEM_FLAG_FOREGROUND_TASKS			= (1 <<  1),
-	XEX2_SYSTEM_FLAG_NO_ODD_MAPPING				= (1 <<  2),
-	XEX2_SYSTEM_FLAG_HANDLE_MCE_INPUT			= (1 <<  3),
-	XEX2_SYSTEM_FLAG_RESTRICTED_HUD_FEATURES		= (1 <<  4),
-	XEX2_SYSTEM_FLAG_HANDLE_GAMEPAD_DISCONNECT		= (1 <<  5),
-	XEX2_SYSTEM_FLAG_INSECURE_SOCKETS			= (1 <<  6),
-	XEX2_SYSTEM_FLAG_XBOX1_INTEROPERABILITY			= (1 <<  7),
-	XEX2_SYSTEM_FLAG_DASH_CONTEXT				= (1 <<  8),
-	XEX2_SYSTEM_FLAG_USES_GAME_VOICE_CHANNEL		= (1 <<  9),
-	XEX2_SYSTEM_FLAG_PAL50_INCOMPATIBLE			= (1 << 10),
-	XEX2_SYSTEM_FLAG_INSECURE_UTILITY_DRIVE			= (1 << 11),
-	XEX2_SYSTEM_FLAG_XAM_HOOKS				= (1 << 12),
-	XEX2_SYSTEM_FLAG_ACCESS_PII				= (1 << 13),
-	XEX2_SYSTEM_FLAG_CROSS_PLATFORM_SYSTEM_LINK		= (1 << 14),
-	XEX2_SYSTEM_FLAG_MULTIDISC_SWAP				= (1 << 15),
-	XEX2_SYSTEM_FLAG_MULTIDISC_INSECURE_MEDIA		= (1 << 16),
-	XEX2_SYSTEM_FLAG_AP25_MEDIA				= (1 << 17),
-	XEX2_SYSTEM_FLAG_NO_CONFIRM_EXIT			= (1 << 18),
-	XEX2_SYSTEM_FLAG_ALLOW_BACKGROUND_DOWNLOAD		= (1 << 19),
-	XEX2_SYSTEM_FLAG_CREATE_PERSISTABLE_RAMDRIVE		= (1 << 20),
-	XEX2_SYSTEM_FLAG_INHERIT_PERSISTENT_RAMDRIVE		= (1 << 21),
-	XEX2_SYSTEM_FLAG_ALLOW_HUD_VIBRATION			= (1 << 22),
-	XEX2_SYSTEM_FLAG_ACCESS_UTILITY_PARTITIONS		= (1 << 23),
-	XEX2_SYSTEM_FLAG_IPTV_INPUT_SUPPORTED			= (1 << 24),
-	XEX2_SYSTEM_FLAG_PREFER_BIG_BUTTON_INPUT		= (1 << 25),
-	XEX2_SYSTEM_FLAG_ALLOW_EXTENDED_SYSTEM_RESERVATION	= (1 << 26),
-	XEX2_SYSTEM_FLAG_MULTIDISC_CROSS_TITLE			= (1 << 27),
-	XEX2_SYSTEM_FLAG_INSTALL_INCOMPATIBLE			= (1 << 28),
-	XEX2_SYSTEM_FLAG_ALLOW_AVATAR_GET_METADATA_BY_XUID	= (1 << 29),
-	XEX2_SYSTEM_FLAG_ALLOW_CONTROLLER_SWAPPING		= (1 << 30),
-	XEX2_SYSTEM_FLAG_DASH_EXTENSIBILITY_MODULE		= (1 << 31),
+	XEX2_SYSTEM_FLAG_NO_FORCED_REBOOT			= (1U <<  0),
+	XEX2_SYSTEM_FLAG_FOREGROUND_TASKS			= (1U <<  1),
+	XEX2_SYSTEM_FLAG_NO_ODD_MAPPING				= (1U <<  2),
+	XEX2_SYSTEM_FLAG_HANDLE_MCE_INPUT			= (1U <<  3),
+	XEX2_SYSTEM_FLAG_RESTRICTED_HUD_FEATURES		= (1U <<  4),
+	XEX2_SYSTEM_FLAG_HANDLE_GAMEPAD_DISCONNECT		= (1U <<  5),
+	XEX2_SYSTEM_FLAG_INSECURE_SOCKETS			= (1U <<  6),
+	XEX2_SYSTEM_FLAG_XBOX1_INTEROPERABILITY			= (1U <<  7),
+	XEX2_SYSTEM_FLAG_DASH_CONTEXT				= (1U <<  8),
+	XEX2_SYSTEM_FLAG_USES_GAME_VOICE_CHANNEL		= (1U <<  9),
+	XEX2_SYSTEM_FLAG_PAL50_INCOMPATIBLE			= (1U << 10),
+	XEX2_SYSTEM_FLAG_INSECURE_UTILITY_DRIVE			= (1U << 11),
+	XEX2_SYSTEM_FLAG_XAM_HOOKS				= (1U << 12),
+	XEX2_SYSTEM_FLAG_ACCESS_PII				= (1U << 13),
+	XEX2_SYSTEM_FLAG_CROSS_PLATFORM_SYSTEM_LINK		= (1U << 14),
+	XEX2_SYSTEM_FLAG_MULTIDISC_SWAP				= (1U << 15),
+	XEX2_SYSTEM_FLAG_MULTIDISC_INSECURE_MEDIA		= (1U << 16),
+	XEX2_SYSTEM_FLAG_AP25_MEDIA				= (1U << 17),
+	XEX2_SYSTEM_FLAG_NO_CONFIRM_EXIT			= (1U << 18),
+	XEX2_SYSTEM_FLAG_ALLOW_BACKGROUND_DOWNLOAD		= (1U << 19),
+	XEX2_SYSTEM_FLAG_CREATE_PERSISTABLE_RAMDRIVE		= (1U << 20),
+	XEX2_SYSTEM_FLAG_INHERIT_PERSISTENT_RAMDRIVE		= (1U << 21),
+	XEX2_SYSTEM_FLAG_ALLOW_HUD_VIBRATION			= (1U << 22),
+	XEX2_SYSTEM_FLAG_ACCESS_UTILITY_PARTITIONS		= (1U << 23),
+	XEX2_SYSTEM_FLAG_IPTV_INPUT_SUPPORTED			= (1U << 24),
+	XEX2_SYSTEM_FLAG_PREFER_BIG_BUTTON_INPUT		= (1U << 25),
+	XEX2_SYSTEM_FLAG_ALLOW_EXTENDED_SYSTEM_RESERVATION	= (1U << 26),
+	XEX2_SYSTEM_FLAG_MULTIDISC_CROSS_TITLE			= (1U << 27),
+	XEX2_SYSTEM_FLAG_INSTALL_INCOMPATIBLE			= (1U << 28),
+	XEX2_SYSTEM_FLAG_ALLOW_AVATAR_GET_METADATA_BY_XUID	= (1U << 29),
+	XEX2_SYSTEM_FLAG_ALLOW_CONTROLLER_SWAPPING		= (1U << 30),
+	XEX2_SYSTEM_FLAG_DASH_EXTENSIBILITY_MODULE		= (1U << 31),
 } XEX2_System_Flags_e;
 
 /**
  * XEX2: Execution ID (0x40006)
  * All fields are in big-endian.
  */
-typedef struct PACKED _XEX2_Execution_ID {
+typedef struct _XEX2_Execution_ID {
 	uint32_t media_id;		// [0x000] Media ID
 	Xbox360_Version_t version;	// [0x004] Version
 	Xbox360_Version_t base_version;	// [0x008] Base version
@@ -441,7 +442,7 @@ typedef struct PACKED _XEX2_Execution_ID {
 	uint8_t disc_count;		// [0x013] Number of discs
 	uint32_t savegame_id;		// [0x014] Savegame ID.
 } XEX2_Execution_ID;
-ASSERT_STRUCT(XEX2_Execution_ID, 6*sizeof(uint32_t));
+ASSERT_STRUCT(XEX2_Execution_ID, 24);
 
 /**
  * XEX2: Game ratings. (0x40310)
@@ -449,7 +450,8 @@ ASSERT_STRUCT(XEX2_Execution_ID, 6*sizeof(uint32_t));
  * NOTE: This field is supposed to be 10 DWORDs,
  * but only 14 rating regions have been assigned.
  */
-typedef union _XEX2_Game_Ratings {
+#pragma pack(1)
+typedef union PACKED _XEX2_Game_Ratings {
 	uint8_t ratings[14];
 	struct {
 		uint8_t esrb;		// [0x000] See XEX2_Game_Ratings_ESRB_e
@@ -468,6 +470,7 @@ typedef union _XEX2_Game_Ratings {
 		uint8_t singapore;	// [0x00D]
 	};
 } XEX2_Game_Ratings;
+#pragma pack()
 ASSERT_STRUCT(XEX2_Game_Ratings, 14);
 
 /**
@@ -620,12 +623,10 @@ typedef enum {
 /**
  * XEX2: LAN key. (0x40404)
  */
-typedef struct PACKED _XEX2_LAN_Key {
+typedef struct _XEX2_LAN_Key {
 	uint8_t key[16];
 } XEX2_LAN_Key;
-ASSERT_STRUCT(XEX2_LAN_Key, 4*sizeof(uint32_t));
-
-#pragma pack()
+ASSERT_STRUCT(XEX2_LAN_Key, 16);
 
 #ifdef __cplusplus
 }

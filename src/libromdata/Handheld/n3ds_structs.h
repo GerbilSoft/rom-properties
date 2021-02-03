@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * n3ds_structs.h: Nintendo 3DS data structures.                           *
  *                                                                         *
- * Copyright (c) 2016-2017 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -20,8 +20,9 @@
 #ifndef __ROMPROPERTIES_LIBROMDATA_N3DS_STRUCTS_H__
 #define __ROMPROPERTIES_LIBROMDATA_N3DS_STRUCTS_H__
 
-#include "librpbase/common.h"
 #include <stdint.h>
+#include "common.h"
+#include "nintendo_system_id.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -75,30 +76,30 @@ typedef enum {
  * Region code bits.
  */
 typedef enum {
-	N3DS_REGION_JAPAN	= (1 << 0),
-	N3DS_REGION_USA		= (1 << 1),
-	N3DS_REGION_EUROPE	= (1 << 2),
-	N3DS_REGION_AUSTRALIA	= (1 << 3),
-	N3DS_REGION_CHINA	= (1 << 4),
-	N3DS_REGION_SOUTH_KOREA	= (1 << 5),
-	N3DS_REGION_TAIWAN	= (1 << 6),
+	N3DS_REGION_JAPAN	= (1U << 0),
+	N3DS_REGION_USA		= (1U << 1),
+	N3DS_REGION_EUROPE	= (1U << 2),
+	N3DS_REGION_AUSTRALIA	= (1U << 3),
+	N3DS_REGION_CHINA	= (1U << 4),
+	N3DS_REGION_SOUTH_KOREA	= (1U << 5),
+	N3DS_REGION_TAIWAN	= (1U << 6),
 } N3DS_Region_Code;
 
 /**
  * Flag bits.
  */
 typedef enum {
-	N3DS_FLAG_VISIBLE		= (1 << 0),
-	N3DS_FLAG_AUTOBOOT		= (1 << 1),
-	N3DS_FLAG_USE_3D		= (1 << 2),
-	N3DS_FLAG_REQUIRE_EULA		= (1 << 3),
-	N3DS_FLAG_AUTOSAVE		= (1 << 4),
-	N3DS_FLAG_EXT_BANNER		= (1 << 5),
-	N3DS_FLAG_AGE_RATING_REQUIRED	= (1 << 6),
-	N3DS_FLAG_HAS_SAVE_DATA		= (1 << 7),
-	N3DS_FLAG_RECORD_USAGE		= (1 << 8),
-	N3DS_FLAG_DISABLE_SD_BACKUP	= (1 << 10),
-	N3DS_FLAG_NEW3DS_ONLY		= (1 << 12),
+	N3DS_FLAG_VISIBLE		= (1U <<  0),
+	N3DS_FLAG_AUTOBOOT		= (1U <<  1),
+	N3DS_FLAG_USE_3D		= (1U <<  2),
+	N3DS_FLAG_REQUIRE_EULA		= (1U <<  3),
+	N3DS_FLAG_AUTOSAVE		= (1U <<  4),
+	N3DS_FLAG_EXT_BANNER		= (1U <<  5),
+	N3DS_FLAG_AGE_RATING_REQUIRED	= (1U <<  6),
+	N3DS_FLAG_HAS_SAVE_DATA		= (1U <<  7),
+	N3DS_FLAG_RECORD_USAGE		= (1U <<  8),
+	N3DS_FLAG_DISABLE_SD_BACKUP	= (1U << 10),
+	N3DS_FLAG_NEW3DS_ONLY		= (1U << 12),
 } N3DS_SMDH_Flags;
 
 /**
@@ -127,18 +128,23 @@ ASSERT_STRUCT(N3DS_SMDH_Header_t, 8256);
  * These are indexes in N3DS_SMDH_Header_t.titles[].
  */
 typedef enum {
+	// 0-7 are the same as Nintendo DS.
 	N3DS_LANG_JAPANESE	= 0,
 	N3DS_LANG_ENGLISH	= 1,
 	N3DS_LANG_FRENCH	= 2,
 	N3DS_LANG_GERMAN	= 3,
 	N3DS_LANG_ITALIAN	= 4,
 	N3DS_LANG_SPANISH	= 5,
-	N3DS_LANG_CHINESE_SIMP	= 6,
+	N3DS_LANG_CHINESE_SIMP	= 6,	// Simplified Chinese
 	N3DS_LANG_KOREAN	= 7,
+
+	// New to Nintendo 3DS.
 	N3DS_LANG_DUTCH		= 8,
 	N3DS_LANG_PORTUGUESE	= 9,
 	N3DS_LANG_RUSSIAN	= 10,
-	N3DS_LANG_CHINESE_TRAD	= 11,
+	N3DS_LANG_CHINESE_TRAD	= 11,	// Traditional Chinese
+
+	N3DS_LANG_MAX
 } N3DS_Language_ID;
 
 // NOTE: Windows SDK defines 'small' as 'char' for IDL.
@@ -237,32 +243,6 @@ typedef struct _N3DS_CIA_Meta_Header_t {
 ASSERT_STRUCT(N3DS_CIA_Meta_Header_t, 0x400);
 
 /**
- * Title ID struct/union. (little-endian version)
- * TODO: Verify operation on big-endian systems.
- */
-typedef union _N3DS_TitleID_LE_t {
-	uint64_t id;
-	struct {
-		uint32_t lo;
-		uint32_t hi;
-	};
-} N3DS_TitleID_LE_t;
-ASSERT_STRUCT(N3DS_TitleID_LE_t, 8);
-
-/**
- * Title ID struct/union. (big-endian version)
- * TODO: Verify operation on big-endian systems.
- */
-typedef union _N3DS_TitleID_BE_t {
-	uint64_t id;
-	struct {
-		uint32_t hi;
-		uint32_t lo;
-	};
-} N3DS_TitleID_BE_t;
-ASSERT_STRUCT(N3DS_TitleID_BE_t, 8);
-
-/**
  * Nintendo 3DS cartridge and eMMC header. (NCSD)
  * This version does not have the 256-byte RSA-2048 signature.
  * Reference: https://3dbrew.org/wiki/NCSD
@@ -276,7 +256,7 @@ typedef struct _N3DS_NCSD_Header_NoSig_t {
 	// [0x100]
 	uint32_t magic;			// [0x100] 'NCSD' (big-endian)
 	uint32_t image_size;		// [0x104] Image size, in media units. (1 media unit = 512 bytes)
-	N3DS_TitleID_LE_t media_id;	// [0x108] Media ID.
+	Nintendo_TitleID_LE_t media_id;	// [0x108] Media ID.
 
 	// [0x110] eMMC-specific partition table.
 	struct {
@@ -406,7 +386,7 @@ typedef struct _N3DS_NCCH_Header_NoSig_t {
 	uint32_t magic;				// [0x100] 'NCCH' (big-endian)
 	uint32_t content_size;			// [0x104] Content size, in media units. (1 media unit = 512 bytes)
 	union {
-		uint64_t partition_id;		// [0x108] Partition ID.
+		Nintendo_TitleID_LE_t title_id;	// [0x108] Title ID. (3dbrew lists this as "partition ID".)
 		struct {
 			uint8_t reserved[6];	// [0x108]
 			uint16_t sysversion;	// [0x10E] System Update version for update partitions.
@@ -415,7 +395,7 @@ typedef struct _N3DS_NCCH_Header_NoSig_t {
 	char maker_code[2];			// [0x110] Maker code.
 	uint16_t version;			// [0x112] Version.
 	uint32_t fw96lock;			// [0x114] Used by FIRM 9.6.0-X to verify the content lock seed.
-	N3DS_TitleID_LE_t program_id;		// [0x118] Program ID.
+	Nintendo_TitleID_LE_t program_id;	// [0x118] Program ID.
 	uint8_t reserved1[0x10];		// [0x120]
 	uint8_t logo_region_hash[0x20];		// [0x130] Logo region SHA-256 hash. (SDK 5+)
 	char product_code[0x10];		// [0x150] ASCII product code, e.g. "CTR-P-CTAP"
@@ -578,7 +558,7 @@ typedef struct PACKED _N3DS_TMD_Header_t {
 	uint8_t signer_crl_version;	// [0x42]
 	uint8_t reserved1;		// [0x43]
 	uint64_t system_version;	// [0x44] Required system version.
-	N3DS_TitleID_BE_t title_id;	// [0x4C] Title ID.
+	Nintendo_TitleID_BE_t title_id;	// [0x4C] Title ID.
 	uint32_t title_type;		// [0x54] Title type.
 	uint16_t group_id;		// [0x58] Group ID.
 	uint32_t save_data_size;	// [0x4A] Save data size. (SRL: Public save data size)
@@ -647,13 +627,11 @@ typedef enum {
  * All fields are BIG-endian due to its
  * roots in the Wii TMD format.
  */
-#pragma pack(1)
-typedef struct PACKED _N3DS_TMD_t {
+typedef struct _N3DS_TMD_t {
 	N3DS_TMD_Header_t header;			// [0x00] TMD header.
 	N3DS_Content_Info_Record_t cinfo_records[64];	// [0xA4] Content info records.
 } N3DS_TMD_t;
 ASSERT_STRUCT(N3DS_TMD_t, 0xC4+(0x24*64));
-#pragma pack()
 
 /**
  * Nintendo 3DS: NCCH Extended Header: Code Set Info.
@@ -700,8 +678,8 @@ ASSERT_STRUCT(N3DS_NCCH_ExHeader_SCI_t, 0x200);
  * NCCH Extended Header: SCI flags.
  */
 typedef enum {
-	N3DS_NCCH_EXHEADER_SCI_CompressExefsCode	= (1 << 0),
-	N3DS_NCCH_EXHEADER_SCI_SDApplication		= (1 << 1),
+	N3DS_NCCH_EXHEADER_SCI_CompressExefsCode	= (1U << 0),
+	N3DS_NCCH_EXHEADER_SCI_SDApplication		= (1U << 1),
 } N3DS_NCCH_ExHeader_SCI_Flags;
 
 /**
@@ -716,7 +694,7 @@ typedef struct _N3DS_NCCH_ExHeader_ACI_t {
 	// [0x000]
 	// Reference: https://3dbrew.org/wiki/NCCH/Extended_Header#ARM11_Local_System_Capabilities
 	struct {
-		N3DS_TitleID_LE_t program_id;
+		Nintendo_TitleID_LE_t program_id;
 		uint32_t core_version;		// Title ID low of required FIRM.
 
 		// Flags:
@@ -775,8 +753,8 @@ ASSERT_STRUCT(N3DS_NCCH_ExHeader_ACI_t, 0x200);
  * NCCH Extended Header: ACI New3DS CPU mode. (flags[0])
  */
 typedef enum {
-	N3DS_NCCH_EXHEADER_ACI_FLAG0_EnableL2Cache	= (1 << 0),	// Ignored.
-	N3DS_NCCH_EXHEADER_ACI_FLAG0_cpuspeed_804MHz	= (1 << 1),
+	N3DS_NCCH_EXHEADER_ACI_FLAG0_EnableL2Cache	= (1U << 0),	// Ignored.
+	N3DS_NCCH_EXHEADER_ACI_FLAG0_cpuspeed_804MHz	= (1U << 1),
 } N3DS_NCCH_ExHeader_ACI_Flag_New3DS_CPUMode;
 
 /**
@@ -784,27 +762,27 @@ typedef enum {
  */
 typedef enum {
 	// New3DS system modes.
-	N3DS_NCCH_EXHEADER_ACI_FLAG1_New3DS_SysMode_Legacy	= (0 << 0),	// 64 MB
-	N3DS_NCCH_EXHEADER_ACI_FLAG1_New3DS_SysMode_Prod	= (1 << 0),	// 124 MB
-	N3DS_NCCH_EXHEADER_ACI_FLAG1_New3DS_SysMode_Dev1	= (2 << 0),	// 178 MB
-	N3DS_NCCH_EXHEADER_ACI_FLAG1_New3DS_SysMode_Dev2	= (3 << 0),	// 124 MB
-	N3DS_NCCH_EXHEADER_ACI_FLAG1_New3DS_SysMode_Mask	= (15 << 0),
+	N3DS_NCCH_EXHEADER_ACI_FLAG1_New3DS_SysMode_Legacy	= (  0U << 0),	// 64 MB
+	N3DS_NCCH_EXHEADER_ACI_FLAG1_New3DS_SysMode_Prod	= (  1U << 0),	// 124 MB
+	N3DS_NCCH_EXHEADER_ACI_FLAG1_New3DS_SysMode_Dev1	= (  2U << 0),	// 178 MB
+	N3DS_NCCH_EXHEADER_ACI_FLAG1_New3DS_SysMode_Dev2	= (  3U << 0),	// 124 MB
+	N3DS_NCCH_EXHEADER_ACI_FLAG1_New3DS_SysMode_Mask	= (0xFU << 0),
 } N3DS_NCCH_ExHeader_ACI_Flag_New3DS_SysMode;
 
 /**
  * NCCH Extended Header: ACI System Mode. (flags[2])
  */
 typedef enum {
-	N3DS_NCCH_EXHEADER_ACI_FLAG2_IdealCPU_Mask		= (2 << 0),
-	N3DS_NCCH_EXHEADER_ACI_FLAG2_Affinity_Mask		= (2 << 2),
+	N3DS_NCCH_EXHEADER_ACI_FLAG2_IdealCPU_Mask		= (2U << 0),
+	N3DS_NCCH_EXHEADER_ACI_FLAG2_Affinity_Mask		= (2U << 2),
 
 	// Old3DS system modes.
-	N3DS_NCCH_EXHEADER_ACI_FLAG2_Old3DS_SysMode_Prod	= (0 << 4),	// 64 MB
-	N3DS_NCCH_EXHEADER_ACI_FLAG2_Old3DS_SysMode_Dev1	= (2 << 4),	// 96 MB
-	N3DS_NCCH_EXHEADER_ACI_FLAG2_Old3DS_SysMode_Dev2	= (3 << 4),	// 80 MB
-	N3DS_NCCH_EXHEADER_ACI_FLAG2_Old3DS_SysMode_Dev3	= (4 << 4),	// 72 MB
-	N3DS_NCCH_EXHEADER_ACI_FLAG2_Old3DS_SysMode_Dev4	= (5 << 4),	// 32 MB
-	N3DS_NCCH_EXHEADER_ACI_FLAG2_Old3DS_SysMode_Mask	= (15 << 4),
+	N3DS_NCCH_EXHEADER_ACI_FLAG2_Old3DS_SysMode_Prod	= (  0U << 4),	// 64 MB
+	N3DS_NCCH_EXHEADER_ACI_FLAG2_Old3DS_SysMode_Dev1	= (  2U << 4),	// 96 MB
+	N3DS_NCCH_EXHEADER_ACI_FLAG2_Old3DS_SysMode_Dev2	= (  3U << 4),	// 80 MB
+	N3DS_NCCH_EXHEADER_ACI_FLAG2_Old3DS_SysMode_Dev3	= (  4U << 4),	// 72 MB
+	N3DS_NCCH_EXHEADER_ACI_FLAG2_Old3DS_SysMode_Dev4	= (  5U << 4),	// 32 MB
+	N3DS_NCCH_EXHEADER_ACI_FLAG2_Old3DS_SysMode_Mask	= (0xFU << 4),
 } N3DS_NCCH_ExHeader_ACI_Flag_SysMode;
 
 /**
@@ -821,52 +799,52 @@ typedef enum {
  * NCCH Extended Header: ACI filesystem access info.
  */
 typedef enum {
-	N3DS_NCCH_EXHEADER_ACI_FsAccess_CategorySystemApplication	= (1 <<  0),
-	N3DS_NCCH_EXHEADER_ACI_FsAccess_CategoryHardwareCheck		= (1 <<  1),
-	N3DS_NCCH_EXHEADER_ACI_FsAccess_CategoryFilesystemTool		= (1 <<  2),
-	N3DS_NCCH_EXHEADER_ACI_FsAccess_Debug				= (1 <<  3),
-	N3DS_NCCH_EXHEADER_ACI_FsAccess_TwlCardBackup			= (1 <<  4),
-	N3DS_NCCH_EXHEADER_ACI_FsAccess_TwlNandData			= (1 <<  5),
-	N3DS_NCCH_EXHEADER_ACI_FsAccess_Boss				= (1 <<  6),
-	N3DS_NCCH_EXHEADER_ACI_FsAccess_DirectSdmc			= (1 <<  7),
-	N3DS_NCCH_EXHEADER_ACI_FsAccess_Core				= (1 <<  8),
-	N3DS_NCCH_EXHEADER_ACI_FsAccess_CtrNandRo			= (1 <<  9),
-	N3DS_NCCH_EXHEADER_ACI_FsAccess_CtrNandRw			= (1 << 10),
-	N3DS_NCCH_EXHEADER_ACI_FsAccess_CtrNandRoWrite			= (1 << 11),
-	N3DS_NCCH_EXHEADER_ACI_FsAccess_CategorySystemSettings		= (1 << 12),
-	N3DS_NCCH_EXHEADER_ACI_FsAccess_Cardboard			= (1 << 13),
-	N3DS_NCCH_EXHEADER_ACI_FsAccess_ExportImportIvs			= (1 << 14),
-	N3DS_NCCH_EXHEADER_ACI_FsAccess_DirectSdmcWrite			= (1 << 15),
-	N3DS_NCCH_EXHEADER_ACI_FsAccess_SwitchCleanup			= (1 << 16),
-	N3DS_NCCH_EXHEADER_ACI_FsAccess_SaveDataMove			= (1 << 17),
-	N3DS_NCCH_EXHEADER_ACI_FsAccess_Shop				= (1 << 18),
-	N3DS_NCCH_EXHEADER_ACI_FsAccess_Shell				= (1 << 19),
-	N3DS_NCCH_EXHEADER_ACI_FsAccess_CategoryHomeMenu		= (1 << 20),
-	N3DS_NCCH_EXHEADER_ACI_FsAccess_SeedDB				= (1 << 21),
+	N3DS_NCCH_EXHEADER_ACI_FsAccess_CategorySystemApplication	= (1U <<  0),
+	N3DS_NCCH_EXHEADER_ACI_FsAccess_CategoryHardwareCheck		= (1U <<  1),
+	N3DS_NCCH_EXHEADER_ACI_FsAccess_CategoryFilesystemTool		= (1U <<  2),
+	N3DS_NCCH_EXHEADER_ACI_FsAccess_Debug				= (1U <<  3),
+	N3DS_NCCH_EXHEADER_ACI_FsAccess_TwlCardBackup			= (1U <<  4),
+	N3DS_NCCH_EXHEADER_ACI_FsAccess_TwlNandData			= (1U <<  5),
+	N3DS_NCCH_EXHEADER_ACI_FsAccess_Boss				= (1U <<  6),
+	N3DS_NCCH_EXHEADER_ACI_FsAccess_DirectSdmc			= (1U <<  7),
+	N3DS_NCCH_EXHEADER_ACI_FsAccess_Core				= (1U <<  8),
+	N3DS_NCCH_EXHEADER_ACI_FsAccess_CtrNandRo			= (1U <<  9),
+	N3DS_NCCH_EXHEADER_ACI_FsAccess_CtrNandRw			= (1U << 10),
+	N3DS_NCCH_EXHEADER_ACI_FsAccess_CtrNandRoWrite			= (1U << 11),
+	N3DS_NCCH_EXHEADER_ACI_FsAccess_CategorySystemSettings		= (1U << 12),
+	N3DS_NCCH_EXHEADER_ACI_FsAccess_Cardboard			= (1U << 13),
+	N3DS_NCCH_EXHEADER_ACI_FsAccess_ExportImportIvs			= (1U << 14),
+	N3DS_NCCH_EXHEADER_ACI_FsAccess_DirectSdmcWrite			= (1U << 15),
+	N3DS_NCCH_EXHEADER_ACI_FsAccess_SwitchCleanup			= (1U << 16),
+	N3DS_NCCH_EXHEADER_ACI_FsAccess_SaveDataMove			= (1U << 17),
+	N3DS_NCCH_EXHEADER_ACI_FsAccess_Shop				= (1U << 18),
+	N3DS_NCCH_EXHEADER_ACI_FsAccess_Shell				= (1U << 19),
+	N3DS_NCCH_EXHEADER_ACI_FsAccess_CategoryHomeMenu		= (1U << 20),
+	N3DS_NCCH_EXHEADER_ACI_FsAccess_SeedDB				= (1U << 21),
 } N3DS_NCCH_ExHeader_ACI_FsAccess;
 
 /**
  * NCCH Extended Header: ACI other attributes.
  */
 typedef enum {
-	N3DS_NCCH_EXHEADER_ACI_OtherAttr_NoRomFS			= (1 << 0),
-	N3DS_NCCH_EXHEADER_ACI_OtherAttr_ExtendedSavedataAccess		= (1 << 1),
+	N3DS_NCCH_EXHEADER_ACI_OtherAttr_NoRomFS			= (1U << 0),
+	N3DS_NCCH_EXHEADER_ACI_OtherAttr_ExtendedSavedataAccess		= (1U << 1),
 } N3DS_NCCH_ExHeader_ACI_OtherAttr;
 
 /**
  * NCCH Extended Header: I/O access control. (ARM9)
  */
 typedef enum {
-	N3DS_NCCH_EXHEADER_ACI_IoAccess_FsMountNand		= (1 << 0),
-	N3DS_NCCH_EXHEADER_ACI_IoAccess_FsMountNandRoWrite	= (1 << 1),
-	N3DS_NCCH_EXHEADER_ACI_IoAccess_FsMountTwln		= (1 << 2),
-	N3DS_NCCH_EXHEADER_ACI_IoAccess_FsMountWnand		= (1 << 3),
-	N3DS_NCCH_EXHEADER_ACI_IoAccess_FsMountCardSpi		= (1 << 4),
-	N3DS_NCCH_EXHEADER_ACI_IoAccess_UseSdif3		= (1 << 5),
-	N3DS_NCCH_EXHEADER_ACI_IoAccess_CreateSeed		= (1 << 6),
-	N3DS_NCCH_EXHEADER_ACI_IoAccess_UseCardSpi		= (1 << 7),
-	N3DS_NCCH_EXHEADER_ACI_IoAccess_SDApplication		= (1 << 8),
-	N3DS_NCCH_EXHEADER_ACI_IoAccess_FsMountSdmcWrite	= (1 << 9),
+	N3DS_NCCH_EXHEADER_ACI_IoAccess_FsMountNand		= (1U << 0),
+	N3DS_NCCH_EXHEADER_ACI_IoAccess_FsMountNandRoWrite	= (1U << 1),
+	N3DS_NCCH_EXHEADER_ACI_IoAccess_FsMountTwln		= (1U << 2),
+	N3DS_NCCH_EXHEADER_ACI_IoAccess_FsMountWnand		= (1U << 3),
+	N3DS_NCCH_EXHEADER_ACI_IoAccess_FsMountCardSpi		= (1U << 4),
+	N3DS_NCCH_EXHEADER_ACI_IoAccess_UseSdif3		= (1U << 5),
+	N3DS_NCCH_EXHEADER_ACI_IoAccess_CreateSeed		= (1U << 6),
+	N3DS_NCCH_EXHEADER_ACI_IoAccess_UseCardSpi		= (1U << 7),
+	N3DS_NCCH_EXHEADER_ACI_IoAccess_SDApplication		= (1U << 8),
+	N3DS_NCCH_EXHEADER_ACI_IoAccess_FsMountSdmcWrite	= (1U << 9),
 } N3DS_NCCH_ExHeader_IoAccessControl;
 
 /**
@@ -911,7 +889,7 @@ typedef struct PACKED _N3DS_Ticket_t {
 	uint8_t reserved1;		// [0x08F]
 	uint64_t ticket_id;		// [0x090]
 	uint32_t console_id;		// [0x098] Console ID.
-	N3DS_TitleID_BE_t title_id;	// [0x09C] Title ID.
+	Nintendo_TitleID_BE_t title_id;	// [0x09C] Title ID.
 	uint8_t reserved2[2];		// [0x0A4]
 	uint16_t title_version;		// [0x0A6] ticket title version.
 	uint8_t reserved3[8];		// [0x0A8]
@@ -936,16 +914,16 @@ typedef enum {
 	// - 0: Unknown, or no encryption.
 	// - 1: Retail
 	// - 2: Debug
-	N3DS_TICKET_TITLEKEY_ISSUER_UNKNOWN	= (0 << 0),
-	N3DS_TICKET_TITLEKEY_ISSUER_RETAIL	= (1 << 0),
-	N3DS_TICKET_TITLEKEY_ISSUER_DEBUG	= (2 << 0),
-	N3DS_TICKET_TITLEKEY_ISSUER_MASK	= (3 << 0),
+	N3DS_TICKET_TITLEKEY_ISSUER_UNKNOWN	= (0U << 0),
+	N3DS_TICKET_TITLEKEY_ISSUER_RETAIL	= (1U << 0),
+	N3DS_TICKET_TITLEKEY_ISSUER_DEBUG	= (2U << 0),
+	N3DS_TICKET_TITLEKEY_ISSUER_MASK	= (3U << 0),
 
 	// Bits 2-4: KeyY index.
 	// - 0: eShop titles
 	// - 1: System titles
 	// - 2-5: Unknown
-	N3DS_TICKET_TITLEKEY_KEYY_INDEX_MASK	= (7 << 2),
+	N3DS_TICKET_TITLEKEY_KEYY_INDEX_MASK	= (7U << 2),
 } N3DS_Ticket_TitleKey_KeyY;
 
 #ifdef __cplusplus

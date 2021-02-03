@@ -16,82 +16,80 @@
 
 INCLUDE(CheckCSourceCompiles)
 
-MACRO(CHECK_C11_C99_COMPILER_FLAG _RESULT)
+FUNCTION(CHECK_C11_C99_COMPILER_FLAG _result)
 	# Flag listing borrowed from GNU autoconf's AC_PROG_CC_C99 macro.
-	UNSET(${_RESULT})
+	UNSET(${_result} PARENT_SCOPE)
 
 	# MSVC doesn't allow setting the C standard.
-	IF(NOT MSVC)
-	# Check if C11 is present without any flags.
-	# gcc-5.1 uses C11 mode by default.
-	MESSAGE(STATUS "Checking if C11 is enabled by default:")
-	CHECK_C_SOURCE_COMPILES("
+	IF(NOT DEFINED _SYS_C11_C99_CFLAG AND NOT MSVC)
+		# Check if C11 is present without any flags.
+		# gcc-5.1 uses C11 mode by default.
+		MESSAGE(STATUS "Checking if C11 is enabled by default:")
+		CHECK_C_SOURCE_COMPILES("
 #if !defined(__STDC_VERSION__) || __STDC_VERSION__ < 201112L
-#error C11 is not enabled
+# error C11 is not enabled
 #endif
 
 int main() { return 0; }" CHECK_C11_ENABLED_DEFAULT)
-	IF (${CHECK_C11_ENABLED_DEFAULT})
-		UNSET(${_RESULT})
-		MESSAGE(STATUS "Checking if C11 is enabled by default: yes")
-	ELSE()
-		MESSAGE(STATUS "Checking if C11 is enabled by default: no")
-		MESSAGE(STATUS "Checking what CFLAG is required for C11:")
-		FOREACH(CHECK_C11_CFLAG "-std=gnu11" "-std=c11" "-c99" "-AC99" "-xc99=all" "-qlanglvl=extc1x" "-qlanglvl=stdc11")
-			SET(SAFE_CMAKE_REQUIRED_DEFINITIONS "${CMAKE_REQUIRED_DEFINITIONS}")
-			SET(CMAKE_REQUIRED_DEFINITIONS "${CHECK_C11_CFLAG}")
-			CHECK_C_SOURCE_COMPILES("int main() { return 0; }" CFLAG_${CHECK_C11_CFLAG})
-			SET(CMAKE_REQUIRED_DEFINITIONS "${SAFE_CMAKE_REQUIRED_DEFINITIONS}")
-			IF(CFLAG_${CHECK_C11_CFLAG})
-				SET(${_RESULT} ${CHECK_C11_CFLAG})
-				BREAK()
-			ENDIF(CFLAG_${CHECK_C11_CFLAG})
-			UNSET(CFLAG_${CHECK_C11_CFLAG})
-		ENDFOREACH()
-
-		IF(${_RESULT})
-			MESSAGE(STATUS "Checking what CFLAG is required for C11: ${${_RESULT}}")
-		ELSE(${_RESULT})
-			MESSAGE(STATUS "Checking what CFLAG is required for C11: unavailable")
-		ENDIF(${_RESULT})
-	ENDIF()
-
-	IF(NOT CHECK_C11_ENABLED_DEFAULT AND NOT ${_RESULT})
-		# Could not enable C11. Try C99 instead.
-		MESSAGE(STATUS "Checking if C99 is enabled by default:")
-		CHECK_C_SOURCE_COMPILES("
-	#if !defined(__STDC_VERSION__) || __STDC_VERSION__ < 199901L
-	#error C99 is not enabled
-	#endif
-
-	int main() { return 0; }" CHECK_C99_ENABLED_DEFAULT)
-		IF (${CHECK_C99_ENABLED_DEFAULT})
-			UNSET(${_RESULT})
-			MESSAGE(STATUS "Checking if C99 is enabled by default: yes")
-		ELSE()
-			MESSAGE(STATUS "Checking if C99 is enabled by default: no")
-			MESSAGE(STATUS "Checking what CFLAG is required for C99:")
-			FOREACH(CHECK_C99_CFLAG "-std=gnu99" "-std=c99" "-c99" "-AC99" "-xc99=all" "-qlanglvl=extc99")
+		IF (CHECK_C11_ENABLED_DEFAULT)
+			SET(_SYS_C11_C99_CFLAG "" CACHE INTERNAL "CFLAG required for C11 or C99 mode.")
+			MESSAGE(STATUS "Checking if C11 is enabled by default: yes")
+		ELSE(CHECK_C11_ENABLED_DEFAULT)
+			MESSAGE(STATUS "Checking if C11 is enabled by default: no")
+			MESSAGE(STATUS "Checking what CFLAG is required for C11:")
+			FOREACH(CHECK_C11_CFLAG "-std=gnu11" "-std=c11" "-c99" "-AC99" "-xc99=all" "-qlanglvl=extc1x" "-qlanglvl=stdc11")
 				SET(SAFE_CMAKE_REQUIRED_DEFINITIONS "${CMAKE_REQUIRED_DEFINITIONS}")
-				SET(CMAKE_REQUIRED_DEFINITIONS "${CHECK_C99_CFLAG}")
-				CHECK_C_SOURCE_COMPILES("int main() { return 0; }" CFLAG_${CHECK_C99_CFLAG})
+				SET(CMAKE_REQUIRED_DEFINITIONS "${CHECK_C11_CFLAG}")
+				CHECK_C_SOURCE_COMPILES("int main() { return 0; }" CFLAG_${CHECK_C11_CFLAG})
 				SET(CMAKE_REQUIRED_DEFINITIONS "${SAFE_CMAKE_REQUIRED_DEFINITIONS}")
-				IF(CFLAG_${CHECK_C99_CFLAG})
-					SET(${_RESULT} ${CHECK_C99_CFLAG})
+				IF(CFLAG_${CHECK_C11_CFLAG})
+					SET(_SYS_C11_C99_CFLAG "${CHECK_C11_CFLAG}" CACHE INTERNAL "CFLAG required for C11 or C99 mode.")
 					BREAK()
-				ENDIF(CFLAG_${CHECK_C99_CFLAG})
-				UNSET(CFLAG_${CHECK_C99_CFLAG})
+				ENDIF(CFLAG_${CHECK_C11_CFLAG})
 			ENDFOREACH()
 
-			IF(${_RESULT})
-				MESSAGE(STATUS "Checking what CFLAG is required for C99: ${${_RESULT}}")
-			ELSE(${_RESULT})
-				MESSAGE(STATUS "Checking what CFLAG is required for C99: unavailable")
-			ENDIF(${_RESULT})
-		ENDIF()
-	ENDIF(NOT CHECK_C11_ENABLED_DEFAULT AND NOT ${_RESULT})
+			IF(_SYS_C11_C99_CFLAG)
+				MESSAGE(STATUS "Checking what CFLAG is required for C11: ${_SYS_C11_C99_CFLAG}")
+			ELSE(_SYS_C11_C99_CFLAG)
+				MESSAGE(STATUS "Checking what CFLAG is required for C11: unavailable")
+			ENDIF(_SYS_C11_C99_CFLAG)
+		ENDIF(CHECK_C11_ENABLED_DEFAULT)
 
-	UNSET(CHECK_C11_ENABLED_DEFAULT)
-	UNSET(CHECK_C99_ENABLED_DEFAULT)
-	ENDIF(NOT MSVC)
-ENDMACRO(CHECK_C11_C99_COMPILER_FLAG)
+		IF(NOT CHECK_C11_ENABLED_DEFAULT AND NOT _SYS_C11_C99_CFLAG)
+			# Could not enable C11. Try C99 instead.
+			MESSAGE(STATUS "Checking if C99 is enabled by default:")
+			CHECK_C_SOURCE_COMPILES("
+#if !defined(__STDC_VERSION__) || __STDC_VERSION__ < 199901L
+# error C99 is not enabled
+#endif
+
+int main() { return 0; }" CHECK_C99_ENABLED_DEFAULT)
+			IF (CHECK_C99_ENABLED_DEFAULT)
+				SET(_SYS_C11_C99_CFLAG "" CACHE INTERNAL "CFLAG required for C11 or C99 mode.")
+				MESSAGE(STATUS "Checking if C99 is enabled by default: yes")
+			ELSE(CHECK_C99_ENABLED_DEFAULT)
+				MESSAGE(STATUS "Checking if C99 is enabled by default: no")
+				MESSAGE(STATUS "Checking what CFLAG is required for C99:")
+				FOREACH(CHECK_C99_CFLAG "-std=gnu99" "-std=c99" "-c99" "-AC99" "-xc99=all" "-qlanglvl=extc99")
+					SET(SAFE_CMAKE_REQUIRED_DEFINITIONS "${CMAKE_REQUIRED_DEFINITIONS}")
+					SET(CMAKE_REQUIRED_DEFINITIONS "${CHECK_C99_CFLAG}")
+					CHECK_C_SOURCE_COMPILES("int main() { return 0; }" CFLAG_${CHECK_C99_CFLAG})
+					SET(CMAKE_REQUIRED_DEFINITIONS "${SAFE_CMAKE_REQUIRED_DEFINITIONS}")
+					IF(CFLAG_${CHECK_C99_CFLAG})
+						SET(_SYS_C11_C99_CFLAG "${CHECK_C99_CFLAG}" CACHE INTERNAL "CFLAG required for C11 or C99 mode.")
+						BREAK()
+					ENDIF(CFLAG_${CHECK_C99_CFLAG})
+				ENDFOREACH()
+
+				IF(_SYS_C11_C99_CFLAG)
+					MESSAGE(STATUS "Checking what CFLAG is required for C99: ${_SYS_C11_C99_CFLAG}")
+				ELSE(_SYS_C11_C99_CFLAG)
+					SET(${_SYS_C11_C99_CFLAG} "" CACHE INTERNAL "CFLAG required for C11 or C99 mode.")
+					MESSAGE(STATUS "Checking what CFLAG is required for C99: unavailable")
+				ENDIF(_SYS_C11_C99_CFLAG)
+			ENDIF(CHECK_C99_ENABLED_DEFAULT)
+		ENDIF(NOT CHECK_C11_ENABLED_DEFAULT AND NOT _SYS_C11_C99_CFLAG)
+	ENDIF(NOT DEFINED _SYS_C11_C99_CFLAG AND NOT MSVC)
+
+	SET(${_result} "${_SYS_C11_C99_CFLAG}" PARENT_SCOPE)
+ENDFUNCTION(CHECK_C11_C99_COMPILER_FLAG)

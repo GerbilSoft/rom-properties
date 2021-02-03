@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * Sega8Bit.cpp: Sega 8-bit (SMS/GG) ROM reader.                           *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -10,8 +10,9 @@
 #include "Sega8Bit.hpp"
 #include "sega8_structs.h"
 
-// librpbase
+// librpbase, librpfile
 using namespace LibRpBase;
+using LibRpFile::IRpFile;
 
 // C++ STL classes.
 using std::string;
@@ -21,7 +22,7 @@ namespace LibRomData {
 
 ROMDATA_IMPL(Sega8Bit)
 
-class Sega8BitPrivate : public RomDataPrivate
+class Sega8BitPrivate final : public RomDataPrivate
 {
 	public:
 		Sega8BitPrivate(Sega8Bit *q, IRpFile *file);
@@ -199,6 +200,7 @@ Sega8Bit::Sega8Bit(IRpFile *file)
 {
 	RP_D(Sega8Bit);
 	d->className = "Sega8Bit";
+	d->mimeType = "application/x-sms-rom";	// unofficial (TODO: SMS vs. GG)
 
 	if (!d->file) {
 		// Could not ref() the file handle.
@@ -209,8 +211,7 @@ Sega8Bit::Sega8Bit(IRpFile *file)
 	size_t size = d->file->seekAndRead(0x7FE0, &d->romHeader, sizeof(d->romHeader));
 	if (size != sizeof(d->romHeader)) {
 		// Seek and/or read error.
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
 
@@ -441,7 +442,7 @@ int Sega8Bit::loadFieldData(void)
 
 	// Checksum.
 	d->fields->addField_string_numeric(C_("RomData", "Checksum"),
-		le16_to_cpu(tmr->checksum), RomFields::FB_HEX, 4,
+		le16_to_cpu(tmr->checksum), RomFields::Base::Hex, 4,
 		RomFields::STRF_MONOSPACE);
 
 	// TODO: ROM size?
@@ -458,7 +459,6 @@ int Sega8Bit::loadFieldData(void)
 		// NOTE: CreationDate is currently handled as QDate on KDE.
 		time_t ctime = d->codemasters_timestamp_to_unix_time(&codemasters->timestamp);
 
-		// TODO: Interpret dateTime of -1 as "error"?
 		d->fields->addField_dateTime(C_("Sega8Bit", "Build Time"), ctime,
 			RomFields::RFT_DATETIME_HAS_DATE |
 			RomFields::RFT_DATETIME_HAS_TIME |
@@ -470,10 +470,10 @@ int Sega8Bit::loadFieldData(void)
 			codemasters->checksum_banks);
 		d->fields->addField_string_numeric(C_("Sega8Bit", "CM Checksum 1"),
 			le16_to_cpu(codemasters->checksum),
-			RomFields::FB_HEX, 4, RomFields::STRF_MONOSPACE);
+			RomFields::Base::Hex, 4, RomFields::STRF_MONOSPACE);
 		d->fields->addField_string_numeric(C_("Sega8Bit", "CM Checksum 2"),
 			le16_to_cpu(codemasters->checksum_compl),
-			RomFields::FB_HEX, 4, RomFields::STRF_MONOSPACE);
+			RomFields::Base::Hex, 4, RomFields::STRF_MONOSPACE);
 	} else if (d->romHeader.sdsc.magic == cpu_to_be32(SDSC_MAGIC)) {
 		// SDSC header magic.
 		const Sega8_SDSC_RomHeader *sdsc = &d->romHeader.sdsc;
@@ -495,7 +495,6 @@ int Sega8Bit::loadFieldData(void)
 		// Build date.
 		time_t ctime = d->sdsc_date_to_unix_time(&sdsc->date);
 
-		// TODO: Interpret dateTime of -1 as "error"?
 		d->fields->addField_dateTime(C_("Sega8Bit", "Build Date"), ctime,
 			RomFields::RFT_DATETIME_HAS_DATE |
 			RomFields::RFT_DATETIME_IS_UTC  // No timezone information here.

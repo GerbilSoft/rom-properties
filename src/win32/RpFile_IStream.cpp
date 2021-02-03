@@ -11,8 +11,8 @@
 #include "config.librpbase.h"
 #include "RpFile_IStream.hpp"
 
-// librpbase
-#include "librpbase/byteswap.h"
+// librpbase, librpcpu
+#include "librpcpu/byteswap_rp.h"
 using namespace LibRpBase;
 
 // C++ STL classes.
@@ -53,6 +53,9 @@ RpFile_IStream::RpFile_IStream(IStream *pStream, bool gzip)
 	, m_zcurPos(0)
 {
 	pStream->AddRef();
+
+	// TODO: Proper writable check.
+	m_isWritable = true;
 
 	if (gzip) {
 #if defined(_MSC_VER) && defined(ZLIB_IS_DLL)
@@ -95,21 +98,24 @@ RpFile_IStream::RpFile_IStream(IStream *pStream, bool gzip)
 							// Make sure the CRC32 table is initialized.
 							get_crc_table();
 
-							int err = inflateInit2(m_pZstm, 16+MAX_WBITS);
-							if (err != Z_OK) {
+							int err = inflateInit2(m_pZstm, 16 + MAX_WBITS);
+							if (err == Z_OK) {
+								// Allocate the zlib buffer.
+								m_pZbuf = static_cast<uint8_t*>(malloc(ZLIB_BUFFER_SIZE));
+								if (m_pZbuf) {
+									m_isCompressed = true;
+								} else {
+									// malloc() failed.
+									inflateEnd(m_pZstm);
+									free(m_pZstm);
+									m_pZstm = nullptr;
+									m_z_uncomp_sz = 0;
+								}
+							} else {
 								// Error initializing zlib.
 								free(m_pZstm);
 								m_pZstm = nullptr;
 								m_z_uncomp_sz = 0;
-							}
-
-							// Allocate the zlib buffer.
-							m_pZbuf = static_cast<uint8_t*>(malloc(ZLIB_BUFFER_SIZE));
-							if (!m_pZbuf) {
-								// malloc() failed.
-								inflateEnd(m_pZstm);
-								free(m_pZstm);
-								m_pZstm = nullptr;
 							}
 						}
 					}
@@ -403,7 +409,7 @@ size_t RpFile_IStream::write(const void *ptr, size_t size)
  * @param pos File position.
  * @return 0 on success; -1 on error.
  */
-int RpFile_IStream::seek(int64_t pos)
+int RpFile_IStream::seek(off64_t pos)
 {
 	LARGE_INTEGER dlibMove;
 	HRESULT hr;
@@ -519,7 +525,7 @@ int RpFile_IStream::seek(int64_t pos)
  * Get the file position.
  * @return File position, or -1 on error.
  */
-int64_t RpFile_IStream::tell(void)
+off64_t RpFile_IStream::tell(void)
 {
 	if (!m_pStream) {
 		m_lastError = EBADF;
@@ -528,7 +534,7 @@ int64_t RpFile_IStream::tell(void)
 
 	if (m_pZstm) {
 		// zlib-compressed file.
-		return static_cast<int64_t>(m_z_filepos);
+		return static_cast<off64_t>(m_z_filepos);
 	}
 
 	LARGE_INTEGER dlibMove;
@@ -541,7 +547,7 @@ int64_t RpFile_IStream::tell(void)
 		return -1;
 	}
 
-	return (int64_t)ulibNewPosition.QuadPart;
+	return static_cast<off64_t>(ulibNewPosition.QuadPart);
 }
 
 /**
@@ -549,7 +555,7 @@ int64_t RpFile_IStream::tell(void)
  * @param size New size. (default is 0)
  * @return 0 on success; -1 on error.
  */
-int RpFile_IStream::truncate(int64_t size)
+int RpFile_IStream::truncate(off64_t size)
 {
 	// TODO: Needs testing.
 	if (!m_pStream) {
@@ -577,7 +583,7 @@ int RpFile_IStream::truncate(int64_t size)
 
 	// Truncate the stream.
 	ULARGE_INTEGER ulibNewSize;
-	ulibNewSize.QuadPart = (uint64_t)size;
+	ulibNewSize.QuadPart = static_cast<ULONGLONG>(size);
 	hr = m_pStream->SetSize(ulibNewSize);
 	if (FAILED(hr)) {
 		// TODO: Convert HRESULT to POSIX?
@@ -601,13 +607,44 @@ int RpFile_IStream::truncate(int64_t size)
 	return 0;
 }
 
+/**
+ * Flush buffers.
+ * This operation only makes sense on writable files.
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int RpFile_IStream::flush(void)
+{
+	// TODO: Needs testing.
+	if (!m_pStream) {
+		m_lastError = EBADF;
+		return -1;
+	} else if (m_pZstm) {
+		// zlib is read-only.
+		m_lastError = EROFS;
+		return -1;
+	}
+
+	if (isWritable()) {
+		HRESULT hr = m_pStream->Commit(STGC_DEFAULT);
+		if (FAILED(hr)) {
+			// TODO: Convert HRESULT to POSIX?
+			m_lastError = EIO;
+			return -m_lastError;
+		}
+		return 0;
+	}
+
+	// Ignore flush operations if the file isn't writable.
+	return 0;
+}
+
 /** File properties. **/
 
 /**
  * Get the file size.
  * @return File size, or negative on error.
  */
-int64_t RpFile_IStream::size(void)
+off64_t RpFile_IStream::size(void)
 {
 	if (!m_pStream) {
 		m_lastError = EBADF;
@@ -616,7 +653,7 @@ int64_t RpFile_IStream::size(void)
 
 	if (m_pZstm) {
 		// zlib-compressed file.
-		return static_cast<int64_t>(m_z_uncomp_sz);
+		return static_cast<off64_t>(m_z_uncomp_sz);
 	}
 
 	// Use Stat() instead of Seek().
@@ -630,7 +667,7 @@ int64_t RpFile_IStream::size(void)
 	}
 
 	// TODO: Make sure cbSize is valid?
-	return (int64_t)statstg.cbSize.QuadPart;
+	return static_cast<off64_t>(statstg.cbSize.QuadPart);
 }
 
 /**

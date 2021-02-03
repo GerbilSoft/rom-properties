@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * DMG.hpp: Game Boy (DMG/CGB/SGB) ROM reader.                             *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * Copyright (c) 2016-2018 by Egor.                                        *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
@@ -12,8 +12,10 @@
 #include "data/NintendoPublishers.hpp"
 #include "dmg_structs.h"
 
-// librpbase
+// librpbase, librpfile
+#include "librpbase/config/Config.hpp"
 using namespace LibRpBase;
+using LibRpFile::IRpFile;
 
 // For sections delegated to other RomData subclasses.
 #include "Audio/GBS.hpp"
@@ -27,7 +29,7 @@ namespace LibRomData {
 
 ROMDATA_IMPL(DMG)
 
-class DMGPrivate : public RomDataPrivate
+class DMGPrivate final : public RomDataPrivate
 {
 	public:
 		DMGPrivate(DMG *q, IRpFile *file);
@@ -41,42 +43,46 @@ class DMGPrivate : public RomDataPrivate
 
 		// System. (RFT_BITFIELD)
 		enum DMG_System {
-			DMG_SYSTEM_DMG		= (1 << 0),
-			DMG_SYSTEM_SGB		= (1 << 1),
-			DMG_SYSTEM_CGB		= (1 << 2),
+			DMG_SYSTEM_DMG		= (1U << 0),
+			DMG_SYSTEM_SGB		= (1U << 1),
+			DMG_SYSTEM_CGB		= (1U << 2),
 		};
 
 		// Cartridge hardware features. (RFT_BITFIELD)
 		enum DMG_Feature {
-			DMG_FEATURE_RAM		= (1 << 0),
-			DMG_FEATURE_BATTERY	= (1 << 1),
-			DMG_FEATURE_TIMER	= (1 << 2),
-			DMG_FEATURE_RUMBLE	= (1 << 3),
+			DMG_FEATURE_RAM		= (1U << 0),
+			DMG_FEATURE_BATTERY	= (1U << 1),
+			DMG_FEATURE_TIMER	= (1U << 2),
+			DMG_FEATURE_RUMBLE	= (1U << 3),
+			DMG_FEATURE_TILT	= (1U << 4),
 		};
 
 		/** Internal ROM data. **/
 
 		// Cartridge hardware.
-		enum DMG_Hardware {
-			DMG_HW_UNK,
-			DMG_HW_ROM,
-			DMG_HW_MBC1,
-			DMG_HW_MBC2,
-			DMG_HW_MBC3,
-			DMG_HW_MBC4,
-			DMG_HW_MBC5,
-			DMG_HW_MBC6,
-			DMG_HW_MBC7,
-			DMG_HW_MMM01,
-			DMG_HW_HUC1,
-			DMG_HW_HUC3,
-			DMG_HW_TAMA5,
-			DMG_HW_CAMERA
+		enum class DMG_Hardware : uint8_t {
+			Unknown = 0,
+
+			ROM,
+			MBC1,
+			MBC2,
+			MBC3,
+			MBC4,
+			MBC5,
+			MBC6,
+			MBC7,
+			MMM01,
+			HUC1,
+			HUC3,
+			TAMA5,
+			Camera,
+
+			Max
 		};
 		static const char *const dmg_hardware_names[];
 
 		struct dmg_cart_type {
-			uint8_t hardware;	// DMG_Hardware
+			DMG_Hardware hardware;
 			uint8_t features;	// DMG_Feature
 		};
 
@@ -88,6 +94,12 @@ class DMGPrivate : public RomDataPrivate
 		static const dmg_cart_type dmg_cart_types_end[];
 
 	public:
+		/**
+		 * Get the system ID for the current ROM image.
+		 * @return System ID. (DMG_System bitfield)
+		 */
+		uint32_t systemID(void) const;
+
 		/**
 		 * Get a dmg_cart_type struct describing a cartridge type byte.
 		 * @param type Cartridge type byte.
@@ -129,16 +141,15 @@ class DMGPrivate : public RomDataPrivate
 		static const uint8_t dmg_nintendo[0x18];
 
 	public:
-		enum DMG_RomType {
-			ROM_UNKNOWN	= -1,	// Unknown ROM type.
-			ROM_DMG		= 0,	// Game Boy
-			ROM_CGB		= 1,	// Game Boy Color
+		enum class RomType {
+			Unknown	= -1,
 
-			ROM_MAX
+			DMG	= 0,	// Game Boy
+			CGB	= 1,	// Game Boy Color
+
+			Max
 		};
-
-		// ROM type.
-		int romType;
+		RomType romType;
 
 	public:
 		// ROM header.
@@ -155,7 +166,7 @@ class DMGPrivate : public RomDataPrivate
 		 * for the CGB flag and the game ID.
 		 *
 		 * @param s_title	[out] Title.
-		 * @param s_gameID	[out] Game ID, or "Unknown" if not available.
+		 * @param s_gameID	[out] Game ID, or empty string if not available.
 		 */
 		void getTitleAndGameID(string &s_title, string &s_gameID) const;
 
@@ -189,57 +200,86 @@ const char *const DMGPrivate::dmg_hardware_names[] = {
 };
 
 const DMGPrivate::dmg_cart_type DMGPrivate::dmg_cart_types_start[] = {
-	{DMG_HW_ROM,	0},
-	{DMG_HW_MBC1,	0},
-	{DMG_HW_MBC1,	DMG_FEATURE_RAM},
-	{DMG_HW_MBC1,	DMG_FEATURE_RAM|DMG_FEATURE_BATTERY},
-	{DMG_HW_UNK,	0},
-	{DMG_HW_MBC2,	0},
-	{DMG_HW_MBC2,	DMG_FEATURE_BATTERY},
-	{DMG_HW_UNK,	0},
-	{DMG_HW_ROM,	DMG_FEATURE_RAM},
-	{DMG_HW_ROM,	DMG_FEATURE_RAM|DMG_FEATURE_BATTERY},
-	{DMG_HW_UNK,	0},
-	{DMG_HW_MMM01,	0},
-	{DMG_HW_MMM01,	DMG_FEATURE_RAM},
-	{DMG_HW_MMM01,	DMG_FEATURE_RAM|DMG_FEATURE_BATTERY},
-	{DMG_HW_UNK,	0},
-	{DMG_HW_MBC3,	DMG_FEATURE_TIMER|DMG_FEATURE_BATTERY},
-	{DMG_HW_MBC3,	DMG_FEATURE_TIMER|DMG_FEATURE_RAM|DMG_FEATURE_BATTERY},
-	{DMG_HW_MBC3,	0},
-	{DMG_HW_MBC3,	DMG_FEATURE_RAM},
-	{DMG_HW_MBC3,	DMG_FEATURE_RAM|DMG_FEATURE_BATTERY},
-	{DMG_HW_UNK,	0},
-	{DMG_HW_MBC4,	0},
-	{DMG_HW_MBC4,	DMG_FEATURE_RAM},
-	{DMG_HW_MBC4,	DMG_FEATURE_RAM|DMG_FEATURE_BATTERY},
-	{DMG_HW_UNK,	0},
-	{DMG_HW_MBC5,	0},
-	{DMG_HW_MBC5,	DMG_FEATURE_RAM},
-	{DMG_HW_MBC5,	DMG_FEATURE_RAM|DMG_FEATURE_BATTERY},
-	{DMG_HW_MBC5,	DMG_FEATURE_RUMBLE},
-	{DMG_HW_MBC5,	DMG_FEATURE_RUMBLE|DMG_FEATURE_RAM},
-	{DMG_HW_MBC5,	DMG_FEATURE_RUMBLE|DMG_FEATURE_RAM|DMG_FEATURE_BATTERY},
-	{DMG_HW_UNK,	0},
-	{DMG_HW_MBC6,	0},
-	{DMG_HW_UNK,	0},
-	{DMG_HW_MBC7,	DMG_FEATURE_RUMBLE|DMG_FEATURE_RAM|DMG_FEATURE_BATTERY},
+	{DMG_Hardware::ROM,	0},
+	{DMG_Hardware::MBC1,	0},
+	{DMG_Hardware::MBC1,	DMG_FEATURE_RAM},
+	{DMG_Hardware::MBC1,	DMG_FEATURE_RAM|DMG_FEATURE_BATTERY},
+	{DMG_Hardware::Unknown,	0},
+	{DMG_Hardware::MBC2,	0},
+	{DMG_Hardware::MBC2,	DMG_FEATURE_BATTERY},
+	{DMG_Hardware::Unknown,	0},
+	{DMG_Hardware::ROM,	DMG_FEATURE_RAM},
+	{DMG_Hardware::ROM,	DMG_FEATURE_RAM|DMG_FEATURE_BATTERY},
+	{DMG_Hardware::Unknown,	0},
+	{DMG_Hardware::MMM01,	0},
+	{DMG_Hardware::MMM01,	DMG_FEATURE_RAM},
+	{DMG_Hardware::MMM01,	DMG_FEATURE_RAM|DMG_FEATURE_BATTERY},
+	{DMG_Hardware::Unknown,	0},
+	{DMG_Hardware::MBC3,	DMG_FEATURE_TIMER|DMG_FEATURE_BATTERY},
+	{DMG_Hardware::MBC3,	DMG_FEATURE_TIMER|DMG_FEATURE_RAM|DMG_FEATURE_BATTERY},
+	{DMG_Hardware::MBC3,	0},
+	{DMG_Hardware::MBC3,	DMG_FEATURE_RAM},
+	{DMG_Hardware::MBC3,	DMG_FEATURE_RAM|DMG_FEATURE_BATTERY},
+	{DMG_Hardware::Unknown,	0},
+	{DMG_Hardware::MBC4,	0},
+	{DMG_Hardware::MBC4,	DMG_FEATURE_RAM},
+	{DMG_Hardware::MBC4,	DMG_FEATURE_RAM|DMG_FEATURE_BATTERY},
+	{DMG_Hardware::Unknown,	0},
+	{DMG_Hardware::MBC5,	0},
+	{DMG_Hardware::MBC5,	DMG_FEATURE_RAM},
+	{DMG_Hardware::MBC5,	DMG_FEATURE_RAM|DMG_FEATURE_BATTERY},
+	{DMG_Hardware::MBC5,	DMG_FEATURE_RUMBLE},
+	{DMG_Hardware::MBC5,	DMG_FEATURE_RUMBLE|DMG_FEATURE_RAM},
+	{DMG_Hardware::MBC5,	DMG_FEATURE_RUMBLE|DMG_FEATURE_RAM|DMG_FEATURE_BATTERY},
+	{DMG_Hardware::Unknown,	0},
+	{DMG_Hardware::MBC6,	0},
+	{DMG_Hardware::Unknown,	0},
+	{DMG_Hardware::MBC7,	DMG_FEATURE_TILT|DMG_FEATURE_RAM|DMG_FEATURE_BATTERY},
 };
 
 const DMGPrivate::dmg_cart_type DMGPrivate::dmg_cart_types_end[] = {
-	{DMG_HW_CAMERA, 0},
-	{DMG_HW_TAMA5, 0},
-	{DMG_HW_HUC3, 0},
-	{DMG_HW_HUC1, DMG_FEATURE_RAM|DMG_FEATURE_BATTERY},
+	{DMG_Hardware::Camera, 0},
+	{DMG_Hardware::TAMA5, 0},
+	{DMG_Hardware::HUC3, 0},
+	{DMG_Hardware::HUC1, DMG_FEATURE_RAM|DMG_FEATURE_BATTERY},
 };
 
 DMGPrivate::DMGPrivate(DMG *q, IRpFile *file)
 	: super(q, file)
-	, romType(ROM_UNKNOWN)
+	, romType(RomType::Unknown)
 {
 	// Clear the various structs.
 	memset(&romHeader, 0, sizeof(romHeader));
 	memset(&gbxFooter, 0, sizeof(gbxFooter));
+}
+
+/**
+ * Get the system ID for the current ROM image.
+ * @return System ID. (DMG_System bitfield)
+ */
+uint32_t DMGPrivate::systemID(void) const
+{
+	uint32_t ret = 0;
+
+	if (romHeader.cgbflag & 0x80) {
+		// Game supports CGB.
+		ret = DMG_SYSTEM_CGB;
+		if (!(romHeader.cgbflag & 0x40)) {
+			// Not CGB exclusive.
+			ret |= DMG_SYSTEM_DMG;
+		}
+	} else {
+		// Game does not support CGB.
+		ret |= DMG_SYSTEM_DMG;
+	}
+
+	if (romHeader.old_publisher_code == 0x33 && romHeader.sgbflag == 0x03) {
+		// Game supports SGB.
+		ret |= DMG_SYSTEM_SGB;
+	}
+
+	assert(ret != 0);
+	return ret;
 }
 
 /**
@@ -249,7 +289,7 @@ DMGPrivate::DMGPrivate(DMG *q, IRpFile *file)
  */
 inline const DMGPrivate::dmg_cart_type& DMGPrivate::CartType(uint8_t type)
 {
-	static const dmg_cart_type unk = {DMG_HW_UNK, 0};
+	static const dmg_cart_type unk = {DMG_Hardware::Unknown, 0};
 	if (type < ARRAY_SIZE(dmg_cart_types_start)) {
 		return dmg_cart_types_start[type];
 	}
@@ -319,11 +359,12 @@ const uint8_t DMGPrivate::dmg_nintendo[0x18] = {
  * for the CGB flag and the game ID.
  *
  * @param s_title	[out] Title.
- * @param s_gameID	[out] Game ID, or "Unknown" if not available.
+ * @param s_gameID	[out] Game ID, or empty string if not available.
  */
 void DMGPrivate::getTitleAndGameID(string &s_title, string &s_gameID) const
 {
-	/* NOTE: there are two approaches for doing this, when the 15 bytes are all used
+	/**
+	 * NOTE: there are two approaches for doing this, when the 15 bytes are all used
 	 * 1) prioritize id
 	 * 2) prioritize title
 	 * Both of those have counter examples:
@@ -331,36 +372,72 @@ void DMGPrivate::getTitleAndGameID(string &s_title, string &s_gameID) const
 	 * With the second one, you will get "MARIO DELUXAHYJ" and Unknown on super mario deluxe rom
 	 *
 	 * Current method is the first one.
+	 *
+	 * Encoding: The German version of "Wheel of Fortune" is called
+	 * "Glücksrad", and the title has 0x9A, which is cp437.
+	 * TODO: GBC titles might use cp1252 instead.
 	 */
+	bool isGameID = false;
 	if (romHeader.cgbflag < 0x80) {
 		// Assuming 16-character title for non-CGB.
 		// Game ID is not present.
-		s_title = latin1_to_utf8(romHeader.title16, sizeof(romHeader.title16));
-		s_gameID = C_("RomData", "Unknown");
-		return;
+		s_title = cpN_to_utf8(437, romHeader.title16, sizeof(romHeader.title16));
+		s_gameID.clear();
+		goto trimTitle;
 	}
 
-	// Check if CGB flag is set.
-	bool isGameID;
+	// Check if the CGB flag is set.
 	if ((romHeader.cgbflag & 0x3F) == 0) {
 		// CGB flag is set.
 		// Check if a Game ID is present.
 		isGameID = true;
-		for (unsigned int i = 11; i < 15; i++) {
-			if (!ISALNUM(romHeader.title15[i])) {
-				// Not a Game ID.
+		// First character must be: [ABKV] [TODO: Verify HW byte?]
+		// Region byte must be: [ADEFGHIJKPSXY]
+		switch (romHeader.title15[11]) {
+			case 'A':
+			case 'B':
+			case 'K':	// tilt sensor
+			case 'V':	// rumble
+				switch (romHeader.title15[14]) {
+					case 'A': case 'D':
+					case 'E': case 'F':
+					case 'G': case 'H':
+					case 'I': case 'J':
+					case 'K': case 'P':
+					case 'S': case 'U':
+					case 'X': case 'Y':
+						// Region byte is valid.
+						break;
+
+					default:
+						// Region byte is invalid.
+						// This is not a Game ID.
+						isGameID = false;
+						break;
+				}
+				break;
+
+			default:
+				// First character is invalid.
+				// This is not a Game ID.
 				isGameID = false;
 				break;
+		}
+
+		if (isGameID) {
+			// Second and third bytes must be uppercase and/or numeric.
+			if ((!ISUPPER(romHeader.title15[12]) && !ISDIGIT(romHeader.title15[12])) ||
+			    (!ISUPPER(romHeader.title15[13]) && !ISDIGIT(romHeader.title15[13])))
+			{
+				// This is not a Game ID.
+				isGameID = false;
 			}
 		}
-	} else {
-		// Not CGB. No Game ID.
-		isGameID = false;
 	}
 
 	if (isGameID) {
 		// Game ID is present.
-		s_title = latin1_to_utf8(romHeader.title11, sizeof(romHeader.title11));
+		s_title = cpN_to_utf8(437, romHeader.title11, sizeof(romHeader.title11));
 
 		// Append the publisher code to make an ID6.
 		s_gameID.clear();
@@ -375,7 +452,7 @@ void DMGPrivate::getTitleAndGameID(string &s_title, string &s_gameID) const
 			s_gameID[5] = romHeader.new_publisher_code[1];
 		} else {
 			// Old publisher code.
-			// FIXME: This probably won't ever happen,
+			// NOTE: This probably won't ever happen,
 			// since Game ID was added *after* CGB.
 			static const char hex_lookup[16] = {
 				'0','1','2','3','4','5','6','7',
@@ -386,8 +463,24 @@ void DMGPrivate::getTitleAndGameID(string &s_title, string &s_gameID) const
 		}
 	} else {
 		// Game ID is not present.
-		s_title = latin1_to_utf8(romHeader.title15, sizeof(romHeader.title15));
-		s_gameID = C_("RomData", "Unknown");
+		s_title = cpN_to_utf8(437, romHeader.title15, sizeof(romHeader.title15));
+		s_gameID.clear();
+	}
+
+trimTitle:
+	// Trim trailing spaces if the title doesn't start with a space.
+	// TODO: Trim leading spaces?
+	if (!s_title.empty() && s_title[0] != ' ') {
+		while (!s_title.empty()) {
+			const size_t size = s_title.size();
+			if (s_title[size-1] == ' ') {
+				// Found a space. Remove it.
+				s_title.resize(size-1);
+			} else {
+				// Not a space. We're done here.
+				break;
+			}
+		}
 	}
 }
 
@@ -408,10 +501,10 @@ string DMGPrivate::getPublisher(void) const
 			if (ISALNUM(romHeader.new_publisher_code[0]) &&
 			    ISALNUM(romHeader.new_publisher_code[1]))
 			{
-				s_publisher = rp_sprintf(C_("DMG", "Unknown (%.2s)"),
+				s_publisher = rp_sprintf(C_("RomData", "Unknown (%.2s)"),
 					romHeader.new_publisher_code);
 			} else {
-				s_publisher = rp_sprintf(C_("DMG", "Unknown (%02X %02X)"),
+				s_publisher = rp_sprintf(C_("RomData", "Unknown (%02X %02X)"),
 					static_cast<uint8_t>(romHeader.new_publisher_code[0]),
 					static_cast<uint8_t>(romHeader.new_publisher_code[1]));
 			}
@@ -459,38 +552,51 @@ DMG::DMG(IRpFile *file)
 	// Seek to the beginning of the header.
 	d->file->rewind();
 
-	// Read the ROM header. [0x150 bytes]
-	uint8_t header[0x150];
-	size_t size = d->file->read(header, sizeof(header));
-	if (size != sizeof(header)) {
-		d->file->unref();
-		d->file = nullptr;
+	// Read the ROM header.
+	// We're reading extra data in case the ROM has an extra
+	// 512-byte copier header present.
+	union {
+		uint8_t   u8[ 0x300 + sizeof(d->romHeader)];
+		uint32_t u32[(0x300 + sizeof(d->romHeader))/4];
+	} header;
+	size_t size = d->file->read(header.u8, sizeof(header.u8));
+	if (size < (0x100 + sizeof(d->romHeader))) {
+		UNREF_AND_NULL_NOCHK(d->file);
 		return;
+	}
+	if (size < sizeof(header.u8)) {
+		memset(&header.u8[size], 0, sizeof(header)-size);
 	}
 
 	// Check if this ROM is supported.
 	DetectInfo info;
 	info.header.addr = 0;
-	info.header.size = sizeof(header);
-	info.header.pData = header;
+	info.header.size = size;
+	info.header.pData = header.u8;
 	info.ext = nullptr;	// Not needed for DMG.
 	info.szFile = 0;	// Not needed for DMG.
-	d->romType = isRomSupported_static(&info);
+	d->romType = static_cast<DMGPrivate::RomType>(isRomSupported_static(&info));
 
-	d->isValid = (d->romType >= 0);
+	d->isValid = ((int)d->romType >= 0);
 	if (d->isValid) {
 		// Save the header for later.
 		// TODO: Save the RST table?
-		memcpy(&d->romHeader, &header[0x100], sizeof(d->romHeader));
+
+		// Check the first DWORD of the Nintendo logo
+		// to determine if a copier header is present.
+		if (likely(header.u32[0x104/4] == cpu_to_be32(0xCEED6666))) {
+			memcpy(&d->romHeader, &header.u8[0x100], sizeof(d->romHeader));
+		} else {
+			memcpy(&d->romHeader, &header.u8[0x300], sizeof(d->romHeader));
+		}
 	} else {
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
 
 	// Attempt to read the GBX footer.
-	int64_t addr = file->size() - sizeof(GBX_Footer);
-	if (addr >= (int64_t)sizeof(GBX_Footer)) {
+	off64_t addr = file->size() - sizeof(GBX_Footer);
+	if (addr >= (off64_t)sizeof(GBX_Footer)) {
 		size = file->seekAndRead(addr, &d->gbxFooter, sizeof(d->gbxFooter));
 		if (size != sizeof(d->gbxFooter)) {
 			// Unable to read the footer.
@@ -498,6 +604,11 @@ DMG::DMG(IRpFile *file)
 			d->gbxFooter.magic = 0;
 		}
 	}
+
+	// Set the MIME type. (unofficial)
+	d->mimeType = (d->romType == DMGPrivate::RomType::CGB)
+			? "application/x-gameboy-color-rom"
+			: "application/x-gameboy-rom";
 }
 
 /** ROM detection functions. **/
@@ -518,22 +629,56 @@ int DMG::isRomSupported_static(const DetectInfo *info)
 	{
 		// Either no detection information was specified,
 		// or the header is too small.
-		return -1;
+		return static_cast<int>(DMGPrivate::RomType::Unknown);
 	}
 
-	// Check the system name.
-	const DMG_RomHeader *const romHeader =
+	// Check for the ROM header at 0x100. (standard location)
+	const DMG_RomHeader *romHeader =
 		reinterpret_cast<const DMG_RomHeader*>(&info->header.pData[0x100]);
-	if (!memcmp(romHeader->nintendo, DMGPrivate::dmg_nintendo, sizeof(DMGPrivate::dmg_nintendo))) {
-		// Found a DMG ROM.
+	if (!memcmp(romHeader->nintendo, DMGPrivate::dmg_nintendo,
+	     sizeof(DMGPrivate::dmg_nintendo)))
+	{
+		// Found at the standard location.
+		DMGPrivate::RomType romType;
 		if (romHeader->cgbflag & 0x80) {
-			return DMGPrivate::ROM_CGB; // CGB supported
+			romType = DMGPrivate::RomType::CGB; // CGB supported
+		} else {
+			romType = DMGPrivate::RomType::DMG;
 		}
-		return DMGPrivate::ROM_DMG;
+		return (int)romType;
+	}
+
+	// Not found at the standard location.
+
+	// A few DMG ROMs have a 512-byte copier header, similar to
+	// Super Magic Drive (MD) and Super Wild Card (SNES).
+	// The header is sometimes missing the identification bytes
+	// (0xAA, 0xBB), so we'll just check for zero bytes.
+	if (info->header.size >= 0x300 + sizeof(DMG_RomHeader)) {
+		const uint32_t *const pData32 =
+			reinterpret_cast<const uint32_t*>(info->header.pData);
+		if (pData32[0x10/4] == 0 && pData32[0x14/4] == 0 &&
+		    pData32[0x18/4] == 0 && pData32[0x1C/4] == 0)
+		{
+			// Check the headered location.
+			romHeader = reinterpret_cast<const DMG_RomHeader*>(&info->header.pData[0x300]);
+			if (!memcmp(romHeader->nintendo, DMGPrivate::dmg_nintendo,
+			     sizeof(DMGPrivate::dmg_nintendo)))
+			{
+				// Found at the headered location.
+				DMGPrivate::RomType romType;
+				if (romHeader->cgbflag & 0x80) {
+					romType = DMGPrivate::RomType::CGB; // CGB supported
+				} else {
+					romType = DMGPrivate::RomType::DMG;
+				}
+				return (int)romType;
+			}
+		}
 	}
 
 	// Not supported.
-	return -1;
+	return (int)DMGPrivate::RomType::Unknown;
 }
 
 /**
@@ -552,7 +697,7 @@ const char *DMG::systemName(unsigned int type) const
 	// TODO: Abbreviation might be different... (Japan uses DMG/CGB?)
 	static_assert(SYSNAME_TYPE_MASK == 3,
 		"DMG::systemName() array index optimization needs to be updated.");
-	static_assert(DMGPrivate::ROM_MAX == 2,
+	static_assert((int)DMGPrivate::RomType::Max == 2,
 		"DMG::systemName() array index optimization needs to be updated.");
 
 	// Bits 0-1: Type. (long, short, abbreviation)
@@ -564,7 +709,7 @@ const char *DMG::systemName(unsigned int type) const
 
 	// NOTE: This might return an incorrect system name if
 	// d->romType is ROM_TYPE_UNKNOWN.
-	return sysNames[d->romType & 1][type & SYSNAME_TYPE_MASK];
+	return sysNames[(int)d->romType & 1][type & SYSNAME_TYPE_MASK];
 }
 
 /**
@@ -617,6 +762,93 @@ const char *const *DMG::supportedMimeTypes_static(void)
 }
 
 /**
+ * Get a bitfield of image types this class can retrieve.
+ * @return Bitfield of supported image types. (ImageTypesBF)
+ */
+uint32_t DMG::supportedImageTypes_static(void)
+{
+	return IMGBF_EXT_TITLE_SCREEN;
+}
+
+/**
+ * Get a bitfield of image types this object can retrieve.
+ * @return Bitfield of supported image types. (ImageTypesBF)
+ */
+uint32_t DMG::supportedImageTypes(void) const
+{
+	return supportedImageTypes_static();
+}
+
+/**
+ * Get a list of all available image sizes for the specified image type.
+ * @param imageType Image type.
+ * @return Vector of available image sizes, or empty vector if no images are available.
+ */
+vector<RomData::ImageSizeDef> DMG::supportedImageSizes(ImageType imageType) const
+{
+	ASSERT_supportedImageSizes(imageType);
+
+	switch (imageType) {
+		case IMG_EXT_TITLE_SCREEN: {
+			static const ImageSizeDef sz_EXT_TITLE_SCREEN_DMG[] = {
+				{nullptr, 160, 144, 0},
+			};
+			static const ImageSizeDef sz_EXT_TITLE_SCREEN_SGB[] = {
+				{nullptr, 256, 224, 0},
+			};
+
+			// If this game supports SGB but not CGB, we'll have an SGB border.
+			RP_D(const DMG);
+			const uint32_t dmg_system = d->systemID();
+			if (dmg_system & DMGPrivate::DMG_SYSTEM_SGB) {
+				if (!(dmg_system & DMGPrivate::DMG_SYSTEM_CGB)) {
+					// SGB but not CGB.
+					return vector<ImageSizeDef>(sz_EXT_TITLE_SCREEN_SGB,
+						sz_EXT_TITLE_SCREEN_SGB + 1);
+				}
+			}
+
+			// Not SGB, or has CGB.
+			return vector<ImageSizeDef>(sz_EXT_TITLE_SCREEN_DMG,
+				sz_EXT_TITLE_SCREEN_DMG + 1);
+		}
+		default:
+			break;
+	}
+
+	// Unsupported image type.
+	return vector<ImageSizeDef>();
+}
+
+/**
+ * Get image processing flags.
+ *
+ * These specify post-processing operations for images,
+ * e.g. applying transparency masks.
+ *
+ * @param imageType Image type.
+ * @return Bitfield of ImageProcessingBF operations to perform.
+ */
+uint32_t DMG::imgpf(ImageType imageType) const
+{
+	ASSERT_imgpf(imageType);
+
+	uint32_t ret = 0;
+	switch (imageType) {
+		case IMG_EXT_TITLE_SCREEN:
+			// Use nearest-neighbor scaling when resizing.
+			ret = IMGPF_RESCALE_NEAREST;
+			break;
+
+		default:
+			// GameTDB's Nintendo DS cover scans have alpha transparency.
+			// Hence, no image processing is required.
+			break;
+	}
+	return ret;
+}
+
+/**
  * Load field data.
  * Called by RomData::fields() if the field data hasn't been loaded yet.
  * @return Number of fields read on success; negative POSIX error code on error.
@@ -630,7 +862,7 @@ int DMG::loadFieldData(void)
 	} else if (!d->file || !d->file->isOpen()) {
 		// File isn't open.
 		return -EBADF;
-	} else if (!d->isValid || d->romType < 0) {
+	} else if (!d->isValid || (int)d->romType < 0) {
 		// Unknown ROM image type.
 		return -EIO;
 	}
@@ -654,27 +886,11 @@ int DMG::loadFieldData(void)
 	string s_title, s_gameID;
 	d->getTitleAndGameID(s_title, s_gameID);
 	d->fields->addField_string(C_("RomData", "Title"), s_title);
-	d->fields->addField_string(C_("DMG", "Game ID"), s_gameID);
+	d->fields->addField_string(C_("RomData", "Game ID"),
+		s_gameID.empty() ? s_gameID.c_str() : C_("RomData", "Unknown"));
 
 	// System
-	uint32_t dmg_system = 0;
-	if (romHeader->cgbflag & 0x80) {
-		// Game supports CGB.
-		dmg_system = DMGPrivate::DMG_SYSTEM_CGB;
-		if (!(romHeader->cgbflag & 0x40)) {
-			// Not CGB exclusive.
-			dmg_system |= DMGPrivate::DMG_SYSTEM_DMG;
-		}
-	} else {
-		// Game does not support CGB.
-		dmg_system |= DMGPrivate::DMG_SYSTEM_DMG;
-	}
-
-	if (romHeader->old_publisher_code == 0x33 && romHeader->sgbflag==0x03) {
-		// Game supports SGB.
-		dmg_system |= DMGPrivate::DMG_SYSTEM_SGB;
-	}
-
+	const uint32_t dmg_system = d->systemID();
 	static const char *const system_bitfield_names[] = {
 		"DMG", "SGB", "CGB"
 	};
@@ -705,12 +921,12 @@ int DMG::loadFieldData(void)
 		// NOTE: Some titles use a different opcode instead of NOP.
 		const uint16_t entry_address = (romHeader->entry[2] | (romHeader->entry[3] << 8));
 		d->fields->addField_string_numeric(entry_point_title,
-			entry_address, RomFields::FB_HEX, 4, RomFields::STRF_MONOSPACE);
+			entry_address, RomFields::Base::Hex, 4, RomFields::STRF_MONOSPACE);
 	} else if (romHeader->entry[0] == 0xC3) {
 		// JP nnnn without a NOP.
 		const uint16_t entry_address = (romHeader->entry[1] | (romHeader->entry[2] << 8));
 		d->fields->addField_string_numeric(entry_point_title,
-			entry_address, RomFields::FB_HEX, 4, RomFields::STRF_MONOSPACE);
+			entry_address, RomFields::Base::Hex, 4, RomFields::STRF_MONOSPACE);
 	} else if (romHeader->entry[0] == 0x18) {
 		// JR nnnn
 		// Found in many homebrew ROMs.
@@ -719,19 +935,18 @@ int DMG::loadFieldData(void)
 		// Add displacement, plus 2.
 		const uint16_t entry_address = 0x100 + disp + 2;
 		d->fields->addField_string_numeric(entry_point_title,
-			entry_address, RomFields::FB_HEX, 4, RomFields::STRF_MONOSPACE);
+			entry_address, RomFields::Base::Hex, 4, RomFields::STRF_MONOSPACE);
 	} else {
 		d->fields->addField_string_hexdump(entry_point_title,
 			romHeader->entry, 4, RomFields::STRF_MONOSPACE);
 	}
 
 	// Publisher
-	d->fields->addField_string(C_("RomData", "Publisher"),
-		d->getPublisher());
+	d->fields->addField_string(C_("RomData", "Publisher"), d->getPublisher());
 
 	// Hardware
 	d->fields->addField_string(C_("DMG", "Hardware"),
-		DMGPrivate::dmg_hardware_names[DMGPrivate::CartType(romHeader->cart_type).hardware]);
+		DMGPrivate::dmg_hardware_names[(int)DMGPrivate::CartType(romHeader->cart_type).hardware]);
 
 	// Features
 	static const char *const feature_bitfield_names[] = {
@@ -739,11 +954,12 @@ int DMG::loadFieldData(void)
 		NOP_C_("DMG|Features", "Battery"),
 		NOP_C_("DMG|Features", "Timer"),
 		NOP_C_("DMG|Features", "Rumble"),
+		NOP_C_("DMG|Features", "Tilt Sensor"),
 	};
 	vector<string> *const v_feature_bitfield_names = RomFields::strArrayToVector_i18n(
 		"DMG|Features", feature_bitfield_names, ARRAY_SIZE(feature_bitfield_names));
 	d->fields->addField_bitfield(C_("DMG", "Features"),
-		v_feature_bitfield_names, 0, DMGPrivate::CartType(romHeader->cart_type).features);
+		v_feature_bitfield_names, 3, DMGPrivate::CartType(romHeader->cart_type).features);
 
 	// ROM Size
 	const char *const rom_size_title = C_("DMG", "ROM Size");
@@ -770,7 +986,7 @@ int DMG::loadFieldData(void)
 	} else {
 		const uint8_t ram_size = DMGPrivate::dmg_ram_size[romHeader->ram_size];
 		if (ram_size == 0 &&
-		    DMGPrivate::CartType(romHeader->cart_type).hardware == DMGPrivate::DMG_HW_MBC2)
+		    DMGPrivate::CartType(romHeader->cart_type).hardware == DMGPrivate::DMG_Hardware::MBC2)
 		{
 			d->fields->addField_string(ram_size_title,
 				// tr: MBC2 internal memory - Not really RAM, but whatever.
@@ -779,7 +995,7 @@ int DMG::loadFieldData(void)
 			d->fields->addField_string(ram_size_title, C_("DMG", "No RAM"));
 		} else {
 			if (ram_size > 8) {
-				const int banks = ram_size / 16;
+				const int banks = ram_size / 8;
 				d->fields->addField_string(ram_size_title,
 					rp_sprintf_p(NC_("DMG", "%1$u KiB (%2$u bank)", "%1$u KiB (%2$u banks)", banks),
 						static_cast<unsigned int>(ram_size),
@@ -811,7 +1027,7 @@ int DMG::loadFieldData(void)
 
 	// Revision
 	d->fields->addField_string_numeric(C_("RomData", "Revision"),
-		romHeader->version, RomFields::FB_DEC, 2);
+		romHeader->version, RomFields::Base::Dec, 2);
 
 	// Header checksum.
 	// This is a checksum of ROM addresses 0x134-0x14D.
@@ -853,7 +1069,6 @@ int DMG::loadFieldData(void)
 		};
 
 		// TODO: Localization?
-		// TODO: bsearch()?
 		static const gbx_mapper_tbl_t gbx_mapper_tbl[] = {
 			// Nintendo
 			{GBX_MAPPER_ROM_ONLY,		"ROM only"},
@@ -924,13 +1139,13 @@ int DMG::loadFieldData(void)
 		// Assuming any non-zero value is present.
 		uint32_t gbx_features = 0;
 		if (gbxFooter->battery_flag) {
-			gbx_features |= (1 << 0);
+			gbx_features |= (1U << 0);
 		}
 		if (gbxFooter->rumble_flag) {
-			gbx_features |= (1 << 1);
+			gbx_features |= (1U << 1);
 		}
 		if (gbxFooter->timer_flag) {
-			gbx_features |= (1 << 2);
+			gbx_features |= (1U << 2);
 		}
 
 		static const char *const gbx_feature_bitfield_names[] = {
@@ -972,11 +1187,11 @@ int DMG::loadFieldData(void)
 			if (size == sizeof(gbs_magic) && gbs_magic == cpu_to_be32(GBS_MAGIC)) {
 				// Found the GBS magic number.
 				// Open the GBS.
-				const int64_t fileSize = d->file->size();
+				const off64_t fileSize = d->file->size();
 				DiscReader *const reader = new DiscReader(d->file, 0, fileSize);
 				if (reader->isOpen()) {
 					// Create a PartitionFile.
-					const int64_t length = fileSize - jp_addr;
+					const off64_t length = fileSize - jp_addr;
 					PartitionFile *const ptFile = new PartitionFile(reader, jp_addr, length);
 					if (ptFile->isOpen()) {
 						// Open the GBS.
@@ -995,7 +1210,7 @@ int DMG::loadFieldData(void)
 					}
 					ptFile->unref();
 				}
-				delete reader;
+				reader->unref();
 			}
 		}
 	}
@@ -1018,14 +1233,14 @@ int DMG::loadMetaData(void)
 	} else if (!d->file) {
 		// File isn't open.
 		return -EBADF;
-	} else if (!d->isValid || d->romType < 0) {
+	} else if (!d->isValid || (int)d->romType < 0) {
 		// Unknown ROM image type.
 		return -EIO;
 	}
 
 	// Create the metadata object.
 	d->metaData = new RomMetaData();
-	d->metaData->reserve(1);	// Maximum of 1 metadata property.
+	d->metaData->reserve(2);	// Maximum of 2 metadata properties.
 
 	// DMG ROM header
 	//const DMG_RomHeader *const romHeader = &d->romHeader;
@@ -1033,17 +1248,408 @@ int DMG::loadMetaData(void)
 	// Title
 	// NOTE: We don't actually need the game ID right now,
 	// but the function retrieves both at the same time.
+	// TODO: Remove STRF_TRIM_END, since we're doing that ourselves?
 	string s_title, s_gameID;
 	d->getTitleAndGameID(s_title, s_gameID);
-	d->metaData->addMetaData_string(Property::Title,
-		s_title, RomMetaData::STRF_TRIM_END);
+	if (!s_title.empty()) {
+		d->metaData->addMetaData_string(Property::Title,
+			s_title, RomMetaData::STRF_TRIM_END);
+	}
 
 	// Publisher
-	d->metaData->addMetaData_string(Property::Publisher,
-		d->getPublisher(), RomMetaData::STRF_TRIM_END);
+	d->metaData->addMetaData_string(Property::Publisher, d->getPublisher());
 
 	// Finished reading the metadata.
 	return static_cast<int>(d->metaData->count());
+}
+
+/**
+ * Get a list of URLs for an external image type.
+ *
+ * A thumbnail size may be requested from the shell.
+ * If the subclass supports multiple sizes, it should
+ * try to get the size that most closely matches the
+ * requested size.
+ *
+ * @param imageType	[in]     Image type.
+ * @param pExtURLs	[out]    Output vector.
+ * @param size		[in,opt] Requested image size. This may be a requested
+ *                               thumbnail size in pixels, or an ImageSizeType
+ *                               enum value.
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int DMG::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
+{
+	ASSERT_extURLs(imageType, pExtURLs);
+	pExtURLs->clear();
+
+	RP_D(const DMG);
+	if (!d->isValid || (int)d->romType < 0) {
+		// ROM image isn't valid.
+		return -EIO;
+	}
+
+	// Check if we have a valid game ID or ROM title.
+	string s_title, s_gameID;
+	d->getTitleAndGameID(s_title, s_gameID);
+	if (s_gameID.empty() && s_title.empty()) {
+		// Empty IDs. Can't check this ROM image.
+		return -ENOENT;
+	}
+
+	if (!s_gameID.empty()) {
+		assert(s_gameID.size() >= 4);
+		if (s_gameID.size() < 4) {
+			// Invalid game ID.
+			return -EIO;
+		}
+	}
+
+	// DMG ROM header, excluding the RST table.
+	const DMG_RomHeader *const romHeader = &d->romHeader;
+	const uint32_t dmg_system = d->systemID();
+
+	// We'll need to append global checksums in cases where
+	// we don't have a game ID and the title collides with
+	// different ROM images.
+	bool append_cksum = false;
+
+	// Check the title screen mode variant to use.
+	static const char ts_subdirs
+		[Config::DMG_TitleScreen_Mode::DMG_TS_MAX]
+		[Config::DMG_TitleScreen_Mode::DMG_TS_MAX][8] =
+	{
+		// Rows: ROM type (DMG, SGB, CGB)
+		// Columns: User selection (DMG, SGB, CGB)
+
+		// DMG (NOTE: DMG-SGB is not a thing; use SGB instead)
+		{"DMG", "DMG", "DMG-CGB"},
+
+		// SGB
+		{"SGB-DMG", "SGB", "SGB-CGB"},
+
+		// CGB
+		{"CGB-DMG", "CGB-SGB", "CGB"},
+	};
+
+	string img_subdir;
+	const Config *const config = Config::instance();
+	Config::DMG_TitleScreen_Mode cfg_rom;
+	if (dmg_system & DMGPrivate::DMG_SYSTEM_CGB) {
+		cfg_rom = Config::DMG_TitleScreen_Mode::DMG_TS_CGB;
+	} else if (dmg_system & DMGPrivate::DMG_SYSTEM_SGB) {
+		cfg_rom = Config::DMG_TitleScreen_Mode::DMG_TS_SGB;
+	} else {
+		cfg_rom = Config::DMG_TitleScreen_Mode::DMG_TS_DMG;
+	}
+
+	Config::DMG_TitleScreen_Mode cfg_ts = config->dmgTitleScreenMode(cfg_rom);
+	assert(cfg_ts >= Config::DMG_TitleScreen_Mode::DMG_TS_DMG);
+	assert(cfg_ts <  Config::DMG_TitleScreen_Mode::DMG_TS_MAX);
+	if (cfg_ts <  Config::DMG_TitleScreen_Mode::DMG_TS_DMG ||
+	    cfg_ts >= Config::DMG_TitleScreen_Mode::DMG_TS_MAX)
+	{
+		// Out of range. Use the default.
+		cfg_ts = cfg_rom;
+	}
+
+	// Special case: If CGB-SGB, make sure the ROM also supports SGB.
+	// Some CGB ROMs do have SGB borders, but since the header doesn't
+	// unlock SGB mode, it doesn't show up on hardware. It *does* show
+	// up on mGBA, though...
+	if (cfg_ts == Config::DMG_TitleScreen_Mode::DMG_TS_SGB &&
+	    !(dmg_system & DMGPrivate::DMG_SYSTEM_SGB))
+	{
+		cfg_ts = Config::DMG_TitleScreen_Mode::DMG_TS_DMG;
+	}
+
+	// Get the image subdirectory from the table.
+	img_subdir = ts_subdirs[cfg_rom][cfg_ts];
+
+	// Subdirectory:
+	// - CGB/x/:   CGB game. (x == region byte, or NoID if no Game ID)
+	// - CGB-DMG/: CGB game, taken in DMG mode.
+	// - CGB-SGB/: CGB+SGB game, taken in SGB mode. (with border)
+	// - SGB/:     SGB-enhanced game, taken in SGB mode. (with border)
+	// - SGB-DMG/: SGB-enhanced game, taken in DMG mode.
+	// - SGB-CGB/: SGB-enhanced game, taken in DMG mode, with CGB colorizations.
+	// - DMG/:     DMG-only game.
+	// - DMG-CGB/: DMG-only game, with CGB colorizations.
+	string img_filename;	// Filename.
+
+	if (s_gameID.empty()) {
+		// No game ID.
+		if (dmg_system & DMGPrivate::DMG_SYSTEM_CGB) {
+			// CGB has subdirectories for the region byte.
+			// This game doesn't have a game ID, so use "NoID".
+			img_subdir += "/NoID";
+		}
+
+		// Image filename is based on the title, plus publisher
+		// code, plus "-J" if region is set to Japanese (0).
+
+		// Manually filter out characters that are rejected by CacheKeys.
+		img_filename.reserve(s_title.size() + 8);
+		const auto s_title_cend = s_title.cend();
+		for (auto iter = s_title.cbegin(); iter != s_title_cend; ++iter) {
+			switch (*iter) {
+				case ':':
+				case '/':
+				case '\\':
+				case '*':
+				case '?':
+					img_filename += '_';
+					break;
+				default:
+					img_filename += *iter;
+					break;
+			}
+		}
+
+		char pbcode[16];
+		if (romHeader->old_publisher_code == 0x33) {
+			// New publisher code.
+			if (unlikely(romHeader->new_publisher_code[0] == '\0' &&
+			             romHeader->new_publisher_code[1] == '\0'))
+			{
+				// NULL publisher code. Use 00.
+				pbcode[0] = '0';
+				pbcode[1] = '0';
+				pbcode[2] = '\0';
+			} else {
+				pbcode[0] = romHeader->new_publisher_code[0];
+				pbcode[1] = romHeader->new_publisher_code[1];
+				pbcode[2] = '\0';
+			}
+			img_filename += '-';
+			img_filename.append(pbcode, 2);
+		} else {
+			// Old publisher code.
+			snprintf(pbcode, sizeof(pbcode), "%02X", romHeader->old_publisher_code);
+			img_filename += '-';
+			img_filename += pbcode;
+		}
+		if (romHeader->region == 0) {
+			img_filename += "-J";
+		}
+
+		// Special cases for ROM images with identical titles.
+		struct DmgSpecialCase_t {
+			char title[17];
+			char publisher[3];
+		};
+
+		// Non-CGB, Non-JP cases.
+		// NOTE: Linux is case-sensitive; Windows is not.
+		static const DmgSpecialCase_t dmgSpecialCases_NoCGB_NoJP[] = {
+			{"BIONIC-COMMANDO", ""},
+			{"BOKEMOB BLUE", ""},
+			{"CAESARS PALACE", "61"},
+			{"COKEMON BLUE", ""},
+			{"COOL SPOT", ""},
+			{"DENNIS", "67"},
+			{"DIG DUG", ""},
+			{"DIG DUG+  ASG", ""},		// Other hacks
+			{"DONKEYKONGLAND 3", ""},
+			{"DUCK TALES", ""},
+			{"DUCK TALES+ ASG", ""},	// Other hacks
+			{"GALAGA&GALAXIAN", "01"},	// TM vs. (R); different CGB colorization
+			{"LOST WORLD", "78"},
+			{"MOTOCROSS+  ASG", ""},	// Other hacks
+			{"MOTOCROSSMANIACS", ""},
+			{"MYSTIC QUEST", ""},
+			{"NFL QUARTERBACK", "56"},
+			{"OBELIX", ""},
+			{"PAC-MAN", "AF"},
+			{"PKMN Generations", ""},
+			{"POKEMON AQUA", ""},
+			{"POKEMON BLUE", ""},
+			{"POKEMON RED", ""},
+			{"Pokemon Blue", ""},
+			{"Pokemon Red", ""},
+			{"SGBPACK", "01"},		// Unl
+			{"SNOW BROS.JR", ""},
+			{"SOLOMON'S CLUB", ""},
+			{"SPY VS SPY", "7F"},
+			{"SUPER HUNCHBACK", "67"},
+			{"TAZMANIA", "78"},
+			{"TESSERAE", "54"},
+			{"THE LION KING", ""},
+			{"THE SWORD OFHOPE", "7F"},
+			{"TOM AND JERRY", ""},
+			{"TRACK MEET", ""},
+			{"Zelda Colour", ""},		// Other hacks
+
+			{"", ""}
+		};
+
+		// Non-CGB, JP cases.
+		static const DmgSpecialCase_t dmgSpecialCases_NoCGB_JP[] = {
+			// TODO: Sachen "TETRIS" ROMs have the same global checksum.
+			{"GAME", ""},			// Sachen
+			{"GBWARST", ""},
+			{"MENU", "00"},			// Unl
+			{"POCKET MONSTERS", ""},
+			{"POCKETMON", ""},
+			{"SAGA", "C3"},
+			{"TEST", "00"},			// Unl
+			{"TOM AND JERRY", ""},
+
+			{"", ""}
+		};
+
+		// CGB, Non-JP cases.
+		static const DmgSpecialCase_t dmgSpecialCases_CGB_NoJP[] = {
+			{"BUGS BUNNY", ""},
+			{"COOL HAND", ""},
+			{"GB SMART CARD", ""},	// Unl
+			{"HARVEST-MOON GB", ""},
+			{"SHADOWGATE CLAS", ""},
+			{"SHANGHAI POCKET", ""},
+			{"SYLVESTER", ""},
+			{"ZELDA", ""},
+			{"ZELDA PL", ""},
+
+			{"", ""}
+		};
+
+		// CGB, JP cases.
+		static const DmgSpecialCase_t dmgSpecialCases_CGB_JP[] = {
+			{"DIGIMON 5", "MK"},	// CGB
+			{"HARVEST-MOON GB", ""},
+			{"METAL SLUG 2", "01"},	// CGB
+
+			{"", ""}
+		};
+
+		// Determine which set of special cases to use.
+		const DmgSpecialCase_t *p;
+		if (dmg_system & DMGPrivate::DMG_SYSTEM_CGB) {
+			// CGB
+			p = (romHeader->region != 0)
+				? dmgSpecialCases_CGB_NoJP
+				: dmgSpecialCases_CGB_JP;
+		} else {
+			// Non-CGB
+			p = (romHeader->region != 0)
+				? dmgSpecialCases_NoCGB_NoJP
+				: dmgSpecialCases_NoCGB_JP;
+		}
+
+		for (; p->title[0] != '\0'; p++) {
+			// Check the title.
+			if (s_title == p->title) {
+				// Title matches.
+				if (p->publisher[0] == '\0' || !strcmp(pbcode, p->publisher)) {
+					// Publisher matches (or isn't being checked).
+					append_cksum = true;
+					break;
+				}
+			}
+		}
+	} else {
+		// Game ID is present. Subdirectory is based on the region byte.
+		img_subdir += '/';
+		img_subdir += s_gameID[3];
+
+		// Image filename is the Game ID.
+		img_filename = s_gameID;
+
+		// Special cases for ROM images with identical game IDs.
+		static const char cgbSpecialCases[][8] = {
+			// Loppi Puzzle Magazine
+			"B52J8N", "B53J8N", "B5IJ8N",
+			"B62J8N", "B63J8N", "B6IJ8N",
+
+			// Antz Racing (E) - different non-CGB error screens
+			"BAZP69",
+
+			// Gift (E) - different non-CGB error screens
+			"BGFP5T",
+
+			// Tomb Raider (UE) - different non-CGB error screens
+			"AT9E78",
+
+			// F-1 Racing Championship (E) - slightly different copyright text on CGB
+			"AEQP41",
+
+			// Pokémon Crystal (U) - "Pokémon 2004" hack has the same game ID.
+			"BYTE01",
+
+			""
+		};
+
+		for (const char *p = &cgbSpecialCases[0][0];
+		     p[0] != '\0'; p += sizeof(cgbSpecialCases[0]))
+		{
+			if (s_gameID == p) {
+				// Game ID matches.
+				append_cksum = true;
+				break;
+			}
+		}
+	}
+
+	if (append_cksum) {
+		// Append the ROM checksum.
+		// NOTE: pandocs says "high byte first", but the actual ROMs
+		// seem to use little-endian.
+		char cksum[16];
+		snprintf(cksum, sizeof(cksum), "-%04X", le16_to_cpu(romHeader->rom_checksum));
+		img_filename += cksum;
+	}
+
+	// Check for invalid characters and replace them with '_'.
+	std::for_each(img_filename.begin(), img_filename.end(),
+		[](char &c) {
+			switch (c) {
+				case '/':
+				case '*':
+				case '?':
+				case ':':
+					c = '_';
+				default:
+					break;
+			}
+		}
+	);
+
+	RP_UNUSED(size);
+	vector<ImageSizeDef> sizeDefs = supportedImageSizes(imageType);
+	assert(sizeDefs.size() == 1);
+	if (sizeDefs.empty()) {
+		// No image sizes.
+		return -ENOENT;
+	}
+
+	// NOTE: RPDB's title screen database only has one size.
+	// There's no need to check image sizes, but we need to
+	// get the image size for the extURLs struct.
+
+	// Determine the image type name.
+	const char *imageTypeName;
+	const char *ext;
+	switch (imageType) {
+		case IMG_EXT_TITLE_SCREEN:
+			imageTypeName = "title";
+			ext = ".png";
+			break;
+		default:
+			// Unsupported image type.
+			return -ENOENT;
+	}
+
+	// Add the URLs.
+	pExtURLs->resize(1);
+	auto extURL_iter = pExtURLs->begin();
+	extURL_iter->url = d->getURL_RPDB("gb", imageTypeName, img_subdir.c_str(), img_filename.c_str(), ext);
+	extURL_iter->cache_key = d->getCacheKey_RPDB("gb", imageTypeName, img_subdir.c_str(), img_filename.c_str(), ext);
+	extURL_iter->width = sizeDefs[0].width;
+	extURL_iter->height = sizeDefs[0].height;
+	extURL_iter->high_res = (sizeDefs[0].index >= 2);
+
+	// All URLs added.
+	return 0;
 }
 
 }

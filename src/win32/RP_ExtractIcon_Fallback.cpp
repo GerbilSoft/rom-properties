@@ -11,12 +11,12 @@
 #include "RP_ExtractIcon.hpp"
 #include "RP_ExtractIcon_p.hpp"
 
-// librpbase, libwin32common
+// librpbase, librpfile, libwin32common
 using namespace LibRpBase;
+using namespace LibRpFile;
 using LibWin32Common::RegKey;
 
 // C++ STL classes.
-using std::unique_ptr;
 using std::tstring;
 
 // COM smart pointer typedefs.
@@ -57,7 +57,7 @@ LONG RP_ExtractIcon_Private::DoExtractIconW(IExtractIconW *pExtractIconW,
 	int nIconIndex;
 	UINT wFlags;
 	// TODO: Handle S_FALSE with GIL_DEFAULTICON?
-	hr = pExtractIconW->GetIconLocation(0, szIconFileW, ARRAY_SIZE(szIconFileW), &nIconIndex, &wFlags);
+	hr = pExtractIconW->GetIconLocation(0, szIconFileW, _countof(szIconFileW), &nIconIndex, &wFlags);
 	if (FAILED(hr)) {
 		// GetIconLocation() failed.
 		return ERROR_FILE_NOT_FOUND;
@@ -117,8 +117,7 @@ LONG RP_ExtractIcon_Private::DoExtractIconA(IExtractIconA *pExtractIconA,
 	}
 
 	// Load the file.
-	// TODO: Proper string conversion.
-	hr = pPersistFile->Load((LPCOLESTR)this->filename.c_str(), STGM_READ);
+	hr = pPersistFile->Load(U82W_s(this->filename), STGM_READ);
 	if (FAILED(hr)) {
 		// Failed to load the file.
 		return ERROR_FILE_NOT_FOUND;
@@ -129,7 +128,7 @@ LONG RP_ExtractIcon_Private::DoExtractIconA(IExtractIconA *pExtractIconA,
 	int nIconIndex;
 	UINT wFlags;
 	// TODO: Handle S_FALSE with GIL_DEFAULTICON?
-	hr = pExtractIconA->GetIconLocation(0, szIconFileA, ARRAY_SIZE(szIconFileA), &nIconIndex, &wFlags);
+	hr = pExtractIconA->GetIconLocation(0, szIconFileA, _countof(szIconFileA), &nIconIndex, &wFlags);
 	if (FAILED(hr)) {
 		// GetIconLocation() failed.
 		return ERROR_FILE_NOT_FOUND;

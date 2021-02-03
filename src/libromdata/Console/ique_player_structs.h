@@ -2,21 +2,19 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * ique_player_structs.h: iQue Player data structures.                     *
  *                                                                         *
- * Copyright (c) 2016 by David Korth.                                      *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #ifndef __ROMPROPERTIES_LIBROMDATA_IQUE_PLAYER_STRUCTS_H__
 #define __ROMPROPERTIES_LIBROMDATA_IQUE_PLAYER_STRUCTS_H__
 
-#include "librpbase/common.h"
+#include "common.h"
 #include <stdint.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-#pragma pack(1)
 
 // .cmd files are always 10,668 (0x29AC) bytes.
 #define IQUE_PLAYER_CMD_FILESIZE 10668
@@ -32,7 +30,7 @@ extern "C" {
  * All fields are in big-endian.
  */
 #define IQUE_PLAYER_MAGIC "CAM"
-typedef struct PACKED _iQuePlayer_contentDesc {
+typedef struct _iQuePlayer_contentDesc {
 	uint32_t eeprom_rdram_addr;		// [0x000] EEPROM RDRAM address
 	uint32_t eeprom_rdram_size;		// [0x004] EEPROM RDRAM size
 	uint32_t flash_rdram_addr;		// [0x008] Flash RDRAM address
@@ -75,7 +73,7 @@ ASSERT_STRUCT(iQuePlayer_contentDesc, 0x48);
  * All fields are in big-endian.
  */
 #define IQUE_PLAYER_BBCONTENTMETADATAHEAD_ADDRESS 0x2800
-typedef struct PACKED _iQuePlayer_BbContentMetaDataHead {
+typedef struct _iQuePlayer_BbContentMetaDataHead {
 	uint32_t unusedPadding;		// [0x000]
 	uint32_t caCrlVersion;		// [0x004]
 	uint32_t cpCrlVersion;		// [0x008]
@@ -100,16 +98,16 @@ ASSERT_STRUCT(iQuePlayer_BbContentMetaDataHead, 0x1AC);
  * Hardware access rights.
  */
 typedef enum {
-	IQUE_PLAYER_HW_PI_BUFFER		= (1 << 0),
-	IQUE_PLAYER_HW_NAND_FLASH		= (1 << 1),
-	IQUE_PLAYER_HW_MEMORY_MAPPER	= (1 << 2),
-	IQUE_PLAYER_HW_AES_ENGINE		= (1 << 3),
-	IQUE_PLAYER_HW_NEW_PI_DMA		= (1 << 4),
-	IQUE_PLAYER_HW_GPIO			= (1 << 5),
-	IQUE_PLAYER_HW_EXT_IO		= (1 << 6),
-	IQUE_PLAYER_HW_NEW_PI_ERR		= (1 << 7),
-	IQUE_PLAYER_HW_USB			= (1 << 8),
-	IQUE_PLAYER_HW_SK_RAM		= (1 << 9),
+	IQUE_PLAYER_HW_PI_BUFFER	= (1U << 0),
+	IQUE_PLAYER_HW_NAND_FLASH	= (1U << 1),
+	IQUE_PLAYER_HW_MEMORY_MAPPER	= (1U << 2),
+	IQUE_PLAYER_HW_AES_ENGINE	= (1U << 3),
+	IQUE_PLAYER_HW_NEW_PI_DMA	= (1U << 4),
+	IQUE_PLAYER_HW_GPIO		= (1U << 5),
+	IQUE_PLAYER_HW_EXT_IO		= (1U << 6),
+	IQUE_PLAYER_HW_NEW_PI_ERR	= (1U << 7),
+	IQUE_PLAYER_HW_USB		= (1U << 8),
+	IQUE_PLAYER_HW_SK_RAM		= (1U << 9),
 } iQuePlayer_hwAccessRights_e;
 
 /**
@@ -121,7 +119,7 @@ typedef enum {
  * All fields are in big-endian.
  */
 #define IQUE_PLAYER_BBTICKETHEAD_ADDRESS 0x29AC
-typedef struct PACKED _iQuePlayer_BbTicketHead {
+typedef struct _iQuePlayer_BbTicketHead {
 	uint32_t bbId;			// [0x29AC] Console ID.
 	uint16_t tid;			// [0x29B0] Ticket ID. (if bit 15 is set, this is a trial ticket)
 	uint16_t code;			// [0x29B2] Trial limitation. (See IQUE_PLAYER_TrialLimitation_e.)
@@ -144,8 +142,6 @@ typedef enum {
 	IQUE_PLAYER_TRIAL_LAUNCHES	= 1,	// Number of launches
 	IQUE_PLAYER_TRIAL_TIME_2	= 2,	// Time-based limitation
 } iQuePlayer_TrialLimitation_e;
-
-#pragma pack()
 
 #ifdef __cplusplus
 }

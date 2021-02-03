@@ -11,9 +11,15 @@
 #include "RP_ShellIconOverlayIdentifier.hpp"
 #include "res/resource.h"
 
-// librpbase, libromdata
+// librpbase, librpfile, libromdata
 using namespace LibRpBase;
+using namespace LibRpFile;
 using LibRomData::RomDataFactory;
+
+// from DllMain.cpp
+extern "C" {
+	extern TCHAR dll_filename[];
+}
 
 // C++ STL classes.
 using std::string;
@@ -64,14 +70,18 @@ RP_ShellIconOverlayIdentifier::~RP_ShellIconOverlayIdentifier()
 
 IFACEMETHODIMP RP_ShellIconOverlayIdentifier::QueryInterface(REFIID riid, LPVOID *ppvObj)
 {
-#pragma warning(push)
-#pragma warning(disable: 4365 4838)
+#ifdef _MSC_VER
+# pragma warning(push)
+# pragma warning(disable: 4365 4838)
+#endif /* _MSC_VER */
 	static const QITAB rgqit[] = {
 		QITABENT(RP_ShellIconOverlayIdentifier, IShellIconOverlayIdentifier),
 		{ 0, 0 }
 	};
-#pragma warning(pop)
-	return LibWin32Common::pfnQISearch(this, rgqit, riid, ppvObj);
+#ifdef _MSC_VER
+# pragma warning(pop)
+#endif /* _MSC_VER */
+	return LibWin32Common::rp_QISearch(this, rgqit, riid, ppvObj);
 }
 
 /** IShellIconOverlayIdentifier **/
@@ -100,7 +110,7 @@ IFACEMETHODIMP RP_ShellIconOverlayIdentifier::IsMemberOf(_In_ PCWSTR pwszPath, D
 
 	// Check for "bad" file systems.
 	// TODO: Combine with the above "slow" check?
-	if (LibRpBase::FileSystem::isOnBadFS(u8filename.c_str(),
+	if (FileSystem::isOnBadFS(u8filename.c_str(),
 	    config->enableThumbnailOnNetworkFS()))
 	{
 		// This file is on a "bad" file system.
@@ -164,7 +174,6 @@ IFACEMETHODIMP RP_ShellIconOverlayIdentifier::GetOverlayInfo(_Out_writes_(cchMax
 		// same size as the regular icon, but with transparency.
 		hr = E_FAIL;
 #if 0
-		extern wchar_t dll_filename[];
 		wcscpy_s(pwszIconFile, cchMax, dll_filename);
 		*pIndex = -IDI_SHIELD;
 		*pdwFlags = ISIOI_ICONFILE | ISIOI_ICONINDEX;

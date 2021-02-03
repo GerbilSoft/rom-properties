@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * FileFormat.hpp: Texture file format base class.                         *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -10,9 +10,8 @@
 #define __ROMPROPERTIES_LIBRPTEXTURE_FILEFORMAT_FILEFORMAT_HPP__
 
 #include "librptexture/config.librptexture.h"
-
-// TODO: Move to librpfile or similar?
-#include "librpbase/common.h"
+#include "common.h"
+#include "RefBase.hpp"
 
 // Common declarations.
 #include "FileFormat_decl.hpp"
@@ -23,12 +22,15 @@ namespace LibRpBase {
 }
 #endif /* ENABLE_LIBRPBASE_ROMFIELDS */
 
+// C includes.
+#include <stdint.h>
+
 namespace LibRpTexture {
 
 class rp_image;
 
 class FileFormatPrivate;
-class FileFormat
+class FileFormat : public RefBase
 {
 	protected:
 		explicit FileFormat(FileFormatPrivate *d);
@@ -47,17 +49,10 @@ class FileFormat
 		FileFormatPrivate *const d_ptr;
 
 	public:
-		/**
-		 * Take a reference to this FileFormat* object.
-		 * @return this
-		 */
-		FileFormat *ref(void);
-
-		/**
-		 * Unreference this FileFormat* object.
-		 * If ref_cnt reaches 0, the FileFormat* object is deleted.
-		 */
-		void unref(void);
+		inline FileFormat *ref(void)
+		{
+			return RefBase::ref<FileFormat>();
+		}
 
 	public:
 		/**
@@ -76,6 +71,21 @@ class FileFormat
 		 * Close the opened file.
 		 */
 		virtual void close(void);
+
+	public:
+		/**
+		 * ROM detection information.
+		 * Used for isRomSupported() functions.
+		 */
+		struct DetectInfo {
+			struct {
+				uint32_t addr;		// Start address in the ROM.
+				uint32_t size;		// Length.
+				const uint8_t *pData;	// Data.
+			} header;		// ROM header.
+			const char *ext;	// File extension, including leading '.'
+			off64_t szFile;		// File size. (Required for certain types.)
+		};
 
 	public:
 		/** Class-specific functions that can be used even if isValid() is false. **/
@@ -115,6 +125,12 @@ class FileFormat
 		 * @return Texture format name, or nullptr on error.
 		 */
 		virtual const char *textureFormatName(void) const = 0;
+
+		/**
+		 * Get the file's MIME type.
+		 * @return MIME type, or nullptr if unknown.
+		 */
+		const char *mimeType(void) const;
 
 		// TODO: Supported file extensions and MIME types.
 

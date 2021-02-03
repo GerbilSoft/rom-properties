@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * dc_structs.h: Sega Dreamcast data structures.                           *
  *                                                                         *
- * Copyright (c) 2017 by David Korth.                                      *
+ * Copyright (c) 2017-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -18,14 +18,12 @@
  * - http://mc.pp.se/dc/ip.bin.html
  */
 
-#include "librpbase/common.h"
+#include "common.h"
 #include <stdint.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-#pragma pack(1)
 
 // VMS blocks are 512 bytes.
 #define DC_VMS_BLOCK_SIZE 512
@@ -38,7 +36,7 @@ extern "C" {
  *
  * All fields are in little-endian.
  */
-typedef struct PACKED _DC_VMS_ICONDATA_Header {
+typedef struct _DC_VMS_ICONDATA_Header {
 	char vms_description[16];	// Shift-JIS; space-padded.
 	uint32_t mono_icon_addr;	// Address of monochrome icon.
 	uint32_t color_icon_addr;	// Address of color icon.
@@ -55,7 +53,7 @@ ASSERT_STRUCT(DC_VMS_ICONDATA_Header, 24);
  *
  * NOTE: Strings are NOT null-terminated!
  */
-typedef union PACKED _DC_VMS_Header {
+typedef union _DC_VMS_Header {
 	struct {
 		char vms_description[16];	// Shift-JIS; space-padded.
 		char dc_description[32];	// Shift-JIS; space-padded.
@@ -121,7 +119,7 @@ typedef enum {
  *
  * All fields are in little-endian.
  */
-typedef struct PACKED _DC_VMI_Timestamp {
+typedef struct _DC_VMI_Timestamp {
 	uint16_t year;		// Year (exact value)
 	uint8_t mon;		// Month (1-12)
 	uint8_t mday;		// Day of month (1-31)
@@ -130,6 +128,7 @@ typedef struct PACKED _DC_VMI_Timestamp {
 	uint8_t sec;		// Second (0-59)
 	uint8_t wday;		// Day of week (0=Sunday, 6=Saturday)
 } DC_VMI_Timestamp;
+ASSERT_STRUCT(DC_VMI_Timestamp, 8);
 
 /**
  * Dreamcast VMI header. (.vmi files)
@@ -139,7 +138,7 @@ typedef struct PACKED _DC_VMI_Timestamp {
  *
  * NOTE: Strings are NOT null-terminated!
  */
-typedef struct PACKED _DC_VMI_Header {
+typedef struct _DC_VMI_Header {
 	// Very primitive checksum.
 	// First four bytes of vms_resource_name,
 	// ANDed with 0x53454741 ("SEGA").
@@ -164,14 +163,14 @@ ASSERT_STRUCT(DC_VMI_Header, 108);
  */
 typedef enum {
 	// Copy protection.
-	DC_VMI_MODE_PROTECT_COPY_OK        = (0 << 0),
-	DC_VMI_MODE_PROTECT_COPY_PROTECTED = (1 << 0),
-	DC_VMI_MODE_PROTECT_MASK           = (1 << 0),
+	DC_VMI_MODE_PROTECT_COPY_OK        = (0U << 0),
+	DC_VMI_MODE_PROTECT_COPY_PROTECTED = (1U << 0),
+	DC_VMI_MODE_PROTECT_MASK           = (1U << 0),
 
 	// File type.
-	DC_VMI_MODE_FTYPE_DATA = (0 << 1),
-	DC_VMI_MODE_FTYPE_GAME = (1 << 1),
-	DC_VMI_MODE_FTYPE_MASK = (1 << 1),
+	DC_VMI_MODE_FTYPE_DATA = (0U << 1),
+	DC_VMI_MODE_FTYPE_GAME = (1U << 1),
+	DC_VMI_MODE_FTYPE_MASK = (1U << 1),
 } DC_VMI_Mode;
 
 /**
@@ -180,7 +179,7 @@ typedef enum {
  *
  * Reference: http://mc.pp.se/dc/vms/flashmem.html
  */
-typedef struct PACKED _DC_VMS_BCD_Timestamp {
+typedef struct _DC_VMS_BCD_Timestamp {
 	uint8_t century;	// Century.
 	uint8_t year;		// Year.
 	uint8_t mon;		// Month (1-12)
@@ -190,6 +189,7 @@ typedef struct PACKED _DC_VMS_BCD_Timestamp {
 	uint8_t sec;		// Second (0-59)
 	uint8_t wday;		// Day of week (0=Monday, 6=Sunday)
 } DC_VMS_BCD_Timestamp;
+ASSERT_STRUCT(DC_VMS_BCD_Timestamp, 8);
 
 /**
  * Dreamcast VMS directory entry.
@@ -202,7 +202,7 @@ typedef struct PACKED _DC_VMS_BCD_Timestamp {
  *
  * NOTE: Strings are NOT null-terminated!
  */
-typedef struct PACKED _DC_VMS_DirEnt {
+typedef struct _DC_VMS_DirEnt {
 	uint8_t filetype;	// See DC_VMS_DirEnt_FType.
 	uint8_t protect;	// See DC_VMS_DirEnt_Protect.
 	uint16_t address;	// First block number.
@@ -244,7 +244,7 @@ typedef enum {
  */
 #define DC_IP0000_BIN_HW_ID	"SEGA SEGAKATANA "
 #define DC_IP0000_BIN_MAKER_ID	"SEGA ENTERPRISES"
-typedef struct PACKED _DC_IP0000_BIN_t {
+typedef struct _DC_IP0000_BIN_t {
 	char hw_id[16];			// "SEGA SEGAKATANA "
 	char maker_id[16];		// "SEGA ENTERPRISES"
 	char device_info[16];		// "1234 GD-ROM1/1  "
@@ -271,36 +271,36 @@ ASSERT_STRUCT(DC_IP0000_BIN_t, 256);
  * Reference: http://mc.pp.se/dc/ip0000.bin.html
  */
 typedef enum {
-	DCP_WINDOWS_CE		= (1 << 0),	// Uses Windows CE
-	DCP_VGA_BOX		= (1 << 4),	// Supports VGA Box
+	DCP_WINDOWS_CE		= (1U <<  0),	// Uses Windows CE
+	DCP_VGA_BOX		= (1U <<  4),	// Supports VGA Box
 
 	// Supported expansion units.
-	DCP_EXP_OTHER		= (1 << 8),	// Other expansions.
-	DCP_PURU_PURU		= (1 << 9),	// Puru Puru pack (Jump Pack)
-	DCP_MICROPHONE		= (1 << 10),	// Microphone
-	DCP_MEMORY_CARD		= (1 << 11),	// Memory Card (VMU)
+	DCP_EXP_OTHER		= (1U <<  8),	// Other expansions.
+	DCP_PURU_PURU		= (1U <<  9),	// Puru Puru pack (Jump Pack)
+	DCP_MICROPHONE		= (1U << 10),	// Microphone
+	DCP_MEMORY_CARD		= (1U << 11),	// Memory Card (VMU)
 
 	// Controller requirements.
 	// If any of these bits are set, the game *requires*
 	// a controller with the specified functionality,
-	DCP_CTRL_START_A_B_DPAD	= (1 << 12),	// Start, A, B, D-Pad
-	DCP_CTRL_C		= (1 << 13),	// C button
-	DCP_CTRL_D		= (1 << 14),	// D button
-	DCP_CTRL_X		= (1 << 15),	// X button
-	DCP_CTRL_Y		= (1 << 16),	// Y button
-	DCP_CTRL_Z		= (1 << 17),	// Z button
-	DCP_CTRL_DPAD_2		= (1 << 18),	// Second D-Pad
-	DCP_CTRL_ANALOG_RT	= (1 << 19),	// Analog R trigger
-	DCP_CTRL_ANALOG_LT	= (1 << 20),	// Analog L trigger
-	DCP_CTRL_ANALOG_H1	= (1 << 21),	// Analog horizontal controller
-	DCP_CTRL_ANALOG_V1	= (1 << 22),	// Analog vertical controller
-	DCP_CTRL_ANALOG_H2	= (1 << 23),	// Analog horizontal controller #2
-	DCP_CTRL_ANALOG_V2	= (1 << 24),	// Analog vertical controller #2
+	DCP_CTRL_START_A_B_DPAD	= (1U << 12),	// Start, A, B, D-Pad
+	DCP_CTRL_C		= (1U << 13),	// C button
+	DCP_CTRL_D		= (1U << 14),	// D button
+	DCP_CTRL_X		= (1U << 15),	// X button
+	DCP_CTRL_Y		= (1U << 16),	// Y button
+	DCP_CTRL_Z		= (1U << 17),	// Z button
+	DCP_CTRL_DPAD_2		= (1U << 18),	// Second D-Pad
+	DCP_CTRL_ANALOG_RT	= (1U << 19),	// Analog R trigger
+	DCP_CTRL_ANALOG_LT	= (1U << 20),	// Analog L trigger
+	DCP_CTRL_ANALOG_H1	= (1U << 21),	// Analog horizontal controller
+	DCP_CTRL_ANALOG_V1	= (1U << 22),	// Analog vertical controller
+	DCP_CTRL_ANALOG_H2	= (1U << 23),	// Analog horizontal controller #2
+	DCP_CTRL_ANALOG_V2	= (1U << 24),	// Analog vertical controller #2
 
 	// Optional expansion peripherals.
-	DCP_CTRL_GUN		= (1 << 25),	// Light Gun
-	DCP_CTRL_KEYBOARD	= (1 << 26),	// Keyboard
-	DCP_CTRL_MOUSE		= (1 << 27),	// Mouse
+	DCP_CTRL_GUN		= (1U << 25),	// Light Gun
+	DCP_CTRL_KEYBOARD	= (1U << 26),	// Keyboard
+	DCP_CTRL_MOUSE		= (1U << 27),	// Mouse
 } DC_IP0000_BIN_Peripherals;
 
 /**
@@ -311,7 +311,7 @@ typedef enum {
  *
  * All fields are in little-endian.
  */
-typedef struct PACKED _DC_IP_BIN_t {
+typedef struct _DC_IP_BIN_t {
 	DC_IP0000_BIN_t meta;			// Meta information. (IP0000.BIN)
 	uint8_t toc[0x200];			// Table of contents.
 	uint8_t license_screen_code[0x3400];	// License screen code.
@@ -330,8 +330,6 @@ typedef struct PACKED _DC_IP_BIN_t {
 	uint8_t bootstrap2[0x2000];
 } DC_IP_BIN_t;
 ASSERT_STRUCT(DC_IP_BIN_t, 0x8000);
-
-#pragma pack()
 
 #ifdef __cplusplus
 }

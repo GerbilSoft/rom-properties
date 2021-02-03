@@ -116,7 +116,7 @@ static int fstPrint(IFst *fst, ostream &os, const string &path,
 
 			// Check if any more entries are present.
 			dirent = fst->readdir(dirp);
-			tree_lines.push_back(dirent ? 1 : 0);
+			tree_lines.emplace_back(dirent ? 1 : 0);
 
 			// Tree line for the directory entry.
 			if (dirent) {
@@ -163,7 +163,7 @@ static int fstPrint(IFst *fst, ostream &os, const string &path,
 			}
 
 			// Print the attributes. (address, size)
-			char attrs[48];
+			char attrs[64];
 			snprintf(attrs, sizeof(attrs), "[addr:0x%08" PRIX64 ", size:%" PRId64 "]",
 				 dirent->offset, dirent->size);
 

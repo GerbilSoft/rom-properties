@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * WiiPartition.hpp: Wii partition reader.                                 *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -48,8 +48,8 @@ class WiiPartition : public GcnPartition
 		 * @param partition_size	[in] Calculated partition size. Used if the size in the header is 0.
 		 * @param cryptoMethod		[in] Crypto method.
 		 */
-		WiiPartition(IDiscReader *discReader, int64_t partition_offset,
-			int64_t partition_size, CryptoMethod crypto = CM_STANDARD);
+		WiiPartition(IDiscReader *discReader, off64_t partition_offset,
+			off64_t partition_size, CryptoMethod crypto = CM_STANDARD);
 		~WiiPartition();
 
 	private:
@@ -70,6 +70,7 @@ class WiiPartition : public GcnPartition
 		 * @param size Amount of data to read, in bytes.
 		 * @return Number of bytes read.
 		 */
+		ATTR_ACCESS_SIZE(write_only, 2, 3)
 		size_t read(void *ptr, size_t size) final;
 
 		/**
@@ -77,14 +78,24 @@ class WiiPartition : public GcnPartition
 		 * @param pos Partition position.
 		 * @return 0 on success; -1 on error.
 		 */
-		int seek(int64_t pos) final;
+		int seek(off64_t pos) final;
 
 		/**
 		 * Get the partition position.
 		 * @return Partition position on success; -1 on error.
 		 */
-		int64_t tell(void) final;
+		off64_t tell(void) final;
 
+	public:
+		/**
+		 * Get the used partition size.
+		 * This size includes the partition header and hashes,
+		 * but does not include "empty" sectors.
+		 * @return Used partition size, or -1 on error.
+		 */
+		off64_t partition_size_used(void) const final;
+
+	public:
 		/** WiiPartition **/
 
 		/**
@@ -95,15 +106,20 @@ class WiiPartition : public GcnPartition
 
 		// Encryption key in use.
 		// TODO: Merge with EncryptionKeys.
-		enum EncKey {
-			ENCKEY_UNKNOWN = -1,
-			ENCKEY_COMMON = 0,	// Wii common key
-			ENCKEY_KOREAN = 1,	// Korean key
-			ENCKEY_VWII = 2,	// vWii common key
-			ENCKEY_DEBUG = 3,	// RVT-R debug key
-			ENCKEY_NONE = 4,	// No encryption (RVT-H)
+		enum class EncKey {
+			Unknown = -1,
 
-			ENCKEY_MAX
+			RVL_Common = 0,		// Common key
+			RVL_Korean = 1,		// Korean key
+			WUP_vWii = 2,		// vWii key
+
+			RVT_Debug = 3,		// Common key (debug)
+			RVT_Korean = 4,		// Korean key (debug)
+			CAT_vWii = 5,		// vWii key (debug)
+
+			None = 6,		// No encryption (RVT-H)
+
+			Max
 		};
 
 		/**
@@ -137,13 +153,17 @@ class WiiPartition : public GcnPartition
 			// Retail
 			Key_Rvl_Common,
 			Key_Rvl_Korean,
-			Key_Wup_vWii_Common,
-			Key_Rvl_SD_AES,
-			Key_Rvl_SD_IV,
-			Key_Rvl_SD_MD5,
+			Key_Wup_Starbuck_vWii_Common,
 
 			// Debug
 			Key_Rvt_Debug,
+			Key_Rvt_Korean,
+			Key_Cat_Starbuck_vWii_Common,
+
+			// SD card (TODO: Retail vs. Debug?)
+			Key_Rvl_SD_AES,
+			Key_Rvl_SD_IV,
+			Key_Rvl_SD_MD5,
 
 			Key_Max
 		};

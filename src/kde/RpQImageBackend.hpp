@@ -1,8 +1,8 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (KDE4/KDE5)                        *
+ * ROM Properties Page shell extension. (KDE4/KF5)                         *
  * RpQImageBackend.hpp: rp_image_backend using QImage.                     *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -44,6 +44,15 @@ class RpQImageBackend : public LibRpTexture::rp_image_backend
 		uint32_t *palette(void) final;
 		const uint32_t *palette(void) const final;
 		int palette_len(void) const final;
+
+	public:
+		/**
+		 * Shrink image dimensions.
+		 * @param width New width.
+		 * @param height New height.
+		 * @return 0 on success; negative POSIX error code on error.
+		 */
+		int shrink(int width, int height) final;
 
 	public:
 		/**

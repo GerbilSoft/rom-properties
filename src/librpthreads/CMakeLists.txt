@@ -1,5 +1,12 @@
-# Threading wrapper library.
-PROJECT(libi18n CXX)
+# Threading wrapper library
+CMAKE_MINIMUM_REQUIRED(VERSION 3.0)
+CMAKE_POLICY(SET CMP0048 NEW)
+IF(POLICY CMP0063)
+	# CMake 3.3: Enable symbol visibility presets for all
+	# target types, including static libraries and executables.
+	CMAKE_POLICY(SET CMP0063 NEW)
+ENDIF(POLICY CMP0063)
+PROJECT(librpthreads LANGUAGES C CXX)
 
 # Find the system threading library.
 # NOTE: If using Windows, always assume we're using Windows threads.

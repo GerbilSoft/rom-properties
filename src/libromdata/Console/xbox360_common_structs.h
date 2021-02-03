@@ -2,16 +2,17 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * xbox360_common_structs.h: Microsoft Xbox 360 common data structures.    *
  *                                                                         *
- * Copyright (c) 2019 by David Korth.                                      *
+ * Copyright (c) 2019-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #ifndef __ROMPROPERTIES_LIBROMDATA_CONSOLE_XBOX360_COMMON_STRUCTS_H__
 #define __ROMPROPERTIES_LIBROMDATA_CONSOLE_XBOX360_COMMON_STRUCTS_H__
 
-#include "librpbase/common.h"
-#include "librpbase/byteorder.h"
 #include <stdint.h>
+
+#include "common.h"
+#include "librpcpu/byteorder.h"
 
 /**
  * Xbox 360: Vesion number
@@ -41,10 +42,10 @@ ASSERT_STRUCT(Xbox360_Version_t, sizeof(uint32_t));
 
 /**
  * Xbox 360: Title ID
- * Contains two characters and a 16-bit number.
+ * Contains a two-character company ID and a 16-bit game ID.
  * NOTE: Struct positioning only works with the original BE32 value.
  */
-typedef union PACKED _XEX2_Title_ID {
+typedef union _XEX2_Title_ID {
 	struct {
 		char a;
 		char b;
