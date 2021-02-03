@@ -928,37 +928,47 @@ struct MsgObjState {
  */
 BOOL GetMessageObjects(MSG *msg, struct MsgObjState *state)
 {
-	BOOL bRet;
+	DWORD ev;
 	for (;;) {
-		DWORD ev = MsgWaitForMultipleObjects(state->count, state->handles, FALSE, INFINITE, QS_ALLINPUT);
-		if (ev == WAIT_OBJECT_0 + state->count) { // Message
-			if ((bRet = GetMessage(msg, NULL, 0, 0)) > 0 && msg->message == WM_APP_WAIT) {
-				if (state->count < MAXIMUM_WAIT_OBJECTS-1) {
-					// Add event
-					state->params[state->count] = msg->wParam;
-					state->handles[state->count] = (HANDLE)msg->lParam;
-					state->count++;
+		// Handle all existing messages.
+		while (PeekMessage(msg, NULL, 0, 0, PM_REMOVE)) {
+			if (msg->message == WM_APP_WAIT) {
+				if (state->count >= MAXIMUM_WAIT_OBJECTS - 1) {
+					DebugBreak();
+					return -1;
 				}
+				// Add event
+				state->params[state->count] = msg->wParam;
+				state->handles[state->count] = (HANDLE)msg->lParam;
+				state->count++;
+			} else if (msg->message == WM_QUIT) {
+				for (DWORD i = 0; i < state->count; i++) {
+					CloseHandle(state->handles[i]);
+				}
+				state->count = 0;
+				return FALSE;
 			} else {
-				if (bRet == 0) { // Quitting
-					for (DWORD i = 0; i < state->count; i++) {
-						CloseHandle(state->handles[i]);
-					}
-					state->count = 0;
-				}
-				return bRet;
+				return TRUE;
 			}
-		} else if (ev >= WAIT_OBJECT_0 && ev < WAIT_OBJECT_0 + state->count) { // Object
-			ev -= WAIT_OBJECT_0;
-			PostMessage(state->hWnd, WM_APP_SIGNAL, state->params[ev], (LPARAM)state->handles[ev]);
-			// Remove event
-			memmove(&state->params[ev], &state->params[ev+1], (state->count-(ev+1))*sizeof(WPARAM));
-			memmove(&state->handles[ev], &state->handles[ev+1], (state->count-(ev+1))*sizeof(HANDLE));
-			state->count--;
 		}
-		// FIXME: handle WAIT_FAILED and others?
+		// Wait until a new message arrives, handling events in the meantime.
+		while ((ev = MsgWaitForMultipleObjects(state->count, state->handles, FALSE, INFINITE, QS_ALLINPUT))
+				!= WAIT_OBJECT_0 + state->count) {
+			if (ev >= WAIT_OBJECT_0 && ev < WAIT_OBJECT_0 + state->count) { // Object
+				ev -= WAIT_OBJECT_0;
+				PostMessage(state->hWnd, WM_APP_SIGNAL, state->params[ev], (LPARAM)state->handles[ev]);
+				// Remove event
+				memmove(&state->params[ev], &state->params[ev + 1], (state->count - (ev + 1)) * sizeof(WPARAM));
+				memmove(&state->handles[ev], &state->handles[ev + 1], (state->count - (ev + 1)) * sizeof(HANDLE));
+				state->count--;
+			} else { // WAIT_FAILED / WAIT_ABANDONED_0 / WAIT_TIMEOUT
+				DebugBreak();
+				return -1;
+			}
+		}
 	}
 }
+
 /**
  * Dialog message loop
  */
@@ -974,18 +984,16 @@ INT_PTR DialogLoop(HINSTANCE hInstance, LPCTSTR lpTemplateName, HWND hWndParent,
 
 	struct MsgObjState state = { hDlg };
 
-	while ((bRet = GetMessageObjects(&msg, &state)) != 0) {
-		if (bRet == -1) {
-			break;
-		} else if (!IsWindow(hDlg) || !IsDialogMessage(hDlg, &msg)) {
+	while ((bRet = GetMessageObjects(&msg, &state)) == TRUE) {
+		if (!IsWindow(hDlg) || !IsDialogMessage(hDlg, &msg)) {
 			TranslateMessage(&msg);
 			DispatchMessage(&msg);
 		}
 	}
-	if (bRet == 0) {
-		return msg.wParam;
+	if (bRet == -1) {
+		return -1;
 	}
-	return -1;
+	return msg.wParam;
 }
 
 /**
