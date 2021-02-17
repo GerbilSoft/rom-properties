@@ -12,7 +12,10 @@
       default sizing function, which doesn't work properly for strings that
       have multiple lines.
     * GTK+: Combined the icon/checkbox column with column 0.
-
+  * CD-ROM: Added support for 2448-byte sector images. Currently supported by
+    the generic ISO parser and PlayStationDisc. Support for other systems may
+    be added later on, but subchannels generally aren't used on Sega Mega CD,
+    Sega Saturn, Sega Dreamcast, or PlayStation Portable.
 * New parser features:
   * NGPC: Added external title screens using RPDB.
   * Xbox360_XDBF:
