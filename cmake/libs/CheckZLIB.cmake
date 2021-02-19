@@ -20,11 +20,11 @@ IF(NOT USE_INTERNAL_ZLIB)
 		SET(HAVE_ZLIB 1)
 	ELSE()
 		# System ZLIB was not found.
-		MESSAGE(STATUS "Using the internal copy of zlib since a system version was not found.")
-		SET(USE_INTERNAL_ZLIB ON CACHE BOOL "Use the internal copy of zlib" FORCE)
+		MESSAGE(STATUS "Using the internal copy of zlib-ng since a system version was not found.")
+		SET(USE_INTERNAL_ZLIB ON CACHE BOOL "Use the internal copy of zlib-ng" FORCE)
 	ENDIF()
 ELSE()
-	MESSAGE(STATUS "Using the internal copy of zlib.")
+	MESSAGE(STATUS "Using the internal copy of zlib-ng.")
 ENDIF(NOT USE_INTERNAL_ZLIB)
 
 IF(USE_INTERNAL_ZLIB)
@@ -44,8 +44,8 @@ IF(USE_INTERNAL_ZLIB)
 	SET(ZLIB_LIBRARIES ${ZLIB_LIBRARY})
 	# FIXME: When was it changed from DIR to DIRS?
 	SET(ZLIB_INCLUDE_DIR
-		${CMAKE_SOURCE_DIR}/extlib/zlib
-		${CMAKE_BINARY_DIR}/extlib/zlib
+		${CMAKE_SOURCE_DIR}/extlib/zlib-ng
+		${CMAKE_BINARY_DIR}/extlib/zlib-ng
 		)
 	SET(ZLIB_INCLUDE_DIRS ${ZLIB_INCLUDE_DIR})
 ELSE(USE_INTERNAL_ZLIB)

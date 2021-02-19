@@ -1,0 +1,28 @@
+This copy of zlib-ng 2.0.0-RC2 is a modified version of the original.
+
+commit 7606b9f39a2c7701a30d06a786fb2a99334b1feb
+Version 2.0.0 Release Candidate 2
+
+Tag: v2.0.0-RC2
+
+The following changes have been made to the original:
+
+- CMakeLists.txt has been edited to prevent building the Win32 resource
+  data when being built as a shared library.
+
+- Example binaries are no longer built.
+
+- CMakeLists.txt now sets the target compile definitions to -DZLIB_CONST
+  and sets the target include directories. This allows all targets
+  that depend on zlib/zlibstatic to automatically pick up the compile
+  definitions and include directories.
+
+- cmake_minimum_required() is disabled, since it interfered with
+  policies set by the main build infrastructure.
+
+- Some other functionality not needed by rom-properties has been disabled.
+
+To obtain the original zlib-ng v2.0.0-RC2, visit:
+https://github.com/zlib-ng/zlib-ng
+
+To obtain the original zlib-1.2.11, visit http://www.zlib.net .
