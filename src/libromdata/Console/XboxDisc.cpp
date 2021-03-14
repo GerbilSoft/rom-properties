@@ -392,6 +392,7 @@ XboxDisc::XboxDisc(IRpFile *file)
 			if (d->xdvdfsPartition->isOpen()) {
 				// It's an XGD3.
 				d->discType = XboxDiscPrivate::DiscType::XGD3;
+				d->wave = 0;
 				d->xdvdfs_addr = xgd3_offset;
 			} else {
 				// It's not an XGD3.
