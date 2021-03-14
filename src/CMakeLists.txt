@@ -50,6 +50,7 @@ ADD_SUBDIRECTORY(librpcpu)
 ADD_SUBDIRECTORY(librpfile)
 ADD_SUBDIRECTORY(librpbase)
 ADD_SUBDIRECTORY(librptexture)
+ADD_SUBDIRECTORY(amiibo-data)
 ADD_SUBDIRECTORY(libromdata)
 
 IF(BUILD_CLI)
