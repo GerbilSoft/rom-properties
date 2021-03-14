@@ -38,6 +38,9 @@
   * Windows: Fixed a column sizing issue that caused XDBF Gamerscore columns
     to be too wide.
   * Xbox360_STFS: Fixed a crash that happened in some cases.
+  * XboxDisc: Fix an edge case where XGD3 discs that have a video partition
+    whose timestamp matches an XGD2 timestamp are not handled correctly.
+    * Affects: "Kinect Rush a Disney Pixar Adventure" (4D5309B6)
 
 ## v1.7.3 (released 2020/09/25)
 

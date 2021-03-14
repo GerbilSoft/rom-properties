@@ -319,6 +319,8 @@ XboxDisc::XboxDisc(IRpFile *file)
 			d->xdvdfs_addr = XDVDFS_LBA_OFFSET_XGD1 * XDVDFS_BLOCK_SIZE;
 			break;
 		case XboxDiscPrivate::DiscType::XGD2:
+			// NOTE: May be XGD3.
+			// If XDVDFS is not present at the XGD2 offset, try XGD3.
 			d->xdvdfs_addr = XDVDFS_LBA_OFFSET_XGD2 * XDVDFS_BLOCK_SIZE;
 			break;
 		case XboxDiscPrivate::DiscType::XGD3:
@@ -378,11 +380,33 @@ XboxDisc::XboxDisc(IRpFile *file)
 	if (!d->xdvdfsPartition->isOpen()) {
 		// Unable to open the XDVDFSPartition.
 		UNREF_AND_NULL_NOCHK(d->xdvdfsPartition);
-		UNREF_AND_NULL_NOCHK(d->discReader);
-		UNREF_AND_NULL_NOCHK(d->file);
-		d->lockKreonDrive();
-		d->isKreon = false;
-		return;
+
+		// If this is XGD2, try the XGD3 offset in case this happens
+		// to be an edge case where it's an XGD3 disc that has a video
+		// partition that matches an XGD2 timestamp.
+		if (d->discType == XboxDiscPrivate::DiscType::XGD2) {
+			static const off_t xgd3_offset = XDVDFS_LBA_OFFSET_XGD3 * XDVDFS_BLOCK_SIZE;
+			d->xdvdfs_addr = XDVDFS_LBA_OFFSET_XGD3 * XDVDFS_BLOCK_SIZE;
+			d->xdvdfsPartition = new XDVDFSPartition(d->discReader,
+				xgd3_offset, d->file->size() - xgd3_offset);
+			if (d->xdvdfsPartition->isOpen()) {
+				// It's an XGD3.
+				d->discType = XboxDiscPrivate::DiscType::XGD3;
+				d->xdvdfs_addr = xgd3_offset;
+			} else {
+				// It's not an XGD3.
+				UNREF_AND_NULL_NOCHK(d->xdvdfsPartition);
+			}
+		}
+
+		if (!d->xdvdfsPartition) {
+			// Unable to open the XDVDFSPartition.
+			UNREF_AND_NULL_NOCHK(d->discReader);
+			UNREF_AND_NULL_NOCHK(d->file);
+			d->lockKreonDrive();
+			d->isKreon = false;
+			return;
+		}
 	}
 
 	// XDVDFS partition is open.
