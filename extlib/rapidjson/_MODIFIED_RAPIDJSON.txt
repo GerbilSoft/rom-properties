@@ -19,6 +19,9 @@ The following changes have been made to the original:
 - prettywriter.h: Added an option to use CRLF newlines, which is needed
   on Windows when copying JSON data to the clipboard.
 
+- rapidjson.h: Set endianness for MSVC/ARM64.
+  Upstream commit: f91405801f88533c609d95f2fcc2d88811544d35
+
 To obtain the original rapidjson-1.1.0, visit:
 https://rapidjson.org/
 https://github.com/Tencent/rapidjson
