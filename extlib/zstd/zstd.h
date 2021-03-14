@@ -80,7 +80,7 @@ extern "C" {
 /*------   Version   ------*/
 #define ZSTD_VERSION_MAJOR    1
 #define ZSTD_VERSION_MINOR    4
-#define ZSTD_VERSION_RELEASE  8
+#define ZSTD_VERSION_RELEASE  9
 #define ZSTD_VERSION_NUMBER  (ZSTD_VERSION_MAJOR *100*100 + ZSTD_VERSION_MINOR *100 + ZSTD_VERSION_RELEASE)
 
 /*! ZSTD_versionNumber() :
@@ -1843,7 +1843,7 @@ ZSTDLIB_API size_t ZSTDLIB_CALL ZSTD_CCtx_refPrefix_advanced(ZSTD_CCtx* cctx, co
  *  and store it into int* value.
  * @return : 0, or an error code (which can be tested with ZSTD_isError()).
  */
-ZSTDLIB_API size_t ZSTDLIB_CALL ZSTD_CCtx_getParameter(ZSTD_CCtx* cctx, ZSTD_cParameter param, int* value);
+ZSTDLIB_API size_t ZSTDLIB_CALL ZSTD_CCtx_getParameter(const ZSTD_CCtx* cctx, ZSTD_cParameter param, int* value);
 
 
 /*! ZSTD_CCtx_params :
@@ -1898,7 +1898,7 @@ ZSTDLIB_API size_t ZSTDLIB_CALL ZSTD_CCtxParams_setParameter(ZSTD_CCtx_params* p
  * Get the requested value of one compression parameter, selected by enum ZSTD_cParameter.
  * @result : 0, or an error code (which can be tested with ZSTD_isError()).
  */
-ZSTDLIB_API size_t ZSTDLIB_CALL ZSTD_CCtxParams_getParameter(ZSTD_CCtx_params* params, ZSTD_cParameter param, int* value);
+ZSTDLIB_API size_t ZSTDLIB_CALL ZSTD_CCtxParams_getParameter(const ZSTD_CCtx_params* params, ZSTD_cParameter param, int* value);
 
 /*! ZSTD_CCtx_setParametersUsingCCtxParams() :
  *  Apply a set of ZSTD_CCtx_params to the compression context.
