@@ -1,11 +1,9 @@
-This copy of zstd-1.4.8 is a modified version of the original.
+This copy of zstd-1.4.9 is a modified version of the original.
 
-commit 97a3da1df009d4dc67251de0c4b1c9d7fe286fc1
-Merge pull request #2435 from facebook/dev
+commit e4558ffd1dc49399faf4ee5d85abed4386b4dcf5
+Merge pull request #2515 from facebook/dev
 
-v1.4.8 hotfix
-
-Tag: v1.4.8
+Tag: v1.4.9
 
 The following changes have been made to the original:
 
