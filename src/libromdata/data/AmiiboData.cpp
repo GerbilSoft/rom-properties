@@ -66,6 +66,7 @@ class AmiiboDataPrivate {
 
 		// Character variants.
 		static const char_variant_t smb_mario_variants[];
+		static const char_variant_t smb_peach_variants[];
 		static const char_variant_t smb_yoshi_variants[];
 		static const char_variant_t smb_rosalina_variants[];
 		static const char_variant_t smb_bowser_variants[];
@@ -306,6 +307,12 @@ const char *const AmiiboDataPrivate::char_series_names[] = {
 const AmiiboDataPrivate::char_variant_t AmiiboDataPrivate::smb_mario_variants[] = {
 	{0x00, "Mario"},
 	{0x01, "Dr. Mario"},
+	{0x03, "Cat Mario"},
+};
+
+const AmiiboDataPrivate::char_variant_t AmiiboDataPrivate::smb_peach_variants[] = {
+	{0x00, "Peach"},
+	{0x01, "Cat Peach"},
 };
 
 const AmiiboDataPrivate::char_variant_t AmiiboDataPrivate::smb_yoshi_variants[] = {
@@ -549,7 +556,7 @@ const AmiiboDataPrivate::char_id_t AmiiboDataPrivate::char_ids[] = {
 	// Super Mario Bros. (character series = 0x000)
 	AMIIBO_CHAR_ID_VAR(0x0000, "Mario", smb_mario_variants),
 	AMIIBO_CHAR_ID_ONE(0x0001, "Luigi"),
-	AMIIBO_CHAR_ID_ONE(0x0002, "Peach"),
+	AMIIBO_CHAR_ID_VAR(0x0002, "Peach", smb_peach_variants),
 	AMIIBO_CHAR_ID_VAR(0x0003, "Yoshi", smb_yoshi_variants),
 	AMIIBO_CHAR_ID_VAR(0x0004, "Rosalina", smb_rosalina_variants),
 	AMIIBO_CHAR_ID_VAR(0x0005, "Bowser", smb_bowser_variants),
@@ -2282,6 +2289,14 @@ const AmiiboDataPrivate::amiibo_id_t AmiiboDataPrivate::amiibo_ids[] = {
 	// SSBU: Wave 13 [0x03A1-0x03A2]
 	{ 83, 13, "Joker"},			// 0x03A1
 	{ 84, 13, "Hero"},			// 0x03A2
+
+	// Unused [0x03A3-0x3A5]
+	{  0, 0, nullptr},			// 0x03A3
+	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x03A4,0x03A5
+
+	// # SMB: Wave 5 (Super Mario 3D World + Bowser's Fury) [0x03A6-0x03A7]
+	{ 21, 5, "Cat Mario"},
+	{ 22, 5, "Cat Peach"},
 };
 
 /** AmiiboData **/
@@ -2363,7 +2378,7 @@ const char *AmiiboData::lookup_amiibo_series_name(uint32_t amiibo_id)
 	// NOTE: gcc-6.3.0 is trying to interpret 0x035E+1 as a
 	// floating-point hex constant:
 	// error: unable to find numeric literal operator ‘operator""+1’
-	static_assert(ARRAY_SIZE(AmiiboDataPrivate::amiibo_ids) == ((0x03A2)+1),
+	static_assert(ARRAY_SIZE(AmiiboDataPrivate::amiibo_ids) == ((0x03A7)+1),
 		"amiibo_ids[] is out of sync with the amiibo ID list.");
 
 	const unsigned int series_id = (amiibo_id >> 8) & 0xFF;
