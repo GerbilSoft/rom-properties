@@ -41,6 +41,7 @@
   * XboxDisc: Fix an edge case where XGD3 discs that have a video partition
     whose timestamp matches an XGD2 timestamp are not handled correctly.
     * Affects: "Kinect Rush a Disney Pixar Adventure" (4D5309B6)
+    * Fixes #291, reported by @Masamune3210.
 
 ## v1.7.3 (released 2020/09/25)
 
