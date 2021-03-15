@@ -217,6 +217,13 @@ int main(int argc, char *argv[])
 				break;
 			}
 
+			// Check if the ID is a multiple of 4.
+			if (id % 4 != 0) {
+				fprintf(stderr, "*** ERROR: Line %d: 'CS' command has non-multiple-of-4 ID: %u (0x%04X)\n", line, id, id);
+				err = true;
+				break;
+			}
+
 			// Check if we already have this character series.
 			unsigned int idx = id / 4;
 			if (idx < charSeriesTable.size()) {
