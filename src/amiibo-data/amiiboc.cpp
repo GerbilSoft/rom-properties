@@ -28,6 +28,8 @@ using std::string;
 using std::unordered_map;
 using std::vector;
 
+static bool verbose = false;
+
 // NOTE: Tables in memory are HOST-endian.
 // They will be swapped to little-endian when written to disk.
 
@@ -103,12 +105,19 @@ static void alignFileTo16Bytes(FILE *f)
 int main(int argc, char *argv[])
 {
 	// TODO: Better command line parsing.
-	if (argc != 3) {
-		fprintf(stderr, "syntax: %s amiibo-data.txt amiibo.bin\n", argv[0]);
+	if (argc < 3) {
+		fprintf(stderr, "syntax: %s [-v] amiibo-data.txt amiibo.bin\n", argv[0]);
 		return EXIT_FAILURE;
 	}
 
-	FILE *f_in = fopen(argv[1], "r");
+	int optind = 1;
+	if (!strcmp(argv[optind], "-v")) {
+		// Verbose mode.
+		verbose = true;
+		optind++;
+	}
+
+	FILE *f_in = fopen(argv[optind++], "r");
 	if (!f_in) {
 		fprintf(stderr, "*** ERROR opening input file '%s': %s\n", argv[1], strerror(errno));
 		return EXIT_FAILURE;
@@ -238,7 +247,9 @@ int main(int argc, char *argv[])
 
 			// Add the name to the string table and save the series name.
 			charSeriesTable[idx] = getStringTableOffset(token);
-			printf("CS: ID=%04X, name=%s, offset=%u\n", id, token, charSeriesTable[idx]);
+			if (verbose) {
+				printf("CS: ID=%04X, name=%s, offset=%u\n", id, token, charSeriesTable[idx]);
+			}
 		} else if (!strcmp(token, "C")) {
 			// Character
 			// Fields: ID, Name
@@ -282,7 +293,9 @@ int main(int argc, char *argv[])
 			CharTableEntry charTableEntry;
 			charTableEntry.char_id = id;
 			charTableEntry.name = getStringTableOffset(token);
-			printf("C: ID=%04X, name=%s, offset=%u\n", id, token, charTableEntry.name);
+			if (verbose) {
+				printf("C: ID=%04X, name=%s, offset=%u\n", id, token, charTableEntry.name);
+			}
 			charTable[id] = std::move(charTableEntry);
 		} else if (!strcmp(token, "CV")) {
 			// Character Variant
@@ -368,7 +381,9 @@ int main(int argc, char *argv[])
 			entry.var_id = var_id;
 			entry.reserved = 0;
 			entry.name = getStringTableOffset(token);
-			printf("CV: ID=%04X, VarID=%02X, name=%s, offset=%u\n", id, var_id, token, entry.name);
+			if (verbose) {
+				printf("CV: ID=%04X, VarID=%02X, name=%s, offset=%u\n", id, var_id, token, entry.name);
+			}
 			pMap->emplace(std::make_pair(var_id, std::move(entry)));
 		} else if (!strcmp(token, "AS")) {
 			// amiibo Series
@@ -414,7 +429,9 @@ int main(int argc, char *argv[])
 
 			// Add the name to the string table and save the series name.
 			amiiboSeriesTable[id] = getStringTableOffset(token);
-			printf("AS: ID=%04X, name=%s, offset=%u\n", id, token, amiiboSeriesTable[id]);
+			if (verbose) {
+				printf("AS: ID=%04X, name=%s, offset=%u\n", id, token, amiiboSeriesTable[id]);
+			}
 		} else if (!strcmp(token, "A")) {
 			// amiibo
 			// Fields: ID, Release No., Wave, Name
@@ -499,8 +516,10 @@ int main(int argc, char *argv[])
 			entry.wave_no = wave_no;
 			entry.reserved = 0;
 			entry.name = getStringTableOffset(token);
-			printf("A: ID=%04X, release_no=%u, wave_no=%u, name=%s, offset=%u\n",
-				id, release_no, wave_no, token, entry.name);
+			if (verbose) {
+				printf("A: ID=%04X, release_no=%u, wave_no=%u, name=%s, offset=%u\n",
+					id, release_no, wave_no, token, entry.name);
+			}
 		} else {
 			// Invalid command.
 			fprintf(stderr, "*** ERROR: Line %d: Invalid command '%s'.\n", line, token);
@@ -515,7 +534,7 @@ int main(int argc, char *argv[])
 	}
 
 	// Write the binary data.
-	FILE *f_out = fopen(argv[2], "wb");
+	FILE *f_out = fopen(argv[optind++], "wb");
 	if (!f_out) {
 		fprintf(stderr, "*** ERROR opening output file '%s': %s\n", argv[2], strerror(errno));
 		return EXIT_FAILURE;
