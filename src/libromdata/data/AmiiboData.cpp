@@ -268,9 +268,9 @@ int AmiiboDataPrivate::loadIfNeeded(void)
 
 	const uint32_t amiibo_offset = le32_to_cpu(pHeader_tmp->amiibo_offset);
 	const uint32_t amiibo_len = le32_to_cpu(pHeader_tmp->amiibo_len);
-	if (amiibo_len < sizeof(AmiiboBinHeader) || amiibo_len == 0 ||
+	if (amiibo_offset < sizeof(AmiiboBinHeader) || amiibo_len == 0 ||
 	    amiibo_len % sizeof(AmiiboIDTableEntry) != 0 ||
-	    ((uint64_t)amiibo_len + (uint64_t)amiibo_len) > static_cast<uint64_t>(filesize))
+	    ((uint64_t)amiibo_offset + (uint64_t)amiibo_len) > static_cast<uint64_t>(filesize))
 	{
 		// p.22 amiibo ID table offsets are invalid.
 		amiibo_bin_data.clear();
@@ -449,42 +449,42 @@ const char *AmiiboData::lookup_char_name(uint32_t char_id) const
 
 	// Do a binary search.
 	const CharTableEntry key = {id, 0};
-	const CharTableEntry *const res =
+	const CharTableEntry *const cres =
 		static_cast<const CharTableEntry*>(bsearch(&key,
 			d->pCharTbl,
 			d->charTbl_count,
 			sizeof(CharTableEntry),
 			AmiiboDataPrivate::CharTableEntry_compar));
-	if (!res) {
+	if (!cres) {
 		// Character ID not found.
 		return nullptr;
 	}
 
 	// Check for variants.
 	const char *name = nullptr;
-	if (le32_to_cpu(res->char_id) & CHARTABLE_VARIANT_FLAG) {
+	if (le32_to_cpu(cres->char_id) & CHARTABLE_VARIANT_FLAG) {
 		// Do a binary search in the character variant table.
 		const uint8_t variant_id = (char_id >> 8) & 0xFF;
 		const CharVariantTableEntry key = {id, variant_id, 0, 0};
-		const CharVariantTableEntry *const res =
+		const CharVariantTableEntry *const vres =
 			static_cast<const CharVariantTableEntry*>(bsearch(&key,
 				d->pCharVarTbl,
 				d->charVarTbl_count,
 				sizeof(CharVariantTableEntry),
 				AmiiboDataPrivate::CharVariantTableEntry_compar));
 
-		if (!res) {
+		if (vres) {
+			// Character variant ID found.
+			name = d->strTbl_lookup(le32_to_cpu(vres->name));
+		} else {
 			// Character variant ID not found.
 			// Maybe it's an error...
 			// Default to the main character name.
-			name = d->strTbl_lookup(le32_to_cpu(res->name));
+			name = d->strTbl_lookup(le32_to_cpu(cres->name));
 		}
-
-		// Get the variant name.
-		name = d->strTbl_lookup(le32_to_cpu(res->name));
 	} else {
 		// No variants.
-		name = d->strTbl_lookup(le32_to_cpu(res->name));
+		name = d->strTbl_lookup(le32_to_cpu(cres->name));
 	}
 
 	return name;
