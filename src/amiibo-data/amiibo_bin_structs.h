@@ -52,11 +52,12 @@ ASSERT_STRUCT(AmiiboBinHeader, 0x080);
 /**
  * Character table entry. (p.21)
  *
- * If bit 32 of char_id is set, character variants are present.
+ * If bit 31 of char_id is set, character variants are present.
  * The character variant table should be checked.
  *
  * All fields are little-endian.
  */
+#define CHARTABLE_VARIANT_FLAG (1U << 31)
 typedef struct _CharTableEntry {
 	uint32_t char_id;	// Character ID (low 16 bits are significant)
 	uint32_t name;		// Character name (string table offset)

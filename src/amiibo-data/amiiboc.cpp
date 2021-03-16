@@ -355,7 +355,7 @@ int main(int argc, char *argv[])
 			}
 			// Set the high bit in the character ID.
 			// This indicates character variants are present.
-			iter->second.char_id |= (1U << 31);
+			iter->second.char_id |= CHARTABLE_VARIANT_FLAG;
 
 			// Check if we already have this character variant.
 			CharVariantMap *pMap;
