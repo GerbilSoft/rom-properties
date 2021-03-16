@@ -30,22 +30,24 @@ typedef struct _AmiiboBinHeader {
 	uint32_t strtbl_offset;	// [0x008] String table
 	uint32_t strtbl_len;	// [0x00C]
 
-	// Page 21
-	uint32_t series_offset;	// [0x010] Series table
-	uint32_t series_len;	// [0x014]
+	// Page 21 (characters)
+	uint32_t cseries_offset;// [0x010] Series table
+	uint32_t cseries_len;	// [0x014]
 	uint32_t char_offset;	// [0x018] Character table
 	uint32_t char_len;	// [0x01C]
 	uint32_t cvar_offset;	// [0x020] Character variant table
 	uint32_t cvar_len;	// [0x024]
 
-	// Page 22
-	uint32_t amiibo_offset;	// [0x028] amiibo ID table
-	uint32_t amiibo_len;
+	// Page 22 (amiibos)
+	uint32_t aseries_offset;// [0x028] amiibo series table
+	uint32_t aseries_len;	// [0x02C]
+	uint32_t amiibo_offset;	// [0x030] amiibo ID table
+	uint32_t amiibo_len;	// [0x034]
 
 	// Reserved
-	uint32_t reserved[4];	// [0x030]
+	uint32_t reserved[18];	// [0x038]
 } AmiiboBinHeader;
-ASSERT_STRUCT(AmiiboBinHeader, 0x040);
+ASSERT_STRUCT(AmiiboBinHeader, 0x080);
 
 /**
  * Character table entry. (p.21)

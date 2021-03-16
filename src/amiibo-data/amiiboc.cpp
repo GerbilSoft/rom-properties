@@ -528,16 +528,16 @@ int main(int argc, char *argv[])
 	// It will be rewritten once everything is finalized.
 	fwrite(&binHeader, 1, sizeof(binHeader), f_out);
 
-	// Series table.
+	// Character series table.
 	alignFileTo16Bytes(f_out);
-	const uint32_t series_len = static_cast<uint32_t>(charSeriesTable.size() * sizeof(charSeriesTable[0]));
-	binHeader.series_offset = cpu_to_le32(static_cast<uint32_t>(ftello(f_out)));
-	binHeader.series_len = cpu_to_le32(series_len);
+	const uint32_t cseries_len = static_cast<uint32_t>(charSeriesTable.size() * sizeof(charSeriesTable[0]));
+	binHeader.cseries_offset = cpu_to_le32(static_cast<uint32_t>(ftello(f_out)));
+	binHeader.cseries_len = cpu_to_le32(cseries_len);
 #if SYS_BYTEORDER == SYS_BIG_ENDIAN
 	// Byteswap the series table to little-endian.
 	__byte_swap_32_array(charSeriesTable.data(), charSeriesTable.size() * sizeof(charSeriesTable[0]));
 #endif /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
-	fwrite(charSeriesTable.data(), 1, series_len, f_out);
+	fwrite(charSeriesTable.data(), 1, cseries_len, f_out);
 
 	// Character table
 	alignFileTo16Bytes(f_out);
@@ -581,6 +581,17 @@ int main(int argc, char *argv[])
 		}
 	}
 	binHeader.cvar_len = cpu_to_le32(cvar_len);
+
+	// amiibo series table.
+	alignFileTo16Bytes(f_out);
+	const uint32_t aseries_len = static_cast<uint32_t>(amiiboSeriesTable.size() * sizeof(amiiboSeriesTable[0]));
+	binHeader.aseries_offset = cpu_to_le32(static_cast<uint32_t>(ftello(f_out)));
+	binHeader.aseries_len = cpu_to_le32(aseries_len);
+#if SYS_BYTEORDER == SYS_BIG_ENDIAN
+	// Byteswap the series table to little-endian.
+	__byte_swap_32_array(amiiboSeriesTable.data(), amiiboSeriesTable.size() * sizeof(amiiboSeriesTable[0]));
+#endif /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
+	fwrite(amiiboSeriesTable.data(), 1, aseries_len, f_out);
 
 	// amiibo ID table
 	alignFileTo16Bytes(f_out);
