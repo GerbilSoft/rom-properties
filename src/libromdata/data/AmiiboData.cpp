@@ -12,8 +12,14 @@
 
 #include "byteswap_rp.h"
 #include "../../amiibo-data/amiibo_bin_structs.h"
+
+#include "librpfile/FileSystem.hpp"
 #include "librpfile/RpFile.hpp"
-using LibRpFile::RpFile;
+using namespace LibRpFile;
+
+// C++ includes.
+#include <string>
+using std::string;
 
 // Uninitialized vector class.
 // Reference: http://andreoffringa.org/?q=uvector
@@ -62,7 +68,15 @@ class AmiiboDataPrivate {
 	public:
 		// amiibo.bin data
 		ao::uvector<uint8_t> amiibo_bin_data;
-		time_t amiibo_bin_ts;
+		time_t amiibo_bin_check_ts;	// Last check timestamp
+		time_t amiibo_bin_file_ts;	// File mtime
+
+		enum class AmiiboBinFileType : uint8_t {
+			None = 0,
+			System = 1,
+			User = 2,
+		};
+		AmiiboBinFileType amiiboBinFileType;
 
 		// Convenience pointers to amiibo.bin structs.
 		const AmiiboBinHeader *pHeader;
@@ -82,9 +96,20 @@ class AmiiboDataPrivate {
 		uint32_t aseriesTbl_count;
 		uint32_t amiiboIdTbl_count;
 
+	private:
+		// amiibo-data.bin filename
+		static const char AMIIBO_BIN_FILENAME[];
+
+		/**
+		 * Get an amiibo-data.bin filename.
+		 * @param amiiboBinFileType AmiiboBinFileType
+		 * @return amiibo-data.bin filename, or empty string on error.
+		 */
+		static string getAmiiboBinFilename(AmiiboBinFileType amiiboBinFileType);
+
 	public:
 		/**
-		 * Load amiibo.bin if it's needed.
+		 * Load amiibo-data.bin if it's needed.
 		 * @return 0 on success or if load isn't needed; negative POSIX error code on error.
 		 */
 		int loadIfNeeded(void);
@@ -120,8 +145,13 @@ class AmiiboDataPrivate {
 		static int RP_C_API CharVariantTableEntry_compar(const void *a, const void *b);
 };
 
+// amiibo-data.bin filename
+const char AmiiboDataPrivate::AMIIBO_BIN_FILENAME[] = "amiibo-data.bin";
+
 AmiiboDataPrivate::AmiiboDataPrivate()
-	: amiibo_bin_ts(-1)
+	: amiibo_bin_check_ts(-1)
+	, amiibo_bin_file_ts(-1)
+	, amiiboBinFileType(AmiiboBinFileType::None)
 	, pHeader(nullptr)
 	, pStrTbl(nullptr)
 	, pCSeriesTbl(nullptr)
@@ -140,25 +170,121 @@ AmiiboDataPrivate::AmiiboDataPrivate()
 }
 
 /**
+ * Get an amiibo-data.bin filename.
+ * @param amiiboBinFileType AmiiboBinFileType
+ * @return amiibo-data.bin filename, or empty string on error.
+ */
+string AmiiboDataPrivate::getAmiiboBinFilename(AmiiboBinFileType amiiboBinFileType)
+{
+	string filename;
+
+	switch (amiiboBinFileType) {
+		default:
+		case AmiiboBinFileType::None:
+			break;
+
+		case AmiiboBinFileType::System:
+			// TODO: Windows version.
+#ifdef DIR_INSTALL_SHARE
+			filename = DIR_INSTALL_SHARE DIR_SEP_STR;
+#endif
+			filename += AMIIBO_BIN_FILENAME;
+			break;
+
+		case AmiiboBinFileType::User:
+			filename = FileSystem::getConfigDirectory();
+			if (!filename.empty()) {
+				if (filename.at(filename.size()-1) != DIR_SEP_CHR) {
+					filename += DIR_SEP_CHR;
+				}
+			}
+			filename += AMIIBO_BIN_FILENAME;
+			break;
+	}
+
+	return filename;
+}
+
+/**
  * Load amiibo.bin if it's needed.
  * @return 0 on success or if load isn't needed; negative POSIX error code on error.
  */
 int AmiiboDataPrivate::loadIfNeeded(void)
 {
-	// TODO: Check timestamps.
+	// Determine the amiibo-data.bin file to load.
+	string filename;
+
+	time_t now = time(nullptr);
 	if (!amiibo_bin_data.empty()) {
-		// Already loaded.
-		return 0;
+		// amiibo data is already loaded.
+		if (now == amiibo_bin_check_ts) {
+			// Same time as last time. (seconds resolution)
+			return 0;
+		}
+	}
+
+	// Check the following paths:
+	// - ~/.config/rom-properties/amiibo-data.bin (user override)
+	// - /usr/share/rom-properties/amiibo-data.bin (system-wide)
+
+	// NOTE: mtime is checked even if no file is loaded, since this is
+	// also used to check if the file exists in the first place.
+	AmiiboBinFileType bin_ft = AmiiboBinFileType::None;
+	time_t mtime = -1;
+	bool ok = false;	// Set to true once a valid file is found.
+
+	// Check the user filename.
+	filename = getAmiiboBinFilename(AmiiboBinFileType::User);
+	if (!filename.empty()) {
+		// Check the mtime to see if we need to reload it.
+		int ret = FileSystem::get_mtime(filename, &mtime);
+		if (ret == 0) {
+			if (mtime == this->amiibo_bin_file_ts) {
+				// User file exists, and the mtime matches the previous mtime.
+				if (this->amiiboBinFileType == AmiiboBinFileType::User) {
+					// Same filetype. No reload is necessary.
+					return 0;
+				}
+			}
+
+			// mtime and/or type doesn't match.
+			// Reload is required.
+			bin_ft = AmiiboBinFileType::User;
+			ok = true;
+		}
+	}
+
+	if (!ok) {
+		// Check the system filename.
+		filename = getAmiiboBinFilename(AmiiboBinFileType::System);
+		if (!filename.empty()) {
+			// Check the mtime to see if we need to reload it.
+			int ret = FileSystem::get_mtime(filename, &mtime);
+			if (ret == 0) {
+				if (mtime == this->amiibo_bin_file_ts) {
+					// User file exists, and the mtime matches the previous mtime.
+					if (this->amiiboBinFileType == AmiiboBinFileType::System) {
+						// Same filetype. No reload is necessary.
+						return 0;
+					}
+				}
+
+				// mtime and/or type doesn't match.
+				// Reload is required.
+				bin_ft = AmiiboBinFileType::System;
+				ok = true;
+			}
+		}
+	}
+
+	if (!ok) {
+		// Unable to find any valid amiibo-data.bin file.
+		// If data was already loaded before, keep using it.
+		return (amiibo_bin_data.empty() ? -ENOENT : 0);
 	}
 
 	// Load amiibo.bin.
-	// TODO: Correct paths.
-#ifdef DIR_INSTALL_SHARE
-	static const char AMIIBO_BIN_FILENAME[] = DIR_INSTALL_SHARE "/amiibo-data.bin";
-#else
-	static const char AMIIBO_BIN_FILENAME[] = "amiibo-data.bin";
-#endif
-	RpFile *const pFile = new RpFile(AMIIBO_BIN_FILENAME, RpFile::FM_OPEN_READ);
+	RpFile *const pFile = new RpFile(filename, RpFile::FM_OPEN_READ);
 	if (!pFile->isOpen()) {
 		// Unable to open the file.
 		int err = -pFile->lastError();
@@ -277,8 +403,12 @@ int AmiiboDataPrivate::loadIfNeeded(void)
 		return -EIO;
 	}
 
+	// Save the updated timestamp and file type.
+	amiibo_bin_check_ts = now;
+	amiibo_bin_file_ts = mtime;
+	amiiboBinFileType = bin_ft;
+
 	// Save the table values and offsets.
-	// TODO: Timestamp?
 	pStrTbl = reinterpret_cast<const char*>(&amiibo_bin_data[strtbl_offset]);
 	pCSeriesTbl = reinterpret_cast<const uint32_t*>(&amiibo_bin_data[cseries_offset]);
 	pCharTbl = reinterpret_cast<const CharTableEntry*>(&amiibo_bin_data[char_offset]);
@@ -299,7 +429,10 @@ int AmiiboDataPrivate::loadIfNeeded(void)
  */
 void AmiiboDataPrivate::clear(void)
 {
-	amiibo_bin_ts = -1;
+	amiibo_bin_check_ts = -1;
+	amiibo_bin_file_ts = -1;
+	amiiboBinFileType = AmiiboBinFileType::None;
+
 	pHeader = nullptr;
 	pStrTbl = nullptr;
 	pCSeriesTbl = nullptr;

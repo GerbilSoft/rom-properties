@@ -68,8 +68,10 @@ typedef char TCHAR;
 // Directory separator character.
 #ifdef _WIN32
 # define DIR_SEP_CHR _T('\\')
+# define DIR_SEP_STR _T("\\")
 #else /* !_WIN32 */
 # define DIR_SEP_CHR _T('/')
+# define DIR_SEP_STR _T("/")
 #endif /* _WIN32 */
 
 #endif /* __ROMPROPERTIES_TCHAR_H__ */
