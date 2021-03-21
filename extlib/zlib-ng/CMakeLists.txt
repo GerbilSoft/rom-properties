@@ -1051,8 +1051,11 @@ if(NOT SKIP_INSTALL_LIBRARIES AND NOT SKIP_INSTALL_ALL)
     # - Removed zlibstatic from INSTALL().
     # - Disabled installation of import libraries.
     # - Install PDB files.
+    # - Use DirInstallPaths.
+    INCLUDE(DirInstallPaths)
     install(TARGETS ${ZLIB_INSTALL_LIBRARIES}
-        RUNTIME DESTINATION "${BIN_INSTALL_DIR}")
+        RUNTIME DESTINATION "${DIR_INSTALL_DLL}")
+        #RUNTIME DESTINATION "${BIN_INSTALL_DIR}"
         #ARCHIVE DESTINATION "${LIB_INSTALL_DIR}"
         #LIBRARY DESTINATION "${LIB_INSTALL_DIR}")
     IF(INSTALL_DEBUG)
