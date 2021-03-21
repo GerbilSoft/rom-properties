@@ -11,7 +11,13 @@
 #include "AmiiboData.hpp"
 
 #include "byteswap_rp.h"
+#include "tcharx.h"
 #include "../../amiibo-data/amiibo_bin_structs.h"
+
+#ifdef _WIN32
+#  include "libwin32common/RpWin32_sdk.h"
+#  include "librpbase/TextFuncs_wchar.hpp"
+#endif /* _WIN32 */
 
 #include "librpfile/FileSystem.hpp"
 #include "librpfile/RpFile.hpp"
@@ -20,6 +26,7 @@ using namespace LibRpFile;
 // C++ includes.
 #include <string>
 using std::string;
+using std::tstring;
 
 // Uninitialized vector class.
 // Reference: http://andreoffringa.org/?q=uvector
@@ -78,6 +85,10 @@ class AmiiboDataPrivate {
 		};
 		AmiiboBinFileType amiiboBinFileType;
 
+#ifdef _WIN32
+		tstring s_dll_filename;
+#endif /* _WIN32 */
+
 		// Convenience pointers to amiibo.bin structs.
 		const AmiiboBinHeader *pHeader;
 		const char *pStrTbl;
@@ -97,15 +108,12 @@ class AmiiboDataPrivate {
 		uint32_t amiiboIdTbl_count;
 
 	private:
-		// amiibo-data.bin filename
-		static const char AMIIBO_BIN_FILENAME[];
-
 		/**
 		 * Get an amiibo-data.bin filename.
 		 * @param amiiboBinFileType AmiiboBinFileType
 		 * @return amiibo-data.bin filename, or empty string on error.
 		 */
-		static string getAmiiboBinFilename(AmiiboBinFileType amiiboBinFileType);
+		string getAmiiboBinFilename(AmiiboBinFileType amiiboBinFileType) const;
 
 	public:
 		/**
@@ -146,7 +154,7 @@ class AmiiboDataPrivate {
 };
 
 // amiibo-data.bin filename
-const char AmiiboDataPrivate::AMIIBO_BIN_FILENAME[] = "amiibo-data.bin";
+#define AMIIBO_BIN_FILENAME "amiibo-data.bin"
 
 AmiiboDataPrivate::AmiiboDataPrivate()
 	: amiibo_bin_check_ts(-1)
@@ -167,6 +175,19 @@ AmiiboDataPrivate::AmiiboDataPrivate()
 	, amiiboIdTbl_count(0)
 {
 	// Loading will be delayed until it's needed.
+
+#ifdef _WIN32
+	TCHAR dll_filename[MAX_PATH];
+	DWORD dwResult = GetModuleFileName(HINST_THISCOMPONENT,
+		dll_filename, _countof(dll_filename));
+	if (dwResult == 0 || GetLastError() != ERROR_SUCCESS) {
+		// Cannot get the DLL filename.
+		// TODO: Windows XP doesn't SetLastError() if the
+		// filename is too big for the buffer.
+		dll_filename[0] = _T('\0');
+	}
+	s_dll_filename = dll_filename;
+#endif /* _WIN32 */
 }
 
 /**
@@ -174,7 +195,7 @@ AmiiboDataPrivate::AmiiboDataPrivate()
  * @param amiiboBinFileType AmiiboBinFileType
  * @return amiibo-data.bin filename, or empty string on error.
  */
-string AmiiboDataPrivate::getAmiiboBinFilename(AmiiboBinFileType amiiboBinFileType)
+string AmiiboDataPrivate::getAmiiboBinFilename(AmiiboBinFileType amiiboBinFileType) const
 {
 	string filename;
 
@@ -183,13 +204,41 @@ string AmiiboDataPrivate::getAmiiboBinFilename(AmiiboBinFileType amiiboBinFileTy
 		case AmiiboBinFileType::None:
 			break;
 
-		case AmiiboBinFileType::System:
+		case AmiiboBinFileType::System: {
 			// TODO: Windows version.
-#ifdef DIR_INSTALL_SHARE
+#if defined(DIR_INSTALL_SHARE)
 			filename = DIR_INSTALL_SHARE DIR_SEP_STR;
+#elif defined(_WIN32)
+			if (s_dll_filename.empty())
+				break;
+
+			// Remove the last backslash.
+			tstring tfilename(s_dll_filename);
+			size_t bs_pos = tfilename.rfind(DIR_SEP_CHR);
+			if (bs_pos == string::npos)
+				break;
+			tfilename.resize(bs_pos+1);
+			tfilename += _T(AMIIBO_BIN_FILENAME);
+			if (GetFileAttributes(tfilename.c_str()) != INVALID_FILE_ATTRIBUTES) {
+				filename = T2U8(tfilename);
+				break;
+			}
+
+			// Not in the DLL directory.
+			// Check parent directory.
+			tfilename.resize(bs_pos);
+			bs_pos = tfilename.rfind(DIR_SEP_CHR);
+			if (bs_pos == string::npos)
+				break;
+			tfilename.resize(bs_pos+1);
+			tfilename += _T(AMIIBO_BIN_FILENAME);
+			if (GetFileAttributes(tfilename.c_str()) != INVALID_FILE_ATTRIBUTES) {
+				filename = T2U8(tfilename);
+				break;
+			}
 #endif
-			filename += AMIIBO_BIN_FILENAME;
 			break;
+		}
 
 		case AmiiboBinFileType::User:
 			filename = FileSystem::getConfigDirectory();
