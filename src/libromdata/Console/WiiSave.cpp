@@ -510,15 +510,19 @@ int WiiSave::loadFieldData(void)
 	if (isSvValid) {
 		// Unix-style permissions field.
 		char s_perms[] = "----------";
-		uint8_t perms = svHeader->permissions;
-		for (char *p = &s_perms[1]; p < s_perms + sizeof(s_perms); p += 3, perms <<= 2) {
-			if (perms & 0x20) {
-				p[0] = 'r';
-			}
-			if (perms & 0x10) {
-				p[1] = 'w';
-			}
-		}
+		const uint8_t perms = svHeader->permissions;
+		if (perms & 0x20)
+			s_perms[1] = 'r';
+		if (perms & 0x10)
+			s_perms[2] = 'w';
+		if (perms & 0x08)
+			s_perms[4] = 'r';
+		if (perms & 0x04)
+			s_perms[5] = 'w';
+		if (perms & 0x02)
+			s_perms[7] = 'r';
+		if (perms & 0x01)
+			s_perms[8] = 'w';
 
 		d->fields->addField_string(C_("WiiSave", "Permissions"), s_perms,
 			RomFields::STRF_MONOSPACE);
