@@ -12,6 +12,7 @@ Maintained by Hans Kristian Rosbach
 |OSS-Fuzz|[![Fuzzing Status](https://oss-fuzz-build-logs.storage.googleapis.com/badges/zlib-ng.svg)](https://bugs.chromium.org/p/oss-fuzz/issues/list?sort=-opened&can=1&q=proj:zlib-ng)
 |Codecov|[![codecov.io](https://codecov.io/github/zlib-ng/zlib-ng/coverage.svg?branch=develop)](https://codecov.io/github/zlib-ng/zlib-ng/)|
 
+
 Features
 --------
 
@@ -35,10 +36,11 @@ Features
 * GitHub Actions continuous integration on Windows, macOS, and Linux
   * Emulated CI for ARM, AARCH64, PPC, PPC64, SPARC64, S390x using qemu
 
-Fork Motivation
----------------------------
 
-The motivation for this fork was due to seeing several 3rd party
+History
+-------
+
+The motivation for this fork came after seeing several 3rd party
 contributions containing new optimizations not getting implemented
 into the official zlib repository.
 
@@ -74,6 +76,7 @@ improvements, or valuable testing.
 
 Please read LICENSE.md, it is very simple and very liberal.
 
+
 Build
 -----
 
@@ -107,6 +110,7 @@ make test
 
 Build Options
 -------------
+
 | CMake                    | configure                | Description                                                                           | Default |
 |:-------------------------|:-------------------------|:--------------------------------------------------------------------------------------|---------|
 | ZLIB_COMPAT              | --zlib-compat            | Compile with zlib compatible API                                                      | OFF     |
@@ -119,6 +123,7 @@ Build Options
 | WITH_FUZZERS             | --with-fuzzers           | Build test/fuzz                                                                       | OFF     |
 | WITH_MAINTAINER_WARNINGS |                          | Build with project maintainer warnings                                                | OFF     |
 | WITH_CODE_COVERAGE       |                          | Enable code coverage reporting                                                        | OFF     |
+
 
 Install
 -------
@@ -158,12 +163,10 @@ make install
 Contributing
 ------------
 
-Zlib-ng is a aiming to be open to contributions, and we would be
-delighted to receive pull requests on github.
-Just remember that any code you submit must be your own and it must
-be zlib licensed.
-Help with testing and reviewing of pull requests etc is also very
-much appreciated.
+Zlib-ng is a aiming to be open to contributions, and we would be delighted to
+receive pull requests on github.
+Just remember that any code you submit must be your own and it must be zlib licensed.
+Help with testing and reviewing of pull requests etc is also very much appreciated.
 
 If you are interested in contributing, please consider joining our
 IRC channel #zlib-ng on the Freenode IRC network.
@@ -174,9 +177,8 @@ Acknowledgments
 
 Thanks to Servebolt.com for sponsoring my maintainership of zlib-ng.
 
-Thanks go out to all the people and companies who have taken the time
-to contribute code reviews, testing and/or patches. Zlib-ng would not
-have been nearly as good without you.
+Thanks go out to all the people and companies who have taken the time to contribute
+code reviews, testing and/or patches. Zlib-ng would not have been nearly as good without you.
 
 The deflate format used by zlib was defined by Phil Katz.
 The deflate and zlib specifications were written by L. Peter Deutsch.
@@ -184,13 +186,15 @@ The deflate and zlib specifications were written by L. Peter Deutsch.
 zlib was originally created by Jean-loup Gailly (compression)
 and Mark Adler (decompression).
 
+
 Advanced Build Options
 ----------------------
 
 | CMake                           | configure             | Description                                                         | Default                |
 |:--------------------------------|:----------------------|:--------------------------------------------------------------------|------------------------|
 | ZLIB_DUAL_LINK                  |                       | Dual link tests with system zlib                                    | OFF                    |
-|                                 | --force-sse2          | Assume SSE2 instructions are always available                       | ON (x86), OFF (x86_64) |
+| UNALIGNED_OK                    |                       | Allow unaligned reads                                               | ON (x86, arm)          |
+|                                 | --force-sse2          | Skip runtime check for SSE2 instructions (Always on for x86_64)     | OFF (x86)              |
 | WITH_AVX2                       |                       | Build with AVX2 intrinsics                                          | ON                     |
 | WITH_SSE2                       |                       | Build with SSE2 intrinsics                                          | ON                     |
 | WITH_SSE4                       |                       | Build with SSE4 intrinsics                                          | ON                     |
@@ -198,9 +202,19 @@ Advanced Build Options
 | WITH_ACLE                       | --without-acle        | Build with ACLE intrinsics                                          | ON                     |
 | WITH_NEON                       | --without-neon        | Build with NEON intrinsics                                          | ON                     |
 | WITH_POWER8                     |                       | Build with POWER8 optimisations                                     | ON                     |
-| WITH_DFLTCC_DEFLATE             | --with-dfltcc-deflate | Use DEFLATE COMPRESSION CALL instruction for compression on IBM Z   | OFF                    |
-| WITH_DFLTCC_INFLATE             | --with-dfltcc-inflate | Use DEFLATE COMPRESSION CALL instruction for decompression on IBM Z | OFF                    |
-| WITH_UNALIGNED                  |                       | Allow optimizations that use unaligned reads if safe on current arch| ON                    |
+| WITH_DFLTCC_DEFLATE             | --with-dfltcc-deflate | Build with DFLTCC intrinsics for compression on IBM Z               | OFF                    |
+| WITH_DFLTCC_INFLATE             | --with-dfltcc-inflate | Build with DFLTCC intrinsics for decompression on IBM Z             | OFF                    |
+| WITH_UNALIGNED                  |                       | Allow optimizations that use unaligned reads if safe on current arch| ON                     |
 | WITH_INFLATE_STRICT             |                       | Build with strict inflate distance checking                         | OFF                    |
 | WITH_INFLATE_ALLOW_INVALID_DIST |                       | Build with zero fill for inflate invalid distances                  | OFF                    |
 | INSTALL_UTILS                   |                       | Copy minigzip and minideflate during install                        | OFF                    |
+
+
+Related Projects
+----------------
+
+* Fork of the popular minigzip                  https://github.com/zlib-ng/minizip-ng
+* Python tool to benchmark minigzip/minideflate https://github.com/zlib-ng/deflatebench
+* Python tool to benchmark pigz                 https://github.com/zlib-ng/pigzbench
+* 3rd party patches for zlib-ng compatibility   https://github.com/zlib-ng/patches
+

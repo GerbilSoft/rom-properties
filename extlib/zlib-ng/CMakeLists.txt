@@ -48,10 +48,12 @@ include(CheckFunctionExists)
 include(CheckIncludeFile)
 include(CheckCSourceCompiles)
 include(CheckCSourceRuns)
+include(CheckCCompilerFlag)
 include(CMakeDependentOption)
 include(FeatureSummary)
 
 include(cmake/detect-arch.cmake)
+include(cmake/detect-coverage.cmake)
 include(cmake/detect-sanitizer.cmake)
 
 if(CMAKE_TOOLCHAIN_FILE)
@@ -103,8 +105,8 @@ if(BASEARCH_ARM_FOUND)
 elseif(BASEARCH_PPC_FOUND)
     add_option(WITH_POWER8 "Build with optimisations for POWER8" ON)
 elseif(BASEARCH_S360_FOUND)
-    add_option(WITH_DFLTCC_DEFLATE "Use DEFLATE CONVERSION CALL instruction for compression on IBM Z" OFF)
-    add_option(WITH_DFLTCC_INFLATE "Use DEFLATE CONVERSION CALL instruction for decompression on IBM Z" OFF)
+    add_option(WITH_DFLTCC_DEFLATE "Build with DFLTCC intrinsics for compression on IBM Z" OFF)
+    add_option(WITH_DFLTCC_INFLATE "Build with DFLTCC intrinsics for decompression on IBM Z" OFF)
 elseif(BASEARCH_X86_FOUND)
     add_option(WITH_AVX2 "Build with AVX2" ON)
     add_option(WITH_SSE2 "Build with SSE2" ON)
@@ -263,7 +265,7 @@ endif()
 # Replace optimization level 3 added by default with level 2
 if(NOT MSVC AND NOT CMAKE_C_FLAGS MATCHES "([\\/\\-]O)3")
     string(REGEX REPLACE "([\\/\\-]O)3" "\\12"
-        CMAKE_C_FLAGS_RELEASE ${CMAKE_C_FLAGS_RELEASE})
+        CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE}")
 endif()
 
 # Set architecture alignment requirements
@@ -313,14 +315,7 @@ endif()
 
 # Set code coverage compiler flags
 if(WITH_CODE_COVERAGE)
-    if(CMAKE_C_COMPILER_ID MATCHES "Clang")
-        set(CMAKE_C_FLAGS "-O0 ${CMAKE_C_FLAGS} -coverage")
-    elseif(__GNUC__)
-        # Some versions of GCC don't support -coverage shorthand
-        set(CMAKE_C_FLAGS "-O0 ${CMAKE_C_FLAGS} -ftest-coverage -fprofile-arcs -fprofile-values")
-        set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -lgcov -fprofile-arcs")
-        set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -lgcov -fprofile-arcs")
-    endif()
+    add_code_coverage()
 endif()
 
 # Set native instruction set compiler flag
@@ -337,13 +332,16 @@ if(MSVC)
 endif(MSVC)
 
 #
-# Check for stndard/system includes
+# Check for standard/system includes
 #
 check_include_file(sys/types.h HAVE_SYS_TYPES_H)
 check_include_file(stdarg.h    HAVE_STDARG_H)
 check_include_file(stdint.h    HAVE_STDINT_H)
 check_include_file(stddef.h    HAVE_STDDEF_H)
 check_include_file(sys/sdt.h   HAVE_SYS_SDT_H)
+if(HAVE_SYS_SDT_H)
+    add_definitions(-DHAVE_SYS_SDT_H)
+endif()
 check_include_file(unistd.h    HAVE_UNISTD_H)
 
 #
@@ -392,12 +390,7 @@ endif()
 #
 # Check whether compiler supports -fno-semantic-interposition parameter
 #
-set(CMAKE_REQUIRED_FLAGS "-fno-semantic-interposition")
-check_c_source_compiles(
-    "int main() { return 0; }"
-    HAVE_NO_INTERPOSITION
-)
-set(CMAKE_REQUIRED_FLAGS)
+check_c_compiler_flag(-fno-semantic-interposition HAVE_NO_INTERPOSITION)
 
 #
 # Check if we can hide zlib internal symbols that are linked between separate source files using hidden
@@ -935,6 +928,10 @@ if(NOT DEFINED BUILD_SHARED_LIBS)
 else()
     add_library(zlib ${ZLIB_ALL_SRCS} ${ZLIB_DLL_SRCS})
 
+    if(NOT BUILD_SHARED_LIBS)
+        add_library(zlibstatic ALIAS zlib)
+    endif()
+
     set(ZLIB_INSTALL_LIBRARIES zlib)
 endif()
 
@@ -1089,9 +1086,6 @@ if(NOT SKIP_INSTALL_HEADERS AND NOT SKIP_INSTALL_ALL)
         DESTINATION "${INC_INSTALL_DIR}" RENAME zlib${SUFFIX}.h)
     install(FILES ${CMAKE_CURRENT_BINARY_DIR}/zconf${SUFFIX}.h
         DESTINATION "${INC_INSTALL_DIR}" RENAME zconf${SUFFIX}.h)
-endif()
-if(NOT SKIP_INSTALL_FILES AND NOT SKIP_INSTALL_ALL)
-    install(FILES zlib.3 DESTINATION "${MAN_INSTALL_DIR}/man3" RENAME zlib${SUFFIX}.3)
 endif()
 if(NOT SKIP_INSTALL_FILES AND NOT SKIP_INSTALL_ALL)
     install(FILES ${ZLIB_PC} DESTINATION "${PKGCONFIG_INSTALL_DIR}")
@@ -1296,6 +1290,9 @@ if(ZLIB_ENABLE_TESTS)
             -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/run-and-redirect.cmake)
     endforeach()
 
+    # Run tests targeting tools
+    include(cmake/test-tools.cmake)
+
     if(NOT WIN32 AND ZLIB_COMPAT)
         add_executable(CVE-2003-0107 test/CVE-2003-0107.c)
         target_link_libraries(CVE-2003-0107 zlib)
@@ -1365,6 +1362,18 @@ if(ZLIB_ENABLE_TESTS)
         "-DTARGET=${MINIGZIP_COMMAND}"
         -DINPUT=${CMAKE_CURRENT_SOURCE_DIR}/test/GH-751/test.txt
         -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/test-compress.cmake)
+
+    add_executable(deflate_quick_bi_valid test/deflate_quick_bi_valid.c)
+    configure_test_executable(deflate_quick_bi_valid)
+    target_link_libraries(deflate_quick_bi_valid zlib)
+    set(DEFLATE_QUICK_BI_VALID_COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:deflate_quick_bi_valid>)
+    add_test(NAME deflate_quick_bi_valid COMMAND ${DEFLATE_QUICK_BI_VALID_COMMAND})
+
+    add_executable(deflate_quick_block_open test/deflate_quick_block_open.c)
+    configure_test_executable(deflate_quick_block_open)
+    target_link_libraries(deflate_quick_block_open zlib)
+    set(DEFLATE_QUICK_BLOCK_OPEN_COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:deflate_quick_block_open>)
+    add_test(NAME deflate_quick_block_open COMMAND ${DEFLATE_QUICK_BLOCK_OPEN_COMMAND})
 endif()
 
 FEATURE_SUMMARY(WHAT ALL INCLUDE_QUIET_PACKAGES)
