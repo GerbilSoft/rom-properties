@@ -271,7 +271,7 @@ IF(USE_INTERNAL_LZ4)
 		SET(BUILD_SHARED_LIBS OFF)
 		SET(BUILD_STATIC_LIBS ON)
 	ENDIF()
-	ADD_SUBDIRECTORY(lz4/contrib/cmake_unofficial)
+	ADD_SUBDIRECTORY(lz4/build/cmake)
 	# NOTE: Cannot remove targets from all builds
 	# if they're being installed.
 	#SET_EXTLIB_PROPERTIES(lz4_shared)

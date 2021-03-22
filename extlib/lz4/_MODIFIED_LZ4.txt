@@ -1,9 +1,9 @@
-This copy of lz4-1.9.2 is a modified version of the original.
+This copy of lz4-1.9.3 is a modified version of the original.
 
-commit fdf2ef5809ca875c454510610764d9125ef2ebbd
-fixed test error
+commit d44371841a2f1728a3f36839fd4b7e872d0927d3
+Merge branch 'dev' into release
 
-Tag: v1.9.2
+Tag: v1.9.3
 
 The following changes have been made to the original:
 
@@ -18,5 +18,5 @@ The following changes have been made to the original:
 
 - MSVC builds: Debug DLLs now have a 'd' postfix.
 
-To obtain the original lz4-1.9.2, visit:
+To obtain the original lz4-1.9.3, visit:
 https://github.com/lz4/lz4

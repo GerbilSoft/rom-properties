@@ -13,7 +13,9 @@
 set(LZ4_TOP_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../..")
 
 # rom-properties: Always disabled.
+#option(LZ4_BUILD_CLI "Build lz4 program" ON)
 #option(LZ4_BUILD_LEGACY_LZ4C "Build lz4c progam with legacy argument support" ON)
+set(LZ4_BUILD_CLI OFF)
 set(LZ4_BUILD_LEGACY_LZ4C OFF)
 
 # Parse version information
@@ -118,24 +120,23 @@ set(LZ4_LIBRARIES_BUILT)
 if(BUILD_SHARED_LIBS)
   IF(WIN32)
     # rom-properties: Add the Win32 resource file.
-    SET(LZ4_RC_FILE "${LZ4_TOP_SOURCE_DIR}/visual/VS2017/liblz4-dll/liblz4-dll.rc")
+    SET(LZ4_RC_FILE "${LZ4_TOP_SOURCE_DIR}/build/VS2017/liblz4-dll/liblz4-dll.rc")
   ENDIF(WIN32)
   add_library(lz4_shared SHARED ${LZ4_SOURCES} ${LZ4_RC_FILE})
   set_target_properties(lz4_shared PROPERTIES
     OUTPUT_NAME lz4
     SOVERSION "${LZ4_VERSION_MAJOR}"
     VERSION "${LZ4_VERSION_STRING}")
-  list(APPEND LZ4_LIBRARIES_BUILT lz4_shared)
-  # rom-properties: Add the include directory, split debug, etc.
-  # Also set LZ4_DLL_EXPORT to ensure the import library is built,
-  # and LZ4_DLL_IMPORT to optimize DLL imports.
-  target_include_directories(lz4_shared PUBLIC "${LZ4_LIB_SOURCE_DIR}")
-  IF(WIN32)
+  if(MSVC)
+    # rom-properties: Add LZ4_DLL_IMPORT=1 in interface flags.
     target_compile_definitions(lz4_shared
 	PRIVATE -DLZ4_DLL_EXPORT=1
 	INTERFACE -DLZ4_DLL_IMPORT=1
 	)
-  ENDIF(WIN32)
+  endif()
+  list(APPEND LZ4_LIBRARIES_BUILT lz4_shared)
+  # rom-properties: Add the include directory, split debug, etc.
+  target_include_directories(lz4_shared PUBLIC "${LZ4_LIB_SOURCE_DIR}")
   DO_SPLIT_DEBUG(lz4_shared)
   SET_WINDOWS_SUBSYSTEM(lz4_shared WIN32)
 endif()
@@ -157,10 +158,12 @@ else()
 endif()
 
 # lz4
-set(LZ4_PROGRAMS_BUILT lz4cli)
-add_executable(lz4cli ${LZ4_CLI_SOURCES})
-set_target_properties(lz4cli PROPERTIES OUTPUT_NAME lz4)
-target_link_libraries(lz4cli ${LZ4_LINK_LIBRARY})
+if (LZ4_BUILD_CLI)
+  set(LZ4_PROGRAMS_BUILT lz4cli)
+  add_executable(lz4cli ${LZ4_CLI_SOURCES})
+  set_target_properties(lz4cli PROPERTIES OUTPUT_NAME lz4)
+  target_link_libraries(lz4cli ${LZ4_LINK_LIBRARY})
+endif()
 
 # lz4c
 if (LZ4_BUILD_LEGACY_LZ4C)
@@ -222,7 +225,7 @@ if(NOT LZ4_BUNDLED_MODE)
     DESTINATION "${CMAKE_INSTALL_LIBDIR}/pkgconfig")
 
   # install lz4cat and unlz4 symlinks on *nix
-  if(UNIX)
+  if(UNIX AND LZ4_BUILD_CLI)
     install(CODE "
       foreach(f lz4cat unlz4)
         set(dest \"\$ENV{DESTDIR}${CMAKE_INSTALL_FULL_BINDIR}/\${f}\")
@@ -238,7 +241,7 @@ if(NOT LZ4_BUNDLED_MODE)
       install(FILES "${CMAKE_CURRENT_BINARY_DIR}/${f}.1"
         DESTINATION "${CMAKE_INSTALL_MANDIR}/man1")
     endforeach()
-  endif(UNIX)
+  endif(UNIX AND LZ4_BUILD_CLI)
 endif(NOT LZ4_BUNDLED_MODE)
 
 # rom-properties: Install the LZ4 shared library in the package.
