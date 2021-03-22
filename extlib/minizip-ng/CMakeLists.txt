@@ -5,7 +5,7 @@
 #                         schmieder.matthias@gmail.com
 #***************************************************************************
 
-cmake_minimum_required(VERSION 3.0.2)
+#cmake_minimum_required(VERSION 3.13)
 
 message(STATUS "Using CMake version ${CMAKE_VERSION}")
 
@@ -76,7 +76,7 @@ endif()
 enable_language(C)
 
 # Library version
-set(VERSION "3.0.0")
+set(VERSION "3.0.1")
 
 # API version
 set(SOVERSION "3.0")
@@ -101,6 +101,7 @@ set(MINIZIP_INC)
 set(MINIZIP_LIB)
 set(MINIZIP_LBD)
 set(MINIZIP_DEP)
+set(MINIZIP_DEP_PKG)
 set(MINIZIP_LFG)
 
 # Initial source files
@@ -255,6 +256,7 @@ if(MZ_ZLIB)
     endif()
 
     if(MZ_ZLIB)
+        list(APPEND MINIZIP_DEP_PKG ZLIB)
         list(APPEND MINIZIP_DEF -DHAVE_ZLIB)
         if(ZLIB_COMPAT)
             list(APPEND MINIZIP_DEF -DZLIB_COMPAT)
@@ -309,6 +311,7 @@ if(MZ_BZIP2)
     endif()
 
     if(MZ_BZIP2)
+        list(APPEND MINIZIP_DEP_PKG BZip2)
         list(APPEND MINIZIP_DEF -DHAVE_BZIP2)
         list(APPEND MINIZIP_SRC mz_strm_bzip.c)
         list(APPEND MINIZIP_HDR mz_strm_bzip.h)
@@ -351,6 +354,7 @@ if(MZ_LZMA)
     endif()
 
     if(MZ_LZMA)
+        list(APPEND MINIZIP_DEP_PKG LibLZMA)
         list(APPEND MINIZIP_DEF -DHAVE_LZMA -DLZMA_API_STATIC)
         list(APPEND MINIZIP_SRC mz_strm_lzma.c)
         list(APPEND MINIZIP_HDR mz_strm_lzma.h)
@@ -366,7 +370,13 @@ if(MZ_ZSTD)
         endif()
         if(NOT ZSTD_FOUND)
             find_package(ZSTD QUIET)
-            set(ZSTD_VERSION ${ZSTD_VERSION_STRING})
+            if(ZSTD_FOUND)
+                if(TARGET zstd::libzstd_static)
+                    list(APPEND ZSTD_LIBRARIES zstd::libzstd_static)
+                else()
+                    list(APPEND ZSTD_LIBRARIES zstd::libzstd_shared)
+                endif()
+            endif()
         endif()
     endif()
 
@@ -390,7 +400,6 @@ if(MZ_ZSTD)
         else()
             list(APPEND MINIZIP_DEP libzstd_shared)
         endif()
-        list(APPEND MINIZIP_LIB ${ZSTD_TARGET})
     else()
         message(STATUS "ZSTD library not found")
 
@@ -398,6 +407,7 @@ if(MZ_ZSTD)
     endif()
 
     if(MZ_ZSTD)
+        list(APPEND MINIZIP_DEP_PKG zstd)
         list(APPEND MINIZIP_DEF -DHAVE_ZSTD)
         list(APPEND MINIZIP_SRC mz_strm_zstd.c)
         list(APPEND MINIZIP_HDR mz_strm_zstd.h)
@@ -446,7 +456,9 @@ if(WIN32)
     list(APPEND MINIZIP_SRC mz_os_win32.c mz_strm_os_win32.c)
 
     if(MZ_PKCRYPT OR MZ_WZAES OR MZ_SIGNING)
-        if(NOT MZ_OPENSSL)
+        if(MZ_OPENSSL)
+            list(APPEND MINIZIP_DEP_PKG OpenSSL)
+        else()
             message(STATUS "Using CryptoAPI")
 
             list(APPEND MINIZIP_SRC mz_crypt_win32.c)
@@ -464,7 +476,9 @@ if(UNIX)
     list(APPEND MINIZIP_SRC mz_os_posix.c mz_strm_os_posix.c)
 
     if(MZ_PKCRYPT OR MZ_WZAES OR MZ_SIGNING)
-        if(NOT MZ_OPENSSL)
+        if(MZ_OPENSSL)
+            list(APPEND MINIZIP_DEP_PKG OpenSSL)
+        else()
             if(APPLE)
                 message(STATUS "Using CoreFoundation Framework")
                 find_library(COREFOUNDATION_LIBRARY CoreFoundation)
@@ -577,6 +591,7 @@ if(UNIX)
 
         list(APPEND MINIZIP_DEF -DHAVE_ICONV)
         list(APPEND MINIZIP_INC ${Iconv_INCLUDE_DIRS})
+        list(APPEND MINIZIP_DEP_PKG Iconv)
         if(NOT Iconv_IS_BUILT_IN)
             list(APPEND MINIZIP_LIB ${Iconv_LIBRARIES})
             list(APPEND MINIZIP_LBD ${Iconv_LIBRARY_DIRS})
@@ -727,12 +742,12 @@ target_link_libraries(${PROJECT_NAME} PUBLIC ${MINIZIP_LIB} ${MINIZIP_DEP})
 #target_link_directories(${PROJECT_NAME} PUBLIC ${MINIZIP_LBD})
 target_compile_definitions(${PROJECT_NAME} PRIVATE ${STDLIB_DEF} ${MINIZIP_DEF})
 target_include_directories(${PROJECT_NAME} PRIVATE ${MINIZIP_INC})
+target_include_directories(${PROJECT_NAME} PUBLIC
+    $<INSTALL_INTERFACE:${INSTALL_INC_DIR}>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
 
-#target_include_directories(${PROJECT_NAME} PUBLIC
-#    $<INSTALL_INTERFACE:${INSTALL_INC_DIR}>
-#    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
-target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-target_compile_definitions(${PROJECT_NAME} PUBLIC ZLIB_CONST)
+# Create minizip alias
+add_library(MINIZIP::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
 
 # Install files
 if(NOT SKIP_INSTALL_LIBRARIES AND NOT SKIP_INSTALL_ALL)
@@ -748,19 +763,27 @@ if(NOT SKIP_INSTALL_LIBRARIES AND NOT SKIP_INSTALL_ALL)
 
     # Create and install CMake package config version file to allow find_package()
     include(CMakePackageConfigHelpers)
-    write_basic_package_version_file(${CMAKE_CURRENT_BINARY_DIR}/minizip-config-version.cmake
+    write_basic_package_version_file(${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}-config-version.cmake
         COMPATIBILITY SameMajorVersion)
 
-    file(WRITE minizip-config.cmake.in "@PACKAGE_INIT@")
+    set(MINIZIP_CONFIG_CONTENT "@PACKAGE_INIT@\n")
+    if(MINIZIP_DEP_PKG)
+        string(APPEND MINIZIP_CONFIG_CONTENT "include(CMakeFindDependencyMacro)\n")
+        foreach(PKG_NAME ${MINIZIP_DEP_PKG})
+            string(APPEND MINIZIP_CONFIG_CONTENT "find_dependency(${PKG_NAME} REQUIRED)\n")
+        endforeach()
+    endif()
+    string(APPEND MINIZIP_CONFIG_CONTENT "include(\"\${CMAKE_CURRENT_LIST_DIR}/${PROJECT_NAME}.cmake\")")
+    file(WRITE minizip-config.cmake.in ${MINIZIP_CONFIG_CONTENT})
 
     # Create config for find_package()
-    configure_package_config_file(minizip-config.cmake.in minizip-config.cmake
+    configure_package_config_file(minizip-config.cmake.in ${PROJECT_NAME}-config.cmake
         INSTALL_DESTINATION "${INSTALL_CMAKE_DIR}")
 
     file(REMOVE minizip-config.cmake.in)
 
-    install(FILES ${CMAKE_CURRENT_BINARY_DIR}/minizip-config-version.cmake
-                  ${CMAKE_CURRENT_BINARY_DIR}/minizip-config.cmake
+    install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}-config-version.cmake
+                  ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}-config.cmake
             DESTINATION "${INSTALL_CMAKE_DIR}")
 endif()
 if(NOT SKIP_INSTALL_HDR AND NOT SKIP_INSTALL_ALL)
