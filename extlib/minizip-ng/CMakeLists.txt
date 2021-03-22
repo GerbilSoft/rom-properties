@@ -724,7 +724,7 @@ if(MZ_LZMA)
 endif()
 
 target_link_libraries(${PROJECT_NAME} PUBLIC ${MINIZIP_LIB} ${MINIZIP_DEP})
-target_link_directories(${PROJECT_NAME} PUBLIC ${MINIZIP_LBD})
+#target_link_directories(${PROJECT_NAME} PUBLIC ${MINIZIP_LBD})
 target_compile_definitions(${PROJECT_NAME} PRIVATE ${STDLIB_DEF} ${MINIZIP_DEF})
 target_include_directories(${PROJECT_NAME} PRIVATE ${MINIZIP_INC})
 
