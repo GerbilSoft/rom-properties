@@ -1,9 +1,9 @@
-This copy of zlib-ng 2.0.0-RC2 is a modified version of the original.
+This copy of zlib-ng 2.0.1 is a modified version of the original.
 
-commit 7606b9f39a2c7701a30d06a786fb2a99334b1feb
-Version 2.0.0 Release Candidate 2
+commit b7af2db53f02e85e5315981e7ad0cef26e37e042
+Version 2.0.1 - Hotfix
 
-Tag: v2.0.0-RC2
+Tag: 2.0.1
 
 The following changes have been made to the original:
 
