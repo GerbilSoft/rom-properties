@@ -82,7 +82,7 @@ ELSEIF(WIN32)
 	SET(DIR_INSTALL_MIME "mime")
 	SET(DIR_INSTALL_DOC "doc")
 	SET(DIR_INSTALL_DOC_ROOT ".")
-	SET(DIR_INSTALL_SHARE "share")	# NOTE: Not used on Windows.
+	SET(DIR_INSTALL_SHARE ".")	# NOTE: Not used on Windows.
 	SET(DIR_INSTALL_CACHE "cache")	# NOTE: Not used on Windows.
 	SET(DIR_INSTALL_EXE_DEBUG "debug")
 	# Installing debug symbols for DLLs in the
