@@ -1,9 +1,9 @@
-This copy of inih-r52 is a modified version of the original.
+This copy of inih-r53 is a modified version of the original.
 
-commit 1e80a47dffbda813604f0913e2ad68c7054c14e4
-Add INI_CUSTOM_ALLOCATOR to allow using a custom memory allocator (#119)
+commit cb55f57d87ae840bd0f65dbe6bd22fa021a873a7
+meson: add static compile args to inih_dep (#126)
 
-Tag: r52
+Tag: r53
 
 The following changes have been made to the original:
 
