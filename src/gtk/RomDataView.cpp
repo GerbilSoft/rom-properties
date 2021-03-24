@@ -1728,12 +1728,25 @@ rom_data_view_create_options_button(RomDataView *page)
 		parent = gtk_widget_get_parent(parent);
 	}
 
-	// On GNOME, the first parent is GtkNotebook.
-	assert(GTK_IS_NOTEBOOK(parent));
-	if (!GTK_IS_NOTEBOOK(parent))
+	// The parent widget can be one of two types:
+	// - nautilus-3.x: GtkNotebook
+	// - caja-3.x: GtkNotebook
+	// - nemo-3.x: GtkStack
+#ifndef GTK_IS_STACK
+#  define GTK_IS_STACK(x) 1
+#endif
+	assert(GTK_IS_NOTEBOOK(parent) || GTK_IS_STACK(parent));
+	if (!GTK_IS_NOTEBOOK(parent) && !GTK_IS_STACK(parent))
 		return;
 
-	// Next: GtkBox (or GtkVBox for GTK+ 2.x).
+	// Nemo only: We might have a GtkFrame between the GtkStack and GtkBox.
+	GtkWidget *fparent = gtk_widget_get_parent(parent);
+	if (GTK_IS_FRAME(fparent))
+		parent = fparent;
+
+	// Next: Container widget.
+	// - GTK+ 2.x: GtkVBox
+	// - GTK+ 3.x: GtkBox
 	parent = gtk_widget_get_parent(parent);
 #if GTK_CHECK_VERSION(3,0,0)
 	assert(GTK_IS_BOX(parent));
