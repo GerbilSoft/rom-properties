@@ -660,7 +660,7 @@ options_menu_button_update_op(OptionsMenuButton *widget,
 	if (id < 0 || id >= g_menu_model_get_n_items(G_MENU_MODEL(widget->menuRomOps)))
 		return;
 
-	char buf[256];
+	char buf[128];
 	snprintf(buf, sizeof(buf), "rp-OptionsMenuButton-%p.%d", widget, id);
 	g_menu_remove(widget->menuRomOps, id);
 
