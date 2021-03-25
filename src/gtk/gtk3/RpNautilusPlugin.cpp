@@ -40,97 +40,48 @@ rp_nautilus_register_types(GTypeModule *module)
 
 /** Per-frontend initialization functions. **/
 
-extern "C" G_MODULE_EXPORT void
-nautilus_module_initialize(GTypeModule *module)
-{
-	CHECK_UID();
-
-	assert(libextension_so == NULL);
-	if (libextension_so != NULL) {
-		// TODO: Reference count?
-		g_critical("*** " G_LOG_DOMAIN ": nautilus_module_initialize() called twice?");
-		return;
-	}
-
-	// dlopen() libnautilus-extension.so.
-	libextension_so = dlopen("libnautilus-extension.so", RTLD_LAZY | RTLD_LOCAL);
-	if (!libextension_so) {
-		g_critical("*** " G_LOG_DOMAIN ": dlopen() failed: %s\n", dlerror());
-		return;
-	}
-
-	// Load symbols.
-	DLSYM(nautilus_file_info_get_type,		nautilus_file_info_get_type);
-	DLSYM(nautilus_file_info_get_uri,		nautilus_file_info_get_uri);
-	DLSYM(nautilus_property_page_provider_get_type,	nautilus_property_page_provider_get_type);
-	DLSYM(nautilus_property_page_new,		nautilus_property_page_new);
-
-	// Symbols loaded. Register our types.
-	rp_nautilus_register_types(module);
-
 #ifdef ENABLE_ACHIEVEMENTS
-	// Register AchGDBus.
-	AchGDBus::instance();
+#  define REGISTER_ACHDBUS() AchGDBus::instance()
+#else /* !ENABLE_ACHIEVEMENTS */
+#  define REGISTER_ACHDBUS() do { } while (0)
 #endif /* ENABLE_ACHIEVEMENTS */
+
+#define NAUTILUS_MODULE_INITIALIZE_FUNC(prefix) \
+extern "C" G_MODULE_EXPORT void \
+prefix##_module_initialize(GTypeModule *module) \
+{ \
+	CHECK_UID(); \
+\
+	assert(libextension_so == NULL); \
+	if (libextension_so != NULL) { \
+		/* TODO: Reference count? */ \
+		g_critical("*** " G_LOG_DOMAIN ": " #prefix "_module_initialize() called twice?"); \
+		return; \
+	} \
+\
+	/* dlopen() the extension library. */ \
+	libextension_so = dlopen("lib" #prefix "-extension.so", RTLD_LAZY | RTLD_LOCAL); \
+	if (!libextension_so) { \
+		g_critical("*** " G_LOG_DOMAIN ": dlopen() failed: %s\n", dlerror()); \
+		return; \
+	} \
+\
+	/* Load symbols. */ \
+	DLSYM(nautilus_file_info_get_type,		prefix##_file_info_get_type); \
+	DLSYM(nautilus_file_info_get_uri,		prefix##_file_info_get_uri); \
+	DLSYM(nautilus_property_page_provider_get_type,	prefix##_property_page_provider_get_type); \
+	DLSYM(nautilus_property_page_new,		prefix##_property_page_new); \
+\
+	/* Symbols loaded. Register our types. */ \
+	rp_nautilus_register_types(module); \
+\
+	/* Register AchGDBus if it's available. */ \
+	REGISTER_ACHDBUS(); \
 }
 
-extern "C" G_MODULE_EXPORT void
-caja_module_initialize(GTypeModule *module)
-{
-	CHECK_UID();
-
-	assert(libextension_so == NULL);
-	if (libextension_so != NULL) {
-		// TODO: Reference count?
-		g_critical("*** " G_LOG_DOMAIN ": caja_module_initialize() called twice?");
-		return;
-	}
-
-	// dlopen() libcaja-extension.so.
-	libextension_so = dlopen("libcaja-extension.so", RTLD_LAZY | RTLD_LOCAL);
-	if (!libextension_so) {
-		g_critical("*** " G_LOG_DOMAIN ": dlopen() failed: %s\n", dlerror());
-		return;
-	}
-
-	// Load symbols.
-	DLSYM(nautilus_file_info_get_type,		caja_file_info_get_type);
-	DLSYM(nautilus_file_info_get_uri,		caja_file_info_get_uri);
-	DLSYM(nautilus_property_page_provider_get_type,	caja_property_page_provider_get_type);
-	DLSYM(nautilus_property_page_new,		caja_property_page_new);
-
-	// Symbols loaded. Register our types.
-	rp_nautilus_register_types(module);
-}
-
-extern "C" G_MODULE_EXPORT void
-nemo_module_initialize(GTypeModule *module)
-{
-	CHECK_UID();
-
-	assert(libextension_so == NULL);
-	if (libextension_so != NULL) {
-		// TODO: Reference count?
-		g_critical("*** " G_LOG_DOMAIN ": nemo_module_initialize() called twice?");
-		return;
-	}
-
-	// dlopen() libnemo-extension.so.
-	libextension_so = dlopen("libnemo-extension.so", RTLD_LAZY | RTLD_LOCAL);
-	if (!libextension_so) {
-		g_critical("*** " G_LOG_DOMAIN ": dlopen() failed: %s\n", dlerror());
-		return;
-	}
-
-	// Load symbols.
-	DLSYM(nautilus_file_info_get_type,		nemo_file_info_get_type);
-	DLSYM(nautilus_file_info_get_uri,		nemo_file_info_get_uri);
-	DLSYM(nautilus_property_page_provider_get_type,	nemo_property_page_provider_get_type);
-	DLSYM(nautilus_property_page_new,		nemo_property_page_new);
-
-	// Symbols loaded. Register our types.
-	rp_nautilus_register_types(module);
-}
+NAUTILUS_MODULE_INITIALIZE_FUNC(nautilus)
+NAUTILUS_MODULE_INITIALIZE_FUNC(caja)
+NAUTILUS_MODULE_INITIALIZE_FUNC(nemo)
 
 /** Common shutdown and list_types functions. **/
 
