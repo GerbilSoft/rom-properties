@@ -22,6 +22,7 @@
 #include "DragImage.hpp"
 #include "MessageWidget.hpp"
 #include "LanguageComboBox.hpp"
+#include "OptionsMenuButton.hpp"
 
 // librpbase, librpfile, librptexture
 #include "librpbase/TextOut.hpp"
@@ -81,11 +82,6 @@ typedef enum {
 	PROP_LAST
 } RomDataViewPropID;
 
-// Use GtkButton or GtkMenuButton?
-#if GTK_CHECK_VERSION(3,6,0)
-#  define USE_GTK_MENU_BUTTON 1
-#endif
-
 // Uncomment to enable the automatic timeout for the ROM Operations MessageWidget.
 //#define AUTO_TIMEOUT_MESSAGEWIDGET 1
 
@@ -120,11 +116,8 @@ static void	tree_view_realize_signal_handler    (GtkTreeView	*treeView,
 static void	cboLanguage_lc_changed_signal_handler(GtkComboBox	*widget,
 						     uint32_t		 lc,
 						     gpointer		 user_data);
-#ifndef USE_GTK_MENU_BUTTON
-static gboolean	btnOptions_clicked_signal_handler   (GtkButton		*button,
-						     GdkEvent	 	*event);
-#endif /* !USE_GTK_MENU_BUTTON */
-static void	menuOptions_triggered_signal_handler(GtkMenuItem	*menuItem,
+static void	btnOptions_triggered_signal_handler (OptionsMenuButton	*menuButton,
+						     gint		 id,
 						     gpointer		 user_data);
 
 #if GTK_CHECK_VERSION(3,0,0)
@@ -148,13 +141,6 @@ struct _RomDataViewClass {
 // Multi-language stuff.
 typedef std::pair<GtkWidget*, const RomFields::Field*> Data_StringMulti_t;
 
-enum StandardOptionID {
-	OPTION_EXPORT_TEXT = -1,
-	OPTION_EXPORT_JSON = -2,
-	OPTION_COPY_TEXT = -3,
-	OPTION_COPY_JSON = -4,
-};
-
 struct Data_ListDataMulti_t {
 	GtkListStore *listStore;
 	GtkTreeView *treeView;
@@ -177,9 +163,8 @@ struct _RomDataView {
 	gchar		*uri;		// URI (GVfs)
 	bool		hasCheckedAchievements;
 
-	// "Options" button.
+	// "Options" button. (OptionsMenuButton)
 	GtkWidget	*btnOptions;
-	GtkWidget	*menuOptions;
 	gchar		*prevExportDir;
 
 	// Header row.
@@ -435,14 +420,6 @@ rom_data_view_dispose(GObject *object)
 		g_source_remove(page->changed_idle);
 		page->changed_idle = 0;
 	}
-
-#ifndef USE_GTK_MENU_BUTTON
-	// Delete the "Options" button menu.
-	if (page->menuOptions) {
-		gtk_widget_destroy(page->menuOptions);
-		page->menuOptions = nullptr;
-	}
-#endif /* !USE_GTK_MENU_BUTTON */
 
 	// Delete the icon frames and tabs.
 	rom_data_view_delete_tabs(page);
@@ -1702,18 +1679,6 @@ rom_data_view_update_field(RomDataView *page, int fieldIdx)
 	return ret;
 }
 
-static string
-convert_accel_to_gtk(const char *str)
-{
-	// GTK+ uses '_' for accelerators, not '&'.
-	string s_ret = str;
-	size_t accel_pos = s_ret.find('&');
-	if (accel_pos != string::npos) {
-		s_ret[accel_pos] = '_';
-	}
-	return s_ret;
-}
-
 static void
 rom_data_view_create_options_button(RomDataView *page)
 {
@@ -1768,34 +1733,9 @@ rom_data_view_create_options_button(RomDataView *page)
 	if (!GTK_IS_DIALOG(parent))
 		return;
 
-	string s_title = convert_accel_to_gtk(C_("RomDataView", "Op&tions"));
-
-	// Add an "Options" button.
-	GtkWidget *const lblOptions = gtk_label_new(nullptr);
-	gtk_label_set_markup_with_mnemonic(GTK_LABEL(lblOptions), s_title.c_str());
-	gtk_widget_show(lblOptions);
-	GtkWidget *const imgOptions = gtk_image_new_from_icon_name("pan-up-symbolic", GTK_ICON_SIZE_BUTTON);
-	gtk_widget_show(imgOptions);
-#if GTK_CHECK_VERSION(3,0,0)
-	GtkWidget *const hboxOptions = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 4);
-#else /* !GTK_CHECK_VERSION(3,0,0) */
-	GtkWidget *const hboxOptions = gtk_hbox_new(false, 4);
-#endif /* GTK_CHECK_VERSION(3,0,0) */
-	gtk_widget_show(hboxOptions);
-	gtk_box_pack_start(GTK_BOX(hboxOptions), lblOptions, false, false, 0);
-	gtk_box_pack_start(GTK_BOX(hboxOptions), imgOptions, false, false, 0);
-#ifdef USE_GTK_MENU_BUTTON
-	// GTK+ 3.6 has GtkMenuButton.
-	// NOTE: GTK+ 4.x's GtkMenuButton supports both label and image.
-	// GTK+ 3.x's only supports image by default, so we'll have to
-	// build a GtkBox with both label and image.
-	page->btnOptions = gtk_menu_button_new();
-	gtk_menu_button_set_direction(GTK_MENU_BUTTON(page->btnOptions), GTK_ARROW_UP);
-#else /* !USE_GTK_MENU_BUTTON */
-	// Use plain old GtkButton.
-	page->btnOptions = gtk_button_new();
-#endif /* USE_GTK_MENU_BUTTON */
-	gtk_container_add(GTK_CONTAINER(page->btnOptions), hboxOptions);
+	// Create the OptionsMenuButton.
+	page->btnOptions = options_menu_button_new();
+	options_menu_button_set_direction(OPTIONS_MENU_BUTTON(page->btnOptions), GTK_ARROW_UP);
 
 	gtk_dialog_add_action_widget(GTK_DIALOG(parent), page->btnOptions, GTK_RESPONSE_NONE);
 	gtk_widget_hide(page->btnOptions);
@@ -1809,15 +1749,6 @@ rom_data_view_create_options_button(RomDataView *page)
 		signal_id, 0, nullptr, 0, 0);
 	g_signal_handler_disconnect(page->btnOptions, handler_id);
 
-#ifndef USE_GTK_MENU_BUTTON
-	// Connect the "event" signal for the GtkButton.
-	// NOTE: We need to pass the event details. Otherwise, we'll
-	// end up with the menu getting "stuck" to the mouse.
-	// Reference: https://developer.gnome.org/gtk-tutorial/stable/x1577.html
-	g_object_set_data(G_OBJECT(page->btnOptions), "RomDataView", page);
-	g_signal_connect(page->btnOptions, "event", G_CALLBACK(btnOptions_clicked_signal_handler), page);
-#endif /* !USE_GTK_MENU_BUTTON */
-
 #if GTK_CHECK_VERSION(3,12,0)
 	GtkWidget *const headerBar = gtk_dialog_get_header_bar(GTK_DIALOG(parent));
 	if (headerBar) {
@@ -1825,8 +1756,7 @@ rom_data_view_create_options_button(RomDataView *page)
 		// No reordering is necessary.
 
 		// Change the arrow to point down instead of up.
-		gtk_image_set_from_icon_name(GTK_IMAGE(imgOptions), "pan-down-symbolic", GTK_ICON_SIZE_BUTTON);
-		gtk_menu_button_set_direction(GTK_MENU_BUTTON(page->btnOptions), GTK_ARROW_DOWN);
+		options_menu_button_set_direction(OPTIONS_MENU_BUTTON(page->btnOptions), GTK_ARROW_DOWN);
 	} else
 #endif /* GTK_CHECK_VERSION(3,12,0) */
 	{
@@ -1842,56 +1772,11 @@ rom_data_view_create_options_button(RomDataView *page)
 		}
 	}
 
-	// Create the menu.
-	// TODO: Switch to GMenu? (glib-2.32)
-	page->menuOptions = gtk_menu_new();
-#ifdef USE_GTK_MENU_BUTTON
-	// NOTE: GtkMenuButton takes ownership of the menu.
-	gtk_menu_button_set_popup(GTK_MENU_BUTTON(page->btnOptions), page->menuOptions);
-#endif /* USE_GTK_MENU_BUTTON */
+	// Connect the OptionsMenuButton's triggered(int) signal.
+	g_signal_connect(page->btnOptions, "triggered", G_CALLBACK(btnOptions_triggered_signal_handler), page);
 
-	/** Standard actions. **/
-	static const struct {
-		const char *desc;
-		int id;
-	} stdacts[] = {
-		{NOP_C_("RomDataView|Options", "Export to Text..."),	OPTION_EXPORT_TEXT},
-		{NOP_C_("RomDataView|Options", "Export to JSON..."),	OPTION_EXPORT_JSON},
-		{NOP_C_("RomDataView|Options", "Copy as Text"),		OPTION_COPY_TEXT},
-		{NOP_C_("RomDataView|Options", "Copy as JSON"),		OPTION_COPY_JSON},
-		{nullptr, 0}
-	};
-
-	for (const auto *p = stdacts; p->desc != nullptr; p++) {
-		GtkWidget *const menuItem = gtk_menu_item_new_with_label(
-			dpgettext_expr(RP_I18N_DOMAIN, "RomDataView|Options", p->desc));
-		g_object_set_data(G_OBJECT(menuItem), "menuOptions_id", GINT_TO_POINTER(p->id));
-		g_signal_connect(menuItem, "activate", G_CALLBACK(menuOptions_triggered_signal_handler), page);
-		gtk_widget_show(menuItem);
-		gtk_menu_shell_append(GTK_MENU_SHELL(page->menuOptions), menuItem);
-	}
-
-	/** ROM operations. **/
-	const vector<RomData::RomOp> ops = page->romData->romOps();
-	if (!ops.empty()) {
-		// FIXME: Not showing up properly with the KDE Breeze theme,
-		// though other separators *do* show up...
-		GtkWidget *menuItem = gtk_separator_menu_item_new();
-		gtk_widget_show(menuItem);
-		gtk_menu_shell_append(GTK_MENU_SHELL(page->menuOptions), menuItem);
-
-		int i = 0;
-		const auto ops_end = ops.cend();
-		for (auto iter = ops.cbegin(); iter != ops_end; ++iter, i++) {
-			const string desc = convert_accel_to_gtk(iter->desc);
-			menuItem = gtk_menu_item_new_with_mnemonic(desc.c_str());
-			gtk_widget_set_sensitive(menuItem, !!(iter->flags & RomData::RomOp::ROF_ENABLED));
-			g_object_set_data(G_OBJECT(menuItem), "menuOptions_id", GINT_TO_POINTER(i));
-			g_signal_connect(menuItem, "activate", G_CALLBACK(menuOptions_triggered_signal_handler), page);
-			gtk_widget_show(menuItem);
-			gtk_menu_shell_append(GTK_MENU_SHELL(page->menuOptions), menuItem);
-		}
-	}
+	// Initialize the menu options.
+	options_menu_button_reinit_menu(OPTIONS_MENU_BUTTON(page->btnOptions), page->romData);
 }
 
 static void
@@ -2465,93 +2350,19 @@ cboLanguage_lc_changed_signal_handler(GtkComboBox *widget,
 	rom_data_view_update_multi(ROM_DATA_VIEW(user_data), lc);
 }
 
-#ifndef USE_GTK_MENU_BUTTON
-/**
- * Menu positioning function.
- * @param menu		[in] GtkMenu*
- * @param x		[out] X position
- * @param y		[out] Y position
- * @param push_in
- * @param user_data	[in] GtkButton* the menu is attached to.
- */
-static void
-btnOptions_menu_pos_func(GtkMenu *menu, gint *x, gint *y, gboolean *push_in, gpointer user_data)
-{
-	GtkWidget *const button = (GtkWidget*)GTK_BUTTON(user_data);
-#if GTK_CHECK_VERSION(2,14,0)
-	GdkWindow *const window = gtk_widget_get_window(button);
-#else /* !GTK_CHECK_VERSION(2,14,0) */
-	GdkWindow *const window = button->window;
-#endif /* GTK_CHECK_VERSION(2,14,0) */
-
-	GtkAllocation button_alloc, menu_alloc;
-	gtk_widget_get_allocation(GTK_WIDGET(button), &button_alloc);
-	gtk_widget_get_allocation(GTK_WIDGET(menu), &menu_alloc);
-	gdk_window_get_origin(window, x, y);
-	*x += button_alloc.x;
-	*y += button_alloc.y - menu_alloc.height;
-
-	*push_in = false;
-}
-
-/**
- * The "Options" button was pressed. (Non-GtkMenuButton version)
- * @param button	GtkButton
- * @param event		GdkEvent
- */
-static gboolean
-btnOptions_clicked_signal_handler(GtkButton *button,
-				  GdkEvent  *event)
-{
-	if (event->type == GDK_BUTTON_PRESS) {
-		// Reference: https://developer.gnome.org/gtk-tutorial/stable/x1577.html
-		RomDataView *const page = ROM_DATA_VIEW(g_object_get_data(G_OBJECT(button), "RomDataView"));
-		assert(page->menuOptions != nullptr);
-		if (!page->menuOptions) {
-			// No menu...
-			return FALSE;
-		}
-
-		GtkMenuPositionFunc menuPositionFunc;
-#if GTK_CHECK_VERSION(3,12,0)
-		// If we're using a GtkHeaderBar, don't use a custom menu positioning function.
-		if (gtk_dialog_get_header_bar(GTK_DIALOG(gtk_widget_get_toplevel(GTK_WIDGET(page)))) != nullptr) {
-			menuPositionFunc = nullptr;
-		} else
-#endif /* GTK_CHECK_VERSION(3,12,0) */
-		{
-			menuPositionFunc = btnOptions_menu_pos_func;
-		}
-
-		// Pop up the menu.
-		// FIXME: Improve button appearance so it's more pushed-in.
-		GdkEventButton *const bevent = reinterpret_cast<GdkEventButton*>(event);
-		gtk_menu_popup(GTK_MENU(page->menuOptions),
-			nullptr, nullptr,
-			menuPositionFunc, button,
-			bevent->button, bevent->time);
-
-		// Tell the caller that we handled the event.
-		return TRUE;
-	}
-
-	// Tell the caller that we did NOT handle the event.
-	return FALSE;
-}
-#endif /* !USE_GTK_MENU_BUTTON */
-
 /**
  * An "Options" menu action was triggered.
- * @param menuItem	Menu item (Get the "menuOptions_id" data.)
+ * @param menuButton	OptionsMenuButton
+ * @param id		Menu options ID
  * @param user_data	RomDataView
  */
 static void
-menuOptions_triggered_signal_handler(GtkMenuItem *menuItem,
-				     gpointer	  user_data)
+btnOptions_triggered_signal_handler(OptionsMenuButton *menuButton,
+				    gint id,
+				    gpointer user_data)
 {
+	RP_UNUSED(menuButton);
 	RomDataView *const page = ROM_DATA_VIEW(user_data);
-	const gint id = (gboolean)GPOINTER_TO_INT(
-		g_object_get_data(G_OBJECT(menuItem), "menuOptions_id"));
 
 	if (id < 0) {
 		// Export/copy to text or JSON.
@@ -2779,10 +2590,7 @@ menuOptions_triggered_signal_handler(GtkMenuItem *menuItem,
 		ops = page->romData->romOps();
 		assert(id < (int)ops.size());
 		if (id < (int)ops.size()) {
-			const RomData::RomOp &op = ops[id];
-			const string desc = convert_accel_to_gtk(op.desc);
-			gtk_menu_item_set_label(menuItem, desc.c_str());
-			gtk_widget_set_sensitive(GTK_WIDGET(menuItem), !!(op.flags & RomData::RomOp::ROF_ENABLED));
+			options_menu_button_update_op(OPTIONS_MENU_BUTTON(page->btnOptions), id, &ops[id]);
 		}
 
 		messageType = GTK_MESSAGE_INFO;

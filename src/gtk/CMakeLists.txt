@@ -50,6 +50,7 @@ SET(rom-properties-gtk_SRCS
 	RpGtk.cpp
 	sort_funcs.c
 	LanguageComboBox.cpp
+	OptionsMenuButton.cpp
 	)
 SET(rom-properties-gtk_H
 	RomDataView.hpp
@@ -62,6 +63,7 @@ SET(rom-properties-gtk_H
 	RpGtk.hpp
 	sort_funcs.h
 	LanguageComboBox.hpp
+	OptionsMenuButton.hpp
 	)
 
 # GTK2 sources and headers.
