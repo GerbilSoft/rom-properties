@@ -30,9 +30,12 @@ typedef GtkButton super;
 #endif
 
 // Use GMenuModel?
-#if 0 //GTK_CHECK_VERSION(3,4,0)
+// - glib-2.32: Adds GMenuModel.
+// - GTK+ 3.4: Supports GMenuModel.
+// - GTK+ 3.6: gtk_widget_insert_action_group()
+#if GTK_CHECK_VERSION(3,6,0)
 #  define USE_G_MENU_MODEL 1
-#endif /* GTK_CHECK_VERSION(3,4,0) */
+#endif /* GTK_CHECK_VERSION(3,6,0) */
 
 /* Property identifiers */
 typedef enum {
@@ -66,8 +69,14 @@ static gboolean	btnOptions_event_signal_handler (GtkButton	*button,
 						 gpointer	user_data);
 #endif /* !USE_GTK_MENU_BUTTON */
 
-static void    	menuOptions_triggered_signal_handler(GtkMenuItem	*menuItem,
+#ifdef USE_G_MENU_MODEL
+static void	action_triggered_signal_handler     (GSimpleAction	*action,
+						     GVariant		*parameter,
 						     gpointer		 user_data);
+#else
+static void	menuOptions_triggered_signal_handler(GtkMenuItem	*menuItem,
+						     gpointer		 user_data);
+#endif /* USE_G_MENU_MODEL */
 
 // OptionsMenuButton class.
 struct _OptionsMenuButtonClass {
@@ -83,8 +92,13 @@ struct _OptionsMenuButton {
 
 #ifdef USE_G_MENU_MODEL
 	GMenu *menuModel;
+	// Map of GActions.
+	// - Key: RomOp ID
+	// - Value: GSimpleAction*
+	std::unordered_map<int, GSimpleAction*> *actionMap;
+	GSimpleActionGroup *actionGroup;
 #endif /* USE_G_MENU_MODEL */
-	GtkMenu *menuOptions;
+	GtkWidget *menuOptions;	// GtkMenu
 
 #if !GTK_CHECK_VERSION(4,0,0)
 	GtkWidget *imgOptions;	// up/down icon
@@ -199,25 +213,45 @@ options_menu_button_init(OptionsMenuButton *widget)
 	// Reference: https://developer.gnome.org/gtk-tutorial/stable/x1577.html
 	g_signal_connect(widget, "event", G_CALLBACK(btnOptions_event_signal_handler), 0);
 #endif /* !USE_GTK_MENU_BUTTON */
+
+#if USE_G_MENU_MODEL
+	widget->actionMap = new std::unordered_map<int, GSimpleAction*>();
+	widget->actionGroup = nullptr;	// will be created later
+#endif /* USE_G_MENU_MODEL */
 }
 
 static void
 options_menu_button_dispose(GObject *object)
 {
-	OptionsMenuButton *const button = OPTIONS_MENU_BUTTON(object);
+	OptionsMenuButton *const widget = OPTIONS_MENU_BUTTON(object);
 
 #ifndef USE_GTK_MENU_BUTTON
 	// Delete the "Options" button menu.
-	if (button->menuOptions) {
-		gtk_widget_destroy(button->menuOptions);
-		button->menuOptions = nullptr;
+	if (widget->menuOptions) {
+		gtk_widget_destroy(widget->menuOptions);
+		widget->menuOptions = nullptr;
 	}
 #endif /* !USE_GTK_MENU_BUTTON */
 
 #ifdef USE_G_MENU_MODEL
-	if (button->menuModel) {
-		g_object_unref(button->menuModel);
-		button->menuModel = nullptr;
+	if (widget->menuModel) {
+		g_object_unref(widget->menuModel);
+		widget->menuModel = nullptr;
+	}
+	if (widget->actionMap) {
+		const auto iter_end = widget->actionMap->cend();
+		for (auto iter = widget->actionMap->cbegin(); iter != iter_end; ++iter) {
+			assert(iter->second != nullptr);
+			if (iter->second) {
+				g_object_unref(iter->second);
+			}
+		}
+		delete widget->actionMap;
+		widget->actionMap = nullptr;
+	}
+	if (widget->actionGroup) {
+		g_object_unref(widget->actionGroup);
+		widget->actionGroup = nullptr;
 	}
 #endif /* USE_G_MENU_MODEL */
 
@@ -406,10 +440,32 @@ btnOptions_event_signal_handler(GtkButton *button,
 }
 #endif /* !USE_GTK_MENU_BUTTON */
 
+#ifdef USE_G_MENU_MODEL
+/**
+ * An "Options" menu action was triggered.
+ * @param action     	GSimpleAction (Get the "menuOptions_id" data.)
+ * @param parameter	Parameter data
+ * @param user_data	OptionsMenuButton
+ */
+static void
+action_triggered_signal_handler(GSimpleAction	*action,
+				GVariant	*parameter,
+				gpointer	 user_data)
+{
+	RP_UNUSED(parameter);
+	OptionsMenuButton *const widget = OPTIONS_MENU_BUTTON(user_data);
+	OptionsMenuButtonClass *const klass = OPTIONS_MENU_BUTTON_GET_CLASS(widget);
+
+	const gint id = (gboolean)GPOINTER_TO_INT(
+		g_object_get_data(G_OBJECT(action), "menuOptions_id"));
+
+	g_signal_emit(widget, klass->signal_ids[SIGNAL_TRIGGERED], 0, id);
+}
+#else /* !USE_G_MENU_MODEL */
 /**
  * An "Options" menu action was triggered.
  * @param menuItem     	Menu item (Get the "menuOptions_id" data.)
- * @param user_data	RomDataView
+ * @param user_data	OptionsMenuButton
  */
 static void
 menuOptions_triggered_signal_handler(GtkMenuItem *menuItem,
@@ -423,6 +479,7 @@ menuOptions_triggered_signal_handler(GtkMenuItem *menuItem,
 
 	g_signal_emit(widget, klass->signal_ids[SIGNAL_TRIGGERED], 0, id);
 }
+#endif /* USE_G_MENU_MODEL */
 
 /** Menu manipulation functions **/
 
@@ -438,6 +495,18 @@ options_menu_button_reinit_menu(OptionsMenuButton *widget,
 	g_return_if_fail(IS_OPTIONS_MENU_BUTTON(widget));
 
 #if USE_G_MENU_MODEL
+	GApplication *const pApp = g_application_get_default();
+	assert(pApp != nullptr);
+	g_return_if_fail(pApp != nullptr);
+
+	char prefix[64];
+	snprintf(prefix, sizeof(prefix), "rp-OptionsMenuButton-%p", widget);
+
+	// Remove the existing GActionGroup from the widget.
+	gtk_widget_insert_action_group(GTK_WIDGET(widget), prefix, nullptr);
+	GSimpleActionGroup *const actionGroup = g_simple_action_group_new();
+	widget->actionMap->clear();
+
 	// GMenuModel does not have separator items per se.
 	// Instead, we have to use separate sections:
 	// - one for standard actions
@@ -447,10 +516,20 @@ options_menu_button_reinit_menu(OptionsMenuButton *widget,
 	GMenu *const menuStdActs = g_menu_new();
 	g_menu_append_section(menuModel, nullptr, G_MENU_MODEL(menuStdActs));
 	for (const auto *p = stdacts; p->desc != nullptr; p++) {
+		// Create the action.
+		char buf[128];
+		snprintf(buf, sizeof(buf), "%d", p->id);
+		GSimpleAction *const action = g_simple_action_new(buf, nullptr);
+		g_simple_action_set_enabled(action, TRUE);
+		g_object_set_data(G_OBJECT(action), "menuOptions_id", GINT_TO_POINTER(p->id));
+		g_signal_connect(action, "activate", G_CALLBACK(action_triggered_signal_handler), widget);
+		widget->actionMap->emplace(p->id, action);
+		g_action_map_add_action(G_ACTION_MAP(actionGroup), G_ACTION(action));
+
+		// Create the menu item.
+		snprintf(buf, sizeof(buf), "%s.%d", prefix, p->id);
 		GMenuItem *const menuItem = g_menu_item_new(
-			dpgettext_expr(RP_I18N_DOMAIN, "RomDataView|Options", p->desc), nullptr);
-		g_object_set_data(G_OBJECT(menuItem), "menuOptions_id", GINT_TO_POINTER(p->id));
-		//g_signal_connect(menuItem, "activate", G_CALLBACK(menuOptions_triggered_signal_handler), widget);
+			dpgettext_expr(RP_I18N_DOMAIN, "RomDataView|Options", p->desc), buf);
 		g_menu_append_item(menuStdActs, menuItem);
 	}
 
@@ -465,20 +544,29 @@ options_menu_button_reinit_menu(OptionsMenuButton *widget,
 		int i = 0;
 		const auto ops_end = ops.cend();
 		for (auto iter = ops.cbegin(); iter != ops_end; ++iter, i++) {
+			// Create the action.
+			char buf[128];
+			snprintf(buf, sizeof(buf), "%d", i);
+			GSimpleAction *const action = g_simple_action_new(buf, nullptr);
+			g_simple_action_set_enabled(action, !!(iter->flags & RomData::RomOp::ROF_ENABLED));
+			g_object_set_data(G_OBJECT(action), "menuOptions_id", GINT_TO_POINTER(i));
+			g_signal_connect(action, "activate", G_CALLBACK(action_triggered_signal_handler), widget);
+			widget->actionMap->emplace(i, action);
+			g_action_map_add_action(G_ACTION_MAP(actionGroup), G_ACTION(action));
+
+			// Create the menu item.
 			const string desc = convert_accel_to_gtk(iter->desc);
-			GMenuItem *const menuItem = g_menu_item_new(desc.c_str(), nullptr);
-			//gtk_widget_set_sensitive(menuItem, !!(iter->flags & RomData::RomOp::ROF_ENABLED));
-			g_object_set_data(G_OBJECT(menuItem), "menuOptions_id", GINT_TO_POINTER(i));
-			//g_signal_connect(menuItem, "activate", G_CALLBACK(menuOptions_triggered_signal_handler), widget);
+			snprintf(buf, sizeof(buf), "%s.%d", prefix, i);
+			GMenuItem *const menuItem = g_menu_item_new(desc.c_str(), buf);
 			g_menu_append_item(menuRomOps, menuItem);
 		}
 	}
 
 	// Create a GtkMenu using the GMenuModel.
-	GtkMenu *const menuOptions = (GtkMenu*)gtk_menu_new_from_model(G_MENU_MODEL(menuModel));
+	GtkWidget *const menuOptions = gtk_menu_new_from_model(G_MENU_MODEL(menuModel));
 #else /* !USE_G_MENU_MODEL */
 	// Create a new GtkMenu.
-	GtkMenu *const menuOptions = (GtkMenu*)gtk_menu_new();
+	GtkWidget *const menuOptions = gtk_menu_new();
 
 	for (const auto *p = stdacts; p->desc != nullptr; p++) {
 		GtkWidget *const menuItem = gtk_menu_item_new_with_label(
@@ -526,10 +614,15 @@ options_menu_button_reinit_menu(OptionsMenuButton *widget,
 	if (widget->menuModel) {
 		g_object_unref(widget->menuModel);
 	}
+	if (widget->actionGroup) {
+		g_object_unref(widget->actionGroup);
+	}
 #endif /* USE_G_MENU_MODEL */
 
 #ifdef USE_G_MENU_MODEL
 	widget->menuModel = menuModel;
+	widget->actionGroup = actionGroup;
+	gtk_widget_insert_action_group(GTK_WIDGET(widget), prefix, G_ACTION_GROUP(actionGroup));
 #endif /* USE_G_MENU_MODEL */
 	widget->menuOptions = menuOptions;
 }
@@ -548,6 +641,9 @@ options_menu_button_update_op(OptionsMenuButton *widget,
 	g_return_if_fail(IS_OPTIONS_MENU_BUTTON(widget));
 	g_return_if_fail(GTK_IS_MENU(widget->menuOptions));
 	g_return_if_fail(op != nullptr);
+
+	// TODO: GMenuModel/GAction version.
+	// The existing GtkMenuItem code seems to work fine with GTK+ 3.x.
 
 	GtkMenuItem *menuItem = nullptr;
 	GList *l = gtk_container_get_children(GTK_CONTAINER(widget->menuOptions));
