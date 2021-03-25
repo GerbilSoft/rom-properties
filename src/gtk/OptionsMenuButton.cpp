@@ -183,7 +183,7 @@ options_menu_button_init(OptionsMenuButton *widget)
 	// using a GtkBox for older versions.
 	// TODO: GTK+ 4.x version.
 
-	string s_title = convert_accel_to_gtk(C_("RomDataView", "Op&tions"));
+	string s_title = convert_accel_to_gtk(C_("RomDataView", "&Options"));
 
 	GtkWidget *const lblOptions = gtk_label_new(nullptr);
 	gtk_label_set_markup_with_mnemonic(GTK_LABEL(lblOptions), s_title.c_str());

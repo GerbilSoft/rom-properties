@@ -361,7 +361,7 @@ void RomDataViewPrivate::createOptionsButton(void)
 
 	// Create the "Options" button.
 	// tr: "Options" button.
-	const QString s_options = U82Q(C_("RomDataView", "Op&tions"));
+	const QString s_options = U82Q(C_("RomDataView", "&Options"));
 	btnOptions = btnBox->addButton(s_options, QDialogButtonBox::ActionRole);
 	btnOptions->hide();
 

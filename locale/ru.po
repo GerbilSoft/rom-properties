@@ -296,7 +296,7 @@ msgstr "ОШИБКА"
 #: ../src/gtk/RomDataView.cpp:1753 ../src/kde/RomDataView.cpp:372
 #: ../src/win32/RP_ShellPropSheetExt.cpp:3398
 msgctxt "RomDataView"
-msgid "Op&tions"
+msgid "&Options"
 msgstr ""
 
 #: ../src/gtk/RomDataView.cpp:1840 ../src/kde/RomDataView.cpp:410
@@ -8714,5 +8714,5 @@ msgstr ""
 #. tr: "Options" button. (WinXP version, with ellipsis.)
 #: ../src/win32/RP_ShellPropSheetExt.cpp:3404
 msgctxt "RomDataView"
-msgid "Op&tions..."
+msgid "&Options..."
 msgstr ""

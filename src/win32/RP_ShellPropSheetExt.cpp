@@ -3107,13 +3107,13 @@ void RP_ShellPropSheetExt_Private::createOptionsButton(void)
 		// (Windows Vista or later)
 		lStyle |= BS_SPLITBUTTON;
 		// tr: "Options" button.
-		ts_caption = U82T_c(C_("RomDataView", "Op&tions"));
+		ts_caption = U82T_c(C_("RomDataView", "&Options"));
 	} else {
 		// COMCTL32 is older than v6.10. Use a regular button.
 		// NOTE: The Unicode down arrow doesn't show on on Windows XP.
 		// Maybe we *should* use ownerdraw...
 		// tr: "Options" button. (WinXP version, with ellipsis.)
-		ts_caption = U82T_c(C_("RomDataView", "Op&tions..."));
+		ts_caption = U82T_c(C_("RomDataView", "&Op&tions..."));
 	}
 
 	hBtnOptions = CreateWindowEx(dwExStyleRTL, WC_BUTTON,
