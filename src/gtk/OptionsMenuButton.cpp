@@ -21,13 +21,18 @@ using std::vector;
 #if GTK_CHECK_VERSION(3,6,0)
 typedef GtkMenuButtonClass superclass;
 typedef GtkMenuButton super;
-#define GTK_TYPE_SUPER GTK_TYPE_MENU_BUTTON
+#  define GTK_TYPE_SUPER GTK_TYPE_MENU_BUTTON
 #  define USE_GTK_MENU_BUTTON 1
 #else /* !GTK_CHECK_VERSION(3,6,0) */
 typedef GtkButtonClass superclass;
 typedef GtkButton super;
-#define GTK_TYPE_SUPER GTK_TYPE_BUTTON
+#  define GTK_TYPE_SUPER GTK_TYPE_BUTTON
 #endif
+
+// Use GMenuModel?
+#if 0 //GTK_CHECK_VERSION(3,4,0)
+#  define USE_G_MENU_MODEL 1
+#endif /* GTK_CHECK_VERSION(3,4,0) */
 
 /* Property identifiers */
 typedef enum {
@@ -45,10 +50,7 @@ typedef enum {
 	SIGNAL_LAST
 } OptionsMenuButtonSignalID;
 
-#ifndef USE_GTK_MENU_BUTTON
 static void	options_menu_button_dispose	(GObject	*object);
-#endif /* !USE_GTK_MENU_BUTTON */
-
 static void	options_menu_button_get_property(GObject	*object,
 						 guint		 prop_id,
 						 GValue		*value,
@@ -79,7 +81,11 @@ struct _OptionsMenuButtonClass {
 struct _OptionsMenuButton {
 	super __parent__;
 
-	GtkWidget *menuOptions;	// GtkMenu
+#ifdef USE_G_MENU_MODEL
+	GMenu *menuModel;
+#endif /* USE_G_MENU_MODEL */
+	GtkMenu *menuOptions;
+
 #if !GTK_CHECK_VERSION(4,0,0)
 	GtkWidget *imgOptions;	// up/down icon
 #endif /* !GTK_CHECK_VERSION(4,0,0) */
@@ -112,10 +118,7 @@ options_menu_button_class_init(OptionsMenuButtonClass *klass)
 {
 	GObjectClass *gobject_class = G_OBJECT_CLASS(klass);
 
-#ifndef USE_GTK_MENU_BUTTON
 	gobject_class->dispose = options_menu_button_dispose;
-#endif /* !USE_GTK_MENU_BUTTON */
-
 	gobject_class->get_property = options_menu_button_get_property;
 	gobject_class->set_property = options_menu_button_set_property;
 
@@ -198,22 +201,29 @@ options_menu_button_init(OptionsMenuButton *widget)
 #endif /* !USE_GTK_MENU_BUTTON */
 }
 
-#ifndef USE_GTK_MENU_BUTTON
 static void
 options_menu_button_dispose(GObject *object)
 {
 	OptionsMenuButton *const button = OPTIONS_MENU_BUTTON(object);
 
+#ifndef USE_GTK_MENU_BUTTON
 	// Delete the "Options" button menu.
 	if (button->menuOptions) {
 		gtk_widget_destroy(button->menuOptions);
 		button->menuOptions = nullptr;
 	}
+#endif /* !USE_GTK_MENU_BUTTON */
+
+#ifdef USE_G_MENU_MODEL
+	if (button->menuModel) {
+		g_object_unref(button->menuModel);
+		button->menuModel = nullptr;
+	}
+#endif /* USE_G_MENU_MODEL */
 
 	// Call the superclass dispose() function.
 	G_OBJECT_CLASS(options_menu_button_parent_class)->dispose(object);
 }
-#endif /* !USE_GTK_MENU_BUTTON */
 
 GtkWidget*
 options_menu_button_new(void)
@@ -427,9 +437,48 @@ options_menu_button_reinit_menu(OptionsMenuButton *widget,
 {
 	g_return_if_fail(IS_OPTIONS_MENU_BUTTON(widget));
 
+#if USE_G_MENU_MODEL
+	// GMenuModel does not have separator items per se.
+	// Instead, we have to use separate sections:
+	// - one for standard actions
+	// - one for ROM operations
+	GMenu *const menuModel = g_menu_new();
+
+	GMenu *const menuStdActs = g_menu_new();
+	g_menu_append_section(menuModel, nullptr, G_MENU_MODEL(menuStdActs));
+	for (const auto *p = stdacts; p->desc != nullptr; p++) {
+		GMenuItem *const menuItem = g_menu_item_new(
+			dpgettext_expr(RP_I18N_DOMAIN, "RomDataView|Options", p->desc), nullptr);
+		g_object_set_data(G_OBJECT(menuItem), "menuOptions_id", GINT_TO_POINTER(p->id));
+		//g_signal_connect(menuItem, "activate", G_CALLBACK(menuOptions_triggered_signal_handler), widget);
+		g_menu_append_item(menuStdActs, menuItem);
+	}
+
+	/** ROM operations. **/
+	const vector<RomData::RomOp> ops = romData->romOps();
+	if (!ops.empty()) {
+		// FIXME: Not showing up properly with the KDE Breeze theme,
+		// though other separators *do* show up...
+		GMenu *const menuRomOps = g_menu_new();
+		g_menu_append_section(menuModel, nullptr, G_MENU_MODEL(menuRomOps));
+
+		int i = 0;
+		const auto ops_end = ops.cend();
+		for (auto iter = ops.cbegin(); iter != ops_end; ++iter, i++) {
+			const string desc = convert_accel_to_gtk(iter->desc);
+			GMenuItem *const menuItem = g_menu_item_new(desc.c_str(), nullptr);
+			//gtk_widget_set_sensitive(menuItem, !!(iter->flags & RomData::RomOp::ROF_ENABLED));
+			g_object_set_data(G_OBJECT(menuItem), "menuOptions_id", GINT_TO_POINTER(i));
+			//g_signal_connect(menuItem, "activate", G_CALLBACK(menuOptions_triggered_signal_handler), widget);
+			g_menu_append_item(menuRomOps, menuItem);
+		}
+	}
+
+	// Create a GtkMenu using the GMenuModel.
+	GtkMenu *const menuOptions = (GtkMenu*)gtk_menu_new_from_model(G_MENU_MODEL(menuModel));
+#else /* !USE_G_MENU_MODEL */
 	// Create a new GtkMenu.
-	// TODO: Switch to GMenu? (glib-2.32)
-	GtkWidget *const menu = gtk_menu_new();
+	GtkMenu *const menuOptions = (GtkMenu*)gtk_menu_new();
 
 	for (const auto *p = stdacts; p->desc != nullptr; p++) {
 		GtkWidget *const menuItem = gtk_menu_item_new_with_label(
@@ -437,7 +486,7 @@ options_menu_button_reinit_menu(OptionsMenuButton *widget,
 		g_object_set_data(G_OBJECT(menuItem), "menuOptions_id", GINT_TO_POINTER(p->id));
 		g_signal_connect(menuItem, "activate", G_CALLBACK(menuOptions_triggered_signal_handler), widget);
 		gtk_widget_show(menuItem);
-		gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuItem);
+		gtk_menu_shell_append(GTK_MENU_SHELL(menuOptions), menuItem);
 	}
 
 	/** ROM operations. **/
@@ -447,7 +496,7 @@ options_menu_button_reinit_menu(OptionsMenuButton *widget,
 		// though other separators *do* show up...
 		GtkWidget *menuItem = gtk_separator_menu_item_new();
 		gtk_widget_show(menuItem);
-		gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuItem);
+		gtk_menu_shell_append(GTK_MENU_SHELL(menuOptions), menuItem);
 
 		int i = 0;
 		const auto ops_end = ops.cend();
@@ -458,22 +507,31 @@ options_menu_button_reinit_menu(OptionsMenuButton *widget,
 			g_object_set_data(G_OBJECT(menuItem), "menuOptions_id", GINT_TO_POINTER(i));
 			g_signal_connect(menuItem, "activate", G_CALLBACK(menuOptions_triggered_signal_handler), widget);
 			gtk_widget_show(menuItem);
-			gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuItem);
+			gtk_menu_shell_append(GTK_MENU_SHELL(menuOptions), menuItem);
 		}
 	}
-
+#endif /* USE_G_MENU_MODEL */
 
 	// Replace the existing menu.
 #ifdef USE_GTK_MENU_BUTTON
 	// NOTE: GtkMenuButton takes ownership of the menu.
-	gtk_menu_button_set_popup(GTK_MENU_BUTTON(widget), menu);
+	gtk_menu_button_set_popup(GTK_MENU_BUTTON(widget), GTK_WIDGET(menuOptions));
 #else /* !USE_GTK_MENU_BUTTON */
 	// Destroy the existing menu.
 	if (widget->menuOptions) {
 		gtk_widget_destroy(widget->menuOptions);
 	}
 #endif /* USE_GTK_MENU_BUTTON */
-	widget->menuOptions = menu;
+#ifdef USE_G_MENU_MODEL
+	if (widget->menuModel) {
+		g_object_unref(widget->menuModel);
+	}
+#endif /* USE_G_MENU_MODEL */
+
+#ifdef USE_G_MENU_MODEL
+	widget->menuModel = menuModel;
+#endif /* USE_G_MENU_MODEL */
+	widget->menuOptions = menuOptions;
 }
 
 /**
