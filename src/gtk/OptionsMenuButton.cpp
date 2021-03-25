@@ -252,7 +252,6 @@ options_menu_button_set_property(GObject	*object,
 
 	switch (prop_id) {
 		case PROP_DIRECTION:
-			printf("Set!!\n");
 			options_menu_button_set_direction(widget, (GtkArrowType)g_value_get_enum(value));
 			break;
 
