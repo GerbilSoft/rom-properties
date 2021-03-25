@@ -528,9 +528,7 @@ options_menu_button_reinit_menu(OptionsMenuButton *widget,
 
 		// Create the menu item.
 		snprintf(buf, sizeof(buf), "%s.%d", prefix, p->id);
-		GMenuItem *const menuItem = g_menu_item_new(
-			dpgettext_expr(RP_I18N_DOMAIN, "RomDataView|Options", p->desc), buf);
-		g_menu_append_item(menuStdActs, menuItem);
+		g_menu_append(menuStdActs, dpgettext_expr(RP_I18N_DOMAIN, "RomDataView|Options", p->desc), buf);
 	}
 
 	/** ROM operations. **/
@@ -557,8 +555,7 @@ options_menu_button_reinit_menu(OptionsMenuButton *widget,
 			// Create the menu item.
 			const string desc = convert_accel_to_gtk(iter->desc);
 			snprintf(buf, sizeof(buf), "%s.%d", prefix, i);
-			GMenuItem *const menuItem = g_menu_item_new(desc.c_str(), buf);
-			g_menu_append_item(menuRomOps, menuItem);
+			g_menu_append(menuRomOps, desc.c_str(), buf);
 		}
 	}
 
