@@ -38,4 +38,4 @@ uint32_t	language_combo_box_get_selected_lc	(LanguageComboBox *widget);
 
 G_END_DECLS
 
-#endif /* __ROMPROPERTIES_GTK_MESSAGEWIDGET_HPP__ */
+#endif /* __ROMPROPERTIES_GTK_LANGUAGECOMBOBOX_HPP__ */
