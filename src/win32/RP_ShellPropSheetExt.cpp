@@ -3113,7 +3113,7 @@ void RP_ShellPropSheetExt_Private::createOptionsButton(void)
 		// NOTE: The Unicode down arrow doesn't show on on Windows XP.
 		// Maybe we *should* use ownerdraw...
 		// tr: "Options" button. (WinXP version, with ellipsis.)
-		ts_caption = U82T_c(C_("RomDataView", "&Op&tions..."));
+		ts_caption = U82T_c(C_("RomDataView", "&Options..."));
 	}
 
 	hBtnOptions = CreateWindowEx(dwExStyleRTL, WC_BUTTON,
