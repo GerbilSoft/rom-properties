@@ -21,6 +21,7 @@
 #include "MessageWidget.hpp"
 #include "LvData.hpp"
 #include "LanguageComboBox.hpp"
+#include "OptionsMenuButton.hpp"
 
 // libwin32common
 #include "libwin32common/AutoGetDC.hpp"
@@ -75,13 +76,6 @@ const CLSID CLSID_RP_ShellPropSheetExt =
 // Bitfield is last due to multiple controls per field.
 #define IDC_RFT_BITFIELD(idx, bit)	(0x7000 + ((idx) * 32) + (bit))
 
-// "Options" menu item.
-#define IDM_OPTIONS_MENU_BASE		0x8000
-#define IDM_OPTIONS_MENU_EXPORT_TEXT	(IDM_OPTIONS_MENU_BASE - 1)
-#define IDM_OPTIONS_MENU_EXPORT_JSON	(IDM_OPTIONS_MENU_BASE - 2)
-#define IDM_OPTIONS_MENU_COPY_TEXT	(IDM_OPTIONS_MENU_BASE - 3)
-#define IDM_OPTIONS_MENU_COPY_JSON	(IDM_OPTIONS_MENU_BASE - 4)
-
 /** RP_ShellPropSheetExt_Private **/
 // Workaround for RP_D() expecting the no-underscore naming convention.
 #define RP_ShellPropSheetExtPrivate RP_ShellPropSheetExt_Private
@@ -111,7 +105,6 @@ class RP_ShellPropSheetExt_Private
 		// Useful window handles.
 		HWND hDlgSheet;		// Property sheet.
 		HWND hBtnOptions;	// Options button.
-		HMENU hMenuOptions;	// Options menu.
 		tstring ts_prevExportDir;
 
 		// Fonts.
@@ -400,10 +393,10 @@ class RP_ShellPropSheetExt_Private
 		void showMessageWidget(unsigned int messageType, const TCHAR *lpszMsg);
 
 		/**
-		 * An "Options" menu action was triggered.
+		 * An "Options" menu button action was triggered.
 		 * @param menuId Menu ID. (Options ID + IDM_OPTIONS_MENU_BASE)
 		 */
-		void menuOptions_action_triggered(int menuId);
+		void btnOptions_action_triggered(int menuId);
 
 		/**
 		 * Dialog subclass procedure to intercept WM_COMMAND for the "Options" button.
@@ -458,7 +451,6 @@ RP_ShellPropSheetExt_Private::RP_ShellPropSheetExt_Private(RP_ShellPropSheetExt 
 	, romData(nullptr)
 	, hDlgSheet(nullptr)
 	, hBtnOptions(nullptr)
-	, hMenuOptions(nullptr)
 	, hFontDlg(nullptr)
 	, hFontBold(nullptr)
 	, fontHandler(nullptr)
@@ -486,11 +478,6 @@ RP_ShellPropSheetExt_Private::~RP_ShellPropSheetExt_Private()
 	// Delete the banner and icon frames.
 	delete lblBanner;
 	delete lblIcon;
-
-	// Delete the popup menu.
-	if (hMenuOptions) {
-		DestroyMenu(hMenuOptions);
-	}
 
 	// Unreference the RomData object.
 	UNREF(romData);
@@ -2007,6 +1994,7 @@ void RP_ShellPropSheetExt_Private::updateMulti(uint32_t user_lc)
 		}
 
 		LanguageComboBoxRegister();
+		OptionsMenuButtonRegister();
 		cboLanguage = CreateWindowEx(WS_EX_NOPARENTNOTIFY,
 			WC_LANGUAGECOMBOBOX, nullptr,
 			CBS_DROPDOWNLIST | WS_CHILD | WS_TABSTOP | WS_VISIBLE,
@@ -2716,10 +2704,10 @@ void RP_ShellPropSheetExt_Private::showMessageWidget(unsigned int messageType, c
 }
 
 /**
- * An "Options" menu action was triggered.
+ * An "Options" menu button action was triggered.
  * @param menuId Menu ID. (Options ID + IDM_OPTIONS_MENU_BASE)
  */
-void RP_ShellPropSheetExt_Private::menuOptions_action_triggered(int menuId)
+void RP_ShellPropSheetExt_Private::btnOptions_action_triggered(int menuId)
 {
 	if (menuId < IDM_OPTIONS_MENU_BASE) {
 		// Export to text or JSON.
@@ -2936,15 +2924,7 @@ void RP_ShellPropSheetExt_Private::menuOptions_action_triggered(int menuId)
 		ops = romData->romOps();
 		assert(id < (int)ops.size());
 		if (id < (int)ops.size()) {
-			const RomData::RomOp &op = ops[id];
-
-			UINT uFlags;
-			if (!(op.flags & RomData::RomOp::ROF_ENABLED)) {
-				uFlags = MF_BYCOMMAND | MF_STRING | MF_DISABLED;
-			} else {
-				uFlags = MF_BYCOMMAND | MF_STRING;
-			}
-			ModifyMenu(hMenuOptions, menuId, uFlags, menuId, U82T_c(op.desc));
+			OptionsMenuButton_UpdateOp(hBtnOptions, id, &ops[id]);
 		}
 	} else {
 		// An error occurred...
@@ -3014,6 +2994,7 @@ LRESULT CALLBACK RP_ShellPropSheetExt_Private::MainDialogSubclassProc(
 	WPARAM wParam, LPARAM lParam,
 	UINT_PTR uIdSubclass, DWORD_PTR dwRefData)
 {
+	// FIXME: Move this to OptionsMenuButton.
 	switch (uMsg) {
 		case WM_NCDESTROY:
 			// Remove the window subclass.
@@ -3021,29 +3002,23 @@ LRESULT CALLBACK RP_ShellPropSheetExt_Private::MainDialogSubclassProc(
 			RemoveWindowSubclass(hWnd, MainDialogSubclassProc, uIdSubclass);
 			break;
 
-		case WM_COMMAND:
-			if (HIWORD(wParam) == BN_CLICKED && LOWORD(wParam) == IDC_RP_OPTIONS) {
-				// Pop up the menu.
-				auto *const d = reinterpret_cast<RP_ShellPropSheetExt_Private*>(dwRefData);
-				assert(d->hBtnOptions != nullptr);
-				assert(d->hMenuOptions != nullptr);
-				if (!d->hBtnOptions || !d->hMenuOptions)
-					break;
+		case WM_COMMAND: {
+			if (HIWORD(wParam) != BN_CLICKED)
+				break;
+			if (LOWORD(wParam) != IDC_RP_OPTIONS)
+				break;
 
-				// Get the absolute position of the "Options" button.
-				RECT rect_btnOptions;
-				GetWindowRect(d->hBtnOptions, &rect_btnOptions);
-				int id = TrackPopupMenu(d->hMenuOptions,
-					TPM_LEFTALIGN | TPM_BOTTOMALIGN | TPM_VERNEGANIMATION |
-						TPM_NONOTIFY | TPM_RETURNCMD,
-					rect_btnOptions.left, rect_btnOptions.top, 0,
-					hWnd, nullptr);
-				if (id != 0) {
-					d->menuOptions_action_triggered(id);
-				}
-				return TRUE;
+			// Pop up the menu.
+			auto *const d = reinterpret_cast<RP_ShellPropSheetExt_Private*>(dwRefData);
+			assert(d->hBtnOptions != nullptr);
+			if (!d->hBtnOptions)
+				break;
+			int menuId = OptionsMenuButton_PopupMenu(d->hBtnOptions);
+			if (menuId != 0) {
+				d->btnOptions_action_triggered(menuId);
 			}
-			break;
+			return TRUE;
+		}
 
 		default:
 			break;
@@ -3097,37 +3072,15 @@ void RP_ShellPropSheetExt_Private::createOptionsButton(void)
 		rect_btnOK.right - rect_btnOK.left,
 		rect_btnOK.bottom - rect_btnOK.top
 	};
-
-	const bool isComCtl32_v610 = LibWin32Common::isComCtl32_v610();
-
-	tstring ts_caption;
-	LONG lStyle = WS_CHILD | WS_VISIBLE | WS_TABSTOP | WS_GROUP | BS_PUSHBUTTON | BS_CENTER;
-	if (isComCtl32_v610) {
-		// COMCTL32 is v6.10 or later. Use BS_SPLITBUTTON.
-		// (Windows Vista or later)
-		lStyle |= BS_SPLITBUTTON;
-		// tr: "Options" button.
-		ts_caption = U82T_c(C_("RomDataView", "&Options"));
-	} else {
-		// COMCTL32 is older than v6.10. Use a regular button.
-		// NOTE: The Unicode down arrow doesn't show on on Windows XP.
-		// Maybe we *should* use ownerdraw...
-		// tr: "Options" button. (WinXP version, with ellipsis.)
-		ts_caption = U82T_c(C_("RomDataView", "&Options..."));
-	}
-
-	hBtnOptions = CreateWindowEx(dwExStyleRTL, WC_BUTTON,
-		ts_caption.c_str(), lStyle,
+	hBtnOptions = CreateWindowEx(dwExStyleRTL, WC_OPTIONSMENUBUTTON,
+		nullptr,	// OptionsMenuButton will set the text.
+		WS_CHILD | WS_VISIBLE | WS_TABSTOP | WS_GROUP | BS_PUSHBUTTON | BS_CENTER,
 		ptBtn.x, ptBtn.y, szBtn.cx, szBtn.cy,
 		hWndParent, (HMENU)IDC_RP_OPTIONS, nullptr, nullptr);
 	SetWindowFont(hBtnOptions, hFontDlg, FALSE);
 
-	if (isComCtl32_v610) {
-		BUTTON_SPLITINFO bsi;
-		bsi.mask = BCSIF_STYLE;
-		bsi.uSplitStyle = BCSS_NOSPLIT;
-		Button_SetSplitInfo(hBtnOptions, &bsi);
-	}
+	// Initialize the "Options" submenu.
+	OptionsMenuButton_ReinitMenu(hBtnOptions, romData);
 
 	// Fix up the tab order. ("Options" should be after "Apply".)
 	HWND hBtnApply = GetDlgItem(hWndParent, IDC_APPLY_BUTTON);
@@ -3140,44 +3093,6 @@ void RP_ShellPropSheetExt_Private::createOptionsButton(void)
 	SetWindowSubclass(hWndParent, MainDialogSubclassProc,
 		static_cast<UINT_PTR>(IDC_RP_OPTIONS),
 		reinterpret_cast<DWORD_PTR>(this));
-
-	// Create the menu.
-	hMenuOptions = CreatePopupMenu();
-
-	/** Standard actions. **/
-	static const struct {
-		const char *desc;
-		unsigned int id;
-	} stdacts[] = {
-		{NOP_C_("RomDataView|Options", "Export to Text..."),	IDM_OPTIONS_MENU_EXPORT_TEXT},
-		{NOP_C_("RomDataView|Options", "Export to JSON..."),	IDM_OPTIONS_MENU_EXPORT_JSON},
-		{NOP_C_("RomDataView|Options", "Copy as Text"),		IDM_OPTIONS_MENU_COPY_TEXT},
-		{NOP_C_("RomDataView|Options", "Copy as JSON"),		IDM_OPTIONS_MENU_COPY_JSON},
-		{nullptr, 0}
-	};
-
-	for (const auto *p = stdacts; p->desc != nullptr; p++) {
-		AppendMenu(hMenuOptions, MF_STRING, p->id,
-			U82T_c(dpgettext_expr(RP_I18N_DOMAIN, "RomDataView|Options", p->desc)));
-	}
-
-	/** ROM operations. **/
-	const vector<RomData::RomOp> ops = romData->romOps();
-	if (!ops.empty()) {
-		AppendMenu(hMenuOptions, MF_SEPARATOR, 0, nullptr);
-
-		unsigned int i = IDM_OPTIONS_MENU_BASE;
-		const auto ops_end = ops.cend();
-		for (auto iter = ops.cbegin(); iter != ops_end; ++iter, i++) {
-			UINT uFlags;
-			if (!(iter->flags & RomData::RomOp::ROF_ENABLED)) {
-				uFlags = MF_STRING | MF_DISABLED;
-			} else {
-				uFlags = MF_STRING;
-			}
-			AppendMenu(hMenuOptions, uFlags, i, U82T_c(iter->desc));
-		}
-	}
 }
 
 /** RP_ShellPropSheetExt **/

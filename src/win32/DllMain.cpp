@@ -38,6 +38,7 @@
 #include "AchWin32.hpp"
 #include "MessageWidget.hpp"
 #include "LanguageComboBox.hpp"
+#include "OptionsMenuButton.hpp"
 
 // libwin32common
 using LibWin32Common::RegKey;
@@ -149,6 +150,7 @@ STDAPI DllCanUnloadNow(void)
 	// Unregister window classes.
 	MessageWidgetUnregister();
 	LanguageComboBoxUnregister();
+	OptionsMenuButtonUnregister();
 
 	// Shut down GDI+ if it was initialized.
 	if (gdipToken != 0) {

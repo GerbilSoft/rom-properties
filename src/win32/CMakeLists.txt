@@ -54,6 +54,7 @@ SET(rom-properties-win32_SRCS
 	MessageWidget.cpp
 	LvData.cpp
 	LanguageComboBox.cpp
+	OptionsMenuButton.cpp
 	config/ConfigDialog.cpp
 	config/PropSheetIcon.cpp
 	config/RP_EmptyVolumeCacheCallback.cpp
@@ -85,6 +86,7 @@ SET(rom-properties-win32_H
 	MessageWidget.hpp
 	LvData.hpp
 	LanguageComboBox.hpp
+	OptionsMenuButton.hpp
 	config/ConfigDialog.hpp
 	config/PropSheetIcon.hpp
 	config/RP_EmptyVolumeCacheCallback.hpp
