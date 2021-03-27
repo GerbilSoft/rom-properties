@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE4/KF5)                         *
  * RomDataView.cpp: RomData viewer.                                        *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -42,6 +42,7 @@ using std::vector;
 #include "ListDataModel.hpp"
 #include "ListDataSortProxyModel.hpp"
 #include "LanguageComboBox.hpp"
+#include "OptionsMenuButton.hpp"
 
 // KDE4/KF5 includes.
 #if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
@@ -87,20 +88,8 @@ class RomDataViewPrivate
 		bool hasCheckedAchievements;
 
 		// "Options" button.
-		QPushButton *btnOptions;
-		QMenu *menuOptions;
-		int romOps_firstActionIndex;
-#if QT_VERSION < QT_VERSION_CHECK(5,0,0)
-		QSignalMapper *mapperOptionsMenu;
-#endif /* QT_VERSION < QT_VERSION_CHECK(5,0,0) */
+		OptionsMenuButton *btnOptions;
 		QString prevExportDir;
-
-		enum StandardOptionID {
-			OPTION_EXPORT_TEXT = -1,
-			OPTION_EXPORT_JSON = -2,
-			OPTION_COPY_TEXT = -3,
-			OPTION_COPY_JSON = -4,
-		};
 
 		// Tab contents.
 		struct tab {
@@ -270,11 +259,6 @@ RomDataViewPrivate::RomDataViewPrivate(RomDataView *q, RomData *romData)
 	, romData(nullptr)
 	, hasCheckedAchievements(false)
 	, btnOptions(nullptr)
-	, menuOptions(nullptr)
-	, romOps_firstActionIndex(-1)
-#if QT_VERSION < QT_VERSION_CHECK(5,0,0)
-	, mapperOptionsMenu(nullptr)
-#endif /* QT_VERSION < QT_VERSION_CHECK(5,0,0) */
 #ifdef HAVE_KMESSAGEWIDGET
 	, messageWidget(nullptr)
 #  ifdef AUTO_TIMEOUT_MESSAGEWIDGET
@@ -360,9 +344,8 @@ void RomDataViewPrivate::createOptionsButton(void)
 		return;
 
 	// Create the "Options" button.
-	// tr: "Options" button.
-	const QString s_options = U82Q(C_("RomDataView", "&Options"));
-	btnOptions = btnBox->addButton(s_options, QDialogButtonBox::ActionRole);
+	btnOptions = new OptionsMenuButton();
+	btnBox->addButton(btnOptions, QDialogButtonBox::ActionRole);
 	btnOptions->hide();
 
 	// Add a spacer to the QDialogButtonBox.
@@ -384,62 +367,12 @@ void RomDataViewPrivate::createOptionsButton(void)
 		}
 	}
 
-	// Create the menu and (for Qt4) signal mapper.
-	menuOptions = new QMenu(s_options, q);
-	btnOptions->setMenu(menuOptions);
+	// Connect the OptionsMenuButton's triggered(int) signal.
+	QObject::connect(btnOptions, SIGNAL(triggered(int)),
+			 q, SLOT(btnOptions_triggered(int)));
 
-#if QT_VERSION < QT_VERSION_CHECK(5,0,0)
-	mapperOptionsMenu = new QSignalMapper(q);
-	QObject::connect(mapperOptionsMenu, SIGNAL(mapped(int)),
-		q, SLOT(menuOptions_action_triggered(int)));
-#endif /* QT_VERSION < QT_VERSION_CHECK(5,0,0) */
-
-	/** Standard actions. **/
-	static const struct {
-		const char *desc;
-		int id;
-	} stdacts[] = {
-		{NOP_C_("RomDataView|Options", "Export to Text..."),	OPTION_EXPORT_TEXT},
-		{NOP_C_("RomDataView|Options", "Export to JSON..."),	OPTION_EXPORT_JSON},
-		{NOP_C_("RomDataView|Options", "Copy as Text"),		OPTION_COPY_TEXT},
-		{NOP_C_("RomDataView|Options", "Copy as JSON"),		OPTION_COPY_JSON},
-		{nullptr, 0}
-	};
-
-	for (const auto *p = stdacts; p->desc != nullptr; p++) {
-		QAction *const action = menuOptions->addAction(
-			U82Q(dpgettext_expr(RP_I18N_DOMAIN, "RomDataView|Options", p->desc)));
-#if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
-		QObject::connect(action, &QAction::triggered,
-			[q, p] { q->menuOptions_action_triggered(p->id); });
-#else /* QT_VERSION < QT_VERSION_CHECK(5,0,0) */
-		QObject::connect(action, SIGNAL(triggered()),
-			mapperOptionsMenu, SLOT(map()));
-		mapperOptionsMenu->setMapping(action, p->id);
-#endif /* QT_VERSION >= QT_VERSION_CHECK(5,0,0) */
-	}
-
-	/** ROM operations. **/
-	const vector<RomData::RomOp> ops = romData->romOps();
-	if (!ops.empty()) {
-		menuOptions->addSeparator();
-		romOps_firstActionIndex = menuOptions->children().count();
-
-		int i = 0;
-		const auto ops_end = ops.cend();
-		for (auto iter = ops.cbegin(); iter != ops_end; ++iter, i++) {
-			QAction *const action = menuOptions->addAction(U82Q(iter->desc));
-			action->setEnabled(!!(iter->flags & RomData::RomOp::ROF_ENABLED));
-#if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
-			QObject::connect(action, &QAction::triggered,
-				[q, i] { q->menuOptions_action_triggered(i); });
-#else /* QT_VERSION < QT_VERSION_CHECK(5,0,0) */
-			QObject::connect(action, SIGNAL(triggered()),
-				mapperOptionsMenu, SLOT(map()));
-			mapperOptionsMenu->setMapping(action, i);
-#endif /* QT_VERSION >= QT_VERSION_CHECK(5,0,0) */
-		}
-	}
+	// Initialize the menu options.
+	btnOptions->reinitMenu(romData);
 }
 
 /**
@@ -1725,7 +1658,7 @@ void RomDataView::setRomData(RomData *romData)
  * An "Options" menu action was triggered.
  * @param id Options ID.
  */
-void RomDataView::menuOptions_action_triggered(int id)
+void RomDataView::btnOptions_triggered(int id)
 {
 	// IDs below 0 are for built-in actions.
 	// IDs >= 0 are for RomData-specific actions.
@@ -1743,22 +1676,22 @@ void RomDataView::menuOptions_action_triggered(int id)
 		QString qs_default_ext;
 		const char *s_filter = nullptr;
 		switch (id) {
-			case RomDataViewPrivate::OPTION_EXPORT_TEXT:
+			case OPTION_EXPORT_TEXT:
 				toClipboard = false;
 				qs_title = U82Q(C_("RomDataView", "Export to Text File"));
 				qs_default_ext = QLatin1String(".txt");
 				// tr: Text files filter. (RP format)
 				s_filter = C_("RomDataView", "Text Files|*.txt|text/plain|All Files|*.*|-");
 				break;
-			case RomDataViewPrivate::OPTION_EXPORT_JSON:
+			case OPTION_EXPORT_JSON:
 				toClipboard = false;
 				qs_title = U82Q(C_("RomDataView", "Export to JSON File"));
 				qs_default_ext = QLatin1String(".json");
 				// tr: JSON files filter. (RP format)
 				s_filter = C_("RomDataView", "JSON Files|*.json|application/json|All Files|*.*|-");
 				break;
-			case RomDataViewPrivate::OPTION_COPY_TEXT:
-			case RomDataViewPrivate::OPTION_COPY_JSON:
+			case OPTION_COPY_TEXT:
+			case OPTION_COPY_JSON:
 				toClipboard = true;
 				break;
 			default:
@@ -1796,18 +1729,18 @@ void RomDataView::menuOptions_action_triggered(int id)
 
 		const uint32_t sel_lc = (d->cboLanguage ? d->cboLanguage->selectedLC() : 0);
 		switch (id) {
-			case RomDataViewPrivate::OPTION_EXPORT_TEXT: {
+			case OPTION_EXPORT_TEXT: {
 				ofs << "== " << rp_sprintf(C_("RomDataView", "File: '%s'"), rom_filename) << std::endl;
 				ROMOutput ro(d->romData, sel_lc);
 				ofs << ro;
 				break;
 			}
-			case RomDataViewPrivate::OPTION_EXPORT_JSON: {
+			case OPTION_EXPORT_JSON: {
 				JSONROMOutput jsro(d->romData);
 				ofs << jsro << std::endl;
 				break;
 			}
-			case RomDataViewPrivate::OPTION_COPY_TEXT: {
+			case OPTION_COPY_TEXT: {
 				ostringstream oss;
 				oss << "== " << rp_sprintf(C_("RomDataView", "File: '%s'"), rom_filename) << std::endl;
 				ROMOutput ro(d->romData, sel_lc);
@@ -1815,7 +1748,7 @@ void RomDataView::menuOptions_action_triggered(int id)
 				QApplication::clipboard()->setText(U82Q(oss.str()));
 				break;
 			}
-			case RomDataViewPrivate::OPTION_COPY_JSON: {
+			case OPTION_COPY_JSON: {
 				ostringstream oss;
 				JSONROMOutput jsro(d->romData);
 				oss << jsro << std::endl;
@@ -1826,11 +1759,6 @@ void RomDataView::menuOptions_action_triggered(int id)
 				assert(!"Invalid action ID.");
 				return;
 		}
-		return;
-	}
-
-	if (d->romOps_firstActionIndex < 0) {
-		// No ROM operations...
 		return;
 	}
 
@@ -1884,17 +1812,7 @@ void RomDataView::menuOptions_action_triggered(int id)
 		ops = d->romData->romOps();
 		assert(id < (int)ops.size());
 		if (id < (int)ops.size()) {
-			const QObjectList &objList = d->menuOptions->children();
-			int actionIndex = d->romOps_firstActionIndex + id;
-			assert(actionIndex < objList.size());
-			if (actionIndex < objList.size()) {
-				QAction *const action = qobject_cast<QAction*>(objList.at(actionIndex));
-				if (action) {
-					const RomData::RomOp &op = ops[id];
-					action->setText(U82Q(op.desc));
-					action->setEnabled(!!(op.flags & RomData::RomOp::ROF_ENABLED));
-				}
-			}
+			d->btnOptions->updateOp(id, &ops[id]);
 		}
 
 		// Show the message and play the sound.

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE4/KF5)                         *
  * RomDataView.hpp: RomData viewer.                                        *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -102,7 +102,7 @@ class RomDataView : public QWidget
 		 * An "Options" menu action was triggered.
 		 * @param id Options ID.
 		 */
-		void menuOptions_action_triggered(int id);
+		void btnOptions_triggered(int id);
 };
 
 #endif /* __ROMPROPERTIES_KDE_ROMDATAVIEW_HPP__ */

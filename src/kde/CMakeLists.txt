@@ -24,6 +24,7 @@ SET(rom-properties-kde_SRCS
 	ListDataModel.cpp
 	ListDataSortProxyModel.cpp
 	LanguageComboBox.cpp
+	OptionsMenuButton.cpp
 	config/stub-export.cpp
 	config/ConfigDialog.cpp
 	config/ITab.cpp
@@ -48,6 +49,7 @@ SET(rom-properties-kde_H
 	ListDataModel.hpp
 	ListDataSortProxyModel.hpp
 	LanguageComboBox.hpp
+	OptionsMenuButton.hpp
 	config/ConfigDialog.hpp
 	config/ITab.hpp
 	config/ImageTypesTab.hpp
