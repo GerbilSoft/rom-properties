@@ -122,10 +122,10 @@ struct option_menu_action_t {
 	int id;
 };
 static const option_menu_action_t stdacts[] = {
-	{NOP_C_("RomDataView|Options", "Export to Text..."),	OPTION_EXPORT_TEXT},
-	{NOP_C_("RomDataView|Options", "Export to JSON..."),	OPTION_EXPORT_JSON},
-	{NOP_C_("RomDataView|Options", "Copy as Text"),		OPTION_COPY_TEXT},
-	{NOP_C_("RomDataView|Options", "Copy as JSON"),		OPTION_COPY_JSON},
+	{NOP_C_("OptionsMenuButton|StdActs", "Export to Text..."),	OPTION_EXPORT_TEXT},
+	{NOP_C_("OptionsMenuButton|StdActs", "Export to JSON..."),	OPTION_EXPORT_JSON},
+	{NOP_C_("OptionsMenuButton|StdActs", "Copy as Text"),		OPTION_COPY_TEXT},
+	{NOP_C_("OptionsMenuButton|StdActs", "Copy as JSON"),		OPTION_COPY_JSON},
 	{nullptr, 0}
 };
 
@@ -183,7 +183,7 @@ options_menu_button_init(OptionsMenuButton *widget)
 	// using a GtkBox for older versions.
 	// TODO: GTK+ 4.x version.
 
-	string s_title = convert_accel_to_gtk(C_("RomDataView", "&Options"));
+	string s_title = convert_accel_to_gtk(C_("OptionsMenuButton", "&Options"));
 
 	GtkWidget *const lblOptions = gtk_label_new(nullptr);
 	gtk_label_set_markup_with_mnemonic(GTK_LABEL(lblOptions), s_title.c_str());

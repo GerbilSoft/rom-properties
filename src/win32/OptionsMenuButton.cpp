@@ -31,10 +31,10 @@ struct option_menu_action_t {
 	int id;
 };
 static const option_menu_action_t stdacts[] = {
-	{NOP_C_("RomDataView|Options", "Export to Text..."),	OPTION_EXPORT_TEXT},
-	{NOP_C_("RomDataView|Options", "Export to JSON..."),	OPTION_EXPORT_JSON},
-	{NOP_C_("RomDataView|Options", "Copy as Text"),		OPTION_COPY_TEXT},
-	{NOP_C_("RomDataView|Options", "Copy as JSON"),		OPTION_COPY_JSON},
+	{NOP_C_("OptionsMenuButton|StdActs", "Export to Text..."),	OPTION_EXPORT_TEXT},
+	{NOP_C_("OptionsMenuButton|StdActs", "Export to JSON..."),	OPTION_EXPORT_JSON},
+	{NOP_C_("OptionsMenuButton|StdActs", "Copy as Text"),		OPTION_COPY_TEXT},
+	{NOP_C_("OptionsMenuButton|StdActs", "Copy as JSON"),		OPTION_COPY_JSON},
 	{nullptr, 0}
 };
 
@@ -91,7 +91,7 @@ OptionsMenuButtonPrivate::OptionsMenuButtonPrivate(HWND hWnd)
 		SetWindowLong(hWnd, GWL_STYLE, lStyle);
 
 		// tr: "Options" button.
-		SetWindowText(hWnd, U82T_c(C_("RomDataView", "&Options")));
+		SetWindowText(hWnd, U82T_c(C_("OptionsMenuButton", "&Options")));
 
 		// Button split.
 		BUTTON_SPLITINFO bsi;
@@ -104,7 +104,7 @@ OptionsMenuButtonPrivate::OptionsMenuButtonPrivate(HWND hWnd)
 		// Maybe we *should* use ownerdraw...
 
 		// tr: "Options" button. (WinXP version, with ellipsis.)
-		SetWindowText(hWnd, U82T_c(C_("RomDataView", "&Options...")));
+		SetWindowText(hWnd, U82T_c(C_("OptionsMenuButton", "&Options...")));
 	}
 }
 

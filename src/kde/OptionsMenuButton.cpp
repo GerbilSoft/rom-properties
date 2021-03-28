@@ -21,10 +21,10 @@ struct option_menu_action_t {
 	int id;
 };
 static const option_menu_action_t stdacts[] = {
-	{NOP_C_("RomDataView|Options", "Export to Text..."),	OPTION_EXPORT_TEXT},
-	{NOP_C_("RomDataView|Options", "Export to JSON..."),	OPTION_EXPORT_JSON},
-	{NOP_C_("RomDataView|Options", "Copy as Text"),		OPTION_COPY_TEXT},
-	{NOP_C_("RomDataView|Options", "Copy as JSON"),		OPTION_COPY_JSON},
+	{NOP_C_("OptionsMenuButton|StdActs", "Export to Text..."),	OPTION_EXPORT_TEXT},
+	{NOP_C_("OptionsMenuButton|StdActs", "Export to JSON..."),	OPTION_EXPORT_JSON},
+	{NOP_C_("OptionsMenuButton|StdActs", "Copy as Text"),		OPTION_COPY_TEXT},
+	{NOP_C_("OptionsMenuButton|StdActs", "Copy as JSON"),		OPTION_COPY_JSON},
 	{nullptr, 0}
 };
 
@@ -65,7 +65,7 @@ void OptionsMenuButton::reinitMenu(const LibRpBase::RomData *romData)
 	// Add the standard actions.
 	for (const auto *p = stdacts; p->desc != nullptr; p++) {
 		QAction *const action = menuOptions->addAction(
-			U82Q(dpgettext_expr(RP_I18N_DOMAIN, "RomDataView|Options", p->desc)));
+			U82Q(dpgettext_expr(RP_I18N_DOMAIN, "OptionsMenuButton", p->desc)));
 #ifdef RP_OMB_USE_LAMBDA_FUNCTIONS
 		// Qt5: Use a lambda function.
 		QObject::connect(action, &QAction::triggered,
