@@ -221,7 +221,7 @@ const char *SufamiTurbo::systemName(unsigned int type) const
 	// Sufami Turbo was only released in Japan, so we can
 	// ignore the region selection.
 	static_assert(SYSNAME_TYPE_MASK == 3,
-		"NGPC::systemName() array index optimization needs to be updated.");
+		"SufamiTurbo::systemName() array index optimization needs to be updated.");
 
 	// Bits 0-1: Type. (long, short, abbreviation)
 	static const char *const sysNames[4] = {
@@ -408,15 +408,15 @@ int SufamiTurbo::loadFieldData(void)
 			features |= (1U << 3);
 			break;
 	}
-	d->fields->addField_bitfield(C_("NGPC", "Features"),
+	d->fields->addField_bitfield(C_("SufamiTurbo", "Features"),
 		v_features_bitfield_names, 4, features);
 
 	// ROM size
-	d->fields->addField_string(C_("NGPC", "ROM Size"),
+	d->fields->addField_string(C_("SufamiTurbo", "ROM Size"),
 		formatFileSizeKiB(romHeader->rom_size * 128*1024));
 
 	// RAM size
-	d->fields->addField_string(C_("NGPC", "SRAM Size"),
+	d->fields->addField_string(C_("SufamiTurbo", "SRAM Size"),
 		formatFileSizeKiB(romHeader->sram_size * 2*1024));
 
 	// TODO: Get the Sufami Turbo game code?
