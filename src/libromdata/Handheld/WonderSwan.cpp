@@ -320,7 +320,7 @@ int WonderSwan::loadFieldData(void)
 		return -EIO;
 	}
 
-	// WonderSwan ROM footer.
+	// WonderSwan ROM footer
 	const WS_RomFooter *const romFooter = &d->romFooter;
 	d->fields->reserve(10);	// Maximum of 10 fields.
 
@@ -436,6 +436,42 @@ int WonderSwan::loadFieldData(void)
 			: C_("WonderSwan|ROMAccessSpeed", "3 cycles"));
 
 	return static_cast<int>(d->fields->count());
+}
+
+/**
+ * Load metadata properties.
+ * Called by RomData::metaData() if the field data hasn't been loaded yet.
+ * @return Number of metadata properties read on success; negative POSIX error code on error.
+ */
+int WonderSwan::loadMetaData(void)
+{
+	RP_D(WonderSwan);
+	if (d->metaData != nullptr) {
+		// Metadata *has* been loaded...
+		return 0;
+	} else if (!d->file) {
+		// File isn't open.
+		return -EBADF;
+	} else if (!d->isValid || (int)d->romType < 0) {
+		// Unknown ROM image type.
+		return -EIO;
+	}
+
+	// Create the metadata object.
+	d->metaData = new RomMetaData();
+	d->metaData->reserve(1);	// Maximum of 1 metadata property.
+
+	// WonderSwan ROM footer
+	const WS_RomFooter *const romFooter = &d->romFooter;
+
+	// Publisher
+	const char *const publisher = WonderSwanPublishers::lookup_name(romFooter->publisher);
+	if (publisher) {
+		d->metaData->addMetaData_string(Property::Publisher, publisher);
+	}
+
+	// Finished reading the metadata.
+	return static_cast<int>(d->metaData->count());
 }
 
 }
