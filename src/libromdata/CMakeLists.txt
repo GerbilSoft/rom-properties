@@ -60,6 +60,7 @@ SET(libromdata_SRCS
 	Handheld/PokemonMini.cpp
 	Handheld/PSP.cpp
 	Handheld/VirtualBoy.cpp
+	Handheld/WonderSwan.cpp
 
 	Audio/ADX.cpp
 	Audio/BCSTM.cpp
@@ -95,6 +96,7 @@ SET(libromdata_SRCS
 	data/SegaPublishers.cpp
 	data/WiiSystemMenuVersion.cpp
 	data/WiiUData.cpp
+	data/WonderSwanPublishers.cpp
 	data/XboxLanguage.cpp
 	data/XboxPublishers.cpp
 	data/Xbox360_STFS_ContentType.cpp
@@ -201,6 +203,7 @@ SET(libromdata_H
 	Handheld/PokemonMini.hpp
 	Handheld/PSP.hpp
 	Handheld/VirtualBoy.hpp
+	Handheld/WonderSwan.hpp
 
 	Handheld/dmg_structs.h
 	Handheld/gba_structs.h
@@ -211,6 +214,7 @@ SET(libromdata_H
 	Handheld/pkmnmini_structs.h
 	Handheld/lnx_structs.h
 	Handheld/vb_structs.h
+	Handheld/ws_structs.h
 
 	Audio/ADX.hpp
 	Audio/BCSTM.hpp
@@ -261,6 +265,7 @@ SET(libromdata_H
 	data/SegaPublishers.hpp
 	data/WiiSystemMenuVersion.hpp
 	data/WiiUData.hpp
+	data/WonderSwanPublishers.hpp
 	data/XboxLanguage.hpp
 	data/XboxPublishers.hpp
 	data/Xbox360_STFS_ContentType.hpp

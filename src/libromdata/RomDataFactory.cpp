@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * RomDataFactory.cpp: RomData factory class.                              *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -75,6 +75,7 @@ using std::vector;
 #include "Handheld/PokemonMini.hpp"
 #include "Handheld/PSP.hpp"
 #include "Handheld/VirtualBoy.hpp"
+#include "Handheld/WonderSwan.hpp"
 
 // RomData subclasses: Audio
 #include "Audio/ADX.hpp"
@@ -355,6 +356,7 @@ const RomDataFactoryPrivate::RomDataFns RomDataFactoryPrivate::romDataFns_header
 // RomData subclasses that use a footer.
 const RomDataFactoryPrivate::RomDataFns RomDataFactoryPrivate::romDataFns_footer[] = {
 	GetRomDataFns(VirtualBoy, ATTR_NONE),
+	GetRomDataFns(WonderSwan, ATTR_NONE),
 	{nullptr, nullptr, nullptr, nullptr, ATTR_NONE, 0, 0}
 };
 
@@ -682,14 +684,14 @@ RomData *RomDataFactory::create(IRpFile *file, unsigned int attrs)
 				// TODO: Don't hard-code this.
 				// Use a pointer to supportedFileExtensions_static() instead?
 				static const char *const exts[] = {
-					".bin",		/* generic .bin */
-					".sms",		/* Sega Master System */
-					".gg",		/* Game Gear */
-					".tgc",		/* game.com */
-					".iso",		/* ISO-9660 */
-					".img",		/* CCD/IMG */
-					".xiso",	/* Xbox disc image */
-					".min",		/* Pokémon Mini */
+					".bin",		// generic .bin
+					".sms",		// Sega Master System
+					".gg",		// Game Gear
+					".tgc",		// game.com
+					".iso",		// ISO-9660
+					".img",		// CCD/IMG
+					".xiso",	// Xbox disc image
+					".min",		// Pokémon Mini
 					nullptr
 				};
 
@@ -779,10 +781,29 @@ RomData *RomDataFactory::create(IRpFile *file, unsigned int attrs)
 
 		// Do we have a matching extension?
 		// FIXME: Instead of hard-coded, check supportedFileExtensions.
-		// Currently only supports VirtualBoy.
-		if (!info.ext || strcasecmp(info.ext, ".vb") != 0) {
-			// Extension doesn't match.
-			continue;
+		static const char *const exts[] = {
+			".vb",		// VirtualBoy
+			".ws",		// WonderSwan
+			".wsc",		// WonderSwan Color
+			nullptr
+		};
+
+		if (info.ext == nullptr) {
+			// No file extension...
+			break;
+		}
+
+		// Check for a matching extension.
+		bool found = false;
+		for (const char *const *ext = exts; *ext != nullptr; ext++) {
+			if (!strcasecmp(info.ext, *ext)) {
+				// Found a match!
+				found = true;
+			}
+		}
+		if (!found) {
+			// No match.
+			break;
 		}
 
 		// Make sure we've read the footer.

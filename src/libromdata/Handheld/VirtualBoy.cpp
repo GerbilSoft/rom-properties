@@ -1,8 +1,8 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (libromdata)                       *
- * DMG.hpp: Virtual Boy ROM reader.                                        *
+ * VirtualBoy.cpp: Nintendo Virtual Boy ROM reader.                        *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * Copyright (c) 2016-2018 by Egor.                                        *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
@@ -56,8 +56,8 @@ class VirtualBoyPrivate final : public RomDataPrivate
 		static bool inline isGameID(char c);
 	
 	public:
-		// ROM header.
-		VB_RomHeader romHeader;
+		// ROM footer.
+		VB_RomFooter romFooter;
 };
 
 /** VirtualBoyPrivate **/
@@ -65,8 +65,8 @@ class VirtualBoyPrivate final : public RomDataPrivate
 VirtualBoyPrivate::VirtualBoyPrivate(VirtualBoy *q, IRpFile *file)
 	: super(q, file)
 {
-	// Clear the ROM header struct.
-	memset(&romHeader, 0, sizeof(romHeader));
+	// Clear the ROM footer struct.
+	memset(&romFooter, 0, sizeof(romFooter));
 }
 
 /**
@@ -131,7 +131,7 @@ VirtualBoy::VirtualBoy(IRpFile *file)
 		return;
 	}
 
-	// Seek to the beginning of the header.
+	// Seek to the beginning of the footer.
 	const off64_t filesize = d->file->size();
 	// File must be at least 0x220 bytes,
 	// and cannot be larger than 16 MB.
@@ -141,20 +141,20 @@ VirtualBoy::VirtualBoy(IRpFile *file)
 		return;
 	}
 
-	// Read the ROM header.
-	const unsigned int header_addr = static_cast<unsigned int>(filesize - 0x220);
-	d->file->seek(header_addr);
-	size_t size = d->file->read(&d->romHeader, sizeof(d->romHeader));
-	if (size != sizeof(d->romHeader)) {
+	// Read the ROM footer.
+	const unsigned int footer_addr = static_cast<unsigned int>(filesize - 0x220);
+	d->file->seek(footer_addr);
+	size_t size = d->file->read(&d->romFooter, sizeof(d->romFooter));
+	if (size != sizeof(d->romFooter)) {
 		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
 
 	// Make sure this is actually a Virtual Boy ROM.
 	DetectInfo info;
-	info.header.addr = header_addr;
-	info.header.size = sizeof(d->romHeader);
-	info.header.pData = reinterpret_cast<const uint8_t*>(&d->romHeader);
+	info.header.addr = footer_addr;
+	info.header.size = sizeof(d->romFooter);
+	info.header.pData = reinterpret_cast<const uint8_t*>(&d->romFooter);
 	info.ext = nullptr;	// Not needed for Virtual Boy.
 	info.szFile = filesize;
 	d->isValid = (isRomSupported(&info) >= 0);
@@ -193,22 +193,22 @@ int VirtualBoy::isRomSupported_static(const DetectInfo *info)
 		return -1;
 	}
 
-	// Virtual Boy header is located at
+	// Virtual Boy footer is located at
 	// 0x220 before the end of the file.
 	if (info->szFile < 0x220)
 		return -1;
-	const uint32_t header_addr_expected = static_cast<uint32_t>(info->szFile - 0x220);
-	if (info->header.addr > header_addr_expected)
+	const uint32_t footer_addr_expected = static_cast<uint32_t>(info->szFile - 0x220);
+	if (info->header.addr > footer_addr_expected)
 		return -1;
-	else if (info->header.addr + info->header.size < header_addr_expected + 0x20)
+	else if (info->header.addr + info->header.size < footer_addr_expected + 0x20)
 		return -1;
 
 	// Determine the offset.
-	const unsigned int offset = header_addr_expected - info->header.addr;
+	const unsigned int offset = footer_addr_expected - info->header.addr;
 
-	// Get the ROM header.
-	const VB_RomHeader *romHeader =
-		reinterpret_cast<const VB_RomHeader*>(&info->header.pData[offset]);
+	// Get the ROM footer.
+	const VB_RomFooter *const romFooter =
+		reinterpret_cast<const VB_RomFooter*>(&info->header.pData[offset]);
 
 	// NOTE: The following is true for every Virtual Boy ROM:
 	// 1) First 20 bytes of title are non-control JIS X 0201 characters (padded with space if needed)
@@ -216,15 +216,15 @@ int VirtualBoy::isRomSupported_static(const DetectInfo *info)
 	// 3) Game ID is either VxxJ (for Japan) or VxxE (for USA) (xx are alphanumeric uppercase characters)
 	// 4) ROM version is always 0, but let's not count on that.
 	// 5) And, obviously, the publisher is always valid, but again let's not rely on this
-	// NOTE: We're supporting all no-intro ROMs except for "Space Pinball (Unknown) (Proto).vb" as it doesn't have a valid header at all
-	if (romHeader->title[20] != 0) {
+	// NOTE: We're supporting all no-intro ROMs except for "Space Pinball (Unknown) (Proto).vb" as it doesn't have a valid footer at all
+	if (romFooter->title[20] != 0) {
 		// title[20] is not NULL.
 		return -1;
 	}
 
 	// Make sure the title is valid JIS X 0201.
-	for (int i = ARRAY_SIZE(romHeader->title)-2-1; i >= 0; i--) {
-		if (!VirtualBoyPrivate::isJISX0201(romHeader->title[i])) {
+	for (int i = ARRAY_SIZE(romFooter->title)-2-1; i >= 0; i--) {
+		if (!VirtualBoyPrivate::isJISX0201(romFooter->title[i])) {
 			// Invalid title character.
 			return -1;
 		}
@@ -237,15 +237,15 @@ int VirtualBoy::isRomSupported_static(const DetectInfo *info)
 	// - Digits
 	// - Space (' ') [not for publisher]
 	// - Hyphen ('-') [not for publisher]
-	if (!VirtualBoyPrivate::isPublisherID(romHeader->publisher[0]) ||
-	    !VirtualBoyPrivate::isPublisherID(romHeader->publisher[1]))
+	if (!VirtualBoyPrivate::isPublisherID(romFooter->publisher[0]) ||
+	    !VirtualBoyPrivate::isPublisherID(romFooter->publisher[1]))
 	{
 		// Invalid publisher ID.
 		return -1;
 	}
 
-	for (int i = ARRAY_SIZE(romHeader->gameid)-1; i >= 0; i--) {
-		if (!VirtualBoyPrivate::isGameID(romHeader->gameid[i])) {
+	for (int i = ARRAY_SIZE(romFooter->gameid)-1; i >= 0; i--) {
+		if (!VirtualBoyPrivate::isGameID(romFooter->gameid[i])) {
 			// Invalid game ID.
 			return -1;
 		}
@@ -342,45 +342,45 @@ int VirtualBoy::loadFieldData(void)
 		return -EIO;
 	}
 
-	// Virtual Boy ROM header, excluding the vector table.
-	const VB_RomHeader *const romHeader = &d->romHeader;
+	// Virtual Boy ROM footer, excluding the vector table.
+	const VB_RomFooter *const romFooter = &d->romFooter;
 	d->fields->reserve(5);	// Maximum of 5 fields.
 
 	// Title
 	d->fields->addField_string(C_("RomData", "Title"),
-		cp1252_sjis_to_utf8(romHeader->title, sizeof(romHeader->title)));
+		cp1252_sjis_to_utf8(romFooter->title, sizeof(romFooter->title)));
 
 	// Game ID and publisher.
-	string id6(romHeader->gameid, sizeof(romHeader->gameid));
-	id6.append(romHeader->publisher, sizeof(romHeader->publisher));
+	string id6(romFooter->gameid, sizeof(romFooter->gameid));
+	id6.append(romFooter->publisher, sizeof(romFooter->publisher));
 	d->fields->addField_string(C_("RomData", "Game ID"), latin1_to_utf8(id6));
 
 	// Look up the publisher.
-	const char *const publisher = NintendoPublishers::lookup(romHeader->publisher);
+	const char *const publisher = NintendoPublishers::lookup(romFooter->publisher);
 	string s_publisher;
 	if (publisher) {
 		s_publisher = publisher;
 	} else {
-		if (ISALNUM(romHeader->publisher[0]) &&
-		    ISALNUM(romHeader->publisher[1]))
+		if (ISALNUM(romFooter->publisher[0]) &&
+		    ISALNUM(romFooter->publisher[1]))
 		{
 			s_publisher = rp_sprintf(C_("RomData", "Unknown (%.2s)"),
-				romHeader->publisher);
+				romFooter->publisher);
 		} else {
 			s_publisher = rp_sprintf(C_("RomData", "Unknown (%02X %02X)"),
-				static_cast<uint8_t>(romHeader->publisher[0]),
-				static_cast<uint8_t>(romHeader->publisher[1]));
+				static_cast<uint8_t>(romFooter->publisher[0]),
+				static_cast<uint8_t>(romFooter->publisher[1]));
 		}
 	}
 	d->fields->addField_string(C_("RomData", "Publisher"), s_publisher);
 
 	// Revision
 	d->fields->addField_string_numeric(C_("RomData", "Revision"),
-		romHeader->version, RomFields::Base::Dec, 2);
+		romFooter->version, RomFields::Base::Dec, 2);
 
 	// Region
 	const char *s_region;
-	switch (romHeader->gameid[3]) {
+	switch (romFooter->gameid[3]) {
 		case 'J':
 			s_region = C_("Region", "Japan");
 			break;
@@ -396,7 +396,7 @@ int VirtualBoy::loadFieldData(void)
 	} else {
 		d->fields->addField_string(C_("RomData", "Region Code"),
 			rp_sprintf(C_("RomData", "Unknown (0x%02X)"),
-				static_cast<uint8_t>(romHeader->gameid[3])));
+				static_cast<uint8_t>(romFooter->gameid[3])));
 	}
 
 	return static_cast<int>(d->fields->count());
