@@ -419,23 +419,119 @@ int WonderSwan::loadFieldData(void)
 
 	// Flags: Display orientation
 	d->fields->addField_string(C_("WonderSwan", "Orientation"),
-		(romFooter->flags & WS_FLAG_DISPLAY_MASK)
+		((romFooter->flags & WS_FLAG_DISPLAY_MASK) == WS_FLAG_DISPLAY_VERTICAL)
 			? C_("WonderSwan|Orientation", "Vertical")
 			: C_("WonderSwan|Orientation", "Horizontal"));
 
 	// Flags: Bus width
 	d->fields->addField_string(C_("WonderSwan", "Bus Width"),
-		(romFooter->flags & WS_FLAG_ROM_BUS_WIDTH_MASK)
+		((romFooter->flags & WS_FLAG_ROM_BUS_WIDTH_MASK) == WS_FLAG_ROM_BUS_WIDTH_8_BIT)
 			? C_("WonderSwan|BusWidth", "8-bit")
 			: C_("WonderSwan|BusWidth", "16-bit"));
 
 	// Flags: ROM access speed
 	d->fields->addField_string(C_("WonderSwan", "ROM Access Speed"),
-		(romFooter->flags & WS_FLAG_ROM_ACCESS_SPEED_MASK)
+		((romFooter->flags & WS_FLAG_ROM_ACCESS_SPEED_MASK) == WS_FLAG_ROM_ACCESS_SPEED_1_CYCLE)
 			? C_("WonderSwan|ROMAccessSpeed", "1 cycle")
 			: C_("WonderSwan|ROMAccessSpeed", "3 cycles"));
 
 	return static_cast<int>(d->fields->count());
+}
+
+/**
+ * Get a bitfield of image types this class can retrieve.
+ * @return Bitfield of supported image types. (ImageTypesBF)
+ */
+uint32_t WonderSwan::supportedImageTypes(void) const
+{
+	return IMGBF_EXT_TITLE_SCREEN;
+}
+
+/**
+ * Get a list of all available image sizes for the specified image type.
+ * @param imageType Image type.
+ * @return Vector of available image sizes, or empty vector if no images are available.
+ */
+vector<RomData::ImageSizeDef> WonderSwan::supportedImageSizes_static(ImageType imageType)
+{
+	ASSERT_supportedImageSizes(imageType);
+
+	switch (imageType) {
+		case IMG_EXT_TITLE_SCREEN: {
+			// Assuming horizontal orientation by default.
+			static const ImageSizeDef sz_EXT_TITLE_SCREEN_H[] = {
+				{nullptr, 224, 144, 0},
+			};
+			return vector<ImageSizeDef>(sz_EXT_TITLE_SCREEN_H,
+				sz_EXT_TITLE_SCREEN_H + ARRAY_SIZE(sz_EXT_TITLE_SCREEN_H));
+		}
+		default:
+			break;
+	}
+
+	// Unsupported image type.
+	return vector<ImageSizeDef>();
+}
+
+/**
+ * Get a list of all available image sizes for the specified image type.
+ * @param imageType Image type.
+ * @return Vector of available image sizes, or empty vector if no images are available.
+ */
+vector<RomData::ImageSizeDef> WonderSwan::supportedImageSizes(ImageType imageType) const
+{
+	ASSERT_supportedImageSizes(imageType);
+
+	switch (imageType) {
+		case IMG_EXT_TITLE_SCREEN: {
+			static const ImageSizeDef sz_EXT_TITLE_SCREEN_H[] = {
+				{nullptr, 224, 144, 0},
+			};
+			static const ImageSizeDef sz_EXT_TITLE_SCREEN_V[] = {
+				{nullptr, 144, 224, 0},
+			};
+
+			RP_D(const WonderSwan);
+			if ((d->romFooter.flags & WS_FLAG_DISPLAY_MASK) == WS_FLAG_DISPLAY_VERTICAL) {
+				return vector<ImageSizeDef>(sz_EXT_TITLE_SCREEN_V,
+					sz_EXT_TITLE_SCREEN_V + ARRAY_SIZE(sz_EXT_TITLE_SCREEN_V));
+			} else {
+				return vector<ImageSizeDef>(sz_EXT_TITLE_SCREEN_H,
+					sz_EXT_TITLE_SCREEN_H + ARRAY_SIZE(sz_EXT_TITLE_SCREEN_H));
+			}
+		}
+		default:
+			break;
+	}
+
+	// Unsupported image type.
+	return vector<ImageSizeDef>();
+}
+
+/**
+ * Get image processing flags.
+ *
+ * These specify post-processing operations for images,
+ * e.g. applying transparency masks.
+ *
+ * @param imageType Image type.
+ * @return Bitfield of ImageProcessingBF operations to perform.
+ */
+uint32_t WonderSwan::imgpf(ImageType imageType) const
+{
+	ASSERT_imgpf(imageType);
+
+	uint32_t ret = 0;
+	switch (imageType) {
+		case IMG_EXT_TITLE_SCREEN:
+			// Use nearest-neighbor scaling when resizing.
+			ret = IMGPF_RESCALE_NEAREST;
+			break;
+
+		default:
+			break;
+	}
+	return ret;
 }
 
 /**
@@ -472,6 +568,78 @@ int WonderSwan::loadMetaData(void)
 
 	// Finished reading the metadata.
 	return static_cast<int>(d->metaData->count());
+}
+
+/**
+ * Get a list of URLs for an external image type.
+ *
+ * A thumbnail size may be requested from the shell.
+ * If the subclass supports multiple sizes, it should
+ * try to get the size that most closely matches the
+ * requested size.
+ *
+ * @param imageType	[in]     Image type.
+ * @param pExtURLs	[out]    Output vector.
+ * @param size		[in,opt] Requested image size. This may be a requested
+ *                               thumbnail size in pixels, or an ImageSizeType
+ *                               enum value.
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int WonderSwan::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
+{
+	ASSERT_extURLs(imageType, pExtURLs);
+	pExtURLs->clear();
+
+	// Get the game ID.
+	RP_D(const WonderSwan);
+	const string game_id = d->getGameID();
+	if (game_id.empty()) {
+		// No game ID.
+		return -ENOENT;
+	}
+
+	// NOTE: We only have one size for WonderSwan right now.
+	RP_UNUSED(size);
+	vector<ImageSizeDef> sizeDefs = supportedImageSizes(imageType);
+	assert(sizeDefs.size() == 1);
+	if (sizeDefs.empty()) {
+		// No image sizes.
+		return -ENOENT;
+	}
+
+	// NOTE: RPDB's title screen database only has one size.
+	// There's no need to check image sizes, but we need to
+	// get the image size for the extURLs struct.
+
+	// Determine the image type name.
+	const char *imageTypeName;
+	const char *ext;
+	switch (imageType) {
+		case IMG_EXT_TITLE_SCREEN:
+			imageTypeName = "title";
+			ext = ".png";
+			break;
+		default:
+			// Unsupported image type.
+			return -ENOENT;
+	}
+
+	// Subdirectory is 'C' for color or 'M' for original/mono.
+	char subdir[2];
+	subdir[0] = (d->romType == WonderSwanPrivate::RomType::Color) ? 'C' : 'M';
+	subdir[1] = '\0';
+
+	// Add the URLs.
+	pExtURLs->resize(1);
+	auto extURL_iter = pExtURLs->begin();
+	extURL_iter->url = d->getURL_RPDB("ws", imageTypeName, subdir, game_id.c_str(), ext);
+	extURL_iter->cache_key = d->getCacheKey_RPDB("ws", imageTypeName, subdir, game_id.c_str(), ext);
+	extURL_iter->width = sizeDefs[0].width;
+	extURL_iter->height = sizeDefs[0].height;
+	extURL_iter->high_res = (sizeDefs[0].index >= 2);
+
+	// All URLs added.
+	return 0;
 }
 
 }

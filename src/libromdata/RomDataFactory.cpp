@@ -356,7 +356,7 @@ const RomDataFactoryPrivate::RomDataFns RomDataFactoryPrivate::romDataFns_header
 // RomData subclasses that use a footer.
 const RomDataFactoryPrivate::RomDataFns RomDataFactoryPrivate::romDataFns_footer[] = {
 	GetRomDataFns(VirtualBoy, ATTR_NONE),
-	GetRomDataFns(WonderSwan, ATTR_HAS_METADATA),
+	GetRomDataFns(WonderSwan, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA),
 	{nullptr, nullptr, nullptr, nullptr, ATTR_NONE, 0, 0}
 };
 

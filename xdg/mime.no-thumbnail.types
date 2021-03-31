@@ -50,8 +50,6 @@ application/x-nintendo-3ds-emmc		# Nintendo3DS
 application/x-nintendo-3ds-firm		# Nintendo3DSFirm
 application/x-pokemon-mini-rom		# PokemonMini
 application/x-virtual-boy-rom		# VirtualBoy
-application/x-wonderswan-rom		# WonderSwan
-application/x-wonderswan-color-rom	# WonderSwan
 
 # Other
 application/x-object			# ELF

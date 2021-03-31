@@ -63,6 +63,8 @@ application/x-neo-geo-pocket-rom	# NGPC
 application/x-neo-geo-pocket-color-rom	# NGPC
 application/x-nintendo-3ds-3dsx		# Nintendo3DS
 application/x-nintendo-3ds-rom		# Nintendo3DS
+application/x-wonderswan-rom		# WonderSwan
+application/x-wonderswan-color-rom	# WonderSwan
 model/x.stl-binary			# Nintendo3DS (?)
 image/x-3ds				# Nintendo3DS (?)
 application/x-nintendo-3ds-cia		# Nintendo3DS
