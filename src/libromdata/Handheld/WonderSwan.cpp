@@ -300,10 +300,10 @@ int WonderSwan::loadFieldData(void)
 		char game_id[16];
 		if (d->romType == WonderSwanPrivate::RomType::Original) {
 			snprintf(game_id, sizeof(game_id), "SWJ-%s%03X",
-				publisher_code, d->romFooter.game_id);
+				publisher_code, romFooter->game_id);
 		} else {
 			snprintf(game_id, sizeof(game_id), "SWJ-%sC%02X",
-				publisher_code, d->romFooter.game_id);
+				publisher_code, romFooter->game_id);
 		}
 		d->fields->addField_string(game_id_title, game_id);
 	} else {
@@ -329,7 +329,7 @@ int WonderSwan::loadFieldData(void)
 	};
 	vector<string> *const v_system_bitfield_names = RomFields::strArrayToVector(
 		system_bitfield_names, ARRAY_SIZE(system_bitfield_names));
-	const uint32_t ws_system = (d->romFooter.system_id & 1 ? 3 : 1);
+	const uint32_t ws_system = (romFooter->system_id & 1 ? 3 : 1);
 	d->fields->addField_bitfield(C_("WonderSwan", "System"),
 		v_system_bitfield_names, 0, ws_system);
 
@@ -340,10 +340,10 @@ int WonderSwan::loadFieldData(void)
 		8192, 16384,
 	};
 	const char *const rom_size_title = C_("WonderSwan", "ROM Size");
-	if (d->romFooter.rom_size < ARRAY_SIZE(rom_size_tbl)) {
+	if (romFooter->rom_size < ARRAY_SIZE(rom_size_tbl)) {
 		d->fields->addField_string(rom_size_title,
 			// TODO: Format with commas?
-			rp_sprintf(C_("WonderSwan", "%u KiB"), rom_size_tbl[d->romFooter.rom_size]));
+			rp_sprintf(C_("WonderSwan", "%u KiB"), rom_size_tbl[romFooter->rom_size]));
 	} else {
 		d->fields->addField_string(rom_size_title,
 			rp_sprintf(C_("RomData", "Unknown (%u)"), romFooter->publisher));
@@ -354,17 +354,17 @@ int WonderSwan::loadFieldData(void)
 		0, 8, 32, 128, 256, 512,
 	};
 	const char *const save_memory_title = C_("WonderSwan", "Save Memory");
-	if (d->romFooter.save_type == 0) {
+	if (romFooter->save_type == 0) {
 		d->fields->addField_string(save_memory_title, C_("WonderSwan|SaveMemory", "None"));
-	} else if (d->romFooter.save_type < ARRAY_SIZE(sram_size_tbl)) {
+	} else if (romFooter->save_type < ARRAY_SIZE(sram_size_tbl)) {
 		d->fields->addField_string(save_memory_title,
 			rp_sprintf_p(C_("WonderSwan|SaveMemory", "%1$u KiB (%2$s)"),
-				sram_size_tbl[d->romFooter.save_type],
+				sram_size_tbl[romFooter->save_type],
 				C_("WonderSwan|SaveMemory", "SRAM")));
 	} else {
 		// EEPROM save
 		unsigned int eeprom_bytes;
-		switch (d->romFooter.save_type) {
+		switch (romFooter->save_type) {
 			case 0x10:	eeprom_bytes = 128; break;
 			case 0x20:	eeprom_bytes = 2048; break;
 			case 0x50:	eeprom_bytes = 1024; break;
@@ -392,7 +392,7 @@ int WonderSwan::loadFieldData(void)
 	vector<string> *const v_ws_feature_bitfield_names = RomFields::strArrayToVector_i18n(
 		"WonderSwan|Features", ws_feature_bitfield_names, ARRAY_SIZE(ws_feature_bitfield_names));
 	d->fields->addField_bitfield(C_("WonderSwan", "Features"),
-		v_ws_feature_bitfield_names, 0, d->romFooter.rtc_present);
+		v_ws_feature_bitfield_names, 0, romFooter->rtc_present);
 
 	// Flags: Display orientation
 	d->fields->addField_string(C_("WonderSwan", "Orientation"),
