@@ -45,6 +45,13 @@ class WonderSwanPrivate final : public RomDataPrivate
 
 		// ROM footer.
 		WS_RomFooter romFooter;
+
+	public:
+		/**
+		 * Get the game ID. (SWJ-PUBx01)
+		 * @return Game ID, or empty string on error.
+		 */
+		string getGameID(void) const;
 };
 
 /** WonderSwanPrivate **/
@@ -55,6 +62,30 @@ WonderSwanPrivate::WonderSwanPrivate(WonderSwan *q, IRpFile *file)
 {
 	// Clear the ROM footer struct.
 	memset(&romFooter, 0, sizeof(romFooter));
+}
+
+/**
+ * Get the game ID. (SWJ-PUBx01)
+ * @return Game ID, or empty string on error.
+ */
+string WonderSwanPrivate::getGameID(void) const
+{
+	const char *const publisher_code = WonderSwanPublishers::lookup_code(romFooter.publisher);
+	if (!publisher_code) {
+		// Invalid publisher code.
+		return string();
+	}
+
+	char game_id[16];
+	if (romType == WonderSwanPrivate::RomType::Original) {
+		snprintf(game_id, sizeof(game_id), "SWJ-%s%03X",
+			publisher_code, romFooter.game_id);
+	} else {
+		snprintf(game_id, sizeof(game_id), "SWJ-%sC%02X",
+			publisher_code, romFooter.game_id);
+	}
+
+	return string(game_id);
 }
 
 /** WonderSwan **/
@@ -295,16 +326,8 @@ int WonderSwan::loadFieldData(void)
 
 	// Game ID
 	const char *const game_id_title = C_("RomData", "Game ID");
-	const char *const publisher_code = WonderSwanPublishers::lookup_code(romFooter->publisher);
-	if (publisher_code != nullptr) {
-		char game_id[16];
-		if (d->romType == WonderSwanPrivate::RomType::Original) {
-			snprintf(game_id, sizeof(game_id), "SWJ-%s%03X",
-				publisher_code, romFooter->game_id);
-		} else {
-			snprintf(game_id, sizeof(game_id), "SWJ-%sC%02X",
-				publisher_code, romFooter->game_id);
-		}
+	const string game_id = d->getGameID();
+	if (!game_id.empty()) {
 		d->fields->addField_string(game_id_title, game_id);
 	} else {
 		d->fields->addField_string(game_id_title, C_("WonderSwan", "None"));
