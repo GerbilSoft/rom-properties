@@ -252,6 +252,7 @@ ENDIF(BUILD_KF5)
 
 IF(BUILD_KF5)
 	# Process MIME types for the .desktop and .json files.
+	# FIXME: Need to add a dependency to ensure these files are regenerated if the XDG files are changed.
 	INCLUDE(ParseMimeTypes)
 	PARSE_MIME_TYPES(MIMETYPES_THUMBONLY
 		"${CMAKE_SOURCE_DIR}/xdg/mime.thumbnail.types"
