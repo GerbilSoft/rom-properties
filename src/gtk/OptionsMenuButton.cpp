@@ -178,11 +178,6 @@ convert_accel_to_gtk(const char *str)
 static void
 options_menu_button_init(OptionsMenuButton *widget)
 {
-	// FIXME: GTK+ 4.x's GtkMenuButton supports both label and image.
-	// GTK+ 3.x's GtkMenuButton only supports one or the other, so we're
-	// using a GtkBox for older versions.
-	// TODO: GTK+ 4.x version.
-
 	string s_title = convert_accel_to_gtk(C_("OptionsMenuButton", "&Options"));
 
 	GtkWidget *const lblOptions = gtk_label_new(nullptr);
