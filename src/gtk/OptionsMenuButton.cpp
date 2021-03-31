@@ -398,7 +398,7 @@ btnOptions_event_signal_handler(GtkButton *button,
 {
 	RP_UNUSED(user_data);
 
-	if (event->type != GDK_BUTTON_PRESS) {
+	if (gdk_event_get_event_type(event) != GDK_BUTTON_PRESS) {
 		// Tell the caller that we did NOT handle the event.
 		return FALSE;
 	}
@@ -424,11 +424,14 @@ btnOptions_event_signal_handler(GtkButton *button,
 
 	// Pop up the menu.
 	// FIXME: Improve button appearance so it's more pushed-in.
-	GdkEventButton *const bevent = reinterpret_cast<GdkEventButton*>(event);
+	guint button_id;
+	if (!gdk_event_get_button(event, &button_id))
+		return FALSE;
+
 	gtk_menu_popup(GTK_MENU(widget->menuOptions),
 		nullptr, nullptr,
-		menuPositionFunc, button,
-		bevent->button, bevent->time);
+		menuPositionFunc, button, button_id,
+		gdk_event_get_time(event));
 
 	// Tell the caller that we handled the event.
 	return TRUE;

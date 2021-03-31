@@ -12,17 +12,17 @@
 // PrecompiledHeader.cmake's FILE(GENERATE) command mangles the
 // escaped double-quotes for G_LOG_DOMAIN.
 #if defined(RP_UI_GTK3_GNOME)
-# define G_LOG_DOMAIN "rom-properties-gnome"
+#  define G_LOG_DOMAIN "rom-properties-gnome"
 #elif defined(RP_UI_GTK3_CINNAMON)
-# define G_LOG_DOMAIN "rom-properties-cinnamon"
+#  define G_LOG_DOMAIN "rom-properties-cinnamon"
 #elif defined(RP_UI_GTK3_MATE)
-# define G_LOG_DOMAIN "rom-properties-mate"
+#  define G_LOG_DOMAIN "rom-properties-mate"
 #elif defined(RP_UI_GTK2_XFCE)
-# define G_LOG_DOMAIN "rom-properties-xfce"
+#  define G_LOG_DOMAIN "rom-properties-xfce"
 #elif defined(RP_UI_GTK3_XFCE)
-# define G_LOG_DOMAIN "rom-properties-xfce3"
+#  define G_LOG_DOMAIN "rom-properties-xfce3"
 #else
-# error RP_UI_GTK macro not defined
+#  error RP_UI_GTK macro not defined
 #endif
 
 #ifdef __cplusplus
@@ -59,7 +59,7 @@
 // NOTE: Thunar-1.8.0's thunarx-renamer.h depends on GtkVBox,
 // which is deprecated in GTK+ 3.x.
 #ifdef GTK_DISABLE_DEPRECATED
-# undef GTK_DISABLE_DEPRECATED
+#  undef GTK_DISABLE_DEPRECATED
 #endif
 
 // GTK+ includes.
@@ -67,13 +67,16 @@
 #include <glib-object.h>
 #include <gtk/gtk.h>
 
+// GTK+ 2.x compatibility functions.
+#include "gtk-compat.h"
+
 // GLib on non-Windows platforms defines G_MODULE_EXPORT to a no-op.
 // This doesn't work when we use symbol visibility settings.
 #if !defined(_WIN32) && (defined(__GNUC__) && __GNUC__ >= 4)
-# ifdef G_MODULE_EXPORT
-#  undef G_MODULE_EXPORT
-# endif
-# define G_MODULE_EXPORT __attribute__ ((visibility ("default")))
+#  ifdef G_MODULE_EXPORT
+#    undef G_MODULE_EXPORT
+#  endif
+#  define G_MODULE_EXPORT __attribute__ ((visibility ("default")))
 #endif /* !_WIN32 && __GNUC__ >= 4 */
 
 // libi18n
@@ -106,14 +109,14 @@
 // GTK+ UI frontend headers
 #include "PIMGTYPE.hpp"
 #ifdef RP_GTK_USE_CAIRO
-# include <cairo.h>
-# include <cairo-gobject.h>
+#  include <cairo.h>
+#  include <cairo-gobject.h>
 #else /* !RP_GTK_USE_CAIRO */
-# include <gdk/gdkpixbuf.h>
+#  include <gdk/gdkpixbuf.h>
 #endif /* RP_GTK_USE_CAIRO */
 
 #ifdef __cplusplus
-# include "RpFile_gio.hpp"
+#  include "RpFile_gio.hpp"
 #endif /* __cplusplus */
 
 #endif /* __ROMPROPERTIES_GTK_STDAFX_H__ */

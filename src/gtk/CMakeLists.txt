@@ -62,6 +62,7 @@ SET(rom-properties-gtk_H
 	MessageWidget.hpp
 	RpGtk.hpp
 	sort_funcs.h
+	gtk-compat.h
 	LanguageComboBox.hpp
 	OptionsMenuButton.hpp
 	)

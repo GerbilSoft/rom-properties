@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * RomDataView.cpp: RomData viewer widget.                                 *
  *                                                                         *
- * Copyright (c) 2017-2020 by David Korth.                                 *
+ * Copyright (c) 2017-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -44,28 +44,6 @@ using std::set;
 using std::string;
 using std::unordered_map;
 using std::vector;
-
-// GTK+ 2.x compatibility macros.
-// Reference: https://github.com/kynesim/wireshark/blob/master/ui/gtk/old-gtk-compat.h
-#if !GTK_CHECK_VERSION(3,0,0)
-static inline GtkWidget *gtk_tree_view_column_get_button(GtkTreeViewColumn *tree_column)
-{
-	/* This is too late, see https://bugzilla.gnome.org/show_bug.cgi?id=641089
-	 * According to
-	 * http://ftp.acc.umu.se/pub/GNOME/sources/gtk+/2.13/gtk+-2.13.4.changes
-	 * access to the button element was sealed during 2.13. They also admit that
-	 * they missed a use case and thus failed to provide an accessor function:
-	 * http://mail.gnome.org/archives/commits-list/2010-December/msg00578.html
-	 * An accessor function was finally added in 3.0.
-	 */
-# if (GTK_CHECK_VERSION(2,14,0) && defined(GSEAL_ENABLE))
-	return tree_column->_g_sealed__button;
-# else
-	return tree_column->button;
-# endif
-}
-#endif /* !GTK_CHECK_VERSION(3,0,0) */
-
 
 // References:
 // - audio-tags plugin
