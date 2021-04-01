@@ -74,10 +74,11 @@ WonderSwanPrivate::WonderSwanPrivate(WonderSwan *q, IRpFile *file)
  */
 string WonderSwanPrivate::getGameID(void) const
 {
-	const char *const publisher_code = WonderSwanPublishers::lookup_code(romFooter.publisher);
+	const char *publisher_code = WonderSwanPublishers::lookup_code(romFooter.publisher);
 	if (!publisher_code) {
 		// Invalid publisher code.
-		return string();
+		// Use "???" as a placeholder.
+		publisher_code = "???";
 	}
 
 	char sys_id;
