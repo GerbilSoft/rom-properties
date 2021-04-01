@@ -121,6 +121,7 @@ button.
 |             System            | Properties Tab | Metadata | Internal Images | External Images |
 |:-----------------------------:|:--------------:|:--------:|:---------------:|:---------------:|
 | Atari Lynx                    |       Yes      |    No    |       N/A       |        No       |
+| Bandai WonderSwan (Color)     |       Yes      |    Yes   |       N/A       |      Title      |
 | Neo Geo Pocket (Color)        |       Yes      |    Yes   |       N/A       |      Title      |
 | Nintendo Game Boy (Color)     |       Yes      |    Yes   |       N/A       |      Title      |
 | Nintendo Virtual Boy          |       Yes      |    No    |       N/A       |        No       |
@@ -153,6 +154,7 @@ button.
 | Valve VTF3 (PS3) Textures     |       Yes      |    Yes   |      Image      |       N/A      |
 
 #### Texture Codecs
+
 * Assorted linear RGB formats, including 15-bit, 16-bit, 24-bit and 32-bit per pixel.
   * Most of these formats have SSE2 and/or SSSE3-optimized decoders.
   * RGB9_E5 is supported, though it is currently converted to ARGB32 for

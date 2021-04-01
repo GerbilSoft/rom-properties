@@ -1,6 +1,6 @@
 # Changes
 
-## v1.8 (released 2020/??/??)
+## v1.8 (released 2021/??/??)
 
 * New features:
   * An achievements system has been added. By viewing certain types of files
@@ -16,6 +16,11 @@
     the generic ISO parser and PlayStationDisc. Support for other systems may
     be added later on, but subchannels generally aren't used on Sega Mega CD,
     Sega Saturn, Sega Dreamcast, or PlayStation Portable.
+
+* New parsers:
+  * WonderSwan: Bandai WonderSwan (Color) ROM images. Supports external title
+    screens using RPDB.
+
 * New parser features:
   * NGPC: Added external title screens using RPDB.
   * Xbox360_XDBF:
