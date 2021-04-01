@@ -85,7 +85,7 @@ const WonderSwanPublishersPrivate::ThirdPartyEntry WonderSwanPublishersPrivate::
 	{"SHL",	"Shall Luck"},
 	{"SQR",	"Squaresoft"},
 	{"",	nullptr},
-	{"",	nullptr},
+	{"SCC",	"NTT Docomo"},	// Mobile Wonder Gate
 	{"TMC",	"Tom Create"},
 	{"",	nullptr},
 	{"NMC",	"Namco"},
@@ -100,6 +100,18 @@ const WonderSwanPublishersPrivate::ThirdPartyEntry WonderSwanPublishersPrivate::
 	{"",	nullptr},
 	{"",	nullptr},
 	{"CAP",	"Capcom"},
+	{"",	nullptr},
+	{"",	nullptr},
+	{"",	nullptr},
+	{"",	nullptr},
+	{"",	nullptr},
+	{"",	nullptr},
+	{"",	nullptr},
+	{"",	nullptr},
+	{"",	nullptr},
+
+	// 0x40
+	{"DDJ",	"Digital Dream"},	// FIXME: Not the actual publisher ID. (Cart has 0x00)
 };
 
 /** Public functions **/

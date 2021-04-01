@@ -46,6 +46,9 @@ class WonderSwanPrivate final : public RomDataPrivate
 		// ROM footer.
 		WS_RomFooter romFooter;
 
+		// Force the game ID's system ID character to '0'?
+		bool forceGameIDSysIDTo0;
+
 	public:
 		/**
 		 * Get the game ID. (SWJ-PUBx01)
@@ -59,6 +62,7 @@ class WonderSwanPrivate final : public RomDataPrivate
 WonderSwanPrivate::WonderSwanPrivate(WonderSwan *q, IRpFile *file)
 	: super(q, file)
 	, romType(RomType::Unknown)
+	, forceGameIDSysIDTo0(false)
 {
 	// Clear the ROM footer struct.
 	memset(&romFooter, 0, sizeof(romFooter));
@@ -76,15 +80,16 @@ string WonderSwanPrivate::getGameID(void) const
 		return string();
 	}
 
-	char game_id[16];
-	if (romType == WonderSwanPrivate::RomType::Original) {
-		snprintf(game_id, sizeof(game_id), "SWJ-%s%03X",
-			publisher_code, romFooter.game_id);
-	} else {
-		snprintf(game_id, sizeof(game_id), "SWJ-%sC%02X",
-			publisher_code, romFooter.game_id);
+	char sys_id;
+	if (romType == RomType::Original || forceGameIDSysIDTo0) {
+		sys_id = '0';
+	} else /*if (romType == RomType::Color)*/ {
+		sys_id = 'C';
 	}
 
+	char game_id[16];
+	snprintf(game_id, sizeof(game_id), "SWJ-%s%c%02X",
+		publisher_code, sys_id, romFooter.game_id);
 	return string(game_id);
 }
 
@@ -158,6 +163,128 @@ WonderSwan::WonderSwan(IRpFile *file)
 
 	if (!d->isValid) {
 		UNREF_AND_NULL_NOCHK(d->file);
+	}
+
+	// Check for certain ROMs that have incorrect footers.
+	switch (d->romFooter.publisher) {
+		default:
+			break;
+
+		case 0x00:	// Unlicensed
+			if (d->romType == WonderSwanPrivate::RomType::Original) {
+				if (d->romFooter.game_id == 0x80 &&
+				    d->romFooter.revision == 0x80 &&
+				    d->romFooter.checksum == le16_to_cpu(0x0004))
+				{
+					// RUN=DIM Return to Earth
+					// Published by Digital Dream, though they don't seem to have
+					// a publisher code assigned.
+					// System ID should be Color.
+					d->romFooter.game_id = 0x01;
+					d->romFooter.publisher = 0x40;	// fake, used internally only
+					d->romFooter.system_id = WS_SYSTEM_ID_COLOR;
+					d->romType = WonderSwanPrivate::RomType::Color;
+				} else if (d->romFooter.game_id == 0 &&
+				           d->romFooter.revision == 0 &&
+				           d->romFooter.checksum == le16_to_cpu(0x7F73))
+				{
+					// SD Gundam G Generation - Gather Beat
+					// NOTE: This game has two IDs: SWJ-BAN030 and SWJ-BAN031
+					d->romFooter.game_id = 0x30;
+					d->romFooter.publisher = 0x01;	// Bandai
+				}
+			} else /*if (d->romType == WonderSwanPrivate::RomType::Color)*/ {
+				if (d->romFooter.game_id == 0x17 &&
+				    d->romFooter.checksum == le16_to_cpu(0x7C1D))
+				{
+					// Turntablist - DJ Battle
+					// Published by Bandai, but publisher ID is 0.
+					// System ID should be Original (Mono).
+					d->romFooter.publisher = 0x01;
+					d->romFooter.system_id = WS_SYSTEM_ID_ORIGINAL;
+					d->romType = WonderSwanPrivate::RomType::Original;
+				}
+			}
+			break;
+
+		case 0x01:	// Bandai ("BAN")
+			if (d->romType == WonderSwanPrivate::RomType::Original) {
+				switch (d->romFooter.game_id) {
+					default:
+						break;
+
+					case 0x01:
+						// Some Digimon games incorrectly have this ID.
+						if (d->romFooter.checksum == le16_to_cpu(0x54A8)) {
+							// Digimon Digital Monsters (As) [M]
+							// FIXME: Need to find the correct game ID for the Asian version here.
+							//d->romFooter.game_id = 0x05;
+						} else if (d->romFooter.checksum == le16_to_cpu(0xC4C9)) {
+							// Digimon Digital Monsters - Anode & Cathode Tamer - Veedramon Version (As) [!]
+							// System ID should be Color.
+							// NOTE: Game ID is SWJ-BAN01C, even though it's Color.
+							d->romFooter.game_id = 0x1C;
+							d->romFooter.system_id = WS_SYSTEM_ID_COLOR;
+							d->romType = WonderSwanPrivate::RomType::Color;
+							d->forceGameIDSysIDTo0 = true;
+						}
+						break;
+
+					case 0x14:
+						// Digimon Tamers: Digimon Medley
+						// System ID should be Color.
+						if (d->romFooter.checksum == le16_to_cpu(0x698F)) {
+							d->romFooter.system_id = WS_SYSTEM_ID_COLOR;
+							d->romType = WonderSwanPrivate::RomType::Color;
+						}
+						break;
+				}
+			}
+			break;
+
+		case 0x0B:	// Sammy ("SUM")
+			if (d->romType == WonderSwanPrivate::RomType::Original) {
+				if (d->romFooter.game_id == 0x07) {
+					// Guilty Gear Petit
+					// System ID should be Color.
+					d->romFooter.system_id = WS_SYSTEM_ID_COLOR;
+					d->romType = WonderSwanPrivate::RomType::Color;
+				}
+			}
+			break;
+
+		case 0x18:	// Kaga Tech ("KGT")
+			if (d->romType == WonderSwanPrivate::RomType::Original) {
+				if (d->romFooter.game_id == 0x09) {
+					// Soroban Gu
+					// System ID should be Color.
+					d->romFooter.system_id = WS_SYSTEM_ID_COLOR;
+					d->romType = WonderSwanPrivate::RomType::Color;
+				}
+			}
+			break;
+
+		case 0x28:	// Square Enix ("SQR")
+			if (d->romType == WonderSwanPrivate::RomType::Original) {
+				switch (d->romFooter.game_id) {
+					default:
+						break;
+					case 0x01:
+						// Final Fantasy
+						// System ID should be Color.
+						d->romType = WonderSwanPrivate::RomType::Color;
+						break;
+					case 0x04:
+						// Hataraku Chocobo
+						// System ID should be Color.
+						// NOTE: Game ID is SWJ-BAN004, even though it's Color.
+						d->romFooter.system_id = WS_SYSTEM_ID_COLOR;
+						d->romType = WonderSwanPrivate::RomType::Color;
+						d->forceGameIDSysIDTo0 = true;
+						break;
+				}
+			}
+			break;
 	}
 }
 
@@ -342,7 +469,7 @@ int WonderSwan::loadFieldData(void)
 	if (publisher) {
 		s_publisher = publisher;
 	} else {
-		s_publisher = rp_sprintf(C_("RomData", "Unknown (%u)"), romFooter->publisher);
+		s_publisher = rp_sprintf(C_("RomData", "Unknown (0x%02X)"), romFooter->publisher);
 	}
 	d->fields->addField_string(C_("RomData", "Publisher"), s_publisher);
 
