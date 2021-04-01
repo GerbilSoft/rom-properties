@@ -474,6 +474,7 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 	// - snes:   https://rpdb.gerbilsoft.com/snes/[key]
 	// - ngp:    https://rpdb.gerbilsoft.com/ngp/[key]
 	// - ngpc:   https://rpdb.gerbilsoft.com/ngpc/[key]
+	// - ws:     https://rpdb.gerbilsoft.com/ws/[key]
 	const TCHAR *slash_pos = _tcschr(cache_key, _T('/'));
 	if (slash_pos == nullptr || slash_pos == cache_key ||
 		slash_pos[1] == '\0')
@@ -514,9 +515,8 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 
 	// Determine the full URL based on the cache key.
 	TCHAR full_url[256];
-	if ((prefix_len == 3 && !_tcsncmp(cache_key, _T("wii"), 3)) ||
+	if ((prefix_len == 3 && (!_tcsncmp(cache_key, _T("wii"), 3) || !_tcsncmp(cache_key, _T("3ds"), 3))) ||
 	    (prefix_len == 4 && !_tcsncmp(cache_key, _T("wiiu"), 4)) ||
-	    (prefix_len == 3 && !_tcsncmp(cache_key, _T("3ds"), 3)) ||
 	    (prefix_len == 2 && !_tcsncmp(cache_key, _T("ds"), 2)))
 	{
 		// Wii, Wii U, Nintendo 3DS, Nintendo DS
@@ -537,7 +537,7 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 			_T("https://amiibo.life/nfc/%.*s/image"),
 			static_cast<int>(filename_len), slash_pos+1);
 	} else if ((prefix_len == 3 && !_tcsncmp(cache_key, _T("gba"), 3)) ||
-		   (prefix_len == 2 && !_tcsncmp(cache_key, _T("gb"), 2)) ||
+		   (prefix_len == 2 && (!_tcsncmp(cache_key, _T("gb"), 2) || !_tcsncmp(cache_key, _T("ws"), 2))) ||
 		   (prefix_len == 4 && (!_tcsncmp(cache_key, _T("snes"), 4) || !_tcsncmp(cache_key, _T("ngpc"), 4)))) {
 		// Game Boy, Game Boy Color, Game Boy Advance, Super NES,
 		// Neo Geo Pocket, Neo Geo Pocket Color
