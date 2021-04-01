@@ -64,7 +64,7 @@ class PlayStationDiscPrivate final : public RomDataPrivate
 		 * @param value		[in] Value
 		 * @return 0 to continue; 1 to stop.
 		 */
-		static int INIHCALL parse_system_cnf(void *user, const char *section, const char *name, const char *value);
+		static int parse_system_cnf(void *user, const char *section, const char *name, const char *value);
 
 		/**
 		 * Load SYSTEM.CNF.
@@ -134,7 +134,7 @@ PlayStationDiscPrivate::~PlayStationDiscPrivate()
  * @param value		[in] Value
  * @return 0 to continue; 1 to stop.
  */
-int INIHCALL PlayStationDiscPrivate::parse_system_cnf(void *user, const char *section, const char *name, const char *value)
+int PlayStationDiscPrivate::parse_system_cnf(void *user, const char *section, const char *name, const char *value)
 {
 	if (section[0] != '\0') {
 		// Sections aren't expected here...

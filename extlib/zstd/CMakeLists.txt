@@ -9,13 +9,9 @@ ADD_DEFINITIONS(-DXXH_NAMESPACE=ZSTD_)
 # Always build with high optimizations.
 IF(MSVC)
 	# Remove some CFLAGS for MSVC builds:
-	# - /Gz: Requires extensive modification and won't provide much benefit.
 	# - /Ob0: Conflicts with /Ob2.
 	# - /Od: Conflicts with /O2.
 	# - /RTC1: Conflicts with /O2.
-	# FIXME: MSVC 2019 is complaining of C2373 type redefinitions
-	# if we don't remove "/Gz", even though we have ZSTDAPI_CALL.
-	STRING(REPLACE "/Gz" "" CMAKE_C_FLAGS "${CMAKE_C_FLAGS}")
 	STRING(REPLACE "/Ob0" "" CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG}")
 	STRING(REPLACE "/Od" "" CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG}")
 	STRING(REPLACE "/RTC1" "" CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG}")

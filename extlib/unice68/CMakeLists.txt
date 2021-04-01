@@ -153,13 +153,6 @@ if (BUILD_UNICE68_CLI)
   CHECK_INCLUDE_FILE (fcntl.h HAVE_FCNTL_H)
   CHECK_INCLUDE_FILE (io.h HAVE_IO_H)
 
-  # rom-properties: 32-bit MSVC gets messed up here due to /Gz.
-  # TODO: Use check_symbol_exists() instead?
-  if (MSVC)
-    set(OLD_CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS}")
-    set(CMAKE_REQUIRED_FLAGS "/Gd")
-  endif (MSVC)
-
   check_function_exists (basename HAVE_BASENAME)
   check_function_exists (setmode HAVE_SETMODE)
   check_function_exists (_setmode HAVE__SETMODE)

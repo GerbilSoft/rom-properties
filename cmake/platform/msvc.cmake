@@ -90,16 +90,6 @@ IF(NOT CMAKE_SIZEOF_VOID_P)
 	ENDIF()
 ENDIF(NOT CMAKE_SIZEOF_VOID_P)
 
-# Use stdcall on i386.
-# Applies to unexported functions only.
-# Exported functions must have explicit calling conventions.
-IF(CPU_i386 OR CPU_amd64)
-	IF(NOT CMAKE_CL_64)
-		SET(RP_C_FLAGS_COMMON   "${RP_C_FLAGS_COMMON} /Gz")
-		SET(RP_CXX_FLAGS_COMMON "${RP_CXX_FLAGS_COMMON} /Gz")
-	ENDIF(NOT CMAKE_CL_64)
-ENDIF(CPU_i386 OR CPU_amd64)
-
 # TODO: Code coverage checking for MSVC?
 IF(ENABLE_COVERAGE)
 	MESSAGE(FATAL_ERROR "Code coverage testing is currently only supported on gcc and clang.")

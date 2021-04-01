@@ -66,7 +66,7 @@ class ConfReaderPrivate
 		 * @param value Value.
 		 * @return 1 on success; 0 on error.
 		 */
-		static int INIHCALL processConfigLine_static(void *user,
+		static int processConfigLine_static(void *user,
 			const char *section, const char *name, const char *value);
 
 		/**

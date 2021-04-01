@@ -9,10 +9,6 @@ The following changes have been made to the original:
 
 - INI files are opened in binary mode instead of text mode.
 
-- Callback functions have explicit __cdecl annotations to ensure
-  they work properly if compiling with 32-bit MSVC using /Gz.
-  (default stdcall)
-
 - The Meson build scripts have been removed.
 
 To obtain the original inih-r52, visit:

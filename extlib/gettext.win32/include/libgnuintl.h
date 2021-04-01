@@ -17,13 +17,6 @@
 #ifndef _LIBINTL_H
 #define _LIBINTL_H 1
 
-/** rom-properties: Modified for __cdecl in MSVC builds. **/
-#ifdef _MSC_VER
-# define INTLCALL __cdecl
-#else
-# define INTLCALL
-#endif
-
 #if 1 && BUILDING_LIBINTL
 #define LIBINTL_DLL_EXPORTED __attribute__((__visibility__("default")))
 #elif defined _MSC_VER && BUILDING_LIBINTL
@@ -136,7 +129,7 @@ extern LIBINTL_DLL_EXPORTED __declspec (dllimport) int libintl_version;
    LC_MESSAGES locale.  If not found, returns MSGID itself (the default
    text).  */
 #ifdef _INTL_REDIRECT_INLINE
-extern LIBINTL_DLL_EXPORTED char * INTLCALL libintl_gettext (const char *__msgid)
+extern LIBINTL_DLL_EXPORTED char * libintl_gettext (const char *__msgid)
        _INTL_MAY_RETURN_STRING_ARG (1);
 static inline
 _INTL_MAY_RETURN_STRING_ARG (1)
@@ -148,7 +141,7 @@ char *gettext (const char *__msgid)
 #ifdef _INTL_REDIRECT_MACROS
 # define gettext libintl_gettext
 #endif
-extern LIBINTL_DLL_EXPORTED char * INTLCALL gettext (const char *__msgid)
+extern LIBINTL_DLL_EXPORTED char * gettext (const char *__msgid)
        _INTL_ASM (libintl_gettext)
        _INTL_MAY_RETURN_STRING_ARG (1);
 #endif
@@ -156,7 +149,7 @@ extern LIBINTL_DLL_EXPORTED char * INTLCALL gettext (const char *__msgid)
 /* Look up MSGID in the DOMAINNAME message catalog for the current
    LC_MESSAGES locale.  */
 #ifdef _INTL_REDIRECT_INLINE
-extern LIBINTL_DLL_EXPORTED char * INTLCALL libintl_dgettext (const char *__domainname, const char *__msgid)
+extern LIBINTL_DLL_EXPORTED char * libintl_dgettext (const char *__domainname, const char *__msgid)
        _INTL_MAY_RETURN_STRING_ARG (2);
 static inline
 _INTL_MAY_RETURN_STRING_ARG (2)
@@ -168,7 +161,7 @@ char *dgettext (const char *__domainname, const char *__msgid)
 #ifdef _INTL_REDIRECT_MACROS
 # define dgettext libintl_dgettext
 #endif
-extern LIBINTL_DLL_EXPORTED char * INTLCALL dgettext (const char *__domainname, const char *__msgid)
+extern LIBINTL_DLL_EXPORTED char * dgettext (const char *__domainname, const char *__msgid)
        _INTL_ASM (libintl_dgettext)
        _INTL_MAY_RETURN_STRING_ARG (2);
 #endif
@@ -176,7 +169,7 @@ extern LIBINTL_DLL_EXPORTED char * INTLCALL dgettext (const char *__domainname, 
 /* Look up MSGID in the DOMAINNAME message catalog for the current CATEGORY
    locale.  */
 #ifdef _INTL_REDIRECT_INLINE
-extern LIBINTL_DLL_EXPORTED char * INTLCALL libintl_dcgettext (const char *__domainname, const char *__msgid,
+extern LIBINTL_DLL_EXPORTED char * libintl_dcgettext (const char *__domainname, const char *__msgid,
                                 int __category)
        _INTL_MAY_RETURN_STRING_ARG (2);
 static inline
@@ -189,7 +182,7 @@ char *dcgettext (const char *__domainname, const char *__msgid, int __category)
 #ifdef _INTL_REDIRECT_MACROS
 # define dcgettext libintl_dcgettext
 #endif
-extern LIBINTL_DLL_EXPORTED char * INTLCALL dcgettext (const char *__domainname, const char *__msgid,
+extern LIBINTL_DLL_EXPORTED char * dcgettext (const char *__domainname, const char *__msgid,
                         int __category)
        _INTL_ASM (libintl_dcgettext)
        _INTL_MAY_RETURN_STRING_ARG (2);
@@ -199,7 +192,7 @@ extern LIBINTL_DLL_EXPORTED char * INTLCALL dcgettext (const char *__domainname,
 /* Similar to 'gettext' but select the plural form corresponding to the
    number N.  */
 #ifdef _INTL_REDIRECT_INLINE
-extern LIBINTL_DLL_EXPORTED char * INTLCALL libintl_ngettext (const char *__msgid1, const char *__msgid2,
+extern LIBINTL_DLL_EXPORTED char * libintl_ngettext (const char *__msgid1, const char *__msgid2,
                                unsigned long int __n)
        _INTL_MAY_RETURN_STRING_ARG (1) _INTL_MAY_RETURN_STRING_ARG (2);
 static inline
@@ -213,7 +206,7 @@ char *ngettext (const char *__msgid1, const char *__msgid2,
 #ifdef _INTL_REDIRECT_MACROS
 # define ngettext libintl_ngettext
 #endif
-extern LIBINTL_DLL_EXPORTED char * INTLCALL ngettext (const char *__msgid1, const char *__msgid2,
+extern LIBINTL_DLL_EXPORTED char * ngettext (const char *__msgid1, const char *__msgid2,
                        unsigned long int __n)
        _INTL_ASM (libintl_ngettext)
        _INTL_MAY_RETURN_STRING_ARG (1) _INTL_MAY_RETURN_STRING_ARG (2);
@@ -222,7 +215,7 @@ extern LIBINTL_DLL_EXPORTED char * INTLCALL ngettext (const char *__msgid1, cons
 /* Similar to 'dgettext' but select the plural form corresponding to the
    number N.  */
 #ifdef _INTL_REDIRECT_INLINE
-extern LIBINTL_DLL_EXPORTED char * INTLCALL libintl_dngettext (const char *__domainname, const char *__msgid1,
+extern LIBINTL_DLL_EXPORTED char * libintl_dngettext (const char *__domainname, const char *__msgid1,
                                 const char *__msgid2, unsigned long int __n)
        _INTL_MAY_RETURN_STRING_ARG (2) _INTL_MAY_RETURN_STRING_ARG (3);
 static inline
@@ -236,7 +229,7 @@ char *dngettext (const char *__domainname, const char *__msgid1,
 #ifdef _INTL_REDIRECT_MACROS
 # define dngettext libintl_dngettext
 #endif
-extern LIBINTL_DLL_EXPORTED char * INTLCALL dngettext (const char *__domainname,
+extern LIBINTL_DLL_EXPORTED char * dngettext (const char *__domainname,
                         const char *__msgid1, const char *__msgid2,
                         unsigned long int __n)
        _INTL_ASM (libintl_dngettext)
@@ -246,7 +239,7 @@ extern LIBINTL_DLL_EXPORTED char * INTLCALL dngettext (const char *__domainname,
 /* Similar to 'dcgettext' but select the plural form corresponding to the
    number N.  */
 #ifdef _INTL_REDIRECT_INLINE
-extern LIBINTL_DLL_EXPORTED char * INTLCALL libintl_dcngettext (const char *__domainname,
+extern LIBINTL_DLL_EXPORTED char * libintl_dcngettext (const char *__domainname,
                                  const char *__msgid1, const char *__msgid2,
                                  unsigned long int __n, int __category)
        _INTL_MAY_RETURN_STRING_ARG (2) _INTL_MAY_RETURN_STRING_ARG (3);
@@ -262,7 +255,7 @@ char *dcngettext (const char *__domainname,
 #ifdef _INTL_REDIRECT_MACROS
 # define dcngettext libintl_dcngettext
 #endif
-extern LIBINTL_DLL_EXPORTED char * INTLCALL dcngettext (const char *__domainname,
+extern LIBINTL_DLL_EXPORTED char * dcngettext (const char *__domainname,
                          const char *__msgid1, const char *__msgid2,
                          unsigned long int __n, int __category)
        _INTL_ASM (libintl_dcngettext)
@@ -275,7 +268,7 @@ extern LIBINTL_DLL_EXPORTED char * INTLCALL dcngettext (const char *__domainname
    If DOMAINNAME is null, return the current default.
    If DOMAINNAME is "", reset to the default of "messages".  */
 #ifdef _INTL_REDIRECT_INLINE
-extern LIBINTL_DLL_EXPORTED char * INTLCALL libintl_textdomain (const char *__domainname);
+extern LIBINTL_DLL_EXPORTED char * libintl_textdomain (const char *__domainname);
 static inline char *textdomain (const char *__domainname)
 {
   return libintl_textdomain (__domainname);
@@ -284,14 +277,14 @@ static inline char *textdomain (const char *__domainname)
 #ifdef _INTL_REDIRECT_MACROS
 # define textdomain libintl_textdomain
 #endif
-extern LIBINTL_DLL_EXPORTED char * INTLCALL textdomain (const char *__domainname)
+extern LIBINTL_DLL_EXPORTED char * textdomain (const char *__domainname)
        _INTL_ASM (libintl_textdomain);
 #endif
 
 /* Specify that the DOMAINNAME message catalog will be found
    in DIRNAME rather than in the system locale data base.  */
 #ifdef _INTL_REDIRECT_INLINE
-extern LIBINTL_DLL_EXPORTED char * INTLCALL libintl_bindtextdomain (const char *__domainname,
+extern LIBINTL_DLL_EXPORTED char * libintl_bindtextdomain (const char *__domainname,
                                      const char *__dirname);
 static inline char *bindtextdomain (const char *__domainname,
                                     const char *__dirname)
@@ -302,7 +295,7 @@ static inline char *bindtextdomain (const char *__domainname,
 #ifdef _INTL_REDIRECT_MACROS
 # define bindtextdomain libintl_bindtextdomain
 #endif
-extern LIBINTL_DLL_EXPORTED char * INTLCALL bindtextdomain (const char *__domainname, const char *__dirname)
+extern LIBINTL_DLL_EXPORTED char * bindtextdomain (const char *__domainname, const char *__dirname)
        _INTL_ASM (libintl_bindtextdomain);
 #endif
 
@@ -310,7 +303,7 @@ extern LIBINTL_DLL_EXPORTED char * INTLCALL bindtextdomain (const char *__domain
 /* Specify that the DOMAINNAME message catalog will be found
    in WDIRNAME rather than in the system locale data base.  */
 #ifdef _INTL_REDIRECT_INLINE
-extern LIBINTL_DLL_EXPORTED wchar_t * INTLCALL libintl_wbindtextdomain (const char *__domainname,
+extern LIBINTL_DLL_EXPORTED wchar_t * libintl_wbindtextdomain (const char *__domainname,
                                          const wchar_t *__wdirname);
 static inline wchar_t *wbindtextdomain (const char *__domainname,
                                         const wchar_t *__wdirname)
@@ -321,7 +314,7 @@ static inline wchar_t *wbindtextdomain (const char *__domainname,
 #ifdef _INTL_REDIRECT_MACROS
 # define wbindtextdomain libintl_wbindtextdomain
 #endif
-extern LIBINTL_DLL_EXPORTED wchar_t * INTLCALL wbindtextdomain (const char *__domainname,
+extern LIBINTL_DLL_EXPORTED wchar_t * wbindtextdomain (const char *__domainname,
                                  const wchar_t *__wdirname)
        _INTL_ASM (libintl_wbindtextdomain);
 #endif
@@ -330,7 +323,7 @@ extern LIBINTL_DLL_EXPORTED wchar_t * INTLCALL wbindtextdomain (const char *__do
 /* Specify the character encoding in which the messages from the
    DOMAINNAME message catalog will be returned.  */
 #ifdef _INTL_REDIRECT_INLINE
-extern LIBINTL_DLL_EXPORTED char * INTLCALL libintl_bind_textdomain_codeset (const char *__domainname,
+extern LIBINTL_DLL_EXPORTED char * libintl_bind_textdomain_codeset (const char *__domainname,
                                               const char *__codeset);
 static inline char *bind_textdomain_codeset (const char *__domainname,
                                              const char *__codeset)
@@ -341,7 +334,7 @@ static inline char *bind_textdomain_codeset (const char *__domainname,
 #ifdef _INTL_REDIRECT_MACROS
 # define bind_textdomain_codeset libintl_bind_textdomain_codeset
 #endif
-extern LIBINTL_DLL_EXPORTED char * INTLCALL bind_textdomain_codeset (const char *__domainname,
+extern LIBINTL_DLL_EXPORTED char * bind_textdomain_codeset (const char *__domainname,
                                       const char *__codeset)
        _INTL_ASM (libintl_bind_textdomain_codeset);
 #endif
@@ -371,12 +364,12 @@ extern LIBINTL_DLL_EXPORTED char * INTLCALL bind_textdomain_codeset (const char 
 #if !(defined fprintf && defined _GL_STDIO_H) /* don't override gnulib */
 #undef fprintf
 #define fprintf libintl_fprintf
-extern LIBINTL_DLL_EXPORTED int INTLCALL fprintf (FILE *, const char *, ...);
+extern LIBINTL_DLL_EXPORTED int fprintf (FILE *, const char *, ...);
 #endif
 #if !(defined vfprintf && defined _GL_STDIO_H) /* don't override gnulib */
 #undef vfprintf
 #define vfprintf libintl_vfprintf
-extern LIBINTL_DLL_EXPORTED int INTLCALL vfprintf (FILE *, const char *, va_list);
+extern LIBINTL_DLL_EXPORTED int vfprintf (FILE *, const char *, va_list);
 #endif
 
 #if !(defined printf && defined _GL_STDIO_H) /* don't override gnulib */
@@ -394,23 +387,23 @@ extern LIBINTL_DLL_EXPORTED int INTLCALL vfprintf (FILE *, const char *, va_list
 # define libintl_printf __printf__
 #endif
 #define printf libintl_printf
-extern LIBINTL_DLL_EXPORTED int INTLCALL printf (const char *, ...);
+extern LIBINTL_DLL_EXPORTED int printf (const char *, ...);
 #endif
 #if !(defined vprintf && defined _GL_STDIO_H) /* don't override gnulib */
 #undef vprintf
 #define vprintf libintl_vprintf
-extern LIBINTL_DLL_EXPORTED int INTLCALL vprintf (const char *, va_list);
+extern LIBINTL_DLL_EXPORTED int vprintf (const char *, va_list);
 #endif
 
 #if !(defined sprintf && defined _GL_STDIO_H) /* don't override gnulib */
 #undef sprintf
 #define sprintf libintl_sprintf
-extern LIBINTL_DLL_EXPORTED int INTLCALL sprintf (char *, const char *, ...);
+extern LIBINTL_DLL_EXPORTED int sprintf (char *, const char *, ...);
 #endif
 #if !(defined vsprintf && defined _GL_STDIO_H) /* don't override gnulib */
 #undef vsprintf
 #define vsprintf libintl_vsprintf
-extern LIBINTL_DLL_EXPORTED int INTLCALL vsprintf (char *, const char *, va_list);
+extern LIBINTL_DLL_EXPORTED int vsprintf (char *, const char *, va_list);
 #endif
 
 #if 1
@@ -418,12 +411,12 @@ extern LIBINTL_DLL_EXPORTED int INTLCALL vsprintf (char *, const char *, va_list
 #if !(defined snprintf && defined _GL_STDIO_H) /* don't override gnulib */
 #undef snprintf
 #define snprintf libintl_snprintf
-extern LIBINTL_DLL_EXPORTED int INTLCALL snprintf (char *, size_t, const char *, ...);
+extern LIBINTL_DLL_EXPORTED int snprintf (char *, size_t, const char *, ...);
 #endif
 #if !(defined vsnprintf && defined _GL_STDIO_H) /* don't override gnulib */
 #undef vsnprintf
 #define vsnprintf libintl_vsnprintf
-extern LIBINTL_DLL_EXPORTED int INTLCALL vsnprintf (char *, size_t, const char *, va_list);
+extern LIBINTL_DLL_EXPORTED int vsnprintf (char *, size_t, const char *, va_list);
 #endif
 
 #endif
@@ -433,12 +426,12 @@ extern LIBINTL_DLL_EXPORTED int INTLCALL vsnprintf (char *, size_t, const char *
 #if !(defined asprintf && defined _GL_STDIO_H) /* don't override gnulib */
 #undef asprintf
 #define asprintf libintl_asprintf
-extern LIBINTL_DLL_EXPORTED int INTLCALL asprintf (char **, const char *, ...);
+extern LIBINTL_DLL_EXPORTED int asprintf (char **, const char *, ...);
 #endif
 #if !(defined vasprintf && defined _GL_STDIO_H) /* don't override gnulib */
 #undef vasprintf
 #define vasprintf libintl_vasprintf
-extern LIBINTL_DLL_EXPORTED int INTLCALL vasprintf (char **, const char *, va_list);
+extern LIBINTL_DLL_EXPORTED int vasprintf (char **, const char *, va_list);
 #endif
 
 #endif
@@ -447,24 +440,24 @@ extern LIBINTL_DLL_EXPORTED int INTLCALL vasprintf (char **, const char *, va_li
 
 #undef fwprintf
 #define fwprintf libintl_fwprintf
-extern LIBINTL_DLL_EXPORTED int INTLCALL fwprintf (FILE *, const wchar_t *, ...);
+extern LIBINTL_DLL_EXPORTED int fwprintf (FILE *, const wchar_t *, ...);
 #undef vfwprintf
 #define vfwprintf libintl_vfwprintf
-extern LIBINTL_DLL_EXPORTED int INTLCALL vfwprintf (FILE *, const wchar_t *, va_list);
+extern LIBINTL_DLL_EXPORTED int vfwprintf (FILE *, const wchar_t *, va_list);
 
 #undef wprintf
 #define wprintf libintl_wprintf
-extern LIBINTL_DLL_EXPORTED int INTLCALL wprintf (const wchar_t *, ...);
+extern LIBINTL_DLL_EXPORTED int wprintf (const wchar_t *, ...);
 #undef vwprintf
 #define vwprintf libintl_vwprintf
-extern LIBINTL_DLL_EXPORTED int INTLCALL vwprintf (const wchar_t *, va_list);
+extern LIBINTL_DLL_EXPORTED int vwprintf (const wchar_t *, va_list);
 
 #undef swprintf
 #define swprintf libintl_swprintf
-extern LIBINTL_DLL_EXPORTED int INTLCALL swprintf (wchar_t *, size_t, const wchar_t *, ...);
+extern LIBINTL_DLL_EXPORTED int swprintf (wchar_t *, size_t, const wchar_t *, ...);
 #undef vswprintf
 #define vswprintf libintl_vswprintf
-extern LIBINTL_DLL_EXPORTED int INTLCALL vswprintf (wchar_t *, size_t, const wchar_t *, va_list);
+extern LIBINTL_DLL_EXPORTED int vswprintf (wchar_t *, size_t, const wchar_t *, va_list);
 
 #endif
 
@@ -477,19 +470,19 @@ extern LIBINTL_DLL_EXPORTED int INTLCALL vswprintf (wchar_t *, size_t, const wch
 #ifndef GNULIB_defined_newlocale /* don't override gnulib */
 #undef newlocale
 #define newlocale libintl_newlocale
-extern LIBINTL_DLL_EXPORTED locale_t INTLCALL newlocale (int, const char *, locale_t);
+extern LIBINTL_DLL_EXPORTED locale_t newlocale (int, const char *, locale_t);
 #endif
 
 #ifndef GNULIB_defined_duplocale /* don't override gnulib */
 #undef duplocale
 #define duplocale libintl_duplocale
-extern LIBINTL_DLL_EXPORTED locale_t INTLCALL duplocale (locale_t);
+extern LIBINTL_DLL_EXPORTED locale_t duplocale (locale_t);
 #endif
 
 #ifndef GNULIB_defined_freelocale /* don't override gnulib */
 #undef freelocale
 #define freelocale libintl_freelocale
-extern LIBINTL_DLL_EXPORTED void INTLCALL freelocale (locale_t);
+extern LIBINTL_DLL_EXPORTED void freelocale (locale_t);
 #endif
 
 #endif
@@ -501,7 +494,7 @@ extern LIBINTL_DLL_EXPORTED void INTLCALL freelocale (locale_t);
 #ifndef GNULIB_defined_setlocale /* don't override gnulib */
 #undef setlocale
 #define setlocale libintl_setlocale
-extern LIBINTL_DLL_EXPORTED char * INTLCALL setlocale (int, const char *);
+extern LIBINTL_DLL_EXPORTED char * setlocale (int, const char *);
 #endif
 
 #if 0
@@ -510,7 +503,7 @@ extern LIBINTL_DLL_EXPORTED char * INTLCALL setlocale (int, const char *);
 #define newlocale libintl_newlocale
 /* Declare newlocale() only if the system headers define the 'locale_t' type. */
 #if !(defined __CYGWIN__ && !defined LC_ALL_MASK)
-extern LIBINTL_DLL_EXPORTED locale_t INTLCALL newlocale (int, const char *, locale_t);
+extern LIBINTL_DLL_EXPORTED locale_t newlocale (int, const char *, locale_t);
 #endif
 
 #endif
@@ -526,7 +519,7 @@ extern LIBINTL_DLL_EXPORTED locale_t INTLCALL newlocale (int, const char *, loca
    prefixes should be directory names without trailing slash (i.e. use ""
    instead of "/").  */
 #define libintl_set_relocation_prefix libintl_set_relocation_prefix
-extern LIBINTL_DLL_EXPORTED void INTLCALL
+extern LIBINTL_DLL_EXPORTED void
        libintl_set_relocation_prefix (const char *orig_prefix,
                                       const char *curr_prefix);
 

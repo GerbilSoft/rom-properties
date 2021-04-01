@@ -26,25 +26,18 @@ extern "C" {
 #define INI_HANDLER_LINENO 0
 #endif
 
-/* rom-properties: using stdcall for internal functions */
-#ifdef _MSC_VER
-#  define INIHCALL __cdecl
-#else
-#  define INIHCALL
-#endif
-
 /* Typedef for prototype of handler function. */
 #if INI_HANDLER_LINENO
-typedef int (INIHCALL *ini_handler)(void* user, const char* section,
+typedef int (*ini_handler)(void* user, const char* section,
                            const char* name, const char* value,
                            int lineno);
 #else
-typedef int (INIHCALL *ini_handler)(void* user, const char* section,
+typedef int (*ini_handler)(void* user, const char* section,
                            const char* name, const char* value);
 #endif
 
 /* Typedef for prototype of fgets-style reader function. */
-typedef char* (INIHCALL *ini_reader)(char* str, int num, void* stream);
+typedef char* (*ini_reader)(char* str, int num, void* stream);
 
 /* Parse given INI-style file. May have [section]s, name=value pairs
    (whitespace stripped), and comments starting with ';' (semicolon). Section
