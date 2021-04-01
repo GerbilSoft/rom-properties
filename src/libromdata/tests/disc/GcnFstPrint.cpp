@@ -23,12 +23,14 @@ using LibRomData::GcnFst;
 
 // C++ includes.
 #include <locale>
+#include <memory>
 #include <sstream>
 #include <string>
 using std::locale;
 using std::ostream;
 using std::ostringstream;
 using std::string;
+using std::unique_ptr;
 
 // librpsecure
 #include "librpsecure/os-secure.h"
@@ -98,15 +100,14 @@ int RP_C_API main(int argc, char *argv[])
 	fseeko(f, 0, SEEK_SET);
 
 	// Read the FST into memory.
-	uint8_t *const fstData = new uint8_t[filesize];
-	size_t rd_size = fread(fstData, 1, filesize, f);
+	unique_ptr<uint8_t[]> fstData(new uint8_t[filesize]);
+	size_t rd_size = fread(fstData.get(), 1, filesize, f);
 	fclose(f);
 	if (rd_size != static_cast<size_t>(filesize)) {
 		// tr: %1$u == number of bytes read, %2$u == number of bytes expected to read
 		printf_p(C_("GcnFstPrint", "ERROR: Read %1$u bytes, expected %2$u bytes."),
 			(unsigned int)rd_size, (unsigned int)filesize);
 		putchar('\n');
-		free(fstData);
 		return EXIT_FAILURE;
 	}
 
@@ -125,17 +126,16 @@ int RP_C_API main(int argc, char *argv[])
 	// Parse the FST.
 	// TODO: Validate the FST and return an error if it doesn't
 	// "look" like an FST?
-	GcnFst *fst = new GcnFst(&fstData[fst_start_offset],
-		static_cast<uint32_t>(filesize - fst_start_offset), offsetShift);
+	unique_ptr<GcnFst> fst(new GcnFst(&fstData[fst_start_offset],
+		static_cast<uint32_t>(filesize - fst_start_offset), offsetShift));
 	if (!fst->isOpen()) {
 		puts(C_("GcnFstPrint", "*** ERROR: Could not open a GcnFst."));
-		free(fstData);
 		return EXIT_FAILURE;
 	}
 
 	// Print the FST to an ostringstream.
 	ostringstream oss;
-	LibRomData::fstPrint(fst, oss);
+	LibRomData::fstPrint(fst.get(), oss);
 	string fst_str = oss.str();
 
 #ifdef _WIN32
@@ -159,7 +159,5 @@ int RP_C_API main(int argc, char *argv[])
 	}
 
 	// Cleanup.
-	delete fst;
-	free(fstData);
 	return 0;
 }
