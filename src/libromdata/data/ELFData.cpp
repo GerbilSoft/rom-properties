@@ -199,7 +199,7 @@ const char *const ELFDataPrivate::machineTypes_low[] = {
 	"TI TMS320C6000 DSP family",
 	"TI TMS320C2000 DSP family",
 	"TI TMS320C55x DSP family",
-	nullptr,
+	"TI Application-Specific RISC",
 	"TI Programmable Realtime Unit",
 	nullptr, nullptr, nullptr, nullptr, nullptr,
 
@@ -261,7 +261,7 @@ const char *const ELFDataPrivate::machineTypes_low[] = {
 	"Beyond BA2",
 	"XMOS xCORE",
 	"Micrchip 8-bit PIC(r)",
-	"Intel (205)",
+	"Intel Graphics Technology",
 	"Intel (206)",
 	"Intel (207)",
 	"Intel (208)",
@@ -294,7 +294,7 @@ const char *const ELFDataPrivate::machineTypes_low[] = {
 const ELFDataPrivate::MachineType ELFDataPrivate::machineTypes_other[] = {
 	{243,		"RISC-V"},
 	{244,		"Lanai"},
-	{247,		"eBPF"},
+	{247,		"Linux eBPF"},
 	{250,		"Netronome Flow Processor"},
 	{251,		"NEC VE"},
 	{252,		"C-SKY"},
