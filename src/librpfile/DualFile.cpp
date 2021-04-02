@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpfile)                        *
  * DualFile.cpp: Special wrapper for handling a split file as one.         *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -201,21 +201,6 @@ off64_t DualFile::tell(void)
 	}
 
 	return m_pos;
-}
-
-/**
- * Truncate the file.
- * (NOTE: Not valid for DualFile; this will always return -1.)
- * @param size New size. (default is 0)
- * @return 0 on success; -1 on error.
- */
-int DualFile::truncate(off64_t size)
-{
-	// Not supported.
-	// TODO: Writable DualFile?
-	RP_UNUSED(size);
-	m_lastError = ENOTSUP;
-	return -1;
 }
 
 /** File properties **/

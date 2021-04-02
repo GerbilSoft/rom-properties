@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE4/KF5)                         *
  * RpFile_kio.hpp: IRpFile implementation using KIO.                       *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -96,14 +96,6 @@ class RpFileKio : public QObject, public LibRpFile::IRpFile
 		 * @return File position, or -1 on error.
 		 */
 		off64_t tell(void) final;
-
-		/**
-		 * Truncate the file.
-		 * (NOTE: Not valid for RpFileKio; this will always return -1.)
-		 * @param size New size. (default is 0)
-		 * @return 0 on success; -1 on error.
-		 */
-		int truncate(off64_t size = 0) final;
 
 	public:
 		/** File properties **/

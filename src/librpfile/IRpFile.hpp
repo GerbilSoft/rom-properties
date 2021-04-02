@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpfile)                        *
  * IRpFile.hpp: File wrapper interface.                                    *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -136,7 +136,13 @@ class IRpFile : public RefBase
 		 * @param size New size. (default is 0)
 		 * @return 0 on success; -1 on error.
 		 */
-		virtual int truncate(off64_t size = 0) = 0;
+		virtual int truncate(off64_t size = 0)
+		{
+			// Not supported.
+			RP_UNUSED(size);
+			m_lastError = ENOTSUP;
+			return -1;
+		}
 
 		/**
 		 * Flush buffers.

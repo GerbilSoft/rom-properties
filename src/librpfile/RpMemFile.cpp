@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpfile)                        *
  * RpMemFile.cpp: IRpFile implementation using a memory buffer.            *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -145,21 +145,6 @@ off64_t RpMemFile::tell(void)
 	}
 
 	return static_cast<off64_t>(m_pos);
-}
-
-/**
- * Truncate the file.
- * (NOTE: Not valid for RpMemFile; this will always return -1.)
- * @param size New size. (default is 0)
- * @return 0 on success; -1 on error.
- */
-int RpMemFile::truncate(off64_t size)
-{
-	// Not supported.
-	// TODO: Writable RpMemFile?
-	RP_UNUSED(size);
-	m_lastError = ENOTSUP;
-	return -1;
 }
 
 }

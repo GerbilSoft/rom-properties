@@ -137,19 +137,6 @@ class SubFile final : public IRpFile
 		}
 
 		/**
-		 * Truncate the file.
-		 * @param size New size. (default is 0)
-		 * @return 0 on success; -1 on error.
-		 */
-		int truncate(off64_t size = 0) final
-		{
-			// SubFile: Not supported.
-			RP_UNUSED(size);
-			m_lastError = ENOTSUP;
-			return -1;
-		}
-
-		/**
 		 * Flush buffers.
 		 * This operation only makes sense on writable files.
 		 * @return 0 on success; negative POSIX error code on error.
