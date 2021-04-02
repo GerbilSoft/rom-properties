@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * DMG.hpp: Game Boy (DMG/CGB/SGB) ROM reader.                             *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * Copyright (c) 2016-2018 by Egor.                                        *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
@@ -15,7 +15,7 @@
 // librpbase, librpfile
 #include "librpbase/config/Config.hpp"
 using namespace LibRpBase;
-using LibRpFile::IRpFile;
+using namespace LibRpFile;
 
 // For sections delegated to other RomData subclasses.
 #include "Audio/GBS.hpp"
@@ -1188,29 +1188,23 @@ int DMG::loadFieldData(void)
 				// Found the GBS magic number.
 				// Open the GBS.
 				const off64_t fileSize = d->file->size();
-				DiscReader *const reader = new DiscReader(d->file, 0, fileSize);
-				if (reader->isOpen()) {
-					// Create a PartitionFile.
-					const off64_t length = fileSize - jp_addr;
-					PartitionFile *const ptFile = new PartitionFile(reader, jp_addr, length);
-					if (ptFile->isOpen()) {
-						// Open the GBS.
-						GBS *const gbs = new GBS(ptFile);
-						if (gbs->isOpen()) {
-							// Add the fields.
-							const RomFields *const gbsFields = gbs->fields();
-							assert(gbsFields != nullptr);
-							assert(!gbsFields->empty());
-							if (gbsFields && !gbsFields->empty()) {
-								d->fields->addFields_romFields(gbsFields,
-									RomFields::TabOffset_AddTabs);
-							}
+				SubFile *const gbsFile = new SubFile(d->file, jp_addr, fileSize - jp_addr);
+				if (gbsFile->isOpen()) {
+					// Open the GBS.
+					GBS *const gbs = new GBS(gbsFile);
+					if (gbs->isOpen()) {
+						// Add the fields.
+						const RomFields *const gbsFields = gbs->fields();
+						assert(gbsFields != nullptr);
+						assert(!gbsFields->empty());
+						if (gbsFields && !gbsFields->empty()) {
+							d->fields->addFields_romFields(gbsFields,
+								RomFields::TabOffset_AddTabs);
 						}
-						gbs->unref();
 					}
-					ptFile->unref();
+					gbs->unref();
 				}
-				reader->unref();
+				gbsFile->unref();
 			}
 		}
 	}

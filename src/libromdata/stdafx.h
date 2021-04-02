@@ -83,6 +83,7 @@
 #include "librpfile/FileSystem.hpp"
 #include "librpfile/IRpFile.hpp"
 #include "librpfile/RpFile.hpp"
+#include "librpfile/SubFile.hpp"
 
 // librptexture C++ headers
 #include "librptexture/img/rp_image.hpp"

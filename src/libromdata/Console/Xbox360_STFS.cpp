@@ -19,12 +19,9 @@
 
 // librpbase, librpfile, librptexture
 #include "librpbase/img/RpPng.hpp"
-#include "librpbase/disc/DiscReader.hpp"
-#include "librpbase/disc/PartitionFile.hpp"
 #include "librpfile/RpMemFile.hpp"
 using namespace LibRpBase;
-using LibRpFile::IRpFile;
-using LibRpFile::RpMemFile;
+using namespace LibRpFile;
 using namespace LibRpTexture;
 
 // C++ STL classes.
@@ -505,20 +502,16 @@ Xbox360_XEX *Xbox360_STFS_Private::openDefaultXex(void)
 	// Load default.xexp.
 	// FIXME: Maybe add a reader class to handle the hashes,
 	// though we only need the XEX header right now.
-	DiscReader *discReader = new DiscReader(this->file);
-	if (discReader->isOpen()) {
-		PartitionFile *const xexFile_tmp = new PartitionFile(discReader, offset, filesize);
-		if (xexFile_tmp->isOpen()) {
-			Xbox360_XEX *const xex_tmp = new Xbox360_XEX(xexFile_tmp);
-			if (xex_tmp->isOpen()) {
-				this->xex = xex_tmp;
-			} else {
-				xex_tmp->unref();
-			}
+	SubFile *const xexFile_tmp = new SubFile(this->file, offset, filesize);
+	if (xexFile_tmp->isOpen()) {
+		Xbox360_XEX *const xex_tmp = new Xbox360_XEX(xexFile_tmp);
+		if (xex_tmp->isOpen()) {
+			this->xex = xex_tmp;
+		} else {
+			xex_tmp->unref();
 		}
-		xexFile_tmp->unref();
 	}
-	UNREF(discReader);
+	xexFile_tmp->unref();
 
 	return this->xex;
 }

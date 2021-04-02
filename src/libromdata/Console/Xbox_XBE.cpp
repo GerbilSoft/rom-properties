@@ -15,6 +15,7 @@
 #include "librpbase/img/RpPng.hpp"
 using namespace LibRpBase;
 using LibRpFile::IRpFile;
+using LibRpFile::SubFile;
 
 // librptexture
 #include "librptexture/fileformat/XboxXPR.hpp"
@@ -58,7 +59,6 @@ class Xbox_XBE_Private final : public RomDataPrivate
 
 		// RomData subclasses.
 		// TODO: Also get the save image? ($$XSIMAGE)
-		DiscReader *discReader;	// Common DiscReader
 		EXE *pe_exe;		// PE executable
 
 		// Title image.
@@ -105,7 +105,6 @@ class Xbox_XBE_Private final : public RomDataPrivate
 
 Xbox_XBE_Private::Xbox_XBE_Private(Xbox_XBE *q, IRpFile *file)
 	: super(q, file)
-	, discReader(nullptr)
 	, pe_exe(nullptr)
 {
 	// Clear the XBE structs.
@@ -129,8 +128,6 @@ Xbox_XBE_Private::~Xbox_XBE_Private()
 			UNREF(xtImage.png);
 		}
 	}
-
-	UNREF(discReader);
 }
 
 /**
@@ -248,37 +245,26 @@ int Xbox_XBE_Private::initXPR0_xtImage(void)
 		return -ENOENT;
 	}
 
-	// Create the DiscReader if it isn't open already.
-	if (!discReader) {
-		DiscReader *const discReader_tmp = new DiscReader(this->file);
-		if (!discReader_tmp->isOpen()) {
-			// Unable to open the DiscReader.
-			discReader_tmp->unref();
-			return -EIO;
-		}
-		discReader = discReader_tmp;
-	}
-
 	// Open the XPR0 image.
 	// paddr/psize have absolute addresses.
 	ret = 0;
-	IRpFile *const ptFile = new PartitionFile(discReader,
+	SubFile *const subFile = new SubFile(this->file,
 		hdr_xtImage.paddr, hdr_xtImage.psize);
-	if (ptFile->isOpen()) {
+	if (subFile->isOpen()) {
 		// $$XTIMAGE is usually an XPR0 image.
 		// The Burger King games, wihch have both Xbox and Xbox 360
 		// executables, incorrectly use PNG format here.
 		uint32_t magic = 0;
-		size_t size = ptFile->read(&magic, sizeof(magic));
+		size_t size = subFile->read(&magic, sizeof(magic));
 		if (size != sizeof(magic)) {
 			// Read error.
-			ptFile->unref();
+			subFile->unref();
 			return -EIO;
 		}
-		ptFile->rewind();
+		subFile->rewind();
 
 		if (magic == cpu_to_be32('XPR0')) {
-			XboxXPR *const xpr0 = new XboxXPR(ptFile);
+			XboxXPR *const xpr0 = new XboxXPR(subFile);
 			if (xpr0->isOpen()) {
 				// XPR0 image opened.
 				xtImage.isInit = true;
@@ -291,7 +277,7 @@ int Xbox_XBE_Private::initXPR0_xtImage(void)
 			}
 		} else if (magic == cpu_to_be32(0x89504E47U)) {	// '\x89PNG'
 			// PNG image.
-			rp_image *const img = RpPng::load(ptFile);
+			rp_image *const img = RpPng::load(subFile);
 			if (img->isValid()) {
 				// PNG image opened.
 				xtImage.isInit = true;
@@ -303,11 +289,11 @@ int Xbox_XBE_Private::initXPR0_xtImage(void)
 				ret = -EIO;
 			}
 		}
-		ptFile->unref();
+		subFile->unref();
 	} else {
 		// Unable to open the file.
 		ret = -EIO;
-		ptFile->unref();
+		subFile->unref();
 	}
 
 	// Image loaded.
@@ -340,23 +326,12 @@ const EXE *Xbox_XBE_Private::initEXE(void)
 		return nullptr;
 	}
 
-	// Create the DiscReader if it isn't open already.
-	if (!discReader) {
-		DiscReader *const discReader_tmp = new DiscReader(this->file);
-		if (!discReader_tmp->isOpen()) {
-			// Unable to open the DiscReader.
-			discReader_tmp->unref();
-			return nullptr;
-		}
-		discReader = discReader_tmp;
-	}
-
 	// Open the EXE file.
-	IRpFile *const ptFile = new PartitionFile(discReader,
+	SubFile *const subFile = new SubFile(this->file,
 		exe_address, fileSize - exe_address);
-	if (ptFile->isOpen()) {
-		EXE *const pe_exe_tmp = new EXE(ptFile);
-		ptFile->unref();
+	if (subFile->isOpen()) {
+		EXE *const pe_exe_tmp = new EXE(subFile);
+		subFile->unref();
 		if (pe_exe_tmp->isOpen()) {
 			// EXE opened.
 			this->pe_exe = pe_exe_tmp;
@@ -366,7 +341,7 @@ const EXE *Xbox_XBE_Private::initEXE(void)
 		}
 	} else {
 		// Unable to open the file.
-		ptFile->unref();
+		subFile->unref();
 	}
 
 	// EXE loaded.
@@ -488,8 +463,6 @@ void Xbox_XBE::close(void)
 			d->xtImage.xpr0->close();
 		}
 	}
-
-	UNREF_AND_NULL(d->discReader);
 
 	// Call the superclass function.
 	super::close();

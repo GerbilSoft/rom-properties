@@ -87,12 +87,10 @@ int Nintendo3DSPrivate::loadSMDH(void)
 		return 0;
 	}
 
-	// TODO: IRpFile implementation with offset/length, so we don't
-	// have to use both DiscReader and PartitionFile.
 	static const size_t N3DS_SMDH_Section_Size =
 		sizeof(N3DS_SMDH_Header_t) + sizeof(N3DS_SMDH_Icon_t);
 
-	IDiscReader *smdhReader = nullptr;
+	SubFile *smdhFile = nullptr;
 	switch (romType) {
 		default:
 			// Unsupported...
@@ -112,7 +110,7 @@ int Nintendo3DSPrivate::loadSMDH(void)
 			}
 
 			// Open the SMDH section.
-			smdhReader = new DiscReader(this->file, le32_to_cpu(mxh.hb3dsx_header.smdh_offset), N3DS_SMDH_Section_Size);
+			smdhFile = new SubFile(this->file, le32_to_cpu(mxh.hb3dsx_header.smdh_offset), N3DS_SMDH_Section_Size);
 			break;
 		}
 
@@ -145,7 +143,7 @@ int Nintendo3DSPrivate::loadSMDH(void)
 
 				// Open the SMDH section.
 				// TODO: Verify that this works.
-				smdhReader = new DiscReader(this->file, addr, N3DS_SMDH_Section_Size);
+				smdhFile = new SubFile(this->file, addr, N3DS_SMDH_Section_Size);
 				break;
 			}
 
@@ -173,26 +171,17 @@ int Nintendo3DSPrivate::loadSMDH(void)
 				return -8;
 			}
 
-			// Create the SMDH reader.
-			smdhReader = new DiscReader(ncch_f_icon, 0, N3DS_SMDH_Section_Size);
+			// Create the SMDH subfile.
+			smdhFile = new SubFile(ncch_f_icon, 0, N3DS_SMDH_Section_Size);
 			ncch_f_icon->unref();
 			break;
 		}
 	}
 
-	if (!smdhReader || !smdhReader->isOpen()) {
-		// Unable to open the SMDH reader.
-		UNREF(smdhReader);
+	if (!smdhFile || !smdhFile->isOpen()) {
+		// Unable to open the SMDH subfile.
+		UNREF(smdhFile);
 		return -9;
-	}
-
-	// Open the SMDH file.
-	PartitionFile *const smdhFile = new PartitionFile(smdhReader, 0, N3DS_SMDH_Section_Size);
-	smdhReader->unref();
-	if (!smdhFile->isOpen()) {
-		// Unable to open the SMDH file.
-		smdhFile->unref();
-		return -10;
 	}
 
 	// Open the SMDH RomData subclass.
