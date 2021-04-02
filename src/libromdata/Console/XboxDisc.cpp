@@ -63,7 +63,6 @@ class XboxDiscPrivate final : public RomDataPrivate
 		off64_t xdvdfs_addr;
 
 		// XDVDFSPartition
-		DiscReader *discReader;
 		XDVDFSPartition *xdvdfsPartition;
 
 		// default.xbe / default.xex
@@ -126,7 +125,6 @@ XboxDiscPrivate::XboxDiscPrivate(XboxDisc *q, IRpFile *file)
 	, discType(DiscType::Unknown)
 	, wave(0)
 	, xdvdfs_addr(0)
-	, discReader(nullptr)
 	, xdvdfsPartition(nullptr)
 	, defaultExeData(nullptr)
 	, exeType(ExeType::Unknown)
@@ -142,7 +140,6 @@ XboxDiscPrivate::~XboxDiscPrivate()
 
 	UNREF(defaultExeData);
 	UNREF(xdvdfsPartition);
-	UNREF(discReader);
 }
 
 /**
@@ -366,17 +363,17 @@ XboxDisc::XboxDisc(IRpFile *file)
 		}
 	}
 
-	// Create the DiscReader and XDVDFSPartition.
-	d->discReader = new DiscReader(d->file);
-	if (!d->discReader->isOpen()) {
+	// Open the XDVDFSPartition.
+	DiscReader *const discReader = new DiscReader(d->file);
+	if (!discReader->isOpen()) {
 		// Unable to open the discReader.
-		UNREF_AND_NULL_NOCHK(d->discReader);
+		discReader->unref();
 		UNREF_AND_NULL_NOCHK(d->file);
 		d->lockKreonDrive();
 		d->isKreon = false;
 		return;
 	}
-	d->xdvdfsPartition = new XDVDFSPartition(d->discReader, d->xdvdfs_addr, d->file->size() - d->xdvdfs_addr);
+	d->xdvdfsPartition = new XDVDFSPartition(discReader, d->xdvdfs_addr, d->file->size() - d->xdvdfs_addr);
 	if (!d->xdvdfsPartition->isOpen()) {
 		// Unable to open the XDVDFSPartition.
 		UNREF_AND_NULL_NOCHK(d->xdvdfsPartition);
@@ -387,7 +384,7 @@ XboxDisc::XboxDisc(IRpFile *file)
 		if (d->discType == XboxDiscPrivate::DiscType::XGD2) {
 			static const off_t xgd3_offset = XDVDFS_LBA_OFFSET_XGD3 * XDVDFS_BLOCK_SIZE;
 			d->xdvdfs_addr = XDVDFS_LBA_OFFSET_XGD3 * XDVDFS_BLOCK_SIZE;
-			d->xdvdfsPartition = new XDVDFSPartition(d->discReader,
+			d->xdvdfsPartition = new XDVDFSPartition(discReader,
 				xgd3_offset, d->file->size() - xgd3_offset);
 			if (d->xdvdfsPartition->isOpen()) {
 				// It's an XGD3.
@@ -400,9 +397,9 @@ XboxDisc::XboxDisc(IRpFile *file)
 			}
 		}
 
+		discReader->unref();
 		if (!d->xdvdfsPartition) {
 			// Unable to open the XDVDFSPartition.
-			UNREF_AND_NULL_NOCHK(d->discReader);
 			UNREF_AND_NULL_NOCHK(d->file);
 			d->lockKreonDrive();
 			d->isKreon = false;
@@ -411,6 +408,7 @@ XboxDisc::XboxDisc(IRpFile *file)
 	}
 
 	// XDVDFS partition is open.
+	discReader->unref();	// XDVDFSPartition has this referenced.
 	if (d->discType <= XboxDiscPrivate::DiscType::Unknown) {
 		// This is an extracted XDVDFS.
 		d->discType = XboxDiscPrivate::DiscType::Extracted;
@@ -435,7 +433,6 @@ void XboxDisc::close(void)
 	}
 
 	UNREF_AND_NULL(d->xdvdfsPartition);
-	UNREF_AND_NULL(d->discReader);
 
 	// Call the superclass function.
 	super::close();
