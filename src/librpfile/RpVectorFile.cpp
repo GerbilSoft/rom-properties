@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpfile)                        *
  * RpVectorFile.cpp: IRpFile implementation using an std::vector.          *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -105,18 +105,6 @@ int RpVectorFile::seek(off64_t pos)
 	}
 
 	return 0;
-}
-
-/** File properties **/
-
-/**
- * Get the filename.
- * @return Filename. (May be empty if the filename is not available.)
- */
-string RpVectorFile::filename(void) const
-{
-	// TODO: Implement this?
-	return string();
 }
 
 }

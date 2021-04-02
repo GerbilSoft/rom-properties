@@ -162,30 +162,4 @@ int RpMemFile::truncate(off64_t size)
 	return -1;
 }
 
-/** File properties **/
-
-/**
- * Get the file size.
- * @return File size, or negative on error.
- */
-off64_t RpMemFile::size(void)
-{
-	if (!m_buf) {
-		m_lastError = EBADF;
-		return -1;
-	}
-
-	return static_cast<off64_t>(m_size);
-}
-
-/**
- * Get the filename.
- * @return Filename. (May be empty if the filename is not available.)
- */
-string RpMemFile::filename(void) const
-{
-	// TODO: Implement this?
-	return string();
-}
-
 }

@@ -104,13 +104,25 @@ class RpMemFile : public IRpFile
 		 * Get the file size.
 		 * @return File size, or negative on error.
 		 */
-		off64_t size(void) final;
+		off64_t size(void) final
+		{
+			if (!m_buf) {
+				m_lastError = EBADF;
+				return -1;
+			}
+
+			return static_cast<off64_t>(m_size);
+		}
 
 		/**
 		 * Get the filename.
 		 * @return Filename. (May be empty if the filename is not available.)
 		 */
-		std::string filename(void) const final;
+		std::string filename(void) const final
+		{
+			// TODO: Implement this?
+			return std::string();
+		}
 
 	protected:
 		const void *m_buf;	// Memory buffer.
