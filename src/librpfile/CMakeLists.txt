@@ -39,6 +39,7 @@ SET(librpfile_H
 	FileSystem.hpp
 	RelatedFile.hpp
 	DualFile.hpp
+	SubFile.hpp
 	scsi/ata_protocol.h
 	scsi/scsi_protocol.h
 	scsi/scsi_ata_cmds.h
