@@ -168,9 +168,6 @@ tstring IDownloader::getOSRelease(void)
 	tstring s_os_release;
 
 #if defined(_WIN32)
-	static bool bTriedWow64 = false;
-	static bool bIsWow64 = false;
-
 	// Get the OS version number.
 	OSVERSIONINFO osvi;
 	osvi.dwOSVersionInfoSize = sizeof(osvi);
@@ -203,6 +200,8 @@ tstring IDownloader::getOSRelease(void)
 	s_os_release += _T("; Win64");
 #  else /* !_WIN64 */
 	// Check for WOW64.
+	static bool bTriedWow64 = false;
+	static bool bIsWow64 = false;
 	if (!bTriedWow64) {
 		HMODULE hKernel32 = GetModuleHandle(_T("kernel32"));
 		assert(hKernel32 != nullptr);
