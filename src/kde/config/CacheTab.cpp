@@ -13,6 +13,10 @@
 #include "../MessageSound.hpp"
 #include "CacheCleaner.hpp"
 
+// librpbase
+#include "librpbase/TextFuncs.hpp"
+using namespace LibRpBase;
+
 // librpfile
 #include "librpfile/FileSystem.hpp"
 using namespace LibRpFile;
@@ -144,10 +148,12 @@ void CacheTabPrivate::clearCacheDir(CacheCleaner::CacheDir cacheDir)
 		ccCleaner->moveToThread(thrCleaner);
 
 		// Status slots.
-		QObject::connect(ccCleaner, SIGNAL(progress(int,int)),
-				 q, SLOT(ccCleaner_progress(int,int)));
+		QObject::connect(ccCleaner, SIGNAL(progress(int,int,bool)),
+				 q, SLOT(ccCleaner_progress(int,int,bool)));
 		QObject::connect(ccCleaner, SIGNAL(error(QString)),
 				 q, SLOT(ccCleaner_error(QString)));
+		QObject::connect(ccCleaner, SIGNAL(cacheIsEmpty(CacheCleaner::CacheDir)),
+				 q, SLOT(ccCleaner_cacheIsEmpty(CacheCleaner::CacheDir)));
 		QObject::connect(ccCleaner, SIGNAL(cacheCleared(CacheCleaner::CacheDir,unsigned int,unsigned int)),
 				 q, SLOT(ccCleaner_cacheCleared(CacheCleaner::CacheDir,unsigned int,unsigned int)));
 		QObject::connect(ccCleaner, SIGNAL(finished()),
@@ -228,12 +234,16 @@ void CacheTab::on_btnRpCache_clicked(void)
  * Cache cleaning task progress update.
  * @param pg_cur Current progress.
  * @param pg_max Maximum progress.
+ * @param hasError If true, errors have occurred.
  */
-void CacheTab::ccCleaner_progress(int pg_cur, int pg_max)
+void CacheTab::ccCleaner_progress(int pg_cur, int pg_max, bool hasError)
 {
 	Q_D(CacheTab);
 	if (d->ui.pbStatus->maximum() != pg_max) {
 		d->ui.pbStatus->setMaximum(pg_max);
+	}
+	if (d->ui.pbStatus->hasError() != hasError) {
+		d->ui.pbStatus->setError(hasError);
 	}
 	d->ui.pbStatus->setValue(pg_cur);
 }
@@ -253,6 +263,33 @@ void CacheTab::ccCleaner_error(const QString &error)
 }
 
 /**
+ * Cache directory is empty.
+ * @param cacheDir Which cache directory was checked.
+ */
+void CacheTab::ccCleaner_cacheIsEmpty(CacheCleaner::CacheDir cacheDir)
+{
+	QString qs_msg;
+	switch (cacheDir) {
+		default:
+			assert(!"Invalid cache directory specified.");
+			qs_msg = tr("Invalid cache directory specified.");
+			break;
+		case CacheCleaner::CD_System:
+			qs_msg = tr("System thumbnail cache is empty. Nothing to do.");
+			break;
+		case CacheCleaner::CD_RomProperties:
+			qs_msg = tr("rom-properties cache is empty. Nothing to do.");
+			break;
+	}
+
+	Q_D(CacheTab);
+	d->ui.pbStatus->setMaximum(1);
+	d->ui.pbStatus->setValue(1);
+	d->ui.lblStatus->setText(qs_msg);
+	MessageSound::play(QMessageBox::Warning, qs_msg, this);
+}
+
+/**
  * Cache was cleared.
  * @param cacheDir Which cache dir was cleared.
  * @param dirErrs Number of directories that could not be deleted.
@@ -260,7 +297,34 @@ void CacheTab::ccCleaner_error(const QString &error)
  */
 void CacheTab::ccCleaner_cacheCleared(CacheCleaner::CacheDir cacheDir, unsigned int dirErrs, unsigned int fileErrs)
 {
-	printf("cacheCleared(): %d %u %u\n", (int)cacheDir, dirErrs, fileErrs);
+	QMessageBox::Icon icon;
+	QString qs_msg;
+	if (dirErrs > 0 || fileErrs > 0) {
+		qs_msg = U82Q(
+			rp_sprintf_p(C_("CacheTab", "Error: Unable to delete %1$u file(s) and/or %2$u dir(s)."),
+				fileErrs, dirErrs));
+		icon = QMessageBox::Warning;
+	} else {
+		switch (cacheDir) {
+			default:
+				assert(!"Invalid cache directory specified.");
+				qs_msg = tr("Invalid cache directory specified.");
+				icon = QMessageBox::Warning;
+				break;
+			case CacheCleaner::CD_System:
+				qs_msg = tr("System thumbnail cache cleared successfully.");
+				icon = QMessageBox::Information;
+				break;
+			case CacheCleaner::CD_RomProperties:
+				qs_msg = tr("rom-properties cache cleared successfully.");
+				icon = QMessageBox::Information;
+				break;
+		}
+	}
+
+	Q_D(CacheTab);
+	d->ui.lblStatus->setText(qs_msg);
+	MessageSound::play(icon, qs_msg, this);
 }
 
 /**

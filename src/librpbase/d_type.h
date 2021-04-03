@@ -2,12 +2,12 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * d_type.h: d_type enumeration.                                           *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBRPBASE_DISC_D_TYPE_H__
-#define __ROMPROPERTIES_LIBRPBASE_DISC_D_TYPE_H__
+#ifndef __ROMPROPERTIES_LIBRPBASE_D_TYPE_H__
+#define __ROMPROPERTIES_LIBRPBASE_D_TYPE_H__
 
 #ifndef _WIN32
 # include <dirent.h>
@@ -65,4 +65,4 @@ enum {
 }
 #endif
 
-#endif /* __ROMPROPERTIES_LIBRPBASE_DISC_D_TYPE_H__ */
+#endif /* __ROMPROPERTIES_LIBRPBASE_D_TYPE_H__ */

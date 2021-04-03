@@ -84,14 +84,21 @@ class CacheTab : public ITab
 		 * Cache cleaning task progress update.
 		 * @param pg_cur Current progress.
 		 * @param pg_max Maximum progress.
+		 * @param hasError If true, errors have occurred.
 		 */
-		void ccCleaner_progress(int pg_cur, int pg_max);
+		void ccCleaner_progress(int pg_cur, int pg_max, bool hasError);
 
 		/**
 		 * An error occurred while clearing the cache.
 		 * @param error Error description.
 		 */
 		void ccCleaner_error(const QString &error);
+
+		/**
+		 * Cache directory is empty.
+		 * @param cacheDir Which cache directory was checked.
+		 */
+		void ccCleaner_cacheIsEmpty(CacheCleaner::CacheDir cacheDir);
 
 		/**
 		 * Cache was cleared.

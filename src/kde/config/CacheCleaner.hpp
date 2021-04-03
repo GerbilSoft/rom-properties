@@ -23,10 +23,7 @@ class CacheCleaner : public QObject
 			CD_RomProperties,
 		};
 
-		explicit CacheCleaner(QObject *parent, CacheCleaner::CacheDir cacheDir = CacheDir::CD_System)
-			: super(parent)
-			, m_cacheDir(cacheDir)
-		{ }
+		explicit CacheCleaner(QObject *parent, CacheCleaner::CacheDir cacheDir = CacheDir::CD_System);
 
 	private:
 		typedef QObject super;
@@ -64,14 +61,21 @@ class CacheCleaner : public QObject
 		 * Cache cleaning task progress update.
 		 * @param pg_cur Current progress.
 		 * @param pg_max Maximum progress.
+		 * @param hasError If true, errors have occurred.
 		 */
-		void progress(int pg_cur, int pg_max);
+		void progress(int pg_cur, int pg_max, bool hasError);
 
 		/**
 		 * An error occurred while clearing the cache.
 		 * @param error Error description.
 		 */
 		void error(const QString &error);
+
+		/**
+		 * Cache directory is empty.
+		 * @param cacheDir Which cache directory was checked.
+		 */
+		void cacheIsEmpty(CacheCleaner::CacheDir cacheDir);
 
 		/**
 		 * Cache has been cleared.
