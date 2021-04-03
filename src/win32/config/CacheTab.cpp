@@ -580,22 +580,19 @@ int CacheTabPrivate::recursiveScan(const TCHAR *path, list<pair<tstring, DWORD> 
 
 		// Make sure we should delete this file.
 		if (!(findFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)) {
-			size_t len;
-			TCHAR *pExt;
-
 			// Thumbs.db files can be deleted.
 			if (!_tcsicmp(findFileData.cFileName, _T("Thumbs.db")))
 				goto isok;
 
 			// Check the extension.
-			len = _tcslen(findFileData.cFileName);
+			size_t len = _tcslen(findFileData.cFileName);
 			if (len <= 4) {
 				// Filename is too short. This is bad.
 				FindClose(hFindFile);
 				return -EIO;
 			}
 
-			pExt = &findFileData.cFileName[len-4];
+			const TCHAR *pExt = &findFileData.cFileName[len-4];
 			if (_tcsicmp(pExt, _T(".png")) != 0 &&
 			    _tcsicmp(pExt, _T(".jpg")) != 0)
 			{
@@ -654,7 +651,9 @@ int CacheTabPrivate::clearRomPropertiesCache(void)
 			bscount++;
 	}
 	if (cacheDir.size() < 8 || bscount < 6) {
-		SetWindowText(hStatusLabel, U82T_c(C_("CacheTab", "ERROR: Unable to get the cache directory path.")));
+		const string s_err = rp_sprintf(C_("CacheTab", "ERROR: %s"),
+			C_("CacheCleaner", "Unable to get the rom-properties cache directory."));
+		SetWindowText(hStatusLabel, U82T_s(s_err));
 		SendMessage(hProgressBar, PBM_SETRANGE, 0, MAKELONG(0, 1));
 		SendMessage(hProgressBar, PBM_SETPOS, 1, 0);
 		// FIXME: Not working...
@@ -693,7 +692,9 @@ int CacheTabPrivate::clearRomPropertiesCache(void)
 	int ret = recursiveScan(cacheDirT.c_str(), rlist);
 	if (ret != 0) {
 		// Non-image file found.
-		SetWindowText(hStatusLabel, U82T_c(C_("CacheTab", "ERROR: rom-properties cache has unexpected files. Not clearing it.")));
+		const string s_err = rp_sprintf(C_("CacheTab", "ERROR: %s"),
+			C_("CacheCleaner", "rom-properties cache has unexpected files. Not clearing it."));
+		SetWindowText(hStatusLabel, U82T_s(s_err));
 		SendMessage(hProgressBar, PBM_SETRANGE, 0, MAKELONG(0, 1));
 		SendMessage(hProgressBar, PBM_SETPOS, 1, 0);
 		EnableWindow(hClearSysThumbs, TRUE);
@@ -756,10 +757,11 @@ int CacheTabPrivate::clearRomPropertiesCache(void)
 	}
 
 	if (dirErrs > 0 || fileErrs > 0) {
-		// TODO: Localize this string.
-		SetWindowText(hStatusLabel, U82T_s(
-			rp_sprintf("Error: Unable to delete %u file(s) and/or %u dir(s).",
-				fileErrs, dirErrs)));
+		char buf[256];
+		snprintf(buf, sizeof(buf), C_("CacheTab", "Error: Unable to delete %u file(s) and/or %u dir(s)."),
+			fileErrs, dirErrs);
+		const string s_err = rp_sprintf(C_("CacheTab", "ERROR: %s"), buf);
+		SetWindowText(hStatusLabel, U82T_s(s_err));
 		MessageBeep(MB_ICONWARNING);
 	} else {
 		SetWindowText(hStatusLabel, U82T_c(C_("CacheTab", "rom-properties cache cleared successfully.")));

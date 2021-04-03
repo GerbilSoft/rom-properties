@@ -300,9 +300,9 @@ void CacheTab::ccCleaner_cacheCleared(CacheCleaner::CacheDir cacheDir, unsigned 
 	QMessageBox::Icon icon;
 	QString qs_msg;
 	if (dirErrs > 0 || fileErrs > 0) {
-		qs_msg = U82Q(
-			rp_sprintf_p(C_("CacheTab", "Error: Unable to delete %1$u file(s) and/or %2$u dir(s)."),
-				fileErrs, dirErrs));
+		qs_msg = tr("<b>ERROR:</b> %1").arg(
+			U82Q(rp_sprintf_p(C_("CacheTab", "Unable to delete %1$u file(s) and/or %2$u dir(s)."),
+				fileErrs, dirErrs)));
 		icon = QMessageBox::Warning;
 	} else {
 		switch (cacheDir) {
