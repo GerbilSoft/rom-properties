@@ -33,6 +33,7 @@ SET(rom-properties-kde_SRCS
 	config/OptionsTab.cpp
 	config/CacheTab.cpp
 	config/CacheCleaner.cpp
+	config/RpProgressBar.cpp
 	config/AchievementsTab.cpp
 	config/AchievementsItemDelegate.cpp
 	config/AboutTab.cpp
@@ -59,10 +60,10 @@ SET(rom-properties-kde_H
 	config/OptionsTab.hpp
 	config/CacheTab.hpp
 	config/CacheCleaner.hpp
+	config/RpProgressBar.hpp
 	config/AchievementsTab.hpp
 	config/AchievementsItemDelegate.hpp
 	config/AboutTab.hpp
-	config/RpProgressBar.hpp
 	)
 SET(rom-properties-kde_UIS
 	RomDataView.ui

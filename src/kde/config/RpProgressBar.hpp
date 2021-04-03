@@ -34,22 +34,7 @@ class RpProgressBar : public QProgressBar
 		 * Set the error state.
 		 * @param error True if error; false if not.
 		 */
-		void setError(bool error)
-		{
-			if (error == m_error)
-				return;
-			m_error = error;
-
-			// Set the palette.
-			if (error) {
-				// TODO: Color scheme matching?
-				QPalette pal = this->palette();
-				pal.setColor(QPalette::Highlight, QColor(Qt::red));
-				this->setPalette(pal);
-			} else {
-				this->setPalette(this->style()->standardPalette());
-			}
-		}
+		void setError(bool error);
 
 		/**
 		 * Get the error state.
