@@ -385,6 +385,15 @@ vector<const char*> GameCubeRegions::gcnRegionToGameTDB(unsigned int gcnRegion, 
 					ret.emplace_back("AU");
 					addEN = true;
 					break;
+
+				case 'X':
+				case 'Y':
+				case 'Z':
+					// Extra language versions.
+					// Usually PAL.
+					ret.emplace_back("EN");
+					ret.emplace_back("US");
+					break;
 			}
 			if (addEN) {
 				ret.emplace_back("EN");
