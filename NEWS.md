@@ -16,6 +16,7 @@
     the generic ISO parser and PlayStationDisc. Support for other systems may
     be added later on, but subchannels generally aren't used on Sega Mega CD,
     Sega Saturn, Sega Dreamcast, or PlayStation Portable.
+  * New Spanish translation (es_ES), contributed by @Amnesia1000.
 
 * New parsers:
   * WonderSwan: Bandai WonderSwan (Color) ROM images. Supports external title
