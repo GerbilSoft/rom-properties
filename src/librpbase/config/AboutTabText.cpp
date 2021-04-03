@@ -43,6 +43,7 @@ const AboutTabText::CreditsData_t AboutTabText::CreditsData[] = {
 	// Translators
 	{CreditType::Translator,	"Egor", "mailto:egor@opensrc.club", "egor@opensrc.club", "ru, uk"},
 	{CreditType::Continue,		"Null Magic", nullptr, nullptr, "pt_BR"},
+	{CreditType::Continue,		"Amnesia1000", nullptr, nullptr, "es"},
 
 	// Contributors
 	{CreditType::Contributor,	"CheatFreak47", nullptr, nullptr, nullptr},
