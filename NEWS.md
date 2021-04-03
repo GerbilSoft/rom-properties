@@ -17,6 +17,8 @@
     be added later on, but subchannels generally aren't used on Sega Mega CD,
     Sega Saturn, Sega Dreamcast, or PlayStation Portable.
   * New Spanish translation (es_ES), contributed by @Amnesia1000.
+  * KDE: rp-config now has a Thumbnail Cache tab, similar to the Windows
+    version.
 
 * New parsers:
   * WonderSwan: Bandai WonderSwan (Color) ROM images. Supports external title

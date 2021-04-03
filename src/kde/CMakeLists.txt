@@ -31,6 +31,9 @@ SET(rom-properties-kde_SRCS
 	config/ImageTypesTab.cpp
 	config/SystemsTab.cpp
 	config/OptionsTab.cpp
+	config/CacheTab.cpp
+	config/CacheCleaner.cpp
+	config/RpProgressBar.cpp
 	config/AchievementsTab.cpp
 	config/AchievementsItemDelegate.cpp
 	config/AboutTab.cpp
@@ -53,8 +56,11 @@ SET(rom-properties-kde_H
 	config/ConfigDialog.hpp
 	config/ITab.hpp
 	config/ImageTypesTab.hpp
-	config/SystemsTab.cpp
+	config/SystemsTab.hpp
 	config/OptionsTab.hpp
+	config/CacheTab.hpp
+	config/CacheCleaner.hpp
+	config/RpProgressBar.hpp
 	config/AchievementsTab.hpp
 	config/AchievementsItemDelegate.hpp
 	config/AboutTab.hpp
@@ -65,6 +71,7 @@ SET(rom-properties-kde_UIS
 	config/ImageTypesTab.ui
 	config/SystemsTab.ui
 	config/OptionsTab.ui
+	config/CacheTab.ui
 	config/AchievementsTab.ui
 	config/AboutTab.ui
 	)

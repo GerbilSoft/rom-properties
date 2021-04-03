@@ -37,7 +37,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rom-properties 1.7.3+\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
-"POT-Creation-Date: 2021-04-02 23:46-0400\n"
+"POT-Creation-Date: 2021-04-03 13:46-0400\n"
 "PO-Revision-Date: 2018-04-13 04:50+0200\n"
 "Last-Translator: Egor <egor@opensrc.club>\n"
 "Language-Team: none\n"
@@ -82,34 +82,64 @@ msgctxt "AchievementsTab"
 msgid "Icon"
 msgstr "Иконка"
 
+#. tr: Windows Vista and later. Has a centralized thumbnails cache.
+#: ../build/src/kde/kf5/ui_CacheTab.h:98 ../src/win32/config/CacheTab.cpp:170
+msgctxt "CacheTab"
+msgid ""
+"If any image type settings were changed, you will need to clear the system "
+"thumbnail cache."
+msgstr ""
+
+#: ../build/src/kde/kf5/ui_CacheTab.h:99
+msgctxt "CacheTab"
+msgid "Clear the System Thumbnail Cache"
+msgstr ""
+
+#: ../build/src/kde/kf5/ui_CacheTab.h:100
+msgctxt "CacheTab"
+msgid ""
+"ROM Properties Page maintains its own download cache for external images.\n"
+"Clearing this cache will force external images to be redownloaded."
+msgstr ""
+
+#: ../build/src/kde/kf5/ui_CacheTab.h:102
+msgctxt "CacheTab"
+msgid "Clear the ROM Properties Page Download Cache"
+msgstr ""
+
 #. tr: Dialog title.
-#: ../build/src/kde/kf5/ui_ConfigDialog.h:85
+#: ../build/src/kde/kf5/ui_ConfigDialog.h:90
 #: ../src/win32/config/ConfigDialog.cpp:238
 msgctxt "ConfigDialog"
 msgid "ROM Properties Page Configuration"
 msgstr "Настройка ROM Properties Page"
 
-#: ../build/src/kde/kf5/ui_ConfigDialog.h:86
+#: ../build/src/kde/kf5/ui_ConfigDialog.h:91
 msgctxt "ConfigDialog"
 msgid "&Image Types"
 msgstr "&Типы изображений"
 
-#: ../build/src/kde/kf5/ui_ConfigDialog.h:87
+#: ../build/src/kde/kf5/ui_ConfigDialog.h:92
 msgctxt "ConfigDialog"
 msgid "&Systems"
 msgstr ""
 
-#: ../build/src/kde/kf5/ui_ConfigDialog.h:88
+#: ../build/src/kde/kf5/ui_ConfigDialog.h:93
 msgctxt "ConfigDialog"
 msgid "&Options"
 msgstr ""
 
-#: ../build/src/kde/kf5/ui_ConfigDialog.h:89
+#: ../build/src/kde/kf5/ui_ConfigDialog.h:94
+msgctxt "ConfigDialog"
+msgid "Thumbnail Cache"
+msgstr ""
+
+#: ../build/src/kde/kf5/ui_ConfigDialog.h:95
 msgctxt "ConfigDialog"
 msgid "&Achievements"
 msgstr ""
 
-#: ../build/src/kde/kf5/ui_ConfigDialog.h:90
+#: ../build/src/kde/kf5/ui_ConfigDialog.h:96
 #, fuzzy
 msgctxt "ConfigDialog"
 msgid "Abou&t"
@@ -259,7 +289,7 @@ msgid ""
 msgstr ""
 
 #: ../src/gtk/AchGDBus.cpp:283 ../src/kde/AchQtDBus.cpp:300
-#: ../src/win32/AchWin32.cpp:392
+#: ../src/win32/AchWin32.cpp:395
 msgctxt "Achievements"
 msgid "Achievement Unlocked"
 msgstr ""
@@ -480,20 +510,26 @@ msgctxt "AboutTab|Libraries"
 msgid "Licenses: %s"
 msgstr "Лицензии: %s"
 
-#: ../src/kde/config/AboutTab.cpp:388
+#: ../src/kde/config/AboutTab.cpp:401
 msgctxt "AboutTab|Libraries"
 msgid "APNG patch:"
 msgstr ""
 
-#: ../src/kde/config/AboutTab.cpp:486 ../src/win32/config/AboutTab.cpp:798
+#: ../src/kde/config/AboutTab.cpp:499 ../src/win32/config/AboutTab.cpp:806
 msgctxt "AboutTab|Support"
 msgid "For technical support, you can visit the following websites:"
 msgstr "Для получения технической поддержки, посетите следующие веб-сайты:"
 
-#: ../src/kde/config/AboutTab.cpp:506 ../src/win32/config/AboutTab.cpp:815
+#: ../src/kde/config/AboutTab.cpp:519 ../src/win32/config/AboutTab.cpp:823
 msgctxt "AboutTab|Support"
 msgid "You can also email the developer directly:"
 msgstr "Вы также можете связаться с разработчиком напрямую:"
+
+#: ../src/kde/config/CacheTab.cpp:304
+#, c-format
+msgctxt "CacheTab"
+msgid "Unable to delete %1$u file(s) and/or %2$u dir(s)."
+msgstr ""
 
 #: ../src/kde/config/ConfigDialog.cpp:82
 msgctxt "ConfigDialog"
@@ -763,7 +799,7 @@ msgid "ADX with Exponential Scale"
 msgstr ""
 
 #: ../src/libromdata/Audio/ADX.cpp:304
-#: ../src/libromdata/Console/GameCube.cpp:1876
+#: ../src/libromdata/Console/GameCube.cpp:1870
 #: ../src/libromdata/Console/GameCubeSave.cpp:878
 #: ../src/libromdata/Console/MegaDrive.cpp:291
 #: ../src/libromdata/Console/NES.cpp:708 ../src/libromdata/Console/NES.cpp:1052
@@ -812,20 +848,20 @@ msgctxt "RomData|Audio"
 msgid "Format"
 msgstr "Формат"
 
-#: ../src/libromdata/Audio/ADX.cpp:310 ../src/libromdata/Audio/BCSTM.cpp:510
-#: ../src/libromdata/Audio/BRSTM.cpp:369
+#: ../src/libromdata/Audio/ADX.cpp:310 ../src/libromdata/Audio/BCSTM.cpp:512
+#: ../src/libromdata/Audio/BRSTM.cpp:370
 msgctxt "RomData|Audio"
 msgid "Channels"
 msgstr ""
 
-#: ../src/libromdata/Audio/ADX.cpp:320 ../src/libromdata/Audio/BCSTM.cpp:516
-#: ../src/libromdata/Audio/BRSTM.cpp:379
+#: ../src/libromdata/Audio/ADX.cpp:320 ../src/libromdata/Audio/BCSTM.cpp:518
+#: ../src/libromdata/Audio/BRSTM.cpp:380
 msgctxt "RomData|Audio"
 msgid "Sample Rate"
 msgstr ""
 
-#: ../src/libromdata/Audio/ADX.cpp:323 ../src/libromdata/Audio/BCSTM.cpp:521
-#: ../src/libromdata/Audio/BRSTM.cpp:382
+#: ../src/libromdata/Audio/ADX.cpp:323 ../src/libromdata/Audio/BCSTM.cpp:523
+#: ../src/libromdata/Audio/BRSTM.cpp:383
 msgctxt "RomData|Audio"
 msgid "Length"
 msgstr ""
@@ -865,12 +901,12 @@ msgctxt "ADX"
 msgid "Loop End"
 msgstr ""
 
-#: ../src/libromdata/Audio/BCSTM.cpp:437 ../src/libromdata/Audio/BCSTM.cpp:439
+#: ../src/libromdata/Audio/BCSTM.cpp:434
 msgctxt "BCSTM"
 msgid "Type"
 msgstr "Тип"
 
-#: ../src/libromdata/Audio/BCSTM.cpp:440
+#: ../src/libromdata/Audio/BCSTM.cpp:441
 #: ../src/librptexture/fileformat/KhronosKTX2.cpp:909
 #: ../src/librptexture/fileformat/ValveVTF.cpp:1038
 #: ../src/librptexture/fileformat/XboxXPR.cpp:784
@@ -879,66 +915,67 @@ msgctxt "RomData"
 msgid "Unknown (%d)"
 msgstr "Неизвестно (%d)"
 
-#: ../src/libromdata/Audio/BCSTM.cpp:446 ../src/libromdata/Audio/BRSTM.cpp:349
+#: ../src/libromdata/Audio/BCSTM.cpp:447 ../src/libromdata/Audio/BRSTM.cpp:349
 msgctxt "RomData"
 msgid "Endianness"
 msgstr ""
 
-#: ../src/libromdata/Audio/BCSTM.cpp:448 ../src/libromdata/Audio/BRSTM.cpp:351
+#: ../src/libromdata/Audio/BCSTM.cpp:449 ../src/libromdata/Audio/BRSTM.cpp:351
 msgctxt "RomData"
 msgid "Big-Endian"
 msgstr ""
 
-#: ../src/libromdata/Audio/BCSTM.cpp:449 ../src/libromdata/Audio/BRSTM.cpp:352
+#: ../src/libromdata/Audio/BCSTM.cpp:450 ../src/libromdata/Audio/BRSTM.cpp:352
 msgctxt "RomData"
 msgid "Little-Endian"
 msgstr ""
 
-#: ../src/libromdata/Audio/BCSTM.cpp:497
+#: ../src/libromdata/Audio/BCSTM.cpp:498
 msgctxt "BCSTM|Codec"
 msgid "Signed 8-bit PCM"
 msgstr ""
 
-#: ../src/libromdata/Audio/BCSTM.cpp:498
+#: ../src/libromdata/Audio/BCSTM.cpp:499
 msgctxt "BCSTM|Codec"
 msgid "Signed 16-bit PCM"
 msgstr ""
 
-#: ../src/libromdata/Audio/BCSTM.cpp:502 ../src/libromdata/Audio/BCSTM.cpp:505
+#: ../src/libromdata/Audio/BCSTM.cpp:502
 msgctxt "BCSTM"
 msgid "Codec"
 msgstr ""
 
-#: ../src/libromdata/Audio/BCSTM.cpp:506 ../src/libromdata/Audio/BRSTM.cpp:365
+#: ../src/libromdata/Audio/BCSTM.cpp:508 ../src/libromdata/Audio/BRSTM.cpp:366
 #: ../src/libromdata/Console/Xbox360_STFS.cpp:1058
 #: ../src/libromdata/Console/XboxDisc.cpp:776
+#: ../src/libromdata/Handheld/WonderSwan.cpp:500
 #: ../src/libromdata/Other/ELF.cpp:1695 ../src/libromdata/Other/MachO.cpp:538
 #, c-format
 msgctxt "RomData"
 msgid "Unknown (%u)"
 msgstr "Неизвестно (%u)"
 
-#: ../src/libromdata/Audio/BCSTM.cpp:526
+#: ../src/libromdata/Audio/BCSTM.cpp:528
 msgctxt "BCSTM"
 msgid "Looping"
 msgstr ""
 
-#: ../src/libromdata/Audio/BCSTM.cpp:527 ../src/libromdata/Audio/BRSTM.cpp:387
+#: ../src/libromdata/Audio/BCSTM.cpp:529 ../src/libromdata/Audio/BRSTM.cpp:388
 msgctxt "RomData"
 msgid "Yes"
 msgstr ""
 
-#: ../src/libromdata/Audio/BCSTM.cpp:527 ../src/libromdata/Audio/BRSTM.cpp:387
+#: ../src/libromdata/Audio/BCSTM.cpp:529 ../src/libromdata/Audio/BRSTM.cpp:388
 msgctxt "RomData"
 msgid "No"
 msgstr "Выкл"
 
-#: ../src/libromdata/Audio/BCSTM.cpp:529
+#: ../src/libromdata/Audio/BCSTM.cpp:531
 msgctxt "BCSTM"
 msgid "Loop Start"
 msgstr ""
 
-#: ../src/libromdata/Audio/BCSTM.cpp:533
+#: ../src/libromdata/Audio/BCSTM.cpp:535
 msgctxt "BCSTM"
 msgid "Loop End"
 msgstr ""
@@ -968,17 +1005,17 @@ msgctxt "BRSTM|Codec"
 msgid "Signed 16-bit PCM"
 msgstr ""
 
-#: ../src/libromdata/Audio/BRSTM.cpp:361 ../src/libromdata/Audio/BRSTM.cpp:364
+#: ../src/libromdata/Audio/BRSTM.cpp:360
 msgctxt "BRSTM"
 msgid "Codec"
 msgstr ""
 
-#: ../src/libromdata/Audio/BRSTM.cpp:386
+#: ../src/libromdata/Audio/BRSTM.cpp:387
 msgctxt "BRSTM"
 msgid "Looping"
 msgstr ""
 
-#: ../src/libromdata/Audio/BRSTM.cpp:389
+#: ../src/libromdata/Audio/BRSTM.cpp:390
 msgctxt "BRSTM"
 msgid "Loop Start"
 msgstr ""
@@ -990,7 +1027,7 @@ msgid "Title"
 msgstr "Название"
 
 #: ../src/libromdata/Audio/GBS.cpp:234 ../src/libromdata/Audio/NSF.cpp:233
-#: ../src/libromdata/Audio/SNDH.cpp:828 ../src/libromdata/Audio/VGM.cpp:410
+#: ../src/libromdata/Audio/SNDH.cpp:828 ../src/libromdata/Audio/VGM.cpp:457
 msgctxt "RomData|Audio"
 msgid "Composer"
 msgstr ""
@@ -1121,6 +1158,7 @@ msgstr "Система"
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:1895
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1169
 #: ../src/libromdata/Handheld/VirtualBoy.cpp:398
+#: ../src/libromdata/Handheld/WonderSwan.cpp:473
 #: ../src/libromdata/Other/Amiibo.cpp:440 ../src/libromdata/Other/ELF.cpp:1268
 #: ../src/libromdata/Other/EXE.cpp:257 ../src/libromdata/Other/EXE.cpp:376
 #: ../src/libromdata/Other/EXE_NE.cpp:320
@@ -1139,7 +1177,7 @@ msgctxt "PSF"
 msgid "Game"
 msgstr ""
 
-#: ../src/libromdata/Audio/PSF.cpp:596 ../src/libromdata/Audio/VGM.cpp:411
+#: ../src/libromdata/Audio/PSF.cpp:596 ../src/libromdata/Audio/VGM.cpp:458
 #: ../src/libromdata/Console/Dreamcast.cpp:659
 #: ../src/libromdata/Console/SegaSaturn.cpp:528
 msgctxt "RomData"
@@ -1425,196 +1463,196 @@ msgctxt "SPC"
 msgid "OST Track #"
 msgstr ""
 
-#: ../src/libromdata/Audio/VGM.cpp:80
+#: ../src/libromdata/Audio/VGM.cpp:99
 #, c-format
 msgctxt "VGM"
 msgid "%u Hz"
 msgstr ""
 
-#: ../src/libromdata/Audio/VGM.cpp:85
+#: ../src/libromdata/Audio/VGM.cpp:104
 #, c-format
 msgctxt "VGM"
 msgid "%1$u.%2$03u kHz"
 msgstr ""
 
-#: ../src/libromdata/Audio/VGM.cpp:90
+#: ../src/libromdata/Audio/VGM.cpp:109
 #, c-format
 msgctxt "VGM"
 msgid "%1$u.%2$03u MHz"
 msgstr ""
 
-#: ../src/libromdata/Audio/VGM.cpp:95
+#: ../src/libromdata/Audio/VGM.cpp:114
 #, c-format
 msgctxt "VGM"
 msgid "%1$u.%2$03u GHz"
 msgstr ""
 
-#: ../src/libromdata/Audio/VGM.cpp:358
+#: ../src/libromdata/Audio/VGM.cpp:405
 msgctxt "VGM"
 msgid "VGM Version"
 msgstr "VGM Версия"
 
-#: ../src/libromdata/Audio/VGM.cpp:359
+#: ../src/libromdata/Audio/VGM.cpp:406
 #, c-format
 msgctxt "VGM"
 msgid "%1$x.%2$02x"
 msgstr ""
 
-#: ../src/libromdata/Audio/VGM.cpp:407
+#: ../src/libromdata/Audio/VGM.cpp:454
 msgctxt "RomData|Audio"
 msgid "Track Name"
 msgstr ""
 
-#: ../src/libromdata/Audio/VGM.cpp:408
+#: ../src/libromdata/Audio/VGM.cpp:455
 msgctxt "VGM"
 msgid "Game Name"
 msgstr ""
 
-#: ../src/libromdata/Audio/VGM.cpp:409
+#: ../src/libromdata/Audio/VGM.cpp:456
 msgctxt "VGM"
 msgid "System Name"
 msgstr ""
 
-#: ../src/libromdata/Audio/VGM.cpp:412
+#: ../src/libromdata/Audio/VGM.cpp:459
 msgctxt "VGM"
 msgid "VGM Ripper"
 msgstr ""
 
-#: ../src/libromdata/Audio/VGM.cpp:413
+#: ../src/libromdata/Audio/VGM.cpp:460
 msgctxt "RomData|Audio"
 msgid "Notes"
 msgstr ""
 
-#: ../src/libromdata/Audio/VGM.cpp:431
+#: ../src/libromdata/Audio/VGM.cpp:478
 msgctxt "VGM"
 msgid "Duration"
 msgstr ""
 
-#: ../src/libromdata/Audio/VGM.cpp:436
+#: ../src/libromdata/Audio/VGM.cpp:483
 msgctxt "VGM"
 msgid "Loop Offset"
 msgstr ""
 
-#: ../src/libromdata/Audio/VGM.cpp:443
+#: ../src/libromdata/Audio/VGM.cpp:490
 msgctxt "VGM"
 msgid "Frame Rate"
 msgstr ""
 
-#: ../src/libromdata/Audio/VGM.cpp:449
+#: ../src/libromdata/Audio/VGM.cpp:496
 msgctxt "VGM"
 msgid "Sound Chips"
 msgstr ""
 
-#: ../src/libromdata/Audio/VGM.cpp:456
+#: ../src/libromdata/Audio/VGM.cpp:504
 #, c-format
 msgctxt "VGM"
 msgid "%s Clock Rate"
 msgstr ""
 
-#: ../src/libromdata/Audio/VGM.cpp:457
+#: ../src/libromdata/Audio/VGM.cpp:505
 #, c-format
 msgctxt "VGM"
 msgid "%s Dual-Chip"
 msgstr ""
 
-#: ../src/libromdata/Audio/VGM.cpp:458
+#: ../src/libromdata/Audio/VGM.cpp:506
+msgctxt "VGM"
+msgid "Yes"
+msgstr ""
+
+#: ../src/libromdata/Audio/VGM.cpp:507
+msgctxt "VGM"
+msgid "No"
+msgstr "Выкл"
+
+#: ../src/libromdata/Audio/VGM.cpp:510
 #, c-format
 msgctxt "VGM"
 msgid "%s Flags"
 msgstr ""
 
-#: ../src/libromdata/Audio/VGM.cpp:459
-msgctxt "VGM"
-msgid "Yes"
-msgstr ""
-
-#: ../src/libromdata/Audio/VGM.cpp:460
-msgctxt "VGM"
-msgid "No"
-msgstr "Выкл"
-
-#: ../src/libromdata/Audio/VGM.cpp:493
+#: ../src/libromdata/Audio/VGM.cpp:543
 #, c-format
 msgctxt "VGM"
 msgid "%s LFSR pattern"
 msgstr ""
 
-#: ../src/libromdata/Audio/VGM.cpp:496
+#: ../src/libromdata/Audio/VGM.cpp:546
 #, c-format
 msgctxt "VGM"
 msgid "%s LFSR width"
 msgstr ""
 
-#: ../src/libromdata/Audio/VGM.cpp:509
+#: ../src/libromdata/Audio/VGM.cpp:559
 msgctxt "VGM|PSGFlags"
 msgid "Freq 0 is 0x400"
 msgstr ""
 
 # bad style?
-#: ../src/libromdata/Audio/VGM.cpp:510
+#: ../src/libromdata/Audio/VGM.cpp:560
 msgctxt "VGM|PSGFlags"
 msgid "Output Negate"
 msgstr ""
 
-#: ../src/libromdata/Audio/VGM.cpp:511
+#: ../src/libromdata/Audio/VGM.cpp:561
 msgctxt "VGM|PSGFlags"
 msgid "Stereo"
 msgstr ""
 
-#: ../src/libromdata/Audio/VGM.cpp:512
+#: ../src/libromdata/Audio/VGM.cpp:562
 msgctxt "VGM|PSGFlags"
 msgid "/8 Clock Divider"
 msgstr ""
 
-#: ../src/libromdata/Audio/VGM.cpp:564
+#: ../src/libromdata/Audio/VGM.cpp:603
 #, c-format
 msgctxt "VGM"
 msgid "%s IF reg"
 msgstr ""
 
-#: ../src/libromdata/Audio/VGM.cpp:576
+#: ../src/libromdata/Audio/VGM.cpp:615
 msgctxt "VGM|AY8910Flags"
 msgid "Legacy Output"
 msgstr ""
 
-#: ../src/libromdata/Audio/VGM.cpp:577
+#: ../src/libromdata/Audio/VGM.cpp:616
 msgctxt "VGM|AY8910Flags"
 msgid "Single Output"
 msgstr ""
 
-#: ../src/libromdata/Audio/VGM.cpp:578
+#: ../src/libromdata/Audio/VGM.cpp:617
 msgctxt "VGM|AY8910Flags"
 msgid "Discrete Output"
 msgstr ""
 
-#: ../src/libromdata/Audio/VGM.cpp:579
+#: ../src/libromdata/Audio/VGM.cpp:618
 msgctxt "VGM|AY8910Flags"
 msgid "Raw Output"
 msgstr ""
 
-#: ../src/libromdata/Audio/VGM.cpp:722
+#: ../src/libromdata/Audio/VGM.cpp:761
 msgctxt "VGM|NESExpansion"
 msgid "Famicom Disk System"
 msgstr ""
 
-#: ../src/libromdata/Audio/VGM.cpp:723
+#: ../src/libromdata/Audio/VGM.cpp:762
 msgctxt "VGM|NESExpansion"
 msgid "(none)"
 msgstr ""
 
-#: ../src/libromdata/Audio/VGM.cpp:725
+#: ../src/libromdata/Audio/VGM.cpp:764
 #, c-format
 msgctxt "VGM"
 msgid "%s Expansions"
 msgstr ""
 
-#: ../src/libromdata/Audio/VGM.cpp:795 ../src/libromdata/Audio/VGM.cpp:817
+#: ../src/libromdata/Audio/VGM.cpp:834 ../src/libromdata/Audio/VGM.cpp:856
 #, c-format
 msgctxt "VGM"
 msgid "%s # of Channels"
 msgstr ""
 
-#: ../src/libromdata/Audio/VGM.cpp:838
+#: ../src/libromdata/Audio/VGM.cpp:877
 #, c-format
 msgctxt "VGM"
 msgid "%s Clock Divider"
@@ -1785,7 +1823,7 @@ msgid "Dreamcast"
 msgstr "Dreamcast"
 
 #: ../src/libromdata/Console/Dreamcast.cpp:638
-#: ../src/libromdata/Console/GameCube.cpp:1511
+#: ../src/libromdata/Console/GameCube.cpp:1505
 #: ../src/libromdata/Console/iQuePlayer.cpp:671
 #: ../src/libromdata/Console/N64.cpp:291
 #: ../src/libromdata/Console/SegaSaturn.cpp:507
@@ -1809,7 +1847,7 @@ msgid "Title"
 msgstr "Название"
 
 #: ../src/libromdata/Console/Dreamcast.cpp:643
-#: ../src/libromdata/Console/GameCube.cpp:1546
+#: ../src/libromdata/Console/GameCube.cpp:1540
 #: ../src/libromdata/Console/GameCubeSave.cpp:877
 #: ../src/libromdata/Console/MegaDrive.cpp:281
 #: ../src/libromdata/Console/MegaDrive.cpp:290
@@ -1824,6 +1862,7 @@ msgstr "Название"
 #: ../src/libromdata/Handheld/GameBoyAdvance.cpp:384
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1026
 #: ../src/libromdata/Handheld/VirtualBoy.cpp:375
+#: ../src/libromdata/Handheld/WonderSwan.cpp:475
 msgctxt "RomData"
 msgid "Publisher"
 msgstr "Издатель"
@@ -1839,7 +1878,7 @@ msgstr ""
 # The meaning is the same in this context, but I decided to go with (2), because it sounds more concise.
 # (1) can be translated as "Номер диска" or "№ диска".
 #: ../src/libromdata/Console/Dreamcast.cpp:668
-#: ../src/libromdata/Console/GameCube.cpp:1549
+#: ../src/libromdata/Console/GameCube.cpp:1543
 #: ../src/libromdata/Console/SegaSaturn.cpp:554
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1924
 #: ../src/libromdata/Other/ISO.cpp:277
@@ -1897,7 +1936,7 @@ msgid "Europe"
 msgstr "Европа"
 
 #: ../src/libromdata/Console/Dreamcast.cpp:691
-#: ../src/libromdata/Console/GameCube.cpp:1570
+#: ../src/libromdata/Console/GameCube.cpp:1564
 #: ../src/libromdata/Console/MegaDrive.cpp:420
 #: ../src/libromdata/Console/Sega8Bit.cpp:440
 #: ../src/libromdata/Console/SegaSaturn.cpp:547
@@ -2208,7 +2247,7 @@ msgstr "Описание"
 
 #: ../src/libromdata/Console/GameCubeBNR.cpp:807
 #: ../src/libromdata/Console/GameCube.cpp:607
-#: ../src/libromdata/Console/GameCube.cpp:1677
+#: ../src/libromdata/Console/GameCube.cpp:1671
 msgctxt "GameCube"
 msgid "Game Info"
 msgstr ""
@@ -2253,7 +2292,7 @@ msgctxt "GameCube"
 msgid "ERROR: Unknown error. (THIS IS A BUG!)"
 msgstr ""
 
-#: ../src/libromdata/Console/GameCube.cpp:1543
+#: ../src/libromdata/Console/GameCube.cpp:1537
 #: ../src/libromdata/Console/GameCubeSave.cpp:873
 #: ../src/libromdata/Console/NES.cpp:849
 #: ../src/libromdata/Console/SNES.cpp:1294
@@ -2268,30 +2307,32 @@ msgstr ""
 #: ../src/libromdata/Handheld/PokemonMini.cpp:254
 #: ../src/libromdata/Handheld/PSP.cpp:569
 #: ../src/libromdata/Handheld/VirtualBoy.cpp:356
+#: ../src/libromdata/Handheld/WonderSwan.cpp:456
 msgctxt "RomData"
 msgid "Game ID"
 msgstr ""
 
-#: ../src/libromdata/Console/GameCube.cpp:1551
+#: ../src/libromdata/Console/GameCube.cpp:1545
 #: ../src/libromdata/Console/N64.cpp:308 ../src/libromdata/Console/NES.cpp:866
 #: ../src/libromdata/Handheld/DMG.cpp:1029
 #: ../src/libromdata/Handheld/GameBoyAdvance.cpp:387
 #: ../src/libromdata/Handheld/NGPC.cpp:347
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1042
 #: ../src/libromdata/Handheld/VirtualBoy.cpp:378
+#: ../src/libromdata/Handheld/WonderSwan.cpp:465
 #, fuzzy
 msgctxt "RomData"
 msgid "Revision"
 msgstr "Ревизия"
 
 #. tr: %1%s == full region name, %2$s == abbreviation
-#: ../src/libromdata/Console/GameCube.cpp:1582
+#: ../src/libromdata/Console/GameCube.cpp:1576
 #, c-format
 msgctxt "GameCube"
 msgid "%1$s (%2$s)"
 msgstr "%1$s (%2$s)"
 
-#: ../src/libromdata/Console/GameCube.cpp:1591
+#: ../src/libromdata/Console/GameCube.cpp:1585
 #: ../src/libromdata/Console/SNES.cpp:1457
 #: ../src/libromdata/Console/Xbox360_STFS.cpp:975
 #: ../src/libromdata/Other/EXE.cpp:151 ../src/libromdata/Other/EXE.cpp:184
@@ -2300,22 +2341,22 @@ msgctxt "RomData"
 msgid "Unknown (0x%08X)"
 msgstr "Неизвестно (0x%08X)"
 
-#: ../src/libromdata/Console/GameCube.cpp:1617
+#: ../src/libromdata/Console/GameCube.cpp:1611
 msgctxt "GameCube"
 msgid "Title ID"
 msgstr ""
 
-#: ../src/libromdata/Console/GameCube.cpp:1626
+#: ../src/libromdata/Console/GameCube.cpp:1620
 msgctxt "GameCube"
 msgid "DVD Video"
 msgstr ""
 
-#: ../src/libromdata/Console/GameCube.cpp:1627
+#: ../src/libromdata/Console/GameCube.cpp:1621
 msgctxt "GameCube"
 msgid "Access Rights"
 msgstr ""
 
-#: ../src/libromdata/Console/GameCube.cpp:1667
+#: ../src/libromdata/Console/GameCube.cpp:1661
 #: ../src/libromdata/Console/WiiWAD.cpp:1141
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1992
 #: ../src/libromdata/Handheld/Nintendo3DS_SMDH.cpp:607
@@ -2324,129 +2365,129 @@ msgctxt "RomData"
 msgid "Age Ratings"
 msgstr ""
 
-#: ../src/libromdata/Console/GameCube.cpp:1682
+#: ../src/libromdata/Console/GameCube.cpp:1676
 msgctxt "GameCube"
 msgid "ERROR: No game partition was found."
 msgstr ""
 
-#: ../src/libromdata/Console/GameCube.cpp:1688
+#: ../src/libromdata/Console/GameCube.cpp:1682
 #, c-format
 msgctxt "GameCube"
 msgid "ERROR: %s"
 msgstr "ОШИБКА: %s"
 
-#: ../src/libromdata/Console/GameCube.cpp:1689
+#: ../src/libromdata/Console/GameCube.cpp:1683
 msgctxt "GameCube"
 msgid "Unknown"
 msgstr "Неизвестно"
 
-#: ../src/libromdata/Console/GameCube.cpp:1769
+#: ../src/libromdata/Console/GameCube.cpp:1763
 msgctxt "GameCube"
 msgid "Update"
 msgstr ""
 
-#: ../src/libromdata/Console/GameCube.cpp:1777
+#: ../src/libromdata/Console/GameCube.cpp:1771
 msgctxt "GameCube"
 msgid "None"
 msgstr ""
 
 #. tr: GameCubePrivate::RVL_PT_GAME (Game partition)
-#: ../src/libromdata/Console/GameCube.cpp:1806
+#: ../src/libromdata/Console/GameCube.cpp:1800
 msgctxt "GameCube|Partition"
 msgid "Game"
 msgstr ""
 
 #. tr: GameCubePrivate::RVL_PT_UPDATE (Update partition)
-#: ../src/libromdata/Console/GameCube.cpp:1808
+#: ../src/libromdata/Console/GameCube.cpp:1802
 msgctxt "GameCube|Partition"
 msgid "Update"
 msgstr ""
 
 #. tr: GameCubePrivate::RVL_PT_CHANNEL (Channel partition)
-#: ../src/libromdata/Console/GameCube.cpp:1810
+#: ../src/libromdata/Console/GameCube.cpp:1804
 msgctxt "GameCube|Partition"
 msgid "Channel"
 msgstr ""
 
 #. tr: WiiPartition::EncKey::RVL_Common - Retail encryption key.
-#: ../src/libromdata/Console/GameCube.cpp:1852
+#: ../src/libromdata/Console/GameCube.cpp:1846
 msgctxt "GameCube|KeyIdx"
 msgid "Retail"
 msgstr ""
 
 #. tr: WiiPartition::EncKey::RVL_Korean - Korean encryption key.
-#: ../src/libromdata/Console/GameCube.cpp:1854
+#: ../src/libromdata/Console/GameCube.cpp:1848
 msgctxt "GameCube|KeyIdx"
 msgid "Korean"
 msgstr ""
 
 #. tr: WiiPartition::EncKey::WUP_vWii - vWii-specific encryption key.
-#: ../src/libromdata/Console/GameCube.cpp:1856
+#: ../src/libromdata/Console/GameCube.cpp:1850
 msgctxt "GameCube|KeyIdx"
 msgid "vWii"
 msgstr ""
 
 #. tr: WiiPartition::EncKey::RVT_Debug - Debug encryption key.
-#: ../src/libromdata/Console/GameCube.cpp:1859
+#: ../src/libromdata/Console/GameCube.cpp:1853
 msgctxt "GameCube|KeyIdx"
 msgid "Debug"
 msgstr ""
 
 #. tr: WiiPartition::EncKey::RVT_Korean - Korean (debug) encryption key.
-#: ../src/libromdata/Console/GameCube.cpp:1861
+#: ../src/libromdata/Console/GameCube.cpp:1855
 msgctxt "GameCube|KeyIdx"
 msgid "Korean (debug)"
 msgstr ""
 
 #. tr: WiiPartition::EncKey::CAT_vWii - vWii (debug) encryption key.
-#: ../src/libromdata/Console/GameCube.cpp:1863
+#: ../src/libromdata/Console/GameCube.cpp:1857
 msgctxt "GameCube|KeyIdx"
 msgid "vWii (debug)"
 msgstr ""
 
 #. tr: WiiPartition::EncKey::None - No encryption.
-#: ../src/libromdata/Console/GameCube.cpp:1866
+#: ../src/libromdata/Console/GameCube.cpp:1860
 msgctxt "GameCube|KeyIdx"
 msgid "None"
 msgstr ""
 
 #. tr: Unknown used size.
-#: ../src/libromdata/Console/GameCube.cpp:1886
+#: ../src/libromdata/Console/GameCube.cpp:1880
 msgctxt "GameCube|Partition"
 msgid "Unknown"
 msgstr "Неизвестно"
 
 #. tr: Partition number.
-#: ../src/libromdata/Console/GameCube.cpp:1896
+#: ../src/libromdata/Console/GameCube.cpp:1890
 msgctxt "GameCube|Partition"
 msgid "#"
 msgstr "№"
 
 #. tr: Partition type.
-#: ../src/libromdata/Console/GameCube.cpp:1898
+#: ../src/libromdata/Console/GameCube.cpp:1892
 msgctxt "GameCube|Partition"
 msgid "Type"
 msgstr ""
 
 #. tr: Encryption key.
-#: ../src/libromdata/Console/GameCube.cpp:1900
+#: ../src/libromdata/Console/GameCube.cpp:1894
 msgctxt "GameCube|Partition"
 msgid "Key"
 msgstr ""
 
 #. tr: Actual data used within the partition.
-#: ../src/libromdata/Console/GameCube.cpp:1902
+#: ../src/libromdata/Console/GameCube.cpp:1896
 msgctxt "GameCube|Partition"
 msgid "Used Size"
 msgstr ""
 
 #. tr: Total size of the partition.
-#: ../src/libromdata/Console/GameCube.cpp:1904
+#: ../src/libromdata/Console/GameCube.cpp:1898
 msgctxt "GameCube|Partition"
 msgid "Total Size"
 msgstr ""
 
-#: ../src/libromdata/Console/GameCube.cpp:1912
+#: ../src/libromdata/Console/GameCube.cpp:1906
 msgctxt "GameCube"
 msgid "Partitions"
 msgstr ""
@@ -5826,6 +5867,118 @@ msgctxt "RomData"
 msgid "Video Title"
 msgstr ""
 
+#: ../src/libromdata/Handheld/WonderSwan.cpp:461
+msgctxt "WonderSwan"
+msgid "None"
+msgstr ""
+
+#: ../src/libromdata/Handheld/WonderSwan.cpp:484
+#, fuzzy
+msgctxt "WonderSwan"
+msgid "System"
+msgstr "Система"
+
+#: ../src/libromdata/Handheld/WonderSwan.cpp:493
+#, fuzzy
+msgctxt "WonderSwan"
+msgid "ROM Size"
+msgstr "Размер ПЗУ"
+
+#: ../src/libromdata/Handheld/WonderSwan.cpp:497
+#, fuzzy, c-format
+msgctxt "WonderSwan"
+msgid "%u KiB"
+msgstr "%u КиБ"
+
+#: ../src/libromdata/Handheld/WonderSwan.cpp:507
+msgctxt "WonderSwan"
+msgid "Save Memory"
+msgstr ""
+
+#: ../src/libromdata/Handheld/WonderSwan.cpp:509
+#: ../src/libromdata/Handheld/WonderSwan.cpp:525
+msgctxt "WonderSwan|SaveMemory"
+msgid "None"
+msgstr ""
+
+#: ../src/libromdata/Handheld/WonderSwan.cpp:512
+#: ../src/libromdata/Handheld/WonderSwan.cpp:529
+#, c-format
+msgctxt "WonderSwan|SaveMemory"
+msgid "%1$u KiB (%2$s)"
+msgstr "%1$u КиБ (%2$u)"
+
+#: ../src/libromdata/Handheld/WonderSwan.cpp:514
+msgctxt "WonderSwan|SaveMemory"
+msgid "SRAM"
+msgstr ""
+
+#: ../src/libromdata/Handheld/WonderSwan.cpp:532
+#, c-format
+msgctxt "WonderSwan|SaveMemory"
+msgid "%1$u bytes (%2$s)"
+msgstr ""
+
+#: ../src/libromdata/Handheld/WonderSwan.cpp:535
+msgctxt "WonderSwan|SaveMemory"
+msgid "EEPROM"
+msgstr ""
+
+#: ../src/libromdata/Handheld/WonderSwan.cpp:541
+msgctxt "WonderSwan|Features"
+msgid "RTC Present"
+msgstr ""
+
+#: ../src/libromdata/Handheld/WonderSwan.cpp:545
+msgctxt "WonderSwan"
+msgid "Features"
+msgstr ""
+
+#: ../src/libromdata/Handheld/WonderSwan.cpp:549
+msgctxt "WonderSwan"
+msgid "Orientation"
+msgstr ""
+
+#: ../src/libromdata/Handheld/WonderSwan.cpp:551
+msgctxt "WonderSwan|Orientation"
+msgid "Vertical"
+msgstr ""
+
+#: ../src/libromdata/Handheld/WonderSwan.cpp:552
+msgctxt "WonderSwan|Orientation"
+msgid "Horizontal"
+msgstr ""
+
+#: ../src/libromdata/Handheld/WonderSwan.cpp:555
+msgctxt "WonderSwan"
+msgid "Bus Width"
+msgstr ""
+
+#: ../src/libromdata/Handheld/WonderSwan.cpp:557
+msgctxt "WonderSwan|BusWidth"
+msgid "8-bit"
+msgstr ""
+
+#: ../src/libromdata/Handheld/WonderSwan.cpp:558
+msgctxt "WonderSwan|BusWidth"
+msgid "16-bit"
+msgstr ""
+
+#: ../src/libromdata/Handheld/WonderSwan.cpp:561
+msgctxt "WonderSwan"
+msgid "ROM Access Speed"
+msgstr ""
+
+#: ../src/libromdata/Handheld/WonderSwan.cpp:563
+msgctxt "WonderSwan|ROMAccessSpeed"
+msgid "1 cycle"
+msgstr ""
+
+#: ../src/libromdata/Handheld/WonderSwan.cpp:564
+msgctxt "WonderSwan|ROMAccessSpeed"
+msgid "3 cycles"
+msgstr ""
+
 #: ../src/libromdata/Other/Amiibo.cpp:410
 msgctxt "Amiibo"
 msgid "NTAG215 Serial"
@@ -8633,18 +8786,18 @@ msgctxt "AboutTab"
 msgid "Credits"
 msgstr "Авторы"
 
-#: ../src/win32/config/AboutTab.cpp:779
+#: ../src/win32/config/AboutTab.cpp:787
 msgctxt "AboutTab"
 msgid "Libraries"
 msgstr "Библиотеки"
 
-#: ../src/win32/config/AboutTab.cpp:821
+#: ../src/win32/config/AboutTab.cpp:829
 msgctxt "AboutTab"
 msgid "Support"
 msgstr "Техподдержка"
 
 #. tr: Tab title.
-#: ../src/win32/config/AboutTab.cpp:1000
+#: ../src/win32/config/AboutTab.cpp:1008
 msgctxt "AboutTab"
 msgid "About"
 msgstr "О программе"
@@ -8653,14 +8806,6 @@ msgstr "О программе"
 #: ../src/win32/config/AchievementsTab.cpp:577
 msgctxt "AchievementsTab"
 msgid "Achievements"
-msgstr ""
-
-#. tr: Windows Vista and later. Has a centralized thumbnails cache.
-#: ../src/win32/config/CacheTab.cpp:170
-msgctxt "CacheTab"
-msgid ""
-"If any image type settings were changed, you will need to clear the system "
-"thumbnail cache."
 msgstr ""
 
 #. tr: Windows XP or earlier. Has Thumbs.db scattered throughout the system.
@@ -8724,33 +8869,46 @@ msgctxt "CacheTab"
 msgid "System thumbnail cache is already empty. Nothing to do here."
 msgstr ""
 
-#: ../src/win32/config/CacheTab.cpp:657
+#: ../src/win32/config/CacheTab.cpp:654 ../src/win32/config/CacheTab.cpp:695
+#: ../src/win32/config/CacheTab.cpp:763
+#, c-format
 msgctxt "CacheTab"
-msgid "ERROR: Unable to get the cache directory path."
+msgid "ERROR: %s"
+msgstr "ОШИБКА: %s"
+
+#: ../src/win32/config/CacheTab.cpp:655
+msgctxt "CacheCleaner"
+msgid "Unable to get the rom-properties cache directory."
 msgstr ""
 
-#: ../src/win32/config/CacheTab.cpp:681
+#: ../src/win32/config/CacheTab.cpp:680
 msgctxt "CacheTab"
 msgid "Clearing the rom-properties cache..."
 msgstr ""
 
 #: ../src/win32/config/CacheTab.cpp:696
-msgctxt "CacheTab"
-msgid "ERROR: rom-properties cache has unexpected files. Not clearing it."
+msgctxt "CacheCleaner"
+msgid "rom-properties cache has unexpected files. Not clearing it."
 msgstr ""
 
-#: ../src/win32/config/CacheTab.cpp:708
+#: ../src/win32/config/CacheTab.cpp:709
 msgctxt "CacheTab"
 msgid "rom-properties cache is empty. Nothing to do."
 msgstr ""
 
-#: ../src/win32/config/CacheTab.cpp:765
+#: ../src/win32/config/CacheTab.cpp:761
+#, c-format
+msgctxt "CacheTab"
+msgid "Error: Unable to delete %u file(s) and/or %u dir(s)."
+msgstr ""
+
+#: ../src/win32/config/CacheTab.cpp:767
 msgctxt "CacheTab"
 msgid "rom-properties cache cleared successfully."
 msgstr ""
 
 #. tr: Tab title.
-#: ../src/win32/config/CacheTab.cpp:1002
+#: ../src/win32/config/CacheTab.cpp:1004
 msgctxt "CacheTab"
 msgid "Thumbnail Cache"
 msgstr ""
