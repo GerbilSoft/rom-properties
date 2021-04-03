@@ -29,7 +29,7 @@ EXSTYLE WS_EX_NOPARENTNOTIFY | WS_EX_CONTROLPARENT
 CAPTION "Dialog"
 FONT 8, "MS Shell Dlg", FW_NORMAL, 0, 0
 BEGIN
-    LTEXT           "Selecione los tipos de imagenes que usted desea utilizar en cada sistema como miniatura.\nLas imágenes internas están contenidas en una ROM.\nLas imágenes externas se reciben de una base de datos de imágenes externas.", IDC_IMAGETYPES_DESC1, 7, 7, 397, 30, SS_LEFT, WS_EX_LEFT
+    LTEXT           "Selecione los tipos de imagenes que usted desea utilizar en cada sistema como miniatura.\nLas imágenes internas están contenidas en la ROM.\nLas imágenes externas se reciben de una base de datos de imágenes externas.", IDC_IMAGETYPES_DESC1, 7, 7, 397, 30, SS_LEFT, WS_EX_LEFT
     LTEXT           "1 = prioridad más alta; 2 = prioridad alta; No = ignorar", IDC_IMAGETYPES_DESC2, 7, 37, 397, 8, SS_LEFT, WS_EX_LEFT
     CONTROL         "IDC_IMAGETYPES_CREDITS", IDC_IMAGETYPES_CREDITS, "SysLink", 0x50010000, 7, 214, 397, 24, 0x00000000
 END
@@ -70,7 +70,7 @@ BEGIN
     AUTOCHECKBOX    "Almacenar la información de origen de los archivos en caché usando atributos extendidos.\nEsto ayuda a identificar de dónde se descargaron los archivos almacenados.", IDC_STOREFILEORIGININFO, 15, 68, 381, 16, BS_MULTILINE, WS_EX_TRANSPARENT
 
     GROUPBOX        "&Options", IDC_STATIC, 7, 92, 397, 50, BS_GROUPBOX, WS_EX_TRANSPARENT
-    AUTOCHECKBOX    "Mostrar un icono de superposición de seguridad para las imágenes de la ROM con...\nPermisos ""peligrosos"".", IDC_DANGEROUSPERMISSIONS, 15, 103, 381, 16, BS_MULTILINE, WS_EX_TRANSPARENT
+    AUTOCHECKBOX    "Mostrar un icono de superposición de seguridad para las imágenes de la ROM con \nPermisos ""peligrosos"".", IDC_DANGEROUSPERMISSIONS, 15, 103, 381, 16, BS_MULTILINE, WS_EX_TRANSPARENT
     AUTOCHECKBOX    "Habilitar la extracción de miniaturas y metadatos de los sistemas\de archivos de red. Esto puede ralentizar la navegación de los archivos.", IDC_ENABLETHUMBNAILONNETWORKFS, 15, 120, 381, 16, BS_MULTILINE, WS_EX_TRANSPARENT
 END
 
@@ -84,10 +84,10 @@ EXSTYLE WS_EX_NOPARENTNOTIFY | WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", FW_NORMAL, 0, 0
 BEGIN
     LTEXT           "IDC_CACHE_DESCRIPTION (Vista)", IDC_CACHE_DESCRIPTION, 7, 7, 397, 8, SS_LEFT, WS_EX_TRANSPARENT
-    PUSHBUTTON      "Clear the System Thumbnail Cache", IDC_CACHE_CLEAR_SYS_THUMBS, 7, 20, 398, 28, 0, WS_EX_LEFT
-    LTEXT           "ROM Properties Page maintains its own download cache for external images.\nClearing this cache will force external images to be redownloaded.", IDC_STATIC, 7, 55, 397, 17, SS_LEFT, WS_EX_TRANSPARENT
-    PUSHBUTTON      "Clear the ROM Properties Page Download Cache", IDC_CACHE_CLEAR_RP_DL, 7, 75, 398, 28, 0, WS_EX_LEFT
-    LTEXT           "Clearing the cache...", IDC_CACHE_STATUS, 7, 191, 397, 9, NOT WS_VISIBLE | SS_LEFT, WS_EX_LEFT
+    PUSHBUTTON      "Borrar el caché de miniaturas del sistema", IDC_CACHE_CLEAR_SYS_THUMBS, 7, 20, 398, 28, 0, WS_EX_LEFT
+    LTEXT           "La página de Rom properties mantiene su propia caché de descarga para las imágenes externas.\nBorrar esta caché obligará a volver a descargar las imágenes externas.", IDC_STATIC, 7, 55, 397, 17, SS_LEFT, WS_EX_TRANSPARENT
+    PUSHBUTTON      "Borrar la caché de descarga de la página de Rom properties", IDC_CACHE_CLEAR_RP_DL, 7, 75, 398, 28, 0, WS_EX_LEFT
+    LTEXT           "Borrando el cache...", IDC_CACHE_STATUS, 7, 191, 397, 9, NOT WS_VISIBLE | SS_LEFT, WS_EX_LEFT
     CONTROL         "", IDC_CACHE_PROGRESS, PROGRESS_CLASS, NOT WS_VISIBLE, 7, 202, 397, 16, WS_EX_LEFT
 END
 
@@ -101,15 +101,15 @@ EXSTYLE WS_EX_NOPARENTNOTIFY | WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", FW_NORMAL, 0, 0
 BEGIN
     LTEXT           "IDC_CACHE_DESCRIPTION (XP)", IDC_CACHE_DESCRIPTION, 7, 7, 397, 25, SS_LEFT, WS_EX_TRANSPARENT
-    AUTORADIOBUTTON "Find all Thumbs.db files on the specified drive(s):", IDC_CACHE_XP_FIND_DRIVES, 7, 35, 168, 8, WS_GROUP, WS_EX_LEFT
-    AUTORADIOBUTTON "Specify a path", IDC_CACHE_XP_FIND_PATH, 180, 35, 61, 8, 0, WS_EX_LEFT
+    AUTORADIOBUTTON "Encuentra todos los archivos Thumbs.db en la(s) unidad(es) especificada(s):", IDC_CACHE_XP_FIND_DRIVES, 7, 35, 168, 8, WS_GROUP, WS_EX_LEFT
+    AUTORADIOBUTTON "Ruta especifica", IDC_CACHE_XP_FIND_PATH, 180, 35, 61, 8, 0, WS_EX_LEFT
     CONTROL         "", IDC_CACHE_XP_DRIVES, WC_LISTVIEW, WS_TABSTOP | WS_BORDER | LVS_ALIGNLEFT | LVS_LIST | LVS_SINGLESEL, 7, 46, 397, 45, WS_EX_LEFT | WS_EX_CLIENTEDGE
     EDITTEXT        IDC_CACHE_XP_PATH, 7, 46, 343, 14, NOT WS_VISIBLE | ES_AUTOHSCROLL, WS_EX_LEFT
-    PUSHBUTTON      "Browse...", IDC_CACHE_XP_BROWSE, 355, 45, 50, 15, NOT WS_VISIBLE, WS_EX_LEFT
-    PUSHBUTTON      "Find and Remove Thumbs.db Files", IDC_CACHE_XP_CLEAR_SYS_THUMBS, 7, 95, 398, 20, WS_DISABLED | BS_MULTILINE, WS_EX_LEFT
-    LTEXT           "ROM Properties Page maintains its own download cache for external images. Clearing this cache will force external images to be redownloaded.", IDC_STATIC, 7, 125, 313, 20, SS_LEFT, WS_EX_TRANSPARENT
-    PUSHBUTTON      "Clear", IDC_CACHE_CLEAR_RP_DL, 323, 127, 82, 15, 0, WS_EX_LEFT
-    LTEXT           "Clearing the cache...", IDC_CACHE_STATUS, 7, 191, 397, 9, NOT WS_VISIBLE | SS_LEFT, WS_EX_LEFT
+    PUSHBUTTON      "Buscar...", IDC_CACHE_XP_BROWSE, 355, 45, 50, 15, NOT WS_VISIBLE, WS_EX_LEFT
+    PUSHBUTTON      "Encontrar y eliminar los archivos Thumbs.db", IDC_CACHE_XP_CLEAR_SYS_THUMBS, 7, 95, 398, 20, WS_DISABLED | BS_MULTILINE, WS_EX_LEFT
+    LTEXT           "La página de Rom properties mantiene su propia caché de descarga de imágenes externas. Borrar esta caché obligará a volver a descargar las imágenes externas.", IDC_STATIC, 7, 125, 313, 20, SS_LEFT, WS_EX_TRANSPARENT
+    PUSHBUTTON      "Borrar", IDC_CACHE_CLEAR_RP_DL, 323, 127, 82, 15, 0, WS_EX_LEFT
+    LTEXT           "Borrando el cache...", IDC_CACHE_STATUS, 7, 191, 397, 9, NOT WS_VISIBLE | SS_LEFT, WS_EX_LEFT
     CONTROL         "", IDC_CACHE_PROGRESS, PROGRESS_CLASS, NOT WS_VISIBLE, 7, 202, 397, 16, WS_EX_LEFT
 END
 
@@ -171,7 +171,7 @@ FONT 8, "MS Shell Dlg", FW_NORMAL, 0, 0
 BEGIN
     CONTROL         "", IDC_ABOUT_ICON, WC_STATIC, SS_ICON, 7, 7, 16, 16, WS_EX_LEFT
     CTEXT           "ROM Properties Page", IDC_ABOUT_LINE1, 7, 7, 398, 9, SS_CENTER, WS_EX_LEFT
-    CTEXT           "Shell Extension", IDC_ABOUT_LINE2, 7, 16, 398, 9, SS_CENTER, WS_EX_LEFT
+    CTEXT           "Extension de Shell", IDC_ABOUT_LINE2, 7, 16, 398, 9, SS_CENTER, WS_EX_LEFT
     CTEXT           "", IDC_ABOUT_VERSION, 7, 28, 398, 32, SS_CENTER, WS_EX_LEFT
     CONTROL         "", IDC_ABOUT_TABCONTROL, WC_TABCONTROL, 0, 7, 63, 398, 168, WS_EX_LEFT
     CONTROL         "", IDC_ABOUT_RICHEDIT, RICHEDIT_CLASS, WS_TABSTOP | WS_BORDER | ES_MULTILINE | ES_READONLY | WS_VSCROLL | ES_AUTOVSCROLL, 14, 84, 366, 140, WS_EX_LEFT | WS_EX_NOPARENTNOTIFY | WS_EX_TRANSPARENT
