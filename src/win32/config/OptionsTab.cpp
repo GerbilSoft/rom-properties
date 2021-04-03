@@ -122,10 +122,19 @@ void OptionsTabPrivate::reset(void)
 	CheckDlgButton(hWndPropSheet, IDC_INTICONSMALL, boolToBstChecked(config->useIntIconForSmallSizes()));
 	CheckDlgButton(hWndPropSheet, IDC_HIGHRESDL, boolToBstChecked(config->downloadHighResScans()));
 	CheckDlgButton(hWndPropSheet, IDC_STOREFILEORIGININFO, boolToBstChecked(config->storeFileOriginInfo()));
+	// FIXME: Uncomment this once the "dangerous" permissions overlay
+	// is working on Windows.
+	/*
 	CheckDlgButton(hWndPropSheet, IDC_DANGEROUSPERMISSIONS,
 		boolToBstChecked(config->showDangerousPermissionsOverlayIcon()));
+	*/
 	CheckDlgButton(hWndPropSheet, IDC_ENABLETHUMBNAILONNETWORKFS,
 		boolToBstChecked(config->enableThumbnailOnNetworkFS()));
+
+	// FIXME: Remove this once the "dangerous" permissions overlay
+	// is working on Windows.
+	CheckDlgButton(hWndPropSheet, IDC_DANGEROUSPERMISSIONS, BST_UNCHECKED);
+	EnableWindow(GetDlgItem(hWndPropSheet, IDC_DANGEROUSPERMISSIONS), FALSE);
 
 	// No longer changed.
 	changed = false;
@@ -168,12 +177,16 @@ void OptionsTabPrivate::loadDefaults(void)
 			boolToBstChecked(storeFileOriginInfo_default));
 		isDefChanged = true;
 	}
+	// FIXME: Uncomment this once the "dangerous" permissions overlay
+	// is working on Windows.
+	/*
 	cur = bstCheckedToBool(IsDlgButtonChecked(hWndPropSheet, IDC_DANGEROUSPERMISSIONS));
-	if (cur != downloadHighResScans_default) {
+	if (cur != showDangerousPermissionsOverlayIcon_default) {
 		CheckDlgButton(hWndPropSheet, IDC_DANGEROUSPERMISSIONS,
 			boolToBstChecked(showDangerousPermissionsOverlayIcon_default));
 		isDefChanged = true;
 	}
+	*/
 	cur = bstCheckedToBool(IsDlgButtonChecked(hWndPropSheet, IDC_ENABLETHUMBNAILONNETWORKFS));
 	if (cur != enableThumbnailOnNetworkFS_default) {
 		CheckDlgButton(hWndPropSheet, IDC_ENABLETHUMBNAILONNETWORKFS,
@@ -227,8 +240,12 @@ void OptionsTabPrivate::save(void)
 	btstr = bstCheckedToBoolString(IsDlgButtonChecked(hWndPropSheet, IDC_STOREFILEORIGININFO));
 	WritePrivateProfileString(_T("Downloads"), _T("StoreFileOriginInfo"), btstr, tfilename.c_str());
 
+	// FIXME: Uncomment this once the "dangerous" permissions overlay
+	// is working on Windows.
+	/*
 	btstr = bstCheckedToBoolString(IsDlgButtonChecked(hWndPropSheet, IDC_DANGEROUSPERMISSIONS));
 	WritePrivateProfileString(_T("Options"), _T("ShowDangerousPermissionsOverlayIcon"), btstr, tfilename.c_str());
+	*/
 
 	btstr = bstCheckedToBoolString(IsDlgButtonChecked(hWndPropSheet, IDC_ENABLETHUMBNAILONNETWORKFS));
 	WritePrivateProfileString(_T("Options"), _T("EnableThumbnailOnNetworkFS"), btstr, tfilename.c_str());
