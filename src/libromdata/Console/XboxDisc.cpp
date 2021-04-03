@@ -397,9 +397,9 @@ XboxDisc::XboxDisc(IRpFile *file)
 			}
 		}
 
-		discReader->unref();
 		if (!d->xdvdfsPartition) {
 			// Unable to open the XDVDFSPartition.
+			discReader->unref();
 			UNREF_AND_NULL_NOCHK(d->file);
 			d->lockKreonDrive();
 			d->isKreon = false;
