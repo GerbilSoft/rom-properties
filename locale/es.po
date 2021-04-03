@@ -35,7 +35,7 @@ msgstr "&Soporte"
 #: ../src/win32/config/AchievementsTab.cpp:445
 msgctxt "AchievementsTab"
 msgid "Unlock Time"
-msgstr ""
+msgstr "Fecha de desbloqueo"
 
 #: ../build/src/kde/kf5/ui_AchievementsTab.h:52
 #: ../src/win32/config/AchievementsTab.cpp:439
@@ -47,7 +47,7 @@ msgstr "Logro"
 #: ../build/src/kde/kf5/ui_AchievementsTab.h:53
 msgctxt "AchievementsTab"
 msgid "Icon"
-msgstr ""
+msgstr "Icono"
 
 #. tr: Dialog title.
 #: ../build/src/kde/kf5/ui_ConfigDialog.h:85
@@ -95,7 +95,7 @@ msgid ""
 msgstr ""
 "Selecione los tipos de imagenes que usted desea utilizar en cada sistema "
 "como miniatura.\n"
-"Las imágenes internas están contenidas en una ROM.\n"
+"Las imágenes internas están contenidas en la ROM.\n"
 "Las imágenes externas se reciben de una base de datos de imágenes externas.\n"
 "\n"
 "1 = prioridad más alta; 2 = prioridad alta; No = ignorar"
@@ -141,9 +141,7 @@ msgstr "Habilitar la descarga de imágenes externas."
 #, fuzzy
 msgctxt "OptionsTab"
 msgid "Always use the internal icon (if present) for small sizes."
-msgstr ""
-"Utilice siempre el icono interno (si está presente) para los tamaños "
-"pequeños."
+msgstr "Utilice siempre el icono interno (si está presente) para los tamaños pequeños."
 
 #: ../build/src/kde/kf5/ui_OptionsTab.h:110
 #, fuzzy
@@ -152,7 +150,7 @@ msgid ""
 "Download high-resolution scans if viewing large thumbnails.\n"
 "This may increase bandwidth usage."
 msgstr ""
-"Descargar arte de alta calidad para miniaturas grandes.\n"
+"Descargar escaneos de alta calidad para miniaturas grandes.\n"
 "Esto podría aumentar la utilización del ancho de banda."
 
 #: ../build/src/kde/kf5/ui_OptionsTab.h:112
@@ -177,8 +175,8 @@ msgid ""
 "\"dangerous\" permissions."
 msgstr ""
 "Mostrar un icono de superposición de seguridad para las imágenes de la ROM "
-"con...\n"
-"Permisos \"peligrosos\"."
+"con\n"
+"permisos \"peligrosos\"."
 
 #: ../build/src/kde/kf5/ui_OptionsTab.h:117
 msgctxt "OptionsTab"
@@ -242,7 +240,7 @@ msgstr ""
 #: ../src/win32/AchWin32.cpp:392
 msgctxt "Achievements"
 msgid "Achievement Unlocked"
-msgstr ""
+msgstr "Logro Desbloqueado"
 
 #. tr: Tab title.
 #: ../src/gtk/gtk3/RpNautilusProvider.cpp:130
@@ -251,7 +249,7 @@ msgstr ""
 #: ../src/win32/RP_ShellPropSheetExt.cpp:3263
 msgctxt "RomDataView"
 msgid "ROM Properties"
-msgstr "Propriedades de ROM"
+msgstr "ROM Properties"
 
 #: ../src/gtk/OptionsMenuButton.cpp:125 ../src/kde/OptionsMenuButton.cpp:24
 #: ../src/win32/OptionsMenuButton.cpp:34
@@ -293,7 +291,7 @@ msgstr "(sistema desconocido)"
 #: ../src/win32/RP_ShellPropSheetExt.cpp:627
 msgctxt "RomDataView"
 msgid "(unknown filetype)"
-msgstr "(sistema desconocido)"
+msgstr "(tipo de archivo desconocido)"
 
 #. tr: %1$s == system name, %2$s == file type
 #: ../src/gtk/RomDataView.cpp:657 ../src/kde/RomDataView.cpp:408
@@ -340,7 +338,7 @@ msgstr "Exportar a un archivo de texto"
 #: ../src/win32/RP_ShellPropSheetExt.cpp:2728
 msgctxt "RomDataView"
 msgid "Text Files|*.txt|text/plain|All Files|*.*|-"
-msgstr "Archivo de texto|*.txt|text/plain|Todos los archivos|*.*|-"
+msgstr "Archivos de texto|*.txt|text/plain|Todos los archivos|*.*|-"
 
 #: ../src/gtk/RomDataView.cpp:2365 ../src/kde/RomDataView.cpp:1688
 #: ../src/win32/RP_ShellPropSheetExt.cpp:2732
@@ -353,7 +351,7 @@ msgstr "Exportar a un archivo JSON"
 #: ../src/win32/RP_ShellPropSheetExt.cpp:2735
 msgctxt "RomDataView"
 msgid "JSON Files|*.json|application/json|All Files|*.*|-"
-msgstr "Archivo JSON|*.json|application/json|Todos los archivos|*.*|-"
+msgstr "Archivos JSON|*.json|application/json|Todos los archivos|*.*|-"
 
 #: ../src/gtk/RomDataView.cpp:2389 ../src/gtk/RomDataView.cpp:2510
 msgid "Cancel"
@@ -370,7 +368,7 @@ msgstr "Guardar"
 #, c-format
 msgctxt "RomDataView"
 msgid "File: '%s'"
-msgstr ""
+msgstr "Archivo: '%s'"
 
 #. tr: "All Files" filter (GTK+ file filter)
 #: ../src/gtk/RomDataView.cpp:2521
@@ -382,7 +380,7 @@ msgstr "Todos los archivos"
 #: ../src/kde/config/AboutTab.cpp:131
 msgctxt "AboutTab"
 msgid "<b>ROM Properties Page</b><br>Shell Extension"
-msgstr ""
+msgstr "<b>ROM Properties Page</b><br>Extension de Shell"
 
 #: ../src/kde/config/AboutTab.cpp:133 ../src/win32/config/AboutTab.cpp:508
 #, c-format
@@ -472,8 +470,7 @@ msgstr "Para obtener apoyo técnico, puede visitar los siguientes sitios web:"
 #: ../src/kde/config/AboutTab.cpp:506 ../src/win32/config/AboutTab.cpp:815
 msgctxt "AboutTab|Support"
 msgid "You can also email the developer directly:"
-msgstr ""
-"También puedes enviar un correo electrónico al desarrollador directamente:"
+msgstr "También puedes enviar un correo electrónico al desarrollador directamente:"
 
 #: ../src/kde/config/ConfigDialog.cpp:82
 msgctxt "ConfigDialog"
@@ -566,8 +563,8 @@ msgstr[1] "Las llaves fueron importadas de '%2$s'."
 msgctxt "KeyManagerTab"
 msgid "%s key already exists in the Key Manager."
 msgid_plural "%s keys already exist in the Key Manager."
-msgstr[0] "La llave %s   ya existen en el Administrador de Llaves."
-msgstr[1] "Las llaves %s   ya existen en el Administrador de Llaves."
+msgstr[0] "La llave %s ya existen en el Administrador de Llaves."
+msgstr[1] "Las llaves %s ya existen en el Administrador de Llaves."
 
 #. tr: %s == number of keys (formatted)
 #: ../src/kde/config/KeyManagerTab.cpp:217
@@ -637,7 +634,8 @@ msgctxt "KeyManagerTab"
 msgid ""
 "keys.bin|keys.bin|-|Binary Files|*.bin|application/octet-stream|All Files|*."
 "*|-"
-msgstr "keys.bin|keys.bin|-|Archivos binarios|*.bin|-|Todos los archivos|*.*|-"
+msgstr ""
+"keys.bin|keys.bin|-|Archivos binarios|*.bin|-|Todos los archivos|*.*|-"
 
 #. tr: Wii U otp.bin dialog title.
 #: ../src/kde/config/KeyManagerTab.cpp:417
@@ -652,7 +650,8 @@ msgstr "Selecciona el archivo otp.bin de WiiU"
 msgctxt "KeyManagerTab"
 msgid ""
 "otp.bin|otp.bin|-|Binary Files|*.bin|application/octet-stream|All Files|*.*|-"
-msgstr "otp.bin|otp.bin|-|Archivos binários|*.bin|-|Todos os Archivos|*.*|-"
+msgstr ""
+"otp.bin|otp.bin|-|Archivos binários|*.bin|-|Todos os Archivos|*.*|-"
 
 #. tr: 3DS boot9.bin dialog title.
 #: ../src/kde/config/KeyManagerTab.cpp:438
@@ -777,7 +776,7 @@ msgstr "ADX con escala exponencial"
 #: ../src/librptexture/fileformat/PowerVR3.cpp:966
 msgctxt "RomData"
 msgid "Unknown"
-msgstr "ERROR"
+msgstr "DESCONOCIDO"
 
 #: ../src/libromdata/Audio/ADX.cpp:307
 msgctxt "RomData|Audio"
@@ -1803,7 +1802,7 @@ msgstr "Distribuidor(a)"
 #: ../src/libromdata/Console/Dreamcast.cpp:648
 msgctxt "Dreamcast"
 msgid "Product #"
-msgstr "# de produto"
+msgstr "Producto #"
 
 #: ../src/libromdata/Console/Dreamcast.cpp:668
 #: ../src/libromdata/Console/GameCube.cpp:1549
@@ -1812,7 +1811,7 @@ msgstr "# de produto"
 #: ../src/libromdata/Other/ISO.cpp:277
 msgctxt "RomData"
 msgid "Disc #"
-msgstr "# de disco"
+msgstr "Disco #"
 
 #. tr: Disc X of Y (for multi-disc games)
 #: ../src/libromdata/Console/Dreamcast.cpp:671
@@ -2208,7 +2207,7 @@ msgstr "Desconocido (%02X %02X)"
 #: ../src/libromdata/Console/GameCube.cpp:627
 msgctxt "GameCube"
 msgid "ERROR: Invalid common key index."
-msgstr "ERROR: índice inválido de Clave comun."
+msgstr "ERROR: Indice inválido de clave comun."
 
 #: ../src/libromdata/Console/GameCube.cpp:634
 msgctxt "GameCube"
@@ -2218,7 +2217,7 @@ msgstr "Incremento de valores"
 #: ../src/libromdata/Console/GameCube.cpp:639
 msgctxt "GameCube"
 msgid "ERROR: Unknown error. (THIS IS A BUG!)"
-msgstr "Error Desconocido (ESTO ES UN ERROR)!"
+msgstr "ERROR: Error Desconocido. (ESTO ES UN ERROR!)"
 
 #: ../src/libromdata/Console/GameCube.cpp:1543
 #: ../src/libromdata/Console/GameCubeSave.cpp:873
@@ -2594,12 +2593,12 @@ msgstr "6 botones"
 #: ../src/libromdata/Console/MegaDrive.cpp:316
 msgctxt "MegaDrive|I/O"
 msgid "SMS Joypad"
-msgstr "Control de Master System"
+msgstr "Control de SMS"
 
 #: ../src/libromdata/Console/MegaDrive.cpp:317
 msgctxt "MegaDrive|I/O"
 msgid "Team Player"
-msgstr "Adaptador Team Player"
+msgstr "Team Player"
 
 #: ../src/libromdata/Console/MegaDrive.cpp:318
 msgctxt "MegaDrive|I/O"
@@ -3679,7 +3678,7 @@ msgstr "Versión de SO"
 #, fuzzy
 msgctxt "WiiWAD"
 msgid "Unknown error. (THIS IS A BUG!)"
-msgstr "Error Desconocido (ESTO ES UN ERROR)!"
+msgstr "Error Desconocido. (ESTO ES UN ERROR!)"
 
 #: ../src/libromdata/Console/WiiWAD.cpp:934
 msgctxt "WiiWAD"
@@ -3776,7 +3775,7 @@ msgstr "SD MD5"
 #: ../src/libromdata/Console/WiiWAD.cpp:1168
 msgctxt "WiiWAD"
 msgid "Unknown"
-msgstr "ERROR"
+msgstr "Desconocido"
 
 #: ../src/libromdata/Console/WiiWAD.cpp:1170
 msgctxt "WiiWAD"
@@ -3862,8 +3861,7 @@ msgstr "Se ha producido un error desconocido al extraer el SRL."
 #: ../src/libromdata/Console/WiiWAD_ops.cpp:172
 msgctxt "RomData"
 msgid "SRL extraction is not supported in NoCrypto builds."
-msgstr ""
-"La extracción de SRL no es compatible con las compilaciones de NoCrypto."
+msgstr "La extracción de SRL no es compatible con las compilaciones de NoCrypto."
 
 #: ../src/libromdata/Console/WiiWIBN.cpp:484
 #, fuzzy
@@ -4656,12 +4654,12 @@ msgstr "Archivo de cache"
 #: ../src/libromdata/data/Xbox360_STFS_ContentType.cpp:60
 msgctxt "Xbox360_STFS|ContentType"
 msgid "Storage Download"
-msgstr ""
+msgstr "Almacenamiento de descarga"
 
 #: ../src/libromdata/data/Xbox360_STFS_ContentType.cpp:62
 msgctxt "Xbox360_STFS|ContentType"
 msgid "Original Xbox Saved Game"
-msgstr "Almacenamiento de descarga"
+msgstr "Save original de Xbox"
 
 #: ../src/libromdata/data/Xbox360_STFS_ContentType.cpp:64
 msgctxt "Xbox360_STFS|ContentType"
@@ -5126,7 +5124,7 @@ msgstr "Tipo de media"
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:1900
 msgctxt "Nintendo3DS"
 msgid "Card2 RW Address"
-msgstr "Tarjeta2 RW Dirección"
+msgstr "Dirección Card2 RW"
 
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:1919
 msgctxt "Nintendo3DS|CDev"
@@ -6018,7 +6016,7 @@ msgstr "Sin KABP"
 #: ../src/libromdata/Other/ELF.cpp:1326
 msgctxt "ELF|PARISCFlags"
 msgid "Lazy Swap"
-msgstr ""
+msgstr "Lazy Swap"
 
 #: ../src/libromdata/Other/ELF.cpp:1349
 msgctxt "ELF"
@@ -6028,47 +6026,47 @@ msgstr "ARM EABI"
 #: ../src/libromdata/Other/ELF.cpp:1357
 msgctxt "ELF|ARMFlags"
 msgid "APCS Float"
-msgstr ""
+msgstr "APCS Flotante"
 
 #: ../src/libromdata/Other/ELF.cpp:1359
 msgctxt "ELF|ARMFlags"
 msgid "Align8"
-msgstr ""
+msgstr "Align8"
 
 #: ../src/libromdata/Other/ELF.cpp:1360
 msgctxt "ELF|ARMFlags"
 msgid "New ABI"
-msgstr ""
+msgstr "Nuevo ABI"
 
 #: ../src/libromdata/Other/ELF.cpp:1362
 msgctxt "ELF|ARMFlags"
 msgid "Old ABI"
-msgstr ""
+msgstr "VIejo ABI"
 
 #: ../src/libromdata/Other/ELF.cpp:1363
 msgctxt "ELF|ARMFlags"
 msgid "Soft Float"
-msgstr ""
+msgstr "Soft Float"
 
 #: ../src/libromdata/Other/ELF.cpp:1364
 msgctxt "ELF|ARMFlags"
 msgid "VFP Float"
-msgstr ""
+msgstr "VFP Flotante"
 
 #: ../src/libromdata/Other/ELF.cpp:1365
 msgctxt "ELF|ARMFlags"
 msgid "Maverick Float"
-msgstr ""
+msgstr "Maverick Flotante"
 
 #: ../src/libromdata/Other/ELF.cpp:1381
 msgctxt "ELF|AlphaFlags"
 msgid "Addresses <= 2GB"
-msgstr ""
+msgstr "Direcciones <= 2GB"
 
 #: ../src/libromdata/Other/ELF.cpp:1382
 msgctxt "ELF|AlphaFlags"
 msgid "Relaxed Code Movement"
-msgstr ""
+msgstr "Movimiento de código relajado"
 
 #: ../src/libromdata/Other/ELF.cpp:1413 ../src/libromdata/Other/ELF.cpp:1446
 #: ../src/libromdata/Other/ELF.cpp:1546 ../src/libromdata/Other/ELF.cpp:1592
@@ -6080,52 +6078,52 @@ msgstr "Subtipo de CPU"
 #: ../src/libromdata/Other/ELF.cpp:1452
 msgctxt "ELF"
 msgid "Linux OSABI"
-msgstr ""
+msgstr "Linux OSABI"
 
 #: ../src/libromdata/Other/ELF.cpp:1521
 msgctxt "ELF"
 msgid "ColdFire ISA"
-msgstr ""
+msgstr "ColdFire ISA"
 
 #: ../src/libromdata/Other/ELF.cpp:1569
 msgctxt "ELF"
 msgid "M32R New Insns"
-msgstr ""
+msgstr "M32R New Insns"
 
 #: ../src/libromdata/Other/ELF.cpp:1605
 msgctxt "ELF|BlackfinFlags"
 msgid "Code in L1"
-msgstr ""
+msgstr "Codigo en L1"
 
 #: ../src/libromdata/Other/ELF.cpp:1606
 msgctxt "ELF|BlackfinFlags"
 msgid "Data in L1"
-msgstr ""
+msgstr "Datos en L1"
 
 #: ../src/libromdata/Other/ELF.cpp:1663
 msgctxt "ELF|RISCVFPABI"
 msgid "Soft-Float"
-msgstr ""
+msgstr "oft-Float"
 
 #: ../src/libromdata/Other/ELF.cpp:1664
 msgctxt "ELF|RISCVFPABI"
 msgid "Single-Float"
-msgstr ""
+msgstr "Single-Float"
 
 #: ../src/libromdata/Other/ELF.cpp:1665
 msgctxt "ELF|RISCVFPABI"
 msgid "Double-Float"
-msgstr ""
+msgstr "Double-Float"
 
 #: ../src/libromdata/Other/ELF.cpp:1666
 msgctxt "ELF|RISCVFPABI"
 msgid "Quad-Float"
-msgstr ""
+msgstr "Quad-Float"
 
 #: ../src/libromdata/Other/ELF.cpp:1668
 msgctxt "ELF"
 msgid "Floating-Point ABI"
-msgstr ""
+msgstr "Punto flotante ABI"
 
 #: ../src/libromdata/Other/ELF.cpp:1689
 msgctxt "ELF"
@@ -6418,7 +6416,7 @@ msgstr "Tipo"
 #: ../src/libromdata/Other/EXE.cpp:857
 msgctxt "EXE"
 msgid "Unknown"
-msgstr "ERROR"
+msgstr "Desconocido"
 
 #: ../src/libromdata/Other/EXE_manifest.cpp:212
 msgctxt "EXE"
@@ -7180,42 +7178,42 @@ msgstr "*** ADVERTENCIA: FST tiene errores y puede quedar inutilizado."
 #: ../src/librpbase/Achievements.cpp:214
 msgctxt "Achievements"
 msgid "You are now a developer!"
-msgstr ""
+msgstr "¡Ahora eres un desarrollador!"
 
 #: ../src/librpbase/Achievements.cpp:215
 msgctxt "Achievements"
 msgid "Viewed a debug-encrypted file."
-msgstr ""
+msgstr "Has visto un archivo encriptado de depuración."
 
 #: ../src/librpbase/Achievements.cpp:219
 msgctxt "Achievements"
 msgid "Now you're playing with POWER!"
-msgstr ""
+msgstr "¡Ahora estás jugando con PODER!"
 
 #: ../src/librpbase/Achievements.cpp:220
 msgctxt "Achievements"
 msgid "Viewed a non-x86/x64 Windows PE executable."
-msgstr ""
+msgstr "Has visto un ejecutable de Windows PE no x86/x64."
 
 #: ../src/librpbase/Achievements.cpp:224
 msgctxt "Achievements"
 msgid "Insert Startup Disc"
-msgstr ""
+msgstr "Inserte Disco de Inicio"
 
 #: ../src/librpbase/Achievements.cpp:225
 msgctxt "Achievements"
 msgid "Viewed a BroadOn format Wii WAD file."
-msgstr ""
+msgstr "Visto un archivo Wii WAD de formato BroadOn."
 
 #: ../src/librpbase/Achievements.cpp:229
 msgctxt "Achievements"
 msgid "Knuckles & Knuckles"
-msgstr ""
+msgstr "Knuckles & Knuckles"
 
 #: ../src/librpbase/Achievements.cpp:230
 msgctxt "Achievements"
 msgid "Viewed a copy of Sonic & Knuckles locked on to Sonic & Knuckles."
-msgstr ""
+msgstr "Has visto una copia de Sonic & Knuckles bloqueada en Sonic & Knuckles."
 
 #. tr: VerifyResult::OK
 #: ../src/librpbase/crypto/KeyManager.cpp:233
@@ -7645,7 +7643,7 @@ msgstr "Luminosidad (%u-bit)"
 #, fuzzy
 msgctxt "FileFormat"
 msgid "Unknown"
-msgstr "ERROR"
+msgstr "Desconocido"
 
 #: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1196
 msgctxt "DirectDrawSurface"
@@ -8202,7 +8200,7 @@ msgstr "Parametros"
 #: ../src/librptexture/fileformat/ValveVTF.cpp:997
 msgctxt "ValveVTF"
 msgid "# of Frames"
-msgstr "Nº de cuadros"
+msgstr "# de cuadros"
 
 #: ../src/librptexture/fileformat/ValveVTF.cpp:999
 msgctxt "ValveVTF"
@@ -8237,7 +8235,7 @@ msgstr "Tamaño de baja resolución"
 #: ../src/librptexture/fileformat/ValveVTF.cpp:1046
 msgctxt "ValveVTF"
 msgid "# of Resources"
-msgstr "Nº de recursos"
+msgstr "# de recursos"
 
 #: ../src/librptexture/fileformat/XboxXPR.cpp:781
 #: ../src/librptexture/fileformat/XboxXPR.cpp:783
@@ -8646,7 +8644,7 @@ msgstr "%1$s() devuelto %2$d."
 #, c-format
 msgctxt "rp-stub"
 msgid "*** ERROR: %1$s() returned %2$d."
-msgstr "*** ERRO: %1$s() devuelto %2$d."
+msgstr "*** ERROR: %1$s() devuelto %2$d."
 
 #: ../src/win32/config/AboutTab.cpp:671
 msgctxt "AboutTab"
@@ -8716,7 +8714,7 @@ msgstr "ERROR: No se detectaron HDDs o SSDs."
 #, c-format
 msgctxt "CacheTab|Win32"
 msgid "ERROR: Thumbnail Cache cleaner not found. (res == %ld)"
-msgstr "ERRO: Limpador de cache minuaturas no encontrado. (res == %ld)"
+msgstr "ERROR: Limpador de cache minuaturas no encontrado. (res == %ld)"
 
 #: ../src/win32/config/CacheTab.cpp:417 ../src/win32/config/CacheTab.cpp:426
 msgctxt "CacheTab|Win32"
@@ -8741,8 +8739,7 @@ msgstr ""
 #, c-format
 msgctxt "CacheTab|Win32"
 msgid "ERROR: IEmptyVolumeCache::Purge() failed on drive %c. (hr == 0x%08X)"
-msgstr ""
-"ERROR: IEmptyVolumeCache::Purge() falló en la unidad %c. (hr == 0x%08X)"
+msgstr "ERROR: IEmptyVolumeCache::Purge() falló en la unidad %c. (hr == 0x%08X)"
 
 #: ../src/win32/config/CacheTab.cpp:541
 msgctxt "CacheTab"
@@ -8752,8 +8749,7 @@ msgstr "Cache de miniaturas de sistema limpio."
 #: ../src/win32/config/CacheTab.cpp:543
 msgctxt "CacheTab"
 msgid "System thumbnail cache is already empty. Nothing to do here."
-msgstr ""
-"El sistema de caché de miniaturas ya está vacío. No hay nada que hacer aquí."
+msgstr "El sistema de caché de miniaturas ya está vacío. No hay nada que hacer aquí."
 
 #: ../src/win32/config/CacheTab.cpp:657
 msgctxt "CacheTab"
@@ -8768,8 +8764,7 @@ msgstr "Limpiando el cache de rom-properties..."
 #: ../src/win32/config/CacheTab.cpp:696
 msgctxt "CacheTab"
 msgid "ERROR: rom-properties cache has unexpected files. Not clearing it."
-msgstr ""
-"ERROR: El cache de rom-properties tiene archivos inesperados. No se está "
+msgstr "ERROR: El cache de rom-properties tiene archivos inesperados. No se está "
 "limpiando "
 
 #: ../src/win32/config/CacheTab.cpp:708
@@ -8815,7 +8810,7 @@ msgstr "I&mportar..."
 #: ../src/win32/config/KeyManagerTab.cpp:1524
 msgctxt "KeyManagerTab"
 msgid "Key Manager"
-msgstr "&Gestor de llaves"
+msgstr "Gestor de llaves"
 
 #. tr: Tab title.
 #: ../src/win32/config/OptionsTab.cpp:421
@@ -8828,7 +8823,7 @@ msgstr "Opciones"
 #, fuzzy
 msgctxt "SystemsTab"
 msgid "Systems"
-msgstr "Sistema"
+msgstr "Sistemas"
 
 #. tr: "Options" button. (WinXP version, with ellipsis.)
 #: ../src/win32/OptionsMenuButton.cpp:107
