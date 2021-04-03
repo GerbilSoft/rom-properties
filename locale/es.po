@@ -140,7 +140,7 @@ msgid ""
 "This may increase bandwidth usage."
 msgstr ""
 "Descargar arte de alta calidad para miniaturas grandes.\n"
-"Esto podría aumentar la utilización del ancho de banda".
+"Esto podría aumentar la utilización del ancho de banda."
 
 #: ../build/src/kde/kf5/ui_OptionsTab.h:112
 msgctxt "OptionsTab"
@@ -163,7 +163,7 @@ msgid ""
 "\"dangerous\" permissions."
 msgstr ""
 "Mostrar un icono de superposición de seguridad para las imágenes de la ROM con...\n"
-"Permisos \"peligrosos\"".
+"Permisos \"peligrosos\"."
 
 #: ../build/src/kde/kf5/ui_OptionsTab.h:117
 msgctxt "OptionsTab"
@@ -172,7 +172,7 @@ msgid ""
 "file systems. This may slow down file browsing."
 msgstr ""
 "Habilitar la extracción de miniaturas y metadatos de los sistemas\n"
-"de archivos de red". Esto puede ralentizar la navegación de los archivos".
+"de archivos de red. Esto puede ralentizar la navegación de los archivos."
 
 #: ../build/src/kde/kf5/ui_SystemsTab.h:124
 msgctxt "SystemsTab"
@@ -566,10 +566,10 @@ msgid_plural ""
 "isn't available."
 msgstr[0] ""
 "Clave %s no importada porque está codificada y la clave maestra no esta "
-"disponible".
+"disponible."
 msgstr[1] ""
 "Claves %s no importadas porque están codificadas y las llaves maestras no estan "
-"disponible".
+"disponible."
 
 #. tr: %s == number of keys (formatted)
 #: ../src/kde/config/KeyManagerTab.cpp:244
@@ -5839,7 +5839,7 @@ msgid ""
 "the Unofficial amiibo Database."
 msgstr ""
 "Imágenes de amiibo proporcionadas por %s,\n"
-"la base de datos no oficial de amiibo".
+"la base de datos no oficial de amiibo."
 
 
 #: ../src/libromdata/Other/Amiibo.cpp:475
@@ -7440,12 +7440,12 @@ msgstr "No se puede reabrir el archivo para escribir."
 #: ../src/librpbase/RomData.cpp:1003
 msgctxt "RomData"
 msgid "Cannot perform this ROM operation on a compressed file."
-msgstr "No se puede realizar esta operación ROM en un archivo comprimido".
+msgstr "No se puede realizar esta operación ROM en un archivo comprimido."
 
 #: ../src/librpbase/RomData.cpp:1016
 msgctxt "RomData"
 msgid "Cannot perform this ROM operation on a read-only file."
-msgstr "No se puede realizar esta operación ROM en un archivo de sólo lectura".
+msgstr "No se puede realizar esta operación ROM en un archivo de sólo lectura."
 
 #: ../src/librpbase/RomData.cpp:1055
 msgctxt "RomData"
