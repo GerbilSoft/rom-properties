@@ -1686,7 +1686,8 @@ msgid ""
 "External\n"
 "Title Screen"
 msgstr ""
-"Pantalla de titulo\n"
+"Pantalla de\n"
+"titulo\n"
 "externa"
 
 #. tr: amiibo
