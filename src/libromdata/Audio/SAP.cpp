@@ -272,7 +272,7 @@ SAPPrivate::TagData SAPPrivate::parseTags(void)
 		// NOTE: String encoding is the common subset of ASCII and ATASCII.
 		// TODO: ascii_to_utf8()?
 		// TODO: Check for duplicate keywords?
-		enum class KeywordType {
+		enum class KeywordType : uint8_t {
 			Unknown = 0,
 
 			Bool,		// bool: Keyword presence sets the value to true.
@@ -283,7 +283,7 @@ SAPPrivate::TagData SAPPrivate::parseTags(void)
 			TimeLoop,	// time+loop: Parameter is a duration, plus an optional "LOOP" setting.
 		};
 		struct KeywordDef {
-			const char *keyword;	// Keyword, e.g. "AUTHOR".
+			char keyword[15];	// Keyword, e.g. "AUTHOR".
 			KeywordType type;	// Keyword type.
 			void *ptr;		// Data pointer.
 		};
@@ -305,12 +305,12 @@ SAPPrivate::TagData SAPPrivate::parseTags(void)
 			// TIME is handled separately.
 			{"TIME",	KeywordType::TimeLoop,		nullptr},
 
-			{nullptr, KeywordType::Unknown, nullptr}
+			{"", KeywordType::Unknown, nullptr}
 		};
 
 		// TODO: Show errors for unsupported tags?
 		// TODO: Print errors?
-		for (const KeywordDef *kwd = &kwds[0]; kwd->keyword != nullptr; kwd++) {
+		for (const KeywordDef *kwd = &kwds[0]; kwd->keyword[0] != '\0'; kwd++) {
 			if (strcasecmp(kwd->keyword, token) != 0) {
 				// Not a match. Keep going.
 				continue;
