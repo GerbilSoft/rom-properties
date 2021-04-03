@@ -900,6 +900,16 @@ const RVL_TMD_Header *WiiPartition::tmdHeader(void) const
 		: nullptr);
 }
 
+/**
+ * Get the title ID. (NOT BYTESWAPPED)
+ * @return Title ID. (0-0 if unavailable)
+ */
+Nintendo_TitleID_BE_t WiiPartition::titleID(void) const
+{
+	RP_D(const WiiPartition);
+	return d->partitionHeader.ticket.title_id;
+}
+
 #ifdef ENABLE_DECRYPTION
 /** Encryption keys. **/
 

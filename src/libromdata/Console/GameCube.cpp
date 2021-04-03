@@ -870,24 +870,18 @@ GameCube::GameCube(IRpFile *file)
 		d->wiiPtbl.resize(1);
 		GameCubePrivate::WiiPartEntry &pt = d->wiiPtbl[0];
 
-		// Determine the partition type.
+		// Open the partition.
 		// TODO: Identify channel partitions by the title ID high?
-		Nintendo_TitleID_BE_t tid;
-		size = d->file->seekAndRead(offsetof(RVL_Ticket, title_id), &tid, sizeof(tid));
-		if (size != sizeof(tid)) {
-			// Error reading the title ID.
-			d->wiiPtbl.clear();
-			goto notSupported;
-		}
-
 		pt.start = 0;
 		pt.size = d->file->size();
 		pt.vg = 0;
 		pt.pt = 0;
 		pt.partition = new WiiPartition(d->discReader, pt.start, pt.size);
 
+		// Determine the partition type.
 		// TODO: Super Smash Bros. Brawl "Masterpieces" partitions.
 		// TODO: Check tid.hi?
+		const Nintendo_TitleID_BE_t tid = pt.partition->titleID();
 		if (tid.lo == be32_to_cpu('UPD') ||	// IOS only
 		    tid.lo == be32_to_cpu('UPE') ||	// USA region
 		    tid.lo == be32_to_cpu('UPJ') ||	// JPN region

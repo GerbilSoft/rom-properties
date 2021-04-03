@@ -147,6 +147,12 @@ class WiiPartition : public GcnPartition
 		 */
 		const RVL_TMD_Header *tmdHeader(void) const;
 
+		/**
+		 * Get the title ID. (NOT BYTESWAPPED)
+		 * @return Title ID. (0-0 if unavailable)
+		 */
+		Nintendo_TitleID_BE_t titleID(void) const;
+
 	public:
 		// Encryption key indexes.
 		enum EncryptionKeys {
