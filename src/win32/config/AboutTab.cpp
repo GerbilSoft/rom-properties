@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * AboutTab.cpp: About tab for rp-config.                                  *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -600,7 +600,7 @@ void AboutTabPrivate::initCreditsTab(void)
 	// FIXME: Figure out how to get links to work without
 	// resorting to manually adding CFE_LINK data...
 	// NOTE: Copyright is NOT localized.
-	sCredits += "Copyright (c) 2016-2020 by David Korth." RTF_BR;
+	sCredits += "Copyright (c) 2016-2021 by David Korth." RTF_BR;
 	sCredits += RTF_BR;
 	sCredits += rp_sprintf(
 		// tr: %s is the name of the license.
