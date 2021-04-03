@@ -629,7 +629,7 @@ int VGM::loadFieldData(void)
 
 				d->fields->addField_string(
 					rp_sprintf(s_clockrate, chip_name).c_str(),
-					d->formatClockRate(clk & ~VGM_CLK_FLAG_ALTMODE));
+					d->formatClockRate(clk));
 				d->fields->addField_string(
 					rp_sprintf(s_dualchip, chip_name).c_str(),
 						(clk_full & VGM_CLK_FLAG_DUALCHIP) ? s_yes : s_no);
