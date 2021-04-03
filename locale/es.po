@@ -7782,26 +7782,26 @@ msgstr "%1$s %2$s"
 #, c-format
 msgctxt "TextOut"
 msgid "(tab %d)"
-msgstr ""
+msgstr "(tab %d)"
 
 #. tr: "[System] [FileType] detected."
 #: ../src/librpbase/TextOut_text.cpp:756
 #, c-format
 msgctxt "TextOut"
 msgid "%1$s %2$s detected"
-msgstr ""
+msgstr "%1$s %2$s detectado"
 
 #. tr: Image Type name, followed by Image Type ID
 #: ../src/librpbase/TextOut_text.cpp:778
 #, c-format
 msgctxt "TextOut"
 msgid "%1$s is present (use -x%2$d to extract)"
-msgstr ""
+msgstr "%1$s esta presente (use -x%2$d para extraer)"
 
 #: ../src/librpbase/TextOut_text.cpp:784
 msgctxt "TextOut"
 msgid "Animated icon is present (use -a to extract)"
-msgstr ""
+msgstr "Icono animado esta presente (use -a para extraer)"
 
 #: ../src/librptexture/fileformat/DidjTex.cpp:527
 msgctxt "DidjTex"
