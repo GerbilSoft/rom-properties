@@ -34,6 +34,11 @@
        <string>&amp;Options</string>
       </attribute>
      </widget>
+     <widget class="CacheTab" name="tabCache">
+      <attribute name="title">
+       <string>Thumbnail Cache</string>
+      </attribute>
+     </widget>
      <widget class="AchievementsTab" name="tabAchievements">
       <attribute name="title">
        <string>&amp;Achievements</string>
@@ -99,6 +104,12 @@
    <class>AchievementsTab</class>
    <extends>QWidget</extends>
    <header>config/AchievementsTab.hpp</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>CacheTab</class>
+   <extends>QWidget</extends>
+   <header>config/CacheTab.hpp</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libunixcommon)                    *
  * userdirs.cpp: Find user directories.                                    *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -33,7 +33,7 @@ namespace LibUnixCommon {
  * @param path Directory path.
  * @return True if this is a writable directory; false if not.
  */
-static inline bool isWritableDirectory(const char *path)
+bool isWritableDirectory(const char *path)
 {
 #ifdef HAVE_STATX
 	struct statx sbx;
