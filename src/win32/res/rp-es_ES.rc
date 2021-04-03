@@ -1,6 +1,6 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (Win32)                            *
- * resource.rc: Win32 resource script. (es_ES)                             *
+ * rp-es_ES.rc: Win32 resource script. (es_ES)                             *
  *                                                                         *
  * Copyright (c) 2016-2021 by David Korth.                                 *
  * Copyright (c) 2021 by Amnesia1000.                                      *
@@ -46,11 +46,11 @@ FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     GROUPBOX        "Pantallas de título de Game Boy", IDC_STATIC, 7, 7, 397, 74
     LTEXT           "Selecciona el modelo de Game Boy que se utilizará para las pantallas de título de los diferentes tipos de ROMs de Game Boy.", IDC_STATIC, 15, 18, 381, 8
-    LTEXT           "Game Boy:",IDC_STATIC, 15, 30, 80, 9
+    LTEXT           "Game Boy:", IDC_STATIC, 15, 30, 80, 9
     COMBOBOX        IDC_SYSTEMS_DMGTS_DMG, 77, 29, 69, 30, CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Super Game Boy:",IDC_STATIC, 15, 45, 80, 9
+    LTEXT           "Super Game Boy:", IDC_STATIC, 15, 45, 80, 9
     COMBOBOX        IDC_SYSTEMS_DMGTS_SGB, 77, 44, 69, 30, CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Game Boy Color:",IDC_STATIC, 15, 60, 80, 9
+    LTEXT           "Game Boy Color:", IDC_STATIC, 15, 60, 80, 9
     COMBOBOX        IDC_SYSTEMS_DMGTS_CGB, 77, 59, 69, 30, CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
 END
 
@@ -142,21 +142,6 @@ BEGIN
     // EDIT control is created as a child control of the ListView.
     //EDITTEXT        IDC_KEYMANAGER_EDIT, 0, 0, 0, 0, NOT WS_VISIBLE | ES_AUTOHSCROLL | ES_WANTRETURN, WS_EX_LEFT
     PUSHBUTTON      "I&mportar", IDC_KEYMANAGER_IMPORT, 7, 224, 50, 14, 0, WS_EX_LEFT
-END
-
-/**
- * Configuration: Key Manager ("Import" popup menu)
- */
-LANGUAGE LANG_SPANISH, SUBLANG_SPANISH
-IDR_KEYMANAGER_IMPORT MENU
-BEGIN
-    POPUP "Importar"
-    BEGIN
-        MENUITEM "Wii keys.bin", IDM_KEYMANAGER_IMPORT_WII_KEYS_BIN
-        MENUITEM "Wii U otp.bin", IDM_KEYMANAGER_IMPORT_WIIU_OTP_BIN
-        MENUITEM "3DS boot9.bin", IDM_KEYMANAGER_IMPORT_3DS_BOOT9_BIN
-        MENUITEM "3DS aeskeydb.bin", IDM_KEYMANAGER_IMPORT_3DS_AESKEYDB
-    END
 END
 #endif /* ENABLE_DECRYPTION */
 
