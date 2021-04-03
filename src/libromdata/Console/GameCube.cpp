@@ -2042,6 +2042,18 @@ int GameCube::loadInternalImage(ImageType imageType, const rp_image **pImage)
 		return -ENOENT;
 	}
 
+	// Verify the disc format.
+	switch (d->discType & GameCubePrivate::DISC_FORMAT_MASK) {
+		default:
+			break;
+
+		case GameCubePrivate::DISC_FORMAT_WIA:
+		case GameCubePrivate::DISC_FORMAT_RVZ:
+			// WIA/RVZ isn't fully supported, so we can't load images.
+			*pImage = nullptr;
+			return -ENOENT;
+	}
+
 	// Load opening.bnr. (GCN/Triforce only)
 	// FIXME: Does Triforce have opening.bnr?
 	if (d->gcn_loadOpeningBnr() != 0) {
