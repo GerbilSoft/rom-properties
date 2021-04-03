@@ -555,7 +555,7 @@ int VGM::loadFieldData(void)
 		// Sega PCM [1.51]
 		if (offsetof(VGM_Header, sega_pcm_if_reg) < data_offset) {
 			unsigned int clk = le32_to_cpu(vgmHeader->sega_pcm_clk);
-			clk &= ~(VGM_CLK_FLAG_ALTMODE | VGM_CLK_FLAG_DUALCHIP);
+			clk &= ~VGM_CLK_FLAG_ALTMODE;
 			if (clk != 0) {
 				d->fields->addField_string(
 					rp_sprintf(s_clockrate, "Sega PCM").c_str(),
