@@ -10,11 +10,11 @@
 #include "stdafx.h"
 #include "TextOut.hpp"
 
-// C includes. (C++ namespace)
+// C includes (C++ namespace)
 #include <cassert>
 #include "ctypex.h"
 
-// C++ includes.
+// C++ STL classes
 using std::flush;
 using std::left;
 using std::max;
@@ -23,6 +23,9 @@ using std::setw;
 using std::string;
 using std::unique_ptr;
 using std::vector;
+
+// libi18n
+#include "libi18n/i18n.h"
 
 // librpbase
 #include "RomData.hpp"
@@ -531,7 +534,7 @@ public:
 
 		if (romField.data.date_time == -1) {
 			// Invalid date/time.
-			os << "Unknown";
+			os << C_("RomData", "Unknown");
 			return os;
 		}
 
@@ -693,7 +696,7 @@ public:
 				if (name) {
 					os << name;
 				} else {
-					os << "(tab " << tabIdx << ')';
+					os << rp_sprintf(C_("TextOut", "(tab %d)"), tabIdx);
 				}
 				os << " -----" << '\n';
 			}
@@ -747,9 +750,16 @@ std::ostream& operator<<(std::ostream& os, const ROMOutput& fo) {
 	assert(systemName != nullptr);
 	assert(fileType != nullptr);
 
-	os << "-- " << (systemName ? systemName : "(unknown system)") <<
-	      ' ' << (fileType ? fileType : "(unknown filetype)") <<
-	      " detected" << '\n';
+	// NOTE: RomDataView context is used for the "unknown" strings.
+	{
+		// tr: "[System] [FileType] detected."
+		const string detectMsg = rp_sprintf_p(C_("TextOut", "%1$s %2$s detected"),
+			(systemName ? systemName : C_("RomDataView", "(unknown system)")),
+			(fileType ? fileType : C_("RomDataView", "(unknown filetype)")));
+
+		os << "-- " << detectMsg << '\n';
+	}
+
 	const RomFields *const fields = romdata->fields();
 	assert(fields != nullptr);
 	if (fields) {
@@ -764,11 +774,14 @@ std::ostream& operator<<(std::ostream& os, const ROMOutput& fo) {
 
 		auto image = romdata->image((RomData::ImageType)i);
 		if (image && image->isValid()) {
-			os << "-- " << RomData::getImageTypeName((RomData::ImageType)i) << " is present (use -x" << i << " to extract)" << '\n';
+			// tr: Image Type name, followed by Image Type ID
+			os << "-- " << rp_sprintf_p(C_("TextOut", "%1$s is present (use -x%2$d to extract)"),
+				RomData::getImageTypeName((RomData::ImageType)i), i) << '\n';
+			// TODO: After localizing, add enough spaces for alignment.
 			os << "   Format : " << rp_image::getFormatName(image->format()) << '\n';
 			os << "   Size   : " << image->width() << " x " << image->height() << '\n';
 			if (romdata->imgpf((RomData::ImageType) i)  & RomData::IMGPF_ICON_ANIMATED) {
-				os << "   Animated icon present (use -a to extract)" << '\n';
+				os << "   " << C_("TextOut", "Animated icon is present (use -a to extract)") << '\n';
 			}
 		}
 	}

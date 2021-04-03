@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rom-properties 1.7.3+\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
-"POT-Creation-Date: 2021-04-03 13:46-0400\n"
+"POT-Creation-Date: 2021-04-03 15:16-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -291,12 +291,14 @@ msgid "&Options"
 msgstr ""
 
 #: ../src/gtk/RomDataView.cpp:649 ../src/kde/RomDataView.cpp:400
+#: ../src/librpbase/TextOut_text.cpp:757
 #: ../src/win32/RP_ShellPropSheetExt.cpp:624
 msgctxt "RomDataView"
 msgid "(unknown system)"
 msgstr ""
 
 #: ../src/gtk/RomDataView.cpp:652 ../src/kde/RomDataView.cpp:403
+#: ../src/librpbase/TextOut_text.cpp:758
 #: ../src/win32/RP_ShellPropSheetExt.cpp:627
 msgctxt "RomDataView"
 msgid "(unknown filetype)"
@@ -769,6 +771,7 @@ msgstr ""
 #: ../src/libromdata/Other/EXE_PE.cpp:570 ../src/libromdata/Other/MachO.cpp:529
 #: ../src/libromdata/Other/NintendoBadge.cpp:729
 #: ../src/libromdata/Other/NintendoBadge.cpp:837
+#: ../src/librpbase/TextOut_text.cpp:537
 #: ../src/librptexture/fileformat/PowerVR3.cpp:966
 msgctxt "RomData"
 msgid "Unknown"
@@ -7644,6 +7647,31 @@ msgstr ""
 #, c-format
 msgctxt "TextFuncs|FileSize"
 msgid "%1$s %2$s"
+msgstr ""
+
+#: ../src/librpbase/TextOut_text.cpp:699
+#, c-format
+msgctxt "TextOut"
+msgid "(tab %d)"
+msgstr ""
+
+#. tr: "[System] [FileType] detected."
+#: ../src/librpbase/TextOut_text.cpp:756
+#, c-format
+msgctxt "TextOut"
+msgid "%1$s %2$s detected"
+msgstr ""
+
+#. tr: Image Type name, followed by Image Type ID
+#: ../src/librpbase/TextOut_text.cpp:778
+#, c-format
+msgctxt "TextOut"
+msgid "%1$s is present (use -x%2$d to extract)"
+msgstr ""
+
+#: ../src/librpbase/TextOut_text.cpp:784
+msgctxt "TextOut"
+msgid "Animated icon is present (use -a to extract)"
 msgstr ""
 
 #: ../src/librptexture/fileformat/DidjTex.cpp:527
