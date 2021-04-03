@@ -39,7 +39,8 @@ CHECK_SYMBOL_EXISTS(memmem "string.h" HAVE_MEMMEM)
 IF(NOT WIN32)
 	CHECK_SYMBOL_EXISTS(nl_langinfo "langinfo.h" HAVE_NL_LANGINFO)
 ELSE(NOT WIN32)
-	# Win32: MinGW's `struct lconv` doesn't have wchar_t fields.
+	# Win32: MinGW's `struct lconv` does have wchar_t fields,
+	# but only if __MSVCRT_VERSION__ >= 0xA00 || _WIN32_WINNT >= 0x601.
 	CHECK_STRUCT_HAS_MEMBER("struct lconv" _W_decimal_point "locale.h"
 		HAVE_STRUCT_LCONV_WCHAR_T
 		LANGUAGE C)
