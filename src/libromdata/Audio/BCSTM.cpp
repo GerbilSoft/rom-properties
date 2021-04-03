@@ -431,12 +431,13 @@ int BCSTM::loadFieldData(void)
 	static const char type_tbl[][8] = {
 		"BCSTM", "BFSTM", "BCWAV"
 	};
+	const char *const type_title = C_("BCSTM", "Type");
 	if (d->audioFormat > BCSTMPrivate::AudioFormat::Unknown &&
 	    (int)d->audioFormat < ARRAY_SIZE(type_tbl))
 	{
-		d->fields->addField_string(C_("BCSTM", "Type"), type_tbl[(int)d->audioFormat]);
+		d->fields->addField_string(type_title, type_tbl[(int)d->audioFormat]);
 	} else {
-		d->fields->addField_string(C_("BCSTM", "Type"),
+		d->fields->addField_string(type_title,
 			rp_sprintf(C_("RomData", "Unknown (%d)"), (int)d->audioFormat));
 	}
 
@@ -498,11 +499,12 @@ int BCSTM::loadFieldData(void)
 		NOP_C_("BCSTM|Codec", "Signed 16-bit PCM"),
 		"DSP ADPCM", "IMA ADPCM",
 	};
+	const char *const codec_title = C_("BCSTM", "Codec");
 	if (codec < ARRAY_SIZE(codec_tbl)) {
-		d->fields->addField_string(C_("BCSTM", "Codec"),
+		d->fields->addField_string(codec_title,
 			dpgettext_expr(RP_I18N_DOMAIN, "BCSTM|Codec", codec_tbl[codec]));
 	} else {
-		d->fields->addField_string(C_("BCSTM", "Codec"),
+		d->fields->addField_string(codec_title,
 			rp_sprintf(C_("RomData", "Unknown (%u)"), codec));
 	}
 

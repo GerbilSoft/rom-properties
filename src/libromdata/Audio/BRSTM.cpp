@@ -357,11 +357,12 @@ int BRSTM::loadFieldData(void)
 		NOP_C_("BRSTM|Codec", "Signed 16-bit PCM"),
 		"4-bit THP ADPCM",
 	};
+	const char *const codec_title = C_("BRSTM", "Codec");
 	if (headChunk1->codec < ARRAY_SIZE(codec_tbl)) {
-		d->fields->addField_string(C_("BRSTM", "Codec"),
+		d->fields->addField_string(codec_title,
 			dpgettext_expr(RP_I18N_DOMAIN, "BRSTM|Codec", codec_tbl[headChunk1->codec]));
 	} else {
-		d->fields->addField_string(C_("BRSTM", "Codec"),
+		d->fields->addField_string(codec_title,
 			rp_sprintf(C_("RomData", "Unknown (%u)"), headChunk1->codec));
 	}
 
