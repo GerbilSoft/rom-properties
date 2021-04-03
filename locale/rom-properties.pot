@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rom-properties 1.7.3+\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
-"POT-Creation-Date: 2021-04-02 22:38-0400\n"
+"POT-Creation-Date: 2021-04-02 23:46-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -91,15 +91,6 @@ msgid ""
 "External images are downloaded from an external image database.\n"
 "\n"
 "1 = highest priority; 2 = second highest priority; No = ignore"
-msgstr ""
-
-#: ../build/src/kde/kf5/ui_ImageTypesTab.h:86
-msgctxt "ImageTypesTab"
-msgid ""
-"GameCube, Wii, Wii U, Nintendo DS, and Nintendo 3DS external images<br/>are "
-"provided by <a href=\"http://www.gametdb.com/\">GameTDB</a>.<br/>\n"
-"amiibo images are provided by <a href=\"https://amiibo.life/\">amiibo.life</"
-"a>, the Unofficial amiibo Database."
 msgstr ""
 
 #: ../build/src/kde/kf5/ui_KeyManagerTab.h:86
@@ -462,10 +453,20 @@ msgctxt "ConfigDialog"
 msgid "&Key Manager"
 msgstr ""
 
-#: ../src/kde/config/ImageTypesTab.cpp:238
-#: ../src/win32/config/ImageTypesTab.cpp:369
+#: ../src/kde/config/ImageTypesTab.cpp:246
+#: ../src/win32/config/ImageTypesTab.cpp:376
 msgctxt "ImageTypesTab|Values"
 msgid "No"
+msgstr ""
+
+#: ../src/kde/config/ImageTypesTab.cpp:353
+#: ../src/win32/config/ImageTypesTab.cpp:503
+msgctxt "ImageTypesTab"
+msgid ""
+"GameCube, Wii, Wii U, Nintendo DS, and Nintendo 3DS external images\n"
+"are provided by <a href=\"http://www.gametdb.com/\">GameTDB</a>.\n"
+"amiibo images are provided by <a href=\"https://amiibo.life/\">amiibo.life</"
+"a>, the Unofficial amiibo Database."
 msgstr ""
 
 #: ../src/kde/config/KeyManagerTab.cpp:123
@@ -8368,7 +8369,7 @@ msgstr ""
 msgctxt "rp_stub"
 msgid ""
 "Shared library stub program.\n"
-"Copyright (c) 2016-2020 by David Korth."
+"Copyright (c) 2016-2021 by David Korth."
 msgstr ""
 
 #: ../src/rp-stub/rp-stub.c:66
@@ -8628,7 +8629,7 @@ msgid "Defaults"
 msgstr ""
 
 #. tr: Tab title.
-#: ../src/win32/config/ImageTypesTab.cpp:685
+#: ../src/win32/config/ImageTypesTab.cpp:710
 msgctxt "ImageTypesTab"
 msgid "Image Types"
 msgstr ""
@@ -8645,7 +8646,7 @@ msgid "Key Manager"
 msgstr ""
 
 #. tr: Tab title.
-#: ../src/win32/config/OptionsTab.cpp:404
+#: ../src/win32/config/OptionsTab.cpp:421
 msgctxt "OptionsTab"
 msgid "Options"
 msgstr ""

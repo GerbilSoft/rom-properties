@@ -24,9 +24,9 @@
 # Egor <egor@opensrc.club>, 2018.
 msgid ""
 msgstr ""
-"Project-Id-Version: rom-properties 1.6.1+\n"
+"Project-Id-Version: rom-properties 1.7.3+\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
-"POT-Creation-Date: 2021-04-02 22:38-0400\n"
+"POT-Creation-Date: 2021-04-02 23:46-0400\n"
 "PO-Revision-Date: 2018-04-13 04:36+0200\n"
 "Last-Translator: Egor <egor@opensrc.club>\n"
 "Language-Team: none\n"
@@ -120,19 +120,6 @@ msgstr ""
 "\n"
 "1 = найвищий пріоритет; 2 = другий після найвищого; Вимк. = не "
 "використовувати цей тип"
-
-#: ../build/src/kde/kf5/ui_ImageTypesTab.h:86
-msgctxt "ImageTypesTab"
-msgid ""
-"GameCube, Wii, Wii U, Nintendo DS, and Nintendo 3DS external images<br/>are "
-"provided by <a href=\"http://www.gametdb.com/\">GameTDB</a>.<br/>\n"
-"amiibo images are provided by <a href=\"https://amiibo.life/\">amiibo.life</"
-"a>, the Unofficial amiibo Database."
-msgstr ""
-"Зовнішні зображення для GameCube, Wii, Wii U, Nintendo DS, та Nintendo "
-"3DS<br/>надані сайтом <a href=\"http://www.gametdb.com/\">GameTDB</a>.<br/>\n"
-"Зовнішні зображення amiibo надані сайтом <a href=\"https://amiibo.life/"
-"\">amiibo.life</a>."
 
 #: ../build/src/kde/kf5/ui_KeyManagerTab.h:86
 msgctxt "KeyManagerTab"
@@ -503,11 +490,26 @@ msgctxt "ConfigDialog"
 msgid "&Key Manager"
 msgstr "&Менеджер ключів"
 
-#: ../src/kde/config/ImageTypesTab.cpp:238
-#: ../src/win32/config/ImageTypesTab.cpp:369
+#: ../src/kde/config/ImageTypesTab.cpp:246
+#: ../src/win32/config/ImageTypesTab.cpp:376
 msgctxt "ImageTypesTab|Values"
 msgid "No"
 msgstr "Вимк."
+
+#: ../src/kde/config/ImageTypesTab.cpp:353
+#: ../src/win32/config/ImageTypesTab.cpp:503
+#, fuzzy
+msgctxt "ImageTypesTab"
+msgid ""
+"GameCube, Wii, Wii U, Nintendo DS, and Nintendo 3DS external images\n"
+"are provided by <a href=\"http://www.gametdb.com/\">GameTDB</a>.\n"
+"amiibo images are provided by <a href=\"https://amiibo.life/\">amiibo.life</"
+"a>, the Unofficial amiibo Database."
+msgstr ""
+"Зовнішні зображення для GameCube, Wii, Wii U, Nintendo DS, та Nintendo 3DS\n"
+"надані сайтом <a href=\"http://www.gametdb.com/\">GameTDB</a>.\n"
+"Зовнішні зображення amiibo надані сайтом <a href=\"https://amiibo.life/"
+"\">amiibo.life</a>."
 
 #: ../src/kde/config/KeyManagerTab.cpp:123
 msgctxt "KeyManagerTab"
@@ -8430,7 +8432,7 @@ msgstr ""
 msgctxt "rp_stub"
 msgid ""
 "Shared library stub program.\n"
-"Copyright (c) 2016-2020 by David Korth."
+"Copyright (c) 2016-2021 by David Korth."
 msgstr ""
 
 #: ../src/rp-stub/rp-stub.c:66
@@ -8690,7 +8692,7 @@ msgid "Defaults"
 msgstr ""
 
 #. tr: Tab title.
-#: ../src/win32/config/ImageTypesTab.cpp:685
+#: ../src/win32/config/ImageTypesTab.cpp:710
 msgctxt "ImageTypesTab"
 msgid "Image Types"
 msgstr "Типи зображень"
@@ -8707,7 +8709,7 @@ msgid "Key Manager"
 msgstr "Менеджер ключів"
 
 #. tr: Tab title.
-#: ../src/win32/config/OptionsTab.cpp:404
+#: ../src/win32/config/OptionsTab.cpp:421
 msgctxt "OptionsTab"
 msgid "Options"
 msgstr ""

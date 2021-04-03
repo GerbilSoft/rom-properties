@@ -4,9 +4,9 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: rom-properties 1.6.1+\n"
+"Project-Id-Version: rom-properties 1.7.3+\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
-"POT-Creation-Date: 2021-04-02 22:38-0400\n"
+"POT-Creation-Date: 2021-04-02 23:46-0400\n"
 "PO-Revision-Date: 2021-04-02 22:56-0400\n"
 "Last-Translator: Amnesia1000\n"
 "Language-Team: \n"
@@ -99,19 +99,6 @@ msgstr ""
 "Las imágenes externas se reciben de una base de datos de imágenes externas.\n"
 "\n"
 "1 = prioridad más alta; 2 = prioridad alta; No = ignorar"
-
-#: ../build/src/kde/kf5/ui_ImageTypesTab.h:86
-msgctxt "ImageTypesTab"
-msgid ""
-"GameCube, Wii, Wii U, Nintendo DS, and Nintendo 3DS external images<br/>are "
-"provided by <a href=\"http://www.gametdb.com/\">GameTDB</a>.<br/>\n"
-"amiibo images are provided by <a href=\"https://amiibo.life/\">amiibo.life</"
-"a>, the Unofficial amiibo Database."
-msgstr ""
-"Las imágenes de GameCube, Wii, Wii U, Nintendo DS y Nintendo 3DS<br/>son "
-"proporcionadas por <a href=\"http://www.gametdb.com/\">GameTDB</a>.<br/>\n"
-"Las imágenes amiibo son proporcionadas por <a href=\"https://amiibo.life/"
-"\">amiibo.life</a>, base de datos no oficial Amiibo."
 
 #: ../build/src/kde/kf5/ui_KeyManagerTab.h:86
 msgctxt "KeyManagerTab"
@@ -395,7 +382,7 @@ msgstr "Todos los archivos"
 #: ../src/kde/config/AboutTab.cpp:131
 msgctxt "AboutTab"
 msgid "<b>ROM Properties Page</b><br>Shell Extension"
-msgstr "<b>Página de propriedades de ROM</b><br>Extensão Shell"
+msgstr ""
 
 #: ../src/kde/config/AboutTab.cpp:133 ../src/win32/config/AboutTab.cpp:508
 #, c-format
@@ -493,11 +480,25 @@ msgctxt "ConfigDialog"
 msgid "&Key Manager"
 msgstr "&Gestor de Llaves"
 
-#: ../src/kde/config/ImageTypesTab.cpp:238
-#: ../src/win32/config/ImageTypesTab.cpp:369
+#: ../src/kde/config/ImageTypesTab.cpp:246
+#: ../src/win32/config/ImageTypesTab.cpp:376
 msgctxt "ImageTypesTab|Values"
 msgid "No"
 msgstr "No"
+
+#: ../src/kde/config/ImageTypesTab.cpp:353
+#: ../src/win32/config/ImageTypesTab.cpp:503
+msgctxt "ImageTypesTab"
+msgid ""
+"GameCube, Wii, Wii U, Nintendo DS, and Nintendo 3DS external images\n"
+"are provided by <a href=\"http://www.gametdb.com/\">GameTDB</a>.\n"
+"amiibo images are provided by <a href=\"https://amiibo.life/\">amiibo.life</"
+"a>, the Unofficial amiibo Database."
+msgstr ""
+"Las imágenes de GameCube, Wii, Wii U, Nintendo DS y Nintendo 3DS\n"
+"son proporcionadas por <a href=\"http://www.gametdb.com/\">GameTDB</a>.\n"
+"Las imágenes amiibo son proporcionadas por <a href=\"https://amiibo.life/"
+"\">amiibo.life</a>, base de datos no oficial Amiibo."
 
 #: ../src/kde/config/KeyManagerTab.cpp:123
 msgctxt "KeyManagerTab"
@@ -8508,10 +8509,10 @@ msgstr "ERROR: %s"
 msgctxt "rp_stub"
 msgid ""
 "Shared library stub program.\n"
-"Copyright (c) 2016-2020 by David Korth."
+"Copyright (c) 2016-2021 by David Korth."
 msgstr ""
-"Carregador de biblioteca ROM-Properties .\n"
-"Copyright (c) 2016-2020 by David Korth."
+"Carregador de biblioteca ROM-Properties.\n"
+"Copyright (c) 2016-2021 by David Korth."
 
 #: ../src/rp-stub/rp-stub.c:66
 #, c-format
@@ -8800,7 +8801,7 @@ msgid "Defaults"
 msgstr "Defecto"
 
 #. tr: Tab title.
-#: ../src/win32/config/ImageTypesTab.cpp:685
+#: ../src/win32/config/ImageTypesTab.cpp:710
 msgctxt "ImageTypesTab"
 msgid "Image Types"
 msgstr "Tipos de imagenes"
@@ -8817,7 +8818,7 @@ msgid "Key Manager"
 msgstr "&Gestor de llaves"
 
 #. tr: Tab title.
-#: ../src/win32/config/OptionsTab.cpp:404
+#: ../src/win32/config/OptionsTab.cpp:421
 msgctxt "OptionsTab"
 msgid "Options"
 msgstr "Opciones"

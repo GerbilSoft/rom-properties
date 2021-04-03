@@ -188,7 +188,7 @@ class AboutTabPrivate
 		/**
 		 * Initialize the dialog.
 		 */
-		void init(void);
+		void initDialog(void);
 };
 
 /** AboutTabPrivate **/
@@ -254,7 +254,7 @@ INT_PTR CALLBACK AboutTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, L
 			SetWindowLongPtr(hDlg, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(d));
 
 			// Initialize the dialog.
-			d->init();
+			d->initDialog();
 			return TRUE;
 		}
 
@@ -871,7 +871,7 @@ void AboutTabPrivate::setTabContents(int index)
 /**
  * Initialize the dialog.
  */
-void AboutTabPrivate::init(void)
+void AboutTabPrivate::initDialog(void)
 {
 	// Initialize the program title text.
 	initProgramTitleText();

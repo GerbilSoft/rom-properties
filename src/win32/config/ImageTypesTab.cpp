@@ -95,6 +95,13 @@ class ImageTypesTabPrivate : public TImageTypesConfig<HWND>
 		void cboImageType_setPriorityValue(unsigned int cbid, unsigned int prio) final;
 
 	public:
+		/** Other ImageTypesTabPrivate functions. **/
+
+		/**
+		 * Initialize strings.
+		 */
+		void initStrings(void);
+
 		/**
 		 * Dialog procedure.
 		 * @param hDlg
@@ -486,6 +493,21 @@ void ImageTypesTabPrivate::cboImageType_setPriorityValue(unsigned int cbid, unsi
 /** Other ImageTypesTabPrivate functions. **/
 
 /**
+ * Initialize strings.
+ */
+void ImageTypesTabPrivate::initStrings(void)
+{
+	SetWindowText(GetDlgItem(hWndPropSheet, IDC_IMAGETYPES_CREDITS), U82T_c(
+		// tr: External image credits.
+		C_("ImageTypesTab",
+			"GameCube, Wii, Wii U, Nintendo DS, and Nintendo 3DS external images\n"
+			"are provided by <a href=\"http://www.gametdb.com/\">GameTDB</a>.\n"
+			"amiibo images are provided by <a href=\"https://amiibo.life/\">amiibo.life</a>,"
+			" the Unofficial amiibo Database.")
+	));
+}
+
+/**
  * Dialog procedure.
  * @param hDlg
  * @param uMsg
@@ -512,6 +534,9 @@ INT_PTR CALLBACK ImageTypesTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 
 			// Store the D object pointer with this particular page dialog.
 			SetWindowLongPtr(hDlg, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(d));
+
+			// Initialize strings.
+			d->initStrings();
 
 			// Create the control grid.
 			d->createGrid();

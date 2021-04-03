@@ -92,6 +92,14 @@ class ImageTypesTabPrivate : public TImageTypesConfig<QComboBox*>
 		void cboImageType_setPriorityValue(unsigned int cbid, unsigned int prio) final;
 
 	public:
+		/** Other ImageTypesTabPrivate functions. **/
+
+		/**
+		 * Initialize strings.
+		 */
+		void initStrings(void);
+
+	public:
 		// Last ComboBox added.
 		// Needed in order to set the correct
 		// tab order for the credits label.
@@ -332,6 +340,27 @@ void ImageTypesTabPrivate::cboImageType_setPriorityValue(unsigned int cbid, unsi
 	}
 }
 
+/** Other ImageTypesTabPrivate functions. **/
+
+/**
+ * Initialize strings.
+ */
+void ImageTypesTabPrivate::initStrings(void)
+{
+	QString sCredits = U82Q(
+		// tr: External image credits.
+		C_("ImageTypesTab",
+			"GameCube, Wii, Wii U, Nintendo DS, and Nintendo 3DS external images\n"
+			"are provided by <a href=\"http://www.gametdb.com/\">GameTDB</a>.\n"
+			"amiibo images are provided by <a href=\"https://amiibo.life/\">amiibo.life</a>,"
+			" the Unofficial amiibo Database.")
+		);
+
+	// Replace "\n" with "<br/>".
+	sCredits.replace(QChar(L'\n'), QLatin1String("<br/>"));
+	ui.lblCredits->setText(sCredits);
+}
+
 /** ImageTypesTab **/
 
 ImageTypesTab::ImageTypesTab(QWidget *parent)
@@ -340,6 +369,9 @@ ImageTypesTab::ImageTypesTab(QWidget *parent)
 {
 	Q_D(ImageTypesTab);
 	d->ui.setupUi(this);
+
+	// Initialize strings.
+	d->initStrings();
 
 	// Create the control grid.
 	d->createGrid();
