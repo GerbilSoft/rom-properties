@@ -636,7 +636,7 @@ int VGM::loadFieldData(void)
 			}
 		}
 
-		// YM2813 [1.51]
+		// YM3812 [1.51]
 		SOUND_CHIP(ym3812, "YM3812", true);
 
 		// YM3526 [1.51]
