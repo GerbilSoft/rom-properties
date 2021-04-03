@@ -151,7 +151,6 @@ AchWin32Private::AchWin32Private()
 
 	// Register the window class.
 	atomWindowClass = RegisterClassEx(&wndClass);
-	DWORD dwErr = GetLastError();
 }
 
 AchWin32Private::~AchWin32Private()
@@ -284,7 +283,11 @@ int AchWin32Private::notifyFunc(Achievements::ID id)
 	const DWORD tid = GetCurrentThreadId();
 	auto iter = map_tidToHWND.find(tid);
 	if (iter != map_tidToHWND.end()) {
-		hNotifyWnd = iter->second;
+		// FIXME: Multiple achievements at once.
+		// On Win7, this doesn't work and we end up
+		// showing *no* achievements.
+		//hNotifyWnd = iter->second;
+		return 0;
 	} else {
 		// No notification window. We'll need to create it.
 		hNotifyWnd = CreateWindow(
