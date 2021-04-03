@@ -71,7 +71,7 @@ BEGIN
 
     GROUPBOX        "&Options", IDC_STATIC, 7, 92, 397, 50, BS_GROUPBOX, WS_EX_TRANSPARENT
     AUTOCHECKBOX    "Mostrar un icono de superposición de seguridad para las imágenes de la ROM con\nPermisos ""peligrosos"".", IDC_DANGEROUSPERMISSIONS, 15, 103, 381, 16, BS_MULTILINE, WS_EX_TRANSPARENT
-    AUTOCHECKBOX    "Habilitar la extracción de miniaturas y metadatos de los sistemas\de archivos de red. Esto puede ralentizar la navegación de los archivos.", IDC_ENABLETHUMBNAILONNETWORKFS, 15, 120, 381, 16, BS_MULTILINE, WS_EX_TRANSPARENT
+    AUTOCHECKBOX    "Habilitar la extracción de miniaturas y metadatos de los sistemas\nde archivos de red. Esto puede ralentizar la navegación de los archivos.", IDC_ENABLETHUMBNAILONNETWORKFS, 15, 120, 381, 16, BS_MULTILINE, WS_EX_TRANSPARENT
 END
 
 /**
