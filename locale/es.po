@@ -6041,7 +6041,7 @@ msgstr "Nuevo ABI"
 #: ../src/libromdata/Other/ELF.cpp:1362
 msgctxt "ELF|ARMFlags"
 msgid "Old ABI"
-msgstr "VIejo ABI"
+msgstr "Viejo ABI"
 
 #: ../src/libromdata/Other/ELF.cpp:1363
 msgctxt "ELF|ARMFlags"
