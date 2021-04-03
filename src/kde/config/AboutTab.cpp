@@ -298,19 +298,32 @@ void AboutTabPrivate::initLibrariesTab(void)
 	/** zlib **/
 #ifdef HAVE_ZLIB
 	sLibraries += brbr;
+#  ifdef ZLIBNG_VERSION
+	string sZlibVersion = "zlib-ng ";
+	sZlibVersion += zlibngVersion();
+#  else /* !ZLIBNG_VERSION */
 	string sZlibVersion = "zlib ";
 	sZlibVersion += zlibVersion();
+#  endif /* ZLIBNG_VERSION */
 
 #if defined(USE_INTERNAL_ZLIB) && !defined(USE_INTERNAL_ZLIB_DLL)
 	sLibraries += rp_sprintf(sIntCopyOf, sZlibVersion.c_str());
 #else
+#  ifdef ZLIBNG_VERSION
+	sLibraries += rp_sprintf(sCompiledWith, "zlib-ng " ZLIBNG_VERSION);
+#  else /* !ZLIBNG_VERSION */
 	sLibraries += rp_sprintf(sCompiledWith, "zlib " ZLIB_VERSION);
+#  endif /* ZLIBNG_VERSION */
 	sLibraries += br;
 	sLibraries += rp_sprintf(sUsingDll, sZlibVersion.c_str());
 #endif
 	sLibraries += BR
 		"Copyright (C) 1995-2017 Jean-loup Gailly and Mark Adler." BR
 		"<a href='https://zlib.net/'>https://zlib.net/</a>" BR;
+#  ifdef ZLIBNG_VERSION
+	// TODO: Also if zlibVersion() contains "zlib-ng"?
+	sLibraries += "<a href='https://github.com/zlib-ng/zlib-ng'>https://github.com/zlib-ng/zlib-ng</a>" BR;
+#  endif /* ZLIBNG_VERSION */
 	sLibraries += rp_sprintf(sLicense, "zlib license");
 #endif /* HAVE_ZLIB */
 
