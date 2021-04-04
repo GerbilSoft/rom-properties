@@ -52,7 +52,7 @@ class ListDataModelPrivate
 		// Flat array of QStrings.
 		// Size should always be columnCount*rowCount.
 		// Ordering is per-row. (row0, col0; row0, col1; row0, col2; row1, col0; etc)
-		// Points to an element in lc_data.
+		// Points to an element in map_data.
 		const vector<QString> *pData;
 
 		// Qt::ItemFlags
