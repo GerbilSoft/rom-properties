@@ -69,29 +69,39 @@ int rp_secure_enable(rp_secure_param_t param)
 		return -ENOSYS;
 	}
 
-	// Allow basic syscalls.
-	seccomp_rule_add_array(ctx, SCMP_ACT_ALLOW, SCMP_SYS(brk), 0, NULL);
-	seccomp_rule_add_array(ctx, SCMP_ACT_ALLOW, SCMP_SYS(exit), 0, NULL);
-	seccomp_rule_add_array(ctx, SCMP_ACT_ALLOW, SCMP_SYS(exit_group), 0, NULL);
-	seccomp_rule_add_array(ctx, SCMP_ACT_ALLOW, SCMP_SYS(read), 0, NULL);
-	seccomp_rule_add_array(ctx, SCMP_ACT_ALLOW, SCMP_SYS(rt_sigreturn), 0, NULL);
-	seccomp_rule_add_array(ctx, SCMP_ACT_ALLOW, SCMP_SYS(write), 0, NULL);
+	static const int syscall_wl_std[] = {
+		// Allow basic syscalls.
+		SCMP_SYS(brk),
+		SCMP_SYS(exit),
+		SCMP_SYS(exit_group),
+		SCMP_SYS(read),
+		SCMP_SYS(rt_sigreturn),
+		SCMP_SYS(write),
 
-	// restart_syscall() is called by glibc to restart
-	// certain syscalls if they're interrupted.
-	seccomp_rule_add_array(ctx, SCMP_ACT_ALLOW, SCMP_SYS(restart_syscall), 0, NULL);
+		// restart_syscall() is called by glibc to restart
+		// certain syscalls if they're interrupted.
+		SCMP_SYS(restart_syscall),
 
 #ifndef NDEBUG
-	// abort() [called by assert()]
-	seccomp_rule_add_array(ctx, SCMP_ACT_ALLOW, SCMP_SYS(getpid), 0, NULL);
-	seccomp_rule_add_array(ctx, SCMP_ACT_ALLOW, SCMP_SYS(gettid), 0, NULL);
-	seccomp_rule_add_array(ctx, SCMP_ACT_ALLOW, SCMP_SYS(rt_sigaction), 0, NULL);
-	seccomp_rule_add_array(ctx, SCMP_ACT_ALLOW, SCMP_SYS(rt_sigprocmask), 0, NULL);
-	seccomp_rule_add_array(ctx, SCMP_ACT_ALLOW, SCMP_SYS(tgkill), 0, NULL);
+		// abort() [called by assert()]
+		SCMP_SYS(getpid),
+		SCMP_SYS(gettid),
+		SCMP_SYS(rt_sigaction),
+		SCMP_SYS(rt_sigprocmask),
+		SCMP_SYS(tgkill),
 #endif /* NDEBUG */
 
+		-1	// End of whitelist
+	};
+
+	// Whitelist the standard syscalls.
+	const int *p = syscall_wl_std;
+	for (; *p != -1; p++) {
+		seccomp_rule_add_array(ctx, SCMP_ACT_ALLOW, *p, 0, NULL);
+	}
+
 	// NOTE: If clone() is wanted, it should be the first syscall in the list.
-	const int *p = param.syscall_wl;
+	p = param.syscall_wl;
 	if (*p == SCMP_SYS(clone)) {
 		// clone() syscall. Only allow threads.
 		const struct scmp_arg_cmp clone_params[] = {
