@@ -393,6 +393,10 @@ vector<const char*> GameCubeRegions::gcnRegionToGameTDB(unsigned int gcnRegion, 
 					// Usually PAL.
 					ret.emplace_back("EN");
 					ret.emplace_back("US");
+					ret.emplace_back("ES");
+					ret.emplace_back("FR");
+					ret.emplace_back("DE");
+					ret.emplace_back("IT");
 					break;
 			}
 			if (addEN) {
