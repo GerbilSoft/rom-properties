@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rom-properties 1.7.3+\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
-"POT-Creation-Date: 2021-04-03 15:16-0400\n"
+"POT-Creation-Date: 2021-04-04 00:15-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -122,26 +122,6 @@ msgid ""
 "External images are downloaded from an external image database.\n"
 "\n"
 "1 = highest priority; 2 = second highest priority; No = ignore"
-msgstr ""
-
-#: ../build/src/kde/kf5/ui_KeyManagerTab.h:86
-msgctxt "KeyManagerTab"
-msgid "Wii keys.bin"
-msgstr ""
-
-#: ../build/src/kde/kf5/ui_KeyManagerTab.h:87
-msgctxt "KeyManagerTab"
-msgid "Wii U otp.bin"
-msgstr ""
-
-#: ../build/src/kde/kf5/ui_KeyManagerTab.h:88
-msgctxt "KeyManagerTab"
-msgid "3DS boot9.bin"
-msgstr ""
-
-#: ../build/src/kde/kf5/ui_KeyManagerTab.h:89
-msgctxt "KeyManagerTab"
-msgid "3DS aeskeydb.bin"
 msgstr ""
 
 #: ../build/src/kde/kf5/ui_KeyManagerTab.h:90

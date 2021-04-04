@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rom-properties 1.7.3+\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
-"POT-Creation-Date: 2021-04-03 15:16-0400\n"
+"POT-Creation-Date: 2021-04-04 00:15-0400\n"
 "PO-Revision-Date: 2021-04-02 22:56-0400\n"
 "Last-Translator: Amnesia1000\n"
 "Language-Team: \n"
@@ -50,8 +50,7 @@ msgid "Icon"
 msgstr "Icono"
 
 #. tr: Windows Vista and later. Has a centralized thumbnails cache.
-#: ../build/src/kde/kf5/ui_CacheTab.h:98
-#: ../src/win32/config/CacheTab.cpp:170
+#: ../build/src/kde/kf5/ui_CacheTab.h:98 ../src/win32/config/CacheTab.cpp:170
 msgctxt "CacheTab"
 msgid ""
 "If any image type settings were changed, you will need to clear the system "
@@ -135,26 +134,6 @@ msgstr ""
 "Las imágenes externas se reciben de una base de datos de imágenes externas.\n"
 "\n"
 "1 = prioridad más alta; 2 = prioridad alta; No = ignorar"
-
-#: ../build/src/kde/kf5/ui_KeyManagerTab.h:86
-msgctxt "KeyManagerTab"
-msgid "Wii keys.bin"
-msgstr "Wii keys.bin"
-
-#: ../build/src/kde/kf5/ui_KeyManagerTab.h:87
-msgctxt "KeyManagerTab"
-msgid "Wii U otp.bin"
-msgstr "Wii U otp.bin"
-
-#: ../build/src/kde/kf5/ui_KeyManagerTab.h:88
-msgctxt "KeyManagerTab"
-msgid "3DS boot9.bin"
-msgstr "3DS boot9.bin"
-
-#: ../build/src/kde/kf5/ui_KeyManagerTab.h:89
-msgctxt "KeyManagerTab"
-msgid "3DS aeskeydb.bin"
-msgstr "3DS aeskeydb.bin"
 
 #: ../build/src/kde/kf5/ui_KeyManagerTab.h:90
 #: ../src/kde/config/KeyManagerTab.cpp:298
