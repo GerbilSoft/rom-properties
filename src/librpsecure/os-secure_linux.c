@@ -104,7 +104,7 @@ int rp_secure_enable(rp_secure_param_t param)
 	p = param.syscall_wl;
 	if (*p == SCMP_SYS(clone)) {
 		// clone() syscall. Only allow threads.
-		const struct scmp_arg_cmp clone_params[] = {
+		static const struct scmp_arg_cmp clone_params[] = {
 			SCMP_A0(SCMP_CMP_MASKED_EQ, CLONE_THREAD, CLONE_THREAD),
 		};
 		seccomp_rule_add_array(ctx, SCMP_ACT_ALLOW, SCMP_SYS(clone),
