@@ -573,7 +573,13 @@ static void InitDialog(HWND hDlg)
 	HWND hStatus1, hExclaim;
 	HMODULE hUser32;
 	bool bHasMsvc32, bErr;
-	const TCHAR *line1 = NULL, *line2 = NULL;
+	TCHAR line1[80], line2[512];
+	line1[0] = _T('\0');
+	line2[0] = _T('\0');
+
+	// OS version check.
+	OSVERSIONINFO osvi;
+	unsigned int vcyear, vcver;
 
 	if (hIconDialog) {
 		SendMessage(hDlg, WM_SETICON, ICON_BIG, (LPARAM)hIconDialog);
@@ -629,49 +635,77 @@ static void InitDialog(HWND hDlg)
 	// message and disable the buttons.
 	bHasMsvc32 = CheckMsvc(false);
 
+	// MSVC 2019 runtime requires Windows Vista or later.
+	osvi.dwOSVersionInfoSize = sizeof(osvi);
+	if (GetVersionEx(&osvi) != 0) {
+		if (osvi.dwMajorVersion >= 6) {
+			// Windows Vista or later. Use MSVC 2019.
+			vcyear = 2019;
+			vcver = 16;
+		} else {
+			// Windows XP/2003 or earlier. Use MSVC 2017.
+			vcyear = 2017;
+			vcver = 15;
+		}
+	}
+
 	// Go through the various permutations.
 #ifndef _WIN64
 	if (!g_is64bit) {
+		bHasMsvc32 = false;
 		// 32-bit system.
 		if (!bHasMsvc32) {
 			// 32-bit MSVCRT is missing.
-			line1 = _T("The 32-bit MSVC 2015-2019 runtime is not installed.");
-			line2 = _T("You can download the 32-bit MSVC 2015-2019 runtime at:\n")
-				BULLET _T(" <a href=\"https://aka.ms/vs/16/release/vc_redist.x86.exe\">")
-					_T("https://aka.ms/vs/16/release/vc_redist.x86.exe</a>");
+			_sntprintf(line1, _countof(line1),
+				_T("The 32-bit MSVC 2015-%u runtime is not installed."), vcyear);
+			_sntprintf(line2, _countof(line2),
+				_T("You can download the 32-bit MSVC 2015-%u runtime at:\n")
+				BULLET _T(" <a href=\"https://aka.ms/vs/%u/release/vc_redist.x86.exe\">")
+					_T("https://aka.ms/vs/%u/release/vc_redist.x86.exe</a>"),
+				vcyear, vcver, vcver);
 		}
 	} else
 #endif /* !_WIN64 */
 	{
+		bHasMsvc32 = false;
 		// 64-bit system.
-		const bool bHasMsvc64 = CheckMsvc(true);
+		const bool bHasMsvc64 = false;//CheckMsvc(true);
 		if (!bHasMsvc32 && !bHasMsvc64) {
 			// Both 32-bit and 64-bit MSVCRT are missing.
-			line1 = _T("The 32-bit and 64-bit MSVC 2015-2019 runtimes are not installed.");
-			line2 = _T("You can download the MSVC 2015-2019 runtime at:\n")
-				BULLET _T(" 32-bit: <a href=\"https://aka.ms/vs/16/release/vc_redist.x86.exe\">")
-					_T("https://aka.ms/vs/16/release/vc_redist.x86.exe</a>\n")
-				BULLET _T(" 64-bit: <a href=\"https://aka.ms/vs/16/release/vc_redist.x64.exe\">")
-					_T("https://aka.ms/vs/16/release/vc_redist.x64.exe</a>");
+			_sntprintf(line1, _countof(line1),
+				_T("The 32-bit and 64-bit MSVC 2015-%u runtimes are not installed."), vcyear);
+			_sntprintf(line2, _countof(line2),
+				_T("You can download the MSVC 2015-%u runtime at:\n")
+				BULLET _T(" 32-bit: <a href=\"https://aka.ms/vs/%u/release/vc_redist.x86.exe\">")
+					_T("https://aka.ms/vs/%u/release/vc_redist.x86.exe</a>\n")
+				BULLET _T(" 64-bit: <a href=\"https://aka.ms/vs/%u/release/vc_redist.x64.exe\">")
+					_T("https://aka.ms/vs/%u/release/vc_redist.x64.exe</a>"),
+				vcyear, vcver, vcver, vcver, vcver);
 		} else if (!bHasMsvc32 && bHasMsvc64) {
 			// 32-bit MSVCRT is missing.
-			line1 = _T("The 32-bit MSVC 2015-2019 runtime is not installed.");
-			line2 = _T("You can download the 32-bit MSVC 2015-2019 runtime at:\n")
-				BULLET _T(" <a href=\"https://aka.ms/vs/16/release/vc_redist.x86.exe\">")
-					_T("https://aka.ms/vs/16/release/vc_redist.x86.exe</a>");
+			_sntprintf(line1, _countof(line1),
+				_T("The 32-bit MSVC 2015-%u runtime is not installed."), vcyear);
+			_sntprintf(line2, _countof(line2),
+				_T("You can download the 32-bit MSVC 2015-%u runtime at:\n")
+				BULLET _T(" <a href=\"https://aka.ms/vs/%u/release/vc_redist.x86.exe\">")
+					_T("https://aka.ms/vs/%u/release/vc_redist.x86.exe</a>"),
+				vcyear, vcver, vcver);
 		} else if (bHasMsvc32 && !bHasMsvc64) {
 			// 64-bit MSVCRT is missing.
-			line1 = _T("The 64-bit MSVC 2015-2019 runtime is not installed.");
-			line2 = _T("You can download the 64-bit MSVC 2015-2019 runtime at:\n")
-				BULLET _T(" <a href=\"https://aka.ms/vs/16/release/vc_redist.x64.exe\">")
-					_T("https://aka.ms/vs/16/release/vc_redist.x64.exe</a>");
+			_sntprintf(line1, _countof(line1),
+				_T("The 64-bit MSVC 2015-%u runtime is not installed."), vcyear);
+			_sntprintf(line2, _countof(line2),
+				_T("You can download the 64-bit MSVC 2015-%u runtime at:\n")
+				BULLET _T(" <a href=\"https://aka.ms/vs/%u/release/vc_redist.x64.exe\">")
+					_T("https://aka.ms/vs/%u/release/vc_redist.x64.exe</a>"),
+				vcyear, vcver, vcver);
 		}
 	}
 
 	// Show the status message.
 	// If line1 is set, an error occurred, so we should
 	// show the exclamation icon and disable the buttons.
-	bErr = (line1 != NULL);
+	bErr = (line1[0] != _T('\0'));
 	ShowStatusMessage(hDlg, line1, line2, (bErr ? MB_ICONEXCLAMATION : 0));
 	EnableButtons(hDlg, !bErr);
 }

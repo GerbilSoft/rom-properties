@@ -46,11 +46,15 @@ following platforms:
 
 The following platforms are still compatible, but may not receive as much support:
 * KDE 4.x
-* Windows XP, Windows Vista
+* Windows XP, Windows Server 2003, Windows Vista
 
-On Windows, you will need the MSVC 2015-2019 runtime:
+On Windows Vista and later, you will need the MSVC 2015-2019 runtime:
 * 32-bit: https://aka.ms/vs/16/release/vc_redist.x86.exe
 * 64-bit: https://aka.ms/vs/16/release/vc_redist.x64.exe
+
+On Windows XP/2003 and earlier, you will need the MSVC 2015-2017 runtime:
+* 32-bit: https://aka.ms/vs/15/release/vc_redist.x86.exe
+* 64-bit: https://aka.ms/vs/15/release/vc_redist.x64.exe
 
 For instructions on compiling from source, see doc/COMPILING.md .
 
