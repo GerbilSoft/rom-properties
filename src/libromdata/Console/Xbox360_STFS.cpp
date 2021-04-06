@@ -733,6 +733,8 @@ const char *const *Xbox360_STFS::supportedFileExtensions_static(void)
 {
 	static const char *const exts[] = {
 		//".stfs",	// FIXME: Not actually used...
+		".fxs",		// Fallout
+		".exs",		// Skyrim
 
 		nullptr
 	};

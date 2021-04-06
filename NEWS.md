@@ -38,6 +38,10 @@
     * Fixes #278, reported by @simontime.
   * MegaDrive: Handle the 'W' region code as used by EverDrive OS ROMs.
   * Amiibo: Split the database out of the C++ code and into a database file.
+  * Xbox360_STFS: Add two more file extensions for some Bethesda games:
+    * Fallout: `.fxs`
+    * Skyrim: `.exs`
+    * Fixes #303, reported by @60fpshacksrock.
 
 * Bug fixes:
   * GameCube: Detect incrementing values partitions in encrypted images.
