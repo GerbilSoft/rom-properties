@@ -671,12 +671,12 @@ int TGA::getFields(RomFields *fields) const
 	}
 
 	const int initial_count = fields->count();
-	fields->reserve(initial_count + 1);	// Maximum of 1 field. (TODO)
+	fields->reserve(initial_count + 3);	// Maximum of 3 fields. (TODO)
 
 	// TGA header.
 	const TGA_Header *const tgaHeader = &d->tgaHeader;
 
-	// Orientation.
+	// Orientation
 	// Uses KTX1 format for display.
 	// Default 00 orientation: H-flip NO, V-flip YES
 	char str[16];
@@ -684,6 +684,32 @@ int TGA::getFields(RomFields *fields) const
 		((tgaHeader->img.attr_dir & TGA_ORIENTATION_X_MASK) ? 'l' : 'r'),
 		((tgaHeader->img.attr_dir & TGA_ORIENTATION_Y_MASK) ? 'd' : 'u'));
 	fields->addField_string(C_("TGA", "Orientation"), str);
+
+	// Compression
+	const char *s_compression;
+	if (tgaHeader->image_type == TGA_IMAGETYPE_HUFFMAN_COLORMAP) {
+		s_compression = C_("TGA|Compression", "Huffman+Delta");
+	} else if (tgaHeader->image_type == TGA_IMAGETYPE_HUFFMAN_4PASS_COLORMAP) {
+		s_compression = C_("TGA|Compression", "Huffman+Delta, 4-pass");
+	} else if (tgaHeader->image_type & TGA_IMAGETYPE_RLE_FLAG) {
+		s_compression = "RLE";
+	} else {
+		s_compression = C_("TGA|Compression", "None");
+	}
+	fields->addField_string(C_("TGA", "Compression"), s_compression);
+
+	// Alpha channel
+	// TODO: dpgettext_expr()
+	const char *s_alphaType;
+	static const char *const alphaType_tbl[4] = {
+		NOP_C_("TGA|AlphaType", "Undefined (ignore)"),
+		NOP_C_("TGA|AlphaType", "Undefined (retain)"),
+		NOP_C_("TGA|AlphaType", "Present"),
+		NOP_C_("TGA|AlphaType", "Premultiplied"),
+	};
+	s_alphaType = alphaType_tbl[d->alphaType >= 0 && (int)d->alphaType < 4
+		? d->alphaType : TGA_ALPHATYPE_UNDEFINED_IGNORE];
+	fields->addField_string(C_("TGA", "Alpha Type"), s_alphaType);
 
 	// Finished reading the field data.
 	return (fields->count() - initial_count);
