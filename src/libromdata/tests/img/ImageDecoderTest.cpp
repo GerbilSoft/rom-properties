@@ -1572,11 +1572,13 @@ INSTANTIATE_TEST_SUITE_P(PowerVR3, ImageDecoderTest,
 			"TGA/" file ".png")
 INSTANTIATE_TEST_SUITE_P(TGA, ImageDecoderTest,
 	::testing::Values(
-		ImageDecoderTest_mode("TGA/TGA_1_8.tga.gz", "CI8-reference.png"),
+		ImageDecoderTest_mode("TGA/TGA_1_CM24_IM8.tga.gz", "CI8-reference.png"),
+		ImageDecoderTest_mode("TGA/TGA_1_CM32_IM8.tga.gz", "CI8a-reference.png"),
 		ImageDecoderTest_mode("TGA/TGA_2_24.tga.gz", "rgb-reference.png"),
 		ImageDecoderTest_mode("TGA/TGA_2_32.tga.gz", "argb-reference.png"),
 		ImageDecoderTest_mode("TGA/TGA_3_8.tga.gz", "gray-reference.png"),
-		ImageDecoderTest_mode("TGA/TGA_9_8.tga.gz", "CI8-reference.png"),
+		ImageDecoderTest_mode("TGA/TGA_9_CM24_IM8.tga.gz", "CI8-reference.png"),
+		ImageDecoderTest_mode("TGA/TGA_9_CM32_IM8.tga.gz", "CI8a-reference.png"),
 		ImageDecoderTest_mode("TGA/TGA_10_24.tga.gz", "rgb-reference.png"),
 		ImageDecoderTest_mode("TGA/TGA_10_32.tga.gz", "argb-reference.png"),
 		ImageDecoderTest_mode("TGA/TGA_11_8.tga.gz", "gray-reference.png"))

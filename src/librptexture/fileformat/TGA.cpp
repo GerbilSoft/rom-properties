@@ -242,6 +242,7 @@ const rp_image *TGAPrivate::loadTGAImage(void)
 	switch (tgaHeader.image_type & ~TGA_IMAGETYPE_RLE_FLAG) {
 		case TGA_IMAGETYPE_COLORMAP: {
 			// Palette
+			// TODO: Check tgaHeader.alpha_dir to verify alpha for 32-bit?
 
 			// Determine the pixel format.
 			ImageDecoder::PixelFormat px_fmt;
