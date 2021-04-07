@@ -1572,6 +1572,7 @@ INSTANTIATE_TEST_SUITE_P(PowerVR3, ImageDecoderTest,
 			"TGA/" file ".png")
 INSTANTIATE_TEST_SUITE_P(TGA, ImageDecoderTest,
 	::testing::Values(
+		// Reference images.
 		ImageDecoderTest_mode("TGA/TGA_1_CM24_IM8.tga.gz", "CI8-reference.png"),
 		ImageDecoderTest_mode("TGA/TGA_1_CM32_IM8.tga.gz", "CI8a-reference.png"),
 		ImageDecoderTest_mode("TGA/TGA_2_24.tga.gz", "rgb-reference.png"),
@@ -1581,7 +1582,15 @@ INSTANTIATE_TEST_SUITE_P(TGA, ImageDecoderTest,
 		ImageDecoderTest_mode("TGA/TGA_9_CM32_IM8.tga.gz", "CI8a-reference.png"),
 		ImageDecoderTest_mode("TGA/TGA_10_24.tga.gz", "rgb-reference.png"),
 		ImageDecoderTest_mode("TGA/TGA_10_32.tga.gz", "argb-reference.png"),
-		ImageDecoderTest_mode("TGA/TGA_11_8.tga.gz", "gray-reference.png"))
+		ImageDecoderTest_mode("TGA/TGA_11_8.tga.gz", "gray-reference.png"),
+
+		// TGA 2.0 conformance test suite
+		TGA_IMAGE_TEST("conformance/cbw8"),
+		TGA_IMAGE_TEST("conformance/ccm8"),
+		TGA_IMAGE_TEST("conformance/ctc24"),
+		TGA_IMAGE_TEST("conformance/ubw8"),
+		TGA_IMAGE_TEST("conformance/ucm8"),
+		TGA_IMAGE_TEST("conformance/utc24"))
 	, ImageDecoderTest::test_case_suffix_generator);
 
 } }
