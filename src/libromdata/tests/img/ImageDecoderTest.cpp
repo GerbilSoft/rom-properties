@@ -1585,12 +1585,16 @@ INSTANTIATE_TEST_SUITE_P(TGA, ImageDecoderTest,
 		ImageDecoderTest_mode("TGA/TGA_11_8.tga.gz", "gray-reference.png"),
 
 		// TGA 2.0 conformance test suite
+		// FIXME: utc16, utc32 have incorrect alpha values?
+		// Both gimp and imagemagick interpret them as completely transparent.
 		TGA_IMAGE_TEST("conformance/cbw8"),
 		TGA_IMAGE_TEST("conformance/ccm8"),
 		TGA_IMAGE_TEST("conformance/ctc24"),
 		TGA_IMAGE_TEST("conformance/ubw8"),
 		TGA_IMAGE_TEST("conformance/ucm8"),
+		//TGA_IMAGE_TEST("conformance/utc16"),
 		TGA_IMAGE_TEST("conformance/utc24"))
+		//TGA_IMAGE_TEST("conformance/utc32"))
 	, ImageDecoderTest::test_case_suffix_generator);
 
 } }
