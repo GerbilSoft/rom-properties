@@ -130,28 +130,35 @@ const rp_image *TGAPrivate::loadTGAImage(void)
 	int pal_size = 0;
 	unique_ptr<uint8_t[]> pal_data;
 	if (tgaHeader.color_map_type >= 1) {
-		// Load the color map. (up to 256 colors only)
-		if (tgaHeader.cmap.idx0 + tgaHeader.cmap.len > 256) {
-			// Too many colors.
-			return nullptr;
-		}
-
 		const unsigned int cmap_bytespp = (tgaHeader.cmap.bpp == 15 ? 2 : (tgaHeader.cmap.bpp / 8));
-		pal_size = 256 * cmap_bytespp;
-		pal_data.reset(new uint8_t[pal_size]);
-
-		// If we don't have a full 256-color palette,
-		// zero-initialize it. (TODO: Optimize this?)
-		if (tgaHeader.cmap.idx0 != 0 || tgaHeader.cmap.len < 256) {
-			memset(pal_data.get(), 0, pal_size);
-		}
-
-		// Read the palette.
 		const size_t read_size = tgaHeader.cmap.len * cmap_bytespp;
-		size_t size = file->read(&pal_data[tgaHeader.cmap.idx0], read_size);
-		if (size != read_size) {
-			// Read error.
-			return nullptr;
+
+		if ((tgaHeader.image_type & ~TGA_IMAGETYPE_RLE_FLAG) == TGA_IMAGETYPE_COLORMAP) {
+			// Load the color map. (up to 256 colors only)
+			if (tgaHeader.cmap.idx0 + tgaHeader.cmap.len > 256) {
+				// Too many colors.
+				return nullptr;
+			}
+
+			pal_size = 256 * cmap_bytespp;
+			pal_data.reset(new uint8_t[pal_size]);
+
+			// If we don't have a full 256-color palette,
+			// zero-initialize it. (TODO: Optimize this?)
+			if (tgaHeader.cmap.idx0 != 0 || tgaHeader.cmap.len < 256) {
+				memset(pal_data.get(), 0, pal_size);
+			}
+
+			// Read the palette.
+			size_t size = file->read(&pal_data[tgaHeader.cmap.idx0], read_size);
+			if (size != read_size) {
+				// Read error.
+				return nullptr;
+			}
+		} else {
+			// Color map is present, but this is not a colormap image.
+			// Skip over the color map.
+			file->seek(file->tell() + read_size);
 		}
 	}
 
