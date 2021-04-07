@@ -478,6 +478,14 @@ void ImageDecoderTest::decodeTest_internal(void)
 		// NOTE: Using RpTextureWrapper.
 		filetype = "DidjTex";
 		m_romData = new RpTextureWrapper(m_f_dds);
+	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".tga.gz")) {
+		// TrueVision TGA
+		// NOTE: Using RpTextureWrapper.
+		// NOTE 2: TGA detection is currently done by file extension,
+		// so we need to set the RpMemFile's filename.
+		filetype = "TGA";
+		m_f_dds->setFilename(mode.dds_gz_filename);
+		m_romData = new RpTextureWrapper(m_f_dds);
 	} else {
 		ASSERT_TRUE(false) << "Unknown image type.";
 	}
@@ -604,6 +612,10 @@ void ImageDecoderTest::decodeBenchmark_internal(void)
 		// NOTE: Increased iterations due to smaller files.
 		// NOTE: Using RpTextureWrapper.
 		max_iterations *= 10;
+		fn_ctor = [](IRpFile *file) { return new RpTextureWrapper(file); };
+	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".tga.gz")) {
+		// TrueVision TGA
+		// NOTE: Using RpTextureWrapper.
 		fn_ctor = [](IRpFile *file) { return new RpTextureWrapper(file); };
 	} else {
 		ASSERT_TRUE(false) << "Unknown image type.";
@@ -1553,6 +1565,20 @@ INSTANTIATE_TEST_SUITE_P(PowerVR3, ImageDecoderTest,
 		)
 	, ImageDecoderTest::test_case_suffix_generator);
 #endif /* ENABLE_PVRTC */
+
+// TGA tests.
+#define TGA_IMAGE_TEST(file) ImageDecoderTest_mode( \
+			"TGA/" file ".tga.gz", \
+			"TGA/" file ".png")
+INSTANTIATE_TEST_SUITE_P(TGA, ImageDecoderTest,
+	::testing::Values(
+		ImageDecoderTest_mode("TGA/TGA_2_24.tga.gz", "rgb-reference.png"),
+		ImageDecoderTest_mode("TGA/TGA_2_32.tga.gz", "argb-reference.png"),
+		ImageDecoderTest_mode("TGA/TGA_3_8.tga.gz", "gray-reference.png"),
+		ImageDecoderTest_mode("TGA/TGA_10_24.tga.gz", "rgb-reference.png"),
+		ImageDecoderTest_mode("TGA/TGA_10_32.tga.gz", "argb-reference.png"),
+		ImageDecoderTest_mode("TGA/TGA_11_8.tga.gz", "gray-reference.png"))
+	, ImageDecoderTest::test_case_suffix_generator);
 
 } }
 

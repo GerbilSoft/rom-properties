@@ -140,16 +140,29 @@ FileFormat *FileFormatFactory::create(IRpFile *file)
 	// for now.
 	const string filename = file->filename();
 	const char *ext = FileSystem::file_ext(filename);
-	if (ext && !strcasecmp(ext, ".tga")) {
-		// TGA file.
-		FileFormat *const fileFormat = new TGA(file);
-		if (fileFormat->isValid()) {
-			// FileFormat subclass obtained.
-			return fileFormat;
+	if (ext) {
+		// TODO: General "compressed file extension" detection.
+		bool is_tga = false;
+		if (!strcasecmp(ext, ".tga")) {
+			is_tga = true;
+		} else if (!strcasecmp(ext, ".gz")) {
+			// May be ".tga.gz".
+			if (filename.size() >= 7 && !strcasecmp(&filename[filename.size()-7], ".tga.gz")) {
+				// It's ".tga.gz".
+				is_tga = true;
+			}
 		}
 
-		// Not actually supported.
-		fileFormat->unref();
+		if (is_tga) {
+			FileFormat *const fileFormat = new TGA(file);
+			if (fileFormat->isValid()) {
+				// FileFormat subclass obtained.
+				return fileFormat;
+			}
+
+			// Not actually supported.
+			fileFormat->unref();
+		}
 	}
 
 	// Read the file's magic number.
