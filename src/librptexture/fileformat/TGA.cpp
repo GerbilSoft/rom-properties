@@ -116,32 +116,61 @@ const rp_image *TGAPrivate::loadTGAImage(void)
 		return nullptr;
 	}
 
-	// Allocate a buffer for the image.
-	// NOTE: Assuming scanlines are not padded. (pitch == width)
-	const uint8_t bytespp = (tgaHeader.img.bpp == 15 ? 2 : (tgaHeader.img.bpp / 8));
-	const int img_size = tgaHeader.img.width * tgaHeader.img.height * bytespp;
-	auto img_data = aligned_uptr<uint8_t>(16, img_size);
-
+	// Image data starts immediately after the TGA header.
 	if (file->seek(sizeof(tgaHeader)) != 0) {
 		// Seek error.
 		return nullptr;
 	}
+
+	int pal_size = 0;
+	unique_ptr<uint8_t[]> pal_data;
+	if (tgaHeader.color_map_type >= 1) {
+		// Load the color map. (up to 256 colors only)
+		if (tgaHeader.cmap.idx0 + tgaHeader.cmap.len > 256) {
+			// Too many colors.
+			return nullptr;
+		}
+
+		const unsigned int cmap_bytespp = (tgaHeader.cmap.bpp == 15 ? 2 : (tgaHeader.cmap.bpp / 8));
+		pal_size = 256 * cmap_bytespp;
+		pal_data.reset(new uint8_t[pal_size]);
+
+		// If we don't have a full 256-color palette,
+		// zero-initialize it. (TODO: Optimize this?)
+		if (tgaHeader.cmap.idx0 != 0 || tgaHeader.cmap.len < 256) {
+			memset(pal_data.get(), 0, pal_size);
+		}
+
+		// Read the palette.
+		const size_t read_size = tgaHeader.cmap.len * cmap_bytespp;
+		size_t size = file->read(&pal_data[tgaHeader.cmap.idx0], read_size);
+		if (size != read_size) {
+			// Read error.
+			return nullptr;
+		}
+	}
+
+	// Allocate a buffer for the image.
+	// NOTE: Assuming scanlines are not padded. (pitch == width)
+	const unsigned int bytespp = (tgaHeader.img.bpp == 15 ? 2 : (tgaHeader.img.bpp / 8));
+	const int img_size = tgaHeader.img.width * tgaHeader.img.height * bytespp;
+	auto img_data = aligned_uptr<uint8_t>(16, img_size);
 
 	if (tgaHeader.image_type & TGA_IMAGETYPE_RLE_FLAG) {
 		// Image is compressed. We'll need to decompress it.
 		// Read the rest of the file into memory.
 		const int64_t fileSize = file->size();
 		if (fileSize > TGA_MAX_SIZE ||
-		    fileSize < static_cast<int64_t>(sizeof(tgaHeader) + sizeof(tgaFooter)))
+		    fileSize < static_cast<int64_t>(sizeof(tgaHeader) + sizeof(tgaFooter) + pal_size))
 		{
 			return nullptr;
 		}
 
-		const size_t rle_size = static_cast<size_t>(fileSize) - sizeof(tgaHeader);
+		const size_t rle_size = static_cast<size_t>(fileSize) - sizeof(tgaHeader) - pal_size;
 		unique_ptr<uint8_t[]> rle_data(new uint8_t[rle_size]);
 		size_t size = file->read(rle_data.get(), rle_size);
 		if (size != rle_size) {
-			// Read eror.
+			// Read error.
 			return nullptr;
 		}
 
@@ -211,10 +240,27 @@ const rp_image *TGAPrivate::loadTGAImage(void)
 	// TODO: RLE.
 	rp_image *imgtmp = nullptr;
 	switch (tgaHeader.image_type & ~TGA_IMAGETYPE_RLE_FLAG) {
-		case TGA_IMAGETYPE_COLORMAP:
+		case TGA_IMAGETYPE_COLORMAP: {
 			// Palette
-			// TODO: Load the color map.
+
+			// Determine the pixel format.
+			ImageDecoder::PixelFormat px_fmt;
+			switch (tgaHeader.cmap.bpp) {
+				case 15:	px_fmt = ImageDecoder::PixelFormat::RGB555; break;
+				case 16:	px_fmt = ImageDecoder::PixelFormat::ARGB1555; break;
+				case 24:	px_fmt = ImageDecoder::PixelFormat::RGB888; break;
+				case 32:	px_fmt = ImageDecoder::PixelFormat::ARGB8888; break;
+				default:	px_fmt = ImageDecoder::PixelFormat::Unknown; break;
+			}
+			assert(px_fmt != ImageDecoder::PixelFormat::Unknown);
+
+			// Decode the image.
+			imgtmp = ImageDecoder::fromLinearCI8(px_fmt,
+				tgaHeader.img.width, tgaHeader.img.height,
+				img_data.get(), img_size,
+				pal_data.get(), pal_size);
 			break;
+		}
 
 		case TGA_IMAGETYPE_TRUECOLOR:
 			// Truecolor
