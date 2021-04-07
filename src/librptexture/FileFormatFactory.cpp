@@ -13,8 +13,9 @@
 #include "fileformat/FileFormat.hpp"
 
 // librpbase, librpfile
+#include "librpfile/FileSystem.hpp"
 using namespace LibRpBase;
-using LibRpFile::IRpFile;
+using namespace LibRpFile;
 
 // C++ STL classes.
 using std::string;
@@ -28,6 +29,7 @@ using std::vector;
 #include "fileformat/KhronosKTX2.hpp"
 #include "fileformat/PowerVR3.hpp"
 #include "fileformat/SegaPVR.hpp"
+#include "fileformat/TGA.hpp"
 #include "fileformat/ValveVTF.hpp"
 #include "fileformat/ValveVTF3.hpp"
 #include "fileformat/XboxXPR.hpp"
@@ -133,8 +135,24 @@ FileFormat *FileFormatFactory::create(IRpFile *file)
 		return nullptr;
 	}
 
+	// Special case: TGA doesn't have a magic number in the header.
+	// It *might* have a footer. We'll just check the file extension
+	// for now.
+	const string filename = file->filename();
+	const char *ext = FileSystem::file_ext(filename);
+	if (!strcasecmp(ext, ".tga")) {
+		// TGA file.
+		FileFormat *const fileFormat = new TGA(file);
+		if (fileFormat->isValid()) {
+			// FileFormat subclass obtained.
+			return fileFormat;
+		}
+
+		// Not actually supported.
+		fileFormat->unref();
+	}
+
 	// Read the file's magic number.
-	// TODO: Special case for TGA?
 	uint32_t magic[2];
 	file->rewind();
 	size_t size = file->read(&magic, sizeof(magic));

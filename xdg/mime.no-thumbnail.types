@@ -64,3 +64,8 @@ application/x-mach-sharedlib		# MachO
 application/x-mach-core			# MachO
 application/x-mach-bundle		# MachO
 application/x-mach-fat-binary		# MachO
+
+# Texture
+# Formats listed here are widely supported by Linux desktop
+# environments, but not other systems.
+image/x-tga				# TGA
