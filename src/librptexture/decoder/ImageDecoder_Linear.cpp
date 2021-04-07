@@ -351,6 +351,18 @@ rp_image *fromLinearCI8(PixelFormat px_format,
 			break;
 		}
 
+		case PixelFormat::RGB555: {
+			const uint16_t *pal_buf16 = static_cast<const uint16_t*>(pal_buf);
+			for (unsigned int i = 0; i < 256; i += 2, pal_buf16 += 2) {
+				palette[i+0] = RGB555_to_ARGB32(le16_to_cpu(pal_buf16[0]));
+				palette[i+1] = RGB555_to_ARGB32(le16_to_cpu(pal_buf16[1]));
+			}
+			// Set the sBIT metadata.
+			static const rp_image::sBIT_t sBIT = {5,6,5,0,0};
+			img->set_sBIT(&sBIT);
+			break;
+		}
+
 		case PixelFormat::RGB565: {
 			const uint16_t *pal_buf16 = static_cast<const uint16_t*>(pal_buf);
 			for (unsigned int i = 0; i < 256; i += 2, pal_buf16 += 2) {

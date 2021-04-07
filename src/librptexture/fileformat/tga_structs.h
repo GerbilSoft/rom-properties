@@ -46,7 +46,7 @@ typedef struct PACKED _TGA_Header {
 		uint16_t width;		// [0x00C]
 		uint16_t height;	// [0x00E]
 		uint8_t bpp;		// [0x010] Color depth (8/15/16/24/32)
-		uint8_t alpha_dir;	// [0x011] Bits 3-0 == alpha ch depth
+		uint8_t attr_dir;	// [0x011] Bits 3-0 == attribute bits (usually alpha)
 					//         Bits 5-4 == orientation (see TGA_Orientation_e)
 	} img;
 } TGA_Header;

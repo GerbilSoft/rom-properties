@@ -55,6 +55,9 @@ class TGAPrivate final : public FileFormatPrivate
 		TGA_ExtArea tgaExtArea;
 		TGA_Footer tgaFooter;
 
+		// Alpha channel type.
+		TGA_AlphaType_e alphaType;
+
 		// Decoded image.
 		rp_image *img;
 
@@ -76,6 +79,7 @@ class TGAPrivate final : public FileFormatPrivate
 TGAPrivate::TGAPrivate(TGA *q, IRpFile *file)
 	: super(q, file)
 	, texType(TexType::Unknown)
+	, alphaType(TGA_ALPHATYPE_PRESENT)
 	, img(nullptr)
 	, flipOp(rp_image::FLIP_V)	// default orientation requires vertical flip
 {
@@ -238,20 +242,27 @@ const rp_image *TGAPrivate::loadTGAImage(void)
 	}
 
 	// Decode the image.
-	// TODO: RLE.
+	// TODO: attr_dir number of bits for alpha?
+	// TODO: Handle premultiplied alpha.
+	const bool hasAlpha = (alphaType >= TGA_ALPHATYPE_PRESENT) &&
+			      ((tgaHeader.img.attr_dir & 0x0F) > 0);
 	rp_image *imgtmp = nullptr;
 	switch (tgaHeader.image_type & ~TGA_IMAGETYPE_RLE_FLAG) {
 		case TGA_IMAGETYPE_COLORMAP: {
 			// Palette
-			// TODO: Check tgaHeader.alpha_dir to verify alpha for 32-bit?
+			// TODO: attr_dir number of bits for alpha?
 
 			// Determine the pixel format.
 			ImageDecoder::PixelFormat px_fmt;
 			switch (tgaHeader.cmap.bpp) {
 				case 15:	px_fmt = ImageDecoder::PixelFormat::RGB555; break;
-				case 16:	px_fmt = ImageDecoder::PixelFormat::ARGB1555; break;
+				case 16:	px_fmt = hasAlpha
+							? ImageDecoder::PixelFormat::ARGB1555
+							: ImageDecoder::PixelFormat::RGB555; break;
 				case 24:	px_fmt = ImageDecoder::PixelFormat::RGB888; break;
-				case 32:	px_fmt = ImageDecoder::PixelFormat::ARGB8888; break;
+				case 32:	px_fmt = hasAlpha
+							? ImageDecoder::PixelFormat::ARGB8888
+							: ImageDecoder::PixelFormat::xRGB8888; break;
 				default:	px_fmt = ImageDecoder::PixelFormat::Unknown; break;
 			}
 			assert(px_fmt != ImageDecoder::PixelFormat::Unknown);
@@ -266,11 +277,14 @@ const rp_image *TGAPrivate::loadTGAImage(void)
 
 		case TGA_IMAGETYPE_TRUECOLOR:
 			// Truecolor
+			// TODO: attr_dir number of bits for alpha?
 			switch (tgaHeader.img.bpp) {
+				case 15:
 				case 16:
-					// ARGB1555
+					// RGB555/ARGB1555
 					imgtmp = ImageDecoder::fromLinear16(
-						ImageDecoder::PixelFormat::ARGB1555,
+						hasAlpha ? ImageDecoder::PixelFormat::ARGB1555
+						         : ImageDecoder::PixelFormat::RGB555,
 						tgaHeader.img.width, tgaHeader.img.height,
 						reinterpret_cast<const uint16_t*>(img_data.get()), img_size);
 					break;
@@ -284,10 +298,11 @@ const rp_image *TGAPrivate::loadTGAImage(void)
 					break;
 
 				case 32:
-					// RGB888
+					// xRGB8888/ARGB8888
 					// TODO: Verify alpha channel depth.
 					imgtmp = ImageDecoder::fromLinear32(
-						ImageDecoder::PixelFormat::ARGB8888,
+						hasAlpha ? ImageDecoder::PixelFormat::ARGB8888
+						         : ImageDecoder::PixelFormat::xRGB8888,
 						tgaHeader.img.width, tgaHeader.img.height,
 						reinterpret_cast<const uint32_t*>(img_data.get()), img_size);
 					break;
@@ -296,8 +311,9 @@ const rp_image *TGAPrivate::loadTGAImage(void)
 
 		case TGA_IMAGETYPE_GRAYSCALE: {
 			// Grayscale
+			assert(!hasAlpha);
 			assert(tgaHeader.img.bpp == 8);
-			if (tgaHeader.img.bpp != 8)
+			if (hasAlpha || tgaHeader.img.bpp != 8)
 				break;
 
 			// Create a grayscale palette.
@@ -409,13 +425,23 @@ TGA::TGA(IRpFile *file)
 		{
 			// We have an extension area.
 			size = d->file->seekAndRead(ext_offset, &d->tgaExtArea, sizeof(d->tgaExtArea));
-			if (size != sizeof(d->tgaExtArea)) {
+			if (size == sizeof(d->tgaExtArea)) {
+				// Extension area read successfully.
+				d->alphaType = static_cast<TGA_AlphaType_e>(d->tgaExtArea.attributes_type);
+			} else {
 				// Error reading the extension area.
 				d->tgaExtArea.size = 0;
+				d->alphaType = TGA_ALPHATYPE_PRESENT;
 			}
+		} else {
+			// No extension area. Assume transparency is prsent.
+			d->alphaType = TGA_ALPHATYPE_PRESENT;
 		}
 
 		// TODO: Developer area?
+	} else {
+		// Not TGA2. Assume no transparency.
+		d->alphaType = TGA_ALPHATYPE_UNDEFINED_IGNORE;
 	}
 
 	// Looks like it's valid.
@@ -439,11 +465,11 @@ TGA::TGA(IRpFile *file)
 	// Is a flip operation required?
 	// H-flip: Default is no; if set, flip.
 	d->flipOp = rp_image::FLIP_NONE;
-	if (d->tgaHeader.img.alpha_dir & TGA_ORIENTATION_X_MASK) {
+	if (d->tgaHeader.img.attr_dir & TGA_ORIENTATION_X_MASK) {
 		d->flipOp = rp_image::FLIP_H;
 	}
 	// V-flip: Default is yes; if set, don't flip.
-	if (!(d->tgaHeader.img.alpha_dir & TGA_ORIENTATION_Y_MASK)) {
+	if (!(d->tgaHeader.img.attr_dir & TGA_ORIENTATION_Y_MASK)) {
 		d->flipOp = static_cast<rp_image::FlipOp>(d->flipOp | rp_image::FLIP_V);
 	}
 }
@@ -522,6 +548,10 @@ const char *TGA::pixelFormat(void) const
 		return nullptr;
 	}
 
+	// TODO: attr_dir number of bits for alpha?
+	const bool hasAlpha = (d->alphaType >= TGA_ALPHATYPE_PRESENT) &&
+			      ((d->tgaHeader.img.attr_dir & 0x0F) > 0);
+
 	const char *fmt = nullptr;
 	switch (d->tgaHeader.image_type) {
 		case TGA_IMAGETYPE_COLORMAP:
@@ -534,13 +564,15 @@ const char *TGA::pixelFormat(void) const
 						fmt = "8bpp with RGB555 palette";
 						break;
 					case 16:
-						fmt = "8bpp with ARGB1555 palette";
+						fmt = hasAlpha ? "8bpp with ARGB1555 palette"
+						               : "8bpp with RGB555 palette";
 						break;
 					case 24:
 						fmt = "8bpp with RGB888 palette";
 						break;
 					case 32:
-						fmt = "8bpp with ARGB8888 palette";
+						fmt = hasAlpha ? "8bpp with ARGB8888 palette"
+						               : "8bpp with xRGB8888 palette";
 						break;
 					default:
 						break;
@@ -552,13 +584,15 @@ const char *TGA::pixelFormat(void) const
 						fmt = "16bpp with RGB555 palette";
 						break;
 					case 16:
-						fmt = "16bpp with ARGB1555 palette";
+						fmt = hasAlpha ? "16bpp with ARGB1555 palette"
+						               : "16bpp with RGB555 palette";
 						break;
 					case 24:
 						fmt = "16bpp with RGB888 palette";
 						break;
 					case 32:
-						fmt = "16bpp with ARGB8888 palette";
+						fmt = hasAlpha ? "16bpp with ARGB8888 palette"
+						               : "16bpp with xRGB8888 palette";
 						break;
 					default:
 						break;
@@ -571,13 +605,13 @@ const char *TGA::pixelFormat(void) const
 			// True color
 			switch (d->tgaHeader.img.bpp) {
 				case 16:
-					fmt = "ARGB1555";
+					fmt = hasAlpha ? "ARGB1555" : "RGB555";
 					break;
 				case 24:
 					fmt = "RGB888";
 					break;
 				case 32:
-					fmt = "ARGB8888";
+					fmt = hasAlpha ? "ARGB8888" : "xRGB8888";
 					break;
 				default:
 					break;
@@ -647,8 +681,8 @@ int TGA::getFields(RomFields *fields) const
 	// Default 00 orientation: H-flip NO, V-flip YES
 	char str[16];
 	snprintf(str, sizeof(str), "S=%c,T=%c",
-		((tgaHeader->img.alpha_dir & TGA_ORIENTATION_X_MASK) ? 'l' : 'r'),
-		((tgaHeader->img.alpha_dir & TGA_ORIENTATION_Y_MASK) ? 'd' : 'u'));
+		((tgaHeader->img.attr_dir & TGA_ORIENTATION_X_MASK) ? 'l' : 'r'),
+		((tgaHeader->img.attr_dir & TGA_ORIENTATION_Y_MASK) ? 'd' : 'u'));
 	fields->addField_string(C_("TGA", "Orientation"), str);
 
 	// Finished reading the field data.
