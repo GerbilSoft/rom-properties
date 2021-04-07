@@ -47,8 +47,12 @@ lcov -a ${coverage_base_info} -a ${coverage_test_info} -o ${coverage_info}
 # Remove third-party libraries and generated sources.
 lcov -o ${coverage_cleaned} -r ${coverage_info} \
 	'*/tests/*' '/usr/*' '*/extlib/*' \
-	'*/moc_*.cpp' '*.moc' '*/ui_*.h' \
+	'*/moc_*.cpp' '*.moc' '*/ui_*.h' '*/qrc_*.cpp' \
+	'*/glibresources.c'
 	'*/SpecializedThumbnailer1.c' \
+	'*/notificationsinterface.cpp' \
+	'*/notificationsinterface.h' \
+	'*/Notifications.c' \
 	'*/src/librpbase/img/pngcheck/pngcheck.cpp' \
 	'*/libi18n/gettext.h'
 
