@@ -23,6 +23,9 @@ extern "C" {
 
 // NOTE: 16-bit color is 15-bit RGB + 1-bit transparency.
 
+// Maximum supported TGA file size is 16 MB.
+#define TGA_MAX_SIZE (16U*1024*1024)
+
 /**
  * TrueVision TGA: Main header.
  * All fields are little-endian.

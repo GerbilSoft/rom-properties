@@ -118,21 +118,99 @@ const rp_image *TGAPrivate::loadTGAImage(void)
 
 	// Allocate a buffer for the image.
 	// NOTE: Assuming scanlines are not padded. (pitch == width)
-	int img_size = tgaHeader.img.width * tgaHeader.img.height;
-	img_size *= (tgaHeader.img.bpp == 15 ? 2 : (tgaHeader.img.bpp / 8));
+	const uint8_t bytespp = (tgaHeader.img.bpp == 15 ? 2 : (tgaHeader.img.bpp / 8));
+	const int img_size = tgaHeader.img.width * tgaHeader.img.height * bytespp;
 	auto img_data = aligned_uptr<uint8_t>(16, img_size);
 
-	// Read the image.
-	size_t size = file->seekAndRead(sizeof(tgaHeader), img_data.get(), img_size);
-	if (size != static_cast<size_t>(img_size)) {
-		// Seek and/or read error.
+	if (file->seek(sizeof(tgaHeader)) != 0) {
+		// Seek error.
 		return nullptr;
 	}
 
+	if (tgaHeader.image_type & TGA_IMAGETYPE_RLE_FLAG) {
+		// Image is compressed. We'll need to decompress it.
+		// Read the rest of the file into memory.
+		const int64_t fileSize = file->size();
+		if (fileSize > TGA_MAX_SIZE ||
+		    fileSize < static_cast<int64_t>(sizeof(tgaHeader) + sizeof(tgaFooter)))
+		{
+			return nullptr;
+		}
+
+		const size_t rle_size = static_cast<size_t>(fileSize) - sizeof(tgaHeader);
+		unique_ptr<uint8_t[]> rle_data(new uint8_t[rle_size]);
+		size_t size = file->read(rle_data.get(), rle_size);
+		if (size != rle_size) {
+			// Read eror.
+			return nullptr;
+		}
+
+		// TGA 2.0 says RLE packets must not cross scanlines.
+		// TGA 1.0 allowed this, so we'll allow it for compatibility.
+
+		// Process RLE packets until we run out of source data or
+		// space in the destination buffer.
+		const uint8_t *pSrc = rle_data.get();
+		const uint8_t *const pSrcEnd = pSrc + rle_size;
+		uint8_t *pDest = img_data.get();
+		uint8_t *const pDestEnd = pDest + img_size;
+
+		for (; pSrc < pSrcEnd && pDest < pDestEnd; ) {
+			// Check the next packet.
+			const uint8_t pkt = *pSrc++;
+			// Low 7 bits indicate number of pixels.
+			// [0,127]; add 1 for [1,128].
+			unsigned int count = (pkt & 0x7F) + 1;
+			if (pDest + (count * bytespp) > pDestEnd) {
+				// Buffer overflow!
+				// TODO: Indicate an error.
+				break;
+			}
+
+			if (pkt & 0x80) {
+				// High bit is set. This is an RLE packet.
+				// One pixel is duplicated `count` number of times.
+
+				// Based on Duff's Device.
+				for (; count > 0; count--) {
+					const uint8_t *pSrcTmp = pSrc;
+					switch (bytespp) {
+						case 4:		*pDest++ = *pSrcTmp++;	// fall-through
+						case 3:		*pDest++ = *pSrcTmp++;	// fall-through
+						case 2:		*pDest++ = *pSrcTmp++;	// fall-through
+						case 1:		*pDest++ = *pSrcTmp++;	// fall-through
+						default:	break;
+					}
+				}
+				pSrc += bytespp;
+			} else {
+				// High bit is clear. This is a raw packet.
+				// `count` number of pixels follow.
+				const unsigned int cpysize = count * bytespp;
+				memcpy(pDest, pSrc, cpysize);
+				pDest += cpysize;
+				pSrc += cpysize;
+			}
+		}
+
+		// In case we didn't have enough data, clear the rest of
+		// the destination buffer.
+		if (pDest < pDestEnd) {
+			memset(pDest, 0, pDestEnd - pDest);
+		}
+	} else {
+		// Image is not compressed. Read it directly.
+		size_t size = file->read(img_data.get(), img_size);
+		if (size != static_cast<size_t>(img_size)) {
+			// Read error.
+			return nullptr;
+		}
+	}
+
 	// Decode the image.
-	// TODO: RLE; orientation bits
+	// TODO: RLE.
 	rp_image *imgtmp = nullptr;
-	switch (tgaHeader.image_type) {
+	switch (tgaHeader.image_type & ~TGA_IMAGETYPE_RLE_FLAG) {
 		case TGA_IMAGETYPE_COLORMAP:
 			// Palette
 			// TODO: Load the color map.
@@ -234,10 +312,14 @@ TGA::TGA(IRpFile *file)
 		return;
 	}
 
-	// Sanity check: TGA file shouldn't be larger than 16 MB.
+	// Sanity check: TGA file shouldn't be larger than 16 MB,
+	// and it must be larger than tgaHeader and tgaFooter.
 	const int64_t fileSize = d->file->size();
-	assert(fileSize <= 16*1024*1024);
-	if (fileSize > 16*1024*1024) {
+	assert(fileSize >= static_cast<int64_t>(sizeof(d->tgaHeader) + sizeof(d->tgaFooter)));
+	assert(fileSize <= TGA_MAX_SIZE);
+	if (fileSize < static_cast<int64_t>(sizeof(d->tgaHeader) + sizeof(d->tgaFooter)) ||
+	    fileSize > TGA_MAX_SIZE)
+	{
 		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
