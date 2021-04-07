@@ -127,13 +127,19 @@ const rp_image *TGAPrivate::loadTGAImage(void)
 		return nullptr;
 	}
 
+	// Is the image colormapped (palette)?
+	const bool isColorMapImage =
+		 (tgaHeader.image_type & ~TGA_IMAGETYPE_RLE_FLAG) == TGA_IMAGETYPE_COLORMAP ||
+		 (tgaHeader.image_type == TGA_IMAGETYPE_HUFFMAN_COLORMAP) ||
+		 (tgaHeader.image_type == TGA_IMAGETYPE_HUFFMAN_4PASS_COLORMAP);
+
 	int pal_size = 0;
 	unique_ptr<uint8_t[]> pal_data;
 	if (tgaHeader.color_map_type >= 1) {
 		const unsigned int cmap_bytespp = (tgaHeader.cmap.bpp == 15 ? 2 : (tgaHeader.cmap.bpp / 8));
 		const size_t read_size = tgaHeader.cmap.len * cmap_bytespp;
 
-		if ((tgaHeader.image_type & ~TGA_IMAGETYPE_RLE_FLAG) == TGA_IMAGETYPE_COLORMAP) {
+		if (isColorMapImage) {
 			// Load the color map. (up to 256 colors only)
 			if (tgaHeader.cmap.idx0 + tgaHeader.cmap.len > 256) {
 				// Too many colors.
@@ -168,7 +174,13 @@ const rp_image *TGAPrivate::loadTGAImage(void)
 	const int img_size = tgaHeader.img.width * tgaHeader.img.height * bytespp;
 	auto img_data = aligned_uptr<uint8_t>(16, img_size);
 
-	if (tgaHeader.image_type & TGA_IMAGETYPE_RLE_FLAG) {
+	if (tgaHeader.image_type == TGA_IMAGETYPE_HUFFMAN_COLORMAP) {
+		// TODO: Huffman+Delta compression.
+		return nullptr;
+	} else if (tgaHeader.image_type == TGA_IMAGETYPE_HUFFMAN_4PASS_COLORMAP) {
+		// TODO: Huffman+Delta, 4-pass compression.
+		return nullptr;
+	} else if (tgaHeader.image_type & TGA_IMAGETYPE_RLE_FLAG) {
 		// Image is compressed. We'll need to decompress it.
 		// Read the rest of the file into memory.
 		const int64_t fileSize = file->size();
@@ -255,7 +267,9 @@ const rp_image *TGAPrivate::loadTGAImage(void)
 			      ((tgaHeader.img.attr_dir & 0x0F) > 0);
 	rp_image *imgtmp = nullptr;
 	switch (tgaHeader.image_type & ~TGA_IMAGETYPE_RLE_FLAG) {
-		case TGA_IMAGETYPE_COLORMAP: {
+		case TGA_IMAGETYPE_COLORMAP:
+		case TGA_IMAGETYPE_HUFFMAN_COLORMAP:
+		case TGA_IMAGETYPE_HUFFMAN_4PASS_COLORMAP: {
 			// Palette
 			// TODO: attr_dir number of bits for alpha?
 
