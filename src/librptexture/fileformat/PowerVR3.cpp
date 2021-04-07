@@ -603,8 +603,7 @@ const rp_image *PowerVR3Private::loadImage(int mip)
 	// TODO: Handle premultiplied alpha, aside from DXT2 and DXT4.
 
 	// Post-processing: Check if a flip is needed.
-	if (img && (flipOp != rp_image::FLIP_NONE) && height > 1) {
-		// TODO: Assert that img dimensions match ktxHeader?
+	if (img && flipOp != rp_image::FLIP_NONE) {
 		rp_image *const flipimg = img->flip(flipOp);
 		if (flipimg) {
 			img->unref();
