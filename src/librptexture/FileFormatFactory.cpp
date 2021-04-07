@@ -140,7 +140,7 @@ FileFormat *FileFormatFactory::create(IRpFile *file)
 	// for now.
 	const string filename = file->filename();
 	const char *ext = FileSystem::file_ext(filename);
-	if (!strcasecmp(ext, ".tga")) {
+	if (ext && !strcasecmp(ext, ".tga")) {
 		// TGA file.
 		FileFormat *const fileFormat = new TGA(file);
 		if (fileFormat->isValid()) {
