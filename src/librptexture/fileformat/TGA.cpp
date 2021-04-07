@@ -117,7 +117,8 @@ const rp_image *TGAPrivate::loadTGAImage(void)
 	}
 
 	// Image data starts immediately after the TGA header.
-	if (file->seek(sizeof(tgaHeader)) != 0) {
+	const unsigned int img_data_offset = (unsigned int)sizeof(tgaHeader) + tgaHeader.id_length;
+	if (file->seek(img_data_offset) != 0) {
 		// Seek error.
 		return nullptr;
 	}
@@ -161,12 +162,12 @@ const rp_image *TGAPrivate::loadTGAImage(void)
 		// Read the rest of the file into memory.
 		const int64_t fileSize = file->size();
 		if (fileSize > TGA_MAX_SIZE ||
-		    fileSize < static_cast<int64_t>(sizeof(tgaHeader) + sizeof(tgaFooter) + pal_size))
+		    fileSize < static_cast<int64_t>(img_data_offset + sizeof(tgaFooter) + pal_size))
 		{
 			return nullptr;
 		}
 
-		const size_t rle_size = static_cast<size_t>(fileSize) - sizeof(tgaHeader) - pal_size;
+		const size_t rle_size = static_cast<size_t>(fileSize) - img_data_offset - pal_size;
 		unique_ptr<uint8_t[]> rle_data(new uint8_t[rle_size]);
 		size_t size = file->read(rle_data.get(), rle_size);
 		if (size != rle_size) {
