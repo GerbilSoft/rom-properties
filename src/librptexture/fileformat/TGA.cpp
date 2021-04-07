@@ -168,6 +168,28 @@ const rp_image *TGAPrivate::loadTGAImage(void)
 			}
 			break;
 
+		case TGA_IMAGETYPE_GRAYSCALE: {
+			// Grayscale
+			assert(tgaHeader.img.bpp == 8);
+			if (tgaHeader.img.bpp != 8)
+				break;
+
+			// Create a grayscale palette.
+			uint32_t palette[256];
+			uint32_t gray = 0xFF000000U;
+			for (unsigned int i = 0; i < 256; i++, gray += 0x010101U) {
+				palette[i] = gray;
+			}
+
+			// Decode the image.
+			imgtmp = ImageDecoder::fromLinearCI8(
+				ImageDecoder::PixelFormat::Host_ARGB32,
+				tgaHeader.img.width, tgaHeader.img.height,
+				img_data.get(), img_size,
+				palette, sizeof(palette));
+			break;
+		}
+
 		default:
 			assert(!"Unsupported TGA format.");
 			break;

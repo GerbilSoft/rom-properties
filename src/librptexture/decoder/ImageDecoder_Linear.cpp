@@ -284,19 +284,23 @@ rp_image *fromLinearCI8(PixelFormat px_format,
 		return nullptr;
 	}
 
-	// Handle BGR888_ABGR7888 palette pixel format for SVR.
-	if (px_format == PixelFormat::BGR888_ABGR7888) {
-		// 32-bit palette required.
-		assert(pal_siz >= 256*4);
-		if (pal_siz < 256*4) {
-			return nullptr;
-		}
-	} else {
-		// 16-bit palette required.
-		assert(pal_siz >= 256*2);
-		if (pal_siz < 256*2) {
-			return nullptr;
-		}
+	// Verify palette size.
+	switch (px_format) {
+		case PixelFormat::BGR888_ABGR7888:
+		case PixelFormat::Host_ARGB32:
+			// 32-bit palette required.
+			assert(pal_siz >= 256*4);
+			if (pal_siz < 256*4) {
+				return nullptr;
+			}
+			break;
+
+		default:
+			// 16-bit palette required.
+			assert(pal_siz >= 256*2);
+			if (pal_siz < 256*2) {
+				return nullptr;
+			}
 	}
 
 	// Create an rp_image.
@@ -425,6 +429,28 @@ rp_image *fromLinearCI8(PixelFormat px_format,
 					tr_idx = static_cast<int>(i+0);
 				}
 				palette[i+1] = BGR888_ABGR7888_to_ARGB32(le32_to_cpu(pal_buf32[1]));
+				if (tr_idx < 0 && ((palette[i+1] >> 24) == 0)) {
+					// Found the transparent color.
+					tr_idx = static_cast<int>(i+1);
+				}
+			}
+			// Set the sBIT metadata.
+			// TODO: Check if alpha is actually used?
+			static const rp_image::sBIT_t sBIT = {8,8,8,0,8};
+			img->set_sBIT(&sBIT);
+			break;
+		}
+
+		case PixelFormat::Host_ARGB32: {
+			// Host-endian ARGB32. Use the palette directly.
+			const uint32_t *pal_buf32 = reinterpret_cast<const uint32_t*>(pal_buf);
+			for (unsigned int i = 0; i < 256; i += 2, pal_buf32 += 2) {
+				palette[i+0] = pal_buf32[0];
+				if (tr_idx < 0 && ((palette[i+0] >> 24) == 0)) {
+					// Found the transparent color.
+					tr_idx = static_cast<int>(i+0);
+				}
+				palette[i+1] = pal_buf32[1];
 				if (tr_idx < 0 && ((palette[i+1] >> 24) == 0)) {
 					// Found the transparent color.
 					tr_idx = static_cast<int>(i+1);
