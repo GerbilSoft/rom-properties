@@ -34,6 +34,9 @@ using std::vector;
 #include "fileformat/ValveVTF3.hpp"
 #include "fileformat/XboxXPR.hpp"
 
+// TGA structs.
+#include "fileformat/tga_structs.h"
+
 namespace LibRpTexture {
 
 class FileFormatFactoryPrivate
@@ -135,38 +138,11 @@ FileFormat *FileFormatFactory::create(IRpFile *file)
 		return nullptr;
 	}
 
-	// Special case: TGA doesn't have a magic number in the header.
-	// It *might* have a footer. We'll just check the file extension
-	// for now.
-	const string filename = file->filename();
-	const char *ext = FileSystem::file_ext(filename);
-	if (ext) {
-		// TODO: General "compressed file extension" detection.
-		bool is_tga = false;
-		if (!strcasecmp(ext, ".tga")) {
-			is_tga = true;
-		} else if (!strcasecmp(ext, ".gz")) {
-			// May be ".tga.gz".
-			if (filename.size() >= 7 && !strcasecmp(&filename[filename.size()-7], ".tga.gz")) {
-				// It's ".tga.gz".
-				is_tga = true;
-			}
-		}
-
-		if (is_tga) {
-			FileFormat *const fileFormat = new TGA(file);
-			if (fileFormat->isValid()) {
-				// FileFormat subclass obtained.
-				return fileFormat;
-			}
-
-			// Not actually supported.
-			fileFormat->unref();
-		}
-	}
-
 	// Read the file's magic number.
-	uint32_t magic[2];
+	union {
+		uint8_t u8[32];
+		uint32_t u32[32/4];
+	} magic;
 	file->rewind();
 	size_t size = file->read(&magic, sizeof(magic));
 	if (size != sizeof(magic)) {
@@ -176,12 +152,12 @@ FileFormat *FileFormatFactory::create(IRpFile *file)
 
 	// Special check for Khronos KTX, which has the same
 	// 32-bit magic number for two completely different versions.
-	if (magic[0] == cpu_to_be32('\xABKTX')) {
+	if (magic.u32[0] == cpu_to_be32('\xABKTX')) {
 		FileFormat *fileFormat = nullptr;
-		if (magic[1] == cpu_to_be32(' 11\xBB')) {
+		if (magic.u32[1] == cpu_to_be32(' 11\xBB')) {
 			// KTX 1.1
 			fileFormat = new KhronosKTX(file);
-		} else if (magic[1] == cpu_to_be32(' 20\xBB')) {
+		} else if (magic.u32[1] == cpu_to_be32(' 20\xBB')) {
 			// KTX 2.0
 			fileFormat = new KhronosKTX2(file);
 		}
@@ -197,9 +173,51 @@ FileFormat *FileFormatFactory::create(IRpFile *file)
 		}
 	}
 
+	// Use some heuristics to check for TGA files.
+	// Based on heuristics from `file`.
+	// TGA 2.0 has an identifying footer as well.
+	// TODO: Also check the file extension?
+
+	// test of Color Map Type 0~no 1~color map
+	// and Image Type 1 2 3 9 10 11 32 33
+	// and Color Map Entry Size 0 15 16 24 32
+	if (((magic.u32[0] & be32_to_cpu(0x00FEC400)) == 0) &&
+	    ((magic.u32[1] & be32_to_cpu(0x000000C0)) == 0))
+	{
+		const TGA_Header *const tgaHeader = reinterpret_cast<const TGA_Header*>(&magic);
+
+		// skip some MPEG sequence *.vob and some CRI ADX audio with improbable interleave bits
+		if ((tgaHeader->img.attr_dir & 0xC0) != 0xC0 &&
+		// skip more garbage like *.iso by looking for positive image type
+		     tgaHeader->image_type > 0 &&
+		// skip some compiled terminfo like xterm+tmux by looking for image type less equal 33
+		     tgaHeader->image_type < 34 &&
+		// skip some MPEG sequence *.vob HV001T01.EVO winnicki.mpg with unacceptable alpha channel depth 11
+		    (tgaHeader->img.attr_dir & 0x0F) != 11)
+		{
+			// skip arches.3200 , Finder.Root , Slp.1 by looking for low pixel depth 1 8 15 16 24 32
+			switch (tgaHeader->img.bpp) {
+				case 1:  case 8:
+				case 15: case 16:
+				case 24: case 32: {
+					// Valid color depth.
+					// This might be TGA.
+					FileFormat *const fileFormat = new TGA(file);
+					if (fileFormat->isValid()) {
+						// FileFormat subclass obtained.
+						return fileFormat;
+					}
+				}
+
+				default:
+					break;
+			}
+		}
+	}
+
 #if SYS_BYTEORDER == SYS_LIL_ENDIAN
 	// Magic number needs to be in host-endian.
-	magic[0] = be32_to_cpu(magic[0]);
+	magic.u32[0] = be32_to_cpu(magic.u32[0]);
 #endif /* SYS_BYTEORDER == SYS_LIL_ENDIAN */
 
 	// Check FileFormat subclasses that take a header at 0
@@ -208,7 +226,7 @@ FileFormat *FileFormatFactory::create(IRpFile *file)
 		&FileFormatFactoryPrivate::FileFormatFns_magic[0];
 	for (; fns->supportedFileExtensions != nullptr; fns++) {
 		// Check the magic number.
-		if (magic[0] == fns->magic) {
+		if (magic.u32[0] == fns->magic) {
 			// Found a matching magic number.
 			// TODO: Implement fns->isTextureSupported.
 			/*if (fns->isTextureSupported(&info) >= 0)*/ {
