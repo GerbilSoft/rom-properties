@@ -521,7 +521,9 @@ TGA::TGA(IRpFile *file)
 		{
 			// We have an extension area.
 			size = d->file->seekAndRead(ext_offset, &d->tgaExtArea, sizeof(d->tgaExtArea));
-			if (size == sizeof(d->tgaExtArea)) {
+			if (size == sizeof(d->tgaExtArea) &&
+			    d->tgaExtArea.size == cpu_to_le16(sizeof(d->tgaExtArea)))
+			{
 				// Extension area read successfully.
 				d->alphaType = static_cast<TGA_AlphaType_e>(d->tgaExtArea.attributes_type);
 			} else {
@@ -767,7 +769,7 @@ int TGA::getFields(RomFields *fields) const
 	}
 
 	const int initial_count = fields->count();
-	fields->reserve(initial_count + 3);	// Maximum of 3 fields. (TODO)
+	fields->reserve(initial_count + 13);	// Maximum of 13 fields.
 
 	// TGA header.
 	const TGA_Header *const tgaHeader = &d->tgaHeader;
@@ -806,6 +808,103 @@ int TGA::getFields(RomFields *fields) const
 	s_alphaType = alphaType_tbl[d->alphaType >= 0 && (int)d->alphaType < 4
 		? d->alphaType : TGA_ALPHATYPE_UNDEFINED_IGNORE];
 	fields->addField_string(C_("TGA", "Alpha Type"), s_alphaType);
+
+	/** Extension area fields **/
+
+	const TGA_ExtArea *const tgaExtArea = &d->tgaExtArea;
+	if (tgaExtArea->size == cpu_to_le16(sizeof(*tgaExtArea))) {
+		// Author
+		if (tgaExtArea->author_name[0] != '\0') {
+			fields->addField_string(C_("RomData", "Author"),
+				cp1252_to_utf8(tgaExtArea->author_name, sizeof(tgaExtArea->author_name)));
+		}
+
+		// Comments
+		string s_comments;
+		for (int i = 0; i < ARRAY_SIZE(tgaExtArea->author_comment); i++) {
+			if (tgaExtArea->author_comment[i][0] != '\0') {
+				if (!s_comments.empty()) {
+					s_comments += '\n';
+				}
+				s_comments += cp1252_to_utf8(
+					tgaExtArea->author_comment[i],
+					sizeof(tgaExtArea->author_comment[i]));
+			}
+		}
+		if (!s_comments.empty()) {
+			fields->addField_string(C_("RomData", "Comments"), s_comments);
+		}
+
+		// Timestamp
+		time_t timestamp = d->tgaTimeToUnixTime(&tgaExtArea->timestamp);
+		if (timestamp != -1) {
+			fields->addField_dateTime(C_("RomData", "Last Saved Time"), timestamp,
+				RomFields::RFT_DATETIME_HAS_DATE |
+				RomFields::RFT_DATETIME_HAS_TIME |
+				RomFields::RFT_DATETIME_IS_UTC);	// no timezone
+		}
+
+		// Job name/ID
+		if (tgaExtArea->job_id[0] != '\0') {
+			fields->addField_string(C_("TGA", "Job Name/ID"),
+				cp1252_to_utf8(tgaExtArea->job_id, sizeof(tgaExtArea->job_id)));
+		}
+
+		// Job time
+		// TODO: Elapsed time data type?
+		if (tgaExtArea->job_time.hours != cpu_to_le16(0) ||
+		    tgaExtArea->job_time.mins != cpu_to_le16(0) ||
+		    tgaExtArea->job_time.secs != cpu_to_le16(0))
+		{
+			fields->addField_string(C_("TGA", "Job Time"),
+				rp_sprintf("%u'%u\"%u",
+					le16_to_cpu(tgaExtArea->job_time.hours),
+					le16_to_cpu(tgaExtArea->job_time.mins),
+					le16_to_cpu(tgaExtArea->job_time.secs)));
+		}
+
+		// Software ID
+		if (tgaExtArea->software_id[0] != '\0') {
+			fields->addField_string(C_("TGA", "Software ID"),
+				cp1252_to_utf8(tgaExtArea->software_id, sizeof(tgaExtArea->software_id)));
+		}
+
+		// Software version
+		if (tgaExtArea->sw_version.number != 0 ||
+		    tgaExtArea->sw_version.letter != ' ')
+		{
+			char lstr[2] = {tgaExtArea->sw_version.letter, '\0'};
+			if (lstr[0] == ' ')
+				lstr[0] = '\0';
+
+			fields->addField_string(C_("TGA", "Software Version"),
+				rp_sprintf("%01u.%02u%s", tgaExtArea->sw_version.number / 100,
+					tgaExtArea->sw_version.number % 100, lstr));
+		}
+
+		// Key color
+		// TODO: RFT_COLOR field?
+		if (tgaExtArea->key_color != cpu_to_le32(0)) {
+			fields->addField_string_numeric(C_("TGA", "Key Color"),
+				le32_to_cpu(tgaExtArea->key_color),
+				RomFields::Base::Hex, 8, RomFields::STRF_MONOSPACE);
+		}
+
+		// Pixel aspect ratio
+		if (tgaExtArea->pixel_aspect_ratio.denominator != cpu_to_le16(0)) {
+			fields->addField_string(C_("TGA", "Pixel Aspect Ratio"),
+				rp_sprintf("%u:%u", tgaExtArea->pixel_aspect_ratio.numerator,
+					tgaExtArea->pixel_aspect_ratio.denominator));
+		}
+
+		// Gamma value
+		if (tgaExtArea->gamma_value.denominator != cpu_to_le16(0)) {
+			const int gamma = (int)(((double)tgaExtArea->gamma_value.numerator /
+						 (double)tgaExtArea->gamma_value.denominator) * 10);
+			fields->addField_string(C_("TGA", "Gamma Value"),
+				rp_sprintf("%u.%u", gamma / 10, gamma % 10));
+		}
+	}
 
 	// Finished reading the field data.
 	return (fields->count() - initial_count);
