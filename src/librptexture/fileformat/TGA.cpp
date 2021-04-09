@@ -443,7 +443,14 @@ time_t TGAPrivate::tgaTimeToUnixTime(const TGA_DateStamp *timestamp)
 	tgatime.tm_isdst = 0;
 
 	// If conversion fails, this will return -1.
+	// FIXME: time_r.h is in librpbase.
+#if defined(_MSC_VER)
+	return _mkgmtime64(&tgatime);
+#elif defined(__MINGW32__)
+	return _mkgmtime(&tgatime);
+#else /* !_MSC_VER */
 	return timegm(&tgatime);
+#endif /* _MSC_VER */
 }
 
 /** TGA **/
