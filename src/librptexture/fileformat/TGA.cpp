@@ -13,8 +13,7 @@
 #include "tga_structs.h"
 
 // librpbase, librpfile
-using LibRpBase::rp_sprintf;
-using LibRpBase::RomFields;
+using namespace LibRpBase;
 using LibRpFile::IRpFile;
 
 // librptexture
@@ -68,10 +67,32 @@ class TGAPrivate final : public FileFormatPrivate
 		rp_image::FlipOp flipOp;
 
 		/**
+		 * Decompress RLE image data.
+		 * @param pDest Output buffer.
+		 * @param dest_len Size of output buffer.
+		 * @param pSrc Input buffer.
+		 * @param src_len Size of input buffer.
+		 * @param bytespp Bytes per pixel.
+		 * @return 0 on success; non-zero on error.
+		 */
+		ATTR_ACCESS_SIZE(write_only, 1, 2)
+		ATTR_ACCESS_SIZE(read_only, 3, 4)
+		static int decompressRLE(uint8_t *pDest, size_t dest_len,
+					 const uint8_t *pSrc, size_t s_len,
+					 uint8_t bytespp);
+
+		/**
 		 * Load the TGA image.
 		 * @return Image, or nullptr on error.
 		 */
 		const rp_image *loadTGAImage(void);
+
+		/**
+		 * Convert a TGA timestamp to UNIX time.
+		 * @param timestamp TGA timestamp. (little-endian)
+		 * @return UNIX time, or -1 if invalid or not set.
+		 */
+		static time_t tgaTimeToUnixTime(const TGA_DateStamp *timestamp);
 };
 
 /** TGAPrivate **/
@@ -92,6 +113,73 @@ TGAPrivate::TGAPrivate(TGA *q, IRpFile *file)
 TGAPrivate::~TGAPrivate()
 {
 	UNREF(img);
+}
+
+/**
+ * Decompress RLE image data.
+ * @param pDest Output buffer.
+ * @param dest_len Size of output buffer.
+ * @param pSrc Input buffer.
+ * @param src_len Size of input buffer.
+ * @param bytespp Bytes per pixel.
+ * @return 0 on success; non-zero on error.
+ */
+int TGAPrivate::decompressRLE(uint8_t *pDest, size_t dest_len,
+			      const uint8_t *pSrc, size_t src_len,
+			      uint8_t bytespp)
+{
+	// TGA 2.0 says RLE packets must not cross scanlines.
+	// TGA 1.0 allowed this, so we'll allow it for compatibility.
+	// TODO: Make bytespp a template parameter?
+
+	// Process RLE packets until we run out of source data or
+	// space in the destination buffer.
+	const uint8_t *const pSrcEnd = pSrc + src_len;
+	uint8_t *const pDestEnd = pDest + dest_len;
+
+	for (; pSrc < pSrcEnd && pDest < pDestEnd; ) {
+		// Check the next packet.
+		const uint8_t pkt = *pSrc++;
+		// Low 7 bits indicate number of pixels.
+		// [0,127]; add 1 for [1,128].
+		unsigned int count = (pkt & 0x7F) + 1;
+		if (pDest + (count * bytespp) > pDestEnd) {
+			// Buffer overflow!
+			return -EIO;
+		}
+
+		if (pkt & 0x80) {
+			// High bit is set. This is an RLE packet.
+			// One pixel is duplicated `count` number of times.
+
+			// Based on Duff's Device.
+			for (; count > 0; count--) {
+				const uint8_t *pSrcTmp = pSrc;
+				switch (bytespp) {
+					case 4:		*pDest++ = *pSrcTmp++;	// fall-through
+					case 3:		*pDest++ = *pSrcTmp++;	// fall-through
+					case 2:		*pDest++ = *pSrcTmp++;	// fall-through
+					case 1:		*pDest++ = *pSrcTmp++;	// fall-through
+					default:	break;
+				}
+			}
+			pSrc += bytespp;
+		} else {
+			// High bit is clear. This is a raw packet.
+			// `count` number of pixels follow.
+			const unsigned int cpysize = count * bytespp;
+			memcpy(pDest, pSrc, cpysize);
+			pDest += cpysize;
+			pSrc += cpysize;
+		}
+	}
+
+	// In case we didn't have enough data, clear the rest of
+	// the destination buffer.
+	if (pDest < pDestEnd) {
+		memset(pDest, 0, pDestEnd - pDest);
+	}
+	return 0;
 }
 
 /**
@@ -198,58 +286,11 @@ const rp_image *TGAPrivate::loadTGAImage(void)
 			return nullptr;
 		}
 
-		// TGA 2.0 says RLE packets must not cross scanlines.
-		// TGA 1.0 allowed this, so we'll allow it for compatibility.
-
-		// Process RLE packets until we run out of source data or
-		// space in the destination buffer.
-		const uint8_t *pSrc = rle_data.get();
-		const uint8_t *const pSrcEnd = pSrc + rle_size;
-		uint8_t *pDest = img_data.get();
-		uint8_t *const pDestEnd = pDest + img_size;
-
-		for (; pSrc < pSrcEnd && pDest < pDestEnd; ) {
-			// Check the next packet.
-			const uint8_t pkt = *pSrc++;
-			// Low 7 bits indicate number of pixels.
-			// [0,127]; add 1 for [1,128].
-			unsigned int count = (pkt & 0x7F) + 1;
-			if (pDest + (count * bytespp) > pDestEnd) {
-				// Buffer overflow!
-				// TODO: Indicate an error.
-				break;
-			}
-
-			if (pkt & 0x80) {
-				// High bit is set. This is an RLE packet.
-				// One pixel is duplicated `count` number of times.
-
-				// Based on Duff's Device.
-				for (; count > 0; count--) {
-					const uint8_t *pSrcTmp = pSrc;
-					switch (bytespp) {
-						case 4:		*pDest++ = *pSrcTmp++;	// fall-through
-						case 3:		*pDest++ = *pSrcTmp++;	// fall-through
-						case 2:		*pDest++ = *pSrcTmp++;	// fall-through
-						case 1:		*pDest++ = *pSrcTmp++;	// fall-through
-						default:	break;
-					}
-				}
-				pSrc += bytespp;
-			} else {
-				// High bit is clear. This is a raw packet.
-				// `count` number of pixels follow.
-				const unsigned int cpysize = count * bytespp;
-				memcpy(pDest, pSrc, cpysize);
-				pDest += cpysize;
-				pSrc += cpysize;
-			}
-		}
-
-		// In case we didn't have enough data, clear the rest of
-		// the destination buffer.
-		if (pDest < pDestEnd) {
-			memset(pDest, 0, pDestEnd - pDest);
+		// Decompress the RLE image.
+		int ret = decompressRLE(img_data.get(), img_size, rle_data.get(), rle_size, bytespp);
+		if (ret != 0) {
+			// Error decompressing the RLE image.
+			return nullptr;
 		}
 	} else {
 		// Image is not compressed. Read it directly.
@@ -369,6 +410,40 @@ const rp_image *TGAPrivate::loadTGAImage(void)
 
 	img = imgtmp;
 	return img;
+}
+
+/**
+ * Convert a TGA timestamp to UNIX time.
+ * @param timestamp TGA timestamp. (little-endian)
+ * @return UNIX time, or -1 if invalid or not set.
+ */
+time_t TGAPrivate::tgaTimeToUnixTime(const TGA_DateStamp *timestamp)
+{
+	assert(timestamp != nullptr);
+	if (!timestamp)
+		return -1;
+
+	// Convert TGA time to Unix time.
+	// NOTE: struct tm has some oddities:
+	// - tm_year: year - 1900
+	// - tm_mon: 0 == January
+	struct tm tgatime;
+
+	// Copy and byteswap everything first.
+	tgatime.tm_year	= le16_to_cpu(timestamp->year) - 1900;
+	tgatime.tm_mon	= le16_to_cpu(timestamp->month) - 1;
+	tgatime.tm_mday = le16_to_cpu(timestamp->day);
+	tgatime.tm_hour	= le16_to_cpu(timestamp->hour);
+	tgatime.tm_min	= le16_to_cpu(timestamp->min);
+	tgatime.tm_sec	= le16_to_cpu(timestamp->sec);
+
+	// tm_wday and tm_yday are output variables.
+	tgatime.tm_wday = 0;
+	tgatime.tm_yday = 0;
+	tgatime.tm_isdst = 0;
+
+	// If conversion fails, this will return -1.
+	return timegm(&tgatime);
 }
 
 /** TGA **/
