@@ -419,9 +419,9 @@ bool EXEPrivate::doesExeRequireAdministrator(void) const
 #endif /* defined(_MSC_VER) && defined(XML_IS_DLL) */
 
 	XMLDocument doc;
-	int ret = loadWin32ManifestResource(doc);
-	if (ret != 0) {
-		return ret;
+	if (loadWin32ManifestResource(doc) != 0) {
+		// No Win32 manifest resource.
+		return false;
 	}
 
 	// Assembly element.
