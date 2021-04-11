@@ -1593,8 +1593,24 @@ INSTANTIATE_TEST_SUITE_P(TGA, ImageDecoderTest,
 		TGA_IMAGE_TEST("conformance/ubw8"),
 		TGA_IMAGE_TEST("conformance/ucm8"),
 		//TGA_IMAGE_TEST("conformance/utc16"),
-		TGA_IMAGE_TEST("conformance/utc24"))
-		//TGA_IMAGE_TEST("conformance/utc32"))
+		TGA_IMAGE_TEST("conformance/utc24"),
+		//TGA_IMAGE_TEST("conformance/utc32"),
+
+		// Test images from tga-go
+		// https://github.com/ftrvxmtrx/tga
+		// FIXME: Some incorrect alpha values...
+		// NOTE: The rgb24/rgb32 colormap images use .1.png; others use .0.png.
+		//ImageDecoderTest_mode("TGA/tga-go/ctc16.tga.gz", "TGA/tga-go/color.png"),
+		ImageDecoderTest_mode("TGA/tga-go/monochrome8_bottom_left_rle.tga.gz", "TGA/tga-go/monochrome8.png"),
+		ImageDecoderTest_mode("TGA/tga-go/monochrome8_bottom_left.tga.gz", "TGA/tga-go/monochrome8.png"),
+		//ImageDecoderTest_mode("TGA/tga-go/monochrome16_bottom_left_rle.tga.gz", "TGA/tga-go/monochrome16.png"),
+		//ImageDecoderTest_mode("TGA/tga-go/monochrome16_bottom_left.tga.gz", "TGA/tga-go/monochrome16.png"),
+		ImageDecoderTest_mode("TGA/tga-go/rgb24_bottom_left_rle.tga.gz", "TGA/tga-go/rgb24.0.png"),
+		ImageDecoderTest_mode("TGA/tga-go/rgb24_top_left_colormap.tga.gz", "TGA/tga-go/rgb24.1.png"),
+		ImageDecoderTest_mode("TGA/tga-go/rgb24_top_left.tga.gz", "TGA/tga-go/rgb24.0.png"),
+		ImageDecoderTest_mode("TGA/tga-go/rgb32_bottom_left.tga.gz", "TGA/tga-go/rgb32.0.png"),
+		//ImageDecoderTest_mode("TGA/tga-go/rgb32_top_left_rle_colormap.tga.gz", "TGA/tga-go/rgb32.1.png"),
+		ImageDecoderTest_mode("TGA/tga-go/rgb32_top_left_rle.tga.gz", "TGA/tga-go/rgb32.0.png"))
 	, ImageDecoderTest::test_case_suffix_generator);
 
 } }
