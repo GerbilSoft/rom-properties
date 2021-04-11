@@ -221,11 +221,12 @@ const rp_image *TGAPrivate::loadTGAImage(void)
 		 (tgaHeader.image_type == TGA_IMAGETYPE_HUFFMAN_COLORMAP) ||
 		 (tgaHeader.image_type == TGA_IMAGETYPE_HUFFMAN_4PASS_COLORMAP);
 
-	int pal_size = 0;
+	unsigned int cmap_size = 0;	// size of the color map in the TGA file
+	int pal_size = 0;		// size of pal_data[] (usually 256*bytespp)
 	unique_ptr<uint8_t[]> pal_data;
 	if (tgaHeader.color_map_type >= 1) {
 		const unsigned int cmap_bytespp = (tgaHeader.cmap.bpp == 15 ? 2 : (tgaHeader.cmap.bpp / 8));
-		const size_t read_size = tgaHeader.cmap.len * cmap_bytespp;
+		cmap_size = tgaHeader.cmap.len * cmap_bytespp;
 
 		if (isColorMapImage) {
 			// Load the color map. (up to 256 colors only)
@@ -244,15 +245,15 @@ const rp_image *TGAPrivate::loadTGAImage(void)
 			}
 
 			// Read the palette.
-			size_t size = file->read(&pal_data[tgaHeader.cmap.idx0], read_size);
-			if (size != read_size) {
+			size_t size = file->read(&pal_data[tgaHeader.cmap.idx0], cmap_size);
+			if (size != cmap_size) {
 				// Read error.
 				return nullptr;
 			}
 		} else {
 			// Color map is present, but this is not a colormap image.
 			// Skip over the color map.
-			file->seek(file->tell() + read_size);
+			file->seek(file->tell() + cmap_size);
 		}
 	}
 
@@ -273,12 +274,12 @@ const rp_image *TGAPrivate::loadTGAImage(void)
 		// Read the rest of the file into memory.
 		const int64_t fileSize = file->size();
 		if (fileSize > TGA_MAX_SIZE ||
-		    fileSize < static_cast<int64_t>(img_data_offset + sizeof(tgaFooter) + pal_size))
+		    fileSize < static_cast<int64_t>(img_data_offset + sizeof(tgaFooter) + cmap_size))
 		{
 			return nullptr;
 		}
 
-		const size_t rle_size = static_cast<size_t>(fileSize) - img_data_offset - pal_size;
+		const size_t rle_size = static_cast<size_t>(fileSize) - img_data_offset - cmap_size;
 		unique_ptr<uint8_t[]> rle_data(new uint8_t[rle_size]);
 		size_t size = file->read(rle_data.get(), rle_size);
 		if (size != rle_size) {

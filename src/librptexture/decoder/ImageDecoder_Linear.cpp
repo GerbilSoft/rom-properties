@@ -520,6 +520,32 @@ rp_image *fromLinearCI8(PixelFormat px_format,
 			break;
 		}
 
+		case PixelFormat::Host_xRGB32: {
+			// Host-endian xRGB32. Use the palette directly.
+			const uint32_t *pal_buf32 = static_cast<const uint32_t*>(pal_buf);
+			for (unsigned int i = 0; i < 256; i += 2, pal_buf32 += 2) {
+				palette[i+0] = pal_buf32[0] | 0xFF000000U;
+				palette[i+1] = pal_buf32[1] | 0xFF000000U;
+			}
+			// Set the sBIT metadata.
+			static const rp_image::sBIT_t sBIT = {8,8,8,0,0};
+			img->set_sBIT(&sBIT);
+			break;
+		}
+
+		case PixelFormat::Swap_xRGB32: {
+			// Swap-endian xRGB32.
+			const uint32_t *pal_buf32 = static_cast<const uint32_t*>(pal_buf);
+			for (unsigned int i = 0; i < 256; i += 2, pal_buf32 += 2) {
+				palette[i+0] = __swab32(pal_buf32[0]) | 0xFF000000U;
+				palette[i+1] = __swab32(pal_buf32[1]) | 0xFF000000U;
+			}
+			// Set the sBIT metadata.
+			static const rp_image::sBIT_t sBIT = {8,8,8,0,0};
+			img->set_sBIT(&sBIT);
+			break;
+		}
+
 		default:
 			assert(!"Invalid pixel format for this function.");
 			img->unref();
