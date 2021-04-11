@@ -809,6 +809,9 @@ rp_image *fromLinear16_cpp(PixelFormat px_format,
 		fromLinear16_convert(RGB555, 5,5,5,0,0);
 		fromLinear16_convert(BGR555, 5,5,5,0,0);
 
+		// IA8
+		fromLinear16_convert(IA8, 8,8,8,8,8);
+
 		// Luminance.
 		// TODO: 16-bit support. Downconverted to 8 for now.
 		fromLinear16_convert(L16, 8,8,8,8,0);

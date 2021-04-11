@@ -373,24 +373,45 @@ const rp_image *TGAPrivate::loadTGAImage(void)
 
 		case TGA_IMAGETYPE_GRAYSCALE: {
 			// Grayscale
-			assert(!hasAlpha);
-			assert(tgaHeader.img.bpp == 8);
-			if (hasAlpha || tgaHeader.img.bpp != 8)
-				break;
+			bool ok;
+			switch (tgaHeader.img.bpp) {
+				case 8:
+					assert(!hasAlpha);
+					ok = !hasAlpha;
+					if (ok) {
+						// Create a grayscale palette.
+						uint32_t palette[256];
+						uint32_t gray = 0xFF000000U;
+						for (unsigned int i = 0; i < 256; i++, gray += 0x010101U) {
+							palette[i] = gray;
+						}
 
-			// Create a grayscale palette.
-			uint32_t palette[256];
-			uint32_t gray = 0xFF000000U;
-			for (unsigned int i = 0; i < 256; i++, gray += 0x010101U) {
-				palette[i] = gray;
+						// Decode the image.
+						imgtmp = ImageDecoder::fromLinearCI8(
+							ImageDecoder::PixelFormat::Host_ARGB32,
+							tgaHeader.img.width, tgaHeader.img.height,
+							img_data.get(), img_size,
+							palette, sizeof(palette));
+					}
+					break;
+
+				case 16:
+					assert(hasAlpha);
+					assert((tgaHeader.img.attr_dir & 0x0F) == 8);
+					ok = (hasAlpha && ((tgaHeader.img.attr_dir & 0x0F) == 8));
+					if (ok) {
+						// Decode the image.
+						imgtmp = ImageDecoder::fromLinear16(
+							ImageDecoder::PixelFormat::IA8,
+							tgaHeader.img.width, tgaHeader.img.height,
+							reinterpret_cast<const uint16_t*>(img_data.get()), img_size);
+					}
+					break;
+
+				default:
+					ok = false;
+					break;
 			}
-
-			// Decode the image.
-			imgtmp = ImageDecoder::fromLinearCI8(
-				ImageDecoder::PixelFormat::Host_ARGB32,
-				tgaHeader.img.width, tgaHeader.img.height,
-				img_data.get(), img_size,
-				palette, sizeof(palette));
 			break;
 		}
 
@@ -729,6 +750,11 @@ const char *TGA::pixelFormat(void) const
 			switch (d->tgaHeader.img.bpp) {
 				case 8:
 					fmt = "8bpp grayscale";
+					break;
+				case 16:
+					if ((d->tgaHeader.img.attr_dir & 0x0F) == 8) {
+						fmt = "IA8";
+					}
 					break;
 				default:
 					break;
