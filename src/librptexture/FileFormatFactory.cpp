@@ -86,6 +86,10 @@ class FileFormatFactoryPrivate
 		// FileFormat subclasses that use a header at 0 and
 		// definitely have a 32-bit magic number at address 0.
 		static const FileFormatFns FileFormatFns_magic[];
+
+		// FileFormat subclasses that have special checks.
+		// This array is for file extensions and MIME types only.
+		static const FileFormatFns FileFormatFns_mime[];
 };
 
 /** FileFormatFactoryPrivate **/
@@ -108,6 +112,16 @@ const FileFormatFactoryPrivate::FileFormatFns FileFormatFactoryPrivate::FileForm
 
 	// Less common formats.
 	GetFileFormatFns(DidjTex, (uint32_t)0x03000000),
+
+	{nullptr, nullptr, nullptr, 0}
+};
+
+// FileFormat subclasses that have special checks.
+// This array is for file extensions and MIME types only.
+const FileFormatFactoryPrivate::FileFormatFns FileFormatFactoryPrivate::FileFormatFns_mime[] = {
+	GetFileFormatFns(KhronosKTX, 0),
+	GetFileFormatFns(KhronosKTX2, 0),
+	GetFileFormatFns(TGA, 0),
 
 	{nullptr, nullptr, nullptr, 0}
 };
@@ -284,6 +298,22 @@ vector<const char*> FileFormatFactory::supportedFileExtensions(void)
 		}
 	}
 
+	// Also handle FileFormat subclasses that have custom magic checks.
+	fns = &FileFormatFactoryPrivate::FileFormatFns_mime[0];
+	for (; fns->supportedFileExtensions != nullptr; fns++) {
+		const char *const *sys_exts = fns->supportedFileExtensions();
+		if (!sys_exts)
+			continue;
+
+		for (; *sys_exts != nullptr; sys_exts++) {
+			auto iter = set_exts.find(*sys_exts);
+			if (iter == set_exts.end()) {
+				set_exts.insert(*sys_exts);
+				vec_exts.emplace_back(*sys_exts);
+			}
+		}
+	}
+
 	return vec_exts;
 }
 
@@ -312,6 +342,22 @@ vector<const char*> FileFormatFactory::supportedMimeTypes(void)
 
 	const FileFormatFactoryPrivate::FileFormatFns *fns =
 		&FileFormatFactoryPrivate::FileFormatFns_magic[0];
+	for (; fns->supportedFileExtensions != nullptr; fns++) {
+		const char *const *sys_mimeTypes = fns->supportedMimeTypes();
+		if (!sys_mimeTypes)
+			continue;
+
+		for (; *sys_mimeTypes != nullptr; sys_mimeTypes++) {
+			auto iter = set_mimeTypes.find(*sys_mimeTypes);
+			if (iter == set_mimeTypes.end()) {
+				set_mimeTypes.insert(*sys_mimeTypes);
+				vec_mimeTypes.emplace_back(*sys_mimeTypes);
+			}
+		}
+	}
+
+	// Also handle FileFormat subclasses that have custom magic checks.
+	fns = &FileFormatFactoryPrivate::FileFormatFns_mime[0];
 	for (; fns->supportedFileExtensions != nullptr; fns++) {
 		const char *const *sys_mimeTypes = fns->supportedMimeTypes();
 		if (!sys_mimeTypes)
