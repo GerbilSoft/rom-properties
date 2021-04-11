@@ -45,6 +45,13 @@ License: GPL-2+
 Comment:
 
 Files:
+ src/libromdata/tests/img/ImageDecoder_data/TGA/conformance/*
+Copyright:
+ (C) TrueVision, Inc.
+License: TGA-2.0
+Comment:
+
+Files:
  src/svrplus/*
 Copyright:
  2017, Egor
@@ -608,3 +615,21 @@ License: BSL-1.0
  FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
  ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  DEALINGS IN THE SOFTWARE.
+
+License: TGA-2.0
+ TrueVision TGA (a.k.a. Targa) 2.0 conformance suite
+ .
+ Official format specification, sample images and utilitiesriginally been publicly available, free of
+ charge and under no specific licensing terms, from TrueVision, Inc.'s  FTP
+ server at the following URL:
+ .
+ ftp://ftp.truevision.com/pub/TGA.File.Format.Spec/PC.Version/
+ .
+ All of the material contained here is therefore copyright to TrueVision, Inc.,
+ unless otherwise stated.
+ .
+ But has been removed in the proceedings of Pinnacle Systems' acquisition of
+ TrueVision, Inc., as outdated. However, a back-up of these files is available
+ here:
+ .
+ http://googlesites.inequation.org/tgautilities

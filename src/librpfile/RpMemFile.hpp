@@ -110,16 +110,38 @@ class RpMemFile : public IRpFile
 		 * Get the filename.
 		 * @return Filename. (May be empty if the filename is not available.)
 		 */
-		std::string filename(void) const final
+		inline std::string filename(void) const final
 		{
-			// TODO: Implement this?
-			return std::string();
+			return m_filename;
+		}
+
+	public:
+		/** RpMemFile functions **/
+
+		/**
+		 * Set the filename.
+		 * @param filename Filename
+		 */
+		inline void setFilename(const char *filename)
+		{
+			m_filename = filename;
+		}
+
+		/**
+		 * Set the filename.
+		 * @param filename Filename
+		 */
+		inline void setFilename(const std::string &filename)
+		{
+			m_filename = filename;
 		}
 
 	protected:
 		const void *m_buf;	// Memory buffer.
 		size_t m_size;		// Size of memory buffer.
 		size_t m_pos;		// Current position.
+
+		std::string m_filename;	// Dummy filename.
 };
 
 }

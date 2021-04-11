@@ -478,6 +478,14 @@ void ImageDecoderTest::decodeTest_internal(void)
 		// NOTE: Using RpTextureWrapper.
 		filetype = "DidjTex";
 		m_romData = new RpTextureWrapper(m_f_dds);
+	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".tga.gz")) {
+		// TrueVision TGA
+		// NOTE: Using RpTextureWrapper.
+		// NOTE 2: TGA detection is currently done by file extension,
+		// so we need to set the RpMemFile's filename.
+		filetype = "TGA";
+		m_f_dds->setFilename(mode.dds_gz_filename);
+		m_romData = new RpTextureWrapper(m_f_dds);
 	} else {
 		ASSERT_TRUE(false) << "Unknown image type.";
 	}
@@ -604,6 +612,10 @@ void ImageDecoderTest::decodeBenchmark_internal(void)
 		// NOTE: Increased iterations due to smaller files.
 		// NOTE: Using RpTextureWrapper.
 		max_iterations *= 10;
+		fn_ctor = [](IRpFile *file) { return new RpTextureWrapper(file); };
+	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".tga.gz")) {
+		// TrueVision TGA
+		// NOTE: Using RpTextureWrapper.
 		fn_ctor = [](IRpFile *file) { return new RpTextureWrapper(file); };
 	} else {
 		ASSERT_TRUE(false) << "Unknown image type.";
@@ -1553,6 +1565,53 @@ INSTANTIATE_TEST_SUITE_P(PowerVR3, ImageDecoderTest,
 		)
 	, ImageDecoderTest::test_case_suffix_generator);
 #endif /* ENABLE_PVRTC */
+
+// TGA tests.
+#define TGA_IMAGE_TEST(file) ImageDecoderTest_mode( \
+			"TGA/" file ".tga.gz", \
+			"TGA/" file ".png")
+INSTANTIATE_TEST_SUITE_P(TGA, ImageDecoderTest,
+	::testing::Values(
+		// Reference images.
+		ImageDecoderTest_mode("TGA/TGA_1_CM24_IM8.tga.gz", "CI8-reference.png"),
+		ImageDecoderTest_mode("TGA/TGA_1_CM32_IM8.tga.gz", "CI8a-reference.png"),
+		ImageDecoderTest_mode("TGA/TGA_2_24.tga.gz", "rgb-reference.png"),
+		ImageDecoderTest_mode("TGA/TGA_2_32.tga.gz", "argb-reference.png"),
+		ImageDecoderTest_mode("TGA/TGA_3_8.tga.gz", "gray-reference.png"),
+		ImageDecoderTest_mode("TGA/TGA_9_CM24_IM8.tga.gz", "CI8-reference.png"),
+		ImageDecoderTest_mode("TGA/TGA_9_CM32_IM8.tga.gz", "CI8a-reference.png"),
+		ImageDecoderTest_mode("TGA/TGA_10_24.tga.gz", "rgb-reference.png"),
+		ImageDecoderTest_mode("TGA/TGA_10_32.tga.gz", "argb-reference.png"),
+		ImageDecoderTest_mode("TGA/TGA_11_8.tga.gz", "gray-reference.png"),
+
+		// TGA 2.0 conformance test suite
+		// FIXME: utc16, utc32 have incorrect alpha values?
+		// Both gimp and imagemagick interpret them as completely transparent.
+		TGA_IMAGE_TEST("conformance/cbw8"),
+		TGA_IMAGE_TEST("conformance/ccm8"),
+		TGA_IMAGE_TEST("conformance/ctc24"),
+		TGA_IMAGE_TEST("conformance/ubw8"),
+		TGA_IMAGE_TEST("conformance/ucm8"),
+		//TGA_IMAGE_TEST("conformance/utc16"),
+		TGA_IMAGE_TEST("conformance/utc24"),
+		//TGA_IMAGE_TEST("conformance/utc32"),
+
+		// Test images from tga-go
+		// https://github.com/ftrvxmtrx/tga
+		// FIXME: Some incorrect alpha values...
+		// NOTE: The rgb24/rgb32 colormap images use .1.png; others use .0.png.
+		//ImageDecoderTest_mode("TGA/tga-go/ctc16.tga.gz", "TGA/tga-go/color.png"),
+		ImageDecoderTest_mode("TGA/tga-go/monochrome8_bottom_left_rle.tga.gz", "TGA/tga-go/monochrome8.png"),
+		ImageDecoderTest_mode("TGA/tga-go/monochrome8_bottom_left.tga.gz", "TGA/tga-go/monochrome8.png"),
+		//ImageDecoderTest_mode("TGA/tga-go/monochrome16_bottom_left_rle.tga.gz", "TGA/tga-go/monochrome16.png"),
+		//ImageDecoderTest_mode("TGA/tga-go/monochrome16_bottom_left.tga.gz", "TGA/tga-go/monochrome16.png"),
+		ImageDecoderTest_mode("TGA/tga-go/rgb24_bottom_left_rle.tga.gz", "TGA/tga-go/rgb24.0.png"),
+		ImageDecoderTest_mode("TGA/tga-go/rgb24_top_left_colormap.tga.gz", "TGA/tga-go/rgb24.1.png"),
+		ImageDecoderTest_mode("TGA/tga-go/rgb24_top_left.tga.gz", "TGA/tga-go/rgb24.0.png"),
+		ImageDecoderTest_mode("TGA/tga-go/rgb32_bottom_left.tga.gz", "TGA/tga-go/rgb32.0.png"),
+		//ImageDecoderTest_mode("TGA/tga-go/rgb32_top_left_rle_colormap.tga.gz", "TGA/tga-go/rgb32.1.png"),
+		ImageDecoderTest_mode("TGA/tga-go/rgb32_top_left_rle.tga.gz", "TGA/tga-go/rgb32.0.png"))
+	, ImageDecoderTest::test_case_suffix_generator);
 
 } }
 

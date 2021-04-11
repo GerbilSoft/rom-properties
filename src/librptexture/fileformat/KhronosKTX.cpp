@@ -539,8 +539,7 @@ const rp_image *KhronosKTXPrivate::loadImage(void)
 	}
 
 	// Post-processing: Check if a flip is needed.
-	if (img && (flipOp != rp_image::FLIP_NONE) && height > 1) {
-		// TODO: Assert that img dimensions match ktxHeader?
+	if (img && flipOp != rp_image::FLIP_NONE) {
 		rp_image *const flipimg = img->flip(flipOp);
 		if (flipimg) {
 			img->unref();
