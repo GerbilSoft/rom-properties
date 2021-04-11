@@ -23,6 +23,9 @@
 * New parsers:
   * WonderSwan: Bandai WonderSwan (Color) ROM images. Supports external title
     screens using RPDB.
+  * TGA: TrueVision TARGA image format. Most encodings are supported; some
+    have alpha channel issues. Thumbnailing is enabled on Windows but not
+    Linux, since most Linux desktop environments support TGA.
 
 * New parser features:
   * NGPC: Added external title screens using RPDB.
@@ -42,6 +45,7 @@
     * Fallout: `.fxs`
     * Skyrim: `.exs`
     * Fixes #303, reported by @60fpshacksrock.
+  * KhronosKTX, KhronosKTX2: Fix thumbnailing registration on Windows.
 
 * Bug fixes:
   * GameCube: Detect incrementing values partitions in encrypted images.

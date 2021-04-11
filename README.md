@@ -145,17 +145,18 @@ button.
 
 ### Texture Formats
 
-|             System            | Properties Tab | Metadata | Internal Images | External Scans |
-|:-----------------------------:|:--------------:|:--------:|:---------------:|:--------------:|
-| Leapster Didj .tex textures   |       Yes      |    Yes   |      Image      |       N/A      |
-| Khronos KTX Textures          |       Yes      |    Yes   |      Image      |       N/A      |
-| Khronos KTX2 Textures         |       Yes      |    Yes   |      Image      |       N/A      |
-| Microsoft DirectDraw Surface  |       Yes      |    Yes   |      Image      |       N/A      |
-| Microsoft Xbox XPR Textures   |       Yes      |    Yes   |      Image      |       N/A      |
-| PowerVR 3.0.0 Textures        |       Yes      |    Yes   |      Image      |       N/A      |
-| Sega PVR/GVR/SVR Textures     |       Yes      |    Yes   |      Image      |       N/A      |
-| Valve VTF Textures            |       Yes      |    Yes   |      Image      |       N/A      |
-| Valve VTF3 (PS3) Textures     |       Yes      |    Yes   |      Image      |       N/A      |
+|          System          | Properties Tab | Metadata | Internal Images | External Scans |
+|:------------------------:|:--------------:|:--------:|:---------------:|:--------------:|
+| Leapster Didj .tex       |       Yes      |    Yes   |      Image      |       N/A      |
+| Khronos KTX              |       Yes      |    Yes   |      Image      |       N/A      |
+| Khronos KTX2             |       Yes      |    Yes   |      Image      |       N/A      |
+| Microsoft DirectDraw DDS |       Yes      |    Yes   |      Image      |       N/A      |
+| Microsoft Xbox XPR       |       Yes      |    Yes   |      Image      |       N/A      |
+| PowerVR 3.0.0            |       Yes      |    Yes   |      Image      |       N/A      |
+| Sega PVR/GVR/SVR         |       Yes      |    Yes   |      Image      |       N/A      |
+| TrueVision TGA           |       Yes      |    Yes   |      Image      |       N/A      |
+| Valve VTF                |       Yes      |    Yes   |      Image      |       N/A      |
+| Valve VTF3 (PS3)         |       Yes      |    Yes   |      Image      |       N/A      |
 
 #### Texture Codecs
 
