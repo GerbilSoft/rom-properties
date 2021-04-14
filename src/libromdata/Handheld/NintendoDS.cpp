@@ -446,21 +446,27 @@ vector<const char*> NintendoDSPrivate::ndsRegionToGameTDB(
 		// European regions.
 		case 'D':	// Germany
 			ret.emplace_back("DE");
+			fallback_region = 1;
 			break;
 		case 'F':	// France
 			ret.emplace_back("FR");
+			fallback_region = 1;
 			break;
 		case 'H':	// Netherlands
 			ret.emplace_back("NL");
+			fallback_region = 1;
 			break;
 		case 'I':	// Italy
 			ret.emplace_back("IT");
+			fallback_region = 1;
 			break;
 		case 'R':	// Russia
 			ret.emplace_back("RU");
+			fallback_region = 1;
 			break;
 		case 'S':	// Spain
 			ret.emplace_back("ES");
+			fallback_region = 1;
 			break;
 		case 'U':	// Australia
 			if (fallback_region == 0) {
