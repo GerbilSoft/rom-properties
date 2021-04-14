@@ -80,6 +80,9 @@ CS:0x380:Jikkyou Powerful Pro Baseball
 CS:0x38C:Diablo
 CS:0x3A0:Persona
 
+CS:0x3B4:Banjo & Kazooie
+CS:0x3C8:Fatal Fury
+
 ### Character IDs (C) [p.21]
 # C Fields: ID, Name
 #
@@ -925,6 +928,9 @@ C:0x3504:Qurupeco and Dan
 # NOTE: Variant 0 isn't actually assigned.
 CV:0x3504:0x00:Qurupeco and Dan
 CV:0x3504:0x01:Qurupeco and Dan
+C:0x3508:Magnamalo
+C:0x3509:Palico
+C:0x350A:Palamute
 
 # Shovel Knight (character series == 0x35C)
 C:0x35C0:Shovel Knight
@@ -965,6 +971,12 @@ C:0x3805:Ganda
 # Diablo (character series == 0x38C)
 C:0x38C0:Loot Goblin
 
+# Banjo & Kazooie (character series == 0x3B4)
+C:0x3B40:Banjo & Kazooie
+
+# Fatal Fury (character series == 0x3C8)
+C:0x3C80:Terry
+
 ### amiibo series (AS) [p.22]
 # AS Fields: ID, Name
 AS:0x00:Super Smash Bros.
@@ -989,6 +1001,7 @@ AS:0x14:Other
 AS:0x15:Mega Man
 AS:0x16:Diablo
 AS:0x17:Jikkyou Powerful Pro Baseball
+AS:0x18:Monster Hunter
 
 ### amiibo IDs (A) [p.22]
 # A Fields: ID, Release No., Wave, Name
@@ -1858,10 +1871,18 @@ A:0x0395:6:0:Daijobu
 # The Legend of Zelda: Link's Awakening Series [0x0399]
 A:0x0399:0:0:Link
 
-# SSBU: Wave 13 [0x03A1-0x03A2]
+# SSBU: Wave 13 [0x03A1-0x03A5]
 A:0x03A1:83:13:Joker
 A:0x03A2:84:13:Hero
+A:0x03A3:85:13:Banjo & Kazooie
+A:0x03A4:86:13:Terry
+A:0x03A5:87:13:Byleth
 
 # SMB: Wave 5 (Super Mario 3D World + Bowser's Fury) [0x03A6-0x03A7]
 A:0x03A6:21:5:Cat Mario
 A:0x03A7:22:5:Cat Peach
+
+# Monster Hunter Rise [0x040F-0x0411]
+A:0x040F:0:0:Magnamalo
+A:0x0410:0:0:Palico
+A:0x0411:0:0:Palamute
