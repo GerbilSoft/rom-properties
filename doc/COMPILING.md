@@ -25,10 +25,19 @@ packages:
 * XFCE (GTK+ 3.x): glib2-devel gtk3-devel cairo-devel Thunar-devel
 * GNOME, MATE, Cinnamon: glib2-devel gtk3-devel cairo-devel nautilus-devel libcanberra-devel
 
+On Arch and Arch base distros you will need to install "base-devel" and the
+following development packages:
+* All: curl zlib libpng libjpeg-turbo nettle pkgconf tinyxml2 libbsd gettext libseccomp
+* Optional decompression: zstd lz4 lzo
+* KDE 5.x: qt5-base qt5-tools extra-cmake-modules kio kwidgetsaddons kfilemetadata
+* XFCE (GTK+ 3.x): glib2 gtk3 cairo libcanberra
+* GNOME, MATE, Cinnamon: glib2 gtk3 cairo libnautilus-extension libcanberra
+
 NOTE: XFCE's Thunar file browser requires the Tumbler D-Bus daemon to be
 installed in order to create thumbnails.
 * Debian/Ubuntu: tumbler
 * Red Hat/Fedora: tumbler
+* Arch: tumbler
 
 NOTE 2: Thunar 1.8.0 switched to GTK+ 3.x. This version is not currently
 available in most distribution repositories. The Fedora RPM listed above
