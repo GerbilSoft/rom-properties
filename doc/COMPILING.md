@@ -25,14 +25,12 @@ packages:
 * XFCE (GTK+ 3.x): glib2-devel gtk3-devel cairo-devel Thunar-devel
 * GNOME, MATE, Cinnamon: glib2-devel gtk3-devel cairo-devel nautilus-devel libcanberra-devel
 
-On Arch and Arch base distros you will need to install "base-devel" and the following development
-packages:
+On Arch and Arch base distros you will need to install "base-devel" and the
+following development packages:
 * All: curl zlib libpng libjpeg-turbo nettle pkgconf tinyxml2 libbsd gettext libseccomp
 * Optional decompression: zstd lz4 lzo
-* KDE 4.x: "libqt4-dev" kdelibs
-* KDE 5.0: qt5-base qt5-tools extra-cmake-modules kio kwidgetsaddons kfilemetadata
-* XFCE (GTK+ 2.x): glib2 gtk2 gdk-pixbuf2 "libthunarx-2-dev" libcanberra 
-* XFCE (GTK+ 3.x): glib2 gtk3 cairo "libthunarx-3-dev" libcanberra
+* KDE 5.x: qt5-base qt5-tools extra-cmake-modules kio kwidgetsaddons kfilemetadata
+* XFCE (GTK+ 3.x): glib2 gtk3 cairo libcanberra
 * GNOME, MATE, Cinnamon: glib2 gtk3 cairo libnautilus-extension libcanberra
 
 NOTE: XFCE's Thunar file browser requires the Tumbler D-Bus daemon to be
