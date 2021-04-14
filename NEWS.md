@@ -61,6 +61,7 @@
     * Fixes #291, reported by @Masamune3210.
   * EXE: Don't show the "dangerous permission" overlay for Win32 executables
     that don't have a manifest.
+  * NintendoDS: Add "EN" fallback for external artwork from GameTDB.
 
 ## v1.7.3 (released 2020/09/25)
 
