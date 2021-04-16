@@ -8,6 +8,31 @@ PROJECT(src)
 INCLUDE(CheckLargeFileSupport)
 CHECK_LARGE_FILE_SUPPORT()
 
+# Check for reentrant time functions.
+# NOTE: May be _gmtime32_s() or _gmtime64_s() on MSVC 2005+.
+# The "inline" part will detect that.
+INCLUDE(CheckSymbolExistsOrInline)
+CHECK_SYMBOL_EXISTS_OR_INLINE(gmtime_r "time.h" "time_t tm; gmtime_r(&tm, NULL);" HAVE_GMTIME_R)
+IF(NOT HAVE_GMTIME_R)
+	CHECK_SYMBOL_EXISTS_OR_INLINE(gmtime_s "time.h" "time_t tm; gmtime_s(NULL, &tm);" HAVE_GMTIME_S)
+ENDIF(NOT HAVE_GMTIME_R)
+CHECK_SYMBOL_EXISTS_OR_INLINE(localtime_r "time.h" "time_t tm; localtime_r(&tm, NULL);" HAVE_LOCALTIME_R)
+IF(NOT HAVE_LOCALTIME_R)
+	CHECK_SYMBOL_EXISTS_OR_INLINE(localtime_s "time.h" "time_t tm; localtime_s(NULL, &tm);" HAVE_LOCALTIME_S)
+ENDIF(NOT HAVE_LOCALTIME_R)
+
+# Other time functions.
+CHECK_SYMBOL_EXISTS_OR_INLINE(timegm "time.h" "struct tm tm; time_t x = timegm(&tm);" HAVE_TIMEGM)
+IF(NOT HAVE_TIMEGM)
+	# NOTE: MSVCRT's _mkgmtime64() has a range of [1970/01/01, 3000/12/31].
+	# glibc and boost both support arbitrary ranges.
+	CHECK_SYMBOL_EXISTS_OR_INLINE(_mkgmtime "time.h" "struct tm tm; time_t x = _mkgmtime(&tm);" HAVE__MKGMTIME)
+	CHECK_SYMBOL_EXISTS_OR_INLINE(_mkgmtime64 "time.h" "struct tm tm; time_t x = _mkgmtime64(&tm);" HAVE__MKGMTIME64)
+ENDIF(NOT HAVE_TIMEGM)
+IF(NOT HAVE_TIMEGM AND NOT HAVE__MKGMTIME AND NOT HAVE__MKGMTIME64)
+	MESSAGE(FATAL_ERROR "timegm() or equivalent function not found.")
+ENDIF(NOT HAVE_TIMEGM AND NOT HAVE__MKGMTIME AND NOT HAVE__MKGMTIME64)
+
 # Write the libc configuration file.
 CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/config.libc.h.in" "${CMAKE_CURRENT_BINARY_DIR}/config.libc.h")
 
