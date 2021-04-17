@@ -287,28 +287,6 @@ RomDataViewPrivate::~RomDataViewPrivate()
 }
 
 /**
- * Find direct child widgets only.
- * @param T Type.
- */
-template<typename T>
-static inline T findDirectChild(QObject *obj, const QString &aName = QString())
-{
-#if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
-	return obj->findChild<T>(aName, Qt::FindDirectChildrenOnly);
-#else /* QT_VERSION < QT_VERSION_CHECK(5,0,0) */
-	foreach(QObject *child, obj->children()) {
-		T qchild = qobject_cast<T>(child);
-		if (qchild != nullptr) {
-			if (aName.isEmpty() || qchild->objectName() == aName) {
-				return qchild;
-			}
-		}
-	}
-	return nullptr;
-#endif /* QT_VERSION >= QT_VERSION_CHECK(5,0,0) */
-}
-
-/**
  * Create the "Options" button in the parent window.
  */
 void RomDataViewPrivate::createOptionsButton(void)

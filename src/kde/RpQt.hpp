@@ -26,14 +26,14 @@ namespace LibRpTexture {
 
 // KDE Frameworks prefix. (KDE4/KF5)
 #if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
-# define RP_KDE_UPPER "KF"
-# define RP_KDE_LOWER "kf"
+#  define RP_KDE_UPPER "KF"
+#  define RP_KDE_LOWER "kf"
 #else /* !QT_VERSION >= QT_VERSION_CHECK(5,0,0) */
-# define RP_KDE_UPPER "KDE"
-# define RP_KDE_LOWER "kde"
+#  define RP_KDE_UPPER "KDE"
+#  define RP_KDE_LOWER "kde"
 #endif /* QT_VERSION >= QT_VERSION_CHECK(5,0,0) */
 
-/** Text conversion. **/
+/** Text conversion **/
 
 /**
  * NOTE: Some of the UTF-8 functions return toUtf8().constData()
@@ -49,7 +49,7 @@ namespace LibRpTexture {
  */
 static inline QString U82Q(const std::string &str)
 {
-	return QString::fromUtf8(str.data(), (int)str.size());
+	return QString::fromUtf8(str.data(), static_cast<int>(str.size()));
 }
 
 /**
@@ -69,9 +69,34 @@ static inline QString U82Q(const char *str, int len = -1)
  * @param qs QString
  * @return const char*
  */
-#define Q2U8(qs) (reinterpret_cast<const char*>(((qs).toUtf8().constData())))
+#define Q2U8(qs) ((qs).toUtf8().constData())
 
-/** Image conversion. **/
+/** QObject **/
+
+/**
+ * Find direct child widgets only.
+ * @param T Type.
+ * @param aName Name to match, or empty string for any object of type T.
+ */
+template<typename T>
+static inline T findDirectChild(QObject *obj, const QString &aName = QString())
+{
+#if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
+	return obj->findChild<T>(aName, Qt::FindDirectChildrenOnly);
+#else /* QT_VERSION < QT_VERSION_CHECK(5,0,0) */
+	foreach(QObject *child, obj->children()) {
+		T qchild = qobject_cast<T>(child);
+		if (qchild != nullptr) {
+			if (aName.isEmpty() || qchild->objectName() == aName) {
+				return qchild;
+			}
+		}
+	}
+	return nullptr;
+#endif /* QT_VERSION >= QT_VERSION_CHECK(5,0,0) */
+}
+
+/** Image conversion **/
 
 /**
  * Convert an rp_image to QImage.
@@ -80,12 +105,14 @@ static inline QString U82Q(const char *str, int len = -1)
  */
 QImage rpToQImage(const LibRpTexture::rp_image *image);
 
+/** QUrl **/
+
 /**
  * Localize a QUrl.
  * This function automatically converts certain URL schemes, e.g. desktop:/, to local paths.
  *
  * @param qUrl QUrl.
- * @return Localize QUrl, or empty QUrl on error.
+ * @return Localized QUrl, or empty QUrl on error.
  */
 QUrl localizeQUrl(const QUrl &url);
 
