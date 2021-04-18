@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * ISO.cpp: ISO-9660 disc image parser.                                    *
  *                                                                         *
- * Copyright (c) 2019-2020 by David Korth.                                 *
+ * Copyright (c) 2019-2021 by David Korth.                                 *
  * Copyright (c) 2020 by Egor.                                             *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
