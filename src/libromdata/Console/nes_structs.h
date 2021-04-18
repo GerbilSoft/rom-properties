@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * nes_structs.h: Nintendo Entertainment System/Famicom data structures.   *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * Copyright (c) 2016-2017 by Egor.                                        *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
@@ -309,13 +309,11 @@ typedef enum {
 /**
  * 3-byte BCD date stamp.
  */
-#pragma pack(1)
-typedef struct PACKED _FDS_BCD_DateStamp {
+typedef struct _FDS_BCD_DateStamp {
 	uint8_t year;	// Add 1925 to this.
 	uint8_t mon;	// 1-12
 	uint8_t mday;	// 1-31
 } FDS_BCD_DateStamp;
-#pragma pack()
 ASSERT_STRUCT(FDS_BCD_DateStamp, 3);
 
 /**

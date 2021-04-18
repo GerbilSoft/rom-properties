@@ -18,6 +18,7 @@
 
 #include <stdint.h>
 #include "common.h"
+#include "nintendo_system_id.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -50,15 +51,8 @@ typedef struct PACKED _Badge_PRBS_Header {
 	uint8_t reserved2[4];	// [0x040] Unknown
 	char filename[48];	// [0x044] Image filename. (Latin-1?)
 	char setname[48];	// [0x074] Set name. (Latin-1?)
-	union {
-		// [0x0A4] Title ID for program launch.
-		// If no program is assigned, this is all 0xFF.
-		uint64_t id;		// [0x0A4]
-		struct {
-			uint32_t lo;	// [0x0A4]
-			uint32_t hi;	// [0x0A8]
-		};
-	} title_id;
+	Nintendo_TitleID_LE_t title_id;	// [0x0A4] Title ID for program launch.
+					// If no program is assigned, this is all 0xFF.
 	uint8_t reserved3[12];	// [0x0AC] Unknown
 	uint32_t mb_width;	// [0x0B8] Mega-badge width.
 	uint32_t mb_height;	// [0x0BC] Mega-badge height.

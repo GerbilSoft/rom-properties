@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * wii_structs.h: Nintendo Wii data structures.                            *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -170,8 +170,8 @@ typedef struct PACKED _RVL_Content_Entry {
 	uint64_t size;			// [0x008] Size
 	uint8_t sha1_hash[20];		// [0x010] SHA-1 hash of the content (installed) or H3 table (disc).
 } RVL_Content_Entry;
-#pragma pack()
 ASSERT_STRUCT(RVL_Content_Entry, 0x24);
+#pragma pack()
 
 /**
  * Content type (bitfield)
@@ -232,7 +232,7 @@ typedef enum {
  * Reference: https://wiibrew.org/wiki/Wii_Disc#Region_setting
  */
 #define RVL_RegionSetting_ADDRESS 0x4E000
-typedef struct PACKED _RVL_RegionSetting {
+typedef struct _RVL_RegionSetting {
 	uint32_t region_code;	// Region code. (See GCN_Region_Code.)
 	uint32_t disc_count;	// Number of game discs.
 	uint8_t reserved[8];

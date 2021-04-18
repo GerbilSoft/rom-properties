@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * wiiu_structs.h: Nintendo Wii U data structures.                         *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -23,8 +23,7 @@ extern "C" {
  * All fields are big-endian.
  * NOTE: Strings are NOT null-terminated!
  */
-#pragma pack(1)
-typedef struct PACKED _WiiU_DiscHeader {
+typedef struct _WiiU_DiscHeader {
 	union {
 		char id[10];		// WUP-P-xxxx
 		struct {
@@ -43,7 +42,6 @@ typedef struct PACKED _WiiU_DiscHeader {
 	char hyphen5;
 	char disc_number;	// Disc number, in ASCII. (TODO: Verify?)
 } WiiU_DiscHeader;
-#pragma pack()
 ASSERT_STRUCT(WiiU_DiscHeader, 22);
 
 // Secondary Wii U disc magic at 0x10000.

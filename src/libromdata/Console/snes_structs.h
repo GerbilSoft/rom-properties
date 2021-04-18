@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * snes_structs.h: Super Nintendo data structures.                         *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -21,8 +21,6 @@ extern "C" {
  * - http://problemkaputt.de/fullsnes.htm
  * - http://satellaview.wikia.com/wiki/Satellaview_ROM_header
  */
-
-#pragma pack(1)
 
 /**
  * ROM mapping. (SNES_RomHeader.rom_mapping)
@@ -114,7 +112,7 @@ typedef enum {
  *
  * NOTE: Strings are NOT null-terminated!
  */
-typedef struct PACKED _SNES_RomHeader {
+typedef struct _SNES_RomHeader {
 	union {
 		// SNES header format.
 		struct {
@@ -150,11 +148,13 @@ typedef struct PACKED _SNES_RomHeader {
 		struct {
 			/** Extended header **/
 			// NOTE: Invalid if 0x7FDB == 0x01
-			struct {
+#pragma pack(1)
+			struct PACKED {
 				char new_publisher_code[2];	// [0x7FB0]
 				uint32_t program_type;		// [0x7FB2] See SNES_BSX_Program_Type.
 				uint8_t reserved[10];		// [0x7FB6] Usually 0x00.
 			} ext;
+#pragma pack()
 
 			/** Standard SNES header. **/
 			char title[16];			// [0x7FC0] Shift-JIS
@@ -234,8 +234,6 @@ typedef enum {
 	SNES_BSX_PRG_SCRIPT	= 0x00000100,	// BS-X script
 	SNES_BSX_PRG_SA_1	= 0x00000200,	// SA-1 program
 } SNES_BSX_Program_Type;
-
-#pragma pack()
 
 #ifdef __cplusplus
 }

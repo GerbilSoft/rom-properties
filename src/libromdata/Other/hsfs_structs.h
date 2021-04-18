@@ -2,6 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * hsfs_structs.h: High Sierra structs for old CD-ROM images.              *
  *                                                                         *
+ * Copyright (c) 2017-2021 by David Korth.                                 *
  * Copyright (c) 2020 Egor.                                                *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
@@ -92,8 +93,7 @@ ASSERT_STRUCT(HSFS_Volume_Descriptor_Header, 15);
  *
  * NOTE: All fields are space-padded. (0x20, ' ')
  */
-#pragma pack(1)
-typedef struct PACKED _HSFS_Primary_Volume_Descriptor {
+typedef struct _HSFS_Primary_Volume_Descriptor {
 	HSFS_Volume_Descriptor_Header header;
 
 	uint8_t reserved1;			// [0x00F] 0x00
@@ -137,7 +137,6 @@ typedef struct PACKED _HSFS_Primary_Volume_Descriptor {
 	uint8_t reserved4[1193];		// [0x357]
 } HSFS_Primary_Volume_Descriptor;
 ASSERT_STRUCT(HSFS_Primary_Volume_Descriptor, ISO_SECTOR_SIZE_MODE1_COOKED);
-#pragma pack()
 
 #define HSFS_VD_MAGIC "CDROM"
 #define HSFS_VD_VERSION 0x01

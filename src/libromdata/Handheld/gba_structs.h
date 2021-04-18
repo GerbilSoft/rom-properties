@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * gba_structs.h: Nintendo Game Boy Advance data structures.               *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -25,8 +25,7 @@ extern "C" {
  *
  * NOTE: Strings are NOT null-terminated!
  */
-#pragma pack(1)
-typedef struct PACKED _GBA_RomHeader {
+typedef struct _GBA_RomHeader {
 	union {
 		uint32_t entry_point;	// 32-bit ARM branch opcode.
 		uint8_t entry_point_bytes[4];
@@ -48,7 +47,6 @@ typedef struct PACKED _GBA_RomHeader {
 	uint8_t checksum;
 	uint8_t reserved2[2];
 } GBA_RomHeader;
-#pragma pack()
 ASSERT_STRUCT(GBA_RomHeader, 192);
 
 #ifdef __cplusplus

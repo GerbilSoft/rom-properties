@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * gcn_structs.h: Nintendo GameCube data structures.                       *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -24,8 +24,7 @@ extern "C" {
  */
 #define GCN_MAGIC 0xC2339F3D
 #define WII_MAGIC 0x5D1C9EA3
-#pragma pack(1)
-typedef struct PACKED _GCN_DiscHeader {
+typedef struct _GCN_DiscHeader {
 	union {
 		char id6[6];	// [0x000] Game code. (ID6)
 		struct {
@@ -53,7 +52,6 @@ typedef struct PACKED _GCN_DiscHeader {
 
 	uint8_t reserved[2];		// [0x062] Reserved (alignment padding)
 } GCN_DiscHeader;
-#pragma pack()
 ASSERT_STRUCT(GCN_DiscHeader, 100);
 
 /**
