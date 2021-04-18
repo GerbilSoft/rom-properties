@@ -46,6 +46,7 @@
     * Skyrim: `.exs`
     * Fixes #303, reported by @60fpshacksrock.
   * KhronosKTX, KhronosKTX2: Fix thumbnailing registration on Windows.
+  * ISO: Basic support for CD-i images. (PVD only)
 
 * Bug fixes:
   * GameCube: Detect incrementing values partitions in encrypted images.

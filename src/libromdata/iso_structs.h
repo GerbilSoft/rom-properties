@@ -2,11 +2,13 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * iso9660.h: ISO-9660 structs for CD-ROM images.                          *
  *                                                                         *
- * Copyright (c) 2017-2020 by David Korth.                                 *
+ * Copyright (c) 2017-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-// Reference: http://wiki.osdev.org/ISO_9660
+// References:
+// - http://wiki.osdev.org/ISO_9660
+// - https://github.com/roysmeding/cditools/blob/master/cdi.py
 
 #ifndef __ROMPROPERTIES_LIBROMDATA_ISO9660_H__
 #define __ROMPROPERTIES_LIBROMDATA_ISO9660_H__
@@ -14,7 +16,7 @@
 #include <stdint.h>
 
 #include "common.h"
-#include "librpcpu/byteorder.h"
+#include "librpcpu/byteswap_rp.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -38,19 +40,19 @@ extern "C" {
  */
 typedef union _uint16_lsb_msb_t {
 	struct {
-		uint16_t le;
-		uint16_t be;
+		uint16_t le;	// Little-endian
+		uint16_t be;	// Big-endian
 	};
 	// Host-endian value.
 #if SYS_BYTEORDER == SYS_LIL_ENDIAN
 	struct {
-		uint16_t he;
-		uint16_t x;
+		uint16_t he;	// Host-endian
+		uint16_t se;	// Swap-endian
 	};
 #else /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
 	struct {
-		uint16_t x;
-		uint16_t he;
+		uint16_t se;	// Swap-endian
+		uint16_t he;	// Host-endian
 	};
 #endif
 } uint16_lsb_msb_t;
@@ -61,23 +63,49 @@ ASSERT_STRUCT(uint16_lsb_msb_t, 4);
  */
 typedef union _uint32_lsb_msb_t {
 	struct {
-		uint32_t le;
-		uint32_t be;
+		uint32_t le;	// Little-endian
+		uint32_t be;	// Big-endian
 	};
 	// Host-endian value.
 #if SYS_BYTEORDER == SYS_LIL_ENDIAN
 	struct {
-		uint32_t he;
-		uint32_t x;
+		uint32_t he;	// Host-endian
+		uint32_t se;	// Swap-endian
 	};
 #else /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
 	struct {
-		uint32_t x;
-		uint32_t he;
+		uint32_t se;	// Swap-endian
+		uint32_t he;	// Host-endian
 	};
 #endif
 } uint32_lsb_msb_t;
 ASSERT_STRUCT(uint32_lsb_msb_t, 8);
+
+/**
+ * Get the host-endian 16-bit value if it's non-zero.
+ * Otherwise, get the swap-endian 16-bit value.
+ */
+static inline uint16_t host16ifNZ(const uint16_lsb_msb_t *lm16)
+{
+	uint16_t val = lm16->he;
+	if (val == 0) {
+		val = __swab16(lm16->se);
+	}
+	return val;
+}
+
+/**
+ * Get the host-endian 32-bit value if it's non-zero.
+ * Otherwise, get the swap-endian 32-bit value.
+ */
+static inline uint32_t host32ifNZ(const uint32_lsb_msb_t *lm32)
+{
+	uint32_t val = lm32->he;
+	if (val == 0) {
+		val = __swab32(lm32->se);
+	}
+	return val;
+}
 
 /**
  * ISO-9660 Primary Volume Descriptor date/time struct.
@@ -288,6 +316,13 @@ typedef enum {
 #define UDF_VD_NSR03 "NSR03"	/* UDF 2.00 */
 #define UDF_VD_BOOT2 "BOOT2"
 #define UDF_VD_TEA01 "TEA01"
+
+/**
+ * CD-i information.
+ * Reference: https://github.com/roysmeding/cditools/blob/master/cdi.py
+ */
+#define CDi_VD_MAGIC "CD-I "
+#define CDi_VD_VERSION 0x01
 
 #ifdef __cplusplus
 }

@@ -52,6 +52,7 @@ class ISOPrivate final : public RomDataPrivate
 
 			ISO9660 = 0,
 			HighSierra = 1,
+			CDi = 2,
 
 			Max
 		};
@@ -254,6 +255,9 @@ void ISOPrivate::checkVolumeDescriptors(void)
 template<typename T>
 void ISOPrivate::addPVDCommon(const T *pvd)
 {
+	// NOTE: CD-i discs only have the BE fields filled in.
+	// If the host-endian value is zero, check the swap-endian version.
+
 	// System ID
 	fields->addField_string(C_("ISO", "System ID"),
 		latin1_to_utf8(pvd->sysID, sizeof(pvd->sysID)),
@@ -267,19 +271,20 @@ void ISOPrivate::addPVDCommon(const T *pvd)
 	// Size of volume
 	fields->addField_string(C_("ISO", "Volume Size"),
 		formatFileSize(
-			static_cast<off64_t>(pvd->volume_space_size.he) *
-			static_cast<off64_t>(pvd->logical_block_size.he)));
+			static_cast<off64_t>(host32ifNZ(&pvd->volume_space_size)) *
+			static_cast<off64_t>(host16ifNZ(&pvd->logical_block_size))));
 
 	// TODO: Show block size?
 
 	// Disc number
-	if (pvd->volume_seq_number.he != 0 && pvd->volume_set_size.he > 1) {
+	const uint16_t volume_seq_number = host16ifNZ(&pvd->volume_seq_number);
+	const uint16_t volume_set_size = host16ifNZ(&pvd->volume_set_size);
+	if (volume_seq_number != 0 && volume_set_size > 1) {
 		const char *const disc_number_title = C_("RomData", "Disc #");
 		fields->addField_string(disc_number_title,
 			// tr: Disc X of Y (for multi-disc games)
 			rp_sprintf_p(C_("RomData|Disc", "%1$u of %2$u"),
-				pvd->volume_seq_number.he,
-				pvd->volume_set_size.he));
+				volume_seq_number, volume_set_size));
 	}
 
 	// Volume set ID
@@ -499,6 +504,15 @@ int ISO::checkPVD(const uint8_t *data)
 		return static_cast<int>(ISOPrivate::DiscType::HighSierra);
 	}
 
+	// Check for a CD-i PVD.
+	// NOTE: CD-i PVD uses the same format as ISO-9660.
+	if (pvd_iso->header.type == ISO_VDT_PRIMARY && pvd_iso->header.version == CDi_VD_VERSION &&
+	    !memcmp(pvd_iso->header.identifier, CDi_VD_MAGIC, sizeof(pvd_iso->header.identifier)))
+	{
+		// This is a CD-i PVD.
+		return static_cast<int>(ISOPrivate::DiscType::CDi);
+	}
+
 	// Not supported.
 	return static_cast<int>(ISOPrivate::DiscType::Unknown);
 }
@@ -559,14 +573,15 @@ const char *ISO::systemName(unsigned int type) const
 		"ISO::systemName() array index optimization needs to be updated.");
 
 	// TODO: UDF, HFS, others?
-	static const char *const sysNames[2][4] = {
+	static const char *const sysNames[3][4] = {
 		{"ISO-9660", "ISO", "ISO", nullptr},
 		{"High Sierra Format", "High Sierra", "HSF", nullptr},
+		{"Compact Disc Interactive", "CD-i", "CD-i", nullptr},
 	};
 
 	unsigned int sysID = 0;
-	if (d->discType == ISOPrivate::DiscType::HighSierra) {
-		sysID = 1;
+	if ((int)d->discType >= 0 && d->discType < ISOPrivate::DiscType::Max) {
+		sysID = (int)d->discType;
 	}
 	return sysNames[sysID][type & SYSNAME_TYPE_MASK];
 }
@@ -653,7 +668,7 @@ int ISO::loadFieldData(void)
 			// ISO-9660
 			d->fields->setTabName(0, C_("ISO", "ISO-9660 PVD"));
 
-			// PVD common fields (ISO-9660, High Sierra)
+			// PVD common fields
 			d->addPVDCommon(&d->pvd.iso);
 
 			// Bibliographic file
@@ -669,11 +684,27 @@ int ISO::loadFieldData(void)
 			// High Sierra
 			d->fields->setTabName(0, C_("ISO", "High Sierra PVD"));
 
-			// PVD common fields (ISO-9660, High Sierra)
+			// PVD common fields
 			d->addPVDCommon(&d->pvd.hsfs);
 
 			// Timestamps
 			d->addPVDTimestamps(&d->pvd.hsfs);
+			break;
+
+		case ISOPrivate::DiscType::CDi:
+			// CD-i
+			d->fields->setTabName(0, C_("ISO", "CD-i PVD"));
+
+			// PVD common fields
+			d->addPVDCommon(&d->pvd.iso);
+
+			// Bibliographic file
+			d->fields->addField_string(C_("ISO", "Bibliographic File"),
+				latin1_to_utf8(d->pvd.iso.bibliographic_file, sizeof(d->pvd.iso.bibliographic_file)),
+				RomFields::STRF_TRIM_END);
+
+			// Timestamps
+			d->addPVDTimestamps(&d->pvd.iso);
 			break;
 
 		default:
@@ -722,6 +753,7 @@ int ISO::loadMetaData(void)
 			break;
 
 		case ISOPrivate::DiscType::ISO9660:
+		case ISOPrivate::DiscType::CDi:
 			d->addPVDCommon_metaData(d->metaData, &d->pvd.iso);
 			d->addPVDTimestamps_metaData(d->metaData, &d->pvd.iso);
 			break;
