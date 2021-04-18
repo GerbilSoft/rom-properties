@@ -513,26 +513,33 @@ RomData *RomDataFactoryPrivate::checkISO(IRpFile *file)
 		romData->unref();
 	}
 
-	// PlayStation 1 and 2
-	if (PlayStationDisc::isRomSupported_static(pvd) >= 0) {
-		// This might be a PS1 or PS2 disc.
-		RomData *const romData = new PlayStationDisc(file);
-		if (romData->isValid()) {
-			// Got a PS1 or PS2 disc.
-			return romData;
-		}
-		romData->unref();
-	}
+	// Other disc formats.
+	typedef int (*pfnIsRomSupported_ISO_t)(const ISO_Primary_Volume_Descriptor *pvd);
+	struct RomDataFns_ISO {
+		pfnIsRomSupported_ISO_t isRomSupported;
+		pfnNewRomData_t newRomData;
+	};
+#define GetRomDataFns_ISO(sys) \
+	{sys::isRomSupported_static, \
+	 RomDataFactoryPrivate::RomData_ctor<sys>}
+	static const RomDataFns_ISO romDataFns_ISO[] = {
+		GetRomDataFns_ISO(PlayStationDisc),
+		GetRomDataFns_ISO(PSP),
 
-	// PlayStation Portable
-	if (PSP::isRomSupported_static(pvd) >= 0) {
-		// This might be a PSP disc.
-		RomData *const romData = new PSP(file);
-		if (romData->isValid()) {
-			// Got a PSP disc.
-			return romData;
+		{nullptr, nullptr}
+	};
+
+	const RomDataFns_ISO *fns = &romDataFns_ISO[0];
+	for (; fns->isRomSupported != nullptr; fns++) {
+		if (fns->isRomSupported(pvd) >= 0) {
+			// This might be the correct RomData subclass.
+			RomData *const romData = fns->newRomData(file);
+			if (romData->isValid()) {
+				// Found the correct RomData subclass.
+				return romData;
+			}
+			romData->unref();
 		}
-		romData->unref();
 	}
 
 	// Not a game-specific file system.
