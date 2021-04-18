@@ -455,14 +455,17 @@ RomData *RomDataFactoryPrivate::checkISO(IRpFile *file)
 		return nullptr;
 	}
 
+	bool is2048;
 	const ISO_Primary_Volume_Descriptor *pvd = nullptr;
 	int discType = ISO::checkPVD(sector.m1.data);
 	if (discType >= 0) {
 		// Found a PVD with 2048-byte sectors.
 		pvd = reinterpret_cast<const ISO_Primary_Volume_Descriptor*>(sector.m1.data);
+		is2048 = true;
 	} else {
 		// Check for a PVD with 2352-byte or 2448-byte sectors.
 		static const unsigned int sector_sizes[] = {2352, 2448, 0};
+		is2048 = false;
 
 		for (const unsigned int *p = sector_sizes; *p != 0; p++) {
 			size_t size = file->seekAndRead(*p * ISO_PVD_LBA, &sector, sizeof(sector));
@@ -485,35 +488,7 @@ RomData *RomDataFactoryPrivate::checkISO(IRpFile *file)
 		return nullptr;
 	}
 
-	// Xbox / Xbox 360
-	bool mayBeXbox = (XboxDisc::isRomSupported_static(pvd) >= 0);
-	if (!mayBeXbox) {
-		// This might be an extracted XDVDFS.
-		// Check for the magic number at the base offset.
-		XDVDFS_Header xdvdfsHeader;
-		size = file->seekAndRead(XDVDFS_HEADER_LBA_OFFSET * XDVDFS_BLOCK_SIZE,
-			&xdvdfsHeader, sizeof(xdvdfsHeader));
-		if (size == sizeof(xdvdfsHeader)) {
-			// Check the magic numbers.
-			if (!memcmp(xdvdfsHeader.magic, XDVDFS_MAGIC, sizeof(xdvdfsHeader.magic)) &&
-			    !memcmp(xdvdfsHeader.magic_footer, XDVDFS_MAGIC, sizeof(xdvdfsHeader.magic_footer)))
-			{
-				// It's a match!
-				mayBeXbox = true;
-			}
-		}
-	}
-
-	if (mayBeXbox) {
-		RomData *const romData = new XboxDisc(file);
-		if (romData->isValid()) {
-			// Got an Xbox disc.
-			return romData;
-		}
-		romData->unref();
-	}
-
-	// Other disc formats.
+	// Console/Handheld disc formats.
 	typedef int (*pfnIsRomSupported_ISO_t)(const ISO_Primary_Volume_Descriptor *pvd);
 	struct RomDataFns_ISO {
 		pfnIsRomSupported_ISO_t isRomSupported;
@@ -525,6 +500,7 @@ RomData *RomDataFactoryPrivate::checkISO(IRpFile *file)
 	static const RomDataFns_ISO romDataFns_ISO[] = {
 		GetRomDataFns_ISO(PlayStationDisc),
 		GetRomDataFns_ISO(PSP),
+		GetRomDataFns_ISO(XboxDisc),
 
 		{nullptr, nullptr}
 	};
@@ -539,6 +515,28 @@ RomData *RomDataFactoryPrivate::checkISO(IRpFile *file)
 				return romData;
 			}
 			romData->unref();
+		}
+	}
+
+	// Check for extracted XDVDFS. (2048-byte sector images only)
+	if (is2048) {
+		// Check for the magic number at the base offset.
+		XDVDFS_Header xdvdfsHeader;
+		size = file->seekAndRead(XDVDFS_HEADER_LBA_OFFSET * XDVDFS_BLOCK_SIZE,
+			&xdvdfsHeader, sizeof(xdvdfsHeader));
+		if (size == sizeof(xdvdfsHeader)) {
+			// Check the magic numbers.
+			if (!memcmp(xdvdfsHeader.magic, XDVDFS_MAGIC, sizeof(xdvdfsHeader.magic)) &&
+			    !memcmp(xdvdfsHeader.magic_footer, XDVDFS_MAGIC, sizeof(xdvdfsHeader.magic_footer)))
+			{
+				// It's a match! Try opening as XboxDisc.
+				RomData *const romData = new XboxDisc(file);
+				if (romData->isValid()) {
+					// Found the correct RomData subclass.
+					return romData;
+				}
+				romData->unref();
+			}
 		}
 	}
 
