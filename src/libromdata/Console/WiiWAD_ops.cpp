@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * WiiWAD.cpp: Nintendo Wii WAD file reader. (ROM operations)              *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -85,7 +85,7 @@ int WiiWAD::doRomOp_int(int id, RomOpParams *pParams)
 	if (be16_to_cpu(d->tmdHeader.title_id.sysID) != NINTENDO_SYSID_TWL) {
 		// We only have a ROM operation for DSi TADs right now.
 		pParams->status = -EINVAL;
-		pParams->msg = C_("RomData", "SRL extraction is only supported for DSi TAD packages.");
+		pParams->msg = C_("WiiWAD", "SRL extraction is only supported for DSi TAD packages.");
 		return -EINVAL;
 	}
 
@@ -169,7 +169,7 @@ out:
 	return pParams->status;
 #else /* !ENABLE_DECRYPTION */
 	pParams->status = -ENOTSUP;
-	pParams->msg = C_("RomData", "SRL extraction is not supported in NoCrypto builds.");
+	pParams->msg = C_("WiiWAD", "SRL extraction is not supported in NoCrypto builds.");
 	return -ENOTSUP;
 #endif /* ENABLE_DECRYPTION */
 }
