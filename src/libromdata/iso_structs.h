@@ -114,8 +114,7 @@ static inline uint32_t host32ifNZ(const uint32_lsb_msb_t *lm32)
  * For an unspecified time, all text fields contain '0' (ASCII zero)
  * and tz_offset is binary zero.
  */
-#pragma pack(1)
-typedef struct PACKED _ISO_PVD_DateTime_t {
+typedef struct _ISO_PVD_DateTime_t {
 	union {
 		char full[16];
 		struct {
@@ -133,14 +132,12 @@ typedef struct PACKED _ISO_PVD_DateTime_t {
 	// Range: [-48 (GMT-1200), +52 (GMT+1300)]
 	int8_t tz_offset;
 } ISO_PVD_DateTime_t;
-#pragma pack()
 ASSERT_STRUCT(ISO_PVD_DateTime_t, 17);
 
 /**
  * ISO-9660 Directory Entry date/time struct.
  */
-#pragma pack(1)
-typedef struct PACKED _ISO_Dir_DateTime_t {
+typedef struct _ISO_Dir_DateTime_t {
 	uint8_t year;		// Number of years since 1900.
 	uint8_t month;		// Month, from 1 to 12.
 	uint8_t day;		// Day, from 1 to 31.
@@ -152,7 +149,6 @@ typedef struct PACKED _ISO_Dir_DateTime_t {
 	// Range: [-48 (GMT-1200), +52 (GMT+1300)]
 	int8_t tz_offset;
 } ISO_Dir_DateTime_t;
-#pragma pack()
 ASSERT_STRUCT(ISO_Dir_DateTime_t, 7);
 
 /**
@@ -187,13 +183,11 @@ typedef enum {
 /**
  * Volume descriptor header.
  */
-#pragma pack(1)
-typedef struct PACKED _ISO_Volume_Descriptor_Header {
+typedef struct _ISO_Volume_Descriptor_Header {
 	uint8_t type;		// Volume descriptor type code. (See ISO_Volume_Descriptor_Type.)
 	char identifier[5];	// (strA) "CD001"
 	uint8_t version;	// Volume descriptor version. (0x01)
 } ISO_Volume_Descriptor_Header;
-#pragma pack()
 ASSERT_STRUCT(ISO_Volume_Descriptor_Header, 7);
 
 /**
@@ -209,16 +203,15 @@ typedef struct PACKED _ISO_Boot_Volume_Descriptor {
 		uint8_t boot_system_use[1977];
 	};
 } ISO_Boot_Volume_Descriptor;
-#pragma pack()
 ASSERT_STRUCT(ISO_Boot_Volume_Descriptor, ISO_SECTOR_SIZE_MODE1_COOKED);
+#pragma pack()
 
 /**
  * Primary volume descriptor.
  *
  * NOTE: All fields are space-padded. (0x20, ' ')
  */
-#pragma pack(1)
-typedef struct PACKED _ISO_Primary_Volume_Descriptor {
+typedef struct _ISO_Primary_Volume_Descriptor {
 	ISO_Volume_Descriptor_Header header;
 
 	uint8_t reserved1;			// [0x007] 0x00
@@ -266,7 +259,6 @@ typedef struct PACKED _ISO_Primary_Volume_Descriptor {
 	uint8_t iso_reserved[653];		// [0x573] Reserved by ISO.
 } ISO_Primary_Volume_Descriptor;
 ASSERT_STRUCT(ISO_Primary_Volume_Descriptor, ISO_SECTOR_SIZE_MODE1_COOKED);
-#pragma pack()
 
 /**
  * Volume descriptor.
@@ -279,8 +271,7 @@ ASSERT_STRUCT(ISO_Primary_Volume_Descriptor, ISO_SECTOR_SIZE_MODE1_COOKED);
 #define ISO_PVD_ADDRESS_2048	(ISO_PVD_LBA * ISO_SECTOR_SIZE_MODE1_COOKED)
 #define ISO_PVD_ADDRESS_2352	(ISO_PVD_LBA * ISO_SECTOR_SIZE_MODE1_RAW)
 #define ISO_PVD_ADDRESS_2448	(ISO_PVD_LBA * ISO_SECTOR_SIZE_MODE1_RAW_SUBCHAN)
-#pragma pack(1)
-typedef union PACKED _ISO_Volume_Descriptor {
+typedef union _ISO_Volume_Descriptor {
 	ISO_Volume_Descriptor_Header header;
 
 	struct {
@@ -292,7 +283,6 @@ typedef union PACKED _ISO_Volume_Descriptor {
 	ISO_Primary_Volume_Descriptor pri;
 } ISO_Volume_Descriptor;
 ASSERT_STRUCT(ISO_Volume_Descriptor, ISO_SECTOR_SIZE_MODE1_COOKED);
-#pragma pack()
 
 /**
  * Volume descriptor type.
