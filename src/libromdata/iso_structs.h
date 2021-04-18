@@ -82,32 +82,6 @@ typedef union _uint32_lsb_msb_t {
 ASSERT_STRUCT(uint32_lsb_msb_t, 8);
 
 /**
- * Get the host-endian 16-bit value if it's non-zero.
- * Otherwise, get the swap-endian 16-bit value.
- */
-static inline uint16_t host16ifNZ(const uint16_lsb_msb_t *lm16)
-{
-	uint16_t val = lm16->he;
-	if (val == 0) {
-		val = __swab16(lm16->se);
-	}
-	return val;
-}
-
-/**
- * Get the host-endian 32-bit value if it's non-zero.
- * Otherwise, get the swap-endian 32-bit value.
- */
-static inline uint32_t host32ifNZ(const uint32_lsb_msb_t *lm32)
-{
-	uint32_t val = lm32->he;
-	if (val == 0) {
-		val = __swab32(lm32->se);
-	}
-	return val;
-}
-
-/**
  * ISO-9660 Primary Volume Descriptor date/time struct.
  * Note that the fields are all strings.
  *

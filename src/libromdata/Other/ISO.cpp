@@ -145,6 +145,26 @@ class ISOPrivate final : public RomDataPrivate
 		{
 			return static_cast<DiscType>(ISO::checkPVD(pvd.data));
 		}
+
+		/**
+		 * Get the host-endian version of an LSB/MSB 16-bit value.
+		 * @param lm16 LSB/MSB 16-bit value.
+		 * @return Host-endian value.
+		 */
+		inline uint16_t host16(const uint16_lsb_msb_t &lm16)
+		{
+			return (likely(discType != DiscType::CDi) ? lm16.he : be16_to_cpu(lm16.be));
+		}
+
+		/**
+		 * Get the host-endian version of an LSB/MSB 32-bit value.
+		 * @param lm32 LSB/MSB 32-bit value.
+		 * @return Host-endian value.
+		 */
+		inline uint32_t host32(const uint32_lsb_msb_t &lm32)
+		{
+			return (likely(discType != DiscType::CDi) ? lm32.he : be16_to_cpu(lm32.be));
+		}
 };
 
 /** ISOPrivate **/
@@ -271,14 +291,14 @@ void ISOPrivate::addPVDCommon(const T *pvd)
 	// Size of volume
 	fields->addField_string(C_("ISO", "Volume Size"),
 		formatFileSize(
-			static_cast<off64_t>(host32ifNZ(&pvd->volume_space_size)) *
-			static_cast<off64_t>(host16ifNZ(&pvd->logical_block_size))));
+			static_cast<off64_t>(host32(pvd->volume_space_size)) *
+			static_cast<off64_t>(host16(pvd->logical_block_size))));
 
 	// TODO: Show block size?
 
 	// Disc number
-	const uint16_t volume_seq_number = host16ifNZ(&pvd->volume_seq_number);
-	const uint16_t volume_set_size = host16ifNZ(&pvd->volume_set_size);
+	const uint16_t volume_seq_number = host16(pvd->volume_seq_number);
+	const uint16_t volume_set_size = host16(pvd->volume_set_size);
 	if (volume_seq_number != 0 && volume_set_size > 1) {
 		const char *const disc_number_title = C_("RomData", "Disc #");
 		fields->addField_string(disc_number_title,
