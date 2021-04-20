@@ -2235,34 +2235,46 @@ int GameCube::checkViewedAchievements(void) const
 	}
 
 	Achievements *const pAch = Achievements::instance();
-	int ret = 0;
 
 	const int wiiPtLoaded = const_cast<GameCubePrivate*>(d)->loadWiiPartitionTables();
-	if (wiiPtLoaded == 0) {
-		// Wii partition tables loaded.
-		WiiPartition::EncKey encKey;
-		if ((d->discType & GameCubePrivate::DISC_FORMAT_MASK) == GameCubePrivate::DISC_FORMAT_NASOS) {
-			// NASOS disc image.
-			// If this would normally be an encrypted image, use encKeyReal().
-			encKey = (d->discHeader.disc_noCrypto == 0
-				? d->gamePartition->encKeyReal()
-				: d->gamePartition->encKey());
-		} else {
-			// Other disc image. Use encKey().
-			encKey = d->gamePartition->encKey();
-		}
+	if (wiiPtLoaded != 0) {
+		// Unable to load Wii partition tables.
+		return 0;
+	}
 
-		switch (encKey) {
-			default:
-				break;
-			case WiiPartition::EncKey::RVT_Debug:
-			case WiiPartition::EncKey::RVT_Korean:
-			case WiiPartition::EncKey::CAT_vWii:
-				// Debug encryption.
-				pAch->unlock(Achievements::ID::ViewedDebugCryptedFile);
-				ret++;
-				break;
-		}
+	// Check for the main partition.
+	const WiiPartition *pt = d->gamePartition;
+	if (!pt) {
+		pt = d->updatePartition;
+	}
+	if (!pt) {
+		// No partitions...
+		return 0;
+	}
+
+	int ret = 0;
+	WiiPartition::EncKey encKey;
+	if ((d->discType & GameCubePrivate::DISC_FORMAT_MASK) == GameCubePrivate::DISC_FORMAT_NASOS) {
+		// NASOS disc image.
+		// If this would normally be an encrypted image, use encKeyReal().
+		encKey = (d->discHeader.disc_noCrypto == 0
+			? pt->encKeyReal()
+			: pt->encKey());
+	} else {
+		// Other disc image. Use encKey().
+		encKey = pt->encKey();
+	}
+
+	switch (encKey) {
+		default:
+			break;
+		case WiiPartition::EncKey::RVT_Debug:
+		case WiiPartition::EncKey::RVT_Korean:
+		case WiiPartition::EncKey::CAT_vWii:
+			// Debug encryption.
+			pAch->unlock(Achievements::ID::ViewedDebugCryptedFile);
+			ret++;
+			break;
 	}
 
 	return ret;
