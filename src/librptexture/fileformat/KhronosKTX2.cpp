@@ -2,17 +2,14 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * KhronosKTX2.cpp: Khronos KTX2 image reader.                             *
  *                                                                         *
- * Copyright (c) 2017-2020 by David Korth.                                 *
+ * Copyright (c) 2017-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 /**
  * References:
  * - https://github.khronos.org/KTX-Specification/
- *
- * WARNING: The specification is still in draft stages.
- * (2.0.rc4 as of 2020/06/17) It is subject to change
- * prior to finalization.
+ * - https://github.com/KhronosGroup/KTX-Specification
  */
 
 #include "stdafx.h"
