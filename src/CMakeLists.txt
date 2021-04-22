@@ -27,16 +27,12 @@ IF(NOT HAVE_TIMEGM)
 	# NOTE: MSVCRT's _mkgmtime64() has a range of [1970/01/01, 3000/12/31].
 	# glibc and boost both support arbitrary ranges.
 	CHECK_SYMBOL_EXISTS_OR_INLINE(_mkgmtime "time.h" "struct tm tm; time_t x = _mkgmtime(&tm);" HAVE__MKGMTIME)
+	CHECK_SYMBOL_EXISTS_OR_INLINE(_mkgmtime32 "time.h" "struct tm tm; time_t x = _mkgmtime(&tm);" HAVE__MKGMTIME32)
 	CHECK_SYMBOL_EXISTS_OR_INLINE(_mkgmtime64 "time.h" "struct tm tm; time_t x = _mkgmtime64(&tm);" HAVE__MKGMTIME64)
 ENDIF(NOT HAVE_TIMEGM)
-IF(NOT HAVE_TIMEGM AND NOT HAVE__MKGMTIME AND NOT HAVE__MKGMTIME64)
-	IF(MINGW)
-		# FIXME: _mkgmtime() exists on 32-bit MinGW-w64, but it's not being found...
-		SET(HAVE__MKGMTIME 1)
-	ELSE(MINGW)
-		MESSAGE(FATAL_ERROR "timegm() or equivalent function not found.")
-	ENDIF(MINGW)
-ENDIF(NOT HAVE_TIMEGM AND NOT HAVE__MKGMTIME AND NOT HAVE__MKGMTIME64)
+IF(NOT HAVE_TIMEGM AND NOT HAVE__MKGMTIME AND NOT HAVE__MKGMTIME32 AND NOT HAVE__MKGMTIME64)
+	MESSAGE(FATAL_ERROR "timegm() or equivalent function not found.")
+ENDIF(NOT HAVE_TIMEGM AND NOT HAVE__MKGMTIME AND NOT HAVE__MKGMTIME32 AND NOT HAVE__MKGMTIME64)
 
 # Write the libc configuration file.
 CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/config.libc.h.in" "${CMAKE_CURRENT_BINARY_DIR}/config.libc.h")
