@@ -15,6 +15,7 @@ class CacheCleaner : public QObject
 {
 	Q_OBJECT
 
+	Q_ENUMS(CacheCleaner::CacheDir)
 	Q_PROPERTY(CacheCleaner::CacheDir cacheDir READ cacheDir WRITE setCacheDir)
 
 	public:
