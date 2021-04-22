@@ -30,7 +30,12 @@ IF(NOT HAVE_TIMEGM)
 	CHECK_SYMBOL_EXISTS_OR_INLINE(_mkgmtime64 "time.h" "struct tm tm; time_t x = _mkgmtime64(&tm);" HAVE__MKGMTIME64)
 ENDIF(NOT HAVE_TIMEGM)
 IF(NOT HAVE_TIMEGM AND NOT HAVE__MKGMTIME AND NOT HAVE__MKGMTIME64)
-	MESSAGE(FATAL_ERROR "timegm() or equivalent function not found.")
+	IF(MINGW)
+		# FIXME: _mkgmtime() exists on 32-bit MinGW-w64, but it's not being found...
+		SET(HAVE__MKGMTIME 1)
+	ELSE(MINGW)
+		MESSAGE(FATAL_ERROR "timegm() or equivalent function not found.")
+	ENDIF(MINGW)
 ENDIF(NOT HAVE_TIMEGM AND NOT HAVE__MKGMTIME AND NOT HAVE__MKGMTIME64)
 
 # Write the libc configuration file.
