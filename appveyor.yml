@@ -40,9 +40,9 @@ environment:
       configuration: Release
       compiler: msvc2015
 
-    - platform: x86
-      configuration: Debug
-      compiler: mingw-w64
+    #- platform: x86
+    #  configuration: Debug
+    #  compiler: mingw-w64
 
     - platform: x64
       configuration: Debug
