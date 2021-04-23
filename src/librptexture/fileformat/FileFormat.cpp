@@ -2,13 +2,15 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * FileFormat.cpp: Texture file format base class.                         *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #include "stdafx.h"
 #include "FileFormat.hpp"
 #include "FileFormat_p.hpp"
+
+#include "libi18n/i18n.h"
 
 // librpfile
 using LibRpFile::IRpFile;
@@ -35,6 +37,9 @@ FileFormatPrivate::FileFormatPrivate(FileFormat *q, IRpFile *file)
 {
 	// Clear the arrays.
 	memset(dimensions, 0, sizeof(dimensions));
+
+	// Initialize i18n.
+	rp_i18n_init();
 
 	if (file) {
 		// Reference the file.

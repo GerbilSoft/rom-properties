@@ -23,6 +23,8 @@
 #include "data/VkEnumStrings.hpp"
 
 // librpbase, librpfile
+#include "libi18n/i18n.h"
+using LibRpBase::rp_sprintf;
 using LibRpBase::RomFields;
 using LibRpFile::IRpFile;
 
@@ -870,10 +872,6 @@ int KhronosKTX2::mipmapCount(void) const
  */
 int KhronosKTX2::getFields(LibRpBase::RomFields *fields) const
 {
-	// TODO: Localization.
-#define C_(ctx, str) str
-#define NOP_C_(ctx, str) str
-
 	assert(fields != nullptr);
 	if (!fields)
 		return 0;
@@ -901,10 +899,8 @@ int KhronosKTX2::getFields(LibRpBase::RomFields *fields) const
 		fields->addField_string(C_("KhronosKTX2", "Supercompression"),
 			supercompression_tbl[ktx2Header->supercompressionScheme]);
 	} else {
-		// TODO: rp_sprintf()?
-		char buf[32];
-		snprintf(buf, sizeof(buf), C_("RomData", "Unknown (%d)"), ktx2Header->supercompressionScheme);
-		fields->addField_string(C_("KhronosKTX2", "Supercompression"), buf);
+		fields->addField_string(C_("KhronosKTX2", "Supercompression"),
+			rp_sprintf(C_("RomData", "Unknown (%d)"), ktx2Header->supercompressionScheme));
 	}
 
 	// NOTE: Vulkan field names should not be localized.

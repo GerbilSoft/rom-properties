@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * XboxXPR.cpp: Microsoft Xbox XPR0 texture reader.                        *
  *                                                                         *
- * Copyright (c) 2019-2020 by David Korth.                                 *
+ * Copyright (c) 2019-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -13,6 +13,7 @@
 #include "xbox_xpr_structs.h"
 
 // librpbase, librpfile
+#include "libi18n/i18n.h"
 using LibRpBase::rp_sprintf;
 using LibRpFile::IRpFile;
 
@@ -754,10 +755,6 @@ int XboxXPR::mipmapCount(void) const
  */
 int XboxXPR::getFields(LibRpBase::RomFields *fields) const
 {
-	// TODO: Localization.
-#define C_(ctx, str) str
-#define NOP_C_(ctx, str) str
-
 	assert(fields != nullptr);
 	if (!fields)
 		return 0;

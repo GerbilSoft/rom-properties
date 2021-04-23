@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * KhronosKTX.cpp: Khronos KTX image reader.                               *
  *                                                                         *
- * Copyright (c) 2017-2020 by David Korth.                                 *
+ * Copyright (c) 2017-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -22,6 +22,7 @@
 #include "data/GLenumStrings.hpp"
 
 // librpbase, librpfile
+#include "libi18n/i18n.h"
 using LibRpBase::RomFields;
 using LibRpFile::IRpFile;
 
@@ -900,10 +901,6 @@ int KhronosKTX::mipmapCount(void) const
  */
 int KhronosKTX::getFields(LibRpBase::RomFields *fields) const
 {
-	// TODO: Localization.
-#define C_(ctx, str) str
-#define NOP_C_(ctx, str) str
-
 	assert(fields != nullptr);
 	if (!fields)
 		return 0;

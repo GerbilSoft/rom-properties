@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * DirectDrawSurface.hpp: DirectDraw Surface image reader.                 *
  *                                                                         *
- * Copyright (c) 2017-2020 by David Korth.                                 *
+ * Copyright (c) 2017-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -16,6 +16,7 @@
 #include "data/DX10Formats.hpp"
 
 // librpbase, librpfile
+#include "libi18n/i18n.h"
 using LibRpBase::rp_sprintf;
 using LibRpBase::RomFields;
 using LibRpFile::IRpFile;
@@ -1076,10 +1077,6 @@ const char *DirectDrawSurface::textureFormatName(void) const
  */
 const char *DirectDrawSurface::pixelFormat(void) const
 {
-	// TODO: Localization.
-#define C_(ctx, str) str
-#define NOP_C_(ctx, str) str
-
 	RP_D(const DirectDrawSurface);
 	if (!d->isValid)
 		return nullptr;
@@ -1170,10 +1167,6 @@ int DirectDrawSurface::mipmapCount(void) const
  */
 int DirectDrawSurface::getFields(RomFields *fields) const
 {
-	// TODO: Localization.
-#define C_(ctx, str) str
-#define NOP_C_(ctx, str) str
-
 	assert(fields != nullptr);
 	if (!fields)
 		return 0;

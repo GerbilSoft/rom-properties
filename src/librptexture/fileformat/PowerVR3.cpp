@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * PowerVR3.cpp: PowerVR 3.0.0 texture image reader.                       *
  *                                                                         *
- * Copyright (c) 2019-2020 by David Korth.                                 *
+ * Copyright (c) 2019-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -20,6 +20,7 @@
 #include "pvr3_structs.h"
 
 // librpbase, librpfile
+#include "libi18n/i18n.h"
 using LibRpBase::RomFields;
 using LibRpFile::IRpFile;
 
@@ -878,10 +879,6 @@ const char *PowerVR3::textureFormatName(void) const
  */
 const char *PowerVR3::pixelFormat(void) const
 {
-	// TODO: Localization.
-#define C_(ctx, str) str
-#define NOP_C_(ctx, str) str
-
 	RP_D(const PowerVR3);
 	if (!d->isValid)
 		return nullptr;
@@ -989,10 +986,6 @@ int PowerVR3::mipmapCount(void) const
  */
 int PowerVR3::getFields(LibRpBase::RomFields *fields) const
 {
-	// TODO: Localization.
-#define C_(ctx, str) str
-#define NOP_C_(ctx, str) str
-
 	assert(fields != nullptr);
 	if (!fields)
 		return 0;

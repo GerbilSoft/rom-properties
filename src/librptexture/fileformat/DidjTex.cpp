@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * DidjTex.hpp: Leapster Didj .tex reader.                                 *
  *                                                                         *
- * Copyright (c) 2019-2020 by David Korth.                                 *
+ * Copyright (c) 2019-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -13,6 +13,7 @@
 #include "didj_tex_structs.h"
 
 // librpbase, librpfile
+#include "libi18n/i18n.h"
 using LibRpBase::rp_sprintf;
 using LibRpBase::RomFields;
 using LibRpFile::IRpFile;
@@ -505,10 +506,6 @@ int DidjTex::mipmapCount(void) const
  */
 int DidjTex::getFields(RomFields *fields) const
 {
-	// TODO: Localization.
-#define C_(ctx, str) str
-#define NOP_C_(ctx, str) str
-
 	assert(fields != nullptr);
 	if (!fields)
 		return 0;

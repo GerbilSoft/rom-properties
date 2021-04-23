@@ -16,6 +16,7 @@
 #include "time_r.h"
 
 // librpbase, librpfile
+#include "libi18n/i18n.h"
 using namespace LibRpBase;
 using LibRpFile::IRpFile;
 
@@ -784,10 +785,6 @@ int TGA::mipmapCount(void) const
  */
 int TGA::getFields(RomFields *fields) const
 {
-	// TODO: Localization.
-#define C_(ctx, str) str
-#define NOP_C_(ctx, str) str
-
 	assert(fields != nullptr);
 	if (!fields)
 		return 0;
