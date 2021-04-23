@@ -17,28 +17,38 @@
 
 #include "i18n.h"
 #ifdef _WIN32
-# include "libwin32common/RpWin32_sdk.h"
+#  include "libwin32common/RpWin32_sdk.h"
 #endif
 
 #include "common.h"
 
+// Initialized?
+#include "stdboolx.h"
+#include "librpthreads/pthread_once.h"
+static pthread_once_t once_control = PTHREAD_ONCE_INIT;
+static bool i18n_is_init = false;
+
 #ifdef _WIN32
 // Architecture name.
 #if defined(_M_X64) || defined(__amd64__)
-# define ARCH_NAME _T("amd64")
+#  define ARCH_NAME _T("amd64")
 #elif defined(_M_IX86) || defined(__i386__)
-# define ARCH_NAME _T("i386")
+#  define ARCH_NAME _T("i386")
+#elif defined(_M_ARM) || defined(__arm__) || defined(__thumb__)
+#  define ARCH_NAME _T("arm")
+#elif defined(_M_ARM64) || defined(__aarch64__)
+#  define ARCH_NAME _T("arm64")
 #else
-# error Unsupported CPU architecture.
+#  error Unsupported CPU architecture.
 #endif
 
 /**
  * Initialize the internationalization subsystem.
  * (Windows version)
  *
- * @return 0 on success; non-zero on error.
+ * Called by pthread_once().
  */
-int rp_i18n_init(void)
+static void rp_i18n_init_int(void)
 {
 	// Windows: Use the application-specific locale directory.
 	DWORD dwResult, dwAttrs;
@@ -57,14 +67,16 @@ int rp_i18n_init(void)
 		// Cannot get the current module filename.
 		// TODO: Windows XP doesn't SetLastError() if the
 		// filename is too big for the buffer.
-		return -1;
+		i18n_is_init = false;
+		return;
 	}
 
 	// Find the last backslash in tpathname[].
 	bs = _tcsrchr(tpathname, _T('\\'));
 	if (!bs) {
 		// No backslashes...
-		return -1;
+		i18n_is_init = false;
+		return;
 	}
 
 	// Append the "locale" subdirectory.
@@ -79,14 +91,16 @@ int rp_i18n_init(void)
 		bs = _tcsrchr(tpathname, _T('\\'));
 		if (!bs) {
 			// No backslashes...
-			return -1;
+			i18n_is_init = false;
+			return;
 		}
 
 		// Make sure the current subdirectory matches
 		// the DLL architecture.
 		if (_tcscmp(bs+1, ARCH_NAME) != 0) {
 			// Not a match.
-			return -1;
+			i18n_is_init = false;
+			return;
 		}
 
 		// Append the "locale" subdirectory.
@@ -96,7 +110,8 @@ int rp_i18n_init(void)
 		    !(dwAttrs & FILE_ATTRIBUTE_DIRECTORY))
 		{
 			// Not found, or not a subdirectory.
-			return -1;
+			i18n_is_init = false;
+			return;
 		}
 	}
 
@@ -108,16 +123,24 @@ int rp_i18n_init(void)
 #else /* !UNICODE */
 	base = bindtextdomain(RP_I18N_DOMAIN, tpathname);
 #endif /* UNICODE */
-	if (!base) {
-		// bindtextdomain() failed.
-		return -1;
-	}
-
-	// Initialized.
-	return 0;
+	i18n_is_init = (base != NULL);
 }
 
 #else /* !_WIN32 */
+
+/**
+ * Initialize the internationalization subsystem.
+ * (Unix/Linux version)
+ *
+ * Called by pthread_once().
+ */
+static void rp_i18n_init_int(void)
+{
+	// Unix/Linux: Use the system-wide locale directory.
+	const char *const base = bindtextdomain(RP_I18N_DOMAIN, DIR_INSTALL_LOCALE);
+	i18n_is_init = (base != NULL);
+}
+#endif /* _WIN32 */
 
 /**
  * Initialize the internationalization subsystem.
@@ -127,14 +150,8 @@ int rp_i18n_init(void)
  */
 int rp_i18n_init(void)
 {
-	// Unix/Linux: Use the system-wide locale directory.
-	const char *const base = bindtextdomain(RP_I18N_DOMAIN, DIR_INSTALL_LOCALE);
-	if (!base) {
-		// bindtextdomain() failed.
-		return -1;
-	}
-	return 0;
+	pthread_once(&once_control, rp_i18n_init_int);
+	return (i18n_is_init ? 0 : -1);
 }
-#endif /* _WIN32 */
 
 #endif /* ENABLE_NLS */
