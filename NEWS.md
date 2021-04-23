@@ -63,6 +63,8 @@
   * EXE: Don't show the "dangerous permission" overlay for Win32 executables
     that don't have a manifest.
   * NintendoDS: Add "EN" fallback for external artwork from GameTDB.
+  * Re-enabled localization for texture parsers. This was broken with the
+    conversion to librptexture in v1.5.
 
 ## v1.7.3 (released 2020/09/25)
 
