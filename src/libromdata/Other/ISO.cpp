@@ -78,10 +78,28 @@ class ISOPrivate final : public RomDataPrivate
 		const char *s_udf_version;
 
 	public:
+		// El Torito boot catalog LBA. (present if non-zero)
+		uint32_t boot_catalog_LBA;
+
+		// TODO: Print more comprehensive boot information?
+		// For now, just listing boot image types. (x86, EFI)
+		enum BootPlatform {
+			BOOT_PLATFORM_x86	= (1U << 0),
+			BOOT_PLATFORM_EFI	= (1U << 1),
+		};
+		uint32_t boot_platforms;
+
+	public:
 		/**
 		 * Check additional volume descirptors.
 		 */
 		void checkVolumeDescriptors(void);
+
+		/**
+		 * Read the El Torito boot catalog.
+		 * @param lba Boot catalog LBA
+		 */
+		void readBootCatalog(uint32_t lba);
 
 		/**
 		 * Convert an ISO PVD timestamp to UNIX time.
@@ -175,6 +193,8 @@ ISOPrivate::ISOPrivate(ISO *q, IRpFile *file)
 	, sector_size(0)
 	, sector_offset(0)
 	, s_udf_version(nullptr)
+	, boot_catalog_LBA(0)
+	, boot_platforms(0)
 {
 	// Clear the disc header structs.
 	memset(&pvd, 0, sizeof(pvd));
@@ -193,40 +213,58 @@ void ISOPrivate::checkVolumeDescriptors(void)
 	off64_t addr = (ISO_PVD_LBA * static_cast<off64_t>(sector_size)) + sector_offset;
 	const off64_t maxaddr = 0x100 * static_cast<off64_t>(sector_size);
 
-	ISO_Volume_Descriptor_Header deschdr;
-	bool foundVDT = false;
-	while (addr < maxaddr) {
+	ISO_Volume_Descriptor vd;
+	uint32_t boot_LBA = 0;
+	bool foundTerminator = false;
+	do {
 		addr += sector_size;
-		size_t size = file->seekAndRead(addr, &deschdr, sizeof(deschdr));
-		if (size != sizeof(deschdr)) {
+		size_t size = file->seekAndRead(addr, &vd, sizeof(vd));
+		if (size != sizeof(vd)) {
 			// Seek and/or read error.
 			break;
 		}
 
-		if (memcmp(deschdr.identifier, ISO_VD_MAGIC, sizeof(deschdr.identifier)) != 0) {
+		if (memcmp(vd.header.identifier, ISO_VD_MAGIC, sizeof(vd.header.identifier)) != 0) {
 			// Incorrect identifier.
 			break;
 		}
 
-		if (deschdr.type == ISO_VDT_TERMINATOR) {
-			// Found the terminator.
-			foundVDT = true;
-			break;
+		switch (vd.header.type) {
+			case ISO_VDT_TERMINATOR:
+				// Found the terminator.
+				foundTerminator = true;
+				break;
+			case ISO_VDT_BOOT_RECORD:
+				if (boot_LBA != 0)
+					break;
+				// Check if this is El Torito.
+				if (!strcmp(vd.boot.sysID, ISO_EL_TORITO_BOOT_SYSTEM_ID)) {
+					// This is El Torito.
+					boot_LBA = le32_to_cpu(vd.boot.boot_catalog_addr);
+				}
+				break;
+			default:
+				break;
 		}
-	}
-	if (!foundVDT) {
+	} while (!foundTerminator && addr < maxaddr);
+	if (!foundTerminator) {
 		// No terminator...
 		return;
 	}
 
+	if (boot_LBA != 0) {
+		// Read the boot catalog.
+		readBootCatalog(boot_LBA);
+	}
+
 	// Check for a UDF extended descriptor section.
 	addr += sector_size;
-	size_t size = file->seekAndRead(addr, &deschdr, sizeof(deschdr));
-	if (size != sizeof(deschdr)) {
+	size_t size = file->seekAndRead(addr, &vd, sizeof(vd));
+	if (size != sizeof(vd)) {
 		// Seek and/or read error.
 		return;
 	}
-	if (memcmp(deschdr.identifier, UDF_VD_BEA01, sizeof(deschdr.identifier)) != 0) {
+	if (memcmp(vd.header.identifier, UDF_VD_BEA01, sizeof(vd.header.identifier)) != 0) {
 		// Not an extended descriptor section.
 		return;
 	}
@@ -234,15 +272,15 @@ void ISOPrivate::checkVolumeDescriptors(void)
 	// Look for NSR02/NSR03.
 	while (addr < maxaddr) {
 		addr += sector_size;
-		size_t size = file->seekAndRead(addr, &deschdr, sizeof(deschdr));
-		if (size != sizeof(deschdr)) {
+		size_t size = file->seekAndRead(addr, &vd, sizeof(vd));
+		if (size != sizeof(vd)) {
 			// Seek and/or read error.
 			break;
 		}
 
-		if (!memcmp(deschdr.identifier, "NSR0", 4)) {
+		if (!memcmp(vd.header.identifier, "NSR0", 4)) {
 			// Found an NSR descriptor.
-			switch (deschdr.identifier[4]) {
+			switch (vd.header.identifier[4]) {
 				case '1':
 					s_udf_version = "1.00";
 					break;
@@ -258,7 +296,7 @@ void ISOPrivate::checkVolumeDescriptors(void)
 			break;
 		}
 
-		if (!memcmp(deschdr.identifier, UDF_VD_TEA01, sizeof(deschdr.identifier))) {
+		if (!memcmp(vd.header.identifier, UDF_VD_TEA01, sizeof(vd.header.identifier))) {
 			// End of extended descriptor section.
 			break;
 		}
@@ -266,6 +304,92 @@ void ISOPrivate::checkVolumeDescriptors(void)
 
 	// Done reading UDF for now.
 	// TODO: More descriptors?
+}
+
+/**
+ * Read the El Torito boot catalog.
+ * @param lba Boot catalog LBA
+ */
+void ISOPrivate::readBootCatalog(uint32_t lba)
+{
+	assert(lba != 0);
+	if (lba == 0)
+		return;
+
+	// Read the entire sector.
+	uint8_t sector_buf[ISO_SECTOR_SIZE_MODE1_COOKED];
+	off64_t addr = (lba * static_cast<off64_t>(sector_size)) + sector_offset;
+	size_t size = file->seekAndRead(addr, sector_buf, sizeof(sector_buf));
+	if (size != sizeof(sector_buf)) {
+		// Seek and/or read error.
+		return;
+	}
+
+	// Parse the entries.
+	const uint8_t *p = sector_buf;
+	const uint8_t *const p_end = &sector_buf[sizeof(sector_buf)];
+	bool isFirst = true, isFinal = false;
+	do {
+		const ISO_Boot_Section_Header_Entry *const header =
+			reinterpret_cast<const ISO_Boot_Section_Header_Entry*>(p);
+		if (isFirst) {
+			// Header ID must be ISO_BOOT_SECTION_HEADER_ID_FIRST,
+			// and the key bytes must be valid.
+			if (header->header_id != ISO_BOOT_SECTION_HEADER_ID_FIRST ||
+			    header->key_55 != 0x55 || header->key_AA != 0xAA)
+			{
+				// Invalid header ID and/or key bytes.
+				return;
+			}
+		} else {
+			if (header->header_id == ISO_BOOT_SECTION_HEADER_ID_FINAL) {
+				// Final header.
+				isFinal = true;
+			} else if (header->header_id != ISO_BOOT_SECTION_HEADER_ID_NEXT) {
+				// Invalid header ID.
+				break;
+			}
+		}
+		p += sizeof(*header);
+		if (p >= p_end)
+			break;
+
+		// TODO: Validate checksum and key bytes?
+
+		// Get header values, and handle first vs. next.
+		unsigned int entries;
+		if (isFirst) {
+			entries = 1;
+			isFirst = false;
+		} else {
+			entries = le16_to_cpu(header->entries);
+		}
+
+		// Section entries.
+		for (unsigned int i = 0; i < entries && p < p_end; i++, p += sizeof(ISO_Boot_Section_Entry)) {
+			const ISO_Boot_Section_Entry *const entry =
+				reinterpret_cast<const ISO_Boot_Section_Entry*>(p);
+			if (entry->boot_indicator != ISO_BOOT_INDICATOR_IS_BOOTABLE)
+				continue;
+
+			// This entry is bootable.
+			// TODO: Save it? For now, merely setting bootable flags.
+			// TODO: Do this for the header, not the entries?
+			switch (header->platform_id) {
+				default:
+					break;
+				case ISO_BOOT_PLATFORM_80x86:
+					boot_platforms |= BOOT_PLATFORM_x86;
+					break;
+				case ISO_BOOT_PLATFORM_EFI:
+					boot_platforms |= BOOT_PLATFORM_EFI;
+					break;
+			}
+		}
+	} while (!isFinal && p < p_end);
+
+	// Finished reading the boot catalog.
+	boot_catalog_LBA = lba;
 }
 
 /**
@@ -678,7 +802,7 @@ int ISO::loadFieldData(void)
 		return -EIO;
 	}
 
-	d->fields->reserve(16);	// Maximum of 16 fields.
+	d->fields->reserve(17);	// Maximum of 17 fields.
 
 	// NOTE: All fields are space-padded. (0x20, ' ')
 	// TODO: ascii_to_utf8()?
@@ -698,6 +822,21 @@ int ISO::loadFieldData(void)
 
 			// Timestamps
 			d->addPVDTimestamps(&d->pvd.iso);
+
+			// Is this disc bootable? (El Torito)
+			if (d->boot_catalog_LBA != 0) {
+				// TODO: More comprehensive boot catalog.
+				// For now, only showing boot platforms, and
+				// only if a boot catalog is present.
+				static const char *const boot_platforms_names[] = {
+					"x86", "EFI"
+				};
+				vector<string> *const v_boot_platforms_names = RomFields::strArrayToVector(
+					boot_platforms_names, ARRAY_SIZE(boot_platforms_names));
+				d->fields->addField_bitfield(C_("ISO", "Boot Platforms"),
+					v_boot_platforms_names, 0, d->boot_platforms);
+
+			}
 			break;
 
 		case ISOPrivate::DiscType::HighSierra:

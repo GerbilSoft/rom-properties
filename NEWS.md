@@ -46,7 +46,11 @@
     * Skyrim: `.exs`
     * Fixes #303, reported by @60fpshacksrock.
   * KhronosKTX, KhronosKTX2: Fix thumbnailing registration on Windows.
-  * ISO: Basic support for CD-i images. (PVD only)
+  * ISO:
+    * Basic support for CD-i images. (PVD only)
+    * Basic support for El Torito boot image detection. Currently only
+      displays if x86 and/or EFI boot images are present, but not any
+      specifics.
 
 * Bug fixes:
   * GameCube: Detect incrementing values partitions in encrypted images.
