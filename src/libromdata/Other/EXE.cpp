@@ -899,9 +899,8 @@ int EXE::loadFieldData(void)
  */
 bool EXE::hasDangerousPermissions(void) const
 {
-	RP_D(const EXE);
-
 #ifdef ENABLE_XML
+	RP_D(const EXE);
 	// PE executables only.
 	if (d->exeType != EXEPrivate::ExeType::PE &&
 	    d->exeType != EXEPrivate::ExeType::PE32PLUS)
