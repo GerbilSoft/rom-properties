@@ -221,7 +221,9 @@ public:
 		}
 
 		// Print the bits.
-		os << ColonPad(field.width, romField.name.c_str());
+		// FIXME: Why do we need to subtract 1 here to correctly align
+		// the first-row boxes? Maybe it should be somewhere else...
+		os << ColonPad(field.width-1, romField.name.c_str());
 		StreamStateSaver state(os);
 		os << left;
 		col = 0;
@@ -238,9 +240,11 @@ public:
 			if (col == perRow) {
 				os << '\n' << Pad(field.width);
 				col = 0;
+			} else {
+				os << ' ';
 			}
 
-			os << " [" << ((bitfield & 1) ? '*' : ' ') << "] " <<
+			os << '[' << ((bitfield & 1) ? '*' : ' ') << "] " <<
 				setw(colSize[col]) << name;
 			col++;
 		}
