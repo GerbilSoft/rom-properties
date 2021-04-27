@@ -243,6 +243,7 @@ bool RomThumbCreator::create(const QString &path, int width, int height, QImage 
 	if (ret == 0) {
 		img = outParams.retImg;
 	}
+	file->unref();
 	return (ret == 0);
 }
 
