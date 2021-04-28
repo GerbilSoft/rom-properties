@@ -52,18 +52,21 @@ class Achievements
 		 * Achievement identifiers.
 		 */
 		enum class ID {
-			// Debug-encrypted file. (devkits)
+			// Debug-encrypted file (devkits)
 			ViewedDebugCryptedFile		= 0,
 
-			// Non-x86/x64 PE executable.
-			// Does not include Xbox 360 executables.
+			// Non-x86/x64 PE executable
+			// Does not include Xbox 360 executables
 			ViewedNonX86PE			= 1,
 
-			// BroadOn WAD file format for Wii.
+			// BroadOn WAD file format for Wii
 			ViewedBroadOnWADFile		= 2,
 
 			// Sonic & Knuckles locked on to Sonic & Knuckles
 			ViewedMegaDriveSKwithSK		= 3,
+
+			// CD-i disc image
+			ViewedCDiDiscImage		= 4,
 
 			Max
 		};

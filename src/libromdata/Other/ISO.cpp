@@ -15,6 +15,7 @@
 #include "hsfs_structs.h"
 
 // librpbase, librpfile, librpcpu
+#include "librpbase/Achievements.hpp"
 #include "librpbase/TextFuncs.hpp"
 #include "libi18n/i18n.h"
 using namespace LibRpBase;
@@ -781,6 +782,31 @@ const char *const *ISO::supportedMimeTypes_static(void)
 		nullptr
 	};
 	return mimeTypes;
+}
+
+/**
+ * Check for "viewed" achievements.
+ *
+ * @return Number of achievements unlocked.
+ */
+int ISO::checkViewedAchievements(void) const
+{
+	RP_D(const ISO);
+	if (!d->isValid) {
+		// Disc image is not valid.
+		return 0;
+	}
+
+	Achievements *const pAch = Achievements::instance();
+	int ret = 0;
+
+	// Check for a CD-i disc image.
+	if (d->discType == ISOPrivate::DiscType::CDi) {
+		pAch->unlock(Achievements::ID::ViewedCDiDiscImage);
+		ret++;
+	}
+
+	return ret;
 }
 
 /**
