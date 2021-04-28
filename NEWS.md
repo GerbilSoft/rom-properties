@@ -55,7 +55,9 @@
 * Bug fixes:
   * GameCube: Detect incrementing values partitions in encrypted images.
     * Fixes #269, reported by @Masamune3210.
-  * KDE: Ensure the "Thumb::URI" value is urlencoded.
+  * KDE:
+    * Ensure the "Thumb::URI" value is urlencoded.
+    * Fixed a massive file handle leak. Affects v1.5 and later.
   * Fixed a potential crash when loading an invalid PNG image.
   * Windows: Fixed a column sizing issue that caused XDBF Gamerscore columns
     to be too wide.
