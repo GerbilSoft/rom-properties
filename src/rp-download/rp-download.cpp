@@ -394,6 +394,9 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 		SCMP_SYS(geteuid),
 		SCMP_SYS(sendmsg),	// libpthread.so [_nss_resolve_gethostbyname4_r() from libnss_resolve.so]
 
+		// FIXME: Manjaro is using these syscalls for some reason...
+		SCMP_SYS(prctl), SCMP_SYS(mremap), SCMP_SYS(ppoll),
+
 		-1	// End of whitelist
 	};
 	param.syscall_wl = syscall_wl;

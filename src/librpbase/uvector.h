@@ -122,12 +122,6 @@ class uvector : private Alloc
 #if !defined(CXX_NO_IS_STANDARD_LAYOUT) && !defined(CXX_NO_CONSTEXPR)
 	static_assert(std::is_standard_layout<Tp>(), "A uvector can only hold classes with standard layout");
 #endif /* !CXX_NO_IS_STANDARD_LAYOUT */
-private:
-#if __cplusplus > 201402L
-	typedef std::allocator_traits<allocator_type>::is_always_equal allocator_is_always_equal;
-#else
-	typedef std::false_type allocator_is_always_equal;
-#endif
 public:
 	/// Element type
 	typedef Tp value_type;
@@ -155,6 +149,12 @@ public:
 	typedef std::size_t size_t;
 	/// Type used for indexing elements
 	typedef std::size_t size_type;
+private:
+#if __cplusplus > 201402L
+	typedef typename std::allocator_traits<allocator_type>::is_always_equal allocator_is_always_equal;
+#else
+	typedef typename std::false_type allocator_is_always_equal;
+#endif
 	
 private:
 	pointer _begin, _end, _endOfStorage;
