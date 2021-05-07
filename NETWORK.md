@@ -38,6 +38,7 @@ or deleted.
   * Nintendo Game Boy Color
   * Nintendo Game Boy Advance
   * Super NES
+  * WonderSwan (Color)
 
 ## Security features
 
