@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpfile)                        *
  * RpFile.hpp: Standard file object.                                       *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -150,12 +150,6 @@ class RpFile : public IRpFile
 
 	public:
 		/** Device file functions **/
-
-		/**
-		 * Is this a device file?
-		 * @return True if this is a device file; false if not.
-		 */
-		bool isDevice(void) const final;
 
 		/**
 		 * Re-read device size using the native OS API.

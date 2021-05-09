@@ -23,7 +23,7 @@ using namespace LibRpFile;
 #include <sys/stat.h>	// stat(), statx()
 
 // d_type compatibility values
-#include "librpbase/d_type.h"
+#include "d_type.h"
 
 // C++ STL classes
 using std::list;

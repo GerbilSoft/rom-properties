@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpfile)                        *
  * RpFile_stdio.cpp: Standard file object. (stdio implementation)          *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -88,16 +88,15 @@ int RpFilePrivate::reOpenFile(void)
 	}
 
 	// Check if this is a device.
-	bool isDevice = false;
 	bool hasFileMode = false;
-	uint16_t fileMode = 0;
+	uint8_t fileType = 0;
 #ifdef HAVE_STATX
 	struct statx sbx;
 	int ret = statx(fileno(file), "", AT_EMPTY_PATH, STATX_TYPE, &sbx);
 	if (ret == 0 && (sbx.stx_mask & STATX_TYPE)) {
 		// statx() succeeded.
 		hasFileMode = true;
-		fileMode = sbx.stx_mode;
+		fileType = IF2DT(sbx.stx_mode);
 	}
 #else /* !HAVE_STATX */
 	struct stat sb;
@@ -105,20 +104,20 @@ int RpFilePrivate::reOpenFile(void)
 	if (ret == 0) {
 		// fstat() succeeded.
 		hasFileMode = true;
-		fileMode = sb.st_mode;
+		fileType = IF2DT(sb.st_mode);
 	}
 #endif /* HAVE_STATX */
 
 	// Did we get the file mode from statx() or stat()?
 	if (hasFileMode) {
-		if (S_ISDIR(fileMode)) {
+		if (fileType == DT_DIR) {
 			// This is a directory.
 			fclose(file);
 			file = nullptr;
 			q->m_lastError = EISDIR;
 			return -EISDIR;
 		}
-		isDevice = (S_ISBLK(fileMode) || S_ISCHR(fileMode));
+		q->m_fileType = fileType;
 	}
 
 	// NOTE: Opening certain device files can cause crashes
@@ -126,16 +125,15 @@ int RpFilePrivate::reOpenFile(void)
 	// that match certain patterns.
 	// TODO: May need updates for *BSD, Mac OS X, etc.
 	// TODO: Check if a block device is a CD-ROM or something else.
-	if (isDevice) {
+	if (q->isDevice()) {
 		// NOTE: Some Unix systems use character devices for "raw"
 		// block devices. Linux does not, so on Linux, we'll only
 		// allow block devices and not character devices.
 #ifdef __linux__
-		if (S_ISCHR(fileMode)) {
+		if (fileType == DT_CHR) {
 			// Character device. Not supported.
 			fclose(file);
 			file = nullptr;
-			isDevice = false;
 			q->m_lastError = ENOTSUP;
 			return -ENOTSUP;
 		}
@@ -176,7 +174,6 @@ int RpFilePrivate::reOpenFile(void)
 			// Not a match.
 			fclose(file);
 			file = nullptr;
-			isDevice = false;
 			q->m_lastError = ENOTSUP;
 			return -ENOTSUP;
 		}
@@ -627,18 +624,6 @@ int RpFile::makeWritable(void)
 	fseeko(d->file, prev_pos, SEEK_SET);
 	d->mode = (RpFile::FileMode)(d->mode | FM_WRITE);
 	return 0;
-}
-
-/** Device file functions **/
-
-/**
- * Is this a device file?
- * @return True if this is a device file; false if not.
- */
-bool RpFile::isDevice(void) const
-{
-	RP_D(const RpFile);
-	return d->devInfo;
 }
 
 }

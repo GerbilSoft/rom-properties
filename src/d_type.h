@@ -1,21 +1,29 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (librpbase)                        *
+ * ROM Properties Page shell extension.                                    *
  * d_type.h: d_type enumeration.                                           *
  *                                                                         *
  * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBRPBASE_D_TYPE_H__
-#define __ROMPROPERTIES_LIBRPBASE_D_TYPE_H__
+#ifndef __ROMPROPERTIES_D_TYPE_H__
+#define __ROMPROPERTIES_D_TYPE_H__
 
 #ifndef _WIN32
-# include <dirent.h>
+#  include <dirent.h>
 #endif
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+// Get DT_* values from struct stat::st_mode
+// and vice-versa.
+#ifndef S_IFMT
+#  define S_IFMT 00170000
+#endif
+#define DT2IF(dt) (((dt) << 12) & S_IFMT)
+#define IF2DT(sif) (((sif) & S_IFMT) >> 12)
 
 // Directory type values.
 // From glibc-2.23's dirent.h.
@@ -65,4 +73,4 @@ enum {
 }
 #endif
 
-#endif /* __ROMPROPERTIES_LIBRPBASE_D_TYPE_H__ */
+#endif /* __ROMPROPERTIES_D_TYPE_H__ */

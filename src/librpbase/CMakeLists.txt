@@ -104,7 +104,6 @@ SET(librpbase_H
 	RomFields.hpp
 	RomMetaData.hpp
 	SystemRegion.hpp
-	d_type.h
 	TextOut.hpp
 	Achievements.hpp
 	img/RpPng.hpp

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpfile)                        *
  * IRpFile.cpp: File wrapper interface.                                    *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -18,6 +18,7 @@ IRpFile::IRpFile()
 	: m_lastError(0)
 	, m_isWritable(false)
 	, m_isCompressed(false)
+	, m_fileType(DT_REG)
 {
 	static_assert(sizeof(off64_t) == 8, "off64_t is not 64-bit!");
 }
