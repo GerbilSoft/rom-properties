@@ -23,11 +23,12 @@ using LibWin32Common::WTSSessionNotification;
 #include <devguid.h>
 
 // COM smart pointer typedefs.
+_COM_SMARTPTR_TYPEDEF(IImageList, IID_IImageList);
 _COM_SMARTPTR_TYPEDEF(IEmptyVolumeCache, IID_IEmptyVolumeCache);
 
 #ifdef __CRT_UUID_DECL
 // FIXME: MSYS2/MinGW-w64 (gcc-9.2.0-2, MinGW-w64 7.0.0.5524.2346384e-1)
-// doesn't declare the UUID for IEmptyVolumeCacheCallBack for __uuidof() emulation.
+// doesn't declare the UUID for IEmptyVolumeCache for __uuidof() emulation.
 __CRT_UUID_DECL(IEmptyVolumeCache, __MSABI_LONG(0x8fce5227), 0x04da, 0x11d1, 0xa0,0x04, 0x00, 0x80, 0x5f, 0x8a, 0xbe, 0x06)
 #endif
 
@@ -44,7 +45,6 @@ class CacheTabPrivate
 {
 	public:
 		CacheTabPrivate();
-		~CacheTabPrivate();
 
 	private:
 		RP_DISABLE_COPY(CacheTabPrivate)
@@ -114,7 +114,7 @@ class CacheTabPrivate
 		typedef HRESULT (STDAPICALLTYPE *PFNSHGETIMAGELIST)(_In_ int iImageList, _In_ REFIID riid, _Outptr_result_nullonfailure_ void **ppvObj);
 
 		// Image list for the XP drive list.
-		IImageList *pImageList;
+		IImageListPtr pImageList;
 
 		// XP drive update mask.
 		DWORD dwUnitmaskXP;
@@ -131,7 +131,6 @@ class CacheTabPrivate
 CacheTabPrivate::CacheTabPrivate()
 	: hPropSheetPage(nullptr)
 	, hWndPropSheet(nullptr)
-	, pImageList(nullptr)
 	, dwUnitmaskXP(0)
 	, isVista(false)
 {
@@ -149,13 +148,6 @@ CacheTabPrivate::CacheTabPrivate()
 		// "There is no disk in the drive." message when
 		// a CD-ROM is removed and we call SHGetFileInfo().
 		SetErrorMode(SEM_FAILCRITICALERRORS);
-	}
-}
-
-CacheTabPrivate::~CacheTabPrivate()
-{
-	if (pImageList) {
-		pImageList->Release();
 	}
 }
 
@@ -202,7 +194,7 @@ void CacheTabPrivate::initDialog(void)
 			// release/destroy it when we're done using it.
 			HRESULT hr = pfnSHGetImageList(SHIL_SMALL, IID_PPV_ARGS(&pImageList));
 			if (SUCCEEDED(hr)) {
-				ListView_SetImageList(hListView, reinterpret_cast<HIMAGELIST>(pImageList), LVSIL_SMALL);
+				ListView_SetImageList(hListView, reinterpret_cast<HIMAGELIST>(pImageList.GetInterfacePtr()), LVSIL_SMALL);
 			}
 		}
 	}
@@ -457,7 +449,7 @@ int CacheTabPrivate::clearThumbnailCacheVista(void)
 	SendMessage(hProgressBar, PBM_SETPOS, 0, 0);
 
 	// Thumbnail cache callback.
-	RP_EmptyVolumeCacheCallback *pCallback = new RP_EmptyVolumeCacheCallback(hWndPropSheet);
+	RP_EmptyVolumeCacheCallback *const pCallback = new RP_EmptyVolumeCacheCallback(hWndPropSheet);
 
 	// NOTE: IEmptyVolumeCache only supports Unicode strings.
 #ifdef UNICODE

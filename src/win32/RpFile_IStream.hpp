@@ -117,7 +117,7 @@ class RpFile_IStream final : public LibRpFile::IRpFile
 		}
 
 	protected:
-		IStream *m_pStream;
+		IStreamPtr m_pStream;
 		std::string m_filename;
 
 		// zlib

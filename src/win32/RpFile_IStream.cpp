@@ -42,7 +42,7 @@ DELAYLOAD_TEST_FUNCTION_IMPL0(zlibVersion);
  */
 RpFile_IStream::RpFile_IStream(IStream *pStream, bool gzip)
 	: super()
-	, m_pStream(pStream)
+	, m_pStream(pStream, true)	// true == call AddRef()
 	, m_z_uncomp_sz(0)
 	, m_z_filepos(0)
 	, m_z_realpos(0)
@@ -52,8 +52,6 @@ RpFile_IStream::RpFile_IStream(IStream *pStream, bool gzip)
 	, m_zbufLen(0)
 	, m_zcurPos(0)
 {
-	pStream->AddRef();
-
 	// TODO: Proper writable check.
 	m_isWritable = true;
 
@@ -142,10 +140,6 @@ RpFile_IStream::~RpFile_IStream()
 		// Close zlib.
 		inflateEnd(m_pZstm);
 		free(m_pZstm);
-	}
-
-	if (m_pStream) {
-		m_pStream->Release();
 	}
 }
 
@@ -237,8 +231,7 @@ bool RpFile_IStream::isOpen(void) const
 void RpFile_IStream::close(void)
 {
 	if (m_pStream) {
-		m_pStream->Release();
-		m_pStream = nullptr;
+		m_pStream.Release();
 	}
 }
 
@@ -452,8 +445,7 @@ int RpFile_IStream::seek(off64_t pos)
 				m_pZbuf = nullptr;
 				m_z_uncomp_sz = 0;
 
-				m_pStream->Release();
-				m_pStream = nullptr;
+				m_pStream.Release();
 				return -1;
 			}
 
@@ -512,8 +504,7 @@ int RpFile_IStream::seek(off64_t pos)
 			m_pZbuf = nullptr;
 			m_z_uncomp_sz = 0;
 
-			m_pStream->Release();
-			m_pStream = nullptr;
+			m_pStream.Release();
 			return -1;
 		}
 	}
