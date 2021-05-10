@@ -11,6 +11,9 @@
 #include "ImageDecoder.hpp"
 #include "ImageDecoder_p.hpp"
 
+// C++ STL classes.
+using std::array;
+
 // References:
 // - https://msdn.microsoft.com/en-us/library/windows/desktop/hh308953(v=vs.85).aspx
 // - https://msdn.microsoft.com/en-us/library/windows/desktop/hh308954(v=vs.85).aspx
@@ -214,6 +217,7 @@ static uint8_t getAnchorIndex(uint8_t partition, uint8_t subset, uint8_t subsetC
 	return idx;
 }
 
+
 /**
  * Right-shift two 64-bit values as if it's a single 128-bit value.
  * NOTE: Assuming `shamt` is always less than 64.
@@ -292,7 +296,7 @@ rp_image *fromBC7(int width, int height,
 	const uint64_t *bc7_src = reinterpret_cast<const uint64_t*>(img_buf);
 
 	// Temporary tile buffer.
-	ALIGNED_VAR(16, argb32_t tileBuf[4*4]);
+	array<argb32_t, 4*4> tileBuf;
 
 	// Anchor indexes.
 	// Subset 0 is always anchored at 0.
@@ -657,21 +661,21 @@ rp_image *fromBC7(int width, int height,
 				break;
 			case 1:
 				// RAGB: Swap A and R.
-				for (unsigned int i = 0; i < 16; i++) {
-					std::swap(tileBuf[i].a, tileBuf[i].r);
-				}
+				std::for_each(tileBuf.begin(), tileBuf.end(), [](argb32_t &pixel) {
+					std::swap(pixel.a, pixel.r);
+				});
 				break;
 			case 2:
 				// GRAB: Swap A and G.
-				for (unsigned int i = 0; i < 16; i++) {
-					std::swap(tileBuf[i].a, tileBuf[i].g);
-				}
+				std::for_each(tileBuf.begin(), tileBuf.end(), [](argb32_t &pixel) {
+					std::swap(pixel.a, pixel.g);
+				});
 				break;
 			case 3:
 				// BRGA: Swap A and B.
-				for (unsigned int i = 0; i < 16; i++) {
-					std::swap(tileBuf[i].a, tileBuf[i].b);
-				}
+				std::for_each(tileBuf.begin(), tileBuf.end(), [](argb32_t &pixel) {
+					std::swap(pixel.a, pixel.b);
+				});
 				break;
 		}
 
