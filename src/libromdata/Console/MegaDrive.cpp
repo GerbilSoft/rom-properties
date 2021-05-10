@@ -741,80 +741,75 @@ int MegaDrive::isRomSupported_static(const DetectInfo *info)
 		{"SEGA",              4,  4, MegaDrivePrivate::ROM_SYSTEM_MD},
 	};
 
-	if (info->header.size >= 0x200) {
-		// Check for Sega CD.
-		// TODO: Gens/GS II lists "ISO/2048", "ISO/2352",
-		// "BIN/2048", and "BIN/2352". I don't think that's
-		// right; there should only be 2048 and 2352.
-		// TODO: Detect Sega CD 32X.
-		// TODO: Use a struct instead of raw bytes?
-		if (!memcmp(&pHeader[0x0010], segacd_magic, sizeof(segacd_magic)-1)) {
-			// Found a Sega CD disc image. (2352-byte sectors)
-			return MegaDrivePrivate::ROM_SYSTEM_MCD |
-			       MegaDrivePrivate::ROM_FORMAT_DISC_2352;
-		} else if (!memcmp(&pHeader[0x0000], segacd_magic, sizeof(segacd_magic)-1)) {
-			// Found a Sega CD disc image. (2048-byte sectors)
-			return MegaDrivePrivate::ROM_SYSTEM_MCD |
-			       MegaDrivePrivate::ROM_FORMAT_DISC_2048;
-		}
-
-		// Check for SMD format. (Mega Drive only)
-		if (info->header.size >= 0x300) {
-			// Check if "SEGA" is in the header in the correct place
-			// for a plain binary ROM.
-			if (memcmp(&pHeader[0x100], sega_magic, sizeof(sega_magic)) != 0 &&
-			    memcmp(&pHeader[0x101], sega_magic, sizeof(sega_magic)) != 0)
-			{
-				// "SEGA" is not in the header. This might be SMD.
-				const SMD_Header *pSmdHeader = reinterpret_cast<const SMD_Header*>(pHeader);
-				if (pSmdHeader->id[0] == 0xAA && pSmdHeader->id[1] == 0xBB &&
-				    pSmdHeader->smd.file_data_type == SMD_FDT_68K_PROGRAM &&
-				    pSmdHeader->file_type == SMD_FT_SMD_GAME_FILE)
-				{
-					// This is an SMD-format ROM.
-					// TODO: Show extended information from the SMD header,
-					// including "split" and other stuff?
-					return MegaDrivePrivate::ROM_SYSTEM_MD |
-					       MegaDrivePrivate::ROM_FORMAT_CART_SMD;
-				}
-			}
-		}
-
-		// Check for other MD-based cartridge formats.
-		int sysId = MegaDrivePrivate::ROM_UNKNOWN;
-		for (int i = 0; i < ARRAY_SIZE(cart_magic); i++) {
-			if (!memcmp(&pHeader[0x100], cart_magic[i].sys_name, cart_magic[i].sys_name_len_100h) ||
-			    !memcmp(&pHeader[0x101], cart_magic[i].sys_name, cart_magic[i].sys_name_len_101h))
-			{
-				// Found a matching system name.
-				sysId = cart_magic[i].system_id;
-				break;
-			}
-		}
-
-		if (sysId == MegaDrivePrivate::ROM_SYSTEM_MD || sysId == MegaDrivePrivate::ROM_SYSTEM_32X) {
-			// Verify the 32X security program if possible.
-			static const uint32_t secprgaddr = 0x512;
-			static const char secprgdesc[] = "MARS Initial & Security Program";
-			if (info->header.size >= secprgaddr + sizeof(secprgdesc) - 1) {
-				// TODO: Check other parts of the security program?
-				if (!memcmp(&pHeader[secprgaddr], secprgdesc, sizeof(secprgdesc)-1)) {
-					// Module name is correct.
-					// TODO: Does the ROM header have to say "SEGA 32X"?
-					sysId = MegaDrivePrivate::ROM_SYSTEM_32X;
-				} else {
-					// Module name is incorrect.
-					// This ROM cannot activate 32X mode.
-					sysId = MegaDrivePrivate::ROM_SYSTEM_MD;
-				}
-			}
-		}
-
-		return MegaDrivePrivate::ROM_FORMAT_CART_BIN | sysId;
+	// Check for Sega CD.
+	// TODO: Gens/GS II lists "ISO/2048", "ISO/2352",
+	// "BIN/2048", and "BIN/2352". I don't think that's
+	// right; there should only be 2048 and 2352.
+	// TODO: Detect Sega CD 32X.
+	// TODO: Use a struct instead of raw bytes?
+	if (!memcmp(&pHeader[0x0010], segacd_magic, sizeof(segacd_magic)-1)) {
+		// Found a Sega CD disc image. (2352-byte sectors)
+		return MegaDrivePrivate::ROM_SYSTEM_MCD |
+		       MegaDrivePrivate::ROM_FORMAT_DISC_2352;
+	} else if (!memcmp(&pHeader[0x0000], segacd_magic, sizeof(segacd_magic)-1)) {
+		// Found a Sega CD disc image. (2048-byte sectors)
+		return MegaDrivePrivate::ROM_SYSTEM_MCD |
+		       MegaDrivePrivate::ROM_FORMAT_DISC_2048;
 	}
 
-	// Not supported.
-	return MegaDrivePrivate::ROM_UNKNOWN;
+	// Check for SMD format. (Mega Drive only)
+	if (info->header.size >= 0x300) {
+		// Check if "SEGA" is in the header in the correct place
+		// for a plain binary ROM.
+		if (memcmp(&pHeader[0x100], sega_magic, sizeof(sega_magic)) != 0 &&
+		    memcmp(&pHeader[0x101], sega_magic, sizeof(sega_magic)) != 0)
+		{
+			// "SEGA" is not in the header. This might be SMD.
+			const SMD_Header *pSmdHeader = reinterpret_cast<const SMD_Header*>(pHeader);
+			if (pSmdHeader->id[0] == 0xAA && pSmdHeader->id[1] == 0xBB &&
+			    pSmdHeader->smd.file_data_type == SMD_FDT_68K_PROGRAM &&
+			    pSmdHeader->file_type == SMD_FT_SMD_GAME_FILE)
+			{
+				// This is an SMD-format ROM.
+				// TODO: Show extended information from the SMD header,
+				// including "split" and other stuff?
+				return MegaDrivePrivate::ROM_SYSTEM_MD |
+				       MegaDrivePrivate::ROM_FORMAT_CART_SMD;
+			}
+		}
+	}
+
+	// Check for other MD-based cartridge formats.
+	int sysId = MegaDrivePrivate::ROM_UNKNOWN;
+	for (int i = 0; i < ARRAY_SIZE(cart_magic); i++) {
+		if (!memcmp(&pHeader[0x100], cart_magic[i].sys_name, cart_magic[i].sys_name_len_100h) ||
+		    !memcmp(&pHeader[0x101], cart_magic[i].sys_name, cart_magic[i].sys_name_len_101h))
+		{
+			// Found a matching system name.
+			sysId = cart_magic[i].system_id;
+			break;
+		}
+	}
+
+	if (sysId == MegaDrivePrivate::ROM_SYSTEM_MD || sysId == MegaDrivePrivate::ROM_SYSTEM_32X) {
+		// Verify the 32X security program if possible.
+		static const uint32_t secprgaddr = 0x512;
+		static const char secprgdesc[] = "MARS Initial & Security Program";
+		if (info->header.size >= secprgaddr + sizeof(secprgdesc) - 1) {
+			// TODO: Check other parts of the security program?
+			if (!memcmp(&pHeader[secprgaddr], secprgdesc, sizeof(secprgdesc)-1)) {
+				// Module name is correct.
+				// TODO: Does the ROM header have to say "SEGA 32X"?
+				sysId = MegaDrivePrivate::ROM_SYSTEM_32X;
+			} else {
+				// Module name is incorrect.
+				// This ROM cannot activate 32X mode.
+				sysId = MegaDrivePrivate::ROM_SYSTEM_MD;
+			}
+		}
+	}
+
+	return MegaDrivePrivate::ROM_FORMAT_CART_BIN | sysId;
 }
 
 /**
