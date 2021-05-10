@@ -13,6 +13,9 @@
 #include "PixelConversion.hpp"
 using namespace LibRpTexture::PixelConversion;
 
+// C++ STL classes.
+using std::array;
+
 namespace LibRpTexture { namespace ImageDecoder {
 
 /**
@@ -81,11 +84,14 @@ rp_image *fromNDS_CI4(int width, int height,
 	const unsigned int tilesX = static_cast<unsigned int>(width / 8);
 	const unsigned int tilesY = static_cast<unsigned int>(height / 8);
 
+	// Tile pointer.
+	const array<uint8_t, 8*8/2> *pTileBuf = reinterpret_cast<const array<uint8_t, 8*8/2>*>(img_buf);
+
 	for (unsigned int y = 0; y < tilesY; y++) {
 		for (unsigned int x = 0; x < tilesX; x++) {
 			// Blit the tile to the main image buffer.
-			ImageDecoderPrivate::BlitTile_CI4_LeftLSN<8, 8>(img, img_buf, x, y);
-			img_buf += ((8 * 8) / 2);
+			ImageDecoderPrivate::BlitTile_CI4_LeftLSN<8, 8>(img, *pTileBuf, x, y);
+			pTileBuf++;
 		}
 	}
 

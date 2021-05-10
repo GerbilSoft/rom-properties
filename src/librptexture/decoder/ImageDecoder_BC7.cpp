@@ -680,8 +680,7 @@ rp_image *fromBC7(int width, int height,
 		}
 
 		// Blit the tile to the main image buffer.
-		ImageDecoderPrivate::BlitTile<uint32_t, 4, 4>(img,
-			reinterpret_cast<const uint32_t*>(&tileBuf[0]), x, y);
+		ImageDecoderPrivate::BlitTile<uint32_t, 4, 4>(img, tileBuf, x, y);
 	} }
 
 	if (width < physWidth || height < physHeight) {

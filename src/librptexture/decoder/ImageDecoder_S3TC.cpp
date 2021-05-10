@@ -14,6 +14,9 @@
 #include "PixelConversion.hpp"
 using namespace LibRpTexture::PixelConversion;
 
+// C++ STL classes.
+using std::array;
+
 // References:
 // - http://www.matejtomcik.com/Public/KnowHow/DXTDecompression/
 // - http://www.fsdeveloper.com/wiki/index.php?title=DXT_compression_explained
@@ -226,7 +229,7 @@ rp_image *fromDXT1_GCN(int width, int height,
 	const unsigned int tilesY = static_cast<unsigned int>(height / 4);
 
 	// Temporary 4-tile buffer.
-	uint32_t tileBuf[4][4*4];
+	array<array<uint32_t, 4*4>, 4> tileBuf;
 
 	// Tiles are arranged in 2x2 blocks.
 	// Reference: https://github.com/nickworonekin/puyotools/blob/80f11884f6cae34c4a56c5b1968600fe7c34628b/Libraries/VrSharp/GvrTexture/GvrDataCodec.cs#L712
@@ -312,7 +315,7 @@ static rp_image *T_fromDXT1(int width, int height,
 	const unsigned int tilesY = static_cast<unsigned int>(physHeight / 4);
 
 	// Temporary tile buffer.
-	uint32_t tileBuf[4*4];
+	array<uint32_t, 4*4> tileBuf;
 
 	for (unsigned int y = 0; y < tilesY; y++) {
 	for (unsigned int x = 0; x < tilesX; x++, dxt1_src++) {
@@ -322,8 +325,8 @@ static rp_image *T_fromDXT1(int width, int height,
 
 		// Process the 16 color indexes.
 		uint32_t indexes = le32_to_cpu(dxt1_src->indexes);
-		for (unsigned int i = 0; i < 16; i++, indexes >>= 2) {
-			tileBuf[i] = pal[indexes & 3].u32;
+		for (auto iter = tileBuf.begin(); iter != tileBuf.end(); ++iter, indexes >>= 2) {
+			*iter = pal[indexes & 3].u32;
 		}
 
 		// Blit the tile to the main image buffer.
@@ -454,7 +457,7 @@ rp_image *fromDXT3(int width, int height,
 	const unsigned int tilesY = static_cast<unsigned int>(physHeight / 4);
 
 	// Temporary tile buffer.
-	uint32_t tileBuf[4*4];
+	array<uint32_t, 4*4> tileBuf;
 
 	for (unsigned int y = 0; y < tilesY; y++) {
 	for (unsigned int x = 0; x < tilesX; x++, dxt3_src++) {
@@ -468,11 +471,11 @@ rp_image *fromDXT3(int width, int height,
 		// Process the 16 color indexes and apply alpha.
 		uint32_t indexes = le32_to_cpu(dxt3_src->colors.indexes);
 		uint64_t alpha = le64_to_cpu(dxt3_src->alpha);
-		for (unsigned int i = 0; i < 16; i++, indexes >>= 2, alpha >>= 4) {
+		for (auto iter = tileBuf.begin(); iter != tileBuf.end(); ++iter, indexes >>= 2, alpha >>= 4) {
 			argb32_t color = pal[indexes & 3];
 			// TODO: Verify alpha value handling for DXT3.
 			color.a = (alpha & 0xF) | ((alpha & 0xF) << 4);
-			tileBuf[i] = color.u32;
+			*iter = color.u32;
 		}
 
 		// Blit the tile to the main image buffer.
@@ -571,7 +574,7 @@ rp_image *fromDXT5(int width, int height,
 	const unsigned int tilesY = static_cast<unsigned int>(physHeight / 4);
 
 	// Temporary tile buffer.
-	uint32_t tileBuf[4*4];
+	array<uint32_t, 4*4> tileBuf;
 
 	for (unsigned int y = 0; y < tilesY; y++) {
 	for (unsigned int x = 0; x < tilesX; x++, dxt5_src++) {
@@ -584,11 +587,11 @@ rp_image *fromDXT5(int width, int height,
 
 		// Process the 16 color and alpha indexes.
 		uint32_t indexes = le32_to_cpu(dxt5_src->colors.indexes);
-		for (unsigned int i = 0; i < 16; i++, indexes >>= 2, alpha48 >>= 3) {
+		for (auto iter = tileBuf.begin(); iter != tileBuf.end(); ++iter, indexes >>= 2, alpha48 >>= 3) {
 			argb32_t color = pal[indexes & 3];
 			// Decode the alpha channel value.
 			color.a = decode_DXT5_alpha_S3TC(alpha48 & 7, dxt5_src->alpha.values);
-			tileBuf[i] = color.u32;
+			*iter = color.u32;
 		}
 
 		// Blit the tile to the main image buffer.
@@ -657,7 +660,7 @@ rp_image *fromBC4(int width, int height,
 	const unsigned int tilesY = static_cast<unsigned int>(physHeight / 4);
 
 	// Temporary tile buffer.
-	uint32_t tileBuf[4*4];
+	array<uint32_t, 4*4> tileBuf;
 
 	// S3TC version.
 	for (unsigned int y = 0; y < tilesY; y++) {
@@ -671,10 +674,10 @@ rp_image *fromBC4(int width, int height,
 		// NOTE: Using red instead of grayscale here.
 		argb32_t color;
 		color.u32 = 0xFF000000;	// opaque black
-		for (unsigned int i = 0; i < 16; i++, red48 >>= 3) {
+		for (auto iter = tileBuf.begin(); iter != tileBuf.end(); ++iter, red48 >>= 3) {
 			// Decode the red channel value.
 			color.r = decode_DXT5_alpha_S3TC(red48 & 7, bc4_src->red.values);
-			tileBuf[i] = color.u32;
+			*iter = color.u32;
 		}
 
 		// Blit the tile to the main image buffer.
@@ -746,7 +749,7 @@ rp_image *fromBC5(int width, int height,
 	const unsigned int tilesY = static_cast<unsigned int>(height / 4);
 
 	// Temporary tile buffer.
-	uint32_t tileBuf[4*4];
+	array<uint32_t, 4*4> tileBuf;
 
 	// S3TC version.
 	for (unsigned int y = 0; y < tilesY; y++) {
@@ -760,11 +763,11 @@ rp_image *fromBC5(int width, int height,
 		// Process the 16 color indexes.
 		argb32_t color;
 		color.u32 = 0xFF000000;	// opaque black
-		for (unsigned int i = 0; i < 16; i++, red48 >>= 3, green48 >>= 3) {
+		for (auto iter = tileBuf.begin(); iter != tileBuf.end(); ++iter, red48 >>= 3, green48 >>= 3) {
 			// Decode the red and green channel values.
 			color.r = decode_DXT5_alpha_S3TC(red48   & 7, bc5_src->red.values);
 			color.g = decode_DXT5_alpha_S3TC(green48 & 7, bc5_src->green.values);
-			tileBuf[i] = color.u32;
+			*iter = color.u32;
 		}
 
 		// Blit the tile to the main image buffer.

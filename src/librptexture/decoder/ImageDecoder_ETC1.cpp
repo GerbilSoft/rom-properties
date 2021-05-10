@@ -10,6 +10,9 @@
 #include "ImageDecoder.hpp"
 #include "ImageDecoder_p.hpp"
 
+// C++ STL classes.
+using std::array;
+
 // References:
 // - https://www.khronos.org/registry/OpenGL/extensions/OES/OES_compressed_ETC1_RGB8_texture.txt
 // - https://www.khronos.org/registry/DataFormat/specs/1.1/dataformat.1.1.html#ETC1
@@ -318,7 +321,7 @@ enum ETC_Decoding_Mode {
  * @param src		[in] Source RGB block.
  */
 template</* ETC_Decoding_Mode */ unsigned int mode>
-static void decodeBlock_ETC_RGB(uint32_t tileBuf[4*4], const etc1_block *etc1_src)
+static void decodeBlock_ETC_RGB(array<uint32_t, 4*4> &tileBuf, const etc1_block *etc1_src)
 {
 	// Prevent invalid combinations from being used.
 	static_assert(mode != (ETC_DM_ETC1 | ETC2_DM_A1), "Cannot use ETC1 with punchthrough alpha.");
@@ -498,7 +501,7 @@ static void decodeBlock_ETC_RGB(uint32_t tileBuf[4*4], const etc1_block *etc1_sr
 		default:
 			// TODO: Return an error code?
 			assert(!"Invalid ETC2 block mode.");
-			memset(tileBuf, 0, 4*4*sizeof(uint32_t));
+			tileBuf.fill(0);
 			break;
 
 		case etc2_block_mode::ETC1: {
@@ -639,7 +642,7 @@ rp_image *fromETC1(int width, int height,
 	const unsigned int tilesY = static_cast<unsigned int>(height / 4);
 
 	// Temporary tile buffer.
-	uint32_t tileBuf[4*4];
+	array<uint32_t, 4*4> tileBuf;
 
 	for (unsigned int y = 0; y < tilesY; y++) {
 	for (unsigned int x = 0; x < tilesX; x++, etc1_src++) {
@@ -701,7 +704,7 @@ rp_image *fromETC2_RGB(int width, int height,
 	const unsigned int tilesY = static_cast<unsigned int>(height / 4);
 
 	// Temporary tile buffer.
-	uint32_t tileBuf[4*4];
+	array<uint32_t, 4*4> tileBuf;
 
 	for (unsigned int y = 0; y < tilesY; y++) {
 	for (unsigned int x = 0; x < tilesX; x++, etc1_src++) {
@@ -725,10 +728,10 @@ rp_image *fromETC2_RGB(int width, int height,
  * @param tileBuf	[out] Destination tile buffer.
  * @param src		[in] Source alpha block.
  */
-static void decodeBlock_ETC2_alpha(uint32_t tileBuf[4*4], const etc2_alpha *alpha)
+static void decodeBlock_ETC2_alpha(array<uint32_t, 4*4> &tileBuf, const etc2_alpha *alpha)
 {
 	// argb32_t for alpha channel handling.
-	argb32_t *const pArgb = reinterpret_cast<argb32_t*>(tileBuf);
+	argb32_t *const pArgb = reinterpret_cast<argb32_t*>(tileBuf.data());
 
 	// Get the base codeword and multiplier.
 	// NOTE: mult == 0 is not allowed to be used by the encoder,
@@ -803,7 +806,7 @@ rp_image *fromETC2_RGBA(int width, int height,
 	const unsigned int tilesY = static_cast<unsigned int>(height / 4);
 
 	// Temporary tile buffer.
-	uint32_t tileBuf[4*4];
+	array<uint32_t, 4*4> tileBuf;
 
 	for (unsigned int y = 0; y < tilesY; y++) {
 	for (unsigned int x = 0; x < tilesX; x++, etc2_src++) {
@@ -869,7 +872,7 @@ rp_image *fromETC2_RGB_A1(int width, int height,
 	const unsigned int tilesY = static_cast<unsigned int>(height / 4);
 
 	// Temporary tile buffer.
-	uint32_t tileBuf[4*4];
+	array<uint32_t, 4*4> tileBuf;
 
 	for (unsigned int y = 0; y < tilesY; y++) {
 	for (unsigned int x = 0; x < tilesX; x++, etc1_src++) {

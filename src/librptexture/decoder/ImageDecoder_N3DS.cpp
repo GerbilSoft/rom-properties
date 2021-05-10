@@ -13,6 +13,9 @@
 #include "PixelConversion.hpp"
 using namespace LibRpTexture::PixelConversion;
 
+// C++ STL classes.
+using std::array;
+
 namespace LibRpTexture { namespace ImageDecoder {
 
 // N3DS uses 3-level Z-ordered tiling.
@@ -67,12 +70,12 @@ rp_image *fromN3DSTiledRGB565(int width, int height,
 	const unsigned int tilesY = static_cast<unsigned int>(height / 8);
 
 	// Temporary tile buffer.
-	uint32_t tileBuf[8*8];
+	array<uint32_t, 8*8> tileBuf;
 
 	for (unsigned int y = 0; y < tilesY; y++) {
 		for (unsigned int x = 0; x < tilesX; x++) {
 			// Convert each tile to ARGB32 manually.
-			for (unsigned int i = 0; i < 8*8; i += 2, img_buf += 2) {
+			for (size_t i = 0; i < tileBuf.size(); i += 2, img_buf += 2) {
 				tileBuf[N3DS_tile_order[i+0]] = RGB565_to_ARGB32(le16_to_cpu(img_buf[0]));
 				tileBuf[N3DS_tile_order[i+1]] = RGB565_to_ARGB32(le16_to_cpu(img_buf[1]));
 			}
@@ -137,14 +140,14 @@ rp_image *fromN3DSTiledRGB565_A4(int width, int height,
 	}
 
 	// Temporary tile buffer.
-	uint32_t tileBuf[8*8];
+	array<uint32_t, 8*8> tileBuf;
 
 	for (unsigned int y = 0; y < tilesY; y++) {
 		for (unsigned int x = 0; x < tilesX; x++) {
 			// Convert each tile to ARGB32 manually.
 			// FIXME: Nybble ordering for A4?
 			// Assuming LeftLSN, same as NDS CI4.
-			for (unsigned int i = 0; i < 8*8; i += 2, img_buf += 2, alpha_buf++) {
+			for (size_t i = 0; i < tileBuf.size(); i += 2, img_buf += 2, alpha_buf++) {
 				tileBuf[N3DS_tile_order[i+0]] = RGB565_A4_to_ARGB32(
 					le16_to_cpu(img_buf[0]), *alpha_buf & 0x0F);
 				tileBuf[N3DS_tile_order[i+1]] = RGB565_A4_to_ARGB32(
