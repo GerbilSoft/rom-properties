@@ -76,25 +76,34 @@ class MegaDrivePrivate final : public RomDataPrivate
 		enum MD_RomType {
 			ROM_UNKNOWN = -1,		// Unknown ROM type.
 
-			// Low byte: System ID.
+			// Low byte: System ID
 			// (TODO: MCD Boot ROMs, other specialized types?)
-			ROM_SYSTEM_MD = 0,		// Mega Drive
-			ROM_SYSTEM_MCD = 1,		// Mega CD
-			ROM_SYSTEM_32X = 2,		// Sega 32X
-			ROM_SYSTEM_MCD32X = 3,		// Sega CD 32X
-			ROM_SYSTEM_PICO = 4,		// Sega Pico
-			ROM_SYSTEM_MAX = ROM_SYSTEM_PICO,
-			ROM_SYSTEM_UNKNOWN = 0xFF,
-			ROM_SYSTEM_MASK = 0xFF,
+			ROM_SYSTEM_MD		= 0,	// Mega Drive
+			ROM_SYSTEM_MCD		= 1,	// Mega CD
+			ROM_SYSTEM_32X		= 2,	// Sega 32X
+			ROM_SYSTEM_MCD32X	= 3,	// Sega CD 32X
+			ROM_SYSTEM_PICO		= 4,	// Sega Pico
+			ROM_SYSTEM_TERADRIVE	= 5,	// Sega Tera Drive
+			ROM_SYSTEM_MAX		= ROM_SYSTEM_TERADRIVE,
+			ROM_SYSTEM_UNKNOWN	= 0xFF,
+			ROM_SYSTEM_MASK		= 0xFF,
 
-			// High byte: Image format.
-			ROM_FORMAT_CART_BIN = (0U << 8),		// Cartridge: Binary format.
-			ROM_FORMAT_CART_SMD = (1U << 8),		// Cartridge: SMD format.
-			ROM_FORMAT_DISC_2048 = (2U << 8),	// Disc: 2048-byte sectors. (ISO)
-			ROM_FORMAT_DISC_2352 = (3U << 8),	// Disc: 2352-byte sectors. (BIN)
-			ROM_FORMAT_MAX = ROM_FORMAT_DISC_2352,
-			ROM_FORMAT_UNKNOWN = (0xFFU << 8),
-			ROM_FORMAT_MASK = (0xFFU << 8),
+			// Mid byte: Image format
+			ROM_FORMAT_CART_BIN	= (0 << 8),	// Cartridge: Binary format.
+			ROM_FORMAT_CART_SMD	= (1 << 8),	// Cartridge: SMD format.
+			ROM_FORMAT_DISC_2048	= (2 << 8),	// Disc: 2048-byte sectors. (ISO)
+			ROM_FORMAT_DISC_2352	= (3 << 8),	// Disc: 2352-byte sectors. (BIN)
+			ROM_FORMAT_MAX		= ROM_FORMAT_DISC_2352,
+			ROM_FORMAT_UNKNOWN	= (0xFF << 8),
+			ROM_FORMAT_MASK		= (0xFF << 8),
+
+			// High byte: Special MD extensions
+			ROM_EXT_SSF2		= (1 << 16),	// SSF2 mapper
+			ROM_EXT_EVERDRIVE	= (2 << 16),	// Everdrive extensions
+			ROM_EXT_MEGAWIFI	= (3 << 16),	// Mega Wifi extensions
+			ROM_EXT_TERADRIVE_68k	= (4 << 16),	// Sega Tera Drive: Boot from 68000
+			ROM_EXT_TERADRIVE_x86	= (5 << 16),	// Sega Tera Drive: Boot from x86
+			ROM_EXT_MASK		= (0xFF << 16),
 		};
 
 		// MIME type table.
@@ -419,6 +428,8 @@ void MegaDrivePrivate::addFields_romHeader(const MD_RomHeader *pRomHeader, bool 
 		"Region", region_code_bitfield_names, ARRAY_SIZE(region_code_bitfield_names));
 	fields->addField_bitfield(C_("RomData", "Region Code"),
 		v_region_code_bitfield_names, 0, md_region_check);
+
+	// TODO: Extensions, e.g. SSF2, MegaWifi, and TeraDrive boot CPU.
 }
 
 /**
@@ -726,6 +737,8 @@ int MegaDrive::isRomSupported_static(const DetectInfo *info)
 	static const char sega_magic[4+1] = "SEGA";
 	static const char segacd_magic[16+1] = "SEGADISCSYSTEM  ";
 
+	// Extra system types from:
+	// - https://www.plutiedev.com/rom-header#system
 	static const struct {
 		const char sys_name[20];
 		uint8_t sys_name_len_100h;	// Length to check at $100
@@ -734,6 +747,17 @@ int MegaDrive::isRomSupported_static(const DetectInfo *info)
 	} cart_magic[] = {
 		{"SEGA PICO       ", 16, 15, MegaDrivePrivate::ROM_SYSTEM_PICO},
 		{"SEGA 32X        ", 16, 15, MegaDrivePrivate::ROM_SYSTEM_32X},
+		{"SEGA SSF        ", 16, 15, MegaDrivePrivate::ROM_SYSTEM_MD |
+		                             MegaDrivePrivate::ROM_EXT_SSF2},
+		{"SEGA EVERDRIVE  ", 16, 15, MegaDrivePrivate::ROM_SYSTEM_MD |
+		                             MegaDrivePrivate::ROM_EXT_EVERDRIVE},
+		{"SEGA MEGAWIFI   ", 16, 15, MegaDrivePrivate::ROM_SYSTEM_MD |
+		                             MegaDrivePrivate::ROM_EXT_MEGAWIFI},
+		{"SEGA TERA68K    ", 16, 15, MegaDrivePrivate::ROM_SYSTEM_TERADRIVE |
+		                             MegaDrivePrivate::ROM_EXT_TERADRIVE_68k},
+		{"SEGA TERA286    ", 16, 15, MegaDrivePrivate::ROM_SYSTEM_TERADRIVE |
+		                             MegaDrivePrivate::ROM_EXT_TERADRIVE_x86},
+
 		// NOTE: Previously, we were checking for
 		// "SEGA MEGA DRIVE" and "SEGA GENESIS".
 		// For broader compatibility with unlicensed ROMs,
@@ -791,7 +815,10 @@ int MegaDrive::isRomSupported_static(const DetectInfo *info)
 		}
 	}
 
-	if (sysId == MegaDrivePrivate::ROM_SYSTEM_MD || sysId == MegaDrivePrivate::ROM_SYSTEM_32X) {
+	uint32_t sysIdOnly = (sysId & MegaDrivePrivate::ROM_SYSTEM_MASK);
+	if (sysIdOnly == MegaDrivePrivate::ROM_SYSTEM_MD ||
+	    sysIdOnly == MegaDrivePrivate::ROM_SYSTEM_32X)
+	{
 		// Verify the 32X security program if possible.
 		static const uint32_t secprgaddr = 0x512;
 		static const char secprgdesc[] = "MARS Initial & Security Program";
@@ -806,6 +833,8 @@ int MegaDrive::isRomSupported_static(const DetectInfo *info)
 				// This ROM cannot activate 32X mode.
 				sysId = MegaDrivePrivate::ROM_SYSTEM_MD;
 			}
+			sysId &= ~MegaDrivePrivate::ROM_SYSTEM_MASK;
+			sysId |= sysIdOnly;
 		}
 	}
 
@@ -846,12 +875,13 @@ const char *MegaDrive::systemName(unsigned int type) const
 	const unsigned int idx = (type & SYSNAME_TYPE_MASK);
 	if ((type & SYSNAME_REGION_MASK) == SYSNAME_REGION_GENERIC) {
 		// Generic system name.
-		static const char *const sysNames[5][4] = {
+		static const char *const sysNames[6][4] = {
 			{"Sega Mega Drive", "Mega Drive", "MD", nullptr},
 			{"Sega Mega CD", "Mega CD", "MCD", nullptr},
 			{"Sega 32X", "Sega 32X", "32X", nullptr},
 			{"Sega Mega CD 32X", "Mega CD 32X", "MCD32X", nullptr},
-			{"Sega Pico", "Pico", "Pico", nullptr}
+			{"Sega Pico", "Pico", "Pico", nullptr},
+			{"Sega Tera Drive", "Tera Drive", "Tera Drive", nullptr}
 		};
 		return sysNames[romSys][idx];
 	}
@@ -862,58 +892,63 @@ const char *MegaDrive::systemName(unsigned int type) const
 	switch (md_bregion) {
 		case MegaDriveRegions::MD_BrandingRegion::Japan:
 		default: {
-			static const char *const sysNames_JP[5][4] = {
+			static const char *const sysNames_JP[6][4] = {
 				{"Sega Mega Drive", "Mega Drive", "MD", nullptr},
 				{"Sega Mega CD", "Mega CD", "MCD", nullptr},
 				{"Sega Super 32X", "Super 32X", "32X", nullptr},
 				{"Sega Mega CD 32X", "Mega CD 32X", "MCD32X", nullptr},
-				{"Sega Kids Computer Pico", "Kids Computer Pico", "Pico", nullptr}
+				{"Sega Kids Computer Pico", "Kids Computer Pico", "Pico", nullptr},
+				{"Sega Tera Drive", "Tera Drive", "Tera Drive", nullptr}
 			};
 			return sysNames_JP[romSys][idx];
 		}
 
 		case MegaDriveRegions::MD_BrandingRegion::USA: {
-			static const char *const sysNames_US[5][4] = {
+			static const char *const sysNames_US[6][4] = {
 				// TODO: "MD" or "Gen"?
 				{"Sega Genesis", "Genesis", "MD", nullptr},
 				{"Sega CD", "Sega CD", "MCD", nullptr},
 				{"Sega 32X", "Sega 32X", "32X", nullptr},
 				{"Sega CD 32X", "Sega CD 32X", "MCD32X", nullptr},
-				{"Sega Pico", "Pico", "Pico", nullptr}
+				{"Sega Pico", "Pico", "Pico", nullptr},
+				{"Sega Tera Drive", "Tera Drive", "Tera Drive", nullptr}
 			};
 			return sysNames_US[romSys][idx];
 		}
 
 		case MegaDriveRegions::MD_BrandingRegion::Europe: {
-			static const char *const sysNames_EU[5][4] = {
+			static const char *const sysNames_EU[6][4] = {
 				{"Sega Mega Drive", "Mega Drive", "MD", nullptr},
 				{"Sega Mega CD", "Mega CD", "MCD", nullptr},
 				{"Sega Mega Drive 32X", "Mega Drive 32X", "32X", nullptr},
 				{"Sega Mega CD 32X", "Sega Mega CD 32X", "MCD32X", nullptr},
-				{"Sega Pico", "Pico", "Pico", nullptr}
+				{"Sega Pico", "Pico", "Pico", nullptr},
+				{"Sega Tera Drive", "Tera Drive", "Tera Drive", nullptr}
 			};
 			return sysNames_EU[romSys][idx];
 		}
 
 		case MegaDriveRegions::MD_BrandingRegion::South_Korea: {
-			static const char *const sysNames_KR[5][4] = {
+			static const char *const sysNames_KR[6][4] = {
 				// TODO: "MD" or something else?
 				{"Samsung Super Aladdin Boy", "Super Aladdin Boy", "MD", nullptr},
 				{"Samsung CD Aladdin Boy", "CD Aladdin Boy", "MCD", nullptr},
 				{"Samsung Super 32X", "Super 32X", "32X", nullptr},
 				{"Sega Mega CD 32X", "Sega Mega CD 32X", "MCD32X", nullptr},
-				{"Sega Pico", "Pico", "Pico", nullptr}
+				{"Sega Pico", "Pico", "Pico", nullptr},
+				{"Sega Tera Drive", "Tera Drive", "Tera Drive", nullptr}
 			};
 			return sysNames_KR[romSys][idx];
 		}
 
 		case MegaDriveRegions::MD_BrandingRegion::Brazil: {
-			static const char *const sysNames_BR[5][4] = {
+			static const char *const sysNames_BR[6][4] = {
 				{"Sega Mega Drive", "Mega Drive", "MD", nullptr},
 				{"Sega CD", "Sega CD", "MCD", nullptr},
 				{"Sega Mega 32X", "Mega 32X", "32X", nullptr},
 				{"Sega CD 32X", "Sega CD 32X", "MCD32X", nullptr},
-				{"Sega Pico", "Pico", "Pico", nullptr}
+				{"Sega Pico", "Pico", "Pico", nullptr},
+				{"Sega Tera Drive", "Tera Drive", "Tera Drive", nullptr}
 			};
 			return sysNames_BR[romSys][idx];
 		}
