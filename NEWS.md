@@ -51,7 +51,7 @@
     * Basic support for El Torito boot image detection. Currently only
       displays if x86 and/or EFI boot images are present, but not any
       specifics.
-  * MegaDrive: Detect Tera Drive ROMs. Some extensions are also detected,
+  * MegaDrive: Detect Teradrive ROMs. Some extensions are also detected,
     but are not displayed at the moment.
 
 * Bug fixes:

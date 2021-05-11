@@ -83,7 +83,7 @@ class MegaDrivePrivate final : public RomDataPrivate
 			ROM_SYSTEM_32X		= 2,	// Sega 32X
 			ROM_SYSTEM_MCD32X	= 3,	// Sega CD 32X
 			ROM_SYSTEM_PICO		= 4,	// Sega Pico
-			ROM_SYSTEM_TERADRIVE	= 5,	// Sega Tera Drive
+			ROM_SYSTEM_TERADRIVE	= 5,	// Sega Teradrive
 			ROM_SYSTEM_MAX		= ROM_SYSTEM_TERADRIVE,
 			ROM_SYSTEM_UNKNOWN	= 0xFF,
 			ROM_SYSTEM_MASK		= 0xFF,
@@ -101,8 +101,8 @@ class MegaDrivePrivate final : public RomDataPrivate
 			ROM_EXT_SSF2		= (1 << 16),	// SSF2 mapper
 			ROM_EXT_EVERDRIVE	= (2 << 16),	// Everdrive extensions
 			ROM_EXT_MEGAWIFI	= (3 << 16),	// Mega Wifi extensions
-			ROM_EXT_TERADRIVE_68k	= (4 << 16),	// Sega Tera Drive: Boot from 68000
-			ROM_EXT_TERADRIVE_x86	= (5 << 16),	// Sega Tera Drive: Boot from x86
+			ROM_EXT_TERADRIVE_68k	= (4 << 16),	// Sega Teradrive: Boot from 68000
+			ROM_EXT_TERADRIVE_x86	= (5 << 16),	// Sega Teradrive: Boot from x86
 			ROM_EXT_MASK		= (0xFF << 16),
 		};
 
@@ -881,7 +881,7 @@ const char *MegaDrive::systemName(unsigned int type) const
 			{"Sega 32X", "Sega 32X", "32X", nullptr},
 			{"Sega Mega CD 32X", "Mega CD 32X", "MCD32X", nullptr},
 			{"Sega Pico", "Pico", "Pico", nullptr},
-			{"Sega Tera Drive", "Tera Drive", "Tera Drive", nullptr}
+			{"Sega Teradrive", "Teradrive", "Teradrive", nullptr}
 		};
 		return sysNames[romSys][idx];
 	}
@@ -898,7 +898,7 @@ const char *MegaDrive::systemName(unsigned int type) const
 				{"Sega Super 32X", "Super 32X", "32X", nullptr},
 				{"Sega Mega CD 32X", "Mega CD 32X", "MCD32X", nullptr},
 				{"Sega Kids Computer Pico", "Kids Computer Pico", "Pico", nullptr},
-				{"Sega Tera Drive", "Tera Drive", "Tera Drive", nullptr}
+				{"Sega Teradrive", "Teradrive", "Teradrive", nullptr}
 			};
 			return sysNames_JP[romSys][idx];
 		}
@@ -911,7 +911,7 @@ const char *MegaDrive::systemName(unsigned int type) const
 				{"Sega 32X", "Sega 32X", "32X", nullptr},
 				{"Sega CD 32X", "Sega CD 32X", "MCD32X", nullptr},
 				{"Sega Pico", "Pico", "Pico", nullptr},
-				{"Sega Tera Drive", "Tera Drive", "Tera Drive", nullptr}
+				{"Sega Teradrive", "Teradrive", "Teradrive", nullptr}
 			};
 			return sysNames_US[romSys][idx];
 		}
@@ -923,7 +923,7 @@ const char *MegaDrive::systemName(unsigned int type) const
 				{"Sega Mega Drive 32X", "Mega Drive 32X", "32X", nullptr},
 				{"Sega Mega CD 32X", "Sega Mega CD 32X", "MCD32X", nullptr},
 				{"Sega Pico", "Pico", "Pico", nullptr},
-				{"Sega Tera Drive", "Tera Drive", "Tera Drive", nullptr}
+				{"Sega Teradrive", "Teradrive", "Teradrive", nullptr}
 			};
 			return sysNames_EU[romSys][idx];
 		}
@@ -936,7 +936,7 @@ const char *MegaDrive::systemName(unsigned int type) const
 				{"Samsung Super 32X", "Super 32X", "32X", nullptr},
 				{"Sega Mega CD 32X", "Sega Mega CD 32X", "MCD32X", nullptr},
 				{"Sega Pico", "Pico", "Pico", nullptr},
-				{"Sega Tera Drive", "Tera Drive", "Tera Drive", nullptr}
+				{"Sega Teradrive", "Teradrive", "Teradrive", nullptr}
 			};
 			return sysNames_KR[romSys][idx];
 		}
@@ -948,7 +948,7 @@ const char *MegaDrive::systemName(unsigned int type) const
 				{"Sega Mega 32X", "Mega 32X", "32X", nullptr},
 				{"Sega CD 32X", "Sega CD 32X", "MCD32X", nullptr},
 				{"Sega Pico", "Pico", "Pico", nullptr},
-				{"Sega Tera Drive", "Tera Drive", "Tera Drive", nullptr}
+				{"Sega Teradrive", "Teradrive", "Teradrive", nullptr}
 			};
 			return sysNames_BR[romSys][idx];
 		}
