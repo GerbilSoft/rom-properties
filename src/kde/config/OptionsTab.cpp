@@ -29,13 +29,17 @@ class OptionsTabPrivate
 		bool changed;
 
 		// PAL language codes for GameTDB.
+		static const int pal_lc_idx_def;	// Default index in pal_lc[].
 		static const uint32_t pal_lc[];
 };
 
 /** OptionsTabPrivate **/
 
 // PAL language codes for GameTDB.
-const uint32_t OptionsTabPrivate::pal_lc[] = {'de', 'en', 'es', 'fr', 'it', 'nl', 'pt', 'ru'};
+// NOTE: 'au' is technically not a language code, but
+// GameTDB handles it as a separate language.
+const int OptionsTabPrivate::pal_lc_idx_def = 2;
+const uint32_t OptionsTabPrivate::pal_lc[] = {'au', 'de', 'en', 'es', 'fr', 'it', 'nl', 'pt', 'ru'};
 
 OptionsTabPrivate::OptionsTabPrivate()
 	: changed(false)
@@ -107,8 +111,8 @@ void OptionsTab::reset(void)
 			break;
 	}
 	if (idx >= ARRAY_SIZE(d->pal_lc)) {
-		// Out of range. Default to 'en'. (index 1)
-		idx = 1;
+		// Out of range. Default to 'en'.
+		idx = d->pal_lc_idx_def;
 	}
 	d->ui.cboGameTDBPAL->setCurrentIndex(idx);
 }
@@ -127,7 +131,8 @@ void OptionsTab::loadDefaults(void)
 	static const bool useIntIconForSmallSizes_default = true;
 	static const bool downloadHighResScans_default = true;
 	static const bool storeFileOriginInfo_default = true;
-	static const int palLanguageForGameTDB_default = 1;	// cboGameTDBPAL index ('en')
+	static const int palLanguageForGameTDB_default =
+		OptionsTabPrivate::pal_lc_idx_def;	// cboGameTDBPAL index ('en')
 	// Options
 	static const bool showDangerousPermissionsOverlayIcon_default = true;
 	static const bool enableThumbnailOnNetworkFS = false;

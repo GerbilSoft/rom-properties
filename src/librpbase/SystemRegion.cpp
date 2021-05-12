@@ -103,6 +103,7 @@ pthread_once_t SystemRegionPrivate::once_control = PTHREAD_ONCE_INIT;
 // NOTE: Names MUST be in UTF-8!
 // Reference: https://www.omniglot.com/language/names.htm
 const SystemRegionPrivate::LangName_t SystemRegionPrivate::langNames[] = {
+	{'au',	"English (AU)"}, // GameTDB only
 	{'de',	"Deutsch"},
 	{'en',	"English"},
 	{'es',	"Español"},
@@ -438,6 +439,7 @@ int SystemRegion::getFlagPosition(uint32_t lc, int *pCol, int *pRow, bool forceP
 	static const flagpos_t flagpos[] = {
 		{'hans',	0, 0},
 		{'hant',	0, 0},
+		{'au',		1, 3},	// GameTDB only
 		{'de',		1, 0},
 		{'es',		2, 0},
 		{'fr',		3, 0},
