@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * WiiU.cpp: Nintendo Wii U disc image reader.                             *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -17,6 +17,7 @@
 #include "GameCubeRegions.hpp"
 
 // librpbase, librpfile
+#include "librpbase/SystemRegion.hpp"
 using namespace LibRpBase;
 using LibRpFile::IRpFile;
 
@@ -575,10 +576,10 @@ int WiiU::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
 		return -ENOENT;
 	}
 
-	// Determine the GameTDB region code(s).
+	// Determine the GameTDB language code(s).
 	// TODO: Figure out the actual Wii U region code.
 	// Using the game ID for now.
-	vector<const char*> tdb_regions = GameCubeRegions::gcnRegionToGameTDB(~0U, d->discHeader.id4[3]);
+	vector<uint16_t> tdb_lc = GameCubeRegions::gcnRegionToGameTDB(~0U, d->discHeader.id4[3]);
 
 	// Game ID.
 	// Replace any non-printable characters with underscores.
@@ -611,9 +612,9 @@ int WiiU::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
 	}
 
 	// Add the URLs.
-	pExtURLs->resize(szdef_count * tdb_regions.size());
+	pExtURLs->resize(szdef_count * tdb_lc.size());
 	auto extURL_iter = pExtURLs->begin();
-	const auto tdb_regions_cend = tdb_regions.cend();
+	const auto tdb_lc_cend = tdb_lc.cend();
 	for (unsigned int i = 0; i < szdef_count; i++) {
 		// Current image type.
 		char imageTypeName[16];
@@ -621,11 +622,12 @@ int WiiU::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
 			 imageTypeName_base, (szdefs_dl[i]->name ? szdefs_dl[i]->name : ""));
 
 		// Add the images.
-		for (auto tdb_iter = tdb_regions.cbegin();
-		     tdb_iter != tdb_regions_cend; ++tdb_iter, ++extURL_iter)
+		for (auto tdb_iter = tdb_lc.cbegin();
+		     tdb_iter != tdb_lc_cend; ++tdb_iter, ++extURL_iter)
 		{
-			extURL_iter->url = d->getURL_GameTDB("wiiu", imageTypeName, *tdb_iter, id6, ext);
-			extURL_iter->cache_key = d->getCacheKey_GameTDB("wiiu", imageTypeName, *tdb_iter, id6, ext);
+			const string lc_str = SystemRegion::lcToStringUpper(*tdb_iter);
+			extURL_iter->url = d->getURL_GameTDB("wiiu", imageTypeName, lc_str.c_str(), id6, ext);
+			extURL_iter->cache_key = d->getCacheKey_GameTDB("wiiu", imageTypeName, lc_str.c_str(), id6, ext);
 			extURL_iter->width = szdefs_dl[i]->width;
 			extURL_iter->height = szdefs_dl[i]->height;
 			extURL_iter->high_res = (szdefs_dl[i]->index > 0);
