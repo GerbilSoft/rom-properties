@@ -76,7 +76,7 @@ static inline QString U82Q(const char *str, int len = -1)
  * @param lc Language code.
  * @return QString.
  */
-static inline QString lcToQs(uint32_t lc)
+static inline QString lcToQString(uint32_t lc)
 {
 	QString s_lc;
 	s_lc.reserve(4);

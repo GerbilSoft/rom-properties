@@ -201,7 +201,7 @@ void OptionsTab::save(QSettings *pSettings)
 		d->ui.chkStoreFileOriginInfo->isChecked());
 	// NOTE: QComboBox::currentData() was added in Qt 5.2.
 	pSettings->setValue(QLatin1String("PalLanguageForGameTDB"),
-		lcToQs(d->ui.cboGameTDBPAL->itemData(d->ui.cboGameTDBPAL->currentIndex()).toUInt()));
+		lcToQString(d->ui.cboGameTDBPAL->itemData(d->ui.cboGameTDBPAL->currentIndex()).toUInt()));
 	pSettings->endGroup();
 
 	// Options

@@ -77,7 +77,8 @@ void LanguageComboBox::setLCs(const std::set<uint32_t> &set_lc)
 		if (name) {
 			this->addItem(U82Q(name), lc);
 		} else {
-			this->addItem(lcToQs(lc), lc);
+			// Invalid language code.
+			this->addItem(lcToQString(lc), lc);
 		}
 
 		if (sel_lc != 0 && lc == sel_lc) {
