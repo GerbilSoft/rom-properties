@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE)                              *
  * OptionsTab.cpp: Options tab for rp-config.                              *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -27,9 +27,15 @@ class OptionsTabPrivate
 	public:
 		// Has the user changed anything?
 		bool changed;
+
+		// PAL language codes for GameTDB.
+		static const uint32_t pal_lc[];
 };
 
 /** OptionsTabPrivate **/
+
+// PAL language codes for GameTDB.
+const uint32_t OptionsTabPrivate::pal_lc[] = {'de', 'en', 'es', 'fr', 'it', 'nl', 'pt', 'ru'};
 
 OptionsTabPrivate::OptionsTabPrivate()
 	: changed(false)
@@ -43,6 +49,9 @@ OptionsTab::OptionsTab(QWidget *parent)
 {
 	Q_D(OptionsTab);
 	d->ui.setupUi(this);
+
+	// Initialize the PAL language dropdown.
+	d->ui.cboGameTDBPAL->setLCs(OptionsTabPrivate::pal_lc, ARRAY_SIZE(OptionsTabPrivate::pal_lc));
 
 	// Load the current configuration.
 	reset();
@@ -78,12 +87,29 @@ void OptionsTab::reset(void)
 	const Config *const config = Config::instance();
 
 	Q_D(OptionsTab);
+
+	// Downloads
 	d->ui.chkExtImgDownloadEnabled->setChecked(config->extImgDownloadEnabled());
 	d->ui.chkUseIntIconForSmallSizes->setChecked(config->useIntIconForSmallSizes());
 	d->ui.chkDownloadHighResScans->setChecked(config->downloadHighResScans());
 	d->ui.chkStoreFileOriginInfo->setChecked(config->storeFileOriginInfo());
+
+	// Options
 	d->ui.chkShowDangerousPermissionsOverlayIcon->setChecked(config->showDangerousPermissionsOverlayIcon());
 	d->ui.chkEnableThumbnailOnNetworkFS->setChecked(config->enableThumbnailOnNetworkFS());
+
+	// PAL language code
+	const uint32_t lc = config->palLanguageForGameTDB();
+	int idx = 0;
+	for (; idx < ARRAY_SIZE(d->pal_lc); idx++) {
+		if (d->pal_lc[idx] == lc)
+			break;
+	}
+	if (idx >= ARRAY_SIZE(d->pal_lc)) {
+		// Out of range. Default to 'en'. (index 1)
+		idx = 1;
+	}
+	d->ui.cboGameTDBPAL->setCurrentIndex(idx);
 }
 
 /**
@@ -95,15 +121,20 @@ void OptionsTab::loadDefaults(void)
 {
 	// TODO: Get the defaults from Config.
 	// For now, hard-coding everything here.
+	// Downloads
 	static const bool extImgDownloadEnabled_default = true;
 	static const bool useIntIconForSmallSizes_default = true;
 	static const bool downloadHighResScans_default = true;
 	static const bool storeFileOriginInfo_default = true;
+	static const int palLanguageForGameTDB_default = 1;	// cboGameTDBPAL index ('en')
+	// Options
 	static const bool showDangerousPermissionsOverlayIcon_default = true;
 	static const bool enableThumbnailOnNetworkFS = false;
 	bool isDefChanged = false;
 
 	Q_D(OptionsTab);
+
+	// Downloads
 	if (d->ui.chkExtImgDownloadEnabled->isChecked() != extImgDownloadEnabled_default) {
 		d->ui.chkExtImgDownloadEnabled->setChecked(extImgDownloadEnabled_default);
 		isDefChanged = true;
@@ -120,6 +151,12 @@ void OptionsTab::loadDefaults(void)
 		d->ui.chkStoreFileOriginInfo->setChecked(storeFileOriginInfo_default);
 		isDefChanged = true;
 	}
+	if (d->ui.cboGameTDBPAL->currentIndex() != palLanguageForGameTDB_default) {
+		d->ui.cboGameTDBPAL->setCurrentIndex(palLanguageForGameTDB_default);
+		isDefChanged = true;
+	}
+
+	// Options
 	if (d->ui.chkShowDangerousPermissionsOverlayIcon->isChecked() !=
 		showDangerousPermissionsOverlayIcon_default)
 	{
@@ -150,6 +187,8 @@ void OptionsTab::save(QSettings *pSettings)
 
 	// Save the configuration.
 	Q_D(const OptionsTab);
+
+	// Downloads
 	pSettings->beginGroup(QLatin1String("Downloads"));
 	pSettings->setValue(QLatin1String("ExtImageDownload"),
 		d->ui.chkExtImgDownloadEnabled->isChecked());
@@ -159,8 +198,12 @@ void OptionsTab::save(QSettings *pSettings)
 		d->ui.chkDownloadHighResScans->isChecked());
 	pSettings->setValue(QLatin1String("StoreFileOriginInfo"),
 		d->ui.chkStoreFileOriginInfo->isChecked());
+	// NOTE: QComboBox::currentData() was added in Qt 5.2.
+	pSettings->setValue(QLatin1String("PalLanguageForGameTDB"),
+		lcToQs(d->ui.cboGameTDBPAL->itemData(d->ui.cboGameTDBPAL->currentIndex()).toUInt()));
 	pSettings->endGroup();
 
+	// Options
 	pSettings->beginGroup(QLatin1String("Options"));
 	pSettings->setValue(QLatin1String("ShowDangerousPermissionsOverlayIcon"),
 		d->ui.chkShowDangerousPermissionsOverlayIcon->isChecked());
@@ -170,9 +213,9 @@ void OptionsTab::save(QSettings *pSettings)
 }
 
 /**
- * A checkbox was clicked.
+ * An option was changed.
  */
-void OptionsTab::checkBox_clicked(void)
+void OptionsTab::optionChanged_slot(void)
 {
 	// Configuration has been changed.
 	Q_D(OptionsTab);

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE4/KF5)                         *
  * LanguageComboBox.cpp: Language QComboBox subclass.                      *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -50,15 +50,7 @@ void LanguageComboBox::setLCs(const std::set<uint32_t> &set_lc)
 		if (name) {
 			this->addItem(U82Q(name), lc);
 		} else {
-			QString s_lc;
-			s_lc.reserve(4);
-			for (uint32_t tmp_lc = lc; tmp_lc != 0; tmp_lc <<= 8) {
-				ushort chr = (ushort)(tmp_lc >> 24);
-				if (chr != 0) {
-					s_lc += QChar(chr);
-				}
-			}
-			this->addItem(s_lc, lc);
+			this->addItem(lcToQs(lc), lc);
 		}
 
 		// Flag icon.
@@ -83,6 +75,22 @@ void LanguageComboBox::setLCs(const std::set<uint32_t> &set_lc)
 
 	// Language codes updated.
 	// TODO: Emit a signal?
+}
+
+/**
+ * Set the language codes.
+ * @param p_lc Array of language codes.
+ * @param len Number of language codes.
+ */
+ATTR_ACCESS_SIZE(read_only, 2, 3)
+void LanguageComboBox::setLCs(const uint32_t *p_lc, size_t len)
+{
+	// Convert the array to std::set<uint32_t> first.
+	std::set<uint32_t> set_lc;
+	for (; len > 0; len--, p_lc++) {
+		set_lc.emplace(*p_lc);
+	}
+	setLCs(set_lc);
 }
 
 /**

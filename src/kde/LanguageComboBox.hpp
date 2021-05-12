@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE4/KF5)                         *
  * LanguageComboBox.hpp: Language QComboBox subclass.                      *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -36,6 +36,14 @@ class LanguageComboBox : public QComboBox
 		 * @param set_lc Set of language codes.
 		 */
 		void setLCs(const std::set<uint32_t> &set_lc);
+
+		/**
+		 * Set the language codes.
+		 * @param p_lc Array of language codes.
+		 * @param len Number of language codes.
+		 */
+		ATTR_ACCESS_SIZE(read_only, 2, 3)
+		void setLCs(const uint32_t *p_lc, size_t len);
 
 		/**
 		 * Get the set of language codes.

@@ -71,6 +71,24 @@ static inline QString U82Q(const char *str, int len = -1)
  */
 #define Q2U8(qs) ((qs).toUtf8().constData())
 
+/**
+ * Convert a language code to a QString.
+ * @param lc Language code.
+ * @return QString.
+ */
+static inline QString lcToQs(uint32_t lc)
+{
+	QString s_lc;
+	s_lc.reserve(4);
+	for (; lc != 0; lc <<= 8) {
+		ushort chr = (ushort)(lc >> 24);
+		if (chr != 0) {
+			s_lc += QChar(chr);
+		}
+	}
+	return s_lc;
+}
+
 /** QObject **/
 
 /**
