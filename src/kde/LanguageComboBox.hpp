@@ -20,6 +20,7 @@ class LanguageComboBox : public QComboBox
 	Q_OBJECT
 
 	Q_PROPERTY(uint32_t selectedLC READ selectedLC WRITE setSelectedLC NOTIFY lcChanged)
+	Q_PROPERTY(bool forcePAL READ isForcePAL WRITE setForcePAL)
 
 	public:
 		explicit LanguageComboBox(QWidget *parent = 0);
@@ -27,6 +28,12 @@ class LanguageComboBox : public QComboBox
 	private:
 		typedef QComboBox super;
 		Q_DISABLE_COPY(LanguageComboBox)
+
+	protected:
+		/**
+		 * Update all icons.
+		 */
+		void updateIcons(void);
 
 	public:
 		/** Language codes **/
@@ -73,6 +80,21 @@ class LanguageComboBox : public QComboBox
 		 */
 		uint32_t selectedLC(void) const;
 
+		/**
+		 * Set the Force PAL setting.
+		 * @param forcePAL Force PAL setting.
+		 */
+		void setForcePAL(bool forcePAL);
+
+		/**
+		 * Get the Force PAL setting.
+		 * @param forcePAL Force PAL setting.
+		 */
+		inline bool isForcePAL(void) const
+		{
+			return m_forcePAL;
+		}
+
 	signals:
 		/**
 		 * Selected language code has been changed.
@@ -86,6 +108,9 @@ class LanguageComboBox : public QComboBox
 		 * @param index Current index.
 		 */
 		void this_currentIndexChanged_slot(int index);
+
+	protected:
+		bool m_forcePAL;
 };
 
 #endif /* __ROMPROPERTIES_KDE_ROMDATAVIEW_HPP__ */

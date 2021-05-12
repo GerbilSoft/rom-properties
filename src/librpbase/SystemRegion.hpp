@@ -64,14 +64,15 @@ class SystemRegion
 
 		/**
 		 * Get the position of a language code's flag icon in the flags sprite sheet.
-		 * @param lc	[in] Language code.
-		 * @param pCol	[out] Pointer to store the column value. (-1 if not found)
-		 * @param pRow	[out] Pointer to store the row value. (-1 if not found)
+		 * @param lc		[in] Language code.
+		 * @param pCol		[out] Pointer to store the column value. (-1 if not found)
+		 * @param pRow		[out] Pointer to store the row value. (-1 if not found)
+		 * @param forcePAL	[in,opt] If true, force PAL regions, e.g. always use the 'gb' flag for English.
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
 		ATTR_ACCESS(write_only, 2)
 		ATTR_ACCESS(write_only, 3)
-		static int getFlagPosition(uint32_t lc, int *pCol, int *pRow);
+		static int getFlagPosition(uint32_t lc, int *pCol, int *pRow, bool forcePAL = false);
 };
 
 }

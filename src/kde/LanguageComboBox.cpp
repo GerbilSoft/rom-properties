@@ -17,9 +17,43 @@ using std::set;
 
 LanguageComboBox::LanguageComboBox(QWidget *parent)
 	: super(parent)
+	, m_forcePAL(false)
 {
 	connect(this, SIGNAL(currentIndexChanged(int)),
 		this, SLOT(this_currentIndexChanged_slot(int)));
+}
+
+/**
+ * Update all icons.
+ */
+void LanguageComboBox::updateIcons(void)
+{
+	const int count = this->count();
+	if (count <= 0)
+		return;
+
+	// Sprite sheets. (32x32, 24x24, 16x16)
+	const QPixmap spriteSheets[3] = {
+		QPixmap(QLatin1String(":/flags/flags-32x32.png")),
+		QPixmap(QLatin1String(":/flags/flags-24x24.png")),
+		QPixmap(QLatin1String(":/flags/flags-16x16.png")),
+	};
+
+	for (int i = 0; i < count; i++) {
+		int col, row;
+		const uint32_t lc = this->itemData(i).toUInt();
+		if (SystemRegion::getFlagPosition(lc, &col, &row, m_forcePAL) != 0) {
+			// No icon available.
+			this->setItemIcon(i, QIcon());
+		}
+
+		// Found a matching icon.
+		QIcon flag_icon;
+		flag_icon.addPixmap(spriteSheets[0].copy(col*32, row*32, 32, 32));
+		flag_icon.addPixmap(spriteSheets[1].copy(col*24, row*24, 24, 24));
+		flag_icon.addPixmap(spriteSheets[2].copy(col*16, row*16, 16, 16));
+		this->setItemIcon(i, flag_icon);
+	}
 }
 
 /**
@@ -34,13 +68,6 @@ void LanguageComboBox::setLCs(const std::set<uint32_t> &set_lc)
 	// Clear the QComboBox and repopulate it.
 	this->clear();
 
-	// Sprite sheets. (32x32, 24x24, 16x16)
-	const QPixmap spriteSheets[3] = {
-		QPixmap(QLatin1String(":/flags/flags-32x32.png")),
-		QPixmap(QLatin1String(":/flags/flags-24x24.png")),
-		QPixmap(QLatin1String(":/flags/flags-16x16.png")),
-	};
-
 	int sel_idx = -1;
 	int cur_idx = 0;
 	const auto set_lc_cend = set_lc.cend();
@@ -53,22 +80,14 @@ void LanguageComboBox::setLCs(const std::set<uint32_t> &set_lc)
 			this->addItem(lcToQs(lc), lc);
 		}
 
-		// Flag icon.
-		int col, row;
-		if (!SystemRegion::getFlagPosition(lc, &col, &row)) {
-			// Found a matching icon.
-			QIcon flag_icon;
-			flag_icon.addPixmap(spriteSheets[0].copy(col*32, row*32, 32, 32));
-			flag_icon.addPixmap(spriteSheets[1].copy(col*24, row*24, 24, 24));
-			flag_icon.addPixmap(spriteSheets[2].copy(col*16, row*16, 16, 16));
-			this->setItemIcon(cur_idx, flag_icon);
-		}
-
 		if (sel_lc != 0 && lc == sel_lc) {
 			// This was the previously-selected LC.
 			sel_idx = cur_idx;
 		}
 	}
+
+	// Update the icons.
+	updateIcons();
 
 	// Re-select the previously-selected LC.
 	this->setCurrentIndex(sel_idx);
@@ -161,6 +180,18 @@ uint32_t LanguageComboBox::selectedLC(void) const
 {
 	const int index = this->currentIndex();
 	return (index >= 0 ? this->itemData(index).toUInt() : 0);
+}
+
+/**
+ * Set the Force PAL setting.
+ * @param forcePAL Force PAL setting.
+ */
+void LanguageComboBox::setForcePAL(bool forcePAL)
+{
+	if (m_forcePAL == forcePAL)
+		return;
+	m_forcePAL = forcePAL;
+	updateIcons();
 }
 
 /**

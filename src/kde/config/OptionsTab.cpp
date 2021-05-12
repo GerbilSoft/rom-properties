@@ -51,6 +51,7 @@ OptionsTab::OptionsTab(QWidget *parent)
 	d->ui.setupUi(this);
 
 	// Initialize the PAL language dropdown.
+	d->ui.cboGameTDBPAL->setForcePAL(true);
 	d->ui.cboGameTDBPAL->setLCs(OptionsTabPrivate::pal_lc, ARRAY_SIZE(OptionsTabPrivate::pal_lc));
 
 	// Load the current configuration.

@@ -411,12 +411,13 @@ const char *SystemRegion::getLocalizedLanguageName(uint32_t lc)
 
 /**
  * Get the position of a language code's flag icon in the flags sprite sheet.
- * @param lc	[in] Language code.
- * @param pCol	[out] Pointer to store the column value. (-1 if not found)
- * @param pRow	[out] Pointer to store the row value. (-1 if not found)
+ * @param lc		[in] Language code.
+ * @param pCol		[out] Pointer to store the column value. (-1 if not found)
+ * @param pRow		[out] Pointer to store the row value. (-1 if not found)
+ * @param forcePAL	[in,opt] If true, force PAL regions, e.g. always use the 'gb' flag for English.
  * @return 0 on success; negative POSIX error code on error.
  */
-int SystemRegion::getFlagPosition(uint32_t lc, int *pCol, int *pRow)
+int SystemRegion::getFlagPosition(uint32_t lc, int *pCol, int *pRow, bool forcePAL)
 {
 	int ret = -ENOENT;
 
@@ -450,7 +451,8 @@ int SystemRegion::getFlagPosition(uint32_t lc, int *pCol, int *pRow)
 		// Special case for English:
 		// Use the 'us' flag if the country code is US,
 		// and the 'gb' flag for everywhere else.
-		if (getCountryCode() == 'US') {
+		// EXCEPTION: If forcing PAL mode, always use 'gb'.
+		if (!forcePAL && getCountryCode() == 'US') {
 			*pCol = 3;
 			*pRow = 2;
 		} else {
