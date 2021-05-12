@@ -259,6 +259,9 @@ vector<uint16_t> GameCubeRegions::gcnRegionToGameTDB(unsigned int gcnRegion, cha
 						// Don't add English again if that's what the
 						// user-specified fallback language is.
 						addEN = !(lc == 'en' || lc == 'EN');
+					} else {
+						// Invalid. Use 'EN'.
+						addEN = true;
 					}
 					break;
 				}

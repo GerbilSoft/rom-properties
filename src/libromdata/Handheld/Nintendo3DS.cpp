@@ -904,6 +904,9 @@ vector<uint16_t> Nintendo3DSPrivate::n3dsRegionToGameTDB(uint32_t smdhRegion, ch
 				if (lc != 'en' && lc != 'EN') {
 					fallback_region = 1;
 				}
+			} else {
+				// Invalid. Use 'EN'.
+				fallback_region = 1;
 			}
 			break;
 		}

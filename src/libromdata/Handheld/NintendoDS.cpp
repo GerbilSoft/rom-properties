@@ -451,6 +451,9 @@ vector<uint16_t> NintendoDSPrivate::ndsRegionToGameTDB(
 				if (lc != 'en' && lc != 'EN') {
 					fallback_region = 1;
 				}
+			} else {
+				// Invalid. Use 'EN'.
+				fallback_region = 1;
 			}
 			break;
 		}
