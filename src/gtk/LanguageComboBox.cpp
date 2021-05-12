@@ -233,15 +233,9 @@ language_combo_box_set_lcs(LanguageComboBox *widget, const uint32_t *lcs_array)
 		if (name) {
 			gtk_list_store_set(widget->listStore, &iter, SM_COL_TEXT, name, -1);
 		} else {
-			string s_lc;
-			s_lc.reserve(4);
-			for (uint32_t tmp_lc = lc; tmp_lc != 0; tmp_lc <<= 8) {
-				char chr = (char)(tmp_lc >> 24);
-				if (chr != 0) {
-					s_lc += chr;
-				}
-			}
-			gtk_list_store_set(widget->listStore, &iter, SM_COL_TEXT, s_lc.c_str(), -1);
+			// Invalid language code.
+			gtk_list_store_set(widget->listStore, &iter, SM_COL_TEXT,
+				SystemRegion::lcToString(lc).c_str(), -1);
 		}
 
 		// Flag icon.

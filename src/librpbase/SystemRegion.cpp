@@ -8,15 +8,22 @@
 
 #include "stdafx.h"
 #include "SystemRegion.hpp"
+#include "ctypex.h"
 
 // librpthreads
 #include "librpthreads/pthread_once.h"
 
-// C includes. (C++ namespace)
+// C includes (C++ namespace)
 #include <clocale>
 
+// C++ STL classes
+using std::string;
 #ifdef _WIN32
-# include "libwin32common/RpWin32_sdk.h"
+using std::wstring;
+#endif /* _WIN32 */
+
+#ifdef _WIN32
+#  include "libwin32common/RpWin32_sdk.h"
 #endif /* _WIN32 */
 
 namespace LibRpBase {
@@ -477,5 +484,83 @@ int SystemRegion::getFlagPosition(uint32_t lc, int *pCol, int *pRow, bool forceP
 
 	return ret;
 }
+
+/**
+ * Convert a language code to a string.
+ * NOTE: The language code will be converted to lowercase if necessary.
+ * @param lc Language code.
+ * @return String.
+ */
+string SystemRegion::lcToString(uint32_t lc)
+{
+	string s_lc;
+	s_lc.reserve(4);
+	for (; lc != 0; lc <<= 8) {
+		uint8_t chr = (uint8_t)(lc >> 24);
+		if (chr != 0) {
+			s_lc += TOLOWER(chr);
+		}
+	}
+	return s_lc;
+}
+
+/**
+ * Convert a language code to a string.
+ * NOTE: The language code will be converted to uppercase.
+ * @param lc Language code.
+ * @return String.
+ */
+string SystemRegion::lcToStringUpper(uint32_t lc)
+{
+	string s_lc;
+	s_lc.reserve(4);
+	for (; lc != 0; lc <<= 8) {
+		uint8_t chr = (uint8_t)(lc >> 24);
+		if (chr != 0) {
+			s_lc += TOUPPER(chr);
+		}
+	}
+	return s_lc;
+}
+
+#ifdef _WIN32
+/**
+ * Convert a language code to a wide string.
+ * NOTE: The language code will be converted to lowercase if necessary.
+ * @param lc Language code.
+ * @return Wide string.
+ */
+wstring SystemRegion::lcToWString(uint32_t lc)
+{
+	wstring ws_lc;
+	ws_lc.reserve(4);
+	for (; lc != 0; lc <<= 8) {
+		uint8_t chr = (uint8_t)(lc >> 24);
+		if (chr != 0) {
+			ws_lc += _towlower(chr);
+		}
+	}
+	return ws_lc;
+}
+
+/**
+ * Convert a language code to a wide string.
+ * NOTE: The language code will be converted to uppercase.
+ * @param lc Language code.
+ * @return Wide string.
+ */
+wstring SystemRegion::lcToWStringUpper(uint32_t lc)
+{
+	wstring ws_lc;
+	ws_lc.reserve(4);
+	for (; lc != 0; lc <<= 8) {
+		uint8_t chr = (uint8_t)(lc >> 24);
+		if (chr != 0) {
+			ws_lc += _towupper(chr);
+		}
+	}
+	return ws_lc;
+}
+#endif /* _WIN32 */
 
 }

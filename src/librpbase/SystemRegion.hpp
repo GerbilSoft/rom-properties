@@ -73,6 +73,49 @@ class SystemRegion
 		ATTR_ACCESS(write_only, 2)
 		ATTR_ACCESS(write_only, 3)
 		static int getFlagPosition(uint32_t lc, int *pCol, int *pRow, bool forcePAL = false);
+
+		/**
+		 * Convert a language code to a string.
+		 * NOTE: The language code will be converted to lowercase if necessary.
+		 * @param lc Language code.
+		 * @return String.
+		 */
+		static std::string lcToString(uint32_t lc);
+
+		/**
+		 * Convert a language code to a string.
+		 * NOTE: The language code will be converted to uppercase.
+		 * @param lc Language code.
+		 * @return String.
+		 */
+		static std::string lcToStringUpper(uint32_t lc);
+
+#ifdef _WIN32
+		/**
+		 * Convert a language code to a wide string.
+		 * NOTE: The language code will be converted to lowercase if necessary.
+		 * @param lc Language code.
+		 * @return Wide string.
+		 */
+		static std::wstring lcToWString(uint32_t lc);
+
+		/**
+		 * Convert a language code to a wide string.
+		 * NOTE: The language code will be converted to uppercase.
+		 * @param lc Language code.
+		 * @return Wide string.
+		 */
+		static std::wstring lcToWStringUpper(uint32_t lc);
+
+#  ifdef _UNICODE
+#    define lcToTString		lcToWString
+#    define lcToTStringUpper	lcToWStringUpper
+#  else /* !_UNCIODE */
+#    define lcToTString		lcToString
+#    define lcToTStringUpper	lcToStringUpper
+#  endif /* _UNICODE */
+
+#endif /* _WIN32 */
 };
 
 }

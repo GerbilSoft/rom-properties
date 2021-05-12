@@ -206,16 +206,9 @@ LRESULT LanguageComboBoxPrivate::setLCs(const uint32_t *lcs_array)
 		tstring s_lc;
 		if (lc_str) {
 			s_lc = U82T_c(lc_str);
-		}
-		else {
+		} else {
 			// Invalid language code.
-			s_lc.reserve(4);
-			for (uint32_t tmp_lc = lc; tmp_lc != 0; tmp_lc <<= 8) {
-				TCHAR chr = (TCHAR)(tmp_lc >> 24);
-				if (chr != 0) {
-					s_lc += chr;
-				}
-			}
+			s_lc = SystemRegion::lcToTString(lc);
 		}
 
 		SIZE size;
