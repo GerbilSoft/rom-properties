@@ -539,7 +539,7 @@ wstring SystemRegion::lcToWString(uint32_t lc)
 	for (; lc != 0; lc <<= 8) {
 		uint8_t chr = (uint8_t)(lc >> 24);
 		if (chr != 0) {
-			ws_lc += _towlower(chr);
+			ws_lc += towlower(chr);
 		}
 	}
 	return ws_lc;
@@ -558,7 +558,7 @@ wstring SystemRegion::lcToWStringUpper(uint32_t lc)
 	for (; lc != 0; lc <<= 8) {
 		uint8_t chr = (uint8_t)(lc >> 24);
 		if (chr != 0) {
-			ws_lc += _towupper(chr);
+			ws_lc += towupper(chr);
 		}
 	}
 	return ws_lc;
