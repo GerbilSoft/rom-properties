@@ -33,6 +33,7 @@ class LanguageComboBoxPrivate
 		LanguageComboBoxPrivate(HWND hWnd)
 			: hWnd(hWnd)
 			, himglFlags(nullptr)
+			, forcePAL(false)
 			, dwExStyleRTL(LibWin32Common::isSystemRTL())
 		{
 			minSize.cx = 0;
@@ -75,6 +76,7 @@ class LanguageComboBoxPrivate
 		HIMAGELIST himglFlags;	// ImageList for flag icons
 
 		SIZE minSize;		// Minimum size required
+		bool forcePAL;		// Force PAL region flags?
 
 		// Is the UI locale right-to-left?
 		// If so, this will be set to WS_EX_LAYOUTRTL.
@@ -220,7 +222,7 @@ LRESULT LanguageComboBoxPrivate::setLCs(const uint32_t *lcs_array)
 		if (imgFlagsSheet) {
 			// Add the image.
 			int col, row;
-			int ret = SystemRegion::getFlagPosition(lc, &col, &row);
+			int ret = SystemRegion::getFlagPosition(lc, &col, &row, forcePAL);
 			assert(ret == 0);
 			if (ret != 0) {
 				// Icon not found. Use a blank icon to prevent issues.
@@ -368,17 +370,33 @@ LanguageComboBoxWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		}
 
 		case WM_LCB_GET_SELECTED_LC: {
-			LanguageComboBoxPrivate *const d = reinterpret_cast<LanguageComboBoxPrivate*>(
+			const LanguageComboBoxPrivate *const d = reinterpret_cast<const LanguageComboBoxPrivate*>(
 				GetWindowLongPtr(hWnd, GWLP_USERDATA));
 			return d->getSelectedLC();
 		}
 
 		case WM_LCB_GET_MIN_SIZE: {
-			LanguageComboBoxPrivate *const d = reinterpret_cast<LanguageComboBoxPrivate*>(
+			const LanguageComboBoxPrivate *const d = reinterpret_cast<const LanguageComboBoxPrivate*>(
 				GetWindowLongPtr(hWnd, GWLP_USERDATA));
 
 			// Pack the minimum size into an LPARAM.
 			return (short)d->minSize.cx | (((short)d->minSize.cy) << 16);
+		}
+
+		case WM_LCB_SET_FORCE_PAL: {
+			LanguageComboBoxPrivate *const d = reinterpret_cast<LanguageComboBoxPrivate*>(
+				GetWindowLongPtr(hWnd, GWLP_USERDATA));
+
+			// TODO: Update icons. For now, LCs must be set
+			// after setting forcePAL.
+			d->forcePAL = static_cast<bool>(wParam);
+			return TRUE;
+		}
+
+		case WM_LCB_GET_FORCE_PAL: {
+			const LanguageComboBoxPrivate *const d = reinterpret_cast<const LanguageComboBoxPrivate*>(
+				GetWindowLongPtr(hWnd, GWLP_USERDATA));
+			return d->forcePAL;
 		}
 	}
 

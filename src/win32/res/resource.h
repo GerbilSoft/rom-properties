@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * resource.rc: Win32 resource script.                                     *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -116,8 +116,9 @@
 #define IDC_INTICONSMALL			40202
 #define IDC_HIGHRESDL				40203
 #define IDC_STOREFILEORIGININFO			40204
-#define IDC_DANGEROUSPERMISSIONS		40205
-#define IDC_ENABLETHUMBNAILONNETWORKFS		40206
+#define IDC_PALLANGUAGEFORGAMETDB		40205
+#define IDC_DANGEROUSPERMISSIONS		40206
+#define IDC_ENABLETHUMBNAILONNETWORKFS		40207
 
 // Thumbnail cache
 #define IDC_CACHE_DESCRIPTION			40301

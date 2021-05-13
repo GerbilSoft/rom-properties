@@ -11,6 +11,7 @@
 #pragma code_page(65001)
 
 #include "resource.h"
+#define WC_LANGUAGECOMBOBOX	"rp-LanguageComboBox"
 
 #define APSTUDIO_HIDDEN_SYMBOLS
 #include <windows.h>
@@ -63,15 +64,18 @@ STYLE DS_3DLOOK | DS_CONTROL | DS_SHELLFONT | WS_VISIBLE | WS_CHILDWINDOW | WS_T
 EXSTYLE WS_EX_NOPARENTNOTIFY | WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", FW_NORMAL, 0, 0
 BEGIN
-    GROUPBOX        "&Descargas", IDC_STATIC, 7, 7, 397, 84, BS_GROUPBOX, WS_EX_TRANSPARENT
+    GROUPBOX        "&Descargas", IDC_STATIC, 7, 7, 397, 105, BS_GROUPBOX, WS_EX_TRANSPARENT
     AUTOCHECKBOX    "Habilitar la descarga de imágenes externas.", IDC_EXTIMGDL, 15, 19, 381, 8, 0, WS_EX_TRANSPARENT
     AUTOCHECKBOX    "Utilice siempre el icono interno (si está presente) para los tamaños pequeños.", IDC_INTICONSMALL, 15, 33, 381, 8, 0, WS_EX_TRANSPARENT
     AUTOCHECKBOX    "Descargar arte de alta calidad para miniaturas grandes.\nEsto podría aumentar la utilización del ancho de banda.", IDC_HIGHRESDL, 15, 47, 381, 16, BS_MULTILINE, WS_EX_TRANSPARENT
     AUTOCHECKBOX    "Almacenar la información de origen de los archivos en caché usando atributos extendidos.\nEsto ayuda a identificar de dónde se descargaron los archivos almacenados.", IDC_STOREFILEORIGININFO, 15, 68, 381, 16, BS_MULTILINE, WS_EX_TRANSPARENT
+    LTEXT           "Language for PAL titles on GameTDB:", IDC_STATIC, 15, 92, 120, 8, 0, WS_EX_TRANSPARENT
+    // FIXME: Determine best height. (Compare to RP_ShellPropSheetExt for multi-language.)
+    CONTROL         "", IDC_PALLANGUAGEFORGAMETDB, WC_LANGUAGECOMBOBOX, CBS_DROPDOWNLIST | WS_CHILD | WS_TABSTOP | WS_VISIBLE, 138, 89, 68, 128, WS_EX_LEFT
 
-    GROUPBOX        "&Options", IDC_STATIC, 7, 92, 397, 50, BS_GROUPBOX, WS_EX_TRANSPARENT
-    AUTOCHECKBOX    "Mostrar un icono de superposición de seguridad para las imágenes de la ROM con\nPermisos ""peligrosos"".", IDC_DANGEROUSPERMISSIONS, 15, 103, 381, 16, BS_MULTILINE, WS_EX_TRANSPARENT
-    AUTOCHECKBOX    "Habilitar la extracción de miniaturas y metadatos de los sistemas\nde archivos de red. Esto puede ralentizar la navegación de los archivos.", IDC_ENABLETHUMBNAILONNETWORKFS, 15, 120, 381, 16, BS_MULTILINE, WS_EX_TRANSPARENT
+    GROUPBOX        "&Options", IDC_STATIC, 7, 113, 397, 50, BS_GROUPBOX, WS_EX_TRANSPARENT
+    AUTOCHECKBOX    "Mostrar un icono de superposición de seguridad para las imágenes de la ROM con\nPermisos ""peligrosos"".", IDC_DANGEROUSPERMISSIONS, 15, 124, 381, 16, BS_MULTILINE, WS_EX_TRANSPARENT
+    AUTOCHECKBOX    "Habilitar la extracción de miniaturas y metadatos de los sistemas\nde archivos de red. Esto puede ralentizar la navegación de los archivos.", IDC_ENABLETHUMBNAILONNETWORKFS, 15, 141, 381, 16, BS_MULTILINE, WS_EX_TRANSPARENT
 END
 
 /**
