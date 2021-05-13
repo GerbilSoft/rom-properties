@@ -9,6 +9,9 @@
 #ifndef __ROMPROPERTIES_KDE_LANGUAGECOMBOBOX_HPP__
 #define __ROMPROPERTIES_KDE_LANGUAGECOMBOBOX_HPP__
 
+// for ATTR_ACCESS_SIZE()
+#include "common.h"
+
 // Qt includes
 #include <QComboBox>
 
