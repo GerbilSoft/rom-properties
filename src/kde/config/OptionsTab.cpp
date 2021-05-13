@@ -29,8 +29,8 @@ class OptionsTabPrivate
 		bool changed;
 
 		// PAL language codes for GameTDB.
-		static const int pal_lc_idx_def;	// Default index in pal_lc[].
 		static const uint32_t pal_lc[];
+		static const int pal_lc_idx_def;	// Default index in pal_lc[].
 };
 
 /** OptionsTabPrivate **/
@@ -38,8 +38,8 @@ class OptionsTabPrivate
 // PAL language codes for GameTDB.
 // NOTE: 'au' is technically not a language code, but
 // GameTDB handles it as a separate language.
-const int OptionsTabPrivate::pal_lc_idx_def = 2;
 const uint32_t OptionsTabPrivate::pal_lc[] = {'au', 'de', 'en', 'es', 'fr', 'it', 'nl', 'pt', 'ru'};
+const int OptionsTabPrivate::pal_lc_idx_def = 2;
 
 OptionsTabPrivate::OptionsTabPrivate()
 	: changed(false)
