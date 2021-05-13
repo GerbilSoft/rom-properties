@@ -72,9 +72,9 @@ BEGIN
     // FIXME: Determine best height. (Compare to RP_ShellPropSheetExt for multi-language.)
     CONTROL         "", IDC_PALLANGUAGEFORGAMETDB, WC_LANGUAGECOMBOBOX, CBS_DROPDOWNLIST | WS_CHILD | WS_TABSTOP | WS_VISIBLE, 138, 89, 68, 128, WS_EX_LEFT
 
-    GROUPBOX        "&Options", IDC_STATIC, 7, 113, 397, 50, BS_GROUPBOX, WS_EX_TRANSPARENT
+    GROUPBOX        "&Options", IDC_STATIC, 7, 113, 397, 54, BS_GROUPBOX, WS_EX_TRANSPARENT
     AUTOCHECKBOX    "Show a security overlay icon for ROM images with\n""dangerous"" permissions.", IDC_DANGEROUSPERMISSIONS, 15, 124, 381, 16, BS_MULTILINE, WS_EX_TRANSPARENT
-    AUTOCHECKBOX    "Enable thumbnailing and metadata extraction on network\nfile systems. This may slow down file browsing.", IDC_ENABLETHUMBNAILONNETWORKFS, 15, 141, 381, 16, BS_MULTILINE, WS_EX_TRANSPARENT
+    AUTOCHECKBOX    "Enable thumbnailing and metadata extraction on network\nfile systems. This may slow down file browsing.", IDC_ENABLETHUMBNAILONNETWORKFS, 15, 145, 381, 16, BS_MULTILINE, WS_EX_TRANSPARENT
 END
 
 /**
