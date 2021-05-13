@@ -3,7 +3,7 @@
  * RP_ExtractIcon_Register.cpp: IExtractIcon implementation.               *
  * COM registration functions.                                             *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -18,31 +18,7 @@ using LibWin32Common::RegKey;
 using std::tstring;
 
 #define CLSID_RP_ExtractIcon_String	TEXT("{E51BC107-E491-4B29-A6A3-2A4309259802}")
-extern const TCHAR RP_ProgID[];
-
-/**
- * Register the COM object.
- * @return ERROR_SUCCESS on success; Win32 error code on error.
- */
-LONG RP_ExtractIcon::RegisterCLSID(void)
-{
-	static const TCHAR description[] = _T("ROM Properties Page - Icon Extractor");
-
-	// Register the COM object.
-	LONG lResult = RegKey::RegisterComObject(__uuidof(RP_ExtractIcon), RP_ProgID, description);
-	if (lResult != ERROR_SUCCESS) {
-		return lResult;
-	}
-
-	// Register as an "approved" shell extension.
-	lResult = RegKey::RegisterApprovedExtension(__uuidof(RP_ExtractIcon), description);
-	if (lResult != ERROR_SUCCESS) {
-		return lResult;
-	}
-
-	// COM object registered.
-	return ERROR_SUCCESS;
-}
+CLSID_IMPL(RP_ExtractIcon, _T("ROM Properties Page - Icon Extractor"))
 
 /**
  * Register the file type handler.
@@ -180,16 +156,6 @@ LONG RP_ExtractIcon::RegisterFileType(RegKey &hkcr, LPCTSTR ext)
 
 	// File type handler registered.
 	return lResult;
-}
-
-/**
- * Unregister the COM object.
- * @return ERROR_SUCCESS on success; Win32 error code on error.
- */
-LONG RP_ExtractIcon::UnregisterCLSID(void)
-{
-	// Unegister the COM object.
-	return RegKey::UnregisterComObject(__uuidof(RP_ExtractIcon), RP_ProgID);
 }
 
 /**

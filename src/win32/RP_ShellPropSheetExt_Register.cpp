@@ -3,7 +3,7 @@
  * RP_ShellPropSheetExt_Register.cpp: IShellPropSheetExt implementation.   *
  * COM registration functions.                                             *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -17,31 +17,9 @@ using LibWin32Common::RegKey;
 using std::tstring;
 
 #define CLSID_RP_ShellPropSheetExt_String	TEXT("{2443C158-DF7C-4352-B435-BC9F885FFD52}")
+CLSID_IMPL(RP_ShellPropSheetExt, _T("ROM Properties Page - Property Sheet"))
+
 extern const TCHAR RP_ProgID[];
-
-/**
- * Register the COM object.
- * @return ERROR_SUCCESS on success; Win32 error code on error.
- */
-LONG RP_ShellPropSheetExt::RegisterCLSID(void)
-{
-	static const TCHAR description[] = _T("ROM Properties Page - Property Sheet");
-
-	// Register the COM object.
-	LONG lResult = RegKey::RegisterComObject(__uuidof(RP_ShellPropSheetExt), RP_ProgID, description);
-	if (lResult != ERROR_SUCCESS) {
-		return lResult;
-	}
-
-	// Register as an "approved" shell extension.
-	lResult = RegKey::RegisterApprovedExtension(__uuidof(RP_ShellPropSheetExt), description);
-	if (lResult != ERROR_SUCCESS) {
-		return lResult;
-	}
-
-	// COM object registered.
-	return ERROR_SUCCESS;
-}
 
 /**
  * Register the file type handler.
@@ -115,22 +93,6 @@ LONG RP_ShellPropSheetExt::RegisterFileType(RegKey &hkcr, LPCTSTR ext)
 
 	// File type handler registered.
 	return lResult;
-}
-
-/**
- * Unregister the COM object.
- * @return ERROR_SUCCESS on success; Win32 error code on error.
- */
-LONG RP_ShellPropSheetExt::UnregisterCLSID(void)
-{
-	// Unegister the COM object.
-	LONG lResult = RegKey::UnregisterComObject(__uuidof(RP_ShellPropSheetExt), RP_ProgID);
-	if (lResult != ERROR_SUCCESS) {
-		return lResult;
-	}
-
-	// TODO
-	return ERROR_SUCCESS;
 }
 
 /**

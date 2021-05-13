@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * RP_ExtractImage.hpp: IExtractImage implementation.                      *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -15,6 +15,9 @@
 
 // Reference: http://www.codeproject.com/Articles/338268/COM-in-C
 #include "libwin32common/ComBase.hpp"
+
+// CLSID common macros
+#include "clsid_common.hpp"
 
 // CLSID
 extern "C" {
@@ -43,39 +46,13 @@ RP_ExtractImage final : public LibWin32Common::ComBase2<IPersistFile, IExtractIm
 		RP_ExtractImage_Private *const d_ptr;
 
 	public:
+		CLSID_DECL(RP_ExtractImage)
+		FILETYPE_HANDLER_DECL(RP_ExtractImage)
+
+	public:
 		// IUnknown
 		IFACEMETHODIMP QueryInterface(REFIID riid, LPVOID *ppvObj) final;
 
-	public:
-		/**
-		 * Register the COM object.
-		 * @return ERROR_SUCCESS on success; Win32 error code on error.
-		 */
-		static LONG RegisterCLSID(void);
-
-		/**
-		 * Register the file type handler.
-		 * @param hkcr HKEY_CLASSES_ROOT or user-specific classes root.
-		 * @param ext File extension, including the leading dot.
-		 * @return ERROR_SUCCESS on success; Win32 error code on error.
-		 */
-		static LONG RegisterFileType(LibWin32Common::RegKey &hkcr, LPCTSTR ext);
-
-		/**
-		 * Unregister the COM object.
-		 * @return ERROR_SUCCESS on success; Win32 error code on error.
-		 */
-		static LONG UnregisterCLSID(void);
-
-		/**
-		 * Unregister the file type handler.
-		 * @param hkcr HKEY_CLASSES_ROOT or user-specific classes root.
-		 * @param ext File extension, including the leading dot.
-		 * @return ERROR_SUCCESS on success; Win32 error code on error.
-		 */
-		static LONG UnregisterFileType(LibWin32Common::RegKey &hkcr, LPCTSTR ext);
-
-	public:
 		// IPersist (IPersistFile base class)
 		IFACEMETHODIMP GetClassID(CLSID *pClassID) final;
 		// IPersistFile

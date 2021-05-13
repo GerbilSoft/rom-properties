@@ -3,7 +3,7 @@
  * RP_ExtractImage_Register.cpp: IExtractImage implementation.             *
  * COM registration functions.                                             *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -19,31 +19,7 @@ using std::tstring;
 
 #define IID_IExtractImage_String	TEXT("{BB2E617C-0920-11D1-9A0B-00C04FC2D6C1}")
 #define CLSID_RP_ExtractImage_String	TEXT("{84573BC0-9502-42F8-8066-CC527D0779E5}")
-extern const TCHAR RP_ProgID[];
-
-/**
- * Register the COM object.
- * @return ERROR_SUCCESS on success; Win32 error code on error.
- */
-LONG RP_ExtractImage::RegisterCLSID(void)
-{
-	static const TCHAR description[] = _T("ROM Properties Page - Image Extractor");
-
-	// Register the COM object.
-	LONG lResult = RegKey::RegisterComObject(__uuidof(RP_ExtractImage), RP_ProgID, description);
-	if (lResult != ERROR_SUCCESS) {
-		return lResult;
-	}
-
-	// Register as an "approved" shell extension.
-	lResult = RegKey::RegisterApprovedExtension(__uuidof(RP_ExtractImage), description);
-	if (lResult != ERROR_SUCCESS) {
-		return lResult;
-	}
-
-	// COM object registered.
-	return ERROR_SUCCESS;
-}
+CLSID_IMPL(RP_ExtractImage, _T("ROM Properties Page - Image Extractor"))
 
 /**
  * Register the file type handler.
@@ -134,22 +110,6 @@ LONG RP_ExtractImage::RegisterFileType(RegKey &hkcr, LPCTSTR ext)
 
 	// File type handler registered.
 	return lResult;
-}
-
-/**
- * Unregister the COM object.
- * @return ERROR_SUCCESS on success; Win32 error code on error.
- */
-LONG RP_ExtractImage::UnregisterCLSID(void)
-{
-	// Unegister the COM object.
-	LONG lResult = RegKey::UnregisterComObject(__uuidof(RP_ExtractImage), RP_ProgID);
-	if (lResult != ERROR_SUCCESS) {
-		return lResult;
-	}
-
-	// TODO
-	return ERROR_SUCCESS;
 }
 
 /**

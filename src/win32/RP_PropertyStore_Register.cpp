@@ -3,7 +3,7 @@
  * RP_PropSheet_Register.cpp: IPropertyStore implementation.               *
  * COM registration functions.                                             *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -18,7 +18,7 @@ using LibWin32Common::RegKey;
 using std::tstring;
 
 #define CLSID_RP_PropertyStore_String	TEXT("{4A1E3510-50BD-4B03-A801-E4C954F43B96}")
-extern const TCHAR RP_ProgID[];
+CLSID_IMPL(RP_PropertyStore, _T("ROM Properties Page - Property Store"))
 
 /**
  * Get the PreviewDetails string.
@@ -138,30 +138,7 @@ std::tstring RP_PropertyStore::GetFullDetailsString()
 	return tstring(FullDetails, _countof(FullDetails)-1);
 }
 
-
-/**
- * Register the COM object.
- * @return ERROR_SUCCESS on success; Win32 error code on error.
- */
-LONG RP_PropertyStore::RegisterCLSID(void)
-{
-	static const TCHAR description[] = _T("ROM Properties Page - Property Store");
-
-	// Register the COM object.
-	LONG lResult = RegKey::RegisterComObject(__uuidof(RP_PropertyStore), RP_ProgID, description);
-	if (lResult != ERROR_SUCCESS) {
-		return lResult;
-	}
-
-	// Register as an "approved" shell extension.
-	lResult = RegKey::RegisterApprovedExtension(__uuidof(RP_PropertyStore), description);
-	if (lResult != ERROR_SUCCESS) {
-		return lResult;
-	}
-
-	// COM object registered.
-	return ERROR_SUCCESS;
-}
+/** Registration **/
 
 /**
  * Register the file type handler.
@@ -211,21 +188,6 @@ LONG RP_PropertyStore::RegisterFileType(RegKey &hkcr, RegKey *pHklm, LPCTSTR ext
 		// TODO: Fallbacks?
 		lResult = hklmph_ext.write(nullptr, CLSID_RP_PropertyStore_String);
 		if (lResult != ERROR_SUCCESS) return lResult;
-	}
-
-	return ERROR_SUCCESS;
-}
-
-/**
- * Unregister the COM object.
- * @return ERROR_SUCCESS on success; Win32 error code on error.
- */
-LONG RP_PropertyStore::UnregisterCLSID(void)
-{
-	// Unegister the COM object.
-	LONG lResult = RegKey::UnregisterComObject(__uuidof(RP_PropertyStore), RP_ProgID);
-	if (lResult != ERROR_SUCCESS) {
-		return lResult;
 	}
 
 	return ERROR_SUCCESS;

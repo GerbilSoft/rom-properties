@@ -3,7 +3,7 @@
  * RP_ThumbnailProvider_Register.cpp: IThumbnailProvider implementation.   *
  * COM registration functions.                                             *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -19,31 +19,7 @@ using std::tstring;
 
 #define IID_IThumbnailProvider_String		TEXT("{E357FCCD-A995-4576-B01F-234630154E96}")
 #define CLSID_RP_ThumbnailProvider_String	TEXT("{4723DF58-463E-4590-8F4A-8D9DD4F4355A}")
-extern const TCHAR RP_ProgID[];
-
-/**
- * Register the COM object.
- * @return ERROR_SUCCESS on success; Win32 error code on error.
- */
-LONG RP_ThumbnailProvider::RegisterCLSID(void)
-{
-	static const TCHAR description[] = _T("ROM Properties Page - Thumbnail Provider");
-
-	// Register the COM object.
-	LONG lResult = RegKey::RegisterComObject(__uuidof(RP_ThumbnailProvider), RP_ProgID, description);
-	if (lResult != ERROR_SUCCESS) {
-		return lResult;
-	}
-
-	// Register as an "approved" shell extension.
-	lResult = RegKey::RegisterApprovedExtension(__uuidof(RP_ThumbnailProvider), description);
-	if (lResult != ERROR_SUCCESS) {
-		return lResult;
-	}
-
-	// COM object registered.
-	return ERROR_SUCCESS;
-}
+CLSID_IMPL(RP_ThumbnailProvider, _T("ROM Properties Page - Thumbnail Provider"))
 
 /**
  * Register the file type handler.
@@ -164,22 +140,6 @@ LONG RP_ThumbnailProvider::RegisterFileType(RegKey &hkcr, LPCTSTR ext)
 
 	// File type handler registered.
 	return lResult;
-}
-
-/**
- * Unregister the COM object.
- * @return ERROR_SUCCESS on success; Win32 error code on error.
- */
-LONG RP_ThumbnailProvider::UnregisterCLSID(void)
-{
-	// Unegister the COM object.
-	LONG lResult = RegKey::UnregisterComObject(__uuidof(RP_ThumbnailProvider), RP_ProgID);
-	if (lResult != ERROR_SUCCESS) {
-		return lResult;
-	}
-
-	// TODO
-	return ERROR_SUCCESS;
 }
 
 /**

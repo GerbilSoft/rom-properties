@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * RP_ShellPropSheetExt.hpp: IShellPropSheetExt implementation.            *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -19,13 +19,16 @@
 // - https://msdn.microsoft.com/en-us/library/ms677109(v=vs.85).aspx
 #include "libwin32common/ComBase.hpp"
 
-namespace LibWin32Common {
-	class RegKey;
-}
+// CLSID common macros
+#include "clsid_common.hpp"
 
 // CLSID
 extern "C" {
 	extern const CLSID CLSID_RP_ShellPropSheetExt;
+}
+
+namespace LibWin32Common {
+	class RegKey;
 }
 
 // C++ includes.
@@ -49,8 +52,8 @@ RP_ShellPropSheetExt final : public LibWin32Common::ComBase2<IShellExtInit, IShe
 		RP_ShellPropSheetExt_Private *d_ptr;
 
 	public:
-		// IUnknown
-		IFACEMETHODIMP QueryInterface(REFIID riid, LPVOID *ppvObj) final;
+		CLSID_DECL(RP_ShellPropSheetExt)
+		FILETYPE_HANDLER_DECL(RP_ShellPropSheetExt)
 
 	private:
 		/**
@@ -76,35 +79,9 @@ RP_ShellPropSheetExt final : public LibWin32Common::ComBase2<IShellExtInit, IShe
 		static LONG UnregisterFileType_int(LibWin32Common::RegKey &hkey_Assoc);
 
 	public:
-		/**
-		 * Register the COM object.
-		 * @return ERROR_SUCCESS on success; Win32 error code on error.
-		 */
-		static LONG RegisterCLSID(void);
+		// IUnknown
+		IFACEMETHODIMP QueryInterface(REFIID riid, LPVOID *ppvObj) final;
 
-		/**
-		 * Register the file type handler.
-		 * @param hkcr HKEY_CLASSES_ROOT or user-specific classes root.
-		 * @param ext File extension, including the leading dot.
-		 * @return ERROR_SUCCESS on success; Win32 error code on error.
-		 */
-		static LONG RegisterFileType(LibWin32Common::RegKey &hkcr, LPCTSTR ext);
-
-		/**
-		 * Unregister the COM object.
-		 * @return ERROR_SUCCESS on success; Win32 error code on error.
-		 */
-		static LONG UnregisterCLSID(void);
-
-		/**
-		 * Unregister the file type handler.
-		 * @param hkcr HKEY_CLASSES_ROOT or user-specific classes root.
-		 * @param ext File extension, including the leading dot.
-		 * @return ERROR_SUCCESS on success; Win32 error code on error.
-		 */
-		static LONG UnregisterFileType(LibWin32Common::RegKey &hkcr, LPCTSTR ext);
-
-	public:
 		// IShellExtInit
 		IFACEMETHODIMP Initialize(LPCITEMIDLIST pidlFolder, LPDATAOBJECT pDataObj, HKEY hKeyProgID) final;
 
