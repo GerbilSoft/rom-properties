@@ -12,6 +12,10 @@
 #include "librpfile/IRpFile.hpp"
 #include <objidl.h>
 
+// for IStreamPtr
+#include <comdef.h>
+#include <comdefsp.h>
+
 // zlib
 struct z_stream_s;
 
