@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>490</width>
-    <height>356</height>
+    <height>384</height>
    </rect>
   </property>
   <layout class="QVBoxLayout" name="vboxMain">
@@ -46,6 +46,36 @@ This may increase bandwidth usage.</string>
 This helps to identify where cached files were downloaded from.</string>
         </property>
        </widget>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="hboxGameTDBPAL">
+        <item>
+         <widget class="QLabel" name="lblGameTDBPAL">
+          <property name="text">
+           <string>Language for PAL titles on GameTDB:</string>
+          </property>
+          <property name="textFormat">
+           <enum>Qt::PlainText</enum>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="LanguageComboBox" name="cboGameTDBPAL"/>
+        </item>
+        <item>
+         <spacer name="hspcGameTDBPAL">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+       </layout>
       </item>
      </layout>
     </widget>
@@ -90,13 +120,20 @@ file systems. This may slow down file browsing.</string>
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>LanguageComboBox</class>
+   <extends>QComboBox</extends>
+   <header>LanguageComboBox.hpp</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections>
   <connection>
    <sender>chkExtImgDownloadEnabled</sender>
    <signal>clicked()</signal>
    <receiver>OptionsTab</receiver>
-   <slot>checkBox_clicked()</slot>
+   <slot>optionChanged_slot()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>28</x>
@@ -112,7 +149,7 @@ file systems. This may slow down file browsing.</string>
    <sender>chkUseIntIconForSmallSizes</sender>
    <signal>clicked()</signal>
    <receiver>OptionsTab</receiver>
-   <slot>checkBox_clicked()</slot>
+   <slot>optionChanged_slot()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>26</x>
@@ -128,11 +165,11 @@ file systems. This may slow down file browsing.</string>
    <sender>chkDownloadHighResScans</sender>
    <signal>clicked()</signal>
    <receiver>OptionsTab</receiver>
-   <slot>checkBox_clicked()</slot>
+   <slot>optionChanged_slot()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>26</x>
-     <y>144</y>
+     <x>40</x>
+     <y>137</y>
     </hint>
     <hint type="destinationlabel">
      <x>3</x>
@@ -144,7 +181,7 @@ file systems. This may slow down file browsing.</string>
    <sender>chkShowDangerousPermissionsOverlayIcon</sender>
    <signal>clicked()</signal>
    <receiver>OptionsTab</receiver>
-   <slot>checkBox_clicked()</slot>
+   <slot>optionChanged_slot()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>65</x>
@@ -160,7 +197,7 @@ file systems. This may slow down file browsing.</string>
    <sender>chkEnableThumbnailOnNetworkFS</sender>
    <signal>clicked()</signal>
    <receiver>OptionsTab</receiver>
-   <slot>checkBox_clicked()</slot>
+   <slot>optionChanged_slot()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>61</x>
@@ -176,7 +213,7 @@ file systems. This may slow down file browsing.</string>
    <sender>chkStoreFileOriginInfo</sender>
    <signal>clicked()</signal>
    <receiver>OptionsTab</receiver>
-   <slot>checkBox_clicked()</slot>
+   <slot>optionChanged_slot()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>86</x>
@@ -188,12 +225,28 @@ file systems. This may slow down file browsing.</string>
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>cboGameTDBPAL</sender>
+   <signal>currentIndexChanged(int)</signal>
+   <receiver>OptionsTab</receiver>
+   <slot>optionChanged_slot()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>319</x>
+     <y>205</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>487</x>
+     <y>200</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <signal>modified()</signal>
   <slot>reset()</slot>
   <slot>loadDefaults()</slot>
   <slot>save()</slot>
-  <slot>checkBox_clicked()</slot>
+  <slot>optionChanged_slot()</slot>
  </slots>
 </ui>

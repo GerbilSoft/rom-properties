@@ -11,6 +11,7 @@
 #pragma code_page(65001)
 
 #include "resource.h"
+#define WC_LANGUAGECOMBOBOX	"rp-LanguageComboBox"
 
 #define APSTUDIO_HIDDEN_SYMBOLS
 #include <windows.h>
@@ -63,15 +64,18 @@ STYLE DS_3DLOOK | DS_CONTROL | DS_SHELLFONT | WS_VISIBLE | WS_CHILDWINDOW | WS_T
 EXSTYLE WS_EX_NOPARENTNOTIFY | WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", FW_NORMAL, 0, 0
 BEGIN
-    GROUPBOX        "&Downloads", IDC_STATIC, 7, 7, 437, 84, BS_GROUPBOX, WS_EX_TRANSPARENT
+    GROUPBOX        "&Downloads", IDC_STATIC, 7, 7, 437, 105, BS_GROUPBOX, WS_EX_TRANSPARENT
     AUTOCHECKBOX    "Habilitar recebimentos de imagem externa.", IDC_EXTIMGDL, 15, 19, 421, 8, 0, WS_EX_TRANSPARENT
     AUTOCHECKBOX    "Sempre utilizar o ícone interno (se presente) para tamanhos pequenos.", IDC_INTICONSMALL, 15, 33, 421, 8, 0, WS_EX_TRANSPARENT
     AUTOCHECKBOX    "Recber arte de alta qualidade com miniaturas grandes.\nIsto pode aumentar a utilização de largura de banda.", IDC_HIGHRESDL, 15, 47, 421, 16, BS_MULTILINE, WS_EX_TRANSPARENT
     AUTOCHECKBOX    "Store cached file origin information using extended attributes.\nThis helps to identify where cached files were downloaded from.", IDC_STOREFILEORIGININFO, 15, 68, 381, 16, BS_MULTILINE, WS_EX_TRANSPARENT
+    LTEXT           "Language for PAL titles on GameTDB:", IDC_STATIC, 15, 92, 120, 8, 0, WS_EX_TRANSPARENT
+    // FIXME: Determine best height. (Compare to RP_ShellPropSheetExt for multi-language.)
+    CONTROL         "", IDC_PALLANGUAGEFORGAMETDB, WC_LANGUAGECOMBOBOX, CBS_DROPDOWNLIST | WS_CHILD | WS_TABSTOP | WS_VISIBLE, 138, 89, 68, 128, WS_EX_LEFT
 
-    GROUPBOX        "&Options", IDC_STATIC, 7, 92, 437, 50, BS_GROUPBOX, WS_EX_TRANSPARENT
-    AUTOCHECKBOX    "Show a security overlay icon for ROM images with\n""dangerous"" permissions.", IDC_DANGEROUSPERMISSIONS, 15, 103, 421, 16, BS_MULTILINE, WS_EX_TRANSPARENT
-    AUTOCHECKBOX    "Enable thumbnailing and metadata extraction on network\nfile systems. This may slow down file browsing.", IDC_ENABLETHUMBNAILONNETWORKFS, 15, 120, 421, 16, BS_MULTILINE, WS_EX_TRANSPARENT
+    GROUPBOX        "&Options", IDC_STATIC, 7, 113, 437, 54, BS_GROUPBOX, WS_EX_TRANSPARENT
+    AUTOCHECKBOX    "Show a security overlay icon for ROM images with\n""dangerous"" permissions.", IDC_DANGEROUSPERMISSIONS, 15, 124, 421, 16, BS_MULTILINE, WS_EX_TRANSPARENT
+    AUTOCHECKBOX    "Enable thumbnailing and metadata extraction on network\nfile systems. This may slow down file browsing.", IDC_ENABLETHUMBNAILONNETWORKFS, 15, 145, 421, 16, BS_MULTILINE, WS_EX_TRANSPARENT
 END
 
 /**

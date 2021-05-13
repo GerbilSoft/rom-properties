@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * GameCube.cpp: Nintendo GameCube and Wii disc image reader.              *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -2152,7 +2152,7 @@ int GameCube::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) c
 		 imageTypeName_base, (sizeDef->name ? sizeDef->name : ""));
 
 	// Determine the GameTDB region code(s).
-	vector<const char*> tdb_regions =
+	vector<uint16_t> tdb_lc =
 		GameCubeRegions::gcnRegionToGameTDB(d->gcnRegion, d->discHeader.id4[3]);
 
 	// Game ID.
@@ -2177,7 +2177,7 @@ int GameCube::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) c
 	// user has high-resolution downloads disabled.
 	// See Nintendo3DS for an example.
 	// (NOTE: For GameTDB, currently only applies to coverfullHQ on GCN/Wii.)
-	size_t vsz = tdb_regions.size();
+	size_t vsz = tdb_lc.size();
 	if (isDisc2) {
 		// Need to increase the initial size.
 		// Increasing the size later invalidates the iterator.
@@ -2186,7 +2186,7 @@ int GameCube::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) c
 
 	pExtURLs->resize(vsz);
 	auto extURL_iter = pExtURLs->begin();
-	const auto tdb_regions_cend = tdb_regions.cend();
+	const auto tdb_lc_cend = tdb_lc.cend();
 
 	// Is this not the first disc?
 	if (isDisc2) {
@@ -2196,22 +2196,24 @@ int GameCube::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) c
 		snprintf(discName, sizeof(discName), "%s%u",
 			 imageTypeName, d->discHeader.disc_number+1);
 
-		for (auto tdb_iter = tdb_regions.cbegin();
-		     tdb_iter != tdb_regions_cend; ++tdb_iter, ++extURL_iter)
+		for (auto tdb_iter = tdb_lc.cbegin();
+		     tdb_iter != tdb_lc_cend; ++tdb_iter, ++extURL_iter)
 		{
-			extURL_iter->url = d->getURL_GameTDB("wii", discName, *tdb_iter, id6, ".png");
-			extURL_iter->cache_key = d->getCacheKey_GameTDB("wii", discName, *tdb_iter, id6, ".png");
+			const string lc_str = SystemRegion::lcToStringUpper(*tdb_iter);
+			extURL_iter->url = d->getURL_GameTDB("wii", discName, lc_str.c_str(), id6, ".png");
+			extURL_iter->cache_key = d->getCacheKey_GameTDB("wii", discName, lc_str.c_str(), id6, ".png");
 			extURL_iter->width = sizeDef->width;
 			extURL_iter->height = sizeDef->height;
 		}
 	}
 
 	// First disc, or not a disc scan.
-	for (auto tdb_iter = tdb_regions.cbegin();
-	     tdb_iter != tdb_regions_cend; ++tdb_iter, ++extURL_iter)
+	for (auto tdb_iter = tdb_lc.cbegin();
+	     tdb_iter != tdb_lc_cend; ++tdb_iter, ++extURL_iter)
 	{
-		extURL_iter->url = d->getURL_GameTDB("wii", imageTypeName, *tdb_iter, id6, ".png");
-		extURL_iter->cache_key = d->getCacheKey_GameTDB("wii", imageTypeName, *tdb_iter, id6, ".png");
+		const string lc_str = SystemRegion::lcToStringUpper(*tdb_iter);
+		extURL_iter->url = d->getURL_GameTDB("wii", imageTypeName, lc_str.c_str(), id6, ".png");
+		extURL_iter->cache_key = d->getCacheKey_GameTDB("wii", imageTypeName, lc_str.c_str(), id6, ".png");
 		extURL_iter->width = sizeDef->width;
 		extURL_iter->height = sizeDef->height;
 		extURL_iter->high_res = false;	// Only one size is available.

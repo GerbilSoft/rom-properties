@@ -193,18 +193,19 @@ class NintendoDSPrivate final : public LibRpBase::RomDataPrivate
 		const char *getNDSSecureAreaString(void);
 
 		/**
-		 * Convert a Nintendo DS(i) region value to a GameTDB region code.
+		 * Convert a Nintendo DS(i) region value to a GameTDB language code.
 		 * @param ndsRegion Nintendo DS region.
 		 * @param dsiRegion Nintendo DSi region.
 		 * @param idRegion Game ID region.
 		 *
-		 * NOTE: Mulitple GameTDB region codes may be returned, including:
-		 * - User-specified fallback region. [TODO]
-		 * - General fallback region.
+		 * NOTE: Mulitple GameTDB language codes may be returned, including:
+		 * - User-specified fallback language code for PAL.
+		 * - General fallback language code.
 		 *
-		 * @return GameTDB region code(s), or empty vector if the region value is invalid.
+		 * @return GameTDB language code(s), or empty vector if the region value is invalid.
+		 * NOTE: The language code may need to be converted to uppercase!
 		 */
-		static std::vector<const char*> ndsRegionToGameTDB(
+		static std::vector<uint16_t> ndsRegionToGameTDB(
 			uint8_t ndsRegion, uint32_t dsiRegion, char idRegion);
 
 		/**

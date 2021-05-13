@@ -2,13 +2,19 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * GameCubeRegions.hpp: Nintendo GameCube/Wii region code detection.       *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #include "stdafx.h"
 #include "GameCubeRegions.hpp"
 #include "gcn_structs.h"
+
+// librpbase
+#include "librpbase/config/Config.hpp"
+#include "librpbase/SystemRegion.hpp"
+using LibRpBase::Config;
+using LibRpBase::SystemRegion;
 
 // C++ STL classes.
 using std::vector;
@@ -174,17 +180,18 @@ const char *GameCubeRegions::gcnRegionToAbbrevString(unsigned int gcnRegion)
 }
 
 /**
- * Convert a GCN region value (from GCN_Boot_Info or RVL_RegionSetting) to a GameTDB region code.
+ * Convert a GCN region value (from GCN_Boot_Info or RVL_RegionSetting) to a GameTDB language code.
  * @param gcnRegion GCN region value.
  * @param idRegion Game ID region.
  *
- * NOTE: Mulitple GameTDB region codes may be returned, including:
- * - User-specified fallback region. [TODO]
- * - General fallback region.
+ * NOTE: Mulitple GameTDB language codes may be returned, including:
+ * - User-specified fallback language code for PAL.
+ * - General fallback language code.
  *
- * @return GameTDB region code(s), or empty vector if the region value is invalid.
+ * @return GameTDB language code(s), or empty vector if the region value is invalid.
+ * NOTE: The language code may need to be converted to uppercase!
  */
-vector<const char*> GameCubeRegions::gcnRegionToGameTDB(unsigned int gcnRegion, char idRegion)
+vector<uint16_t> GameCubeRegions::gcnRegionToGameTDB(unsigned int gcnRegion, char idRegion)
 {
 	/**
 	 * There are two region codes for GCN/Wii games:
@@ -203,7 +210,7 @@ vector<const char*> GameCubeRegions::gcnRegionToGameTDB(unsigned int gcnRegion, 
 	 * Game ID reference:
 	 * - https://github.com/dolphin-emu/dolphin/blob/4c9c4568460df91a38d40ac3071d7646230a8d0f/Source/Core/DiscIO/Enums.cpp
 	 */
-	vector<const char*> ret;
+	vector<uint16_t> ret;
 
 	switch (gcnRegion) {
 		case GCN_REGION_JPN:
@@ -214,71 +221,88 @@ vector<const char*> GameCubeRegions::gcnRegionToGameTDB(unsigned int gcnRegion, 
 				case 'K':
 				case 'T':	// South Korea with Japanese language
 				case 'Q':	// South Korea with English language
-					ret.emplace_back("KO");
+					ret.push_back('KO');
 					break;
 				case 'C':	// China (unofficial?)
 				case 'W':	// Taiwan
-					// NOTE: GameTDB only has "ZH" for boxart, not "ZHCN" or "ZHTW".
-					ret.emplace_back("ZH");
+					// NOTE: GameTDB only has 'ZH' for boxart, not 'ZHCN' or 'ZHTW'.
+					ret.push_back('ZH');
 					break;
 
 				// Wrong region, but handle it anyway.
 				case 'E':	// USA
-					ret.emplace_back("US");
+					ret.push_back('US');
 					break;
 				case 'P':	// Europe (PAL)
 				default:	// All others
-					ret.emplace_back("EN");
+					ret.push_back('EN');
 					break;
 			}
-			ret.emplace_back("JA");
+			ret.push_back('JA');
 			break;
 
-		case GCN_REGION_EUR:
+		case GCN_REGION_EUR: {
+			bool addEN = false;
 			switch (idRegion) {
 				case 'P':	// PAL
 				case 'X':	// Multi-language release
 				case 'Y':	// Multi-language release
 				case 'L':	// Japanese import to PAL regions
 				case 'M':	// Japanese import to PAL regions
-				default:
+				default: {
+					// Generic PAL release.
+					// Use the user-specified fallback.
+					const Config *const config = Config::instance();
+					const uint32_t lc = config->palLanguageForGameTDB();
+					if (lc != 0 && lc < 65536) {
+						ret.push_back(static_cast<uint16_t>(lc));
+						// Don't add English again if that's what the
+						// user-specified fallback language is.
+						addEN = !(lc == 'en' || lc == 'EN');
+					} else {
+						// Invalid. Use 'EN'.
+						addEN = true;
+					}
 					break;
+				}
 
 				// NOTE: No GameID code for PT.
-				// TODO: Implement user-specified fallbacks.
 
 				case 'D':	// Germany
-					ret.emplace_back("DE");
+					ret.push_back('DE');
 					break;
 				case 'F':	// France
-					ret.emplace_back("FR");
+					ret.push_back('FR');
 					break;
 				case 'H':	// Netherlands
-					ret.emplace_back("NL");
+					ret.push_back('NL');
 					break;
 				case 'I':	// Italy
-					ret.emplace_back("IT");
+					ret.push_back('IT');
 					break;
 				case 'R':	// Russia
-					ret.emplace_back("RU");
+					ret.push_back('RU');
 					break;
 				case 'S':	// Spain
-					ret.emplace_back("ES");
+					ret.push_back('ES');
 					break;
 				case 'U':	// Australia
-					ret.emplace_back("AU");
+					ret.push_back('AU');
 					break;
 
 				// Wrong region, but handle it anyway.
 				case 'E':	// USA
-					ret.emplace_back("US");
+					ret.push_back('US');
 					break;
 				case 'J':	// Japan
-					ret.emplace_back("JA");
+					ret.push_back('JA');
 					break;
 			}
-			ret.emplace_back("EN");
+			if (addEN) {
+				ret.push_back('EN');
+			}
 			break;
+		}
 
 		// USA and South Korea regions don't have separate
 		// subregions for other countries.
@@ -295,13 +319,13 @@ vector<const char*> GameCubeRegions::gcnRegionToGameTDB(unsigned int gcnRegion, 
 
 				// Wrong region, but handle it anyway.
 				case 'P':	// Europe (PAL)
-					ret.emplace_back("EN");
+					ret.push_back('EN');
 					break;
 				case 'J':	// Japan
-					ret.emplace_back("JA");
+					ret.push_back('JA');
 					break;
 			}
-			ret.emplace_back("US");
+			ret.push_back('US');
 			break;
 
 		case GCN_REGION_KOR:
@@ -309,100 +333,104 @@ vector<const char*> GameCubeRegions::gcnRegionToGameTDB(unsigned int gcnRegion, 
 			// - K: South Korea
 			// - Q: South Korea with Japanese language
 			// - T: South Korea with English language
-			ret.emplace_back("KO");
+			ret.push_back('KO');
 			break;
 
 		case GCN_REGION_CHN:
 			// Possible game ID regions:
 			// - C: China
-			// NOTE: GameTDB only has "ZH" for boxart, not "ZHCN" or "ZHTW".
-			ret.emplace_back("ZH");
+			// NOTE: GameTDB only has 'ZH' for boxart, not 'ZHCN' or 'ZHTW'.
+			ret.push_back('ZH');
 			break;
 
 		case GCN_REGION_TWN:
 			// Possible game ID regions:
 			// - W: Taiwan
-			// NOTE: GameTDB only has "ZH" for boxart, not "ZHCN" or "ZHTW".
-			ret.emplace_back("ZH");
+			// NOTE: GameTDB only has 'ZH' for boxart, not 'ZHCN' or 'ZHTW'.
+			ret.push_back('ZH');
 			break;
 
 		case GCN_REGION_ALL:
-		default:
+		default: {
 			// Invalid gcnRegion. Use the game ID by itself.
 			// (Usually happens if we can't read BI2.bin,
 			// e.g. in WIA images.)
 			bool addEN = false;
 			switch (idRegion) {
-				case 'E':	// USA
-					ret.emplace_back("US");
-					break;
 				case 'P':	// Europe (PAL)
-					addEN = true;
+				case 'X':	// Multi-language release
+				case 'Y':	// Multi-language release
+				case 'L':	// Japanese import to PAL regions
+				case 'M':	// Japanese import to PAL regions
+				default: {
+					// Generic PAL release.
+					// Use the user-specified fallback.
+					const Config *const config = Config::instance();
+					const uint32_t lc = config->palLanguageForGameTDB();
+					if (lc != 0) {
+						ret.push_back(lc);
+						// Don't add English again if that's what the
+						// user-specified fallback language is.
+						addEN = !(lc == 'en' || lc == 'EN');
+					}
+					break;
+				}
+
+				case 'E':	// USA
+					ret.push_back('US');
 					break;
 				case 'J':	// Japan
-					ret.emplace_back("JA");
+					ret.push_back('JA');
 					break;
 				case 'W':	// Taiwan
 					// NOTE: GameTDB only has "ZH" for boxart, not "ZHCN" or "ZHTW".
-					ret.emplace_back("ZH");
+					ret.push_back('ZH');
 					break;
 				case 'K':	// South Korea
 				case 'T':	// South Korea with Japanese language
 				case 'Q':	// South Korea with English language
-					ret.emplace_back("KO");
+					ret.push_back('KO');
 					break;
 				case 'C':	// China (unofficial?)
-					// NOTE: GameTDB only has "ZH" for boxart, not "ZHCN" or "ZHTW".
-					ret.emplace_back("ZH");
+					// NOTE: GameTDB only has 'ZH' for boxart, not 'ZHCN' or 'ZHTW'.
+					ret.push_back('ZH');
 					break;
 
 				/** PAL regions **/
 				case 'D':	// Germany
-					ret.emplace_back("DE");
+					ret.push_back('DE');
 					addEN = true;
 					break;
 				case 'F':	// France
-					ret.emplace_back("FR");
+					ret.push_back('FR');
 					addEN = true;
 					break;
 				case 'H':	// Netherlands
-					ret.emplace_back("NL");
+					ret.push_back('NL');
 					addEN = true;
 					break;
 				case 'I':	// Italy
-					ret.emplace_back("IT");
+					ret.push_back('IT');
 					addEN = true;
 					break;
 				case 'R':	// Russia
-					ret.emplace_back("RU");
+					ret.push_back('RU');
 					addEN = true;
 					break;
 				case 'S':	// Spain
-					ret.emplace_back("ES");
+					ret.push_back('ES');
 					addEN = true;
 					break;
 				case 'U':	// Australia
-					ret.emplace_back("AU");
+					ret.push_back('AU');
 					addEN = true;
-					break;
-
-				case 'X':
-				case 'Y':
-				case 'Z':
-					// Extra language versions.
-					// Usually PAL.
-					ret.emplace_back("EN");
-					ret.emplace_back("US");
-					ret.emplace_back("ES");
-					ret.emplace_back("FR");
-					ret.emplace_back("DE");
-					ret.emplace_back("IT");
 					break;
 			}
 			if (addEN) {
-				ret.emplace_back("EN");
+				ret.push_back('EN');
 			}
 			break;
+		}
 	}
 
 	return ret;

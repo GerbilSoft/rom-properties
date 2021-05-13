@@ -64,14 +64,58 @@ class SystemRegion
 
 		/**
 		 * Get the position of a language code's flag icon in the flags sprite sheet.
-		 * @param lc	[in] Language code.
-		 * @param pCol	[out] Pointer to store the column value. (-1 if not found)
-		 * @param pRow	[out] Pointer to store the row value. (-1 if not found)
+		 * @param lc		[in] Language code.
+		 * @param pCol		[out] Pointer to store the column value. (-1 if not found)
+		 * @param pRow		[out] Pointer to store the row value. (-1 if not found)
+		 * @param forcePAL	[in,opt] If true, force PAL regions, e.g. always use the 'gb' flag for English.
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
 		ATTR_ACCESS(write_only, 2)
 		ATTR_ACCESS(write_only, 3)
-		static int getFlagPosition(uint32_t lc, int *pCol, int *pRow);
+		static int getFlagPosition(uint32_t lc, int *pCol, int *pRow, bool forcePAL = false);
+
+		/**
+		 * Convert a language code to a string.
+		 * NOTE: The language code will be converted to lowercase if necessary.
+		 * @param lc Language code.
+		 * @return String.
+		 */
+		static std::string lcToString(uint32_t lc);
+
+		/**
+		 * Convert a language code to a string.
+		 * NOTE: The language code will be converted to uppercase.
+		 * @param lc Language code.
+		 * @return String.
+		 */
+		static std::string lcToStringUpper(uint32_t lc);
+
+#ifdef _WIN32
+		/**
+		 * Convert a language code to a wide string.
+		 * NOTE: The language code will be converted to lowercase if necessary.
+		 * @param lc Language code.
+		 * @return Wide string.
+		 */
+		static std::wstring lcToWString(uint32_t lc);
+
+		/**
+		 * Convert a language code to a wide string.
+		 * NOTE: The language code will be converted to uppercase.
+		 * @param lc Language code.
+		 * @return Wide string.
+		 */
+		static std::wstring lcToWStringUpper(uint32_t lc);
+
+#  ifdef _UNICODE
+#    define lcToTString		lcToWString
+#    define lcToTStringUpper	lcToWStringUpper
+#  else /* !_UNCIODE */
+#    define lcToTString		lcToString
+#    define lcToTStringUpper	lcToStringUpper
+#  endif /* _UNICODE */
+
+#endif /* _WIN32 */
 };
 
 }

@@ -15,6 +15,8 @@
 #include "data/NintendoLanguage.hpp"
 
 // librpbase, librpfile, librptexture
+#include "librpbase/config/Config.hpp"
+#include "librpbase/SystemRegion.hpp"
 using namespace LibRpBase;
 using LibRpFile::IRpFile;
 using LibRpFile::RpFile;
@@ -327,18 +329,19 @@ inline uint32_t NintendoDSPrivate::getDefaultLC(void) const
 }
 
 /**
- * Convert a Nintendo DS(i) region value to a GameTDB region code.
+ * Convert a Nintendo DS(i) region value to a GameTDB language code.
  * @param ndsRegion Nintendo DS region.
  * @param dsiRegion Nintendo DSi region.
  * @param idRegion Game ID region.
  *
- * NOTE: Mulitple GameTDB region codes may be returned, including:
- * - User-specified fallback region. [TODO]
- * - General fallback region.
+ * NOTE: Mulitple GameTDB language codes may be returned, including:
+ * - User-specified fallback language code for PAL.
+ * - General fallback language code.
  *
- * @return GameTDB region code(s), or empty vector if the region value is invalid.
+ * @return GameTDB language code(s), or empty vector if the region value is invalid.
+ * NOTE: The language code may need to be converted to uppercase!
  */
-vector<const char*> NintendoDSPrivate::ndsRegionToGameTDB(
+vector<uint16_t> NintendoDSPrivate::ndsRegionToGameTDB(
 	uint8_t ndsRegion, uint32_t dsiRegion, char idRegion)
 {
 	/**
@@ -364,35 +367,35 @@ vector<const char*> NintendoDSPrivate::ndsRegionToGameTDB(
 	 * Game ID reference:
 	 * - https://github.com/dolphin-emu/dolphin/blob/4c9c4568460df91a38d40ac3071d7646230a8d0f/Source/Core/DiscIO/Enums.cpp
 	 */
-	vector<const char*> ret;
+	vector<uint16_t> ret;
 
 	int fallback_region = 0;
 	switch (dsiRegion) {
 		case DSi_REGION_JAPAN:
-			ret.emplace_back("JA");
+			ret.push_back('JA');
 			return ret;
 		case DSi_REGION_USA:
-			ret.emplace_back("US");
+			ret.push_back('US');
 			return ret;
 		case DSi_REGION_EUROPE:
 		case DSi_REGION_EUROPE | DSi_REGION_AUSTRALIA:
-			// Process the game ID and use "EN" as a fallback.
+			// Process the game ID and use 'EN' as a fallback.
 			fallback_region = 1;
 			break;
 		case DSi_REGION_AUSTRALIA:
-			// Process the game ID and use "AU","EN" as fallbacks.
+			// Process the game ID and use 'AU','EN' as fallbacks.
 			fallback_region = 2;
 			break;
 		case DSi_REGION_CHINA:
-			// NOTE: GameTDB only has "ZH" for boxart, not "ZHCN" or "ZHTW".
-			ret.emplace_back("ZH");
-			ret.emplace_back("JA");
-			ret.emplace_back("EN");
+			// NOTE: GameTDB only has 'ZH' for boxart, not 'ZHCN' or 'ZHTW'.
+			ret.push_back('ZH');
+			ret.push_back('JA');
+			ret.push_back('EN');
 			return ret;
 		case DSi_REGION_SKOREA:
-			ret.emplace_back("KO");
-			ret.emplace_back("JA");
-			ret.emplace_back("EN");
+			ret.push_back('KO');
+			ret.push_back('JA');
+			ret.push_back('EN');
 			return ret;
 		case 0:
 		default:
@@ -405,67 +408,79 @@ vector<const char*> NintendoDSPrivate::ndsRegionToGameTDB(
 
 	// Check for China/Korea.
 	if (ndsRegion & NDS_REGION_CHINA) {
-		// NOTE: GameTDB only has "ZH" for boxart, not "ZHCN" or "ZHTW".
-		ret.emplace_back("ZH");
-		ret.emplace_back("JA");
-		ret.emplace_back("EN");
+		// NOTE: GameTDB only has 'ZH' for boxart, not 'ZHCN' or 'ZHTW'.
+		ret.push_back('ZH');
+		ret.push_back('JA');
+		ret.push_back('EN');
 		return ret;
 	} else if (ndsRegion & NDS_REGION_SKOREA) {
-		ret.emplace_back("KO");
-		ret.emplace_back("JA");
-		ret.emplace_back("EN");
+		ret.push_back('KO');
+		ret.push_back('JA');
+		ret.push_back('EN');
 		return ret;
 	}
 
 	// Check for region-specific game IDs.
 	switch (idRegion) {
 		case 'E':	// USA
-			ret.emplace_back("US");
+			ret.push_back('US');
 			break;
 		case 'J':	// Japan
-			ret.emplace_back("JA");
+			ret.push_back('JA');
 			break;
 		case 'O':
 			// TODO: US/EU.
 			// Compare to host system region.
 			// For now, assuming US.
-			ret.emplace_back("US");
+			ret.push_back('US');
 			break;
 		case 'P':	// PAL
 		case 'X':	// Multi-language release
 		case 'Y':	// Multi-language release
 		case 'L':	// Japanese import to PAL regions
 		case 'M':	// Japanese import to PAL regions
-		default:
-			if (fallback_region == 0) {
-				// Use the fallback region.
+		default: {
+			// Generic PAL release.
+			// Use the user-specified fallback.
+			const Config *const config = Config::instance();
+			const uint32_t lc = config->palLanguageForGameTDB();
+			if (lc != 0 && lc < 65536) {
+				ret.push_back(static_cast<uint16_t>(lc));
+				// Don't add English again if that's what the
+				// user-specified fallback language is.
+				if (lc != 'en' && lc != 'EN') {
+					fallback_region = 1;
+				}
+			} else {
+				// Invalid. Use 'EN'.
 				fallback_region = 1;
 			}
 			break;
+		}
 
 		// European regions.
 		case 'D':	// Germany
-			ret.emplace_back("DE");
+			ret.push_back('DE');
 			fallback_region = 1;
 			break;
 		case 'F':	// France
-			ret.emplace_back("FR");
+			ret.push_back('FR');
 			fallback_region = 1;
 			break;
 		case 'H':	// Netherlands
-			ret.emplace_back("NL");
+			ret.push_back('NL');
 			fallback_region = 1;
 			break;
 		case 'I':	// Italy
-			ret.emplace_back("IT");
+			ret.push_back('IT');
 			fallback_region = 1;
 			break;
 		case 'R':	// Russia
-			ret.emplace_back("RU");
+			ret.push_back('RU');
 			fallback_region = 1;
 			break;
 		case 'S':	// Spain
-			ret.emplace_back("ES");
+			ret.push_back('ES');
 			fallback_region = 1;
 			break;
 		case 'U':	// Australia
@@ -480,12 +495,12 @@ vector<const char*> NintendoDSPrivate::ndsRegionToGameTDB(
 	switch (fallback_region) {
 		case 1:
 			// Europe
-			ret.emplace_back("EN");
+			ret.push_back('EN');
 			break;
 		case 2:
 			// Australia
-			ret.emplace_back("AU");
-			ret.emplace_back("EN");
+			ret.push_back('AU');
+			ret.push_back('EN');
 			break;
 
 		case 0:	// None
@@ -1544,8 +1559,8 @@ int NintendoDS::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size)
 	// GameTDB URL functions.
 	id4[4] = 0;
 
-	// Determine the GameTDB region code(s).
-	vector<const char*> tdb_regions = d->ndsRegionToGameTDB(
+	// Determine the GameTDB language code(s).
+	vector<uint16_t> tdb_lc = d->ndsRegionToGameTDB(
 		d->romHeader.nds_region,
 		((d->romHeader.unitcode & NintendoDSPrivate::DS_HW_DSi)
 			? le32_to_cpu(d->romHeader.dsi.region_code)
@@ -1569,9 +1584,9 @@ int NintendoDS::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size)
 	}
 
 	// Add the URLs.
-	pExtURLs->resize(szdef_count * tdb_regions.size());
+	pExtURLs->resize(szdef_count * tdb_lc.size());
 	auto extURL_iter = pExtURLs->begin();
-	const auto tdb_regions_cend = tdb_regions.cend();
+	const auto tdb_lc_cend = tdb_lc.cend();
 	for (unsigned int i = 0; i < szdef_count; i++) {
 		// Current image type.
 		char imageTypeName[16];
@@ -1579,11 +1594,12 @@ int NintendoDS::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size)
 			 imageTypeName_base, (szdefs_dl[i]->name ? szdefs_dl[i]->name : ""));
 
 		// Add the images.
-		for (auto tdb_iter = tdb_regions.cbegin();
-		     tdb_iter != tdb_regions_cend; ++tdb_iter, ++extURL_iter)
+		for (auto tdb_iter = tdb_lc.cbegin();
+		     tdb_iter != tdb_lc_cend; ++tdb_iter, ++extURL_iter)
 		{
-			extURL_iter->url = d->getURL_GameTDB("ds", imageTypeName, *tdb_iter, id4, ext);
-			extURL_iter->cache_key = d->getCacheKey_GameTDB("ds", imageTypeName, *tdb_iter, id4, ext);
+			const string lc_str = SystemRegion::lcToStringUpper(*tdb_iter);
+			extURL_iter->url = d->getURL_GameTDB("ds", imageTypeName, lc_str.c_str(), id4, ext);
+			extURL_iter->cache_key = d->getCacheKey_GameTDB("ds", imageTypeName, lc_str.c_str(), id4, ext);
 			extURL_iter->width = szdefs_dl[i]->width;
 			extURL_iter->height = szdefs_dl[i]->height;
 			extURL_iter->high_res = (szdefs_dl[i]->index >= 2);

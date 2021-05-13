@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * WiiWAD.cpp: Nintendo Wii WAD file reader.                               *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -19,6 +19,7 @@
 
 // librpbase, librpfile, librptexture
 #include "librpbase/Achievements.hpp"
+#include "librpbase/SystemRegion.hpp"
 using namespace LibRpBase;
 using LibRpFile::IRpFile;
 using LibRpTexture::rp_image;
@@ -1469,10 +1470,10 @@ int WiiWAD::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) con
 		}
 	}
 
-	// Determine the GameTDB region code(s).
+	// Determine the GameTDB language code(s).
 	const unsigned int gcnRegion = be16_to_cpu(tmdHeader->region_code);
 	const char id4_region = (char)tmdHeader->title_id.u8[7];
-	vector<const char*> tdb_regions =
+	vector<uint16_t> tdb_lc =
 		GameCubeRegions::gcnRegionToGameTDB(gcnRegion, id4_region);
 
 	// If we're downloading a "high-resolution" image (M or higher),
@@ -1491,9 +1492,9 @@ int WiiWAD::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) con
 	}
 
 	// Add the URLs.
-	pExtURLs->resize(szdef_count * tdb_regions.size());
+	pExtURLs->resize(szdef_count * tdb_lc.size());
 	auto extURL_iter = pExtURLs->begin();
-	const auto tdb_regions_cend = tdb_regions.cend();
+	const auto tdb_lc_cend = tdb_lc.cend();
 	for (unsigned int i = 0; i < szdef_count; i++) {
 		// Current image type.
 		char imageTypeName[16];
@@ -1501,11 +1502,12 @@ int WiiWAD::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) con
 			 imageTypeName_base, (szdefs_dl[i]->name ? szdefs_dl[i]->name : ""));
 
 		// Add the images.
-		for (auto tdb_iter = tdb_regions.cbegin();
-		     tdb_iter != tdb_regions_cend; ++tdb_iter, ++extURL_iter)
+		for (auto tdb_iter = tdb_lc.cbegin();
+		     tdb_iter != tdb_lc_cend; ++tdb_iter, ++extURL_iter)
 		{
-			extURL_iter->url = d->getURL_GameTDB(sysDir, imageTypeName, *tdb_iter, id4, ext);
-			extURL_iter->cache_key = d->getCacheKey_GameTDB(sysDir, imageTypeName, *tdb_iter, id4, ext);
+			const string lc_str = SystemRegion::lcToStringUpper(*tdb_iter);
+			extURL_iter->url = d->getURL_GameTDB(sysDir, imageTypeName, lc_str.c_str(), id4, ext);
+			extURL_iter->cache_key = d->getCacheKey_GameTDB(sysDir, imageTypeName, lc_str.c_str(), id4, ext);
 			extURL_iter->width = szdefs_dl[i]->width;
 			extURL_iter->height = szdefs_dl[i]->height;
 			extURL_iter->high_res = (szdefs_dl[i]->index >= 2);

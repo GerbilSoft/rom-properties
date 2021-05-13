@@ -8,15 +8,22 @@
 
 #include "stdafx.h"
 #include "SystemRegion.hpp"
+#include "ctypex.h"
 
 // librpthreads
 #include "librpthreads/pthread_once.h"
 
-// C includes. (C++ namespace)
+// C includes (C++ namespace)
 #include <clocale>
 
+// C++ STL classes
+using std::string;
 #ifdef _WIN32
-# include "libwin32common/RpWin32_sdk.h"
+using std::wstring;
+#endif /* _WIN32 */
+
+#ifdef _WIN32
+#  include "libwin32common/RpWin32_sdk.h"
 #endif /* _WIN32 */
 
 namespace LibRpBase {
@@ -96,6 +103,7 @@ pthread_once_t SystemRegionPrivate::once_control = PTHREAD_ONCE_INIT;
 // NOTE: Names MUST be in UTF-8!
 // Reference: https://www.omniglot.com/language/names.htm
 const SystemRegionPrivate::LangName_t SystemRegionPrivate::langNames[] = {
+	{'au',	"English (AU)"}, // GameTDB only
 	{'de',	"Deutsch"},
 	{'en',	"English"},
 	{'es',	"Español"},
@@ -411,12 +419,13 @@ const char *SystemRegion::getLocalizedLanguageName(uint32_t lc)
 
 /**
  * Get the position of a language code's flag icon in the flags sprite sheet.
- * @param lc	[in] Language code.
- * @param pCol	[out] Pointer to store the column value. (-1 if not found)
- * @param pRow	[out] Pointer to store the row value. (-1 if not found)
+ * @param lc		[in] Language code.
+ * @param pCol		[out] Pointer to store the column value. (-1 if not found)
+ * @param pRow		[out] Pointer to store the row value. (-1 if not found)
+ * @param forcePAL	[in,opt] If true, force PAL regions, e.g. always use the 'gb' flag for English.
  * @return 0 on success; negative POSIX error code on error.
  */
-int SystemRegion::getFlagPosition(uint32_t lc, int *pCol, int *pRow)
+int SystemRegion::getFlagPosition(uint32_t lc, int *pCol, int *pRow, bool forcePAL)
 {
 	int ret = -ENOENT;
 
@@ -430,6 +439,7 @@ int SystemRegion::getFlagPosition(uint32_t lc, int *pCol, int *pRow)
 	static const flagpos_t flagpos[] = {
 		{'hans',	0, 0},
 		{'hant',	0, 0},
+		{'au',		1, 3},	// GameTDB only
 		{'de',		1, 0},
 		{'es',		2, 0},
 		{'fr',		3, 0},
@@ -450,7 +460,8 @@ int SystemRegion::getFlagPosition(uint32_t lc, int *pCol, int *pRow)
 		// Special case for English:
 		// Use the 'us' flag if the country code is US,
 		// and the 'gb' flag for everywhere else.
-		if (getCountryCode() == 'US') {
+		// EXCEPTION: If forcing PAL mode, always use 'gb'.
+		if (!forcePAL && getCountryCode() == 'US') {
 			*pCol = 3;
 			*pRow = 2;
 		} else {
@@ -475,5 +486,83 @@ int SystemRegion::getFlagPosition(uint32_t lc, int *pCol, int *pRow)
 
 	return ret;
 }
+
+/**
+ * Convert a language code to a string.
+ * NOTE: The language code will be converted to lowercase if necessary.
+ * @param lc Language code.
+ * @return String.
+ */
+string SystemRegion::lcToString(uint32_t lc)
+{
+	string s_lc;
+	s_lc.reserve(4);
+	for (; lc != 0; lc <<= 8) {
+		uint8_t chr = (uint8_t)(lc >> 24);
+		if (chr != 0) {
+			s_lc += TOLOWER(chr);
+		}
+	}
+	return s_lc;
+}
+
+/**
+ * Convert a language code to a string.
+ * NOTE: The language code will be converted to uppercase.
+ * @param lc Language code.
+ * @return String.
+ */
+string SystemRegion::lcToStringUpper(uint32_t lc)
+{
+	string s_lc;
+	s_lc.reserve(4);
+	for (; lc != 0; lc <<= 8) {
+		uint8_t chr = (uint8_t)(lc >> 24);
+		if (chr != 0) {
+			s_lc += TOUPPER(chr);
+		}
+	}
+	return s_lc;
+}
+
+#ifdef _WIN32
+/**
+ * Convert a language code to a wide string.
+ * NOTE: The language code will be converted to lowercase if necessary.
+ * @param lc Language code.
+ * @return Wide string.
+ */
+wstring SystemRegion::lcToWString(uint32_t lc)
+{
+	wstring ws_lc;
+	ws_lc.reserve(4);
+	for (; lc != 0; lc <<= 8) {
+		uint8_t chr = (uint8_t)(lc >> 24);
+		if (chr != 0) {
+			ws_lc += towlower(chr);
+		}
+	}
+	return ws_lc;
+}
+
+/**
+ * Convert a language code to a wide string.
+ * NOTE: The language code will be converted to uppercase.
+ * @param lc Language code.
+ * @return Wide string.
+ */
+wstring SystemRegion::lcToWStringUpper(uint32_t lc)
+{
+	wstring ws_lc;
+	ws_lc.reserve(4);
+	for (; lc != 0; lc <<= 8) {
+		uint8_t chr = (uint8_t)(lc >> 24);
+		if (chr != 0) {
+			ws_lc += towupper(chr);
+		}
+	}
+	return ws_lc;
+}
+#endif /* _WIN32 */
 
 }

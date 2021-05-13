@@ -21,6 +21,9 @@ using namespace LibRpBase;
 // Extracted from imageres.dll or shell32.dll.
 #include "PropSheetIcon.hpp"
 
+// Controls for registration.
+#include "LanguageComboBox.hpp"
+
 // C++ STL classes.
 using std::array;
 using std::tstring;
@@ -96,6 +99,9 @@ ConfigDialogPrivate::ConfigDialogPrivate()
 
 	// TODO: Also ICC_STANDARD_CLASSES on XP+?
 	InitCommonControlsEx(&initCommCtrl);
+
+	// Initialize our custom controls.
+	LanguageComboBoxRegister();
 
 	// Initialize the property sheet tabs.
 
