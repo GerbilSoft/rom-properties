@@ -19,6 +19,8 @@
   * New Spanish translation (es_ES), contributed by @Amnesia1000.
   * KDE: rp-config now has a Thumbnail Cache tab, similar to the Windows
     version.
+  * rp-config: The default language for images for PAL titles downloaded from
+    GameTDB can now be set.
 
 * New parsers:
   * WonderSwan: Bandai WonderSwan (Color) ROM images. Supports external title
