@@ -14,8 +14,8 @@
 /***************************************************************************/
 
 /* MZ_VERSION */
-#define MZ_VERSION                      ("3.0.1")
-#define MZ_VERSION_BUILD                (030001)
+#define MZ_VERSION                      ("3.0.2")
+#define MZ_VERSION_BUILD                (030002)
 
 /* MZ_ERROR */
 #define MZ_OK                           (0)  /* zlib */
@@ -147,7 +147,7 @@
 #define MZ_FREE(PTR)                    (free(PTR))
 #endif
 
-#if defined(_WINDOWS) && defined(MZ_EXPORTS)
+#if defined(_WIN32) && defined(MZ_EXPORTS)
 #define MZ_EXPORT __declspec(dllexport)
 #else
 #define MZ_EXPORT

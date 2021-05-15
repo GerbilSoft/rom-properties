@@ -76,7 +76,7 @@ endif()
 enable_language(C)
 
 # Library version
-set(VERSION "3.0.1")
+set(VERSION "3.0.2")
 
 # API version
 set(SOVERSION "3.0")
@@ -90,10 +90,10 @@ include(GNUInstallDirs)
 # rom-properties: Disabled FeatureSummary.
 #include(FeatureSummary)
 
-set(INSTALL_BIN_DIR ${CMAKE_INSTALL_FULL_BINDIR} CACHE PATH "Installation directory for executables")
-set(INSTALL_LIB_DIR ${CMAKE_INSTALL_FULL_LIBDIR} CACHE PATH "Installation directory for libraries")
-set(INSTALL_INC_DIR ${CMAKE_INSTALL_FULL_INCLUDEDIR} CACHE PATH "Installation directory for headers")
-set(INSTALL_MAN_DIR ${CMAKE_INSTALL_FULL_MANDIR} CACHE PATH "Installation directory for manual pages")
+set(INSTALL_BIN_DIR ${CMAKE_INSTALL_BINDIR} CACHE PATH "Installation directory for executables")
+set(INSTALL_LIB_DIR ${CMAKE_INSTALL_LIBDIR} CACHE PATH "Installation directory for libraries")
+set(INSTALL_INC_DIR ${CMAKE_INSTALL_INCLUDEDIR} CACHE PATH "Installation directory for headers")
+set(INSTALL_MAN_DIR ${CMAKE_INSTALL_MANDIR} CACHE PATH "Installation directory for manual pages")
 
 set(STDLIB_DEF)
 set(MINIZIP_DEF)
@@ -279,24 +279,24 @@ if(MZ_BZIP2)
         # BZip2 repository does not support cmake so we have to create
         # the bzip2 library ourselves
         set(BZIP2_SRC
-            lib/bzip2/blocksort.c
-            lib/bzip2/bzlib.c
-            lib/bzip2/compress.c
-            lib/bzip2/crctable.c
-            lib/bzip2/decompress.c
-            lib/bzip2/huffman.c
-            lib/bzip2/randtable.c)
+            ${BZIP2_SOURCE_DIR}/blocksort.c
+            ${BZIP2_SOURCE_DIR}/bzlib.c
+            ${BZIP2_SOURCE_DIR}/compress.c
+            ${BZIP2_SOURCE_DIR}/crctable.c
+            ${BZIP2_SOURCE_DIR}/decompress.c
+            ${BZIP2_SOURCE_DIR}/huffman.c
+            ${BZIP2_SOURCE_DIR}/randtable.c)
 
         set(BZIP2_HDR
-            lib/bzip2/bzlib.h
-            lib/bzip2/bzlib_private.h)
+            ${BZIP2_SOURCE_DIR}/bzlib.h
+            ${BZIP2_SOURCE_DIR}/bzlib_private.h)
 
         add_library(bzip2 STATIC ${BZIP2_SRC} ${BZIP2_HDR})
 
         target_compile_definitions(bzip2 PRIVATE -DBZ_NO_STDIO)
 
         list(APPEND MINIZIP_DEP bzip2)
-        list(APPEND MINIZIP_INC lib/bzip2)
+        list(APPEND MINIZIP_INC ${BZIP2_SOURCE_DIR})
     else()
         message(STATUS "BZip2 library not found")
 
@@ -461,6 +461,8 @@ if(WIN32)
             list(APPEND MINIZIP_SRC mz_crypt_win32.c)
             list(APPEND MINIZIP_LIB crypt32.lib)
         endif()
+    else()
+        list(APPEND MINIZIP_DEF -DMZ_ZIP_NO_CRYPTO)
     endif()
 endif()
 if(CMAKE_SYSTEM_NAME STREQUAL "WindowsStore")
@@ -575,6 +577,8 @@ if(UNIX)
                 endif()
             endif()
         endif()
+    else()
+        list(APPEND MINIZIP_DEF -DMZ_ZIP_NO_CRYPTO)
     endif()
 
     # Iconv is only necessary when it is not already built-in
@@ -708,9 +712,9 @@ endif()
 set(MINIZIP_PC ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.pc)
 configure_file(minizip.pc.cmakein ${MINIZIP_PC} @ONLY)
 
-set(INSTALL_CMAKE_DIR "${CMAKE_INSTALL_FULL_LIBDIR}/cmake/${PROJECT_NAME}"
+set(INSTALL_CMAKE_DIR "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}"
     CACHE PATH "Installation directory for cmake files.")
-set(INSTALL_PKGCONFIG_DIR "${CMAKE_INSTALL_FULL_LIBDIR}/pkgconfig"
+set(INSTALL_PKGCONFIG_DIR "${CMAKE_INSTALL_LIBDIR}/pkgconfig"
     CACHE PATH "Installation directory for pkgconfig (.pc) files")
 
 add_library(${PROJECT_NAME} ${MINIZIP_SRC} ${MINIZIP_HDR})
@@ -762,7 +766,6 @@ if(NOT SKIP_INSTALL_LIBRARIES AND NOT SKIP_INSTALL_ALL)
     include(CMakePackageConfigHelpers)
     write_basic_package_version_file(${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}-config-version.cmake
         COMPATIBILITY SameMajorVersion)
-
     set(MINIZIP_CONFIG_CONTENT "@PACKAGE_INIT@\n")
     if(MINIZIP_DEP_PKG)
         string(APPEND MINIZIP_CONFIG_CONTENT "include(CMakeFindDependencyMacro)\n")
