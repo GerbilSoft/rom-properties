@@ -26,7 +26,7 @@
 
 
   The data format used by the zlib library is described by RFCs (Request for
-  Comments) 1950 to 1952 in the files http://tools.ietf.org/html/rfc1950
+  Comments) 1950 to 1952 in the files https://tools.ietf.org/html/rfc1950
   (zlib format), rfc1951 (deflate format) and rfc1952 (gzip format).
 */
 
@@ -46,11 +46,11 @@
 extern "C" {
 #endif
 
-#define ZLIBNG_VERSION "2.0.2"
-#define ZLIBNG_VERNUM 0x2020
+#define ZLIBNG_VERSION "2.0.3"
+#define ZLIBNG_VERNUM 0x2030
 #define ZLIBNG_VER_MAJOR 2
 #define ZLIBNG_VER_MINOR 0
-#define ZLIBNG_VER_REVISION 2
+#define ZLIBNG_VER_REVISION 3
 #define ZLIBNG_VER_SUBREVISION 0
 
 #define ZLIB_VERSION "1.2.11.zlib-ng"
@@ -1192,6 +1192,8 @@ Z_EXTERN unsigned long Z_EXPORT zlibCompileFlags(void);
  */
 
 
+#ifndef Z_SOLO
+
                         /* utility functions */
 
 /*
@@ -1646,6 +1648,7 @@ Z_EXTERN void Z_EXPORT gzclearerr(gzFile file);
    file that is being written concurrently.
 */
 
+#endif
 
                         /* checksum functions */
 
@@ -1794,7 +1797,7 @@ Z_EXTERN int Z_EXPORT gzgetc_(gzFile file);  /* backward compatibility */
    Z_EXTERN void Z_EXPORT crc32_combine_gen64(uint32_t *op, z_off64_t);
 #endif
 
-#if !defined(ZLIB_INTERNAL) && defined(Z_WANT64)
+#if !defined(Z_INTERNAL) && defined(Z_WANT64)
 #    define gzopen gzopen64
 #    define gzseek gzseek64
 #    define gztell gztell64

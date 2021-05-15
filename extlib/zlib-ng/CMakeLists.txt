@@ -222,16 +222,22 @@ else()
         if(__GNUC__)
             if(BASEARCH_ARM_FOUND)
                 if("${ARCH}" MATCHES "arm" AND NOT CMAKE_C_FLAGS MATCHES "-mfloat-abi")
-                    # Check support for ARM floating point ABI
-                    execute_process(COMMAND ${CMAKE_C_COMPILER} "-dumpmachine"
-                                    OUTPUT_VARIABLE GCC_MACHINE)
-                    if("${GCC_MACHINE}" MATCHES "gnueabihf")
-                        set(FLOATABI "-mfloat-abi=hard")
-                    elseif("${GCC_MACHINE}" MATCHES ".*gnueabi")
+                    # Auto-detect support for ARM floating point ABI
+                    check_c_compiler_flag(-mfloat-abi=softfp HAVE_FLOATABI_SOFTFP)
+                    if(HAVE_FLOATABI_SOFTFP)
                         set(FLOATABI "-mfloat-abi=softfp")
+                    else()
+                        check_c_compiler_flag(-mfloat-abi=hard HAVE_FLOATABI_HARD)
+                        if(HAVE_FLOATABI_HARD)
+                            set(FLOATABI "-mfloat-abi=hard")
+                        endif()
                     endif()
-                    message(STATUS "ARM floating point arch: ${FLOATABI}")
-                    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${FLOATABI}")
+                    if(FLOATABI)
+                        message(STATUS "ARM floating point arch: ${FLOATABI}")
+                        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${FLOATABI}")
+                    else()
+                        message(STATUS "ARM floating point arch not auto-detected")
+                    endif()
                 endif()
                 # NEON
                 if("${ARCH}" MATCHES "aarch64")
@@ -257,6 +263,15 @@ else()
                 set(SSSE3FLAG "-mssse3")
                 set(SSE4FLAG "-msse4")
                 set(PCLMULFLAG "-mpclmul")
+            endif()
+            # Check whether -fno-lto is available
+            set(CMAKE_REQUIRED_FLAGS "-fno-lto")
+            check_c_source_compiles(
+                "int main() { return 0; }"
+                FNO_LTO_AVAILABLE FAIL_REGEX "not supported")
+            set(CMAKE_REQUIRED_FLAGS)
+            if(FNO_LTO_AVAILABLE)
+                set(NOLTOFLAG "-fno-lto")
             endif()
         endif()
     endif()
@@ -658,12 +673,78 @@ endif()
 if(WITH_OPTIM)
     if(BASEARCH_ARM_FOUND)
         add_definitions(-DARM_FEATURES)
+        if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
+            if(NOT "${ARCH}" MATCHES "aarch64")
+                check_c_source_compiles(
+                    "#include <sys/auxv.h>
+                    int main() {
+                        return (getauxval(AT_HWCAP2) & HWCAP2_CRC32);
+                    }"
+                    ARM_AUXV_HAS_CRC32
+                )
+                if(ARM_AUXV_HAS_CRC32)
+                    add_definitions(-DARM_AUXV_HAS_CRC32)
+                else()
+                    check_c_source_compiles(
+                        "#include <sys/auxv.h>
+                        #include <asm/hwcap.h>
+                        int main() {
+                            return (getauxval(AT_HWCAP2) & HWCAP2_CRC32);
+                        }"
+                        ARM_HWCAP_HAS_CRC32
+                    )
+                    if (ARM_HWCAP_HAS_CRC32)
+                        add_definitions(-DARM_AUXV_HAS_CRC32 -DARM_ASM_HWCAP)
+                    else()
+                        message(STATUS "HWCAP2_CRC32 not present in sys/auxv.h; cannot detect support at runtime.")
+                    endif()
+                endif()
+            else()
+                check_c_source_compiles(
+                    "#include <sys/auxv.h>
+                    int main() {
+                        return (getauxval(AT_HWCAP) & HWCAP_CRC32);
+                    }"
+                    ARM_AUXV_HAS_CRC32
+                )
+                if(ARM_AUXV_HAS_CRC32)
+                    add_definitions(-DARM_AUXV_HAS_CRC32)
+                else()
+                   message(STATUS "HWCAP_CRC32 not present in sys/auxv.h; cannot detect support at runtime.")
+                endif()
+            endif()
+            if(NOT "${ARCH}" MATCHES "aarch64")
+                check_c_source_compiles(
+                    "#include <sys/auxv.h>
+                    int main() {
+                      return (getauxval(AT_HWCAP) & HWCAP_ARM_NEON);
+                    }"
+                    ARM_AUXV_HAS_NEON
+                )
+                if(ARM_AUXV_HAS_NEON)
+                    add_definitions(-DARM_AUXV_HAS_NEON)
+                else()
+                    check_c_source_compiles(
+                        "#include <sys/auxv.h>
+                        int main() {
+                          return (getauxval(AT_HWCAP) & HWCAP_NEON);
+                        }"
+                        ARM_AUXV_HAS_NEON
+                    )
+                    if (ARM_AUXV_HAS_NEON)
+                        add_definitions(-DARM_AUXV_HAS_NEON)
+                    else()
+                        message(STATUS "Neither HWCAP_ARM_NEON or HWCAP_NEON present in sys/auxv.h; cannot detect support at runtime.")
+                    endif()
+                endif()
+            endif()
+        endif()
         list(APPEND ZLIB_ARCH_HDRS ${ARCHDIR}/arm.h)
         list(APPEND ZLIB_ARCH_SRCS ${ARCHDIR}/armfeature.c)
         if(WITH_ACLE AND NOT MSVC)
             add_definitions(-DARM_ACLE_CRC_HASH)
             set(ACLE_SRCS ${ARCHDIR}/crc32_acle.c ${ARCHDIR}/insert_string_acle.c)
-            set_property(SOURCE ${ACLE_SRCS} PROPERTY COMPILE_FLAGS "${ACLEFLAG}")
+            set_property(SOURCE ${ACLE_SRCS} PROPERTY COMPILE_FLAGS "${ACLEFLAG} ${NOLTOFLAG}")
             list(APPEND ZLIB_ARCH_SRCS ${ACLE_SRCS})
             add_feature_info(ACLE_CRC 1 "Support ACLE optimized CRC hash generation, using \"${ACLEFLAG}\"")
         endif()
@@ -671,7 +752,7 @@ if(WITH_OPTIM)
             add_definitions(-DARM_NEON_ADLER32 -DARM_NEON_CHUNKSET -DARM_NEON_SLIDEHASH)
             set(NEON_SRCS ${ARCHDIR}/adler32_neon.c ${ARCHDIR}/chunkset_neon.c ${ARCHDIR}/slide_neon.c)
             list(APPEND ZLIB_ARCH_SRCS ${NEON_SRCS})
-            set_property(SOURCE ${NEON_SRCS} PROPERTY COMPILE_FLAGS "${NEONFLAG}")
+            set_property(SOURCE ${NEON_SRCS} PROPERTY COMPILE_FLAGS "${NEONFLAG} ${NOLTOFLAG}")
             if(MSVC)
                 add_definitions(-D__ARM_NEON__)
             endif()
@@ -688,7 +769,7 @@ if(WITH_OPTIM)
             list(APPEND ZLIB_ARCH_SRCS ${ARCHDIR}/power.c)
             set(POWER8_SRCS ${ARCHDIR}/adler32_power8.c ${ARCHDIR}/slide_hash_power8.c)
             list(APPEND ZLIB_ARCH_SRCS ${POWER8_SRCS})
-            set_property(SOURCE ${POWER8_SRCS} PROPERTY COMPILE_FLAGS "${POWER8FLAG}")
+            set_property(SOURCE ${POWER8_SRCS} PROPERTY COMPILE_FLAGS "${POWER8FLAG} ${NOLTOFLAG}")
         endif()
     elseif(BASEARCH_S360_FOUND)
         if(WITH_DFLTCC_DEFLATE OR WITH_DFLTCC_INFLATE)
@@ -721,14 +802,14 @@ if(WITH_OPTIM)
             list(APPEND AVX2_SRCS ${ARCHDIR}/adler32_avx.c)
             add_feature_info(AVX2_ADLER32 1 "Support AVX2-accelerated adler32, using \"${AVX2FLAG}\"")
             list(APPEND ZLIB_ARCH_SRCS ${AVX2_SRCS})
-            set_property(SOURCE ${AVX2_SRCS} PROPERTY COMPILE_FLAGS "${AVX2FLAG}")
+            set_property(SOURCE ${AVX2_SRCS} PROPERTY COMPILE_FLAGS "${AVX2FLAG} ${NOLTOFLAG}")
         endif()
         if(WITH_SSE4 AND (HAVE_SSE42CRC_INLINE_ASM OR HAVE_SSE42CRC_INTRIN))
             add_definitions(-DX86_SSE42_CRC_HASH)
             set(SSE42_SRCS ${ARCHDIR}/insert_string_sse.c)
             add_feature_info(SSE42_CRC 1 "Support SSE4.2 optimized CRC hash generation, using \"${SSE4FLAG}\"")
             list(APPEND ZLIB_ARCH_SRCS ${SSE42_SRCS})
-            set_property(SOURCE ${SSE42_SRCS} PROPERTY COMPILE_FLAGS "${SSE4FLAG}")
+            set_property(SOURCE ${SSE42_SRCS} PROPERTY COMPILE_FLAGS "${SSE4FLAG} ${NOLTOFLAG}")
             if(HAVE_SSE42CRC_INTRIN)
                 add_definitions(-DX86_SSE42_CRC_INTRIN)
             endif()
@@ -738,14 +819,14 @@ if(WITH_OPTIM)
             set(SSE42_SRCS ${ARCHDIR}/compare258_sse.c)
             add_feature_info(SSE42_COMPARE258 1 "Support SSE4.2 optimized compare258, using \"${SSE4FLAG}\"")
             list(APPEND ZLIB_ARCH_SRCS ${SSE42_SRCS})
-            set_property(SOURCE ${SSE42_SRCS} PROPERTY COMPILE_FLAGS "${SSE4FLAG}")
+            set_property(SOURCE ${SSE42_SRCS} PROPERTY COMPILE_FLAGS "${SSE4FLAG} ${NOLTOFLAG}")
         endif()
         if(WITH_SSE2 AND HAVE_SSE2_INTRIN)
             add_definitions(-DX86_SSE2 -DX86_SSE2_CHUNKSET -DX86_SSE2_SLIDEHASH)
             set(SSE2_SRCS ${ARCHDIR}/chunkset_sse.c ${ARCHDIR}/slide_sse.c)
             list(APPEND ZLIB_ARCH_SRCS ${SSE2_SRCS})
             if(NOT ${ARCH} MATCHES "x86_64")
-                set_property(SOURCE ${SSE2_SRCS} PROPERTY COMPILE_FLAGS "${SSE2FLAG}")
+                set_property(SOURCE ${SSE2_SRCS} PROPERTY COMPILE_FLAGS "${SSE2FLAG} ${NOLTOFLAG}")
                 add_feature_info(FORCE_SSE2 FORCE_SSE2 "Assume CPU is SSE2 capable")
                 if(FORCE_SSE2)
                     add_definitions(-DX86_NOCHECK_SSE2)
@@ -757,14 +838,14 @@ if(WITH_OPTIM)
             set(SSSE3_SRCS ${ARCHDIR}/adler32_ssse3.c)
             add_feature_info(SSSE3_ADLER32 1 "Support SSSE3-accelerated adler32, using \"${SSSE3FLAG}\"")
             list(APPEND ZLIB_ARCH_SRCS ${SSSE3_SRCS})
-            set_property(SOURCE ${SSSE3_SRCS} PROPERTY COMPILE_FLAGS "${SSSE3FLAG}")
+            set_property(SOURCE ${SSSE3_SRCS} PROPERTY COMPILE_FLAGS "${SSSE3FLAG} ${NOLTOFLAG}")
         endif()
         if(WITH_PCLMULQDQ AND HAVE_PCLMULQDQ_INTRIN AND WITH_SSSE3 AND WITH_SSE4)
             add_definitions(-DX86_PCLMULQDQ_CRC)
             set(PCLMULQDQ_SRCS ${ARCHDIR}/crc_folding.c)
             add_feature_info(PCLMUL_CRC 1 "Support CRC hash generation using PCLMULQDQ, using \"${SSSE3FLAG} ${SSE4FLAG} ${PCLMULFLAG}\"")
             list(APPEND ZLIB_ARCH_SRCS ${PCLMULQDQ_SRCS})
-            set_property(SOURCE ${PCLMULQDQ_SRCS} PROPERTY COMPILE_FLAGS "${SSSE3FLAG} ${SSE4FLAG} ${PCLMULFLAG}")
+            set_property(SOURCE ${PCLMULQDQ_SRCS} PROPERTY COMPILE_FLAGS "${SSSE3FLAG} ${SSE4FLAG} ${PCLMULFLAG} ${NOLTOFLAG}")
         endif()
     endif()
 endif()
@@ -1160,7 +1241,7 @@ if(ZLIB_ENABLE_TESTS)
     add_test(NAME makefixed
         COMMAND ${CMAKE_COMMAND}
         "-DCOMMAND=${MAKEFIXED_COMMAND}"
-        -DOUTPUT=${CMAKE_CURRENT_SOURCE_DIR}/inffixed_tbl._h
+        -DOUTPUT=${CMAKE_CURRENT_BINARY_DIR}/inffixed_tbl._h
         -DCOMPARE=${CMAKE_CURRENT_SOURCE_DIR}/inffixed_tbl.h
         -DIGNORE_LINE_ENDINGS=ON
         -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/run-and-compare.cmake)
@@ -1172,7 +1253,7 @@ if(ZLIB_ENABLE_TESTS)
     add_test(NAME maketrees
         COMMAND ${CMAKE_COMMAND}
         "-DCOMMAND=${MAKETREES_COMMAND}"
-        -DOUTPUT=${CMAKE_CURRENT_SOURCE_DIR}/trees_tbl._h
+        -DOUTPUT=${CMAKE_CURRENT_BINARY_DIR}/trees_tbl._h
         -DCOMPARE=${CMAKE_CURRENT_SOURCE_DIR}/trees_tbl.h
         -DIGNORE_LINE_ENDINGS=ON
         -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/run-and-compare.cmake)
@@ -1184,7 +1265,7 @@ if(ZLIB_ENABLE_TESTS)
     add_test(NAME makecrct-crc32
         COMMAND ${CMAKE_COMMAND}
         "-DCOMMAND=${MAKECRCT_COMMAND}"
-        -DOUTPUT=${CMAKE_CURRENT_SOURCE_DIR}/crc32_tbl._h
+        -DOUTPUT=${CMAKE_CURRENT_BINARY_DIR}/crc32_tbl._h
         -DCOMPARE=${CMAKE_CURRENT_SOURCE_DIR}/crc32_tbl.h
         -DIGNORE_LINE_ENDINGS=ON
         -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/run-and-compare.cmake)
@@ -1193,7 +1274,7 @@ if(ZLIB_ENABLE_TESTS)
     add_test(NAME makecrct-crc32-combine
         COMMAND ${CMAKE_COMMAND}
         "-DCOMMAND=${MAKECRCT_COMMAND}"
-        -DOUTPUT=${CMAKE_CURRENT_SOURCE_DIR}/crc32_comb_tbl._h
+        -DOUTPUT=${CMAKE_CURRENT_BINARY_DIR}/crc32_comb_tbl._h
         -DCOMPARE=${CMAKE_CURRENT_SOURCE_DIR}/crc32_comb_tbl.h
         -DIGNORE_LINE_ENDINGS=ON
         -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/run-and-compare.cmake)
@@ -1231,7 +1312,7 @@ if(ZLIB_ENABLE_TESTS)
                 "-DCOMPRESS_ARGS=${compress_args}"
                 "-DDECOMPRESS_ARGS=-d;-c"
                 -DINPUT=${CMAKE_CURRENT_SOURCE_DIR}/${path}
-                -DOUTPUT=${CMAKE_CURRENT_SOURCE_DIR}/${path}-${test_id}.gz
+                -DTEST_NAME=${test_id}
                 -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/test-compress.cmake)
         endif()
     endmacro()
@@ -1260,7 +1341,7 @@ if(ZLIB_ENABLE_TESTS)
             continue()
         endif()
         foreach(TEST_CONFIG ${TEST_CONFIGS})
-            get_filename_component(TEST_NAME ${TEST_FILE_PATH} NAME_WE)
+            get_filename_component(TEST_NAME ${TEST_FILE_PATH} NAME)
             if (TEST_NAME STREQUAL "")
                 continue()
             endif()
@@ -1293,6 +1374,7 @@ if(ZLIB_ENABLE_TESTS)
         COMMAND ${CMAKE_COMMAND}
         "-DTARGET=${MINIGZIP_COMMAND}"
         "-DCOMPRESS_ARGS=-c;-k;-4"
+        -DTEST_NAME=GH-361-test-txt
         -DINPUT=${CMAKE_CURRENT_SOURCE_DIR}/test/GH-361/test.txt
         -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/test-compress.cmake)
 
@@ -1301,6 +1383,7 @@ if(ZLIB_ENABLE_TESTS)
         "-DCOMPRESS_TARGET=${SWITCHLEVELS_COMMAND}"
         "-DCOMPRESS_ARGS=1;5;9;3"
         "-DDECOMPRESS_TARGET=${MINIGZIP_COMMAND}"
+        -DTEST_NAME=GH-364-test-bin
         -DINPUT=${CMAKE_CURRENT_SOURCE_DIR}/test/GH-364/test.bin
         -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/test-compress.cmake)
 
@@ -1310,6 +1393,7 @@ if(ZLIB_ENABLE_TESTS)
         "-DCOMPRESS_ARGS=-c;-m;1;-w;-15;-1;-s;4"
         "-DDECOMPRESS_ARGS=-c;-d;-m;1;-w;-15"
         -DGZIP_VERIFY=OFF
+        -DTEST_NAME=GH-382-defneg3-dat
         -DINPUT=${CMAKE_CURRENT_SOURCE_DIR}/test/GH-382/defneg3.dat
         -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/test-compress.cmake)
 
@@ -1320,6 +1404,7 @@ if(ZLIB_ENABLE_TESTS)
         "-DDECOMPRESS_TARGET=${MINIGZIP_COMMAND}"
         -DCOMPARE=OFF
         -DGZIP_VERIFY=OFF
+        -DTEST_NAME=GH-536-segfault-lcet10-txt
         -DINPUT=${CMAKE_CURRENT_SOURCE_DIR}/test/data/lcet10.txt
         -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/test-compress.cmake)
 
@@ -1330,6 +1415,7 @@ if(ZLIB_ENABLE_TESTS)
         "-DDECOMPRESS_TARGET=${MINIGZIP_COMMAND}"
         -DCOMPARE=OFF
         -DGZIP_VERIFY=OFF
+        -DTEST_NAME=GH-536-incomplete-read-lcet10-txt
         -DINPUT=${CMAKE_CURRENT_SOURCE_DIR}/test/data/lcet10.txt
         -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/test-compress.cmake)
 
@@ -1340,12 +1426,14 @@ if(ZLIB_ENABLE_TESTS)
         "-DDECOMPRESS_TARGET=${MINIGZIP_COMMAND}"
         -DCOMPARE=OFF
         -DGZIP_VERIFY=OFF
+        -DTEST_NAME=GH-536-zero-stored-block-lcet10-txt
         -DINPUT=${CMAKE_CURRENT_SOURCE_DIR}/test/data/lcet10.txt
         -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/test-compress.cmake)
 
     add_test(NAME GH-751
         COMMAND ${CMAKE_COMMAND}
         "-DTARGET=${MINIGZIP_COMMAND}"
+        -DTEST_NAME=GH-751-test-txt
         -DINPUT=${CMAKE_CURRENT_SOURCE_DIR}/test/GH-751/test.txt
         -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/test-compress.cmake)
 
