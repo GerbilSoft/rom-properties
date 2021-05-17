@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libwin32common)                   *
  * WinUI.hpp: Windows UI common functions.                                 *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -11,7 +11,6 @@
 #include "AutoGetDC.hpp"
 #include "MiniU82T.hpp"
 
-#include <commctrl.h>
 #include <commdlg.h>
 #include <shlwapi.h>
 
@@ -22,11 +21,9 @@
 #include <algorithm>
 #include <memory>
 #include <string>
-#include <unordered_set>
 #include <vector>
 using std::string;
 using std::unique_ptr;
-using std::unordered_set;
 using std::tstring;
 using std::vector;
 
@@ -167,6 +164,7 @@ int measureTextSizeLink(HWND hWnd, HFONT hFont, const TCHAR *tstr, LPSIZE lpSize
 			*p++ = *tstr;
 		}
 	}
+	assert(lbrackets == 0);
 
 	*p = 0;
 	return measureTextSize(hWnd, hFont, ntstr.get(), lpSize);
@@ -194,16 +192,13 @@ COLORREF getAltRowColor(void)
 	rgb.color = GetSysColor(COLOR_WINDOW);
 
 	// TODO: Better "convert to grayscale" and brighten/darken algorithms?
+	// TODO: Handle color component overflow.
 	if (((rgb.r + rgb.g + rgb.b) / 3) >= 128) {
 		// Subtract 16 from each color component.
-		rgb.r -= 16;
-		rgb.g -= 16;
-		rgb.b -= 16;
+		rgb.color -= 0x00101010U;
 	} else {
 		// Add 16 to each color component.
-		rgb.r += 16;
-		rgb.g += 16;
-		rgb.b += 16;
+		rgb.color += 0x00101010U;
 	}
 
 	return rgb.color;
@@ -218,13 +213,11 @@ bool isComCtl32_v610(void)
 	// Check the COMCTL32.DLL version.
 	HMODULE hComCtl32 = GetModuleHandle(_T("COMCTL32"));
 	assert(hComCtl32 != nullptr);
-
-	typedef HRESULT (CALLBACK *PFNDLLGETVERSION)(DLLVERSIONINFO *pdvi);
-	PFNDLLGETVERSION pfnDllGetVersion = nullptr;
 	if (!hComCtl32)
 		return false;
 
-	pfnDllGetVersion = (PFNDLLGETVERSION)GetProcAddress(hComCtl32, "DllGetVersion");
+	typedef HRESULT (CALLBACK *PFNDLLGETVERSION)(DLLVERSIONINFO *pdvi);
+	PFNDLLGETVERSION pfnDllGetVersion = (PFNDLLGETVERSION)GetProcAddress(hComCtl32, "DllGetVersion");
 	if (!pfnDllGetVersion)
 		return false;
 
@@ -693,6 +686,12 @@ LRESULT CALLBACK MultiLineEditProc(
 	UINT_PTR uIdSubclass, DWORD_PTR dwRefData)
 {
 	switch (uMsg) {
+		case WM_NCDESTROY:
+			// Remove the window subclass.
+			// Reference: https://blogs.msdn.microsoft.com/oldnewthing/20031111-00/?p=41883
+			RemoveWindowSubclass(hWnd, MultiLineEditProc, uIdSubclass);
+			break;
+
 		case WM_KEYDOWN: {
 			// Work around Enter/Escape issues.
 			// Reference: http://blogs.msdn.com/b/oldnewthing/archive/2007/08/20/4470527.aspx
@@ -706,11 +705,9 @@ LRESULT CALLBACK MultiLineEditProc(
 				case VK_RETURN:
 					SendMessage(hDlg, WM_COMMAND, IDOK, 0);
 					return TRUE;
-
 				case VK_ESCAPE:
 					SendMessage(hDlg, WM_COMMAND, IDCANCEL, 0);
 					return TRUE;
-
 				default:
 					break;
 			}
@@ -725,12 +722,6 @@ LRESULT CALLBACK MultiLineEditProc(
 			const LRESULT code = DefSubclassProc(hWnd, uMsg, wParam, lParam);
 			return (code & ~(LRESULT)DLGC_HASSETSEL);
 		}
-
-		case WM_NCDESTROY:
-			// Remove the window subclass.
-			// Reference: https://blogs.msdn.microsoft.com/oldnewthing/20031111-00/?p=41883
-			RemoveWindowSubclass(hWnd, MultiLineEditProc, uIdSubclass);
-			break;
 
 		default:
 			break;
@@ -759,6 +750,12 @@ LRESULT CALLBACK SingleLineEditProc(
 	((void)dwRefData);
 
 	switch (uMsg) {
+		case WM_NCDESTROY:
+			// Remove the window subclass.
+			// Reference: https://blogs.msdn.microsoft.com/oldnewthing/20031111-00/?p=41883
+			RemoveWindowSubclass(hWnd, SingleLineEditProc, uIdSubclass);
+			break;
+
 		case WM_GETDLGCODE: {
 			// Filter out DLGC_HASSETSEL.
 			// References:
@@ -767,12 +764,6 @@ LRESULT CALLBACK SingleLineEditProc(
 			const LRESULT code = DefSubclassProc(hWnd, uMsg, wParam, lParam);
 			return (code & ~(LRESULT)DLGC_HASSETSEL);
 		}
-
-		case WM_NCDESTROY:
-			// Remove the window subclass.
-			// Reference: https://blogs.msdn.microsoft.com/oldnewthing/20031111-00/?p=41883
-			RemoveWindowSubclass(hWnd, SingleLineEditProc, uIdSubclass);
-			break;
 
 		default:
 			break;
