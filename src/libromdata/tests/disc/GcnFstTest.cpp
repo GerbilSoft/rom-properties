@@ -215,10 +215,10 @@ unzFile GcnFstTest::openZip(const char *filename)
 	path += filename;
 
 #ifdef _WIN32
-	// NOTE: MiniZip 2.2.3's compatibility functions
+	// NOTE: MiniZip 3.0.2's compatibility functions
 	// take UTF-8 on Windows, not UTF-16.
 	zlib_filefunc64_def ffunc;
-	fill_win32_filefunc64W(&ffunc);
+	fill_win32_filefunc64(&ffunc);
 	return unzOpen2_64(path.c_str(), &ffunc);
 #else /* !_WIN32 */
 	return unzOpen(path.c_str());
