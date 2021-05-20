@@ -39,7 +39,7 @@ namespace LibRpBase {
  * @param file IRpFile to load from.
  * @return rp_image*, or nullptr on error.
  */
-rp_image *RpJpeg::loadUnchecked(IRpFile *file)
+rp_image *RpJpeg::load(IRpFile *file)
 {
 	if (!file)
 		return nullptr;
