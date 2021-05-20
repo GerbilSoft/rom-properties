@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * RpImageLoader.cpp: Image loader class.                                  *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -58,50 +58,6 @@ const uint8_t RpImageLoaderPrivate::jpeg_magic_2[4] =
 
 /**
  * Load an image from an IRpFile.
- *
- * This image is NOT checked for issues; do not use
- * with untrusted images!
- *
- * @param file IRpFile to load from.
- * @return rp_image*, or nullptr on error.
- */
-rp_image *RpImageLoader::loadUnchecked(IRpFile *file)
-{
-	file->rewind();
-
-	// Check the file header to see what kind of image this is.
-	uint8_t buf[256];
-	size_t sz = file->read(buf, sizeof(buf));
-	if (sz >= sizeof(RpImageLoaderPrivate::png_magic)) {
-		// Check for PNG.
-		if (!memcmp(buf, RpImageLoaderPrivate::png_magic,
-		     sizeof(RpImageLoaderPrivate::png_magic)))
-		{
-			// Found a PNG image.
-			return RpPng::loadUnchecked(file);
-		}
-#ifdef HAVE_JPEG
-		else if (!memcmp(buf, RpImageLoaderPrivate::jpeg_magic_1,
-			  sizeof(RpImageLoaderPrivate::jpeg_magic_1)) &&
-			 !memcmp(&buf[6], RpImageLoaderPrivate::jpeg_magic_2,
-			  sizeof(RpImageLoaderPrivate::jpeg_magic_2)))
-		{
-			// Found a JPEG image.
-			return RpJpeg::loadUnchecked(file);
-		}
-#endif /* HAVE_JPEG */
-	}
-
-	// Unsupported image format.
-	return nullptr;
-}
-
-/**
- * Load an image from an IRpFile.
- *
- * This image is verified with various tools to ensure
- * it doesn't have any errors.
- *
  * @param file IRpFile to load from.
  * @return rp_image*, or nullptr on error.
  */

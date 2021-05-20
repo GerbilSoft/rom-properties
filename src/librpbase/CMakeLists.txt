@@ -80,7 +80,6 @@ SET(librpbase_SRCS
 	img/RpPng.cpp
 	img/RpPngWriter.cpp
 	img/IconAnimHelper.cpp
-	img/pngcheck/pngcheck.cpp
 	disc/IDiscReader.cpp
 	disc/DiscReader.cpp
 	disc/PartitionFile.cpp
@@ -161,17 +160,6 @@ IF(ENABLE_DECRYPTION)
 		SET(librpbase_CRYPTO_OS_H    crypto/AesNettle.hpp)
 	ENDIF(WIN32)
 ENDIF(ENABLE_DECRYPTION)
-
-IF(HAVE_ZLIB)
-	# Enable zlib in pngcheck.
-	SET_SOURCE_FILES_PROPERTIES(img/pngcheck/pngcheck.cpp
-		PROPERTIES COMPILE_DEFINITIONS USE_ZLIB)
-ENDIF(HAVE_ZLIB)
-IF(CMAKE_COMPILER_IS_GNUCXX)
-	# Disable some warnings for pngcheck.
-	SET_SOURCE_FILES_PROPERTIES(img/pngcheck/pngcheck.cpp
-		PROPERTIES COMPILE_FLAGS "-Wno-unused")
-ENDIF(CMAKE_COMPILER_IS_GNUCXX)
 
 # CPU-specific and optimized sources.
 IF(CPU_i386 OR CPU_amd64)

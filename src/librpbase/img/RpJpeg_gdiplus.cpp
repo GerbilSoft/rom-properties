@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * RpJpeg_gdiplus.cpp: JPEG image handler. (GDI+ version)                  *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -36,10 +36,6 @@ namespace LibRpBase {
 
 /**
  * Load a JPEG image from an IRpFile.
- *
- * This image is NOT checked for issues; do not use
- * with untrusted images!
- *
  * @param file IRpFile to load from.
  * @return rp_image*, or nullptr on error.
  */
@@ -63,24 +59,6 @@ rp_image *RpJpeg::loadUnchecked(IRpFile *file)
 	// Create an rp_image using the GDI+ bitmap.
 	RpGdiplusBackend *const backend = new RpGdiplusBackend(pGdipBmp);
 	return new rp_image(backend);
-}
-
-/**
- * Load a JPEG image from an IRpFile.
- *
- * This image is verified with various tools to ensure
- * it doesn't have any errors.
- *
- * @param file IRpFile to load from.
- * @return rp_image*, or nullptr on error.
- */
-rp_image *RpJpeg::load(IRpFile *file)
-{
-	if (!file)
-		return nullptr;
-
-	// FIXME: Add a JPEG equivalent of pngcheck().
-	return loadUnchecked(file);
 }
 
 }

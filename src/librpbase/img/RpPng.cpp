@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * RpPng.cpp: PNG image handler.                                           *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -52,9 +52,6 @@ using std::unique_ptr;
 #  define PNGCAPI
 # endif
 #endif /* !PNGCAPI */
-
-// pngcheck()
-#include "pngcheck/pngcheck.hpp"
 
 #if defined(_MSC_VER) && (defined(ZLIB_IS_DLL) || defined(PNG_IS_DLL))
 // Need zlib for delay-load checks.
@@ -559,14 +556,10 @@ rp_image *RpPngPrivate::loadPng(png_structp png_ptr, png_infop info_ptr)
 
 /**
  * Load a PNG image from an IRpFile.
- *
- * This image is NOT checked for issues; do not use
- * with untrusted images!
- *
  * @param file IRpFile to load from.
  * @return rp_image*, or nullptr on error.
  */
-rp_image *RpPng::loadUnchecked(IRpFile *file)
+rp_image *RpPng::load(IRpFile *file)
 {
 	if (!file)
 		return nullptr;
@@ -611,35 +604,6 @@ rp_image *RpPng::loadUnchecked(IRpFile *file)
 	// Free the PNG structs.
 	png_destroy_read_struct(&png_ptr, &info_ptr, nullptr);
 	return img;
-}
-
-/**
- * Load a PNG image from an IRpFile.
- *
- * This image is verified with various tools to ensure
- * it doesn't have any errors.
- *
- * @param file IRpFile to load from.
- * @return rp_image*, or nullptr on error.
- */
-rp_image *RpPng::load(IRpFile *file)
-{
-	if (!file)
-		return nullptr;
-
-	// Check the image with pngcheck() first.
-	file->rewind();
-	int ret = pngcheck(file);
-	// NOTE: BK Pocket Bike Racer's icon is missing the IEND chunk.
-	// pngcheck returns kMinorError in that case.
-	// TODO: Make it a special exception?
-	if (ret != kOK && ret != kMinorError) {
-		// PNG image has major errors.
-		return nullptr;
-	}
-
-	// PNG image has been validated.
-	return loadUnchecked(file);
 }
 
 /**

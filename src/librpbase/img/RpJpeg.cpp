@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * RpJpeg.cpp: JPEG image handler.                                         *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -207,14 +207,10 @@ void RpJpegPrivate::jpeg_IRpFile_src(j_decompress_ptr cinfo, IRpFile *infile)
 
 /**
  * Load a JPEG image from an IRpFile.
- *
- * This image is NOT checked for issues; do not use
- * with untrusted images!
- *
  * @param file IRpFile to load from.
  * @return rp_image*, or nullptr on error.
  */
-rp_image *RpJpeg::loadUnchecked(IRpFile *file)
+rp_image *RpJpeg::load(IRpFile *file)
 {
 	if (!file)
 		return nullptr;
@@ -587,24 +583,6 @@ rp_image *RpJpeg::loadUnchecked(IRpFile *file)
 
 	// Return the image.
 	return img;
-}
-
-/**
- * Load a JPEG image from an IRpFile.
- *
- * This image is verified with various tools to ensure
- * it doesn't have any errors.
- *
- * @param file IRpFile to load from.
- * @return rp_image*, or nullptr on error.
- */
-rp_image *RpJpeg::load(IRpFile *file)
-{
-	if (!file)
-		return nullptr;
-
-	// FIXME: Add a JPEG equivalent of pngcheck().
-	return loadUnchecked(file);
 }
 
 }

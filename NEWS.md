@@ -76,6 +76,15 @@
   * Re-enabled localization for texture parsers. This was broken with the
     conversion to librptexture in v1.5.
 
+* Security Notes:
+  * pngcheck-2.3.0 was previously used to validate PNG images before loading
+    them with libpng. New security fixes for pngcheck were released in December
+    2020 with the caveat that because the code was crufty and unmaintained,
+    there may still be security issues. Because of this, pngcheck has been
+    removed entirely. Other security hardening methods, such as running image
+    decoders in a separate low-privilege process, may be implemented in the
+    future.
+
 ## v1.7.3 (released 2020/09/25)
 
 * Bug fixes:

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE4/KF5)                         *
  * AchWin32.hpp: Win32 notifications for achievements.                     *
  *                                                                         *
- * Copyright (c) 2020 by David Korth.                                      *
+ * Copyright (c) 2020-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -229,7 +229,7 @@ const rp_image *AchWin32Private::loadSpriteSheet(int iconSize)
 		return nullptr;
 	}
 
-	rp_image *const imgAchSheet = RpPng::loadUnchecked(f_res);
+	rp_image *const imgAchSheet = RpPng::load(f_res);
 	f_res->unref();
 	if (!imgAchSheet) {
 		// Unable to load the achievements sprite sheet.

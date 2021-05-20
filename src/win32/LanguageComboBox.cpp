@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * LanguageComboBox.cpp: Language ComboBoxEx superclass.                   *
  *                                                                         *
- * Copyright (c) 2017-2020 by David Korth.                                 *
+ * Copyright (c) 2017-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -142,7 +142,7 @@ LRESULT LanguageComboBoxPrivate::setLCs(const uint32_t *lcs_array)
 	RpFile_windres *const f_res = new RpFile_windres(HINST_THISCOMPONENT,
 		MAKEINTRESOURCE(resID), MAKEINTRESOURCE(RT_PNG));
 	if (f_res->isOpen()) {
-		imgFlagsSheet = RpPng::loadUnchecked(f_res);
+		imgFlagsSheet = RpPng::load(f_res);
 		// Make sure the bitmap has the expected size.
 		assert(imgFlagsSheet->width() == (iconSize * SystemRegion::FLAGS_SPRITE_SHEET_COLS));
 		assert(imgFlagsSheet->height() == (iconSize * SystemRegion::FLAGS_SPRITE_SHEET_ROWS));

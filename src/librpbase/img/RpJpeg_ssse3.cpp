@@ -3,7 +3,7 @@
  * RpJpeg.cpp: JPEG image handler.                                         *
  * SSSE3-optimized version.                                                *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -23,7 +23,7 @@ namespace LibRpBase {
 /**
  * Decode a 24-bit BGR JPEG to 32-bit ARGB.
  * SSSE3-optimized version.
- * NOTE: This function should ONLY be called from RpJpeg::loadUnchecked().
+ * NOTE: This function should ONLY be called from RpJpeg::load().
  * @param img		[in/out] rp_image.
  * @param cinfo		[in/out] JPEG decompression struct.
  * @param buffer 	[in/out] Line buffer. (Must be 16-byte aligned!)

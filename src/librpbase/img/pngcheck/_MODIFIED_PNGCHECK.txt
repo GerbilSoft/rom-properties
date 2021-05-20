@@ -1,8 +1,0 @@
-This copy of pngcheck-2.3.0 is a modified version of the original.
-
-The following changes have been made to the original:
-
-- All files other than pngcheck.c and README have been removed.
-
-To obtain the original pngcheck-2.3.0, visit:
-- http://www.libpng.org/pub/png/apps/pngcheck.html

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * AchievementsTab.cpp: Achievements tab for rp-config.                    *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -279,7 +279,7 @@ void AchievementsTabPrivate::updateImageList(void)
 		return;
 	}
 
-	imgAchSheet = RpPng::loadUnchecked(f_res);
+	imgAchSheet = RpPng::load(f_res);
 	f_res->unref();
 	assert(imgAchSheet != nullptr);
 	if (!imgAchSheet)
@@ -301,7 +301,7 @@ void AchievementsTabPrivate::updateImageList(void)
 		return;
 	}
 
-	imgAchGraySheet = RpPng::loadUnchecked(f_res);
+	imgAchGraySheet = RpPng::load(f_res);
 	f_res->unref();
 	assert(imgAchGraySheet != nullptr);
 	if (!imgAchGraySheet) {
