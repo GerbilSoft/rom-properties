@@ -24,11 +24,7 @@
 		 * Unregister the COM object. \
 		 * @return ERROR_SUCCESS on success; Win32 error code on error. \
 		 */ \
-		static LONG UnregisterCLSID(void) \
-		{ \
-			extern const TCHAR RP_ProgID[]; \
-			return LibWin32Common::RegKey::UnregisterComObject(__uuidof(klass), RP_ProgID); \
-		}
+		static LONG UnregisterCLSID(void);
 
 // CLSID register/unregister function declarations (no inline)
 #define CLSID_DECL_NOINLINE(klass) \
@@ -62,6 +58,16 @@ LONG klass::RegisterCLSID(void) \
 	\
 	/* Register as an "approved" shell extension. */ \
 	return RegKey::RegisterApprovedExtension(__uuidof(klass), description); \
+}
+\
+/** \
+ * Unregister the COM object. \
+ * @return ERROR_SUCCESS on success; Win32 error code on error. \
+ */ \
+LONG klass::UnregisterCLSID(void) \
+{ \
+	extern const TCHAR RP_ProgID[]; \
+	return LibWin32Common::RegKey::UnregisterComObject(__uuidof(klass), RP_ProgID); \
 }
 
 
