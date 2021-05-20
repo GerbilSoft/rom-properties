@@ -58,7 +58,7 @@ LONG klass::RegisterCLSID(void) \
 	\
 	/* Register as an "approved" shell extension. */ \
 	return RegKey::RegisterApprovedExtension(__uuidof(klass), description); \
-}
+} \
 \
 /** \
  * Unregister the COM object. \
