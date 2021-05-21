@@ -27,13 +27,16 @@ extern "C" {
  */
 typedef struct _NDS_RomHeader {
 	char title[12];
-	union {
+	// Some compilers pad this structure to a multiple of 4 bytes
+#pragma pack(1)
+	union PACKED {
 		char id6[6];	// Game code. (ID6)
-		struct {
+		struct PACKED {
 			char id4[4];		// Game code. (ID4)
 			char company[2];	// Company code.
 		};
 	};
+#pragma pack()
 
 	// 0x12
 	uint8_t unitcode;	// 00h == NDS, 02h == NDS+DSi, 03h == DSi only

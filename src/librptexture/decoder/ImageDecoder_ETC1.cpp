@@ -28,16 +28,18 @@ typedef union _etc1_block {
 		// Byte layout:
 		// - diffbit == 0: 4 MSB == base 1, 4 LSB == base 2
 		// - diffbit == 1: 5 MSB == base, 3 LSB == differential
-		union {
+		// Some compilers pad this structure to a multiple of 4 bytes
+#pragma pack(1)
+		union PACKED {
 			// Indiv/Diff
-			struct {
+			struct PACKED {
 				uint8_t R;
 				uint8_t G;
 				uint8_t B;
 			} id;
 
 			// ETC2 'T' mode
-			struct {
+			struct PACKED {
 				uint8_t R1;
 				uint8_t G1B1;
 				uint8_t R2G2;
@@ -45,7 +47,7 @@ typedef union _etc1_block {
 			} t;
 
 			// ETC2 'H' mode
-			struct {
+			struct PACKED {
 				uint8_t R1G1a;
 				uint8_t G1bB1aB1b;
 				uint8_t B1bR2G2;
@@ -53,6 +55,7 @@ typedef union _etc1_block {
 				// B2 is in `control`.
 			} h;
 		};
+#pragma pack()
 
 		// Control byte: [ETC1]
 		// - 3 MSB:  table code word 1

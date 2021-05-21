@@ -104,12 +104,15 @@ ASSERT_STRUCT(TGA_DateStamp, 6*sizeof(uint16_t));
  * TrueVision TGA: Elapsed time.
  * All fields are little-endian.
  */
-typedef struct _TGA_ElapsedTime {
+// Some compilers pad this structure to a multiple of 4 bytes
+#pragma pack(1)
+typedef struct PACKED _TGA_ElapsedTime {
 	uint16_t hours;	// [0x000] 0-65535
 	uint16_t mins;	// [0x002] 0-59
 	uint16_t secs;	// [0x004] 0-59
 } TGA_ElapsedTime;
 ASSERT_STRUCT(TGA_ElapsedTime, 3*sizeof(uint16_t));
+#pragma pack()
 
 /**
  * TrueVision TGA: Software version.

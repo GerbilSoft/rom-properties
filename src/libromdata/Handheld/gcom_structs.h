@@ -49,7 +49,9 @@ typedef struct _Gcom_RomHeader {
 	uint8_t flags;			// [0x004] Flags (See Gcom_Flags_e)
 	char sys_id[9];			// [0x005] System identifier
 
-	struct {
+	// Some compilers pad this structure to a multiple of 4 bytes
+#pragma pack(1)
+	struct PACKED {
 		/**
 		 * game.com ROM images are divided into 16 KB banks,
 		 * each of which makes up a 2bpp 256x256 bitmap.
@@ -67,6 +69,7 @@ typedef struct _Gcom_RomHeader {
 		uint8_t x;	// [0x00F] X coordinate within the bank.
 		uint8_t y;	// [0x010] Y coordinate within the bank.
 	} icon;
+#pragma pack()
 
 	char title[9];			// [0x011] Game title.
 	uint16_t game_id;		// [0x01A] Game ID.
