@@ -49,6 +49,21 @@
 # define ASSERT_STRUCT(st, sz)
 #endif
 
+/**
+ * static_asserts offset of a structure member
+ * Also defines a constant of form StructName_MemberName_OFFSET
+ */
+// TODO: Check MSVC support for static_assert() in C mode.
+#if defined(__cplusplus)
+# define ASSERT_STRUCT_OFFSET(st,mb,of) /*enum { st##_##mb##_OFFSET = (of), };*/ \
+	static_assert(offsetof(st,mb)==(of),#mb " is not at offset " #of " in struct " #st ".")
+#elif defined(__GNUC__) && defined(__STDC_VERSION__) && __STDC_VERSION__ >= 201112L
+# define ASSERT_STRUCT_OFFSET(st,mb,of) /*enum { st##_##mb##_OFFSET = (of), };*/ \
+	_Static_assert(offsetof(st,mb)==(of),#mb " is not at offset " #of " in struct " #st ".")
+#else
+# define ASSERT_STRUCT_OFFSET(st, mb, of)
+#endif
+
 // RP equivalent of Q_UNUSED().
 #define RP_UNUSED(x) ((void)x)
 
