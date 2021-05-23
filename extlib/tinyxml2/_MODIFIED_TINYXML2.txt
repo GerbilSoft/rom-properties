@@ -1,9 +1,9 @@
-This copy of tinyxml2-8.0.0 is a modified version of the original.
+This copy of tinyxml2-8.1.0 is a modified version of the original.
 
-commit bf15233ad88390461f6ab0dbcf046cce643c5fcb
-Setting the version to 8.0.0
+commit 3291390336141573e51dfa991b4179c8bcd8f306
+update the docs
 
-Tag: 8.0.0
+Tag: 8.1.0
 
 The following changes have been made to the original:
 
@@ -17,5 +17,5 @@ The following changes have been made to the original:
 - cmake_minimum_required() is disabled, since it interfered with
   policies set by the main build infrastructure.
 
-To obtain the original tinyxml2-8.0.0, visit:
+To obtain the original tinyxml2-8.1.0, visit:
 https://github.com/leethomason/tinyxml2

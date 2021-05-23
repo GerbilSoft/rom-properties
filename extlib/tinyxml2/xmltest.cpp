@@ -632,6 +632,10 @@ int main( int argc, const char ** argv )
 		ele->SetAttribute( "int", 1 );
 		ele->SetAttribute( "double", -1.0 );
 
+		const char* answer = 0;
+		ele->QueryAttribute("str", &answer);
+		XMLTest("Query char attribute", "strValue", answer);
+
 		const char* cStr = ele->Attribute( "str" );
 		{
 			XMLError queryResult = ele->QueryIntAttribute( "int", &iVal );
@@ -643,11 +647,11 @@ int main( int argc, const char ** argv )
 		}
 
 		{
-			int queryResult = ele->QueryAttribute( "int", &iVal2 );
+			XMLError queryResult = ele->QueryAttribute( "int", &iVal2 );
 			XMLTest( "Query int attribute generic", (int)XML_SUCCESS, queryResult);
 		}
 		{
-			int queryResult = ele->QueryAttribute( "double", &dVal2 );
+			XMLError queryResult = ele->QueryAttribute( "double", &dVal2 );
 			XMLTest( "Query double attribute generic", (int)XML_SUCCESS, queryResult);
 		}
 
@@ -819,7 +823,7 @@ int main( int argc, const char ** argv )
 			}
 			{
 				int v = 0;
-				int queryResult = element->QueryAttribute("attrib", &v);
+				XMLError queryResult = element->QueryAttribute("attrib", &v);
 				XMLTest("Attribute: int", (int)XML_SUCCESS, queryResult, true);
 				XMLTest("Attribute: int", -100, v, true);
 			}
@@ -835,7 +839,7 @@ int main( int argc, const char ** argv )
 			}
 			{
 				unsigned v = 0;
-				int queryResult = element->QueryAttribute("attrib", &v);
+				XMLError queryResult = element->QueryAttribute("attrib", &v);
 				XMLTest("Attribute: unsigned", (int)XML_SUCCESS, queryResult, true);
 				XMLTest("Attribute: unsigned", unsigned(100), v, true);
 			}
@@ -859,7 +863,7 @@ int main( int argc, const char ** argv )
 			}
 			{
 				int64_t v = 0;
-				int queryResult = element->QueryAttribute("attrib", &v);
+				XMLError queryResult = element->QueryAttribute("attrib", &v);
 				XMLTest("Attribute: int64_t", (int)XML_SUCCESS, queryResult, true);
 				XMLTest("Attribute: int64_t", BIG, v, true);
 			}
@@ -875,7 +879,7 @@ int main( int argc, const char ** argv )
             }
             {
                 uint64_t v = 0;
-                int queryResult = element->QueryAttribute("attrib", &v);
+				XMLError queryResult = element->QueryAttribute("attrib", &v);
                 XMLTest("Attribute: uint64_t", (int)XML_SUCCESS, queryResult, true);
                 XMLTest("Attribute: uint64_t", BIG_POS, v, true);
             }
@@ -891,7 +895,7 @@ int main( int argc, const char ** argv )
 			}
 			{
 				bool v = false;
-				int queryResult = element->QueryAttribute("attrib", &v);
+				XMLError queryResult = element->QueryAttribute("attrib", &v);
 				XMLTest("Attribute: bool", (int)XML_SUCCESS, queryResult, true);
 				XMLTest("Attribute: bool", true, v, true);
 			}
@@ -919,7 +923,7 @@ int main( int argc, const char ** argv )
 			}
 			{
 				double v = 0;
-				int queryResult = element->QueryAttribute("attrib", &v);
+				XMLError queryResult = element->QueryAttribute("attrib", &v);
 				XMLTest("Attribute: bool", (int)XML_SUCCESS, queryResult, true);
 				XMLTest("Attribute: double", 100.0, v, true);
 			}
@@ -935,7 +939,7 @@ int main( int argc, const char ** argv )
 			}
 			{
 				float v = 0;
-				int queryResult = element->QueryAttribute("attrib", &v);
+				XMLError queryResult = element->QueryAttribute("attrib", &v);
 				XMLTest("Attribute: float", (int)XML_SUCCESS, queryResult, true);
 				XMLTest("Attribute: float", 100.0f, v, true);
 			}
@@ -1672,6 +1676,24 @@ int main( int argc, const char ** argv )
 
         bool test6 = pointElement->FirstChildElement("BoolText")->BoolText();
         XMLTest("FloatText()) test", true, test6);
+    }
+
+    {
+        // hex value test
+        const char* xml = "<point> <IntText>  0x2020</IntText> <UnsignedText>0X2020</UnsignedText> \
+						   <Int64Text> 0x1234</Int64Text></point>";
+        XMLDocument doc;
+        doc.Parse(xml);
+
+        const XMLElement* pointElement = doc.RootElement();
+        int test1 = pointElement->FirstChildElement("IntText")->IntText();
+        XMLTest("IntText() hex value test", 0x2020, test1);
+
+        unsigned test2 = pointElement->FirstChildElement("UnsignedText")->UnsignedText();
+        XMLTest("UnsignedText() hex value test", static_cast<unsigned>(0x2020), test2);
+
+        int64_t test3 = pointElement->FirstChildElement("Int64Text")->Int64Text();
+        XMLTest("Int64Text() hex value test", static_cast<int64_t>(0x1234), test3);
     }
 
 	{
