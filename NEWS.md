@@ -75,6 +75,8 @@
   * NintendoDS: Add "EN" fallback for external artwork from GameTDB.
   * Re-enabled localization for texture parsers. This was broken with the
     conversion to librptexture in v1.5.
+  * rpcli: Fix a segfault with JSON output on MD ROMs that have empty
+    string fields.
 
 * Security Notes:
   * pngcheck-2.3.0 was previously used to validate PNG images before loading

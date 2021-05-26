@@ -119,7 +119,9 @@ public:
 					desc_obj.AddMember("format", romField.desc.flags, allocator);
 					field_obj.AddMember("desc", desc_obj, allocator);
 
-					field_obj.AddMember("data", StringRef(*(romField.data.str)), allocator);
+					field_obj.AddMember("data",
+						romField.data.str ? StringRef(*(romField.data.str)) : StringRef(""),
+						allocator);
 					break;
 				}
 
