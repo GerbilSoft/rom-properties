@@ -39,6 +39,7 @@ application/x-gamecube-save		# GameCubeSave
 application/x-ique-dat			# iQuePlayer
 application/x-ique-cmd			# iQuePlayer
 application/x-ps1-save			# PlayStationSave
+application/x-satellaview-rom		# SNES
 application/x-saturn-rom		# SegaSaturn
 application/vnd.nintendo.snes.rom	# SNES
 application/x-snes-rom			# SNES

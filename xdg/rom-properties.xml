@@ -340,6 +340,14 @@
     </magic>
   </mime-type>
 
+  <!-- SNES (SatellaView from no-intro) -->
+  <mime-type type="application/x-satellaview-rom">
+    <comment>Satellaview ROM</comment>
+    <sub-class-of type="application/vnd.nintendo.snes.rom"/>
+    <generic-icon name="application-x-executable"/>
+    <glob pattern="*.bs"/>
+  </mime-type>
+
   <!-- SufamiTurbo (handled as SNES, sort of) -->
   <mime-type type="application/x-sufami-turbo-rom">
     <comment>Sufami Turbo ROM</comment>

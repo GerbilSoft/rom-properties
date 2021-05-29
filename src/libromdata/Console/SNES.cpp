@@ -768,6 +768,7 @@ SNES::SNES(IRpFile *file)
 					// TODO: Use the size value.
 					// Size is (1024 << (buf[6] & 0x0F))
 					d->romType = SNESPrivate::RomType::BSX;
+					d->mimeType = "application/x-satellaview-rom";	// unofficial, not on fd.o
 					break;
 				}
 			}
@@ -875,6 +876,7 @@ SNES::SNES(IRpFile *file)
 				// BS-X ROM header is valid.
 				d->header_address = *pHeaderAddress;
 				d->romType = SNESPrivate::RomType::BSX;
+				d->mimeType = "application/x-satellaview-rom";	// unofficial, not on fd.o
 				break;
 			}
 		}
@@ -1105,6 +1107,10 @@ const char *const *SNES::supportedMimeTypes_static(void)
 
 		// Unofficial MIME types from FreeDesktop.org.
 		"application/x-snes-rom",
+
+		// Unofficial MIME types.
+		// TODO: Get these upstreamed on FreeDesktop.org.
+		"application/x-satellaview-rom",
 
 		nullptr
 	};
