@@ -475,6 +475,7 @@ bool SNESPrivate::isBsxRomHeaderValid(const SNES_RomHeader *romHeader, bool isHi
 string SNESPrivate::getRomTitle(void) const
 {
 	// NOTE: If the region code is JPN, the title might be encoded in Shift-JIS.
+	// NOTE: Some JPN ROMs have a 'J' game ID but not a JPN region code.
 	// TODO: Space elimination; China, Korea encodings?
 	// TODO: Remove leading spaces? (Capcom NFL Football; symlinked on the server for now.)
 
@@ -483,12 +484,14 @@ string SNESPrivate::getRomTitle(void) const
 	const char *title;
 	size_t len;
 	switch (romType) {
-		case RomType::SNES:
-			doSJIS = (romHeader.snes.destination_code == SNES_DEST_JAPAN);
+		case RomType::SNES: {
+			doSJIS = (romHeader.snes.destination_code == SNES_DEST_JAPAN) ||
+			         (romHeader.snes.old_publisher_code == 0x33 && romHeader.snes.ext.id4[3] == 'J');
 			title = romHeader.snes.title;
 			len = sizeof(romHeader.snes.title);
 			getSnesRomMapping(&romHeader, nullptr, &hasExtraChr);
 			break;
+		}
 		case RomType::BSX:
 			// TODO: Extra characters may be needed for:
 			// - Excitebike - Bun Bun Mario Battle - Stadium 3
