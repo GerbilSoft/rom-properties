@@ -399,13 +399,14 @@ void DMGPrivate::getTitleAndGameID(string &s_title, string &s_gameID) const
 			case 'K':	// tilt sensor
 			case 'V':	// rumble
 				switch (romHeader.title15[14]) {
-					case 'A': case 'D':
-					case 'E': case 'F':
-					case 'G': case 'H':
-					case 'I': case 'J':
-					case 'K': case 'P':
-					case 'S': case 'U':
-					case 'X': case 'Y':
+					case 'A': case 'B':	// B == Brazil
+					case 'D': case 'E':
+					case 'F': case 'G':
+					case 'H': case 'I':
+					case 'J': case 'K':
+					case 'P': case 'S':
+					case 'U': case 'X':
+					case 'Y':
 						// Region byte is valid.
 						break;
 
