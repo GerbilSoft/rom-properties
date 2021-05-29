@@ -190,12 +190,24 @@ FileFormat *FileFormatFactory::create(IRpFile *file)
 	// Use some heuristics to check for TGA files.
 	// Based on heuristics from `file`.
 	// TGA 2.0 has an identifying footer as well.
-	// TODO: Also check the file extension?
+	// NOTE: We're also checking the file extension due to
+	// conflicts with "WWF Raw" on SNES.
+	const string filename = file->filename();
+	const char *ext = FileSystem::file_ext(filename);
+	bool ext_ok = false;
+	if (!ext || ext[0] == '\0') {
+		// No extension. Check for TGA anyway.
+		ext_ok = true;
+	} else if (!strcasecmp(ext, ".tga")) {
+		// TGA extension.
+		ext_ok = true;
+	}
 
 	// test of Color Map Type 0~no 1~color map
 	// and Image Type 1 2 3 9 10 11 32 33
 	// and Color Map Entry Size 0 15 16 24 32
-	if (((magic.u32[0] & be32_to_cpu(0x00FEC400)) == 0) &&
+	if (ext_ok &&
+	    ((magic.u32[0] & be32_to_cpu(0x00FEC400)) == 0) &&
 	    ((magic.u32[1] & be32_to_cpu(0x000000C0)) == 0))
 	{
 		const TGA_Header *const tgaHeader = reinterpret_cast<const TGA_Header*>(&magic);
