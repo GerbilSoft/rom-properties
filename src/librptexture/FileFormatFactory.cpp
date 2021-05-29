@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * FileFormatFactory.cpp: FileFormat factory class.                        *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -201,6 +201,14 @@ FileFormat *FileFormatFactory::create(IRpFile *file)
 	} else if (!strcasecmp(ext, ".tga")) {
 		// TGA extension.
 		ext_ok = true;
+	} else if (!strcasecmp(ext, ".gz")) {
+		// Check if it's ".tga.gz".
+		if (filename.size() >= 7) {
+			if (!strncasecmp(&filename[filename.size()-7], ".tga", 4)) {
+				// It's ".tga.gz".
+				ext_ok = true;
+			}
+		}
 	}
 
 	// test of Color Map Type 0~no 1~color map
