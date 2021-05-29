@@ -373,10 +373,14 @@ bool SNESPrivate::isSnesRomHeaderValid(const SNES_RomHeader *romHeader, bool isH
 bool SNESPrivate::isBsxRomHeaderValid(const SNES_RomHeader *romHeader, bool isHiROM)
 {
 	// TODO: Game title may be ASCII or Shift-JIS.
-	// For now, just make sure the first byte isn't 0.
-	if (romHeader->bsx.title[0] == 0) {
-		// Title is empty.
-		return false;
+	// For now, just make sure the first byte isn't 0 or space.
+	switch (romHeader->bsx.title[0]) {
+		case '\0':
+		case ' ':
+			// Title is empty.
+			return false;
+		default:
+			break;
 	}
 
 	// Is the ROM mapping byte valid?
