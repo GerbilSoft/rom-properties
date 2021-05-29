@@ -406,7 +406,7 @@ void DMGPrivate::getTitleAndGameID(string &s_title, string &s_gameID) const
 					case 'J': case 'K':
 					case 'P': case 'S':
 					case 'U': case 'X':
-					case 'Y':
+					case 'Y': case 'Z':
 						// Region byte is valid.
 						break;
 
