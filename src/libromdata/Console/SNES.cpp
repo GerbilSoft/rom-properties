@@ -447,6 +447,18 @@ bool SNESPrivate::isBsxRomHeaderValid(const SNES_RomHeader *romHeader, bool isHi
 	}
 #endif
 
+	// Check the program type.
+	switch (romHeader->bsx.ext.program_type) {
+		case SNES_BSX_PRG_65c816:
+		case SNES_BSX_PRG_SCRIPT:
+		case SNES_BSX_PRG_SA_1:
+			break;
+
+		default:
+			// Invalid program type.
+			return false;
+	}
+
 	// ROM header appears to be valid.
 	// TODO: Check other BS-X fields.
 	return true;
