@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * MegaDrive.cpp: Sega Mega Drive ROM reader.                              *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -30,6 +30,7 @@ using std::vector;
 namespace LibRomData {
 
 ROMDATA_IMPL(MegaDrive)
+ROMDATA_IMPL_IMG(MegaDrive)
 
 class MegaDrivePrivate final : public RomDataPrivate
 {
@@ -1005,6 +1006,68 @@ const char *const *MegaDrive::supportedMimeTypes_static(void)
 }
 
 /**
+ * Get a bitfield of image types this class can retrieve.
+ * @return Bitfield of supported image types. (ImageTypesBF)
+ */
+uint32_t MegaDrive::supportedImageTypes_static(void)
+{
+	return IMGBF_EXT_TITLE_SCREEN;
+}
+
+/**
+ * Get a list of all available image sizes for the specified image type.
+ * @param imageType Image type.
+ * @return Vector of available image sizes, or empty vector if no images are available.
+ */
+vector<RomData::ImageSizeDef> MegaDrive::supportedImageSizes_static(ImageType imageType)
+{
+	ASSERT_supportedImageSizes(imageType);
+
+	switch (imageType) {
+		case IMG_EXT_TITLE_SCREEN: {
+			// FIXME: Assuming 320x224; some games might use 256x224,
+			// which will need scaling.
+			static const ImageSizeDef sz_EXT_TITLE_SCREEN[] = {
+				{nullptr, 292, 224, 0},
+			};
+			return vector<ImageSizeDef>(sz_EXT_TITLE_SCREEN,
+				sz_EXT_TITLE_SCREEN + ARRAY_SIZE(sz_EXT_TITLE_SCREEN));
+		}
+		default:
+			break;
+	}
+
+	// Unsupported image type.
+	return vector<ImageSizeDef>();
+}
+
+/**
+ * Get image processing flags.
+ *
+ * These specify post-processing operations for images,
+ * e.g. applying transparency masks.
+ *
+ * @param imageType Image type.
+ * @return Bitfield of ImageProcessingBF operations to perform.
+ */
+uint32_t MegaDrive::imgpf(ImageType imageType) const
+{
+	ASSERT_imgpf(imageType);
+
+	uint32_t ret = 0;
+	switch (imageType) {
+		case IMG_EXT_TITLE_SCREEN:
+			// FIXME: If 256x224, rescale to 320x224?
+			ret = IMGPF_RESCALE_NEAREST;
+			break;
+
+		default:
+			break;
+	}
+	return ret;
+}
+
+/**
  * Load field data.
  * Called by RomData::fields() if the field data hasn't been loaded yet.
  * @return Number of fields read on success; negative POSIX error code on error.
@@ -1097,6 +1160,128 @@ int MegaDrive::checkViewedAchievements(void) const
 	}
 
 	return ret;
+}
+
+/**
+ * Get a list of URLs for an external image type.
+ *
+ * A thumbnail size may be requested from the shell.
+ * If the subclass supports multiple sizes, it should
+ * try to get the size that most closely matches the
+ * requested size.
+ *
+ * @param imageType	[in]     Image type.
+ * @param pExtURLs	[out]    Output vector.
+ * @param size		[in,opt] Requested image size. This may be a requested
+ *                               thumbnail size in pixels, or an ImageSizeType
+ *                               enum value.
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int MegaDrive::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
+{
+	ASSERT_extURLs(imageType, pExtURLs);
+	pExtURLs->clear();
+
+	RP_D(const MegaDrive);
+	if (!d->isValid || (int)d->romType < 0) {
+		// ROM image isn't valid.
+		return -EIO;
+	}
+
+	// TODO: Some ROMs are 'worldwide' but may have a different
+	// title screen depending on region. This may need to be
+	// hard-coded...
+
+	// System IDs.
+	static const char *const sys_tbl[] = {
+		"md", "mcd", "32x", "mcd32x", "pico", "tera"
+	};
+	if ((d->romType & MegaDrivePrivate::ROM_SYSTEM_MASK) > ARRAY_SIZE(sys_tbl))
+		return -ENOENT;
+	const char *const sys = sys_tbl[d->romType & MegaDrivePrivate::ROM_SYSTEM_MASK];
+
+	// Make sure the ROM serial number is valid.
+	// It should start with one of the following:
+	// - "GM ": Game
+	// - "BR ": Mega CD Boot ROM
+	// - "OS ": TMSS
+	// - TODO: Others?
+	uint16_t rom_type;
+	memcpy(&rom_type, d->romHeader.serial, sizeof(rom_type));
+	if (d->romHeader.serial[2] != ' ') {
+		// Missing space.
+		return -ENOENT;
+	}
+	if (rom_type != cpu_to_be16('GM') &&
+	    rom_type != cpu_to_be16('BR') &&
+	    rom_type != cpu_to_be16('OS'))
+	{
+		// Not a valid ROM type.
+		return -ENOENT;
+	}
+
+	// Using the MD hex region code.
+	static const char dec_to_hex[] = {
+		'0', '1', '2', '3', '4', '5', '6', '7',
+		'8', '9', 'A', 'B', 'C', 'D', 'E', 'F',
+	};
+	const char region_code[2] = {dec_to_hex[d->md_region & 0x0F], '\0'};
+
+	// Get the serial number.
+	// TODO: Trim it?
+	string gameID = latin1_to_utf8(d->romHeader.serial, sizeof(d->romHeader.serial));
+	if (gameID.empty()) {
+		// No game ID. Image is not available.
+		return -ENOENT;
+	}
+
+	// Special handling for Wonder Mega 1.00 boot ROMs, since they
+	// have the same serial number as the matching Mega CD.
+	if (rom_type == cpu_to_be16('BR') &&
+	    d->romHeader.title_domestic[0] == 'W' &&
+	    d->romHeader.title_domestic[6] == '-')
+	{
+		gameID += "-WM";
+	}
+
+	// NOTE: We only have one size for MegaDrive right now.
+	// TODO: Determine the actual image size.
+	RP_UNUSED(size);
+	vector<ImageSizeDef> sizeDefs = supportedImageSizes(imageType);
+	assert(sizeDefs.size() == 1);
+	if (sizeDefs.empty()) {
+		// No image sizes.
+		return -ENOENT;
+	}
+
+	// NOTE: RPDB's title screen database only has one size.
+	// There's no need to check image sizes, but we need to
+	// get the image size for the extURLs struct.
+
+	// Determine the image type name.
+	const char *imageTypeName;
+	const char *ext;
+	switch (imageType) {
+		case IMG_EXT_TITLE_SCREEN:
+			imageTypeName = "title";
+			ext = ".png";
+			break;
+		default:
+			// Unsupported image type.
+			return -ENOENT;
+	}
+
+	// Add the URLs.
+	pExtURLs->resize(1);
+	auto extURL_iter = pExtURLs->begin();
+	extURL_iter->url = d->getURL_RPDB(sys, imageTypeName, region_code, gameID.c_str(), ext);
+	extURL_iter->cache_key = d->getCacheKey_RPDB(sys, imageTypeName, region_code, gameID.c_str(), ext);
+	extURL_iter->width = sizeDefs[0].width;
+	extURL_iter->height = sizeDefs[0].height;
+	extURL_iter->high_res = (sizeDefs[0].index >= 2);
+
+	// All URLs added.
+	return 0;
 }
 
 }

@@ -302,7 +302,7 @@ const RomDataFactoryPrivate::RomDataFns RomDataFactoryPrivate::romDataFns_header
 	GetRomDataFns(GameCubeBNR, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA),
 	GetRomDataFns(GameCubeSave, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA),
 	GetRomDataFns(iQuePlayer, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA),
-	GetRomDataFns(MegaDrive, ATTR_SUPPORTS_DEVICES),	// ATTR_SUPPORTS_DEVICES for Sega CD
+	GetRomDataFns(MegaDrive, ATTR_HAS_THUMBNAIL | ATTR_SUPPORTS_DEVICES),	// ATTR_SUPPORTS_DEVICES for Sega CD
 	GetRomDataFns(N64, ATTR_HAS_METADATA),
 	GetRomDataFns(NES, ATTR_NONE),
 	GetRomDataFns(SNES, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA),
