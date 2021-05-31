@@ -1221,10 +1221,18 @@ int MegaDrive::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) 
 	// - TODO: Others?
 	uint16_t rom_type;
 	memcpy(&rom_type, romHeader->serial, sizeof(rom_type));
-	if (romHeader->serial[2] != ' ' && romHeader->serial[2] != '_') {
-		// Missing space.
-		return -ENOENT;
+	// Verify the separator.
+	switch (romHeader->serial[2]) {
+		case ' ': case '_': case 'T':
+			// ' ' is the normal version.
+			// '_' is used incorrectly by some ROMs.
+			// 'T' is used by a few that have a very long serial number.
+			break;
+		default:
+			// Missing separator.
+			return -ENOENT;
 	}
+	// Verify the ROM type.
 	if (rom_type != cpu_to_be16('GM') &&
 	    rom_type != cpu_to_be16('BR') &&
 	    rom_type != cpu_to_be16('OS') &&
