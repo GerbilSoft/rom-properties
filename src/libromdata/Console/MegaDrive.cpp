@@ -740,6 +740,8 @@ int MegaDrive::isRomSupported_static(const DetectInfo *info)
 
 	// Extra system types from:
 	// - https://www.plutiedev.com/rom-header#system
+	// NOTE: Doom 32X incorrectly has the region code at the end of the
+	// system name field, so ignore the last two bytes for 32X.
 	static const struct {
 		const char sys_name[20];
 		uint8_t sys_name_len_100h;	// Length to check at $100
@@ -747,7 +749,7 @@ int MegaDrive::isRomSupported_static(const DetectInfo *info)
 		uint32_t system_id;
 	} cart_magic[] = {
 		{"SEGA PICO       ", 16, 15, MegaDrivePrivate::ROM_SYSTEM_PICO},
-		{"SEGA 32X        ", 16, 15, MegaDrivePrivate::ROM_SYSTEM_32X},
+		{"SEGA 32X      ",   14, 13, MegaDrivePrivate::ROM_SYSTEM_32X},
 		{"SEGA SSF        ", 16, 15, MegaDrivePrivate::ROM_SYSTEM_MD |
 		                             MegaDrivePrivate::ROM_EXT_SSF2},
 		{"SEGA EVERDRIVE  ", 16, 15, MegaDrivePrivate::ROM_SYSTEM_MD |
@@ -1200,6 +1202,12 @@ int MegaDrive::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) 
 		return -ENOENT;
 	const char *const sys = sys_tbl[d->romType & MegaDrivePrivate::ROM_SYSTEM_MASK];
 
+	// If this is S&K plus a locked-on ROM, use the
+	// locked-on ROM's serial number with region "S&K".
+	const MD_RomHeader *const romHeader = (d->pRomHeaderLockOn != nullptr
+						? d->pRomHeaderLockOn
+						: &d->romHeader);
+
 	// Make sure the ROM serial number is valid.
 	// It should start with one of the following:
 	// - "GM ": Game
@@ -1207,8 +1215,8 @@ int MegaDrive::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) 
 	// - "OS ": TMSS
 	// - TODO: Others?
 	uint16_t rom_type;
-	memcpy(&rom_type, d->romHeader.serial, sizeof(rom_type));
-	if (d->romHeader.serial[2] != ' ') {
+	memcpy(&rom_type, romHeader->serial, sizeof(rom_type));
+	if (romHeader->serial[2] != ' ') {
 		// Missing space.
 		return -ENOENT;
 	}
@@ -1220,31 +1228,63 @@ int MegaDrive::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) 
 		return -ENOENT;
 	}
 
-	// Using the MD hex region code.
-	static const char dec_to_hex[] = {
-		'0', '1', '2', '3', '4', '5', '6', '7',
-		'8', '9', 'A', 'B', 'C', 'D', 'E', 'F',
-	};
-	const char region_code[2] = {dec_to_hex[d->md_region & 0x0F], '\0'};
+	// If this is S&K plus a locked-on ROM, use the
+	// locked-on ROM's serial number with region "S&K".
+	char region_code[4];
+	string gameID;
+	if (d->pRomHeaderLockOn && rom_type == cpu_to_be16('GM')) {
+		// Use region code "S&K" for locked-on ROMs.
+		memcpy(region_code, "S&K", 4);
 
-	// Get the serial number and trim it.
-	string gameID = latin1_to_utf8(d->romHeader.serial, sizeof(d->romHeader.serial));
-	while (!gameID.empty()) {
-		size_t size = gameID.size();
-		if (gameID[size-1] != ' ')
-			break;
-		gameID.resize(size-1);
-	}
-	if (gameID.empty()) {
-		// No game ID. Image is not available.
-		return -ENOENT;
+		// A unique title screen is only provided for:
+		// - Sonic 1 (all Blue Spheres levels)
+		// - Sonic 2 (Knuckles in Sonic 2)
+		// - Sonic 3 (Sonic 3 & Knuckles)
+
+		// If the serial number doesn't match, then use a
+		// generic "NO WAY!" screen.
+		if (!memcmp(&romHeader->serial[3], "00001009-00", 11) ||
+		    !memcmp(&romHeader->serial[3], "00004049-01", 11) ||
+		    !memcmp(&romHeader->serial[3], "00001051-00", 11) ||
+		    !memcmp(&romHeader->serial[3], "00001051-01", 11) ||
+		    !memcmp(&romHeader->serial[3], "00001051-02", 11) ||
+		    !memcmp(&romHeader->serial[3], "MK-1079 -00", 11))
+		{
+			// Unique title screen is available.
+			gameID = latin1_to_utf8(romHeader->serial, sizeof(romHeader->serial));
+		} else {
+			// Generic title screen only.
+			// TODO: If the locked-on ROM is >2 MB, show S&K?
+			gameID = "NO-WAY";
+		}
+	} else {
+		// Using the MD hex region code.
+		static const char dec_to_hex[] = {
+			'0', '1', '2', '3', '4', '5', '6', '7',
+			'8', '9', 'A', 'B', 'C', 'D', 'E', 'F',
+		};
+		region_code[0] = dec_to_hex[d->md_region & 0x0F];
+		region_code[1] = '\0';
+
+		// Get the serial number and trim it.
+		gameID = latin1_to_utf8(romHeader->serial, sizeof(romHeader->serial));
+		while (!gameID.empty()) {
+			size_t size = gameID.size();
+			if (gameID[size-1] != ' ')
+				break;
+			gameID.resize(size-1);
+		}
+		if (gameID.empty()) {
+			// No game ID. Image is not available.
+			return -ENOENT;
+		}
 	}
 
 	// Special handling for Wonder Mega 1.00 boot ROMs, since they
 	// have the same serial number as the matching Mega CD.
 	if (rom_type == cpu_to_be16('BR') &&
-	    d->romHeader.title_domestic[0] == 'W' &&
-	    d->romHeader.title_domestic[6] == '-')
+	    romHeader->title_domestic[0] == 'W' &&
+	    romHeader->title_domestic[6] == '-')
 	{
 		gameID += "-WM";
 	}
