@@ -1216,6 +1216,7 @@ int MegaDrive::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) 
 	// - "GM ": Game
 	// - "BR ": Mega CD Boot ROM
 	// - "OS ": TMSS
+	// - "SP ": Multitap I/O Sample Program
 	// - TODO: Others?
 	uint16_t rom_type;
 	memcpy(&rom_type, romHeader->serial, sizeof(rom_type));
@@ -1225,7 +1226,8 @@ int MegaDrive::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) 
 	}
 	if (rom_type != cpu_to_be16('GM') &&
 	    rom_type != cpu_to_be16('BR') &&
-	    rom_type != cpu_to_be16('OS'))
+	    rom_type != cpu_to_be16('OS') &&
+	    rom_type != cpu_to_be16('SP'))
 	{
 		// Not a valid ROM type.
 		return -ENOENT;
