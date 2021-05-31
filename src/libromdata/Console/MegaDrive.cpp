@@ -1059,8 +1059,11 @@ uint32_t MegaDrive::imgpf(ImageType imageType) const
 	uint32_t ret = 0;
 	switch (imageType) {
 		case IMG_EXT_TITLE_SCREEN:
-			// FIXME: If 256x224, rescale to 320x224?
-			ret = IMGPF_RESCALE_NEAREST;
+			// Rescaling is required for the 8:7 pixel aspect ratio
+			// if the image is 256px wide. Note that this flag only
+			// takes effect for 256px or 512px images; 320px images
+			// will not be rescaled.
+			ret = IMGPF_RESCALE_ASPECT_8to7;
 			break;
 
 		default:
