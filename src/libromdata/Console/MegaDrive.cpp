@@ -1227,9 +1227,14 @@ int MegaDrive::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) 
 	};
 	const char region_code[2] = {dec_to_hex[d->md_region & 0x0F], '\0'};
 
-	// Get the serial number.
-	// TODO: Trim it?
+	// Get the serial number and trim it.
 	string gameID = latin1_to_utf8(d->romHeader.serial, sizeof(d->romHeader.serial));
+	while (!gameID.empty()) {
+		size_t size = gameID.size();
+		if (gameID[size-1] != ' ')
+			break;
+		gameID.resize(size-1);
+	}
 	if (gameID.empty()) {
 		// No game ID. Image is not available.
 		return -ENOENT;
