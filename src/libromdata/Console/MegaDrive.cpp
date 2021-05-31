@@ -1217,17 +1217,19 @@ int MegaDrive::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) 
 	// - "BR ": Mega CD Boot ROM
 	// - "OS ": TMSS
 	// - "SP ": Multitap I/O Sample Program
+	// - "MK ": Incorrect "Game" designation used by some games.
 	// - TODO: Others?
 	uint16_t rom_type;
 	memcpy(&rom_type, romHeader->serial, sizeof(rom_type));
-	if (romHeader->serial[2] != ' ') {
+	if (romHeader->serial[2] != ' ' && romHeader->serial[2] != '_') {
 		// Missing space.
 		return -ENOENT;
 	}
 	if (rom_type != cpu_to_be16('GM') &&
 	    rom_type != cpu_to_be16('BR') &&
 	    rom_type != cpu_to_be16('OS') &&
-	    rom_type != cpu_to_be16('SP'))
+	    rom_type != cpu_to_be16('SP') &&
+	    rom_type != cpu_to_be16('MK'))
 	{
 		// Not a valid ROM type.
 		return -ENOENT;
