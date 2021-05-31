@@ -1289,6 +1289,15 @@ int MegaDrive::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) 
 		gameID += "-WM";
 	}
 
+	// Special handling for SegaNet ROMs, which all have the same
+	// serial number but different checksums.
+	// TODO: Do this for e.g. Sonic prototypes?
+	if (!memcmp(romHeader->serial, "GM 00054503-00", 14)) {
+		char buf[8];
+		snprintf(buf, sizeof(buf), "-%04X", be16_to_cpu(romHeader->checksum));
+		gameID += buf;
+	}
+
 	// NOTE: We only have one size for MegaDrive right now.
 	// TODO: Determine the actual image size.
 	RP_UNUSED(size);
