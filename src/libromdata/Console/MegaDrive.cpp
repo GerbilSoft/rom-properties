@@ -830,11 +830,11 @@ int MegaDrive::isRomSupported_static(const DetectInfo *info)
 			if (!memcmp(&pHeader[secprgaddr], secprgdesc, sizeof(secprgdesc)-1)) {
 				// Module name is correct.
 				// TODO: Does the ROM header have to say "SEGA 32X"?
-				sysId = MegaDrivePrivate::ROM_SYSTEM_32X;
+				sysIdOnly = MegaDrivePrivate::ROM_SYSTEM_32X;
 			} else {
 				// Module name is incorrect.
 				// This ROM cannot activate 32X mode.
-				sysId = MegaDrivePrivate::ROM_SYSTEM_MD;
+				sysIdOnly = MegaDrivePrivate::ROM_SYSTEM_MD;
 			}
 			sysId &= ~MegaDrivePrivate::ROM_SYSTEM_MASK;
 			sysId |= sysIdOnly;
