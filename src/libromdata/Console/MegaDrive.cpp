@@ -1195,10 +1195,10 @@ int MegaDrive::loadMetaData(void)
 	// Title
 	// TODO: Domestic vs. export; space elimination?
 	// Check domestic first. If empty, check overseas.
-	string s_title = cp1252_sjis_to_utf8(romHeader->title_domestic, sizeof(romHeader->title_domestic));
+	string s_title = cp1252_sjis_to_utf8(romHeader->title_export, sizeof(romHeader->title_export));
 	trimEnd(s_title);
 	if (s_title.empty()) {
-		s_title = cp1252_sjis_to_utf8(romHeader->title_export, sizeof(romHeader->title_export));
+		s_title = cp1252_sjis_to_utf8(romHeader->title_domestic, sizeof(romHeader->title_domestic));
 	}
 	if (!s_title.empty()) {
 		d->metaData->addMetaData_string(Property::Title, s_title);
