@@ -1140,34 +1140,6 @@ int MegaDrive::loadFieldData(void)
 }
 
 /**
- * Check for "viewed" achievements.
- *
- * @return Number of achievements unlocked.
- */
-int MegaDrive::checkViewedAchievements(void) const
-{
-	RP_D(const MegaDrive);
-	if (!d->isValid) {
-		// ROM is not valid.
-		return 0;
-	}
-
-	Achievements *const pAch = Achievements::instance();
-	int ret = 0;
-
-	if (d->pRomHeaderLockOn) {
-		// Is it S&K locked on to S&K?
-		if (!memcmp(d->pRomHeaderLockOn->serial, "GM MK-1563 -00", sizeof(d->pRomHeaderLockOn->serial))) {
-			// It is!
-			pAch->unlock(Achievements::ID::ViewedMegaDriveSKwithSK);
-			ret++;
-		}
-	}
-
-	return ret;
-}
-
-/**
  * Get a list of URLs for an external image type.
  *
  * A thumbnail size may be requested from the shell.
@@ -1351,6 +1323,34 @@ int MegaDrive::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) 
 
 	// All URLs added.
 	return 0;
+}
+
+/**
+ * Check for "viewed" achievements.
+ *
+ * @return Number of achievements unlocked.
+ */
+int MegaDrive::checkViewedAchievements(void) const
+{
+	RP_D(const MegaDrive);
+	if (!d->isValid) {
+		// ROM is not valid.
+		return 0;
+	}
+
+	Achievements *const pAch = Achievements::instance();
+	int ret = 0;
+
+	if (d->pRomHeaderLockOn) {
+		// Is it S&K locked on to S&K?
+		if (!memcmp(d->pRomHeaderLockOn->serial, "GM MK-1563 -00", sizeof(d->pRomHeaderLockOn->serial))) {
+			// It is!
+			pAch->unlock(Achievements::ID::ViewedMegaDriveSKwithSK);
+			ret++;
+		}
+	}
+
+	return ret;
 }
 
 }
