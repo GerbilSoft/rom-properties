@@ -159,6 +159,14 @@ class MegaDrivePrivate final : public RomDataPrivate
 		// Extra headers.
 		SMD_Header *pSmdHeader;		// SMD header.
 		MD_RomHeader *pRomHeaderLockOn;	// Locked-on ROM header.
+
+	public:
+		/**
+		 * Get the publisher.
+		 * @param pRomHeader ROM header to check.
+		 * @return Publisher, or "Unknown" if unknown.
+		 */
+		static string getPublisher(const MD_RomHeader *pRomHeader);
 };
 
 /** MegaDrivePrivate **/
@@ -261,45 +269,8 @@ void MegaDrivePrivate::addFields_romHeader(const MD_RomHeader *pRomHeader, bool 
 		cp1252_sjis_to_utf8(pRomHeader->copyright, sizeof(pRomHeader->copyright)),
 			RomFields::STRF_TRIM_END);
 
-	// Determine the publisher.
-	// Formats in the copyright line:
-	// - "(C)SEGA"
-	// - "(C)T-xx"
-	// - "(C)T-xxx"
-	// - "(C)Txxx"
-	const char *publisher = nullptr;
-	unsigned int t_code = 0;
-	if (!memcmp(pRomHeader->copyright, "(C)SEGA", 7)) {
-		// Sega first-party game.
-		publisher = "Sega";
-	} else if (!memcmp(pRomHeader->copyright, "(C)T", 4)) {
-		// Third-party game.
-		int start = 4;
-		if (pRomHeader->copyright[4] == '-')
-			start++;
-		char *endptr;
-		t_code = strtoul(&pRomHeader->copyright[start], &endptr, 10);
-		if (t_code != 0 &&
-		    endptr > &pRomHeader->copyright[start] &&
-		    endptr < &pRomHeader->copyright[start+3])
-		{
-			// Valid T-code. Look up the publisher.
-			publisher = SegaPublishers::lookup(t_code);
-		}
-	}
-
-	const char *const publisher_title = C_("RomData", "Publisher");
-	if (publisher) {
-		// Publisher identified.
-		fields->addField_string(publisher_title, publisher);
-	} else if (t_code > 0) {
-		// Unknown publisher, but there is a valid T code.
-		fields->addField_string(publisher_title, rp_sprintf("T-%u", t_code));
-	} else {
-		// Unknown publisher.
-		fields->addField_string(C_("RomData", "Publisher"),
-			C_("RomData", "Unknown"));
-	}
+	// Publisher
+	fields->addField_string(C_("RomData", "Publisher"), getPublisher(pRomHeader));
 
 	// Titles, serial number, and checksum.
 	fields->addField_string(C_("MegaDrive", "Domestic Title"),
@@ -526,6 +497,61 @@ void MegaDrivePrivate::addFields_vectorTable(const M68K_VectorTable *pVectors)
 	params.headers = v_vectors_headers;
 	params.data.single = vv_vectors;
 	fields->addField_listData(C_("RomData", "Vector Table"), &params);
+}
+
+/**
+ * Get the publisher.
+ * @param pRomHeader ROM header to check.
+ * @return Publisher, or "Unknown" if unknown.
+ */
+string MegaDrivePrivate::getPublisher(const MD_RomHeader *pRomHeader)
+{
+	string s_publisher;
+
+	// Determine the publisher.
+	// Formats in the copyright line:
+	// - "(C)SEGA"
+	// - "(C)T-xx"
+	// - "(C)T-xxx"
+	// - "(C)Txxx"
+	unsigned int t_code = 0;
+	if (!memcmp(pRomHeader->copyright, "(C)SEGA", 7)) {
+		// Sega first-party game.
+		s_publisher = "Sega";
+	} else if (!memcmp(pRomHeader->copyright, "(C)T", 4)) {
+		// Third-party game.
+		int start = 4;
+		if (pRomHeader->copyright[4] == '-')
+			start++;
+		char *endptr;
+		t_code = strtoul(&pRomHeader->copyright[start], &endptr, 10);
+		if (t_code != 0 &&
+		    endptr > &pRomHeader->copyright[start] &&
+		    endptr < &pRomHeader->copyright[start+3])
+		{
+			// Valid T-code. Look up the publisher.
+			const char *const publisher = SegaPublishers::lookup(t_code);
+			if (publisher) {
+				s_publisher = publisher;
+			}
+		}
+	}
+
+	if (s_publisher.empty()) {
+		// Publisher not identified.
+		// Check for a T-code.
+		if (t_code > 0) {
+			// Found a T-code.
+			char buf[16];
+			snprintf(buf, sizeof(buf), "T-%u", t_code);
+			s_publisher = buf;
+		} else {
+			// Unknown publisher.
+			s_publisher = C_("RomData", "Unknown");
+		}
+	}
+
+	return s_publisher;
 }
 
 /** MegaDrive **/
@@ -1137,6 +1163,53 @@ int MegaDrive::loadFieldData(void)
 
 	// Finished reading the field data.
 	return static_cast<int>(d->fields->count());
+}
+
+/**
+ * Load metadata properties.
+ * Called by RomData::metaData() if the field data hasn't been loaded yet.
+ * @return Number of metadata properties read on success; negative POSIX error code on error.
+ */
+int MegaDrive::loadMetaData(void)
+{
+	RP_D(MegaDrive);
+	if (d->metaData != nullptr) {
+		// Metadata *has* been loaded...
+		return 0;
+	} else if (!d->file) {
+		// File isn't open.
+		return -EBADF;
+	} else if (!d->isValid || (int)d->romType < 0) {
+		// Unknown ROM image type.
+		return -EIO;
+	}
+
+	// Create the metadata object.
+	d->metaData = new RomMetaData();
+	d->metaData->reserve(2);	// Maximum of 2 metadata properties.
+
+	// MD ROM header
+	// TODO: Lock-on support?
+	const MD_RomHeader *const romHeader = &d->romHeader;
+
+	// Title
+	// TODO: Domestic vs. export; space elimination?
+	// Check domestic first. If empty, check overseas.
+	string s_title = cp1252_sjis_to_utf8(romHeader->title_domestic, sizeof(romHeader->title_domestic));
+	trimEnd(s_title);
+	if (s_title.empty()) {
+		s_title = cp1252_sjis_to_utf8(romHeader->title_export, sizeof(romHeader->title_export));
+	}
+	if (!s_title.empty()) {
+		d->metaData->addMetaData_string(Property::Title, s_title);
+	}
+
+	// Publisher
+	// TODO: Don't show if the publisher is unknown?
+	d->metaData->addMetaData_string(Property::Publisher, d->getPublisher(romHeader));
+
+	// Finished reading the metadata.
+	return static_cast<int>(d->metaData->count());
 }
 
 /**
