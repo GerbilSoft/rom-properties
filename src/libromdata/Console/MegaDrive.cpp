@@ -523,12 +523,14 @@ string MegaDrivePrivate::getPublisher(const MD_RomHeader *pRomHeader)
 		int start = 4;
 		if (pRomHeader->copyright[4] == '-')
 			start++;
-		char *endptr;
-		t_code = strtoul(&pRomHeader->copyright[start], &endptr, 10);
-		if (t_code != 0 &&
-		    endptr > &pRomHeader->copyright[start] &&
-		    endptr < &pRomHeader->copyright[start+3])
-		{
+
+		// Read up to three digits.
+		char buf[4];
+		memcpy(buf, &pRomHeader->copyright[start], 3);
+		buf[3] = '\0';
+
+		t_code = strtoul(buf, nullptr, 10);
+		if (t_code != 0) {
 			// Valid T-code. Look up the publisher.
 			const char *const publisher = SegaPublishers::lookup(t_code);
 			if (publisher) {
@@ -774,7 +776,6 @@ int MegaDrive::isRomSupported_static(const DetectInfo *info)
 		uint8_t sys_name_len_101h;	// Length to check at $101
 		uint32_t system_id;
 	} cart_magic[] = {
-		{"SEGA PICO       ", 16, 15, MegaDrivePrivate::ROM_SYSTEM_PICO},
 		{"SEGA 32X      ",   14, 13, MegaDrivePrivate::ROM_SYSTEM_32X},
 		{"SEGA SSF        ", 16, 15, MegaDrivePrivate::ROM_SYSTEM_MD |
 		                             MegaDrivePrivate::ROM_EXT_SSF2},
@@ -786,6 +787,10 @@ int MegaDrive::isRomSupported_static(const DetectInfo *info)
 		                             MegaDrivePrivate::ROM_EXT_TERADRIVE_68k},
 		{"SEGA TERA286    ", 16, 15, MegaDrivePrivate::ROM_SYSTEM_TERADRIVE |
 		                             MegaDrivePrivate::ROM_EXT_TERADRIVE_x86},
+		{"SEGA PICO       ", 16, 15, MegaDrivePrivate::ROM_SYSTEM_PICO},
+		{"SAMSUNG PICO    ", 16, 15, MegaDrivePrivate::ROM_SYSTEM_PICO},	// TODO: Indicate Korean.
+		{"SEGATOYS PICO   ", 16, 15, MegaDrivePrivate::ROM_SYSTEM_PICO},	// Late 90s
+		{"IMA IKUNOUJYUKU ", 16, 15, MegaDrivePrivate::ROM_SYSTEM_PICO},	// Some JP ROMs
 
 		// NOTE: Previously, we were checking for
 		// "SEGA MEGA DRIVE" and "SEGA GENESIS".
@@ -1263,29 +1268,45 @@ int MegaDrive::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) 
 	// - "OS ": TMSS
 	// - "SP ": Multitap I/O Sample Program
 	// - "MK ": Incorrect "Game" designation used by some games.
+	// - "T-":  Incorrect "third-party" designation. (Should be "GM T-")
+	// - "HPC-": (Some) Sega Pico titles
+	// - "MPR-": (Some) Sega Pico titles
 	// - TODO: Others?
 	uint16_t rom_type;
 	memcpy(&rom_type, romHeader->serial, sizeof(rom_type));
 	// Verify the separator.
 	switch (romHeader->serial[2]) {
-		case ' ': case '_': case 'T':
+		case ' ': case '_': case '-': case 'T':
 			// ' ' is the normal version.
-			// '_' is used incorrectly by some ROMs.
+			// '_' and '-' are used incorrectly by some ROMs.
 			// 'T' is used by a few that have a very long serial number.
 			break;
 		default:
+			// Check for some exceptions:
+			// - "T-": Incorrectly used by some games.
+			// - "HPC-": Used by some Pico titles.
+			// - "MPR-": Used by some Pico titles.
+			if (rom_type == cpu_to_be16('T-') ||
+			    !memcmp(romHeader->serial, "HPC-", 4) ||
+			    !memcmp(romHeader->serial, "MPR-", 4))
+			{
+				// Found an exception.
+				break;
+			}
 			// Missing separator.
 			return -ENOENT;
 	}
+
 	// Verify the ROM type.
-	if (rom_type != cpu_to_be16('GM') &&
-	    rom_type != cpu_to_be16('BR') &&
-	    rom_type != cpu_to_be16('OS') &&
-	    rom_type != cpu_to_be16('SP') &&
-	    rom_type != cpu_to_be16('MK'))
-	{
-		// Not a valid ROM type.
-		return -ENOENT;
+	// TODO: Constant cpu_to_be16() macro for use in switch()?
+	switch (be16_to_cpu(rom_type)) {
+		case 'GM': case 'BR': case 'OS':
+		case 'SP': case 'MK': case 'T-':
+		case 'HP': case 'MP':
+			break;
+		default:
+			// Not a valid ROM type.
+			return -ENOENT;
 	}
 
 	// If this is S&K plus a locked-on ROM, use the

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * MegaDriveRegions.cpp: Sega Mega Drive region code detection.            *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -11,6 +11,9 @@
 #include "librpbase/SystemRegion.hpp"
 
 namespace LibRomData {
+
+// TODO: Separate parser function for Pico,
+// since Pico doesn't have worldwide releases.
 
 /**
  * Parse the region codes field from an MD ROM header.
@@ -85,6 +88,9 @@ unsigned int MegaDriveRegions::parseRegionCodes(const char *region_codes, int si
 						ret |= MD_REGION_USA;
 						break;
 					case 'E':
+					//case 'F':	// France (Pico) (CONFLICTS WITH HEX)
+					case 'G':	// Germany (Pico)
+					case 'S':	// Spain (Pico)
 						ret |= MD_REGION_EUROPE;
 						break;
 					default:

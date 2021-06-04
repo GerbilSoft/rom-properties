@@ -281,6 +281,19 @@
     </magic>
     <glob pattern="*.iso"/>
   </mime-type>
+  <mime-type type="application/x-sega-pico-rom">
+    <!-- Translate this to Kids Computer Pico if the console was known as such in your locale
+         Should be Sega Pico in all but Japan: https://en.wikipedia.org/wiki/Sega_Pico -->
+    <comment>Sega Pico ROM</comment>
+    <generic-icon name="application-x-executable"/>
+    <magic priority="50">
+      <match type="string" value="SEGA PICO" offset="256"/>
+      <match type="string" value="SAMSUNG PICO" offset="256"/>
+      <match type="string" value="SEGATOYS PICO" offset="256"/>
+      <match type="string" value="IMA IKUNOUJYUKU" offset="256"/>
+    </magic>
+    <glob pattern="*.pco"/>
+  </mime-type>
 
   <!-- NES -->
   <mime-type type="application/x-nes-rom">
