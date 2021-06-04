@@ -263,7 +263,7 @@
   </mime-type>
 
   <!-- MegaDrive -->
-  <mime-type type="application/x-sega-cd-rom">
+  <mime-type type="application/x-sega-cd-32x-rom">
     <!-- Translate this to Mega-CD if the console was known as such in your locale
          Should be Mega-CD in all but en_US, Mexico, Canada and Brazil: https://en.wikipedia.org/wiki/Sega_CD -->
     <comment>Sega CD 32X disc image</comment>
