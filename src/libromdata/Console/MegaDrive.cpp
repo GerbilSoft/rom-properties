@@ -126,6 +126,16 @@ class MegaDrivePrivate final : public RomDataPrivate
 				rfmt == ROM_FORMAT_DISC_2352);
 		}
 
+		/**
+		 * Parse region codes.
+		 *
+		 * Wrapper function to handle some games that don't have
+		 * the region code in the correct location.
+		 *
+		 * @param pRomHeader ROM header.
+		 */
+		static uint32_t parseRegionCodes(const MD_RomHeader *pRomHeader);
+
 	public:
 		/**
 		 * Add fields for the ROM header.
@@ -247,6 +257,31 @@ uint32_t MegaDrivePrivate::parseIOSupport(const char *io_support, int size)
 	}
 
 	return ret;
+}
+
+/**
+ * Parse region codes.
+ *
+ * Wrapper function to handle some games that don't have
+ * the region code in the correct location.
+ *
+ * @param pRomHeader ROM header.
+ */
+uint32_t MegaDrivePrivate::parseRegionCodes(const MD_RomHeader *pRomHeader)
+{
+	uint32_t md_region = MegaDriveRegions::parseRegionCodes(
+		pRomHeader->region_codes, sizeof(pRomHeader->region_codes));
+	if (md_region != 0)
+		return md_region;
+
+	// Some early games incorrectly have the MD region code at a different location.
+	// - Golden Axe: 0x1C0
+	if (pRomHeader->modem_info[4] != ' ' && pRomHeader->modem_info[7] == ' ') {
+		md_region = MegaDriveRegions::parseRegionCodes(
+			&pRomHeader->modem_info[4], 3);
+	}
+
+	return md_region;
 }
 
 /**
@@ -384,8 +419,7 @@ void MegaDrivePrivate::addFields_romHeader(const MD_RomHeader *pRomHeader, bool 
 	// TODO: Validate the Mega CD security program?
 	uint32_t md_region_check;
 	if (unlikely(bRedetectRegion)) {
-		md_region_check = MegaDriveRegions::parseRegionCodes(
-			pRomHeader->region_codes, sizeof(pRomHeader->region_codes));
+		md_region_check = parseRegionCodes(pRomHeader);
 	} else {
 		md_region_check = this->md_region;
 	}
@@ -679,8 +713,7 @@ MegaDrive::MegaDrive(IRpFile *file)
 	}
 
 	// Parse the MD region code.
-	d->md_region = MegaDriveRegions::parseRegionCodes(
-		d->romHeader.region_codes, sizeof(d->romHeader.region_codes));
+	d->md_region = d->parseRegionCodes(&d->romHeader);
 
 	// Determine the MIME type.
 	const uint8_t sysID = (d->romType & MegaDrivePrivate::ROM_SYSTEM_MASK);

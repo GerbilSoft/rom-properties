@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * md_structs.h: Sega Mega Drive data structures.                          *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -24,24 +24,24 @@ typedef struct _M68K_VectorTable {
 	union {
 		uint32_t vectors[64];
 		struct {
-			uint32_t initial_sp;
-			uint32_t initial_pc;
-			uint32_t bus_error;
-			uint32_t address_error;
-			uint32_t illegal_insn;
-			uint32_t div_by_zero;
-			uint32_t chk_exception;
-			uint32_t trapv_exception;
-			uint32_t priv_violation;
-			uint32_t trace_exception;
-			uint32_t lineA_emulator;
-			uint32_t lineF_emulator;
-			uint32_t reserved1[3];
-			uint32_t uninit_interrupt;
-			uint32_t reserved2[8];
-			uint32_t interrupts[8];		// 0 == spurious
-			uint32_t trap_insns[16];	// TRAP #x
-			uint32_t reserved3[16];
+			uint32_t initial_sp;		// [0x000]
+			uint32_t initial_pc;		// [0x004]
+			uint32_t bus_error;		// [0x008]
+			uint32_t address_error;		// [0x00C]
+			uint32_t illegal_insn;		// [0x010]
+			uint32_t div_by_zero;		// [0x014]
+			uint32_t chk_exception;		// [0x018]
+			uint32_t trapv_exception;	// [0x01C]
+			uint32_t priv_violation;	// [0x020]
+			uint32_t trace_exception;	// [0x024]
+			uint32_t lineA_emulator;	// [0x028]
+			uint32_t lineF_emulator;	// [0x02C]
+			uint32_t reserved1[3];		// [0x030]
+			uint32_t uninit_interrupt;	// [0x03C]
+			uint32_t reserved2[8];		// [0x040]
+			uint32_t interrupts[8];		// [0x060] 0 == spurious
+			uint32_t trap_insns[16];	// [0x080] TRAP #x
+			uint32_t reserved3[16];		// [0x0C0]
 
 			// User interrupt vectors #64-255 are not included,
 			// since they overlap the MD ROM header.
@@ -57,42 +57,45 @@ ASSERT_STRUCT(M68K_VectorTable, 64*sizeof(uint32_t));
  * All fields are big-endian.
  * NOTE: Strings are NOT null-terminated!
  */
+#define MD_ROMHEADER_ADDRESS 0x100
 typedef struct _MD_RomHeader {
 	// Titles may be encoded in either
 	// Shift-JIS (cp932) or cp1252.
-	char system[16];
-	char copyright[16];
-	char title_domestic[48];	// Japanese ROM name.
-	char title_export[48];		// US/Europe ROM name.
-	char serial[14];
-	uint16_t checksum;
-	char io_support[16];
+	// NOTE: Offsets are based on the absolute ROM address,
+	// since the header is located at 0x100.
+	char system[16];		// [0x100] System ID
+	char copyright[16];		// [0x110] Copyright
+	char title_domestic[48];	// [0x120] Japanese ROM name
+	char title_export[48];		// [0x150] US/Europe ROM name
+	char serial[14];		// [0x180] Serial number
+	uint16_t checksum;		// [0x18E] Checksum (excluding vector table and header)
+	char io_support[16];		// [0x190] Supported I/O devices
 
 	// ROM/RAM address information.
-	uint32_t rom_start;
-	uint32_t rom_end;
-	uint32_t ram_start;
-	uint32_t ram_end;
+	uint32_t rom_start;		// [0x1A0]
+	uint32_t rom_end;		// [0x1A4]
+	uint32_t ram_start;		// [0x1A8]
+	uint32_t ram_end;		// [0x1AC]
 
 	// Save RAM information.
 	// Info format: 'R', 'A', %1x1yz000, 0x20
 	// x == 1 for backup (SRAM), 0 for not backup
 	// yz == 10 for even addresses, 11 for odd addresses
-	uint32_t sram_info;
-	uint32_t sram_start;
-	uint32_t sram_end;
+	uint32_t sram_info;		// [0x1B0]
+	uint32_t sram_start;		// [0x1B4]
+	uint32_t sram_end;		// [0x1B8]
 
 	// Miscellaneous.
-	char modem_info[12];
+	char modem_info[12];		// [0x1BC]
 	union {
-		char notes[40];
+		char notes[40];		// [0x1C8]
 		struct {
-			char notes24[24];
-			uint32_t info;
-			uint8_t data[12];
+			char notes24[24];	// [0x1C8]
+			uint32_t info;		// [0x1E0]
+			uint8_t data[12];	// [0x1E4]
 		} extrom;
 	};
-	char region_codes[16];
+	char region_codes[16];		// [0x1F0]
 } MD_RomHeader;
 ASSERT_STRUCT(MD_RomHeader, 256);
 
