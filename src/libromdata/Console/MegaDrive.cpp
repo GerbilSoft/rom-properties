@@ -1297,6 +1297,7 @@ int MegaDrive::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) 
 	// Make sure the ROM serial number is valid.
 	// It should start with one of the following:
 	// - "GM ": Game
+	// - "AI ": Educational
 	// - "BR ": Mega CD Boot ROM
 	// - "OS ": TMSS
 	// - "SP ": Multitap I/O Sample Program
@@ -1333,7 +1334,8 @@ int MegaDrive::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) 
 	// Verify the ROM type.
 	// TODO: Constant cpu_to_be16() macro for use in switch()?
 	switch (be16_to_cpu(rom_type)) {
-		case 'GM': case 'BR': case 'OS':
+		case 'GM': case 'AI':
+		case 'BR': case 'OS':
 		case 'SP': case 'MK': case 'T-':
 		case 'HP': case 'MP':
 			break;
