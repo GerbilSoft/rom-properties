@@ -47,20 +47,22 @@ class MegaDrivePrivate final : public RomDataPrivate
 
 		// I/O support. (RFT_BITFIELD)
 		enum MD_IO_Support_Bitfield {
-			MD_IOBF_JOYPAD_3	= (1U << 0),	// 3-button joypad
-			MD_IOBF_JOYPAD_6	= (1U << 1),	// 6-button joypad
-			MD_IOBF_JOYPAD_SMS	= (1U << 2),	// 2-button joypad (SMS)
-			MD_IOBF_TEAM_PLAYER	= (1U << 3),	// Team Player
-			MD_IOBF_KEYBOARD	= (1U << 4),	// Keyboard
-			MD_IOBF_SERIAL		= (1U << 5),	// Serial (RS-232C)
-			MD_IOBF_PRINTER		= (1U << 6),	// Printer
-			MD_IOBF_TABLET		= (1U << 7),	// Tablet
-			MD_IOBF_TRACKBALL	= (1U << 8),	// Trackball
-			MD_IOBF_PADDLE		= (1U << 9),	// Paddle
-			MD_IOBF_FDD		= (1U << 10),	// Floppy Drive
-			MD_IOBF_CDROM		= (1U << 11),	// CD-ROM
-			MD_IOBF_ACTIVATOR	= (1U << 12),	// Activator
-			MD_IOBF_MEGA_MOUSE	= (1U << 13),	// Mega Mouse
+			MD_IOBF_JOYPAD_3	= (1U <<  0),	// 3-button joypad
+			MD_IOBF_JOYPAD_6	= (1U <<  1),	// 6-button joypad
+			MD_IOBF_JOYPAD_SMS	= (1U <<  2),	// 2-button joypad (SMS)
+			MD_IOBF_ANALOG		= (1U <<  3),	// Analog (XE-1 AP)
+			MD_IOBF_TEAM_PLAYER	= (1U <<  4),	// Team Player
+			MD_IOBF_LIGHT_GUN	= (1U <<  5),	// Light Gun (Menacer)
+			MD_IOBF_KEYBOARD	= (1U <<  6),	// Keyboard
+			MD_IOBF_SERIAL		= (1U <<  7),	// Serial (RS-232C)
+			MD_IOBF_PRINTER		= (1U <<  8),	// Printer
+			MD_IOBF_TABLET		= (1U <<  9),	// Tablet
+			MD_IOBF_TRACKBALL	= (1U << 10),	// Trackball
+			MD_IOBF_PADDLE		= (1U << 11),	// Paddle
+			MD_IOBF_FDD		= (1U << 12),	// Floppy Drive
+			MD_IOBF_CDROM		= (1U << 13),	// CD-ROM
+			MD_IOBF_ACTIVATOR	= (1U << 14),	// Activator
+			MD_IOBF_MEGA_MOUSE	= (1U << 15),	// Mega Mouse
 		};
 
 		/** Internal ROM data. **/
@@ -330,7 +332,9 @@ void MegaDrivePrivate::addFields_romHeader(const MD_RomHeader *pRomHeader, bool 
 		NOP_C_("MegaDrive|I/O", "6-button"),
 		// tr: Use a locale-specific abbreviation for Sega Master System, e.g. MK3 or similar.
 		NOP_C_("MegaDrive|I/O", "SMS Joypad"),
+		NOP_C_("MegaDrive|I/O", "Analog"),
 		NOP_C_("MegaDrive|I/O", "Team Player"),
+		NOP_C_("MegaDrive|I/O", "Light Gun"),
 		NOP_C_("MegaDrive|I/O", "Keyboard"),
 		NOP_C_("MegaDrive|I/O", "Serial I/O"),
 		NOP_C_("MegaDrive|I/O", "Printer"),
