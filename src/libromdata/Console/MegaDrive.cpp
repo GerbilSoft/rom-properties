@@ -347,12 +347,25 @@ void MegaDrivePrivate::addFields_romHeader(const MD_RomHeader *pRomHeader, bool 
 		NOP_C_("MegaDrive|I/O", "Activator"),
 		NOP_C_("MegaDrive|I/O", "Mega Mouse"),
 	};
-	vector<string> *const v_io_bitfield_names = RomFields::strArrayToVector_i18n(
-		"MegaDrive|I/O", io_bitfield_names, ARRAY_SIZE(io_bitfield_names));
-	// Parse I/O support.
+	// NOTE: Using a plain text field because most games only support
+	// one or two devices, so we don't need to list them all.
 	uint32_t io_support = parseIOSupport(pRomHeader->io_support, sizeof(pRomHeader->io_support));
-	fields->addField_bitfield(C_("MegaDrive", "I/O Support"),
-		v_io_bitfield_names, 3, io_support);
+	string s_io_devices;
+	s_io_devices.reserve(32);
+	unsigned int bit = 1;
+	for (unsigned int i = 0; i < ARRAY_SIZE(io_bitfield_names); i++, bit <<= 1) {
+		if (io_support & bit) {
+			if (!s_io_devices.empty()) {
+				s_io_devices += ", ";
+			}
+			s_io_devices += dpgettext_expr(RP_I18N_DOMAIN,
+				"MegaDrive|I/O", io_bitfield_names[i]);
+		}
+	}
+	if (s_io_devices.empty()) {
+		s_io_devices = C_("MegaDrive|I/O", "None");
+	}
+	fields->addField_string(C_("MegaDrive", "I/O Support"), s_io_devices);
 
 	if (!isDisc()) {
 		// ROM range.
