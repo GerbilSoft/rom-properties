@@ -354,7 +354,7 @@ void MegaDrivePrivate::addFields_romHeader(const MD_RomHeader *pRomHeader, bool 
 	uint32_t io_support = parseIOSupport(pRomHeader->io_support, sizeof(pRomHeader->io_support));
 	string s_io_devices;
 	s_io_devices.reserve(32);
-	unsigned int bit = 1;
+	uint32_t bit = 1;
 	for (unsigned int i = 0; i < ARRAY_SIZE(io_bitfield_names); i++, bit <<= 1) {
 		if (io_support & bit) {
 			if (!s_io_devices.empty()) {
