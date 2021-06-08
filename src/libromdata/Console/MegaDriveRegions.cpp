@@ -78,8 +78,11 @@ unsigned int MegaDriveRegions::parseRegionCodes(const char *region_codes, int si
 			// Check for old-style JUE region codes.
 			// (J counts as both Japan and Asia.)
 			for (int i = 0; i < size; i++) {
-				if (region_codes[i] == 0 || ISSPACE(region_codes[i]))
+				// Allow spaces in the first three characters.
+				// "Psy-O-Blade (Japan)" has "  J".
+				if (i >= 3 && (region_codes[i] == 0 || ISSPACE(region_codes[i])))
 					break;
+
 				switch (region_codes[i]) {
 					case 'J':
 						ret |= MD_REGION_JAPAN | MD_REGION_ASIA;
