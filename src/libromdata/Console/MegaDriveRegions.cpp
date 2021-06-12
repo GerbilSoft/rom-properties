@@ -85,6 +85,7 @@ unsigned int MegaDriveRegions::parseRegionCodes(const char *region_codes, int si
 
 				switch (region_codes[i]) {
 					case 'J':
+					case 'K':	// Korea (Tiny Toon Adventures)
 						ret |= MD_REGION_JAPAN | MD_REGION_ASIA;
 						break;
 					case 'U':

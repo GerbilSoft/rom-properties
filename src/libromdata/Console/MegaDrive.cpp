@@ -1322,6 +1322,7 @@ int MegaDrive::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) 
 	// - "OS ": TMSS
 	// - "SP ": Multitap I/O Sample Program
 	// - "MK ": Incorrect "Game" designation used by some games.
+	// - "mk ": Lowercase "MK", used by "Senjou no Ookami II ~ Mercs (World)".
 	// - "T-":  Incorrect "third-party" designation. (Should be "GM T-")
 	// - "G-":  Incorrect "first-party JP" designation. (Should be "GM G-")
 	// - "HPC-": (Some) Sega Pico titles
@@ -1358,7 +1359,7 @@ int MegaDrive::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) 
 	switch (be16_to_cpu(rom_type)) {
 		case 'GM': case 'G ': case 'G-': case 'AI':
 		case 'BR': case 'OS':
-		case 'SP': case 'MK': case 'T-':
+		case 'SP': case 'MK': case 'mk': case 'T-':
 		case 'HP': case 'MP':
 			break;
 		default:
