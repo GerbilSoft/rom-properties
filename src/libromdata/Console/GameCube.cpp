@@ -2097,10 +2097,12 @@ int GameCube::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) c
 	}
 
 	// Check for known unusable game IDs.
-	// - RELSAB: Generic ID used for prototypes and Wii update partitions.
+	// - RELSAB: Generic ID used for GCN prototypes and Wii update partitions.
+	// - RABAxx: Generic ID used for Wii prototypes and devkit updaters.
 	// - _INSZZ: Channel partition.
 	if (d->discHeader.id4[0] == '_' ||
-	    !memcmp(d->discHeader.id6, "RELSAB", 6))
+	    !memcmp(d->discHeader.id6, "RELSAB", 6) ||
+	    !memcmp(d->discHeader.id4, "RABA", 4))
 	{
 		// Cannot download images for this game ID.
 		return -ENOENT;
