@@ -1346,6 +1346,10 @@ int MegaDrive::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) 
 	// - "mk ": Lowercase "MK", used by "Senjou no Ookami II ~ Mercs (World)".
 	// - "T-":  Incorrect "third-party" designation. (Should be "GM T-")
 	// - "G-":  Incorrect "first-party JP" designation. (Should be "GM G-")
+	// - "TECTOY ": Used by TecToy titles.
+	// - "SF-": Some unlicensed titles.
+	// - "JN-": Some unlicensed titles.
+	// - "LGM-": Some unlicensed titles.
 	// - "HPC-": (Some) Sega Pico titles
 	// - "MPR-": (Some) Sega Pico titles
 	// - TODO: Others?
@@ -1361,13 +1365,15 @@ int MegaDrive::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) 
 		default:
 			// Check for some exceptions:
 			// - "T-": Incorrectly used by some games.
+			// - "TECTOY": Used by TecToy titles.
 			// - "HPC-": Used by some Pico titles.
 			// - "MPR-": Used by some Pico titles.
 			if (rom_type == cpu_to_be16('T-') ||
 			    rom_type == cpu_to_be16('G-') ||
 			    !memcmp(romHeader->serial, "LGM-", 4) ||
 			    !memcmp(romHeader->serial, "HPC-", 4) ||
-			    !memcmp(romHeader->serial, "MPR-", 4))
+			    !memcmp(romHeader->serial, "MPR-", 4) ||
+			    !memcmp(romHeader->serial, "TECTOY ", 7))
 			{
 				// Found an exception.
 				break;
@@ -1382,6 +1388,8 @@ int MegaDrive::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) 
 		case 'GM': case 'G ': case 'G-': case 'AI':
 		case 'BR': case 'OS':
 		case 'SP': case 'MK': case 'mk': case 'T-':
+		case 'TE':	// "TECTOY " [NOTE: Separate commits for this vs. Game Toshokan]
+		case 'SF': case 'JN': case 'LG':
 		case 'HP': case 'MP':
 			break;
 		default:
