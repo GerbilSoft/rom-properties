@@ -27,6 +27,9 @@ using LibRpFile::IRpFile;
 using std::string;
 using std::vector;
 
+// zlib for crc32()
+#include <zlib.h>
+
 namespace LibRomData {
 
 ROMDATA_IMPL(MegaDrive)
@@ -167,6 +170,7 @@ class MegaDrivePrivate final : public RomDataPrivate
 		// NOTE: Must be byteswapped on access.
 		M68K_VectorTable vectors;	// Interrupt vectors.
 		MD_RomHeader romHeader;		// ROM header.
+		uint32_t gt_crc;		// Game Toshokan: CRC32 of $20000-$200FF.
 
 		// Extra headers.
 		SMD_Header *pSmdHeader;		// SMD header.
@@ -200,6 +204,7 @@ MegaDrivePrivate::MegaDrivePrivate(MegaDrive *q, IRpFile *file)
 	: super(q, file)
 	, romType(ROM_UNKNOWN)
 	, md_region(0)
+	, gt_crc(0)
 	, pSmdHeader(nullptr)
 	, pRomHeaderLockOn(nullptr)
 {
@@ -740,10 +745,26 @@ MegaDrive::MegaDrive(IRpFile *file)
 		d->mimeType = d->mimeType_tbl[sysID];
 	}
 
-	// If this is S&K, try reading the locked-on ROM header.
+	// Special ROM checks. (MD only for now)
+	if (sysID != MegaDrivePrivate::ROM_SYSTEM_MD)
+		return;
+
 	const int64_t fileSize = d->file->size();
-	if (sysID == MegaDrivePrivate::ROM_SYSTEM_MD && fileSize >= ((2*1024*1024)+512) &&
-	    !memcmp(d->romHeader.serial, "GM MK-1563 -00", sizeof(d->romHeader.serial)))
+
+	// Check for Game Toshokan with a downloaded game.
+	if (fileSize == 256*1024 &&
+	    !memcmp(d->romHeader.serial, "GM 00054503-00", 14) &&
+	    (d->romType & MegaDrivePrivate::ROM_FORMAT_MASK) == MegaDrivePrivate::ROM_FORMAT_CART_BIN)
+	{
+		// Calculate the CRC32 of $20000-$200FF.
+		// TODO: SMD deinterleaving.
+		uint8_t buf[256];
+		d->file->seekAndRead(0x20000, buf, sizeof(buf));
+		d->gt_crc = crc32(0, buf, sizeof(buf));
+	}
+	// If this is S&K, try reading the locked-on ROM header.
+	else if (fileSize >= ((2*1024*1024)+512) &&
+	         !memcmp(d->romHeader.serial, "GM MK-1563 -00", sizeof(d->romHeader.serial)))
 	{
 		// Check if a locked-on ROM is present.
 		if ((d->romType & MegaDrivePrivate::ROM_FORMAT_MASK) == MegaDrivePrivate::ROM_FORMAT_CART_SMD) {
@@ -1344,6 +1365,7 @@ int MegaDrive::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) 
 			// - "MPR-": Used by some Pico titles.
 			if (rom_type == cpu_to_be16('T-') ||
 			    rom_type == cpu_to_be16('G-') ||
+			    !memcmp(romHeader->serial, "LGM-", 4) ||
 			    !memcmp(romHeader->serial, "HPC-", 4) ||
 			    !memcmp(romHeader->serial, "MPR-", 4))
 			{
@@ -1428,13 +1450,19 @@ int MegaDrive::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) 
 		gameID += "-WM";
 	}
 
-	// Special handling for SegaNet ROMs, which all have the same
-	// serial number but different checksums.
-	// TODO: Do this for e.g. Sonic prototypes?
-	if (!memcmp(romHeader->serial, "GM 00054503-00", 14)) {
-		char buf[8];
-		snprintf(buf, sizeof(buf), "-%04X", be16_to_cpu(romHeader->checksum));
-		gameID += buf;
+	// Special handling for Game Toshokan ROMs, which have a 128 KB Boot ROM
+	// and 128 KB RAM for downloaded games.
+	// NOTE: No-Intro has two sets:
+	// - "Game no Kanzume Otokuyou": Boot ROM + game data (found on compilation discs)
+	// - "SegaNet": Same, but most of these have had their checksums updated for the full 256 KB.
+	if (d->gt_crc != 0) {
+		// Use the CRC32 of $20000-$200FF as the filename with the GT "region".
+		region_code[0] = 'G';
+		region_code[1] = 'T';
+		region_code[2] = '\0';
+		char buf[16];
+		snprintf(buf, sizeof(buf), "%08X", d->gt_crc);
+		gameID = buf;
 	}
 
 	// NOTE: We only have one size for MegaDrive right now.
