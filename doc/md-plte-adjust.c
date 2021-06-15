@@ -154,6 +154,13 @@ int main(int argc, char *argv[])
 
 	// Read the PLTE header. (Must be the first chunk after IHDR.)
 	size = fread(&buf.plte, 1, sizeof(buf.plte), f_png);
+	if (size == sizeof(buf.plte) && !memcmp(buf.plte.magic, "acTL", 4)) {
+		// acTL. This is an APNG.
+		// PLTE should be immediately after it.
+		// FIXME: First color seems to be unused and has low bits set...
+		fseek(f_png, 8+4, SEEK_CUR);
+		size = fread(&buf.plte, 1, sizeof(buf.plte), f_png);
+	}
 	if (size != sizeof(buf.plte) || memcmp(buf.plte.magic, "PLTE", 4) != 0) {
 		fclose(f_png);
 		fprintf(stderr, "*** ERROR reading PNG file '%s': PLTE chunk is invalid or missing.\n",
