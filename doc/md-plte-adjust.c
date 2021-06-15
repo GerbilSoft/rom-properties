@@ -13,6 +13,9 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+// Example bash command:
+// for FILE in *.png; do if [ ! -L "${FILE}" ]; then ./md-plte-adjust "${FILE}"; fi; done
+
 #include <arpa/inet.h>
 #include <errno.h>
 #include <stdio.h>
