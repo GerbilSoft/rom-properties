@@ -51,6 +51,17 @@ typedef struct _M68K_VectorTable {
 ASSERT_STRUCT(M68K_VectorTable, 64*sizeof(uint32_t));
 
 /**
+ * ROM/RAM address information sub-struct.
+ */
+typedef struct _MD_RomRamInfo {
+	uint32_t rom_start;	// [0x1A0]
+	uint32_t rom_end;	// [0x1A4]
+	uint32_t ram_start;	// [0x1A8]
+	uint32_t ram_end;	// [0x1AC]
+} MD_RomRamInfo;
+ASSERT_STRUCT(MD_RomRamInfo, 4*sizeof(uint32_t));
+
+/**
  * Mega Drive ROM header.
  * This matches the MD ROM header format exactly.
  *
@@ -65,17 +76,27 @@ typedef struct _MD_RomHeader {
 	// since the header is located at 0x100.
 	char system[16];		// [0x100] System ID
 	char copyright[16];		// [0x110] Copyright
-	char title_domestic[48];	// [0x120] Japanese ROM name
-	char title_export[48];		// [0x150] US/Europe ROM name
-	char serial[14];		// [0x180] Serial number
-	uint16_t checksum;		// [0x18E] Checksum (excluding vector table and header)
-	char io_support[16];		// [0x190] Supported I/O devices
-
-	// ROM/RAM address information.
-	uint32_t rom_start;		// [0x1A0]
-	uint32_t rom_end;		// [0x1A4]
-	uint32_t ram_start;		// [0x1A8]
-	uint32_t ram_end;		// [0x1AC]
+	union {
+		struct {
+			char title_domestic[48];// [0x120] Japanese ROM name
+			char title_export[48];	// [0x150] US/European ROM name
+			char serial_number[14];	// [0x180] Serial number
+			uint16_t checksum;	// [0x18E] Checksum (excluding vector table and header)
+			char io_support[16];	// [0x190] Supported I/O devices
+			MD_RomRamInfo rom_ram;	// [0x1A0] ROM/RAM address information
+		};
+		struct {
+			char title_domestic[32];// [0x120] Japanese ROM name
+			char title_export[32];	// [0x140] US/European ROM name
+			char serial_number[14];	// [0x160] Serial number
+			uint16_t checksum;	// [0x16E] Checksum (excluding vector table and header)
+			char io_support[16];	// [0x170] Supported I/O devices
+			MD_RomRamInfo rom_ram;	// [0x180] ROM/RAM address information
+			// TODO: Does the early format have SRAM information
+			// at 0x190 or 0x1B0?
+			uint8_t reserved[0x20];	// [0x190]
+		} early;
+	};
 
 	// Save RAM information.
 	// Info format: 'R', 'A', %1x1yz000, 0x20
