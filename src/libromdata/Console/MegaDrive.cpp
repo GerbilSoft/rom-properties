@@ -28,6 +28,7 @@ using std::string;
 using std::vector;
 
 // zlib for crc32()
+// TODO: DelayLoad [also need to add DelayLoad to Nintendo3DS, Nintendo3DSFirm, and KeyStoreUI]
 #include <zlib.h>
 
 namespace LibRomData {
@@ -142,6 +143,13 @@ class MegaDrivePrivate final : public RomDataPrivate
 		static uint32_t parseRegionCodes(const MD_RomHeader *pRomHeader);
 
 	public:
+		/**
+		 * Determine if a ROM header is using the 'early' format.
+		 * @param pRomHeader ROM header.
+		 * @return True if 'early'; false if standard.
+		 */
+		static bool checkIfEarlyRomHeader(const MD_RomHeader *pRomHeader);
+
 		/**
 		 * Add fields for the ROM header.
 		 *
@@ -294,6 +302,29 @@ uint32_t MegaDrivePrivate::parseRegionCodes(const MD_RomHeader *pRomHeader)
 }
 
 /**
+ * Determine if a ROM header is using the 'early' format.
+ * @param pRomHeader ROM header.
+ * @return True if 'early'; false if standard.
+ */
+bool MegaDrivePrivate::checkIfEarlyRomHeader(const MD_RomHeader *pRomHeader)
+{
+	// Check if the serial number is empty.
+	switch (pRomHeader->serial_number[0]) {
+		case ' ':
+		case '\0':
+			// Empty serial number.
+			break;
+		default:
+			// Not an empty serial number.
+			return false;
+	}
+
+	// Is a valid 'GM' serial number present at the 'early' header location?
+	// If so, we'll assume this is an early ROM header.
+	return !memcmp(pRomHeader->early.serial_number, "GM", 2);
+}
+
+/**
  * Add fields for the ROM header.
  *
  * This function will not create a new tab.
@@ -305,6 +336,8 @@ uint32_t MegaDrivePrivate::parseRegionCodes(const MD_RomHeader *pRomHeader)
  */
 void MegaDrivePrivate::addFields_romHeader(const MD_RomHeader *pRomHeader, bool bRedetectRegion)
 {
+	const bool isEarlyRomHeader = checkIfEarlyRomHeader(pRomHeader);
+
 	// Read the strings from the header.
 	fields->addField_string(C_("MegaDrive", "System"),
 		cp1252_sjis_to_utf8(pRomHeader->system, sizeof(pRomHeader->system)),
@@ -316,21 +349,45 @@ void MegaDrivePrivate::addFields_romHeader(const MD_RomHeader *pRomHeader, bool 
 	// Publisher
 	fields->addField_string(C_("RomData", "Publisher"), getPublisher(pRomHeader));
 
+	// Some fields vary depending on if this is a standard ROM header
+	// or an 'early' ROM header.
+	const char *s_title_domestic, *s_title_export;
+	const char *s_serial_number, *s_io_support;
+	const MD_RomRamInfo *pRomRam;
+	int title_len;
+	uint16_t checksum;
+	if (!isEarlyRomHeader) {
+		// Standard ROM header.
+		s_title_domestic = pRomHeader->title_domestic;
+		s_title_export = pRomHeader->title_export;
+		s_serial_number = pRomHeader->serial_number;
+		s_io_support = pRomHeader->io_support;
+		pRomRam = &pRomHeader->rom_ram;
+		title_len = sizeof(pRomHeader->title_domestic);
+		checksum = be16_to_cpu(pRomHeader->checksum);
+	} else {
+		// 'Early' ROM header.
+		s_title_domestic = pRomHeader->early.title_domestic;
+		s_title_export = pRomHeader->early.title_export;
+		s_serial_number = pRomHeader->early.serial_number;
+		s_io_support = pRomHeader->early.io_support;
+		pRomRam = &pRomHeader->early.rom_ram;
+		title_len = sizeof(pRomHeader->early.title_domestic);
+		checksum = be16_to_cpu(pRomHeader->early.checksum);
+	}
+
 	// Titles, serial number, and checksum.
 	fields->addField_string(C_("MegaDrive", "Domestic Title"),
-		cp1252_sjis_to_utf8(pRomHeader->title_domestic, sizeof(pRomHeader->title_domestic)),
-			RomFields::STRF_TRIM_END);
+		cp1252_sjis_to_utf8(s_title_domestic, title_len), RomFields::STRF_TRIM_END);
 	fields->addField_string(C_("MegaDrive", "Export Title"),
-		cp1252_sjis_to_utf8(pRomHeader->title_export, sizeof(pRomHeader->title_export)),
-			RomFields::STRF_TRIM_END);
+		cp1252_sjis_to_utf8(s_title_export, title_len), RomFields::STRF_TRIM_END);
 	fields->addField_string(C_("MegaDrive", "Serial Number"),
-		cp1252_sjis_to_utf8(pRomHeader->serial, sizeof(pRomHeader->serial)),
+		cp1252_sjis_to_utf8(s_serial_number, sizeof(pRomHeader->serial_number)),
 			RomFields::STRF_TRIM_END);
 	if (!isDisc()) {
 		// Checksum. (MD only; not valid for Mega CD.)
 		fields->addField_string_numeric(C_("RomData", "Checksum"),
-			be16_to_cpu(pRomHeader->checksum), RomFields::Base::Hex, 4,
-			RomFields::STRF_MONOSPACE);
+			checksum, RomFields::Base::Hex, 4, RomFields::STRF_MONOSPACE);
 	}
 
 	// I/O support bitfield.
@@ -356,7 +413,7 @@ void MegaDrivePrivate::addFields_romHeader(const MD_RomHeader *pRomHeader, bool 
 	};
 	// NOTE: Using a plain text field because most games only support
 	// one or two devices, so we don't need to list them all.
-	uint32_t io_support = parseIOSupport(pRomHeader->io_support, sizeof(pRomHeader->io_support));
+	uint32_t io_support = parseIOSupport(s_io_support, sizeof(pRomHeader->io_support));
 	string s_io_devices;
 	s_io_devices.reserve(32);
 	uint32_t bit = 1;
@@ -377,14 +434,14 @@ void MegaDrivePrivate::addFields_romHeader(const MD_RomHeader *pRomHeader, bool 
 	if (!isDisc()) {
 		// ROM range.
 		fields->addField_string_address_range(C_("MegaDrive", "ROM Range"),
-				be32_to_cpu(pRomHeader->rom_start),
-				be32_to_cpu(pRomHeader->rom_end), 8,
+				be32_to_cpu(pRomRam->rom_start),
+				be32_to_cpu(pRomRam->rom_end), 8,
 				RomFields::STRF_MONOSPACE);
 
 		// RAM range.
 		fields->addField_string_address_range(C_("MegaDrive", "RAM Range"),
-				be32_to_cpu(pRomHeader->ram_start),
-				be32_to_cpu(pRomHeader->ram_end), 8,
+				be32_to_cpu(pRomRam->ram_start),
+				be32_to_cpu(pRomRam->ram_end), 8,
 				RomFields::STRF_MONOSPACE);
 
 		// Check for external memory.
@@ -749,11 +806,15 @@ MegaDrive::MegaDrive(IRpFile *file)
 	if (sysID != MegaDrivePrivate::ROM_SYSTEM_MD)
 		return;
 
+	const bool isEarlyRomHeader = d->checkIfEarlyRomHeader(&d->romHeader);
 	const int64_t fileSize = d->file->size();
+	const char *const s_serial_number = (isEarlyRomHeader
+		? d->romHeader.early.serial_number
+		: d->romHeader.serial_number);
 
 	// Check for Game Toshokan with a downloaded game.
 	if (fileSize == 256*1024 &&
-	    !memcmp(d->romHeader.serial, "GM 00054503-00", 14) &&
+	    !memcmp(s_serial_number, "GM 00054503-00", sizeof(d->romHeader.serial_number)) &&
 	    (d->romType & MegaDrivePrivate::ROM_FORMAT_MASK) == MegaDrivePrivate::ROM_FORMAT_CART_BIN)
 	{
 		// Calculate the CRC32 of $20000-$200FF.
@@ -764,7 +825,7 @@ MegaDrive::MegaDrive(IRpFile *file)
 	}
 	// If this is S&K, try reading the locked-on ROM header.
 	else if (fileSize >= ((2*1024*1024)+512) &&
-	         !memcmp(d->romHeader.serial, "GM MK-1563 -00", sizeof(d->romHeader.serial)))
+	         !memcmp(s_serial_number, "GM MK-1563 -00", sizeof(d->romHeader.serial_number)))
 	{
 		// Check if a locked-on ROM is present.
 		if ((d->romType & MegaDrivePrivate::ROM_FORMAT_MASK) == MegaDrivePrivate::ROM_FORMAT_CART_SMD) {
@@ -1330,9 +1391,14 @@ int MegaDrive::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) 
 
 	// If this is S&K plus a locked-on ROM, use the
 	// locked-on ROM's serial number with region "S&K".
-	const MD_RomHeader *const romHeader = (d->pRomHeaderLockOn != nullptr
+	const MD_RomHeader *const pRomHeader = (d->pRomHeaderLockOn != nullptr
 						? d->pRomHeaderLockOn
 						: &d->romHeader);
+
+	const bool isEarlyRomHeader = d->checkIfEarlyRomHeader(pRomHeader);
+	const char *const s_serial_number = (isEarlyRomHeader
+		? pRomHeader->early.serial_number
+		: pRomHeader->serial_number);
 
 	// Make sure the ROM serial number is valid.
 	// It should start with one of the following:
@@ -1354,9 +1420,9 @@ int MegaDrive::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) 
 	// - "MPR-": (Some) Sega Pico titles
 	// - TODO: Others?
 	uint16_t rom_type;
-	memcpy(&rom_type, romHeader->serial, sizeof(rom_type));
+	memcpy(&rom_type, s_serial_number, sizeof(rom_type));
 	// Verify the separator.
-	switch (romHeader->serial[2]) {
+	switch (s_serial_number[2]) {
 		case ' ': case '_': case '-': case 'T':
 			// ' ' is the normal version.
 			// '_' and '-' are used incorrectly by some ROMs.
@@ -1370,10 +1436,10 @@ int MegaDrive::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) 
 			// - "MPR-": Used by some Pico titles.
 			if (rom_type == cpu_to_be16('T-') ||
 			    rom_type == cpu_to_be16('G-') ||
-			    !memcmp(romHeader->serial, "LGM-", 4) ||
-			    !memcmp(romHeader->serial, "HPC-", 4) ||
-			    !memcmp(romHeader->serial, "MPR-", 4) ||
-			    !memcmp(romHeader->serial, "TECTOY ", 7))
+			    !memcmp(s_serial_number, "LGM-", 4) ||
+			    !memcmp(s_serial_number, "HPC-", 4) ||
+			    !memcmp(s_serial_number, "MPR-", 4) ||
+			    !memcmp(s_serial_number, "TECTOY ", 7))
 			{
 				// Found an exception.
 				break;
@@ -1412,15 +1478,15 @@ int MegaDrive::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) 
 
 		// If the serial number doesn't match, then use a
 		// generic "NO WAY!" screen.
-		if (!memcmp(&romHeader->serial[3], "00001009-00", 11) ||
-		    !memcmp(&romHeader->serial[3], "00004049-01", 11) ||
-		    !memcmp(&romHeader->serial[3], "00001051-00", 11) ||
-		    !memcmp(&romHeader->serial[3], "00001051-01", 11) ||
-		    !memcmp(&romHeader->serial[3], "00001051-02", 11) ||
-		    !memcmp(&romHeader->serial[3], "MK-1079 -00", 11))
+		if (!memcmp(&s_serial_number[3], "00001009-00", 11) ||
+		    !memcmp(&s_serial_number[3], "00004049-01", 11) ||
+		    !memcmp(&s_serial_number[3], "00001051-00", 11) ||
+		    !memcmp(&s_serial_number[3], "00001051-01", 11) ||
+		    !memcmp(&s_serial_number[3], "00001051-02", 11) ||
+		    !memcmp(&s_serial_number[3], "MK-1079 -00", 11))
 		{
 			// Unique title screen is available.
-			gameID = latin1_to_utf8(romHeader->serial, sizeof(romHeader->serial));
+			gameID = latin1_to_utf8(s_serial_number, sizeof(pRomHeader->serial_number));
 		} else {
 			// Generic title screen only.
 			// TODO: If the locked-on ROM is >2 MB, show S&K?
@@ -1436,7 +1502,7 @@ int MegaDrive::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) 
 		region_code[1] = '\0';
 
 		// Get the serial number and trim it.
-		gameID = latin1_to_utf8(romHeader->serial, sizeof(romHeader->serial));
+		gameID = latin1_to_utf8(s_serial_number, sizeof(pRomHeader->serial_number));
 		while (!gameID.empty()) {
 			size_t size = gameID.size();
 			if (gameID[size-1] != ' ')
@@ -1452,8 +1518,8 @@ int MegaDrive::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) 
 	// Special handling for Wonder Mega 1.00 boot ROMs, since they
 	// have the same serial number as the matching Mega CD.
 	if (rom_type == cpu_to_be16('BR') &&
-	    romHeader->title_domestic[0] == 'W' &&
-	    romHeader->title_domestic[6] == '-')
+	    pRomHeader->title_domestic[0] == 'W' &&
+	    pRomHeader->title_domestic[6] == '-')
 	{
 		gameID += "-WM";
 	}
@@ -1531,7 +1597,11 @@ int MegaDrive::checkViewedAchievements(void) const
 
 	if (d->pRomHeaderLockOn) {
 		// Is it S&K locked on to S&K?
-		if (!memcmp(d->pRomHeaderLockOn->serial, "GM MK-1563 -00", sizeof(d->pRomHeaderLockOn->serial))) {
+		// NOTE: S&K always has a standard serial number,
+		// so we don't have to call checkIfEarlyRomHeader().
+		if (!memcmp(d->pRomHeaderLockOn->serial_number, "GM MK-1563 -00",
+		            sizeof(d->pRomHeaderLockOn->serial_number)))
+		{
 			// It is!
 			pAch->unlock(Achievements::ID::ViewedMegaDriveSKwithSK);
 			ret++;
