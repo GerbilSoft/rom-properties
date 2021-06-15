@@ -205,14 +205,23 @@ int main(int argc, char *argv[])
 	// - Image was *not* taken using the "raw" palette.
 	// - Image is from a 32X game.
 	for (i = 0; i < palette_len; i += 3) {
-		if ((p_pal_data[i+0] & 0x1F) ||
-		    (p_pal_data[i+1] & 0x1F) ||
-		    (p_pal_data[i+2] & 0x1F))
-		{
-			fclose(f_png);
-			fprintf(stderr, "*** ERROR updating PNG file '%s': Palette index %u has low RGB bits set.\n",
-				png_filename, i / 3);
-			return EXIT_FAILURE;
+		uint8_t r, g, b;
+		r = p_pal_data[i+0];
+		g = p_pal_data[i+1];
+		b = p_pal_data[i+2];
+		if ((r & 0x1F) || (g & 0x1F) || (b & 0x1F)) {
+			// Low bit is set.
+			// NOTE: Last palette index might be RGB(255,255,255) for some reason,
+			// even though it's not used. (not full optimization)
+			if ((i + 3) == palette_len && (r == 0xFF) && (g == 0xFF) && (b == 0xFF)) {
+				// We'll allow it.
+			} else {
+				// Low bits are set...
+				fclose(f_png);
+				fprintf(stderr, "*** ERROR updating PNG file '%s': Palette index %u has low RGB bits set.\n",
+					png_filename, i / 3);
+				return EXIT_FAILURE;
+			}
 		}
 
 		p_pal_data[i+0] = vdp_colors[p_pal_data[i+0] >> 5];
