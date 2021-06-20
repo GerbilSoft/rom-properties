@@ -1419,8 +1419,9 @@ int MegaDrive::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) 
 	// - "JN-": Some unlicensed titles.
 	// - "LGM-": Some unlicensed titles.
 	// - "HPC-": (Some) Sega Pico titles.
-	// - "MPR-": (Some) Sega Pico titles.
-	// - "837-": (Some) Samsung Pico titles.
+	// - "MPR-": (Some) Sega Pico titles. (BR)
+	// - "837-": (Some) Samsung Pico titles. (KR)
+	// - "610-": (Some) Sega Pico titles. (JP)
 	// - TODO: Others?
 	uint16_t rom_type;
 	memcpy(&rom_type, s_serial_number, sizeof(rom_type));
@@ -1443,6 +1444,7 @@ int MegaDrive::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) 
 			    !memcmp(s_serial_number, "HPC-", 4) ||
 			    !memcmp(s_serial_number, "MPR-", 4) ||
 			    !memcmp(s_serial_number, "837-", 4) ||
+			    !memcmp(s_serial_number, "610-", 4) ||
 			    !memcmp(s_serial_number, "TECTOY ", 7))
 			{
 				// Found an exception.
@@ -1460,7 +1462,7 @@ int MegaDrive::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) 
 		case 'SP': case 'MK': case 'mk': case 'T-':
 		case 'TE':	// "TECTOY "
 		case 'SF': case 'JN': case 'LG':
-		case 'HP': case 'MP': case '83':
+		case 'HP': case 'MP': case '61': case '83':
 			break;
 		default:
 			// Not a valid ROM type.
