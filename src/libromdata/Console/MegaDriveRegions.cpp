@@ -55,7 +55,18 @@ unsigned int MegaDriveRegions::parseRegionCodes(const char *region_codes, int si
 			ret = MD_REGION_JAPAN | MD_REGION_ASIA |
 			      MD_REGION_USA | MD_REGION_EUROPE;
 		}
-	} else if (region_codes[0] < 16) {
+	}
+	else if ((region_codes[0] == '8' || region_codes[0] == 'E') &&
+	         (region_codes[2] == 0 || ISSPACE(region_codes[2])))
+	{
+		// Some Pico games have unusual European region codes,
+		// e.g. '8F' or 'EF' for France. Handle it here:
+		// - '8F' would be parsed as "no regions".
+		// - 'EF' might be parsed as "all regions" due to 'F'.
+		ret = MD_REGION_EUROPE;
+	}
+	else if (region_codes[0] < 16)
+	{
 		// Hex code not mapped to ASCII.
 		ret = region_codes[0];
 	}

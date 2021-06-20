@@ -924,7 +924,9 @@ int MegaDrive::isRomSupported_static(const DetectInfo *info)
 		{"SEGA PICO       ", 16, 15, MegaDrivePrivate::ROM_SYSTEM_PICO},
 		{"SAMSUNG PICO    ", 16, 15, MegaDrivePrivate::ROM_SYSTEM_PICO},	// TODO: Indicate Korean.
 		{"SEGATOYS PICO   ", 16, 15, MegaDrivePrivate::ROM_SYSTEM_PICO},	// Late 90s
+		{"SEGA TOYS PICO  ", 16, 15, MegaDrivePrivate::ROM_SYSTEM_PICO},	// Late 90s
 		{"IMA IKUNOUJYUKU ", 16, 15, MegaDrivePrivate::ROM_SYSTEM_PICO},	// Some JP ROMs
+		{"SEGA IAC        ", 16, 15, MegaDrivePrivate::ROM_SYSTEM_PICO},	// Some JP ROMs
 
 		// NOTE: Previously, we were checking for
 		// "SEGA MEGA DRIVE" and "SEGA GENESIS".
@@ -1416,8 +1418,9 @@ int MegaDrive::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) 
 	// - "SF-": Some unlicensed titles.
 	// - "JN-": Some unlicensed titles.
 	// - "LGM-": Some unlicensed titles.
-	// - "HPC-": (Some) Sega Pico titles
-	// - "MPR-": (Some) Sega Pico titles
+	// - "HPC-": (Some) Sega Pico titles.
+	// - "MPR-": (Some) Sega Pico titles.
+	// - "837-": (Some) Samsung Pico titles.
 	// - TODO: Others?
 	uint16_t rom_type;
 	memcpy(&rom_type, s_serial_number, sizeof(rom_type));
@@ -1439,6 +1442,7 @@ int MegaDrive::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) 
 			    !memcmp(s_serial_number, "LGM-", 4) ||
 			    !memcmp(s_serial_number, "HPC-", 4) ||
 			    !memcmp(s_serial_number, "MPR-", 4) ||
+			    !memcmp(s_serial_number, "837-", 4) ||
 			    !memcmp(s_serial_number, "TECTOY ", 7))
 			{
 				// Found an exception.
@@ -1454,9 +1458,9 @@ int MegaDrive::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) 
 		case 'GM': case 'G ': case 'G-': case 'AI':
 		case 'BR': case 'OS':
 		case 'SP': case 'MK': case 'mk': case 'T-':
-		case 'TE':	// "TECTOY " [NOTE: Separate commits for this vs. Game Toshokan]
+		case 'TE':	// "TECTOY "
 		case 'SF': case 'JN': case 'LG':
-		case 'HP': case 'MP':
+		case 'HP': case 'MP': case '83':
 			break;
 		default:
 			// Not a valid ROM type.
