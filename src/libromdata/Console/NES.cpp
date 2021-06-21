@@ -243,14 +243,25 @@ int NESPrivate::loadInternalFooter(void)
 	for (unsigned int i = 0; i < static_cast<unsigned int>(sizeof(footer.name)); i++) {
 		uint8_t chr = static_cast<uint8_t>(footer.name[i]);
 
-		// Skip leading 0xFF.
-		if (chr == 0xFFU) {
-			if (foundNonFF) {
-				// Cannot have 0xFF here.
-				foundInvalid = true;
+		// Skip leading NULL and 0xFF.
+		// End at trailing NULL and 0xFF.
+		// TODO:
+		// - Adventures of Gilligan's Island, The (USA): Valid header; name is all 0x20.
+		// - Akagawa Jirou no Yuurei Ressha (Japan): Name may have Shift-JIS.
+		if (chr == 0U || chr == 0xFFU) {
+			if (!foundNonFF) {
+				// Leading 0xFF. Skip it.
+				continue;
+			} else {
+				// Trailing 0xFF. End of string.
+				if (i == 0) {
+					// Shouldn't happen...
+					foundInvalid = true;
+					break;
+				}
+				lastValidChar = i - 1;
 				break;
 			}
-			continue;
 		}
 		// Also skip leading spaces.
 		if (!foundNonFF && chr == ' ') {
