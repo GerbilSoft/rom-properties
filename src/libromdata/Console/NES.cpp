@@ -84,7 +84,7 @@ class NESPrivate final : public RomDataPrivate
 		NES_IntFooter footer;
 		bool hasCheckedIntFooter;	// True if we already checked.
 		uint8_t intFooterErrno;		// If checked: 0 if valid, positive errno on error.
-		uint8_t firstNonFF;		// First non-FF character in the name.
+		string s_footerName;		// Name from the footer.
 
 		/**
 		 * Convert an FDS BCD datestamp to Unix time.
@@ -116,7 +116,6 @@ NESPrivate::NESPrivate(NES *q, IRpFile *file)
 	, romType(ROM_UNKNOWN)
 	, hasCheckedIntFooter(false)
 	, intFooterErrno(255)
-	, firstNonFF(sizeof(footer.name))
 {
 	// Clear the ROM header structs.
 	memset(&header, 0, sizeof(header));
@@ -238,6 +237,7 @@ int NESPrivate::loadInternalFooter(void)
 
 	// Check if the name looks right.
 	unsigned int firstNonFF = static_cast<unsigned int>(sizeof(footer.name));
+	unsigned int lastValidChar = static_cast<unsigned int>(sizeof(footer.name)) - 1;
 	bool foundNonFF = false;
 	bool foundInvalid = false;
 	for (unsigned int i = 0; i < static_cast<unsigned int>(sizeof(footer.name)); i++) {
@@ -268,10 +268,13 @@ int NESPrivate::loadInternalFooter(void)
 		}
 	}
 
-	if (!foundInvalid && firstNonFF < static_cast<unsigned int>(sizeof(footer.name))) {
+	if (!foundInvalid &&
+	    firstNonFF < static_cast<unsigned int>(sizeof(footer.name)) &&
+	    lastValidChar > firstNonFF && lastValidChar < static_cast<unsigned int>(sizeof(footer.name)))
+	{
 		// Name looks valid.
+		s_footerName = latin1_to_utf8(&footer.name[firstNonFF], lastValidChar - firstNonFF + 1);
 		intFooterErrno = 0;
-		this->firstNonFF = static_cast<uint8_t>(firstNonFF);
 	} else {
 		// Does not appear to be a valid footer.
 		intFooterErrno = ENOENT;
@@ -1216,11 +1219,9 @@ int NES::loadFieldData(void)
 			const NES_IntFooter &footer = d->footer;
 
 			// Internal name (Assuming ASCII)
-			if (d->firstNonFF < static_cast<unsigned int>(sizeof(footer.name))) {
+			if (!d->s_footerName.empty()) {
 				d->fields->addField_string(C_("NES", "Internal Name"),
-					latin1_to_utf8(&footer.name[d->firstNonFF],
-						       sizeof(footer.name) - d->firstNonFF),
-					RomFields::STRF_TRIM_END);
+					d->s_footerName, RomFields::STRF_TRIM_END);
 			}
 
 			// PRG checksum
