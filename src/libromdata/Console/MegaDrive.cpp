@@ -926,6 +926,7 @@ int MegaDrive::isRomSupported_static(const DetectInfo *info)
 		{"SEGATOYS PICO   ", 16, 15, MegaDrivePrivate::ROM_SYSTEM_PICO},	// Late 90s
 		{"SEGA TOYS PICO  ", 16, 15, MegaDrivePrivate::ROM_SYSTEM_PICO},	// Late 90s
 		{"IMA IKUNOUJYUKU ", 16, 15, MegaDrivePrivate::ROM_SYSTEM_PICO},	// Some JP ROMs
+		{"IMA IKUNOJYUKU  ", 16, 15, MegaDrivePrivate::ROM_SYSTEM_PICO},	// Some JP ROMs
 		{"SEGA IAC        ", 16, 15, MegaDrivePrivate::ROM_SYSTEM_PICO},	// Some JP ROMs
 
 		// NOTE: Previously, we were checking for
