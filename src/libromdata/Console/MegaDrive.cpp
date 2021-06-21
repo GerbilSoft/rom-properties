@@ -896,44 +896,49 @@ int MegaDrive::isRomSupported_static(const DetectInfo *info)
 	// ROM header.
 	const uint8_t *const pHeader = info->header.pData;
 
-	// Magic strings.
-	static const char sega_magic[4+1] = "SEGA";
-	static const char segacd_magic[16+1] = "SEGADISCSYSTEM  ";
+	// Magic strings. (NOTE: **NOT** NULL-terminated!)
+	static const char sega_magic[4] = {'S','E','G','A'};
+	static const char segacd_magic[16] = {'S','E','G','A','D','I','S','C','S','Y','S','T','E','M',' ',' '};
 
 	// Extra system types from:
 	// - https://www.plutiedev.com/rom-header#system
 	// NOTE: Doom 32X incorrectly has the region code at the end of the
 	// system name field, so ignore the last two bytes for 32X.
 	static const struct {
-		const char sys_name[20];
-		uint8_t sys_name_len_100h;	// Length to check at $100
-		uint8_t sys_name_len_101h;	// Length to check at $101
+		char sys_name[12+1];
+		uint8_t sys_name_len;	// Length to check at $100; for $101, subtract 1.
 		uint32_t system_id;
-	} cart_magic[] = {
-		{"SEGA 32X      ",   14, 13, MegaDrivePrivate::ROM_SYSTEM_32X},
-		{"SEGA SSF        ", 16, 15, MegaDrivePrivate::ROM_SYSTEM_MD |
-		                             MegaDrivePrivate::ROM_EXT_SSF2},
-		{"SEGA EVERDRIVE  ", 16, 15, MegaDrivePrivate::ROM_SYSTEM_MD |
-		                             MegaDrivePrivate::ROM_EXT_EVERDRIVE},
-		{"SEGA MEGAWIFI   ", 16, 15, MegaDrivePrivate::ROM_SYSTEM_MD |
-		                             MegaDrivePrivate::ROM_EXT_MEGAWIFI},
-		{"SEGA TERA68K    ", 16, 15, MegaDrivePrivate::ROM_SYSTEM_TERADRIVE |
-		                             MegaDrivePrivate::ROM_EXT_TERADRIVE_68k},
-		{"SEGA TERA286    ", 16, 15, MegaDrivePrivate::ROM_SYSTEM_TERADRIVE |
-		                             MegaDrivePrivate::ROM_EXT_TERADRIVE_x86},
-		{"SEGA PICO       ", 16, 15, MegaDrivePrivate::ROM_SYSTEM_PICO},
-		{"SAMSUNG PICO    ", 16, 15, MegaDrivePrivate::ROM_SYSTEM_PICO},	// TODO: Indicate Korean.
-		{"SEGATOYS PICO   ", 16, 15, MegaDrivePrivate::ROM_SYSTEM_PICO},	// Late 90s
-		{"SEGA TOYS PICO  ", 16, 15, MegaDrivePrivate::ROM_SYSTEM_PICO},	// Late 90s
-		{"IMA IKUNOUJYUKU ", 16, 15, MegaDrivePrivate::ROM_SYSTEM_PICO},	// Some JP ROMs
-		{"IMA IKUNOJYUKU  ", 16, 15, MegaDrivePrivate::ROM_SYSTEM_PICO},	// Some JP ROMs
-		{"SEGA IAC        ", 16, 15, MegaDrivePrivate::ROM_SYSTEM_PICO},	// Some JP ROMs
+	} cart_magic_sega[] = {
+		{" 32X      ",   10, MegaDrivePrivate::ROM_SYSTEM_32X},
+		{" SSF        ", 12, MegaDrivePrivate::ROM_SYSTEM_MD |
+		                     MegaDrivePrivate::ROM_EXT_SSF2},
+		{" EVERDRIVE  ", 12, MegaDrivePrivate::ROM_SYSTEM_MD |
+		                     MegaDrivePrivate::ROM_EXT_EVERDRIVE},
+		{" MEGAWIFI   ", 12, MegaDrivePrivate::ROM_SYSTEM_MD |
+		                     MegaDrivePrivate::ROM_EXT_MEGAWIFI},
+		{" TERA68K    ", 12, MegaDrivePrivate::ROM_SYSTEM_TERADRIVE |
+		                     MegaDrivePrivate::ROM_EXT_TERADRIVE_68k},
+		{" TERA286    ", 12, MegaDrivePrivate::ROM_SYSTEM_TERADRIVE |
+		                     MegaDrivePrivate::ROM_EXT_TERADRIVE_x86},
+		{" PICO       ", 12, MegaDrivePrivate::ROM_SYSTEM_PICO},
+		{"TOYS PICO   ", 12, MegaDrivePrivate::ROM_SYSTEM_PICO},	// Late 90s
+		{" TOYS PICO  ", 12, MegaDrivePrivate::ROM_SYSTEM_PICO},	// Late 90s
+		{" IAC        ", 12, MegaDrivePrivate::ROM_SYSTEM_PICO},	// Some JP ROMs
 
 		// NOTE: Previously, we were checking for
 		// "SEGA MEGA DRIVE" and "SEGA GENESIS".
 		// For broader compatibility with unlicensed ROMs,
 		// just check for "SEGA". (Required for TMSS.)
-		{"SEGA",              4,  4, MegaDrivePrivate::ROM_SYSTEM_MD},
+		{"SEGA",          4, MegaDrivePrivate::ROM_SYSTEM_MD},
+	};
+
+	// Other non-Sega system IDs. (Sega Pico)
+	static const struct {
+		char sys_name[16];	// NOTE: **NOT** NULL-terminated!
+	} cart_magic_pico[] = {
+		{'S','A','M','S','U','N','G',' ','P','I','C','O',' ',' ',' ',' '},	// TODO: Indicate Korean.
+		{'I','M','A',' ','I','K','U','N','O','U','J','Y','U','K','U',' '},	// Some JP ROMs
+		{'I','M','A',' ','I','K','U','N','O','J','Y','U','K','U',' ',' '},	// Some JP ROMs
 	};
 
 	// Check for Sega CD.
@@ -942,11 +947,11 @@ int MegaDrive::isRomSupported_static(const DetectInfo *info)
 	// right; there should only be 2048 and 2352.
 	// TODO: Detect Sega CD 32X.
 	// TODO: Use a struct instead of raw bytes?
-	if (!memcmp(&pHeader[0x0010], segacd_magic, sizeof(segacd_magic)-1)) {
+	if (!memcmp(&pHeader[0x0010], segacd_magic, sizeof(segacd_magic))) {
 		// Found a Sega CD disc image. (2352-byte sectors)
 		return MegaDrivePrivate::ROM_SYSTEM_MCD |
 		       MegaDrivePrivate::ROM_FORMAT_DISC_2352;
-	} else if (!memcmp(&pHeader[0x0000], segacd_magic, sizeof(segacd_magic)-1)) {
+	} else if (!memcmp(&pHeader[0x0000], segacd_magic, sizeof(segacd_magic))) {
 		// Found a Sega CD disc image. (2048-byte sectors)
 		return MegaDrivePrivate::ROM_SYSTEM_MCD |
 		       MegaDrivePrivate::ROM_FORMAT_DISC_2048;
@@ -976,14 +981,43 @@ int MegaDrive::isRomSupported_static(const DetectInfo *info)
 
 	// Check for other MD-based cartridge formats.
 	int sysId = MegaDrivePrivate::ROM_UNKNOWN;
-	for (int i = 0; i < ARRAY_SIZE(cart_magic); i++) {
-		if (!memcmp(&pHeader[0x100], cart_magic[i].sys_name, cart_magic[i].sys_name_len_100h) ||
-		    !memcmp(&pHeader[0x101], cart_magic[i].sys_name, cart_magic[i].sys_name_len_101h))
-		{
-			// Found a matching system name.
-			sysId = cart_magic[i].system_id;
-			break;
+	if (!memcmp(&pHeader[0x100], sega_magic, sizeof(sega_magic))) {
+		// "SEGA" is at 0x100.
+		for (unsigned int i = 0; i < ARRAY_SIZE(cart_magic_sega); i++) {
+			if (!memcmp(&pHeader[0x104], cart_magic_sega[i].sys_name,
+			                             cart_magic_sega[i].sys_name_len))
+			{
+				// Found a matching system name.
+				sysId = cart_magic_sega[i].system_id;
+				break;
+			}
 		}
+	} else if (!memcmp(&pHeader[0x101], sega_magic, sizeof(sega_magic))) {
+		// "SEGA" is at 0x101.
+		for (unsigned int i = 0; i < ARRAY_SIZE(cart_magic_sega); i++) {
+			if (!memcmp(&pHeader[0x105], cart_magic_sega[i].sys_name,
+			                             cart_magic_sega[i].sys_name_len-1))
+			{
+				// Found a matching system name.
+				sysId = cart_magic_sega[i].system_id;
+				break;
+			}
+		}
+	} else {
+		// Not a "SEGA" cartridge header.
+		// Check for less common Pico ROMs.
+		for (unsigned int i = 0; i < ARRAY_SIZE(cart_magic_pico); i++) {
+			if (!memcmp(&pHeader[0x100], cart_magic_pico[i].sys_name, 16)) {
+				// Found a matching system name.
+				sysId = MegaDrivePrivate::ROM_SYSTEM_PICO;
+				break;
+			}
+		}
+	}
+
+	if (sysId == MegaDrivePrivate::ROM_UNKNOWN) {
+		// Still unknown...
+		return sysId;
 	}
 
 	uint32_t sysIdOnly = (sysId & MegaDrivePrivate::ROM_SYSTEM_MASK);
