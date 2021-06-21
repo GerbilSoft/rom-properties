@@ -924,12 +924,6 @@ int MegaDrive::isRomSupported_static(const DetectInfo *info)
 		{"TOYS PICO   ", 12, MegaDrivePrivate::ROM_SYSTEM_PICO},	// Late 90s
 		{" TOYS PICO  ", 12, MegaDrivePrivate::ROM_SYSTEM_PICO},	// Late 90s
 		{" IAC        ", 12, MegaDrivePrivate::ROM_SYSTEM_PICO},	// Some JP ROMs
-
-		// NOTE: Previously, we were checking for
-		// "SEGA MEGA DRIVE" and "SEGA GENESIS".
-		// For broader compatibility with unlicensed ROMs,
-		// just check for "SEGA". (Required for TMSS.)
-		{"SEGA",          4, MegaDrivePrivate::ROM_SYSTEM_MD},
 	};
 
 	// Other non-Sega system IDs. (Sega Pico)
@@ -992,6 +986,11 @@ int MegaDrive::isRomSupported_static(const DetectInfo *info)
 				break;
 			}
 		}
+		if (sysId == MegaDrivePrivate::ROM_UNKNOWN) {
+			// Unknown "SEGA" header. Assume it's MD.
+			// NOTE: "Virtua Racing Deluxe (USA).32x" has "SEGA 32X U".
+			sysId = MegaDrivePrivate::ROM_SYSTEM_MD;
+		}
 	} else if (!memcmp(&pHeader[0x101], sega_magic, sizeof(sega_magic))) {
 		// "SEGA" is at 0x101.
 		for (unsigned int i = 0; i < ARRAY_SIZE(cart_magic_sega); i++) {
@@ -1002,6 +1001,11 @@ int MegaDrive::isRomSupported_static(const DetectInfo *info)
 				sysId = cart_magic_sega[i].system_id;
 				break;
 			}
+		}
+		if (sysId == MegaDrivePrivate::ROM_UNKNOWN) {
+			// Unknown "SEGA" header. Assume it's MD.
+			// NOTE: "Virtua Racing Deluxe (USA).32x" has "SEGA 32X U".
+			sysId = MegaDrivePrivate::ROM_SYSTEM_MD;
 		}
 	} else {
 		// Not a "SEGA" cartridge header.
