@@ -926,13 +926,15 @@ int MegaDrive::isRomSupported_static(const DetectInfo *info)
 		{" IAC        ", 12, MegaDrivePrivate::ROM_SYSTEM_PICO},	// Some JP ROMs
 	};
 
-	// Other non-Sega system IDs. (Sega Pico)
+	// Ohter non-Sega system IDs. (Sega Pico, Sega Picture Magic)
 	static const struct {
-		char sys_name[16];	// NOTE: **NOT** NULL-terminated!
-	} cart_magic_pico[] = {
-		{'S','A','M','S','U','N','G',' ','P','I','C','O',' ',' ',' ',' '},	// TODO: Indicate Korean.
-		{'I','M','A',' ','I','K','U','N','O','U','J','Y','U','K','U',' '},	// Some JP ROMs
-		{'I','M','A',' ','I','K','U','N','O','J','Y','U','K','U',' ',' '},	// Some JP ROMs
+		char sys_name[17];
+		uint8_t system_id;
+	} cart_magic_other[] = {
+		{"SAMSUNG PICO    ", MegaDrivePrivate::ROM_SYSTEM_PICO},	// TODO: Indicate Korean.
+		{"IMA IKUNOUJYUKU ", MegaDrivePrivate::ROM_SYSTEM_PICO},	// Some JP ROMs
+		{"IMA IKUNOJYUKU  ", MegaDrivePrivate::ROM_SYSTEM_PICO},	// Some JP ROMs
+		{"Picture Magic   ", MegaDrivePrivate::ROM_SYSTEM_32X},		// Picture Magic
 	};
 
 	// Check for Sega CD.
@@ -1009,11 +1011,11 @@ int MegaDrive::isRomSupported_static(const DetectInfo *info)
 		}
 	} else {
 		// Not a "SEGA" cartridge header.
-		// Check for less common Pico ROMs.
-		for (unsigned int i = 0; i < ARRAY_SIZE(cart_magic_pico); i++) {
-			if (!memcmp(&pHeader[0x100], cart_magic_pico[i].sys_name, 16)) {
+		// Check for less common ROMs without a "SEGA" system name.
+		for (unsigned int i = 0; i < ARRAY_SIZE(cart_magic_other); i++) {
+			if (!memcmp(&pHeader[0x100], cart_magic_other[i].sys_name, 16)) {
 				// Found a matching system name.
-				sysId = MegaDrivePrivate::ROM_SYSTEM_PICO;
+				sysId = cart_magic_other[i].system_id;
 				break;
 			}
 		}
