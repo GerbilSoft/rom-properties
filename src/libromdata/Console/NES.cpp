@@ -233,24 +233,39 @@ int NESPrivate::loadInternalFooter(void)
 	// - Bits 0, 1, 2 control mirroring; mutually-exclusive.
 	// FIXME: These are no longer detected:
 	// - 0x03: J.League Fighting Soccer - The King of Ace Strikers (Japan)
-	// - 0x05: Higemaru - Makai-jima - Nanatsu no Shima Daibouken (Japan)
-	// - 0x05: Makai Island (USA) (Proto)
-	// - 0x14: Pinball Quest (Australia)
 	// FIXME: These *are* being detected but shouldn't be:
 	// - 0x84: Mario Bros. (Europe) (PAL-MA-0)
 	// - 0x84: Mario Bros. (World) (GameCube Edition)
 	// - 0x84: Mario Bros. (World)
 	if (footer.board_info & 0x78) {
 		// Invalid bits set.
-		hasCheckedIntFooter = true;
-		intFooterErrno = ENOENT;
-		return intFooterErrno;
+		if (footer.board_info == 0x14) {
+			// Special case for: Pinball Quest (Australia)
+		} else {
+			hasCheckedIntFooter = true;
+			intFooterErrno = ENOENT;
+			return intFooterErrno;
+		}
 	} else {
 		switch (footer.board_info & 0x07) {
 			case 0: case 1:
 			case 2: case 4:
 				// Valid mirroring bits.
 				break;
+			case 5: {
+				// These titles have "00 01 02 03 04 05 06 07":
+				// - Higemaru - Makai-jima - Nanatsu no Shima Daibouken (Japan)
+				// - Makai Island (USA) (Proto)
+				static const uint8_t check_05[] = {0,1,2,3,4,5,6,7};
+				const uint8_t *const u8 = reinterpret_cast<const uint8_t*>(&footer);
+				if (memcmp(&u8[0x10], check_05, sizeof(check_05)) != 0) {
+					// Not valid.
+					hasCheckedIntFooter = true;
+					intFooterErrno = ENOENT;
+					return intFooterErrno;
+				}
+				break;
+			}
 			default:
 				// Not valid mirroring bits.
 				hasCheckedIntFooter = true;
