@@ -237,15 +237,30 @@ int NESPrivate::loadInternalFooter(void)
 	// - 0x84: Mario Bros. (Europe) (PAL-MA-0)
 	// - 0x84: Mario Bros. (World) (GameCube Edition)
 	// - 0x84: Mario Bros. (World)
+
+	// Check for special cases.
+	switch (footer.board_info) {
+		case 0x14:
+			// Special case for: Pinball Quest (Australia)
+			goto skip_board_info_check;
+		case 0x84:
+			// Mario Bros. - header is NOT valid.
+			// NOTE: Bomberman II (Japan) also has 0x84,
+			// so also check for an invalid CHR checksum.
+			if (footer.chr_checksum == le16_to_cpu(0x8484)) {
+				// Invalid CHR checksum.
+				intFooterErrno = ENOENT;
+				return intFooterErrno;
+			}
+			break;
+		default:
+			break;
+	}
+
 	if (footer.board_info & 0x78) {
 		// Invalid bits set.
-		if (footer.board_info == 0x14) {
-			// Special case for: Pinball Quest (Australia)
-		} else {
-			hasCheckedIntFooter = true;
-			intFooterErrno = ENOENT;
-			return intFooterErrno;
-		}
+		intFooterErrno = ENOENT;
+		return intFooterErrno;
 	} else {
 		switch (footer.board_info & 0x07) {
 			case 0: case 1:
@@ -260,7 +275,6 @@ int NESPrivate::loadInternalFooter(void)
 				const uint8_t *const u8 = reinterpret_cast<const uint8_t*>(&footer);
 				if (memcmp(&u8[0x10], check_05, sizeof(check_05)) != 0) {
 					// Not valid.
-					hasCheckedIntFooter = true;
 					intFooterErrno = ENOENT;
 					return intFooterErrno;
 				}
@@ -268,12 +282,12 @@ int NESPrivate::loadInternalFooter(void)
 			}
 			default:
 				// Not valid mirroring bits.
-				hasCheckedIntFooter = true;
 				intFooterErrno = ENOENT;
 				return intFooterErrno;
 		}
 	}
 
+skip_board_info_check:
 	// Check if the name looks right.
 	unsigned int firstNonFF = static_cast<unsigned int>(sizeof(footer.name));
 	unsigned int lastValidChar = static_cast<unsigned int>(sizeof(footer.name)) - 1;
