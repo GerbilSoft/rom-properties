@@ -1301,7 +1301,7 @@ int NES::loadFieldData(void)
 			// ROM sizes (as powers of two)
 			static const uint8_t sz_shift_lookup[] = {
 				0,	// 0
-				0,	// 1
+				14,	// 1 (16 KB)
 				15,	// 2 (32 KB)
 				17,	// 3 (128 KB)
 				18,	// 4 (256 KB)
@@ -1331,14 +1331,26 @@ int NES::loadFieldData(void)
 
 			// CHR ROM size
 			string s_chr_size;
+			bool b_chr_ram = false;
 			if (chr_sz_idx == 0) {
 				s_chr_size = C_("NES", "Not set");
 			} else if (chr_size > 1) {
 				s_chr_size = formatFileSizeKiB(chr_size);
+			} else if (chr_sz_idx == 8) {
+				// CHR RAM: 8 KiB
+				b_chr_ram = true;
+				s_chr_size = formatFileSizeKiB(8192);
 			} else {
 				s_chr_size = rp_sprintf(C_("RomData", "Unknown (0x%02X)"), chr_sz_idx);
 			}
-			d->fields->addField_string(C_("NES", "CHR ROM Size"), s_chr_size);
+			if (likely(!b_chr_ram)) {
+				d->fields->addField_string(C_("NES", "CHR ROM Size"), s_chr_size);
+			} else {
+				// NOTE: Some ROMs that have CHR ROM indicate CHR RAM in the footer,
+				// e.g. Castlevania II - Simon's Quest (E/U) and Contra (J).
+				// Other regional versions of these games actually *do* have CHR RAM.
+				d->fields->addField_string(C_("NES", "CHR RAM Size"), s_chr_size);
+			}
 
 			// Mirroring
 			switch (footer.board_info >> 4) {
