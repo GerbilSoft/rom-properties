@@ -1353,6 +1353,7 @@ int NES::loadFieldData(void)
 			}
 
 			// Mirroring
+			// TODO: This is incorrect; need to figure out the correct values...
 			switch (footer.board_info >> 4) {
 				case 0:
 					s_mirroring = C_("NES|Mirroring", "Horizontal");
