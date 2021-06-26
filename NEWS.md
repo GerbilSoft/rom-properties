@@ -41,7 +41,14 @@
   * GameCom: Added support for RLE-compressed icons. "Game.com Internet"
     and "Tiger Web Link" are the only two titles known to use them.
     * Fixes #278, reported by @simontime.
-  * MegaDrive: Handle the 'W' region code as used by EverDrive OS ROMs.
+  * MegaDrive:
+    * Handle the 'W' region code as used by EverDrive OS ROMs.
+    * Significantly improved Sega Pico detection, including handling
+      non-standard system names and region codes.
+    * Detect the "old" header format with 32-character titles.
+    * Support for external title screens has been added using RPDB.
+    * Added metadata properties. Currently supports publisher and title.
+      Domestic title is used if available; otherwise, export title is used.
   * Amiibo: Split the database out of the C++ code and into a database file.
   * Xbox360_STFS: Add two more file extensions for some Bethesda games:
     * Fallout: `.fxs`

@@ -31,11 +31,6 @@ audio/x-spc				# SPC
 audio/x-vgm				# VGM
 
 # Console
-application/x-genesis-rom		# MegaDrive
-application/x-sega-cd-rom		# MegaDrive
-application/x-genesis-32x-rom		# MegaDrive
-application/x-sega-cd-32x-rom		# MegaDrive
-application/x-sega-pico-rom		# MegaDrive
 application/x-n64-rom			# N64
 application/x-nes-rom			# NES
 application/x-fds-disk			# NES

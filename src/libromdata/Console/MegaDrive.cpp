@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * MegaDrive.cpp: Sega Mega Drive ROM reader.                              *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -27,9 +27,14 @@ using LibRpFile::IRpFile;
 using std::string;
 using std::vector;
 
+// zlib for crc32()
+// TODO: DelayLoad [also need to add DelayLoad to Nintendo3DS, Nintendo3DSFirm, and KeyStoreUI]
+#include <zlib.h>
+
 namespace LibRomData {
 
 ROMDATA_IMPL(MegaDrive)
+ROMDATA_IMPL_IMG(MegaDrive)
 
 class MegaDrivePrivate final : public RomDataPrivate
 {
@@ -46,20 +51,22 @@ class MegaDrivePrivate final : public RomDataPrivate
 
 		// I/O support. (RFT_BITFIELD)
 		enum MD_IO_Support_Bitfield {
-			MD_IOBF_JOYPAD_3	= (1U << 0),	// 3-button joypad
-			MD_IOBF_JOYPAD_6	= (1U << 1),	// 6-button joypad
-			MD_IOBF_JOYPAD_SMS	= (1U << 2),	// 2-button joypad (SMS)
-			MD_IOBF_TEAM_PLAYER	= (1U << 3),	// Team Player
-			MD_IOBF_KEYBOARD	= (1U << 4),	// Keyboard
-			MD_IOBF_SERIAL		= (1U << 5),	// Serial (RS-232C)
-			MD_IOBF_PRINTER		= (1U << 6),	// Printer
-			MD_IOBF_TABLET		= (1U << 7),	// Tablet
-			MD_IOBF_TRACKBALL	= (1U << 8),	// Trackball
-			MD_IOBF_PADDLE		= (1U << 9),	// Paddle
-			MD_IOBF_FDD		= (1U << 10),	// Floppy Drive
-			MD_IOBF_CDROM		= (1U << 11),	// CD-ROM
-			MD_IOBF_ACTIVATOR	= (1U << 12),	// Activator
-			MD_IOBF_MEGA_MOUSE	= (1U << 13),	// Mega Mouse
+			MD_IOBF_JOYPAD_3	= (1U <<  0),	// 3-button joypad
+			MD_IOBF_JOYPAD_6	= (1U <<  1),	// 6-button joypad
+			MD_IOBF_JOYPAD_SMS	= (1U <<  2),	// 2-button joypad (SMS)
+			MD_IOBF_ANALOG		= (1U <<  3),	// Analog (XE-1 AP)
+			MD_IOBF_TEAM_PLAYER	= (1U <<  4),	// Team Player
+			MD_IOBF_LIGHT_GUN	= (1U <<  5),	// Light Gun (Menacer)
+			MD_IOBF_KEYBOARD	= (1U <<  6),	// Keyboard
+			MD_IOBF_SERIAL		= (1U <<  7),	// Serial (RS-232C)
+			MD_IOBF_PRINTER		= (1U <<  8),	// Printer
+			MD_IOBF_TABLET		= (1U <<  9),	// Tablet
+			MD_IOBF_TRACKBALL	= (1U << 10),	// Trackball
+			MD_IOBF_PADDLE		= (1U << 11),	// Paddle
+			MD_IOBF_FDD		= (1U << 12),	// Floppy Drive
+			MD_IOBF_CDROM		= (1U << 13),	// CD-ROM
+			MD_IOBF_ACTIVATOR	= (1U << 14),	// Activator
+			MD_IOBF_MEGA_MOUSE	= (1U << 15),	// Mega Mouse
 		};
 
 		/** Internal ROM data. **/
@@ -125,7 +132,24 @@ class MegaDrivePrivate final : public RomDataPrivate
 				rfmt == ROM_FORMAT_DISC_2352);
 		}
 
+		/**
+		 * Parse region codes.
+		 *
+		 * Wrapper function to handle some games that don't have
+		 * the region code in the correct location.
+		 *
+		 * @param pRomHeader ROM header.
+		 */
+		static uint32_t parseRegionCodes(const MD_RomHeader *pRomHeader);
+
 	public:
+		/**
+		 * Determine if a ROM header is using the 'early' format.
+		 * @param pRomHeader ROM header.
+		 * @return True if 'early'; false if standard.
+		 */
+		static bool checkIfEarlyRomHeader(const MD_RomHeader *pRomHeader);
+
 		/**
 		 * Add fields for the ROM header.
 		 *
@@ -154,10 +178,19 @@ class MegaDrivePrivate final : public RomDataPrivate
 		// NOTE: Must be byteswapped on access.
 		M68K_VectorTable vectors;	// Interrupt vectors.
 		MD_RomHeader romHeader;		// ROM header.
+		uint32_t gt_crc;		// Game Toshokan: CRC32 of $20000-$200FF.
 
 		// Extra headers.
 		SMD_Header *pSmdHeader;		// SMD header.
 		MD_RomHeader *pRomHeaderLockOn;	// Locked-on ROM header.
+
+	public:
+		/**
+		 * Get the publisher.
+		 * @param pRomHeader ROM header to check.
+		 * @return Publisher, or "Unknown" if unknown.
+		 */
+		static string getPublisher(const MD_RomHeader *pRomHeader);
 };
 
 /** MegaDrivePrivate **/
@@ -179,6 +212,7 @@ MegaDrivePrivate::MegaDrivePrivate(MegaDrive *q, IRpFile *file)
 	: super(q, file)
 	, romType(ROM_UNKNOWN)
 	, md_region(0)
+	, gt_crc(0)
 	, pSmdHeader(nullptr)
 	, pRomHeaderLockOn(nullptr)
 {
@@ -212,7 +246,9 @@ uint32_t MegaDrivePrivate::parseIOSupport(const char *io_support, int size)
 			MD_IO_JOYPAD_3,
 			MD_IO_JOYPAD_6,
 			MD_IO_JOYPAD_SMS,
+			MD_IO_ANALOG,
 			MD_IO_TEAM_PLAYER,
+			MD_IO_LIGHT_GUN,
 			MD_IO_KEYBOARD,
 			MD_IO_SERIAL,
 			MD_IO_PRINTER,
@@ -241,6 +277,54 @@ uint32_t MegaDrivePrivate::parseIOSupport(const char *io_support, int size)
 }
 
 /**
+ * Parse region codes.
+ *
+ * Wrapper function to handle some games that don't have
+ * the region code in the correct location.
+ *
+ * @param pRomHeader ROM header.
+ */
+uint32_t MegaDrivePrivate::parseRegionCodes(const MD_RomHeader *pRomHeader)
+{
+	uint32_t md_region = MegaDriveRegions::parseRegionCodes(
+		pRomHeader->region_codes, sizeof(pRomHeader->region_codes));
+	if (md_region != 0)
+		return md_region;
+
+	// Some early games incorrectly have the MD region code at a different location.
+	// - Golden Axe: 0x1C0
+	if (pRomHeader->modem_info[4] != ' ' && pRomHeader->modem_info[7] == ' ') {
+		md_region = MegaDriveRegions::parseRegionCodes(
+			&pRomHeader->modem_info[4], 3);
+	}
+
+	return md_region;
+}
+
+/**
+ * Determine if a ROM header is using the 'early' format.
+ * @param pRomHeader ROM header.
+ * @return True if 'early'; false if standard.
+ */
+bool MegaDrivePrivate::checkIfEarlyRomHeader(const MD_RomHeader *pRomHeader)
+{
+	// Check if the serial number is empty.
+	switch (pRomHeader->serial_number[0]) {
+		case ' ':
+		case '\0':
+			// Empty serial number.
+			break;
+		default:
+			// Not an empty serial number.
+			return false;
+	}
+
+	// Is a valid 'GM' serial number present at the 'early' header location?
+	// If so, we'll assume this is an early ROM header.
+	return !memcmp(pRomHeader->early.serial_number, "GM", 2);
+}
+
+/**
  * Add fields for the ROM header.
  *
  * This function will not create a new tab.
@@ -252,6 +336,8 @@ uint32_t MegaDrivePrivate::parseIOSupport(const char *io_support, int size)
  */
 void MegaDrivePrivate::addFields_romHeader(const MD_RomHeader *pRomHeader, bool bRedetectRegion)
 {
+	const bool isEarlyRomHeader = checkIfEarlyRomHeader(pRomHeader);
+
 	// Read the strings from the header.
 	fields->addField_string(C_("MegaDrive", "System"),
 		cp1252_sjis_to_utf8(pRomHeader->system, sizeof(pRomHeader->system)),
@@ -260,61 +346,48 @@ void MegaDrivePrivate::addFields_romHeader(const MD_RomHeader *pRomHeader, bool 
 		cp1252_sjis_to_utf8(pRomHeader->copyright, sizeof(pRomHeader->copyright)),
 			RomFields::STRF_TRIM_END);
 
-	// Determine the publisher.
-	// Formats in the copyright line:
-	// - "(C)SEGA"
-	// - "(C)T-xx"
-	// - "(C)T-xxx"
-	// - "(C)Txxx"
-	const char *publisher = nullptr;
-	unsigned int t_code = 0;
-	if (!memcmp(pRomHeader->copyright, "(C)SEGA", 7)) {
-		// Sega first-party game.
-		publisher = "Sega";
-	} else if (!memcmp(pRomHeader->copyright, "(C)T", 4)) {
-		// Third-party game.
-		int start = 4;
-		if (pRomHeader->copyright[4] == '-')
-			start++;
-		char *endptr;
-		t_code = strtoul(&pRomHeader->copyright[start], &endptr, 10);
-		if (t_code != 0 &&
-		    endptr > &pRomHeader->copyright[start] &&
-		    endptr < &pRomHeader->copyright[start+3])
-		{
-			// Valid T-code. Look up the publisher.
-			publisher = SegaPublishers::lookup(t_code);
-		}
-	}
+	// Publisher
+	fields->addField_string(C_("RomData", "Publisher"), getPublisher(pRomHeader));
 
-	const char *const publisher_title = C_("RomData", "Publisher");
-	if (publisher) {
-		// Publisher identified.
-		fields->addField_string(publisher_title, publisher);
-	} else if (t_code > 0) {
-		// Unknown publisher, but there is a valid T code.
-		fields->addField_string(publisher_title, rp_sprintf("T-%u", t_code));
+	// Some fields vary depending on if this is a standard ROM header
+	// or an 'early' ROM header.
+	const char *s_title_domestic, *s_title_export;
+	const char *s_serial_number, *s_io_support;
+	const MD_RomRamInfo *pRomRam;
+	int title_len;
+	uint16_t checksum;
+	if (!isEarlyRomHeader) {
+		// Standard ROM header.
+		s_title_domestic = pRomHeader->title_domestic;
+		s_title_export = pRomHeader->title_export;
+		s_serial_number = pRomHeader->serial_number;
+		s_io_support = pRomHeader->io_support;
+		pRomRam = &pRomHeader->rom_ram;
+		title_len = sizeof(pRomHeader->title_domestic);
+		checksum = be16_to_cpu(pRomHeader->checksum);
 	} else {
-		// Unknown publisher.
-		fields->addField_string(C_("RomData", "Publisher"),
-			C_("RomData", "Unknown"));
+		// 'Early' ROM header.
+		s_title_domestic = pRomHeader->early.title_domestic;
+		s_title_export = pRomHeader->early.title_export;
+		s_serial_number = pRomHeader->early.serial_number;
+		s_io_support = pRomHeader->early.io_support;
+		pRomRam = &pRomHeader->early.rom_ram;
+		title_len = sizeof(pRomHeader->early.title_domestic);
+		checksum = be16_to_cpu(pRomHeader->early.checksum);
 	}
 
 	// Titles, serial number, and checksum.
 	fields->addField_string(C_("MegaDrive", "Domestic Title"),
-		cp1252_sjis_to_utf8(pRomHeader->title_domestic, sizeof(pRomHeader->title_domestic)),
-			RomFields::STRF_TRIM_END);
+		cp1252_sjis_to_utf8(s_title_domestic, title_len), RomFields::STRF_TRIM_END);
 	fields->addField_string(C_("MegaDrive", "Export Title"),
-		cp1252_sjis_to_utf8(pRomHeader->title_export, sizeof(pRomHeader->title_export)),
-			RomFields::STRF_TRIM_END);
+		cp1252_sjis_to_utf8(s_title_export, title_len), RomFields::STRF_TRIM_END);
 	fields->addField_string(C_("MegaDrive", "Serial Number"),
-		cp1252_sjis_to_utf8(pRomHeader->serial, sizeof(pRomHeader->serial)),
+		cp1252_sjis_to_utf8(s_serial_number, sizeof(pRomHeader->serial_number)),
 			RomFields::STRF_TRIM_END);
 	if (!isDisc()) {
 		// Checksum. (MD only; not valid for Mega CD.)
 		fields->addField_string_numeric(C_("RomData", "Checksum"),
-			be16_to_cpu(pRomHeader->checksum), RomFields::Base::Hex, 4,
-			RomFields::STRF_MONOSPACE);
+			checksum, RomFields::Base::Hex, 4, RomFields::STRF_MONOSPACE);
 	}
 
 	// I/O support bitfield.
@@ -323,7 +396,9 @@ void MegaDrivePrivate::addFields_romHeader(const MD_RomHeader *pRomHeader, bool 
 		NOP_C_("MegaDrive|I/O", "6-button"),
 		// tr: Use a locale-specific abbreviation for Sega Master System, e.g. MK3 or similar.
 		NOP_C_("MegaDrive|I/O", "SMS Joypad"),
+		NOP_C_("MegaDrive|I/O", "Analog"),
 		NOP_C_("MegaDrive|I/O", "Team Player"),
+		NOP_C_("MegaDrive|I/O", "Light Gun"),
 		NOP_C_("MegaDrive|I/O", "Keyboard"),
 		NOP_C_("MegaDrive|I/O", "Serial I/O"),
 		NOP_C_("MegaDrive|I/O", "Printer"),
@@ -336,24 +411,37 @@ void MegaDrivePrivate::addFields_romHeader(const MD_RomHeader *pRomHeader, bool 
 		NOP_C_("MegaDrive|I/O", "Activator"),
 		NOP_C_("MegaDrive|I/O", "Mega Mouse"),
 	};
-	vector<string> *const v_io_bitfield_names = RomFields::strArrayToVector_i18n(
-		"MegaDrive|I/O", io_bitfield_names, ARRAY_SIZE(io_bitfield_names));
-	// Parse I/O support.
-	uint32_t io_support = parseIOSupport(pRomHeader->io_support, sizeof(pRomHeader->io_support));
-	fields->addField_bitfield(C_("MegaDrive", "I/O Support"),
-		v_io_bitfield_names, 3, io_support);
+	// NOTE: Using a plain text field because most games only support
+	// one or two devices, so we don't need to list them all.
+	uint32_t io_support = parseIOSupport(s_io_support, sizeof(pRomHeader->io_support));
+	string s_io_devices;
+	s_io_devices.reserve(32);
+	uint32_t bit = 1;
+	for (unsigned int i = 0; i < ARRAY_SIZE(io_bitfield_names); i++, bit <<= 1) {
+		if (io_support & bit) {
+			if (!s_io_devices.empty()) {
+				s_io_devices += ", ";
+			}
+			s_io_devices += dpgettext_expr(RP_I18N_DOMAIN,
+				"MegaDrive|I/O", io_bitfield_names[i]);
+		}
+	}
+	if (s_io_devices.empty()) {
+		s_io_devices = C_("MegaDrive|I/O", "None");
+	}
+	fields->addField_string(C_("MegaDrive", "I/O Support"), s_io_devices);
 
 	if (!isDisc()) {
 		// ROM range.
 		fields->addField_string_address_range(C_("MegaDrive", "ROM Range"),
-				be32_to_cpu(pRomHeader->rom_start),
-				be32_to_cpu(pRomHeader->rom_end), 8,
+				be32_to_cpu(pRomRam->rom_start),
+				be32_to_cpu(pRomRam->rom_end), 8,
 				RomFields::STRF_MONOSPACE);
 
 		// RAM range.
 		fields->addField_string_address_range(C_("MegaDrive", "RAM Range"),
-				be32_to_cpu(pRomHeader->ram_start),
-				be32_to_cpu(pRomHeader->ram_end), 8,
+				be32_to_cpu(pRomRam->ram_start),
+				be32_to_cpu(pRomRam->ram_end), 8,
 				RomFields::STRF_MONOSPACE);
 
 		// Check for external memory.
@@ -412,8 +500,7 @@ void MegaDrivePrivate::addFields_romHeader(const MD_RomHeader *pRomHeader, bool 
 	// TODO: Validate the Mega CD security program?
 	uint32_t md_region_check;
 	if (unlikely(bRedetectRegion)) {
-		md_region_check = MegaDriveRegions::parseRegionCodes(
-			pRomHeader->region_codes, sizeof(pRomHeader->region_codes));
+		md_region_check = parseRegionCodes(pRomHeader);
 	} else {
 		md_region_check = this->md_region;
 	}
@@ -525,6 +612,63 @@ void MegaDrivePrivate::addFields_vectorTable(const M68K_VectorTable *pVectors)
 	params.headers = v_vectors_headers;
 	params.data.single = vv_vectors;
 	fields->addField_listData(C_("RomData", "Vector Table"), &params);
+}
+
+/**
+ * Get the publisher.
+ * @param pRomHeader ROM header to check.
+ * @return Publisher, or "Unknown" if unknown.
+ */
+string MegaDrivePrivate::getPublisher(const MD_RomHeader *pRomHeader)
+{
+	string s_publisher;
+
+	// Determine the publisher.
+	// Formats in the copyright line:
+	// - "(C)SEGA"
+	// - "(C)T-xx"
+	// - "(C)T-xxx"
+	// - "(C)Txxx"
+	unsigned int t_code = 0;
+	if (!memcmp(pRomHeader->copyright, "(C)SEGA", 7)) {
+		// Sega first-party game.
+		s_publisher = "Sega";
+	} else if (!memcmp(pRomHeader->copyright, "(C)T", 4)) {
+		// Third-party game.
+		int start = 4;
+		if (pRomHeader->copyright[4] == '-')
+			start++;
+
+		// Read up to three digits.
+		char buf[4];
+		memcpy(buf, &pRomHeader->copyright[start], 3);
+		buf[3] = '\0';
+
+		t_code = strtoul(buf, nullptr, 10);
+		if (t_code != 0) {
+			// Valid T-code. Look up the publisher.
+			const char *const publisher = SegaPublishers::lookup(t_code);
+			if (publisher) {
+				s_publisher = publisher;
+			}
+		}
+	}
+
+	if (s_publisher.empty()) {
+		// Publisher not identified.
+		// Check for a T-code.
+		if (t_code > 0) {
+			// Found a T-code.
+			char buf[16];
+			snprintf(buf, sizeof(buf), "T-%u", t_code);
+			s_publisher = buf;
+		} else {
+			// Unknown publisher.
+			s_publisher = C_("RomData", "Unknown");
+		}
+	}
+
+	return s_publisher;
 }
 
 /** MegaDrive **/
@@ -650,8 +794,7 @@ MegaDrive::MegaDrive(IRpFile *file)
 	}
 
 	// Parse the MD region code.
-	d->md_region = MegaDriveRegions::parseRegionCodes(
-		d->romHeader.region_codes, sizeof(d->romHeader.region_codes));
+	d->md_region = d->parseRegionCodes(&d->romHeader);
 
 	// Determine the MIME type.
 	const uint8_t sysID = (d->romType & MegaDrivePrivate::ROM_SYSTEM_MASK);
@@ -659,10 +802,30 @@ MegaDrive::MegaDrive(IRpFile *file)
 		d->mimeType = d->mimeType_tbl[sysID];
 	}
 
-	// If this is S&K, try reading the locked-on ROM header.
+	// Special ROM checks. (MD only for now)
+	if (sysID != MegaDrivePrivate::ROM_SYSTEM_MD)
+		return;
+
+	const bool isEarlyRomHeader = d->checkIfEarlyRomHeader(&d->romHeader);
 	const int64_t fileSize = d->file->size();
-	if (sysID == MegaDrivePrivate::ROM_SYSTEM_MD && fileSize >= ((2*1024*1024)+512) &&
-	    !memcmp(d->romHeader.serial, "GM MK-1563 -00", sizeof(d->romHeader.serial)))
+	const char *const s_serial_number = (isEarlyRomHeader
+		? d->romHeader.early.serial_number
+		: d->romHeader.serial_number);
+
+	// Check for Game Toshokan with a downloaded game.
+	if (fileSize == 256*1024 &&
+	    !memcmp(s_serial_number, "GM 00054503-00", sizeof(d->romHeader.serial_number)) &&
+	    (d->romType & MegaDrivePrivate::ROM_FORMAT_MASK) == MegaDrivePrivate::ROM_FORMAT_CART_BIN)
+	{
+		// Calculate the CRC32 of $20000-$200FF.
+		// TODO: SMD deinterleaving.
+		uint8_t buf[256];
+		d->file->seekAndRead(0x20000, buf, sizeof(buf));
+		d->gt_crc = crc32(0, buf, sizeof(buf));
+	}
+	// If this is S&K, try reading the locked-on ROM header.
+	else if (fileSize >= ((2*1024*1024)+512) &&
+	         !memcmp(s_serial_number, "GM MK-1563 -00", sizeof(d->romHeader.serial_number)))
 	{
 		// Check if a locked-on ROM is present.
 		if ((d->romType & MegaDrivePrivate::ROM_FORMAT_MASK) == MegaDrivePrivate::ROM_FORMAT_CART_SMD) {
@@ -733,36 +896,45 @@ int MegaDrive::isRomSupported_static(const DetectInfo *info)
 	// ROM header.
 	const uint8_t *const pHeader = info->header.pData;
 
-	// Magic strings.
-	static const char sega_magic[4+1] = "SEGA";
-	static const char segacd_magic[16+1] = "SEGADISCSYSTEM  ";
+	// Magic strings. (NOTE: **NOT** NULL-terminated!)
+	static const char sega_magic[4] = {'S','E','G','A'};
+	static const char segacd_magic[16] = {'S','E','G','A','D','I','S','C','S','Y','S','T','E','M',' ',' '};
 
 	// Extra system types from:
 	// - https://www.plutiedev.com/rom-header#system
+	// NOTE: Doom 32X incorrectly has the region code at the end of the
+	// system name field, so ignore the last two bytes for 32X.
 	static const struct {
-		const char sys_name[20];
-		uint8_t sys_name_len_100h;	// Length to check at $100
-		uint8_t sys_name_len_101h;	// Length to check at $101
+		char sys_name[12+1];
+		uint8_t sys_name_len;	// Length to check at $100; for $101, subtract 1.
 		uint32_t system_id;
-	} cart_magic[] = {
-		{"SEGA PICO       ", 16, 15, MegaDrivePrivate::ROM_SYSTEM_PICO},
-		{"SEGA 32X        ", 16, 15, MegaDrivePrivate::ROM_SYSTEM_32X},
-		{"SEGA SSF        ", 16, 15, MegaDrivePrivate::ROM_SYSTEM_MD |
-		                             MegaDrivePrivate::ROM_EXT_SSF2},
-		{"SEGA EVERDRIVE  ", 16, 15, MegaDrivePrivate::ROM_SYSTEM_MD |
-		                             MegaDrivePrivate::ROM_EXT_EVERDRIVE},
-		{"SEGA MEGAWIFI   ", 16, 15, MegaDrivePrivate::ROM_SYSTEM_MD |
-		                             MegaDrivePrivate::ROM_EXT_MEGAWIFI},
-		{"SEGA TERA68K    ", 16, 15, MegaDrivePrivate::ROM_SYSTEM_TERADRIVE |
-		                             MegaDrivePrivate::ROM_EXT_TERADRIVE_68k},
-		{"SEGA TERA286    ", 16, 15, MegaDrivePrivate::ROM_SYSTEM_TERADRIVE |
-		                             MegaDrivePrivate::ROM_EXT_TERADRIVE_x86},
+	} cart_magic_sega[] = {
+		{" 32X      ",   10, MegaDrivePrivate::ROM_SYSTEM_32X},
+		{" SSF        ", 12, MegaDrivePrivate::ROM_SYSTEM_MD |
+		                     MegaDrivePrivate::ROM_EXT_SSF2},
+		{" EVERDRIVE  ", 12, MegaDrivePrivate::ROM_SYSTEM_MD |
+		                     MegaDrivePrivate::ROM_EXT_EVERDRIVE},
+		{" MEGAWIFI   ", 12, MegaDrivePrivate::ROM_SYSTEM_MD |
+		                     MegaDrivePrivate::ROM_EXT_MEGAWIFI},
+		{" TERA68K    ", 12, MegaDrivePrivate::ROM_SYSTEM_TERADRIVE |
+		                     MegaDrivePrivate::ROM_EXT_TERADRIVE_68k},
+		{" TERA286    ", 12, MegaDrivePrivate::ROM_SYSTEM_TERADRIVE |
+		                     MegaDrivePrivate::ROM_EXT_TERADRIVE_x86},
+		{" PICO       ", 12, MegaDrivePrivate::ROM_SYSTEM_PICO},
+		{"TOYS PICO   ", 12, MegaDrivePrivate::ROM_SYSTEM_PICO},	// Late 90s
+		{" TOYS PICO  ", 12, MegaDrivePrivate::ROM_SYSTEM_PICO},	// Late 90s
+		{" IAC        ", 12, MegaDrivePrivate::ROM_SYSTEM_PICO},	// Some JP ROMs
+	};
 
-		// NOTE: Previously, we were checking for
-		// "SEGA MEGA DRIVE" and "SEGA GENESIS".
-		// For broader compatibility with unlicensed ROMs,
-		// just check for "SEGA". (Required for TMSS.)
-		{"SEGA",              4,  4, MegaDrivePrivate::ROM_SYSTEM_MD},
+	// Ohter non-Sega system IDs. (Sega Pico, Sega Picture Magic)
+	static const struct {
+		char sys_name[17];
+		uint8_t system_id;
+	} cart_magic_other[] = {
+		{"SAMSUNG PICO    ", MegaDrivePrivate::ROM_SYSTEM_PICO},	// TODO: Indicate Korean.
+		{"IMA IKUNOUJYUKU ", MegaDrivePrivate::ROM_SYSTEM_PICO},	// Some JP ROMs
+		{"IMA IKUNOJYUKU  ", MegaDrivePrivate::ROM_SYSTEM_PICO},	// Some JP ROMs
+		{"Picture Magic   ", MegaDrivePrivate::ROM_SYSTEM_32X},		// Picture Magic
 	};
 
 	// Check for Sega CD.
@@ -771,11 +943,11 @@ int MegaDrive::isRomSupported_static(const DetectInfo *info)
 	// right; there should only be 2048 and 2352.
 	// TODO: Detect Sega CD 32X.
 	// TODO: Use a struct instead of raw bytes?
-	if (!memcmp(&pHeader[0x0010], segacd_magic, sizeof(segacd_magic)-1)) {
+	if (!memcmp(&pHeader[0x0010], segacd_magic, sizeof(segacd_magic))) {
 		// Found a Sega CD disc image. (2352-byte sectors)
 		return MegaDrivePrivate::ROM_SYSTEM_MCD |
 		       MegaDrivePrivate::ROM_FORMAT_DISC_2352;
-	} else if (!memcmp(&pHeader[0x0000], segacd_magic, sizeof(segacd_magic)-1)) {
+	} else if (!memcmp(&pHeader[0x0000], segacd_magic, sizeof(segacd_magic))) {
 		// Found a Sega CD disc image. (2048-byte sectors)
 		return MegaDrivePrivate::ROM_SYSTEM_MCD |
 		       MegaDrivePrivate::ROM_FORMAT_DISC_2048;
@@ -805,14 +977,53 @@ int MegaDrive::isRomSupported_static(const DetectInfo *info)
 
 	// Check for other MD-based cartridge formats.
 	int sysId = MegaDrivePrivate::ROM_UNKNOWN;
-	for (int i = 0; i < ARRAY_SIZE(cart_magic); i++) {
-		if (!memcmp(&pHeader[0x100], cart_magic[i].sys_name, cart_magic[i].sys_name_len_100h) ||
-		    !memcmp(&pHeader[0x101], cart_magic[i].sys_name, cart_magic[i].sys_name_len_101h))
-		{
-			// Found a matching system name.
-			sysId = cart_magic[i].system_id;
-			break;
+	if (!memcmp(&pHeader[0x100], sega_magic, sizeof(sega_magic))) {
+		// "SEGA" is at 0x100.
+		for (unsigned int i = 0; i < ARRAY_SIZE(cart_magic_sega); i++) {
+			if (!memcmp(&pHeader[0x104], cart_magic_sega[i].sys_name,
+			                             cart_magic_sega[i].sys_name_len))
+			{
+				// Found a matching system name.
+				sysId = cart_magic_sega[i].system_id;
+				break;
+			}
 		}
+		if (sysId == MegaDrivePrivate::ROM_UNKNOWN) {
+			// Unknown "SEGA" header. Assume it's MD.
+			// NOTE: "Virtua Racing Deluxe (USA).32x" has "SEGA 32X U".
+			sysId = MegaDrivePrivate::ROM_SYSTEM_MD;
+		}
+	} else if (!memcmp(&pHeader[0x101], sega_magic, sizeof(sega_magic))) {
+		// "SEGA" is at 0x101.
+		for (unsigned int i = 0; i < ARRAY_SIZE(cart_magic_sega); i++) {
+			if (!memcmp(&pHeader[0x105], cart_magic_sega[i].sys_name,
+			                             cart_magic_sega[i].sys_name_len-1))
+			{
+				// Found a matching system name.
+				sysId = cart_magic_sega[i].system_id;
+				break;
+			}
+		}
+		if (sysId == MegaDrivePrivate::ROM_UNKNOWN) {
+			// Unknown "SEGA" header. Assume it's MD.
+			// NOTE: "Virtua Racing Deluxe (USA).32x" has "SEGA 32X U".
+			sysId = MegaDrivePrivate::ROM_SYSTEM_MD;
+		}
+	} else {
+		// Not a "SEGA" cartridge header.
+		// Check for less common ROMs without a "SEGA" system name.
+		for (unsigned int i = 0; i < ARRAY_SIZE(cart_magic_other); i++) {
+			if (!memcmp(&pHeader[0x100], cart_magic_other[i].sys_name, 16)) {
+				// Found a matching system name.
+				sysId = cart_magic_other[i].system_id;
+				break;
+			}
+		}
+	}
+
+	if (sysId == MegaDrivePrivate::ROM_UNKNOWN) {
+		// Still unknown...
+		return sysId;
 	}
 
 	uint32_t sysIdOnly = (sysId & MegaDrivePrivate::ROM_SYSTEM_MASK);
@@ -827,11 +1038,11 @@ int MegaDrive::isRomSupported_static(const DetectInfo *info)
 			if (!memcmp(&pHeader[secprgaddr], secprgdesc, sizeof(secprgdesc)-1)) {
 				// Module name is correct.
 				// TODO: Does the ROM header have to say "SEGA 32X"?
-				sysId = MegaDrivePrivate::ROM_SYSTEM_32X;
+				sysIdOnly = MegaDrivePrivate::ROM_SYSTEM_32X;
 			} else {
 				// Module name is incorrect.
 				// This ROM cannot activate 32X mode.
-				sysId = MegaDrivePrivate::ROM_SYSTEM_MD;
+				sysIdOnly = MegaDrivePrivate::ROM_SYSTEM_MD;
 			}
 			sysId &= ~MegaDrivePrivate::ROM_SYSTEM_MASK;
 			sysId |= sysIdOnly;
@@ -1005,6 +1216,71 @@ const char *const *MegaDrive::supportedMimeTypes_static(void)
 }
 
 /**
+ * Get a bitfield of image types this class can retrieve.
+ * @return Bitfield of supported image types. (ImageTypesBF)
+ */
+uint32_t MegaDrive::supportedImageTypes_static(void)
+{
+	return IMGBF_EXT_TITLE_SCREEN;
+}
+
+/**
+ * Get a list of all available image sizes for the specified image type.
+ * @param imageType Image type.
+ * @return Vector of available image sizes, or empty vector if no images are available.
+ */
+vector<RomData::ImageSizeDef> MegaDrive::supportedImageSizes_static(ImageType imageType)
+{
+	ASSERT_supportedImageSizes(imageType);
+
+	switch (imageType) {
+		case IMG_EXT_TITLE_SCREEN: {
+			// FIXME: Assuming 320x224; some games might use 256x224,
+			// which will need scaling.
+			static const ImageSizeDef sz_EXT_TITLE_SCREEN[] = {
+				{nullptr, 292, 224, 0},
+			};
+			return vector<ImageSizeDef>(sz_EXT_TITLE_SCREEN,
+				sz_EXT_TITLE_SCREEN + ARRAY_SIZE(sz_EXT_TITLE_SCREEN));
+		}
+		default:
+			break;
+	}
+
+	// Unsupported image type.
+	return vector<ImageSizeDef>();
+}
+
+/**
+ * Get image processing flags.
+ *
+ * These specify post-processing operations for images,
+ * e.g. applying transparency masks.
+ *
+ * @param imageType Image type.
+ * @return Bitfield of ImageProcessingBF operations to perform.
+ */
+uint32_t MegaDrive::imgpf(ImageType imageType) const
+{
+	ASSERT_imgpf(imageType);
+
+	uint32_t ret = 0;
+	switch (imageType) {
+		case IMG_EXT_TITLE_SCREEN:
+			// Rescaling is required for the 8:7 pixel aspect ratio
+			// if the image is 256px wide. Note that this flag only
+			// takes effect for 256px or 512px images; 320px images
+			// will not be rescaled.
+			ret = IMGPF_RESCALE_ASPECT_8to7;
+			break;
+
+		default:
+			break;
+	}
+	return ret;
+}
+
+/**
  * Load field data.
  * Called by RomData::fields() if the field data hasn't been loaded yet.
  * @return Number of fields read on success; negative POSIX error code on error.
@@ -1072,6 +1348,285 @@ int MegaDrive::loadFieldData(void)
 }
 
 /**
+ * Load metadata properties.
+ * Called by RomData::metaData() if the field data hasn't been loaded yet.
+ * @return Number of metadata properties read on success; negative POSIX error code on error.
+ */
+int MegaDrive::loadMetaData(void)
+{
+	RP_D(MegaDrive);
+	if (d->metaData != nullptr) {
+		// Metadata *has* been loaded...
+		return 0;
+	} else if (!d->file) {
+		// File isn't open.
+		return -EBADF;
+	} else if (!d->isValid || (int)d->romType < 0) {
+		// Unknown ROM image type.
+		return -EIO;
+	}
+
+	// Create the metadata object.
+	d->metaData = new RomMetaData();
+	d->metaData->reserve(2);	// Maximum of 2 metadata properties.
+
+	// MD ROM header
+	// TODO: Lock-on support?
+	const MD_RomHeader *const romHeader = &d->romHeader;
+
+	// Title
+	// TODO: Domestic vs. export; space elimination?
+	// Check domestic first. If empty, check overseas.
+	string s_title = cp1252_sjis_to_utf8(romHeader->title_export, sizeof(romHeader->title_export));
+	trimEnd(s_title);
+	if (s_title.empty()) {
+		s_title = cp1252_sjis_to_utf8(romHeader->title_domestic, sizeof(romHeader->title_domestic));
+	}
+	if (!s_title.empty()) {
+		d->metaData->addMetaData_string(Property::Title, s_title);
+	}
+
+	// Publisher
+	// TODO: Don't show if the publisher is unknown?
+	d->metaData->addMetaData_string(Property::Publisher, d->getPublisher(romHeader));
+
+	// Finished reading the metadata.
+	return static_cast<int>(d->metaData->count());
+}
+
+/**
+ * Get a list of URLs for an external image type.
+ *
+ * A thumbnail size may be requested from the shell.
+ * If the subclass supports multiple sizes, it should
+ * try to get the size that most closely matches the
+ * requested size.
+ *
+ * @param imageType	[in]     Image type.
+ * @param pExtURLs	[out]    Output vector.
+ * @param size		[in,opt] Requested image size. This may be a requested
+ *                               thumbnail size in pixels, or an ImageSizeType
+ *                               enum value.
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int MegaDrive::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
+{
+	ASSERT_extURLs(imageType, pExtURLs);
+	pExtURLs->clear();
+
+	RP_D(const MegaDrive);
+	if (!d->isValid || (int)d->romType < 0) {
+		// ROM image isn't valid.
+		return -EIO;
+	}
+
+	// TODO: Some ROMs are 'worldwide' but may have a different
+	// title screen depending on region. This may need to be
+	// hard-coded...
+
+	// System IDs.
+	static const char *const sys_tbl[] = {
+		"md", "mcd", "32x", "mcd32x", "pico", "tera"
+	};
+	if ((d->romType & MegaDrivePrivate::ROM_SYSTEM_MASK) > ARRAY_SIZE(sys_tbl))
+		return -ENOENT;
+	const char *const sys = sys_tbl[d->romType & MegaDrivePrivate::ROM_SYSTEM_MASK];
+
+	// If this is S&K plus a locked-on ROM, use the
+	// locked-on ROM's serial number with region "S&K".
+	const MD_RomHeader *const pRomHeader = (d->pRomHeaderLockOn != nullptr
+						? d->pRomHeaderLockOn
+						: &d->romHeader);
+
+	const bool isEarlyRomHeader = d->checkIfEarlyRomHeader(pRomHeader);
+	const char *const s_serial_number = (isEarlyRomHeader
+		? pRomHeader->early.serial_number
+		: pRomHeader->serial_number);
+
+	// Make sure the ROM serial number is valid.
+	// It should start with one of the following:
+	// - "GM ": Game
+	// - "G  ": Some games and non-game titles don't have the 'M'.
+	// - "AI ": Educational
+	// - "BR ": Mega CD Boot ROM
+	// - "OS ": TMSS
+	// - "SP ": Multitap I/O Sample Program
+	// - "MK ": Incorrect "Game" designation used by some games.
+	// - "mk ": Lowercase "MK", used by "Senjou no Ookami II ~ Mercs (World)".
+	// - "T-":  Incorrect "third-party" designation. (Should be "GM T-")
+	// - "G-":  Incorrect "first-party JP" designation. (Should be "GM G-")
+	// - "TECTOY ": Used by TecToy titles.
+	// - "SF-": Some unlicensed titles.
+	// - "JN-": Some unlicensed titles.
+	// - "LGM-": Some unlicensed titles.
+	// - "HPC-": (Some) Sega Pico titles.
+	// - "MPR-": (Some) Sega Pico titles. (BR)
+	// - "837-": (Some) Samsung Pico titles. (KR)
+	// - "610-": (Some) Sega Pico titles. (JP)
+	// - TODO: Others?
+	uint16_t rom_type;
+	memcpy(&rom_type, s_serial_number, sizeof(rom_type));
+	// Verify the separator.
+	switch (s_serial_number[2]) {
+		case ' ': case '_': case '-': case 'T':
+			// ' ' is the normal version.
+			// '_' and '-' are used incorrectly by some ROMs.
+			// 'T' is used by a few that have a very long serial number.
+			break;
+		default:
+			// Check for some exceptions:
+			// - "T-": Incorrectly used by some games.
+			// - "TECTOY": Used by TecToy titles.
+			// - "HPC-": Used by some Pico titles.
+			// - "MPR-": Used by some Pico titles.
+			if (rom_type == cpu_to_be16('T-') ||
+			    rom_type == cpu_to_be16('G-') ||
+			    !memcmp(s_serial_number, "LGM-", 4) ||
+			    !memcmp(s_serial_number, "HPC-", 4) ||
+			    !memcmp(s_serial_number, "MPR-", 4) ||
+			    !memcmp(s_serial_number, "837-", 4) ||
+			    !memcmp(s_serial_number, "610-", 4) ||
+			    !memcmp(s_serial_number, "TECTOY ", 7))
+			{
+				// Found an exception.
+				break;
+			}
+			// Missing separator.
+			return -ENOENT;
+	}
+
+	// Verify the ROM type.
+	// TODO: Constant cpu_to_be16() macro for use in switch()?
+	switch (be16_to_cpu(rom_type)) {
+		case 'GM': case 'G ': case 'G-': case 'AI':
+		case 'BR': case 'OS':
+		case 'SP': case 'MK': case 'mk': case 'T-':
+		case 'TE':	// "TECTOY "
+		case 'SF': case 'JN': case 'LG':
+		case 'HP': case 'MP': case '61': case '83':
+			break;
+		default:
+			// Not a valid ROM type.
+			return -ENOENT;
+	}
+
+	// If this is S&K plus a locked-on ROM, use the
+	// locked-on ROM's serial number with region "S&K".
+	char region_code[4];
+	string gameID;
+	if (d->pRomHeaderLockOn && rom_type == cpu_to_be16('GM')) {
+		// Use region code "S&K" for locked-on ROMs.
+		memcpy(region_code, "S&K", 4);
+
+		// A unique title screen is only provided for:
+		// - Sonic 1 (all Blue Spheres levels)
+		// - Sonic 2 (Knuckles in Sonic 2)
+		// - Sonic 3 (Sonic 3 & Knuckles)
+
+		// If the serial number doesn't match, then use a
+		// generic "NO WAY!" screen.
+		if (!memcmp(&s_serial_number[3], "00001009-00", 11) ||
+		    !memcmp(&s_serial_number[3], "00004049-01", 11) ||
+		    !memcmp(&s_serial_number[3], "00001051-00", 11) ||
+		    !memcmp(&s_serial_number[3], "00001051-01", 11) ||
+		    !memcmp(&s_serial_number[3], "00001051-02", 11) ||
+		    !memcmp(&s_serial_number[3], "MK-1079 -00", 11))
+		{
+			// Unique title screen is available.
+			gameID = latin1_to_utf8(s_serial_number, sizeof(pRomHeader->serial_number));
+		} else {
+			// Generic title screen only.
+			// TODO: If the locked-on ROM is >2 MB, show S&K?
+			gameID = "NO-WAY";
+		}
+	} else {
+		// Using the MD hex region code.
+		static const char dec_to_hex[] = {
+			'0', '1', '2', '3', '4', '5', '6', '7',
+			'8', '9', 'A', 'B', 'C', 'D', 'E', 'F',
+		};
+		region_code[0] = dec_to_hex[d->md_region & 0x0F];
+		region_code[1] = '\0';
+
+		// Get the serial number and trim it.
+		gameID = latin1_to_utf8(s_serial_number, sizeof(pRomHeader->serial_number));
+		while (!gameID.empty()) {
+			size_t size = gameID.size();
+			if (gameID[size-1] != ' ')
+				break;
+			gameID.resize(size-1);
+		}
+		if (gameID.empty()) {
+			// No game ID. Image is not available.
+			return -ENOENT;
+		}
+	}
+
+	// Special handling for Wonder Mega 1.00 boot ROMs, since they
+	// have the same serial number as the matching Mega CD.
+	if (rom_type == cpu_to_be16('BR') &&
+	    pRomHeader->title_domestic[0] == 'W' &&
+	    pRomHeader->title_domestic[6] == '-')
+	{
+		gameID += "-WM";
+	}
+
+	// Special handling for Game Toshokan ROMs, which have a 128 KB Boot ROM
+	// and 128 KB RAM for downloaded games.
+	// NOTE: No-Intro has two sets:
+	// - "Game no Kanzume Otokuyou": Boot ROM + game data (found on compilation discs)
+	// - "SegaNet": Same, but most of these have had their checksums updated for the full 256 KB.
+	if (d->gt_crc != 0) {
+		// Use the CRC32 of $20000-$200FF as the filename with the GT "region".
+		region_code[0] = 'G';
+		region_code[1] = 'T';
+		region_code[2] = '\0';
+		char buf[16];
+		snprintf(buf, sizeof(buf), "%08X", d->gt_crc);
+		gameID = buf;
+	}
+
+	// NOTE: We only have one size for MegaDrive right now.
+	// TODO: Determine the actual image size.
+	RP_UNUSED(size);
+	vector<ImageSizeDef> sizeDefs = supportedImageSizes(imageType);
+	assert(sizeDefs.size() == 1);
+	if (sizeDefs.empty()) {
+		// No image sizes.
+		return -ENOENT;
+	}
+
+	// NOTE: RPDB's title screen database only has one size.
+	// There's no need to check image sizes, but we need to
+	// get the image size for the extURLs struct.
+
+	// Determine the image type name.
+	const char *imageTypeName;
+	const char *ext;
+	switch (imageType) {
+		case IMG_EXT_TITLE_SCREEN:
+			imageTypeName = "title";
+			ext = ".png";
+			break;
+		default:
+			// Unsupported image type.
+			return -ENOENT;
+	}
+
+	// Add the URLs.
+	pExtURLs->resize(1);
+	auto extURL_iter = pExtURLs->begin();
+	extURL_iter->url = d->getURL_RPDB(sys, imageTypeName, region_code, gameID.c_str(), ext);
+	extURL_iter->cache_key = d->getCacheKey_RPDB(sys, imageTypeName, region_code, gameID.c_str(), ext);
+	extURL_iter->width = sizeDefs[0].width;
+	extURL_iter->height = sizeDefs[0].height;
+	extURL_iter->high_res = (sizeDefs[0].index >= 2);
+
+	// All URLs added.
+	return 0;
+}
+
+/**
  * Check for "viewed" achievements.
  *
  * @return Number of achievements unlocked.
@@ -1089,7 +1644,11 @@ int MegaDrive::checkViewedAchievements(void) const
 
 	if (d->pRomHeaderLockOn) {
 		// Is it S&K locked on to S&K?
-		if (!memcmp(d->pRomHeaderLockOn->serial, "GM MK-1563 -00", sizeof(d->pRomHeaderLockOn->serial))) {
+		// NOTE: S&K always has a standard serial number,
+		// so we don't have to call checkIfEarlyRomHeader().
+		if (!memcmp(d->pRomHeaderLockOn->serial_number, "GM MK-1563 -00",
+		            sizeof(d->pRomHeaderLockOn->serial_number)))
+		{
 			// It is!
 			pAch->unlock(Achievements::ID::ViewedMegaDriveSKwithSK);
 			ret++;

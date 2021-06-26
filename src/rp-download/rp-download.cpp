@@ -517,16 +517,18 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 	slash_pos = _tcschr(cache_key_urlencode.data(), _T('/'));
 
 	// Determine the full URL based on the cache key.
+	bool ok = false;
 	TCHAR full_url[256];
 	if ((prefix_len == 3 && (!_tcsncmp(cache_key, _T("wii"), 3) || !_tcsncmp(cache_key, _T("3ds"), 3))) ||
 	    (prefix_len == 4 && !_tcsncmp(cache_key, _T("wiiu"), 4)) ||
 	    (prefix_len == 2 && !_tcsncmp(cache_key, _T("ds"), 2)))
 	{
-		// Wii, Wii U, Nintendo 3DS, Nintendo DS
+		// GameTDB: Wii, Wii U, Nintendo 3DS, Nintendo DS
+		ok = true;
 		_sntprintf(full_url, _countof(full_url),
 			_T("https://art.gametdb.com/%s"), cache_key_urlencode.c_str());
 	} else if (prefix_len == 6 && !_tcsncmp(cache_key, _T("amiibo"), 6)) {
-		// amiibo.
+		// amiibo.life: amiibo images
 		// NOTE: We need to remove the file extension.
 		size_t filename_len = _tcslen(slash_pos+1);
 		if (filename_len <= 4) {
@@ -536,17 +538,55 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 		}
 		filename_len -= 4;
 
+		ok = true;
 		_sntprintf(full_url, _countof(full_url),
 			_T("https://amiibo.life/nfc/%.*s/image"),
 			static_cast<int>(filename_len), slash_pos+1);
-	} else if ((prefix_len == 3 && !_tcsncmp(cache_key, _T("gba"), 3)) ||
-		   (prefix_len == 2 && (!_tcsncmp(cache_key, _T("gb"), 2) || !_tcsncmp(cache_key, _T("ws"), 2))) ||
-		   (prefix_len == 4 && (!_tcsncmp(cache_key, _T("snes"), 4) || !_tcsncmp(cache_key, _T("ngpc"), 4)))) {
-		// Game Boy, Game Boy Color, Game Boy Advance, Super NES,
-		// Neo Geo Pocket, Neo Geo Pocket Color
-		_sntprintf(full_url, _countof(full_url),
-			_T("https://rpdb.gerbilsoft.com/%s"), cache_key_urlencode.c_str());
 	} else {
+		// RPDB: Title screen images for various systems.
+		//"mcd32x", "pico", "tera"
+		switch (prefix_len) {
+			default:
+				break;
+			case 2:
+				if (!_tcsncmp(cache_key, _T("gb"), 2) ||
+				    !_tcsncmp(cache_key, _T("ws"), 2) ||
+				    !_tcsncmp(cache_key, _T("md"), 2))
+				{
+					ok = true;
+				}
+				break;
+			case 3:
+				if (!_tcsncmp(cache_key, _T("gba"), 3) ||
+				    !_tcsncmp(cache_key, _T("mcd"), 3) ||
+				    !_tcsncmp(cache_key, _T("32x"), 3))
+				{
+					ok = true;
+				}
+				break;
+			case 4:
+				if (!_tcsncmp(cache_key, _T("snes"), 4) ||
+				    !_tcsncmp(cache_key, _T("ngpc"), 4) ||
+				    !_tcsncmp(cache_key, _T("pico"), 4) ||
+				    !_tcsncmp(cache_key, _T("tera"), 4))
+				{
+					ok = true;
+				}
+				break;
+			case 6:
+				if (!_tcsncmp(cache_key, _T("mcd32x"), 6)) {
+					ok = true;
+				}
+				break;
+		}
+
+		if (ok) {
+			_sntprintf(full_url, _countof(full_url),
+				_T("https://rpdb.gerbilsoft.com/%s"), cache_key_urlencode.c_str());
+		}
+	}
+
+	if (!ok) {
 		// Prefix is not supported.
 		SHOW_ERROR(_T("Cache key '%s' has an unsupported prefix."), cache_key);
 		return EXIT_FAILURE;

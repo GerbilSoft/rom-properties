@@ -378,6 +378,10 @@ skip_image_check:
 			ImgClass scaled_img = rescaleImgClass(pOutParams->retImg, pOutParams->fullSize);
 			freeImgClass(pOutParams->retImg);
 			pOutParams->retImg = scaled_img;
+
+			// Disable nearest-neighbor scaling, since we already lost
+			// pixel-perfect sharpness with the 8:7 rescale.
+			imgpf &= ~RomData::IMGPF_RESCALE_NEAREST;
 		}
 	}
 

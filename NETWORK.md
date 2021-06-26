@@ -37,6 +37,7 @@ or deleted.
   * Nintendo Game Boy
   * Nintendo Game Boy Color
   * Nintendo Game Boy Advance
+  * Sega Mega Drive / Genesis, Sega CD, 32X, Pico
   * Super NES
   * WonderSwan (Color)
 
