@@ -109,7 +109,7 @@ button.
 | Nintendo Wii Saves        |       Yes      |    No    |       Yes       |       N/A       |
 | Nintendo Wii U            |       Yes      |    No    |        No       |   Disc, Covers  |
 | Sega 8-bit (SMS, GG)      |       Yes      |    Yes   |       N/A       |        No       |
-| Sega Mega Drive           |       Yes      |    No    |       N/A       |        No       |
+| Sega Mega Drive           |       Yes      |    Yes   |       N/A       |      Title      |
 | Sega Dreamcast            |       Yes      |    Yes   |      Media      |        No       |
 | Sega Dreamcast Saves      |       Yes      |    Yes   |   Icon, Banner  |        No       |
 | Sega Saturn               |       Yes      |    Yes   |       N/A       |        No       |
@@ -119,6 +119,7 @@ button.
 | Sony PlayStation 2 Discs  |       Yes      |    Yes   |       N/A       |        No       |
 
 \* Internal images are only present in Wii DLC WADs.
+\* Sega Mega Drive includes Sega CD, 32X, and Pico.
 
 ### Handhelds
 
