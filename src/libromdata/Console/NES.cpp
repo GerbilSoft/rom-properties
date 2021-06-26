@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * NES.cpp: Nintendo Entertainment System/Famicom ROM reader.              *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * Copyright (c) 2016-2018 by Egor.                                        *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
@@ -80,6 +80,12 @@ class NESPrivate final : public RomDataPrivate
 			TNES_RomHeader tnes;
 		} header;
 
+		// ROM footer. (optional)
+		NES_IntFooter footer;
+		bool hasCheckedIntFooter;	// True if we already checked.
+		uint8_t intFooterErrno;		// If checked: 0 if valid, positive errno on error.
+		string s_footerName;		// Name from the footer.
+
 		/**
 		 * Convert an FDS BCD datestamp to Unix time.
 		 * @param fds_bcd_ds FDS BCD datestamp.
@@ -90,6 +96,17 @@ class NESPrivate final : public RomDataPrivate
 		 * was released in 1983.
 		 */
 		static time_t fds_bcd_datestamp_to_unix_time(const FDS_BCD_DateStamp *fds_bcd_ds);
+
+		/**
+		 * Load the internal footer.
+		 * This is present at the end of the last PRG bank in some ROMs.
+		 *
+		 * NOTE: The NES header must have already been loaded, since we
+		 * need to know how many PRG ROM banks are present.
+		 *
+		 * @return 0 if found; negative POSIX error code on error.
+		 */
+		int loadInternalFooter(void);
 };
 
 /** NESPrivate **/
@@ -97,9 +114,12 @@ class NESPrivate final : public RomDataPrivate
 NESPrivate::NESPrivate(NES *q, IRpFile *file)
 	: super(q, file)
 	, romType(ROM_UNKNOWN)
+	, hasCheckedIntFooter(false)
+	, intFooterErrno(255)
 {
 	// Clear the ROM header structs.
 	memset(&header, 0, sizeof(header));
+	memset(&footer, 0, sizeof(footer));
 }
 
 /**
@@ -150,6 +170,180 @@ time_t NESPrivate::fds_bcd_datestamp_to_unix_time(const FDS_BCD_DateStamp *fds_b
 
 	// If conversion fails, d->ctime will be set to -1.
 	return timegm(&fdstime);
+}
+
+/**
+ * Load the internal NES footer.
+ * This is present at the end of the last PRG bank in some ROMs.
+ *
+ * NOTE: The NES header must have already been loaded, since we
+ * need to know how many PRG ROM banks are present.
+ *
+ * @return 0 if found; negative POSIX error code on error.
+ */
+int NESPrivate::loadInternalFooter(void)
+{
+	if (hasCheckedIntFooter) {
+		return intFooterErrno;
+	}
+	hasCheckedIntFooter = true;
+	intFooterErrno = EIO;
+
+	// Get the PRG ROM size.
+	unsigned int prg_rom_size;
+	switch (romType & NESPrivate::ROM_FORMAT_MASK) {
+		case ROM_FORMAT_OLD_INES:
+		case ROM_FORMAT_INES:
+			prg_rom_size = header.ines.prg_banks * INES_PRG_BANK_SIZE;
+			break;
+		case ROM_FORMAT_NES2:
+			prg_rom_size = ((header.ines.prg_banks +
+					(header.ines.nes2.prg_banks_hi << 8))
+					* INES_PRG_BANK_SIZE);
+			break;
+		case ROM_FORMAT_TNES:
+			prg_rom_size = header.tnes.prg_banks * TNES_PRG_BANK_SIZE;
+			break;
+		default:
+			// FDS is not supported here.
+			// TODO: ENOTSUP instead?
+			intFooterErrno = ENOENT;
+			return -((int)intFooterErrno);
+	}
+
+	// Check for the internal NES footer.
+	// This is located at the last 32 bytes of the last PRG bank in some ROMs.
+	// We'll verify that it's valid by looking for an
+	// all-ASCII title, possibly right-aligned with
+	// 0xFF filler bytes.
+	// NOTE: +16 to skip the iNES header.
+	const unsigned int addr = prg_rom_size - sizeof(footer) + 16;
+
+	size_t size = file->seekAndRead(addr, &footer, sizeof(footer));
+	if (size != sizeof(footer)) {
+		// Seek and/or read error.
+		// Assume we don't have an internal footer.
+		intFooterErrno = ENOENT;
+		return intFooterErrno;
+	}
+
+	// Check the board information value.
+	// TODO: Determine valid values.
+	// - Bit 7: can be set, indicates ???
+	// - Bits 0, 1, 2 control mirroring; mutually-exclusive.
+	// FIXME: These are no longer detected:
+	// - 0x03: J.League Fighting Soccer - The King of Ace Strikers (Japan)
+	// FIXME: These *are* being detected but shouldn't be:
+	// - 0x84: Mario Bros. (Europe) (PAL-MA-0)
+	// - 0x84: Mario Bros. (World) (GameCube Edition)
+	// - 0x84: Mario Bros. (World)
+
+	// Check for special cases.
+	switch (footer.board_info) {
+		case 0x14:
+			// Special case for: Pinball Quest (Australia)
+			goto skip_board_info_check;
+		case 0x84:
+			// Mario Bros. - header is NOT valid.
+			// NOTE: Bomberman II (Japan) also has 0x84,
+			// so also check for an invalid CHR checksum.
+			if (footer.chr_checksum == le16_to_cpu(0x8484)) {
+				// Invalid CHR checksum.
+				intFooterErrno = ENOENT;
+				return intFooterErrno;
+			}
+			break;
+		default:
+			break;
+	}
+
+	if (footer.board_info & 0x78) {
+		// Invalid bits set.
+		intFooterErrno = ENOENT;
+		return intFooterErrno;
+	} else {
+		switch (footer.board_info & 0x07) {
+			case 0: case 1:
+			case 2: case 4:
+				// Valid mirroring bits.
+				break;
+			case 5: {
+				// These titles have "00 01 02 03 04 05 06 07":
+				// - Higemaru - Makai-jima - Nanatsu no Shima Daibouken (Japan)
+				// - Makai Island (USA) (Proto)
+				static const uint8_t check_05[] = {0,1,2,3,4,5,6,7};
+				const uint8_t *const u8 = reinterpret_cast<const uint8_t*>(&footer);
+				if (memcmp(&u8[0x10], check_05, sizeof(check_05)) != 0) {
+					// Not valid.
+					intFooterErrno = ENOENT;
+					return intFooterErrno;
+				}
+				break;
+			}
+			default:
+				// Not valid mirroring bits.
+				intFooterErrno = ENOENT;
+				return intFooterErrno;
+		}
+	}
+
+skip_board_info_check:
+	// Check if the name looks right.
+	unsigned int firstNonFF = static_cast<unsigned int>(sizeof(footer.name));
+	unsigned int lastValidChar = static_cast<unsigned int>(sizeof(footer.name)) - 1;
+	bool foundNonFF = false;
+	bool foundInvalid = false;
+	for (unsigned int i = 0; i < static_cast<unsigned int>(sizeof(footer.name)); i++) {
+		uint8_t chr = static_cast<uint8_t>(footer.name[i]);
+
+		// Skip leading NULL and 0xFF.
+		// End at trailing NULL and 0xFF.
+		// TODO:
+		// - Adventures of Gilligan's Island, The (USA): Valid header; name is all 0x20.
+		// - Akagawa Jirou no Yuurei Ressha (Japan): Name may have Shift-JIS.
+		if (chr == 0U || chr == 0xFFU) {
+			if (!foundNonFF) {
+				// Leading 0xFF. Skip it.
+				continue;
+			} else {
+				// Trailing 0xFF. End of string.
+				if (i == 0) {
+					// Shouldn't happen...
+					foundInvalid = true;
+					break;
+				}
+				lastValidChar = i - 1;
+				break;
+			}
+		}
+		// Also skip leading spaces.
+		if (!foundNonFF && chr == ' ') {
+			continue;
+		}
+
+		if (!foundNonFF) {
+			foundNonFF = true;
+			firstNonFF = i;
+		}
+		if (chr < 32 || chr >= 127) {
+			// Invalid character.
+			foundInvalid = true;
+			break;
+		}
+	}
+
+	if (!foundInvalid &&
+	    firstNonFF < static_cast<unsigned int>(sizeof(footer.name)) &&
+	    lastValidChar > firstNonFF && lastValidChar < static_cast<unsigned int>(sizeof(footer.name)))
+	{
+		// Name looks valid.
+		s_footerName = latin1_to_utf8(&footer.name[firstNonFF], lastValidChar - firstNonFF + 1);
+		intFooterErrno = 0;
+	} else {
+		// Does not appear to be a valid footer.
+		intFooterErrno = ENOENT;
+	}
+	return -((int)intFooterErrno);
 }
 
 /** NES **/
@@ -1082,103 +1276,40 @@ int NES::loadFieldData(void)
 			d->fields->addField_string(C_("NES", "Default Expansion"), s_exp_hw);
 		}
 
-		// Check for the internal NES footer.
-		// This is located at the last 32 bytes of the last PRG bank in some ROMs.
-		// We'll verify that it's valid by looking for an
-		// all-ASCII title, possibly right-aligned with
-		// 0xFF filler bytes.
-		// NOTE: +16 to skip the iNES header.
-		NES_IntFooter intFooter;
-		bool hasFooter = false;
-		unsigned int firstNonFF = (unsigned int)sizeof(intFooter.name);
-		unsigned int addr = prg_rom_size - sizeof(intFooter) + 16;
-
-		do {	// to break out early
-			size_t size = d->file->seekAndRead(addr, &intFooter, sizeof(intFooter));
-			if (size != sizeof(intFooter)) {
-				// Seek and/or read error.
-				// Assume we don't have an internal footer.
-				break;
-			}
-
-			// Check the mirroring value.
-			if ((intFooter.board_info >> 4) > 1) {
-				// Incorrect mirroring value.
-				break;
-			}
-
-			// Check if the name looks right.
-			firstNonFF = (unsigned int)sizeof(intFooter.name);
-			bool foundNonFF = false;
-			bool foundInvalid = false;
-			for (unsigned int i = 0; i < (unsigned int)sizeof(intFooter.name); i++) {
-				uint8_t chr = (uint8_t)intFooter.name[i];
-
-				// Skip leading 0xFF.
-				if (chr == 0xFF) {
-					if (foundNonFF) {
-						// Cannot have 0xFF here.
-						foundInvalid = true;
-						break;
-					}
-					continue;
-				}
-				// Also skip leading spaces.
-				if (!foundNonFF && chr == ' ') {
-					continue;
-				}
-
-				if (!foundNonFF) {
-					foundNonFF = true;
-					firstNonFF = i;
-				}
-				if (chr < 32 || chr >= 127) {
-					// Invalid character.
-					foundInvalid = true;
-					break;
-				}
-			}
-
-			if (!foundInvalid && firstNonFF < (unsigned int)sizeof(intFooter.name)) {
-				// Name looks valid.
-				hasFooter = true;
-				break;
-			}
-		} while (0);
-
-		if (hasFooter) {
+		// Check for the internal footer.
+		if (d->loadInternalFooter() == 0) {
 			// Found the internal footer.
 			d->fields->addTab("Internal Footer");
+			const NES_IntFooter &footer = d->footer;
 
 			// Internal name (Assuming ASCII)
-			if (firstNonFF < (unsigned int)sizeof(intFooter.name)) {
+			if (!d->s_footerName.empty()) {
 				d->fields->addField_string(C_("NES", "Internal Name"),
-					latin1_to_utf8(&intFooter.name[firstNonFF], sizeof(intFooter.name)-firstNonFF),
-					RomFields::STRF_TRIM_END);
+					d->s_footerName, RomFields::STRF_TRIM_END);
 			}
 
 			// PRG checksum
 			d->fields->addField_string_numeric(C_("NES", "PRG Checksum"),
-				le16_to_cpu(intFooter.prg_checksum),
+				le16_to_cpu(footer.prg_checksum),
 				RomFields::Base::Hex, 4, RomFields::STRF_MONOSPACE);
 
 			// CHR checksum
 			d->fields->addField_string_numeric(C_("NES", "CHR Checksum"),
-				le16_to_cpu(intFooter.chr_checksum),
+				le16_to_cpu(footer.chr_checksum),
 				RomFields::Base::Hex, 4, RomFields::STRF_MONOSPACE);
 
 			// ROM sizes (as powers of two)
 			static const uint8_t sz_shift_lookup[] = {
 				0,	// 0
-				0,	// 1
+				14,	// 1 (16 KB)
 				15,	// 2 (32 KB)
 				17,	// 3 (128 KB)
 				18,	// 4 (256 KB)
 				19,	// 5 (512 KB)
 			};
 
-			const uint8_t prg_sz_idx = intFooter.rom_size >> 4;
-			const uint8_t chr_sz_idx = intFooter.rom_size & 0x0F;
+			const uint8_t prg_sz_idx = footer.rom_size >> 4;
+			const uint8_t chr_sz_idx = footer.rom_size & 0x0F;
 			unsigned int prg_size = 0, chr_size = 0;
 			if (prg_sz_idx < ARRAY_SIZE(sz_shift_lookup)) {
 				prg_size = (1 << sz_shift_lookup[prg_sz_idx]);
@@ -1200,17 +1331,30 @@ int NES::loadFieldData(void)
 
 			// CHR ROM size
 			string s_chr_size;
+			bool b_chr_ram = false;
 			if (chr_sz_idx == 0) {
 				s_chr_size = C_("NES", "Not set");
 			} else if (chr_size > 1) {
 				s_chr_size = formatFileSizeKiB(chr_size);
+			} else if (chr_sz_idx == 8) {
+				// CHR RAM: 8 KiB
+				b_chr_ram = true;
+				s_chr_size = formatFileSizeKiB(8192);
 			} else {
 				s_chr_size = rp_sprintf(C_("RomData", "Unknown (0x%02X)"), chr_sz_idx);
 			}
-			d->fields->addField_string(C_("NES", "CHR ROM Size"), s_chr_size);
+			if (likely(!b_chr_ram)) {
+				d->fields->addField_string(C_("NES", "CHR ROM Size"), s_chr_size);
+			} else {
+				// NOTE: Some ROMs that have CHR ROM indicate CHR RAM in the footer,
+				// e.g. Castlevania II - Simon's Quest (E/U) and Contra (J).
+				// Other regional versions of these games actually *do* have CHR RAM.
+				d->fields->addField_string(C_("NES", "CHR RAM Size"), s_chr_size);
+			}
 
 			// Mirroring
-			switch (intFooter.board_info >> 4) {
+			// TODO: This is incorrect; need to figure out the correct values...
+			switch (footer.board_info >> 4) {
 				case 0:
 					s_mirroring = C_("NES|Mirroring", "Horizontal");
 					break;
@@ -1225,23 +1369,23 @@ int NES::loadFieldData(void)
 				d->fields->addField_string(mirroring_title, s_mirroring);
 			} else {
 				d->fields->addField_string(mirroring_title,
-					rp_sprintf(C_("RomData", "Unknown (0x%02X)"), intFooter.board_info >> 4));
+					rp_sprintf(C_("RomData", "Unknown (0x%02X)"), footer.board_info >> 4));
 			}
 
 			// Board type
 			// TODO: Lookup table.
 			d->fields->addField_string_numeric(C_("NES", "Board Type"),
-				intFooter.board_info & 0x0F);
+				footer.board_info & 0x0F);
 
 			// Publisher
 			const char *const publisher_title = C_("RomData", "Publisher");
 			const char *const publisher =
-				NintendoPublishers::lookup_old(intFooter.publisher_code);
+				NintendoPublishers::lookup_old(footer.publisher_code);
 			if (publisher) {
 				d->fields->addField_string(publisher_title, publisher);
 			} else {
 				d->fields->addField_string(publisher_title,
-					rp_sprintf(C_("RomData", "Unknown (0x%02X)"), intFooter.publisher_code));
+					rp_sprintf(C_("RomData", "Unknown (0x%02X)"), footer.publisher_code));
 			}
 		}
 	}

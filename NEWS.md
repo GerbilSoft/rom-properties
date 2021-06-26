@@ -77,6 +77,7 @@
     conversion to librptexture in v1.5.
   * rpcli: Fix a segfault with JSON output on MD ROMs that have empty
     string fields.
+  * NES: Improved internal footer detection.
 
 * Security Notes:
   * pngcheck-2.3.0 was previously used to validate PNG images before loading
