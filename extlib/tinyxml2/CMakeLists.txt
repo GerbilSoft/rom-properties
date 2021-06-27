@@ -1,10 +1,6 @@
 # rom-properties: Disable CMake version requirement.
 #cmake_minimum_required(VERSION 3.15)
-project(tinyxml2 VERSION 8.1.0)
-
-IF(0) # rom-properties: CMake policies.
-cmake_policy(SET CMP0048 NEW)
-ENDIF(0) # rom-properties
+project(tinyxml2 VERSION 9.0.0)
 
 IF(0) # rom-properties: Disable tests.
 include(CTest)
