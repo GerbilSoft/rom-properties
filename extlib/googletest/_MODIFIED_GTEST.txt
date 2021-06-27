@@ -1,4 +1,11 @@
-This copy of googletest-1.10.0 is a modified version of the original.
+This copy of googletest-1.11.0 is a modified version of the original.
+
+commit e2239ee6043f73722e7aa812a459f54a28552929
+    Googletest export
+    
+    Release GoogleTest 1.11.0
+    
+    PiperOrigin-RevId: 378861756
 
 The following changes have been made to the original:
 
@@ -15,5 +22,5 @@ The following changes have been made to the original:
 - Removed test suites, scripts, and Xcode projects in order to reduce
   warnings on LGTM.
 
-To obtain the original googletest-1.10.0, visit:
+To obtain the original googletest-1.11.0, visit:
 https://github.com/google/googletest
