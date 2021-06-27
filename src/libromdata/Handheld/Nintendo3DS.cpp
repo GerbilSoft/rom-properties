@@ -37,11 +37,20 @@ using std::vector;
 
 // zlib for crc32()
 #include <zlib.h>
+#ifdef _MSC_VER
+// MSVC: Exception handling for /DELAYLOAD.
+#  include "libwin32common/DelayLoadHelper.h"
+#endif /* _MSC_VER */
 
 namespace LibRomData {
 
 ROMDATA_IMPL(Nintendo3DS)
 ROMDATA_IMPL_IMG_SIZES(Nintendo3DS)
+
+#ifdef _MSC_VER
+// DelayLoad test implementation.
+DELAYLOAD_TEST_FUNCTION_IMPL0(get_crc_table);
+#endif /* _MSC_VER */
 
 /** Nintendo3DSPrivate **/
 
@@ -737,11 +746,29 @@ void Nintendo3DSPrivate::addTitleIdAndProductCodeFields(bool showContentType)
 	if (f_logo) {
 		const off64_t szFile = f_logo->size();
 		if (szFile == 8192) {
-			// Calculate the CRC32.
-			unique_ptr<uint8_t[]> buf(new uint8_t[static_cast<unsigned int>(szFile)]);
-			size_t size = f_logo->read(buf.get(), static_cast<unsigned int>(szFile));
-			if (size == static_cast<unsigned int>(szFile)) {
-				crc = crc32(0, buf.get(), static_cast<unsigned int>(szFile));
+#if defined(_MSC_VER) && defined(ZLIB_IS_DLL)
+			// Delay load verification.
+			// TODO: Only if linked with /DELAYLOAD?
+			bool has_zlib = true;
+			if (DelayLoad_test_get_crc_table() != 0) {
+				// Delay load failed.
+				// Can't calculate the CRC32.
+				has_zlib = false;
+			}
+#else /* !defined(_MSC_VER) || !defined(ZLIB_IS_DLL) */
+			// zlib isn't in a DLL, but we need to ensure that the
+			// CRC table is initialized anyway.
+			static const bool has_zlib = true;
+			get_crc_table();
+#endif /* defined(_MSC_VER) && defined(ZLIB_IS_DLL) */
+
+			if (has_zlib) {
+				// Calculate the CRC32.
+				unique_ptr<uint8_t[]> buf(new uint8_t[static_cast<unsigned int>(szFile)]);
+				size_t size = f_logo->read(buf.get(), static_cast<unsigned int>(szFile));
+				if (size == static_cast<unsigned int>(szFile)) {
+					crc = crc32(0, buf.get(), static_cast<unsigned int>(szFile));
+				}
 			}
 		} else if (szFile > 0) {
 			// Some other custom logo.

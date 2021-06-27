@@ -28,13 +28,21 @@ using std::string;
 using std::vector;
 
 // zlib for crc32()
-// TODO: DelayLoad [also need to add DelayLoad to Nintendo3DS, Nintendo3DSFirm, and KeyStoreUI]
 #include <zlib.h>
+#ifdef _MSC_VER
+// MSVC: Exception handling for /DELAYLOAD.
+#  include "libwin32common/DelayLoadHelper.h"
+#endif /* _MSC_VER */
 
 namespace LibRomData {
 
 ROMDATA_IMPL(MegaDrive)
 ROMDATA_IMPL_IMG(MegaDrive)
+
+#ifdef _MSC_VER
+// DelayLoad test implementation.
+DELAYLOAD_TEST_FUNCTION_IMPL0(get_crc_table);
+#endif /* _MSC_VER */
 
 class MegaDrivePrivate final : public RomDataPrivate
 {
@@ -817,6 +825,20 @@ MegaDrive::MegaDrive(IRpFile *file)
 	    !memcmp(s_serial_number, "GM 00054503-00", sizeof(d->romHeader.serial_number)) &&
 	    (d->romType & MegaDrivePrivate::ROM_FORMAT_MASK) == MegaDrivePrivate::ROM_FORMAT_CART_BIN)
 	{
+#if defined(_MSC_VER) && defined(ZLIB_IS_DLL)
+		// Delay load verification.
+		// TODO: Only if linked with /DELAYLOAD?
+		if (DelayLoad_test_get_crc_table() != 0) {
+			// Delay load failed.
+			// Can't calculate the CRC32.
+			return;
+		}
+#else /* !defined(_MSC_VER) || !defined(ZLIB_IS_DLL) */
+		// zlib isn't in a DLL, but we need to ensure that the
+		// CRC table is initialized anyway.
+		get_crc_table();
+#endif /* defined(_MSC_VER) && defined(ZLIB_IS_DLL) */
+
 		// Calculate the CRC32 of $20000-$200FF.
 		// TODO: SMD deinterleaving.
 		uint8_t buf[256];

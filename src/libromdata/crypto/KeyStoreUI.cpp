@@ -32,6 +32,10 @@ using std::vector;
 
 // zlib for crc32()
 #include <zlib.h>
+#ifdef _MSC_VER
+// MSVC: Exception handling for /DELAYLOAD.
+#  include "libwin32common/DelayLoadHelper.h"
+#endif /* _MSC_VER */
 
 // for Qt-style signal emission
 #ifdef emit
@@ -40,6 +44,11 @@ using std::vector;
 #define emit
 
 namespace LibRomData {
+
+#ifdef _MSC_VER
+// DelayLoad test implementation.
+DELAYLOAD_TEST_FUNCTION_IMPL0(get_crc_table);
+#endif /* _MSC_VER */
 
 class KeyStoreUIPrivate
 {
@@ -1262,14 +1271,32 @@ KeyStoreUI::ImportReturn KeyStoreUI::import3DSboot9bin(const char *filename)
 	}
 	file->close();
 
-	// Check the CRC32.
-	// NOTE: CRC32 isn't particularly strong, so we'll still
-	// verify the keys before importing them.
-	const uint32_t crc = crc32(0, buf.get(), 32768);
-	if (crc != 0x9D50A525) {
-		// Incorrect CRC32.
-		iret.status = ImportStatus::InvalidFile;
-		return iret;
+#if defined(_MSC_VER) && defined(ZLIB_IS_DLL)
+	// Delay load verification.
+	// TODO: Only if linked with /DELAYLOAD?
+	bool has_zlib = true;
+	if (DelayLoad_test_get_crc_table() != 0) {
+		// Delay load failed.
+		// Can't calculate the CRC32.
+		has_zlib = false;
+	}
+#else /* !defined(_MSC_VER) || !defined(ZLIB_IS_DLL) */
+	// zlib isn't in a DLL, but we need to ensure that the
+	// CRC table is initialized anyway.
+	static const bool has_zlib = true;
+	get_crc_table();
+#endif /* defined(_MSC_VER) && defined(ZLIB_IS_DLL) */
+
+	if (has_zlib) {
+		// Check the CRC32.
+		// NOTE: CRC32 isn't particularly strong, so we'll still
+		// verify the keys before importing them.
+		const uint32_t crc = crc32(0, buf.get(), 32768);
+		if (crc != 0x9D50A525) {
+			// Incorrect CRC32.
+			iret.status = ImportStatus::InvalidFile;
+			return iret;
+		}
 	}
 
 	// Key addresses and indexes.
