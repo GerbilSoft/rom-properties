@@ -70,8 +70,6 @@ fi
 
 # set defaults before processing command line options
 LDCONFIG=${LDCONFIG-"ldconfig"}
-LDFLAGS=${LDFLAGS}
-LDSHAREDLIBC="${LDSHAREDLIBC}"
 DEFFILE=
 RC=
 RCFLAGS=
@@ -209,9 +207,9 @@ show()
 {
   case "$*" in
     *$test.c*)
-      echo === $test.c === >> configure.log
+      echo "=== $test.c ===" >> configure.log
       cat $test.c >> configure.log
-      echo === >> configure.log;;
+      echo "===" >> configure.log;;
   esac
   echo $* >> configure.log
 }
@@ -779,6 +777,8 @@ if try $CC -c $CFLAGS $test.c; then
   mv zconf${SUFFIX}.temp.h zconf${SUFFIX}.h
   echo "Checking for unistd.h... Yes." | tee -a configure.log
 else
+  sed < zconf${SUFFIX}.h "/^#ifdef HAVE_UNISTD_H.* may be/s/def HAVE_UNISTD_H\(.*\) may be set to #if 1/ 0\1 was set to #if 0/" > zconf${SUFFIX}.temp.h
+  mv zconf${SUFFIX}.temp.h zconf${SUFFIX}.h
   echo "Checking for unistd.h... No." | tee -a configure.log
 fi
 

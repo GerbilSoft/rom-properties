@@ -18,12 +18,13 @@ Z_INTERNAL uint32_t CHUNKSIZE(void) {
    without iteration, which will hopefully make the branch prediction more
    reliable. */
 Z_INTERNAL uint8_t* CHUNKCOPY(uint8_t *out, uint8_t const *from, unsigned len) {
+    Assert(len > 0, "chunkcopy should never have a length 0");
     chunk_t chunk;
-    --len;
+    int32_t align = (--len % sizeof(chunk_t)) + 1;
     loadchunk(from, &chunk);
     storechunk(out, &chunk);
-    out += (len % sizeof(chunk_t)) + 1;
-    from += (len % sizeof(chunk_t)) + 1;
+    out += align;
+    from += align;
     len /= sizeof(chunk_t);
     while (len > 0) {
         loadchunk(from, &chunk);
@@ -37,34 +38,48 @@ Z_INTERNAL uint8_t* CHUNKCOPY(uint8_t *out, uint8_t const *from, unsigned len) {
 
 /* Behave like chunkcopy, but avoid writing beyond of legal output. */
 Z_INTERNAL uint8_t* CHUNKCOPY_SAFE(uint8_t *out, uint8_t const *from, unsigned len, uint8_t *safe) {
-    if ((safe - out) < (ptrdiff_t)sizeof(chunk_t)) {
-        int32_t use_chunk16 = sizeof(chunk_t) > 16 && (len & 16);
-        if (use_chunk16) {
-            memcpy(out, from, 16);
-            out += 16;
-            from += 16;
-        }
-        if (len & 8) {
-            memcpy(out, from, 8);
-            out += 8;
-            from += 8;
-        }
-        if (len & 4) {
-            memcpy(out, from, 4);
-            out += 4;
-            from += 4;
-        }
-        if (len & 2) {
-            memcpy(out, from, 2);
-            out += 2;
-            from += 2;
-        }
-        if (len & 1) {
-            *out++ = *from++;
-        }
-        return out;
+    unsigned safelen = (unsigned)((safe - out) + 1);
+    len = MIN(len, safelen);
+#if CHUNK_SIZE >= 32
+    while (len >= 32) {
+        memcpy(out, from, 32);
+        out += 32;
+        from += 32;
+        len -= 32;
     }
-    return CHUNKCOPY(out, from, len);
+#endif
+#if CHUNK_SIZE >= 16
+    while (len >= 16) {
+        memcpy(out, from, 16);
+        out += 16;
+        from += 16;
+        len -= 16;
+    }
+#endif
+#if CHUNK_SIZE >= 8
+    while (len >= 8) {
+        memcpy(out, from, 8);
+        out += 8;
+        from += 8;
+        len -= 8;
+    }
+#endif
+    if (len >= 4) {
+        memcpy(out, from, 4);
+        out += 4;
+        from += 4;
+        len -= 4;
+    }
+    if (len >= 2) {
+        memcpy(out, from, 2);
+        out += 2;
+        from += 2;
+        len -= 2;
+    }
+    if (len == 1) {
+        *out++ = *from++;
+    }
+    return out;
 }
 
 /* Perform short copies until distance can be rewritten as being at least
@@ -93,7 +108,7 @@ Z_INTERNAL uint8_t* CHUNKUNROLL(uint8_t *out, unsigned *dist, unsigned *len) {
 Z_INTERNAL uint8_t* CHUNKMEMSET(uint8_t *out, unsigned dist, unsigned len) {
     /* Debug performance related issues when len < sizeof(uint64_t):
        Assert(len >= sizeof(uint64_t), "chunkmemset should be called on larger chunks"); */
-    Assert(dist > 0, "cannot have a distance 0");
+    Assert(dist > 0, "chunkmemset cannot have a distance 0");
 
     unsigned char *from = out - dist;
     chunk_t chunk;
@@ -152,18 +167,20 @@ Z_INTERNAL uint8_t* CHUNKMEMSET(uint8_t *out, unsigned dist, unsigned len) {
     }
 
     /* Last, deal with the case when LEN is not a multiple of SZ. */
-    if (rem)
+    if (rem) {
         memcpy(out, from, rem);
-    out += rem;
+        out += rem;
+    }
 
     return out;
 }
 
 Z_INTERNAL uint8_t* CHUNKMEMSET_SAFE(uint8_t *out, unsigned dist, unsigned len, unsigned left) {
+    len = MIN(len, left);
     if (left < (unsigned)(3 * sizeof(chunk_t))) {
+        uint8_t *from = out - dist;
         while (len > 0) {
-            *out = *(out - dist);
-            out++;
+            *out++ = *from++;
             --len;
         }
         return out;
