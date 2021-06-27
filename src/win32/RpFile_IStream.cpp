@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * RpFile_IStream.hpp: IRpFile using an IStream*.                          *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -32,7 +32,7 @@ using std::unique_ptr;
 
 #ifdef _MSC_VER
 // DelayLoad test implementation.
-DELAYLOAD_TEST_FUNCTION_IMPL0(zlibVersion);
+DELAYLOAD_TEST_FUNCTION_IMPL0(get_crc_table);
 #endif /* _MSC_VER */
 
 /**
@@ -59,11 +59,15 @@ RpFile_IStream::RpFile_IStream(IStream *pStream, bool gzip)
 #if defined(_MSC_VER) && defined(ZLIB_IS_DLL)
 		// Delay load verification.
 		// TODO: Only if linked with /DELAYLOAD?
-		if (DelayLoad_test_zlibVersion() != 0) {
+		if (DelayLoad_test_get_crc_table() != 0) {
 			// Delay load failed.
 			// Don't do any gzip checking.
 			return;
 		}
+#else /* !defined(_MSC_VER) || !defined(ZLIB_IS_DLL) */
+		// zlib isn't in a DLL, but we need to ensure that the
+		// CRC table is initialized anyway.
+		get_crc_table();
 #endif /* defined(_MSC_VER) && defined(ZLIB_IS_DLL) */
 
 		// for IStream::Seek()

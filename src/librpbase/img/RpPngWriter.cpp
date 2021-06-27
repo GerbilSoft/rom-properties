@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * RpPngWriter.cpp: PNG image writer.                                      *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -28,6 +28,7 @@ using LibRpTexture::argb32_t;
 #include "APNG_dlopen.h"
 
 // libpng
+#include <zlib.h>	// get_crc_table()
 #include <png.h>
 
 #if PNG_LIBPNG_VER < 10209 || \
@@ -99,7 +100,7 @@ static int DelayLoad_test_zlib_and_png(void)
 	static bool success = false;
 	if (!success) {
 		__try {
-			zlibVersion();
+			get_crc_table();
 			png_access_version_number();
 		} __except (DelayLoad_filter_zlib_and_png(GetExceptionCode())) {
 			return -ENOTSUP;
@@ -373,6 +374,10 @@ void RpPngWriterPrivate::init(IRpFile *file, int width, int height, rp_image::Fo
 		lastError = ENOTSUP;
 		return;
 	}
+#else /* !defined(_MSC_VER) || (!defined(ZLIB_IS_DLL) && !defined(PNG_IS_DLL)) */
+	// zlib isn't in a DLL, but we need to ensure that the
+	// CRC table is initialized anyway.
+	get_crc_table();
 #endif /* defined(_MSC_VER) && (defined(ZLIB_IS_DLL) || defined(PNG_IS_DLL)) */
 
 	if (!file->isOpen()) {

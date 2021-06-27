@@ -32,7 +32,7 @@ namespace LibRpFile {
 
 #ifdef _MSC_VER
 // DelayLoad test implementation.
-DELAYLOAD_TEST_FUNCTION_IMPL0(zlibVersion);
+DELAYLOAD_TEST_FUNCTION_IMPL0(get_crc_table);
 #endif /* _MSC_VER */
 
 /** RpFilePrivate **/
@@ -319,11 +319,15 @@ void RpFile::init(void)
 #if defined(_MSC_VER) && defined(ZLIB_IS_DLL)
 		// Delay load verification.
 		// TODO: Only if linked with /DELAYLOAD?
-		if (DelayLoad_test_zlibVersion() != 0) {
+		if (DelayLoad_test_get_crc_table() != 0) {
 			// Delay load failed.
 			// Don't do any gzip checking.
 			return;
 		}
+#else /* !defined(_MSC_VER) || !defined(ZLIB_IS_DLL) */
+		// zlib isn't in a DLL, but we need to ensure that the
+		// CRC table is initialized anyway.
+		get_crc_table();
 #endif /* defined(_MSC_VER) && defined(ZLIB_IS_DLL) */
 
 		DWORD bytesRead;
@@ -370,9 +374,6 @@ void RpFile::init(void)
 							// underlying Windows handle.
 							int gzfd_dup = _open_osfhandle((intptr_t)hGzDup, _O_RDONLY);
 							if (gzfd_dup >= 0) {
-								// Make sure the CRC32 table is initialized.
-								get_crc_table();
-
 								d->gzfd = gzdopen(gzfd_dup, "r");
 								if (d->gzfd) {
 									m_isCompressed = true;

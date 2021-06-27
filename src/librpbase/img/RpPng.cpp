@@ -27,6 +27,7 @@ using LibRpTexture::argb32_t;
 using std::unique_ptr;
 
 // Image format libraries.
+#include <zlib.h>	// get_crc_table()
 #include <png.h>
 
 #if PNG_LIBPNG_VER < 10209 || \
@@ -70,7 +71,7 @@ static int DelayLoad_test_zlib_and_png(void)
 	static bool success = false;
 	if (!success) {
 		__try {
-			zlibVersion();
+			get_crc_table();
 			png_access_version_number();
 		} __except (DelayLoad_filter_zlib_and_png(GetExceptionCode())) {
 			return -ENOTSUP;
@@ -571,6 +572,10 @@ rp_image *RpPng::load(IRpFile *file)
 		// Delay load failed.
 		return nullptr;
 	}
+#else /* !defined(_MSC_VER) || (!defined(ZLIB_IS_DLL) && !defined(PNG_IS_DLL)) */
+	// zlib isn't in a DLL, but we need to ensure that the
+	// CRC table is initialized anyway.
+	get_crc_table();
 #endif /* defined(_MSC_VER) && (defined(ZLIB_IS_DLL) || defined(PNG_IS_DLL)) */
 
 	// Rewind the file.
