@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * AmiiboData.cpp: Nintendo amiibo identification data.                    *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -207,7 +207,7 @@ string AmiiboDataPrivate::getAmiiboBinFilename(AmiiboBinFileType amiiboBinFileTy
 		case AmiiboBinFileType::System: {
 			// TODO: Windows version.
 #if defined(DIR_INSTALL_SHARE)
-			filename = DIR_INSTALL_SHARE DIR_SEP_STR;
+			filename = DIR_INSTALL_SHARE DIR_SEP_STR AMIIBO_BIN_FILENAME;
 #elif defined(_WIN32)
 			if (s_dll_filename.empty())
 				break;
