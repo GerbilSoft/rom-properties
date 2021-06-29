@@ -1002,6 +1002,7 @@ AS:0x15:Mega Man
 AS:0x16:Diablo
 AS:0x17:Jikkyou Powerful Pro Baseball
 AS:0x18:Monster Hunter
+AS:0xFF:Super Nintendo World
 
 ### amiibo IDs (A) [p.22]
 # A Fields: ID, Release No., Wave, Name
@@ -1870,6 +1871,14 @@ A:0x0395:6:0:Daijobu
 
 # The Legend of Zelda: Link's Awakening Series [0x0399]
 A:0x0399:0:0:Link
+
+# Super Nintendo World: Power-Up Bands
+A:0x039B:1:1:Mario Power-Up Band
+A:0x039C:2:1:Luigi Power-Up Band
+A:0x039D:3:1:Peach Power-Up Band
+A:0x039E:4:1:Daisy Power-Up Band
+A:0x03A0:5:1:Toad Power-Up Band
+A:0x039F:6:1:Yoshi Power-Up Band
 
 # SSBU: Wave 13 [0x03A1-0x03A5]
 A:0x03A1:83:13:Joker

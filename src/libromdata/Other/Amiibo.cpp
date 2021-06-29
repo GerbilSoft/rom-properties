@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * Amiibo.cpp: Nintendo amiibo NFC dump reader.                            *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -422,13 +422,15 @@ int Amiibo::loadFieldData(void)
 		RomFields::STRF_MONOSPACE);
 
 	// tr: amiibo type.
-	static const char *const amiibo_type_tbl[3] = {
+	static const char *const amiibo_type_tbl[4] = {
 		// tr: NFP_TYPE_FIGURINE == standard amiibo
 		NOP_C_("Amiibo|Type", "Figurine"),
 		// tr: NFP_TYPE_CARD == amiibo card
 		NOP_C_("Amiibo|Type", "Card"),
 		// tr: NFP_TYPE_YARN == yarn amiibo
 		NOP_C_("Amiibo|Type", "Yarn"),
+		// tr: NFP_TYPE_BAND == Power-Up Band
+		NOP_C_("Amiibo|Type", "Power-Up Band"),
 	};
 	const char *const amiibo_type_title = C_("Amiibo", "amiibo Type");
 	if ((char_id & 0xFF) < ARRAY_SIZE(amiibo_type_tbl)) {
