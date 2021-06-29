@@ -55,6 +55,7 @@
     * Support for external title screens has been added using RPDB.
     * Added metadata properties. Currently supports publisher and title.
       Domestic title is used if available; otherwise, export title is used.
+    * Improved detection of Sega Pico ROM images.
   * Amiibo: Split the database out of the C++ code and into a database file.
   * Xbox360_STFS: Add two more file extensions for some Bethesda games:
     * Fallout: `.fxs`
@@ -66,16 +67,6 @@
     * Basic support for El Torito boot image detection. Currently only
       displays if x86 and/or EFI boot images are present, but not any
       specifics.
-  * MegaDrive:
-    * Detect Teradrive ROMs. Some extensions are also detected, but are
-      not displayed at the moment.
-    * Added external title screen images.
-    * Added more I/O devices. The I/O device field is now a string instead
-      of a bitfield, since most games only support one or two devices.
-    * Handle some more unusual ROM headers, including "early" headers
-      that have 32 bytes for titles instead of 48, and some incorrect
-      region code offsets.
-    * Improved detection of Sega Pico ROM images.
 
 * Bug fixes:
   * GameCube: Detect incrementing values partitions in encrypted images.
