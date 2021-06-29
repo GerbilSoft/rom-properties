@@ -877,6 +877,7 @@ C:0x2106:Alm
 C:0x2107:Celica
 C:0x2108:Chrom
 C:0x2109:Tiki
+C:0x210B:Byleth
 
 # Xenoblade (character series == 0x224)
 C:0x2240:Shulk
@@ -970,6 +971,9 @@ C:0x3805:Ganda
 
 # Diablo (character series == 0x38C)
 C:0x38C0:Loot Goblin
+
+# Persona (character series == 0x3A0)
+C:0x3A00:Joker
 
 # Banjo & Kazooie (character series == 0x3B4)
 C:0x3B40:Banjo & Kazooie
@@ -1172,6 +1176,9 @@ A:0x0377:0:4:Marina
 A:0x038E:0:5:Octoling Girl
 A:0x038F:0:5:Octoling Boy
 A:0x0390:0:5:Octoling Octopus
+
+# Diablo [0x0391]
+A:0x0391:0:0:Loot Goblin
 
 # Yarn Yoshi [0x0041-0x0043]
 A:0x0041:1:0:Green Yarn Yoshi
@@ -1841,6 +1848,9 @@ A:0x035B:0:4:Revali
 # BoxBoy!: Qbby [0x035E]
 A:0x035E:0:0:Qbby
 
+# Pikmin [0x035F]
+A:0x035F:0:0:Pikmin
+
 # Fire Emblem [0x0360-0x0361]
 A:0x0360:1:0:Alm
 A:0x0361:2:0:Celica
@@ -1872,7 +1882,7 @@ A:0x0395:6:0:Daijobu
 # The Legend of Zelda: Link's Awakening Series [0x0399]
 A:0x0399:0:0:Link
 
-# Super Nintendo World: Power-Up Bands
+# Super Nintendo World: Power-Up Bands [0x039B-0x039F]
 A:0x039B:1:1:Mario Power-Up Band
 A:0x039C:2:1:Luigi Power-Up Band
 A:0x039D:3:1:Peach Power-Up Band
