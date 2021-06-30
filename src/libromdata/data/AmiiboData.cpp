@@ -205,7 +205,6 @@ string AmiiboDataPrivate::getAmiiboBinFilename(AmiiboBinFileType amiiboBinFileTy
 			break;
 
 		case AmiiboBinFileType::System: {
-			// TODO: Windows version.
 #if defined(DIR_INSTALL_SHARE)
 			filename = DIR_INSTALL_SHARE DIR_SEP_STR AMIIBO_BIN_FILENAME;
 #elif defined(_WIN32)
