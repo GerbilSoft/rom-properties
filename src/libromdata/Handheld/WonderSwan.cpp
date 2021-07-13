@@ -43,6 +43,10 @@ class WonderSwanPrivate final : public RomDataPrivate
 		};
 		RomType romType;
 
+		// MIME type table.
+		// Ordering matches RomType.
+		static const char *const mimeType_tbl[];
+
 		// ROM footer.
 		WS_RomFooter romFooter;
 
@@ -58,6 +62,20 @@ class WonderSwanPrivate final : public RomDataPrivate
 };
 
 /** WonderSwanPrivate **/
+
+// MIME type table.
+// Ordering matches RomType.
+const char *const WonderSwanPrivate::mimeType_tbl[] = {
+	// Unofficial MIME types from FreeDesktop.org.
+	"application/x-wonderswan-rom",
+	"application/x-wonderswan-color-rom",
+
+	// Unofficial MIME types.
+	// TODO: Get this upstreamed on FreeDesktop.org.
+	"application/x-pocket-challenge-v2-rom",
+
+	nullptr
+};
 
 WonderSwanPrivate::WonderSwanPrivate(WonderSwan *q, IRpFile *file)
 	: super(q, file)
@@ -114,7 +132,6 @@ WonderSwan::WonderSwan(IRpFile *file)
 {
 	RP_D(WonderSwan);
 	d->className = "WonderSwan";
-	d->mimeType = "application/x-wonderswan-color-rom";
 
 	if (!d->file) {
 		// Could not ref() the file handle.
@@ -287,6 +304,12 @@ WonderSwan::WonderSwan(IRpFile *file)
 			}
 			break;
 	}
+
+	// MIME type.
+	// TODO: Set to application/x-pocket-challenge-v2-rom if the extension is .pc2?
+	if ((int)d->romType >= 0) {
+		d->mimeType = d->mimeType_tbl[(int)d->romType];
+	}
 }
 
 /** ROM detection functions. **/
@@ -303,10 +326,14 @@ int WonderSwan::isRomSupported_static(const DetectInfo *info)
 	if (!info || !info->header.pData)
 		return static_cast<int>(WonderSwanPrivate::RomType::Unknown);
 
-	// File extension must be ".ws" or ".wsc".
+	// File extension must be ".ws", ".wsc", or ".pc2".
 	// TODO: Gzipped ROMs?
-	if (!info->ext || (strcasecmp(info->ext, ".ws") != 0 && strcasecmp(info->ext, ".wsc") != 0)) {
-		// Not ".ws" or ".wsc".
+	if (!info->ext || (
+	     strcasecmp(info->ext, ".ws") != 0 &&
+	     strcasecmp(info->ext, ".wsc") != 0 &&
+	     strcasecmp(info->ext, ".pc2") != 0))
+	{
+		// Not a supported file extension.
 		return static_cast<int>(WonderSwanPrivate::RomType::Unknown);
 	}
 
@@ -401,6 +428,7 @@ const char *const *WonderSwan::supportedFileExtensions_static(void)
 	static const char *const exts[] = {
 		".ws",
 		".wsc",
+		".pc2",
 
 		nullptr
 	};
@@ -419,14 +447,7 @@ const char *const *WonderSwan::supportedFileExtensions_static(void)
  */
 const char *const *WonderSwan::supportedMimeTypes_static(void)
 {
-	static const char *const mimeTypes[] = {
-		// Unofficial MIME types from FreeDesktop.org.
-		"application/x-wonderswan-rom",
-		"application/x-wonderswan-color-rom",
-
-		nullptr
-	};
-	return mimeTypes;
+	return WonderSwanPrivate::mimeType_tbl;
 }
 
 /**
@@ -718,8 +739,14 @@ int WonderSwan::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size)
 	ASSERT_extURLs(imageType, pExtURLs);
 	pExtURLs->clear();
 
-	// Get the game ID.
+	// "Pocket Challenge v2" ROMs don't have a publisher or
+	// game ID set, so we can't get a title screen.
 	RP_D(const WonderSwan);
+	if (d->romFooter.publisher == 0 || d->romFooter.game_id == 0) {
+		return -ENOENT;
+	}
+
+	// Get the game ID.
 	const string game_id = d->getGameID();
 	if (game_id.empty()) {
 		// No game ID.

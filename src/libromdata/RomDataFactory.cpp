@@ -791,6 +791,7 @@ RomData *RomDataFactory::create(IRpFile *file, unsigned int attrs)
 			".vb",		// VirtualBoy
 			".ws",		// WonderSwan
 			".wsc",		// WonderSwan Color
+			".pc2",		// Pocket Challenge v2 (WS-compatible)
 			nullptr
 		};
 

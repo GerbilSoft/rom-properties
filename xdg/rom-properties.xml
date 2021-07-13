@@ -657,6 +657,14 @@
     </magic>
   </mime-type>
 
+  <!-- WonderSwan -->
+  <mime-type type="application/x-pocket-challenge-v2-rom">
+    <comment>Pocket Challenge v2 ROM</comment>
+    <sub-class-of type="application/x-wonderswan-rom"/>
+    <generic-icon name="application-x-executable"/>
+    <glob pattern="*.pc2"/>
+  </mime-type>
+
   <!-- *** Other *** -->
 
   <!-- Amiibo -->
