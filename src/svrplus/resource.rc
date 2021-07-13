@@ -2,9 +2,12 @@
  * ROM Properties Page shell extension installer. (svrplus)                *
  * resource.rc: Win32 resource script.                                     *
  *                                                                         *
- * Copyright (c) 2017-2020 by Egor.                                        *
+ * Copyright (c) 2017-2021 by Egor.                                        *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
+
+// UTF-8 encoding
+#pragma code_page(65001)
 
 // Common rom-properties resource header.
 #include "resource.common.inc.h"

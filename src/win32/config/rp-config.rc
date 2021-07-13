@@ -6,6 +6,9 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+// UTF-8 encoding
+#pragma code_page(65001)
+
 // Common rom-properties resource header.
 #include "resource.common.inc.h"
 
