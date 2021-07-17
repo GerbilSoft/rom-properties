@@ -150,9 +150,21 @@ class NintendoDSPrivate final : public LibRpBase::RomDataPrivate
 		 */
 		inline uint32_t totalUsedRomSize(void) const
 		{
-			return likely(romType < RomType::DSi_Enhanced)
-				? le32_to_cpu(romHeader.total_used_rom_size)
-				: le32_to_cpu(romHeader.dsi.total_used_rom_size);
+			if (likely(romType < RomType::DSi_Enhanced)) {
+				// NDS ROM. Return the NDS total used ROM size.
+				// NOTE: 0x88 is added for the "cloneplay" RSA key.
+				// References:
+				// - https://github.com/d0k3/GodMode9/issues/721
+				// - https://github.com/DS-Homebrew/GodMode9i/commit/43f440c9fa449ac953ad27798df5b31b2b903157
+				// - https://github.com/DS-Homebrew/nds-bootstrap/commit/24243ff4ad6a9bf9c47c16b3e285dc85266b9372
+				// - https://github.com/DS-Homebrew/nds-bootstrap/releases/tag/v0.44.2
+				const uint32_t nds_rom_size = le32_to_cpu(romHeader.total_used_rom_size) + 0x88;
+				return (nds_rom_size < this->romSize ? nds_rom_size : this->romSize);
+			}
+
+			// DSi ROM. Return the DSi total used ROM size.
+			// NOTE: "cloneplay" RSA key is included in here.
+			return le32_to_cpu(romHeader.dsi.total_used_rom_size);
 		}
 
 		/**

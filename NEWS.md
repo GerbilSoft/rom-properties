@@ -84,7 +84,9 @@
     * Fixes #291, reported by @Masamune3210.
   * EXE: Don't show the "dangerous permission" overlay for Win32 executables
     that don't have a manifest.
-  * NintendoDS: Add "EN" fallback for external artwork from GameTDB.
+  * NintendoDS:
+    * Add "EN" fallback for external artwork from GameTDB.
+    * Preserve the RSA key area for "cloneboot" when trimming ROMs.
   * Re-enabled localization for texture parsers. This was broken with the
     conversion to librptexture in v1.5.
   * rpcli: Fix a segfault with JSON output on MD ROMs that have empty
