@@ -10,20 +10,16 @@ video game ROM and disc images.
 [![Total alerts](https://img.shields.io/lgtm/alerts/g/GerbilSoft/rom-properties.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/GerbilSoft/rom-properties/alerts/)
 [![Language grade: C/C++](https://img.shields.io/lgtm/grade/cpp/g/GerbilSoft/rom-properties.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/GerbilSoft/rom-properties/context:cpp)
 
-## v1.7
+## v1.8
 
-This release adds a ton of new features, including "ROM operations", 3DS sighax
-detection, and support for PlayStation Portable disc images:
+This release adds a ton of new features, including achievements, WonderSwan
+(Color) ROMs, and external title screens (via RPDB) for Sega Mega Drive:
 
-![PlayStation Portable disc image](doc/img/rp-v1.7-kde5.PSP.png)
-
-Other improvements in this release include several file handle leak fixes,
-addition of a vertical scrollbar on Windows property pages if needed, and
-improved ROM image detection for several supported formats.
+![Sega Mega Drive ROM images](doc/img/rp-v1.8-kde5.MegaDrive.RPDB.png)
 
 Translators needed; file an issue if you'd like to get started on a new translation, or submit a Pull Request if you have a translation ready to go.
 
-See [`NEWS.md`](NEWS.md) for a full list of changes in v1.7.
+See [`NEWS.md`](NEWS.md) for a full list of changes in v1.8.
 
 ## Feedback
 
