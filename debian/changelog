@@ -10,10 +10,6 @@ rom-properties (1.8-1ppa2~focal1) bionic; urgency=medium
 
  -- David Korth <gerbilsoft@gerbilsoft.com>  Sun, 18 Jul 2021 19:31:43 -0400
 
-    PPA version bumped to ensure it updates from previous versions.
-
- -- David Korth <gerbilsoft@gerbilsoft.com>  Sun, 18 Jul 2021 18:12:28 -0400
-
 rom-properties (1.8-1ppa2~bionic2) bionic; urgency=medium
 
   * [kde] OptionsMenuButton.hpp: #include <qglobal.h>
