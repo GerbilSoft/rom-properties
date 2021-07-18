@@ -1,6 +1,6 @@
 # Changes
 
-## v1.8 (released 2021/??/??)
+## v1.8 (released 2021/07/18)
 
 * New features:
   * An achievements system has been added. By viewing certain types of files
