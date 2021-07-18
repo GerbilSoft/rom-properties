@@ -24,7 +24,6 @@ using LibRpFile::IRpFile;
 // DiscReader
 #include "librpbase/disc/DiscReader.hpp"
 #include "disc/WuxReader.hpp"
-#include "disc/wux_structs.h"
 
 // C++ STL classes.
 using std::string;
@@ -217,12 +216,9 @@ int WiiU::isRomSupported_static(const DetectInfo *info)
 		return static_cast<int>(WiiUPrivate::DiscType::Unknown);
 	}
 
-	// Check for WUX magic numbers.
-	const wuxHeader_t *const wuxHeader = reinterpret_cast<const wuxHeader_t*>(info->header.pData);
-	if (wuxHeader->magic[0] == cpu_to_le32(WUX_MAGIC_0) &&
-	    wuxHeader->magic[1] == cpu_to_le32(WUX_MAGIC_1))
-	{
-		// WUX header detected.
+	// Check if this is disc is in WUX format.
+	if (WuxReader::isDiscSupported_static(info->header.pData, info->header.size) >= 0) {
+		// Disc image is in WUX format.
 		// TODO: Also check for other Wii U magic numbers if WUX is found.
 		// TODO: Verify block size?
 		return static_cast<int>(WiiUPrivate::DiscType::WUX);
@@ -231,8 +227,9 @@ int WiiU::isRomSupported_static(const DetectInfo *info)
 	// Game ID must start with "WUP-".
 	// NOTE: There's also a secondary magic number at 0x10000,
 	// but we can't check it here.
+	// TODO: Dev discs don't have a "WUP-" magic number.
 	const WiiU_DiscHeader *const wiiu_header = reinterpret_cast<const WiiU_DiscHeader*>(info->header.pData);
-	if (memcmp(wiiu_header->id, "WUP-", 4) != 0) {
+	if (wiiu_header->magic != cpu_to_be32(WIIU_MAGIC)) {
 		// Not Wii U.
 		return static_cast<int>(WiiUPrivate::DiscType::Unknown);
 	}
@@ -251,8 +248,8 @@ int WiiU::isRomSupported_static(const DetectInfo *info)
 
 	// Check for GCN/Wii magic numbers.
 	const GCN_DiscHeader *gcn_header = reinterpret_cast<const GCN_DiscHeader*>(info->header.pData);
-	if (be32_to_cpu(gcn_header->magic_wii) == WII_MAGIC ||
-	    be32_to_cpu(gcn_header->magic_gcn) == GCN_MAGIC)
+	if (gcn_header->magic_wii == be32_to_cpu(WII_MAGIC) ||
+	    gcn_header->magic_gcn == be32_to_cpu(GCN_MAGIC))
 	{
 		// GameCube and/or Wii magic is present.
 		// This is not a Wii U disc image.

@@ -17,23 +17,24 @@ extern "C" {
 #endif
 
 /**
- * Nintendo Wii U disc header.
+ * Nintendo Wii U disc header. (Retail games only!)
  * Reference: https://github.com/maki-chan/wudecrypt/blob/master/main.c
  * 
  * All fields are big-endian.
  * NOTE: Strings are NOT null-terminated!
  */
-// Some compilers pad this structure to a multiple of 4 bytes
-#pragma pack(1)
-typedef struct PACKED _WiiU_DiscHeader {
+#pragma pack(1)	// NOTE: Some compilers pad this structure to a multiple of 4 bytes
+#define WIIU_MAGIC 'WUP-'
+typedef struct _WiiU_DiscHeader {
 	union PACKED {
-		char id[10];		// WUP-P-xxxx
+		uint32_t magic;		// 'WUP-'
+		char id[10];		// "WUP-P-xxxx"
 		struct PACKED {
-			char wup[3];	// WUP
-			char hyphen1;	// -
-			char p;		// P
-			char hyphen2;	// -
-			char id4[4];	// xxxx
+			char wup[3];	// "WUP"
+			char hyphen1;	// '-'
+			char p;		// 'P'
+			char hyphen2;	// '-'
+			char id4[4];	// "xxxx"
 		};
 	};
 	char hyphen3;
