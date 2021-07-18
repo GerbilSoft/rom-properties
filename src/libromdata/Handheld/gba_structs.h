@@ -32,13 +32,16 @@ typedef struct _GBA_RomHeader {
 	};
 	uint8_t nintendo_logo[0x9C];	// Compressed logo.
 	char title[12];
-	union {
+	// Some compilers pad this structure to a multiple of 4 bytes
+#pragma pack(1)
+	union PACKED {
 		char id6[6];	// Game code. (ID6)
-		struct {
+		struct PACKED {
 			char id4[4];		// Game code. (ID4)
 			char company[2];	// Company code.
 		};
 	};
+#pragma pack()
 	uint8_t fixed_96h;	// Fixed value. (Must be 0x96)
 	uint8_t unit_code;	// 0x00 for all GBA models.
 	uint8_t device_type;	// 0x00. (bit 7 for debug?)

@@ -25,13 +25,16 @@ extern "C" {
 #define GCN_MAGIC 0xC2339F3D
 #define WII_MAGIC 0x5D1C9EA3
 typedef struct _GCN_DiscHeader {
-	union {
+	// Some compilers pad this structure to a multiple of 4 bytes
+#pragma pack(1)
+	union PACKED {
 		char id6[6];	// [0x000] Game code. (ID6)
-		struct {
+		struct PACKED {
 			char id4[4];		// [0x000] Game code. (ID4)
 			char company[2];	// [0x004] Company code.
 		};
 	};
+#pragma pack()
 
 	uint8_t disc_number;		// [0x006] Disc number.
 	uint8_t revision;		// [0x007] Revision.

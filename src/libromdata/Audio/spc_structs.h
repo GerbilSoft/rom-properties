@@ -31,13 +31,14 @@ extern "C" {
  * NOTE: The ID666 tag is always located at 0x02E.
  * Both the relative and absolute addresses are listed.
  */
-typedef struct _SPC_ID666 {
+// Some compilers pad this structure to a multiple of 4 bytes
+#pragma pack(1)
+typedef struct PACKED _SPC_ID666 {
 	char song_title[32];	// [0x000, 0x02E] Song title.
 	char game_title[32];	// [0x020, 0x04E] Game title.
 	char dumper_name[16];	// [0x040, 0x06E] Name of dumper.
 	char comments[32];	// [0x050, 0x07E] Comments.
 
-#pragma pack(1)
 	union PACKED {
 		struct {
 			char dump_date[11];		// [0x070, 0x09E] Date SPC was dumped. (MM/DD/YYYY)
@@ -63,9 +64,9 @@ typedef struct _SPC_ID666 {
 			uint8_t length_fields[7];	// [0x07B, 0x0A9] Common portion of the length fields.
 		} test;
 	};
-#pragma pack()
 } SPC_ID666;
 ASSERT_STRUCT(SPC_ID666, 210);
+#pragma pack()
 
 /**
  * Emulator used to dump the SPC file.

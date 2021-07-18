@@ -24,11 +24,14 @@ extern "C" {
 /**
  * 54-byte header used by some standalone saves
  */
-typedef struct _PS1_54_Header {
+// Some compilers pad this structure to a multiple of 4 bytes
+#pragma pack(1)
+typedef struct PACKED _PS1_54_Header {
 	char filename[21];	// Filename from BlockEntry->filename
 	char title[33];		// Title from SC->title converted to ASCII
 } PS1_54_Header;
 ASSERT_STRUCT(PS1_54_Header, 54);
+#pragma pack()
 
 typedef enum {
 	PS1_ENTRY_ALLOC_FIRST         = 0x51, // First or only block of a file

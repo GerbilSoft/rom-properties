@@ -42,13 +42,16 @@ typedef struct _DMG_RomHeader {
 	union {
 		char title16[16];	// [0x134] Title
 		struct {
-			union {
+			// Some compilers pad this structure to a multiple of 4 bytes
+#pragma pack(1)
+			union PACKED {
 				char title15[15];
-				struct {
+				struct PACKED {
 					char title11[11];
 					char id4[4];
 				};
 			};
+#pragma pack()
 			uint8_t cgbflag;
 		};
 	};

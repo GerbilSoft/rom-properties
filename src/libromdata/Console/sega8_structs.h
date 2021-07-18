@@ -71,7 +71,9 @@ typedef enum {
  * NOTE: Fields are in BCD.
  * Reference: http://www.smspower.org/Development/CodemastersHeader
  */
-typedef struct _Sega8_Codemasters_Timestamp {
+// Some compilers pad this structure to a multiple of 4 bytes
+#pragma pack(1)
+typedef struct PACKED _Sega8_Codemasters_Timestamp {
 	uint8_t day;
 	uint8_t month;
 	uint8_t year;
@@ -79,6 +81,7 @@ typedef struct _Sega8_Codemasters_Timestamp {
 	uint8_t minute;
 } Sega8_Codemasters_Timestamp;
 ASSERT_STRUCT(Sega8_Codemasters_Timestamp, 5);
+#pragma pack()
 
 /**
  * Codemasters ROM header.
@@ -121,11 +124,13 @@ ASSERT_STRUCT(Sega8_SDSC_Date, 4);
  * Located at $7FE0.
  */
 #define SDSC_MAGIC 'SDSC'
-typedef struct _Sega8_SDSC_RomHeader {
+#pragma pack(1)
+typedef struct PACKED _Sega8_SDSC_RomHeader {
 	uint32_t magic;		// [0x000] 'SDSC'
 	uint8_t version[2];	// [0x004] Program version, in BCD.
 				//         [0] = major version
 				//         [1] = minor version
+	// Some compilers add padding here
 	Sega8_SDSC_Date date;	// [0x006] Build date.
 
 	// The following are pointers to ASCII C-strings in the ROM image.
@@ -135,6 +140,7 @@ typedef struct _Sega8_SDSC_RomHeader {
 	uint16_t desc_ptr;	// [0x00E] Program description.
 } Sega8_SDSC_RomHeader;
 ASSERT_STRUCT(Sega8_SDSC_RomHeader, 16);
+#pragma pack()
 
 #ifdef __cplusplus
 }

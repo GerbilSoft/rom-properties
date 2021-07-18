@@ -192,12 +192,15 @@ typedef enum {
 /**
  * PowerVR3 Metadata: Orientation struct.
  */
-typedef struct _PowerVR3_Metadata_Orientation_t {
+// Some compilers pad this structure to a multiple of 4 bytes
+#pragma pack(1)
+typedef struct PACKED _PowerVR3_Metadata_Orientation_t {
 	uint8_t x;	// 0 == increases to the right; 1 == increases to the left
 	uint8_t y;	// 0 == increases downwards; 1 == increases upwards
 	uint8_t z;	// 0 == increases inwards; 1 == increases outwards
 } PowerVR3_Metadata_Orientation;
 ASSERT_STRUCT(PowerVR3_Metadata_Orientation, 3);
+#pragma pack()
 
 #ifdef __cplusplus
 }

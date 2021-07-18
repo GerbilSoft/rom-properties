@@ -160,10 +160,13 @@ typedef struct _SNES_RomHeader {
 			char title[16];			// [0x7FC0] Shift-JIS
 			uint32_t block_alloc;		// [0x7FD0] Block allocation flags.
 			uint16_t limited_starts;	// [0x7FD4] Limited starts
-			struct {
+			// Some compilers pad this structure to a multiple of 4 bytes
+#pragma pack(1)
+			struct PACKED {
 				uint8_t month;		// [0x7FD6] Month
 				uint8_t day;		// [0x7FD7] Day
 			} date;
+#pragma pack()
 			uint8_t rom_mapping;		// [0x7FD8] LoROM, HiROM
 			uint8_t file_type;		// [0x7FD9] File/Execution type
 			uint8_t old_publisher_code;	// [0x7FDA] 0x33 if valid; 0x00 if deleted.
@@ -191,12 +194,15 @@ typedef struct _SNES_RomHeader {
 			uint16_t abort;		// [0x7FF8]
 			uint16_t nmi;		// [0x7FFA]
 			uint16_t res;		// [0x7FFC]
-			union {
+			// Some compilers pad this structure to a multiple of 4 bytes
+#pragma pack(1)
+			union PACKED {
 				// IRQ/BRK share the same vector
 				// in 6502 emulation mode.
 				uint16_t irq;	// [0x7FFE]
 				uint16_t brk;
 			};
+#pragma pack()
 		} emulation;
 	} vectors;
 } SNES_RomHeader;

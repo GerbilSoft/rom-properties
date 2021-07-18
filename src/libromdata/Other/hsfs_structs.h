@@ -45,7 +45,9 @@ ASSERT_STRUCT(HSFS_PVD_DateTime_t, 16);
 /**
  * HSFS Directory Entry date/time struct.
  */
-typedef struct _HSFS_Dir_DateTime_t {
+// Some compilers pad this structure to a multiple of 4 bytes
+#pragma pack(1)
+typedef struct PACKED _HSFS_Dir_DateTime_t {
 	uint8_t year;		// Number of years since 1900.
 	uint8_t month;		// Month, from 1 to 12.
 	uint8_t day;		// Day, from 1 to 31.
@@ -54,6 +56,7 @@ typedef struct _HSFS_Dir_DateTime_t {
 	uint8_t second;		// Second, from 0 to 59.
 } HSFS_Dir_DateTime_t;
 ASSERT_STRUCT(HSFS_Dir_DateTime_t, 6);
+#pragma pack()
 
 /**
  * Directory entry, excluding the variable-length file identifier.
@@ -93,7 +96,8 @@ ASSERT_STRUCT(HSFS_Volume_Descriptor_Header, 15);
  *
  * NOTE: All fields are space-padded. (0x20, ' ')
  */
-typedef struct _HSFS_Primary_Volume_Descriptor {
+#pragma pack(1)
+typedef struct PACKED _HSFS_Primary_Volume_Descriptor {
 	HSFS_Volume_Descriptor_Header header;
 
 	uint8_t reserved1;			// [0x00F] 0x00
@@ -128,6 +132,7 @@ typedef struct _HSFS_Primary_Volume_Descriptor {
 	char abstract_file[32];			// [0x2F6] (strD) Filename of the abstract file.
 
 	// Timestamps.
+	// Some compilers add padding here
 	HSFS_PVD_DateTime_t btime;		// [0x316] Volume creation time.
 	HSFS_PVD_DateTime_t mtime;		// [0x326] Volume modification time.
 	HSFS_PVD_DateTime_t exptime;		// [0x336] Volume expiration time.
@@ -137,6 +142,7 @@ typedef struct _HSFS_Primary_Volume_Descriptor {
 	uint8_t reserved4[1193];		// [0x357]
 } HSFS_Primary_Volume_Descriptor;
 ASSERT_STRUCT(HSFS_Primary_Volume_Descriptor, ISO_SECTOR_SIZE_MODE1_COOKED);
+#pragma pack()
 
 #define HSFS_VD_MAGIC "CDROM"
 #define HSFS_VD_VERSION 0x01
