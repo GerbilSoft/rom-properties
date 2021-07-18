@@ -12,6 +12,7 @@
 // librpbase
 #include "librpbase/RomData.hpp"
 
+#include <qglobal.h>
 #if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
 #  define RP_OMB_USE_LAMBDA_FUNCTIONS 1
 #endif /* QT_VERSION < QT_VERSION_CHECK(5,0,0) */
