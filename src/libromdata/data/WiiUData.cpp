@@ -86,6 +86,7 @@ const WiiUDataPrivate::WiiUDiscPublisher WiiUDataPrivate::disc_publishers_noregi
 	{'ADQx', '00GD'},	// Dragon Quest X: Mezameshi Itsutsu no Shuzoku
 	{'ADRx', '004Q'},	// Disney Infinity: Marvel Super Heroes - 2.0 Edition
 	{'ADXx', '00GD'},	// Deus Ex: Human Revolution - Director's Cut
+	{'AE9x', '0026'},	// Shmup Collection
 	{'AECx', '0052'},	// Call of Duty: Black Ops II
 	{'AEMx', '004Q'},	// Disney Epic Mickey 2: The Power of Two
 	{'AF3x', '0069'},	// FIFA Soccer 13
@@ -247,6 +248,7 @@ const WiiUDataPrivate::WiiUDiscPublisher WiiUDataPrivate::disc_publishers_noregi
 	{'BWFx', '0001'},	// Star Fox Guard
 	{'BXAx', '0001'},	// Art Academy: Atelier
 	{'CNFx', '0001'},	// Paper Mario: Color Splash
+	{'HEHx', '0026'},	// Finding Teddy II - Definitive Edition
 	// NOTE: These publisher IDs do NOT match the NintendoPublishers list!
 	// (Also '3A' for Teslagrad.)
 	{'SNCx', '0067'},	// (Event Preview) Freedom Planet
@@ -259,7 +261,9 @@ const WiiUDataPrivate::WiiUDiscPublisher WiiUDataPrivate::disc_publishers_noregi
 	{'WNCx', '0001'},	// Pokémon Rumble U: Special Edition
 	{'WDKx', '0008'},	// DuckTales: Remastered
 	{'WGDx', '003A'},	// Teslagrad
+	{'WGSx', '00CX'},	// Giana Sisters: Twisted Dreams - Director's Cut
 	{'WKNx', '00AY'},	// Shovel Knight
+	{'WTBx', '00EY'},	// Shakedown: Hawaii
 
 	{0, 0}
 };
