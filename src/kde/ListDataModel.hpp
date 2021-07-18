@@ -14,6 +14,7 @@
 
 // Qt includes
 #include <QtCore/QAbstractListModel>
+#include <QtCore/QSize>
 
 // C++ includes
 #include <set>
