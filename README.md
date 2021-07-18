@@ -15,7 +15,7 @@ video game ROM and disc images.
 This release adds a ton of new features, including "ROM operations", 3DS sighax
 detection, and support for PlayStation Portable disc images:
 
-![PlayStation Portable disc image](doc/img/v1.7/rp.kde5.PSP.png)
+![PlayStation Portable disc image](doc/img/rp-v1.7-kde5.PSP.png)
 
 Other improvements in this release include several file handle leak fixes,
 addition of a vertical scrollbar on Windows property pages if needed, and
