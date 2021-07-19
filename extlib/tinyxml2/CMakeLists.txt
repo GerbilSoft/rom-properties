@@ -105,6 +105,7 @@ IF(WIN32) # rom-properties
 install(
     TARGETS tinyxml2 EXPORT tinyxml2-targets
     RUNTIME COMPONENT tinyxml2_runtime
+            DESTINATION ${INSTALL_BIN_DIR}
     #LIBRARY COMPONENT tinyxml2_runtime
     #NAMELINK_COMPONENT tinyxml2_development
     #ARCHIVE COMPONENT tinyxml2_development
