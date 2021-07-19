@@ -1,6 +1,14 @@
 # Changes
 
-## v1.9 (released 2021/??/??)
+## v1.8.1 (released 2021/07/19)
+
+* Bug fixes:
+  * Fix svrplus.exe not detecting the MSVC runtime at all.
+  * Fix tinyxml2.dll packaging in the Windows build.
+  * Fix delay-loading of tinyxml2.dll when viewing Windows executables.
+
+* Other changes:
+  * Updated the amiibo databases to be current as of 2021/07/14.
 
 ## v1.8 (released 2021/07/18)
 
