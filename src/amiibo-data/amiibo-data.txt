@@ -930,6 +930,9 @@ C:0x3504:Qurupeco and Dan
 # NOTE: Variant 0 isn't actually assigned.
 CV:0x3504:0x00:Qurupeco and Dan
 CV:0x3504:0x01:Qurupeco and Dan
+C:0x3505:Razewing Ratha
+C:0x3506:Ena
+C:0x3507:Tsukino
 C:0x3508:Magnamalo
 C:0x3509:Palico
 C:0x350A:Palamute
@@ -1816,7 +1819,7 @@ A:0x02C0:88:1:Pink Gold Peach (Tennis)
 A:0x02C1:89:1:Pink Gold Peach (Golf)
 A:0x02C2:90:1:Pink Gold Peach (Horse Racing)
 
-# Monster Hunter [0x02E1-0x02E6]
+# Monster Hunter Stories (Wave 1) [0x02E1-0x02E6]
 A:0x02E2:1:1:One-Eyed Rathalos and Rider (Male)
 A:0x02E1:2:1:One-Eyed Rathalos and Rider (Female)
 A:0x02E3:3:1:Nabiru
@@ -1901,6 +1904,11 @@ A:0x03A5:87:13:Byleth
 # SMB: Wave 5 (Super Mario 3D World + Bowser's Fury) [0x03A6-0x03A7]
 A:0x03A6:21:5:Cat Mario
 A:0x03A7:22:5:Cat Peach
+
+# Monster Hunter Stories (Wave 2) [0x040C-0x040E]
+A:0x040C:8:2:Razewing Ratha
+A:0x040D:7:2:Ena
+A:0x040E:9:2:Tsukino
 
 # Monster Hunter Rise [0x040F-0x0411]
 A:0x040F:0:0:Magnamalo
