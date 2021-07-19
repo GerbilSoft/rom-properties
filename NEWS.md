@@ -6,11 +6,14 @@
 
 * Bug fixes:
   * Fix svrplus.exe not detecting the MSVC runtime at all.
+    * Fixes #312, reported by @SCOTT0852.
   * Fix tinyxml2.dll packaging in the Windows build.
+    * Fixes #313, reported by @ccawley2011.
   * Fix delay-loading of tinyxml2.dll when viewing Windows executables.
+    * Fixes #313, reported by @ccawley2011.
 
 * Other changes:
-  * Updated the amiibo databases to be current as of 2021/07/14.
+  * Updated the amiibo database to be current as of 2021/07/14.
 
 ## v1.8 (released 2021/07/18)
 
