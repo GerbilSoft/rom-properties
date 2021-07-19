@@ -1,3 +1,10 @@
+rom-properties (1.8-1ppa3~bionic1) bionic; urgency=medium
+
+  * Minor package bump due to accidentally building a "focal" package
+    with the "bionic" distribution tag.
+
+ -- David Korth <gerbilsoft@gerbilsoft.com>  Sun, 18 Jul 2021 20:50:22 -0400
+
 rom-properties (1.8-1ppa2~bionic2) bionic; urgency=medium
 
   * [kde] OptionsMenuButton.hpp: #include <qglobal.h>
