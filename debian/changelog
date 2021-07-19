@@ -1,3 +1,12 @@
+rom-properties (1.8-1ppa2~focal2) bionic; urgency=medium
+
+  * Disable system libzstd.
+
+    It *has* ZSTD_compressStream2, but for some reason it's failing to
+    find it. I'll need to diagnose this later.
+
+ -- David Korth <gerbilsoft@gerbilsoft.com>  Sun, 18 Jul 2021 20:01:21 -0400
+
 rom-properties (1.8-1ppa2~focal1) bionic; urgency=medium
 
   * Build for Ubuntu 20.04 "Focal" Fossa.
