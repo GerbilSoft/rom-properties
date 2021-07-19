@@ -1,3 +1,11 @@
+rom-properties (1.8-1ppa2~focal3) focal; urgency=medium
+
+  * Re-enable system libzstd; fix changelog distribution.
+
+    It was actually building for bionic, not focal.
+
+ -- David Korth <gerbilsoft@gerbilsoft.com>  Sun, 18 Jul 2021 20:28:35 -0400
+
 rom-properties (1.8-1ppa2~focal2) bionic; urgency=medium
 
   * Disable system libzstd.
