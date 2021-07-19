@@ -143,6 +143,7 @@ CV:0x0100:0x01:Toon Link
 C:0x0101:Zelda
 CV:0x0101:0x00:Zelda
 CV:0x0101:0x01:Sheik
+CV:0x0101:0x03:Zelda & Loftwing
 C:0x0102:Ganondorf
 # NOTE: Variant 0 isn't used.
 CV:0x0102:0x01:Ganondorf
@@ -1905,3 +1906,6 @@ A:0x03A7:22:5:Cat Peach
 A:0x040F:0:0:Magnamalo
 A:0x0410:0:0:Palico
 A:0x0411:0:0:Palamute
+
+# The Legend of Zelda: Skyward Sword Series [0x414]
+A:0x0414:0:0:Zelda & Loftwing
