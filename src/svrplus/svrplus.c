@@ -652,7 +652,6 @@ static void InitDialog(HWND hDlg)
 	// Go through the various permutations.
 #ifndef _WIN64
 	if (!g_is64bit) {
-		bHasMsvc32 = false;
 		// 32-bit system.
 		if (!bHasMsvc32) {
 			// 32-bit MSVCRT is missing.
@@ -667,9 +666,8 @@ static void InitDialog(HWND hDlg)
 	} else
 #endif /* !_WIN64 */
 	{
-		bHasMsvc32 = false;
 		// 64-bit system.
-		const bool bHasMsvc64 = false;//CheckMsvc(true);
+		const bool bHasMsvc64 = CheckMsvc(true);
 		if (!bHasMsvc32 && !bHasMsvc64) {
 			// Both 32-bit and 64-bit MSVCRT are missing.
 			_sntprintf(line1, _countof(line1),
