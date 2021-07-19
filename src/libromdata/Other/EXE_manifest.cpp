@@ -71,22 +71,15 @@ do { } while (0)
  * The XML is loaded and parsed using the specified
  * TinyXML document.
  *
+ * NOTE: DelayLoad must be checked by the caller, since it's
+ * passing an XMLDocument reference to this function.
+ *
  * @param doc		[in/out] XML document.
  * @param ppResName	[out,opt] Pointer to receive the loaded resource name. (statically-allocated string)
  * @return 0 on success; negative POSIX error code on error.
  */
 int EXEPrivate::loadWin32ManifestResource(XMLDocument &doc, const char **ppResName) const
 {
-#if defined(_MSC_VER) && defined(XML_IS_DLL)
-	// Delay load verification.
-	// TODO: Only if linked with /DELAYLOAD?
-	int ret_dl = DelayLoad_test_TinyXML2();
-	if (ret_dl != 0) {
-		// Delay load failed.
-		return ret_dl;
-	}
-#endif /* defined(_MSC_VER) && defined(XML_IS_DLL) */
-
 	// Make sure the resource directory is loaded.
 	int ret = const_cast<EXEPrivate*>(this)->loadPEResourceTypes();
 	if (ret != 0) {
@@ -201,6 +194,16 @@ int EXEPrivate::loadWin32ManifestResource(XMLDocument &doc, const char **ppResNa
  */
 int EXEPrivate::addFields_PE_Manifest(void)
 {
+#if defined(_MSC_VER) && defined(XML_IS_DLL)
+	// Delay load verification.
+	// TODO: Only if linked with /DELAYLOAD?
+	int ret_dl = DelayLoad_test_TinyXML2();
+	if (ret_dl != 0) {
+		// Delay load failed.
+		return ret_dl;
+	}
+#endif /* defined(_MSC_VER) && defined(XML_IS_DLL) */
+
 	const char *pResName = nullptr;
 	XMLDocument doc;
 	int ret = loadWin32ManifestResource(doc, &pResName);

@@ -185,6 +185,9 @@ class EXEPrivate final : public LibRpBase::RomDataPrivate
 		 * The XML is loaded and parsed using the specified
 		 * TinyXML document.
 		 *
+		 * NOTE: DelayLoad must be checked by the caller, since it's
+		 * passing an XMLDocument reference to this function.
+		 *
 		 * @param doc		[in/out] XML document.
 		 * @param ppResName	[out,opt] Pointer to receive the loaded resource name. (statically-allocated string)
 		 * @return 0 on success; negative POSIX error code on error.
