@@ -1,3 +1,9 @@
+rom-properties (1.8.2-1ppa2~hirsute1) hirsute; urgency=medium
+
+  * Build for Ubuntu 21.04 "Hirsute" Hippo.
+
+ -- David Korth <gerbilsoft@gerbilsoft.com>  Mon, 19 Jul 2021 23:53:30 -0400
+
 rom-properties (1.8.2-1ppa2~focal1) focal; urgency=medium
 
   * Build for Ubuntu 20.04 "Focal" Fossa.
