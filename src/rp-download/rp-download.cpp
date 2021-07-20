@@ -389,6 +389,9 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 		SCMP_SYS(setsockopt), SCMP_SYS(socket),
 		SCMP_SYS(socketcall),	// FIXME: Enhanced filtering? [cURL+GnuTLS only?]
 		SCMP_SYS(socketpair), SCMP_SYS(sysinfo),
+		SCMP_SYS(rt_sigprocmask),	// Ubuntu 20.04: __GI_getaddrinfo() ->
+						// gaih_inet() ->
+						// _nss_myhostname_gethostbyname4_r()
 
 		// libnss_resolve.so (systemd-resolved)
 		SCMP_SYS(geteuid),

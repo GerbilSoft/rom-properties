@@ -89,6 +89,10 @@ int rpt_do_security_options(void)
 		SCMP_SYS(getegid), SCMP_SYS(geteuid), SCMP_SYS(poll),
 		SCMP_SYS(recvfrom), SCMP_SYS(sendmsg), SCMP_SYS(socket),
 		SCMP_SYS(socketcall),	// FIXME: Enhanced filtering? [cURL+GnuTLS only?]
+		SCMP_SYS(socketpair), SCMP_SYS(sysinfo),
+		SCMP_SYS(rt_sigprocmask),	// Ubuntu 20.04: __GI_getaddrinfo() ->
+						// gaih_inet() ->
+						// _nss_myhostname_gethostbyname4_r()
 
 		// only if G_MESSAGES_DEBUG=all [on Gentoo, but not Ubuntu 14.04]
 		SCMP_SYS(getpeername),	// g_log_writer_is_journald() [g_log()]
