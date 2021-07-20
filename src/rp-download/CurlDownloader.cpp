@@ -206,7 +206,7 @@ int CurlDownloader::download(void)
 	// Set the User-Agent.
 	curl_easy_setopt(curl, CURLOPT_USERAGENT, m_userAgent.c_str());
 
-	// TODO: Set the User-Agent?
+	// Download the file.
 	CURLcode res = curl_easy_perform(curl);
 	curl_easy_cleanup(curl);
 	switch (res) {
