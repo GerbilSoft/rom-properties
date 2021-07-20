@@ -826,8 +826,10 @@ const rp_image *RomData::image(ImageType imageType) const
 	assert((ret == 0 && img != nullptr) ||
 	       (ret != 0 && img == nullptr));
 
+#ifdef _DEBUG // Must be guarded with this in case neither `_DEBUG` nor `NDEBUG` are defined
 	// SANITY CHECK: `img` must not be -1LL.
 	assert(img != INVALID_IMG_PTR);
+#endif
 
 	return (ret == 0 ? img : nullptr);
 }
