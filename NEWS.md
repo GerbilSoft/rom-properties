@@ -1,6 +1,11 @@
 # Changes
 
-## v1.9 (released 2021/??/??)
+## v1.8.2 (released 2021/07/19)
+
+* Bug fixes:
+  * rp-download: Allow the rt_sigprocmask() syscall. This is needed on
+    Ubuntu 20.04 and later, and possibly other systems that use systemd.
+    * This was reported by gold lightning.
 
 ## v1.8.1 (released 2021/07/19)
 
