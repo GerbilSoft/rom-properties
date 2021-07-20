@@ -35,15 +35,6 @@ IF(UNIX AND NOT APPLE)
 		)
 ENDIF(UNIX AND NOT APPLE)
 
-# If no build type is set, default to "Release".
-STRING(TOLOWER "${CMAKE_BUILD_TYPE}" TMP_BUILD_TYPE)
-IF(TMP_BUILD_TYPE STREQUAL "")
-	SET(CMAKE_BUILD_TYPE "Release" CACHE STRING "" FORCE)
-ELSEIF(TMP_BUILD_TYPE MATCHES "none")
-	SET(CMAKE_BUILD_TYPE "Release" CACHE STRING "" FORCE)
-ENDIF()
-UNSET(TMP_BUILD_TYPE)
-
 # Put all the binaries and libraries into a single directory.
 # NOTE: CACHE INTERNAL is required in order to get this to work
 # for KF5 for some reason. (and maybe that's why KDE4 did this
