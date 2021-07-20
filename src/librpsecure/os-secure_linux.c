@@ -22,12 +22,8 @@
 #include <sys/prctl.h>
 #include <linux/sched.h>	// CLONE_THREAD
 
-#ifndef NDEBUG
-#  define ENABLE_SECCOMP_DEBUG 1
-#endif /* !NDEBUG */
-
+#include "seccomp-debug.h"
 #ifdef ENABLE_SECCOMP_DEBUG
-#  include "seccomp-debug.h"
 #  define SCMP_ACTION SCMP_ACT_TRAP
 #else /* !ENABLE_SECCOMP_DEBUG */
 #  define SCMP_ACTION SCMP_ACT_KILL
