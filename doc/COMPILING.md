@@ -50,7 +50,7 @@ Clone the repository, then:
 $ cd rom-properties
 $ mkdir build
 $ cd build
-$ cmake .. -DCMAKE_INSTALL_PREFIX=/usr
+$ cmake .. -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Release
 $ make
 $ sudo make install
 (KDE 4.x) $ kbuildsycoca4 --noincremental
