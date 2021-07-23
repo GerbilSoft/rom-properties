@@ -920,7 +920,9 @@ int MegaDrive::isRomSupported_static(const DetectInfo *info)
 
 	// Magic strings. (NOTE: **NOT** NULL-terminated!)
 	static const char sega_magic[4] = {'S','E','G','A'};
-	static const char segacd_magic[16] = {'S','E','G','A','D','I','S','C','S','Y','S','T','E','M',' ',' '};
+	static const char segacd_magic[16] =  {'S','E','G','A','D','I','S','C','S','Y','S','T','E','M',' ',' '};
+	// NOTE: Only used for Sega CD 32X.
+	static const char sega32x_magic[16] = {'S','E','G','A',' ','3','2','X',' ',' ',' ',' ',' ',' ',' ',' '};
 
 	// Extra system types from:
 	// - https://www.plutiedev.com/rom-header#system
@@ -967,10 +969,22 @@ int MegaDrive::isRomSupported_static(const DetectInfo *info)
 	// TODO: Use a struct instead of raw bytes?
 	if (!memcmp(&pHeader[0x0010], segacd_magic, sizeof(segacd_magic))) {
 		// Found a Sega CD disc image. (2352-byte sectors)
+		if (unlikely(!memcmp(&pHeader[0x0110], sega32x_magic, sizeof(sega32x_magic)))) {
+			// This is a Sega CD 32X disc image.
+			// TODO: Check for 32X security code?
+			return MegaDrivePrivate::ROM_SYSTEM_MCD32X |
+			       MegaDrivePrivate::ROM_FORMAT_DISC_2352;
+		}
 		return MegaDrivePrivate::ROM_SYSTEM_MCD |
 		       MegaDrivePrivate::ROM_FORMAT_DISC_2352;
 	} else if (!memcmp(&pHeader[0x0000], segacd_magic, sizeof(segacd_magic))) {
 		// Found a Sega CD disc image. (2048-byte sectors)
+		if (unlikely(!memcmp(&pHeader[0x0100], sega32x_magic, sizeof(sega32x_magic)))) {
+			// This is a Sega CD 32X disc image.
+			// TODO: Check for 32X security code?
+			return MegaDrivePrivate::ROM_SYSTEM_MCD32X |
+			       MegaDrivePrivate::ROM_FORMAT_DISC_2048;
+		}
 		return MegaDrivePrivate::ROM_SYSTEM_MCD |
 		       MegaDrivePrivate::ROM_FORMAT_DISC_2048;
 	}
