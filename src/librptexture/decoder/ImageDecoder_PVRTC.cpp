@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * ImageDecoder_PVRTC.cpp: Image decoding functions. (PVRTC)               *
  *                                                                         *
- * Copyright (c) 2019-2020 by David Korth.                                 *
+ * Copyright (c) 2019-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -53,17 +53,31 @@ rp_image *fromPVRTC(int width, int height,
 
 	// PVRTC 2bpp uses 8x4 tiles.
 	// PVRTC 4bpp uses 4x4 tiles.
+	// Minimum image size: 8x8 (4bpp); 16x8 (2bpp)
+	// TODO: PVRTDecompress supports images smaller than the minimum
+	// image size, but it will copy to a temporary buffer, and the
+	// return value will match the temporary buffer size.
 	if ((mode & PVRTC_BPP_MASK) == PVRTC_2BPP) {
 		// PVRTC 2bpp
 		assert(width % 8 == 0);
 		assert(height % 4 == 0);
 		if (width % 8 != 0 || height % 4 != 0)
 			return nullptr;
+
+		assert(width >= 16);
+		assert(height >= 8);
+		if (width < 16 || height < 8)
+			return nullptr;
 	} else {
 		// PVRTC 4bpp
 		assert(width % 4 == 0);
 		assert(height % 4 == 0);
 		if (width % 4 != 0 || height % 4 != 0)
+			return nullptr;
+
+		assert(width >= 8);
+		assert(height >= 8);
+		if (width < 8 || height < 8)
 			return nullptr;
 	}
 
@@ -119,10 +133,24 @@ rp_image *fromPVRTCII(int width, int height,
 	// PVRTC-II uses 4x4 tiles (4bpp) or 8x4 tiles (2bpp), but
 	// PVRTC-II allows the last tile to be cut off, so round
 	// up for the physical tile size.
+	// Minimum image size: 8x8 (4bpp); 16x8 (2bpp)
+	// TODO: PVRTDecompress supports images smaller than the minimum
+	// image size, but it will copy to a temporary buffer, and the
+	// return value will match the temporary buffer size.
 	int physWidth;
 	if ((mode & PVRTC_BPP_MASK) == PVRTC_2BPP) {
+		assert(width >= 16);
+		assert(height >= 8);
+		if (width < 16 || height < 8)
+			return nullptr;
+
 		physWidth = ALIGN_BYTES(8, width);
 	} else {
+		assert(width >= 8);
+		assert(height >= 8);
+		if (width < 8 || height < 8)
+			return nullptr;
+
 		physWidth = ALIGN_BYTES(4, width);
 	}
 	const int physHeight = ALIGN_BYTES(4, height);
@@ -139,7 +167,7 @@ rp_image *fromPVRTCII(int width, int height,
 	}
 
 	// Create an rp_image.
-	rp_image *const img = new rp_image(width, height, rp_image::Format::ARGB32);
+	rp_image *const img = new rp_image(physWidth, physHeight, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
 		img->unref();
