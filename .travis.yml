@@ -28,7 +28,6 @@ addons:
       - libthunarx-2-dev
       - libgtk-3-dev
       - libnautilus-extension-dev
-      - libbsd-dev
       - gettext
       - libnemo-extension-dev
       - libseccomp-dev

@@ -30,7 +30,6 @@ Build-Depends:
  libcairo2-dev,
  libnautilus-extension-dev,
  libnemo-extension-dev,
- libbsd-dev,
  gettext,
  liblz4-dev,
  liblzo2-dev,

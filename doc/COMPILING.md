@@ -4,7 +4,7 @@
 
 On Debian/Ubuntu, you will need build-essential and the following development
 packages:
-* All: cmake libcurl-dev zlib1g-dev libpng-dev libjpeg-dev nettle-dev pkg-config libtinyxml2-dev libbsd-dev gettext libseccomp-dev
+* All: cmake libcurl-dev zlib1g-dev libpng-dev libjpeg-dev nettle-dev pkg-config libtinyxml2-dev gettext libseccomp-dev
 * Optional decompression: libzstd-dev liblz4-dev liblzo2-dev
 * KDE 4.x: libqt4-dev kdelibs5-dev
 * KDE 5.x: qtbase5-dev qttools5-dev-tools extra-cmake-modules libkf5kio-dev libkf5widgetsaddons-dev libkf5filemetadata-dev
@@ -17,7 +17,7 @@ NOTE: libkf5kio-dev was called kio-dev prior to Ubuntu 18.04.
 On Red Hat, Fedora, OpenSUSE, and other RPM-based distributions, you will need
 to install "C Development Tools and Libraries" and the following development
 packages:
-* All: cmake libcurl-devel zlib-devel libpng16-devel libjpeg-turbo-devel nettle-devel tinyxml2-devel libbsd-devel gettext-tools libseccomp-devel
+* All: cmake libcurl-devel zlib-devel libpng16-devel libjpeg-turbo-devel nettle-devel tinyxml2-devel gettext-tools libseccomp-devel
 * Optional decompression: libzstd-devel lz4-devel lzo-devel
 * KDE 4.x: qt-devel kdelibs-devel
 * KDE 5.x: qt5-qtbase-devel qt5-qttools extra-cmake-modules kf5-kio-devel kf5-kwidgetsaddons-devel kf5-kfilemetadata-devel
@@ -27,7 +27,7 @@ packages:
 
 On Arch and Arch base distros you will need to install "base-devel" and the
 following development packages:
-* All: curl zlib libpng libjpeg-turbo nettle pkgconf tinyxml2 libbsd gettext libseccomp
+* All: curl zlib libpng libjpeg-turbo nettle pkgconf tinyxml2 gettext libseccomp
 * Optional decompression: zstd lz4 lzo
 * KDE 5.x: qt5-base qt5-tools extra-cmake-modules kio kwidgetsaddons kfilemetadata
 * XFCE (GTK+ 3.x): glib2 gtk3 cairo libcanberra
