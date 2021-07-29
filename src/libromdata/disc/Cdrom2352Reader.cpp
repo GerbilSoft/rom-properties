@@ -25,7 +25,7 @@ namespace LibRomData {
 
 class Cdrom2352ReaderPrivate : public SparseDiscReaderPrivate {
 	public:
-		Cdrom2352ReaderPrivate(Cdrom2352Reader *q, unsigned int physBlockSize = 2352);
+		explicit Cdrom2352ReaderPrivate(Cdrom2352Reader *q, unsigned int physBlockSize = 2352);
 
 	private:
 		typedef SparseDiscReaderPrivate super;

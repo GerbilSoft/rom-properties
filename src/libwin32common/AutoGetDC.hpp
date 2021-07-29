@@ -24,7 +24,7 @@ namespace LibWin32Common {
 class AutoGetDC
 {
 	public:
-		inline AutoGetDC(HWND hWnd)
+		explicit inline AutoGetDC(HWND hWnd)
 			: hWnd(hWnd)
 			, bAdjFont(false)
 		{
@@ -32,7 +32,7 @@ class AutoGetDC
 			hDC = GetDC(hWnd);
 		}
 
-		inline AutoGetDC(HWND hWnd, HFONT hFont)
+		explicit inline AutoGetDC(HWND hWnd, HFONT hFont)
 			: hWnd(hWnd)
 			, bAdjFont(true)
 		{

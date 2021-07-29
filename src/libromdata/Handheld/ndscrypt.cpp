@@ -143,7 +143,7 @@ int ndscrypt_load_blowfish_bin(BlowfishKey bfkey)
 class NDSCrypt
 {
 	public:
-		NDSCrypt(uint32_t gamecode);
+		explicit NDSCrypt(uint32_t gamecode);
 
 	private:
 		static uint32_t lookup(uint32_t *magic, uint32_t v);
