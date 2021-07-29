@@ -320,6 +320,15 @@ SET(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_SOURCE_DIR}/LICENSE")
 SET(CPACK_RESOURCE_FILE_README "${CMAKE_SOURCE_DIR}/README.md")
 #SET(CPACK_RESOURCE_FILE_WELCOME "${CMAKE_SOURCE_DIR}/doc/WELCOME.txt")
 
+# Additional document files for the root directory.
+# TODO: Convert from Unix line endings to Windows when
+# compiling for Windows?
+INCLUDE(DirInstallPaths)
+INSTALL(FILES NETWORK.md
+	DESTINATION "${DIR_INSTALL_DOC_ROOT}"
+	COMPONENT "doc"
+	)
+
 # CPack: Source package settings.
 # NOTE: Double-escape is required because the unescaped
 # string # is written to CPackSourceConfig.cmake, which
