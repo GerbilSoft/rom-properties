@@ -351,7 +351,6 @@ void DragImageLabel::mouseMoveEvent(QMouseEvent *event)
 	delete pngWriter;
 
 	QMimeData *const mimeData = new QMimeData;
-	QByteArray ba = pngData->qByteArray();
 	mimeData->setData(QLatin1String("image/png"), pngData->qByteArray());
 
 	QDrag *const drag = new QDrag(this);
