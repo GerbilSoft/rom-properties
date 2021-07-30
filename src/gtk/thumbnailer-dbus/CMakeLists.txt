@@ -6,7 +6,7 @@ IF(POLICY CMP0063)
 	# target types, including static libraries and executables.
 	CMAKE_POLICY(SET CMP0063 NEW)
 ENDIF(POLICY CMP0063)
-PROJECT(thumbnailer-dbus LANGUAGES C CXX)
+PROJECT(rp-thumbnailer-dbus LANGUAGES C CXX)
 
 # Find packages.
 FIND_PACKAGE(GLib2 ${REQUIRE_XFCE} 2.26.0)
@@ -42,13 +42,13 @@ IF(CFLAG_Wno_unused_parameter)
 		APPEND_STRING PROPERTIES COMPILE_FLAGS " -Wno-unused-parameter ")
 ENDIF(CFLAG_Wno_unused_parameter)
 
-SET(rp-thumbnailer-dbus_SRCS
+SET(${PROJECT_NAME}_SRCS
 	rp-thumbnailer-dbus.c
 	rp-thumbnailer-main.cpp
 	rptsecure.c
 	${CMAKE_CURRENT_BINARY_DIR}/SpecializedThumbnailer1.c
 	)
-SET(rp-thumbnailer-dbus_H
+SET(${PROJECT_NAME}_H
 	rp-thumbnailer-dbus.h
 	rptsecure.h
 	${CMAKE_CURRENT_BINARY_DIR}/SpecializedThumbnailer1.h
@@ -61,12 +61,12 @@ CONFIGURE_FILE(com.gerbilsoft.rom-properties.SpecializedThumbnailer1.service.in
 
 IF(BUILD_THUMBNAILER_DBUS)
 	# D-Bus thumbnailer.
-	ADD_EXECUTABLE(rp-thumbnailer-dbus
-		${rp-thumbnailer-dbus_SRCS}
-		${rp-thumbnailer-dbus_H}
+	ADD_EXECUTABLE(${PROJECT_NAME}
+		${${PROJECT_NAME}_SRCS}
+		${${PROJECT_NAME}_H}
 		)
-	DO_SPLIT_DEBUG(rp-thumbnailer-dbus)
-	TARGET_INCLUDE_DIRECTORIES(rp-thumbnailer-dbus
+	DO_SPLIT_DEBUG(${PROJECT_NAME})
+	TARGET_INCLUDE_DIRECTORIES(${PROJECT_NAME}
 		PUBLIC	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
 		PRIVATE	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>
@@ -74,14 +74,14 @@ IF(BUILD_THUMBNAILER_DBUS)
 			$<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src>
 			$<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/src>
 		)
-	TARGET_LINK_LIBRARIES(rp-thumbnailer-dbus unixcommon rpsecure)
-	TARGET_LINK_LIBRARIES(rp-thumbnailer-dbus GLib2::gio-unix GLib2::gio GLib2::gobject GLib2::glib)
+	TARGET_LINK_LIBRARIES(${PROJECT_NAME} unixcommon rpsecure)
+	TARGET_LINK_LIBRARIES(${PROJECT_NAME} GLib2::gio-unix GLib2::gio GLib2::gobject GLib2::glib)
 	# Link in libdl if it's required for dlopen().
 	IF(CMAKE_DL_LIBS)
-		TARGET_LINK_LIBRARIES(rp-thumbnailer-dbus ${CMAKE_DL_LIBS})
+		TARGET_LINK_LIBRARIES(${PROJECT_NAME} ${CMAKE_DL_LIBS})
 	ENDIF(CMAKE_DL_LIBS)
-	TARGET_COMPILE_DEFINITIONS(rp-thumbnailer-dbus
-		PRIVATE G_LOG_DOMAIN=\"rp-thumbnailer-dbus\"
+	TARGET_COMPILE_DEFINITIONS(${PROJECT_NAME}
+		PRIVATE G_LOG_DOMAIN=\"${PROJECT_NAME}\"
 		)
 ENDIF(BUILD_THUMBNAILER_DBUS)
 
@@ -92,7 +92,7 @@ ENDIF(BUILD_THUMBNAILER_DBUS)
 IF(BUILD_THUMBNAILER_DBUS)
 	# FIXME: ${ThunarX2_EXTENSIONS_DIR} always uses the system prefix.
 	# This should be adjusted to ${CMAKE_INSTALL_PREFIX}.
-	INSTALL(TARGETS rp-thumbnailer-dbus
+	INSTALL(TARGETS ${PROJECT_NAME}
 		RUNTIME DESTINATION "${DIR_INSTALL_EXE}"
 		COMPONENT "plugin"
 		)
@@ -137,7 +137,7 @@ IF(BUILD_THUMBNAILER_DBUS)
 	# Check if a split debug file should be installed.
 	IF(INSTALL_DEBUG)
 		# FIXME: Generator expression $<TARGET_PROPERTY:${_target},PDB> didn't work with CPack-3.6.1.
-		GET_TARGET_PROPERTY(DEBUG_FILENAME rp-thumbnailer-dbus PDB)
+		GET_TARGET_PROPERTY(DEBUG_FILENAME ${PROJECT_NAME} PDB)
 		IF(DEBUG_FILENAME)
 			INSTALL(FILES "${DEBUG_FILENAME}"
 				DESTINATION "lib/debug/${DIR_INSTALL_EXE}"

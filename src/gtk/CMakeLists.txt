@@ -23,23 +23,11 @@ SET(GTK_ALL_DEPRECATED_FLAGS "${GLIB_DEPRECATED_FLAGS} ${GDK_DEPRECATED_FLAGS} $
 SET(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} ${GTK_ALL_DEPRECATED_FLAGS}")
 SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} ${GTK_ALL_DEPRECATED_FLAGS}")
 
-# CPU-specific and optimized sources.
-IF(CPU_i386 OR CPU_amd64)
-	# IFUNC requires glibc.
-	# We're not checking for glibc here, but we do have preprocessor
-	# checks, so even if this does get compiled on a non-glibc system,
-	# it won't do anything.
-	# TODO: Might be supported on other Unix-like operating systems...
-	IF(UNIX AND NOT APPLE)
-		SET(rom-properties-gtk2_IFUNC_SRCS GdkImageConv_ifunc.cpp)
-	ENDIF(UNIX AND NOT APPLE)
-
-	# NOTE: SSSE3 flags are set in subprojects, not here.
-	SET(rom-properties-gtk2_SSSE3_SRCS GdkImageConv_ssse3.cpp)
-ENDIF(CPU_i386 OR CPU_amd64)
+# Write the config.h file.
+CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/config.gtk.h.in" "${CMAKE_CURRENT_BINARY_DIR}/config.gtk.h")
 
 # Sources and headers.
-SET(rom-properties-gtk_SRCS
+SET(${PROJECT_NAME}_SRCS
 	RomDataView.cpp
 	DragImage.cpp
 	CreateThumbnail.cpp
@@ -52,10 +40,9 @@ SET(rom-properties-gtk_SRCS
 	LanguageComboBox.cpp
 	OptionsMenuButton.cpp
 	)
-SET(rom-properties-gtk_H
+SET(${PROJECT_NAME}_H
 	RomDataView.hpp
 	DragImage.hpp
-	GdkImageConv.hpp
 	PIMGTYPE.hpp
 	rp-gtk-enums.h
 	RpFile_gio.hpp
@@ -67,18 +54,10 @@ SET(rom-properties-gtk_H
 	OptionsMenuButton.hpp
 	)
 
-# GTK2 sources and headers.
-SET(rom-properties-gtk2_SRCS GdkImageConv.cpp)
-SET(rom-properties-gtk2_H GdkImageConv.hpp)
-
-# GTK3 sources and headers.
-SET(rom-properties-gtk3_SRCS CairoImageConv.cpp)
-SET(rom-properties-gtk3_H CairoImageConv.hpp)
-
 IF(ENABLE_ACHIEVEMENTS)
 	# D-Bus notification for achievements
-	SET(rom-properties-gtk-notify_SRCS AchGDBus.cpp)
-	SET(rom-properties-gtk-notify_H    AchGDBus.hpp)
+	SET(${PROJECT_NAME}-notify_SRCS AchGDBus.cpp)
+	SET(${PROJECT_NAME}-notify_H    AchGDBus.hpp)
 ENDIF(ENABLE_ACHIEVEMENTS)
 
 # Common libraries required for both GTK+ 2.x and 3.x.

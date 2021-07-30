@@ -48,14 +48,16 @@ ELSE(GLib2_FOUND AND GObject2_FOUND AND GIO_FOUND AND GIO-UNIX_FOUND AND GdkPixb
 ENDIF(GLib2_FOUND AND GObject2_FOUND AND GIO_FOUND AND GIO-UNIX_FOUND AND GdkPixbuf2_FOUND AND GTK2_FOUND)
 
 # Sources and headers. (GTK+ common)
-STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-xfce_SRCS  "${rom-properties-gtk_SRCS}")
-STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-xfce_SRCS2 "${rom-properties-gtk2_SRCS}")
-STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-xfce_H     "${rom-properties-gtk_H}")
-STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-xfce_H2    "${rom-properties-gtk2_H}")
+STRING(REGEX REPLACE "([^;]+)" "../\\1" ${PROJECT_NAME}_SRCS "${rom-properties-gtk_SRCS}")
+STRING(REGEX REPLACE "([^;]+)" "../\\1" ${PROJECT_NAME}_H    "${rom-properties-gtk_H}")
+
+# GdkImageConv (GTK+ 2.x)
+SET(${PROJECT_NAME}_SRCS ${${PROJECT_NAME}_SRCS} GdkImageConv.cpp)
+SET(${PROJECT_NAME}_H    ${${PROJECT_NAME}_H}    GdkImageConv.hpp)
 
 IF(ENABLE_ACHIEVEMENTS)
-	STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-xfce-notify_SRCS "${rom-properties-gtk-notify_SRCS}")
-	STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-xfce-notify_H    "${rom-properties-gtk-notify_H}")
+	STRING(REGEX REPLACE "([^;]+)" "../\\1" ${PROJECT_NAME}-notify_SRCS "${rom-properties-gtk-notify_SRCS}")
+	STRING(REGEX REPLACE "([^;]+)" "../\\1" ${PROJECT_NAME}-notify_H    "${rom-properties-gtk-notify_H}")
 
 	# D-Bus bindings for notifications.
 	# NOTE: This has to be in this file, not the GTK+ CMakeLists.txt.
@@ -70,8 +72,8 @@ IF(ENABLE_ACHIEVEMENTS)
 		VERBATIM
 		)
 
-	SET(rom-properties-xfce-notify_SRCS
-		${rom-properties-xfce-notify_SRCS}
+	SET(${PROJECT_NAME}-notify_SRCS
+		${${PROJECT_NAME}-notify_SRCS}
 		${CMAKE_CURRENT_BINARY_DIR}/Notifications.c
 		)
 
@@ -85,15 +87,24 @@ IF(ENABLE_ACHIEVEMENTS)
 ENDIF(ENABLE_ACHIEVEMENTS)
 
 # CPU-specific and optimized sources.
-IF(rom-properties-gtk2_SSSE3_SRCS)
-	STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-xfce_IFUNC_SRCS "${rom-properties-gtk2_IFUNC_SRCS}")
-	STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-xfce_SSSE3_SRCS "${rom-properties-gtk2_SSSE3_SRCS}")
+IF(CPU_i386 OR CPU_amd64)
+	# IFUNC requires glibc.
+	# We're not checking for glibc here, but we do have preprocessor
+	# checks, so even if this does get compiled on a non-glibc system,
+	# it won't do anything.
+	# TODO: Might be supported on other Unix-like operating systems...
+	IF(UNIX AND NOT APPLE)
+		SET(${PROJECT_NAME}_IFUNC_SRCS GdkImageConv_ifunc.cpp)
 
-	# Disable LTO on the IFUNC files if LTO is known to be broken.
-	IF(GCC_5xx_LTO_ISSUES)
-		SET_SOURCE_FILES_PROPERTIES(${rom-properties-xfce_IFUNC_SRCS}
-			APPEND_STRING PROPERTIES COMPILE_FLAGS " -fno-lto ")
-	ENDIF(GCC_5xx_LTO_ISSUES)
+		# Disable LTO on the IFUNC files if LTO is known to be broken.
+		IF(GCC_5xx_LTO_ISSUES)
+			SET_SOURCE_FILES_PROPERTIES(${${PROJECT_NAME}_IFUNC_SRCS}
+				APPEND_STRING PROPERTIES COMPILE_FLAGS " -fno-lto ")
+		ENDIF(GCC_5xx_LTO_ISSUES)
+	ENDIF(UNIX AND NOT APPLE)
+
+	# NOTE: SSSE3 flags are set in subprojects, not here.
+	SET(${PROJECT_NAME}_SSSE3_SRCS GdkImageConv_ssse3.cpp)
 
 	IF(MSVC AND NOT CMAKE_CL_64)
 		SET(SSSE3_FLAG "/arch:SSE2")
@@ -102,27 +113,24 @@ IF(rom-properties-gtk2_SSSE3_SRCS)
 		SET(SSSE3_FLAG "-mssse3")
 	ENDIF()
 	IF(SSSE3_FLAG)
-		SET_SOURCE_FILES_PROPERTIES(${rom-properties-xfce_SSSE3_SRCS}
+		SET_SOURCE_FILES_PROPERTIES(${${PROJECT_NAME}_SSSE3_SRCS}
 			APPEND_STRING PROPERTIES COMPILE_FLAGS " ${SSSE3_FLAG} ")
 	ENDIF(SSSE3_FLAG)
 ENDIF()
 UNSET(arch)
 
-# Write the config.h file.
-CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/config.xfce.h.in" "${CMAKE_CURRENT_BINARY_DIR}/config.xfce.h")
-
 # Sources and headers. (XFCE-specific)
-SET(rom-properties-xfce_SRCS
-	${rom-properties-xfce_SRCS} ${rom-properties-xfce_SRCS2}
-	${rom-properties-xfce-notify_SRCS} ${rom-properties-xfce-notify_H}
-	${rom-properties-xfce_IFUNC_SRCS}
-	${rom-properties-xfce_SSSE3_SRCS}
+SET(${PROJECT_NAME}_SRCS
+	${${PROJECT_NAME}_SRCS} ${${PROJECT_NAME}_SRCS2}
+	${${PROJECT_NAME}-notify_SRCS} ${${PROJECT_NAME}-notify_H}
+	${${PROJECT_NAME}_IFUNC_SRCS}
+	${${PROJECT_NAME}_SSSE3_SRCS}
 	../gtk3/RpThunarPlugin.cpp
 	../gtk3/RpThunarProvider.cpp
 	../gtk3/is-supported.cpp
 	)
-SET(rom-properties-xfce_H
-	${rom-properties-xfce_H} ${rom-properties-xfce_H2}
+SET(${PROJECT_NAME}_H
+	${${PROJECT_NAME}_H} ${${PROJECT_NAME}_H2}
 	../gtk3/RpThunarPlugin.hpp
 	../gtk3/RpThunarProvider.hpp
 	../gtk3/is-supported.hpp
@@ -131,33 +139,33 @@ SET(rom-properties-xfce_H
 	)
 
 IF(LibCanberra_FOUND AND LibCanberraGtk2_FOUND)
-	SET(rom-properties-xfce_SRCS ${rom-properties-xfce_SRCS} ../MessageSound.cpp)
-	SET(rom-properties-xfce_H    ${rom-properties-xfce_H}    ../MessageSound.hpp)
+	SET(${PROJECT_NAME}_SRCS ${${PROJECT_NAME}_SRCS} ../MessageSound.cpp)
+	SET(${PROJECT_NAME}_H    ${${PROJECT_NAME}_H}    ../MessageSound.hpp)
 ENDIF(LibCanberra_FOUND AND LibCanberraGtk2_FOUND)
 
 IF(ENABLE_PCH)
 	# Precompiled headers.
 	INCLUDE(PrecompiledHeader)
-	SET(rom-properties-xfce_PCH_C ../stdafx.c)
-	SET(rom-properties-xfce_PCH_CXX ../stdafx.cpp)
-	SET(rom-properties-xfce_PCH_SRC ${rom-properties-xfce_PCH_C} ${rom-properties-xfce_PCH_CXX})
-	SET(rom-properties-xfce_PCH_H ../stdafx.h)
+	SET(${PROJECT_NAME}_PCH_C ../stdafx.c)
+	SET(${PROJECT_NAME}_PCH_CXX ../stdafx.cpp)
+	SET(${PROJECT_NAME}_PCH_SRC ${${PROJECT_NAME}_PCH_C} ${${PROJECT_NAME}_PCH_CXX})
+	SET(${PROJECT_NAME}_PCH_H ../stdafx.h)
 ENDIF(ENABLE_PCH)
 
 IF(BUILD_GTK2)
-	ADD_LIBRARY(rom-properties-xfce MODULE
-		${rom-properties-xfce_PCH_SRC} ${rom-properties-xfce_PCH_H}
-		${rom-properties-xfce_SRCS}
+	ADD_LIBRARY(${PROJECT_NAME} MODULE
+		${${PROJECT_NAME}_PCH_SRC} ${${PROJECT_NAME}_PCH_H}
+		${${PROJECT_NAME}_SRCS}
 		)
 	IF(ENABLE_PCH)
-		ADD_PRECOMPILED_HEADER(rom-properties-xfce ${rom-properties-xfce_PCH_H}
-			SOURCE_C ${rom-properties-xfce_PCH_C}
-			SOURCE_CXX ${rom-properties-xfce_PCH_CXX}
+		ADD_PRECOMPILED_HEADER(${PROJECT_NAME} ${${PROJECT_NAME}_PCH_H}
+			SOURCE_C ${${PROJECT_NAME}_PCH_C}
+			SOURCE_CXX ${${PROJECT_NAME}_PCH_CXX}
 			)
 	ENDIF(ENABLE_PCH)
-	SET_TARGET_PROPERTIES(rom-properties-xfce PROPERTIES PREFIX "")
-	DO_SPLIT_DEBUG(rom-properties-xfce)
-	TARGET_INCLUDE_DIRECTORIES(rom-properties-xfce
+	SET_TARGET_PROPERTIES(${PROJECT_NAME} PROPERTIES PREFIX "")
+	DO_SPLIT_DEBUG(${PROJECT_NAME})
+	TARGET_INCLUDE_DIRECTORIES(${PROJECT_NAME}
 		PUBLIC	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
 		PRIVATE	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>
@@ -165,24 +173,24 @@ IF(BUILD_GTK2)
 			$<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src>
 			$<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/src>
 		)
-	TARGET_INCLUDE_DIRECTORIES(rom-properties-xfce PUBLIC ${GTK2_INCLUDE_DIRS})
+	TARGET_INCLUDE_DIRECTORIES(${PROJECT_NAME} PUBLIC ${GTK2_INCLUDE_DIRS})
 
-	TARGET_LINK_LIBRARIES(rom-properties-xfce PRIVATE glibresources)
-	TARGET_LINK_LIBRARIES(rom-properties-xfce PRIVATE rpcpu romdata rpfile rpbase)
+	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE glibresources)
+	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE rpcpu romdata rpfile rpbase)
 	IF(ENABLE_NLS)
-		TARGET_LINK_LIBRARIES(rom-properties-xfce PRIVATE i18n)
+		TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE i18n)
 	ENDIF(ENABLE_NLS)
-	TARGET_LINK_LIBRARIES(rom-properties-xfce PRIVATE GdkPixbuf2::gdkpixbuf2)
-	TARGET_LINK_LIBRARIES(rom-properties-xfce PUBLIC ${GTK2_LIBRARIES} GLib2::gio-unix GLib2::gio GLib2::gobject GLib2::glib)
+	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE GdkPixbuf2::gdkpixbuf2)
+	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PUBLIC ${GTK2_LIBRARIES} GLib2::gio-unix GLib2::gio GLib2::gobject GLib2::glib)
 	IF(LibCanberra_FOUND AND LibCanberraGtk2_FOUND)
-		TARGET_LINK_LIBRARIES(rom-properties-xfce PRIVATE LibCanberra::libcanberra LibCanberra::gtk2)
-		TARGET_COMPILE_DEFINITIONS(rom-properties-xfce PRIVATE ENABLE_MESSAGESOUND)
+		TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE LibCanberra::libcanberra LibCanberra::gtk2)
+		TARGET_COMPILE_DEFINITIONS(${PROJECT_NAME} PRIVATE ENABLE_MESSAGESOUND)
 	ENDIF(LibCanberra_FOUND AND LibCanberraGtk2_FOUND)
 
 	# TODO: Move GTK2_DEFINITIONS to TARGET_COMPILE_DEFINITIONS.
 	# (Requires removing the "-D" switches.)
 	ADD_DEFINITIONS(${GTK2_DEFINITIONS})
-	TARGET_COMPILE_DEFINITIONS(rom-properties-xfce
+	TARGET_COMPILE_DEFINITIONS(${PROJECT_NAME}
 		PRIVATE RP_UI_GTK2_XFCE
 		)
 ENDIF(BUILD_GTK2)
@@ -194,7 +202,7 @@ ENDIF(BUILD_GTK2)
 IF(BUILD_GTK2)
 	# FIXME: ${ThunarX2_EXTENSIONS_DIR} always uses the system prefix.
 	# This should be adjusted to ${CMAKE_INSTALL_PREFIX}.
-	INSTALL(TARGETS rom-properties-xfce
+	INSTALL(TARGETS ${PROJECT_NAME}
 		LIBRARY DESTINATION "${ThunarX2_EXTENSIONS_DIR}"
 		COMPONENT "plugin"
 		)
@@ -202,7 +210,7 @@ IF(BUILD_GTK2)
 	# Check if a split debug file should be installed.
 	IF(INSTALL_DEBUG)
 		# FIXME: Generator expression $<TARGET_PROPERTY:${_target},PDB> didn't work with CPack-3.6.1.
-		GET_TARGET_PROPERTY(DEBUG_FILENAME rom-properties-xfce PDB)
+		GET_TARGET_PROPERTY(DEBUG_FILENAME ${PROJECT_NAME} PDB)
 		IF(DEBUG_FILENAME)
 			INSTALL(FILES "${DEBUG_FILENAME}"
 				DESTINATION "lib/debug/${ThunarX2_EXTENSIONS_DIR}"

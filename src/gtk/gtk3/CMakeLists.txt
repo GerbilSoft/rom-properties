@@ -63,14 +63,16 @@ ELSE(GLib2_FOUND AND GObject2_FOUND AND GIO_FOUND AND GIO-UNIX_FOUND AND Cairo_F
 ENDIF(GLib2_FOUND AND GObject2_FOUND AND GIO_FOUND AND GIO-UNIX_FOUND AND Cairo_FOUND AND GTK3_FOUND)
 
 # Sources and headers. (GTK+ common)
-STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-gtk3_CSRCS  "${rom-properties-gtk_SRCS}")
-STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-gtk3_CSRCS2 "${rom-properties-gtk3_SRCS}")
-STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-gtk3_CH     "${rom-properties-gtk_H}")
-STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-gtk3_CH2    "${rom-properties-gtk3_H}")
+STRING(REGEX REPLACE "([^;]+)" "../\\1" ${PROJECT_NAME}_SRCS "${rom-properties-gtk_SRCS}")
+STRING(REGEX REPLACE "([^;]+)" "../\\1" ${PROJECT_NAME}_H    "${rom-properties-gtk_H}")
+
+# CairoImageConv (GTK+ 3.x)
+SET(${PROJECT_NAME}_SRCS ${${PROJECT_NAME}_SRCS} CairoImageConv.cpp)
+SET(${PROJECT_NAME}_H    ${${PROJECT_NAME}_H}    CairoImageConv.hpp)
 
 IF(ENABLE_ACHIEVEMENTS)
-	STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-gtk3-notify_SRCS "${rom-properties-gtk-notify_SRCS}")
-	STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-gtk3-notify_H    "${rom-properties-gtk-notify_H}")
+	STRING(REGEX REPLACE "([^;]+)" "../\\1" ${PROJECT_NAME}-notify_SRCS "${rom-properties-gtk-notify_SRCS}")
+	STRING(REGEX REPLACE "([^;]+)" "../\\1" ${PROJECT_NAME}-notify_H    "${rom-properties-gtk-notify_H}")
 
 	# D-Bus bindings for notifications.
 	# NOTE: This has to be in this file, not the GTK+ CMakeLists.txt.
@@ -85,8 +87,8 @@ IF(ENABLE_ACHIEVEMENTS)
 		VERBATIM
 		)
 
-	SET(rom-properties-gtk3-notify_SRCS
-		${rom-properties-gtk3-notify_SRCS}
+	SET(${PROJECT_NAME}-notify_SRCS
+		${${PROJECT_NAME}-notify_SRCS}
 		${CMAKE_CURRENT_BINARY_DIR}/Notifications.c
 		)
 
@@ -100,13 +102,13 @@ IF(ENABLE_ACHIEVEMENTS)
 ENDIF(ENABLE_ACHIEVEMENTS)
 
 # CPU-specific and optimized sources.
-IF(rom-properties-gtk3_SSSE3_SRCS)
-	STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-gtk3_IFUNC_SRCS "${rom-properties-gtk3_IFUNC_SRCS}")
-	STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-gtk3_SSSE3_SRCS "${rom-properties-gtk3_SSSE3_SRCS}")
+IF(${PROJECT_NAME}_SSSE3_SRCS)
+	STRING(REGEX REPLACE "([^;]+)" "../\\1" ${PROJECT_NAME}_IFUNC_SRCS "${${PROJECT_NAME}_IFUNC_SRCS}")
+	STRING(REGEX REPLACE "([^;]+)" "../\\1" ${PROJECT_NAME}_SSSE3_SRCS "${${PROJECT_NAME}_SSSE3_SRCS}")
 
 	# Disable LTO on the IFUNC files if LTO is known to be broken.
 	IF(GCC_5xx_LTO_ISSUES)
-		SET_SOURCE_FILES_PROPERTIES(${rom-properties-gtk3_IFUNC_SRCS}
+		SET_SOURCE_FILES_PROPERTIES(${${PROJECT_NAME}_IFUNC_SRCS}
 			APPEND_STRING PROPERTIES COMPILE_FLAGS " -fno-lto ")
 	ENDIF(GCC_5xx_LTO_ISSUES)
 
@@ -117,29 +119,26 @@ IF(rom-properties-gtk3_SSSE3_SRCS)
 		SET(SSSE3_FLAG "-mssse3")
 	ENDIF()
 	IF(SSSE3_FLAG)
-		SET_SOURCE_FILES_PROPERTIES(${rom-properties-gtk3_SSSE3_SRCS}
+		SET_SOURCE_FILES_PROPERTIES(${${PROJECT_NAME}_SSSE3_SRCS}
 			APPEND_STRING PROPERTIES COMPILE_FLAGS " ${SSSE3_FLAG} ")
 	ENDIF(SSSE3_FLAG)
 ENDIF()
 UNSET(arch)
 
-# Write the config.h file.
-CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/config.gtk3.h.in" "${CMAKE_CURRENT_BINARY_DIR}/config.gtk3.h")
-
 # Sources and headers. (GTK3-specific)
-SET(rom-properties-gtk3_SRCS
-	${rom-properties-gtk3_CSRCS} ${rom-properties-gtk3_CSRCS2}
-	${rom-properties-gtk3-notify_SRCS} ${rom-properties-gtk3-notify_H}
-	${rom-properties-gtk3_IFUNC_SRCS}
-	${rom-properties-gtk3_SSSE3_SRCS}
+SET(${PROJECT_NAME}_SRCS
+	${${PROJECT_NAME}_SRCS} ${${PROJECT_NAME}_H}
+	${${PROJECT_NAME}-notify_SRCS} ${${PROJECT_NAME}-notify_H}
+	${${PROJECT_NAME}_IFUNC_SRCS}
+	${${PROJECT_NAME}_SSSE3_SRCS}
 	RpNautilusPlugin.cpp
 	RpNautilusProvider.cpp
 	RpThunarPlugin.cpp
 	RpThunarProvider.cpp
 	is-supported.cpp
 	)
-SET(rom-properties-gtk3_H
-	${rom-properties-gtk3_CH} ${rom-properties-gtk3_CH2}
+SET(${PROJECT_NAME}_H
+	${${PROJECT_NAME}_CH} ${${PROJECT_NAME}_CH2}
 	RpNautilusPlugin.hpp
 	RpNautilusProvider.hpp
 	RpThunarPlugin.hpp
@@ -150,33 +149,33 @@ SET(rom-properties-gtk3_H
 	)
 
 IF(LibCanberra_FOUND AND LibCanberraGtk3_FOUND)
-	SET(rom-properties-gtk3_SRCS ${rom-properties-gtk3_SRCS} ../MessageSound.cpp)
-	SET(rom-properties-gtk3_H    ${rom-properties-gtk3_H}    ../MessageSound.hpp)
+	SET(${PROJECT_NAME}_SRCS ${${PROJECT_NAME}_SRCS} ../MessageSound.cpp)
+	SET(${PROJECT_NAME}_H    ${${PROJECT_NAME}_H}    ../MessageSound.hpp)
 ENDIF(LibCanberra_FOUND AND LibCanberraGtk3_FOUND)
 
 IF(ENABLE_PCH)
 	# Precompiled headers.
 	INCLUDE(PrecompiledHeader)
-	SET(rom-properties-gtk3_PCH_C ../stdafx.c)
-	SET(rom-properties-gtk3_PCH_CXX ../stdafx.cpp)
-	SET(rom-properties-gtk3_PCH_SRC ${rom-properties-gtk3_PCH_C} ${rom-properties-gtk3_PCH_CXX})
-	SET(rom-properties-gtk3_PCH_H ../stdafx.h)
+	SET(${PROJECT_NAME}_PCH_C ../stdafx.c)
+	SET(${PROJECT_NAME}_PCH_CXX ../stdafx.cpp)
+	SET(${PROJECT_NAME}_PCH_SRC ${${PROJECT_NAME}_PCH_C} ${${PROJECT_NAME}_PCH_CXX})
+	SET(${PROJECT_NAME}_PCH_H ../stdafx.h)
 ENDIF(ENABLE_PCH)
 
 IF(BUILD_GTK3)
-	ADD_LIBRARY(rom-properties-gtk3 MODULE
-		${rom-properties-gtk3_PCH_SRC} ${rom-properties-gtk3_PCH_H}
-		${rom-properties-gtk3_SRCS}
+	ADD_LIBRARY(${PROJECT_NAME} MODULE
+		${${PROJECT_NAME}_PCH_SRC} ${${PROJECT_NAME}_PCH_H}
+		${${PROJECT_NAME}_SRCS}
 		)
 	IF(ENABLE_PCH)
-		ADD_PRECOMPILED_HEADER(rom-properties-gtk3 ${rom-properties-gtk3_PCH_H}
-			SOURCE_C ${rom-properties-gtk3_PCH_C}
-			SOURCE_CXX ${rom-properties-gtk3_PCH_CXX}
+		ADD_PRECOMPILED_HEADER(${PROJECT_NAME} ${${PROJECT_NAME}_PCH_H}
+			SOURCE_C ${${PROJECT_NAME}_PCH_C}
+			SOURCE_CXX ${${PROJECT_NAME}_PCH_CXX}
 			)
 	ENDIF(ENABLE_PCH)
-	SET_TARGET_PROPERTIES(rom-properties-gtk3 PROPERTIES PREFIX "")
-	DO_SPLIT_DEBUG(rom-properties-gtk3)
-	TARGET_INCLUDE_DIRECTORIES(rom-properties-gtk3
+	SET_TARGET_PROPERTIES(${PROJECT_NAME} PROPERTIES PREFIX "")
+	DO_SPLIT_DEBUG(${PROJECT_NAME})
+	TARGET_INCLUDE_DIRECTORIES(${PROJECT_NAME}
 		PUBLIC	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
 		PRIVATE	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>
@@ -184,24 +183,24 @@ IF(BUILD_GTK3)
 			$<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src>
 			$<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/src>
 		)
-	TARGET_LINK_LIBRARIES(rom-properties-gtk3 PRIVATE glibresources)
-	TARGET_LINK_LIBRARIES(rom-properties-gtk3 PRIVATE rpcpu romdata rpfile rpbase)
+	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE glibresources)
+	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE rpcpu romdata rpfile rpbase)
 	IF(ENABLE_NLS)
-		TARGET_LINK_LIBRARIES(rom-properties-gtk3 PRIVATE i18n)
+		TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE i18n)
 	ENDIF(ENABLE_NLS)
-	TARGET_LINK_LIBRARIES(rom-properties-gtk3 PRIVATE Cairo::cairo)
-	TARGET_LINK_LIBRARIES(rom-properties-gtk3 PUBLIC Gtk3::gtk3 GLib2::gio-unix GLib2::gio GLib2::gobject GLib2::glib)
+	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE Cairo::cairo)
+	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PUBLIC Gtk3::gtk3 GLib2::gio-unix GLib2::gio GLib2::gobject GLib2::glib)
 	IF(LibCanberra_FOUND AND LibCanberraGtk3_FOUND)
-		TARGET_LINK_LIBRARIES(rom-properties-gtk3 PRIVATE LibCanberra::libcanberra LibCanberra::gtk3)
-		TARGET_COMPILE_DEFINITIONS(rom-properties-gtk3 PRIVATE ENABLE_MESSAGESOUND)
+		TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE LibCanberra::libcanberra LibCanberra::gtk3)
+		TARGET_COMPILE_DEFINITIONS(${PROJECT_NAME} PRIVATE ENABLE_MESSAGESOUND)
 	ENDIF(LibCanberra_FOUND AND LibCanberraGtk3_FOUND)
 
 	# Link in libdl if it's required for dlopen().
 	IF(CMAKE_DL_LIBS)
-		TARGET_LINK_LIBRARIES(rom-properties-gtk3 PRIVATE ${CMAKE_DL_LIBS})
+		TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE ${CMAKE_DL_LIBS})
 	ENDIF(CMAKE_DL_LIBS)
 
-	TARGET_COMPILE_DEFINITIONS(rom-properties-gtk3
+	TARGET_COMPILE_DEFINITIONS(${PROJECT_NAME}
 		PRIVATE RP_UI_GTK3_GNOME
 		)
 ENDIF(BUILD_GTK3)
@@ -212,40 +211,40 @@ ENDIF(BUILD_GTK3)
 
 IF(BUILD_GTK3)
 	# GNOME (Nautilus) extension is installed directly.
-	INSTALL(TARGETS rom-properties-gtk3
+	INSTALL(TARGETS ${PROJECT_NAME}
 		LIBRARY DESTINATION "${LibNautilusExtension_EXTENSION_DIR}"
 		COMPONENT "plugin"
 		)
 
 	# Symlinks are created for Caja, Nemo, and Thunar.
 	# Reference: https://stackoverflow.com/questions/34578362/how-can-i-package-a-symlink-with-cpack
-	ADD_CUSTOM_COMMAND(TARGET rom-properties-gtk3 POST_BUILD
-		COMMAND ln -sf "${LibNautilusExtension_EXTENSION_DIR}/rom-properties-gtk3.so" rom-properties-gtk3.symlink.so
+	ADD_CUSTOM_COMMAND(TARGET ${PROJECT_NAME} POST_BUILD
+		COMMAND ln -sf "${LibNautilusExtension_EXTENSION_DIR}/${PROJECT_NAME}.so" ${PROJECT_NAME}.symlink.so
 		WORKING_DIRECTORY "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}"
 		VERBATIM
 		)
 
 	# Install symlinks.
-	INSTALL(FILES "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/rom-properties-gtk3.symlink.so"
+	INSTALL(FILES "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/${PROJECT_NAME}.symlink.so"
 		DESTINATION "${LibCajaExtension_EXTENSION_DIR}"
-		RENAME "rom-properties-gtk3.so"
+		RENAME "${PROJECT_NAME}.so"
 		COMPONENT "plugin"
 		)
-	INSTALL(FILES "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/rom-properties-gtk3.symlink.so"
+	INSTALL(FILES "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/${PROJECT_NAME}.symlink.so"
 		DESTINATION "${LibNemoExtension_EXTENSION_DIR}"
-		RENAME "rom-properties-gtk3.so"
+		RENAME "${PROJECT_NAME}.so"
 		COMPONENT "plugin"
 		)
-	INSTALL(FILES "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/rom-properties-gtk3.symlink.so"
+	INSTALL(FILES "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/${PROJECT_NAME}.symlink.so"
 		DESTINATION "${ThunarX3_EXTENSIONS_DIR}"
-		RENAME "rom-properties-gtk3.so"
+		RENAME "${PROJECT_NAME}.so"
 		COMPONENT "plugin"
 		)
 
 	# Check if a split debug file should be installed.
 	IF(INSTALL_DEBUG)
 		# FIXME: Generator expression $<TARGET_PROPERTY:${_target},PDB> didn't work with CPack-3.6.1.
-		GET_TARGET_PROPERTY(DEBUG_FILENAME rom-properties-gtk3 PDB)
+		GET_TARGET_PROPERTY(DEBUG_FILENAME ${PROJECT_NAME} PDB)
 		IF(DEBUG_FILENAME)
 			INSTALL(FILES "${DEBUG_FILENAME}"
 				DESTINATION "lib/debug/${LibNautilusExtension_EXTENSION_DIR}"
