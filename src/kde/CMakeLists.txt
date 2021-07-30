@@ -11,7 +11,7 @@ PROJECT(rom-properties-kde LANGUAGES CXX)
 # Common files for both KDE4 and KF5.
 
 # Sources and headers.
-SET(rom-properties-kde_SRCS
+SET(${PROJECT_NAME}_SRCS
 	RomPropertiesDialogPlugin.cpp
 	RomDataView.cpp
 	RomThumbCreator.cpp
@@ -38,7 +38,7 @@ SET(rom-properties-kde_SRCS
 	config/AchievementsItemDelegate.cpp
 	config/AboutTab.cpp
 	)
-SET(rom-properties-kde_H
+SET(${PROJECT_NAME}_H
 	RomPropertiesDialogPlugin.hpp
 	RomDataView.hpp
 	RomThumbCreator.hpp
@@ -65,7 +65,7 @@ SET(rom-properties-kde_H
 	config/AchievementsItemDelegate.hpp
 	config/AboutTab.hpp
 	)
-SET(rom-properties-kde_UIS
+SET(${PROJECT_NAME}_UIS
 	RomDataView.ui
 	config/ConfigDialog.ui
 	config/ImageTypesTab.ui
@@ -75,41 +75,41 @@ SET(rom-properties-kde_UIS
 	config/AchievementsTab.ui
 	config/AboutTab.ui
 	)
-SET(rom-properties-kde_RCC_SRCS
+SET(${PROJECT_NAME}_RCC_SRCS
 	../res/flags/flags.qrc
 	../res/ach/ach.qrc
 	)
 
 IF(ENABLE_DECRYPTION)
-	SET(rom-properties-kde_SRCS
-		${rom-properties-kde_SRCS}
+	SET(${PROJECT_NAME}_SRCS
+		${${PROJECT_NAME}_SRCS}
 		config/KeyManagerTab.cpp
 		config/KeyStoreQt.cpp
 		config/KeyStoreModel.cpp
 		config/KeyStoreItemDelegate.cpp
 		)
-	SET(rom-properties-kde_H
-		${rom-properties-kde_H}
+	SET(${PROJECT_NAME}_H
+		${${PROJECT_NAME}_H}
 		config/KeyManagerTab.hpp
 		config/KeyStoreQt.hpp
 		config/KeyStoreModel.hpp
 		config/KeyStoreItemDelegate.hpp
 		)
-	SET(rom-properties-kde_UIS
-		${rom-properties-kde_UIS}
+	SET(${PROJECT_NAME}_UIS
+		${${PROJECT_NAME}_UIS}
 		config/KeyManagerTab.ui
 		)
 ENDIF(ENABLE_DECRYPTION)
 
 IF(ENABLE_NLS)
-	SET(rom-properties-kde_SRCS ${rom-properties-kde_SRCS} GettextTranslator.cpp)
-	SET(rom-properties-kde_H    ${rom-properties-kde_H}    GettextTranslator.hpp)
+	SET(${PROJECT_NAME}_SRCS ${${PROJECT_NAME}_SRCS} GettextTranslator.cpp)
+	SET(${PROJECT_NAME}_H    ${${PROJECT_NAME}_H}    GettextTranslator.hpp)
 ENDIF(ENABLE_NLS)
 
 IF(ENABLE_ACHIEVEMENTS)
 	# D-Bus notification for achievements
-	SET(rom-properties-kde-notify_SRCS AchQtDBus.cpp)
-	SET(rom-properties-kde-notify_H    AchQtDBus.hpp)
+	SET(${PROJECT_NAME}-notify_SRCS AchQtDBus.cpp)
+	SET(${PROJECT_NAME}-notify_H    AchQtDBus.hpp)
 ENDIF(ENABLE_ACHIEVEMENTS)
 
 # RpFile_kio requires KDE Frameworks 5.
