@@ -11,18 +11,12 @@
 
 // PrecompiledHeader.cmake's FILE(GENERATE) command mangles the
 // escaped double-quotes for G_LOG_DOMAIN.
-#if defined(RP_UI_GTK3_GNOME)
-#  define G_LOG_DOMAIN "rom-properties-gnome"
-#elif defined(RP_UI_GTK3_CINNAMON)
-#  define G_LOG_DOMAIN "rom-properties-cinnamon"
-#elif defined(RP_UI_GTK3_MATE)
-#  define G_LOG_DOMAIN "rom-properties-mate"
-#elif defined(RP_UI_GTK2_XFCE)
+#if defined(RP_UI_GTK3)
+#  define G_LOG_DOMAIN "rom-properties-gtk3"
+#elif defined(RP_UI_XFCE)
 #  define G_LOG_DOMAIN "rom-properties-xfce"
-#elif defined(RP_UI_GTK3_XFCE)
-#  define G_LOG_DOMAIN "rom-properties-xfce3"
 #else
-#  error RP_UI_GTK macro not defined
+#  error RP_UI macro not defined
 #endif
 
 #ifdef __cplusplus
