@@ -9,46 +9,46 @@ ENDIF(POLICY CMP0063)
 PROJECT(rpcli LANGUAGES C CXX)
 
 # Sources and headers.
-SET(rpcli_SRCS
+SET(${PROJECT_NAME}_SRCS
 	rpcli.cpp
 	device.cpp
 	rpcli_secure.c
 	)
-SET(rpcli_H
+SET(${PROJECT_NAME}_H
 	device.hpp
 	rpcli_secure.h
 	)
 
 # Check for system security functionality.
 IF(WIN32)
-	SET(rpcli_RC resource.rc)
+	SET(${PROJECT_NAME}_RC resource.rc)
 
 	# Create the manifest file.
-	CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/rpcli.exe.manifest.in" "${CMAKE_CURRENT_BINARY_DIR}/rpcli.exe.manifest" @ONLY)
+	CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/${PROJECT_NAME}.exe.manifest.in" "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.exe.manifest" @ONLY)
 ENDIF(WIN32)
 
 IF(ENABLE_DECRYPTION)
-	SET(rpcli_CRYPTO_SRCS verifykeys.cpp)
-	SET(rpcli_CRYPTO_H verifykeys.hpp)
+	SET(${PROJECT_NAME}_CRYPTO_SRCS verifykeys.cpp)
+	SET(${PROJECT_NAME}_CRYPTO_H verifykeys.hpp)
 ENDIF(ENABLE_DECRYPTION)
 
 IF(ENABLE_PCH)
 	# Precompiled headers.
 	INCLUDE(PrecompiledHeader)
-	SET(rpcli_PCH_C stdafx.c)
-	SET(rpcli_PCH_CXX stdafx.cpp)
-	SET(rpcli_PCH_SRC ${rpcli_PCH_C} ${rpcli_PCH_CXX})
-	SET(rpcli_PCH_H stdafx.h)
+	SET(${PROJECT_NAME}_PCH_C stdafx.c)
+	SET(${PROJECT_NAME}_PCH_CXX stdafx.cpp)
+	SET(${PROJECT_NAME}_PCH_SRC ${${PROJECT_NAME}_PCH_C} ${${PROJECT_NAME}_PCH_CXX})
+	SET(${PROJECT_NAME}_PCH_H stdafx.h)
 ENDIF(ENABLE_PCH)
 
 IF(MSVC)
 	# Delay-load sources.
-	SET(rpcli-DELAYLOAD_SRC ../libwin32common/DelayLoadHelper.c)
-	SET(rpcli-DELAYLOAD_H ../libwin32common/DelayLoadHelper.h)
+	SET(${PROJECT_NAME}-DELAYLOAD_SRC ../libwin32common/DelayLoadHelper.c)
+	SET(${PROJECT_NAME}-DELAYLOAD_H ../libwin32common/DelayLoadHelper.h)
 ENDIF(MSVC)
 
 # Write the config.h file.
-CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/config.rpcli.h.in" "${CMAKE_CURRENT_BINARY_DIR}/config.rpcli.h")
+CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/config.${PROJECT_NAME}.h.in" "${CMAKE_CURRENT_BINARY_DIR}/config.${PROJECT_NAME}.h")
 
 #########################
 # Build the executable. #
@@ -58,48 +58,48 @@ CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/config.rpcli.h.in" "${CMAKE_CURRENT_
 INCLUDE(../libwin32common/DelayLoadHelper.cmake)
 SET_DELAYLOAD_EXTLIB_FLAGS()
 
-ADD_EXECUTABLE(rpcli
-	${rpcli_PCH_SRC} ${rpcli_PCH_H}
-	${rpcli-DELAYLOAD_SRC} ${rpcli-DELAYLOAD_H}
-	${rpcli_SRCS} ${rpcli_H}
-	${rpcli_CRYPTO_SRCS} ${rpcli_CRYPTO_H}
-	${rpcli_RC}
+ADD_EXECUTABLE(${PROJECT_NAME}
+	${${PROJECT_NAME}_PCH_SRC} ${${PROJECT_NAME}_PCH_H}
+	${${PROJECT_NAME}-DELAYLOAD_SRC} ${${PROJECT_NAME}-DELAYLOAD_H}
+	${${PROJECT_NAME}_SRCS} ${${PROJECT_NAME}_H}
+	${${PROJECT_NAME}_CRYPTO_SRCS} ${${PROJECT_NAME}_CRYPTO_H}
+	${${PROJECT_NAME}_RC}
 	)
 IF(ENABLE_PCH)
-	ADD_PRECOMPILED_HEADER(rpcli ${rpcli_PCH_H}
-		SOURCE_C ${rpcli_PCH_C}
-		SOURCE_CXX ${rpcli_PCH_CXX}
+	ADD_PRECOMPILED_HEADER(${PROJECT_NAME} ${${PROJECT_NAME}_PCH_H}
+		SOURCE_C ${${PROJECT_NAME}_PCH_C}
+		SOURCE_CXX ${${PROJECT_NAME}_PCH_CXX}
 		)
 ENDIF(ENABLE_PCH)
-SET_TARGET_PROPERTIES(rpcli PROPERTIES PREFIX "")
-DO_SPLIT_DEBUG(rpcli)
-SET_WINDOWS_SUBSYSTEM(rpcli CONSOLE)
-SET_WINDOWS_NO_MANIFEST(rpcli)
+SET_TARGET_PROPERTIES(${PROJECT_NAME} PROPERTIES PREFIX "")
+DO_SPLIT_DEBUG(${PROJECT_NAME})
+SET_WINDOWS_SUBSYSTEM(${PROJECT_NAME} CONSOLE)
+SET_WINDOWS_NO_MANIFEST(${PROJECT_NAME})
 # FIXME: setargv isn't necessarily sorted...
 # TODO: Implement our own setargv function?
-SET_WINDOWS_ENTRYPOINT(rpcli wmain ON)
+SET_WINDOWS_ENTRYPOINT(${PROJECT_NAME} wmain ON)
 # Include paths:
 # - Public: Current source and binary directories.
 # - Private: Parent source and binary directories,
 #            and top-level binary directory for git_version.h.
-TARGET_INCLUDE_DIRECTORIES(rpcli
+TARGET_INCLUDE_DIRECTORIES(${PROJECT_NAME}
 	PUBLIC	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>		# rpcli
 		$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>		# rpcli
 	PRIVATE	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>	# src
 		$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/..>	# src
 		$<BUILD_INTERFACE:${CMAKE_BINARY_DIR}>
 	)
-TARGET_LINK_LIBRARIES(rpcli PRIVATE rpsecure romdata rpfile rpbase)
+TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE rpsecure romdata rpfile rpbase)
 IF(ENABLE_NLS)
-	TARGET_LINK_LIBRARIES(rpcli PRIVATE i18n)
+	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE i18n)
 ENDIF(ENABLE_NLS)
 IF(WIN32)
-	TARGET_LINK_LIBRARIES(rpcli PRIVATE wmain)
+	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE wmain)
 ENDIF(WIN32)
 
 # Make sure git_version.h is created before compiling this target.
 IF(TARGET git_version)
-	ADD_DEPENDENCIES(rpcli git_version)
+	ADD_DEPENDENCIES(${PROJECT_NAME} git_version)
 ENDIF(TARGET git_version)
 
 # CMake-3.7.2 doesn't add include paths to windres.
@@ -115,10 +115,10 @@ ENDIF(MINGW)
 # since loading gdi32.dll will crash in that case.
 # NOTE: ole32.dll is indirectly linked through libwin32common. (CoTaskMemFree())
 # FIXME: gdiplus.dll isn't linked in, though I'm pretty sure it's used...
-ADD_DELAYLOAD_FLAGS(rpcli shell32.dll ole32.dll)
+ADD_DELAYLOAD_FLAGS(${PROJECT_NAME} shell32.dll ole32.dll)
 IF(MSVC)
 	# Extended delay-load functionality.
-	TARGET_LINK_LIBRARIES(rpcli PRIVATE delayimp)
+	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE delayimp)
 ENDIF(MSVC)
 
 #################
@@ -130,7 +130,7 @@ INCLUDE(DirInstallPaths)
 # NOTE: Don't install libraries.
 # That installs the import library, which isn't used
 # for shell extensions.
-INSTALL(TARGETS rpcli
+INSTALL(TARGETS ${PROJECT_NAME}
 	RUNTIME DESTINATION "${DIR_INSTALL_EXE}"
 	LIBRARY DESTINATION "${DIR_INSTALL_DLL}"
 	#ARCHIVE DESTINATION "${DIR_INSTALL_LIB}"
@@ -139,11 +139,11 @@ INSTALL(TARGETS rpcli
 IF(INSTALL_APPARMOR)
 	# AppArmor profile (Linux only)
 	# Convert the full path to use '.' instead of '/'.
-	STRING(REPLACE "/" "." APPARMOR_CONF "${CMAKE_INSTALL_PREFIX}/${DIR_INSTALL_EXE}/rpcli")
+	STRING(REPLACE "/" "." APPARMOR_CONF "${CMAKE_INSTALL_PREFIX}/${DIR_INSTALL_EXE}/${PROJECT_NAME}")
 	# Remove the leading slash if present.
 	STRING(REGEX REPLACE "^\\." "" APPARMOR_CONF "${APPARMOR_CONF}")
 
-	INSTALL(FILES rpcli.apparmor.conf
+	INSTALL(FILES ${PROJECT_NAME}.apparmor.conf
 		RENAME "${APPARMOR_CONF}"
 		DESTINATION "${DIR_INSTALL_APPARMOR}"
 		COMPONENT "apparmor"
@@ -152,7 +152,7 @@ ENDIF(INSTALL_APPARMOR)
 IF(INSTALL_DEBUG)
 	# Split debug file
 	# FIXME: Generator expression $<TARGET_PROPERTY:${_target},PDB> didn't work with CPack-3.6.1.
-	GET_TARGET_PROPERTY(DEBUG_FILENAME rpcli PDB)
+	GET_TARGET_PROPERTY(DEBUG_FILENAME ${PROJECT_NAME} PDB)
 	INSTALL(FILES "${DEBUG_FILENAME}"
 		DESTINATION "${DIR_INSTALL_EXE_DEBUG}"
 		COMPONENT "debug"

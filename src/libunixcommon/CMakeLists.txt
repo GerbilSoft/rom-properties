@@ -7,7 +7,7 @@ IF(POLICY CMP0063)
 	CMAKE_POLICY(SET CMP0063 NEW)
 ENDIF(POLICY CMP0063)
 # FIXME: CMake-3.15.5 on travis-ci can't find Objective-C...
-PROJECT(libunixcommon LANGUAGES C CXX)
+PROJECT(unixcommon LANGUAGES C CXX)
 
 # Qt5 requires "-fpic -fPIC" due to reduced relocations.
 # This is also needed in order to link the static library
@@ -93,34 +93,34 @@ SET(CMAKE_REQUIRED_DEFINITIONS "${OLD_CMAKE_REQUIRED_DEFINITIONS}")
 UNSET(OLD_CMAKE_REQUIRED_DEFINITIONS)
 
 # Write the config.h file.
-CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/config.libunixcommon.h.in" "${CMAKE_CURRENT_BINARY_DIR}/config.libunixcommon.h")
+CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/config.lib${PROJECT_NAME}.h.in" "${CMAKE_CURRENT_BINARY_DIR}/config.lib${PROJECT_NAME}.h")
 
 # Sources and headers.
 IF(APPLE)
-	SET(libunixcommon_SRCS userdirs_mac.mm)
-	SET(libunixcommon_H userdirs.hpp)
+	SET(${PROJECT_NAME}_SRCS userdirs_mac.mm)
+	SET(${PROJECT_NAME}_H userdirs.hpp)
 ELSE(APPLE)
-	SET(libunixcommon_SRCS userdirs.cpp dll-search.c)
-	SET(libunixcommon_H userdirs.hpp dll-search.h)
+	SET(${PROJECT_NAME}_SRCS userdirs.cpp dll-search.c)
+	SET(${PROJECT_NAME}_H userdirs.hpp dll-search.h)
 ENDIF(APPLE)
 
 ######################
 # Build the library. #
 ######################
 
-ADD_LIBRARY(unixcommon STATIC
-	${libunixcommon_SRCS}
-	${libunixcommon_H}
+ADD_LIBRARY(${PROJECT_NAME} STATIC
+	${${PROJECT_NAME}_SRCS}
+	${${PROJECT_NAME}_H}
 	)
 INCLUDE(SetMSVCDebugPath)
-SET_MSVC_DEBUG_PATH(unixcommon)
+SET_MSVC_DEBUG_PATH(${PROJECT_NAME})
 # Exclude from ALL builds.
-SET_TARGET_PROPERTIES(unixcommon PROPERTIES EXCLUDE_FROM_ALL TRUE)
+SET_TARGET_PROPERTIES(${PROJECT_NAME} PROPERTIES EXCLUDE_FROM_ALL TRUE)
 IF(APPLE)
-	TARGET_LINK_LIBRARIES(unixcommon PUBLIC "-framework Foundation")
+	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PUBLIC "-framework Foundation")
 ENDIF(APPLE)
 
-TARGET_INCLUDE_DIRECTORIES(unixcommon
+TARGET_INCLUDE_DIRECTORIES(${PROJECT_NAME}
 	PUBLIC	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
 		$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
 	PRIVATE	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>

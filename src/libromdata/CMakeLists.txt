@@ -6,14 +6,14 @@ IF(POLICY CMP0063)
 	# target types, including static libraries and executables.
 	CMAKE_POLICY(SET CMP0063 NEW)
 ENDIF(POLICY CMP0063)
-PROJECT(libromdata LANGUAGES CXX)
+PROJECT(romdata LANGUAGES CXX)
 
 IF(NOT WIN32)
 	CHECK_SYMBOL_EXISTS(posix_spawn "spawn.h" HAVE_POSIX_SPAWN)
 ENDIF(NOT WIN32)
 
 # Sources.
-SET(libromdata_SRCS
+SET(${PROJECT_NAME}_SRCS
 	RomDataFactory.cpp
 
 	Console/Dreamcast.cpp
@@ -127,7 +127,7 @@ SET(libromdata_SRCS
 	utils/SuperMagicDrive.cpp
 	)
 # Headers.
-SET(libromdata_H
+SET(${PROJECT_NAME}_H
 	RomDataFactory.hpp
 	CopierFormats.h
 	cdrom_structs.h
@@ -306,14 +306,14 @@ SET(libromdata_H
 	)
 
 IF(ENABLE_XML)
-	SET(libromdata_SRCS ${libromdata_SRCS} Other/EXE_manifest.cpp)
+	SET(${PROJECT_NAME}_SRCS ${${PROJECT_NAME}_SRCS} Other/EXE_manifest.cpp)
 	IF(MSVC AND (NOT USE_INTERNAL_XML OR USE_INTERNAL_XML_DLL))
-		SET(libromdata_SRCS ${libromdata_SRCS} Other/EXE_delayload.cpp)
+		SET(${PROJECT_NAME}_SRCS ${${PROJECT_NAME}_SRCS} Other/EXE_delayload.cpp)
 	ENDIF(MSVC AND (NOT USE_INTERNAL_XML OR USE_INTERNAL_XML_DLL))
 ENDIF(ENABLE_XML)
 
 IF(ENABLE_DECRYPTION)
-	SET(libromdata_CRYPTO_SRCS
+	SET(${PROJECT_NAME}_CRYPTO_SRCS
 		crypto/CtrKeyScrambler.cpp
 		crypto/N3DSVerifyKeys.cpp
 		crypto/KeyStoreUI.cpp
@@ -321,7 +321,7 @@ IF(ENABLE_DECRYPTION)
 		Handheld/ndscrypt.cpp
 		Handheld/nds_crc.cpp
 		)
-	SET(libromdata_CRYPTO_H
+	SET(${PROJECT_NAME}_CRYPTO_H
 		crypto/CtrKeyScrambler.hpp
 		crypto/N3DSVerifyKeys.hpp
 		crypto/KeyStoreUI.hpp
@@ -333,12 +333,12 @@ ENDIF(ENABLE_DECRYPTION)
 
 # OS-specific sources.
 IF(WIN32)
-	SET(libromdata_OS_SRCS img/ExecRpDownload_win32.cpp)
+	SET(${PROJECT_NAME}_OS_SRCS img/ExecRpDownload_win32.cpp)
 ELSEIF(UNIX)
-	SET(libromdata_OS_SRCS img/ExecRpDownload_posix.cpp)
+	SET(${PROJECT_NAME}_OS_SRCS img/ExecRpDownload_posix.cpp)
 ELSE()
 	# Dummy implementation for unsupported systems.
-	SET(libromdata_OS_SRCS img/ExecRpDownload_dummy.cpp)
+	SET(${PROJECT_NAME}_OS_SRCS img/ExecRpDownload_dummy.cpp)
 ENDIF()
 
 # Optimized sources.
@@ -349,10 +349,10 @@ IF(CPU_i386 OR CPU_amd64)
 	# it won't do anything.
 	# TODO: Might be supported on other Unix-like operating systems...
 	IF(UNIX AND NOT APPLE)
-		SET(libromdata_IFUNC_SRCS utils/SuperMagicDrive_ifunc.cpp)
+		SET(${PROJECT_NAME}_IFUNC_SRCS utils/SuperMagicDrive_ifunc.cpp)
 		# Disable LTO on the IFUNC files if LTO is known to be broken.
 		IF(GCC_5xx_LTO_ISSUES)
-			SET_SOURCE_FILES_PROPERTIES(${libromdata_IFUNC_SRCS}
+			SET_SOURCE_FILES_PROPERTIES(${${PROJECT_NAME}_IFUNC_SRCS}
 				APPEND_STRING PROPERTIES COMPILE_FLAGS " -fno-lto ")
 		ENDIF(GCC_5xx_LTO_ISSUES)
 	ENDIF(UNIX AND NOT APPLE)
@@ -363,10 +363,10 @@ IF(CPU_i386 OR CPU_amd64)
 	# amd64 CPUs support SSE2 as a minimum anyway, so there's
 	# no point in building MMX code for 64-bit.
 	IF(CPU_i386)
-		SET(libromdata_MMX_SRCS utils/SuperMagicDrive_mmx.cpp)
+		SET(${PROJECT_NAME}_MMX_SRCS utils/SuperMagicDrive_mmx.cpp)
 	ENDIF(CPU_i386)
-	SET(libromdata_SSE2_SRCS
-		${libromdata_SSE2_SRCS}
+	SET(${PROJECT_NAME}_SSE2_SRCS
+		${${PROJECT_NAME}_SSE2_SRCS}
 		utils/SuperMagicDrive_sse2.cpp
 		)
 
@@ -392,50 +392,50 @@ ENDIF()
 
 # Write the config.h file.
 INCLUDE(DirInstallPaths)
-CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/config.libromdata.h.in" "${CMAKE_CURRENT_BINARY_DIR}/config.libromdata.h")
+CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/config.lib${PROJECT_NAME}.h.in" "${CMAKE_CURRENT_BINARY_DIR}/config.lib${PROJECT_NAME}.h")
 
 IF(ENABLE_PCH)
 	# Precompiled headers.
 	INCLUDE(PrecompiledHeader)
-	SET(libromdata_PCH_CXX stdafx.cpp)
-	SET(libromdata_PCH_SRC ${libromdata_PCH_CXX})
-	SET(libromdata_PCH_H stdafx.h)
+	SET(${PROJECT_NAME}_PCH_CXX stdafx.cpp)
+	SET(${PROJECT_NAME}_PCH_SRC ${${PROJECT_NAME}_PCH_CXX})
+	SET(${PROJECT_NAME}_PCH_H stdafx.h)
 ENDIF(ENABLE_PCH)
 
 ######################
 # Build the library. #
 ######################
 
-ADD_LIBRARY(romdata STATIC
-	${libromdata_PCH_SRC} ${libromdata_PCH_H}
-	${libromdata_SRCS} ${libromdata_H}
-	${libromdata_OS_SRCS} ${libromdata_OS_H}
-	${libromdata_CRYPTO_SRCS} ${libromdata_CRYPTO_H}
-	${libromdata_IFUNC_SRCS}
-	${libromdata_MMX_SRCS}
-	${libromdata_SSE2_SRCS}
+ADD_LIBRARY(${PROJECT_NAME} STATIC
+	${${PROJECT_NAME}_PCH_SRC} ${${PROJECT_NAME}_PCH_H}
+	${${PROJECT_NAME}_SRCS} ${${PROJECT_NAME}_H}
+	${${PROJECT_NAME}_OS_SRCS} ${${PROJECT_NAME}_OS_H}
+	${${PROJECT_NAME}_CRYPTO_SRCS} ${${PROJECT_NAME}_CRYPTO_H}
+	${${PROJECT_NAME}_IFUNC_SRCS}
+	${${PROJECT_NAME}_MMX_SRCS}
+	${${PROJECT_NAME}_SSE2_SRCS}
 	)
 IF(ENABLE_PCH)
-	ADD_PRECOMPILED_HEADER(romdata ${libromdata_PCH_H}
-		SOURCE_CXX ${libromdata_PCH_CXX}
+	ADD_PRECOMPILED_HEADER(${PROJECT_NAME} ${${PROJECT_NAME}_PCH_H}
+		SOURCE_CXX ${${PROJECT_NAME}_PCH_CXX}
 		)
 ENDIF(ENABLE_PCH)
 INCLUDE(SetMSVCDebugPath)
-SET_MSVC_DEBUG_PATH(romdata)
+SET_MSVC_DEBUG_PATH(${PROJECT_NAME})
 
 # TODO: More public/private library stuff.
-TARGET_LINK_LIBRARIES(romdata PUBLIC rptexture rpfile rpbase)
-TARGET_LINK_LIBRARIES(romdata PRIVATE rpcpu rpthreads cachecommon)
-TARGET_LINK_LIBRARIES(romdata PRIVATE inih)
+TARGET_LINK_LIBRARIES(${PROJECT_NAME} PUBLIC rptexture rpfile rpbase)
+TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE rpcpu rpthreads cachecommon)
+TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE inih)
 IF(ENABLE_NLS)
-	TARGET_LINK_LIBRARIES(romdata PRIVATE i18n)
+	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE i18n)
 ENDIF(ENABLE_NLS)
 
 # Include paths:
 # - Public: Current source and binary directories.
 # - Private: Parent source and binary directories,
 #            and top-level binary directory for git_version.h.
-TARGET_INCLUDE_DIRECTORIES(romdata
+TARGET_INCLUDE_DIRECTORIES(${PROJECT_NAME}
 	PUBLIC  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>		# libromdata
 		$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>		# libromdata
 	PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>	# src
@@ -444,37 +444,37 @@ TARGET_INCLUDE_DIRECTORIES(romdata
 	)
 IF(WIN32)
 	# librpsecure: integrity_level.h
-	TARGET_LINK_LIBRARIES(romdata PRIVATE rpsecure)
+	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE rpsecure)
 
 	# Windows SDK libraries.
-	TARGET_LINK_LIBRARIES(romdata PRIVATE advapi32)
+	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE advapi32)
 	IF(MSVC)
-		TARGET_LINK_LIBRARIES(romdata PRIVATE delayimp)
+		TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE delayimp)
 	ENDIF(MSVC)
 ENDIF(WIN32)
 # Exclude from ALL builds.
-SET_TARGET_PROPERTIES(romdata PROPERTIES EXCLUDE_FROM_ALL TRUE)
+SET_TARGET_PROPERTIES(${PROJECT_NAME} PROPERTIES EXCLUDE_FROM_ALL TRUE)
 
 # Other libraries.
-TARGET_LINK_LIBRARIES(romdata PRIVATE ${ZLIB_LIBRARY})
+TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE ${ZLIB_LIBRARY})
 IF(ENABLE_XML AND TinyXML2_FOUND)
-	TARGET_LINK_LIBRARIES(romdata PRIVATE ${TinyXML2_LIBRARY})
-	TARGET_INCLUDE_DIRECTORIES(romdata PRIVATE ${TinyXML2_INCLUDE_DIR})
+	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE ${TinyXML2_LIBRARY})
+	TARGET_INCLUDE_DIRECTORIES(${PROJECT_NAME} PRIVATE ${TinyXML2_INCLUDE_DIR})
 ENDIF(ENABLE_XML AND TinyXML2_FOUND)
 
 IF(ENABLE_UNICE68)
-	TARGET_LINK_LIBRARIES(romdata PRIVATE unice68_lib)
+	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE unice68_lib)
 ENDIF(ENABLE_UNICE68)
 
 IF(ENABLE_LIBMSPACK)
-	TARGET_LINK_LIBRARIES(romdata PRIVATE mspack)
+	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE mspack)
 ENDIF(ENABLE_LIBMSPACK)
 
 IF(ENABLE_LZ4 AND LZ4_FOUND)
-	TARGET_LINK_LIBRARIES(romdata PRIVATE ${LZ4_LIBRARY})
+	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE ${LZ4_LIBRARY})
 ENDIF(ENABLE_LZ4 AND LZ4_FOUND)
 IF(ENABLE_LZO AND LZO_FOUND)
-	TARGET_LINK_LIBRARIES(romdata PRIVATE ${LZO_LIBRARY})
+	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE ${LZO_LIBRARY})
 ENDIF(ENABLE_LZO AND LZO_FOUND)
 
 # Unix: Add -fpic/-fPIC in order to use this static library in plugins.

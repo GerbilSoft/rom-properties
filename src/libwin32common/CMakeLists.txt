@@ -6,7 +6,7 @@ IF(POLICY CMP0063)
 	# target types, including static libraries and executables.
 	CMAKE_POLICY(SET CMP0063 NEW)
 ENDIF(POLICY CMP0063)
-PROJECT(libwin32common LANGUAGES C CXX)
+PROJECT(win32common LANGUAGES C CXX)
 
 ### NOTE: DelayLoadHelper should NOT be compiled here.
 # If it is, it won't be linked into the resulting executable,
@@ -28,10 +28,10 @@ SET(CMAKE_REQUIRED_INCLUDES ${OLD_CMAKE_REQUIRED_INCLUDES})
 UNSET(OLD_CMAKE_REQUIRED_INCLUDES)
 
 # Write the config.h file.
-CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/config.libwin32common.h.in" "${CMAKE_CURRENT_BINARY_DIR}/config.libwin32common.h")
+CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/config.lib${PROJECT_NAME}.h.in" "${CMAKE_CURRENT_BINARY_DIR}/config.lib${PROJECT_NAME}.h")
 
 # Sources and headers.
-SET(libwin32common_SRCS
+SET(${PROJECT_NAME}_SRCS
 	DialogBuilder.cpp
 	RegKey.cpp
 	WinUI.cpp
@@ -44,7 +44,7 @@ SET(libwin32common_SRCS
 	sdk/win_iid.c
 	sdk/GUID_fn.c
 	)
-SET(libwin32common_H
+SET(${PROJECT_NAME}_H
 	RpWin32_sdk.h
 	DialogBuilder.hpp
 	RegKey.hpp
@@ -71,18 +71,18 @@ SET(libwin32common_H
 # Build the library. #
 ######################
 
-ADD_LIBRARY(win32common STATIC
-	${libwin32common_SRCS}
-	${libwin32common_H}
+ADD_LIBRARY(${PROJECT_NAME} STATIC
+	${${PROJECT_NAME}_SRCS}
+	${${PROJECT_NAME}_H}
 	)
 INCLUDE(SetMSVCDebugPath)
-SET_MSVC_DEBUG_PATH(win32common)
+SET_MSVC_DEBUG_PATH(${PROJECT_NAME})
 # Exclude from ALL builds.
-SET_TARGET_PROPERTIES(win32common PROPERTIES EXCLUDE_FROM_ALL TRUE)
-TARGET_LINK_LIBRARIES(win32common PRIVATE rpthreads)
-TARGET_LINK_LIBRARIES(win32common PRIVATE uuid ole32 advapi32 shell32)
+SET_TARGET_PROPERTIES(${PROJECT_NAME} PROPERTIES EXCLUDE_FROM_ALL TRUE)
+TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE rpthreads)
+TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE uuid ole32 advapi32 shell32)
 
-TARGET_INCLUDE_DIRECTORIES(win32common
+TARGET_INCLUDE_DIRECTORIES(${PROJECT_NAME}
 	PUBLIC  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>		# libwin32common
 		$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>		# libwin32common
 	PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>	# src

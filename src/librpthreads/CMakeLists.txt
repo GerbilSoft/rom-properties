@@ -6,7 +6,7 @@ IF(POLICY CMP0063)
 	# target types, including static libraries and executables.
 	CMAKE_POLICY(SET CMP0063 NEW)
 ENDIF(POLICY CMP0063)
-PROJECT(librpthreads LANGUAGES C CXX)
+PROJECT(rpthreads LANGUAGES C CXX)
 
 # Find the system threading library.
 # NOTE: If using Windows, always assume we're using Windows threads.
@@ -20,8 +20,8 @@ ELSE(WIN32)
 ENDIF(WIN32)
 
 # Threading implementation.
-SET(librpthreads_SRCS dummy.cpp)
-SET(librpthreads_H
+SET(${PROJECT_NAME}_SRCS dummy.cpp)
+SET(${PROJECT_NAME}_H
 	Atomics.h
 	Semaphore.hpp
 	Mutex.hpp
@@ -29,7 +29,7 @@ SET(librpthreads_H
 	)
 IF(CMAKE_USE_WIN32_THREADS_INIT)
 	SET(HAVE_WIN32_THREADS 1)
-	SET(librpthreads_SRCS ${librpthreads_SRCS} pthread_once.c)
+	SET(${PROJECT_NAME}_SRCS ${${PROJECT_NAME}_SRCS} pthread_once.c)
 ELSEIF(CMAKE_USE_PTHREADS_INIT)
 	SET(HAVE_PTHREADS 1)
 ELSE()
@@ -37,25 +37,25 @@ ELSE()
 ENDIF()
 
 # Write the config.h file.
-CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/config.librpthreads.h.in" "${CMAKE_CURRENT_BINARY_DIR}/config.librpthreads.h")
+CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/config.lib${PROJECT_NAME}.h.in" "${CMAKE_CURRENT_BINARY_DIR}/config.lib${PROJECT_NAME}.h")
 
 ######################
 # Build the library. #
 ######################
 
 # FIXME: May need a dummy file on Linux?
-ADD_LIBRARY(rpthreads STATIC
-	${librpthreads_SRCS}
-	${librpthreads_H}
+ADD_LIBRARY(${PROJECT_NAME} STATIC
+	${${PROJECT_NAME}_SRCS}
+	${${PROJECT_NAME}_H}
 	)
 
-TARGET_INCLUDE_DIRECTORIES(rpthreads
+TARGET_INCLUDE_DIRECTORIES(${PROJECT_NAME}
 	PUBLIC	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
 		$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
 	)
 
 IF(CMAKE_THREAD_LIBS_INIT)
-	TARGET_LINK_LIBRARIES(rpthreads PUBLIC ${CMAKE_THREAD_LIBS_INIT})
+	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PUBLIC ${CMAKE_THREAD_LIBS_INIT})
 ENDIF(CMAKE_THREAD_LIBS_INIT)
 
 # Unix: Add -fpic/-fPIC in order to use this static library in plugins.

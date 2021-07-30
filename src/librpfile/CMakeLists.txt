@@ -6,7 +6,7 @@ IF(POLICY CMP0063)
 	# target types, including static libraries and executables.
 	CMAKE_POLICY(SET CMP0063 NEW)
 ENDIF(POLICY CMP0063)
-PROJECT(librpfile LANGUAGES CXX)
+PROJECT(rpfile LANGUAGES CXX)
 
 # Check for C library functions.
 IF(NOT WIN32)
@@ -19,7 +19,7 @@ IF(NOT WIN32)
 ENDIF(NOT WIN32)
 
 # Sources.
-SET(librpfile_SRCS
+SET(${PROJECT_NAME}_SRCS
 	IRpFile.cpp
 	RpMemFile.cpp
 	RpVectorFile.cpp
@@ -30,7 +30,7 @@ SET(librpfile_SRCS
 	scsi/RpFile_scsi.cpp
 	)
 # Headers.
-SET(librpfile_H
+SET(${PROJECT_NAME}_H
 	IRpFile.hpp
 	RpFile.hpp
 	RpFile_p.hpp
@@ -47,15 +47,15 @@ SET(librpfile_H
 
 # SCSI implementation for Kreon disc drive support.
 IF(WIN32)
-	SET(librpfile_SRCS ${librpfile_SRCS} scsi/RpFile_scsi_win32.cpp)
+	SET(${PROJECT_NAME}_SRCS ${${PROJECT_NAME}_SRCS} scsi/RpFile_scsi_win32.cpp)
 	SET(RP_OS_SCSI_SUPPORTED 1)
 ELSEIF(CMAKE_SYSTEM_NAME STREQUAL "Linux")
-	SET(librpfile_SRCS ${librpfile_SRCS} scsi/RpFile_scsi_linux.cpp)
+	SET(${PROJECT_NAME}_SRCS ${${PROJECT_NAME}_SRCS} scsi/RpFile_scsi_linux.cpp)
 	SET(RP_OS_SCSI_SUPPORTED 1)
 ELSEIF(CMAKE_SYSTEM_NAME STREQUAL "FreeBSD" OR CMAKE_SYSTEM_NAME STREQUAL "Dragonfly")
 	# FIXME: Not working properly. (SCSI ILLEGAL REQUEST errors)
 	# NOTE: The file is still needed for rereadDeviceSizeOS().
-	SET(librpfile_SRCS ${librpfile_SRCS} scsi/RpFile_scsi_freebsd.cpp)
+	SET(${PROJECT_NAME}_SRCS ${${PROJECT_NAME}_SRCS} scsi/RpFile_scsi_freebsd.cpp)
 
 	IF(0) # FIXME
 	# TODO: Check for header files. CHECK_INCLUDE_FILE() doesn't work
@@ -73,71 +73,71 @@ ELSEIF(CMAKE_SYSTEM_NAME STREQUAL "FreeBSD" OR CMAKE_SYSTEM_NAME STREQUAL "Drago
 	ENDIF()
 	ENDIF(0) # FIXME
 ELSEIF(CMAKE_SYSTEM_NAME STREQUAL "NetBSD" OR CMAKE_SYSTEM_NAME STREQUAL "OpenBSD")
-	SET(librpfile_SRCS ${librpfile_SRCS} scsi/RpFile_scsi_netbsd.cpp)
+	SET(${PROJECT_NAME}_SRCS ${${PROJECT_NAME}_SRCS} scsi/RpFile_scsi_netbsd.cpp)
 	SET(RP_OS_SCSI_SUPPORTED 1)
 ELSE()
 	# Dummy implementation for RpFile::rereadDeviceSizeOS().
-	SET(librpfile_SRCS ${librpfile_SRCS} scsi/RpFile_scsi_dummy.cpp)
+	SET(${PROJECT_NAME}_SRCS ${${PROJECT_NAME}_SRCS} scsi/RpFile_scsi_dummy.cpp)
 ENDIF()
 
 IF(WIN32)
-	SET(librpfile_OS_SRCS
+	SET(${PROJECT_NAME}_OS_SRCS
 		win32/FileSystem_win32.cpp
 		win32/RpFile_win32.cpp
 		win32/IStreamWrapper.cpp
 		win32/RpFile_windres.cpp
 		)
-	SET(librpfile_OS_H
+	SET(${PROJECT_NAME}_OS_H
 		win32/IStreamWrapper.hpp
 		win32/RpFile_windres.hpp
 		)
 ELSE(WIN32)
-	SET(librpfile_OS_SRCS
+	SET(${PROJECT_NAME}_OS_SRCS
 		FileSystem_posix.cpp
 		RpFile_stdio.cpp
 		)
 ENDIF(WIN32)
 
 # Write the config.h files.
-CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/config.librpfile.h.in" "${CMAKE_CURRENT_BINARY_DIR}/config.librpfile.h")
+CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/config.lib${PROJECT_NAME}.h.in" "${CMAKE_CURRENT_BINARY_DIR}/config.lib${PROJECT_NAME}.h")
 
 IF(ENABLE_PCH)
 	# Precompiled headers.
 	INCLUDE(PrecompiledHeader)
-	SET(librpfile_PCH_CXX stdafx.cpp)
-	SET(librpfile_PCH_SRC ${librpfile_PCH_CXX})
-	SET(librpfile_PCH_H stdafx.h)
+	SET(${PROJECT_NAME}_PCH_CXX stdafx.cpp)
+	SET(${PROJECT_NAME}_PCH_SRC ${${PROJECT_NAME}_PCH_CXX})
+	SET(${PROJECT_NAME}_PCH_H stdafx.h)
 ENDIF(ENABLE_PCH)
 
 ######################
 # Build the library. #
 ######################
 
-ADD_LIBRARY(rpfile STATIC
-	${librpfile_PCH_SRC} ${librpfile_PCH_H}
-	${librpfile_SRCS} ${librpfile_H}
-	${librpfile_OS_SRCS} ${librpfile_OS_H}
+ADD_LIBRARY(${PROJECT_NAME} STATIC
+	${${PROJECT_NAME}_PCH_SRC} ${${PROJECT_NAME}_PCH_H}
+	${${PROJECT_NAME}_SRCS} ${${PROJECT_NAME}_H}
+	${${PROJECT_NAME}_OS_SRCS} ${${PROJECT_NAME}_OS_H}
 	)
 IF(ENABLE_PCH)
-	ADD_PRECOMPILED_HEADER(rpfile ${librpfile_PCH_H}
-		SOURCE_CXX ${librpfile_PCH_CXX}
+	ADD_PRECOMPILED_HEADER(${PROJECT_NAME} ${${PROJECT_NAME}_PCH_H}
+		SOURCE_CXX ${${PROJECT_NAME}_PCH_CXX}
 		)
 ENDIF(ENABLE_PCH)
 INCLUDE(SetMSVCDebugPath)
-SET_MSVC_DEBUG_PATH(rpfile)
+SET_MSVC_DEBUG_PATH(${PROJECT_NAME})
 
 # rpthreads is needed for atomic functions.
-TARGET_LINK_LIBRARIES(rpfile PRIVATE rpcpu rpthreads)
+TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE rpcpu rpthreads)
 IF(WIN32)
 	# for MiniU82T
-	TARGET_LINK_LIBRARIES(rpfile PRIVATE win32common)
+	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE win32common)
 ENDIF(WIN32)
 
 # Include paths:
 # - Public: Current source and binary directories.
 # - Private: Parent source and binary directories,
 #            and top-level binary directory for git_version.h.
-TARGET_INCLUDE_DIRECTORIES(rpfile
+TARGET_INCLUDE_DIRECTORIES(${PROJECT_NAME}
 	PUBLIC  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>		# librpfile
 		$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>		# librpfile
 	PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>	# src
@@ -147,34 +147,34 @@ TARGET_INCLUDE_DIRECTORIES(rpfile
 IF(NOT ZLIB_LIBRARY)
 	MESSAGE(FATAL_ERROR "ZLIB_LIBRARY has not been set by CheckZLIB.cmake.")
 ENDIF(NOT ZLIB_LIBRARY)
-TARGET_LINK_LIBRARIES(rpfile PRIVATE ${ZLIB_LIBRARY})
+TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE ${ZLIB_LIBRARY})
 IF(MSVC)
-	TARGET_LINK_LIBRARIES(rpfile PRIVATE delayimp)
+	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE delayimp)
 ENDIF(MSVC)
 # Exclude from ALL builds.
-SET_TARGET_PROPERTIES(rpfile PROPERTIES EXCLUDE_FROM_ALL TRUE)
+SET_TARGET_PROPERTIES(${PROJECT_NAME} PROPERTIES EXCLUDE_FROM_ALL TRUE)
 # Make sure git_version.h is created before compiling this target.
 IF(TARGET git_version)
-	ADD_DEPENDENCIES(rpfile git_version)
+	ADD_DEPENDENCIES(${PROJECT_NAME} git_version)
 ENDIF(TARGET git_version)
 
 # Other libraries.
-TARGET_LINK_LIBRARIES(rpfile PRIVATE rptexture inih rpthreads cachecommon)
+TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE rptexture inih rpthreads cachecommon)
 IF(ZLIB_FOUND)
-	TARGET_LINK_LIBRARIES(rpfile PRIVATE ${ZLIB_LIBRARIES})
-	TARGET_INCLUDE_DIRECTORIES(rpfile PRIVATE ${ZLIB_INCLUDE_DIRS})
-	TARGET_COMPILE_DEFINITIONS(rpfile PRIVATE ${ZLIB_DEFINITIONS})
+	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE ${ZLIB_LIBRARIES})
+	TARGET_INCLUDE_DIRECTORIES(${PROJECT_NAME} PRIVATE ${ZLIB_INCLUDE_DIRS})
+	TARGET_COMPILE_DEFINITIONS(${PROJECT_NAME} PRIVATE ${ZLIB_DEFINITIONS})
 ENDIF(ZLIB_FOUND)
 #IF(WIN32)
 #	# libwin32common
-#	TARGET_LINK_LIBRARIES(rpfile PRIVATE win32common)
+#	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE win32common)
 #ELSE(WIN32)
 #	# libunixcommon
-#	TARGET_LINK_LIBRARIES(rpfile PRIVATE unixcommon)
+#	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE unixcommon)
 #ENDIF(WIN32)
 IF(SCSI_LIBRARY)
 	# An extra library is needed for SCSI support.
-	TARGET_LINK_LIBRARIES(rpfile PRIVATE ${SCSI_LIBRARY})
+	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE ${SCSI_LIBRARY})
 ENDIF(SCSI_LIBRARY)
 
 # Unix: Add -fpic/-fPIC in order to use this static library in plugins.

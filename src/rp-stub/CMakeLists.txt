@@ -9,9 +9,9 @@ ENDIF(POLICY CMP0063)
 PROJECT(rp-stub LANGUAGES C)
 
 # rp-stub
-ADD_EXECUTABLE(rp-stub rp-stub.c rp-stub_secure.c rp-stub_secure.h)
-DO_SPLIT_DEBUG(rp-stub)
-TARGET_INCLUDE_DIRECTORIES(rp-stub
+ADD_EXECUTABLE(${PROJECT_NAME} rp-stub.c rp-stub_secure.c rp-stub_secure.h)
+DO_SPLIT_DEBUG(${PROJECT_NAME})
+TARGET_INCLUDE_DIRECTORIES(${PROJECT_NAME}
 	PUBLIC	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>		# rp-stub
 		$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>		# rp-stub
 	PRIVATE	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>	# src
@@ -21,19 +21,19 @@ TARGET_INCLUDE_DIRECTORIES(rp-stub
 
 # Make sure git_version.h is created before compiling this target.
 IF(TARGET git_version)
-	ADD_DEPENDENCIES(rp-stub git_version)
+	ADD_DEPENDENCIES(${PROJECT_NAME} git_version)
 ENDIF(TARGET git_version)
 
 # dll-search.c is in libunixcommon.
-TARGET_LINK_LIBRARIES(rp-stub PRIVATE unixcommon rpsecure)
+TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE unixcommon rpsecure)
 
 IF(ENABLE_NLS)
-	TARGET_LINK_LIBRARIES(rp-stub PRIVATE i18n)
+	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE i18n)
 ENDIF(ENABLE_NLS)
 
 # Link in libdl if it's required for dlopen().
 IF(CMAKE_DL_LIBS)
-	TARGET_LINK_LIBRARIES(rp-stub PRIVATE ${CMAKE_DL_LIBS})
+	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE ${CMAKE_DL_LIBS})
 ENDIF(CMAKE_DL_LIBS)
 
 ###########################
@@ -44,19 +44,19 @@ INCLUDE(DirInstallPaths)
 
 # Create symlinks for rp-thumbnail and rp-config.
 # Reference: https://stackoverflow.com/questions/34578362/how-can-i-package-a-symlink-with-cpack
-ADD_CUSTOM_COMMAND(TARGET rp-stub POST_BUILD
-	COMMAND ln -sf "${CMAKE_INSTALL_PREFIX}/${DIR_INSTALL_EXE}/rp-stub" rp-thumbnail
+ADD_CUSTOM_COMMAND(TARGET ${PROJECT_NAME} POST_BUILD
+	COMMAND ln -sf "${CMAKE_INSTALL_PREFIX}/${DIR_INSTALL_EXE}/${PROJECT_NAME}" rp-thumbnail
 	WORKING_DIRECTORY "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}"
 	VERBATIM
 	)
-ADD_CUSTOM_COMMAND(TARGET rp-stub POST_BUILD
-	COMMAND ln -sf rp-stub rp-config
+ADD_CUSTOM_COMMAND(TARGET ${PROJECT_NAME} POST_BUILD
+	COMMAND ln -sf ${PROJECT_NAME} rp-config
 	WORKING_DIRECTORY "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}"
 	VERBATIM
 	)
 
 # Install the main target and the symlinks.
-INSTALL(TARGETS rp-stub
+INSTALL(TARGETS ${PROJECT_NAME}
 	RUNTIME DESTINATION "${DIR_INSTALL_EXE}"
 	COMPONENT "plugin"
 	)
@@ -72,7 +72,7 @@ INSTALL(PROGRAMS "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/rp-config"
 # Check if a split debug file should be installed.
 IF(INSTALL_DEBUG)
 	# FIXME: Generator expression $<TARGET_PROPERTY:${_target},PDB> didn't work with CPack-3.6.1.
-	GET_TARGET_PROPERTY(DEBUG_FILENAME rp-stub PDB)
+	GET_TARGET_PROPERTY(DEBUG_FILENAME ${PROJECT_NAME} PDB)
 	IF(DEBUG_FILENAME)
 		# TODO: Uncomment this once symlinking is fixed.
 		#INSTALL(FILES "${DEBUG_FILENAME}"

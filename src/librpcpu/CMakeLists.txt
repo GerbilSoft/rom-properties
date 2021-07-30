@@ -6,17 +6,17 @@ IF(POLICY CMP0063)
 	# target types, including static libraries and executables.
 	CMAKE_POLICY(SET CMP0063 NEW)
 ENDIF(POLICY CMP0063)
-PROJECT(librpcpu LANGUAGES C)
+PROJECT(rpcpu LANGUAGES C)
 
 # Check for C headers.
 CHECK_INCLUDE_FILES("features.h" HAVE_FEATURES_H)
 
 # Sources.
-SET(librpcpu_SRCS
+SET(${PROJECT_NAME}_SRCS
 	byteswap.c
 	)
 # Headers.
-SET(librpcpu_H
+SET(${PROJECT_NAME}_H
 	byteorder.h
 	byteswap_rp.h
 	bitstuff.h
@@ -24,8 +24,8 @@ SET(librpcpu_H
 
 # CPU-specific and optimized sources.
 IF(CPU_i386 OR CPU_amd64)
-	SET(librpcpu_CPU_SRCS cpuflags_x86.c)
-	SET(librpcpu_CPU_H cpuflags_x86.h)
+	SET(${PROJECT_NAME}_CPU_SRCS cpuflags_x86.c)
+	SET(${PROJECT_NAME}_CPU_H cpuflags_x86.h)
 
 	# MSVC does not support MMX intrinsics in 64-bit builds.
 	# Reference: https://msdn.microsoft.com/en-us/library/08x3t697(v=vs.110).aspx
@@ -33,11 +33,11 @@ IF(CPU_i386 OR CPU_amd64)
 	# amd64 CPUs support SSE2 as a minimum anyway, so there's
 	# no point in building MMX code for 64-bit.
 	IF(CPU_i386)
-		SET(librpcpu_MMX_SRCS byteswap_mmx.c)
+		SET(${PROJECT_NAME}_MMX_SRCS byteswap_mmx.c)
 	ENDIF(CPU_i386)
 
-	SET(librpcpu_SSE2_SRCS byteswap_sse2.c)
-	SET(librpcpu_SSSE3_SRCS byteswap_ssse3.c)
+	SET(${PROJECT_NAME}_SSE2_SRCS byteswap_sse2.c)
+	SET(${PROJECT_NAME}_SSSE3_SRCS byteswap_ssse3.c)
 
 	# IFUNC requires glibc.
 	# We're not checking for glibc here, but we do have preprocessor
@@ -45,10 +45,10 @@ IF(CPU_i386 OR CPU_amd64)
 	# it won't do anything.
 	# TODO: Might be supported on other Unix-like operating systems...
 	IF(UNIX AND NOT APPLE)
-		SET(librpcpu_IFUNC_SRCS byteswap_ifunc.c)
+		SET(${PROJECT_NAME}_IFUNC_SRCS byteswap_ifunc.c)
 		# Disable LTO on the IFUNC files if LTO is known to be broken.
 		IF(GCC_5xx_LTO_ISSUES)
-			SET_SOURCE_FILES_PROPERTIES(${librpcpu_IFUNC_SRCS}
+			SET_SOURCE_FILES_PROPERTIES(${${PROJECT_NAME}_IFUNC_SRCS}
 				APPEND_STRING PROPERTIES COMPILE_FLAGS " -fno-lto ")
 		ENDIF(GCC_5xx_LTO_ISSUES)
 	ENDIF(UNIX AND NOT APPLE)
@@ -65,17 +65,17 @@ IF(CPU_i386 OR CPU_amd64)
 	ENDIF()
 
 	IF(MMX_FLAG)
-		SET_SOURCE_FILES_PROPERTIES(${librpcpu_MMX_SRCS}
+		SET_SOURCE_FILES_PROPERTIES(${${PROJECT_NAME}_MMX_SRCS}
 			APPEND_STRING PROPERTIES COMPILE_FLAGS " ${MMX_FLAG} ")
 	ENDIF(MMX_FLAG)
 
 	IF(SSE2_FLAG)
-		SET_SOURCE_FILES_PROPERTIES(${librpcpu_SSE2_SRCS}
+		SET_SOURCE_FILES_PROPERTIES(${${PROJECT_NAME}_SSE2_SRCS}
 			APPEND_STRING PROPERTIES COMPILE_FLAGS " ${SSE2_FLAG} ")
 	ENDIF(SSE2_FLAG)
 
 	IF(SSSE3_FLAG)
-		SET_SOURCE_FILES_PROPERTIES(${librpcpu_SSSE3_SRCS}
+		SET_SOURCE_FILES_PROPERTIES(${${PROJECT_NAME}_SSSE3_SRCS}
 			APPEND_STRING PROPERTIES COMPILE_FLAGS " ${SSSE3_FLAG} ")
 	ENDIF(SSSE3_FLAG)
 ENDIF()
@@ -95,26 +95,26 @@ CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/config.byteswap.h.in" "${CMAKE_CURRE
 # Build the library. #
 ######################
 
-ADD_LIBRARY(rpcpu STATIC
-	${librpcpu_SRCS} ${librpcpu_H}
-	${librpcpu_OS_SRCS} ${librpcpu_OS_H}
-	${librpcpu_CPU_SRCS} ${librpcpu_CPU_H}
-	${librpcpu_IFUNC_SRCS}
-	${librpcpu_MMX_SRCS}
-	${librpcpu_SSE2_SRCS}
-	${librpcpu_SSSE3_SRCS}
+ADD_LIBRARY(${PROJECT_NAME} STATIC
+	${${PROJECT_NAME}_SRCS} ${${PROJECT_NAME}_H}
+	${${PROJECT_NAME}_OS_SRCS} ${${PROJECT_NAME}_OS_H}
+	${${PROJECT_NAME}_CPU_SRCS} ${${PROJECT_NAME}_CPU_H}
+	${${PROJECT_NAME}_IFUNC_SRCS}
+	${${PROJECT_NAME}_MMX_SRCS}
+	${${PROJECT_NAME}_SSE2_SRCS}
+	${${PROJECT_NAME}_SSSE3_SRCS}
 	)
 INCLUDE(SetMSVCDebugPath)
-SET_MSVC_DEBUG_PATH(rpcpu)
+SET_MSVC_DEBUG_PATH(${PROJECT_NAME})
 
 # rpthreads is needed for atomic functions.
-TARGET_LINK_LIBRARIES(rpcpu PRIVATE rpthreads)
+TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE rpthreads)
 
 # Include paths:
 # - Public: Current source and binary directories.
 # - Private: Parent source and binary directories,
 #            and top-level binary directory for git_version.h.
-TARGET_INCLUDE_DIRECTORIES(rpcpu
+TARGET_INCLUDE_DIRECTORIES(${PROJECT_NAME}
 	PUBLIC  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>		# librpcpu
 		$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>		# librpcpu
 	PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>	# src
@@ -122,7 +122,7 @@ TARGET_INCLUDE_DIRECTORIES(rpcpu
 		$<BUILD_INTERFACE:${CMAKE_BINARY_DIR}>			# build
 	)
 # Exclude from ALL builds.
-SET_TARGET_PROPERTIES(rpcpu PROPERTIES EXCLUDE_FROM_ALL TRUE)
+SET_TARGET_PROPERTIES(${PROJECT_NAME} PROPERTIES EXCLUDE_FROM_ALL TRUE)
 
 # Unix: Add -fpic/-fPIC in order to use this static library in plugins.
 IF(UNIX AND NOT APPLE)

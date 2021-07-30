@@ -6,10 +6,10 @@ IF(POLICY CMP0063)
 	# target types, including static libraries and executables.
 	CMAKE_POLICY(SET CMP0063 NEW)
 ENDIF(POLICY CMP0063)
-PROJECT(librptexture LANGUAGES CXX)
+PROJECT(rptexture LANGUAGES CXX)
 
 # Sources.
-SET(librptexture_SRCS
+SET(${PROJECT_NAME}_SRCS
 	FileFormatFactory.cpp
 
 	img/rp_image.cpp
@@ -44,7 +44,7 @@ SET(librptexture_SRCS
 	data/VkEnumStrings.cpp
 	)
 # Headers.
-SET(librptexture_H
+SET(${PROJECT_NAME}_H
 	FileFormatFactory.hpp
 
 	img/rp_image.hpp
@@ -88,18 +88,18 @@ SET(librptexture_H
 	)
 
 IF(WIN32)
-	SET(librptexture_OS_SRCS
+	SET(${PROJECT_NAME}_OS_SRCS
 		img/GdiplusHelper.cpp
 		img/RpGdiplusBackend.cpp
 		)
-	SET(librptexture_OS_H
+	SET(${PROJECT_NAME}_OS_H
 		img/GdiplusHelper.hpp
 		img/RpGdiplusBackend.hpp
 		)
 ENDIF(WIN32)
 
 IF(ENABLE_PVRTC)
-	SET(librptexture_PVRTC_SRCS decoder/ImageDecoder_PVRTC.cpp)
+	SET(${PROJECT_NAME}_PVRTC_SRCS decoder/ImageDecoder_PVRTC.cpp)
 ENDIF(ENABLE_PVRTC)
 
 # CPU-specific and optimized sources.
@@ -109,15 +109,15 @@ IF(CPU_i386 OR CPU_amd64)
 	#
 	# amd64 CPUs support SSE2 as a minimum anyway, so there's
 	# no point in building MMX code for 64-bit.
-	SET(librptexture_SSE2_SRCS
+	SET(${PROJECT_NAME}_SSE2_SRCS
 		img/rp_image_ops_sse2.cpp
 		decoder/ImageDecoder_Linear_sse2.cpp
 		)
-	SET(librptexture_SSSE3_SRCS
+	SET(${PROJECT_NAME}_SSSE3_SRCS
 		decoder/ImageDecoder_Linear_ssse3.cpp
 		)
 	# TODO: Disable SSE 4.1 if not supported by the compiler?
-	SET(librptexture_SSE41_SRCS
+	SET(${PROJECT_NAME}_SSE41_SRCS
 		img/un-premultiply_sse41.cpp
 		)
 
@@ -127,10 +127,10 @@ IF(CPU_i386 OR CPU_amd64)
 	# it won't do anything.
 	# TODO: Might be supported on other Unix-like operating systems...
 	IF(UNIX AND NOT APPLE)
-		SET(librptexture_IFUNC_SRCS decoder/ImageDecoder_ifunc.cpp)
+		SET(${PROJECT_NAME}_IFUNC_SRCS decoder/ImageDecoder_ifunc.cpp)
 		# Disable LTO on the IFUNC files if LTO is known to be broken.
 		IF(GCC_5xx_LTO_ISSUES)
-			SET_SOURCE_FILES_PROPERTIES(${librptexture_IFUNC_SRCS}
+			SET_SOURCE_FILES_PROPERTIES(${${PROJECT_NAME}_IFUNC_SRCS}
 				APPEND_STRING PROPERTIES COMPILE_FLAGS " -fno-lto ")
 		ENDIF(GCC_5xx_LTO_ISSUES)
 	ENDIF(UNIX AND NOT APPLE)
@@ -149,70 +149,70 @@ IF(CPU_i386 OR CPU_amd64)
 	ENDIF()
 
 	IF(MMX_FLAG)
-		SET_SOURCE_FILES_PROPERTIES(${librptexture_MMX_SRCS}
+		SET_SOURCE_FILES_PROPERTIES(${${PROJECT_NAME}_MMX_SRCS}
 			APPEND_STRING PROPERTIES COMPILE_FLAGS " ${MMX_FLAG} ")
 	ENDIF(MMX_FLAG)
 
 	IF(SSE2_FLAG)
-		SET_SOURCE_FILES_PROPERTIES(${librptexture_SSE2_SRCS}
+		SET_SOURCE_FILES_PROPERTIES(${${PROJECT_NAME}_SSE2_SRCS}
 			APPEND_STRING PROPERTIES COMPILE_FLAGS " ${SSE2_FLAG} ")
 	ENDIF(SSE2_FLAG)
 
 	IF(SSSE3_FLAG)
-		SET_SOURCE_FILES_PROPERTIES(${librptexture_SSSE3_SRCS}
+		SET_SOURCE_FILES_PROPERTIES(${${PROJECT_NAME}_SSSE3_SRCS}
 			APPEND_STRING PROPERTIES COMPILE_FLAGS " ${SSSE3_FLAG} ")
 	ENDIF(SSSE3_FLAG)
 
 	IF(SSE41_FLAG)
-		SET_SOURCE_FILES_PROPERTIES(${librptexture_SSE41_SRCS}
+		SET_SOURCE_FILES_PROPERTIES(${${PROJECT_NAME}_SSE41_SRCS}
 			APPEND_STRING PROPERTIES COMPILE_FLAGS " ${SSE41_FLAG} ")
 	ENDIF(SSE41_FLAG)
 ENDIF()
 UNSET(arch)
 
 # Write the config.h files.
-CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/config.librptexture.h.in" "${CMAKE_CURRENT_BINARY_DIR}/config.librptexture.h")
+CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/config.lib${PROJECT_NAME}.h.in" "${CMAKE_CURRENT_BINARY_DIR}/config.lib${PROJECT_NAME}.h")
 
 # Precompiled headers.
 IF(ENABLE_PCH)
 	INCLUDE(PrecompiledHeader)
-	SET(librptexture_PCH_CXX stdafx.cpp)
-	SET(librptexture_PCH_SRC ${librptexture_PCH_CXX})
-	SET(librptexture_PCH_H stdafx.h)
+	SET(${PROJECT_NAME}_PCH_CXX stdafx.cpp)
+	SET(${PROJECT_NAME}_PCH_SRC ${${PROJECT_NAME}_PCH_CXX})
+	SET(${PROJECT_NAME}_PCH_H stdafx.h)
 ENDIF(ENABLE_PCH)
 
 ######################
 # Build the library. #
 ######################
 
-ADD_LIBRARY(rptexture STATIC
-	${librptexture_PCH_SRC} ${librptexture_PCH_H}
-	${librptexture_SRCS} ${librptexture_H}
-	${librptexture_OS_SRCS} ${librptexture_OS_H}
-	${librptexture_PVRTC_SRCS}
-	${librptexture_IFUNC_SRCS}
-	${librptexture_MMX_SRCS}
-	${librptexture_SSE2_SRCS}
-	${librptexture_SSSE3_SRCS}
-	${librptexture_SSE41_SRCS}
+ADD_LIBRARY(${PROJECT_NAME} STATIC
+	${${PROJECT_NAME}_PCH_SRC} ${${PROJECT_NAME}_PCH_H}
+	${${PROJECT_NAME}_SRCS} ${${PROJECT_NAME}_H}
+	${${PROJECT_NAME}_OS_SRCS} ${${PROJECT_NAME}_OS_H}
+	${${PROJECT_NAME}_PVRTC_SRCS}
+	${${PROJECT_NAME}_IFUNC_SRCS}
+	${${PROJECT_NAME}_MMX_SRCS}
+	${${PROJECT_NAME}_SSE2_SRCS}
+	${${PROJECT_NAME}_SSSE3_SRCS}
+	${${PROJECT_NAME}_SSE41_SRCS}
 	)
 IF(ENABLE_PCH)
-	ADD_PRECOMPILED_HEADER(rptexture ${librptexture_PCH_H}
-		SOURCE_CXX ${librptexture_PCH_CXX}
+	ADD_PRECOMPILED_HEADER(${PROJECT_NAME} ${${PROJECT_NAME}_PCH_H}
+		SOURCE_CXX ${${PROJECT_NAME}_PCH_CXX}
 		)
 ENDIF(ENABLE_PCH)
 INCLUDE(SetMSVCDebugPath)
-SET_MSVC_DEBUG_PATH(rptexture)
+SET_MSVC_DEBUG_PATH(${PROJECT_NAME})
 
 # TODO: More public/private library stuff.
-TARGET_LINK_LIBRARIES(rptexture PUBLIC rpcpu rpfile)
-TARGET_LINK_LIBRARIES(rptexture PRIVATE rpthreads)
+TARGET_LINK_LIBRARIES(${PROJECT_NAME} PUBLIC rpcpu rpfile)
+TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE rpthreads)
 
 # Include paths:
 # - Public: Current source and binary directories.
 # - Private: Parent source and binary directories,
 #            and top-level binary directory for git_version.h.
-TARGET_INCLUDE_DIRECTORIES(rptexture
+TARGET_INCLUDE_DIRECTORIES(${PROJECT_NAME}
 	PUBLIC  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>		# librptexture
 		$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>		# librptexture
 	PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>	# src
@@ -220,32 +220,32 @@ TARGET_INCLUDE_DIRECTORIES(rptexture
 		$<BUILD_INTERFACE:${CMAKE_BINARY_DIR}>			# build
 	)
 IF(ENABLE_NLS)
-	TARGET_LINK_LIBRARIES(rptexture PRIVATE i18n)
+	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE i18n)
 ENDIF(ENABLE_NLS)
 IF(MSVC)
-	TARGET_LINK_LIBRARIES(rptexture PRIVATE delayimp)
+	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE delayimp)
 ENDIF(MSVC)
 # Exclude from ALL builds.
-SET_TARGET_PROPERTIES(rptexture PROPERTIES EXCLUDE_FROM_ALL TRUE)
+SET_TARGET_PROPERTIES(${PROJECT_NAME} PROPERTIES EXCLUDE_FROM_ALL TRUE)
 
 # zlib
 IF(NOT ZLIB_LIBRARY)
 	MESSAGE(FATAL_ERROR "ZLIB_LIBRARY has not been set by CheckZLIB.cmake.")
 ENDIF(NOT ZLIB_LIBRARY)
-TARGET_INCLUDE_DIRECTORIES(rptexture PRIVATE ${ZLIB_INCLUDE_DIRS})
-TARGET_LINK_LIBRARIES(rptexture PRIVATE ${ZLIB_LIBRARY})
+TARGET_INCLUDE_DIRECTORIES(${PROJECT_NAME} PRIVATE ${ZLIB_INCLUDE_DIRS})
+TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE ${ZLIB_LIBRARY})
 
 # PowerVR Native SDK
 IF(ENABLE_PVRTC)
-	TARGET_LINK_LIBRARIES(rptexture PRIVATE pvrtc)
+	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE pvrtc)
 ENDIF(ENABLE_PVRTC)
 
 # Other libraries.
 IF(WIN32)
 	# libwin32common
-	TARGET_LINK_LIBRARIES(rptexture PRIVATE win32common)
+	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE win32common)
 	# Windows system libraries
-	TARGET_LINK_LIBRARIES(rptexture PRIVATE gdiplus)
+	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE gdiplus)
 ENDIF(WIN32)
 
 # Unix: Add -fpic/-fPIC in order to use this static library in plugins.

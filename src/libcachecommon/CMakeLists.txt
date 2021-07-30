@@ -6,20 +6,20 @@ IF(POLICY CMP0063)
 	# target types, including static libraries and executables.
 	CMAKE_POLICY(SET CMP0063 NEW)
 ENDIF(POLICY CMP0063)
-PROJECT(libcachecommon LANGUAGES CXX)
+PROJECT(cachecommon LANGUAGES CXX)
 
-SET(libcachecommon_SRCS
+SET(${PROJECT_NAME}_SRCS
 	CacheKeys.cpp
 	CacheDir.cpp
 	)
-SET(libcachecommon_H
+SET(${PROJECT_NAME}_H
 	CacheKeys.hpp
 	CacheDir.hpp
 	)
 
 # Write the config.h file.
 INCLUDE(DirInstallPaths)
-CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/config.libcachecommon.h.in" "${CMAKE_CURRENT_BINARY_DIR}/config.libcachecommon.h")
+CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/config.lib${PROJECT_NAME}.h.in" "${CMAKE_CURRENT_BINARY_DIR}/config.lib${PROJECT_NAME}.h")
 
 ######################
 # Build the library. #
@@ -27,23 +27,23 @@ CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/config.libcachecommon.h.in" "${CMAKE
 
 INCLUDE(SetMSVCDebugPath)
 
-ADD_LIBRARY(cachecommon STATIC
-	${libcachecommon_SRCS} ${libcachecommon_H}
+ADD_LIBRARY(${PROJECT_NAME} STATIC
+	${${PROJECT_NAME}_SRCS} ${${PROJECT_NAME}_H}
 	)
-SET_MSVC_DEBUG_PATH(cachecommon)
-TARGET_INCLUDE_DIRECTORIES(cachecommon
+SET_MSVC_DEBUG_PATH(${PROJECT_NAME})
+TARGET_INCLUDE_DIRECTORIES(${PROJECT_NAME}
 	PUBLIC  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
 		$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
 	PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>
 		$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/..>
 	)
 # Exclude from ALL builds.
-SET_TARGET_PROPERTIES(cachecommon PROPERTIES EXCLUDE_FROM_ALL TRUE)
-TARGET_LINK_LIBRARIES(cachecommon PRIVATE rpthreads)
+SET_TARGET_PROPERTIES(${PROJECT_NAME} PROPERTIES EXCLUDE_FROM_ALL TRUE)
+TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE rpthreads)
 IF(WIN32)
-	TARGET_LINK_LIBRARIES(cachecommon PRIVATE win32common)
+	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE win32common)
 ELSE(WIN32)
-	TARGET_LINK_LIBRARIES(cachecommon PRIVATE unixcommon)
+	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE unixcommon)
 ENDIF(WIN32)
 
 # Unix: Add -fpic/-fPIC in order to use these static libraries in plugins.
