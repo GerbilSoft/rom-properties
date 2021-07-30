@@ -1,17 +1,26 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (GTK+ common)                      *
- * gtk2-compat.h: GTK+ compatibility functions.                        *
+ * gtk-compat.h: GTK+ compatibility functions.                             *
  *                                                                         *
  * Copyright (c) 2017-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_GTK_GTK2_COMPAT_H__
-#define __ROMPROPERTIES_GTK_GTK2_COMPAT_H__
+#ifndef __ROMPROPERTIES_GTK_GTK_COMPAT_H__
+#define __ROMPROPERTIES_GTK_GTK_COMPAT_H__
 
 #include <gtk/gtk.h>
 
 G_BEGIN_DECLS
+
+#if !GTK_CHECK_VERSION(2,14,0)
+static inline GdkWindow*
+gtk_widget_get_window(GtkWidget *widget)
+{
+	g_return_val_if_fail(widget != NULL, NULL);
+	return widget->window;
+}
+#endif /* GTK_CHECK_VERSION(2,14,0) */
 
 #if !GTK_CHECK_VERSION(3,0,0)
 static inline GtkWidget*
@@ -76,4 +85,4 @@ gdk_event_get_event_type (const GdkEvent *event)
 
 G_END_DECLS
 
-#endif /* __ROMPROPERTIES_GTK_GTK2_COMPAT_H__ */
+#endif /* __ROMPROPERTIES_GTK_GTK_COMPAT_H__ */

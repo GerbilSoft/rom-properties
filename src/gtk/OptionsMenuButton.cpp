@@ -369,11 +369,7 @@ static void
 btnOptions_menu_pos_func(GtkMenu *menu, gint *x, gint *y, gboolean *push_in, gpointer user_data)
 {
 	GtkWidget *const button = (GtkWidget*)GTK_BUTTON(user_data);
-#if GTK_CHECK_VERSION(2,14,0)
 	GdkWindow *const window = gtk_widget_get_window(button);
-#else /* !GTK_CHECK_VERSION(2,14,0) */
-	GdkWindow *const window = button->window;
-#endif /* GTK_CHECK_VERSION(2,14,0) */
 
 	GtkAllocation button_alloc, menu_alloc;
 	gtk_widget_get_allocation(GTK_WIDGET(button), &button_alloc);
