@@ -72,13 +72,15 @@ IF(GLib2_FOUND AND GObject2_FOUND)
 	ENDIF(NOT GdkPixbuf2_FOUND)
 	FIND_PACKAGE(Cairo)
 	IF(NOT Cairo_FOUND)
-		# Cannot build GTK3 frontends.
+		# Cannot build GTK3 or GTK4 frontends.
 		SET(BUILD_GTK3 OFF CACHE INTERNAL "Build the GTK+ 3.x plugin." FORCE)
+		SET(BUILD_GTK4 OFF CACHE INTERNAL "Build the GTK 4.x plugin." FORCE)
 	ENDIF(NOT Cairo_FOUND)
 ELSE(GLib2_FOUND AND GObject2_FOUND)
 	# Cannot build any GTK+ frontends.
 	SET(BUILD_GTK2 OFF CACHE INTERNAL "Build the GTK+ 2.x plugin." FORCE)
 	SET(BUILD_GTK3 OFF CACHE INTERNAL "Check for GTK+ 3.x plugin." FORCE)
+	SET(BUILD_GTK4 OFF CACHE INTERNAL "Check for GTK 4.x plugin." FORCE)
 ENDIF(GLib2_FOUND AND GObject2_FOUND)
 
 # Build GTK+ 2.x frontends.
@@ -98,24 +100,36 @@ IF(BUILD_GTK3)
 	FIND_PACKAGE(GTK3 3.10.0 ${REQUIRE_GTK3})
 	IF(GTK3_FOUND)
 		ADD_SUBDIRECTORY(gtk3)
-
-		# Process the .thumbnailer file.
-		INCLUDE(DirInstallPaths)
-		INCLUDE(ParseMimeTypes)
-		PARSE_MIME_TYPES(MIMETYPES_THUMBONLY "${CMAKE_SOURCE_DIR}/xdg/mime.thumbnail.types")
-		CONFIGURE_FILE(rom-properties.thumbnailer.in rom-properties.thumbnailer @ONLY)
-		INSTALL(FILES "${CMAKE_CURRENT_BINARY_DIR}/rom-properties.thumbnailer"
-			DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/thumbnailers"
-			COMPONENT "plugin"
-			)
 	ELSE(GTK3_FOUND)
 		SET(BUILD_GTK3 OFF CACHE INTERNAL "Build the GTK+ 3.x plugin." FORCE)
 	ENDIF(GTK3_FOUND)
 ENDIF(BUILD_GTK3)
 
+# Build GTK 4.x frontends.
+IF(BUILD_GTK4)
+	FIND_PACKAGE(GTK4 ${REQUIRE_GTK4})
+	IF(GTK4_FOUND)
+		ADD_SUBDIRECTORY(gtk4)
+	ELSE(GTK4_FOUND)
+		SET(BUILD_GTK4 OFF CACHE INTERNAL "Build the GTK 4.x plugin." FORCE)
+	ENDIF(GTK4_FOUND)
+ENDIF(BUILD_GTK4)
+
+IF(GTK3_FOUND OR GTK4_FOUND)
+	# Process the .thumbnailer file.
+	INCLUDE(DirInstallPaths)
+	INCLUDE(ParseMimeTypes)
+	PARSE_MIME_TYPES(MIMETYPES_THUMBONLY "${CMAKE_SOURCE_DIR}/xdg/mime.thumbnail.types")
+	CONFIGURE_FILE(rom-properties.thumbnailer.in rom-properties.thumbnailer @ONLY)
+	INSTALL(FILES "${CMAKE_CURRENT_BINARY_DIR}/rom-properties.thumbnailer"
+		DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/thumbnailers"
+		COMPONENT "plugin"
+		)
+ENDIF(GTK3_FOUND OR GTK4_FOUND)
+
 # Build the D-Bus thumbnailer.
 # Required for XFCE.
-IF(BUILD_GTK2 OR BUILD_GTK3)
+IF(BUILD_GTK2 OR BUILD_GTK3 OR BUILD_GTK4)
 	SET(BUILD_THUMBNAILER_DBUS ON CACHE INTERNAL "Build the D-Bus thumbnailer." FORCE)
 	ADD_SUBDIRECTORY(thumbnailer-dbus)
-ENDIF(BUILD_GTK2 OR BUILD_GTK3)
+ENDIF(BUILD_GTK2 OR BUILD_GTK3 OR BUILD_GTK4)

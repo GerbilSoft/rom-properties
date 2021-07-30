@@ -106,10 +106,16 @@ message_widget_class_init(MessageWidgetClass *klass)
 	// Initialize MessageWidget CSS.
 	GtkCssProvider *const provider = gtk_css_provider_new();
 	GdkDisplay *const display = gdk_display_get_default();
+#  if GTK_CHECK_VERSION(4,0,0)
+	// GdkScreen no longer exists in GTK4.
+	// Style context providers are added directly to GdkDisplay instead.
+	gtk_style_context_add_provider_for_display(display,
+		GTK_STYLE_PROVIDER(provider), GTK_STYLE_PROVIDER_PRIORITY_USER);
+#  else /* !GTK_CHECK_VERSION(4,0,0) */
 	GdkScreen *const screen = gdk_display_get_default_screen(display);
-
 	gtk_style_context_add_provider_for_screen(screen,
 		GTK_STYLE_PROVIDER(provider), GTK_STYLE_PROVIDER_PRIORITY_USER);
+#  endif /* !GTK_CHECK_VERSION(4,0,0) */
 
 	static const char css_MessageWidget[] =
 		"@define-color gsrp_color_info rgb(61,174,233);\n"
@@ -132,7 +138,7 @@ message_widget_class_init(MessageWidgetClass *klass)
 		"\tborder: 2px solid @gsrp_color_error;\n"
 		"}\n";
 
-	gtk_css_provider_load_from_data(GTK_CSS_PROVIDER(provider), css_MessageWidget, -1, nullptr);
+	GTK_CSS_PROVIDER_LOAD_FROM_DATA(GTK_CSS_PROVIDER(provider), css_MessageWidget, -1);
 	g_object_unref(provider);
 #endif /* GTK_CHECK_VERSION(3,0,0) */
 }
@@ -159,22 +165,33 @@ message_widget_init(MessageWidget *widget)
 #endif /* GTK_CHECK_VERSION(3,0,0) */
 
 	widget->messageType = GTK_MESSAGE_OTHER;
-
 	widget->image = gtk_image_new();
-	gtk_box_pack_start(hbox, widget->image, FALSE, FALSE, 4);
-
 	widget->label = gtk_label_new(nullptr);
 	gtk_widget_show(widget->label);
-	gtk_box_pack_start(hbox, widget->label, FALSE, FALSE, 0);
 
 	// TODO: Prpoer alignment.
 
 	widget->closeButton = gtk_button_new();
+	gtk_widget_show(widget->closeButton);
+#if GTK_CHECK_VERSION(4,0,0)
+	gtk_button_set_icon_name(GTK_BUTTON(widget->closeButton), "dialog-close");
+	gtk_button_set_has_frame(GTK_BUTTON(widget->closeButton), FALSE);
+#else /* !GTK_CHECK_VERSION(4,0,0) */
 	GtkWidget *const imageClose = gtk_image_new_from_icon_name("dialog-close", GTK_ICON_SIZE_BUTTON);
 	gtk_button_set_image(GTK_BUTTON(widget->closeButton), imageClose);
 	gtk_button_set_relief(GTK_BUTTON(widget->closeButton), GTK_RELIEF_NONE);
-	gtk_widget_show(widget->closeButton);
+#endif /* GTK_CHECK_VERSION(4,0,0) */
+
+#if GTK_CHECK_VERSION(4,0,0)
+	// TODO: Padding?
+	gtk_box_append(hbox, widget->image);
+	gtk_box_append(hbox, widget->label);
+	gtk_box_append(hbox, widget->closeButton);
+#else /* !GTK_CHECK_VERSION(4,0,0) */
+	gtk_box_pack_start(hbox, widget->image, FALSE, FALSE, 4);
+	gtk_box_pack_start(hbox, widget->label, FALSE, FALSE, 0);
 	gtk_box_pack_end(hbox, widget->closeButton, FALSE, FALSE, 0);
+#endif /* GTK_CHECK_VERSION(4,0,0) */
 
 	g_signal_connect(widget->closeButton, "clicked",
 		G_CALLBACK(closeButton_clicked_handler), widget);
@@ -304,8 +321,12 @@ message_widget_set_message_type(MessageWidget *widget, GtkMessageType messageTyp
 
 	gtk_widget_set_visible(widget->image, (pIconInfo->icon_name != nullptr));
 	if (pIconInfo->icon_name) {
+#if GTK_CHECK_VERSION(4,0,0)
+		gtk_image_set_from_icon_name(GTK_IMAGE(widget->image), pIconInfo->icon_name);
+#else /* !GTK_CHECK_VERSION(4,0,0) */
 		// TODO: Better icon size?
 		gtk_image_set_from_icon_name(GTK_IMAGE(widget->image), pIconInfo->icon_name, GTK_ICON_SIZE_BUTTON);
+#endif /* GTK_CHECK_VERSION(4,0,0) */
 
 #if GTK_CHECK_VERSION(3,0,0)
 		// Remove all of our CSS classes first.

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * CreateThumbnail.cpp: Thumbnail creator for wrapper programs.            *
  *                                                                         *
- * Copyright (c) 2017-2020 by David Korth.                                 *
+ * Copyright (c) 2017-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -28,14 +28,16 @@ using std::unique_ptr;
 // GTK+ major version.
 // We can't simply use GTK_MAJOR_VERSION because
 // that has parentheses.
-#if GTK_CHECK_VERSION(4,0,0)
-# error Needs updating for GTK4.
+#if GTK_CHECK_VERSION(5,0,0)
+#  error Needs updating for GTK4.
+#elif GTK_CHECK_VERSION(4,0,0)
+#  define GTK_MAJOR_STR "4"
 #elif GTK_CHECK_VERSION(3,0,0)
-# define GTK_MAJOR_STR "3"
+#  define GTK_MAJOR_STR "3"
 #elif GTK_CHECK_VERSION(2,0,0)
-# define GTK_MAJOR_STR "2"
+#  define GTK_MAJOR_STR "2"
 #else
-# error GTK+ is too old.
+#  error GTK+ is too old.
 #endif
 
 /** CreateThumbnailPrivate **/

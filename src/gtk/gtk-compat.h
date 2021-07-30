@@ -83,6 +83,47 @@ gdk_event_get_event_type (const GdkEvent *event)
 }
 #endif /* !GTK_CHECK_VERSION(3,10,0) */
 
+#if !GTK_CHECK_VERSION(4,0,0)
+static inline void
+gtk_scrolled_window_set_child(GtkScrolledWindow *scrolled_window, GtkWidget *child)
+{
+	// TODO: Remove the exisitng child widget?
+	gtk_container_add(GTK_CONTAINER(scrolled_window), child);
+}
+#endif /* GTK_CHECK_VERSION(4,0,0) */
+
+#if GTK_CHECK_VERSION(4,0,0)
+#  define GTK_CSS_PROVIDER_LOAD_FROM_DATA(provider, data, length) \
+	gtk_css_provider_load_from_data((provider), (data), (length))
+#else /* !GTK_CHECK_VERSION(4,0,0) */
+#  define GTK_CSS_PROVIDER_LOAD_FROM_DATA(provider, data, length) \
+	gtk_css_provider_load_from_data((provider), (data), (length), NULL)
+#endif /* GTK_CHECK_VERSION(4,0,0) */
+
+// Clipboard
+#if GTK_CHECK_VERSION(4,0,0)
+static inline void
+rp_gtk_main_clipboard_set_text(const char *text)
+{
+	GValue value = G_VALUE_INIT;
+	g_value_init(&value, G_TYPE_STRING);
+	g_value_set_string(&value, text);
+
+	GdkDisplay *const display = gdk_display_get_default();
+	GdkClipboard *const clipboard = gdk_display_get_clipboard(display);
+	gdk_clipboard_set_value(clipboard, &value);
+
+	g_value_unset(&value);
+}
+#else /* !GTK_CHECK_VERSION(4,0,0) */
+static inline void
+rp_gtk_main_clipboard_set_text(const char *text)
+{
+	GtkClipboard *const clipboard = gtk_clipboard_get(GDK_SELECTION_CLIPBOARD);
+	gtk_clipboard_set_text(clipboard, text, -1);
+}
+#endif /* GTK_CHECK_VERSION(4,0,0) */
+
 G_END_DECLS
 
 #endif /* __ROMPROPERTIES_GTK_GTK_COMPAT_H__ */

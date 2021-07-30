@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * stdafx.h: Common definitions and includes.                              *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -11,7 +11,9 @@
 
 // PrecompiledHeader.cmake's FILE(GENERATE) command mangles the
 // escaped double-quotes for G_LOG_DOMAIN.
-#if defined(RP_UI_GTK3)
+#if defined(RP_UI_GTK4)
+#  define G_LOG_DOMAIN "rom-properties-gtk4"
+#elif defined(RP_UI_GTK3)
 #  define G_LOG_DOMAIN "rom-properties-gtk3"
 #elif defined(RP_UI_XFCE)
 #  define G_LOG_DOMAIN "rom-properties-xfce"

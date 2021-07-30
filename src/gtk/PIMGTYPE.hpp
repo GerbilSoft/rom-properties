@@ -17,7 +17,9 @@
 # error GTK+ 3.x earlier than 3.10 is not supported.
 #endif
 
-#if GTK_CHECK_VERSION(3,10,0)
+// NOTE: GTK4 doesn't support Cairo anymore, so we'll switch back to GdkPixbuf.
+// TODO: Use GdkTexture?
+#if GTK_CHECK_VERSION(3,10,0) && !GTK_CHECK_VERSION(4,0,0)
 #  define RP_GTK_USE_CAIRO 1
 #  ifdef __cplusplus
 #    include "CairoImageConv.hpp"
@@ -70,6 +72,7 @@ static inline void gtk_image_set_from_PIMGTYPE(GtkImage *image, PIMGTYPE pImgTyp
 #endif /* RP_GTK_USE_CAIRO */
 }
 
+#if !GTK_CHECK_VERSION(4,0,0)	// FIXME: GTK4 has a new Drag & Drop API.
 // gtk_drag_set_icon_PIMGTYPE wrapper function.
 static inline void gtk_drag_set_icon_PIMGTYPE(GdkDragContext *context, PIMGTYPE pImgType)
 {
@@ -81,6 +84,7 @@ static inline void gtk_drag_set_icon_PIMGTYPE(GdkDragContext *context, PIMGTYPE 
 	gtk_drag_set_icon_pixbuf(context, pImgType, 0, 0);
 #endif /* RP_GTK_USE_CAIRO */
 }
+#endif /* !GTK_CHECK_VERSION(4,0,0) */
 
 // PIMGTYPE ref() wrapper function.
 static inline PIMGTYPE PIMGTYPE_ref(PIMGTYPE pImgType)

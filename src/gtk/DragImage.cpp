@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * DragImage.cpp: Drag & Drop image.                                       *
  *                                                                         *
- * Copyright (c) 2017-2020 by David Korth.                                 *
+ * Copyright (c) 2017-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -28,17 +28,32 @@ static void	drag_image_dispose	(GObject	*object);
 static void	drag_image_finalize	(GObject	*object);
 
 // Signal handlers
+// FIXME: GTK4 has a new Drag & Drop API.
+#if !GTK_CHECK_VERSION(4,0,0)
 static void	drag_image_drag_begin(DragImage *image, GdkDragContext *context, gpointer user_data);
 static void	drag_image_drag_data_get(DragImage *image, GdkDragContext *context, GtkSelectionData *data, guint info, guint time, gpointer user_data);
+#endif /* !GTK_CHECK_VERSION(4,0,0) */
+
+// GTK4 no longer needs GtkEventBox, since
+// all widgets receive events.
+#if GTK_CHECK_VERSION(4,0,0)
+typedef GtkBoxClass superclass;
+typedef GtkBox super;
+#  define GTK_TYPE_SUPER GTK_TYPE_BOX
+#else /* !GTK_CHECK_VERSION(4,0,0) */
+typedef GtkEventBoxClass superclass;
+typedef GtkEventBox super;
+#  define GTK_TYPE_SUPER GTK_TYPE_EVENT_BOX
+#endif
 
 // DragImage class.
 struct _DragImageClass {
-	GtkEventBoxClass __parent__;
+	superclass __parent__;
 };
 
 // DragImage instance.
 struct _DragImage {
-	GtkEventBox __parent__;
+	super __parent__;
 
 	// GtkImage child widget.
 	GtkImage *imageWidget;
@@ -91,7 +106,7 @@ struct _DragImage {
 // NOTE: G_DEFINE_TYPE() doesn't work in C++ mode with gcc-6.2
 // due to an implicit int to GTypeFlags conversion.
 G_DEFINE_TYPE_EXTENDED(DragImage, drag_image,
-	GTK_TYPE_EVENT_BOX, static_cast<GTypeFlags>(0), {});
+	GTK_TYPE_SUPER, static_cast<GTypeFlags>(0), {});
 
 static void
 drag_image_class_init(DragImageClass *klass)
@@ -116,12 +131,19 @@ drag_image_init(DragImage *image)
 	// Create the child GtkImage widget.
 	image->imageWidget = GTK_IMAGE(gtk_image_new());
 	gtk_widget_show(GTK_WIDGET(image->imageWidget));
+#if GTK_CHECK_VERSION(4,0,0)
+	gtk_box_append(GTK_BOX(image), GTK_WIDGET(image->imageWidget));
+#else /* !GTK_CHECK_VERSION(4,0,0) */
 	gtk_container_add(GTK_CONTAINER(image), GTK_WIDGET(image->imageWidget));
+#endif /* GTK_CHECK_VERSION(4,0,0) */
 
+// FIXME: GTK4 has a new Drag & Drop API.
+#if !GTK_CHECK_VERSION(4,0,0)
 	g_signal_connect(G_OBJECT(image), "drag-begin",
 		G_CALLBACK(drag_image_drag_begin), (gpointer)0);
 	g_signal_connect(G_OBJECT(image), "drag-data-get",
 		G_CALLBACK(drag_image_drag_data_get), (gpointer)0);
+#endif /* !GTK_CHECK_VERSION(4,0,0) */
 }
 
 static void
@@ -221,6 +243,8 @@ drag_image_update_pixmaps(DragImage *image)
 		bRet = true;
 	}
 
+	// FIXME: GTK4 has a new Drag & Drop API.
+#if !GTK_CHECK_VERSION(4,0,0)
 	if (bRet) {
 		// Image or animated icon data was set.
 		// Set a drag source.
@@ -237,6 +261,8 @@ drag_image_update_pixmaps(DragImage *image)
 		// Unset the drag source.
 		gtk_drag_source_unset(GTK_WIDGET(image));
 	}
+#endif /* !GTK_CHECK_VERSION(4,0,0) */
+
 	return bRet;
 }
 
@@ -496,6 +522,8 @@ drag_image_reset_anim_frame(DragImage *image)
 
 /** Signal handlers **/
 
+// FIXME: GTK4 has a new Drag & Drop API.
+#if !GTK_CHECK_VERSION(4,0,0)
 static void
 drag_image_drag_begin(DragImage *image, GdkDragContext *context, gpointer user_data)
 {
@@ -574,3 +602,4 @@ drag_image_drag_data_get(DragImage *image, GdkDragContext *context, GtkSelection
 	// We're done here.
 	pngData->unref();
 }
+#endif /* !GTK_CHECK_VERSION(4,0,0) */

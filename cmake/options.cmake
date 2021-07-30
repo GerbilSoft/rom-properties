@@ -27,6 +27,7 @@ IF(UNIX AND NOT APPLE)
 	OPTION_UI(KF5 "Build the KDE Frameworks 5 plugin.")
 	OPTION_UI(XFCE "Build the XFCE (GTK+ 2.x) plugin.")
 	OPTION_UI(GTK3 "Build the GTK+ 3.x plugin.")
+	#OPTION_UI(GTK4 "Build the GTK 4.x plugin. (EXPERIMENTAL)")	# NOTE: Only enable if debugging!
 
 	# NOTE: The GTK+ 2.x plugin is XFCE only right now.
 	SET(BUILD_GTK2 "${BUILD_XFCE}")

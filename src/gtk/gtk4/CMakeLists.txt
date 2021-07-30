@@ -1,8 +1,5 @@
-# GTK+ 3.x UI frontend for:
-# - Nautilus 3.x (GNOME)
-# - Caja 1.18 (MATE)
-# - Nemo (Cinnamon)
-# - Thunar 1.8 (XFCE)
+# GTK+ 4.x UI frontend
+# TODO: Not supported by any file browsers yet...
 CMAKE_MINIMUM_REQUIRED(VERSION 3.0)
 CMAKE_POLICY(SET CMP0048 NEW)
 IF(POLICY CMP0063)
@@ -10,65 +7,36 @@ IF(POLICY CMP0063)
 	# target types, including static libraries and executables.
 	CMAKE_POLICY(SET CMP0063 NEW)
 ENDIF(POLICY CMP0063)
-PROJECT(rom-properties-gtk3 LANGUAGES C CXX)
+PROJECT(rom-properties-gtk4 LANGUAGES C CXX)
 
-FIND_PACKAGE(GLib2 ${REQUIRE_GTK3} 2.26.0)
-FIND_PACKAGE(GObject2 ${REQUIRE_GTK3} 2.26.0)
-FIND_PACKAGE(GIO ${REQUIRE_GTK3} 2.26.0)
-FIND_PACKAGE(GIO-UNIX ${REQUIRE_GTK3} 2.26.0)
-FIND_PACKAGE(Cairo ${REQUIRE_GTK3})
-# GTK3 minimum is 3.10.0. (gtk_image_set_from_surface)
-FIND_PACKAGE(GTK3 3.10.0 ${REQUIRE_GTK3})
-IF(GLib2_FOUND AND GObject2_FOUND AND GIO_FOUND AND GIO-UNIX_FOUND AND Cairo_FOUND AND GTK3_FOUND)
+FIND_PACKAGE(GLib2 ${REQUIRE_GTK4} 2.26.0)
+FIND_PACKAGE(GObject2 ${REQUIRE_GTK4} 2.26.0)
+FIND_PACKAGE(GIO ${REQUIRE_GTK4} 2.26.0)
+FIND_PACKAGE(GIO-UNIX ${REQUIRE_GTK4} 2.26.0)
+FIND_PACKAGE(GdkPixbuf2 ${REQUIRE_GTK})	# GTK4 doesn't support Cairo. (TODO: GdkTexture)
+FIND_PACKAGE(GTK4 ${REQUIRE_GTK4})
+IF(GLib2_FOUND AND GObject2_FOUND AND GIO_FOUND AND GIO-UNIX_FOUND AND GdkPixbuf2_FOUND AND GTK4_FOUND)
 	# We're not going to have an explicit dependency on libnautilus-extension.
 	# It will be dlopen()'d at runtime based on which
 	# initialization function is called.
 
-	# Nautilus (GNOME)
-	FIND_PACKAGE(LibNautilusExtension 3.0.0)
-	IF(NOT LibNautilusExtension_FOUND)
-		MESSAGE(STATUS "LibNautilusExtension not found. Using the default extensions directory.")
-		SET(LibNautilusExtension_EXTENSION_DIR "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/nautilus/extensions-3.0")
-	ENDIF(NOT LibNautilusExtension_FOUND)
+	# TODO: File browser extension libraries.
 
-	# Caja (MATE)
-	FIND_PACKAGE(LibCajaExtension 1.18.0)
-	IF(NOT LibCajaExtension_FOUND)
-		MESSAGE(STATUS "LibCajaExtension not found. Using the default extensions directory.")
-		SET(LibCajaExtension_EXTENSION_DIR "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/caja/extensions-2.0")
-	ENDIF(NOT LibCajaExtension_FOUND)
-
-	# Nemo (Cinnamon)
-	FIND_PACKAGE(LibNemoExtension)
-	IF(NOT LibNemoExtension_FOUND)
-		MESSAGE(STATUS "LibNemoExtension not found. Using the default extensions directory.")
-		SET(LibNemoExtension_EXTENSION_DIR "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/nemo/extensions-3.0")
-	ENDIF(NOT LibNemoExtension_FOUND)
-
-	# ThunarX3 (XFCE)
-	FIND_PACKAGE(ThunarX3)
-	IF(NOT ThunarX3_FOUND)
-		MESSAGE(STATUS "ThunarX3 not found. Using the default extensions directory.")
-		SET(ThunarX3_EXTENSIONS_DIR "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/thunarx-3")
-	ENDIF(NOT ThunarX3_FOUND)
-
-	# LibCanberra and LibCanberraGtk3
-	# TODO: Add an OPTION() to allow the user to disable this?
-	FIND_PACKAGE(LibCanberra)
-	FIND_PACKAGE(LibCanberraGtk3)
-ELSE(GLib2_FOUND AND GObject2_FOUND AND GIO_FOUND AND GIO-UNIX_FOUND AND Cairo_FOUND AND GTK3_FOUND)
-	# GTK+ 3.x (or required dependencies) were not found.
-	# Disable the GNOME frontend.
-	SET(BUILD_GTK3 OFF CACHE INTERNAL "Build the GTK+ 3.x plugin." FORCE)
-ENDIF(GLib2_FOUND AND GObject2_FOUND AND GIO_FOUND AND GIO-UNIX_FOUND AND Cairo_FOUND AND GTK3_FOUND)
+	# TODO: Use GSound. libcanberra isn't available for GTK4.
+	# GSound works on all versions, so use it for others if it's available.
+ELSE(GLib2_FOUND AND GObject2_FOUND AND GIO_FOUND AND GIO-UNIX_FOUND AND GdkPixbuf2_FOUND AND GTK4_FOUND)
+	# GTK 4.x (or required dependencies) were not found.
+	# Disable the GTK4 frontend.
+	SET(BUILD_GTK4 OFF CACHE INTERNAL "Build the GTK 4.x plugin." FORCE)
+ENDIF(GLib2_FOUND AND GObject2_FOUND AND GIO_FOUND AND GIO-UNIX_FOUND AND GdkPixbuf2_FOUND AND GTK4_FOUND)
 
 # Sources and headers. (GTK+ common)
 STRING(REGEX REPLACE "([^;]+)" "../\\1" ${PROJECT_NAME}_CSRCS "${rom-properties-gtk_SRCS}")
 STRING(REGEX REPLACE "([^;]+)" "../\\1" ${PROJECT_NAME}_CH    "${rom-properties-gtk_H}")
 
-# CairoImageConv (GTK+ 3.x)
-SET(${PROJECT_NAME}_SRCS ${${PROJECT_NAME}_SRCS} CairoImageConv.cpp)
-SET(${PROJECT_NAME}_H    ${${PROJECT_NAME}_H}    CairoImageConv.hpp)
+# GdkImageConv (GTK+ 2.x; TODO: Switch to GdkTexture)
+SET(${PROJECT_NAME}_SRCS ${${PROJECT_NAME}_SRCS} ../xfce/GdkImageConv.cpp)
+SET(${PROJECT_NAME}_H    ${${PROJECT_NAME}_H}    ../xfce/GdkImageConv.hpp)
 
 IF(ENABLE_ACHIEVEMENTS)
 	STRING(REGEX REPLACE "([^;]+)" "../\\1" ${PROJECT_NAME}-notify_SRCS "${rom-properties-gtk-notify_SRCS}")
@@ -125,33 +93,33 @@ IF(${PROJECT_NAME}_SSSE3_SRCS)
 ENDIF()
 UNSET(arch)
 
-# Sources and headers. (GTK3-specific)
+# Sources and headers. (GTK4-specific)
 SET(${PROJECT_NAME}_SRCS
 	${${PROJECT_NAME}_CSRCS} ${${PROJECT_NAME}_SRCS}
 	${${PROJECT_NAME}-notify_SRCS} ${${PROJECT_NAME}-notify_H}
 	${${PROJECT_NAME}_IFUNC_SRCS}
 	${${PROJECT_NAME}_SSSE3_SRCS}
-	RpNautilusPlugin.cpp
-	RpNautilusProvider.cpp
-	RpThunarPlugin.cpp
-	RpThunarProvider.cpp
-	is-supported.cpp
+	../gtk3/RpNautilusPlugin.cpp
+	../gtk3/RpNautilusProvider.cpp
+	#../gtk3/RpThunarPlugin.cpp	# No plans for GTK4 Thunar yet...
+	#../gtk3/RpThunarProvider.cpp	# No plans for GTK4 Thunar yet...
+	../gtk3/is-supported.cpp
 	)
 SET(${PROJECT_NAME}_H
 	${${PROJECT_NAME}_CH} ${${PROJECT_NAME}_H}
-	RpNautilusPlugin.hpp
-	RpNautilusProvider.hpp
-	RpThunarPlugin.hpp
-	RpThunarProvider.hpp
-	is-supported.hpp
-	plugin-helper.h
-	thunarx-mini.h
+	../gtk3/RpNautilusPlugin.hpp
+	../gtk3/RpNautilusProvider.hpp
+	#../gtk3/RpThunarPlugin.hpp	# No plans for GTK4 Thunar yet...
+	#../gtk3/RpThunarProvider.hpp	# No plans for GTK4 Thunar yet...
+	../gtk3/is-supported.hpp
+	../gtk3/plugin-helper.h
+	../gtk3/thunarx-mini.h
 	)
 
-IF(LibCanberra_FOUND AND LibCanberraGtk3_FOUND)
-	SET(${PROJECT_NAME}_SRCS ${${PROJECT_NAME}_SRCS} ../MessageSound.cpp)
-	SET(${PROJECT_NAME}_H    ${${PROJECT_NAME}_H}    ../MessageSound.hpp)
-ENDIF(LibCanberra_FOUND AND LibCanberraGtk3_FOUND)
+#IF(LibCanberra_FOUND AND LibCanberraGtk3_FOUND)
+#	SET(${PROJECT_NAME}_SRCS ${${PROJECT_NAME}_SRCS} ../MessageSound.cpp)
+#	SET(${PROJECT_NAME}_H    ${${PROJECT_NAME}_H}    ../MessageSound.hpp)
+#ENDIF(LibCanberra_FOUND AND LibCanberraGtk3_FOUND)
 
 IF(ENABLE_PCH)
 	# Precompiled headers.
@@ -162,7 +130,7 @@ IF(ENABLE_PCH)
 	SET(${PROJECT_NAME}_PCH_H ../stdafx.h)
 ENDIF(ENABLE_PCH)
 
-IF(BUILD_GTK3)
+IF(BUILD_GTK4)
 	ADD_LIBRARY(${PROJECT_NAME} MODULE
 		${${PROJECT_NAME}_PCH_SRC} ${${PROJECT_NAME}_PCH_H}
 		${${PROJECT_NAME}_SRCS}
@@ -176,9 +144,11 @@ IF(BUILD_GTK3)
 	SET_TARGET_PROPERTIES(${PROJECT_NAME} PROPERTIES PREFIX "")
 	DO_SPLIT_DEBUG(${PROJECT_NAME})
 	TARGET_INCLUDE_DIRECTORIES(${PROJECT_NAME}
-		PUBLIC	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>		# gtk3
-			$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>		# gtk3
-		PRIVATE	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>	# gtk
+		PUBLIC	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../gtk3>	# gtk3
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/../gtk3>	# gtk3
+		PRIVATE	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../xfce>	# xfce (for GdkImageConv)
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/../xfce>	# xfce (for GdkImageConv)
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>	# gtk
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/..>	# gtk
 			$<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src>		# src
 			$<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/src>		# src
@@ -188,26 +158,30 @@ IF(BUILD_GTK3)
 	IF(ENABLE_NLS)
 		TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE i18n)
 	ENDIF(ENABLE_NLS)
-	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE Cairo::cairo)
-	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PUBLIC Gtk3::gtk3 GLib2::gio-unix GLib2::gio GLib2::gobject GLib2::glib)
-	IF(LibCanberra_FOUND AND LibCanberraGtk3_FOUND)
-		TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE LibCanberra::libcanberra LibCanberra::gtk3)
-		TARGET_COMPILE_DEFINITIONS(${PROJECT_NAME} PRIVATE ENABLE_MESSAGESOUND)
-	ENDIF(LibCanberra_FOUND AND LibCanberraGtk3_FOUND)
+	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE GdkPixbuf2::gdkpixbuf2)
+	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PUBLIC Gtk4::gtk4 GLib2::gio-unix GLib2::gio GLib2::gobject GLib2::glib)
+	#IF(LibCanberra_FOUND AND LibCanberraGtk3_FOUND)
+	#	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE LibCanberra::libcanberra LibCanberra::gtk3)
+	#	TARGET_COMPILE_DEFINITIONS(${PROJECT_NAME} PRIVATE ENABLE_MESSAGESOUND)
+	#ENDIF(LibCanberra_FOUND AND LibCanberraGtk3_FOUND)
 
 	# Link in libdl if it's required for dlopen().
 	IF(CMAKE_DL_LIBS)
 		TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE ${CMAKE_DL_LIBS})
 	ENDIF(CMAKE_DL_LIBS)
 
-	TARGET_COMPILE_DEFINITIONS(${PROJECT_NAME} PRIVATE RP_UI_GTK3)
-ENDIF(BUILD_GTK3)
+	TARGET_COMPILE_DEFINITIONS(${PROJECT_NAME}
+		PRIVATE RP_UI_GTK4
+		)
+ENDIF(BUILD_GTK4)
 
 #######################
 # Install the plugin. #
 #######################
 
-IF(BUILD_GTK3)
+# FIXME: Don't use .pc files for the extension libraries, since only
+# one version (3 or 4) can be installed at a time. Use defaults only.
+IF(0) #IF(BUILD_GTK4)
 	# GNOME (Nautilus) extension is installed directly.
 	INSTALL(TARGETS ${PROJECT_NAME}
 		LIBRARY DESTINATION "${LibNautilusExtension_EXTENSION_DIR}"
@@ -234,7 +208,7 @@ IF(BUILD_GTK3)
 		COMPONENT "plugin"
 		)
 	INSTALL(FILES "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/${PROJECT_NAME}.symlink.so"
-		DESTINATION "${ThunarX3_EXTENSIONS_DIR}"
+		DESTINATION "${ThunarX4_EXTENSIONS_DIR}"
 		RENAME "${PROJECT_NAME}.so"
 		COMPONENT "plugin"
 		)
@@ -250,4 +224,4 @@ IF(BUILD_GTK3)
 				)
 		ENDIF(DEBUG_FILENAME)
 	ENDIF(INSTALL_DEBUG)
-ENDIF(BUILD_GTK3)
+ENDIF(0) #ENDIF(BUILD_GTK4)

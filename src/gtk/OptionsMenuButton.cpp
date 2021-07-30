@@ -17,6 +17,38 @@ using LibRpBase::RomData;
 using std::string;
 using std::vector;
 
+#if GTK_CHECK_VERSION(4,0,0)
+// FIXME: GtkMenuButton is final in GTK4.
+// For now, copying the class definitions from GTK 4.2, but this
+// will need to be remade into a container.
+struct _GtkMenuButton {
+	GtkWidget parent_instance;
+
+	GtkWidget *button;
+	GtkWidget *popover; /* Only one at a time can be set */
+	GMenuModel *model;
+
+	GtkMenuButtonCreatePopupFunc create_popup_func;
+	gpointer create_popup_user_data;
+	GDestroyNotify create_popup_destroy_notify;
+
+	GtkWidget *label_widget;
+	GtkWidget *image_widget;
+	GtkWidget *arrow_widget;
+	GtkArrowType arrow_type;
+	gboolean always_show_arrow;
+
+	gboolean primary;
+};
+
+struct _GtkMenuButtonClass {
+	GtkWidgetClass parent_class;
+
+	void (* activate) (GtkMenuButton *self);
+};
+typedef struct _GtkMenuButtonClass GtkMenuButtonClass;
+#endif /* GTK_CHECK_VERSION(4,0,0) */
+
 // Use GtkButton or GtkMenuButton?
 #if GTK_CHECK_VERSION(3,6,0)
 typedef GtkMenuButtonClass superclass;
@@ -180,28 +212,33 @@ options_menu_button_init(OptionsMenuButton *widget)
 {
 	string s_title = convert_accel_to_gtk(C_("OptionsMenuButton", "&Options"));
 
-	GtkWidget *const lblOptions = gtk_label_new(nullptr);
-	gtk_label_set_markup_with_mnemonic(GTK_LABEL(lblOptions), s_title.c_str());
-	gtk_widget_show(lblOptions);
-
 	// Initialize the direction image.
+#if !GTK_CHECK_VERSION(4,0,0)
 	widget->imgOptions = gtk_image_new();
+#endif /* !GTK_CHECK_VERSION(4,0,0) */
 #ifndef USE_GTK_MENU_BUTTON
 	widget->arrowType = (GtkArrowType)-1;	// force update
 #endif /* !USE_GTK_MENU_BUTTON */
 	options_menu_button_set_direction(widget, GTK_ARROW_UP);
 
-#if GTK_CHECK_VERSION(3,0,0)
+#if GTK_CHECK_VERSION(4,0,0)
+	gtk_menu_button_set_label(GTK_MENU_BUTTON(widget), s_title.c_str());
+#else /* !GTK_CHECK_VERSION(4,0,0) */
+	GtkWidget *const lblOptions = gtk_label_new(nullptr);
+	gtk_label_set_markup_with_mnemonic(GTK_LABEL(lblOptions), s_title.c_str());
+	gtk_widget_show(lblOptions);
+#  if GTK_CHECK_VERSION(3,0,0)
 	GtkWidget *const hboxOptions = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 4);
-#else /* !GTK_CHECK_VERSION(3,0,0) */
+#  else /* !GTK_CHECK_VERSION(3,0,0) */
 	GtkWidget *const hboxOptions = gtk_hbox_new(false, 4);
-#endif /* GTK_CHECK_VERSION(3,0,0) */
+#  endif /* GTK_CHECK_VERSION(3,0,0) */
 	gtk_widget_show(hboxOptions);
 
 	// Add the label and image to the GtkBox.
 	gtk_box_pack_start(GTK_BOX(hboxOptions), lblOptions, false, false, 0);
 	gtk_box_pack_start(GTK_BOX(hboxOptions), widget->imgOptions, false, false, 0);
 	gtk_container_add(GTK_CONTAINER(widget), hboxOptions);
+#endif /* GTK_CHECK_VERSION(4,0,0) */
 
 #ifndef USE_GTK_MENU_BUTTON
 	// Connect the superclass's "event" signal.
@@ -323,6 +360,7 @@ options_menu_button_set_direction(OptionsMenuButton *widget, GtkArrowType arrowT
 		return;
 #endif /* USE_GTK_MENU_BUTTON */
 
+#if !GTK_CHECK_VERSION(4,0,0)
 	const char *iconName;
 	switch (arrowType) {
 		case GTK_ARROW_UP:
@@ -348,6 +386,7 @@ options_menu_button_set_direction(OptionsMenuButton *widget, GtkArrowType arrowT
 	} else {
 		gtk_widget_hide(widget->imgOptions);
 	}
+#endif /* GTK_CHECK_VERSION(4,0,0) */
 
 #ifdef USE_GTK_MENU_BUTTON
 	gtk_menu_button_set_direction(GTK_MENU_BUTTON(widget), arrowType);
