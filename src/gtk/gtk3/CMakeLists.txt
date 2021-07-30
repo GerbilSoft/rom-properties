@@ -63,8 +63,8 @@ ELSE(GLib2_FOUND AND GObject2_FOUND AND GIO_FOUND AND GIO-UNIX_FOUND AND Cairo_F
 ENDIF(GLib2_FOUND AND GObject2_FOUND AND GIO_FOUND AND GIO-UNIX_FOUND AND Cairo_FOUND AND GTK3_FOUND)
 
 # Sources and headers. (GTK+ common)
-STRING(REGEX REPLACE "([^;]+)" "../\\1" ${PROJECT_NAME}_SRCS "${rom-properties-gtk_SRCS}")
-STRING(REGEX REPLACE "([^;]+)" "../\\1" ${PROJECT_NAME}_H    "${rom-properties-gtk_H}")
+STRING(REGEX REPLACE "([^;]+)" "../\\1" ${PROJECT_NAME}_CSRCS "${rom-properties-gtk_SRCS}")
+STRING(REGEX REPLACE "([^;]+)" "../\\1" ${PROJECT_NAME}_CH    "${rom-properties-gtk_H}")
 
 # CairoImageConv (GTK+ 3.x)
 SET(${PROJECT_NAME}_SRCS ${${PROJECT_NAME}_SRCS} CairoImageConv.cpp)
@@ -127,7 +127,7 @@ UNSET(arch)
 
 # Sources and headers. (GTK3-specific)
 SET(${PROJECT_NAME}_SRCS
-	${${PROJECT_NAME}_SRCS} ${${PROJECT_NAME}_H}
+	${${PROJECT_NAME}_CSRCS} ${${PROJECT_NAME}_SRCS}
 	${${PROJECT_NAME}-notify_SRCS} ${${PROJECT_NAME}-notify_H}
 	${${PROJECT_NAME}_IFUNC_SRCS}
 	${${PROJECT_NAME}_SSSE3_SRCS}
@@ -138,7 +138,7 @@ SET(${PROJECT_NAME}_SRCS
 	is-supported.cpp
 	)
 SET(${PROJECT_NAME}_H
-	${${PROJECT_NAME}_CH} ${${PROJECT_NAME}_CH2}
+	${${PROJECT_NAME}_CH} ${${PROJECT_NAME}_H}
 	RpNautilusPlugin.hpp
 	RpNautilusProvider.hpp
 	RpThunarPlugin.hpp
