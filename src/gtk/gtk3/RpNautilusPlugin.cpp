@@ -2,12 +2,12 @@
  * ROM Properties Page shell extension. (GTK+ 3.x)                         *
  * RpNautilusPlugin.cpp: Nautilus (and forks) Plugin Definition.           *
  *                                                                         *
- * Copyright (c) 2017-2020 by David Korth.                                 *
+ * Copyright (c) 2017-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #include "stdafx.h"
-#include "config.gtk3.h"
+#include "config.gtk.h"
 #include "plugin-helper.h"
 
 #include "RpNautilusPlugin.hpp"
