@@ -19,6 +19,22 @@
 #  error Neither GSound nor LibCanberra GTK are available
 #endif
 
+#ifdef HAVE_GSOUND
+/**
+ * GSound playback callback.
+ * This callback destroys the GSound context.
+ * @param source_object GSoundContext
+ * @param res GAsyncResult
+ * @param user_data User data
+ */
+static void _gsound_play_callback(GObject *source_object, GAsyncResult *res, gpointer user_data)
+{
+	RP_UNUSED(res);
+	RP_UNUSED(user_data);
+	g_object_unref(source_object);
+}
+#endif /* HAVE_GSOUND */
+
 /**
  * Play a message sound effect.
  * @param notificationType Notification type.
@@ -94,10 +110,10 @@ void MessageSound::play(GtkMessageType notificationType, const char *message, Gt
 	g_hash_table_insert(attrs, (void*)GSOUND_ATTR_WINDOW_X11_SCREEN, (void*)name);
 #endif /* GTK_CHECK_VERSION(4,0,0) */
 
-	// FIXME: g_object_unref() on ctx immediately after calling
+	// NOTE: g_object_unref() on ctx immediately after calling
 	// gsound_context_play_simplev() results in no sound.
-	// Need to use a callback...
-	gsound_context_play_simplev(ctx, attrs, nullptr, nullptr);
+	// The context will be deleted in the callback.
+	gsound_context_play_fullv(ctx, attrs, nullptr, _gsound_play_callback, nullptr);
 	g_hash_table_destroy(attrs);
 #elif defined(HAVE_LIBCANBERRA_GTK)
 	if (parent) {
