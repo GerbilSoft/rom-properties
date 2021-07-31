@@ -55,15 +55,49 @@ void MessageSound::play(GtkMessageType notificationType, const char *message, Gt
 	// NOTE: Description cannot be nullptr. Otherwise, the sound won't play.
 
 #if defined(HAVE_GSOUND)
-	// FIXME: g_object_unref() on ctx immediately after calling
-	// gsound_context_play_simple() results in no sound.
-	// Need to use a callback...
-	RP_UNUSED(parent);
 	GSoundContext *const ctx = gsound_context_new(nullptr, nullptr);
-	gsound_context_play_simple(ctx, nullptr, nullptr,
-		GSOUND_ATTR_EVENT_ID, event_id,
-		GSOUND_ATTR_EVENT_DESCRIPTION, (message ? message : ""),
-		nullptr);
+
+	GHashTable *attrs = g_hash_table_new_full(g_str_hash, g_str_equal, nullptr, g_free);
+
+	// Sound properties.
+	g_hash_table_insert(attrs, (void*)GSOUND_ATTR_EVENT_ID, (void*)g_strdup(event_id));
+	g_hash_table_insert(attrs, (void*)GSOUND_ATTR_EVENT_DESCRIPTION,
+		(void*)g_strdup(message ? message : ""));
+
+	// Set some properties that would usually be set by libcanberra-gtk.
+	const char *name = gtk_window_get_default_icon_name();
+	if (name != nullptr) {
+		g_hash_table_insert(attrs, (void*)GSOUND_ATTR_APPLICATION_ICON_NAME, (void*)g_strdup(name));
+	}
+
+#if !GTK_CHECK_VERSION(4,0,0)
+	GdkScreen *const screen = gdk_screen_get_default();
+#endif /* !GTK_CHECK_VERSION(4,0,0) */
+
+	if (parent) {
+		name = gdk_display_get_name(gtk_widget_get_display(parent));
+	} else {
+#if GTK_CHECK_VERSION(4,0,0)
+		// TODO: Get X11 display? (Use the DISPLAY variable, maybe...)
+		name = nullptr;
+#else /* !GTK_CHECK_VERSION(4,0,0) */
+		name = gdk_display_get_name(gdk_screen_get_display(screen));
+#endif /* GTK_CHECK_VERSION(4,0,0) */
+	}
+	if (name != nullptr) {
+		g_hash_table_insert(attrs, (void*)GSOUND_ATTR_WINDOW_X11_DISPLAY, (void*)g_strdup(name));
+	}
+
+#if !GTK_CHECK_VERSION(4,0,0)
+	// X11 screen number. (TODO: GTK4 version?)
+	name = g_strdup_printf("%i", gdk_screen_get_number(screen));
+	g_hash_table_insert(attrs, (void*)GSOUND_ATTR_WINDOW_X11_SCREEN, (void*)name);
+#endif /* GTK_CHECK_VERSION(4,0,0) */
+
+	// FIXME: g_object_unref() on ctx immediately after calling
+	// gsound_context_play_simplev() results in no sound.
+	// Need to use a callback...
+	gsound_context_play_simplev(ctx, attrs, nullptr, nullptr);
 #elif defined(HAVE_LIBCANBERRA_GTK)
 	if (parent) {
 		ca_gtk_play_for_widget(gtk_widget_get_toplevel_widget(parent), 0,
