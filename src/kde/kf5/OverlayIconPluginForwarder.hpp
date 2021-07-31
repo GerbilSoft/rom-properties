@@ -11,7 +11,7 @@
  ***************************************************************************/
 
 #ifndef __ROMPROPERTIES_KDE_KF5_OVERLAYICONPLUGINFORWARDER_HPP__
-#define __ROMPROPERTIES_KDE_OVERLAYICONPLUGINFORWARDER_HPP__
+#define __ROMPROPERTIES_KDE_KF5_OVERLAYICONPLUGINFORWARDER_HPP__
 
 #include <QtCore/qglobal.h>
 #include <KOverlayIconPlugin>
@@ -53,4 +53,4 @@ class OverlayIconPluginForwarder final : public KOverlayIconPlugin
 
 }
 
-#endif /* __ROMPROPERTIES_KDE_OVERLAYICONPLUGINFORWARDER_HPP__ */
+#endif /* __ROMPROPERTIES_KDE_KF5_OVERLAYICONPLUGINFORWARDER_HPP__ */
