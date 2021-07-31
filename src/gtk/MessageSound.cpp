@@ -98,6 +98,7 @@ void MessageSound::play(GtkMessageType notificationType, const char *message, Gt
 	// gsound_context_play_simplev() results in no sound.
 	// Need to use a callback...
 	gsound_context_play_simplev(ctx, attrs, nullptr, nullptr);
+	g_hash_table_destroy(attrs);
 #elif defined(HAVE_LIBCANBERRA_GTK)
 	if (parent) {
 		ca_gtk_play_for_widget(gtk_widget_get_toplevel_widget(parent), 0,
