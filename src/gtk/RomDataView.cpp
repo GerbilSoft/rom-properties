@@ -2467,12 +2467,7 @@ btnOptions_triggered_signal_handler(OptionsMenuButton *menuButton,
 {
 	RP_UNUSED(menuButton);
 	RomDataView *const page = ROM_DATA_VIEW(user_data);
-
-#if GTK_CHECK_VERSION(4,0,0)
-	GtkWindow *const parent = GTK_WINDOW(gtk_widget_get_root(GTK_WIDGET(page)));
-#else /* !GTK_CHECK_VERSION(4,0,0) */
-	GtkWindow *const parent = GTK_WINDOW(gtk_widget_get_toplevel(GTK_WIDGET(page)));
-#endif /* GTK_CHECK_VERSION */
+	GtkWindow *const parent = gtk_widget_get_toplevel_window(GTK_WIDGET(page));
 
 	if (id < 0) {
 		// Export/copy to text or JSON.

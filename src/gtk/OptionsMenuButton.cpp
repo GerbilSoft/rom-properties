@@ -449,7 +449,7 @@ btnOptions_event_signal_handler(GtkButton *button,
 	GtkMenuPositionFunc menuPositionFunc;
 #if GTK_CHECK_VERSION(3,12,0)
 	// If we're using a GtkHeaderBar, don't use a custom menu positioning function.
-	if (gtk_dialog_get_header_bar(GTK_DIALOG(gtk_widget_get_toplevel(GTK_WIDGET(widget)))) != nullptr) {
+	if (gtk_dialog_get_header_bar(gtk_widget_get_toplevel_dialog(GTK_WIDGET(widget))) != nullptr) {
 		menuPositionFunc = nullptr;
 	} else
 #endif /* GTK_CHECK_VERSION(3,12,0) */

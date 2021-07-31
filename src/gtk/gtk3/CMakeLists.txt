@@ -51,11 +51,6 @@ IF(GLib2_FOUND AND GObject2_FOUND AND GIO_FOUND AND GIO-UNIX_FOUND AND Cairo_FOU
 		MESSAGE(STATUS "ThunarX3 not found. Using the default extensions directory.")
 		SET(ThunarX3_EXTENSIONS_DIR "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/thunarx-3")
 	ENDIF(NOT ThunarX3_FOUND)
-
-	# LibCanberra and LibCanberraGtk3
-	# TODO: Add an OPTION() to allow the user to disable this?
-	FIND_PACKAGE(LibCanberra)
-	FIND_PACKAGE(LibCanberraGtk3)
 ELSE(GLib2_FOUND AND GObject2_FOUND AND GIO_FOUND AND GIO-UNIX_FOUND AND Cairo_FOUND AND GTK3_FOUND)
 	# GTK+ 3.x (or required dependencies) were not found.
 	# Disable the GNOME frontend.
@@ -148,10 +143,10 @@ SET(${PROJECT_NAME}_H
 	thunarx-mini.h
 	)
 
-IF(LibCanberra_FOUND AND LibCanberraGtk3_FOUND)
+IF(HAVE_GSOUND OR (HAVE_LIBCANBERRA AND HAVE_LIBCANBERRA_GTK3))
 	SET(${PROJECT_NAME}_SRCS ${${PROJECT_NAME}_SRCS} ../MessageSound.cpp)
 	SET(${PROJECT_NAME}_H    ${${PROJECT_NAME}_H}    ../MessageSound.hpp)
-ENDIF(LibCanberra_FOUND AND LibCanberraGtk3_FOUND)
+ENDIF(HAVE_GSOUND OR (HAVE_LIBCANBERRA AND HAVE_LIBCANBERRA_GTK3))
 
 IF(ENABLE_PCH)
 	# Precompiled headers.
@@ -190,10 +185,13 @@ IF(BUILD_GTK3)
 	ENDIF(ENABLE_NLS)
 	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE Cairo::cairo)
 	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PUBLIC Gtk3::gtk3 GLib2::gio-unix GLib2::gio GLib2::gobject GLib2::glib)
-	IF(LibCanberra_FOUND AND LibCanberraGtk3_FOUND)
-		TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE LibCanberra::libcanberra LibCanberra::gtk3)
+	IF(HAVE_GSOUND)
+		TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE GSound::gsound)
 		TARGET_COMPILE_DEFINITIONS(${PROJECT_NAME} PRIVATE ENABLE_MESSAGESOUND)
-	ENDIF(LibCanberra_FOUND AND LibCanberraGtk3_FOUND)
+	ELSEIF(HAVE_LIBCANBERRA AND HAVE_LIBCANBERRA_GTK3)
+		TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE LibCanberra::gtk3 LibCanberra::libcanberra)
+		TARGET_COMPILE_DEFINITIONS(${PROJECT_NAME} PRIVATE ENABLE_MESSAGESOUND)
+	ENDIF()
 
 	# Link in libdl if it's required for dlopen().
 	IF(CMAKE_DL_LIBS)

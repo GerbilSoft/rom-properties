@@ -21,9 +21,6 @@ IF(GLib2_FOUND AND GObject2_FOUND AND GIO_FOUND AND GIO-UNIX_FOUND AND GdkPixbuf
 	# initialization function is called.
 
 	# TODO: File browser extension libraries.
-
-	# TODO: Use GSound. libcanberra isn't available for GTK4.
-	# GSound works on all versions, so use it for others if it's available.
 ELSE(GLib2_FOUND AND GObject2_FOUND AND GIO_FOUND AND GIO-UNIX_FOUND AND GdkPixbuf2_FOUND AND GTK4_FOUND)
 	# GTK 4.x (or required dependencies) were not found.
 	# Disable the GTK4 frontend.
@@ -116,10 +113,10 @@ SET(${PROJECT_NAME}_H
 	../gtk3/thunarx-mini.h
 	)
 
-#IF(LibCanberra_FOUND AND LibCanberraGtk3_FOUND)
-#	SET(${PROJECT_NAME}_SRCS ${${PROJECT_NAME}_SRCS} ../MessageSound.cpp)
-#	SET(${PROJECT_NAME}_H    ${${PROJECT_NAME}_H}    ../MessageSound.hpp)
-#ENDIF(LibCanberra_FOUND AND LibCanberraGtk3_FOUND)
+IF(HAVE_GSOUND)
+	SET(${PROJECT_NAME}_SRCS ${${PROJECT_NAME}_SRCS} ../MessageSound.cpp)
+	SET(${PROJECT_NAME}_H    ${${PROJECT_NAME}_H}    ../MessageSound.hpp)
+ENDIF(HAVE_GSOUND)
 
 IF(ENABLE_PCH)
 	# Precompiled headers.
@@ -160,10 +157,10 @@ IF(BUILD_GTK4)
 	ENDIF(ENABLE_NLS)
 	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE GdkPixbuf2::gdkpixbuf2)
 	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PUBLIC Gtk4::gtk4 GLib2::gio-unix GLib2::gio GLib2::gobject GLib2::glib)
-	#IF(LibCanberra_FOUND AND LibCanberraGtk3_FOUND)
-	#	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE LibCanberra::libcanberra LibCanberra::gtk3)
-	#	TARGET_COMPILE_DEFINITIONS(${PROJECT_NAME} PRIVATE ENABLE_MESSAGESOUND)
-	#ENDIF(LibCanberra_FOUND AND LibCanberraGtk3_FOUND)
+	IF(HAVE_GSOUND)
+		TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE GSound::gsound)
+		TARGET_COMPILE_DEFINITIONS(${PROJECT_NAME} PRIVATE ENABLE_MESSAGESOUND)
+	ENDIF(HAVE_GSOUND)
 
 	# Link in libdl if it's required for dlopen().
 	IF(CMAKE_DL_LIBS)

@@ -9,6 +9,23 @@
 #ifndef __ROMPROPERTIES_GTK_CONFIG_H__
 #define __ROMPROPERTIES_GTK_CONFIG_H__
 
+/* Define to 1 if LibCanberra is available. */
+#cmakedefine HAVE_LIBCANBERRA 1
+
+/* Define to 1 if GSound is available. */
+#cmakedefine HAVE_GSOUND 1
+
+/* Define to 1 if LibCanberra GTK2 is available. */
+#cmakedefine HAVE_LIBCANBERRA_GTK2 1
+
+/* Define to 1 if LibCanberra GTK3 is available. */
+#cmakedefine HAVE_LIBCANBERRA_GTK3 1
+
+/* Define to 1 if LibCanberra GTK (any version) is available. */
+#if defined(HAVE_LIBCANBERRA_GTK2) || defined(HAVE_LIBCANBERRA_GTK3)
+#  define HAVE_LIBCANBERRA_GTK 1
+#endif /* HAVE_LIBCANBERRA_GTK2 || HAVE_LIBCANBERRA_GTK3 */
+
 /* Define to 1 if achievements are enabled. */
 #cmakedefine ENABLE_ACHIEVEMENTS 1
 

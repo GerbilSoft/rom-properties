@@ -23,9 +23,6 @@ SET(GTK_ALL_DEPRECATED_FLAGS "${GLIB_DEPRECATED_FLAGS} ${GDK_DEPRECATED_FLAGS} $
 SET(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} ${GTK_ALL_DEPRECATED_FLAGS}")
 SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} ${GTK_ALL_DEPRECATED_FLAGS}")
 
-# Write the config.h file.
-CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/config.gtk.h.in" "${CMAKE_CURRENT_BINARY_DIR}/config.gtk.h")
-
 # Sources and headers.
 SET(${PROJECT_NAME}_SRCS
 	RomDataView.cpp
@@ -82,6 +79,33 @@ ELSE(GLib2_FOUND AND GObject2_FOUND)
 	SET(BUILD_GTK3 OFF CACHE INTERNAL "Check for GTK+ 3.x plugin." FORCE)
 	SET(BUILD_GTK4 OFF CACHE INTERNAL "Check for GTK 4.x plugin." FORCE)
 ENDIF(GLib2_FOUND AND GObject2_FOUND)
+
+# LibCanberra and related packages.
+# TODO: Add an OPTION() to allow the user to disable this?
+FIND_PACKAGE(GSound)
+IF(GSound_FOUND)
+	SET(HAVE_GSOUND 1)
+ELSE(GSound_FOUND)
+	FIND_PACKAGE(LibCanberra)
+	IF(LibCanberra_FOUND)
+		SET(HAVE_LIBCANBERRA 1)
+		IF(BUILD_GTK2)
+			FIND_PACKAGE(LibCanberraGtk2)
+			IF(LibCanberraGtk2_FOUND)
+				SET(HAVE_LIBCANBERRA_GTK2 1)
+			ENDIF(LibCanberraGtk2_FOUND)
+		ENDIF(BUILD_GTK2)
+		IF(BUILD_GTK3)
+			FIND_PACKAGE(LibCanberraGtk3)
+			IF(LibCanberraGtk3_FOUND)
+				SET(HAVE_LIBCANBERRA_GTK3 1)
+			ENDIF(LibCanberraGtk3_FOUND)
+		ENDIF(BUILD_GTK3)
+	ENDIF(LibCanberra_FOUND)
+ENDIF(GSound_FOUND)
+
+# Write the config.h file.
+CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/config.gtk.h.in" "${CMAKE_CURRENT_BINARY_DIR}/config.gtk.h")
 
 # Build GTK+ 2.x frontends.
 IF(BUILD_GTK2)

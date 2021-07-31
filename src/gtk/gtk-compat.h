@@ -124,6 +124,26 @@ rp_gtk_main_clipboard_set_text(const char *text)
 }
 #endif /* GTK_CHECK_VERSION(4,0,0) */
 
+#if GTK_CHECK_VERSION(4,0,0)
+#define GTK_WIDET_GET_TOPLEVEL_FN(name, type, macro) \
+static inline type* \
+gtk_widget_get_toplevel_##name(GtkWidget *widget) \
+{ \
+	return macro(gtk_widget_get_root(widget)); \
+}
+#else /* !GTK_CHECK_VERSION(4,0,0) */
+#define GTK_WIDET_GET_TOPLEVEL_FN(name, type, macro) \
+static inline type* \
+gtk_widget_get_toplevel_##name(GtkWidget *widget) \
+{ \
+	return macro(gtk_widget_get_toplevel(widget)); \
+}
+#endif /* GTK_CHECK_VERSION(4,0,0) */
+
+GTK_WIDET_GET_TOPLEVEL_FN(widget, GtkWidget, GTK_WIDGET)
+GTK_WIDET_GET_TOPLEVEL_FN(window, GtkWindow, GTK_WINDOW)
+GTK_WIDET_GET_TOPLEVEL_FN(dialog, GtkDialog, GTK_DIALOG)
+
 G_END_DECLS
 
 #endif /* __ROMPROPERTIES_GTK_GTK_COMPAT_H__ */

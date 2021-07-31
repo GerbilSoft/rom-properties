@@ -8,11 +8,17 @@ packages:
 * Optional decompression: libzstd-dev liblz4-dev liblzo2-dev
 * KDE 4.x: libqt4-dev kdelibs5-dev
 * KDE 5.x: qtbase5-dev qttools5-dev-tools extra-cmake-modules libkf5kio-dev libkf5widgetsaddons-dev libkf5filemetadata-dev
-* XFCE (GTK+ 2.x): libglib2.0-dev libgtk2.0-dev libgdk-pixbuf2.0-dev libthunarx-2-dev libcanberra-dev libcanberra-gtk-dev
-* XFCE (GTK+ 3.x): libglib2.0-dev libgtk-3-dev libcairo2-dev libthunarx-3-dev libcanberra-dev libcanberra-gtk3-dev
-* GNOME, MATE, Cinnamon: libglib2.0-dev libgtk-3-dev libcairo2-dev libnautilus-extension-dev libcanberra-dev libcanberra-gtk3-dev
+* XFCE (GTK+ 2.x): libglib2.0-dev libgtk2.0-dev libgdk-pixbuf2.0-dev libthunarx-2-dev libcanberra-dev libgsound-dev
+* XFCE (GTK+ 3.x): libglib2.0-dev libgtk-3-dev libcairo2-dev libthunarx-3-dev libgsound-dev
+* GNOME, MATE, Cinnamon: libglib2.0-dev libgtk-3-dev libcairo2-dev libnautilus-extension-dev libgsound-dev
 
-NOTE: libkf5kio-dev was called kio-dev prior to Ubuntu 18.04.
+NOTE: On older versions of Ubuntu, some packages were different:
+* Earlier than 18.04:
+  * libkf5kio-dev: use kio-dev
+* Earlier than 16.04:
+  * libgsound-dev: use libcanberra-dev and a GTK-specific library package:
+    * libcanberra-gtk-dev
+    * libcanberra-gtk3-dev
 
 On Red Hat, Fedora, OpenSUSE, and other RPM-based distributions, you will need
 to install "C Development Tools and Libraries" and the following development
@@ -21,17 +27,21 @@ packages:
 * Optional decompression: libzstd-devel lz4-devel lzo-devel
 * KDE 4.x: qt-devel kdelibs-devel
 * KDE 5.x: qt5-qtbase-devel qt5-qttools extra-cmake-modules kf5-kio-devel kf5-kwidgetsaddons-devel kf5-kfilemetadata-devel
-* XFCE (GTK+ 2.x): glib2-devel gtk2-devel gdk-pixbuf2-devel Thunar-devel
-* XFCE (GTK+ 3.x): glib2-devel gtk3-devel cairo-devel Thunar-devel
-* GNOME, MATE, Cinnamon: glib2-devel gtk3-devel cairo-devel nautilus-devel libcanberra-devel
+* XFCE (GTK+ 2.x): glib2-devel gtk2-devel gdk-pixbuf2-devel Thunar-devel gsound-devel
+* XFCE (GTK+ 3.x): glib2-devel gtk3-devel cairo-devel Thunar-devel gsound-devel
+* GNOME, MATE, Cinnamon: glib2-devel gtk3-devel cairo-devel nautilus-devel gsound-devel
+
+NOTE: If gsound-devel is not available, use libcanberra-devel instead.
 
 On Arch and Arch base distros you will need to install "base-devel" and the
 following development packages:
 * All: curl zlib libpng libjpeg-turbo nettle pkgconf tinyxml2 gettext libseccomp
 * Optional decompression: zstd lz4 lzo
 * KDE 5.x: qt5-base qt5-tools extra-cmake-modules kio kwidgetsaddons kfilemetadata
-* XFCE (GTK+ 3.x): glib2 gtk3 cairo libcanberra
-* GNOME, MATE, Cinnamon: glib2 gtk3 cairo libnautilus-extension libcanberra
+* XFCE (GTK+ 3.x): glib2 gtk3 cairo gsound
+* GNOME, MATE, Cinnamon: glib2 gtk3 cairo libnautilus-extension gsound
+
+NOTE: If gsound is not available, use libcanberra instead.
 
 NOTE: XFCE's Thunar file browser requires the Tumbler D-Bus daemon to be
 installed in order to create thumbnails.
