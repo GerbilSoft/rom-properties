@@ -2,6 +2,9 @@
 
 ## v1.9 (released 2021/??/??)
 
+* Bug fixes:
+  * EXE: Improve runtime DLL detection in some cases.
+
 ## v1.8.3 (released 2021/08/03)
 
 * Bug fixes:
