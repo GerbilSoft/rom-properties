@@ -392,6 +392,7 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 		SCMP_SYS(rt_sigprocmask),	// Ubuntu 20.04: __GI_getaddrinfo() ->
 						// gaih_inet() ->
 						// _nss_myhostname_gethostbyname4_r()
+		SCMP_SYS(clone3),	// pthread_create() with glibc-2.34
 
 		// libnss_resolve.so (systemd-resolved)
 		SCMP_SYS(geteuid),
