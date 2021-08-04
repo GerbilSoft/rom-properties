@@ -275,7 +275,7 @@ int EXEPrivate::findPERuntimeDLL(string &refDesc, string &refLink)
 	const IMAGE_IMPORT_DIRECTORY *pImpDirTbl = reinterpret_cast<const IMAGE_IMPORT_DIRECTORY*>(impDirTbl.data());
 	const IMAGE_IMPORT_DIRECTORY *const pImpDirTblEnd = pImpDirTbl + (impDirTbl.size() / sizeof(IMAGE_IMPORT_DIRECTORY));
 	for (; pImpDirTbl < pImpDirTblEnd; pImpDirTbl++) {
-		if (pImpDirTbl->rvaImportLookupTable == 0 || pImpDirTbl->rvaModuleName == 0) {
+		if (pImpDirTbl->rvaModuleName == 0) {
 			// End of table.
 			break;
 		}
@@ -288,6 +288,10 @@ int EXEPrivate::findPERuntimeDLL(string &refDesc, string &refLink)
 		if (rvaModuleName > dll_vaddr_high) {
 			dll_vaddr_high = rvaModuleName;
 		}
+	}
+	if (dll_vaddr_low == ~0U || dll_vaddr_high == 0) {
+		// No imports...
+		return -ENOENT;
 	}
 
 	// NOTE: Since the DLL names are NULL-terminated, we'll have to guess
