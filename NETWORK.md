@@ -41,6 +41,26 @@ or deleted.
   * Super NES
   * WonderSwan (Color)
 
+### ROM Information Used
+
+The following information is used as the lookup key in order to retrieve
+images from the online databases:
+
+* GameCube, Wii, Wii U: 6-character Game ID (e.g. `GALE01`) and region code.
+* Game Boy, Game Boy Color: Game title (e.g. `POKEMON RED`), or game ID
+  (e.g. `BXTJ01`) if available. Region code and publisher ID are also used.
+* Game Boy Advance: 6-character Game ID (e.g. `AXVE01`)
+* Nintendo DS: 4-character Game ID (e.g. `ATRE`)
+* Nintendo 3DS: Product ID (e.g. `CTR-P-AXCE`) and region code.
+* amiibo: 64-bit amiibo ID (e.g. `00000000-00000002`)
+* Neo Geo Pocket (Color): Game ID (e.g. `NEOP0001`). For certain games
+  with invalid IDs (e.g. homebrew), the game title is also used.
+* Sega Mega Drive and related: Serial number (e.g. `GM 00001009-00`)
+  and region code.
+* Super NES: Game title and region code (e.g. `SNS-SUPER MARIOWORLD-USA`),
+  or 2-character or 4-character game ID if present (e.g. `SNS-YI-USA`).
+* WonderSwan (Color): Game ID (e.g. `SWJ-BAN001`), plus the Mono/Color flag.
+
 ## Security features
 
 As of rom-properties v1.5, the downloading functionality has been
