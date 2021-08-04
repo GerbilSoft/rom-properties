@@ -354,6 +354,24 @@ int EXEPrivate::findPERuntimeDLL(string &refDesc, string &refLink)
 		{  0,	    "", nullptr, nullptr}
 	};
 
+	// Visual Basic DLL version to display version table.
+	static const struct {
+		uint8_t ver_major;
+		uint8_t ver_minor;
+		const char dll_name1[13];
+		const char dll_name2[13];
+		const char *url;
+	} msvb_dll_tbl[] = {
+		{6,0, "msvbvm60.dll", "", "https://download.microsoft.com/download/5/a/d/5ad868a0-8ecd-4bb0-a882-fe53eb7ef348/VB6.0-KB290887-X86.exe"},
+		{5,0, "msvbvm50.dll", "", "https://download.microsoft.com/download/vb50pro/utility/1/win98/en-us/msvbvm50.exe"},
+
+		// FIXME: Is it vbrun400.dll, vbrun432.dll, or both?
+		// TODO: Find a download link.
+		{4,0, "vbrun400.dll", "vbrun432.dll", nullptr},
+
+		{0,0, "", "", nullptr}
+	};
+
 	// Check all of the DLL names.
 	bool found = false;
 	const auto set_dll_vaddrs_cend = set_dll_vaddrs.cend();
@@ -371,12 +389,21 @@ int EXEPrivate::findPERuntimeDLL(string &refDesc, string &refLink)
 
 		// Check for MSVC 2015-2019. (vcruntime140.dll)
 		if (!strcmp(dll_name, "vcruntime140.dll")) {
+			// TODO: If host OS is Windows XP or earlier, limit it to 2017?
 			refDesc = rp_sprintf(
 				C_("EXE|Runtime", "Microsoft Visual C++ %s Runtime"), "2015-2019");
-			if (is64) {
-				refLink = "https://aka.ms/vs/16/release/vc_redist.x64.exe";
-			} else {
-				refLink = "https://aka.ms/vs/16/release/vc_redist.x86.exe";
+			switch (le16_to_cpu(hdr.pe.FileHeader.Machine)) {
+				case IMAGE_FILE_MACHINE_I386:
+					refLink = "https://aka.ms/vs/16/release/vc_redist.x86.exe";
+					break;
+				case IMAGE_FILE_MACHINE_AMD64:
+					refLink = "https://aka.ms/vs/16/release/vc_redist.x64.exe";
+					break;
+				case IMAGE_FILE_MACHINE_ARM64:
+					refLink = "https://aka.ms/vs/16/release/VC_redist.arm64.exe";
+					break;
+				default:
+					break;
 			}
 			break;
 		} else if (!strcmp(dll_name, "vcruntime140d.dll")) {
@@ -450,22 +477,16 @@ int EXEPrivate::findPERuntimeDLL(string &refDesc, string &refLink)
 		// Check for Visual Basic DLLs.
 		// NOTE: There's only three 32-bit versions of Visual Basic,
 		// and .NET versions don't count.
-		if (!strcmp(dll_name, "msvbvm60.dll")) {
-			refDesc = rp_sprintf(
-				C_("EXE|Runtime", "Microsoft Visual Basic %s Runtime"), "6.0");
-			refLink = "https://download.microsoft.com/download/5/a/d/5ad868a0-8ecd-4bb0-a882-fe53eb7ef348/VB6.0-KB290887-X86.exe";
-			break;
-		} else if (!strcmp(dll_name, "msvbvm50.dll")) {
-			refDesc = rp_sprintf(
-				C_("EXE|Runtime", "Microsoft Visual Basic %s Runtime"), "5.0");
-			refLink = "https://download.microsoft.com/download/vb50pro/utility/1/win98/en-us/msvbvm50.exe";
-			break;
-		} else if (!strcmp(dll_name, "vbrun400.dll") || !strcmp(dll_name, "vbrun432.dll")) {
-			// FIXME: Is it vbrun400.dll, vbrun432.dll, or both?
-			refDesc = rp_sprintf(
-				C_("EXE|Runtime", "Microsoft Visual Basic %s Runtime"), "4.0");
-			// TODO: Find a download link.
-			break;
+		for (auto *p = &msvb_dll_tbl[0]; p->ver_major != 0; p++) {
+			if (!strcmp(dll_name, p->dll_name1) ||
+			    (p->dll_name2[0] != '\0' && !strcmp(dll_name, p->dll_name2)))
+			{
+				// Found a matching version.
+				refDesc = rp_sprintf(C_("EXE|Runtime", "Microsoft Visual Basic %u.%u Runtime"),
+					p->ver_major, p->ver_minor);
+				refLink = p->url;
+				break;
+			}
 		}
 	}
 
