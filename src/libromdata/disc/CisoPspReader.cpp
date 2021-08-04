@@ -243,7 +243,7 @@ CisoPspReader::CisoPspReader(IRpFile *file)
 
 		case CisoPspReaderPrivate::CisoType::CISO:
 			isZlib = true;
-			break;
+			// fall-through
 #ifdef HAVE_LZ4
 		case CisoPspReaderPrivate::CisoType::ZISO:
 #endif /* HAVE_LZ4 */
