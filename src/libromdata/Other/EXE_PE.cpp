@@ -358,18 +358,18 @@ int EXEPrivate::findPERuntimeDLL(string &refDesc, string &refLink)
 	static const struct {
 		uint8_t ver_major;
 		uint8_t ver_minor;
-		const char dll_name1[13];
-		const char dll_name2[13];
+		const char dll_name[13];
 		const char *url;
 	} msvb_dll_tbl[] = {
-		{6,0, "msvbvm60.dll", "", "https://download.microsoft.com/download/5/a/d/5ad868a0-8ecd-4bb0-a882-fe53eb7ef348/VB6.0-KB290887-X86.exe"},
-		{5,0, "msvbvm50.dll", "", "https://download.microsoft.com/download/vb50pro/utility/1/win98/en-us/msvbvm50.exe"},
+		{6,0, "msvbvm60.dll", "https://download.microsoft.com/download/5/a/d/5ad868a0-8ecd-4bb0-a882-fe53eb7ef348/VB6.0-KB290887-X86.exe"},
+		{5,0, "msvbvm50.dll", "https://download.microsoft.com/download/vb50pro/utility/1/win98/en-us/msvbvm50.exe"},
 
 		// FIXME: Is it vbrun400.dll, vbrun432.dll, or both?
 		// TODO: Find a download link.
-		{4,0, "vbrun400.dll", "vbrun432.dll", nullptr},
+		{4,0, "vbrun400.dll", nullptr},
+		{4,0, "vbrun400.dll", nullptr},
 
-		{0,0, "", "", nullptr}
+		{0,0, "", nullptr}
 	};
 
 	// Check all of the DLL names.
@@ -478,9 +478,7 @@ int EXEPrivate::findPERuntimeDLL(string &refDesc, string &refLink)
 		// NOTE: There's only three 32-bit versions of Visual Basic,
 		// and .NET versions don't count.
 		for (auto *p = &msvb_dll_tbl[0]; p->ver_major != 0; p++) {
-			if (!strcmp(dll_name, p->dll_name1) ||
-			    (p->dll_name2[0] != '\0' && !strcmp(dll_name, p->dll_name2)))
-			{
+			if (!strcmp(dll_name, p->dll_name)) {
 				// Found a matching version.
 				refDesc = rp_sprintf(C_("EXE|Runtime", "Microsoft Visual Basic %u.%u Runtime"),
 					p->ver_major, p->ver_minor);
