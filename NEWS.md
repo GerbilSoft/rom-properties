@@ -1,6 +1,20 @@
 # Changes
 
-## v1.9 (released 2021/??/??)
+## v1.8.3 (released 2021/08/03)
+
+* Bug fixes:
+  * Fix a division by zero when reading PSP CISO/CSO images.
+    This bug was reported by @NotaInutilis in issue #286.
+  * Fix a crash in the BC7 and PVRTC image decoders if the image dimensions
+    were not a multiple of the tile size.
+  * rp-download: Allow clone3(), which is needed on systems that have
+    by glibc-2.34.
+
+* Other changes:
+  * GTK+ frontends now use libgsound if available.
+  * Experimental support for GTK4 has been added. It's not available by
+    default (configuration is commented out in CMake), since none of the
+    major file browsers support GTK4 yet.
 
 ## v1.8.2 (released 2021/07/19)
 
