@@ -637,16 +637,15 @@ static void InitDialog(HWND hDlg)
 
 	// MSVC 2019 runtime requires Windows Vista or later.
 	osvi.dwOSVersionInfoSize = sizeof(osvi);
-	if (GetVersionEx(&osvi) != 0) {
-		if (osvi.dwMajorVersion >= 6) {
-			// Windows Vista or later. Use MSVC 2019.
-			vcyear = 2019;
-			vcver = 16;
-		} else {
-			// Windows XP/2003 or earlier. Use MSVC 2017.
-			vcyear = 2017;
-			vcver = 15;
-		}
+	if (GetVersionEx(&osvi) != 0 && osvi.dwMajorVersion >= 6) {
+		// Windows Vista or later. Use MSVC 2019.
+		vcyear = 2019;
+		vcver = 16;
+	} else {
+		// Windows XP/2003 or earlier, or GetVersionEx() failed.
+		// Use MSVC 2017.
+		vcyear = 2017;
+		vcver = 15;
 	}
 
 	// Go through the various permutations.
