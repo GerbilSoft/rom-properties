@@ -201,6 +201,22 @@ int EXEPrivate::findNERuntimeDLL(string &refDesc, string &refLink, bool &refHasK
 		}
 	}
 
+	// Visual Basic DLL version to display version table.
+	static const struct {
+		uint8_t ver_major;
+		uint8_t ver_minor;
+		const char dll_name[8];	// NOT NULL-terminated!
+		const char *url;
+	} msvb_dll_tbl[] = {
+		{4,0, {'V','B','R','U','N','4','0','0'}, nullptr},
+		{4,0, {'V','B','R','U','N','4','3','2'}, nullptr},
+		{3,0, {'V','B','R','U','N','3','0','0'}, nullptr},
+		{2,0, {'V','B','R','U','N','2','0','0'}, nullptr},
+		{1,0, {'V','B','R','U','N','1','0','0'}, "https://download.microsoft.com/download/vb30/sampleaa/1/w9xnt4/en-us/vbrun100.exe"},
+
+		{0,0, "", nullptr}
+	};
+
 	// FIXME: Alignment?
 	const uint16_t *pModRef = pModRefTable;
 	const uint16_t *const pModRefEnd = &pModRef[modRefs];
@@ -242,28 +258,17 @@ int EXEPrivate::findNERuntimeDLL(string &refDesc, string &refLink, bool &refHasK
 					break;
 			}
 		} else if (count == 8) {
-			// FIXME: Is it VBRUN400 or VBRUN416 for 16-bit?
-			if (!strncmp(pDllName, "VBRUN400", 8) || !strncmp(pDllName, "VBRUN416", 8)) {
-				refDesc = rp_sprintf(
-					C_("EXE|Runtime", "Microsoft Visual Basic %s Runtime"), "4.0");
-				if (refHasKernel)
+			// Check for Visual Basic DLLs.
+			// NOTE: There's only three 32-bit versions of Visual Basic,
+			// and .NET versions don't count.
+			for (auto *p = &msvb_dll_tbl[0]; p->ver_major != 0; p++) {
+				if (!strncmp(pDllName, p->dll_name, sizeof(p->dll_name))) {
+					// Found a matching version.
+					refDesc = rp_sprintf(C_("EXE|Runtime", "Microsoft Visual Basic %u.%u Runtime"),
+						p->ver_major, p->ver_minor);
+					refLink = p->url;
 					break;
-			} else if (!strncmp(pDllName, "VBRUN300", 8)) {
-				refDesc = rp_sprintf(
-					C_("EXE|Runtime", "Microsoft Visual Basic %s Runtime"), "3.0");
-				if (refHasKernel)
-					break;
-			} else if (!strncmp(pDllName, "VBRUN200", 8)) {
-				refDesc = rp_sprintf(
-					C_("EXE|Runtime", "Microsoft Visual Basic %s Runtime"), "2.0");
-				if (refHasKernel)
-					break;
-			} else if (!strncmp(pDllName, "VBRUN100", 8)) {
-				refDesc = rp_sprintf(
-					C_("EXE|Runtime", "Microsoft Visual Basic %s Runtime"), "1.0");
-				refLink = "https://download.microsoft.com/download/vb30/sampleaa/1/w9xnt4/en-us/vbrun100.exe";
-				if (refHasKernel)
-					break;
+				}
 			}
 		}
 	}
