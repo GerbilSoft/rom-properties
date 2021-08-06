@@ -133,6 +133,35 @@ struct Data_ListDataMulti_t {
 		, field(field) { }
 };
 
+// C++ objects.
+struct _RomDataViewCxx {
+	struct tab {
+		GtkWidget	*vbox;		// Either page or a GtkVBox/GtkBox.
+		GtkWidget	*table;		// GtkTable (2.x); GtkGrid (3.x)
+		GtkWidget	*lblCredits;
+
+		tab() : vbox(nullptr), table(nullptr), lblCredits(nullptr) { }
+	};
+	vector<tab> tabs;
+
+	// Mapping of field index to GtkWidget*.
+	// For rom_data_view_update_field().
+	unordered_map<int, GtkWidget*> map_fieldIdx;
+
+	// Description labels.
+	vector<GtkWidget*>	vecDescLabels;
+
+	// Multi-language functionality.
+	uint32_t	def_lc;
+	set<uint32_t>	set_lc;	// Set of supported language codes.
+
+	// RFT_STRING_MULTI value labels.
+	vector<Data_StringMulti_t> vecStringMulti;
+
+	// RFT_LISTDATA_MULTI value GtkListStores.
+	vector<Data_ListDataMulti_t> vecListDataMulti;
+};
+
 // GTK+ property page instance.
 struct _RomDataView {
 	super __parent__;
@@ -154,40 +183,25 @@ struct _RomDataView {
 
 	// Tab layout.
 	GtkWidget	*tabWidget;
-	struct tab {
-		GtkWidget	*vbox;		// Either page or a GtkVBox/GtkBox.
-		GtkWidget	*table;		// GtkTable (2.x); GtkGrid (3.x)
-		GtkWidget	*lblCredits;
-
-		tab() : vbox(nullptr), table(nullptr), lblCredits(nullptr) { }
-	};
-	vector<tab>	*tabs;
-
-	/* Timeouts */
-	guint		changed_idle;
-
-	// Mapping of field index to GtkWidget*.
-	// For rom_data_view_update_field().
-	unordered_map<int, GtkWidget*> *map_fieldIdx;
-	bool inhibit_checkbox_no_toggle;
+	// Tabs moved to: cxx->tabs
 
 	// MessageWidget for ROM operation notifications.
 	GtkWidget	*messageWidget;
 
-	// Description labels.
-	RpDescFormatType	desc_format_type;
-	vector<GtkWidget*>	*vecDescLabels;
-
-	// Multi-language functionality.
-	uint32_t	def_lc;
-	set<uint32_t>	*set_lc;	// Set of supported language codes.
+	// Multi-language combo box.
 	GtkWidget	*cboLanguage;
 
-	// RFT_STRING_MULTI value labels.
-	vector<Data_StringMulti_t> *vecStringMulti;
+	/* Timeouts */
+	guint		changed_idle;
 
-	// RFT_LISTDATA_MULTI value GtkListStores.
-	vector<Data_ListDataMulti_t> *vecListDataMulti;
+	// Description label format type.
+	RpDescFormatType	desc_format_type;
+
+	// Inhibit checkbox toggling for RFT_BITFIELD while updating.
+	bool inhibit_checkbox_no_toggle;
+
+	// C++ objects
+	_RomDataViewCxx	*cxx;
 };
 
 // NOTE: G_DEFINE_TYPE() doesn't work in C++ mode with gcc-6.2
@@ -306,13 +320,7 @@ rom_data_view_init(RomDataView *page)
 	// g_object_new() guarantees that all values are initialized to 0.
 
 	// Initialize C++ objects.
-	page->tabs = new vector<RomDataView::tab>();
-	page->map_fieldIdx = new unordered_map<int, GtkWidget*>();
-
-	page->set_lc = new set<uint32_t>();
-	page->vecDescLabels = new vector<GtkWidget*>();
-	page->vecStringMulti = new vector<Data_StringMulti_t>();
-	page->vecListDataMulti = new vector<Data_ListDataMulti_t>();
+	page->cxx = new _RomDataViewCxx();
 
 	// Default description format type.
 	page->desc_format_type = RP_DFT_XFCE;
@@ -426,13 +434,7 @@ rom_data_view_finalize(GObject *object)
 	RomDataView *const page = ROM_DATA_VIEW(object);
 
 	// Delete the C++ objects.
-	delete page->tabs;
-	delete page->map_fieldIdx;
-	delete page->vecDescLabels;
-
-	delete page->set_lc;
-	delete page->vecStringMulti;
-	delete page->vecListDataMulti;
+	delete page->cxx;
 
 	// Free the strings.
 	g_free(page->prevExportDir);
@@ -619,7 +621,7 @@ rom_data_view_desc_format_type_changed(RomDataView	*page,
 	g_return_if_fail(IS_ROM_DATA_VIEW(page));
 	g_return_if_fail(desc_format_type >= RP_DFT_XFCE && desc_format_type < RP_DFT_LAST);
 
-	std::for_each(page->vecDescLabels->cbegin(), page->vecDescLabels->cend(),
+	std::for_each(page->cxx->vecDescLabels.cbegin(), page->cxx->vecDescLabels.cend(),
 		[desc_format_type](GtkWidget *label) {
 			set_label_format_type(GTK_LABEL(label), desc_format_type);
 		}
@@ -762,7 +764,7 @@ rom_data_view_init_string(RomDataView *page,
 
 	// NOTE: Add the widget to the field index map here,
 	// since `widget` might be NULLed out later.
-	page->map_fieldIdx->insert(std::make_pair(fieldIdx, widget));
+	page->cxx->map_fieldIdx.insert(std::make_pair(fieldIdx, widget));
 
 	// Check for any formatting options. (RFT_STRING only)
 	if (field.type == RomFields::RFT_STRING && field.desc.flags != 0) {
@@ -788,7 +790,7 @@ rom_data_view_init_string(RomDataView *page,
 		if (field.desc.flags & RomFields::STRF_CREDITS) {
 			// Credits row goes at the end.
 			// There should be a maximum of one STRF_CREDITS per tab.
-			auto &tab = page->tabs->at(field.tabIdx);
+			auto &tab = page->cxx->tabs.at(field.tabIdx);
 			assert(tab.lblCredits == nullptr);
 
 			// Credits row.
@@ -891,7 +893,7 @@ rom_data_view_init_bitfield(RomDataView *page,
 		}
 	}
 
-	page->map_fieldIdx->insert(std::make_pair(fieldIdx, widget));
+	page->cxx->map_fieldIdx.insert(std::make_pair(fieldIdx, widget));
 	return widget;
 }
 
@@ -1251,11 +1253,11 @@ rom_data_view_init_listdata(RomDataView *page,
 	}
 
 	if (isMulti) {
-		page->vecListDataMulti->emplace_back(
+		page->cxx->vecListDataMulti.emplace_back(
 			Data_ListDataMulti_t(listStore, GTK_TREE_VIEW(treeView), &field));
 	}
 
-	page->map_fieldIdx->insert(std::make_pair(fieldIdx, scrolledWindow));
+	page->cxx->map_fieldIdx.insert(std::make_pair(fieldIdx, scrolledWindow));
 	return scrolledWindow;
 }
 
@@ -1382,7 +1384,7 @@ rom_data_view_init_string_multi(RomDataView *page,
 	// be able to change the displayed language.
 	GtkWidget *const lblStringMulti = rom_data_view_init_string(page, field, fieldIdx, "");
 	if (lblStringMulti) {
-		page->vecStringMulti->emplace_back(lblStringMulti, &field);
+		page->cxx->vecStringMulti.emplace_back(lblStringMulti, &field);
 	}
 	return lblStringMulti;
 }
@@ -1395,9 +1397,11 @@ rom_data_view_init_string_multi(RomDataView *page,
 static void
 rom_data_view_update_multi(RomDataView *page, uint32_t user_lc)
 {
+	_RomDataViewCxx *const cxx = page->cxx;
+
 	// RFT_STRING_MULTI
-	const auto vecStringMulti_cend = page->vecStringMulti->cend();
-	for (auto iter = page->vecStringMulti->cbegin();
+	const auto vecStringMulti_cend = cxx->vecStringMulti.cend();
+	for (auto iter = cxx->vecStringMulti.cbegin();
 	     iter != vecStringMulti_cend; ++iter)
 	{
 		GtkWidget *const lblString = iter->first;
@@ -1417,19 +1421,19 @@ rom_data_view_update_multi(RomDataView *page, uint32_t user_lc)
 			for (auto iter_sm = pStr_multi->cbegin();
 			     iter_sm != pStr_multi_cend; ++iter_sm)
 			{
-				page->set_lc->insert(iter_sm->first);
+				page->cxx->set_lc.insert(iter_sm->first);
 			}
 		}
 
 		// Get the string and update the text.
-		const string *const pStr = RomFields::getFromStringMulti(pStr_multi, page->def_lc, user_lc);
+		const string *const pStr = RomFields::getFromStringMulti(pStr_multi, cxx->def_lc, user_lc);
 		assert(pStr != nullptr);
 		gtk_label_set_text(GTK_LABEL(lblString), (pStr ? pStr->c_str() : ""));
 	}
 
 	// RFT_LISTDATA_MULTI
-	const auto vecListDataMulti_cend = page->vecListDataMulti->cend();
-	for (auto iter = page->vecListDataMulti->cbegin();
+	const auto vecListDataMulti_cend = cxx->vecListDataMulti.cend();
+	for (auto iter = cxx->vecListDataMulti.cbegin();
 	     iter != vecListDataMulti_cend; ++iter)
 	{
 		GtkListStore *const listStore = iter->listStore;
@@ -1449,12 +1453,12 @@ rom_data_view_update_multi(RomDataView *page, uint32_t user_lc)
 			for (auto iter_sm = pListData_multi->cbegin();
 			     iter_sm != pListData_multi_cend; ++iter_sm)
 			{
-				page->set_lc->insert(iter_sm->first);
+				cxx->set_lc.insert(iter_sm->first);
 			}
 		}
 
 		// Get the ListData_t.
-		const auto *const pListData = RomFields::getFromListDataMulti(pListData_multi, page->def_lc, user_lc);
+		const auto *const pListData = RomFields::getFromListDataMulti(pListData_multi, cxx->def_lc, user_lc);
 		assert(pListData != nullptr);
 		if (pListData != nullptr) {
 			const auto &listDataDesc = pField->desc.list_data;
@@ -1497,7 +1501,7 @@ rom_data_view_update_multi(RomDataView *page, uint32_t user_lc)
 		}
 	}
 
-	if (!page->cboLanguage && page->set_lc->size() > 1) {
+	if (!page->cboLanguage && cxx->set_lc.size() > 1) {
 		// Create a VBox for the combobox to reduce its vertical height.
 #if GTK_CHECK_VERSION(3,0,0)
 		GtkWidget *const vboxCboLanguage = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
@@ -1533,8 +1537,8 @@ rom_data_view_update_multi(RomDataView *page, uint32_t user_lc)
 		// NOTE: LanguageComboBox uses a 0-terminated array, so we'll
 		// need to convert the std::set<> to an std::vector<>.
 		vector<uint32_t> vec_lc;
-		vec_lc.reserve(page->set_lc->size() + 1);
-		std::for_each(page->set_lc->cbegin(), page->set_lc->cend(),
+		vec_lc.reserve(cxx->set_lc.size() + 1);
+		std::for_each(cxx->set_lc.cbegin(), cxx->set_lc.cend(),
 			[&vec_lc](uint32_t lc) {
 				vec_lc.emplace_back(lc);
 			}
@@ -1544,17 +1548,17 @@ rom_data_view_update_multi(RomDataView *page, uint32_t user_lc)
 
 		// Select the default language.
 		uint32_t lc_to_set = 0;
-		const auto set_lc_end = page->set_lc->end();
-		if (page->set_lc->find(page->def_lc) != set_lc_end) {
+		const auto set_lc_end = cxx->set_lc.end();
+		if (cxx->set_lc.find(cxx->def_lc) != set_lc_end) {
 			// def_lc was found.
-			lc_to_set = page->def_lc;
-		} else if (page->set_lc->find('en') != set_lc_end) {
+			lc_to_set = cxx->def_lc;
+		} else if (cxx->set_lc.find('en') != set_lc_end) {
 			// 'en' was found.
 			lc_to_set = 'en';
 		} else {
 			// Unknown. Select the first language.
-			if (!page->set_lc->empty()) {
-				lc_to_set = *(page->set_lc->cbegin());
+			if (!cxx->set_lc.empty()) {
+				lc_to_set = *(cxx->set_lc.cbegin());
 			}
 		}
 		language_combo_box_set_selected_lc(LANGUAGE_COMBO_BOX(page->cboLanguage), lc_to_set);
@@ -1593,8 +1597,8 @@ rom_data_view_update_field(RomDataView *page, int fieldIdx)
 		return 3;
 
 	// Get the GtkWidget*.
-	auto iter = page->map_fieldIdx->find(fieldIdx);
-	if (iter == page->map_fieldIdx->end()) {
+	auto iter = page->cxx->map_fieldIdx.find(fieldIdx);
+	if (iter == page->cxx->map_fieldIdx.end()) {
 		// Not found.
 		return 4;
 	}
@@ -1862,15 +1866,16 @@ rom_data_view_update_display(RomDataView *page)
 #endif
 
 	// Create the GtkNotebook.
+	auto &tabs = page->cxx->tabs;
 	int tabCount = pFields->tabCount();
 	if (tabCount > 1) {
-		page->tabs->resize(tabCount);
+		tabs.resize(tabCount);
 		page->tabWidget = gtk_notebook_new();
 
 		// Add spacing between the system info header and the table.
 		g_object_set(page, "spacing", 8, nullptr);
 
-		auto tabIter = page->tabs->begin();
+		auto tabIter = tabs.begin();
 		for (int i = 0; i < tabCount; i++, ++tabIter) {
 			// Create a tab.
 			const char *name = pFields->tabName(i);
@@ -1925,8 +1930,8 @@ rom_data_view_update_display(RomDataView *page)
 		// Don't create a GtkNotebook, but simulate a single
 		// tab in page->tabs[] to make it easier to work with.
 		tabCount = 1;
-		page->tabs->resize(1);
-		auto &tab = page->tabs->at(0);
+		tabs.resize(1);
+		auto &tab = tabs.at(0);
 		tab.vbox = GTK_WIDGET(page);
 
 #if USE_GTK_GRID
@@ -1952,9 +1957,9 @@ rom_data_view_update_display(RomDataView *page)
 	}
 
 	// Reserve enough space for vecDescLabels.
-	page->vecDescLabels->reserve(count);
+	page->cxx->vecDescLabels.reserve(count);
 	// Per-tab row counts.
-	vector<int> tabRowCount(page->tabs->size());
+	vector<int> tabRowCount(tabs.size());
 
 	// tr: Field description label.
 	const char *const desc_label_fmt = C_("RomDataView", "%s:");
@@ -1969,11 +1974,11 @@ rom_data_view_update_display(RomDataView *page)
 
 		// Verify the tab index.
 		const int tabIdx = field.tabIdx;
-		assert(tabIdx >= 0 && tabIdx < (int)page->tabs->size());
-		if (tabIdx < 0 || tabIdx >= (int)page->tabs->size()) {
+		assert(tabIdx >= 0 && tabIdx < static_cast<int>(tabs.size()));
+		if (tabIdx < 0 || tabIdx >= static_cast<int>(tabs.size())) {
 			// Tab index is out of bounds.
 			continue;
-		} else if (!page->tabs->at(tabIdx).table) {
+		} else if (!tabs.at(tabIdx).table) {
 			// Tab name is empty. Tab is hidden.
 			continue;
 		}
@@ -2015,14 +2020,14 @@ rom_data_view_update_display(RomDataView *page)
 
 		if (widget) {
 			// Add the widget to the table.
-			auto &tab = page->tabs->at(tabIdx);
+			auto &tab = tabs.at(tabIdx);
 
 			// tr: Field description label.
 			const string txt = rp_sprintf(desc_label_fmt, field.name.c_str());
 			GtkWidget *lblDesc = gtk_label_new(txt.c_str());
 			gtk_label_set_use_underline(GTK_LABEL(lblDesc), false);
 			gtk_widget_show(lblDesc);
-			page->vecDescLabels->emplace_back(lblDesc);
+			page->cxx->vecDescLabels.emplace_back(lblDesc);
 
 			// Check if this is an RFT_STRING with warning set.
 			// If it is, set the "RFT_STRING_warning" flag.
@@ -2152,8 +2157,8 @@ rom_data_view_update_display(RomDataView *page)
 	}
 
 	// Initial update of RFT_STRING_MULTI and RFT_LISTDATA_MULTI fields.
-	if (!page->vecStringMulti->empty() || !page->vecListDataMulti->empty()) {
-		page->def_lc = pFields->defaultLanguageCode();
+	if (!page->cxx->vecStringMulti.empty() || !page->cxx->vecListDataMulti.empty()) {
+		page->cxx->def_lc = pFields->defaultLanguageCode();
 		rom_data_view_update_multi(page, 0);
 	}
 }
@@ -2225,15 +2230,14 @@ static void
 rom_data_view_delete_tabs(RomDataView *page)
 {
 	assert(page != nullptr);
-	assert(page->tabs != nullptr);
-	assert(page->map_fieldIdx != nullptr);
-	assert(page->vecDescLabels != nullptr);
-	assert(page->vecStringMulti != nullptr);
-	assert(page->vecListDataMulti != nullptr);
+	assert(page->cxx != nullptr);
+	_RomDataViewCxx *const cxx = page->cxx;
 
 	// Delete the tab contents.
-	std::for_each(page->tabs->begin(), page->tabs->end(),
-		[page](_RomDataView::tab &tab) {
+	// TODO: Move to the tab object.
+	auto &tabs = cxx->tabs;
+	std::for_each(tabs.begin(), tabs.end(),
+		[page](_RomDataViewCxx::tab &tab) {
 #if GTK_CHECK_VERSION(4,0,0)
 			if (tab.lblCredits) {
 				g_object_unref(tab.lblCredits);
@@ -2257,8 +2261,8 @@ rom_data_view_delete_tabs(RomDataView *page)
 #endif /* GTK_CHECK_VERSION(4,0,0) */
 		}
 	);
-	page->tabs->clear();
-	page->map_fieldIdx->clear();
+	tabs.clear();
+	cxx->map_fieldIdx.clear();
 
 	if (page->tabWidget) {
 		// Delete the tab widget.
@@ -2281,10 +2285,10 @@ rom_data_view_delete_tabs(RomDataView *page)
 	}
 
 	// Clear the various widget references.
-	page->vecDescLabels->clear();
-	page->set_lc->clear();
-	page->vecStringMulti->clear();
-	page->vecListDataMulti->clear();
+	cxx->vecDescLabels.clear();
+	cxx->set_lc.clear();
+	cxx->vecStringMulti.clear();
+	cxx->vecListDataMulti.clear();
 }
 
 /** Signal handlers **/
