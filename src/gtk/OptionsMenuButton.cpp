@@ -693,12 +693,13 @@ options_menu_button_update_op(OptionsMenuButton *widget,
 	if (id < 0 || id >= g_menu_model_get_n_items(G_MENU_MODEL(widget->menuRomOps)))
 		return;
 
-	char buf[128];
-	snprintf(buf, sizeof(buf), "rp-OptionsMenuButton-%p.%d", widget, id);
-	g_menu_remove(widget->menuRomOps, id);
+	char detailed_action[128];
+	snprintf(detailed_action, sizeof(detailed_action),
+		"rp-OptionsMenuButton-%p.%d", widget, id);
 
+	g_menu_remove(widget->menuRomOps, id);
 	const string desc = convert_accel_to_gtk(op->desc);
-	g_menu_insert(widget->menuRomOps, id, desc.c_str(), buf);
+	g_menu_insert(widget->menuRomOps, id, desc.c_str(), detailed_action);
 	g_simple_action_set_enabled(iter->second, !!(op->flags & RomData::RomOp::ROF_ENABLED));
 #else /* !USE_G_MENU_MODEL */
 	GtkMenuItem *menuItem = nullptr;
