@@ -136,11 +136,42 @@ struct Data_ListDataMulti_t {
 // C++ objects.
 struct _RomDataViewCxx {
 	struct tab {
+		RomDataView	*page;		// Parent page
 		GtkWidget	*vbox;		// Either page or a GtkVBox/GtkBox.
 		GtkWidget	*table;		// GtkTable (2.x); GtkGrid (3.x)
 		GtkWidget	*lblCredits;
 
-		tab() : vbox(nullptr), table(nullptr), lblCredits(nullptr) { }
+		tab()
+			: page(nullptr)
+			, vbox(nullptr)
+			, table(nullptr)
+			, lblCredits(nullptr)
+		{ }
+
+		~tab()
+		{
+#if GTK_CHECK_VERSION(4,0,0)
+			if (lblCredits) {
+				g_object_unref(lblCredits);
+			}
+			if (table) {
+				g_object_unref(table);
+			}
+			if (vbox && vbox != GTK_WIDGET(page)) {
+				g_object_unref(vbox);
+			}
+#else /* !GTK_CHECK_VERSION(4,0,0) */
+			if (lblCredits) {
+				gtk_widget_destroy(lblCredits);
+			}
+			if (table) {
+				gtk_widget_destroy(table);
+			}
+			if (vbox && vbox != GTK_WIDGET(page)) {
+				gtk_widget_destroy(vbox);
+			}
+#endif /* GTK_CHECK_VERSION(4,0,0) */
+		}
 	};
 	vector<tab> tabs;
 
@@ -1885,6 +1916,8 @@ rom_data_view_update_display(RomDataView *page)
 			}
 
 			auto &tab = *tabIter;
+			tab.page = page;
+
 #if USE_GTK_GRID
 			tab.vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 8);
 			tab.table = gtk_grid_new();
@@ -1932,6 +1965,7 @@ rom_data_view_update_display(RomDataView *page)
 		tabCount = 1;
 		tabs.resize(1);
 		auto &tab = tabs.at(0);
+		tab.page = page;
 		tab.vbox = GTK_WIDGET(page);
 
 #if USE_GTK_GRID
@@ -2233,35 +2267,8 @@ rom_data_view_delete_tabs(RomDataView *page)
 	assert(page->cxx != nullptr);
 	_RomDataViewCxx *const cxx = page->cxx;
 
-	// Delete the tab contents.
-	// TODO: Move to the tab object.
-	auto &tabs = cxx->tabs;
-	std::for_each(tabs.begin(), tabs.end(),
-		[page](_RomDataViewCxx::tab &tab) {
-#if GTK_CHECK_VERSION(4,0,0)
-			if (tab.lblCredits) {
-				g_object_unref(tab.lblCredits);
-			}
-			if (tab.table) {
-				g_object_unref(tab.table);
-			}
-			if (tab.vbox && tab.vbox != GTK_WIDGET(page)) {
-				g_object_unref(tab.vbox);
-			}
-#else /* !GTK_CHECK_VERSION(4,0,0) */
-			if (tab.lblCredits) {
-				gtk_widget_destroy(tab.lblCredits);
-			}
-			if (tab.table) {
-				gtk_widget_destroy(tab.table);
-			}
-			if (tab.vbox && tab.vbox != GTK_WIDGET(page)) {
-				gtk_widget_destroy(tab.vbox);
-			}
-#endif /* GTK_CHECK_VERSION(4,0,0) */
-		}
-	);
-	tabs.clear();
+	// Clear the tabs.
+	cxx->tabs.clear();
 	cxx->map_fieldIdx.clear();
 
 	if (page->tabWidget) {
