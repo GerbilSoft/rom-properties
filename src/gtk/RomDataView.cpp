@@ -7,8 +7,9 @@
  ***************************************************************************/
 
 #include "stdafx.h"
-#include "RomDataView.hpp"
+#include "config.gtk.h"
 
+#include "RomDataView.hpp"
 #include "rp-gtk-enums.h"
 #include "RpGtk.hpp"
 #include "sort_funcs.h"
@@ -33,6 +34,16 @@ using LibRpTexture::rp_image;
 // libromdata
 #include "libromdata/RomDataFactory.hpp"
 using LibRomData::RomDataFactory;
+
+// libdl
+#ifdef HAVE_DLVSYM
+#  ifndef _GNU_SOURCE
+#    define _GNU_SOURCE 1
+#  endif /* _GNU_SOURCE */
+#else /* !HAVE_DLVSYM */
+#  define dlvsym(handle, symbol, version) dlsym((handle), (symbol))
+#endif /* HAVE_DLVSYM */
+#include <dlfcn.h>
 
 // C++ STL classes.
 #include <fstream>
@@ -108,6 +119,16 @@ typedef GtkVBoxClass superclass;
 typedef GtkVBox super;
 #define GTK_TYPE_SUPER GTK_TYPE_VBOX
 #endif
+
+// libhandy function pointers.
+// Only initialized if libhandy is linked into the process.
+struct HdyHeaderBar;
+typedef GType (*pfnGlibGetType_t)(void);
+typedef GType (*pfnHdyHeaderBarPackEnd_t)(HdyHeaderBar *self, GtkWidget *child);
+static bool has_checked_hdy = false;
+static pfnGlibGetType_t pfn_hdy_deck_get_type = nullptr;
+static pfnGlibGetType_t pfn_hdy_header_bar_get_type = nullptr;
+static pfnHdyHeaderBarPackEnd_t pfn_hdy_header_bar_pack_end = nullptr;
 
 // GTK+ property page class.
 struct _RomDataViewClass {
@@ -268,6 +289,22 @@ rom_data_view_class_init(RomDataViewClass *klass)
 
 	// Install the properties.
 	g_object_class_install_properties(gobject_class, PROP_LAST, klass->properties);
+
+	/** libhandy **/
+
+	// Check if libhandy-1 is loaded in the process.
+	// TODO: Verify that it is in fact 1.x if symbol versioning isn't available.
+	if (!has_checked_hdy) {
+		has_checked_hdy = true;
+		pfn_hdy_deck_get_type = (pfnGlibGetType_t)dlvsym(
+			RTLD_DEFAULT, "hdy_deck_get_type", "LIBHANDY_1_0");
+		if (pfn_hdy_deck_get_type) {
+			pfn_hdy_header_bar_get_type = (pfnGlibGetType_t)dlvsym(
+				RTLD_DEFAULT, "hdy_header_bar_get_type", "LIBHANDY_1_0");
+			pfn_hdy_header_bar_pack_end = (pfnHdyHeaderBarPackEnd_t)dlvsym(
+				RTLD_DEFAULT, "hdy_header_bar_pack_end", "LIBHANDY_1_0");
+		}
+	}
 }
 
 /**
@@ -1806,31 +1843,72 @@ rom_data_view_create_options_button(RomDataView *page)
 	// Next: GtkDialog subclass.
 	// - XFCE: ThunarPropertiesDialog
 	// - Nautilus: NautilusPropertiesWindow
+	//   - NOTE: Nautilus 40 uses HdyWindow, which is a GtkWindow subclass.
 	// - Caja: FMPropertiesWindow
 	// - Nemo: NemoPropertiesWindow
+	bool isLibHandy = false;
 	parent = gtk_widget_get_parent(parent);
-	assert(GTK_IS_DIALOG(parent));
-	if (!GTK_IS_DIALOG(parent))
-		return;
+	if (!GTK_IS_DIALOG(parent)) {
+		// NOTE: As of Nautilus 40, there may be an HdyDeck here.
+		// We're not linking to libhandy, so check the class name.
+		if (pfn_hdy_deck_get_type && G_OBJECT_TYPE(parent) == pfn_hdy_deck_get_type()) {
+			// Get the next parent widget.
+			isLibHandy = true;
+			parent = gtk_widget_get_parent(parent);
+		}
+	}
+	if (isLibHandy) {
+		// Main window is based on HdyWindow, which is derived from
+		// GtkWindow, not GtkDialog.
+		assert(GTK_IS_WINDOW(parent));
+		if (!GTK_IS_WINDOW(parent))
+			return;
+	} else {
+		// Main window is derived from GtkDialog.
+		assert(GTK_IS_DIALOG(parent));
+		if (!GTK_IS_DIALOG(parent))
+			return;
+	}
 
 	// Create the OptionsMenuButton.
 	page->btnOptions = options_menu_button_new();
+	gtk_widget_hide(page->btnOptions);
 	options_menu_button_set_direction(OPTIONS_MENU_BUTTON(page->btnOptions), GTK_ARROW_UP);
 
-	gtk_dialog_add_action_widget(GTK_DIALOG(parent), page->btnOptions, GTK_RESPONSE_NONE);
-	gtk_widget_hide(page->btnOptions);
-	assert(page->btnOptions != nullptr);
-	if (!page->btnOptions)
-		return;
+	if (!isLibHandy) {
+		// Not using LibHandy, so add the widget to the GtkDialog.
+		gtk_dialog_add_action_widget(GTK_DIALOG(parent), page->btnOptions, GTK_RESPONSE_NONE);
 
-	// Disconnect the "clicked" signal from the default GtkDialog response handler.
-	guint signal_id = g_signal_lookup("clicked", GTK_TYPE_BUTTON);
-	gulong handler_id = g_signal_handler_find(page->btnOptions, G_SIGNAL_MATCH_ID,
-		signal_id, 0, nullptr, 0, 0);
-	g_signal_handler_disconnect(page->btnOptions, handler_id);
+		// Disconnect the "clicked" signal from the default GtkDialog response handler.
+		guint signal_id = g_signal_lookup("clicked", GTK_TYPE_BUTTON);
+		gulong handler_id = g_signal_handler_find(page->btnOptions, G_SIGNAL_MATCH_ID,
+			signal_id, 0, nullptr, 0, 0);
+		g_signal_handler_disconnect(page->btnOptions, handler_id);
+	}
 
 #if GTK_CHECK_VERSION(3,12,0)
-	GtkWidget *const headerBar = gtk_dialog_get_header_bar(GTK_DIALOG(parent));
+	GtkWidget *headerBar = nullptr;
+	if (isLibHandy) {
+		// Nautilus 40 uses libhandy, which has a different arrangement of widgets.
+		// NautilusPropertiesWindow
+		// |- GtkBox
+		//    |- HdyHeaderBar
+		GtkWidget *const gtkBox = gtk_widget_get_first_child(parent);
+		if (gtkBox && GTK_IS_BOX(gtkBox)) {
+			GtkWidget *const hdyHeaderBar = gtk_widget_get_first_child(gtkBox);
+			if (hdyHeaderBar && G_OBJECT_TYPE(hdyHeaderBar) == pfn_hdy_header_bar_get_type())
+			{
+				// Found the HdyHeaderBar.
+				// Pack the Options button at the end.
+				// NOTE: No type checking here...
+				pfn_hdy_header_bar_pack_end((HdyHeaderBar*)hdyHeaderBar, page->btnOptions);
+				headerBar = hdyHeaderBar;
+			}
+		}
+	} else {
+		// Earlier versions use GtkDialog's own header bar functionality.
+		headerBar = gtk_dialog_get_header_bar(GTK_DIALOG(parent));
+	}
 	if (headerBar) {
 		// Dialog has a Header Bar instead of an action area.
 		// No reordering is necessary.

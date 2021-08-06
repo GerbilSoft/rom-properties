@@ -9,6 +9,9 @@
 #ifndef __ROMPROPERTIES_GTK_CONFIG_H__
 #define __ROMPROPERTIES_GTK_CONFIG_H__
 
+/* Define to 1 if you have the `dlvsym` function. */
+#cmakedefine HAVE_DLVSYM 1
+
 /* Define to 1 if LibCanberra is available. */
 #cmakedefine HAVE_LIBCANBERRA 1
 
