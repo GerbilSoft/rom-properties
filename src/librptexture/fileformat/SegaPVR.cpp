@@ -870,26 +870,27 @@ const rp_image *SegaPVRPrivate::loadGvrImage(void)
 	const uint32_t file_sz = static_cast<uint32_t>(file->size());
 
 	const unsigned int pvrDataStart = gbix_len + sizeof(PVR_Header);
-	uint32_t expected_size = 0;
+	uint32_t expected_size = (pvrHeader.width * pvrHeader.height);
 
 	switch (pvrHeader.gvr.img_data_type) {
 		case GVR_IMG_I4:
-			expected_size = ((pvrHeader.width * pvrHeader.height) / 2);
+		case GVR_IMG_DXT1:
+			// 4bpp
+			expected_size /= 2;
 			break;
 		case GVR_IMG_I8:
 		case GVR_IMG_IA4:
-			expected_size = (pvrHeader.width * pvrHeader.height);
+			// 8bpp; no adjustments needed.
 			break;
 		case GVR_IMG_IA8:
 		case GVR_IMG_RGB565:
 		case GVR_IMG_RGB5A3:
-			expected_size = ((pvrHeader.width * pvrHeader.height) * 2);
+			// 16bpp
+			expected_size *= 2;
 			break;
 		case GVR_IMG_ARGB8888:
-			expected_size = ((pvrHeader.width * pvrHeader.height) * 4);
-			break;
-		case GVR_IMG_DXT1:
-			expected_size = ((pvrHeader.width * pvrHeader.height) / 2);
+			// 32bpp
+			expected_size *= 4;
 			break;
 
 		default:
