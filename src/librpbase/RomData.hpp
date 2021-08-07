@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * RomData.hpp: ROM data base class.                                       *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -592,7 +592,14 @@ class RomData : public RefBase
 				} sfi;
 			};
 
-			RomOp() { }
+			RomOp()
+				: desc(nullptr), flags(0)
+			{
+				sfi.title = nullptr;
+				sfi.filter = nullptr;
+				sfi.ext = nullptr;
+			}
+
 			RomOp(const char *desc, uint32_t flags)
 				: desc(desc), flags(flags)
 			{

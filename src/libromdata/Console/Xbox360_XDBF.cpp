@@ -273,8 +273,9 @@ Xbox360_XDBF_Private::Xbox360_XDBF_Private(Xbox360_XDBF *q, IRpFile *file, bool 
 	// Clear the header.
 	memset(&xdbfHeader, 0, sizeof(xdbfHeader));
 
-	// Clear the string table pointers.
+	// Clear the string table pointers and indexes.
 	strTbls.fill(nullptr);
+	strTblIndexes.fill(0);
 }
 
 Xbox360_XDBF_Private::~Xbox360_XDBF_Private()
