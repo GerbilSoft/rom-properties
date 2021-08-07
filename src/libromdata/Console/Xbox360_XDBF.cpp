@@ -1340,51 +1340,6 @@ int Xbox360_XDBF_Private::addFields_strings_GPD(RomFields *fields) const
 
 	// NOTE: GPDs only have one language, so not using RFT_STRING_MULTI here.
 
-	// Title: Check if English is valid.
-	// If it is, we'll de-duplicate the fields.
-	// NOTE: English is language 1, so we can start the loop at 2 (Japanese).
-	string title_en;
-	if (strTblIndexes[XDBF_LANGUAGE_ENGLISH] >= 0) {
-		title_en = const_cast<Xbox360_XDBF_Private*>(this)->loadString_SPA(
-			XDBF_LANGUAGE_ENGLISH, XDBF_ID_TITLE);
-	}
-	bool dedupe_titles = !title_en.empty();
-
-	// Title fields.
-	RomFields::StringMultiMap_t *const pMap_title = new RomFields::StringMultiMap_t();
-	if (!title_en.empty()) {
-		pMap_title->insert(std::make_pair('en', title_en));
-	}
-	for (int langID = XDBF_LANGUAGE_JAPANESE; langID < XDBF_LANGUAGE_MAX; langID++) {
-		if (strTblIndexes[langID] < 0) {
-			// This language is not available.
-			continue;
-		}
-
-		string title_lang = const_cast<Xbox360_XDBF_Private*>(this)->loadString_SPA(
-			(XDBF_Language_e)langID, XDBF_ID_TITLE);
-		if (title_lang.empty()) {
-			// Title is not available for this language.
-			continue;
-		}
-
-		if (dedupe_titles) {
-			// Is the title the same as the English title?
-			// TODO: Avoid converting the string before this check?
-			if (title_lang == title_en) {
-				// Same title. Skip it.
-				continue;
-			}
-		}
-
-		const uint32_t lc = XboxLanguage::getXbox360LanguageCode(langID);
-		assert(lc != 0);
-		if (lc == 0)
-			continue;
-
-		pMap_title->insert(std::make_pair(lc, std::move(title_lang)));
-	}
-
 	// Title
 	const char *const s_title_title = C_("RomData", "Title");
 	string s_title = const_cast<Xbox360_XDBF_Private*>(this)->loadString_GPD(XDBF_ID_TITLE);
