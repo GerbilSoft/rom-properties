@@ -220,9 +220,9 @@ struct _RomDataViewCxx {
 struct _RomDataView {
 	super __parent__;
 
+	_RomDataViewCxx	*cxx;		// C++ objects
 	RomData		*romData;	// ROM data
 	gchar		*uri;		// URI (GVfs)
-	bool		hasCheckedAchievements;
 
 	// "Options" button. (OptionsMenuButton)
 	GtkWidget	*btnOptions;
@@ -253,9 +253,8 @@ struct _RomDataView {
 
 	// Inhibit checkbox toggling for RFT_BITFIELD while updating.
 	bool inhibit_checkbox_no_toggle;
-
-	// C++ objects
-	_RomDataViewCxx	*cxx;
+	// Have we checked for achievements?
+	bool hasCheckedAchievements;
 };
 
 // NOTE: G_DEFINE_TYPE() doesn't work in C++ mode with gcc-6.2
