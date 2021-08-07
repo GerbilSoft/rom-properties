@@ -8,6 +8,12 @@ PROJECT(src)
 INCLUDE(CheckLargeFileSupport)
 CHECK_LARGE_FILE_SUPPORT()
 
+# Check for dirent.h. (for d_type.h)
+CHECK_INCLUDE_FILE("dirent.h" HAVE_DIRENT_H)
+# Check for sys/stat.h. (for d_type.h)
+# Windows Universal CRT has this; older versions of MSVCRT do not.
+CHECK_INCLUDE_FILE("sys/stat.h" HAVE_SYS_STAT_H)
+
 # Check for reentrant time functions.
 # NOTE: May be _gmtime32_s() or _gmtime64_s() on MSVC 2005+.
 # The "inline" part will detect that.

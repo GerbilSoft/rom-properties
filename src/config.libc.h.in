@@ -15,6 +15,12 @@
 /* Define to the size of `off64_t` if it's available. */
 #cmakedefine SIZEOF_OFF64_T @OFF64_T@
 
+/* Define to 1 if you have the <dirent.h> header file. */
+#cmakedefine HAVE_DIRENT_H 1
+
+/* Define to 1 if you have the <sys/stat.h> header file. */
+#cmakedefine HAVE_SYS_STAT_H 1
+
 /** Time functions **/
 
 /* Define to 1 if you have the `gmtime_r` function. */

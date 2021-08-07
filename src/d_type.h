@@ -9,8 +9,13 @@
 #ifndef __ROMPROPERTIES_D_TYPE_H__
 #define __ROMPROPERTIES_D_TYPE_H__
 
-#ifndef _WIN32
+#include "config.libc.h"
+
+#if defined(HAVE_DIRENT_H)
 #  include <dirent.h>
+#elif defined(HAVE_SYS_STAT_H)
+// Windows Universal CRT has S_IFMT defined in <sys/stat.h>.
+#  include <sys/stat.h>
 #endif
 
 #ifdef __cplusplus
