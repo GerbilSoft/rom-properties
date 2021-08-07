@@ -92,13 +92,13 @@ static uint32_t getStringTableOffset(const char *str)
  */
 static void alignFileTo16Bytes(FILE *f)
 {
-	off_t offset = ftello(f);
-	if (offset % 16 == 0)
+	const unsigned int offset_mod16 = static_cast<unsigned int>(ftello(f) % 16);
+	if (offset_mod16 == 0)
 		return;
 
 	uint8_t zerobytes[16];
 	memset(zerobytes, 0, sizeof(zerobytes));
-	const unsigned int count = 16 - (offset % 16);
+	const unsigned int count = 16 - offset_mod16;
 	fwrite(zerobytes, 1, count, f);
 }
 
