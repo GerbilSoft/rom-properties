@@ -523,8 +523,10 @@ const rp_image *SegaPVRPrivate::loadPvrImage(void)
 			// Small VQ images have up to 1024 palette entries based on width,
 			// and the image data is 2bpp.
 			// Skip the palette, since that's handled later.
-			svr_pal_buf.resize(ImageDecoder::calcDreamcastSmallVQPaletteEntries_WithMipmaps(pvrHeader.width) * 2);
-			mipmap_size += svr_pal_buf.size();
+			const unsigned int pal_siz =
+				ImageDecoder::calcDreamcastSmallVQPaletteEntries_WithMipmaps(pvrHeader.width) * 2;
+			svr_pal_buf.resize(pal_siz);
+			mipmap_size += pal_siz;
 			expected_size = ((pvrHeader.width * pvrHeader.height) / 4);
 			break;
 		}
@@ -538,18 +540,20 @@ const rp_image *SegaPVRPrivate::loadPvrImage(void)
 
 			// NOTE: Puyo Tools sometimes uses the wrong image data type
 			// for the palette format. Use pixel format instead.
+			unsigned int pal_siz;
 			switch (pvrHeader.pvr.px_format) {
 				case SVR_PX_BGR5A3:
-					svr_pal_buf.resize(16*2);
+					pal_siz = 16 * 2;
 					break;
 				case SVR_PX_BGR888_ABGR7888:
-					svr_pal_buf.resize(16*4);
+					pal_siz = 16 * 4;
 					break;
 				default:
 					assert(!"Unsupported pixel format for SVR.");
 					return nullptr;
 			}
-			mipmap_size = svr_pal_buf.size();
+			svr_pal_buf.resize(pal_siz);
+			mipmap_size = pal_siz;
 			expected_size = ((pvrHeader.width * pvrHeader.height) / 2);
 			break;
 		}
@@ -563,18 +567,20 @@ const rp_image *SegaPVRPrivate::loadPvrImage(void)
 
 			// NOTE: Puyo Tools sometimes uses the wrong image data type
 			// for the palette format. Use pixel format instead.
+			unsigned int pal_siz;
 			switch (pvrHeader.pvr.px_format) {
 				case SVR_PX_BGR5A3:
-					svr_pal_buf.resize(256*2);
+					pal_siz = 256 * 2;
 					break;
 				case SVR_PX_BGR888_ABGR7888:
-					svr_pal_buf.resize(256*4);
+					pal_siz = 256 * 4;
 					break;
 				default:
 					assert(!"Unsupported pixel format for SVR.");
 					return nullptr;
 			}
-			mipmap_size = svr_pal_buf.size();
+			svr_pal_buf.resize(pal_siz);
+			mipmap_size = pal_siz;
 			expected_size = (pvrHeader.width * pvrHeader.height);
 			break;
 		}
@@ -735,7 +741,7 @@ const rp_image *SegaPVRPrivate::loadPvrImage(void)
 				true, true,
 				pvrHeader.width, pvrHeader.height,
 				buf.get(), expected_size,
-				reinterpret_cast<const uint16_t*>(svr_pal_buf.data()), svr_pal_buf.size());
+				reinterpret_cast<const uint16_t*>(svr_pal_buf.data()), (int)svr_pal_buf.size());
 			break;
 		}
 
@@ -764,7 +770,7 @@ const rp_image *SegaPVRPrivate::loadPvrImage(void)
 			img = ImageDecoder::fromLinearCI4(px_format, false,
 				pvrHeader.width, pvrHeader.height,
 				buf.get(), expected_size,
-				svr_pal_buf.data(), svr_pal_buf.size());
+				svr_pal_buf.data(), (int)svr_pal_buf.size());
 
 			// Puyo Tools: Minimum swizzle size for 4-bit is 128x128.
 			if (pvrHeader.width >= 128 && pvrHeader.height >= 128) {
@@ -815,7 +821,7 @@ const rp_image *SegaPVRPrivate::loadPvrImage(void)
 			img = ImageDecoder::fromLinearCI8(px_format,
 				pvrHeader.width, pvrHeader.height,
 				buf.get(), expected_size,
-				svr_pal_buf.data(), svr_pal_buf.size());
+				svr_pal_buf.data(), (int)svr_pal_buf.size());
 
 			// Puyo Tools: Minimum swizzle size for 8-bit is 128x64.
 			if (pvrHeader.width >= 128 && pvrHeader.height >= 64) {
