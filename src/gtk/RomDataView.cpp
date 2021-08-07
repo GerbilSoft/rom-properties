@@ -120,6 +120,7 @@ typedef GtkVBox super;
 #define GTK_TYPE_SUPER GTK_TYPE_VBOX
 #endif
 
+#if GTK_CHECK_VERSION(3,0,0)
 // libhandy function pointers.
 // Only initialized if libhandy is linked into the process.
 struct HdyHeaderBar;
@@ -129,6 +130,7 @@ static bool has_checked_hdy = false;
 static pfnGlibGetType_t pfn_hdy_deck_get_type = nullptr;
 static pfnGlibGetType_t pfn_hdy_header_bar_get_type = nullptr;
 static pfnHdyHeaderBarPackEnd_t pfn_hdy_header_bar_pack_end = nullptr;
+#endif /* GTK_CHECK_VERSION(3,0,0) */
 
 // GTK+ property page class.
 struct _RomDataViewClass {
@@ -290,6 +292,7 @@ rom_data_view_class_init(RomDataViewClass *klass)
 	// Install the properties.
 	g_object_class_install_properties(gobject_class, PROP_LAST, klass->properties);
 
+#if GTK_CHECK_VERSION(3,0,0)
 	/** libhandy **/
 
 	// Check if libhandy-1 is loaded in the process.
@@ -305,6 +308,7 @@ rom_data_view_class_init(RomDataViewClass *klass)
 				RTLD_DEFAULT, "hdy_header_bar_pack_end", "LIBHANDY_1_0");
 		}
 	}
+#endif /* GTK_CHECK_VERSION(3,0,0) */
 }
 
 /**
@@ -1846,8 +1850,11 @@ rom_data_view_create_options_button(RomDataView *page)
 	//   - NOTE: Nautilus 40 uses HdyWindow, which is a GtkWindow subclass.
 	// - Caja: FMPropertiesWindow
 	// - Nemo: NemoPropertiesWindow
+#if GTK_CHECK_VERSION(3,0,0)
 	bool isLibHandy = false;
+#endif /* GTK_CHECK_VERSION(3,0,0) */
 	parent = gtk_widget_get_parent(parent);
+#if GTK_CHECK_VERSION(3,0,0)
 	if (!GTK_IS_DIALOG(parent)) {
 		// NOTE: As of Nautilus 40, there may be an HdyDeck here.
 		// We're not linking to libhandy, so check the class name.
@@ -1863,7 +1870,9 @@ rom_data_view_create_options_button(RomDataView *page)
 		assert(GTK_IS_WINDOW(parent));
 		if (!GTK_IS_WINDOW(parent))
 			return;
-	} else {
+	} else
+#endif /* GTK_CHECK_VERSION(3,0,0) */
+	{
 		// Main window is derived from GtkDialog.
 		assert(GTK_IS_DIALOG(parent));
 		if (!GTK_IS_DIALOG(parent))
@@ -1875,7 +1884,12 @@ rom_data_view_create_options_button(RomDataView *page)
 	gtk_widget_hide(page->btnOptions);
 	options_menu_button_set_direction(OPTIONS_MENU_BUTTON(page->btnOptions), GTK_ARROW_UP);
 
-	if (!isLibHandy) {
+#if GTK_CHECK_VERSION(3,0,0)
+	if (isLibHandy) {
+		// LibHandy version doesn't use GtkDialog.
+	} else
+#endif /* GTK_CHECK_VERSION(3,0,0) */
+	{
 		// Not using LibHandy, so add the widget to the GtkDialog.
 		gtk_dialog_add_action_widget(GTK_DIALOG(parent), page->btnOptions, GTK_RESPONSE_NONE);
 
