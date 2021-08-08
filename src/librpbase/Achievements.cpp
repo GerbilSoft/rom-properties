@@ -816,16 +816,17 @@ int Achievements::unlock(ID id, int bit)
 
 	// Check the type.
 	bool unlocked = false;
-	const AchievementsPrivate::AchInfo_t *const achInfo = &d->achInfo[(int)id];
-	switch (achInfo->type) {
+	const AchievementsPrivate::AchInfo_t &achInfo = d->achInfo[(int)id];
+	AchievementsPrivate::AchData_t &achData = d->mapAchData[id];
+	switch (achInfo.type) {
 		default:
 			assert(!"Achievement type not supported.");
 			return -EINVAL;
 
 		case AchievementsPrivate::AT_COUNT: {
 			// Check if we've already reached the required count.
-			uint8_t count = d->mapAchData[id].count;
-			if (count >= achInfo->count) {
+			uint8_t count = achData.count;
+			if (count >= achInfo.count) {
 				// Count has been reached.
 				// Achievement is already unlocked.
 				return 0;
@@ -833,9 +834,9 @@ int Achievements::unlock(ID id, int bit)
 
 			// Increment the count.
 			count++;
-			d->mapAchData[id].count = count;
-			d->mapAchData[id].timestamp = time(nullptr);
-			if (count >= achInfo->count) {
+			achData.count = count;
+			achData.timestamp = time(nullptr);
+			if (count >= achInfo.count) {
 				// Achievement unlocked!
 				unlocked = true;
 			}
@@ -845,16 +846,16 @@ int Achievements::unlock(ID id, int bit)
 		case AchievementsPrivate::AT_BITFIELD: {
 			// Bitfield value.
 			assert(bit >= 0);
-			assert(bit < achInfo->count);
-			if (bit < 0 || bit >= achInfo->count) {
+			assert(bit < achInfo.count);
+			if (bit < 0 || bit >= achInfo.count) {
 				// Invalid bit index.
 				return -EINVAL;
 			}
 
 			// Check if we've already filled the bitfield.
 			// TODO: Verify 32-bit and 64-bit operation for values 32 and 64.
-			const uint64_t bf_filled = (1ULL << achInfo->count) - 1;
-			uint64_t bf_value = d->mapAchData[id].bitfield;
+			const uint64_t bf_filled = (1ULL << achInfo.count) - 1;
+			uint64_t bf_value = achData.bitfield;
 			if (bf_value == bf_filled) {
 				// Bitfield is already filled.
 				// Achievement is already unlocked.
@@ -868,8 +869,8 @@ int Achievements::unlock(ID id, int bit)
 				return 0;
 			}
 
-			d->mapAchData[id].bitfield = bf_new;
-			d->mapAchData[id].timestamp = time(nullptr);
+			achData.bitfield = bf_new;
+			achData.timestamp = time(nullptr);
 			if (bf_new == bf_filled) {
 				// Achievement unlocked!
 				unlocked = true;
