@@ -365,7 +365,7 @@ int ConfigPrivate::processConfigLine(const char *section, const char *name, cons
 			static_assert(ARRAY_SIZE(imageTypeNames) == RomData::IMG_EXT_MAX+1, "imageTypeNames[] is the wrong size.");
 
 			RomData::ImageType imgType = static_cast<RomData::ImageType>(-1);
-			for (int i = 0; i < ARRAY_SIZE(imageTypeNames); i++) {
+			for (size_t i = 0; i < ARRAY_SIZE(imageTypeNames); i++) {
 				if (static_cast<size_t>(imageTypeNames[i][0]) == len &&
 				    !strncasecmp(pos, &imageTypeNames[i][1], len))
 				{

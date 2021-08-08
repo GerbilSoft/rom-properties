@@ -175,7 +175,7 @@ const rp_image *NintendoDSPrivate::loadIcon(void)
 
 		// Parse the icon sequence.
 		uint8_t bmp_idx = 0;
-		int seq_idx;
+		size_t seq_idx;
 		for (seq_idx = 0; seq_idx < ARRAY_SIZE(nds_icon_title.dsi_icon_seq); seq_idx++) {
 			const uint16_t seq = le16_to_cpu(nds_icon_title.dsi_icon_seq[seq_idx]);
 			const int delay = (seq & 0xFF);
@@ -984,7 +984,7 @@ int NintendoDS::loadFieldData(void)
 
 	// Title.
 	d->fields->addField_string(C_("RomData", "Title"),
-		latin1_to_utf8(romHeader->title, ARRAY_SIZE(romHeader->title)));
+		latin1_to_utf8(romHeader->title, ARRAY_SIZE_I(romHeader->title)));
 
 	if (!d->nds_icon_title_loaded) {
 		// Attempt to load the icon/title data.
@@ -1042,7 +1042,7 @@ int NintendoDS::loadFieldData(void)
 
 	// Game ID.
 	d->fields->addField_string(C_("RomData", "Game ID"),
-		latin1_to_utf8(romHeader->id6, ARRAY_SIZE(romHeader->id6)));
+		latin1_to_utf8(romHeader->id6, ARRAY_SIZE_I(romHeader->id6)));
 
 	// Publisher.
 	const char *const publisher_title = C_("RomData", "Publisher");
@@ -1387,7 +1387,7 @@ int NintendoDS::loadMetaData(void)
 	if (s_title.empty()) {
 		// Full title is not available.
 		// Use the short title from the NDS header.
-		s_title = latin1_to_utf8(romHeader->title, ARRAY_SIZE(romHeader->title));
+		s_title = latin1_to_utf8(romHeader->title, ARRAY_SIZE_I(romHeader->title));
 	}
 
 	d->metaData->addMetaData_string(Property::Title, s_title);

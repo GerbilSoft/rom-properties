@@ -1863,7 +1863,7 @@ int GameCube::loadFieldData(void)
 				"wii_key_tbl[] size is incorrect.");
 
 			const char *s_key_name;
-			if ((int)encKey >= 0 && (int)encKey < ARRAY_SIZE(wii_key_tbl)) {
+			if ((int)encKey >= 0 && (int)encKey < ARRAY_SIZE_I(wii_key_tbl)) {
 				s_key_name = dpgettext_expr(RP_I18N_DOMAIN, "GameCube|KeyIdx", wii_key_tbl[(int)encKey]);
 			} else {
 				// WiiPartition::EncKey::Unknown

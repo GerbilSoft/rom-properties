@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension.                                    *
  * common.h: Common types and macros.                                      *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -23,8 +23,13 @@
  * Reference: http://stackoverflow.com/questions/8018843/macro-definition-array-size
  */
 #define ARRAY_SIZE(x) \
-	((int)(((sizeof(x) / sizeof(x[0]))) / \
-		(size_t)(!(sizeof(x) % sizeof(x[0])))))
+	(((sizeof(x) / sizeof(x[0]))) / \
+		(size_t)(!(sizeof(x) % sizeof(x[0]))))
+
+/**
+ * Number of elements in an array. (cast to int)
+ */
+#define ARRAY_SIZE_I(x) ((int)(ARRAY_SIZE(x)))
 
 // PACKED struct attribute.
 // Use in conjunction with #pragma pack(1).

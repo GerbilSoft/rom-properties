@@ -17,17 +17,6 @@
 # define RP_C_API
 #endif
 
-/**
- * Number of elements in an array.
- *
- * Includes a static check for pointers to make sure
- * a dynamically-allocated array wasn't specified.
- * Reference: http://stackoverflow.com/questions/8018843/macro-definition-array-size
- */
-#define ARRAY_SIZE(x) \
-	((int)(((sizeof(x) / sizeof(x[0]))) / \
-		(size_t)(!(sizeof(x) % sizeof(x[0])))))
-
 // Some compilers don't seem to provide the static_assert() macro,
 // even though they default to C11.
 // OpenBSD 6.6: clang-8.0.1

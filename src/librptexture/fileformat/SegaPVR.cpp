@@ -1301,7 +1301,7 @@ SegaPVR::SegaPVR(IRpFile *file)
 	d->dimensions[1] = d->pvrHeader.height;
 
 	// Set the MIME type.
-	if ((int)d->pvrType < ARRAY_SIZE(d->mimeType_tbl)-1) {
+	if ((int)d->pvrType < ARRAY_SIZE_I(d->mimeType_tbl)-1) {
 		d->mimeType = d->mimeType_tbl[(int)d->pvrType];
 	}
 }

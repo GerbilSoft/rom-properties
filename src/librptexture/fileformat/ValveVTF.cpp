@@ -231,8 +231,8 @@ unsigned int ValveVTFPrivate::calcImageSize(VTF_IMAGE_FORMAT format, unsigned in
 	static_assert(ARRAY_SIZE(mul_tbl) == VTF_IMAGE_FORMAT_MAX,
 		"mul_tbl[] is not the correct size.");
 
-	assert(format >= 0 && format < ARRAY_SIZE(mul_tbl));
-	if (format < 0 || format >= ARRAY_SIZE(mul_tbl)) {
+	assert(format >= 0 && format < ARRAY_SIZE_I(mul_tbl));
+	if (format < 0 || format >= ARRAY_SIZE_I(mul_tbl)) {
 		// Invalid format.
 		return 0;
 	}
@@ -306,8 +306,8 @@ unsigned int ValveVTFPrivate::getMinBlockSize(VTF_IMAGE_FORMAT format)
 	static_assert(ARRAY_SIZE(block_size_tbl) == VTF_IMAGE_FORMAT_MAX,
 		"block_size_tbl[] is not the correct size.");
 
-	assert(format >= 0 && format < ARRAY_SIZE(block_size_tbl));
-	if (format < 0 || format >= ARRAY_SIZE(block_size_tbl)) {
+	assert(format >= 0 && format < ARRAY_SIZE_I(block_size_tbl));
+	if (format < 0 || format >= ARRAY_SIZE_I(block_size_tbl)) {
 		// Invalid format.
 		return 0;
 	}
@@ -856,7 +856,7 @@ const char *ValveVTF::pixelFormat(void) const
 
 	const int fmt = d->vtfHeader.highResImageFormat;
 
-	if (fmt >= 0 && fmt < ARRAY_SIZE(d->img_format_tbl)) {
+	if (fmt >= 0 && fmt < ARRAY_SIZE_I(d->img_format_tbl)) {
 		if (d->img_format_tbl[fmt] != nullptr) {
 			return d->img_format_tbl[fmt];
 		}
@@ -1008,7 +1008,7 @@ int ValveVTF::getFields(LibRpBase::RomFields *fields) const
 	// Low-resolution image format.
 	const char *img_format;
 	if (vtfHeader->lowResImageFormat >= 0 &&
-	    vtfHeader->lowResImageFormat < ARRAY_SIZE(d->img_format_tbl))
+	    vtfHeader->lowResImageFormat < ARRAY_SIZE_I(d->img_format_tbl))
 	{
 		img_format = d->img_format_tbl[vtfHeader->lowResImageFormat];
 	} else if (vtfHeader->lowResImageFormat < 0) {

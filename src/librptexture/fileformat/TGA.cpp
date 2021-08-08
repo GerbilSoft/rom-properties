@@ -848,7 +848,7 @@ int TGA::getFields(RomFields *fields) const
 
 		// Comments
 		string s_comments;
-		for (int i = 0; i < ARRAY_SIZE(tgaExtArea->author_comment); i++) {
+		for (size_t i = 0; i < ARRAY_SIZE(tgaExtArea->author_comment); i++) {
 			if (tgaExtArea->author_comment[i][0] != '\0') {
 				if (!s_comments.empty()) {
 					s_comments += '\n';

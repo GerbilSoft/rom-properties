@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * NintendoBadge.hpp: Nintendo Badge Arcade image reader.                  *
  *                                                                         *
- * Copyright (c) 2017-2020 by David Korth.                                 *
+ * Copyright (c) 2017-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -441,7 +441,7 @@ NintendoBadge::NintendoBadge(IRpFile *file)
 	}
 
 	// Set the MIME type.
-	if ((int)d->badgeType < ARRAY_SIZE(d->mimeType_tbl)-1) {
+	if ((int)d->badgeType < ARRAY_SIZE_I(d->mimeType_tbl)-1) {
 		d->mimeType = d->mimeType_tbl[(int)d->badgeType];
 	}
 }
@@ -717,7 +717,7 @@ int NintendoBadge::loadFieldData(void)
 
 				if (prbs->name[langID][0] != cpu_to_le16('\0')) {
 					pMap_name->insert(std::make_pair(lc,
-						utf16le_to_utf8(prbs->name[langID], ARRAY_SIZE(prbs->name[langID]))));
+						utf16le_to_utf8(prbs->name[langID], ARRAY_SIZE_I(prbs->name[langID]))));
 				}
 			}
 
@@ -817,7 +817,7 @@ int NintendoBadge::loadFieldData(void)
 				}
 			}
 			// NOTE: There aer 16 name entries, but only 12 languages...
-			if (lang >= 0 && lang < ARRAY_SIZE(cabs->name)) {
+			if (lang >= 0 && lang < ARRAY_SIZE_I(cabs->name)) {
 				d->fields->addField_string(s_name_title,
 					utf16le_to_utf8(cabs->name[lang], sizeof(cabs->name[lang])));
 			}

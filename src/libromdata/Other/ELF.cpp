@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * ELF.cpp: Executable and Linkable Format reader.                         *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -1137,7 +1137,7 @@ int ELF::loadFieldData(void)
 	};
 	const char *const format_title = C_("ELF", "Format");
 	if (d->elfFormat > ELFPrivate::Elf_Format::Unknown &&
-	    (int)d->elfFormat < ARRAY_SIZE(exec_type_tbl))
+	    (int)d->elfFormat < ARRAY_SIZE_I(exec_type_tbl))
 	{
 		d->fields->addField_string(format_title,
 			dpgettext_expr(RP_I18N_DOMAIN, "RomData|ExecType", exec_type_tbl[(int)d->elfFormat]));

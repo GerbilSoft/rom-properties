@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * NGPC.cpp: Neo Geo Pocket (Color) ROM reader.                            *
  *                                                                         *
- * Copyright (c) 2019-2020 by David Korth.                                 *
+ * Copyright (c) 2019-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -128,7 +128,7 @@ NGPC::NGPC(IRpFile *file)
 	}
 
 	// Set the MIME type.
-	if ((int)d->romType < ARRAY_SIZE(d->mimeType_tbl)-1) {
+	if ((int)d->romType < ARRAY_SIZE_I(d->mimeType_tbl)-1) {
 		d->mimeType = d->mimeType_tbl[(int)d->romType];
 	}
 }

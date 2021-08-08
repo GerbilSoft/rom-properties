@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * XboxLanguage.cpp: Get the system language for Microsoft Xbox systems.   *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -86,8 +86,8 @@ uint32_t XboxLanguage::getXbox360LanguageCode(int langID)
 	};
 
 	assert(langID >= 0);
-	assert(langID < ARRAY_SIZE(langID_to_lc));
-	if (langID < 0 || langID >= ARRAY_SIZE(langID_to_lc)) {
+	assert(langID < ARRAY_SIZE_I(langID_to_lc));
+	if (langID < 0 || langID >= ARRAY_SIZE_I(langID_to_lc)) {
 		// Out of range.
 		return 0;
 	}

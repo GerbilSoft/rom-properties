@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * NESMappers.cpp: NES mapper data.                                        *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * Copyright (c) 2016-2018 by Egor.                                        *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
@@ -911,7 +911,7 @@ const char *NESMappers::lookup_ines(int mapper)
 	} else if (mapper < 512) {
 		// NES 2.0 Plane 1 [256-511]
 		mapper -= 256;
-		if (mapper >= ARRAY_SIZE(NESMappersPrivate::mappers_plane1)) {
+		if (mapper >= ARRAY_SIZE_I(NESMappersPrivate::mappers_plane1)) {
 			// Mapper number is out of range for plane 1.
 			return nullptr;
 		}
@@ -919,7 +919,7 @@ const char *NESMappers::lookup_ines(int mapper)
 	} else if (mapper < 768) {
 		// NES 2.0 Plane 2 [512-767]
 		mapper -= 512;
-		if (mapper >= ARRAY_SIZE(NESMappersPrivate::mappers_plane2)) {
+		if (mapper >= ARRAY_SIZE_I(NESMappersPrivate::mappers_plane2)) {
 			// Mapper number is out of range for plane 2.
 			return nullptr;
 		}
@@ -1004,7 +1004,7 @@ int NESMappers::tnesMapperToInesMapper(int tnes_mapper)
 		185,	// VROM-disable
 	};
 
-	if (tnes_mapper < 0 || tnes_mapper >= ARRAY_SIZE(ines_mappers)) {
+	if (tnes_mapper < 0 || tnes_mapper >= ARRAY_SIZE_I(ines_mappers)) {
 		// Undefined TNES mapper.
 		return -1;
 	} else if (ines_mappers[tnes_mapper] == 255) {

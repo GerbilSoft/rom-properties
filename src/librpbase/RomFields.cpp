@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * RomFields.cpp: ROM fields class.                                        *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -151,9 +151,11 @@ const char *RomFields::ageRatingAbbrev(AgeRatingsCountry country)
 		"PEGI", "MEKU", "PEGI-PT", "BBFC",
 		"ACB",  "GRB",  "CGSRR",
 	};
+	static_assert(ARRAY_SIZE_I(abbrevs) == (int)AgeRatingsCountry::Taiwan+1,
+		"Age Ratings abbrevations needs to be updated!");
 
-	assert((int)country >= 0 && (int)country < ARRAY_SIZE(abbrevs));
-	if ((int)country < 0 || (int)country >= ARRAY_SIZE(abbrevs)) {
+	assert((int)country >= 0 && (int)country < ARRAY_SIZE_I(abbrevs));
+	if ((int)country < 0 || (int)country >= ARRAY_SIZE_I(abbrevs)) {
 		// Index is out of range.
 		return nullptr;
 	}

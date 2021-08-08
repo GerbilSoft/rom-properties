@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * KeyStoreUI.cpp: Key store UI base class.                                *
  *                                                                         *
- * Copyright (c) 2012-2020 by David Korth.                                 *
+ * Copyright (c) 2012-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -236,7 +236,7 @@ KeyStoreUIPrivate::KeyStoreUIPrivate(KeyStoreUI *q)
 
 	int keyIdxStart = 0;
 	auto sectIter = sections.begin();
-	for (int encSysNum = 0; encSysNum < ARRAY_SIZE(encKeyFns); encSysNum++, ++sectIter) {
+	for (size_t encSysNum = 0; encSysNum < ARRAY_SIZE(encKeyFns); encSysNum++, ++sectIter) {
 		const EncKeyFns_t *const encSys = &encKeyFns[encSysNum];
 		const int keyCount = encSys->pfnKeyCount();
 		assert(keyCount > 0);
@@ -313,7 +313,7 @@ void KeyStoreUIPrivate::reset(void)
 
 	int keyIdxStart = 0;
 	KeyManager::KeyData_t keyData;
-	for (int encSysNum = 0; encSysNum < ARRAY_SIZE(encKeyFns); encSysNum++) {
+	for (size_t encSysNum = 0; encSysNum < ARRAY_SIZE(encKeyFns); encSysNum++) {
 		const KeyStoreUIPrivate::EncKeyFns_t *const encSys = &encKeyFns[encSysNum];
 		const int keyCount = encSys->pfnKeyCount();
 		assert(keyCount > 0);
@@ -836,9 +836,9 @@ const char *KeyStoreUI::sectName(int sectIdx) const
 	RP_D(const KeyStoreUI);
 	assert(sectIdx >= 0);
 	assert(sectIdx < (int)d->sections.size());
-	assert(sectIdx < ARRAY_SIZE(d->encKeyFns));
+	assert(sectIdx < ARRAY_SIZE_I(d->encKeyFns));
 	if (sectIdx < 0 || sectIdx >= static_cast<int>(d->sections.size()) ||
-		sectIdx >= ARRAY_SIZE(d->encKeyFns))
+		sectIdx >= ARRAY_SIZE_I(d->encKeyFns))
 	{
 		return nullptr;
 	}

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * SNES.cpp: Super Nintendo ROM image reader.                              *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -280,7 +280,7 @@ bool SNESPrivate::isSnesRomHeaderValid(const SNES_RomHeader *romHeader, bool isH
 	// Check: Final Fantasy V - Expert v0.947 by JCE3000GT (Hack) [a1].smc
 	// - Zero out the low 0x7F00 bytes.
 	// - ROM is incorrectly detected as LoROM.
-	for (int i = 0; i < ARRAY_SIZE(romHeader->snes.title); i++) {
+	for (size_t i = 0; i < ARRAY_SIZE(romHeader->snes.title); i++) {
 		const uint8_t chr = static_cast<uint8_t>(romHeader->snes.title[i]);
 		if (chr == 0) {
 			if (i == 0) {
@@ -335,7 +335,7 @@ bool SNESPrivate::isSnesRomHeaderValid(const SNES_RomHeader *romHeader, bool isH
 		}
 
 		// Game ID must contain alphanumeric characters or a space.
-		for (int i = 0; i < ARRAY_SIZE(romHeader->snes.ext.id4); i++) {
+		for (size_t i = 0; i < ARRAY_SIZE(romHeader->snes.ext.id4); i++) {
 			// ID4 should be in the format "SMWJ" or "MW  ".
 			if (ISALNUM(romHeader->snes.ext.id4[i])) {
 				// Alphanumeric character.

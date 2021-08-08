@@ -106,11 +106,11 @@ void OptionsTab::reset(void)
 	// PAL language code
 	const uint32_t lc = config->palLanguageForGameTDB();
 	int idx = 0;
-	for (; idx < ARRAY_SIZE(d->pal_lc); idx++) {
+	for (; idx < ARRAY_SIZE_I(d->pal_lc); idx++) {
 		if (d->pal_lc[idx] == lc)
 			break;
 	}
-	if (idx >= ARRAY_SIZE(d->pal_lc)) {
+	if (idx >= ARRAY_SIZE_I(d->pal_lc)) {
 		// Out of range. Default to 'en'.
 		idx = d->pal_lc_idx_def;
 	}

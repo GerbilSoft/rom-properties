@@ -120,7 +120,7 @@ N64::N64(IRpFile *file)
 			// swap2 format. (wordswapped)
 			// Convert the header to Z64 first.
 			#define UNSWAP2(x) (uint32_t)(((x) >> 16) | ((x) << 16))
-			for (int i = 0; i < ARRAY_SIZE(d->romHeader.u32); i++) {
+			for (size_t i = 0; i < ARRAY_SIZE(d->romHeader.u32); i++) {
 				d->romHeader.u32[i] = UNSWAP2(d->romHeader.u32[i]);
 			}
 			break;

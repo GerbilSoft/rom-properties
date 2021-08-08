@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * MachO.cpp: Mach-O executable format.                                    *
  *                                                                         *
- * Copyright (c) 2019-2020 by David Korth.                                 *
+ * Copyright (c) 2019-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -519,7 +519,7 @@ int MachO::loadFieldData(void)
 		};
 		const char *const format_title = C_("MachO", "Format");
 		if (machFormat > MachOPrivate::Mach_Format::Unknown &&
-		    (int)machFormat < ARRAY_SIZE(exec_type_tbl))
+		    (int)machFormat < ARRAY_SIZE_I(exec_type_tbl))
 		{
 			d->fields->addField_string(format_title,
 				dpgettext_expr(RP_I18N_DOMAIN, "RomData|ExecType", exec_type_tbl[(int)machFormat]));

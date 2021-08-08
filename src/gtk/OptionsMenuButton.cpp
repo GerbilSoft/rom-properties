@@ -706,7 +706,7 @@ options_menu_button_update_op(OptionsMenuButton *widget,
 	GList *l = gtk_container_get_children(GTK_CONTAINER(widget->menuOptions));
 
 	// Skip the standard actions and separator.
-	for (int i = 0; i < ARRAY_SIZE(stdacts) && l != nullptr; i++) {
+	for (size_t i = 0; i < ARRAY_SIZE(stdacts) && l != nullptr; i++) {
 		l = l->next;
 	}
 

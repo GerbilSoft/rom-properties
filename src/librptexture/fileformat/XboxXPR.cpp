@@ -773,7 +773,7 @@ int XboxXPR::getFields(LibRpBase::RomFields *fields) const
 		"XPR0", "XPR1", "XPR2"
 	};
 	if (d->xprType > XboxXPRPrivate::XPRType::Unknown &&
-	    (int)d->xprType < ARRAY_SIZE(type_tbl))
+	    (int)d->xprType < ARRAY_SIZE_I(type_tbl))
 	{
 		fields->addField_string(C_("XboxXPR", "Type"), type_tbl[(int)d->xprType]);
 	} else {

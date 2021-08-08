@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * NCCHReader.cpp: Nintendo 3DS NCCH reader.                               *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -13,8 +13,8 @@
 
 // librpbase, librpfile
 #ifdef ENABLE_DECRYPTION
-#include "librpbase/crypto/AesCipherFactory.hpp"
-#include "librpbase/crypto/IAesCipher.hpp"
+#  include "librpbase/crypto/AesCipherFactory.hpp"
+#  include "librpbase/crypto/IAesCipher.hpp"
 #endif /* ENABLE_DECRYPTION */
 using namespace LibRpBase;
 using LibRpFile::IRpFile;
@@ -278,7 +278,7 @@ NCCHReaderPrivate::NCCHReaderPrivate(NCCHReader *q,
 				0, N3DS_NCCH_SECTION_EXEFS));
 
 			// ExeFS files
-			for (int i = 0; i < ARRAY_SIZE(exefs_header.files); i++) {
+			for (size_t i = 0; i < ARRAY_SIZE(exefs_header.files); i++) {
 				const N3DS_ExeFS_File_Header_t *file_header = &exefs_header.files[i];
 				if (file_header->name[0] == 0)
 					continue;	// or break?
@@ -1004,9 +1004,9 @@ IRpFile *NCCHReader::open(int section, const char *filename)
 	}
 
 	const N3DS_ExeFS_File_Header_t *file_header = nullptr;
-	for (int i = 0; i < ARRAY_SIZE(exefs_header->files); i++) {
+	for (size_t i = 0; i < ARRAY_SIZE(exefs_header->files); i++) {
 		if (!strncmp(exefs_header->files[i].name, filename, sizeof(exefs_header->files[i].name))) {
-			// Found "icon".
+			// Found the file.
 			file_header = &exefs_header->files[i];
 			break;
 		}

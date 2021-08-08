@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * Xbox_XBE.cpp: Microsoft Xbox executable reader.                         *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -709,7 +709,7 @@ int Xbox_XBE::loadFieldData(void)
 
 	// Game name
 	d->fields->addField_string(C_("RomData", "Title"),
-		utf16le_to_utf8(xbeCertificate->title_name, ARRAY_SIZE(xbeCertificate->title_name)));
+		utf16le_to_utf8(xbeCertificate->title_name, ARRAY_SIZE_I(xbeCertificate->title_name)));
 
 	// Original PE filename
 	const uint32_t base_address = le32_to_cpu(d->xbeHeader.base_address);
@@ -887,7 +887,7 @@ int Xbox_XBE::loadMetaData(void)
 
 	// Title
 	d->metaData->addMetaData_string(Property::Title,
-		utf16le_to_utf8(xbeCertificate->title_name, ARRAY_SIZE(xbeCertificate->title_name)));
+		utf16le_to_utf8(xbeCertificate->title_name, ARRAY_SIZE_I(xbeCertificate->title_name)));
 
 	// Publisher
 	d->metaData->addMetaData_string(Property::Publisher, d->getPublisher());
