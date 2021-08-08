@@ -1293,7 +1293,7 @@ SegaPVR::SegaPVR(IRpFile *file)
 			UNREF_AND_NULL_NOCHK(d->file);
 			d->pvrType = SegaPVRPrivate::PVRType::Unknown;
 			d->isValid = false;
-			break;
+			return;
 	}
 
 	// Cache the dimensions for the FileFormat base class.
@@ -1301,8 +1301,7 @@ SegaPVR::SegaPVR(IRpFile *file)
 	d->dimensions[1] = d->pvrHeader.height;
 
 	// Set the MIME type.
-	// Set the MIME type.
-	if (d->isValid && (int)d->pvrType < ARRAY_SIZE(d->mimeType_tbl)-1) {
+	if ((int)d->pvrType < ARRAY_SIZE(d->mimeType_tbl)-1) {
 		d->mimeType = d->mimeType_tbl[(int)d->pvrType];
 	}
 }
