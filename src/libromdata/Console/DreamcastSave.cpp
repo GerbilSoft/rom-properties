@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * DreamcastSave.cpp: Sega Dreamcast save file reader.                     *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -310,7 +310,7 @@ unsigned int DreamcastSavePrivate::readAndVerifyVmsHeader(uint32_t address)
 	// Monochrome icon is usually within the first 256 bytes
 	// of the start of the file.
 	if ((loaded_headers & DC_IS_ICONDATA_VMS) ||
-	    (vms_header.dc_description[0] >= sizeof(DC_VMS_ICONDATA_Header) &&
+	    ((unsigned int)vms_header.dc_description[0] >= sizeof(DC_VMS_ICONDATA_Header) &&
 	     vms_header.dc_description[1] == 0 &&
 	     vms_header.dc_description[2] == 0 &&
 	     vms_header.dc_description[3] == 0))
