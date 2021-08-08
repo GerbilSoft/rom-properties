@@ -456,7 +456,6 @@ void AchievementsTabPrivate::reset(void)
 
 	// Add the achievements.
 	// TODO: Copy over CustomDraw from RP_ShellPropSheetExt for newline handling?
-	LVITEM item;
 	const Achievements *const pAch = Achievements::instance();
 	for (int i = 0; i < (int)Achievements::ID::Max; i++) {
 		const Achievements::ID id = (Achievements::ID)i;
@@ -476,6 +475,7 @@ void AchievementsTabPrivate::reset(void)
 		}
 
 		// Column 0: Achievement
+		LVITEM item;
 		item.mask = LVIF_TEXT | LVIF_IMAGE;
 		item.iItem = i;
 		item.iSubItem = 0;
