@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * SegaPVR.cpp: Sega PVR texture reader.                                   *
  *                                                                         *
- * Copyright (c) 2017-2020 by David Korth.                                 *
+ * Copyright (c) 2017-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -1302,7 +1302,7 @@ SegaPVR::SegaPVR(IRpFile *file)
 
 	// Set the MIME type.
 	// Set the MIME type.
-	if ((int)d->pvrType < ARRAY_SIZE(d->mimeType_tbl)-1) {
+	if (d->isValid && (int)d->pvrType < ARRAY_SIZE(d->mimeType_tbl)-1) {
 		d->mimeType = d->mimeType_tbl[(int)d->pvrType];
 	}
 }
