@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * CacheTab.cpp: Thumbnail Cache tab for rp-config.                        *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -475,12 +475,8 @@ int CacheTabPrivate::clearThumbnailCacheVista(void)
 
 		// Free the display name and description,
 		// since we don't need them.
-		if (pwszDisplayName) {
-			CoTaskMemFree(pwszDisplayName);
-		}
-		if (pwszDescription) {
-			CoTaskMemFree(pwszDescription);
-		}
+		CoTaskMemFree(pwszDisplayName);
+		CoTaskMemFree(pwszDescription);
 
 		// Did initialization succeed?
 		if (hr == S_FALSE) {

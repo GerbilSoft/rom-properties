@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libwin32common)                   *
  * userdirs.cpp: Find user directories.                                    *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -138,10 +138,8 @@ string getCacheDirectory(void)
 			// Path obtained.
 			cache_dir = W2U8(pszPath);
 		}
-		if (pszPath) {
-			CoTaskMemFree(pszPath);
-			pszPath = nullptr;
-		}
+		CoTaskMemFree(pszPath);
+		pszPath = nullptr;
 
 		if (cache_dir.empty()) {
 			// SHGetKnownFolderPath(FOLDERID_LocalAppDataLow) failed.
@@ -154,10 +152,8 @@ string getCacheDirectory(void)
 				// Path obtained.
 				cache_dir = W2U8(pszPath);
 			}
-			if (pszPath) {
-				CoTaskMemFree(pszPath);
-				pszPath = nullptr;
-			}
+			CoTaskMemFree(pszPath);
+			pszPath = nullptr;
 		}
 	}
 
