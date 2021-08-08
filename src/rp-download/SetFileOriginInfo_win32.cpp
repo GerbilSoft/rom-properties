@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (rp-download)                         *
  * SetFileOriginInfo_win32.cpp: setFileOriginInfo() function. (Win32 version) *
  *                                                                            *
- * Copyright (c) 2016-2020 by David Korth.                                    *
+ * Copyright (c) 2016-2021 by David Korth.                                    *
  * SPDX-License-Identifier: GPL-2.0-or-later                                  *
  ******************************************************************************/
 
@@ -139,11 +139,9 @@ int setFileOriginInfo(FILE *file, const TCHAR *filename, const TCHAR *url, time_
 			CloseHandle(hAds);
 		} else {
 			// Error opening the ADS.
+			err = w32err_to_posix(GetLastError());
 			if (err == 0) {
-				err = w32err_to_posix(GetLastError());
-				if (err == 0) {
-					err = EIO;
-				}
+				err = EIO;
 			}
 		}
 	}
