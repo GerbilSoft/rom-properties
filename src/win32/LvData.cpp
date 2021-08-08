@@ -242,7 +242,7 @@ void LvData::doSort(int column, RomFields::ColSortOrder direction)
 		assert(b >= 0);
 		assert(b < (int)vvStr.size());
 		if (a < 0 || a >= (int)vvStr.size() ||
-		    b < 0 || a >= (int)vvStr.size())
+		    b < 0 || b >= (int)vvStr.size())
 		{
 			return false;
 		}
