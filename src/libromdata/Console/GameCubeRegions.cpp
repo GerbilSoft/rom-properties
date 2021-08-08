@@ -71,6 +71,7 @@ const char *GameCubeRegions::gcnRegionToString(unsigned int gcnRegion, char idRe
 				case 'C':	// China (unofficial?)
 					return C_("Region", "China");
 			}
+			break;
 
 		case GCN_REGION_EUR:
 			if (pIsDefault) {
@@ -103,6 +104,7 @@ const char *GameCubeRegions::gcnRegionToString(unsigned int gcnRegion, char idRe
 				case 'U':	// Australia
 					return C_("Region", "Australia");
 			}
+			break;
 
 		// USA and South Korea regions don't have separate
 		// subregions for other countries.
