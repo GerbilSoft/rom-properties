@@ -3,7 +3,7 @@
  * Nintendo3DS.hpp: Nintendo 3DS ROM reader.                               *
  * Handles CCI/3DS, CIA, and SMDH files.                                   *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -858,6 +858,7 @@ vector<uint16_t> Nintendo3DSPrivate::n3dsRegionToGameTDB(uint32_t smdhRegion, ch
 	 * - https://github.com/dolphin-emu/dolphin/blob/4c9c4568460df91a38d40ac3071d7646230a8d0f/Source/Core/DiscIO/Enums.cpp
 	 */
 	vector<uint16_t> ret;
+	ret.reserve(3);
 
 	int fallback_region = 0;
 	switch (smdhRegion) {
