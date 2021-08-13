@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE4/KF5)                         *
  * AchQtDBus.cpp: QtDBus notifications for achievements.                   *
  *                                                                         *
- * Copyright (c) 2020 by David Korth.                                      *
+ * Copyright (c) 2020-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -204,7 +204,7 @@ QImage AchQtDBusPrivate::loadSpriteSheet(int iconSize)
 	}
 
 	// Sprite sheet is correct.
-	map_imgAchSheet.emplace(std::make_pair(iconSize, imgAchSheet));
+	map_imgAchSheet.emplace(iconSize, imgAchSheet);
 	return imgAchSheet;
 }
 

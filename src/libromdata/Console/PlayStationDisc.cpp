@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * PlayStationDisc.cpp: PlayStation 1 and 2 disc image reader.             *
  *                                                                         *
- * Copyright (c) 2019-2020 by David Korth.                                 *
+ * Copyright (c) 2019-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -147,7 +147,7 @@ int PlayStationDiscPrivate::parse_system_cnf(void *user, const char *section, co
 		[](unsigned char c) { return std::toupper(c); });
 
 	PlayStationDiscPrivate *const d = static_cast<PlayStationDiscPrivate*>(user);
-	auto ret = d->system_cnf.emplace(std::make_pair(std::move(s_name), value));
+	auto ret = d->system_cnf.emplace(std::move(s_name), value);
 	return (ret.second ? 0 : 1);
 }
 
@@ -174,7 +174,7 @@ int PlayStationDiscPrivate::loadSystemCnf(IsoPartition *pt)
 			if (f_psx_exe && f_psx_exe->isOpen()) {
 				// Found PSX.EXE.
 				boot_filename = "PSX.EXE";
-				system_cnf.emplace(std::make_pair("BOOT", boot_filename));
+				system_cnf.emplace("BOOT", boot_filename);
 				if (f_psx_exe) {
 					f_psx_exe->unref();
 				}

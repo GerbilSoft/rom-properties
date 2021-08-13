@@ -132,8 +132,7 @@ static int recursiveScan(const char *path, list<pair<tstring, uint8_t> > &rlist)
 		}
 
 		// Add the filename and file type.
-		// NOTE: emplace_back() doesn't support implicit std::make_pair on MSVC 2010.
-		rlist.emplace_back(std::make_pair(std::move(fullpath), d_type));
+		rlist.emplace_back(std::move(fullpath), d_type);
 	};
 	closedir(pdir);
 

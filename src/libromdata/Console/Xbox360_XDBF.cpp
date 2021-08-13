@@ -3,7 +3,7 @@
  * Xbox360_XDBF.cpp: Microsoft Xbox 360 game resource reader.              *
  * Handles XDBF files and sections.                                        *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -756,7 +756,7 @@ rp_image *Xbox360_XDBF_Private::loadImage(uint64_t image_id)
 
 	if (img) {
 		// Save the image for later use.
-		map_images.insert(std::make_pair(image_id, img));
+		map_images.emplace(image_id, img);
 	}
 
 	return img;
@@ -854,7 +854,7 @@ int Xbox360_XDBF_Private::addFields_strings_SPA(RomFields *fields) const
 	// Title fields.
 	RomFields::StringMultiMap_t *const pMap_title = new RomFields::StringMultiMap_t();
 	if (!title_en.empty()) {
-		pMap_title->insert(std::make_pair('en', title_en));
+		pMap_title->emplace('en', title_en);
 	}
 	for (int langID = XDBF_LANGUAGE_JAPANESE; langID < XDBF_LANGUAGE_MAX; langID++) {
 		if (strTblIndexes[langID] < 0) {
@@ -883,7 +883,7 @@ int Xbox360_XDBF_Private::addFields_strings_SPA(RomFields *fields) const
 		if (lc == 0)
 			continue;
 
-		pMap_title->insert(std::make_pair(lc, std::move(title_lang)));
+		pMap_title->emplace(lc, std::move(title_lang));
 	}
 
 	const char *const s_title_title = C_("RomData", "Title");
@@ -1089,7 +1089,7 @@ int Xbox360_XDBF_Private::addFields_achievements_SPA(void)
 			continue;
 		}
 
-		mvv_xach->insert(std::make_pair(lc, std::move(*pvv_xach[langID])));
+		mvv_xach->emplace(lc, std::move(*pvv_xach[langID]));
 		delete pvv_xach[langID];
 	}
 
@@ -1297,7 +1297,7 @@ int Xbox360_XDBF_Private::addFields_avatarAwards_SPA(void)
 			continue;
 		}
 
-		mvv_xgaa->insert(std::make_pair(lc, std::move(*pvv_xgaa[langID])));
+		mvv_xgaa->emplace(lc, std::move(*pvv_xgaa[langID]));
 		delete pvv_xgaa[langID];
 	}
 

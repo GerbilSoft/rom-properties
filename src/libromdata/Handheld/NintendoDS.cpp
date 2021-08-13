@@ -1025,10 +1025,9 @@ int NintendoDS::loadFieldData(void)
 				continue;
 
 			if (d->nds_icon_title.title[langID][0] != cpu_to_le16('\0')) {
-				pMap_full_title->insert(std::make_pair(lc,
-					utf16_to_utf8(
-						d->nds_icon_title.title[langID],
-						ARRAY_SIZE(d->nds_icon_title.title[langID]))));
+				pMap_full_title->emplace(lc, utf16_to_utf8(
+					d->nds_icon_title.title[langID],
+					ARRAY_SIZE(d->nds_icon_title.title[langID])));
 			}
 		}
 

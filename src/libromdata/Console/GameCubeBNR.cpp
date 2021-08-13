@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * GameCubeBNR.cpp: Nintendo GameCube banner reader.                       *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -580,31 +580,31 @@ int GameCubeBNR::loadFieldData(void)
 
 			// Game name.
 			if (comment.gamename_full[0] != '\0') {
-				pMap_gamename->insert(std::make_pair(lc,
-					cp1252_to_utf8(comment.gamename_full,
-					ARRAY_SIZE(comment.gamename_full))));
+				pMap_gamename->emplace(lc, cp1252_to_utf8(
+					comment.gamename_full,
+					ARRAY_SIZE(comment.gamename_full)));
 			} else if (comment.gamename[0] != '\0') {
-				pMap_gamename->insert(std::make_pair(lc,
-					cp1252_to_utf8(comment.gamename,
-					ARRAY_SIZE(comment.gamename))));
+				pMap_gamename->emplace(lc, cp1252_to_utf8(
+					comment.gamename,
+					ARRAY_SIZE(comment.gamename)));
 			}
 
 			// Company.
 			if (comment.company_full[0] != '\0') {
-				pMap_company->insert(std::make_pair(lc,
-					cp1252_to_utf8(comment.company_full,
-					ARRAY_SIZE(comment.company_full))));
+				pMap_company->emplace(lc, cp1252_to_utf8(
+					comment.company_full,
+					ARRAY_SIZE(comment.company_full)));
 			} else if (comment.company[0] != '\0') {
-				pMap_company->insert(std::make_pair(lc,
-					cp1252_to_utf8(comment.company,
-					ARRAY_SIZE(comment.company))));
+				pMap_company->emplace(lc, cp1252_to_utf8(
+					comment.company,
+					ARRAY_SIZE(comment.company)));
 			}
 
 			// Game description.
 			if (comment.gamedesc[0] != '\0') {
-				pMap_gamedesc->insert(std::make_pair(lc,
-					cp1252_to_utf8(comment.gamedesc,
-					ARRAY_SIZE(comment.gamedesc))));
+				pMap_gamedesc->emplace(lc, cp1252_to_utf8(
+					comment.gamedesc,
+					ARRAY_SIZE(comment.gamedesc)));
 			}
 		}
 
@@ -862,8 +862,8 @@ int GameCubeBNR::addField_gameInfo(LibRpBase::RomFields *fields, uint32_t gcnReg
 
 			// Get the game info string.
 			// TODO: Always use GCN_REGION_EUR here instead of gcnRegion?
-			string s_gameInfo = d->getGameInfoString(&d->comments[langID], gcnRegion);
-			pMap_gameinfo->insert(std::make_pair(lc, std::move(s_gameInfo)));
+			pMap_gameinfo->emplace(lc,
+				d->getGameInfoString(&d->comments[langID], gcnRegion));
 		}
 
 		// Add the field.

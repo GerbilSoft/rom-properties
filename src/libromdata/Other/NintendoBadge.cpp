@@ -716,8 +716,8 @@ int NintendoBadge::loadFieldData(void)
 					continue;
 
 				if (prbs->name[langID][0] != cpu_to_le16('\0')) {
-					pMap_name->insert(std::make_pair(lc,
-						utf16le_to_utf8(prbs->name[langID], ARRAY_SIZE_I(prbs->name[langID]))));
+					pMap_name->emplace(lc, utf16le_to_utf8(
+						prbs->name[langID], ARRAY_SIZE_I(prbs->name[langID])));
 				}
 			}
 

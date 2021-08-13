@@ -555,7 +555,7 @@ QLabel *RomDataViewPrivate::initString(QLabel *lblDesc,
 		tab.form->addRow(lblDesc, lblString);
 	}
 
-	map_fieldIdx.insert(std::make_pair(fieldIdx, lblString));
+	map_fieldIdx.emplace(fieldIdx, lblString);
 	return lblString;
 }
 
@@ -613,7 +613,7 @@ void RomDataViewPrivate::initBitfield(QLabel *lblDesc,
 	}
 
 	tabs[field.tabIdx].form->addRow(lblDesc, gridLayout);
-	map_fieldIdx.insert(std::make_pair(fieldIdx, gridLayout));
+	map_fieldIdx.emplace(fieldIdx, gridLayout);
 }
 
 /**
@@ -796,7 +796,7 @@ void RomDataViewPrivate::initListData(QLabel *lblDesc,
 		// Single row.
 		tabs[field.tabIdx].form->addRow(lblDesc, treeView);
 	}
-	map_fieldIdx.insert(std::make_pair(fieldIdx, treeView));
+	map_fieldIdx.emplace(fieldIdx, treeView);
 
 	// Row height is recalculated when the window is first visible
 	// and/or the system theme is changed.
@@ -808,7 +808,7 @@ void RomDataViewPrivate::initListData(QLabel *lblDesc,
 	treeView->installEventFilter(q);
 
 	if (isMulti) {
-		vecListDataMulti.emplace_back(std::make_pair(treeView, listModel));
+		vecListDataMulti.emplace_back(treeView, listModel);
 	}
 }
 
@@ -993,7 +993,7 @@ void RomDataViewPrivate::initStringMulti(QLabel *lblDesc,
 	QString qs_empty;
 	QLabel *const lblStringMulti = initString(lblDesc, field, fieldIdx, &qs_empty);
 	if (lblStringMulti) {
-		vecStringMulti.emplace_back(std::make_pair(lblStringMulti, &field));
+		vecStringMulti.emplace_back(lblStringMulti, &field);
 	}
 }
 

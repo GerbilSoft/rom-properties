@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * Xbox360_STFS.cpp: Microsoft Xbox 360 package reader.                    *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -908,16 +908,16 @@ int Xbox360_STFS::loadFieldData(void)
 
 		// Display name
 		if (stfsMetadata->display_name[langID_off][0] != 0) {
-			pMap_name->insert(std::make_pair(lc,
-				utf16be_to_utf8(stfsMetadata->display_name[langID_off],
-					ARRAY_SIZE(stfsMetadata->display_name[langID_off]))));
+			pMap_name->emplace(lc, utf16be_to_utf8(
+				stfsMetadata->display_name[langID_off],
+				ARRAY_SIZE(stfsMetadata->display_name[langID_off])));
 		}
 
 		// Description
 		if (stfsMetadata->display_description[langID_off][0] != 0) {
-			pMap_name->insert(std::make_pair(lc,
-				utf16be_to_utf8(stfsMetadata->display_description[langID_off],
-					ARRAY_SIZE(stfsMetadata->display_description[langID_off]))));
+			pMap_name->emplace(lc, utf16be_to_utf8(
+				stfsMetadata->display_description[langID_off],
+				ARRAY_SIZE(stfsMetadata->display_description[langID_off])));
 		}
 	}
 

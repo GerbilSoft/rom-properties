@@ -3,7 +3,7 @@
  * Nintendo3DS_SMDH.hpp: Nintendo 3DS SMDH reader.                         *
  * Handles SMDH files and SMDH sections.                                   *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -509,22 +509,19 @@ int Nintendo3DS_SMDH::loadFieldData(void)
 			continue;
 
 		if (smdhHeader->titles[langID].desc_short[0] != cpu_to_le16('\0')) {
-			pMap_desc_short->insert(std::make_pair(lc,
-				utf16le_to_utf8(
-					smdhHeader->titles[langID].desc_short,
-					ARRAY_SIZE(smdhHeader->titles[langID].desc_short))));
+			pMap_desc_short->emplace(lc, utf16le_to_utf8(
+				smdhHeader->titles[langID].desc_short,
+				ARRAY_SIZE(smdhHeader->titles[langID].desc_short)));
 		}
 		if (smdhHeader->titles[langID].desc_long[0] != cpu_to_le16('\0')) {
-			pMap_desc_long->insert(std::make_pair(lc,
-				utf16le_to_utf8(
-					smdhHeader->titles[langID].desc_long,
-					ARRAY_SIZE(smdhHeader->titles[langID].desc_long))));
+			pMap_desc_long->emplace(lc, utf16le_to_utf8(
+				smdhHeader->titles[langID].desc_long,
+				ARRAY_SIZE(smdhHeader->titles[langID].desc_long)));
 		}
 		if (smdhHeader->titles[langID].publisher[0] != cpu_to_le16('\0')) {
-			pMap_publisher->insert(std::make_pair(lc,
-				utf16le_to_utf8(
-					smdhHeader->titles[langID].publisher,
-					ARRAY_SIZE(smdhHeader->titles[langID].publisher))));
+			pMap_publisher->emplace(lc, utf16le_to_utf8(
+				smdhHeader->titles[langID].publisher,
+				ARRAY_SIZE(smdhHeader->titles[langID].publisher)));
 		}
 	}
 

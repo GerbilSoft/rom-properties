@@ -99,7 +99,7 @@ RomFields::StringMultiMap_t *WiiCommon::getWiiBannerStrings(
 				info += utf16be_to_utf8(pImet->names[langID][1], ARRAY_SIZE_I(pImet->names[langID][1]));
 			}
 
-			pMap_bannerName->insert(std::make_pair(lc, std::move(info)));
+			pMap_bannerName->emplace(lc, std::move(info));
 		}
 	}
 

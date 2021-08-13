@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * PEResourceReader.cpp: Portable Executable resource reader.              *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -271,7 +271,7 @@ const PEResourceReaderPrivate::rsrc_dir_t *PEResourceReaderPrivate::getTypeDir(u
 	}
 
 	// Load the directory.
-	auto iter_type = type_dirs.insert(std::make_pair(type, rsrc_dir_t()));
+	auto iter_type = type_dirs.emplace(type, rsrc_dir_t());
 	if (!iter_type.second) {
 		// Error adding to the map.
 		return nullptr;
@@ -326,7 +326,7 @@ const PEResourceReaderPrivate::rsrc_dir_t *PEResourceReaderPrivate::getTypeIdDir
 	}
 
 	// Load the directory.
-	auto iter_type_and_id = type_and_id_dirs.insert(std::make_pair(type_and_id, rsrc_dir_t()));
+	auto iter_type_and_id = type_and_id_dirs.emplace(type_and_id, rsrc_dir_t());
 	if (!iter_type_and_id.second) {
 		// Error adding to the map.
 		return nullptr;
@@ -856,7 +856,7 @@ int PEResourceReader::load_VS_VERSION_INFO(int id, int lang, VS_FIXEDFILEINFO *p
 	ret = PEResourceReaderPrivate::load_StringTable(f_ver.get(), st, &langID);
 	if (ret == 0) {
 		// String table read successfully.
-		pVsSfi->insert(std::make_pair(langID, std::move(st)));
+		pVsSfi->emplace(langID, std::move(st));
 	}
 
 	// Version information read successfully.

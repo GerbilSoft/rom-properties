@@ -248,7 +248,7 @@ const rp_image *AchWin32Private::loadSpriteSheet(int iconSize)
 	}
 
 	// Sprite sheet is correct.
-	map_imgAchSheet.emplace(std::make_pair(iconSize, imgAchSheet));
+	map_imgAchSheet.emplace(iconSize, imgAchSheet);
 	return imgAchSheet;
 }
 
@@ -299,8 +299,8 @@ int AchWin32Private::notifyFunc(Achievements::ID id)
 			nullptr, nullptr,	// hWndParent, hMenu
 			nullptr, this);		// hInstance, lpParam
 		SetWindowLongPtr(hNotifyWnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(this));
-		map_tidToHWND.emplace(std::make_pair(tid, hNotifyWnd));
-		map_hWndToTID.emplace(std::make_pair(hNotifyWnd, tid));
+		map_tidToHWND.emplace(tid, hNotifyWnd);
+		map_hWndToTID.emplace(hNotifyWnd, tid);
 	}
 
 	// FIXME: Notification window procedure.

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE4/KF5)                         *
  * ListDataModel.cpp: QAbstractListModel for RFT_LISTDATA.                 *
  *                                                                         *
- * Copyright (c) 2012-2020 by David Korth.                                 *
+ * Copyright (c) 2012-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -587,8 +587,8 @@ void ListDataModel::setField(const RomFields::Field *pField)
 		const auto multi_cend = multi->cend();
 		for (; iter != multi_cend; ++iter) {
 			assert(static_cast<int>(iter->second.size()) == rowCount);
-			auto pair = d->map_data.emplace(std::make_pair(iter->first,
-				d->convertListDataToVector(&iter->second, hasCheckboxes)));
+			auto pair = d->map_data.emplace(iter->first,
+				d->convertListDataToVector(&iter->second, hasCheckboxes));
 			if (!d->pData && iter->first == d->lc) {
 				d->pData = &(pair.first->second);
 			}
@@ -602,8 +602,8 @@ void ListDataModel::setField(const RomFields::Field *pField)
 	} else {
 		// RFT_LISTDATA: Single language.
 		rowCount = static_cast<int>(list_data->size());
-		auto pair = d->map_data.emplace(std::make_pair(0,
-			d->convertListDataToVector(list_data, hasCheckboxes)));
+		auto pair = d->map_data.emplace(0,
+			d->convertListDataToVector(list_data, hasCheckboxes));
 		d->pData = &(pair.first->second);
 	}
 

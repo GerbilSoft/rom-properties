@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * NEResourceReader.cpp: New Executable resource reader.                   *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -219,7 +219,7 @@ int NEResourceReaderPrivate::loadResTbl(void)
 		}
 
 		// Create a new vector for the resource type.
-		auto iter_type = res_types.insert(std::make_pair(rtTypeID, rsrc_dir_t()));
+		auto iter_type = res_types.emplace(rtTypeID, rsrc_dir_t());
 		assert(iter_type.second);
 		if (!iter_type.second) {
 			// Error adding to the map.
@@ -769,7 +769,7 @@ int NEResourceReader::load_VS_VERSION_INFO(int id, int lang, VS_FIXEDFILEINFO *p
 	ret = NEResourceReaderPrivate::load_StringTable(f_ver.get(), st, &langID);
 	if (ret == 0) {
 		// String table read successfully.
-		pVsSfi->insert(std::make_pair(langID, std::move(st)));
+		pVsSfi->emplace(langID, std::move(st));
 	}
 
 	// Version information read successfully.

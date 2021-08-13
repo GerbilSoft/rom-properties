@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * RP_ShellPropSheetExt.cpp: IShellPropSheetExt implementation.            *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -1533,7 +1533,7 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 
 	// Save the LvData.
 	// TODO: Verify that std::move() works here.
-	map_lvData.insert(std::make_pair(cId, std::move(lvData)));
+	map_lvData.emplace(cId, std::move(lvData));
 
 	// Set the virtual list item count.
 	ListView_SetItemCountEx(hListView, lv_row_num,
@@ -1792,7 +1792,7 @@ int RP_ShellPropSheetExt_Private::initStringMulti(HWND hDlg, HWND hWndTab,
 	int field_cy = initString(hDlg, hWndTab, pt_start, size, field, fieldIdx,
 		_T(""), &lblStringMulti);
 	if (lblStringMulti) {
-		vecStringMulti.emplace_back(std::make_pair(lblStringMulti, &field));
+		vecStringMulti.emplace_back(lblStringMulti, &field);
 	}
 	return field_cy;
 }

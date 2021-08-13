@@ -82,7 +82,7 @@ static uint32_t getStringTableOffset(const char *str)
 	const uint32_t offset = static_cast<uint32_t>(stringTable.size());
 	string entry(str);
 	stringTable.insert(stringTable.end(), entry.c_str(), entry.c_str() + entry.size() + 1);
-	stringTableMap.emplace(std::make_pair(std::move(entry), offset));
+	stringTableMap.emplace(std::move(entry), offset);
 	return offset;
 }
 
@@ -137,7 +137,7 @@ int main(int argc, char *argv[])
 	stringTable.reserve(32768);	// TODO: Optimal reservation?
 	stringTableMap.reserve(2048);	// TODO: Optimal reservation?
 	stringTable.push_back('\0');
-	stringTableMap.emplace(std::make_pair("", 0));
+	stringTableMap.emplace("", 0);
 
 	// Parse the file.
 	bool foundHeader = false;	// true if we found the header line
@@ -371,7 +371,7 @@ int main(int argc, char *argv[])
 				}
 			} else {
 				// No character variants yet.
-				auto ret = charVarTable.emplace(std::make_pair(id, CharVariantMap()));
+				auto ret = charVarTable.emplace(id, CharVariantMap());
 				pMap = &(ret.first->second);
 			}
 
@@ -384,7 +384,7 @@ int main(int argc, char *argv[])
 			if (verbose) {
 				printf("CV: ID=%04X, VarID=%02X, name=%s, offset=%u\n", id, var_id, token, entry.name);
 			}
-			pMap->emplace(std::make_pair(var_id, std::move(entry)));
+			pMap->emplace(var_id, std::move(entry));
 		} else if (!strcmp(token, "AS")) {
 			// amiibo Series
 			// Fields: ID, Name

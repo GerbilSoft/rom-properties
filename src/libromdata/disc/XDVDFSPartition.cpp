@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * XDVDFSPartition.cpp: Microsoft Xbox XDVDFS partition reader.            *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -315,7 +315,7 @@ const ao::uvector<uint8_t> *XDVDFSPartitionPrivate::getDirectory(const char *pat
 	}
 
 	// Save the directory table for later.
-	auto ins_iter = dirTables.insert(std::make_pair(path, std::move(dirTable)));
+	auto ins_iter = dirTables.emplace(path, std::move(dirTable));
 
 	// Root directory loaded.
 	return &(ins_iter.first->second);

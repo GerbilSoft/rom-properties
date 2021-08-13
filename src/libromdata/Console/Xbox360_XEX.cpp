@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * Xbox360_XEX.cpp: Microsoft Xbox 360 executable reader.                  *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -521,7 +521,7 @@ const XEX2_Resource_Info *Xbox360_XEX_Private::getXdbfResInfo(const char *resour
 		return nullptr;
 	}
 
-	auto ins_iter = mapResInfo.insert(std::make_pair(resource_id, res));
+	auto ins_iter = mapResInfo.emplace(resource_id, res);
 	return &(ins_iter.first->second);
 }
 

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * SPC.hpp: SPC audio reader.                                              *
  *                                                                         *
- * Copyright (c) 2018-2020 by David Korth.                                 *
+ * Copyright (c) 2018-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -111,7 +111,7 @@ class SPCPrivate final : public RomDataPrivate
 			 */
 			inline void insertInt(SPC_xID6_Item_e key, int ivalue)
 			{
-				map.insert(std::make_pair(key, val_t(ivalue)));
+				map.emplace(key, val_t(ivalue));
 			}
 
 			/**
@@ -121,7 +121,7 @@ class SPCPrivate final : public RomDataPrivate
 			 */
 			inline void insertUInt(SPC_xID6_Item_e key, unsigned int uvalue)
 			{
-				map.insert(std::make_pair(key, val_t(uvalue)));
+				map.emplace(key, val_t(uvalue));
 			}
 
 			/**
@@ -133,7 +133,7 @@ class SPCPrivate final : public RomDataPrivate
 			{
 				val_t val;
 				val.timestamp = timestamp;
-				map.insert(std::make_pair(key, val));
+				map.emplace(key, val);
 			}
 
 			/**
@@ -146,7 +146,7 @@ class SPCPrivate final : public RomDataPrivate
 				val_t val((unsigned int)strs.size());
 				val.isStrIdx = true;
 				strs.emplace_back(str);
-				map.insert(std::make_pair(key, val));
+				map.emplace(key, val);
 			}
 
 			/**

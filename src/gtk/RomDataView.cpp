@@ -835,7 +835,7 @@ rom_data_view_init_string(RomDataView *page,
 
 	// NOTE: Add the widget to the field index map here,
 	// since `widget` might be NULLed out later.
-	page->cxx->map_fieldIdx.insert(std::make_pair(fieldIdx, widget));
+	page->cxx->map_fieldIdx.emplace(fieldIdx, widget);
 
 	// Check for any formatting options. (RFT_STRING only)
 	if (field.type == RomFields::RFT_STRING && field.desc.flags != 0) {
@@ -964,7 +964,7 @@ rom_data_view_init_bitfield(RomDataView *page,
 		}
 	}
 
-	page->cxx->map_fieldIdx.insert(std::make_pair(fieldIdx, widget));
+	page->cxx->map_fieldIdx.emplace(fieldIdx, widget);
 	return widget;
 }
 
@@ -1328,7 +1328,7 @@ rom_data_view_init_listdata(RomDataView *page,
 			Data_ListDataMulti_t(listStore, GTK_TREE_VIEW(treeView), &field));
 	}
 
-	page->cxx->map_fieldIdx.insert(std::make_pair(fieldIdx, scrolledWindow));
+	page->cxx->map_fieldIdx.emplace(fieldIdx, scrolledWindow);
 	return scrolledWindow;
 }
 

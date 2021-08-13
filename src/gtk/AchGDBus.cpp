@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (GTK+)                             *
  * AchGDBus.cpp: GDBus notifications for achievements.                     *
  *                                                                         *
- * Copyright (c) 2020 by David Korth.                                      *
+ * Copyright (c) 2020-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -168,7 +168,7 @@ PIMGTYPE AchGDBusPrivate::loadSpriteSheet(int iconSize)
 #endif /* RP_GTK_USE_CAIRO */
 
 	// Sprite sheet is correct.
-	map_imgAchSheet.emplace(std::make_pair(iconSize, imgAchSheet));
+	map_imgAchSheet.emplace(iconSize, imgAchSheet);
 	return imgAchSheet;
 }
 

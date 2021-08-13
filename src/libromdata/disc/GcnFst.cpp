@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * GcnFst.cpp: GameCube/Wii FST parser.                                    *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -182,7 +182,7 @@ inline const char *GcnFstPrivate::entry_name(const GCN_FST_Entry *fst_entry) con
 	const char *str = &string_table_ptr[offset];
 	int len = static_cast<int>(strlen(str));	// TODO: Bounds checking.
 	string u8str = cp1252_sjis_to_utf8(str, len);
-	iter = u8_string_table.insert(std::make_pair(offset, u8str)).first;
+	iter = u8_string_table.emplace(offset, u8str).first;
 	return iter->second.c_str();
 }
 

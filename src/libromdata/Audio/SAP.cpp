@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * SAP.cpp: Atari 8-bit SAP audio reader.                                  *
  *                                                                         *
- * Copyright (c) 2018-2020 by David Korth.                                 *
+ * Copyright (c) 2018-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -399,7 +399,7 @@ SAPPrivate::TagData SAPPrivate::parseTags(void)
 					bool loop_flag;
 					if (!durationToMsLoop(params, &duration, &loop_flag)) {
 						// Parsed successfully.
-						tags.durations.emplace_back(std::make_pair(duration, loop_flag));
+						tags.durations.emplace_back(duration, loop_flag);
 					}
 					break;
 				}

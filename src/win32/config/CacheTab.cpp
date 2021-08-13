@@ -604,8 +604,7 @@ int CacheTabPrivate::recursiveScan(const TCHAR *path, list<pair<tstring, DWORD> 
 		}
 
 		// Add the filename and attributes.
-		// NOTE: emplace_back() doesn't support implicit std::make_pair on MSVC 2010.
-		rlist.emplace_back(std::make_pair(std::move(fullFileName), findFileData.dwFileAttributes));
+		rlist.emplace_back(std::move(fullFileName), findFileData.dwFileAttributes);
 	} while (FindNextFile(hFindFile, &findFileData));
 	FindClose(hFindFile);
 
