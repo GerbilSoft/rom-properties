@@ -278,8 +278,10 @@ NCCHReaderPrivate::NCCHReaderPrivate(NCCHReader *q,
 				0, N3DS_NCCH_SECTION_EXEFS));
 
 			// ExeFS files
-			for (size_t i = 0; i < ARRAY_SIZE(exefs_header.files); i++) {
-				const N3DS_ExeFS_File_Header_t *file_header = &exefs_header.files[i];
+			const N3DS_ExeFS_File_Header_t *const hdr_end = &exefs_header.files[ARRAY_SIZE(exefs_header.files)];
+			for (const N3DS_ExeFS_File_Header_t *file_header = &exefs_header.files[0];
+			     file_header < hdr_end; file_header++)
+			{
 				if (file_header->name[0] == 0)
 					continue;	// or break?
 
@@ -1003,15 +1005,17 @@ IRpFile *NCCHReader::open(int section, const char *filename)
 		return nullptr;
 	}
 
-	const N3DS_ExeFS_File_Header_t *file_header = nullptr;
-	for (size_t i = 0; i < ARRAY_SIZE(exefs_header->files); i++) {
-		if (!strncmp(exefs_header->files[i].name, filename, sizeof(exefs_header->files[i].name))) {
+	bool found = false;
+	const N3DS_ExeFS_File_Header_t *file_header;
+	const N3DS_ExeFS_File_Header_t *const hdr_end = &exefs_header->files[ARRAY_SIZE(exefs_header->files)];
+	for (file_header = &exefs_header->files[0]; file_header < hdr_end; file_header++) {
+		if (!strncmp(file_header->name, filename, sizeof(file_header->name))) {
 			// Found the file.
-			file_header = &exefs_header->files[i];
+			found = true;
 			break;
 		}
 	}
-	if (!file_header) {
+	if (!found) {
 		// File not found.
 		m_lastError = ENOENT;
 		return nullptr;
@@ -1019,8 +1023,7 @@ IRpFile *NCCHReader::open(int section, const char *filename)
 
 	// Get the file offset.
 	const uint32_t offset = (le32_to_cpu(d->ncch_header.hdr.exefs_offset) << d->media_unit_shift) +
-		sizeof(d->exefs_header) +
-		le32_to_cpu(file_header->offset);
+		sizeof(d->exefs_header) + le32_to_cpu(file_header->offset);
 	const uint32_t size = le32_to_cpu(file_header->size);
 	if (offset >= d->ncch_length ||
 	    (static_cast<off64_t>(offset) + size) > d->ncch_length)

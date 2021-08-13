@@ -186,7 +186,7 @@ class KeyStoreUIPrivate
 
 	public:
 		// Hexadecimal lookup table.
-		static const char hex_lookup[16];
+		static const std::array<char, 16> hex_lookup;
 
 		/**
 		 * Convert a binary key to a hexadecimal string.
@@ -207,7 +207,7 @@ const KeyStoreUIPrivate::EncKeyFns_t KeyStoreUIPrivate::encKeyFns[] = {
 };
 
 // Hexadecimal lookup table.
-const char KeyStoreUIPrivate::hex_lookup[16] = {
+const std::array<char, 16> KeyStoreUIPrivate::hex_lookup = {
 	'0','1','2','3','4','5','6','7',
 	'8','9','A','B','C','D','E','F',
 };
@@ -236,8 +236,8 @@ KeyStoreUIPrivate::KeyStoreUIPrivate(KeyStoreUI *q)
 
 	int keyIdxStart = 0;
 	auto sectIter = sections.begin();
-	for (size_t encSysNum = 0; encSysNum < ARRAY_SIZE(encKeyFns); encSysNum++, ++sectIter) {
-		const EncKeyFns_t *const encSys = &encKeyFns[encSysNum];
+	const EncKeyFns_t *const encKeyFns_end = &encKeyFns[ARRAY_SIZE(encKeyFns)];
+	for (const EncKeyFns_t *encSys = &encKeyFns[0]; encSys < encKeyFns_end; encSys++, ++sectIter) {
 		const int keyCount = encSys->pfnKeyCount();
 		assert(keyCount > 0);
 		if (keyCount <= 0)
