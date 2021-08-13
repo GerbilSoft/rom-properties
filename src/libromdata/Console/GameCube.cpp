@@ -279,9 +279,7 @@ int GameCubePrivate::loadWiiPartitionTables(void)
 	// Clear the existing partition table vector.
 	std::for_each(wiiPtbl.begin(), wiiPtbl.end(),
 		[](WiiPartEntry &entry) {
-			if (entry.partition) {
-				entry.partition->unref();
-			}
+			UNREF(entry.partition);
 		}
 	);
 	wiiPtbl.clear();
