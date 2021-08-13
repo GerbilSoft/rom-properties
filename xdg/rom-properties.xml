@@ -905,6 +905,24 @@
       </match>
     </magic>
   </mime-type>
+  <mime-type type="image/x-sega-svr">
+    <comment>Sega SVR for PlayStation 2 texture file</comment>
+    <sub-class-of type="image/x-generic"/>
+    <generic-icon name="image-x-generic"/>
+    <glob pattern="*.svr"/>
+    <magic priority="75">
+      <!-- FIXME: Also check for SVR-specific format IDs. -->
+      <match value="PVRT" type="string" offset="0"/>
+      <match value="GBIX" type="string" offset="0">
+        <match value="PVRT" type="string" offset="12"/>
+        <match value="PVRT" type="string" offset="16"/>
+      </match>
+      <match value="GCIX" type="string" offset="0">
+        <match value="PVRT" type="string" offset="12"/>
+        <match value="PVRT" type="string" offset="16"/>
+      </match>
+    </magic>
+  </mime-type>
 
   <!-- ValveVTF -->
   <mime-type type="image/vnd.valve.source.texture">
