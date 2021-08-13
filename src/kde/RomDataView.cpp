@@ -1027,7 +1027,7 @@ void RomDataViewPrivate::updateMulti(uint32_t user_lc)
 			for (auto iter_sm = pStr_multi->cbegin();
 			     iter_sm != pStr_multi_cend; ++iter_sm)
 			{
-				set_lc.insert(iter_sm->first);
+				set_lc.emplace(iter_sm->first);
 			}
 		}
 
@@ -1256,6 +1256,13 @@ void RomDataViewPrivate::initDisplayWidgets(void)
 	map_fieldIdx.clear();
 	ui.tabWidget->clear();
 	ui.tabWidget->hide();
+
+	// Clear multi-language stuff.
+	def_lc = 0;
+	vecStringMulti.clear();
+	vecListDataMulti.clear();
+	delete cboLanguage;
+	cboLanguage = nullptr;
 
 	// Initialize the header row.
 	initHeaderRow();

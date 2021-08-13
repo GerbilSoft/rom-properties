@@ -193,7 +193,6 @@ class RP_ShellPropSheetExt_Private
 
 		// Multi-language functionality.
 		uint32_t def_lc;	// Default language code from RomFields.
-		set<uint32_t> set_lc;	// Set of supported language codes.
 		HWND cboLanguage;
 
 		// RFT_STRING_MULTI value labels.
@@ -1803,6 +1802,8 @@ int RP_ShellPropSheetExt_Private::initStringMulti(HWND hDlg, HWND hWndTab,
  */
 void RP_ShellPropSheetExt_Private::updateMulti(uint32_t user_lc)
 {
+	set<uint32_t> set_lc;
+
 	// RFT_STRING_MULTI
 	const auto vecStringMulti_cend = vecStringMulti.cend();
 	for (auto iter = vecStringMulti.cbegin();
@@ -1825,7 +1826,7 @@ void RP_ShellPropSheetExt_Private::updateMulti(uint32_t user_lc)
 			for (auto iter_sm = pStr_multi->cbegin();
 			     iter_sm != pStr_multi_cend; ++iter_sm)
 			{
-				set_lc.insert(iter_sm->first);
+				set_lc.emplace(iter_sm->first);
 			}
 		}
 
@@ -1865,7 +1866,7 @@ void RP_ShellPropSheetExt_Private::updateMulti(uint32_t user_lc)
 			for (auto iter_sm = pListData_multi->cbegin();
 			     iter_sm != pListData_multi_cend; ++iter_sm)
 			{
-				set_lc.insert(iter_sm->first);
+				set_lc.emplace(iter_sm->first);
 			}
 		}
 
@@ -2007,11 +2008,7 @@ void RP_ShellPropSheetExt_Private::updateMulti(uint32_t user_lc)
 		// need to convert the std::set<> to an std::vector<>.
 		vector<uint32_t> vec_lc;
 		vec_lc.reserve(set_lc.size() + 1);
-		std::for_each(set_lc.cbegin(), set_lc.cend(),
-			[&vec_lc](uint32_t lc) {
-				vec_lc.emplace_back(lc);
-			}
-		);
+		vec_lc.assign(set_lc.cbegin(), set_lc.cend());
 		vec_lc.emplace_back(0);
 		LanguageComboBox_SetLCs(cboLanguage, vec_lc.data());
 

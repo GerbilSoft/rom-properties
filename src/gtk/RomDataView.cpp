@@ -207,7 +207,6 @@ struct _RomDataViewCxx {
 
 	// Multi-language functionality.
 	uint32_t	def_lc;
-	set<uint32_t>	set_lc;	// Set of supported language codes.
 
 	// RFT_STRING_MULTI value labels.
 	vector<Data_StringMulti_t> vecStringMulti;
@@ -1469,6 +1468,7 @@ static void
 rom_data_view_update_multi(RomDataView *page, uint32_t user_lc)
 {
 	_RomDataViewCxx *const cxx = page->cxx;
+	set<uint32_t> set_lc;
 
 	// RFT_STRING_MULTI
 	const auto vecStringMulti_cend = cxx->vecStringMulti.cend();
@@ -1492,7 +1492,7 @@ rom_data_view_update_multi(RomDataView *page, uint32_t user_lc)
 			for (auto iter_sm = pStr_multi->cbegin();
 			     iter_sm != pStr_multi_cend; ++iter_sm)
 			{
-				page->cxx->set_lc.insert(iter_sm->first);
+				set_lc.emplace(iter_sm->first);
 			}
 		}
 
@@ -1524,7 +1524,7 @@ rom_data_view_update_multi(RomDataView *page, uint32_t user_lc)
 			for (auto iter_sm = pListData_multi->cbegin();
 			     iter_sm != pListData_multi_cend; ++iter_sm)
 			{
-				cxx->set_lc.insert(iter_sm->first);
+				set_lc.emplace(iter_sm->first);
 			}
 		}
 
@@ -1572,7 +1572,7 @@ rom_data_view_update_multi(RomDataView *page, uint32_t user_lc)
 		}
 	}
 
-	if (!page->cboLanguage && cxx->set_lc.size() > 1) {
+	if (!page->cboLanguage && set_lc.size() > 1) {
 		// Create a VBox for the combobox to reduce its vertical height.
 #if GTK_CHECK_VERSION(3,0,0)
 		GtkWidget *const vboxCboLanguage = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
@@ -1608,28 +1608,24 @@ rom_data_view_update_multi(RomDataView *page, uint32_t user_lc)
 		// NOTE: LanguageComboBox uses a 0-terminated array, so we'll
 		// need to convert the std::set<> to an std::vector<>.
 		vector<uint32_t> vec_lc;
-		vec_lc.reserve(cxx->set_lc.size() + 1);
-		std::for_each(cxx->set_lc.cbegin(), cxx->set_lc.cend(),
-			[&vec_lc](uint32_t lc) {
-				vec_lc.emplace_back(lc);
-			}
-		);
+		vec_lc.reserve(set_lc.size() + 1);
+		vec_lc.assign(set_lc.cbegin(), set_lc.cend());
 		vec_lc.emplace_back(0);
 		language_combo_box_set_lcs(LANGUAGE_COMBO_BOX(page->cboLanguage), vec_lc.data());
 
 		// Select the default language.
 		uint32_t lc_to_set = 0;
-		const auto set_lc_end = cxx->set_lc.end();
-		if (cxx->set_lc.find(cxx->def_lc) != set_lc_end) {
+		const auto set_lc_end = set_lc.end();
+		if (set_lc.find(cxx->def_lc) != set_lc_end) {
 			// def_lc was found.
 			lc_to_set = cxx->def_lc;
-		} else if (cxx->set_lc.find('en') != set_lc_end) {
+		} else if (set_lc.find('en') != set_lc_end) {
 			// 'en' was found.
 			lc_to_set = 'en';
 		} else {
 			// Unknown. Select the first language.
-			if (!cxx->set_lc.empty()) {
-				lc_to_set = *(cxx->set_lc.cbegin());
+			if (!set_lc.empty()) {
+				lc_to_set = *(set_lc.cbegin());
 			}
 		}
 		language_combo_box_set_selected_lc(LANGUAGE_COMBO_BOX(page->cboLanguage), lc_to_set);
@@ -2384,7 +2380,7 @@ rom_data_view_delete_tabs(RomDataView *page)
 
 	// Clear the various widget references.
 	cxx->vecDescLabels.clear();
-	cxx->set_lc.clear();
+	cxx->def_lc = 0;
 	cxx->vecStringMulti.clear();
 	cxx->vecListDataMulti.clear();
 }
