@@ -33,7 +33,7 @@ ENDIF(NOT CMAKE_CXX_FLAGS MATCHES "/EHsc")
 INCLUDE(CheckCCompilerFlag)
 FOREACH(FLAG_TEST "/sdl" "/guard:cf" "/utf-8")
 	# CMake doesn't like certain characters in variable names.
-	STRING(REGEX REPLACE "/|:" "_" FLAG_TEST_VARNAME "${FLAG_TEST}")
+	STRING(REGEX REPLACE "/|:|=" "_" FLAG_TEST_VARNAME "${FLAG_TEST}")
 
 	CHECK_C_COMPILER_FLAG("${FLAG_TEST}" CFLAG_${FLAG_TEST_VARNAME})
 	IF(CFLAG_${FLAG_TEST_VARNAME})
