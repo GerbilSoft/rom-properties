@@ -505,16 +505,6 @@ class RomData : public RefBase
 		virtual int extURLs(ImageType imageType, std::vector<ExtURL> *pExtURLs, int size = IMAGE_SIZE_DEFAULT) const;
 
 		/**
-		 * Scrape an image URL from a downloaded HTML page.
-		 * Needed if IMGPF_EXTURL_NEEDS_HTML_SCRAPING is set.
-		 * @param html HTML data.
-		 * @param size Size of HTML data.
-		 * @return Image URL, or empty string if not found or not supported.
-		 */
-		ATTR_ACCESS_SIZE(read_only, 2, 3)
-		virtual std::string scrapeImageURL(const char *html, size_t size) const;
-
-		/**
 		 * Get name of an image type
 		 * @param imageType Image type.
 		 * @return String containing user-friendly name of an image type.

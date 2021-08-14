@@ -891,21 +891,6 @@ int RomData::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) co
 }
 
 /**
- * Scrape an image URL from a downloaded HTML page.
- * Needed if IMGPF_EXTURL_NEEDS_HTML_SCRAPING is set.
- * @param html HTML data.
- * @param size Size of HTML data.
- * @return Image URL, or empty string if not found or not supported.
- */
-string RomData::scrapeImageURL(const char *html, size_t size) const
-{
-	// Not supported in the base class.
-	RP_UNUSED(html);
-	RP_UNUSED(size);
-	return string();
-}
-
-/**
 * Get name of an image type
 * @param imageType Image type.
 * @return String containing user-friendly name of an image type.
