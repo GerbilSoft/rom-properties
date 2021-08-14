@@ -100,7 +100,7 @@ typedef struct PACKED _RVL_Ticket {
 	uint32_t permitted_titles_mask;	// [0x1E8] Permitted titles mask.
 	uint32_t permit_mask;		// [0x1EC] Permit mask.
 	uint8_t title_export;		// [0x1F0] Title Export allowed using PRNG key. (1 == yes, 0 == no)
-	uint8_t common_key_index;	// [0x1F1] Common Key index. (0 == default, 1 == Korean)
+	uint8_t common_key_index;	// [0x1F1] Common Key index. (0 == default, 1 == Korean, 2 == vWii)
 	uint8_t unknown3[0x30];		// [0x1F2] Unknown. (VC related?)
 	uint8_t content_access_perm[0x40];	// [0x222] Content access permissions. (1 bit per content)
 	uint8_t padding2[2];		// [0x262] Padding. (always 0)
