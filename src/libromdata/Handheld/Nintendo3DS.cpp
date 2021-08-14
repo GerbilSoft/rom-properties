@@ -44,19 +44,34 @@ using std::vector;
 
 namespace LibRomData {
 
-ROMDATA_IMPL(Nintendo3DS)
-ROMDATA_IMPL_IMG_SIZES(Nintendo3DS)
-
 #ifdef _MSC_VER
 // DelayLoad test implementation.
 DELAYLOAD_TEST_FUNCTION_IMPL0(get_crc_table);
 #endif /* _MSC_VER */
 
+ROMDATA_IMPL(Nintendo3DS)
+ROMDATA_IMPL_IMG_SIZES(Nintendo3DS)
+
 /** Nintendo3DSPrivate **/
 
-// MIME type table.
-// Ordering matches N3DS_RomType.
-const char *const Nintendo3DSPrivate::mimeType_tbl[] = {
+/* RomDataInfo */
+const char *const Nintendo3DSPrivate::exts[] = {
+	".3dsx",	// Homebrew application.
+	".3ds",		// ROM image. (NOTE: Conflicts with 3DS Max.)
+	".3dz",		// ROM image. (with private header for Gateway 3DS)
+	".cci",		// ROM image.
+	".cia",		// CTR installable archive.
+	".ncch",	// NCCH file.
+	".app",		// NCCH file. (NOTE: May conflict with others...)
+	".cxi",		// CTR Executable Image (NCCH)
+	".cfa",		// CTR File Archive (NCCH)
+	".csu",		// CTR System Update (CCI)
+
+	nullptr
+};
+const char *const Nintendo3DSPrivate::mimeTypes[] = {
+	// NOTE: Ordering matches N3DS_RomType.
+
 	// Unofficial MIME types.
 	// TODO: Get these upstreamed on FreeDesktop.org.
 	"application/x-nintendo-3ds-3dsx",
@@ -67,9 +82,12 @@ const char *const Nintendo3DSPrivate::mimeType_tbl[] = {
 
 	nullptr
 };
+const RomDataInfo Nintendo3DSPrivate::romDataInfo = {
+	"Nintendo3DS", exts, mimeTypes
+};
 
 Nintendo3DSPrivate::Nintendo3DSPrivate(Nintendo3DS *q, IRpFile *file)
-	: super(q, file)
+	: super(q, file, &romDataInfo)
 	, romType(RomType::Unknown)
 	, headers_loaded(0)
 	, media_unit_shift(9)	// default is 9 (512 bytes)
@@ -1214,7 +1232,6 @@ Nintendo3DS::Nintendo3DS(IRpFile *file)
 	// This class handles several different types of files,
 	// so we'll initialize d->fileType later.
 	RP_D(Nintendo3DS);
-	d->className = "Nintendo3DS";
 	d->fileType = FileType::Unknown;
 
 	if (!d->file) {
@@ -1293,7 +1310,7 @@ Nintendo3DS::Nintendo3DS(IRpFile *file)
 	}
 
 	// Set the MIME type.
-	d->mimeType = d->mimeType_tbl[(int)d->romType];
+	d->mimeType = d->mimeTypes[(int)d->romType];
 
 	// File is valid.
 	d->isValid = true;
@@ -1482,53 +1499,6 @@ const char *Nintendo3DS::systemName(unsigned int type) const
 	};
 
 	return sysNames[type];
-}
-
-/**
- * Get a list of all supported file extensions.
- * This is to be used for file type registration;
- * subclasses don't explicitly check the extension.
- *
- * NOTE: The extensions do not include the leading dot,
- * e.g. "bin" instead of ".bin".
- *
- * NOTE 2: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *Nintendo3DS::supportedFileExtensions_static(void)
-{
-	static const char *const exts[] = {
-		".3dsx",	// Homebrew application.
-		".3ds",		// ROM image. (NOTE: Conflicts with 3DS Max.)
-		".3dz",		// ROM image. (with private header for Gateway 3DS)
-		".cci",		// ROM image.
-		".cia",		// CTR installable archive.
-		".ncch",	// NCCH file.
-		".app",		// NCCH file. (NOTE: May conflict with others...)
-		".cxi",		// CTR Executable Image (NCCH)
-		".cfa",		// CTR File Archive (NCCH)
-		".csu",		// CTR System Update (CCI)
-
-		nullptr
-	};
-	return exts;
-}
-
-/**
- * Get a list of all supported MIME types.
- * This is to be used for metadata extractors that
- * must indicate which MIME types they support.
- *
- * NOTE: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *Nintendo3DS::supportedMimeTypes_static(void)
-{
-	return Nintendo3DSPrivate::mimeType_tbl;
 }
 
 /**

@@ -55,6 +55,12 @@ class WiiWADPrivate final : public LibRpBase::RomDataPrivate
 		RP_DISABLE_COPY(WiiWADPrivate)
 
 	public:
+		/** RomDataInfo **/
+		static const char *const exts[];
+		static const char *const mimeTypes[];
+		static const LibRpBase::RomDataInfo romDataInfo;
+
+	public:
 		// WAD type.
 		enum class WadType {
 			Unknown	= -1,	// Unknown WAD type.

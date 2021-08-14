@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * RomData.cpp: ROM data base class.                                       *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth                                  *
+ * Copyright (c) 2016-2021 by David Korth                                  *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -32,20 +32,23 @@ namespace LibRpBase {
 /**
  * Initialize a RomDataPrivate storage class.
  *
- * @param q RomData class.
- * @param file ROM file.
+ * @param q RomData class
+ * @param file ROM file
+ * @param pRomDataInfo RomData subclass information
  */
-RomDataPrivate::RomDataPrivate(RomData *q, IRpFile *file)
+RomDataPrivate::RomDataPrivate(RomData *q, IRpFile *file, const RomDataInfo *pRomDataInfo)
 	: q_ptr(q)
 	, isValid(false)
 	, isCompressed(false)
 	, file(nullptr)
 	, fields(new RomFields())
 	, metaData(nullptr)
-	, className(nullptr)
+	, pRomDataInfo(pRomDataInfo)
 	, mimeType(nullptr)
 	, fileType(RomData::FileType::ROM_Image)
 {
+	assert(pRomDataInfo != nullptr);
+
 	// Initialize i18n.
 	rp_i18n_init();
 
@@ -468,21 +471,6 @@ time_t RomDataPrivate::pvd_time_to_unix_time(const char pvd_time[16], int8_t tz_
  *
  * To close the file, either delete this object or call close().
  *
- * @param file ROM file.
- */
-RomData::RomData(IRpFile *file)
-	: d_ptr(new RomDataPrivate(this, file))
-{ }
-
-/**
- * ROM data base class.
- *
- * A ROM file must be opened by the caller. The file handle
- * will be ref()'d and must be kept open in order to load
- * data from the ROM.
- *
- * To close the file, either delete this object or call close().
- *
  * NOTE: Check isValid() to determine if this is a valid ROM.
  *
  * @param d RomDataPrivate subclass.
@@ -564,8 +552,7 @@ bool RomData::isCompressed(void) const
 const char *RomData::className(void) const
 {
 	RP_D(const RomData);
-	assert(d->className != nullptr);
-	return d->className;
+	return d->pRomDataInfo->className;
 }
 
 /**
@@ -669,6 +656,41 @@ const char *RomData::mimeType(void) const
 {
 	RP_D(const RomData);
 	return d->mimeType;
+}
+
+/**
+ * Get a list of all supported file extensions.
+ * This is to be used for file type registration;
+ * subclasses don't explicitly check the extension.
+ *
+ * NOTE: The extensions include the leading dot,
+ * e.g. ".bin" instead of "bin".
+ *
+ * NOTE 2: The array and the strings in the array should
+ * *not* be freed by the caller.
+ *
+ * @return NULL-terminated array of all supported file extensions, or nullptr on error.
+ */
+const char *const *RomData::supportedFileExtensions(void) const
+{
+	RP_D(const RomData);
+	return d->pRomDataInfo->exts;
+}
+
+/**
+ * Get a list of all supported MIME types.
+ * This is to be used for metadata extractors that
+ * must indicate which MIME types they support.
+ *
+ * NOTE: The array and the strings in the array should
+ * *not* be freed by the caller.
+ *
+ * @return NULL-terminated array of all supported file extensions, or nullptr on error.
+ */
+const char *const *RomData::supportedMimeTypes(void) const
+{
+	RP_D(const RomData);
+	return d->pRomDataInfo->mimeTypes;
 }
 
 /**

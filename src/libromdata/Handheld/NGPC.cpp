@@ -20,9 +20,6 @@ using std::vector;
 
 namespace LibRomData {
 
-ROMDATA_IMPL(NGPC)
-ROMDATA_IMPL_IMG(NGPC)
-
 class NGPCPrivate final : public RomDataPrivate
 {
 	public:
@@ -31,6 +28,12 @@ class NGPCPrivate final : public RomDataPrivate
 	private:
 		typedef RomDataPrivate super;
 		RP_DISABLE_COPY(NGPCPrivate)
+
+	public:
+		/** RomDataInfo **/
+		static const char *const exts[];
+		static const char *const mimeTypes[];
+		static const RomDataInfo romDataInfo;
 
 	public:
 		/** RomFields **/
@@ -46,29 +49,37 @@ class NGPCPrivate final : public RomDataPrivate
 		};
 		RomType romType;
 
-		// MIME type table.
-		// Ordering matches RomType.
-		static const char *const mimeType_tbl[];
-
 	public:
 		// ROM header.
 		NGPC_RomHeader romHeader;
 };
 
+ROMDATA_IMPL(NGPC)
+ROMDATA_IMPL_IMG(NGPC)
+
 /** NGPCPrivate **/
 
-// MIME type table.
-// Ordering matches RomType.
-const char *const NGPCPrivate::mimeType_tbl[] = {
+/* RomDataInfo */
+const char *const NGPCPrivate::exts[] = {
+	".ngp",  ".ngc", ".ngpc",
+
+	nullptr
+};
+const char *const NGPCPrivate::mimeTypes[] = {
+	// NOTE: Ordering matches RomType.
+
 	// Unofficial MIME types from FreeDesktop.org.
 	"application/x-neo-geo-pocket-rom",
 	"application/x-neo-geo-pocket-color-rom",
 
 	nullptr
 };
+const RomDataInfo NGPCPrivate::romDataInfo = {
+	"NGPC", exts, mimeTypes
+};
 
 NGPCPrivate::NGPCPrivate(NGPC *q, IRpFile *file)
-	: super(q, file)
+	: super(q, file, &romDataInfo)
 	, romType(RomType::Unknown)
 {
 	// Clear the various structs.
@@ -94,8 +105,6 @@ NGPC::NGPC(IRpFile *file)
 	: super(new NGPCPrivate(this, file))
 {
 	RP_D(NGPC);
-	d->className = "NGPC";
-
 	if (!d->file) {
 		// Could not ref() the file handle.
 		return;
@@ -128,8 +137,8 @@ NGPC::NGPC(IRpFile *file)
 	}
 
 	// Set the MIME type.
-	if ((int)d->romType < ARRAY_SIZE_I(d->mimeType_tbl)-1) {
-		d->mimeType = d->mimeType_tbl[(int)d->romType];
+	if ((int)d->romType < ARRAY_SIZE_I(d->mimeTypes)-1) {
+		d->mimeType = d->mimeTypes[(int)d->romType];
 	}
 }
 
@@ -208,44 +217,6 @@ const char *NGPC::systemName(unsigned int type) const
 	// NOTE: This might return an incorrect system name if
 	// d->romType is RomType::TYPE_UNKNOWN.
 	return sysNames[(int)d->romType & 1][type & SYSNAME_TYPE_MASK];
-}
-
-/**
- * Get a list of all supported file extensions.
- * This is to be used for file type registration;
- * subclasses don't explicitly check the extension.
- *
- * NOTE: The extensions include the leading dot,
- * e.g. ".bin" instead of "bin".
- *
- * NOTE 2: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *NGPC::supportedFileExtensions_static(void)
-{
-	static const char *const exts[] = {
-		".ngp",  ".ngc", ".ngpc",
-
-		nullptr
-	};
-	return exts;
-}
-
-/**
- * Get a list of all supported MIME types.
- * This is to be used for metadata extractors that
- * must indicate which MIME types they support.
- *
- * NOTE: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *NGPC::supportedMimeTypes_static(void)
-{
-	return NGPCPrivate::mimeType_tbl;
 }
 
 /**

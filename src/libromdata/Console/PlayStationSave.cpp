@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * PlayStationSave.hpp: Sony PlayStation save file reader.                 *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * Copyright (c) 2017-2018 by Egor.                                        *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
@@ -25,9 +25,6 @@ using std::vector;
 
 namespace LibRomData {
 
-ROMDATA_IMPL(PlayStationSave)
-ROMDATA_IMPL_IMG(PlayStationSave)
-
 class PlayStationSavePrivate final : public RomDataPrivate
 {
 	public:
@@ -37,6 +34,12 @@ class PlayStationSavePrivate final : public RomDataPrivate
 	private:
 		typedef RomDataPrivate super;
 		RP_DISABLE_COPY(PlayStationSavePrivate)
+
+	public:
+		/** RomDataInfo **/
+		static const char *const exts[];
+		static const char *const mimeTypes[];
+		static const RomDataInfo romDataInfo;
 
 	public:
 		// Animated icon data.
@@ -76,10 +79,33 @@ class PlayStationSavePrivate final : public RomDataPrivate
 		const rp_image *loadIcon(void);
 };
 
+ROMDATA_IMPL(PlayStationSave)
+ROMDATA_IMPL_IMG(PlayStationSave)
+
 /** PlayStationSavePrivate **/
 
+/* RomDataInfo */
+const char *const PlayStationSavePrivate::exts[] = {
+	".psv",
+	".mcb", ".mcx", ".pda", ".psx",
+	".mcs", ".ps1",
+
+	// TODO: support RAW?
+	nullptr
+};
+const char *const PlayStationSavePrivate::mimeTypes[] = {
+	// Unofficial MIME types.
+	// TODO: Get these upstreamed on FreeDesktop.org.
+	"application/x-ps1-save",
+
+	nullptr
+};
+const RomDataInfo PlayStationSavePrivate::romDataInfo = {
+	"PlayStationSave", exts, mimeTypes
+};
+
 PlayStationSavePrivate::PlayStationSavePrivate(PlayStationSave *q, IRpFile *file)
-	: super(q, file)
+	: super(q, file, &romDataInfo)
 	, iconAnimData(nullptr)
 	, saveType(SaveType::Unknown)
 {
@@ -189,7 +215,6 @@ PlayStationSave::PlayStationSave(IRpFile *file)
 {
 	// This class handles save files.
 	RP_D(PlayStationSave);
-	d->className = "PlayStationSave";
 	d->mimeType = "application/x-ps1-save";	// unofficial, not on fd.o
 	d->fileType = FileType::SaveFile;
 
@@ -361,54 +386,6 @@ const char *PlayStationSave::systemName(unsigned int type) const
 	};
 
 	return sysNames[type & SYSNAME_TYPE_MASK];
-}
-
-/**
- * Get a list of all supported file extensions.
- * This is to be used for file type registration;
- * subclasses don't explicitly check the extension.
- *
- * NOTE: The extensions include the leading dot,
- * e.g. ".bin" instead of "bin".
- *
- * NOTE 2: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *PlayStationSave::supportedFileExtensions_static(void)
-{
-	static const char *const exts[] = {
-		".psv",
-		".mcb", ".mcx", ".pda", ".psx",
-		".mcs", ".ps1",
-
-		// TODO: support RAW?
-		nullptr
-	};
-	return exts;
-}
-
-/**
- * Get a list of all supported MIME types.
- * This is to be used for metadata extractors that
- * must indicate which MIME types they support.
- *
- * NOTE: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *PlayStationSave::supportedMimeTypes_static(void)
-{
-	static const char *const mimeTypes[] = {
-		// Unofficial MIME types.
-		// TODO: Get these upstreamed on FreeDesktop.org.
-		"application/x-ps1-save",
-
-		nullptr
-	};
-	return mimeTypes;
 }
 
 /**

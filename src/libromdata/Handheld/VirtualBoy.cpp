@@ -22,8 +22,6 @@ using std::vector;
 
 namespace LibRomData {
 
-ROMDATA_IMPL(VirtualBoy)
-
 class VirtualBoyPrivate final : public RomDataPrivate
 {
 	public:
@@ -32,6 +30,12 @@ class VirtualBoyPrivate final : public RomDataPrivate
 	private:
 		typedef RomDataPrivate super;
 		RP_DISABLE_COPY(VirtualBoyPrivate)
+
+	public:
+		/** RomDataInfo **/
+		static const char *const exts[];
+		static const char *const mimeTypes[];
+		static const RomDataInfo romDataInfo;
 
 	public:
 		/**
@@ -60,10 +64,31 @@ class VirtualBoyPrivate final : public RomDataPrivate
 		VB_RomFooter romFooter;
 };
 
+ROMDATA_IMPL(VirtualBoy)
+
 /** VirtualBoyPrivate **/
 
+/* RomDataInfo */
+const char *const VirtualBoyPrivate::exts[] = {
+	// NOTE: These extensions may cause conflicts on
+	// Windows if fallback handling isn't working.
+
+	".vb",	// Visual Basic .NET source files
+
+	nullptr
+};
+const char *const VirtualBoyPrivate::mimeTypes[] = {
+	// Unofficial MIME types from FreeDesktop.org.
+	"application/x-virtual-boy-rom",
+
+	nullptr
+};
+const RomDataInfo VirtualBoyPrivate::romDataInfo = {
+	"VirtualBoy", exts, mimeTypes
+};
+
 VirtualBoyPrivate::VirtualBoyPrivate(VirtualBoy *q, IRpFile *file)
-	: super(q, file)
+	: super(q, file, &romDataInfo)
 {
 	// Clear the ROM footer struct.
 	memset(&romFooter, 0, sizeof(romFooter));
@@ -123,7 +148,6 @@ VirtualBoy::VirtualBoy(IRpFile *file)
 	: super(new VirtualBoyPrivate(this, file))
 {
 	RP_D(VirtualBoy);
-	d->className = "VirtualBoy";
 	d->mimeType = "application/x-virtual-boy-rom";	// unofficial
 
 	if (!d->file) {
@@ -275,52 +299,6 @@ const char *VirtualBoy::systemName(unsigned int type) const
 	};
 
 	return sysNames[type & SYSNAME_TYPE_MASK];
-}
-
-/**
- * Get a list of all supported file extensions.
- * This is to be used for file type registration;
- * subclasses don't explicitly check the extension.
- *
- * NOTE: The extensions include the leading dot,
- * e.g. ".bin" instead of "bin".
- *
- * NOTE 2: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *VirtualBoy::supportedFileExtensions_static(void)
-{
-	// NOTE: These extensions may cause conflicts on
-	// Windows if fallback handling isn't working.
-	static const char *const exts[] = {
-		".vb",	// Visual Basic .NET source files
-
-		nullptr
-	};
-	return exts;
-}
-
-/**
- * Get a list of all supported MIME types.
- * This is to be used for metadata extractors that
- * must indicate which MIME types they support.
- *
- * NOTE: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *VirtualBoy::supportedMimeTypes_static(void)
-{
-	static const char *const mimeTypes[] = {
-		// Unofficial MIME types from FreeDesktop.org.
-		"application/x-virtual-boy-rom",
-
-		nullptr
-	};
-	return mimeTypes;
 }
 
 /**

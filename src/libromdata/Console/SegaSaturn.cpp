@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * SegaSaturn.hpp: Sega Saturn disc image reader.                          *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -28,8 +28,6 @@ using std::vector;
 
 namespace LibRomData {
 
-ROMDATA_IMPL(SegaSaturn)
-
 class SegaSaturnPrivate final : public RomDataPrivate
 {
 	public:
@@ -38,6 +36,12 @@ class SegaSaturnPrivate final : public RomDataPrivate
 	private:
 		typedef RomDataPrivate super;
 		RP_DISABLE_COPY(SegaSaturnPrivate)
+
+	public:
+		/** RomDataInfo **/
+		static const char *const exts[];
+		static const char *const mimeTypes[];
+		static const RomDataInfo romDataInfo;
 
 	public:
 		/** RomFields **/
@@ -120,8 +124,31 @@ class SegaSaturnPrivate final : public RomDataPrivate
 
 /** SegaSaturnPrivate **/
 
+ROMDATA_IMPL(SegaSaturn)
+
+/* RomDataInfo */
+const char *const SegaSaturnPrivate::exts[] = {
+	".iso",	// ISO-9660 (2048-byte)
+	".bin",	// Raw (2352-byte)
+
+	// TODO: Add these formats?
+	//".cdi",	// DiscJuggler
+	//".nrg",	// Nero
+
+	nullptr
+};
+const char *const SegaSaturnPrivate::mimeTypes[] = {
+	// Unofficial MIME types from FreeDesktop.org.
+	"application/x-saturn-rom",
+
+	nullptr
+};
+const RomDataInfo SegaSaturnPrivate::romDataInfo = {
+	"SegaSaturn", exts, mimeTypes
+};
+
 SegaSaturnPrivate::SegaSaturnPrivate(SegaSaturn *q, IRpFile *file)
-	: super(q, file)
+	: super(q, file, &romDataInfo)
 	, discType(DiscType::Unknown)
 	, saturn_region(0)
 {
@@ -304,7 +331,6 @@ SegaSaturn::SegaSaturn(IRpFile *file)
 {
 	// This class handles disc images.
 	RP_D(SegaSaturn);
-	d->className = "SegaSaturn";
 	d->mimeType = "application/x-saturn-rom";	// unofficial
 	d->fileType = FileType::DiscImage;
 
@@ -428,55 +454,6 @@ const char *SegaSaturn::systemName(unsigned int type) const
 	};
 
 	return sysNames[type & SYSNAME_TYPE_MASK];
-}
-
-/**
- * Get a list of all supported file extensions.
- * This is to be used for file type registration;
- * subclasses don't explicitly check the extension.
- *
- * NOTE: The extensions include the leading dot,
- * e.g. ".bin" instead of "bin".
- *
- * NOTE 2: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *SegaSaturn::supportedFileExtensions_static(void)
-{
-	static const char *const exts[] = {
-		".iso",	// ISO-9660 (2048-byte)
-		".bin",	// Raw (2352-byte)
-
-		// TODO: Add these formats?
-		//".cdi",	// DiscJuggler
-		//".nrg",	// Nero
-
-		nullptr
-	};
-	return exts;
-}
-
-/**
- * Get a list of all supported MIME types.
- * This is to be used for metadata extractors that
- * must indicate which MIME types they support.
- *
- * NOTE: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *SegaSaturn::supportedMimeTypes_static(void)
-{
-	static const char *const mimeTypes[] = {
-		// Unofficial MIME types from FreeDesktop.org.
-		"application/x-saturn-rom",
-
-		nullptr
-	};
-	return mimeTypes;
 }
 
 /**

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * GameBoyAdvance.hpp: Nintendo Game Boy Advance ROM reader.               *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -21,9 +21,6 @@ using std::vector;
 
 namespace LibRomData {
 
-ROMDATA_IMPL(GameBoyAdvance)
-ROMDATA_IMPL_IMG(GameBoyAdvance)
-
 class GameBoyAdvancePrivate final : public RomDataPrivate
 {
 	public:
@@ -32,6 +29,12 @@ class GameBoyAdvancePrivate final : public RomDataPrivate
 	private:
 		typedef RomDataPrivate super;
 		RP_DISABLE_COPY(GameBoyAdvancePrivate)
+
+	public:
+		/** RomDataInfo **/
+		static const char *const exts[];
+		static const char *const mimeTypes[];
+		static const RomDataInfo romDataInfo;
 
 	public:
 		enum class RomType {
@@ -56,10 +59,32 @@ class GameBoyAdvancePrivate final : public RomDataPrivate
 		string getPublisher(void) const;
 };
 
+ROMDATA_IMPL(GameBoyAdvance)
+ROMDATA_IMPL_IMG(GameBoyAdvance)
+
 /** GameBoyAdvancePrivate **/
 
+/* RomDataInfo */
+const char *const GameBoyAdvancePrivate::exts[] = {
+	".gba",	// Most common
+	".agb",	// Less common
+	".mb",	// Multiboot (may conflict with AutoDesk Maya)
+	".srl",	// Official SDK extension
+
+	nullptr
+};
+const char *const GameBoyAdvancePrivate::mimeTypes[] = {
+	// Unofficial MIME types from FreeDesktop.org.
+	"application/x-gba-rom",
+
+	nullptr
+};
+const RomDataInfo GameBoyAdvancePrivate::romDataInfo = {
+	"GameBoyAdvance", exts, mimeTypes
+};
+
 GameBoyAdvancePrivate::GameBoyAdvancePrivate(GameBoyAdvance *q, IRpFile *file)
-	: super(q, file)
+	: super(q, file, &romDataInfo)
 	, romType(RomType::Unknown)
 {
 	// Clear the ROM header struct.
@@ -111,7 +136,6 @@ GameBoyAdvance::GameBoyAdvance(IRpFile *file)
 	: super(new GameBoyAdvancePrivate(this, file))
 {
 	RP_D(GameBoyAdvance);
-	d->className = "GameBoyAdvance";
 	d->mimeType = "application/x-gba-rom";	// unofficial
 
 	if (!d->file) {
@@ -230,53 +254,6 @@ const char *GameBoyAdvance::systemName(unsigned int type) const
 	};
 
 	return sysNames[type & SYSNAME_TYPE_MASK];
-}
-
-/**
- * Get a list of all supported file extensions.
- * This is to be used for file type registration;
- * subclasses don't explicitly check the extension.
- *
- * NOTE: The extensions include the leading dot,
- * e.g. ".bin" instead of "bin".
- *
- * NOTE 2: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *GameBoyAdvance::supportedFileExtensions_static(void)
-{
-	static const char *const exts[] = {
-		".gba",	// Most common
-		".agb",	// Less common
-		".mb",	// Multiboot (may conflict with AutoDesk Maya)
-		".srl",	// Official SDK extension
-
-		nullptr
-	};
-	return exts;
-}
-
-/**
- * Get a list of all supported MIME types.
- * This is to be used for metadata extractors that
- * must indicate which MIME types they support.
- *
- * NOTE: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *GameBoyAdvance::supportedMimeTypes_static(void)
-{
-	static const char *const mimeTypes[] = {
-		// Unofficial MIME types from FreeDesktop.org.
-		"application/x-gba-rom",
-
-		nullptr
-	};
-	return mimeTypes;
 }
 
 /**

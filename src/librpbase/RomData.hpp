@@ -49,21 +49,6 @@ class RomData : public RefBase
 		 *
 		 * NOTE: Check isValid() to determine if this is a valid ROM.
 		 *
-		 * @param file ROM file.
-		 */
-		explicit RomData(LibRpFile::IRpFile *file);
-
-		/**
-		 * ROM data base class.
-		 *
-		 * A ROM file must be opened by the caller. The file handle
-		 * will be ref()'d and must be kept open in order to load
-		 * data from the ROM.
-		 *
-		 * To close the file, either delete this object or call close().
-		 *
-		 * NOTE: Check isValid() to determine if this is a valid ROM.
-		 *
 		 * @param d RomDataPrivate subclass.
 		 */
 		explicit RomData(RomDataPrivate *d);
@@ -279,7 +264,7 @@ class RomData : public RefBase
 		 *
 		 * @return NULL-terminated array of all supported file extensions, or nullptr on error.
 		 */
-		virtual const char *const *supportedFileExtensions(void) const = 0;
+		const char *const *supportedFileExtensions(void) const;
 
 		/**
 		 * Get a list of all supported MIME types.
@@ -291,7 +276,7 @@ class RomData : public RefBase
 		 *
 		 * @return NULL-terminated array of all supported file extensions, or nullptr on error.
 		 */
-		virtual const char *const *supportedMimeTypes(void) const = 0;
+		const char *const *supportedMimeTypes(void) const;
 
 		/**
 		 * Image types supported by a RomData subclass.

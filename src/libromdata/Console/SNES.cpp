@@ -23,9 +23,6 @@ using std::vector;
 
 namespace LibRomData {
 
-ROMDATA_IMPL(SNES)
-ROMDATA_IMPL_IMG(SNES)
-
 class SNESPrivate final : public RomDataPrivate
 {
 	public:
@@ -34,6 +31,12 @@ class SNESPrivate final : public RomDataPrivate
 	private:
 		typedef RomDataPrivate super;
 		RP_DISABLE_COPY(SNESPrivate)
+
+	public:
+		/** RomDataInfo **/
+		static const char *const exts[];
+		static const char *const mimeTypes[];
+		static const RomDataInfo romDataInfo;
 
 	public:
 		/**
@@ -110,10 +113,43 @@ class SNESPrivate final : public RomDataPrivate
 		string getGameID(bool doFake = false) const;
 };
 
+ROMDATA_IMPL(SNES)
+ROMDATA_IMPL_IMG(SNES)
+
 /** SNESPrivate **/
 
+/* RomDataInfo */
+const char *const SNESPrivate::exts[] = {
+	".smc", ".swc", ".sfc",
+	".fig", ".ufo", ".mgd",
+
+	// BS-X
+	".bs", ".bsx",
+
+	// Nintendo Super System (MAME) (TODO)
+	//".ic1",
+
+	nullptr
+};
+const char *const SNESPrivate::mimeTypes[] = {
+	// Vendor-specific MIME types from FreeDesktop.org.
+	"application/vnd.nintendo.snes.rom",
+
+	// Unofficial MIME types from FreeDesktop.org.
+	"application/x-snes-rom",
+
+	// Unofficial MIME types.
+	// TODO: Get these upstreamed on FreeDesktop.org.
+	"application/x-satellaview-rom",
+
+	nullptr
+};
+const RomDataInfo SNESPrivate::romDataInfo = {
+	"SNES", exts, mimeTypes
+};
+
 SNESPrivate::SNESPrivate(SNES *q, IRpFile *file)
-	: super(q, file)
+	: super(q, file, &romDataInfo)
 	, romType(RomType::Unknown)
 	, header_address(0)
 {
@@ -741,7 +777,6 @@ SNES::SNES(IRpFile *file)
 	: super(new SNESPrivate(this, file))
 {
 	RP_D(SNES);
-	d->className = "SNES";
 	d->mimeType = "application/vnd.nintendo.snes.rom";	// vendor-specific
 
 	if (!d->file) {
@@ -932,15 +967,12 @@ int SNES::isRomSupported_static(const DetectInfo *info)
 	// SNES ROMs don't necessarily have a header at the start of the file.
 	// Therefore, we're using the file extension.
 	if (info->ext && info->ext[0] != 0) {
-		const char *const *exts = supportedFileExtensions_static();
-		if (!exts) {
-			// Should not happen...
-			return static_cast<int>(SNESPrivate::RomType::Unknown);
-		}
-		for (; *exts != nullptr; exts++) {
-			if (!strcasecmp(info->ext, *exts)) {
+		for (const char *const *ext = SNESPrivate::exts;
+		     *ext != nullptr; ext++)
+		{
+			if (!strcasecmp(info->ext, *ext)) {
 				// File extension is supported.
-				if ((*exts)[1] == 'b') {
+				if ((*ext)[1] == 'b') {
 					// BS-X extension.
 					return static_cast<int>(SNESPrivate::RomType::BSX);
 				} else {
@@ -1076,64 +1108,6 @@ const char *SNES::systemName(unsigned int type) const
 	}
 
 	return sysNames[idx];
-}
-
-/**
- * Get a list of all supported file extensions.
- * This is to be used for file type registration;
- * subclasses don't explicitly check the extension.
- *
- * NOTE: The extensions do not include the leading dot,
- * e.g. "bin" instead of ".bin".
- *
- * NOTE 2: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *SNES::supportedFileExtensions_static(void)
-{
-	static const char *const exts[] = {
-		".smc", ".swc", ".sfc",
-		".fig", ".ufo", ".mgd",
-
-		// BS-X
-		".bs", ".bsx",
-
-		// Nintendo Super System (MAME) (TODO)
-		//".ic1",
-
-		nullptr
-	};
-	return exts;
-}
-
-/**
- * Get a list of all supported MIME types.
- * This is to be used for metadata extractors that
- * must indicate which MIME types they support.
- *
- * NOTE: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *SNES::supportedMimeTypes_static(void)
-{
-	static const char *const mimeTypes[] = {
-		// Vendor-specific MIME types from FreeDesktop.org.
-		"application/vnd.nintendo.snes.rom",
-
-		// Unofficial MIME types from FreeDesktop.org.
-		"application/x-snes-rom",
-
-		// Unofficial MIME types.
-		// TODO: Get these upstreamed on FreeDesktop.org.
-		"application/x-satellaview-rom",
-
-		nullptr
-	};
-	return mimeTypes;
 }
 
 /**

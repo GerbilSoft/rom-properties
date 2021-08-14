@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * GameCubeSave.hpp: Nintendo GameCube save file reader.                   *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -25,9 +25,6 @@ using std::vector;
 
 namespace LibRomData {
 
-ROMDATA_IMPL(GameCubeSave)
-ROMDATA_IMPL_IMG(GameCubeSave)
-
 class GameCubeSavePrivate final : public RomDataPrivate
 {
 	public:
@@ -37,6 +34,12 @@ class GameCubeSavePrivate final : public RomDataPrivate
 	private:
 		typedef RomDataPrivate super;
 		RP_DISABLE_COPY(GameCubeSavePrivate)
+
+	public:
+		/** RomDataInfo **/
+		static const char *const exts[];
+		static const char *const mimeTypes[];
+		static const RomDataInfo romDataInfo;
 
 	public:
 		// Internal images.
@@ -101,10 +104,32 @@ class GameCubeSavePrivate final : public RomDataPrivate
 		const rp_image *loadBanner(void);
 };
 
+ROMDATA_IMPL(GameCubeSave)
+ROMDATA_IMPL_IMG(GameCubeSave)
+
 /** GameCubeSavePrivate **/
 
+/* RomDataInfo */
+const char *const GameCubeSavePrivate::exts[] = {
+	".gci",	// USB Memory Adapter
+	".gcs",	// GameShark
+	".sav",	// MaxDrive (TODO: Too generic?)
+
+	nullptr
+};
+const char *const GameCubeSavePrivate::mimeTypes[] = {
+	// Unofficial MIME types.
+	// TODO: Get these upstreamed on FreeDesktop.org.
+	"application/x-gamecube-save",
+
+	nullptr
+};
+const RomDataInfo GameCubeSavePrivate::romDataInfo = {
+	"GameCubeSave", exts, mimeTypes
+};
+
 GameCubeSavePrivate::GameCubeSavePrivate(GameCubeSave *q, IRpFile *file)
-	: super(q, file)
+	: super(q, file, &romDataInfo)
 	, img_banner(nullptr)
 	, iconAnimData(nullptr)
 	, saveType(SaveType::Unknown)
@@ -526,7 +551,6 @@ GameCubeSave::GameCubeSave(IRpFile *file)
 {
 	// This class handles save files.
 	RP_D(GameCubeSave);
-	d->className = "GameCubeSave";
 	d->mimeType = "application/x-gamecube-save";	// unofficial, not on fd.o
 	d->fileType = FileType::SaveFile;
 
@@ -702,53 +726,6 @@ const char *GameCubeSave::systemName(unsigned int type) const
 	}
 
 	return sysNames[type & SYSNAME_TYPE_MASK];
-}
-
-/**
- * Get a list of all supported file extensions.
- * This is to be used for file type registration;
- * subclasses don't explicitly check the extension.
- *
- * NOTE: The extensions do not include the leading dot,
- * e.g. "bin" instead of ".bin".
- *
- * NOTE 2: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *GameCubeSave::supportedFileExtensions_static(void)
-{
-	static const char *const exts[] = {
-		".gci",	// USB Memory Adapter
-		".gcs",	// GameShark
-		".sav",	// MaxDrive (TODO: Too generic?)
-
-		nullptr
-	};
-	return exts;
-}
-
-/**
- * Get a list of all supported MIME types.
- * This is to be used for metadata extractors that
- * must indicate which MIME types they support.
- *
- * NOTE: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *GameCubeSave::supportedMimeTypes_static(void)
-{
-	static const char *const mimeTypes[] = {
-		// Unofficial MIME types.
-		// TODO: Get these upstreamed on FreeDesktop.org.
-		"application/x-gamecube-save",
-
-		nullptr
-	};
-	return mimeTypes;
 }
 
 /**

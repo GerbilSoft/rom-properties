@@ -21,9 +21,6 @@ using std::vector;
 
 namespace LibRomData {
 
-ROMDATA_IMPL(Amiibo)
-ROMDATA_IMPL_IMG(Amiibo)
-
 class AmiiboPrivate final : public RomDataPrivate
 {
 	public:
@@ -32,6 +29,12 @@ class AmiiboPrivate final : public RomDataPrivate
 	private:
 		typedef RomDataPrivate super;
 		RP_DISABLE_COPY(AmiiboPrivate)
+
+	public:
+		/** RomDataInfo **/
+		static const char *const exts[];
+		static const char *const mimeTypes[];
+		static const RomDataInfo romDataInfo;
 
 	public:
 		// NFC data.
@@ -49,10 +52,37 @@ class AmiiboPrivate final : public RomDataPrivate
 		static bool calcCheckBytes(const uint8_t *serial, uint8_t *pCb0, uint8_t *pCb1);
 };
 
+ROMDATA_IMPL(Amiibo)
+ROMDATA_IMPL_IMG(Amiibo)
+
 /** AmiiboPrivate **/
 
+/* RomDataInfo */
+const char *const AmiiboPrivate::exts[] = {
+	// NOTE: These extensions may cause conflicts on
+	// Windows if fallback handling isn't working.
+	".bin",	// too generic
+
+	// NOTE: The following extensions are listed
+	// for testing purposes on Windows, and may
+	// be removed later.
+	".nfc", ".nfp",
+
+	nullptr
+};
+const char *const AmiiboPrivate::mimeTypes[] = {
+	// Unofficial MIME types.
+	// TODO: Get these upstreamed on FreeDesktop.org.
+	"application/x-nintendo-amiibo",
+
+	nullptr
+};
+const RomDataInfo AmiiboPrivate::romDataInfo = {
+	"Amiibo", exts, mimeTypes
+};
+
 AmiiboPrivate::AmiiboPrivate(Amiibo *q, IRpFile *file)
-	: super(q, file)
+	: super(q, file, &romDataInfo)
 	, nfpSize(0)
 {
 	// Clear the NFP data struct.
@@ -96,7 +126,6 @@ Amiibo::Amiibo(IRpFile *file)
 {
 	// This class handles NFC dumps.
 	RP_D(Amiibo);
-	d->className = "Amiibo";
 	d->mimeType = "application/x-nintendo-amiibo";	// unofficial, not on fd.o
 	d->fileType = FileType::NFC_Dump;
 
@@ -260,58 +289,6 @@ const char *Amiibo::systemName(unsigned int type) const
 	};
 
 	return sysNames[type & SYSNAME_TYPE_MASK];
-}
-
-/**
- * Get a list of all supported file extensions.
- * This is to be used for file type registration;
- * subclasses don't explicitly check the extension.
- *
- * NOTE: The extensions include the leading dot,
- * e.g. ".bin" instead of "bin".
- *
- * NOTE 2: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *Amiibo::supportedFileExtensions_static(void)
-{
-	static const char *const exts[] = {
-		// NOTE: These extensions may cause conflicts on
-		// Windows if fallback handling isn't working.
-		".bin",	// too generic
-
-		// NOTE: The following extensions are listed
-		// for testing purposes on Windows, and may
-		// be removed later.
-		".nfc", ".nfp",
-
-		nullptr
-	};
-	return exts;
-}
-
-/**
- * Get a list of all supported MIME types.
- * This is to be used for metadata extractors that
- * must indicate which MIME types they support.
- *
- * NOTE: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *Amiibo::supportedMimeTypes_static(void)
-{
-	static const char *const mimeTypes[] = {
-		// Unofficial MIME types.
-		// TODO: Get these upstreamed on FreeDesktop.org.
-		"application/x-nintendo-amiibo",
-
-		nullptr
-	};
-	return mimeTypes;
 }
 
 /**

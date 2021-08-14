@@ -30,9 +30,6 @@ using std::vector;
 
 namespace LibRomData {
 
-ROMDATA_IMPL(Xbox360_STFS)
-ROMDATA_IMPL_IMG_TYPES(Xbox360_STFS)
-
 // Workaround for RP_D() expecting the no-underscore naming convention.
 #define Xbox360_STFSPrivate Xbox360_STFS_Private
 
@@ -45,6 +42,12 @@ class Xbox360_STFS_Private final : public RomDataPrivate
 	private:
 		typedef RomDataPrivate super;
 		RP_DISABLE_COPY(Xbox360_STFS_Private)
+
+	public:
+		/** RomDataInfo **/
+		static const char *const exts[];
+		static const char *const mimeTypes[];
+		static const RomDataInfo romDataInfo;
 
 	public:
 		// STFS type.
@@ -145,10 +148,32 @@ class Xbox360_STFS_Private final : public RomDataPrivate
 		Xbox360_XEX *openDefaultXex(void);
 };
 
+ROMDATA_IMPL(Xbox360_STFS)
+ROMDATA_IMPL_IMG_TYPES(Xbox360_STFS)
+
 /** Xbox360_STFS_Private **/
 
+/* RomDataInfo */
+const char *const Xbox360_STFS_Private::exts[] = {
+	//".stfs",	// FIXME: Not actually used...
+	".fxs",		// Fallout
+	".exs",		// Skyrim
+
+	nullptr
+};
+const char *const Xbox360_STFS_Private::mimeTypes[] = {
+	// Unofficial MIME types.
+	// TODO: Get these upstreamed on FreeDesktop.org.
+	"application/x-xbox360-stfs",
+
+	nullptr
+};
+const RomDataInfo Xbox360_STFS_Private::romDataInfo = {
+	"Xbox360_STFS", exts, mimeTypes
+};
+
 Xbox360_STFS_Private::Xbox360_STFS_Private(Xbox360_STFS *q, IRpFile *file)
-	: super(q, file)
+	: super(q, file, &romDataInfo)
 	, stfsType(StfsType::Unknown)
 	, img_icon(nullptr)
 	, headers_loaded(0)
@@ -537,7 +562,6 @@ Xbox360_STFS::Xbox360_STFS(IRpFile *file)
 	// This class handles application packages.
 	// TODO: Change to Save File if the content is a save file.
 	RP_D(Xbox360_STFS);
-	d->className = "Xbox360_STFS";
 	d->mimeType = "application/x-xbox360-stfs";	// unofficial, not on fd.o
 	d->fileType = FileType::ApplicationPackage;
 
@@ -714,53 +738,6 @@ const char *Xbox360_STFS::systemName(unsigned int type) const
 	};
 
 	return sysNames[type & SYSNAME_TYPE_MASK];
-}
-
-/**
- * Get a list of all supported file extensions.
- * This is to be used for file type registration;
- * subclasses don't explicitly check the extension.
- *
- * NOTE: The extensions do not include the leading dot,
- * e.g. "bin" instead of ".bin".
- *
- * NOTE 2: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *Xbox360_STFS::supportedFileExtensions_static(void)
-{
-	static const char *const exts[] = {
-		//".stfs",	// FIXME: Not actually used...
-		".fxs",		// Fallout
-		".exs",		// Skyrim
-
-		nullptr
-	};
-	return exts;
-}
-
-/**
- * Get a list of all supported MIME types.
- * This is to be used for metadata extractors that
- * must indicate which MIME types they support.
- *
- * NOTE: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *Xbox360_STFS::supportedMimeTypes_static(void)
-{
-	static const char *const mimeTypes[] = {
-		// Unofficial MIME types.
-		// TODO: Get these upstreamed on FreeDesktop.org.
-		"application/x-xbox360-stfs",
-
-		nullptr
-	};
-	return mimeTypes;
 }
 
 /**

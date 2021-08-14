@@ -30,10 +30,6 @@ using std::vector;
 
 namespace LibRomData {
 
-ROMDATA_IMPL(Xbox360_XDBF)
-ROMDATA_IMPL_IMG_TYPES(Xbox360_XDBF)
-ROMDATA_IMPL_IMG_SIZES(Xbox360_XDBF)
-
 // Workaround for RP_D() expecting the no-underscore naming convention.
 #define Xbox360_XDBFPrivate Xbox360_XDBF_Private
 
@@ -46,6 +42,12 @@ class Xbox360_XDBF_Private final : public RomDataPrivate
 	private:
 		typedef RomDataPrivate super;
 		RP_DISABLE_COPY(Xbox360_XDBF_Private)
+
+	public:
+		/** RomDataInfo **/
+		static const char *const exts[];
+		static const char *const mimeTypes[];
+		static const RomDataInfo romDataInfo;
 
 	public:
 		// XDBF type.
@@ -260,10 +262,34 @@ class Xbox360_XDBF_Private final : public RomDataPrivate
 		}
 };
 
+ROMDATA_IMPL(Xbox360_XDBF)
+ROMDATA_IMPL_IMG_TYPES(Xbox360_XDBF)
+ROMDATA_IMPL_IMG_SIZES(Xbox360_XDBF)
+
 /** Xbox360_XDBF_Private **/
 
+/* RomDataInfo */
+// NOTE: Using the same image settings as Xbox360_XEX.
+const char *const Xbox360_XDBF_Private::exts[] = {
+	".xdbf",
+	".spa",		// XEX XDBF files
+	".gpd",		// Gamer Profile Data
+
+	nullptr
+};
+const char *const Xbox360_XDBF_Private::mimeTypes[] = {
+	// Unofficial MIME types.
+	// TODO: Get these upstreamed on FreeDesktop.org.
+	"application/x-xbox360-xdbf",
+
+	nullptr
+};
+const RomDataInfo Xbox360_XDBF_Private::romDataInfo = {
+	"Xbox360_XEX", exts, mimeTypes
+};
+
 Xbox360_XDBF_Private::Xbox360_XDBF_Private(Xbox360_XDBF *q, IRpFile *file, bool xex)
-	: super(q, file)
+	: super(q, file, &romDataInfo)
 	, xdbfType(XDBFType::Unknown)
 	, img_icon(nullptr)
 	, data_offset(0)
@@ -1540,8 +1566,8 @@ Xbox360_XDBF::Xbox360_XDBF(IRpFile *file)
 	: super(new Xbox360_XDBF_Private(this, file, false))
 {
 	// This class handles XDBF files and/or sections only.
+	// NOTE: Using the same image settings as Xbox360_XEX.
 	RP_D(Xbox360_XDBF);
-	d->className = "Xbox360_XEX";	// Using the same image settings as Xbox360_XEX.
 	d->mimeType = "application/x-xbox360-xdbf";	// unofficial, not on fd.o
 	d->fileType = FileType::ResourceFile;
 
@@ -1572,7 +1598,6 @@ Xbox360_XDBF::Xbox360_XDBF(IRpFile *file, bool xex)
 {
 	// This class handles XDBF files and/or sections only.
 	RP_D(Xbox360_XDBF);
-	d->className = "Xbox360_XEX";	// Using the same image settings as Xbox360_XEX.
 	d->mimeType = "application/x-xbox360-xdbf";	// unofficial, not on fd.o
 	d->fileType = FileType::ResourceFile;
 
@@ -1748,53 +1773,6 @@ const char *Xbox360_XDBF::systemName(unsigned int type) const
 	};
 
 	return sysNames[type & SYSNAME_TYPE_MASK];
-}
-
-/**
- * Get a list of all supported file extensions.
- * This is to be used for file type registration;
- * subclasses don't explicitly check the extension.
- *
- * NOTE: The extensions do not include the leading dot,
- * e.g. "bin" instead of ".bin".
- *
- * NOTE 2: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *Xbox360_XDBF::supportedFileExtensions_static(void)
-{
-	static const char *const exts[] = {
-		".xdbf",
-		".spa",		// XEX XDBF files
-		".gpd",		// Gamer Profile Data
-
-		nullptr
-	};
-	return exts;
-}
-
-/**
- * Get a list of all supported MIME types.
- * This is to be used for metadata extractors that
- * must indicate which MIME types they support.
- *
- * NOTE: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *Xbox360_XDBF::supportedMimeTypes_static(void)
-{
-	static const char *const mimeTypes[] = {
-		// Unofficial MIME types.
-		// TODO: Get these upstreamed on FreeDesktop.org.
-		"application/x-xbox360-xdbf",
-
-		nullptr
-	};
-	return mimeTypes;
 }
 
 /**

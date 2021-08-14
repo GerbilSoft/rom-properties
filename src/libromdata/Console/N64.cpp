@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * N64.cpp: Nintendo 64 ROM image reader.                                  *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -20,8 +20,6 @@ using std::vector;
 
 namespace LibRomData {
 
-ROMDATA_IMPL(N64)
-
 class N64Private final : public RomDataPrivate
 {
 	public:
@@ -30,6 +28,12 @@ class N64Private final : public RomDataPrivate
 	private:
 		typedef RomDataPrivate super;
 		RP_DISABLE_COPY(N64Private)
+
+	public:
+		/** RomDataInfo **/
+		static const char *const exts[];
+		static const char *const mimeTypes[];
+		static const RomDataInfo romDataInfo;
 
 	public:
 		// ROM image type.
@@ -51,10 +55,28 @@ class N64Private final : public RomDataPrivate
 		N64_RomHeader romHeader;
 };
 
+ROMDATA_IMPL(N64)
+
 /** N64Private **/
 
+/* RomDataInfo */
+const char *const N64Private::exts[] = {
+	".z64", ".n64", ".v64",
+
+	nullptr
+};
+const char *const N64Private::mimeTypes[] = {
+	// Unofficial MIME types from FreeDesktop.org.
+	"application/x-n64-rom",
+
+	nullptr
+};
+const RomDataInfo N64Private::romDataInfo = {
+	"N64", exts, mimeTypes
+};
+
 N64Private::N64Private(N64 *q, IRpFile *file)
-	: super(q, file)
+	: super(q, file, &romDataInfo)
 	, romType(RomType::Unknown)
 {
 	// Clear the ROM header struct.
@@ -80,7 +102,6 @@ N64::N64(IRpFile *file)
 	: super(new N64Private(this, file))
 {
 	RP_D(N64);
-	d->className = "N64";
 	d->mimeType = "application/x-n64-rom";	// unofficial
 
 	if (!d->file) {
@@ -214,49 +235,6 @@ const char *N64::systemName(unsigned int type) const
 	};
 
 	return sysNames[type & SYSNAME_TYPE_MASK];
-}
-
-/**
- * Get a list of all supported file extensions.
- * This is to be used for file type registration;
- * subclasses don't explicitly check the extension.
- *
- * NOTE: The extensions do not include the leading dot,
- * e.g. "bin" instead of ".bin".
- *
- * NOTE 2: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *N64::supportedFileExtensions_static(void)
-{
-	static const char *const exts[] = {
-		".z64", ".n64", ".v64",
-		nullptr
-	};
-	return exts;
-}
-
-/**
- * Get a list of all supported MIME types.
- * This is to be used for metadata extractors that
- * must indicate which MIME types they support.
- *
- * NOTE: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *N64::supportedMimeTypes_static(void)
-{
-	static const char *const mimeTypes[] = {
-		// Unofficial MIME types from FreeDesktop.org.
-		"application/x-n64-rom",
-
-		nullptr
-	};
-	return mimeTypes;
 }
 
 /**

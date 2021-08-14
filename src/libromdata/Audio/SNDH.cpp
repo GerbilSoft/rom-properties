@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * SNDH.hpp: Atari ST SNDH audio reader.                                   *
  *                                                                         *
- * Copyright (c) 2018-2020 by David Korth.                                 *
+ * Copyright (c) 2018-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -35,8 +35,6 @@ using std::vector;
 
 namespace LibRomData {
 
-ROMDATA_IMPL(SNDH)
-
 class SNDHPrivate final : public RomDataPrivate
 {
 	public:
@@ -45,6 +43,12 @@ class SNDHPrivate final : public RomDataPrivate
 	private:
 		typedef RomDataPrivate super;
 		RP_DISABLE_COPY(SNDHPrivate)
+
+	public:
+		/** RomDataInfo **/
+		static const char *const exts[];
+		static const char *const mimeTypes[];
+		static const RomDataInfo romDataInfo;
 
 	public:
 		// Parsed tags.
@@ -100,10 +104,29 @@ class SNDHPrivate final : public RomDataPrivate
 		TagData parseTags(void);
 };
 
+ROMDATA_IMPL(SNDH)
+
 /** SNDHPrivate **/
 
+/* RomDataInfo */
+const char *const SNDHPrivate::exts[] = {
+	".sndh",
+
+	nullptr
+};
+const char *const SNDHPrivate::mimeTypes[] = {
+	// Unofficial MIME types.
+	// TODO: Get these upstreamed on FreeDesktop.org.
+	"audio/x-sndh",
+
+	nullptr
+};
+const RomDataInfo SNDHPrivate::romDataInfo = {
+	"SNDH", exts, mimeTypes
+};
+
 SNDHPrivate::SNDHPrivate(SNDH *q, IRpFile *file)
-	: super(q, file)
+	: super(q, file, &romDataInfo)
 { }
 
 /**
@@ -611,7 +634,6 @@ SNDH::SNDH(IRpFile *file)
 	: super(new SNDHPrivate(this, file))
 {
 	RP_D(SNDH);
-	d->className = "SNDH";
 	d->mimeType = "audio/x-sndh";	// unofficial, not on fd.o
 	d->fileType = FileType::AudioFile;
 
@@ -739,51 +761,6 @@ const char *SNDH::systemName(unsigned int type) const
 	};
 
 	return sysNames[type & SYSNAME_TYPE_MASK];
-}
-
-/**
- * Get a list of all supported file extensions.
- * This is to be used for file type registration;
- * subclasses don't explicitly check the extension.
- *
- * NOTE: The extensions include the leading dot,
- * e.g. ".bin" instead of "bin".
- *
- * NOTE 2: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *SNDH::supportedFileExtensions_static(void)
-{
-	static const char *const exts[] = {
-		".sndh",
-
-		nullptr
-	};
-	return exts;
-}
-
-/**
- * Get a list of all supported MIME types.
- * This is to be used for metadata extractors that
- * must indicate which MIME types they support.
- *
- * NOTE: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *SNDH::supportedMimeTypes_static(void)
-{
-	static const char *const mimeTypes[] = {
-		// Unofficial MIME types.
-		// TODO: Get these upstreamed on FreeDesktop.org.
-		"audio/x-sndh",
-
-		nullptr
-	};
-	return mimeTypes;
 }
 
 /**

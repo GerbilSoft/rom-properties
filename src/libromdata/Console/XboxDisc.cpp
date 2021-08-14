@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * XboxDisc.cpp: Microsoft Xbox disc image parser.                         *
  *                                                                         *
- * Copyright (c) 2019-2020 by David Korth.                                 *
+ * Copyright (c) 2019-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -32,8 +32,6 @@ using std::vector;
 
 namespace LibRomData {
 
-ROMDATA_IMPL(XboxDisc)
-
 class XboxDiscPrivate final : public RomDataPrivate
 {
 	public:
@@ -43,6 +41,12 @@ class XboxDiscPrivate final : public RomDataPrivate
 	private:
 		typedef RomDataPrivate super;
 		RP_DISABLE_COPY(XboxDiscPrivate)
+
+	public:
+		/** RomDataInfo **/
+		static const char *const exts[];
+		static const char *const mimeTypes[];
+		static const RomDataInfo romDataInfo;
 
 	public:
 		// Disc type.
@@ -118,10 +122,32 @@ class XboxDiscPrivate final : public RomDataPrivate
 		inline void lockKreonDrive(void);
 };
 
+ROMDATA_IMPL(XboxDisc)
+
 /** XboxDiscPrivate **/
 
+/* RomDataInfo */
+const char *const XboxDiscPrivate::exts[] = {
+	".iso",		// ISO
+	".xiso",	// Xbox ISO image
+	// TODO: More?
+
+	nullptr
+};
+const char *const XboxDiscPrivate::mimeTypes[] = {
+	// Unofficial MIME types from FreeDesktop.org..
+	"application/x-cd-image",
+	"application/x-iso9660-image",
+
+	// TODO: XDVDFS?
+	nullptr
+};
+const RomDataInfo XboxDiscPrivate::romDataInfo = {
+	"XboxDisc", exts, mimeTypes
+};
+
 XboxDiscPrivate::XboxDiscPrivate(XboxDisc *q, IRpFile *file)
-	: super(q, file)
+	: super(q, file, &romDataInfo)
 	, discType(DiscType::Unknown)
 	, wave(0)
 	, xdvdfs_addr(0)
@@ -288,7 +314,6 @@ XboxDisc::XboxDisc(IRpFile *file)
 {
 	// This class handles disc images.
 	RP_D(XboxDisc);
-	d->className = "XboxDisc";
 	d->mimeType = "application/x-cd-image";	// unofficial
 	d->fileType = FileType::DiscImage;
 
@@ -603,54 +628,6 @@ const char *XboxDisc::systemName(unsigned int type) const
 	// Should not get here...
 	assert(!"XboxDisc::systemName(): Invalid system name.");
 	return nullptr;
-}
-
-/**
- * Get a list of all supported file extensions.
- * This is to be used for file type registration;
- * subclasses don't explicitly check the extension.
- *
- * NOTE: The extensions do not include the leading dot,
- * e.g. "bin" instead of ".bin".
- *
- * NOTE 2: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *XboxDisc::supportedFileExtensions_static(void)
-{
-	static const char *const exts[] = {
-		".iso",		// ISO
-		".xiso",	// Xbox ISO image
-		// TODO: More?
-
-		nullptr
-	};
-	return exts;
-}
-
-/**
- * Get a list of all supported MIME types.
- * This is to be used for metadata extractors that
- * must indicate which MIME types they support.
- *
- * NOTE: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *XboxDisc::supportedMimeTypes_static(void)
-{
-	static const char *const mimeTypes[] = {
-		// Unofficial MIME types from FreeDesktop.org..
-		"application/x-cd-image",
-		"application/x-iso9660-image",
-
-		// TODO: XDVDFS?
-		nullptr
-	};
-	return mimeTypes;
 }
 
 /**

@@ -22,9 +22,6 @@ using std::vector;
 
 namespace LibRomData {
 
-ROMDATA_IMPL(WiiWIBN)
-ROMDATA_IMPL_IMG(WiiWIBN)
-
 class WiiWIBNPrivate final : public RomDataPrivate
 {
 	public:
@@ -34,6 +31,12 @@ class WiiWIBNPrivate final : public RomDataPrivate
 	private:
 		typedef RomDataPrivate super;
 		RP_DISABLE_COPY(WiiWIBNPrivate)
+
+	public:
+		/** RomDataInfo **/
+		static const char *const exts[];
+		static const char *const mimeTypes[];
+		static const RomDataInfo romDataInfo;
 
 	public:
 		// Internal images.
@@ -63,10 +66,34 @@ class WiiWIBNPrivate final : public RomDataPrivate
 		const rp_image *loadBanner(void);
 };
 
+ROMDATA_IMPL(WiiWIBN)
+ROMDATA_IMPL_IMG(WiiWIBN)
+
 /** WiiWIBNPrivate **/
 
+/* RomDataInfo */
+// NOTE: This will be handled using the same
+// settings as WiiSave.
+const char *const WiiWIBNPrivate::exts[] = {
+	// Save banner is usually "banner.bin" in the save directory.
+	".bin",
+	".wibn",	// Custom
+
+	nullptr
+};
+const char *const WiiWIBNPrivate::mimeTypes[] = {
+	// Unofficial MIME types.
+	// TODO: Get these upstreamed on FreeDesktop.org.
+	"application/x-wii-wibn",	// .wibn
+
+	nullptr
+};
+const RomDataInfo WiiWIBNPrivate::romDataInfo = {
+	"WiiSave", exts, mimeTypes
+};
+
 WiiWIBNPrivate::WiiWIBNPrivate(WiiWIBN *q, IRpFile *file)
-	: super(q, file)
+	: super(q, file, &romDataInfo)
 	, img_banner(nullptr)
 	, iconAnimData(nullptr)
 {
@@ -228,11 +255,10 @@ const rp_image *WiiWIBNPrivate::loadBanner(void)
 WiiWIBN::WiiWIBN(IRpFile *file)
 	: super(new WiiWIBNPrivate(this, file))
 {
-	// This class handles save files.
+	// This class handles banner files.
 	// NOTE: This will be handled using the same
 	// settings as WiiSave.
 	RP_D(WiiWIBN);
-	d->className = "WiiSave";
 	d->mimeType = "application/x-wii-wibn";	// unofficial, not on fd.o
 	d->fileType = FileType::BannerFile;
 
@@ -320,53 +346,6 @@ const char *WiiWIBN::systemName(unsigned int type) const
 	};
 
 	return sysNames[type & SYSNAME_TYPE_MASK];
-}
-
-/**
- * Get a list of all supported file extensions.
- * This is to be used for file type registration;
- * subclasses don't explicitly check the extension.
- *
- * NOTE: The extensions do not include the leading dot,
- * e.g. "bin" instead of ".bin".
- *
- * NOTE 2: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *WiiWIBN::supportedFileExtensions_static(void)
-{
-	// Save banner is usually "banner.bin" in the save directory.
-	static const char *const exts[] = {
-		".bin",
-		".wibn",	// Custom
-
-		nullptr
-	};
-	return exts;
-}
-
-/**
- * Get a list of all supported MIME types.
- * This is to be used for metadata extractors that
- * must indicate which MIME types they support.
- *
- * NOTE: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *WiiWIBN::supportedMimeTypes_static(void)
-{
-	static const char *const mimeTypes[] = {
-		// Unofficial MIME types.
-		// TODO: Get these upstreamed on FreeDesktop.org.
-		"application/x-wii-wibn",	// .wibn
-
-		nullptr
-	};
-	return mimeTypes;
 }
 
 /**

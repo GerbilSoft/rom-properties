@@ -36,9 +36,6 @@ using std::vector;
 
 namespace LibRomData {
 
-ROMDATA_IMPL(MegaDrive)
-ROMDATA_IMPL_IMG(MegaDrive)
-
 #ifdef _MSC_VER
 // DelayLoad test implementation.
 DELAYLOAD_TEST_FUNCTION_IMPL0(get_crc_table);
@@ -53,6 +50,12 @@ class MegaDrivePrivate final : public RomDataPrivate
 	private:
 		typedef RomDataPrivate super;
 		RP_DISABLE_COPY(MegaDrivePrivate)
+
+	public:
+		/** RomDataInfo **/
+		static const char *const exts[];
+		static const char *const mimeTypes[];
+		static const RomDataInfo romDataInfo;
 
 	public:
 		/** RomFields **/
@@ -120,10 +123,6 @@ class MegaDrivePrivate final : public RomDataPrivate
 			ROM_EXT_TERADRIVE_x86	= (5 << 16),	// Sega Teradrive: Boot from x86
 			ROM_EXT_MASK		= (0xFF << 16),
 		};
-
-		// MIME type table.
-		// Ordering matches MD_RomType's system IDs.
-		static const char *const mimeType_tbl[];
 
 		int romType;		// ROM type.
 		unsigned int md_region;	// MD hexadecimal region code.
@@ -201,11 +200,28 @@ class MegaDrivePrivate final : public RomDataPrivate
 		static string getPublisher(const MD_RomHeader *pRomHeader);
 };
 
+ROMDATA_IMPL(MegaDrive)
+ROMDATA_IMPL_IMG(MegaDrive)
+
 /** MegaDrivePrivate **/
 
-// MIME type table.
-// Ordering matches MD_RomType's system IDs.
-const char *const MegaDrivePrivate::mimeType_tbl[] = {
+/* RomDataInfo */
+const char *const MegaDrivePrivate::exts[] = {
+	".gen", ".smd",
+	".32x", ".pco",
+	".sgd",	".68k", // Official extensions
+
+	// NOTE: These extensions may cause conflicts on
+	// Windows if fallback handling isn't working.
+	".md",	// conflicts with Markdown
+	".bin",	// too generic
+	".iso",	// too generic
+
+	nullptr
+};
+const char *const MegaDrivePrivate::mimeTypes[] = {
+	// NOTE: Ordering matches MD_RomType's system IDs.
+
 	// Unofficial MIME types from FreeDesktop.org.
 	"application/x-genesis-rom",
 	"application/x-sega-cd-rom",
@@ -215,9 +231,12 @@ const char *const MegaDrivePrivate::mimeType_tbl[] = {
 
 	nullptr
 };
+const RomDataInfo MegaDrivePrivate::romDataInfo = {
+	"MegaDrive", exts, mimeTypes
+};
 
 MegaDrivePrivate::MegaDrivePrivate(MegaDrive *q, IRpFile *file)
-	: super(q, file)
+	: super(q, file, &romDataInfo)
 	, romType(ROM_UNKNOWN)
 	, md_region(0)
 	, gt_crc(0)
@@ -698,7 +717,6 @@ MegaDrive::MegaDrive(IRpFile *file)
 	: super(new MegaDrivePrivate(this, file))
 {
 	RP_D(MegaDrive);
-	d->className = "MegaDrive";
 
 	if (!d->file) {
 		// Could not ref() the file handle.
@@ -806,8 +824,8 @@ MegaDrive::MegaDrive(IRpFile *file)
 
 	// Determine the MIME type.
 	const uint8_t sysID = (d->romType & MegaDrivePrivate::ROM_SYSTEM_MASK);
-	if (sysID < ARRAY_SIZE(d->mimeType_tbl)-1) {
-		d->mimeType = d->mimeType_tbl[sysID];
+	if (sysID < ARRAY_SIZE(d->mimeTypes)-1) {
+		d->mimeType = d->mimeTypes[sysID];
 	}
 
 	// Special ROM checks. (MD only for now)
@@ -1203,52 +1221,6 @@ const char *MegaDrive::systemName(unsigned int type) const
 
 	// Should not get here...
 	return nullptr;
-}
-
-/**
- * Get a list of all supported file extensions.
- * This is to be used for file type registration;
- * subclasses don't explicitly check the extension.
- *
- * NOTE: The extensions include the leading dot,
- * e.g. ".bin" instead of "bin".
- *
- * NOTE 2: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *MegaDrive::supportedFileExtensions_static(void)
-{
-	static const char *const exts[] = {
-		".gen", ".smd",
-		".32x", ".pco",
-		".sgd",	".68k", // Official extensions
-
-		// NOTE: These extensions may cause conflicts on
-		// Windows if fallback handling isn't working.
-		".md",	// conflicts with Markdown
-		".bin",	// too generic
-		".iso",	// too generic
-
-		nullptr
-	};
-	return exts;
-}
-
-/**
- * Get a list of all supported MIME types.
- * This is to be used for metadata extractors that
- * must indicate which MIME types they support.
- *
- * NOTE: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *MegaDrive::supportedMimeTypes_static(void)
-{
-	return MegaDrivePrivate::mimeType_tbl;
 }
 
 /**

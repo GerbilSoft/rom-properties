@@ -26,14 +26,14 @@ using LibRpFile::RpMemFile;
 using LibRpTexture::rp_image;
 
 #ifdef ENABLE_DECRYPTION
-# include "librpbase/crypto/IAesCipher.hpp"
-# include "librpbase/crypto/AesCipherFactory.hpp"
-# include "librpbase/crypto/KeyManager.hpp"
+#  include "librpbase/crypto/IAesCipher.hpp"
+#  include "librpbase/crypto/AesCipherFactory.hpp"
+#  include "librpbase/crypto/KeyManager.hpp"
 #endif /* ENABLE_DECRYPTION */
 
 #ifdef ENABLE_LIBMSPACK
-# include "mspack.h"
-# include "xenia_lzx.h"
+#  include "mspack.h"
+#  include "xenia_lzx.h"
 #endif /* ENABLE_LIBMSPACK */
 
 // C++ STL classes.
@@ -45,8 +45,6 @@ using std::unordered_map;
 using std::vector;
 
 namespace LibRomData {
-
-ROMDATA_IMPL(Xbox360_XEX)
 
 // Workaround for RP_D() expecting the no-underscore naming convention.
 #define Xbox360_XEXPrivate Xbox360_XEX_Private
@@ -60,6 +58,12 @@ class Xbox360_XEX_Private final : public RomDataPrivate
 	private:
 		typedef RomDataPrivate super;
 		RP_DISABLE_COPY(Xbox360_XEX_Private)
+
+	public:
+		/** RomDataInfo **/
+		static const char *const exts[];
+		static const char *const mimeTypes[];
+		static const RomDataInfo romDataInfo;
 
 	public:
 		// XEX type.
@@ -238,6 +242,29 @@ class Xbox360_XEX_Private final : public RomDataPrivate
 #endif
 };
 
+ROMDATA_IMPL(Xbox360_XEX)
+
+/** Xbox360_XEX_Private **/
+
+/* RomDataInfo */
+const char *const Xbox360_XEX_Private::exts[] = {
+	".xex",		// Executable
+	".xexp",	// Patch
+
+	nullptr
+};
+const char *const Xbox360_XEX_Private::mimeTypes[] = {
+	// Unofficial MIME types.
+	// TODO: Get these upstreamed on FreeDesktop.org.
+	"application/x-xbox360-executable",
+	"application/x-xbox360-patch",
+
+	nullptr
+};
+const RomDataInfo Xbox360_XEX_Private::romDataInfo = {
+	"Xbox360_XEX", exts, mimeTypes
+};
+
 #ifdef ENABLE_DECRYPTION
 // Verification key names.
 const char *const Xbox360_XEX_Private::EncryptionKeyNames[Xbox360_XEX::Key_Max] = {
@@ -259,10 +286,8 @@ const uint8_t Xbox360_XEXPrivate::EncryptionKeyVerifyData[Xbox360_XEX::Key_Max][
 };
 #endif /* ENABLE_DECRYPTION */
 
-/** Xbox360_XEX_Private **/
-
 Xbox360_XEX_Private::Xbox360_XEX_Private(Xbox360_XEX *q, IRpFile *file)
-	: super(q, file)
+	: super(q, file, &romDataInfo)
 	, xexType(XexType::Unknown)
 	, isExecutionIDLoaded(false)
 	, keyInUse(-1)
@@ -1342,7 +1367,6 @@ Xbox360_XEX::Xbox360_XEX(IRpFile *file)
 {
 	// This class handles executables.
 	RP_D(Xbox360_XEX);
-	d->className = "Xbox360_XEX";
 	d->mimeType = "application/x-xbox360-executable";	// unofficial, not on fd.o
 	d->fileType = FileType::Executable;
 
@@ -1518,53 +1542,6 @@ const char *Xbox360_XEX::systemName(unsigned int type) const
 	};
 
 	return sysNames[type & SYSNAME_TYPE_MASK];
-}
-
-/**
- * Get a list of all supported file extensions.
- * This is to be used for file type registration;
- * subclasses don't explicitly check the extension.
- *
- * NOTE: The extensions do not include the leading dot,
- * e.g. "bin" instead of ".bin".
- *
- * NOTE 2: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *Xbox360_XEX::supportedFileExtensions_static(void)
-{
-	static const char *const exts[] = {
-		".xex",		// Executable
-		".xexp",	// Patch
-
-		nullptr
-	};
-	return exts;
-}
-
-/**
- * Get a list of all supported MIME types.
- * This is to be used for metadata extractors that
- * must indicate which MIME types they support.
- *
- * NOTE: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *Xbox360_XEX::supportedMimeTypes_static(void)
-{
-	static const char *const mimeTypes[] = {
-		// Unofficial MIME types.
-		// TODO: Get these upstreamed on FreeDesktop.org.
-		"application/x-xbox360-executable",
-		"application/x-xbox360-patch",
-
-		nullptr
-	};
-	return mimeTypes;
 }
 
 /**

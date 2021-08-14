@@ -33,8 +33,6 @@ using std::vector;
 
 namespace LibRomData {
 
-ROMDATA_IMPL(Xbox_XBE)
-
 // Workaround for RP_D() expecting the no-underscore naming convention.
 #define Xbox_XBEPrivate Xbox_XBE_Private
 
@@ -47,6 +45,12 @@ class Xbox_XBE_Private final : public RomDataPrivate
 	private:
 		typedef RomDataPrivate super;
 		RP_DISABLE_COPY(Xbox_XBE_Private)
+
+	public:
+		/** RomDataInfo **/
+		static const char *const exts[];
+		static const char *const mimeTypes[];
+		static const RomDataInfo romDataInfo;
 
 	public:
 		// XBE header
@@ -101,10 +105,29 @@ class Xbox_XBE_Private final : public RomDataPrivate
 		string getPublisher(void) const;
 };
 
+ROMDATA_IMPL(Xbox_XBE)
+
 /** Xbox_XBE_Private **/
 
+/* RomDataInfo */
+const char *const Xbox_XBE_Private::exts[] = {
+	".xbe",
+
+	nullptr
+};
+const char *const Xbox_XBE_Private::mimeTypes[] = {
+	// Unofficial MIME types.
+	// TODO: Get these upstreamed on FreeDesktop.org.
+	"application/x-xbox-executable",
+
+	nullptr
+};
+const RomDataInfo Xbox_XBE_Private::romDataInfo = {
+	"Xbox_XBE", exts, mimeTypes
+};
+
 Xbox_XBE_Private::Xbox_XBE_Private(Xbox_XBE *q, IRpFile *file)
-	: super(q, file)
+	: super(q, file, &romDataInfo)
 	, pe_exe(nullptr)
 {
 	// Clear the XBE structs.
@@ -397,7 +420,6 @@ Xbox_XBE::Xbox_XBE(IRpFile *file)
 {
 	// This class handles executables.
 	RP_D(Xbox_XBE);
-	d->className = "Xbox_XBE";
 	d->mimeType = "application/x-xbox-executable";	// unofficial, not on fd.o
 	d->fileType = FileType::Executable;
 
@@ -523,51 +545,6 @@ const char *Xbox_XBE::systemName(unsigned int type) const
 	};
 
 	return sysNames[type & SYSNAME_TYPE_MASK];
-}
-
-/**
- * Get a list of all supported file extensions.
- * This is to be used for file type registration;
- * subclasses don't explicitly check the extension.
- *
- * NOTE: The extensions do not include the leading dot,
- * e.g. "bin" instead of ".bin".
- *
- * NOTE 2: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *Xbox_XBE::supportedFileExtensions_static(void)
-{
-	static const char *const exts[] = {
-		".xbe",
-
-		nullptr
-	};
-	return exts;
-}
-
-/**
- * Get a list of all supported MIME types.
- * This is to be used for metadata extractors that
- * must indicate which MIME types they support.
- *
- * NOTE: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *Xbox_XBE::supportedMimeTypes_static(void)
-{
-	static const char *const mimeTypes[] = {
-		// Unofficial MIME types.
-		// TODO: Get these upstreamed on FreeDesktop.org.
-		"application/x-xbox-executable",
-
-		nullptr
-	};
-	return mimeTypes;
 }
 
 /**

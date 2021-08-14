@@ -24,8 +24,6 @@ using std::vector;
 
 namespace LibRomData {
 
-ROMDATA_IMPL(NES)
-
 class NESPrivate final : public RomDataPrivate
 {
 	public:
@@ -34,6 +32,12 @@ class NESPrivate final : public RomDataPrivate
 	private:
 		typedef RomDataPrivate super;
 		RP_DISABLE_COPY(NESPrivate)
+
+	public:
+		/** RomDataInfo **/
+		static const char *const exts[];
+		static const char *const mimeTypes[];
+		static const RomDataInfo romDataInfo;
 
 	public:
 		/** RomFields **/
@@ -109,10 +113,41 @@ class NESPrivate final : public RomDataPrivate
 		int loadInternalFooter(void);
 };
 
+ROMDATA_IMPL(NES)
+
 /** NESPrivate **/
 
+/* RomDataInfo */
+const char *const NESPrivate::exts[] = {
+	// NOTE: .fds is missing block checksums.
+	// .qd has block checksums, as does .tds (which is basically
+	// a 16-byte header, FDS BIOS, and a .qd file).
+
+	// This isn't too important right now because we're only
+	// reading the header, but we'll need to take it into
+	// account if file access is added.
+
+	".nes",	// iNES
+	".nez",	// Compressed iNES?
+	".fds",	// Famicom Disk System
+	".qd",	// FDS (Animal Crossing)
+	".tds",	// FDS (3DS Virtual Console)
+
+	nullptr
+};
+const char *const NESPrivate::mimeTypes[] = {
+	// Unofficial MIME types from FreeDesktop.org.
+	"application/x-nes-rom",
+	"application/x-fds-disk",
+
+	nullptr
+};
+const RomDataInfo NESPrivate::romDataInfo = {
+	"NES", exts, mimeTypes
+};
+
 NESPrivate::NESPrivate(NES *q, IRpFile *file)
-	: super(q, file)
+	: super(q, file, &romDataInfo)
 	, romType(ROM_UNKNOWN)
 	, hasCheckedIntFooter(false)
 	, intFooterErrno(255)
@@ -365,7 +400,6 @@ NES::NES(IRpFile *file)
 	: super(new NESPrivate(this, file))
 {
 	RP_D(NES);
-	d->className = "NES";
 
 	if (!d->file) {
 		// Could not ref() the file handle.
@@ -694,63 +728,6 @@ const char *NES::systemName(unsigned int type) const
 
 	// Should not get here...
 	return nullptr;
-}
-
-/**
- * Get a list of all supported file extensions.
- * This is to be used for file type registration;
- * subclasses don't explicitly check the extension.
- *
- * NOTE: The extensions include the leading dot,
- * e.g. ".bin" instead of "bin".
- *
- * NOTE 2: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *NES::supportedFileExtensions_static(void)
-{
-	// NOTE: .fds is missing block checksums.
-	// .qd has block checksums, as does .tds (which is basically
-	// a 16-byte header, FDS BIOS, and a .qd file).
-
-	// This isn't too important right now because we're only
-	// reading the header, but we'll need to take it into
-	// account if file access is added.
-
-	static const char *const exts[] = {
-		".nes",	// iNES
-		".nez",	// Compressed iNES?
-		".fds",	// Famicom Disk System
-		".qd",	// FDS (Animal Crossing)
-		".tds",	// FDS (3DS Virtual Console)
-
-		nullptr
-	};
-	return exts;
-}
-
-/**
- * Get a list of all supported MIME types.
- * This is to be used for metadata extractors that
- * must indicate which MIME types they support.
- *
- * NOTE: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *NES::supportedMimeTypes_static(void)
-{
-	static const char *const mimeTypes[] = {
-		// Unofficial MIME types from FreeDesktop.org.
-		"application/x-nes-rom",
-		"application/x-fds-disk",
-
-		nullptr
-	};
-	return mimeTypes;
 }
 
 /**

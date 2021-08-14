@@ -21,14 +21,14 @@ using LibRpFile::IRpFile;
 // FIXME: MinGW v6:
 // ELF.cpp:1209:72: warning: unknown conversion type character ‘l’ in format [-Wformat=]
 #if !defined(_MSC_VER) || _MSC_VER >= 1800
-# include <cinttypes>
+#  include <cinttypes>
 #else
-# ifndef PRIx64
-#  define PRIx64 "I64x"
-# endif
-# ifndef PRIX64
-#  define PRIX64 "I64X"
-# endif
+#  ifndef PRIx64
+#    define PRIx64 "I64x"
+#  endif
+#  ifndef PRIX64
+#    define PRIX64 "I64X"
+#  endif
 #endif
 
 // C++ STL classes.
@@ -42,8 +42,6 @@ using std::vector;
 
 namespace LibRomData {
 
-ROMDATA_IMPL(ELF)
-
 class ELFPrivate final : public RomDataPrivate
 {
 	public:
@@ -52,6 +50,12 @@ class ELFPrivate final : public RomDataPrivate
 	private:
 		typedef RomDataPrivate super;
 		RP_DISABLE_COPY(ELFPrivate)
+
+	public:
+		/** RomDataInfo **/
+		static const char *const exts[];
+		static const char *const mimeTypes[];
+		static const RomDataInfo romDataInfo;
 
 	public:
 		// ELF format.
@@ -163,10 +167,40 @@ class ELFPrivate final : public RomDataPrivate
 		int addPtDynamicFields(void);
 };
 
+ROMDATA_IMPL(ELF)
+
 /** ELFPrivate **/
 
+/* RomDataInfo */
+const char *const ELFPrivate::exts[] = {
+	//".",		// FIXME: Does this work for files with no extension?
+	".elf",		// Common for Wii homebrew.
+	".so",		// Shared libraries. (TODO: Versioned .so files.)
+	".o",		// Relocatable object files.
+	".core",	// Core dumps.
+	".debug",	// Split debug files.
+
+	// Wii U
+	".rpx",		// Cafe OS executable
+	".rpl",		// Cafe OS library
+
+	nullptr
+};
+const char *const ELFPrivate::mimeTypes[] = {
+	// Unofficial MIME types from FreeDesktop.org.
+	"application/x-object",
+	"application/x-executable",
+	"application/x-sharedlib",
+	"application/x-core",
+
+	nullptr
+};
+const RomDataInfo ELFPrivate::romDataInfo = {
+	"ELF", exts, mimeTypes
+};
+
 ELFPrivate::ELFPrivate(ELF *q, IRpFile *file)
-	: super(q, file)
+	: super(q, file, &romDataInfo)
 	, elfFormat(Elf_Format::Unknown)
 	, hasCheckedPH(false)
 	, isPie(false)
@@ -752,7 +786,6 @@ ELF::ELF(IRpFile *file)
 	// This class handles different types of files.
 	// d->fileType will be set later.
 	RP_D(ELF);
-	d->className = "ELF";
 	d->fileType = FileType::Unknown;
 
 	if (!d->file) {
@@ -1042,62 +1075,6 @@ const char *ELF::systemName(unsigned int type) const
 	};
 
 	return sysNames[type];
-}
-
-/**
- * Get a list of all supported file extensions.
- * This is to be used for file type registration;
- * subclasses don't explicitly check the extension.
- *
- * NOTE: The extensions do not include the leading dot,
- * e.g. "bin" instead of ".bin".
- *
- * NOTE 2: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *ELF::supportedFileExtensions_static(void)
-{
-	static const char *const exts[] = {
-		//".",		// FIXME: Does this work for files with no extension?
-		".elf",		// Common for Wii homebrew.
-		".so",		// Shared libraries. (TODO: Versioned .so files.)
-		".o",		// Relocatable object files.
-		".core",	// Core dumps.
-		".debug",	// Split debug files.
-
-		// Wii U
-		".rpx",		// Cafe OS executable
-		".rpl",		// Cafe OS library
-
-		nullptr
-	};
-	return exts;
-}
-
-/**
- * Get a list of all supported MIME types.
- * This is to be used for metadata extractors that
- * must indicate which MIME types they support.
- *
- * NOTE: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *ELF::supportedMimeTypes_static(void)
-{
-	static const char *const mimeTypes[] = {
-		// Unofficial MIME types from FreeDesktop.org.
-		"application/x-object",
-		"application/x-executable",
-		"application/x-sharedlib",
-		"application/x-core",
-
-		nullptr
-	};
-	return mimeTypes;
 }
 
 /**

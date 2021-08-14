@@ -25,9 +25,6 @@ using std::vector;
 
 namespace LibRomData {
 
-ROMDATA_IMPL(RpTextureWrapper)
-ROMDATA_IMPL_IMG_TYPES(RpTextureWrapper)
-
 class RpTextureWrapperPrivate final : public RomDataPrivate
 {
 	public:
@@ -39,14 +36,36 @@ class RpTextureWrapperPrivate final : public RomDataPrivate
 		RP_DISABLE_COPY(RpTextureWrapperPrivate)
 
 	public:
+		/** RomDataInfo **/
+		static const char *const exts[];
+		static const char *const mimeTypes[];
+		static const RomDataInfo romDataInfo;
+
+	public:
 		// librptexture file format object.
 		FileFormat *texture;
 };
 
+ROMDATA_IMPL(RpTextureWrapper)
+ROMDATA_IMPL_IMG_TYPES(RpTextureWrapper)
+
 /** RpTextureWrapperPrivate **/
 
+/* RomDataInfo */
+// NOTE: RomDataFactory queries extensions and MIME types from
+// FileFormatFactory directly, so these aren't used.
+const char *const RpTextureWrapperPrivate::exts[] = {
+	nullptr
+};
+const char *const RpTextureWrapperPrivate::mimeTypes[] = {
+	nullptr
+};
+const RomDataInfo RpTextureWrapperPrivate::romDataInfo = {
+	"RpTextureWrapper", exts, mimeTypes
+};
+
 RpTextureWrapperPrivate::RpTextureWrapperPrivate(RpTextureWrapper *q, IRpFile *file)
-	: super(q, file)
+	: super(q, file, &romDataInfo)
 	, texture(nullptr)
 { }
 
@@ -75,7 +94,6 @@ RpTextureWrapper::RpTextureWrapper(IRpFile *file)
 {
 	// This class handles texture files.
 	RP_D(RpTextureWrapper);
-	d->className = "RpTextureWrapper";
 	d->fileType = FileType::TextureFile;
 
 	if (!d->file) {
@@ -151,45 +169,6 @@ const char *RpTextureWrapper::systemName(unsigned int type) const
 
 	// TODO: Short names and whatnot from FileFormat.
 	return d->texture->textureFormatName();
-}
-
-/**
- * Get a list of all supported file extensions.
- * This is to be used for file type registration;
- * subclasses don't explicitly check the extension.
- *
- * NOTE: The extensions include the leading dot,
- * e.g. ".bin" instead of "bin".
- *
- * NOTE 2: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *RpTextureWrapper::supportedFileExtensions_static(void)
-{
-	// Not used anymore.
-	// RomDataFactory queries extensions from FileFormatFactory directly.
-	static const char *const exts[] = { nullptr };
-	return exts;
-}
-
-/**
- * Get a list of all supported MIME types.
- * This is to be used for metadata extractors that
- * must indicate which MIME types they support.
- *
- * NOTE: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *RpTextureWrapper::supportedMimeTypes_static(void)
-{
-	// Not used anymore.
-	// RomDataFactory queries MIME types from FileFormatFactory directly.
-	static const char *const mimeTypes[] = { nullptr };
-	return mimeTypes;
 }
 
 /**

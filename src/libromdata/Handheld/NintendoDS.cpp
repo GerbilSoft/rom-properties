@@ -34,8 +34,32 @@ ROMDATA_IMPL_IMG(NintendoDS)
 
 /** NintendoDSPrivate **/
 
+/* RomDataInfo */
+// NOTE: Using the same image settings as Nintendo3DS.
+const char *const NintendoDSPrivate::exts[] = {
+	".nds",	// Nintendo DS
+	".dsi",	// Nintendo DSi (devkitARM r46)
+	".ids",	// iQue DS (no-intro)
+	".srl",	// Official SDK extension
+
+	nullptr
+};
+const char *const NintendoDSPrivate::mimeTypes[] = {
+	// Unofficial MIME types from FreeDesktop.org.
+	"application/x-nintendo-ds-rom",
+
+	// Unofficial MIME types.
+	// TODO: Get these upstreamed on FreeDesktop.org.
+	"application/x-nintendo-dsi-rom",
+
+	nullptr
+};
+const RomDataInfo NintendoDSPrivate::romDataInfo = {
+	"NintendoDS", exts, mimeTypes
+};
+
 NintendoDSPrivate::NintendoDSPrivate(NintendoDS *q, IRpFile *file, bool cia)
-	: super(q, file)
+	: super(q, file, &romDataInfo)
 	, iconAnimData(nullptr)
 	, icon_first_frame(nullptr)
 	, romType(RomType::Unknown)
@@ -564,8 +588,6 @@ NintendoDS::NintendoDS(IRpFile *file)
 	: super(new NintendoDSPrivate(this, file, false))
 {
 	RP_D(NintendoDS);
-	d->className = "NintendoDS";
-
 	if (!d->file) {
 		// Could not ref() the file handle.
 		return;
@@ -592,8 +614,6 @@ NintendoDS::NintendoDS(IRpFile *file, bool cia)
 	: super(new NintendoDSPrivate(this, file, cia))
 {
 	RP_D(NintendoDS);
-	d->className = "NintendoDS";
-
 	if (!d->file) {
 		// Could not ref() the file handle.
 		return;
@@ -752,57 +772,6 @@ const char *NintendoDS::systemName(unsigned int type) const
 	}
 
 	return sysNames[idx];
-}
-
-/**
- * Get a list of all supported file extensions.
- * This is to be used for file type registration;
- * subclasses don't explicitly check the extension.
- *
- * NOTE: The extensions include the leading dot,
- * e.g. ".bin" instead of "bin".
- *
- * NOTE 2: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *NintendoDS::supportedFileExtensions_static(void)
-{
-	static const char *const exts[] = {
-		".nds",	// Nintendo DS
-		".dsi",	// Nintendo DSi (devkitARM r46)
-		".ids",	// iQue DS (no-intro)
-		".srl",	// Official SDK extension
-
-		nullptr
-	};
-	return exts;
-}
-
-/**
- * Get a list of all supported MIME types.
- * This is to be used for metadata extractors that
- * must indicate which MIME types they support.
- *
- * NOTE: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *NintendoDS::supportedMimeTypes_static(void)
-{
-	static const char *const mimeTypes[] = {
-		// Unofficial MIME types from FreeDesktop.org.
-		"application/x-nintendo-ds-rom",
-
-		// Unofficial MIME types.
-		// TODO: Get these upstreamed on FreeDesktop.org.
-		"application/x-nintendo-dsi-rom",
-
-		nullptr
-	};
-	return mimeTypes;
 }
 
 /**

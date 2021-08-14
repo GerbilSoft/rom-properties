@@ -35,8 +35,6 @@ using std::vector;
 
 namespace LibRomData {
 
-ROMDATA_IMPL(ISO)
-
 class ISOPrivate final : public RomDataPrivate
 {
 	public:
@@ -45,6 +43,12 @@ class ISOPrivate final : public RomDataPrivate
 	private:
 		typedef RomDataPrivate super;
 		RP_DISABLE_COPY(ISOPrivate)
+
+	public:
+		/** RomDataInfo **/
+		static const char *const exts[];
+		static const char *const mimeTypes[];
+		static const RomDataInfo romDataInfo;
 
 	public:
 		// Disc type.
@@ -186,10 +190,37 @@ class ISOPrivate final : public RomDataPrivate
 		}
 };
 
+ROMDATA_IMPL(ISO)
+
 /** ISOPrivate **/
 
+/* RomDataInfo */
+const char *const ISOPrivate::exts[] = {
+	".iso",		// ISO
+	".iso9660",	// ISO (listed in shared-mime-info)
+	".bin",		// BIN (2352-byte)
+	".xiso",	// Xbox ISO image
+	".img",		// CCD/IMG
+	// TODO: More?
+	// TODO: Is there a separate extension for High Sierra or CD-i?
+
+	nullptr
+};
+const char *const ISOPrivate::mimeTypes[] = {
+	// Unofficial MIME types from FreeDesktop.org.
+	"application/x-cd-image",
+	"application/x-iso9660-image",
+
+	// TODO: BIN (2352)?
+	// TODO: Is there a separate MIME for High Sierra or CD-i?
+	nullptr
+};
+const RomDataInfo ISOPrivate::romDataInfo = {
+	"ISO", exts, mimeTypes
+};
+
 ISOPrivate::ISOPrivate(ISO *q, IRpFile *file)
-	: super(q, file)
+	: super(q, file, &romDataInfo)
 	, discType(DiscType::Unknown)
 	, sector_size(0)
 	, sector_offset(0)
@@ -554,7 +585,6 @@ ISO::ISO(IRpFile *file)
 {
 	// This class handles disc images.
 	RP_D(ISO);
-	d->className = "ISO";
 	d->mimeType = "application/x-cd-image";	// unofficial [TODO: Others?]
 	d->fileType = FileType::DiscImage;
 
@@ -688,9 +718,10 @@ int ISO::isRomSupported_static(const DetectInfo *info)
 		return -1;
 	}
 
-	const char *const *exts = supportedFileExtensions_static();
-	for (; *exts != nullptr; exts++) {
-		if (!strcasecmp(info->ext, *exts)) {
+	for (const char *const *ext = ISOPrivate::exts;
+	     *ext != nullptr; ext++)
+	{
+		if (!strcasecmp(info->ext, *ext)) {
 			// Found a match.
 			return 0;
 		}
@@ -729,59 +760,6 @@ const char *ISO::systemName(unsigned int type) const
 		sysID = (int)d->discType;
 	}
 	return sysNames[sysID][type & SYSNAME_TYPE_MASK];
-}
-
-/**
- * Get a list of all supported file extensions.
- * This is to be used for file type registration;
- * subclasses don't explicitly check the extension.
- *
- * NOTE: The extensions do not include the leading dot,
- * e.g. "bin" instead of ".bin".
- *
- * NOTE 2: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *ISO::supportedFileExtensions_static(void)
-{
-	static const char *const exts[] = {
-		".iso",		// ISO
-		".iso9660",	// ISO (listed in shared-mime-info)
-		".bin",		// BIN (2352-byte)
-		".xiso",	// Xbox ISO image
-		".img",		// CCD/IMG
-		// TODO: More?
-		// TODO: Is there a separate extension for High Sierra?
-
-		nullptr
-	};
-	return exts;
-}
-
-/**
- * Get a list of all supported MIME types.
- * This is to be used for metadata extractors that
- * must indicate which MIME types they support.
- *
- * NOTE: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *ISO::supportedMimeTypes_static(void)
-{
-	static const char *const mimeTypes[] = {
-		// Unofficial MIME types from FreeDesktop.org.
-		"application/x-cd-image",
-		"application/x-iso9660-image",
-
-		// TODO: BIN (2352)?
-		// TODO: Is there a separate MIME for High Sierra?
-		nullptr
-	};
-	return mimeTypes;
 }
 
 /**

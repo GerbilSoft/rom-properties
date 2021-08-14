@@ -24,8 +24,6 @@ using std::vector;
 
 namespace LibRomData {
 
-ROMDATA_IMPL(PSF)
-
 class PSFPrivate final : public RomDataPrivate
 {
 	public:
@@ -34,6 +32,12 @@ class PSFPrivate final : public RomDataPrivate
 	private:
 		typedef RomDataPrivate super;
 		RP_DISABLE_COPY(PSFPrivate)
+
+	public:
+		/** RomDataInfo **/
+		static const char *const exts[];
+		static const char *const mimeTypes[];
+		static const RomDataInfo romDataInfo;
 
 	public:
 		// PSF header.
@@ -62,10 +66,43 @@ class PSFPrivate final : public RomDataPrivate
 		static unsigned int lengthToMs(const char *str);
 };
 
+ROMDATA_IMPL(PSF)
+
 /** PSFPrivate **/
 
+/* RomDataInfo */
+const char *const PSFPrivate::exts[] = {
+	// NOTE: The .*lib files are not listed, since they
+	// contain samples, not songs.
+
+	".psf", ".minipsf",
+	".psf1", ".minipsf1",
+	".psf2", ".minipsf2",
+
+	".ssf", ".minissf",
+	".dsf", ".minidsf",
+
+	".usf", ".miniusf",
+	".gsf", ".minigsf",
+	".snsf", ".minisnsf",
+
+	".qsf", ".miniqsf",
+
+	nullptr
+};
+const char *const PSFPrivate::mimeTypes[] = {
+	// Unofficial MIME types from FreeDesktop.org.
+	"audio/x-psf",
+	"audio/x-minipsf",
+
+	nullptr
+};
+const RomDataInfo PSFPrivate::romDataInfo = {
+	"PSF", exts, mimeTypes
+};
+
 PSFPrivate::PSFPrivate(PSF *q, IRpFile *file)
-	: super(q, file)
+	: super(q, file, &romDataInfo)
 {
 	// Clear the PSF header struct.
 	memset(&psfHeader, 0, sizeof(psfHeader));
@@ -355,7 +392,6 @@ PSF::PSF(IRpFile *file)
 	: super(new PSFPrivate(this, file))
 {
 	RP_D(PSF);
-	d->className = "PSF";
 	d->mimeType = "audio/x-psf";	// unofficial (TODO: x-minipsf?)
 	d->fileType = FileType::AudioFile;
 
@@ -440,64 +476,6 @@ const char *PSF::systemName(unsigned int type) const
 	};
 
 	return sysNames[type & SYSNAME_TYPE_MASK];
-}
-
-/**
- * Get a list of all supported file extensions.
- * This is to be used for file type registration;
- * subclasses don't explicitly check the extension.
- *
- * NOTE: The extensions include the leading dot,
- * e.g. ".bin" instead of "bin".
- *
- * NOTE 2: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *PSF::supportedFileExtensions_static(void)
-{
-	// NOTE: The .*lib files are not listed, since they
-	// contain samples, not songs.
-	static const char *const exts[] = {
-		".psf", ".minipsf",
-		".psf1", ".minipsf1",
-		".psf2", ".minipsf2",
-
-		".ssf", ".minissf",
-		".dsf", ".minidsf",
-
-		".usf", ".miniusf",
-		".gsf", ".minigsf",
-		".snsf", ".minisnsf",
-
-		".qsf", ".miniqsf",
-
-		nullptr
-	};
-	return exts;
-}
-
-/**
- * Get a list of all supported MIME types.
- * This is to be used for metadata extractors that
- * must indicate which MIME types they support.
- *
- * NOTE: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *PSF::supportedMimeTypes_static(void)
-{
-	static const char *const mimeTypes[] = {
-		// Unofficial MIME types from FreeDesktop.org.
-		"audio/x-psf",
-		"audio/x-minipsf",
-
-		nullptr
-	};
-	return mimeTypes;
 }
 
 /**

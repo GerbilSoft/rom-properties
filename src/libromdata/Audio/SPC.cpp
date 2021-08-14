@@ -22,8 +22,6 @@ using std::vector;
 
 namespace LibRomData {
 
-ROMDATA_IMPL(SPC)
-
 class SPCPrivate final : public RomDataPrivate
 {
 	public:
@@ -32,6 +30,12 @@ class SPCPrivate final : public RomDataPrivate
 	private:
 		typedef RomDataPrivate super;
 		RP_DISABLE_COPY(SPCPrivate)
+
+	public:
+		/** RomDataInfo **/
+		static const char *const exts[];
+		static const char *const mimeTypes[];
+		static const RomDataInfo romDataInfo;
 
 	public:
 		// SPC header.
@@ -169,10 +173,28 @@ class SPCPrivate final : public RomDataPrivate
 		TagData parseTags(void);
 };
 
+ROMDATA_IMPL(SPC)
+
 /** SPCPrivate **/
 
+/* RomDataInfo */
+const char *const SPCPrivate::exts[] = {
+	".spc",
+
+	nullptr
+};
+const char *const SPCPrivate::mimeTypes[] = {
+	// Unofficial MIME types.
+	"audio/x-spc",
+
+	nullptr
+};
+const RomDataInfo SPCPrivate::romDataInfo = {
+	"SPC", exts, mimeTypes
+};
+
 SPCPrivate::SPCPrivate(SPC *q, IRpFile *file)
-	: super(q, file)
+	: super(q, file, &romDataInfo)
 {
 	// Clear the SPC header struct.
 	memset(&spcHeader, 0, sizeof(spcHeader));
@@ -498,7 +520,6 @@ SPC::SPC(IRpFile *file)
 	: super(new SPCPrivate(this, file))
 {
 	RP_D(SPC);
-	d->className = "SPC";
 	d->mimeType = "audio/x-spc";	// unofficial
 	d->fileType = FileType::AudioFile;
 
@@ -583,50 +604,6 @@ const char *SPC::systemName(unsigned int type) const
 	};
 
 	return sysNames[type & SYSNAME_TYPE_MASK];
-}
-
-/**
- * Get a list of all supported file extensions.
- * This is to be used for file type registration;
- * subclasses don't explicitly check the extension.
- *
- * NOTE: The extensions include the leading dot,
- * e.g. ".bin" instead of "bin".
- *
- * NOTE 2: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *SPC::supportedFileExtensions_static(void)
-{
-	static const char *const exts[] = {
-		".spc",
-
-		nullptr
-	};
-	return exts;
-}
-
-/**
- * Get a list of all supported MIME types.
- * This is to be used for metadata extractors that
- * must indicate which MIME types they support.
- *
- * NOTE: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *SPC::supportedMimeTypes_static(void)
-{
-	static const char *const mimeTypes[] = {
-		// Unofficial MIME types.
-		"audio/x-spc",
-
-		nullptr
-	};
-	return mimeTypes;
 }
 
 /**

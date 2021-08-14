@@ -37,8 +37,6 @@ using std::vector;
 
 namespace LibRomData {
 
-ROMDATA_IMPL(PlayStationDisc)
-
 class PlayStationDiscPrivate final : public RomDataPrivate
 {
 	public:
@@ -48,6 +46,12 @@ class PlayStationDiscPrivate final : public RomDataPrivate
 	private:
 		typedef RomDataPrivate super;
 		RP_DISABLE_COPY(PlayStationDiscPrivate)
+
+	public:
+		/** RomDataInfo **/
+		static const char *const exts[];
+		static const char *const mimeTypes[];
+		static const RomDataInfo romDataInfo;
 
 	public:
 		ISO_Primary_Volume_Descriptor pvd;
@@ -106,10 +110,33 @@ class PlayStationDiscPrivate final : public RomDataPrivate
 		ConsoleType consoleType;
 };
 
+ROMDATA_IMPL(PlayStationDisc)
+
 /** PlayStationDiscPrivate **/
 
+/* RomDataInfo */
+const char *const PlayStationDiscPrivate::exts[] = {
+	".iso",		// ISO
+	".bin",		// BIN/CUE
+	".img",		// CCD/IMG
+	// TODO: More?
+
+	nullptr
+};
+const char *const PlayStationDiscPrivate::mimeTypes[] = {
+	// Unofficial MIME types from FreeDesktop.org.
+	"application/x-cd-image",
+	"application/x-iso9660-image",
+
+	// TODO: PS1/PS2?
+	nullptr
+};
+const RomDataInfo PlayStationDiscPrivate::romDataInfo = {
+	"PlayStationDisc", exts, mimeTypes
+};
+
 PlayStationDiscPrivate::PlayStationDiscPrivate(PlayStationDisc *q, IRpFile *file)
-	: super(q, file)
+	: super(q, file, &romDataInfo)
 	, discReader(nullptr)
 	, isoPartition(nullptr)
 	, bootExeData(nullptr)
@@ -305,7 +332,6 @@ PlayStationDisc::PlayStationDisc(IRpFile *file)
 {
 	// This class handles disc images.
 	RP_D(PlayStationDisc);
-	d->className = "PlayStationDisc";
 	d->mimeType = "application/x-cd-image";	// unofficial
 	d->fileType = FileType::DiscImage;
 
@@ -587,55 +613,6 @@ const char *PlayStationDisc::systemName(unsigned int type) const
 	// Should not get here...
 	assert(!"PlayStationDisc::systemName(): Invalid system name.");
 	return nullptr;
-}
-
-/**
- * Get a list of all supported file extensions.
- * This is to be used for file type registration;
- * subclasses don't explicitly check the extension.
- *
- * NOTE: The extensions do not include the leading dot,
- * e.g. "bin" instead of ".bin".
- *
- * NOTE 2: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *PlayStationDisc::supportedFileExtensions_static(void)
-{
-	static const char *const exts[] = {
-		".iso",		// ISO
-		".bin",		// BIN/CUE
-		".img",		// CCD/IMG
-		// TODO: More?
-
-		nullptr
-	};
-	return exts;
-}
-
-/**
- * Get a list of all supported MIME types.
- * This is to be used for metadata extractors that
- * must indicate which MIME types they support.
- *
- * NOTE: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *PlayStationDisc::supportedMimeTypes_static(void)
-{
-	static const char *const mimeTypes[] = {
-		// Unofficial MIME types from FreeDesktop.org..
-		"application/x-cd-image",
-		"application/x-iso9660-image",
-
-		// TODO: PS1/PS2?
-		nullptr
-	};
-	return mimeTypes;
 }
 
 /**

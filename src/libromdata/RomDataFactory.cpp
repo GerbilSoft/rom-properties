@@ -11,6 +11,7 @@
 #include "libromdata/config.libromdata.h"
 
 #include "RomDataFactory.hpp"
+#include "RomData_p.hpp"	// for RomDataInfo
 
 // librpbase, librpfile
 #include "librpfile/RelatedFile.hpp"
@@ -115,15 +116,13 @@ class RomDataFactoryPrivate
 
 	public:
 		typedef int (*pfnIsRomSupported_t)(const RomData::DetectInfo *info);
-		typedef const char *const * (*pfnSupportedFileExtensions_t)(void);
-		typedef const char *const * (*pfnSupportedMimeTypes_t)(void);
+		typedef const RomDataInfo * (*pfnRomDataInfo_t)(void);
 		typedef RomData* (*pfnNewRomData_t)(IRpFile *file);
 
 		struct RomDataFns {
 			pfnIsRomSupported_t isRomSupported;
 			pfnNewRomData_t newRomData;
-			pfnSupportedFileExtensions_t supportedFileExtensions;
-			pfnSupportedMimeTypes_t supportedMimeTypes;
+			pfnRomDataInfo_t romDataInfo;
 			unsigned int attrs;
 
 			// Extra fields for files whose headers
@@ -145,15 +144,13 @@ class RomDataFactoryPrivate
 #define GetRomDataFns(sys, attrs) \
 	{sys::isRomSupported_static, \
 	 RomDataFactoryPrivate::RomData_ctor<sys>, \
-	 sys::supportedFileExtensions_static, \
-	 sys::supportedMimeTypes_static, \
+	 sys::romDataInfo, \
 	 attrs, 0, 0}
 
 #define GetRomDataFns_addr(sys, attrs, address, size) \
 	{sys::isRomSupported_static, \
 	 RomDataFactoryPrivate::RomData_ctor<sys>, \
-	 sys::supportedFileExtensions_static, \
-	 sys::supportedMimeTypes_static, \
+	 sys::romDataInfo, \
 	 attrs, address, size}
 
 		// RomData subclasses that use a header at 0 and
@@ -290,7 +287,7 @@ const RomDataFactoryPrivate::RomDataFns RomDataFactoryPrivate::romDataFns_magic[
 	GetRomDataFns_addr(Xbox360_STFS, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'PIRS'),
 	GetRomDataFns_addr(Xbox360_STFS, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'LIVE'),
 
-	{nullptr, nullptr, nullptr, nullptr, ATTR_NONE, 0, 0}
+	{nullptr, nullptr, nullptr, ATTR_NONE, 0, 0}
 };
 
 // RomData subclasses that use a header.
@@ -352,14 +349,14 @@ const RomDataFactoryPrivate::RomDataFns RomDataFactoryPrivate::romDataFns_header
 	// NOTE: ATTR_HAS_THUMBNAIL is needed for Xbox 360.
 	GetRomDataFns_addr(ISO, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA | ATTR_SUPPORTS_DEVICES | ATTR_CHECK_ISO, 0x40000, 0x20),
 
-	{nullptr, nullptr, nullptr, nullptr, ATTR_NONE, 0, 0}
+	{nullptr, nullptr, nullptr, ATTR_NONE, 0, 0}
 };
 
 // RomData subclasses that use a footer.
 const RomDataFactoryPrivate::RomDataFns RomDataFactoryPrivate::romDataFns_footer[] = {
 	GetRomDataFns(VirtualBoy, ATTR_NONE),
 	GetRomDataFns(WonderSwan, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA),
-	{nullptr, nullptr, nullptr, nullptr, ATTR_NONE, 0, 0}
+	{nullptr, nullptr, nullptr, ATTR_NONE, 0, 0}
 };
 
 // Table of pointers to tables.
@@ -630,7 +627,7 @@ RomData *RomDataFactory::create(IRpFile *file, unsigned int attrs)
 	// and definitely have a 32-bit magic number in the header.
 	const RomDataFactoryPrivate::RomDataFns *fns =
 		&RomDataFactoryPrivate::romDataFns_magic[0];
-	for (; fns->supportedFileExtensions != nullptr; fns++) {
+	for (; fns->romDataInfo != nullptr; fns++) {
 		if ((fns->attrs & attrs) != attrs) {
 			// This RomData subclass doesn't have the
 			// required attributes.
@@ -674,7 +671,7 @@ RomData *RomDataFactory::create(IRpFile *file, unsigned int attrs)
 	// but don't have a simple 32-bit magic number check.
 	fns = &RomDataFactoryPrivate::romDataFns_header[0];
 	bool checked_exts = false;
-	for (; fns->supportedFileExtensions != nullptr; fns++) {
+	for (; fns->romDataInfo != nullptr; fns++) {
 		if ((fns->attrs & attrs) != attrs) {
 			// This RomData subclass doesn't have the
 			// required attributes.
@@ -779,7 +776,7 @@ RomData *RomDataFactory::create(IRpFile *file, unsigned int attrs)
 
 	bool readFooter = false;
 	fns = &RomDataFactoryPrivate::romDataFns_footer[0];
-	for (; fns->supportedFileExtensions != nullptr; fns++) {
+	for (; fns->romDataInfo != nullptr; fns++) {
 		if ((fns->attrs & attrs) != attrs) {
 			// This RomData subclass doesn't have the
 			// required attributes.
@@ -787,7 +784,7 @@ RomData *RomDataFactory::create(IRpFile *file, unsigned int attrs)
 		}
 
 		// Do we have a matching extension?
-		// FIXME: Instead of hard-coded, check supportedFileExtensions.
+		// FIXME: Instead of hard-coded, check romDataInfo()->exts.
 		static const char *const exts[] = {
 			".vb",		// VirtualBoy
 			".ws",		// WonderSwan
@@ -877,8 +874,8 @@ void RomDataFactoryPrivate::init_supportedFileExtensions(void)
 	     *tblptr != nullptr; tblptr++)
 	{
 		const RomDataFns *fns = *tblptr;
-		for (; fns->supportedFileExtensions != nullptr; fns++) {
-			const char *const *sys_exts = fns->supportedFileExtensions();
+		for (; fns->romDataInfo != nullptr; fns++) {
+			const char *const *sys_exts = fns->romDataInfo()->exts;
 			if (!sys_exts)
 				continue;
 
@@ -969,8 +966,8 @@ void RomDataFactoryPrivate::init_supportedMimeTypes(void)
 	     *tblptr != nullptr; tblptr++)
 	{
 		const RomDataFns *fns = *tblptr;
-		for (; fns->supportedFileExtensions != nullptr; fns++) {
-			const char *const *sys_mimeTypes = fns->supportedMimeTypes();
+		for (; fns->romDataInfo != nullptr; fns++) {
+			const char *const *sys_mimeTypes = fns->romDataInfo()->mimeTypes;
 			if (!sys_mimeTypes)
 				continue;
 
@@ -990,7 +987,7 @@ void RomDataFactoryPrivate::init_supportedMimeTypes(void)
 		[&set_mimeTypes](const char *mimeType) {
 			auto iter = set_mimeTypes.find(mimeType);
 			if (iter == set_mimeTypes.end()) {
-				set_mimeTypes.insert(mimeType);
+				set_mimeTypes.emplace(mimeType);
 				vec_mimeTypes.emplace_back(mimeType);
 			}
 		}

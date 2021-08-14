@@ -20,8 +20,6 @@ using std::string;
 
 namespace LibRomData {
 
-ROMDATA_IMPL(BCSTM)
-
 class BCSTMPrivate final : public RomDataPrivate
 {
 	public:
@@ -30,6 +28,12 @@ class BCSTMPrivate final : public RomDataPrivate
 	private:
 		typedef RomDataPrivate super;
 		RP_DISABLE_COPY(BCSTMPrivate)
+
+	public:
+		/** RomDataInfo **/
+		static const char *const exts[];
+		static const char *const mimeTypes[];
+		static const RomDataInfo romDataInfo;
 
 	public:
 		// Audio format.
@@ -43,10 +47,6 @@ class BCSTMPrivate final : public RomDataPrivate
 			Max
 		};
 		AudioFormat audioFormat;
-
-		// MIME type table.
-		// Ordering matches AudioFormat.
-		static const char *const mimeType_tbl[];
 
 	public:
 		// BCSTM headers.
@@ -81,11 +81,21 @@ class BCSTMPrivate final : public RomDataPrivate
 		}
 };
 
+ROMDATA_IMPL(BCSTM)
+
 /** BCSTMPrivate **/
 
-// MIME type table.
-// Ordering matches AudioFormat.
-const char *const BCSTMPrivate::mimeType_tbl[] = {
+/* RomDataInfo */
+const char *const BCSTMPrivate::exts[] = {
+	".bcstm",
+	".bfstm",
+	".bcwav",
+
+	nullptr
+};
+const char *const BCSTMPrivate::mimeTypes[] = {
+	// NOTE: Ordering matches AudioFormat.
+
 	// Unofficial MIME types.
 	// TODO: Get these upstreamed on FreeDesktop.org.
 	"audio/x-bcstm",
@@ -94,9 +104,12 @@ const char *const BCSTMPrivate::mimeType_tbl[] = {
 
 	nullptr
 };
+const RomDataInfo BCSTMPrivate::romDataInfo = {
+	"BCSTM", exts, mimeTypes
+};
 
 BCSTMPrivate::BCSTMPrivate(BCSTM *q, IRpFile *file)
-	: super(q, file)
+	: super(q, file, &romDataInfo)
 	, audioFormat(AudioFormat::Unknown)
 	, needsByteswap(false)
 {
@@ -124,7 +137,6 @@ BCSTM::BCSTM(IRpFile *file)
 	: super(new BCSTMPrivate(this, file))
 {
 	RP_D(BCSTM);
-	d->className = "BCSTM";
 	d->fileType = FileType::AudioFile;
 
 	if (!d->file) {
@@ -152,8 +164,8 @@ BCSTM::BCSTM(IRpFile *file)
 	if ((int)d->audioFormat < 0) {
 		UNREF_AND_NULL_NOCHK(d->file);
 		return;
-	} else if ((int)d->audioFormat < ARRAY_SIZE_I(d->mimeType_tbl)-1) {
-		d->mimeType = d->mimeType_tbl[(int)d->audioFormat];
+	} else if ((int)d->audioFormat < ARRAY_SIZE_I(d->mimeTypes)-1) {
+		d->mimeType = d->mimeTypes[(int)d->audioFormat];
 	}
 
 	// Is byteswapping needed?
@@ -361,46 +373,6 @@ const char *BCSTM::systemName(unsigned int type) const
 
 	// Should not get here...
 	return nullptr;
-}
-
-/**
- * Get a list of all supported file extensions.
- * This is to be used for file type registration;
- * subclasses don't explicitly check the extension.
- *
- * NOTE: The extensions include the leading dot,
- * e.g. ".bin" instead of "bin".
- *
- * NOTE 2: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *BCSTM::supportedFileExtensions_static(void)
-{
-	static const char *const exts[] = {
-		".bcstm",
-		".bfstm",
-		".bcwav",
-
-		nullptr
-	};
-	return exts;
-}
-
-/**
- * Get a list of all supported MIME types.
- * This is to be used for metadata extractors that
- * must indicate which MIME types they support.
- *
- * NOTE: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *BCSTM::supportedMimeTypes_static(void)
-{
-	return BCSTMPrivate::mimeType_tbl;
 }
 
 /**

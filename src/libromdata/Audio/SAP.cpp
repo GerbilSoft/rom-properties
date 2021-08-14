@@ -25,8 +25,6 @@ using std::vector;
 
 namespace LibRomData {
 
-ROMDATA_IMPL(SAP)
-
 class SAPPrivate final : public RomDataPrivate
 {
 	public:
@@ -35,6 +33,12 @@ class SAPPrivate final : public RomDataPrivate
 	private:
 		typedef RomDataPrivate super;
 		RP_DISABLE_COPY(SAPPrivate)
+
+	public:
+		/** RomDataInfo **/
+		static const char *const exts[];
+		static const char *const mimeTypes[];
+		static const RomDataInfo romDataInfo;
 
 	public:
 		// Parsed tags.
@@ -85,10 +89,28 @@ class SAPPrivate final : public RomDataPrivate
 		TagData parseTags(void);
 };
 
+ROMDATA_IMPL(SAP)
+
 /** SAPPrivate **/
 
+/* RomDataInfo */
+const char *const SAPPrivate::exts[] = {
+	".sap",
+
+	nullptr
+};
+const char *const SAPPrivate::mimeTypes[] = {
+	// Unofficial MIME types.
+	"audio/x-sap",
+
+	nullptr
+};
+const RomDataInfo SAPPrivate::romDataInfo = {
+	"SAP", exts, mimeTypes
+};
+
 SAPPrivate::SAPPrivate(SAP *q, IRpFile *file)
-	: super(q, file)
+	: super(q, file, &romDataInfo)
 { }
 
 /**
@@ -434,7 +456,6 @@ SAP::SAP(IRpFile *file)
 	: super(new SAPPrivate(this, file))
 {
 	RP_D(SAP);
-	d->className = "SAP";
 	d->mimeType = "audio/x-sap";	// unofficial
 	d->fileType = FileType::AudioFile;
 
@@ -520,50 +541,6 @@ const char *SAP::systemName(unsigned int type) const
 	};
 
 	return sysNames[type & SYSNAME_TYPE_MASK];
-}
-
-/**
- * Get a list of all supported file extensions.
- * This is to be used for file type registration;
- * subclasses don't explicitly check the extension.
- *
- * NOTE: The extensions include the leading dot,
- * e.g. ".bin" instead of "bin".
- *
- * NOTE 2: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *SAP::supportedFileExtensions_static(void)
-{
-	static const char *const exts[] = {
-		".sap",
-
-		nullptr
-	};
-	return exts;
-}
-
-/**
- * Get a list of all supported MIME types.
- * This is to be used for metadata extractors that
- * must indicate which MIME types they support.
- *
- * NOTE: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *SAP::supportedMimeTypes_static(void)
-{
-	static const char *const mimeTypes[] = {
-		// Unofficial MIME types.
-		"audio/x-sap",
-
-		nullptr
-	};
-	return mimeTypes;
 }
 
 /**

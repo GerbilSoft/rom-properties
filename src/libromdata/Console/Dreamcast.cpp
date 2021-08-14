@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * Dreamcast.hpp: Sega Dreamcast disc image reader.                        *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -36,9 +36,6 @@ using std::vector;
 
 namespace LibRomData {
 
-ROMDATA_IMPL(Dreamcast)
-ROMDATA_IMPL_IMG_TYPES(Dreamcast)
-
 class DreamcastPrivate final : public RomDataPrivate
 {
 	public:
@@ -48,6 +45,12 @@ class DreamcastPrivate final : public RomDataPrivate
 	private:
 		typedef RomDataPrivate super;
 		RP_DISABLE_COPY(DreamcastPrivate)
+
+	public:
+		/** RomDataInfo **/
+		static const char *const exts[];
+		static const char *const mimeTypes[];
+		static const RomDataInfo romDataInfo;
 
 	public:
 		enum class DiscType {
@@ -107,10 +110,41 @@ class DreamcastPrivate final : public RomDataPrivate
 		void parseDiscNumber(uint8_t &disc_num, uint8_t &disc_total) const;
 };
 
+ROMDATA_IMPL(Dreamcast)
+ROMDATA_IMPL_IMG_TYPES(Dreamcast)
+
 /** DreamcastPrivate **/
 
+/* RomDataInfo */
+const char *const DreamcastPrivate::exts[] = {
+	".iso",	// ISO-9660 (2048-byte)
+	".bin",	// Raw (2352-byte)
+	".gdi",	// GD-ROM cuesheet
+
+	// TODO: Add these formats?
+	//".cdi",	// DiscJuggler
+	//".nrg",	// Nero
+
+	nullptr
+};
+const char *const DreamcastPrivate::mimeTypes[] = {
+	// Unofficial MIME types.
+	"application/x-dreamcast-rom",
+	"application/x-dreamcast-iso-image",
+	"application/x-dreamcast-cuesheet",
+
+	// Unofficial MIME types from FreeDesktop.org.
+	// TODO: Get the above types upstreamed and get rid of this.
+	"application/x-dc-rom",
+
+	nullptr
+};
+const RomDataInfo DreamcastPrivate::romDataInfo = {
+	"Dreamcast", exts, mimeTypes
+};
+
 DreamcastPrivate::DreamcastPrivate(Dreamcast *q, IRpFile *file)
-	: super(q, file)
+	: super(q, file, &romDataInfo)
 	, discType(DiscType::Unknown)
 	, discReader(nullptr)
 	, isoPartition(nullptr)
@@ -295,7 +329,6 @@ Dreamcast::Dreamcast(IRpFile *file)
 {
 	// This class handles disc images.
 	RP_D(Dreamcast);
-	d->className = "Dreamcast";
 	d->fileType = FileType::DiscImage;
 
 	if (!d->file) {
@@ -497,62 +530,6 @@ const char *Dreamcast::systemName(unsigned int type) const
 	};
 
 	return sysNames[type & SYSNAME_TYPE_MASK];
-}
-
-/**
- * Get a list of all supported file extensions.
- * This is to be used for file type registration;
- * subclasses don't explicitly check the extension.
- *
- * NOTE: The extensions include the leading dot,
- * e.g. ".bin" instead of "bin".
- *
- * NOTE 2: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *Dreamcast::supportedFileExtensions_static(void)
-{
-	static const char *const exts[] = {
-		".iso",	// ISO-9660 (2048-byte)
-		".bin",	// Raw (2352-byte)
-		".gdi",	// GD-ROM cuesheet
-
-		// TODO: Add these formats?
-		//".cdi",	// DiscJuggler
-		//".nrg",	// Nero
-
-		nullptr
-	};
-	return exts;
-}
-
-/**
- * Get a list of all supported MIME types.
- * This is to be used for metadata extractors that
- * must indicate which MIME types they support.
- *
- * NOTE: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *Dreamcast::supportedMimeTypes_static(void)
-{
-	static const char *const mimeTypes[] = {
-		// Unofficial MIME types.
-		"application/x-dreamcast-rom",
-		"application/x-dreamcast-iso-image",
-		"application/x-dreamcast-cuesheet",
-
-		// Unofficial MIME types from FreeDesktop.org.
-		// TODO: Get the above types upstreamed and get rid of this.
-		"application/x-dc-rom",
-
-		nullptr
-	};
-	return mimeTypes;
 }
 
 /**

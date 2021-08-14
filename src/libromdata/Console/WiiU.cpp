@@ -31,9 +31,6 @@ using std::vector;
 
 namespace LibRomData {
 
-ROMDATA_IMPL(WiiU)
-ROMDATA_IMPL_IMG(WiiU)
-
 class WiiUPrivate final : public RomDataPrivate
 {
 	public:
@@ -43,6 +40,12 @@ class WiiUPrivate final : public RomDataPrivate
 	private:
 		typedef RomDataPrivate super;
 		RP_DISABLE_COPY(WiiUPrivate)
+
+	public:
+		/** RomDataInfo **/
+		static const char *const exts[];
+		static const char *const mimeTypes[];
+		static const RomDataInfo romDataInfo;
 
 	public:
 		enum class DiscType {
@@ -62,10 +65,34 @@ class WiiUPrivate final : public RomDataPrivate
 		WiiU_DiscHeader discHeader;
 };
 
+ROMDATA_IMPL(WiiU)
+ROMDATA_IMPL_IMG(WiiU)
+
 /** WiiUPrivate **/
 
+/* RomDataInfo */
+const char *const WiiUPrivate::exts[] = {
+	".wud", ".wux",
+
+	// NOTE: May cause conflicts on Windows
+	// if fallback handling isn't working.
+	".iso",
+
+	nullptr
+};
+const char *const WiiUPrivate::mimeTypes[] = {
+	// Unofficial MIME types.
+	// TODO: Get these upstreamed on FreeDesktop.org.
+	"application/x-wii-u-rom",
+
+	nullptr
+};
+const RomDataInfo WiiUPrivate::romDataInfo = {
+	"WiiU", exts, mimeTypes
+};
+
 WiiUPrivate::WiiUPrivate(WiiU *q, IRpFile *file)
-	: super(q, file)
+	: super(q, file, &romDataInfo)
 	, discType(DiscType::Unknown)
 	, discReader(nullptr)
 {
@@ -98,7 +125,6 @@ WiiU::WiiU(IRpFile *file)
 {
 	// This class handles disc images.
 	RP_D(WiiU);
-	d->className = "WiiU";
 	d->mimeType = "application/x-wii-u-rom";	// unofficial, not on fd.o
 	d->fileType = FileType::DiscImage;
 
@@ -282,55 +308,6 @@ const char *WiiU::systemName(unsigned int type) const
 	};
 
 	return sysNames[type & SYSNAME_TYPE_MASK];
-}
-
-/**
- * Get a list of all supported file extensions.
- * This is to be used for file type registration;
- * subclasses don't explicitly check the extension.
- *
- * NOTE: The extensions do not include the leading dot,
- * e.g. "bin" instead of ".bin".
- *
- * NOTE 2: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *WiiU::supportedFileExtensions_static(void)
-{
-	static const char *const exts[] = {
-		".wud", ".wux",
-
-		// NOTE: May cause conflicts on Windows
-		// if fallback handling isn't working.
-		".iso",
-
-		nullptr
-	};
-	return exts;
-}
-
-/**
- * Get a list of all supported MIME types.
- * This is to be used for metadata extractors that
- * must indicate which MIME types they support.
- *
- * NOTE: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *WiiU::supportedMimeTypes_static(void)
-{
-	static const char *const mimeTypes[] = {
-		// Unofficial MIME types.
-		// TODO: Get these upstreamed on FreeDesktop.org.
-		"application/x-wii-u-rom",
-
-		nullptr
-	};
-	return mimeTypes;
 }
 
 /**

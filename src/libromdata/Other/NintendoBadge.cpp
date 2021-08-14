@@ -25,9 +25,6 @@ using std::vector;
 
 namespace LibRomData {
 
-ROMDATA_IMPL(NintendoBadge)
-ROMDATA_IMPL_IMG_TYPES(NintendoBadge)
-
 class NintendoBadgePrivate final : public RomDataPrivate
 {
 	public:
@@ -37,6 +34,12 @@ class NintendoBadgePrivate final : public RomDataPrivate
 	private:
 		typedef RomDataPrivate super;
 		RP_DISABLE_COPY(NintendoBadgePrivate)
+
+	public:
+		/** RomDataInfo **/
+		static const char *const exts[];
+		static const char *const mimeTypes[];
+		static const RomDataInfo romDataInfo;
 
 	public:
 		enum class BadgeType {
@@ -61,10 +64,6 @@ class NintendoBadgePrivate final : public RomDataPrivate
 
 		// Is this a mega badge? (>1x1)
 		bool megaBadge;
-
-		// MIME type table.
-		// Ordering matches BadgeType.
-		static const char *const mimeType_tbl[];
 
 	public:
 		// Badge header.
@@ -96,11 +95,24 @@ class NintendoBadgePrivate final : public RomDataPrivate
 		inline uint32_t getDefaultLC(void) const;
 };
 
+ROMDATA_IMPL(NintendoBadge)
+ROMDATA_IMPL_IMG_TYPES(NintendoBadge)
+
 /** NintendoBadgePrivate **/
 
-// MIME type table.
-// Ordering matches BadgeType.
-const char *const NintendoBadgePrivate::mimeType_tbl[] = {
+/* RomDataInfo */
+const char *const NintendoBadgePrivate::exts[] = {
+	// NOTE: These extensions may cause conflicts on
+	// Windows if fallback handling isn't working.
+
+	".prb",	// PRBS file
+	".cab",	// CABS file (NOTE: Conflicts with Microsoft CAB) [TODO: Unregister?]
+
+	nullptr
+};
+const char *const NintendoBadgePrivate::mimeTypes[] = {
+	// NOTE: Ordering matches BadgeType.
+
 	// Unofficial MIME types.
 	// TODO: Get these upstreamed on FreeDesktop.org.
 	"application/x-nintendo-badge",
@@ -108,9 +120,12 @@ const char *const NintendoBadgePrivate::mimeType_tbl[] = {
 
 	nullptr
 };
+const RomDataInfo NintendoBadgePrivate::romDataInfo = {
+	"NintendoBadge", exts, mimeTypes
+};
 
 NintendoBadgePrivate::NintendoBadgePrivate(NintendoBadge *q, IRpFile *file)
-	: super(q, file)
+	: super(q, file, &romDataInfo)
 	, badgeType(BadgeType::Unknown)
 	, megaBadge(false)
 {
@@ -397,7 +412,6 @@ NintendoBadge::NintendoBadge(IRpFile *file)
 {
 	// This class handles texture files.
 	RP_D(NintendoBadge);
-	d->className = "NintendoBadge";
 	d->fileType = FileType::TextureFile;
 
 	if (!d->file) {
@@ -441,8 +455,8 @@ NintendoBadge::NintendoBadge(IRpFile *file)
 	}
 
 	// Set the MIME type.
-	if ((int)d->badgeType < ARRAY_SIZE_I(d->mimeType_tbl)-1) {
-		d->mimeType = d->mimeType_tbl[(int)d->badgeType];
+	if ((int)d->badgeType < ARRAY_SIZE_I(d->mimeTypes)-1) {
+		d->mimeType = d->mimeTypes[(int)d->badgeType];
 	}
 }
 
@@ -505,45 +519,6 @@ const char *NintendoBadge::systemName(unsigned int type) const
 	};
 
 	return sysNames[type & SYSNAME_TYPE_MASK];
-}
-
-/**
- * Get a list of all supported file extensions.
- * This is to be used for file type registration;
- * subclasses don't explicitly check the extension.
- *
- * NOTE: The extensions include the leading dot,
- * e.g. ".bin" instead of "bin".
- *
- * NOTE 2: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *NintendoBadge::supportedFileExtensions_static(void)
-{
-	static const char *const exts[] = {
-		".prb",	// PRBS file
-		".cab",	// CABS file (NOTE: Conflicts with Microsoft CAB) [TODO: Unregister?]
-
-		nullptr
-	};
-	return exts;
-}
-
-/**
- * Get a list of all supported MIME types.
- * This is to be used for metadata extractors that
- * must indicate which MIME types they support.
- *
- * NOTE: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *NintendoBadge::supportedMimeTypes_static(void)
-{
-	return NintendoBadgePrivate::mimeType_tbl;
 }
 
 /**

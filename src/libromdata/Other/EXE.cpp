@@ -31,6 +31,41 @@ ROMDATA_IMPL(EXE)
 
 /** EXEPrivate **/
 
+/* RomDataInfo */
+const char *const EXEPrivate::exts[] = {
+	// References:
+	// - https://en.wikipedia.org/wiki/Portable_Executable
+
+	// PE extensions
+	".exe", ".dll",
+	".acm", ".ax",
+	".cpl", ".drv",
+	".efi", ".mui",
+	".ocx", ".scr",
+	".sys", ".tsp",
+
+	// NE extensions
+	".fon", ".icl",
+
+	// LE extensions
+	".vxd", ".386",
+
+	nullptr
+};
+const char *const EXEPrivate::mimeTypes[] = {
+	// Unofficial MIME types from FreeDesktop.org.
+	"application/x-ms-dos-executable",
+
+	// Unofficial MIME types from Microsoft.
+	// Reference: https://technet.microsoft.com/en-us/library/cc995276.aspx?f=255&MSPPError=-2147217396
+	"application/x-msdownload",
+
+	nullptr
+};
+const RomDataInfo EXEPrivate::romDataInfo = {
+	"EXE", exts, mimeTypes
+};
+
 // NE target OSes.
 // Also used for LE.
 const char *const EXEPrivate::NE_TargetOSes[6] = {
@@ -43,7 +78,7 @@ const char *const EXEPrivate::NE_TargetOSes[6] = {
 };
 
 EXEPrivate::EXEPrivate(EXE *q, IRpFile *file)
-	: super(q, file)
+	: super(q, file, &romDataInfo)
 	, exeType(ExeType::Unknown)
 	, rsrcReader(nullptr)
 	, pe_subsystem(IMAGE_SUBSYSTEM_UNKNOWN)
@@ -398,7 +433,6 @@ EXE::EXE(IRpFile *file)
 	// This class handles different types of files.
 	// d->fileType will be set later.
 	RP_D(EXE);
-	d->className = "EXE";
 	d->mimeType = "application/x-ms-dos-executable";	// unofficial (TODO: More types?)
 	d->fileType = FileType::Unknown;
 
@@ -749,68 +783,6 @@ const char *EXE::systemName(unsigned int type) const
 	// Should not get here...
 	assert(!"Unknown EXE type.");
 	return "Unknown EXE type";
-}
-
-/**
- * Get a list of all supported file extensions.
- * This is to be used for file type registration;
- * subclasses don't explicitly check the extension.
- *
- * NOTE: The extensions do not include the leading dot,
- * e.g. "bin" instead of ".bin".
- *
- * NOTE 2: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *EXE::supportedFileExtensions_static(void)
-{
-	// References:
-	// - https://en.wikipedia.org/wiki/Portable_Executable
-	static const char *const exts[] = {
-		// PE extensions
-		".exe", ".dll",
-		".acm", ".ax",
-		".cpl", ".drv",
-		".efi", ".mui",
-		".ocx", ".scr",
-		".sys", ".tsp",
-
-		// NE extensions
-		".fon", ".icl",
-
-		// LE extensions
-		".vxd", ".386",
-
-		nullptr
-	};
-	return exts;
-}
-
-/**
- * Get a list of all supported MIME types.
- * This is to be used for metadata extractors that
- * must indicate which MIME types they support.
- *
- * NOTE: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *EXE::supportedMimeTypes_static(void)
-{
-	static const char *const mimeTypes[] = {
-		// Unofficial MIME types from FreeDesktop.org.
-		"application/x-ms-dos-executable",
-
-		// Unofficial MIME types from Microsoft.
-		// Reference: https://technet.microsoft.com/en-us/library/cc995276.aspx?f=255&MSPPError=-2147217396
-		"application/x-msdownload",
-
-		nullptr
-	};
-	return mimeTypes;
 }
 
 /**

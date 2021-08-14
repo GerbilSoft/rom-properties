@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * RomData_p.hpp: ROM data base class. (PRIVATE CLASS)                     *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -33,16 +33,23 @@ namespace LibRpBase {
 class RomFields;
 class RomMetaData;
 
+struct RomDataInfo {
+	const char *className;		// Class name for user configuration (ASCII)
+	const char *const *exts;	// Supported file extensions
+	const char *const *mimeTypes;	// Supported MIME types
+};
+
 class RomDataPrivate
 {
 	public:
 		/**
 		 * Initialize a RomDataPrivate storage class.
 		 *
-		 * @param q RomData class.
-		 * @param file ROM file.
+		 * @param q RomData class
+		 * @param file ROM file
+		 * @param pRomDataInfo RomData subclass information
 		 */
-		RomDataPrivate(RomData *q, LibRpFile::IRpFile *file);
+		RomDataPrivate(RomData *q, LibRpFile::IRpFile *file, const RomDataInfo *pRomDataInfo);
 
 		virtual ~RomDataPrivate();
 
@@ -62,7 +69,7 @@ class RomDataPrivate
 
 	public:
 		/** These fields must be set by RomData subclasses in their constructors. **/
-		const char *className;		// Class name for user configuration. (ASCII) (default is nullptr)
+		const RomDataInfo *pRomDataInfo;// RomData subclass information
 		const char *mimeType;		// MIME type. (ASCII) (default is nullptr)
 		RomData::FileType fileType;	// File type. (default is FileType::ROM_Image)
 

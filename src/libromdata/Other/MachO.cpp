@@ -25,8 +25,6 @@ using std::vector;
 
 namespace LibRomData {
 
-ROMDATA_IMPL(MachO)
-
 class MachOPrivate final : public RomDataPrivate
 {
 	public:
@@ -35,6 +33,12 @@ class MachOPrivate final : public RomDataPrivate
 	private:
 		typedef RomDataPrivate super;
 		RP_DISABLE_COPY(MachOPrivate)
+
+	public:
+		/** RomDataInfo **/
+		static const char *const exts[];
+		static const char *const mimeTypes[];
+		static const RomDataInfo romDataInfo;
 
 	public:
 		// Executable format.
@@ -89,10 +93,43 @@ class MachOPrivate final : public RomDataPrivate
 		static Mach_Format checkMachMagicNumber(uint32_t magic);
 };
 
+ROMDATA_IMPL(MachO)
+
 /** MachOPrivate **/
 
+/* RomDataInfo */
+const char *const MachOPrivate::exts[] = {
+	//".",		// FIXME: Does this work for files with no extension?
+	".bin",
+	".so",		// Shared libraries. (TODO: Versioned .so files.)
+	".dylib",	// Dynamic libraries. (TODO: Versioned .dylib files.)
+	".bundle",	// Bundles.
+	// TODO: More?
+
+	nullptr
+};
+const char *const MachOPrivate::mimeTypes[] = {
+	// Unofficial MIME types.
+
+	// FIXME: Defining the magic numbers for Mach-O executables in
+	// rom-properties.xml causes KDE to lock up due to a conflict
+	// with the standard definitions. Hence, we're using our own types.
+
+	"application/x-mach-object",
+	"application/x-mach-executable",
+	"application/x-mach-sharedlib",
+	"application/x-mach-core",
+	"application/x-mach-bundle",
+	"application/x-mach-fat-binary",
+
+	nullptr
+};
+const RomDataInfo MachOPrivate::romDataInfo = {
+	"MachO", exts, mimeTypes
+};
+
 MachOPrivate::MachOPrivate(MachO *q, IRpFile *file)
-	: super(q, file)
+	: super(q, file, &romDataInfo)
 	, execFormat(Exec_Format::Unknown)
 { }
 
@@ -142,7 +179,6 @@ MachO::MachO(IRpFile *file)
 	// This class handles different types of files.
 	// d->fileType will be set later.
 	RP_D(MachO);
-	d->className = "MachO";
 	d->fileType = FileType::Unknown;
 
 	if (!d->file) {
@@ -395,67 +431,6 @@ const char *MachO::systemName(unsigned int type) const
 	};
 
 	return sysNames[type & SYSNAME_TYPE_MASK];
-}
-
-/**
- * Get a list of all supported file extensions.
- * This is to be used for file type registration;
- * subclasses don't explicitly check the extension.
- *
- * NOTE: The extensions do not include the leading dot,
- * e.g. "bin" instead of ".bin".
- *
- * NOTE 2: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *MachO::supportedFileExtensions_static(void)
-{
-	static const char *const exts[] = {
-		//".",		// FIXME: Does this work for files with no extension?
-		".bin",
-		".so",		// Shared libraries. (TODO: Versioned .so files.)
-		".dylib",	// Dynamic libraries. (TODO: Versioned .dylib files.)
-		".bundle",	// Bundles.
-		// TODO: More?
-
-		nullptr
-	};
-	return exts;
-}
-
-/**
- * Get a list of all supported MIME types.
- * This is to be used for metadata extractors that
- * must indicate which MIME types they support.
- *
- * NOTE: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *MachO::supportedMimeTypes_static(void)
-{
-	static const char *const mimeTypes[] = {
-		// Unofficial MIME types.
-
-		// FIXME: Defining the magic numbers for Mach-O
-		// executables in rom-properties.xml causes
-		// KDE to lock up due to a conflict with the
-		// standard definitions. Hence, we're using our
-		// own types.
-
-		"application/x-mach-object",
-		"application/x-mach-executable",
-		"application/x-mach-sharedlib",
-		"application/x-mach-core",
-		"application/x-mach-bundle",
-		"application/x-mach-fat-binary",
-
-		nullptr
-	};
-	return mimeTypes;
 }
 
 /**

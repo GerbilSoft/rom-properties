@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * Sega8Bit.cpp: Sega 8-bit (SMS/GG) ROM reader.                           *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -20,8 +20,6 @@ using std::vector;
 
 namespace LibRomData {
 
-ROMDATA_IMPL(Sega8Bit)
-
 class Sega8BitPrivate final : public RomDataPrivate
 {
 	public:
@@ -30,6 +28,12 @@ class Sega8BitPrivate final : public RomDataPrivate
 	private:
 		typedef RomDataPrivate super;
 		RP_DISABLE_COPY(Sega8BitPrivate)
+
+	public:
+		/** RomDataInfo **/
+		static const char *const exts[];
+		static const char *const mimeTypes[];
+		static const RomDataInfo romDataInfo;
 
 	public:
 		// ROM header. (0x7FE0-0x7FFF)
@@ -64,10 +68,31 @@ class Sega8BitPrivate final : public RomDataPrivate
 		static time_t sdsc_date_to_unix_time(const Sega8_SDSC_Date *date);
 };
 
+ROMDATA_IMPL(Sega8Bit)
+
 /** Sega8BitPrivate **/
 
+/* RomDataInfo */
+const char *const Sega8BitPrivate::exts[] = {
+	".sms",	// Sega Master System
+	".gg",	// Sega Game Gear
+	// TODO: Other Sega 8-bit formats?
+
+	nullptr
+};
+const char *const Sega8BitPrivate::mimeTypes[] = {
+	// Unofficial MIME types from FreeDesktop.org.
+	"application/x-sms-rom",
+	"application/x-gamegear-rom",
+
+	nullptr
+};
+const RomDataInfo Sega8BitPrivate::romDataInfo = {
+	"Sega8Bit", exts, mimeTypes
+};
+
 Sega8BitPrivate::Sega8BitPrivate(Sega8Bit *q, IRpFile *file)
-	: super(q, file)
+	: super(q, file, &romDataInfo)
 {
 	// Clear the ROM header struct.
 	memset(&romHeader, 0, sizeof(romHeader));
@@ -199,7 +224,6 @@ Sega8Bit::Sega8Bit(IRpFile *file)
 	: super(new Sega8BitPrivate(this, file))
 {
 	RP_D(Sega8Bit);
-	d->className = "Sega8Bit";
 	d->mimeType = "application/x-sms-rom";	// unofficial (TODO: SMS vs. GG)
 
 	if (!d->file) {
@@ -293,53 +317,6 @@ const char *Sega8Bit::systemName(unsigned int type) const
 	};
 
 	return sysNames[type & SYSNAME_TYPE_MASK];
-}
-
-/**
- * Get a list of all supported file extensions.
- * This is to be used for file type registration;
- * subclasses don't explicitly check the extension.
- *
- * NOTE: The extensions include the leading dot,
- * e.g. ".bin" instead of "bin".
- *
- * NOTE 2: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *Sega8Bit::supportedFileExtensions_static(void)
-{
-	static const char *const exts[] = {
-		".sms",	// Sega Master System
-		".gg",	// Sega Game Gear
-		// TODO: Other Sega 8-bit formats?
-
-		nullptr
-	};
-	return exts;
-}
-
-/**
- * Get a list of all supported MIME types.
- * This is to be used for metadata extractors that
- * must indicate which MIME types they support.
- *
- * NOTE: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *Sega8Bit::supportedMimeTypes_static(void)
-{
-	static const char *const mimeTypes[] = {
-		// Unofficial MIME types from FreeDesktop.org.
-		"application/x-sms-rom",
-		"application/x-gamegear-rom",
-
-		nullptr
-	};
-	return mimeTypes;
 }
 
 /**

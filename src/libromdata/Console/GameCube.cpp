@@ -50,9 +50,6 @@ using std::vector;
 
 namespace LibRomData {
 
-ROMDATA_IMPL(GameCube)
-ROMDATA_IMPL_IMG(GameCube)
-
 class GameCubePrivate final : public RomDataPrivate
 {
 	public:
@@ -62,6 +59,12 @@ class GameCubePrivate final : public RomDataPrivate
 	private:
 		typedef RomDataPrivate super;
 		RP_DISABLE_COPY(GameCubePrivate)
+
+	public:
+		/** RomDataInfo **/
+		static const char *const exts[];
+		static const char *const mimeTypes[];
+		static const RomDataInfo romDataInfo;
 
 	public:
 		// NDDEMO header.
@@ -196,7 +199,52 @@ class GameCubePrivate final : public RomDataPrivate
 		const char *wii_getCryptoStatus(WiiPartition *partition);
 };
 
+ROMDATA_IMPL(GameCube)
+ROMDATA_IMPL_IMG(GameCube)
+
 /** GameCubePrivate **/
+
+/* RomDataInfo */
+const char *const GameCubePrivate::exts[] = {
+	".gcm", ".rvm",
+	".wbfs",
+	".ciso", ".cso",
+	".tgc",
+	".dec",	// .iso.dec
+	".gcz",
+
+	// Partially supported. (Header only!)
+	".wia",
+	".rvz",	// based on WIA
+
+	// NOTE: May cause conflicts on Windows
+	// if fallback handling isn't working.
+	".iso",
+
+	nullptr
+};
+const char *const GameCubePrivate::mimeTypes[] = {
+	// Unofficial MIME types from FreeDesktop.org.
+	"application/x-gamecube-rom",
+	"application/x-gamecube-iso-image",
+	"application/x-gamecube-tgc",
+	"application/x-wii-rom",
+	"application/x-wii-iso-image",
+	"application/x-wbfs",
+	"application/x-wia",
+
+	// Unofficial MIME types.
+	// TODO: Get these upstreamed on FreeDesktop.org.
+	"application/x-cso",		// technically a different format...
+	"application/x-nasos-image",
+	"application/x-gcz-image",
+	"application/x-rvz-image",
+
+	nullptr
+};
+const RomDataInfo GameCubePrivate::romDataInfo = {
+	"GameCube", exts, mimeTypes
+};
 
 // NDDEMO header.
 const uint8_t GameCubePrivate::nddemo_header[64] = {
@@ -211,7 +259,7 @@ const uint8_t GameCubePrivate::nddemo_header[64] = {
 };
 
 GameCubePrivate::GameCubePrivate(GameCube *q, IRpFile *file)
-	: super(q, file)
+	: super(q, file, &romDataInfo)
 	, discType(DISC_UNKNOWN)
 	, discReader(nullptr)
 	, gcnRegion(~0)
@@ -659,7 +707,6 @@ GameCube::GameCube(IRpFile *file)
 {
 	// This class handles disc images.
 	RP_D(GameCube);
-	d->className = "GameCube";
 	d->fileType = FileType::DiscImage;
 
 	if (!d->file) {
@@ -1299,76 +1346,6 @@ const char *GameCube::systemName(unsigned int type) const
 	}
 
 	return sysNames[d->discType & 3][type & SYSNAME_TYPE_MASK];
-}
-
-/**
- * Get a list of all supported file extensions.
- * This is to be used for file type registration;
- * subclasses don't explicitly check the extension.
- *
- * NOTE: The extensions do not include the leading dot,
- * e.g. "bin" instead of ".bin".
- *
- * NOTE 2: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *GameCube::supportedFileExtensions_static(void)
-{
-	static const char *const exts[] = {
-		".gcm", ".rvm",
-		".wbfs",
-		".ciso", ".cso",
-		".tgc",
-		".dec",	// .iso.dec
-		".gcz",
-
-		// Partially supported. (Header only!)
-		".wia",
-		".rvz",	// based on WIA
-
-		// NOTE: May cause conflicts on Windows
-		// if fallback handling isn't working.
-		".iso",
-
-		nullptr
-	};
-	return exts;
-}
-
-/**
- * Get a list of all supported MIME types.
- * This is to be used for metadata extractors that
- * must indicate which MIME types they support.
- *
- * NOTE: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *GameCube::supportedMimeTypes_static(void)
-{
-	static const char *const mimeTypes[] = {
-		// Unofficial MIME types from FreeDesktop.org.
-		"application/x-gamecube-rom",
-		"application/x-gamecube-iso-image",
-		"application/x-gamecube-tgc",
-		"application/x-wii-rom",
-		"application/x-wii-iso-image",
-		"application/x-wbfs",
-		"application/x-wia",
-
-		// Unofficial MIME types.
-		// TODO: Get these upstreamed on FreeDesktop.org.
-		"application/x-cso",		// technically a different format...
-		"application/x-nasos-image",
-		"application/x-gcz-image",
-		"application/x-rvz-image",
-
-		nullptr
-	};
-	return mimeTypes;
 }
 
 /**

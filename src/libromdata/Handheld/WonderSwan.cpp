@@ -21,8 +21,6 @@ using std::vector;
 
 namespace LibRomData {
 
-ROMDATA_IMPL(WonderSwan)
-
 class WonderSwanPrivate final : public RomDataPrivate
 {
 	public:
@@ -31,6 +29,12 @@ class WonderSwanPrivate final : public RomDataPrivate
 	private:
 		typedef RomDataPrivate super;
 		RP_DISABLE_COPY(WonderSwanPrivate)
+
+	public:
+		/** RomDataInfo **/
+		static const char *const exts[];
+		static const char *const mimeTypes[];
+		static const RomDataInfo romDataInfo;
 
 	public:
 		enum class RomType {
@@ -42,10 +46,6 @@ class WonderSwanPrivate final : public RomDataPrivate
 			Max
 		};
 		RomType romType;
-
-		// MIME type table.
-		// Ordering matches RomType.
-		static const char *const mimeType_tbl[];
 
 		// ROM footer.
 		WS_RomFooter romFooter;
@@ -61,11 +61,24 @@ class WonderSwanPrivate final : public RomDataPrivate
 		string getGameID(void) const;
 };
 
+ROMDATA_IMPL(WonderSwan)
+
 /** WonderSwanPrivate **/
 
-// MIME type table.
-// Ordering matches RomType.
-const char *const WonderSwanPrivate::mimeType_tbl[] = {
+/* RomDataInfo */
+const char *const WonderSwanPrivate::exts[] = {
+	// NOTE: These extensions may cause conflicts on
+	// Windows if fallback handling isn't working.
+
+	".ws",
+	".wsc",
+	".pc2",	// Pocket Challenge V2
+
+	nullptr
+};
+const char *const WonderSwanPrivate::mimeTypes[] = {
+	// NOTE: Ordering matches RomType.
+
 	// Unofficial MIME types from FreeDesktop.org.
 	"application/x-wonderswan-rom",
 	"application/x-wonderswan-color-rom",
@@ -76,9 +89,12 @@ const char *const WonderSwanPrivate::mimeType_tbl[] = {
 
 	nullptr
 };
+const RomDataInfo WonderSwanPrivate::romDataInfo = {
+	"WonderSwan", exts, mimeTypes
+};
 
 WonderSwanPrivate::WonderSwanPrivate(WonderSwan *q, IRpFile *file)
-	: super(q, file)
+	: super(q, file, &romDataInfo)
 	, romType(RomType::Unknown)
 	, forceGameIDSysIDTo0(false)
 {
@@ -131,8 +147,6 @@ WonderSwan::WonderSwan(IRpFile *file)
 	: super(new WonderSwanPrivate(this, file))
 {
 	RP_D(WonderSwan);
-	d->className = "WonderSwan";
-
 	if (!d->file) {
 		// Could not ref() the file handle.
 		return;
@@ -308,7 +322,7 @@ WonderSwan::WonderSwan(IRpFile *file)
 	// MIME type.
 	// TODO: Set to application/x-pocket-challenge-v2-rom if the extension is .pc2?
 	if ((int)d->romType >= 0) {
-		d->mimeType = d->mimeType_tbl[(int)d->romType];
+		d->mimeType = d->mimeTypes[(int)d->romType];
 	}
 }
 
@@ -406,48 +420,6 @@ const char *WonderSwan::systemName(unsigned int type) const
 	};
 
 	return sysNames[d->romFooter.system_id & 1][type & SYSNAME_TYPE_MASK];
-}
-
-/**
- * Get a list of all supported file extensions.
- * This is to be used for file type registration;
- * subclasses don't explicitly check the extension.
- *
- * NOTE: The extensions include the leading dot,
- * e.g. ".bin" instead of "bin".
- *
- * NOTE 2: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *WonderSwan::supportedFileExtensions_static(void)
-{
-	// NOTE: These extensions may cause conflicts on
-	// Windows if fallback handling isn't working.
-	static const char *const exts[] = {
-		".ws",
-		".wsc",
-		".pc2",
-
-		nullptr
-	};
-	return exts;
-}
-
-/**
- * Get a list of all supported MIME types.
- * This is to be used for metadata extractors that
- * must indicate which MIME types they support.
- *
- * NOTE: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *WonderSwan::supportedMimeTypes_static(void)
-{
-	return WonderSwanPrivate::mimeType_tbl;
 }
 
 /**

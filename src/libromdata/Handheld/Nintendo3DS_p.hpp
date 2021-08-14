@@ -46,6 +46,12 @@ class Nintendo3DSPrivate final : public LibRpBase::RomDataPrivate
 		RP_DISABLE_COPY(Nintendo3DSPrivate)
 
 	public:
+		/** RomDataInfo **/
+		static const char *const exts[];
+		static const char *const mimeTypes[];
+		static const LibRpBase::RomDataInfo romDataInfo;
+
+	public:
 		// ROM type.
 		enum class RomType {
 			Unknown = -1,
@@ -59,10 +65,6 @@ class Nintendo3DSPrivate final : public LibRpBase::RomDataPrivate
 			Max
 		};
 		RomType romType;
-
-		// MIME type table.
-		// Ordering matches N3DS_RomType.
-		static const char *const mimeType_tbl[];
 
 	public:
 		// What stuff do we have?

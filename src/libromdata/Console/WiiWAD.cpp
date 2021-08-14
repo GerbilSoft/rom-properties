@@ -48,8 +48,30 @@ ROMDATA_IMPL(WiiWAD)
 
 /** WiiWADPrivate **/
 
+/* RomDataInfo */
+const char *const WiiWADPrivate::exts[] = {
+	".wad",		// Nintendo WAD Format
+	".bwf",		// BroadOn WAD Format
+	".tad",		// DSi TAD (similar to Nintendo WAD)
+
+	nullptr
+};
+const char *const WiiWADPrivate::mimeTypes[] = {
+	// Unofficial MIME types from FreeDesktop.org.
+	"application/x-wii-wad",
+
+	// Unofficial MIME types.
+	// TODO: Get these upstreamed on FreeDesktop.org.
+	"application/x-dsi-tad",
+
+	nullptr
+};
+const RomDataInfo WiiWADPrivate::romDataInfo = {
+	"WiiWAD", exts, mimeTypes
+};
+
 WiiWADPrivate::WiiWADPrivate(WiiWAD *q, IRpFile *file)
-	: super(q, file)
+	: super(q, file, &romDataInfo)
 	, wadType(WadType::Unknown)
 	, data_offset(0)
 	, data_size(0)
@@ -225,7 +247,6 @@ WiiWAD::WiiWAD(IRpFile *file)
 {
 	// This class handles application packages.
 	RP_D(WiiWAD);
-	d->className = "WiiWAD";
 	d->mimeType = "application/x-wii-wad";	// unofficial
 	d->fileType = FileType::ApplicationPackage;
 
@@ -619,56 +640,6 @@ const char *WiiWAD::systemName(unsigned int type) const
 
 	// Should not get here...
 	return nullptr;
-}
-
-/**
- * Get a list of all supported file extensions.
- * This is to be used for file type registration;
- * subclasses don't explicitly check the extension.
- *
- * NOTE: The extensions do not include the leading dot,
- * e.g. "bin" instead of ".bin".
- *
- * NOTE 2: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *WiiWAD::supportedFileExtensions_static(void)
-{
-	static const char *const exts[] = {
-		".wad",		// Nintendo WAD Format
-		".bwf",		// BroadOn WAD Format
-		".tad",		// DSi TAD (similar to Nintendo WAD)
-
-		nullptr
-	};
-	return exts;
-}
-
-/**
- * Get a list of all supported MIME types.
- * This is to be used for metadata extractors that
- * must indicate which MIME types they support.
- *
- * NOTE: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *WiiWAD::supportedMimeTypes_static(void)
-{
-	static const char *const mimeTypes[] = {
-		// Unofficial MIME types from FreeDesktop.org.
-		"application/x-wii-wad",
-
-		// Unofficial MIME types.
-		// TODO: Get these upstreamed on FreeDesktop.org.
-		"application/x-dsi-tad",
-
-		nullptr
-	};
-	return mimeTypes;
 }
 
 /**

@@ -25,10 +25,6 @@ using std::vector;
 
 namespace LibRomData {
 
-ROMDATA_IMPL(Nintendo3DS_SMDH)
-ROMDATA_IMPL_IMG_TYPES(Nintendo3DS_SMDH)
-ROMDATA_IMPL_IMG_SIZES(Nintendo3DS_SMDH)
-
 // Workaround for RP_D() expecting the no-underscore naming convention.
 #define Nintendo3DS_SMDHPrivate Nintendo3DS_SMDH_Private
 
@@ -41,6 +37,12 @@ class Nintendo3DS_SMDH_Private final : public RomDataPrivate
 	private:
 		typedef RomDataPrivate super;
 		RP_DISABLE_COPY(Nintendo3DS_SMDH_Private)
+
+	public:
+		/** RomDataInfo **/
+		static const char *const exts[];
+		static const char *const mimeTypes[];
+		static const RomDataInfo romDataInfo;
 
 	public:
 		// Internal images.
@@ -75,10 +77,32 @@ class Nintendo3DS_SMDH_Private final : public RomDataPrivate
 		inline uint32_t getDefaultLC(void) const;
 };
 
+ROMDATA_IMPL(Nintendo3DS_SMDH)
+ROMDATA_IMPL_IMG_TYPES(Nintendo3DS_SMDH)
+ROMDATA_IMPL_IMG_SIZES(Nintendo3DS_SMDH)
+
 /** Nintendo3DS_SMDH_Private **/
 
+/* RomDataInfo */
+// NOTE: Using the same image settings as Nintendo3DS.
+const char *const Nintendo3DS_SMDH_Private::exts[] = {
+	".smdh",	// SMDH (icon) file.
+
+	nullptr
+};
+const char *const Nintendo3DS_SMDH_Private::mimeTypes[] = {
+	// Unofficial MIME types.
+	// TODO: Get these upstreamed on FreeDesktop.org.
+	"application/x-nintendo-3ds-smdh",
+
+	nullptr
+};
+const RomDataInfo Nintendo3DS_SMDH_Private::romDataInfo = {
+	"Nintendo3DS", exts, mimeTypes
+};
+
 Nintendo3DS_SMDH_Private::Nintendo3DS_SMDH_Private(Nintendo3DS_SMDH *q, IRpFile *file)
-	: super(q, file)
+	: super(q, file, &romDataInfo)
 {
 	// Clear img_icon.
 	img_icon.fill(nullptr);
@@ -225,8 +249,8 @@ Nintendo3DS_SMDH::Nintendo3DS_SMDH(IRpFile *file)
 	: super(new Nintendo3DS_SMDH_Private(this, file))
 {
 	// This class handles SMDH files and/or sections only.
+	// NOTE: Using the same image settings as Nintendo3DS.
 	RP_D(Nintendo3DS_SMDH);
-	d->className = "Nintendo3DS";	// Using the same image settings as Nintendo3DS.
 	d->mimeType = "application/x-nintendo-3ds-smdh";	// unofficial, not on fd.o
 	d->fileType = FileType::IconFile;
 
@@ -330,51 +354,6 @@ const char *Nintendo3DS_SMDH::systemName(unsigned int type) const
 	};
 
 	return sysNames[idx];
-}
-
-/**
- * Get a list of all supported file extensions.
- * This is to be used for file type registration;
- * subclasses don't explicitly check the extension.
- *
- * NOTE: The extensions do not include the leading dot,
- * e.g. "bin" instead of ".bin".
- *
- * NOTE 2: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *Nintendo3DS_SMDH::supportedFileExtensions_static(void)
-{
-	static const char *const exts[] = {
-		".smdh",	// SMDH (icon) file.
-
-		nullptr
-	};
-	return exts;
-}
-
-/**
- * Get a list of all supported MIME types.
- * This is to be used for metadata extractors that
- * must indicate which MIME types they support.
- *
- * NOTE: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *Nintendo3DS_SMDH::supportedMimeTypes_static(void)
-{
-	static const char *const mimeTypes[] = {
-		// Unofficial MIME types.
-		// TODO: Get these upstreamed on FreeDesktop.org.
-		"application/x-nintendo-3ds-smdh",
-
-		nullptr
-	};
-	return mimeTypes;
 }
 
 /**

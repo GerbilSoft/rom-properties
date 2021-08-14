@@ -27,8 +27,6 @@ using std::vector;
 
 namespace LibRomData {
 
-ROMDATA_IMPL(DMG)
-
 class DMGPrivate final : public RomDataPrivate
 {
 	public:
@@ -37,6 +35,12 @@ class DMGPrivate final : public RomDataPrivate
 	private:
 		typedef RomDataPrivate super;
 		RP_DISABLE_COPY(DMGPrivate)
+
+	public:
+		/** RomDataInfo **/
+		static const char *const exts[];
+		static const char *const mimeTypes[];
+		static const RomDataInfo romDataInfo;
 
 	public:
 		/** RomFields **/
@@ -177,7 +181,30 @@ class DMGPrivate final : public RomDataPrivate
 		string getPublisher(void) const;
 };
 
+ROMDATA_IMPL(DMG)
+
 /** DMGPrivate **/
+
+/* RomDataInfo */
+const char *const DMGPrivate::exts[] = {
+	".gb",  ".sgb", ".sgb2",
+	".gbc", ".cgb",
+
+	// ROMs with GBX footer.
+	".gbx",
+
+	nullptr
+};
+const char *const DMGPrivate::mimeTypes[] = {
+	// Unofficial MIME types from FreeDesktop.org.
+	"application/x-gameboy-rom",
+	"application/x-gameboy-color-rom",
+
+	nullptr
+};
+const RomDataInfo DMGPrivate::romDataInfo = {
+	"DMG", exts, mimeTypes
+};
 
 /** Internal ROM data. **/
 
@@ -245,7 +272,7 @@ const DMGPrivate::dmg_cart_type DMGPrivate::dmg_cart_types_end[] = {
 };
 
 DMGPrivate::DMGPrivate(DMG *q, IRpFile *file)
-	: super(q, file)
+	: super(q, file, &romDataInfo)
 	, romType(RomType::Unknown)
 {
 	// Clear the various structs.
@@ -543,8 +570,6 @@ DMG::DMG(IRpFile *file)
 	: super(new DMGPrivate(this, file))
 {
 	RP_D(DMG);
-	d->className = "DMG";
-
 	if (!d->file) {
 		// Could not ref() the file handle.
 		return;
@@ -711,55 +736,6 @@ const char *DMG::systemName(unsigned int type) const
 	// NOTE: This might return an incorrect system name if
 	// d->romType is ROM_TYPE_UNKNOWN.
 	return sysNames[(int)d->romType & 1][type & SYSNAME_TYPE_MASK];
-}
-
-/**
- * Get a list of all supported file extensions.
- * This is to be used for file type registration;
- * subclasses don't explicitly check the extension.
- *
- * NOTE: The extensions include the leading dot,
- * e.g. ".bin" instead of "bin".
- *
- * NOTE 2: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *DMG::supportedFileExtensions_static(void)
-{
-	static const char *const exts[] = {
-		".gb",  ".sgb", ".sgb2",
-		".gbc", ".cgb",
-
-		// ROMs with GBX footer.
-		".gbx",
-
-		nullptr
-	};
-	return exts;
-}
-
-/**
- * Get a list of all supported MIME types.
- * This is to be used for metadata extractors that
- * must indicate which MIME types they support.
- *
- * NOTE: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *DMG::supportedMimeTypes_static(void)
-{
-	static const char *const mimeTypes[] = {
-		// Unofficial MIME types from FreeDesktop.org.
-		"application/x-gameboy-rom",
-		"application/x-gameboy-color-rom",
-
-		nullptr
-	};
-	return mimeTypes;
 }
 
 /**

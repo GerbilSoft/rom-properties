@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * GBS.hpp: GBS audio reader.                                              *
  *                                                                         *
- * Copyright (c) 2018-2020 by David Korth.                                 *
+ * Copyright (c) 2018-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -20,8 +20,6 @@ using std::vector;
 
 namespace LibRomData {
 
-ROMDATA_IMPL(GBS)
-
 class GBSPrivate : public RomDataPrivate
 {
 	public:
@@ -32,15 +30,39 @@ class GBSPrivate : public RomDataPrivate
 		RP_DISABLE_COPY(GBSPrivate)
 
 	public:
+		/** RomDataInfo **/
+		static const char *const exts[];
+		static const char *const mimeTypes[];
+		static const RomDataInfo romDataInfo;
+
+	public:
 		// GBS header.
 		// NOTE: **NOT** byteswapped in memory.
 		GBS_Header gbsHeader;
 };
 
+ROMDATA_IMPL(GBS)
+
 /** GBSPrivate **/
 
+/* RomDataInfo */
+const char *const GBSPrivate::exts[] = {
+	".gbs",
+
+	nullptr
+};
+const char *const GBSPrivate::mimeTypes[] = {
+	// Unofficial MIME types.
+	"audio/x-gbs",
+
+	nullptr
+};
+const RomDataInfo GBSPrivate::romDataInfo = {
+	"GBS", exts, mimeTypes
+};
+
 GBSPrivate::GBSPrivate(GBS *q, IRpFile *file)
-	: super(q, file)
+	: super(q, file, &romDataInfo)
 {
 	// Clear the GBS header struct.
 	memset(&gbsHeader, 0, sizeof(gbsHeader));
@@ -65,7 +87,6 @@ GBS::GBS(IRpFile *file)
 	: super(new GBSPrivate(this, file))
 {
 	RP_D(GBS);
-	d->className = "GBS";
 	d->mimeType = "audio/x-gbs";	// unofficial
 	d->fileType = FileType::AudioFile;
 
@@ -150,50 +171,6 @@ const char *GBS::systemName(unsigned int type) const
 	};
 
 	return sysNames[type & SYSNAME_TYPE_MASK];
-}
-
-/**
- * Get a list of all supported file extensions.
- * This is to be used for file type registration;
- * subclasses don't explicitly check the extension.
- *
- * NOTE: The extensions include the leading dot,
- * e.g. ".bin" instead of "bin".
- *
- * NOTE 2: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *GBS::supportedFileExtensions_static(void)
-{
-	static const char *const exts[] = {
-		".gbs",
-
-		nullptr
-	};
-	return exts;
-}
-
-/**
- * Get a list of all supported MIME types.
- * This is to be used for metadata extractors that
- * must indicate which MIME types they support.
- *
- * NOTE: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *GBS::supportedMimeTypes_static(void)
-{
-	static const char *const mimeTypes[] = {
-		// Unofficial MIME types.
-		"audio/x-gbs",
-
-		nullptr
-	};
-	return mimeTypes;
 }
 
 /**
