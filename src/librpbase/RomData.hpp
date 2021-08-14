@@ -534,16 +534,6 @@ class RomData : public RefBase
 
 	public:
 		/**
-		 * ROF_SAVE_FILE information.
-		 * `const char*` fields are owned by the RomData subclass.
-		 */
-		struct RomOpSaveFileInfo {
-			const char *title;		// Dialog title.
-			const char *filter;		// Filename filter. (Windows style, with '|' delimiters.)
-			std::string def_filename;	// Default filename. (without path)
-		};
-
-		/**
 		 * ROM operation struct.
 		 * `const char*` fields are owned by the RomData subclass.
 		 */
