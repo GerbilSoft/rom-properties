@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * FileFormat_decl.hpp: Texture file format base class. (Subclass macros)  *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * Copyright (c) 2016-2018 by Egor.                                        *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
@@ -21,6 +21,7 @@ namespace LibRpFile {
 }
 namespace LibRpTexture {
 	class rp_image;
+	struct TextureInfo;
 }
 
 #ifdef ENABLE_LIBRPBASE_ROMFIELDS
@@ -56,58 +57,10 @@ class klass final : public LibRpTexture::FileFormat { \
 		/** Class-specific functions that can be used even if isValid() is false. **/ \
 		\
 		/** \
-		 * Get a list of all supported file extensions. \
-		 * This is to be used for file type registration; \
-		 * subclasses don't explicitly check the extension. \
-		 * \
-		 * NOTE: The extensions include the leading dot, \
-		 * e.g. ".bin" instead of "bin". \
-		 * \
-		 * NOTE 2: The array and the strings in the array should \
-		 * *not* be freed by the caller. \
-		 * \
-		 * @return NULL-terminated array of all supported file extensions, or nullptr on error. \
+		 * Get the static RomDataInfo for this class. \
+		 * @return Static RomDataInfo \
 		 */ \
-		static const char *const *supportedFileExtensions_static(void); \
-		\
-		/** \
-		 * Get a list of all supported file extensions. \
-		 * This is to be used for file type registration; \
-		 * subclasses don't explicitly check the extension. \
-		 * \
-		 * NOTE: The extensions include the leading dot, \
-		 * e.g. ".bin" instead of "bin". \
-		 * \
-		 * NOTE 2: The array and the strings in the array should \
-		 * *not* be freed by the caller. \
-		 * \
-		 * @return NULL-terminated array of all supported file extensions, or nullptr on error. \
-		 */ \
-		const char *const *supportedFileExtensions(void) const final; \
-		\
-		/** \
-		 * Get a list of all supported MIME types. \
-		 * This is to be used for metadata extractors that \
-		 * must indicate which MIME types they support. \
-		 * \
-		 * NOTE: The array and the strings in the array should \
-		 * *not* be freed by the caller. \
-		 * \
-		 * @return NULL-terminated array of all supported file extensions, or nullptr on error. \
-		 */ \
-		static const char *const *supportedMimeTypes_static(void); \
-		\
-		/** \
-		 * Get a list of all supported MIME types. \
-		 * This is to be used for metadata extractors that \
-		 * must indicate which MIME types they support. \
-		 * \
-		 * NOTE: The array and the strings in the array should \
-		 * *not* be freed by the caller. \
-		 * \
-		 * @return NULL-terminated array of all supported file extensions, or nullptr on error. \
-		 */ \
-		const char *const *supportedMimeTypes(void) const final; \
+		static const LibRpTexture::TextureInfo *textureInfo(void); \
 	\
 	public: \
 		/** Property accessors **/ \
@@ -174,36 +127,12 @@ class klass final : public LibRpTexture::FileFormat { \
  */
 #define FILEFORMAT_IMPL(klass) \
 /** \
- * Get a list of all supported file extensions. \
- * This is to be used for file type registration; \
- * subclasses don't explicitly check the extension. \
- * \
- * NOTE: The extensions include the leading dot, \
- * e.g. ".bin" instead of "bin". \
- * \
- * NOTE 2: The array and the strings in the array should \
- * *not* be freed by the caller. \
- * \
- * @return NULL-terminated array of all supported file extensions, or nullptr on error. \
+ * Get the static TextureInfo for this class. \
+ * @return Static TextureInfo \
  */ \
-const char *const *klass::supportedFileExtensions(void) const \
+const LibRpTexture::TextureInfo *klass::textureInfo(void) \
 { \
-	return klass::supportedFileExtensions_static(); \
-} \
-\
-/** \
- * Get a list of all supported MIME types. \
- * This is to be used for metadata extractors that \
- * must indicate which MIME types they support. \
- * \
- * NOTE: The array and the strings in the array should \
- * *not* be freed by the caller. \
- * \
- * @return NULL-terminated array of all supported file extensions, or nullptr on error. \
- */ \
-const char *const *klass::supportedMimeTypes(void) const \
-{ \
-	return klass::supportedMimeTypes_static(); \
+	return &klass##Private::textureInfo; \
 }
 
 #endif /* __ROMPROPERTIES_LIBRPTEXTURE_FILEFORMAT_FILEFORMAT_DECL_HPP__ */

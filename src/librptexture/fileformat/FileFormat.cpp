@@ -25,16 +25,20 @@ namespace LibRpTexture {
 /**
  * Initialize a FileFormatPrivate storage class.
  *
- * @param q FileFormat class.
- * @param file Texture file.
+ * @param q FileFormat class
+ * @param file Texture file
+ * @param pTextureInfo FileFormat subclass information
  */
-FileFormatPrivate::FileFormatPrivate(FileFormat *q, IRpFile *file)
+FileFormatPrivate::FileFormatPrivate(FileFormat *q, IRpFile *file, const TextureInfo *pTextureInfo)
 	: q_ptr(q)
 	, ref_cnt(1)
 	, isValid(false)
 	, file(nullptr)
+	, pTextureInfo(pTextureInfo)
 	, mimeType(nullptr)
 {
+	assert(pTextureInfo != nullptr);
+
 	// Clear the arrays.
 	memset(dimensions, 0, sizeof(dimensions));
 

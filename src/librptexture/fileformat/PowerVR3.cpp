@@ -35,8 +35,6 @@ using std::vector;
 
 namespace LibRpTexture {
 
-FILEFORMAT_IMPL(PowerVR3)
-
 class PowerVR3Private final : public FileFormatPrivate
 {
 	public:
@@ -46,6 +44,12 @@ class PowerVR3Private final : public FileFormatPrivate
 	private:
 		typedef FileFormatPrivate super;
 		RP_DISABLE_COPY(PowerVR3Private)
+
+	public:
+		/** TextureInfo **/
+		static const char *const exts[];
+		static const char *const mimeTypes[];
+		static const TextureInfo textureInfo;
 
 	public:
 		// PVR3 header.
@@ -107,7 +111,26 @@ class PowerVR3Private final : public FileFormatPrivate
 		int loadPvr3Metadata(void);
 };
 
+FILEFORMAT_IMPL(PowerVR3)
+
 /** PowerVR3Private **/
+
+/* TextureInfo */
+const char *const PowerVR3Private::exts[] = {
+	".pvr",		// NOTE: Same as SegaPVR.
+
+	nullptr
+};
+const char *const PowerVR3Private::mimeTypes[] = {
+	// Unofficial MIME types.
+	// TODO: Get these upstreamed on FreeDesktop.org.
+	"image/x-pvr",
+
+	nullptr
+};
+const TextureInfo PowerVR3Private::textureInfo = {
+	exts, mimeTypes
+};
 
 // Uncompressed format lookup table. (UBYTE, UBYTE_NORM)
 const struct PowerVR3Private::FmtLkup_t PowerVR3Private::fmtLkup_tbl_U8[] = {
@@ -173,7 +196,7 @@ const struct PowerVR3Private::FmtLkup_t PowerVR3Private::fmtLkup_tbl_U32[] = {
 };
 
 PowerVR3Private::PowerVR3Private(PowerVR3 *q, IRpFile *file)
-	: super(q, file)
+	: super(q, file, &textureInfo)
 	, isByteswapNeeded(false)
 	, flipOp(rp_image::FLIP_NONE)
 	, orientation_valid(false)
@@ -810,52 +833,6 @@ PowerVR3::PowerVR3(IRpFile *file)
 			d->dimensions[2] = d->pvr3Header.depth;
 		}
 	}
-}
-
-/** Class-specific functions that can be used even if isValid() is false. **/
-
-/**
- * Get a list of all supported file extensions.
- * This is to be used for file type registration;
- * subclasses don't explicitly check the extension.
- *
- * NOTE: The extensions include the leading dot,
- * e.g. ".bin" instead of "bin".
- *
- * NOTE 2: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *PowerVR3::supportedFileExtensions_static(void)
-{
-	static const char *const exts[] = {
-		".pvr",		// NOTE: Same as SegaPVR.
-		nullptr
-	};
-	return exts;
-}
-
-/**
- * Get a list of all supported MIME types.
- * This is to be used for metadata extractors that
- * must indicate which MIME types they support.
- *
- * NOTE: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *PowerVR3::supportedMimeTypes_static(void)
-{
-	static const char *const mimeTypes[] = {
-		// Unofficial MIME types.
-		// TODO: Get these upstreamed on FreeDesktop.org.
-		"image/x-pvr",
-
-		nullptr
-	};
-	return mimeTypes;
 }
 
 /** Property accessors **/

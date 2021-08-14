@@ -31,8 +31,6 @@ using std::vector;
 
 namespace LibRpTexture {
 
-FILEFORMAT_IMPL(DirectDrawSurface)
-
 class DirectDrawSurfacePrivate final : public FileFormatPrivate
 {
 	public:
@@ -42,6 +40,12 @@ class DirectDrawSurfacePrivate final : public FileFormatPrivate
 	private:
 		typedef FileFormatPrivate super;
 		RP_DISABLE_COPY(DirectDrawSurfacePrivate)
+
+	public:
+		/** TextureInfo **/
+		static const char *const exts[];
+		static const char *const mimeTypes[];
+		static const TextureInfo textureInfo;
 
 	public:
 		// DDS header.
@@ -109,7 +113,29 @@ class DirectDrawSurfacePrivate final : public FileFormatPrivate
 		int updatePixelFormat(void);
 };
 
+FILEFORMAT_IMPL(DirectDrawSurface)
+
 /** DirectDrawSurfacePrivate **/
+
+/* TextureInfo */
+const char *const DirectDrawSurfacePrivate::exts[] = {
+	".dds",	// DirectDraw Surface
+
+	nullptr
+};
+const char *const DirectDrawSurfacePrivate::mimeTypes[] = {
+	// Vendor-specific MIME types.
+	// TODO: Get these upstreamed on FreeDesktop.org.
+	"image/vnd.ms-dds",
+
+	// Unofficial MIME types from FreeDesktop.org.
+	"image/x-dds",
+
+	nullptr
+};
+const TextureInfo DirectDrawSurfacePrivate::textureInfo = {
+	exts, mimeTypes
+};
 
 // Supported 16-bit uncompressed RGB formats.
 const DirectDrawSurfacePrivate::RGB_Format_Table_t DirectDrawSurfacePrivate::rgb_fmt_tbl_16[] = {
@@ -473,7 +499,7 @@ int DirectDrawSurfacePrivate::updatePixelFormat(void)
 }
 
 DirectDrawSurfacePrivate::DirectDrawSurfacePrivate(DirectDrawSurface *q, IRpFile *file)
-	: super(q, file)
+	: super(q, file, &textureInfo)
 	, texDataStartAddr(0)
 	, img(nullptr)
 	, pxf_uncomp(ImageDecoder::PixelFormat::Unknown)
@@ -1005,55 +1031,6 @@ int DirectDrawSurface::isRomSupported_static(const DetectInfo *info)
 
 	// Not supported.
 	return -1;
-}
-
-/** Class-specific functions that can be used even if isValid() is false. **/
-
-/**
- * Get a list of all supported file extensions.
- * This is to be used for file type registration;
- * subclasses don't explicitly check the extension.
- *
- * NOTE: The extensions include the leading dot,
- * e.g. ".bin" instead of "bin".
- *
- * NOTE 2: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *DirectDrawSurface::supportedFileExtensions_static(void)
-{
-	static const char *const exts[] = {
-		".dds",	// DirectDraw Surface
-		nullptr
-	};
-	return exts;
-}
-
-/**
- * Get a list of all supported MIME types.
- * This is to be used for metadata extractors that
- * must indicate which MIME types they support.
- *
- * NOTE: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *DirectDrawSurface::supportedMimeTypes_static(void)
-{
-	static const char *const mimeTypes[] = {
-		// Vendor-specific MIME types.
-		// TODO: Get these upstreamed on FreeDesktop.org.
-		"image/vnd.ms-dds",
-
-		// Unofficial MIME types from FreeDesktop.org.
-		"image/x-dds",
-
-		nullptr
-	};
-	return mimeTypes;
 }
 
 /** Property accessors **/

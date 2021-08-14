@@ -33,8 +33,6 @@ using std::vector;
 
 namespace LibRpTexture {
 
-FILEFORMAT_IMPL(ValveVTF)
-
 class ValveVTFPrivate final : public FileFormatPrivate
 {
 	public:
@@ -44,6 +42,12 @@ class ValveVTFPrivate final : public FileFormatPrivate
 	private:
 		typedef FileFormatPrivate super;
 		RP_DISABLE_COPY(ValveVTFPrivate)
+
+	public:
+		/** TextureInfo **/
+		static const char *const exts[];
+		static const char *const mimeTypes[];
+		static const TextureInfo textureInfo;
 
 	public:
 		// VTF header.
@@ -123,7 +127,31 @@ class ValveVTFPrivate final : public FileFormatPrivate
 #endif
 };
 
+FILEFORMAT_IMPL(ValveVTF)
+
 /** ValveVTFPrivate **/
+
+/* TextureInfo */
+const char *const ValveVTFPrivate::exts[] = {
+	".vtf",
+	//".vtx",	// TODO: Some files might use the ".vtx" extension.
+
+	nullptr
+};
+const char *const ValveVTFPrivate::mimeTypes[] = {
+	// Vendor-specific MIME types.
+	// TODO: Get these upstreamed on FreeDesktop.org.
+	"image/vnd.valve.source.texture",
+
+	// Unofficial MIME types.
+	// TODO: Get these upstreamed on FreeDesktop.org.
+	"image/x-vtf",
+
+	nullptr
+};
+const TextureInfo ValveVTFPrivate::textureInfo = {
+	exts, mimeTypes
+};
 
 // Image format table.
 const char *const ValveVTFPrivate::img_format_tbl[] = {
@@ -161,7 +189,7 @@ static_assert(ARRAY_SIZE(ValveVTFPrivate::img_format_tbl)-1 == VTF_IMAGE_FORMAT_
 	"Missing VTF image formats.");
 
 ValveVTFPrivate::ValveVTFPrivate(ValveVTF *q, IRpFile *file)
-	: super(q, file)
+	: super(q, file, &textureInfo)
 	, texDataStartAddr(0)
 {
 	// Clear the structs and arrays.
@@ -776,57 +804,6 @@ ValveVTF::ValveVTF(IRpFile *file)
 			d->dimensions[2] = d->vtfHeader.depth;
 		}
 	}
-}
-
-/** Class-specific functions that can be used even if isValid() is false. **/
-
-/**
- * Get a list of all supported file extensions.
- * This is to be used for file type registration;
- * subclasses don't explicitly check the extension.
- *
- * NOTE: The extensions include the leading dot,
- * e.g. ".bin" instead of "bin".
- *
- * NOTE 2: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *ValveVTF::supportedFileExtensions_static(void)
-{
-	static const char *const exts[] = {
-		".vtf",
-		//".vtx",	// TODO: Some files might use the ".vtx" extension.
-		nullptr
-	};
-	return exts;
-}
-
-/**
- * Get a list of all supported MIME types.
- * This is to be used for metadata extractors that
- * must indicate which MIME types they support.
- *
- * NOTE: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *ValveVTF::supportedMimeTypes_static(void)
-{
-	static const char *const mimeTypes[] = {
-		// Vendor-specific MIME types.
-		// TODO: Get these upstreamed on FreeDesktop.org.
-		"image/vnd.valve.source.texture",
-
-		// Unofficial MIME types.
-		// TODO: Get these upstreamed on FreeDesktop.org.
-		"image/x-vtf",
-
-		nullptr
-	};
-	return mimeTypes;
 }
 
 /** Property accessors **/

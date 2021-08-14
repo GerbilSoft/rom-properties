@@ -27,8 +27,6 @@ using std::vector;
 
 namespace LibRpTexture {
 
-FILEFORMAT_IMPL(SegaPVR)
-
 class SegaPVRPrivate final : public FileFormatPrivate
 {
 	public:
@@ -38,6 +36,12 @@ class SegaPVRPrivate final : public FileFormatPrivate
 	private:
 		typedef FileFormatPrivate super;
 		RP_DISABLE_COPY(SegaPVRPrivate)
+
+	public:
+		/** TextureInfo **/
+		static const char *const exts[];
+		static const char *const mimeTypes[];
+		static const TextureInfo textureInfo;
 
 	public:
 		enum class PVRType {
@@ -51,10 +55,6 @@ class SegaPVRPrivate final : public FileFormatPrivate
 			Max
 		};
 		PVRType pvrType;
-
-		// MIME type table.
-		// Ordering matches PVRType.
-		static const char *const mimeType_tbl[];
 
 	public:
 		// PVR header.
@@ -127,11 +127,21 @@ class SegaPVRPrivate final : public FileFormatPrivate
 		static rp_image *svr_unswizzle_16(const rp_image *img_swz);
 };
 
+FILEFORMAT_IMPL(SegaPVR)
+
 /** SegaPVRPrivate **/
 
-// MIME type table.
-// Ordering matches PVRType.
-const char *const SegaPVRPrivate::mimeType_tbl[] = {
+/* TextureInfo */
+const char *const SegaPVRPrivate::exts[] = {
+	".pvr",	// Sega Dreamcast PVR
+	".gvr",	// GameCube GVR
+	".svr",	// PlayStation 2 SVR
+
+	nullptr
+};
+const char *const SegaPVRPrivate::mimeTypes[] = {
+	// NOTE: Ordering matches PVRType.
+
 	// Unofficial MIME types.
 	// TODO: Get these upstreamed on FreeDesktop.org.
 	"image/x-sega-pvr",
@@ -141,9 +151,12 @@ const char *const SegaPVRPrivate::mimeType_tbl[] = {
 
 	nullptr
 };
+const TextureInfo SegaPVRPrivate::textureInfo = {
+	exts, mimeTypes
+};
 
 SegaPVRPrivate::SegaPVRPrivate(SegaPVR *q, IRpFile *file)
-	: super(q, file)
+	: super(q, file, &textureInfo)
 	, pvrType(PVRType::Unknown)
 	, gbix_len(0)
 	, gbix(0)
@@ -1301,8 +1314,8 @@ SegaPVR::SegaPVR(IRpFile *file)
 	d->dimensions[1] = d->pvrHeader.height;
 
 	// Set the MIME type.
-	if ((int)d->pvrType < ARRAY_SIZE_I(d->mimeType_tbl)-1) {
-		d->mimeType = d->mimeType_tbl[(int)d->pvrType];
+	if ((int)d->pvrType < ARRAY_SIZE_I(d->mimeTypes)-1) {
+		d->mimeType = d->mimeTypes[(int)d->pvrType];
 	}
 }
 
@@ -1389,48 +1402,6 @@ int SegaPVR::isRomSupported_static(const DetectInfo *info)
 	}
 
 	return static_cast<int>(pvrType);
-}
-
-/** Class-specific functions that can be used even if isValid() is false. **/
-
-/**
- * Get a list of all supported file extensions.
- * This is to be used for file type registration;
- * subclasses don't explicitly check the extension.
- *
- * NOTE: The extensions include the leading dot,
- * e.g. ".bin" instead of "bin".
- *
- * NOTE 2: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *SegaPVR::supportedFileExtensions_static(void)
-{
-	static const char *const exts[] = {
-		".pvr",	// Sega Dreamcast PVR
-		".gvr",	// GameCube GVR
-		".svr",	// PlayStation 2 SVR
-
-		nullptr
-	};
-	return exts;
-}
-
-/**
- * Get a list of all supported MIME types.
- * This is to be used for metadata extractors that
- * must indicate which MIME types they support.
- *
- * NOTE: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *SegaPVR::supportedMimeTypes_static(void)
-{
-	return SegaPVRPrivate::mimeType_tbl;
 }
 
 /** Property accessors **/

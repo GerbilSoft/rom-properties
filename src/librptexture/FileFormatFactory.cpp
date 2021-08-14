@@ -11,6 +11,7 @@
 
 #include "FileFormatFactory.hpp"
 #include "fileformat/FileFormat.hpp"
+#include "fileformat/FileFormat_p.hpp"	// for TextureInfo
 
 // librpbase, librpfile
 #include "librpfile/FileSystem.hpp"
@@ -53,15 +54,13 @@ class FileFormatFactoryPrivate
 		// at the beginning of the file for all formats.
 		// FIXME: TGA format doesn't follow this...
 		//typedef int (*pfnIsTextureSupported_t)(const FileFormat::DetectInfo *info);	// TODO
-		typedef const char *const * (*pfnSupportedFileExtensions_t)(void);
-		typedef const char *const * (*pfnSupportedMimeTypes_t)(void);
+		typedef const TextureInfo* (*pfnTextureInfo_t)(void);
 		typedef FileFormat* (*pfnNewFileFormat_t)(IRpFile *file);
 
 		struct FileFormatFns {
 			//pfnIsTextureSupported_t isTextureSupported;	// TODO
 			pfnNewFileFormat_t newFileFormat;
-			pfnSupportedFileExtensions_t supportedFileExtensions;
-			pfnSupportedMimeTypes_t supportedMimeTypes;
+			pfnTextureInfo_t textureInfo;
 
 			uint32_t magic;
 		};
@@ -79,8 +78,7 @@ class FileFormatFactoryPrivate
 #define GetFileFormatFns(format, magic) \
 	{/*format::isRomSupported_static,*/ /* TODO */ \
 	 FileFormatFactoryPrivate::FileFormat_ctor<format>, \
-	 format::supportedFileExtensions_static, \
-	 format::supportedMimeTypes_static, \
+	 format::textureInfo, \
 	 (magic)}
 
 		// FileFormat subclasses that use a header at 0 and
@@ -113,7 +111,7 @@ const FileFormatFactoryPrivate::FileFormatFns FileFormatFactoryPrivate::FileForm
 	// Less common formats.
 	GetFileFormatFns(DidjTex, (uint32_t)0x03000000),
 
-	{nullptr, nullptr, nullptr, 0}
+	{nullptr, nullptr, 0}
 };
 
 // FileFormat subclasses that have special checks.
@@ -123,7 +121,7 @@ const FileFormatFactoryPrivate::FileFormatFns FileFormatFactoryPrivate::FileForm
 	GetFileFormatFns(KhronosKTX2, 0),
 	GetFileFormatFns(TGA, 0),
 
-	{nullptr, nullptr, nullptr, 0}
+	{nullptr, nullptr, 0}
 };
 
 /** FileFormatFactory **/
@@ -258,7 +256,7 @@ FileFormat *FileFormatFactory::create(IRpFile *file)
 	// and definitely have a 32-bit magic number at address 0.
 	const FileFormatFactoryPrivate::FileFormatFns *fns =
 		&FileFormatFactoryPrivate::FileFormatFns_magic[0];
-	for (; fns->supportedFileExtensions != nullptr; fns++) {
+	for (; fns->textureInfo != nullptr; fns++) {
 		// Check the magic number.
 		if (magic.u32[0] == fns->magic) {
 			// Found a matching magic number.
@@ -304,8 +302,8 @@ vector<const char*> FileFormatFactory::supportedFileExtensions(void)
 
 	const FileFormatFactoryPrivate::FileFormatFns *fns =
 		&FileFormatFactoryPrivate::FileFormatFns_magic[0];
-	for (; fns->supportedFileExtensions != nullptr; fns++) {
-		const char *const *sys_exts = fns->supportedFileExtensions();
+	for (; fns->textureInfo != nullptr; fns++) {
+		const char *const *sys_exts = fns->textureInfo()->exts;
 		if (!sys_exts)
 			continue;
 
@@ -320,8 +318,8 @@ vector<const char*> FileFormatFactory::supportedFileExtensions(void)
 
 	// Also handle FileFormat subclasses that have custom magic checks.
 	fns = &FileFormatFactoryPrivate::FileFormatFns_mime[0];
-	for (; fns->supportedFileExtensions != nullptr; fns++) {
-		const char *const *sys_exts = fns->supportedFileExtensions();
+	for (; fns->textureInfo != nullptr; fns++) {
+		const char *const *sys_exts = fns->textureInfo()->exts;
 		if (!sys_exts)
 			continue;
 
@@ -362,8 +360,8 @@ vector<const char*> FileFormatFactory::supportedMimeTypes(void)
 
 	const FileFormatFactoryPrivate::FileFormatFns *fns =
 		&FileFormatFactoryPrivate::FileFormatFns_magic[0];
-	for (; fns->supportedFileExtensions != nullptr; fns++) {
-		const char *const *sys_mimeTypes = fns->supportedMimeTypes();
+	for (; fns->textureInfo != nullptr; fns++) {
+		const char *const *sys_mimeTypes = fns->textureInfo()->mimeTypes;
 		if (!sys_mimeTypes)
 			continue;
 
@@ -378,8 +376,8 @@ vector<const char*> FileFormatFactory::supportedMimeTypes(void)
 
 	// Also handle FileFormat subclasses that have custom magic checks.
 	fns = &FileFormatFactoryPrivate::FileFormatFns_mime[0];
-	for (; fns->supportedFileExtensions != nullptr; fns++) {
-		const char *const *sys_mimeTypes = fns->supportedMimeTypes();
+	for (; fns->textureInfo != nullptr; fns++) {
+		const char *const *sys_mimeTypes = fns->textureInfo()->mimeTypes;
 		if (!sys_mimeTypes)
 			continue;
 

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * FileFormat.hpp: Texture file format base class. (PRIVATE CLASS)         *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -15,6 +15,11 @@ namespace LibRpFile {
 
 namespace LibRpTexture {
 
+struct TextureInfo {
+	const char *const *exts;	// Supported file extensions
+	const char *const *mimeTypes;	// Supported MIME types
+};
+
 class FileFormat;
 class FileFormatPrivate
 {
@@ -22,10 +27,11 @@ class FileFormatPrivate
 		/**
 		 * Initialize a FileFormatPrivate storage class.
 		 *
-		 * @param q FileFormat class.
-		 * @param file Texture file.
+		 * @param q FileFormat class
+		 * @param file Texture file
+		 * @param pTextureInfo FileFormat subclass information
 		 */
-		explicit FileFormatPrivate(FileFormat *q, LibRpFile::IRpFile *file);
+		explicit FileFormatPrivate(FileFormat *q, LibRpFile::IRpFile *file, const TextureInfo *pTextureInfo);
 
 		virtual ~FileFormatPrivate();
 
@@ -42,6 +48,7 @@ class FileFormatPrivate
 
 	public:
 		/** These fields must be set by FileFormat subclasses in their constructors. **/
+		const TextureInfo *pTextureInfo;// FileFormat subclass information
 		const char *mimeType;		// MIME type. (ASCII) (default is nullptr)
 		int dimensions[3];		// Dimensions. (width, height, depth)
 						// 2D textures have depth=0.

@@ -23,8 +23,6 @@ using LibRpFile::IRpFile;
 
 namespace LibRpTexture {
 
-FILEFORMAT_IMPL(XboxXPR)
-
 class XboxXPRPrivate final : public FileFormatPrivate
 {
 	public:
@@ -34,6 +32,12 @@ class XboxXPRPrivate final : public FileFormatPrivate
 	private:
 		typedef FileFormatPrivate super;
 		RP_DISABLE_COPY(XboxXPRPrivate)
+
+	public:
+		/** TextureInfo **/
+		static const char *const exts[];
+		static const char *const mimeTypes[];
+		static const TextureInfo textureInfo;
 
 	public:
 		enum class XPRType {
@@ -144,10 +148,30 @@ class XboxXPRPrivate final : public FileFormatPrivate
 		const rp_image *loadXboxXPR0Image(void);
 };
 
+FILEFORMAT_IMPL(XboxXPR)
+
 /** XboxXPRPrivate **/
 
+/* TextureInfo */
+const char *const XboxXPRPrivate::exts[] = {
+	".xbx", ".xpr",
+
+	nullptr
+};
+const char *const XboxXPRPrivate::mimeTypes[] = {
+	// Unofficial MIME types.
+	// TODO: Get these upstreamed on FreeDesktop.org.
+	// TODO: Add additional MIME types for XPR1/XPR2. (archive files)
+	"image/x-xbox-xpr0",
+
+	nullptr
+};
+const TextureInfo XboxXPRPrivate::textureInfo = {
+	exts, mimeTypes
+};
+
 XboxXPRPrivate::XboxXPRPrivate(XboxXPR *q, IRpFile *file)
-	: super(q, file)
+	: super(q, file, &textureInfo)
 	, xprType(XPRType::Unknown)
 	, img(nullptr)
 {
@@ -588,54 +612,6 @@ XboxXPR::XboxXPR(IRpFile *file)
 	d->dimensions[0] = 1 << (d->xpr0Header.width_pow2 >> 4);
 	d->dimensions[1] = 1 << (d->xpr0Header.height_pow2 & 0x0F);
 	d->dimensions[2] = 0;
-}
-
-/** Class-specific functions that can be used even if isValid() is false. **/
-
-/**
- * Get a list of all supported file extensions.
- * This is to be used for file type registration;
- * subclasses don't explicitly check the extension.
- *
- * NOTE: The extensions include the leading dot,
- * e.g. ".bin" instead of "bin".
- *
- * NOTE 2: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *XboxXPR::supportedFileExtensions_static(void)
-{
-	static const char *const exts[] = {
-		".xbx", ".xpr",
-
-		nullptr
-	};
-	return exts;
-}
-
-/**
- * Get a list of all supported MIME types.
- * This is to be used for metadata extractors that
- * must indicate which MIME types they support.
- *
- * NOTE: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *XboxXPR::supportedMimeTypes_static(void)
-{
-	static const char *const mimeTypes[] = {
-		// Unofficial MIME types.
-		// TODO: Get these upstreamed on FreeDesktop.org.
-		// TODO: Add additional MIME types for XPR1/XPR2. (archive files)
-		"image/x-xbox-xpr0",
-
-		nullptr
-	};
-	return mimeTypes;
 }
 
 /** Property accessors **/

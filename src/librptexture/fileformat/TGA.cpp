@@ -30,8 +30,6 @@ using std::unique_ptr;
 
 namespace LibRpTexture {
 
-FILEFORMAT_IMPL(TGA)
-
 class TGAPrivate final : public FileFormatPrivate
 {
 	public:
@@ -41,6 +39,12 @@ class TGAPrivate final : public FileFormatPrivate
 	private:
 		typedef FileFormatPrivate super;
 		RP_DISABLE_COPY(TGAPrivate)
+
+	public:
+		/** TextureInfo **/
+		static const char *const exts[];
+		static const char *const mimeTypes[];
+		static const TextureInfo textureInfo;
 
 	public:
 		enum class TexType {
@@ -99,10 +103,29 @@ class TGAPrivate final : public FileFormatPrivate
 		static time_t tgaTimeToUnixTime(const TGA_DateStamp *timestamp);
 };
 
+FILEFORMAT_IMPL(TGA)
+
 /** TGAPrivate **/
 
+/* TextureInfo */
+const char *const TGAPrivate::exts[] = {
+	".tga",
+	// TODO: Other obsolete file extensions?
+
+	nullptr
+};
+const char *const TGAPrivate::mimeTypes[] = {
+	// Unofficial MIME types from FreeDesktop.org.
+	"image/x-tga",
+
+	nullptr
+};
+const TextureInfo TGAPrivate::textureInfo = {
+	exts, mimeTypes
+};
+
 TGAPrivate::TGAPrivate(TGA *q, IRpFile *file)
-	: super(q, file)
+	: super(q, file, &textureInfo)
 	, texType(TexType::Unknown)
 	, alphaType(TGA_ALPHATYPE_PRESENT)
 	, img(nullptr)
@@ -596,53 +619,6 @@ TGA::TGA(IRpFile *file)
 	if (!(d->tgaHeader.img.attr_dir & TGA_ORIENTATION_Y_MASK)) {
 		d->flipOp = static_cast<rp_image::FlipOp>(d->flipOp | rp_image::FLIP_V);
 	}
-}
-
-/** Class-specific functions that can be used even if isValid() is false. **/
-
-/**
- * Get a list of all supported file extensions.
- * This is to be used for file type registration;
- * subclasses don't explicitly check the extension.
- *
- * NOTE: The extensions include the leading dot,
- * e.g. ".bin" instead of "bin".
- *
- * NOTE 2: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *TGA::supportedFileExtensions_static(void)
-{
-	static const char *const exts[] = {
-		".tga",
-		// TODO: Other obsolete file extensions?
-
-		nullptr
-	};
-	return exts;
-}
-
-/**
- * Get a list of all supported MIME types.
- * This is to be used for metadata extractors that
- * must indicate which MIME types they support.
- *
- * NOTE: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *TGA::supportedMimeTypes_static(void)
-{
-	static const char *const mimeTypes[] = {
-		// Unofficial MIME types from FreeDesktop.org.
-		"image/x-tga",
-
-		nullptr
-	};
-	return mimeTypes;
 }
 
 /** Property accessors **/

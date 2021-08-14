@@ -35,8 +35,6 @@ using std::unique_ptr;
 
 namespace LibRpTexture {
 
-FILEFORMAT_IMPL(DidjTex)
-
 #ifdef _MSC_VER
 // DelayLoad test implementation.
 DELAYLOAD_TEST_FUNCTION_IMPL0(get_crc_table);
@@ -51,6 +49,12 @@ class DidjTexPrivate final : public FileFormatPrivate
 	private:
 		typedef FileFormatPrivate super;
 		RP_DISABLE_COPY(DidjTexPrivate)
+
+	public:
+		/** TextureInfo **/
+		static const char *const exts[];
+		static const char *const mimeTypes[];
+		static const TextureInfo textureInfo;
 
 	public:
 		enum class TexType {
@@ -79,10 +83,30 @@ class DidjTexPrivate final : public FileFormatPrivate
 		const rp_image *loadDidjTexImage(void);
 };
 
+FILEFORMAT_IMPL(DidjTex)
+
 /** DidjTexPrivate **/
 
+/* TextureInfo */
+const char *const DidjTexPrivate::exts[] = {
+	".tex",		// NOTE: Too generic...
+	".texs",	// NOTE: Has multiple textures.
+
+	nullptr
+};
+const char *const DidjTexPrivate::mimeTypes[] = {
+	// Unofficial MIME types.
+	// TODO: Get these upstreamed on FreeDesktop.org.
+	"image/x-didj-texture",
+
+	nullptr
+};
+const TextureInfo DidjTexPrivate::textureInfo = {
+	exts, mimeTypes
+};
+
 DidjTexPrivate::DidjTexPrivate(DidjTex *q, IRpFile *file)
-	: super(q, file)
+	: super(q, file, &textureInfo)
 	, texType(TexType::Unknown)
 	, img(nullptr)
 {
@@ -386,54 +410,6 @@ DidjTex::DidjTex(IRpFile *file)
 	d->dimensions[0] = le32_to_cpu(d->texHeader.width);
 	d->dimensions[1] = le32_to_cpu(d->texHeader.height);
 	d->dimensions[2] = 0;
-}
-
-/** Class-specific functions that can be used even if isValid() is false. **/
-
-/**
- * Get a list of all supported file extensions.
- * This is to be used for file type registration;
- * subclasses don't explicitly check the extension.
- *
- * NOTE: The extensions include the leading dot,
- * e.g. ".bin" instead of "bin".
- *
- * NOTE 2: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *DidjTex::supportedFileExtensions_static(void)
-{
-	static const char *const exts[] = {
-		".tex",		// NOTE: Too generic...
-		".texs",	// NOTE: Has multiple textures.
-
-		nullptr
-	};
-	return exts;
-}
-
-/**
- * Get a list of all supported MIME types.
- * This is to be used for metadata extractors that
- * must indicate which MIME types they support.
- *
- * NOTE: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *DidjTex::supportedMimeTypes_static(void)
-{
-	static const char *const mimeTypes[] = {
-		// Unofficial MIME types.
-		// TODO: Get these upstreamed on FreeDesktop.org.
-		"image/x-didj-texture",
-
-		nullptr
-	};
-	return mimeTypes;
 }
 
 /** Property accessors **/

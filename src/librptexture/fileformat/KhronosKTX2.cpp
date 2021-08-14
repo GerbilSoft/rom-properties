@@ -44,8 +44,6 @@ using std::vector;
 
 namespace LibRpTexture {
 
-FILEFORMAT_IMPL(KhronosKTX2)
-
 class KhronosKTX2Private final : public FileFormatPrivate
 {
 	public:
@@ -55,6 +53,12 @@ class KhronosKTX2Private final : public FileFormatPrivate
 	private:
 		typedef FileFormatPrivate super;
 		RP_DISABLE_COPY(KhronosKTX2Private)
+
+	public:
+		/** TextureInfo **/
+		static const char *const exts[];
+		static const char *const mimeTypes[];
+		static const TextureInfo textureInfo;
 
 	public:
 		// KTX2 header.
@@ -95,10 +99,29 @@ class KhronosKTX2Private final : public FileFormatPrivate
 		void loadKeyValueData(void);
 };
 
+FILEFORMAT_IMPL(KhronosKTX2)
+
 /** KhronosKTX2Private **/
 
+/* TextureInfo */
+const char *const KhronosKTX2Private::exts[] = {
+	// TODO: Include ".ktx" too?
+	".ktx2",
+
+	nullptr
+};
+const char *const KhronosKTX2Private::mimeTypes[] = {
+	// Official MIME types.
+	"image/ktx2",
+
+	nullptr
+};
+const TextureInfo KhronosKTX2Private::textureInfo = {
+	exts, mimeTypes
+};
+
 KhronosKTX2Private::KhronosKTX2Private(KhronosKTX2 *q, IRpFile *file)
-	: super(q, file)
+	: super(q, file, &textureInfo)
 	, flipOp(rp_image::FLIP_V)
 {
 	// Clear the KTX2 header struct.
@@ -762,52 +785,6 @@ int KhronosKTX2::isRomSupported_static(const DetectInfo *info)
 
 	// Not supported.
 	return -1;
-}
-
-/** Class-specific functions that can be used even if isValid() is false. **/
-
-/**
- * Get a list of all supported file extensions.
- * This is to be used for file type registration;
- * subclasses don't explicitly check the extension.
- *
- * NOTE: The extensions include the leading dot,
- * e.g. ".bin" instead of "bin".
- *
- * NOTE 2: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *KhronosKTX2::supportedFileExtensions_static(void)
-{
-	static const char *const exts[] = {
-		// TODO: Include ".ktx" too?
-		".ktx2",
-		nullptr
-	};
-	return exts;
-}
-
-/**
- * Get a list of all supported MIME types.
- * This is to be used for metadata extractors that
- * must indicate which MIME types they support.
- *
- * NOTE: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *KhronosKTX2::supportedMimeTypes_static(void)
-{
-	static const char *const mimeTypes[] = {
-		// Official MIME types.
-		"image/ktx2",
-
-		nullptr
-	};
-	return mimeTypes;
 }
 
 /** Property accessors **/
