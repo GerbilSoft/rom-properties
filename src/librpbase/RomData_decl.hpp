@@ -62,7 +62,7 @@ class klass final : public LibRpBase::RomData { \
 		const char *systemName(unsigned int type) const final; \
 		\
 		/** \
-		 * Get static RomDataInfo for this class. \
+		 * Get the static RomDataInfo for this class. \
 		 * @return Static RomDataInfo \
 		 */ \
 		static const LibRpBase::RomDataInfo *romDataInfo(void); \
@@ -278,7 +278,7 @@ int klass::isRomSupported(const DetectInfo *info) const \
 } \
 \
 /** \
- * Get static RomDataInfo for this class. \
+ * Get the static RomDataInfo for this class. \
  * @return Static RomDataInfo \
  */ \
 const LibRpBase::RomDataInfo *klass::romDataInfo(void) \
