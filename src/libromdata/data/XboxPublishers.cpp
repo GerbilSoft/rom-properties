@@ -126,6 +126,7 @@ const XboxPublishersPrivate::ThirdPartyEntry XboxPublishersPrivate::thirdPartyLi
 	{'SC',	"SCi Games"},
 	{'SE',	"SEGA"},
 	{'SN',	"SNK"},
+	{'SQ',	"Square Enix"},
 	{'SS',	"Simon & Schuster"},
 	{'SU',	"Success Corporation"},
 	{'SW',	"Swing! Deutschland"},
