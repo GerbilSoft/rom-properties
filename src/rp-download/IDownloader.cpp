@@ -230,12 +230,26 @@ tstring IDownloader::getOSRelease(void)
 	// Reference: https://www.freedesktop.org/software/systemd/man/os-release.html
 
 	// TODO: Distro and/or kernel version?
+	const char *field_name = nullptr;
+	size_t field_len = 0;
 	FILE *f_in = fopen("/etc/os-release", "r");
-	if (!f_in) {
+	if (f_in) {
+		field_name = "NAME=";
+	} else {
 		f_in = fopen("/usr/lib/os-release", "r");
-		if (!f_in) {
+		if (f_in) {
+			field_name = "NAME=";
+			field_len = 5;
+		} else {
 			// os-release file not found.
-			return tstring();
+			// Try the older lsb-release file.
+			f_in = fopen("/etc/lsb-release", "r");
+			if (f_in) {
+				field_name = "DISTRIB_ID=";
+				field_len = 11;
+			} else {
+				return tstring();
+			}
 		}
 	}
 
@@ -253,12 +267,12 @@ tstring IDownloader::getOSRelease(void)
 		if (*line == '\0')
 			continue;
 
-		if (strncmp(line, "NAME=", 5) != 0) {
-			// Not "NAME=".
+		if (strncmp(line, field_name, field_len) != 0) {
+			// Not the correct field.
 			continue;
 		}
 
-		line += 5;
+		line += field_len;
 		if (*line == '\0')
 			continue;
 
