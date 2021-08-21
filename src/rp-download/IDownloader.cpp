@@ -17,8 +17,12 @@
 #include <string>
 using std::tstring;
 
+#ifdef __linux__
+#  include "ini.h"
+#endif /* __linux__ */
+
 #ifdef __APPLE__
-# include <CoreServices/CoreServices.h>
+#  include <CoreServices/CoreServices.h>
 #endif /* __APPLE__ */
 
 namespace RpDownload {
@@ -159,6 +163,48 @@ void IDownloader::clear(void)
 	m_data.clear();
 }
 
+#ifdef __linux__
+struct inih_ctx {
+	const char *field_name;
+	char ret_value[64];
+
+	inih_ctx(const char *field_name)
+		: field_name(field_name)
+	{
+		ret_value[0] = '\0';
+	}
+};
+
+/**
+ * inih parsing function for /etc/os-release and /etc/lsb-release.
+ * @param user Pointer to inih_ctx.
+ * @param section Section
+ * @param name Key
+ * @param value Value
+ * @return 1 to continue; 0 to stop processing.
+ */
+static int parse_os_release(void *user, const char *section, const char *name, const char *value)
+{
+	// We want to find the specified field name,
+	// which is not contained within a section.
+	if (section[0] != '\0') {
+		// We're in a section.
+		return 1;
+	}
+
+	inih_ctx *const ctx = static_cast<inih_ctx*>(user);
+	if (!strcmp(ctx->field_name, name)) {
+		// Found the field.
+		// TODO: strlcpy() or snprintf() or similar?
+		strncpy(ctx->ret_value, value, sizeof(ctx->ret_value));
+		return 0;
+	}
+
+	// Continue processing.
+	return 0;
+}
+#endif /* __linux__ */
+
 /**
  * Get the OS release information.
  * @return OS release information, or empty string if not available.
@@ -230,74 +276,36 @@ tstring IDownloader::getOSRelease(void)
 	// Reference: https://www.freedesktop.org/software/systemd/man/os-release.html
 
 	// TODO: Distro and/or kernel version?
-	const char *field_name = nullptr;
-	size_t field_len = 0;
+	inih_ctx ctx(nullptr);
 	FILE *f_in = fopen("/etc/os-release", "r");
 	if (f_in) {
-		field_name = "NAME=";
+		ctx.field_name = "NAME";
 	} else {
 		f_in = fopen("/usr/lib/os-release", "r");
 		if (f_in) {
-			field_name = "NAME=";
-			field_len = 5;
+			ctx.field_name = "NAME";
 		} else {
 			// os-release file not found.
 			// Try the older lsb-release file.
 			f_in = fopen("/etc/lsb-release", "r");
 			if (f_in) {
-				field_name = "DISTRIB_ID=";
-				field_len = 11;
-			} else {
-				return tstring();
+				ctx.field_name = "DISTRIB_ID";
 			}
 		}
 	}
-
-	// Find the "NAME=" line.
-	char buf[256];
-	for (unsigned int line_count = 0; !feof(f_in) && line_count < 32; line_count++) {
-		char *line = fgets(buf, sizeof(buf), f_in);
-		if (!line)
-			break;
-
-		// Remove leading spaces.
-		while (*line != '\0' && ISSPACE(*line)) {
-			line++;
-		}
-		if (*line == '\0')
-			continue;
-
-		if (strncmp(line, field_name, field_len) != 0) {
-			// Not the correct field.
-			continue;
-		}
-
-		line += field_len;
-		if (*line == '\0')
-			continue;
-
-		// Remove spaces at the end.
-		size_t len = strlen(line);
-		while (len > 0 && ISSPACE(line[len-1])) {
-			len--;
-		}
-		if (len == 0)
-			continue;
-
-		// Check if we need to remove double-quotes.
-		if (*line == '"') {
-			// Check if the last character is double-quotes.
-			if (len >= 2 && line[len-1] == '"') {
-				// It's double-quotes.
-				line++;
-				len -= 2;
-			}
-		}
-
-		// Line found.
-		s_os_release.assign(line, len);
-		break;
+	if (!ctx.field_name) {
+		// No field name...
+		return tstring();
 	}
+
+	// Find the requested field.
+	ini_parse_file(f_in, parse_os_release, &ctx);
+	if (ctx.ret_value[0] == '\0') {
+		// Field not found.
+		return tstring();
+	}
+
+	s_os_release.assign(ctx.ret_value);
 #endif
 
 	return s_os_release;
