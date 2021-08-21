@@ -168,7 +168,7 @@ struct inih_ctx {
 	const char *field_name;
 	char ret_value[64];
 
-	inih_ctx(const char *field_name)
+	inih_ctx(const char *field_name = nullptr)
 		: field_name(field_name)
 	{
 		ret_value[0] = '\0';
@@ -276,7 +276,7 @@ tstring IDownloader::getOSRelease(void)
 	// Reference: https://www.freedesktop.org/software/systemd/man/os-release.html
 
 	// TODO: Distro and/or kernel version?
-	inih_ctx ctx(nullptr);
+	inih_ctx ctx;
 	FILE *f_in = fopen("/etc/os-release", "r");
 	if (f_in) {
 		ctx.field_name = "NAME";
