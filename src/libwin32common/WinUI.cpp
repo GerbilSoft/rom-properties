@@ -616,10 +616,17 @@ static tstring getFileName_int(bool bSave, HWND hWnd,
 	// TODO: Make OFN_DONTADDTORECENT customizable?
 	BOOL bRet;
 	if (!bSave) {
-		ofn.Flags = OFN_DONTADDTORECENT | OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST | OFN_HIDEREADONLY;
+		ofn.Flags = OFN_DONTADDTORECENT |
+		            OFN_HIDEREADONLY |
+		            OFN_NO­CHANGE­DIR |
+		            OFN_FILEMUSTEXIST |
+		            OFN_PATHMUSTEXIST;
 		bRet = GetOpenFileName(&ofn);
 	} else {
-		ofn.Flags = OFN_DONTADDTORECENT | OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY;
+		ofn.Flags = OFN_DONTADDTORECENT |
+		            OFN_HIDEREADONLY |
+		            OFN_NOCHANGEDIR |
+		            OFN_OVERWRITEPROMPT;;
 		bRet = GetSaveFileName(&ofn);
 	}
 

@@ -22,19 +22,19 @@ EXTERN_C IMAGE_DOS_HEADER __ImageBase;
 #define HINST_THISCOMPONENT ((HINSTANCE)&__ImageBase)
 
 // Architecture-specific subdirectory.
-#if defined(__i386__) || defined(_M_IX86)
+#if defined(_M_IX86) || defined(__i386__)
 static const TCHAR rp_subdir[] = _T("i386\\");
-#elif defined(__amd64__) || defined(_M_X64)
+#elif defined(_M_X64) || defined(_M_AMD64) || defined(__amd64__) || defined(__x86_64__)
 static const TCHAR rp_subdir[] = _T("amd64\\");
-#elif defined(__ia64__) || defined(_M_IA64)
+#elif defined(_M_IA64) || defined(__ia64__)
 static const TCHAR rp_subdir[] = _T("ia64\\");
-#elif defined(__aarch64__) || defined(_M_ARM64)
-static const TCHAR rp_subdir[] = _T("arm64\\");
-#elif defined(__arm__) || defined(__thumb__) || \
-      defined(_M_ARM) || defined(_M_ARMT)
+#elif defined(_M_ARM) || defined(__arm__) || \
+      defined(_M_ARMT) || defined(__thumb__)
 static const TCHAR rp_subdir[] = _T("arm\\");
+#elif defined(_M_ARM64) || defined(__aarch64__)
+static const TCHAR rp_subdir[] = _T("arm64\\");
 #else
-# error Unsupported CPU architecture.
+#  error Unsupported CPU architecture.
 #endif
 
 /**

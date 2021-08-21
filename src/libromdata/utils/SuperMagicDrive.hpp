@@ -15,18 +15,19 @@
 #include <stdint.h>
 
 #if defined(RP_CPU_I386) || defined(RP_CPU_AMD64)
-# include "librpcpu/cpuflags_x86.h"
+#  include "librpcpu/cpuflags_x86.h"
 /* MSVC does not support MMX intrinsics in 64-bit builds. */
 /* Reference: https://msdn.microsoft.com/en-us/library/08x3t697(v=vs.110).aspx */
 /* In addition, amd64 CPUs all support SSE2 as a minimum, */
 /* so there's no point in building MMX code for 64-bit. */
-# if (defined(_M_IX86) || defined(__i386__)) && !defined(_M_X64) && !defined(__amd64__)
-#  define SMD_HAS_MMX 1
-# endif
-# define SMD_HAS_SSE2 1
+#  if (defined(_M_IX86) || defined(__i386__)) && \
+      !(defined(_M_X64) || defined(_M_AMD64) || defined(__amd64__) || defined(__x86_64__))
+#    define SMD_HAS_MMX 1
+#  endif
+#  define SMD_HAS_SSE2 1
 #endif
 #ifdef RP_CPU_AMD64
-# define SMD_ALWAYS_HAS_SSE2 1
+#  define SMD_ALWAYS_HAS_SSE2 1
 #endif
 
 namespace LibRomData {

@@ -17,8 +17,8 @@ extern "C" {
 #endif
 
 /* CPU flags (IA32/x86_64) */
-#if defined(__i386__) || defined(__amd64__) || defined(__x86_64__) || \
-    defined(_M_IX86) || defined(_M_X64)
+#if defined(_M_IX86) || defined(__i386__) || \
+    defined(_M_X64) || defined(_M_AMD64) || defined(__amd64__) || defined(__x86_64__)
 
 // Set of CPU flags we check for right now.
 // More flags will be added if needed.
@@ -30,7 +30,7 @@ extern "C" {
 #define RP_CPUFLAG_X86_SSE41		((uint32_t)(1U << 5))
 #define RP_CPUFLAG_X86_SSE42		((uint32_t)(1U << 6))
 
-#endif /* defined(__i386__) || defined(__amd64__) || defined(__x86_64__) */
+#endif /* _M_IX86) || __i386__ || _M_X64 || _M_AMD64 || __amd64__ || __x86_64__ */
 
 // Don't modify these!
 extern uint32_t RP_CPU_Flags;
