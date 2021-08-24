@@ -130,7 +130,7 @@ typedef struct _SNES_RomHeader {
 			/** Standard SNES header. **/
 			char title[21];			// [0x7FC0] NOTE: May be Shift-JIS?
 			uint8_t rom_mapping;		// [0x7FD5] LoROM, HiROM
-			uint8_t rom_type;		// [0x7FD6]
+			uint8_t rom_type;		// [0x7FD6] ROM type. (enhancements)
 			uint8_t rom_size;		// [0x7FD7] ROM size. (1024 << rom_size)
 			uint8_t sram_size;		// [0x7FD8] SRAM size. (1024 << sram_size);
 			uint8_t destination_code;	// [0x7FD9] Destination code. (TODO: Enum?)

@@ -4,6 +4,8 @@
 
 * Bug fixes:
   * EXE: Improve runtime DLL detection in some cases.
+  * SNES: Fix detection of games that declare usage of the S-RTC chip
+    in the ROM header. (sd2snes menu)
 
 ## v1.8.3 (released 2021/08/03)
 

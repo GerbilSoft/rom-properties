@@ -352,8 +352,8 @@ bool SNESPrivate::isSnesRomHeaderValid(const SNES_RomHeader *romHeader, bool isH
 		default:
 			break;
 	}
-	if (((romHeader->snes.rom_type & SNES_ROMTYPE_ENH_MASK) >= SNES_ROMTYPE_ENH_S_RTC) &&
-	    ((romHeader->snes.rom_type & SNES_ROMTYPE_ENH_MASK) <  SNES_ROMTYPE_ENH_OTHER))
+	if (((romHeader->snes.rom_type & SNES_ROMTYPE_ENH_MASK) > SNES_ROMTYPE_ENH_S_RTC) &&
+	    ((romHeader->snes.rom_type & SNES_ROMTYPE_ENH_MASK) < SNES_ROMTYPE_ENH_OTHER))
 	{
 		// Not a valid ROM type.
 		return false;
