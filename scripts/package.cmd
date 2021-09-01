@@ -136,14 +136,14 @@ IF EXIST "%PRGFILES%\Microsoft Visual Studio\2017\Enterprise\VC\Tools\MSVC\14.16
 )
 
 :: MSVC 2019: Use the 2017 (14.1x) compiler for 32-bit in order to maintain WinXP compatibilty.
-IF EXIST "%PRGFILES%\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.29.30037\bin\HostX86\x86\cl.exe" (
+IF EXIST "%PRGFILES%\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.29.30133\bin\HostX86\x86\cl.exe" (
 	SET "MSVC32_DIR=%PRGFILES%\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.16.27023"
 	SET "MSVC32_VERSION=14.16"
 	SET "MSVC32_YEAR=2019"
 	SET "CMAKE32_GENERATOR=16 2019"
 	SET "CMAKE32_TOOLSET=v141_xp"
 
-	SET "MSVC64_DIR=%PRGFILES%\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.29.30037"
+	SET "MSVC64_DIR=%PRGFILES%\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.29.30133"
 	SET "MSVC64_VERSION=14.29"
 	SET "MSVC64_YEAR=2019"
 	SET "CMAKE64_GENERATOR=16 2019"
@@ -156,7 +156,7 @@ IF EXIST "%PRGFILES%\Microsoft Visual Studio\2019\Professional\VC\Tools\MSVC\14.
 	SET "CMAKE32_GENERATOR=16 2019"
 	SET "CMAKE32_TOOLSET=v141_xp"
 
-	SET "MSVC64_DIR=%PRGFILES%\Microsoft Visual Studio\2019\Professional\VC\Tools\MSVC\14.29.30037"
+	SET "MSVC64_DIR=%PRGFILES%\Microsoft Visual Studio\2019\Professional\VC\Tools\MSVC\14.29.30133"
 	SET "MSVC64_VERSION=14.29"
 	SET "MSVC64_YEAR=2019"
 	SET "CMAKE64_GENERATOR=16 2019"
@@ -169,7 +169,7 @@ IF EXIST "%PRGFILES%\Microsoft Visual Studio\2019\Enterprise\VC\Tools\MSVC\14.16
 	SET "CMAKE32_GENERATOR=16 2019"
 	SET "CMAKE32_TOOLSET=v141_xp"
 
-	SET "MSVC64_DIR=%PRGFILES%\Microsoft Visual Studio\2019\Enterprise\VC\Tools\MSVC\14.29.30037"
+	SET "MSVC64_DIR=%PRGFILES%\Microsoft Visual Studio\2019\Enterprise\VC\Tools\MSVC\14.29.30133"
 	SET "MSVC64_VERSION=14.29"
 	SET "MSVC64_YEAR=2019"
 	SET "CMAKE64_GENERATOR=16 2019"
