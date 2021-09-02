@@ -41,6 +41,7 @@ SET(${PROJECT_NAME}_SRCS
 	userdirs.cpp
 	HiDPI.h
 	MiniU82T.cpp
+	env_vars.cpp
 	sdk/win_iid.c
 	sdk/GUID_fn.c
 	)
@@ -58,6 +59,7 @@ SET(${PROJECT_NAME}_H
 	userdirs.hpp
 	HiDPI.c
 	MiniU82T.hpp
+	env_vars.hpp
 	sdk/QITab.h
 	sdk/IListView.hpp
 	sdk/IOwnerDataCallback.hpp

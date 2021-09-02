@@ -12,6 +12,7 @@
 #include "RP_ExtractIcon_p.hpp"
 
 // librpbase, librpfile, libwin32common
+#include "libwin32common/env_vars.hpp"
 using namespace LibRpBase;
 using namespace LibRpFile;
 using LibWin32Common::RegKey;
@@ -201,51 +202,6 @@ int RP_ExtractIcon_Private::getIconIndexFromSpec(LPCTSTR szIconSpec)
 	}
 
 	return nIconIndex;
-}
-
-/**
- * Find the specified file in the system PATH.
- * @param szAppName File (usually an application name)
- * @return Full path, or empty string if not found.
- */
-std::tstring RP_ExtractIcon_Private::findInPath(LPCTSTR szAppName)
-{
-	// TODO: Move to libwin32common?
-	std::tstring full_path;
-	TCHAR path_buf[4096];
-	TCHAR expand_buf[MAX_PATH];
-
-	DWORD dwRet = GetEnvironmentVariable(_T("PATH"), path_buf, _countof(path_buf));
-	if (dwRet >= _countof(path_buf)) {
-		// FIXME: Handle this?
-		return full_path;
-	}
-
-	// Check each PATH entry.
-	TCHAR *saveptr;
-	for (const TCHAR *token = _tcstok_s(path_buf, _T(";"), &saveptr);
-	     token != nullptr; token = _tcstok_s(nullptr, _T(";"), &saveptr))
-	{
-		// PATH may contain variables.
-		dwRet = ExpandEnvironmentStrings(token, expand_buf, _countof(expand_buf));
-		if (dwRet >= _countof(expand_buf)) {
-			// FIXME: Handle this?
-			continue;
-		}
-
-		full_path = expand_buf;
-		full_path += _T('\\');
-		full_path += szAppName;
-
-		if (GetFileAttributes(full_path.c_str()) != INVALID_FILE_ATTRIBUTES) {
-			// Found a match!
-			return full_path;
-		}
-	}
-
-	// No match.
-	full_path.clear();
-	return full_path;
 }
 
 /**
@@ -450,7 +406,7 @@ LONG RP_ExtractIcon_Private::Fallback_int_Application(LPCTSTR szAppName, bool bC
 		// If we still don't have a path, we'll need to check
 		// all entries in PATH.
 		if (defaultIcon.empty()) {
-			defaultIcon = findInPath(szAppName);
+			defaultIcon = LibWin32Common::findInPath(szAppName);
 		}
 	} else {
 		// DefaultIcon is set but IconHandler isn't, which means

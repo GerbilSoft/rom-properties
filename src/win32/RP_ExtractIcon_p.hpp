@@ -92,13 +92,6 @@ class RP_ExtractIcon_Private
 		static int getIconIndexFromSpec(LPCTSTR szIconSpec);
 
 		/**
-		 * Find the specified file in the system PATH.
-		 * @param szAppName File (usually an application name)
-		 * @return Full path, or empty string if not found.
-		 */
-		static std::tstring findInPath(LPCTSTR szAppName);
-
-		/**
 		 * Fallback icon handler function. (internal)
 		 * This function reads the RP_Fallback key for fallback data.
 		 * @param hkey_Assoc File association key to check.
