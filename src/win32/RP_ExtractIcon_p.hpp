@@ -115,12 +115,13 @@ class RP_ExtractIcon_Private
 		 * This function reads a registered application ProgID for fallbacks,
 		 * e.g. from UserChoice.
 		 * @param szAppName Application name, e.g. _T("notepad.exe")
-		 * @param phiconLarge Large icon.
-		 * @param phiconSmall Small icon.
-		 * @param nIconSize Icon sizes.
-		 * @return ERROR_SUCCESS on success; Win32 error code on error.
+		 * @param bCurrentUser If true, check HKCU instead of HKCR.
+		 * @param phiconLarge Large icon
+		 * @param phiconSmall Small icon
+		 * @param nIconSize Icon sizes
+		 * @return ERROR_SUCCESS on success; Win32 error code on error
 		 */
-		LONG Fallback_int_Application(LPCTSTR szAppName,
+		LONG Fallback_int_Application(LPCTSTR szAppName, bool bCurrentUser,
 			HICON* phiconLarge, HICON* phiconSmall, UINT nIconSize);
 
 	public:

@@ -360,19 +360,27 @@ LONG RP_ExtractIcon_Private::Fallback_int(RegKey &hkey_Assoc,
  * This function reads a registered application ProgID for fallbacks,
  * e.g. from UserChoice.
  * @param szAppName Application name, e.g. _T("notepad.exe")
- * @param phiconLarge Large icon.
- * @param phiconSmall Small icon.
- * @param nIconSize Icon sizes.
- * @return ERROR_SUCCESS on success; Win32 error code on error.
+ * @param bCurrentUser If true, check HKCU instead of HKCR.
+ * @param phiconLarge Large icon
+ * @param phiconSmall Small icon
+ * @param nIconSize Icon sizes
+ * @return ERROR_SUCCESS on success; Win32 error code on error
  */
-LONG RP_ExtractIcon_Private::Fallback_int_Application(LPCTSTR szAppName,
+LONG RP_ExtractIcon_Private::Fallback_int_Application(LPCTSTR szAppName, bool bCurrentUser,
 	HICON* phiconLarge, HICON* phiconSmall, UINT nIconSize)
 {
 	// Open the ProgID key.
-	// TODO: Check in HKCU first, then HKCR?
-	tstring progID = _T("Applications\\");
+	HKEY hKeyRoot;
+	tstring progID;
+	if (bCurrentUser) {
+		hKeyRoot = HKEY_CURRENT_USER;
+		progID = _T("SOFTWARE\\Classes\\Applications\\");
+	} else {
+		hKeyRoot = HKEY_CLASSES_ROOT;
+		progID = _T("Applications\\");
+	}
 	progID += szAppName;
-	RegKey hkey_Assoc(HKEY_CLASSES_ROOT, progID.c_str(), KEY_READ, false);
+	RegKey hkey_Assoc(hKeyRoot, progID.c_str(), KEY_READ, false);
 	if (!hkey_Assoc.isOpen()) {
 		return hkey_Assoc.lOpenRes();
 	}
@@ -547,7 +555,14 @@ LONG RP_ExtractIcon_Private::Fallback(HICON *phiconLarge, HICON *phiconSmall, UI
 		// TODO: Verify that it starts with "Applications"?
 		size_t bs_pos = progID.find_last_of(_T('\\'));
 		if (bs_pos != tstring::npos) {
-			lResult = Fallback_int_Application(&progID[bs_pos+1], phiconLarge, phiconSmall, nIconSize);
+			// Check HKCU first.
+			lResult = Fallback_int_Application(&progID[bs_pos+1], true,
+				phiconLarge, phiconSmall, nIconSize);
+			if (lResult != ERROR_SUCCESS) {
+				// Check HKLM second.
+				lResult = Fallback_int_Application(&progID[bs_pos+1], false,
+					phiconLarge, phiconSmall, nIconSize);
+			}
 		} else {
 			lResult = ERROR_FILE_NOT_FOUND;
 		}
