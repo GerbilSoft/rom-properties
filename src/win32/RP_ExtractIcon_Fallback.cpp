@@ -18,6 +18,7 @@ using LibWin32Common::RegKey;
 
 // C++ STL classes.
 using std::tstring;
+using std::unique_ptr;
 
 // COM smart pointer typedefs.
 #ifndef _MSC_VER
@@ -166,7 +167,90 @@ LONG RP_ExtractIcon_Private::DoExtractIconA(IExtractIconA *pExtractIconA,
 }
 
 /**
+ * Get the icon index from an icon resource specification,
+ * e.g. "C:\\Windows\\Some.DLL,1" .
+ * @param szIconSpec Icon resource specification
+ * @return Icon index, or 0 (default) if unknown.
+ */
+int RP_ExtractIcon_Private::getIconIndexFromSpec(LPCTSTR szIconSpec)
+{
+	// DefaultIcon format: "C:\\Windows\\Some.DLL,1"
+	// TODO: Can the filename be quoted?
+	// TODO: Better error codes?
+	int nIconIndex;
+	const TCHAR *const comma = _tcsrchr(szIconSpec, _T(','));
+	if (!comma) {
+		// No comma. Assume the default icon index.
+		return 0;
+	}
+
+	// Found the comma.
+	if (comma > szIconSpec && comma[1] != _T('\0')) {
+		TCHAR *endptr = nullptr;
+		errno = 0;
+		nIconIndex = (int)_tcstol(&comma[1], &endptr, 10);
+		if (errno == ERANGE || *endptr != 0) {
+			// _tcstol() failed.
+			// DefaultIcon is invalid, but we'll assume the index is 0.
+			nIconIndex = 0;
+		}
+	} else {
+		// Comma is the last character.
+		// We'll assume the index is 0.
+		nIconIndex = 0;
+	}
+
+	return nIconIndex;
+}
+
+/**
+ * Find the specified file in the system PATH.
+ * @param szAppName File (usually an application name)
+ * @return Full path, or empty string if not found.
+ */
+std::tstring RP_ExtractIcon_Private::findInPath(LPCTSTR szAppName)
+{
+	// TODO: Move to libwin32common?
+	std::tstring full_path;
+	TCHAR path_buf[4096];
+	TCHAR expand_buf[MAX_PATH];
+
+	DWORD dwRet = GetEnvironmentVariable(_T("PATH"), path_buf, _countof(path_buf));
+	if (dwRet >= _countof(path_buf)) {
+		// FIXME: Handle this?
+		return full_path;
+	}
+
+	// Check each PATH entry.
+	TCHAR *saveptr;
+	for (const TCHAR *token = _tcstok_s(path_buf, _T(";"), &saveptr);
+	     token != nullptr; token = _tcstok_s(nullptr, _T(";"), &saveptr))
+	{
+		// PATH may contain variables.
+		dwRet = ExpandEnvironmentStrings(token, expand_buf, _countof(expand_buf));
+		if (dwRet >= _countof(expand_buf)) {
+			// FIXME: Handle this?
+			continue;
+		}
+
+		full_path = expand_buf;
+		full_path += _T('\\');
+		full_path += szAppName;
+
+		if (GetFileAttributes(full_path.c_str()) != INVALID_FILE_ATTRIBUTES) {
+			// Found a match!
+			return full_path;
+		}
+	}
+
+	// No match.
+	full_path.clear();
+	return full_path;
+}
+
+/**
  * Fallback icon handler function. (internal)
+ * This function reads the RP_Fallback key for fallback data.
  * @param hkey_Assoc File association key to check.
  * @param phiconLarge Large icon.
  * @param phiconSmall Small icon.
@@ -243,33 +327,12 @@ LONG RP_ExtractIcon_Private::Fallback_int(RegKey &hkey_Assoc,
 
 	// DefaultIcon is set but IconHandler isn't, which means
 	// the file's icon is stored as an icon resource.
-
-	// DefaultIcon format: "C:\\Windows\\Some.DLL,1"
-	// TODO: Can the filename be quoted?
-	// TODO: Better error codes?
-	int nIconIndex;
-	size_t comma = defaultIcon.find_last_of(L',');
-	if (comma != tstring::npos) {
-		// Found the comma.
-		if (comma > 0 && comma < defaultIcon.size()-1) {
-			TCHAR *endptr = nullptr;
-			errno = 0;
-			nIconIndex = (int)_tcstol(&defaultIcon[comma+1], &endptr, 10);
-			if (errno == ERANGE || *endptr != 0) {
-				// _tcstol() failed.
-				// DefaultIcon is invalid.
-				return ERROR_FILE_NOT_FOUND;
-			}
-		} else {
-			// Comma is the last character.
-			return ERROR_FILE_NOT_FOUND;
-		}
-
-		// Remove the comma portion.
+	// TODO: Return filename+index in the main IExtractIconW handler?
+	int nIconIndex = getIconIndexFromSpec(defaultIcon.c_str());
+	// Remove the trailing comma at the end of defaultIcon, if present.
+	size_t comma = defaultIcon.find_last_of(_T(','));
+	if (comma != tstring::npos && comma > 0) {
 		defaultIcon.resize(comma);
-	} else {
-		// Assume the default icon index.
-		nIconIndex = 0;
 	}
 
 	// PrivateExtractIcons() is published as of Windows XP SP1,
@@ -280,7 +343,134 @@ LONG RP_ExtractIcon_Private::Fallback_int(RegKey &hkey_Assoc,
 	// TODO: What if the size isn't found?
 	HICON hIcons[2];
 	UINT uRet = PrivateExtractIcons(defaultIcon.c_str(), nIconIndex,
-			nIconSize, nIconSize, hIcons, nullptr, 2, 0);
+		nIconSize, nIconSize, hIcons, nullptr, 2, 0);
+	if (uRet == 0) {
+		// No icons were extracted.
+		return ERROR_FILE_NOT_FOUND;
+	}
+
+	// At least one icon was extracted.
+	*phiconLarge = hIcons[0];
+	*phiconSmall = hIcons[1];
+	return ERROR_SUCCESS;
+}
+
+/**
+ * Fallback icon handler function. (internal)
+ * This function reads a registered application ProgID for fallbacks,
+ * e.g. from UserChoice.
+ * @param szAppName Application name, e.g. _T("notepad.exe")
+ * @param phiconLarge Large icon.
+ * @param phiconSmall Small icon.
+ * @param nIconSize Icon sizes.
+ * @return ERROR_SUCCESS on success; Win32 error code on error.
+ */
+LONG RP_ExtractIcon_Private::Fallback_int_Application(LPCTSTR szAppName,
+	HICON* phiconLarge, HICON* phiconSmall, UINT nIconSize)
+{
+	// Open the ProgID key.
+	// TODO: Check in HKCU first, then HKCR?
+	tstring progID = _T("Applications\\");
+	progID += szAppName;
+	RegKey hkey_Assoc(HKEY_CLASSES_ROOT, progID.c_str(), KEY_READ, false);
+	if (!hkey_Assoc.isOpen()) {
+		return hkey_Assoc.lOpenRes();
+	}
+
+	// Get the DefaultIcon key.
+	tstring defaultIcon;
+	RegKey hkey_DefaultIcon(hkey_Assoc, _T("DefaultIcon"), KEY_READ, false);
+	if (hkey_DefaultIcon.isOpen()) {
+		DWORD dwType;
+		defaultIcon = hkey_DefaultIcon.read_expand(nullptr, &dwType);
+	}
+
+	int nIconIndex = 0;
+	if (defaultIcon.empty()) {
+		// No default icon.
+		return ERROR_FILE_NOT_FOUND;
+	} else if (defaultIcon == _T("%1")) {
+		// In the case of an executable, the default icon is itself.
+		defaultIcon.clear();
+
+		// Check the App Paths keys. (NOTE: Need to check with and without ".exe".)
+		// TODO: Default Programs Editor changes?
+		tstring szAppNameNoExe(szAppName);
+		size_t dotpos = szAppNameNoExe.find_last_of(_T('.'));
+		if (dotpos != tstring::npos && dotpos > 0) {
+			szAppNameNoExe.resize(dotpos - 1);
+		}
+
+		// First, check HKCU App Paths.
+		{
+			RegKey hkcu_AppPaths(HKEY_CURRENT_USER, _T("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\App Paths"), KEY_READ, false);
+			if (hkcu_AppPaths.isOpen()) {
+				// Check with the .exe extension.
+				RegKey hkcu_ap_exe(hkcu_AppPaths, szAppName, KEY_READ, false);
+				if (hkcu_ap_exe.isOpen()) {
+					defaultIcon = hkcu_ap_exe.read_expand(nullptr);
+				}
+				if (defaultIcon.empty()) {
+					// Check without the .exe extension.
+					RegKey hkcu_ap_noexe(hkcu_AppPaths, szAppNameNoExe.c_str(), KEY_READ, false);
+					if (hkcu_ap_noexe.isOpen()) {
+						defaultIcon = hkcu_ap_noexe.read_expand(nullptr);
+					}
+				}
+			}
+		}
+
+		// Next, check HKLM App Paths.
+		if (defaultIcon.empty()) {
+			RegKey hklm_AppPaths(HKEY_LOCAL_MACHINE, _T("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\App Paths"), KEY_READ, false);
+			if (hklm_AppPaths.isOpen()) {
+				// Check with the .exe extension.
+				RegKey hklm_ap_exe(hklm_AppPaths, szAppName, KEY_READ, false);
+				if (hklm_ap_exe.isOpen()) {
+					defaultIcon = hklm_ap_exe.read_expand(nullptr);
+				}
+				if (defaultIcon.empty()) {
+					// Check without the .exe extension.
+					RegKey hklm_ap_noexe(hklm_AppPaths, szAppNameNoExe.c_str(), KEY_READ, false);
+					if (hklm_ap_noexe.isOpen()) {
+						defaultIcon = hklm_ap_noexe.read_expand(nullptr);
+					}
+				}
+			}
+		}
+
+		// If we still don't have a path, we'll need to check
+		// all entries in PATH.
+		if (defaultIcon.empty()) {
+			defaultIcon = findInPath(szAppName);
+		}
+	} else {
+		// DefaultIcon is set but IconHandler isn't, which means
+		// the file's icon is stored as an icon resource.
+		// TODO: Return filename+index in the main IExtractIconW handler?
+		nIconIndex = getIconIndexFromSpec(defaultIcon.c_str());
+
+		// Remove the trailing comma at the end of defaultIcon, if present.
+		size_t comma = defaultIcon.find_last_of(_T(','));
+		if (comma != tstring::npos && comma > 0) {
+			defaultIcon.resize(comma);
+		}
+	}
+
+	if (defaultIcon.empty()) {
+		// Can't find the EXE.
+		return ERROR_FILE_NOT_FOUND;
+	}
+
+	// PrivateExtractIcons() is published as of Windows XP SP1,
+	// but it's "officially" private.
+	// Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/ms648075(v=vs.85).aspx
+	// TODO: Verify that hIcons[x] is NULL if only one size is found.
+	// TODO: Verify which icon is extracted.
+	// TODO: What if the size isn't found?
+	HICON hIcons[2];
+	UINT uRet = PrivateExtractIcons(defaultIcon.c_str(), nIconIndex,
+		nIconSize, nIconSize, hIcons, nullptr, 2, 0);
 	if (uRet == 0) {
 		// No icons were extracted.
 		return ERROR_FILE_NOT_FOUND;
@@ -311,15 +501,16 @@ LONG RP_ExtractIcon_Private::Fallback(HICON *phiconLarge, HICON *phiconSmall, UI
 		// Invalid or missing file extension.
 		return ERROR_FILE_NOT_FOUND;
 	}
+	const tstring ts_file_ext = U82T_c(file_ext);
 
 	// Open the filetype key in HKCR.
-	RegKey hkey_Assoc(HKEY_CLASSES_ROOT, U82T_c(file_ext), KEY_READ, false);
-	if (!hkey_Assoc.isOpen()) {
-		return hkey_Assoc.lOpenRes();
+	RegKey hkcr_Assoc(HKEY_CLASSES_ROOT, ts_file_ext.c_str(), KEY_READ, false);
+	if (!hkcr_Assoc.isOpen()) {
+		return hkcr_Assoc.lOpenRes();
 	}
 
 	// If we have a ProgID, check it first.
-	const tstring progID = hkey_Assoc.read(nullptr);
+	tstring progID = hkcr_Assoc.read(nullptr);
 	if (!progID.empty()) {
 		// Custom ProgID is registered.
 		// TODO: Get the correct top-level registry key.
@@ -333,6 +524,34 @@ LONG RP_ExtractIcon_Private::Fallback(HICON *phiconLarge, HICON *phiconSmall, UI
 		}
 	}
 
-	// Extract the icon from the filetype key.
-	return Fallback_int(hkey_Assoc, phiconLarge, phiconSmall, nIconSize);
+	// Check the filetype key.
+	LONG lResult = Fallback_int(hkcr_Assoc, phiconLarge, phiconSmall, nIconSize);
+	if (lResult == ERROR_SUCCESS) {
+		// Filetype icon extracted.
+		return lResult;
+	}
+
+	// Try the UserChoice program association.
+	tstring keyName = _T("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\FileExts\\");
+	keyName += ts_file_ext;
+	keyName += _T("\\UserChoice");
+	RegKey hkcu_UserChoice(HKEY_CURRENT_USER, keyName.c_str(), KEY_READ, false);
+	if (!hkcu_UserChoice.isOpen()) {
+		return hkcu_UserChoice.lOpenRes();
+	}
+
+	// Format should be "Applications\\[program.exe]".
+	progID = hkcu_UserChoice.read(_T("ProgId"));
+	if (!progID.empty()) {
+		// Find the backslash and remove it.
+		// TODO: Verify that it starts with "Applications"?
+		size_t bs_pos = progID.find_last_of(_T('\\'));
+		if (bs_pos != tstring::npos) {
+			lResult = Fallback_int_Application(&progID[bs_pos+1], phiconLarge, phiconSmall, nIconSize);
+		} else {
+			lResult = ERROR_FILE_NOT_FOUND;
+		}
+	}
+
+	return lResult;
 }

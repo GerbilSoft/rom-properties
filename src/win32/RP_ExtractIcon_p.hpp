@@ -84,7 +84,23 @@ class RP_ExtractIcon_Private
 			HICON *phiconLarge, HICON *phiconSmall, UINT nIconSize);
 
 		/**
+		 * Get the icon index from an icon resource specification,
+		 * e.g. "C:\\Windows\\Some.DLL,1" .
+		 * @param szIconSpec Icon resource specification
+		 * @return Icon index, or 0 (default) if unknown.
+		 */
+		static int getIconIndexFromSpec(LPCTSTR szIconSpec);
+
+		/**
+		 * Find the specified file in the system PATH.
+		 * @param szAppName File (usually an application name)
+		 * @return Full path, or empty string if not found.
+		 */
+		static std::tstring findInPath(LPCTSTR szAppName);
+
+		/**
 		 * Fallback icon handler function. (internal)
+		 * This function reads the RP_Fallback key for fallback data.
 		 * @param hkey_Assoc File association key to check.
 		 * @param phiconLarge Large icon.
 		 * @param phiconSmall Small icon.
@@ -93,6 +109,19 @@ class RP_ExtractIcon_Private
 		 */
 		LONG Fallback_int(LibWin32Common::RegKey &hkey_Assoc,
 			HICON *phiconLarge, HICON *phiconSmall, UINT nIconSize);
+
+		/**
+		 * Fallback icon handler function. (internal)
+		 * This function reads a registered application ProgID for fallbacks,
+		 * e.g. from UserChoice.
+		 * @param szAppName Application name, e.g. _T("notepad.exe")
+		 * @param phiconLarge Large icon.
+		 * @param phiconSmall Small icon.
+		 * @param nIconSize Icon sizes.
+		 * @return ERROR_SUCCESS on success; Win32 error code on error.
+		 */
+		LONG Fallback_int_Application(LPCTSTR szAppName,
+			HICON* phiconLarge, HICON* phiconSmall, UINT nIconSize);
 
 	public:
 		/**
