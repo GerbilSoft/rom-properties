@@ -184,6 +184,9 @@ tstring RegKey::read(LPCTSTR lpValueName, LPDWORD lpType) const
  */
 tstring RegKey::read_expand(LPCTSTR lpValueName, LPDWORD lpType) const
 {
+	// Local buffer optimization to reduce memory allocation.
+	TCHAR locbuf[128];
+
 	DWORD dwType = 0;
 	tstring wstr = read(lpValueName, &dwType);
 	if (wstr.empty() || dwType != REG_EXPAND_SZ) {
@@ -206,6 +209,26 @@ tstring RegKey::read_expand(LPCTSTR lpValueName, LPDWORD lpType) const
 		return tstring();
 	}
 
+	if (cchExpand <= _countof(locbuf)) {
+		// The expanded string fits in the local buffer.
+		cchExpand = ExpandEnvironmentStrings(wstr.c_str(), locbuf, cchExpand);
+		if (cchExpand == 0) {
+			// Error expanding the strings.
+			if (lpType) {
+				*lpType = 0;
+			}
+			return tstring();
+		}
+
+		// String has been expanded.
+		if (lpType) {
+			*lpType = REG_EXPAND_SZ;
+		}
+		return tstring(locbuf, cchExpand-1);
+	}
+
+	// Temporarily allocate a buffer large enough for the string,
+	// then call ExpandEnvironmentStrings() again.
 	unique_ptr<TCHAR[]> tbuf(new TCHAR[cchExpand]);
 	cchExpand = ExpandEnvironmentStrings(wstr.c_str(), tbuf.get(), cchExpand);
 	if (cchExpand == 0) {
