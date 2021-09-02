@@ -121,11 +121,8 @@ IFACEMETHODIMP RP_ThumbnailProvider::GetThumbnail(UINT cx, HBITMAP *phbmp, WTS_A
 	CreateThumbnail::GetThumbnailOutParams_t outParams;
 	outParams.retImg = nullptr;
 	int ret = d->thumbnailer.getThumbnail(d->file, cx, &outParams);
-	if (ret != 0 || !outParams.retImg) {
+	if (ret != 0) {
 		// ROM is not supported. Use the fallback.
-		if (outParams.retImg) {
-			DeleteBitmap(outParams.retImg);
-		}
 		return d->Fallback(cx, phbmp, pdwAlpha);
 	}
 

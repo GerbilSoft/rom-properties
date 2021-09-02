@@ -213,9 +213,8 @@ IFACEMETHODIMP RP_ExtractIcon::Extract(LPCWSTR pszFile, UINT nIconIndex,
 	// ROM is supported. Get the image.
 	// TODO: Small icon?
 	CreateThumbnail::GetThumbnailOutParams_t outParams;
-	outParams.retImg = nullptr;
 	int ret = d->thumbnailer.getThumbnail(d->romData, LOWORD(nIconSize), &outParams);
-	if (ret != 0 || !outParams.retImg) {
+	if (ret != 0) {
 		// Thumbnail not available. Use the fallback.
 		if (outParams.retImg) {
 			DeleteBitmap(outParams.retImg);

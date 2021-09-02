@@ -313,11 +313,8 @@ G_MODULE_EXPORT int RP_C_API rp_create_thumbnail(const char *source_file, const 
 	unique_ptr<CreateThumbnailPrivate> d(new CreateThumbnailPrivate());
 	CreateThumbnailPrivate::GetThumbnailOutParams_t outParams;
 	ret = d->getThumbnail(romData, maximum_size, &outParams);
-	if (ret != 0 || !d->isImgClassValid(outParams.retImg)) {
+	if (ret != 0) {
 		// No image.
-		if (outParams.retImg) {
-			d->freeImgClass(outParams.retImg);
-		}
 		romData->unref();
 		return RPCT_SOURCE_FILE_NO_IMAGE;
 	}

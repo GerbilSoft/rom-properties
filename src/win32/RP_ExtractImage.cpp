@@ -228,11 +228,8 @@ IFACEMETHODIMP RP_ExtractImage::Extract(HBITMAP *phBmpImage)
 	CreateThumbnail::GetThumbnailOutParams_t outParams;
 	outParams.retImg = nullptr;
 	int ret = d->thumbnailer.getThumbnail(d->romData, d->rgSize.cx, &outParams);
-	if (ret != 0 || !outParams.retImg) {
+	if (ret != 0) {
 		// ROM is not supported. Use the fallback.
-		if (outParams.retImg) {
-			DeleteBitmap(outParams.retImg);
-		}
 		return d->Fallback(phBmpImage);
 	}
 	*phBmpImage = outParams.retImg;
