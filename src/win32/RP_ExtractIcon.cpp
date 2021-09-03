@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * RP_ExtractIcon.cpp: IExtractIcon implementation.                        *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -50,7 +50,7 @@ RP_ExtractIcon::~RP_ExtractIcon()
 /** IUnknown **/
 // Reference: https://msdn.microsoft.com/en-us/library/office/cc839627.aspx
 
-IFACEMETHODIMP RP_ExtractIcon::QueryInterface(REFIID riid, LPVOID *ppvObj)
+IFACEMETHODIMP RP_ExtractIcon::QueryInterface(_In_ REFIID riid, _Outptr_ LPVOID *ppvObj)
 {
 #ifdef _MSC_VER
 # pragma warning(push)
@@ -72,7 +72,7 @@ IFACEMETHODIMP RP_ExtractIcon::QueryInterface(REFIID riid, LPVOID *ppvObj)
 /** IPersistFile **/
 // Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/cc144067(v=vs.85).aspx#unknown_28177
 
-IFACEMETHODIMP RP_ExtractIcon::GetClassID(CLSID *pClassID)
+IFACEMETHODIMP RP_ExtractIcon::GetClassID(_Out_ CLSID *pClassID)
 {
 	if (!pClassID) {
 		return E_POINTER;
@@ -86,7 +86,7 @@ IFACEMETHODIMP RP_ExtractIcon::IsDirty(void)
 	return E_NOTIMPL;
 }
 
-IFACEMETHODIMP RP_ExtractIcon::Load(LPCOLESTR pszFileName, DWORD dwMode)
+IFACEMETHODIMP RP_ExtractIcon::Load(_In_ LPCOLESTR pszFileName, DWORD dwMode)
 {
 	RP_UNUSED(dwMode);	// TODO
 
@@ -125,30 +125,40 @@ IFACEMETHODIMP RP_ExtractIcon::Load(LPCOLESTR pszFileName, DWORD dwMode)
 	return S_OK;
 }
 
-IFACEMETHODIMP RP_ExtractIcon::Save(LPCOLESTR pszFileName, BOOL fRemember)
+IFACEMETHODIMP RP_ExtractIcon::Save(_In_ LPCOLESTR pszFileName, BOOL fRemember)
 {
 	RP_UNUSED(pszFileName);
 	RP_UNUSED(fRemember);
 	return E_NOTIMPL;
 }
 
-IFACEMETHODIMP RP_ExtractIcon::SaveCompleted(LPCOLESTR pszFileName)
+IFACEMETHODIMP RP_ExtractIcon::SaveCompleted(_In_ LPCOLESTR pszFileName)
 {
 	RP_UNUSED(pszFileName);
 	return E_NOTIMPL;
 }
 
-IFACEMETHODIMP RP_ExtractIcon::GetCurFile(LPOLESTR *ppszFileName)
+IFACEMETHODIMP RP_ExtractIcon::GetCurFile(_In_ LPOLESTR *ppszFileName)
 {
-	RP_UNUSED(ppszFileName);
-	return E_NOTIMPL;
+	if (!ppszFileName)
+		return E_POINTER;
+
+	RP_D(const RP_ExtractIcon);
+	size_t cb = (d->filename.size() + 1) * sizeof(wchar_t);
+	LPWSTR psz = static_cast<LPWSTR>(CoTaskMemAlloc(cb));
+	if (!psz)
+		return E_OUTOFMEMORY;
+
+	memcpy(psz, d->filename.c_str(), cb);
+	return S_OK;
 }
 
 /** IExtractIconW **/
 // Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/bb761854(v=vs.85).aspx
 
 IFACEMETHODIMP RP_ExtractIcon::GetIconLocation(UINT uFlags,
-	LPWSTR pszIconFile, UINT cchMax, int *piIndex, UINT *pwFlags)
+	_Out_writes_(cchMax) LPWSTR pszIconFile, UINT cchMax,
+	_Out_ int *piIndex, _Out_ UINT *pwFlags)
 {
 	// TODO: If the icon is cached on disk, return a filename.
 	// TODO: Enable ASYNC?
@@ -181,8 +191,8 @@ IFACEMETHODIMP RP_ExtractIcon::GetIconLocation(UINT uFlags,
 	return S_OK;
 }
 
-IFACEMETHODIMP RP_ExtractIcon::Extract(LPCWSTR pszFile, UINT nIconIndex,
-	HICON *phiconLarge, HICON *phiconSmall, UINT nIconSize)
+IFACEMETHODIMP RP_ExtractIcon::Extract(_In_ LPCWSTR pszFile, UINT nIconIndex,
+	_Outptr_ HICON *phiconLarge, _Outptr_ HICON *phiconSmall, UINT nIconSize)
 {
 	// NOTE: pszFile and nIconIndex were set in GetIconLocation().
 	// TODO: Validate them to make sure they're the same values
@@ -262,7 +272,8 @@ IFACEMETHODIMP RP_ExtractIcon::Extract(LPCWSTR pszFile, UINT nIconIndex,
 // Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/bb761854(v=vs.85).aspx
 
 IFACEMETHODIMP RP_ExtractIcon::GetIconLocation(UINT uFlags,
-	LPSTR pszIconFile, UINT cchMax, int *piIndex, UINT *pwFlags)
+	_Out_writes_(cchMax) LPSTR pszIconFile, UINT cchMax,
+	_Out_ int *piIndex, _Out_ UINT *pwFlags)
 {
 	// NOTE: pszIconFile is always blanked out in the IExtractIconW
 	// interface, so no conversion is necessary. We still need a
@@ -277,8 +288,8 @@ IFACEMETHODIMP RP_ExtractIcon::GetIconLocation(UINT uFlags,
 	return hr;
 }
 
-IFACEMETHODIMP RP_ExtractIcon::Extract(LPCSTR pszFile, UINT nIconIndex,
-	HICON *phiconLarge, HICON *phiconSmall, UINT nIconSize)
+IFACEMETHODIMP RP_ExtractIcon::Extract(_In_ LPCSTR pszFile, UINT nIconIndex,
+	_Outptr_ HICON *phiconLarge, _Outptr_ HICON *phiconSmall, UINT nIconSize)
 {
 	// NOTE: The IExtractIconW interface doesn't use pszFile,
 	// so no conversion is necessary.

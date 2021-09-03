@@ -70,10 +70,10 @@ RP_PropertyStore final : public LibWin32Common::ComBase3<IInitializeWithStream, 
 
 	public:
 		// IUnknown
-		IFACEMETHODIMP QueryInterface(REFIID riid, LPVOID *ppvObj) final;
+		IFACEMETHODIMP QueryInterface(_In_ REFIID riid, _Outptr_ LPVOID *ppvObj) final;
 
 		// IInitializeWithStream
-		IFACEMETHODIMP Initialize(IStream *pstream, DWORD grfMode) final;
+		IFACEMETHODIMP Initialize(_In_ IStream *pstream, DWORD grfMode) final;
 
 		// IPropertyStore
 		IFACEMETHODIMP Commit(void) final;

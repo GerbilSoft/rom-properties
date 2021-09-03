@@ -833,13 +833,11 @@ int RP_ShellPropSheetExt_Private::initString(_In_ HWND hDlg, _In_ HWND hWndTab,
 			// Create a read-only EDIT control.
 			// The STATIC control doesn't allow the user
 			// to highlight and copy data.
-			DWORD dwStyle;
+			DWORD dwStyle = WS_CHILD | WS_TABSTOP | WS_VISIBLE | WS_CLIPSIBLINGS |
+			                ES_READONLY | ES_AUTOHSCROLL;
 			if (lf_count > 0) {
 				// Multiple lines.
-				dwStyle = WS_CHILD | WS_TABSTOP | WS_VISIBLE | WS_CLIPSIBLINGS | ES_READONLY | ES_AUTOHSCROLL | ES_MULTILINE;
-			} else {
-				// Single line.
-				dwStyle = WS_CHILD | WS_TABSTOP | WS_VISIBLE | WS_CLIPSIBLINGS | ES_READONLY | ES_AUTOHSCROLL;
+				dwStyle |= ES_MULTILINE;
 			}
 
 			hDlgItem = CreateWindowEx(WS_EX_NOPARENTNOTIFY | WS_EX_TRANSPARENT | dwExStyleRTL,
@@ -1185,7 +1183,6 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 
 	// Create a ListView widget.
 	// NOTE: Separate row option is handled by the caller.
-	// TODO: Optimize by not using OR?
 	DWORD lvsStyle = WS_CHILD | WS_VISIBLE | WS_TABSTOP | LVS_ALIGNLEFT |
 	                 LVS_REPORT | LVS_SINGLESEL | LVS_OWNERDATA;
 	if (!listDataDesc.names) {
@@ -3111,7 +3108,7 @@ RP_ShellPropSheetExt::~RP_ShellPropSheetExt()
 /** IUnknown **/
 // Reference: https://msdn.microsoft.com/en-us/library/office/cc839627.aspx
 
-IFACEMETHODIMP RP_ShellPropSheetExt::QueryInterface(REFIID riid, LPVOID *ppvObj)
+IFACEMETHODIMP RP_ShellPropSheetExt::QueryInterface(_In_ REFIID riid, _Outptr_ LPVOID *ppvObj)
 {
 #ifdef _MSC_VER
 # pragma warning(push)
@@ -3134,7 +3131,7 @@ IFACEMETHODIMP RP_ShellPropSheetExt::QueryInterface(REFIID riid, LPVOID *ppvObj)
 // References:
 // - https://msdn.microsoft.com/en-us/library/windows/desktop/bb775094(v=vs.85).aspx
 IFACEMETHODIMP RP_ShellPropSheetExt::Initialize(
-	LPCITEMIDLIST pidlFolder, LPDATAOBJECT pDataObj, HKEY hKeyProgID)
+	_In_ LPCITEMIDLIST pidlFolder, _In_ LPDATAOBJECT pDataObj, _In_ HKEY hKeyProgID)
 {
 	((void)pidlFolder);
 	((void)hKeyProgID);
@@ -3247,7 +3244,7 @@ cleanup:
 
 /** IShellPropSheetExt **/
 
-IFACEMETHODIMP RP_ShellPropSheetExt::AddPages(LPFNADDPROPSHEETPAGE pfnAddPage, LPARAM lParam)
+IFACEMETHODIMP RP_ShellPropSheetExt::AddPages(_In_ LPFNADDPROPSHEETPAGE pfnAddPage, LPARAM lParam)
 {
 	// Based on CppShellExtPropSheetHandler.
 	// https://code.msdn.microsoft.com/windowsapps/CppShellExtPropSheetHandler-d93b49b7
@@ -3299,7 +3296,8 @@ IFACEMETHODIMP RP_ShellPropSheetExt::AddPages(LPFNADDPROPSHEETPAGE pfnAddPage, L
 	return S_OK;
 }
 
-IFACEMETHODIMP RP_ShellPropSheetExt::ReplacePage(UINT uPageID, LPFNADDPROPSHEETPAGE pfnReplaceWith, LPARAM lParam)
+IFACEMETHODIMP RP_ShellPropSheetExt::ReplacePage(UINT uPageID,
+	_In_ LPFNADDPROPSHEETPAGE pfnReplaceWith, LPARAM lParam)
 {
 	// Not used.
 	RP_UNUSED(uPageID);

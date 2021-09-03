@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpfile)                        *
  * FileSystem_common.cpp: File system functions. (Common functions)        *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -88,10 +88,11 @@ const string &getConfigDirectory(void)
 
 /**
  * Get the file extension from a filename or pathname.
- * @param filename Filename.
- * @return File extension, including the leading dot. (pointer to within the filename) [nullptr if no extension]
+ * @param filename Filename
+ * @return File extension, including the leading dot (pointer to within the filename) [nullptr if no extension]
  */
-const char *file_ext(const string &filename)
+template<typename T>
+static const T *T_file_ext(const std::basic_string<T> &filename)
 {
 	size_t dotpos = filename.find_last_of('.');
 	size_t slashpos = filename.find_last_of(DIR_SEP_CHR);
@@ -106,6 +107,28 @@ const char *file_ext(const string &filename)
 	// Return the file extension. (pointer to within the filename)
 	return &filename[dotpos];
 }
+
+/**
+ * Get the file extension from a filename or pathname.
+ * @param filename Filename
+ * @return File extension, including the leading dot (pointer to within the filename) [nullptr if no extension]
+ */
+const char* file_ext(const string& filename)
+{
+	return T_file_ext(filename);
+}
+
+#ifdef _WIN32
+/**
+ * Get the file extension from a filename or pathname. (wchar_t version)
+ * @param filename Filename
+ * @return File extension, including the leading dot (pointer to within the filename) [nullptr if no extension]
+ */
+const wchar_t* file_ext(const std::wstring& filename)
+{
+	return T_file_ext(filename);
+}
+#endif /* _WIN32 */
 
 /**
  * Replace the file extension from a filename.
