@@ -226,7 +226,6 @@ IFACEMETHODIMP RP_ExtractImage::Extract(HBITMAP *phBmpImage)
 	// ROM is supported. Get the image.
 	// NOTE: Using width only. (TODO: both width/height?)
 	CreateThumbnail::GetThumbnailOutParams_t outParams;
-	outParams.retImg = nullptr;
 	int ret = d->thumbnailer.getThumbnail(d->romData, d->rgSize.cx, &outParams);
 	if (ret != 0) {
 		// ROM is not supported. Use the fallback.
