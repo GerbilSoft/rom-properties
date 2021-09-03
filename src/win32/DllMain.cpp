@@ -488,9 +488,11 @@ static LONG RegisterUserFileType(const tstring &sid, const RomDataFactory::ExtIn
 	// multiple times due to HKCR vs. HKLM differences.
 
 	// Get the ProgID.
+	// NOTE: Skipping "Applications\\" ProgIDs. These are registered
+	// applications and are selected using "UserChoice" on Win8+.
 	const tstring progID = GetUserFileAssoc(sid, ext_info.ext);
-	if (progID.empty()) {
-		// No ProgID.
+	if (progID.empty() || !_tcsnicmp(progID.c_str(), _T("Applications\\"), 13)) {
+		// No ProgID and/or it's "Applications/".
 		return ERROR_SUCCESS;
 	}
 
@@ -557,6 +559,9 @@ static LONG UnregisterUserFileType(const tstring &sid, const RomDataFactory::Ext
 {
 	// NOTE: We might end up registering RP_PropertyStore
 	// multiple times due to HKCR vs. HKLM differences.
+
+	// NOTE: Not skipping "Applications\\" ProgIDs, since these may
+	// have been registered by older versions of rom-properties.
 
 	// Get the ProgID.
 	const tstring progID = GetUserFileAssoc(sid, ext_info.ext);
