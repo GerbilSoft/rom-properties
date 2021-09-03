@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * RP_ExtractIcon_p.hpp: IExtractIcon implementation. (PRIVATE CLASS)      *
  *                                                                         *
- * Copyright (c) 2016-2017 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -102,20 +102,6 @@ class RP_ExtractIcon_Private
 		 */
 		LONG Fallback_int(LibWin32Common::RegKey &hkey_Assoc,
 			HICON *phiconLarge, HICON *phiconSmall, UINT nIconSize);
-
-		/**
-		 * Fallback icon handler function. (internal)
-		 * This function reads a registered application ProgID for fallbacks,
-		 * e.g. from UserChoice.
-		 * @param szAppName Application name, e.g. _T("notepad.exe")
-		 * @param bCurrentUser If true, check HKCU instead of HKCR.
-		 * @param phiconLarge Large icon
-		 * @param phiconSmall Small icon
-		 * @param nIconSize Icon sizes
-		 * @return ERROR_SUCCESS on success; Win32 error code on error
-		 */
-		LONG Fallback_int_Application(LPCTSTR szAppName, bool bCurrentUser,
-			HICON* phiconLarge, HICON* phiconSmall, UINT nIconSize);
 
 	public:
 		/**
