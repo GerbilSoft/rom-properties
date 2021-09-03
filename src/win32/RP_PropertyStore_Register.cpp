@@ -157,6 +157,7 @@ LONG RP_PropertyStore::RegisterFileType(RegKey &hkcr, RegKey *pHklm, LPCTSTR ext
 
 	// Write the registry keys.
 	// TODO: Determine which fields are actually supported by the specific extension.
+	// TODO: RP_Fallback handling?
 	RegKey hkey_ext(hkcr, ext, KEY_READ|KEY_WRITE, true);
 	if (!hkey_ext.isOpen())
 		return hkey_ext.lOpenRes();
@@ -204,17 +205,22 @@ LONG RP_PropertyStore::UnregisterFileType(RegKey &hkcr, RegKey *pHklm, LPCTSTR e
 {
 	// Check the main file extension key.
 	// If PreviewDetails and InfoTip match our values, remove them.
-	const tstring s_previewDetails = GetPreviewDetailsString();
-	const tstring s_infoTip = GetInfoTipString();
+	// FIXME: What if our version changes?
+	// TODO: RP_Fallback handling?
 
-	// Write the registry keys.
 	RegKey hkey_ext(hkcr, ext, KEY_READ|KEY_WRITE, true);
 	if (!hkey_ext.isOpen())
 		return hkey_ext.lOpenRes();
-	LONG lResult = hkey_ext.write(_T("PreviewDetails"), s_previewDetails);
-	if (lResult != ERROR_SUCCESS) return lResult;
-	lResult = hkey_ext.write(_T("InfoTip"), s_infoTip);
-	if (lResult != ERROR_SUCCESS) return lResult;
+	tstring s_value = hkey_ext.read(_T("PreviewDetails"));
+	if (s_value == GetPreviewDetailsString()) {
+		LONG lResult = hkey_ext.deleteValue(_T("PreviewDetails"));
+		if (lResult != ERROR_SUCCESS) return lResult;
+	}
+	s_value = hkey_ext.read(_T("InfoTip"));
+	if (s_value == GetInfoTipString()) {
+		LONG lResult = hkey_ext.deleteValue(_T("InfoTip"));
+		if (lResult != ERROR_SUCCESS) return lResult;
+	}
 
 	if (pHklm) {
 		// Open the "PropertyHandlers" key.
@@ -231,7 +237,7 @@ LONG RP_PropertyStore::UnregisterFileType(RegKey &hkcr, RegKey *pHklm, LPCTSTR e
 			const tstring def_value = hklmph_ext.read(nullptr);
 			if (def_value == CLSID_RP_PropertyStore_String) {
 				// Remove the default value.
-				lResult = hklmph_ext.deleteValue(nullptr);
+				LONG lResult = hklmph_ext.deleteValue(nullptr);
 				if (lResult != ERROR_SUCCESS) return lResult;
 				// If there are no more values, delete the key.
 				if (hklmph_ext.isKeyEmpty()) {
@@ -242,7 +248,7 @@ LONG RP_PropertyStore::UnregisterFileType(RegKey &hkcr, RegKey *pHklm, LPCTSTR e
 			}
 		} else {
 			// Anything other than ERROR_FILE_NOT_FOUND is an error.
-			lResult = hklmph_ext.lOpenRes();
+			LONG lResult = hklmph_ext.lOpenRes();
 			if (lResult != ERROR_FILE_NOT_FOUND) {
 				return lResult;
 			}
