@@ -624,6 +624,39 @@ static LONG UnregisterUserFileType(const tstring &sid, const RomDataFactory::Ext
 }
 
 /**
+ * Unregister ourselves in any "HKCR\\Applications" entries.
+ * This was an error that caused various brokenness with
+ * UserChoice on Windows 8+.
+ *
+ * @param hkcr "HKCR\\Applications" or "HKU\\xxx\\SOFTWARE\\Classes\\Applications".
+ * @return ERROR_SUCCESS on success; Win32 error code on error.
+ */
+static LONG UnregisterFromApplications(RegKey& hkcr)
+{
+	// Enumerate the subkeys and unregister from each of them.
+	list<tstring> lstSubKeys;
+	LONG lResult = hkcr.enumSubKeys(lstSubKeys);
+	if (lResult != ERROR_SUCCESS || lstSubKeys.empty()) {
+		return lResult;
+	}
+
+	const auto iter_cend = lstSubKeys.cend();
+	for (auto iter = lstSubKeys.cbegin(); iter != iter_cend; ++iter) {
+		RegKey hkey_app(hkcr, iter->c_str(), KEY_READ|KEY_WRITE, false);
+		if (!hkey_app.isOpen())
+			continue;
+
+		// Unregister from this Application.
+		// NOTE: Not checking results.
+		// NOTE: No RP_ShellPropSheetExt unregistration is needed here.
+		RP_ExtractIcon::UnregisterFileType(hkey_app, nullptr);
+		RP_ExtractImage::UnregisterFileType(hkey_app, nullptr);
+		RP_ThumbnailProvider::UnregisterFileType(hkey_app, nullptr);
+		RP_PropertyStore::UnregisterFileType(hkey_app, nullptr, nullptr);
+	}
+}
+
+/**
  * Remove HKEY_USERS subkeys from an std::list if we don't want to process them.
  * @param subKey Subkey name.
  * @return True to remove; false to keep.
@@ -754,6 +787,15 @@ STDAPI DllRegisterServer(void)
 	// TODO: Icon/thumbnail handling?
 	lResult = RP_ShellPropSheetExt::RegisterFileType(hkcr, _T("Drive"));
 	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
+
+	// Unregister ourselves in any "HKCR\\Applications" entries,
+	// and similarly for users. This was an error that caused
+	// various brokenness with UserChoice on Windows 8+.
+	RegKey hkcr_Applications(HKEY_CLASSES_ROOT, _T("Applications"), KEY_READ, false);
+	if (hkcr_Applications.isOpen()) {
+		UnregisterFromApplications(hkcr_Applications);
+	}
+	// TODO: User SIDs
 
 	// Notify the shell that file associations have changed.
 	// Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/cc144148(v=vs.85).aspx

@@ -118,11 +118,11 @@ LONG RP_ExtractIcon_Private::RegisterFileType(RegKey &hkey_Assoc)
 
 /**
  * Register the file type handler.
- * @param hkcr HKEY_CLASSES_ROOT or user-specific classes root.
- * @param ext File extension, including the leading dot.
+ * @param hkcr	[in] HKEY_CLASSES_ROOT or user-specific classes root.
+ * @param ext	[in] File extension, including the leading dot.
  * @return ERROR_SUCCESS on success; Win32 error code on error.
  */
-LONG RP_ExtractIcon::RegisterFileType(RegKey &hkcr, LPCTSTR ext)
+LONG RP_ExtractIcon::RegisterFileType(RegKey &hkcr, _In_ LPCTSTR ext)
 {
 	// Open the file extension key.
 	RegKey hkcr_ext(hkcr, ext, KEY_READ|KEY_WRITE, true);
@@ -270,12 +270,21 @@ LONG RP_ExtractIcon_Private::UnregisterFileType(RegKey &hkey_Assoc)
 
 /**
  * Unregister the file type handler.
- * @param hkcr HKEY_CLASSES_ROOT or user-specific classes root.
- * @param ext File extension, including the leading dot.
+ * @param hkcr	[in] HKEY_CLASSES_ROOT or user-specific classes root.
+ * @param ext	[in,opt] File extension, including the leading dot.
+ *
+ * NOTE: ext can be NULL, in which case, hkcr is assumed to be
+ * the registered file association.
+ *
  * @return ERROR_SUCCESS on success; Win32 error code on error.
  */
-LONG RP_ExtractIcon::UnregisterFileType(RegKey &hkcr, LPCTSTR ext)
+LONG RP_ExtractIcon::UnregisterFileType(RegKey &hkcr, _In_opt_ LPCTSTR ext)
 {
+	if (!ext) {
+		// Unregister from hkcr directly.
+		return RP_ExtractIcon_Private::UnregisterFileType(hkcr);
+	}
+
 	// Open the file extension key.
 	RegKey hkcr_ext(hkcr, ext, KEY_READ|KEY_WRITE, false);
 	if (!hkcr_ext.isOpen()) {
