@@ -49,32 +49,92 @@ IF(CMAKE_BUILD_TYPE MATCHES ^release)
 	SET(CMAKE_FIND_LIBRARY_SUFFIXES .lib .a ${CMAKE_FIND_LIBRARY_SUFFIXES})
 ENDIF(CMAKE_BUILD_TYPE MATCHES ^release)
 
-# Test for various linker flags.
+# Test for common LDFLAGS.
+# NOTE: CHECK_C_COMPILER_FLAG() doesn't seem to work, even with
+# CMAKE_TRY_COMPILE_TARGET_TYPE. Check `ld --help` for the various
+# parameters instead.
+
 # NOTE: --tsaware is only valid for EXEs, not DLLs.
 # TODO: Make static linkage a CMake option: --static-libgcc, --static-libstdc++
-FOREACH(FLAG_TEST "-Wl,--large-address-aware" "-Wl,--nxcompat" "-Wl,--tsaware")
-	# CMake doesn't like "+" characters in variable names.
-	STRING(REPLACE "+" "_" FLAG_TEST_VARNAME "${FLAG_TEST}")
+EXECUTE_PROCESS(COMMAND ${CMAKE_LINKER} --help
+	OUTPUT_VARIABLE _ld_out
+	ERROR_QUIET)
 
-	IF(LDFLAG_${FLAG_TEST_VARNAME})
-		SET(RP_EXE_LINKER_FLAGS_WIN32 "${RP_EXE_LINKER_FLAGS_WIN32} ${FLAG_TEST}")
-	ENDIF(LDFLAG_${FLAG_TEST_VARNAME})
-	UNSET(LDFLAG_${FLAG_TEST_VARNAME})
-	UNSET(FLAG_TEST_VARNAME)
+# NOTE: Newer ld shows things like "--[disable-]dynamicbase".
+IF(CPU_i386 OR CPU_arm)
+	# 32-bit only LDFLAGS
+	FOREACH(FLAG_TEST "large-address-aware")
+		IF(NOT DEFINED LDFLAG_${FLAG_TEST})
+			MESSAGE(STATUS "Checking if ld supports --${FLAG_TEST}")
+			IF(_ld_out MATCHES "${FLAG_TEST}")
+				MESSAGE(STATUS "Checking if ld supports --${FLAG_TEST} - yes")
+				SET(LDFLAG_${FLAG_TEST} 1 CACHE INTERNAL "Linker supports --${FLAG_TEST}")
+			ELSE()
+				MESSAGE(STATUS "Checking if ld supports --${FLAG_TEST} - no")
+				SET(LDFLAG_${FLAG_TEST} "" CACHE INTERNAL "Linker supports --${FLAG_TEST}")
+			ENDIF()
+		ENDIF()
+
+		IF(LDFLAG_${FLAG_TEST})
+			SET(RP_EXE_LINKER_FLAGS_WIN32 "${RP_EXE_LINKER_FLAGS_WIN32} -Wl,--${FLAG_TEST}")
+		ENDIF(LDFLAG_${FLAG_TEST})
+	ENDFOREACH()
+ELSEIF(CPU_amd64 OR CPU_arm64)
+	# 64-bit only LDFLAGS
+	FOREACH(FLAG_TEST "high-entropy-va")
+		IF(NOT DEFINED LDFLAG_${FLAG_TEST})
+			MESSAGE(STATUS "Checking if ld supports --${FLAG_TEST}")
+			IF(_ld_out MATCHES "${FLAG_TEST}")
+				MESSAGE(STATUS "Checking if ld supports --${FLAG_TEST} - yes")
+				SET(LDFLAG_${FLAG_TEST} 1 CACHE INTERNAL "Linker supports --${FLAG_TEST}")
+			ELSE()
+				MESSAGE(STATUS "Checking if ld supports --${FLAG_TEST} - no")
+				SET(LDFLAG_${FLAG_TEST} "" CACHE INTERNAL "Linker supports --${FLAG_TEST}")
+			ENDIF()
+		ENDIF()
+
+		IF(LDFLAG_${FLAG_TEST})
+			SET(RP_EXE_LINKER_FLAGS_WIN32 "${RP_EXE_LINKER_FLAGS_WIN32} -Wl,--${FLAG_TEST}")
+		ENDIF(LDFLAG_${FLAG_TEST})
+	ENDFOREACH()
+ENDIF()
+
+# CPU-independent LDFLAGS
+FOREACH(FLAG_TEST "dynamicbase" "nxcompat")
+	IF(NOT DEFINED LDFLAG_${FLAG_TEST})
+		MESSAGE(STATUS "Checking if ld supports --${FLAG_TEST}")
+		IF(_ld_out MATCHES "${FLAG_TEST}")
+			MESSAGE(STATUS "Checking if ld supports --${FLAG_TEST} - yes")
+			SET(LDFLAG_${FLAG_TEST} 1 CACHE INTERNAL "Linker supports --${FLAG_TEST}")
+		ELSE()
+			MESSAGE(STATUS "Checking if ld supports --${FLAG_TEST} - no")
+			SET(LDFLAG_${FLAG_TEST} "" CACHE INTERNAL "Linker supports --${FLAG_TEST}")
+		ENDIF()
+	ENDIF()
+
+	IF(LDFLAG_${FLAG_TEST})
+		SET(RP_EXE_LINKER_FLAGS_WIN32 "${RP_EXE_LINKER_FLAGS_WIN32} -Wl,--${FLAG_TEST}")
+	ENDIF(LDFLAG_${FLAG_TEST})
 ENDFOREACH()
 SET(RP_SHARED_LINKER_FLAGS_WIN32 "${RP_EXE_LINKER_FLAGS_WIN32}")
 SET(RP_MODULE_LINKER_FLAGS_WIN32 "${RP_EXE_LINKER_FLAGS_WIN32}")
 
 # EXE-only flags.
-FOREACH(FLAG_TEST "-Wl,--tsaware")
-	# CMake doesn't like "+" characters in variable names.
-	STRING(REPLACE "+" "_" FLAG_TEST_VARNAME "${FLAG_TEST}")
+FOREACH(FLAG_TEST "tsaware")
+	IF(NOT DEFINED LDFLAG_${FLAG_TEST})
+		MESSAGE(STATUS "Checking if ld supports --${FLAG_TEST}")
+		IF(_ld_out MATCHES "${FLAG_TEST}")
+			MESSAGE(STATUS "Checking if ld supports --${FLAG_TEST} - yes")
+			SET(LDFLAG_${FLAG_TEST} 1 CACHE INTERNAL "Linker supports --${FLAG_TEST}")
+		ELSE()
+			MESSAGE(STATUS "Checking if ld supports --${FLAG_TEST} - no")
+			SET(LDFLAG_${FLAG_TEST} "" CACHE INTERNAL "Linker supports --${FLAG_TEST}")
+		ENDIF()
+	ENDIF()
 
-	IF(LDFLAG_${FLAG_TEST_VARNAME})
-		SET(RP_EXE_LINKER_FLAGS_WIN32 "${RP_EXE_LINKER_FLAGS_WIN32} ${FLAG_TEST}")
-	ENDIF(LDFLAG_${FLAG_TEST_VARNAME})
-	UNSET(LDFLAG_${FLAG_TEST_VARNAME})
-	UNSET(FLAG_TEST_VARNAME)
+	IF(LDFLAG_${FLAG_TEST})
+		SET(RP_EXE_LINKER_FLAGS_WIN32 "${RP_EXE_LINKER_FLAGS_WIN32} -Wl,--${FLAG_TEST}")
+	ENDIF(LDFLAG_${FLAG_TEST})
 ENDFOREACH()
 
 # Test for dynamicbase (ASLR) support.
