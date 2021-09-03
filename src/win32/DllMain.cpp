@@ -654,6 +654,8 @@ static LONG UnregisterFromApplications(RegKey& hkcr)
 		RP_ThumbnailProvider::UnregisterFileType(hkey_app, nullptr);
 		RP_PropertyStore::UnregisterFileType(hkey_app, nullptr, nullptr);
 	}
+
+	return ERROR_SUCCESS;
 }
 
 /**
