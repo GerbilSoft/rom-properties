@@ -16,6 +16,7 @@ using LibWin32Common::RegKey;
 
 // C++ STL classes.
 using std::tstring;
+using std::unique_ptr;
 
 #define IID_IExtractImage_String	TEXT("{BB2E617C-0920-11D1-9A0B-00C04FC2D6C1}")
 #define CLSID_RP_ExtractImage_String	TEXT("{84573BC0-9502-42F8-8066-CC527D0779E5}")
@@ -124,35 +125,38 @@ LONG RP_ExtractImage::RegisterFileType(RegKey &hkcr, _In_ LPCTSTR ext)
 LONG RP_ExtractImage_Private::UnregisterFileType(RegKey &hkey_Assoc)
 {
 	// Unregister as the image handler for this file association.
+	// NOTE: Continuing even if some keys are missing in case there
+	// are other leftover keys.
 
 	// Open the "ShellEx" key.
 	RegKey hkcr_ShellEx(hkey_Assoc, _T("ShellEx"), KEY_READ, false);
 	if (!hkcr_ShellEx.isOpen()) {
 		// ERROR_FILE_NOT_FOUND is acceptable here.
 		LONG lResult = hkcr_ShellEx.lOpenRes();
-		if (lResult == ERROR_FILE_NOT_FOUND) {
-			return ERROR_SUCCESS;
+		if (lResult != ERROR_FILE_NOT_FOUND) {
+			return lResult;
 		}
-		return lResult;
 	}
 
 	// Open the {IID_IExtractImage} key.
-	RegKey hkcr_IExtractImage(hkcr_ShellEx, IID_IExtractImage_String, KEY_READ|KEY_WRITE, false);
-	if (!hkcr_IExtractImage.isOpen()) {
-		// ERROR_FILE_NOT_FOUND is acceptable here.
-		LONG lResult = hkcr_IExtractImage.lOpenRes();
-		if (lResult == ERROR_FILE_NOT_FOUND) {
-			return ERROR_SUCCESS;
+	unique_ptr<RegKey> phkcr_IExtractImage;
+	if (hkcr_ShellEx.isOpen()) {
+		phkcr_IExtractImage.reset(new RegKey(hkcr_ShellEx, IID_IExtractImage_String, KEY_READ|KEY_WRITE, false));
+		if (phkcr_IExtractImage->isOpen()) {
+			// Check if the default value matches the CLSID.
+			const tstring str_IExtractImage = phkcr_IExtractImage->read(nullptr);
+			if (str_IExtractImage != CLSID_RP_ExtractImage_String) {
+				// Not our IExtractImage.
+				phkcr_IExtractImage.reset(nullptr);
+			}
+		} else {
+			// ERROR_FILE_NOT_FOUND is acceptable here.
+			LONG lResult = phkcr_IExtractImage->lOpenRes();
+			if (lResult != ERROR_FILE_NOT_FOUND) {
+				return lResult;
+			}
+			phkcr_IExtractImage.reset(nullptr);
 		}
-		return lResult;
-	}
-
-	// Check if the default value matches the CLSID.
-	const tstring str_IExtractImage = hkcr_IExtractImage.read(nullptr);
-	if (str_IExtractImage != CLSID_RP_ExtractImage_String) {
-		// Not our IExtractImage.
-		// We're done here.
-		return ERROR_SUCCESS;
 	}
 
 	// Restore the fallbacks if we have any.
@@ -163,39 +167,56 @@ LONG RP_ExtractImage_Private::UnregisterFileType(RegKey &hkey_Assoc)
 		clsid_reg = hkcr_RP_Fallback.read(_T("IExtractImage"));
 	}
 
-	if (!clsid_reg.empty()) {
-		// Restore the IExtractImage.
-		LONG lResult = hkcr_IExtractImage.write(nullptr, clsid_reg);
-		if (lResult != ERROR_SUCCESS) {
-			return lResult;
-		}
-	} else {
-		// No IExtractImage to restore.
-		// Remove the current one.
-		hkcr_IExtractImage.close();
-		LONG lResult = hkcr_ShellEx.deleteSubKey(IID_IExtractImage_String);
-		if (lResult != ERROR_SUCCESS && lResult != ERROR_FILE_NOT_FOUND) {
-			return lResult;
+	if (phkcr_IExtractImage) {
+		if (!clsid_reg.empty()) {
+			// Restore the IExtractImage.
+			LONG lResult = phkcr_IExtractImage->write(nullptr, clsid_reg);
+			if (lResult != ERROR_SUCCESS) {
+				return lResult;
+			}
+		} else {
+			// No IExtractImage to restore.
+			// Remove the current one.
+			phkcr_IExtractImage.reset();
+			LONG lResult = hkcr_ShellEx.deleteSubKey(IID_IExtractImage_String);
+			if (lResult != ERROR_SUCCESS && lResult != ERROR_FILE_NOT_FOUND) {
+				return lResult;
+			}
+
+			// If the "ShellEx" key is empty, delete it.
+			if (hkcr_ShellEx.isKeyEmpty()) {
+				hkcr_ShellEx.close();
+				hkey_Assoc.deleteSubKey(_T("ShellEx"));
+			}
 		}
 	}
 
 	// Remove the fallbacks.
-	LONG lResult = ERROR_SUCCESS;
 	if (hkcr_RP_Fallback.isOpen()) {
-		lResult = hkcr_RP_Fallback.deleteValue(_T("IExtractImage"));
-		if (lResult == ERROR_FILE_NOT_FOUND) {
-			lResult = ERROR_SUCCESS;
+		LONG lResult = hkcr_RP_Fallback.deleteValue(_T("IExtractImage"));
+		if (lResult != ERROR_SUCCESS && lResult != ERROR_FILE_NOT_FOUND) {
+			return lResult;
+		}
+
+		// If the key is empty, delete it.
+		if (hkcr_RP_Fallback.isKeyEmpty()) {
+			hkcr_RP_Fallback.close();
+			hkey_Assoc.deleteSubKey(_T("RP_Fallback"));
 		}
 	}
 
 	// File type handler unregistered.
-	return lResult;
+	return ERROR_SUCCESS;
 }
 
 /**
  * Unregister the file type handler.
  * @param hkcr	[in] HKEY_CLASSES_ROOT or user-specific classes root.
  * @param ext	[in,opt] File extension, including the leading dot.
+ *
+ * NOTE: ext can be NULL, in which case, hkcr is assumed to be
+ * the registered file association.
+ *
  * @return ERROR_SUCCESS on success; Win32 error code on error.
  */
 LONG RP_ExtractImage::UnregisterFileType(RegKey &hkcr, _In_opt_ LPCTSTR ext)
