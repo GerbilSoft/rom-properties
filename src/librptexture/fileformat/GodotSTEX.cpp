@@ -7,6 +7,8 @@
  ***************************************************************************/
 
 #include "stdafx.h"
+#include "config.librptexture.h"
+
 #include "GodotSTEX.hpp"
 #include "FileFormat_p.hpp"
 
@@ -163,6 +165,9 @@ unsigned int GodotSTEXPrivate::calcImageSize(STEX_Format_e format, unsigned int 
 		Align4Divide2,
 		Align4,
 
+		// ASTC requires aligned blocks.
+		Align8Divide4,
+
 		Max
 	};
 
@@ -215,7 +220,8 @@ unsigned int GodotSTEXPrivate::calcImageSize(STEX_Format_e format, unsigned int 
 		OpCode::Divide2,	// STEX_FORMAT_ETC2_RGB8A1	// TODO: Verify; Align4?
 
 		// Proprietary formats used in Sonic Colors Ultimate.
-		OpCode::Divide4,	// STEX_FORMAT_SCU_ASTC_8x8	// 8x8 == 2bpp
+		// FIXME: Other ASTC variants need a more complicated calculation.
+		OpCode::Align8Divide4,	// STEX_FORMAT_SCU_ASTC_8x8	// 8x8 == 2bpp
 	};
 	static_assert(ARRAY_SIZE(mul_tbl) == STEX_FORMAT_MAX,
 		"mul_tbl[] is not the correct size.");
@@ -256,6 +262,10 @@ unsigned int GodotSTEXPrivate::calcImageSize(STEX_Format_e format, unsigned int 
 
 		case OpCode::Align4:
 			expected_size = ALIGN_BYTES(4, width) * ALIGN_BYTES(4, height);
+			break;
+
+		case OpCode::Align8Divide4:
+			expected_size = ALIGN_BYTES(8, width) * ALIGN_BYTES(8, height) / 4;
 			break;
 	}
 
@@ -368,6 +378,15 @@ const rp_image *GodotSTEXPrivate::loadImage(int mip)
 				stexHeader.width, height,
 				buf.get(), expected_size);
 			break;
+
+#ifdef ENABLE_ASTC
+		case STEX_FORMAT_SCU_ASTC_8x8:
+			img = ImageDecoder::fromASTC(
+				stexHeader.width, height,
+				buf.get(), expected_size,
+				8, 8);
+			break;
+#endif /* ENABLE_ASTC */
 	}
 
 	mipmaps[mip] = img;

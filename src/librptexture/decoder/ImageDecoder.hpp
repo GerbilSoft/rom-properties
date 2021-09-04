@@ -877,6 +877,23 @@ ATTR_ACCESS_SIZE(read_only, 3, 4)
 rp_image *fromBC7(int width, int height,
 	const uint8_t *img_buf, int img_siz);
 
+#ifdef ENABLE_ASTC
+/**
+ * Convert an ASTC 2D image to rp_image.
+ * @param width Image width
+ * @param height Image height
+ * @param img_buf PVRTC image buffer
+ * @param img_siz Size of image data
+ * @param block_x ASTC block size, X value
+ * @param block_y ASTC block size, Y value
+ * @return rp_image, or nullptr on error.
+ */
+ATTR_ACCESS_SIZE(read_only, 3, 4)
+rp_image *fromASTC(int width, int height,
+	const uint8_t *RESTRICT img_buf, int img_siz,
+	uint8_t block_x, uint8_t block_y);
+#endif /* ENABLE_ASTC */
+
 } }
 
 #endif /* __ROMPROPERTIES_LIBRPTEXTURE_DECODER_IMAGEDECODER_HPP__ */
