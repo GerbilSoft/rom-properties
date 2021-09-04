@@ -199,8 +199,8 @@ unsigned int GodotSTEXPrivate::calcImageSize(STEX_Format_e format, unsigned int 
 		OpCode::Align4Divide2,	// STEX_FORMAT_DXT1
 		OpCode::Align4,		// STEX_FORMAT_DXT3
 		OpCode::Align4,		// STEX_FORMAT_DXT5
-		OpCode::Align4Divide2,	// STEX_FORMAT_RGTC_R		// TODO: Verify
-		OpCode::Align4Divide2,	// STEX_FORMAT_RGTC_RG		// TODO: Verify
+		OpCode::Align4Divide2,	// STEX_FORMAT_RGTC_R
+		OpCode::Align4,		// STEX_FORMAT_RGTC_RG
 		OpCode::Align4,		// STEX_FORMAT_BPTC_RGBA
 		OpCode::Align4,		// STEX_FORMAT_BPTC_RGBF	// TODO: Verify
 
@@ -377,6 +377,25 @@ const rp_image *GodotSTEXPrivate::loadImage(int mip)
 			break;
 		case STEX_FORMAT_DXT5:
 			img = ImageDecoder::fromDXT5(
+				stexHeader.width, height,
+				buf.get(), expected_size);
+			break;
+
+		case STEX_FORMAT_RGTC_R:
+			// RGTC, one component. (BC4)
+			img = ImageDecoder::fromBC4(
+				stexHeader.width, height,
+				buf.get(), expected_size);
+			break;
+		case STEX_FORMAT_RGTC_RG:
+			// RGTC, two components. (BC5)
+			img = ImageDecoder::fromBC5(
+				stexHeader.width, height,
+				buf.get(), expected_size);
+			break;
+		case STEX_FORMAT_BPTC_RGBA:
+			// BPTC-compressed RGBA texture. (BC7)
+			img = ImageDecoder::fromBC7(
 				stexHeader.width, height,
 				buf.get(), expected_size);
 			break;
