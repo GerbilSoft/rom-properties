@@ -141,24 +141,6 @@ HBITMAP CreateThumbnailNoAlpha::rpImageToImgClass(const rp_image *img) const
 		return nullptr;
 	}
 
-	// Windows doesn't like non-square icons.
-	// Add extra transparent columns/rows before
-	// converting to HBITMAP.
-	rp_image *tmp_img = nullptr;
-	if (!img->isSquare()) {
-		// Image is non-square.
-		tmp_img = img->squared();
-		assert(tmp_img != nullptr);
-		if (tmp_img) {
-			const RpGdiplusBackend *const tmp_backend =
-				dynamic_cast<const RpGdiplusBackend*>(tmp_img->backend());
-			assert(tmp_backend != nullptr);
-			if (tmp_backend) {
-				backend = tmp_backend;
-			}
-		}
-	}
-
 	// Convert to HBITMAP.
 	// TODO: Const-ness stuff.
 
@@ -168,7 +150,6 @@ HBITMAP CreateThumbnailNoAlpha::rpImageToImgClass(const rp_image *img) const
 	// Thumbs.db images won't reflect color scheme changes.
 	HBITMAP hbmp = const_cast<RpGdiplusBackend*>(backend)->toHBITMAP(
 		LibWin32Common::GetSysColor_ARGB32(COLOR_WINDOW));
-	UNREF(tmp_img);
 	return hbmp;
 }
 
