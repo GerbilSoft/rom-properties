@@ -893,7 +893,7 @@ int ValveVTF::getFields(LibRpBase::RomFields *fields) const
 #endif
 
 	const int initial_count = fields->count();
-	fields->reserve(initial_count + 1);	// Maximum of 12 fields.
+	fields->reserve(initial_count + 9);	// Maximum of 9 fields.
 
 	// VTF header.
 	const VTFHEADER *const vtfHeader = &d->vtfHeader;
