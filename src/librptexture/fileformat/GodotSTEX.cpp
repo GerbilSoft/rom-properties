@@ -684,7 +684,19 @@ int GodotSTEX::getFields(LibRpBase::RomFields *fields) const
 	}
 
 	const int initial_count = fields->count();
-	fields->reserve(initial_count + 2);	// Maximum of 2 fields.
+	fields->reserve(initial_count + 3);	// Maximum of 3 fields.
+
+	// If a rescale size is specified, and it differs from internal dimensions,
+	// show the internal dimensions.
+	if (d->stexHeader.width_rescale > 0 && d->stexHeader.height_rescale > 0) {
+		if (d->stexHeader.width != d->stexHeader.width_rescale ||
+		    d->stexHeader.height != d->stexHeader.height_rescale)
+		{
+			// Rescale size is specified. Show internal dimensions.
+			fields->addField_dimensions(C_("GodotSTEX", "Internal Size"),
+				d->stexHeader.width, d->stexHeader.height);
+		}
+	}
 
 	// Flags
 	static const char *const flags_bitfield_names[] = {
