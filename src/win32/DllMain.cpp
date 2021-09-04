@@ -652,7 +652,9 @@ static LONG UnregisterFromApplications(RegKey& hkcr)
 		RP_ExtractIcon::UnregisterFileType(hkey_app, nullptr);
 		RP_ExtractImage::UnregisterFileType(hkey_app, nullptr);
 		RP_ThumbnailProvider::UnregisterFileType(hkey_app, nullptr);
+#ifdef HAVE_RP_PROPERTYSTORE_DEPS
 		RP_PropertyStore::UnregisterFileType(hkey_app, nullptr, nullptr);
+#endif /* HAVE_RP_PROPERTYSTORE_DEPS */
 	}
 
 	return ERROR_SUCCESS;
