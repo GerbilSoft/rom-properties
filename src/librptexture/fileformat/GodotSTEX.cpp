@@ -719,6 +719,7 @@ int GodotSTEX::getFields(LibRpBase::RomFields *fields) const
 	static const char *const format_flags_bitfield_names[] = {
 		NOP_C_("GodotSTEX|FormatFlags", "Lossless"),
 		NOP_C_("GodotSTEX|FormatFlags", "Lossy"),
+		NOP_C_("GodotSTEX|FormatFlags", "Stream"),
 		NOP_C_("GodotSTEX|FormatFlags", "Has Mipmaps"),
 		NOP_C_("GodotSTEX|FormatFlags", "Detect 3D"),
 		NOP_C_("GodotSTEX|FormatFlags", "Detect sRGB"),
@@ -727,7 +728,7 @@ int GodotSTEX::getFields(LibRpBase::RomFields *fields) const
 	vector<string> *const v_format_flags_bitfield_names = RomFields::strArrayToVector_i18n(
 		"GodotSTEX|FormatFlags", format_flags_bitfield_names, ARRAY_SIZE(format_flags_bitfield_names));
 	fields->addField_bitfield(C_("GodotSTEX", "Format Flags"),
-		v_format_flags_bitfield_names, 3, d->stexHeader.format >> 21);
+		v_format_flags_bitfield_names, 3, d->stexHeader.format >> 20);
 
 	// Finished reading the field data.
 	return (fields->count() - initial_count);
