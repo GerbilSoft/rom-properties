@@ -38,39 +38,20 @@ rp_image *fromASTC(int width, int height,
 	assert(width > 0);
 	assert(height > 0);
 
-	// ASTC block size is always 128-bit.
-	// Based on the X and Y parameters, calculate the expected
-	// total compressed image size.
-	unsigned int texelsInBlock =
-		static_cast<unsigned int>(block_x) * static_cast<unsigned int>(block_y);
-
-	// Multiply (width * height) by texelsInBlock, then divide by 128 to get the actual size.
-	// NOTE: The image size doesn't need to be aligned to the block size,
-	// but the decompression buffer does need to be aligned.
-	int physWidth = width;
-	int physHeight = height;
-	if (physWidth % block_x != 0) {
-		physWidth += (block_x - (physWidth % block_x));
-	}
-	if (physHeight % block_y != 0) {
-		physHeight += (block_y - (physHeight % block_y));
-	}
-
-	// expected_size_in / texelsInBlock == number of blocks required
-	unsigned int expected_size_in = physWidth * physHeight;
-	unsigned int blocks_req = expected_size_in / texelsInBlock;
-	if (expected_size_in % texelsInBlock != 0) {
-		blocks_req++;
-	}
-	// Each block is 128 bits (16 bytes).
-	expected_size_in = blocks_req * 16;
-
+	// Get the expected size.
+	const unsigned int expected_size_in = calcExpectedSizeASTC(width, height, block_x, block_y);
 	assert(img_siz >= static_cast<int>(expected_size_in));
 	if (!img_buf || width <= 0 || height <= 0 ||
 	    img_siz < static_cast<int>(expected_size_in))
 	{
 		return nullptr;
 	}
+
+	// Align the image size.
+	// TODO: Combine with calcExpectedSizeASTC()?
+	int physWidth = width;
+	int physHeight = height;
+	alignImageSizeASTC(physWidth, physHeight, block_x, block_y);
 
 	// Create an rp_image.
 	rp_image *const img = new rp_image(physWidth, physHeight, rp_image::Format::ARGB32);

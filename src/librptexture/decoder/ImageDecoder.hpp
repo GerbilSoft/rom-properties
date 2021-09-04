@@ -877,6 +877,52 @@ ATTR_ACCESS_SIZE(read_only, 3, 4)
 rp_image *fromBC7(int width, int height,
 	const uint8_t *img_buf, int img_siz);
 
+/**
+ * Align width/height for ASTC.
+ * @param width		[in,out] Image width
+ * @param height	[in,out] Image height
+ * @param block_x	[in] Block width
+ * @param block_y	[in] Block height
+ */
+static inline void alignImageSizeASTC(int& width, int& height, uint8_t block_x, uint8_t block_y)
+{
+	if (width % block_x != 0) {
+		width += (block_x - (width % block_x));
+	}
+	if (height % block_y != 0) {
+		height += (block_y - (height % block_y));
+	}
+}
+
+/**
+ * Calculate the expected size of an ASTC-compressed 2D image.
+ * @param width Image width
+ * @param height Image height
+ * @param block_x Block width
+ * @param block_y Block height
+ * @return Expected size, in bytes
+ */
+static inline unsigned int calcExpectedSizeASTC(int width, int height, uint8_t block_x, uint8_t block_y)
+{
+	// ASTC block size is always 128-bit.
+	const unsigned int texelsInBlock =
+		static_cast<unsigned int>(block_x) * static_cast<unsigned int>(block_y);
+
+	// Based on the X and Y parameters, calculate the expected
+	// total compressed image size.
+	// NOTE: Physical image size must be aligned to the block size.
+	alignImageSizeASTC(width, height, block_x, block_y);
+
+	const unsigned int texels = width * height;
+	unsigned int blocks_req = texels / texelsInBlock;
+	if (texels % texelsInBlock != 0) {
+		blocks_req++;
+	}
+
+	// Each block is 128 bits (16 bytes).
+	return blocks_req * 16;
+}
+
 #ifdef ENABLE_ASTC
 /**
  * Convert an ASTC 2D image to rp_image.
