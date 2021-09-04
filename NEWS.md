@@ -24,6 +24,9 @@
     thumbnail will still be used for thumbnail previews. This should fix
     some issues with Windows 8/10/11 file associations.
     * See issues: #241, #318, #319
+  * Windows: Don't square images before returning them for IExtractImage and
+    IThumbnailProviders. Icons are still squared for IExtractIcon, since
+    Windows doesn't really like non-square icons.
 
 ## v1.8.3 (released 2021/08/03)
 
