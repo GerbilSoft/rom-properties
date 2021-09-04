@@ -272,36 +272,6 @@ const rp_image *KhronosKTX2Private::loadImage(int mip)
 		// NOTE: These were handled separately in KTX1 due to OpenGL
 		// differentiating between "format" and "internal format".
 
-#ifdef ENABLE_PVRTC
-		case VK_FORMAT_PVRTC1_2BPP_UNORM_BLOCK_IMG:
-		case VK_FORMAT_PVRTC1_2BPP_SRGB_BLOCK_IMG:
-			// 32 pixels compressed into 64 bits. (2bpp)
-			expected_size = (width * height) / 4;
-			break;
-
-		case VK_FORMAT_PVRTC2_2BPP_UNORM_BLOCK_IMG:
-		case VK_FORMAT_PVRTC2_2BPP_SRGB_BLOCK_IMG:
-			// 32 pixels compressed into 64 bits. (2bpp)
-			// NOTE: Width and height must be rounded to the nearest tile. (8x4)
-			expected_size = ALIGN_BYTES(8, width) *
-			                ALIGN_BYTES(4, height) / 4;
-			break;
-
-		case VK_FORMAT_PVRTC1_4BPP_UNORM_BLOCK_IMG:
-		case VK_FORMAT_PVRTC1_4BPP_SRGB_BLOCK_IMG:
-			// 16 pixels compressed into 64 bits. (4bpp)
-			expected_size = (width * height) / 2;
-			break;
-
-		case VK_FORMAT_PVRTC2_4BPP_UNORM_BLOCK_IMG:
-		case VK_FORMAT_PVRTC2_4BPP_SRGB_BLOCK_IMG:
-			// 16 pixels compressed into 64 bits. (4bpp)
-			// NOTE: Width and height must be rounded to the nearest tile. (8x4)
-			expected_size = ALIGN_BYTES(4, width) *
-			                ALIGN_BYTES(4, height) / 2;
-			break;
-#endif /* ENABLE_PVRTC */
-
 		case VK_FORMAT_BC1_RGB_UNORM_BLOCK:
 		case VK_FORMAT_BC1_RGB_SRGB_BLOCK:
 		case VK_FORMAT_BC1_RGBA_UNORM_BLOCK:
@@ -333,6 +303,95 @@ const rp_image *KhronosKTX2Private::loadImage(int mip)
 			expected_size = ALIGN_BYTES(4, width) *
 					ALIGN_BYTES(4, (int)height);
 			break;
+
+#ifdef ENABLE_PVRTC
+		case VK_FORMAT_PVRTC1_2BPP_UNORM_BLOCK_IMG:
+		case VK_FORMAT_PVRTC1_2BPP_SRGB_BLOCK_IMG:
+			// 32 pixels compressed into 64 bits. (2bpp)
+			expected_size = (width * height) / 4;
+			break;
+
+		case VK_FORMAT_PVRTC2_2BPP_UNORM_BLOCK_IMG:
+		case VK_FORMAT_PVRTC2_2BPP_SRGB_BLOCK_IMG:
+			// 32 pixels compressed into 64 bits. (2bpp)
+			// NOTE: Width and height must be rounded to the nearest tile. (8x4)
+			expected_size = ALIGN_BYTES(8, width) *
+			                ALIGN_BYTES(4, height) / 4;
+			break;
+
+		case VK_FORMAT_PVRTC1_4BPP_UNORM_BLOCK_IMG:
+		case VK_FORMAT_PVRTC1_4BPP_SRGB_BLOCK_IMG:
+			// 16 pixels compressed into 64 bits. (4bpp)
+			expected_size = (width * height) / 2;
+			break;
+
+		case VK_FORMAT_PVRTC2_4BPP_UNORM_BLOCK_IMG:
+		case VK_FORMAT_PVRTC2_4BPP_SRGB_BLOCK_IMG:
+			// 16 pixels compressed into 64 bits. (4bpp)
+			// NOTE: Width and height must be rounded to the nearest tile. (8x4)
+			expected_size = ALIGN_BYTES(4, width) *
+			                ALIGN_BYTES(4, height) / 2;
+			break;
+#endif /* ENABLE_PVRTC */
+
+#ifdef ENABLE_ASTC
+		case VK_FORMAT_ASTC_4x4_UNORM_BLOCK:
+		case VK_FORMAT_ASTC_4x4_SRGB_BLOCK:
+			expected_size = ImageDecoder::calcExpectedSizeASTC(width, height, 4, 4);
+			break;
+		case VK_FORMAT_ASTC_5x4_UNORM_BLOCK:
+		case VK_FORMAT_ASTC_5x4_SRGB_BLOCK:
+			expected_size = ImageDecoder::calcExpectedSizeASTC(width, height, 5, 4);
+			break;
+		case VK_FORMAT_ASTC_5x5_UNORM_BLOCK:
+		case VK_FORMAT_ASTC_5x5_SRGB_BLOCK:
+			expected_size = ImageDecoder::calcExpectedSizeASTC(width, height, 5, 5);
+			break;
+		case VK_FORMAT_ASTC_6x5_UNORM_BLOCK:
+		case VK_FORMAT_ASTC_6x5_SRGB_BLOCK:
+			expected_size = ImageDecoder::calcExpectedSizeASTC(width, height, 6, 5);
+			break;
+		case VK_FORMAT_ASTC_6x6_UNORM_BLOCK:
+		case VK_FORMAT_ASTC_6x6_SRGB_BLOCK:
+			expected_size = ImageDecoder::calcExpectedSizeASTC(width, height, 6, 6);
+			break;
+		case VK_FORMAT_ASTC_8x5_UNORM_BLOCK:
+		case VK_FORMAT_ASTC_8x5_SRGB_BLOCK:
+			expected_size = ImageDecoder::calcExpectedSizeASTC(width, height, 8, 5);
+			break;
+		case VK_FORMAT_ASTC_8x6_UNORM_BLOCK:
+		case VK_FORMAT_ASTC_8x6_SRGB_BLOCK:
+			expected_size = ImageDecoder::calcExpectedSizeASTC(width, height, 8, 6);
+			break;
+		case VK_FORMAT_ASTC_8x8_UNORM_BLOCK:
+		case VK_FORMAT_ASTC_8x8_SRGB_BLOCK:
+			expected_size = ImageDecoder::calcExpectedSizeASTC(width, height, 8, 8);
+			break;
+		case VK_FORMAT_ASTC_10x5_UNORM_BLOCK:
+		case VK_FORMAT_ASTC_10x5_SRGB_BLOCK:
+			expected_size = ImageDecoder::calcExpectedSizeASTC(width, height, 10, 5);
+			break;
+		case VK_FORMAT_ASTC_10x6_UNORM_BLOCK:
+		case VK_FORMAT_ASTC_10x6_SRGB_BLOCK:
+			expected_size = ImageDecoder::calcExpectedSizeASTC(width, height, 10, 6);
+			break;
+		case VK_FORMAT_ASTC_10x8_UNORM_BLOCK:
+		case VK_FORMAT_ASTC_10x8_SRGB_BLOCK:
+			expected_size = ImageDecoder::calcExpectedSizeASTC(width, height, 10, 8);
+			break;
+		case VK_FORMAT_ASTC_10x10_UNORM_BLOCK:
+		case VK_FORMAT_ASTC_10x10_SRGB_BLOCK:
+			expected_size = ImageDecoder::calcExpectedSizeASTC(width, height, 10, 10);
+			break;
+		case VK_FORMAT_ASTC_12x10_UNORM_BLOCK:
+		case VK_FORMAT_ASTC_12x10_SRGB_BLOCK:
+			expected_size = ImageDecoder::calcExpectedSizeASTC(width, height, 12, 10);
+			break;
+		case VK_FORMAT_ASTC_12x12_UNORM_BLOCK:
+		case VK_FORMAT_ASTC_12x12_SRGB_BLOCK:
+			expected_size = ImageDecoder::calcExpectedSizeASTC(width, height, 12, 12);
+			break;
+#endif /* ENABLE_ASTC */
 
 		default:
 			// Not supported.
@@ -526,6 +585,80 @@ const rp_image *KhronosKTX2Private::loadImage(int mip)
 				ImageDecoder::PVRTC_4BPP | ImageDecoder::PVRTC_ALPHA_YES);
 			break;
 #endif /* ENABLE_PVRTC */
+
+#ifdef ENABLE_ASTC
+		// TODO: sRGB handling?
+		case VK_FORMAT_ASTC_4x4_UNORM_BLOCK:
+		case VK_FORMAT_ASTC_4x4_SRGB_BLOCK:
+			img = ImageDecoder::fromASTC(width, height,
+				buf.get(), expected_size, 4, 4);
+			break;
+		case VK_FORMAT_ASTC_5x4_UNORM_BLOCK:
+		case VK_FORMAT_ASTC_5x4_SRGB_BLOCK:
+			img = ImageDecoder::fromASTC(width, height,
+				buf.get(), expected_size, 5, 4);
+			break;
+		case VK_FORMAT_ASTC_5x5_UNORM_BLOCK:
+		case VK_FORMAT_ASTC_5x5_SRGB_BLOCK:
+			img = ImageDecoder::fromASTC(width, height,
+				buf.get(), expected_size, 5, 5);
+			break;
+		case VK_FORMAT_ASTC_6x5_UNORM_BLOCK:
+		case VK_FORMAT_ASTC_6x5_SRGB_BLOCK:
+			img = ImageDecoder::fromASTC(width, height,
+				buf.get(), expected_size, 6, 5);
+			break;
+		case VK_FORMAT_ASTC_6x6_UNORM_BLOCK:
+		case VK_FORMAT_ASTC_6x6_SRGB_BLOCK:
+			img = ImageDecoder::fromASTC(width, height,
+				buf.get(), expected_size, 6, 6);
+			break;
+		case VK_FORMAT_ASTC_8x5_UNORM_BLOCK:
+		case VK_FORMAT_ASTC_8x5_SRGB_BLOCK:
+			img = ImageDecoder::fromASTC(width, height,
+				buf.get(), expected_size, 8, 5);
+			break;
+		case VK_FORMAT_ASTC_8x6_UNORM_BLOCK:
+		case VK_FORMAT_ASTC_8x6_SRGB_BLOCK:
+			img = ImageDecoder::fromASTC(width, height,
+				buf.get(), expected_size, 8, 6);
+			break;
+		case VK_FORMAT_ASTC_8x8_UNORM_BLOCK:
+		case VK_FORMAT_ASTC_8x8_SRGB_BLOCK:
+			img = ImageDecoder::fromASTC(width, height,
+				buf.get(), expected_size, 8, 8);
+			break;
+		case VK_FORMAT_ASTC_10x5_UNORM_BLOCK:
+		case VK_FORMAT_ASTC_10x5_SRGB_BLOCK:
+			img = ImageDecoder::fromASTC(width, height,
+				buf.get(), expected_size, 10, 5);
+			break;
+		case VK_FORMAT_ASTC_10x6_UNORM_BLOCK:
+		case VK_FORMAT_ASTC_10x6_SRGB_BLOCK:
+			img = ImageDecoder::fromASTC(width, height,
+				buf.get(), expected_size, 10, 6);
+			break;
+		case VK_FORMAT_ASTC_10x8_UNORM_BLOCK:
+		case VK_FORMAT_ASTC_10x8_SRGB_BLOCK:
+			img = ImageDecoder::fromASTC(width, height,
+				buf.get(), expected_size, 10, 8);
+			break;
+		case VK_FORMAT_ASTC_10x10_UNORM_BLOCK:
+		case VK_FORMAT_ASTC_10x10_SRGB_BLOCK:
+			img = ImageDecoder::fromASTC(width, height,
+				buf.get(), expected_size, 10, 10);
+			break;
+		case VK_FORMAT_ASTC_12x10_UNORM_BLOCK:
+		case VK_FORMAT_ASTC_12x10_SRGB_BLOCK:
+			img = ImageDecoder::fromASTC(width, height,
+				buf.get(), expected_size, 12, 10);
+			break;
+		case VK_FORMAT_ASTC_12x12_UNORM_BLOCK:
+		case VK_FORMAT_ASTC_12x12_SRGB_BLOCK:
+			img = ImageDecoder::fromASTC(width, height,
+				buf.get(), expected_size, 12, 12);
+			break;
+#endif /* ENABLE_ASTC */
 
 		default:
 			// Not supported.

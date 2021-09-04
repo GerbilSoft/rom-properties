@@ -19,6 +19,35 @@ using std::array;
 namespace LibRpTexture { namespace ImageDecoder {
 
 /**
+ * Calculate the expected size of an ASTC-compressed 2D image.
+ * @param width Image width
+ * @param height Image height
+ * @param block_x Block width
+ * @param block_y Block height
+ * @return Expected size, in bytes
+ */
+unsigned int calcExpectedSizeASTC(int width, int height, uint8_t block_x, uint8_t block_y)
+{
+	// ASTC block size is always 128-bit.
+	const unsigned int texelsInBlock =
+		static_cast<unsigned int>(block_x) * static_cast<unsigned int>(block_y);
+
+	// Based on the X and Y parameters, calculate the expected
+	// total compressed image size.
+	// NOTE: Physical image size must be aligned to the block size.
+	alignImageSizeASTC(width, height, block_x, block_y);
+
+	const unsigned int texels = width * height;
+	unsigned int blocks_req = texels / texelsInBlock;
+	if (texels % texelsInBlock != 0) {
+		blocks_req++;
+	}
+
+	// Each block is 128 bits (16 bytes).
+	return blocks_req * 16;
+}
+
+/**
  * Convert an ASTC 2D image to rp_image.
  * @param width Image width
  * @param height Image height
