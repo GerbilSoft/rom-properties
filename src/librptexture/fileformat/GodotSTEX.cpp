@@ -15,6 +15,7 @@
 #include "godot_stex_structs.h"
 
 // librpbase, librpfile
+#include "libi18n/i18n.h"
 using LibRpBase::RomFields;
 using LibRpFile::IRpFile;
 
@@ -23,6 +24,7 @@ using LibRpFile::IRpFile;
 #include "decoder/ImageDecoder.hpp"
 
 // C++ STL classes
+using std::string;
 using std::vector;
 
 namespace LibRpTexture {
@@ -383,8 +385,7 @@ const rp_image *GodotSTEXPrivate::loadImage(int mip)
 		case STEX_FORMAT_SCU_ASTC_8x8:
 			img = ImageDecoder::fromASTC(
 				stexHeader.width, height,
-				buf.get(), expected_size,
-				8, 8);
+				buf.get(), expected_size, 8, 8);
 			break;
 #endif /* ENABLE_ASTC */
 	}
@@ -530,8 +531,42 @@ int GodotSTEX::getFields(LibRpBase::RomFields *fields) const
 		return -EIO;
 	}
 
-	// TODO: Add fields?
-	return 0;
+	const int initial_count = fields->count();
+	fields->reserve(initial_count + 2);	// Maximum of 2 fields.
+
+	// Flags
+	static const char *const flags_bitfield_names[] = {
+		NOP_C_("GodotSTEX|Flags", "Mipmaps"),
+		NOP_C_("GodotSTEX|Flags", "Repeat"),
+		NOP_C_("GodotSTEX|Flags", "Filter"),
+		NOP_C_("GodotSTEX|Flags", "Anisotropic"),
+		NOP_C_("GodotSTEX|Flags", "To Linear"),
+		NOP_C_("GodotSTEX|Flags", "Mirrored Repeat"),
+		nullptr, nullptr, nullptr, nullptr, nullptr,
+		NOP_C_("GodotSTEX|Flags", "Cubemap"),
+		NOP_C_("GodotSTEX|Flags", "For Streaming"),
+	};
+	vector<string> *const v_flags_bitfield_names = RomFields::strArrayToVector_i18n(
+		"GodotSTEX|Flags", flags_bitfield_names, ARRAY_SIZE(flags_bitfield_names));
+	fields->addField_bitfield(C_("GodotSTEX", "Flags"),
+		v_flags_bitfield_names, 3, d->stexHeader.flags);
+
+	// Format flags (starting at bit 21)
+	static const char *const format_flags_bitfield_names[] = {
+		NOP_C_("GodotSTEX|FormatFlags", "Lossless"),
+		NOP_C_("GodotSTEX|FormatFlags", "Lossy"),
+		NOP_C_("GodotSTEX|FormatFlags", "Has Mipmaps"),
+		NOP_C_("GodotSTEX|FormatFlags", "Detect 3D"),
+		NOP_C_("GodotSTEX|FormatFlags", "Detect sRGB"),
+		NOP_C_("GodotSTEX|FormatFlags", "Detect Normal"),
+	};
+	vector<string> *const v_format_flags_bitfield_names = RomFields::strArrayToVector_i18n(
+		"GodotSTEX|FormatFlags", format_flags_bitfield_names, ARRAY_SIZE(format_flags_bitfield_names));
+	fields->addField_bitfield(C_("GodotSTEX", "Format Flags"),
+		v_format_flags_bitfield_names, 3, d->stexHeader.format >> 21);
+
+	// Finished reading the field data.
+	return (fields->count() - initial_count);
 }
 #endif /* ENABLE_LIBRPBASE_ROMFIELDS */
 
