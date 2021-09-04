@@ -365,6 +365,67 @@ const rp_image *GodotSTEXPrivate::loadImage(int mip)
 		default:
 			break;
 
+		case STEX_FORMAT_L8:
+			img = ImageDecoder::fromLinear8(
+				ImageDecoder::PixelFormat::L8,
+				stexHeader.width, height,
+				buf.get(), expected_size);
+			break;
+		case STEX_FORMAT_LA8:
+			// TODO: Verify byte-order.
+			img = ImageDecoder::fromLinear16(
+				ImageDecoder::PixelFormat::L8A8,
+				stexHeader.width, height,
+				reinterpret_cast<const uint16_t*>(buf.get()),
+				expected_size);
+			break;
+
+		case STEX_FORMAT_R8:
+			img = ImageDecoder::fromLinear8(
+				ImageDecoder::PixelFormat::R8,
+				stexHeader.width, height,
+				buf.get(), expected_size);
+			break;
+		case STEX_FORMAT_RG8:
+			// TODO: Verify byte-order.
+			img = ImageDecoder::fromLinear16(
+				ImageDecoder::PixelFormat::GR88,
+				stexHeader.width, height,
+				reinterpret_cast<const uint16_t*>(buf.get()),
+				expected_size);
+			break;
+		case STEX_FORMAT_RGB8:
+			// TODO: Verify byte-order.
+			img = ImageDecoder::fromLinear24(
+				ImageDecoder::PixelFormat::RGB888,
+				stexHeader.width, height,
+				buf.get(), expected_size);
+			break;
+		case STEX_FORMAT_RGBA8:
+			// TODO: Verify byte-order.
+			img = ImageDecoder::fromLinear32(
+				ImageDecoder::PixelFormat::ARGB8888,
+				stexHeader.width, height,
+				reinterpret_cast<const uint32_t*>(buf.get()),
+				expected_size);
+			break;
+		case STEX_FORMAT_RGBA4444:
+			// TODO: Verify byte-order.
+			img = ImageDecoder::fromLinear16(
+				ImageDecoder::PixelFormat::ARGB4444,
+				stexHeader.width, height,
+				reinterpret_cast<const uint16_t*>(buf.get()),
+				expected_size);
+			break;
+
+		case STEX_FORMAT_RGBE9995:
+			img = ImageDecoder::fromLinear32(
+				ImageDecoder::PixelFormat::RGB9_E5,
+				stexHeader.width, height,
+				reinterpret_cast<const uint32_t*>(buf.get()),
+				expected_size);
+			break;
+
 		case STEX_FORMAT_DXT1:
 			img = ImageDecoder::fromDXT1(
 				stexHeader.width, height,
@@ -396,6 +457,55 @@ const rp_image *GodotSTEXPrivate::loadImage(int mip)
 		case STEX_FORMAT_BPTC_RGBA:
 			// BPTC-compressed RGBA texture. (BC7)
 			img = ImageDecoder::fromBC7(
+				stexHeader.width, height,
+				buf.get(), expected_size);
+			break;
+
+#ifdef ENABLE_PVRTC
+		case STEX_FORMAT_PVRTC1_2:
+			img = ImageDecoder::fromPVRTC(
+				stexHeader.width, height,
+				buf.get(), expected_size,
+				ImageDecoder::PVRTC_2BPP | ImageDecoder::PVRTC_ALPHA_NONE);
+			break;
+		case STEX_FORMAT_PVRTC1_2A:
+			img = ImageDecoder::fromPVRTC(
+				stexHeader.width, height,
+				buf.get(), expected_size,
+				ImageDecoder::PVRTC_2BPP | ImageDecoder::PVRTC_ALPHA_YES);
+			break;
+
+		case STEX_FORMAT_PVRTC1_4:
+			img = ImageDecoder::fromPVRTC(
+				stexHeader.width, height,
+				buf.get(), expected_size,
+				ImageDecoder::PVRTC_4BPP | ImageDecoder::PVRTC_ALPHA_NONE);
+			break;
+		case STEX_FORMAT_PVRTC1_4A:
+			img = ImageDecoder::fromPVRTC(
+				stexHeader.width, height,
+				buf.get(), expected_size,
+				ImageDecoder::PVRTC_4BPP | ImageDecoder::PVRTC_ALPHA_YES);
+			break;
+#endif /* ENABLE_PVRTC */
+
+		case STEX_FORMAT_ETC:
+			img = ImageDecoder::fromETC1(
+				stexHeader.width, height,
+				buf.get(), expected_size);
+			break;
+		case STEX_FORMAT_ETC2_RGB8:
+			img = ImageDecoder::fromETC2_RGB(
+				stexHeader.width, height,
+				buf.get(), expected_size);
+			break;
+		case STEX_FORMAT_ETC2_RGBA8:
+			img = ImageDecoder::fromETC2_RGBA(
+				stexHeader.width, height,
+				buf.get(), expected_size);
+			break;
+		case STEX_FORMAT_ETC2_RGB8A1:
+			img = ImageDecoder::fromETC2_RGB_A1(
 				stexHeader.width, height,
 				buf.get(), expected_size);
 			break;

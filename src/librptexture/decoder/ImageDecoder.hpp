@@ -105,15 +105,18 @@ enum class PixelFormat : uint8_t {
 	// TODO: Might be a VTFEdit bug. (Tested versions: 1.2.5, 1.3.3)
 	RABG8888,
 
-	// Luminance formats.
+	// Luminance
 	L8,		// LLLLLLLL
 	A4L4,		// AAAAllll
 	L16,		// LLLLLLLL llllllll
 	A8L8,		// AAAAAAAA LLLLLLLL
 	L8A8,		// LLLLLLLL AAAAAAAA
 
-	// Alpha formats.
+	// Alpha
 	A8,		// AAAAAAAA
+
+	// Other
+	R8,		// RRRRRRRR
 
 	// Endian-specific ARGB32 definitions.
 #if SYS_BYTEORDER == SYS_LIL_ENDIAN
