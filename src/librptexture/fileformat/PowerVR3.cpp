@@ -398,8 +398,55 @@ const rp_image *PowerVR3Private::loadImage(int mip)
 				expected_size = width * height * 4;
 				break;
 
+#ifdef ENABLE_ASTC
+			case PVR3_PXF_ASTC_4x4:
+				expected_size = ImageDecoder::calcExpectedSizeASTC(width, height, 4, 4);
+				break;
+			case PVR3_PXF_ASTC_5x4:
+				expected_size = ImageDecoder::calcExpectedSizeASTC(width, height, 5, 4);
+				break;
+			case PVR3_PXF_ASTC_5x5:
+				expected_size = ImageDecoder::calcExpectedSizeASTC(width, height, 5, 5);
+				break;
+			case PVR3_PXF_ASTC_6x5:
+				expected_size = ImageDecoder::calcExpectedSizeASTC(width, height, 6, 5);
+				break;
+			case PVR3_PXF_ASTC_6x6:
+				expected_size = ImageDecoder::calcExpectedSizeASTC(width, height, 6, 6);
+				break;
+			case PVR3_PXF_ASTC_8x5:
+				expected_size = ImageDecoder::calcExpectedSizeASTC(width, height, 8, 5);
+				break;
+			case PVR3_PXF_ASTC_8x6:
+				expected_size = ImageDecoder::calcExpectedSizeASTC(width, height, 8, 6);
+				break;
+			case PVR3_PXF_ASTC_8x8:
+				expected_size = ImageDecoder::calcExpectedSizeASTC(width, height, 8, 8);
+				break;
+			case PVR3_PXF_ASTC_10x5:
+				expected_size = ImageDecoder::calcExpectedSizeASTC(width, height, 10, 5);
+				break;
+			case PVR3_PXF_ASTC_10x6:
+				expected_size = ImageDecoder::calcExpectedSizeASTC(width, height, 10, 6);
+				break;
+			case PVR3_PXF_ASTC_10x8:
+				expected_size = ImageDecoder::calcExpectedSizeASTC(width, height, 10, 8);
+				break;
+			case PVR3_PXF_ASTC_10x10:
+				expected_size = ImageDecoder::calcExpectedSizeASTC(width, height, 10, 10);
+				break;
+			case PVR3_PXF_ASTC_12x10:
+				expected_size = ImageDecoder::calcExpectedSizeASTC(width, height, 12, 10);
+				break;
+			case PVR3_PXF_ASTC_12x12:
+				expected_size = ImageDecoder::calcExpectedSizeASTC(width, height, 12, 12);
+				break;
+
+			// TODO: PVR3 ASTC 3D formats.
+#endif /* ENABLE_ASTC */
+
 			default:
-				// TODO: ASTC, other formats that aren't actually compressed.
+				// TODO: Other formats that aren't actually compressed.
 				//assert(!"Unsupported PowerVR3 compressed format.");
 				return nullptr;
 		}
@@ -616,8 +663,55 @@ const rp_image *PowerVR3Private::loadImage(int mip)
 					reinterpret_cast<const uint32_t*>(buf.get()), expected_size);
 				break;
 
+#ifdef ENABLE_ASTC
+			case PVR3_PXF_ASTC_4x4:
+				img = ImageDecoder::fromASTC(width, height, buf.get(), expected_size, 4, 4);
+				break;
+			case PVR3_PXF_ASTC_5x4:
+				img = ImageDecoder::fromASTC(width, height, buf.get(), expected_size, 5, 4);
+				break;
+			case PVR3_PXF_ASTC_5x5:
+				img = ImageDecoder::fromASTC(width, height, buf.get(), expected_size, 5, 5);
+				break;
+			case PVR3_PXF_ASTC_6x5:
+				img = ImageDecoder::fromASTC(width, height, buf.get(), expected_size, 6, 5);
+				break;
+			case PVR3_PXF_ASTC_6x6:
+				img = ImageDecoder::fromASTC(width, height, buf.get(), expected_size, 6, 6);
+				break;
+			case PVR3_PXF_ASTC_8x5:
+				img = ImageDecoder::fromASTC(width, height, buf.get(), expected_size, 8, 5);
+				break;
+			case PVR3_PXF_ASTC_8x6:
+				img = ImageDecoder::fromASTC(width, height, buf.get(), expected_size, 8, 6);
+				break;
+			case PVR3_PXF_ASTC_8x8:
+				img = ImageDecoder::fromASTC(width, height, buf.get(), expected_size, 8, 8);
+				break;
+			case PVR3_PXF_ASTC_10x5:
+				img = ImageDecoder::fromASTC(width, height, buf.get(), expected_size, 10, 5);
+				break;
+			case PVR3_PXF_ASTC_10x6:
+				img = ImageDecoder::fromASTC(width, height, buf.get(), expected_size, 10, 6);
+				break;
+			case PVR3_PXF_ASTC_10x8:
+				img = ImageDecoder::fromASTC(width, height, buf.get(), expected_size, 10, 8);
+				break;
+			case PVR3_PXF_ASTC_10x10:
+				img = ImageDecoder::fromASTC(width, height, buf.get(), expected_size, 10, 10);
+				break;
+			case PVR3_PXF_ASTC_12x10:
+				img = ImageDecoder::fromASTC(width, height, buf.get(), expected_size, 12, 10);
+				break;
+			case PVR3_PXF_ASTC_12x12:
+				img = ImageDecoder::fromASTC(width, height, buf.get(), expected_size, 12, 12);
+				break;
+
+			// TODO: PVR3 ASTC 3D formats.
+#endif /* ENABLE_ASTC */
+
 			default:
-				// TODO: ASTC, other formats that aren't actually compressed.
+				// TODO: Other formats that aren't actually compressed.
 				//assert(!"Unsupported PowerVR3 compressed format.");
 				return nullptr;
 		}
