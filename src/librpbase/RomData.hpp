@@ -357,6 +357,13 @@ class RomData : public RefBase
 			// This is for Super NES, and only applies to images
 			// with 256px and 512px widths.
 			IMGPF_RESCALE_ASPECT_8to7	= (1U << 4),
+
+			// Image should be rescaled to the size specified by
+			// the second RFT_DIMENSIONS field. (for e.g. ETC2
+			// textures that have a power-of-2 size but should
+			// be rendered with a smaller size)
+			// FIXME: Better way to get the rescale size.
+			IMGPF_RESCALE_RFT_DIMENSIONS_2	= (1U << 5),
 		};
 
 		struct ImageSizeDef {

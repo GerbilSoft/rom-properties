@@ -125,6 +125,18 @@ class FileFormat : public RefBase
 		int getDimensions(int pBuf[3]) const;
 
 		/**
+		 * Get the image rescale dimensions.
+		 *
+		 * This is for e.g. ETC2 textures that are stored as
+		 * a power-of-2 size but should be rendered with a
+		 * smaller size.
+		 *
+		 * @param pBuf Two-element array for [x, y].
+		 * @return 0 on success; -ENOENT if no rescale dimensions; negative POSIX error code on error.
+		 */
+		int getRescaleDimensions(int pBuf[2]) const;
+
+		/**
 		 * Get the pixel format, e.g. "RGB888" or "DXT1".
 		 * @return Pixel format, or nullptr if unavailable.
 		 */

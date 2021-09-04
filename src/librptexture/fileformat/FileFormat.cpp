@@ -41,6 +41,7 @@ FileFormatPrivate::FileFormatPrivate(FileFormat *q, IRpFile *file, const Texture
 
 	// Clear the arrays.
 	memset(dimensions, 0, sizeof(dimensions));
+	memset(rescale_dimensions, 0, sizeof(rescale_dimensions));
 
 	// Initialize i18n.
 	rp_i18n_init();
@@ -145,6 +146,33 @@ int FileFormat::getDimensions(int pBuf[3]) const
 	}
 
 	memcpy(pBuf, d->dimensions, sizeof(d->dimensions));
+	return 0;
+}
+
+/**
+ * Get the image rescale dimensions.
+ *
+ * This is for e.g. ETC2 textures that are stored as
+ * a power-of-2 size but should be rendered with a
+ * smaller size.
+ *
+ * @param pBuf Two-element array for [x, y].
+ * @return 0 on success; -ENOENT if no rescale dimensions; negative POSIX error code on error.
+ */
+int FileFormat::getRescaleDimensions(int pBuf[3]) const
+{
+	RP_D(const FileFormat);
+	if (!d->isValid) {
+		// Not supported.
+		return -EBADF;
+	}
+
+	if (d->rescale_dimensions[0] == 0 || d->rescale_dimensions[1] == 0) {
+		// No rescale dimensions.
+		return -ENOENT;
+	}
+
+	memcpy(pBuf, d->rescale_dimensions, sizeof(d->rescale_dimensions));
 	return 0;
 }
 

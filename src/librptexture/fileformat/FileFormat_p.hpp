@@ -52,6 +52,10 @@ class FileFormatPrivate
 		const char *mimeType;		// MIME type. (ASCII) (default is nullptr)
 		int dimensions[3];		// Dimensions. (width, height, depth)
 						// 2D textures have depth=0.
+		int rescale_dimensions[2];	// Rescale dimensions, (width, height)
+						// Needed for e.g. ETC2 where a power-of-2 size
+						// is used but the image should be rescaled before
+						// displaying in a UI frontend.
 };
 
 }
