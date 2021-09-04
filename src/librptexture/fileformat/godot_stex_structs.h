@@ -25,8 +25,10 @@ extern "C" {
 #define STEX_30_MAGIC 'GDST'
 typedef struct _STEX_30_Header {
 	uint32_t magic;			// [0x000] 'GDST'
-	uint32_t width;			// [0x004]
-	uint32_t height;		// [0x008]
+	uint16_t width;			// [0x004] Width
+	uint16_t width_custom;		// [0x006] If set, this is width, and `width` is flags?
+	uint16_t height;		// [0x008] Height
+	uint16_t height_custom;		// [0x008] If set, this is height, and `height` is flags?
 	uint32_t flags;			// [0x00C] Texture flags (see STEX_Flags_e)
 	uint32_t format;		// [0x010] Texture format (see STEX_Format_e)
 } STEX_30_Header;

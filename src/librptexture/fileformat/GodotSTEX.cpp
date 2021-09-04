@@ -307,13 +307,17 @@ const rp_image *GodotSTEXPrivate::loadImage(int mip)
 		mipmaps.resize(mipmapCount);
 	}
 
+	// NOTE: We can't use stexHeader's width/height fields because
+	// the "custom" fields might be set for e.g. ETC2 textures.
+	// Use dimensions[] instead.
+
 	// Sanity check: Maximum image dimensions of 32768x32768.
 	// NOTE: `height == 0` is allowed here. (1D texture)
-	assert(stexHeader.width > 0);
-	assert(stexHeader.width <= 32768);
-	assert(stexHeader.height <= 32768);
-	if (stexHeader.width == 0 || stexHeader.width > 32768 ||
-	    stexHeader.height > 32768)
+	assert(dimensions[0] > 0);
+	assert(dimensions[0] <= 32768);
+	assert(dimensions[1] <= 32768);
+	if (dimensions[0] == 0 || dimensions[0] > 32768 ||
+	    dimensions[1] > 32768)
 	{
 		// Invalid image dimensions.
 		return nullptr;
@@ -327,13 +331,13 @@ const rp_image *GodotSTEXPrivate::loadImage(int mip)
 
 	// Handle a 1D texture as a "width x 1" 2D texture.
 	// NOTE: Handling a 3D texture as a single 2D texture.
-	const unsigned int height = (stexHeader.height > 0 ? stexHeader.height : 1);
+	const unsigned int height = (dimensions[1] > 0 ? dimensions[1] : 1);
 
 	// Determine the image data size based on format.
 	// TODO: Stride adjustment?
 	unsigned int expected_size = calcImageSize(
 		static_cast<STEX_Format_e>(stexHeader.format),
-		stexHeader.width, height);
+		dimensions[0], height);
 	if (expected_size == 0 || expected_size > file_sz) {
 		// Invalid image size.
 		return nullptr;
@@ -368,14 +372,14 @@ const rp_image *GodotSTEXPrivate::loadImage(int mip)
 		case STEX_FORMAT_L8:
 			img = ImageDecoder::fromLinear8(
 				ImageDecoder::PixelFormat::L8,
-				stexHeader.width, height,
+				dimensions[0], height,
 				buf.get(), expected_size);
 			break;
 		case STEX_FORMAT_LA8:
 			// TODO: Verify byte-order.
 			img = ImageDecoder::fromLinear16(
 				ImageDecoder::PixelFormat::L8A8,
-				stexHeader.width, height,
+				dimensions[0], height,
 				reinterpret_cast<const uint16_t*>(buf.get()),
 				expected_size);
 			break;
@@ -383,14 +387,14 @@ const rp_image *GodotSTEXPrivate::loadImage(int mip)
 		case STEX_FORMAT_R8:
 			img = ImageDecoder::fromLinear8(
 				ImageDecoder::PixelFormat::R8,
-				stexHeader.width, height,
+				dimensions[0], height,
 				buf.get(), expected_size);
 			break;
 		case STEX_FORMAT_RG8:
 			// TODO: Verify byte-order.
 			img = ImageDecoder::fromLinear16(
 				ImageDecoder::PixelFormat::GR88,
-				stexHeader.width, height,
+				dimensions[0], height,
 				reinterpret_cast<const uint16_t*>(buf.get()),
 				expected_size);
 			break;
@@ -398,14 +402,14 @@ const rp_image *GodotSTEXPrivate::loadImage(int mip)
 			// TODO: Verify byte-order.
 			img = ImageDecoder::fromLinear24(
 				ImageDecoder::PixelFormat::RGB888,
-				stexHeader.width, height,
+				dimensions[0], height,
 				buf.get(), expected_size);
 			break;
 		case STEX_FORMAT_RGBA8:
 			// TODO: Verify byte-order.
 			img = ImageDecoder::fromLinear32(
 				ImageDecoder::PixelFormat::ARGB8888,
-				stexHeader.width, height,
+				dimensions[0], height,
 				reinterpret_cast<const uint32_t*>(buf.get()),
 				expected_size);
 			break;
@@ -413,7 +417,7 @@ const rp_image *GodotSTEXPrivate::loadImage(int mip)
 			// TODO: Verify byte-order.
 			img = ImageDecoder::fromLinear16(
 				ImageDecoder::PixelFormat::ARGB4444,
-				stexHeader.width, height,
+				dimensions[0], height,
 				reinterpret_cast<const uint16_t*>(buf.get()),
 				expected_size);
 			break;
@@ -421,69 +425,69 @@ const rp_image *GodotSTEXPrivate::loadImage(int mip)
 		case STEX_FORMAT_RGBE9995:
 			img = ImageDecoder::fromLinear32(
 				ImageDecoder::PixelFormat::RGB9_E5,
-				stexHeader.width, height,
+				dimensions[0], height,
 				reinterpret_cast<const uint32_t*>(buf.get()),
 				expected_size);
 			break;
 
 		case STEX_FORMAT_DXT1:
 			img = ImageDecoder::fromDXT1(
-				stexHeader.width, height,
+				dimensions[0], height,
 				buf.get(), expected_size);
 			break;
 		case STEX_FORMAT_DXT3:
 			img = ImageDecoder::fromDXT3(
-				stexHeader.width, height,
+				dimensions[0], height,
 				buf.get(), expected_size);
 			break;
 		case STEX_FORMAT_DXT5:
 			img = ImageDecoder::fromDXT5(
-				stexHeader.width, height,
+				dimensions[0], height,
 				buf.get(), expected_size);
 			break;
 
 		case STEX_FORMAT_RGTC_R:
 			// RGTC, one component. (BC4)
 			img = ImageDecoder::fromBC4(
-				stexHeader.width, height,
+				dimensions[0], height,
 				buf.get(), expected_size);
 			break;
 		case STEX_FORMAT_RGTC_RG:
 			// RGTC, two components. (BC5)
 			img = ImageDecoder::fromBC5(
-				stexHeader.width, height,
+				dimensions[0], height,
 				buf.get(), expected_size);
 			break;
 		case STEX_FORMAT_BPTC_RGBA:
 			// BPTC-compressed RGBA texture. (BC7)
 			img = ImageDecoder::fromBC7(
-				stexHeader.width, height,
+				dimensions[0], height,
 				buf.get(), expected_size);
 			break;
 
 #ifdef ENABLE_PVRTC
 		case STEX_FORMAT_PVRTC1_2:
 			img = ImageDecoder::fromPVRTC(
-				stexHeader.width, height,
+				dimensions[0], height,
 				buf.get(), expected_size,
 				ImageDecoder::PVRTC_2BPP | ImageDecoder::PVRTC_ALPHA_NONE);
 			break;
 		case STEX_FORMAT_PVRTC1_2A:
 			img = ImageDecoder::fromPVRTC(
-				stexHeader.width, height,
+				dimensions[0], height,
 				buf.get(), expected_size,
 				ImageDecoder::PVRTC_2BPP | ImageDecoder::PVRTC_ALPHA_YES);
 			break;
 
 		case STEX_FORMAT_PVRTC1_4:
 			img = ImageDecoder::fromPVRTC(
-				stexHeader.width, height,
+				dimensions[0], height,
 				buf.get(), expected_size,
 				ImageDecoder::PVRTC_4BPP | ImageDecoder::PVRTC_ALPHA_NONE);
 			break;
 		case STEX_FORMAT_PVRTC1_4A:
 			img = ImageDecoder::fromPVRTC(
-				stexHeader.width, height,
+				dimensions[0], height,
 				buf.get(), expected_size,
 				ImageDecoder::PVRTC_4BPP | ImageDecoder::PVRTC_ALPHA_YES);
 			break;
@@ -491,29 +495,29 @@ const rp_image *GodotSTEXPrivate::loadImage(int mip)
 
 		case STEX_FORMAT_ETC:
 			img = ImageDecoder::fromETC1(
-				stexHeader.width, height,
+				dimensions[0], height,
 				buf.get(), expected_size);
 			break;
 		case STEX_FORMAT_ETC2_RGB8:
 			img = ImageDecoder::fromETC2_RGB(
-				stexHeader.width, height,
+				dimensions[0], height,
 				buf.get(), expected_size);
 			break;
 		case STEX_FORMAT_ETC2_RGBA8:
 			img = ImageDecoder::fromETC2_RGBA(
-				stexHeader.width, height,
+				dimensions[0], height,
 				buf.get(), expected_size);
 			break;
 		case STEX_FORMAT_ETC2_RGB8A1:
 			img = ImageDecoder::fromETC2_RGB_A1(
-				stexHeader.width, height,
+				dimensions[0], height,
 				buf.get(), expected_size);
 			break;
 
 #ifdef ENABLE_ASTC
 		case STEX_FORMAT_SCU_ASTC_8x8:
 			img = ImageDecoder::fromASTC(
-				stexHeader.width, height,
+				dimensions[0], height,
 				buf.get(), expected_size, 8, 8);
 			break;
 #endif /* ENABLE_ASTC */
@@ -571,16 +575,22 @@ GodotSTEX::GodotSTEX(IRpFile *file)
 	// Header is stored in little-endian, so it always
 	// needs to be byteswapped on big-endian.
 	// NOTE: Signature is *not* byteswapped.
-	d->stexHeader.width	= be32_to_cpu(d->stexHeader.width);
-	d->stexHeader.height	= be32_to_cpu(d->stexHeader.height);
-	d->stexHeader.flags	= be32_to_cpu(d->stexHeader.flags);
-	d->stexHeader.format	= be32_to_cpu(d->stexHeader.format);
+	d->stexHeader.width		= be16_to_cpu(d->stexHeader.width);
+	d->stexHeader.width_custom	= be16_to_cpu(d->stexHeader.width_custom);
+	d->stexHeader.height		= be16_to_cpu(d->stexHeader.height);
+	d->stexHeader.height_custom	= be16_to_cpu(d->stexHeader.height_custom);
+	d->stexHeader.flags		= be32_to_cpu(d->stexHeader.flags);
+	d->stexHeader.format		= be32_to_cpu(d->stexHeader.format);
 #endif
 
 	// Cache the dimensions for the FileFormat base class.
 	// TODO: 3D textures?
-	d->dimensions[0] = d->stexHeader.width;
-	d->dimensions[1] = d->stexHeader.height;
+	d->dimensions[0] = (d->stexHeader.width_custom != 0)
+			?   d->stexHeader.width_custom
+			:   d->stexHeader.width;
+	d->dimensions[1] = (d->stexHeader.height_custom != 0)
+			?   d->stexHeader.height_custom
+			:   d->stexHeader.height;
 }
 
 /** Property accessors **/
