@@ -90,6 +90,7 @@ application/vnd.ms-cab-compressed	# NintendoBadge
 application/x-nintendo-badge-set	# NintendoBadge
 
 # Texture
+image/astc				# ASTC
 image/x-didj-texture			# DidjTex
 image/vnd.ms-dds			# DirectDrawSurface
 image/x-dds				# DirectDrawSurface

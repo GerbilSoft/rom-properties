@@ -67,6 +67,15 @@ rp_image *fromASTC(int width, int height,
 	assert(width > 0);
 	assert(height > 0);
 
+	// TODO: Validate combinations.
+	assert(block_x >= 4);
+	assert(block_x <= 12);
+	assert(block_y >= 4);
+	assert(block_y <= 12);
+	if (block_x < 4 || block_x > 12 || block_y < 4 || block_y > 12) {
+		return nullptr;
+	}
+
 	// Get the expected size.
 	const unsigned int expected_size_in = calcExpectedSizeASTC(width, height, block_x, block_y);
 	assert(img_siz >= static_cast<int>(expected_size_in));

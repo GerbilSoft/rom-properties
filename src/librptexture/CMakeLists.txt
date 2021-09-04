@@ -28,6 +28,7 @@ SET(${PROJECT_NAME}_SRCS
 	decoder/PixelConversion.cpp
 
 	fileformat/FileFormat.cpp
+	fileformat/ASTC.cpp
 	fileformat/DidjTex.cpp
 	fileformat/DirectDrawSurface.cpp
 	fileformat/GodotSTEX.cpp
@@ -59,6 +60,7 @@ SET(${PROJECT_NAME}_H
 	fileformat/FileFormat.hpp
 	fileformat/FileFormat_p.hpp
 	fileformat/FileFormat_decl.hpp
+	fileformat/ASTC.hpp
 	fileformat/DidjTex.hpp
 	fileformat/DirectDrawSurface.hpp
 	fileformat/GodotSTEX.hpp
@@ -71,6 +73,7 @@ SET(${PROJECT_NAME}_H
 	fileformat/ValveVTF3.hpp
 	fileformat/XboxXPR.hpp
 
+	fileformat/astc_structs.h
 	fileformat/dds_structs.h
 	fileformat/didj_tex_structs.h
 	fileformat/godot_stex_structs.h

@@ -837,6 +837,17 @@
   <!-- *** Texture *** -->
 
   <!-- GodotSTEX -->
+  <mime-type type="image/astc">
+    <comment>ASTC texture image</comment>
+    <sub-class-of type="image/x-generic"/>
+    <glob pattern="*.astc"/>
+    <generic-icon name="image-x-generic"/>
+    <magic priority="80">
+      <match type="little32" value="0x5CA1AB1E" offset="0"/>
+    </magic>
+  </mime-type>
+
+  <!-- GodotSTEX -->
   <mime-type type="image/x-godot-stex">
     <comment>Godot STEX texture image</comment>
     <sub-class-of type="image/x-generic"/>

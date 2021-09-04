@@ -24,6 +24,7 @@ using std::unordered_set;
 using std::vector;
 
 // FileFormat subclasses.
+#include "fileformat/ASTC.hpp"
 #include "fileformat/DidjTex.hpp"
 #include "fileformat/DirectDrawSurface.hpp"
 #include "fileformat/GodotSTEX.hpp"
@@ -97,6 +98,7 @@ class FileFormatFactoryPrivate
 // definitely have a 32-bit magic number at address 0.
 // TODO: Add support for multiple magic numbers per class.
 const FileFormatFactoryPrivate::FileFormatFns FileFormatFactoryPrivate::FileFormatFns_magic[] = {
+	GetFileFormatFns(ASTC, '\x13\xAB\xA1\x5C'),	// Needs to be in multi-char constant format.
 	GetFileFormatFns(DirectDrawSurface, 'DDS '),
 	GetFileFormatFns(GodotSTEX, 'GDST'),
 	GetFileFormatFns(PowerVR3, 'PVR\x03'),
