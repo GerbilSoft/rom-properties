@@ -1092,6 +1092,16 @@ INSTANTIATE_TEST_SUITE_P(TCtest_PVRTC, ImageDecoderTest,
 	, ImageDecoderTest::test_case_suffix_generator);
 #endif /* ENABLE_PVRTC */
 
+#ifdef ENABLE_ASTC
+// texture-compressor tests. (ASTC)
+INSTANTIATE_TEST_SUITE_P(TCtest_ASTC, ImageDecoderTest,
+	::testing::Values(
+		ImageDecoderTest_mode(
+			"tctest/example-astc.dds.gz",
+			"tctest/example-astc.png"))
+	, ImageDecoderTest::test_case_suffix_generator);
+#endif /* ENABLE_ASTC */
+
 // BC7 tests.
 INSTANTIATE_TEST_SUITE_P(BC7, ImageDecoderTest,
 	::testing::Values(
