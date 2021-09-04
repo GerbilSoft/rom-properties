@@ -2,6 +2,18 @@
 
 ## v1.9 (released 2021/??/??)
 
+* New parsers:
+  * GodotSTEX: Godot 3.x texture files. Supports most linear encodings,
+    S3TC, BC4, BC5, RGTC, BC7, PVRTC-I, ETC1, ETC2, and ASTC. Note that
+    ASTC isn't officially supported; the format value 0x25 is used by
+    Sonic Colors Ultimate.
+  * ASTC: ASTC texture format. This is a minimal header format for textures
+    encoded using ASTC.
+
+* New parser features:
+  * Added ASTC decoding. All texture formats that support ASTC have been
+    updated to allow decoding ASTC textures.
+
 * Bug fixes:
   * EXE: Improve runtime DLL detection in some cases.
   * SNES: Fix detection of games that declare usage of the S-RTC chip
