@@ -217,9 +217,9 @@ unsigned int GodotSTEXPrivate::calcImageSize(STEX_Format_e format, unsigned int 
 		// 0x20
 		OpCode::Divide2,	// STEX_FORMAT_ETC2_RG11	// TODO: Verify; Align4?
 		OpCode::Divide2,	// STEX_FORMAT_ETC2_RG11S	// TODO: Verify; Align4?
-		OpCode::Divide2,	// STEX_FORMAT_ETC2_RGB8	// TODO: Verify; Align4?
-		OpCode::None,		// STEX_FORMAT_ETC2_RGBA8	// TODO: Verify; Align4?
-		OpCode::Divide2,	// STEX_FORMAT_ETC2_RGB8A1	// TODO: Verify; Align4?
+		OpCode::Align4Divide2,	// STEX_FORMAT_ETC2_RGB8	// TODO: Verify?
+		OpCode::Align4,		// STEX_FORMAT_ETC2_RGBA8	// TODO: Verify?
+		OpCode::Align4Divide2,	// STEX_FORMAT_ETC2_RGB8A1	// TODO: Verify?
 
 		// Proprietary formats used in Sonic Colors Ultimate.
 		// FIXME: Other ASTC variants need a more complicated calculation.
@@ -307,10 +307,6 @@ const rp_image *GodotSTEXPrivate::loadImage(int mip)
 		mipmaps.resize(mipmapCount);
 	}
 
-	// NOTE: We can't use stexHeader's width/height fields because
-	// the "custom" fields might be set for e.g. ETC2 textures.
-	// Use dimensions[] instead.
-
 	// Sanity check: Maximum image dimensions of 32768x32768.
 	// NOTE: `height == 0` is allowed here. (1D texture)
 	assert(dimensions[0] > 0);
@@ -331,11 +327,12 @@ const rp_image *GodotSTEXPrivate::loadImage(int mip)
 
 	// Handle a 1D texture as a "width x 1" 2D texture.
 	// NOTE: Handling a 3D texture as a single 2D texture.
-	const unsigned int height = (dimensions[1] > 0 ? dimensions[1] : 1);
+	unsigned int height = (dimensions[1] > 0 ? dimensions[1] : 1);
 
 	// Determine the image data size based on format.
 	// TODO: Stride adjustment?
-	unsigned int expected_size = calcImageSize(
+	// TODO: If width_rescale/height_rescale are set, adjust for display?
+	const unsigned int expected_size = calcImageSize(
 		static_cast<STEX_Format_e>(stexHeader.format),
 		dimensions[0], height);
 	if (expected_size == 0 || expected_size > file_sz) {
@@ -499,6 +496,8 @@ const rp_image *GodotSTEXPrivate::loadImage(int mip)
 				buf.get(), expected_size);
 			break;
 		case STEX_FORMAT_ETC2_RGB8:
+			// NOTE: If the ETC2 texture has mipmaps,
+			// it's stored as a Power-of-2 texture.
 			img = ImageDecoder::fromETC2_RGB(
 				dimensions[0], height,
 				buf.get(), expected_size);
@@ -576,21 +575,17 @@ GodotSTEX::GodotSTEX(IRpFile *file)
 	// needs to be byteswapped on big-endian.
 	// NOTE: Signature is *not* byteswapped.
 	d->stexHeader.width		= be16_to_cpu(d->stexHeader.width);
-	d->stexHeader.width_custom	= be16_to_cpu(d->stexHeader.width_custom);
+	d->stexHeader.width_rescale	= be16_to_cpu(d->stexHeader.width_rescale);
 	d->stexHeader.height		= be16_to_cpu(d->stexHeader.height);
-	d->stexHeader.height_custom	= be16_to_cpu(d->stexHeader.height_custom);
+	d->stexHeader.height_rescale	= be16_to_cpu(d->stexHeader.height_rescale);
 	d->stexHeader.flags		= be32_to_cpu(d->stexHeader.flags);
 	d->stexHeader.format		= be32_to_cpu(d->stexHeader.format);
 #endif
 
 	// Cache the dimensions for the FileFormat base class.
 	// TODO: 3D textures?
-	d->dimensions[0] = (d->stexHeader.width_custom != 0)
-			?   d->stexHeader.width_custom
-			:   d->stexHeader.width;
-	d->dimensions[1] = (d->stexHeader.height_custom != 0)
-			?   d->stexHeader.height_custom
-			:   d->stexHeader.height;
+	d->dimensions[0] = d->stexHeader.width;
+	d->dimensions[1] = d->stexHeader.height;
 }
 
 /** Property accessors **/
