@@ -10,5 +10,7 @@ The following changes have been made to the original:
 
 - Added fall-through comments.
 
+- Swap the R and B channels to match the expected data formats.
+
 To obtain the original Basis Universal v1.15, visit:
 https://github.com/BinomialLLC/basis_universal
