@@ -407,24 +407,21 @@ const rp_image *GodotSTEXPrivate::loadImage(int mip)
 				expected_size);
 			break;
 		case STEX_FORMAT_RGB8:
-			// TODO: Verify byte-order.
 			img = ImageDecoder::fromLinear24(
-				ImageDecoder::PixelFormat::RGB888,
+				ImageDecoder::PixelFormat::BGR888,
 				width, height,
 				buf.get(), expected_size);
 			break;
 		case STEX_FORMAT_RGBA8:
-			// TODO: Verify byte-order.
 			img = ImageDecoder::fromLinear32(
-				ImageDecoder::PixelFormat::ARGB8888,
+				ImageDecoder::PixelFormat::ABGR8888,
 				width, height,
 				reinterpret_cast<const uint32_t*>(buf.get()),
 				expected_size);
 			break;
 		case STEX_FORMAT_RGBA4444:
-			// TODO: Verify byte-order.
 			img = ImageDecoder::fromLinear16(
-				ImageDecoder::PixelFormat::ARGB4444,
+				ImageDecoder::PixelFormat::RGBA4444,
 				width, height,
 				reinterpret_cast<const uint16_t*>(buf.get()),
 				expected_size);
