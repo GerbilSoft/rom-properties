@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * dds_structs.h: DirectDraw Surface texture format data structures.       *
  *                                                                         *
- * Copyright (c) 2017-2020 by David Korth.                                 *
+ * Copyright (c) 2017-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -299,7 +299,52 @@ typedef enum {
 	DXGI_FORMAT_V408			= 132,
 	DXGI_FORMAT_FORCE_UINT			= 0xffffffff,
 
-	// Additional Xbox One formats.
+	// ASTC formats.
+	// Reference: https://github.com/bkaradzic/bgfx/blob/master/src/renderer_d3d.h
+	DXGI_FORMAT_ASTC_4X4_TYPELESS		= 133,
+	DXGI_FORMAT_ASTC_4X4_UNORM		= 134,
+	DXGI_FORMAT_ASTC_4X4_UNORM_SRGB		= 135,
+	DXGI_FORMAT_ASTC_5X4_TYPELESS		= 137,
+	DXGI_FORMAT_ASTC_5X4_UNORM		= 138,
+	DXGI_FORMAT_ASTC_5X4_UNORM_SRGB		= 139,
+	DXGI_FORMAT_ASTC_5X5_TYPELESS		= 141,
+	DXGI_FORMAT_ASTC_5X5_UNORM		= 142,
+	DXGI_FORMAT_ASTC_5X5_UNORM_SRGB		= 143,
+	DXGI_FORMAT_ASTC_6X5_TYPELESS		= 145,
+	DXGI_FORMAT_ASTC_6X5_UNORM		= 146,
+	DXGI_FORMAT_ASTC_6X5_UNORM_SRGB		= 147,
+	DXGI_FORMAT_ASTC_6X6_TYPELESS		= 149,
+	DXGI_FORMAT_ASTC_6X6_UNORM		= 150,
+	DXGI_FORMAT_ASTC_6X6_UNORM_SRGB		= 151,
+	DXGI_FORMAT_ASTC_8X5_TYPELESS		= 153,
+	DXGI_FORMAT_ASTC_8X5_UNORM		= 154,
+	DXGI_FORMAT_ASTC_8X5_UNORM_SRGB		= 155,
+	DXGI_FORMAT_ASTC_8X6_TYPELESS		= 157,
+	DXGI_FORMAT_ASTC_8X6_UNORM		= 158,
+	DXGI_FORMAT_ASTC_8X6_UNORM_SRGB		= 159,
+	DXGI_FORMAT_ASTC_8X8_TYPELESS		= 161,
+	DXGI_FORMAT_ASTC_8X8_UNORM		= 162,
+	DXGI_FORMAT_ASTC_8X8_UNORM_SRGB		= 163,
+	DXGI_FORMAT_ASTC_10X5_TYPELESS		= 165,
+	DXGI_FORMAT_ASTC_10X5_UNORM		= 166,
+	DXGI_FORMAT_ASTC_10X5_UNORM_SRGB	= 167,
+	DXGI_FORMAT_ASTC_10X6_TYPELESS		= 169,
+	DXGI_FORMAT_ASTC_10X6_UNORM		= 170,
+	DXGI_FORMAT_ASTC_10X6_UNORM_SRGB	= 171,
+	DXGI_FORMAT_ASTC_10X8_TYPELESS		= 173,
+	DXGI_FORMAT_ASTC_10X8_UNORM		= 174,
+	DXGI_FORMAT_ASTC_10X8_UNORM_SRGB	= 175,
+	DXGI_FORMAT_ASTC_10X10_TYPELESS		= 177,
+	DXGI_FORMAT_ASTC_10X10_UNORM		= 178,
+	DXGI_FORMAT_ASTC_10X10_UNORM_SRGB	= 179,
+	DXGI_FORMAT_ASTC_12X10_TYPELESS		= 181,
+	DXGI_FORMAT_ASTC_12X10_UNORM		= 182,
+	DXGI_FORMAT_ASTC_12X10_UNORM_SRGB	= 183,
+	DXGI_FORMAT_ASTC_12X12_TYPELESS		= 185,
+	DXGI_FORMAT_ASTC_12X12_UNORM		= 186,
+	DXGI_FORMAT_ASTC_12X12_UNORM_SRGB	= 187,
+
+	// Additional Xbox One formats
 	// Reference: https://github.com/Microsoft/DirectXTex/blob/master/DirectXTex/DirectXTexP.h
 	XBOX_DXGI_FORMAT_R10G10B10_SNORM_A2_UNORM	= 189,
 	XBOX_DXGI_FORMAT_R4G4_UNORM			= 190,

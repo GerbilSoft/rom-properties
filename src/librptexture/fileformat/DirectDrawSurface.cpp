@@ -572,6 +572,8 @@ const rp_image *DirectDrawSurfacePrivate::loadImage(void)
 	// that have an alpha channel, except for DXT2 and DXT4,
 	// which use premultiplied alpha.
 
+	// TODO: Handle sRGB.
+
 	// NOTE: Mipmaps are stored *after* the main image.
 	// Hence, no mipmap processing is necessary.
 	if (dxgi_format != 0) {
@@ -627,6 +629,93 @@ const rp_image *DirectDrawSurfacePrivate::loadImage(void)
 				// Uncompressed "special" 32bpp formats.
 				expected_size = ddsHeader.dwWidth * ddsHeader.dwHeight * 4;
 				break;
+
+#ifdef ENABLE_ASTC
+			case DXGI_FORMAT_ASTC_4X4_TYPELESS:
+			case DXGI_FORMAT_ASTC_4X4_UNORM:
+			case DXGI_FORMAT_ASTC_4X4_UNORM_SRGB:
+				expected_size = ImageDecoder::calcExpectedSizeASTC(
+					ddsHeader.dwWidth, ddsHeader.dwHeight, 4, 4);
+				break;
+			case DXGI_FORMAT_ASTC_5X4_TYPELESS:
+			case DXGI_FORMAT_ASTC_5X4_UNORM:
+			case DXGI_FORMAT_ASTC_5X4_UNORM_SRGB:
+				expected_size = ImageDecoder::calcExpectedSizeASTC(
+					ddsHeader.dwWidth, ddsHeader.dwHeight, 5, 4);
+				break;
+			case DXGI_FORMAT_ASTC_5X5_TYPELESS:
+			case DXGI_FORMAT_ASTC_5X5_UNORM:
+			case DXGI_FORMAT_ASTC_5X5_UNORM_SRGB:
+				expected_size = ImageDecoder::calcExpectedSizeASTC(
+					ddsHeader.dwWidth, ddsHeader.dwHeight, 5, 5);
+				break;
+			case DXGI_FORMAT_ASTC_6X5_TYPELESS:
+			case DXGI_FORMAT_ASTC_6X5_UNORM:
+			case DXGI_FORMAT_ASTC_6X5_UNORM_SRGB:
+				expected_size = ImageDecoder::calcExpectedSizeASTC(
+					ddsHeader.dwWidth, ddsHeader.dwHeight, 6, 5);
+				break;
+			case DXGI_FORMAT_ASTC_6X6_TYPELESS:
+			case DXGI_FORMAT_ASTC_6X6_UNORM:
+			case DXGI_FORMAT_ASTC_6X6_UNORM_SRGB:
+				expected_size = ImageDecoder::calcExpectedSizeASTC(
+					ddsHeader.dwWidth, ddsHeader.dwHeight, 6, 6);
+				break;
+			case DXGI_FORMAT_ASTC_8X5_TYPELESS:
+			case DXGI_FORMAT_ASTC_8X5_UNORM:
+			case DXGI_FORMAT_ASTC_8X5_UNORM_SRGB:
+				expected_size = ImageDecoder::calcExpectedSizeASTC(
+					ddsHeader.dwWidth, ddsHeader.dwHeight, 8, 5);
+				break;
+			case DXGI_FORMAT_ASTC_8X6_TYPELESS:
+			case DXGI_FORMAT_ASTC_8X6_UNORM:
+			case DXGI_FORMAT_ASTC_8X6_UNORM_SRGB:
+				expected_size = ImageDecoder::calcExpectedSizeASTC(
+					ddsHeader.dwWidth, ddsHeader.dwHeight, 8, 6);
+				break;
+			case DXGI_FORMAT_ASTC_8X8_TYPELESS:
+			case DXGI_FORMAT_ASTC_8X8_UNORM:
+			case DXGI_FORMAT_ASTC_8X8_UNORM_SRGB:
+				expected_size = ImageDecoder::calcExpectedSizeASTC(
+					ddsHeader.dwWidth, ddsHeader.dwHeight, 8, 8);
+				break;
+			case DXGI_FORMAT_ASTC_10X5_TYPELESS:
+			case DXGI_FORMAT_ASTC_10X5_UNORM:
+			case DXGI_FORMAT_ASTC_10X5_UNORM_SRGB:
+				expected_size = ImageDecoder::calcExpectedSizeASTC(
+					ddsHeader.dwWidth, ddsHeader.dwHeight, 10, 5);
+				break;
+			case DXGI_FORMAT_ASTC_10X6_TYPELESS:
+			case DXGI_FORMAT_ASTC_10X6_UNORM:
+			case DXGI_FORMAT_ASTC_10X6_UNORM_SRGB:
+				expected_size = ImageDecoder::calcExpectedSizeASTC(
+					ddsHeader.dwWidth, ddsHeader.dwHeight, 10, 6);
+				break;
+			case DXGI_FORMAT_ASTC_10X8_TYPELESS:
+			case DXGI_FORMAT_ASTC_10X8_UNORM:
+			case DXGI_FORMAT_ASTC_10X8_UNORM_SRGB:
+				expected_size = ImageDecoder::calcExpectedSizeASTC(
+					ddsHeader.dwWidth, ddsHeader.dwHeight, 10, 8);
+				break;
+			case DXGI_FORMAT_ASTC_10X10_TYPELESS:
+			case DXGI_FORMAT_ASTC_10X10_UNORM:
+			case DXGI_FORMAT_ASTC_10X10_UNORM_SRGB:
+				expected_size = ImageDecoder::calcExpectedSizeASTC(
+					ddsHeader.dwWidth, ddsHeader.dwHeight, 10, 10);
+				break;
+			case DXGI_FORMAT_ASTC_12X10_TYPELESS:
+			case DXGI_FORMAT_ASTC_12X10_UNORM:
+			case DXGI_FORMAT_ASTC_12X10_UNORM_SRGB:
+				expected_size = ImageDecoder::calcExpectedSizeASTC(
+					ddsHeader.dwWidth, ddsHeader.dwHeight, 12, 10);
+				break;
+			case DXGI_FORMAT_ASTC_12X12_TYPELESS:
+			case DXGI_FORMAT_ASTC_12X12_UNORM:
+			case DXGI_FORMAT_ASTC_12X12_UNORM_SRGB:
+				expected_size = ImageDecoder::calcExpectedSizeASTC(
+					ddsHeader.dwWidth, ddsHeader.dwHeight, 12, 12);
+				break;
+#endif /* ENABLE_ASTC */
 
 			default:
 				// Not supported.
@@ -747,6 +836,107 @@ const rp_image *DirectDrawSurfacePrivate::loadImage(void)
 					reinterpret_cast<const uint32_t*>(buf.get()),
 					expected_size);
 				break;
+
+#ifdef ENABLE_ASTC
+			case DXGI_FORMAT_ASTC_4X4_TYPELESS:
+			case DXGI_FORMAT_ASTC_4X4_UNORM:
+			case DXGI_FORMAT_ASTC_4X4_UNORM_SRGB:
+				img = ImageDecoder::fromASTC(
+					ddsHeader.dwWidth, ddsHeader.dwHeight,
+					buf.get(), expected_size, 4, 4);
+				break;
+			case DXGI_FORMAT_ASTC_5X4_TYPELESS:
+			case DXGI_FORMAT_ASTC_5X4_UNORM:
+			case DXGI_FORMAT_ASTC_5X4_UNORM_SRGB:
+				img = ImageDecoder::fromASTC(
+					ddsHeader.dwWidth, ddsHeader.dwHeight,
+					buf.get(), expected_size, 5, 4);
+				break;
+			case DXGI_FORMAT_ASTC_5X5_TYPELESS:
+			case DXGI_FORMAT_ASTC_5X5_UNORM:
+			case DXGI_FORMAT_ASTC_5X5_UNORM_SRGB:
+				img = ImageDecoder::fromASTC(
+					ddsHeader.dwWidth, ddsHeader.dwHeight,
+					buf.get(), expected_size, 5, 5);
+				break;
+			case DXGI_FORMAT_ASTC_6X5_TYPELESS:
+			case DXGI_FORMAT_ASTC_6X5_UNORM:
+			case DXGI_FORMAT_ASTC_6X5_UNORM_SRGB:
+				img = ImageDecoder::fromASTC(
+					ddsHeader.dwWidth, ddsHeader.dwHeight,
+					buf.get(), expected_size, 6, 5);
+				break;
+			case DXGI_FORMAT_ASTC_6X6_TYPELESS:
+			case DXGI_FORMAT_ASTC_6X6_UNORM:
+			case DXGI_FORMAT_ASTC_6X6_UNORM_SRGB:
+				img = ImageDecoder::fromASTC(
+					ddsHeader.dwWidth, ddsHeader.dwHeight,
+					buf.get(), expected_size, 6, 6);
+				break;
+			case DXGI_FORMAT_ASTC_8X5_TYPELESS:
+			case DXGI_FORMAT_ASTC_8X5_UNORM:
+			case DXGI_FORMAT_ASTC_8X5_UNORM_SRGB:
+				img = ImageDecoder::fromASTC(
+					ddsHeader.dwWidth, ddsHeader.dwHeight,
+					buf.get(), expected_size, 8, 5);
+				break;
+			case DXGI_FORMAT_ASTC_8X6_TYPELESS:
+			case DXGI_FORMAT_ASTC_8X6_UNORM:
+			case DXGI_FORMAT_ASTC_8X6_UNORM_SRGB:
+				img = ImageDecoder::fromASTC(
+					ddsHeader.dwWidth, ddsHeader.dwHeight,
+					buf.get(), expected_size, 8, 6);
+				break;
+			case DXGI_FORMAT_ASTC_8X8_TYPELESS:
+			case DXGI_FORMAT_ASTC_8X8_UNORM:
+			case DXGI_FORMAT_ASTC_8X8_UNORM_SRGB:
+				img = ImageDecoder::fromASTC(
+					ddsHeader.dwWidth, ddsHeader.dwHeight,
+					buf.get(), expected_size, 8, 8);
+				break;
+			case DXGI_FORMAT_ASTC_10X5_TYPELESS:
+			case DXGI_FORMAT_ASTC_10X5_UNORM:
+			case DXGI_FORMAT_ASTC_10X5_UNORM_SRGB:
+				img = ImageDecoder::fromASTC(
+					ddsHeader.dwWidth, ddsHeader.dwHeight,
+					buf.get(), expected_size, 10, 5);
+				break;
+			case DXGI_FORMAT_ASTC_10X6_TYPELESS:
+			case DXGI_FORMAT_ASTC_10X6_UNORM:
+			case DXGI_FORMAT_ASTC_10X6_UNORM_SRGB:
+				img = ImageDecoder::fromASTC(
+					ddsHeader.dwWidth, ddsHeader.dwHeight,
+					buf.get(), expected_size, 10, 6);
+				break;
+			case DXGI_FORMAT_ASTC_10X8_TYPELESS:
+			case DXGI_FORMAT_ASTC_10X8_UNORM:
+			case DXGI_FORMAT_ASTC_10X8_UNORM_SRGB:
+				img = ImageDecoder::fromASTC(
+					ddsHeader.dwWidth, ddsHeader.dwHeight,
+					buf.get(), expected_size, 10, 8);
+				break;
+			case DXGI_FORMAT_ASTC_10X10_TYPELESS:
+			case DXGI_FORMAT_ASTC_10X10_UNORM:
+			case DXGI_FORMAT_ASTC_10X10_UNORM_SRGB:
+				img = ImageDecoder::fromASTC(
+					ddsHeader.dwWidth, ddsHeader.dwHeight,
+					buf.get(), expected_size, 10, 10);
+				break;
+			case DXGI_FORMAT_ASTC_12X10_TYPELESS:
+			case DXGI_FORMAT_ASTC_12X10_UNORM:
+			case DXGI_FORMAT_ASTC_12X10_UNORM_SRGB:
+				img = ImageDecoder::fromASTC(
+					ddsHeader.dwWidth, ddsHeader.dwHeight,
+					buf.get(), expected_size, 12, 10);
+				break;
+			case DXGI_FORMAT_ASTC_12X12_TYPELESS:
+			case DXGI_FORMAT_ASTC_12X12_UNORM:
+			case DXGI_FORMAT_ASTC_12X12_UNORM_SRGB:
+				img = ImageDecoder::fromASTC(
+					ddsHeader.dwWidth, ddsHeader.dwHeight,
+					buf.get(), expected_size, 12, 12);
+				break;
+#endif /* ENABLE_ASTC */
 
 			default:
 				// Not supported.

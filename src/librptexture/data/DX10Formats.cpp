@@ -92,10 +92,36 @@ const char *const DX10FormatsPrivate::dxgiFormat_tbl[] = {
 	"XBOX_R10G10B10_7E2_A2_FLOAT",				// 116
 	"XBOX_R10G10B10_6E4_A2_FLOAT",				// 117
 	"XBOX_D16_UNORM_S8_UINT", "XBOX_R6_UNORM_X8_TYPELESS",	// 118-119
-	"XBOX_DXGI_FORMAT_X16_TYPELESS_G8_UINT",		// 120
+	"XBOX_X16_TYPELESS_G8_UINT",				// 120
 	nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,	// 121-126
 	nullptr, nullptr, nullptr,				// 127-129
 	"P208", "V208", "V408",					// 130-132
+
+	// ASTC
+	#define DXGI_ASTC(x,y) \
+		"ASTC_" #x "X" #x "_TYPELESS",\
+		"ASTC_" #x "X" #x "_UNORM", \
+		"ASTC_" #x "X" #x "_UNORM_SRGB", \
+		nullptr
+	DXGI_ASTC(4, 4),	// 133-135
+	DXGI_ASTC(5, 4),	// 137-139
+	DXGI_ASTC(5, 5),	// 141-143
+	DXGI_ASTC(6, 5),	// 145-147
+	DXGI_ASTC(6, 6),	// 149-151
+	DXGI_ASTC(8, 5),	// 153-155
+	DXGI_ASTC(8, 6),	// 157-159
+	DXGI_ASTC(8, 8),	// 161-163
+	DXGI_ASTC(10, 5),	// 165-167
+	DXGI_ASTC(10, 6),	// 169-171
+	DXGI_ASTC(10, 8),	// 173-175
+	DXGI_ASTC(10, 10),	// 177-179
+	DXGI_ASTC(12, 10),	// 181-183
+	DXGI_ASTC(12, 12),	// 185-187
+
+	// Additional Xbox One formats
+	"XBOX_R10G10B10_SNORM_A2_UNORM",	// 189
+	"XBOX_R4G4_UNORM",			// 190
+	
 };
 
 /** DX10Formats **/
@@ -107,7 +133,7 @@ const char *const DX10FormatsPrivate::dxgiFormat_tbl[] = {
  */
 const char *DX10Formats::lookup_dxgiFormat(unsigned int dxgiFormat)
 {
-	static_assert(ARRAY_SIZE(DX10FormatsPrivate::dxgiFormat_tbl) == DXGI_FORMAT_V408+1,
+	static_assert(ARRAY_SIZE(DX10FormatsPrivate::dxgiFormat_tbl) == XBOX_DXGI_FORMAT_R4G4_UNORM+1,
 		"DX10FormatsPrivate::dxgiFormat_tbl[] size is incorrect.");
 
 	const char *texFormat = nullptr;
@@ -115,12 +141,6 @@ const char *DX10Formats::lookup_dxgiFormat(unsigned int dxgiFormat)
 		texFormat = DX10FormatsPrivate::dxgiFormat_tbl[dxgiFormat];
 	} else {
 		switch (dxgiFormat) {
-			case XBOX_DXGI_FORMAT_R10G10B10_SNORM_A2_UNORM:
-				texFormat = "XBOX_R10G10B10_SNORM_A2_UNORM";
-				break;
-			case XBOX_DXGI_FORMAT_R4G4_UNORM:
-				texFormat = "XBOX_R4G4_UNORM";
-				break;
 			case DXGI_FORMAT_FORCE_UINT:
 				texFormat = "FORCE_UINT";
 				break;
