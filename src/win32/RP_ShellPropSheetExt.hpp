@@ -80,14 +80,14 @@ RP_ShellPropSheetExt final : public LibWin32Common::ComBase2<IShellExtInit, IShe
 
 	public:
 		// IUnknown
-		IFACEMETHODIMP QueryInterface(REFIID riid, LPVOID *ppvObj) final;
+		IFACEMETHODIMP QueryInterface(_In_ REFIID riid, _Outptr_ LPVOID *ppvObj) final;
 
 		// IShellExtInit
-		IFACEMETHODIMP Initialize(LPCITEMIDLIST pidlFolder, LPDATAOBJECT pDataObj, HKEY hKeyProgID) final;
+		IFACEMETHODIMP Initialize(_In_ LPCITEMIDLIST pidlFolder, _In_ LPDATAOBJECT pDataObj, _In_ HKEY hKeyProgID) final;
 
 		// IShellPropSheetExt
-		IFACEMETHODIMP AddPages(LPFNADDPROPSHEETPAGE pfnAddPage, LPARAM lParam) final;
-		IFACEMETHODIMP ReplacePage(UINT uPageID, LPFNADDPROPSHEETPAGE pfnReplaceWith, LPARAM lParam) final;
+		IFACEMETHODIMP AddPages(_In_ LPFNADDPROPSHEETPAGE pfnAddPage, LPARAM lParam) final;
+		IFACEMETHODIMP ReplacePage(UINT uPageID, _In_ LPFNADDPROPSHEETPAGE pfnReplaceWith, LPARAM lParam) final;
 };
 
 #ifdef __CRT_UUID_DECL

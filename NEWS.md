@@ -6,6 +6,12 @@
   * EXE: Improve runtime DLL detection in some cases.
   * SNES: Fix detection of games that declare usage of the S-RTC chip
     in the ROM header. (sd2snes menu)
+  * Windows: Don't edit registered Applications when adding icon handling
+    registry keys. If a program is associated with an emulator filetype,
+    that program's icon will be used for IExtractIcon, but the rom-properties
+    thumbnail will still be used for thumbnail previews. This should fix
+    some issues with Windows 8/10/11 file associations.
+    * See issues: #241, #318, #319
 
 ## v1.8.3 (released 2021/08/03)
 

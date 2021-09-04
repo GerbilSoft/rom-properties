@@ -16,6 +16,7 @@ using LibWin32Common::RegKey;
 
 // C++ STL classes.
 using std::tstring;
+using std::unique_ptr;
 
 #define CLSID_RP_PropertyStore_String	TEXT("{4A1E3510-50BD-4B03-A801-E4C954F43B96}")
 CLSID_IMPL(RP_PropertyStore, _T("ROM Properties Page - Property Store"))
@@ -142,12 +143,12 @@ std::tstring RP_PropertyStore::GetFullDetailsString()
 
 /**
  * Register the file type handler.
- * @param hkcr HKEY_CLASSES_ROOT or user-specific classes root.
- * @param pHklm HKEY_LOCAL_MACHINE or user-specific root, or nullptr to skip.
- * @param ext File extension, including the leading dot.
+ * @param hkcr	[in] HKEY_CLASSES_ROOT or user-specific classes root.
+ * @param pHklm	[in,opt] HKEY_LOCAL_MACHINE or user-specific root, or nullptr to skip.
+ * @param ext	[in] File extension, including the leading dot.
  * @return ERROR_SUCCESS on success; Win32 error code on error.
  */
-LONG RP_PropertyStore::RegisterFileType(RegKey &hkcr, RegKey *pHklm, LPCTSTR ext)
+LONG RP_PropertyStore::RegisterFileType(RegKey &hkcr, _In_opt_ RegKey *pHklm, _In_ LPCTSTR ext)
 {
 	// Set the properties to display in the various fields.
 	// FIXME: FullDetails will show empty properties...
@@ -157,6 +158,7 @@ LONG RP_PropertyStore::RegisterFileType(RegKey &hkcr, RegKey *pHklm, LPCTSTR ext
 
 	// Write the registry keys.
 	// TODO: Determine which fields are actually supported by the specific extension.
+	// TODO: RP_Fallback handling?
 	RegKey hkey_ext(hkcr, ext, KEY_READ|KEY_WRITE, true);
 	if (!hkey_ext.isOpen())
 		return hkey_ext.lOpenRes();
@@ -195,26 +197,45 @@ LONG RP_PropertyStore::RegisterFileType(RegKey &hkcr, RegKey *pHklm, LPCTSTR ext
 
 /**
  * Unregister the file type handler.
- * @param hkcr HKEY_CLASSES_ROOT or user-specific classes root.
- * @param pHklm HKEY_LOCAL_MACHINE or user-specific root, or nullptr to skip.
- * @param ext File extension, including the leading dot.
+ * @param hkcr	[in] HKEY_CLASSES_ROOT or user-specific classes root.
+ * @param pHklm	[in,opt] HKEY_LOCAL_MACHINE or user-specific root, or nullptr to skip.
+ * @param ext	[in,opt] File extension, including the leading dot.
+ *
+ * NOTE: ext can be NULL, in which case, hkcr is assumed to be
+ * the registered file association.
+ *
  * @return ERROR_SUCCESS on success; Win32 error code on error.
  */
-LONG RP_PropertyStore::UnregisterFileType(RegKey &hkcr, RegKey *pHklm, LPCTSTR ext)
+LONG RP_PropertyStore::UnregisterFileType(RegKey &hkcr, _In_opt_ RegKey *pHklm, _In_opt_ LPCTSTR ext)
 {
 	// Check the main file extension key.
 	// If PreviewDetails and InfoTip match our values, remove them.
-	const tstring s_previewDetails = GetPreviewDetailsString();
-	const tstring s_infoTip = GetInfoTipString();
+	// FIXME: What if our version changes?
+	// TODO: RP_Fallback handling?
 
-	// Write the registry keys.
-	RegKey hkey_ext(hkcr, ext, KEY_READ|KEY_WRITE, true);
-	if (!hkey_ext.isOpen())
-		return hkey_ext.lOpenRes();
-	LONG lResult = hkey_ext.write(_T("PreviewDetails"), s_previewDetails);
-	if (lResult != ERROR_SUCCESS) return lResult;
-	lResult = hkey_ext.write(_T("InfoTip"), s_infoTip);
-	if (lResult != ERROR_SUCCESS) return lResult;
+	unique_ptr<RegKey> hkey_tmp;
+	RegKey *pHkey;
+	if (ext) {
+		// ext is specified.
+		hkey_tmp.reset(new RegKey(hkcr, ext, KEY_READ|KEY_WRITE, true));
+		pHkey = hkey_tmp.get();
+	} else {
+		// No ext. Use hkcr directly.
+		pHkey = &hkcr;
+	}
+
+	if (!pHkey->isOpen())
+		return pHkey->lOpenRes();
+	tstring s_value = pHkey->read(_T("PreviewDetails"));
+	if (s_value == GetPreviewDetailsString()) {
+		LONG lResult = pHkey->deleteValue(_T("PreviewDetails"));
+		if (lResult != ERROR_SUCCESS) return lResult;
+	}
+	s_value = pHkey->read(_T("InfoTip"));
+	if (s_value == GetInfoTipString()) {
+		LONG lResult = pHkey->deleteValue(_T("InfoTip"));
+		if (lResult != ERROR_SUCCESS) return lResult;
+	}
 
 	if (pHklm) {
 		// Open the "PropertyHandlers" key.
@@ -231,7 +252,7 @@ LONG RP_PropertyStore::UnregisterFileType(RegKey &hkcr, RegKey *pHklm, LPCTSTR e
 			const tstring def_value = hklmph_ext.read(nullptr);
 			if (def_value == CLSID_RP_PropertyStore_String) {
 				// Remove the default value.
-				lResult = hklmph_ext.deleteValue(nullptr);
+				LONG lResult = hklmph_ext.deleteValue(nullptr);
 				if (lResult != ERROR_SUCCESS) return lResult;
 				// If there are no more values, delete the key.
 				if (hklmph_ext.isKeyEmpty()) {
@@ -242,7 +263,7 @@ LONG RP_PropertyStore::UnregisterFileType(RegKey &hkcr, RegKey *pHklm, LPCTSTR e
 			}
 		} else {
 			// Anything other than ERROR_FILE_NOT_FOUND is an error.
-			lResult = hklmph_ext.lOpenRes();
+			LONG lResult = hklmph_ext.lOpenRes();
 			if (lResult != ERROR_FILE_NOT_FOUND) {
 				return lResult;
 			}

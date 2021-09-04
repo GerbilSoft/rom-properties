@@ -16,6 +16,7 @@ using LibWin32Common::RegKey;
 
 // C++ STL classes.
 using std::tstring;
+using std::unique_ptr;
 
 #define IID_IThumbnailProvider_String		TEXT("{E357FCCD-A995-4576-B01F-234630154E96}")
 #define CLSID_RP_ThumbnailProvider_String	TEXT("{4723DF58-463E-4590-8F4A-8D9DD4F4355A}")
@@ -102,11 +103,11 @@ LONG RP_ThumbnailProvider_Private::RegisterFileType(RegKey &hkey_Assoc)
 
 /**
  * Register the file type handler.
- * @param hkcr HKEY_CLASSES_ROOT or user-specific classes root.
- * @param ext File extension, including the leading dot.
+ * @param hkcr	[in] HKEY_CLASSES_ROOT or user-specific classes root.
+ * @param ext	[in] File extension, including the leading dot.
  * @return ERROR_SUCCESS on success; Win32 error code on error.
  */
-LONG RP_ThumbnailProvider::RegisterFileType(RegKey &hkcr, LPCTSTR ext)
+LONG RP_ThumbnailProvider::RegisterFileType(RegKey &hkcr, _In_ LPCTSTR ext)
 {
 	// Open the file extension key.
 	RegKey hkcr_ext(hkcr, ext, KEY_READ|KEY_WRITE, true);
@@ -154,35 +155,39 @@ LONG RP_ThumbnailProvider::RegisterFileType(RegKey &hkcr, LPCTSTR ext)
 LONG RP_ThumbnailProvider_Private::UnregisterFileType(RegKey &hkey_Assoc)
 {
 	// Unregister as the thumbnail handler for this file association.
+	// NOTE: Continuing even if some keys are missing in case there
+	// are other leftover keys.
 
 	// Open the "ShellEx" key.
 	RegKey hkcr_ShellEx(hkey_Assoc, _T("ShellEx"), KEY_READ, false);
 	if (!hkcr_ShellEx.isOpen()) {
 		// ERROR_FILE_NOT_FOUND is acceptable here.
 		LONG lResult = hkcr_ShellEx.lOpenRes();
-		if (lResult == ERROR_FILE_NOT_FOUND) {
-			return ERROR_SUCCESS;
+		if (lResult != ERROR_FILE_NOT_FOUND) {
+			return lResult;
 		}
-		return lResult;
 	}
 
 	// Open the {IID_IThumbnailProvider} key.
-	RegKey hkcr_IThumbnailProvider(hkcr_ShellEx, IID_IThumbnailProvider_String, KEY_READ|KEY_WRITE, false);
-	if (!hkcr_IThumbnailProvider.isOpen()) {
-		// ERROR_FILE_NOT_FOUND is acceptable here.
-		LONG lResult = hkcr_IThumbnailProvider.lOpenRes();
-		if (lResult == ERROR_FILE_NOT_FOUND) {
-			return ERROR_SUCCESS;
+	unique_ptr<RegKey> phkcr_IThumbnailProvider;
+	if (hkcr_ShellEx.isOpen()) {
+		phkcr_IThumbnailProvider.reset(new RegKey(hkcr_ShellEx, IID_IThumbnailProvider_String, KEY_READ|KEY_WRITE, false));
+		if (phkcr_IThumbnailProvider->isOpen()) {
+			// Check if the default value matches the CLSID.
+			const tstring str_IThumbnailProvider = phkcr_IThumbnailProvider->read(nullptr);
+			if (str_IThumbnailProvider != CLSID_RP_ThumbnailProvider_String) {
+				// Not our IThumbnailProvider.
+				// We're done here.
+				return ERROR_SUCCESS;
+			}
+		} else {
+			// ERROR_FILE_NOT_FOUND is acceptable here.
+			LONG lResult = phkcr_IThumbnailProvider->lOpenRes();
+			if (lResult != ERROR_FILE_NOT_FOUND) {
+				return lResult;
+			}
+			phkcr_IThumbnailProvider.reset(nullptr);
 		}
-		return lResult;
-	}
-
-	// Check if the default value matches the CLSID.
-	const tstring str_IThumbnailProvider = hkcr_IThumbnailProvider.read(nullptr);
-	if (str_IThumbnailProvider != CLSID_RP_ThumbnailProvider_String) {
-		// Not our IThumbnailProvider.
-		// We're done here.
-		return ERROR_SUCCESS;
 	}
 
 	// Restore the fallbacks if we have any.
@@ -196,67 +201,89 @@ LONG RP_ThumbnailProvider_Private::UnregisterFileType(RegKey &hkey_Assoc)
 		treatment = hkcr_RP_Fallback.read_dword(_T("Treatment"), &dwTypeTreatment);
 	}
 
-	if (!clsid_reg.empty()) {
-		// Restore the IThumbnailProvider.
-		LONG lResult = hkcr_IThumbnailProvider.write(nullptr, clsid_reg);
-		if (lResult != ERROR_SUCCESS) {
-			return lResult;
-		}
-		// Restore the "Treatment" value.
-		if (dwTypeTreatment == REG_DWORD) {
-			lResult = hkey_Assoc.write_dword(_T("Treatment"), treatment);
+	if (phkcr_IThumbnailProvider) {
+		if (!clsid_reg.empty()) {
+			// Restore the IThumbnailProvider.
+			LONG lResult = phkcr_IThumbnailProvider->write(nullptr, clsid_reg);
 			if (lResult != ERROR_SUCCESS) {
 				return lResult;
 			}
+			// Restore the "Treatment" value.
+			if (dwTypeTreatment == REG_DWORD) {
+				lResult = hkey_Assoc.write_dword(_T("Treatment"), treatment);
+				if (lResult != ERROR_SUCCESS) {
+					return lResult;
+				}
+			} else {
+				// No "Treatment" value to restore.
+				// Delete the current one if it's present.
+				lResult = hkey_Assoc.deleteValue(_T("Treatment"));
+				if (lResult != ERROR_SUCCESS && lResult != ERROR_FILE_NOT_FOUND) {
+					return lResult;
+				}
+			}
 		} else {
-			// No "Treatment" value to restore.
-			// Delete the current one if it's present.
+			// No IThumbnailProvider to restore.
+			// Remove the current one.
+			phkcr_IThumbnailProvider->close();
+			LONG lResult = hkcr_ShellEx.deleteSubKey(IID_IThumbnailProvider_String);
+			if (lResult != ERROR_SUCCESS && lResult != ERROR_FILE_NOT_FOUND) {
+				return lResult;
+			}
+
+			// Remove the "Treatment" value if it's present.
 			lResult = hkey_Assoc.deleteValue(_T("Treatment"));
 			if (lResult != ERROR_SUCCESS && lResult != ERROR_FILE_NOT_FOUND) {
 				return lResult;
 			}
-		}
-	} else {
-		// No IThumbnailProvider to restore.
-		// Remove the current one.
-		hkcr_IThumbnailProvider.close();
-		LONG lResult = hkcr_ShellEx.deleteSubKey(IID_IThumbnailProvider_String);
-		if (lResult != ERROR_SUCCESS && lResult != ERROR_FILE_NOT_FOUND) {
-			return lResult;
-		}
 
-		// Remove the "Treatment" value if it's present.
-		lResult = hkey_Assoc.deleteValue(_T("Treatment"));
-		if (lResult != ERROR_SUCCESS && lResult != ERROR_FILE_NOT_FOUND) {
-			return lResult;
+			// If the "ShellEx" key is empty, delete it.
+			if (hkcr_ShellEx.isKeyEmpty()) {
+				hkcr_ShellEx.close();
+				hkey_Assoc.deleteSubKey(_T("ShellEx"));
+			}
 		}
 	}
 
 	// Remove the fallbacks.
-	LONG lResult = ERROR_SUCCESS;
 	if (hkcr_RP_Fallback.isOpen()) {
-		lResult = hkcr_RP_Fallback.deleteValue(_T("IThumbnailProvider"));
+		LONG lResult = hkcr_RP_Fallback.deleteValue(_T("IThumbnailProvider"));
 		if (lResult != ERROR_SUCCESS && lResult != ERROR_FILE_NOT_FOUND) {
 			return lResult;
 		}
 		lResult = hkcr_RP_Fallback.deleteValue(_T("Treatment"));
-		if (lResult == ERROR_FILE_NOT_FOUND) {
-			lResult = ERROR_SUCCESS;
+		if (lResult != ERROR_SUCCESS && lResult != ERROR_FILE_NOT_FOUND) {
+			return lResult;
+		}
+
+		// If the key is empty, delete it.
+		if (hkcr_RP_Fallback.isKeyEmpty()) {
+			hkcr_RP_Fallback.close();
+			hkey_Assoc.deleteSubKey(_T("RP_Fallback"));
 		}
 	}
 
 	// File type handler unregistered.
-	return lResult;
+	return ERROR_SUCCESS;
 }
 
 /**
  * Unregister the file type handler.
- * @param hkcr HKEY_CLASSES_ROOT or user-specific classes root.
- * @param ext File extension, including the leading dot.
+ * @param hkcr	[in] HKEY_CLASSES_ROOT or user-specific classes root.
+ * @param ext	[in,opt] File extension, including the leading dot.
+ *
+ * NOTE: ext can be NULL, in which case, hkcr is assumed to be
+ * the registered file association.
+ *
  * @return ERROR_SUCCESS on success; Win32 error code on error.
  */
-LONG RP_ThumbnailProvider::UnregisterFileType(RegKey &hkcr, LPCTSTR ext)
+LONG RP_ThumbnailProvider::UnregisterFileType(RegKey &hkcr, _In_opt_ LPCTSTR ext)
 {
+	if (!ext) {
+		// Unregister from hkcr directly.
+		return RP_ThumbnailProvider_Private::UnregisterFileType(hkcr);
+	}
+
 	// Open the file extension key.
 	RegKey hkcr_ext(hkcr, ext, KEY_READ|KEY_WRITE, false);
 	if (!hkcr_ext.isOpen()) {

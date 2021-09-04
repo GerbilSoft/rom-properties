@@ -57,13 +57,13 @@ RP_ThumbnailProvider final : public LibWin32Common::ComBase2<IInitializeWithStre
 
 	public:
 		// IUnknown
-		IFACEMETHODIMP QueryInterface(REFIID riid, LPVOID *ppvObj) final;
+		IFACEMETHODIMP QueryInterface(_In_ REFIID riid, _Outptr_ LPVOID *ppvObj) final;
 
 		// IInitializeWithStream
-		IFACEMETHODIMP Initialize(IStream *pstream, DWORD grfMode) final;
+		IFACEMETHODIMP Initialize(_In_ IStream *pstream, DWORD grfMode) final;
 
 		// IThumbnailProvider
-		IFACEMETHODIMP GetThumbnail(UINT cx, HBITMAP *phbmp, WTS_ALPHATYPE *pdwAlpha) final;
+		IFACEMETHODIMP GetThumbnail(UINT cx, _Outptr_ HBITMAP *phbmp, _Out_ WTS_ALPHATYPE *pdwAlpha) final;
 };
 
 #ifdef __CRT_UUID_DECL

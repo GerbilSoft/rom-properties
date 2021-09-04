@@ -488,9 +488,11 @@ static LONG RegisterUserFileType(const tstring &sid, const RomDataFactory::ExtIn
 	// multiple times due to HKCR vs. HKLM differences.
 
 	// Get the ProgID.
+	// NOTE: Skipping "Applications\\" ProgIDs. These are registered
+	// applications and are selected using "UserChoice" on Win8+.
 	const tstring progID = GetUserFileAssoc(sid, ext_info.ext);
-	if (progID.empty()) {
-		// No ProgID.
+	if (progID.empty() || !_tcsnicmp(progID.c_str(), _T("Applications\\"), 13)) {
+		// No ProgID and/or it's "Applications/".
 		return ERROR_SUCCESS;
 	}
 
@@ -558,6 +560,9 @@ static LONG UnregisterUserFileType(const tstring &sid, const RomDataFactory::Ext
 	// NOTE: We might end up registering RP_PropertyStore
 	// multiple times due to HKCR vs. HKLM differences.
 
+	// NOTE: Not skipping "Applications\\" ProgIDs, since these may
+	// have been registered by older versions of rom-properties.
+
 	// Get the ProgID.
 	const tstring progID = GetUserFileAssoc(sid, ext_info.ext);
 	if (progID.empty()) {
@@ -613,6 +618,43 @@ static LONG UnregisterUserFileType(const tstring &sid, const RomDataFactory::Ext
 		} else if (hku_cr.lOpenRes() != ERROR_FILE_NOT_FOUND) {
 			return hku_cr.lOpenRes();
 		}
+	}
+
+	return ERROR_SUCCESS;
+}
+
+/**
+ * Unregister ourselves in any "HKCR\\Applications" entries.
+ * This was an error that caused various brokenness with
+ * UserChoice on Windows 8+.
+ *
+ * @param hkcr "HKCR\\Applications" or "HKU\\xxx\\SOFTWARE\\Classes\\Applications".
+ * @return ERROR_SUCCESS on success; Win32 error code on error.
+ */
+static LONG UnregisterFromApplications(RegKey& hkcr)
+{
+	// Enumerate the subkeys and unregister from each of them.
+	list<tstring> lstSubKeys;
+	LONG lResult = hkcr.enumSubKeys(lstSubKeys);
+	if (lResult != ERROR_SUCCESS || lstSubKeys.empty()) {
+		return lResult;
+	}
+
+	const auto iter_cend = lstSubKeys.cend();
+	for (auto iter = lstSubKeys.cbegin(); iter != iter_cend; ++iter) {
+		RegKey hkey_app(hkcr, iter->c_str(), KEY_READ|KEY_WRITE, false);
+		if (!hkey_app.isOpen())
+			continue;
+
+		// Unregister from this Application.
+		// NOTE: Not checking results.
+		// NOTE: No RP_ShellPropSheetExt unregistration is needed here.
+		RP_ExtractIcon::UnregisterFileType(hkey_app, nullptr);
+		RP_ExtractImage::UnregisterFileType(hkey_app, nullptr);
+		RP_ThumbnailProvider::UnregisterFileType(hkey_app, nullptr);
+#ifdef HAVE_RP_PROPERTYSTORE_DEPS
+		RP_PropertyStore::UnregisterFileType(hkey_app, nullptr, nullptr);
+#endif /* HAVE_RP_PROPERTYSTORE_DEPS */
 	}
 
 	return ERROR_SUCCESS;
@@ -715,30 +757,6 @@ STDAPI DllRegisterServer(void)
 		}
 	}
 
-	// NOTE: Some extensions were accidentally registered in previous versions:
-	// - LibRomData::EXE: "*.vxd"
-	// - LibRomData::MachO: ".dylib.bundle" [v1.4]
-	// These extensions will be explicitly deleted here.
-	// NOTE: Ignoring any errors to prevent `regsvr32` from failing.
-	hkcr.deleteSubKey(_T("*.vxd"));
-	hkcr.deleteSubKey(_T(".dylib.bundle"));
-	for (auto sid_iter = user_SIDs.cbegin(); sid_iter != user_SIDs_cend; ++sid_iter) {
-		TCHAR regPath[288];
-		int len = _sntprintf_s(regPath, _countof(regPath),
-			_T("%s\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\FileExts"),
-			sid_iter->c_str());
-		if (len <= 0 || len >= _countof(regPath)) {
-			// Buffer isn't large enough...
-			continue;
-		}
-
-		RegKey hkuvxd(HKEY_USERS, regPath, KEY_WRITE, false);
-		if (!hkuvxd.isOpen() || hkuvxd.lOpenRes() == ERROR_FILE_NOT_FOUND)
-			continue;
-		hkuvxd.deleteSubKey(_T("*.vxd"));
-		hkuvxd.deleteSubKey(_T(".dylib.bundle"));
-	}
-
 	// Register RP_ShellPropSheetExt for all file types.
 	// Fixes an issue where it doesn't show up for .dds if
 	// Visual Studio 2017 is installed.
@@ -749,6 +767,52 @@ STDAPI DllRegisterServer(void)
 	// TODO: Icon/thumbnail handling?
 	lResult = RP_ShellPropSheetExt::RegisterFileType(hkcr, _T("Drive"));
 	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
+
+	/** Fixes for previous versions **/
+
+	// NOTE: Some extensions were accidentally registered in previous versions:
+	// - LibRomData::EXE: "*.vxd"
+	// - LibRomData::MachO: ".dylib.bundle" [v1.4]
+	// These extensions will be explicitly deleted here.
+	// NOTE: Ignoring any errors to prevent `regsvr32` from failing.
+	hkcr.deleteSubKey(_T("*.vxd"));
+	hkcr.deleteSubKey(_T(".dylib.bundle"));
+
+	// Unregister ourselves in any "HKCR\\Applications" entries,
+	// and similarly for users. This was an error that caused
+	// various brokenness with UserChoice on Windows 8+.
+	RegKey hkcr_Applications(HKEY_CLASSES_ROOT, _T("Applications"), KEY_READ, false);
+	if (hkcr_Applications.isOpen()) {
+		UnregisterFromApplications(hkcr_Applications);
+	}
+
+	// Per-user versions of the above.
+	for (auto sid_iter = user_SIDs.cbegin(); sid_iter != user_SIDs_cend; ++sid_iter) {
+		TCHAR regPath[288];
+
+		// Incorrect file extension registrations.
+		int len = _sntprintf_s(regPath, _countof(regPath),
+			_T("%s\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\FileExts"),
+			sid_iter->c_str());
+		if (len > 0 && len < _countof(regPath)) {
+			RegKey hkuvxd(HKEY_USERS, regPath, KEY_WRITE, false);
+			if (hkuvxd.isOpen()) {
+				hkuvxd.deleteSubKey(_T("*.vxd"));
+				hkuvxd.deleteSubKey(_T(".dylib.bundle"));
+			}
+		}
+
+		// "HKU\\xxx\\SOFTWARE\\Classes\\Applications" entries
+		len = _sntprintf_s(regPath, _countof(regPath),
+			_T("%s\\SOFTWARE\\Classes\\Applications"),
+			sid_iter->c_str());
+		if (len > 0 && len < _countof(regPath)) {
+			RegKey hku_Applications(HKEY_USERS, regPath, KEY_READ|KEY_WRITE, false);
+			if (hku_Applications.isOpen()) {
+				UnregisterFromApplications(hku_Applications);
+			}
+		}
+	}
 
 	// Notify the shell that file associations have changed.
 	// Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/cc144148(v=vs.85).aspx
@@ -812,30 +876,6 @@ STDAPI DllUnregisterServer(void)
 		}
 	}
 
-	// NOTE: Some extensions were accidentally registered in previous versions:
-	// - LibRomData::EXE: "*.vxd"
-	// - LibRomData::MachO: ".dylib.bundle" [v1.4]
-	// These extensions will be explicitly deleted here.
-	// NOTE: Ignoring any errors to prevent `regsvr32` from failing.
-	hkcr.deleteSubKey(_T("*.vxd"));
-	hkcr.deleteSubKey(_T(".dylib.bundle"));
-	for (auto sid_iter = user_SIDs.cbegin(); sid_iter != user_SIDs_cend; ++sid_iter) {
-		TCHAR regPath[288];
-		int len = _sntprintf_s(regPath, _countof(regPath),
-			_T("%s\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\FileExts"),
-			sid_iter->c_str());
-		if (len <= 0 || len >= _countof(regPath)) {
-			// Buffer isn't large enough...
-			continue;
-		}
-
-		RegKey hkuvxd(HKEY_USERS, regPath, KEY_WRITE, false);
-		if (!hkuvxd.isOpen() || hkuvxd.lOpenRes() == ERROR_FILE_NOT_FOUND)
-			continue;
-		hkuvxd.deleteSubKey(_T("*.vxd"));
-		hkcr.deleteSubKey(_T(".dylib.bundle"));
-	}
-
 	// Unregister RP_ShellPropSheetExt for all file types.
 	lResult = RP_ShellPropSheetExt::UnregisterFileType(hkcr, _T("*"));
 	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
@@ -847,6 +887,52 @@ STDAPI DllUnregisterServer(void)
 
 	// Remove the ProgID.
 	hkcr.deleteSubKey(RP_ProgID);
+
+	/** Fixes for previous versions **/
+
+	// NOTE: Some extensions were accidentally registered in previous versions:
+	// - LibRomData::EXE: "*.vxd"
+	// - LibRomData::MachO: ".dylib.bundle" [v1.4]
+	// These extensions will be explicitly deleted here.
+	// NOTE: Ignoring any errors to prevent `regsvr32` from failing.
+	hkcr.deleteSubKey(_T("*.vxd"));
+	hkcr.deleteSubKey(_T(".dylib.bundle"));
+
+	// Unregister ourselves in any "HKCR\\Applications" entries,
+	// and similarly for users. This was an error that caused
+	// various brokenness with UserChoice on Windows 8+.
+	RegKey hkcr_Applications(HKEY_CLASSES_ROOT, _T("Applications"), KEY_READ, false);
+	if (hkcr_Applications.isOpen()) {
+		UnregisterFromApplications(hkcr_Applications);
+	}
+
+	// Per-user versions of the above.
+	for (auto sid_iter = user_SIDs.cbegin(); sid_iter != user_SIDs_cend; ++sid_iter) {
+		TCHAR regPath[288];
+
+		// Incorrect file extension registrations.
+		int len = _sntprintf_s(regPath, _countof(regPath),
+			_T("%s\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\FileExts"),
+			sid_iter->c_str());
+		if (len > 0 && len < _countof(regPath)) {
+			RegKey hkuvxd(HKEY_USERS, regPath, KEY_WRITE, false);
+			if (hkuvxd.isOpen()) {
+				hkuvxd.deleteSubKey(_T("*.vxd"));
+				hkuvxd.deleteSubKey(_T(".dylib.bundle"));
+			}
+		}
+
+		// "HKU\\xxx\\SOFTWARE\\Classes\\Applications" entries
+		len = _sntprintf_s(regPath, _countof(regPath),
+			_T("%s\\SOFTWARE\\Classes\\Applications"),
+			sid_iter->c_str());
+		if (len > 0 && len < _countof(regPath)) {
+			RegKey hku_Applications(HKEY_USERS, regPath, KEY_READ | KEY_WRITE, false);
+			if (hku_Applications.isOpen()) {
+				UnregisterFromApplications(hku_Applications);
+			}
+		}
+	}
 
 	// Notify the shell that file associations have changed.
 	// Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/cc144148(v=vs.85).aspx

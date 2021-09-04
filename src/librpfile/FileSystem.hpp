@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpfile)                        *
  * FileSystem.hpp: File system functions.                                  *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -127,10 +127,19 @@ static inline int delete_file(const std::string &filename)
 
 /**
  * Get the file extension from a filename or pathname.
- * @param filename Filename.
- * @return File extension, including the leading dot. (pointer to within the filename) [nullptr if no extension]
+ * @param filename Filename
+ * @return File extension, including the leading dot (pointer to within the filename) [nullptr if no extension]
  */
 const char *file_ext(const std::string &filename);
+
+#ifdef _WIN32
+/**
+ * Get the file extension from a filename or pathname. (wchar_t version)
+ * @param filename Filename
+ * @return File extension, including the leading dot (pointer to within the filename) [nullptr if no extension]
+ */
+const wchar_t *file_ext(const std::wstring& filename);
+#endif /* _WIN32 */
 
 /**
  * Replace the file extension from a filename.

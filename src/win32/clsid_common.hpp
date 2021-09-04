@@ -75,16 +75,20 @@ LONG klass::UnregisterCLSID(void) \
 #define FILETYPE_HANDLER_DECL(klass) \
 		/** \
 		 * Register the file type handler. \
-		 * @param hkcr HKEY_CLASSES_ROOT or user-specific classes root. \
-		 * @param ext File extension, including the leading dot. \
+		 * @param hkcr	[in] HKEY_CLASSES_ROOT or user-specific classes root. \
+		 * @param ext	[in] File extension, including the leading dot. \
 		 * @return ERROR_SUCCESS on success; Win32 error code on error. \
 		 */ \
 		static LONG RegisterFileType(LibWin32Common::RegKey &hkcr, LPCTSTR ext); \
 		\
 		/** \
 		 * Unregister the file type handler. \
-		 * @param hkcr HKEY_CLASSES_ROOT or user-specific classes root. \
-		 * @param ext File extension, including the leading dot. \
+		 * @param hkcr	[in] HKEY_CLASSES_ROOT or user-specific classes root. \
+		 * @param ext	[in,opt] File extension, including the leading dot. \
+		 * \
+		 * NOTE: ext can be NULL, in which case, hkcr is assumed to be \
+		 * the registered file association. \
+		 * \
 		 * @return ERROR_SUCCESS on success; Win32 error code on error. \
 		 */ \
 		static LONG UnregisterFileType(LibWin32Common::RegKey &hkcr, LPCTSTR ext);
@@ -93,18 +97,22 @@ LONG klass::UnregisterCLSID(void) \
 #define FILETYPE_HANDLER_HKLM_DECL(klass) \
 		/** \
 		 * Register the file type handler. \
-		 * @param hkcr HKEY_CLASSES_ROOT or user-specific classes root. \
-		 * @param pHklm HKEY_LOCAL_MACHINE or user-specific root, or nullptr to skip. \
-		 * @param ext File extension, including the leading dot. \
+		 * @param hkcr	[in] HKEY_CLASSES_ROOT or user-specific classes root. \
+		 * @param pHklm	[in,opt] HKEY_LOCAL_MACHINE or user-specific root, or nullptr to skip. \
+		 * @param ext	[in] File extension, including the leading dot. \
 		 * @return ERROR_SUCCESS on success; Win32 error code on error. \
 		 */ \
 		static LONG RegisterFileType(LibWin32Common::RegKey &hkcr, LibWin32Common::RegKey *pHklm, LPCTSTR ext); \
 		\
 		/** \
 		 * Unregister the file type handler. \
-		 * @param hkcr HKEY_CLASSES_ROOT or user-specific classes root. \
-		 * @param pHklm HKEY_LOCAL_MACHINE or user-specific root, or nullptr to skip. \
-		 * @param ext File extension, including the leading dot. \
+		 * @param hkcr	[in] HKEY_CLASSES_ROOT or user-specific classes root. \
+		 * @param pHklm	[in,opt] HKEY_LOCAL_MACHINE or user-specific root, or nullptr to skip. \
+		 * @param ext	[in,opt] File extension, including the leading dot. \
+		 * \
+		 * NOTE: ext can be NULL, in which case, hkcr is assumed to be \
+		 * the registered file association. \
+		 * \
 		 * @return ERROR_SUCCESS on success; Win32 error code on error. \
 		 */ \
 		static LONG UnregisterFileType(LibWin32Common::RegKey &hkcr, LibWin32Common::RegKey *pHklm, LPCTSTR ext);

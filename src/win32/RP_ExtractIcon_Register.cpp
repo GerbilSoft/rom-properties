@@ -118,11 +118,11 @@ LONG RP_ExtractIcon_Private::RegisterFileType(RegKey &hkey_Assoc)
 
 /**
  * Register the file type handler.
- * @param hkcr HKEY_CLASSES_ROOT or user-specific classes root.
- * @param ext File extension, including the leading dot.
+ * @param hkcr	[in] HKEY_CLASSES_ROOT or user-specific classes root.
+ * @param ext	[in] File extension, including the leading dot.
  * @return ERROR_SUCCESS on success; Win32 error code on error.
  */
-LONG RP_ExtractIcon::RegisterFileType(RegKey &hkcr, LPCTSTR ext)
+LONG RP_ExtractIcon::RegisterFileType(RegKey &hkcr, _In_ LPCTSTR ext)
 {
 	// Open the file extension key.
 	RegKey hkcr_ext(hkcr, ext, KEY_READ|KEY_WRITE, true);
@@ -170,112 +170,144 @@ LONG RP_ExtractIcon::RegisterFileType(RegKey &hkcr, LPCTSTR ext)
 LONG RP_ExtractIcon_Private::UnregisterFileType(RegKey &hkey_Assoc)
 {
 	// Unregister as the icon handler for this file association.
+	// NOTE: Continuing even if some keys are missing in case there
+	// are other leftover keys.
 
 	// Open the "DefaultIcon" key.
+	tstring defaultIcon;
 	RegKey hkcr_DefaultIcon(hkey_Assoc, _T("DefaultIcon"), KEY_READ|KEY_WRITE, false);
-	if (!hkcr_DefaultIcon.isOpen()) {
+	if (hkcr_DefaultIcon.isOpen()) {
+		defaultIcon = hkcr_DefaultIcon.read(nullptr);
+	} else {
 		// ERROR_FILE_NOT_FOUND is acceptable here.
 		// In that case, it means we aren't registered.
 		LONG lResult = hkcr_DefaultIcon.lOpenRes();
-		if (lResult == ERROR_FILE_NOT_FOUND) {
-			return ERROR_SUCCESS;
+		if (lResult != ERROR_FILE_NOT_FOUND) {
+			return lResult;
 		}
-		return lResult;
 	}
 
 	// Open the "ShellEx\\IconHandler" key.
+	tstring iconHandler;
 	RegKey hkcr_IconHandler(hkey_Assoc, _T("ShellEx\\IconHandler"), KEY_READ|KEY_WRITE, false);
-	if (!hkcr_IconHandler.isOpen()) {
+	if (hkcr_IconHandler.isOpen()) {
+		iconHandler = hkcr_IconHandler.read(nullptr);
+	} else {
 		// ERROR_FILE_NOT_FOUND is acceptable here.
 		// In that case, it means we aren't registered.
 		LONG lResult = hkcr_DefaultIcon.lOpenRes();
-		if (lResult == ERROR_FILE_NOT_FOUND) {
-			return ERROR_SUCCESS;
+		if (lResult != ERROR_FILE_NOT_FOUND) {
+			return lResult;
 		}
-		return lResult;
 	}
 
 	// Check if DefaultIcon is "%1" and IconHandler is our CLSID.
-	tstring defaultIcon = hkcr_DefaultIcon.read(nullptr);
-	tstring iconHandler = hkcr_IconHandler.read(nullptr);
 	// FIXME: Restore if iconHandler matches, even if defaultIcon doesn't.
-	if (defaultIcon != _T("%1") || iconHandler != CLSID_RP_ExtractIcon_String) {
-		// Not our DefaultIcon or IconHandler.
-		// We're done here.
-		return ERROR_SUCCESS;
+	if (defaultIcon != _T("%1")) {
+		// Not our DefaultIcon.
+		hkcr_DefaultIcon.close();
+	}
+	if (iconHandler != CLSID_RP_ExtractIcon_String) {
+		// Not our IconHandler.
+		hkcr_DefaultIcon.close();
+		hkcr_IconHandler.close();
 	}
 
 	// Restore the fallbacks if we have any.
 	DWORD dwTypeDefaultIcon = 0, dwTypeIconHandler = 0;
-	defaultIcon.clear();
-	iconHandler.clear();
+	tstring defaultIcon_fb, iconHandler_fb;
 	RegKey hkcr_RP_Fallback(hkey_Assoc, _T("RP_Fallback"), KEY_READ|KEY_WRITE, false);
 	if (hkcr_RP_Fallback.isOpen()) {
 		// Read the fallbacks.
-		defaultIcon = hkcr_RP_Fallback.read(_T("DefaultIcon"), &dwTypeDefaultIcon);
-		iconHandler = hkcr_RP_Fallback.read(_T("IconHandler"), &dwTypeIconHandler);
+		defaultIcon_fb = hkcr_RP_Fallback.read(_T("DefaultIcon"), &dwTypeDefaultIcon);
+		iconHandler_fb = hkcr_RP_Fallback.read(_T("IconHandler"), &dwTypeIconHandler);
 	}
 
-	if (!defaultIcon.empty()) {
-		// Restore the DefaultIcon.
-		LONG lResult = hkcr_DefaultIcon.write(nullptr, defaultIcon, dwTypeDefaultIcon);
-		if (lResult != ERROR_SUCCESS) {
-			return lResult;
-		}
-	} else {
-		// Delete the DefaultIcon.
-		hkcr_DefaultIcon.close();
-		LONG lResult = hkey_Assoc.deleteSubKey(_T("DefaultIcon"));
-		if (lResult != ERROR_SUCCESS && lResult != ERROR_FILE_NOT_FOUND) {
-			return lResult;
-		}
-	}
-
-	if (!iconHandler.empty()) {
-		// Restore the IconHandler.
-		LONG lResult = hkcr_IconHandler.write(nullptr, iconHandler, dwTypeIconHandler);
-		if (lResult != ERROR_SUCCESS) {
-			return lResult;
-		}
-	} else {
-		// Open the "ShellEx" key.
-		RegKey hkcr_ShellEx(hkey_Assoc, _T("ShellEx"), KEY_WRITE, false);
-		if (hkcr_ShellEx.isOpen()) {
-			// Delete the IconHandler.
-			// FIXME: Windows 7 isn't properly deleting this in some cases...
-			// (".3gp" extension; owned by WMP11)
-			LONG lResult = hkcr_ShellEx.deleteSubKey(_T("IconHandler"));
+	if (hkcr_DefaultIcon.isOpen()) {
+		if (!defaultIcon_fb.empty()) {
+			// Restore the DefaultIcon.
+			LONG lResult = hkcr_DefaultIcon.write(nullptr, defaultIcon_fb, dwTypeDefaultIcon);
+			if (lResult != ERROR_SUCCESS) {
+				return lResult;
+			}
+		} else {
+			// Delete the DefaultIcon.
+			hkcr_DefaultIcon.close();
+			LONG lResult = hkey_Assoc.deleteSubKey(_T("DefaultIcon"));
 			if (lResult != ERROR_SUCCESS && lResult != ERROR_FILE_NOT_FOUND) {
 				return lResult;
 			}
 		}
 	}
 
+	if (hkcr_IconHandler.isOpen()) {
+		if (!iconHandler_fb.empty()) {
+			// Restore the IconHandler.
+			LONG lResult = hkcr_IconHandler.write(nullptr, iconHandler_fb, dwTypeIconHandler);
+			if (lResult != ERROR_SUCCESS) {
+				return lResult;
+			}
+		} else {
+			// Open the "ShellEx" key.
+			RegKey hkcr_ShellEx(hkey_Assoc, _T("ShellEx"), KEY_READ|KEY_WRITE, false);
+			if (hkcr_ShellEx.isOpen()) {
+				// Delete the IconHandler.
+				// FIXME: Windows 7 isn't properly deleting this in some cases...
+				// (".3gp" extension; owned by WMP11)
+				hkcr_IconHandler.close();
+				LONG lResult = hkcr_ShellEx.deleteSubKey(_T("IconHandler"));
+				if (lResult != ERROR_SUCCESS && lResult != ERROR_FILE_NOT_FOUND) {
+					return lResult;
+				}
+
+				// If the "ShellEx" key is empty, delete it.
+				if (hkcr_ShellEx.isKeyEmpty()) {
+					hkcr_ShellEx.close();
+					hkey_Assoc.deleteSubKey(_T("ShellEx"));
+				}
+			}
+		}
+	}
+
 	// Remove the fallbacks.
-	LONG lResult = ERROR_SUCCESS;
 	if (hkcr_RP_Fallback.isOpen()) {
-		lResult = hkcr_RP_Fallback.deleteValue(_T("DefaultIcon"));
+		LONG lResult = hkcr_RP_Fallback.deleteValue(_T("DefaultIcon"));
 		if (lResult != ERROR_SUCCESS && lResult != ERROR_FILE_NOT_FOUND) {
 			return lResult;
 		}
 		lResult = hkcr_RP_Fallback.deleteValue(_T("IconHandler"));
-		if (lResult == ERROR_FILE_NOT_FOUND) {
-			lResult = ERROR_SUCCESS;
+		if (lResult != ERROR_SUCCESS && lResult != ERROR_FILE_NOT_FOUND) {
+			return lResult;
+		}
+
+		// If the key is empty, delete it.
+		if (hkcr_RP_Fallback.isKeyEmpty()) {
+			hkcr_RP_Fallback.close();
+			hkey_Assoc.deleteSubKey(_T("RP_Fallback"));
 		}
 	}
 
 	// File type handler unregistered.
-	return lResult;
+	return ERROR_SUCCESS;
 }
 
 /**
  * Unregister the file type handler.
- * @param hkcr HKEY_CLASSES_ROOT or user-specific classes root.
- * @param ext File extension, including the leading dot.
+ * @param hkcr	[in] HKEY_CLASSES_ROOT or user-specific classes root.
+ * @param ext	[in,opt] File extension, including the leading dot.
+ *
+ * NOTE: ext can be NULL, in which case, hkcr is assumed to be
+ * the registered file association.
+ *
  * @return ERROR_SUCCESS on success; Win32 error code on error.
  */
-LONG RP_ExtractIcon::UnregisterFileType(RegKey &hkcr, LPCTSTR ext)
+LONG RP_ExtractIcon::UnregisterFileType(RegKey &hkcr, _In_opt_ LPCTSTR ext)
 {
+	if (!ext) {
+		// Unregister from hkcr directly.
+		return RP_ExtractIcon_Private::UnregisterFileType(hkcr);
+	}
+
 	// Open the file extension key.
 	RegKey hkcr_ext(hkcr, ext, KEY_READ|KEY_WRITE, false);
 	if (!hkcr_ext.isOpen()) {

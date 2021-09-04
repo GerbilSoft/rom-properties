@@ -3,7 +3,7 @@
  * RP_ExtractIcon_Fallback.cpp: IExtractIcon implementation.               *
  * Fallback functions for unsupported files.                               *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -12,12 +12,14 @@
 #include "RP_ExtractIcon_p.hpp"
 
 // librpbase, librpfile, libwin32common
+#include "libwin32common/env_vars.hpp"
 using namespace LibRpBase;
 using namespace LibRpFile;
 using LibWin32Common::RegKey;
 
 // C++ STL classes.
 using std::tstring;
+using std::unique_ptr;
 
 // COM smart pointer typedefs.
 #ifndef _MSC_VER
@@ -166,7 +168,45 @@ LONG RP_ExtractIcon_Private::DoExtractIconA(IExtractIconA *pExtractIconA,
 }
 
 /**
+ * Get the icon index from an icon resource specification,
+ * e.g. "C:\\Windows\\Some.DLL,1" .
+ * @param szIconSpec Icon resource specification
+ * @return Icon index, or 0 (default) if unknown.
+ */
+int RP_ExtractIcon_Private::getIconIndexFromSpec(LPCTSTR szIconSpec)
+{
+	// DefaultIcon format: "C:\\Windows\\Some.DLL,1"
+	// TODO: Can the filename be quoted?
+	// TODO: Better error codes?
+	int nIconIndex;
+	const TCHAR *const comma = _tcsrchr(szIconSpec, _T(','));
+	if (!comma) {
+		// No comma. Assume the default icon index.
+		return 0;
+	}
+
+	// Found the comma.
+	if (comma > szIconSpec && comma[1] != _T('\0')) {
+		TCHAR *endptr = nullptr;
+		errno = 0;
+		nIconIndex = (int)_tcstol(&comma[1], &endptr, 10);
+		if (errno == ERANGE || *endptr != 0) {
+			// _tcstol() failed.
+			// DefaultIcon is invalid, but we'll assume the index is 0.
+			nIconIndex = 0;
+		}
+	} else {
+		// Comma is the last character.
+		// We'll assume the index is 0.
+		nIconIndex = 0;
+	}
+
+	return nIconIndex;
+}
+
+/**
  * Fallback icon handler function. (internal)
+ * This function reads the RP_Fallback key for fallback data.
  * @param hkey_Assoc File association key to check.
  * @param phiconLarge Large icon.
  * @param phiconSmall Small icon.
@@ -243,33 +283,12 @@ LONG RP_ExtractIcon_Private::Fallback_int(RegKey &hkey_Assoc,
 
 	// DefaultIcon is set but IconHandler isn't, which means
 	// the file's icon is stored as an icon resource.
-
-	// DefaultIcon format: "C:\\Windows\\Some.DLL,1"
-	// TODO: Can the filename be quoted?
-	// TODO: Better error codes?
-	int nIconIndex;
-	size_t comma = defaultIcon.find_last_of(L',');
-	if (comma != tstring::npos) {
-		// Found the comma.
-		if (comma > 0 && comma < defaultIcon.size()-1) {
-			TCHAR *endptr = nullptr;
-			errno = 0;
-			nIconIndex = (int)_tcstol(&defaultIcon[comma+1], &endptr, 10);
-			if (errno == ERANGE || *endptr != 0) {
-				// _tcstol() failed.
-				// DefaultIcon is invalid.
-				return ERROR_FILE_NOT_FOUND;
-			}
-		} else {
-			// Comma is the last character.
-			return ERROR_FILE_NOT_FOUND;
-		}
-
-		// Remove the comma portion.
+	// TODO: Return filename+index in the main IExtractIconW handler?
+	int nIconIndex = getIconIndexFromSpec(defaultIcon.c_str());
+	// Remove the trailing comma at the end of defaultIcon, if present.
+	size_t comma = defaultIcon.find_last_of(_T(','));
+	if (comma != tstring::npos && comma > 0) {
 		defaultIcon.resize(comma);
-	} else {
-		// Assume the default icon index.
-		nIconIndex = 0;
 	}
 
 	// PrivateExtractIcons() is published as of Windows XP SP1,
@@ -280,7 +299,7 @@ LONG RP_ExtractIcon_Private::Fallback_int(RegKey &hkey_Assoc,
 	// TODO: What if the size isn't found?
 	HICON hIcons[2];
 	UINT uRet = PrivateExtractIcons(defaultIcon.c_str(), nIconIndex,
-			nIconSize, nIconSize, hIcons, nullptr, 2, 0);
+		nIconSize, nIconSize, hIcons, nullptr, 2, 0);
 	if (uRet == 0) {
 		// No icons were extracted.
 		return ERROR_FILE_NOT_FOUND;
@@ -311,15 +330,16 @@ LONG RP_ExtractIcon_Private::Fallback(HICON *phiconLarge, HICON *phiconSmall, UI
 		// Invalid or missing file extension.
 		return ERROR_FILE_NOT_FOUND;
 	}
+	const tstring ts_file_ext = U82T_c(file_ext);
 
 	// Open the filetype key in HKCR.
-	RegKey hkey_Assoc(HKEY_CLASSES_ROOT, U82T_c(file_ext), KEY_READ, false);
-	if (!hkey_Assoc.isOpen()) {
-		return hkey_Assoc.lOpenRes();
+	RegKey hkcr_Assoc(HKEY_CLASSES_ROOT, ts_file_ext.c_str(), KEY_READ, false);
+	if (!hkcr_Assoc.isOpen()) {
+		return hkcr_Assoc.lOpenRes();
 	}
 
 	// If we have a ProgID, check it first.
-	const tstring progID = hkey_Assoc.read(nullptr);
+	tstring progID = hkcr_Assoc.read(nullptr);
 	if (!progID.empty()) {
 		// Custom ProgID is registered.
 		// TODO: Get the correct top-level registry key.
@@ -333,6 +353,6 @@ LONG RP_ExtractIcon_Private::Fallback(HICON *phiconLarge, HICON *phiconSmall, UI
 		}
 	}
 
-	// Extract the icon from the filetype key.
-	return Fallback_int(hkey_Assoc, phiconLarge, phiconSmall, nIconSize);
+	// Check the filetype key.
+	return Fallback_int(hkcr_Assoc, phiconLarge, phiconSmall, nIconSize);
 }

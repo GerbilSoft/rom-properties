@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * RP_ExtractImage.hpp: IExtractImage implementation.                      *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -18,6 +18,7 @@ using LibRpTexture::rp_image;
 using LibRomData::RomDataFactory;
 
 // C++ STL classes.
+using std::string;
 using std::tstring;
 
 // CLSID
@@ -55,7 +56,7 @@ RP_ExtractImage::~RP_ExtractImage()
 /** IUnknown **/
 // Reference: https://msdn.microsoft.com/en-us/library/office/cc839627.aspx
 
-IFACEMETHODIMP RP_ExtractImage::QueryInterface(REFIID riid, LPVOID *ppvObj)
+IFACEMETHODIMP RP_ExtractImage::QueryInterface(_In_ REFIID riid, _Outptr_ LPVOID *ppvObj)
 {
 #ifdef _MSC_VER
 # pragma warning(push)
@@ -77,7 +78,7 @@ IFACEMETHODIMP RP_ExtractImage::QueryInterface(REFIID riid, LPVOID *ppvObj)
 /** IPersistFile **/
 // Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/cc144067(v=vs.85).aspx#unknown_28177
 
-IFACEMETHODIMP RP_ExtractImage::GetClassID(CLSID *pClassID)
+IFACEMETHODIMP RP_ExtractImage::GetClassID(_Out_ CLSID *pClassID)
 {
 	if (!pClassID) {
 		return E_POINTER;
@@ -91,7 +92,7 @@ IFACEMETHODIMP RP_ExtractImage::IsDirty(void)
 	return E_NOTIMPL;
 }
 
-IFACEMETHODIMP RP_ExtractImage::Load(LPCOLESTR pszFileName, DWORD dwMode)
+IFACEMETHODIMP RP_ExtractImage::Load(_In_ LPCOLESTR pszFileName, DWORD dwMode)
 {
 	RP_UNUSED(dwMode);	// TODO
 
@@ -101,17 +102,18 @@ IFACEMETHODIMP RP_ExtractImage::Load(LPCOLESTR pszFileName, DWORD dwMode)
 
 	// pszFileName is the file being worked on.
 	// TODO: If the file was already loaded, don't reload it.
-	d->filename = W2U8(pszFileName);
+	d->filename = pszFileName;
+	const string filename_u8 = W2U8(pszFileName);
 
 	// Check for "bad" file systems.
 	const Config *const config = Config::instance();
-	if (FileSystem::isOnBadFS(d->filename.c_str(), config->enableThumbnailOnNetworkFS())) {
+	if (FileSystem::isOnBadFS(filename_u8.c_str(), config->enableThumbnailOnNetworkFS())) {
 		// This file is on a "bad" file system.
 		return E_FAIL;
 	}
 
 	// Attempt to open the ROM file.
-	RpFile *const file = new RpFile(d->filename, RpFile::FM_OPEN_READ_GZ);
+	RpFile *const file = new RpFile(filename_u8, RpFile::FM_OPEN_READ_GZ);
 	if (!file->isOpen()) {
 		// Unable to open the file.
 		file->unref();
@@ -130,21 +132,25 @@ IFACEMETHODIMP RP_ExtractImage::Load(LPCOLESTR pszFileName, DWORD dwMode)
 	return S_OK;
 }
 
-IFACEMETHODIMP RP_ExtractImage::Save(LPCOLESTR pszFileName, BOOL fRemember)
+IFACEMETHODIMP RP_ExtractImage::Save(_In_ LPCOLESTR pszFileName, BOOL fRemember)
 {
 	RP_UNUSED(pszFileName);
 	RP_UNUSED(fRemember);
 	return E_NOTIMPL;
 }
 
-IFACEMETHODIMP RP_ExtractImage::SaveCompleted(LPCOLESTR pszFileName)
+IFACEMETHODIMP RP_ExtractImage::SaveCompleted(_In_ LPCOLESTR pszFileName)
 {
 	RP_UNUSED(pszFileName);
 	return E_NOTIMPL;
 }
 
-IFACEMETHODIMP RP_ExtractImage::GetCurFile(LPOLESTR *ppszFileName)
+IFACEMETHODIMP RP_ExtractImage::GetCurFile(_Outptr_ LPOLESTR *ppszFileName)
 {
+	assert(ppszFileName != nullptr);
+	if (!ppszFileName) {
+		return E_POINTER;
+	}
 	RP_UNUSED(ppszFileName);
 	return E_NOTIMPL;
 }
@@ -154,9 +160,10 @@ IFACEMETHODIMP RP_ExtractImage::GetCurFile(LPOLESTR *ppszFileName)
 // - https://msdn.microsoft.com/en-us/library/windows/desktop/bb761848(v=vs.85).aspx
 // - http://www.codeproject.com/Articles/2887/Create-Thumbnail-Extractor-objects-for-your-MFC-do
 
-IFACEMETHODIMP RP_ExtractImage::GetLocation(LPWSTR pszPathBuffer,
-	DWORD cchMax, DWORD *pdwPriority, const SIZE *prgSize,
-	DWORD dwRecClrDepth, DWORD *pdwFlags)
+IFACEMETHODIMP RP_ExtractImage::GetLocation(
+	_Out_writes_(cchMax) LPWSTR pszPathBuffer, DWORD cchMax,
+	_Out_ DWORD *pdwPriority, _In_ const SIZE *prgSize,
+	DWORD dwRecClrDepth, _Inout_ DWORD *pdwFlags)
 {
 	((void)pszPathBuffer);
 	((void)cchMax);
@@ -204,7 +211,7 @@ IFACEMETHODIMP RP_ExtractImage::GetLocation(LPWSTR pszPathBuffer,
 	return S_OK;
 }
 
-IFACEMETHODIMP RP_ExtractImage::Extract(HBITMAP *phBmpImage)
+IFACEMETHODIMP RP_ExtractImage::Extract(_Outptr_ HBITMAP *phBmpImage)
 {
 	// Make sure a filename was set by calling IPersistFile::Load().
 	RP_D(RP_ExtractImage);
@@ -226,13 +233,9 @@ IFACEMETHODIMP RP_ExtractImage::Extract(HBITMAP *phBmpImage)
 	// ROM is supported. Get the image.
 	// NOTE: Using width only. (TODO: both width/height?)
 	CreateThumbnail::GetThumbnailOutParams_t outParams;
-	outParams.retImg = nullptr;
 	int ret = d->thumbnailer.getThumbnail(d->romData, d->rgSize.cx, &outParams);
-	if (ret != 0 || !outParams.retImg) {
+	if (ret != 0) {
 		// ROM is not supported. Use the fallback.
-		if (outParams.retImg) {
-			DeleteBitmap(outParams.retImg);
-		}
 		return d->Fallback(phBmpImage);
 	}
 	*phBmpImage = outParams.retImg;
@@ -246,7 +249,7 @@ IFACEMETHODIMP RP_ExtractImage::Extract(HBITMAP *phBmpImage)
  * @param pDateStamp	[out] Pointer to FILETIME to store the timestamp in.
  * @return COM error code.
  */
-IFACEMETHODIMP RP_ExtractImage::GetDateStamp(FILETIME *pDateStamp)
+IFACEMETHODIMP RP_ExtractImage::GetDateStamp(_Out_ FILETIME *pDateStamp)
 {
 	RP_D(RP_ExtractImage);
 	if (!pDateStamp) {
@@ -260,10 +263,9 @@ IFACEMETHODIMP RP_ExtractImage::GetDateStamp(FILETIME *pDateStamp)
 	// Open the file and get the last write time.
 	// NOTE: LibRpBase::FileSystem::get_mtime() exists,
 	// but its resolution is seconds, less than FILETIME.
-	const tstring tfilename = U82T_s(d->filename);
-	HANDLE hFile = CreateFile(tfilename.c_str(),
-		GENERIC_READ, FILE_SHARE_READ, NULL,
-		OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+	HANDLE hFile = CreateFile(d->filename.c_str(),
+		GENERIC_READ, FILE_SHARE_READ, nullptr,
+		OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
 	if (!hFile) {
 		// Could not open the file.
 		// TODO: Return STG_E_FILENOTFOUND?

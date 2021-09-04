@@ -51,24 +51,25 @@ RP_ExtractImage final : public LibWin32Common::ComBase2<IPersistFile, IExtractIm
 
 	public:
 		// IUnknown
-		IFACEMETHODIMP QueryInterface(REFIID riid, LPVOID *ppvObj) final;
+		IFACEMETHODIMP QueryInterface(_In_ REFIID riid, _Outptr_ LPVOID *ppvObj) final;
 
 		// IPersist (IPersistFile base class)
-		IFACEMETHODIMP GetClassID(CLSID *pClassID) final;
+		IFACEMETHODIMP GetClassID(_Out_ CLSID *pClassID) final;
 		// IPersistFile
 		IFACEMETHODIMP IsDirty(void) final;
-		IFACEMETHODIMP Load(LPCOLESTR pszFileName, DWORD dwMode) final;
-		IFACEMETHODIMP Save(LPCOLESTR pszFileName, BOOL fRemember) final;
-		IFACEMETHODIMP SaveCompleted(LPCOLESTR pszFileName) final;
-		IFACEMETHODIMP GetCurFile(LPOLESTR *ppszFileName) final;
+		IFACEMETHODIMP Load(_In_ LPCOLESTR pszFileName, DWORD dwMode) final;
+		IFACEMETHODIMP Save(_In_ LPCOLESTR pszFileName, BOOL fRemember) final;
+		IFACEMETHODIMP SaveCompleted(_In_ LPCOLESTR pszFileName) final;
+		IFACEMETHODIMP GetCurFile(_Outptr_ LPOLESTR *ppszFileName) final;
 
 		// IExtractImage
-		IFACEMETHODIMP GetLocation(LPWSTR pszPathBuffer, DWORD cchMax,
-			DWORD *pdwPriority, const SIZE *prgSize,
-			DWORD dwRecClrDepth, DWORD *pdwFlags) final;
-		IFACEMETHODIMP Extract(HBITMAP *phBmpImage) final;
+		IFACEMETHODIMP GetLocation(
+			_Out_writes_(cchMax) LPWSTR pszPathBuffer, DWORD cchMax,
+			_Out_ DWORD *pdwPriority, _In_ const SIZE *prgSize,
+			DWORD dwRecClrDepth, _Inout_ DWORD *pdwFlags) final;
+		IFACEMETHODIMP Extract(_Outptr_ HBITMAP *phBmpImage) final;
 		// IExtractImage2
-		IFACEMETHODIMP GetDateStamp(FILETIME *pDateStamp) final;
+		IFACEMETHODIMP GetDateStamp(_Out_ FILETIME *pDateStamp) final;
 };
 
 #ifdef __CRT_UUID_DECL

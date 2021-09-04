@@ -244,9 +244,9 @@ inline void TCreateThumbnail<ImgClass>::rescale_aspect(ImgSize &rs_size, const I
 
 /**
  * Create a thumbnail for the specified ROM file.
- * @param romData	[in] RomData object.
- * @param reqSize	[in] Requested image size. (single dimension; assuming square image)
- * @param pOutParams	[out] Output parameters.
+ * @param romData	[in] RomData object
+ * @param reqSize	[in] Requested image size (single dimension; assuming square image)
+ * @param pOutParams	[out] Output parameters (If an error occurs, pOutParams->retImg will be null)
  * @return 0 on success; non-zero on error.
  */
 template<typename ImgClass>
@@ -376,12 +376,14 @@ skip_image_check:
 		if (scaleW != 0) {
 			pOutParams->fullSize.width = scaleW;
 			ImgClass scaled_img = rescaleImgClass(pOutParams->retImg, pOutParams->fullSize);
-			freeImgClass(pOutParams->retImg);
-			pOutParams->retImg = scaled_img;
+			if (isImgClassValid(scaled_img)) {
+				freeImgClass(pOutParams->retImg);
+				pOutParams->retImg = scaled_img;
 
-			// Disable nearest-neighbor scaling, since we already lost
-			// pixel-perfect sharpness with the 8:7 rescale.
-			imgpf &= ~RomData::IMGPF_RESCALE_NEAREST;
+				// Disable nearest-neighbor scaling, since we already lost
+				// pixel-perfect sharpness with the 8:7 rescale.
+				imgpf &= ~RomData::IMGPF_RESCALE_NEAREST;
+			}
 		}
 	}
 
@@ -430,10 +432,15 @@ skip_image_check:
 			// may result in 0x0, which is no good. If this happens,
 			// skip the rescaling entirely.
 			if (rescale_sz.width > 0 && rescale_sz.height > 0) {
-				pOutParams->thumbSize = rescale_sz;
 				ImgClass scaled_img = rescaleImgClass(pOutParams->retImg, rescale_sz);
-				freeImgClass(pOutParams->retImg);
-				pOutParams->retImg = scaled_img;
+				if (isImgClassValid(scaled_img)) {
+					freeImgClass(pOutParams->retImg);
+					pOutParams->retImg = scaled_img;
+					pOutParams->thumbSize = rescale_sz;
+				} else {
+					// Rescale failed. Use the full image size.
+					pOutParams->thumbSize = pOutParams->fullSize;
+				}
 			} else {
 				// Unable to rescale. Use the full image size.
 				pOutParams->thumbSize = pOutParams->fullSize;
@@ -453,9 +460,9 @@ skip_image_check:
 
 /**
  * Create a thumbnail for the specified ROM file.
- * @param file		[in] Open IRpFile object.
- * @param reqSize	[in] Requested image size. (single dimension; assuming square image)
- * @param pOutParams	[out] Output parameters.
+ * @param file		[in] Open IRpFile object
+ * @param reqSize	[in] Requested image size (single dimension; assuming square image)
+ * @param pOutParams	[out] Output parameters (If an error occurs, pOutParams->retImg will be null)
  * @return 0 on success; non-zero on error.
  */
 template<typename ImgClass>
@@ -485,9 +492,9 @@ int TCreateThumbnail<ImgClass>::getThumbnail(IRpFile *file, int reqSize, GetThum
 
 /**
  * Create a thumbnail for the specified ROM file.
- * @param filename	[in] ROM file.
- * @param reqSize	[in] Requested image size. (single dimension; assuming square image)
- * @param pOutParams	[out] Output parameters.
+ * @param filename	[in] ROM file
+ * @param reqSize	[in] Requested image size (single dimension; assuming square image)
+ * @param pOutParams	[out] Output parameters (If an error occurs, pOutParams->retImg will be null)
  * @return 0 on success; non-zero on error.
  */
 template<typename ImgClass>
