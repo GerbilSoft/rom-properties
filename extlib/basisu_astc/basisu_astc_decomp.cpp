@@ -701,7 +701,7 @@ void decodeISETritBlock (ISEDecodedResult* dst, int numValues, BitAccessStream& 
 			DE_ASSERT(false);
 	}
 	const deUint32 T = (T7 << 7) | (T56 << 5) | (T4 << 4) | (T23 << 2) | (T01 << 0);
-	static const deUint32 tritsFromT[256][5] =
+	static const deUint8 tritsFromT[256][5] =
 	{
 		{ 0,0,0,0,0 }, { 1,0,0,0,0 }, { 2,0,0,0,0 }, { 0,0,2,0,0 }, { 0,1,0,0,0 }, { 1,1,0,0,0 }, { 2,1,0,0,0 }, { 1,0,2,0,0 }, { 0,2,0,0,0 }, { 1,2,0,0,0 }, { 2,2,0,0,0 }, { 2,0,2,0,0 }, { 0,2,2,0,0 }, { 1,2,2,0,0 }, { 2,2,2,0,0 }, { 2,0,2,0,0 },
 		{ 0,0,1,0,0 }, { 1,0,1,0,0 }, { 2,0,1,0,0 }, { 0,1,2,0,0 }, { 0,1,1,0,0 }, { 1,1,1,0,0 }, { 2,1,1,0,0 }, { 1,1,2,0,0 }, { 0,2,1,0,0 }, { 1,2,1,0,0 }, { 2,2,1,0,0 }, { 2,1,2,0,0 }, { 0,0,0,2,2 }, { 1,0,0,2,2 }, { 2,0,0,2,2 }, { 0,0,2,2,2 },
@@ -720,7 +720,7 @@ void decodeISETritBlock (ISEDecodedResult* dst, int numValues, BitAccessStream& 
 		{ 0,0,0,1,2 }, { 1,0,0,1,2 }, { 2,0,0,1,2 }, { 0,0,2,1,2 }, { 0,1,0,1,2 }, { 1,1,0,1,2 }, { 2,1,0,1,2 }, { 1,0,2,1,2 }, { 0,2,0,1,2 }, { 1,2,0,1,2 }, { 2,2,0,1,2 }, { 2,0,2,1,2 }, { 0,2,2,1,2 }, { 1,2,2,1,2 }, { 2,2,2,1,2 }, { 2,0,2,1,2 },
 		{ 0,0,1,1,2 }, { 1,0,1,1,2 }, { 2,0,1,1,2 }, { 0,1,2,1,2 }, { 0,1,1,1,2 }, { 1,1,1,1,2 }, { 2,1,1,1,2 }, { 1,1,2,1,2 }, { 0,2,1,1,2 }, { 1,2,1,1,2 }, { 2,2,1,1,2 }, { 2,1,2,1,2 }, { 0,2,2,2,2 }, { 1,2,2,2,2 }, { 2,2,2,2,2 }, { 2,1,2,2,2 }
 	};
-	const deUint32 (& trits)[5] = tritsFromT[T];
+	const deUint8 (& trits)[5] = tritsFromT[T];
 	for (int i = 0; i < numValues; i++)
 	{
 		dst[i].m	= m[i];
@@ -748,7 +748,7 @@ void decodeISEQuintBlock (ISEDecodedResult* dst, int numValues, BitAccessStream&
 			DE_ASSERT(false);
 	}
 	const deUint32 Q = (Q56 << 5) | (Q34 << 3) | (Q012 << 0);
-	static const deUint32 quintsFromQ[256][3] =
+	static const deUint8 quintsFromQ[256][3] =
 	{
 		{ 0,0,0 }, { 1,0,0 }, { 2,0,0 }, { 3,0,0 }, { 4,0,0 }, { 0,4,0 }, { 4,4,0 }, { 4,4,4 }, { 0,1,0 }, { 1,1,0 }, { 2,1,0 }, { 3,1,0 }, { 4,1,0 }, { 1,4,0 }, { 4,4,1 }, { 4,4,4 },
 		{ 0,2,0 }, { 1,2,0 }, { 2,2,0 }, { 3,2,0 }, { 4,2,0 }, { 2,4,0 }, { 4,4,2 }, { 4,4,4 }, { 0,3,0 }, { 1,3,0 }, { 2,3,0 }, { 3,3,0 }, { 4,3,0 }, { 3,4,0 }, { 4,4,3 }, { 4,4,4 },
@@ -759,7 +759,7 @@ void decodeISEQuintBlock (ISEDecodedResult* dst, int numValues, BitAccessStream&
 		{ 0,0,3 }, { 1,0,3 }, { 2,0,3 }, { 3,0,3 }, { 4,0,3 }, { 0,4,3 }, { 0,0,4 }, { 1,0,4 }, { 0,1,3 }, { 1,1,3 }, { 2,1,3 }, { 3,1,3 }, { 4,1,3 }, { 1,4,3 }, { 0,1,4 }, { 1,1,4 },
 		{ 0,2,3 }, { 1,2,3 }, { 2,2,3 }, { 3,2,3 }, { 4,2,3 }, { 2,4,3 }, { 0,2,4 }, { 1,2,4 }, { 0,3,3 }, { 1,3,3 }, { 2,3,3 }, { 3,3,3 }, { 4,3,3 }, { 3,4,3 }, { 0,3,4 }, { 1,3,4 }
 	};
-	const deUint32 (& quints)[3] = quintsFromQ[Q];
+	const deUint8 (& quints)[3] = quintsFromQ[Q];
 	for (int i = 0; i < numValues; i++)
 	{
 		dst[i].m	= m[i];
@@ -805,7 +805,7 @@ void unquantizeColorEndpoints (deUint32* dst, const ISEDecodedResult* iseResults
 	{
 		const int rangeCase				= iseParams.numBits*2 - (iseParams.mode == ISEMODE_TRIT ? 2 : 1);
 		DE_ASSERT(basisu_astc::inRange(rangeCase, 0, 10));
-		static const deUint32	Ca[11]	= { 204, 113, 93, 54, 44, 26, 22, 13, 11, 6, 5 };
+		static const deUint8	Ca[11]	= { 204, 113, 93, 54, 44, 26, 22, 13, 11, 6, 5 };
 		const deUint32			C		= Ca[rangeCase];
 		for (int endpointNdx = 0; endpointNdx < numEndpoints; endpointNdx++)
 		{
