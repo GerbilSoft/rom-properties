@@ -98,7 +98,13 @@ class FileFormatFactoryPrivate
 // definitely have a 32-bit magic number at address 0.
 // TODO: Add support for multiple magic numbers per class.
 const FileFormatFactoryPrivate::FileFormatFns FileFormatFactoryPrivate::FileFormatFns_magic[] = {
-	GetFileFormatFns(ASTC, '\x13\xAB\xA1\x5C'),	// Needs to be in multi-char constant format.
+	// FIXME: Proper byteswapping for ASTC.
+	// NOTE: There's byteswapping later on due to multi-char constant stuff
+#if SYS_BYTEORDER == SYS_LIL_ENDIAN
+	GetFileFormatFns(ASTC, 0x13ABA15C),	// Needs to be in multi-char constant format.
+#else /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
+	GetFileFormatFns(ASTC, 0x5CA1AB13),	// Needs to be in multi-char constant format.
+#endif
 	GetFileFormatFns(DirectDrawSurface, 'DDS '),
 	GetFileFormatFns(GodotSTEX, 'GDST'),
 	GetFileFormatFns(PowerVR3, 'PVR\x03'),
