@@ -26,6 +26,7 @@ using std::vector;
 // FileFormat subclasses.
 #include "fileformat/DidjTex.hpp"
 #include "fileformat/DirectDrawSurface.hpp"
+#include "fileformat/GodotSTEX.hpp"
 #include "fileformat/KhronosKTX.hpp"
 #include "fileformat/KhronosKTX2.hpp"
 #include "fileformat/PowerVR3.hpp"
@@ -97,6 +98,7 @@ class FileFormatFactoryPrivate
 // TODO: Add support for multiple magic numbers per class.
 const FileFormatFactoryPrivate::FileFormatFns FileFormatFactoryPrivate::FileFormatFns_magic[] = {
 	GetFileFormatFns(DirectDrawSurface, 'DDS '),
+	GetFileFormatFns(GodotSTEX, 'GDST'),
 	GetFileFormatFns(PowerVR3, 'PVR\x03'),
 	GetFileFormatFns(PowerVR3, '\x03RVP'),
 	GetFileFormatFns(SegaPVR, 'PVRT'),

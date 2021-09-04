@@ -836,6 +836,17 @@
 
   <!-- *** Texture *** -->
 
+  <!-- GodotSTEX -->
+  <mime-type type="image/x-godot-stex">
+    <comment>Godot STEX texture image</comment>
+    <sub-class-of type="image/x-generic"/>
+    <glob pattern="*.stex"/>
+    <generic-icon name="image-x-generic"/>
+    <magic priority="80">
+      <match value="PVRT" type="string" offset="0"/>
+    </magic>
+  </mime-type>
+
   <!-- KhronosKTX2 -->
   <!-- NOTE: Upstream has KTX1. -->
   <mime-type type="image/ktx2">

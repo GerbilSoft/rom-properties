@@ -93,6 +93,7 @@ application/x-nintendo-badge-set	# NintendoBadge
 image/x-didj-texture			# DidjTex
 image/vnd.ms-dds			# DirectDrawSurface
 image/x-dds				# DirectDrawSurface
+image/x-godot-stex			# Godot STEX
 image/ktx				# KhronosKTX
 image/ktx2				# KhronosKTX2
 image/x-pvr				# PowerVR3

@@ -30,6 +30,7 @@ SET(${PROJECT_NAME}_SRCS
 	fileformat/FileFormat.cpp
 	fileformat/DidjTex.cpp
 	fileformat/DirectDrawSurface.cpp
+	fileformat/GodotSTEX.cpp
 	fileformat/KhronosKTX.cpp
 	fileformat/KhronosKTX2.cpp
 	fileformat/PowerVR3.cpp
@@ -60,6 +61,7 @@ SET(${PROJECT_NAME}_H
 	fileformat/FileFormat_decl.hpp
 	fileformat/DidjTex.hpp
 	fileformat/DirectDrawSurface.hpp
+	fileformat/GodotSTEX.hpp
 	fileformat/KhronosKTX.hpp
 	fileformat/KhronosKTX2.hpp
 	fileformat/PowerVR3.hpp
@@ -71,6 +73,7 @@ SET(${PROJECT_NAME}_H
 
 	fileformat/dds_structs.h
 	fileformat/didj_tex_structs.h
+	fileformat/godot_stex_structs.h
 	fileformat/ktx_structs.h
 	fileformat/ktx_structs.h
 	fileformat/pvr_structs.h
