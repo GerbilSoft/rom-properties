@@ -6,5 +6,9 @@ The following changes have been made to the original:
   the rest of Basis Universal, e.g. using std::max<> instead of
   basisu::maximum<>.
 
+- Large 32-bit arrays have been converted to 8-bit.
+
+- Added fall-through comments.
+
 To obtain the original Basis Universal v1.15, visit:
 https://github.com/BinomialLLC/basis_universal

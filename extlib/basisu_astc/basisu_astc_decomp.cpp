@@ -692,10 +692,10 @@ void decodeISETritBlock (ISEDecodedResult* dst, int numValues, BitAccessStream& 
 	switch (numValues)
 	{
 		// \note Fall-throughs.
-		case 1: T23		= 0;
-		case 2: T4		= 0;
-		case 3: T56		= 0;
-		case 4: T7		= 0;
+		case 1: T23		= 0;	// fall-through
+		case 2: T4		= 0;	// fall-through
+		case 3: T56		= 0;	// fall-through
+		case 4: T7		= 0;	// fall-through
 		case 5: break;
 		default:
 			DE_ASSERT(false);
@@ -741,8 +741,8 @@ void decodeISEQuintBlock (ISEDecodedResult* dst, int numValues, BitAccessStream&
 	switch (numValues)
 	{
 		// \note Fall-throughs.
-		case 1: Q34		= 0;
-		case 2: Q56		= 0;
+		case 1: Q34		= 0;	// fall-through
+		case 2: Q56		= 0;	// fall-through
 		case 3: break;
 		default:
 			DE_ASSERT(false);
