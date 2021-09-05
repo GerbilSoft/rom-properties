@@ -16,7 +16,9 @@
 
 // librpbase, librpfile
 #include "libi18n/i18n.h"
+#include "librpbase/TextFuncs.hpp"
 using LibRpBase::RomFields;
+using LibRpBase::rp_sprintf;
 using LibRpFile::IRpFile;
 
 // librptexture
@@ -81,6 +83,12 @@ class GodotSTEXPrivate final : public FileFormatPrivate
 		static const ImageSizeCalc::OpCode op_tbl[];
 
 	public:
+		/**
+		 * Is this a VRAM texture? (i.e. not lossless/lossy)
+		 * return True if it is; false if it isn't.
+		 */
+		inline bool isVRAMTexture(void) const;
+
 		/**
 		 * Get mipmap information.
 		 * @return 0 on success; negative POSIX error code on error.
@@ -223,6 +231,36 @@ GodotSTEXPrivate::~GodotSTEXPrivate()
 }
 
 /**
+ * Is this a VRAM texture? (i.e. not lossless/lossy)
+ * return True if it is; false if it isn't.
+ */
+bool GodotSTEXPrivate::isVRAMTexture(void) const
+{
+	bool bRet = true;
+	switch (stexVersion) {
+		default:
+			assert(!"Invalid STEX version.");
+			bRet = false;
+			break;
+		case 3:
+			if ((stexHeader.v3.format & (STEX_FORMAT_FLAG_LOSSLESS |
+			                             STEX_FORMAT_FLAG_LOSSY)) != 0) {
+				// Lossless and/or lossy image.
+				bRet = false;
+			}
+			break;
+		case 4:
+			if (stexHeader.v4.data_format != STEX4_DATA_FORMAT_IMAGE) {
+				// Lossless and/or lossy image.
+				// TODO: Basis Universal supports mipmaps.
+				bRet = false;
+			}
+			break;
+	}
+	return bRet;
+}
+
+/**
  * Get mipmap information.
  * @return 0 on success; non-zero on error.
  */
@@ -292,6 +330,14 @@ int GodotSTEXPrivate::getMipmapInfo(void)
 		// We're done here.
 		return 0;
 	}
+
+	// Mipmaps might be supported by lossless (PNG/WebP) or lossy (WebP)
+	// images, but we're not supporting it here.
+	if (!isVRAMTexture()) {
+		// Lossless (PNG/WebP) or lossy (WebP).
+		return 0;
+	}
+
 	// Check the mipmap flag and/or count.
 	switch (stexVersion) {
 		default:
@@ -393,6 +439,11 @@ const rp_image *GodotSTEXPrivate::loadImage(int mip)
 
 	if (file->size() > 128*1024*1024) {
 		// Sanity check: STEX files shouldn't be more than 128 MB.
+		return nullptr;
+	}
+
+	// TODO: Support PNG and/or WebP images, and maybe Basis Universal.
+	if (!isVRAMTexture()) {
 		return nullptr;
 	}
 
@@ -796,23 +847,48 @@ int GodotSTEX::getFields(LibRpBase::RomFields *fields) const
 	const int initial_count = fields->count();
 	fields->reserve(initial_count + 2);	// Maximum of 2 fields.
 
-	if (d->stexVersion == 3) {
-		// Flags (Godot 3 only)
-		static const char *const flags_bitfield_names[] = {
-			NOP_C_("GodotSTEX|Flags", "Mipmaps"),
-			NOP_C_("GodotSTEX|Flags", "Repeat"),
-			NOP_C_("GodotSTEX|Flags", "Filter"),
-			NOP_C_("GodotSTEX|Flags", "Anisotropic"),
-			NOP_C_("GodotSTEX|Flags", "To Linear"),
-			NOP_C_("GodotSTEX|Flags", "Mirrored Repeat"),
-			nullptr, nullptr, nullptr, nullptr, nullptr,
-			NOP_C_("GodotSTEX|Flags", "Cubemap"),
-			NOP_C_("GodotSTEX|Flags", "For Streaming"),
-		};
-		vector<string> *const v_flags_bitfield_names = RomFields::strArrayToVector_i18n(
-			"GodotSTEX|Flags", flags_bitfield_names, ARRAY_SIZE(flags_bitfield_names));
-		fields->addField_bitfield(C_("GodotSTEX", "Flags"),
-			v_flags_bitfield_names, 3, d->stexHeader.v3.flags);
+	switch (d->stexVersion) {
+		default:
+			assert(!"Invalid STEX version.");
+			break;
+		case 3: {
+			// Flags (Godot 3 only)
+			static const char *const flags_bitfield_names[] = {
+				NOP_C_("GodotSTEX|Flags", "Mipmaps"),
+				NOP_C_("GodotSTEX|Flags", "Repeat"),
+				NOP_C_("GodotSTEX|Flags", "Filter"),
+				NOP_C_("GodotSTEX|Flags", "Anisotropic"),
+				NOP_C_("GodotSTEX|Flags", "To Linear"),
+				NOP_C_("GodotSTEX|Flags", "Mirrored Repeat"),
+				nullptr, nullptr, nullptr, nullptr, nullptr,
+				NOP_C_("GodotSTEX|Flags", "Cubemap"),
+				NOP_C_("GodotSTEX|Flags", "For Streaming"),
+			};
+			vector<string> *const v_flags_bitfield_names = RomFields::strArrayToVector_i18n(
+				"GodotSTEX|Flags", flags_bitfield_names, ARRAY_SIZE(flags_bitfield_names));
+			fields->addField_bitfield(C_("GodotSTEX", "Flags"),
+				v_flags_bitfield_names, 3, d->stexHeader.v3.flags);
+			break;
+		}
+		case 4: {
+			// Data Format (Godot 4 only)
+			static const char *const data_format_tbl[] = {
+				NOP_C_("GodotSTEX|DataFormat", "Image"),
+				"PNG", "WebP",	// Not translatable!
+				NOP_C_("GodotSTEX|DataFormat", "Basis Universal"),
+			};
+			const char *const s_title = C_("GodotSTEX", "Data Format");
+			if (d->stexHeader.v4.data_format < ARRAY_SIZE(data_format_tbl)) {
+				fields->addField_string(s_title,
+					dpgettext_expr(RP_I18N_DOMAIN, "GodotSTEX|DataFormat",
+						data_format_tbl[d->stexHeader.v4.data_format]));
+			} else {
+				fields->addField_string(s_title,
+					rp_sprintf(C_("RomData", "Unknown (%u)"),
+						d->stexHeader.v4.data_format));
+			}
+			break;
+		}
 	}
 
 	// Format flags (v3) (starting at bit 20)
