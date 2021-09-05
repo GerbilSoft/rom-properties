@@ -53,6 +53,15 @@ class GodotSTEXPrivate final : public FileFormatPrivate
 		// Mipmap 0 is the full image.
 		vector<rp_image*> mipmaps;
 
+		// Mipmap sizes and start addresses.
+		struct mipmap_data_t {
+			uint32_t addr;		// start address
+			uint32_t size;		// in bytes
+			uint16_t width;		// width
+			uint16_t height;	// height
+		};
+		vector<mipmap_data_t> mipmap_data;
+
 		// Invalid pixel format message
 		char invalid_pixel_format[24];
 
@@ -69,6 +78,12 @@ class GodotSTEXPrivate final : public FileFormatPrivate
 		 * @return Image size, in bytes
 		 */
 		static unsigned int calcImageSize(STEX_Format_e format, unsigned int width, unsigned int height);
+
+		/**
+		 * Get mipmap information.
+		 * @return 0 on success; negative POSIX error code on error.
+		 */
+		int getMipmapInfo(void);
 
 		/**
 		 * Load the image.
@@ -275,22 +290,116 @@ unsigned int GodotSTEXPrivate::calcImageSize(STEX_Format_e format, unsigned int 
 }
 
 /**
+ * Get mipmap information.
+ * @return 0 on success; non-zero on error.
+ */
+int GodotSTEXPrivate::getMipmapInfo(void)
+{
+	if (!mipmaps.empty()) {
+		// Mipmap info was already obtained.
+		return 0;
+	}
+
+	// Sanity check: Maximum image dimensions of 32768x32768.
+	// NOTE: `height == 0` is allowed here. (1D texture)
+	assert(stexHeader.width > 0);
+	assert(stexHeader.width <= 32768);
+	assert(stexHeader.height <= 32768);
+	if (stexHeader.width == 0 || stexHeader.width > 32768 || stexHeader.height > 32768) {
+		// Invalid image dimensions.
+		return -EIO;
+	}
+
+	if (file->size() > 128*1024*1024) {
+		// Sanity check: STEX files shouldn't be more than 128 MB.
+		return -ENOMEM;
+	}
+	const uint32_t file_sz = static_cast<uint32_t>(file->size());
+
+	// Add the main image as the first mipmap.
+	// TODO: Mipmap alignment?
+	// TODO: Reserve space maybe?
+	mipmaps.resize(1);
+	mipmap_data.resize(1);
+
+	int64_t addr = sizeof(stexHeader);
+	unsigned int width = stexHeader.width;
+	unsigned int height = (stexHeader.height > 0 ? stexHeader.height : 1);
+	unsigned int expected_size = calcImageSize(
+		static_cast<STEX_Format_e>(stexHeader.format),
+		width, height);
+	if (expected_size == 0 || expected_size + addr > file_sz) {
+		// Invalid image size.
+		return -EIO;
+	}
+
+	mipmap_data[0].addr = addr;
+	mipmap_data[0].size = expected_size;
+	mipmap_data[0].width = width;
+	mipmap_data[0].height = (height > 0 ? height : 1);
+
+	// Handle a 1D texture as a "width x 1" 2D texture.
+	// NOTE: Handling a 3D texture as a single 2D texture.
+	// NOTE: Using the internal image size, not the rescale size.
+	if (height <= 1 || !(stexHeader.format & STEX_FORMAT_FLAG_HAS_MIPMAPS)) {
+		// No mipmaps, or this is a 1D texture.
+		// We're done here.
+		return 0;
+	}
+
+	// Next mipmaps.
+	// The header doesn't store a mipmap count,
+	// so we'll need to figure it out ourselves.
+	int i = 1;
+	for (addr += expected_size; addr < file_sz; addr += expected_size, i++) {
+		// Divide width/height by two.
+		// TODO: Any alignment or minimum sizes?
+		width /= 2;
+		height /= 2;
+		if (width <= 0 || height <= 0) {
+			// We're done here.
+			// NOTE: There seems to be more mipmaps in some files...
+			break;
+		}
+
+		expected_size = calcImageSize(
+			static_cast<STEX_Format_e>(stexHeader.format),
+			width, height);
+		if (expected_size == 0 || expected_size + addr > file_sz) {
+			// Invalid image size.
+			break;
+		}
+
+		// Add a mipmap.
+		mipmaps.resize(mipmaps.size() + 1);
+		mipmap_data.resize(mipmap_data.size() + 1);
+		mipmap_data_t &mdata = mipmap_data[mipmap_data.size() - 1];
+		mdata.addr = addr;
+		mdata.size = expected_size;
+		mdata.width = width;
+		mdata.height = height;
+	}
+
+	// Done calculating mipmaps.
+	return 0;
+}
+
+/**
  * Load the image.
  * @param mip Mipmap number. (0 == full image)
  * @return Image, or nullptr on error.
  */
 const rp_image *GodotSTEXPrivate::loadImage(int mip)
 {
-	// TODO: Determine the mipmap count.
-	int mipmapCount = 0;//vtfHeader.mipmapCount;
-	if (mipmapCount <= 0) {
-		// No mipmaps == one image.
-		mipmapCount = 1;
+	// Make sure the mipmap information is loaded.
+	int ret = getMipmapInfo();
+	if (ret != 0) {
+		return nullptr;
 	}
 
 	assert(mip >= 0);
-	assert(mip < mipmapCount);
-	if (mip < 0 || mip >= mipmapCount) {
+	assert(mip < (int)mipmaps.size());
+	if (mip < 0 || mip >= (int)mipmaps.size()) {
 		// Invalid mipmap number.
 		return nullptr;
 	}
@@ -303,28 +412,11 @@ const rp_image *GodotSTEXPrivate::loadImage(int mip)
 		return nullptr;
 	}
 
-	if (mipmaps.size() != static_cast<size_t>(mipmapCount)) {
-		mipmaps.resize(mipmapCount);
-	}
-
-	// Handle a 1D texture as a "width x 1" 2D texture.
-	// NOTE: Handling a 3D texture as a single 2D texture.
-	// NOTE: Using the internal image size, not the rescale size.
-	const unsigned int width = stexHeader.width;
-	const unsigned int height = (stexHeader.height > 0 ? stexHeader.height : 1);
-
-	// Sanity check: Maximum image dimensions of 32768x32768.
-	// NOTE: `height == 0` is allowed here. (1D texture)
-	assert(width > 0);
-	assert(width <= 32768);
-	assert(height <= 32768);
-	if (width == 0 || width > 32768 || height > 32768) {
-		// Invalid image dimensions.
-		return nullptr;
-	}
+	const mipmap_data_t &mdata = mipmap_data[mip];
 
 	// Sanity check: Verify that the rescale dimensions,
 	// if present, don't exceed 32768x32768.
+	// TODO: Rescale dimensions for mipmaps?
 	assert(stexHeader.width_rescale <= 32768);
 	assert(stexHeader.height_rescale <= 32768);
 	if (stexHeader.width_rescale > 32768 ||
@@ -338,34 +430,18 @@ const rp_image *GodotSTEXPrivate::loadImage(int mip)
 		// Sanity check: STEX files shouldn't be more than 128 MB.
 		return nullptr;
 	}
-	const uint32_t file_sz = static_cast<uint32_t>(file->size());
-
-	// Determine the image data size based on format.
-	// TODO: Stride adjustment?
-	// TODO: If width_rescale/height_rescale are set, adjust for display?
-	const unsigned int expected_size = calcImageSize(
-		static_cast<STEX_Format_e>(stexHeader.format),
-		width, height);
-	if (expected_size == 0 || expected_size > file_sz) {
-		// Invalid image size.
-		return nullptr;
-	}
-
-	// TODO: Adjust for mipmaps.
-	// For now, assuming the main texture is directly after the header.
-	const unsigned int texDataStartAddr = static_cast<unsigned int>(sizeof(stexHeader));
 
 	// Seek to the start of the texture data.
-	int ret = file->seek(texDataStartAddr);
+	ret = file->seek(mdata.addr);
 	if (ret != 0) {
 		// Seek error.
 		return nullptr;
 	}
 
 	// Read the texture data.
-	auto buf = aligned_uptr<uint8_t>(16, expected_size);
-	size_t size = file->read(buf.get(), expected_size);
-	if (size != expected_size) {
+	auto buf = aligned_uptr<uint8_t>(16, mdata.size);
+	size_t size = file->read(buf.get(), mdata.size);
+	if (size != mdata.size) {
 		// Read error.
 		return nullptr;
 	}
@@ -380,152 +456,152 @@ const rp_image *GodotSTEXPrivate::loadImage(int mip)
 		case STEX_FORMAT_L8:
 			img = ImageDecoder::fromLinear8(
 				ImageDecoder::PixelFormat::L8,
-				width, height,
-				buf.get(), expected_size);
+				mdata.width, mdata.height,
+				buf.get(), mdata.size);
 			break;
 		case STEX_FORMAT_LA8:
 			// TODO: Verify byte-order.
 			img = ImageDecoder::fromLinear16(
 				ImageDecoder::PixelFormat::L8A8,
-				width, height,
+				mdata.width, mdata.height,
 				reinterpret_cast<const uint16_t*>(buf.get()),
-				expected_size);
+				mdata.size);
 			break;
 
 		case STEX_FORMAT_R8:
 			img = ImageDecoder::fromLinear8(
 				ImageDecoder::PixelFormat::R8,
-				width, height,
-				buf.get(), expected_size);
+				mdata.width, mdata.height,
+				buf.get(), mdata.size);
 			break;
 		case STEX_FORMAT_RG8:
 			// TODO: Verify byte-order.
 			img = ImageDecoder::fromLinear16(
 				ImageDecoder::PixelFormat::GR88,
-				width, height,
+				mdata.width, mdata.height,
 				reinterpret_cast<const uint16_t*>(buf.get()),
-				expected_size);
+				mdata.size);
 			break;
 		case STEX_FORMAT_RGB8:
 			img = ImageDecoder::fromLinear24(
 				ImageDecoder::PixelFormat::BGR888,
-				width, height,
-				buf.get(), expected_size);
+				mdata.width, mdata.height,
+				buf.get(), mdata.size);
 			break;
 		case STEX_FORMAT_RGBA8:
 			img = ImageDecoder::fromLinear32(
 				ImageDecoder::PixelFormat::ABGR8888,
-				width, height,
+				mdata.width, mdata.height,
 				reinterpret_cast<const uint32_t*>(buf.get()),
-				expected_size);
+				mdata.size);
 			break;
 		case STEX_FORMAT_RGBA4444:
 			img = ImageDecoder::fromLinear16(
 				ImageDecoder::PixelFormat::RGBA4444,
-				width, height,
+				mdata.width, mdata.height,
 				reinterpret_cast<const uint16_t*>(buf.get()),
-				expected_size);
+				mdata.size);
 			break;
 
 		case STEX_FORMAT_RGBE9995:
 			img = ImageDecoder::fromLinear32(
 				ImageDecoder::PixelFormat::RGB9_E5,
-				width, height,
+				mdata.width, mdata.height,
 				reinterpret_cast<const uint32_t*>(buf.get()),
-				expected_size);
+				mdata.size);
 			break;
 
 		case STEX_FORMAT_DXT1:
 			img = ImageDecoder::fromDXT1(
-				width, height,
-				buf.get(), expected_size);
+				mdata.width, mdata.height,
+				buf.get(), mdata.size);
 			break;
 		case STEX_FORMAT_DXT3:
 			img = ImageDecoder::fromDXT3(
-				width, height,
-				buf.get(), expected_size);
+				mdata.width, mdata.height,
+				buf.get(), mdata.size);
 			break;
 		case STEX_FORMAT_DXT5:
 			img = ImageDecoder::fromDXT5(
-				width, height,
-				buf.get(), expected_size);
+				mdata.width, mdata.height,
+				buf.get(), mdata.size);
 			break;
 
 		case STEX_FORMAT_RGTC_R:
 			// RGTC, one component. (BC4)
 			img = ImageDecoder::fromBC4(
-				width, height,
-				buf.get(), expected_size);
+				mdata.width, mdata.height,
+				buf.get(), mdata.size);
 			break;
 		case STEX_FORMAT_RGTC_RG:
 			// RGTC, two components. (BC5)
 			img = ImageDecoder::fromBC5(
-				width, height,
-				buf.get(), expected_size);
+				mdata.width, mdata.height,
+				buf.get(), mdata.size);
 			break;
 		case STEX_FORMAT_BPTC_RGBA:
 			// BPTC-compressed RGBA texture. (BC7)
 			img = ImageDecoder::fromBC7(
-				width, height,
-				buf.get(), expected_size);
+				mdata.width, mdata.height,
+				buf.get(), mdata.size);
 			break;
 
 #ifdef ENABLE_PVRTC
 		case STEX_FORMAT_PVRTC1_2:
 			img = ImageDecoder::fromPVRTC(
-				width, height,
-				buf.get(), expected_size,
+				mdata.width, mdata.height,
+				buf.get(), mdata.size,
 				ImageDecoder::PVRTC_2BPP | ImageDecoder::PVRTC_ALPHA_NONE);
 			break;
 		case STEX_FORMAT_PVRTC1_2A:
 			img = ImageDecoder::fromPVRTC(
-				width, height,
-				buf.get(), expected_size,
+				mdata.width, mdata.height,
+				buf.get(), mdata.size,
 				ImageDecoder::PVRTC_2BPP | ImageDecoder::PVRTC_ALPHA_YES);
 			break;
 
 		case STEX_FORMAT_PVRTC1_4:
 			img = ImageDecoder::fromPVRTC(
-				width, height,
-				buf.get(), expected_size,
+				mdata.width, mdata.height,
+				buf.get(), mdata.size,
 				ImageDecoder::PVRTC_4BPP | ImageDecoder::PVRTC_ALPHA_NONE);
 			break;
 		case STEX_FORMAT_PVRTC1_4A:
 			img = ImageDecoder::fromPVRTC(
-				width, height,
-				buf.get(), expected_size,
+				mdata.width, mdata.height,
+				buf.get(), mdata.size,
 				ImageDecoder::PVRTC_4BPP | ImageDecoder::PVRTC_ALPHA_YES);
 			break;
 #endif /* ENABLE_PVRTC */
 
 		case STEX_FORMAT_ETC:
 			img = ImageDecoder::fromETC1(
-				width, height,
-				buf.get(), expected_size);
+				mdata.width, mdata.height,
+				buf.get(), mdata.size);
 			break;
 		case STEX_FORMAT_ETC2_RGB8:
 			// NOTE: If the ETC2 texture has mipmaps,
 			// it's stored as a Power-of-2 texture.
 			img = ImageDecoder::fromETC2_RGB(
-				width, height,
-				buf.get(), expected_size);
+				mdata.width, mdata.height,
+				buf.get(), mdata.size);
 			break;
 		case STEX_FORMAT_ETC2_RGBA8:
 			img = ImageDecoder::fromETC2_RGBA(
-				width, height,
-				buf.get(), expected_size);
+				mdata.width, mdata.height,
+				buf.get(), mdata.size);
 			break;
 		case STEX_FORMAT_ETC2_RGB8A1:
 			img = ImageDecoder::fromETC2_RGB_A1(
-				width, height,
-				buf.get(), expected_size);
+				mdata.width, mdata.height,
+				buf.get(), mdata.size);
 			break;
 
 #ifdef ENABLE_ASTC
 		case STEX_FORMAT_SCU_ASTC_8x8:
 			img = ImageDecoder::fromASTC(
-				width, height,
-				buf.get(), expected_size, 8, 8);
+				mdata.width, mdata.height,
+				buf.get(), mdata.size, 8, 8);
 			break;
 #endif /* ENABLE_ASTC */
 	}
@@ -599,6 +675,9 @@ GodotSTEX::GodotSTEX(IRpFile *file)
 	d->dimensions[1] = d->stexHeader.height;
 	d->rescale_dimensions[0] = d->stexHeader.width_rescale;
 	d->rescale_dimensions[1] = d->stexHeader.height_rescale;
+
+	// Initialize the mipmap data.
+	d->getMipmapInfo();
 }
 
 /** Property accessors **/
@@ -656,8 +735,7 @@ int GodotSTEX::mipmapCount(void) const
 		return 0;
 	}
 
-	// TODO: Count the number of mipmaps.
-	return 0;
+	return static_cast<int>(d->mipmaps.size());
 }
 
 #ifdef ENABLE_LIBRPBASE_ROMFIELDS
