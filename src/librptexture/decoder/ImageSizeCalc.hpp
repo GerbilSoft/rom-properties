@@ -9,6 +9,9 @@
 #ifndef __ROMPROPERTIES_LIBRPTEXTURE_DECODER_IMAGESIZECALC_HPP__
 #define __ROMPROPERTIES_LIBRPTEXTURE_DECODER_IMAGESIZECALC_HPP__
 
+// C includes (C++ namespace)
+#include <cassert>
+
 namespace LibRpTexture { namespace ImageSizeCalc {
 
 // OpCode values for calcImageSize().
@@ -49,6 +52,31 @@ enum class OpCode : uint8_t {
 unsigned int calcImageSize(
 	const OpCode *op_tbl, size_t tbl_size,
 	unsigned int format, unsigned int width, unsigned int height);
+
+/**
+ * Validate ASTC block size.
+ * @param block_x	[in] Block width
+ * @param block_y	[in] Block height
+ * @return True if valid; false if not.
+ */
+static inline bool validateBlockSizeASTC(uint8_t block_x, uint8_t block_y)
+{
+	assert(block_x >= 4);
+	assert(block_x <= 12);
+	assert(block_y >= 4);
+	assert(block_y <= 12);
+	assert(block_x >= block_y);
+	if (block_x < 4 || block_x > 12 ||
+	    block_y < 4 || block_y > 12 ||
+	    block_x < block_y)
+	{
+		// Invalid block size.
+		return false;
+	}
+
+	// TODO: Validate combinations?
+	return true;
+}
 
 /**
  * Align width/height for ASTC.

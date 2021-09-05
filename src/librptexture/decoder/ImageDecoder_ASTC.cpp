@@ -40,11 +40,7 @@ rp_image *fromASTC(int width, int height,
 	assert(height > 0);
 
 	// TODO: Validate combinations.
-	assert(block_x >= 4);
-	assert(block_x <= 12);
-	assert(block_y >= 4);
-	assert(block_y <= 12);
-	if (block_x < 4 || block_x > 12 || block_y < 4 || block_y > 12) {
+	if (!ImageSizeCalc::validateBlockSizeASTC(block_x, block_y)) {
 		return nullptr;
 	}
 
@@ -58,7 +54,7 @@ rp_image *fromASTC(int width, int height,
 	}
 
 	// Align the image size.
-	// TODO: Combine with calcExpectedSizeASTC()?
+	// TODO: Combine with calcImageSizeASTC()?
 	int physWidth = width;
 	int physHeight = height;
 	ImageSizeCalc::alignImageSizeASTC(physWidth, physHeight, block_x, block_y);

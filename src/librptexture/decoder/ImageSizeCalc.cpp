@@ -78,6 +78,11 @@ unsigned int calcImageSize(
  */
 unsigned int calcImageSizeASTC(int width, int height, uint8_t block_x, uint8_t block_y)
 {
+	if (!validateBlockSizeASTC(block_x, block_y)) {
+		// Invalid block size.
+		return 0;
+	}
+
 	// ASTC block size is always 128-bit.
 	const unsigned int texelsInBlock =
 		static_cast<unsigned int>(block_x) * static_cast<unsigned int>(block_y);
