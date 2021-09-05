@@ -713,32 +713,59 @@ int rp_image::swapRB_cpp(void)
 	RP_D(rp_image);
 	rp_image_backend *const backend = d->backend;
 
-	assert(backend->format == Format::ARGB32);
-	if (backend->format != Format::ARGB32) {
-		// ARGB32 only.
-		return -EINVAL;
-	}
+	switch (backend->format) {
+		default:
+			// Unsupported image format.
+			assert(!"Unsupported rp_image::Format.");
+			return -EINVAL;
 
-	const unsigned int diff = (backend->stride - this->row_bytes()) / sizeof(uint32_t);
-	argb32_t *img_buf = static_cast<argb32_t*>(backend->data());
+		case rp_image::Format::ARGB32: {
+			const unsigned int diff = (backend->stride - this->row_bytes()) / sizeof(uint32_t);
+			argb32_t *img_buf = static_cast<argb32_t*>(backend->data());
 
-	for (unsigned int y = static_cast<unsigned int>(backend->height); y > 0; y--) {
-		unsigned int x = static_cast<unsigned int>(backend->width);
-		for (; x > 1; x -= 2, img_buf += 2) {
-			std::swap(img_buf[0].r, img_buf[0].b);
-			std::swap(img_buf[1].r, img_buf[1].b);
+			for (unsigned int y = static_cast<unsigned int>(backend->height); y > 0; y--) {
+				unsigned int x = static_cast<unsigned int>(backend->width);
+				for (; x > 1; x -= 2, img_buf += 2) {
+					std::swap(img_buf[0].r, img_buf[0].b);
+					std::swap(img_buf[1].r, img_buf[1].b);
+				}
+
+				if (x == 1) {
+					std::swap(img_buf->r, img_buf->b);
+					img_buf++;
+				}
+
+				// Next row.
+				img_buf += diff;
+			}
+			break;
 		}
 
-		if (x == 1) {
-			std::swap(img_buf->r, img_buf->b);
-			img_buf++;
-		}
+		case rp_image::Format::CI8: {
+			argb32_t *pal = reinterpret_cast<argb32_t*>(backend->palette());
+			const int pal_len = backend->palette_len();
+			assert(pal != nullptr);
+			assert(pal_len > 0);
+			if (!pal || pal_len <= 0) {
+				return -EINVAL;
+			}
 
-		// Next row.
-		img_buf += diff;
+			// Convert the palette.
+			int i;
+			for (i = 0; i+1 < pal_len; i += 2, pal += 2) {
+				std::swap(pal[i+1].r, pal[i+1].b);
+				std::swap(pal[i+1].r, pal[i+1].b);
+			}
+			for (; i < pal_len; i++, pal++) {
+				// Last color.
+				std::swap(pal[i].r, pal[i].b);
+			}
+			break;
+		}
 	}
 
 	// R and B channels swapped.
 	return 0;
 }
+
 }
