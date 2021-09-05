@@ -170,8 +170,10 @@ static void ExtractImages(const RomData *romData, vector<ExtractParam>& extract)
  * @param json Is program running in json mode?
  * @param extract Vector of image extraction parameters
  * @param languageCode Language code. (0 for default)
+ * @param skipInternalImages If true, skip internal image processing.
  */
-static void DoFile(const char *filename, bool json, vector<ExtractParam>& extract, uint32_t languageCode = 0)
+static void DoFile(const char *filename, bool json, vector<ExtractParam>& extract,
+	uint32_t languageCode = 0, bool skipInternalImages = false)
 {
 	cerr << "== " << rp_sprintf(C_("rpcli", "Reading file '%s'..."), filename) << endl;
 	RpFile *const file = new RpFile(filename, RpFile::FM_OPEN_READ_GZ);
@@ -180,9 +182,9 @@ static void DoFile(const char *filename, bool json, vector<ExtractParam>& extrac
 		if (romData && romData->isValid()) {
 			if (json) {
 				cerr << "-- " << C_("rpcli", "Outputting JSON data") << endl;
-				cout << JSONROMOutput(romData, languageCode) << endl;
+				cout << JSONROMOutput(romData, languageCode, skipInternalImages) << endl;
 			} else {
-				cout << ROMOutput(romData, languageCode) << endl;
+				cout << ROMOutput(romData, languageCode, skipInternalImages) << endl;
 			}
 
 			ExtractImages(romData, extract);
@@ -398,6 +400,7 @@ int RP_C_API main(int argc, char *argv[])
 	bool inq_ata_packet = false;
 #endif /* RP_OS_SCSI_SUPPORTED */
 	uint32_t languageCode = 0;
+	bool skipInternalImages = false;
 	bool first = true;
 	int ret = 0;
 	for (int i = 1; i < argc; i++){
@@ -453,6 +456,11 @@ int RP_C_API main(int argc, char *argv[])
 
 				// Language code set.
 				languageCode = lc;
+				break;
+			}
+			case 'K': {
+				// Skip internal images. (NOTE: Not documented.)
+				skipInternalImages = true;
 				break;
 			}
 			case 'x': {
@@ -518,7 +526,7 @@ int RP_C_API main(int argc, char *argv[])
 #endif /* RP_OS_SCSI_SUPPORTED */
 			{
 				// Regular file.
-				DoFile(argv[i], json, extract, languageCode);
+				DoFile(argv[i], json, extract, languageCode, skipInternalImages);
 			}
 
 #ifdef RP_OS_SCSI_SUPPORTED

@@ -32,17 +32,19 @@ std::string urlPartialUnescape(const std::string &url);
 class ROMOutput {
 	const RomData *const romdata;
 	uint32_t lc;
+	bool skipInternalImages;
 public:
-	explicit ROMOutput(const RomData *romdata, uint32_t lc = 0);
+	explicit ROMOutput(const RomData *romdata, uint32_t lc = 0, bool skipInternalImages = false);
 	friend std::ostream& operator<<(std::ostream& os, const ROMOutput& fo);
 };
 
 class JSONROMOutput {
 	const RomData *const romdata;
 	uint32_t lc;
+	bool skipInternalImages;
 	bool crlf_;
 public:
-	explicit JSONROMOutput(const RomData *romdata, uint32_t lc = 0);
+	explicit JSONROMOutput(const RomData *romdata, uint32_t lc = 0, bool skipInternalImages = false);
 	friend std::ostream& operator<<(std::ostream& os, const JSONROMOutput& fo);
 
 	inline bool crlf(void) const {
