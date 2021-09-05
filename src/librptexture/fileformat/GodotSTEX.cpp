@@ -737,8 +737,13 @@ GodotSTEX::GodotSTEX(IRpFile *file)
 				(d->stexHeader.v3.format & STEX_FORMAT_MASK);
 			d->dimensions[0] = d->stexHeader.v3.width;
 			d->dimensions[1] = d->stexHeader.v3.height;
-			d->rescale_dimensions[0] = d->stexHeader.v3.width_rescale;
-			d->rescale_dimensions[1] = d->stexHeader.v3.height_rescale;
+			if (d->stexHeader.v3.width_rescale  != d->dimensions[0] ||
+			    d->stexHeader.v3.height_rescale != d->dimensions[1])
+			{
+				// Rescaling is needed.
+				d->rescale_dimensions[0] = d->stexHeader.v3.width_rescale;
+				d->rescale_dimensions[1] = d->stexHeader.v3.height_rescale;
+			}
 			break;
 		case 4:
 			// FIXME: Verify rescale dimensions.
@@ -746,8 +751,13 @@ GodotSTEX::GodotSTEX(IRpFile *file)
 				(d->stexHeader.v4.pixel_format & STEX_FORMAT_MASK);
 			d->dimensions[0] = d->stexHeader.v4.img_width;
 			d->dimensions[1] = d->stexHeader.v4.img_height;
-			d->rescale_dimensions[0] = d->stexHeader.v4.width;
-			d->rescale_dimensions[1] = d->stexHeader.v4.height;
+			if ((int)d->stexHeader.v4.width  != d->dimensions[0] ||
+			    (int)d->stexHeader.v4.height != d->dimensions[1])
+			{
+				// Rescaling is needed.
+				d->rescale_dimensions[0] = d->stexHeader.v4.width;
+				d->rescale_dimensions[1] = d->stexHeader.v4.height;
+			}
 			break;
 	}
 

@@ -51,8 +51,9 @@ typedef struct _STEX_4_Header {
 	uint32_t reserved[3];		// [0x018]
 
 	// Image header
-	// NOTE: Duplicate width/height values?
-	// May have an effect on non-square ETC2 images.
+	// NOTE: This is the physical image size. If it's different
+	// from the above image size (e.g. in ETC2), then rescaling
+	// is needed when displaying the image.
 	uint32_t data_format;		// [0x024] Data format (see STEX4_DataFormat_e)
 	uint16_t img_width;		// [0x028] Image width
 	uint16_t img_height;		// [0x02A] Image height
