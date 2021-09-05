@@ -934,7 +934,7 @@ int GodotSTEX::getFields(LibRpBase::RomFields *fields) const
 		NOP_C_("GodotSTEX|FormatFlags", "Detect Roughness"),
 	};
 
-	vector<string> *v_format_flags_bitfield_names;
+	vector<string> *v_format_flags_bitfield_names = nullptr;
 	switch (d->stexVersion) {
 		default:
 			assert(!"Invalid STEX version.");
@@ -950,8 +950,10 @@ int GodotSTEX::getFields(LibRpBase::RomFields *fields) const
 					ARRAY_SIZE(format_flags_bitfield_names_v4));
 			break;
 	}
-	fields->addField_bitfield(C_("GodotSTEX", "Format Flags"),
-		v_format_flags_bitfield_names, 3, d->pixelFormat >> 20);
+	if (v_format_flags_bitfield_names) {
+		fields->addField_bitfield(C_("GodotSTEX", "Format Flags"),
+			v_format_flags_bitfield_names, 3, d->pixelFormat >> 20);
+	}
 
 	// Finished reading the field data.
 	return (fields->count() - initial_count);
