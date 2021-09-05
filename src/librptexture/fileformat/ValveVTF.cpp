@@ -426,7 +426,7 @@ const rp_image *ValveVTFPrivate::loadImage(int mip)
 	}
 	const uint32_t file_sz = static_cast<uint32_t>(file->size());
 
-	// Make sure we have the mipmap info.
+	// Make sure the mipmap info is loaded.
 	int ret = getMipmapInfo();
 	assert(ret == 0);
 	assert(!mipmap_data.empty());

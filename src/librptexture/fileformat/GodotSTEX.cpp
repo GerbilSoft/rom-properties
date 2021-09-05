@@ -404,7 +404,9 @@ const rp_image *GodotSTEXPrivate::loadImage(int mip)
 {
 	// Make sure the mipmap information is loaded.
 	int ret = getMipmapInfo();
-	if (ret != 0) {
+	assert(ret == 0);
+	assert(!mipmap_data.empty());
+	if (ret != 0 || mipmap_data.empty()) {
 		return nullptr;
 	}
 
@@ -773,9 +775,6 @@ GodotSTEX::GodotSTEX(IRpFile *file)
 			}
 			break;
 	}
-
-	// Initialize the mipmap data.
-	d->getMipmapInfo();
 }
 
 /** Property accessors **/
@@ -829,24 +828,35 @@ int GodotSTEX::mipmapCount(void) const
 	if (!d->isValid)
 		return -1;
 
+	int mipmap_count = 0;
 	switch (d->stexVersion) {
 		default:
 			assert(!"Invalid STEX version.");
-			return -1;
-		case 3:
-			if (!(d->stexHeader.v3.format & STEX_FORMAT_FLAG_HAS_MIPMAPS)) {
-				return 0;
+			mipmap_count = -1;
+			break;
+		case 3: {
+			if (!(d->stexHeader.v3.format & STEX_FORMAT_FLAG_HAS_MIPMAPS))
+				break;
+
+			// Make sure the mipmap info is loaded.
+			int ret = const_cast<GodotSTEXPrivate*>(d)->getMipmapInfo();
+			assert(ret == 0);
+			assert(!d->mipmap_data.empty());
+			if (ret == 0 && !d->mipmap_data.empty()) {
+				mipmap_count = static_cast<int>(d->mipmap_data.size());
+			} else {
+				// Unable to load the mipmap info.
+				mipmap_count = -1;
 			}
 			break;
+		}
 		case 4:
 			// NOTE: STEX_FORMAT_FLAG_HAS_MIPMAPS isn't used.
-			if (d->stexHeader.v4.mipmap_count == 0) {
-				return 0;
-			}
+			mipmap_count = d->stexHeader.v4.mipmap_count;
 			break;
 	}
 
-	return static_cast<int>(d->mipmaps.size());
+	return mipmap_count;
 }
 
 #ifdef ENABLE_LIBRPBASE_ROMFIELDS
@@ -865,6 +875,15 @@ int GodotSTEX::getFields(LibRpBase::RomFields *fields) const
 	if (!d->isValid) {
 		// Unknown file type.
 		return -EIO;
+	}
+
+	// Make sure the mipmap info is loaded.
+	int ret = const_cast<GodotSTEXPrivate*>(d)->getMipmapInfo();
+	assert(ret == 0);
+	assert(!d->mipmap_data.empty());
+	if (ret != 0 || d->mipmap_data.empty()) {
+		// Unable to load the mipmap info.
+		return ret;
 	}
 
 	const int initial_count = fields->count();
