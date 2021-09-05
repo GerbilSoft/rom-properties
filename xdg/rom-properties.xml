@@ -854,7 +854,7 @@
     <glob pattern="*.stex"/>
     <generic-icon name="image-x-generic"/>
     <magic priority="80">
-      <match value="PVRT" type="string" offset="0"/>
+      <match value="GDST" type="string" offset="0"/>
     </magic>
   </mime-type>
 
