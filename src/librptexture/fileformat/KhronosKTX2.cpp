@@ -31,6 +31,7 @@ using LibRpFile::IRpFile;
 // librptexture
 #include "img/rp_image.hpp"
 #include "decoder/ImageDecoder.hpp"
+#include "decoder/ImageSizeCalc.hpp"
 
 // C++ STL classes.
 using std::string;
@@ -337,59 +338,59 @@ const rp_image *KhronosKTX2Private::loadImage(int mip)
 #ifdef ENABLE_ASTC
 		case VK_FORMAT_ASTC_4x4_UNORM_BLOCK:
 		case VK_FORMAT_ASTC_4x4_SRGB_BLOCK:
-			expected_size = ImageDecoder::calcExpectedSizeASTC(width, height, 4, 4);
+			expected_size = ImageSizeCalc::calcImageSizeASTC(width, height, 4, 4);
 			break;
 		case VK_FORMAT_ASTC_5x4_UNORM_BLOCK:
 		case VK_FORMAT_ASTC_5x4_SRGB_BLOCK:
-			expected_size = ImageDecoder::calcExpectedSizeASTC(width, height, 5, 4);
+			expected_size = ImageSizeCalc::calcImageSizeASTC(width, height, 5, 4);
 			break;
 		case VK_FORMAT_ASTC_5x5_UNORM_BLOCK:
 		case VK_FORMAT_ASTC_5x5_SRGB_BLOCK:
-			expected_size = ImageDecoder::calcExpectedSizeASTC(width, height, 5, 5);
+			expected_size = ImageSizeCalc::calcImageSizeASTC(width, height, 5, 5);
 			break;
 		case VK_FORMAT_ASTC_6x5_UNORM_BLOCK:
 		case VK_FORMAT_ASTC_6x5_SRGB_BLOCK:
-			expected_size = ImageDecoder::calcExpectedSizeASTC(width, height, 6, 5);
+			expected_size = ImageSizeCalc::calcImageSizeASTC(width, height, 6, 5);
 			break;
 		case VK_FORMAT_ASTC_6x6_UNORM_BLOCK:
 		case VK_FORMAT_ASTC_6x6_SRGB_BLOCK:
-			expected_size = ImageDecoder::calcExpectedSizeASTC(width, height, 6, 6);
+			expected_size = ImageSizeCalc::calcImageSizeASTC(width, height, 6, 6);
 			break;
 		case VK_FORMAT_ASTC_8x5_UNORM_BLOCK:
 		case VK_FORMAT_ASTC_8x5_SRGB_BLOCK:
-			expected_size = ImageDecoder::calcExpectedSizeASTC(width, height, 8, 5);
+			expected_size = ImageSizeCalc::calcImageSizeASTC(width, height, 8, 5);
 			break;
 		case VK_FORMAT_ASTC_8x6_UNORM_BLOCK:
 		case VK_FORMAT_ASTC_8x6_SRGB_BLOCK:
-			expected_size = ImageDecoder::calcExpectedSizeASTC(width, height, 8, 6);
+			expected_size = ImageSizeCalc::calcImageSizeASTC(width, height, 8, 6);
 			break;
 		case VK_FORMAT_ASTC_8x8_UNORM_BLOCK:
 		case VK_FORMAT_ASTC_8x8_SRGB_BLOCK:
-			expected_size = ImageDecoder::calcExpectedSizeASTC(width, height, 8, 8);
+			expected_size = ImageSizeCalc::calcImageSizeASTC(width, height, 8, 8);
 			break;
 		case VK_FORMAT_ASTC_10x5_UNORM_BLOCK:
 		case VK_FORMAT_ASTC_10x5_SRGB_BLOCK:
-			expected_size = ImageDecoder::calcExpectedSizeASTC(width, height, 10, 5);
+			expected_size = ImageSizeCalc::calcImageSizeASTC(width, height, 10, 5);
 			break;
 		case VK_FORMAT_ASTC_10x6_UNORM_BLOCK:
 		case VK_FORMAT_ASTC_10x6_SRGB_BLOCK:
-			expected_size = ImageDecoder::calcExpectedSizeASTC(width, height, 10, 6);
+			expected_size = ImageSizeCalc::calcImageSizeASTC(width, height, 10, 6);
 			break;
 		case VK_FORMAT_ASTC_10x8_UNORM_BLOCK:
 		case VK_FORMAT_ASTC_10x8_SRGB_BLOCK:
-			expected_size = ImageDecoder::calcExpectedSizeASTC(width, height, 10, 8);
+			expected_size = ImageSizeCalc::calcImageSizeASTC(width, height, 10, 8);
 			break;
 		case VK_FORMAT_ASTC_10x10_UNORM_BLOCK:
 		case VK_FORMAT_ASTC_10x10_SRGB_BLOCK:
-			expected_size = ImageDecoder::calcExpectedSizeASTC(width, height, 10, 10);
+			expected_size = ImageSizeCalc::calcImageSizeASTC(width, height, 10, 10);
 			break;
 		case VK_FORMAT_ASTC_12x10_UNORM_BLOCK:
 		case VK_FORMAT_ASTC_12x10_SRGB_BLOCK:
-			expected_size = ImageDecoder::calcExpectedSizeASTC(width, height, 12, 10);
+			expected_size = ImageSizeCalc::calcImageSizeASTC(width, height, 12, 10);
 			break;
 		case VK_FORMAT_ASTC_12x12_UNORM_BLOCK:
 		case VK_FORMAT_ASTC_12x12_SRGB_BLOCK:
-			expected_size = ImageDecoder::calcExpectedSizeASTC(width, height, 12, 12);
+			expected_size = ImageSizeCalc::calcImageSizeASTC(width, height, 12, 12);
 			break;
 #endif /* ENABLE_ASTC */
 

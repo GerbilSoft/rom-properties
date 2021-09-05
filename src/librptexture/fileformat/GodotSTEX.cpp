@@ -22,6 +22,8 @@ using LibRpFile::IRpFile;
 // librptexture
 #include "img/rp_image.hpp"
 #include "decoder/ImageDecoder.hpp"
+#include "decoder/ImageSizeCalc.hpp"
+using LibRpTexture::ImageSizeCalc::OpCode;
 
 // C++ STL classes
 using std::string;
@@ -69,16 +71,10 @@ class GodotSTEXPrivate final : public FileFormatPrivate
 		// Image format table
 		static const char *const img_format_tbl[];
 
-	public:
-		/**
-		 * Calculate an image size.
-		 * @param format STEX image format
-		 * @param width Image width
-		 * @param height Image height
-		 * @return Image size, in bytes
-		 */
-		static unsigned int calcImageSize(STEX_Format_e format, unsigned int width, unsigned int height);
+		// ImageSizeCalc opcode table
+		static const ImageSizeCalc::OpCode op_tbl[];
 
+	public:
 		/**
 		 * Get mipmap information.
 		 * @return 0 on success; negative POSIX error code on error.
@@ -143,9 +139,66 @@ const char *const GodotSTEXPrivate::img_format_tbl[] = {
 	"ASTC_8x8",
 };
 
+// ImageSizeCalc opcode table
+const ImageSizeCalc::OpCode GodotSTEXPrivate::op_tbl[] = {
+	// 0x00
+	OpCode::None,		// STEX_FORMAT_L8
+	OpCode::Multiply2,	// STEX_FORMAT_LA8
+	OpCode::None,		// STEX_FORMAT_R8
+	OpCode::Multiply2,	// STEX_FORMAT_RG8
+	OpCode::Multiply3,	// STEX_FORMAT_RGB8
+	OpCode::Multiply4,	// STEX_FORMAT_RGBA8
+	OpCode::Multiply2,	// STEX_FORMAT_RGBA4444
+	OpCode::Multiply2,	// STEX_FORMAT_RGB565
+
+	// 0x08
+	OpCode::Multiply4,	// STEX_FORMAT_RF
+	OpCode::Multiply8,	// STEX_FORMAT_RGF
+	OpCode::Multiply12,	// STEX_FORMAT_RGBF	// TODO: Verify that it's not RGBxF.
+	OpCode::Multiply16,	// STEX_FORMAT_RGBAF
+	OpCode::Multiply2,	// STEX_FORMAT_RH
+	OpCode::Multiply4,	// STEX_FORMAT_RGH
+	OpCode::Multiply6,	// STEX_FORMAT_RGBH	// TODO: Verify that it's not RGBxH.
+	OpCode::Multiply8,	// STEX_FORMAT_RGBAH
+
+	// 0x10
+	OpCode::Multiply4,	// STEX_FORMAT_RGBE9995
+	OpCode::Align4Divide2,	// STEX_FORMAT_DXT1
+	OpCode::Align4,		// STEX_FORMAT_DXT3
+	OpCode::Align4,		// STEX_FORMAT_DXT5
+	OpCode::Align4Divide2,	// STEX_FORMAT_RGTC_R
+	OpCode::Align4,		// STEX_FORMAT_RGTC_RG
+	OpCode::Align4,		// STEX_FORMAT_BPTC_RGBA
+	OpCode::Align4,		// STEX_FORMAT_BPTC_RGBF	// TODO: Verify
+
+	// 0x18
+	OpCode::Align4,		// STEX_FORMAT_BPTC_RGBFU	// TODO: Verify
+	OpCode::Divide4,	// STEX_FORMAT_PVRTC1_2		// TODO: Alignment for PVRTC1?
+	OpCode::Divide4,	// STEX_FORMAT_PVRTC1_2A
+	OpCode::Divide2,	// STEX_FORMAT_PVRTC1_4
+	OpCode::Divide2,	// STEX_FORMAT_PVRTC1_4A
+	OpCode::Divide2,	// STEX_FORMAT_ETC
+	OpCode::Divide2,	// STEX_FORMAT_ETC2_R11		// TODO: Verify; Align4?
+	OpCode::Divide2,	// STEX_FORMAT_ETC2_R11S	// TODO: Verify; Align4?
+
+	// 0x20
+	OpCode::Divide2,	// STEX_FORMAT_ETC2_RG11	// TODO: Verify; Align4?
+	OpCode::Divide2,	// STEX_FORMAT_ETC2_RG11S	// TODO: Verify; Align4?
+	OpCode::Align4Divide2,	// STEX_FORMAT_ETC2_RGB8	// TODO: Verify?
+	OpCode::Align4,		// STEX_FORMAT_ETC2_RGBA8	// TODO: Verify?
+	OpCode::Align4Divide2,	// STEX_FORMAT_ETC2_RGB8A1	// TODO: Verify?
+
+	// Proprietary formats used in Sonic Colors Ultimate.
+	// FIXME: Other ASTC variants need a more complicated calculation.
+	OpCode::Align8Divide4,	// STEX_FORMAT_SCU_ASTC_8x8	// 8x8 == 2bpp
+};
+
 GodotSTEXPrivate::GodotSTEXPrivate(GodotSTEX *q, IRpFile *file)
 	: super(q, file, &textureInfo)
 {
+	static_assert(ARRAY_SIZE(GodotSTEXPrivate::op_tbl) == STEX_FORMAT_MAX,
+		"GodotSTEXPrivate::op_tbl[] is not the correct size.");
+
 	// Clear the structs and arrays.
 	memset(&stexHeader, 0, sizeof(stexHeader));
 	memset(invalid_pixel_format, 0, sizeof(invalid_pixel_format));
@@ -154,139 +207,6 @@ GodotSTEXPrivate::GodotSTEXPrivate(GodotSTEX *q, IRpFile *file)
 GodotSTEXPrivate::~GodotSTEXPrivate()
 {
 	std::for_each(mipmaps.begin(), mipmaps.end(), [](rp_image *img) { UNREF(img); });
-}
-
-/**
- * Calculate an image size.
- * @param format STEX image format
- * @param width Image width
- * @param height Image height
- * @return Image size, in bytes
- */
-unsigned int GodotSTEXPrivate::calcImageSize(STEX_Format_e format, unsigned int width, unsigned int height)
-{
-	enum class OpCode : uint8_t {
-		Unknown = 0,
-		None,
-		Multiply2,
-		Multiply3,
-		Multiply4,
-		Multiply6,
-		Multiply8,
-		Multiply12,
-		Multiply16,
-		Divide2,
-		Divide4,
-
-		// DXTn requires aligned blocks.
-		Align4Divide2,
-		Align4,
-
-		// ASTC requires aligned blocks.
-		Align8Divide4,
-
-		Max
-	};
-
-	static const OpCode mul_tbl[] = {
-		// 0x00
-		OpCode::None,		// STEX_FORMAT_L8
-		OpCode::Multiply2,	// STEX_FORMAT_LA8
-		OpCode::None,		// STEX_FORMAT_R8
-		OpCode::Multiply2,	// STEX_FORMAT_RG8
-		OpCode::Multiply3,	// STEX_FORMAT_RGB8	// TODO: Verify that it's not RGBx8.
-		OpCode::Multiply4,	// STEX_FORMAT_RGBA8
-		OpCode::Multiply2,	// STEX_FORMAT_RGBA4444
-		OpCode::Multiply2,	// STEX_FORMAT_RGB565
-
-		// 0x08
-		OpCode::Multiply4,	// STEX_FORMAT_RF
-		OpCode::Multiply8,	// STEX_FORMAT_RGF
-		OpCode::Multiply12,	// STEX_FORMAT_RGBF	// TODO: Verify that it's not RGBxF.
-		OpCode::Multiply16,	// STEX_FORMAT_RGBAF
-		OpCode::Multiply2,	// STEX_FORMAT_RH
-		OpCode::Multiply4,	// STEX_FORMAT_RGH
-		OpCode::Multiply6,	// STEX_FORMAT_RGBH	// TODO: Verify that it's not RGBxH.
-		OpCode::Multiply8,	// STEX_FORMAT_RGBAH
-
-		// 0x10
-		OpCode::Multiply4,	// STEX_FORMAT_RGBE9995
-		OpCode::Align4Divide2,	// STEX_FORMAT_DXT1
-		OpCode::Align4,		// STEX_FORMAT_DXT3
-		OpCode::Align4,		// STEX_FORMAT_DXT5
-		OpCode::Align4Divide2,	// STEX_FORMAT_RGTC_R
-		OpCode::Align4,		// STEX_FORMAT_RGTC_RG
-		OpCode::Align4,		// STEX_FORMAT_BPTC_RGBA
-		OpCode::Align4,		// STEX_FORMAT_BPTC_RGBF	// TODO: Verify
-
-		// 0x18
-		OpCode::Align4,		// STEX_FORMAT_BPTC_RGBFU	// TODO: Verify
-		OpCode::Divide4,	// STEX_FORMAT_PVRTC1_2		// TODO: Alignment for PVRTC1?
-		OpCode::Divide4,	// STEX_FORMAT_PVRTC1_2A
-		OpCode::Divide2,	// STEX_FORMAT_PVRTC1_4
-		OpCode::Divide2,	// STEX_FORMAT_PVRTC1_4A
-		OpCode::Divide2,	// STEX_FORMAT_ETC
-		OpCode::Divide2,	// STEX_FORMAT_ETC2_R11		// TODO: Verify; Align4?
-		OpCode::Divide2,	// STEX_FORMAT_ETC2_R11S	// TODO: Verify; Align4?
-
-		// 0x20
-		OpCode::Divide2,	// STEX_FORMAT_ETC2_RG11	// TODO: Verify; Align4?
-		OpCode::Divide2,	// STEX_FORMAT_ETC2_RG11S	// TODO: Verify; Align4?
-		OpCode::Align4Divide2,	// STEX_FORMAT_ETC2_RGB8	// TODO: Verify?
-		OpCode::Align4,		// STEX_FORMAT_ETC2_RGBA8	// TODO: Verify?
-		OpCode::Align4Divide2,	// STEX_FORMAT_ETC2_RGB8A1	// TODO: Verify?
-
-		// Proprietary formats used in Sonic Colors Ultimate.
-		// FIXME: Other ASTC variants need a more complicated calculation.
-		OpCode::Align8Divide4,	// STEX_FORMAT_SCU_ASTC_8x8	// 8x8 == 2bpp
-	};
-	static_assert(ARRAY_SIZE(mul_tbl) == STEX_FORMAT_MAX,
-		"mul_tbl[] is not the correct size.");
-
-	format = static_cast<STEX_Format_e>(
-		static_cast<unsigned int>(format) & STEX_FORMAT_MASK);
-	assert(format >= 0 && format < ARRAY_SIZE_I(mul_tbl));
-	if (format < 0 || format >= ARRAY_SIZE_I(mul_tbl)) {
-		// Invalid format.
-		return 0;
-	}
-
-	unsigned int expected_size = 0;
-	if (mul_tbl[format] < OpCode::Align4Divide2) {
-		expected_size = width * height;
-	}
-
-	switch (mul_tbl[format]) {
-		default:
-		case OpCode::Unknown:
-			// Invalid opcode.
-			return 0;
-
-		case OpCode::None:					break;
-		case OpCode::Multiply2:		expected_size *= 2;	break;
-		case OpCode::Multiply3:		expected_size *= 3;	break;
-		case OpCode::Multiply4:		expected_size *= 4;	break;
-		case OpCode::Multiply6:		expected_size *= 6;	break;
-		case OpCode::Multiply8:		expected_size *= 8;	break;
-		case OpCode::Multiply12:	expected_size *= 12;	break;
-		case OpCode::Multiply16:	expected_size *= 16;	break;
-		case OpCode::Divide2:		expected_size /= 2;	break;
-		case OpCode::Divide4:		expected_size /= 4;	break;
-
-		case OpCode::Align4Divide2:
-			expected_size = ALIGN_BYTES(4, width) * ALIGN_BYTES(4, height) / 2;
-			break;
-
-		case OpCode::Align4:
-			expected_size = ALIGN_BYTES(4, width) * ALIGN_BYTES(4, height);
-			break;
-
-		case OpCode::Align8Divide4:
-			expected_size = ALIGN_BYTES(8, width) * ALIGN_BYTES(8, height) / 4;
-			break;
-	}
-
-	return expected_size;
 }
 
 /**
@@ -325,9 +245,9 @@ int GodotSTEXPrivate::getMipmapInfo(void)
 	int64_t addr = sizeof(stexHeader);
 	unsigned int width = stexHeader.width;
 	unsigned int height = (stexHeader.height > 0 ? stexHeader.height : 1);
-	unsigned int expected_size = calcImageSize(
-		static_cast<STEX_Format_e>(stexHeader.format),
-		width, height);
+	unsigned int expected_size = ImageSizeCalc::calcImageSize(
+		op_tbl, ARRAY_SIZE(op_tbl),
+		(stexHeader.format & STEX_FORMAT_MASK), width, height);
 	if (expected_size == 0 || expected_size + addr > file_sz) {
 		// Invalid image size.
 		return -EIO;
@@ -363,8 +283,8 @@ int GodotSTEXPrivate::getMipmapInfo(void)
 		}
 
 		expected_size = calcImageSize(
-			static_cast<STEX_Format_e>(stexHeader.format),
-			width, height);
+			op_tbl, ARRAY_SIZE(op_tbl),
+			(stexHeader.format & STEX_FORMAT_MASK), width, height);
 		if (expected_size == 0 || expected_size + addr > file_sz) {
 			// Invalid image size.
 			break;

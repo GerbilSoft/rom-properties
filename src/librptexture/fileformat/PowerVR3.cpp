@@ -27,6 +27,7 @@ using LibRpFile::IRpFile;
 // librptexture
 #include "img/rp_image.hpp"
 #include "decoder/ImageDecoder.hpp"
+#include "decoder/ImageSizeCalc.hpp"
 
 // C++ STL classes.
 using std::string;
@@ -400,46 +401,46 @@ const rp_image *PowerVR3Private::loadImage(int mip)
 
 #ifdef ENABLE_ASTC
 			case PVR3_PXF_ASTC_4x4:
-				expected_size = ImageDecoder::calcExpectedSizeASTC(width, height, 4, 4);
+				expected_size = ImageSizeCalc::calcImageSizeASTC(width, height, 4, 4);
 				break;
 			case PVR3_PXF_ASTC_5x4:
-				expected_size = ImageDecoder::calcExpectedSizeASTC(width, height, 5, 4);
+				expected_size = ImageSizeCalc::calcImageSizeASTC(width, height, 5, 4);
 				break;
 			case PVR3_PXF_ASTC_5x5:
-				expected_size = ImageDecoder::calcExpectedSizeASTC(width, height, 5, 5);
+				expected_size = ImageSizeCalc::calcImageSizeASTC(width, height, 5, 5);
 				break;
 			case PVR3_PXF_ASTC_6x5:
-				expected_size = ImageDecoder::calcExpectedSizeASTC(width, height, 6, 5);
+				expected_size = ImageSizeCalc::calcImageSizeASTC(width, height, 6, 5);
 				break;
 			case PVR3_PXF_ASTC_6x6:
-				expected_size = ImageDecoder::calcExpectedSizeASTC(width, height, 6, 6);
+				expected_size = ImageSizeCalc::calcImageSizeASTC(width, height, 6, 6);
 				break;
 			case PVR3_PXF_ASTC_8x5:
-				expected_size = ImageDecoder::calcExpectedSizeASTC(width, height, 8, 5);
+				expected_size = ImageSizeCalc::calcImageSizeASTC(width, height, 8, 5);
 				break;
 			case PVR3_PXF_ASTC_8x6:
-				expected_size = ImageDecoder::calcExpectedSizeASTC(width, height, 8, 6);
+				expected_size = ImageSizeCalc::calcImageSizeASTC(width, height, 8, 6);
 				break;
 			case PVR3_PXF_ASTC_8x8:
-				expected_size = ImageDecoder::calcExpectedSizeASTC(width, height, 8, 8);
+				expected_size = ImageSizeCalc::calcImageSizeASTC(width, height, 8, 8);
 				break;
 			case PVR3_PXF_ASTC_10x5:
-				expected_size = ImageDecoder::calcExpectedSizeASTC(width, height, 10, 5);
+				expected_size = ImageSizeCalc::calcImageSizeASTC(width, height, 10, 5);
 				break;
 			case PVR3_PXF_ASTC_10x6:
-				expected_size = ImageDecoder::calcExpectedSizeASTC(width, height, 10, 6);
+				expected_size = ImageSizeCalc::calcImageSizeASTC(width, height, 10, 6);
 				break;
 			case PVR3_PXF_ASTC_10x8:
-				expected_size = ImageDecoder::calcExpectedSizeASTC(width, height, 10, 8);
+				expected_size = ImageSizeCalc::calcImageSizeASTC(width, height, 10, 8);
 				break;
 			case PVR3_PXF_ASTC_10x10:
-				expected_size = ImageDecoder::calcExpectedSizeASTC(width, height, 10, 10);
+				expected_size = ImageSizeCalc::calcImageSizeASTC(width, height, 10, 10);
 				break;
 			case PVR3_PXF_ASTC_12x10:
-				expected_size = ImageDecoder::calcExpectedSizeASTC(width, height, 12, 10);
+				expected_size = ImageSizeCalc::calcImageSizeASTC(width, height, 12, 10);
 				break;
 			case PVR3_PXF_ASTC_12x12:
-				expected_size = ImageDecoder::calcExpectedSizeASTC(width, height, 12, 12);
+				expected_size = ImageSizeCalc::calcImageSizeASTC(width, height, 12, 12);
 				break;
 
 			// TODO: PVR3 ASTC 3D formats.

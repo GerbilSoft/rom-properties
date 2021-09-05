@@ -25,6 +25,8 @@ SET(${PROJECT_NAME}_SRCS
 	decoder/ImageDecoder_DC.cpp
 	decoder/ImageDecoder_ETC1.cpp
 	decoder/ImageDecoder_BC7.cpp
+
+	decoder/ImageSizeCalc.cpp
 	decoder/PixelConversion.cpp
 
 	fileformat/FileFormat.cpp
@@ -55,6 +57,7 @@ SET(${PROJECT_NAME}_H
 
 	decoder/ImageDecoder.hpp
 	decoder/ImageDecoder_p.hpp
+	decoder/ImageSizeCalc.hpp
 	decoder/PixelConversion.hpp
 
 	fileformat/FileFormat.hpp

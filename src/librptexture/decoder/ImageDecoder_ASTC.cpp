@@ -11,41 +11,13 @@
 #include "ImageDecoder.hpp"
 #include "ImageDecoder_p.hpp"
 
+#include "ImageSizeCalc.hpp"
 #include "basisu_astc_decomp.h"
 
 // C++ STL classes.
 using std::array;
 
 namespace LibRpTexture { namespace ImageDecoder {
-
-/**
- * Calculate the expected size of an ASTC-compressed 2D image.
- * @param width Image width
- * @param height Image height
- * @param block_x Block width
- * @param block_y Block height
- * @return Expected size, in bytes
- */
-unsigned int calcExpectedSizeASTC(int width, int height, uint8_t block_x, uint8_t block_y)
-{
-	// ASTC block size is always 128-bit.
-	const unsigned int texelsInBlock =
-		static_cast<unsigned int>(block_x) * static_cast<unsigned int>(block_y);
-
-	// Based on the X and Y parameters, calculate the expected
-	// total compressed image size.
-	// NOTE: Physical image size must be aligned to the block size.
-	alignImageSizeASTC(width, height, block_x, block_y);
-
-	const unsigned int texels = width * height;
-	unsigned int blocks_req = texels / texelsInBlock;
-	if (texels % texelsInBlock != 0) {
-		blocks_req++;
-	}
-
-	// Each block is 128 bits (16 bytes).
-	return blocks_req * 16;
-}
 
 /**
  * Convert an ASTC 2D image to rp_image.
@@ -77,7 +49,7 @@ rp_image *fromASTC(int width, int height,
 	}
 
 	// Get the expected size.
-	const unsigned int expected_size_in = calcExpectedSizeASTC(width, height, block_x, block_y);
+	const unsigned int expected_size_in = ImageSizeCalc::calcImageSizeASTC(width, height, block_x, block_y);
 	assert(img_siz >= static_cast<int>(expected_size_in));
 	if (!img_buf || width <= 0 || height <= 0 ||
 	    img_siz < static_cast<int>(expected_size_in))
@@ -89,7 +61,7 @@ rp_image *fromASTC(int width, int height,
 	// TODO: Combine with calcExpectedSizeASTC()?
 	int physWidth = width;
 	int physHeight = height;
-	alignImageSizeASTC(physWidth, physHeight, block_x, block_y);
+	ImageSizeCalc::alignImageSizeASTC(physWidth, physHeight, block_x, block_y);
 
 	// Create an rp_image.
 	rp_image *const img = new rp_image(physWidth, physHeight, rp_image::Format::ARGB32);

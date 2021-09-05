@@ -19,6 +19,7 @@ using LibRpFile::IRpFile;
 // librptexture
 #include "img/rp_image.hpp"
 #include "decoder/ImageDecoder.hpp"
+#include "decoder/ImageSizeCalc.hpp"
 
 namespace LibRpTexture {
 
@@ -135,7 +136,7 @@ const rp_image *ASTCPrivate::loadImage(void)
 	const int height = (dimensions[1] > 0 ? dimensions[1] : 1);
 
 	// Calculate the expected size.
-	const unsigned int expected_size = ImageDecoder::calcExpectedSizeASTC(
+	const unsigned int expected_size = ImageSizeCalc::calcImageSizeASTC(
 		dimensions[0], height,
 		astcHeader.blockdimX, astcHeader.blockdimY);
 	if (expected_size == 0 || expected_size > file_sz) {

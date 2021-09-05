@@ -24,6 +24,7 @@ using LibRpFile::IRpFile;
 // librptexture
 #include "img/rp_image.hpp"
 #include "decoder/ImageDecoder.hpp"
+#include "decoder/ImageSizeCalc.hpp"
 
 // C++ STL classes.
 using std::string;
@@ -634,85 +635,85 @@ const rp_image *DirectDrawSurfacePrivate::loadImage(void)
 			case DXGI_FORMAT_ASTC_4X4_TYPELESS:
 			case DXGI_FORMAT_ASTC_4X4_UNORM:
 			case DXGI_FORMAT_ASTC_4X4_UNORM_SRGB:
-				expected_size = ImageDecoder::calcExpectedSizeASTC(
+				expected_size = ImageSizeCalc::calcImageSizeASTC(
 					ddsHeader.dwWidth, ddsHeader.dwHeight, 4, 4);
 				break;
 			case DXGI_FORMAT_ASTC_5X4_TYPELESS:
 			case DXGI_FORMAT_ASTC_5X4_UNORM:
 			case DXGI_FORMAT_ASTC_5X4_UNORM_SRGB:
-				expected_size = ImageDecoder::calcExpectedSizeASTC(
+				expected_size = ImageSizeCalc::calcImageSizeASTC(
 					ddsHeader.dwWidth, ddsHeader.dwHeight, 5, 4);
 				break;
 			case DXGI_FORMAT_ASTC_5X5_TYPELESS:
 			case DXGI_FORMAT_ASTC_5X5_UNORM:
 			case DXGI_FORMAT_ASTC_5X5_UNORM_SRGB:
-				expected_size = ImageDecoder::calcExpectedSizeASTC(
+				expected_size = ImageSizeCalc::calcImageSizeASTC(
 					ddsHeader.dwWidth, ddsHeader.dwHeight, 5, 5);
 				break;
 			case DXGI_FORMAT_ASTC_6X5_TYPELESS:
 			case DXGI_FORMAT_ASTC_6X5_UNORM:
 			case DXGI_FORMAT_ASTC_6X5_UNORM_SRGB:
-				expected_size = ImageDecoder::calcExpectedSizeASTC(
+				expected_size = ImageSizeCalc::calcImageSizeASTC(
 					ddsHeader.dwWidth, ddsHeader.dwHeight, 6, 5);
 				break;
 			case DXGI_FORMAT_ASTC_6X6_TYPELESS:
 			case DXGI_FORMAT_ASTC_6X6_UNORM:
 			case DXGI_FORMAT_ASTC_6X6_UNORM_SRGB:
-				expected_size = ImageDecoder::calcExpectedSizeASTC(
+				expected_size = ImageSizeCalc::calcImageSizeASTC(
 					ddsHeader.dwWidth, ddsHeader.dwHeight, 6, 6);
 				break;
 			case DXGI_FORMAT_ASTC_8X5_TYPELESS:
 			case DXGI_FORMAT_ASTC_8X5_UNORM:
 			case DXGI_FORMAT_ASTC_8X5_UNORM_SRGB:
-				expected_size = ImageDecoder::calcExpectedSizeASTC(
+				expected_size = ImageSizeCalc::calcImageSizeASTC(
 					ddsHeader.dwWidth, ddsHeader.dwHeight, 8, 5);
 				break;
 			case DXGI_FORMAT_ASTC_8X6_TYPELESS:
 			case DXGI_FORMAT_ASTC_8X6_UNORM:
 			case DXGI_FORMAT_ASTC_8X6_UNORM_SRGB:
-				expected_size = ImageDecoder::calcExpectedSizeASTC(
+				expected_size = ImageSizeCalc::calcImageSizeASTC(
 					ddsHeader.dwWidth, ddsHeader.dwHeight, 8, 6);
 				break;
 			case DXGI_FORMAT_ASTC_8X8_TYPELESS:
 			case DXGI_FORMAT_ASTC_8X8_UNORM:
 			case DXGI_FORMAT_ASTC_8X8_UNORM_SRGB:
-				expected_size = ImageDecoder::calcExpectedSizeASTC(
+				expected_size = ImageSizeCalc::calcImageSizeASTC(
 					ddsHeader.dwWidth, ddsHeader.dwHeight, 8, 8);
 				break;
 			case DXGI_FORMAT_ASTC_10X5_TYPELESS:
 			case DXGI_FORMAT_ASTC_10X5_UNORM:
 			case DXGI_FORMAT_ASTC_10X5_UNORM_SRGB:
-				expected_size = ImageDecoder::calcExpectedSizeASTC(
+				expected_size = ImageSizeCalc::calcImageSizeASTC(
 					ddsHeader.dwWidth, ddsHeader.dwHeight, 10, 5);
 				break;
 			case DXGI_FORMAT_ASTC_10X6_TYPELESS:
 			case DXGI_FORMAT_ASTC_10X6_UNORM:
 			case DXGI_FORMAT_ASTC_10X6_UNORM_SRGB:
-				expected_size = ImageDecoder::calcExpectedSizeASTC(
+				expected_size = ImageSizeCalc::calcImageSizeASTC(
 					ddsHeader.dwWidth, ddsHeader.dwHeight, 10, 6);
 				break;
 			case DXGI_FORMAT_ASTC_10X8_TYPELESS:
 			case DXGI_FORMAT_ASTC_10X8_UNORM:
 			case DXGI_FORMAT_ASTC_10X8_UNORM_SRGB:
-				expected_size = ImageDecoder::calcExpectedSizeASTC(
+				expected_size = ImageSizeCalc::calcImageSizeASTC(
 					ddsHeader.dwWidth, ddsHeader.dwHeight, 10, 8);
 				break;
 			case DXGI_FORMAT_ASTC_10X10_TYPELESS:
 			case DXGI_FORMAT_ASTC_10X10_UNORM:
 			case DXGI_FORMAT_ASTC_10X10_UNORM_SRGB:
-				expected_size = ImageDecoder::calcExpectedSizeASTC(
+				expected_size = ImageSizeCalc::calcImageSizeASTC(
 					ddsHeader.dwWidth, ddsHeader.dwHeight, 10, 10);
 				break;
 			case DXGI_FORMAT_ASTC_12X10_TYPELESS:
 			case DXGI_FORMAT_ASTC_12X10_UNORM:
 			case DXGI_FORMAT_ASTC_12X10_UNORM_SRGB:
-				expected_size = ImageDecoder::calcExpectedSizeASTC(
+				expected_size = ImageSizeCalc::calcImageSizeASTC(
 					ddsHeader.dwWidth, ddsHeader.dwHeight, 12, 10);
 				break;
 			case DXGI_FORMAT_ASTC_12X12_TYPELESS:
 			case DXGI_FORMAT_ASTC_12X12_UNORM:
 			case DXGI_FORMAT_ASTC_12X12_UNORM_SRGB:
-				expected_size = ImageDecoder::calcExpectedSizeASTC(
+				expected_size = ImageSizeCalc::calcImageSizeASTC(
 					ddsHeader.dwWidth, ddsHeader.dwHeight, 12, 12);
 				break;
 #endif /* ENABLE_ASTC */
