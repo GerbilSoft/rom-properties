@@ -12,7 +12,7 @@
 // librptexture
 using LibRpTexture::rp_image;
 
-// SSSE3 headers.
+// SSSE3 intrinsics
 #include <xmmintrin.h>
 #include <emmintrin.h>
 #include <tmmintrin.h>
@@ -65,54 +65,52 @@ GdkPixbuf *GdkImageConv::rp_image_to_GdkPixbuf_ssse3(const rp_image *img)
 
 	// Sanity check: Make sure rowstride is correct.
 	assert(gdk_pixbuf_get_rowstride(pixbuf) == rowstride);
-	const int dest_stride_adj = (rowstride / sizeof(*px_dest)) - img->width();
+	const int dest_row_width = rowstride / sizeof(*px_dest);
 
-	// ABGR shuffle mask.
+	// ABGR shuffle mask
 	const __m128i shuf_mask = _mm_setr_epi8(2,1,0,3, 6,5,4,7, 10,9,8,11, 14,13,12,15);
 
 	switch (img->format()) {
 		case rp_image::Format::ARGB32: {
 			// Copy the image data.
+			FILE *f = fopen("/tmp/OMGWTF.txt", "a");
+			fprintf(f, "quack\n");
+			fflush(f);
+			fclose(f);
 			const uint32_t *img_buf = static_cast<const uint32_t*>(img->bits());
-			const int src_stride_adj = (img->stride() / sizeof(uint32_t)) - width;
+			const int src_row_width = img->stride() / sizeof(uint32_t);
+
 			for (unsigned int y = (unsigned int)height; y > 0; y--) {
 				// Process 16 pixels per iteration using SSSE3.
-				unsigned int x = (unsigned int)width;
-				for (; x > 15; x -= 16, px_dest += 16, img_buf += 16) {
-					const __m128i *xmm_src = reinterpret_cast<const __m128i*>(img_buf);
-					__m128i *xmm_dest = reinterpret_cast<__m128i*>(px_dest);
-
+				unsigned int x = static_cast<unsigned int>(width);
+				const __m128i *xmm_src = reinterpret_cast<const __m128i*>(img_buf);
+				__m128i *xmm_dest = reinterpret_cast<__m128i*>(px_dest);
+				for (; x > 15; x -= 16, xmm_src += 4, xmm_dest += 4) {
 					__m128i sa = _mm_load_si128(&xmm_src[0]);
 					__m128i sb = _mm_load_si128(&xmm_src[1]);
 					__m128i sc = _mm_load_si128(&xmm_src[2]);
 					__m128i sd = _mm_load_si128(&xmm_src[3]);
 
-					__m128i val = _mm_shuffle_epi8(sa, shuf_mask);
-					_mm_store_si128(&xmm_dest[0], val);
-
-					val = _mm_shuffle_epi8(sb, shuf_mask);
-					_mm_store_si128(&xmm_dest[1], val);
-
-					val = _mm_shuffle_epi8(sc, shuf_mask);
-					_mm_store_si128(&xmm_dest[2], val);
-
-					val = _mm_shuffle_epi8(sd, shuf_mask);
-					_mm_store_si128(&xmm_dest[3], val);
+					_mm_store_si128(&xmm_dest[0], _mm_shuffle_epi8(sa, shuf_mask));
+					_mm_store_si128(&xmm_dest[1], _mm_shuffle_epi8(sb, shuf_mask));
+					_mm_store_si128(&xmm_dest[2], _mm_shuffle_epi8(sc, shuf_mask));
+					_mm_store_si128(&xmm_dest[3], _mm_shuffle_epi8(sd, shuf_mask));
 				}
 
 				// Remaining pixels.
+				const uint32_t *rpx_src = reinterpret_cast<const uint32_t*>(xmm_src);
+				uint32_t *rpx_dest = reinterpret_cast<uint32_t*>(xmm_dest);
 				for (; x > 0; x--) {
-					// Last pixel.
-					*px_dest = (*img_buf & 0xFF00FF00) |
-						  ((*img_buf & 0x00FF0000) >> 16) |
-						  ((*img_buf & 0x000000FF) << 16);
-					img_buf++;
-					px_dest++;
+					*rpx_dest = (*rpx_src & 0xFF00FF00) |
+					           ((*rpx_src & 0x00FF0000) >> 16) |
+					           ((*rpx_src & 0x000000FF) << 16);
+					rpx_src++;
+					rpx_dest++;
 				}
 
 				// Next line.
-				img_buf += src_stride_adj;
-				px_dest += dest_stride_adj;
+				img_buf += src_row_width;
+				px_dest += dest_row_width;
 			}
 			break;
 		}
@@ -136,31 +134,24 @@ GdkPixbuf *GdkImageConv::rp_image_to_GdkPixbuf_ssse3(const rp_image *img)
 			}
 
 			// Process 16 colors per iteration using SSSE3.
-			unsigned int i = (unsigned int)src_pal_len;
-			uint32_t *dest_pal = palette;
-			for (; i > 15; i -= 16, dest_pal += 16, src_pal += 16) {
-				const __m128i *xmm_src = reinterpret_cast<const __m128i*>(src_pal);
-				__m128i *xmm_dest = reinterpret_cast<__m128i*>(dest_pal);
-
+			unsigned int i = static_cast<unsigned int>(src_pal_len);
+			const __m128i *xmm_src = reinterpret_cast<const __m128i*>(src_pal);
+			__m128i *xmm_dest = reinterpret_cast<__m128i*>(palette);
+			for (; i > 15; i -= 16, xmm_src += 4, xmm_dest += 4) {
 				__m128i sa = _mm_load_si128(&xmm_src[0]);
 				__m128i sb = _mm_load_si128(&xmm_src[1]);
 				__m128i sc = _mm_load_si128(&xmm_src[2]);
 				__m128i sd = _mm_load_si128(&xmm_src[3]);
 
-				__m128i val = _mm_shuffle_epi8(sa, shuf_mask);
-				_mm_store_si128(&xmm_dest[0], val);
-
-				val = _mm_shuffle_epi8(sb, shuf_mask);
-				_mm_store_si128(&xmm_dest[1], val);
-
-				val = _mm_shuffle_epi8(sc, shuf_mask);
-				_mm_store_si128(&xmm_dest[2], val);
-
-				val = _mm_shuffle_epi8(sd, shuf_mask);
-				_mm_store_si128(&xmm_dest[3], val);
+				_mm_store_si128(&xmm_dest[0], _mm_shuffle_epi8(sa, shuf_mask));
+				_mm_store_si128(&xmm_dest[1], _mm_shuffle_epi8(sb, shuf_mask));
+				_mm_store_si128(&xmm_dest[2], _mm_shuffle_epi8(sc, shuf_mask));
+				_mm_store_si128(&xmm_dest[3], _mm_shuffle_epi8(sd, shuf_mask));
 			}
 
 			// Remaining colors.
+			src_pal = reinterpret_cast<const uint32_t*>(xmm_src);
+			uint32_t *dest_pal = reinterpret_cast<uint32_t*>(xmm_dest);
 			for (; i > 0; i--, dest_pal++, src_pal++) {
 				*dest_pal = (*src_pal & 0xFF00FF00) |
 					   ((*src_pal & 0x00FF0000) >> 16) |
@@ -174,8 +165,11 @@ GdkPixbuf *GdkImageConv::rp_image_to_GdkPixbuf_ssse3(const rp_image *img)
 			}
 
 			// Convert the image data from CI8 to ARGB32.
-			const uint8_t *img_buf = static_cast<const uint8_t*>(img->bits());
+			// FIXME: Why not just leave it as CI8?
+			const int dest_stride_adj = (rowstride / sizeof(*px_dest)) - img->width();
 			const int src_stride_adj = img->stride() - width;
+
+			const uint8_t *img_buf = static_cast<const uint8_t*>(img->bits());
 			for (unsigned int y = (unsigned int)height; y > 0; y--) {
 				unsigned int x;
 				for (x = (unsigned int)width; x > 3; x -= 4) {
