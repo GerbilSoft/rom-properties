@@ -507,17 +507,22 @@ class rp_image : public RefBase
 		 * Swap Red and Blue channels in an ARGB32 image.
 		 * Standard version using regular C++ code.
 		 *
-		 * NOTE: The image *must* be ARGB32.
-		 *
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
 		int swapRB_cpp(void);
 
+#ifdef RP_IMAGE_HAS_SSSE3
 		/**
 		 * Swap Red and Blue channels in an ARGB32 image.
+		 * SSSE3-optimized version.
 		 *
-		 * NOTE: The image *must* be ARGB32.
-		 *
+		 * @return 0 on success; negative POSIX error code on error.
+		 */
+		int swapRB_ssse3(void);
+#endif /* RP_IMAGE_HAS_SSSE3 */
+
+		/**
+		 * Swap Red and Blue channels in an ARGB32 image.
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
 		inline int swapRB(void);
@@ -561,11 +566,11 @@ inline int rp_image::apply_chroma_key(uint32_t key)
 	// amd64 always has SSE2.
 	return apply_chroma_key_sse2(key);
 #else
-# if defined(RP_IMAGE_HAS_SSE2)
+#  if defined(RP_IMAGE_HAS_SSE2)
 	if (RP_CPU_HasSSE2()) {
 		return apply_chroma_key_sse2(key);
 	} else
-# endif /* RP_IMAGE_HAS_SSE2 */
+#  endif /* RP_IMAGE_HAS_SSE2 */
 	{
 		return apply_chroma_key_cpp(key);
 	}
@@ -574,15 +579,19 @@ inline int rp_image::apply_chroma_key(uint32_t key)
 
 /**
  * Swap Red and Blue channels in an ARGB32 image.
- *
- * NOTE: The image *must* be ARGB32.
- *
  * @return 0 on success; negative POSIX error code on error.
  */
 inline int rp_image::swapRB(void)
 {
 	// FIXME: Figure out how to get IFUNC working with C++ member functions.
-	return swapRB_cpp();
+#if defined(RP_IMAGE_HAS_SSSE3)
+	if (RP_CPU_HasSSSE3()) {
+		return swapRB_ssse3();
+	} else
+#endif /* RP_IMAGE_HAS_SSSE3 */
+	{
+		return swapRB_cpp();
+	}
 }
 
 }
