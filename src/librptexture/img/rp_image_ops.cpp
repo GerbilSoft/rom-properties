@@ -700,4 +700,45 @@ int rp_image::shrink(int width, int height)
 	return d->backend->shrink(width, height);
 }
 
+/**
+ * Swap Red and Blue channels in an ARGB32 image.
+ * Standard version using regular C++ code.
+ *
+ * NOTE: The image *must* be ARGB32.
+ *
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int rp_image::swapRB_cpp(void)
+{
+	RP_D(rp_image);
+	rp_image_backend *const backend = d->backend;
+
+	assert(backend->format == Format::ARGB32);
+	if (backend->format != Format::ARGB32) {
+		// ARGB32 only.
+		return -EINVAL;
+	}
+
+	const unsigned int diff = (backend->stride - this->row_bytes()) / sizeof(uint32_t);
+	argb32_t *img_buf = static_cast<argb32_t*>(backend->data());
+
+	for (unsigned int y = static_cast<unsigned int>(backend->height); y > 0; y--) {
+		unsigned int x = static_cast<unsigned int>(backend->width);
+		for (; x > 1; x -= 2, img_buf += 2) {
+			std::swap(img_buf[0].r, img_buf[0].b);
+			std::swap(img_buf[1].r, img_buf[1].b);
+		}
+
+		if (x == 1) {
+			std::swap(img_buf->r, img_buf->b);
+			img_buf++;
+		}
+
+		// Next row.
+		img_buf += diff;
+	}
+
+	// R and B channels swapped.
+	return 0;
+}
 }

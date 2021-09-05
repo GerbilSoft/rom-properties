@@ -126,6 +126,7 @@ IF(CPU_i386 OR CPU_amd64)
 		decoder/ImageDecoder_Linear_sse2.cpp
 		)
 	SET(${PROJECT_NAME}_SSSE3_SRCS
+		#img/rp_image_ops_ssse3.cpp
 		decoder/ImageDecoder_Linear_ssse3.cpp
 		)
 	# TODO: Disable SSE 4.1 if not supported by the compiler?

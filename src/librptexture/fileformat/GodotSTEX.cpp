@@ -590,10 +590,14 @@ const rp_image *GodotSTEXPrivate::loadImage(int mip)
 			break;
 #endif /* ENABLE_PVRTC */
 
+		// NOTE: Godot 4 uses swapped R and B channels in ETC textures.
 		case STEX_FORMAT_ETC:
 			img = ImageDecoder::fromETC1(
 				mdata.width, mdata.height,
 				buf.get(), mdata.size);
+			if (img && stexVersion == 4) {
+				img->swapRB();
+			}
 			break;
 		case STEX_FORMAT_ETC2_RGB8:
 			// NOTE: If the ETC2 texture has mipmaps,
@@ -601,16 +605,25 @@ const rp_image *GodotSTEXPrivate::loadImage(int mip)
 			img = ImageDecoder::fromETC2_RGB(
 				mdata.width, mdata.height,
 				buf.get(), mdata.size);
+			if (img && stexVersion == 4) {
+				img->swapRB();
+			}
 			break;
 		case STEX_FORMAT_ETC2_RGBA8:
 			img = ImageDecoder::fromETC2_RGBA(
 				mdata.width, mdata.height,
 				buf.get(), mdata.size);
+			if (img && stexVersion == 4) {
+				img->swapRB();
+			}
 			break;
 		case STEX_FORMAT_ETC2_RGB8A1:
 			img = ImageDecoder::fromETC2_RGB_A1(
 				mdata.width, mdata.height,
 				buf.get(), mdata.size);
+			if (img && stexVersion == 4) {
+				img->swapRB();
+			}
 			break;
 
 #ifdef ENABLE_ASTC
