@@ -581,12 +581,12 @@ GodotSTEX::GodotSTEX(IRpFile *file)
 	// Header is stored in little-endian, so it always
 	// needs to be byteswapped on big-endian.
 	// NOTE: Signature is *not* byteswapped.
-	d->stexHeader.width		= be16_to_cpu(d->stexHeader.width);
-	d->stexHeader.width_rescale	= be16_to_cpu(d->stexHeader.width_rescale);
-	d->stexHeader.height		= be16_to_cpu(d->stexHeader.height);
-	d->stexHeader.height_rescale	= be16_to_cpu(d->stexHeader.height_rescale);
-	d->stexHeader.flags		= be32_to_cpu(d->stexHeader.flags);
-	d->stexHeader.format		= be32_to_cpu(d->stexHeader.format);
+	d->stexHeader.width		= le16_to_cpu(d->stexHeader.width);
+	d->stexHeader.width_rescale	= le16_to_cpu(d->stexHeader.width_rescale);
+	d->stexHeader.height		= le16_to_cpu(d->stexHeader.height);
+	d->stexHeader.height_rescale	= le16_to_cpu(d->stexHeader.height_rescale);
+	d->stexHeader.flags		= le32_to_cpu(d->stexHeader.flags);
+	d->stexHeader.format		= le32_to_cpu(d->stexHeader.format);
 #endif
 
 	// Cache the dimensions for the FileFormat base class.
