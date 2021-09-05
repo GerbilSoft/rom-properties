@@ -17,13 +17,12 @@ extern "C" {
 #endif
 
 /**
- * Godot STEX 3.0: File header.
- * NOTE: The format is changing in Godot master branch. (4.0)
+ * Godot STEX 3: File header.
  *
  * All fields are in little-endian.
  */
-#define STEX_30_MAGIC 'GDST'
-typedef struct _STEX_30_Header {
+#define STEX_3_MAGIC 'GDST'
+typedef struct _STEX_3_Header {
 	uint32_t magic;			// [0x000] 'GDST'
 	uint16_t width;			// [0x004] Width
 	uint16_t width_rescale;		// [0x006] If set, viewer should rescale image to this width.
@@ -31,8 +30,36 @@ typedef struct _STEX_30_Header {
 	uint16_t height_rescale;	// [0x008] If set, viewer should rescale image to this height.
 	uint32_t flags;			// [0x00C] Texture flags (see STEX_Flags_e)
 	uint32_t format;		// [0x010] Texture format (see STEX_Format_e)
-} STEX_30_Header;
-ASSERT_STRUCT(STEX_30_Header, 5*sizeof(uint32_t));
+} STEX_3_Header;
+ASSERT_STRUCT(STEX_3_Header, 5*sizeof(uint32_t));
+
+/**
+ * Godot STEX 4: File header.
+ *
+ * All fields are in little-endian.
+ */
+#define STEX_4_MAGIC 'GST2'
+#define STEX_4_FORMAT_VERSION 1
+typedef struct _STEX_4_Header {
+	// GST2 header
+	uint32_t magic;			// [0x000] 'GST2' (2D texture)
+	uint32_t version;		// [0x004] Format version (1)
+	uint32_t width;			// [0x008]
+	uint32_t height;		// [0x00C]
+	uint32_t format_flags;		// [0x010] Format flags (see STEX_Format_e) [FLAGS ONLY!]
+	uint32_t mipmap_limit;		// [0x014] TODO: What is this used for?
+	uint32_t reserved[3];		// [0x018]
+
+	// Image header
+	// NOTE: Duplicate width/height values?
+	// May have an effect on non-square ETC2 images.
+	uint32_t data_format;		// [0x024] Data format (see STEX4_DataFormat_e)
+	uint16_t img_width;		// [0x028] Image width
+	uint16_t img_height;		// [0x02A] Image height
+	uint32_t mipmap_count;		// [0x02C] Mipmap count
+	uint32_t pixel_format;		// [0x030] Pixel format (see STEX_Format_e) [NO FLAGS!]
+} STEX_4_Header;
+ASSERT_STRUCT(STEX_4_Header, 13*sizeof(uint32_t));
 
 /**
  * Godot STEX: Texture flags
@@ -48,10 +75,11 @@ typedef enum {
 	STEX_FLAG_USED_FOR_STREAMING	= (1U << 12),
 
 	STEX_FLAGS_DEFAULT		= STEX_FLAG_REPEAT | STEX_FLAG_MIPMAPS | STEX_FLAG_FILTER
-} STEX_30_Flags_e;
+} STEX_3_Flags_e;
 
 /**
  * Godot STEX: Texture format
+ * NOTE: Format flags are only part of the texture format in Godot 3.
  */
 typedef enum {
 	// 0x00
@@ -105,21 +133,34 @@ typedef enum {
 	STEX_FORMAT_SCU_ASTC_8x8 = 0x25,
 
 	// NOTE: The following formats were added in Godot 4.0.
-	//STEX_FORMAT_ETC2_RA_AS_RG = 0x25,	//used to make basis universal happy
-	//STEX_FORMAT_DXT5_RA_AS_RG = 0x26,	//used to make basis universal happy
+	STEX4_FORMAT_ETC2_RA_AS_RG = 0x25,	//used to make basis universal happy
+	STEX4_FORMAT_DXT5_RA_AS_RG = 0x26,	//used to make basis universal happy
 
 	STEX_FORMAT_MAX,
 
 	// Format flags
-	STEX_FORMAT_MASK		= (1U << 20) - 1,
-	STEX_FORMAT_FLAG_LOSSLESS	= (1U << 20),
-	STEX_FORMAT_FLAG_LOSSY		= (1U << 21),
-	STEX_FORMAT_FLAG_STREAM		= (1U << 22),
-	STEX_FORMAT_FLAG_HAS_MIPMAPS	= (1U << 23),
-	STEX_FORMAT_FLAG_DETECT_3D	= (1U << 24),
-	STEX_FORMAT_FLAG_DETECT_SRGB	= (1U << 25),
-	STEX_FORMAT_FLAG_DETECT_NORMAL	= (1U << 26),
+	// NOTE: Godot 4 doesn't use lossless, lossy, or detect sRGB.
+	STEX_FORMAT_MASK			= (1U << 20) - 1,
+	STEX_FORMAT_FLAG_LOSSLESS		= (1U << 20),
+	STEX_FORMAT_FLAG_LOSSY			= (1U << 21),
+	STEX_FORMAT_FLAG_STREAM			= (1U << 22),
+	STEX_FORMAT_FLAG_HAS_MIPMAPS		= (1U << 23),
+	STEX_FORMAT_FLAG_DETECT_3D		= (1U << 24),
+	STEX_FORMAT_FLAG_DETECT_SRGB		= (1U << 25),
+	STEX_FORMAT_FLAG_DETECT_NORMAL		= (1U << 26),
+	// Added in Godot 4
+	STEX_FORMAT_FLAG_DETECT_ROUGHNESS	= (1U << 27),
 } STEX_Format_e;
+
+/**
+ * Godot STEX 4: Data format
+ */
+typedef enum {
+	STEX4_DATA_FORMAT_IMAGE			= 0,
+	STEX4_DATA_FORMAT_PNG			= 1,
+	STEX4_DATA_FORMAT_WEBP			= 2,
+	STEX4_DATA_FORMAT_BASIS_UNIVERSAL	= 3,
+} STEX4_DataFormat_e;
 
 #ifdef __cplusplus
 }

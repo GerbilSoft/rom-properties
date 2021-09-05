@@ -107,6 +107,7 @@ const FileFormatFactoryPrivate::FileFormatFns FileFormatFactoryPrivate::FileForm
 #endif
 	GetFileFormatFns(DirectDrawSurface, 'DDS '),
 	GetFileFormatFns(GodotSTEX, 'GDST'),
+	GetFileFormatFns(GodotSTEX, 'GST2'),
 	GetFileFormatFns(PowerVR3, 'PVR\x03'),
 	GetFileFormatFns(PowerVR3, '\x03RVP'),
 	GetFileFormatFns(SegaPVR, 'PVRT'),

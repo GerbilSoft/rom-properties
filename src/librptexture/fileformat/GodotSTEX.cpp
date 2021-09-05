@@ -49,7 +49,13 @@ class GodotSTEXPrivate final : public FileFormatPrivate
 
 	public:
 		// Godot STEX header.
-		STEX_30_Header stexHeader;
+		union {
+			uint32_t magic;		// [0x000] 'GDST' (v3) or 'GST2' (v4)
+			STEX_3_Header v3;
+			STEX_4_Header v4;
+		} stexHeader;
+		unsigned int stexVersion;	// 3 or 4 (TODO: romType equivalent)
+		STEX_Format_e pixelFormat;	// minus flags
 
 		// Decoded mipmaps.
 		// Mipmap 0 is the full image.
@@ -190,11 +196,18 @@ const ImageSizeCalc::OpCode GodotSTEXPrivate::op_tbl[] = {
 
 	// Proprietary formats used in Sonic Colors Ultimate.
 	// FIXME: Other ASTC variants need a more complicated calculation.
+	// FIXME: Godot 4 has a different format here.
 	OpCode::Align8Divide4,	// STEX_FORMAT_SCU_ASTC_8x8	// 8x8 == 2bpp
+
+	// Godot 4 formats (TODO)
+	//OpCode::Divide2,	// STEX4_FORMAT_ETC2_RA_AS_RG	// TODO
+	OpCode::Align4,		// STEX4_FORMAT_DXT5_RA_AS_RG	// TODO
 };
 
 GodotSTEXPrivate::GodotSTEXPrivate(GodotSTEX *q, IRpFile *file)
 	: super(q, file, &textureInfo)
+	, stexVersion(0)
+	, pixelFormat(static_cast<STEX_Format_e>(-1))
 {
 	static_assert(ARRAY_SIZE(GodotSTEXPrivate::op_tbl) == STEX_FORMAT_MAX,
 		"GodotSTEXPrivate::op_tbl[] is not the correct size.");
@@ -220,12 +233,15 @@ int GodotSTEXPrivate::getMipmapInfo(void)
 		return 0;
 	}
 
+	// NOTE: Using dimensions[] instead of accessing stexHeader directly
+	// due to differences in the v3 and v4 formats.
+
 	// Sanity check: Maximum image dimensions of 32768x32768.
 	// NOTE: `height == 0` is allowed here. (1D texture)
-	assert(stexHeader.width > 0);
-	assert(stexHeader.width <= 32768);
-	assert(stexHeader.height <= 32768);
-	if (stexHeader.width == 0 || stexHeader.width > 32768 || stexHeader.height > 32768) {
+	assert(dimensions[0] > 0);
+	assert(dimensions[0] <= 32768);
+	assert(dimensions[1] <= 32768);
+	if (dimensions[0] == 0 || dimensions[0] > 32768 || dimensions[1] > 32768) {
 		// Invalid image dimensions.
 		return -EIO;
 	}
@@ -242,12 +258,22 @@ int GodotSTEXPrivate::getMipmapInfo(void)
 	mipmaps.resize(1);
 	mipmap_data.resize(1);
 
-	int64_t addr = sizeof(stexHeader);
-	unsigned int width = stexHeader.width;
-	unsigned int height = (stexHeader.height > 0 ? stexHeader.height : 1);
+	int64_t addr;
+	switch (stexVersion) {
+		default:
+			assert(!"Invalid STEX version.");
+			return -EIO;
+		case 3:
+			addr = sizeof(stexHeader.v3);
+			break;
+		case 4:
+			addr = sizeof(stexHeader.v4);
+			break;
+	}
+	unsigned int width = dimensions[0];
+	unsigned int height = (dimensions[1] > 0 ? dimensions[1] : 1);
 	unsigned int expected_size = ImageSizeCalc::calcImageSize(
-		op_tbl, ARRAY_SIZE(op_tbl),
-		(stexHeader.format & STEX_FORMAT_MASK), width, height);
+		op_tbl, ARRAY_SIZE(op_tbl), pixelFormat, width, height);
 	if (expected_size == 0 || expected_size + addr > file_sz) {
 		// Invalid image size.
 		return -EIO;
@@ -256,20 +282,40 @@ int GodotSTEXPrivate::getMipmapInfo(void)
 	mipmap_data[0].addr = addr;
 	mipmap_data[0].size = expected_size;
 	mipmap_data[0].width = width;
-	mipmap_data[0].height = (height > 0 ? height : 1);
+	mipmap_data[0].height = height;
 
 	// Handle a 1D texture as a "width x 1" 2D texture.
 	// NOTE: Handling a 3D texture as a single 2D texture.
 	// NOTE: Using the internal image size, not the rescale size.
-	if (height <= 1 || !(stexHeader.format & STEX_FORMAT_FLAG_HAS_MIPMAPS)) {
-		// No mipmaps, or this is a 1D texture.
+	if (height <= 1) {
+		// This is a 1D texture.
 		// We're done here.
 		return 0;
+	}
+	// Check the mipmap flag and/or count.
+	switch (stexVersion) {
+		default:
+			assert(!"Invalid STEX version.");
+			return -EIO;
+		case 3:
+			if (!(stexHeader.v3.format & STEX_FORMAT_FLAG_HAS_MIPMAPS)) {
+				// No mipmaps.
+				return 0;
+			}
+			break;
+		case 4:
+			if (stexHeader.v4.mipmap_count <= 1) {
+				// No mipmaps.
+				return 0;
+			}
+			break;
 	}
 
 	// Next mipmaps.
 	// The header doesn't store a mipmap count,
 	// so we'll need to figure it out ourselves.
+	// TODO: STEX 4 has a mipmap count. We should make use of it;
+	// otherwise, the number of mipmaps might not match...
 	int i = 1;
 	for (addr += expected_size; addr < file_sz; addr += expected_size, i++) {
 		// Divide width/height by two.
@@ -282,9 +328,8 @@ int GodotSTEXPrivate::getMipmapInfo(void)
 			break;
 		}
 
-		expected_size = calcImageSize(
-			op_tbl, ARRAY_SIZE(op_tbl),
-			(stexHeader.format & STEX_FORMAT_MASK), width, height);
+		expected_size = calcImageSize(op_tbl, ARRAY_SIZE(op_tbl),
+			pixelFormat, width, height);
 		if (expected_size == 0 || expected_size + addr > file_sz) {
 			// Invalid image size.
 			break;
@@ -337,10 +382,10 @@ const rp_image *GodotSTEXPrivate::loadImage(int mip)
 	// Sanity check: Verify that the rescale dimensions,
 	// if present, don't exceed 32768x32768.
 	// TODO: Rescale dimensions for mipmaps?
-	assert(stexHeader.width_rescale <= 32768);
-	assert(stexHeader.height_rescale <= 32768);
-	if (stexHeader.width_rescale > 32768 ||
-	    stexHeader.height_rescale > 32768)
+	assert(rescale_dimensions[0] <= 32768);
+	assert(rescale_dimensions[1] <= 32768);
+	if (rescale_dimensions[0] > 32768 ||
+	    rescale_dimensions[1] > 32768)
 	{
 		// Invalid rescale dimensions.
 		return nullptr;
@@ -369,7 +414,7 @@ const rp_image *GodotSTEXPrivate::loadImage(int mip)
 	// Decode the image.
 	// TODO: More formats.
 	rp_image *img = nullptr;
-	switch (stexHeader.format & STEX_FORMAT_MASK) {
+	switch (pixelFormat) {
 		default:
 			break;
 
@@ -519,9 +564,13 @@ const rp_image *GodotSTEXPrivate::loadImage(int mip)
 
 #ifdef ENABLE_ASTC
 		case STEX_FORMAT_SCU_ASTC_8x8:
-			img = ImageDecoder::fromASTC(
-				mdata.width, mdata.height,
-				buf.get(), mdata.size, 8, 8);
+			// NOTE: Only valid for Godot 3.
+			// For Godot 4, this is a completely different format.
+			if (stexVersion == 3) {
+				img = ImageDecoder::fromASTC(
+					mdata.width, mdata.height,
+					buf.get(), mdata.size, 8, 8);
+			}
 			break;
 #endif /* ENABLE_ASTC */
 	}
@@ -568,7 +617,18 @@ GodotSTEX::GodotSTEX(IRpFile *file)
 	}
 
 	// Verify the STEX magic.
-	if (d->stexHeader.magic != cpu_to_be32(STEX_30_MAGIC)) {
+	if (d->stexHeader.magic == cpu_to_be32(STEX_3_MAGIC)) {
+		// Godot 3 texture
+		d->stexVersion = 3;
+	} else if (d->stexHeader.magic == cpu_to_be32(STEX_4_MAGIC)) {
+		// Godot 4 texture
+		if (le32_to_cpu(d->stexHeader.v4.version) > STEX_4_FORMAT_VERSION) {
+			// Unsupported format version.
+			UNREF_AND_NULL_NOCHK(d->file);
+			return;
+		}
+		d->stexVersion = 4;
+	} else {
 		// Incorrect magic.
 		UNREF_AND_NULL_NOCHK(d->file);
 		return;
@@ -577,24 +637,68 @@ GodotSTEX::GodotSTEX(IRpFile *file)
 	// File is valid.
 	d->isValid = true;
 
-#if SYS_BYTEORDER == SYS_BIG_ENDIAN
+#if SYS_BYTEORDER == SYS_LIL_ENDIAN
 	// Header is stored in little-endian, so it always
 	// needs to be byteswapped on big-endian.
 	// NOTE: Signature is *not* byteswapped.
-	d->stexHeader.width		= le16_to_cpu(d->stexHeader.width);
-	d->stexHeader.width_rescale	= le16_to_cpu(d->stexHeader.width_rescale);
-	d->stexHeader.height		= le16_to_cpu(d->stexHeader.height);
-	d->stexHeader.height_rescale	= le16_to_cpu(d->stexHeader.height_rescale);
-	d->stexHeader.flags		= le32_to_cpu(d->stexHeader.flags);
-	d->stexHeader.format		= le32_to_cpu(d->stexHeader.format);
+	switch (d->stexVersion) {
+		default:
+			assert(!"Invalid STEX version.");
+			UNREF_AND_NULL_NOCHK(d->file);
+			return;
+
+		case 3:
+			d->stexHeader.v3.width		= le16_to_cpu(d->stexHeader.v3.width);
+			d->stexHeader.v3.width_rescale	= le16_to_cpu(d->stexHeader.v3.width_rescale);
+			d->stexHeader.v3.height		= le16_to_cpu(d->stexHeader.v3.height);
+			d->stexHeader.v3.height_rescale	= le16_to_cpu(d->stexHeader.v3.height_rescale);
+			d->stexHeader.v3.flags		= le32_to_cpu(d->stexHeader.v3.flags);
+			d->stexHeader.v3.format		= le32_to_cpu(d->stexHeader.v3.format);
+			break;
+
+		case 4:
+			d->stexHeader.v4.version	= le32_to_cpu(d->stexHeader.v4.version);
+			d->stexHeader.v4.width		= le32_to_cpu(d->stexHeader.v4.width);
+			d->stexHeader.v4.height		= le32_to_cpu(d->stexHeader.v4.height);
+			d->stexHeader.v4.format_flags	= le32_to_cpu(d->stexHeader.v4.format_flags);
+			d->stexHeader.v4.mipmap_limit	= le32_to_cpu(d->stexHeader.v4.mipmap_limit);
+
+			d->stexHeader.v4.data_format	= le32_to_cpu(d->stexHeader.v4.data_format);
+			d->stexHeader.v4.img_width	= le16_to_cpu(d->stexHeader.v4.img_width);
+			d->stexHeader.v4.img_height	= le16_to_cpu(d->stexHeader.v4.img_height);
+			d->stexHeader.v4.mipmap_count	= le32_to_cpu(d->stexHeader.v4.mipmap_count);
+			d->stexHeader.v4.pixel_format	= le32_to_cpu(d->stexHeader.v4.pixel_format);
+			break;
+	}
 #endif
 
 	// Cache the dimensions for the FileFormat base class.
+	// Also cache the pixel format.
 	// TODO: 3D textures?
-	d->dimensions[0] = d->stexHeader.width;
-	d->dimensions[1] = d->stexHeader.height;
-	d->rescale_dimensions[0] = d->stexHeader.width_rescale;
-	d->rescale_dimensions[1] = d->stexHeader.height_rescale;
+	// TODO: Don't set rescale dimensions if they match the regular dimensions.
+	switch (d->stexVersion) {
+		default:
+			assert(!"Invalid STEX version.");
+			UNREF_AND_NULL_NOCHK(d->file);
+			return;
+		case 3:
+			d->pixelFormat = static_cast<STEX_Format_e>
+				(d->stexHeader.v3.format & STEX_FORMAT_MASK);
+			d->dimensions[0] = d->stexHeader.v3.width;
+			d->dimensions[1] = d->stexHeader.v3.height;
+			d->rescale_dimensions[0] = d->stexHeader.v3.width_rescale;
+			d->rescale_dimensions[1] = d->stexHeader.v3.height_rescale;
+			break;
+		case 4:
+			// FIXME: Verify rescale dimensions.
+			d->pixelFormat = static_cast<STEX_Format_e>
+				(d->stexHeader.v4.pixel_format & STEX_FORMAT_MASK);
+			d->dimensions[0] = d->stexHeader.v4.img_width;
+			d->dimensions[1] = d->stexHeader.v4.img_height;
+			d->rescale_dimensions[0] = d->stexHeader.v4.width;
+			d->rescale_dimensions[1] = d->stexHeader.v4.height;
+			break;
+	}
 
 	// Initialize the mipmap data.
 	d->getMipmapInfo();
@@ -626,9 +730,9 @@ const char *GodotSTEX::pixelFormat(void) const
 	if (!d->isValid)
 		return nullptr;
 
-	const unsigned int fmt = (d->stexHeader.format & STEX_FORMAT_MASK);
-	if (fmt < ARRAY_SIZE(d->img_format_tbl)) {
-		return d->img_format_tbl[fmt];
+	// TODO: Don't return version-specific pixel formats for the wrong version.
+	if (d->pixelFormat >= 0 && d->pixelFormat < ARRAY_SIZE(d->img_format_tbl)) {
+		return d->img_format_tbl[d->pixelFormat];
 	}
 
 	// Invalid pixel format.
@@ -636,7 +740,7 @@ const char *GodotSTEX::pixelFormat(void) const
 		// TODO: Localization?
 		snprintf(const_cast<GodotSTEXPrivate*>(d)->invalid_pixel_format,
 			sizeof(d->invalid_pixel_format),
-			"Unknown (%d)", fmt);
+			"Unknown (%d)", d->pixelFormat);
 	}
 	return d->invalid_pixel_format;
 }
@@ -651,8 +755,21 @@ int GodotSTEX::mipmapCount(void) const
 	if (!d->isValid)
 		return -1;
 
-	if (!(d->stexHeader.format & STEX_FORMAT_FLAG_HAS_MIPMAPS)) {
-		return 0;
+	switch (d->stexVersion) {
+		default:
+			assert(!"Invalid STEX version.");
+			return -1;
+		case 3:
+			if (!(d->stexHeader.v3.format & STEX_FORMAT_FLAG_HAS_MIPMAPS)) {
+				return 0;
+			}
+			break;
+		case 4:
+			// NOTE: STEX_FORMAT_FLAG_HAS_MIPMAPS isn't used.
+			if (d->stexHeader.v4.mipmap_count == 0) {
+				return 0;
+			}
+			break;
 	}
 
 	return static_cast<int>(d->mipmaps.size());
@@ -679,25 +796,27 @@ int GodotSTEX::getFields(LibRpBase::RomFields *fields) const
 	const int initial_count = fields->count();
 	fields->reserve(initial_count + 2);	// Maximum of 2 fields.
 
-	// Flags
-	static const char *const flags_bitfield_names[] = {
-		NOP_C_("GodotSTEX|Flags", "Mipmaps"),
-		NOP_C_("GodotSTEX|Flags", "Repeat"),
-		NOP_C_("GodotSTEX|Flags", "Filter"),
-		NOP_C_("GodotSTEX|Flags", "Anisotropic"),
-		NOP_C_("GodotSTEX|Flags", "To Linear"),
-		NOP_C_("GodotSTEX|Flags", "Mirrored Repeat"),
-		nullptr, nullptr, nullptr, nullptr, nullptr,
-		NOP_C_("GodotSTEX|Flags", "Cubemap"),
-		NOP_C_("GodotSTEX|Flags", "For Streaming"),
-	};
-	vector<string> *const v_flags_bitfield_names = RomFields::strArrayToVector_i18n(
-		"GodotSTEX|Flags", flags_bitfield_names, ARRAY_SIZE(flags_bitfield_names));
-	fields->addField_bitfield(C_("GodotSTEX", "Flags"),
-		v_flags_bitfield_names, 3, d->stexHeader.flags);
+	if (d->stexVersion == 3) {
+		// Flags (Godot 3 only)
+		static const char *const flags_bitfield_names[] = {
+			NOP_C_("GodotSTEX|Flags", "Mipmaps"),
+			NOP_C_("GodotSTEX|Flags", "Repeat"),
+			NOP_C_("GodotSTEX|Flags", "Filter"),
+			NOP_C_("GodotSTEX|Flags", "Anisotropic"),
+			NOP_C_("GodotSTEX|Flags", "To Linear"),
+			NOP_C_("GodotSTEX|Flags", "Mirrored Repeat"),
+			nullptr, nullptr, nullptr, nullptr, nullptr,
+			NOP_C_("GodotSTEX|Flags", "Cubemap"),
+			NOP_C_("GodotSTEX|Flags", "For Streaming"),
+		};
+		vector<string> *const v_flags_bitfield_names = RomFields::strArrayToVector_i18n(
+			"GodotSTEX|Flags", flags_bitfield_names, ARRAY_SIZE(flags_bitfield_names));
+		fields->addField_bitfield(C_("GodotSTEX", "Flags"),
+			v_flags_bitfield_names, 3, d->stexHeader.v3.flags);
+	}
 
-	// Format flags (starting at bit 21)
-	static const char *const format_flags_bitfield_names[] = {
+	// Format flags (v3) (starting at bit 20)
+	static const char *const format_flags_bitfield_names_v3[] = {
 		NOP_C_("GodotSTEX|FormatFlags", "Lossless"),
 		NOP_C_("GodotSTEX|FormatFlags", "Lossy"),
 		NOP_C_("GodotSTEX|FormatFlags", "Stream"),
@@ -706,10 +825,34 @@ int GodotSTEX::getFields(LibRpBase::RomFields *fields) const
 		NOP_C_("GodotSTEX|FormatFlags", "Detect sRGB"),
 		NOP_C_("GodotSTEX|FormatFlags", "Detect Normal"),
 	};
-	vector<string> *const v_format_flags_bitfield_names = RomFields::strArrayToVector_i18n(
-		"GodotSTEX|FormatFlags", format_flags_bitfield_names, ARRAY_SIZE(format_flags_bitfield_names));
+	// Format flags (v4) (starting at bit 22)
+	static const char *const format_flags_bitfield_names_v4[] = {
+		NOP_C_("GodotSTEX|FormatFlags", "Stream"),
+		nullptr,
+		NOP_C_("GodotSTEX|FormatFlags", "Detect 3D"),
+		nullptr,
+		NOP_C_("GodotSTEX|FormatFlags", "Detect Normal"),
+		NOP_C_("GodotSTEX|FormatFlags", "Detect Roughness"),
+	};
+
+	vector<string> *v_format_flags_bitfield_names;
+	switch (d->stexVersion) {
+		default:
+			assert(!"Invalid STEX version.");
+			break;
+		case 3:
+			v_format_flags_bitfield_names = RomFields::strArrayToVector_i18n(
+				"GodotSTEX|FormatFlags", format_flags_bitfield_names_v3,
+					ARRAY_SIZE(format_flags_bitfield_names_v3));
+			break;
+		case 4:
+			v_format_flags_bitfield_names = RomFields::strArrayToVector_i18n(
+				"GodotSTEX|FormatFlags", format_flags_bitfield_names_v4,
+					ARRAY_SIZE(format_flags_bitfield_names_v4));
+			break;
+	}
 	fields->addField_bitfield(C_("GodotSTEX", "Format Flags"),
-		v_format_flags_bitfield_names, 3, d->stexHeader.format >> 20);
+		v_format_flags_bitfield_names, 3, d->pixelFormat >> 20);
 
 	// Finished reading the field data.
 	return (fields->count() - initial_count);
