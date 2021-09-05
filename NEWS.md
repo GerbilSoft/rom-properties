@@ -3,16 +3,18 @@
 ## v1.9 (released 2021/??/??)
 
 * New parsers:
-  * GodotSTEX: Godot 3.x texture files. Supports most linear encodings,
+  * GodotSTEX: Godot 3 and 4 texture files. Supports most linear encodings,
     S3TC, BC4, BC5, RGTC, BC7, PVRTC-I, ETC1, ETC2, and ASTC. Note that
     ASTC isn't officially supported; the format value 0x25 is used by
-    Sonic Colors Ultimate.
+    Sonic Colors Ultimate. (0x25 is used for a Basis Universal format in
+    Godot 4.)
   * ASTC: ASTC texture format. This is a minimal header format for textures
     encoded using ASTC.
 
 * New parser features:
   * Added ASTC decoding. All texture formats that support ASTC have been
-    updated to allow decoding ASTC textures.
+    updated to allow decoding ASTC textures. (HDR is not supported, and
+    the LDR decoder is rather slow.)
 
 * Bug fixes:
   * EXE: Improve runtime DLL detection in some cases.

@@ -145,7 +145,7 @@ button.
 |      Texture Format      | Properties Tab | Metadata | Internal Images | External Scans |
 |:------------------------:|:--------------:|:--------:|:---------------:|:--------------:|
 | ASTC container           |       Yes      |    Yes   |      Image      |       N/A      |
-| Godot 3.x .stex          |       Yes      |    Yes   |      Image      |       N/A      |
+| Godot 3,4 .stex          |       Yes      |    Yes   |      Image      |       N/A      |
 | Leapster Didj .tex       |       Yes      |    Yes   |      Image      |       N/A      |
 | Khronos KTX              |       Yes      |    Yes   |      Image      |       N/A      |
 | Khronos KTX2             |       Yes      |    Yes   |      Image      |       N/A      |
@@ -367,6 +367,8 @@ https://github.com/GerbilSoft/rom-properties/issues
 * [maxcso](https://github.com/unknownbrackets/maxcso) for documentation on the
   compressed formats used by unofficial Sony PlayStation Portable disc image
   loaders.
+* [Basis Universal](https://github.com/BinomialLLC/basis_universal) for the ASTC
+  decoder, which was derived from the [Android Open Source Project](https://source.android.com/).
 * [Godot Engine](https://github.com/godotengine/godot) for documentation on
   Godot's own .stex format.
 * [Vulkan SDK for Android](https://arm-software.github.io/vulkan-sdk/_a_s_t_c.html)
