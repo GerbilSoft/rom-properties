@@ -309,29 +309,35 @@ const rp_image *KhronosKTX2Private::loadImage(int mip)
 		case VK_FORMAT_PVRTC1_2BPP_UNORM_BLOCK_IMG:
 		case VK_FORMAT_PVRTC1_2BPP_SRGB_BLOCK_IMG:
 			// 32 pixels compressed into 64 bits. (2bpp)
-			expected_size = (width * height) / 4;
+			// NOTE: Image dimensions must be a power of 2 for PVRTC-I.
+			expected_size = ImageSizeCalc::calcImageSizePVRTC_PoT<true>(width, height);
 			break;
 
 		case VK_FORMAT_PVRTC2_2BPP_UNORM_BLOCK_IMG:
 		case VK_FORMAT_PVRTC2_2BPP_SRGB_BLOCK_IMG:
 			// 32 pixels compressed into 64 bits. (2bpp)
 			// NOTE: Width and height must be rounded to the nearest tile. (8x4)
-			expected_size = ALIGN_BYTES(8, width) *
-			                ALIGN_BYTES(4, height) / 4;
+			// FIXME: Our PVRTC-II decoder requires power-of-2 textures right now.
+			//expected_size = ALIGN_BYTES(8, width) *
+			//                ALIGN_BYTES(4, height) / 4;
+			expected_size = ImageSizeCalc::calcImageSizePVRTC_PoT<true>(width, height);
 			break;
 
 		case VK_FORMAT_PVRTC1_4BPP_UNORM_BLOCK_IMG:
 		case VK_FORMAT_PVRTC1_4BPP_SRGB_BLOCK_IMG:
 			// 16 pixels compressed into 64 bits. (4bpp)
-			expected_size = (width * height) / 2;
+			// NOTE: Image dimensions must be a power of 2 for PVRTC-I.
+			expected_size = ImageSizeCalc::calcImageSizePVRTC_PoT<false>(width, height);
 			break;
 
 		case VK_FORMAT_PVRTC2_4BPP_UNORM_BLOCK_IMG:
 		case VK_FORMAT_PVRTC2_4BPP_SRGB_BLOCK_IMG:
 			// 16 pixels compressed into 64 bits. (4bpp)
 			// NOTE: Width and height must be rounded to the nearest tile. (8x4)
-			expected_size = ALIGN_BYTES(4, width) *
-			                ALIGN_BYTES(4, height) / 2;
+			// FIXME: Our PVRTC-II decoder requires power-of-2 textures right now.
+			//expected_size = ALIGN_BYTES(4, width) *
+			//                ALIGN_BYTES(4, height) / 2;
+			expected_size = ImageSizeCalc::calcImageSizePVRTC_PoT<false>(width, height);
 			break;
 #endif /* ENABLE_PVRTC */
 

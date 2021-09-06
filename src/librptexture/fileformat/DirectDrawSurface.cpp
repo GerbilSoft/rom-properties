@@ -587,12 +587,16 @@ const rp_image *DirectDrawSurfacePrivate::loadImage(void)
 #ifdef ENABLE_PVRTC
 			case DXGI_FORMAT_FAKE_PVRTC_2bpp:
 				// 32 pixels compressed into 64 bits. (2bpp)
-				expected_size = (ddsHeader.dwWidth * ddsHeader.dwHeight) / 4;
+				// NOTE: Image dimensions must be a power of 2 for PVRTC-I.
+				expected_size = ImageSizeCalc::calcImageSizePVRTC_PoT<true>(
+					ddsHeader.dwWidth, ddsHeader.dwHeight);
 				break;
 
 			case DXGI_FORMAT_FAKE_PVRTC_4bpp:
 				// 16 pixels compressed into 64 bits. (4bpp)
-				expected_size = (ddsHeader.dwWidth * ddsHeader.dwHeight) / 2;
+				// NOTE: Image dimensions must be a power of 2 for PVRTC-I.
+				expected_size = ImageSizeCalc::calcImageSizePVRTC_PoT<false>(
+					ddsHeader.dwWidth, ddsHeader.dwHeight);
 				break;
 #endif /* ENABLE_PVRTC */
 

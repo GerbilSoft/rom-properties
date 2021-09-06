@@ -344,27 +344,33 @@ const rp_image *PowerVR3Private::loadImage(int mip)
 			case PVR3_PXF_PVRTC_2bpp_RGB:
 			case PVR3_PXF_PVRTC_2bpp_RGBA:
 				// 2bpp formats (PVRTC)
-				expected_size = width * height / 4;
+				// NOTE: Image dimensions must be a power of 2 for PVRTC-I.
+				expected_size = ImageSizeCalc::calcImageSizePVRTC_PoT<true>(width, height);
 				break;
 
 			case PVR3_PXF_PVRTCII_2bpp:
 				// 2bpp formats (PVRTC-II)
 				// NOTE: Width and height must be rounded to the nearest tile. (8x4)
-				expected_size = ALIGN_BYTES(8, width) *
-				                ALIGN_BYTES(4, height) / 4;
+				// FIXME: Our PVRTC-II decoder requires power-of-2 textures right now.
+				//expected_size = ALIGN_BYTES(8, width) *
+				//                ALIGN_BYTES(4, height) / 4;
+				expected_size = ImageSizeCalc::calcImageSizePVRTC_PoT<true>(width, height);
 				break;
 
 			case PVR3_PXF_PVRTC_4bpp_RGB:
 			case PVR3_PXF_PVRTC_4bpp_RGBA:
 				// 4bpp formats (PVRTC)
-				expected_size = width * height / 2;
+				// NOTE: Image dimensions must be a power of 2 for PVRTC-I.
+				expected_size = ImageSizeCalc::calcImageSizePVRTC_PoT<false>(width, height);
 				break;
 
 			case PVR3_PXF_PVRTCII_4bpp:
 				// 4bpp formats (PVRTC-II)
 				// NOTE: Width and height must be rounded to the nearest tile. (4x4)
-				expected_size = ALIGN_BYTES(4, width) *
-				                ALIGN_BYTES(4, height) / 2;
+				// FIXME: Our PVRTC-II decoder requires power-of-2 textures right now.
+				//expected_size = ALIGN_BYTES(4, width) *
+				//                ALIGN_BYTES(4, height) / 2;
+				expected_size = ImageSizeCalc::calcImageSizePVRTC_PoT<false>(width, height);
 				break;
 #endif /* ENABLE_PVRTC */
 

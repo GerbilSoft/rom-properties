@@ -224,26 +224,37 @@ const rp_image *KhronosKTXPrivate::loadImage(void)
 				case GL_COMPRESSED_RGB_PVRTC_2BPPV1_IMG:
 				case GL_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG:
 					// 32 pixels compressed into 64 bits. (2bpp)
-					expected_size = (ktxHeader.pixelWidth * height) / 4;
+					// NOTE: Image dimensions must be a power of 2 for PVRTC-I.
+					expected_size = ImageSizeCalc::calcImageSizePVRTC_PoT<true>(
+						ktxHeader.pixelWidth, height);
 					break;
 
 				case GL_COMPRESSED_RGBA_PVRTC_2BPPV2_IMG:
 					// 32 pixels compressed into 64 bits. (2bpp)
 					// NOTE: Width and height must be rounded to the nearest tile. (8x4)
-					expected_size = ALIGN_BYTES(8, ktxHeader.pixelWidth) *
-					                ALIGN_BYTES(4, (int)height) / 4;
+					// FIXME: Our PVRTC-II decoder requires power-of-2 textures right now.
+					//expected_size = ALIGN_BYTES(8, ktxHeader.pixelWidth) *
+					//                ALIGN_BYTES(4, (int)height) / 4;
+					expected_size = ImageSizeCalc::calcImageSizePVRTC_PoT<true>
+						(ktxHeader.pixelWidth, height);
 					break;
 
 				case GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG:
 				case GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG:
 					// 16 pixels compressed into 64 bits. (4bpp)
-					expected_size = (ktxHeader.pixelWidth * height) / 2;
+					// NOTE: Image dimensions must be a power of 2 for PVRTC-I.
+					expected_size = ImageSizeCalc::calcImageSizePVRTC_PoT<false>(
+						ktxHeader.pixelWidth, height);
 					break;
 
 				case GL_COMPRESSED_RGBA_PVRTC_4BPPV2_IMG:
+					// 16 pixels compressed into 64 bits. (4bpp)
 					// NOTE: Width and height must be rounded to the nearest tile. (4x4)
-					expected_size = ALIGN_BYTES(4, ktxHeader.pixelWidth) *
-					                ALIGN_BYTES(4, (int)height) / 2;
+					// FIXME: Our PVRTC-II decoder requires power-of-2 textures right now.
+					//expected_size = ALIGN_BYTES(4, ktxHeader.pixelWidth) *
+					//                ALIGN_BYTES(4, (int)height) / 2;
+					expected_size = ImageSizeCalc::calcImageSizePVRTC_PoT<false>
+						(ktxHeader.pixelWidth, height);
 					break;
 #endif /* ENABLE_PVRTC */
 
