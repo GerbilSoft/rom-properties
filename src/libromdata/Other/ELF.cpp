@@ -18,23 +18,14 @@ using LibRpFile::IRpFile;
 // cinttypes was added in MSVC 2013.
 // For older versions, we'll need to manually define PRIX64.
 // TODO: Split into a separate header file?
-// FIXME: MinGW-w64 on AppVeyor seems to use the C99 "%llx" even though
-// we set -D__USE_MINGW_ANSI_STDIO=0, so it ends up failing with a
-// format warning.
-// FIXME: What if we use MinGW-w64 with later MSVCRT or UCRT?
-#define __STDC_FORMAT_MACROS
-#ifdef _WIN32
-#  if _MSC_VER >= 1800
-#    include <cinttypes>
-#  else
-#    ifdef PRIX64
-#      undef PRIX64
-#    endif
-#    define PRIX64 "I64X"
-#  endif
-#else /* !_WIN32 */
+#if defined(_MSC_VER) && _MSC_VER < 1700
+// MSVC 2013 added cinttypes.h.
+// Older versions don't have it.
+#  define PRIX64 "I64X"
+#else
+#  define __STDC_FORMAT_MACROS
 #  include <cinttypes>
-#endif /* _WIN32 */
+#endif
 
 // C++ STL classes.
 using std::string;

@@ -3,10 +3,6 @@
 
 # Enable "secure" API functions: *_s()
 ADD_DEFINITIONS(-DMINGW_HAS_SECURE_API)
-# Disable MinGW ANSI stdio, since we're using msvcrt.dll.
-# Otherwise, inttypes.h uses %llx instead of %I64x, which
-# causes printf formatting errors.
-ADD_DEFINITIONS(-D__USE_MINGW_ANSI_STDIO=0)
 
 # Subsystem and minimum Windows version:
 # - If i386: 5.01
