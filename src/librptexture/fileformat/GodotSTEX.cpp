@@ -53,8 +53,8 @@ class GodotSTEXPrivate final : public FileFormatPrivate
 		// Godot STEX header.
 		union {
 			uint32_t magic;		// [0x000] 'GDST' (v3) or 'GST2' (v4)
-			STEX_3_Header v3;
-			STEX_4_Header v4;
+			STEX3_Header v3;
+			STEX4_Header v4;
 		} stexHeader;
 		unsigned int stexVersion;	// 3 or 4 (TODO: romType equivalent)
 		STEX_Format_e pixelFormat;	// flags are NOT included here
@@ -690,12 +690,12 @@ GodotSTEX::GodotSTEX(IRpFile *file)
 	}
 
 	// Verify the STEX magic.
-	if (d->stexHeader.magic == cpu_to_be32(STEX_3_MAGIC)) {
+	if (d->stexHeader.magic == cpu_to_be32(STEX3_MAGIC)) {
 		// Godot 3 texture
 		d->stexVersion = 3;
-	} else if (d->stexHeader.magic == cpu_to_be32(STEX_4_MAGIC)) {
+	} else if (d->stexHeader.magic == cpu_to_be32(STEX4_MAGIC)) {
 		// Godot 4 texture
-		if (le32_to_cpu(d->stexHeader.v4.version) > STEX_4_FORMAT_VERSION) {
+		if (le32_to_cpu(d->stexHeader.v4.version) > STEX4_FORMAT_VERSION) {
 			// Unsupported format version.
 			UNREF_AND_NULL_NOCHK(d->file);
 			return;

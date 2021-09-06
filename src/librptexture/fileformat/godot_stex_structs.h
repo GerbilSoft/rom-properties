@@ -17,12 +17,12 @@ extern "C" {
 #endif
 
 /**
- * Godot STEX 3: File header.
+ * Godot STEX 3: File header
  *
  * All fields are in little-endian.
  */
-#define STEX_3_MAGIC 'GDST'
-typedef struct _STEX_3_Header {
+#define STEX3_MAGIC 'GDST'
+typedef struct _STEX3_Header {
 	uint32_t magic;			// [0x000] 'GDST'
 	uint16_t width;			// [0x004] Width
 	uint16_t width_rescale;		// [0x006] If set, viewer should rescale image to this width.
@@ -30,17 +30,17 @@ typedef struct _STEX_3_Header {
 	uint16_t height_rescale;	// [0x008] If set, viewer should rescale image to this height.
 	uint32_t flags;			// [0x00C] Texture flags (see STEX_Flags_e)
 	uint32_t format;		// [0x010] Texture format (see STEX_Format_e)
-} STEX_3_Header;
-ASSERT_STRUCT(STEX_3_Header, 5*sizeof(uint32_t));
+} STEX3_Header;
+ASSERT_STRUCT(STEX3_Header, 5*sizeof(uint32_t));
 
 /**
- * Godot STEX 4: File header.
+ * Godot STEX 4: File header
  *
  * All fields are in little-endian.
  */
-#define STEX_4_MAGIC 'GST2'
-#define STEX_4_FORMAT_VERSION 1
-typedef struct _STEX_4_Header {
+#define STEX4_MAGIC 'GST2'
+#define STEX4_FORMAT_VERSION 1
+typedef struct _STEX4_Header {
 	// GST2 header
 	uint32_t magic;			// [0x000] 'GST2' (2D texture)
 	uint32_t version;		// [0x004] Format version (1)
@@ -59,8 +59,8 @@ typedef struct _STEX_4_Header {
 	uint16_t img_height;		// [0x02A] Image height
 	uint32_t mipmap_count;		// [0x02C] Mipmap count
 	uint32_t pixel_format;		// [0x030] Pixel format (see STEX_Format_e) [NO FLAGS!]
-} STEX_4_Header;
-ASSERT_STRUCT(STEX_4_Header, 13*sizeof(uint32_t));
+} STEX4_Header;
+ASSERT_STRUCT(STEX4_Header, 13*sizeof(uint32_t));
 
 /**
  * Godot STEX: Texture flags
@@ -76,7 +76,7 @@ typedef enum {
 	STEX_FLAG_USED_FOR_STREAMING	= (1U << 12),
 
 	STEX_FLAGS_DEFAULT		= STEX_FLAG_REPEAT | STEX_FLAG_MIPMAPS | STEX_FLAG_FILTER
-} STEX_3_Flags_e;
+} STEX3_Flags_e;
 
 /**
  * Godot STEX: Texture format
