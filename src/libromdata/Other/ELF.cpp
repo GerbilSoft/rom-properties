@@ -22,14 +22,11 @@ using LibRpFile::IRpFile;
 // we set -D__USE_MINGW_ANSI_STDIO=0, so it ends up failing with a
 // format warning.
 // FIXME: What if we use MinGW-w64 with later MSVCRT or UCRT?
+#define __STDC_FORMAT_MACROS
 #ifdef _WIN32
 #  if _MSC_VER >= 1800
 #    include <cinttypes>
 #  else
-#    ifdef PRIx64
-#      undef PRIx64
-#    endif
-#    define PRIx64 "I64x"
 #    ifdef PRIX64
 #      undef PRIX64
 #    endif
