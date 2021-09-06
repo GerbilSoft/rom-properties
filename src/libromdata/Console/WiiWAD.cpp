@@ -971,7 +971,7 @@ int WiiWAD::loadFieldData(void)
 	}
 
 	// Title version.
-	const uint16_t title_version = be16_to_cpu(tmdHeader->title_version);
+	const unsigned int title_version = be16_to_cpu(tmdHeader->title_version);
 	d->fields->addField_string(C_("WiiWAD", "Title Version"),
 		rp_sprintf("%u.%u (v%u)", title_version >> 8, title_version & 0xFF, title_version));
 
