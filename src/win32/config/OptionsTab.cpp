@@ -158,11 +158,11 @@ void OptionsTabPrivate::reset(void)
 	// PAL language code.
 	const uint32_t lc = config->palLanguageForGameTDB();
 	int idx = 0;
-	for (; idx < ARRAY_SIZE(pal_lc); idx++) {
+	for (; idx < ARRAY_SIZE_I(pal_lc); idx++) {
 		if (pal_lc[idx] == lc)
 			break;
 	}
-	if (idx >= ARRAY_SIZE(pal_lc)) {
+	if (idx >= ARRAY_SIZE_I(pal_lc)) {
 		// Out of range. Default to 'en'.
 		idx = pal_lc_idx_def;
 	}
@@ -287,7 +287,7 @@ void OptionsTabPrivate::save(void)
 	WritePrivateProfileString(_T("Downloads"), _T("StoreFileOriginInfo"), btstr, tfilename.c_str());
 
 	int idx = ComboBox_GetCurSel(GetDlgItem(hWndPropSheet, IDC_PALLANGUAGEFORGAMETDB));
-	if (idx < 0 || idx >= ARRAY_SIZE(pal_lc)) {
+	if (idx < 0 || idx >= ARRAY_SIZE_I(pal_lc)) {
 		idx = pal_lc_idx_def;
 	}
 	WritePrivateProfileString(_T("Downloads"), _T("PalLanguageForGameTDB"),
