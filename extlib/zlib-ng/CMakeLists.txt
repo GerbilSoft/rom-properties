@@ -498,7 +498,8 @@ macro(check_c_source_compile_or_run source flag)
     endif()
 endmacro()
 
-set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -DZLIB_DEBUG")
+# rom-properties: Disable ZLIB_DEBUG in rom-properties debug builds.
+#set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -DZLIB_DEBUG")
 
 if(MSVC)
     set(CMAKE_DEBUG_POSTFIX "d")
