@@ -404,6 +404,11 @@ int GodotSTEXPrivate::getMipmapInfo(void)
  */
 const rp_image *GodotSTEXPrivate::loadImage(int mip)
 {
+	// TODO: Handle lossless/lossy images.
+	if (!isVRAMTexture()) {
+		return nullptr;
+	}
+
 	// Make sure the mipmap information is loaded.
 	int ret = getMipmapInfo();
 	assert(ret == 0);
