@@ -9,6 +9,8 @@
 #ifndef __ROMPROPERTIES_LIBRPTEXTURE_DECODER_IMAGESIZECALC_HPP__
 #define __ROMPROPERTIES_LIBRPTEXTURE_DECODER_IMAGESIZECALC_HPP__
 
+#include "bitstuff.h"
+
 // C includes (C++ namespace)
 #include <cassert>
 
@@ -52,6 +54,33 @@ enum class OpCode : uint8_t {
 unsigned int calcImageSize(
 	const OpCode *op_tbl, size_t tbl_size,
 	unsigned int format, unsigned int width, unsigned int height);
+
+/**
+ * Calculate the expected size of a PVRTC-I compressed 2D image.
+ * PVRTC-I requires power-of-2 dimensions.
+ * @tparam is2bpp True for 2bpp; false for 4bpp.
+ * @param width Image width
+ * @param height Image height
+ * @return Expected size, in bytes
+ */
+template<bool is2bpp>
+static inline unsigned int calcImageSizePVRTC_PoT(int width, int height)
+{
+	static const int min_width = (is2bpp ? 8 : 4);
+	if (width < min_width) {
+		width = min_width;
+	} else if (!isPow2(width)) {
+		width = nextPow2(width);
+	}
+
+	if (height < 4) {
+		height = 4;
+	} else if (!isPow2(height)) {
+		height = nextPow2(height);
+	}
+
+	return (width * height / (is2bpp ? 4 : 2));
+}
 
 /**
  * Validate ASTC block size.

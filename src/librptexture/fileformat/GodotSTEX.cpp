@@ -188,7 +188,7 @@ const ImageSizeCalc::OpCode GodotSTEXPrivate::op_tbl[] = {
 
 	// 0x18
 	OpCode::Align4,		// STEX_FORMAT_BPTC_RGBFU	// TODO: Verify
-	OpCode::Divide4,	// STEX_FORMAT_PVRTC1_2		// TODO: Alignment for PVRTC1?
+	OpCode::Divide4,	// STEX_FORMAT_PVRTC1_2
 	OpCode::Divide4,	// STEX_FORMAT_PVRTC1_2A
 	OpCode::Divide2,	// STEX_FORMAT_PVRTC1_4
 	OpCode::Divide2,	// STEX_FORMAT_PVRTC1_4A
@@ -783,6 +783,24 @@ GodotSTEX::GodotSTEX(IRpFile *file)
 
 	// Mask off the flags for the actual pixel format.
 	d->pixelFormat = static_cast<STEX_Format_e>(d->pixelFormat_flags & STEX_FORMAT_MASK);
+
+	// Special case: Godot 3 doesn't set rescaling parameters for NPOT PVRTC textures.
+	if (d->pixelFormat >= STEX_FORMAT_PVRTC1_2 && d->pixelFormat <= STEX_FORMAT_PVRTC1_4A) {
+		if (d->rescale_dimensions[0] == 0 &&
+		    (!isPow2(d->dimensions[0]) || !isPow2(d->dimensions[1])))
+		{
+			// NPOT PVRTC texture, and no rescaling dimensions are set.
+			d->rescale_dimensions[0] = d->dimensions[0];
+			d->rescale_dimensions[1] = d->dimensions[1];
+
+			if (!isPow2(d->dimensions[0])) {
+				d->dimensions[0] = nextPow2(d->dimensions[0]);
+			}
+			if (!isPow2(d->dimensions[1])) {
+				d->dimensions[1] = nextPow2(d->dimensions[1]);
+			}
+		}
+	}
 }
 
 /** Property accessors **/

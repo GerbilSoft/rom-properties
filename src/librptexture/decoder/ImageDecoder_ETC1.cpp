@@ -624,11 +624,11 @@ rp_image *fromETC1(int width, int height,
 		return nullptr;
 	}
 
-	// ETC1 uses 4x4 tiles.
-	assert(width % 4 == 0);
-	assert(height % 4 == 0);
-	if (width % 4 != 0 || height % 4 != 0)
-		return nullptr;
+	// ETC1 uses 4x4 tiles, but some container formats allow
+	// the last tile to be cut off, so round up for the
+	// physical tile size.
+	const int physWidth = ALIGN_BYTES(4, width);
+	const int physHeight = ALIGN_BYTES(4, height);
 
 	// Create an rp_image.
 	rp_image *const img = new rp_image(width, height, rp_image::Format::ARGB32);
@@ -655,6 +655,11 @@ rp_image *fromETC1(int width, int height,
 		// Blit the tile to the main image buffer.
 		ImageDecoderPrivate::BlitTile<uint32_t, 4, 4>(img, tileBuf, x, y);
 	} }
+
+	if (width < physWidth || height < physHeight) {
+		// Shrink the image.
+		img->shrink(width, height);
+	}
 
 	// Set the sBIT metadata.
 	static const rp_image::sBIT_t sBIT = {8,8,8,0,0};
@@ -686,14 +691,14 @@ rp_image *fromETC2_RGB(int width, int height,
 		return nullptr;
 	}
 
-	// ETC2 uses 4x4 tiles.
-	assert(width % 4 == 0);
-	assert(height % 4 == 0);
-	if (width % 4 != 0 || height % 4 != 0)
-		return nullptr;
+	// ETC2 uses 4x4 tiles, but some container formats allow
+	// the last tile to be cut off, so round up for the
+	// physical tile size.
+	const int physWidth = ALIGN_BYTES(4, width);
+	const int physHeight = ALIGN_BYTES(4, height);
 
 	// Create an rp_image.
-	rp_image *const img = new rp_image(width, height, rp_image::Format::ARGB32);
+	rp_image *const img = new rp_image(physWidth, physHeight, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
 		img->unref();
@@ -703,8 +708,8 @@ rp_image *fromETC2_RGB(int width, int height,
 	const etc1_block *etc1_src = reinterpret_cast<const etc1_block*>(img_buf);
 
 	// Calculate the total number of tiles.
-	const unsigned int tilesX = static_cast<unsigned int>(width / 4);
-	const unsigned int tilesY = static_cast<unsigned int>(height / 4);
+	const unsigned int tilesX = static_cast<unsigned int>(physWidth / 4);
+	const unsigned int tilesY = static_cast<unsigned int>(physHeight / 4);
 
 	// Temporary tile buffer.
 	array<uint32_t, 4*4> tileBuf;
@@ -717,6 +722,11 @@ rp_image *fromETC2_RGB(int width, int height,
 		// Blit the tile to the main image buffer.
 		ImageDecoderPrivate::BlitTile<uint32_t, 4, 4>(img, tileBuf, x, y);
 	} }
+
+	if (width < physWidth || height < physHeight) {
+		// Shrink the image.
+		img->shrink(width, height);
+	}
 
 	// Set the sBIT metadata.
 	static const rp_image::sBIT_t sBIT = {8,8,8,0,0};
@@ -788,14 +798,14 @@ rp_image *fromETC2_RGBA(int width, int height,
 		return nullptr;
 	}
 
-	// ETC2 uses 4x4 tiles.
-	assert(width % 4 == 0);
-	assert(height % 4 == 0);
-	if (width % 4 != 0 || height % 4 != 0)
-		return nullptr;
+	// ETC2 uses 4x4 tiles, but some container formats allow
+	// the last tile to be cut off, so round up for the
+	// physical tile size.
+	const int physWidth = ALIGN_BYTES(4, width);
+	const int physHeight = ALIGN_BYTES(4, height);
 
 	// Create an rp_image.
-	rp_image *const img = new rp_image(width, height, rp_image::Format::ARGB32);
+	rp_image *const img = new rp_image(physWidth, physHeight, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
 		img->unref();
@@ -805,8 +815,8 @@ rp_image *fromETC2_RGBA(int width, int height,
 	const etc2_rgba_block *etc2_src = reinterpret_cast<const etc2_rgba_block*>(img_buf);
 
 	// Calculate the total number of tiles.
-	const unsigned int tilesX = static_cast<unsigned int>(width / 4);
-	const unsigned int tilesY = static_cast<unsigned int>(height / 4);
+	const unsigned int tilesX = static_cast<unsigned int>(physWidth / 4);
+	const unsigned int tilesY = static_cast<unsigned int>(physHeight / 4);
 
 	// Temporary tile buffer.
 	array<uint32_t, 4*4> tileBuf;
@@ -823,6 +833,11 @@ rp_image *fromETC2_RGBA(int width, int height,
 		// Blit the tile to the main image buffer.
 		ImageDecoderPrivate::BlitTile<uint32_t, 4, 4>(img, tileBuf, x, y);
 	} }
+
+	if (width < physWidth || height < physHeight) {
+		// Shrink the image.
+		img->shrink(width, height);
+	}
 
 	// Set the sBIT metadata.
 	static const rp_image::sBIT_t sBIT = {8,8,8,0,8};
@@ -854,14 +869,14 @@ rp_image *fromETC2_RGB_A1(int width, int height,
 		return nullptr;
 	}
 
-	// ETC2 uses 4x4 tiles.
-	assert(width % 4 == 0);
-	assert(height % 4 == 0);
-	if (width % 4 != 0 || height % 4 != 0)
-		return nullptr;
+	// ETC2 uses 4x4 tiles, but some container formats allow
+	// the last tile to be cut off, so round up for the
+	// physical tile size.
+	const int physWidth = ALIGN_BYTES(4, width);
+	const int physHeight = ALIGN_BYTES(4, height);
 
 	// Create an rp_image.
-	rp_image *const img = new rp_image(width, height, rp_image::Format::ARGB32);
+	rp_image *const img = new rp_image(physWidth, physHeight, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
 		img->unref();
@@ -871,8 +886,8 @@ rp_image *fromETC2_RGB_A1(int width, int height,
 	const etc1_block *etc1_src = reinterpret_cast<const etc1_block*>(img_buf);
 
 	// Calculate the total number of tiles.
-	const unsigned int tilesX = static_cast<unsigned int>(width / 4);
-	const unsigned int tilesY = static_cast<unsigned int>(height / 4);
+	const unsigned int tilesX = static_cast<unsigned int>(physWidth / 4);
+	const unsigned int tilesY = static_cast<unsigned int>(physHeight / 4);
 
 	// Temporary tile buffer.
 	array<uint32_t, 4*4> tileBuf;
@@ -885,6 +900,11 @@ rp_image *fromETC2_RGB_A1(int width, int height,
 		// Blit the tile to the main image buffer.
 		ImageDecoderPrivate::BlitTile<uint32_t, 4, 4>(img, tileBuf, x, y);
 	} }
+
+	if (width < physWidth || height < physHeight) {
+		// Shrink the image.
+		img->shrink(width, height);
+	}
 
 	// Set the sBIT metadata.
 	static const rp_image::sBIT_t sBIT = {8,8,8,0,1};

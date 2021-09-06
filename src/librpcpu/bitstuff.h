@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpcpu)                         *
  * bitstuff.h: Bit manipulation inline functions.                          *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -68,7 +68,7 @@ static inline unsigned int popcount(unsigned int x)
 
 /**
  * Check if a value is a power of 2. (also must be non-zero)
- * @param x Value.
+ * @param x Value
  * @return True if this is value is a power of 2 and is non-zero; false if not.
  */
 static inline bool isPow2(unsigned int x)
@@ -77,6 +77,16 @@ static inline bool isPow2(unsigned int x)
 	// - https://stackoverflow.com/questions/600293/how-to-check-if-a-number-is-a-power-of-2
 	// - https://stackoverflow.com/a/600492
 	return (x != 0 && ((x & (x - 1)) == 0));
+}
+
+/**
+ * Get the next power of 2.
+ * @param x Value
+ * @return Next power of 2.
+ */
+static inline unsigned int nextPow2(unsigned int x)
+{
+	return (1U << (uilog2(x) + 1));
 }
 
 #ifdef __cplusplus
