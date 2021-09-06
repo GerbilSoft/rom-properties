@@ -969,7 +969,11 @@ int GodotSTEX::getFields(LibRpBase::RomFields *fields) const
 	}
 
 	const int initial_count = fields->count();
-	fields->reserve(initial_count + 2);	// Maximum of 2 fields.
+	fields->reserve(initial_count + 3);	// Maximum of 3 fields.
+
+	// STEX version (NOT STEX4's version field!)
+	fields->addField_string_numeric(C_("GodotSTEX", "STEX Version"), d->stexVersion);
+	
 
 	switch (d->stexVersion) {
 		default:
