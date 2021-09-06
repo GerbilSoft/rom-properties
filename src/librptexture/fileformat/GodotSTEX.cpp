@@ -710,7 +710,7 @@ GodotSTEX::GodotSTEX(IRpFile *file)
 	// File is valid.
 	d->isValid = true;
 
-#if SYS_BYTEORDER == SYS_LIL_ENDIAN
+#if SYS_BYTEORDER == SYS_BIG_ENDIAN
 	// Header is stored in little-endian, so it always
 	// needs to be byteswapped on big-endian.
 	// NOTE: Signature is *not* byteswapped.
@@ -743,7 +743,7 @@ GodotSTEX::GodotSTEX(IRpFile *file)
 			d->stexHeader.v4.pixel_format	= le32_to_cpu(d->stexHeader.v4.pixel_format);
 			break;
 	}
-#endif
+#endif /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
 
 	// Cache the dimensions for the FileFormat base class.
 	// Also cache the pixel format.
