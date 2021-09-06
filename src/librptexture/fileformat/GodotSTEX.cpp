@@ -877,15 +877,6 @@ int GodotSTEX::getFields(LibRpBase::RomFields *fields) const
 		return -EIO;
 	}
 
-	// Make sure the mipmap info is loaded.
-	int ret = const_cast<GodotSTEXPrivate*>(d)->getMipmapInfo();
-	assert(ret == 0);
-	assert(!d->mipmap_data.empty());
-	if (ret != 0 || d->mipmap_data.empty()) {
-		// Unable to load the mipmap info.
-		return ret;
-	}
-
 	const int initial_count = fields->count();
 	fields->reserve(initial_count + 2);	// Maximum of 2 fields.
 
