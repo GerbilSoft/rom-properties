@@ -631,7 +631,7 @@ rp_image *fromETC1(int width, int height,
 	const int physHeight = ALIGN_BYTES(4, height);
 
 	// Create an rp_image.
-	rp_image *const img = new rp_image(width, height, rp_image::Format::ARGB32);
+	rp_image *const img = new rp_image(physWidth, physHeight, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
 		img->unref();
@@ -641,8 +641,8 @@ rp_image *fromETC1(int width, int height,
 	const etc1_block *etc1_src = reinterpret_cast<const etc1_block*>(img_buf);
 
 	// Calculate the total number of tiles.
-	const unsigned int tilesX = static_cast<unsigned int>(width / 4);
-	const unsigned int tilesY = static_cast<unsigned int>(height / 4);
+	const unsigned int tilesX = static_cast<unsigned int>(physWidth / 4);
+	const unsigned int tilesY = static_cast<unsigned int>(physHeight / 4);
 
 	// Temporary tile buffer.
 	array<uint32_t, 4*4> tileBuf;
