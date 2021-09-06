@@ -1632,29 +1632,48 @@ INSTANTIATE_TEST_SUITE_P(TGA, ImageDecoderTest,
 		ImageDecoderTest_mode("TGA/tga-go/rgb32_top_left_rle.tga.gz", "TGA/tga-go/rgb32.0.png"))
 	, ImageDecoderTest::test_case_suffix_generator);
 
-// Godot 3.x STEX tests
-INSTANTIATE_TEST_SUITE_P(STEX, ImageDecoderTest,
+// Godot STEX3 tests
+INSTANTIATE_TEST_SUITE_P(STEX3, ImageDecoderTest,
 	::testing::Values(
-		ImageDecoderTest_mode("STEX/argb.BPTC_RGBA.stex.gz", "STEX/argb.BPTC_RGBA.png"),
-		ImageDecoderTest_mode("STEX/argb.DXT5.stex.gz", "STEX/argb.DXT5.png"),
-		ImageDecoderTest_mode("STEX/argb.ETC2_RGBA8.stex.gz", "STEX/argb.ETC2_RGBA8.png"),
-		ImageDecoderTest_mode("STEX/argb.PVRTC1_4A.stex.gz", "STEX/argb.PVRTC1_4A.png"),
-		ImageDecoderTest_mode("STEX/argb.RGBA4444.stex.gz", "STEX/argb.RGBA4444.png"),
-		ImageDecoderTest_mode("STEX/argb.RGBA8.stex.gz", "argb-reference.png"),
+		ImageDecoderTest_mode("STEX3/argb.BPTC_RGBA.stex.gz",	"STEX3/argb.BPTC_RGBA.png"),
+		ImageDecoderTest_mode("STEX3/argb.DXT5.stex.gz",	"STEX3/argb.DXT5.png"),
+		ImageDecoderTest_mode("STEX3/argb.ETC2_RGBA8.stex.gz",	"STEX3/argb.ETC2_RGBA8.png"),
+		ImageDecoderTest_mode("STEX3/argb.PVRTC1_4A.stex.gz",	"STEX3/argb.PVRTC1_4A.png"),
+		ImageDecoderTest_mode("STEX3/argb.RGBA4444.stex.gz",	"STEX3/argb.RGBA4444.png"),
+		ImageDecoderTest_mode("STEX3/argb.RGBA8.stex.gz",	"argb-reference.png"),
 
-		ImageDecoderTest_mode("STEX/rgb.BPTC_RGBA.stex.gz", "STEX/rgb.BPTC_RGBA.png"),
-		ImageDecoderTest_mode("STEX/rgb.DXT1.stex.gz", "STEX/rgb.DXT1.png"),
-		ImageDecoderTest_mode("STEX/rgb.ETC2_RGB8.stex.gz", "STEX/rgb.ETC2_RGB8.png"),
-		ImageDecoderTest_mode("STEX/rgb.ETC.stex.gz", "STEX/rgb.ETC.png"),
-		ImageDecoderTest_mode("STEX/rgb.PVRTC1_4.stex.gz", "STEX/rgb.PVRTC1_4.png"),
-		ImageDecoderTest_mode("STEX/rgb.RGB8.stex.gz", "rgb-reference.png"),
+		ImageDecoderTest_mode("STEX3/rgb.BPTC_RGBA.stex.gz",	"STEX3/rgb.BPTC_RGBA.png"),
+		ImageDecoderTest_mode("STEX3/rgb.DXT1.stex.gz",		"STEX3/rgb.DXT1.png"),
+		ImageDecoderTest_mode("STEX3/rgb.ETC2_RGB8.stex.gz",	"STEX3/rgb.ETC2_RGB8.png"),
+		ImageDecoderTest_mode("STEX3/rgb.ETC.stex.gz",		"STEX3/rgb.ETC.png"),
+		ImageDecoderTest_mode("STEX3/rgb.PVRTC1_4.stex.gz",	"STEX3/rgb.PVRTC1_4.png"),
+		ImageDecoderTest_mode("STEX3/rgb.RGB8.stex.gz",		"rgb-reference.png"),
 
-		ImageDecoderTest_mode("STEX/gray.BPTC_RGBA.stex.gz", "STEX/gray.BPTC_RGBA.png"),
-		ImageDecoderTest_mode("STEX/gray.DXT1.stex.gz", "STEX/gray.DXT1.png"),
-		ImageDecoderTest_mode("STEX/gray.ETC2_RGBA8.stex.gz", "STEX/gray.ETC2_RGBA8.png"),
-		ImageDecoderTest_mode("STEX/gray.ETC.stex.gz", "STEX/gray.ETC.png"),
-		ImageDecoderTest_mode("STEX/gray.PVRTC1_4.stex.gz", "STEX/gray.PVRTC1_4.png"),
-		ImageDecoderTest_mode("STEX/gray.L8.stex.gz", "gray-reference.png"))
+		ImageDecoderTest_mode("STEX3/gray.BPTC_RGBA.stex.gz",	"STEX3/gray.BPTC_RGBA.png"),
+		ImageDecoderTest_mode("STEX3/gray.DXT1.stex.gz",	"STEX3/gray.DXT1.png"),
+		ImageDecoderTest_mode("STEX3/gray.ETC2_RGBA8.stex.gz",	"STEX3/gray.ETC2_RGBA8.png"),
+		ImageDecoderTest_mode("STEX3/gray.ETC.stex.gz",		"STEX3/gray.ETC.png"),
+		ImageDecoderTest_mode("STEX3/gray.PVRTC1_4.stex.gz",	"STEX3/gray.PVRTC1_4.png"),
+		ImageDecoderTest_mode("STEX3/gray.L8.stex.gz",		"gray-reference.png"))
+	, ImageDecoderTest::test_case_suffix_generator);
+
+// Godot STEX4 tests
+// NOTE: Godot 4 uses different encoders for DXTn and ETCn,
+// so the decompressed images will not match STEX3.
+INSTANTIATE_TEST_SUITE_P(STEX4, ImageDecoderTest,
+	::testing::Values(
+		ImageDecoderTest_mode("STEX4/argb.DXT5.stex.gz",	"STEX4/argb.DXT5.png"),
+		ImageDecoderTest_mode("STEX4/argb.ETC2_RGBA8.stex.gz",	"STEX4/argb.ETC2_RGBA8.png"),
+		ImageDecoderTest_mode("STEX4/argb.RGBA8.stex.gz",	"argb-reference.png"),
+
+		// Godot 4 encodes rgb-reference.png using DXT5 instead of DXT1 for some reason.
+		ImageDecoderTest_mode("STEX4/rgb.DXT5.stex.gz",		"STEX4/rgb.DXT5.png"),
+		ImageDecoderTest_mode("STEX4/rgb.ETC2_RGB8.stex.gz",	"STEX4/rgb.ETC2_RGB8.png"),
+		ImageDecoderTest_mode("STEX4/rgb.RGB8.stex.gz",		"rgb-reference.png"),
+
+		ImageDecoderTest_mode("STEX4/gray.DXT1.stex.gz",	"STEX4/gray.DXT1.png"),
+		ImageDecoderTest_mode("STEX4/gray.ETC.stex.gz",		"STEX4/gray.ETC.png"),
+		ImageDecoderTest_mode("STEX4/gray.L8.stex.gz",		"gray-reference.png"))
 	, ImageDecoderTest::test_case_suffix_generator);
 } }
 
