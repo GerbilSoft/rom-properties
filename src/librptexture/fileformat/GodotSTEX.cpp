@@ -57,7 +57,8 @@ class GodotSTEXPrivate final : public FileFormatPrivate
 			STEX_4_Header v4;
 		} stexHeader;
 		unsigned int stexVersion;	// 3 or 4 (TODO: romType equivalent)
-		STEX_Format_e pixelFormat;	// minus flags
+		STEX_Format_e pixelFormat;	// flags are NOT included here
+		uint32_t pixelFormat_flags;	// pixelFormat with flags
 
 		// Decoded mipmaps.
 		// Mipmap 0 is the full image.
@@ -215,7 +216,8 @@ const ImageSizeCalc::OpCode GodotSTEXPrivate::op_tbl[] = {
 GodotSTEXPrivate::GodotSTEXPrivate(GodotSTEX *q, IRpFile *file)
 	: super(q, file, &textureInfo)
 	, stexVersion(0)
-	, pixelFormat(static_cast<STEX_Format_e>(-1))
+	, pixelFormat(static_cast<STEX_Format_e>(~0U))
+	, pixelFormat_flags(~0U)
 {
 	static_assert(ARRAY_SIZE(GodotSTEXPrivate::op_tbl) == STEX_FORMAT_MAX,
 		"GodotSTEXPrivate::op_tbl[] is not the correct size.");
@@ -748,8 +750,7 @@ GodotSTEX::GodotSTEX(IRpFile *file)
 			UNREF_AND_NULL_NOCHK(d->file);
 			return;
 		case 3:
-			d->pixelFormat = static_cast<STEX_Format_e>
-				(d->stexHeader.v3.format & STEX_FORMAT_MASK);
+			d->pixelFormat_flags = d->stexHeader.v3.format;
 			d->dimensions[0] = d->stexHeader.v3.width;
 			d->dimensions[1] = d->stexHeader.v3.height;
 			if (d->stexHeader.v3.width_rescale  != d->dimensions[0] ||
@@ -762,8 +763,7 @@ GodotSTEX::GodotSTEX(IRpFile *file)
 			break;
 		case 4:
 			// FIXME: Verify rescale dimensions.
-			d->pixelFormat = static_cast<STEX_Format_e>
-				(d->stexHeader.v4.pixel_format & STEX_FORMAT_MASK);
+			d->pixelFormat_flags = d->stexHeader.v4.pixel_format;
 			d->dimensions[0] = d->stexHeader.v4.img_width;
 			d->dimensions[1] = d->stexHeader.v4.img_height;
 			if ((int)d->stexHeader.v4.width  != d->dimensions[0] ||
@@ -775,6 +775,9 @@ GodotSTEX::GodotSTEX(IRpFile *file)
 			}
 			break;
 	}
+
+	// Mask off the flags for the actual pixel format.
+	d->pixelFormat = static_cast<STEX_Format_e>(d->pixelFormat_flags & STEX_FORMAT_MASK);
 }
 
 /** Property accessors **/
@@ -962,7 +965,7 @@ int GodotSTEX::getFields(LibRpBase::RomFields *fields) const
 	}
 	if (v_format_flags_bitfield_names) {
 		fields->addField_bitfield(C_("GodotSTEX", "Format Flags"),
-			v_format_flags_bitfield_names, 3, d->pixelFormat >> 20);
+			v_format_flags_bitfield_names, 3, d->pixelFormat_flags >> 20);
 	}
 
 	// Finished reading the field data.
