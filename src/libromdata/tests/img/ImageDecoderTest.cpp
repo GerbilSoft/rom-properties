@@ -1675,6 +1675,9 @@ INSTANTIATE_TEST_SUITE_P(STEX4, ImageDecoderTest,
 		ImageDecoderTest_mode("STEX4/gray.ETC.stex.gz",		"STEX4/gray.ETC.png"),
 		ImageDecoderTest_mode("STEX4/gray.L8.stex.gz",		"gray-reference.png"))
 	, ImageDecoderTest::test_case_suffix_generator);
+
+// TODO: NPOT tests for compressed formats. (partial block sizes)
+
 } }
 
 /**
