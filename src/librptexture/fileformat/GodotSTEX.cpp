@@ -16,10 +16,14 @@
 
 // librpbase, librpfile
 #include "libi18n/i18n.h"
+#include "librpbase/img/RpPng.hpp"
 #include "librpbase/TextFuncs.hpp"
+#include "librpfile/RpMemFile.hpp"
 using LibRpBase::RomFields;
+using LibRpBase::RpPng;
 using LibRpBase::rp_sprintf;
 using LibRpFile::IRpFile;
+using LibRpFile::RpMemFile;
 
 // librptexture
 #include "img/rp_image.hpp"
@@ -29,6 +33,7 @@ using LibRpTexture::ImageSizeCalc::OpCode;
 
 // C++ STL classes
 using std::string;
+using std::unique_ptr;
 using std::vector;
 
 namespace LibRpTexture {
@@ -50,7 +55,7 @@ class GodotSTEXPrivate final : public FileFormatPrivate
 		static const TextureInfo textureInfo;
 
 	public:
-		// Godot STEX header.
+		// Godot STEX header
 		union {
 			uint32_t magic;		// [0x000] 'GDST' (v3) or 'GST2' (v4)
 			STEX3_Header v3;
@@ -59,6 +64,10 @@ class GodotSTEXPrivate final : public FileFormatPrivate
 		unsigned int stexVersion;	// 3 or 4 (TODO: romType equivalent)
 		STEX_Format_e pixelFormat;	// flags are NOT included here
 		uint32_t pixelFormat_flags;	// pixelFormat with flags
+
+		// Embedded file header (PNG/WebP)
+		bool hasEmbeddedFile;
+		STEX_Embed_Header embedHeader;
 
 		// Decoded mipmaps.
 		// Mipmap 0 is the full image.
@@ -84,12 +93,6 @@ class GodotSTEXPrivate final : public FileFormatPrivate
 		static const ImageSizeCalc::OpCode op_tbl[];
 
 	public:
-		/**
-		 * Is this a VRAM texture? (i.e. not lossless/lossy)
-		 * return True if it is; false if it isn't.
-		 */
-		inline bool isVRAMTexture(void) const;
-
 		/**
 		 * Get mipmap information.
 		 * @return 0 on success; negative POSIX error code on error.
@@ -218,48 +221,20 @@ GodotSTEXPrivate::GodotSTEXPrivate(GodotSTEX *q, IRpFile *file)
 	, stexVersion(0)
 	, pixelFormat(static_cast<STEX_Format_e>(~0U))
 	, pixelFormat_flags(~0U)
+	, hasEmbeddedFile(false)
 {
 	static_assert(ARRAY_SIZE(GodotSTEXPrivate::op_tbl) == STEX_FORMAT_MAX,
 		"GodotSTEXPrivate::op_tbl[] is not the correct size.");
 
 	// Clear the structs and arrays.
 	memset(&stexHeader, 0, sizeof(stexHeader));
+	memset(&embedHeader, 0, sizeof(embedHeader));
 	memset(invalid_pixel_format, 0, sizeof(invalid_pixel_format));
 }
 
 GodotSTEXPrivate::~GodotSTEXPrivate()
 {
 	std::for_each(mipmaps.begin(), mipmaps.end(), [](rp_image *img) { UNREF(img); });
-}
-
-/**
- * Is this a VRAM texture? (i.e. not lossless/lossy)
- * return True if it is; false if it isn't.
- */
-bool GodotSTEXPrivate::isVRAMTexture(void) const
-{
-	bool bRet = true;
-	switch (stexVersion) {
-		default:
-			assert(!"Invalid STEX version.");
-			bRet = false;
-			break;
-		case 3:
-			if ((stexHeader.v3.format & (STEX_FORMAT_FLAG_LOSSLESS |
-			                             STEX_FORMAT_FLAG_LOSSY)) != 0) {
-				// Lossless and/or lossy image.
-				bRet = false;
-			}
-			break;
-		case 4:
-			if (stexHeader.v4.data_format != STEX4_DATA_FORMAT_IMAGE) {
-				// Lossless and/or lossy image.
-				// TODO: Basis Universal supports mipmaps.
-				bRet = false;
-			}
-			break;
-	}
-	return bRet;
 }
 
 /**
@@ -310,12 +285,52 @@ int GodotSTEXPrivate::getMipmapInfo(void)
 			addr = sizeof(stexHeader.v4);
 			break;
 	}
+
 	unsigned int width = dimensions[0];
 	unsigned int height = (dimensions[1] > 0 ? dimensions[1] : 1);
+
+	if (hasEmbeddedFile) {
+		// Lossless (PNG/WebP) or lossy (WebP).
+		// We'll use the size from the embedded file header.
+		// TODO: Verify the embedded image's dimensions?
+		// TODO: Mipmap support? STEX3 has a mipmap count in the header,
+		// though we're excluding it right now.
+
+		// NOTE: embedHeader.size includes the fourCC.
+		assert(embedHeader.size > 4);
+		if (embedHeader.size <= 4) {
+			// Invalid size.
+			mipmaps.clear();
+			mipmap_data.clear();
+			return -EIO;
+		}
+
+		const uint32_t embed_size = embedHeader.size - 4;
+		// Sanity check: Maximum of 16 MB for the embedded image.
+		assert(embedHeader.size <= 16*1024*1024);
+		if (embedHeader.size >= 16*1024*1024) {
+			// Invalid embedded file size.
+			mipmaps.clear();
+			mipmap_data.clear();
+			return -EIO;
+		}
+
+		mipmap_data[0].addr = addr + sizeof(embedHeader);
+		if (stexVersion == 3) {
+			mipmap_data[0].addr += sizeof(uint32_t);
+		}
+		mipmap_data[0].size = embed_size;
+		mipmap_data[0].width = width;
+		mipmap_data[0].height = height;
+		return 0;
+	}
+
 	unsigned int expected_size = ImageSizeCalc::calcImageSize(
 		op_tbl, ARRAY_SIZE(op_tbl), pixelFormat, width, height);
 	if (expected_size == 0 || expected_size + addr > file_sz) {
 		// Invalid image size.
+		mipmaps.clear();
+		mipmap_data.clear();
 		return -EIO;
 	}
 
@@ -330,13 +345,6 @@ int GodotSTEXPrivate::getMipmapInfo(void)
 	if (height <= 1) {
 		// This is a 1D texture.
 		// We're done here.
-		return 0;
-	}
-
-	// Mipmaps might be supported by lossless (PNG/WebP) or lossy (WebP)
-	// images, but we're not supporting it here.
-	if (!isVRAMTexture()) {
-		// Lossless (PNG/WebP) or lossy (WebP).
 		return 0;
 	}
 
@@ -404,11 +412,6 @@ int GodotSTEXPrivate::getMipmapInfo(void)
  */
 const rp_image *GodotSTEXPrivate::loadImage(int mip)
 {
-	// TODO: Handle lossless/lossy images.
-	if (!isVRAMTexture()) {
-		return nullptr;
-	}
-
 	// Make sure the mipmap information is loaded.
 	int ret = getMipmapInfo();
 	assert(ret == 0);
@@ -452,8 +455,33 @@ const rp_image *GodotSTEXPrivate::loadImage(int mip)
 	}
 
 	// TODO: Support PNG and/or WebP images, and maybe Basis Universal.
-	if (!isVRAMTexture()) {
-		return nullptr;
+	if (hasEmbeddedFile) {
+		// If it's PNG, load it.
+		if (embedHeader.fourCC != cpu_to_be32(STEX_FourCC_PNG)) {
+			// Not PNG.
+			return nullptr;
+		}
+		if (stexVersion == 4 && stexHeader.v4.data_format != STEX4_DATA_FORMAT_PNG) {
+			// FourCC is PNG, but the data format isn't...
+			return nullptr;
+		}
+
+		// Load the PNG data.
+		unique_ptr<uint8_t[]> buf(new uint8_t[mdata.size]);
+		size_t size = file->seekAndRead(mdata.addr, buf.get(), mdata.size);
+		if (size != mdata.size) {
+			// Seek and/or read error.
+			return nullptr;
+		}
+
+		// FIXME: Move RpPng to librptexture.
+		// Requires moving IconAnimData and some other stuff...
+		// TODO: Make use of PartitionFile instead of loading it into memory?
+		RpMemFile *const memFile = new RpMemFile(buf.get(), mdata.size);
+		mipmaps[mip] = RpPng::load(memFile);
+		memFile->unref();
+
+		return mipmaps[mip];
 	}
 
 	// Seek to the start of the texture data.
@@ -648,9 +676,7 @@ const rp_image *GodotSTEXPrivate::loadImage(int mip)
 #endif /* ENABLE_ASTC */
 	}
 
-	// FIXME: Rescale the image if necessary.
-	// This might need to be done in the UI.
-
+	// Image rescaling is handled by the UI frontend.
 	mipmaps[mip] = img;
 	return img;
 }
@@ -693,6 +719,25 @@ GodotSTEX::GodotSTEX(IRpFile *file)
 	if (d->stexHeader.magic == cpu_to_be32(STEX3_MAGIC)) {
 		// Godot 3 texture
 		d->stexVersion = 3;
+
+		// Read the embedded file header if it's present.
+		if ((le32_to_cpu(d->stexHeader.v3.format) & (STEX_FORMAT_FLAG_LOSSLESS |
+		                                             STEX_FORMAT_FLAG_LOSSY)) != 0)
+		{
+			// TODO: STEX3 has another uint32_t before the embedded file header.
+			// This is the mipmap count. We're ignoring PNG/WebP mipmaps for now.
+			size = d->file->seekAndRead(sizeof(d->stexHeader.v3) + sizeof(uint32_t),
+				&d->embedHeader, sizeof(d->embedHeader));
+			if (size != sizeof(d->embedHeader)) {
+				// Seek and/or read error.
+				UNREF_AND_NULL_NOCHK(d->file);
+				return;
+			}
+#if SYS_BYTEORDER == SYS_BIG_ENDIAN
+			d->embedHeader.size = le32_to_cpu(d->embedHeader.size);
+#endif /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
+			d->hasEmbeddedFile = true;
+		}
 	} else if (d->stexHeader.magic == cpu_to_be32(STEX4_MAGIC)) {
 		// Godot 4 texture
 		if (le32_to_cpu(d->stexHeader.v4.version) > STEX4_FORMAT_VERSION) {
@@ -701,6 +746,26 @@ GodotSTEX::GodotSTEX(IRpFile *file)
 			return;
 		}
 		d->stexVersion = 4;
+
+		// Read the embedded file header if it's present.
+		switch (le32_to_cpu(d->stexHeader.v4.data_format)) {
+			case STEX4_DATA_FORMAT_PNG:
+			case STEX4_DATA_FORMAT_WEBP:
+				size = d->file->seekAndRead(sizeof(d->stexHeader.v4),
+					&d->embedHeader, sizeof(d->embedHeader));
+				if (size != sizeof(d->embedHeader)) {
+					// Seek and/or read error.
+					UNREF_AND_NULL_NOCHK(d->file);
+					return;
+				}
+#if SYS_BYTEORDER == SYS_BIG_ENDIAN
+				d->embedHeader.size = le32_to_cpu(d->embedHeader.size);
+#endif /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
+				d->hasEmbeddedFile = true;
+				break;
+			default:
+				break;
+		}
 	} else {
 		// Incorrect magic.
 		UNREF_AND_NULL_NOCHK(d->file);

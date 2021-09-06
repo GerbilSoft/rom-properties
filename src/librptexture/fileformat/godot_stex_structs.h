@@ -63,6 +63,20 @@ typedef struct _STEX4_Header {
 ASSERT_STRUCT(STEX4_Header, 13*sizeof(uint32_t));
 
 /**
+ * Godot STEX: Embedded file header for lossless/lossy format.
+ * This is immediately followed by a PNG and/or WebP image.
+ *
+ * Size is little-endian; FourCC is big-endian.
+ */
+#define STEX_FourCC_PNG		'PNG '
+#define STEX_FourCC_WEBP	'WEBP'
+typedef struct _STEX_Embed_Header {
+	uint32_t size;		// [0x000] Embedded file size
+	uint32_t fourCC;	// [0x004] FourCC
+} STEX_Embed_Header;
+ASSERT_STRUCT(STEX_Embed_Header, 2*sizeof(uint32_t));
+
+/**
  * Godot STEX: Texture flags
  */
 typedef enum {
