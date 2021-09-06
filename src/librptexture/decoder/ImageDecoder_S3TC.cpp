@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * ImageDecoder_S3TC.cpp: Image decoding functions. (S3TC)                 *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -293,7 +293,7 @@ static rp_image *T_fromDXT1(int width, int height,
 	const int physWidth = ALIGN_BYTES(4, width);
 	const int physHeight = ALIGN_BYTES(4, height);
 
-	assert(img_siz >= ((width * height) / 2));
+	assert(img_siz >= ((physWidth * physHeight) / 2));
 	if (!img_buf || width <= 0 || height <= 0 ||
 	    img_siz < ((physWidth * physHeight) / 2))
 	{
