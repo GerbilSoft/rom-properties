@@ -564,6 +564,10 @@ const rp_image *GodotSTEXPrivate::loadImage(int mip)
 				mdata.size);
 			break;
 
+		// NOTE: Godot 4's DXTn encoding is broken if the
+		// image width isn't a multiple of 4.
+		// - https://github.com/godotengine/godot/issues/49981
+		// - https://github.com/godotengine/godot/issues/51943
 		case STEX_FORMAT_DXT1:
 			img = ImageDecoder::fromDXT1(
 				mdata.width, mdata.height,
