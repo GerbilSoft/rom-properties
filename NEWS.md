@@ -29,6 +29,9 @@
   * Windows: Don't square images before returning them for IExtractImage and
     IThumbnailProviders. Icons are still squared for IExtractIcon, since
     Windows doesn't really like non-square icons.
+  * PVRTC-I requires power-of-2 textures. We're currently using a
+    slightly-modified PVRTC-I decoder for PVRTC-II as well, so we have to
+    enforce power-of-2 textures for PVRTC-II for now.
 
 ## v1.8.3 (released 2021/08/03)
 
