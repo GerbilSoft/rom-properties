@@ -32,6 +32,10 @@
   * PVRTC-I requires power-of-2 textures. We're currently using a
     slightly-modified PVRTC-I decoder for PVRTC-II as well, so we have to
     enforce power-of-2 textures for PVRTC-II for now.
+  * DXT3 decoding now always uses the 4-color (c0 > c1) palette. Previously,
+    I implemented this as (c0 ≤ c1) due to misleading documentation, which
+    didn't work correctly, so I disabled it entirely. Implementing it as
+    (c0 > c1) works correctly with the existing test images.
 
 ## v1.8.3 (released 2021/08/03)
 

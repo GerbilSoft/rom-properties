@@ -65,7 +65,7 @@ static FORCEINLINE uint64_t extract48(const dxt5_alpha *RESTRICT data)
 enum DXTn_Palette_Flags {
 	DXTn_PALETTE_BIG_ENDIAN		= (1U << 0),
 	DXTn_PALETTE_COLOR3_ALPHA	= (1U << 1),	// GL_COMPRESSED_RGBA_S3TC_DXT1_EXT
-	DXTn_PALETTE_COLOR0_LE_COLOR1	= (1U << 2),	// Assume color0 <= color1. (DXT2/DXT3)
+	DXTn_PALETTE_COLOR0_GT_COLOR1	= (1U << 2),	// Assume color0 > color1. (DXT2/DXT3)
 };
 
 /**
@@ -90,7 +90,7 @@ static inline void decode_DXTn_tile_color_palette_S3TC(argb32_t *RESTRICT pal, c
 	pal[1].u32 = RGB565_to_ARGB32(c1);
 
 	// Calculate the second two colors.
-	if (!(flags & DXTn_PALETTE_COLOR0_LE_COLOR1) && (c0 > c1)) {
+	if ((flags & DXTn_PALETTE_COLOR0_GT_COLOR1) || (c0 > c1)) {
 		// color0 > color1
 		pal[2].r = ((2 * pal[0].r) + pal[1].r) / 3;
 		pal[2].g = ((2 * pal[0].g) + pal[1].g) / 3;
@@ -463,10 +463,7 @@ rp_image *fromDXT3(int width, int height,
 	for (unsigned int x = 0; x < tilesX; x++, dxt3_src++) {
 		// Decode the DXT3 tile palette.
 		argb32_t pal[4];
-		// FIXME: DXTn_PALETTE_COLOR0_LE_COLOR1 seems to result in garbage pixels.
-		// https://github.com/kchapelier/decode-dxt/tree/master/lib has similar code
-		// but handles DXT3 like both DXT1 and DXT5, so disable this for now.
-		decode_DXTn_tile_color_palette_S3TC<0/*DXTn_PALETTE_COLOR0_LE_COLOR1*/>(pal, &dxt3_src->colors);
+		decode_DXTn_tile_color_palette_S3TC<DXTn_PALETTE_COLOR0_GT_COLOR1>(pal, &dxt3_src->colors);
 
 		// Process the 16 color indexes and apply alpha.
 		uint32_t indexes = le32_to_cpu(dxt3_src->colors.indexes);
