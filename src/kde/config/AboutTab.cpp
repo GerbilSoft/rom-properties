@@ -407,50 +407,55 @@ void AboutTabPrivate::initLibrariesTab(void)
 	/** nettle **/
 #ifdef ENABLE_DECRYPTION
 	sLibraries += brbr;
-# ifdef HAVE_NETTLE_VERSION_H
+#  ifdef HAVE_NETTLE_VERSION_H
 	snprintf(sVerBuf, sizeof(sVerBuf),
-		"GNU Nettle %u.%u", NETTLE_VERSION_MAJOR, NETTLE_VERSION_MINOR);
+		"GNU Nettle %u.%u",
+			static_cast<unsigned int>(NETTLE_VERSION_MAJOR),
+			static_cast<unsigned int>(NETTLE_VERSION_MINOR));
 	sLibraries += rp_sprintf(sCompiledWith, sVerBuf);
-#  ifdef HAVE_NETTLE_VERSION_FUNCTIONS
+#    ifdef HAVE_NETTLE_VERSION_FUNCTIONS
 	snprintf(sVerBuf, sizeof(sVerBuf),
-		"GNU Nettle %u.%u", nettle_version_major(), nettle_version_minor());
+		"GNU Nettle %u.%u",
+			static_cast<unsigned int>(nettle_version_major()),
+			static_cast<unsigned int>(nettle_version_minor()));
 	sLibraries += br;
 	sLibraries += rp_sprintf(sUsingDll, sVerBuf);
-#  endif /* HAVE_NETTLE_VERSION_FUNCTIONS */
+#    endif /* HAVE_NETTLE_VERSION_FUNCTIONS */
 	sLibraries += BR
 		"Copyright (C) 2001-2021 Niels Möller." BR
 		"<a href='https://www.lysator.liu.se/~nisse/nettle/'>https://www.lysator.liu.se/~nisse/nettle/</a>" BR;
 	sLibraries += rp_sprintf(sLicenses, "GNU LGPL v3+, GNU GPL v2+");
-# else /* !HAVE_NETTLE_VERSION_H */
-#  ifdef HAVE_NETTLE_3
+#  else /* !HAVE_NETTLE_VERSION_H */
+#    ifdef HAVE_NETTLE_3
 	sLibraries += rp_sprintf(sCompiledWith, "GNU Nettle 3.0");
 	sLibraries += BR
 		"Copyright (C) 2001-2014 Niels Möller." BR
 		"<a href='https://www.lysator.liu.se/~nisse/nettle/'>https://www.lysator.liu.se/~nisse/nettle/</a>" BR;
 	sLibraries += rp_sprintf(sLicenses, "GNU LGPL v3+, GNU GPL v2+");
-#  else /* !HAVE_NETTLE_3 */
+#    else /* !HAVE_NETTLE_3 */
 	sLibraries += rp_sprintf(sCompiledWith, "GNU Nettle 2.x");
 	sLibraries += BR
 		"Copyright (C) 2001-2013 Niels Möller." BR
 		"<a href='https://www.lysator.liu.se/~nisse/nettle/'>https://www.lysator.liu.se/~nisse/nettle/</a>" BR;
 	sLibraries += rp_sprintf(sLicense, "GNU LGPL v2.1+");
-#  endif /* HAVE_NETTLE_3 */
-# endif /* HAVE_NETTLE_VERSION_H */
+#    endif /* HAVE_NETTLE_3 */
+#  endif /* HAVE_NETTLE_VERSION_H */
 #endif /* ENABLE_DECRYPTION */
 
 	/** TinyXML2 **/
 #ifdef ENABLE_XML
 	sLibraries += brbr;
 	snprintf(sVerBuf, sizeof(sVerBuf), "TinyXML2 %u.%u.%u",
-		TIXML2_MAJOR_VERSION, TIXML2_MINOR_VERSION,
-		TIXML2_PATCH_VERSION);
+		static_cast<unsigned int>(TIXML2_MAJOR_VERSION),
+		static_cast<unsigned int>(TIXML2_MINOR_VERSION),
+		static_cast<unsigned int>(TIXML2_PATCH_VERSION));
 
-#if defined(USE_INTERNAL_XML) && !defined(USE_INTERNAL_XML_DLL)
+#  if defined(USE_INTERNAL_XML) && !defined(USE_INTERNAL_XML_DLL)
 	sLibraries += rp_sprintf(sIntCopyOf, sVerBuf);
-#else
+#  else
 	// FIXME: Runtime version?
 	sLibraries += rp_sprintf(sCompiledWith, sVerBuf);
-#endif
+#  endif
 	sLibraries += BR
 		"Copyright (C) 2000-2020 Lee Thomason" BR
 		"<a href='http://www.grinninglizard.com/'>http://www.grinninglizard.com/</a>" BR;
@@ -463,13 +468,13 @@ void AboutTabPrivate::initLibrariesTab(void)
 #if defined(HAVE_GETTEXT) && defined(LIBINTL_VERSION)
 	if (LIBINTL_VERSION & 0xFF) {
 		snprintf(sVerBuf, sizeof(sVerBuf), "GNU gettext %u.%u.%u",
-			LIBINTL_VERSION >> 16,
-			(LIBINTL_VERSION >> 8) & 0xFF,
-			LIBINTL_VERSION & 0xFF);
+			static_cast<unsigned int>( LIBINTL_VERSION >> 16),
+			static_cast<unsigned int>((LIBINTL_VERSION >>  8) & 0xFF),
+			static_cast<unsigned int>( LIBINTL_VERSION        & 0xFF));
 	} else {
 		snprintf(sVerBuf, sizeof(sVerBuf), "GNU gettext %u.%u",
-			LIBINTL_VERSION >> 16,
-			(LIBINTL_VERSION >> 8) & 0xFF);
+			static_cast<unsigned int>( LIBINTL_VERSION >> 16),
+			static_cast<unsigned int>((LIBINTL_VERSION >>  8) & 0xFF));
 	}
 #  ifdef _WIN32
 	sLibraries += rp_sprintf(sIntCopyOf, sVerBuf);

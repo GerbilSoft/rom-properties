@@ -6,7 +6,7 @@
  * multiple plugins, so this file acts as a KFileMetaData ExtractorPlugin, *
  * and then forwards the request to the main library.                      *
  *                                                                         *
- * Copyright (c) 2018-2020 by David Korth.                                 *
+ * Copyright (c) 2018-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -38,7 +38,8 @@ ExtractorPluginForwarder::ExtractorPluginForwarder(QObject *parent)
 	, fwd_plugin(nullptr)
 {
 	if (getuid() == 0 || geteuid() == 0) {
-		qCritical("*** kfilemetadata_rom_properties_" RP_KDE_LOWER "%u does not support running as root.", QT_VERSION >> 16);
+		qCritical("*** kfilemetadata_rom_properties_" RP_KDE_LOWER "%u does not support running as root.",
+			static_cast<unsigned int>(QT_VERSION) >> 16);
 		return;
 	}
 

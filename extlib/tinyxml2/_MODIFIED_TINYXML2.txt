@@ -17,5 +17,7 @@ The following changes have been made to the original:
 - cmake_minimum_required() is disabled, since it interfered with
   policies set by the main build infrastructure.
 
+- Fixed several -Wformat warnings.
+
 To obtain the original tinyxml2-9.0.0, visit:
 https://github.com/leethomason/tinyxml2

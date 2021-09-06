@@ -996,10 +996,16 @@ int Xbox360_STFS::loadFieldData(void)
 	basever.u32 = be32_to_cpu(stfsMetadata->base_version.u32);
 	d->fields->addField_string(C_("Xbox360_XEX", "Version"),
 		rp_sprintf("%u.%u.%u.%u",
-			ver.major, ver.minor, ver.build, ver.qfe));
+			static_cast<unsigned int>(ver.major),
+			static_cast<unsigned int>(ver.minor),
+			static_cast<unsigned int>(ver.build),
+			static_cast<unsigned int>(ver.qfe)));
 	d->fields->addField_string(C_("Xbox360_XEX", "Base Version"),
 		rp_sprintf("%u.%u.%u.%u",
-			basever.major, basever.minor, basever.build, basever.qfe));
+			static_cast<unsigned int>(basever.major),
+			static_cast<unsigned int>(basever.minor),
+			static_cast<unsigned int>(basever.build),
+			static_cast<unsigned int>(basever.qfe)));
 
 	// Console-specific packages.
 	if (stfsHeader->magic == cpu_to_be32(STFS_MAGIC_CON)) {

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE)                              *
  * stub-export.cpp: Exported function for the rp-config stub.              *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -11,7 +11,7 @@
 
 // i18n
 #ifdef ENABLE_NLS
-# include "../GettextTranslator.hpp"
+#  include "../GettextTranslator.hpp"
 #endif
 
 /**
@@ -24,7 +24,8 @@ extern "C"
 Q_DECL_EXPORT int RP_C_API rp_show_config_dialog(int argc, char *argv[])
 {
 	if (getuid() == 0 || geteuid() == 0) {
-		qCritical("*** rom-properties-" RP_KDE_LOWER "%u does not support running as root.", QT_VERSION >> 16);
+		qCritical("*** rom-properties-" RP_KDE_LOWER "%u does not support running as root.",
+			static_cast<unsigned int>(QT_VERSION) >> 16);
 		return EXIT_FAILURE;
 	}
 

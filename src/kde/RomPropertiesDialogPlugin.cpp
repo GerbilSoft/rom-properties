@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE4/KF5)                         *
  * RomPropertiesDialogPlugin.cpp: KPropertiesDialogPlugin.                 *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -30,7 +30,8 @@ RomPropertiesDialogPlugin::RomPropertiesDialogPlugin(KPropertiesDialog *props, c
 	: super(props)
 {
 	if (getuid() == 0 || geteuid() == 0) {
-		qCritical("*** rom-properties-" RP_KDE_LOWER "%u does not support running as root.", QT_VERSION >> 16);
+		qCritical("*** rom-properties-" RP_KDE_LOWER "%u does not support running as root.",
+			static_cast<unsigned int>(QT_VERSION) >> 16);
 		return;
 	}
 

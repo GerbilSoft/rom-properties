@@ -1017,7 +1017,8 @@ int KhronosKTX2::getFields(LibRpBase::RomFields *fields) const
 			supercompression_tbl[ktx2Header->supercompressionScheme]);
 	} else {
 		fields->addField_string(C_("KhronosKTX2", "Supercompression"),
-			rp_sprintf(C_("RomData", "Unknown (%d)"), ktx2Header->supercompressionScheme));
+			rp_sprintf(C_("RomData", "Unknown (%u)"),
+				ktx2Header->supercompressionScheme));
 	}
 
 	// NOTE: Vulkan field names should not be localized.

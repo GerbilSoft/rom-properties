@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata/tests)                 *
  * FstPrint.cpp: FST printer.                                              *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -165,7 +165,7 @@ static int fstPrint(IFst *fst, ostream &os, const string &path,
 			// Print the attributes. (address, size)
 			char attrs[64];
 			snprintf(attrs, sizeof(attrs), "[addr:0x%08" PRIX64 ", size:%" PRId64 "]",
-				 dirent->offset, dirent->size);
+				 static_cast<uint64_t>(dirent->offset), dirent->size);
 
 			// Check if any more entries are present.
 			dirent = fst->readdir(dirp);

@@ -338,7 +338,7 @@ string RomFields::ageRatingsDecode(const age_ratings_t *age_ratings, bool newlin
 		} else {
 			// Invalid age rating organization.
 			// Use the numeric index.
-			str += rp_sprintf("%d", i);
+			str += rp_sprintf("%u", i);
 		}
 		str += '=';
 		str += ageRatingDecode((AgeRatingsCountry)i, rating);
