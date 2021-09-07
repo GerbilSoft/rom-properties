@@ -936,9 +936,9 @@ void decodeHDREndpointMode7 (UVec4& e0, UVec4& e1, deUint32 v0, deUint32 v1, deU
 #undef ASSIGN_X_BITS
 #undef SHOR
 	}
-	static const int shiftAmounts[] = { 1, 1, 2, 3, 4, 5 };
+	static const deUint8 shiftAmounts[] = { 1, 1, 2, 3, 4, 5 };
 	DE_ASSERT(mode < DE_LENGTH_OF_ARRAY(shiftAmounts));
-	red		<<= shiftAmounts[mode];
+	red	<<= shiftAmounts[mode];
 	green	<<= shiftAmounts[mode];
 	blue	<<= shiftAmounts[mode];
 	scale	<<= shiftAmounts[mode];
@@ -1002,11 +1002,11 @@ void decodeHDREndpointMode11 (UVec4& e0, UVec4& e1, deUint32 v0, deUint32 v1, de
 #undef ASSIGN_X_BITS
 #undef SHOR
 		}
-		static const int numDBits[] = { 7, 6, 7, 6, 5, 6, 5, 6 };
+		static const deUint8 numDBits[] = { 7, 6, 7, 6, 5, 6, 5, 6 };
 		DE_ASSERT(mode < DE_LENGTH_OF_ARRAY(numDBits));
 		d0 = signExtend(d0, numDBits[mode]);
 		d1 = signExtend(d1, numDBits[mode]);
-		const int shiftAmount = (mode >> 1) ^ 3;
+		const unsigned int shiftAmount = (mode >> 1) ^ 3;
 		a	<<= shiftAmount;
 		c	<<= shiftAmount;
 		b0	<<= shiftAmount;
@@ -1242,9 +1242,9 @@ void unquantizeWeights (deUint32 dst[64], const ISEDecodedResult* weightGrid, co
 		const int rangeCase = iseParams.numBits*2 + (iseParams.mode == ISEMODE_QUINT ? 1 : 0);
 		if (rangeCase == 0 || rangeCase == 1)
 		{
-			static const deUint32 map0[3]	= { 0, 32, 63 };
-			static const deUint32 map1[5]	= { 0, 16, 32, 47, 63 };
-			const deUint32* const map		= rangeCase == 0 ? &map0[0] : &map1[0];
+			static const deUint8 map0[3]	= { 0, 32, 63 };
+			static const deUint8 map1[5]	= { 0, 16, 32, 47, 63 };
+			const deUint8* const map = (rangeCase == 0) ? &map0[0] : &map1[0];
 			for (int i = 0; i < numWeights; i++)
 			{
 				DE_ASSERT(weightGrid[i].v < (rangeCase == 0 ? 3u : 5u));
@@ -1254,7 +1254,7 @@ void unquantizeWeights (deUint32 dst[64], const ISEDecodedResult* weightGrid, co
 		else
 		{
 			DE_ASSERT(rangeCase <= 6);
-			static const deUint32	Ca[5]	= { 50, 28, 23, 13, 11 };
+			static const deUint8	Ca[5]	= { 50, 28, 23, 13, 11 };
 			const deUint32			C		= Ca[rangeCase-2];
 			for (int weightNdx = 0; weightNdx < numWeights; weightNdx++)
 			{
