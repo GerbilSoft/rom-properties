@@ -339,9 +339,10 @@ public:
 };
 
 
-JSONROMOutput::JSONROMOutput(const RomData *romdata, uint32_t lc)
+JSONROMOutput::JSONROMOutput(const RomData *romdata, uint32_t lc, bool skipInternalImages)
 	: romdata(romdata)
 	, lc(lc)
+	, skipInternalImages(skipInternalImages)
 	, crlf_(false) { }
 std::ostream& operator<<(std::ostream& os, const JSONROMOutput& fo) {
 	auto romdata = fo.romdata;
@@ -358,7 +359,7 @@ std::ostream& operator<<(std::ostream& os, const JSONROMOutput& fo) {
 	document.AddMember("system", StringRef(systemName ? systemName : "unknown"), allocator);
 	document.AddMember("filetype", StringRef(fileType ? fileType : "unknown"), allocator);
 
-	// Fields.
+	// Fields
 	const RomFields *const fields = romdata->fields();
 	assert(fields != nullptr);
 	if (fields) {
@@ -369,60 +370,62 @@ std::ostream& operator<<(std::ostream& os, const JSONROMOutput& fo) {
 		}
 	}
 
-	// Internal images.
 	const uint32_t imgbf = romdata->supportedImageTypes();
 	if (imgbf != 0) {
-		Value imgint_array(kArrayType);	// imgint
+		if (!fo.skipInternalImages) {
+			// Internal images
+			Value imgint_array(kArrayType);	// imgint
 
-		for (int i = RomData::IMG_INT_MIN; i <= RomData::IMG_INT_MAX; i++) {
-			if (!(imgbf & (1U << i)))
-				continue;
+			for (int i = RomData::IMG_INT_MIN; i <= RomData::IMG_INT_MAX; i++) {
+				if (!(imgbf & (1U << i)))
+					continue;
 
-			auto image = romdata->image((RomData::ImageType)i);
-			if (!image || !image->isValid())
-				continue;
+				auto image = romdata->image((RomData::ImageType)i);
+				if (!image || !image->isValid())
+					continue;
 
-			Value imgint_obj(kObjectType);
-			imgint_obj.AddMember("type", StringRef(RomData::getImageTypeName((RomData::ImageType)i)), allocator);
-			imgint_obj.AddMember("format", StringRef(rp_image::getFormatName(image->format())), allocator);
+				Value imgint_obj(kObjectType);
+				imgint_obj.AddMember("type", StringRef(RomData::getImageTypeName((RomData::ImageType)i)), allocator);
+				imgint_obj.AddMember("format", StringRef(rp_image::getFormatName(image->format())), allocator);
 
-			Value size_array(kArrayType);	// size
-			size_array.PushBack(image->width(), allocator);
-			size_array.PushBack(image->height(), allocator);
-			imgint_obj.AddMember("size", size_array, allocator);
+				Value size_array(kArrayType);	// size
+				size_array.PushBack(image->width(), allocator);
+				size_array.PushBack(image->height(), allocator);
+				imgint_obj.AddMember("size", size_array, allocator);
 
-			const uint32_t ppf = romdata->imgpf((RomData::ImageType)i);
-			if (ppf) {
-				imgint_obj.AddMember("postprocessing", ppf, allocator);
-			}
-
-			if (ppf & RomData::IMGPF_ICON_ANIMATED) {
-				auto animdata = romdata->iconAnimData();
-				if (animdata) {
-					imgint_obj.AddMember("frames", animdata->count, allocator);
-
-					Value animseq(kArrayType);	// sequence
-					for (int j = 0; j < animdata->seq_count; j++) {
-						animseq.PushBack((unsigned)animdata->seq_index[j], allocator);
-					}
-					imgint_obj.AddMember("sequence", animseq, allocator);
-
-					Value animdelay(kArrayType);	// delay
-					for (int j = 0; j < animdata->seq_count; j++) {
-						animdelay.PushBack(animdata->delays[j].ms, allocator);
-					}
-					imgint_obj.AddMember("delay", animdelay, allocator);
+				const uint32_t ppf = romdata->imgpf((RomData::ImageType)i);
+				if (ppf) {
+					imgint_obj.AddMember("postprocessing", ppf, allocator);
 				}
+
+				if (ppf & RomData::IMGPF_ICON_ANIMATED) {
+					auto animdata = romdata->iconAnimData();
+					if (animdata) {
+						imgint_obj.AddMember("frames", animdata->count, allocator);
+
+						Value animseq(kArrayType);	// sequence
+						for (int j = 0; j < animdata->seq_count; j++) {
+							animseq.PushBack((unsigned)animdata->seq_index[j], allocator);
+						}
+						imgint_obj.AddMember("sequence", animseq, allocator);
+
+						Value animdelay(kArrayType);	// delay
+						for (int j = 0; j < animdata->seq_count; j++) {
+							animdelay.PushBack(animdata->delays[j].ms, allocator);
+						}
+						imgint_obj.AddMember("delay", animdelay, allocator);
+					}
+				}
+
+				imgint_array.PushBack(imgint_obj, allocator);
 			}
-
-			imgint_array.PushBack(imgint_obj, allocator);
-		}
-		if (!imgint_array.Empty()) {
-			document.AddMember("imgint", imgint_array, allocator);
+			if (!imgint_array.Empty()) {
+				document.AddMember("imgint", imgint_array, allocator);
+			}
 		}
 
-		// External images.
-		// NOTE: IMGPF_ICON_ANIMATED won't ever appear in external image
+		// External image URLs
+		// NOTE: IMGPF_ICON_ANIMATED won't ever appear in external images.
 		Value imgext_array(kArrayType);	// imgext
 		vector<RomData::ExtURL> extURLs;
 		for (int i = RomData::IMG_EXT_MIN; i <= RomData::IMG_EXT_MAX; i++) {

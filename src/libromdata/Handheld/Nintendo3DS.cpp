@@ -2128,7 +2128,7 @@ int Nintendo3DS::loadFieldData(void)
 
 		// Process the contents.
 		// TODO: Content types?
-		int i = 0;
+		unsigned int i = 0;
 		const auto content_chunks_cend = d->content_chunks.cend();
 		for (auto iter = d->content_chunks.cbegin();
 		     iter != content_chunks_cend; ++iter, ++i)

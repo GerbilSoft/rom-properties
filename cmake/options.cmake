@@ -87,6 +87,9 @@ OPTION(ENABLE_LIBMSPACK "Enable libmspack-xenia for Xbox 360 executables." ON)
 # Enable the PowerVR Native SDK subset for PVRTC decompression.
 OPTION(ENABLE_PVRTC "Enable the PowerVR Native SDK subset for PVRTC decompression." ON)
 
+# Enable the ASTC decoder from Basis Universal.
+OPTION(ENABLE_ASTC "Enable ASTC decoding using the Basis Universal decoder." ON)
+
 # Enable precompiled headers.
 # FIXME: Not working properly on older gcc. Use cmake-3.16.0's built-in PCH?
 IF(MSVC)

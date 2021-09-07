@@ -229,6 +229,13 @@ uint32_t RpTextureWrapper::imgpf(ImageType imageType) const
 		// 64x64 or smaller.
 		ret = IMGPF_RESCALE_NEAREST;
 	}
+
+	// Are rescale dimensions specified?
+	int rescale_dimensions[2];
+	if (d->texture->getRescaleDimensions(rescale_dimensions) == 0) {
+		ret |= IMGPF_RESCALE_RFT_DIMENSIONS_2;
+	}
+
 	return ret;
 }
 
@@ -253,7 +260,7 @@ int RpTextureWrapper::loadFieldData(void)
 
 	// RpTextureWrapper header
 	const FileFormat *const texture = d->texture;
-	d->fields->reserve(3);	// Maximum of 3 fields.
+	d->fields->reserve(4);	// Maximum of 4 fields.
 
 	// Dimensions
 	int dimensions[3];
@@ -261,6 +268,17 @@ int RpTextureWrapper::loadFieldData(void)
 	if (ret == 0) {
 		d->fields->addField_dimensions(C_("RpTextureWrapper", "Dimensions"),
 			dimensions[0], dimensions[1], dimensions[2]);
+
+		// Rescale dimensions (may not be present)
+		// TODO: 3D rescaling?
+		int rescale_dimensions[2];
+		ret = texture->getRescaleDimensions(rescale_dimensions);
+		if (ret == 0 && (rescale_dimensions[0] != dimensions[0] ||
+		                 rescale_dimensions[1] != dimensions[1]))
+		{
+			d->fields->addField_dimensions(C_("RpTextureWrapper", "Rescale To"),
+				rescale_dimensions[0], rescale_dimensions[1]);
+		}
 	}
 
 	// Pixel format

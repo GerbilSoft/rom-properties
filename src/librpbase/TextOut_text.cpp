@@ -744,9 +744,10 @@ public:
 };
 
 
-ROMOutput::ROMOutput(const RomData *romdata, uint32_t lc)
+ROMOutput::ROMOutput(const RomData *romdata, uint32_t lc, bool skipInternalImages)
 	: romdata(romdata)
-	, lc(lc) { }
+	, lc(lc)
+	, skipInternalImages(skipInternalImages) { }
 std::ostream& operator<<(std::ostream& os, const ROMOutput& fo) {
 	auto romdata = fo.romdata;
 	const char *const systemName = romdata->systemName(RomData::SYSNAME_TYPE_LONG | RomData::SYSNAME_REGION_ROM_LOCAL);
@@ -764,54 +765,61 @@ std::ostream& operator<<(std::ostream& os, const ROMOutput& fo) {
 		os << "-- " << detectMsg << '\n';
 	}
 
+	// Fields
 	const RomFields *const fields = romdata->fields();
 	assert(fields != nullptr);
 	if (fields) {
 		os << FieldsOutput(*fields, fo.lc) << '\n';
 	}
 
-	const int supported = romdata->supportedImageTypes();
+	const uint32_t imgbf = romdata->supportedImageTypes();
+	if (imgbf != 0) {
+		// Internal images
+		if (!fo.skipInternalImages) {
+			for (int i = RomData::IMG_INT_MIN; i <= RomData::IMG_INT_MAX; i++) {
+				if (!(imgbf & (1U << i)))
+					continue;
 
-	for (int i = RomData::IMG_INT_MIN; i <= RomData::IMG_INT_MAX; i++) {
-		if (!(supported & (1U << i)))
-			continue;
-
-		auto image = romdata->image((RomData::ImageType)i);
-		if (image && image->isValid()) {
-			// tr: Image Type name, followed by Image Type ID
-			os << "-- " << rp_sprintf_p(C_("TextOut", "%1$s is present (use -x%2$d to extract)"),
-				RomData::getImageTypeName((RomData::ImageType)i), i) << '\n';
-			// TODO: After localizing, add enough spaces for alignment.
-			os << "   Format : " << rp_image::getFormatName(image->format()) << '\n';
-			os << "   Size   : " << image->width() << " x " << image->height() << '\n';
-			if (romdata->imgpf((RomData::ImageType) i)  & RomData::IMGPF_ICON_ANIMATED) {
-				os << "   " << C_("TextOut", "Animated icon is present (use -a to extract)") << '\n';
+				auto image = romdata->image((RomData::ImageType)i);
+				if (image && image->isValid()) {
+					// tr: Image Type name, followed by Image Type ID
+					os << "-- " << rp_sprintf_p(C_("TextOut", "%1$s is present (use -x%2$d to extract)"),
+						RomData::getImageTypeName((RomData::ImageType)i), i) << '\n';
+					// TODO: After localizing, add enough spaces for alignment.
+					os << "   Format : " << rp_image::getFormatName(image->format()) << '\n';
+					os << "   Size   : " << image->width() << " x " << image->height() << '\n';
+					if (romdata->imgpf((RomData::ImageType) i)  & RomData::IMGPF_ICON_ANIMATED) {
+						os << "   " << C_("TextOut", "Animated icon is present (use -a to extract)") << '\n';
+					}
+				}
 			}
 		}
-	}
 
-	std::vector<RomData::ExtURL> extURLs;
-	for (int i = RomData::IMG_EXT_MIN; i <= RomData::IMG_EXT_MAX; i++) {
-		if (!(supported & (1U << i)))
-			continue;
+		// External image URLs
+		// NOTE: IMGPF_ICON_ANIMATED won't ever appear in external images.
+		std::vector<RomData::ExtURL> extURLs;
+		for (int i = RomData::IMG_EXT_MIN; i <= RomData::IMG_EXT_MAX; i++) {
+			if (!(imgbf & (1U << i)))
+				continue;
 
-		// NOTE: extURLs may be empty even though the class supports it.
-		// Check extURLs before doing anything else.
+			// NOTE: extURLs may be empty even though the class supports it.
+			// Check extURLs before doing anything else.
 
-		extURLs.clear();	// NOTE: May not be needed...
-		// TODO: Customize the image size parameter?
-		// TODO: Option to retrieve supported image size?
-		int ret = romdata->extURLs((RomData::ImageType)i, &extURLs, RomData::IMAGE_SIZE_DEFAULT);
-		if (ret != 0 || extURLs.empty())
-			continue;
+			extURLs.clear();	// NOTE: May not be needed...
+			// TODO: Customize the image size parameter?
+			// TODO: Option to retrieve supported image size?
+			int ret = romdata->extURLs((RomData::ImageType)i, &extURLs, RomData::IMAGE_SIZE_DEFAULT);
+			if (ret != 0 || extURLs.empty())
+				continue;
 
-		std::for_each(extURLs.cbegin(), extURLs.cend(),
-			[i, &os](const RomData::ExtURL &extURL) {
-				os << "-- " <<
-					RomData::getImageTypeName((RomData::ImageType)i) << ": " << urlPartialUnescape(extURL.url) <<
-					" (cache_key: " << extURL.cache_key << ')' << '\n';
-			}
-		);
+			std::for_each(extURLs.cbegin(), extURLs.cend(),
+				[i, &os](const RomData::ExtURL &extURL) {
+					os << "-- " <<
+						RomData::getImageTypeName((RomData::ImageType)i) << ": " << urlPartialUnescape(extURL.url) <<
+						" (cache_key: " << extURL.cache_key << ')' << '\n';
+				}
+			);
+		}
 	}
 
 	os.flush();

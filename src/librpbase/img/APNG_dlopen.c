@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * APNG_dlopen.c: APNG dlopen()'d function pointers.                       *
  *                                                                         *
- * Copyright (c) 2014-2019 by David Korth.                                 *
+ * Copyright (c) 2014-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -100,7 +100,7 @@ static int init_apng(void)
 	// TODO: Get path of already-opened libpng?
 	// TODO: On Linux, __USE_GNU and RTLD_DEFAULT.
 	snprintf(png_so_filename, sizeof(png_so_filename),
-		"libpng%u.so", PNG_LIBPNG_VER_SONUM);
+		"libpng%u.so", (unsigned int)PNG_LIBPNG_VER_SONUM);
 	libpng_dll = dlopen(png_so_filename, RTLD_LOCAL|RTLD_NOW);
 	if (!libpng_dll)
 		return -1;

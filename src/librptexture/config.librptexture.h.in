@@ -15,4 +15,7 @@
 /* Define to 1 if PVRTC decompression should be enabled. */
 #cmakedefine ENABLE_PVRTC 1
 
+/* Define to 1 if ASTC decompression should be enabled. */
+#cmakedefine ENABLE_ASTC 1
+
 #endif /* __ROMPROPERTIES_LIBRPTEXTURE_CONFIG_H__ */

@@ -142,8 +142,10 @@ button.
 
 ### Texture Formats
 
-|          System          | Properties Tab | Metadata | Internal Images | External Scans |
+|      Texture Format      | Properties Tab | Metadata | Internal Images | External Scans |
 |:------------------------:|:--------------:|:--------:|:---------------:|:--------------:|
+| ASTC container           |       Yes      |    Yes   |      Image      |       N/A      |
+| Godot 3,4 .stex          |       Yes      |    Yes   |      Image      |       N/A      |
 | Leapster Didj .tex       |       Yes      |    Yes   |      Image      |       N/A      |
 | Khronos KTX              |       Yes      |    Yes   |      Image      |       N/A      |
 | Khronos KTX2             |       Yes      |    Yes   |      Image      |       N/A      |
@@ -166,13 +168,13 @@ button.
 * Nintendo 3DS: Tiled and twiddled RGB565
 * GameCube: Tiled RGB5A3 and CI8 with RGB5A3 palette
 * S3TC: DXT1, DXT2, DXT3, DXT4, DXT5, BC4, and BC5 codecs.
-  * Supported file formats: DDS, KTX, KTX2, VTF, VTF3, XPR
   * GameCube 2x2-tiled DXT1 is supported in GVR texture files.
-* BC7: Supported in DDS, KTX, KTX2, and PowerVR 3.0.0 texture files.
+* BC7: Supported in multiple texture file formats.
   * The implementation is somewhat slow. (Contributions welcome.)
-* PVRTC: Supported in DDS, KTX, KTX2, and PowerVR 3.0.0 texture files.
+* PVRTC: Supported in multiple texture file formats.
   * PVRTC-II: Partially supported. The hard transition flag and images
     that aren't a multiple of the tile size are not supported.
+* ASTC: Supported in multiple texture file formats.
 
 ### Audio Formats
 
@@ -365,3 +367,9 @@ https://github.com/GerbilSoft/rom-properties/issues
 * [maxcso](https://github.com/unknownbrackets/maxcso) for documentation on the
   compressed formats used by unofficial Sony PlayStation Portable disc image
   loaders.
+* [Basis Universal](https://github.com/BinomialLLC/basis_universal) for the ASTC
+  decoder, which was derived from the [Android Open Source Project](https://source.android.com/).
+* [Godot Engine](https://github.com/godotengine/godot) for documentation on
+  Godot's own .stex format.
+* [Vulkan SDK for Android](https://arm-software.github.io/vulkan-sdk/_a_s_t_c.html)
+  for the ASTC file format header.

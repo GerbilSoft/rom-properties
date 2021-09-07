@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE4/KF5)                         *
  * RomThumbCreator.cpp: Thumbnail creator.                                 *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -275,7 +275,8 @@ Q_DECL_EXPORT int RP_C_API rp_create_thumbnail(const char *source_file, const ch
 	// in order to return better error codes.
 
 	if (getuid() == 0 || geteuid() == 0) {
-		qCritical("*** " RP_KDE_LOWER "%u does not support running as root.", QT_VERSION >> 16);
+		qCritical("*** " RP_KDE_LOWER "%u does not support running as root.",
+			static_cast<unsigned int>(QT_VERSION) >> 16);
 		return RPCT_RUNNING_AS_ROOT;
 	}
 

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * SystemsTab.cpp: Systems tab for rp-config.                              *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -182,8 +182,8 @@ void SystemsTabPrivate::save(void)
 	const TCHAR s_dmg_dmg[][4] = {_T("DMG"), _T("CGB")};
 	const int idxDMG = ComboBox_GetCurSel(GetDlgItem(hWndPropSheet, IDC_SYSTEMS_DMGTS_DMG));
 	assert(idxDMG >= 0);
-	assert(idxDMG < ARRAY_SIZE(s_dmg_dmg));
-	if (idxDMG >= 0 && idxDMG < ARRAY_SIZE(s_dmg_dmg)) {
+	assert(idxDMG < ARRAY_SIZE_I(s_dmg_dmg));
+	if (idxDMG >= 0 && idxDMG < ARRAY_SIZE_I(s_dmg_dmg)) {
 		WritePrivateProfileString(_T("DMGTitleScreenMode"), _T("DMG"), s_dmg_dmg[idxDMG], tfilename.c_str());
 	}
 
@@ -192,13 +192,13 @@ void SystemsTabPrivate::save(void)
 	const int idxCGB = ComboBox_GetCurSel(GetDlgItem(hWndPropSheet, IDC_SYSTEMS_DMGTS_CGB));
 
 	assert(idxSGB >= 0);
-	assert(idxSGB < ARRAY_SIZE(s_dmg_other));
-	if (idxSGB >= 0 && idxSGB < ARRAY_SIZE(s_dmg_other)) {
+	assert(idxSGB < ARRAY_SIZE_I(s_dmg_other));
+	if (idxSGB >= 0 && idxSGB < ARRAY_SIZE_I(s_dmg_other)) {
 		WritePrivateProfileString(_T("DMGTitleScreenMode"), _T("SGB"), s_dmg_other[idxSGB], tfilename.c_str());
 	}
 	assert(idxCGB >= 0);
-	assert(idxCGB < ARRAY_SIZE(s_dmg_other));
-	if (idxCGB >= 0 && idxCGB < ARRAY_SIZE(s_dmg_other)) {
+	assert(idxCGB < ARRAY_SIZE_I(s_dmg_other));
+	if (idxCGB >= 0 && idxCGB < ARRAY_SIZE_I(s_dmg_other)) {
 		WritePrivateProfileString(_T("DMGTitleScreenMode"), _T("CGB"), s_dmg_other[idxCGB], tfilename.c_str());
 	}
 

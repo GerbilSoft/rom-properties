@@ -722,13 +722,17 @@ rp_image *fromLinear8(PixelFormat px_format,
 
 	// Convert one line at a time. (8-bit -> ARGB32)
 	switch (px_format) {
-		// Luminance.
+		// Luminance
 		fromLinear8_convert(L8, 8,8,8,8,0);
 		fromLinear8_convert(A4L4, 4,4,4,4,4);
 
-		// Alpha.
+		// Alpha
 		// NOTE: Have to specify RGB bits...
 		fromLinear8_convert(A8, 1,1,1,1,8);
+
+		// Other
+		// NOTE: Have to specify RGB bits...
+		fromLinear8_convert(R8, 8,1,1,0,0);
 
 		default:
 			assert(!"Unsupported 8-bit pixel format.");

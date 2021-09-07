@@ -105,15 +105,18 @@ enum class PixelFormat : uint8_t {
 	// TODO: Might be a VTFEdit bug. (Tested versions: 1.2.5, 1.3.3)
 	RABG8888,
 
-	// Luminance formats.
+	// Luminance
 	L8,		// LLLLLLLL
 	A4L4,		// AAAAllll
 	L16,		// LLLLLLLL llllllll
 	A8L8,		// AAAAAAAA LLLLLLLL
 	L8A8,		// LLLLLLLL AAAAAAAA
 
-	// Alpha formats.
+	// Alpha
 	A8,		// AAAAAAAA
+
+	// Other
+	R8,		// RRRRRRRR
 
 	// Endian-specific ARGB32 definitions.
 #if SYS_BYTEORDER == SYS_LIL_ENDIAN
@@ -876,6 +879,23 @@ rp_image *fromPVRTCII(int width, int height,
 ATTR_ACCESS_SIZE(read_only, 3, 4)
 rp_image *fromBC7(int width, int height,
 	const uint8_t *img_buf, int img_siz);
+
+#ifdef ENABLE_ASTC
+/**
+ * Convert an ASTC 2D image to rp_image.
+ * @param width Image width
+ * @param height Image height
+ * @param img_buf PVRTC image buffer
+ * @param img_siz Size of image data
+ * @param block_x ASTC block size, X value
+ * @param block_y ASTC block size, Y value
+ * @return rp_image, or nullptr on error.
+ */
+ATTR_ACCESS_SIZE(read_only, 3, 4)
+rp_image *fromASTC(int width, int height,
+	const uint8_t *RESTRICT img_buf, int img_siz,
+	uint8_t block_x, uint8_t block_y);
+#endif /* ENABLE_ASTC */
 
 } }
 

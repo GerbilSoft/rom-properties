@@ -3,7 +3,7 @@
  * device.cpp: Extra functions for devices.                                *
  *                                                                         *
  * Copyright (c) 2016-2018 by Egor.                                        *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -67,7 +67,8 @@ std::ostream& operator<<(std::ostream& os, const ScsiInquiry& si)
 	int ret = si.file->scsi_inquiry(&resp);
 	if (ret != 0) {
 		// TODO: Decode the error.
-		os << "-- " << rp_sprintf(C_("rpcli", "SCSI INQUIRY failed: %08X"), ret) << endl;
+		os << "-- " << rp_sprintf(C_("rpcli", "SCSI INQUIRY failed: %08X"),
+			static_cast<unsigned int>(ret)) << endl;
 		return os;
 	}
 
@@ -174,7 +175,8 @@ std::ostream& operator<<(std::ostream& os, const AtaIdentifyDevice& si)
 	if (ret != 0) {
 		// TODO: Decode the error.
 		os << "-- " << rp_sprintf(C_("rpcli", "ATA %s failed: %08X"),
-			(si.packet ? "IDENTIFY PACKET DEVICE" : "IDENTIFY DEVICE"), ret) << endl;
+			(si.packet ? "IDENTIFY PACKET DEVICE" : "IDENTIFY DEVICE"),
+			static_cast<unsigned int>(ret)) << endl;
 		return os;
 	}
 

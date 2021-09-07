@@ -359,7 +359,8 @@ int CacheTabPrivate::clearThumbnailCacheVista(void)
 		// this is only run on Vista+.
 		DWORD dwErr = GetLastError();
 		snprintf(errbuf, sizeof(errbuf), C_("CacheTab|Win32",
-			"ERROR: GetLogicalDrives() failed. (GetLastError() == 0x%08X)"), dwErr);
+			"ERROR: GetLogicalDrives() failed. (GetLastError() == 0x%08X)"),
+			static_cast<unsigned int>(dwErr));
 		SetWindowText(hStatusLabel, U82T_c(errbuf));
 		SendMessage(hProgressBar, PBM_SETSTATE, PBST_ERROR, 0);
 		return 1;
@@ -429,7 +430,8 @@ int CacheTabPrivate::clearThumbnailCacheVista(void)
 	if (FAILED(hr)) {
 		// Failed...
 		snprintf(errbuf, sizeof(errbuf), C_("CacheTab|Win32",
-			"ERROR: CoCreateInstance() failed. (hr == 0x%08X)"), hr);
+			"ERROR: CoCreateInstance() failed. (hr == 0x%08X)"),
+			static_cast<unsigned int>(hr));
 		SetWindowText(hStatusLabel, U82T_c(errbuf));
 		SendMessage(hProgressBar, PBM_SETSTATE, PBST_ERROR, 0);
 		return 6;
@@ -489,7 +491,7 @@ int CacheTabPrivate::clearThumbnailCacheVista(void)
 			// TODO: Continue with other drives?
 			snprintf(errbuf, sizeof(errbuf), C_("CacheTab|Win32",
 				"ERROR: IEmptyVolumeCache::Initialize() failed on drive %c. (hr == 0x%08X)"),
-				(char)szDrivePath[0], hr);
+				(char)szDrivePath[0], static_cast<unsigned int>(hr));
 			SetWindowText(hStatusLabel, U82T_c(errbuf));
 			SendMessage(hProgressBar, PBM_SETSTATE, PBST_ERROR, 0);
 			pCallback->Release();
@@ -506,7 +508,7 @@ int CacheTabPrivate::clearThumbnailCacheVista(void)
 			// Cleanup failed. (TODO: Figure out why!)
 			snprintf(errbuf, sizeof(errbuf), C_("CacheTab|Win32",
 				"ERROR: IEmptyVolumeCache::Purge() failed on drive %c. (hr == 0x%08X)"),
-				(char)szDrivePath[0], hr);
+				(char)szDrivePath[0], static_cast<unsigned int>(hr));
 			SetWindowText(hStatusLabel, U82T_c(errbuf));
 			SendMessage(hProgressBar, PBM_SETSTATE, PBST_ERROR, 0);
 			pCallback->Release();

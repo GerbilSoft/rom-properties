@@ -16,6 +16,8 @@ The following changes have been made to the original:
 - xenia_lzx.c: Xenia's lzx_decompress() function. Rewritten to compile as
   C code in all supported compilers, including MSVC 2010.
 
+- Fixed several -Wformat warnings.
+
 To obtain the original libmspack:
 - Original: https://www.cabextract.org.uk/libmspack/
 - Xenia: https://github.com/xenia-project/xenia/tree/master/third_party/mspack

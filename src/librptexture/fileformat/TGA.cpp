@@ -905,7 +905,9 @@ int TGA::getFields(RomFields *fields) const
 			const int gamma = (int)(((double)tgaExtArea->gamma_value.numerator /
 						 (double)tgaExtArea->gamma_value.denominator) * 10);
 			fields->addField_string(C_("TGA", "Gamma Value"),
-				rp_sprintf("%u.%u", gamma / 10, gamma % 10));
+				rp_sprintf("%u.%u",
+					static_cast<unsigned int>(gamma / 10),
+					static_cast<unsigned int>(gamma % 10)));
 		}
 	}
 

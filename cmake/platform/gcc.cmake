@@ -39,7 +39,11 @@ UNSET(RP_C11_CFLAG)
 UNSET(RP_CXX11_CXXFLAG)
 
 # Test for common CFLAGS and CXXFLAGS.
-FOREACH(FLAG_TEST "-Wall" "-Wextra" "-Wno-multichar" "-fstrict-aliasing" "-fno-common" "-Werror=return-type")
+# NOTE: Not adding -Werror=format-nonliteral because there are some
+# legitimate uses of non-literal format strings.
+SET(CFLAGS_WARNINGS -Wall -Wextra -Wno-multichar)
+SET(CFLAGS_WERROR_FORMAT -Werror=format -Werror=format-security -Werror=format-signedness -Werror=format-truncation -Werror=format-y2k)
+FOREACH(FLAG_TEST ${CFLAGS_WARNINGS} ${CFLAGS_WERROR_FORMAT} "-fstrict-aliasing" "-fno-common" "-Werror=return-type")
 	# CMake doesn't like certain characters in variable names.
 	STRING(REGEX REPLACE "/|:|=" "_" FLAG_TEST_VARNAME "${FLAG_TEST}")
 

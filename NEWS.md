@@ -2,6 +2,20 @@
 
 ## v1.9 (released 2021/??/??)
 
+* New parsers:
+  * GodotSTEX: Godot 3 and 4 texture files. Supports most linear encodings,
+    S3TC, BC4, BC5, RGTC, BC7, PVRTC-I, ETC1, ETC2, and ASTC. Note that
+    ASTC isn't officially supported; the format value 0x25 is used by
+    Sonic Colors Ultimate. (0x25 is used for a Basis Universal format in
+    Godot 4.)
+  * ASTC: ASTC texture format. This is a minimal header format for textures
+    encoded using ASTC.
+
+* New parser features:
+  * Added ASTC decoding. All texture formats that support ASTC have been
+    updated to allow decoding ASTC textures. (HDR is not supported, and
+    the LDR decoder is rather slow.)
+
 * Bug fixes:
   * EXE: Improve runtime DLL detection in some cases.
   * SNES: Fix detection of games that declare usage of the S-RTC chip
@@ -12,6 +26,16 @@
     thumbnail will still be used for thumbnail previews. This should fix
     some issues with Windows 8/10/11 file associations.
     * See issues: #241, #318, #319
+  * Windows: Don't square images before returning them for IExtractImage and
+    IThumbnailProviders. Icons are still squared for IExtractIcon, since
+    Windows doesn't really like non-square icons.
+  * PVRTC-I requires power-of-2 textures. We're currently using a
+    slightly-modified PVRTC-I decoder for PVRTC-II as well, so we have to
+    enforce power-of-2 textures for PVRTC-II for now.
+  * DXT3 decoding now always uses the 4-color (c0 > c1) palette. Previously,
+    I implemented this as (c0 ≤ c1) due to misleading documentation, which
+    didn't work correctly, so I disabled it entirely. Implementing it as
+    (c0 > c1) works correctly with the existing test images.
 
 ## v1.8.3 (released 2021/08/03)
 

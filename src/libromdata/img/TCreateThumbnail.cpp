@@ -16,6 +16,7 @@
 
 // librpbase, librpfile
 #include "librpbase/RomData.hpp"
+#include "librpbase/RomFields.hpp"
 #include "librpbase/config/Config.hpp"
 #include "librpbase/img/RpImageLoader.hpp"
 #include "librpfile/RpFile.hpp"
@@ -358,6 +359,42 @@ skip_image_check:
 		freeImgClass(pOutParams->retImg);
 		pOutParams->retImg = getNullImgClass();
 		return RPCT_SOURCE_FILE_ERROR;
+	}
+
+	if (imgpf & RomData::IMGPF_RESCALE_RFT_DIMENSIONS_2) {
+		// Find the second RFT_DIMENSIONS field.
+		const RomFields *const fields = romData->fields();
+		const RomFields::Field *field[2] = {nullptr, nullptr};
+		const auto iter_end = fields->cend();
+		for (auto iter = fields->cbegin(); iter != iter_end; ++iter) {
+			if (iter->type != RomFields::RFT_DIMENSIONS)
+				continue;
+			// Found an RFT_DIMENSIONS.
+			if (!field[0]) {
+				field[0] = &(*iter);
+			} else {
+				field[1] = &(*iter);
+				break;
+			}
+		}
+
+		if (field[1]) {
+			// Found dimensions.
+			ImgSize rescaleSize = {
+				field[1]->data.dimensions[0],
+				field[1]->data.dimensions[1],
+			};
+			ImgClass scaled_img = rescaleImgClass(pOutParams->retImg, rescaleSize);
+			if (isImgClassValid(scaled_img)) {
+				freeImgClass(pOutParams->retImg);
+				pOutParams->retImg = scaled_img;
+				pOutParams->fullSize = rescaleSize;
+
+				// Disable nearest-neighbor scaling, since we already lost
+				// pixel-perfect sharpness with the rescale.
+				imgpf &= ~RomData::IMGPF_RESCALE_NEAREST;
+			}
+		}
 	}
 
 	if (imgpf & RomData::IMGPF_RESCALE_ASPECT_8to7) {

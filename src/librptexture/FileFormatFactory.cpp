@@ -24,8 +24,10 @@ using std::unordered_set;
 using std::vector;
 
 // FileFormat subclasses.
+#include "fileformat/ASTC.hpp"
 #include "fileformat/DidjTex.hpp"
 #include "fileformat/DirectDrawSurface.hpp"
+#include "fileformat/GodotSTEX.hpp"
 #include "fileformat/KhronosKTX.hpp"
 #include "fileformat/KhronosKTX2.hpp"
 #include "fileformat/PowerVR3.hpp"
@@ -96,7 +98,16 @@ class FileFormatFactoryPrivate
 // definitely have a 32-bit magic number at address 0.
 // TODO: Add support for multiple magic numbers per class.
 const FileFormatFactoryPrivate::FileFormatFns FileFormatFactoryPrivate::FileFormatFns_magic[] = {
+	// FIXME: Proper byteswapping for ASTC.
+	// NOTE: There's byteswapping later on due to multi-char constant stuff
+#if SYS_BYTEORDER == SYS_LIL_ENDIAN
+	GetFileFormatFns(ASTC, 0x13ABA15C),	// Needs to be in multi-char constant format.
+#else /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
+	GetFileFormatFns(ASTC, 0x5CA1AB13),	// Needs to be in multi-char constant format.
+#endif
 	GetFileFormatFns(DirectDrawSurface, 'DDS '),
+	GetFileFormatFns(GodotSTEX, 'GDST'),
+	GetFileFormatFns(GodotSTEX, 'GST2'),
 	GetFileFormatFns(PowerVR3, 'PVR\x03'),
 	GetFileFormatFns(PowerVR3, '\x03RVP'),
 	GetFileFormatFns(SegaPVR, 'PVRT'),

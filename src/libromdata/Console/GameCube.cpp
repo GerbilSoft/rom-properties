@@ -2169,9 +2169,9 @@ int GameCube::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) c
 	if (isDisc2) {
 		// Disc 2 (or 3, or 4...)
 		// Request the disc 2 image first.
-		char discName[16];
-		snprintf(discName, sizeof(discName), "%s%u",
-			 imageTypeName, d->discHeader.disc_number+1);
+		char discName[20];
+		snprintf(discName, sizeof(discName), "%.16s%u",
+			 imageTypeName, static_cast<unsigned int>(d->discHeader.disc_number) + 1);
 
 		for (auto tdb_iter = tdb_lc.cbegin();
 		     tdb_iter != tdb_lc_cend; ++tdb_iter, ++extURL_iter)

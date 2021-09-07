@@ -18,17 +18,13 @@ using LibRpFile::IRpFile;
 // cinttypes was added in MSVC 2013.
 // For older versions, we'll need to manually define PRIX64.
 // TODO: Split into a separate header file?
-// FIXME: MinGW v6:
-// ELF.cpp:1209:72: warning: unknown conversion type character ‘l’ in format [-Wformat=]
-#if !defined(_MSC_VER) || _MSC_VER >= 1800
-#  include <cinttypes>
+#if defined(_MSC_VER) && _MSC_VER < 1700
+// MSVC 2013 added cinttypes.h.
+// Older versions don't have it.
+#  define PRIX64 "I64X"
 #else
-#  ifndef PRIx64
-#    define PRIx64 "I64x"
-#  endif
-#  ifndef PRIX64
-#    define PRIX64 "I64X"
-#  endif
+#  define __STDC_FORMAT_MACROS
+#  include <cinttypes>
 #endif
 
 // C++ STL classes.

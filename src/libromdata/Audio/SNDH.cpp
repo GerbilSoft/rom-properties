@@ -842,7 +842,7 @@ int SNDH::loadFieldData(void)
 	// Timer frequencies.
 	// TODO: Use RFT_LISTDATA?
 	const char *const s_timer_freq = C_("SNDH", "Timer %c Freq");
-	for (unsigned int i = 0; i < (unsigned int)ARRAY_SIZE(tags.timer_freq); i++) {
+	for (int i = 0; i < ARRAY_SIZE_I(tags.timer_freq); i++) {
 		if (tags.timer_freq[i] == 0)
 			continue;
 

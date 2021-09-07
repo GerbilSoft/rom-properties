@@ -25,11 +25,15 @@ SET(${PROJECT_NAME}_SRCS
 	decoder/ImageDecoder_DC.cpp
 	decoder/ImageDecoder_ETC1.cpp
 	decoder/ImageDecoder_BC7.cpp
+
+	decoder/ImageSizeCalc.cpp
 	decoder/PixelConversion.cpp
 
 	fileformat/FileFormat.cpp
+	fileformat/ASTC.cpp
 	fileformat/DidjTex.cpp
 	fileformat/DirectDrawSurface.cpp
+	fileformat/GodotSTEX.cpp
 	fileformat/KhronosKTX.cpp
 	fileformat/KhronosKTX2.cpp
 	fileformat/PowerVR3.cpp
@@ -53,13 +57,16 @@ SET(${PROJECT_NAME}_H
 
 	decoder/ImageDecoder.hpp
 	decoder/ImageDecoder_p.hpp
+	decoder/ImageSizeCalc.hpp
 	decoder/PixelConversion.hpp
 
 	fileformat/FileFormat.hpp
 	fileformat/FileFormat_p.hpp
 	fileformat/FileFormat_decl.hpp
+	fileformat/ASTC.hpp
 	fileformat/DidjTex.hpp
 	fileformat/DirectDrawSurface.hpp
+	fileformat/GodotSTEX.hpp
 	fileformat/KhronosKTX.hpp
 	fileformat/KhronosKTX2.hpp
 	fileformat/PowerVR3.hpp
@@ -69,8 +76,10 @@ SET(${PROJECT_NAME}_H
 	fileformat/ValveVTF3.hpp
 	fileformat/XboxXPR.hpp
 
+	fileformat/astc_structs.h
 	fileformat/dds_structs.h
 	fileformat/didj_tex_structs.h
+	fileformat/godot_stex_structs.h
 	fileformat/ktx_structs.h
 	fileformat/ktx_structs.h
 	fileformat/pvr_structs.h
@@ -99,8 +108,11 @@ IF(WIN32)
 ENDIF(WIN32)
 
 IF(ENABLE_PVRTC)
-	SET(${PROJECT_NAME}_PVRTC_SRCS decoder/ImageDecoder_PVRTC.cpp)
+	SET(${PROJECT_NAME}_SRCS ${${PROJECT_NAME}_SRCS} decoder/ImageDecoder_PVRTC.cpp)
 ENDIF(ENABLE_PVRTC)
+IF(ENABLE_ASTC)
+	SET(${PROJECT_NAME}_SRCS ${${PROJECT_NAME}_SRCS} decoder/ImageDecoder_ASTC.cpp)
+ENDIF(ENABLE_ASTC)
 
 # CPU-specific and optimized sources.
 IF(CPU_i386 OR CPU_amd64)
@@ -114,6 +126,7 @@ IF(CPU_i386 OR CPU_amd64)
 		decoder/ImageDecoder_Linear_sse2.cpp
 		)
 	SET(${PROJECT_NAME}_SSSE3_SRCS
+		img/rp_image_ops_ssse3.cpp
 		decoder/ImageDecoder_Linear_ssse3.cpp
 		)
 	# TODO: Disable SSE 4.1 if not supported by the compiler?
@@ -189,7 +202,6 @@ ADD_LIBRARY(${PROJECT_NAME} STATIC
 	${${PROJECT_NAME}_PCH_SRC} ${${PROJECT_NAME}_PCH_H}
 	${${PROJECT_NAME}_SRCS} ${${PROJECT_NAME}_H}
 	${${PROJECT_NAME}_OS_SRCS} ${${PROJECT_NAME}_OS_H}
-	${${PROJECT_NAME}_PVRTC_SRCS}
 	${${PROJECT_NAME}_IFUNC_SRCS}
 	${${PROJECT_NAME}_MMX_SRCS}
 	${${PROJECT_NAME}_SSE2_SRCS}
@@ -239,6 +251,11 @@ TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE ${ZLIB_LIBRARY})
 IF(ENABLE_PVRTC)
 	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE pvrtc)
 ENDIF(ENABLE_PVRTC)
+
+# ASTC decoder from Basis Universal
+IF(ENABLE_ASTC)
+	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE basisu_astc)
+ENDIF(ENABLE_ASTC)
 
 # Other libraries.
 IF(WIN32)

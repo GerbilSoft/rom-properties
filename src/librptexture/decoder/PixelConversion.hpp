@@ -700,6 +700,20 @@ static inline uint32_t A8_to_ARGB32(uint8_t px8)
 	return (px8 << 24);
 }
 
+// Other
+
+/**
+ * Convert an R8 pixel to ARGB32.
+ * @param px8 R8 pixel.
+ * @return ARGB32 pixel.
+ */
+static inline uint32_t R8_to_ARGB32(uint8_t px8)
+{
+	//     R8: RRRRRRRR
+	// ARGB32: AAAAAAAA RRRRRRRR GGGGGGGG BBBBBBBB
+	return 0xFF000000U | (static_cast<uint32_t>(px8) << 16);
+}
+
 } }
 
 #endif /* __ROMPROPERTIES_LIBRPTEXTURE_DECODER_PIXELCONVERSION_HPP__ */

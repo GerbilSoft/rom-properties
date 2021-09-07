@@ -29,6 +29,7 @@ using LibRpFile::IRpFile;
 // librptexture
 #include "img/rp_image.hpp"
 #include "decoder/ImageDecoder.hpp"
+#include "decoder/ImageSizeCalc.hpp"
 
 // C++ STL classes.
 using std::string;
@@ -223,26 +224,37 @@ const rp_image *KhronosKTXPrivate::loadImage(void)
 				case GL_COMPRESSED_RGB_PVRTC_2BPPV1_IMG:
 				case GL_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG:
 					// 32 pixels compressed into 64 bits. (2bpp)
-					expected_size = (ktxHeader.pixelWidth * height) / 4;
+					// NOTE: Image dimensions must be a power of 2 for PVRTC-I.
+					expected_size = ImageSizeCalc::calcImageSizePVRTC_PoT<true>(
+						ktxHeader.pixelWidth, height);
 					break;
 
 				case GL_COMPRESSED_RGBA_PVRTC_2BPPV2_IMG:
 					// 32 pixels compressed into 64 bits. (2bpp)
 					// NOTE: Width and height must be rounded to the nearest tile. (8x4)
-					expected_size = ALIGN_BYTES(8, ktxHeader.pixelWidth) *
-					                ALIGN_BYTES(4, (int)height) / 4;
+					// FIXME: Our PVRTC-II decoder requires power-of-2 textures right now.
+					//expected_size = ALIGN_BYTES(8, ktxHeader.pixelWidth) *
+					//                ALIGN_BYTES(4, (int)height) / 4;
+					expected_size = ImageSizeCalc::calcImageSizePVRTC_PoT<true>
+						(ktxHeader.pixelWidth, height);
 					break;
 
 				case GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG:
 				case GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG:
 					// 16 pixels compressed into 64 bits. (4bpp)
-					expected_size = (ktxHeader.pixelWidth * height) / 2;
+					// NOTE: Image dimensions must be a power of 2 for PVRTC-I.
+					expected_size = ImageSizeCalc::calcImageSizePVRTC_PoT<false>(
+						ktxHeader.pixelWidth, height);
 					break;
 
 				case GL_COMPRESSED_RGBA_PVRTC_4BPPV2_IMG:
+					// 16 pixels compressed into 64 bits. (4bpp)
 					// NOTE: Width and height must be rounded to the nearest tile. (4x4)
-					expected_size = ALIGN_BYTES(4, ktxHeader.pixelWidth) *
-					                ALIGN_BYTES(4, (int)height) / 2;
+					// FIXME: Our PVRTC-II decoder requires power-of-2 textures right now.
+					//expected_size = ALIGN_BYTES(4, ktxHeader.pixelWidth) *
+					//                ALIGN_BYTES(4, (int)height) / 2;
+					expected_size = ImageSizeCalc::calcImageSizePVRTC_PoT<false>
+						(ktxHeader.pixelWidth, height);
 					break;
 #endif /* ENABLE_PVRTC */
 
@@ -294,6 +306,79 @@ const rp_image *KhronosKTXPrivate::loadImage(void)
 					// TODO: Does KTX handle GL_RGB9_E5 as compressed?
 					expected_size = ktxHeader.pixelWidth * height * 4;
 					break;
+
+#ifdef ENABLE_ASTC
+				case GL_COMPRESSED_RGBA_ASTC_4x4_KHR:
+				case GL_COMPRESSED_SRGB8_ALPHA8_ASTC_4x4_KHR:
+					expected_size = ImageSizeCalc::calcImageSizeASTC(
+						ktxHeader.pixelWidth, height, 4, 4);
+					break;
+				case GL_COMPRESSED_RGBA_ASTC_5x4_KHR:
+				case GL_COMPRESSED_SRGB8_ALPHA8_ASTC_5x4_KHR:
+					expected_size = ImageSizeCalc::calcImageSizeASTC(
+						ktxHeader.pixelWidth, height, 5, 4);
+					break;
+				case GL_COMPRESSED_RGBA_ASTC_5x5_KHR:
+				case GL_COMPRESSED_SRGB8_ALPHA8_ASTC_5x5_KHR:
+					expected_size = ImageSizeCalc::calcImageSizeASTC(
+						ktxHeader.pixelWidth, height, 5, 5);
+					break;
+				case GL_COMPRESSED_RGBA_ASTC_6x5_KHR:
+				case GL_COMPRESSED_SRGB8_ALPHA8_ASTC_6x5_KHR:
+					expected_size = ImageSizeCalc::calcImageSizeASTC(
+						ktxHeader.pixelWidth, height, 6, 5);
+					break;
+				case GL_COMPRESSED_RGBA_ASTC_6x6_KHR:
+				case GL_COMPRESSED_SRGB8_ALPHA8_ASTC_6x6_KHR:
+					expected_size = ImageSizeCalc::calcImageSizeASTC(
+						ktxHeader.pixelWidth, height, 6, 6);
+					break;
+				case GL_COMPRESSED_RGBA_ASTC_8x5_KHR:
+				case GL_COMPRESSED_SRGB8_ALPHA8_ASTC_8x5_KHR:
+					expected_size = ImageSizeCalc::calcImageSizeASTC(
+						ktxHeader.pixelWidth, height, 8, 5);
+					break;
+				case GL_COMPRESSED_RGBA_ASTC_8x6_KHR:
+				case GL_COMPRESSED_SRGB8_ALPHA8_ASTC_8x6_KHR:
+					expected_size = ImageSizeCalc::calcImageSizeASTC(
+						ktxHeader.pixelWidth, height, 8, 6);
+					break;
+				case GL_COMPRESSED_RGBA_ASTC_8x8_KHR:
+				case GL_COMPRESSED_SRGB8_ALPHA8_ASTC_8x8_KHR:
+					expected_size = ImageSizeCalc::calcImageSizeASTC(
+						ktxHeader.pixelWidth, height, 8, 8);
+					break;
+				case GL_COMPRESSED_RGBA_ASTC_10x5_KHR:
+				case GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x5_KHR:
+					expected_size = ImageSizeCalc::calcImageSizeASTC(
+						ktxHeader.pixelWidth, height, 10, 5);
+					break;
+				case GL_COMPRESSED_RGBA_ASTC_10x6_KHR:
+				case GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x6_KHR:
+					expected_size = ImageSizeCalc::calcImageSizeASTC(
+						ktxHeader.pixelWidth, height, 10, 6);
+					break;
+				case GL_COMPRESSED_RGBA_ASTC_10x8_KHR:
+				case GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x8_KHR:
+					expected_size = ImageSizeCalc::calcImageSizeASTC(
+						ktxHeader.pixelWidth, height, 10, 8);
+					break;
+				case GL_COMPRESSED_RGBA_ASTC_10x10_KHR:
+				case GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x10_KHR:
+					expected_size = ImageSizeCalc::calcImageSizeASTC(
+						ktxHeader.pixelWidth, height, 10, 10);
+					break;
+				case GL_COMPRESSED_RGBA_ASTC_12x10_KHR:
+				case GL_COMPRESSED_SRGB8_ALPHA8_ASTC_12x10_KHR:
+					expected_size = ImageSizeCalc::calcImageSizeASTC(
+						ktxHeader.pixelWidth, height, 12, 10);
+					break;
+				case GL_COMPRESSED_RGBA_ASTC_12x12_KHR:
+				case GL_COMPRESSED_SRGB8_ALPHA8_ASTC_12x12_KHR:
+					expected_size = ImageSizeCalc::calcImageSizeASTC(
+						ktxHeader.pixelWidth, height, 12, 12);
+					break;
+#endif /* ENABLE_ASTC */
 
 				default:
 					// Not supported.
@@ -554,6 +639,92 @@ const rp_image *KhronosKTXPrivate::loadImage(void)
 						reinterpret_cast<const uint32_t*>(buf.get()), expected_size);
 					break;
 
+#ifdef ENABLE_ASTC
+				case GL_COMPRESSED_RGBA_ASTC_4x4_KHR:
+				case GL_COMPRESSED_SRGB8_ALPHA8_ASTC_4x4_KHR:
+					img = ImageDecoder::fromASTC(
+						ktxHeader.pixelWidth, height,
+						buf.get(), expected_size, 4, 4);
+					break;
+				case GL_COMPRESSED_RGBA_ASTC_5x4_KHR:
+				case GL_COMPRESSED_SRGB8_ALPHA8_ASTC_5x4_KHR:
+					img = ImageDecoder::fromASTC(
+						ktxHeader.pixelWidth, height,
+						buf.get(), expected_size, 5, 4);
+					break;
+				case GL_COMPRESSED_RGBA_ASTC_5x5_KHR:
+				case GL_COMPRESSED_SRGB8_ALPHA8_ASTC_5x5_KHR:
+					img = ImageDecoder::fromASTC(
+						ktxHeader.pixelWidth, height,
+						buf.get(), expected_size, 5, 5);
+					break;
+				case GL_COMPRESSED_RGBA_ASTC_6x5_KHR:
+				case GL_COMPRESSED_SRGB8_ALPHA8_ASTC_6x5_KHR:
+					img = ImageDecoder::fromASTC(
+						ktxHeader.pixelWidth, height,
+						buf.get(), expected_size, 6, 5);
+					break;
+				case GL_COMPRESSED_RGBA_ASTC_6x6_KHR:
+				case GL_COMPRESSED_SRGB8_ALPHA8_ASTC_6x6_KHR:
+					img = ImageDecoder::fromASTC(
+						ktxHeader.pixelWidth, height,
+						buf.get(), expected_size, 6, 6);
+					break;
+				case GL_COMPRESSED_RGBA_ASTC_8x5_KHR:
+				case GL_COMPRESSED_SRGB8_ALPHA8_ASTC_8x5_KHR:
+					img = ImageDecoder::fromASTC(
+						ktxHeader.pixelWidth, height,
+						buf.get(), expected_size, 8, 5);
+					break;
+				case GL_COMPRESSED_RGBA_ASTC_8x6_KHR:
+				case GL_COMPRESSED_SRGB8_ALPHA8_ASTC_8x6_KHR:
+					img = ImageDecoder::fromASTC(
+						ktxHeader.pixelWidth, height,
+						buf.get(), expected_size, 8, 6);
+					break;
+				case GL_COMPRESSED_RGBA_ASTC_8x8_KHR:
+				case GL_COMPRESSED_SRGB8_ALPHA8_ASTC_8x8_KHR:
+					img = ImageDecoder::fromASTC(
+						ktxHeader.pixelWidth, height,
+						buf.get(), expected_size, 8, 8);
+					break;
+				case GL_COMPRESSED_RGBA_ASTC_10x5_KHR:
+				case GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x5_KHR:
+					img = ImageDecoder::fromASTC(
+						ktxHeader.pixelWidth, height,
+						buf.get(), expected_size, 10, 5);
+					break;
+				case GL_COMPRESSED_RGBA_ASTC_10x6_KHR:
+				case GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x6_KHR:
+					img = ImageDecoder::fromASTC(
+						ktxHeader.pixelWidth, height,
+						buf.get(), expected_size, 10, 6);
+					break;
+				case GL_COMPRESSED_RGBA_ASTC_10x8_KHR:
+				case GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x8_KHR:
+					img = ImageDecoder::fromASTC(
+						ktxHeader.pixelWidth, height,
+						buf.get(), expected_size, 10, 8);
+					break;
+				case GL_COMPRESSED_RGBA_ASTC_10x10_KHR:
+				case GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x10_KHR:
+					img = ImageDecoder::fromASTC(
+						ktxHeader.pixelWidth, height,
+						buf.get(), expected_size, 10, 10);
+					break;
+				case GL_COMPRESSED_RGBA_ASTC_12x10_KHR:
+				case GL_COMPRESSED_SRGB8_ALPHA8_ASTC_12x10_KHR:
+					img = ImageDecoder::fromASTC(
+						ktxHeader.pixelWidth, height,
+						buf.get(), expected_size, 12, 10);
+					break;
+				case GL_COMPRESSED_RGBA_ASTC_12x12_KHR:
+				case GL_COMPRESSED_SRGB8_ALPHA8_ASTC_12x12_KHR:
+					img = ImageDecoder::fromASTC(
+						ktxHeader.pixelWidth, height,
+						buf.get(), expected_size, 12, 12);
+					break;
+#endif /* ENABLE_ASTC */
 				default:
 					// Not supported.
 					break;

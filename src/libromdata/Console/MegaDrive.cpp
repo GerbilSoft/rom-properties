@@ -614,7 +614,7 @@ void MegaDrivePrivate::addFields_vectorTable(const M68K_VectorTable *pVectors)
 		data_row.reserve(3);
 
 		// Actual vector number.
-		const uint8_t vector_index = vectors_map[i];
+		const unsigned int vector_index = vectors_map[i];
 
 		// #
 		// NOTE: This is the byte address in the vector table.

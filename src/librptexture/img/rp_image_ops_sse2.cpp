@@ -12,7 +12,7 @@
 #include "rp_image_p.hpp"
 #include "rp_image_backend.hpp"
 
-// SSE2 intrinsics.
+// SSE2 intrinsics
 #include <emmintrin.h>
 
 // Workaround for RP_D() expecting the no-underscore, UpperCamelCase naming convention.

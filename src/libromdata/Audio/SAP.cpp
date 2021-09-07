@@ -618,7 +618,7 @@ int SAP::loadFieldData(void)
 			rp_sprintf("%c", tags.type));
 	} else {
 		d->fields->addField_string(type_title,
-			rp_sprintf("0x%02X", tags.type),
+			rp_sprintf("0x%02X", static_cast<unsigned int>(tags.type)),
 			RomFields::STRF_MONOSPACE);
 	}
 

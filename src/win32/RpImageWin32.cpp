@@ -319,6 +319,18 @@ HICON RpImageWin32::toHICON(const rp_image *image)
 		return nullptr;
 	}
 
+	// Windows doesn't like non-square icons.
+	// Add extra transparent columns/rows before
+	// converting to HBITMAP.
+	rp_image *tmp_img = nullptr;
+	if (!image->isSquare()) {
+		// Image is non-square.
+		tmp_img = image->squared();
+		if (tmp_img) {
+			image = tmp_img;
+		}
+	}
+
 	// We should be using the RpGdiplusBackend.
 	const RpGdiplusBackend *backend =
 		dynamic_cast<const RpGdiplusBackend*>(image->backend());
@@ -356,6 +368,7 @@ cleanup:
 		DeleteBitmap(hBitmap);
 	if (hbmMask)
 		DeleteBitmap(hbmMask);
+	UNREF(tmp_img);
 	return hIcon;
 }
 
@@ -467,10 +480,37 @@ HICON RpImageWin32::toHICON(HBITMAP hBitmap)
 	// NOTE: Windows doesn't seem to have any way to get
 	// direct access to the HBITMAP's pixels, so this step
 	// step is required. (GetDIBits() copies the pixels.)
-	rp_image *const img = fromHBITMAP(hBitmap);
+	rp_image *img = fromHBITMAP(hBitmap);
 	if (!img) {
 		// Error converting to rp_image.
 		return nullptr;
+	}
+
+	// Windows doesn't like non-square icons.
+	// Add extra transparent columns/rows before
+	// converting to HBITMAP.
+	HBITMAP hBmpTmp = nullptr;
+	if (!img->isSquare()) {
+		// Image is non-square.
+		rp_image *const tmp_img = img->squared();
+		if (tmp_img) {
+			UNREF(img);
+			img = tmp_img;
+		}
+
+		// Create a new temporary bitmap.
+		const RpGdiplusBackend* backend =
+			dynamic_cast<const RpGdiplusBackend*>(img->backend());
+		assert(backend != nullptr);
+		if (!backend) {
+			// Incorrect backend set.
+			UNREF(img);
+			return nullptr;
+		}
+		hBmpTmp = const_cast<RpGdiplusBackend*>(backend)->toHBITMAP_alpha();
+		if (hBmpTmp) {
+			hBitmap = hBmpTmp;
+		}
 	}
 
 	// Convert the image to an icon mask.
@@ -478,6 +518,9 @@ HICON RpImageWin32::toHICON(HBITMAP hBitmap)
 	if (!hbmMask) {
 		// Failed to create the icon mask.
 		img->unref();
+		if (hBmpTmp) {
+			DeleteBitmap(hBmpTmp);
+		}
 		return nullptr;
 	}
 
@@ -493,8 +536,11 @@ HICON RpImageWin32::toHICON(HBITMAP hBitmap)
 	// Create the icon.
 	HICON hIcon = CreateIconIndirect(&ii);
 
-	// Delete the icon mask bitmap and we're done.
+	// Delete the bitmaps and we're done.
 	DeleteBitmap(hbmMask);
+	if (hBmpTmp) {
+		DeleteBitmap(hBmpTmp);
+	}
 	img->unref();
 	return hIcon;
 }

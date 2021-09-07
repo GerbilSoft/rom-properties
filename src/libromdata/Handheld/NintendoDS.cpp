@@ -1024,7 +1024,8 @@ int NintendoDS::loadFieldData(void)
 		} else {
 			d->fields->addField_string(publisher_title,
 				rp_sprintf(C_("RomData", "Unknown (%02X %02X)"),
-					romHeader->company[0], romHeader->company[1]));
+					static_cast<unsigned int>(romHeader->company[0]),
+					static_cast<unsigned int>(romHeader->company[1])));
 		}
 	}
 

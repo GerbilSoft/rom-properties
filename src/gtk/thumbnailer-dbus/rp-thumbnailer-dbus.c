@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (D-Bus Thumbnailer)                *
  * rp-thumbnailer-dbus.c: D-Bus thumbnailer service.                       *
  *                                                                         *
- * Copyright (c) 2017-2020 by David Korth.                                 *
+ * Copyright (c) 2017-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -91,7 +91,7 @@ struct _RpThumbnailerClass {
 	guint signal_ids[SIGNAL_LAST];
 };
 
-#define SHUTDOWN_TIMEOUT_SECONDS 30
+#define SHUTDOWN_TIMEOUT_SECONDS 30U
 
 // Thumbnail request information.
 struct request_info {

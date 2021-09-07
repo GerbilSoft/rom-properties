@@ -1695,7 +1695,10 @@ int Xbox360_XEX::loadFieldData(void)
 	string s_minver;
 	if (minver.u32 != 0) {
 		s_minver = rp_sprintf("%u.%u.%u.%u",
-			minver.major, minver.minor, minver.build, minver.qfe);
+			static_cast<unsigned int>(minver.major),
+			static_cast<unsigned int>(minver.minor),
+			static_cast<unsigned int>(minver.build),
+			static_cast<unsigned int>(minver.qfe));
 	} else {
 		s_minver = C_("RomData", "Unknown");
 	}

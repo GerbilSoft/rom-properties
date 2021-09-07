@@ -38,10 +38,10 @@ using std::u16string;
 // but this seems to work on Windows XP.
 // NOTE 2: AURL_ENABLEEMAILADDR might only work on Win8+.
 #ifndef AURL_ENABLEURL
-# define AURL_ENABLEURL 1
+#  define AURL_ENABLEURL 1
 #endif
 #ifndef AURL_ENABLEEMAILADDR
-# define AURL_ENABLEEMAILADDR 2
+#  define AURL_ENABLEEMAILADDR 2
 #endif
 // Uncomment to enable use of RichEdit 4.1 if available.
 // FIXME: Friendly links aren't underlined or blue on WinXP or Win7...
@@ -50,14 +50,14 @@ using std::u16string;
 
 // Other libraries.
 #ifdef HAVE_ZLIB
-# include <zlib.h>
+#  include <zlib.h>
 #endif
 #ifdef HAVE_PNG
-# include "librpbase/img/APNG_dlopen.h"
-# include <png.h>
+#  include "librpbase/img/APNG_dlopen.h"
+#  include <png.h>
 #endif
 #ifdef ENABLE_XML
-# include "tinyxml2.h"
+#  include "tinyxml2.h"
 #endif
 
 // Useful RTF strings.
@@ -740,9 +740,9 @@ void AboutTabPrivate::initLibrariesTab(void)
 	/** TinyXML2 **/
 #ifdef ENABLE_XML
 	snprintf(sVerBuf, sizeof(sVerBuf), "TinyXML2 %u.%u.%u",
-		TIXML2_MAJOR_VERSION,
-		TIXML2_MINOR_VERSION,
-		TIXML2_PATCH_VERSION);
+		static_cast<unsigned int>(TIXML2_MAJOR_VERSION),
+		static_cast<unsigned int>(TIXML2_MINOR_VERSION),
+		static_cast<unsigned int>(TIXML2_PATCH_VERSION));
 
 	// FIXME: Runtime version?
 	sLibraries += RTF_BR RTF_BR;
@@ -759,13 +759,13 @@ void AboutTabPrivate::initLibrariesTab(void)
 #if defined(HAVE_GETTEXT) && defined(LIBINTL_VERSION)
 	if (LIBINTL_VERSION & 0xFF) {
 		snprintf(sVerBuf, sizeof(sVerBuf), "GNU gettext %u.%u.%u",
-			LIBINTL_VERSION >> 16,
-			(LIBINTL_VERSION >> 8) & 0xFF,
-			LIBINTL_VERSION & 0xFF);
+			static_cast<unsigned int>( LIBINTL_VERSION >> 16),
+			static_cast<unsigned int>((LIBINTL_VERSION >>  8) & 0xFF),
+			static_cast<unsigned int>( LIBINTL_VERSION        & 0xFF));
 	} else {
 		snprintf(sVerBuf, sizeof(sVerBuf), "GNU gettext %u.%u",
-			LIBINTL_VERSION >> 16,
-			(LIBINTL_VERSION >> 8) & 0xFF);
+			static_cast<unsigned int>( LIBINTL_VERSION >> 16),
+			static_cast<unsigned int>((LIBINTL_VERSION >>  8) & 0xFF));
 	}
 
 	sLibraries += RTF_BR RTF_BR;

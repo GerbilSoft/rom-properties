@@ -84,7 +84,7 @@ GdkPixbuf *GdkImageConv::rp_image_to_GdkPixbuf_cpp(const rp_image *img)
 			// Get the palette.
 			array<uint32_t, 256> palette;
 			int i;
-			for (i = 0; i < src_pal_len; i += 2, src_pal += 2) {
+			for (i = 0; i+1 < src_pal_len; i += 2, src_pal += 2) {
 				// Swap the R and B channels in the palette.
 				palette[i+0] = (src_pal[0] & 0xFF00FF00) |
 					      ((src_pal[0] & 0x00FF0000) >> 16) |
