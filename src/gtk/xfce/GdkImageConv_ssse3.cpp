@@ -98,10 +98,8 @@ GdkPixbuf *GdkImageConv::rp_image_to_GdkPixbuf_ssse3(const rp_image *img)
 				const argb32_t *rpx_src = reinterpret_cast<const argb32_t*>(xmm_src);
 				argb32_t *rpx_dest = reinterpret_cast<argb32_t*>(xmm_dest);
 				for (; x > 0; x--) {
-					rpx_dest->a = rpx_src->a;
-					rpx_dest->r = rpx_src->b;
-					rpx_dest->g = rpx_src->g;
-					rpx_dest->b = rpx_src->r;
+					rpx_dest->u32 = rpx_src->u32;
+					std::swap(rpx_dest->r, rpx_dest->b);
 					rpx_src++;
 					rpx_dest++;
 				}
@@ -151,10 +149,8 @@ GdkPixbuf *GdkImageConv::rp_image_to_GdkPixbuf_ssse3(const rp_image *img)
 			src_pal = reinterpret_cast<const argb32_t*>(xmm_src);
 			argb32_t *dest_pal = reinterpret_cast<argb32_t*>(xmm_dest);
 			for (; i > 0; i--, dest_pal++, src_pal++) {
-				dest_pal->a = src_pal->a;
-				dest_pal->r = src_pal->b;
-				dest_pal->g = src_pal->g;
-				dest_pal->b = src_pal->r;
+				dest_pal->u32 = src_pal->u32;
+				std::swap(dest_pal->r, dest_pal->b);
 			}
 
 			// Zero out the rest of the palette if the new
