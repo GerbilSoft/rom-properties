@@ -13,6 +13,7 @@
 using std::array;
 
 // librptexture
+using LibRpTexture::argb32_t;
 using LibRpTexture::rp_image;
 
 /**
@@ -36,32 +37,38 @@ GdkPixbuf *GdkImageConv::rp_image_to_GdkPixbuf_cpp(const rp_image *img)
 	if (unlikely(!pixbuf))
 		return nullptr;
 
-	uint32_t *px_dest = reinterpret_cast<uint32_t*>(gdk_pixbuf_get_pixels(pixbuf));
+	argb32_t *px_dest = reinterpret_cast<argb32_t*>(gdk_pixbuf_get_pixels(pixbuf));
 	const int dest_stride_adj = (gdk_pixbuf_get_rowstride(pixbuf) / sizeof(*px_dest)) - width;
 
 	switch (img->format()) {
 		case rp_image::Format::ARGB32: {
 			// Copy the image data.
-			const uint32_t *img_buf = static_cast<const uint32_t*>(img->bits());
-			const int src_stride_adj = (img->stride() / sizeof(uint32_t)) - width;
+			const argb32_t *img_buf = static_cast<const argb32_t*>(img->bits());
+			const int src_stride_adj = (img->stride() / sizeof(argb32_t)) - width;
 			for (unsigned int y = (unsigned int)height; y > 0; y--) {
 				unsigned int x;
 				for (x = (unsigned int)width; x > 1; x -= 2) {
-					// Swap the R and B channels.
-					px_dest[0] = (img_buf[0] & 0xFF00FF00) |
-						    ((img_buf[0] & 0x00FF0000) >> 16) |
-						    ((img_buf[0] & 0x000000FF) << 16);
-					px_dest[1] = (img_buf[1] & 0xFF00FF00) |
-						    ((img_buf[1] & 0x00FF0000) >> 16) |
-						    ((img_buf[1] & 0x000000FF) << 16);
+					// Swap the R and B channels
+					px_dest[0].a = img_buf[0].a;
+					px_dest[0].r = img_buf[0].b;
+					px_dest[0].g = img_buf[0].g;
+					px_dest[0].b = img_buf[0].r;
+
+					px_dest[1].a = img_buf[1].a;
+					px_dest[1].r = img_buf[1].b;
+					px_dest[1].g = img_buf[1].g;
+					px_dest[1].b = img_buf[1].r;
+
 					img_buf += 2;
 					px_dest += 2;
 				}
 				if (x == 1) {
-					// Last pixel.
-					*px_dest = (*img_buf & 0xFF00FF00) |
-						  ((*img_buf & 0x00FF0000) >> 16) |
-						  ((*img_buf & 0x000000FF) << 16);
+					// Last pixel
+					px_dest->a = img_buf->a;
+					px_dest->r = img_buf->b;
+					px_dest->g = img_buf->g;
+					px_dest->b = img_buf->r;
+
 					img_buf++;
 					px_dest++;
 				}
@@ -74,7 +81,7 @@ GdkPixbuf *GdkImageConv::rp_image_to_GdkPixbuf_cpp(const rp_image *img)
 		}
 
 		case rp_image::Format::CI8: {
-			const uint32_t *src_pal = img->palette();
+			const argb32_t *src_pal = reinterpret_cast<const argb32_t*>(img->palette());
 			const int src_pal_len = img->palette_len();
 			assert(src_pal != nullptr);
 			assert(src_pal_len > 0);
@@ -82,22 +89,26 @@ GdkPixbuf *GdkImageConv::rp_image_to_GdkPixbuf_cpp(const rp_image *img)
 				break;
 
 			// Get the palette.
-			array<uint32_t, 256> palette;
+			array<argb32_t, 256> palette;
 			int i;
 			for (i = 0; i+1 < src_pal_len; i += 2, src_pal += 2) {
 				// Swap the R and B channels in the palette.
-				palette[i+0] = (src_pal[0] & 0xFF00FF00) |
-					      ((src_pal[0] & 0x00FF0000) >> 16) |
-					      ((src_pal[0] & 0x000000FF) << 16);
-				palette[i+1] = (src_pal[1] & 0xFF00FF00) |
-					      ((src_pal[1] & 0x00FF0000) >> 16) |
-					      ((src_pal[1] & 0x000000FF) << 16);
+				palette[i+0].a = src_pal[0].a;
+				palette[i+0].r = src_pal[0].b;
+				palette[i+0].g = src_pal[0].g;
+				palette[i+0].b = src_pal[0].r;
+
+				palette[i+1].a = src_pal[1].a;
+				palette[i+1].r = src_pal[1].b;
+				palette[i+1].g = src_pal[1].g;
+				palette[i+1].b = src_pal[1].r;
 			}
 			for (; i < src_pal_len; i++, src_pal++) {
 				// Last color.
-				palette[i] = (*src_pal & 0xFF00FF00) |
-					    ((*src_pal & 0x00FF0000) >> 16) |
-					    ((*src_pal & 0x000000FF) << 16);
+				palette[i].a = src_pal->a;
+				palette[i].b = src_pal->b;
+				palette[i].g = src_pal->g;
+				palette[i].r = src_pal->r;
 			}
 
 			// Zero out the rest of the palette if the new
