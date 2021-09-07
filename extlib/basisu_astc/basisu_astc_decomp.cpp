@@ -1262,12 +1262,26 @@ void unquantizeWeights (deUint32 dst[64], const ISEDecodedResult* weightGrid, co
 				const deUint32 b = getBit(weightGrid[weightNdx].m, 1);
 				const deUint32 c = getBit(weightGrid[weightNdx].m, 2);
 				const deUint32 A = a == 0 ? 0 : (1<<7)-1;
-				const deUint32 B = rangeCase == 2 ? 0
-								 : rangeCase == 3 ? 0
-								 : rangeCase == 4 ? (b << 6) |					(b << 2) |				(b << 0)
-								 : rangeCase == 5 ? (b << 6) |								(b << 1)
-								 : rangeCase == 6 ? (c << 6) | (b << 5) |					(c << 1) |	(b << 0)
-								 : (deUint32)-1;
+
+				deUint32 B;
+				switch (rangeCase) {
+					case 2:
+					case 3:
+						B = 0;
+						break;
+					case 4:
+						B = (b << 6) | (b << 2) | (b << 0);
+						break;
+					case 5:
+						B = (b << 6) | (b << 1);
+						break;
+					case 6:
+						B = (c << 6) | (b << 5) | (c << 1) | (b << 0);
+						break;
+					default:
+						B = (deUint32)-1;
+						break;
+				}
 				dst[weightNdx] = (((weightGrid[weightNdx].tq*C + B) ^ A) >> 2) | (A & 0x20);
 			}
 		}
