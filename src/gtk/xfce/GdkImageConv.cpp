@@ -49,25 +49,18 @@ GdkPixbuf *GdkImageConv::rp_image_to_GdkPixbuf_cpp(const rp_image *img)
 				unsigned int x;
 				for (x = (unsigned int)width; x > 1; x -= 2) {
 					// Swap the R and B channels
-					px_dest[0].a = img_buf[0].a;
-					px_dest[0].r = img_buf[0].b;
-					px_dest[0].g = img_buf[0].g;
-					px_dest[0].b = img_buf[0].r;
-
-					px_dest[1].a = img_buf[1].a;
-					px_dest[1].r = img_buf[1].b;
-					px_dest[1].g = img_buf[1].g;
-					px_dest[1].b = img_buf[1].r;
+					px_dest[0].u32 = img_buf[0].u32;
+					px_dest[1].u32 = img_buf[1].u32;
+					std::swap(px_dest[0].r, px_dest[0].b);
+					std::swap(px_dest[1].r, px_dest[1].b);
 
 					img_buf += 2;
 					px_dest += 2;
 				}
 				if (x == 1) {
 					// Last pixel
-					px_dest->a = img_buf->a;
-					px_dest->r = img_buf->b;
-					px_dest->g = img_buf->g;
-					px_dest->b = img_buf->r;
+					px_dest->u32 = img_buf->u32;
+					std::swap(px_dest->r, px_dest->b);
 
 					img_buf++;
 					px_dest++;
@@ -93,22 +86,16 @@ GdkPixbuf *GdkImageConv::rp_image_to_GdkPixbuf_cpp(const rp_image *img)
 			int i;
 			for (i = 0; i+1 < src_pal_len; i += 2, src_pal += 2) {
 				// Swap the R and B channels in the palette.
-				palette[i+0].a = src_pal[0].a;
-				palette[i+0].r = src_pal[0].b;
-				palette[i+0].g = src_pal[0].g;
-				palette[i+0].b = src_pal[0].r;
+				palette[i+0].u32 = src_pal[0].u32;
+				palette[i+1].u32 = src_pal[1].u32;
 
-				palette[i+1].a = src_pal[1].a;
-				palette[i+1].r = src_pal[1].b;
-				palette[i+1].g = src_pal[1].g;
-				palette[i+1].b = src_pal[1].r;
+				std::swap(palette[i+0].r, palette[i+0].b);
+				std::swap(palette[i+1].r, palette[i+1].b);
 			}
 			for (; i < src_pal_len; i++, src_pal++) {
 				// Last color.
-				palette[i].a = src_pal->a;
-				palette[i].b = src_pal->b;
-				palette[i].g = src_pal->g;
-				palette[i].r = src_pal->r;
+				palette[i].u32 = src_pal->u32;
+				std::swap(palette[i].r, palette[i].b);
 			}
 
 			// Zero out the rest of the palette if the new
