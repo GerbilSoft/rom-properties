@@ -1577,17 +1577,14 @@ bool decompress(uint8_t *pDst, const uint8_t * data, bool isSRGB, int blockWidth
 	
 	if (!isSRGB)
 	{
-		int pix = 0;
-		for (int i = 0; i < blockHeight; i++)
+		const float *pLinear = linear;
+		for (int i = blockWidth * blockHeight; i > 0; i--, pDst += 4, pLinear += 4)
 		{
-			for (int j = 0; j < blockWidth; j++, pix++)
-			{
-				// NOTE: R and B are swapped for rom-properties.
-				pDst[4 * pix + 2] = (uint8_t)(basisu_astc::clamp<int>((int)(linear[pix * 4 + 0] * 65536.0f + .5f), 0, 65535) >> 8);
-				pDst[4 * pix + 1] = (uint8_t)(basisu_astc::clamp<int>((int)(linear[pix * 4 + 1] * 65536.0f + .5f), 0, 65535) >> 8);
-				pDst[4 * pix + 0] = (uint8_t)(basisu_astc::clamp<int>((int)(linear[pix * 4 + 2] * 65536.0f + .5f), 0, 65535) >> 8);
-				pDst[4 * pix + 3] = (uint8_t)(basisu_astc::clamp<int>((int)(linear[pix * 4 + 3] * 65536.0f + .5f), 0, 65535) >> 8);
-			}
+			// NOTE: R and B are swapped for rom-properties.
+			pDst[2] = (uint8_t)(basisu_astc::clamp<int>((int)(pLinear[0] * 65536.0f + .5f), 0, 65535) >> 8);
+			pDst[1] = (uint8_t)(basisu_astc::clamp<int>((int)(pLinear[1] * 65536.0f + .5f), 0, 65535) >> 8);
+			pDst[0] = (uint8_t)(basisu_astc::clamp<int>((int)(pLinear[2] * 65536.0f + .5f), 0, 65535) >> 8);
+			pDst[3] = (uint8_t)(basisu_astc::clamp<int>((int)(pLinear[3] * 65536.0f + .5f), 0, 65535) >> 8);
 		}
 	}
 
