@@ -73,10 +73,6 @@ GdkPixbuf *GdkImageConv::rp_image_to_GdkPixbuf_ssse3(const rp_image *img)
 	switch (img->format()) {
 		case rp_image::Format::ARGB32: {
 			// Copy the image data.
-			FILE *f = fopen("/tmp/OMGWTF.txt", "a");
-			fprintf(f, "quack\n");
-			fflush(f);
-			fclose(f);
 			const uint32_t *img_buf = static_cast<const uint32_t*>(img->bits());
 			const int src_row_width = img->stride() / sizeof(uint32_t);
 
