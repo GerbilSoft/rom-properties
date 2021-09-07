@@ -10,6 +10,7 @@
 #include "GdkImageConv.hpp"
 
 // librptexture
+using LibRpTexture::argb32_t;
 using LibRpTexture::rp_image;
 
 // SSSE3 intrinsics
@@ -73,8 +74,8 @@ GdkPixbuf *GdkImageConv::rp_image_to_GdkPixbuf_ssse3(const rp_image *img)
 	switch (img->format()) {
 		case rp_image::Format::ARGB32: {
 			// Copy the image data.
-			const uint32_t *img_buf = static_cast<const uint32_t*>(img->bits());
-			const int src_row_width = img->stride() / sizeof(uint32_t);
+			const argb32_t *img_buf = static_cast<const argb32_t*>(img->bits());
+			const int src_row_width = img->stride() / sizeof(argb32_t);
 
 			for (unsigned int y = (unsigned int)height; y > 0; y--) {
 				// Process 16 pixels per iteration using SSSE3.
@@ -94,12 +95,13 @@ GdkPixbuf *GdkImageConv::rp_image_to_GdkPixbuf_ssse3(const rp_image *img)
 				}
 
 				// Remaining pixels.
-				const uint32_t *rpx_src = reinterpret_cast<const uint32_t*>(xmm_src);
-				uint32_t *rpx_dest = reinterpret_cast<uint32_t*>(xmm_dest);
+				const argb32_t *rpx_src = reinterpret_cast<const argb32_t*>(xmm_src);
+				argb32_t *rpx_dest = reinterpret_cast<argb32_t*>(xmm_dest);
 				for (; x > 0; x--) {
-					*rpx_dest = (*rpx_src & 0xFF00FF00) |
-					           ((*rpx_src & 0x00FF0000) >> 16) |
-					           ((*rpx_src & 0x000000FF) << 16);
+					rpx_dest->a = rpx_src->a;
+					rpx_dest->r = rpx_src->b;
+					rpx_dest->g = rpx_src->g;
+					rpx_dest->b = rpx_src->r;
 					rpx_src++;
 					rpx_dest++;
 				}
@@ -112,7 +114,7 @@ GdkPixbuf *GdkImageConv::rp_image_to_GdkPixbuf_ssse3(const rp_image *img)
 		}
 
 		case rp_image::Format::CI8: {
-			const uint32_t *src_pal = img->palette();
+			const argb32_t *src_pal = reinterpret_cast<const argb32_t*>(img->palette());
 			const int src_pal_len = img->palette_len();
 			assert(src_pal != nullptr);
 			assert(src_pal_len > 0);
@@ -146,18 +148,19 @@ GdkPixbuf *GdkImageConv::rp_image_to_GdkPixbuf_ssse3(const rp_image *img)
 			}
 
 			// Remaining colors.
-			src_pal = reinterpret_cast<const uint32_t*>(xmm_src);
-			uint32_t *dest_pal = reinterpret_cast<uint32_t*>(xmm_dest);
+			src_pal = reinterpret_cast<const argb32_t*>(xmm_src);
+			argb32_t *dest_pal = reinterpret_cast<argb32_t*>(xmm_dest);
 			for (; i > 0; i--, dest_pal++, src_pal++) {
-				*dest_pal = (*src_pal & 0xFF00FF00) |
-					   ((*src_pal & 0x00FF0000) >> 16) |
-					   ((*src_pal & 0x000000FF) << 16);
+				dest_pal->a = src_pal->a;
+				dest_pal->r = src_pal->b;
+				dest_pal->g = src_pal->g;
+				dest_pal->b = src_pal->r;
 			}
 
 			// Zero out the rest of the palette if the new
 			// palette is larger than the old palette.
 			if (src_pal_len < dest_pal_len) {
-				memset(dest_pal, 0, (dest_pal_len - src_pal_len) * sizeof(uint32_t));
+				memset(dest_pal, 0, (dest_pal_len - src_pal_len) * sizeof(argb32_t));
 			}
 
 			// Convert the image data from CI8 to ARGB32.
