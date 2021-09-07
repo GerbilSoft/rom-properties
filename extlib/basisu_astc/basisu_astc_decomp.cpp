@@ -816,18 +816,44 @@ void unquantizeColorEndpoints (deUint32* dst, const ISEDecodedResult* iseResults
 			const deUint32 e = getBit(iseResults[endpointNdx].m, 4);
 			const deUint32 f = getBit(iseResults[endpointNdx].m, 5);
 			const deUint32 A = a == 0 ? 0 : (1<<9)-1;
-			const deUint32 B = rangeCase == 0	? 0
-							 : rangeCase == 1	? 0
-							 : rangeCase == 2	? (b << 8) |									(b << 4) |				(b << 2) |	(b << 1)
-							 : rangeCase == 3	? (b << 8) |												(b << 3) |	(b << 2)
-							 : rangeCase == 4	? (c << 8) | (b << 7) |										(c << 3) |	(b << 2) |	(c << 1) |	(b << 0)
-							 : rangeCase == 5	? (c << 8) | (b << 7) |													(c << 2) |	(b << 1) |	(c << 0)
-							 : rangeCase == 6	? (d << 8) | (c << 7) | (b << 6) |										(d << 2) |	(c << 1) |	(b << 0)
-							 : rangeCase == 7	? (d << 8) | (c << 7) | (b << 6) |													(d << 1) |	(c << 0)
-							 : rangeCase == 8	? (e << 8) | (d << 7) | (c << 6) | (b << 5) |										(e << 1) |	(d << 0)
-							 : rangeCase == 9	? (e << 8) | (d << 7) | (c << 6) | (b << 5) |													(e << 0)
-							 : rangeCase == 10	? (f << 8) | (e << 7) | (d << 6) | (c << 5) |	(b << 4) |										(f << 0)
-							 : (deUint32)-1;
+
+			deUint32 B;
+			switch (rangeCase) {
+				case 0:
+				case 1:
+					B = 0;
+					break;
+				case 2:
+					B = (b << 8) | (b << 4) | (b << 2) | (b << 1);
+					break;
+				case 3:
+					B = (b << 8) | (b << 3) | (b << 2);
+					break;
+				case 4:
+					B = (c << 8) | (b << 7) | (c << 3) | (b << 2) | (c << 1) | (b << 0);
+					break;
+				case 5:
+					B = (c << 8) | (b << 7) | (c << 2) | (b << 1) | (c << 0);
+					break;
+				case 6:
+					B = (d << 8) | (c << 7) | (b << 6) | (d << 2) | (c << 1) | (b << 0);
+					break;
+				case 7:
+					B = (d << 8) | (c << 7) | (b << 6) | (d << 1) | (c << 0);
+					break;
+				case 8:
+					B = (e << 8) | (d << 7) | (c << 6) | (b << 5) | (e << 1) | (d << 0);
+					break;
+				case 9:
+					B = (e << 8) | (d << 7) | (c << 6) | (b << 5) | (e << 0);
+					break;
+				case 10:
+					B = (f << 8) | (e << 7) | (d << 6) | (c << 5) |	(b << 4) | (f << 0);
+					break;
+				default:
+					B = (deUint32)-1;
+					break;
+			}
 			DE_ASSERT(B != (deUint32)-1);
 			dst[endpointNdx] = (((iseResults[endpointNdx].tq*C + B) ^ A) >> 2) | (A & 0x80);
 		}

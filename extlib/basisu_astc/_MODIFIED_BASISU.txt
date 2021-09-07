@@ -12,5 +12,7 @@ The following changes have been made to the original:
 
 - Swap the R and B channels to match the expected data formats.
 
+- Converted some large ternary comparison trees to switch/case.
+
 To obtain the original Basis Universal v1.15, visit:
 https://github.com/BinomialLLC/basis_universal
