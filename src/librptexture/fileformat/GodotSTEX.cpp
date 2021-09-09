@@ -899,6 +899,12 @@ const char *GodotSTEX::pixelFormat(void) const
 		return nullptr;
 
 	// TODO: Don't return version-specific pixel formats for the wrong version.
+	if (d->stexVersion == 3) {
+		// Godot 3: Pixel format is always L8 (0) if an embedded
+		// PNG or WebP image is present.
+		if (d->hasEmbeddedFile)
+			return nullptr;
+	}
 	if (d->pixelFormat >= 0 && d->pixelFormat < ARRAY_SIZE(d->img_format_tbl)) {
 		return d->img_format_tbl[d->pixelFormat];
 	}
