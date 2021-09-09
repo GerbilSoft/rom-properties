@@ -1292,8 +1292,10 @@ void unquantizeWeights (deUint32 dst[64], const ISEDecodedResult* weightGrid, co
 		for (int weightNdx = 0; weightNdx < numWeights; weightNdx++)
 			dst[weightNdx] = bitReplicationScale(weightGrid[weightNdx].v, iseParams.numBits, 6);
 	}
-	for (int weightNdx = 0; weightNdx < numWeights; weightNdx++)
-		dst[weightNdx] += dst[weightNdx] > 32 ? 1 : 0;
+	for (int weightNdx = 0; weightNdx < numWeights; weightNdx++) {
+		if (dst[weightNdx] > 32)
+			dst[weightNdx]++;
+	}
 	// Initialize nonexistent weights to poison values
 	for (int weightNdx = numWeights; weightNdx < 64; weightNdx++)
 		dst[weightNdx] = ~0u;
@@ -1433,10 +1435,10 @@ DecompressResult setTexelColors (void* dst, ColorEndpointPair* colorEndpoints, T
 			return DECOMPRESS_RESULT_ERROR;
 	}
 
+	unsigned int texelNdx = 0;
 	for (int texelY = 0; texelY < blockHeight; texelY++)
-	for (int texelX = 0; texelX < blockWidth; texelX++)
+	for (int texelX = 0; texelX < blockWidth; texelX++, texelNdx++)
 	{
-		const int				texelNdx			= texelY*blockWidth + texelX;
 		const int				colorEndpointNdx	= numPartitions == 1 ? 0 : computeTexelPartition(partitionIndexSeed, texelX, texelY, 0, numPartitions, smallBlock);
 		DE_ASSERT(colorEndpointNdx < numPartitions);
 		const UVec4&			e0					= colorEndpoints[colorEndpointNdx].e0;
