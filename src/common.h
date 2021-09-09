@@ -188,7 +188,9 @@
 
 // printf()-style function attribute.
 #ifndef ATTR_PRINTF
-#  ifdef __GNUC__
+#  if defined(__clang__) || defined(__llvm__)
+#    define ATTR_PRINTF(fmt, args) __attribute__((format(printf, fmt, args)))
+#  elif defined(__GNUC__)
 #    if !defined(_WIN32) || (defined(_UCRT) || __USE_MINGW_ANSI_STDIO)
 #      define ATTR_PRINTF(fmt, args) __attribute__((format(gnu_printf, fmt, args)))
 #    else
