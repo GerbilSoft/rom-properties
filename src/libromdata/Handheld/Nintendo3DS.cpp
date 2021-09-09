@@ -73,12 +73,11 @@ const char *const Nintendo3DSPrivate::mimeTypes[] = {
 	// NOTE: Ordering matches N3DS_RomType.
 
 	// Unofficial MIME types.
-	// TODO: Get these upstreamed on FreeDesktop.org.
-	"application/x-nintendo-3ds-3dsx",
-	"application/x-nintendo-3ds-rom",
-	"application/x-nintendo-3ds-emmc",
-	"application/x-nintendo-3ds-cia",
-	"application/x-nintendo-3ds-ncch",
+	"application/x-nintendo-3ds-executable",	// on fd.o
+	"application/x-nintendo-3ds-rom",		// on fd.o
+	"application/x-nintendo-3ds-emmc",		// NOT on fd.o
+	"application/x-nintendo-3ds-cia",		// NOT on fd.o
+	"application/x-nintendo-3ds-ncch",		// NOT on fd.o
 
 	nullptr
 };

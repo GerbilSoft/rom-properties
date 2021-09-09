@@ -129,13 +129,13 @@ const char *const DreamcastPrivate::exts[] = {
 };
 const char *const DreamcastPrivate::mimeTypes[] = {
 	// Unofficial MIME types.
-	"application/x-dreamcast-rom",
 	"application/x-dreamcast-iso-image",
-	"application/x-dreamcast-cuesheet",
+	"application/x-dc-rom",
 
 	// Unofficial MIME types from FreeDesktop.org.
 	// TODO: Get the above types upstreamed and get rid of this.
-	"application/x-dc-rom",
+	"application/x-dreamcast-rom",
+	"application/x-gd-rom-cue",
 
 	nullptr
 };
@@ -366,7 +366,7 @@ Dreamcast::Dreamcast(IRpFile *file)
 		case DreamcastPrivate::DiscType::Iso2048:
 			// 2048-byte sectors.
 			// TODO: Determine session start address.
-			d->mimeType = "application/x-dreamcast-rom";	// unofficial, not on fd.o
+			d->mimeType = "application/x-dreamcast-rom";	// unofficial
 			memcpy(&d->discHeader, &sector, sizeof(d->discHeader));
 			d->iso_start_offset = -1;
 			d->discReader = new DiscReader(d->file);
@@ -379,7 +379,7 @@ Dreamcast::Dreamcast(IRpFile *file)
 
 		case DreamcastPrivate::DiscType::Iso2352: {
 			// 2352-byte sectors.
-			d->mimeType = "application/x-dreamcast-rom";	// unofficial, not on fd.o
+			d->mimeType = "application/x-dreamcast-rom";	// unofficial
 			const uint8_t *const data = cdromSectorDataPtr(&sector);
 			memcpy(&d->discHeader, data, sizeof(d->discHeader));
 			d->discReader = new Cdrom2352Reader(d->file);
@@ -401,7 +401,7 @@ Dreamcast::Dreamcast(IRpFile *file)
 			}
 			// TODO: Don't hard-code 2048?
 			d->gdiReader->seekAndRead(lba_track03*2048, &d->discHeader, sizeof(d->discHeader));
-			d->mimeType = "application/x-dreamcast-cuesheet";	// unofficial, not on fd.o
+			d->mimeType = "application/x-gd-rom-cue";	// unofficial
 			break;
 		}
 

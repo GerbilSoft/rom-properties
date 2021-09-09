@@ -18,8 +18,8 @@ application/x-raw-disk-image
 # Console
 application/x-dreamcast-rom		# Dreamcast
 application/x-dreamcast-iso-image	# Dreamcast
-application/x-dreamcast-cuesheet	# Dreamcast
 application/x-dc-rom			# Dreamcast
+application/x-gd-rom-cue		# Dreamcast
 application/x-dreamcast-vms		# DreamcastSave
 application/x-dreamcast-vms-info	# DreamcastSave
 application/x-dreamcast-dci		# DreamcastSave

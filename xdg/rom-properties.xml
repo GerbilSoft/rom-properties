@@ -125,8 +125,8 @@
       <match value="SEGA SEGAKATANA" type="string" offset="16"/>
     </magic>
   </mime-type>
-  <mime-type type="application/x-dreamcast-cuesheet">
-    <comment>Dreamcast cuesheet</comment>
+  <mime-type type="application/x-gd-rom-cue">
+    <comment>GD-ROM image cuesheet</comment>
     <sub-class-of type="application/x-cd-image"/>
     <generic-icon name="application-x-cd-image"/>
     <glob pattern="*.gdi"/>
@@ -513,7 +513,7 @@
   </mime-type>
 
   <!-- Nintendo3DS -->
-  <mime-type type="application/x-nintendo-3ds-3dsx">
+  <mime-type type="application/x-nintendo-3ds-executable">
     <comment>Nintendo 3DS homebrew application</comment>
     <sub-class-of type="application/x-executable"/>
     <generic-icon name="application-x-executable"/>
