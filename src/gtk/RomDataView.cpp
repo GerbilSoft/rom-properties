@@ -1889,9 +1889,17 @@ rom_data_view_create_options_button(RomDataView *page)
 		gtk_dialog_add_action_widget(GTK_DIALOG(parent), page->btnOptions, GTK_RESPONSE_NONE);
 
 		// Disconnect the "clicked" signal from the default GtkDialog response handler.
-		guint signal_id = g_signal_lookup("clicked", GTK_TYPE_BUTTON);
+		// NOTE: May be "activate" now that OptionsMenuButton no longer derives from
+		// GtkMenuButton/GtkButton.
+		guint signal_id = 0;
+		if (GTK_IS_BUTTON(page->btnOptions)) {
+			signal_id = g_signal_lookup("clicked", GTK_TYPE_BUTTON);
+		} else {
+			signal_id = gtk_widget_class_get_activate_signal(GTK_WIDGET_GET_CLASS(page->btnOptions));
+		}
 		gulong handler_id = g_signal_handler_find(page->btnOptions, G_SIGNAL_MATCH_ID,
 			signal_id, 0, nullptr, 0, 0);
+		printf("signal_id: %u, handler_id: %lu\n", signal_id, handler_id);
 		g_signal_handler_disconnect(page->btnOptions, handler_id);
 	}
 

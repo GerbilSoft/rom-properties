@@ -162,6 +162,17 @@ gtk_widget_get_first_child(GtkWidget *widget)
 }
 #endif /* !GTK_CHECK_VERSION(4,0,0) */
 
+#if !GTK_CHECK_VERSION(4,0,0)
+static inline void gtk_widget_class_set_activate_signal(GtkWidgetClass *widget_class, guint signal_id)
+{
+	widget_class->activate_signal = signal_id;
+}
+static inline guint gtk_widget_class_get_activate_signal(GtkWidgetClass *widget_class)
+{
+	return widget_class->activate_signal;
+}
+#endif /* !GTK_CHECK_VERSION(4,0,0) */
+
 G_END_DECLS
 
 #endif /* __ROMPROPERTIES_GTK_GTK_COMPAT_H__ */

@@ -1,6 +1,6 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (GTK+ common)                      *
- * OptionsMenuButton.hpp: Options menu GtkMenuButton subclass.             *
+ * OptionsMenuButton.cpp: Options menu GtkMenuButton container.            *
  *                                                                         *
  * Copyright (c) 2017-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
