@@ -265,7 +265,7 @@ size_t RpFileKio::read(void *ptr, size_t size)
 
 /**
  * Write data to the file.
- * (NOTE: Not valid for RpMemFile; this will always return 0.)
+ * (NOTE: Not valid for RpFileKio; this will always return 0.)
  * @param ptr Input data buffer.
  * @param size Amount of data to read, in bytes.
  * @return Number of bytes written.

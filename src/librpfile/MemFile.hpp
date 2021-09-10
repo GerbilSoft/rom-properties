@@ -1,19 +1,19 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (librpfile)                        *
- * RpMemFile.hpp: IRpFile implementation using a memory buffer.            *
+ * MemFile.hpp: IRpFile implementation using a memory buffer.              *
  *                                                                         *
  * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBRPFILE_RPMEMFILE_HPP__
-#define __ROMPROPERTIES_LIBRPFILE_RPMEMFILE_HPP__
+#ifndef __ROMPROPERTIES_LIBRPFILE_MEMFILE_HPP__
+#define __ROMPROPERTIES_LIBRPFILE_MEMFILE_HPP__
 
 #include "IRpFile.hpp"
 
 namespace LibRpFile {
 
-class RpMemFile : public IRpFile
+class MemFile : public IRpFile
 {
 	public:
 		/**
@@ -27,19 +27,19 @@ class RpMemFile : public IRpFile
 		 * @param size Size of memory buffer.
 		 */
 		ATTR_ACCESS_SIZE(read_only, 2, 3)
-		RpMemFile(const void *buf, size_t size);
+		MemFile(const void *buf, size_t size);
 	protected:
 		/**
 		 * Internal constructor for use by subclasses.
 		 * This initializes everything to nullptr.
 		 */
-		RpMemFile();
+		MemFile();
 	protected:
-		virtual ~RpMemFile() { }	// call unref() instead
+		virtual ~MemFile() { }	// call unref() instead
 
 	private:
 		typedef IRpFile super;
-		RP_DISABLE_COPY(RpMemFile)
+		RP_DISABLE_COPY(MemFile)
 
 	public:
 		/**
@@ -68,7 +68,7 @@ class RpMemFile : public IRpFile
 
 		/**
 		 * Write data to the file.
-		 * (NOTE: Not valid for RpMemFile; this will always return 0.)
+		 * (NOTE: Not valid for MemFile; this will always return 0.)
 		 * @param ptr Input data buffer.
 		 * @param size Amount of data to read, in bytes.
 		 * @return Number of bytes written.
@@ -116,7 +116,7 @@ class RpMemFile : public IRpFile
 		}
 
 	public:
-		/** RpMemFile functions **/
+		/** MemFile functions **/
 
 		/**
 		 * Set the filename.
@@ -146,4 +146,4 @@ class RpMemFile : public IRpFile
 
 }
 
-#endif /* __ROMPROPERTIES_LIBRPFILE_RPMEMFILE_HPP__ */
+#endif /* __ROMPROPERTIES_LIBRPFILE_MEMFILE_HPP__ */

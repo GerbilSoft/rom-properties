@@ -14,10 +14,10 @@
 
 // librpbase, librpfile, librptexture
 #include "librpbase/img/RpPng.hpp"
-#include "librpfile/RpMemFile.hpp"
+#include "librpfile/MemFile.hpp"
 using namespace LibRpBase;
 using LibRpFile::IRpFile;
-using LibRpFile::RpMemFile;
+using LibRpFile::MemFile;
 using LibRpTexture::rp_image;
 
 // C++ STL classes.
@@ -774,9 +774,9 @@ rp_image *Xbox360_XDBF_Private::loadImage(uint64_t image_id)
 		return nullptr;
 	}
 
-	// Create an RpMemFile and decode the image.
+	// Create a MemFile and decode the image.
 	// TODO: For rpcli, shortcut to extract the PNG directly.
-	RpMemFile *const f_mem = new RpMemFile(png_buf.get(), length);
+	MemFile *const f_mem = new MemFile(png_buf.get(), length);
 	rp_image *img = RpPng::load(f_mem);
 	f_mem->unref();
 

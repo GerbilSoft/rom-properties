@@ -19,10 +19,10 @@
 // librpbase, librpfile, librptexture
 #include "librpbase/Achievements.hpp"
 #include "librpbase/disc/CBCReader.hpp"
-#include "librpfile/RpMemFile.hpp"
+#include "librpfile/MemFile.hpp"
 using namespace LibRpBase;
 using LibRpFile::IRpFile;
-using LibRpFile::RpMemFile;
+using LibRpFile::MemFile;
 using LibRpTexture::rp_image;
 
 #ifdef ENABLE_DECRYPTION
@@ -1219,7 +1219,7 @@ const EXE *Xbox360_XEX_Private::initEXE(void)
 	IRpFile *peFile_tmp;
 #ifdef ENABLE_LIBMSPACK
 	if (!lzx_peHeader.empty()) {
-		peFile_tmp = new RpMemFile(lzx_peHeader.data(), lzx_peHeader.size());
+		peFile_tmp = new MemFile(lzx_peHeader.data(), lzx_peHeader.size());
 	} else
 #endif /* ENABLE_LIBMSPACK */
 	{
@@ -1259,7 +1259,7 @@ const Xbox360_XDBF *Xbox360_XEX_Private::initXDBF(void)
 	IRpFile *peFile_tmp;
 #ifdef ENABLE_LIBMSPACK
 	if (!lzx_xdbfSection.empty()) {
-		peFile_tmp = new RpMemFile(lzx_xdbfSection.data(), lzx_xdbfSection.size());
+		peFile_tmp = new MemFile(lzx_xdbfSection.data(), lzx_xdbfSection.size());
 	} else
 #endif /* ENABLE_LIBMSPACK */
 	{

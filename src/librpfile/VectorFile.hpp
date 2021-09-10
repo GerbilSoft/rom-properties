@@ -1,13 +1,13 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (librpfile)                        *
- * RpVectorFile.hpp: IRpFile implementation using an std::vector.          *
+ * VectorFile.hpp: IRpFile implementation using an std::vector.            *
  *                                                                         *
  * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBRPFILE_RPVECTORFILE_HPP__
-#define __ROMPROPERTIES_LIBRPFILE_RPVECTORFILE_HPP__
+#ifndef __ROMPROPERTIES_LIBRPFILE_VECTORFILE_HPP__
+#define __ROMPROPERTIES_LIBRPFILE_VECTORFILE_HPP__
 
 #include "librpfile/IRpFile.hpp"
 
@@ -16,20 +16,20 @@
 
 namespace LibRpFile {
 
-class RpVectorFile final : public IRpFile
+class VectorFile final : public IRpFile
 {
 	public:
 		/**
 		 * Open an IRpFile backed by an std::vector.
 		 * The resulting IRpFile is writable.
 		 */
-		RpVectorFile();
+		VectorFile();
 	protected:
-		virtual ~RpVectorFile() { }	// call unref() instead
+		virtual ~VectorFile() { }	// call unref() instead
 
 	private:
 		typedef IRpFile super;
-		RP_DISABLE_COPY(RpVectorFile)
+		RP_DISABLE_COPY(VectorFile)
 
 	public:
 		/**
@@ -39,7 +39,7 @@ class RpVectorFile final : public IRpFile
 		 */
 		bool isOpen(void) const final
 		{
-			// RpVectorFile is always open.
+			// VectorFile is always open.
 			return true;
 		}
 
@@ -92,7 +92,7 @@ class RpVectorFile final : public IRpFile
 		 */
 		int flush(void) final
 		{
-			// Ignore flush operations, since RpVectorFile is entirely in memory.
+			// Ignore flush operations, since VectorFile is entirely in memory.
 			return 0;
 		}
 
@@ -131,7 +131,7 @@ class RpVectorFile final : public IRpFile
 		}
 
 	public:
-		/** RpVectorFile-specific functions **/
+		/** VectorFile-specific functions **/
 
 		/**
 		 * Get the underlying std::vector.
@@ -149,4 +149,4 @@ class RpVectorFile final : public IRpFile
 
 }
 
-#endif /* __ROMPROPERTIES_LIBRPFILE_RPVECTORFILE_HPP__ */
+#endif /* __ROMPROPERTIES_LIBRPFILE_VECTORFILE_HPP__ */

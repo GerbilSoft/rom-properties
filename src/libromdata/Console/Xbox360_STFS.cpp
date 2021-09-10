@@ -19,7 +19,7 @@
 
 // librpbase, librpfile, librptexture
 #include "librpbase/img/RpPng.hpp"
-#include "librpfile/RpMemFile.hpp"
+#include "librpfile/MemFile.hpp"
 using namespace LibRpBase;
 using namespace LibRpFile;
 using namespace LibRpTexture;
@@ -233,9 +233,9 @@ const rp_image *Xbox360_STFS_Private::loadIcon(void)
 		iconSize = sizeof(stfsThumbnails.mdv2.title_thumbnail_image);
 	}
 
-	// Create an RpMemFile and decode the image.
+	// Create a MemFile and decode the image.
 	// TODO: For rpcli, shortcut to extract the PNG directly.
-	RpMemFile *f_mem = new RpMemFile(pIconData, iconSize);
+	MemFile *f_mem = new MemFile(pIconData, iconSize);
 	rp_image *img = RpPng::load(f_mem);
 	f_mem->unref();
 
@@ -252,7 +252,7 @@ const rp_image *Xbox360_STFS_Private::loadIcon(void)
 			iconSize = sizeof(stfsThumbnails.mdv2.thumbnail_image);
 		}
 
-		f_mem = new RpMemFile(pIconData, iconSize);
+		f_mem = new MemFile(pIconData, iconSize);
 		img = RpPng::load(f_mem);
 		f_mem->unref();
 	}

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata/tests)                 *
  * ImageDecoderTest.cpp: ImageDecoder class test.                          *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -34,7 +34,7 @@
 #include "common.h"
 #include "librpbase/img/RpImageLoader.hpp"
 #include "librpfile/RpFile.hpp"
-#include "librpfile/RpMemFile.hpp"
+#include "librpfile/MemFile.hpp"
 #include "librpfile/FileSystem.hpp"
 using namespace LibRpBase;
 using namespace LibRpFile;
@@ -154,9 +154,9 @@ class ImageDecoderTest : public ::testing::TestWithParam<ImageDecoderTest_mode>
 
 		// RomData class pointer for .dds.gz.
 		// Placed here so it can be freed by TearDown() if necessary.
-		// The underlying RpMemFile is here as well, since we can't
+		// The underlying MemFile is here as well, since we can't
 		// delete it before deleting the RomData object.
-		RpMemFile *m_f_dds;
+		MemFile *m_f_dds;
 		RomData *m_romData;
 
 	public:
@@ -397,15 +397,15 @@ void ImageDecoderTest::decodeTest_internal(void)
 	const ImageDecoderTest_mode &mode = GetParam();
 
 	// Load the PNG image.
-	unique_RefBase<RpMemFile> f_png(new RpMemFile(m_png_buf.data(), m_png_buf.size()));
-	ASSERT_TRUE(f_png->isOpen()) << "Could not create RpMemFile for the PNG image.";
+	unique_RefBase<MemFile> f_png(new MemFile(m_png_buf.data(), m_png_buf.size()));
+	ASSERT_TRUE(f_png->isOpen()) << "Could not create MemFile for the PNG image.";
 	unique_ptr<rp_image, RpImageUnrefDeleter> img_png(RpImageLoader::load(f_png.get()), RpImageUnrefDeleter());
 	ASSERT_TRUE(img_png != nullptr) << "Could not load the PNG image as rp_image.";
 	ASSERT_TRUE(img_png->isValid()) << "Could not load the PNG image as rp_image.";
 
 	// Open the image as an IRpFile.
-	m_f_dds = new RpMemFile(m_dds_buf.data(), m_dds_buf.size());
-	ASSERT_TRUE(m_f_dds->isOpen()) << "Could not create RpMemFile for the DDS image.";
+	m_f_dds = new MemFile(m_dds_buf.data(), m_dds_buf.size());
+	ASSERT_TRUE(m_f_dds->isOpen()) << "Could not create MemFile for the DDS image.";
 
 	// Determine the image type by checking the last 7 characters of the filename.
 	const char *filetype = nullptr;
@@ -482,7 +482,7 @@ void ImageDecoderTest::decodeTest_internal(void)
 		// TrueVision TGA
 		// NOTE: Using RpTextureWrapper.
 		// NOTE 2: TGA detection is currently done by file extension,
-		// so we need to set the RpMemFile's filename.
+		// so we need to set the MemFile's filename.
 		filetype = "TGA";
 		m_f_dds->setFilename(mode.dds_gz_filename);
 		m_romData = new RpTextureWrapper(m_f_dds);
@@ -527,8 +527,8 @@ void ImageDecoderTest::decodeBenchmark_internal(void)
 	const ImageDecoderTest_mode &mode = GetParam();
 
 	// Open the image as an IRpFile.
-	m_f_dds = new RpMemFile(m_dds_buf.data(), m_dds_buf.size());
-	ASSERT_TRUE(m_f_dds->isOpen()) << "Could not create RpMemFile for the DDS image.";
+	m_f_dds = new MemFile(m_dds_buf.data(), m_dds_buf.size());
+	ASSERT_TRUE(m_f_dds->isOpen()) << "Could not create MemFile for the DDS image.";
 
 	// NOTE: We can't simply decode the image multiple times.
 	// We have to reopen the RomData subclass every time.

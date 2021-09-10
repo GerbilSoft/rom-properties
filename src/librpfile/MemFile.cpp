@@ -1,13 +1,13 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (librpfile)                        *
- * RpMemFile.cpp: IRpFile implementation using a memory buffer.            *
+ * MemFile.cpp: IRpFile implementation using a memory buffer.              *
  *                                                                         *
  * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #include "stdafx.h"
-#include "RpMemFile.hpp"
+#include "MemFile.hpp"
 
 // C++ STL classes.
 using std::string;
@@ -24,7 +24,7 @@ namespace LibRpFile {
  * @param buf Memory buffer.
  * @param size Size of memory buffer.
  */
-RpMemFile::RpMemFile(const void *buf, size_t size)
+MemFile::MemFile(const void *buf, size_t size)
 	: super()
 	, m_buf(buf)
 	, m_size(static_cast<off64_t>(size))
@@ -42,7 +42,7 @@ RpMemFile::RpMemFile(const void *buf, size_t size)
  * Internal constructor for use by subclasses.
  * This initializes everything to nullptr.
  */
-RpMemFile::RpMemFile()
+MemFile::MemFile()
 	: super()
 	, m_buf(nullptr)
 	, m_size(0)
@@ -52,7 +52,7 @@ RpMemFile::RpMemFile()
 /**
  * Close the file.
  */
-void RpMemFile::close(void)
+void MemFile::close(void)
 {
 	m_buf = nullptr;
 	m_size = 0;
@@ -65,7 +65,7 @@ void RpMemFile::close(void)
  * @param size Amount of data to read, in bytes.
  * @return Number of bytes read.
  */
-size_t RpMemFile::read(void *ptr, size_t size)
+size_t MemFile::read(void *ptr, size_t size)
 {
 	if (!m_buf) {
 		m_lastError = EBADF;
@@ -94,14 +94,14 @@ size_t RpMemFile::read(void *ptr, size_t size)
 
 /**
  * Write data to the file.
- * (NOTE: Not valid for RpMemFile; this will always return 0.)
+ * (NOTE: Not valid for MemFile; this will always return 0.)
  * @param ptr Input data buffer.
  * @param size Amount of data to read, in bytes.
  * @return Number of bytes written.
  */
-size_t RpMemFile::write(const void *ptr, size_t size)
+size_t MemFile::write(const void *ptr, size_t size)
 {
-	// Not a valid operation for RpMemFile.
+	// Not a valid operation for MemFile.
 	RP_UNUSED(ptr);
 	RP_UNUSED(size);
 	m_lastError = EBADF;
@@ -113,7 +113,7 @@ size_t RpMemFile::write(const void *ptr, size_t size)
  * @param pos File position.
  * @return 0 on success; -1 on error.
  */
-int RpMemFile::seek(off64_t pos)
+int MemFile::seek(off64_t pos)
 {
 	if (!m_buf) {
 		m_lastError = EBADF;
@@ -137,7 +137,7 @@ int RpMemFile::seek(off64_t pos)
  * Get the file position.
  * @return File position, or -1 on error.
  */
-off64_t RpMemFile::tell(void)
+off64_t MemFile::tell(void)
 {
 	if (!m_buf) {
 		m_lastError = EBADF;

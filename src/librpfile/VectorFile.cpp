@@ -1,13 +1,13 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (librpfile)                        *
- * RpVectorFile.cpp: IRpFile implementation using an std::vector.          *
+ * VectorFile.cpp: IRpFile implementation using an std::vector.            *
  *                                                                         *
  * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #include "stdafx.h"
-#include "RpVectorFile.hpp"
+#include "VectorFile.hpp"
 
 // C++ STL classes.
 using std::string;
@@ -18,14 +18,14 @@ namespace LibRpFile {
  * Open an IRpFile backed by an std::vector.
  * The resulting IRpFile is writable.
  */
-RpVectorFile::RpVectorFile()
+VectorFile::VectorFile()
 	: super()
 	, m_pos(0)
 {
 	// Reserve at least 16 KB.
 	m_vector.reserve(16*1024);
 
-	// RpVectorFile is writable.
+	// VectorFile is writable.
 	m_isWritable = true;
 }
 
@@ -35,7 +35,7 @@ RpVectorFile::RpVectorFile()
  * @param size Amount of data to read, in bytes.
  * @return Number of bytes read.
  */
-size_t RpVectorFile::read(void *ptr, size_t size)
+size_t VectorFile::read(void *ptr, size_t size)
 {
 	if (unlikely(size == 0)) {
 		// Not reading anything...
@@ -63,7 +63,7 @@ size_t RpVectorFile::read(void *ptr, size_t size)
  * @param size Amount of data to read, in bytes.
  * @return Number of bytes written.
  */
-size_t RpVectorFile::write(const void *ptr, size_t size)
+size_t VectorFile::write(const void *ptr, size_t size)
 {
 	if (unlikely(size == 0)) {
 		// Not writing anything...
@@ -92,7 +92,7 @@ size_t RpVectorFile::write(const void *ptr, size_t size)
  * @param pos File position.
  * @return 0 on success; -1 on error.
  */
-int RpVectorFile::seek(off64_t pos)
+int VectorFile::seek(off64_t pos)
 {
 	// NOTE: m_pos is size_t, since it's referring to
 	// a position within a memory buffer.

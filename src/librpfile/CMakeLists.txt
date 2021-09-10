@@ -21,8 +21,8 @@ ENDIF(NOT WIN32)
 # Sources.
 SET(${PROJECT_NAME}_SRCS
 	IRpFile.cpp
-	RpMemFile.cpp
-	RpVectorFile.cpp
+	MemFile.cpp
+	VectorFile.cpp
 	FileSystem_common.cpp
 	RelatedFile.cpp
 	DualFile.cpp
@@ -34,8 +34,8 @@ SET(${PROJECT_NAME}_H
 	IRpFile.hpp
 	RpFile.hpp
 	RpFile_p.hpp
-	RpMemFile.hpp
-	RpVectorFile.hpp
+	MemFile.hpp
+	VectorFile.hpp
 	FileSystem.hpp
 	RelatedFile.hpp
 	DualFile.hpp

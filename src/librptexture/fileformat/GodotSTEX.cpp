@@ -18,12 +18,12 @@
 #include "libi18n/i18n.h"
 #include "librpbase/img/RpPng.hpp"
 #include "librpbase/TextFuncs.hpp"
-#include "librpfile/RpMemFile.hpp"
+#include "librpfile/MemFile.hpp"
 using LibRpBase::RomFields;
 using LibRpBase::RpPng;
 using LibRpBase::rp_sprintf;
 using LibRpFile::IRpFile;
-using LibRpFile::RpMemFile;
+using LibRpFile::MemFile;
 
 // librptexture
 #include "img/rp_image.hpp"
@@ -477,7 +477,7 @@ const rp_image *GodotSTEXPrivate::loadImage(int mip)
 		// FIXME: Move RpPng to librptexture.
 		// Requires moving IconAnimData and some other stuff...
 		// TODO: Make use of PartitionFile instead of loading it into memory?
-		RpMemFile *const memFile = new RpMemFile(buf.get(), mdata.size);
+		MemFile *const memFile = new MemFile(buf.get(), mdata.size);
 		mipmaps[mip] = RpPng::load(memFile);
 		memFile->unref();
 

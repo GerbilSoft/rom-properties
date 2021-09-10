@@ -13,9 +13,9 @@
 // librpbase, librpfile, librptexture
 #include "librpbase/img/IconAnimData.hpp"
 #include "librpbase/img/IconAnimHelper.hpp"
-#include "librpfile/RpVectorFile.hpp"
+#include "librpfile/VectorFile.hpp"
 using namespace LibRpBase;
-using LibRpFile::RpVectorFile;
+using LibRpFile::VectorFile;
 using LibRpTexture::rp_image;
 
 // C++ STL classes.
@@ -550,7 +550,7 @@ drag_image_drag_data_get(DragImage *image, GdkDragContext *context, GtkSelection
 	auto *const anim = image->anim;
 	const bool isAnimated = (anim && anim->iconAnimData && anim->iconAnimHelper.isAnimated());
 
-	RpVectorFile *const pngData = new RpVectorFile();
+	VectorFile *const pngData = new VectorFile();
 	RpPngWriter *pngWriter;
 	if (isAnimated) {
 		// Animated icon.
