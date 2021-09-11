@@ -1055,7 +1055,7 @@ rp_image *SegaPVRPrivate::svr_unswizzle_4or8(const rp_image *img_swz)
 	}
 
 	// Copy the palette.
-	int palette_len = std::min(img_swz->palette_len(), img->palette_len());
+	const unsigned int palette_len = std::min(img_swz->palette_len(), img->palette_len());
 	memcpy(img->palette(), img_swz->palette(), palette_len * sizeof(uint32_t));
 
 	const uint8_t *src_pixels = static_cast<const uint8_t*>(img_swz->bits());

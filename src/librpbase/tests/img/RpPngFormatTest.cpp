@@ -208,7 +208,7 @@ class RpPngFormatTest : public ::testing::TestWithParam<RpPngFormatTest_mode>
 			const rp_image *img,
 			const uint32_t *pBmpPalette,
 			const tRNS_CI8_t *pBmpAlpha = nullptr,
-			int bmpColorTableSize = 256,
+			unsigned int bmpColorTableSize = 256U,
 			int biClrUsed = -1);
 
 		/**
@@ -593,7 +593,7 @@ void RpPngFormatTest::Compare_Palettes(
 	const rp_image *img,
 	const uint32_t *pBmpPalette,
 	const tRNS_CI8_t *pBmpAlpha,
-	int bmpColorTableSize,
+	unsigned int bmpColorTableSize,
 	int biClrUsed)
 {
 	const uint32_t *pSrcPalette = img->palette();
@@ -602,7 +602,9 @@ void RpPngFormatTest::Compare_Palettes(
 	}
 
 	uint32_t xor_result = 0;
-	for (int i = 0; i < biClrUsed; i++, pSrcPalette++, pBmpPalette++) {
+	for (unsigned int i = 0; i < static_cast<unsigned int>(biClrUsed);
+	     i++, pSrcPalette++, pBmpPalette++)
+	{
 		uint32_t bmp32 = le32_to_cpu(*pBmpPalette) & 0x00FFFFFF;
 		if (pBmpAlpha) {
 			// BMP tRNS chunk is specified.
@@ -616,18 +618,22 @@ void RpPngFormatTest::Compare_Palettes(
 	EXPECT_EQ(0U, xor_result) << "CI8 rp_image's palette doesn't match BMP.";
 
 	// Make sure the unused colors in the rp_image are all 0.
-	if (biClrUsed < img->palette_len()) {
+	if (static_cast<unsigned int>(biClrUsed) < img->palette_len()) {
 		uint32_t or_result = 0;
-		for (int i = img->palette_len(); i > biClrUsed; i--, pSrcPalette++) {
+		for (unsigned int i = img->palette_len(); i > static_cast<unsigned int>(biClrUsed);
+		     i--, pSrcPalette++)
+		{
 			or_result |= *pSrcPalette;
 		}
 		EXPECT_EQ(0U, or_result) << "CI8 rp_image's palette doesn't have unused entries set to 0.";
 	}
 
 	// Make sure the unused colors in the BMP are all 0.
-	if (biClrUsed < bmpColorTableSize) {
+	if (static_cast<unsigned int>(biClrUsed) < bmpColorTableSize) {
 		uint32_t or_result = 0;
-		for (int i = img->palette_len(); i > biClrUsed; i--, pBmpPalette++) {
+		for (unsigned int i = img->palette_len(); i > static_cast<unsigned int>(biClrUsed);
+		     i--, pBmpPalette++)
+		{
 			or_result |= *pBmpPalette;
 		}
 		EXPECT_EQ(0U, or_result) << "BMP's palette doesn't have unused entries set to 0.";
@@ -658,7 +664,7 @@ void RpPngFormatTest::Compare_CI8_BMP8(
 	uint32_t xor_result = 0;
 
 	// Check the palette.
-	ASSERT_NO_FATAL_FAILURE(Compare_Palettes(img, pBmpPalette, pBmpAlpha, 256, biClrUsed));
+	ASSERT_NO_FATAL_FAILURE(Compare_Palettes(img, pBmpPalette, pBmpAlpha, 256U, biClrUsed));
 
 	// 256-color BMP images always have an internal width that's
 	// a multiple of 8px. If the image isn't a multiple of 8px,
@@ -939,7 +945,7 @@ TEST_P(RpPngFormatTest, loadTest)
 			// 256-color image. Get the palette.
 			// NOTE: rp_image's palette length is always 256, which may be
 			// greater than the used colors in the BMP.
-			ASSERT_GE(m_img->palette_len(), (int)bih.biClrUsed)
+			ASSERT_GE(m_img->palette_len(), bih.biClrUsed)
 				<< "BMP palette is larger than the rp_image palette.";
 
 			// NOTE: Palette has 32-bit entries, but the alpha channel is ignored.
@@ -959,13 +965,13 @@ TEST_P(RpPngFormatTest, loadTest)
 
 			// NOTE: The color table does have two colors, so we should
 			// compare it to the rp_image palette.
-			ASSERT_GE(m_img->palette_len(), (int)bih.biClrUsed)
+			ASSERT_GE(m_img->palette_len(), bih.biClrUsed)
 				<< "BMP palette is larger than the rp_image palette.";
 
 			// 256-color image. Get the palette.
 			// NOTE: rp_image's palette length is always 256, which may be
 			// greater than the used colors in the BMP.
-			ASSERT_GE(m_img->palette_len(), (int)bih.biClrUsed)
+			ASSERT_GE(m_img->palette_len(), bih.biClrUsed)
 				<< "BMP palette is larger than the rp_image palette.";
 
 			// NOTE: Palette has 32-bit entries, but the alpha channel is ignored.

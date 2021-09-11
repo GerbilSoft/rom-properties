@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * RpGdiplusBackend.hpp: rp_image_backend using GDI+.                      *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -285,11 +285,11 @@ const uint32_t *RpGdiplusBackend::palette(void) const
 	return reinterpret_cast<const uint32_t*>(m_pGdipPalette->Entries);
 }
 
-int RpGdiplusBackend::palette_len(void) const
+unsigned int RpGdiplusBackend::palette_len(void) const
 {
 	if (!m_pGdipPalette)
 		return 0;
-	return static_cast<int>(m_pGdipPalette->Count);
+	return m_pGdipPalette->Count;
 }
 
 /**

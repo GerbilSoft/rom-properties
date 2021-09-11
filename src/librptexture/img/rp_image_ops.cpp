@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * rp_image_ops.cpp: Image class. (operations)                             *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -62,7 +62,7 @@ rp_image *rp_image::dup(void) const
 
 	// If CI8, copy the palette.
 	if (format == rp_image::Format::CI8) {
-		int entries = std::min(img->palette_len(), backend->palette_len());
+		const unsigned int entries = std::min(img->palette_len(), backend->palette_len());
 		uint32_t *const dest_pal = img->palette();
 		memcpy(dest_pal, backend->palette(), entries * sizeof(uint32_t));
 		// Palette is zero-initialized, so we don't need to
@@ -481,7 +481,7 @@ rp_image *rp_image::resized(int width, int height, Alignment alignment, uint32_t
 
 	// If CI8, copy the palette.
 	if (format == rp_image::Format::CI8) {
-		int entries = std::min(img->palette_len(), backend->palette_len());
+		const unsigned int entries = std::min(img->palette_len(), backend->palette_len());
 		uint32_t *const dest_pal = img->palette();
 		memcpy(dest_pal, backend->palette(), entries * sizeof(uint32_t));
 		// Palette is zero-initialized, so we don't need to
@@ -673,7 +673,7 @@ rp_image *rp_image::flip(FlipOp op) const
 
 	// If CI8, copy the palette.
 	if (backend->format == rp_image::Format::CI8) {
-		int entries = std::min(flipimg->palette_len(), backend->palette_len());
+		const unsigned int entries = std::min(flipimg->palette_len(), backend->palette_len());
 		uint32_t *const dest_pal = flipimg->palette();
 		memcpy(dest_pal, backend->palette(), entries * sizeof(uint32_t));
 		// Palette is zero-initialized, so we don't need to
@@ -743,7 +743,7 @@ int rp_image::swapRB_cpp(void)
 
 		case rp_image::Format::CI8: {
 			argb32_t *pal = reinterpret_cast<argb32_t*>(backend->palette());
-			const int pal_len = backend->palette_len();
+			const unsigned int pal_len = backend->palette_len();
 			assert(pal != nullptr);
 			assert(pal_len > 0);
 			if (!pal || pal_len <= 0) {
@@ -751,7 +751,7 @@ int rp_image::swapRB_cpp(void)
 			}
 
 			// Convert the palette.
-			int i;
+			unsigned int i;
 			for (i = 0; i+1 < pal_len; i += 2, pal += 2) {
 				std::swap(pal[i+1].r, pal[i+1].b);
 				std::swap(pal[i+1].r, pal[i+1].b);

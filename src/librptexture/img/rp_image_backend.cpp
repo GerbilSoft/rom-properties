@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * rp_image_backend.cpp: Image backend and storage classes.                *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -101,7 +101,7 @@ bool rp_image_backend::has_translucent_palette_entries(void) const
 		return false;
 
 	const uint32_t *palette = this->palette();
-	int i = this->palette_len();
+	unsigned int i = this->palette_len();
 	assert(palette != nullptr);
 	assert(i > 0);
 

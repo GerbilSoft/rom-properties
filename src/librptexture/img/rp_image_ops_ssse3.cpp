@@ -1,7 +1,7 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (librptexture)                     *
  * rp_image_ops.cpp: Image class. (operations)                             *
- * SSSE3-optimized version.                                                 *
+ * SSSE3-optimized version.                                                *
  *                                                                         *
  * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
@@ -80,7 +80,7 @@ int rp_image::swapRB_ssse3(void)
 
 		case rp_image::Format::CI8: {
 			argb32_t *pal = reinterpret_cast<argb32_t*>(backend->palette());
-			const int pal_len = backend->palette_len();
+			const unsigned int pal_len = backend->palette_len();
 			assert(pal != nullptr);
 			assert(pal_len > 0);
 			if (!pal || pal_len <= 0) {
@@ -88,9 +88,9 @@ int rp_image::swapRB_ssse3(void)
 			}
 
 			// Process 16 colors per iteration using SSSE3.
-			unsigned int i;
 			__m128i *xmm_pal = reinterpret_cast<__m128i*>(pal);
-			for (i = (unsigned int)pal_len; i > 15; i -= 16, pal += 4) {
+			unsigned int i;
+			for (i = pal_len; i > 15; i -= 16, pal += 4) {
 				__m128i sa = _mm_load_si128(&xmm_pal[0]);
 				__m128i sb = _mm_load_si128(&xmm_pal[1]);
 				__m128i sc = _mm_load_si128(&xmm_pal[2]);

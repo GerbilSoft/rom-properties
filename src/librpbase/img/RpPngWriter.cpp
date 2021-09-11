@@ -198,7 +198,7 @@ class RpPngWriterPrivate
 			rp_image::Format format;
 
 			// Palette for CI8 images.
-			int palette_len;
+			unsigned int palette_len;
 			const uint32_t *palette;
 
 #ifdef PNG_sBIT_SUPPORTED
@@ -680,7 +680,7 @@ int RpPngWriterPrivate::write_CI8_palette(void)
 	// have different widths, heights, and/or formats.
 	// Also, does PNG support separate palettes per frame?
 	// If not, the frames may need to be converted to ARGB32.
-	if (cache.palette_len <= 0 || cache.palette_len > 256)
+	if (cache.palette_len == 0 || cache.palette_len > 256)
 		return -EINVAL;
 
 	// Maximum size.
@@ -692,7 +692,7 @@ int RpPngWriterPrivate::write_CI8_palette(void)
 	const argb32_t *p_img_pal = reinterpret_cast<const argb32_t*>(cache.palette);
 	png_color *p_png_pal = png_pal.data();
 	uint8_t *p_png_tRNS = png_tRNS.data();
-	for (int i = cache.palette_len; i > 0; i--, p_img_pal++, p_png_pal++, p_png_tRNS++) {
+	for (unsigned int i = cache.palette_len; i > 0; i--, p_img_pal++, p_png_pal++, p_png_tRNS++) {
 		// NOTE: Shifting method is actually more
 		// efficient on gcc, but MSVC handles both
 		// the same as gcc with argb32_t. (movzx)
@@ -1206,7 +1206,7 @@ int RpPngWriter::write_IHDR(void)
  * @param palette_len	[in,opt] Number of entries in `palette`.
  * @return 0 on success; negative POSIX error code on error.
  */
-int RpPngWriter::write_IHDR(const rp_image::sBIT_t *sBIT, const uint32_t *palette, int palette_len)
+int RpPngWriter::write_IHDR(const rp_image::sBIT_t *sBIT, const uint32_t *palette, unsigned int palette_len)
 {
 	RP_D(RpPngWriter);
 	assert(d->imageTag == RpPngWriterPrivate::ImageTag::Raw);

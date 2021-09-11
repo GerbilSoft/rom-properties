@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * rp_image.hpp: Image class.                                              *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -54,7 +54,7 @@ class rp_image_backend_default : public rp_image_backend
 			return m_palette;
 		}
 
-		int palette_len(void) const final
+		unsigned int palette_len(void) const final
 		{
 			return m_palette_len;
 		}
@@ -73,7 +73,7 @@ class rp_image_backend_default : public rp_image_backend
 		size_t m_data_len;
 
 		uint32_t *m_palette;
-		int m_palette_len;
+		unsigned int m_palette_len;
 };
 
 rp_image_backend_default::rp_image_backend_default(int width, int height, rp_image::Format format)
@@ -81,7 +81,7 @@ rp_image_backend_default::rp_image_backend_default(int width, int height, rp_ima
 	, m_data(nullptr)
 	, m_data_len(0)
 	, m_palette(nullptr)
-	, m_palette_len(0)
+	, m_palette_len(0U)
 {
 	if (width == 0 || height == 0) {
 		// Error initializing the backend.
@@ -126,7 +126,7 @@ rp_image_backend_default::rp_image_backend_default(int width, int height, rp_ima
 
 		// 256 colors allocated in the palette.
 		memset(m_palette, 0, palette_sz);
-		m_palette_len = 256;
+		m_palette_len = 256U;
 	}
 }
 
@@ -456,7 +456,7 @@ uint32_t *rp_image::palette(void)
  * Get the number of elements in the image palette.
  * @return Number of elements in the image palette, or 0 if not a paletted image.
  */
-int rp_image::palette_len(void) const
+unsigned int rp_image::palette_len(void) const
 {
 	RP_D(const rp_image);
 	return d->backend->palette_len();

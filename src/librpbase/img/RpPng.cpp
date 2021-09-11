@@ -255,18 +255,21 @@ void RpPngPrivate::Read_CI8_Palette(png_structp png_ptr, png_infop info_ptr,
 
 	// rp_image's palette data.
 	// ARGB32: AAAAAAAA RRRRRRRR GGGGGGGG BBBBBBBB
-	const int palette_len = img->palette_len();
+	const unsigned int palette_len = img->palette_len();
 	uint32_t *img_palette = img->palette();
 	assert(palette_len > 0);
 	assert(palette_len <= 256);
 	assert(img_palette != nullptr);
-	if (!img_palette || palette_len <= 0 || palette_len > 256)
+	if (!img_palette || palette_len == 0 || palette_len > 256)
 		return;
 
 	switch (color_type) {
 		case PNG_COLOR_TYPE_PALETTE:
 			// Get the palette from the PNG image.
 			if (png_get_PLTE(png_ptr, info_ptr, &png_palette, &num_palette) != PNG_INFO_PLTE)
+				break;
+			assert(num_palette > 0);
+			if (num_palette <= 0)
 				break;
 
 			// Check if there's a tRNS chunk.
@@ -276,7 +279,7 @@ void RpPngPrivate::Read_CI8_Palette(png_structp png_ptr, png_infop info_ptr,
 			}
 
 			// Combine the 24-bit RGB palette with the transparency information.
-			for (int i = std::min(num_palette, palette_len);
+			for (unsigned int i = std::min(static_cast<unsigned int>(num_palette), palette_len);
 			     i > 0; i--, img_palette++, png_palette++)
 			{
 				argb32_t color;
@@ -296,7 +299,7 @@ void RpPngPrivate::Read_CI8_Palette(png_structp png_ptr, png_infop info_ptr,
 				*img_palette = color.u32;
 			}
 
-			if (num_palette < palette_len) {
+			if (static_cast<unsigned int>(num_palette) < palette_len) {
 				// Clear the rest of the palette.
 				// (NOTE: 0 == fully transparent.)
 				memset(img_palette, 0, (palette_len - num_palette) * sizeof(uint32_t));
@@ -309,7 +312,7 @@ void RpPngPrivate::Read_CI8_Palette(png_structp png_ptr, png_infop info_ptr,
 			// the grayscale values will be incorrect.
 			// TODO: Handle the tRNS chunk?
 			uint32_t gray = 0xFF000000;
-			for (int i = 0; i < std::min(256, palette_len);
+			for (unsigned int i = 0; i < std::min(256U, palette_len);
 			     i++, img_palette++, gray += 0x010101)
 			{
 				// TODO: tRNS chunk handling.

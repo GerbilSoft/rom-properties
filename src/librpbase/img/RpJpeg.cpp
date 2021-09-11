@@ -355,7 +355,8 @@ rp_image *RpJpeg::load(IRpFile *file)
 				return nullptr;
 			}
 
-			for (int i = 0; i < std::min(256, img->palette_len());
+			const unsigned int img_palette_len = img->palette_len();
+			for (unsigned int i = 0; i < std::min(256U, img_palette_len);
 				i++, img_palette++)
 			{
 				uint8_t gray = static_cast<uint8_t>(i);
@@ -363,12 +364,10 @@ rp_image *RpJpeg::load(IRpFile *file)
 				*img_palette |= 0xFF000000;
 			}
 
-			if (img->palette_len() > 256) {
+			if (img_palette_len > 256) {
 				// Clear the rest of the palette.
 				// (NOTE: 0 == fully transparent.)
-				for (int i = img->palette_len()-256; i > 0;
-					i--, img_palette++)
-				{
+				for (unsigned i = img_palette_len-256; i > 0; i--, img_palette++) {
 					*img_palette = 0;
 				}
 			}

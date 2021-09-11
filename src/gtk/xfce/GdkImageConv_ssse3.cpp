@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * GdkImageConv.cpp: Helper functions to convert from rp_image to GDK.     *
  *                                                                         *
- * Copyright (c) 2017-2020 by David Korth.                                 *
+ * Copyright (c) 2017-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -113,14 +113,14 @@ GdkPixbuf *GdkImageConv::rp_image_to_GdkPixbuf_ssse3(const rp_image *img)
 
 		case rp_image::Format::CI8: {
 			const argb32_t *src_pal = reinterpret_cast<const argb32_t*>(img->palette());
-			const int src_pal_len = img->palette_len();
+			const unsigned int src_pal_len = img->palette_len();
 			assert(src_pal != nullptr);
 			assert(src_pal_len > 0);
-			if (!src_pal || src_pal_len <= 0)
+			if (!src_pal || src_pal_len == 0)
 				break;
 
 			// Get the palette.
-			static const int dest_pal_len = 256;
+			static const unsigned int dest_pal_len = 256;
 			uint32_t *const palette = static_cast<uint32_t*>(aligned_malloc(16, dest_pal_len*sizeof(uint32_t)));
 			assert(palette != nullptr);
 			if (unlikely(!palette)) {
@@ -130,9 +130,9 @@ GdkPixbuf *GdkImageConv::rp_image_to_GdkPixbuf_ssse3(const rp_image *img)
 			}
 
 			// Process 16 colors per iteration using SSSE3.
-			unsigned int i = static_cast<unsigned int>(src_pal_len);
 			const __m128i *xmm_src = reinterpret_cast<const __m128i*>(src_pal);
 			__m128i *xmm_dest = reinterpret_cast<__m128i*>(palette);
+			unsigned int i = src_pal_len;
 			for (; i > 15; i -= 16, xmm_src += 4, xmm_dest += 4) {
 				__m128i sa = _mm_load_si128(&xmm_src[0]);
 				__m128i sb = _mm_load_si128(&xmm_src[1]);

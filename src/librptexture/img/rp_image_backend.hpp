@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * rp_image_backend.hpp: Image backend and storage classes.                *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -64,7 +64,7 @@ class rp_image_backend
 		// Image palette.
 		virtual uint32_t *palette(void) = 0;
 		virtual const uint32_t *palette(void) const = 0;
-		virtual int palette_len(void) const = 0;
+		virtual unsigned int palette_len(void) const = 0;
 		int tr_idx;
 
 	public:

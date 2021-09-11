@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * GdkImageConv.cpp: Helper functions to convert from rp_image to GDK.     *
  *                                                                         *
- * Copyright (c) 2017-2020 by David Korth.                                 *
+ * Copyright (c) 2017-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -75,15 +75,15 @@ GdkPixbuf *GdkImageConv::rp_image_to_GdkPixbuf_cpp(const rp_image *img)
 
 		case rp_image::Format::CI8: {
 			const argb32_t *src_pal = reinterpret_cast<const argb32_t*>(img->palette());
-			const int src_pal_len = img->palette_len();
+			const unsigned int src_pal_len = img->palette_len();
 			assert(src_pal != nullptr);
 			assert(src_pal_len > 0);
-			if (!src_pal || src_pal_len <= 0)
+			if (!src_pal || src_pal_len == 0)
 				break;
 
 			// Get the palette.
 			array<argb32_t, 256> palette;
-			int i;
+			unsigned int i;
 			for (i = 0; i+1 < src_pal_len; i += 2, src_pal += 2) {
 				// Swap the R and B channels in the palette.
 				palette[i+0].u32 = src_pal[0].u32;
@@ -100,7 +100,7 @@ GdkPixbuf *GdkImageConv::rp_image_to_GdkPixbuf_cpp(const rp_image *img)
 
 			// Zero out the rest of the palette if the new
 			// palette is larger than the old palette.
-			if (src_pal_len < (int)palette.size()) {
+			if (src_pal_len < palette.size()) {
 				memset(&palette[src_pal_len], 0, (palette.size() - src_pal_len) * sizeof(uint32_t));
 			}
 

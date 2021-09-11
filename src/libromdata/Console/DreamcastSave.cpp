@@ -635,7 +635,7 @@ const rp_image *DreamcastSavePrivate::loadIcon_ICONDATA_VMS(void)
 			return img;
 		}
 
-		uint32_t *palette = img->palette();
+		uint32_t *const palette = img->palette();
 		assert(palette != nullptr);
 		if (palette) {
 			palette[0] = 0xFF8CCEAD;	// Green

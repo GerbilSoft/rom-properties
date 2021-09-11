@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE4/KF5)                         *
  * RpQImageBackend.hpp: rp_image_backend using QImage.                     *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -43,7 +43,7 @@ class RpQImageBackend : public LibRpTexture::rp_image_backend
 		// Image palette.
 		uint32_t *palette(void) final;
 		const uint32_t *palette(void) const final;
-		int palette_len(void) const final;
+		unsigned int palette_len(void) const final;
 
 	public:
 		/**

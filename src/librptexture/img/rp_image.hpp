@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * rp_image.hpp: Image class.                                              *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -252,7 +252,7 @@ class rp_image : public RefBase
 		 * Get the number of elements in the image palette.
 		 * @return Number of elements in the image palette, or 0 if not a paletted image.
 		 */
-		int palette_len(void) const;
+		unsigned int palette_len(void) const;
 
 		/**
 		 * Get the index of the transparency color in the palette.

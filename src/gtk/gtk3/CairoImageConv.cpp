@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * CairoImageConv.cpp: Helper functions to convert from rp_image to Cairo. *
  *                                                                         *
- * Copyright (c) 2017-2020 by David Korth.                                 *
+ * Copyright (c) 2017-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -93,21 +93,21 @@ cairo_surface_t *CairoImageConv::rp_image_to_cairo_surface_t(const rp_image *img
 
 		case rp_image::Format::CI8: {
 			const uint32_t *const palette = img->palette();
-			const int palette_len = img->palette_len();
+			const unsigned int palette_len = img->palette_len();
 			assert(palette != nullptr);
 			assert(palette_len > 0);
 			assert(palette_len <= 256);
-			if (!palette || palette_len <= 0 || palette_len > 256)
+			if (!palette || palette_len == 0 || palette_len > 256)
 				break;
 
 			// Premultiply the palette.
 			std::array<uint32_t, 256> pal_prex;
 			const uint32_t *pal_toUse;
 			if (premultiply) {
-				for (int i = 0; i < palette_len; i++) {
+				for (unsigned int i = 0; i < palette_len; i++) {
 					pal_prex[i] = rp_image::premultiply_pixel(palette[i]);
 				}
-				if (palette_len < (int)pal_prex.size()) {
+				if (palette_len < pal_prex.size()) {
 					// Clear the rest of the palette.
 					memset(&pal_prex[palette_len], 0, (pal_prex.size() - palette_len) * sizeof(uint32_t));
 				}

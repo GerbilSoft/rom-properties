@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * RpPngWriter.hpp: PNG image writer.                                      *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -192,7 +192,7 @@ class RpPngWriter
 		 * @param palette_len	[in,opt] Number of entries in `palette`.
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
-		int write_IHDR(const LibRpTexture::rp_image::sBIT_t *sBIT, const uint32_t *palette = nullptr, int palette_len = 0);
+		int write_IHDR(const LibRpTexture::rp_image::sBIT_t *sBIT, const uint32_t *palette = nullptr, unsigned int palette_len = 0);
 
 		// Key/value pair.
 		// - Key: Must be Latin-1.
