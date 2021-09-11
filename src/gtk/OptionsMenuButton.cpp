@@ -100,12 +100,12 @@ static void	menuOptions_triggered_signal_handler(GtkMenuItem	*menuItem,
 						     gpointer		 user_data);
 #endif /* USE_G_MENU_MODEL */
 
+static GParamSpec *props[PROP_LAST];
+static guint options_menu_button_signals[SIGNAL_LAST];
+
 // OptionsMenuButton class.
 struct _OptionsMenuButtonClass {
 	superclass __parent__;
-
-	GParamSpec *properties[PROP_LAST];
-	guint signal_ids[SIGNAL_LAST];
 };
 
 // OptionsMenuButton instance.
@@ -164,7 +164,7 @@ options_menu_button_class_init(OptionsMenuButtonClass *klass)
 
 	/** Properties **/
 
-	klass->properties[PROP_DIRECTION] = g_param_spec_enum(
+	props[PROP_DIRECTION] = g_param_spec_enum(
 		"direction", "Direction (up or down)", "Direction for the dropdown arrow.",
 		GTK_TYPE_ARROW_TYPE, GTK_ARROW_UP,
 		(GParamFlags)(G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
@@ -172,17 +172,17 @@ options_menu_button_class_init(OptionsMenuButtonClass *klass)
 	// Install the properties.
 	// NOTE: Not overriding properties anymore because this widget
 	// *contains* a GtkMenuButton instead of subclassing it.
-	g_object_class_install_properties(gobject_class, PROP_LAST, klass->properties);
+	g_object_class_install_properties(gobject_class, PROP_LAST, props);
 
 	/** Signals **/
 
 	// GtkButton signals
-	klass->signal_ids[SIGNAL_CLICKED] = g_signal_new("clicked",
+	options_menu_button_signals[SIGNAL_CLICKED] = g_signal_new("clicked",
 		TYPE_OPTIONS_MENU_BUTTON,
 		static_cast<GSignalFlags>(G_SIGNAL_RUN_FIRST | G_SIGNAL_ACTION),
 		0, NULL, NULL, NULL,
 		G_TYPE_NONE, 0);
-	klass->signal_ids[SIGNAL_ACTIVATE] = g_signal_new("activate",
+	options_menu_button_signals[SIGNAL_ACTIVATE] = g_signal_new("activate",
 		TYPE_OPTIONS_MENU_BUTTON,
 		static_cast<GSignalFlags>(G_SIGNAL_RUN_FIRST | G_SIGNAL_ACTION),
 		0, NULL, NULL, NULL,
@@ -190,13 +190,13 @@ options_menu_button_class_init(OptionsMenuButtonClass *klass)
 
 	// GtkMenuButton signals
 	// TODO: G_SIGNAL_ACTION?
-	klass->signal_ids[SIGNAL_TRIGGERED] = g_signal_new("triggered",
+	options_menu_button_signals[SIGNAL_TRIGGERED] = g_signal_new("triggered",
 		TYPE_OPTIONS_MENU_BUTTON, G_SIGNAL_RUN_LAST,
 		0, NULL, NULL, NULL,
 		G_TYPE_NONE, 1, G_TYPE_INT);
 
 	// Register the Activate signal.
-	gtk_widget_class_set_activate_signal(GTK_WIDGET_CLASS(klass), klass->signal_ids[SIGNAL_ACTIVATE]);
+	gtk_widget_class_set_activate_signal(GTK_WIDGET_CLASS(klass), options_menu_button_signals[SIGNAL_ACTIVATE]);
 }
 
 // TODO: Consolidate into common .cpp file.
@@ -427,10 +427,8 @@ btnOptions_clicked_signal_handler(GtkButton *button, gpointer user_data)
 
 	OptionsMenuButton *const widget = OPTIONS_MENU_BUTTON(gtk_widget_get_parent(GTK_WIDGET(button)));
 	g_return_val_if_fail(widget != nullptr, FALSE);
-	OptionsMenuButtonClass *const klass = OPTIONS_MENU_BUTTON_GET_CLASS(widget);
-	g_return_val_if_fail(klass != nullptr, FALSE);
 
-	g_signal_emit(GTK_WIDGET(widget), klass->signal_ids[SIGNAL_ACTIVATE], 0);
+	g_signal_emit(GTK_WIDGET(widget), options_menu_button_signals[SIGNAL_ACTIVATE], 0);
 	return TRUE;
 }
 
@@ -441,10 +439,8 @@ btnOptions_activate_signal_handler(GtkButton *button, gpointer user_data)
 
 	OptionsMenuButton *const widget = OPTIONS_MENU_BUTTON(gtk_widget_get_parent(GTK_WIDGET(button)));
 	g_return_val_if_fail(widget != nullptr, FALSE);
-	OptionsMenuButtonClass *const klass = OPTIONS_MENU_BUTTON_GET_CLASS(widget);
-	g_return_val_if_fail(klass != nullptr, FALSE);
 
-	g_signal_emit(GTK_WIDGET(widget), klass->signal_ids[SIGNAL_ACTIVATE], 0);
+	g_signal_emit(GTK_WIDGET(widget), options_menu_button_signals[SIGNAL_ACTIVATE], 0);
 	return TRUE;
 }
 
@@ -541,12 +537,12 @@ action_triggered_signal_handler(GSimpleAction	*action,
 {
 	RP_UNUSED(parameter);
 	OptionsMenuButton *const widget = OPTIONS_MENU_BUTTON(user_data);
-	OptionsMenuButtonClass *const klass = OPTIONS_MENU_BUTTON_GET_CLASS(widget);
+	g_return_if_fail(widget != nullptr);
 
 	const gint id = (gboolean)GPOINTER_TO_INT(
 		g_object_get_data(G_OBJECT(action), "menuOptions_id"));
 
-	g_signal_emit(widget, klass->signal_ids[SIGNAL_TRIGGERED], 0, id);
+	g_signal_emit(widget, options_menu_button_signals[SIGNAL_TRIGGERED], 0, id);
 }
 #else /* !USE_G_MENU_MODEL */
 /**
@@ -560,12 +556,12 @@ menuOptions_triggered_signal_handler(GtkMenuItem *menuItem,
 {
 	g_return_if_fail(IS_OPTIONS_MENU_BUTTON(user_data));
 	OptionsMenuButton *const widget = OPTIONS_MENU_BUTTON(user_data);
-	OptionsMenuButtonClass *const klass = OPTIONS_MENU_BUTTON_GET_CLASS(widget);
+	g_return_if_fail(widget != nullptr);
 
 	const gint id = (gboolean)GPOINTER_TO_INT(
 		g_object_get_data(G_OBJECT(menuItem), "menuOptions_id"));
 
-	g_signal_emit(widget, klass->signal_ids[SIGNAL_TRIGGERED], 0, id);
+	g_signal_emit(widget, options_menu_button_signals[SIGNAL_TRIGGERED], 0, id);
 }
 #endif /* USE_G_MENU_MODEL */
 

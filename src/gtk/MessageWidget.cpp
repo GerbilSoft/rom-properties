@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * MessageWidget.hpp: Message widget. (Similar to KMessageWidget)          *
  *                                                                         *
- * Copyright (c) 2017-2020 by David Korth.                                 *
+ * Copyright (c) 2017-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -49,11 +49,11 @@ typedef GtkEventBox super;
 #define GTK_TYPE_SUPER GTK_TYPE_EVENT_BOX
 #endif
 
+static GParamSpec *props[PROP_LAST];
+
 // MessageWidget class.
 struct _MessageWidgetClass {
 	superclass __parent__;
-
-	GParamSpec *properties[PROP_LAST];
 };
 
 // MessageWidget instance.
@@ -89,18 +89,18 @@ message_widget_class_init(MessageWidgetClass *klass)
 
 	/** Properties **/
 
-	klass->properties[PROP_TEXT] = g_param_spec_string(
+	props[PROP_TEXT] = g_param_spec_string(
 		"text", "Text", "Text displayed on the MessageWidget.",
 		nullptr,
 		(GParamFlags)(G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
-	klass->properties[PROP_MESSAGE_TYPE] = g_param_spec_enum(
+	props[PROP_MESSAGE_TYPE] = g_param_spec_enum(
 		"message-type", "Message Type", "Message type.",
 		GTK_TYPE_MESSAGE_TYPE, GTK_MESSAGE_OTHER,
 		(GParamFlags)(G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
 	// Install the properties.
-	g_object_class_install_properties(gobject_class, PROP_LAST, klass->properties);
+	g_object_class_install_properties(gobject_class, PROP_LAST, props);
 
 #if GTK_CHECK_VERSION(3,0,0)
 	// Initialize MessageWidget CSS.
@@ -280,8 +280,7 @@ message_widget_set_text(MessageWidget *widget, const gchar *str)
 
 	// FIXME: If called from rom_data_view_set_property(), this might
 	// result in *two* notifications.
-	MessageWidgetClass *const klass = MESSAGE_WIDGET_GET_CLASS(widget);
-	g_object_notify_by_pspec(G_OBJECT(widget), klass->properties[PROP_TEXT]);
+	g_object_notify_by_pspec(G_OBJECT(widget), props[PROP_TEXT]);
 }
 
 const gchar*
@@ -370,8 +369,7 @@ message_widget_set_message_type(MessageWidget *widget, GtkMessageType messageTyp
 
 	// FIXME: If called from rom_data_view_set_property(), this might
 	// result in *two* notifications.
-	MessageWidgetClass *const klass = MESSAGE_WIDGET_GET_CLASS(widget);
-	g_object_notify_by_pspec(G_OBJECT(widget), klass->properties[PROP_MESSAGE_TYPE]);
+	g_object_notify_by_pspec(G_OBJECT(widget), props[PROP_MESSAGE_TYPE]);
 }
 
 GtkMessageType

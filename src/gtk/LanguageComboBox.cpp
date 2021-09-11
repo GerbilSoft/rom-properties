@@ -52,12 +52,12 @@ static void	language_combo_box_set_property	(GObject	*object,
 static void	internal_changed_handler	(LanguageComboBox *widget,
 						 gpointer          user_data);
 
+static GParamSpec *props[PROP_LAST];
+static guint language_combo_box_signals[SIGNAL_LAST];
+
 // LanguageComboBox class.
 struct _LanguageComboBoxClass {
 	GtkComboBoxClass __parent__;
-
-	GParamSpec *properties[PROP_LAST];
-	guint signal_ids[SIGNAL_LAST];
 };
 
 // LanguageComboBox instance.
@@ -81,17 +81,17 @@ language_combo_box_class_init(LanguageComboBoxClass *klass)
 
 	/** Properties **/
 
-	klass->properties[PROP_SELECTED_LC] = g_param_spec_uint(
+	props[PROP_SELECTED_LC] = g_param_spec_uint(
 		"selected-lc", "Selected LC", "Selected language code.",
 		0U, ~0U, 0U,
 		(GParamFlags)(G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
 	// Install the properties.
-	g_object_class_install_properties(gobject_class, PROP_LAST, klass->properties);
+	g_object_class_install_properties(gobject_class, PROP_LAST, props);
 
 	/** Signals **/
 
-	klass->signal_ids[SIGNAL_LC_CHANGED] = g_signal_new("lc-changed",
+	language_combo_box_signals[SIGNAL_LC_CHANGED] = g_signal_new("lc-changed",
 		TYPE_LANGUAGE_COMBO_BOX, G_SIGNAL_RUN_LAST,
 		0, NULL, NULL, NULL,
 		G_TYPE_NONE, 1, G_TYPE_UINT);
@@ -316,8 +316,7 @@ language_combo_box_clear_lcs(LanguageComboBox *widget)
 	gtk_list_store_clear(widget->listStore);
 	if (cur_idx >= 0) {
 		// Nothing is selected now.
-		LanguageComboBoxClass *const klass = LANGUAGE_COMBO_BOX_GET_CLASS(widget);
-		g_signal_emit(widget, klass->signal_ids[SIGNAL_LC_CHANGED], 0, 0);
+		g_signal_emit(widget, language_combo_box_signals[SIGNAL_LC_CHANGED], 0, 0);
 	}
 }
 
@@ -370,8 +369,7 @@ language_combo_box_set_selected_lc(LanguageComboBox *widget, uint32_t lc)
 
 	// FIXME: If called from language_combo_box_set_property(), this might
 	// result in *two* notifications.
-	LanguageComboBoxClass *const klass = LANGUAGE_COMBO_BOX_GET_CLASS(widget);
-	g_object_notify_by_pspec(G_OBJECT(widget), klass->properties[PROP_SELECTED_LC]);
+	g_object_notify_by_pspec(G_OBJECT(widget), props[PROP_SELECTED_LC]);
 
 	// NOTE: internal_changed_handler will emit SIGNAL_LC_CHANGED,
 	// so we don't need to emit it here.
@@ -407,7 +405,6 @@ internal_changed_handler(LanguageComboBox *widget,
 			 gpointer          user_data)
 {
 	RP_UNUSED(user_data);
-	LanguageComboBoxClass *const klass = LANGUAGE_COMBO_BOX_GET_CLASS(widget);
 	const uint32_t lc = language_combo_box_get_selected_lc(widget);
-	g_signal_emit(widget, klass->signal_ids[SIGNAL_LC_CHANGED], 0, lc);
+	g_signal_emit(widget, language_combo_box_signals[SIGNAL_LC_CHANGED], 0, lc);
 }

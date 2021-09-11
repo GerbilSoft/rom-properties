@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libunixcommon)                    *
  * dll-search.c: Function to search for a usable rom-properties library.   *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -22,7 +22,7 @@
 // OpenBSD 6.5 doesn't have the static_assert() macro,
 // even though it *does* use LLVM/Clang 7.0.1.
 #ifndef static_assert
-# define static_assert _Static_assert
+#  define static_assert _Static_assert
 #endif
 
 // Supported rom-properties frontends.
@@ -31,6 +31,7 @@ typedef enum {
 	RP_FE_KF5,
 	RP_FE_GTK2,	// XFCE (Thunar 1.6)
 	RP_FE_GTK3,	// GNOME, MATE, Cinnamon, XFCE (Thunar 1.8)
+	RP_FE_GTK4,	// not used yet
 
 	RP_FE_MAX
 } RP_Frontend;
@@ -52,8 +53,14 @@ static const char *const RP_Extension_Path[RP_FE_MAX] = {
 #else
 	NULL,
 #endif
+	// FIXME: libnautilus-extension 3 and 4 cannot be installed at the same time.
 #ifdef LibNautilusExtension_EXTENSION_DIR
 	LibNautilusExtension_EXTENSION_DIR "/rom-properties-gtk3.so",
+#else
+	NULL,
+#endif
+#ifdef LibNautilusExtension_EXTENSION_DIR
+	LibNautilusExtension_EXTENSION_DIR "/rom-properties-gtk4.so",
 #else
 	NULL,
 #endif
@@ -63,10 +70,11 @@ static const char *const RP_Extension_Path[RP_FE_MAX] = {
 // - Index: Current desktop environment. (RP_Frontend)
 // - Value: Plugin to use. (RP_Frontend)
 static const uint8_t plugin_prio[RP_FE_MAX][RP_FE_MAX] = {
-	{RP_FE_KDE4, RP_FE_KF5, RP_FE_GTK2, RP_FE_GTK3},	// RP_FE_KDE4
-	{RP_FE_KF5, RP_FE_KDE4, RP_FE_GTK3, RP_FE_GTK2},	// RP_FE_KF5
-	{RP_FE_GTK2, RP_FE_GTK3, RP_FE_KF5, RP_FE_KDE4},	// RP_FE_GTK2
-	{RP_FE_GTK3, RP_FE_GTK2, RP_FE_KF5, RP_FE_KDE4},	// RP_FE_GTK3
+	{RP_FE_KDE4, RP_FE_KF5, RP_FE_GTK2, RP_FE_GTK3, RP_FE_GTK4},	// RP_FE_KDE4
+	{RP_FE_KF5, RP_FE_KDE4, RP_FE_GTK4, RP_FE_GTK3, RP_FE_GTK2},	// RP_FE_KF5
+	{RP_FE_GTK2, RP_FE_GTK3, RP_FE_GTK4, RP_FE_KF5, RP_FE_KDE4},	// RP_FE_GTK2
+	{RP_FE_GTK3, RP_FE_GTK4, RP_FE_GTK2, RP_FE_KF5, RP_FE_KDE4},	// RP_FE_GTK3
+	{RP_FE_GTK4, RP_FE_GTK3, RP_FE_GTK2, RP_FE_KF5, RP_FE_KDE4},	// RP_FE_GTK4
 };
 
 /**
@@ -331,9 +339,9 @@ int rp_dll_search(const char *symname, void **ppDll, void **ppfn, PFN_RP_DLL_DEB
 
 	// Debug: Print the active desktop environment.
 	if (pfnDebug) {
-		static const char *const de_name_tbl[] = {
+		static const char de_name_tbl[][8] = {
 			"KDE4", "KF5",
-			"GTK2", "GTK3",
+			"GTK2", "GTK3", "GTK4",
 		};
 		static_assert(sizeof(de_name_tbl)/sizeof(de_name_tbl[0]) == RP_FE_MAX,
 			"de_name_tbl[] needs to be updated.");

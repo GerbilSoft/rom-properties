@@ -84,11 +84,11 @@ static gboolean	rp_thumbnailer_dequeue		(OrgFreedesktopThumbnailsSpecializedThum
 						 guint32	 handle,
 						 RpThumbnailer	*thumbnailer);
 
+static GParamSpec *props[PROP_LAST];
+static guint thumbnailer_signals[SIGNAL_LAST];
+
 struct _RpThumbnailerClass {
 	GObjectClass __parent__;
-
-	GParamSpec *properties[PROP_LAST];
-	guint signal_ids[SIGNAL_LAST];
 };
 
 #define SHUTDOWN_TIMEOUT_SECONDS 30U
@@ -186,32 +186,32 @@ rp_thumbnailer_class_init(RpThumbnailerClass *klass, gpointer class_data)
 
 	/** Properties **/
 
-	klass->properties[PROP_CONNECTION] = g_param_spec_object(
+	props[PROP_CONNECTION] = g_param_spec_object(
 		"connection", "connection", "D-Bus connection.",
 		G_TYPE_DBUS_CONNECTION,
 		G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS | G_PARAM_CONSTRUCT_ONLY);
 
-	klass->properties[PROP_CACHE_DIR] = g_param_spec_string(
+	props[PROP_CACHE_DIR] = g_param_spec_string(
 		"cache-dir", "cache-dir", "XDG cache directory.",
 		NULL,
 		G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS | G_PARAM_CONSTRUCT_ONLY);
 
-	klass->properties[PROP_PFN_RP_CREATE_THUMBNAIL] = g_param_spec_pointer(
+	props[PROP_PFN_RP_CREATE_THUMBNAIL] = g_param_spec_pointer(
 		"pfn-rp-create-thumbnail", "pfn-rp-create-thumbnail", "rp_create_thumbnail() function pointer.",
 		G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS | G_PARAM_CONSTRUCT_ONLY);
 
-	klass->properties[PROP_EXPORTED] = g_param_spec_boolean(
+	props[PROP_EXPORTED] = g_param_spec_boolean(
 		"exported", "exported", "Is the D-Bus object exported?",
 		false,
 		G_PARAM_READABLE | G_PARAM_STATIC_STRINGS);
 
 	// Install the properties.
-	g_object_class_install_properties(gobject_class, PROP_LAST, klass->properties);
+	g_object_class_install_properties(gobject_class, PROP_LAST, props);
 
 	/** Signals **/
 
 	// RpThumbnailer has been idle for long enough and should exit.
-	klass->signal_ids[SIGNAL_SHUTDOWN] = g_signal_new("shutdown",
+	thumbnailer_signals[SIGNAL_SHUTDOWN] = g_signal_new("shutdown",
 		TYPE_RP_THUMBNAILER, G_SIGNAL_RUN_LAST,
 		0, NULL, NULL, NULL,
 		G_TYPE_NONE, 0);
@@ -255,8 +255,7 @@ rp_thumbnailer_constructed(GObject *object)
 
 	// Object is exported.
 	thumbnailer->exported = true;
-	RpThumbnailerClass *const klass = RP_THUMBNAILER_GET_CLASS(thumbnailer);
-	g_object_notify_by_pspec(G_OBJECT(thumbnailer), klass->properties[PROP_EXPORTED]);
+	g_object_notify_by_pspec(G_OBJECT(thumbnailer), props[PROP_EXPORTED]);
 }
 
 static void
@@ -491,10 +490,9 @@ rp_thumbnailer_timeout(RpThumbnailer *thumbnailer)
 	}
 
 	// Stop the timeout and shut down the thumbnailer.
-	RpThumbnailerClass *const klass = RP_THUMBNAILER_GET_CLASS(thumbnailer);
 	thumbnailer->timeout_id = 0;
 	thumbnailer->shutdown_emitted = true;
-	g_signal_emit(thumbnailer, klass->signal_ids[SIGNAL_SHUTDOWN], 0);
+	g_signal_emit(thumbnailer, thumbnailer_signals[SIGNAL_SHUTDOWN], 0);
 	g_debug("Shutting down due to %u seconds of inactivity.", SHUTDOWN_TIMEOUT_SECONDS);
 	return false;
 }

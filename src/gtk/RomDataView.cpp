@@ -132,11 +132,11 @@ static pfnGlibGetType_t pfn_hdy_header_bar_get_type = nullptr;
 static pfnHdyHeaderBarPackEnd_t pfn_hdy_header_bar_pack_end = nullptr;
 #endif /* GTK_CHECK_VERSION(3,0,0) */
 
+static GParamSpec *props[PROP_LAST];
+
 // GTK+ property page class.
 struct _RomDataViewClass {
 	superclass __parent__;
-
-	GParamSpec *properties[PROP_LAST];
 };
 
 // Multi-language stuff.
@@ -272,23 +272,23 @@ rom_data_view_class_init(RomDataViewClass *klass)
 
 	/** Properties **/
 
-	klass->properties[PROP_URI] = g_param_spec_string(
+	props[PROP_URI] = g_param_spec_string(
 		"uri", "URI", "URI of the ROM image being displayed.",
 		nullptr,
 		(GParamFlags)(G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
-	klass->properties[PROP_DESC_FORMAT_TYPE] = g_param_spec_enum(
+	props[PROP_DESC_FORMAT_TYPE] = g_param_spec_enum(
 		"desc-format-type", "desc-format-type", "Description format type.",
 		RP_TYPE_DESC_FORMAT_TYPE, RP_DFT_XFCE,
 		(GParamFlags)(G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
-	klass->properties[PROP_SHOWING_DATA] = g_param_spec_boolean(
+	props[PROP_SHOWING_DATA] = g_param_spec_boolean(
 		"showing-data", "showing-data", "Is a valid RomData object being displayed?",
 		false,
 		(GParamFlags)(G_PARAM_READABLE | G_PARAM_STATIC_STRINGS));
 
 	// Install the properties.
-	g_object_class_install_properties(gobject_class, PROP_LAST, klass->properties);
+	g_object_class_install_properties(gobject_class, PROP_LAST, props);
 
 #if GTK_CHECK_VERSION(3,0,0)
 	/** libhandy **/
@@ -653,8 +653,7 @@ rom_data_view_set_uri(RomDataView	*page,
 	// URI has been changed.
 	// FIXME: If called from rom_data_view_set_property(), this might
 	// result in *two* notifications.
-	RomDataViewClass *const klass = ROM_DATA_VIEW_GET_CLASS(page);
-	g_object_notify_by_pspec(G_OBJECT(page), klass->properties[PROP_URI]);
+	g_object_notify_by_pspec(G_OBJECT(page), props[PROP_URI]);
 }
 
 RpDescFormatType
@@ -680,8 +679,7 @@ rom_data_view_set_desc_format_type(RomDataView *page, RpDescFormatType desc_form
 	// result in *two* notifications.
 	page->desc_format_type = desc_format_type;
 	rom_data_view_desc_format_type_changed(page, desc_format_type);
-	RomDataViewClass *const klass = ROM_DATA_VIEW_GET_CLASS(page);
-	g_object_notify_by_pspec(G_OBJECT(page), klass->properties[PROP_DESC_FORMAT_TYPE]);
+	g_object_notify_by_pspec(G_OBJECT(page), props[PROP_DESC_FORMAT_TYPE]);
 }
 
 static void
@@ -2326,8 +2324,7 @@ rom_data_view_load_rom_data(gpointer data)
 			// result in *two* notifications.
 			page->romData = romData;
 			page->hasCheckedAchievements = false;
-			RomDataViewClass *const klass = ROM_DATA_VIEW_GET_CLASS(page);
-			g_object_notify_by_pspec(G_OBJECT(page), klass->properties[PROP_SHOWING_DATA]);
+			g_object_notify_by_pspec(G_OBJECT(page), props[PROP_SHOWING_DATA]);
 		}
 
 		// Update the display widgets.
