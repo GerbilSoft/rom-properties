@@ -487,11 +487,12 @@ int rp_image::tr_idx(void) const
 void rp_image::set_tr_idx(int tr_idx)
 {
 	RP_D(rp_image);
+	const int palette_len = static_cast<int>(d->backend->palette_len());
 	assert(d->backend->format == Format::CI8);
-	assert(tr_idx >= -1 && tr_idx < d->backend->palette_len());
+	assert(tr_idx >= -1 && tr_idx < palette_len);
 
 	if (d->backend->format == Format::CI8 &&
-	    tr_idx >= -1 && tr_idx < d->backend->palette_len())
+	    tr_idx >= -1 && tr_idx < palette_len)
 	{
 		d->backend->tr_idx = tr_idx;
 	}
