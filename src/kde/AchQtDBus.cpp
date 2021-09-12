@@ -10,6 +10,9 @@
 #include "AchQtDBus.hpp"
 using LibRpBase::Achievements;
 
+// librptexture
+using LibRpTexture::argb32_t;
+
 // QtDBus
 #include "notificationsinterface.h"
 
@@ -156,7 +159,6 @@ QImage AchQtDBusPrivate::loadSpriteSheet(int iconSize)
 	}
 
 	// Make sure it's ARGB32.
-	// NOTE: The R and B channels need to be swapped for XDG notifications.
 	if (imgAchSheet.format() != QImage::Format_ARGB32) {
 		imgAchSheet = imgAchSheet.convertToFormat(QImage::Format_ARGB32);
 		if (imgAchSheet.isNull()) {
@@ -175,27 +177,22 @@ QImage AchQtDBusPrivate::loadSpriteSheet(int iconSize)
 		return QImage();
 	}
 
+	// NOTE: The R and B channels need to be swapped for XDG notifications.
 	// Swap the R and B channels in place.
 	// TODO: Qt 6.0 will have an in-place rgbSwap() function.
-	uint32_t *bits = reinterpret_cast<uint32_t*>(imgAchSheet.bits());
+	argb32_t *bits = reinterpret_cast<argb32_t*>(imgAchSheet.bits());
 	int strideDiff = imgAchSheet.bytesPerLine() - (imgAchSheet.width() * sizeof(uint32_t));
 	for (unsigned int y = (unsigned int)imgAchSheet.height(); y > 0; y--) {
 		unsigned int x;
 		for (x = (unsigned int)imgAchSheet.width(); x > 1; x -= 2) {
-			// Swap the R and B channels.
-			bits[0] = (bits[0] & 0xFF00FF00) |
-				 ((bits[0] & 0x00FF0000) >> 16) |
-				 ((bits[0] & 0x000000FF) << 16);
-			bits[1] = (bits[1] & 0xFF00FF00) |
-				 ((bits[1] & 0x00FF0000) >> 16) |
-				 ((bits[1] & 0x000000FF) << 16);
+			// Swap the R and B channels
+			std::swap(bits[0].r, bits[0].b);
+			std::swap(bits[1].r, bits[1].b);
 			bits += 2;
 		}
 		if (x == 1) {
-			// Last pixel.
-			*bits = (*bits & 0xFF00FF00) |
-			       ((*bits & 0x00FF0000) >> 16) |
-			       ((*bits & 0x000000FF) << 16);
+			// Last pixel
+			std::swap(bits->r, bits->b);
 			bits++;
 		}
 

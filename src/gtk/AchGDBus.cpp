@@ -10,6 +10,9 @@
 #include "AchGDBus.hpp"
 using LibRpBase::Achievements;
 
+// librptexture
+using LibRpTexture::argb32_t;
+
 // GDBus
 #include <glib-object.h>
 #include "Notifications.h"
@@ -136,28 +139,23 @@ PIMGTYPE AchGDBusPrivate::loadSpriteSheet(int iconSize)
 	}
 
 #ifdef RP_GTK_USE_CAIRO
+	// NOTE: The R and B channels need to be swapped for XDG notifications.
 	// Cairo: Swap the R and B channels in place.
 	int width, height;
 	PIMGTYPE_get_size(imgAchSheet, &width, &height);
-	uint32_t *bits = reinterpret_cast<uint32_t*>(PIMGTYPE_get_image_data(imgAchSheet));
-	int strideDiff = (PIMGTYPE_get_rowstride(imgAchSheet) / sizeof(uint32_t)) - width;
+	argb32_t *bits = reinterpret_cast<argb32_t*>(PIMGTYPE_get_image_data(imgAchSheet));
+	int strideDiff = (PIMGTYPE_get_rowstride(imgAchSheet) / sizeof(argb32_t)) - width;
 	for (unsigned int y = (unsigned int)height; y > 0; y--) {
 		unsigned int x;
 		for (x = (unsigned int)width; x > 1; x -= 2) {
-			// Swap the R and B channels.
-			bits[0] = (bits[0] & 0xFF00FF00) |
-				 ((bits[0] & 0x00FF0000) >> 16) |
-				 ((bits[0] & 0x000000FF) << 16);
-			bits[1] = (bits[1] & 0xFF00FF00) |
-				 ((bits[1] & 0x00FF0000) >> 16) |
-				 ((bits[1] & 0x000000FF) << 16);
+			// Swap the R and B channels
+			std::swap(bits[0].r, bits[0].b);
+			std::swap(bits[1].r, bits[1].b);
 			bits += 2;
 		}
 		if (x == 1) {
-			// Last pixel.
-			*bits = (*bits & 0xFF00FF00) |
-			       ((*bits & 0x00FF0000) >> 16) |
-			       ((*bits & 0x000000FF) << 16);
+			// Last pixel
+			std::swap(bits->r, bits->b);
 			bits++;
 		}
 
