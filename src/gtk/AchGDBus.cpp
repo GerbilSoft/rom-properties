@@ -141,6 +141,7 @@ PIMGTYPE AchGDBusPrivate::loadSpriteSheet(int iconSize)
 #ifdef RP_GTK_USE_CAIRO
 	// NOTE: The R and B channels need to be swapped for XDG notifications.
 	// Cairo: Swap the R and B channels in place.
+	// TODO: SSSE3-optimized version?
 	int width, height;
 	PIMGTYPE_get_size(imgAchSheet, &width, &height);
 	argb32_t *bits = reinterpret_cast<argb32_t*>(PIMGTYPE_get_image_data(imgAchSheet));

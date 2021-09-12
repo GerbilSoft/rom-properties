@@ -180,6 +180,7 @@ QImage AchQtDBusPrivate::loadSpriteSheet(int iconSize)
 	// NOTE: The R and B channels need to be swapped for XDG notifications.
 	// Swap the R and B channels in place.
 	// TODO: Qt 6.0 will have an in-place rgbSwap() function.
+	// TODO: SSSE3-optimized version?
 	argb32_t *bits = reinterpret_cast<argb32_t*>(imgAchSheet.bits());
 	int strideDiff = imgAchSheet.bytesPerLine() - (imgAchSheet.width() * sizeof(uint32_t));
 	for (unsigned int y = (unsigned int)imgAchSheet.height(); y > 0; y--) {
