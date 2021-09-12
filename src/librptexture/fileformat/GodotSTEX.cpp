@@ -918,7 +918,7 @@ const char *GodotSTEX::pixelFormat(void) const
 			break;
 	}
 
-	if (d->pixelFormat >= 0 && d->pixelFormat < pixelFormatMax) {
+	if (d->pixelFormat >= 0 && d->pixelFormat <= pixelFormatMax) {
 		return d->img_format_tbl[d->pixelFormat];
 	}
 
