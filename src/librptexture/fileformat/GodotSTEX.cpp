@@ -899,13 +899,26 @@ const char *GodotSTEX::pixelFormat(void) const
 		return nullptr;
 
 	// TODO: Don't return version-specific pixel formats for the wrong version.
-	if (d->stexVersion == 3) {
-		// Godot 3: Pixel format is always L8 (0) if an embedded
-		// PNG or WebP image is present.
-		if (d->hasEmbeddedFile)
+	STEX_Format_e pixelFormatMax;
+	switch (d->stexVersion) {
+		default:
+			assert(!"Invalid STEX version.");
 			return nullptr;
+		case 3:
+			// Godot 3: Pixel format is always L8 (0) if an embedded
+			// PNG or WebP image is present.
+			if (d->hasEmbeddedFile)
+				return nullptr;
+			pixelFormatMax = STEX_FORMAT_SCU_ASTC_8x8;
+			break;
+		case 4:
+			// Godot 4: SCU's ASTC format isn't valid.
+			// TODO: Godot 4-specific formats?
+			pixelFormatMax = STEX_FORMAT_ETC2_RGB8A1;
+			break;
 	}
-	if (d->pixelFormat >= 0 && d->pixelFormat < ARRAY_SIZE(d->img_format_tbl)) {
+
+	if (d->pixelFormat >= 0 && d->pixelFormat < pixelFormatMax) {
 		return d->img_format_tbl[d->pixelFormat];
 	}
 
