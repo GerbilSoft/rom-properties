@@ -33,12 +33,15 @@ int rpt_do_security_options(void)
 		// FIXME: glibc-2.31 uses 64-bit time syscalls that may not be
 		// defined in earlier versions, including Ubuntu 14.04.
 
+		// Multi-threading is required by libcurl.
+
 		// NOTE: Special case for clone(). If it's the first syscall
 		// in the list, it has a parameter restriction added that
 		// ensures it can only be used to create threads.
 		SCMP_SYS(clone),
 		// Other multi-threading syscalls
 		SCMP_SYS(set_robust_list),
+		SCMP_SYS(clone3),	// pthread_create() with glibc-2.34
 
 		SCMP_SYS(access),	// LibUnixCommon::isWritableDirectory()
 		SCMP_SYS(close),

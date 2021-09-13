@@ -78,12 +78,21 @@ int rp_secure_enable(rp_secure_param_t param)
 		// certain syscalls if they're interrupted.
 		SCMP_SYS(restart_syscall),
 
+		// OpenMP thread management
+		// TODO: Only enable if _OPENMP?
+		SCMP_SYS(clone),
+		SCMP_SYS(set_robust_list),
+		SCMP_SYS(clone3),		// pthread_create() with glibc-2.34
+
+		// OpenMP [and also abort()]
+		// NOTE: Also used by Ubuntu 20.04's DNS resolver.
+		SCMP_SYS(rt_sigaction),
+		SCMP_SYS(rt_sigprocmask),
+
 #ifndef NDEBUG
 		// abort() [called by assert()]
 		SCMP_SYS(getpid),
 		SCMP_SYS(gettid),
-		SCMP_SYS(rt_sigaction),
-		SCMP_SYS(rt_sigprocmask),
 		SCMP_SYS(tgkill),
 #endif /* NDEBUG */
 

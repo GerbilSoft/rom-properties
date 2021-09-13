@@ -321,12 +321,15 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 		// FIXME: glibc-2.31 uses 64-bit time syscalls that may not be
 		// defined in earlier versions, including Ubuntu 14.04.
 
+		// Multi-threading is required by libcurl.
+
 		// NOTE: Special case for clone(). If it's the first syscall
 		// in the list, it has a parameter restriction added that
 		// ensures it can only be used to create threads.
 		SCMP_SYS(clone),
 		// Other multi-threading syscalls
 		SCMP_SYS(set_robust_list),
+		SCMP_SYS(clone3),	// pthread_create() with glibc-2.34
 
 		SCMP_SYS(access), SCMP_SYS(clock_gettime),
 #if defined(__SNR_clock_gettime64) || defined(__NR_clock_gettime64)
@@ -392,7 +395,6 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 		SCMP_SYS(rt_sigprocmask),	// Ubuntu 20.04: __GI_getaddrinfo() ->
 						// gaih_inet() ->
 						// _nss_myhostname_gethostbyname4_r()
-		SCMP_SYS(clone3),	// pthread_create() with glibc-2.34
 
 		// libnss_resolve.so (systemd-resolved)
 		SCMP_SYS(geteuid),
