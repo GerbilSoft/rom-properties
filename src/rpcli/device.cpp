@@ -108,7 +108,8 @@ std::ostream& operator<<(std::ostream& os, const ScsiInquiry& si)
 	};
 	os << "Peripheral device type: ";
 	const char *const pdt = pdt_tbl[resp.PeripheralDeviceType & 0x1F];
-	os << (pdt ? pdt : rp_sprintf("0x%02X", resp.PeripheralDeviceType & 0x1F)) << endl;
+	os << (pdt ? pdt : rp_sprintf("0x%02X",
+		static_cast<unsigned int>(resp.PeripheralDeviceType) & 0x1F)) << endl;
 
 	os << "Peripheral qualifier:   ";
 	static const char *const pq_tbl[8] = {
