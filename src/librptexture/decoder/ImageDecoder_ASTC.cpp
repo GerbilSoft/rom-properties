@@ -75,7 +75,6 @@ rp_image *fromASTC(int width, int height,
 	const unsigned int tilesY = static_cast<unsigned int>(physHeight / block_y);
 	const unsigned int bytesPerTileRow = tilesX * 16;	// for OpenMP
 
-	// Temporary tile buffer.
 	// NOTE: Largest ASTC format is 12x12.
 	const int stride_px = img->stride() / sizeof(uint32_t);
 	uint32_t *const pDestBits = static_cast<uint32_t*>(img->bits());
@@ -88,8 +87,10 @@ rp_image *fromASTC(int width, int height,
 	for (unsigned int y = 0; y < tilesY; y++) {
 		const uint8_t *pSrc = &img_buf[y * bytesPerTileRow];
 		for (unsigned int x = 0; x < tilesX; x++, pSrc += 16) {
-			// Decode the tile from ASTC.
+			// Temporary tile buffer
 			array<uint32_t, 12*12> tileBuf;
+
+			// Decode the tile from ASTC.
 			bool bRet = basisu_astc::astc::decompress(
 				reinterpret_cast<uint8_t*>(tileBuf.data()), pSrc,
 				false,	// TODO: sRGB scaling?
