@@ -78,12 +78,6 @@ int rp_secure_enable(rp_secure_param_t param)
 		// certain syscalls if they're interrupted.
 		SCMP_SYS(restart_syscall),
 
-		// OpenMP thread management
-		// TODO: Only enable if _OPENMP?
-		SCMP_SYS(clone),
-		SCMP_SYS(set_robust_list),
-		SCMP_SYS(clone3),		// pthread_create() with glibc-2.34
-
 		// OpenMP [and also abort()]
 		// NOTE: Also used by Ubuntu 20.04's DNS resolver.
 		SCMP_SYS(rt_sigaction),
@@ -100,14 +94,12 @@ int rp_secure_enable(rp_secure_param_t param)
 	};
 
 	// Whitelist the standard syscalls.
-	const int *p = syscall_wl_std;
-	for (; *p != -1; p++) {
+	for (const int *p = syscall_wl_std; *p != -1; p++) {
 		seccomp_rule_add_array(ctx, SCMP_ACT_ALLOW, *p, 0, NULL);
 	}
 
-	// NOTE: If clone() is wanted, it should be the first syscall in the list.
-	p = param.syscall_wl;
-	if (*p == SCMP_SYS(clone)) {
+	// Multi-threading syscalls.
+	if (param.threading) {
 		// clone() syscall. Only allow threads.
 		const struct scmp_arg_cmp clone_params[] = {
 			SCMP_A0(SCMP_CMP_MASKED_EQ, CLONE_THREAD, CLONE_THREAD),
@@ -115,14 +107,23 @@ int rp_secure_enable(rp_secure_param_t param)
 		seccomp_rule_add_array(ctx, SCMP_ACT_ALLOW, SCMP_SYS(clone),
 			(unsigned int)(sizeof(clone_params)/sizeof(clone_params[0])), clone_params);
 
-		// Skip clone() in the loop.
-		p++;
+		// Other syscalls for multi-threading.
+		static const int syscall_wl_threading[] = {
+			SCMP_SYS(clone),
+			SCMP_SYS(set_robust_list),
+			SCMP_SYS(clone3),		// pthread_create() with glibc-2.34
+
+			-1	// End of whitelist
+		};
+
+		for (const int *p = syscall_wl_threading; *p != -1; p++) {
+			seccomp_rule_add_array(ctx, SCMP_ACT_ALLOW, *p, 0, NULL);
+		}
 	}
 
-	// Add syscalls from the whitelist.
+	// Add syscalls from the caller's whitelist.
 	// TODO: More extensive syscall parameters?
-	for (; *p != -1; p++) {
-		assert(*p != SCMP_SYS(clone));
+	for (const int *p = param.syscall_wl; *p != -1; p++) {
 		seccomp_rule_add_array(ctx, SCMP_ACT_ALLOW, *p, 0, NULL);
 	}
 

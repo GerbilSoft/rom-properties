@@ -114,6 +114,7 @@ int rp_stub_do_security_options(bool config)
 		-1	// End of whitelist
 	};
 	param.syscall_wl = syscall_wl;
+	param.threading = true;		// FIXME: Only if OpenMP is enabled?
 #elif defined(HAVE_PLEDGE)
 	// Promises:
 	// - stdio: General stdio functionality.

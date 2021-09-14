@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (D-Bus Thumbnailer)                *
  * rptsecure.c: Security options for rp-thumbnailer-dbus.                  *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -32,16 +32,6 @@ int rpt_do_security_options(void)
 		// TODO: Add more syscalls.
 		// FIXME: glibc-2.31 uses 64-bit time syscalls that may not be
 		// defined in earlier versions, including Ubuntu 14.04.
-
-		// Multi-threading is required by libcurl.
-
-		// NOTE: Special case for clone(). If it's the first syscall
-		// in the list, it has a parameter restriction added that
-		// ensures it can only be used to create threads.
-		SCMP_SYS(clone),
-		// Other multi-threading syscalls
-		SCMP_SYS(set_robust_list),
-		SCMP_SYS(clone3),	// pthread_create() with glibc-2.34
 
 		SCMP_SYS(access),	// LibUnixCommon::isWritableDirectory()
 		SCMP_SYS(close),
@@ -107,6 +97,7 @@ int rpt_do_security_options(void)
 		-1	// End of whitelist
 	};
 	param.syscall_wl = syscall_wl;
+	param.threading = true;		// libcurl uses multi-threading.
 #elif defined(HAVE_PLEDGE)
 	// Promises:
 	// - stdio: General stdio functionality.
