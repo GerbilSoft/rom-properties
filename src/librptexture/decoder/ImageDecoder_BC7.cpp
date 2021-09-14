@@ -672,8 +672,8 @@ rp_image *fromBC7(int width, int height,
 	}
 
 	// Calculate the total number of tiles.
-	const unsigned int tilesX = static_cast<unsigned int>(physWidth / 4);
-	const unsigned int tilesY = static_cast<unsigned int>(physHeight / 4);
+	const int tilesX = physWidth / 4;
+	const int tilesY = physHeight / 4;
 	const unsigned int bytesPerTileRow = tilesX * sizeof(bc7_block);	// for OpenMP
 
 	// Create an rp_image.
@@ -694,7 +694,7 @@ rp_image *fromBC7(int width, int height,
 #endif /* _OPENMP */
 
 #pragma omp parallel for
-	for (unsigned int y = 0; y < tilesY; y++) {
+	for (int y = 0; y < tilesY; y++) {
 		// BC7 has eight block modes with varying properties, including
 		// bitfields of different lengths. As such, the only guaranteed
 		// block format we have is 128-bit little-endian, which will be
@@ -703,7 +703,7 @@ rp_image *fromBC7(int width, int height,
 		// TODO: Optimize by using fewer shifts?
 		const uint64_t *bc7_src = reinterpret_cast<const uint64_t*>(
 			&img_buf[y * bytesPerTileRow]);
-		for (unsigned int x = 0; x < tilesX; x++, bc7_src += 2) {
+		for (int x = 0; x < tilesX; x++, bc7_src += 2) {
 			// Temporary tile buffer
 			array<argb32_t, 4*4> tileBuf;
 

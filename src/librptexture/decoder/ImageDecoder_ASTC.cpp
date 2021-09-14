@@ -71,8 +71,8 @@ rp_image *fromASTC(int width, int height,
 	// so we'll need to use a tiled decode loop.
 
 	// Calculate the total number of tiles.
-	const unsigned int tilesX = static_cast<unsigned int>(physWidth / block_x);
-	const unsigned int tilesY = static_cast<unsigned int>(physHeight / block_y);
+	const int tilesX = physWidth / block_x;
+	const int tilesY = physHeight / block_y;
 	const unsigned int bytesPerTileRow = tilesX * 16;	// for OpenMP
 
 	// NOTE: Largest ASTC format is 12x12.
@@ -84,9 +84,9 @@ rp_image *fromASTC(int width, int height,
 #endif /* _OPENMP */
 
 #pragma omp parallel for
-	for (unsigned int y = 0; y < tilesY; y++) {
+	for (int y = 0; y < tilesY; y++) {
 		const uint8_t *pSrc = &img_buf[y * bytesPerTileRow];
-		for (unsigned int x = 0; x < tilesX; x++, pSrc += 16) {
+		for (int x = 0; x < tilesX; x++, pSrc += 16) {
 			// Temporary tile buffer
 			array<uint32_t, 12*12> tileBuf;
 
