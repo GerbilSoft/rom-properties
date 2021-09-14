@@ -567,9 +567,9 @@ static inline uint32_t RGB9_E5_to_ARGB32(uint32_t px32)
 	float bf = (float)((px32 >> 18) & 0x1FF) * scale.f;
 
 	// Convert to uint8_t, clamping to [0,255].
-	uint8_t r = (rf <= 0.0f ? 0 : (rf >= 1.0f ? 255 : ((uint8_t)floorf(rf * 256.0f))));
-	uint8_t g = (gf <= 0.0f ? 0 : (gf >= 1.0f ? 255 : ((uint8_t)floorf(gf * 256.0f))));
-	uint8_t b = (bf <= 0.0f ? 0 : (bf >= 1.0f ? 255 : ((uint8_t)floorf(bf * 256.0f))));
+	uint8_t r = (rf <= 0.0f ? 0 : (rf >= 1.0f ? 255 : ((uint8_t)(rf * 256.0f))));
+	uint8_t g = (gf <= 0.0f ? 0 : (gf >= 1.0f ? 255 : ((uint8_t)(gf * 256.0f))));
+	uint8_t b = (bf <= 0.0f ? 0 : (bf >= 1.0f ? 255 : ((uint8_t)(bf * 256.0f))));
 
 	// Convert back to ARGB32.
 	return (0xFF000000 | (r << 16) | (g << 8) | b);
