@@ -217,29 +217,41 @@ static uint8_t getAnchorIndex(uint8_t partition, uint8_t subset, uint8_t subsetC
 	return idx;
 }
 
-
 /**
- * Right-shift two 64-bit values as if it's a single 128-bit value.
- * NOTE: Assuming `shamt` is always less than 64.
- * @param msb	[in/out] MSB QWORD
- * @param lsb	[in/out] LSB QWORD
- * @param shamt [in] Shift amount
+ * BC7 block struct.
  */
-static FORCEINLINE void rshift128(uint64_t &msb, uint64_t &lsb, unsigned int shamt)
-{
-	assert(shamt < 64);
-	if (shamt == 0) {
-		// Nothing to do here...
-		return;
+struct bc7_block {
+	uint64_t lsb;
+	uint64_t msb;
+
+	bc7_block(const uint64_t *src)
+	{
+		// TODO: Make sure this is correct on big-endian.
+		lsb = le64_to_cpu(src[0]);
+		msb = le64_to_cpu(src[1]);
 	}
 
-	// Shift LSB first.
-	lsb >>= shamt;
-	// Copy from MSB to LSB.
-	lsb |= (msb << (64 - shamt));
-	// Shift MSB next.
-	msb >>= shamt;
-}
+	/**
+	 * Right-shift the two 64-bit values as if it's a single 128-bit value.
+	 * NOTE: Assuming `shamt` is always less than 64.
+	 * @param shamt	[in] Shift amount
+	 */
+	FORCEINLINE void rshift128(unsigned int shamt)
+	{
+		assert(shamt < 64);
+		if (shamt == 0) {
+			// Nothing to do here...
+			return;
+		}
+
+		// Shift LSB first.
+		lsb >>= shamt;
+		// Copy from MSB to LSB.
+		lsb |= (msb << (64 - shamt));
+		// Shift MSB next.
+		msb >>= shamt;
+	}
+};
 
 /**
  * Convert a BC7 image to rp_image.
@@ -328,18 +340,17 @@ rp_image *fromBC7(int width, int height,
 
 		/** END: Temporary values. **/
 
-		// TODO: Make sure this is correct on big-endian.
-		uint64_t lsb = le64_to_cpu(bc7_src[0]);
-		uint64_t msb = le64_to_cpu(bc7_src[1]);
+		// Current block.
+		bc7_block block(bc7_src);
 
 		// Check the block mode.
-		const int mode = get_mode(static_cast<uint32_t>(lsb));
+		const int mode = get_mode(static_cast<uint32_t>(block.lsb));
 		if (mode < 0) {
 			// Invalid mode.
 			img->unref();
 			return nullptr;
 		}
-		rshift128(msb, lsb, mode+1);
+		block.rshift128(mode+1);
 
 		// Rotation mode.
 		// Only present in modes 4 and 5.
@@ -350,8 +361,8 @@ rp_image *fromBC7(int width, int height,
 		// - 11: BRGA - swap A and B
 		uint8_t rotation_mode;
 		if (mode == 4 || mode == 5) {
-			rotation_mode = lsb & 3;
-			rshift128(msb, lsb, 2);
+			rotation_mode = block.lsb & 3;
+			block.rshift128(2);
 		} else {
 			// No rotation.
 			rotation_mode = 0;
@@ -365,8 +376,8 @@ rp_image *fromBC7(int width, int height,
 			// color data and which is used for alpha data:
 			// - idxMode_m4 == 0: Color == 2-bit, Alpha == 3-bit
 			// - idxMode_m4 == 1: Color == 3-bit, Alpha == 2-bit
-			idxMode_m4 = lsb & 1;
-			rshift128(msb, lsb, 1);
+			idxMode_m4 = block.lsb & 1;
+			block.rshift128(1);
 		}
 
 		// Subset/partition.
@@ -375,8 +386,8 @@ rp_image *fromBC7(int width, int height,
 		uint32_t subset = 0;
 		uint8_t partition = 0;
 		if (PartitionBits[mode] != 0) {
-			partition = lsb & ((1U << PartitionBits[mode]) - 1);
-			rshift128(msb, lsb, PartitionBits[mode]);
+			partition = block.lsb & ((1U << PartitionBits[mode]) - 1);
+			block.rshift128(PartitionBits[mode]);
 
 			// Determine the subset to use.
 			switch (SubsetCount[mode]) {
@@ -414,7 +425,7 @@ rp_image *fromBC7(int width, int height,
 		const unsigned int component_count = endpoint_count * 3;
 		uint8_t ep_idx = 0, comp_idx = 0;
 		for (unsigned int i = 0; i < component_count; i++) {
-			endpoints.u8[ep_idx][comp_idx] = (lsb & endpoint_mask) << endpoint_shamt;
+			endpoints.u8[ep_idx][comp_idx] = (block.lsb & endpoint_mask) << endpoint_shamt;
 			ep_idx++;
 			if (ep_idx == endpoint_count) {
 				// Next component.
@@ -423,7 +434,7 @@ rp_image *fromBC7(int width, int height,
 			}
 
 			// Shift the data over.
-			rshift128(msb, lsb, endpoint_bits);
+			block.rshift128(endpoint_bits);
 		}
 
 		// Do we have alpha components?
@@ -436,8 +447,8 @@ rp_image *fromBC7(int width, int height,
 			const uint8_t alpha_mask = (1U << alpha_bits) - 1;
 			const uint8_t alpha_shamt = 8U - alpha_bits;
 			for (unsigned int i = 0; i < endpoint_count; i++) {
-				alpha[i] = (lsb & alpha_mask) << alpha_shamt;
-				rshift128(msb, lsb, alpha_bits);
+				alpha[i] = (block.lsb & alpha_mask) << alpha_shamt;
+				block.rshift128(alpha_bits);
 			}
 		} else {
 			// No alpha. Use 255.
@@ -455,23 +466,23 @@ rp_image *fromBC7(int width, int height,
 		if (PBitCount[mode] != 0) {
 			// Optimization to avoid having to shift the
 			// whole 64-bit and/or 128-bit value multiple times.
-			unsigned int lsb8 = (lsb & 0xFF);
+			unsigned int lsb8 = (block.lsb & 0xFF);
 			if (mode == 1) {
 				// Mode 1: Two P-bits for four endpoints.
 
 				// Subset 0
-				if (lsb & 1) {
+				if (block.lsb & 1) {
 					endpoints.u32[0] |= 0x02020202;
 					endpoints.u32[1] |= 0x02020202;
 				}
 
 				// Subset 1
-				if (lsb & 2) {
+				if (block.lsb & 2) {
 					endpoints.u32[2] |= 0x02020202;
 					endpoints.u32[3] |= 0x02020202;
 				}
 
-				rshift128(msb, lsb, 2);
+				block.rshift128(2);
 			} else {
 				// Other modes: Unique P-bit for each endpoint.
 				const uint8_t p_ep_shamt = 7 - endpoint_bits;
@@ -485,7 +496,7 @@ rp_image *fromBC7(int width, int height,
 					// Apply P-bits to the alpha components.
 					assert(endpoint_count <= ARRAY_SIZE(alpha));
 					const uint8_t p_a_shamt = 7 - alpha_bits;
-					lsb8 = (lsb & 0xFF);
+					lsb8 = (block.lsb & 0xFF);
 					for (unsigned int i = 0; i < endpoint_count; i++, lsb8 >>= 1) {
 						alpha[i] |= (lsb8 & 1) << p_a_shamt;
 					}
@@ -495,7 +506,7 @@ rp_image *fromBC7(int width, int height,
 					alpha_bits++;
 				}
 
-				rshift128(msb, lsb, endpoint_count);
+				block.rshift128(endpoint_count);
 			}
 
 			// Increment the endpoint bits to indicate how many bits
@@ -538,18 +549,18 @@ rp_image *fromBC7(int width, int height,
 				// NOTE: We've already shifted by 50 bits by now, so the
 				// MSB contains the high 14 bits of the index data, and
 				// the LSB contains the low 33 bits of the index data.
-				idxData = (msb << 33) | (lsb >> 31);
+				idxData = (block.msb << 33) | (block.lsb >> 31);
 				index_bits = 3;
 				index_mask = (1U << 3) - 1;
 			} else {
 				// idxMode is not set: Color data uses the 2-bit indexes.
-				idxData = lsb & ((1U << 31) - 1);
+				idxData = block.lsb & ((1U << 31) - 1);
 				index_bits = 2;
 				index_mask = (1U << 2) - 1;
 			}
 		} else {
 			// Use the LSB indexes as-is.
-			idxData = lsb;
+			idxData = block.lsb;
 			index_mask = (1U << index_bits) - 1;
 		}
 
@@ -589,7 +600,7 @@ rp_image *fromBC7(int width, int height,
 			uint8_t index_bits, index_mask;
 			if (idxMode_m4) {
 				// idxMode is set: Alpha data uses the 2-bit indexes.
-				idxData = lsb & ((1U << 31) - 1);
+				idxData = block.lsb & ((1U << 31) - 1);
 				index_bits = 2;
 				index_mask = (1U << 2) - 1;
 			} else {
@@ -597,7 +608,7 @@ rp_image *fromBC7(int width, int height,
 				// NOTE: We've already shifted by 50 bits by now, so the
 				// MSB contains the high 14 bits of the index data, and
 				// the LSB contains the low 33 bits of the index data.
-				idxData = (msb << 33) | (lsb >> 31);
+				idxData = (block.msb << 33) | (block.lsb >> 31);
 				index_bits = 3;
 				index_mask = (1U << 3) - 1;
 			}
@@ -629,10 +640,10 @@ rp_image *fromBC7(int width, int height,
 			// Process alpha using the index data.
 			if (mode == 5) {
 				// Mode 5: Separate alpha indexes, stored after the color indexes.
-				idxData = lsb >> 31;
+				idxData = block.lsb >> 31;
 			} else {
 				// Other modes: Same indexes as color data.
-				idxData = lsb;
+				idxData = block.lsb;
 			}
 			subsetData = subset;
 			for (unsigned int i = 0; i < 16; i++, subsetData >>= 2) {
