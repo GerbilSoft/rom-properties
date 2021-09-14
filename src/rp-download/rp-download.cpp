@@ -320,7 +320,6 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 		// TODO: Add more syscalls.
 		// FIXME: glibc-2.31 uses 64-bit time syscalls that may not be
 		// defined in earlier versions, including Ubuntu 14.04.
-
 		SCMP_SYS(access),
 		SCMP_SYS(clock_gettime),
 #if defined(__SNR_clock_gettime64) || defined(__NR_clock_gettime64)
