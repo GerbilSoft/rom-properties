@@ -674,6 +674,7 @@ rp_image *fromBC7(int width, int height,
 	// Calculate the total number of tiles.
 	const unsigned int tilesX = static_cast<unsigned int>(physWidth / 4);
 	const unsigned int tilesY = static_cast<unsigned int>(physHeight / 4);
+	const unsigned int bytesPerTileRow = tilesX * sizeof(bc7_block);	// for OpenMP
 
 	// Create an rp_image.
 	rp_image *const img = new rp_image(physWidth, physHeight, rp_image::Format::ARGB32);
@@ -688,30 +689,52 @@ rp_image *fromBC7(int width, int height,
 	// Rotation bits makes this difficult...
 	static const rp_image::sBIT_t sBIT = {8,8,8,0,8};
 
-	// BC7 has eight block modes with varying properties, including
-	// bitfields of different lengths. As such, the only guaranteed
-	// block format we have is 128-bit little-endian, which will be
-	// represented as two uint64_t values, which will be shifted
-	// as each component is processed.
-	// TODO: Optimize by using fewer shifts?
-	const uint64_t *bc7_src = reinterpret_cast<const uint64_t*>(img_buf);
+#ifdef _OPENMP
+	bool bErr = false;
+#endif /* _OPENMP */
 
-	// Temporary tile buffer.
-	array<argb32_t, 4*4> tileBuf;
-
+#pragma omp parallel for
 	for (unsigned int y = 0; y < tilesY; y++) {
-	for (unsigned int x = 0; x < tilesX; x++, bc7_src += 2) {
-		// Decode the block.
-		int ret = decodeBC7Block(tileBuf, bc7_src);
-		if (ret != 0) {
-			// Error decoding the block.
-			img->unref();
-			return nullptr;
-		}
+		// BC7 has eight block modes with varying properties, including
+		// bitfields of different lengths. As such, the only guaranteed
+		// block format we have is 128-bit little-endian, which will be
+		// represented as two uint64_t values, which will be shifted
+		// as each component is processed.
+		// TODO: Optimize by using fewer shifts?
+		const uint64_t *bc7_src = reinterpret_cast<const uint64_t*>(
+			&img_buf[y * bytesPerTileRow]);
+		for (unsigned int x = 0; x < tilesX; x++, bc7_src += 2) {
+			// Temporary tile buffer
+			array<argb32_t, 4*4> tileBuf;
 
-		// Blit the tile to the main image buffer.
-		ImageDecoderPrivate::BlitTile<uint32_t, 4, 4>(img, tileBuf, x, y);
-	} }
+			// Decode the block.
+			int ret = decodeBC7Block(tileBuf, bc7_src);
+			if (ret != 0) {
+				// BC7 decoding error.
+#ifdef _OPENMP
+				// Cannot return when using OpenMP,
+				// so set an error value and continue.
+				bErr = true;
+				break;
+#else /* !_OPENMP */
+				// Not using OpenMP, so return immediately.
+				img->unref();
+				return nullptr;
+#endif /* _OPENMP */
+			}
+
+			// Blit the tile to the main image buffer.
+			ImageDecoderPrivate::BlitTile<uint32_t, 4, 4>(img, tileBuf, x, y);
+		}
+	}
+
+#ifdef _OPENMP
+	if (bErr) {
+		// A decoding error occurred.
+		img->unref();
+		return nullptr;
+	}
+#endif /* _OPENMP */
 
 	if (width < physWidth || height < physHeight) {
 		// Shrink the image.
