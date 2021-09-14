@@ -1654,7 +1654,10 @@ INSTANTIATE_TEST_SUITE_P(STEX3, ImageDecoderTest,
 		ImageDecoderTest_mode("STEX3/gray.ETC2_RGBA8.stex.gz",	"STEX3/gray.ETC2_RGBA8.png"),
 		ImageDecoderTest_mode("STEX3/gray.ETC.stex.gz",		"STEX3/gray.ETC.png"),
 		ImageDecoderTest_mode("STEX3/gray.PVRTC1_4.stex.gz",	"STEX3/gray.PVRTC1_4.png"),
-		ImageDecoderTest_mode("STEX3/gray.L8.stex.gz",		"gray-reference.png"))
+		ImageDecoderTest_mode("STEX3/gray.L8.stex.gz",		"gray-reference.png"),
+
+		ImageDecoderTest_mode("STEX3/TEST_RR_areaMap-bg.tga-RGBE9995.stex.gz",
+		                      "STEX3/TEST_RR_areaMap-bg.tga-RGBE9995.png"))
 	, ImageDecoderTest::test_case_suffix_generator);
 
 // Godot STEX4 tests
