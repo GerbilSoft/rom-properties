@@ -14,6 +14,14 @@ IF(ENABLE_OPENMP)
 	FIND_PACKAGE(OpenMP)
 	IF(OpenMP_FOUND)
 		SET(HAVE_OPENMP 1)
+		IF(NOT MSVC AND NOT OpenMP_CXX_LIB_NAMES)
+			# Prior to CMake 3.9, FindOpenMP didn't set
+			# library names. This breaks on Ubuntu 16.04,
+			# which uses CMake 3.5.
+			# NOTE: FIND_LIBRARY(gomp) doesn't work...
+			FIND_PACKAGE(Threads REQUIRED)
+			SET(OpenMP_CXX_LIB_NAMES -lgomp ${CMAKE_THREAD_LIBS_INIT})
+		ENDIF(NOT MSVC AND NOT OpenMP_CXX_LIB_NAMES)
 	ENDIF(OpenMP_FOUND)
 ENDIF(ENABLE_OPENMP)
 
