@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (rp-download)                      *
  * rp-download.cpp: Standalone cache downloader.                           *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -321,7 +321,8 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 		// FIXME: glibc-2.31 uses 64-bit time syscalls that may not be
 		// defined in earlier versions, including Ubuntu 14.04.
 
-		SCMP_SYS(access), SCMP_SYS(clock_gettime),
+		SCMP_SYS(access),
+		SCMP_SYS(clock_gettime),
 #if defined(__SNR_clock_gettime64) || defined(__NR_clock_gettime64)
 		SCMP_SYS(clock_gettime64),
 #endif /* __SNR_clock_gettime64 || __NR_clock_gettime64 */

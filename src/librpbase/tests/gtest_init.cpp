@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase/tests)                  *
  * gtest_init.c: Google Test initialization.                               *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -41,10 +41,14 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 	param.bHighSec = FALSE;
 #elif defined(HAVE_SECCOMP)
 	static const int syscall_wl[] = {
-		// Syscalls used by rp-download.
+		// Syscalls used by rom-properties unit tests.
 		// TODO: Add more syscalls.
 		// FIXME: glibc-2.31 uses 64-bit time syscalls that may not be
 		// defined in earlier versions, including Ubuntu 14.04.
+		SCMP_SYS(clock_gettime),
+#if defined(__SNR_clock_gettime64) || defined(__NR_clock_gettime64)
+		SCMP_SYS(clock_gettime64),
+#endif /* __SNR_clock_gettime64 || __NR_clock_gettime64 */
 		SCMP_SYS(fcntl),     SCMP_SYS(fcntl64),		// gcc profiling
 		SCMP_SYS(fstat),     SCMP_SYS(fstat64),		// __GI___fxstat() [printf()]
 		SCMP_SYS(fstatat64), SCMP_SYS(newfstatat),	// Ubuntu 19.10 (32-bit)
