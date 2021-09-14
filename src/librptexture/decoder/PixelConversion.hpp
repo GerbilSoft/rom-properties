@@ -2,14 +2,14 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * PixelConversion.hpp: Pixel conversion inline functions.                 *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #ifndef __ROMPROPERTIES_LIBRPTEXTURE_DECODER_PIXELCONVERSION_HPP__
 #define __ROMPROPERTIES_LIBRPTEXTURE_DECODER_PIXELCONVERSION_HPP__
 
-// C includes. (C++ namespace)
+// C includes (C++ namespace)
 #include <cmath>
 
 namespace LibRpTexture { namespace PixelConversion {
@@ -548,16 +548,23 @@ static inline uint32_t RGB9_E5_to_ARGB32(uint32_t px32)
 	// NOTE: This will truncate the color channels.
 	// TODO: Add ARGB64 support?
 
-	// Reference: https://www.khronos.org/registry/OpenGL/extensions/EXT/EXT_texture_shared_exponent.txt
+	// References:
+	// - https://www.khronos.org/registry/OpenGL/extensions/EXT/EXT_texture_shared_exponent.txt
+	// - https://gitlab.freedesktop.org/mesa/mesa/-/blob/main/src/util/format_rgb9e5.h
 	// RGB9_E5: EEEEEBBB BBBBBBGG GGGGGGGR RRRRRRRR
 	//  ARGB32: AAAAAAAA RRRRRRRR GGGGGGGG BBBBBBBB
-	int8_t e = (px32 >> 27) - 15 - 9;
+#define RGB9E5_EXP_BIAS 15
+#define RGB9E5_MANTISSA_BITS 9
+	int e;
+	union { float f; uint32_t u; } scale;
+
+	e = (px32 >> 27) - RGB9E5_EXP_BIAS - RGB9E5_MANTISSA_BITS;
+	scale.u = (e + 127) << 23;
 
 	// Process as float.
-	// TODO: SSE optimizations?
-	float rf =  (px32        & 0x1FF) * powf(2, e);
-	float gf = ((px32 >>  9) & 0x1FF) * powf(2, e);
-	float bf = ((px32 >> 18) & 0x1FF) * powf(2, e);
+	float rf = (float) (px32        & 0x1FF) * scale.f;
+	float gf = (float)((px32 >>  9) & 0x1FF) * scale.f;
+	float bf = (float)((px32 >> 18) & 0x1FF) * scale.f;
 
 	// Convert to uint8_t, clamping to [0,255].
 	uint8_t r = (rf <= 0.0f ? 0 : (rf >= 1.0f ? 255 : ((uint8_t)floorf(rf * 256.0f))));
