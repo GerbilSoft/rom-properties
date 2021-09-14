@@ -287,7 +287,8 @@ string RomFields::ageRatingDecode(AgeRatingsCountry country, uint16_t rating)
 	} else {
 		// No string rating.
 		// Print the numeric value.
-		str = rp_sprintf("%u", rating & RomFields::AGEBF_MIN_AGE_MASK);
+		str = rp_sprintf("%u",
+			static_cast<unsigned int>(rating) & RomFields::AGEBF_MIN_AGE_MASK);
 	}
 
 	if (rating & RomFields::AGEBF_ONLINE_PLAY) {
