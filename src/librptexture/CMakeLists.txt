@@ -67,6 +67,7 @@ SET(${PROJECT_NAME}_SRCS
 # Headers.
 SET(${PROJECT_NAME}_H
 	FileFormatFactory.hpp
+	argb32_t.hpp
 
 	img/rp_image.hpp
 	img/rp_image_p.hpp

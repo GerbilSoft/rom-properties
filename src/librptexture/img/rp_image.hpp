@@ -29,28 +29,11 @@
 #  define RP_IMAGE_ALWAYS_HAS_SSE2 1
 #endif
 
+#include "../argb32_t.hpp"
+
 // TODO: Make this implicitly shared.
 
 namespace LibRpTexture {
-
-// ARGB32 value with byte accessors.
-union argb32_t {
-	struct {
-#if SYS_BYTEORDER == SYS_LIL_ENDIAN
-		uint8_t b;
-		uint8_t g;
-		uint8_t r;
-		uint8_t a;
-#else /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
-		uint8_t a;
-		uint8_t r;
-		uint8_t g;
-		uint8_t b;
-#endif
-	};
-	uint32_t u32;
-};
-ASSERT_STRUCT(argb32_t, 4);
 
 class rp_image_backend;
 

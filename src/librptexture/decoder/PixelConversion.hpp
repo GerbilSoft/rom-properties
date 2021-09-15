@@ -12,6 +12,9 @@
 // C includes (C++ namespace)
 #include <cmath>
 
+// argb32_t
+#include "argb32_t.hpp"
+
 namespace LibRpTexture { namespace PixelConversion {
 
 /** Color conversion functions. **/
@@ -555,10 +558,9 @@ static inline uint32_t RGB9_E5_to_ARGB32(uint32_t px32)
 	//  ARGB32: AAAAAAAA RRRRRRRR GGGGGGGG BBBBBBBB
 #define RGB9E5_EXP_BIAS 15
 #define RGB9E5_MANTISSA_BITS 9
-	int e;
 	union { float f; uint32_t u; } scale;
 
-	e = (px32 >> 27) - RGB9E5_EXP_BIAS - RGB9E5_MANTISSA_BITS;
+	const int e = (px32 >> 27) - RGB9E5_EXP_BIAS - RGB9E5_MANTISSA_BITS;
 	scale.u = (e + 127) << 23;
 
 	// Process as float.
@@ -566,13 +568,13 @@ static inline uint32_t RGB9_E5_to_ARGB32(uint32_t px32)
 	float gf = (float)((px32 >>  9) & 0x1FF) * scale.f;
 	float bf = (float)((px32 >> 18) & 0x1FF) * scale.f;
 
-	// Convert to uint8_t, clamping to [0,255].
-	uint8_t r = (rf <= 0.0f ? 0 : (rf >= 1.0f ? 255 : ((uint8_t)(rf * 256.0f))));
-	uint8_t g = (gf <= 0.0f ? 0 : (gf >= 1.0f ? 255 : ((uint8_t)(gf * 256.0f))));
-	uint8_t b = (bf <= 0.0f ? 0 : (bf >= 1.0f ? 255 : ((uint8_t)(bf * 256.0f))));
-
-	// Convert back to ARGB32.
-	return (0xFF000000 | (r << 16) | (g << 8) | b);
+	// Convert to ARGB32, clamping to [0,255].
+	argb32_t pxr;
+	pxr.a = 0xFF;
+	pxr.r = (rf <= 0.0f ? 0 : (rf >= 1.0f ? 255 : ((uint8_t)(rf * 256.0f))));
+	pxr.g = (gf <= 0.0f ? 0 : (gf >= 1.0f ? 255 : ((uint8_t)(gf * 256.0f))));
+	pxr.b = (bf <= 0.0f ? 0 : (bf >= 1.0f ? 255 : ((uint8_t)(bf * 256.0f))));
+	return pxr.u32;
 }
 
 // PlayStation 2-specific 32-bit RGB
