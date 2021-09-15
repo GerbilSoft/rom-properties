@@ -321,7 +321,7 @@ rp_image *fromLinearCI8(PixelFormat px_format,
 
 	// Convert the palette.
 	// TODO: Optimize using pointers instead of indexes?
-	uint32_t *palette = img->palette();
+	argb32_t *const palette = reinterpret_cast<argb32_t*>(img->palette());
 	assert(img->palette_len() >= 256);
 	if (img->palette_len() < 256) {
 		// Not enough colors...
@@ -334,13 +334,13 @@ rp_image *fromLinearCI8(PixelFormat px_format,
 		case PixelFormat::ARGB1555: {
 			const uint16_t *pal_buf16 = static_cast<const uint16_t*>(pal_buf);
 			for (unsigned int i = 0; i < 256; i += 2, pal_buf16 += 2) {
-				palette[i] = ARGB1555_to_ARGB32(le16_to_cpu(pal_buf16[0]));
-				if (tr_idx < 0 && ((palette[i] >> 24) == 0)) {
+				palette[i+0].u32 = ARGB1555_to_ARGB32(le16_to_cpu(pal_buf16[0]));
+				if (tr_idx < 0 && palette[i+0].a == 0) {
 					// Found the transparent color.
 					tr_idx = static_cast<int>(i+0);
 				}
-				palette[i+1] = ARGB1555_to_ARGB32(le16_to_cpu(pal_buf16[1]));
-				if (tr_idx < 0 && ((palette[i+1] >> 24) == 0)) {
+				palette[i+1].u32 = ARGB1555_to_ARGB32(le16_to_cpu(pal_buf16[1]));
+				if (tr_idx < 0 && palette[i+1].a == 0) {
 					// Found the transparent color.
 					tr_idx = static_cast<int>(i+1);
 				}
@@ -354,8 +354,8 @@ rp_image *fromLinearCI8(PixelFormat px_format,
 		case PixelFormat::RGB555: {
 			const uint16_t *pal_buf16 = static_cast<const uint16_t*>(pal_buf);
 			for (unsigned int i = 0; i < 256; i += 2, pal_buf16 += 2) {
-				palette[i+0] = RGB555_to_ARGB32(le16_to_cpu(pal_buf16[0]));
-				palette[i+1] = RGB555_to_ARGB32(le16_to_cpu(pal_buf16[1]));
+				palette[i+0].u32 = RGB555_to_ARGB32(le16_to_cpu(pal_buf16[0]));
+				palette[i+1].u32 = RGB555_to_ARGB32(le16_to_cpu(pal_buf16[1]));
 			}
 			// Set the sBIT metadata.
 			static const rp_image::sBIT_t sBIT = {5,6,5,0,0};
@@ -366,8 +366,8 @@ rp_image *fromLinearCI8(PixelFormat px_format,
 		case PixelFormat::RGB565: {
 			const uint16_t *pal_buf16 = static_cast<const uint16_t*>(pal_buf);
 			for (unsigned int i = 0; i < 256; i += 2, pal_buf16 += 2) {
-				palette[i+0] = RGB565_to_ARGB32(le16_to_cpu(pal_buf16[0]));
-				palette[i+1] = RGB565_to_ARGB32(le16_to_cpu(pal_buf16[1]));
+				palette[i+0].u32 = RGB565_to_ARGB32(le16_to_cpu(pal_buf16[0]));
+				palette[i+1].u32 = RGB565_to_ARGB32(le16_to_cpu(pal_buf16[1]));
 			}
 			// Set the sBIT metadata.
 			static const rp_image::sBIT_t sBIT = {5,6,5,0,0};
@@ -378,13 +378,13 @@ rp_image *fromLinearCI8(PixelFormat px_format,
 		case PixelFormat::ARGB4444: {
 			const uint16_t *pal_buf16 = static_cast<const uint16_t*>(pal_buf);
 			for (unsigned int i = 0; i < 256; i += 2, pal_buf16 += 2) {
-				palette[i+0] = ARGB4444_to_ARGB32(le16_to_cpu(pal_buf16[0]));
-				if (tr_idx < 0 && ((palette[i+0] >> 24) == 0)) {
+				palette[i+0].u32 = ARGB4444_to_ARGB32(le16_to_cpu(pal_buf16[0]));
+				if (tr_idx < 0 && palette[i+0].a == 0) {
 					// Found the transparent color.
 					tr_idx = static_cast<int>(i+0);
 				}
-				palette[i+1] = ARGB4444_to_ARGB32(le16_to_cpu(pal_buf16[1]));
-				if (tr_idx < 0 && ((palette[i+1] >> 24) == 0)) {
+				palette[i+1].u32 = ARGB4444_to_ARGB32(le16_to_cpu(pal_buf16[1]));
+				if (tr_idx < 0 && palette[i+1].a == 0) {
 					// Found the transparent color.
 					tr_idx = static_cast<int>(i+1);
 				}
@@ -398,13 +398,13 @@ rp_image *fromLinearCI8(PixelFormat px_format,
 		case PixelFormat::RGBA4444: {
 			const uint16_t *pal_buf16 = static_cast<const uint16_t*>(pal_buf);
 			for (unsigned int i = 0; i < 256; i += 2, pal_buf16 += 2) {
-				palette[i+0] = RGBA4444_to_ARGB32(le16_to_cpu(pal_buf16[0]));
-				if (tr_idx < 0 && ((palette[i+0] >> 24) == 0)) {
+				palette[i+0].u32 = RGBA4444_to_ARGB32(le16_to_cpu(pal_buf16[0]));
+				if (tr_idx < 0 && palette[i+0].a == 0) {
 					// Found the transparent color.
 					tr_idx = static_cast<int>(i+0);
 				}
-				palette[i+1] = RGBA4444_to_ARGB32(le16_to_cpu(pal_buf16[1]));
-				if (tr_idx < 0 && ((palette[i+1] >> 24) == 0)) {
+				palette[i+1].u32 = RGBA4444_to_ARGB32(le16_to_cpu(pal_buf16[1]));
+				if (tr_idx < 0 && palette[i+1].a == 0) {
 					// Found the transparent color.
 					tr_idx = static_cast<int>(i+1);
 				}
@@ -420,13 +420,13 @@ rp_image *fromLinearCI8(PixelFormat px_format,
 			// Assuming little-endian for SVR right now.
 			const uint16_t *pal_buf16 = static_cast<const uint16_t*>(pal_buf);
 			for (unsigned int i = 0; i < 256; i += 2, pal_buf16 += 2) {
-				palette[i+0] = BGR5A3_to_ARGB32(le16_to_cpu(pal_buf16[0]));
-				if (tr_idx < 0 && ((palette[i+0] >> 24) == 0)) {
+				palette[i+0].u32 = BGR5A3_to_ARGB32(le16_to_cpu(pal_buf16[0]));
+				if (tr_idx < 0 && palette[i+0].a == 0) {
 					// Found the transparent color.
 					tr_idx = static_cast<int>(i+0);
 				}
-				palette[i+1] = BGR5A3_to_ARGB32(le16_to_cpu(pal_buf16[1]));
-				if (tr_idx < 0 && ((palette[i+1] >> 24) == 0)) {
+				palette[i+1].u32 = BGR5A3_to_ARGB32(le16_to_cpu(pal_buf16[1]));
+				if (tr_idx < 0 && palette[i+1].a == 0) {
 					// Found the transparent color.
 					tr_idx = static_cast<int>(i+1);
 				}
@@ -443,13 +443,13 @@ rp_image *fromLinearCI8(PixelFormat px_format,
 			// Assuming little-endian for SVR right now.
 			const uint32_t *pal_buf32 = static_cast<const uint32_t*>(pal_buf);
 			for (unsigned int i = 0; i < 256; i += 2, pal_buf32 += 2) {
-				palette[i+0] = BGR888_ABGR7888_to_ARGB32(le32_to_cpu(pal_buf32[0]));
-				if (tr_idx < 0 && ((palette[i+0] >> 24) == 0)) {
+				palette[i+0].u32 = BGR888_ABGR7888_to_ARGB32(le32_to_cpu(pal_buf32[0]));
+				if (tr_idx < 0 && palette[i+0].a == 0) {
 					// Found the transparent color.
 					tr_idx = static_cast<int>(i+0);
 				}
-				palette[i+1] = BGR888_ABGR7888_to_ARGB32(le32_to_cpu(pal_buf32[1]));
-				if (tr_idx < 0 && ((palette[i+1] >> 24) == 0)) {
+				palette[i+1].u32 = BGR888_ABGR7888_to_ARGB32(le32_to_cpu(pal_buf32[1]));
+				if (tr_idx < 0 && palette[i+1].a == 0) {
 					// Found the transparent color.
 					tr_idx = static_cast<int>(i+1);
 				}
@@ -466,8 +466,15 @@ rp_image *fromLinearCI8(PixelFormat px_format,
 			// TODO: Combine with Host_ARGB32?
 			const uint8_t *pal_buf24 = static_cast<const uint8_t*>(pal_buf);
 			for (unsigned int i = 0; i < 256; i += 2, pal_buf24 += 6) {
-				palette[i+0] = 0xFF000000U | pal_buf24[0] | (pal_buf24[1] << 8) | (pal_buf24[2] << 16);
-				palette[i+1] = 0xFF000000U | pal_buf24[3] | (pal_buf24[4] << 8) | (pal_buf24[5] << 16);
+				palette[i+0].a = 0xFF;
+				palette[i+0].r = pal_buf24[2];
+				palette[i+0].g = pal_buf24[1];
+				palette[i+0].b = pal_buf24[0];
+
+				palette[i+1].a = 0xFF;
+				palette[i+1].r = pal_buf24[5];
+				palette[i+1].g = pal_buf24[4];
+				palette[i+1].b = pal_buf24[3];
 			}
 
 			// Set the sBIT metadata.
@@ -480,13 +487,13 @@ rp_image *fromLinearCI8(PixelFormat px_format,
 			// Host-endian ARGB32. Use the palette directly.
 			const uint32_t *pal_buf32 = static_cast<const uint32_t*>(pal_buf);
 			for (unsigned int i = 0; i < 256; i += 2, pal_buf32 += 2) {
-				palette[i+0] = pal_buf32[0];
-				if (tr_idx < 0 && ((palette[i+0] >> 24) == 0)) {
+				palette[i+0].u32 = pal_buf32[0];
+				if (tr_idx < 0 && palette[i+0].a == 0) {
 					// Found the transparent color.
 					tr_idx = static_cast<int>(i+0);
 				}
-				palette[i+1] = pal_buf32[1];
-				if (tr_idx < 0 && ((palette[i+1] >> 24) == 0)) {
+				palette[i+1].u32 = pal_buf32[1];
+				if (tr_idx < 0 && palette[i+1].a == 0) {
 					// Found the transparent color.
 					tr_idx = static_cast<int>(i+1);
 				}
@@ -502,13 +509,13 @@ rp_image *fromLinearCI8(PixelFormat px_format,
 			// Swap-endian ARGB32.
 			const uint32_t *pal_buf32 = static_cast<const uint32_t*>(pal_buf);
 			for (unsigned int i = 0; i < 256; i += 2, pal_buf32 += 2) {
-				palette[i+0] = __swab32(pal_buf32[0]);
-				if (tr_idx < 0 && ((palette[i+0] >> 24) == 0)) {
+				palette[i+0].u32 = __swab32(pal_buf32[0]);
+				if (tr_idx < 0 && palette[i+0].a == 0) {
 					// Found the transparent color.
 					tr_idx = static_cast<int>(i+0);
 				}
-				palette[i+1] = __swab32(pal_buf32[1]);
-				if (tr_idx < 0 && ((palette[i+1] >> 24) == 0)) {
+				palette[i+1].u32 = __swab32(pal_buf32[1]);
+				if (tr_idx < 0 && palette[i+1].a == 0) {
 					// Found the transparent color.
 					tr_idx = static_cast<int>(i+1);
 				}
@@ -522,10 +529,11 @@ rp_image *fromLinearCI8(PixelFormat px_format,
 
 		case PixelFormat::Host_xRGB32: {
 			// Host-endian xRGB32. Use the palette directly.
+			// TODO: More optimal to set .a instead of a 32-bit OR?
 			const uint32_t *pal_buf32 = static_cast<const uint32_t*>(pal_buf);
 			for (unsigned int i = 0; i < 256; i += 2, pal_buf32 += 2) {
-				palette[i+0] = pal_buf32[0] | 0xFF000000U;
-				palette[i+1] = pal_buf32[1] | 0xFF000000U;
+				palette[i+0].u32 = pal_buf32[0] | 0xFF000000U;
+				palette[i+1].u32 = pal_buf32[1] | 0xFF000000U;
 			}
 			// Set the sBIT metadata.
 			static const rp_image::sBIT_t sBIT = {8,8,8,0,0};
@@ -535,10 +543,11 @@ rp_image *fromLinearCI8(PixelFormat px_format,
 
 		case PixelFormat::Swap_xRGB32: {
 			// Swap-endian xRGB32.
+			// TODO: More optimal to set .a instead of a 32-bit OR?
 			const uint32_t *pal_buf32 = static_cast<const uint32_t*>(pal_buf);
 			for (unsigned int i = 0; i < 256; i += 2, pal_buf32 += 2) {
-				palette[i+0] = __swab32(pal_buf32[0]) | 0xFF000000U;
-				palette[i+1] = __swab32(pal_buf32[1]) | 0xFF000000U;
+				palette[i+0].u32 = __swab32(pal_buf32[0]) | 0xFF000000U;
+				palette[i+1].u32 = __swab32(pal_buf32[1]) | 0xFF000000U;
 			}
 			// Set the sBIT metadata.
 			static const rp_image::sBIT_t sBIT = {8,8,8,0,0};
@@ -611,8 +620,8 @@ rp_image *fromLinearMono(int width, int height,
 
 	// Set a default monochrome palette.
 	uint32_t *palette = img->palette();
-	palette[0] = 0xFFFFFFFF;	// white
-	palette[1] = 0xFF000000;	// black
+	palette[0] = 0xFFFFFFFFU;	// white
+	palette[1] = 0xFF000000U;	// black
 	img->set_tr_idx(-1);
 
 	// NOTE: rp_image initializes the palette to 0,
@@ -1240,6 +1249,7 @@ rp_image *fromLinear32_cpp(PixelFormat px_format,
 			// VTF "ARGB8888", which is actually RABG.
 			// TODO: This might be a VTFEdit bug. (Tested versions: 1.2.5, 1.3.3)
 			// TODO: Verify on big-endian.
+			// TODO: Use argb32_t?
 			uint32_t *px_dest = static_cast<uint32_t*>(img->bits());
 			for (unsigned int y = static_cast<unsigned int>(height); y > 0; y--) {
 				unsigned int x;
