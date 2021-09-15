@@ -2,6 +2,10 @@
 
 ## v1.9 (released 2021/??/??)
 
+* New features:
+  * OpenMP can now be used to improve decoding performance for some image
+    codecs, including ASTC and BC7.
+
 * New parsers:
   * GodotSTEX: Godot 3 and 4 texture files. Supports most linear encodings,
     S3TC, BC4, BC5, RGTC, BC7, PVRTC-I, ETC1, ETC2, and ASTC. Note that
@@ -36,6 +40,9 @@
     I implemented this as (c0 ≤ c1) due to misleading documentation, which
     didn't work correctly, so I disabled it entirely. Implementing it as
     (c0 > c1) works correctly with the existing test images.
+
+* Other changes:
+  * Significantly improved the peformance of the RGB9_E5 decoder.
 
 ## v1.8.3 (released 2021/08/03)
 
