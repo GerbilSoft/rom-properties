@@ -323,7 +323,7 @@ static int32_t getModulationValues(int32_t modulationValues[16][8], int32_t modu
 {
 	if (bpp == 2)
 	{
-		const int32_t RepVals0[4] = { 0, 3, 5, 8 };
+		static const uint8_t RepVals0[4] = { 0, 3, 5, 8 };
 
 		// extract the modulation value. If a simple encoding
 		if (modulationModes[xPos][yPos] == 0) { return RepVals0[modulationValues[xPos][yPos]]; }
@@ -593,6 +593,9 @@ static uint32_t PVRTDecompressPVRTC_int(const void* pCompressedData, uint32_t Do
 	uint32_t YTrueDim = std::max(YDim, 8u);
 
 	// If the dimensions aren't correct, we need to create a new buffer instead of just using the provided one, as the buffer will overrun otherwise.
+	// rom-properties: make sure we don't hit this case
+	assert(XTrueDim == XDim);
+	assert(YTrueDim == YDim);
 	if (XTrueDim != XDim || YTrueDim != YDim) { pDecompressedData = new Pixel32[XTrueDim * YTrueDim]; }
 
 	// Decompress the surface.
