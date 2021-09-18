@@ -35,10 +35,13 @@ class DX10FormatsPrivate
 
 /**
  * DirectX 10 format table.
- * NOTE: Only contains the contiguous section.
- * Other values have to be checked afterwards.
  */
 const char DX10FormatsPrivate::dxgiFormat_strtbl[] = {
+	// NOTE: Format 0 is "UNKNOWN", but we're not displaying
+	// that right now. Maybe add it in later? (This would
+	// require either rebuilding the offset table or adding
+	// "UNKNOWN" to the end of the string table.)
+
 	// 0
 	"\0" "R32G32B32A32_TYPELESS\0"
 	"R32G32B32A32_FLOAT\0" "R32G32B32A32_UINT\0"
