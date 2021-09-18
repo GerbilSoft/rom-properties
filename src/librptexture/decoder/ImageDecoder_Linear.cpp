@@ -1000,7 +1000,7 @@ rp_image *fromLinear32_cpp(PixelFormat px_format,
 		return nullptr;
 	}
 
-	// Stride adjustment.
+	// Stride adjustment
 	int src_stride_adj = 0;
 	assert(stride >= 0);
 	if (stride > 0) {
@@ -1015,7 +1015,7 @@ rp_image *fromLinear32_cpp(PixelFormat px_format,
 		src_stride_adj = (stride / bytespp) - width;
 	}
 
-	// Create an rp_image.
+	// Create an rp_image
 	rp_image *const img = new rp_image(width, height, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
@@ -1025,9 +1025,12 @@ rp_image *fromLinear32_cpp(PixelFormat px_format,
 	int dest_stride = img->stride();
 	const int dest_stride_adj = (dest_stride / sizeof(argb32_t)) - img->width();
 
-	// sBIT for standard ARGB32.
+	// sBIT for standard ARGB32
 	static const rp_image::sBIT_t sBIT_x32 = {8,8,8,0,0};
 	static const rp_image::sBIT_t sBIT_A32 = {8,8,8,0,8};
+
+	// Destination pixel buffer
+	uint32_t *px_dest = static_cast<uint32_t*>(img->bits());
 
 	// Convert one line at a time. (32-bit -> ARGB32)
 	// NOTE: All functions except PixelFormat::Host_ARGB32 are partially unrolled.
@@ -1048,7 +1051,6 @@ rp_image *fromLinear32_cpp(PixelFormat px_format,
 				// Stride is not identical. Copy each scanline.
 				stride /= bytespp;
 				dest_stride /= bytespp;
-				uint32_t *px_dest = static_cast<uint32_t*>(img->bits());
 				const unsigned int copy_len = static_cast<unsigned int>(width * bytespp);
 				for (unsigned int y = static_cast<unsigned int>(height); y > 0; y--) {
 					memcpy(px_dest, img_buf, copy_len);
@@ -1063,7 +1065,6 @@ rp_image *fromLinear32_cpp(PixelFormat px_format,
 		case PixelFormat::Host_RGBA32: {
 			// Host-endian RGBA32.
 			// Pixel copy is needed, with shifting.
-			uint32_t *px_dest = static_cast<uint32_t*>(img->bits());
 			for (unsigned int y = static_cast<unsigned int>(height); y > 0; y--) {
 				unsigned int x;
 				for (x = static_cast<unsigned int>(width); x > 1; x -= 2) {
@@ -1089,7 +1090,6 @@ rp_image *fromLinear32_cpp(PixelFormat px_format,
 		case PixelFormat::Host_xRGB32: {
 			// Host-endian XRGB32.
 			// Pixel copy is needed, with alpha channel masking.
-			uint32_t *px_dest = static_cast<uint32_t*>(img->bits());
 			for (unsigned int y = static_cast<unsigned int>(height); y > 0; y--) {
 				unsigned int x;
 				for (x = static_cast<unsigned int>(width); x > 1; x -= 2) {
@@ -1115,7 +1115,6 @@ rp_image *fromLinear32_cpp(PixelFormat px_format,
 		case PixelFormat::Host_RGBx32: {
 			// Host-endian RGBx32.
 			// Pixel copy is needed, with a right shift.
-			uint32_t *px_dest = static_cast<uint32_t*>(img->bits());
 			for (unsigned int y = static_cast<unsigned int>(height); y > 0; y--) {
 				unsigned int x;
 				for (x = static_cast<unsigned int>(width); x > 1; x -= 2) {
@@ -1141,7 +1140,6 @@ rp_image *fromLinear32_cpp(PixelFormat px_format,
 		case PixelFormat::Swap_ARGB32: {
 			// Byteswapped ARGB32.
 			// Pixel copy is needed, with byteswapping.
-			uint32_t *px_dest = static_cast<uint32_t*>(img->bits());
 			for (unsigned int y = static_cast<unsigned int>(height); y > 0; y--) {
 				unsigned int x;
 				for (x = static_cast<unsigned int>(width); x > 1; x -= 2) {
@@ -1167,7 +1165,6 @@ rp_image *fromLinear32_cpp(PixelFormat px_format,
 		case PixelFormat::Swap_RGBA32: {
 			// Byteswapped ABGR32.
 			// Pixel copy is needed, with shifting.
-			uint32_t *px_dest = static_cast<uint32_t*>(img->bits());
 			for (unsigned int y = static_cast<unsigned int>(height); y > 0; y--) {
 				unsigned int x;
 				for (x = static_cast<unsigned int>(width); x > 1; x -= 2) {
@@ -1196,7 +1193,6 @@ rp_image *fromLinear32_cpp(PixelFormat px_format,
 		case PixelFormat::Swap_xRGB32: {
 			// Byteswapped XRGB32.
 			// Pixel copy is needed, with byteswapping and alpha channel masking.
-			uint32_t *px_dest = static_cast<uint32_t*>(img->bits());
 			for (unsigned int y = static_cast<unsigned int>(height); y > 0; y--) {
 				unsigned int x;
 				for (x = static_cast<unsigned int>(width); x > 1; x -= 2) {
@@ -1222,7 +1218,6 @@ rp_image *fromLinear32_cpp(PixelFormat px_format,
 		case PixelFormat::Swap_RGBx32: {
 			// Byteswapped RGBx32.
 			// Pixel copy is needed, with byteswapping and a right shift.
-			uint32_t *px_dest = static_cast<uint32_t*>(img->bits());
 			for (unsigned int y = static_cast<unsigned int>(height); y > 0; y--) {
 				unsigned int x;
 				for (x = static_cast<unsigned int>(width); x > 1; x -= 2) {
@@ -1250,7 +1245,6 @@ rp_image *fromLinear32_cpp(PixelFormat px_format,
 			// TODO: This might be a VTFEdit bug. (Tested versions: 1.2.5, 1.3.3)
 			// TODO: Verify on big-endian.
 			// TODO: Use argb32_t?
-			uint32_t *px_dest = static_cast<uint32_t*>(img->bits());
 			for (unsigned int y = static_cast<unsigned int>(height); y > 0; y--) {
 				unsigned int x;
 				for (x = static_cast<unsigned int>(width); x > 1; x -= 2) {
@@ -1288,7 +1282,6 @@ rp_image *fromLinear32_cpp(PixelFormat px_format,
 
 #define fromLinear32_convert(fmt, r,g,b,gr,a) \
 		case PixelFormat::fmt: { \
-			uint32_t *px_dest = static_cast<uint32_t*>(img->bits()); \
 			for (unsigned int y = (unsigned int)height; y > 0; y--) { \
 				for (unsigned int x = (unsigned int)width; x > 0; x--) { \
 					*px_dest = fmt##_to_ARGB32(le32_to_cpu(*img_buf)); \
@@ -1320,7 +1313,7 @@ rp_image *fromLinear32_cpp(PixelFormat px_format,
 		fromLinear32_convert(BGR888_ABGR7888, 8,8,8,0,8);
 
 		default:
-			assert(!"Unsupported 16-bit pixel format.");
+			assert(!"Unsupported 32-bit pixel format.");
 			img->unref();
 			return nullptr;
 	}
