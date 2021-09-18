@@ -3,7 +3,7 @@
  * ImageDecoder_Linear.cpp: Image decoding functions. (Linear)             *
  * Standard version. (C++ code only)                                       *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -987,7 +987,7 @@ rp_image *fromLinear32_cpp(PixelFormat px_format,
 	int width, int height,
 	const uint32_t *RESTRICT img_buf, int img_siz, int stride)
 {
-	static const int bytespp = 4;
+	static const int bytespp = sizeof(uint32_t);
 
 	// Verify parameters.
 	assert(img_buf != nullptr);
@@ -1307,7 +1307,29 @@ rp_image *fromLinear32_cpp(PixelFormat px_format,
 		// For now, truncating it to ARGB32.
 		fromLinear32_convert(A2R10G10B10, 8,8,8,0,2);
 		fromLinear32_convert(A2B10G10R10, 8,8,8,0,2);
-		fromLinear32_convert(RGB9_E5, 8,8,8,0,0);
+
+		case PixelFormat::RGB9_E5: {
+			uint32_t *const bits = static_cast<uint32_t*>(img->bits());
+			const int src_row_width = (stride > 0)
+				? (stride / bytespp)
+				: width;
+			const int dest_row_width = img->stride() / bytespp;
+#pragma omp parallel for
+			for (int y = 0; y < height; y++) {
+				const uint32_t *px_src = &img_buf[y * src_row_width];
+				uint32_t *px_dest = &bits[y * dest_row_width];
+				for (unsigned int x = (unsigned int)width; x > 0; x--) {
+					*px_dest = RGB9_E5_to_ARGB32(le32_to_cpu(*px_src));
+					px_src++;
+					px_dest++;
+				}
+			}
+
+			/* Set the sBIT data. */
+			static const rp_image::sBIT_t sBIT = {8,8,8,0,0};
+			img->set_sBIT(&sBIT);
+			break;
+		}
 
 		// PS2's wacky 32-bit format.
 		fromLinear32_convert(BGR888_ABGR7888, 8,8,8,0,8);
