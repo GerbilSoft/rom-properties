@@ -249,8 +249,10 @@ rp_image *fromDXT1_GCN(int width, int height,
 			// NOTE: The tile indexes are stored "backwards" due to
 			// big-endian shenanigans.
 			uint32_t indexes = be32_to_cpu(dxt1_src->indexes);
-			for (int i = 16-1; i >= 0; i--, indexes >>= 2) {
-				tileBuf[tile][i] = pal[indexes & 3].u32;
+			for (auto iter = tileBuf[tile].rbegin();
+			     iter != tileBuf[tile].rend(); ++iter, indexes >>= 2)
+			{
+				*iter = pal[indexes & 3].u32;
 			}
 		}
 
@@ -670,7 +672,7 @@ rp_image *fromBC4(int width, int height,
 		// Process the 16 color indexes.
 		// NOTE: Using red instead of grayscale here.
 		argb32_t color;
-		color.u32 = 0xFF000000;	// opaque black
+		color.u32 = 0xFF000000U;	// opaque black
 		for (auto iter = tileBuf.begin(); iter != tileBuf.end(); ++iter, red48 >>= 3) {
 			// Decode the red channel value.
 			color.r = decode_DXT5_alpha_S3TC(red48 & 7, bc4_src->red.values);
@@ -759,7 +761,7 @@ rp_image *fromBC5(int width, int height,
 
 		// Process the 16 color indexes.
 		argb32_t color;
-		color.u32 = 0xFF000000;	// opaque black
+		color.u32 = 0xFF000000U;	// opaque black
 		for (auto iter = tileBuf.begin(); iter != tileBuf.end(); ++iter, red48 >>= 3, green48 >>= 3) {
 			// Decode the red and green channel values.
 			color.r = decode_DXT5_alpha_S3TC(red48   & 7, bc5_src->red.values);
