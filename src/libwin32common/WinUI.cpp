@@ -696,13 +696,13 @@ LRESULT CALLBACK MultiLineEditProc(
 	switch (uMsg) {
 		case WM_NCDESTROY:
 			// Remove the window subclass.
-			// Reference: https://blogs.msdn.microsoft.com/oldnewthing/20031111-00/?p=41883
+			// Reference: https://devblogs.microsoft.com/oldnewthing/20031111-00/?p=41883
 			RemoveWindowSubclass(hWnd, MultiLineEditProc, uIdSubclass);
 			break;
 
 		case WM_KEYDOWN: {
 			// Work around Enter/Escape issues.
-			// Reference: http://blogs.msdn.com/b/oldnewthing/archive/2007/08/20/4470527.aspx
+			// Reference: https://devblogs.microsoft.com/oldnewthing/20070820-00/?p=25513
 			if (!dwRefData) {
 				// No parent dialog...
 				break;
@@ -760,7 +760,7 @@ LRESULT CALLBACK SingleLineEditProc(
 	switch (uMsg) {
 		case WM_NCDESTROY:
 			// Remove the window subclass.
-			// Reference: https://blogs.msdn.microsoft.com/oldnewthing/20031111-00/?p=41883
+			// Reference: https://devblogs.microsoft.com/oldnewthing/20031111-00/?p=41883
 			RemoveWindowSubclass(hWnd, SingleLineEditProc, uIdSubclass);
 			break;
 
@@ -797,7 +797,7 @@ LRESULT CALLBACK ListViewNoDividerDblClickSubclassProc(
 	switch (uMsg) {
 		case WM_NCDESTROY:
 			// Remove the window subclass.
-			// Reference: https://blogs.msdn.microsoft.com/oldnewthing/20031111-00/?p=41883
+			// Reference: https://devblogs.microsoft.com/oldnewthing/20031111-00/?p=41883
 			RemoveWindowSubclass(hWnd, ListViewNoDividerDblClickSubclassProc, uIdSubclass);
 			break;
 

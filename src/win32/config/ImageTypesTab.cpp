@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * ImageTypesTab.cpp: Image type priorities tab. (Part of ConfigDialog.)   *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -597,7 +597,7 @@ INT_PTR CALLBACK ImageTypesTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 			// NOTE: CBN_SELCHANGE is NOT sent in response to
 			// CB_SETCURSEL, so we shouldn't need to "lock"
 			// this handler when reset() is called.
-			// Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/bb775821(v=vs.85).aspx
+			// Reference: https://docs.microsoft.com/en-us/windows/win32/controls/cbn-selchange
 			unsigned int cbid = LOWORD(wParam);
 			if (cbid < IDC_IMAGETYPES_CBOIMAGETYPE_BASE)
 				break;

@@ -806,7 +806,7 @@ HBITMAP RpGdiplusBackend::convBmpData_ARGB32(const Gdiplus::BitmapData *pBmpData
 	BITMAPINFOHEADER *const bmiHeader = &bmi.bmiHeader;
 
 	// Initialize the BITMAPINFOHEADER.
-	// Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/dd183376%28v=vs.85%29.aspx
+	// Reference: https://docs.microsoft.com/en-us/windows/win32/api/wingdi/ns-wingdi-bitmapinfoheader
 	bmiHeader->biSize = sizeof(BITMAPINFOHEADER);
 	bmiHeader->biWidth = pBmpData->Width;
 	bmiHeader->biHeight = -static_cast<int>(pBmpData->Height);	// Top-down
@@ -868,7 +868,7 @@ HBITMAP RpGdiplusBackend::convBmpData_CI8(const Gdiplus::BitmapData *pBmpData)
 	BITMAPINFOHEADER *bmiHeader = &bmi->bmiHeader;
 
 	// Initialize the BITMAPINFOHEADER.
-	// Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/dd183376%28v=vs.85%29.aspx
+	// Reference: https://docs.microsoft.com/en-us/windows/win32/api/wingdi/ns-wingdi-bitmapinfoheader
 	bmiHeader->biSize = sizeof(BITMAPINFOHEADER);
 	bmiHeader->biWidth = pBmpData->Width;
 	bmiHeader->biHeight = -static_cast<int>(pBmpData->Height);	// Top-down

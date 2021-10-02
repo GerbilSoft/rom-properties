@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpsecure/win32)                *
  * secoptions.c: Security options for executables.                         *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -206,7 +206,7 @@ out:
  * rom-properties Windows executable initialization.
  * This sets various security options.
  * References:
- * - https://msdn.microsoft.com/en-us/library/bb430720.aspx
+ * - https://docs.microsoft.com/en-us/previous-versions/bb430720(v=msdn.10)
  * - https://chromium.googlesource.com/chromium/src/+/441d852dbcb7b9b31328393c7e31562b1e268399/sandbox/win/src/process_mitigations.cc
  * - https://chromium.googlesource.com/chromium/src/+/refs/heads/master/sandbox/win/src/process_mitigations.cc
  * - https://github.com/chromium/chromium/blob/master/sandbox/win/src/process_mitigations.cc
@@ -392,7 +392,7 @@ int rp_secure_win32_secoptions_init(int bHighSec)
 
 	// Set extension point disable policy.
 	// Extension point DLLs are some weird MFC-specific thing.
-	// https://msdn.microsoft.com/en-us/library/h5f7ck28.aspx
+	// https://docs.microsoft.com/en-us/cpp/build/extension-dlls
 	{
 		PROCESS_MITIGATION_EXTENSION_POINT_DISABLE_POLICY extension_point_disable = { 0 };
 		extension_point_disable.DisableExtensionPoints = TRUE;

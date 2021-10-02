@@ -54,7 +54,7 @@ RP_ExtractImage::~RP_ExtractImage()
 }
 
 /** IUnknown **/
-// Reference: https://msdn.microsoft.com/en-us/library/office/cc839627.aspx
+// Reference: https://docs.microsoft.com/en-us/office/client-developer/outlook/mapi/implementing-iunknown-in-c-plus-plus
 
 IFACEMETHODIMP RP_ExtractImage::QueryInterface(_In_ REFIID riid, _Outptr_ LPVOID *ppvObj)
 {
@@ -76,7 +76,7 @@ IFACEMETHODIMP RP_ExtractImage::QueryInterface(_In_ REFIID riid, _Outptr_ LPVOID
 }
 
 /** IPersistFile **/
-// Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/cc144067(v=vs.85).aspx#unknown_28177
+// Reference: https://docs.microsoft.com/en-us/windows/win32/shell/handlers
 
 IFACEMETHODIMP RP_ExtractImage::GetClassID(_Out_ CLSID *pClassID)
 {
@@ -157,7 +157,7 @@ IFACEMETHODIMP RP_ExtractImage::GetCurFile(_Outptr_ LPOLESTR *ppszFileName)
 
 /** IExtractImage **/
 // References:
-// - https://msdn.microsoft.com/en-us/library/windows/desktop/bb761848(v=vs.85).aspx
+// - https://docs.microsoft.com/en-us/windows/win32/api/shobjidl_core/nn-shobjidl_core-iextractimage
 // - http://www.codeproject.com/Articles/2887/Create-Thumbnail-Extractor-objects-for-your-MFC-do
 
 IFACEMETHODIMP RP_ExtractImage::GetLocation(

@@ -48,7 +48,7 @@ RP_ExtractIcon::~RP_ExtractIcon()
 }
 
 /** IUnknown **/
-// Reference: https://msdn.microsoft.com/en-us/library/office/cc839627.aspx
+// Reference: https://docs.microsoft.com/en-us/office/client-developer/outlook/mapi/implementing-iunknown-in-c-plus-plus
 
 IFACEMETHODIMP RP_ExtractIcon::QueryInterface(_In_ REFIID riid, _Outptr_ LPVOID *ppvObj)
 {
@@ -70,7 +70,7 @@ IFACEMETHODIMP RP_ExtractIcon::QueryInterface(_In_ REFIID riid, _Outptr_ LPVOID 
 }
 
 /** IPersistFile **/
-// Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/cc144067(v=vs.85).aspx#unknown_28177
+// Reference: https://docs.microsoft.com/en-us/windows/win32/shell/handlers
 
 IFACEMETHODIMP RP_ExtractIcon::GetClassID(_Out_ CLSID *pClassID)
 {
@@ -154,7 +154,7 @@ IFACEMETHODIMP RP_ExtractIcon::GetCurFile(_In_ LPOLESTR *ppszFileName)
 }
 
 /** IExtractIconW **/
-// Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/bb761854(v=vs.85).aspx
+// Reference: https://docs.microsoft.com/en-us/windows/win32/api/shlobj_core/nn-shlobj_core-iextracticonw
 
 IFACEMETHODIMP RP_ExtractIcon::GetIconLocation(UINT uFlags,
 	_Out_writes_(cchMax) LPWSTR pszIconFile, UINT cchMax,
@@ -162,7 +162,7 @@ IFACEMETHODIMP RP_ExtractIcon::GetIconLocation(UINT uFlags,
 {
 	// TODO: If the icon is cached on disk, return a filename.
 	// TODO: Enable ASYNC?
-	// - https://msdn.microsoft.com/en-us/library/windows/desktop/bb761852(v=vs.85).aspx
+	// - https://docs.microsoft.com/en-us/windows/win32/api/shlobj_core/nf-shlobj_core-iextracticonw-geticonlocation
 	RP_UNUSED(uFlags);
 	if (!pszIconFile || !piIndex || cchMax == 0) {
 		return E_INVALIDARG;
@@ -269,7 +269,7 @@ IFACEMETHODIMP RP_ExtractIcon::Extract(_In_ LPCWSTR pszFile, UINT nIconIndex,
 }
 
 /** IExtractIconA **/
-// Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/bb761854(v=vs.85).aspx
+// Reference: https://docs.microsoft.com/en-us/windows/win32/api/shlobj_core/nn-shlobj_core-iextracticona
 
 IFACEMETHODIMP RP_ExtractIcon::GetIconLocation(UINT uFlags,
 	_Out_writes_(cchMax) LPSTR pszIconFile, UINT cchMax,

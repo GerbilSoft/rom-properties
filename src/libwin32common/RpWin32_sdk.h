@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libwin32common)                   *
  * RpWin32_sdk.h: Windows SDK defines and includes.                        *
  *                                                                         *
- * Copyright (c) 2009-2019 by David Korth.                                 *
+ * Copyright (c) 2009-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -11,19 +11,19 @@
 
 // Show a warning if one of the macros isn't defined in CMake.
 #ifndef WINVER
-#pragma message("WINVER not defined; defaulting to 0x0500.")
-#define WINVER		0x0500
+#  pragma message("WINVER not defined; defaulting to 0x0500.")
+#  define WINVER	0x0500
 #endif
-#ifndef _WIN32_WINNT
-#pragma message("_WIN32_WINNT not defined; defaulting to 0x0500.")
-#define _WIN32_WINNT	0x0500
+#  ifndef _WIN32_WINNT
+#  pragma message("_WIN32_WINNT not defined; defaulting to 0x0500.")
+#  define _WIN32_WINNT	0x0500
 #endif
 #ifndef _WIN32_IE
-#pragma message("_WIN32_IE not defined; defaulting to 0x0500.")
-#define _WIN32_IE	0x0500
+#  pragma message("_WIN32_IE not defined; defaulting to 0x0500.")
+#  define _WIN32_IE	0x0500
 #endif
 
-// Define this symbol to get XP themes. See:
+// Define this symbol to get XP themes. See: [FIXME: 404]
 // http://msdn.microsoft.com/library/en-us/dnwxp/html/xptheming.asp
 // for more info. Note that as of May 2006, the page says the symbols should
 // be called "SIDEBYSIDE_COMMONCONTROLS" but the headers in my SDKs in VC 6 & 7
@@ -155,7 +155,7 @@ static inline ULONG InterlockedDecrement(ULONG volatile *Addend)
 
 // Current image instance.
 // This is filled in by the linker.
-// Reference: https://blogs.msdn.microsoft.com/oldnewthing/20041025-00/?p=37483
+// Reference: https://devblogs.microsoft.com/oldnewthing/20041025-00/?p=37483
 EXTERN_C IMAGE_DOS_HEADER __ImageBase;
 #define HINST_THISCOMPONENT ((HINSTANCE)&__ImageBase)
 

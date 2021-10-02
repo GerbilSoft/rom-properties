@@ -18,11 +18,11 @@ extern "C" {
 
 /**
  * References:
- * - https://msdn.microsoft.com/en-us/library/windows/desktop/bb943990(v=vs.85).aspx
- * - https://msdn.microsoft.com/en-us/library/windows/desktop/bb943992(v=vs.85).aspx
- * - https://msdn.microsoft.com/en-us/library/windows/desktop/bb943982(v=vs.85).aspx (DDS_HEADER)
- * - https://msdn.microsoft.com/en-us/library/windows/desktop/bb943983(v=vs.85).aspx (DDS_HEADER_DX10)
- * - https://msdn.microsoft.com/en-us/library/windows/desktop/bb943984(v=vs.85).aspx (DDS_PIXELFORMAT)
+ * - https://docs.microsoft.com/en-us/windows/win32/direct3ddds/dx-graphics-dds
+ * - https://docs.microsoft.com/en-us/windows/win32/direct3ddds/dx-graphics-dds-reference
+ * - https://docs.microsoft.com/en-us/windows/win32/direct3ddds/dds-header
+ * - https://docs.microsoft.com/en-us/windows/win32/direct3ddds/dds-header-dxt10
+ * - https://docs.microsoft.com/en-us/windows/win32/direct3ddds/dds-pixelformat
  * - https://github.com/Microsoft/DirectXTK/wiki/XboxDDSTextureLoader (DDS_HEADER_XBOX)
  * - https://github.com/Microsoft/DirectXTex
  */
@@ -31,7 +31,7 @@ extern "C" {
 
 /**
  * DirectDraw Surface: Pixel format.
- * Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/bb943984(v=vs.85).aspx
+ * Reference: https://docs.microsoft.com/en-us/windows/win32/direct3ddds/dds-pixelformat
  *
  * All fields are in little-endian.
  */
@@ -105,7 +105,7 @@ ASSERT_STRUCT(DDS_NVTT_Header, 11*sizeof(uint32_t));
 /**
  * DirectDraw Surface: File header.
  * This does NOT include the 'DDS ' magic.
- * Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/bb943982(v=vs.85).aspx
+ * Reference: https://docs.microsoft.com/en-us/windows/win32/direct3ddds/dds-header
  *
  * All fields are in little-endian.
  */
@@ -164,7 +164,7 @@ typedef enum {
 
 /**
  * DirectX 10 data format enum.
- * Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/bb173059(v=vs.85).aspx
+ * Reference: https://docs.microsoft.com/en-us/windows/win32/api/dxgiformat/ne-dxgiformat-dxgi_format
  */
 typedef enum {
 	DXGI_FORMAT_UNKNOWN			= 0,
@@ -360,7 +360,7 @@ typedef enum {
 
 /**
  * DirectX 10 resource dimension enum.
- * Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/bb172411(v=vs.85).aspx
+ * Reference: https://docs.microsoft.com/en-us/windows/win32/api/d3d10/ne-d3d10-d3d10_resource_dimension
  */
 typedef enum {
 	D3D10_RESOURCE_DIMENSION_UNKNOWN	= 0,
@@ -373,7 +373,7 @@ typedef enum {
 /**
  * DirectDraw Surface: DX10 header.
  * This is present after DDS_HEADER if ddspf.dwFourCC == 'DX10'.
- * Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/bb943983(v=vs.85).aspx
+ * Reference: https://docs.microsoft.com/en-us/windows/win32/direct3ddds/dds-header-dxt10
  *
  * All fields are in little-endian.
  */

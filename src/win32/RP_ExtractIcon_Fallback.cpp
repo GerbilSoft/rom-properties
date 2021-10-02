@@ -75,7 +75,7 @@ LONG RP_ExtractIcon_Private::DoExtractIconW(IExtractIconW *pExtractIconW,
 
 		// PrivateExtractIcons() is published as of Windows XP SP1,
 		// but it's "officially" private.
-		// Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/ms648075(v=vs.85).aspx
+		// Reference: https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-privateextracticonsw
 		// TODO: Verify that hIcons[x] is NULL if only one size is found.
 		// TODO: Verify which icon is extracted.
 		// TODO: What if the size isn't found?
@@ -146,7 +146,7 @@ LONG RP_ExtractIcon_Private::DoExtractIconA(IExtractIconA *pExtractIconA,
 
 		// PrivateExtractIcons() is published as of Windows XP SP1,
 		// but it's "officially" private.
-		// Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/ms648075(v=vs.85).aspx
+		// Reference: https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-privateextracticonsa
 		// TODO: Verify that hIcons[x] is NULL if only one size is found.
 		// TODO: Verify which icon is extracted.
 		// TODO: What if the size isn't found?
@@ -238,7 +238,7 @@ LONG RP_ExtractIcon_Private::Fallback_int(RegKey &hkey_Assoc,
 
 		// Parse the CLSID string.
 		// TODO: Use IIDFromString() instead to skip ProgID handling?
-		// Reference: https://blogs.msdn.microsoft.com/oldnewthing/20151015-00/?p=91351
+		// Reference: https://devblogs.microsoft.com/oldnewthing/20151015-00/?p=91351
 		CLSID clsidIconHandler;
 		HRESULT hr = CLSIDFromString(iconHandler.c_str(), &clsidIconHandler);
 		if (FAILED(hr)) {
@@ -293,7 +293,7 @@ LONG RP_ExtractIcon_Private::Fallback_int(RegKey &hkey_Assoc,
 
 	// PrivateExtractIcons() is published as of Windows XP SP1,
 	// but it's "officially" private.
-	// Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/ms648075(v=vs.85).aspx
+	// Reference: https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-privateextracticonsw
 	// TODO: Verify that hIcons[x] is NULL if only one size is found.
 	// TODO: Verify which icon is extracted.
 	// TODO: What if the size isn't found?

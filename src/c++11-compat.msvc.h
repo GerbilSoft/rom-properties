@@ -1,7 +1,7 @@
 /***************************************************************************
  * c++11-compat.msvc.h: C++ 2011 compatibility header. (MSVC)              *
  *                                                                         *
- * Copyright (c) 2011-2020 by David Korth.                                 *
+ * Copyright (c) 2011-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -26,7 +26,7 @@
  *
  * These are all automatically enabled when compiling C code.
  *
- * Reference: https://msdn.microsoft.com/en-us/library/hh567368.aspx
+ * Reference: https://docs.microsoft.com/en-us/previous-versions/hh567368(v=vs.140)
  */
 
 #if (_MSC_VER < 1900)

@@ -16,7 +16,7 @@
 // References:
 // - http://www.codeproject.com/Articles/338268/COM-in-C
 // - https://code.msdn.microsoft.com/windowsapps/CppShellExtPropSheetHandler-d93b49b7
-// - https://msdn.microsoft.com/en-us/library/ms677109(v=vs.85).aspx
+// - https://docs.microsoft.com/en-us/windows/win32/ad/implementing-the-property-page-com-object
 #include "libwin32common/ComBase.hpp"
 
 // CLSID common macros

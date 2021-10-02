@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * RpImageWin32.cpp: rp_image to Win32 conversion functions.               *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -52,8 +52,8 @@ HBITMAP RpImageWin32::toHBITMAP_mask(const rp_image *image)
 	 * 0 == transparent pixel
 	 *
 	 * References:
-	 * - https://msdn.microsoft.com/en-us/library/windows/desktop/ms648059%28v=vs.85%29.aspx
-	 * - https://msdn.microsoft.com/en-us/library/windows/desktop/ms648052%28v=vs.85%29.aspx
+	 * - https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createicon
+	 * - https://docs.microsoft.com/en-us/windows/win32/api/winuser/ns-winuser-iconinfo
 	 */
 
 	// NOTE: Monochrome bitmaps have a stride of 32px. (4 bytes)
@@ -69,7 +69,7 @@ HBITMAP RpImageWin32::toHBITMAP_mask(const rp_image *image)
 	BITMAPINFOHEADER *bmiHeader = &bmi.bmiHeader;
 
 	// Initialize the BITMAPINFOHEADER.
-	// Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/dd183376%28v=vs.85%29.aspx
+	// Reference: https://docs.microsoft.com/en-us/windows/win32/api/wingdi/ns-wingdi-bitmapinfoheader
 	bmiHeader->biSize = sizeof(BITMAPINFOHEADER);
 	bmiHeader->biWidth = width;
 	bmiHeader->biHeight = image->height();	// FIXME: Top-down isn't working for monochrome...
@@ -408,7 +408,7 @@ rp_image *RpImageWin32::fromHBITMAP(HBITMAP hBitmap)
 
 	// TODO: Copy the palette for 8-bit.
 
-	// Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/dd183402(v=vs.85).aspx
+	// Reference: https://docs.microsoft.com/en-us/windows/win32/gdi/capturing-an-image
 	const int height = abs(bm.bmHeight);
 	BITMAPINFOHEADER bi;
 	bi.biSize = sizeof(bi);

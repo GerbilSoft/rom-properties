@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * aligned_malloc.h: Aligned memory allocation compatibility header.       *
  *                                                                         *
- * Copyright (c) 2015-2020 by David Korth                                  *
+ * Copyright (c) 2015-2021 by David Korth                                  *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -11,7 +11,7 @@
 
 // References:
 // - http://www.gnu.org/software/libc/manual/html_node/Aligned-Memory-Blocks.html
-// - https://msdn.microsoft.com/en-us/library/8z34s9c6.aspx
+// - https://docs.microsoft.com/en-us/cpp/c-runtime-library/reference/aligned-malloc?view=msvc-160
 // - http://linux.die.net/man/3/aligned_alloc (needs _ISOC11_SOURCE ?)
 
 /**

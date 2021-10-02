@@ -328,12 +328,12 @@ int NEResourceReaderPrivate::load_VS_VERSION_INFO_header(IRpFile *file, const ch
 int NEResourceReaderPrivate::load_StringTable(IRpFile *file, IResourceReader::StringTable &st, uint32_t *langID)
 {
 	// References:
-	// - String: https://msdn.microsoft.com/en-us/library/windows/desktop/ms646987(v=vs.85).aspx
-	// - StringTable: https://msdn.microsoft.com/en-us/library/windows/desktop/ms646992(v=vs.85).aspx
+	// - String: https://docs.microsoft.com/en-us/windows/win32/menurc/string-str
+	// - StringTable: https://docs.microsoft.com/en-us/windows/win32/menurc/stringtable
 
 	// NOTE: 16-bit version resources use DWORD alignment, not WORD alignment.
 	// I'm guessing this is because it was originally developed for Windows NT.
-	// Reference: https://blogs.msdn.microsoft.com/oldnewthing/20061220-15/?p=28653
+	// Reference: https://devblogs.microsoft.com/oldnewthing/20061220-15/?p=28653
 
 	// Read fields.
 	const off64_t pos_start = file->tell();

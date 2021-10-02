@@ -9,7 +9,7 @@
 // References:
 // - http://www.codeproject.com/Articles/338268/COM-in-C
 // - https://code.msdn.microsoft.com/windowsapps/CppShellExtPropSheetHandler-d93b49b7
-// - https://msdn.microsoft.com/en-us/library/ms677109(v=vs.85).aspx
+// - https://docs.microsoft.com/en-us/windows/win32/ad/implementing-the-property-page-com-object
 
 #include "stdafx.h"
 #include "RP_ShellPropSheetExt.hpp"
@@ -2208,7 +2208,7 @@ void RP_ShellPropSheetExt_Private::initDialog(void)
 	const int count = pFields->count();
 
 	// Make sure we have all required window classes available.
-	// Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/bb775507(v=vs.85).aspx
+	// Reference: https://docs.microsoft.com/en-us/windows/win32/api/commctrl/ns-commctrl-initcommoncontrolsex
 	INITCOMMONCONTROLSEX initCommCtrl;
 	initCommCtrl.dwSize = sizeof(initCommCtrl);
 	initCommCtrl.dwICC = ICC_LISTVIEW_CLASSES | ICC_LINK_CLASS |
@@ -2992,7 +2992,7 @@ LRESULT CALLBACK RP_ShellPropSheetExt_Private::MainDialogSubclassProc(
 	switch (uMsg) {
 		case WM_NCDESTROY:
 			// Remove the window subclass.
-			// Reference: https://blogs.msdn.microsoft.com/oldnewthing/20031111-00/?p=41883
+			// Reference: https://devblogs.microsoft.com/oldnewthing/20031111-00/?p=41883
 			RemoveWindowSubclass(hWnd, MainDialogSubclassProc, uIdSubclass);
 			break;
 
@@ -3106,7 +3106,7 @@ RP_ShellPropSheetExt::~RP_ShellPropSheetExt()
 }
 
 /** IUnknown **/
-// Reference: https://msdn.microsoft.com/en-us/library/office/cc839627.aspx
+// Reference: https://docs.microsoft.com/en-us/office/client-developer/outlook/mapi/implementing-iunknown-in-c-plus-plus
 
 IFACEMETHODIMP RP_ShellPropSheetExt::QueryInterface(_In_ REFIID riid, _Outptr_ LPVOID *ppvObj)
 {
@@ -3126,10 +3126,8 @@ IFACEMETHODIMP RP_ShellPropSheetExt::QueryInterface(_In_ REFIID riid, _Outptr_ L
 }
 
 /** IShellExtInit **/
+// Reference: https://docs.microsoft.com/en-us/windows/win32/api/shobjidl_core/nf-shobjidl_core-ishellextinit-initialize [Initialize()]
 
-/** IShellPropSheetExt **/
-// References:
-// - https://msdn.microsoft.com/en-us/library/windows/desktop/bb775094(v=vs.85).aspx
 IFACEMETHODIMP RP_ShellPropSheetExt::Initialize(
 	_In_ LPCITEMIDLIST pidlFolder, _In_ LPDATAOBJECT pDataObj, _In_ HKEY hKeyProgID)
 {
@@ -3243,6 +3241,7 @@ cleanup:
 }
 
 /** IShellPropSheetExt **/
+// Reference: https://docs.microsoft.com/en-us/windows/win32/api/shobjidl_core/nn-shobjidl_core-ishellpropsheetext
 
 IFACEMETHODIMP RP_ShellPropSheetExt::AddPages(_In_ LPFNADDPROPSHEETPAGE pfnAddPage, LPARAM lParam)
 {

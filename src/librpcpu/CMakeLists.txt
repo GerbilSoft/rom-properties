@@ -28,7 +28,7 @@ IF(CPU_i386 OR CPU_amd64)
 	SET(${PROJECT_NAME}_CPU_H cpuflags_x86.h)
 
 	# MSVC does not support MMX intrinsics in 64-bit builds.
-	# Reference: https://msdn.microsoft.com/en-us/library/08x3t697(v=vs.110).aspx
+	# Reference: https://docs.microsoft.com/en-us/cpp/cpp/m64?view=msvc-160
 	#
 	# amd64 CPUs support SSE2 as a minimum anyway, so there's
 	# no point in building MMX code for 64-bit.

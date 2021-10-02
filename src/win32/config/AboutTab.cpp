@@ -45,7 +45,7 @@ using std::u16string;
 #endif
 // Uncomment to enable use of RichEdit 4.1 if available.
 // FIXME: Friendly links aren't underlined or blue on WinXP or Win7...
-// Reference: https://blogs.msdn.microsoft.com/murrays/2015/03/27/richedit-colors/
+// Reference: https://docs.microsoft.com/en-us/archive/blogs/murrays/richedit-colors
 //#define MSFTEDIT_USE_41 1
 
 // Other libraries.
@@ -389,7 +389,7 @@ DWORD CALLBACK AboutTabPrivate::EditStreamCallback(
 	_In_ LONG cb,
 	_Out_ LONG *pcb)
 {
-	// Reference: https://blogs.msdn.microsoft.com/oldnewthing/20070110-13/?p=28463
+	// Reference: https://devblogs.microsoft.com/oldnewthing/20070110-13/?p=28463
 	RTF_CTX *const rtfCtx = reinterpret_cast<RTF_CTX*>(dwCookie);
 	if (!rtfCtx->str) {
 		// No string.
@@ -466,7 +466,7 @@ string AboutTabPrivate::rtfFriendlyLink(const char *link, const char *title)
 
 	if (bUseFriendlyLinks) {
 		// Friendly links are available.
-		// Reference: https://blogs.msdn.microsoft.com/murrays/2009/09/24/richedit-friendly-name-hyperlinks/
+		// Reference: https://docs.microsoft.com/en-us/archive/blogs/murrays/richedit-friendly-name-hyperlinks
 		return rp_sprintf("{\\field{\\*\\fldinst{HYPERLINK \"%s\"}}{\\fldrslt{%s}}}",
 			rtfEscape(link).c_str(), rtfEscape(title).c_str());
 	} else {
@@ -855,7 +855,7 @@ void AboutTabPrivate::setTabContents(int index)
 
 	// NOTE: EM_SETTEXTEX doesn't seem to work.
 	// We'll need to stream in the text instead.
-	// Reference: https://blogs.msdn.microsoft.com/oldnewthing/20070110-13/?p=28463
+	// Reference: https://devblogs.microsoft.com/oldnewthing/20070110-13/?p=28463
 	switch (index) {
 		case 0:
 			rtfCtx.str = &sCredits;

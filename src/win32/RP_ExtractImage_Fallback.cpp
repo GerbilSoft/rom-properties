@@ -50,7 +50,7 @@ HRESULT RP_ExtractImage_Private::Fallback_int(RegKey &hkey_Assoc, HBITMAP *phBmp
 
 	// Parse the CLSID string.
 	// TODO: Use IIDFromString() instead to skip ProgID handling?
-	// Reference: https://blogs.msdn.microsoft.com/oldnewthing/20151015-00/?p=91351
+	// Reference: https://devblogs.microsoft.com/oldnewthing/20151015-00/?p=91351
 	CLSID clsidExtractImage;
 	HRESULT hr = CLSIDFromString(clsid_reg.c_str(), &clsidExtractImage);
 	if (FAILED(hr)) {

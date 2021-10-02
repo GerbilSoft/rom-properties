@@ -184,7 +184,7 @@ RP_PropertyStore::~RP_PropertyStore()
 }
 
 /** IUnknown **/
-// Reference: https://msdn.microsoft.com/en-us/library/office/cc839627.aspx
+// Reference: https://docs.microsoft.com/en-us/office/client-developer/outlook/mapi/implementing-iunknown-in-c-plus-plus
 
 IFACEMETHODIMP RP_PropertyStore::QueryInterface(_In_ REFIID riid, _Outptr_ LPVOID *ppvObj)
 {
@@ -205,7 +205,7 @@ IFACEMETHODIMP RP_PropertyStore::QueryInterface(_In_ REFIID riid, _Outptr_ LPVOI
 }
 
 /** IInitializeWithStream **/
-// Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/bb761812(v=vs.85).aspx [Initialize()]
+// Reference: https://docs.microsoft.com/en-us/windows/win32/api/propsys/nf-propsys-iinitializewithstream-initialize [Initialize()]
 
 IFACEMETHODIMP RP_PropertyStore::Initialize(_In_ IStream *pstream, DWORD grfMode)
 {
@@ -435,7 +435,7 @@ IFACEMETHODIMP RP_PropertyStore::Initialize(_In_ IStream *pstream, DWORD grfMode
 }
 
 /** IPropertyStore **/
-// Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/bb761474(v=vs.85).aspx
+// Reference: https://docs.microsoft.com/en-us/windows/win32/api/propsys/nn-propsys-ipropertystore
 
 IFACEMETHODIMP RP_PropertyStore::Commit(void)
 {
@@ -498,7 +498,7 @@ IFACEMETHODIMP RP_PropertyStore::SetValue(_In_ REFPROPERTYKEY key, _In_ REFPROPV
 }
 
 /** IPropertyStoreCapabilities **/
-// Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/bb761452(v=vs.85).aspx
+// Reference: https://docs.microsoft.com/en-us/windows/win32/api/propsys/nn-propsys-ipropertystorecapabilities
 
 IFACEMETHODIMP RP_PropertyStore::IsPropertyWritable(REFPROPERTYKEY key)
 {

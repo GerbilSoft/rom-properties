@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * AesCAPI_NG.cpp: AES decryption class using Win32 CryptoAPI NG.          *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -16,7 +16,7 @@
 #include "librpthreads/Atomics.h"
 
 // References:
-// - https://msdn.microsoft.com/en-us/library/windows/desktop/aa376234%28v=vs.85%29.aspx?f=255&MSPPError=-2147217396
+// - https://docs.microsoft.com/en-us/windows/win32/seccng/encrypting-data-with-cng
 #include <bcrypt.h>
 #include <winternl.h>
 
@@ -309,7 +309,7 @@ int AesCAPI_NG::setKey(const uint8_t *RESTRICT pKey, size_t size)
 		return -EINVAL;
 	}
 
-	// Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/aa376234%28v=vs.85%29.aspx?f=255&MSPPError=-2147217396
+	// Reference: https://docs.microsoft.com/en-us/windows/win32/seccng/encrypting-data-with-cng
 
 	// Calculate the buffer size for the key object.
 	ULONG cbKeyObject;

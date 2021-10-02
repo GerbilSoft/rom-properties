@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * SystemRegion.cpp: Get the system country code.                          *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -290,7 +290,7 @@ void SystemRegionPrivate::getSystemRegion(void)
 	}
 
 	// References:
-	// - https://msdn.microsoft.com/en-us/library/windows/desktop/dd318101(v=vs.85).aspx
+	// - https://docs.microsoft.com/en-us/windows/win32/api/winnls/nf-winnls-getlocaleinfow
 
 	// NOTE: LOCALE_SISO3166CTRYNAME might not work on some old versions
 	// of Windows, but our minimum is Windows XP.

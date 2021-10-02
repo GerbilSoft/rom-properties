@@ -246,7 +246,7 @@ int EXEPrivate::addFields_PE_Manifest(void)
 
 	// Trust info.
 	// TODO: Fine-grained permissions?
-	// Reference: https://msdn.microsoft.com/en-us/library/6ad1fshk.aspx
+	// Reference: https://docs.microsoft.com/en-us/visualstudio/deployment/trustinfo-element-clickonce-application
 	FIRST_CHILD_ELEMENT_NS(trustInfo, assembly, "trustInfo", "asmv2");
 	if (trustInfo) {
 		FIRST_CHILD_ELEMENT_NS(security, trustInfo, "security", "asmv2");
@@ -263,7 +263,7 @@ int EXEPrivate::addFields_PE_Manifest(void)
 	}
 
 	// windowsSettings bitfield.
-	// Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/aa375635(v=vs.85).aspx
+	// Reference: https://docs.microsoft.com/en-us/windows/win32/sbscs/manifest-file-schema
 	// TODO: Ordering.
 	typedef enum {
 		Setting_autoElevate				= (1U << 0),
@@ -322,7 +322,7 @@ int EXEPrivate::addFields_PE_Manifest(void)
 			// DPI Aware.
 			// TODO: Test 10/1607 and improve descriptions.
 			// TODO: Decode strings to more useful values.
-			// Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/aa374191(v=vs.85).aspx
+			// Reference: https://docs.microsoft.com/en-us/windows/win32/sbscs/application-manifests
 			ADD_TEXT(windowsSettings, "dpiAware", C_("EXE|Manifest", "DPI Aware"));
 			// DPI Awareness. (Win10/1607)
 			ADD_TEXT(windowsSettings, "dpiAwareness", C_("EXE|Manifest", "DPI Awareness"));

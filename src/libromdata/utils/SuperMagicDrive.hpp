@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * SuperMagicDrive.cpp: Super Magic Drive deinterleaving function.         *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -17,7 +17,7 @@
 #if defined(RP_CPU_I386) || defined(RP_CPU_AMD64)
 #  include "librpcpu/cpuflags_x86.h"
 /* MSVC does not support MMX intrinsics in 64-bit builds. */
-/* Reference: https://msdn.microsoft.com/en-us/library/08x3t697(v=vs.110).aspx */
+/* Reference: https://docs.microsoft.com/en-us/cpp/cpp/m64?view=msvc-160 */
 /* In addition, amd64 CPUs all support SSE2 as a minimum, */
 /* so there's no point in building MMX code for 64-bit. */
 #  if (defined(_M_IX86) || defined(__i386__)) && \

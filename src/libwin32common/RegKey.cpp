@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libwin32common)                   *
  * RegKey.hpp: Registry key wrapper.                                       *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -400,7 +400,7 @@ LONG RegKey::deleteValue(LPCTSTR lpValueName)
  */
 LONG RegKey::deleteSubKey(HKEY hKeyRoot, LPCTSTR lpSubKey)
 {
-	// Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/ms724235(v=vs.85).aspx
+	// Reference: https://docs.microsoft.com/en-us/windows/win32/sysinfo/deleting-a-key-with-subkeys
 	if (!hKeyRoot || !lpSubKey || !lpSubKey[0]) {
 		// nullptr specified, or lpSubKey is empty.
 		return ERROR_INVALID_PARAMETER;
@@ -505,8 +505,8 @@ LONG RegKey::enumSubKeys(list<tstring> &lstSubKeys)
 	// cMaxSubKeyLen doesn't include the NULL terminator.
 	cMaxSubKeyLen++;
 
-	// https://msdn.microsoft.com/en-us/library/windows/desktop/ms724872(v=vs.85).aspx says
-	// key names are limited to 255 characters, but who knows...
+	// https://docs.microsoft.com/en-us/windows/win32/sysinfo/registry-element-size-limits
+	// says key names are limited to 255 characters, but who knows...
 	unique_ptr<TCHAR[]> szName(new TCHAR[cMaxSubKeyLen]);
 
 	// Initialize the vector.
@@ -676,7 +676,7 @@ LONG RegKey::RegisterComObject(REFCLSID rclsid, LPCTSTR progID, LPCTSTR descript
 	}
 
 	// Set the threading model to Apartment.
-	// Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/cc144110%28v=vs.85%29.aspx?f=255&MSPPError=-2147217396
+	// Reference: https://docs.microsoft.com/en-us/windows/win32/shell/reg-shell-exts
 	lResult = hkcr_InprocServer32.write(_T("ThreadingModel"), _T("Apartment"));
 	if (lResult != ERROR_SUCCESS)
 		return lResult;

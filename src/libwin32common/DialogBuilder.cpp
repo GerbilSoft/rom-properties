@@ -2,16 +2,16 @@
  * ROM Properties Page shell extension. (libwin32common)                   *
  * DialogBuilder.cpp: DLGTEMPLATEEX builder class.                         *
  *                                                                         *
- * Copyright (c) 2016-2017 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 // DLGTEMPLATEEX references:
-// - DLGTEMPLATE: https://msdn.microsoft.com/en-us/library/windows/desktop/ms645394(v=vs.85).aspx
-// - DLGTEMPLATEEX: https://msdn.microsoft.com/en-us/library/windows/desktop/ms645398(v=vs.85).aspx
-// - DLGITEMTEMPLATE: https://msdn.microsoft.com/en-us/library/windows/desktop/ms644997(v=vs.85).aspx
-// - DLGITEMTEMPLATEEX: https://msdn.microsoft.com/en-us/library/windows/desktop/ms645389(v=vs.85).aspx
-// - 32-bit extended dialogs: https://blogs.msdn.microsoft.com/oldnewthing/20040623-00/?p=38753
+// - DLGTEMPLATE: https://docs.microsoft.com/en-us/windows/win32/api/winuser/ns-winuser-dlgtemplate
+// - DLGTEMPLATEEX: https://docs.microsoft.com/en-us/windows/win32/dlgbox/dlgtemplateex
+// - DLGITEMTEMPLATE: https://docs.microsoft.com/en-us/windows/win32/api/winuser/ns-winuser-dlgitemtemplate
+// - DLGITEMTEMPLATEEX: https://docs.microsoft.com/en-us/windows/win32/dlgbox/dlgitemtemplateex
+// - 32-bit extended dialogs: https://devblogs.microsoft.com/oldnewthing/20040623-00/?p=38753
 
 #include "DialogBuilder.hpp"
 

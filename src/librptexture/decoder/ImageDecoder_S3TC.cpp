@@ -22,7 +22,7 @@ using std::array;
 // - http://www.fsdeveloper.com/wiki/index.php?title=DXT_compression_explained
 // - https://en.wikipedia.org/wiki/S3_Texture_Compression
 // - https://www.khronos.org/opengl/wiki/S3_Texture_Compression
-// - https://msdn.microsoft.com/en-us/library/windows/desktop/bb694531(v=vs.85).aspx
+// - https://docs.microsoft.com/en-us/windows/win32/direct3d10/d3d10-graphics-programming-guide-resources-block-compression
 
 // S2TC: https://github.com/divVerent/s2tc/blob/master/s2tc_libtxc_dxtn.cpp
 

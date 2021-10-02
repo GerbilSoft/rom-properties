@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * DllMain.cpp: DLL entry point and COM registration handler.              *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -107,7 +107,7 @@ BOOL WINAPI DllMain(HINSTANCE hInstance, DWORD dwReason, LPVOID /*lpReserved*/)
 			// Disable thread library calls, since we don't
 			// care about thread attachments.
 			// NOTE: On MSVC, don't do this if using the static CRT.
-			// Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/ms682579(v=vs.85).aspx
+			// Reference: https://docs.microsoft.com/en-us/windows/win32/api/libloaderapi/nf-libloaderapi-disablethreadlibrarycalls
 			DisableThreadLibraryCalls(hInstance);
 #endif /* !defined(_MSC_VER) || defined(_DLL) */
 
@@ -815,7 +815,7 @@ STDAPI DllRegisterServer(void)
 	}
 
 	// Notify the shell that file associations have changed.
-	// Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/cc144148(v=vs.85).aspx
+	// Reference: https://docs.microsoft.com/en-us/windows/win32/shell/fa-file-types
 	SHChangeNotify(SHCNE_ASSOCCHANGED, SHCNF_IDLIST, nullptr, nullptr);
 
 	return S_OK;
@@ -935,7 +935,7 @@ STDAPI DllUnregisterServer(void)
 	}
 
 	// Notify the shell that file associations have changed.
-	// Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/cc144148(v=vs.85).aspx
+	// Reference: https://docs.microsoft.com/en-us/windows/win32/shell/fa-file-types
 	SHChangeNotify(SHCNE_ASSOCCHANGED, SHCNF_IDLIST, nullptr, nullptr);
 
 	return S_OK;
@@ -943,7 +943,7 @@ STDAPI DllUnregisterServer(void)
 
 /**
  * Get the DLL version.
- * Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/bb776404(v=vs.85).aspx
+ * Reference: https://docs.microsoft.com/en-us/windows/win32/api/shlwapi/nc-shlwapi-dllgetversionproc
  */
 STDAPI DllGetVersion(_Out_ DLLVERSIONINFO2 *pdvi)
 {

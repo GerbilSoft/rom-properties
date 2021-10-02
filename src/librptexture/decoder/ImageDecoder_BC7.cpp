@@ -15,8 +15,8 @@
 using std::array;
 
 // References:
-// - https://msdn.microsoft.com/en-us/library/windows/desktop/hh308953(v=vs.85).aspx
-// - https://msdn.microsoft.com/en-us/library/windows/desktop/hh308954(v=vs.85).aspx
+// - https://docs.microsoft.com/en-us/windows/win32/direct3d11/bc7-format
+// - https://docs.microsoft.com/en-us/windows/win32/direct3d11/bc7-format-mode-reference
 
 namespace LibRpTexture { namespace ImageDecoder {
 

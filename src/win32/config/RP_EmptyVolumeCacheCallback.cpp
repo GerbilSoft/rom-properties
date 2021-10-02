@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                                 *
  * RP_EmptyVolumeCacheCallback.cpp: RP_EmptyVolumeCacheCallback implementation. *
  *                                                                              *
- * Copyright (c) 2016-2017 by David Korth.                                      *
+ * Copyright (c) 2016-2021 by David Korth.                                      *
  * SPDX-License-Identifier: GPL-2.0-or-later                                    *
  ********************************************************************************/
 
@@ -15,7 +15,7 @@ RP_EmptyVolumeCacheCallback::RP_EmptyVolumeCacheCallback(HWND hProgressBar)
 { }
 
 /** IUnknown **/
-// Reference: https://msdn.microsoft.com/en-us/library/office/cc839627.aspx
+// Reference: https://docs.microsoft.com/en-us/office/client-developer/outlook/mapi/implementing-iunknown-in-c-plus-plus
 
 IFACEMETHODIMP RP_EmptyVolumeCacheCallback::QueryInterface(REFIID riid, LPVOID *ppvObj)
 {
@@ -34,7 +34,7 @@ IFACEMETHODIMP RP_EmptyVolumeCacheCallback::QueryInterface(REFIID riid, LPVOID *
 }
 
 /** IEmptyVolumeCacheCallBack **/
-// Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/bb762008(v=vs.85).aspx
+// Reference: https://docs.microsoft.com/en-us/windows/win32/api/emptyvc/nn-emptyvc-iemptyvolumecachecallback
 // TODO: Needs testing on a system with lots of thumbnails.
 
 IFACEMETHODIMP RP_EmptyVolumeCacheCallback::ScanProgress(DWORDLONG dwlSpaceUsed, DWORD dwFlags, LPCWSTR pcwszStatus)

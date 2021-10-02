@@ -408,8 +408,8 @@ int PEResourceReaderPrivate::load_VS_VERSION_INFO_header(IRpFile *file, const ch
 int PEResourceReaderPrivate::load_StringTable(IRpFile *file, IResourceReader::StringTable &st, uint32_t *langID)
 {
 	// References:
-	// - String: https://msdn.microsoft.com/en-us/library/windows/desktop/ms646987(v=vs.85).aspx
-	// - StringTable: https://msdn.microsoft.com/en-us/library/windows/desktop/ms646992(v=vs.85).aspx
+	// - String: https://docs.microsoft.com/en-us/windows/win32/menurc/string-str
+	// - StringTable: https://docs.microsoft.com/en-us/windows/win32/menurc/stringtable
 
 	// Read fields.
 	const off64_t pos_start = file->tell();

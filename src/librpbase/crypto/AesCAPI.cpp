@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * AesCAPI.cpp: AES decryption class using Win32 CryptoAPI.                *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -16,12 +16,12 @@
 // References:
 // - http://www.codeproject.com/Tips/787096/Operation-Password-CryptoAPI-with-AES
 //   [Google: "CryptoAPI decrypting AES example" (no quotes)]
-// - https://msdn.microsoft.com/en-us/library/windows/desktop/aa380255(v=vs.85).aspx
+// - https://docs.microsoft.com/en-us/windows/win32/seccrypto/cryptography-portal
 // - http://stackoverflow.com/questions/29636767/how-to-aes-cbc-encryption-using-cryptoapi
 //   [Google: "CryptoAPI AES-CBC" (no quotes)]
 // - http://www.codeproject.com/Articles/11578/Encryption-using-the-Win-Crypto-API
 //   [Google: "CryptoAPI AES-CBC" (no quotes)]
-// - https://msdn.microsoft.com/en-us/library/windows/desktop/aa382383(v=vs.85).aspx
+// - https://docs.microsoft.com/en-us/windows/win32/seccrypto/example-c-program--importing-a-plaintext-key
 //   [Google: "CryptImportKey" (no quotes)]
 // - http://etutorials.org/Programming/secure+programming/Chapter+5.+Symmetric+Encryption/5.25+Using+Symmetric+Encryption+with+Microsoft+s+CryptoAPI/
 //   [Google: "CryptoAPI set IV" (no quotes)]
@@ -73,7 +73,7 @@ AesCAPIPrivate::AesCAPIPrivate()
 
 	// Initialize the CryptoAPI provider.
 	// TODO: Try multiple times, e.g.:
-	// - https://msdn.microsoft.com/en-us/library/windows/desktop/aa382383(v=vs.85).aspx
+	// - https://docs.microsoft.com/en-us/windows/win32/seccrypto/example-c-program--importing-a-plaintext-key
 	// http://stackoverflow.com/questions/4495247/ms-crypto-api-behavior-on-windows-xp-vs-vista-7
 	// MS_ENH_RSA_AES_PROV is the value for Windows 7, but it fails for XP.
 	// XP expects MS_ENH_RSA_AES_PROV_XP, which has "(Prototype)".
@@ -332,7 +332,7 @@ size_t AesCAPI::decrypt(uint8_t *RESTRICT pData, size_t size)
 
 	// Temporarily duplicate the key so we don't overwrite
 	// the feedback register in the original key.
-	// Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/aa379913(v=vs.85).aspx
+	// Reference: https://docs.microsoft.com/en-us/windows/win32/api/wincrypt/nf-wincrypt-cryptdecrypt
 	HCRYPTKEY hMyKey;
 	if (!CryptDuplicateKey(d->hKey, nullptr, 0, &hMyKey)) {
 		// Error duplicating the key.

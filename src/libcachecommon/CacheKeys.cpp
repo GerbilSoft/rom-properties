@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libcachecommon)                   *
  * CacheKeys.cpp: Cache key handling functions.                            *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -39,7 +39,7 @@ namespace LibCacheCommon {
 // '/' is allowed for cache hierarchy. (Converted to '\\' on Windows.)
 // '.' is allowed for file extensions.
 // (NOTE: '/' and '.' are allowed for extensions and cache hierarchy.)
-// Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/aa365247(v=vs.85).aspx
+// Reference: https://docs.microsoft.com/en-us/windows/win32/fileio/naming-a-file
 // Values:
 // - 0: Not allowed (converted to '_')
 // - 1: Allowed

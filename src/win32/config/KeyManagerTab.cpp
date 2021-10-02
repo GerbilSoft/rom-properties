@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * KeyManagerTab.hpp: Key Manager tab for rp-config.                       *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -911,7 +911,7 @@ LRESULT CALLBACK KeyManagerTabPrivate::ListViewSubclassProc(
 
 		case WM_NCDESTROY:
 			// Remove the window subclass.
-			// Reference: https://blogs.msdn.microsoft.com/oldnewthing/20031111-00/?p=41883
+			// Reference: https://devblogs.microsoft.com/oldnewthing/20031111-00/?p=41883
 			RemoveWindowSubclass(hWnd, ListViewSubclassProc, uIdSubclass);
 			break;
 
@@ -1113,7 +1113,7 @@ LRESULT CALLBACK KeyManagerTabPrivate::ListViewEditSubclassProc(
 
 		case WM_NCDESTROY:
 			// Remove the window subclass.
-			// Reference: https://blogs.msdn.microsoft.com/oldnewthing/20031111-00/?p=41883
+			// Reference: https://devblogs.microsoft.com/oldnewthing/20031111-00/?p=41883
 			RemoveWindowSubclass(hWnd, ListViewSubclassProc, uIdSubclass);
 			break;
 

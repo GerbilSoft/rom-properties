@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpfile)                        *
  * FileSystem_win32.cpp: File system functions. (Win32 implementation)     *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -323,7 +323,7 @@ bool is_symlink(const char *filename)
 	const tstring tfilename = makeWinPath(filename);
 
 	// Check the reparse point type.
-	// Reference: https://blogs.msdn.microsoft.com/oldnewthing/20100212-00/?p=14963
+	// Reference: https://devblogs.microsoft.com/oldnewthing/20100212-00/?p=14963
 	WIN32_FIND_DATA findFileData;
 	HANDLE hFind = FindFirstFile(tfilename.c_str(), &findFileData);
 	if (!hFind || hFind == INVALID_HANDLE_VALUE) {
@@ -396,7 +396,7 @@ string resolve_symlink(const char *filename)
 		return string();
 	}
 
-	// Reference: https://blogs.msdn.microsoft.com/oldnewthing/20100212-00/?p=14963
+	// Reference: https://devblogs.microsoft.com/oldnewthing/20100212-00/?p=14963
 	// TODO: Enable write sharing in regular IRpFile?
 	const tstring tfilename = makeWinPath(filename);
 	HANDLE hFile = CreateFile(tfilename.c_str(),
