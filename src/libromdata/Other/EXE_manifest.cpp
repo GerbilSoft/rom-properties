@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * EXE_manifest.cpp: DOS/Windows executable reader. (PE manifest reader)   *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -330,7 +330,9 @@ int EXEPrivate::addFields_PE_Manifest(void)
 	}
 
 	// Operating system compatibility.
-	// Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/aa374191(v=vs.85).aspx
+	// References:
+	// - https://docs.microsoft.com/en-us/windows/win32/sbscs/application-manifests
+	// - https://docs.microsoft.com/en-us/windows/win32/sysinfo/targeting-your-application-at-windows-8-1
 	typedef enum {
 		OS_WinVista		= (1U << 0),
 		OS_Win7			= (1U << 1),
@@ -379,6 +381,8 @@ int EXEPrivate::addFields_PE_Manifest(void)
 				} else if (!strcasecmp(Id, "{1f676c76-80e1-4239-95bb-83d0f6d0da78}")) {
 					compat |= OS_Win81;
 				} else if (!strcasecmp(Id, "{8e0f7a12-bfb3-4fe8-b9a5-48fd50a15a9a}")) {
+					// NOTE: Also used for Windows 11.
+					// Reference: https://stackoverflow.com/questions/68240304/whats-the-supportedos-guid-for-windows-11
 					compat |= OS_Win10;
 				}
 			}
