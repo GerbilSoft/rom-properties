@@ -11,6 +11,7 @@
  ***************************************************************************/
 
 #include "config.kf5.h"
+#include "../check-uid.hpp"
 
 #include "OverlayIconPluginForwarder.hpp"
 #include "OverlayIconPlugin.hpp"
@@ -34,11 +35,7 @@ OverlayIconPluginForwarder::OverlayIconPluginForwarder(QObject *parent)
 	, hRpKdeSo(nullptr)
 	, fwd_plugin(nullptr)
 {
-	if (getuid() == 0 || geteuid() == 0) {
-		qCritical("*** overlayiconplugin_rom_properties_" RP_KDE_LOWER "%u does not support running as root.",
-			static_cast<unsigned int>(QT_VERSION) >> 16);
-		return;
-	}
+	CHECK_UID();
 
 	// FIXME: Check the .desktop file?
 	QString pluginPath(QString::fromUtf8(KF5_PLUGIN_INSTALL_DIR));

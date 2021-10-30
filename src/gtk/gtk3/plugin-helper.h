@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (GTK+ 3.x)                         *
  * plugin-helper.h: Plugin helper macros.                                  *
  *                                                                         *
- * Copyright (c) 2017-2020 by David Korth.                                 *
+ * Copyright (c) 2017-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -13,6 +13,7 @@
 #include <dlfcn.h>
 
 #include <glib.h>
+#include "check-uid.h"
 
 G_BEGIN_DECLS
 
@@ -21,14 +22,6 @@ G_BEGIN_DECLS
 #else
 # define SHOW_INIT_MESSAGE() do { } while (0)
 #endif
-
-#define CHECK_UID() do { \
-	if (getuid() == 0 || geteuid() == 0) { \
-		g_critical("*** " G_LOG_DOMAIN " does not support running as root."); \
-		return; \
-	} \
-	SHOW_INIT_MESSAGE(); \
-} while (0)
 
 #define DLSYM(symvar, symdlopen) do { \
 	pfn_##symvar = (__typeof__(pfn_##symvar))dlsym(libextension_so, #symdlopen); \

@@ -7,6 +7,7 @@
  ***************************************************************************/
 
 #include "common.h"
+#include "check-uid.h"
 #include "libunixcommon/userdirs.hpp"
 #include "libunixcommon/dll-search.h"
 #include "rp-thumbnailer-dbus.h"
@@ -118,12 +119,8 @@ int main(int argc, char *argv[])
 	RP_UNUSED(argc);
 	RP_UNUSED(argv);
 
-	if (getuid() == 0 || geteuid() == 0) {
-		fprintf(stderr, "*** %s does not support running as root.", argv[0]);
-		return EXIT_FAILURE;
-	}
-
 	// Enable security options.
+	CHECK_UID_RET(EXIT_FAILURE);
 	rpt_do_security_options();
 
 #if !GLIB_CHECK_VERSION(2,36,0)

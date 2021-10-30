@@ -8,6 +8,7 @@
 
 #include "stdafx.h"
 #include "config.kde.h"
+#include "check-uid.hpp"
 
 #include "RomThumbCreator.hpp"
 #include "RpQImageBackend.hpp"
@@ -273,12 +274,7 @@ Q_DECL_EXPORT int RP_C_API rp_create_thumbnail(const char *source_file, const ch
 	// NOTE: TCreateThumbnail() has wrappers for opening the
 	// ROM file and getting RomData*, but we're doing it here
 	// in order to return better error codes.
-
-	if (getuid() == 0 || geteuid() == 0) {
-		qCritical("*** " RP_KDE_LOWER "%u does not support running as root.",
-			static_cast<unsigned int>(QT_VERSION) >> 16);
-		return RPCT_RUNNING_AS_ROOT;
-	}
+	CHECK_UID_RET(RPCT_RUNNING_AS_ROOT);
 
 	// Register RpQImageBackend.
 	// TODO: Static initializer somewhere?

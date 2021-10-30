@@ -15,6 +15,7 @@
  */
 
 #include "stdafx.h"
+#include "check-uid.hpp"
 #include "RomPropertiesDialogPlugin.hpp"
 #include "RomDataView.hpp"
 
@@ -29,11 +30,7 @@ using LibRomData::RomDataFactory;
 RomPropertiesDialogPlugin::RomPropertiesDialogPlugin(KPropertiesDialog *props, const QVariantList&)
 	: super(props)
 {
-	if (getuid() == 0 || geteuid() == 0) {
-		qCritical("*** rom-properties-" RP_KDE_LOWER "%u does not support running as root.",
-			static_cast<unsigned int>(QT_VERSION) >> 16);
-		return;
-	}
+	CHECK_UID();
 
 	// Check if a single file was specified.
 	KFileItemList items = props->items();

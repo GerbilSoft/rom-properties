@@ -7,6 +7,7 @@
  ***************************************************************************/
 
 #include "stdafx.h"
+#include "check-uid.h"
 
 // librpbase, librptexture
 using namespace LibRpBase;
@@ -273,11 +274,7 @@ G_MODULE_EXPORT int RP_C_API rp_create_thumbnail(const char *source_file, const 
 {
 	// Some of this is based on the GNOME Thumbnailer skeleton project.
 	// https://github.com/hadess/gnome-thumbnailer-skeleton/blob/master/gnome-thumbnailer-skeleton.c
-
-	if (getuid() == 0 || geteuid() == 0) {
-		g_critical("*** " G_LOG_DOMAIN " does not support running as root.");
-		return RPCT_RUNNING_AS_ROOT;
-	}
+	CHECK_UID_RET(RPCT_RUNNING_AS_ROOT);
 
 	// Make sure glib is initialized.
 	// NOTE: This is a no-op as of glib-2.36.

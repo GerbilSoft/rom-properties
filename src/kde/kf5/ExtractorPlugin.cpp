@@ -11,6 +11,7 @@
  ***************************************************************************/
 
 #include "stdafx.h"
+#include "check-uid.hpp"
 #include "ExtractorPlugin.hpp"
 
 // librpbase, librpfile
@@ -43,12 +44,7 @@ namespace RomPropertiesKF5 {
 extern "C" {
 	Q_DECL_EXPORT ExtractorPlugin *PFN_CREATEEXTRACTORPLUGINKDE_FN(QObject *parent)
 	{
-		if (getuid() == 0 || geteuid() == 0) {
-			qCritical("*** kfilemetadata_rom_properties_" RP_KDE_LOWER "%u does not support running as root.",
-				static_cast<unsigned int>(QT_VERSION) >> 16);
-			return nullptr;
-		}
-
+		CHECK_UID_RET(nullptr);
 		return new ExtractorPlugin(parent);
 	}
 }

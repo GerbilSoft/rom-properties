@@ -61,6 +61,7 @@ SET(${PROJECT_NAME}_H
 	gtk-compat.h
 	LanguageComboBox.hpp
 	OptionsMenuButton.hpp
+	check-uid.h
 	)
 
 IF(ENABLE_ACHIEVEMENTS)

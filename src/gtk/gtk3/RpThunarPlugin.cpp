@@ -64,16 +64,12 @@ extern "C" G_MODULE_EXPORT void
 thunar_extension_initialize(ThunarxProviderPlugin *plugin)
 {
 	CHECK_UID();
+	SHOW_INIT_MESSAGE();
 
 	assert(libextension_so == NULL);
 	if (libextension_so != NULL) {
 		// TODO: Reference count?
 		g_critical("*** " G_LOG_DOMAIN ": thunar_extension_initialize() called twice?");
-		return;
-	}
-
-	if (getuid() == 0 || geteuid() == 0) {
-		g_critical("*** " G_LOG_DOMAIN " does not support running as root.");
 		return;
 	}
 

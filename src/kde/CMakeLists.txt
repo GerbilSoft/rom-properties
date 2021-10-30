@@ -53,6 +53,7 @@ SET(${PROJECT_NAME}_H
 	ListDataSortProxyModel.hpp
 	LanguageComboBox.hpp
 	OptionsMenuButton.hpp
+	check-uid.hpp
 	config/ConfigDialog.hpp
 	config/ITab.hpp
 	config/ImageTypesTab.hpp

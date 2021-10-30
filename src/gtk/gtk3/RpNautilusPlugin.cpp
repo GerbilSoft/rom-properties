@@ -51,6 +51,7 @@ extern "C" G_MODULE_EXPORT void \
 prefix##_module_initialize(GTypeModule *module) \
 { \
 	CHECK_UID(); \
+	SHOW_INIT_MESSAGE(); \
 \
 	assert(libextension_so == NULL); \
 	if (libextension_so != NULL) { \
