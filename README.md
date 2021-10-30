@@ -114,7 +114,7 @@ button.
 | Sony PlayStation Saves    |       Yes      |    Yes   |       Icon      |       N/A       |
 | Sony PlayStation 2 Discs  |       Yes      |    Yes   |       N/A       |        No       |
 
-\* Internal images are only present in Wii DLC WADs.
+\* Internal images are only present in Wii DLC WADs.<br>
 \* Sega Mega Drive includes Sega CD, 32X, and Pico.
 
 ### Handhelds
@@ -136,7 +136,7 @@ button.
 
 \* The Nintendo DSi TAD parser supports development TADs that are normally
    imported using DSi Nmenu. It does not currently support DSi exports from
-   retail systems.
+   retail systems.<br>
 \* The PSP parser supports both PSP game and UMD video discs, as well as
    several compressed disc formats: CISOv1, CISOv2, ZISO, JISO, and DAX.
 
