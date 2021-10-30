@@ -77,6 +77,7 @@ CS:0x374:Cereal
 CS:0x378:Metal Gear
 CS:0x37C:Castlevania
 CS:0x380:Jikkyou Powerful Pro Baseball
+CS:0x384:Yu-Gi-Oh!
 CS:0x38C:Diablo
 CS:0x3A0:Persona
 
@@ -658,6 +659,7 @@ CV:0x05C0:0x02:Samus Aran
 C:0x05C1:Metroid
 C:0x05C2:Ridley
 C:0x05C3:Dark Samus
+C:0x05C4:E.M.M.I.
 
 # F-Zero (character series == 0x060)
 C:0x0600:Captain Falcon
@@ -973,6 +975,15 @@ C:0x3803:Hayakawa
 C:0x3804:Yabe
 C:0x3805:Ganda
 
+# Yu-Gi-Oh! (character series == 0x384)
+C:0x3840:Yuga Oudou
+C:0x3841:Tatsuhisa “Luke” Kamijō
+C:0x3842:Gakuto Sōgetsu
+C:0x3843:Romin Kirishima
+C:0x3844:Roa Kirishima
+C:0x3845:Nail Saionji
+C:0x3846:Asana Mutsuba
+
 # Diablo (character series == 0x38C)
 C:0x38C0:Loot Goblin
 
@@ -1010,6 +1021,7 @@ AS:0x15:Mega Man
 AS:0x16:Diablo
 AS:0x17:Jikkyou Powerful Pro Baseball
 AS:0x18:Monster Hunter
+AS:0x19:Yu-Gi-Oh!
 AS:0xFF:Super Nintendo World
 
 ### amiibo IDs (A) [p.22]
@@ -1915,5 +1927,18 @@ A:0x040F:0:0:Magnamalo
 A:0x0410:0:0:Palico
 A:0x0411:0:0:Palamute
 
+# Metroid Dread [0x412-0x413]
+A:0x0412:0:0:Samus (Metroid Dread)
+A:0x0413:0:0:E.M.M.I.
+
 # The Legend of Zelda: Skyward Sword Series [0x414]
 A:0x0414:0:0:Zelda & Loftwing
+
+# Yu-Gi-Oh! [0x424-0x42A]
+A:0x0424:0:0:Yuga Oudou
+A:0x0425:0:0:Tatsuhisa “Luke” Kamijō
+A:0x0426:0:0:Gakuto Sōgetsu
+A:0x0427:0:0:Romin Kirishima
+A:0x0428:0:0:Roa Kirishima
+A:0x0429:0:0:Nail Saionji
+A:0x042A:0:0:Asana Mutsuba
