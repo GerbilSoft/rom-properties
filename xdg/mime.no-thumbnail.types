@@ -20,6 +20,7 @@ audio/x-bcstm				# BCSTM
 audio/x-bfstm				# BCSTM
 audio/x-bcwav				# BCSTM
 audio/x-brstm				# BRSTM
+audio/x-gbr				# GBS
 audio/x-gbs				# GBS
 audio/x-nsf				# NSF
 audio/x-psf				# PSF

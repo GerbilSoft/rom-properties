@@ -19,6 +19,7 @@
   * Added ASTC decoding. All texture formats that support ASTC have been
     updated to allow decoding ASTC textures. (HDR is not supported, and
     the LDR decoder is rather slow.)
+  * The GBS parser now partially supports the older GBR format.
 
 * Bug fixes:
   * EXE: Improve runtime DLL detection in some cases.

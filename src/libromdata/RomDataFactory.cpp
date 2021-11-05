@@ -272,7 +272,8 @@ const RomDataFactoryPrivate::RomDataFns RomDataFactoryPrivate::romDataFns_magic[
 
 	// Audio
 	GetRomDataFns_addr(BRSTM, ATTR_HAS_METADATA, 0, 'RSTM'),
-	GetRomDataFns_addr(GBS, ATTR_HAS_METADATA, 0, 0x47425301),	// 'GBS\x01'
+	GetRomDataFns_addr(GBS, ATTR_HAS_METADATA, 0, 0x47425301U),	// 'GBS\x01'
+	GetRomDataFns_addr(GBS, ATTR_HAS_METADATA, 0, 0x47425246U),	// 'GBRF'
 	GetRomDataFns_addr(NSF, ATTR_HAS_METADATA, 0, 'NESM'),
 	GetRomDataFns_addr(SPC, ATTR_HAS_METADATA, 0, 'SNES'),
 	GetRomDataFns_addr(VGM, ATTR_HAS_METADATA, 0, 'Vgm '),

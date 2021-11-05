@@ -185,6 +185,7 @@ button.
 | CRI ADX ADPCM                 |       Yes      |    Yes   |       N/A       |       N/A      |
 | Commodore 64 SID Music        |       Yes      |    Yes   |       N/A       |       N/A      |
 | Game Boy Sound System         |       Yes      |    Yes   |       N/A       |       N/A      |
+| Game Boy Ripped               |       Yes      |    N/A   |       N/A       |       N/A      |
 | Nintendo 3DS BCSTM and BCWAV  |       Yes      |    Yes   |       N/A       |       N/A      |
 | Nintendo Sound Format         |       Yes      |    Yes   |       N/A       |       N/A      |
 | Nintendo Wii BRSTM            |       Yes      |    Yes   |       N/A       |       N/A      |
@@ -373,3 +374,4 @@ https://github.com/GerbilSoft/rom-properties/issues
   Godot's own .stex format.
 * [Vulkan SDK for Android](https://arm-software.github.io/vulkan-sdk/_a_s_t_c.html)
   for the ASTC file format header.
+* [NEZ Plug](http://nezplug.sourceforge.net/) for basic GBR specifications.
