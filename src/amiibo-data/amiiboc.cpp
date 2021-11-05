@@ -10,10 +10,11 @@
 
 // Byteswapping
 #include "byteswap_rp.h"
+// Unsigned ctype
+#include "ctypex.h"
 
 // C includes. (C++ namespace)
 #include <cassert>
-#include <cctype>
 #include <cerrno>
 #include <cstdio>
 #include <cstring>
@@ -148,7 +149,7 @@ int main(int argc, char *argv[])
 		// Remove leading and trailing whitespace.
 		const char *const buf_end = buf + sizeof(buf);
 		char *p = buf;
-		while (p < buf_end && *p != '\0' && isspace(*p)) {
+		while (p < buf_end && *p != '\0' && ISSPACE(*p)) {
 			p++;
 		}
 		if (*p == '#') {
@@ -157,7 +158,7 @@ int main(int argc, char *argv[])
 		}
 		size_t plen = strlen(p);
 		while (plen > 0) {
-			if (!isspace(p[plen-1]))
+			if (!ISSPACE(p[plen-1]))
 				break;
 
 			p[plen-1] = '\0';
