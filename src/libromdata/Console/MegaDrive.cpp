@@ -198,6 +198,12 @@ class MegaDrivePrivate final : public RomDataPrivate
 		 * @return Publisher, or "Unknown" if unknown.
 		 */
 		static string getPublisher(const MD_RomHeader *pRomHeader);
+
+		/**
+		 * Initialize zlib.
+		 * @return 0 on success; non-zero on error.
+		 */
+		static int zlibInit(void);
 };
 
 ROMDATA_IMPL(MegaDrive)
@@ -524,13 +530,11 @@ void MegaDrivePrivate::addFields_romHeader(const MD_RomHeader *pRomHeader, bool 
 	}
 
 	// Region code.
-	// TODO: Validate the Mega CD security program?
-	uint32_t md_region_check;
-	if (unlikely(bRedetectRegion)) {
-		md_region_check = parseRegionCodes(pRomHeader);
-	} else {
-		md_region_check = this->md_region;
-	}
+	// NOTE: bRedetectRegion is only used for S&K lock-on,
+	// so we don't need to worry about the Mega CD security program.
+	const uint32_t md_region_check = (unlikely(bRedetectRegion))
+		? parseRegionCodes(pRomHeader)
+		: this->md_region;
 
 	static const char *const region_code_bitfield_names[] = {
 		NOP_C_("Region", "Japan"),
@@ -698,6 +702,30 @@ string MegaDrivePrivate::getPublisher(const MD_RomHeader *pRomHeader)
 	return s_publisher;
 }
 
+/**
+ * Initialize zlib.
+ * @return 0 on success; non-zero on error.
+ */
+int MegaDrivePrivate::zlibInit(void)
+{
+#if defined(_MSC_VER) && defined(ZLIB_IS_DLL)
+	// Delay load verification.
+	// TODO: Only if linked with /DELAYLOAD?
+	if (DelayLoad_test_get_crc_table() != 0) {
+		// Delay load failed.
+		// Can't calculate the CRC32.
+		return -ENOENT;
+	}
+#else /* !defined(_MSC_VER) || !defined(ZLIB_IS_DLL) */
+	// zlib isn't in a DLL, but we need to ensure that the
+	// CRC table is initialized anyway.
+	get_crc_table();
+#endif /* defined(_MSC_VER) && defined(ZLIB_IS_DLL) */
+
+	// zlib initialized.
+	return 0;
+}
+
 /** MegaDrive **/
 
 /**
@@ -726,8 +754,8 @@ MegaDrive::MegaDrive(IRpFile *file)
 	// Seek to the beginning of the file.
 	d->file->rewind();
 
-	// Read the ROM header. [0x800 bytes; minimum 0x200]
-	uint8_t header[0x800];
+	// Read the ROM header. [0x810 bytes; minimum 0x200]
+	uint8_t header[0x810];
 	size_t size = d->file->read(header, sizeof(header));
 	if (size < 0x200) {
 		UNREF_AND_NULL_NOCHK(d->file);
@@ -742,6 +770,10 @@ MegaDrive::MegaDrive(IRpFile *file)
 	info.ext = nullptr;	// Not needed for MD.
 	info.szFile = 0;	// Not needed for MD.
 	d->romType = isRomSupported_static(&info);
+
+	// Mega CD security program CRC32
+	// TODO: zlib delay-load on Windows.
+	uint32_t mcd_sp_crc = 0;
 
 	if (d->romType >= 0) {
 		// Save the header for later.
@@ -789,6 +821,17 @@ MegaDrive::MegaDrive(IRpFile *file)
 				// MD-style header is at 0x100.
 				// No vector table is present on the disc.
 				memcpy(&d->romHeader, &header[0x100], sizeof(d->romHeader));
+
+				// Calculate the security program CRC32.
+				// NOTE: The JP security program fits into the first sector,
+				// but US/EU takes up two sectors. This shouldn't be an issue,
+				// since we don't need the full program; we just need to be
+				// able to distinguish between them.
+				// NOTE: Only the first 0x4C0 bytes seem to be identical
+				// between USA and EUR, and 0x150 in JPN...
+				if (size >= (0x200 + 0x150) && !d->zlibInit()) {
+					mcd_sp_crc = crc32(0, &header[0x200], 0x150);
+				}
 				break;
 
 			case MegaDrivePrivate::ROM_FORMAT_DISC_2352:
@@ -798,12 +841,23 @@ MegaDrive::MegaDrive(IRpFile *file)
 					UNREF_AND_NULL_NOCHK(d->file);
 					return;
 				}
-
 				d->fileType = FileType::DiscImage;
+
 				// MCD-specific header is at 0x10. [TODO]
 				// MD-style header is at 0x110.
 				// No vector table is present on the disc.
 				memcpy(&d->romHeader, &header[0x110], sizeof(d->romHeader));
+
+				// Calculate the security program CRC32.
+				// NOTE: The JP security program fits into the first sector,
+				// but US/EU takes up two sectors. This shouldn't be an issue,
+				// since we don't need the full program; we just need to be
+				// able to distinguish between them.
+				// NOTE: Only the first 0x4C0 bytes seem to be identical
+				// between USA and EUR, and 0x150 in JPN...
+				if (size >= (0x210 + 0x150) && !d->zlibInit()) {
+					mcd_sp_crc = crc32(0, &header[0x210], 0x150);
+				}
 				break;
 
 			case MegaDrivePrivate::ROM_FORMAT_UNKNOWN:
@@ -819,8 +873,29 @@ MegaDrive::MegaDrive(IRpFile *file)
 		UNREF_AND_NULL_NOCHK(d->file);
 	}
 
-	// Parse the MD region code.
-	d->md_region = d->parseRegionCodes(&d->romHeader);
+	// MD region code.
+	// If this is a Mega CD title, check the security program,
+	// since the code in the ROM header is sometimes inaccurate.
+	switch (mcd_sp_crc) {
+		case 0xD6BC66C7:
+			d->md_region = MegaDriveRegions::MD_REGION_JAPAN | MegaDriveRegions::MD_REGION_ASIA;
+			break;
+		case 0xC5878BA4:
+			d->md_region = MegaDriveRegions::MD_REGION_USA;
+			break;
+		case 0x233CFB15:
+			d->md_region = MegaDriveRegions::MD_REGION_EUROPE;
+			break;
+
+		default:
+			assert(!"Unrecognized Mega CD security sector.");
+			// fall-through
+		case 0:
+			// Not a Mega CD title.
+			// Parse the MD region code.
+			d->md_region = d->parseRegionCodes(&d->romHeader);
+			break;
+	}
 
 	// Determine the MIME type.
 	const uint8_t sysID = (d->romType & MegaDrivePrivate::ROM_SYSTEM_MASK);
@@ -843,19 +918,10 @@ MegaDrive::MegaDrive(IRpFile *file)
 	    !memcmp(s_serial_number, "GM 00054503-00", sizeof(d->romHeader.serial_number)) &&
 	    (d->romType & MegaDrivePrivate::ROM_FORMAT_MASK) == MegaDrivePrivate::ROM_FORMAT_CART_BIN)
 	{
-#if defined(_MSC_VER) && defined(ZLIB_IS_DLL)
-		// Delay load verification.
-		// TODO: Only if linked with /DELAYLOAD?
-		if (DelayLoad_test_get_crc_table() != 0) {
-			// Delay load failed.
-			// Can't calculate the CRC32.
+		if (!d->zlibInit()) {
+			// Can't initialize zlib to calculate the CRC32.
 			return;
 		}
-#else /* !defined(_MSC_VER) || !defined(ZLIB_IS_DLL) */
-		// zlib isn't in a DLL, but we need to ensure that the
-		// CRC table is initialized anyway.
-		get_crc_table();
-#endif /* defined(_MSC_VER) && defined(ZLIB_IS_DLL) */
 
 		// Calculate the CRC32 of $20000-$200FF.
 		// TODO: SMD deinterleaving.
