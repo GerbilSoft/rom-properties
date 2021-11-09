@@ -183,7 +183,10 @@ class MegaDrivePrivate final : public RomDataPrivate
 	public:
 		// ROM header.
 		// NOTE: Must be byteswapped on access.
-		M68K_VectorTable vectors;	// Interrupt vectors.
+		union {
+			M68K_VectorTable vectors;	// Interrupt vectors.
+			uint8_t mcd_hdr[256];		// TODO: MCD-specific header struct.
+		};
 		MD_RomHeader romHeader;		// ROM header.
 		uint32_t gt_crc;		// Game Toshokan: CRC32 of $20000-$200FF.
 
@@ -817,9 +820,10 @@ MegaDrive::MegaDrive(IRpFile *file)
 			case MegaDrivePrivate::ROM_FORMAT_DISC_2048:
 				d->fileType = FileType::DiscImage;
 
-				// MCD-specific header is at 0. [TODO]
+				// MCD-specific header is at 0.
 				// MD-style header is at 0x100.
 				// No vector table is present on the disc.
+				memcpy(&d->mcd_hdr, header, sizeof(d->mcd_hdr));
 				memcpy(&d->romHeader, &header[0x100], sizeof(d->romHeader));
 
 				// Calculate the security program CRC32.
@@ -843,9 +847,10 @@ MegaDrive::MegaDrive(IRpFile *file)
 				}
 				d->fileType = FileType::DiscImage;
 
-				// MCD-specific header is at 0x10. [TODO]
+				// MCD-specific header is at 0x10.
 				// MD-style header is at 0x110.
 				// No vector table is present on the disc.
+				memcpy(&d->mcd_hdr, &header[0x10], sizeof(d->mcd_hdr));
 				memcpy(&d->romHeader, &header[0x110], sizeof(d->romHeader));
 
 				// Calculate the security program CRC32.
@@ -1053,9 +1058,13 @@ int MegaDrive::isRomSupported_static(const DetectInfo *info)
 	// TODO: Use a struct instead of raw bytes?
 	if (!memcmp(&pHeader[0x0010], segacd_magic, sizeof(segacd_magic))) {
 		// Found a Sega CD disc image. (2352-byte sectors)
-		if (unlikely(!memcmp(&pHeader[0x0110], sega32x_magic, sizeof(sega32x_magic)))) {
+		if (unlikely(!memcmp(&pHeader[0x0100 + 0x10], sega32x_magic, sizeof(sega32x_magic)))) {
 			// This is a Sega CD 32X disc image.
 			// TODO: Check for 32X security code?
+			return MegaDrivePrivate::ROM_SYSTEM_MCD32X |
+			       MegaDrivePrivate::ROM_FORMAT_DISC_2352;
+		} else if (unlikely(pHeader[0x18A + 0x10] == 'F')) {
+			// Serial number has 'F'. This is probably 32X.
 			return MegaDrivePrivate::ROM_SYSTEM_MCD32X |
 			       MegaDrivePrivate::ROM_FORMAT_DISC_2352;
 		}
@@ -1068,6 +1077,10 @@ int MegaDrive::isRomSupported_static(const DetectInfo *info)
 			// TODO: Check for 32X security code?
 			return MegaDrivePrivate::ROM_SYSTEM_MCD32X |
 			       MegaDrivePrivate::ROM_FORMAT_DISC_2048;
+		} else if (unlikely(pHeader[0x18A] == 'F')) {
+			// Serial number has 'F'. This is probably 32X.
+			return MegaDrivePrivate::ROM_SYSTEM_MCD32X |
+			       MegaDrivePrivate::ROM_FORMAT_DISC_2352;
 		}
 		return MegaDrivePrivate::ROM_SYSTEM_MCD |
 		       MegaDrivePrivate::ROM_FORMAT_DISC_2048;
@@ -1636,28 +1649,54 @@ int MegaDrive::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) 
 		}
 	}
 
-	// Special handling for Wonder Mega 1.00 boot ROMs, since they
-	// have the same serial number as the matching Mega CD.
-	if (rom_type == cpu_to_be16('BR') &&
-	    pRomHeader->title_domestic[0] == 'W' &&
-	    pRomHeader->title_domestic[6] == '-')
-	{
-		gameID += "-WM";
-	}
+	switch (d->romType & MegaDrivePrivate::ROM_SYSTEM_MASK) {
+		default:
+			break;
 
-	// Special handling for Game Toshokan ROMs, which have a 128 KB Boot ROM
-	// and 128 KB RAM for downloaded games.
-	// NOTE: No-Intro has two sets:
-	// - "Game no Kanzume Otokuyou": Boot ROM + game data (found on compilation discs)
-	// - "SegaNet": Same, but most of these have had their checksums updated for the full 256 KB.
-	if (d->gt_crc != 0) {
-		// Use the CRC32 of $20000-$200FF as the filename with the GT "region".
-		region_code[0] = 'G';
-		region_code[1] = 'T';
-		region_code[2] = '\0';
-		char buf[16];
-		snprintf(buf, sizeof(buf), "%08X", d->gt_crc);
-		gameID = buf;
+		case MegaDrivePrivate::ROM_SYSTEM_MD:
+			// Special handling for Wonder Mega 1.00 boot ROMs, since they
+			// have the same serial number as the matching Mega CD.
+			if (rom_type == cpu_to_be16('BR') &&
+			    pRomHeader->title_domestic[0] == 'W' &&
+			    pRomHeader->title_domestic[6] == '-')
+			{
+				gameID += "-WM";
+			}
+
+			// Special handling for Game Toshokan ROMs, which have a 128 KB Boot ROM
+			// and 128 KB RAM for downloaded games.
+			// NOTE: No-Intro has two sets:
+			// - "Game no Kanzume Otokuyou": Boot ROM + game data (found on compilation discs)
+			// - "SegaNet": Same, but most of these have had their checksums updated for the full 256 KB.
+			if (d->gt_crc != 0) {
+				// Use the CRC32 of $20000-$200FF as the filename with the GT "region".
+				region_code[0] = 'G';
+				region_code[1] = 'T';
+				region_code[2] = '\0';
+				char buf[16];
+				snprintf(buf, sizeof(buf), "%08X", d->gt_crc);
+				gameID = buf;
+			}
+
+			break;
+
+		case MegaDrivePrivate::ROM_SYSTEM_MCD:
+		case MegaDrivePrivate::ROM_SYSTEM_MCD32X:
+			// Check for certain MCD titles for exceptions.
+
+			// Slam City with Scottie Pippen (MCD, MCD32X)
+			printf("mcd\n");
+			if (!memcmp(s_serial_number, "GM T-162035-", 12) ||
+			    !memcmp(s_serial_number, "GM T-16204F-", 12))
+			{
+				printf("serial; disc == %c\n", d->mcd_hdr[0x1A]);
+				if (ISDIGIT(d->mcd_hdr[0x1A])) {
+					// Append the disc number.
+					gameID += ".disc";
+					gameID += (char)d->mcd_hdr[0x1A];
+				}
+			}
+			break;
 	}
 
 	// NOTE: We only have one size for MegaDrive right now.
