@@ -1056,34 +1056,49 @@ int MegaDrive::isRomSupported_static(const DetectInfo *info)
 	// right; there should only be 2048 and 2352.
 	// TODO: Detect Sega CD 32X.
 	// TODO: Use a struct instead of raw bytes?
-	if (!memcmp(&pHeader[0x0010], segacd_magic, sizeof(segacd_magic))) {
+	int mcd_offset = -1;
+	if (!memcmp(&pHeader[0x10], segacd_magic, sizeof(segacd_magic))) {
 		// Found a Sega CD disc image. (2352-byte sectors)
-		if (unlikely(!memcmp(&pHeader[0x0100 + 0x10], sega32x_magic, sizeof(sega32x_magic)))) {
-			// This is a Sega CD 32X disc image.
-			// TODO: Check for 32X security code?
-			return MegaDrivePrivate::ROM_SYSTEM_MCD32X |
-			       MegaDrivePrivate::ROM_FORMAT_DISC_2352;
-		} else if (unlikely(pHeader[0x18A + 0x10] == 'F')) {
-			// Serial number has 'F'. This is probably 32X.
-			return MegaDrivePrivate::ROM_SYSTEM_MCD32X |
-			       MegaDrivePrivate::ROM_FORMAT_DISC_2352;
-		}
-		return MegaDrivePrivate::ROM_SYSTEM_MCD |
-		       MegaDrivePrivate::ROM_FORMAT_DISC_2352;
-	} else if (!memcmp(&pHeader[0x0000], segacd_magic, sizeof(segacd_magic))) {
+		mcd_offset = 0x10;
+	} else if (!memcmp(&pHeader[0], segacd_magic, sizeof(segacd_magic))) {
 		// Found a Sega CD disc image. (2048-byte sectors)
-		if (unlikely(!memcmp(&pHeader[0x0100], sega32x_magic, sizeof(sega32x_magic)))) {
+		mcd_offset = 0;
+	}
+
+	if (mcd_offset >= 0) {
+		// Check for some Mega CD disc images that don't
+		// properly indicate that they're 32X games.
+		const uint8_t *const pMcdHeader = &pHeader[mcd_offset];
+		const int discSectorSize = (mcd_offset != 0)
+			? MegaDrivePrivate::ROM_FORMAT_DISC_2352
+			: MegaDrivePrivate::ROM_FORMAT_DISC_2048;
+
+		if (unlikely(!memcmp(&pMcdHeader[0x0100], sega32x_magic, sizeof(sega32x_magic)))) {
 			// This is a Sega CD 32X disc image.
 			// TODO: Check for 32X security code?
-			return MegaDrivePrivate::ROM_SYSTEM_MCD32X |
-			       MegaDrivePrivate::ROM_FORMAT_DISC_2048;
-		} else if (unlikely(pHeader[0x18A] == 'F')) {
+			return discSectorSize | MegaDrivePrivate::ROM_SYSTEM_MCD32X;
+		} else if (unlikely(pMcdHeader[0x18A] == 'F')) {
 			// Serial number has 'F'. This is probably 32X.
-			return MegaDrivePrivate::ROM_SYSTEM_MCD32X |
-			       MegaDrivePrivate::ROM_FORMAT_DISC_2352;
+			return discSectorSize | MegaDrivePrivate::ROM_SYSTEM_MCD32X;
+		} else if (!memcmp(&pMcdHeader[0x180], "GM MK-4438 -00", 14)) {
+			// Fahrenheit (USA)
+			// The 32X disc has the same serial number as the Mega CD
+			// disc, but the build date in the MCD-specific header is
+			// a month later.
+			if (pMcdHeader[0x51] == '3') {
+				return discSectorSize | MegaDrivePrivate::ROM_SYSTEM_MCD32X;
+			}
+		} else if (!memcmp(&pMcdHeader[0x180], "GM MK-4435 -00", 14)) {
+			// Surgical Strike (USA/Brazil)
+			// A 32X version was released in Brazil, which mostly has the
+			// same header except for "32X" in the MCD-specific header and
+			// region code 'U' instead of '4'.
+			if (pMcdHeader[0x18] == '3') {
+				return discSectorSize | MegaDrivePrivate::ROM_SYSTEM_MCD32X;
+			}
 		}
-		return MegaDrivePrivate::ROM_SYSTEM_MCD |
-		       MegaDrivePrivate::ROM_FORMAT_DISC_2048;
+
+		return discSectorSize | MegaDrivePrivate::ROM_SYSTEM_MCD;
 	}
 
 	// Check for SMD format. (Mega Drive only)
@@ -1684,16 +1699,78 @@ int MegaDrive::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) 
 		case MegaDrivePrivate::ROM_SYSTEM_MCD32X:
 			// Check for certain MCD titles for exceptions.
 
-			// Slam City with Scottie Pippen (MCD, MCD32X)
-			printf("mcd\n");
 			if (!memcmp(s_serial_number, "GM T-162035-", 12) ||
 			    !memcmp(s_serial_number, "GM T-16204F-", 12))
 			{
-				printf("serial; disc == %c\n", d->mcd_hdr[0x1A]);
+				// Slam City with Scottie Pippen (MCD, MCD32X)
+				// Different discs have a different number in the
+				// MCD-specific header, but the serial number is
+				// identical on all MCD discs, and all MCD32X discs.
 				if (ISDIGIT(d->mcd_hdr[0x1A])) {
 					// Append the disc number.
 					gameID += ".disc";
 					gameID += (char)d->mcd_hdr[0x1A];
+				}
+			} else {
+				switch (d->md_region) {
+					default:
+						break;
+
+					case MegaDriveRegions::MD_REGION_EUROPE:
+						if (!memcmp(s_serial_number, "GM MK-4411 -00", 14)) {
+							// Jurassic Park (EUR) - different language versions,
+							// which have different titles but the same serial number.
+							if (ISALPHA(pRomHeader->title_domestic[14])) {
+								// Append the first character of the region.
+								gameID += '.';
+								gameID += pRomHeader->title_domestic[14];
+							}
+						} else if (!memcmp(s_serial_number, "GM T-93185-00 ", 14)) {
+							// Sensible Soccer (EUR) - a demo version with a slightly
+							// different title screen has the same serial number.
+							// It can be identified by an earlier build date in the
+							// MCD-specific header.
+							if (d->mcd_hdr[0x51] == '5') {
+								gameID += ".demo";
+							}
+						}
+						break;
+
+					case MegaDriveRegions::MD_REGION_JAPAN | MegaDriveRegions::MD_REGION_ASIA:
+						if (!memcmp(s_serial_number, "GM G-6041     ", 14)) {
+							// Ecco two-disc set (JPN) - both discs have the same
+							// serial number, but Ecco II has a '2' in the
+							// MCD-specific header.
+							gameID += ".disc";
+							gameID += (d->mcd_hdr[0x14] == '2' ? '2' : '1');
+						} else if (!memcmp(s_serial_number, "GM T-32024 -01", 14)) {
+							// Sega MultiMedia Studio Demo has the same
+							// serial number as Sol-Feace (JPN).
+							if (pRomHeader->title_domestic[0] == 'D') {
+								// Sega MultiMedia Studio Demo
+								gameID += ".mmstudio";
+							}
+						}
+						break;
+
+					case MegaDriveRegions::MD_REGION_USA:
+						if (!memcmp(s_serial_number, "GM T-121015-00", 14)) {
+							// Dragon's Lair (USA)
+							// Demo version has the same serial number but says
+							// "Demo" in the title field.
+							// FIXME: Space Ace (USA) demo has the exact same serial number
+							// and header data as Dragon's Lair (USA) for some reason.
+							// Space Ace's data track is less than 10 MB, so we'll use that
+							// to distinguish it.
+							if (pRomHeader->title_domestic[13] == 'D') {
+								// Dragon's Lair demo
+								gameID += ".demo";
+							} else if (d->file->size() < 10U*1024U*1024U) {
+								// Space Ace demo
+								gameID += ".sa-demo";
+							}
+						}
+						break;
 				}
 			}
 			break;
