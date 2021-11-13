@@ -1668,7 +1668,7 @@ int MegaDrive::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) 
 		default:
 			break;
 
-		case MegaDrivePrivate::ROM_SYSTEM_MD:
+		case MegaDrivePrivate::ROM_SYSTEM_MD: {
 			// Special handling for Wonder Mega 1.00 boot ROMs, since they
 			// have the same serial number as the matching Mega CD.
 			if (rom_type == cpu_to_be16('BR') &&
@@ -1676,6 +1676,7 @@ int MegaDrive::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) 
 			    pRomHeader->title_domestic[6] == '-')
 			{
 				gameID += "-WM";
+				break;
 			}
 
 			// Special handling for Game Toshokan ROMs, which have a 128 KB Boot ROM
@@ -1691,9 +1692,64 @@ int MegaDrive::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) 
 				char buf[16];
 				snprintf(buf, sizeof(buf), "%08X", d->gt_crc);
 				gameID = buf;
+				break;
 			}
 
+			// Check for some ROMs that have different variants with the
+			// same serial number. We'll append the ROM checksum to the
+			// filename, similar to DMG.
+			struct MDRomSerialData_t {
+				uint8_t md_region;
+				char serial[15];
+			};
+			static const struct MDRomSerialData_t md_rom_serial_data[] = {
+				{0x0F, "GM 00004039-00"},	// Arrow Flash
+				{0x04, "GM T-24016 -00"},	// Atomic Robo-Kid
+				{0x08, "GM T-120146-50"},	// Brian Lara Cricket 96 / Shane Warne Cricket (EUR)
+				{0x04, "GM T-50016 -00"},	// Budokan / John Madden Football /
+				                         	// F1 World Championship Edition (USA) (Proto 1)
+				{0x03, "GM 64013-00   "},	// Dahna - Megami Tanjou (JPN)
+				{0x08, "GM T-70246 -00"},	// Dune II - The Battle for Arrakis (EUR)
+				{0x03, "GM T-68063 -00"},	// Dyna Brothers 2 [Special] (JPN)
+				{0x04, "GM T-50236 -00"},	// EA Hockey (JPN) / NHL Hockey (USA)
+				{0x07, "GM T-32063 -00"},	// El.Viento (JPN/USA)
+				{0x0C, "GM T-081046-00"},	// Empire of Steel (EUR) / Steel Empire (USA)
+				{0x04, "GM T-50256 -00"},	// Fatal Rewind / The Killing Game Show
+				{0x04, "GM T-34016 -00"},	// Fire Shark (USA/EUR)
+				{0x07, "GM T-50901 -00"},	// Frogger (USA)
+				{0x04, "GM T-47026 -00"},	// Ka-Ge-Ki (JPN/USA)
+				{0x08, "GM MK-1353 -00"},	// Landstalker (EUR)
+				{0x03, "GM G-4078   00"},	// Mazin Saga (JPN)
+				{0x0F, "GM T-81406 -00"},	// NBA Jam Tournament Edition /
+				                         	// Blockbuster World Video Game Championship II
+				{0x07, "GM T-13083 -00"},	// Side Pocket
+				{0x03, "GM G-005536-01"},	// Soleil (JPN)
+				{0x08, "GM MK-01182-00"},	// Soleil (EUR)
+				{0x04, "GM T-30016 -00"},	// Super Volleyball (USA) / Sport Games (BRA)
+				{0x04, "GM T-50376 -00"},	// Team USA Basketball (USA/EUR) / Dream Team USA (JPN)
+				{0x03, "GM G-5543  -00"},	// The Story of Thor (JPN)
+				{0x08, "GM MK-1354 -00"},	// The Story of Thor (EUR)
+				{0x08, "GM MK-1043 -00"},	// ToeJam & Earl in Panic on Funkotron (EUR)
+				{0x03, "GM T-22033 -00"},	// Caesar no Yabou / Warrior of Rome
+				//{0x03, "GM T-22056 -00"},	// Caesar no Yabou II / Warrior of Rome II (FIXME: Checksums are identical...)
+			};
+
+			const auto *const p_end = &md_rom_serial_data[ARRAY_SIZE(md_rom_serial_data)];
+			for (const auto *p = &md_rom_serial_data[0]; p < p_end; p++) {
+				if (p->md_region != d->md_region)
+					continue;
+				if (memcmp(p->serial, pRomHeader->serial_number, 14) != 0)
+					continue;
+
+				// Found a match! Append the checksum.
+				// NOTE: Not supporting "early" ROM headers here.
+				char buf[16];
+				snprintf(buf, sizeof(buf), ".%04X", be16_to_cpu(pRomHeader->checksum));
+				gameID += buf;
+				break;
+			}
 			break;
+		}
 
 		case MegaDrivePrivate::ROM_SYSTEM_MCD:
 		case MegaDrivePrivate::ROM_SYSTEM_MCD32X:
