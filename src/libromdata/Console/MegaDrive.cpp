@@ -923,7 +923,7 @@ MegaDrive::MegaDrive(IRpFile *file)
 	    !memcmp(s_serial_number, "GM 00054503-00", sizeof(d->romHeader.serial_number)) &&
 	    (d->romType & MegaDrivePrivate::ROM_FORMAT_MASK) == MegaDrivePrivate::ROM_FORMAT_CART_BIN)
 	{
-		if (!d->zlibInit()) {
+		if (d->zlibInit() != 0) {
 			// Can't initialize zlib to calculate the CRC32.
 			return;
 		}
