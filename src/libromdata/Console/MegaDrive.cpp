@@ -1085,7 +1085,7 @@ int MegaDrive::isRomSupported_static(const DetectInfo *info)
 			// The 32X disc has the same serial number as the Mega CD
 			// disc, but the build date in the MCD-specific header is
 			// a month later.
-			if (pMcdHeader[0x51] == '3') {
+			if (pMcdHeader[0x1F0] == 'U' && pMcdHeader[0x51] == '3') {
 				return discSectorSize | MegaDrivePrivate::ROM_SYSTEM_MCD32X;
 			}
 		} else if (!memcmp(&pMcdHeader[0x180], "GM MK-4435 -00", 14)) {
