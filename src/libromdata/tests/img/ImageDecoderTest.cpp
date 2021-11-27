@@ -929,7 +929,13 @@ INSTANTIATE_TEST_SUITE_P(KTX, ImageDecoderTest,
 		KTX_IMAGE_TEST("hi_mark"),
 		KTX_IMAGE_TEST("hi_mark_sq"),
 
-		// RGBA reference image.
+		// EAC
+		KTX_IMAGE_TEST("conftestimage_R11_EAC"),
+		KTX_IMAGE_TEST("conftestimage_RG11_EAC"),
+		KTX_IMAGE_TEST("conftestimage_SIGNED_R11_EAC"),
+		KTX_IMAGE_TEST("conftestimage_SIGNED_RG11_EAC"),
+
+		// RGBA reference image
 		ImageDecoderTest_mode(
 			"KTX/rgba-reference.ktx.gz",
 			"KTX/rgba.png"))
