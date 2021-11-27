@@ -163,7 +163,7 @@ const struct PowerVR3Private::FmtLkup_t PowerVR3Private::fmtLkup_tbl_U8[] = {
 	// TODO: "Weird" formats.
 	{   'abgr', 0x10101010, ImageDecoder::PixelFormat::A16B16G16R16,	64},
 	{  '\0bgr', 0x00101010, ImageDecoder::PixelFormat::B16G16R16,		48},
-	{  '\0rgb', 0x000B0B0A, ImageDecoder::PixelFormat::R11G11B10,		32},
+	{  '\0rgb', 0x000B0B0A, ImageDecoder::PixelFormat::R11G11B10,		32},	// NOTE: May be float.
 #endif
 
 	{0, 0, ImageDecoder::PixelFormat::Unknown, 0}
@@ -621,6 +621,16 @@ const rp_image *PowerVR3Private::loadImage(int mip)
 				// ETC2-compressed RGB texture
 				// with EAC-compressed alpha channel.
 				img = ImageDecoder::fromETC2_RGBA(width, height, buf.get(), expected_size);
+				break;
+
+			case PVR3_PXF_EAC_R11:
+				// EAC-compressed R11 texture.
+				img = ImageDecoder::fromEAC_R11(width, height, buf.get(), expected_size);
+				break;
+
+			case PVR3_PXF_EAC_RG11:
+				// EAC-compressed RG11 texture.
+				img = ImageDecoder::fromEAC_RG11(width, height, buf.get(), expected_size);
 				break;
 
 			case PVR3_PXF_DXT1:

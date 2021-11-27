@@ -737,14 +737,16 @@ rp_image *fromETC2_RGB(int width, int height,
 }
 
 /**
- * Decode an ETC2 alpha block.
+ * Decode an EAC (ETC2) alpha block.
+ * @tparam byteOffset	[in] Byte offset. (Usually ARGB32_BYTE_OFFSET_A for alpha.)
  * @param tileBuf	[out] Destination tile buffer.
  * @param src		[in] Source alpha block.
  */
-static void decodeBlock_ETC2_alpha(array<uint32_t, 4*4> &tileBuf, const etc2_alpha *alpha)
+template<unsigned int byteOffset>
+static void T_decodeBlock_EAC(array<uint32_t, 4*4> &tileBuf, const etc2_alpha *alpha)
 {
-	// argb32_t for alpha channel handling.
-	argb32_t *const pArgb = reinterpret_cast<argb32_t*>(tileBuf.data());
+	// uint8_t* for byte offset handling.
+	uint8_t *const pU8 = reinterpret_cast<uint8_t*>(tileBuf.data());
 
 	// Get the base codeword and multiplier.
 	// NOTE: mult == 0 is not allowed to be used by the encoder,
@@ -760,11 +762,13 @@ static void decodeBlock_ETC2_alpha(array<uint32_t, 4*4> &tileBuf, const etc2_alp
 	// Pixel index.
 	uint64_t alpha48 = extract48(alpha);
 
-	// NOTE: alpha is stored *backwards*.
+	// NOTE: EAC codeword bits are stored *backwards*.
 	// TODO: Optimize to eliminate double-shifting.
+	// TODO: For R11/RG11 EAC, this should result in an 11-bit value, not 8-bit.
 	for (unsigned int i = 0; i < 16; i++, alpha48 <<= 3) {
 		// Calculate the alpha value for this pixel.
 		int A = base + (tbl[(alpha48 >> 45) & 0x07] * mult);
+		// NOTE: For EAC, this is an 11-bit value that must be truncated to 8-bit.
 		if (A > 255) {
 			A = 255;
 		} else if (A < 0) {
@@ -772,7 +776,7 @@ static void decodeBlock_ETC2_alpha(array<uint32_t, 4*4> &tileBuf, const etc2_alp
 		}
 
 		// Set the new alpha value.
-		pArgb[etc1_mapping[i]].a = static_cast<uint8_t>(A);
+		pU8[(etc1_mapping[i] * sizeof(uint32_t)) + byteOffset] = static_cast<uint8_t>(A);
 	}
 }
 
@@ -828,7 +832,7 @@ rp_image *fromETC2_RGBA(int width, int height,
 
 		// Decode the ETC2 alpha block.
 		// TODO: Don't fill in the alpha channel in decodeBlock_ETC2_RGB()?
-		decodeBlock_ETC2_alpha(tileBuf, &etc2_src->alpha);
+		T_decodeBlock_EAC<ARGB32_BYTE_OFFSET_A>(tileBuf, &etc2_src->alpha);
 
 		// Blit the tile to the main image buffer.
 		ImageDecoderPrivate::BlitTile<uint32_t, 4, 4>(img, tileBuf, x, y);
@@ -908,6 +912,150 @@ rp_image *fromETC2_RGB_A1(int width, int height,
 
 	// Set the sBIT metadata.
 	static const rp_image::sBIT_t sBIT = {8,8,8,0,1};
+	img->set_sBIT(&sBIT);
+
+	// Image has been converted.
+	return img;
+}
+
+/**
+ * Convert an EAC R11 image to rp_image.
+ * @param width Image width.
+ * @param height Image height.
+ * @param img_buf EAC R11 image buffer.
+ * @param img_siz Size of image data. [must be >= (w*h)/2]
+ * @return rp_image, or nullptr on error.
+ */
+rp_image *fromEAC_R11(int width, int height,
+	const uint8_t *RESTRICT img_buf, int img_siz)
+{
+	// Verify parameters.
+	assert(img_buf != nullptr);
+	assert(width > 0);
+	assert(height > 0);
+	assert(img_siz >= ((width * height) / 2));
+	if (!img_buf || width <= 0 || height <= 0 ||
+	    img_siz < ((width * height) / 2))
+	{
+		return nullptr;
+	}
+
+	// ETC2 uses 4x4 tiles, but some container formats allow
+	// the last tile to be cut off, so round up for the
+	// physical tile size.
+	const int physWidth = ALIGN_BYTES(4, width);
+	const int physHeight = ALIGN_BYTES(4, height);
+
+	// Create an rp_image.
+	rp_image *const img = new rp_image(physWidth, physHeight, rp_image::Format::ARGB32);
+	if (!img->isValid()) {
+		// Could not allocate the image.
+		img->unref();
+		return nullptr;
+	}
+
+	const etc2_alpha *eac_block = reinterpret_cast<const etc2_alpha*>(img_buf);
+
+	// Calculate the total number of tiles.
+	const unsigned int tilesX = static_cast<unsigned int>(physWidth / 4);
+	const unsigned int tilesY = static_cast<unsigned int>(physHeight / 4);
+
+	// Temporary tile buffer.
+	// NOTE: Must be initialized to 0xFF000000U, since
+	// T_decodeBlock_EAC<>() only modifies a single channel.
+	array<uint32_t, 4*4> tileBuf;
+	tileBuf.fill(0xFF000000U);
+
+	for (unsigned int y = 0; y < tilesY; y++) {
+	for (unsigned int x = 0; x < tilesX; x++, eac_block++) {
+		// Decode the EAC R11 block.
+		T_decodeBlock_EAC<ARGB32_BYTE_OFFSET_R>(tileBuf, eac_block);
+
+		// Blit the tile to the main image buffer.
+		ImageDecoderPrivate::BlitTile<uint32_t, 4, 4>(img, tileBuf, x, y);
+	} }
+
+	if (width < physWidth || height < physHeight) {
+		// Shrink the image.
+		img->shrink(width, height);
+	}
+
+	// Set the sBIT metadata.
+	// NOTE: Cannot set the G and B channels to 0, so setting them to 1.
+	static const rp_image::sBIT_t sBIT = {8,1,1,0,0};
+	img->set_sBIT(&sBIT);
+
+	// Image has been converted.
+	return img;
+}
+
+/**
+ * Convert an EAC RG11 image to rp_image.
+ * @param width Image width.
+ * @param height Image height.
+ * @param img_buf EAC R11 image buffer.
+ * @param img_siz Size of image data. [must be >= (w*h)]
+ * @return rp_image, or nullptr on error.
+ */
+rp_image *fromEAC_RG11(int width, int height,
+	const uint8_t *RESTRICT img_buf, int img_siz)
+{
+	// Verify parameters.
+	assert(img_buf != nullptr);
+	assert(width > 0);
+	assert(height > 0);
+	assert(img_siz >= (width * height));
+	if (!img_buf || width <= 0 || height <= 0 ||
+	    img_siz < (width * height))
+	{
+		return nullptr;
+	}
+
+	// ETC2 uses 4x4 tiles, but some container formats allow
+	// the last tile to be cut off, so round up for the
+	// physical tile size.
+	const int physWidth = ALIGN_BYTES(4, width);
+	const int physHeight = ALIGN_BYTES(4, height);
+
+	// Create an rp_image.
+	rp_image *const img = new rp_image(physWidth, physHeight, rp_image::Format::ARGB32);
+	if (!img->isValid()) {
+		// Could not allocate the image.
+		img->unref();
+		return nullptr;
+	}
+
+	const etc2_alpha *eac_block = reinterpret_cast<const etc2_alpha*>(img_buf);
+
+	// Calculate the total number of tiles.
+	const unsigned int tilesX = static_cast<unsigned int>(physWidth / 4);
+	const unsigned int tilesY = static_cast<unsigned int>(physHeight / 4);
+
+	// Temporary tile buffer.
+	// NOTE: Must be initialized to 0xFF000000U, since
+	// T_decodeBlock_EAC<>() only modifies a single channel.
+	array<uint32_t, 4*4> tileBuf;
+	tileBuf.fill(0xFF000000U);
+
+	for (unsigned int y = 0; y < tilesY; y++) {
+	for (unsigned int x = 0; x < tilesX; x++, eac_block += 2) {
+		// Decode the EAC R11 block.
+		T_decodeBlock_EAC<ARGB32_BYTE_OFFSET_R>(tileBuf, &eac_block[0]);
+		// Decode the EAC G11 block.
+		T_decodeBlock_EAC<ARGB32_BYTE_OFFSET_G>(tileBuf, &eac_block[1]);
+
+		// Blit the tile to the main image buffer.
+		ImageDecoderPrivate::BlitTile<uint32_t, 4, 4>(img, tileBuf, x, y);
+	} }
+
+	if (width < physWidth || height < physHeight) {
+		// Shrink the image.
+		img->shrink(width, height);
+	}
+
+	// Set the sBIT metadata.
+	// NOTE: Cannot set the B channel to 0, so setting it to 1 instead.
+	static const rp_image::sBIT_t sBIT = {8,8,1,0,0};
 	img->set_sBIT(&sBIT);
 
 	// Image has been converted.

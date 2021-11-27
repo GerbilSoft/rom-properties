@@ -196,12 +196,12 @@ const ImageSizeCalc::OpCode GodotSTEXPrivate::op_tbl[] = {
 	OpCode::Divide2,	// STEX_FORMAT_PVRTC1_4
 	OpCode::Divide2,	// STEX_FORMAT_PVRTC1_4A
 	OpCode::Divide2,	// STEX_FORMAT_ETC
-	OpCode::Divide2,	// STEX_FORMAT_ETC2_R11		// TODO: Verify; Align4?
-	OpCode::Divide2,	// STEX_FORMAT_ETC2_R11S	// TODO: Verify; Align4?
+	OpCode::Divide2,	// STEX_FORMAT_ETC2_R11
+	OpCode::Divide2,	// STEX_FORMAT_ETC2_R11S
 
 	// 0x20
-	OpCode::Divide2,	// STEX_FORMAT_ETC2_RG11	// TODO: Verify; Align4?
-	OpCode::Divide2,	// STEX_FORMAT_ETC2_RG11S	// TODO: Verify; Align4?
+	OpCode::None,		// STEX_FORMAT_ETC2_RG11
+	OpCode::None,		// STEX_FORMAT_ETC2_RG11S
 	OpCode::Align4Divide2,	// STEX_FORMAT_ETC2_RGB8	// TODO: Verify?
 	OpCode::Align4,		// STEX_FORMAT_ETC2_RGBA8	// TODO: Verify?
 	OpCode::Align4Divide2,	// STEX_FORMAT_ETC2_RGB8A1	// TODO: Verify?
@@ -665,6 +665,23 @@ const rp_image *GodotSTEXPrivate::loadImage(int mip)
 			if (img && stexVersion == 4) {
 				img->swapRB();
 			}
+			break;
+
+		case STEX_FORMAT_ETC2_R11:
+		case STEX_FORMAT_ETC2_R11S:
+			// EAC-compressed R11 texture.
+			// TODO: Does the signed version get decoded differently?
+			img = ImageDecoder::fromEAC_R11(
+				mdata.width, mdata.height,
+				buf.get(), mdata.size);
+			break;
+		case STEX_FORMAT_ETC2_RG11:
+		case STEX_FORMAT_ETC2_RG11S:
+			// EAC-compressed RG11 texture.
+			// TODO: Does the signed version get decoded differently?
+			img = ImageDecoder::fromEAC_RG11(
+				mdata.width, mdata.height,
+				buf.get(), mdata.size);
 			break;
 
 #ifdef ENABLE_ASTC

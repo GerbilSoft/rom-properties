@@ -536,6 +536,24 @@ const rp_image *KhronosKTXPrivate::loadImage(void)
 						buf.get(), expected_size);
 					break;
 
+				case GL_COMPRESSED_R11_EAC:
+				case GL_COMPRESSED_SIGNED_R11_EAC:
+					// EAC-compressed R11 texture.
+					// TODO: Does the signed version get decoded differently?
+					img = ImageDecoder::fromEAC_R11(
+						ktxHeader.pixelWidth, height,
+						buf.get(), expected_size);
+					break;
+
+				case GL_COMPRESSED_RG11_EAC:
+				case GL_COMPRESSED_SIGNED_RG11_EAC:
+					// EAC-compressed RG11 texture.
+					// TODO: Does the signed version get decoded differently?
+					img = ImageDecoder::fromEAC_RG11(
+						ktxHeader.pixelWidth, height,
+						buf.get(), expected_size);
+					break;
+
 				case GL_COMPRESSED_RED_RGTC1:
 				case GL_COMPRESSED_SIGNED_RED_RGTC1:
 					// RGTC, one component. (BC4)

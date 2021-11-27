@@ -21,6 +21,12 @@
     the LDR decoder is rather slow.)
   * The GBS parser now partially supports the older GBR format.
 
+* New compressed texture formats:
+  * EAC R11 and RG11, which uses ETC2's alpha channel compression for
+    1-channel and 2-channel textures. Note that the channels are truncated
+    from 11-bit to 8-bit for display purposes, and signed int versions
+    might not be displayed correctly.
+
 * Bug fixes:
   * EXE: Improve runtime DLL detection in some cases.
   * SNES: Fix detection of games that declare usage of the S-RTC chip

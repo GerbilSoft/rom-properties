@@ -169,6 +169,7 @@ button.
 * GameCube: Tiled RGB5A3 and CI8 with RGB5A3 palette
 * S3TC: DXT1, DXT2, DXT3, DXT4, DXT5, BC4, and BC5 codecs.
   * GameCube 2x2-tiled DXT1 is supported in GVR texture files.
+* ETCn: ETC1, ETC2 (RGB, RGBA, RGB_A1), EAC
 * BC7: Supported in multiple texture file formats.
   * The implementation is somewhat slow. (Contributions welcome.)
 * PVRTC: Supported in multiple texture file formats.

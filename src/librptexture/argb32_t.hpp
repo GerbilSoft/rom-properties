@@ -32,6 +32,19 @@ union argb32_t {
 };
 ASSERT_STRUCT(argb32_t, 4);
 
+// Byte offsets for certain functions.
+#if SYS_BYTEORDER == SYS_LIL_ENDIAN
+#  define ARGB32_BYTE_OFFSET_B 0
+#  define ARGB32_BYTE_OFFSET_G 1
+#  define ARGB32_BYTE_OFFSET_R 2
+#  define ARGB32_BYTE_OFFSET_A 3
+#else /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
+#  define ARGB32_BYTE_OFFSET_A 0
+#  define ARGB32_BYTE_OFFSET_R 1
+#  define ARGB32_BYTE_OFFSET_G 2
+#  define ARGB32_BYTE_OFFSET_B 3
+#endif
+
 }
 
 #endif /* __ROMPROPERTIES_LIBRPTEXTURE_ARGB32_T_HPP__ */

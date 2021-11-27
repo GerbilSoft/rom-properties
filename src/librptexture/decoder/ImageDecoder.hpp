@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * ImageDecoder.cpp: Image decoding functions.                             *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -772,7 +772,7 @@ static inline int calcDreamcastSmallVQPaletteEntries_WithMipmaps(int width)
 	}
 }
 
-/* ETC1 */
+/* ETCn */
 
 /**
  * Convert an ETC1 image to rp_image.
@@ -820,6 +820,30 @@ rp_image *fromETC2_RGBA(int width, int height,
  */
 ATTR_ACCESS_SIZE(read_only, 3, 4)
 rp_image *fromETC2_RGB_A1(int width, int height,
+	const uint8_t *RESTRICT img_buf, int img_siz);
+
+/**
+ * Convert an EAC R11 image to rp_image.
+ * @param width Image width.
+ * @param height Image height.
+ * @param img_buf EAC R11 image buffer.
+ * @param img_siz Size of image data. [must be >= (w*h)/2]
+ * @return rp_image, or nullptr on error.
+ */
+ATTR_ACCESS_SIZE(read_only, 3, 4)
+rp_image *fromEAC_R11(int width, int height,
+	const uint8_t *RESTRICT img_buf, int img_siz);
+
+/**
+ * Convert an EAC RG11 image to rp_image.
+ * @param width Image width.
+ * @param height Image height.
+ * @param img_buf EAC R11 image buffer.
+ * @param img_siz Size of image data. [must be >= (w*h)]
+ * @return rp_image, or nullptr on error.
+ */
+ATTR_ACCESS_SIZE(read_only, 3, 4)
+rp_image *fromEAC_RG11(int width, int height,
 	const uint8_t *RESTRICT img_buf, int img_siz);
 
 #ifdef ENABLE_PVRTC

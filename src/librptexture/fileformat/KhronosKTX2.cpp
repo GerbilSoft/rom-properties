@@ -547,6 +547,22 @@ const rp_image *KhronosKTX2Private::loadImage(int mip)
 				buf.get(), expected_size);
 			break;
 
+		case VK_FORMAT_EAC_R11_UNORM_BLOCK:
+		case VK_FORMAT_EAC_R11_SNORM_BLOCK:
+			// EAC-compressed R11 texture.
+			// TODO: Does the signed version get decoded differently?
+			img = ImageDecoder::fromEAC_R11(
+				width, height,
+				buf.get(), expected_size);
+
+		case VK_FORMAT_EAC_R11G11_UNORM_BLOCK:
+		case VK_FORMAT_EAC_R11G11_SNORM_BLOCK:
+			// EAC-compressed RG11 texture.
+			// TODO: Does the signed version get decoded differently?
+			img = ImageDecoder::fromEAC_RG11(
+				width, height,
+				buf.get(), expected_size);
+
 		case VK_FORMAT_BC7_UNORM_BLOCK:
 		case VK_FORMAT_BC7_SRGB_BLOCK:
 			// BPTC-compressed RGBA texture. (BC7)
