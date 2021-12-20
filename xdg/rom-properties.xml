@@ -302,6 +302,15 @@
     </magic>
     <glob pattern="*.pco"/>
   </mime-type>
+  <mime-type type="application/x-sega-teradrive-rom">
+    <comment>Sega Teradrive ROM</comment>
+    <generic-icon name="application-x-executable"/>
+    <magic priority="50">
+      <match type="string" value="SEGA TERA68K" offset="256"/>
+      <match type="string" value="SEGA TERA286" offset="256"/>
+    </magic>
+    <glob pattern="*.gen"/>
+  </mime-type>
 
   <!-- NES -->
   <mime-type type="application/x-nes-rom">

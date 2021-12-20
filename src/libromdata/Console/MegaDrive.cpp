@@ -237,6 +237,7 @@ const char *const MegaDrivePrivate::mimeTypes[] = {
 	"application/x-genesis-32x-rom",
 	"application/x-sega-cd-32x-rom",	// NOTE: Not on fd.o!
 	"application/x-sega-pico-rom",
+	"application/x-sega-teradrive-rom",
 
 	nullptr
 };
