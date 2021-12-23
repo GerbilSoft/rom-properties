@@ -15,6 +15,13 @@
 
 #include <windows.h>
 
+// rom-properties: Needs Windows 2000 or later for FSCTL_GET_REPARSE_POINT.
+// Define it ourselves if it isn't available.
+#include <winioctl.h>
+#ifndef FSCTL_GET_REPARSE_POINT
+#  define FSCTL_GET_REPARSE_POINT CTL_CODE(FILE_DEVICE_FILE_SYSTEM, 42, METHOD_BUFFERED, FILE_ANY_ACCESS)
+#endif
+
 /***************************************************************************/
 
 #if defined(WINAPI_FAMILY_PARTITION) && (!(defined(MZ_WINRT_API)))

@@ -743,8 +743,9 @@ static int32_t mz_zip_entry_write_header(void *stream, uint8_t local, mz_zip_fil
         err = mz_zip_entry_write_crc_sizes(stream, zip64, mask, file_info);
 
     if (mask) {
+        // rom-properties: PRIx64 requires uint64_t; file_info->disk_offset is int64_t.
         snprintf(masked_name, sizeof(masked_name), "%" PRIx32 "_%" PRIx64,
-            file_info->disk_number, file_info->disk_offset);
+            file_info->disk_number, (uint64_t)file_info->disk_offset);
         filename = masked_name;
     } else {
         filename = file_info->filename;
