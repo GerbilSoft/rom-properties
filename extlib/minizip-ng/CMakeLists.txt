@@ -76,10 +76,10 @@ endif()
 enable_language(C)
 
 # Library version
-set(VERSION "3.0.2")
+set(VERSION "3.0.4")
 
 # API version
-set(SOVERSION "3.0")
+set(SOVERSION "3")
 
 include(CheckLibraryExists)
 include(CheckSymbolExists)
@@ -970,7 +970,7 @@ endif()
 
 #Build fuzzer executables
 if(MZ_BUILD_FUZZ_TESTS)
-    if(CMAKE_C_COMPILER_ID STREQUAL "Clang")
+    if(CMAKE_C_COMPILER_ID MATCHES "Clang")
         enable_language(CXX)
 
         if(DEFINED ENV{LIB_FUZZING_ENGINE})

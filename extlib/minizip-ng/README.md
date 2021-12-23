@@ -1,4 +1,4 @@
-# minizip-ng 3.0.2
+# minizip-ng 3.0.4
 
 minizip-ng is a zip manipulation library written in C that is supported on Windows, macOS, and Linux.
 
@@ -59,7 +59,7 @@ To generate project files for your platform:
 2. Run cmake in the minizip directory.
 
 ```
-cmake . -DMZ_BUILD_TEST=ON
+cmake . -DMZ_BUILD_TESTS=ON
 cmake --build .
 ```
 
