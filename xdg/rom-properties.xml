@@ -121,6 +121,48 @@
 
   <!-- *** Console *** -->
 
+  <!-- CBMCart -->
+  <mime-type type="application/x-c64-cartridge">
+    <comment>Commodore 64 ROM cartridge</comment>
+    <sub-class-of type="application/x-executable"/>
+    <generic-icon name="application-x-executable"/>
+    <magic priority="70">
+      <match value="C64 CARTRIDGE   " type="string" offset="0"/>
+    </magic>
+  </mime-type>
+  <mime-type type="application/x-c128-cartridge">
+    <comment>Commodore 128 ROM cartridge</comment>
+    <sub-class-of type="application/x-executable"/>
+    <generic-icon name="application-x-executable"/>
+    <magic priority="70">
+      <match value="C128 CARTRIDGE  " type="string" offset="0"/>
+    </magic>
+  </mime-type>
+  <mime-type type="application/x-cbm2-cartridge">
+    <comment>Commodore CBM-II ROM cartridge</comment>
+    <sub-class-of type="application/x-executable"/>
+    <generic-icon name="application-x-executable"/>
+    <magic priority="70">
+      <match value="CBM2 CARTRIDGE  " type="string" offset="0"/>
+    </magic>
+  </mime-type>
+  <mime-type type="application/x-vic20-cartridge">
+    <comment>Commodore VIC-20 ROM cartridge</comment>
+    <sub-class-of type="application/x-executable"/>
+    <generic-icon name="application-x-executable"/>
+    <magic priority="70">
+      <match value="VIC20 CARTRIDGE " type="string" offset="0"/>
+    </magic>
+  </mime-type>
+  <mime-type type="application/x-plus4-cartridge">
+    <comment>Commodore Plus/4 ROM cartridge</comment>
+    <sub-class-of type="application/x-executable"/>
+    <generic-icon name="application-x-executable"/>
+    <magic priority="70">
+      <match value="PLUS4 CARTRIDGE " type="string" offset="0"/>
+    </magic>
+  </mime-type>
+
   <!-- Dreamcast -->
   <mime-type type="application/x-dreamcast-rom">
     <comment>Dreamcast disc image</comment>

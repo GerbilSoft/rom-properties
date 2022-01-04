@@ -16,6 +16,7 @@ ENDIF(NOT WIN32)
 SET(${PROJECT_NAME}_SRCS
 	RomDataFactory.cpp
 
+	Console/CBMCart.cpp
 	Console/Dreamcast.cpp
 	Console/DreamcastSave.cpp
 	Console/GameCube.cpp
@@ -134,6 +135,7 @@ SET(${PROJECT_NAME}_H
 	iso_structs.h
 	nintendo_system_id.h
 
+	Console/CBMCart.hpp
 	Console/Dreamcast.hpp
 	Console/DreamcastSave.hpp
 	Console/GameCube.hpp
@@ -164,6 +166,7 @@ SET(${PROJECT_NAME}_H
 	Console/Xbox360_XEX.hpp
 	Console/XboxDisc.hpp
 
+	Console/cbm_cart_structs.h
 	Console/dc_structs.h
 	Console/gcn_structs.h
 	Console/gcn_banner.h

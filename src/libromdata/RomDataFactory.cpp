@@ -32,6 +32,7 @@ using std::unordered_set;
 using std::vector;
 
 // RomData subclasses: Consoles
+#include "Console/CBMCart.hpp"
 #include "Console/Dreamcast.hpp"
 #include "Console/DreamcastSave.hpp"
 #include "Console/GameCube.hpp"
@@ -287,6 +288,14 @@ const RomDataFactoryPrivate::RomDataFns RomDataFactoryPrivate::romDataFns_magic[
 	GetRomDataFns_addr(Xbox360_STFS, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'CON '),
 	GetRomDataFns_addr(Xbox360_STFS, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'PIRS'),
 	GetRomDataFns_addr(Xbox360_STFS, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'LIVE'),
+
+	// Consoles: CBMCart
+	// Moved here because they're less common.
+	GetRomDataFns_addr(CBMCart, ATTR_HAS_METADATA, 0, 'C64 '),
+	GetRomDataFns_addr(CBMCart, ATTR_HAS_METADATA, 0, 'C128'),
+	GetRomDataFns_addr(CBMCart, ATTR_HAS_METADATA, 0, 'CBM2'),
+	GetRomDataFns_addr(CBMCart, ATTR_HAS_METADATA, 0, 'VIC2'),
+	GetRomDataFns_addr(CBMCart, ATTR_HAS_METADATA, 0, 'PLUS'),
 
 	{nullptr, nullptr, nullptr, ATTR_NONE, 0, 0}
 };
