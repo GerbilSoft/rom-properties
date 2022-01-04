@@ -27,18 +27,19 @@ extern "C" {
  */
 typedef struct _GBA_RomHeader {
 	union {
-		uint32_t entry_point;	// 32-bit ARM branch opcode.
+		uint32_t entry_point;	// 32-bit ARM branch opcode
 		uint8_t entry_point_bytes[4];
 	};
-	uint8_t nintendo_logo[0x9C];	// Compressed logo.
+	uint8_t nintendo_logo[0x9C];	// Compressed logo
 	char title[12];
 	// Some compilers pad this structure to a multiple of 4 bytes
 #pragma pack(1)
 	union PACKED {
-		char id6[6];	// Game code. (ID6)
+		char id6[6];		// Game code (ID6)
+		uint32_t id4_32;	// Game code (ID4, 32-bit)
 		struct PACKED {
-			char id4[4];		// Game code. (ID4)
-			char company[2];	// Company code.
+			char id4[4];		// Game code (ID4)
+			char company[2];	// Company code
 		};
 	};
 #pragma pack()

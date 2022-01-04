@@ -481,14 +481,6 @@ int GameBoyAdvance::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int s
 	if (!d->isValid || (int)d->romType < 0) {
 		// ROM image isn't valid.
 		return -EIO;
-	} else if (!memcmp(d->romHeader.id4, "AGBJ", 4) ||
-	           !memcmp(d->romHeader.id4, "    ", 4) ||
-	           !memcmp(d->romHeader.id4, "____", 4))
-	{
-		// This is a prototype.
-		// No external images are available.
-		// TODO: CRC32-based images?
-		return -ENOENT;
 	} else if (d->romType == GameBoyAdvancePrivate::RomType::NDS_Expansion) {
 		// This is a Nintendo DS expansion cartridge.
 		// No external images are available.
@@ -521,28 +513,70 @@ int GameBoyAdvance::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int s
 			return -ENOENT;
 	}
 
-	// Game ID. (RPDB uses ID6 for Game Boy Advance.)
-	// The ID6 cannot have non-printable characters.
-	char id6[7];
-	for (int i = ARRAY_SIZE(d->romHeader.id6)-1; i >= 0; i--) {
-		if (!ISPRINT(d->romHeader.id6[i])) {
-			// Non-printable character found.
-			return -ENOENT;
-		}
-		id6[i] = d->romHeader.id6[i];
-	}
-	// NULL-terminated ID6 is needed for the
-	// RPDB URL functions.
-	id6[6] = 0;
+	// Region code
+	char region_code[8];
 
-	// Region code is id6[3].
-	const char region_code[2] = {id6[3], '\0'};
+	// If the game ID is known to be used for multiple ROMs,
+	// e.g. prototypes, use the ROM title instead.
+	// NOTE: Interpreting the ID4 as BE32 because we're using
+	// multi-character constants.
+	string name;
+	name.reserve(12);
+	static const uint32_t common_ID4[] = {
+		'AGBJ', '    ', '____', 'RARE',
+		'0000', 'XXXX', 'XXXE',
+	};
+	if (d->romHeader.id4[0] == '\0') {
+		// Empty ID4. Use the title.
+		name.assign(d->romHeader.title, sizeof(d->romHeader.title));
+		size_t null_pos = name.find('\0');
+		if (null_pos != string::npos) {
+			name.resize(null_pos);
+		}
+		trimEnd(name);
+		memcpy(region_code, "NoID", 5);
+	} else {
+		const uint32_t id4_32 = be32_to_cpu(d->romHeader.id4_32);
+		for (auto *p = common_ID4; p < &common_ID4[ARRAY_SIZE(common_ID4)]; p++) {
+			if (id4_32 == *p) {
+				// This ROM has a common ID4. Use the title.
+				name.assign(d->romHeader.title, sizeof(d->romHeader.title));
+				size_t null_pos = name.find('\0');
+				if (null_pos != string::npos) {
+					name.resize(null_pos);
+				}
+				trimEnd(name);
+				memcpy(region_code, "NoID", 5);
+				break;
+			}
+		}
+	}
+	if (name.empty()) {
+		// Not using the title. Use the ID6.
+		// The ID6 cannot have non-printable characters.
+		name.resize(6);
+		for (int i = ARRAY_SIZE(d->romHeader.id6)-1; i >= 0; i--) {
+			if (!ISPRINT(d->romHeader.id6[i])) {
+				// Non-printable character found.
+				return -ENOENT;
+			}
+			name[i] = d->romHeader.id6[i];
+		}
+
+		// Region code is taken from the ID4.
+		region_code[0] = name[3];
+		region_code[1] = '\0';
+	}
+	if (name.empty()) {
+		// Title is empty. Can't get the title screenshot.
+		return -ENOENT;
+	}
 
 	// Add the URLs.
 	pExtURLs->resize(1);
 	auto extURL_iter = pExtURLs->begin();
-	extURL_iter->url = d->getURL_RPDB("gba", imageTypeName, region_code, id6, ext);
-	extURL_iter->cache_key = d->getCacheKey_RPDB("gba", imageTypeName, region_code, id6, ext);
+	extURL_iter->url = d->getURL_RPDB("gba", imageTypeName, region_code, name.c_str(), ext);
+	extURL_iter->cache_key = d->getCacheKey_RPDB("gba", imageTypeName, region_code, name.c_str(), ext);
 	extURL_iter->width = sizeDefs[0].width;
 	extURL_iter->height = sizeDefs[0].height;
 	extURL_iter->high_res = (sizeDefs[0].index >= 2);
