@@ -14,19 +14,19 @@
 
 // C includes.
 #ifndef _WIN32
-# include <fcntl.h>
-# include <sys/stat.h>
-# include <unistd.h>
+#  include <fcntl.h>
+#  include <sys/stat.h>
+#  include <unistd.h>
 #endif /* _WIN32 */
 
 #ifndef __S_ISTYPE
-# define __S_ISTYPE(mode, mask) (((mode) & S_IFMT) == (mask))
+#  define __S_ISTYPE(mode, mask) (((mode) & S_IFMT) == (mask))
 #endif
 #if defined(__S_IFDIR) && !defined(S_IFDIR)
-# define S_IFDIR __S_IFDIR
+#  define S_IFDIR __S_IFDIR
 #endif
 #ifndef S_ISDIR
-# define S_ISDIR(mode) __S_ISTYPE((mode), S_IFDIR)
+#  define S_ISDIR(mode) __S_ISTYPE((mode), S_IFDIR)
 #endif /* !S_ISTYPE */
 
 // C includes. (C++ namespace)
@@ -42,9 +42,9 @@ using std::unique_ptr;
 
 #ifdef _WIN32
 // libwin32common
-# include "libwin32common/RpWin32_sdk.h"
-# include "libwin32common/w32err.h"
-# include "libwin32common/w32time.h"
+#  include "libwin32common/RpWin32_sdk.h"
+#  include "libwin32common/w32err.h"
+#  include "libwin32common/w32time.h"
 #endif /* _WIN32 */
 
 // libcachecommon
@@ -52,21 +52,21 @@ using std::unique_ptr;
 #include "libcachecommon/CacheKeys.hpp"
 
 #ifdef _WIN32
-# include <direct.h>
-# define _TMKDIR(dirname) _tmkdir(dirname)
+#  include <direct.h>
+#  define _TMKDIR(dirname) _tmkdir(dirname)
 #else /* !_WIN32 */
-# define _TMKDIR(dirname) _tmkdir((dirname), 0777)
+#  define _TMKDIR(dirname) _tmkdir((dirname), 0777)
 #endif /* _WIN32 */
 
 #ifndef _countof
-# define _countof(x) (sizeof(x)/sizeof(x[0]))
+#  define _countof(x) (sizeof(x)/sizeof(x[0]))
 #endif
 
 // TODO: IDownloaderFactory?
 #ifdef _WIN32
-# include "WinInetDownloader.hpp"
+#  include "WinInetDownloader.hpp"
 #else
-# include "CurlDownloader.hpp"
+#  include "CurlDownloader.hpp"
 #endif
 #include "SetFileOriginInfo.hpp"
 using namespace RpDownload;
@@ -475,6 +475,7 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 	// - ngp:    https://rpdb.gerbilsoft.com/ngp/[key]
 	// - ngpc:   https://rpdb.gerbilsoft.com/ngpc/[key]
 	// - ws:     https://rpdb.gerbilsoft.com/ws/[key]
+	// - c64:
 	const TCHAR *slash_pos = _tcschr(cache_key, _T('/'));
 	if (slash_pos == nullptr || slash_pos == cache_key ||
 		slash_pos[1] == '\0')
@@ -541,7 +542,6 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 			static_cast<int>(filename_len), slash_pos+1);
 	} else {
 		// RPDB: Title screen images for various systems.
-		//"mcd32x", "pico", "tera"
 		switch (prefix_len) {
 			default:
 				break;
@@ -556,7 +556,8 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 			case 3:
 				if (!_tcsncmp(cache_key, _T("gba"), 3) ||
 				    !_tcsncmp(cache_key, _T("mcd"), 3) ||
-				    !_tcsncmp(cache_key, _T("32x"), 3))
+				    !_tcsncmp(cache_key, _T("32x"), 3) ||
+				    !_tcsncmp(cache_key, _T("c64"), 3))
 				{
 					ok = true;
 				}
@@ -565,7 +566,16 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 				if (!_tcsncmp(cache_key, _T("snes"), 4) ||
 				    !_tcsncmp(cache_key, _T("ngpc"), 4) ||
 				    !_tcsncmp(cache_key, _T("pico"), 4) ||
-				    !_tcsncmp(cache_key, _T("tera"), 4))
+				    !_tcsncmp(cache_key, _T("tera"), 4) ||
+				    !_tcsncmp(cache_key, _T("c128"), 4))
+				{
+					ok = true;
+				}
+				break;
+			case 5:
+				if (!_tcsncmp(cache_key, _T("cbmII"), 5) ||
+				    !_tcsncmp(cache_key, _T("vic20"), 5) ||
+				    !_tcsncmp(cache_key, _T("plus4"), 5))
 				{
 					ok = true;
 				}

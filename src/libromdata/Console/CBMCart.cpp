@@ -16,9 +16,22 @@ using LibRpFile::IRpFile;
 
 // C++ STL classes.
 using std::string;
+using std::unique_ptr;
 using std::vector;
 
+// zlib for crc32()
+#include <zlib.h>
+#ifdef _MSC_VER
+// MSVC: Exception handling for /DELAYLOAD.
+#  include "libwin32common/DelayLoadHelper.h"
+#endif /* _MSC_VER */
+
 namespace LibRomData {
+
+#ifdef _MSC_VER
+// DelayLoad test implementation.
+DELAYLOAD_TEST_FUNCTION_IMPL0(get_crc_table);
+#endif /* _MSC_VER */
 
 class CBMCartPrivate final : public RomDataPrivate
 {
@@ -60,9 +73,22 @@ class CBMCartPrivate final : public RomDataPrivate
 
 		// ROM header.
 		CBM_CRTHeader romHeader;
+
+		// CRC32 of the first 16 KB of ROM data.
+		// Used for the external image URL.
+		// NOTE: Calculated by extURLs() on demand.
+		uint32_t rom_16k_crc32;
+
+	public:
+		/**
+		 * Initialize zlib.
+		 * @return 0 on success; non-zero on error.
+		 */
+		static int zlibInit(void);
 };
 
 ROMDATA_IMPL(CBMCart)
+ROMDATA_IMPL_IMG(CBMCart)
 
 /** CBMCartPrivate **/
 
@@ -149,9 +175,34 @@ const char *const CBMCartPrivate::crt_types_vic20[] = {
 CBMCartPrivate::CBMCartPrivate(CBMCart *q, IRpFile *file)
 	: super(q, file, &romDataInfo)
 	, romType(RomType::Unknown)
+	, rom_16k_crc32(0)
 {
 	// Clear the ROM header struct.
 	memset(&romHeader, 0, sizeof(romHeader));
+}
+
+/**
+ * Initialize zlib.
+ * @return 0 on success; non-zero on error.
+ */
+int CBMCartPrivate::zlibInit(void)
+{
+#if defined(_MSC_VER) && defined(ZLIB_IS_DLL)
+	// Delay load verification.
+	// TODO: Only if linked with /DELAYLOAD?
+	if (DelayLoad_test_get_crc_table() != 0) {
+		// Delay load failed.
+		// Can't calculate the CRC32.
+		return -ENOENT;
+	}
+#else /* !defined(_MSC_VER) || !defined(ZLIB_IS_DLL) */
+	// zlib isn't in a DLL, but we need to ensure that the
+	// CRC table is initialized anyway.
+	get_crc_table();
+#endif /* defined(_MSC_VER) && defined(ZLIB_IS_DLL) */
+
+	// zlib initialized.
+	return 0;
 }
 
 /** CBMCart **/
@@ -295,6 +346,42 @@ const char *CBMCart::systemName(unsigned int type) const
 		i = 0;
 	}
 	return sysNames[i][type & SYSNAME_TYPE_MASK];
+}
+
+/**
+ * Get a bitfield of image types this class can retrieve.
+ * @return Bitfield of supported image types. (ImageTypesBF)
+ */
+uint32_t CBMCart::supportedImageTypes_static(void)
+{
+	return IMGBF_EXT_TITLE_SCREEN;
+}
+
+/**
+ * Get a list of all available image sizes for the specified image type.
+ * @param imageType Image type.
+ * @return Vector of available image sizes, or empty vector if no images are available.
+ */
+vector<RomData::ImageSizeDef> CBMCart::supportedImageSizes_static(ImageType imageType)
+{
+	ASSERT_supportedImageSizes(imageType);
+
+	switch (imageType) {
+		case IMG_EXT_TITLE_SCREEN: {
+			// FIXME: NTSC vs. PAL; proper rescaling.
+			// Using VICE C64 NTSC image dimensions.
+			static const ImageSizeDef sz_EXT_TITLE_SCREEN[] = {
+				{nullptr, 384, 247, 0},
+			};
+			return vector<ImageSizeDef>(sz_EXT_TITLE_SCREEN,
+				sz_EXT_TITLE_SCREEN + ARRAY_SIZE(sz_EXT_TITLE_SCREEN));
+		}
+		default:
+			break;
+	}
+
+	// Unsupported image type.
+	return vector<ImageSizeDef>();
 }
 
 /**
@@ -443,6 +530,161 @@ int CBMCart::loadMetaData(void)
 
 	// Finished reading the metadata.
 	return (d->metaData ? static_cast<int>(d->metaData->count()) : -ENOENT);
+}
+
+/**
+ * Get a list of URLs for an external image type.
+ *
+ * A thumbnail size may be requested from the shell.
+ * If the subclass supports multiple sizes, it should
+ * try to get the size that most closely matches the
+ * requested size.
+ *
+ * @param imageType	[in]     Image type.
+ * @param pExtURLs	[out]    Output vector.
+ * @param size		[in,opt] Requested image size. This may be a requested
+ *                               thumbnail size in pixels, or an ImageSizeType
+ *                               enum value.
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int CBMCart::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
+{
+	ASSERT_extURLs(imageType, pExtURLs);
+	pExtURLs->clear();
+
+	RP_D(CBMCart);
+	if (!d->isValid || (int)d->romType < 0) {
+		// ROM image isn't valid.
+		return -EIO;
+	}
+
+	// System IDs.
+	static const char *const sys_tbl[] = {
+		"c64", "c128", "cbmII", "vic20", "plus4"
+	};
+	if (static_cast<int>(d->romType) >= ARRAY_SIZE_I(sys_tbl))
+		return -ENOENT;
+	const char *const sys = sys_tbl[(int)d->romType];
+
+	// Image URL is the CRC32 of the first 16 KB of actual ROM data
+	// in the cartridge. If the cartridge has less than 16 KB ROM,
+	// then it's the CRC32 of whatever's available.
+	if (d->rom_16k_crc32 == 0) {
+		// CRC32 hasn't been calculated yet.
+		if (d->zlibInit() != 0) {
+			// zlib could not be initialized.
+			return -EIO;
+		}
+
+		if (!d->file || !d->file->isOpen()) {
+			// File isn't open. Can't calculate the CRC32.
+			return -EBADF;
+		}
+
+		// Read CHIP packets until we've read up to 16 KB of ROM data.
+		size_t sz_rd_total = 0;
+		int64_t addr = static_cast<int64_t>(be32_to_cpu(d->romHeader.hdr_len));
+		int ret = d->file->seek(addr);
+		if (ret != 0) {
+			// Seek error.
+			int err = -d->file->lastError();
+			if (err == 0) {
+				err = -EIO;
+			}
+			return err;
+		}
+
+#define CBM_ROM_BUF_SIZ (16*1024)
+		unique_ptr<uint8_t[]> buf(new uint8_t[CBM_ROM_BUF_SIZ]);
+		while (sz_rd_total < CBM_ROM_BUF_SIZ) {
+			CBM_CRT_CHIPHeader chipHeader;
+			size_t size = d->file->read(&chipHeader, sizeof(chipHeader));
+			if (size != sizeof(chipHeader)) {
+				// Read error.
+				break;
+			}
+
+			// Check the CHIP magic.
+			if (chipHeader.magic != cpu_to_be32(CBM_CRT_CHIP_MAGIC)) {
+				// Invalid magic.
+				break;
+			}
+
+			// Determine how much data to read.
+			uint16_t sz_to_read = be16_to_cpu(chipHeader.rom_size);
+			if (sz_to_read == 0) {
+				// No data... Bank is invalid.
+				break;
+			} else if (sz_rd_total + sz_to_read > CBM_ROM_BUF_SIZ) {
+				// Too much data. Trim it.
+				sz_to_read = static_cast<uint16_t>(CBM_ROM_BUF_SIZ - sz_rd_total);
+			}
+
+			// Read the data.
+			size = d->file->read(&buf[sz_rd_total], sz_to_read);
+			sz_rd_total += size;
+			if (size != sz_to_read) {
+				// Read error. We'll at least process whatever was read,
+				// and then stop here.
+				// "Fraction Fever (USA, Europe)" is 8,272 bytes, but the
+				// CHIP header says 16 KB.
+				break;
+			}
+		}
+
+		if (sz_rd_total == 0) {
+			// Unable to read *any* data.
+			return -EIO;
+		}
+
+		// Calculate the CRC32 of whatever data we could read.
+		d->rom_16k_crc32 = crc32(0, buf.get(), sz_rd_total);
+	}
+
+	// Lowercase hex CRC32s are used.
+	char s_crc32[16];
+	snprintf(s_crc32, sizeof(s_crc32), "%08x", d->rom_16k_crc32);
+
+	// NOTE: We only have one size for CBMCart right now.
+	// TODO: Determine the actual image size.
+	RP_UNUSED(size);
+	vector<ImageSizeDef> sizeDefs = supportedImageSizes(imageType);
+	assert(sizeDefs.size() == 1);
+	if (sizeDefs.empty()) {
+		// No image sizes.
+		return -ENOENT;
+	}
+
+	// NOTE: RPDB's title screen database only has one size.
+	// There's no need to check image sizes, but we need to
+	// get the image size for the extURLs struct.
+
+	// Determine the image type name.
+	const char *imageTypeName;
+	const char *ext;
+	switch (imageType) {
+		case IMG_EXT_TITLE_SCREEN:
+			imageTypeName = "title";
+			ext = ".png";
+			break;
+		default:
+			// Unsupported image type.
+			return -ENOENT;
+	}
+
+	// FIXME: Use a better subdirectory scheme instead of just "crt" for cartridge?
+
+	// Add the URLs.
+	pExtURLs->resize(1);
+	auto extURL_iter = pExtURLs->begin();
+	extURL_iter->url = d->getURL_RPDB(sys, imageTypeName, "crt", s_crc32, ext);
+	extURL_iter->cache_key = d->getCacheKey_RPDB(sys, imageTypeName, "crt", s_crc32, ext);
+	extURL_iter->width = sizeDefs[0].width;
+	extURL_iter->height = sizeDefs[0].height;
+	extURL_iter->high_res = (sizeDefs[0].index >= 2);
+
+	// All URLs added.
+	return 0;
 }
 
 }

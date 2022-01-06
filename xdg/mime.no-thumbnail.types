@@ -32,12 +32,6 @@ audio/x-spc				# SPC
 audio/x-vgm				# VGM
 
 # Console
-application/x-c64-cartridge		# CBMCart
-application/x-c128-cartridge		# CBMCart
-application/x-cbm2-cartridge		# CBMCart
-application/x-vic20-cartridge		# CBMCart
-application/x-plus4-cartridge		# CBMCart
-application/pkix-cert			# CBMCart (NOTE: Workaround; .crt is detected as this)
 application/x-n64-rom			# N64
 application/x-nes-rom			# NES
 application/x-fds-disk			# NES

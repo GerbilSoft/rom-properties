@@ -41,6 +41,33 @@ typedef struct _CBM_CRTHeader {
 } CBM_CRTHeader;
 ASSERT_STRUCT(CBM_CRTHeader, 0x40);
 
+/**
+ * CHIP packet header.
+ * Reference: https://vice-emu.sourceforge.io/vice_17.html#SEC393
+ *
+ * All fields are in big-endian.
+ */
+#define CBM_CRT_CHIP_MAGIC 'CHIP'
+typedef struct _CBM_CRT_CHIPHeader {
+	uint32_t magic;		// [0x000] 'CHIP'
+	uint32_t length;	// [0x004] Packet length, including CHIP header
+	uint16_t type;		// [0x008] Chip type (See CBM_CRT_Chip_Type_e.)
+	uint16_t bank_number;	// [0x00A] Bank number (0 for the first bank in the cartridge)
+	uint16_t load_address;	// [0x00C] Starting load address
+	uint16_t rom_size;	// [0x00E] ROM image size, in bytes
+} CBM_CRT_CHIPHeader;
+ASSERT_STRUCT(CBM_CRT_CHIPHeader, 16);
+
+/**
+ * CHIP packet type.
+ */
+typedef enum {
+	CBM_CRT_CHIP_TYPE_ROM		= 0,
+	CBM_CRT_CHIP_TYPE_RAM		= 1,
+	CBM_CRT_CHIP_TYPE_FlashROM	= 2,
+	CBM_CRT_CHIP_TYPE_EEPROM	= 3,
+} CBM_CRT_Chip_Type_e;
+
 #ifdef __cplusplus
 }
 #endif

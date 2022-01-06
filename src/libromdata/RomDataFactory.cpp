@@ -291,11 +291,11 @@ const RomDataFactoryPrivate::RomDataFns RomDataFactoryPrivate::romDataFns_magic[
 
 	// Consoles: CBMCart
 	// Moved here because they're less common.
-	GetRomDataFns_addr(CBMCart, ATTR_HAS_METADATA, 0, 'C64 '),
-	GetRomDataFns_addr(CBMCart, ATTR_HAS_METADATA, 0, 'C128'),
-	GetRomDataFns_addr(CBMCart, ATTR_HAS_METADATA, 0, 'CBM2'),
-	GetRomDataFns_addr(CBMCart, ATTR_HAS_METADATA, 0, 'VIC2'),
-	GetRomDataFns_addr(CBMCart, ATTR_HAS_METADATA, 0, 'PLUS'),
+	GetRomDataFns_addr(CBMCart, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'C64 '),
+	GetRomDataFns_addr(CBMCart, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'C128'),
+	GetRomDataFns_addr(CBMCart, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'CBM2'),
+	GetRomDataFns_addr(CBMCart, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'VIC2'),
+	GetRomDataFns_addr(CBMCart, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'PLUS'),
 
 	{nullptr, nullptr, nullptr, ATTR_NONE, 0, 0}
 };
