@@ -414,7 +414,7 @@ int CBMCart::loadFieldData(void)
 	}
 
 	// Cartridge type
-	const uint64_t type = be16_to_cpu(romHeader->type);
+	const unsigned int type = be16_to_cpu(romHeader->type);
 	bool b_noType = false;
 	const char *s_type = nullptr;
 	switch (d->romType) {
@@ -673,12 +673,21 @@ int CBMCart::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) co
 	}
 
 	// FIXME: Use a better subdirectory scheme instead of just "crt" for cartridge?
+	// NOTE: For C64 cartridges, using a second level subdirectory
+	// for the cartridge type.
+	char s_subdir[16];
+	if (d->romType == CBMCartPrivate::RomType::C64) {
+		// TODO: Separate dir for UltiMax?
+		snprintf(s_subdir, sizeof(s_subdir), "crt/%u", be16_to_cpu(d->romHeader.type));
+	} else {
+		memcpy(s_subdir, "crt", 4);
+	}
 
 	// Add the URLs.
 	pExtURLs->resize(1);
 	auto extURL_iter = pExtURLs->begin();
-	extURL_iter->url = d->getURL_RPDB(sys, imageTypeName, "crt", s_crc32, ext);
-	extURL_iter->cache_key = d->getCacheKey_RPDB(sys, imageTypeName, "crt", s_crc32, ext);
+	extURL_iter->url = d->getURL_RPDB(sys, imageTypeName, s_subdir, s_crc32, ext);
+	extURL_iter->cache_key = d->getCacheKey_RPDB(sys, imageTypeName, s_subdir, s_crc32, ext);
 	extURL_iter->width = sizeDefs[0].width;
 	extURL_iter->height = sizeDefs[0].height;
 	extURL_iter->high_res = (sizeDefs[0].index >= 2);
