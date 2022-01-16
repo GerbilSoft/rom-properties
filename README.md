@@ -89,14 +89,15 @@ button.
 
 |           System          | Properties Tab | Metadata | Internal Images | External Images |
 |:-------------------------:|:--------------:|:--------:|:---------------:|:---------------:|
-| NES                       |       Yes      |    No    |       N/A       |        No       |
-| Super NES                 |       Yes      |    Yes   |       N/A       |      Title     |
+| Commodore 64/128 .CRT     |       Yes      |    Yes   |       N/A       |      Title      |
+| iQue Player ticket files  |       Yes      |    Yes   |   Icon, Banner  |        No       |
 | Microsoft Xbox (XBE)      |       Yes      |    Yes   |       Icon      |        No       |
 | Microsoft Xbox 360 (XEX)  |       Yes      |    Yes   |       Icon      |        No       |
 | Microsoft Xbox 360 (STFS) |       Yes      |    Yes   |       Icon      |        No       |
 | Microsoft Xbox Game Discs |       Yes      |    Yes   |       Icon      |        No       |
+| NES                       |       Yes      |    No    |       N/A       |        No       |
+| Super NES                 |       Yes      |    Yes   |       N/A       |      Title      |
 | Nintendo 64               |       Yes      |    Yes   |       N/A       |        No       |
-| iQue Player ticket files  |       Yes      |    Yes   |   Icon, Banner  |        No       |
 | Nintendo GameCube Discs   |       Yes      |    Yes   |      Banner     |   Disc, Covers  |
 | Nintendo GameCube Banners |       Yes      |    Yes   |      Banner     |        No       |
 | Nintendo GameCube Saves   |       Yes      |    Yes   |       Icon      |       N/A       |

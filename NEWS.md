@@ -14,6 +14,8 @@
     Godot 4.)
   * ASTC: ASTC texture format. This is a minimal header format for textures
     encoded using ASTC.
+  * CBMCart: Commodore ROM cartridges, using VICE 3.0's .CRT format. Supports
+    external title screen images for C64 and C128 cartridges.
 
 * New parser features:
   * Added ASTC decoding. All texture formats that support ASTC have been

@@ -33,6 +33,7 @@ or deleted.
 * https://amiibo.life/ - Images of Nintendo amiibo products.
 * https://rpdb.gerbilsoft.com/ - Title screen images for the following
   systems:
+  * Commodore 64/128 (cartridges)
   * Neo Geo Pocket (Color)
   * Nintendo Game Boy
   * Nintendo Game Boy Color
@@ -46,6 +47,8 @@ or deleted.
 The following information is used as the lookup key in order to retrieve
 images from the online databases:
 
+* Commodore 64/128 cartridges: CRC32 of up to 16 KB of ROM data, and
+  cartridge type.
 * GameCube, Wii, Wii U: 6-character Game ID (e.g. `GALE01`) and region code.
 * Game Boy, Game Boy Color: Game title (e.g. `POKEMON RED`), or game ID
   (e.g. `BXTJ01`) if available. Region code and publisher ID are also used.
