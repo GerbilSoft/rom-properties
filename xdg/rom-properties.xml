@@ -643,9 +643,10 @@
   </mime-type>
 
   <!-- NintendoDS -->
-  <mime-type type="application/x-nintendo-ds-rom">
+  <mime-type type="application/vnd.nintendo.nitro.rom">
     <comment>Nintendo DS ROM</comment>
     <generic-icon name="application-x-executable"/>
+    <alias type="application/x-nintendo-ds-rom"/>
     <glob pattern="*.nds"/>
     <glob pattern="*.dsi"/>
     <glob pattern="*.ids"/>

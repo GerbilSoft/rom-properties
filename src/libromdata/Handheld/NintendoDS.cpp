@@ -48,6 +48,9 @@ const char *const NintendoDSPrivate::mimeTypes[] = {
 	// Unofficial MIME types from FreeDesktop.org.
 	"application/x-nintendo-ds-rom",
 
+	// Vendor-specific type listed in Fedora's mime.types.
+	"application/vnd.nintendo.nitro.rom",
+
 	// Unofficial MIME types.
 	// TODO: Get these upstreamed on FreeDesktop.org.
 	"application/x-nintendo-dsi-rom",

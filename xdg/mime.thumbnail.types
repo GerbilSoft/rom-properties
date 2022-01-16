@@ -84,6 +84,7 @@ application/x-nintendo-3ds-cia		# Nintendo3DS
 application/x-nintendo-3ds-ncch		# Nintendo3DS
 application/x-nintendo-3ds-smdh		# Nintendo3DS_SMDH
 application/x-nintendo-ds-rom		# NintendoDS
+application/vnd.nintendo.nitro.rom	# NintendoDS
 application/x-nintendo-dsi-rom		# NintendoDS
 application/x-psp-ciso-image		# PSP
 application/x-psp-dax-image		# PSP
