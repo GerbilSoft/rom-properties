@@ -22,6 +22,7 @@
     updated to allow decoding ASTC textures. (HDR is not supported, and
     the LDR decoder is rather slow.)
   * The GBS parser now partially supports the older GBR format.
+  * GameCube: IOS version is now shown for Wii discs.
 
 * New compressed texture formats:
   * EAC R11 and RG11, which uses ETC2's alpha channel compression for

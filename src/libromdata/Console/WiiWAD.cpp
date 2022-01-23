@@ -1047,7 +1047,7 @@ int WiiWAD::loadFieldData(void)
 				rp_sprintf(C_("RomData", "Unknown (0x%02X)"), gcnRegion));
 		}
 
-		// Required IOS version)
+		// Required IOS version.
 		if (sys_id <= NINTENDO_SYSID_RVL) {
 			const char *const ios_version_title = C_("WiiWAD", "IOS Version");
 			const uint32_t ios_lo = be32_to_cpu(tmdHeader->sys_version.lo);

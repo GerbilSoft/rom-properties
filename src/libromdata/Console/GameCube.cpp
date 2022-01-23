@@ -1595,6 +1595,25 @@ int GameCube::loadFieldData(void)
 			v_access_rights_hdr->emplace_back(C_("GameCube", "DVD Video"));
 			d->fields->addField_bitfield(C_("GameCube", "Access Rights"),
 				v_access_rights_hdr, 0, be32_to_cpu(tmdHeader->access_rights));
+
+			// Required IOS version.
+			// TODO: Is this the best place for it?
+			const char *const ios_version_title = C_("GameCube", "IOS Version");
+			const uint32_t ios_lo = be32_to_cpu(tmdHeader->sys_version.lo);
+			if (tmdHeader->sys_version.hi == cpu_to_be32(0x00000001) &&
+			    ios_lo > 2 && ios_lo < 0x300)
+			{
+				// Standard IOS slot.
+				d->fields->addField_string(ios_version_title,
+					rp_sprintf("IOS%u", ios_lo));
+			} else if (tmdHeader->sys_version.id != 0) {
+				// Non-standard IOS slot.
+				// Print the full title ID.
+				d->fields->addField_string(ios_version_title,
+					rp_sprintf("%08X-%08X",
+						be32_to_cpu(tmdHeader->sys_version.hi),
+						be32_to_cpu(tmdHeader->sys_version.lo)));
+			}
 		}
 	}
 
