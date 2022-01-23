@@ -78,6 +78,22 @@ extern z_const char * const PREFIX(z_errmsg)[10]; /* indexed by 2-zlib_error */
 
 #define ADLER32_INITIAL_VALUE 1 /* initial adler-32 hash value */
 
+#define ZLIB_WRAPLEN 6      /* zlib format overhead */
+#define GZIP_WRAPLEN 18     /* gzip format overhead */
+
+#define DEFLATE_HEADER_BITS 3
+#define DEFLATE_EOBS_BITS   15
+#define DEFLATE_PAD_BITS    6
+#define DEFLATE_BLOCK_OVERHEAD ((DEFLATE_HEADER_BITS + DEFLATE_EOBS_BITS + DEFLATE_PAD_BITS) >> 3)
+/* deflate block overhead: 3 bits for block start + 15 bits for block end + padding to nearest byte */
+
+#define DEFLATE_QUICK_LIT_MAX_BITS 9
+#define DEFLATE_QUICK_OVERHEAD(x) ((x * (DEFLATE_QUICK_LIT_MAX_BITS - 8) + 7) >> 3)
+/* deflate_quick worst-case overhead: 9 bits per literal, round up to next byte (+7) */
+
+
+#define ZLIB_WRAPLEN 6 /* zlib format overhead */
+
         /* target dependencies */
 
 #ifdef AMIGA
@@ -204,14 +220,14 @@ void Z_INTERNAL   zng_cfree(void *opaque, void *ptr);
 #  define ZSWAP32(q) ((((q) >> 24) & 0xff) + (((q) >> 8) & 0xff00) + \
                      (((q) & 0xff00) << 8) + (((q) & 0xff) << 24))
 #  define ZSWAP64(q)                           \
-          ((q & 0xFF00000000000000u) >> 56u) | \
+         (((q & 0xFF00000000000000u) >> 56u) | \
           ((q & 0x00FF000000000000u) >> 40u) | \
           ((q & 0x0000FF0000000000u) >> 24u) | \
           ((q & 0x000000FF00000000u) >> 8u)  | \
           ((q & 0x00000000FF000000u) << 8u)  | \
           ((q & 0x0000000000FF0000u) << 24u) | \
           ((q & 0x000000000000FF00u) << 40u) | \
-          ((q & 0x00000000000000FFu) << 56u)
+          ((q & 0x00000000000000FFu) << 56u))
 #endif
 
 /* Only enable likely/unlikely if the compiler is known to support it */

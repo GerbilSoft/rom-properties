@@ -289,7 +289,7 @@ endif()
 
 # Set architecture alignment requirements
 if(WITH_UNALIGNED)
-    if(BASEARCH_ARM_FOUND OR (BASEARCH_PPC_FOUND AND "${ARCH}" MATCHES "powerpc64le") OR BASEARCH_X86_FOUND)
+    if((BASEARCH_ARM_FOUND AND NOT "${ARCH}" MATCHES "armv[2-7]") OR (BASEARCH_PPC_FOUND AND "${ARCH}" MATCHES "powerpc64le") OR BASEARCH_X86_FOUND)
         if(NOT DEFINED UNALIGNED_OK)
             set(UNALIGNED_OK TRUE)
         endif()
@@ -300,7 +300,9 @@ if(WITH_UNALIGNED)
     endif()
     if(BASEARCH_ARM_FOUND)
         if(NOT DEFINED UNALIGNED64_OK)
-            if("${ARCH}" MATCHES "(arm(v[8-9])?|aarch64)")
+            if("${ARCH}" MATCHES "armv[2-7]")
+                set(UNALIGNED64_OK FALSE)
+            elseif("${ARCH}" MATCHES "(arm(v[8-9])?|aarch64)")
                 set(UNALIGNED64_OK TRUE)
             endif()
         endif()
@@ -380,6 +382,13 @@ check_function_exists(strerror HAVE_STRERROR)
 if(NOT HAVE_STRERROR)
     add_definitions(-DNO_STRERROR)
 endif()
+
+set(CMAKE_REQUIRED_DEFINITIONS -D _POSIX_C_SOURCE=200112L)
+check_function_exists(posix_memalign HAVE_POSIX_MEMALIGN)
+if(HAVE_POSIX_MEMALIGN)
+    add_definitions(-DHAVE_POSIX_MEMALIGN)
+endif()
+set(CMAKE_REQUIRED_DEFINITIONS)
 
 # rom-properties
 if(MSVC)
@@ -740,7 +749,7 @@ if(WITH_OPTIM)
         endif()
         list(APPEND ZLIB_ARCH_HDRS ${ARCHDIR}/arm.h)
         list(APPEND ZLIB_ARCH_SRCS ${ARCHDIR}/armfeature.c)
-        if(WITH_ACLE AND NOT MSVC)
+        if(WITH_ACLE AND NOT MSVC AND NOT "${ARCH}" MATCHES "armv[2-7]")
             add_definitions(-DARM_ACLE_CRC_HASH)
             set(ACLE_SRCS ${ARCHDIR}/crc32_acle.c ${ARCHDIR}/insert_string_acle.c)
             set_property(SOURCE ${ACLE_SRCS} PROPERTY COMPILE_FLAGS "${ACLEFLAG} ${NOLTOFLAG}")
@@ -1013,7 +1022,8 @@ endif()
 
 foreach(ZLIB_INSTALL_LIBRARY ${ZLIB_INSTALL_LIBRARIES})
     target_include_directories(${ZLIB_INSTALL_LIBRARY} PUBLIC
-        ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR})
+        "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR};${CMAKE_CURRENT_SOURCE_DIR}>"
+        "$<INSTALL_INTERFACE:include>")
 endforeach()
 
 if(WIN32)
@@ -1188,7 +1198,9 @@ option(ZLIB_ENABLE_TESTS "Build test binaries" ON)
 if(ZLIB_ENABLE_TESTS)
     enable_testing()
     macro(configure_test_executable target)
-        target_include_directories(${target} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+        target_include_directories(${target} PUBLIC
+            "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>"
+            "$<INSTALL_INTERFACE:include>")
         if(NOT WITH_GZFILEOP)
             target_compile_definitions(${target} PUBLIC -DWITH_GZFILEOP)
             target_sources(${target} PRIVATE ${ZLIB_GZFILE_PRIVATE_HDRS} ${ZLIB_GZFILE_SRCS})
@@ -1209,6 +1221,7 @@ if(ZLIB_ENABLE_TESTS)
     endmacro()
 
     add_simple_test_executable(adler32_test)
+    add_simple_test_executable(crc32_test)
     add_simple_test_executable(example)
 
     set(MINIGZIP_COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:minigzip>)
@@ -1246,7 +1259,9 @@ if(ZLIB_ENABLE_TESTS)
     target_sources(infcover PRIVATE inftrees.c)
 
     add_executable(makefixed tools/makefixed.c inftrees.c)
-    target_include_directories(makefixed PUBLIC ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR})
+    target_include_directories(makefixed PUBLIC
+        "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR};${CMAKE_CURRENT_SOURCE_DIR}>"
+        "$<INSTALL_INTERFACE:include>")
 
     set(MAKEFIXED_COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:makefixed>)
     add_test(NAME makefixed
@@ -1258,7 +1273,9 @@ if(ZLIB_ENABLE_TESTS)
         -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/run-and-compare.cmake)
 
     add_executable(maketrees tools/maketrees.c trees.c zutil.c)
-    target_include_directories(maketrees PUBLIC ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR})
+    target_include_directories(maketrees PUBLIC
+        "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR};${CMAKE_CURRENT_SOURCE_DIR}>"
+        "$<INSTALL_INTERFACE:include>")
 
     set(MAKETREES_COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:maketrees>)
     add_test(NAME maketrees
@@ -1270,7 +1287,9 @@ if(ZLIB_ENABLE_TESTS)
         -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/run-and-compare.cmake)
 
     add_executable(makecrct tools/makecrct.c)
-    target_include_directories(makecrct PUBLIC ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR})
+    target_include_directories(makecrct PUBLIC
+        "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR};${CMAKE_CURRENT_SOURCE_DIR}>"
+        "$<INSTALL_INTERFACE:include>")
 
     set(MAKECRCT_COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:makecrct>)
     add_test(NAME makecrct-crc32
@@ -1450,6 +1469,7 @@ if(ZLIB_ENABLE_TESTS)
 
     add_simple_test_executable(deflate_quick_bi_valid)
     add_simple_test_executable(deflate_quick_block_open)
+    add_simple_test_executable(inflate_adler32)
     add_simple_test_executable(hash_head_0)
 endif()
 

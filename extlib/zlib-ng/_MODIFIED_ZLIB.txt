@@ -1,15 +1,20 @@
-This copy of zlib-ng 2.0.3 is a modified version of the original.
+This copy of zlib-ng 2.0.6 is a modified version of the original.
 
-commit c69f78bc5e18a0f6de2dcbd8af863f59a14194f0
-Version 2.0.5
-- Fix inflate corruption on aarch64 #1008
-- Fix MSVC warnings #1002 #1013
-- Minor chunkset improvements #1000 #994 #1015
-- Minor cleanup #997
-- Add CI test for pigz on aarch64 #1004
-- Cmake improvements #996
+commit b56a2fd0b126cfe5f13e68ab9090cd4f6a773286
+Version 2.0.6
+ - Fix hangs on macOS #1031
+ - Fix minideflate write buffers being overwritten #1060
+ - Fix deflateBound and compressBound returning too small size estimates #1049 #1071
+ - Fix incorrect function declaration warning #1080
+ - Fix build problems when building outside of source dir #1049
+ - Fix build problems on arm2-7 #1030
+ - Fixed some compile warnings #1020 #1036 #1037 #1048
+ - Improved posix memalign support #888
+ - Improvements to testing #637 #1026 #1032 #1035 #1049 #1051 #1056 #1063 #1067 #1079
+ - Improvements for integration into other projects #1022 #1042
+ - Code style fixes #637 #1040 #1050 #1075
 
-Tag: 2.0.5
+Tag: 2.0.6
 
 The following changes have been made to the original:
 
@@ -28,7 +33,7 @@ The following changes have been made to the original:
 
 - Some other functionality not needed by rom-properties has been disabled.
 
-To obtain the original zlib-ng v2.0.3, visit:
+To obtain the original zlib-ng v2.0.6, visit:
 https://github.com/zlib-ng/zlib-ng
 
 To obtain the original zlib-1.2.11, visit:
