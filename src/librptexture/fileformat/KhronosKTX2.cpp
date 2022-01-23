@@ -554,6 +554,7 @@ const rp_image *KhronosKTX2Private::loadImage(int mip)
 			img = ImageDecoder::fromEAC_R11(
 				width, height,
 				buf.get(), expected_size);
+			break;
 
 		case VK_FORMAT_EAC_R11G11_UNORM_BLOCK:
 		case VK_FORMAT_EAC_R11G11_SNORM_BLOCK:
@@ -562,6 +563,7 @@ const rp_image *KhronosKTX2Private::loadImage(int mip)
 			img = ImageDecoder::fromEAC_RG11(
 				width, height,
 				buf.get(), expected_size);
+			break;
 
 		case VK_FORMAT_BC7_UNORM_BLOCK:
 		case VK_FORMAT_BC7_SRGB_BLOCK:
