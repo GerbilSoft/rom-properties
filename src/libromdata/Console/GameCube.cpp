@@ -1837,21 +1837,21 @@ int GameCube::loadFieldData(void)
 
 			static const char *const wii_key_tbl[] = {
 				// tr: WiiPartition::EncKey::RVL_Common - Retail encryption key.
-				NOP_C_("Wii|KeyIdx", "Retail"),
+				NOP_C_("Wii|EncKey", "Retail"),
 				// tr: WiiPartition::EncKey::RVL_Korean - Korean encryption key.
-				NOP_C_("Wii|KeyIdx", "Korean"),
+				NOP_C_("Wii|EncKey", "Korean"),
 				// tr: WiiPartition::EncKey::WUP_vWii - vWii-specific encryption key.
-				NOP_C_("Wii|KeyIdx", "vWii"),
+				NOP_C_("Wii|EncKey", "vWii"),
 
 				// tr: WiiPartition::EncKey::RVT_Debug - Debug encryption key.
-				NOP_C_("Wii|KeyIdx", "Debug"),
+				NOP_C_("Wii|EncKey", "Debug"),
 				// tr: WiiPartition::EncKey::RVT_Korean - Korean (debug) encryption key.
-				NOP_C_("Wii|KeyIdx", "Korean (debug)"),
+				NOP_C_("Wii|EncKey", "Korean (debug)"),
 				// tr: WiiPartition::EncKey::CAT_vWii - vWii (debug) encryption key.
-				NOP_C_("Wii|KeyIdx", "vWii (debug)"),
+				NOP_C_("Wii|EncKey", "vWii (debug)"),
 
 				// tr: WiiPartition::EncKey::None - No encryption.
-				NOP_C_("Wii|KeyIdx", "None"),
+				NOP_C_("Wii|EncKey", "None"),
 			};
 			static_assert(ARRAY_SIZE(wii_key_tbl) == (int)WiiPartition::EncKey::Max,
 				"wii_key_tbl[] size is incorrect.");
