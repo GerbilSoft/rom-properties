@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * GameCube.cpp: Nintendo GameCube and Wii disc image reader.              *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -670,14 +670,14 @@ const char *GameCubePrivate::wii_getCryptoStatus(WiiPartition *partition)
 		// This may be an invalid key index.
 		if (partition->encKey() == WiiPartition::EncKey::Unknown) {
 			// Invalid key index.
-			return C_("GameCube", "ERROR: Invalid common key index.");
+			return C_("Wii", "ERROR: Invalid common key index.");
 		}
 	}
 
 	if (res == KeyManager::VerifyResult::IncrementingValues) {
 		// Debug discs may have incrementing values instead of a
 		// valid update partition.
-		return C_("GameCube", "Incrementing values");
+		return C_("Wii", "Incrementing values");
 	}
 
 	const char *err = KeyManager::verifyResultToString(res);
@@ -1548,7 +1548,7 @@ int GameCube::loadFieldData(void)
 			string s_region;
 			if (suffix) {
 				// tr: %1%s == full region name, %2$s == abbreviation
-				s_region = rp_sprintf_p(C_("GameCube", "%1$s (%2$s)"), region, suffix);
+				s_region = rp_sprintf_p(C_("Wii", "%1$s (%2$s)"), region, suffix);
 			} else {
 				s_region = region;
 			}
@@ -1583,7 +1583,7 @@ int GameCube::loadFieldData(void)
 			// Title ID.
 			// TID Lo is usually the same as the game ID,
 			// except for some diagnostics discs.
-			d->fields->addField_string(C_("GameCube", "Title ID"),
+			d->fields->addField_string(C_("Nintendo", "Title ID"),
 				rp_sprintf("%08X-%08X",
 					be32_to_cpu(tmdHeader->title_id.hi),
 					be32_to_cpu(tmdHeader->title_id.lo)));
@@ -1592,13 +1592,13 @@ int GameCube::loadFieldData(void)
 			vector<string> *const v_access_rights_hdr = new vector<string>();
 			v_access_rights_hdr->reserve(2);
 			v_access_rights_hdr->emplace_back("AHBPROT");
-			v_access_rights_hdr->emplace_back(C_("GameCube", "DVD Video"));
-			d->fields->addField_bitfield(C_("GameCube", "Access Rights"),
+			v_access_rights_hdr->emplace_back(C_("Wii", "DVD Video"));
+			d->fields->addField_bitfield(C_("Wii", "Access Rights"),
 				v_access_rights_hdr, 0, be32_to_cpu(tmdHeader->access_rights));
 
 			// Required IOS version.
 			// TODO: Is this the best place for it?
-			const char *const ios_version_title = C_("GameCube", "IOS Version");
+			const char *const ios_version_title = C_("Wii", "IOS Version");
 			const uint32_t ios_lo = be32_to_cpu(tmdHeader->sys_version.lo);
 			if (tmdHeader->sys_version.hi == cpu_to_be32(0x00000001) &&
 			    ios_lo > 2 && ios_lo < 0x300)
@@ -1754,7 +1754,7 @@ int GameCube::loadFieldData(void)
 			}
 		}
 
-		const char *const update_title = C_("GameCube", "Update");
+		const char *const update_title = C_("Nintendo", "Update");
 		if (isDebugIOS || ios_retail_count == 1) {
 			d->fields->addField_string(update_title,
 				rp_sprintf("IOS%u %u.%u (v%u)", ios_slot, ios_major, ios_minor,
@@ -1762,7 +1762,7 @@ int GameCube::loadFieldData(void)
 		} else {
 			if (!sysMenu) {
 				if (!d->updatePartition) {
-					sysMenu = C_("GameCube", "None");
+					sysMenu = C_("Nintendo", "None");
 				} else {
 					sysMenu = d->wii_getCryptoStatus(d->updatePartition);
 				}
@@ -1791,14 +1791,14 @@ int GameCube::loadFieldData(void)
 			string s_ptype;
 			static const char *const part_type_tbl[3] = {
 				// tr: GameCubePrivate::RVL_PT_GAME (Game partition)
-				NOP_C_("GameCube|Partition", "Game"),
+				NOP_C_("Wii|Partition", "Game"),
 				// tr: GameCubePrivate::RVL_PT_UPDATE (Update partition)
-				NOP_C_("GameCube|Partition", "Update"),
+				NOP_C_("Wii|Partition", "Update"),
 				// tr: GameCubePrivate::RVL_PT_CHANNEL (Channel partition)
-				NOP_C_("GameCube|Partition", "Channel"),
+				NOP_C_("Wii|Partition", "Channel"),
 			};
 			if (entry.type <= RVL_PT_CHANNEL) {
-				s_ptype = dpgettext_expr(RP_I18N_DOMAIN, "GameCube|Partition", part_type_tbl[entry.type]);
+				s_ptype = dpgettext_expr(RP_I18N_DOMAIN, "Wii|Partition", part_type_tbl[entry.type]);
 			} else {
 				// If all four bytes are ASCII letters and/or numbers,
 				// print it as-is. (SSBB demo channel)
@@ -1837,28 +1837,28 @@ int GameCube::loadFieldData(void)
 
 			static const char *const wii_key_tbl[] = {
 				// tr: WiiPartition::EncKey::RVL_Common - Retail encryption key.
-				NOP_C_("GameCube|KeyIdx", "Retail"),
+				NOP_C_("Wii|KeyIdx", "Retail"),
 				// tr: WiiPartition::EncKey::RVL_Korean - Korean encryption key.
-				NOP_C_("GameCube|KeyIdx", "Korean"),
+				NOP_C_("Wii|KeyIdx", "Korean"),
 				// tr: WiiPartition::EncKey::WUP_vWii - vWii-specific encryption key.
-				NOP_C_("GameCube|KeyIdx", "vWii"),
+				NOP_C_("Wii|KeyIdx", "vWii"),
 
 				// tr: WiiPartition::EncKey::RVT_Debug - Debug encryption key.
-				NOP_C_("GameCube|KeyIdx", "Debug"),
+				NOP_C_("Wii|KeyIdx", "Debug"),
 				// tr: WiiPartition::EncKey::RVT_Korean - Korean (debug) encryption key.
-				NOP_C_("GameCube|KeyIdx", "Korean (debug)"),
+				NOP_C_("Wii|KeyIdx", "Korean (debug)"),
 				// tr: WiiPartition::EncKey::CAT_vWii - vWii (debug) encryption key.
-				NOP_C_("GameCube|KeyIdx", "vWii (debug)"),
+				NOP_C_("Wii|KeyIdx", "vWii (debug)"),
 
 				// tr: WiiPartition::EncKey::None - No encryption.
-				NOP_C_("GameCube|KeyIdx", "None"),
+				NOP_C_("Wii|KeyIdx", "None"),
 			};
 			static_assert(ARRAY_SIZE(wii_key_tbl) == (int)WiiPartition::EncKey::Max,
 				"wii_key_tbl[] size is incorrect.");
 
 			const char *s_key_name;
 			if ((int)encKey >= 0 && (int)encKey < ARRAY_SIZE_I(wii_key_tbl)) {
-				s_key_name = dpgettext_expr(RP_I18N_DOMAIN, "GameCube|KeyIdx", wii_key_tbl[(int)encKey]);
+				s_key_name = dpgettext_expr(RP_I18N_DOMAIN, "Wii|KeyIdx", wii_key_tbl[(int)encKey]);
 			} else {
 				// WiiPartition::EncKey::Unknown
 				s_key_name = C_("RomData", "Unknown");
@@ -1871,7 +1871,7 @@ int GameCube::loadFieldData(void)
 				data_row.emplace_back(LibRpBase::formatFileSize(used_size));
 			} else {
 				// tr: Unknown used size.
-				data_row.emplace_back(C_("GameCube|Partition", "Unknown"));
+				data_row.emplace_back(C_("Wii|Partition", "Unknown"));
 			}
 
 			// Partition size.
@@ -1881,23 +1881,23 @@ int GameCube::loadFieldData(void)
 		// Fields.
 		static const char *const partitions_names[] = {
 			// tr: Partition number.
-			NOP_C_("GameCube|Partition", "#"),
+			NOP_C_("Wii|Partition", "#"),
 			// tr: Partition type.
-			NOP_C_("GameCube|Partition", "Type"),
+			NOP_C_("Wii|Partition", "Type"),
 			// tr: Encryption key.
-			NOP_C_("GameCube|Partition", "Key"),
+			NOP_C_("Wii|Partition", "Key"),
 			// tr: Actual data used within the partition.
-			NOP_C_("GameCube|Partition", "Used Size"),
+			NOP_C_("Wii|Partition", "Used Size"),
 			// tr: Total size of the partition.
-			NOP_C_("GameCube|Partition", "Total Size"),
+			NOP_C_("Wii|Partition", "Total Size"),
 		};
 		vector<string> *const v_partitions_names = RomFields::strArrayToVector_i18n(
-			"GameCube|Partition", partitions_names, ARRAY_SIZE(partitions_names));
+			"Wii|Partition", partitions_names, ARRAY_SIZE(partitions_names));
 
 		RomFields::AFLD_PARAMS params;
 		params.headers = v_partitions_names;
 		params.data.single = vv_partitions;
-		d->fields->addField_listData(C_("GameCube", "Partitions"), &params);
+		d->fields->addField_listData(C_("Wii", "Partitions"), &params);
 	} else {
 		// Could not load partition tables.
 		// FIXME: Show an error?

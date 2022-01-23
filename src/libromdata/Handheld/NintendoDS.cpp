@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * NintendoDS.hpp: Nintendo DS(i) ROM reader.                              *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -1118,7 +1118,7 @@ int NintendoDS::loadFieldData(void)
 
 	// Title ID.
 	const uint32_t tid_hi = le32_to_cpu(romHeader->dsi.title_id.hi);
-	d->fields->addField_string(C_("NintendoDS", "Title ID"),
+	d->fields->addField_string(C_("Nintendo", "Title ID"),
 		rp_sprintf("%08X-%08X",
 			tid_hi, le32_to_cpu(romHeader->dsi.title_id.lo)));
 

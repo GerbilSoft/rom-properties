@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * WiiWAD.cpp: Nintendo Wii WAD file reader.                               *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -951,7 +951,7 @@ int WiiWAD::loadFieldData(void)
 
 	// Title ID.
 	// TODO: Make sure the ticket title ID matches the TMD title ID.
-	d->fields->addField_string(C_("WiiWAD", "Title ID"),
+	d->fields->addField_string(C_("Nintendo", "Title ID"),
 		rp_sprintf("%08X-%08X",
 			be32_to_cpu(tmdHeader->title_id.hi),
 			be32_to_cpu(tmdHeader->title_id.lo)));
@@ -972,7 +972,7 @@ int WiiWAD::loadFieldData(void)
 
 	// Title version.
 	const unsigned int title_version = be16_to_cpu(tmdHeader->title_version);
-	d->fields->addField_string(C_("WiiWAD", "Title Version"),
+	d->fields->addField_string(C_("Nintendo", "Title Version"),
 		rp_sprintf("%u.%u (v%u)", title_version >> 8, title_version & 0xFF, title_version));
 
 	// Wii-specific
@@ -1049,7 +1049,7 @@ int WiiWAD::loadFieldData(void)
 
 		// Required IOS version.
 		if (sys_id <= NINTENDO_SYSID_RVL) {
-			const char *const ios_version_title = C_("WiiWAD", "IOS Version");
+			const char *const ios_version_title = C_("Wii", "IOS Version");
 			const uint32_t ios_lo = be32_to_cpu(tmdHeader->sys_version.lo);
 			if (tmdHeader->sys_version.hi == cpu_to_be32(0x00000001) &&
 			    ios_lo > 2 && ios_lo < 0x300)
@@ -1071,8 +1071,8 @@ int WiiWAD::loadFieldData(void)
 		vector<string> *const v_access_rights_hdr = new vector<string>();
 		v_access_rights_hdr->reserve(2);
 		v_access_rights_hdr->emplace_back("AHBPROT");
-		v_access_rights_hdr->emplace_back(C_("WiiWAD", "DVD Video"));
-		d->fields->addField_bitfield(C_("WiiWAD", "Access Rights"),
+		v_access_rights_hdr->emplace_back(C_("Wii", "DVD Video"));
+		d->fields->addField_bitfield(C_("Wii", "Access Rights"),
 			v_access_rights_hdr, 0, be32_to_cpu(tmdHeader->access_rights));
 
 		if (sys_id == NINTENDO_SYSID_RVL) {
@@ -1118,24 +1118,24 @@ int WiiWAD::loadFieldData(void)
 	// TODO: WiiPartition function to get a key's "display name"?
 	static const char *const encKeyNames[] = {
 		// Retail
-		NOP_C_("WiiWAD|EncKey", "Retail"),
-		NOP_C_("WiiWAD|EncKey", "Korean"),
-		NOP_C_("WiiWAD|EncKey", "vWii"),
+		NOP_C_("Wii|EncKey", "Retail"),
+		NOP_C_("Wii|EncKey", "Korean"),
+		NOP_C_("Wii|EncKey", "vWii"),
 
 		// Debug
-		NOP_C_("WiiWAD|EncKey", "Debug"),
-		NOP_C_("WiiWAD|EncKey", "Korean (debug)"),
-		NOP_C_("WiiWAD|EncKey", "vWii (debug)"),
+		NOP_C_("Wii|EncKey", "Debug"),
+		NOP_C_("Wii|EncKey", "Korean (debug)"),
+		NOP_C_("Wii|EncKey", "vWii (debug)"),
 
 		// SD card (TODO: Retail vs. Debug?)
-		NOP_C_("WiiWAD|EncKey", "SD AES"),
-		NOP_C_("WiiWAD|EncKey", "SD IV"),
-		NOP_C_("WiiWAD|EncKey", "SD MD5"),
+		NOP_C_("Wii|EncKey", "SD AES"),
+		NOP_C_("Wii|EncKey", "SD IV"),
+		NOP_C_("Wii|EncKey", "SD MD5"),
 	};
 	static_assert(ARRAY_SIZE(encKeyNames) == WiiPartition::Key_Max, "Update encKeyNames[]!");
 	const char *keyName;
 	if (d->key_idx >= 0 && d->key_idx < WiiPartition::Key_Max) {
-		keyName = dpgettext_expr(RP_I18N_DOMAIN, "WiiWAD|EncKey", encKeyNames[d->key_idx]);
+		keyName = dpgettext_expr(RP_I18N_DOMAIN, "Wii|EncKey", encKeyNames[d->key_idx]);
 	} else {
 		keyName = C_("WiiWAD", "Unknown");
 	}
