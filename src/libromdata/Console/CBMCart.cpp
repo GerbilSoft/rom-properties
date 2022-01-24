@@ -143,7 +143,7 @@ const char *const CBMCartPrivate::crt_types_c64[] = {
 	// 40
 	"Super Snapshot V4", "IEEE-488", "Game Killer", "Prophet64",
 	"EXOS", "Freeze Frame", "Freeze Machine", "Snapshot64",
-	"Super Explode V5.0" "Magic Voice",
+	"Super Explode V5.0", "Magic Voice",
 
 	// 50
 	"Action Replay 2", "MACH 5", "Diashow-Maker", "Pagefox",
