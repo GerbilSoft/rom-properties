@@ -10,10 +10,17 @@
 #define __ROMPROPERTIES_LIBRPTEXTURE_FILEFORMAT_FILEFORMAT_HPP__
 
 #include "librptexture/config.librptexture.h"
+
+// C includes.
+#include <stdint.h>
+#include <sys/types.h>	// for off64_t
+
+// Common macros
 #include "common.h"
 #include "RefBase.hpp"
+#include "d_type.h"
 
-// Common declarations.
+// Common declarations
 #include "FileFormat_decl.hpp"
 
 #ifdef ENABLE_LIBRPBASE_ROMFIELDS
@@ -21,9 +28,6 @@ namespace LibRpBase {
 	class RomFields;
 }
 #endif /* ENABLE_LIBRPBASE_ROMFIELDS */
-
-// C includes.
-#include <stdint.h>
 
 namespace LibRpTexture {
 

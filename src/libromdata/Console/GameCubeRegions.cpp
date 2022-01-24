@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * GameCubeRegions.hpp: Nintendo GameCube/Wii region code detection.       *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -12,9 +12,7 @@
 
 // librpbase
 #include "librpbase/config/Config.hpp"
-#include "librpbase/SystemRegion.hpp"
 using LibRpBase::Config;
-using LibRpBase::SystemRegion;
 
 // C++ STL classes.
 using std::vector;

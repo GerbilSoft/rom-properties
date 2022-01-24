@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (rp-download)                      *
  * IDownloader.cpp: Downloader interface.                                  *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -10,10 +10,10 @@
 #include "IDownloader.hpp"
 #include "config.version.h"
 
-// C includes. (C++ namespace)
-#include <cassert>
+// C includes (C++ namespace)
+#include <cstdio>
 
-// C++ includes.
+// C++ includes
 #include <string>
 using std::tstring;
 

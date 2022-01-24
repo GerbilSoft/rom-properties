@@ -12,7 +12,7 @@
 #include "RpPng.hpp"
 
 // librpfile
-#include "librpfile/RpFile.hpp"
+#include "librpfile/IRpFile.hpp"
 using LibRpFile::IRpFile;
 
 // librptexture

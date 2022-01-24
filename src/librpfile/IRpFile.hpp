@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpfile)                        *
  * IRpFile.hpp: File wrapper interface.                                    *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -11,10 +11,11 @@
 
 // C includes
 #include <stdint.h>
+#include <sys/types.h>	// for off64_t
 
 // C includes (C++ namespace)
 #include <cerrno>
-#include <cstddef>	/* for size_t */
+#include <cstddef>	// for size_t
 
 // C++ includes
 #include <string>

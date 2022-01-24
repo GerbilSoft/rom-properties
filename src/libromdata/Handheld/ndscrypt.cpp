@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * ndscrypt.cpp: Nintendo DS encryption.                                   *
  *                                                                         *
- * Copyright (c) 2020 by David Korth.                                      *
+ * Copyright (c) 2020-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -16,11 +16,10 @@
 #include "byteswap_rp.h"
 #include "nds_crc.hpp"	// TODO: Optimized versions?
 
-// C includes.
+// C includes
 #include <stdint.h>
-#include <stdlib.h>
 
-// C includes. (C++ namespace)
+// C includes (C++ namespace)
 #include <cassert>
 #include <cerrno>
 
@@ -34,7 +33,7 @@ using LibRpBase::MD5Hash;
 using LibRpThreads::Mutex;
 using LibRpThreads::MutexLocker;
 
-// C++ STL classes.
+// C++ STL classes
 using std::string;
 
 // Blowfish data.

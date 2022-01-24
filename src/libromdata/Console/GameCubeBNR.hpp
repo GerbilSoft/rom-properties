@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * GameCubeBNR.hpp: Nintendo GameCube banner reader.                       *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -10,7 +10,6 @@
 #define __ROMPROPERTIES_LIBROMDATA_GAMECUBEBNR_HPP__
 
 #include "librpbase/RomData.hpp"
-#include "gcn_banner.h"
 
 namespace LibRomData {
 

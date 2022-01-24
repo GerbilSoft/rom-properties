@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture/tests)               *
  * UnPremutiplyTest.cpp: Test un_premultiply().                            *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -11,10 +11,8 @@
 #include "tcharx.h"
 #include "common.h"
 
-// librpbase, librptexture, librpcpu
-#include "librpbase/aligned_malloc.h"
+// librptexture
 #include "librptexture/img/rp_image.hpp"
-#include "librpcpu/byteswap_rp.h"
 
 // C includes.
 #include <stdint.h>

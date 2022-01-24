@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * FileFormat.cpp: Texture file format base class.                         *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -14,9 +14,6 @@
 
 // librpfile
 using LibRpFile::IRpFile;
-
-// librpthreads
-#include "librpthreads/Atomics.h"
 
 namespace LibRpTexture {
 

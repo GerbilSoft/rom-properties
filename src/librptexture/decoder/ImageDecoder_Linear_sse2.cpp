@@ -3,18 +3,19 @@
  * ImageDecoder_Linear.cpp: Image decoding functions. (Linear)             *
  * SSE2-optimized version.                                                 *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #include "stdafx.h"
 #include "ImageDecoder.hpp"
-#include "ImageDecoder_p.hpp"
 
+// librptexture
+#include "img/rp_image.hpp"
 #include "PixelConversion.hpp"
 using namespace LibRpTexture::PixelConversion;
 
-// SSE2 intrinsics.
+// SSE2 intrinsics
 #include <emmintrin.h>
 
 // MSVC complains when the high bit is set in hex values

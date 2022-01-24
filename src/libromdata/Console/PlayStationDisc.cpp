@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * PlayStationDisc.cpp: PlayStation 1 and 2 disc image reader.             *
  *                                                                         *
- * Copyright (c) 2019-2021 by David Korth.                                 *
+ * Copyright (c) 2019-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -11,10 +11,8 @@
 #include "ps2_structs.h"
 
 // librpbase, librpfile
-#include "librpfile/RpFile.hpp"
 using namespace LibRpBase;
 using LibRpFile::IRpFile;
-using LibRpFile::RpFile;
 
 // IsoPartition
 #include "../cdrom_structs.h"
@@ -40,7 +38,7 @@ namespace LibRomData {
 class PlayStationDiscPrivate final : public RomDataPrivate
 {
 	public:
-		PlayStationDiscPrivate(PlayStationDisc *q, LibRpFile::IRpFile *file);
+		PlayStationDiscPrivate(PlayStationDisc *q, IRpFile *file);
 		virtual ~PlayStationDiscPrivate();
 
 	private:

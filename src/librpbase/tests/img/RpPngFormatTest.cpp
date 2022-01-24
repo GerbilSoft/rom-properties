@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase/tests)                  *
  * RpPngFormatTest.cpp: RpImageLoader PNG format test.                     *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -15,7 +15,7 @@
 #include "bmp.h"
 
 #ifdef HAVE_PNG
-#include <png.h>
+#  include <png.h>
 #endif /* HAVE_PNG */
 
 // gzclose_r() and gzclose_w() were introduced in zlib-1.2.4.
@@ -29,18 +29,18 @@
 #endif
 
 // librpcpu, librpbase
-#include "librpcpu/byteswap_rp.h"
 #include "common.h"
 #include "uvector.h"
-#include "img/RpImageLoader.hpp"
+#include "tcharx.h"	// for DIR_SEP_CHR
+#include "librpcpu/byteswap_rp.h"
 
 // librpfile
 #include "librpfile/RpFile.hpp"
 #include "librpfile/MemFile.hpp"
-#include "librpfile/FileSystem.hpp"
 using namespace LibRpFile;
 
 // librptexture
+#include "img/RpImageLoader.hpp"
 #include "librptexture/img/rp_image.hpp"
 using LibRpTexture::rp_image;
 
@@ -64,8 +64,7 @@ namespace LibRpBase { namespace Tests {
 // tRNS chunk for CI8 paletted images.
 // BMP format doesn't support alpha values
 // in the color table.
-struct tRNS_CI8_t
-{
+struct tRNS_CI8_t {
 	uint8_t alpha[256];
 };
 

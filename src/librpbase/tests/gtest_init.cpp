@@ -2,14 +2,9 @@
  * ROM Properties Page shell extension. (librpbase/tests)                  *
  * gtest_init.c: Google Test initialization.                               *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
-
-#include "librpbase/config.librpbase.h"
-
-// C includes. (C++ namespace)
-#include <cstdlib>
 
 // C++ includes.
 #include <locale>

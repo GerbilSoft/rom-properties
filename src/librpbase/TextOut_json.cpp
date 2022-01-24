@@ -3,7 +3,7 @@
  * TextOut.hpp: Text output for RomData. (JSON output)                     *
  *                                                                         *
  * Copyright (c) 2016-2018 by Egor.                                        *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -12,7 +12,6 @@
 
 // C includes. (C++ namespace)
 #include <cassert>
-#include "ctypex.h"
 
 // C++ includes.
 using std::ostream;
@@ -22,7 +21,6 @@ using std::vector;
 // librpbase
 #include "RomData.hpp"
 #include "RomFields.hpp"
-#include "TextFuncs.hpp"
 #include "img/IconAnimData.hpp"
 
 // librptexture

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * Achievements.hpp: Achievements class.                                   *
  *                                                                         *
- * Copyright (c) 2020 by David Korth.                                      *
+ * Copyright (c) 2020-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -10,10 +10,6 @@
 #define __ROMPROPERTIES_LIBRPBASE_ACHIEVEMENTS_HPP__
 
 #include "common.h"
-
-namespace LibRpTexture {
-	class rp_image;
-}
 
 namespace LibRpBase {
 

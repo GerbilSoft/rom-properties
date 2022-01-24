@@ -2,18 +2,21 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * PixelConversion.hpp: Pixel conversion inline functions.                 *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #ifndef __ROMPROPERTIES_LIBRPTEXTURE_DECODER_PIXELCONVERSION_HPP__
 #define __ROMPROPERTIES_LIBRPTEXTURE_DECODER_PIXELCONVERSION_HPP__
 
-// C includes (C++ namespace)
-#include <cmath>
+// librpcpu
+#include "byteswap_rp.h"
 
 // argb32_t
 #include "argb32_t.hpp"
+
+// C includes
+#include <stdint.h>
 
 namespace LibRpTexture { namespace PixelConversion {
 

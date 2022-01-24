@@ -3,17 +3,14 @@
  * SuperMagicDrive_sse2.cpp: Super Magic Drive deinterleaving function.    *
  * SSE2-optimized version.                                                 *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #include "stdafx.h"
 #include "SuperMagicDrive.hpp"
 
-// C includes. (C++ namespace)
-#include <cassert>
-
-// SSE2 intrinsics.
+// SSE2 intrinsics
 #include <emmintrin.h>
 
 namespace LibRomData {

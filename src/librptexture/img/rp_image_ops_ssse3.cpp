@@ -3,7 +3,7 @@
  * rp_image_ops.cpp: Image class. (operations)                             *
  * SSSE3-optimized version.                                                *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -13,7 +13,6 @@
 #include "rp_image_backend.hpp"
 
 // SSSE3 intrinsics
-#include <xmmintrin.h>
 #include <emmintrin.h>
 #include <tmmintrin.h>
 
