@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * ImageDecoder.cpp: Image decoding functions.                             *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -239,7 +239,7 @@ rp_image *fromLinear16_sse2(PixelFormat px_format,
 	const uint16_t *RESTRICT img_buf, int img_siz, int stride = 0);
 #endif /* IMAGEDECODER_HAS_SSE2 */
 
-#if defined(RP_HAS_IFUNC) && (defined(RP_CPU_I386) || defined(RP_CPU_AMD64))
+#if defined(HAVE_IFUNC) && (defined(RP_CPU_I386) || defined(RP_CPU_AMD64))
 
 #  ifdef IMAGEDECODER_ALWAYS_HAS_SSE2
 // System does support IFUNC, but it's always guaranteed to have SSE2.
@@ -280,7 +280,7 @@ IFUNC_SSE2_STATIC_INLINE rp_image *fromLinear16(PixelFormat px_format,
 	const uint16_t *RESTRICT img_buf, int img_siz, int stride = 0);
 #  endif /* IMAGEDECODER_ALWAYS_HAS_SSE2 */
 
-#else /* !RP_HAS_IFUNC or not i386/amd64 */
+#else /* !HAVE_IFUNC or not i386/amd64 */
 // System does not support IFUNC, or we aren't guaranteed to have
 // optimizations for these CPUs. Use standard inline dispatch.
 
@@ -313,7 +313,7 @@ static inline rp_image *fromLinear16(PixelFormat px_format,
 #  endif /* IMAGEDECODER_ALWAYS_HAS_SSE2 */
 }
 
-#endif /* RP_HAS_IFUNC */
+#endif /* HAVE_IFUNC */
 
 /** 24-bit **/
 
@@ -351,7 +351,7 @@ rp_image *fromLinear24_ssse3(PixelFormat px_format,
 	const uint8_t *RESTRICT img_buf, int img_siz, int stride = 0);
 #endif /* IMAGEDECODER_HAS_SSSE3 */
 
-#if defined(RP_HAS_IFUNC) && (defined(RP_CPU_I386) || defined(RP_CPU_AMD64))
+#if defined(HAVE_IFUNC) && (defined(RP_CPU_I386) || defined(RP_CPU_AMD64))
 /**
  * Convert a linear 24-bit RGB image to rp_image.
  * @param px_format	[in] 24-bit pixel format.
@@ -394,7 +394,7 @@ static inline rp_image *fromLinear24(PixelFormat px_format,
 		return fromLinear24_cpp(px_format, width, height, img_buf, img_siz, stride);
 	}
 }
-#endif /* RP_HAS_IFUNC && (RP_CPU_I386 || RP_CPU_AMD64) */
+#endif /* HAVE_IFUNC && (RP_CPU_I386 || RP_CPU_AMD64) */
 
 /** 32-bit **/
 
@@ -430,7 +430,7 @@ rp_image *fromLinear32_ssse3(PixelFormat px_format,
 	const uint32_t *RESTRICT img_buf, int img_siz, int stride = 0);
 #endif /* IMAGEDECODER_HAS_SSSE3 */
 
-#if defined(RP_HAS_IFUNC) && (defined(RP_CPU_I386) || defined(RP_CPU_AMD64))
+#if defined(HAVE_IFUNC) && (defined(RP_CPU_I386) || defined(RP_CPU_AMD64))
 /**
  * Convert a linear 32-bit RGB image to rp_image.
  * @param px_format	[in] 32-bit pixel format.
@@ -471,7 +471,7 @@ static inline rp_image *fromLinear32(PixelFormat px_format,
 		return fromLinear32_cpp(px_format, width, height, img_buf, img_siz, stride);
 	}
 }
-#endif /* !RP_HAS_IFUNC || (!RP_CPU_I386 && !RP_CPU_AMD64) */
+#endif /* !HAVE_IFUNC || (!RP_CPU_I386 && !RP_CPU_AMD64) */
 
 /** GameCube **/
 

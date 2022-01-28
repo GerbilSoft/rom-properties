@@ -152,19 +152,17 @@ IF(CPU_i386 OR CPU_amd64)
 		img/un-premultiply_sse41.cpp
 		)
 
-	# IFUNC requires glibc.
-	# We're not checking for glibc here, but we do have preprocessor
-	# checks, so even if this does get compiled on a non-glibc system,
-	# it won't do anything.
-	# TODO: Might be supported on other Unix-like operating systems...
-	IF(UNIX AND NOT APPLE)
+	# IFUNC functionality
+	INCLUDE(CheckIfuncSupport)
+	CHECK_IFUNC_SUPPORT()
+	IF(HAVE_IFUNC)
 		SET(${PROJECT_NAME}_IFUNC_SRCS decoder/ImageDecoder_ifunc.cpp)
 		# Disable LTO on the IFUNC files if LTO is known to be broken.
 		IF(GCC_5xx_LTO_ISSUES)
 			SET_SOURCE_FILES_PROPERTIES(${${PROJECT_NAME}_IFUNC_SRCS}
 				APPEND_STRING PROPERTIES COMPILE_FLAGS " -fno-lto ")
 		ENDIF(GCC_5xx_LTO_ISSUES)
-	ENDIF(UNIX AND NOT APPLE)
+	ENDIF(HAVE_IFUNC)
 
 	IF(MSVC AND CPU_i386)
 		SET(SSE2_FLAG "/arch:SSE2")

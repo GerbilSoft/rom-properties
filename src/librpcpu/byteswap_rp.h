@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpcpu)                         *
  * byteswap_rp.h: Byteswapping functions.                                  *
  *                                                                         *
- * Copyright (c) 2008-2021 by David Korth.                                 *
+ * Copyright (c) 2008-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -12,7 +12,7 @@
 // C includes.
 #include <stdint.h>
 
-/* Byteswapping intrinsics. */
+#include "config.librpcpu.h"
 #include "config.byteswap.h"
 
 /* Get the system byte order. */
@@ -46,7 +46,7 @@
 
 /* `inline` might not be defined in older versions. */
 #ifndef inline
-# define inline __inline
+#  define inline __inline
 #endif
 
 #else /* !defined(_MSC_VER) */
@@ -54,24 +54,24 @@
 /* Use gcc's byteswap intrinsics if available. */
 
 #ifdef HAVE___BUILTIN_BSWAP16
-#define __swab16(x) ((uint16_t)__builtin_bswap16(x))
+#  define __swab16(x) ((uint16_t)__builtin_bswap16(x))
 #else
-#define __swab16(x) ((uint16_t)((((uint16_t)x) << 8) | (((uint16_t)x) >> 8)))
+#  define __swab16(x) ((uint16_t)((((uint16_t)x) << 8) | (((uint16_t)x) >> 8)))
 #endif
 
 #ifdef HAVE___BUILTIN_BSWAP32
-#define __swab32(x) ((uint32_t)__builtin_bswap32(x))
+#  define __swab32(x) ((uint32_t)__builtin_bswap32(x))
 #else
-#define __swab32(x) \
+#  define __swab32(x) \
 	((uint32_t)((((uint32_t)x) << 24) | (((uint32_t)x) >> 24) | \
 		((((uint32_t)x) & 0x0000FF00UL) << 8) | \
 		((((uint32_t)x) & 0x00FF0000UL) >> 8)))
 #endif
 
 #ifdef HAVE___BUILTIN_BSWAP64
-#define __swab64(x) ((uint64_t)__builtin_bswap64(x))
+#  define __swab64(x) ((uint64_t)__builtin_bswap64(x))
 #else
-#define __swab64(x) \
+#  define __swab64(x) \
 	((uint64_t)((((uint64_t)x) << 56) | (((uint64_t)x) >> 56) | \
 		((((uint64_t)x) & 0x000000000000FF00ULL) << 40) | \
 		((((uint64_t)x) & 0x0000000000FF0000ULL) << 24) | \
@@ -187,7 +187,7 @@ void __byte_swap_16_array_ssse3(uint16_t *ptr, size_t n);
 void __byte_swap_32_array_ssse3(uint32_t *ptr, size_t n);
 #endif /* BYTESWAP_HAS_SSSE3 */
 
-#if defined(RP_HAS_IFUNC) && (defined(RP_CPU_I386) || defined(RP_CPU_AMD64))
+#if defined(HAVE_IFUNC) && (defined(RP_CPU_I386) || defined(RP_CPU_AMD64))
 /* System has IFUNC. Use it for dispatching. */
 
 /**
@@ -204,7 +204,7 @@ void __byte_swap_16_array(uint16_t *ptr, size_t n);
  */
 void __byte_swap_32_array(uint32_t *ptr, size_t n);
 
-#else /* !RP_HAS_IFUNC && !(defined(RP_CPU_I386) || defined(RP_CPU_AMD64)) */
+#else /* !HAVE_IFUNC && !(defined(RP_CPU_I386) || defined(RP_CPU_AMD64)) */
 /* System does not have IFUNC. Use inline dispatch functions. */
 
 /**
@@ -214,31 +214,31 @@ void __byte_swap_32_array(uint32_t *ptr, size_t n);
  */
 static inline void __byte_swap_16_array(uint16_t *ptr, size_t n)
 {
-# ifdef BYTESWAP_HAS_SSSE3
+#  ifdef BYTESWAP_HAS_SSSE3
 	if (RP_CPU_HasSSSE3()) {
 		__byte_swap_16_array_ssse3(ptr, n);
 	} else
-# endif /* BYTESWAP_HAS_SSSE3 */
-# ifdef BYTESWAP_ALWAYS_HAS_SSE2
+#  endif /* BYTESWAP_HAS_SSSE3 */
+#  ifdef BYTESWAP_ALWAYS_HAS_SSE2
 	{
 		__byte_swap_16_array_sse2(ptr, n);
 	}
-# else /* !BYTESWAP_ALWAYS_HAS_SSE2 */
-#  ifdef BYTESWAP_HAS_SSE2
+#  else /* !BYTESWAP_ALWAYS_HAS_SSE2 */
+#    ifdef BYTESWAP_HAS_SSE2
 	if (RP_CPU_HasSSE2()) {
 		__byte_swap_16_array_sse2(ptr, n);
 	} else
-#  endif /* BYTESWAP_HAS_SSE2 */
-#  ifdef BYTESWAP_HAS_MMX
+#    endif /* BYTESWAP_HAS_SSE2 */
+#    ifdef BYTESWAP_HAS_MMX
 	if (RP_CPU_HasMMX()) {
 		__byte_swap_16_array_mmx(ptr, n);
 	} else
-#  endif /* BYTESWAP_HAS_MMX */
+#    endif /* BYTESWAP_HAS_MMX */
 	// TODO: MMX-optimized version?
 	{
 		__byte_swap_16_array_c(ptr, n);
 	}
-# endif /* BYTESWAP_ALWAYS_HAS_SSE2 */
+#  endif /* BYTESWAP_ALWAYS_HAS_SSE2 */
 }
 
 /**
@@ -248,35 +248,35 @@ static inline void __byte_swap_16_array(uint16_t *ptr, size_t n)
  */
 static inline void __byte_swap_32_array(uint32_t *ptr, size_t n)
 {
-# ifdef BYTESWAP_HAS_SSSE3
+#  ifdef BYTESWAP_HAS_SSSE3
 	if (RP_CPU_HasSSSE3()) {
 		__byte_swap_32_array_ssse3(ptr, n);
 	} else
-# endif /* BYTESWAP_HAS_SSSE3 */
-# ifdef BYTESWAP_ALWAYS_HAS_SSE2
+#  endif /* BYTESWAP_HAS_SSSE3 */
+#  ifdef BYTESWAP_ALWAYS_HAS_SSE2
 	{
 		__byte_swap_32_array_sse2(ptr, n);
 	}
-# else /* !BYTESWAP_ALWAYS_HAS_SSE2 */
-#  ifdef BYTESWAP_HAS_SSE2
+#  else /* !BYTESWAP_ALWAYS_HAS_SSE2 */
+#    ifdef BYTESWAP_HAS_SSE2
 	if (RP_CPU_HasSSE2()) {
 		__byte_swap_32_array_sse2(ptr, n);
 	} else
-#  endif /* BYTESWAP_HAS_SSE2 */
-#  if 0 /* FIXME: The MMX version is actually *slower* than the C version. */
-#  ifdef BYTESWAP_HAS_MMX
+#    endif /* BYTESWAP_HAS_SSE2 */
+#    if 0 /* FIXME: The MMX version is actually *slower* than the C version. */
+#    ifdef BYTESWAP_HAS_MMX
 	if (RP_CPU_HasMMX()) {
 		__byte_swap_32_array_mmx(ptr, n);
 	} else
-#  endif /* BYTESWAP_HAS_MMX */
-#  endif /* 0 */
+#    endif /* BYTESWAP_HAS_MMX */
+#    endif /* 0 */
 	{
 		__byte_swap_32_array_c(ptr, n);
 	}
-# endif /* !BYTESWAP_ALWAYS_HAS_SSE2 */
+#  endif /* !BYTESWAP_ALWAYS_HAS_SSE2 */
 }
 
-#endif /* RP_HAS_IFUNC && (defined(RP_CPU_I386) || defined(RP_CPU_AMD64)) */
+#endif /* HAVE_IFUNC && (defined(RP_CPU_I386) || defined(RP_CPU_AMD64)) */
 
 #ifdef __cplusplus
 }

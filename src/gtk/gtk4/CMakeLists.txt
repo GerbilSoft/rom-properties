@@ -67,15 +67,22 @@ IF(ENABLE_ACHIEVEMENTS)
 ENDIF(ENABLE_ACHIEVEMENTS)
 
 # CPU-specific and optimized sources.
-IF(${PROJECT_NAME}_SSSE3_SRCS)
-	STRING(REGEX REPLACE "([^;]+)" "../\\1" ${PROJECT_NAME}_IFUNC_SRCS "${${PROJECT_NAME}_IFUNC_SRCS}")
-	STRING(REGEX REPLACE "([^;]+)" "../\\1" ${PROJECT_NAME}_SSSE3_SRCS "${${PROJECT_NAME}_SSSE3_SRCS}")
+IF(CPU_i386 OR CPU_amd64)
+	# IFUNC functionality
+	INCLUDE(CheckIfuncSupport)
+	CHECK_IFUNC_SUPPORT()
+	IF(HAVE_IFUNC)
+		SET(${PROJECT_NAME}_IFUNC_SRCS ../xfce/GdkImageConv_ifunc.cpp)
 
-	# Disable LTO on the IFUNC files if LTO is known to be broken.
-	IF(GCC_5xx_LTO_ISSUES)
-		SET_SOURCE_FILES_PROPERTIES(${${PROJECT_NAME}_IFUNC_SRCS}
-			APPEND_STRING PROPERTIES COMPILE_FLAGS " -fno-lto ")
-	ENDIF(GCC_5xx_LTO_ISSUES)
+		# Disable LTO on the IFUNC files if LTO is known to be broken.
+		IF(GCC_5xx_LTO_ISSUES)
+			SET_SOURCE_FILES_PROPERTIES(${${PROJECT_NAME}_IFUNC_SRCS}
+				APPEND_STRING PROPERTIES COMPILE_FLAGS " -fno-lto ")
+		ENDIF(GCC_5xx_LTO_ISSUES)
+	ENDIF(HAVE_IFUNC)
+
+	# NOTE: SSSE3 flags are set in subprojects, not here.
+	SET(${PROJECT_NAME}_SSSE3_SRCS ../xfce/GdkImageConv_ssse3.cpp)
 
 	IF(MSVC AND NOT CMAKE_CL_64)
 		SET(SSSE3_FLAG "/arch:SSE2")

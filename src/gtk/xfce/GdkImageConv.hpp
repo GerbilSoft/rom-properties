@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * GdkImageConv.hpp: Helper functions to convert from rp_image to GDK.     *
  *                                                                         *
- * Copyright (c) 2017-2020 by David Korth.                                 *
+ * Copyright (c) 2017-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -59,7 +59,7 @@ class GdkImageConv
 		static IFUNC_INLINE GdkPixbuf *rp_image_to_GdkPixbuf(const LibRpTexture::rp_image *img);
 };
 
-#if !defined(RP_HAS_IFUNC) || (!defined(RP_CPU_I386) && !defined(RP_CPU_AMD64))
+#if !defined(HAVE_IFUNC) || (!defined(RP_CPU_I386) && !defined(RP_CPU_AMD64))
 
 // System does not support IFUNC, or we don't have optimizations for these CPUs.
 // Use standard inline dispatch.
@@ -81,6 +81,6 @@ inline GdkPixbuf *GdkImageConv::rp_image_to_GdkPixbuf(const LibRpTexture::rp_ima
 	}
 }
 
-#endif /* !defined(RP_HAS_IFUNC) || (!defined(RP_CPU_I386) && !defined(RP_CPU_AMD64)) */
+#endif /* !defined(HAVE_IFUNC) || (!defined(RP_CPU_I386) && !defined(RP_CPU_AMD64)) */
 
 #endif /* __ROMPROPERTIES_GTK_GDKIMAGECONV_HPP__ */

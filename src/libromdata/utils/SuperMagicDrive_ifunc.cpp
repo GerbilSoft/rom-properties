@@ -2,15 +2,15 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * SuperMagicDrive_ifunc.cpp: SuperMagicDrive IFUNC resolution functions.  *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #include "stdafx.h"
 #include "config.librpbase.h"
-#include "librpcpu/cpu_dispatch.h"
+#include "config.librpcpu.h"
 
-#ifdef RP_HAS_IFUNC
+#ifdef HAVE_IFUNC
 
 #include "SuperMagicDrive.hpp"
 using LibRomData::SuperMagicDrive;
@@ -48,4 +48,4 @@ void SuperMagicDrive::decodeBlock(uint8_t *RESTRICT pDest, const uint8_t *RESTRI
 	IFUNC_ATTR(decodeBlock_resolve);
 #endif /* SMD_ALWAYS_HAS_SSE2 */
 
-#endif /* RP_HAS_IFUNC */
+#endif /* HAVE_IFUNC */

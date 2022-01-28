@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * SuperMagicDrive.cpp: Super Magic Drive deinterleaving function.         *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -92,7 +92,7 @@ class SuperMagicDrive
 
 /** Dispatch functions. **/
 
-#if defined(RP_HAS_IFUNC) && defined(SMD_ALWAYS_HAS_SSE2)
+#if defined(HAVE_IFUNC) && defined(SMD_ALWAYS_HAS_SSE2)
 
 // System does support IFUNC, but it's always guaranteed to have SSE2.
 // Eliminate the IFUNC dispatch on this system.
@@ -109,9 +109,9 @@ inline void SuperMagicDrive::decodeBlock(uint8_t *RESTRICT pDest, const uint8_t 
 	decodeBlock_sse2(pDest, pSrc);
 }
 
-#endif /* defined(RP_HAS_IFUNC) && defined(SMD_ALWAYS_HAS_SSE2) */
+#endif /* defined(HAVE_IFUNC) && defined(SMD_ALWAYS_HAS_SSE2) */
 
-#if !defined(RP_HAS_IFUNC) || (!defined(RP_CPU_I386) && !defined(RP_CPU_AMD64))
+#if !defined(HAVE_IFUNC) || (!defined(RP_CPU_I386) && !defined(RP_CPU_AMD64))
 
 /**
  * Decode a Super Magic Drive interleaved block.
@@ -141,7 +141,7 @@ inline void SuperMagicDrive::decodeBlock(uint8_t *RESTRICT pDest, const uint8_t 
 #endif /* SMD_ALWAYS_HAS_SSE2 */
 }
 
-#endif /* !defined(RP_HAS_IFUNC) || (!defined(RP_CPU_I386) && !defined(RP_CPU_AMD64)) */
+#endif /* !defined(HAVE_IFUNC) || (!defined(RP_CPU_I386) && !defined(RP_CPU_AMD64)) */
 
 }
 

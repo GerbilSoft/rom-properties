@@ -2,14 +2,14 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * GdkImageConv_ifunc.cpp: GdkImageConv IFUNC resolution functions.        *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #include "stdafx.h"
-#include "config.librpbase.h"
+#include "config.librpcpu.h"
 
-#ifdef RP_HAS_IFUNC
+#ifdef HAVE_IFUNC
 
 #include "GdkImageConv.hpp"
 using LibRpTexture::rp_image;
@@ -38,4 +38,4 @@ static __typeof__(&GdkImageConv::rp_image_to_GdkPixbuf_cpp) rp_image_to_GdkPixbu
 GdkPixbuf *GdkImageConv::rp_image_to_GdkPixbuf(const rp_image *img)
 	IFUNC_ATTR(rp_image_to_GdkPixbuf_resolve);
 
-#endif /* RP_HAS_IFUNC */
+#endif /* HAVE_IFUNC */
