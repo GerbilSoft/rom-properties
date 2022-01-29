@@ -1178,7 +1178,7 @@ Xbox360_Version_t Xbox360_XEX_Private::getMinKernelVersion(void)
 	// Skip the string table.
 	p += sizeof(*pLibHdr) + be32_to_cpu(pLibHdr->str_tbl_size);
 
-	while (p + sizeof(XEX2_Import_Library_Entry) < p_end) {
+	while (p < p_end - sizeof(XEX2_Import_Library_Entry)) {
 		// Check the minimum version of this import library.
 		const XEX2_Import_Library_Entry *const entry =
 			reinterpret_cast<const XEX2_Import_Library_Entry*>(p);
