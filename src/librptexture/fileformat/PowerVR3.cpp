@@ -803,7 +803,7 @@ int PowerVR3Private::loadPvr3Metadata(void)
 		switch (pHdr->key) {
 			case PVR3_META_ORIENTATION: {
 				// Logical orientation.
-				if (p + sizeof(orientation) > p_end) {
+				if (p > p_end - sizeof(orientation)) {
 					// Out of bounds...
 					p = p_end;
 					break;
