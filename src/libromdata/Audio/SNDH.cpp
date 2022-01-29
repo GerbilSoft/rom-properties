@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * SNDH.hpp: Atari ST SNDH audio reader.                                   *
  *                                                                         *
- * Copyright (c) 2018-2021 by David Korth.                                 *
+ * Copyright (c) 2018-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -447,14 +447,14 @@ SNDHPrivate::TagData SNDHPrivate::parseTags(void)
 				// NOTE: The data format for some of these seems to be
 				// two bytes per subtune, two more bytes, then two NULL bytes.
 				bool handled = false;
-				if (p + 4+2 < p_end) {
+				if (p < p_end - 4+2) {
 					if (p[4+2] == 0 && ISUPPER(p[4+2+1])) {
 						p += 4+2+1;
 						handled = true;
 					}
 				}
 
-				if (!handled && p + 4+3 < p_end) {
+				if (!handled && p < p_end - 4+3) {
 					if (p[4+3] == 0 && ISUPPER(p[4+3+1])) {
 						p += 4+3+1;
 						handled = true;
@@ -462,7 +462,7 @@ SNDHPrivate::TagData SNDHPrivate::parseTags(void)
 				}
 
 				// Check for the 5-byte version.
-				if (!handled && (p + 4+5+1 < p_end)) {
+				if (!handled && (p < p_end - 4+5+1)) {
 					// Might not have a NULL terminator.
 					if (p[4+5] != 0 && ISUPPER(p[4+5+1])) {
 						// No NULL terminator.
@@ -479,7 +479,7 @@ SNDHPrivate::TagData SNDHPrivate::parseTags(void)
 
 				// Search for `00 00`.
 				if (!handled) {
-					for (p += 4; p+1 < p_end; p += 2) {
+					for (p += 4; p < p_end-1; p += 2) {
 						if (p[0] == 0 && p[1] == 0) {
 							// Found it!
 							p += 2;
@@ -523,8 +523,8 @@ SNDHPrivate::TagData SNDHPrivate::parseTags(void)
 				// NOTE: Digits might not be NULL-terminated,
 				// so instead of using readAsciiNumberFromBuffer(),
 				// parse the two digits manually.
-				assert(p + 4 <= p_end);
-				if (p + 4 > p_end) {
+				assert(p <= p_end - 4);
+				if (p > p_end - 4) {
 					// Out of bounds.
 					p = p_end;
 					break;

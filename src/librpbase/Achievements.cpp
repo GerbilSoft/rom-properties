@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * Achievements.cpp: Achievements class.                                   *
  *                                                                         *
- * Copyright (c) 2020-2021 by David Korth.                                 *
+ * Copyright (c) 2020-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -610,7 +610,7 @@ int AchievementsPrivate::load(void)
 	const uint8_t *p = &buf.data()[sizeof(AchBinHeader)];
 	const uint8_t *const p_end = &buf.data()[buf.size()];
 	uint32_t ach_count = le32_to_cpu(header->count);
-	for (; ok && p+3 < p_end && ach_count > 0; ach_count--) {
+	for (; ok && p < p_end-3 && ach_count > 0; ach_count--) {
 		// Achievement ID.
 		const uint16_t id = p[0] | (p[1] << 8);
 		bool isIDok = true;
