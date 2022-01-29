@@ -431,9 +431,9 @@ void trimEnd(string &str)
 	// NOTE: No str.empty() check because that's usually never the case here.
 	// TODO: Check for U+3000? (UTF-8: "\xE3\x80\x80")
 	size_t sz = str.size();
-	const char *p_start = str.c_str();
-	for (const char *p = p_start + sz - 1; p >= p_start; p--) {
-		if (*p != ' ')
+	const auto iter_rend = str.rend();
+	for (auto iter = str.rbegin(); iter != iter_rend; ++iter) {
+		if (*iter != ' ')
 			break;
 		sz--;
 	}
