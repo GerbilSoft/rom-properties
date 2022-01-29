@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * PowerVR3.cpp: PowerVR 3.0.0 texture image reader.                       *
  *                                                                         *
- * Copyright (c) 2019-2021 by David Korth.                                 *
+ * Copyright (c) 2019-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -780,8 +780,7 @@ int PowerVR3Private::loadPvr3Metadata(void)
 
 	uint8_t *p = buf.get();
 	uint8_t *const p_end = p + pvr3Header.metadata_size;
-	// FIXME: Might overflow...
-	while (p + sizeof(PowerVR3_Metadata_Block_Header_t) < p_end) {
+	while (p < p_end - sizeof(PowerVR3_Metadata_Block_Header_t)) {
 		PowerVR3_Metadata_Block_Header_t *const pHdr =
 			reinterpret_cast<PowerVR3_Metadata_Block_Header_t*>(p);
 		p += sizeof(*pHdr);
