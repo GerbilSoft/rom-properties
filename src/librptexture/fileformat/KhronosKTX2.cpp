@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * KhronosKTX2.cpp: Khronos KTX2 image reader.                             *
  *                                                                         *
- * Copyright (c) 2017-2021 by David Korth.                                 *
+ * Copyright (c) 2017-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -739,7 +739,7 @@ void KhronosKTX2Private::loadKeyValueData(void)
 	const char *const p_end = p + ktx2Header.kvdByteLength;
 	bool hasKTXorientation = false;
 
-	while (p < p_end) {
+	while (p < p_end-3) {
 		// Check the next key/value size.
 		const uint32_t sz = le32_to_cpu(*((const uint32_t*)p));
 		if (sz < 2) {
