@@ -795,7 +795,7 @@ void KhronosKTXPrivate::loadKeyValueData(void)
 	const char *const p_end = p + ktxHeader.bytesOfKeyValueData;
 	bool hasKTXorientation = false;
 
-	while (p + 3 < p_end) {
+	while (p < p_end - 3) {
 		// Check the next key/value size.
 		uint32_t sz = *((const uint32_t*)p);
 		if (isByteswapNeeded) {
