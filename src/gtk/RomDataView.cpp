@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * RomDataView.cpp: RomData viewer widget.                                 *
  *                                                                         *
- * Copyright (c) 2017-2021 by David Korth.                                 *
+ * Copyright (c) 2017-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -2293,7 +2293,7 @@ static gboolean
 rom_data_view_load_rom_data(gpointer data)
 {
 	RomDataView *const page = ROM_DATA_VIEW(data);
-	g_return_val_if_fail(page != nullptr || IS_ROM_DATA_VIEW(page), G_SOURCE_REMOVE);
+	g_return_val_if_fail(page != nullptr && IS_ROM_DATA_VIEW(page), G_SOURCE_REMOVE);
 
 	if (G_UNLIKELY(page->uri == nullptr)) {
 		// No URI.

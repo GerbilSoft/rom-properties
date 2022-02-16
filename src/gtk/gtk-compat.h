@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * gtk-compat.h: GTK+ compatibility functions.                             *
  *                                                                         *
- * Copyright (c) 2017-2021 by David Korth.                                 *
+ * Copyright (c) 2017-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -148,17 +148,21 @@ GTK_WIDET_GET_TOPLEVEL_FN(dialog, GtkDialog, GTK_DIALOG)
 static inline GtkWidget*
 gtk_widget_get_first_child(GtkWidget *widget)
 {
+	GtkWidget *ret = nullptr;
+
 	// Assuming this is a GtkContainer.
 	assert(GTK_IS_CONTAINER(widget));
 	GList *const widgetList = gtk_container_get_children(GTK_CONTAINER(widget));
 	if (!widgetList)
-		return nullptr;
+		return ret;
 	// NOTE: First widget in the list matches the first widget in the
 	// UI file, contrary to the bitfield stuff in RomDataView...
 	GList *const widgetIter = g_list_first(widgetList);
-	GtkWidget *const retWidget = GTK_WIDGET(widgetIter->data);
+	assert(widgetIter != nullptr);
+	if (widgetIter)
+		ret = GTK_WIDGET(widgetIter->data);
 	g_list_free(widgetList);
-	return retWidget;
+	return ret;
 }
 #endif /* !GTK_CHECK_VERSION(4,0,0) */
 

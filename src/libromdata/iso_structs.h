@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * iso9660.h: ISO-9660 structs for CD-ROM images.                          *
  *                                                                         *
- * Copyright (c) 2017-2021 by David Korth.                                 *
+ * Copyright (c) 2017-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -92,7 +92,7 @@ ASSERT_STRUCT(uint32_lsb_msb_t, 8);
 #pragma pack(1)
 typedef struct PACKED _ISO_PVD_DateTime_t {
 	union {
-		char full[16];
+		char full[17];
 		struct {
 			char year[4];		// Year, from 1 to 9999.
 			char month[2];		// Month, from 1 to 12.
@@ -101,12 +101,12 @@ typedef struct PACKED _ISO_PVD_DateTime_t {
 			char minute[2];		// Minute, from 0 to 59.
 			char second[2];		// Second, from 0 to 59.
 			char csecond[2];	// Centiseconds, from 0 to 99.
+
+			// Timezone offset, in 15-minute intervals.
+			// Range: [-48 (GMT-1200), +52 (GMT+1300)]
+			int8_t tz_offset;
 		};
 	};
-
-	// Timezone offset, in 15-minute intervals.
-	// Range: [-48 (GMT-1200), +52 (GMT+1300)]
-	int8_t tz_offset;
 } ISO_PVD_DateTime_t;
 ASSERT_STRUCT(ISO_PVD_DateTime_t, 17);
 #pragma pack()
