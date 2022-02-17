@@ -1544,7 +1544,8 @@ rom_data_view_update_multi(RomDataView *page, uint32_t user_lc)
 
 			// Update the list.
 			GtkTreeIter treeIter;
-			gboolean ok = gtk_tree_model_get_iter_first(GTK_TREE_MODEL(listStore), &treeIter);
+			GtkTreeModel *const treeModel = GTK_TREE_MODEL(listStore);
+			gboolean ok = gtk_tree_model_get_iter_first(treeModel, &treeIter);
 			auto iter_listData = pListData->cbegin();
 			const auto pListData_cend = pListData->cend();
 			while (ok && iter_listData != pListData_cend) {
@@ -1559,7 +1560,7 @@ rom_data_view_update_multi(RomDataView *page, uint32_t user_lc)
 
 				// Next row.
 				++iter_listData;
-				ok = gtk_tree_model_iter_next(GTK_TREE_MODEL(listStore), &treeIter);
+				ok = gtk_tree_model_iter_next(treeModel, &treeIter);
 			}
 
 			// Resize the columns to fit the contents.

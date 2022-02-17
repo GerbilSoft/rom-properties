@@ -220,7 +220,7 @@ language_combo_box_rebuild_icons(LanguageComboBox *widget)
 #endif /* GTK_CHECK_VERSION(3,10,0) */
 
 	GtkTreeIter iter;
-	GtkTreeModel *treeModel = GTK_TREE_MODEL(widget->listStore);
+	GtkTreeModel *const treeModel = GTK_TREE_MODEL(widget->listStore);
 	gboolean ok = gtk_tree_model_get_iter_first(treeModel, &iter);
 	if (!ok) {
 		// No iterators...
