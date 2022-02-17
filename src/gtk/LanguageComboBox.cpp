@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * LanguageComboBox.hpp: Language GtkComboBox subclass.                    *
  *                                                                         *
- * Copyright (c) 2017-2020 by David Korth.                                 *
+ * Copyright (c) 2017-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -21,6 +21,7 @@ typedef enum {
 	PROP_0,
 
 	PROP_SELECTED_LC,
+	PROP_FORCE_PAL,
 
 	PROP_LAST
 } LanguageComboBoxPropID;
@@ -65,6 +66,7 @@ struct _LanguageComboBox {
 	GtkComboBox __parent__;
 
 	GtkListStore *listStore;
+	gboolean forcePAL;
 };
 
 // NOTE: G_DEFINE_TYPE() doesn't work in C++ mode with gcc-6.2
@@ -84,6 +86,11 @@ language_combo_box_class_init(LanguageComboBoxClass *klass)
 	props[PROP_SELECTED_LC] = g_param_spec_uint(
 		"selected-lc", "Selected LC", "Selected language code.",
 		0U, ~0U, 0U,
+		(GParamFlags)(G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+
+	props[PROP_FORCE_PAL] = g_param_spec_boolean(
+		"force-pal", "Force PAL", "Force PAL regions.",
+		false,
 		(GParamFlags)(G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
 	// Install the properties.
@@ -149,6 +156,10 @@ language_combo_box_get_property(GObject	*object,
 			g_value_set_uint(value, language_combo_box_get_selected_lc(widget));
 			break;
 
+		case PROP_FORCE_PAL:
+			g_value_set_boolean(value, widget->forcePAL);
+			break;
+
 		default:
 			G_OBJECT_WARN_INVALID_PROPERTY_ID(object, prop_id, pspec);
 			break;
@@ -168,10 +179,86 @@ language_combo_box_set_property(GObject	*object,
 			language_combo_box_set_selected_lc(widget, g_value_get_uint(value));
 			break;
 
+		case PROP_FORCE_PAL:
+			language_combo_box_set_force_pal(widget, g_value_get_boolean(value));
+			break;
+
 		default:
 			G_OBJECT_WARN_INVALID_PROPERTY_ID(object, prop_id, pspec);
 			break;
 	}
+}
+
+/**
+ * Rebuild the language icons.
+ * @param widget LanguageComboBox
+ */
+void
+language_combo_box_rebuild_icons(LanguageComboBox *widget)
+{
+	// TODO:
+	// - High-DPI scaling on GTK+ earlier than 3.10
+	// - Fractional scaling
+	// - Runtime adjustment via "configure" event
+	// Reference: https://developer.gnome.org/gdk3/stable/gdk3-Windows.html#gdk-window-get-scale-factor
+	const unsigned int iconSize = 16;
+#if GTK_CHECK_VERSION(3,10,0)
+#  if 0
+	// FIXME: gtk_widget_get_window() doesn't work unless the window is realized.
+	// We might need to initialize the dropdown in the "realize" signal handler.
+	GdkWindow *const gdk_window = gtk_widget_get_window(GTK_WIDGET(widget));
+	assert(gdk_window != nullptr);
+	if (gdk_window) {
+		const gint scale_factor = gdk_window_get_scale_factor(gdk_window);
+		if (scale_factor >= 2) {
+			// 2x scaling or higher.
+			// TODO: Larger icon sizes?
+			iconSize = 32;
+		}
+	}
+#  endif /* 0 */
+#endif /* GTK_CHECK_VERSION(3,10,0) */
+
+	GtkTreeIter iter;
+	GtkTreeModel *treeModel = GTK_TREE_MODEL(widget->listStore);
+	gboolean ok = gtk_tree_model_get_iter_first(treeModel, &iter);
+	if (!ok) {
+		// No iterators...
+		return;
+	}
+
+	// Load the flags sprite sheet.
+	char flags_filename[64];
+	snprintf(flags_filename, sizeof(flags_filename),
+		"/com/gerbilsoft/rom-properties/flags/flags-%ux%u.png",
+		iconSize, iconSize);
+	PIMGTYPE flags_spriteSheet = PIMGTYPE_load_png_from_gresource(flags_filename);
+	assert(flags_spriteSheet != nullptr);
+
+	do {
+		if (flags_spriteSheet) {
+			uint32_t lc = 0;
+			gtk_tree_model_get(treeModel, &iter, SM_COL_LC, &lc, -1);
+
+			int col, row;
+			if (!SystemRegion::getFlagPosition(lc, &col, &row, widget->forcePAL)) {
+				// Found a matching icon.
+				PIMGTYPE icon = PIMGTYPE_get_subsurface(flags_spriteSheet,
+					col*iconSize, row*iconSize, iconSize, iconSize);
+				gtk_list_store_set(widget->listStore, &iter, SM_COL_ICON, icon, -1);
+				PIMGTYPE_destroy(icon);
+			} else {
+				// No icon. Clear it.
+				gtk_list_store_set(widget->listStore, &iter, SM_COL_ICON, nullptr, -1);
+			}
+		} else {
+			// Clear the icon.
+			gtk_list_store_set(widget->listStore, &iter, SM_COL_ICON, nullptr, -1);
+		}
+
+		// Next row.
+		ok = gtk_tree_model_iter_next(treeModel, &iter);
+	} while (ok);
 }
 
 /**
@@ -186,37 +273,6 @@ language_combo_box_set_lcs(LanguageComboBox *widget, const uint32_t *lcs_array)
 
 	// Check the LC of the selected index.
 	const uint32_t sel_lc = language_combo_box_get_selected_lc(widget);
-
-	// TODO:
-	// - High-DPI scaling on GTK+ earlier than 3.10
-	// - Fractional scaling
-	// - Runtime adjustment via "configure" event
-	// Reference: https://developer.gnome.org/gdk3/stable/gdk3-Windows.html#gdk-window-get-scale-factor
-	const unsigned int iconSize = 16;
-#if GTK_CHECK_VERSION(3,10,0)
-# if 0
-	// FIXME: gtk_widget_get_window() doesn't work unless the window is realized.
-	// We might need to initialize the dropdown in the "realize" signal handler.
-	GdkWindow *const gdk_window = gtk_widget_get_window(GTK_WIDGET(widget));
-	assert(gdk_window != nullptr);
-	if (gdk_window) {
-		const gint scale_factor = gdk_window_get_scale_factor(gdk_window);
-		if (scale_factor >= 2) {
-			// 2x scaling or higher.
-			// TODO: Larger icon sizes?
-			iconSize = 32;
-		}
-	}
-# endif /* 0 */
-#endif /* GTK_CHECK_VERSION(3,10,0) */
-
-	// Load the flags sprite sheet.
-	char flags_filename[64];
-	snprintf(flags_filename, sizeof(flags_filename),
-		"/com/gerbilsoft/rom-properties/flags/flags-%ux%u.png",
-		iconSize, iconSize);
-	PIMGTYPE flags_spriteSheet = PIMGTYPE_load_png_from_gresource(flags_filename);
-	assert(flags_spriteSheet != nullptr);
 
 	// Populate the GtkListStore.
 	gtk_list_store_clear(widget->listStore);
@@ -238,27 +294,14 @@ language_combo_box_set_lcs(LanguageComboBox *widget, const uint32_t *lcs_array)
 				SystemRegion::lcToString(lc).c_str(), -1);
 		}
 
-		// Flag icon.
-		if (flags_spriteSheet) {
-			int col, row;
-			if (!SystemRegion::getFlagPosition(lc, &col, &row)) {
-				// Found a matching icon.
-				PIMGTYPE icon = PIMGTYPE_get_subsurface(flags_spriteSheet,
-					col*iconSize, row*iconSize, iconSize, iconSize);
-				gtk_list_store_set(widget->listStore, &iter, SM_COL_ICON, icon, -1);
-				PIMGTYPE_destroy(icon);
-			}
-		}
-
 		if (sel_lc != 0 && lc == sel_lc) {
 			// This was the previously-selected LC.
 			sel_idx = cur_idx;
 		}
 	}
 
-	// We're done using the flags sprite sheet,
-	// so unreference it to prevent memory leaks.
-	PIMGTYPE_destroy(flags_spriteSheet);
+	// Rebuild icons.
+	language_combo_box_rebuild_icons(widget);
 
 	// Re-select the previously-selected LC.
 	gtk_combo_box_set_active(GTK_COMBO_BOX(widget), sel_idx);
@@ -393,6 +436,29 @@ language_combo_box_get_selected_lc(LanguageComboBox *widget)
 		g_value_unset(&value);
 	}
 	return sel_lc;
+}
+
+/**
+ * Set the Force PAL setting.
+ * @param forcePAL Force PAL setting.
+ */
+void
+language_combo_box_set_force_pal(LanguageComboBox *widget, gboolean forcePAL)
+{
+	if (widget->forcePAL == forcePAL)
+		return;
+	widget->forcePAL = forcePAL;
+	language_combo_box_rebuild_icons(widget);
+}
+
+/**
+ * Get the Force PAL setting.
+ * @return Force PAL setting.
+ */
+gboolean
+language_combo_box_get_force_pal(LanguageComboBox *widget)
+{
+	return widget->forcePAL;
 }
 
 /**

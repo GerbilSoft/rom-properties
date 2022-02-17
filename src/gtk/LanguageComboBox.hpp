@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * LanguageComboBox.hpp: Language GtkComboBox subclass.                    *
  *                                                                         *
- * Copyright (c) 2017-2020 by David Korth.                                 *
+ * Copyright (c) 2017-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -35,6 +35,9 @@ void		language_combo_box_clear_lcs		(LanguageComboBox *widget);
 
 gboolean	language_combo_box_set_selected_lc	(LanguageComboBox *widget, uint32_t lc);
 uint32_t	language_combo_box_get_selected_lc	(LanguageComboBox *widget);
+
+void		language_combo_box_set_force_pal	(LanguageComboBox *widget, gboolean forcePAL);
+gboolean	language_combo_box_get_force_pal	(LanguageComboBox *widget);
 
 G_END_DECLS
 
