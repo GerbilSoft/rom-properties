@@ -50,6 +50,9 @@
     I implemented this as (c0 ≤ c1) due to misleading documentation, which
     didn't work correctly, so I disabled it entirely. Implementing it as
     (c0 > c1) works correctly with the existing test images.
+  * KDE: Work around a KIO issue where thumbnails with a stride not equal
+    to width * bytespp are broken. Usually only shows up in 24-bit images
+    with unusual widths, e.g. hi_mark_sq.ktx .
 
 * Other changes:
   * Significantly improved the peformance of the RGB9_E5 decoder.

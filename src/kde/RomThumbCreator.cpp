@@ -243,6 +243,24 @@ bool RomThumbCreator::create(const QString &path, int width, int height, QImage 
 	int ret = d->getThumbnail(file, width, &outParams);
 	if (ret == 0) {
 		img = outParams.retImg;
+		// FIXME: KF5 5.91, Dolphin 21.12.1
+		// If img.width() * bytespp != img.bytesPerLine(), the image
+		// pitch is incorrect. Test image: hi_mark_sq.ktx (145x130)
+		// The underlying QImage works perfectly fine, though...
+		int bytespp;
+		switch (img.format()) {
+			// TODO: Other formats?
+			case QImage::Format_Indexed8:
+				bytespp = 1;
+				break;
+			case QImage::Format_ARGB32:
+			default:
+				bytespp = 4;
+				break;
+		}
+		if (img.width() * bytespp != img.bytesPerLine()) {
+			img = img.copy();
+		}
 	}
 	file->unref();
 	return (ret == 0);
