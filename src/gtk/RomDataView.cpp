@@ -198,10 +198,6 @@ struct _RomDataViewCxx {
 	};
 	vector<tab> tabs;
 
-	// Mapping of field index to GtkWidget*.
-	// For rom_data_view_update_field().
-	unordered_map<int, GtkWidget*> map_fieldIdx;
-
 	// Description labels.
 	vector<GtkWidget*>	vecDescLabels;
 
@@ -830,9 +826,8 @@ rom_data_view_init_string(RomDataView *page,
 		}
 	}
 
-	// NOTE: Add the widget to the field index map here,
-	// since `widget` might be NULLed out later.
-	page->cxx->map_fieldIdx.emplace(fieldIdx, widget);
+	// NOTE: Set the field index here, since `widget` might be NULLed out later.
+	g_object_set_data(G_OBJECT(widget), "RFT_fieldIdx", GINT_TO_POINTER(fieldIdx+1));
 
 	// Check for any formatting options. (RFT_STRING only)
 	if (field.type == RomFields::RFT_STRING && field.desc.flags != 0) {
@@ -961,7 +956,7 @@ rom_data_view_init_bitfield(RomDataView *page,
 		}
 	}
 
-	page->cxx->map_fieldIdx.emplace(fieldIdx, widget);
+	g_object_set_data(G_OBJECT(widget), "RFT_fieldIdx", GINT_TO_POINTER(fieldIdx+1));
 	return widget;
 }
 
@@ -1325,7 +1320,7 @@ rom_data_view_init_listdata(RomDataView *page,
 			Data_ListDataMulti_t(listStore, GTK_TREE_VIEW(treeView), &field));
 	}
 
-	page->cxx->map_fieldIdx.emplace(fieldIdx, scrolledWindow);
+	g_object_set_data(G_OBJECT(scrolledWindow), "RFT_fieldIdx", GINT_TO_POINTER(fieldIdx+1));
 	return scrolledWindow;
 }
 
@@ -1644,6 +1639,10 @@ rom_data_view_update_multi(RomDataView *page, uint32_t user_lc)
 static int
 rom_data_view_update_field(RomDataView *page, int fieldIdx)
 {
+	assert(page != nullptr);
+	assert(page->cxx != nullptr);
+	_RomDataViewCxx *const cxx = page->cxx;
+
 	const RomFields *const pFields = page->romData->fields();
 	assert(pFields != nullptr);
 	if (!pFields) {
@@ -1663,12 +1662,61 @@ rom_data_view_update_field(RomDataView *page, int fieldIdx)
 		return 3;
 
 	// Get the GtkWidget*.
-	auto iter = page->cxx->map_fieldIdx.find(fieldIdx);
-	if (iter == page->cxx->map_fieldIdx.end()) {
-		// Not found.
-		return 4;
+	// NOTE: Linear search through all display objects, since
+	// this function isn't used that often.
+	GtkWidget *widget = nullptr;
+	const auto tabs_cend = cxx->tabs.cend();
+	for (auto iter = cxx->tabs.cbegin(); iter != tabs_cend && widget == nullptr; ++iter) {
+		GtkWidget *table = iter->table;	// GtkTable (2.x); GtkGrid (3.x)
+
+#if GTK_CHECK_VERSION(4,0,0)
+		// Get the first child.
+		// NOTE: Widgets are enumerated in forwards order.
+		// TODO: Needs testing!
+		GtkWidget *tmp_widget = gtk_widget_get_first_child(table);
+		if (!tmp_widget)
+			continue;
+
+		do {
+			// Check if the field index is correct.
+			// NOTE: RFT_fieldIdx starts at 1 to prevent conflicts with widgets
+			// that don't have RFT_fieldIdx, which would return NULL here.
+			const gint tmp_fieldIdx = GPOINTER_TO_INT(
+				g_object_get_data(G_OBJECT(tmp_widget), "RFT_fieldIdx"));
+			if (tmp_fieldIdx != 0 && (tmp_fieldIdx - 1) == fieldIdx) {
+				// Found the field.
+				widget = tmp_widget;
+				break;
+			}
+		} while ((tmp_widget = gtk_widget_get_next_sibling(tmp_widget)) != nullptr);
+#else /* !GTK_CHECK_VERSION(4,0,0) */
+		// Get the list of child widgets.
+		// NOTE: Widgets are enumerated in reverse order.
+		GList *const widgetList = gtk_container_get_children(GTK_CONTAINER(table));
+		if (!widgetList)
+			continue;
+
+		for (GList *widgetIter = g_list_last(widgetList); widgetIter != nullptr;
+		     widgetIter = widgetIter->prev)
+		{
+			GtkWidget *const tmp_widget = GTK_WIDGET(widgetIter->data);
+			if (!tmp_widget)
+				continue;
+
+			// Check if the field index is correct.
+			// NOTE: RFT_fieldIdx starts at 1 to prevent conflicts with widgets
+			// that don't have RFT_fieldIdx, which would return NULL here.
+			const gint tmp_fieldIdx = GPOINTER_TO_INT(
+				g_object_get_data(G_OBJECT(tmp_widget), "RFT_fieldIdx"));
+			if (tmp_fieldIdx != 0 && (tmp_fieldIdx - 1) == fieldIdx) {
+				// Found the field.
+				widget = tmp_widget;
+				break;
+			}
+		}
+		g_list_free(widgetList);
+#endif
 	}
-	GtkWidget *const widget = iter->second;
 
 	// Update the value widget(s).
 	int ret;
@@ -1752,12 +1800,13 @@ rom_data_view_update_field(RomDataView *page, int fieldIdx)
 				g_object_set_data(G_OBJECT(checkBox), "RFT_BITFIELD_value", GUINT_TO_POINTER((guint)value));
 			}
 #else /* !GTK_CHECK_VERSION(4,0,0) */
+			// Get the list of child widgets.
+			// NOTE: Widgets are enumerated in reverse order.
 			GList *const widgetList = gtk_container_get_children(GTK_CONTAINER(widget));
 			if (!widgetList) {
 				ret = 9;
 				break;
 			}
-			// NOTE: Widgets are enumerated in reverse order.
 			GList *checkBoxIter = g_list_last(widgetList);
 
 			// Inhibit the "no-toggle" signal while updating.
@@ -2361,7 +2410,6 @@ rom_data_view_delete_tabs(RomDataView *page)
 
 	// Clear the tabs.
 	cxx->tabs.clear();
-	cxx->map_fieldIdx.clear();
 
 	if (page->tabWidget) {
 		// Delete the tab widget.

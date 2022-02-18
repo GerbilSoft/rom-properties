@@ -101,10 +101,6 @@ class RomDataViewPrivate
 		};
 		vector<tab> tabs;
 
-		// Mapping of field index to QObject*.
-		// For updateField().
-		unordered_map<int, QObject*> map_fieldIdx;
-
 #ifdef HAVE_KMESSAGEWIDGET
 		// KMessageWidget for ROM operation notifications.
 		KMessageWidget *messageWidget;
@@ -555,7 +551,7 @@ QLabel *RomDataViewPrivate::initString(QLabel *lblDesc,
 		tab.form->addRow(lblDesc, lblString);
 	}
 
-	map_fieldIdx.emplace(fieldIdx, lblString);
+	lblString->setProperty("RFT_fieldIdx", fieldIdx);
 	return lblString;
 }
 
@@ -613,7 +609,7 @@ void RomDataViewPrivate::initBitfield(QLabel *lblDesc,
 	}
 
 	tabs[field.tabIdx].form->addRow(lblDesc, gridLayout);
-	map_fieldIdx.emplace(fieldIdx, gridLayout);
+	gridLayout->setProperty("RFT_fieldIdx", fieldIdx);
 }
 
 /**
@@ -796,7 +792,7 @@ void RomDataViewPrivate::initListData(QLabel *lblDesc,
 		// Single row.
 		tabs[field.tabIdx].form->addRow(lblDesc, treeView);
 	}
-	map_fieldIdx.emplace(fieldIdx, treeView);
+	treeView->setProperty("RFT_fieldIdx", fieldIdx);
 
 	// Row height is recalculated when the window is first visible
 	// and/or the system theme is changed.
@@ -1142,11 +1138,47 @@ int RomDataViewPrivate::updateField(int fieldIdx)
 		return 3;
 
 	// Get the QObject*.
-	auto iter = map_fieldIdx.find(fieldIdx);
-	if (iter == map_fieldIdx.end()) {
-		// Not found.
-		return 4;
+	// NOTE: Linear search through all display objects, since
+	// this function isn't used that often.
+	QObject *qObj = nullptr;
+	const auto tabs_cend = tabs.cend();
+	for (auto iter = tabs.cbegin(); iter != tabs_cend && qObj == nullptr; ++iter) {
+		QFormLayout *const form = iter->form;
+		const int rowCount = form->rowCount();
+		for (int row = 0; row < rowCount && qObj == nullptr; row++) {
+			// TODO: Also check LabelRole in some cases?
+			QLayoutItem *const item = form->itemAt(row, QFormLayout::FieldRole);
+
+			// Check for QWidget.
+			QObject *qObjTmp = item->widget();
+			if (qObjTmp) {
+				// Check if the field index is correct.
+				QVariant qVar = qObjTmp->property("RFT_fieldIdx");
+				bool ok = false;
+				const int tmp_fieldIdx = qVar.toInt(&ok);
+				if (ok && tmp_fieldIdx == fieldIdx) {
+					// Found the field.
+					qObj = qObjTmp;
+					break;
+				}
+			}
+
+			// Check for QLayout.
+			qObjTmp = item->layout();
+			if (qObjTmp) {
+				// Check if the field index is correct.
+				QVariant qVar = qObjTmp->property("RFT_fieldIdx");
+				bool ok = false;
+				const int tmp_fieldIdx = qVar.toInt(&ok);
+				if (ok && tmp_fieldIdx == fieldIdx) {
+					// Found the field.
+					qObj = qObjTmp;
+					break;
+				}
+			}
+		}
 	}
+
 
 	// Update the value widget(s).
 	int ret;
@@ -1162,7 +1194,7 @@ int RomDataViewPrivate::updateField(int fieldIdx)
 
 		case RomFields::RFT_STRING: {
 			// QObject is a QLabel.
-			QLabel *const label = qobject_cast<QLabel*>(iter->second);
+			QLabel *const label = qobject_cast<QLabel*>(qObj);
 			assert(label != nullptr);
 			if (!label) {
 				ret = 7;
@@ -1180,7 +1212,7 @@ int RomDataViewPrivate::updateField(int fieldIdx)
 
 		case RomFields::RFT_BITFIELD: {
 			// QObject is a QGridLayout with QCheckBox widgets.
-			QGridLayout *const layout = qobject_cast<QGridLayout*>(iter->second);
+			QGridLayout *const layout = qobject_cast<QGridLayout*>(qObj);
 			assert(layout != nullptr);
 			if (!layout) {
 				ret = 8;
@@ -1253,7 +1285,6 @@ void RomDataViewPrivate::initDisplayWidgets(void)
 		}
 	);
 	tabs.clear();
-	map_fieldIdx.clear();
 	ui.tabWidget->clear();
 	ui.tabWidget->hide();
 
