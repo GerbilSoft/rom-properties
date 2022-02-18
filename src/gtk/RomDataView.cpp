@@ -1661,6 +1661,15 @@ rom_data_view_update_field(RomDataView *page, int fieldIdx)
 	if (!field)
 		return 3;
 
+	// Lambda function to check a QObject's RFT_fieldIdx.
+	auto checkFieldIdx = [](GtkWidget *widget, int fieldIdx) -> bool {
+		// NOTE: RFT_fieldIdx starts at 1 to prevent conflicts with widgets
+		// that don't have RFT_fieldIdx, which would return NULL here.
+		const gint tmp_fieldIdx = GPOINTER_TO_INT(
+			g_object_get_data(G_OBJECT(widget), "RFT_fieldIdx"));
+		return (tmp_fieldIdx != 0 && (tmp_fieldIdx - 1) == fieldIdx);
+	};
+
 	// Get the GtkWidget*.
 	// NOTE: Linear search through all display objects, since
 	// this function isn't used that often.
@@ -1677,11 +1686,7 @@ rom_data_view_update_field(RomDataView *page, int fieldIdx)
 		     tmp_widget != nullptr; tmp_widget = gtk_widget_get_next_sibling(tmp_widget))
 		{
 			// Check if the field index is correct.
-			// NOTE: RFT_fieldIdx starts at 1 to prevent conflicts with widgets
-			// that don't have RFT_fieldIdx, which would return NULL here.
-			const gint tmp_fieldIdx = GPOINTER_TO_INT(
-				g_object_get_data(G_OBJECT(tmp_widget), "RFT_fieldIdx"));
-			if (tmp_fieldIdx != 0 && (tmp_fieldIdx - 1) == fieldIdx) {
+			if (checkFieldIdx(tmp_widget, fieldIdx)) {
 				// Found the field.
 				widget = tmp_widget;
 				break;
@@ -1702,11 +1707,7 @@ rom_data_view_update_field(RomDataView *page, int fieldIdx)
 				continue;
 
 			// Check if the field index is correct.
-			// NOTE: RFT_fieldIdx starts at 1 to prevent conflicts with widgets
-			// that don't have RFT_fieldIdx, which would return NULL here.
-			const gint tmp_fieldIdx = GPOINTER_TO_INT(
-				g_object_get_data(G_OBJECT(tmp_widget), "RFT_fieldIdx"));
-			if (tmp_fieldIdx != 0 && (tmp_fieldIdx - 1) == fieldIdx) {
+			if (checkFieldIdx(tmp_widget, fieldIdx)) {
 				// Found the field.
 				widget = tmp_widget;
 				break;

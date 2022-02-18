@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE4/KF5)                         *
  * RomDataView.cpp: RomData viewer.                                        *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -1137,6 +1137,14 @@ int RomDataViewPrivate::updateField(int fieldIdx)
 	if (!field)
 		return 3;
 
+	// Lambda function to check a QObject's RFT_fieldIdx.
+	auto checkFieldIdx = [](QObject *qObj, int fieldIdx) -> bool {
+		const QVariant qVar = qObj->property("RFT_fieldIdx");
+		bool ok = false;
+		const int tmp_fieldIdx = qVar.toInt(&ok);
+		return (ok && tmp_fieldIdx == fieldIdx);
+	};
+
 	// Get the QObject*.
 	// NOTE: Linear search through all display objects, since
 	// this function isn't used that often.
@@ -1151,30 +1159,18 @@ int RomDataViewPrivate::updateField(int fieldIdx)
 
 			// Check for QWidget.
 			QObject *qObjTmp = item->widget();
-			if (qObjTmp) {
-				// Check if the field index is correct.
-				QVariant qVar = qObjTmp->property("RFT_fieldIdx");
-				bool ok = false;
-				const int tmp_fieldIdx = qVar.toInt(&ok);
-				if (ok && tmp_fieldIdx == fieldIdx) {
-					// Found the field.
-					qObj = qObjTmp;
-					break;
-				}
+			if (qObjTmp && checkFieldIdx(qObjTmp, fieldIdx)) {
+				// Found the field.
+				qObj = qObjTmp;
+				break;
 			}
 
 			// Check for QLayout.
 			qObjTmp = item->layout();
-			if (qObjTmp) {
-				// Check if the field index is correct.
-				QVariant qVar = qObjTmp->property("RFT_fieldIdx");
-				bool ok = false;
-				const int tmp_fieldIdx = qVar.toInt(&ok);
-				if (ok && tmp_fieldIdx == fieldIdx) {
-					// Found the field.
-					qObj = qObjTmp;
-					break;
-				}
+			if (qObjTmp && checkFieldIdx(qObjTmp, fieldIdx)) {
+				// Found the field.
+				qObj = qObjTmp;
+				break;
 			}
 		}
 	}
