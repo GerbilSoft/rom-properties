@@ -1673,11 +1673,9 @@ rom_data_view_update_field(RomDataView *page, int fieldIdx)
 		// Get the first child.
 		// NOTE: Widgets are enumerated in forwards order.
 		// TODO: Needs testing!
-		GtkWidget *tmp_widget = gtk_widget_get_first_child(table);
-		if (!tmp_widget)
-			continue;
-
-		do {
+		for (GtkWidget *tmp_widget = gtk_widget_get_first_child(table);
+		     tmp_widget != nullptr; tmp_widget = gtk_widget_get_next_sibling(tmp_widget))
+		{
 			// Check if the field index is correct.
 			// NOTE: RFT_fieldIdx starts at 1 to prevent conflicts with widgets
 			// that don't have RFT_fieldIdx, which would return NULL here.
@@ -1688,7 +1686,7 @@ rom_data_view_update_field(RomDataView *page, int fieldIdx)
 				widget = tmp_widget;
 				break;
 			}
-		} while ((tmp_widget = gtk_widget_get_next_sibling(tmp_widget)) != nullptr);
+		}
 #else /* !GTK_CHECK_VERSION(4,0,0) */
 		// Get the list of child widgets.
 		// NOTE: Widgets are enumerated in reverse order.
