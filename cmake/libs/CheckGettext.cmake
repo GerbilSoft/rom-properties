@@ -2,7 +2,7 @@
 # On Windows, we always use our own precompiled gettext.
 # On other platforms, we always use the system gettext.
 
-MACRO(CHECK_GETTEXT)
+FUNCTION(CHECK_GETTEXT)
 	# Intl == runtime library
 	# Gettext == compile-time tools
 	IF(WIN32)
@@ -19,18 +19,26 @@ MACRO(CHECK_GETTEXT)
 
 		SET(Intl_INCLUDE_DIR "${gettext_ROOT}/include" CACHE INTERNAL "libintl include directory." FORCE)
 		IF(MSVC)
-			# MSVC: Link to the import library.
+			# MSVC: Link to the import library
 			SET(Intl_LIBRARIES "${gettext_LIB}/libgnuintl-8.lib" CACHE INTERNAL "libintl libraries" FORCE)
 		ELSE(MSVC)
-			# MinGW: Link to the import library. (TODO: Link to the DLL?)
+			# MinGW: Link to the import library (TODO: Link to the DLL?)
 			SET(Intl_LIBRARIES "${gettext_LIB}/libgnuintl.dll.a" CACHE INTERNAL "libintl libraries" FORCE)
 		ENDIF(MSVC)
 
-		# Executables.
-		SET(GETTEXT_MSGFMT_EXECUTABLE "${gettext_BIN}/msgfmt.exe" CACHE INTERNAL "msgfmt executable" FORCE)
-		SET(GETTEXT_MSGMERGE_EXECUTABLE "${gettext_BIN}/msgmerge.exe" CACHE INTERNAL "msgmerge executable" FORCE)
-		SET(GETTEXT_XGETTEXT_EXECUTABLE "${gettext_BIN}/xgettext.exe" CACHE INTERNAL "xgettext executable" FORCE)
-		SET(GETTEXT_MSGINIT_EXECUTABLE "${gettext_BIN}/msginit.exe" CACHE INTERNAL "msginit executable" FORCE)
+		# Executables
+		# NOTE: If cross-compiling on Linux for Windows, use the native tools.
+		IF(CMAKE_CROSSCOMPILING)
+			FIND_PROGRAM(GETTEXT_MSGFMT_EXECUTABLE msgfmt)
+			FIND_PROGRAM(GETTEXT_MSGMERGE_EXECUTABLE msgmerge)
+			FIND_PROGRAM(GETTEXT_XGETTEXT_EXECUTABLE xgettext)
+			FIND_PROGRAM(GETTEXT_MSGINIT_EXECUTABLE msginit)
+		ELSE(CMAKE_CROSSCOMPILING)
+			SET(GETTEXT_MSGFMT_EXECUTABLE "${gettext_BIN}/msgfmt.exe" CACHE INTERNAL "msgfmt executable" FORCE)
+			SET(GETTEXT_MSGMERGE_EXECUTABLE "${gettext_BIN}/msgmerge.exe" CACHE INTERNAL "msgmerge executable" FORCE)
+			SET(GETTEXT_XGETTEXT_EXECUTABLE "${gettext_BIN}/xgettext.exe" CACHE INTERNAL "xgettext executable" FORCE)
+			SET(GETTEXT_MSGINIT_EXECUTABLE "${gettext_BIN}/msginit.exe" CACHE INTERNAL "msginit executable" FORCE)
+		ENDIF(CMAKE_CROSSCOMPILING)
 
 		IF(NOT TARGET libgnuintl_dll_target)
 			# Destination directory.
@@ -71,5 +79,5 @@ MACRO(CHECK_GETTEXT)
 		FIND_PROGRAM(GETTEXT_XGETTEXT_EXECUTABLE xgettext)
 		FIND_PROGRAM(GETTEXT_MSGINIT_EXECUTABLE msginit)
 	ENDIF(WIN32)
-	SET(HAVE_GETTEXT 1)
-ENDMACRO(CHECK_GETTEXT)
+	SET(HAVE_GETTEXT 1 PARENT_SCOPE)
+ENDFUNCTION(CHECK_GETTEXT)
