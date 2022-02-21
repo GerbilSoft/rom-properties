@@ -12,6 +12,7 @@ IF(NOT PACKAGE_NAME)
 ENDIF(NOT PACKAGE_NAME)
 
 # Architecture name for arch-specific paths.
+INCLUDE(CPUInstructionSetFlags)
 IF(CPU_amd64)
 	SET(arch "amd64")
 ELSEIF(CPU_i386)

@@ -67,6 +67,7 @@ IF(ENABLE_ACHIEVEMENTS)
 ENDIF(ENABLE_ACHIEVEMENTS)
 
 # CPU-specific and optimized sources.
+INCLUDE(CPUInstructionSetFlags)
 IF(CPU_i386 OR CPU_amd64)
 	# IFUNC functionality
 	INCLUDE(CheckIfuncSupport)

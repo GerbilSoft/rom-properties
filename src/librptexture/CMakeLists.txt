@@ -133,6 +133,7 @@ IF(ENABLE_ASTC)
 ENDIF(ENABLE_ASTC)
 
 # CPU-specific and optimized sources.
+INCLUDE(CPUInstructionSetFlags)
 IF(CPU_i386 OR CPU_amd64)
 	# MSVC does not support MMX intrinsics in 64-bit builds.
 	# Reference: https://docs.microsoft.com/en-us/cpp/cpp/m64?view=msvc-160
@@ -163,19 +164,6 @@ IF(CPU_i386 OR CPU_amd64)
 				APPEND_STRING PROPERTIES COMPILE_FLAGS " -fno-lto ")
 		ENDIF(GCC_5xx_LTO_ISSUES)
 	ENDIF(HAVE_IFUNC)
-
-	IF(MSVC AND CPU_i386)
-		SET(SSE2_FLAG "/arch:SSE2")
-		SET(SSSE3_FLAG "/arch:SSE2")
-		SET(SSE41_FLAG "/arch:SSE2")
-	ELSEIF(NOT MSVC)
-		IF(CPU_i386)
-			SET(MMX_FLAG "-mmmx")
-			SET(SSE2_FLAG "-msse2")
-		ENDIF(CPU_i386)
-		SET(SSSE3_FLAG "-mssse3")
-		SET(SSE41_FLAG "-msse4.1")
-	ENDIF()
 
 	IF(MMX_FLAG)
 		SET_SOURCE_FILES_PROPERTIES(${${PROJECT_NAME}_MMX_SRCS}

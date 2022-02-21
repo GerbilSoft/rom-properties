@@ -345,6 +345,7 @@ ELSE()
 ENDIF()
 
 # Optimized sources.
+INCLUDE(CPUInstructionSetFlags)
 IF(CPU_i386 OR CPU_amd64)
 	# IFUNC requires glibc.
 	# We're not checking for glibc here, but we do have preprocessor
@@ -372,16 +373,6 @@ IF(CPU_i386 OR CPU_amd64)
 		${${PROJECT_NAME}_SSE2_SRCS}
 		utils/SuperMagicDrive_sse2.cpp
 		)
-
-	IF(CPU_i386)
-		IF(MSVC)
-			SET(SSE2_FLAG "/arch:SSE2")
-		ELSE(MSVC)
-			# TODO: Other compilers?
-			SET(MMX_FLAG "-mmmx")
-			SET(SSE2_FLAG "-msse2")
-		ENDIF(MSVC)
-	ENDIF(CPU_i386)
 
 	IF(MMX_FLAG)
 		SET_SOURCE_FILES_PROPERTIES(utils/SuperMagicDrive_mmx.cpp
