@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpthreads)                     *
  * Atomics.h: Atomic function macros.                                      *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -32,15 +32,15 @@
 #  define ATOMIC_DEC_FETCH(ptr)			__c11_atomic_dec_fetch(ptr, 1, __ATOMIC_SEQ_CST)
 #  define ATOMIC_OR_FETCH(ptr, val)		__c11_atomic_or_fetch(ptr, val, __ATOMIC_SEQ_CST)
    /* NOTE: C11 version of cmpxchg requires pointers, so we'll use the Itanium-style version. */
-#  define ATOMIC_CMPXCHG(ptr, cmp, xchg)	__sync_val_compare_and_swap(ptr, cmp, xchg);
-#  define ATOMIC_EXCHANGE(ptr, val)		__c11_atomic_exchange(ptr, val);
+#  define ATOMIC_CMPXCHG(ptr, cmp, xchg)	__sync_val_compare_and_swap(ptr, cmp, xchg)
+#  define ATOMIC_EXCHANGE(ptr, val)		__c11_atomic_exchange(ptr, val)
 # else
    /* Use Itanium-style atomics. */
 #  define ATOMIC_INC_FETCH(ptr)			__sync_add_and_fetch(ptr, 1)
 #  define ATOMIC_DEC_FETCH(ptr)			__sync_sub_and_fetch(ptr, 1)
 #  define ATOMIC_OR_FETCH(ptr, val)		__sync_or_and_fetch(ptr, val)
-#  define ATOMIC_CMPXCHG(ptr, cmp, xchg)	__sync_val_compare_and_swap(ptr, cmp, xchg);
-#  define ATOMIC_EXCHANGE(ptr, val)		__sync_lock_test_and_set(ptr, val);
+#  define ATOMIC_CMPXCHG(ptr, cmp, xchg)	__sync_val_compare_and_swap(ptr, cmp, xchg)
+#  define ATOMIC_EXCHANGE(ptr, val)		__sync_lock_test_and_set(ptr, val)
 # endif
 #elif defined(__GNUC__)
 # if (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 7))
