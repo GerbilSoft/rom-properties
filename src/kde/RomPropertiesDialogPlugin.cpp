@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE4/KF5)                         *
  * RomPropertiesDialogPlugin.cpp: KPropertiesDialogPlugin.                 *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -27,10 +27,23 @@ using LibRpFile::IRpFile;
 #include "libromdata/RomDataFactory.hpp"
 using LibRomData::RomDataFactory;
 
-RomPropertiesDialogPlugin::RomPropertiesDialogPlugin(KPropertiesDialog *props, const QVariantList&)
-	: super(props)
+/**
+ * Instantiate a RomDataView for the given KPropertiesDialog.
+ * @param parent KPropertiesDialog (NOTE: QObject* is used for registerPlugin() compatibility.)
+ * @param args
+ */
+RomPropertiesDialogPlugin::RomPropertiesDialogPlugin(QObject *parent, const QVariantList &args)
+	: super(qobject_cast<KPropertiesDialog*>(parent))
 {
+	Q_UNUSED(args)
 	CHECK_UID();
+
+	KPropertiesDialog *const props = qobject_cast<KPropertiesDialog*>(parent);
+	assert(props != nullptr);
+	if (!props) {
+		// Parent *must* be KPropertiesDialog.
+		return;
+	}
 
 	// Check if a single file was specified.
 	KFileItemList items = props->items();

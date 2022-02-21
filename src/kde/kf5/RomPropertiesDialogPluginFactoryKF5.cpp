@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KF5)                              *
  * RomPropertiesDialogPluginFactoryKF5.cpp: Factory class.                 *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -16,18 +16,27 @@
 
 #include "stdafx.h"
 #include "RomPropertiesDialogPlugin.hpp"
+
+#include <kcoreaddons_version.h>
 #include <kpluginfactory.h>
 
+#if KCOREADDONS_VERSION >= QT_VERSION_CHECK(5,89,0)
+// KF5 5.89 added a new registerPlugin() with no keyword or CreateInstanceFunction parameters
+// and deprecated the old version.
+K_PLUGIN_FACTORY_WITH_JSON(RomPropertiesDialogFactory, "rom-properties-kf5.json",
+	registerPlugin<RomPropertiesDialogPlugin>();)
+#else /* KCOREADDONS_VERSION < 0x055900 */
 static QObject *createRomPropertiesPage(QWidget *w, QObject *parent, const QVariantList &args)
 {
+	// NOTE: RomPropertiesDialogPlugin will verify that parent is an
+	// instance of KPropertiesDialog*, so we don't have to do that here.
 	Q_UNUSED(w)
-	KPropertiesDialog *props = qobject_cast<KPropertiesDialog*>(parent);
-	Q_ASSERT(props);
-	return new RomPropertiesDialogPlugin(props, args);
+	return new RomPropertiesDialogPlugin(parent, args);
 }
 
 K_PLUGIN_FACTORY_WITH_JSON(RomPropertiesDialogFactory, "rom-properties-kf5.json",
 	registerPlugin<RomPropertiesDialogPlugin>(QString(), createRomPropertiesPage);)
+#endif
 
 // automoc4 works correctly without any special handling.
 // automoc5 doesn't notice that K_PLUGIN_FACTORY() has a
