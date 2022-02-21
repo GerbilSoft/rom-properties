@@ -29,9 +29,9 @@ IF(NOT CMAKE_CXX_FLAGS MATCHES "/EHsc")
 ENDIF(NOT CMAKE_CXX_FLAGS MATCHES "/EHsc")
 
 # Test for MSVC-specific compiler flags.
-# /utf-8 and /Zc:throiwngNew were both added in MSVC 2015.
+# /utf-8 and was added in MSVC 2015.
 INCLUDE(CheckCCompilerFlag)
-FOREACH(FLAG_TEST "/sdl" "/guard:cf" "/utf-8" "/Zc:throwingNew")
+FOREACH(FLAG_TEST "/sdl" "/guard:cf" "/utf-8")
 	# CMake doesn't like certain characters in variable names.
 	STRING(REGEX REPLACE "/|:|=" "_" FLAG_TEST_VARNAME "${FLAG_TEST}")
 
@@ -39,15 +39,31 @@ FOREACH(FLAG_TEST "/sdl" "/guard:cf" "/utf-8" "/Zc:throwingNew")
 	IF(CFLAG_${FLAG_TEST_VARNAME})
 		SET(RP_C_FLAGS_COMMON "${RP_C_FLAGS_COMMON} ${FLAG_TEST}")
 		SET(RP_CXX_FLAGS_COMMON "${RP_CXX_FLAGS_COMMON} ${FLAG_TEST}")
-		IF(FLAG_TEST STREQUAL "/guard:cf")
-			# "/guard:cf" must be added to linker flags as well.
-			SET(RP_EXE_LINKER_FLAGS_COMMON "${RP_EXE_LINKER_FLAGS_COMMON} ${FLAG_TEST}")
-			SET(RP_SHARED_LINKER_FLAGS_COMMON "${RP_SHARED_LINKER_FLAGS_COMMON} ${FLAG_TEST}")
-			SET(RP_MODULE_LINKER_FLAGS_COMMON "${RP_MODULE_LINKER_FLAGS_COMMON} ${FLAG_TEST}")
-		ENDIF(FLAG_TEST STREQUAL "/guard:cf")
 	ENDIF(CFLAG_${FLAG_TEST_VARNAME})
 	UNSET(CFLAG_${FLAG_TEST_VARNAME})
 ENDFOREACH()
+
+# "/guard:cf" must be added to linker flags in addition to CFLAGS.
+CHECK_C_COMPILER_FLAG("/guard:cf" CFLAG_guard_cf)
+IF(CFLAG_guard_cf)
+	SET(RP_C_FLAGS_COMMON "${RP_C_FLAGS_COMMON} /guard:cf")
+	SET(RP_CXX_FLAGS_COMMON "${RP_CXX_FLAGS_COMMON} /guard:cf")
+	SET(RP_EXE_LINKER_FLAGS_COMMON "${RP_EXE_LINKER_FLAGS_COMMON} /guard:cf")
+	SET(RP_SHARED_LINKER_FLAGS_COMMON "${RP_SHARED_LINKER_FLAGS_COMMON} /guard:cf")
+	SET(RP_MODULE_LINKER_FLAGS_COMMON "${RP_MODULE_LINKER_FLAGS_COMMON} /guard:cf")
+ENDIF(CFLAG_guard_cf)
+UNSET(CFLAG_guard_cf)
+
+# "/Zc:throwingNew" is always enabled on clang-cl, and causes
+# warnings to be printed if it's specified.
+# NOTE: "/Zc:throwingNew" was added in MSVC 2015.
+IF(NOT CMAKE_CXX_COMPILER_ID STREQUAL Clang)
+	CHECK_CXX_COMPILER_FLAG("/Zc:throwingNew" CXXFLAG_Zc_throwingNew)
+	IF(CXXFLAG_Zc_throwingNew)
+		SET(RP_CXX_FLAGS_COMMON "${RP_CXX_FLAGS_COMMON} /Zc:throwingNew")
+	ENDIF(CXXFLAG_Zc_throwingNew)
+	UNSET(CXXFLAG_Zc_throwingNew)
+ENDIF(NOT CMAKE_CXX_COMPILER_ID STREQUAL Clang)
 
 # Disable warning C4996 (deprecated), then re-enable it.
 # Otherwise, it gets handled as an error due to /sdl.
