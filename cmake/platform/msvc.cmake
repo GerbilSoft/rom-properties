@@ -58,6 +58,7 @@ UNSET(CFLAG_guard_cf)
 # warnings to be printed if it's specified.
 # NOTE: "/Zc:throwingNew" was added in MSVC 2015.
 IF(NOT CMAKE_CXX_COMPILER_ID STREQUAL Clang)
+	INCLUDE(CheckCXXCompilerFlag)
 	CHECK_CXX_COMPILER_FLAG("/Zc:throwingNew" CXXFLAG_Zc_throwingNew)
 	IF(CXXFLAG_Zc_throwingNew)
 		SET(RP_CXX_FLAGS_COMMON "${RP_CXX_FLAGS_COMMON} /Zc:throwingNew")
