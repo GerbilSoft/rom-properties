@@ -3,7 +3,7 @@
  * EXE_NE.cpp: DOS/Windows executable reader.                              *
  * 16-bit New Executable format.                                           *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -405,6 +405,42 @@ void EXEPrivate::addFields_NE(void)
 		"EXE|OtherFlags", OtherFlags_names, ARRAY_SIZE(OtherFlags_names));
 	fields->addField_bitfield(C_("EXE", "Other Flags"),
 		v_OtherFlags_names, 2, hdr.ne.OS2EXEFlags);
+
+	// Timestamp (Early NE executables; pre-Win1.01)
+	// NOTE: Uses the same field as CRC, so use
+	// heuristics to determine if it's valid.
+	// High 16 bits == date; low 16 bits = time
+	// Reference: https://docs.microsoft.com/en-us/cpp/c-runtime-library/32-bit-windows-time-date-formats?view=msvc-170
+	// TODO: Also add to metadata?
+	const uint32_t ne_dos_time = le32_to_cpu(hdr.ne.FileLoadCRC);
+	struct tm ne_tm;
+	// tm_year is year - 1900; DOS timestamp starts at 1980.
+	// NOTE: Only allowing 1983-1985.
+	ne_tm.tm_year = ((ne_dos_time >> 25) & 0x7F) + 80;
+	if (ne_tm.tm_year >= 83 && ne_tm.tm_year <= 85) {
+		ne_tm.tm_mon	= ((ne_dos_time >> 21) & 0x0F) - 1;	// DOS is 1-12; Unix is 0-11
+		ne_tm.tm_mday	= ((ne_dos_time >> 16) & 0x1F);
+		ne_tm.tm_hour	= ((ne_dos_time >> 11) & 0x1F);
+		ne_tm.tm_min	= ((ne_dos_time >>  5) & 0x3F);
+		ne_tm.tm_sec	=  (ne_dos_time & 0x1F) * 2;
+
+		// tm_wday and tm_yday are output variables.
+		ne_tm.tm_wday = 0;
+		ne_tm.tm_yday = 0;
+		ne_tm.tm_isdst = 0;
+
+		// Verify ranges.
+		if (ne_tm.tm_mon <= 11 && ne_tm.tm_mday <= 31 &&
+		    ne_tm.tm_hour <= 23 && ne_tm.tm_min <= 60 && ne_tm.tm_sec <= 59)
+		{
+			// In range.
+			const time_t ne_time = timegm(&ne_tm);
+			fields->addField_dateTime(C_("EXE", "Timestamp"), ne_time,
+				RomFields::RFT_DATETIME_HAS_DATE |
+				RomFields::RFT_DATETIME_HAS_TIME |
+				RomFields::RFT_DATETIME_IS_UTC);	// no timezone
+		}
+	}
 
 	// Expected Windows version.
 	// TODO: Is this used in OS/2 executables?

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * EXE.cpp: DOS/Windows executable reader.                                 *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -709,7 +709,7 @@ const char *EXE::systemName(unsigned int type) const
 					return sysNames_NE_PharLap[1][type & SYSNAME_TYPE_MASK];
 				} else {
 					// Not Phar-Lap.
-					return nullptr;
+					return C_("EXE", "Unknown NE");
 				}
 			}
 			return sysNames_NE[d->hdr.ne.targOS][type & SYSNAME_TYPE_MASK];
@@ -725,7 +725,7 @@ const char *EXE::systemName(unsigned int type) const
 			if (targOS <= NE_OS_WIN386) {
 				return sysNames_NE[targOS][type & SYSNAME_TYPE_MASK];
 			}
-			return nullptr;
+			return C_("EXE", "Unknown LE/LX");
 		}
 
 		case EXEPrivate::ExeType::W3: {
@@ -782,7 +782,7 @@ const char *EXE::systemName(unsigned int type) const
 
 	// Should not get here...
 	assert(!"Unknown EXE type.");
-	return "Unknown EXE type";
+	return C_("EXE", "Unknown EXE");
 }
 
 /**
