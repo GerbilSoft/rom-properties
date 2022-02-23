@@ -259,6 +259,10 @@ language_combo_box_rebuild_icons(LanguageComboBox *widget)
 		// Next row.
 		ok = gtk_tree_model_iter_next(treeModel, &iter);
 	} while (ok);
+
+	if (flags_spriteSheet) {
+		PIMGTYPE_destroy(flags_spriteSheet);
+	}
 }
 
 /**
