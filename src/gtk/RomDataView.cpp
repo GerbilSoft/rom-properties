@@ -159,42 +159,11 @@ struct Data_ListDataMulti_t {
 // C++ objects.
 struct _RomDataViewCxx {
 	struct tab {
-		RomDataView	*page;		// Parent page
-		GtkWidget	*vbox;		// Either page or a GtkVBox/GtkBox.
+		GtkWidget	*vbox;		// Either parent page or a GtkVBox/GtkBox.
 		GtkWidget	*table;		// GtkTable (2.x); GtkGrid (3.x)
 		GtkWidget	*lblCredits;
 
-		tab()
-			: page(nullptr)
-			, vbox(nullptr)
-			, table(nullptr)
-			, lblCredits(nullptr)
-		{ }
-
-		~tab()
-		{
-#if GTK_CHECK_VERSION(4,0,0)
-			if (lblCredits) {
-				g_object_unref(lblCredits);
-			}
-			if (table) {
-				g_object_unref(table);
-			}
-			if (vbox && vbox != GTK_WIDGET(page)) {
-				g_object_unref(vbox);
-			}
-#else /* !GTK_CHECK_VERSION(4,0,0) */
-			if (lblCredits) {
-				gtk_widget_destroy(lblCredits);
-			}
-			if (table) {
-				gtk_widget_destroy(table);
-			}
-			if (vbox && vbox != GTK_WIDGET(page)) {
-				gtk_widget_destroy(vbox);
-			}
-#endif /* GTK_CHECK_VERSION(4,0,0) */
-		}
+		tab() : vbox(nullptr), table(nullptr), lblCredits(nullptr) { }
 	};
 	vector<tab> tabs;
 
@@ -855,6 +824,7 @@ rom_data_view_init_string(RomDataView *page,
 			// There should be a maximum of one STRF_CREDITS per tab.
 			auto &tab = page->cxx->tabs.at(field.tabIdx);
 			assert(tab.lblCredits == nullptr);
+			tab.lblCredits = widget;
 
 			// Credits row.
 #if GTK_CHECK_VERSION(4,0,0)
@@ -2057,7 +2027,6 @@ rom_data_view_update_display(RomDataView *page)
 			}
 
 			auto &tab = *tabIter;
-			tab.page = page;
 
 #if USE_GTK_GRID
 			tab.vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 8);
@@ -2106,7 +2075,6 @@ rom_data_view_update_display(RomDataView *page)
 		tabCount = 1;
 		tabs.resize(1);
 		auto &tab = tabs.at(0);
-		tab.page = page;
 		tab.vbox = GTK_WIDGET(page);
 
 #if USE_GTK_GRID
@@ -2408,14 +2376,25 @@ rom_data_view_delete_tabs(RomDataView *page)
 	_RomDataViewCxx *const cxx = page->cxx;
 
 	// Clear the tabs.
+	if (cxx->tabs.size() == 1) {
+		// Single tab. We'll need to remove the table first.
+		GtkWidget *const table = cxx->tabs[0].table;
+		if (table) {
+#if GTK_CHECK_VERSION(4,0,0)
+			gtk_box_remove(GTK_BOX(page), table);
+#else /* !GTK_CHECK_VERSION(4,0,0) */
+			gtk_container_remove(GTK_CONTAINER(page), table);
+#endif /* GTK_CHECK_VERSION(4,0,0) */
+		}
+	}
 	cxx->tabs.clear();
 
 	if (page->tabWidget) {
 		// Delete the tab widget.
 #if GTK_CHECK_VERSION(4,0,0)
-		g_object_unref(page->tabWidget);
+		gtk_box_remove(GTK_BOX(page), page->tabWidget);
 #else /* !GTK_CHECK_VERSION(4,0,0) */
-		gtk_widget_destroy(page->tabWidget);
+		gtk_container_remove(GTK_CONTAINER(page), page->tabWidget);
 #endif /* GTK_CHECK_VERSION(4,0,0) */
 		page->tabWidget = nullptr;
 	}
@@ -2423,9 +2402,9 @@ rom_data_view_delete_tabs(RomDataView *page)
 	// Delete the language combobox.
 	if (page->cboLanguage) {
 #if GTK_CHECK_VERSION(4,0,0)
-		g_object_unref(page->cboLanguage);
+		gtk_box_remove(GTK_BOX(page->hboxHeaderRow_outer), page->cboLanguage);
 #else /* !GTK_CHECK_VERSION(4,0,0) */
-		gtk_widget_destroy(page->cboLanguage);
+		gtk_container_remove(GTK_CONTAINER(page->hboxHeaderRow_outer), page->cboLanguage);
 #endif /* GTK_CHECK_VERSION(4,0,0) */
 		page->cboLanguage = nullptr;
 	}
@@ -2712,15 +2691,14 @@ btnOptions_triggered_signal_handler(OptionsMenuButton *menuButton,
 
 			// TODO: URIs?
 			gchar *out_filename = (get_file ? g_file_get_path(get_file) : nullptr);
-			g_object_unref(dialog);
 #else /* !GTK_CHECK_VERSION(4,0,0) */
 			gint res = gtk_dialog_run(GTK_DIALOG(dialog));
 			gchar *out_filename = (res == GTK_RESPONSE_ACCEPT
 				? gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog))
 				: nullptr);
-			gtk_widget_destroy(dialog);
 #endif /* !GTK_CHECK_VERSION(4,0,0) */
 
+			g_object_unref(dialog);
 			if (!out_filename) {
 				// No filename...
 				return;
@@ -2867,15 +2845,14 @@ btnOptions_triggered_signal_handler(OptionsMenuButton *menuButton,
 
 		// TODO: URIs?
 		save_filename = (get_file ? g_file_get_path(get_file) : nullptr);
-		g_object_unref(dialog);
 #else /* !GTK_CHECK_VERSION(4,0,0) */
 		gint res = gtk_dialog_run(GTK_DIALOG(dialog));
 		save_filename = (res == GTK_RESPONSE_ACCEPT
 			? gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog))
 			: nullptr);
-		gtk_widget_destroy(dialog);
 #endif /* !GTK_CHECK_VERSION(4,0,0) */
 
+		g_object_unref(dialog);
 		params.save_filename = save_filename;
 	}
 
