@@ -1646,7 +1646,7 @@ rom_data_view_update_field(RomDataView *page, int fieldIdx)
 	GtkWidget *widget = nullptr;
 	const auto tabs_cend = cxx->tabs.cend();
 	for (auto iter = cxx->tabs.cbegin(); iter != tabs_cend && widget == nullptr; ++iter) {
-		GtkWidget *table = iter->table;	// GtkTable (2.x); GtkGrid (3.x)
+		GtkWidget *const table = iter->table;	// GtkTable (2.x); GtkGrid (3.x)
 
 #if GTK_CHECK_VERSION(4,0,0)
 		// Get the first child.
