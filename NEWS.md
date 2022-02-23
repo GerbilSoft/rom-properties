@@ -23,6 +23,8 @@
     the LDR decoder is rather slow.)
   * The GBS parser now partially supports the older GBR format.
   * GameCube: IOS version is now shown for Wii discs.
+  * EXE: Parse timestamps in early NE executables.
+  * Xbox_XBE: Display "Init Flags".
 
 * New compressed texture formats:
   * EAC R11 and RG11, which uses ETC2's alpha channel compression for
