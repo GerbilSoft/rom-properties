@@ -1664,13 +1664,14 @@ rom_data_view_update_field(RomDataView *page, int fieldIdx)
 		}
 #else /* !GTK_CHECK_VERSION(4,0,0) */
 		// Get the list of child widgets.
-		// NOTE: Widgets are enumerated in reverse order.
+		// NOTE: Widgets are enumerated in forwards order,
+		// since the list head is the first item.
 		GList *const widgetList = gtk_container_get_children(GTK_CONTAINER(table));
 		if (!widgetList)
 			continue;
 
-		for (GList *widgetIter = g_list_last(widgetList); widgetIter != nullptr;
-		     widgetIter = widgetIter->prev)
+		for (GList *widgetIter = g_list_first(widgetList); widgetIter != nullptr;
+		     widgetIter = widgetIter->next)
 		{
 			GtkWidget *const tmp_widget = GTK_WIDGET(widgetIter->data);
 			if (!tmp_widget)
