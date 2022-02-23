@@ -680,8 +680,8 @@ int Xbox_XBE::loadFieldData(void)
 		return 0;
 	}
 
-	// Maximum of 12 fields.
-	d->fields->reserve(12);
+	// Maximum of 13 fields.
+	d->fields->reserve(13);
 	d->fields->setTabName(0, "XBE");
 
 	// Game name
@@ -801,6 +801,19 @@ int Xbox_XBE::loadFieldData(void)
 
 	d->fields->addField_string(C_("Xbox_XBE", "Media Types"),
 		found ? oss.str() : C_("Xbox_XBE", "None"));
+
+	// Initialization flags
+	const uint32_t init_flags = le32_to_cpu(xbeHeader->init_flags);
+	static const char *const init_flags_tbl[] = {
+		NOP_C_("Xbox_XBE|InitFlags", "Mount Utility Drive"),
+		NOP_C_("Xbox_XBE|InitFlags", "Format Utility Drive"),
+		NOP_C_("Xbox_XBE|InitFlags", "Limit RAM to 64 MB"),
+		NOP_C_("Xbox_XBE|InitFlags", "Don't Setup HDD"),
+	};
+	vector<string> *const v_init_flags = RomFields::strArrayToVector_i18n(
+		"Region", init_flags_tbl, ARRAY_SIZE(init_flags_tbl));
+	d->fields->addField_bitfield(C_("Xbox_XBE", "Init Flags"),
+		v_init_flags, 2, init_flags);
 
 	// Region code
 	uint32_t region_code = le32_to_cpu(xbeCertificate->region_code);
