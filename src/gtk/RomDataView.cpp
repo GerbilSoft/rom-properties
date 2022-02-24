@@ -1670,7 +1670,7 @@ rom_data_view_update_field(RomDataView *page, int fieldIdx)
 		if (!widgetList)
 			continue;
 
-		for (GList *widgetIter = g_list_first(widgetList); widgetIter != nullptr;
+		for (GList *widgetIter = widgetList; widgetIter != nullptr;
 		     widgetIter = widgetIter->next)
 		{
 			GtkWidget *const tmp_widget = GTK_WIDGET(widgetIter->data);
