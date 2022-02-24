@@ -367,7 +367,7 @@ options_menu_button_get_direction(OptionsMenuButton *widget)
 {
 	g_return_val_if_fail(IS_OPTIONS_MENU_BUTTON(widget), GTK_ARROW_UP);
 #ifdef USE_GTK_MENU_BUTTON
-	return gtk_menu_button_get_direction(GTK_MENU_BUTTON(widget));
+	return gtk_menu_button_get_direction(GTK_MENU_BUTTON(widget->button));
 #else /* !USE_GTK_MENU_BUTTON */
 	return widget->arrowType;
 #endif /* USE_GTK_MENU_BUTTON */
