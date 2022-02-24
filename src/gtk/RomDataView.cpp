@@ -2390,6 +2390,16 @@ rom_data_view_delete_tabs(RomDataView *page)
 	}
 	cxx->tabs.clear();
 
+	if (page->messageWidget) {
+		// Delete the message widget.
+#if GTK_CHECK_VERSION(4,0,0)
+		gtk_box_remove(GTK_BOX(page), page->messageWidget);
+#else /* !GTK_CHECK_VERSION(4,0,0) */
+		gtk_container_remove(GTK_CONTAINER(page), page->messageWidget);
+#endif /* GTK_CHECK_VERSION(4,0,0) */
+		page->messageWidget = nullptr;
+	}
+
 	if (page->tabWidget) {
 		// Delete the tab widget.
 #if GTK_CHECK_VERSION(4,0,0)
@@ -2400,8 +2410,8 @@ rom_data_view_delete_tabs(RomDataView *page)
 		page->tabWidget = nullptr;
 	}
 
-	// Delete the language combobox.
 	if (page->cboLanguage) {
+		// Delete the language combobox.
 #if GTK_CHECK_VERSION(4,0,0)
 		gtk_box_remove(GTK_BOX(page->hboxHeaderRow_outer), page->cboLanguage);
 #else /* !GTK_CHECK_VERSION(4,0,0) */
