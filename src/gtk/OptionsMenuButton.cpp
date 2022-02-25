@@ -428,7 +428,7 @@ btnOptions_clicked_signal_handler(GtkButton *button, gpointer user_data)
 	OptionsMenuButton *const widget = OPTIONS_MENU_BUTTON(gtk_widget_get_parent(GTK_WIDGET(button)));
 	g_return_val_if_fail(widget != nullptr, FALSE);
 
-	g_signal_emit(GTK_WIDGET(widget), options_menu_button_signals[SIGNAL_ACTIVATE], 0);
+	g_signal_emit(GTK_WIDGET(widget), options_menu_button_signals[SIGNAL_CLICKED], 0);
 	return TRUE;
 }
 
