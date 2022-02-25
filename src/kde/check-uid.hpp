@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE4/KF5)                         *
  * check-uid.h: CHECK_UID() macro.                                         *
  *                                                                         *
- * Copyright (c) 2017-2021 by David Korth.                                 *
+ * Copyright (c) 2017-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -11,7 +11,6 @@
 
 #include <unistd.h>
 #include <qglobal.h>
-#include <QtCore/qlogging.h>
 
 // Prevent running as root.
 #define CHECK_UID() do { \
