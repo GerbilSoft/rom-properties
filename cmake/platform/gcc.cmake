@@ -72,11 +72,16 @@ ENDIF(CFLAG_IMPLFUNC)
 UNSET(CFLAG_IMPLFUNC)
 
 # Enable "suggest override" if available. (C++ only)
-CHECK_CXX_COMPILER_FLAG("-Wsuggest-override" CXXFLAG_SUGGEST_OVERRIDE)
-IF(CXXFLAG_SUGGEST_OVERRIDE)
-	SET(RP_CXX_FLAGS_COMMON "${RP_CXX_FLAGS_COMMON} -Wsuggest-override -Wno-error=suggest-override")
-ENDIF(CXXFLAG_SUGGEST_OVERRIDE)
-UNSET(CXXFLAG_SUGGEST_OVERRIDE)
+# NOTE: If gcc, only enable on 9.2 and later, since earlier versions
+# will warn if a function is marked 'final' but not 'override'
+# https://gcc.gnu.org/bugzilla/show_bug.cgi?id=78010
+IF(NOT CMAKE_COMPILER_IS_GNUCC OR (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 9.1))
+	CHECK_CXX_COMPILER_FLAG("-Wsuggest-override" CXXFLAG_SUGGEST_OVERRIDE)
+	IF(CXXFLAG_SUGGEST_OVERRIDE)
+		SET(RP_CXX_FLAGS_COMMON "${RP_CXX_FLAGS_COMMON} -Wsuggest-override -Wno-error=suggest-override")
+	ENDIF(CXXFLAG_SUGGEST_OVERRIDE)
+	UNSET(CXXFLAG_SUGGEST_OVERRIDE)
+ENDIF(NOT CMAKE_COMPILER_IS_GNUCC OR (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 9.1))
 
 # Code coverage checking.
 IF(ENABLE_COVERAGE)
