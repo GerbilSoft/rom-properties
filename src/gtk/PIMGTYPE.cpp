@@ -145,6 +145,7 @@ PIMGTYPE PIMGTYPE_load_png_from_gresource(const char *filename)
 	// We'll use g_memory_input_stream_new_from_data() for compatibility.
 	gsize size;
 	const void *pData = g_bytes_get_data(pBytes, &size);
+	map_gbytes_unref.emplace(pData, pBytes); // FIXME: Memory leak on GTK2/GTK4?
 	GInputStream *const stream = g_memory_input_stream_new_from_data(
 		pData, size, gbytes_destroy_notify);
 	PIMGTYPE pixbuf = gdk_pixbuf_new_from_stream(stream, nullptr, nullptr);
