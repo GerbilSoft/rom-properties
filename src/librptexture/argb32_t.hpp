@@ -10,6 +10,7 @@
 #define __ROMPROPERTIES_LIBRPTEXTURE_ARGB32_T_HPP__
 
 #include "common.h"
+#include "librpcpu/byteorder.h"
 
 namespace LibRpTexture {
 
