@@ -2412,10 +2412,22 @@ rom_data_view_delete_tabs(RomDataView *page)
 
 	if (page->cboLanguage) {
 		// Delete the language combobox.
+		// NOTE: cboLanguage is contained in a GtkBox (GtkVBox).
+		// We'll need to get the parent widget first, then remove
+		// the parent widget.
+		GtkWidget *parent = gtk_widget_get_parent(page->cboLanguage);
+#if GTK_CHECK_VERSION(3,0,0)
+		assert(GTK_IS_BOX(parent));
+#else /* !GTK_CHECK_VERSION(3,0,0) */
+		// GTK2: The GtkVBox is contained within a GtkAlignment.
+		parent = gtk_widget_get_parent(parent);
+		assert(GTK_IS_ALIGNMENT(parent));
+#endif /* GTK_CHECK_VERSION(3,0,0) */
+
 #if GTK_CHECK_VERSION(4,0,0)
-		gtk_box_remove(GTK_BOX(page->hboxHeaderRow_outer), page->cboLanguage);
+		gtk_box_remove(GTK_BOX(page->hboxHeaderRow_outer), parent);
 #else /* !GTK_CHECK_VERSION(4,0,0) */
-		gtk_container_remove(GTK_CONTAINER(page->hboxHeaderRow_outer), page->cboLanguage);
+		gtk_container_remove(GTK_CONTAINER(page->hboxHeaderRow_outer), parent);
 #endif /* GTK_CHECK_VERSION(4,0,0) */
 		page->cboLanguage = nullptr;
 	}
