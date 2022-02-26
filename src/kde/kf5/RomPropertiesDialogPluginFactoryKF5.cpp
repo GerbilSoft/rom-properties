@@ -25,7 +25,7 @@
 // and deprecated the old version.
 K_PLUGIN_FACTORY_WITH_JSON(RomPropertiesDialogFactory, "rom-properties-kf5.json",
 	registerPlugin<RomPropertiesDialogPlugin>();)
-#else /* KCOREADDONS_VERSION < 0x055900 */
+#else /* KCOREADDONS_VERSION < QT_VERSION_CHECK(5,89,0) */
 static QObject *createRomPropertiesPage(QWidget *w, QObject *parent, const QVariantList &args)
 {
 	// NOTE: RomPropertiesDialogPlugin will verify that parent is an
