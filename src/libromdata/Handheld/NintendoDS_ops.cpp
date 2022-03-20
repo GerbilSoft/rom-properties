@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * NintendoDS.hpp: Nintendo DS(i) ROM reader. (ROM operations)             *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -265,6 +265,13 @@ int NintendoDS::doRomOp_int(int id, RomOpParams *pParams)
 			// Trim = reduce ROM to minimum size as indicated by header.
 			// Untrim = expand to power of 2 size, filled with 0xFF.
 			const uint32_t total_used_rom_size = d->totalUsedRomSize();
+			if (total_used_rom_size < 1024) {
+				// Invalid ROM size in header.
+				pParams->status = -EIO;
+				pParams->msg = C_("NintendoDS", "ROM header has an invalid \"Used ROM Size\" field.");
+				return -EIO;
+			}
+
 			bool doTrim;
 			if (!(total_used_rom_size < d->romSize)) {
 				// ROM is trimmed. Untrim it.
