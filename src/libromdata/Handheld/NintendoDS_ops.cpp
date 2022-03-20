@@ -201,9 +201,13 @@ vector<RomData::RomOp> NintendoDS::romOps_int(void) const
 	bool showUntrim = false;
 	if (likely(d->romSize > 0)) {
 		// Determine if the ROM is trimmed.
-
 		const uint32_t total_used_rom_size = d->totalUsedRomSize();
-		if (total_used_rom_size == d->romSize && isPow2(d->romSize)) {
+		if (total_used_rom_size < 1024) {
+			// Invalid ROM size in header.
+			// Cannot trim/untrim, so show the "Trim ROM" option but disabled.
+			showUntrim = !isPow2(d->romSize);
+			flags = RomOp::ROF_REQ_WRITABLE;
+		} else if (total_used_rom_size == d->romSize && isPow2(d->romSize)) {
 			// ROM is technically trimmed, but it's already a power of two.
 			// Cannot trim/untrim, so show the "Trim ROM" option but disabled.
 			showUntrim = false;
