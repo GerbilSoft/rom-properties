@@ -992,8 +992,8 @@ const NESMappersPrivate::SubmapperInfo *NESMappersPrivate::lookup_nes2_submapper
 {
 	assert(mapper >= 0);
 	assert(submapper >= 0);
-	assert(submapper < 256);
-	if (mapper < 0 || submapper < 0 || submapper >= 256) {
+	assert(submapper < 16);
+	if (mapper < 0 || submapper < 0 || submapper >= 16) {
 		// Mapper or submapper number is out of range.
 		return nullptr;
 	}
