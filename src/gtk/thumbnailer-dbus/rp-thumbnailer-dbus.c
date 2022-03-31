@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (D-Bus Thumbnailer)                *
  * rp-thumbnailer-dbus.c: D-Bus thumbnailer service.                       *
  *                                                                         *
- * Copyright (c) 2017-2021 by David Korth.                                 *
+ * Copyright (c) 2017-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -286,10 +286,7 @@ static void
 rp_thumbnailer_finalize(GObject *object)
 {
 	RpThumbnailer *const thumbnailer = RP_THUMBNAILER(object);
-
-	if (thumbnailer->skeleton) {
-		g_object_unref(thumbnailer->skeleton);
-	}
+	g_clear_object(&thumbnailer->skeleton);
 
 	// Delete any remaining requests and free the queue.
 	for (GList *p = thumbnailer->request_queue.head; p != NULL; p = p->next) {
@@ -357,9 +354,7 @@ rp_thumbnailer_set_property(GObject *object,
 
 	switch (prop_id) {
 		case PROP_CONNECTION: {
-			if (thumbnailer->connection) {
-				g_object_unref(thumbnailer->connection);
-			}
+			g_clear_object(&thumbnailer->connection);
 
 			GDBusConnection *const connection = (GDBusConnection*)g_value_get_object(value);
 			thumbnailer->connection = (G_IS_DBUS_CONNECTION(connection)

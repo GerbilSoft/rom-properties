@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * OptionsMenuButton.cpp: Options menu GtkMenuButton container.            *
  *                                                                         *
- * Copyright (c) 2017-2021 by David Korth.                                 *
+ * Copyright (c) 2017-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -293,10 +293,7 @@ options_menu_button_dispose(GObject *object)
 #endif /* !USE_GTK_MENU_BUTTON */
 
 #ifdef USE_G_MENU_MODEL
-	if (widget->menuModel) {
-		g_object_unref(widget->menuModel);
-		widget->menuModel = nullptr;
-	}
+	g_clear_object(&widget->menuModel);
 	// owned by widget->menuModel
 	widget->menuRomOps = nullptr;
 
@@ -304,12 +301,10 @@ options_menu_button_dispose(GObject *object)
 		delete widget->actionMap;
 		widget->actionMap = nullptr;
 	}
-	if (widget->actionGroup) {
-		// The GSimpleActionGroup owns the actions, so
-		// this will automatically delete the actions.
-		g_object_unref(widget->actionGroup);
-		widget->actionGroup = nullptr;
-	}
+
+	// The GSimpleActionGroup owns the actions, so
+	// this will automatically delete the actions.
+	g_clear_object(&widget->actionGroup);
 #endif /* USE_G_MENU_MODEL */
 
 	// Call the superclass dispose() function.
@@ -692,20 +687,14 @@ options_menu_button_reinit_menu(OptionsMenuButton *widget,
 #endif /* USE_GTK_MENU_BUTTON */
 
 #ifdef USE_G_MENU_MODEL
-	if (widget->menuModel) {
-		g_object_unref(widget->menuModel);
-	}
+	g_clear_object(&widget->menuModel);
 	widget->menuModel = menuModel;
 	widget->menuRomOps = menuRomOps;
-	if (widget->actionGroup) {
-		g_object_unref(widget->actionGroup);
-	}
+	g_clear_object(&widget->actionGroup);
 	widget->actionGroup = actionGroup;
 	gtk_widget_insert_action_group(GTK_WIDGET(widget), prefix, G_ACTION_GROUP(actionGroup));
 #else /* !USE_G_MENU_MODEL */
-	if (widget->menuOptions) {
-		gtk_widget_destroy(widget->menuOptions);
-	}
+	g_clear_object(&widget->menuOptions);
 	widget->menuOptions = menuOptions;
 #endif /* USE_G_MENU_MODEL */
 }
