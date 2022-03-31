@@ -71,9 +71,12 @@ IF(ENABLE_ACHIEVEMENTS)
 ENDIF(ENABLE_ACHIEVEMENTS)
 
 # Common libraries required for both GTK+ 2.x and 3.x.
-FIND_PACKAGE(GLib2 2.26.0)
-FIND_PACKAGE(GObject2 2.26.0)
+FIND_PACKAGE(GLib2 ${GLIB_MIN_VERSION})
+FIND_PACKAGE(GObject2 ${GLIB_MIN_VERSION})
 IF(GLib2_FOUND AND GObject2_FOUND)
+	# Ensure we don't use functions not available in GLib 2.32.
+	ADD_DEFINITIONS(-DGLIB_VERSION_MIN_REQUIRED=GLIB_VERSION_2_32 -DGLIB_VERSION_MAX_ALLOWED=GLIB_VERSION_2_32)
+
 	# Check for version-specific image libraries.
 	FIND_PACKAGE(GdkPixbuf2)
 	IF(NOT GdkPixbuf2_FOUND)

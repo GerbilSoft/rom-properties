@@ -66,6 +66,10 @@ CHECK_HIDDEN_VISIBILITY()
 INCLUDE(CheckIncludeFile)
 CHECK_INCLUDE_FILE("stdbool.h" HAVE_STDBOOL_H)
 
+# glib-2.32 (released 2012/03/24) added GResource and GMenuModel.
+# Ubuntu 14.04 has glib-2.40.
+SET(GLIB_MIN_VERSION 2.32.0)
+
 # Write the version number to config.version.h.
 CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/config.version.h.in" "${CMAKE_CURRENT_BINARY_DIR}/config.version.h")
 
