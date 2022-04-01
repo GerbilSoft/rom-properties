@@ -123,18 +123,18 @@ int main(int argc, char *argv[])
 	CHECK_UID_RET(EXIT_FAILURE);
 	rpt_do_security_options();
 
-#if !GLIB_CHECK_VERSION(2,36,0)
-	// g_type_init() is automatic as of glib-2.36.0
+#if !GLIB_CHECK_VERSION(2,35,1)
+	// g_type_init() is automatic as of glib-2.35.1
 	// and is marked deprecated.
 	g_type_init();
-#endif /* !GLIB_CHECK_VERSION(2,36,0) */
+#endif
 #if !GLIB_CHECK_VERSION(2,32,0)
 	// g_thread_init() is automatic as of glib-2.32.0
 	// and is marked deprecated.
 	if (!g_thread_supported()) {
 		g_thread_init(nullptr);
 	}
-#endif /* !GLIB_CHECK_VERSION(2,32,0) */
+#endif
 
 	// Initialize the cache directory.
 	if (init_cache_dir() != 0) {

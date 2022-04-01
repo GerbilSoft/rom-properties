@@ -277,8 +277,8 @@ G_MODULE_EXPORT int RP_C_API rp_create_thumbnail(const char *source_file, const 
 	CHECK_UID_RET(RPCT_RUNNING_AS_ROOT);
 
 	// Make sure glib is initialized.
-	// NOTE: This is a no-op as of glib-2.36.
-#if !GLIB_CHECK_VERSION(2,36,0)
+	// NOTE: This is a no-op as of glib-2.35.1.
+#if !GLIB_CHECK_VERSION(2,35,1)
 	g_type_init();
 #endif
 
