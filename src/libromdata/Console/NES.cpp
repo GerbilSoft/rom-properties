@@ -3,7 +3,7 @@
  * NES.cpp: Nintendo Entertainment System/Famicom ROM reader.              *
  *                                                                         *
  * Copyright (c) 2016-2021 by David Korth.                                 *
- * Copyright (c) 2016-2018 by Egor.                                        *
+ * Copyright (c) 2016-2022 by Egor.                                        *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -1058,19 +1058,9 @@ int NES::loadFieldData(void)
 			case NESPrivate::ROM_FORMAT_INES:
 			case NESPrivate::ROM_FORMAT_NES2:
 				// Mirroring
-				// TODO: Detect mappers that have programmable mirroring.
-				// TODO: Also One Screen, e.g. AxROM.
-				if (d->header.ines.mapper_lo & INES_F6_MIRROR_FOUR) {
-					// Four screens using extra VRAM.
-					s_mirroring = C_("NES|Mirroring", "Four Screens");
-				} else {
-					// TODO: There should be a "one screen" option...
-					if (d->header.ines.mapper_lo & INES_F6_MIRROR_VERT) {
-						s_mirroring = C_("NES|Mirroring", "Vertical");
-					} else {
-						s_mirroring = C_("NES|Mirroring", "Horizontal");
-					}
-				}
+				s_mirroring = NESMappers::lookup_ines_mirroring(mapper, submapper == -1 ? 0 : submapper,
+					d->header.ines.mapper_lo & INES_F6_MIRROR_VERT,
+					d->header.ines.mapper_lo & INES_F6_MIRROR_FOUR);
 
 				// Check for NES 2.0 extended console types, including VS hardware.
 				if ((d->romType & (NESPrivate::ROM_SYSTEM_MASK | NESPrivate::ROM_FORMAT_MASK)) ==
