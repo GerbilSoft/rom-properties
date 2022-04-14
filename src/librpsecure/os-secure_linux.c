@@ -110,6 +110,7 @@ int rp_secure_enable(rp_secure_param_t param)
 			SCMP_SYS(clone),
 			SCMP_SYS(set_robust_list),
 			SCMP_SYS(clone3),		// pthread_create() with glibc-2.34
+			SCMP_SYS(rseq),			// restartable sequences, glibc-2.35
 
 			-1	// End of whitelist
 		};
