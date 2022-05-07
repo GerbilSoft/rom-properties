@@ -40,6 +40,7 @@ CS:0x080:Splatoon
 CS:0x09C:Mario Sports Superstars
 
 CS:0x0A0:Animal Crossing
+CS:0x0A4:Arms
 
 CS:0x190:Pokémon
 CS:0x194:Pokémon
@@ -883,6 +884,9 @@ C:0x0A1D:Frett
 C:0x0A1E:Azalea
 C:0x0A1F:Roswell
 C:0x0A20:Faith
+
+# Arms (character series == 0x0A4)
+C:0x0A40:Min Min
 
 # Pokémon (character series == 0x190 - 0x1BC)
 # NOTE: IDs are 0x1900 + National Pokédex number.
@@ -1950,12 +1954,12 @@ A:0x039E:4:1:Daisy Power-Up Band
 A:0x03A0:5:1:Toad Power-Up Band
 A:0x039F:6:1:Yoshi Power-Up Band
 
-# SSBU: Wave 13 [0x03A1-0x03A5]
-A:0x03A1:83:13:Joker
-A:0x03A2:84:13:Hero
-A:0x03A3:85:13:Banjo & Kazooie
-A:0x03A4:86:13:Terry
-A:0x03A5:87:13:Byleth
+# SSBU: Wave 14 (Ultimate Fighter Pass 1) [0x03A1-0x03A5]
+A:0x03A1:83:14:Joker
+A:0x03A2:84:14:Hero
+A:0x03A3:85:14:Banjo & Kazooie
+A:0x03A4:86:14:Terry
+A:0x03A5:87:14:Byleth
 
 # SMB: Wave 5 (Super Mario 3D World + Bowser's Fury) [0x03A6-0x03A7]
 A:0x03A6:21:5:Cat Mario
@@ -2027,6 +2031,9 @@ A:0x0413:0:0:E.M.M.I.
 
 # The Legend of Zelda: Skyward Sword Series [0x414]
 A:0x0414:0:0:Zelda & Loftwing
+
+# SSBU: Wave 15 (Ultimate Fighter Pass 2) [0x041D]
+A:0x041D:88:15:Min Min
 
 # Yu-Gi-Oh! [0x424-0x42A]
 A:0x0424:0:0:Yuga Oudou
