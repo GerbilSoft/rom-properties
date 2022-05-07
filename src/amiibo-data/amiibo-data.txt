@@ -39,6 +39,8 @@ CS:0x07C:Mii
 CS:0x080:Splatoon
 CS:0x09C:Mario Sports Superstars
 
+CS:0x0A0:Animal Crossing
+
 CS:0x190:Pokémon
 CS:0x194:Pokémon
 CS:0x198:Pokémon
@@ -165,13 +167,18 @@ CV:0x0181:0x00:Isabelle (Summer Outfit)
 CV:0x0181:0x01:Isabelle (Winter Outfit)
 CV:0x0181:0x02:Isabelle (Series 3)
 CV:0x0181:0x03:Isabelle (Series 4)
+CV:0x0181:0x04:Isabelle (Series 5)
+CV:0x0181:0x05:Isabelle (Sweater)
 C:0x0182:K.K. Slider
 CV:0x0182:0x00:K.K. Slider
 CV:0x0182:0x01:DJ K.K.
 C:0x0183:Tom Nook
 CV:0x0183:0x00:Tom Nook
 CV:0x0183:0x01:Tom Nook (Series 3)
+CV:0x0183:0x02:Tom Nook (Series 5)
+CV:0x0183:0x03:Tom Nook (Coat)
 C:0x0184:Timmy & Tommy
+CV:0x0184:0x05:Timmy & Tommy (Series 5)
 C:0x0185:Timmy
 CV:0x0185:0x00:Timmy
 CV:0x0185:0x02:Timmy (Series 3)
@@ -183,6 +190,7 @@ CV:0x0186:0x03:Tommy (Series 4)
 C:0x0187:Sable
 C:0x0188:Mabel
 C:0x0189:Labelle
+CV:0x0189:0x01:Label (Series 5)
 C:0x018A:Reese
 C:0x018B:Cyrus
 C:0x018C:Digby
@@ -240,6 +248,7 @@ C:0x01B6:Katie
 C:0x01C1:Lottie
 CV:0x01C1:0x00:Lottie
 CV:0x01C1:0x01:Lottie (Series 4)
+CV:0x01C1:0x02:Lottie (Island)
 C:0x0200:Cyrano
 C:0x0201:Antonio
 C:0x0202:Pango
@@ -839,6 +848,41 @@ CV:0x09D1:0x02:Pink Gold Peach (Baseball)
 CV:0x09D1:0x03:Pink Gold Peach (Tennis)
 CV:0x09D1:0x04:Pink Gold Peach (Golf)
 CV:0x09D1:0x05:Pink Gold Peach (Horse Racing)
+
+# Animal Crossing (character series == 0x0A0)
+C:0x0A00:Orville
+C:0x0A01:Wilbur
+C:0x0A02:C.J.
+C:0x0A03:Flick
+C:0x0A04:Daisy Mae
+C:0x0A05:Harvey
+C:0x0A06:Wisp
+C:0x0A07:Niko
+C:0x0A08:Wardell
+C:0x0A09:Sherb
+C:0x0A0A:Megan
+C:0x0A0B:Dom
+C:0x0A0C:Audie
+C:0x0A0D:Cyd
+C:0x0A0E:Judy
+C:0x0A0F:Raymond
+C:0x0A10:Reneigh
+C:0x0A11:Sasha
+C:0x0A12:Ione
+C:0x0A13:Tiansheng
+C:0x0A14:Shino
+C:0x0A15:Marlo
+C:0x0A16:Petri
+C:0x0A17:Cephalobot
+C:0x0A18:Quinn
+C:0x0A19:Chabwick
+C:0x0A1A:Zoe
+C:0x0A1B:Ace
+C:0x0A1C:Rio
+C:0x0A1D:Frett
+C:0x0A1E:Azalea
+C:0x0A1F:Roswell
+C:0x0A20:Faith
 
 # Pokémon (character series == 0x190 - 0x1BC)
 # NOTE: IDs are 0x1900 + National Pokédex number.
@@ -1916,6 +1960,56 @@ A:0x03A5:87:13:Byleth
 # SMB: Wave 5 (Super Mario 3D World + Bowser's Fury) [0x03A6-0x03A7]
 A:0x03A6:21:5:Cat Mario
 A:0x03A7:22:5:Cat Peach
+
+# Animal Crossing Cards: Series 5 [0x03A8-0x03D7]
+A:0x03A8:401:8:Tom Nook
+A:0x03A9:402:8:Timmy & Tommy
+A:0x03AA:403:8:Isabelle
+A:0x03AB:404:8:Orville
+A:0x03AC:405:8:Wilbur
+A:0x03AD:406:8:Blathers
+A:0x03AE:407:8:Celeste
+A:0x03AF:408:8:Mabel
+A:0x03B0:409:8:Sable
+A:0x03B1:410:8:Label
+A:0x03B2:411:8:K.K. Slider
+A:0x03B3:412:8:C.J.
+A:0x03B4:413:8:Flick
+A:0x03B5:414:8:Daisy Mae
+A:0x03B6:415:8:Kicks
+A:0x03B7:416:8:Saharah
+A:0x03B8:417:8:Harvey
+A:0x03B9:418:8:Gulliver
+A:0x03BA:419:8:Wisp
+A:0x03BB:420:8:Lottie (Island)
+A:0x03BC:421:8:Niko
+A:0x03BD:422:8:Wardell
+A:0x03BE:423:8:Tom Nook (Coat)
+A:0x03BF:424:8:Isabelle (Sweater)
+A:0x03C0:425:8:Sherb
+A:0x03C1:426:8:Megan
+A:0x03C2:427:8:Dom
+A:0x03C3:428:8:Audie
+A:0x03C4:429:8:Cyd
+A:0x03C5:430:8:Judy
+A:0x03C6:431:8:Raymond
+A:0x03C7:432:8:Reneigh
+A:0x03C8:433:8:Sasha
+A:0x03C9:434:8:Ione
+A:0x03CA:435:8:Tiansheng
+A:0x03CB:436:8:Shino
+A:0x03CC:437:8:Marlo
+A:0x03CD:438:8:Petri
+A:0x03CE:439:8:Cephalobot
+A:0x03CF:440:8:Quinn
+A:0x03D0:441:8:Chabwick
+A:0x03D1:442:8:Zoe
+A:0x03D2:443:8:Ace
+A:0x03D3:444:8:Rio
+A:0x03D4:445:8:Frett
+A:0x03D5:446:8:Azalea
+A:0x03D6:447:8:Roswell
+A:0x03D7:448:8:Faith
 
 # Monster Hunter Stories (Wave 2) [0x040C-0x040E]
 A:0x040C:8:2:Razewing Ratha
