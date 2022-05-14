@@ -896,7 +896,7 @@
 
   <!-- *** Texture *** -->
 
-  <!-- GodotSTEX -->
+  <!-- ASTC -->
   <mime-type type="image/astc">
     <comment>ASTC texture image</comment>
     <sub-class-of type="image/x-generic"/>
