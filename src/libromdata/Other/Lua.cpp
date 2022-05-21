@@ -36,8 +36,14 @@ class LuaPrivate final : public RomDataPrivate
 		typedef RomDataPrivate super;
 		RP_DISABLE_COPY(LuaPrivate)
 
+	protected:
+		/**
+		 * Reset the Lua identification variables.
+		 */
+		void reset_lua(void);
+
 	public:
-		enum class Version {
+		enum class Version : int8_t {
 			Unknown = -1,
 			Lua2_4 = 0,
 			Lua2_5 = 1,
@@ -59,16 +65,59 @@ class LuaPrivate final : public RomDataPrivate
 		 */
 		static Version to_version(uint8_t version);
 
+	public:
+		// Lua header.
+		uint8_t header[LUA_HEADERSIZE];
+
+		enum class Endianness : int8_t {
+			Unknown = -1,
+			BE = 0,
+			LE = 1,
+		};
+		Endianness endianness;
+
+		/**
+		 * Flip endianness from BE to LE or vice-versa.
+		 * @param endianness Endianness
+		 * @return Flipped endianness
+		 */
+		static inline Endianness FlipEndianness(Endianness endianness)
+		{
+			switch (endianness) {
+				case Endianness::BE:	return Endianness::LE;
+				case Endianness::LE:	return Endianness::BE;
+				default:		assert(!"Invalid endianness."); break;
+			}
+		}
+
+		int8_t int_size = -1;		// sizeof(int)
+		int8_t size_t_size = -1;	// sizeof(size_t)
+		int8_t instruction_size = -1;	// sizeof(lua_Instruction)
+		bool weird_layout = false;	// weird layout of the bits within lua_Instruction
+		int8_t integer_size = -1;	// sizeof(lua_Integer)
+		int8_t number_size = -1;	// sizeof(lua_Number), has a slightly different meaning for 3.x
+
+		enum class IntegralType : int8_t {
+			Unknown = -1,
+			Float = 0,
+			Integer = 1,
+			String = 2,	// Lua 3.2
+		};
+		IntegralType is_integral;	// lua_Number
+
+		bool is_float_swapped;		// float endianness is swapped compared to integer
+		bool corrupted;			// the LUA_TAIL is corrupted
+
 	private:
 		/**
 		 * Compares two byte ranges.
 		 * @param lhs buffer to be compared
 		 * @param rhs buffer to compare with
 		 * @param len size of the buffers
-		 * @param endianness when set to 1, one of the buffers is reversed (used for comparing LE number to BE constant)
+		 * @param endianness when set to LE, one of the buffers is reversed (used for comparing LE number to BE constant)
 		 * @return true if equal
 		 */
-		static bool compare(const uint8_t *lhs, const uint8_t *rhs, size_t len, int endianness);
+		static bool compare(const uint8_t *lhs, const uint8_t *rhs, size_t len, Endianness endianness);
 
 		/**
 		 * Figures out endianness by comparing an integer with a magic constant
@@ -77,7 +126,7 @@ class LuaPrivate final : public RomDataPrivate
 		 * @param len length of the number
 		 * @return the endianness
 		 */
-		static int detect_endianness_int(const char *test_int64, const uint8_t *p, size_t len);
+		static Endianness detect_endianness_int(const char *test_int64, const uint8_t *p, size_t len);
 
 		/**
 		 * Figures out endianness and type by comparing a number with a magic constant
@@ -89,7 +138,10 @@ class LuaPrivate final : public RomDataPrivate
 		 * @param is_integral (out) whether number is int or float
 		 * @return the endianness
 		 */
-		static int detect_endianness(const char *test_int64, const char *test_float32, const char *test_float64, const uint8_t *p, size_t len, int *is_integral);
+		static Endianness detect_endianness(const char *test_int64,
+			const char *test_float32, const char *test_float64,
+			const uint8_t *p, size_t len, IntegralType *is_integral);
+
 	public:
 		/**
 		 * Parses lua header into individual fields.
@@ -100,32 +152,17 @@ class LuaPrivate final : public RomDataPrivate
 		/**
 		 * Parses lua 2.x header into individual fields.
 		 */
-		void parse2(uint8_t version, uint8_t *p);
+		void parse2(uint8_t version, const uint8_t *p);
 
 		/**
 		 * Parses lua 3.x header into individual fields.
 		 */
-		void parse3(uint8_t version, uint8_t *p);
+		void parse3(uint8_t version, const uint8_t *p);
 
 		/**
 		 * Parses lua 4.x/5.x header into individual fields.
 		 */
-		void parse4(uint8_t version, uint8_t *p);
-
-	public:
-		// Lua header.
-		uint8_t header[LUA_HEADERSIZE];
-
-		int endianness = -1; // -1 - Unknown, 0 - BE, 1 - LE
-		int int_size = -1; // sizeof(int)
-		int size_t_size = -1; // sizeof(size_t)
-		int Instruction_size = -1; // sizeof(lua_Instruction)
-		bool weird_layout = false; // weird layout of the bits within lua_Instruction
-		int Integer_size = -1; // sizeof(lua_Integer)
-		int Number_size = -1; // sizeof(lua_Number), has a slightly different meaning for 3.x
-		int is_integral = -1; // lua_Number is: -1 - Unknown, 0 - float, 1 - integer, 2 - string (3.2)
-		bool is_float_swapped = false; // float endianness is swapped compared to integer
-		bool corrupted = false; // the LUA_TAIL is corrupted
+		void parse4(uint8_t version, const uint8_t *p);
 };
 
 ROMDATA_IMPL(Lua)
@@ -136,17 +173,16 @@ ROMDATA_IMPL(Lua)
 const char *const LuaPrivate::exts[] = {
 	// NOTE: These extensions may cause conflicts on
 	// Windows if fallback handling isn't working.
-	".lua",	// Lua source code.
-	".out", // from luac.out, the default output filename of luac.
 	".lub", // Lua binary
+	".out", // from luac.out, the default output filename of luac.
+
 	// TODO: Others?
 	nullptr
 };
 const char *const LuaPrivate::mimeTypes[] = {
 	// Unofficial MIME types from FreeDesktop.org.
-	// FIXME: these are the MIME types for Lua source code
+	// FIXME: Source MIME type is "text/x-lua"; using "application/x-lua" for binary.
 	"application/x-lua",
-	"text/x-lua",
 	nullptr
 };
 const RomDataInfo LuaPrivate::romDataInfo = {
@@ -158,26 +194,44 @@ LuaPrivate::LuaPrivate(Lua *q, IRpFile *file)
 {
 	// Clear the header struct.
 	memset(&header, 0, sizeof(header));
+
+	// Reset the Lua identification variables.
+	reset_lua();
+}
+
+void LuaPrivate::reset_lua(void)
+{
+	endianness = Endianness::Unknown;
+	int_size = -1;				// sizeof(int)
+	size_t_size = -1;			// sizeof(size_t)
+	instruction_size = -1;			// sizeof(lua_Instruction)
+	weird_layout = false;			// weird layout of the bits within lua_Instruction
+	integer_size = -1;			// sizeof(lua_Integer)
+	number_size = -1;			// sizeof(lua_Number), has a slightly different meaning for 3.x
+	is_integral = IntegralType::Unknown;	// lua_Number
+	is_float_swapped = false;		// float endianness is swapped compared to integer
+	corrupted = false;			// the LUA_TAIL is corrupted
 }
 
 /**
  * Converts version byte to Version enum
  */
-LuaPrivate::Version LuaPrivate::to_version(uint8_t version) {
+LuaPrivate::Version LuaPrivate::to_version(uint8_t version)
+{
 	switch (version) {
-	// Bytecode dumping was introduced in 2.3, which was never publicly released.
-	// 2.4 kept the same format, so we refer to the 0x23 format as "2.4".
-	case 0x23: return Version::Lua2_4;
-	case 0x25: return Version::Lua2_5; // Also used by 3.0
-	case 0x31: return Version::Lua3_1;
-	case 0x32: return Version::Lua3_2;
-	case 0x40: return Version::Lua4_0;
-	case 0x50: return Version::Lua5_0;
-	case 0x51: return Version::Lua5_1;
-	case 0x52: return Version::Lua5_2;
-	case 0x53: return Version::Lua5_3;
-	case 0x54: return Version::Lua5_4;
-	default:   return Version::Unknown;
+		// Bytecode dumping was introduced in 2.3, which was never publicly released.
+		// 2.4 kept the same format, so we refer to the 0x23 format as "2.4".
+		case 0x23:	return Version::Lua2_4;
+		case 0x25:	return Version::Lua2_5; // Also used by 3.0
+		case 0x31:	return Version::Lua3_1;
+		case 0x32:	return Version::Lua3_2;
+		case 0x40:	return Version::Lua4_0;
+		case 0x50:	return Version::Lua5_0;
+		case 0x51:	return Version::Lua5_1;
+		case 0x52:	return Version::Lua5_2;
+		case 0x53:	return Version::Lua5_3;
+		case 0x54:	return Version::Lua5_4;
+		default:	return Version::Unknown;
 	}
 }
 
@@ -189,16 +243,23 @@ LuaPrivate::Version LuaPrivate::to_version(uint8_t version) {
  * @param endianness when set to 1, one of the buffers is reversed (used for comparing LE number to BE constant)
  * @return true if equal
  */
-bool LuaPrivate::compare(const uint8_t *lhs, const uint8_t *rhs, size_t len, int endianness)
+bool LuaPrivate::compare(const uint8_t *lhs, const uint8_t *rhs, size_t len, Endianness endianness)
 {
-	assert(endianness == 0 || endianness == 1);
-	if (endianness == 0) {
-		return !memcmp(lhs, rhs, len);
-	} else if (endianness == 1) {
-		for (size_t i = 0; i < len ; i++)
-			if (lhs[i] != rhs[len-1-i])
-				return false;
-		return true;
+	switch (endianness) {
+		case Endianness::BE:
+			return !memcmp(lhs, rhs, len);
+
+		case Endianness::LE:
+			for (size_t i = 0; i < len; i++) {
+				if (lhs[i] != rhs[len-1-i]) {
+					return false;
+				}
+			}
+			return true;
+
+		default:
+			assert(!"Invalid endianness value.");
+			break;
 	}
 	return false;
 }
@@ -210,21 +271,22 @@ bool LuaPrivate::compare(const uint8_t *lhs, const uint8_t *rhs, size_t len, int
  * @param len length of the number
  * @return the endianness
  */
-int LuaPrivate::detect_endianness_int(const char *test_int64, const uint8_t *p, size_t len) {
+LuaPrivate::Endianness LuaPrivate::detect_endianness_int(const char *test_int64, const uint8_t *p, size_t len)
+{
 	const uint8_t *test_int = nullptr;
 	if (len == 8)
 		test_int = (const uint8_t*)test_int64;
 	else if (len == 4)
 		test_int = (const uint8_t*)test_int64 + 4;
 	else
-		return -1;
+		return Endianness::Unknown;
 
-	if (compare(p, test_int, len, 0))
-		return 0;
-	else if (compare(p, test_int, len, 1))
-		return 1;
+	if (compare(p, test_int, len, Endianness::BE))
+		return Endianness::BE;
+	else if (compare(p, test_int, len, Endianness::LE))
+		return Endianness::LE;
 	else
-		return -1;
+		return Endianness::Unknown;
 }
 
 /**
@@ -237,7 +299,10 @@ int LuaPrivate::detect_endianness_int(const char *test_int64, const uint8_t *p, 
  * @param is_integral (out) whether number is int or float
  * @return the endianness
  */
-int LuaPrivate::detect_endianness(const char *test_int64, const char *test_float32, const char *test_float64, const uint8_t *p, size_t len, int *is_integral) {
+LuaPrivate::Endianness LuaPrivate::detect_endianness(const char *test_int64,
+	const char *test_float32, const char *test_float64,
+	const uint8_t *p, size_t len, IntegralType *is_integral)
+{
 	const uint8_t *test_int = nullptr;
 	const uint8_t *test_float = nullptr;
 	if (len == 8) {
@@ -247,20 +312,27 @@ int LuaPrivate::detect_endianness(const char *test_int64, const char *test_float
 		test_int = (const uint8_t*)test_int64 + 4;
 		test_float = (const uint8_t*)test_float32;
 	} else {
-		*is_integral = -1;
-		return -1;
+		*is_integral = IntegralType::Unknown;
+		return Endianness::Unknown;
 	}
-	int endianness = -1;
-	if (compare(p, test_float, len, 0))
-		endianness = 0, *is_integral = 1;
-	else if (compare(p, test_float, len, 1))
-		endianness = 1, *is_integral = 1;
-	else if (compare(p, test_int, len, 0))
-		endianness = 0, *is_integral = 1;
-	else if (compare(p, test_int, len, 1))
-		endianness = 1, *is_integral = 1;
-	else
-		endianness = -1, *is_integral = -1;
+
+	Endianness endianness;
+	if (compare(p, test_float, len, Endianness::BE)) {
+		endianness = Endianness::BE;
+		*is_integral = IntegralType::Float;
+	} else if (compare(p, test_float, len, Endianness::LE)) {
+		endianness = Endianness::LE;
+		*is_integral = IntegralType::Float;
+	} else if (compare(p, test_int, len, Endianness::BE)) {
+		endianness = Endianness::BE;
+		*is_integral = IntegralType::Integer;
+	} else if (compare(p, test_int, len, Endianness::LE)) {
+		endianness = Endianness::BE;
+		*is_integral = IntegralType::Integer;
+	} else {
+		endianness = Endianness::Unknown;
+		*is_integral = IntegralType::Unknown;
+	}
 	return endianness;
 }
 
@@ -269,18 +341,9 @@ int LuaPrivate::detect_endianness(const char *test_int64, const char *test_float
  */
 void LuaPrivate::parse()
 {
-	endianness = -1;
-	int_size = -1;
-	size_t_size = -1;
-	Instruction_size = -1;
-	weird_layout = false;
-	Integer_size = -1;
-	Number_size = -1;
-	is_integral = -1;
-	is_float_swapped = false;
-	corrupted = false;
+	reset_lua();
 
-	uint8_t *p = header + 4;
+	const uint8_t *p = header + 4;
 	uint8_t version = *p++;
 
 	if (version < 0x31)
@@ -294,7 +357,7 @@ void LuaPrivate::parse()
 /*
  * Parses lua 2.x header into individual fields.
  */
-void LuaPrivate::parse2(uint8_t version, uint8_t *p) {
+void LuaPrivate::parse2(uint8_t version, const uint8_t *p) {
 	if (version == 0x25) {
 		// these two are hardcoded to be 2 and 4
 		p++; // word size
@@ -303,47 +366,64 @@ void LuaPrivate::parse2(uint8_t version, uint8_t *p) {
 	}
 
 	const uint8_t *test_word = (const uint8_t*)"\x12\x34"; // 0x1234
-	if (compare(p, test_word, 2, 0))
-		endianness = 0;
-	else if (compare(p, test_word, 2, 1))
-		endianness = 1;
+	if (compare(p, test_word, 2, Endianness::BE)) {
+		endianness = Endianness::BE;
+	} else if (compare(p, test_word, 2, Endianness::LE)) {
+		endianness = Endianness::LE;
+	}
 
 	const uint8_t *test_float = (const uint8_t*)"\x17\xBF\x0A\x46"; // 0.123456789e-23
-	if (endianness != -1 && compare(p + 2, test_float, 4, !endianness))
+	if (endianness != Endianness::Unknown &&
+	    compare(p + 2, test_float, 4, FlipEndianness(endianness)))
+	{
 		is_float_swapped = true;
+	}
 }
 
 /**
  * Parses lua 3.x header into individual fields.
  */
-void LuaPrivate::parse3(uint8_t version, uint8_t *p) {
+void LuaPrivate::parse3(uint8_t version, const uint8_t *p) {
 	if (version == 0x31) {
 		uint8_t Number_type = *p++;
 		switch (Number_type) {
-			case 'l': Number_size = 4; endianness = 0; is_integral = 1; return;
-			case 'f': Number_size = 4; endianness = 0; is_integral = 0; return;
-			case 'd': Number_size = 8; endianness = 0; is_integral = 0; return;
+			case 'l':
+				number_size = 4;
+				endianness = Endianness::BE;
+				is_integral = IntegralType::Integer;
+				return;
+			case 'f':
+				number_size = 4;
+				endianness = Endianness::BE;
+				is_integral = IntegralType::Float;
+				return;
+			case 'd':
+				number_size = 8;
+				endianness = Endianness::BE;
+				is_integral = IntegralType::Float;
+				return;
 			case '?': break;
 			default: return;
 		}
 	}
 
-	Number_size = *p++;
-	if (version == 0x32 && !Number_size) {
-		Number_size = -1;
-		is_integral = 2;
+	number_size = *p++;
+	if (version == 0x32 && !number_size) {
+		number_size = -1;
+		is_integral = IntegralType::String;
 		return;
 	}
 
 	// This is supposed to be 3.14159265358979323846e8 cast to lua_Number
-	endianness = detect_endianness("\x00\x00\x00\x00\x12\xB9\xB0\xA1", "\x4D\x95\xCD\x85", "\x41\xB2\xB9\xB0\xA1\x5B\xE6\x12",
-		p, Number_size, &is_integral);
+	endianness = detect_endianness("\x00\x00\x00\x00\x12\xB9\xB0\xA1",
+		"\x4D\x95\xCD\x85", "\x41\xB2\xB9\xB0\xA1\x5B\xE6\x12",
+		p, number_size, &is_integral);
 }
 
 /**
  * Parses lua 4.x/5.x header into individual fields.
  */
-void LuaPrivate::parse4(uint8_t version, uint8_t *p) {
+void LuaPrivate::parse4(uint8_t version, const uint8_t *p) {
 	// Format byte. 0 means official format. Apparently it's meant to be used by forks(?)
 	if (version >= 0x51)
 		if (*p++ != 0)
@@ -360,7 +440,7 @@ void LuaPrivate::parse4(uint8_t version, uint8_t *p) {
 	}
 
 	if (version < 0x53) {
-		endianness = *p > 1 ? -1 : *p;
+		endianness = *p > 1 ? Endianness::Unknown : (Endianness)*p;
 		p++;
 	}
 
@@ -370,72 +450,79 @@ void LuaPrivate::parse4(uint8_t version, uint8_t *p) {
 		size_t_size = *p++;
 	}
 
-	Instruction_size = *p++;
+	   instruction_size = *p++;
 
 	if (version == 0x40) {
 		uint8_t INSTRUCTION_bits = *p++;
 		uint8_t OP_bits = *p++;
 		uint8_t B_bits = *p++;
-		if (INSTRUCTION_bits != 32 || OP_bits != 6 || B_bits != 9)
+		if (INSTRUCTION_bits != 32 || OP_bits != 6 || B_bits != 9) {
 			weird_layout = true;
+		}
 	} else if (version == 0x50) {
 		uint8_t OP_bits = *p++;
 		uint8_t A_bits = *p++;
 		uint8_t B_bits = *p++;
 		uint8_t C_bits = *p++;
-		if (OP_bits != 6 || A_bits != 8 || B_bits != 9 || C_bits != 9)
+		if (OP_bits != 6 || A_bits != 8 || B_bits != 9 || C_bits != 9) {
 			weird_layout = true;
+		}
 	}
 
 	// Lua 5.3 introduced support for a separate integer type.
 	if (version >= 0x53)
-		Integer_size = *p++;
+		      integer_size = *p++;
 
-	Number_size = *p++;
-	
+	number_size = *p++;
+
 	if (version >= 0x53) {
 		// A test number for lua_Integer (0x5678)
-		endianness = detect_endianness_int("\x00\x00\x00\x00\x00\x00\x56\x78", p, Number_size);
-		if (Integer_size != 8 && Integer_size != 4) // a check to avoid overflows
+		endianness = detect_endianness_int("\x00\x00\x00\x00\x00\x00\x56\x78", p, number_size);
+		if (integer_size != 8 && integer_size != 4) // a check to avoid overflows
 			return;
-		p += Integer_size;
+		p += integer_size;
 		// Note that if this fails, we end up with endianness == -1, and so the test
 		// for lua_Number gets skipped.
 	}
 
 	if (version == 0x51 || version == 0x52) {
 		// Lua 5.1 and 5.2 just have a flag to specify whether lua_Number is int or float.
-		is_integral = *p > 1 ? -1 : *p;
+		is_integral = *p > 1 ? IntegralType::Unknown : (IntegralType)*p;
 		p++;
 		// End of header for 5.1
-	} else if (endianness != -1) {
+	} else if (endianness != Endianness::Unknown) {
 		// 4.0, 5.0 and 5.3+ have a test number, from which we can tell the format of lua_Number.
 
 		// NOTE: 5.0 and earlier don't compare the fractional part of the test number.
 
 		// Pick the right set of constants based on version
-		int ed = -1;
+		Endianness ed = Endianness::Unknown;
 		if (version == 0x40) {
 			// This is supposed to be 3.14159265358979323846e8 cast to lua_Number
-			ed = detect_endianness("\x00\x00\x00\x00\x12\xB9\xB0\xA1", "\x4D\x95\xCD\x85", "\x41\xB2\xB9\xB0\xA1\x5B\xE6\x12",
-				p, Number_size, &is_integral);
+			ed = detect_endianness("\x00\x00\x00\x00\x12\xB9\xB0\xA1",
+				"\x4D\x95\xCD\x85", "\x41\xB2\xB9\xB0\xA1\x5B\xE6\x12",
+				p, number_size, &is_integral);
 		} else if (version == 0x50) {
 			// This is supposed to be 3.14159265358979323846e7 cast to lua_Number
-			ed = detect_endianness("\x00\x00\x00\x00\x01\xDF\x5E\x76", "\x4B\xEF\xAF\x3B", "\x41\x7D\xF5\xE7\x68\x93\x09\xB6",
-				p, Number_size, &is_integral);
+			ed = detect_endianness("\x00\x00\x00\x00\x01\xDF\x5E\x76",
+				"\x4B\xEF\xAF\x3B", "\x41\x7D\xF5\xE7\x68\x93\x09\xB6",
+				p, number_size, &is_integral);
 		} else {
 			// This is supposed to be 370.5 cast to lua_Number
-			ed = detect_endianness("\x00\x00\x00\x00\x00\x00\x01\x72", "\x43\xB9\x40\x00", "\x40\x77\x28\x00\x00\x00\x00\x00",
-				p, Number_size, &is_integral);
+			ed = detect_endianness("\x00\x00\x00\x00\x00\x00\x01\x72",
+				"\x43\xB9\x40\x00", "\x40\x77\x28\x00\x00\x00\x00\x00",
+				p, number_size, &is_integral);
 		}
-		if (is_integral == 0 && ed != endianness)
+		if (is_integral == IntegralType::Float && ed != endianness) {
 			is_float_swapped = true;
+		}
 		// End of header for 4.0, 5.0, 5.3, 5.4
 	}
 
 	if (version == 0x52) {
-		if (memcmp(p, LUA_TAIL, sizeof(LUA_TAIL)-1))
+		if (memcmp(p, LUA_TAIL, sizeof(LUA_TAIL)-1)) {
 			corrupted = true;
+		}
 		// End of header for 5.2
 	}
 }
@@ -459,7 +546,7 @@ Lua::Lua(IRpFile *file)
 	: super(new LuaPrivate(this, file))
 {
 	RP_D(Lua);
-	d->mimeType = "text/x-lua";	// unofficial
+	d->mimeType = "application/x-lua";	// unofficial; binary files only
 	d->fileType = FileType::Executable; // FIXME: maybe another type should be introduced?
 
 	if (!d->file) {
@@ -514,10 +601,11 @@ int Lua::isRomSupported_static(const DetectInfo *info)
 	if (!memcmp(header, LUA_MAGIC, sizeof(LUA_MAGIC)-1)) {
 		uint8_t version = header[4];
 		uint8_t format = version >= 0x51 ? header[5] : 0;
-		if (format == 0)
+		if (format == 0) {
 			return static_cast<int>(LuaPrivate::to_version(version));
+		}
 	}
-		
+
 	return static_cast<int>(LuaPrivate::Version::Unknown);
 }
 
@@ -535,7 +623,7 @@ const char *Lua::systemName(unsigned int type) const
 		"Lua::systemName() array index optimization needs to be updated.");
 	static_assert((int)LuaPrivate::Version::Max == 10,
 		"Lua::systemName() array index optimization needs to be updated.");
-	
+
 	static const char *const sysNames[10][4] = {
 		{"PUC Lua 2.4", "Lua 2.4", "Lua", nullptr},
 		{"PUC Lua 2.5/3.0", "Lua 2.5/3.0", "Lua", nullptr},
@@ -575,23 +663,53 @@ int Lua::loadFieldData(void)
 
 	d->fields->reserve(10);	// Maximum of 10 fields.
 
-	if (d->endianness != -1)
-		d->fields->addField_string(C_("Lua", "Endianness"),
-			d->endianness ? C_("Lua", "Little-endian") : C_("Lua", "Big-endian"));
+	if (d->endianness != LuaPrivate::Endianness::Unknown) {
+		const char *s_endianness = nullptr;
+		switch (d->endianness) {
+			case LuaPrivate::Endianness::BE:
+				s_endianness = C_("Lua", "Big-endian");
+				break;
+			case LuaPrivate::Endianness::LE:
+				s_endianness = C_("Lua", "Little-endian");
+				break;
+			default:
+				assert(!"Invalid endianness.");
+				break;
+		}
+		if (s_endianness) {
+			d->fields->addField_string(C_("Lua", "Endianness"), s_endianness);
+		}
+	}
 	if (d->int_size != -1)
 		d->fields->addField_string_numeric(C_("Lua", "int size"), d->int_size);
 	if (d->size_t_size != -1)
 		d->fields->addField_string_numeric(C_("Lua", "size_t size"), d->size_t_size);
-	if (d->Instruction_size != -1)
-		d->fields->addField_string_numeric(C_("Lua", "lua_Instruction size"), d->Instruction_size);
-	if (d->Integer_size != -1)
-		d->fields->addField_string_numeric(C_("Lua", "lua_Integer size"), d->Integer_size);
-	if (d->Number_size != -1)
-		d->fields->addField_string_numeric(C_("Lua", "lua_Number size"), d->Number_size);
-	if (d->is_integral != -1)
-		d->fields->addField_string(C_("Lua", "lua_Number type"),
-			d->is_integral == 2 ? C_("Lua", "String") :
-			d->is_integral == 1 ? C_("Lua", "Integer") : C_("Lua", "Floating-point"));
+	if (d->instruction_size != -1)
+		d->fields->addField_string_numeric(C_("Lua", "lua_Instruction size"), d->instruction_size);
+	if (d->integer_size != -1)
+		d->fields->addField_string_numeric(C_("Lua", "lua_Integer size"), d->integer_size);
+	if (d->number_size != -1)
+		d->fields->addField_string_numeric(C_("Lua", "lua_Number size"), d->number_size);
+	if (d->is_integral != LuaPrivate::IntegralType::Unknown) {
+		const char *s_integral_type = nullptr;
+		switch (d->is_integral) {
+			case LuaPrivate::IntegralType::Float:
+				s_integral_type = C_("Lua", "Floating-point");
+				break;
+			case LuaPrivate::IntegralType::Integer:
+				s_integral_type = C_("Lua", "Integer");
+				break;
+			case LuaPrivate::IntegralType::String:
+				s_integral_type = C_("Lua", "String");
+				break;
+			default:
+				assert(!"Invalid integral type.");
+				break;
+		}
+		if (s_integral_type) {
+			d->fields->addField_string(C_("Lua", "lua_Number type"), s_integral_type);
+		}
+	}
 	if (d->is_float_swapped)
 		d->fields->addField_string(C_("RomData", "Warning"),
 			C_("Lua", "Floating-point values are byte-swapped"), RomFields::STRF_WARNING);
