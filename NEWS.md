@@ -34,7 +34,9 @@
     might not be displayed correctly.
 
 * Bug fixes:
-  * EXE: Improve runtime DLL detection in some cases.
+  * EXE:
+    * Improve runtime DLL detection in some cases.
+    * Improve detection of certain EFI executables.
   * SNES: Fix detection of games that declare usage of the S-RTC chip
     in the ROM header. (sd2snes menu)
   * Windows: Don't edit registered Applications when adding icon handling

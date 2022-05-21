@@ -472,12 +472,31 @@ EXE::EXE(IRpFile *file)
 	// - Relocation table address less than 0x40
 	// - Magic number is 'ZM' (Windows only accepts 'MZ')
 	if (le16_to_cpu(d->mz.e_lfarlc) < 0x40 ||
-	    d->mz.e_magic == cpu_to_be16('ZM')) {
+	    d->mz.e_magic == cpu_to_be16('ZM'))
+	{
 		// MS-DOS executable.
-		d->exeType = EXEPrivate::ExeType::MZ;
-		// TODO: Check for MS-DOS device drivers?
-		d->fileType = FileType::Executable;
-		return;
+		// NOTE: Some EFI executables have a 0 offset for the
+		// relocation table. Check some other fields, and if
+		// they're all zero, assume it's *not* MS-DOS.
+		// NOTE 2: Byteswapping isn't needed for 0 checks.
+		bool isDOS = true;
+		if (d->mz.e_lfarlc == 0) {
+			if (d->mz.e_cp == 0 &&
+			    d->mz.e_cs == 0 && d->mz.e_ip == 0 &&
+			    d->mz.e_ss == 0 && d->mz.e_sp == 0)
+			{
+				// Zero program size, CS:IP, and SS:SP.
+				// This is *not* an MS-DOS executable.
+				isDOS = false;
+			}
+		}
+
+		if (isDOS) {
+			d->exeType = EXEPrivate::ExeType::MZ;
+			// TODO: Check for MS-DOS device drivers?
+			d->fileType = FileType::Executable;
+			return;
+		}
 	}
 
 	// Load the secondary header. (NE/LE/LX/PE)
