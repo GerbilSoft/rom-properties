@@ -197,6 +197,7 @@ static int parse_os_release(void *user, const char *section, const char *name, c
 		// Found the field.
 		// TODO: strlcpy() or snprintf() or similar?
 		strncpy(ctx->ret_value, value, sizeof(ctx->ret_value));
+		ctx->ret_value[sizeof(ctx->ret_value)-1] = '\0';
 		return 0;
 	}
 
