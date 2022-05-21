@@ -87,6 +87,7 @@ static int recursiveScan(const char *path, list<pair<tstring, uint8_t> > &rlist)
 					default:
 						// Not supported.
 						// TODO: Better error message.
+						closedir(pdir);
 						return -EIO;
 					case S_IFREG:
 						d_type = DT_REG;
