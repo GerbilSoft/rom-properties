@@ -129,7 +129,14 @@ const rp_image *WiiWIBNPrivate::loadIcon(void)
 	// Read up to 8 icons.
 	static const unsigned int iconstartaddr = BANNER_WIBN_STRUCT_SIZE;
 	static const unsigned int iconsizetotal = BANNER_WIBN_ICON_SIZE*CARD_MAXICONS;
+	// FIXME: Some compilers are reporting that `icondata.get()` is NULL here,
+	// which results in an error due to -Werror=nonnull.
 	auto icondata = aligned_uptr<uint8_t>(16, iconsizetotal);
+	assert(icondata.get() != nullptr);
+	if (!icondata.get()) {
+		// Memory allocation failed somehow...
+		return nullptr;
+	}
 	size_t size = file->seekAndRead(iconstartaddr, icondata.get(), iconsizetotal);
 	if (size < BANNER_WIBN_ICON_SIZE) {
 		// Unable to read *any* icons.
