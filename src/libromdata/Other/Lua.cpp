@@ -88,6 +88,7 @@ class LuaPrivate final : public RomDataPrivate
 				case Endianness::LE:	return Endianness::BE;
 				default:		assert(!"Invalid endianness."); break;
 			}
+			return Endianness::Unknown;
 		}
 
 		int8_t int_size = -1;		// sizeof(int)
