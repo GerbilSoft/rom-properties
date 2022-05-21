@@ -19,6 +19,23 @@
 extern "C" {
 #endif
 
+#define LUA_MAGIC "\033Lua"
+#define LUA_TAIL "\x19\x93\r\n\x1a\n"
+
+/* Actual header sizes:
+ * 2.4: 11
+ * 2.5: 14
+ * 3.1: 7+Number
+ * 3.2: 6+Number
+ * 4.0: 13+Number
+ * 5.0: 14+Number
+ * 5.1: 12
+ * 5.2: 18
+ * 5.3: 17+Integer+Number (the biggest one)
+ * 5.4: 15+Integer+Number
+ */
+#define LUA_HEADERSIZE (17+8+8)
+
 /**
  * Lua binary chunk header.
  *
@@ -30,9 +47,6 @@ typedef struct _Lua_Header {
 	uint8_t version; /* 0x50 = 5.0, 0x51 = 5.1, etc */
 } Lua_Header;
 ASSERT_STRUCT(Lua_Header, 5);
-
-#define LUA_MAGIC "\033Lua"
-#define LUA_TAIL "\x19\x93\r\n\x1a\n"
 
 /**
  * Lua 2.3 binary chunk header.

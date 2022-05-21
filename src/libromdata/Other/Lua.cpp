@@ -9,6 +9,7 @@
 
 #include "stdafx.h"
 #include "Lua.hpp"
+#include "lua_structs.h"
 
 // librpbase, librpfile
 using namespace LibRpBase;
@@ -19,22 +20,6 @@ using std::string;
 using std::vector;
 
 namespace LibRomData {
-
-/* Actual header sizes:
- * 2.4: 11
- * 2.5: 14
- * 3.1: 7+Number
- * 3.2: 6+Number
- * 4.0: 13+Number
- * 5.0: 14+Number
- * 5.1: 12
- * 5.2: 18
- * 5.3: 17+Integer+Number (the biggest one)
- * 5.4: 15+Integer+Number
- */
-#define LUA_MAGIC "\033Lua"
-#define LUA_TAIL "\x19\x93\r\n\x1a\n"
-#define LUA_HEADERSIZE (17+8+8)
 
 class LuaPrivate final : public RomDataPrivate
 {
