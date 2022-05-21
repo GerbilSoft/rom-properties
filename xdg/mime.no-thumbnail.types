@@ -52,6 +52,7 @@ application/x-object			# ELF
 application/x-executable		# ELF/EXE
 application/x-sharedlib			# ELF
 application/x-core			# ELF
+application/x-lua			# Lua
 application/x-ms-dos-executable		# EXE
 application/x-msdownload		# EXE
 application/x-mach-object		# MachO
