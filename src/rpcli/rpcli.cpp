@@ -243,12 +243,12 @@ static void PrintSystemRegion(void)
  */
 static void PrintPathnames(void)
 {
-	cout << rp_sprintf("User's home directory:   ") << OS_NAMESPACE::getHomeDirectory() << endl;
-	cout << rp_sprintf("User's cache directory:  ") << OS_NAMESPACE::getCacheDirectory() << endl;
-	cout << rp_sprintf("User's config directory: ") << OS_NAMESPACE::getConfigDirectory() << endl;
-	cout << endl;
-	cout << rp_sprintf("RP cache directory:      ") << FileSystem::getCacheDirectory() << endl;
-	cout << rp_sprintf("RP config directory:     ") << FileSystem::getConfigDirectory() << endl;
+	cout << rp_sprintf("User's home directory:   ") << OS_NAMESPACE::getHomeDirectory() << '\n';
+	cout << rp_sprintf("User's cache directory:  ") << OS_NAMESPACE::getCacheDirectory() << '\n';
+	cout << rp_sprintf("User's config directory: ") << OS_NAMESPACE::getConfigDirectory() << '\n';
+	cout << '\n';
+	cout << rp_sprintf("RP cache directory:      ") << FileSystem::getCacheDirectory() << '\n';
+	cout << rp_sprintf("RP config directory:     ") << FileSystem::getConfigDirectory() << '\n';
 
 	// Extra line. (TODO: Only if multiple commands are specified.)
 	cout << endl;
@@ -346,30 +346,33 @@ int RP_C_API main(int argc, char *argv[])
 
 	if(argc < 2){
 #ifdef ENABLE_DECRYPTION
-		cerr << C_("rpcli", "Usage: rpcli [-k] [-c] [-p] [-j] [-l lang] [[-x[b]N outfile]... [-a apngoutfile] filename]...") << endl;
-		cerr << "  -k:   " << C_("rpcli", "Verify encryption keys in keys.conf.") << endl;
+		cerr << C_("rpcli", "Usage: rpcli [-k] [-c] [-p] [-j] [-l lang] [[-x[b]N outfile]... [-a apngoutfile] filename]...") << '\n';
+		cerr << "  -k:   " << C_("rpcli", "Verify encryption keys in keys.conf.") << '\n';
 #else /* !ENABLE_DECRYPTION */
-		cerr << C_("rpcli", "Usage: rpcli [-c] [-p] [-j] [-l lang] [[-x[b]N outfile]... [-a apngoutfile] filename]...") << endl;
+		cerr << C_("rpcli", "Usage: rpcli [-c] [-p] [-j] [-l lang] [[-x[b]N outfile]... [-a apngoutfile] filename]...") << '\n';
 #endif /* ENABLE_DECRYPTION */
-		cerr << "  -c:   " << C_("rpcli", "Print system region information.") << endl;
-		cerr << "  -p:   " << C_("rpcli", "Print system path information.") << endl;
-		cerr << "  -j:   " << C_("rpcli", "Use JSON output format.") << endl;
-		cerr << "  -l:   " << C_("rpcli", "Retrieve the specified language from the ROM image.") << endl;
-		cerr << "  -xN:  " << C_("rpcli", "Extract image N to outfile in PNG format.") << endl;
-		cerr << "  -a:   " << C_("rpcli", "Extract the animated icon to outfile in APNG format.") << endl;
-		cerr << endl;
+		cerr << "  -c:   " << C_("rpcli", "Print system region information.") << '\n';
+		cerr << "  -p:   " << C_("rpcli", "Print system path information.") << '\n';
+		cerr << "  -j:   " << C_("rpcli", "Use JSON output format.") << '\n';
+		cerr << "  -l:   " << C_("rpcli", "Retrieve the specified language from the ROM image.") << '\n';
+		cerr << "  -xN:  " << C_("rpcli", "Extract image N to outfile in PNG format.") << '\n';
+		cerr << "  -a:   " << C_("rpcli", "Extract the animated icon to outfile in APNG format.") << '\n';
+		cerr << '\n';
 #ifdef RP_OS_SCSI_SUPPORTED
-		cerr << C_("rpcli", "Special options for devices:") << endl;
-		cerr << "  -is:   " << C_("rpcli", "Run a SCSI INQUIRY command.") << endl;
-		cerr << "  -ia:   " << C_("rpcli", "Run an ATA IDENTIFY DEVICE command.") << endl;
-		cerr << "  -ip:   " << C_("rpcli", "Run an ATA IDENTIFY PACKET DEVICE command.") << endl;
-		cerr << endl;
+		cerr << C_("rpcli", "Special options for devices:") << '\n';
+		cerr << "  -is:   " << C_("rpcli", "Run a SCSI INQUIRY command.") << '\n';
+		cerr << "  -ia:   " << C_("rpcli", "Run an ATA IDENTIFY DEVICE command.") << '\n';
+		cerr << "  -ip:   " << C_("rpcli", "Run an ATA IDENTIFY PACKET DEVICE command.") << '\n';
+		cerr << '\n';
 #endif /* RP_OS_SCSI_SUPPORTED */
-		cerr << C_("rpcli", "Examples:") << endl;
-		cerr << "* rpcli s3.gen" << endl;
-		cerr << "\t " << C_("rpcli", "displays info about s3.gen") << endl;
-		cerr << "* rpcli -x0 icon.png pokeb2.nds" << endl;
+		cerr << C_("rpcli", "Examples:") << '\n';
+		cerr << "* rpcli s3.gen" << '\n';
+		cerr << "\t " << C_("rpcli", "displays info about s3.gen") << '\n';
+		cerr << "* rpcli -x0 icon.png pokeb2.nds" << '\n';
 		cerr << "\t " << C_("rpcli", "extracts icon from pokeb2.nds") << endl;
+
+		// Since we didn't do anything, return a failure code.
+		return EXIT_FAILURE;
 	}
 	
 	assert(RomData::IMG_INT_MIN == 0);
@@ -537,7 +540,7 @@ int RP_C_API main(int argc, char *argv[])
 			extract.clear();
 		}
 	}
-	if (json) cout << "]\n";
+	if (json) cout << ']' << endl;
 
 #ifdef _WIN32
 	// Shut down GDI+.

@@ -28,7 +28,6 @@ using LibRpFile::RpFile;
 // C++ includes.
 #include <iomanip>
 #include <iostream>
-using std::endl;
 
 class StreamStateSaver {
 	std::ios &stream;	// Stream being adjusted.
@@ -68,7 +67,7 @@ std::ostream& operator<<(std::ostream& os, const ScsiInquiry& si)
 	if (ret != 0) {
 		// TODO: Decode the error.
 		os << "-- " << rp_sprintf(C_("rpcli", "SCSI INQUIRY failed: %08X"),
-			static_cast<unsigned int>(ret)) << endl;
+			static_cast<unsigned int>(ret)) << '\n';
 		return os;
 	}
 
@@ -76,7 +75,7 @@ std::ostream& operator<<(std::ostream& os, const ScsiInquiry& si)
 	// TODO: Trim spaces?
 	// TODO: i18n?
 	StreamStateSaver state(os);
-	os << "-- SCSI INQUIRY data for: " << si.file->filename() << endl;
+	os << "-- SCSI INQUIRY data for: " << si.file->filename() << '\n';
 
 	static const char *const pdt_tbl[0x20] = {
 		"Direct-access block device",		// 0x00
@@ -109,7 +108,7 @@ std::ostream& operator<<(std::ostream& os, const ScsiInquiry& si)
 	os << "Peripheral device type: ";
 	const char *const pdt = pdt_tbl[resp.PeripheralDeviceType & 0x1F];
 	os << (pdt ? pdt : rp_sprintf("0x%02X",
-		static_cast<unsigned int>(resp.PeripheralDeviceType) & 0x1F)) << endl;
+		static_cast<unsigned int>(resp.PeripheralDeviceType) & 0x1F)) << '\n';
 
 	os << "Peripheral qualifier:   ";
 	static const char *const pq_tbl[8] = {
@@ -120,9 +119,9 @@ std::ostream& operator<<(std::ostream& os, const ScsiInquiry& si)
 		"100b", "101b",		// 100b,101b
 		"110b", "111b",		// 110b,111b
 	};
-	os << pq_tbl[resp.PeripheralDeviceType >> 5] << endl;
+	os << pq_tbl[resp.PeripheralDeviceType >> 5] << '\n';
 
-	os << "Removable media:        " << (resp.RMB_DeviceTypeModifier & 0x80 ? "Yes" : "No") << endl;
+	os << "Removable media:        " << (resp.RMB_DeviceTypeModifier & 0x80 ? "Yes" : "No") << '\n';
 
 	os << "SCSI version:           ";
 	if (resp.Version <= 0x07) {
@@ -140,16 +139,16 @@ std::ostream& operator<<(std::ostream& os, const ScsiInquiry& si)
 	} else {
 		os << rp_sprintf("0x%02X", resp.Version);
 	}
-	os << endl;
+	os << '\n';
 
 	// TODO: ResponseDataFormat and high bits?
 	// TODO: Verify AdditionalLength field?
 	// TODO: Flags.
 	// TODO: Trim spaces.
-	os << "Vendor ID:              " << latin1_to_utf8(resp.vendor_id, sizeof(resp.vendor_id)) << endl;
-	os << "Product ID:             " << latin1_to_utf8(resp.product_id, sizeof(resp.product_id)) << endl;
-	os << "Firmware version:       " << latin1_to_utf8(resp.product_revision_level, sizeof(resp.product_revision_level)) << endl;
-	os << "Vendor notes:           " << latin1_to_utf8(resp.VendorSpecific, sizeof(resp.VendorSpecific)) << endl;
+	os << "Vendor ID:              " << latin1_to_utf8(resp.vendor_id, sizeof(resp.vendor_id)) << '\n';
+	os << "Product ID:             " << latin1_to_utf8(resp.product_id, sizeof(resp.product_id)) << '\n';
+	os << "Firmware version:       " << latin1_to_utf8(resp.product_revision_level, sizeof(resp.product_revision_level)) << '\n';
+	os << "Vendor notes:           " << latin1_to_utf8(resp.VendorSpecific, sizeof(resp.VendorSpecific)) << '\n';
 
 	// TODO: Check supported media types for CD/DVD/BD-ROM drives?
 	// That's a bit more than an INQUIRY command...
@@ -177,7 +176,7 @@ std::ostream& operator<<(std::ostream& os, const AtaIdentifyDevice& si)
 		// TODO: Decode the error.
 		os << "-- " << rp_sprintf(C_("rpcli", "ATA %s failed: %08X"),
 			(si.packet ? "IDENTIFY PACKET DEVICE" : "IDENTIFY DEVICE"),
-			static_cast<unsigned int>(ret)) << endl;
+			static_cast<unsigned int>(ret)) << '\n';
 		return os;
 	}
 
@@ -186,15 +185,15 @@ std::ostream& operator<<(std::ostream& os, const AtaIdentifyDevice& si)
 	// TODO: Trim spaces?
 	// TODO: i18n?
 	StreamStateSaver state(os);
-	os << "-- ATA IDENTIFY " << (si.packet ? "PACKET " : "") << "DEVICE data for: " << si.file->filename() << endl;
-	os << "Model number:          " << latin1_to_utf8(resp.model_number, sizeof(resp.model_number)) << endl;
-	os << "Firmware version:      " << latin1_to_utf8(resp.firmware_revision, sizeof(resp.firmware_revision)) << endl;
-	os << "Serial number:         " << latin1_to_utf8(resp.serial_number, sizeof(resp.serial_number)) << endl;
-	os << "Media serial number:   " << latin1_to_utf8(resp.media_serial_number, sizeof(resp.media_serial_number)) << endl;
+	os << "-- ATA IDENTIFY " << (si.packet ? "PACKET " : "") << "DEVICE data for: " << si.file->filename() << '\n';
+	os << "Model number:          " << latin1_to_utf8(resp.model_number, sizeof(resp.model_number)) << '\n';
+	os << "Firmware version:      " << latin1_to_utf8(resp.firmware_revision, sizeof(resp.firmware_revision)) << '\n';
+	os << "Serial number:         " << latin1_to_utf8(resp.serial_number, sizeof(resp.serial_number)) << '\n';
+	os << "Media serial number:   " << latin1_to_utf8(resp.media_serial_number, sizeof(resp.media_serial_number)) << '\n';
 	// TODO: Byte count.
-	os << "Sector count (28-bit): " << resp.total_sectors << endl;
-	os << "Sector count (48-bit): " << resp.total_sectors_48 << endl;
-	os << "Integrity word:        " << rp_sprintf("%04X", resp.integrity) << endl;
+	os << "Sector count (28-bit): " << resp.total_sectors << '\n';
+	os << "Sector count (48-bit): " << resp.total_sectors_48 << '\n';
+	os << "Integrity word:        " << rp_sprintf("%04X", resp.integrity) << '\n';
 	return os;
 }
 
