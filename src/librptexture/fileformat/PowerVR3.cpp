@@ -1046,7 +1046,9 @@ const char *PowerVR3::pixelFormat(void) const
 			 sizeof(d->invalid_pixel_format),
 			 "%s%s", s_pxf, s_chcnt);
 	} else {
-		strcpy(const_cast<PowerVR3Private*>(d)->invalid_pixel_format, C_("RomData", "Unknown"));
+		snprintf(const_cast<PowerVR3Private*>(d)->invalid_pixel_format,
+			 sizeof(d->invalid_pixel_format),
+			 "%s", (C_("RomData", "Unknown")));
 	}
 	return d->invalid_pixel_format;
 }
