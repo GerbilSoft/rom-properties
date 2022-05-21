@@ -515,6 +515,7 @@ int GameBoyAdvance::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int s
 
 	// Region code
 	char region_code[8];
+	region_code[0] = '\0';
 
 	// If the game ID is known to be used for multiple ROMs,
 	// e.g. prototypes, use the ROM title instead.
