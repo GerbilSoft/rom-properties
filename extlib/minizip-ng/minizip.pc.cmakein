@@ -1,8 +1,8 @@
 prefix=@CMAKE_INSTALL_PREFIX@
 exec_prefix=@CMAKE_INSTALL_PREFIX@
-libdir=@INSTALL_LIB_DIR@
-sharedlibdir=@INSTALL_LIB_DIR@
-includedir=@INSTALL_INC_DIR@
+libdir=@CMAKE_INSTALL_FULL_LIBDIR@
+sharedlibdir=@CMAKE_INSTALL_FULL_LIBDIR@
+includedir=@CMAKE_INSTALL_FULL_INCLUDEDIR@
 
 Name: @PROJECT_NAME@
 Description: Minizip zip file manipulation library

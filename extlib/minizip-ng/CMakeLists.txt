@@ -7,6 +7,8 @@
 
 #cmake_minimum_required(VERSION 3.13)
 
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
+
 message(STATUS "Using CMake version ${CMAKE_VERSION}")
 
 # rom-properties: Disabled these options.
@@ -39,7 +41,11 @@ option(MZ_BUILD_UNIT_TESTS "Builds minizip unit test project" OFF)
 option(MZ_BUILD_FUZZ_TESTS "Builds minizip fuzzer executables" OFF)
 option(MZ_CODE_COVERAGE "Builds with code coverage flags" OFF)
 # Package management options
-set(MZ_PROJECT_SUFFIX "" CACHE STRING "Project name suffix for package managers")
+if(NOT MZ_COMPAT AND NOT DEFINED MZ_PROJECT_SUFFIX)
+    set(MZ_PROJECT_SUFFIX "-ng" CACHE STRING "Project name suffix for package managers")
+else()
+    set(MZ_PROJECT_SUFFIX "" CACHE STRING "Project name suffix for package managers")
+endif()
 
 mark_as_advanced(MZ_FILE32_API MZ_PROJECT_SUFFIX)
 ENDIF(0)
@@ -62,9 +68,6 @@ if(DEFINED MZ_BUILD_FUZZ_TEST)
     set(MZ_BUILD_FUZZ_TESTS ${MZ_BUILD_FUZZ_TEST})
 endif()
 
-if(POLICY CMP0074)
-    cmake_policy(SET CMP0074 OLD)
-endif()
 if(POLICY CMP0054)
     cmake_policy(SET CMP0054 NEW)
 endif()
@@ -76,7 +79,7 @@ endif()
 enable_language(C)
 
 # Library version
-set(VERSION "3.0.4")
+set(VERSION "3.0.6")
 
 # API version
 set(SOVERSION "3")
@@ -89,6 +92,8 @@ include(CheckTypeSize)
 include(GNUInstallDirs)
 # rom-properties: Disabled FeatureSummary.
 #include(FeatureSummary)
+
+include(cmake/clone-repo.cmake)
 
 set(INSTALL_BIN_DIR ${CMAKE_INSTALL_BINDIR} CACHE PATH "Installation directory for executables")
 set(INSTALL_LIB_DIR ${CMAKE_INSTALL_LIBDIR} CACHE PATH "Installation directory for libraries")
@@ -159,42 +164,6 @@ if(MSVC)
    unset(OLD_CMAKE_REQUIRED_FLAGS)
 endif(MSVC)
 
-# Checkout remote repository
-macro(clone_repo name url)
-    if(NOT ${name}_REPOSITORY)
-        set(${name}_REPOSITORY ${url})
-    endif()
-    if(NOT ${name}_TAG)
-        set(${name}_TAG master)
-    endif()
-
-    message(STATUS "Fetching ${name} ${${name}_REPOSITORY} ${${name}_TAG}")
-
-    # Check for FetchContent cmake support
-    if(${CMAKE_VERSION} VERSION_LESS "3.11")
-        message(FATAL_ERROR "CMake 3.11 required to fetch ${name}")
-    else()
-        include(FetchContent)
-
-        string(TOLOWER ${name} name_lower)
-        string(TOUPPER ${name} name_upper)
-
-        FetchContent_Declare(${name}
-            GIT_REPOSITORY ${${name}_REPOSITORY}
-            GIT_TAG ${${name}_TAG}
-            SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/lib/${name_lower})
-
-        FetchContent_GetProperties(${name} POPULATED ${name_lower}_POPULATED)
-
-        if(NOT ${name_lower}_POPULATED)
-            FetchContent_Populate(${name})
-        endif()
-
-        set(${name_upper}_SOURCE_DIR ${${name_lower}_SOURCE_DIR})
-        set(${name_upper}_BINARY_DIR ${${name_lower}_BINARY_DIR})
-    endif()
-endmacro()
-
 if(MZ_LIBCOMP)
     if(APPLE)
         # Use Apple libcompression
@@ -215,11 +184,21 @@ endif()
 if(MZ_ZLIB)
     # Check if zlib is present
     if(NOT MZ_FORCE_FETCH_LIBS)
+        find_package(ZLIBNG QUIET)
         find_package(ZLIB QUIET)
         set(ZLIB_VERSION ${ZLIB_VERSION_STRING})
     endif()
 
-    if(ZLIB_FOUND AND NOT MZ_FORCE_FETCH_LIBS)
+    if(ZLIBNG_FOUND AND NOT MZ_FORCE_FETCH_LIBS)
+        message(STATUS "Using ZLIBNG")
+
+        list(APPEND MINIZIP_INC ${ZLIBNG_INCLUDE_DIRS})
+        list(APPEND MINIZIP_LIB ${ZLIBNG_LIBRARIES})
+        list(APPEND MINIZIP_LBD ${ZLIBNG_LIBRARY_DIRS})
+
+        set(PC_PRIVATE_LIBS " -lz-ng")
+        set(ZLIB_COMPAT OFF)
+    elseif(ZLIB_FOUND AND NOT MZ_FORCE_FETCH_LIBS)
         message(STATUS "Using ZLIB ${ZLIB_VERSION}")
 
         list(APPEND MINIZIP_INC ${ZLIB_INCLUDE_DIRS})
@@ -227,6 +206,7 @@ if(MZ_ZLIB)
         list(APPEND MINIZIP_LBD ${ZLIB_LIBRARY_DIRS})
 
         set(PC_PRIVATE_LIBS " -lz")
+        set(ZLIB_COMPAT ON)
     elseif(MZ_FETCH_LIBS)
         clone_repo(zlib https://github.com/madler/zlib)
 
@@ -237,10 +217,16 @@ if(MZ_ZLIB)
         list(APPEND MINIZIP_INC ${ZLIB_BINARY_DIR})
 
         # Have to add zlib to install targets
-        if(NOT DEFINED BUILD_SHARED_LIBS OR NOT ${BUILD_SHARED_LIBS})
+        if(NOT DEFINED BUILD_SHARED_LIBS OR NOT BUILD_SHARED_LIBS)
             list(APPEND MINIZIP_DEP zlibstatic)
         else()
             list(APPEND MINIZIP_DEP zlib)
+        endif()
+        if(EXISTS "${ZLIB_BINARY_DIR}/zlib-ng.h")
+            message(STATUS "ZLIB repository detected as ZLIBNG")
+            set(ZLIB_COMPAT OFF)
+        else()
+            set(ZLIB_COMPAT ON)
         endif()
     else()
         message(STATUS "ZLIB library not found")
@@ -249,10 +235,14 @@ if(MZ_ZLIB)
     endif()
 
     if(MZ_ZLIB)
-        list(APPEND MINIZIP_DEP_PKG ZLIB)
         list(APPEND MINIZIP_DEF -DHAVE_ZLIB)
         if(ZLIB_COMPAT)
             list(APPEND MINIZIP_DEF -DZLIB_COMPAT)
+        endif()
+        if(ZLIBNG_FOUND OR NOT ZLIB_COMPAT)
+            list(APPEND MINIZIP_DEP_PKG ZLIBNG)
+        elseif(ZLIB_FOUND)
+            list(APPEND MINIZIP_DEP_PKG ZLIB)
         endif()
         list(APPEND MINIZIP_SRC mz_strm_zlib.c)
         list(APPEND MINIZIP_HDR mz_strm_zlib.h)
@@ -434,10 +424,12 @@ if(MZ_OPENSSL)
         list(APPEND MINIZIP_SRC mz_crypt_openssl.c)
         list(APPEND MINIZIP_LIB ${OPENSSL_LIBRARIES})
         list(APPEND MINIZIP_LBD ${OPENSSL_LIBRARY_DIRS})
-        list(APPEND MINIZIP_INC ${OPENSSL_INCLUDE_DIR})
 
         if(OPENSSL_INCLUDE_DIRS)
             list(APPEND MINIZIP_INC ${OPENSSL_INCLUDE_DIRS})
+        endif()
+        if(OPENSSL_INCLUDE_DIR)
+            list(APPEND MINIZIP_INC ${OPENSSL_INCLUDE_DIR})
         endif()
     else()
         message(STATUS "OpenSSL library not found")
@@ -642,30 +634,19 @@ endif()
 
 # Include compatibility layer
 if(MZ_COMPAT)
-    set(COMPAT_HEADER "\
-/* file.h -- Compatibility layer shim\n\
-   part of the minizip-ng project\n\n\
-   This program is distributed under the terms of the same license as zlib.\n\
-   See the accompanying LICENSE file for the full text of the license.\n\
-*/\n\n\
-#ifndef MZ_COMPAT_FILE\n\
-#define MZ_COMPAT_FILE\n\n\
-#include \"mz_compat.h\"\n\n\
-#endif\n")
+    set(FILE_H "zip.h")
+    set(MZ_COMPAT_FILE "MZ_COMPAT_ZIP")
+    configure_file(mz_compat_shim.h.in zip.h)
 
-    string(REPLACE "file.h" "zip.h" ZIP_COMPAT_HEADER ${COMPAT_HEADER})
-    string(REPLACE "MZ_COMPAT_FILE" "MZ_COMPAT_ZIP" ZIP_COMPAT_HEADER ${ZIP_COMPAT_HEADER})
-    file(WRITE "zip.h" ${ZIP_COMPAT_HEADER})
-
-    string(REPLACE "file.h" "unzip.h" UNZIP_COMPAT_HEADER ${COMPAT_HEADER})
-    string(REPLACE "MZ_COMPAT_FILE" "MZ_COMPAT_UNZIP" UNZIP_COMPAT_HEADER ${UNZIP_COMPAT_HEADER})
-    file(WRITE "unzip.h" ${UNZIP_COMPAT_HEADER})
+    set(FILE_H "unzip.h")
+    set(MZ_COMPAT_FILE "MZ_COMPAT_UNZIP")
+    configure_file(mz_compat_shim.h.in unzip.h)
 
     if(MZ_COMPAT_VERSION)
         list(APPEND MINIZIP_DEF -DMZ_COMPAT_VERSION=${MZ_COMPAT_VERSION})
     endif()
     list(APPEND MINIZIP_SRC mz_compat.c)
-    list(APPEND MINIZIP_HDR mz_compat.h zip.h unzip.h)
+    list(APPEND MINIZIP_HDR mz_compat.h ${CMAKE_CURRENT_BINARY_DIR}/zip.h ${CMAKE_CURRENT_BINARY_DIR}/unzip.h)
 endif()
 
 # Set compiler options
@@ -703,7 +684,7 @@ endif()
 list(APPEND MINIZIP_INC ${CMAKE_CURRENT_SOURCE_DIR})
 
 # Create minizip library
-project(minizip${MZ_PROJECT_SUFFIX} VERSION ${VERSION})
+project(minizip${MZ_PROJECT_SUFFIX} LANGUAGES C VERSION ${VERSION})
 
 if(NOT ${MZ_PROJECT_SUFFIX} STREQUAL "")
     message(STATUS "Project configured as ${PROJECT_NAME}")
@@ -732,7 +713,7 @@ if(MSVC)
     # VS debugger has problems when executable and static library are named the same
     set_target_properties(${PROJECT_NAME} PROPERTIES OUTPUT_NAME lib${PROJECT_NAME})
 endif()
-if(NOT RISCOS)
+if(NOT RISCOS AND NOT PSP)
     set_target_properties(${PROJECT_NAME} PROPERTIES POSITION_INDEPENDENT_CODE 1)
 endif()
 if(MZ_LZMA)
@@ -744,14 +725,20 @@ target_link_libraries(${PROJECT_NAME} PUBLIC ${MINIZIP_LIB} ${MINIZIP_DEP})
 target_compile_definitions(${PROJECT_NAME} PRIVATE ${STDLIB_DEF} ${MINIZIP_DEF})
 target_include_directories(${PROJECT_NAME} PRIVATE ${MINIZIP_INC})
 target_include_directories(${PROJECT_NAME} PUBLIC
-    $<INSTALL_INTERFACE:${INSTALL_INC_DIR}>
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
+if(MZ_COMPAT)
+    target_include_directories(${PROJECT_NAME} PUBLIC
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>)
+endif()
 
 # Create minizip alias
-add_library(MINIZIP::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
+add_library(MINIZIP::minizip ALIAS ${PROJECT_NAME})
 
 # Install files
 if(NOT SKIP_INSTALL_LIBRARIES AND NOT SKIP_INSTALL_ALL)
+    target_include_directories(${PROJECT_NAME} PUBLIC
+        $<INSTALL_INTERFACE:${INSTALL_INC_DIR}>)
+
     install(TARGETS ${PROJECT_NAME} ${MINIZIP_DEP}
             EXPORT ${PROJECT_NAME}
             INCLUDES DESTINATION "${INSTALL_INC_DIR}"
