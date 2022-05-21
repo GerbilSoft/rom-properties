@@ -84,6 +84,7 @@ SET(${PROJECT_NAME}_SRCS
 	Other/MachO.cpp
 	Other/NintendoBadge.cpp
 	Other/RpTextureWrapper.cpp
+	Other/Lua.cpp
 
 	data/AmiiboData.cpp
 	data/ELFData.cpp
@@ -249,6 +250,7 @@ SET(${PROJECT_NAME}_H
 	Other/MachO.hpp
 	Other/NintendoBadge.hpp
 	Other/RpTextureWrapper.hpp
+	Other/Lua.hpp
 
 	Other/badge_structs.h
 	Other/elf_structs.h

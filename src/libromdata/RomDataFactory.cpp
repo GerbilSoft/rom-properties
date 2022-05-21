@@ -100,6 +100,7 @@ using std::vector;
 #include "Other/MachO.hpp"
 #include "Other/NintendoBadge.hpp"
 #include "Other/RpTextureWrapper.hpp"
+#include "Other/Lua.hpp"
 
 // Special case for Dreamcast save files.
 #include "Console/dc_structs.h"
@@ -281,6 +282,7 @@ const RomDataFactoryPrivate::RomDataFns RomDataFactoryPrivate::romDataFns_magic[
 
 	// Other
 	GetRomDataFns_addr(ELF, ATTR_NONE, 0, 0x7F454C46),		// '\177ELF'
+	GetRomDataFns_addr(Lua, ATTR_NONE, 0, 0x1B4C7561),		// '\033Lua'
 
 	// Consoles: Xbox 360 STFS
 	// Moved here to prevent conflicts with the Nintendo DS ROM image
