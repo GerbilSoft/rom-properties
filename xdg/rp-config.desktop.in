@@ -1,0 +1,20 @@
+[Desktop Entry]
+Version=@RP_DISPLAY_VERSION@
+Icon=media-flash
+Exec=rp-config
+Terminal=false
+Type=Application
+Categories=System;Settings;QT;
+Name=ROM Properties configurator
+Name[de]=ROM Properties konfigurator
+Name[en_GB]=ROM Properties configurator
+Name[en_US]=ROM Properties configurator
+Name[es]=Configurador de ROM Properties
+Name[fr]=Configurateur de ROM Properties
+Name[it]=Configuratore di ROM Properties
+Name[ja]=ROM Properties コンフィギュレータ
+Name[pt]=Configurador de ROM Properties
+Name[pt_BR]=Configurador de ROM Properties
+Name[ru]=конфигуратор романтических свойств
+GenericName=rp-config
+Comment=ROM Properties configuration program
