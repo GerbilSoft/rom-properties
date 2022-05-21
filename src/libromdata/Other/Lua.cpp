@@ -57,7 +57,6 @@ class LuaPrivate final : public RomDataPrivate
 			Lua5_4 = 9,
 			Max
 		};
-
 		Version version;
 
 		/**
@@ -202,6 +201,7 @@ LuaPrivate::LuaPrivate(Lua *q, IRpFile *file)
 
 void LuaPrivate::reset_lua(void)
 {
+	version = Version::Unknown;
 	endianness = Endianness::Unknown;
 	int_size = -1;				// sizeof(int)
 	size_t_size = -1;			// sizeof(size_t)
