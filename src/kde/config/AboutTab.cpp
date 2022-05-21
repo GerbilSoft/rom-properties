@@ -157,7 +157,7 @@ void AboutTabPrivate::initCreditsTab(void)
 	string sCredits;
 	sCredits.reserve(4096);
 	// NOTE: Copyright is NOT localized.
-	sCredits += "Copyright (c) 2016-2021 by David Korth." BR;
+	sCredits += "Copyright (c) 2016-2022 by David Korth." BR;
 	sCredits += rp_sprintf(
 		// tr: %s is the name of the license.
 		C_("AboutTab|Credits", "This program is licensed under the %s or later."),
