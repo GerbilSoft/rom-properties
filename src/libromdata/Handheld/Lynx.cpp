@@ -172,13 +172,7 @@ const char *Lynx::systemName(unsigned int type) const
 		"Atari Lynx", "Lynx", "LNX", nullptr,
 	};
 
-	unsigned int idx = (type & SYSNAME_TYPE_MASK);
-	if (idx >= ARRAY_SIZE(sysNames)) {
-		// Invalid index...
-		idx &= SYSNAME_TYPE_MASK;
-	}
-
-	return sysNames[idx];
+	return sysNames[type & SYSNAME_TYPE_MASK];
 }
 
 /**
