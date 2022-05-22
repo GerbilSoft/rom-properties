@@ -148,7 +148,7 @@ GTK_WIDET_GET_TOPLEVEL_FN(dialog, GtkDialog, GTK_DIALOG)
 static inline GtkWidget*
 gtk_widget_get_first_child(GtkWidget *widget)
 {
-	GtkWidget *ret = nullptr;
+	GtkWidget *ret = NULL;
 
 	// Assuming this is a GtkContainer.
 	assert(GTK_IS_CONTAINER(widget));
@@ -158,7 +158,7 @@ gtk_widget_get_first_child(GtkWidget *widget)
 	// NOTE: First widget in the list matches the first widget in the
 	// UI file, contrary to the bitfield stuff in RomDataView...
 	GList *const widgetIter = g_list_first(widgetList);
-	assert(widgetIter != nullptr);
+	assert(widgetIter != NULL);
 	if (widgetIter)
 		ret = GTK_WIDGET(widgetIter->data);
 	g_list_free(widgetList);
