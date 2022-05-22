@@ -598,8 +598,8 @@ int CBMCart::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) co
 		unique_ptr<uint8_t[]> buf(new uint8_t[CBM_ROM_BUF_SIZ]);
 		while (sz_rd_total < CBM_ROM_BUF_SIZ) {
 			CBM_CRT_CHIPHeader chipHeader;
-			size_t size = d->file->read(&chipHeader, sizeof(chipHeader));
-			if (size != sizeof(chipHeader)) {
+			size_t sz_rd = d->file->read(&chipHeader, sizeof(chipHeader));
+			if (sz_rd != sizeof(chipHeader)) {
 				// Read error.
 				break;
 			}
@@ -621,9 +621,9 @@ int CBMCart::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) co
 			}
 
 			// Read the data.
-			size = d->file->read(&buf[sz_rd_total], sz_to_read);
-			sz_rd_total += size;
-			if (size != sz_to_read) {
+			sz_rd = d->file->read(&buf[sz_rd_total], sz_to_read);
+			sz_rd_total += sz_rd;
+			if (sz_rd != sz_to_read) {
 				// Read error. We'll at least process whatever was read,
 				// and then stop here.
 				// "Fraction Fever (USA, Europe)" is 8,272 bytes, but the
