@@ -668,17 +668,17 @@ int Lua::loadFieldData(void)
 		const char *s_endianness = nullptr;
 		switch (d->endianness) {
 			case LuaPrivate::Endianness::BE:
-				s_endianness = C_("Lua", "Big-endian");
+				s_endianness = C_("RomData", "Big-Endian");
 				break;
 			case LuaPrivate::Endianness::LE:
-				s_endianness = C_("Lua", "Little-endian");
+				s_endianness = C_("RomData", "Little-Endian");
 				break;
 			default:
 				assert(!"Invalid endianness.");
 				break;
 		}
 		if (s_endianness) {
-			d->fields->addField_string(C_("Lua", "Endianness"), s_endianness);
+			d->fields->addField_string(C_("RomData", "Endianness"), s_endianness);
 		}
 	}
 	if (d->int_size != -1)
