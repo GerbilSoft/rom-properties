@@ -10,16 +10,16 @@ video game ROM and disc images.
 [![Total alerts](https://img.shields.io/lgtm/alerts/g/GerbilSoft/rom-properties.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/GerbilSoft/rom-properties/alerts/)
 [![Language grade: C/C++](https://img.shields.io/lgtm/grade/cpp/g/GerbilSoft/rom-properties.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/GerbilSoft/rom-properties/context:cpp)
 
-## v1.8
+## v1.9
 
-This release adds a ton of new features, including achievements, WonderSwan
-(Color) ROMs, and external title screens (via RPDB) for Sega Mega Drive:
+This release adds a ton of new features, including ASTC and Godot textures,
+Commodore ROM cartridge images, and various performance improvements.
 
-![Sega Mega Drive ROM images](doc/img/rp-v1.8-kde5.MegaDrive.RPDB.png)
+![Godot 3 textures from Sonic Colors Ultimate](doc/img/rp-v1.9-kde5.GodotSTEX.SCU.png)
 
 Translators needed; file an issue if you'd like to get started on a new translation, or submit a Pull Request if you have a translation ready to go.
 
-See [`NEWS.md`](NEWS.md) for a full list of changes in v1.8.
+See [`NEWS.md`](NEWS.md) for a full list of changes in v1.9.
 
 ## Feedback
 
@@ -202,6 +202,7 @@ button.
 |:------------------------------:|:--------------:|:--------:|:---------------:|:--------------:|
 | Executable and Linkable Format |       Yes      |    No    |       N/A       |       N/A      |
 | ISO-9660 Disc Images           |       Yes      |   Yes    |        No       |       N/A      |
+| PUC Lua binaries               |       Yes      |    No    |       N/A       |       N/A      |
 | Mach-O Binaries                |       Yes      |    No    |       N/A       |       N/A      |
 | Nintendo amiibo                |       Yes      |    No    |       N/A       |      Media     |
 | Nintendo Badge Arcade          |       Yes      |    No    |      Image      |       N/A      |

@@ -1,10 +1,12 @@
 # Changes
 
-## v1.9 (released 2021/??/??)
+## v1.9 (released 2022/05/22)
 
 * New features:
   * OpenMP can now be used to improve decoding performance for some image
     codecs, including ASTC and BC7.
+  * A .desktop file has been added for rp-config on Linux systems, which
+    adds it to the applications menu on most desktop environments.
 
 * New parsers:
   * GodotSTEX: Godot 3 and 4 texture files. Supports most linear encodings,
@@ -16,6 +18,7 @@
     encoded using ASTC.
   * CBMCart: Commodore ROM cartridges, using VICE 3.0's .CRT format. Supports
     external title screen images for C64 and C128 cartridges.
+  * Lua: PUC LUA binary format (.lub).
 
 * New parser features:
   * Added ASTC decoding. All texture formats that support ASTC have been
