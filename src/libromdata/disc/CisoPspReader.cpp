@@ -994,11 +994,11 @@ int CisoPspReader::readBlock(uint32_t blockIdx, int pos, void *ptr, size_t size)
 			}
 
 			// Decompress the data.
-			int size = LZ4_decompress_safe(
+			int sz_rd = LZ4_decompress_safe(
 				reinterpret_cast<const char*>(d->z_buffer.data()),
 				reinterpret_cast<char*>(d->blockCache.data()),
 				z_block_size, d->block_size);
-			if (size != (int)d->block_size) {
+			if (sz_rd != (int)d->block_size) {
 				// Decompression error.
 				// TODO: Print warnings and/or more comprehensive error codes.
 				d->blockCacheIdx = ~0U;

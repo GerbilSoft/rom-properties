@@ -1654,10 +1654,10 @@ int MegaDrive::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) 
 		// Get the serial number and trim it.
 		gameID = latin1_to_utf8(s_serial_number, sizeof(pRomHeader->serial_number));
 		while (!gameID.empty()) {
-			size_t size = gameID.size();
-			if (gameID[size-1] != ' ')
+			const size_t sz = gameID.size();
+			if (gameID[sz-1] != ' ')
 				break;
-			gameID.resize(size-1);
+			gameID.resize(sz-1);
 		}
 		if (gameID.empty()) {
 			// No game ID. Image is not available.
