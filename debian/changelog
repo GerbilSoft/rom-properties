@@ -1,3 +1,11 @@
+rom-properties (1.9-1ppa2~bionic1) bionic; urgency=medium
+
+  * Build for Ubuntu 18.04 "Bionic" Beaver.
+
+    PPA version bumped to ensure it updates from previous versions.
+
+ -- David Korth <gerbilsoft@gerbilsoft.com>  Sun, 22 May 2022 14:42:00 -0400
+
 rom-properties (1.9-1ppa1~xenial2) xenial; urgency=medium
 
   * Fix undefined 'nullptr' in gtk-compat.h in C PCH builds.
