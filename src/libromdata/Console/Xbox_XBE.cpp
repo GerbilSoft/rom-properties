@@ -319,8 +319,7 @@ int Xbox_XBE_Private::initXPR0_xtImage(void)
 		subFile->unref();
 	}
 
-	// Image loaded.
-	return 0;
+	return ret;
 }
 
 /**
