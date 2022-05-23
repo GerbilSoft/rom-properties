@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE4/KF5)                         *
  * DragImageTreeView.cpp: Drag & Drop QTreeView subclass.                  *
  *                                                                         *
- * Copyright (c) 2019-2020 by David Korth.                                 *
+ * Copyright (c) 2019-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -87,7 +87,6 @@ void DragImageTreeView::startDrag(Qt::DropActions supportedActions)
 		delete pngWriter;
 
 		// Set the PNG data.
-		QByteArray ba = pngData->qByteArray();
 		mimeData->setData(QLatin1String("image/png"), pngData->qByteArray());
 		pngData->unref();
 
