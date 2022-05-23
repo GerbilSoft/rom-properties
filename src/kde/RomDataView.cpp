@@ -551,7 +551,9 @@ QLabel *RomDataViewPrivate::initString(QLabel *lblDesc,
 		tab.form->addRow(lblDesc, lblString);
 	}
 
-	lblString->setProperty("RFT_fieldIdx", fieldIdx);
+	if (lblString) {
+		lblString->setProperty("RFT_fieldIdx", fieldIdx);
+	}
 	return lblString;
 }
 
