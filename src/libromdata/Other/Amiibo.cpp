@@ -43,13 +43,11 @@ class AmiiboPrivate final : public RomDataPrivate
 		NFP_Data_t nfpData;
 
 		/**
-		 * Calculate the check bytes from an NTAG215 serial number.
+		 * Verify the check bytes in an NTAG215 serial number.
 		 * @param serial	[in] NTAG215 serial number. (9 bytes)
-		 * @param pCb0		[out] Check byte 0. (calculated)
-		 * @param pCb1		[out] Check byte 1. (calculated)
 		 * @return True if the serial number has valid check bytes; false if not.
 		 */
-		static bool calcCheckBytes(const uint8_t *serial, uint8_t *pCb0, uint8_t *pCb1);
+		static bool verifyCheckBytes(const uint8_t *serial);
 };
 
 ROMDATA_IMPL(Amiibo)
@@ -90,20 +88,20 @@ AmiiboPrivate::AmiiboPrivate(Amiibo *q, IRpFile *file)
 }
 
 /**
- * Calculate the check bytes from an NTAG215 serial number.
+ * Verify the check bytes in an NTAG215 serial number.
  * @param serial	[in] NTAG215 serial number. (9 bytes)
  * @param pCb0		[out] Check byte 0. (calculated)
  * @param pCb1		[out] Check byte 1. (calculated)
  * @return True if the serial number has valid check bytes; false if not.
  */
-bool AmiiboPrivate::calcCheckBytes(const uint8_t *serial, uint8_t *pCb0, uint8_t *pCb1)
+bool AmiiboPrivate::verifyCheckBytes(const uint8_t *serial)
 {
 	// Check Byte 0 = CT ^ SN0 ^ SN1 ^ SN2
 	// Check Byte 1 = SN3 ^ SN4 ^ SN5 ^ SN6
 	// NTAG215 uses Cascade Level 2, so CT = 0x88.
-	*pCb0 = 0x88 ^ serial[0] ^ serial[1] ^ serial[2];
-	*pCb1 = serial[4] ^ serial[5] ^ serial[6] ^ serial[7];
-	return (*pCb0 == serial[3] && *pCb1 == serial[8]);
+	const uint8_t cb0 = 0x88 ^ serial[0] ^ serial[1] ^ serial[2];
+	const uint8_t cb1 = serial[4] ^ serial[5] ^ serial[6] ^ serial[7];
+	return (cb0 == serial[3] && cb1 == serial[8]);
 }
 
 /** Amiibo **/
@@ -220,8 +218,7 @@ int Amiibo::isRomSupported_static(const DetectInfo *info)
 	}
 
 	// Validate the UID check bytes.
-	uint8_t cb0, cb1;
-	if (!AmiiboPrivate::calcCheckBytes(nfpData->serial, &cb0, &cb1)) {
+	if (!AmiiboPrivate::verifyCheckBytes(nfpData->serial)) {
 		// Check bytes are invalid.
 		// These are read-only, so something went wrong
 		// when the tag was being dumped.
