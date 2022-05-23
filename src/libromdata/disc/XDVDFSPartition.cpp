@@ -199,7 +199,6 @@ const XDVDFS_DirEntry *XDVDFSPartitionPrivate::getDirEntry(const ao::uvector<uin
 		s_entry_filename.assign(entry_filename, dirEntry->name_length);
 
 		// Check the filename.
-		// TODO: Use non-locale-specific case-insensitive check? (only letters)
 		uint16_t subtree_offset = 0;
 		int cmp = xdvdfs_strcasecmp(s_filename.c_str(), s_entry_filename.c_str());
 		if (cmp == 0) {
