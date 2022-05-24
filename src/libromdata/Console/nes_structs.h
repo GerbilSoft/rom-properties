@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * nes_structs.h: Nintendo Entertainment System/Famicom data structures.   *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * Copyright (c) 2016-2017 by Egor.                                        *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
@@ -65,7 +65,9 @@ typedef struct _INES_RomHeader {
 		} ines;
 		struct {
 			uint8_t mapper_hi2;
-			uint8_t prg_banks_hi;
+			uint8_t banks_hi;	// [CCCC PPPP] High nybble of PRG/CHR bank size.
+						// If PPPP == 0xF, an alternate method is used:
+						// Low value is [EEEE EEMM] -> 2^E * (MM*2 + 1)
 			uint8_t prg_ram_size;	// logarithmic
 			uint8_t vram_size;	// logarithmic
 			uint8_t tv_mode;	// 12

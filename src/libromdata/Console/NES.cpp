@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * NES.cpp: Nintendo Entertainment System/Famicom ROM reader.              *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * Copyright (c) 2016-2022 by Egor.                                        *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
@@ -20,6 +20,7 @@ using LibRpFile::IRpFile;
 
 // C++ STL classes.
 using std::string;
+using std::unique_ptr;
 using std::vector;
 
 namespace LibRomData {
@@ -100,6 +101,24 @@ class NESPrivate final : public RomDataPrivate
 		 * was released in 1983.
 		 */
 		static time_t fds_bcd_datestamp_to_unix_time(const FDS_BCD_DateStamp *fds_bcd_ds);
+
+		/**
+		 * Get the PRG ROM size.
+		 * @return PRG ROM size.
+		 */
+		unsigned int get_prg_rom_size(void) const;
+
+		/**
+		 * Get the CHR ROM size.
+		 * @return CHR ROM size.
+		 */
+		unsigned int get_chr_rom_size(void) const;
+
+		/**
+		 * Get the iNES mapper number.
+		 * @return iNES mapper number.
+		 */
+		int get_iNES_mapper_number(void) const;
 
 		/**
 		 * Load the internal footer.
@@ -208,6 +227,130 @@ time_t NESPrivate::fds_bcd_datestamp_to_unix_time(const FDS_BCD_DateStamp *fds_b
 }
 
 /**
+ * Get the PRG ROM size.
+ * @return PRG ROM size.
+ */
+unsigned int NESPrivate::get_prg_rom_size(void) const
+{
+	unsigned int prg_rom_size;
+
+	switch (romType & NESPrivate::ROM_FORMAT_MASK) {
+		case NESPrivate::ROM_FORMAT_OLD_INES:
+		case NESPrivate::ROM_FORMAT_INES:
+			// Special case: If a single PRG bank is present, CHR ROM is
+			// present, and the total file size matches a PRG bank,
+			// this is likely Galaxian with 8 KB PRG ROM.
+			// TODO: Cache the file size in case the file is closed?
+			if (header.ines.prg_banks == 1 && header.ines.chr_banks == 1) {
+				if (file && file->size() == 16400) {
+					return 8192;
+				}
+			}
+
+			prg_rom_size = header.ines.prg_banks * INES_PRG_BANK_SIZE;
+			break;
+
+		case NESPrivate::ROM_FORMAT_NES2: {
+			// NES 2.0 has an alternate method for indicating PRG ROM size,
+			// so we need to check for that.
+			if (likely((header.ines.nes2.banks_hi & 0x0F) != 0x0F)) {
+				// Standard method.
+				prg_rom_size = ((header.ines.prg_banks |
+						((header.ines.nes2.banks_hi & 0x0F) << 8))
+						* INES_PRG_BANK_SIZE);
+			} else {
+				// Alternate method: [EEEE EEMM] -> 2^E * (MM*2 + 1)
+				// TODO: Verify that this works.
+				prg_rom_size = (1U << (header.ines.prg_banks >> 2)) *
+					       ((header.ines.prg_banks & 0x03) + 1);
+			}
+			break;
+		}
+
+		case NESPrivate::ROM_FORMAT_TNES:
+			prg_rom_size = header.tnes.prg_banks * TNES_PRG_BANK_SIZE;
+			break;
+
+		default:
+			// Not supported.
+			prg_rom_size = 0;
+			break;
+	}
+
+	return prg_rom_size;
+}
+
+/**
+ * Get the PRG ROM size.
+ * @return PRG ROM size.
+ */
+unsigned int NESPrivate::get_chr_rom_size(void) const
+{
+	unsigned int chr_rom_size;
+
+	switch (romType & NESPrivate::ROM_FORMAT_MASK) {
+		case NESPrivate::ROM_FORMAT_OLD_INES:
+		case NESPrivate::ROM_FORMAT_INES:
+			chr_rom_size = header.ines.chr_banks * INES_CHR_BANK_SIZE;
+			break;
+
+		case NESPrivate::ROM_FORMAT_NES2:
+			chr_rom_size = ((header.ines.chr_banks |
+					((header.ines.nes2.banks_hi & 0xF0) << 4))
+					* INES_CHR_BANK_SIZE);
+			break;
+
+		case NESPrivate::ROM_FORMAT_TNES:
+			chr_rom_size = header.tnes.chr_banks * TNES_CHR_BANK_SIZE;
+			break;
+
+		default:
+			// Not supported.
+			chr_rom_size = 0;
+			break;
+	}
+
+	return chr_rom_size;
+}
+
+/**
+ * Get the iNES mapper number.
+ * @return iNES mapper number.
+ */
+int NESPrivate::get_iNES_mapper_number(void) const
+{
+	int mapper;
+
+	switch (romType & NESPrivate::ROM_FORMAT_MASK) {
+		case NESPrivate::ROM_FORMAT_OLD_INES:
+			mapper = (header.ines.mapper_lo >> 4);
+			break;
+
+		case NESPrivate::ROM_FORMAT_INES:
+			mapper = (header.ines.mapper_lo >> 4) |
+				 (header.ines.mapper_hi & 0xF0);
+			break;
+
+		case NESPrivate::ROM_FORMAT_NES2:
+			mapper = (header.ines.mapper_lo >> 4) |
+				 (header.ines.mapper_hi & 0xF0) |
+				 ((header.ines.nes2.mapper_hi2 & 0x0F) << 8);
+			break;
+
+		case NESPrivate::ROM_FORMAT_TNES:
+			mapper = NESMappers::tnesMapperToInesMapper(header.tnes.mapper);
+			break;
+
+		default:
+			// Mappers aren't supported.
+			mapper = -1;
+			break;
+	}
+
+	return mapper;
+}
+
+/**
  * Load the internal NES footer.
  * This is present at the end of the last PRG bank in some ROMs.
  *
@@ -224,26 +367,13 @@ int NESPrivate::loadInternalFooter(void)
 	hasCheckedIntFooter = true;
 	intFooterErrno = EIO;
 
-	// Get the PRG ROM size.
-	unsigned int prg_rom_size;
-	switch (romType & NESPrivate::ROM_FORMAT_MASK) {
-		case ROM_FORMAT_OLD_INES:
-		case ROM_FORMAT_INES:
-			prg_rom_size = header.ines.prg_banks * INES_PRG_BANK_SIZE;
-			break;
-		case ROM_FORMAT_NES2:
-			prg_rom_size = ((header.ines.prg_banks +
-					(header.ines.nes2.prg_banks_hi << 8))
-					* INES_PRG_BANK_SIZE);
-			break;
-		case ROM_FORMAT_TNES:
-			prg_rom_size = header.tnes.prg_banks * TNES_PRG_BANK_SIZE;
-			break;
-		default:
-			// FDS is not supported here.
-			// TODO: ENOTSUP instead?
-			intFooterErrno = ENOENT;
-			return -((int)intFooterErrno);
+	unsigned int prg_rom_size = get_prg_rom_size();
+	if (prg_rom_size == 0) {
+		// Unable to get the PRG ROM size.
+		// This might be FDS, which isn't supported here.
+		// TODO: ENOTSUP instead?
+		intFooterErrno = ENOENT;
+		return -((int)intFooterErrno);
 	}
 
 	// Check for the internal NES footer.
@@ -532,10 +662,27 @@ int NES::isRomSupported_static(const DetectInfo *info)
 		if ((inesHeader->mapper_hi & 0x0C) == 0x08) {
 			// May be NES 2.0
 			// Verify the ROM size.
+
+			// NES 2.0 has an alternate method for indicating PRG ROM size,
+			// so we need to check for that.
+			unsigned int prg_rom_size, chr_rom_size;
+			if (likely((inesHeader->nes2.banks_hi & 0x0F) != 0x0F)) {
+				// Standard method.
+				prg_rom_size = ((inesHeader->prg_banks |
+						((inesHeader->nes2.banks_hi & 0x0F) << 8))
+						* INES_PRG_BANK_SIZE);
+			} else {
+				// Alternate method: [EEEE EEMM] -> 2^E * (MM*2 + 1)
+				// TODO: Verify that this works.
+				prg_rom_size = (1U << (inesHeader->prg_banks >> 2)) *
+					       ((inesHeader->prg_banks & 0x03) + 1);
+			}
+			chr_rom_size = ((inesHeader->chr_banks |
+					((inesHeader->nes2.banks_hi & 0xF0) << 4))
+					* INES_CHR_BANK_SIZE);
+
 			const off64_t size = sizeof(INES_RomHeader) +
-				(inesHeader->prg_banks * INES_PRG_BANK_SIZE) +
-				(inesHeader->chr_banks * INES_CHR_BANK_SIZE) +
-				((inesHeader->nes2.prg_banks_hi << 8) * INES_PRG_BANK_SIZE);
+				prg_rom_size + chr_rom_size;
 			if (size <= info->szFile) {
 				// This is an NES 2.0 header.
 				switch (inesHeader->mapper_hi & INES_F7_SYSTEM_MASK) {
@@ -764,25 +911,23 @@ int NES::loadFieldData(void)
 	const char *tabName = "iNES";
 	const char *rom_format = "iNES";
 	bool romOK = true;
-	int mapper = -1;
 	int submapper = -1;
 	int tnes_mapper = -1;
 	bool has_trainer = false;
 	uint8_t tv_mode = 0xFF;			// NES2_TV_Mode (0xFF if unknown)
-	unsigned int prg_rom_size = 0;
-	unsigned int chr_rom_size = 0;
 	unsigned int chr_ram_size = 0;		// CHR RAM
 	unsigned int chr_ram_battery_size = 0;	// CHR RAM with battery (rare but it exists)
 	unsigned int prg_ram_size = 0;		// PRG RAM ($6000-$7FFF)
 	unsigned int prg_ram_battery_size = 0;	// PRG RAM with battery (save RAM)
 
+	const int mapper = d->get_iNES_mapper_number();
+	const unsigned int prg_rom_size = d->get_prg_rom_size();
+	const unsigned int chr_rom_size = d->get_chr_rom_size();
+
 	switch (d->romType & NESPrivate::ROM_FORMAT_MASK) {
 		case NESPrivate::ROM_FORMAT_OLD_INES:
 			rom_format = C_("NES|Format", "Archaic iNES");
-			mapper = (d->header.ines.mapper_lo >> 4);
 			has_trainer = !!(d->header.ines.mapper_lo & INES_F6_TRAINER);
-			prg_rom_size = d->header.ines.prg_banks * INES_PRG_BANK_SIZE;
-			chr_rom_size = d->header.ines.chr_banks * INES_CHR_BANK_SIZE;
 			if (chr_rom_size == 0) {
 				chr_ram_size = 8192;
 			}
@@ -792,14 +937,10 @@ int NES::loadFieldData(void)
 			break;
 
 		case NESPrivate::ROM_FORMAT_INES:
-			mapper = (d->header.ines.mapper_lo >> 4) |
-				 (d->header.ines.mapper_hi & 0xF0);
 			has_trainer = !!(d->header.ines.mapper_lo & INES_F6_TRAINER);
 			// NOTE: Very few iNES ROMs have this set correctly,
 			// so we're ignoring it for now.
 			//tv_mode = (d->header.ines.ines.tv_mode & 1);
-			prg_rom_size = d->header.ines.prg_banks * INES_PRG_BANK_SIZE;
-			chr_rom_size = d->header.ines.chr_banks * INES_CHR_BANK_SIZE;
 			if (chr_rom_size == 0) {
 				chr_ram_size = 8192;
 			}
@@ -820,16 +961,9 @@ int NES::loadFieldData(void)
 		case NESPrivate::ROM_FORMAT_NES2:
 			tabName = "NES 2.0";	// NOT translatable!
 			rom_format = "NES 2.0";	// NOT translatable!
-			mapper = (d->header.ines.mapper_lo >> 4) |
-				 (d->header.ines.mapper_hi & 0xF0) |
-				 ((d->header.ines.nes2.mapper_hi2 & 0x0F) << 8);
 			submapper = (d->header.ines.nes2.mapper_hi2 >> 4);
 			has_trainer = !!(d->header.ines.mapper_lo & INES_F6_TRAINER);
 			tv_mode = (d->header.ines.nes2.tv_mode & 3);
-			prg_rom_size = ((d->header.ines.prg_banks +
-					(d->header.ines.nes2.prg_banks_hi << 8))
-					* INES_PRG_BANK_SIZE);
-			chr_rom_size = d->header.ines.chr_banks * INES_CHR_BANK_SIZE;
 			// CHR RAM size. (TODO: Needs testing.)
 			if (d->header.ines.nes2.vram_size & 0x0F) {
 				chr_ram_size = 128 << ((d->header.ines.nes2.vram_size & 0x0F) - 1);
@@ -853,9 +987,6 @@ int NES::loadFieldData(void)
 			tabName = "TNES";	// NOT translatable!
 			rom_format = C_("NES|Format", "TNES (Nintendo 3DS Virtual Console)");
 			tnes_mapper = d->header.tnes.mapper;
-			mapper = NESMappers::tnesMapperToInesMapper(tnes_mapper);
-			prg_rom_size = d->header.tnes.prg_banks * TNES_PRG_BANK_SIZE;
-			chr_rom_size = d->header.tnes.chr_banks * TNES_CHR_BANK_SIZE;
 			// FIXME: Check Zelda TNES to see where 8K CHR RAM is.
 			break;
 
