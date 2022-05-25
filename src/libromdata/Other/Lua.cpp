@@ -43,7 +43,7 @@ class LuaPrivate final : public RomDataPrivate
 		void reset_lua(void);
 
 	public:
-		enum class LuaVersion : int8_t {
+		enum class LuaVersion {
 			Unknown = -1,
 			Lua2_4 = 0,
 			Lua2_5 = 1,
@@ -191,17 +191,19 @@ const RomDataInfo LuaPrivate::romDataInfo = {
 
 LuaPrivate::LuaPrivate(Lua *q, IRpFile *file)
 	: super(q, file, &romDataInfo)
+	, luaVersion(LuaVersion::Unknown)
 {
 	// Clear the header struct.
 	memset(&header, 0, sizeof(header));
 
 	// Reset the Lua identification variables.
+	// NOTE: Does NOT reset luaVersion; that's set when
+	// the file is loaded.
 	reset_lua();
 }
 
 void LuaPrivate::reset_lua(void)
 {
-	luaVersion = LuaVersion::Unknown;
 	endianness = Endianness::Unknown;
 	int_size = -1;				// sizeof(int)
 	size_t_size = -1;			// sizeof(size_t)
