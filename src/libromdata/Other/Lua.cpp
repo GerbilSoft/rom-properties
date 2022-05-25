@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * Lua.cpp: Lua binary chunk reader.                                       *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * Copyright (c) 2016-2022 by Egor.                                        *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
@@ -43,7 +43,7 @@ class LuaPrivate final : public RomDataPrivate
 		void reset_lua(void);
 
 	public:
-		enum class Version : int8_t {
+		enum class LuaVersion : int8_t {
 			Unknown = -1,
 			Lua2_4 = 0,
 			Lua2_5 = 1,
@@ -57,12 +57,12 @@ class LuaPrivate final : public RomDataPrivate
 			Lua5_4 = 9,
 			Max
 		};
-		Version version;
+		LuaVersion luaVersion;
 
 		/**
 		 * Converts version byte to Version enum
 		 */
-		static Version to_version(uint8_t version);
+		static LuaVersion to_version(uint8_t version);
 
 	public:
 		// Lua header.
@@ -201,7 +201,7 @@ LuaPrivate::LuaPrivate(Lua *q, IRpFile *file)
 
 void LuaPrivate::reset_lua(void)
 {
-	version = Version::Unknown;
+	luaVersion = LuaVersion::Unknown;
 	endianness = Endianness::Unknown;
 	int_size = -1;				// sizeof(int)
 	size_t_size = -1;			// sizeof(size_t)
@@ -217,22 +217,22 @@ void LuaPrivate::reset_lua(void)
 /**
  * Converts version byte to Version enum
  */
-LuaPrivate::Version LuaPrivate::to_version(uint8_t version)
+LuaPrivate::LuaVersion LuaPrivate::to_version(uint8_t version)
 {
 	switch (version) {
 		// Bytecode dumping was introduced in 2.3, which was never publicly released.
 		// 2.4 kept the same format, so we refer to the 0x23 format as "2.4".
-		case 0x23:	return Version::Lua2_4;
-		case 0x25:	return Version::Lua2_5; // Also used by 3.0
-		case 0x31:	return Version::Lua3_1;
-		case 0x32:	return Version::Lua3_2;
-		case 0x40:	return Version::Lua4_0;
-		case 0x50:	return Version::Lua5_0;
-		case 0x51:	return Version::Lua5_1;
-		case 0x52:	return Version::Lua5_2;
-		case 0x53:	return Version::Lua5_3;
-		case 0x54:	return Version::Lua5_4;
-		default:	return Version::Unknown;
+		case 0x23:	return LuaVersion::Lua2_4;
+		case 0x25:	return LuaVersion::Lua2_5; // Also used by 3.0
+		case 0x31:	return LuaVersion::Lua3_1;
+		case 0x32:	return LuaVersion::Lua3_2;
+		case 0x40:	return LuaVersion::Lua4_0;
+		case 0x50:	return LuaVersion::Lua5_0;
+		case 0x51:	return LuaVersion::Lua5_1;
+		case 0x52:	return LuaVersion::Lua5_2;
+		case 0x53:	return LuaVersion::Lua5_3;
+		case 0x54:	return LuaVersion::Lua5_4;
+		default:	return LuaVersion::Unknown;
 	}
 }
 
@@ -572,8 +572,8 @@ Lua::Lua(IRpFile *file)
 	info.header.pData = d->header;
 	info.ext = nullptr;	// Not needed for Lua.
 	info.szFile = 0;	// Not needed for Lua.
-	d->version = static_cast<LuaPrivate::Version>(isRomSupported_static(&info));
-	d->isValid = ((int)d->version >= 0);
+	d->luaVersion = static_cast<LuaPrivate::LuaVersion>(isRomSupported_static(&info));
+	d->isValid = ((int)d->luaVersion >= 0);
 
 	if (!d->isValid) {
 		UNREF_AND_NULL_NOCHK(d->file);
@@ -595,7 +595,7 @@ int Lua::isRomSupported_static(const DetectInfo *info)
 	    info->header.addr != 0 ||
 	    info->header.size < LUA_HEADERSIZE)
 	{
-		return static_cast<int>(LuaPrivate::Version::Unknown);
+		return static_cast<int>(LuaPrivate::LuaVersion::Unknown);
 	}
 
 	const uint8_t *header = info->header.pData;
@@ -607,7 +607,7 @@ int Lua::isRomSupported_static(const DetectInfo *info)
 		}
 	}
 
-	return static_cast<int>(LuaPrivate::Version::Unknown);
+	return static_cast<int>(LuaPrivate::LuaVersion::Unknown);
 }
 
 /**
@@ -622,7 +622,7 @@ const char *Lua::systemName(unsigned int type) const
 
 	static_assert(SYSNAME_TYPE_MASK == 3,
 		"Lua::systemName() array index optimization needs to be updated.");
-	static_assert((int)LuaPrivate::Version::Max == 10,
+	static_assert((int)LuaPrivate::LuaVersion::Max == 10,
 		"Lua::systemName() array index optimization needs to be updated.");
 
 	static const char *const sysNames[10][4] = {
@@ -638,7 +638,7 @@ const char *Lua::systemName(unsigned int type) const
 		{"PUC Lua 5.4", "Lua 5.4", "Lua", nullptr},
 	};
 
-	return sysNames[(int)d->version][type & SYSNAME_TYPE_MASK];
+	return sysNames[(int)d->luaVersion][type & SYSNAME_TYPE_MASK];
 }
 
 /**
