@@ -1536,10 +1536,21 @@ int NES::loadFieldData(void)
 			}
 			d->fields->addField_string(mirroring_title, s_mirroring_int);
 
-			// Board type
-			// TODO: Lookup table.
-			d->fields->addField_string_numeric(C_("NES", "Board Type"),
-				footer.board_info & 0x7F);
+			// Board type (Mapper)
+			static const char *const footer_mapper_tbl[] = {
+				"NROM", "CNROM", "UNROM", "GNROM", "MMCx"
+			};
+			const unsigned int footer_mapper = (footer.board_info & 0x7F);
+			string s_footer_mapper;
+			if (footer_mapper < ARRAY_SIZE(footer_mapper_tbl)) {
+				// tr: Print the mapper ID followed by the mapper name.
+				s_footer_mapper = rp_sprintf_p(C_("NES|Mapper", "%1$u - %2$s"),
+					footer_mapper, footer_mapper_tbl[footer_mapper]);
+			} else {
+				// tr: Print only the mapper ID.
+				s_footer_mapper = rp_sprintf("%u", footer_mapper);
+			}
+			d->fields->addField_string(C_("NES", "Board Type"), s_footer_mapper);
 
 			// Publisher
 			const char *const publisher_title = C_("RomData", "Publisher");
