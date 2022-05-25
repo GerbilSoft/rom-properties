@@ -640,7 +640,10 @@ const char *Lua::systemName(unsigned int type) const
 		{"PUC Lua 5.4", "Lua 5.4", "Lua", nullptr},
 	};
 
-	return sysNames[(int)d->luaVersion][type & SYSNAME_TYPE_MASK];
+	const int i = (int)d->luaVersion;
+	if (i < 0 || i >= (int)LuaPrivate::LuaVersion::Max)
+		return nullptr;
+	return sysNames[i][type & SYSNAME_TYPE_MASK];
 }
 
 /**
