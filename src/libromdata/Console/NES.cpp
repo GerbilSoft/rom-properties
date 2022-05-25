@@ -120,6 +120,12 @@ class NESPrivate final : public RomDataPrivate
 		 */
 		int get_iNES_mapper_number(void) const;
 
+		// Internal footer: PRG ROM sizes (as powers of two)
+		static const uint8_t footer_prg_rom_size_shift_lkup[];
+
+		// Internal footer: CHR ROM/RAM sizes (as powers of two)
+		static const uint8_t footer_chr_rom_size_shift_lkup[];
+
 		/**
 		 * Load the internal footer.
 		 * This is present at the end of the last PRG bank in some ROMs.
@@ -163,6 +169,26 @@ const char *const NESPrivate::mimeTypes[] = {
 };
 const RomDataInfo NESPrivate::romDataInfo = {
 	"NES", exts, mimeTypes
+};
+
+// Internal footer: PRG ROM sizes (as powers of two)
+const uint8_t NESPrivate::footer_prg_rom_size_shift_lkup[] = {
+	16,	// 0 (64 KB)
+	14,	// 1 (16 KB)
+	15,	// 2 (32 KB)
+	17,	// 3 (128 KB)
+	18,	// 4 (256 KB)
+	19,	// 5 (512 KB)
+};
+
+// Internal footer: CHR ROM sizes (as powers of two)
+const uint8_t NESPrivate::footer_chr_rom_size_shift_lkup[] = {
+	13,	// 0 (8 KB)
+	14,	// 1 (16 KB)
+	15,	// 2 (32 KB)
+	17,	// 3 (128 KB)	// FIXME: May be 64 KB.
+	18,	// 4 (256 KB)
+	19,	// 5 (512 KB)
 };
 
 NESPrivate::NESPrivate(NES *q, IRpFile *file)
@@ -367,7 +393,7 @@ int NESPrivate::loadInternalFooter(void)
 	hasCheckedIntFooter = true;
 	intFooterErrno = EIO;
 
-	unsigned int prg_rom_size = get_prg_rom_size();
+	const unsigned int prg_rom_size = get_prg_rom_size();
 	if (prg_rom_size == 0) {
 		// Unable to get the PRG ROM size.
 		// This might be FDS, which isn't supported here.
@@ -381,7 +407,7 @@ int NESPrivate::loadInternalFooter(void)
 	// We'll verify that it's valid by looking for an
 	// all-ASCII title, possibly right-aligned with
 	// 0xFF filler bytes.
-	// NOTE: +16 to skip the iNES header.
+	// NOTE: +16 to skip the iNES/TNES header.
 	const unsigned int addr = prg_rom_size - sizeof(footer) + 16;
 
 	size_t size = file->seekAndRead(addr, &footer, sizeof(footer));
@@ -392,123 +418,191 @@ int NESPrivate::loadInternalFooter(void)
 		return intFooterErrno;
 	}
 
-	// Check the board information value.
-	// TODO: Determine valid values.
-	// - Bit 7: can be set, indicates ???
-	// - Bits 0, 1, 2 control mirroring; mutually-exclusive.
-	// FIXME: These are no longer detected:
-	// - 0x03: J.League Fighting Soccer - The King of Ace Strikers (Japan)
-	// FIXME: These *are* being detected but shouldn't be:
-	// - 0x84: Mario Bros. (Europe) (PAL-MA-0)
-	// - 0x84: Mario Bros. (World) (GameCube Edition)
-	// - 0x84: Mario Bros. (World)
-
-	// Check for special cases.
-	switch (footer.board_info) {
-		case 0x14:
-			// Special case for: Pinball Quest (Australia)
-			goto skip_board_info_check;
-		case 0x84:
-			// Mario Bros. - header is NOT valid.
-			// NOTE: Bomberman II (Japan) also has 0x84,
-			// so also check for an invalid CHR checksum.
-			if (footer.chr_checksum == le16_to_cpu(0x8484)) {
-				// Invalid CHR checksum.
-				intFooterErrno = ENOENT;
-				return intFooterErrno;
-			}
-			break;
-		default:
-			break;
-	}
-
-	if (footer.board_info & 0x78) {
-		// Invalid bits set.
+	// FIXME: This prevents a lot of otherwise valid footers from being displayed...
+#if 0
+	// Validate the checksum: sum of [FFF2-FFF9] == 0
+	uint8_t checksum = std::accumulate(&footer.u8[0x12], &footer.u8[0x1A], 0);
+	if (checksum != 0) {
+		// Incorrect checksum.
 		intFooterErrno = ENOENT;
 		return intFooterErrno;
-	} else {
-		switch (footer.board_info & 0x07) {
-			case 0: case 1:
-			case 2: case 4:
-				// Valid mirroring bits.
-				break;
-			case 5: {
-				// These titles have "00 01 02 03 04 05 06 07":
-				// - Higemaru - Makai-jima - Nanatsu no Shima Daibouken (Japan)
-				// - Makai Island (USA) (Proto)
-				static const uint8_t check_05[] = {0,1,2,3,4,5,6,7};
-				const uint8_t *const u8 = reinterpret_cast<const uint8_t*>(&footer);
-				if (memcmp(&u8[0x10], check_05, sizeof(check_05)) != 0) {
-					// Not valid.
-					intFooterErrno = ENOENT;
-					return intFooterErrno;
-				}
-				break;
-			}
-			default:
-				// Not valid mirroring bits.
-				intFooterErrno = ENOENT;
-				return intFooterErrno;
-		}
+	}
+#endif
+
+	// We'll allow certain errors if the name is valid.
+	bool onlyIfValidName = false;
+
+	// Check for an invalid publisher.
+	// NOTE: Some footers have partially valid information even with
+	// an invalid publisher, but the info isn't very useful.
+	if (footer.publisher_code == 0x00 || footer.publisher_code == 0xFF) {
+		// Invalid publisher.
+		onlyIfValidName = true;
 	}
 
-skip_board_info_check:
-	// Check if the name looks right.
-	unsigned int firstNonFF = static_cast<unsigned int>(sizeof(footer.name));
-	unsigned int lastValidChar = static_cast<unsigned int>(sizeof(footer.name)) - 1;
-	bool foundNonFF = false;
-	bool foundInvalid = false;
-	for (unsigned int i = 0; i < static_cast<unsigned int>(sizeof(footer.name)); i++) {
-		uint8_t chr = static_cast<uint8_t>(footer.name[i]);
+	// PRG and CHR checksums sometimes aren't set.
+	// The ROM size field *must* be valid and match the iNES header.
+	const uint8_t prg_sz_idx = footer.rom_size >> 4;
+	const uint8_t chr_sz_idx = footer.rom_size & 0x07;
+	if (prg_sz_idx >= ARRAY_SIZE(footer_prg_rom_size_shift_lkup) ||
+	    chr_sz_idx >= ARRAY_SIZE(footer_chr_rom_size_shift_lkup))
+	{
+		// Invalid ROM size.
+		intFooterErrno = ENOENT;
+		return intFooterErrno;
+	}
 
-		// Skip leading NULL and 0xFF.
-		// End at trailing NULL and 0xFF.
-		// TODO:
-		// - Adventures of Gilligan's Island, The (USA): Valid header; name is all 0x20.
-		// - Akagawa Jirou no Yuurei Ressha (Japan): Name may have Shift-JIS.
-		if (chr == 0U || chr == 0xFFU) {
-			if (!foundNonFF) {
-				// Leading 0xFF. Skip it.
-				continue;
+	// NOTE: Some ROMs have a footer that indicates half or double
+	// the ROM size that's present in the iNES header.
+	// (Dragon Quest, some others)
+	// For these, we'll only allow the DIV2 version if a valid name is present.
+	const unsigned int prg_rom_size_lkup = (1U << footer_prg_rom_size_shift_lkup[prg_sz_idx]);
+	if (prg_rom_size == prg_rom_size_lkup) {
+		// PRG ROM size is correct.
+	} else if ((prg_rom_size / 2) == prg_rom_size_lkup ||
+		   (prg_rom_size * 2) == prg_rom_size_lkup) {
+		// PRG ROM size is half the actual size.
+		onlyIfValidName = true;
+	} else {
+		// PRG ROM size is incorrect.
+		intFooterErrno = ENOENT;
+		return intFooterErrno;
+	}
+	// FIXME: Addams Family has an incorrect CHR ROM size. (8 KB; should be 128 KB)
+#if 0
+	if (!(footer.rom_size & 0x08)) {
+		const unsigned int chr_rom_size = get_chr_rom_size();
+		if (chr_rom_size != 0 &&
+		    chr_rom_size != (1U << footer_chr_rom_size_shift_lkup[chr_sz_idx])) {
+			// CHR ROM size is incorrect.
+			intFooterErrno = ENOENT;
+			return intFooterErrno;
+		}
+	}
+#endif
+
+	// Title encoding value must be valid.
+	// NOTE: '100 Man Dollar Kid' has 4 here.
+	if (footer.title_encoding > 4) {
+		intFooterErrno = ENOENT;
+		return intFooterErrno;
+	}
+
+	// Get the title.
+	// NOTE: Some ROMs have an encoding value of 4.
+	// Handling anything that isn't SJIS as if it's ASCII.
+	// FIXME: Some have a "none" title encoding even though they have a title?
+	if (footer.title_encoding == NES_INTFOOTER_ENCODING_ASCII ||
+	    footer.title_encoding == NES_INTFOOTER_ENCODING_SJIS ||
+	    footer.title_encoding == 4)
+	{
+		// Check the title length.
+		// TODO: Adjust for off-by-ones?
+		if (unlikely(footer.title_length == 0)) {
+			// No title.
+			s_footerName.clear();
+		} else if (footer.title_length <= 16) {
+			// Add 1 to get the actual length.
+			// (Unless it's 16, in which case, leave it as-is.)
+			unsigned int len = footer.title_length;
+			if (len < 16)
+				len++;
+			// NOTE: The spec says the title should be right-aligned,
+			// but some games incorrectly left-align it.
+			// Also, some titles use '\00' or '\x20' for padding instead of '\xFF'.
+			unsigned int start;
+			const uint8_t last_chr = (uint8_t)footer.title[0x0F];
+			if (likely(last_chr != 0xFF &&
+			           last_chr != 0x00 &&
+				   last_chr != 0x20))
+			{
+				// Right-aligned
+				start = 16 - len;
 			} else {
-				// Trailing 0xFF. End of string.
-				if (i == 0) {
-					// Shouldn't happen...
-					foundInvalid = true;
+				// Left-aligned
+				start = 0;
+			}
+
+			// Trim leading spaces.
+			while (len > 0) {
+				const uint8_t chr = (uint8_t)footer.title[start];
+				if (chr == 0x00 || chr == 0x20 || chr == 0xFF) {
+					start++;
+					len--;
+				} else {
 					break;
 				}
-				lastValidChar = i - 1;
+			}
+
+			// Trim to the last valid character.
+			// NOTE: NESDEV says $20-3F and $41-$5A are allowed,
+			// but some games have lowercase characters.
+			// NOTE: Allowing all printable characters that aren't 0xFF.
+			for (unsigned int i = 0; i < len; i++) {
+				const uint8_t chr = (uint8_t)footer.title[start+i];
+				if (chr >= 0x20 && chr != 0xFF)
+					continue;
+				len = i;
 				break;
 			}
-		}
-		// Also skip leading spaces.
-		if (!foundNonFF && chr == ' ') {
-			continue;
-		}
 
-		if (!foundNonFF) {
-			foundNonFF = true;
-			firstNonFF = i;
-		}
-		if (chr < 32 || chr >= 127) {
-			// Invalid character.
-			foundInvalid = true;
-			break;
-		}
-	}
+			if (footer.title_encoding != NES_INTFOOTER_ENCODING_SJIS) {
+				// Sometimes the length is too short:
+				// - Imagineer: Addams Family titles
+				// - Alfred Chicken
+				// - Daikaijuu Deburas [right-aligned]
+				if (start+len < 16) {
+					// Increase to the right.
+					for (; start+len < 16; len++) {
+						// NOTE: Skipping spaces.
+						const uint8_t chr = (uint8_t)footer.title[start+len];
+						if (chr >= 0x21 && chr <= 0x7E) {
+							continue;
+						}
+						break;
+					}
+				}
 
-	if (!foundInvalid &&
-	    firstNonFF < static_cast<unsigned int>(sizeof(footer.name)) &&
-	    lastValidChar > firstNonFF && lastValidChar < static_cast<unsigned int>(sizeof(footer.name)))
-	{
-		// Name looks valid.
-		s_footerName = latin1_to_utf8(&footer.name[firstNonFF], lastValidChar - firstNonFF + 1);
-		intFooterErrno = 0;
+				// Check if we need to increase to the left.
+				for (; start > 0; start--, len++) {
+					// NOTE: Skipping spaces.
+					const uint8_t chr = (uint8_t)footer.title[start-1];
+					if (chr >= 0x21 && chr <= 0x7E) {
+						continue;
+					}
+					break;
+				}
+
+				// TODO: ascii_to_utf8()?
+				s_footerName = cp1252_to_utf8(&footer.title[start], len);
+			} else {
+				// Trim 0xFF characters.
+				for (; len > 0; len--) {
+					const uint8_t chr = (uint8_t)footer.title[start+len-1];
+					if (chr != 0xFF && chr != 0x00 && chr != 0x20)
+						break;
+				}
+				s_footerName = cp1252_sjis_to_utf8(&footer.title[start], len);
+			}
+		} else {
+			// Invalid title length.
+			s_footerName.clear();
+		}
 	} else {
-		// Does not appear to be a valid footer.
-		intFooterErrno = ENOENT;
+		// No title.
+		s_footerName.clear();
 	}
-	return -((int)intFooterErrno);
+
+	if (onlyIfValidName && s_footerName.empty()) {
+		// Only allowing certain errors if the name is valid,
+		// and there's no name. Not valid.
+		intFooterErrno = ENOENT;
+		return intFooterErrno;
+	}
+
+	// Internal footer is valid.
+	intFooterErrno = 0;
+	return 0;
 }
 
 /** NES **/
@@ -1396,48 +1490,30 @@ int NES::loadFieldData(void)
 				le16_to_cpu(footer.chr_checksum),
 				RomFields::Base::Hex, 4, RomFields::STRF_MONOSPACE);
 
-			// ROM sizes (as powers of two)
-			static const uint8_t sz_shift_lookup[] = {
-				0,	// 0
-				14,	// 1 (16 KB)
-				15,	// 2 (32 KB)
-				17,	// 3 (128 KB)
-				18,	// 4 (256 KB)
-				19,	// 5 (512 KB)
-			};
-
 			const uint8_t prg_sz_idx = footer.rom_size >> 4;
-			const uint8_t chr_sz_idx = footer.rom_size & 0x0F;
+			const uint8_t chr_sz_idx = footer.rom_size & 0x07;
 			unsigned int prg_size = 0, chr_size = 0;
-			if (prg_sz_idx < ARRAY_SIZE(sz_shift_lookup)) {
-				prg_size = (1 << sz_shift_lookup[prg_sz_idx]);
+			if (prg_sz_idx < ARRAY_SIZE(d->footer_prg_rom_size_shift_lkup)) {
+				prg_size = (1U << d->footer_prg_rom_size_shift_lkup[prg_sz_idx]);
 			}
-			if (chr_sz_idx < ARRAY_SIZE(sz_shift_lookup)) {
-				chr_size = (1 << sz_shift_lookup[chr_sz_idx]);
+			if (chr_sz_idx < ARRAY_SIZE(d->footer_chr_rom_size_shift_lkup)) {
+				chr_size = (1U << d->footer_chr_rom_size_shift_lkup[chr_sz_idx]);
 			}
 
 			// PRG ROM size
 			string s_prg_size;
-			if (prg_sz_idx == 0) {
-				s_prg_size = C_("NES", "Not set");
-			} else if (prg_size > 1) {
+			if (prg_size > 0) {
 				s_prg_size = formatFileSizeKiB(prg_size);
 			} else {
 				s_prg_size = rp_sprintf(C_("RomData", "Unknown (0x%02X)"), prg_sz_idx);
 			}
 			d->fields->addField_string(C_("NES", "PRG ROM Size"), s_prg_size);
 
-			// CHR ROM size
+			// CHR ROM/RAM size
 			string s_chr_size;
-			bool b_chr_ram = false;
-			if (chr_sz_idx == 0) {
-				s_chr_size = C_("NES", "Not set");
-			} else if (chr_size > 1) {
+			bool b_chr_ram = !!(footer.rom_size & 0x08);
+			if (chr_size > 0) {
 				s_chr_size = formatFileSizeKiB(chr_size);
-			} else if (chr_sz_idx == 8) {
-				// CHR RAM: 8 KiB
-				b_chr_ram = true;
-				s_chr_size = formatFileSizeKiB(8192);
 			} else {
 				s_chr_size = rp_sprintf(C_("RomData", "Unknown (0x%02X)"), chr_sz_idx);
 			}
@@ -1452,28 +1528,18 @@ int NES::loadFieldData(void)
 
 			// Mirroring
 			// TODO: This is incorrect; need to figure out the correct values...
-			switch (footer.board_info >> 4) {
-				case 0:
-					s_mirroring = C_("NES|Mirroring", "Horizontal");
-					break;
-				case 1:
-					s_mirroring = C_("NES|Mirroring", "Vertical");
-					break;
-				default:
-					s_mirroring = nullptr;
-					break;
-			}
-			if (s_mirroring) {
-				d->fields->addField_string(mirroring_title, s_mirroring);
+			const char *s_mirroring_int;
+			if (footer.board_info & 0x80) {
+				s_mirroring_int = C_("NES|Mirroring", "Horizontal");
 			} else {
-				d->fields->addField_string(mirroring_title,
-					rp_sprintf(C_("RomData", "Unknown (0x%02X)"), footer.board_info >> 4));
+				s_mirroring_int = C_("NES|Mirroring", "Vertical");
 			}
+			d->fields->addField_string(mirroring_title, s_mirroring_int);
 
 			// Board type
 			// TODO: Lookup table.
 			d->fields->addField_string_numeric(C_("NES", "Board Type"),
-				footer.board_info & 0x0F);
+				footer.board_info & 0x7F);
 
 			// Publisher
 			const char *const publisher_title = C_("RomData", "Publisher");

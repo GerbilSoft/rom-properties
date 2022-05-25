@@ -12,6 +12,7 @@
  * - https://wiki.nesdev.com/w/index.php/INES
  * - https://wiki.nesdev.com/w/index.php/NES_2.0
  * - https://wiki.nesdev.com/w/index.php/Family_Computer_Disk_System
+ * - https://www.nesdev.org/wiki/Nintendo_header
  */
 
 #ifndef __ROMPROPERTIES_LIBROMDATA_NES_STRUCTS_H__
@@ -50,7 +51,7 @@ extern "C" {
 typedef struct _INES_RomHeader {
 	uint32_t magic;		// [0x000] 'NES\x1A' (big-endian)
 	uint8_t prg_banks;	// [0x004] # of 16 KB PRG ROM banks.
-	uint8_t chr_banks;	// [0x005]# of 8 KB CHR ROM banks.
+	uint8_t chr_banks;	// [0x005] # of 8 KB CHR ROM banks.
 
 	// Mapper values. Each byte has one
 	// nybble, plus HW information.
@@ -241,26 +242,55 @@ typedef enum {
  * References:
  * - http://forums.no-intro.org/viewtopic.php?f=2&t=445
  * - https://github.com/GerbilSoft/rom-properties/issues/116
+ * - https://www.nesdev.org/wiki/Nintendo_header
  *
  * TODO: Add enums?
  */
-typedef struct _NES_IntFooter {
-	char name[16];		// [0x000] Name. (May be right-aligned with 0xFF filler bytes.)
-	uint16_t prg_checksum;	// [0x010] PRG checksum.
-	uint16_t chr_checksum;	// [0x012] CHR checksum.
-	uint8_t rom_size;	// [0x014] ROM sizes. Upper nybble == PRG, lower nybble == CHR
-				//         2=32KB; 3=128KB; 4=256KB; 5=512KB
-	uint8_t board_info;	// [0x015] Board information.
-				//         Upper nybble: Mirroring (1=vertical, 0=horizontal)
-				//         Lower nybble: Mapper (4=MMCx)
-	uint8_t unknown1[2];	// [0x016]
-	uint8_t publisher_code;	// [0x018] Old publisher code.
-	uint8_t unknown2;	// [0x019]
-	uint16_t nmi_vector;	// [0x01A] NMI vector.
-	uint16_t reset_vector;	// [0x01C] Reset vector.
-	uint16_t irq_vector;	// [0x01E] IRQ vector.
+typedef union _NES_IntFooter {
+	struct {
+		char title[16];		// [0x000] Title. (right-aligned with 0xFF filler bytes)
+		uint16_t prg_checksum;	// [0x010] PRG checksum
+		uint16_t chr_checksum;	// [0x012] CHR checksum
+		uint8_t rom_size;	// [0x014] ROM sizes: [PPPP TCCC]
+					//         PPPP = PRG ROM
+					//                (0=64KB, 1=16KB, 2=32KB, 3=128KB, 4=256KB, 5=512KB)
+					//            T = CHR type: 0 = ROM, 1 = RAM
+					//          CCC = CHR ROM
+					//                (0=8KB, 1=16KB, 2=32KB, 3=64/128KB, 4=256KB)
+		uint8_t board_info;	// [0x015] Board information.
+					//         Bit 7: Mirroring (1=vertical, 0=horizontal)
+					//         Bits 6-0: Mapper (see NES_IntFooter_Mapper_e)
+		uint8_t title_encoding;	// [0x016] Title encoding: 0=None, 1=ASCII, 2=JIS X 0201 (Shift-JIS?)
+		uint8_t title_length;	// [0x017] 0=None; 1-15 = 2-16 bytes (sometimes off by one)
+		uint8_t publisher_code;	// [0x018] Old publisher code.
+		uint8_t checksum;	// [0x019] Checksum: sum of [FFF2,FFF9] == 0
+		uint16_t nmi_vector;	// [0x01A] NMI vector.
+		uint16_t reset_vector;	// [0x01C] Reset vector.
+		uint16_t irq_vector;	// [0x01E] IRQ vector.
+	};
+	uint8_t u8[32];
 } NES_IntFooter;
 ASSERT_STRUCT(NES_IntFooter, 32);
+
+/**
+ * NES internal footer: Mappers
+ */
+typedef enum {
+	NES_INTFOOTER_MAPPER_NROM	= 0,
+	NES_INTFOOTER_MAPPER_CNROM	= 1,
+	NES_INTFOOTER_MAPPER_UNROM	= 2,
+	NES_INTFOOTER_MAPPER_GNROM	= 3,
+	NES_INTFOOTER_MAPPER_MMCx	= 4,
+} NES_IntFooter_Mapper_e;
+
+/**
+ * NES internal footer: Encoding
+ */
+typedef enum {
+	NES_INTFOOTER_ENCODING_NONE	= 0,
+	NES_INTFOOTER_ENCODING_ASCII	= 1,
+	NES_INTFOOTER_ENCODING_SJIS	= 2,
+} NES_IntFooter_Encoding_e;
 
 /**
  * TNES ROM header.
