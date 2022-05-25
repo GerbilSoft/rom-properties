@@ -1,5 +1,11 @@
 # Changes
 
+## v1.9.1 (released 2022/??/??)
+
+* Bug fixes:
+  * Lua: Fix a crash on Windows where systemName() sometimes returned
+    an invalid pointer when using the GUI frontend.
+
 ## v1.9 (released 2022/05/22)
 
 * New features:
