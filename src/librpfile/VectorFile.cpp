@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpfile)                        *
  * VectorFile.cpp: IRpFile implementation using an std::vector.            *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -75,9 +75,12 @@ size_t VectorFile::write(const void *ptr, size_t size)
 	if (req_size < 0) {
 		// Overflow...
 		return 0;
+	} else if (req_size > static_cast<off64_t>(std::numeric_limits<size_t>::max())) {
+		// Too big for size_t.
+		return 0;
 	} else if (req_size > static_cast<off64_t>(m_vector.size())) {
 		// Need to expand the std::vector.
-		m_vector.resize(req_size);
+		m_vector.resize(static_cast<size_t>(req_size));
 	}
 
 	// Copy the data to the buffer.
@@ -101,7 +104,7 @@ int VectorFile::seek(off64_t pos)
 	} else if (pos >= static_cast<off64_t>(m_vector.size())) {
 		m_pos = m_vector.size();
 	} else {
-		m_pos = pos;
+		m_pos = static_cast<size_t>(pos);
 	}
 
 	return 0;

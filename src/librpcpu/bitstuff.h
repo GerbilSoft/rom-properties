@@ -2,22 +2,18 @@
  * ROM Properties Page shell extension. (librpcpu)                         *
  * bitstuff.h: Bit manipulation inline functions.                          *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #ifndef __ROMPROPERTIES_LIBRPCPU_BITSTUFF_H__
 #define __ROMPROPERTIES_LIBRPCPU_BITSTUFF_H__
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #ifdef _MSC_VER
-# include <intrin.h>
-# ifndef inline
-#  define inline __inline
-# endif /* !inline */
+#  include <intrin.h>
+#  ifndef inline
+#    define inline __inline
+#  endif /* !inline */
 #endif /* _MSC_VER */
 
 #include "stdboolx.h"
@@ -68,10 +64,16 @@ static inline unsigned int popcount(unsigned int x)
 
 /**
  * Check if a value is a power of 2. (also must be non-zero)
+ * @tparam t Type
  * @param x Value
  * @return True if this is value is a power of 2 and is non-zero; false if not.
  */
+#ifdef __cplusplus
+template<typename T>
+static inline bool isPow2(T x)
+#else
 static inline bool isPow2(unsigned int x)
+#endif
 {
 	// References:
 	// - https://stackoverflow.com/questions/600293/how-to-check-if-a-number-is-a-power-of-2
@@ -88,9 +90,5 @@ static inline unsigned int nextPow2(unsigned int x)
 {
 	return (1U << (uilog2(x) + 1));
 }
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif /* __ROMPROPERTIES_LIBRPCPU_BITSTUFF_H__ */

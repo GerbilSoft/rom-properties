@@ -227,10 +227,12 @@ SNDHPrivate::TagData SNDHPrivate::parseTags(void)
 		// Decompress the data.
 		// FIXME: unice68_depacker() only supports decompressing the entire file.
 		// Add a variant that supports buffer sizes.
-		const off64_t fileSize = file->size();
-		if (fileSize < 16) {
+		const off64_t fileSize_o = file->size();
+		if (fileSize_o < 16) {
 			return tags;
 		}
+
+		const size_t fileSize = static_cast<size_t>(fileSize_o);
 		unique_ptr<uint8_t[]> inbuf(new uint8_t[fileSize]);
 		sz = file->seekAndRead(0, inbuf.get(), fileSize);
 		if (sz != (size_t)fileSize) {

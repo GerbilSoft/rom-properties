@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * iQuePlayer.cpp: iQue Player .cmd reader.                                *
  *                                                                         *
- * Copyright (c) 2019-2021 by David Korth.                                 *
+ * Copyright (c) 2019-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -172,10 +172,10 @@ int iQuePlayerPrivate::getTitleAndISBN(string &title, string &isbn)
 	static const size_t title_buf_sz = IQUE_PLAYER_BBCONTENTMETADATAHEAD_ADDRESS - sizeof(contentDesc);
 	std::unique_ptr<char[]> title_buf(new char[title_buf_sz]);
 
-	const off64_t title_addr = sizeof(contentDesc) +
+	const unsigned int title_addr = sizeof(contentDesc) +
 		be16_to_cpu(contentDesc.thumb_image_size) +
 		be16_to_cpu(contentDesc.title_image_size);
-	if (title_addr >= (off64_t)title_buf_sz) {
+	if (title_addr >= title_buf_sz) {
 		// Out of range.
 		return 1;
 	}

@@ -507,7 +507,7 @@ void RomFields::reserveTabs(int n)
 void RomFields::setTabIndex(int tabIdx)
 {
 	RP_D(RomFields);
-	d->tabIdx = tabIdx;
+	d->tabIdx = static_cast<uint8_t>(tabIdx);
 	if (static_cast<int>(d->tabNames.size()) < tabIdx+1) {
 		// Need to resize tabNames.
 		d->tabNames.resize(tabIdx+1);
@@ -544,7 +544,7 @@ int RomFields::addTab(const char *name)
 {
 	RP_D(RomFields);
 	d->tabNames.emplace_back(name);
-	d->tabIdx = static_cast<int>(d->tabNames.size() - 1);
+	d->tabIdx = static_cast<uint8_t>(d->tabNames.size() - 1);
 	return d->tabIdx;
 }
 
@@ -707,7 +707,7 @@ int RomFields::addFields_romFields(const RomFields *other, int tabOffset)
 		tabOffset = d->tabIdx + 1;
 
 		// Set the final tab index.
-		d->tabIdx = static_cast<int>(d->tabNames.size() - 1);
+		d->tabIdx = static_cast<uint8_t>(d->tabNames.size() - 1);
 	}
 
 	// Copy the default language code if it hasn't been set yet.

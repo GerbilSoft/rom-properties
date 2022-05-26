@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpfile)                        *
  * stdafx.h: Common definitions and includes.                              *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -22,6 +22,7 @@
 // C++ includes.
 #include <algorithm>
 #include <array>
+#include <limits>
 
 #else /* !__cplusplus */
 /** C **/

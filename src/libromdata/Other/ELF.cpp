@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * ELF.cpp: Executable and Linkable Format reader.                         *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -331,7 +331,7 @@ int ELFPrivate::checkProgramHeaders(void)
 					}
 
 					if (info.size > 0) {
-						interpreter.assign(buf, info.size);
+						interpreter.assign(buf, static_cast<size_t>(info.size));
 					}
 				}
 

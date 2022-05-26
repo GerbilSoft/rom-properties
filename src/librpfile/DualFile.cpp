@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpfile)                        *
  * DualFile.cpp: Special wrapper for handling a split file as one.         *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -129,7 +129,7 @@ size_t DualFile::read(void *ptr, size_t size)
 	// Read crosses the boundary between file 0 and file 1.
 
 	// File 0 portion.
-	const size_t file0_sz = m_size[0] - m_pos;
+	const size_t file0_sz = static_cast<size_t>(m_size[0] - m_pos);
 	size_t sz0_read = m_file[0]->seekAndRead(m_pos, ptr8, file0_sz);
 	m_lastError = m_file[0]->lastError();
 	m_pos += sz0_read;

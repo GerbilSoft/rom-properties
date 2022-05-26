@@ -746,7 +746,7 @@ void KhronosKTX2Private::loadKeyValueData(void)
 			// Must be at least 2 bytes for an empty key and its NULL terminator.
 			// TODO: Show an error?
 			break;
-		} else if ((p_end - p) < 4+sz) {
+		} else if ((p_end - p) < 4+static_cast<intptr_t>(sz)) {
 			// Out of range.
 			// TODO: Show an error?
 			break;

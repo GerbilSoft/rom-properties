@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * AmiiboData.cpp: Nintendo amiibo identification data.                    *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -342,8 +342,10 @@ int AmiiboDataPrivate::loadIfNeeded(void)
 
 	// Make sure the file is larger than sizeof(AmiiboBinHeader)
 	// and it's under 1 MB.
-	const int64_t filesize = pFile->size();
-	if (filesize < (int64_t)sizeof(AmiiboBinHeader) || filesize >= 1024*1024) {
+	const off64_t fileSize_o = pFile->size();
+	if (fileSize_o < (off64_t)sizeof(AmiiboBinHeader) ||
+	    fileSize_o >= 1024*1024)
+	{
 		// Over 1 MB.
 		pFile->unref();
 		return -ENOMEM;
@@ -353,10 +355,11 @@ int AmiiboDataPrivate::loadIfNeeded(void)
 	clear();
 
 	// Load the data.
-	amiibo_bin_data.resize(filesize);
-	size_t size = pFile->read(amiibo_bin_data.data(), filesize);
+	const size_t fileSize = static_cast<size_t>(fileSize_o);
+	amiibo_bin_data.resize(fileSize);
+	size_t size = pFile->read(amiibo_bin_data.data(), fileSize);
 	pFile->unref();
-	if (size != static_cast<size_t>(filesize)) {
+	if (size != fileSize) {
 		// Read error.
 		int err = -pFile->lastError();
 		if (err == 0) {
@@ -379,7 +382,7 @@ int AmiiboDataPrivate::loadIfNeeded(void)
 	const uint32_t strtbl_offset = le32_to_cpu(pHeader_tmp->strtbl_offset);
 	const uint32_t strtbl_len = le32_to_cpu(pHeader_tmp->strtbl_len);
 	if (strtbl_offset < sizeof(AmiiboBinHeader) || strtbl_len == 0 ||
-	    ((uint64_t)strtbl_offset + (uint64_t)strtbl_len) > static_cast<uint64_t>(filesize))
+	    ((uint64_t)strtbl_offset + (uint64_t)strtbl_len) > static_cast<uint64_t>(fileSize))
 	{
 		// String table offsets are invalid.
 		amiibo_bin_data.clear();
@@ -400,7 +403,7 @@ int AmiiboDataPrivate::loadIfNeeded(void)
 	const uint32_t cseries_len = le32_to_cpu(pHeader_tmp->cseries_len);
 	if (cseries_offset < sizeof(AmiiboBinHeader) || cseries_len == 0 ||
 	    cseries_len % sizeof(uint32_t) != 0 ||
-	    ((uint64_t)cseries_offset + (uint64_t)cseries_len) > static_cast<uint64_t>(filesize))
+	    ((uint64_t)cseries_offset + (uint64_t)cseries_len) > static_cast<uint64_t>(fileSize))
 	{
 		// p.21 character series table offsets are invalid.
 		amiibo_bin_data.clear();
@@ -411,7 +414,7 @@ int AmiiboDataPrivate::loadIfNeeded(void)
 	const uint32_t char_len = le32_to_cpu(pHeader_tmp->char_len);
 	if (char_offset < sizeof(AmiiboBinHeader) || char_len == 0 ||
 	    char_len % sizeof(CharTableEntry) != 0 ||
-	    ((uint64_t)char_offset + (uint64_t)char_len) > static_cast<uint64_t>(filesize))
+	    ((uint64_t)char_offset + (uint64_t)char_len) > static_cast<uint64_t>(fileSize))
 	{
 		// p.21 character table offsets are invalid.
 		amiibo_bin_data.clear();
@@ -422,7 +425,7 @@ int AmiiboDataPrivate::loadIfNeeded(void)
 	const uint32_t cvar_len = le32_to_cpu(pHeader_tmp->cvar_len);
 	if (cvar_offset < sizeof(AmiiboBinHeader) || cvar_len == 0 ||
 	    cvar_len % sizeof(CharVariantTableEntry) != 0 ||
-	    ((uint64_t)cvar_offset + (uint64_t)cvar_len) > static_cast<uint64_t>(filesize))
+	    ((uint64_t)cvar_offset + (uint64_t)cvar_len) > static_cast<uint64_t>(fileSize))
 	{
 		// p.21 character variant table offsets are invalid.
 		amiibo_bin_data.clear();
@@ -433,7 +436,7 @@ int AmiiboDataPrivate::loadIfNeeded(void)
 	const uint32_t aseries_len = le32_to_cpu(pHeader_tmp->aseries_len);
 	if (aseries_offset < sizeof(AmiiboBinHeader) || aseries_len == 0 ||
 	    aseries_len % sizeof(uint32_t) != 0 ||
-	    ((uint64_t)aseries_offset + (uint64_t)aseries_len) > static_cast<uint64_t>(filesize))
+	    ((uint64_t)aseries_offset + (uint64_t)aseries_len) > static_cast<uint64_t>(fileSize))
 	{
 		// p.22 amiibo series table offsets are invalid.
 		amiibo_bin_data.clear();
@@ -444,7 +447,7 @@ int AmiiboDataPrivate::loadIfNeeded(void)
 	const uint32_t amiibo_len = le32_to_cpu(pHeader_tmp->amiibo_len);
 	if (amiibo_offset < sizeof(AmiiboBinHeader) || amiibo_len == 0 ||
 	    amiibo_len % sizeof(AmiiboIDTableEntry) != 0 ||
-	    ((uint64_t)amiibo_offset + (uint64_t)amiibo_len) > static_cast<uint64_t>(filesize))
+	    ((uint64_t)amiibo_offset + (uint64_t)amiibo_len) > static_cast<uint64_t>(fileSize))
 	{
 		// p.22 amiibo ID table offsets are invalid.
 		amiibo_bin_data.clear();

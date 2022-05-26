@@ -203,7 +203,7 @@ size_t CBCReader::read(void *ptr, size_t size)
 	// TODO: Check for overflow.
 	if (d->pos + (off64_t)size > d->length) {
 		// Reduce size so it doesn't go out of bounds.
-		size = d->length - d->pos;
+		size = static_cast<size_t>(d->length - d->pos);
 	}
 
 	uint8_t iv[16];

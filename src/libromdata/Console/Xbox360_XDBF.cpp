@@ -3,7 +3,7 @@
  * Xbox360_XDBF.cpp: Microsoft Xbox 360 game resource reader.              *
  * Handles XDBF files and sections.                                        *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -377,11 +377,12 @@ int Xbox360_XDBF_Private::initStrTblIndexes(void)
 			continue;
 
 		// Found a string table.
-		const uint64_t langID = be64_to_cpu(iter->resource_id);
-		assert(langID < XDBF_LANGUAGE_MAX);
-		if (langID >= XDBF_LANGUAGE_MAX)
+		const uint64_t langID_64 = be64_to_cpu(iter->resource_id);
+		assert(langID_64 < XDBF_LANGUAGE_MAX);
+		if (langID_64 >= XDBF_LANGUAGE_MAX)
 			continue;
 
+		const int16_t langID = static_cast<int16_t>(langID_64);
 		assert(strTblIndexes[langID] < 0);
 		if (strTblIndexes[langID] < 0) {
 			// Found the language. (Assuming only one string table per language.)

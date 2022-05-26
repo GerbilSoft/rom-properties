@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata/tests)                 *
  * GcnFstPrint.cpp: GameCube/Wii FST printer.                              *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -91,8 +91,8 @@ int RP_C_API main(int argc, char *argv[])
 
 	// Make sure the FST is less than 16 MB.
 	fseeko(f, 0, SEEK_END);
-	off64_t filesize = ftello(f);
-	if (filesize > (16*1024*1024)) {
+	const off64_t fileSize_o = ftello(f);
+	if (fileSize_o > (16*1024*1024)) {
 		puts(C_("GcnFstPrint", "ERROR: FST is too big. (Maximum of 16 MB.)"));
 		fclose(f);
 		return EXIT_FAILURE;
@@ -100,13 +100,14 @@ int RP_C_API main(int argc, char *argv[])
 	fseeko(f, 0, SEEK_SET);
 
 	// Read the FST into memory.
-	unique_ptr<uint8_t[]> fstData(new uint8_t[filesize]);
-	size_t rd_size = fread(fstData.get(), 1, filesize, f);
+	const size_t fileSize = static_cast<size_t>(fileSize_o);
+	unique_ptr<uint8_t[]> fstData(new uint8_t[fileSize]);
+	size_t rd_size = fread(fstData.get(), 1, fileSize, f);
 	fclose(f);
-	if (rd_size != static_cast<size_t>(filesize)) {
+	if (rd_size != fileSize) {
 		// tr: %1$u == number of bytes read, %2$u == number of bytes expected to read
 		printf_p(C_("GcnFstPrint", "ERROR: Read %1$u bytes, expected %2$u bytes."),
-			(unsigned int)rd_size, (unsigned int)filesize);
+			(unsigned int)rd_size, (unsigned int)fileSize);
 		putchar('\n');
 		return EXIT_FAILURE;
 	}
@@ -127,7 +128,7 @@ int RP_C_API main(int argc, char *argv[])
 	// TODO: Validate the FST and return an error if it doesn't
 	// "look" like an FST?
 	unique_ptr<GcnFst> fst(new GcnFst(&fstData[fst_start_offset],
-		static_cast<uint32_t>(filesize - fst_start_offset), offsetShift));
+		static_cast<uint32_t>(fileSize - fst_start_offset), offsetShift));
 	if (!fst->isOpen()) {
 		puts(C_("GcnFstPrint", "*** ERROR: Could not open a GcnFst."));
 		return EXIT_FAILURE;

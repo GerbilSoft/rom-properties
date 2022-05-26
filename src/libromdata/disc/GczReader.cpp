@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * GczReader.cpp: GameCube/Wii GCZ disc image reader.                      *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -73,7 +73,7 @@ class GczReaderPrivate : public SparseDiscReaderPrivate {
 		 * @param blockNum Block number.
 		 * @return Block's compressed size, or 0 on error.
 		 */
-		uint32_t getBlockCompressedSize(uint64_t blockNum) const;
+		uint32_t getBlockCompressedSize(uint32_t blockNum) const;
 };
 
 /** GczReaderPrivate **/
@@ -92,7 +92,7 @@ GczReaderPrivate::GczReaderPrivate(GczReader *q)
  * @param blockNum Block number.
  * @return Block's compressed size, or 0 on error.
  */
-uint32_t GczReaderPrivate::getBlockCompressedSize(uint64_t blockNum) const
+uint32_t GczReaderPrivate::getBlockCompressedSize(uint32_t blockNum) const
 {
 	assert(blockNum < blockPointers.size());
 	if (blockNum >= blockPointers.size()) {

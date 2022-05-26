@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * MessageWidget.cpp: Message widget. (Similar to KMessageWidget)          *
  *                                                                         *
- * Copyright (c) 2017-2020 by David Korth.                                 *
+ * Copyright (c) 2017-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -398,8 +398,8 @@ MessageWidgetWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 					ShowWindow(hWnd, SW_HIDE);
 					// Send a notification.
 					const NMHDR nmhdr = {
-						hWnd,			// hwndFrom
-						GetDlgCtrlID(hWnd),	// idFrom
+						hWnd,				// hwndFrom
+						(UINT_PTR)GetDlgCtrlID(hWnd),	// idFrom
 						MSGWN_CLOSED,
 					};
 					SendMessage(GetParent(hWnd), WM_NOTIFY, nmhdr.idFrom, reinterpret_cast<LPARAM>(&nmhdr));
