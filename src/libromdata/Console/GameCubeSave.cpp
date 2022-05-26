@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * GameCubeSave.hpp: Nintendo GameCube save file reader.                   *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -893,7 +893,7 @@ int GameCubeSave::loadFieldData(void)
 			// Found a NULL byte.
 			desc_len = null_pos - comment.file;
 		}
-		desc += cp1252_sjis_to_utf8(comment.file, desc_len);
+		desc += cp1252_sjis_to_utf8(comment.file, static_cast<int>(desc_len));
 
 		d->fields->addField_string(C_("GameCubeSave", "Description"), desc);
 	}

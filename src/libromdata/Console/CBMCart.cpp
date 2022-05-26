@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * CBMCart.cpp: Commodore ROM cartridge reader.                            *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -638,7 +638,7 @@ int CBMCart::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) co
 		}
 
 		// Calculate the CRC32 of whatever data we could read.
-		d->rom_16k_crc32 = crc32(0, buf.get(), sz_rd_total);
+		d->rom_16k_crc32 = crc32(0, buf.get(), static_cast<uInt>(sz_rd_total));
 	}
 
 	// Lowercase hex CRC32s are used.

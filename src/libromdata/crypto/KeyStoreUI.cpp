@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * KeyStoreUI.cpp: Key store UI base class.                                *
  *                                                                         *
- * Copyright (c) 2012-2021 by David Korth.                                 *
+ * Copyright (c) 2012-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -313,7 +313,7 @@ void KeyStoreUIPrivate::reset(void)
 
 	int keyIdxStart = 0;
 	KeyManager::KeyData_t keyData;
-	for (size_t encSysNum = 0; encSysNum < ARRAY_SIZE(encKeyFns); encSysNum++) {
+	for (int encSysNum = 0; encSysNum < ARRAY_SIZE_I(encKeyFns); encSysNum++) {
 		const KeyStoreUIPrivate::EncKeyFns_t *const encSys = &encKeyFns[encSysNum];
 		const int keyCount = encSys->pfnKeyCount();
 		assert(keyCount > 0);

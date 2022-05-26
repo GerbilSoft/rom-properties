@@ -130,7 +130,7 @@ string SufamiTurboPrivate::getRomTitle(void) const
 	}
 
 	// Convert the title from cp1252 and/or Shift-JIS.
-	return cp1252_sjis_to_utf8(&romHeader.title[start], len);
+	return cp1252_sjis_to_utf8(&romHeader.title[start], static_cast<int>(len));
 }
 
 /** SufamiTurbo **/

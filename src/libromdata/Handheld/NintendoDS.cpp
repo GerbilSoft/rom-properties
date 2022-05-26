@@ -202,8 +202,8 @@ const rp_image *NintendoDSPrivate::loadIcon(void)
 
 		// Parse the icon sequence.
 		uint8_t bmp_idx = 0;
-		size_t seq_idx;
-		for (seq_idx = 0; seq_idx < ARRAY_SIZE(nds_icon_title.dsi_icon_seq); seq_idx++) {
+		int seq_idx;
+		for (seq_idx = 0; seq_idx < ARRAY_SIZE_I(nds_icon_title.dsi_icon_seq); seq_idx++) {
 			const uint16_t seq = le16_to_cpu(nds_icon_title.dsi_icon_seq[seq_idx]);
 			const int delay = (seq & 0xFF);
 			if (delay == 0) {

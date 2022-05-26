@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * GdiReader.hpp: GD-ROM reader for Dreamcast GDI images.                  *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -562,12 +562,12 @@ int GdiReader::readBlock(uint32_t blockIdx, int pos, void *ptr, size_t size)
 		// NOTE: Sector user data area position depends on the sector mode.
 		const uint8_t *const data = cdromSectorDataPtr(&sector);
 		memcpy(ptr, &data[pos], size);
-		return size;
+		return static_cast<int>(size);
 	}
 
 	// 2048-byte sectors.
 	size_t sz_read = blockRange->file->seekAndRead(phys_pos, ptr, size);
-	return (sz_read > 0 ? (int)sz_read : -1);
+	return (sz_read > 0 ? static_cast<int>(sz_read) : -1);
 }
 
 /** GDI-specific functions. **/

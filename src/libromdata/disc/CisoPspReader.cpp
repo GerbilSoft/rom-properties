@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * CisoPspReader.cpp: PlayStation Portable CISO disc image reader.         *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -754,7 +754,7 @@ int CisoPspReader::readBlock(uint32_t blockIdx, int pos, void *ptr, size_t size)
 	if (blockIdx == d->blockCacheIdx) {
 		// Block is cached.
 		memcpy(ptr, &d->blockCache[pos], size);
-		return size;
+		return static_cast<int>(size);
 	}
 
 	// Get the physical address first.
@@ -1067,7 +1067,7 @@ int CisoPspReader::readBlock(uint32_t blockIdx, int pos, void *ptr, size_t size)
 	// Block has been loaded into the cache.
 	memcpy(ptr, &d->blockCache[pos], size);
 	d->blockCacheIdx = blockIdx;
-	return size;
+	return static_cast<int>(size);
 }
 
 }

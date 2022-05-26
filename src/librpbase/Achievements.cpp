@@ -424,12 +424,14 @@ int AchievementsPrivate::save(void) const
 
 	// Length of achievement data.
 	// Includes count, but not crc32.
-	header->length = buf.size() - HeaderSizeMinusCount;
+	header->length = static_cast<uint32_t>(buf.size() - HeaderSizeMinusCount);
 
 	// CRC32 of achievement data.
 	// Includes count.
 	if (buf.size() > HeaderSizeMinusCount) {
-		header->crc32 = cpu_to_le32(crc32(0, &buf.data()[HeaderSizeMinusCount], buf.size() - HeaderSizeMinusCount));
+		header->crc32 = cpu_to_le32(
+			crc32(0, &buf.data()[HeaderSizeMinusCount],
+			      static_cast<uInt>(buf.size() - HeaderSizeMinusCount)));
 	}
 
 #if defined(NDEBUG) || defined(FORCE_OBFUSCATE)

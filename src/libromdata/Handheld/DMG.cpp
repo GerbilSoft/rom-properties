@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * DMG.hpp: Game Boy (DMG/CGB/SGB) ROM reader.                             *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * Copyright (c) 2016-2018 by Egor.                                        *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
@@ -597,7 +597,7 @@ DMG::DMG(IRpFile *file)
 	// Check if this ROM is supported.
 	DetectInfo info;
 	info.header.addr = 0;
-	info.header.size = size;
+	info.header.size = static_cast<unsigned int>(size);
 	info.header.pData = header.u8;
 	info.ext = nullptr;	// Not needed for DMG.
 	info.szFile = 0;	// Not needed for DMG.

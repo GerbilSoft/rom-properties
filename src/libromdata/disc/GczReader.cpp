@@ -416,7 +416,7 @@ int GczReader::readBlock(uint32_t blockIdx, int pos, void *ptr, size_t size)
 	if (blockIdx == d->blockCacheIdx) {
 		// Block is cached.
 		memcpy(ptr, &d->blockCache[pos], size);
-		return size;
+		return static_cast<int>(size);
 	}
 
 	// NOTE: If this is the last block, then we might have
@@ -513,7 +513,7 @@ int GczReader::readBlock(uint32_t blockIdx, int pos, void *ptr, size_t size)
 	// Block has been loaded into the cache.
 	memcpy(ptr, &d->blockCache[pos], size);
 	d->blockCacheIdx = blockIdx;
-	return size;
+	return static_cast<int>(size);
 }
 
 }

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * MD5HashCAPI.cpp: MD5 hash class. (Win32 CryptoAPI implementation.)      *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -57,7 +57,7 @@ int MD5Hash::calcHash(uint8_t *pHash, size_t hash_len, const void *pData, size_t
 	}
 
 	// Hash the data.
-	if (!CryptHashData(hHash, static_cast<const BYTE*>(pData), len, 0)) {
+	if (!CryptHashData(hHash, static_cast<const BYTE*>(pData), static_cast<DWORD>(len), 0)) {
 		// Error hashing the data.
 		int ret = -w32err_to_posix(GetLastError());
 		CryptDestroyHash(hHash);
