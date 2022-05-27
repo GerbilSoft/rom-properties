@@ -2,12 +2,15 @@
  * ROM Properties Page shell extension. (KDE4/KF5)                         *
  * RpQt.cpp: Qt wrappers for some libromdata functionality.                *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #include "stdafx.h"
 #include "RpGtk.hpp"
+
+// C++ STL classes
+using std::string;
 
 /**
  * Convert an RP file dialog filter to GTK+.
@@ -25,7 +28,7 @@
  *
  * @param fileChooser GtkFileChooser*
  * @param filter RP file dialog filter. (UTF-8, from gettext())
- * @return Qt file dialog filter.
+ * @return 0 on success; negative POSIX error code on error.
  */
 int rpFileDialogFilterToGtk(GtkFileChooser *fileChooser, const char *filter)
 {
@@ -96,4 +99,20 @@ int rpFileDialogFilterToGtk(GtkFileChooser *fileChooser, const char *filter)
 
 	g_free(tmpfilter);
 	return 0;
+}
+
+/**
+ * Convert Win32/Qt-style accelerator notation ('&') to GTK-style ('_').
+ * @param str String with '&' accelerator
+ * @return String with '_' accelerator
+ */
+string convert_accel_to_gtk(const char *str)
+{
+	// GTK+ uses '_' for accelerators, not '&'.
+	string s_ret = str;
+	size_t accel_pos = s_ret.find('&');
+	if (accel_pos != string::npos) {
+		s_ret[accel_pos] = '_';
+	}
+	return s_ret;
 }

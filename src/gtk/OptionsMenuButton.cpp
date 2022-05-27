@@ -9,6 +9,7 @@
 #include "stdafx.h"
 #include "OptionsMenuButton.hpp"
 #include "PIMGTYPE.hpp"
+#include "RpGtk.hpp"
 
 // librpbase
 using LibRpBase::RomData;
@@ -192,19 +193,6 @@ options_menu_button_class_init(OptionsMenuButtonClass *klass)
 
 	// Register the Activate signal.
 	gtk_widget_class_set_activate_signal(GTK_WIDGET_CLASS(klass), options_menu_button_signals[SIGNAL_ACTIVATE]);
-}
-
-// TODO: Consolidate into common .cpp file.
-static string
-convert_accel_to_gtk(const char *str)
-{
-	// GTK+ uses '_' for accelerators, not '&'.
-	string s_ret = str;
-	size_t accel_pos = s_ret.find('&');
-	if (accel_pos != string::npos) {
-		s_ret[accel_pos] = '_';
-	}
-	return s_ret;
 }
 
 static void
