@@ -19,6 +19,10 @@ extern "C" {
  */
 extern const uint16_t crc16tab[];
 
+#ifdef __cplusplus
+}
+#endif
+
 /*
  * CalcCrc16
  * Does not perform final inversion.
@@ -34,9 +38,5 @@ static inline uint16_t CalcCrc16(const uint8_t *data, size_t length, uint16_t cr
 	}
 	return crc;
 }
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif	// __CRC_H
