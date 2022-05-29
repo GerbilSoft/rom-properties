@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * MessageWidget.hpp: Message widget. (Similar to KMessageWidget)          *
  *                                                                         *
- * Copyright (c) 2017-2021 by David Korth.                                 *
+ * Copyright (c) 2017-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -40,7 +40,6 @@ static gboolean	timeout_hide_source_func	(gpointer	 user_data);
 typedef GtkBoxClass superclass;
 typedef GtkBox super;
 #define GTK_TYPE_SUPER GTK_TYPE_BOX
-#define USE_GTK_GRID 1	// Use GtkGrid instead of GtkTable.
 #else
 // Top class is GtkEventBox, since we can't
 // set the background color of GtkHBox.
