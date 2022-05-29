@@ -51,4 +51,13 @@ gboolean	rom_data_view_is_showing_data	(RomDataView	*page) G_GNUC_INTERNAL;
 
 G_END_DECLS
 
+#ifdef __cplusplus
+namespace LibRpBase {
+	class RomData;
+};
+GtkWidget	*rom_data_view_new_with_romData	(const gchar *uri,
+						 LibRpBase::RomData *romData,
+						 RpDescFormatType desc_format_type) G_GNUC_INTERNAL G_GNUC_MALLOC;
+#endif /* __cplusplus */
+
 #endif /* __ROMPROPERTIES_GTK_ROMDATA_VIEW_HPP__ */

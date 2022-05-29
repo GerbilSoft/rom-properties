@@ -17,16 +17,17 @@ using LibRpBase::RomData;
 using LibRomData::RomDataFactory;
 
 /**
- * Check if the specified URI is supported.
+ * Attempt to open a RomData object from the specified GVfs URI.
+ * If it is, the RomData object will be opened.
  * @param uri URI rom e.g. nautilus_file_info_get_uri().
- * @return True if supported; false if not.
+ * @return RomData object if supported; nullptr if not.
  */
-gboolean rp_gtk3_is_uri_supported(const gchar *uri)
+LibRpBase::RomData *rp_gtk3_open_uri(const gchar *uri)
 {
-	gboolean supported = false;
-	g_return_val_if_fail(uri != nullptr && uri[0] != '\0', false);
+	g_return_val_if_fail(uri != nullptr && uri[0] != '\0', nullptr);
 
 	// TODO: Check file extensions and/or MIME types?
+	RomData *romData = nullptr;
 
 	// Check if the URI maps to a local file.
 	IRpFile *file = nullptr;
@@ -42,17 +43,10 @@ gboolean rp_gtk3_is_uri_supported(const gchar *uri)
 
 	// Open the ROM file.
 	if (file->isOpen()) {
-		// Is this ROM file supported?
-		// NOTE: We have to create an instance here in order to
-		// prevent false positives caused by isRomSupported()
-		// saying "yes" while new RomData() says "no".
-		RomData *const romData = RomDataFactory::create(file);
-		if (romData != nullptr) {
-			supported = true;
-			romData->unref();
-		}
+		// Attempt to open the ROM file.
+		romData = RomDataFactory::create(file);
 	}
 	file->unref();
 
-	return supported;
+	return romData;
 }

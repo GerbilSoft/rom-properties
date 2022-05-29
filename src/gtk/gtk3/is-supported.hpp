@@ -11,15 +11,19 @@
 
 #include <glib.h>
 
-G_BEGIN_DECLS
+#ifdef __cplusplus
+namespace LibRomData {
+	class RomData;
+};
 
 /**
- * Check if the specified URI is supported.
+ * Attempt to open a RomData object from the specified GVfs URI.
+ * If it is, the RomData object will be opened.
  * @param uri URI rom e.g. nautilus_file_info_get_uri().
- * @return True if supported; false if not.
+ * @return RomData object if supported; nullptr if not.
  */
-gboolean rp_gtk3_is_uri_supported(const gchar *uri);
+LibRpBase::RomData *rp_gtk3_open_uri(const gchar *uri);
 
-G_END_DECLS
+#endif /* __cplusplus */
 
 #endif /* __ROMPROPERTIES_GTK3_IS_SUPPORTED_H__ */

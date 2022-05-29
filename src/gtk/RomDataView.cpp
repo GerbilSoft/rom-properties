@@ -491,10 +491,31 @@ rom_data_view_new(void)
 GtkWidget*
 rom_data_view_new_with_uri(const gchar *uri, RpDescFormatType desc_format_type)
 {
+	assert(uri != nullptr);
+
 	RomDataView *const page = static_cast<RomDataView*>(g_object_new(TYPE_ROM_DATA_VIEW, nullptr));
 	page->desc_format_type = desc_format_type;
 	page->uri = g_strdup(uri);
-	if (G_LIKELY(page->uri != nullptr)) {
+	if (G_LIKELY(uri != nullptr)) {
+		page->changed_idle = g_idle_add(rom_data_view_load_rom_data, page);
+	}
+
+	return reinterpret_cast<GtkWidget*>(page);
+}
+
+GtkWidget*
+rom_data_view_new_with_romData(const gchar *uri, RomData *romData, RpDescFormatType desc_format_type)
+{
+	// Both URI and RomData need to be set.
+	assert(uri != nullptr && romData != nullptr);
+
+	RomDataView *const page = static_cast<RomDataView*>(g_object_new(TYPE_ROM_DATA_VIEW, nullptr));
+	page->desc_format_type = desc_format_type;
+	if (uri && romData) {
+		page->uri = g_strdup(uri);
+		page->romData = romData->ref();
+	}
+	if (G_LIKELY(uri != nullptr && romData != nullptr)) {
 		page->changed_idle = g_idle_add(rom_data_view_load_rom_data, page);
 	}
 
@@ -2313,37 +2334,56 @@ rom_data_view_load_rom_data(gpointer data)
 	RomDataView *const page = ROM_DATA_VIEW(data);
 	g_return_val_if_fail(page != nullptr && IS_ROM_DATA_VIEW(page), G_SOURCE_REMOVE);
 
-	if (G_UNLIKELY(page->uri == nullptr)) {
-		// No URI.
+	if (G_UNLIKELY(page->uri == nullptr && page->romData == nullptr)) {
+		// No URI or RomData.
 		// TODO: Remove widgets?
 		page->changed_idle = 0;
 		return G_SOURCE_REMOVE;
 	}
 
-	// Check if the URI maps to a local file.
-	IRpFile *file = nullptr;
-	gchar *const filename = g_filename_from_uri(page->uri, nullptr, nullptr);
-	if (filename) {
-		// Local file. Use RpFile.
-		file = new RpFile(filename, RpFile::FM_OPEN_READ_GZ);
-		g_free(filename);
-	} else {
-		// Not a local file. Use RpFileGio.
-		file = new RpFileGio(page->uri);
-	}
+	// Do we have a RomData object loaded already?
+	if (!page->romData) {
+		// No RomData object. Load the specified URI.
 
-	if (file->isOpen()) {
+		// Check if the URI maps to a local file.
+		IRpFile *file = nullptr;
+		gchar *const filename = g_filename_from_uri(page->uri, nullptr, nullptr);
+		if (filename) {
+			// Local file. Use RpFile.
+			file = new RpFile(filename, RpFile::FM_OPEN_READ_GZ);
+			g_free(filename);
+		} else {
+			// Not a local file. Use RpFileGio.
+			file = new RpFileGio(page->uri);
+		}
+
+		if (!file->isOpen()) {
+			// Unable to open the file.
+			file->unref();
+			page->changed_idle = 0;
+			return G_SOURCE_REMOVE;
+		}
+
 		// Create the RomData object.
 		// file is ref()'d by RomData.
 		RomData *const romData = RomDataFactory::create(file);
 		if (romData != page->romData) {
 			// FIXME: If called from rom_data_view_set_property(), this might
 			// result in *two* notifications.
+			page->romData->unref();
 			page->romData = romData;
 			page->hasCheckedAchievements = false;
 			g_object_notify_by_pspec(G_OBJECT(page), props[PROP_SHOWING_DATA]);
 		}
 
+		file->unref();
+	} else {
+		// RomData object is already loaded.
+		page->hasCheckedAchievements = false;
+		g_object_notify_by_pspec(G_OBJECT(page), props[PROP_SHOWING_DATA]);
+	}
+
+	if (page->romData) {
 		// Update the display widgets.
 		// TODO: If already mapped, check achievements again.
 		rom_data_view_update_display(page);
@@ -2351,11 +2391,8 @@ rom_data_view_load_rom_data(gpointer data)
 		// Make sure the underlying file handle is closed,
 		// since we don't need it once the RomData has been
 		// loaded by RomDataView.
-		if (romData) {
-			romData->close();
-		}
+		page->romData->close();
 	}
-	file->unref();
 
 	// Animation timer will be started when the page
 	// receives the "map" signal.
