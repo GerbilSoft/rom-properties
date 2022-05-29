@@ -1,5 +1,5 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (GTK+ 3.x)                         *
+ * ROM Properties Page shell extension. (GTK+ common)                      *
  * is-supported.hpp: Check if a URI is supported.                          *
  *                                                                         *
  * Copyright (c) 2017-2020 by David Korth.                                 *
@@ -22,7 +22,7 @@ using LibRomData::RomDataFactory;
  * @param uri URI rom e.g. nautilus_file_info_get_uri().
  * @return RomData object if supported; nullptr if not.
  */
-LibRpBase::RomData *rp_gtk3_open_uri(const gchar *uri)
+LibRpBase::RomData *rp_gtk_open_uri(const gchar *uri)
 {
 	g_return_val_if_fail(uri != nullptr && uri[0] != '\0', nullptr);
 

@@ -48,6 +48,7 @@ SET(${PROJECT_NAME}_SRCS
 	sort_funcs.c
 	LanguageComboBox.cpp
 	OptionsMenuButton.cpp
+	is-supported.cpp
 	)
 SET(${PROJECT_NAME}_H
 	RomDataView.hpp
@@ -62,6 +63,7 @@ SET(${PROJECT_NAME}_H
 	LanguageComboBox.hpp
 	OptionsMenuButton.hpp
 	check-uid.h
+	is-supported.hpp
 	)
 
 IF(ENABLE_ACHIEVEMENTS)

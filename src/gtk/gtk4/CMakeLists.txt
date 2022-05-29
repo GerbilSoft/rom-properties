@@ -108,7 +108,6 @@ SET(${PROJECT_NAME}_SRCS
 	../gtk3/RpNautilusProvider.cpp
 	#../gtk3/RpThunarPlugin.cpp	# No plans for GTK4 Thunar yet...
 	#../gtk3/RpThunarProvider.cpp	# No plans for GTK4 Thunar yet...
-	../gtk3/is-supported.cpp
 	)
 SET(${PROJECT_NAME}_H
 	${${PROJECT_NAME}_CH} ${${PROJECT_NAME}_H}
@@ -116,7 +115,6 @@ SET(${PROJECT_NAME}_H
 	../gtk3/RpNautilusProvider.hpp
 	#../gtk3/RpThunarPlugin.hpp	# No plans for GTK4 Thunar yet...
 	#../gtk3/RpThunarProvider.hpp	# No plans for GTK4 Thunar yet...
-	../gtk3/is-supported.hpp
 	../gtk3/plugin-helper.h
 	../gtk3/thunarx-mini.h
 	)

@@ -121,13 +121,11 @@ SET(${PROJECT_NAME}_SRCS
 	${${PROJECT_NAME}_SSSE3_SRCS}
 	../gtk3/RpThunarPlugin.cpp
 	../gtk3/RpThunarProvider.cpp
-	../gtk3/is-supported.cpp
 	)
 SET(${PROJECT_NAME}_H
 	${${PROJECT_NAME}_CH} ${${PROJECT_NAME}_H}
 	../gtk3/RpThunarPlugin.hpp
 	../gtk3/RpThunarProvider.hpp
-	../gtk3/is-supported.hpp
 	../gtk3/plugin-helper.h
 	../gtk3/thunarx-mini.h
 	)

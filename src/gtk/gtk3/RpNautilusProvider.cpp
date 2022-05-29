@@ -122,7 +122,7 @@ rp_nautilus_provider_get_pages(NautilusPropertyPageProvider *provider, GList *fi
 	}
 
 	// Attempt to open the URI.
-	RomData *const romData = rp_gtk3_open_uri(uri);
+	RomData *const romData = rp_gtk_open_uri(uri);
 	if (G_LIKELY(romData != nullptr)) {
 		// Create the RomDataView.
 		// TODO: Add some extra padding to the top...

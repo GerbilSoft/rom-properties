@@ -106,7 +106,7 @@ rp_thunar_provider_get_pages(ThunarxPropertyPageProvider *page_provider, GList *
 	}
 
 	// Attempt to open the URI.
-	RomData *const romData = rp_gtk3_open_uri(uri);
+	RomData *const romData = rp_gtk_open_uri(uri);
 	if (G_LIKELY(romData != nullptr)) {
 		// Create the RomDataView.
 		GtkWidget *const romDataView = rom_data_view_new_with_romData(uri, romData, RP_DFT_XFCE);
