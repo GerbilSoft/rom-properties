@@ -491,31 +491,24 @@ rom_data_view_new(void)
 GtkWidget*
 rom_data_view_new_with_uri(const gchar *uri, RpDescFormatType desc_format_type)
 {
-	assert(uri != nullptr);
-
-	RomDataView *const page = static_cast<RomDataView*>(g_object_new(TYPE_ROM_DATA_VIEW, nullptr));
-	page->desc_format_type = desc_format_type;
-	page->uri = g_strdup(uri);
-	if (G_LIKELY(uri != nullptr)) {
-		page->changed_idle = g_idle_add(rom_data_view_load_rom_data, page);
-	}
-
-	return reinterpret_cast<GtkWidget*>(page);
+	return rom_data_view_new_with_romData(uri, nullptr, desc_format_type);
 }
 
 GtkWidget*
 rom_data_view_new_with_romData(const gchar *uri, RomData *romData, RpDescFormatType desc_format_type)
 {
-	// Both URI and RomData need to be set.
-	assert(uri != nullptr && romData != nullptr);
+	// At least URI needs to be set.
+	assert(uri != nullptr);
 
 	RomDataView *const page = static_cast<RomDataView*>(g_object_new(TYPE_ROM_DATA_VIEW, nullptr));
 	page->desc_format_type = desc_format_type;
-	if (uri && romData) {
+	if (uri) {
 		page->uri = g_strdup(uri);
-		page->romData = romData->ref();
+		if (romData) {
+			page->romData = romData->ref();
+		}
 	}
-	if (G_LIKELY(uri != nullptr && romData != nullptr)) {
+	if (G_LIKELY(uri != nullptr)) {
 		page->changed_idle = g_idle_add(rom_data_view_load_rom_data, page);
 	}
 
