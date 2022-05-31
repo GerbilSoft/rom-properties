@@ -74,7 +74,7 @@ application/x-gba-rom			# GameBoyAdvance
 application/x-game-com-rom		# GameCom
 application/x-neo-geo-pocket-rom	# NGPC
 application/x-neo-geo-pocket-color-rom	# NGPC
-application/x-nintendo-3ds-3dsx		# Nintendo3DS
+application/x-nintendo-3ds-executable	# Nintendo3DS
 application/x-nintendo-3ds-rom		# Nintendo3DS
 application/x-wonderswan-rom		# WonderSwan
 application/x-wonderswan-color-rom	# WonderSwan
