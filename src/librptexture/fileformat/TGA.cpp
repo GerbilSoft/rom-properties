@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * TGA.cpp: TrueVision TGA reader.                                         *
  *                                                                         *
- * Copyright (c) 2019-2021 by David Korth.                                 *
+ * Copyright (c) 2019-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -299,9 +299,9 @@ const rp_image *TGAPrivate::loadTGAImage(void)
 	} else if (tgaHeader.image_type & TGA_IMAGETYPE_RLE_FLAG) {
 		// Image is compressed. We'll need to decompress it.
 		// Read the rest of the file into memory.
-		const int64_t fileSize = file->size();
+		const off64_t fileSize = file->size();
 		if (fileSize > TGA_MAX_SIZE ||
-		    fileSize < static_cast<int64_t>(img_data_offset + sizeof(tgaFooter) + cmap_size))
+		    fileSize < static_cast<off64_t>(img_data_offset + sizeof(tgaFooter) + cmap_size))
 		{
 			return nullptr;
 		}
@@ -523,10 +523,10 @@ TGA::TGA(IRpFile *file)
 
 	// Sanity check: TGA file shouldn't be larger than 16 MB,
 	// and it must be larger than tgaHeader and tgaFooter.
-	const int64_t fileSize = d->file->size();
-	assert(fileSize >= static_cast<int64_t>(sizeof(d->tgaHeader) + sizeof(d->tgaFooter)));
+	const off64_t fileSize = d->file->size();
+	assert(fileSize >= static_cast<off64_t>(sizeof(d->tgaHeader) + sizeof(d->tgaFooter)));
 	assert(fileSize <= TGA_MAX_SIZE);
-	if (fileSize < static_cast<int64_t>(sizeof(d->tgaHeader) + sizeof(d->tgaFooter)) ||
+	if (fileSize < static_cast<off64_t>(sizeof(d->tgaHeader) + sizeof(d->tgaFooter)) ||
 	    fileSize > TGA_MAX_SIZE)
 	{
 		UNREF_AND_NULL_NOCHK(d->file);
@@ -565,8 +565,8 @@ TGA::TGA(IRpFile *file)
 	if (d->texType == TGAPrivate::TexType::TGA2) {
 		// Check for an extension area.
 		const uint32_t ext_offset = le32_to_cpu(d->tgaFooter.ext_offset);
-		if (ext_offset != 0 && fileSize > (int64_t)sizeof(d->tgaExtArea) &&
-		    (ext_offset < (fileSize - (int64_t)sizeof(d->tgaExtArea))))
+		if (ext_offset != 0 && fileSize > (off64_t)sizeof(d->tgaExtArea) &&
+		    (ext_offset < (fileSize - (off64_t)sizeof(d->tgaExtArea))))
 		{
 			// We have an extension area.
 			size = d->file->seekAndRead(ext_offset, &d->tgaExtArea, sizeof(d->tgaExtArea));

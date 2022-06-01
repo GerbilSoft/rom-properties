@@ -252,7 +252,7 @@ GczReader::GczReader(IRpFile *file)
 	}
 
 	// Data offset is the current read position.
-	int64_t pos = m_file->tell();
+	off64_t pos = m_file->tell();
 	if (pos <= 0 || pos >= 1LL*1024*1024*1024) {
 		// tell() failed...
 		m_lastError = m_file->lastError();

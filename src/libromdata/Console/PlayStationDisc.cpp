@@ -222,7 +222,7 @@ int PlayStationDiscPrivate::loadSystemCnf(IsoPartition *pt)
 	}
 
 	// CNF file should be less than 2048 bytes.
-	const int64_t fileSize = f_system_cnf->size();
+	const off64_t fileSize = f_system_cnf->size();
 	if (fileSize > 2048) {
 		f_system_cnf->unref();
 		return -ENOMEM;

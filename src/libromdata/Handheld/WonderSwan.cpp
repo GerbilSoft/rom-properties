@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * WonderSwan.cpp: Bandai WonderSwan (Color) ROM reader.                   *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -367,13 +367,15 @@ int WonderSwan::isRomSupported_static(const DetectInfo *info)
 	}
 
 	// Virtual Boy header is located at the end of the file.
-	if (info->szFile < static_cast<int64_t>(sizeof(WS_RomFooter)))
+	if (info->szFile < static_cast<off64_t>(sizeof(WS_RomFooter))) {
 		return static_cast<int>(WonderSwanPrivate::RomType::Unknown);
+	}
 	const uint32_t header_addr_expected = static_cast<uint32_t>(info->szFile - sizeof(WS_RomFooter));
-	if (info->header.addr > header_addr_expected)
+	if (info->header.addr > header_addr_expected) {
 		return static_cast<int>(WonderSwanPrivate::RomType::Unknown);
-	else if (info->header.addr + info->header.size < header_addr_expected + sizeof(WS_RomFooter))
+	} else if (info->header.addr + info->header.size < header_addr_expected + sizeof(WS_RomFooter)) {
 		return static_cast<int>(WonderSwanPrivate::RomType::Unknown);
+	}
 
 	// Determine the offset.
 	const unsigned int offset = header_addr_expected - info->header.addr;

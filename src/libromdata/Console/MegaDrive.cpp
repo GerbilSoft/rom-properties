@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * MegaDrive.cpp: Sega Mega Drive ROM reader.                              *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -914,7 +914,7 @@ MegaDrive::MegaDrive(IRpFile *file)
 		return;
 
 	const bool isEarlyRomHeader = d->checkIfEarlyRomHeader(&d->romHeader);
-	const int64_t fileSize = d->file->size();
+	const off64_t fileSize = d->file->size();
 	const char *const s_serial_number = (isEarlyRomHeader
 		? d->romHeader.early.serial_number
 		: d->romHeader.serial_number);

@@ -530,7 +530,7 @@ int AchievementsPrivate::load(void)
 		return ret;
 	}
 
-	const int64_t fileSize = file->size();
+	const off64_t fileSize = file->size();
 	if (fileSize > 1*1024*1024) {
 		// 1 MB is probably way too much...
 		file->unref();
