@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata/tests)                 *
  * ImageDecoderTest.cpp: ImageDecoder class test.                          *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -665,15 +665,8 @@ string ImageDecoderTest::test_case_suffix_generator(const ::testing::TestParamIn
 
 	// Replace all non-alphanumeric characters with '_'.
 	// See gtest-param-util.h::IsValidParamName().
-	std::for_each(suffix.begin(), suffix.end(),
-		[](char &c) {
-			// NOTE: Not checking for '_' because that
-			// wastes a branch.
-			if (!ISALNUM(c)) {
-				c = '_';
-			}
-		}
-	);
+	std::replace_if(suffix.begin(), suffix.end(),
+		[](char c) { return !ISALNUM(c); }, '_');
 
 	// Append the image type to allow checking multiple types
 	// of images in the same file.
