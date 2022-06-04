@@ -50,8 +50,8 @@ using std::set;
 using std::string;
 using std::unique_ptr;
 using std::unordered_map;
-using std::wstring;
 using std::vector;
+using std::wstring;	// for tstring
 
 // Windows 10 and later
 #ifndef DATE_MONTHDAY
@@ -112,9 +112,6 @@ class RP_ShellPropSheetExt_Private
 		HFONT hFontBold;	// Bold font.
 		FontHandler fontHandler;
 
-		// ListView controls. (for toggling LVS_EX_DOUBLEBUFFER)
-		vector<HWND> hwndListViewControls;
-
 		// Header row widgets.
 		HWND lblSysInfo;
 		POINT ptSysInfo;
@@ -122,6 +119,8 @@ class RP_ShellPropSheetExt_Private
 
 		// wtsapi32.dll for Remote Desktop status. (WinXP and later)
 		WTSSessionNotification wts;
+		// ListView controls (for toggling LVS_EX_DOUBLEBUFFER)
+		vector<HWND> hwndListViewControls;
 
 		// Alternate row color.
 		COLORREF colorAltRow;
@@ -212,21 +211,6 @@ class RP_ShellPropSheetExt_Private
 		void loadImages(void);
 
 	private:
-		/**
-		 * Check if we need to use WS_EX_LAYOUTRTL.
-		 * TODO: Cache this value?
-		 * @return WS_EX_LAYOUTRTL if process is RTL; otherwise 0.
-		 */
-		static inline DWORD checkLayoutRTL(void)
-		{
-			// Set WS_EX_LAYOUTRTL if the process is RTL.
-			DWORD dwDefaultLayout;
-			const BOOL bRet = GetProcessDefaultLayout(&dwDefaultLayout);
-			return (unlikely(bRet && dwDefaultLayout == LAYOUT_RTL))
-				? WS_EX_LAYOUTRTL
-				: 0;
-		}
-
 		/**
 		 * Rescale an image to be as close to the required size as possible.
 		 * @param req_sz	[in] Required size.
@@ -869,10 +853,12 @@ int RP_ShellPropSheetExt_Private::initString(_In_ HWND hDlg, _In_ HWND hWndTab,
 		LibWin32Common::measureTextSizeLink(hWndTab, hFont, str_nl, &szText);
 
 		// Determine the position.
-		const int x = (((winRect.right - winRect.left) - szText.cx) / 2) + winRect.left;
-		const int y = winRect.bottom - tmpRect.top - szText.cy;
+		const POINT pos = {
+			(((winRect.right - winRect.left) - szText.cx) / 2) + winRect.left,
+			winRect.bottom - tmpRect.top - szText.cy
+		};
 		// Set the position and size.
-		SetWindowPos(hDlgItem, 0, x, y, szText.cx, szText.cy,
+		SetWindowPos(hDlgItem, 0, pos.x, pos.y, szText.cx, szText.cy,
 			SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOZORDER);
 
 		// Clear field_cy so the description widget won't show up
@@ -1059,9 +1045,6 @@ int RP_ShellPropSheetExt_Private::initBitfield(HWND hDlg, HWND hWndTab,
 		rect_subtract.bottom /= 2;
 	}
 	pt.y -= rect_subtract.bottom;
-
-	// WS_EX_LAYOUTRTL
-	const DWORD dwExStyleRTL = checkLayoutRTL();
 
 	row = 0; col = 0;
 	auto iter = tnames.cbegin();
@@ -2367,8 +2350,6 @@ void RP_ShellPropSheetExt_Private::initDialog(void)
 		// Add tabs.
 		// NOTE: Tabs must be added *before* calling TabCtrl_AdjustRect();
 		// otherwise, the tab bar height won't be taken into account.
-		TCITEM tcItem;
-		tcItem.mask = TCIF_TEXT;
 		for (int i = 0; i < tabCount; i++) {
 			// Create a tab.
 			const char *name = pFields->tabName(i);
@@ -2377,6 +2358,9 @@ void RP_ShellPropSheetExt_Private::initDialog(void)
 				continue;
 			}
 			const tstring tstr = U82T_c(name);
+
+			TCITEM tcItem;
+			tcItem.mask = TCIF_TEXT;
 			tcItem.pszText = const_cast<LPTSTR>(tstr.c_str());
 			// FIXME: Does the index work correctly if a tab is skipped?
 			TabCtrl_InsertItem(tabWidget, i, &tcItem);
@@ -2506,6 +2490,7 @@ void RP_ShellPropSheetExt_Private::initDialog(void)
 				// Create checkboxes starting at the current point.
 				field_cy = initBitfield(hDlgSheet, tab.hDlg, pt_start, field, fieldIdx);
 				break;
+
 			case RomFields::RFT_LISTDATA: {
 				// Create a ListView control.
 				size.cy *= 6;	// TODO: Is this needed?
@@ -2606,11 +2591,10 @@ void RP_ShellPropSheetExt_Private::initDialog(void)
 	// Update scrollbar settings.
 	// TODO: If a VScroll bar is added, adjust widths of RFT_LISTDATA.
 	// TODO: HScroll bar?
-	const auto tabs_cend = tabs.cend();
-	for (auto iter = tabs.cbegin(); iter != tabs_cend; ++iter) {
+	const int cy = dlgSize.cy;
+	std::for_each(tabs.cbegin(), tabs.cend(), [cy](const tab &tab) {
 		// Set scroll info.
 		// FIXME: Separate child dialog for no tabs.
-		const auto &tab = *iter;
 
 		// VScroll bar
 		SCROLLINFO si;
@@ -2618,7 +2602,7 @@ void RP_ShellPropSheetExt_Private::initDialog(void)
 		si.fMask = SIF_ALL;
 		si.nMin = 0;
 		si.nMax = tab.curPt.y - 2;	// max is exclusive
-		si.nPage = dlgSize.cy;
+		si.nPage = cy;
 		si.nPos = 0;
 		SetScrollInfo(tab.hDlg, SB_VERT, &si, TRUE);
 
@@ -2630,7 +2614,7 @@ void RP_ShellPropSheetExt_Private::initDialog(void)
 		si.nPage = 2;
 		si.nPos = 0;
 		SetScrollInfo(tab.hDlg, SB_HORZ, &si, TRUE);
-	}
+	});
 
 	// Initial update of RFT_MULTI_STRING fields.
 	if (!vecStringMulti.empty()) {
@@ -2665,16 +2649,14 @@ void RP_ShellPropSheetExt_Private::adjustTabsForMessageWidgetVisibility(bool bVi
 		tab_h -= rectMsgw.bottom;
 	}
 
-	std::for_each(tabs.cbegin(), tabs.cend(),
-		[tab_h](const tab &tab) {
-			RECT tabRect;
-			GetClientRect(tab.hDlg, &tabRect);
-			if (tabRect.bottom != tab_h) {
-				SetWindowPos(tab.hDlg, nullptr, 0, 0, tabRect.right, tab_h,
-					SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOZORDER);
-			}
+	std::for_each(tabs.cbegin(), tabs.cend(), [tab_h](const tab &tab) {
+		RECT tabRect;
+		GetClientRect(tab.hDlg, &tabRect);
+		if (tabRect.bottom != tab_h) {
+			SetWindowPos(tab.hDlg, nullptr, 0, 0, tabRect.right, tab_h,
+				SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOZORDER);
 		}
-	);
+	});
 }
 
 /**
@@ -2845,19 +2827,17 @@ void RP_ShellPropSheetExt_Private::btnOptions_action_triggered(int menuId)
 				return;
 		}
 
-		if (toClipboard) {
-			if (OpenClipboard(hDlgSheet)) {
-				EmptyClipboard();
-				HGLOBAL hglbCopy = GlobalAlloc(GMEM_MOVEABLE, (ts_out.size() + 1) * sizeof(TCHAR));
-				if (hglbCopy) {
-					LPTSTR lpszCopy = static_cast<LPTSTR>(GlobalLock(hglbCopy));
-					memcpy(lpszCopy, ts_out.data(), ts_out.size() * sizeof(TCHAR));
-					lpszCopy[ts_out.size()] = _T('\0');
-					GlobalUnlock(hglbCopy);
-					SetClipboardData(CF_UNICODETEXT, hglbCopy);
-				}
-				CloseClipboard();
+		if (toClipboard && OpenClipboard(hDlgSheet)) {
+			EmptyClipboard();
+			HGLOBAL hglbCopy = GlobalAlloc(GMEM_MOVEABLE, (ts_out.size() + 1) * sizeof(TCHAR));
+			if (hglbCopy) {
+				LPTSTR lpszCopy = static_cast<LPTSTR>(GlobalLock(hglbCopy));
+				memcpy(lpszCopy, ts_out.data(), ts_out.size() * sizeof(TCHAR));
+				lpszCopy[ts_out.size()] = _T('\0');
+				GlobalUnlock(hglbCopy);
+				SetClipboardData(CF_UNICODETEXT, hglbCopy);
 			}
+			CloseClipboard();
 		}
 		return;
 	}
@@ -2892,11 +2872,11 @@ void RP_ShellPropSheetExt_Private::btnOptions_action_triggered(int menuId)
 		string initialFile = FileSystem::replace_ext(romData->filename(), op->sfi.ext);
 
 		// Prompt for a save file.
-		tstring tstr = LibWin32Common::getSaveFileName(hDlgSheet,
+		tstring t_save_filename = LibWin32Common::getSaveFileName(hDlgSheet,
 			U82T_c(op->sfi.title), filter.c_str(), U82T_s(initialFile));
-		if (tstr.empty())
+		if (t_save_filename.empty())
 			return;
-		s_save_filename = T2U8(tstr);
+		s_save_filename = T2U8(t_save_filename);
 		params.save_filename = s_save_filename.c_str();
 	}
 
@@ -2945,11 +2925,8 @@ void RP_ShellPropSheetExt_Private::btnOptions_action_triggered(int menuId)
 			// Determine the position.
 			// TODO: Update on DPI change.
 			const int cySmIcon = GetSystemMetrics(SM_CYSMICON);
-			POINT ptMsgw; SIZE szMsgw;
-			szMsgw.cy = cySmIcon + 8;
-			ptMsgw.x = winRect.left;
-			ptMsgw.y = winRect.bottom - szMsgw.cy;
-			szMsgw.cx = winRect.right - winRect.left;
+			SIZE szMsgw = {winRect.right - winRect.left, cySmIcon + 8};
+			POINT ptMsgw = {winRect.left, winRect.bottom - szMsgw.cy};
 			if (tabs.size() > 1) {
 				ptMsgw.x += tmpRect.left;
 				ptMsgw.y -= tmpRect.top;

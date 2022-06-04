@@ -13,6 +13,7 @@
 #include "rp-gtk-enums.h"
 #include "RpGtk.hpp"
 #include "sort_funcs.h"
+#include "is-supported.hpp"
 
 // ENABLE_MESSAGESOUND is set by CMakeLists.txt.
 #ifdef ENABLE_MESSAGESOUND
@@ -1171,14 +1172,8 @@ rom_data_view_init_listdata(RomDataView *page,
 	};
 
 	// Set up the column names.
-	uint32_t align_headers = listDataDesc.col_attrs.align_headers;
-	uint32_t align_data = listDataDesc.col_attrs.align_data;
-	uint32_t sizing = listDataDesc.col_attrs.sizing;
-	uint32_t sorting = listDataDesc.col_attrs.sorting;
-	for (int i = 0; i < colCount; i++, align_headers >>= RomFields::TXA_BITS,
-	     align_data >>= RomFields::TXA_BITS,
-	     sizing >>= RomFields::COLSZ_BITS, sorting >>= RomFields::COLSORT_BITS)
-	{
+	RomFields::ListDataColAttrs_t col_attrs = listDataDesc.col_attrs;
+	for (int i = 0; i < colCount; i++, col_attrs.shiftRight()) {
 		const int listStore_col_idx = i + listStore_col_start;
 
 		// NOTE: Not skipping empty column names.
@@ -1197,21 +1192,18 @@ rom_data_view_init_listdata(RomDataView *page,
 		gtk_tree_view_column_add_attribute(column, renderer, "text", listStore_col_idx);
 		gtk_tree_view_append_column(GTK_TREE_VIEW(treeView), column);
 
-		// Header alignment
-		const float header_xalign = align_tbl_xalign[align_headers & RomFields::TXA_MASK];
-		// Data alignment
-		const float data_xalign = align_tbl_xalign[align_data & RomFields::TXA_MASK];
-		const PangoAlignment data_alignment =
-			static_cast<PangoAlignment>(align_tbl_pango[align_data & RomFields::TXA_MASK]);
-
-		g_object_set(column, "alignment", header_xalign, nullptr);
+		// Header/data alignment
+		g_object_set(column,
+			"alignment", align_tbl_xalign[col_attrs.align_headers & RomFields::TXA_MASK],
+			nullptr);
 		g_object_set(renderer,
-			"xalign", data_xalign,
-			"alignment", data_alignment, nullptr);
+			"xalign", align_tbl_xalign[col_attrs.align_data & RomFields::TXA_MASK],
+			"alignment", static_cast<PangoAlignment>(align_tbl_pango[col_attrs.align_data & RomFields::TXA_MASK]),
+			nullptr);
 
 		// Column sizing
 		// NOTE: We don't have direct equivalents to QHeaderView::ResizeMode.
-		switch (sizing & RomFields::COLSZ_MASK) {
+		switch (col_attrs.sizing & RomFields::COLSZ_MASK) {
 			case RomFields::ColSizing::COLSZ_INTERACTIVE:
 				gtk_tree_view_column_set_resizable(column, true);
 				gtk_tree_view_column_set_sizing(column, GTK_TREE_VIEW_COLUMN_GROW_ONLY);
@@ -1242,7 +1234,7 @@ rom_data_view_init_listdata(RomDataView *page,
 		// NOTE: We're setting the sorting functions on the proxy model.
 		// That way, it won't affect the underlying data, which ensures
 		// that RFT_LISTDATA_MULTI is still handled correctly.
-		switch (sorting & RomFields::COLSORT_MASK) {
+		switch (col_attrs.sorting & RomFields::COLSORT_MASK) {
 			default:
 				// Unsupported. We'll use standard sorting.
 				assert(!"Unsupported sorting method.");
@@ -1273,10 +1265,10 @@ rom_data_view_init_listdata(RomDataView *page,
 
 	// Set the default sorting column.
 	// NOTE: sort_dir maps directly to GtkSortType.
-	if (listDataDesc.col_attrs.sort_col >= 0) {
+	if (col_attrs.sort_col >= 0) {
 		gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(sortProxy),
-			listDataDesc.col_attrs.sort_col + listStore_col_start,
-			static_cast<GtkSortType>(listDataDesc.col_attrs.sort_dir));
+			col_attrs.sort_col + listStore_col_start,
+			static_cast<GtkSortType>(col_attrs.sort_dir));
 	}
 
 	// Set a minimum height for the scroll area.
@@ -1429,7 +1421,7 @@ rom_data_view_init_string_multi(RomDataView *page,
 	// NOTE: The string contents won't be initialized here.
 	// They will be initialized separately, since the user will
 	// be able to change the displayed language.
-	GtkWidget *const lblStringMulti = rom_data_view_init_string(page, field, fieldIdx, "");
+	GtkWidget *const lblStringMulti = rom_data_view_init_string(page, field, fieldIdx, nullptr);
 	if (lblStringMulti) {
 		page->cxx->vecStringMulti.emplace_back(lblStringMulti, &field);
 	}
@@ -1884,7 +1876,7 @@ rom_data_view_create_options_button(RomDataView *page)
 #if GTK_CHECK_VERSION(3,0,0)
 	if (!GTK_IS_DIALOG(parent)) {
 		// NOTE: As of Nautilus 40, there may be an HdyDeck here.
-		// We're not linking to libhandy, so check the class name.
+		// Check if it's HdyDeck using dynamically-loaded function pointers.
 		if (pfn_hdy_deck_get_type && G_OBJECT_TYPE(parent) == pfn_hdy_deck_get_type()) {
 			// Get the next parent widget.
 			isLibHandy = true;
@@ -2337,30 +2329,8 @@ rom_data_view_load_rom_data(gpointer data)
 	// Do we have a RomData object loaded already?
 	if (!page->romData) {
 		// No RomData object. Load the specified URI.
-
-		// Check if the URI maps to a local file.
-		IRpFile *file = nullptr;
-		gchar *const filename = g_filename_from_uri(page->uri, nullptr, nullptr);
-		if (filename) {
-			// Local file. Use RpFile.
-			file = new RpFile(filename, RpFile::FM_OPEN_READ_GZ);
-			g_free(filename);
-		} else {
-			// Not a local file. Use RpFileGio.
-			file = new RpFileGio(page->uri);
-		}
-
-		if (!file->isOpen()) {
-			// Unable to open the file.
-			file->unref();
-			page->changed_idle = 0;
-			return G_SOURCE_REMOVE;
-		}
-
-		// Create the RomData object.
-		// file is ref()'d by RomData.
-		RomData *const romData = RomDataFactory::create(file);
-		if (romData != page->romData) {
+		RomData *const romData = rp_gtk_open_uri(page->uri);
+		if (romData) {
 			// FIXME: If called from rom_data_view_set_property(), this might
 			// result in *two* notifications.
 			page->romData->unref();
@@ -2368,8 +2338,6 @@ rom_data_view_load_rom_data(gpointer data)
 			page->hasCheckedAchievements = false;
 			g_object_notify_by_pspec(G_OBJECT(page), props[PROP_SHOWING_DATA]);
 		}
-
-		file->unref();
 	} else {
 		// RomData object is already loaded.
 		page->hasCheckedAchievements = false;

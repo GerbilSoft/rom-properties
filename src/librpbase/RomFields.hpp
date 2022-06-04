@@ -231,8 +231,20 @@ class RomFields
 			uint32_t align_data;	// Data alignment
 			uint32_t sizing;	// Column sizing
 			uint32_t sorting;	// Column sorting
+
 			int8_t  sort_col;	// Default sort column. (-1 for none)
 			ColSortOrder sort_dir;	// Sort order.
+
+			/**
+			 * Shift the column alignment/sizing/sorting bits by one column.
+			 */
+			void shiftRight(void)
+			{
+				align_headers >>= TXA_BITS;
+				align_data >>= TXA_BITS;
+				sizing >>= COLSZ_BITS;
+				sorting >>= COLSORT_BITS;
+			}
 		};
 
 		// Typedefs for various containers.
