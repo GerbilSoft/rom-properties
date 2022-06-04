@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE4/KF5)                         *
  * AchWin32.hpp: Win32 notifications for achievements.                     *
  *                                                                         *
- * Copyright (c) 2020-2021 by David Korth.                                 *
+ * Copyright (c) 2020-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -161,28 +161,24 @@ AchWin32Private::~AchWin32Private()
 	}
 
 	// TODO: Verify that the threads are still valid.
-	std::for_each(map_tidToHWND.cbegin(), map_tidToHWND.cend(),
-		[](const auto &pair) {
-			// Zero out the user data to prevent WM_NCDESTROY from
-			// attempting to modify the maps.
-			HWND hWnd = pair.second;
-			SetWindowLongPtr(hWnd, GWLP_USERDATA, 0);
+	for (const auto &pair : map_tidToHWND) {
+		// Zero out the user data to prevent WM_NCDESTROY from
+		// attempting to modify the maps.
+		HWND hWnd = pair.second;
+		SetWindowLongPtr(hWnd, GWLP_USERDATA, 0);
 
-			// Now destroy the window.
-			DestroyWindow(hWnd);
-		}
-	);
+		// Now destroy the window.
+		DestroyWindow(hWnd);
+	}
 
 	if (atomWindowClass > 0) {
 		UnregisterClass(MAKEINTATOM(atomWindowClass), HINST_THISCOMPONENT);
 	}
 
 	// Delete the achievements sprite sheets.
-	std::for_each(map_imgAchSheet.begin(), map_imgAchSheet.end(),
-		[](std::pair<int, rp_image*> pair) {
-			pair.second->unref();
-		}
-	);
+	for (auto &pair : map_imgAchSheet) {
+		pair.second->unref();
+	}
 }
 
 /**

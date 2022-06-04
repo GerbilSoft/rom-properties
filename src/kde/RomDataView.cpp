@@ -1267,21 +1267,19 @@ int RomDataViewPrivate::updateField(int fieldIdx)
 void RomDataViewPrivate::initDisplayWidgets(void)
 {
 	// Clear the tabs.
-	std::for_each(tabs.begin(), tabs.end(),
-		[this](RomDataViewPrivate::tab &tab) {
-			// Delete the credits label if it's present.
-			delete tab.lblCredits;
-			// Delete the QFormLayout if it's present.
-			if (tab.form) {
-				clearLayout(tab.form);
-				delete tab.form;
-			}
-			// Delete the QVBoxLayout.
-			if (tab.vbox != ui.vboxLayout) {
-				delete tab.vbox;
-			}
+	for (RomDataViewPrivate::tab &tab : tabs) {
+		// Delete the credits label if it's present.
+		delete tab.lblCredits;
+		// Delete the QFormLayout if it's present.
+		if (tab.form) {
+			clearLayout(tab.form);
+			delete tab.form;
 		}
-	);
+		// Delete the QVBoxLayout.
+		if (tab.vbox != ui.vboxLayout) {
+			delete tab.vbox;
+		}
+	}
 	tabs.clear();
 	ui.tabWidget->clear();
 	ui.tabWidget->hide();
@@ -1445,11 +1443,9 @@ void RomDataViewPrivate::initDisplayWidgets(void)
 
 	// Add vertical spacers to each QFormLayout.
 	// This is mostly needed for e.g. DSi and 3DS permissions.
-	std::for_each(tabs.cbegin(), tabs.cend(),
-		[](const tab &tab) {
-			tab.form->addItem(new QSpacerItem(0, 0));
-		}
-	);
+	for (const tab &tab : tabs) {
+		tab.form->addItem(new QSpacerItem(0, 0));
+	}
 
 	// Close the file.
 	// Keeping the file open may prevent the user from
@@ -1816,11 +1812,9 @@ void RomDataView::btnOptions_triggered(int id)
 		// ROM operation completed.
 
 		// Update fields.
-		std::for_each(params.fieldIdx.cbegin(), params.fieldIdx.cend(),
-			[d](int fieldIdx) {
-				d->updateField(fieldIdx);
-			}
-		);
+		for (int fieldIdx : params.fieldIdx) {
+			d->updateField(fieldIdx);
+		}
 
 		// Update the RomOp menu entry in case it changed.
 		// NOTE: Assuming the RomOps vector order hasn't changed.

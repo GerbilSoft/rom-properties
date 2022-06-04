@@ -6,7 +6,7 @@
  * multiple plugins, so this file acts as a KFileMetaData ExtractorPlugin, *
  * and then forwards the request to the main library.                      *
  *                                                                         *
- * Copyright (c) 2018-2021 by David Korth.                                 *
+ * Copyright (c) 2018-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -61,11 +61,9 @@ QStringList ExtractorPlugin::mimetypes(void) const
 	// Convert to QStringList.
 	QStringList mimeTypes;
 	mimeTypes.reserve(static_cast<int>(vec_mimeTypes.size()));
-	std::for_each(vec_mimeTypes.cbegin(), vec_mimeTypes.cend(),
-		[&mimeTypes](const char *mimeType) {
-			mimeTypes += QLatin1String(mimeType);
-		}
-	);
+	for (const char *mimeType : vec_mimeTypes) {
+		mimeTypes += QLatin1String(mimeType);
+	}
 	return mimeTypes;
 }
 

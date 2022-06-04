@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE4/KF5)                         *
  * ListDataModel.cpp: QAbstractListModel for RFT_LISTDATA.                 *
  *                                                                         *
- * Copyright (c) 2012-2021 by David Korth.                                 *
+ * Copyright (c) 2012-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -144,11 +144,9 @@ ListDataModelPrivate::ListDataModelPrivate(ListDataModel *q)
 ListDataModelPrivate::~ListDataModelPrivate()
 {
 	// Unreference rp_images.
-	std::for_each(icons_rp.cbegin(), icons_rp.cend(),
-		[](const rp_image *img) {
-			UNREF(img);
-		}
-	);
+	for (const rp_image *img : icons_rp) {
+		UNREF(img);
+	}
 }
 
 /**
@@ -168,11 +166,9 @@ void ListDataModelPrivate::clearData(void)
 	// Clear icons.
 	icons.clear();
 	// Unreference rp_images.
-	std::for_each(icons_rp.cbegin(), icons_rp.cend(),
-		[](const rp_image *img) {
-			UNREF(img);
-		}
-	);
+	for (const rp_image *img : icons_rp) {
+		UNREF(img);
+	}
 	icons_rp.clear();
 }
 

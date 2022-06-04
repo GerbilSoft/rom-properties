@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * DragImageLabel.cpp: Drag & Drop image label.                            *
  *                                                                         *
- * Copyright (c) 2019-2021 by David Korth.                                 *
+ * Copyright (c) 2019-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -79,9 +79,11 @@ class DragImageLabelPrivate
 				if (animTimerID) {
 					KillTimer(m_hwndParent, animTimerID);
 				}
-				std::for_each(iconFrames.cbegin(), iconFrames.cend(),
-					[](HBITMAP hbmp) { if (hbmp) { DeleteBitmap(hbmp); } }
-				);
+				for (HBITMAP hbmp : iconFrames) {
+					if (hbmp) {
+						DeleteBitmap(hbmp);
+					}
+				}
 				UNREF(iconAnimData);
 			}
 		};

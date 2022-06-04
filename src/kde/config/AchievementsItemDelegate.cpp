@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE)                              *
  * AchievementsItemDelegate.hpp: Achievements item delegate for rp-config. *
  *                                                                         *
- * Copyright (c) 2013-2020 by David Korth.                                 *
+ * Copyright (c) 2013-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -280,11 +280,9 @@ void AchievementsItemDelegate::paint(QPainter *painter,
 	}
 
 	if (diff != 0) {
-		std::for_each(v_rect.begin(), v_rect.end(),
-			[diff](QRect &rect) {
-				rect.translate(0, diff);
-			}
-		);
+		for (QRect &rect : v_rect) {
+			rect.translate(0, diff);
+		}
 	}
 
 	painter->save();

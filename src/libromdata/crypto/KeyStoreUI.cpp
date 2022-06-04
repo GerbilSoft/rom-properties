@@ -1045,11 +1045,9 @@ int KeyStoreUI::setKey(int idx, const string &value)
 void KeyStoreUI::allKeysSaved(void)
 {
 	RP_D(KeyStoreUI);
-	std::for_each(d->keys.begin(), d->keys.end(),
-		[](KeyStoreUI::Key &key) {
-			key.modified = false;
-		}
-	);
+	for (KeyStoreUI::Key &key : d->keys) {
+		key.modified = false;
+	}
 
 	// KeyStore is no longer changed.
 	// NOTE: Not emitting modified() here.

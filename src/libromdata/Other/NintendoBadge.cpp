@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * NintendoBadge.hpp: Nintendo Badge Arcade image reader.                  *
  *                                                                         *
- * Copyright (c) 2017-2021 by David Korth.                                 *
+ * Copyright (c) 2017-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -143,11 +143,9 @@ NintendoBadgePrivate::~NintendoBadgePrivate()
 	static_assert(static_cast<unsigned int>(BadgeIndex_PRBS::Max) == ARRAY_SIZE(img_badges),
 		"BadgeIndex_PRBS::Max != ARRAY_SIZE(img)");
 
-	std::for_each(img_badges.begin(), img_badges.end(),
-		[](rp_image *img) {
-			UNREF(img);
-		}
-	);
+	for (rp_image *img : img_badges) {
+		UNREF(img);
+	}
 }
 
 /**

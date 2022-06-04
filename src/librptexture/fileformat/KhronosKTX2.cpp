@@ -132,7 +132,9 @@ KhronosKTX2Private::KhronosKTX2Private(KhronosKTX2 *q, IRpFile *file)
 
 KhronosKTX2Private::~KhronosKTX2Private()
 {
-	std::for_each(mipmaps.begin(), mipmaps.end(), [](rp_image *img) { UNREF(img); });
+	for (rp_image *img :mipmaps) {
+		UNREF(img);
+	}
 }
 
 /**
@@ -894,11 +896,11 @@ KhronosKTX2::KhronosKTX2(IRpFile *file)
 		return;
 	}
 #if SYS_BYTEORDER == SYS_BIG_ENDIAN
-	std::for_each(d->mipmap_data.begin(), d->mipmap_data.end(), [](KTX2_Mipmap_Index &mipdata) {
+	for (KTX2_Mipmap_Index &mipdata : d->mipmap_data) {
 		mipdata.byteOffset = le64_to_cpu(mipdata.byteOffset);
 		mipdata.byteLength = le64_to_cpu(mipdata.byteLength);
 		mipdata.uncompressedByteLength = le64_to_cpu(mipdata.uncompressedByteLength);
-	});
+	}
 #endif /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
 
 	// Load key/value data.

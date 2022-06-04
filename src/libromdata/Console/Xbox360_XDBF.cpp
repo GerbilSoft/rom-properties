@@ -307,14 +307,14 @@ Xbox360_XDBF_Private::Xbox360_XDBF_Private(Xbox360_XDBF *q, IRpFile *file, bool 
 Xbox360_XDBF_Private::~Xbox360_XDBF_Private()
 {
 	// Delete any allocated string tables.
-	std::for_each(strTbls.begin(), strTbls.end(), [](ao::uvector<char>* pStrTbl) { delete pStrTbl; });
+	for (ao::uvector<char> *pStrTbl : strTbls) {
+		delete pStrTbl;
+	}
 
 	// Delete any loaded images.
-	std::for_each(map_images.begin(), map_images.end(),
-		[](unordered_map<uint64_t, rp_image*>::value_type &iter) {
-			UNREF(iter.second);
-		}
-	);
+	for (auto &p : map_images) {
+		UNREF(p.second);
+	}
 }
 
 /**

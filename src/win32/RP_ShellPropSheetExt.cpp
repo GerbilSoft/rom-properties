@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * RP_ShellPropSheetExt.cpp: IShellPropSheetExt implementation.            *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -949,16 +949,14 @@ int RP_ShellPropSheetExt_Private::initBitfield(HWND hDlg, HWND hWndTab,
 	// native Windows encoding once.
 	vector<tstring> tnames;
 	tnames.reserve(count);
-	std::for_each(bitfieldDesc.names->cbegin(), bitfieldDesc.names->cend(),
-		[&tnames](const string &name) {
-			if (name.empty()) {
-				// Skip U82T_s() for empty strings.
-				tnames.emplace_back(tstring());
-			} else {
-				tnames.emplace_back(U82T_s(name));
-			}
+	for (const string &name : *(bitfieldDesc.names)) {
+		if (name.empty()) {
+			// Skip U82T_s() for empty strings.
+			tnames.emplace_back(tstring());
+		} else {
+			tnames.emplace_back(U82T_s(name));
 		}
-	);
+	}
 
 	// Column widths for multi-row layouts.
 	// (Includes the checkbox size.)
@@ -2564,8 +2562,7 @@ void RP_ShellPropSheetExt_Private::initDialog(void)
 	// Update scrollbar settings.
 	// TODO: If a VScroll bar is added, adjust widths of RFT_LISTDATA.
 	// TODO: HScroll bar?
-	const int cy = dlgSize.cy;
-	std::for_each(tabs.cbegin(), tabs.cend(), [cy](const tab &tab) {
+	for (const tab &tab : tabs) {
 		// Set scroll info.
 		// FIXME: Separate child dialog for no tabs.
 
@@ -2575,7 +2572,7 @@ void RP_ShellPropSheetExt_Private::initDialog(void)
 		si.fMask = SIF_ALL;
 		si.nMin = 0;
 		si.nMax = tab.curPt.y - 2;	// max is exclusive
-		si.nPage = cy;
+		si.nPage = dlgSize.cy;
 		si.nPos = 0;
 		SetScrollInfo(tab.hDlg, SB_VERT, &si, TRUE);
 
@@ -2587,7 +2584,7 @@ void RP_ShellPropSheetExt_Private::initDialog(void)
 		si.nPage = 2;
 		si.nPos = 0;
 		SetScrollInfo(tab.hDlg, SB_HORZ, &si, TRUE);
-	});
+	}
 
 	// Initial update of RFT_MULTI_STRING fields.
 	if (!vecStringMulti.empty()) {
@@ -2622,14 +2619,14 @@ void RP_ShellPropSheetExt_Private::adjustTabsForMessageWidgetVisibility(bool bVi
 		tab_h -= rectMsgw.bottom;
 	}
 
-	std::for_each(tabs.cbegin(), tabs.cend(), [tab_h](const tab &tab) {
+	for (const tab &tab : tabs) {
 		RECT tabRect;
 		GetClientRect(tab.hDlg, &tabRect);
 		if (tabRect.bottom != tab_h) {
 			SetWindowPos(tab.hDlg, nullptr, 0, 0, tabRect.right, tab_h,
 				SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOZORDER);
 		}
-	});
+	}
 }
 
 /**
@@ -2860,11 +2857,9 @@ void RP_ShellPropSheetExt_Private::btnOptions_action_triggered(int menuId)
 		messageType = MB_ICONINFORMATION;
 
 		// Update fields.
-		std::for_each(params.fieldIdx.cbegin(), params.fieldIdx.cend(),
-			[this](int fieldIdx) {
-				this->updateField(fieldIdx);
-			}
-		);
+		for (int fieldIdx : params.fieldIdx) {
+			this->updateField(fieldIdx);
+		}
 
 		// Update the RomOp menu entry in case it changed.
 		// NOTE: Assuming the RomOps vector order hasn't changed.
@@ -3833,22 +3828,18 @@ INT_PTR CALLBACK RP_ShellPropSheetExt_Private::DlgProc(HWND hDlg, UINT uMsg, WPA
 			// If console (or RemoteFX) was connected, enable ListView double-buffering.
 			switch (wParam) {
 				case WTS_CONSOLE_CONNECT:
-					std::for_each(d->hwndListViewControls.cbegin(), d->hwndListViewControls.cend(),
-						[](HWND hWnd) {
-							DWORD dwExStyle = ListView_GetExtendedListViewStyle(hWnd);
-							dwExStyle |= LVS_EX_DOUBLEBUFFER;
-							ListView_SetExtendedListViewStyle(hWnd, dwExStyle);
-						}
-					);
+					for (HWND hWnd : d->hwndListViewControls) {
+						DWORD dwExStyle = ListView_GetExtendedListViewStyle(hWnd);
+						dwExStyle |= LVS_EX_DOUBLEBUFFER;
+						ListView_SetExtendedListViewStyle(hWnd, dwExStyle);
+					}
 					break;
 				case WTS_REMOTE_CONNECT:
-					std::for_each(d->hwndListViewControls.cbegin(), d->hwndListViewControls.cend(),
-						[](HWND hWnd) {
-							DWORD dwExStyle = ListView_GetExtendedListViewStyle(hWnd);
-							dwExStyle &= ~LVS_EX_DOUBLEBUFFER;
-							ListView_SetExtendedListViewStyle(hWnd, dwExStyle);
-						}
-					);
+					for (HWND hWnd : d->hwndListViewControls) {
+						DWORD dwExStyle = ListView_GetExtendedListViewStyle(hWnd);
+						dwExStyle &= ~LVS_EX_DOUBLEBUFFER;
+						ListView_SetExtendedListViewStyle(hWnd, dwExStyle);
+					}
 					break;
 				default:
 					break;

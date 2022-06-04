@@ -334,9 +334,9 @@ int FontHandlerPrivate::initMonospacedFont(void)
 	}
 
 	// Update all monospaced controls to use the new font.
-	std::for_each(vecMonoControls.cbegin(), vecMonoControls.cend(),
-		[hFontMonoNew](HWND hWnd) { SetWindowFont(hWnd, hFontMonoNew, false); }
-	);
+	for (HWND hWnd : vecMonoControls) {
+		SetWindowFont(hWnd, hFontMonoNew, false);
+	}
 
 	// Delete the old font and save the new one.
 	HFONT hFontMonoOld = hFontMono;

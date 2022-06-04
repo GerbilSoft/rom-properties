@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * PSF.hpp: PSF audio reader.                                              *
  *                                                                         *
- * Copyright (c) 2018-2021 by David Korth.                                 *
+ * Copyright (c) 2018-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -196,11 +196,9 @@ unordered_map<string, string> PSFPrivate::parseTags(off64_t tag_addr)
 
 	// If we're not using UTF-8, convert the values.
 	if (!isUtf8) {
-		std::for_each(kv.begin(), kv.end(),
-			[](unordered_map<string, string>::value_type &p) {
-				p.second = cp1252_sjis_to_utf8(p.second);
-			}
-		);
+		for (auto &p : kv) {
+			p.second = cp1252_sjis_to_utf8(p.second);
+		}
 	}
 
 	return kv;

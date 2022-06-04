@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (GTK+)                             *
  * AchGDBus.cpp: GDBus notifications for achievements.                     *
  *                                                                         *
- * Copyright (c) 2020-2021 by David Korth.                                 *
+ * Copyright (c) 2020-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -91,11 +91,9 @@ AchGDBusPrivate::~AchGDBusPrivate()
 	}
 
 	// Delete the achievements sprite sheets.
-	std::for_each(map_imgAchSheet.begin(), map_imgAchSheet.end(),
-		[](std::pair<int, PIMGTYPE> pair) {
-			PIMGTYPE_destroy(pair.second);
-		}
-	);
+	for (const auto &pair : map_imgAchSheet) {
+		PIMGTYPE_destroy(pair.second);
+	}
 }
 
 /**

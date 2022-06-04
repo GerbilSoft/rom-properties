@@ -102,11 +102,9 @@ GdiReaderPrivate::~GdiReaderPrivate()
  */
 void GdiReaderPrivate::close(void)
 {
-	std::for_each(blockRanges.begin(), blockRanges.end(),
-		[](BlockRange &blockRange) {
-			UNREF(blockRange.file);
-		}
-	);
+	for (BlockRange &blockRange : blockRanges) {
+		UNREF(blockRange.file);
+	}
 	blockRanges.clear();
 	trackMappings.clear();
 

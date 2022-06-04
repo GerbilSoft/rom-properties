@@ -211,7 +211,9 @@ PowerVR3Private::PowerVR3Private(PowerVR3 *q, IRpFile *file)
 
 PowerVR3Private::~PowerVR3Private()
 {
-	std::for_each(mipmaps.begin(), mipmaps.end(), [](rp_image *img) { UNREF(img); });
+	for (rp_image *img : mipmaps) {
+		UNREF(img);
+	}
 }
 
 /**

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * ImageDecoder_BC7.cpp: Image decoding functions. (BC7)                   *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -620,21 +620,21 @@ static int decodeBC7Block(array<argb32_t, 4*4> &tileBuf, const uint64_t *bc7_src
 			break;
 		case 1:
 			// RAGB: Swap A and R.
-			std::for_each(tileBuf.begin(), tileBuf.end(), [](argb32_t &pixel) {
+			for (argb32_t &pixel : tileBuf) {
 				std::swap(pixel.a, pixel.r);
-			});
+			}
 			break;
 		case 2:
 			// GRAB: Swap A and G.
-			std::for_each(tileBuf.begin(), tileBuf.end(), [](argb32_t &pixel) {
+			for (argb32_t &pixel : tileBuf) {
 				std::swap(pixel.a, pixel.g);
-			});
+			}
 			break;
 		case 3:
 			// BRGA: Swap A and B.
-			std::for_each(tileBuf.begin(), tileBuf.end(), [](argb32_t &pixel) {
+			for (argb32_t &pixel : tileBuf) {
 				std::swap(pixel.a, pixel.b);
-			});
+			}
 			break;
 	}
 

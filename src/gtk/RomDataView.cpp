@@ -669,11 +669,9 @@ rom_data_view_desc_format_type_changed(RomDataView	*page,
 	g_return_if_fail(IS_ROM_DATA_VIEW(page));
 	g_return_if_fail(desc_format_type >= RP_DFT_XFCE && desc_format_type < RP_DFT_LAST);
 
-	std::for_each(page->cxx->vecDescLabels.cbegin(), page->cxx->vecDescLabels.cend(),
-		[desc_format_type](GtkWidget *label) {
-			set_label_format_type(GTK_LABEL(label), desc_format_type);
-		}
-	);
+	for (GtkWidget *label : page->cxx->vecDescLabels) {
+		set_label_format_type(GTK_LABEL(label), desc_format_type);
+	}
 }
 
 gboolean
@@ -2884,11 +2882,9 @@ btnOptions_triggered_signal_handler(OptionsMenuButton *menuButton,
 		// ROM operation completed.
 
 		// Update fields.
-		std::for_each(params.fieldIdx.cbegin(), params.fieldIdx.cend(),
-			[page](int fieldIdx) {
-				rom_data_view_update_field(page, fieldIdx);
-			}
-		);
+		for (int fieldIdx : params.fieldIdx) {
+			rom_data_view_update_field(page, fieldIdx);
+		}
 
 		// Update the RomOp menu entry in case it changed.
 		// NOTE: Assuming the RomOps vector order hasn't changed.

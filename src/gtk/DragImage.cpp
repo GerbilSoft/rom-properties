@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * DragImage.cpp: Drag & Drop image.                                       *
  *                                                                         *
- * Copyright (c) 2017-2021 by David Korth.                                 *
+ * Copyright (c) 2017-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -91,11 +91,11 @@ struct _DragImage {
 				g_source_remove(tmrIconAnim);
 			}
 
-			std::for_each(iconFrames.begin(), iconFrames.end(), [](PIMGTYPE frame) {
+			for (PIMGTYPE frame : iconFrames) {
 				if (frame) {
 					PIMGTYPE_destroy(frame);
 				}
-			});
+			}
 
 			UNREF(iconAnimData);
 		}

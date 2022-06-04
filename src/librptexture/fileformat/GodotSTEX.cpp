@@ -234,7 +234,9 @@ GodotSTEXPrivate::GodotSTEXPrivate(GodotSTEX *q, IRpFile *file)
 
 GodotSTEXPrivate::~GodotSTEXPrivate()
 {
-	std::for_each(mipmaps.begin(), mipmaps.end(), [](rp_image *img) { UNREF(img); });
+	for (rp_image *img : mipmaps) {
+		UNREF(img);
+	}
 }
 
 /**

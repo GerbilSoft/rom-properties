@@ -1571,19 +1571,17 @@ int DMG::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
 	}
 
 	// Check for invalid characters and replace them with '_'.
-	std::for_each(img_filename.begin(), img_filename.end(),
-		[](char &c) {
-			switch (c) {
-				case '/':
-				case '*':
-				case '?':
-				case ':':
-					c = '_';
-				default:
-					break;
-			}
+	for (char &c : img_filename) {
+		switch (c) {
+			case '/':
+			case '*':
+			case '?':
+			case ':':
+				c = '_';
+			default:
+				break;
 		}
-	);
+	}
 
 	RP_UNUSED(size);
 	vector<ImageSizeDef> sizeDefs = supportedImageSizes(imageType);

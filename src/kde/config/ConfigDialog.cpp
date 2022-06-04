@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE)                              *
  * ConfigDialog.cpp: Configuration dialog.                                 *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -173,9 +173,9 @@ ConfigDialog::ConfigDialog(QWidget *parent)
 	// This is needed in order to track focus in case
 	// the "Apply" button is clicked.
 	QList<QWidget*> widgets = this->findChildren<QWidget*>();
-	std::for_each(widgets.begin(), widgets.end(), [this](QWidget *widget) {
+	for (QWidget *widget : widgets) {
 		widget->installEventFilter(this);
-	});
+	}
 }
 
 /**

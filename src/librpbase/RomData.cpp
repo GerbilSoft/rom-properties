@@ -974,13 +974,11 @@ vector<RomData::RomOp> RomData::romOps(void) const
 		// Some RomOps can't be run on a compressed file.
 		// Disable those that can't.
 		// TODO: Indicate why they're disabled?
-		std::for_each(v_ops.begin(), v_ops.end(),
-			[](RomData::RomOp &op) {
-				if (op.flags & RomOp::ROF_REQ_WRITABLE) {
-					op.flags &= ~RomOp::ROF_ENABLED;
-				}
+		for (RomData::RomOp &op : v_ops) {
+			if (op.flags & RomOp::ROF_REQ_WRITABLE) {
+				op.flags &= ~RomOp::ROF_ENABLED;
 			}
-		);
+		}
 	}
 
 	return v_ops;

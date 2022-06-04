@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * ValveVTF.cpp: Valve VTF image reader.                                   *
  *                                                                         *
- * Copyright (c) 2017-2021 by David Korth.                                 *
+ * Copyright (c) 2017-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -226,7 +226,9 @@ ValveVTFPrivate::ValveVTFPrivate(ValveVTF *q, IRpFile *file)
 
 ValveVTFPrivate::~ValveVTFPrivate()
 {
-	std::for_each(mipmaps.begin(), mipmaps.end(), [](rp_image *img) { UNREF(img); });
+	for (rp_image *img : mipmaps) {
+		UNREF(img);
+	}
 }
 
 /**

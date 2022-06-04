@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * RomDataFactory.cpp: RomData factory class.                              *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -910,27 +910,23 @@ void RomDataFactoryPrivate::init_supportedFileExtensions(void)
 	// Get file extensions from FileFormatFactory.
 	static const unsigned int FFF_ATTRS = ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA;
 	vector<const char*> vec_exts_fileFormat = FileFormatFactory::supportedFileExtensions();
-	std::for_each(vec_exts_fileFormat.cbegin(), vec_exts_fileFormat.cend(),
-		[&map_exts](const char *ext) {
-			auto iter = map_exts.find(ext);
-			if (iter != map_exts.end()) {
-				// We already had this extension.
-				// Update its attributes.
-				iter->second |= FFF_ATTRS;
-			} else {
-				// First time encountering this extension.
-				map_exts[ext] = FFF_ATTRS;
-				vec_exts.emplace_back(RomDataFactory::ExtInfo(ext, FFF_ATTRS));
-			}
+	for (const char *ext : vec_exts_fileFormat) {
+		auto iter = map_exts.find(ext);
+		if (iter != map_exts.end()) {
+			// We already had this extension.
+			// Update its attributes.
+			iter->second |= FFF_ATTRS;
+		} else {
+			// First time encountering this extension.
+			map_exts[ext] = FFF_ATTRS;
+			vec_exts.emplace_back(RomDataFactory::ExtInfo(ext, FFF_ATTRS));
 		}
-	);
+	}
 
 	// Make sure the vector's attributes fields are up to date.
-	std::for_each(vec_exts.begin(), vec_exts.end(),
-		[&map_exts](RomDataFactory::ExtInfo &extInfo) {
-			extInfo.attrs = map_exts[extInfo.ext];
-		}
-	);
+	for (RomDataFactory::ExtInfo &extInfo : vec_exts) {
+		extInfo.attrs = map_exts[extInfo.ext];
+	}
 }
 
 /**
@@ -995,15 +991,13 @@ void RomDataFactoryPrivate::init_supportedMimeTypes(void)
 
 	// Get MIME types from FileFormatFactory.
 	vector<const char*> vec_mimeTypes_fileFormat = FileFormatFactory::supportedMimeTypes();
-	std::for_each(vec_mimeTypes_fileFormat.cbegin(), vec_mimeTypes_fileFormat.cend(),
-		[&set_mimeTypes](const char *mimeType) {
-			auto iter = set_mimeTypes.find(mimeType);
-			if (iter == set_mimeTypes.end()) {
-				set_mimeTypes.emplace(mimeType);
-				vec_mimeTypes.emplace_back(mimeType);
-			}
+	for (const char *mimeType : vec_mimeTypes_fileFormat) {
+		auto iter = set_mimeTypes.find(mimeType);
+		if (iter == set_mimeTypes.end()) {
+			set_mimeTypes.emplace(mimeType);
+			vec_mimeTypes.emplace_back(mimeType);
 		}
-	);
+	}
 }
 
 /**
