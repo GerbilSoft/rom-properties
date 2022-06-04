@@ -107,9 +107,7 @@ class RP_ShellPropSheetExt_Private
 		HWND hBtnOptions;	// Options button.
 		tstring ts_prevExportDir;
 
-		// Fonts.
-		HFONT hFontDlg;		// Main dialog font.
-		HFONT hFontBold;	// Bold font.
+		// Font handler
 		FontHandler fontHandler;
 
 		// Header row widgets.
@@ -346,12 +344,6 @@ class RP_ShellPropSheetExt_Private
 		 */
 		int updateField(int fieldIdx);
 
-		/**
-		 * Initialize the bold font.
-		 * @param hFont Base font.
-		 */
-		void initBoldFont(HFONT hFont);
-
 	public:
 		/**
 		 * Initialize the dialog. (hDlgSheet)
@@ -434,8 +426,6 @@ RP_ShellPropSheetExt_Private::RP_ShellPropSheetExt_Private(RP_ShellPropSheetExt 
 	, romData(nullptr)
 	, hDlgSheet(nullptr)
 	, hBtnOptions(nullptr)
-	, hFontDlg(nullptr)
-	, hFontBold(nullptr)
 	, fontHandler(nullptr)
 	, lblSysInfo(nullptr)
 	, colorAltRow(LibWin32Common::getAltRowColor())
@@ -464,11 +454,6 @@ RP_ShellPropSheetExt_Private::~RP_ShellPropSheetExt_Private()
 
 	// Unreference the RomData object.
 	UNREF(romData);
-
-	// Delete the fonts.
-	if (hFontBold) {
-		DeleteFont(hFontBold);
-	}
 }
 
 /**
@@ -592,9 +577,10 @@ int RP_ShellPropSheetExt_Private::createHeaderRow(HWND hDlg, const POINT &pt_sta
 
 	// Font to use.
 	// TODO: Handle these assertions in release builds.
-	assert(hFontBold != nullptr);
-	assert(hFontDlg != nullptr);
-	const HFONT hFont = (hFontBold ? hFontBold : hFontDlg);
+	HFONT hFont = fontHandler.boldFont();
+	if (!hFont) {
+		hFont = GetWindowFont(hDlg);
+	}
 
 	// System name and file type.
 	// TODO: System logo and/or game title?
@@ -736,7 +722,7 @@ int RP_ShellPropSheetExt_Private::initString(_In_ HWND hDlg, _In_ HWND hWndTab,
 	}
 
 	// Get the default font.
-	HFONT hFont = hFontDlg;
+	HFONT hFont = GetWindowFont(hDlg);
 
 	// Check for any formatting options.
 	bool isWarning = false, isMonospace = false;
@@ -749,15 +735,16 @@ int RP_ShellPropSheetExt_Private::initString(_In_ HWND hDlg, _In_ HWND hWndTab,
 
 		if (field.desc.flags & RomFields::STRF_WARNING) {
 			// "Warning" font.
+			isWarning = true;
+			HFONT hFontBold = fontHandler.boldFont();
 			if (hFontBold) {
 				hFont = hFontBold;
-				isWarning = true;
-				// Set the font of the description control.
-				HWND hStatic = GetDlgItem(hWndTab, IDC_STATIC_DESC(fieldIdx));
-				if (hStatic) {
-					SetWindowFont(hStatic, hFont, false);
-					SetWindowLongPtr(hStatic, GWLP_USERDATA, static_cast<LONG_PTR>(RGB(255, 0, 0)));
-				}
+			}
+			// Set the font of the description control.
+			HWND hStatic = GetDlgItem(hWndTab, IDC_STATIC_DESC(fieldIdx));
+			if (hStatic) {
+				SetWindowFont(hStatic, hFont, false);
+				SetWindowLongPtr(hStatic, GWLP_USERDATA, static_cast<LONG_PTR>(RGB(255, 0, 0)));
 			}
 		} else if (field.desc.flags & RomFields::STRF_MONOSPACE) {
 			// Monospaced font.
@@ -941,6 +928,7 @@ int RP_ShellPropSheetExt_Private::initBitfield(HWND hDlg, HWND hWndTab,
 
 	// Dialog font and device context.
 	// NOTE: Using the parent dialog's font.
+	HFONT hFontDlg = GetWindowFont(hDlg);
 	AutoGetDC hDC(hWndTab, hFontDlg);
 
 	// Create a grid of checkboxes.
@@ -1172,6 +1160,7 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 		lvsStyle |= LVS_NOCOLUMNHEADER;
 	}
 	const uint16_t cId = IDC_RFT_LISTDATA(fieldIdx);
+	HFONT hFontDlg = GetWindowFont(hDlg);
 	HWND hListView = CreateWindowEx(WS_EX_NOPARENTNOTIFY | WS_EX_CLIENTEDGE | dwExStyleRTL,
 		WC_LISTVIEW, nullptr, lvsStyle,
 		pt_start.x, pt_start.y, size.cx, size.cy,
@@ -1820,6 +1809,8 @@ void RP_ShellPropSheetExt_Private::updateMulti(uint32_t user_lc)
 		}
 	}
 
+	HFONT hFontDlg = GetWindowFont(hDlgSheet);
+
 	// RFT_LISTDATA_MULTI
 	const auto map_lvData_end = map_lvData.end();
 	for (auto iter = map_lvData.begin(); iter != map_lvData_end; ++iter) {
@@ -2138,28 +2129,6 @@ int RP_ShellPropSheetExt_Private::updateField(int fieldIdx)
 }
 
 /**
- * Initialize the bold font.
- * @param hFont Base font.
- */
-void RP_ShellPropSheetExt_Private::initBoldFont(HFONT hFont)
-{
-	assert(hFont != nullptr);
-	if (!hFont || hFontBold) {
-		// No base font, or the bold font
-		// is already initialized.
-		return;
-	}
-
-	// Create the bold font.
-	LOGFONT lfFontBold;
-	if (GetObject(hFont, sizeof(lfFontBold), &lfFontBold) != 0) {
-		// Adjust the font and create a new one.
-		lfFontBold.lfWeight = FW_BOLD;
-		hFontBold = CreateFontIndirect(&lfFontBold);
-	}
-}
-
-/**
  * Initialize the dialog. (hDlgSheet)
  * Called by WM_INITDIALOG.
  */
@@ -2199,15 +2168,11 @@ void RP_ShellPropSheetExt_Private::initDialog(void)
 	// TODO: Also ICC_STANDARD_CLASSES on XP+?
 	InitCommonControlsEx(&initCommCtrl);
 
-	// Dialog font and device context.
-	if (!hFontDlg) {
-		hFontDlg = GetWindowFont(hDlgSheet);
-	}
-	AutoGetDC hDC(hDlgSheet, hFontDlg);
-
-	// Initialize the fonts.
-	initBoldFont(hFontDlg);
+	// Initialize the font handler.
 	fontHandler.setWindow(hDlgSheet);
+
+	// Device context for text measurement
+	AutoGetDC hDC(hDlgSheet, GetWindowFont(hDlgSheet));
 
 	// Convert the bitfield description names to the
 	// native Windows encoding once.
@@ -2246,11 +2211,17 @@ void RP_ShellPropSheetExt_Private::initDialog(void)
 		if (field.type == RomFields::RFT_STRING &&
 		    field.desc.flags & RomFields::STRF_WARNING)
 		{
-			// Label is bold. Use hFontBold.
-			HFONT hFontOrig = SelectFont(hDC, hFontBold);
+			// Label is bold.
+			HFONT hFontOrig = nullptr;
+			HFONT hFontBold = fontHandler.boldFont();
+			if (hFontBold) {
+				HFONT hFontOrig = SelectFont(hDC, hFontBold);
+			}
 			GetTextExtentPoint32(hDC, desc_text.data(),
 				static_cast<int>(desc_text.size()), &textSize);
-			SelectFont(hDC, hFontOrig);
+			if (hFontBold) {
+				SelectFont(hDC, hFontOrig);
+			}
 		}
 		else
 		{
@@ -2330,6 +2301,8 @@ void RP_ShellPropSheetExt_Private::initDialog(void)
 	dlgRect.top += (headerH + 2);
 	dlgSize.cy -= (headerH + 2);
 	headerPt.y += headerH;
+
+	HFONT hFontDlg = GetWindowFont(hDlgSheet);
 
 	// Do we need to create a tab widget?
 	if (tabCount > 1) {
@@ -2944,7 +2917,7 @@ void RP_ShellPropSheetExt_Private::btnOptions_action_triggered(int menuId)
 				ptMsgw.x, ptMsgw.y, szMsgw.cx, szMsgw.cy,
 				hDlgSheet, (HMENU)IDC_MESSAGE_WIDGET,
 				HINST_THISCOMPONENT, nullptr);
-			SetWindowFont(hMessageWidget, hFontDlg, false);
+			SetWindowFont(hMessageWidget, GetWindowFont(hDlgSheet), false);
 		}
 
 		showMessageWidget(messageType, U82T_s(params.msg));
@@ -3048,7 +3021,7 @@ void RP_ShellPropSheetExt_Private::createOptionsButton(void)
 		WS_CHILD | WS_VISIBLE | WS_TABSTOP | WS_GROUP | BS_PUSHBUTTON | BS_CENTER,
 		ptBtn.x, ptBtn.y, szBtn.cx, szBtn.cy,
 		hWndParent, (HMENU)IDC_RP_OPTIONS, nullptr, nullptr);
-	SetWindowFont(hBtnOptions, hFontDlg, FALSE);
+	SetWindowFont(hBtnOptions, GetWindowFont(hDlgSheet), FALSE);
 
 	// Initialize the "Options" submenu.
 	OptionsMenuButton_ReinitMenu(hBtnOptions, romData);

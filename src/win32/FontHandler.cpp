@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * FontHandler.cpp: Font handler.                                          *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -31,9 +31,9 @@ class FontHandlerPrivate
 		// Window used for the dialog font.
 		HWND hWnd;
 
-		// Monospaced font.
+		// Fonts
+		HFONT hFontBold;
 		HFONT hFontMono;
-		LOGFONT lfFontMono;
 
 		// Controls.
 		vector<HWND> vecMonoControls;	// Controls using the monospaced font.
@@ -69,6 +69,18 @@ class FontHandlerPrivate
 		 */
 		static bool isClearTypeEnabled(void);
 
+		/**
+		 * (Re)Initialize the bold font.
+		 * @return 0 on success; negative POSIX error code on error.
+		 */
+		int initBoldFont(void);
+
+		/**
+		 * (Re)Initialize the monospaced font.
+		 * @return 0 on success; negative POSIX error code on error.
+		 */
+		int initMonospacedFont(void);
+
 	public:
 		/**
 		 * Update fonts.
@@ -82,17 +94,16 @@ class FontHandlerPrivate
 
 FontHandlerPrivate::FontHandlerPrivate(HWND hWnd)
 	: hWnd(hWnd)
+	, hFontBold(nullptr)
 	, hFontMono(nullptr)
 	, bPrevIsClearType(false)
-{
-	memset(&lfFontMono, 0, sizeof(lfFontMono));
-	if (hWnd) {
-		updateFonts(true);
-	}
-}
+{ }
 
 FontHandlerPrivate::~FontHandlerPrivate()
 {
+	if (hFontBold) {
+		DeleteFont(hFontBold);
+	}
 	if (hFontMono) {
 		DeleteFont(hFontMono);
 	}
@@ -226,34 +237,23 @@ bool FontHandlerPrivate::isClearTypeEnabled(void)
 }
 
 /**
- * Update fonts.
- * @param force Force update. (Use for WM_THEMECHANGED.)
+ * (Re)Initialize the bold font.
  * @return 0 on success; negative POSIX error code on error.
  */
-int FontHandlerPrivate::updateFonts(bool force)
+int FontHandlerPrivate::initBoldFont(void)
 {
 	if (!hWnd) {
-		// No window. Delete the fonts.
-		if (hFontMono) {
-			DeleteFont(hFontMono);
-			hFontMono = nullptr;
+		// No window. Delete the font.
+		if (hFontBold) {
+			DeleteFont(hFontBold);
+			hFontBold = nullptr;
 		}
 		return -EBADF;
 	}
 
-	// TODO: Only create fonts if controls are using them.
+	// TODO: Keep track of controls that use this font?
 
-	// We need to create the fonts if:
-	// - The fonts aren't created yet.
-	// - The ClearType state was changed.
-	bool bIsClearType = isClearTypeEnabled();
-	bool bCreateFonts = force || (bIsClearType != bPrevIsClearType) || !hFontMono;
-	if (!bCreateFonts) {
-		// Nothing to do here.
-		return 0;
-	}
-
-	// Create the fonts.
+	// Get the current window font.
 	HFONT hFont = GetWindowFont(hWnd);
 	assert(hFont != nullptr);
 	if (!hFont) {
@@ -261,6 +261,55 @@ int FontHandlerPrivate::updateFonts(bool force)
 		return -ENOENT;
 	}
 
+	LOGFONT lfFontBold;
+	if (GetObject(hFont, sizeof(lfFontBold), &lfFontBold) == 0) {
+		// Unable to obtain the LOGFONT.
+		return -EIO;
+	}
+
+	// Adjust the font weight and create the new font.
+	lfFontBold.lfWeight = FW_BOLD;
+	HFONT hFontBoldNew = CreateFontIndirect(&lfFontBold);
+	if (!hFontBoldNew) {
+		// Unable to create the new font.
+		return -w32err_to_posix(GetLastError());
+	}
+
+	// Delete the old font and save the new one.
+	HFONT hFontBoldOld = hFontBold;
+	hFontBold = hFontBoldNew;
+	if (hFontBoldOld) {
+		DeleteFont(hFontBoldOld);
+	}
+
+	// Font created.
+	return 0;
+}
+
+/**
+ * (Re)Initialize the monospaced font.
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int FontHandlerPrivate::initMonospacedFont(void)
+{
+	if (!hWnd) {
+		// No window. Delete the font.
+		if (hFontMono) {
+			DeleteFont(hFontMono);
+			hFontMono = nullptr;
+		}
+		return -EBADF;
+	}
+
+	// Get the current window font.
+	HFONT hFont = GetWindowFont(hWnd);
+	assert(hFont != nullptr);
+	if (!hFont) {
+		// Unable to get the window font.
+		return -ENOENT;
+	}
+
+	LOGFONT lfFontMono;
 	if (GetObject(hFont, sizeof(lfFontMono), &lfFontMono) == 0) {
 		// Unable to obtain the LOGFONT.
 		return -EIO;
@@ -276,6 +325,7 @@ int FontHandlerPrivate::updateFonts(bool force)
 	// Create the monospaced font.
 	// If ClearType is enabled, use DEFAULT_QUALITY;
 	// otherwise, use NONANTIALIASED_QUALITY.
+	const bool bIsClearType = isClearTypeEnabled();
 	lfFontMono.lfQuality = (bIsClearType ? DEFAULT_QUALITY : NONANTIALIASED_QUALITY);
 	HFONT hFontMonoNew = CreateFontIndirect(&lfFontMono);
 	if (!hFontMonoNew) {
@@ -293,6 +343,46 @@ int FontHandlerPrivate::updateFonts(bool force)
 	hFontMono = hFontMonoNew;
 	if (hFontMonoOld) {
 		DeleteFont(hFontMonoOld);
+	}
+
+	// Font created.
+	return 0;
+}
+
+/**
+ * Update fonts.
+ * @param force Force update. (Use for WM_THEMECHANGED.)
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int FontHandlerPrivate::updateFonts(bool force)
+{
+	if (!hWnd) {
+		// No window. Delete the fonts.
+		if (hFontBold) {
+			DeleteFont(hFontBold);
+			hFontBold = nullptr;
+		}
+		if (hFontMono) {
+			DeleteFont(hFontMono);
+			hFontMono = nullptr;
+		}
+		return -EBADF;
+	}
+
+	// We need to update the fonts if the ClearType state was changed.
+	const bool bIsClearType = isClearTypeEnabled();
+	const bool bCreateFonts = force || (bIsClearType != bPrevIsClearType);
+	if (!bCreateFonts) {
+		// Nothing to do here.
+		return 0;
+	}
+
+	// Update fonts if they were previously created.
+	if (hFontBold) {
+		initBoldFont();
+	}
+	if (hFontMono || !vecMonoControls.empty()) {
+		initMonospacedFont();
 	}
 
 	// Update the ClearType state.
@@ -334,6 +424,20 @@ void FontHandler::setWindow(HWND hWnd)
 }
 
 /**
+ * Get the bold font.
+ * @return Bold font, or nullptr on error.
+ */
+HFONT FontHandler::boldFont(void) const
+{
+	RP_D(FontHandler);
+	if (!d->hFontBold) {
+		d->initBoldFont();
+	}
+	assert(d->hFontBold != nullptr);
+	return d->hFontBold;
+}
+
+/**
  * Get the monospaced font.
  * Needed in some cases, e.g. for ListView.
  * @return Monospaced font, or nullptr on error.
@@ -341,6 +445,9 @@ void FontHandler::setWindow(HWND hWnd)
 HFONT FontHandler::monospacedFont(void) const
 {
 	RP_D(FontHandler);
+	if (!d->hFontMono) {
+		d->initMonospacedFont();
+	}
 	assert(d->hFontMono != nullptr);
 	return d->hFontMono;
 }
@@ -353,6 +460,9 @@ void FontHandler::addMonoControl(HWND hWnd)
 {
 	RP_D(FontHandler);
 	assert(d->hWnd != nullptr);
+	if (!d->hFontMono) {
+		d->initMonospacedFont();
+	}
 	d->vecMonoControls.emplace_back(hWnd);
 	SetWindowFont(hWnd, d->hFontMono, false);
 }
