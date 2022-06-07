@@ -250,8 +250,7 @@ CBMCart::CBMCart(IRpFile *file)
 	d->isValid = (d->romType > CBMCartPrivate::RomType::Unknown);
 
 	if (!d->isValid) {
-		d->file->unref();
-		d->file = nullptr;
+		UNREF_AND_NULL_NOCHK(d->file);
 	}
 }
 
@@ -404,7 +403,7 @@ int CBMCart::loadFieldData(void)
 	}
 
 	const CBM_CRTHeader *const romHeader = &d->romHeader;
-	d->fields->reserve(1);	// Maximum of 1 field.
+	d->fields->reserve(2);	// Maximum of 2 fields.
 
 	// Title
 	if (romHeader->title[0] != '\0') {
