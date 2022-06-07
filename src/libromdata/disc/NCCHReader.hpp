@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * NCCHReader.hpp: Nintendo 3DS NCCH reader.                               *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -166,6 +166,13 @@ class NCCHReader : public LibRpBase::IPartition
 		 * @return Encryption key verification result.
 		 */
 		LibRpBase::KeyManager::VerifyResult verifyResult(void) const;
+
+		/*
+		 * Are we forcing NoCrypto due to incorrect NCCH flags?
+		 * This happens with some badly-decrypted NCSD images.
+		 * @return True if forcing NoCrypto; false if not.
+		 */
+		bool isForceNoCrypto(void) const;
 
 #ifdef ENABLE_DECRYPTION
 		/**

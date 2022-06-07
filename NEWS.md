@@ -5,6 +5,12 @@
 * Bug fixes:
   * Lua: Fix a crash on Windows where systemName() sometimes returned
     an invalid pointer when using the GUI frontend.
+  * Nintendo3DS:
+    * Fixed NCCH detection for CFAs with an "icon" file but no ".code" file,
+      which is usually the case for DLC CIAs.
+    * Handle badly-decrypted NCSD/CCI images that don't set the NoCrypto flag.
+      * https://github.com/d0k3/GodMode9/commit/98c1b25bb0ebb1e35a7387ee34714d5fcf4b29df
+      * https://github.com/d0k3/GodMode9/issues/575
 
 ## v1.9 (released 2022/05/22)
 

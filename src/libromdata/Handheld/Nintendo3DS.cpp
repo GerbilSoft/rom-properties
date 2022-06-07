@@ -1777,11 +1777,10 @@ int Nintendo3DS::loadFieldData(void)
 	// Is the NCSD header loaded?
 	if (d->headers_loaded & Nintendo3DSPrivate::HEADER_NCSD) {
 		// Display the NCSD header.
+		bool addTID = false;
 		if (haveSeparateSMDHTab) {
 			d->fields->addTab("NCSD");
-			// Add the title ID and product code fields here.
-			// (Content type is listed in the NCSD partition table.)
-			d->addTitleIdAndProductCodeFields(false);
+			addTID = true;
 		} else {
 			d->fields->setTabName(0, "NCSD");
 		}
@@ -1810,6 +1809,21 @@ int Nintendo3DS::loadFieldData(void)
 					err, RomFields::STRF_WARNING);
 				shownWarning = true;
 			}
+		} else if (ncch->isForceNoCrypto()) {
+			// NCSD is decrypted but has incorrect encryption flags.
+			// TODO: Show in the SMDH tab if it's visible?
+			if (!shownWarning) {
+				d->fields->addField_string(C_("RomData", "Warning"),
+					C_("Nintendo3DS", "NCCH encryption flags are incorrect. Use GodMode9 to fix."),
+                                       RomFields::STRF_WARNING);
+				shownWarning = true;
+			}
+		}
+
+		if (addTID) {
+			// Add the title ID and product code fields here.
+			// (Content type is listed in the NCSD partition table.)
+			d->addTitleIdAndProductCodeFields(false);
 		}
 
 		// TODO: Add more fields?
@@ -2005,6 +2019,9 @@ int Nintendo3DS::loadFieldData(void)
 							data_row.emplace_back(s_unknown);
 						}
 					} else {
+						// TODO: Show an error if this should be NoCrypto.
+						// This is detected for the main NCCH in the initial
+						// NCSD check, but not here...
 						data_row.emplace_back(rp_sprintf("%s%s (0x%02X)",
 							(cryptoType.name ? cryptoType.name : s_unknown),
 							(cryptoType.seed ? "+Seed" : ""),

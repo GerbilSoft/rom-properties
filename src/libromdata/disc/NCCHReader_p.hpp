@@ -78,11 +78,14 @@ class NCCHReaderPrivate
 		// Encryption key verification result.
 		LibRpBase::KeyManager::VerifyResult verifyResult;
 
+		// Are we forcing NoCrypto due to incorrect flags?
+		bool forceNoCrypto;
+
 		// Non-NCCH content type.
 		// We won't extract any information from them,
 		// other than the type and the fact that they're
 		// not encrypted.
-		enum class NonNCCHContentType {
+		enum class NonNCCHContentType : uint8_t {
 			Unknown	= 0,
 
 			NDHT,	// Nintendo DS Cart Whitelist
@@ -110,6 +113,21 @@ class NCCHReaderPrivate
 		 * @return 0 on success; non-zero on error.
 		 */
 		int loadExHeader(void);
+
+		/**
+		 * Verify a decrypted ExeFS header.
+		 * This checks for known filenames in the header.
+		 * @param pExefsHeader ExeFS header.
+		 * @return True if valid; false if not.
+		 */
+		static inline bool verifyExefsHeader(const N3DS_ExeFS_Header_t *pExefsHeader)
+		{
+			// Check the first filename.
+			// It should be ".code" for CXIs.
+			// It might be "icon" for CFAs.
+			return (!strcmp(pExefsHeader->files[0].name, ".code") ||
+				!strcmp(pExefsHeader->files[0].name, "icon"));
+		}
 
 #ifdef ENABLE_DECRYPTION
 		// Title ID. Used for AES-CTR initialization.

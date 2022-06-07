@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * NCCHReader.cpp: Nintendo 3DS NCCH reader.                               *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -37,6 +37,7 @@ NCCHReaderPrivate::NCCHReaderPrivate(NCCHReader *q,
 	, pos(0)
 	, headers_loaded(0)
 	, verifyResult(KeyManager::VerifyResult::Unknown)
+	, forceNoCrypto(false)
 	, nonNcchContentType(NonNCCHContentType::Unknown)
 #ifdef ENABLE_DECRYPTION
 	, tid_be(0)
@@ -109,25 +110,24 @@ NCCHReaderPrivate::NCCHReaderPrivate(NCCHReader *q,
 		// Try debug keys instead.
 		verifyResult = N3DSVerifyKeys::loadNCCHKeys(ncch_keys, &ncch_header,
 			N3DS_TICKET_TITLEKEY_ISSUER_DEBUG);
-		if (verifyResult != KeyManager::VerifyResult::OK) {
+		if (verifyResult == KeyManager::VerifyResult::OK) {
+			// Debug keys worked.
+			isDebug = true;
+		} else {
 			// Debug keys didn't work.
-			// Zero out the keys.
+			// NOTE: Some badly-decrypted NCSDs don't set the NoCrypto flag,
+			// so we'll try it as NoCrypto anyway.
 			memset(ncch_keys, 0, sizeof(ncch_keys));
-			q->m_lastError = EIO;
-			closeFileOrDiscReader();
-			return;
+			forceNoCrypto = true;
 		}
-		// Debug keys worked.
-		isDebug = true;
 	}
 #else /* !ENABLE_DECRYPTION */
 	// Decryption is not available, so only NoCrypto is allowed.
 	if (!(ncch_header.hdr.flags[N3DS_NCCH_FLAG_BIT_MASKS] & N3DS_NCCH_BIT_MASK_NoCrypto)) {
 		// Unsupported.
-		verifyResult = KeyManager::VerifyResult::NoSupport;
-		q->m_lastError = EIO;
-		closeFileOrDiscReader();
-		return;
+		// NOTE: Some badly-decrypted NCSDs don't set the NoCrypto flag,
+		// so we'll try it as NoCrypto anyway.
+		forceNoCrypto = true;
 	}
 	// No decryption is required.
 	verifyResult = KeyManager::VerifyResult::OK;
@@ -138,7 +138,8 @@ NCCHReaderPrivate::NCCHReaderPrivate(NCCHReader *q,
 	// non-zero and on a multiple of 16 for AES.
 	// TODO: Verify length.
 	const uint32_t exefs_offset = (le32_to_cpu(ncch_header.hdr.exefs_offset) << media_unit_shift);
-	if (exefs_offset >= 16) {
+	const uint32_t exefs_size = (le32_to_cpu(ncch_header.hdr.exefs_size) << media_unit_shift);
+	if (exefs_offset >= 16 && exefs_size >= sizeof(exefs_header)) {
 		// Read the ExeFS header.
 		size = readFromROM(exefs_offset, &exefs_header, sizeof(exefs_header));
 		if (size != sizeof(exefs_header)) {
@@ -152,171 +153,172 @@ NCCHReaderPrivate::NCCHReaderPrivate(NCCHReader *q,
 	}
 
 #ifdef ENABLE_DECRYPTION
-	if (!(ncch_header.hdr.flags[N3DS_NCCH_FLAG_BIT_MASKS] & N3DS_NCCH_BIT_MASK_NoCrypto)) {
+	if (!(ncch_header.hdr.flags[N3DS_NCCH_FLAG_BIT_MASKS] & N3DS_NCCH_BIT_MASK_NoCrypto) ||
+	     !forceNoCrypto)
+	{
 		// Initialize the AES cipher.
 		// TODO: Check for errors.
 		cipher = AesCipherFactory::create();
 		cipher->setChainingMode(IAesCipher::ChainingMode::CTR);
 		u128_t ctr;
 
+		// FIXME: Verification if ExeFS isn't available.
 		if (headers_loaded & HEADER_EXEFS) {
-			// Decrypt the ExeFS header.
+			// Temporary copy of the ExeFS header for decryption tests.
+			N3DS_ExeFS_Header_t exefs_header_tmp;
+			memcpy(&exefs_header_tmp, &exefs_header, sizeof(exefs_header_tmp));
+
+			// Decrypt the ExeFS header with the current keyset.
 			// ExeFS header uses ncchKey0.
 			cipher->setKey(ncch_keys[0].u8, sizeof(ncch_keys[0].u8));
 			ctr.init_ctr(tid_be, N3DS_NCCH_SECTION_EXEFS, 0);
 			cipher->setIV(ctr.u8, sizeof(ctr.u8));
-			cipher->decrypt(reinterpret_cast<uint8_t*>(&exefs_header), sizeof(exefs_header));
+			cipher->decrypt(reinterpret_cast<uint8_t*>(&exefs_header_tmp), sizeof(exefs_header));
 
 			// For CXI: First file should be ".code".
 			// For CFA: First file should be "icon".
 			// Checking for both just in case there's an exception.
 
-			// Check the first filename.
-			if (strcmp(exefs_header.files[0].name, ".code") != 0 &&
-			    strcmp(exefs_header.files[0].name, "icon") != 0)
-			{
+			// Verify the ExeFS header.
+			if (verifyExefsHeader(&exefs_header_tmp)) {
+				// ExeFS header is correct.
+				memcpy(&exefs_header, &exefs_header_tmp, sizeof(exefs_header));
+			} else {
+				// ExeFS header is incorrect. Possibly an incorrect keyset.
 				if (isDebug) {
 					// We already tried both sets.
 					// Zero out the keys.
+					// NOTE: Some badly-decrypted NCSDs don't set the NoCrypto flag,
+					// so we'll try it as NoCrypto anyway.
 					memset(ncch_keys, 0, sizeof(ncch_keys));
-					q->m_lastError = EIO;
 					delete cipher;
 					cipher = nullptr;
-					closeFileOrDiscReader();
-					return;
-				}
-
-				// Retail keys failed.
-				// Try again with debug keys.
-				// TODO: Consolidate this code.
-				verifyResult = N3DSVerifyKeys::loadNCCHKeys(ncch_keys, &ncch_header,
-					N3DS_TICKET_TITLEKEY_ISSUER_DEBUG);
-				if (verifyResult != KeyManager::VerifyResult::OK) {
-					// Failed to load the keyset.
-					// Zero out the keys.
-					memset(ncch_keys, 0, sizeof(ncch_keys));
-					q->m_lastError = EIO;
-					delete cipher;
-					cipher = nullptr;
-					closeFileOrDiscReader();
-					return;
-				}
-
-				// Reload the ExeFS header.
-				size = readFromROM(exefs_offset, &exefs_header, sizeof(exefs_header));
-				if (size != sizeof(exefs_header)) {
-					// Read error.
-					// NOTE: readFromROM() sets q->m_lastError.
-					delete cipher;
-					cipher = nullptr;
-					closeFileOrDiscReader();
-					return;
-				}
-
-				// Decrypt the ExeFS header.
-				// ExeFS header uses ncchKey0.
-				cipher->setKey(ncch_keys[0].u8, sizeof(ncch_keys[0].u8));
-				ctr.init_ctr(tid_be, N3DS_NCCH_SECTION_EXEFS, 0);
-				cipher->setIV(ctr.u8, sizeof(ctr.u8));
-				cipher->decrypt(reinterpret_cast<uint8_t*>(&exefs_header), sizeof(exefs_header));
-
-				// Check the first filename, again.
-				if (strcmp(exefs_header.files[0].name, ".code") != 0 &&
-				    strcmp(exefs_header.files[0].name, "icon") != 0)
-				{
-					// Still not usable.
-					delete cipher;
-					q->m_lastError = EIO;
-					cipher = nullptr;
-					closeFileOrDiscReader();
-					return;
-				}
-
-				// We're using debug keys.
-				isDebug = true;
-			}
-		}
-
-		// Initialize encrypted section handling.
-		// Reference: https://github.com/profi200/Project_CTR/blob/master/makerom/ncch.c
-		// Encryption details:
-		// - ExHeader: ncchKey0, N3DS_NCCH_SECTION_EXHEADER
-		// - acexDesc (TODO): ncchKey0, N3DS_NCCH_SECTION_EXHEADER
-		// - Logo: Plaintext (SDK5+ only)
-		// - ExeFS:
-		//   - Header, "icon" and "banner": ncchKey0, N3DS_NCCH_SECTION_EXEFS
-		//   - Other files: ncchKey1, N3DS_NCCH_SECTION_EXEFS
-		// - RomFS (TODO): ncchKey1, N3DS_NCCH_SECTION_ROMFS
-
-		// Logo (SDK5+)
-		// NOTE: This is plaintext, but read() doesn't work properly
-		// unless a section is defined. Use N3DS_NCCH_SECTION_PLAIN
-		// to indicate this.
-		const uint32_t logo_region_size = le32_to_cpu(ncch_header.hdr.logo_region_size) << media_unit_shift;
-		if (logo_region_size > 0) {
-			const uint32_t logo_region_offset = le32_to_cpu(ncch_header.hdr.logo_region_offset) << media_unit_shift;
-			encSections.emplace_back(EncSection(
-				logo_region_offset,	// Address within NCCH.
-				logo_region_offset,		// Counter base address.
-				logo_region_size,
-				0, N3DS_NCCH_SECTION_PLAIN));
-		}
-
-		// ExHeader
-		encSections.emplace_back(EncSection(
-			sizeof(N3DS_NCCH_Header_t),	// Address within NCCH.
-			sizeof(N3DS_NCCH_Header_t),	// Counter base address.
-			le32_to_cpu(ncch_header.hdr.exheader_size),
-			0, N3DS_NCCH_SECTION_EXHEADER));
-
-		if (headers_loaded & HEADER_EXEFS) {
-			// ExeFS header
-			encSections.emplace_back(EncSection(
-				exefs_offset,	// Address within NCCH.
-				exefs_offset,	// Counter base address.
-				sizeof(N3DS_ExeFS_Header_t),
-				0, N3DS_NCCH_SECTION_EXEFS));
-
-			// ExeFS files
-			const N3DS_ExeFS_File_Header_t *const hdr_end = &exefs_header.files[ARRAY_SIZE(exefs_header.files)];
-			for (const N3DS_ExeFS_File_Header_t *file_header = &exefs_header.files[0];
-			     file_header < hdr_end; file_header++)
-			{
-				if (file_header->name[0] == 0)
-					continue;	// or break?
-
-				uint8_t keyIdx;
-				if (!strncmp(file_header->name, "icon", sizeof(file_header->name)) ||
-				    !strncmp(file_header->name, "banner", sizeof(file_header->name))) {
-					// Icon and Banner use key 0.
-					keyIdx = 0;
+					forceNoCrypto = true;
 				} else {
-					// All other files use key 1.
-					keyIdx = 1;
-				}
+					// Retail keys failed.
+					// Try again with debug keys.
+					// TODO: Consolidate this code.
+					verifyResult = N3DSVerifyKeys::loadNCCHKeys(ncch_keys, &ncch_header,
+						N3DS_TICKET_TITLEKEY_ISSUER_DEBUG);
+					if (verifyResult != KeyManager::VerifyResult::OK) {
+						// Failed to load the keyset.
+						// Zero out the keys.
+						// NOTE: Some badly-decrypted NCSDs don't set the NoCrypto flag,
+						// so we'll try it as NoCrypto anyway.
+						memset(ncch_keys, 0, sizeof(ncch_keys));
+						delete cipher;
+						cipher = nullptr;
+						forceNoCrypto = true;
+					} else {
+						// Decrypt the ExeFS header with the debug keyset.
+						// ExeFS header uses ncchKey0.
+						memcpy(&exefs_header_tmp, &exefs_header, sizeof(exefs_header_tmp));
+						cipher->setKey(ncch_keys[0].u8, sizeof(ncch_keys[0].u8));
+						ctr.init_ctr(tid_be, N3DS_NCCH_SECTION_EXEFS, 0);
+						cipher->setIV(ctr.u8, sizeof(ctr.u8));
+						cipher->decrypt(reinterpret_cast<uint8_t*>(&exefs_header_tmp), sizeof(exefs_header_tmp));
 
-				encSections.emplace_back(EncSection(
-					exefs_offset + sizeof(exefs_header) +	// Address within NCCH.
-						le32_to_cpu(file_header->offset),
-					exefs_offset,				// Counter base address.
-					le32_to_cpu(file_header->size),
-					keyIdx, N3DS_NCCH_SECTION_EXEFS));
+						// Verify the ExeFS header, again.
+						if (verifyExefsHeader(&exefs_header_tmp)) {
+							// ExeFS header is correct.
+							memcpy(&exefs_header, &exefs_header_tmp, sizeof(exefs_header));
+							isDebug = true;
+						} else {
+							// Still not usable.
+							// NOTE: Some badly-decrypted NCSDs don't set the NoCrypto flag,
+							// so we'll try it as NoCrypto anyway.
+							memset(ncch_keys, 0, sizeof(ncch_keys));
+							delete cipher;
+							cipher = nullptr;
+							forceNoCrypto = true;
+						}
+					}
+				}
 			}
 		}
 
-		// RomFS
-		if (ncch_header.hdr.romfs_size != cpu_to_le32(0)) {
-			const uint32_t romfs_offset = (le32_to_cpu(ncch_header.hdr.romfs_offset) << media_unit_shift);
-			encSections.emplace_back(EncSection(
-				romfs_offset,	// Address within NCCH.
-				romfs_offset,	// Counter base address.
-				(le32_to_cpu(ncch_header.hdr.romfs_size) << media_unit_shift),
-				0, N3DS_NCCH_SECTION_ROMFS));
-		}
+		if (!forceNoCrypto) {
+			// Initialize encrypted section handling.
+			// Reference: https://github.com/profi200/Project_CTR/blob/master/makerom/ncch.c
+			// Encryption details:
+			// - ExHeader: ncchKey0, N3DS_NCCH_SECTION_EXHEADER
+			// - acexDesc (TODO): ncchKey0, N3DS_NCCH_SECTION_EXHEADER
+			// - Logo: Plaintext (SDK5+ only)
+			// - ExeFS:
+			//   - Header, "icon" and "banner": ncchKey0, N3DS_NCCH_SECTION_EXEFS
+			//   - Other files: ncchKey1, N3DS_NCCH_SECTION_EXEFS
+			// - RomFS (TODO): ncchKey1, N3DS_NCCH_SECTION_ROMFS
 
-		// Sort encSections by NCCH-relative address.
-		// TODO: Check for overlap?
-		std::sort(encSections.begin(), encSections.end());
+			// Logo (SDK5+)
+			// NOTE: This is plaintext, but read() doesn't work properly
+			// unless a section is defined. Use N3DS_NCCH_SECTION_PLAIN
+			// to indicate this.
+			const uint32_t logo_region_size = le32_to_cpu(ncch_header.hdr.logo_region_size) << media_unit_shift;
+			if (logo_region_size > 0) {
+				const uint32_t logo_region_offset = le32_to_cpu(ncch_header.hdr.logo_region_offset) << media_unit_shift;
+				encSections.emplace_back(EncSection(
+					logo_region_offset,	// Address within NCCH.
+					logo_region_offset,		// Counter base address.
+					logo_region_size,
+					0, N3DS_NCCH_SECTION_PLAIN));
+			}
+
+			// ExHeader
+			encSections.emplace_back(EncSection(
+				sizeof(N3DS_NCCH_Header_t),	// Address within NCCH.
+				sizeof(N3DS_NCCH_Header_t),	// Counter base address.
+				le32_to_cpu(ncch_header.hdr.exheader_size),
+				0, N3DS_NCCH_SECTION_EXHEADER));
+
+			if (headers_loaded & HEADER_EXEFS) {
+				// ExeFS header
+				encSections.emplace_back(EncSection(
+					exefs_offset,	// Address within NCCH.
+					exefs_offset,	// Counter base address.
+					sizeof(N3DS_ExeFS_Header_t),
+					0, N3DS_NCCH_SECTION_EXEFS));
+
+				// ExeFS files
+				const N3DS_ExeFS_File_Header_t *const hdr_end = &exefs_header.files[ARRAY_SIZE(exefs_header.files)];
+				for (const N3DS_ExeFS_File_Header_t *file_header = &exefs_header.files[0];
+				file_header < hdr_end; file_header++)
+				{
+					if (file_header->name[0] == 0)
+						continue;	// or break?
+
+					uint8_t keyIdx;
+					if (!strncmp(file_header->name, "icon", sizeof(file_header->name)) ||
+					!strncmp(file_header->name, "banner", sizeof(file_header->name))) {
+						// Icon and Banner use key 0.
+						keyIdx = 0;
+					} else {
+						// All other files use key 1.
+						keyIdx = 1;
+					}
+
+					encSections.emplace_back(EncSection(
+						exefs_offset + sizeof(exefs_header) +	// Address within NCCH.
+							le32_to_cpu(file_header->offset),
+						exefs_offset,				// Counter base address.
+						le32_to_cpu(file_header->size),
+						keyIdx, N3DS_NCCH_SECTION_EXEFS));
+				}
+			}
+
+			// RomFS
+			if (ncch_header.hdr.romfs_size != cpu_to_le32(0)) {
+				const uint32_t romfs_offset = (le32_to_cpu(ncch_header.hdr.romfs_offset) << media_unit_shift);
+				encSections.emplace_back(EncSection(
+					romfs_offset,	// Address within NCCH.
+					romfs_offset,	// Counter base address.
+					(le32_to_cpu(ncch_header.hdr.romfs_size) << media_unit_shift),
+					0, N3DS_NCCH_SECTION_ROMFS));
+			}
+
+			// Sort encSections by NCCH-relative address.
+			// TODO: Check for overlap?
+			std::sort(encSections.begin(), encSections.end());
+		}
 	}
 #endif /* ENABLE_DECRYPTION */
 }
@@ -566,7 +568,9 @@ size_t NCCHReader::read(void *ptr, size_t size)
 		size = static_cast<size_t>(d->ncch_length - d->pos);
 	}
 
-	if (d->ncch_header.hdr.flags[N3DS_NCCH_FLAG_BIT_MASKS] & N3DS_NCCH_BIT_MASK_NoCrypto) {
+	if ((d->ncch_header.hdr.flags[N3DS_NCCH_FLAG_BIT_MASKS] & N3DS_NCCH_BIT_MASK_NoCrypto) ||
+	     d->forceNoCrypto)
+	{
 		// No NCCH encryption.
 		// NOTE: readFromROM() sets q->m_lastError, so we
 		// don't need to check if a short read occurred.
@@ -901,6 +905,17 @@ KeyManager::VerifyResult NCCHReader::verifyResult(void) const
 {
 	RP_D(const NCCHReader);
 	return d->verifyResult;
+}
+
+/**
+ * Are we forcing NoCrypto due to incorrect NCCH flags?
+ * This happens with some badly-decrypted NCSD images.
+ * @return True if forcing NoCrypto; false if not.
+ */
+bool NCCHReader::isForceNoCrypto(void) const
+{
+	RP_D(const NCCHReader);
+	return d->forceNoCrypto;
 }
 
 #ifdef ENABLE_DECRYPTION
