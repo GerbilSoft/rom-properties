@@ -163,6 +163,7 @@ NCCHReaderPrivate::NCCHReaderPrivate(NCCHReader *q,
 		u128_t ctr;
 
 		// FIXME: Verification if ExeFS isn't available.
+		do {
 		if (headers_loaded & HEADER_EXEFS) {
 			// Temporary copy of the ExeFS header for decryption tests.
 			N3DS_ExeFS_Header_t exefs_header_tmp;
@@ -183,59 +184,63 @@ NCCHReaderPrivate::NCCHReaderPrivate(NCCHReader *q,
 			if (verifyExefsHeader(&exefs_header_tmp)) {
 				// ExeFS header is correct.
 				memcpy(&exefs_header, &exefs_header_tmp, sizeof(exefs_header));
-			} else {
-				// ExeFS header is incorrect. Possibly an incorrect keyset.
-				if (isDebug) {
-					// We already tried both sets.
-					// Zero out the keys.
-					// NOTE: Some badly-decrypted NCSDs don't set the NoCrypto flag,
-					// so we'll try it as NoCrypto anyway.
-					memset(ncch_keys, 0, sizeof(ncch_keys));
-					delete cipher;
-					cipher = nullptr;
-					forceNoCrypto = true;
-				} else {
-					// Retail keys failed.
-					// Try again with debug keys.
-					// TODO: Consolidate this code.
-					verifyResult = N3DSVerifyKeys::loadNCCHKeys(ncch_keys, &ncch_header,
-						N3DS_TICKET_TITLEKEY_ISSUER_DEBUG);
-					if (verifyResult != KeyManager::VerifyResult::OK) {
-						// Failed to load the keyset.
-						// Zero out the keys.
-						// NOTE: Some badly-decrypted NCSDs don't set the NoCrypto flag,
-						// so we'll try it as NoCrypto anyway.
-						memset(ncch_keys, 0, sizeof(ncch_keys));
-						delete cipher;
-						cipher = nullptr;
-						forceNoCrypto = true;
-					} else {
-						// Decrypt the ExeFS header with the debug keyset.
-						// ExeFS header uses ncchKey0.
-						memcpy(&exefs_header_tmp, &exefs_header, sizeof(exefs_header_tmp));
-						cipher->setKey(ncch_keys[0].u8, sizeof(ncch_keys[0].u8));
-						ctr.init_ctr(tid_be, N3DS_NCCH_SECTION_EXEFS, 0);
-						cipher->setIV(ctr.u8, sizeof(ctr.u8));
-						cipher->decrypt(reinterpret_cast<uint8_t*>(&exefs_header_tmp), sizeof(exefs_header_tmp));
-
-						// Verify the ExeFS header, again.
-						if (verifyExefsHeader(&exefs_header_tmp)) {
-							// ExeFS header is correct.
-							memcpy(&exefs_header, &exefs_header_tmp, sizeof(exefs_header));
-							isDebug = true;
-						} else {
-							// Still not usable.
-							// NOTE: Some badly-decrypted NCSDs don't set the NoCrypto flag,
-							// so we'll try it as NoCrypto anyway.
-							memset(ncch_keys, 0, sizeof(ncch_keys));
-							delete cipher;
-							cipher = nullptr;
-							forceNoCrypto = true;
-						}
-					}
-				}
+				break;
 			}
-		}
+
+			// ExeFS header is incorrect. Possibly an incorrect keyset.
+			if (isDebug) {
+				// We already tried both sets.
+				// Zero out the keys.
+				// NOTE: Some badly-decrypted NCSDs don't set the NoCrypto flag,
+				// so we'll try it as NoCrypto anyway.
+				memset(ncch_keys, 0, sizeof(ncch_keys));
+				delete cipher;
+				cipher = nullptr;
+				forceNoCrypto = true;
+				break;
+			}
+
+			// Retail keys failed.
+			// Try again with debug keys.
+			// TODO: Consolidate this code.
+			verifyResult = N3DSVerifyKeys::loadNCCHKeys(ncch_keys, &ncch_header,
+				N3DS_TICKET_TITLEKEY_ISSUER_DEBUG);
+			if (verifyResult != KeyManager::VerifyResult::OK) {
+				// Failed to load the keyset.
+				// Zero out the keys.
+				// NOTE: Some badly-decrypted NCSDs don't set the NoCrypto flag,
+				// so we'll try it as NoCrypto anyway.
+				memset(ncch_keys, 0, sizeof(ncch_keys));
+				delete cipher;
+				cipher = nullptr;
+				forceNoCrypto = true;
+				break;
+			}
+
+			// Decrypt the ExeFS header with the debug keyset.
+			// ExeFS header uses ncchKey0.
+			memcpy(&exefs_header_tmp, &exefs_header, sizeof(exefs_header_tmp));
+			cipher->setKey(ncch_keys[0].u8, sizeof(ncch_keys[0].u8));
+			ctr.init_ctr(tid_be, N3DS_NCCH_SECTION_EXEFS, 0);
+			cipher->setIV(ctr.u8, sizeof(ctr.u8));
+			cipher->decrypt(reinterpret_cast<uint8_t*>(&exefs_header_tmp), sizeof(exefs_header_tmp));
+
+			// Verify the ExeFS header, again.
+			if (verifyExefsHeader(&exefs_header_tmp)) {
+				// ExeFS header is correct.
+				memcpy(&exefs_header, &exefs_header_tmp, sizeof(exefs_header));
+				isDebug = true;
+				break;
+			}
+
+			// Still not usable.
+			// NOTE: Some badly-decrypted NCSDs don't set the NoCrypto flag,
+			// so we'll try it as NoCrypto anyway.
+			memset(ncch_keys, 0, sizeof(ncch_keys));
+			delete cipher;
+			cipher = nullptr;
+			forceNoCrypto = true;
+		} } while (0);
 
 		if (!forceNoCrypto) {
 			// Initialize encrypted section handling.
