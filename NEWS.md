@@ -11,6 +11,9 @@
     * Handle badly-decrypted NCSD/CCI images that don't set the NoCrypto flag.
       * https://github.com/d0k3/GodMode9/commit/98c1b25bb0ebb1e35a7387ee34714d5fcf4b29df
       * https://github.com/d0k3/GodMode9/issues/575
+  * N64:
+    * OS versions are major.minor, e.g. 2.0, not 20.
+      * Fixes #339, reported by @slp32.
 
 ## v1.9 (released 2022/05/22)
 
