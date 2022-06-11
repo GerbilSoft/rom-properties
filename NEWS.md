@@ -12,7 +12,8 @@
       * https://github.com/d0k3/GodMode9/commit/98c1b25bb0ebb1e35a7387ee34714d5fcf4b29df
       * https://github.com/d0k3/GodMode9/issues/575
   * N64:
-    * OS versions are major.minor, e.g. 2.0, not 20.
+    * OS versions are major.minor, e.g. 2.0, not 20. In addition, there should
+      not be a space between "OS" and the number, e.g. "OS2.0K".
       * Fixes #339, reported by @slp32.
     * Don't check the clock rate when checking the magic number.
       * Fixes detection of e.g. Star Fox 64 and Cruis'n USA, which have a

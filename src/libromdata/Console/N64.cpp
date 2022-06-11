@@ -299,7 +299,7 @@ int N64::loadFieldData(void)
 	    romHeader->os_version[1] == 0x00 &&
 	    ISALPHA(romHeader->os_version[3]))
 	{
-		snprintf(buf, sizeof(buf), "OS %u.%u%c",
+		snprintf(buf, sizeof(buf), "OS%u.%u%c",
 			romHeader->os_version[2] / 10,
 			romHeader->os_version[2] % 10,
 			romHeader->os_version[3]);
