@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * N64.cpp: Nintendo 64 ROM image reader.                                  *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -200,13 +200,13 @@ int N64::isRomSupported_static(const DetectInfo *info)
 	// NOTE: This technically isn't a "magic number",
 	// but it appears to be the same for all N64 ROMs.
 	N64Private::RomType romType = N64Private::RomType::Unknown;
-	if (romHeader->magic64 == cpu_to_be64(N64_Z64_MAGIC)) {
+	if ((romHeader->magic64 & cpu_to_be64(N64_Z64_MAGIC_MASK)) == cpu_to_be64(N64_Z64_MAGIC)) {
 		romType = N64Private::RomType::Z64;
-	} else if (romHeader->magic64 == cpu_to_be64(N64_V64_MAGIC)) {
+	} else if ((romHeader->magic64 & cpu_to_be64(N64_V64_MAGIC_MASK)) == cpu_to_be64(N64_V64_MAGIC)) {
 		romType = N64Private::RomType::V64;
-	} else if (romHeader->magic64 == cpu_to_be64(N64_SWAP2_MAGIC)) {
+	} else if ((romHeader->magic64 & cpu_to_be64(N64_SWAP2_MAGIC_MASK)) == cpu_to_be64(N64_SWAP2_MAGIC)) {
 		romType = N64Private::RomType::SWAP2;
-	} else if (romHeader->magic64 == cpu_to_be64(N64_LE32_MAGIC)) {
+	} else if ((romHeader->magic64 & cpu_to_be64(N64_LE32_MAGIC_MASK)) == cpu_to_be64(N64_LE32_MAGIC)) {
 		romType = N64Private::RomType::LE32;
 	}
 

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * n64_structs.h: Nintendo 64 data structures.                             *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -26,10 +26,17 @@ extern "C" {
  * All fields are in big-endian.
  * NOTE: Strings are NOT null-terminated!
  */
-#define N64_Z64_MAGIC   0x803712400000000FULL
-#define N64_V64_MAGIC   0x3780401200000F00ULL
-#define N64_SWAP2_MAGIC 0x12408037000F0000ULL
-#define N64_LE32_MAGIC  0x401237800F000000ULL
+// NOTE: The clock rate can be different from the default,
+// so we're checking everything *except* the clockrate.
+// (The low nybble of the clockrate value is always 0xF.)
+#define N64_Z64_MAGIC		0x803712400000000FULL
+#define N64_Z64_MAGIC_MASK	0xFFFFFFFF0000000FULL
+#define N64_V64_MAGIC		0x3780401200000F00ULL
+#define N64_V64_MAGIC_MASK	0xFFFFFFFF00000F00ULL
+#define N64_SWAP2_MAGIC		0x12408037000F0000ULL
+#define N64_SWAP2_MAGIC_MASK	0xFFFFFFFF000F0000ULL
+#define N64_LE32_MAGIC		0x401237800F000000ULL
+#define N64_LE32_MAGIC_MASK	0xFFFFFFFF0F000000ULL
 typedef union _N64_RomHeader {
 	struct {
 		union {

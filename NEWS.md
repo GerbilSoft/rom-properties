@@ -14,6 +14,10 @@
   * N64:
     * OS versions are major.minor, e.g. 2.0, not 20.
       * Fixes #339, reported by @slp32.
+    * Don't check the clock rate when checking the magic number.
+      * Fixes detection of e.g. Star Fox 64 and Cruis'n USA, which have a
+        value set for clock rate instead of using the system default.
+      * Fixes #340, reported by @slp32.
 
 ## v1.9 (released 2022/05/22)
 
