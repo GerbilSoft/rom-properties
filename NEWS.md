@@ -18,6 +18,7 @@
       * Fixes detection of e.g. Star Fox 64 and Cruis'n USA, which have a
         value set for clock rate instead of using the system default.
       * Fixes #340, reported by @slp32.
+    * Display the ROM header clock rate. If 0, "default" will be shown.
 
 ## v1.9 (released 2022/05/22)
 

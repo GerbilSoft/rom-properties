@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * TextFuncs.hpp: Text encoding functions.                                 *
  *                                                                         *
- * Copyright (c) 2009-2020 by David Korth.                                 *
+ * Copyright (c) 2009-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -714,6 +714,13 @@ std::string formatFileSize(off64_t fileSize);
  * @return Formatted file size.
  */
 std::string formatFileSizeKiB(unsigned int size);
+
+/**
+ * Format a frequency.
+ * @param frequency Frequency.
+ * @return Formatted frequency.
+ */
+std::string formatFrequency(uint32_t frequency);
 
 /**
  * Remove trailing spaces from a string.

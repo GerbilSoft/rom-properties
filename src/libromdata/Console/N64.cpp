@@ -165,11 +165,13 @@ N64::N64(IRpFile *file)
 	d->isValid = true;
 
 	// Byteswap the header from Z64 format.
+#if SYS_BYTEORDER != SYS_BIG_ENDIAN
 	d->romHeader.init_pi	= be32_to_cpu(d->romHeader.init_pi);
 	d->romHeader.clockrate	= be32_to_cpu(d->romHeader.clockrate);
 	d->romHeader.entrypoint	= be32_to_cpu(d->romHeader.entrypoint);
 	d->romHeader.crc[0]     = be32_to_cpu(d->romHeader.crc[0]);
 	d->romHeader.crc[1]     = be32_to_cpu(d->romHeader.crc[1]);
+#endif /* SYS_BYTEORDER != SYS_BIG_ENDIAN */
 }
 
 /** ROM detection functions. **/
@@ -262,7 +264,7 @@ int N64::loadFieldData(void)
 	// ROM file header is read and byteswapped in the constructor.
 	// TODO: Indicate the byteswapping format?
 	const N64_RomHeader *const romHeader = &d->romHeader;
-	d->fields->reserve(6);	// Maximum of 6 fields.
+	d->fields->reserve(7);	// Maximum of 7 fields.
 
 	// Title.
 	// TODO: Space elimination.
@@ -307,6 +309,18 @@ int N64::loadFieldData(void)
 		d->fields->addField_string_hexdump(os_version_title,
 			romHeader->os_version, sizeof(romHeader->os_version),
 			RomFields::STRF_MONOSPACE);
+	}
+
+	// Clock rate.
+	// NOTE: Lower 0xF is masked.
+	const char *clockrate_title = C_("N64", "Clock Rate");
+	const uint32_t clockrate = (romHeader->clockrate & ~0xFU);
+	if (clockrate == 0) {
+		d->fields->addField_string(clockrate_title,
+			C_("N64|ClockRate", "0 (default)"));
+	} else {
+		d->fields->addField_string(clockrate_title,
+			formatFrequency(clockrate));
 	}
 
 	// CRCs.

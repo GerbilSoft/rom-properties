@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * TextFuncs.cpp: Text encoding functions.                                 *
  *                                                                         *
- * Copyright (c) 2009-2020 by David Korth.                                 *
+ * Copyright (c) 2009-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -286,9 +286,10 @@ std::string rp_vsprintf_p(const char *fmt, va_list ap)
 
 /** Other useful text functions **/
 
-static inline int calc_frac_part(off64_t size, off64_t mask)
+template<typename T>
+static inline int calc_frac_part(T val, T mask)
 {
-	float f = static_cast<float>(size & (mask - 1)) / static_cast<float>(mask);
+	float f = static_cast<float>(val & (mask - 1)) / static_cast<float>(mask);
 	int frac_part = static_cast<int>(f * 1000.0f);
 
 	// MSVC added round() and roundf() in MSVC 2013.
@@ -326,32 +327,32 @@ string formatFileSize(off64_t size)
 		// tr: Kilobytes
 		suffix = C_("TextFuncs|FileSize", "KiB");
 		whole_part = static_cast<int>(size >> 10);
-		frac_part = calc_frac_part(size, (1LL << 10));
+		frac_part = calc_frac_part<off_t>(size, (1LL << 10));
 	} else if (size < (2LL << 30)) {
 		// tr: Megabytes
 		suffix = C_("TextFuncs|FileSize", "MiB");
 		whole_part = static_cast<int>(size >> 20);
-		frac_part = calc_frac_part(size, (1LL << 20));
+		frac_part = calc_frac_part<off_t>(size, (1LL << 20));
 	} else if (size < (2LL << 40)) {
 		// tr: Gigabytes
 		suffix = C_("TextFuncs|FileSize", "GiB");
 		whole_part = static_cast<int>(size >> 30);
-		frac_part = calc_frac_part(size, (1LL << 30));
+		frac_part = calc_frac_part<off_t>(size, (1LL << 30));
 	} else if (size < (2LL << 50)) {
 		// tr: Terabytes
 		suffix = C_("TextFuncs|FileSize", "TiB");
 		whole_part = static_cast<int>(size >> 40);
-		frac_part = calc_frac_part(size, (1LL << 40));
+		frac_part = calc_frac_part<off_t>(size, (1LL << 40));
 	} else if (size < (2LL << 60)) {
 		// tr: Petabytes
 		suffix = C_("TextFuncs|FileSize", "PiB");
 		whole_part = static_cast<int>(size >> 50);
-		frac_part = calc_frac_part(size, (1LL << 50));
+		frac_part = calc_frac_part<off_t>(size, (1LL << 50));
 	} else /*if (size < (2LL << 70))*/ {
 		// tr: Exabytes
 		suffix = C_("TextFuncs|FileSize", "EiB");
 		whole_part = static_cast<int>(size >> 60);
-		frac_part = calc_frac_part(size, (1LL << 60));
+		frac_part = calc_frac_part<off_t>(size, (1LL << 60));
 	}
 
 	// Localize the whole part.
@@ -419,6 +420,88 @@ string formatFileSize(off64_t size)
 std::string formatFileSizeKiB(unsigned int size)
 {
 	return rp_sprintf("%u %s", (size / 1024), C_("TextFuncs|FileSize", "KiB"));
+}
+
+/**
+ * Format a frequency.
+ * @param frequency Frequency.
+ * @return Formatted frequency.
+ */
+std::string formatFrequency(uint32_t frequency)
+{
+	const char *suffix;
+	// frac_part is always 0 to 100.
+	// If whole_part >= 10, frac_part is divided by 10.
+	int whole_part, frac_part;
+
+	// TODO: Optimize this?
+	if (frequency < (2*1000)) {
+		// tr: Hertz (< 1,000)
+		suffix = C_("TextFuncs|Frequency", "Hz");
+		whole_part = frequency;
+		frac_part = 0;
+	} else if (frequency < (2*1000*1000)) {
+		// tr: Kilohertz
+		suffix = C_("TextFuncs|Frequency", "kHz");
+		whole_part = frequency / 1000;
+		frac_part = calc_frac_part<uint32_t>(frequency, 1000);
+	} else if (frequency < (2*1000*1000*1000)) {
+		// tr: Megahertz
+		suffix = C_("TextFuncs|Frequency", "MHz");
+		whole_part = frequency / (1000*1000);
+		frac_part = calc_frac_part<uint32_t>(frequency, 1000*1000);
+	} else /*if (frequency < (2*1000*1000*1000*1000))*/ {
+		// tr: Gigahertz
+		suffix = C_("TextFuncs|Frequency", "GHz");
+		whole_part = frequency / (1000*1000*1000);
+		frac_part = calc_frac_part<uint32_t>(frequency, 1000*1000*1000);
+	}
+
+	// Localize the whole part.
+	ostringstream s_value;
+	s_value << whole_part;
+
+	if (frequency >= (2*1000)) {
+		// Fractional part.
+		const int frac_digits = 2;
+
+		// Get the localized decimal point.
+#if defined(_WIN32)
+		// Use localeconv(). (Windows: Convert from UTF-16 to UTF-8.)
+#  if defined(HAVE_STRUCT_LCONV_WCHAR_T)
+		// MSVCRT: `struct lconv` has wchar_t fields.
+		s_value << utf16_to_utf8(
+			reinterpret_cast<const char16_t*>(localeconv()->_W_decimal_point), -1);
+#  else /* !HAVE_STRUCT_LCONV_WCHAR_T */
+		// MinGW v5,v6: `struct lconv` does not have wchar_t fields.
+		// NOTE: The `char` fields are ANSI.
+		s_value << ansi_to_utf8(localeconv()->decimal_point, -1);
+#  endif /* HAVE_STRUCT_LCONV_WCHAR_T */
+#elif defined(HAVE_NL_LANGINFO)
+		// Use nl_langinfo().
+		// Reference: https://www.gnu.org/software/libc/manual/html_node/The-Elegant-and-Fast-Way.html
+		// NOTE: RADIXCHAR is the portable version of DECIMAL_POINT.
+		s_value << nl_langinfo(RADIXCHAR);
+#else
+		// Use localeconv(). (Assuming UTF-8)
+		s_value << localeconv()->decimal_point;
+#endif
+
+		// Append the fractional part using the required number of digits.
+		s_value << std::setw(frac_digits) << std::setfill('0') << frac_part;
+	}
+
+	if (suffix) {
+		// tr: %1$s == localized value, %2$s == suffix (e.g. MHz)
+		return rp_sprintf_p(C_("TextFuncs|Frequency", "%1$s %2$s"),
+			s_value.str().c_str(), suffix);
+	} else {
+		return s_value.str();
+	}
+
+	// Should not get here...
+	assert(!"Invalid code path.");
+	return "QUACK";
 }
 
 /**
