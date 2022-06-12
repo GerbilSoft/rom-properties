@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * Xbox360_XEX.cpp: Microsoft Xbox 360 executable reader.                  *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -1280,16 +1280,13 @@ const Xbox360_XDBF *Xbox360_XEX_Private::initXDBF(void)
 		if (fileFormatInfo.compression_type == XEX2_COMPRESSION_TYPE_BASIC) {
 			// File has zero padding removed.
 			// Determine the actual physical address.
-			const auto basicZDataSegments_cend = basicZDataSegments.cend();
-			for (auto iter = basicZDataSegments.cbegin();
-			     iter != basicZDataSegments_cend; ++iter)
-			{
-				if (xdbf_physaddr >= iter->vaddr &&
-				    xdbf_physaddr < (iter->vaddr + iter->length))
+			for (auto &&p : basicZDataSegments) {
+				if (xdbf_physaddr >= p.vaddr &&
+				    xdbf_physaddr < (p.vaddr + p.length))
 				{
 					// Found the correct segment.
 					// Adjust the physical address.
-					xdbf_physaddr -= (iter->vaddr - iter->physaddr);
+					xdbf_physaddr -= (p.vaddr - p.physaddr);
 					break;
 				}
 			}

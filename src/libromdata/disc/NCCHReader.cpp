@@ -284,16 +284,14 @@ NCCHReaderPrivate::NCCHReaderPrivate(NCCHReader *q,
 					0, N3DS_NCCH_SECTION_EXEFS));
 
 				// ExeFS files
-				const N3DS_ExeFS_File_Header_t *const hdr_end = &exefs_header.files[ARRAY_SIZE(exefs_header.files)];
-				for (const N3DS_ExeFS_File_Header_t *file_header = &exefs_header.files[0];
-				file_header < hdr_end; file_header++)
-				{
-					if (file_header->name[0] == 0)
+				for (auto &&p : exefs_header.files) {
+					if (p.name[0] == 0)
 						continue;	// or break?
 
 					uint8_t keyIdx;
-					if (!strncmp(file_header->name, "icon", sizeof(file_header->name)) ||
-					!strncmp(file_header->name, "banner", sizeof(file_header->name))) {
+					if (!strncmp(p.name, "icon", sizeof(p.name)) ||
+					    !strncmp(p.name, "banner", sizeof(p.name)))
+					{
 						// Icon and Banner use key 0.
 						keyIdx = 0;
 					} else {
@@ -303,9 +301,9 @@ NCCHReaderPrivate::NCCHReaderPrivate(NCCHReader *q,
 
 					encSections.emplace_back(EncSection(
 						exefs_offset + sizeof(exefs_header) +	// Address within NCCH.
-							le32_to_cpu(file_header->offset),
+							le32_to_cpu(p.offset),
 						exefs_offset,				// Counter base address.
-						le32_to_cpu(file_header->size),
+						le32_to_cpu(p.size),
 						keyIdx, N3DS_NCCH_SECTION_EXEFS));
 				}
 			}
@@ -1025,17 +1023,15 @@ IRpFile *NCCHReader::open(int section, const char *filename)
 		return nullptr;
 	}
 
-	bool found = false;
-	const N3DS_ExeFS_File_Header_t *file_header;
-	const N3DS_ExeFS_File_Header_t *const hdr_end = &exefs_header->files[ARRAY_SIZE(exefs_header->files)];
-	for (file_header = &exefs_header->files[0]; file_header < hdr_end; file_header++) {
-		if (!strncmp(file_header->name, filename, sizeof(file_header->name))) {
+	const N3DS_ExeFS_File_Header_t *file_header = nullptr;
+	for (auto &&p : exefs_header->files) {
+		if (!strncmp(p.name, filename, sizeof(p.name))) {
 			// Found the file.
-			found = true;
+			file_header = &p;
 			break;
 		}
 	}
-	if (!found) {
+	if (!file_header) {
 		// File not found.
 		m_lastError = ENOENT;
 		return nullptr;

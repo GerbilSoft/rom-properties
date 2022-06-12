@@ -34,11 +34,11 @@ void DragImageTreeView::startDrag(Qt::DropActions supportedActions)
 	// NOTE: Each column is technically considered an item.
 	// Find the first item with a valid RpImageRole.
 	QModelIndexList items;
-	for (auto iter = indexes.begin(); iter != indexes.end(); ++iter) {
-		void *img = iter->data(RpImageRole).value<void*>();
+	for (auto &&p : indexes) {
+		void *img = p.data(RpImageRole).value<void*>();
 		if (img != nullptr) {
 			// Index has a valid image.
-			items.append(*iter);
+			items.append(p);
 		}
 	}
 
@@ -49,9 +49,7 @@ void DragImageTreeView::startDrag(Qt::DropActions supportedActions)
 	QMimeData *const mimeData = new QMimeData;
 	QIcon dragIcon;
 	bool hasOne = false;
-	const auto items_end = items.end();
-	for (auto iter = items.begin(); iter != items_end; ++iter) {
-		const QModelIndex &index = *iter;
+	for (auto &&index : items) {
 		const rp_image *const img = static_cast<const rp_image*>(index.data(RpImageRole).value<void*>());
 		if (!img)
 			continue;

@@ -132,7 +132,7 @@ KhronosKTX2Private::KhronosKTX2Private(KhronosKTX2 *q, IRpFile *file)
 
 KhronosKTX2Private::~KhronosKTX2Private()
 {
-	for (rp_image *img :mipmaps) {
+	for (rp_image *img : mipmaps) {
 		UNREF(img);
 	}
 }

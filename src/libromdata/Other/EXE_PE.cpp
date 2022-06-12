@@ -110,12 +110,11 @@ uint32_t EXEPrivate::pe_vaddr_to_paddr(uint32_t vaddr, uint32_t size)
 		}
 	}
 
-	const auto pe_sections_cend = pe_sections.cend();
-	for (auto iter = pe_sections.cbegin(); iter != pe_sections_cend; ++iter) {
-		if (iter->VirtualAddress <= vaddr) {
-			if ((iter->VirtualAddress + iter->SizeOfRawData) >= (vaddr+size)) {
+	for (auto &&p : pe_sections) {
+		if (p.VirtualAddress <= vaddr) {
+			if ((p.VirtualAddress + p.SizeOfRawData) >= (vaddr+size)) {
 				// Found the section. Adjust the address.
-				return (vaddr - iter->VirtualAddress) + iter->PointerToRawData;
+				return (vaddr - p.VirtualAddress) + p.PointerToRawData;
 			}
 		}
 	}

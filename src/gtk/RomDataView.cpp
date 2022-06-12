@@ -1438,12 +1438,9 @@ rom_data_view_update_multi(RomDataView *page, uint32_t user_lc)
 	set<uint32_t> set_lc;
 
 	// RFT_STRING_MULTI
-	const auto vecStringMulti_cend = cxx->vecStringMulti.cend();
-	for (auto iter = cxx->vecStringMulti.cbegin();
-	     iter != vecStringMulti_cend; ++iter)
-	{
-		GtkWidget *const lblString = iter->first;
-		const RomFields::Field *const pField = iter->second;
+	for (auto &&vsm : cxx->vecStringMulti) {
+		GtkWidget *const lblString = vsm.first;
+		const RomFields::Field *const pField = vsm.second;
 		const auto *const pStr_multi = pField->data.str_multi;
 		assert(pStr_multi != nullptr);
 		assert(!pStr_multi->empty());
@@ -1455,11 +1452,8 @@ rom_data_view_update_multi(RomDataView *page, uint32_t user_lc)
 		if (!page->cboLanguage) {
 			// Need to add all supported languages.
 			// TODO: Do we need to do this for all of them, or just one?
-			const auto pStr_multi_cend = pStr_multi->cend();
-			for (auto iter_sm = pStr_multi->cbegin();
-			     iter_sm != pStr_multi_cend; ++iter_sm)
-			{
-				set_lc.emplace(iter_sm->first);
+			for (auto &&psm : *pStr_multi) {
+				set_lc.emplace(psm.first);
 			}
 		}
 
@@ -1470,12 +1464,9 @@ rom_data_view_update_multi(RomDataView *page, uint32_t user_lc)
 	}
 
 	// RFT_LISTDATA_MULTI
-	const auto vecListDataMulti_cend = cxx->vecListDataMulti.cend();
-	for (auto iter = cxx->vecListDataMulti.cbegin();
-	     iter != vecListDataMulti_cend; ++iter)
-	{
-		GtkListStore *const listStore = iter->listStore;
-		const RomFields::Field *const pField = iter->field;
+	for (auto &&vldm : cxx->vecListDataMulti) {
+		GtkListStore *const listStore = vldm.listStore;
+		const RomFields::Field *const pField = vldm.field;
 		const auto *const pListData_multi = pField->data.list_data.data.multi;
 		assert(pListData_multi != nullptr);
 		assert(!pListData_multi->empty());
@@ -1487,11 +1478,8 @@ rom_data_view_update_multi(RomDataView *page, uint32_t user_lc)
 		if (!page->cboLanguage) {
 			// Need to add all supported languages.
 			// TODO: Do we need to do this for all of them, or just one?
-			const auto pListData_multi_cend = pListData_multi->cend();
-			for (auto iter_sm = pListData_multi->cbegin();
-			     iter_sm != pListData_multi_cend; ++iter_sm)
-			{
-				set_lc.emplace(iter_sm->first);
+			for (auto &&pldm : *pListData_multi) {
+				set_lc.emplace(pldm.first);
 			}
 		}
 
@@ -1535,7 +1523,7 @@ rom_data_view_update_multi(RomDataView *page, uint32_t user_lc)
 			// Resize the columns to fit the contents.
 			// NOTE: Only done on first load.
 			if (!page->cboLanguage) {
-				gtk_tree_view_columns_autosize(GTK_TREE_VIEW(iter->treeView));
+				gtk_tree_view_columns_autosize(GTK_TREE_VIEW(vldm.treeView));
 			}
 		}
 	}

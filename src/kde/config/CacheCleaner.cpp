@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE)                              *
  * CacheCleaner.cpp: Cache cleaner object for CacheTab.                    *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -232,11 +232,10 @@ void CacheCleaner::run(void)
 	unsigned int count = 0;
 	unsigned int dirErrs = 0, fileErrs = 0;
 	bool hasErrors = false;
-	const auto rlist_cend = rlist.cend();
-	for (auto iter = rlist.cbegin(); iter != rlist_cend; ++iter) {
-		if (iter->second == DT_DIR) {
+	for (auto &&p : rlist) {
+		if (p.second == DT_DIR) {
 			// Remove the directory.
-			int ret = rmdir(iter->first.c_str());
+			int ret = rmdir(p.first.c_str());
 			if (ret != 0) {
 				dirErrs++;
 				hasErrors = true;
@@ -244,7 +243,7 @@ void CacheCleaner::run(void)
 		} else {
 			// Delete the file.
 			// TODO: Does the parent directory mode need to be changed to writable?
-			int ret = unlink(iter->first.c_str());
+			int ret = unlink(p.first.c_str());
 			if (ret != 0) {
 				fileErrs++;
 				hasErrors = true;

@@ -3,7 +3,7 @@
  * rpcli.cpp: Command-line interface for properties.                       *
  *                                                                         *
  * Copyright (c) 2016-2018 by Egor.                                        *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -91,10 +91,10 @@ DELAYLOAD_TEST_FUNCTION_IMPL1(textdomain, nullptr);
 
 struct ExtractParam {
 	const char* filename;	// Target filename. Can be null due to argv[argc]
-	int image_type;		// Image Type. -1 = iconAnimData, MUST be between -1 and IMG_INT_MAX
+	int imageType;		// Image Type. -1 = iconAnimData, MUST be between -1 and IMG_INT_MAX
 
-	ExtractParam(const char *filename, int image_type)
-		: filename(filename), image_type(image_type) { }
+	ExtractParam(const char *filename, int imageType)
+		: filename(filename), imageType(imageType) { }
 };
 
 /**
@@ -104,48 +104,47 @@ struct ExtractParam {
 */
 static void ExtractImages(const RomData *romData, vector<ExtractParam>& extract) {
 	int supported = romData->supportedImageTypes();
-	const auto extract_cend = extract.cend();
-	for (auto it = extract.cbegin(); it != extract_cend; ++it) {
-		if (!it->filename) continue;
+	for (auto &&p : extract) {
+		if (!p.filename) continue;
 		bool found = false;
 		
-		if (it->image_type >= 0 && supported & (1U << it->image_type)) {
+		if (p.imageType >= 0 && supported & (1U << p.imageType)) {
 			// normal image
-			auto image = romData->image((RomData::ImageType)it->image_type);
+			const RomData::ImageType imageType =
+				static_cast<RomData::ImageType>(p.imageType);
+			auto image = romData->image(imageType);
 			if (image && image->isValid()) {
 				found = true;
 				cerr << "-- " <<
 					// tr: %1$s == image type name, %2$s == output filename
 					rp_sprintf_p(C_("rpcli", "Extracting %1$s into '%2$s'"),
-						RomData::getImageTypeName((RomData::ImageType)it->image_type),
-						it->filename) << endl;
-				int errcode = RpPng::save(it->filename, image);
+						RomData::getImageTypeName(imageType),
+						p.filename) << endl;
+				int errcode = RpPng::save(p.filename, image);
 				if (errcode != 0) {
 					// tr: %1$s == filename, %2%s == error message
 					cerr << rp_sprintf_p(C_("rpcli", "Couldn't create file '%1$s': %2$s"),
-						it->filename, strerror(-errcode)) << endl;
+						p.filename, strerror(-errcode)) << endl;
 				} else {
 					cerr << "   " << C_("rpcli", "Done") << endl;
 				}
 			}
-		}
-
-		else if (it->image_type == -1) {
+		} else if (p.imageType == -1) {
 			// iconAnimData image
 			auto iconAnimData = romData->iconAnimData();
 			if (iconAnimData && iconAnimData->count != 0 && iconAnimData->seq_count != 0) {
 				found = true;
-				cerr << "-- " << rp_sprintf(C_("rpcli", "Extracting animated icon into '%s'"), it->filename) << endl;
-				int errcode = RpPng::save(it->filename, iconAnimData);
+				cerr << "-- " << rp_sprintf(C_("rpcli", "Extracting animated icon into '%s'"), p.filename) << endl;
+				int errcode = RpPng::save(p.filename, iconAnimData);
 				if (errcode == -ENOTSUP) {
 					cerr << "   " << C_("rpcli", "APNG not supported, extracting only the first frame") << endl;
 					// falling back to outputting the first frame
-					errcode = RpPng::save(it->filename, iconAnimData->frames[iconAnimData->seq_index[0]]);
+					errcode = RpPng::save(p.filename, iconAnimData->frames[iconAnimData->seq_index[0]]);
 				}
 				if (errcode != 0) {
 					cerr << "   " <<
 						rp_sprintf_p(C_("rpcli", "Couldn't create file '%1$s': %2$s"),
-							it->filename, strerror(-errcode)) << endl;
+							p.filename, strerror(-errcode)) << endl;
 				} else {
 					cerr << "   " << C_("rpcli", "Done") << endl;
 				}
@@ -153,12 +152,14 @@ static void ExtractImages(const RomData *romData, vector<ExtractParam>& extract)
 		}
 		if (!found) {
 			// TODO: Return an error code?
-			if (it->image_type == -1) {
+			if (p.imageType == -1) {
 				cerr << "-- " << C_("rpcli", "Animated icon not found") << endl;
 			} else {
+				const RomData::ImageType imageType =
+					static_cast<RomData::ImageType>(p.imageType);
 				cerr << "-- " <<
 					rp_sprintf(C_("rpcli", "Image '%s' not found"),
-						RomData::getImageTypeName((RomData::ImageType)it->image_type)) << endl;
+						RomData::getImageTypeName(imageType)) << endl;
 			}
 		}
 	}

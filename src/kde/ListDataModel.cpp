@@ -180,9 +180,7 @@ void ListDataModelPrivate::updateIconPixmaps(void)
 	icons.clear();
 	icons.reserve(icons_rp.size());
 
-	const auto icons_rp_cend = icons_rp.cend();
-	for (auto iter = icons_rp.cbegin(); iter != icons_rp_cend; ++iter) {
-		const rp_image *const img = *iter;
+	for (auto &&img : icons_rp) {
 		if (!img) {
 			icons.emplace_back(QPixmap());
 			continue;
@@ -220,9 +218,7 @@ vector<QString> ListDataModelPrivate::convertListDataToVector(const RomFields::L
 	const int rowCount = list_data->size();
 
 	data.reserve(columnCount * rowCount);
-	const auto list_data_cend = list_data->cend();
-	for (auto iter = list_data->cbegin(); iter != list_data_cend; ++iter) {
-		const vector<string> &data_row = *iter;
+	for (auto &&data_row : *list_data) {
 		if (hasCheckboxes && data_row.empty()) {
 			// Skip this row.
 			continue;
@@ -231,9 +227,13 @@ vector<QString> ListDataModelPrivate::convertListDataToVector(const RomFields::L
 		// Add item text.
 		assert((int)data_row.size() == columnCount);
 		int cols = columnCount;
-		const auto data_row_cend = data_row.cend();
-		for (auto iter = data_row.cbegin(); iter != data_row_cend && cols > 0; ++iter, cols--) {
-			data.emplace_back(U82Q(*iter));
+		for (auto &&u8_str : data_row) {
+			data.emplace_back(U82Q(u8_str));
+
+			cols--;
+			if (cols <= 0) {
+				break;
+			}
 		}
 		// If there's fewer columns in the data row than we have allocated,
 		// add blank QStrings.
@@ -545,9 +545,8 @@ void ListDataModel::setField(const RomFields::Field *pField)
 		d->headers.clear();
 		d->headers.reserve(columnCount);
 
-		const auto names_cend = listDataDesc.names->cend();
-		for (auto iter = listDataDesc.names->cbegin(); iter != names_cend; ++iter) {
-			d->headers.emplace_back(U82Q(*iter));
+		for (auto &&u8_str : *(listDataDesc.names)) {
+			d->headers.emplace_back(U82Q(u8_str));
 		}
 	} else {
 		// No column headers.
@@ -577,15 +576,13 @@ void ListDataModel::setField(const RomFields::Field *pField)
 		// RFT_LISTDATA_MULTI: Multiple languages.
 		const auto *const multi = pField->data.list_data.data.multi;
 		// NOTE: Assuming all languages have the same number of rows.
-		auto iter = multi->cbegin();
-		rowCount = static_cast<int>(iter->second.size());
+		rowCount = static_cast<int>(multi->cbegin()->second.size());
 
-		const auto multi_cend = multi->cend();
-		for (; iter != multi_cend; ++iter) {
-			assert(static_cast<int>(iter->second.size()) == rowCount);
-			auto pair = d->map_data.emplace(iter->first,
-				d->convertListDataToVector(&iter->second, hasCheckboxes));
-			if (!d->pData && iter->first == d->lc) {
+		for (auto &pdm : *multi) {
+			assert(static_cast<int>(pdm.second.size()) == rowCount);
+			auto pair = d->map_data.emplace(pdm.first,
+				d->convertListDataToVector(&(pdm.second), hasCheckboxes));
+			if (!d->pData && pdm.first == d->lc) {
 				d->pData = &(pair.first->second);
 			}
 		}
@@ -609,9 +606,7 @@ void ListDataModel::setField(const RomFields::Field *pField)
 		// Also, we can assume all rows are present, since
 		// icons and checkboxes are mutually exclusive.
 		d->icons.reserve(rowCount);
-		const auto icons_cend = pField->data.list_data.mxd.icons->cend();
-		for (auto iter = pField->data.list_data.mxd.icons->cbegin(); iter != icons_cend; ++iter) {
-			const rp_image *const icon = *iter;
+		for (auto &&icon : *(pField->data.list_data.mxd.icons)) {
 			d->icons_rp.emplace_back(icon ? icon->ref() : nullptr);
 		}
 		// Update the icons pixmap vector.
@@ -687,9 +682,8 @@ set<uint32_t> ListDataModel::getLCs(void) const
 		}
 	}
 
-	const auto map_data_cend = d->map_data.cend();
-	for (auto iter = d->map_data.cbegin(); iter != map_data_cend; ++iter) {
-		set_lc.insert(iter->first);
+	for (auto &&pmd : d->map_data) {
+		set_lc.insert(pmd.first);
 	}
 	return set_lc;
 }

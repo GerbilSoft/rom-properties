@@ -1006,10 +1006,9 @@ void RomDataViewPrivate::updateMulti(uint32_t user_lc)
 	set<uint32_t> set_lc;
 
 	// RFT_STRING_MULTI
-	const auto vecStringMulti_cend = vecStringMulti.cend();
-	for (auto iter = vecStringMulti.cbegin(); iter != vecStringMulti_cend; ++iter) {
-		QLabel *const lblString = iter->first;
-		const RomFields::Field *const pField = iter->second;
+	for (auto &&vsm : vecStringMulti) {
+		QLabel *const lblString = vsm.first;
+		const RomFields::Field *const pField = vsm.second;
 		const auto *const pStr_multi = pField->data.str_multi;
 		assert(pStr_multi != nullptr);
 		assert(!pStr_multi->empty());
@@ -1021,11 +1020,8 @@ void RomDataViewPrivate::updateMulti(uint32_t user_lc)
 		if (!cboLanguage) {
 			// Need to add all supported languages.
 			// TODO: Do we need to do this for all of them, or just one?
-			const auto pStr_multi_cend = pStr_multi->cend();
-			for (auto iter_sm = pStr_multi->cbegin();
-			     iter_sm != pStr_multi_cend; ++iter_sm)
-			{
-				set_lc.emplace(iter_sm->first);
+			for (auto &&psm : *pStr_multi) {
+				set_lc.emplace(psm.first);
 			}
 		}
 
@@ -1036,10 +1032,9 @@ void RomDataViewPrivate::updateMulti(uint32_t user_lc)
 	}
 
 	// RFT_LISTDATA_MULTI
-	const auto vecListDataMulti_cend = vecListDataMulti.cend();
-	for (auto iter = vecListDataMulti.cbegin(); iter != vecListDataMulti_cend; ++iter) {
-		QTreeView *const treeView = iter->first;
-		ListDataModel *const listModel = iter->second;
+	for (auto &&vldm : vecListDataMulti) {
+		QTreeView *const treeView = vldm.first;
+		ListDataModel *const listModel = vldm.second;
 
 		if (listModel != nullptr) {
 			if (!cboLanguage) {

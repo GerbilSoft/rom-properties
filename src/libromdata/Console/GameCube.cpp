@@ -419,17 +419,16 @@ int GameCubePrivate::loadWiiPartitionTables(void)
 	);
 
 	// Create the WiiPartition objects.
-	const auto wiiPtbl_end = wiiPtbl.end();
-	for (auto iter = wiiPtbl.begin(); iter != wiiPtbl_end; ++iter) {
-		iter->partition = new WiiPartition(discReader, iter->start, iter->size,
+	for (auto &p : wiiPtbl) {
+		p.partition = new WiiPartition(discReader, p.start, p.size,
 			(WiiPartition::CryptoMethod)cryptoMethod);
 
-		if (iter->type == RVL_PT_UPDATE && !updatePartition) {
+		if (p.type == RVL_PT_UPDATE && !updatePartition) {
 			// System Update partition.
-			updatePartition = iter->partition;
-		} else if (iter->type == RVL_PT_GAME && !gamePartition) {
+			updatePartition = p.partition;
+		} else if (p.type == RVL_PT_GAME && !gamePartition) {
 			// Game partition.
-			gamePartition = iter->partition;
+			gamePartition = p.partition;
 		}
 	}
 

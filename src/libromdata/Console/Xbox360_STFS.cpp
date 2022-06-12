@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * Xbox360_STFS.cpp: Microsoft Xbox 360 package reader.                    *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -476,31 +476,30 @@ Xbox360_XEX *Xbox360_STFS_Private::openDefaultXex(void)
 	// Find default.xex or default.xexp and load it.
 	// TODO: Handle subdirectories?
 	const STFS_DirEntry_t *dirEntry = nullptr;
-	const auto fileTable_cend = fileTable.cend();
-	for (auto iter = fileTable.cbegin(); iter != fileTable_cend; ++iter) {
+	for (auto &&p : fileTable) {
 		// Make sure this isn't a subdirectory.
-		if (iter->flags_len & 0x80) {
+		if (p.flags_len & 0x80) {
 			// It's a subdirectory.
 			continue;
 		}
 
 		// "default.xex" is 11 characters.
 		// "default.xexp" is 12 characters.
-		switch (iter->flags_len & 0x3F) {
+		switch (p.flags_len & 0x3F) {
 			case 11:
 				// Check for default.xex.
-				if (!strncasecmp("default.xex", iter->filename, 12)) {
+				if (!strncasecmp("default.xex", p.filename, 12)) {
 					// Found default.xex.
-					dirEntry = &(*iter);
+					dirEntry = &p;
 					break;
 				}
 				break;
 
 			case 12:
 				// Check for default.xexp.
-				if (!strncasecmp("default.xexp", iter->filename, 13)) {
+				if (!strncasecmp("default.xexp", p.filename, 13)) {
 					// Found default.xexp.
-					dirEntry = &(*iter);
+					dirEntry = &p;
 					break;
 				}
 				break;

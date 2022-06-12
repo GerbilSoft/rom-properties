@@ -451,10 +451,9 @@ CisoPspReader::CisoPspReader(IRpFile *file)
 
 			// Process the NC areas.
 			d->daxNCTable.resize(num_blocks);
-			const auto nc_areas_end = nc_areas.cend();
-			for (auto iter = nc_areas.cbegin(); iter != nc_areas_end; ++iter) {
-				uint32_t i = le32_to_cpu(iter->start);
-				const uint32_t end = i + le32_to_cpu(iter->count);
+			for (auto &&p : nc_areas) {
+				uint32_t i = le32_to_cpu(p.start);
+				const uint32_t end = i + le32_to_cpu(p.count);
 				if (end > num_blocks) {
 					// Out of range...
 					m_lastError = EIO;

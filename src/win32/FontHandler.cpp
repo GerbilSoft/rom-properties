@@ -194,14 +194,13 @@ int FontHandlerPrivate::findMonospacedFont(LOGFONT *plfFontMono)
 		_T("Fixedsys Excelsior 1.0"),
 		_T("Fixedsys"),
 		_T("Courier New"),
-		nullptr
 	};
 
 	const TCHAR *mono_font = nullptr;
-	for (const TCHAR *const *test_font = mono_font_names; *test_font != nullptr; test_font++) {
-		if (enum_fonts.find(*test_font) != enum_fonts.end()) {
+	for (const TCHAR *pFontTest : mono_font_names) {
+		if (enum_fonts.find(pFontTest) != enum_fonts.end()) {
 			// Found a font.
-			mono_font = *test_font;
+			mono_font = pFontTest;
 			break;
 		}
 	}

@@ -142,15 +142,17 @@ void OptionsMenuButtonPrivate::reinitMenu(const RomData *romData)
 		AppendMenu(hMenuOptions, MF_SEPARATOR, 0, nullptr);
 
 		unsigned int i = IDM_OPTIONS_MENU_BASE;
-		const auto ops_end = ops.cend();
-		for (auto iter = ops.cbegin(); iter != ops_end; ++iter, i++) {
+		for (const auto &op : ops) {
 			UINT uFlags;
-			if (!(iter->flags & RomData::RomOp::ROF_ENABLED)) {
+			if (!(op.flags & RomData::RomOp::ROF_ENABLED)) {
 				uFlags = MF_STRING | MF_DISABLED;
 			} else {
 				uFlags = MF_STRING;
 			}
-			AppendMenu(hMenuOptions, uFlags, i, U82T_c(iter->desc));
+			AppendMenu(hMenuOptions, uFlags, i, U82T_c(op.desc));
+
+			// Next menu item.
+			i++;
 		}
 	}
 }

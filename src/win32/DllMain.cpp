@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * DllMain.cpp: DLL entry point and COM registration handler.              *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -374,9 +374,9 @@ static LONG UnregisterFileType(RegKey &hkcr, RegKey *pHklm, const RomDataFactory
 
 	// Delete keys if they're empty.
 	static const TCHAR *const keysToDel[] = {_T("ShellEx"), _T("RP_Fallback")};
-	for (int i = ARRAY_SIZE(keysToDel)-1; i >= 0; i--) {
+	for (const TCHAR *keyToDel : keysToDel) {
 		// Check if the key is empty.
-		RegKey hkey_del(hkey_fileType, keysToDel[i], KEY_READ, false);
+		RegKey hkey_del(hkey_fileType, keyToDel, KEY_READ, false);
 		if (!hkey_del.isOpen())
 			continue;
 
@@ -385,7 +385,7 @@ static LONG UnregisterFileType(RegKey &hkcr, RegKey *pHklm, const RomDataFactory
 		if (hkey_del.isKeyEmpty()) {
 			// No subkeys. Delete this key.
 			hkey_del.close();
-			hkey_fileType.deleteSubKey(keysToDel[i]);
+			hkey_fileType.deleteSubKey(keyToDel);
 		}
 	}
 
@@ -409,9 +409,9 @@ static LONG UnregisterFileType(RegKey &hkcr, RegKey *pHklm, const RomDataFactory
 	if (!progID.empty()) {
 		// Custom ProgID is registered.
 		RegKey hkey_ProgID(hkcr, progID.c_str(), KEY_READ|KEY_WRITE, false);
-		for (int i = ARRAY_SIZE(keysToDel)-1; i >= 0; i--) {
+		for (const TCHAR *keyToDel : keysToDel) {
 			// Check if the key is empty.
-			RegKey hkey_del(hkey_ProgID, keysToDel[i], KEY_READ, false);
+			RegKey hkey_del(hkey_ProgID, keyToDel, KEY_READ, false);
 			if (!hkey_del.isOpen())
 				continue;
 
@@ -420,7 +420,7 @@ static LONG UnregisterFileType(RegKey &hkcr, RegKey *pHklm, const RomDataFactory
 			if (hkey_del.isKeyEmpty()) {
 				// No subkeys. Delete this key.
 				hkey_del.close();
-				hkey_ProgID.deleteSubKey(keysToDel[i]);
+				hkey_ProgID.deleteSubKey(keyToDel);
 			}
 		}
 	}
@@ -640,9 +640,8 @@ static LONG UnregisterFromApplications(RegKey& hkcr)
 		return lResult;
 	}
 
-	const auto iter_cend = lstSubKeys.cend();
-	for (auto iter = lstSubKeys.cbegin(); iter != iter_cend; ++iter) {
-		RegKey hkey_app(hkcr, iter->c_str(), KEY_READ|KEY_WRITE, false);
+	for (auto &&subKey : lstSubKeys) {
+		RegKey hkey_app(hkcr, subKey.c_str(), KEY_READ|KEY_WRITE, false);
 		if (!hkey_app.isOpen())
 			continue;
 
@@ -743,16 +742,14 @@ STDAPI DllRegisterServer(void)
 
 	// Register all supported file extensions.
 	const vector<RomDataFactory::ExtInfo> &vec_exts = RomDataFactory::supportedFileExtensions();
-	const auto vec_exts_cend = vec_exts.cend();
-	const auto user_SIDs_cend = user_SIDs.cend();
-	for (auto ext_iter = vec_exts.cbegin(); ext_iter != vec_exts_cend; ++ext_iter) {
+	for (const auto &ext : vec_exts) {
 		// Register the file type handlers for this file extension globally.
-		lResult = RegisterFileType(hkcr, &hklm, *ext_iter);
+		lResult = RegisterFileType(hkcr, &hklm, ext);
 		if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
 
 		// Register user file types if necessary.
-		for (auto sid_iter = user_SIDs.cbegin(); sid_iter != user_SIDs_cend; ++sid_iter) {
-			lResult = RegisterUserFileType(*sid_iter, *ext_iter);
+		for (const auto &sid : user_SIDs) {
+			lResult = RegisterUserFileType(sid, ext);
 			if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
 		}
 	}
@@ -787,13 +784,13 @@ STDAPI DllRegisterServer(void)
 	}
 
 	// Per-user versions of the above.
-	for (auto sid_iter = user_SIDs.cbegin(); sid_iter != user_SIDs_cend; ++sid_iter) {
+	for (const auto &sid : user_SIDs) {
 		TCHAR regPath[288];
 
 		// Incorrect file extension registrations.
 		int len = _sntprintf_s(regPath, _countof(regPath),
 			_T("%s\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\FileExts"),
-			sid_iter->c_str());
+			sid.c_str());
 		if (len > 0 && len < _countof(regPath)) {
 			RegKey hkuvxd(HKEY_USERS, regPath, KEY_WRITE, false);
 			if (hkuvxd.isOpen()) {
@@ -805,7 +802,7 @@ STDAPI DllRegisterServer(void)
 		// "HKU\\xxx\\SOFTWARE\\Classes\\Applications" entries
 		len = _sntprintf_s(regPath, _countof(regPath),
 			_T("%s\\SOFTWARE\\Classes\\Applications"),
-			sid_iter->c_str());
+			sid.c_str());
 		if (len > 0 && len < _countof(regPath)) {
 			RegKey hku_Applications(HKEY_USERS, regPath, KEY_READ|KEY_WRITE, false);
 			if (hku_Applications.isOpen()) {
@@ -862,16 +859,14 @@ STDAPI DllUnregisterServer(void)
 
 	// Unegister all supported file types.
 	const vector<RomDataFactory::ExtInfo> vec_exts = RomDataFactory::supportedFileExtensions();
-	const auto vec_exts_cend = vec_exts.cend();
-	const auto user_SIDs_cend = user_SIDs.cend();
-	for (auto ext_iter = vec_exts.cbegin(); ext_iter != vec_exts_cend; ++ext_iter) {
+	for (const auto &ext : vec_exts) {
 		// Unregister the file type handlers for this file extension globally.
-		lResult = UnregisterFileType(hkcr, &hklm, *ext_iter);
+		lResult = UnregisterFileType(hkcr, &hklm, ext);
 		if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
 
 		// Unregister user file types if necessary.
-		for (auto sid_iter = user_SIDs.cbegin(); sid_iter != user_SIDs_cend; ++sid_iter) {
-			lResult = UnregisterUserFileType(*sid_iter, *ext_iter);
+		for (const auto &sid : user_SIDs) {
+			lResult = UnregisterUserFileType(sid, ext);
 			if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
 		}
 	}
@@ -907,13 +902,13 @@ STDAPI DllUnregisterServer(void)
 	}
 
 	// Per-user versions of the above.
-	for (auto sid_iter = user_SIDs.cbegin(); sid_iter != user_SIDs_cend; ++sid_iter) {
+	for (const auto &sid : user_SIDs) {
 		TCHAR regPath[288];
 
 		// Incorrect file extension registrations.
 		int len = _sntprintf_s(regPath, _countof(regPath),
 			_T("%s\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\FileExts"),
-			sid_iter->c_str());
+			sid.c_str());
 		if (len > 0 && len < _countof(regPath)) {
 			RegKey hkuvxd(HKEY_USERS, regPath, KEY_WRITE, false);
 			if (hkuvxd.isOpen()) {
@@ -925,7 +920,7 @@ STDAPI DllUnregisterServer(void)
 		// "HKU\\xxx\\SOFTWARE\\Classes\\Applications" entries
 		len = _sntprintf_s(regPath, _countof(regPath),
 			_T("%s\\SOFTWARE\\Classes\\Applications"),
-			sid_iter->c_str());
+			sid.c_str());
 		if (len > 0 && len < _countof(regPath)) {
 			RegKey hku_Applications(HKEY_USERS, regPath, KEY_READ | KEY_WRITE, false);
 			if (hku_Applications.isOpen()) {

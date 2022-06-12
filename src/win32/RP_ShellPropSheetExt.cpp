@@ -1261,9 +1261,7 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 
 	int lv_row_num = 0;
 	int nl_max = 0;	// Highest number of newlines in any string.
-	const auto list_data_cend = list_data->cend();
-	for (auto iter = list_data->cbegin(); iter != list_data_cend; ++iter) {
-		const vector<string> &data_row = *iter;
+	for (const auto &data_row : *list_data) {
 		// FIXME: Skip even if we don't have checkboxes?
 		// (also check other UI frontends)
 		if (hasCheckboxes) {
@@ -1292,19 +1290,14 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 			lv_row_data.resize(data_row.size());
 
 			// Check newline counts in all strings to find nl_max.
-			const auto *const multi = field.data.list_data.data.multi;
-			const auto multi_cend = multi->cend();
-			for (auto iter_m = multi->cbegin(); iter_m != multi_cend; ++iter_m) {
-				const RomFields::ListData_t &ld = iter_m->second;
-				const auto ld_cend = ld.cend();
-				for (auto iter_row = ld.cbegin(); iter_row != ld_cend; ++iter_row) {
-					const auto &data_row = *iter_row;
-					const auto data_row_cend = data_row.cend();
-					for (auto iter_col = data_row.cbegin(); iter_col != data_row_cend; ++iter_col) {
+			for (const auto &ldm : *(field.data.list_data.data.multi)) {
+				const RomFields::ListData_t &ld = ldm.second;
+				for (const auto &m_data_row : ld) {
+					for (const auto &m_data_col : m_data_row) {
 						size_t prev_nl_pos = 0;
 						size_t cur_nl_pos;
 						int nl = 0;
-						while ((cur_nl_pos = iter_col->find('\n', prev_nl_pos)) != tstring::npos) {
+						while ((cur_nl_pos = m_data_col.find('\n', prev_nl_pos)) != tstring::npos) {
 							nl++;
 							prev_nl_pos = cur_nl_pos + 1;
 						}
@@ -1315,9 +1308,8 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 		} else {
 			// Single language.
 			int col = 0;
-			const auto data_row_cend = data_row.cend();
-			for (auto iter = data_row.cbegin(); iter != data_row_cend; ++iter, col++) {
-				tstring tstr = U82T_s(*iter);
+			for (const auto &data_str : data_row) {
+				tstring tstr = U82T_s(data_str);
 
 				int nl_count;
 				int width = LibWin32Common::measureStringForListView(hDC, tstr, &nl_count);
@@ -1328,6 +1320,9 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 
 				// TODO: Store the icon index if necessary.
 				lv_row_data.emplace_back(std::move(tstr));
+
+				// Next column.
+				col++;
 			}
 		}
 
@@ -1772,12 +1767,9 @@ void RP_ShellPropSheetExt_Private::updateMulti(uint32_t user_lc)
 	set<uint32_t> set_lc;
 
 	// RFT_STRING_MULTI
-	const auto vecStringMulti_cend = vecStringMulti.cend();
-	for (auto iter = vecStringMulti.cbegin();
-	     iter != vecStringMulti_cend; ++iter)
-	{
-		const HWND lblString = iter->first;
-		const RomFields::Field *const pField = iter->second;
+	for (const auto &vsm : vecStringMulti) {
+		const HWND lblString = vsm.first;
+		const RomFields::Field *const pField = vsm.second;
 		const auto *const pStr_multi = pField->data.str_multi;
 		assert(pStr_multi != nullptr);
 		assert(!pStr_multi->empty());
@@ -1789,11 +1781,8 @@ void RP_ShellPropSheetExt_Private::updateMulti(uint32_t user_lc)
 		if (!cboLanguage) {
 			// Need to add all supported languages.
 			// TODO: Do we need to do this for all of them, or just one?
-			const auto pStr_multi_cend = pStr_multi->cend();
-			for (auto iter_sm = pStr_multi->cbegin();
-			     iter_sm != pStr_multi_cend; ++iter_sm)
-			{
-				set_lc.emplace(iter_sm->first);
+			for (const auto &psm : *pStr_multi) {
+				set_lc.emplace(psm.first);
 			}
 		}
 
@@ -1810,9 +1799,8 @@ void RP_ShellPropSheetExt_Private::updateMulti(uint32_t user_lc)
 	HFONT hFontDlg = GetWindowFont(hDlgSheet);
 
 	// RFT_LISTDATA_MULTI
-	const auto map_lvData_end = map_lvData.end();
-	for (auto iter = map_lvData.begin(); iter != map_lvData_end; ++iter) {
-		LvData &lvData = iter->second;
+	for (auto &&mlvd : map_lvData) {
+		LvData &lvData = mlvd.second;
 		if (!lvData.hListView) {
 			// Not an RFT_LISTDATA_MULTI.
 			continue;
@@ -1831,11 +1819,8 @@ void RP_ShellPropSheetExt_Private::updateMulti(uint32_t user_lc)
 		if (!cboLanguage) {
 			// Need to add all supported languages.
 			// TODO: Do we need to do this for all of them, or just one?
-			const auto pListData_multi_cend = pListData_multi->cend();
-			for (auto iter_sm = pListData_multi->cbegin();
-			     iter_sm != pListData_multi_cend; ++iter_sm)
-			{
-				set_lc.emplace(iter_sm->first);
+			for (const auto &pldm : *pListData_multi) {
+				set_lc.emplace(pldm.first);
 			}
 		}
 

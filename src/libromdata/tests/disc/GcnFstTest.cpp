@@ -362,13 +362,12 @@ void GcnFstTest::checkNoDuplicateFilenames(const char *subdir)
 	}
 
 	// Check subdirectories.
-	const auto subdirs_cend = subdirs.cend();
-	for (auto iter = subdirs.cbegin(); iter != subdirs_cend; ++iter) {
+	for (auto &&p : subdirs) {
 		string path = subdir;
 		if (!path.empty() && path[path.size()-1] != '/') {
 			path += '/';
 		}
-		path += iter->c_str();
+		path += p.c_str();
 		checkNoDuplicateFilenames(path.c_str());
 	}
 

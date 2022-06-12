@@ -312,7 +312,7 @@ Xbox360_XDBF_Private::~Xbox360_XDBF_Private()
 	}
 
 	// Delete any loaded images.
-	for (auto &p : map_images) {
+	for (auto &&p : map_images) {
 		UNREF(p.second);
 	}
 }
@@ -563,23 +563,22 @@ string Xbox360_XDBF_Private::loadString_GPD(uint16_t string_id)
 
 	// GPD doesn't have string tables.
 	// Instead, each string is its own entry in the main resource table.
-	const auto entryTable_cend = entryTable.cend();
-	for (auto iter = entryTable.cbegin(); iter != entryTable_cend; ++iter) {
-		if (iter->namespace_id != cpu_to_be16(XDBF_GPD_NAMESPACE_STRING)) {
+	for (auto &&p : entryTable) {
+		if (p.namespace_id != cpu_to_be16(XDBF_GPD_NAMESPACE_STRING)) {
 			// Not a string.
 			continue;
 		}
 
 		// Check for Sync List or Sync Data entry.
-		if (iter->resource_id == cpu_to_be64(XDBF_GPD_SYNC_LIST_ENTRY) ||
-		    iter->resource_id == cpu_to_be64(XDBF_GPD_SYNC_DATA_ENTRY))
+		if (p.resource_id == cpu_to_be64(XDBF_GPD_SYNC_LIST_ENTRY) ||
+		    p.resource_id == cpu_to_be64(XDBF_GPD_SYNC_DATA_ENTRY))
 		{
 			// Skip this entry.
 			continue;
 		}
 
-		const uint32_t addr = be32_to_cpu(iter->offset) + this->data_offset;
-		uint32_t length = be32_to_cpu(iter->length);
+		const uint32_t addr = be32_to_cpu(p.offset) + this->data_offset;
+		uint32_t length = be32_to_cpu(p.length);
 		// Sanity check: Length must be > 2 but <= 4096 bytes,
 		// and must be divisible by 2.
 		assert(length > 2);
@@ -1423,25 +1422,24 @@ int Xbox360_XDBF_Private::addFields_achievements_GPD(void)
 	// Instead, each achievement is its own entry in the main resource table.
 #define XACH_GPD_BUF_LEN 4096
 	unique_ptr<uint8_t[]> buf(new uint8_t[XACH_GPD_BUF_LEN]);
-	const XDBF_XACH_Entry_Header_GPD *const p =
+	const XDBF_XACH_Entry_Header_GPD *const pGPD =
 		reinterpret_cast<const XDBF_XACH_Entry_Header_GPD*>(buf.get());
-	const auto entryTable_cend = entryTable.cend();
-	for (auto iter = entryTable.cbegin(); iter != entryTable_cend; ++iter) {
-		if (iter->namespace_id != cpu_to_be16(XDBF_GPD_NAMESPACE_ACHIEVEMENT)) {
+	for (auto &&p : entryTable) {
+		if (p.namespace_id != cpu_to_be16(XDBF_GPD_NAMESPACE_ACHIEVEMENT)) {
 			// Not an achievement.
 			continue;
 		}
 
 		// Check for Sync List or Sync Data entry.
-		if (iter->resource_id == cpu_to_be64(XDBF_GPD_SYNC_LIST_ENTRY) ||
-		    iter->resource_id == cpu_to_be64(XDBF_GPD_SYNC_DATA_ENTRY))
+		if (p.resource_id == cpu_to_be64(XDBF_GPD_SYNC_LIST_ENTRY) ||
+		    p.resource_id == cpu_to_be64(XDBF_GPD_SYNC_DATA_ENTRY))
 		{
 			// Skip this entry.
 			continue;
 		}
 
-		const uint32_t addr = be32_to_cpu(iter->offset) + this->data_offset;
-		const uint32_t length = be32_to_cpu(iter->length);
+		const uint32_t addr = be32_to_cpu(p.offset) + this->data_offset;
+		const uint32_t length = be32_to_cpu(p.length);
 		// Sanity check: Achievement shouldn't be more than sizeof(buf).
 		assert(length <= XACH_GPD_BUF_LEN);
 		if (length > XACH_GPD_BUF_LEN)
@@ -1455,8 +1453,8 @@ int Xbox360_XDBF_Private::addFields_achievements_GPD(void)
 		}
 
 		// Verify achievement header size.
-		assert(be32_to_cpu(p->size) == sizeof(*p));
-		if (be32_to_cpu(p->size) != sizeof(*p)) {
+		assert(be32_to_cpu(pGPD->size) == sizeof(*pGPD));
+		if (be32_to_cpu(pGPD->size) != sizeof(*pGPD)) {
 			// Incorrect achievement header size.
 			continue;
 		}
@@ -1464,17 +1462,17 @@ int Xbox360_XDBF_Private::addFields_achievements_GPD(void)
 		// Icon.
 		// TODO: Grayscale version if locked?
 		// NOTE: Most GPDs don't have achievement icons...
-		vv_icons->push_back(loadImage(be32_to_cpu(p->image_id)));
+		vv_icons->push_back(loadImage(be32_to_cpu(pGPD->image_id)));
 
 		// TODO: Localized numeric formatting?
 		char s_achievement_id[16];
-		snprintf(s_achievement_id, sizeof(s_achievement_id), "%u", be32_to_cpu(p->achievement_id));
+		snprintf(s_achievement_id, sizeof(s_achievement_id), "%u", be32_to_cpu(pGPD->achievement_id));
 		char s_gamerscore[16];
-		snprintf(s_gamerscore, sizeof(s_gamerscore), "%u", be32_to_cpu(p->gamerscore));
+		snprintf(s_gamerscore, sizeof(s_gamerscore), "%u", be32_to_cpu(pGPD->gamerscore));
 
 		// Get the strings.
 		const char16_t *pTitle = nullptr, *pUnlockedDesc = nullptr, *pLockedDesc = nullptr;
-		const char16_t *pstr = reinterpret_cast<const char16_t*>(&buf[sizeof(*p)]);
+		const char16_t *pstr = reinterpret_cast<const char16_t*>(&buf[sizeof(*pGPD)]);
 		const char16_t *const pstr_end = reinterpret_cast<const char16_t*>(&buf[length]);
 
 		// Find the first NULL.

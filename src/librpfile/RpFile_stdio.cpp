@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpfile)                        *
  * RpFile_stdio.cpp: Standard file object. (stdio implementation)          *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -156,15 +156,15 @@ int RpFilePrivate::reOpenFile(void)
 			"\x07" "/dev/cd",
 			"\x08" "/dev/rcd",
 #else
-# define NO_PATTERNS_FOR_THIS_OS 1
+#  define NO_PATTERNS_FOR_THIS_OS 1
 			"\x00"
 #endif
 		};
 
 #ifndef NO_PATTERNS_FOR_THIS_OS
 		bool isMatch = false;
-		for (size_t i = 0; i < ARRAY_SIZE(fileNamePatterns); i++) {
-			if (!strncasecmp(filename.c_str(), &fileNamePatterns[i][1], (uint8_t)fileNamePatterns[i][0])) {
+		for (auto &&pattern : fileNamePatterns) {
+			if (!strncasecmp(filename.c_str(), &pattern[1], (uint8_t)pattern[0])) {
 				// Found a match!
 				isMatch = true;
 				break;

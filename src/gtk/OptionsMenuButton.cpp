@@ -594,21 +594,23 @@ options_menu_button_reinit_menu(OptionsMenuButton *widget,
 		g_menu_append_section(menuModel, nullptr, G_MENU_MODEL(menuRomOps));
 
 		int i = 0;
-		const auto ops_end = ops.cend();
-		for (auto iter = ops.cbegin(); iter != ops_end; ++iter, i++) {
+		for (auto &&op : ops) {
 			// Create the action.
 			char buf[128];
 			snprintf(buf, sizeof(buf), "%d", i);
 			GSimpleAction *const action = g_simple_action_new(buf, nullptr);
-			g_simple_action_set_enabled(action, !!(iter->flags & RomData::RomOp::ROF_ENABLED));
+			g_simple_action_set_enabled(action, !!(op.flags & RomData::RomOp::ROF_ENABLED));
 			g_object_set_data(G_OBJECT(action), "menuOptions_id", GINT_TO_POINTER(i));
 			g_signal_connect(action, "activate", G_CALLBACK(action_triggered_signal_handler), widget);
 			g_action_map_add_action(G_ACTION_MAP(actionGroup), G_ACTION(action));
 
 			// Create the menu item.
-			const string desc = convert_accel_to_gtk(iter->desc);
+			const string desc = convert_accel_to_gtk(op.desc);
 			snprintf(buf, sizeof(buf), "%s.%d", prefix, i);
 			g_menu_append(menuRomOps, desc.c_str(), buf);
+
+			// Next operation.
+			i++;
 		}
 	}
 #else /* !USE_G_MENU_MODEL */
@@ -635,15 +637,17 @@ options_menu_button_reinit_menu(OptionsMenuButton *widget,
 		gtk_menu_shell_append(GTK_MENU_SHELL(menuOptions), menuItem);
 
 		int i = 0;
-		const auto ops_end = ops.cend();
-		for (auto iter = ops.cbegin(); iter != ops_end; ++iter, i++) {
-			const string desc = convert_accel_to_gtk(iter->desc);
+		for (auto &&op : ops) {
+			const string desc = convert_accel_to_gtk(op.desc);
 			menuItem = gtk_menu_item_new_with_mnemonic(desc.c_str());
-			gtk_widget_set_sensitive(menuItem, !!(iter->flags & RomData::RomOp::ROF_ENABLED));
+			gtk_widget_set_sensitive(menuItem, !!(op.flags & RomData::RomOp::ROF_ENABLED));
 			g_object_set_data(G_OBJECT(menuItem), "menuOptions_id", GINT_TO_POINTER(i));
 			g_signal_connect(menuItem, "activate", G_CALLBACK(menuOptions_triggered_signal_handler), widget);
 			gtk_widget_show(menuItem);
 			gtk_menu_shell_append(GTK_MENU_SHELL(menuOptions), menuItem);
+
+			// Next operation.
+			i++;
 		}
 	}
 #endif /* USE_G_MENU_MODEL */

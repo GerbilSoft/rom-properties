@@ -148,12 +148,10 @@ vector<RpFile::KreonFeature> RpFile::getKreonFeatureList(void)
 	}
 
 	vec.reserve(feature_buf.size());
-	const auto feature_buf_cend = feature_buf.cend();
-	for (auto iter = feature_buf.cbegin(); iter != feature_buf_cend; ++iter) {
-		const uint16_t feature = be16_to_cpu(*iter);
+	for (const uint16_t feature : feature_buf) {
 		if (feature == 0)
 			break;
-		vec.emplace_back(static_cast<KreonFeature>(feature));
+		vec.emplace_back(static_cast<KreonFeature>(be16_to_cpu(feature)));
 	}
 
 	if (vec.size() < 2 ||

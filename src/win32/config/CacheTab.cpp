@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * CacheTab.cpp: Thumbnail Cache tab for rp-config.                        *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -633,12 +633,9 @@ int CacheTabPrivate::clearRomPropertiesCache(void)
 	// Cache directory.
 	// Sanity check: Must be at least 8 characters.
 	const string cacheDir = FileSystem::getCacheDirectory();
-	size_t bscount = 0;
-	const auto cacheDir_cend = cacheDir.cend();
-	for (auto iter = cacheDir.cbegin(); iter != cacheDir_cend; ++iter) {
-		if (*iter == L'\\')
-			bscount++;
-	}
+	const size_t bscount = std::count_if(cacheDir.cbegin(), cacheDir.cend(),
+		[](TCHAR p) { return p == L'\\'; });
+
 	if (cacheDir.size() < 8 || bscount < 6) {
 		const string s_err = rp_sprintf(C_("CacheTab", "ERROR: %s"),
 			C_("CacheCleaner", "Unable to get the rom-properties cache directory."));
@@ -710,11 +707,10 @@ int CacheTabPrivate::clearRomPropertiesCache(void)
 	SendMessage(hProgressBar, PBM_SETPOS, 2, 0);
 	unsigned int count = 0;
 	unsigned int dirErrs = 0, fileErrs = 0;
-	const auto rlist_cend = rlist.cend();
-	for (auto iter = rlist.cbegin(); iter != rlist_cend; ++iter) {
-		if (iter->second & FILE_ATTRIBUTE_DIRECTORY) {
+	for (const auto &p : rlist) {
+		if (p.second & FILE_ATTRIBUTE_DIRECTORY) {
 			// Remove the directory.
-			BOOL bRet = RemoveDirectory(iter->first.c_str());
+			BOOL bRet = RemoveDirectory(p.first.c_str());
 			if (!bRet) {
 				dirErrs++;
 				SendMessage(hProgressBar, PBM_SETSTATE, PBST_ERROR, 0);
@@ -722,16 +718,16 @@ int CacheTabPrivate::clearRomPropertiesCache(void)
 		} else {
 			// Delete the file.
 			BOOL bRet = TRUE;
-			if (iter->second & FILE_ATTRIBUTE_READONLY) {
+			if (p.second & FILE_ATTRIBUTE_READONLY) {
 				// Need to remove the read-only attribute.
-				bRet = SetFileAttributes(iter->first.c_str(), (iter->second & ~FILE_ATTRIBUTE_READONLY));
+				bRet = SetFileAttributes(p.first.c_str(), (p.second & ~FILE_ATTRIBUTE_READONLY));
 			}
 			if (!bRet) {
 				// Error removing the read-only attribute.
 				fileErrs++;
 				SendMessage(hProgressBar, PBM_SETSTATE, PBST_ERROR, 0);
 			} else {
-				bRet = DeleteFile(iter->first.c_str());
+				bRet = DeleteFile(p.first.c_str());
 				if (!bRet) {
 					// Error deleting the file.
 					fileErrs++;

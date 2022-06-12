@@ -884,15 +884,16 @@ int ValveVTF::getFields(LibRpBase::RomFields *fields) const
 	// Convert to ListData_t for RFT_LISTDATA.
 	auto vv_flags = new RomFields::ListData_t();
 	vv_flags->reserve(ARRAY_SIZE(flags_names));
-	for (size_t i = 0; i < ARRAY_SIZE(flags_names); i++) {
-		if (flags_names[i]) {
-			size_t j = vv_flags->size()+1;
-			vv_flags->resize(j);
-			auto &data_row = vv_flags->at(j-1);
-			// TODO: Localization.
-			//data_row.emplace_back(dpgettext_expr(RP_I18N_DOMAIN, "ValveVTF|Flags", flags_names[i]));
-			data_row.emplace_back(flags_names[i]);
-		}
+	for (const char *pFlagName : flags_names) {
+		if (!pFlagName)
+			continue;
+
+		size_t j = vv_flags->size()+1;
+		vv_flags->resize(j);
+		auto &data_row = vv_flags->at(j-1);
+		// TODO: Localization.
+		//data_row.emplace_back(dpgettext_expr(RP_I18N_DOMAIN, "ValveVTF|Flags", pFlagName));
+		data_row.emplace_back(pFlagName);
 	}
 
 	RomFields::AFLD_PARAMS params(RomFields::RFT_LISTDATA_CHECKBOXES, rows_visible);

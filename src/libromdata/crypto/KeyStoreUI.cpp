@@ -609,7 +609,7 @@ string KeyStoreUIPrivate::convertKanjiToHex(const string &str)
 	// Check for non-ASCII characters.
 	// TODO: Also check for non-hex digits?
 	bool hasNonAscii = false;
-	for (auto p : str) {
+	for (char p : str) {
 		// The following check works for both UTF-8 and UTF-16.
 		// If the character value is >= 128, it's non-ASCII.
 		if (static_cast<unsigned int>(p) >= 128) {

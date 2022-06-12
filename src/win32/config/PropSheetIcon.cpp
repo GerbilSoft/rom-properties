@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * PropSheetIcon.cpp: Property sheet icon.                                 *
  *                                                                         *
- * Copyright (c) 2016-2017 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -63,21 +63,21 @@ PropSheetIconPrivate::PropSheetIconPrivate()
 		{_T("shell32.dll"),  MAKEINTRESOURCE(13)},
 	};
 
-	for (unsigned int i = 0; i < ARRAY_SIZE(iconDllData); i++) {
-		HMODULE hDll = LoadLibrary(iconDllData[i].dll_filename);
+	for (const auto &p : iconDllData) {
+		HMODULE hDll = LoadLibrary(p.dll_filename);
 		if (!hDll)
 			continue;
 
 		// Check for the specified icon resource.
-		HRSRC hRes = FindResource(hDll, iconDllData[i].pszIcon, RT_GROUP_ICON);
+		HRSRC hRes = FindResource(hDll, p.pszIcon, RT_GROUP_ICON);
 		if (hRes) {
 			// Found a usable icon resource.
 			hIcon = static_cast<HICON>(LoadImage(
-				hDll, iconDllData[i].pszIcon, IMAGE_ICON,
+				hDll, p.pszIcon, IMAGE_ICON,
 				GetSystemMetrics(SM_CXICON),
 				GetSystemMetrics(SM_CYICON), 0));
 			hIconSmall = static_cast<HICON>(LoadImage(
-				hDll, iconDllData[i].pszIcon, IMAGE_ICON,
+				hDll, p.pszIcon, IMAGE_ICON,
 				GetSystemMetrics(SM_CXSMICON),
 				GetSystemMetrics(SM_CYSMICON), 0));
 
@@ -85,7 +85,7 @@ PropSheetIconPrivate::PropSheetIconPrivate()
 			// select that and downscale.
 			// Windows XP does not, so it will upscale the 48x48 icon.
 			hIcon96 = static_cast<HICON>(LoadImage(
-				hDll, iconDllData[i].pszIcon, IMAGE_ICON,
+				hDll, p.pszIcon, IMAGE_ICON,
 				96, 96, 0));
 
 			FreeLibrary(hDll);

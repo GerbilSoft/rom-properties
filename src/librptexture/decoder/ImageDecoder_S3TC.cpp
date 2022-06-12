@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * ImageDecoder_S3TC.cpp: Image decoding functions. (S3TC)                 *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -327,8 +327,9 @@ static rp_image *T_fromDXT1(int width, int height,
 
 		// Process the 16 color indexes.
 		uint32_t indexes = le32_to_cpu(dxt1_src->indexes);
-		for (auto iter = tileBuf.begin(); iter != tileBuf.end(); ++iter, indexes >>= 2) {
-			*iter = pal[indexes & 3].u32;
+		for (uint32_t &p : tileBuf) {
+			p = pal[indexes & 3].u32;
+			indexes >>= 2;
 		}
 
 		// Blit the tile to the main image buffer.

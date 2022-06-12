@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * SAP.cpp: Atari 8-bit SAP audio reader.                                  *
  *                                                                         *
- * Copyright (c) 2018-2021 by David Korth.                                 *
+ * Copyright (c) 2018-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -326,26 +326,24 @@ SAPPrivate::TagData SAPPrivate::parseTags(void)
 			{"COVOX",	KeywordType::UInt16_Hex,	&tags.covox_addr},
 			// TIME is handled separately.
 			{"TIME",	KeywordType::TimeLoop,		nullptr},
-
-			{"", KeywordType::Unknown, nullptr}
 		};
 
 		// TODO: Show errors for unsupported tags?
 		// TODO: Print errors?
-		for (const KeywordDef *kwd = &kwds[0]; kwd->keyword[0] != '\0'; kwd++) {
-			if (strcasecmp(kwd->keyword, token) != 0) {
+		for (auto &&kwd : kwds) {
+			if (strcasecmp(kwd.keyword, token) != 0) {
 				// Not a match. Keep going.
 				continue;
 			}
 
-			switch (kwd->type) {
+			switch (kwd.type) {
 				default:
 					assert(!"Unsupported keyword type.");
 					break;
 
 				case KeywordType::Bool:
 					// Presence of this keyword sets the value to true.
-					*(static_cast<bool*>(kwd->ptr)) = true;
+					*(static_cast<bool*>(kwd.ptr)) = true;
 					break;
 
 				case KeywordType::UInt16_Dec: {
@@ -356,7 +354,7 @@ SAPPrivate::TagData SAPPrivate::parseTags(void)
 					char *endptr = nullptr;
 					long val = strtol(params, &endptr, 10);
 					if (endptr > params && (*endptr == '\0' || ISSPACE(*endptr))) {
-						*(static_cast<uint16_t*>(kwd->ptr)) = static_cast<uint16_t>(val);
+						*(static_cast<uint16_t*>(kwd.ptr)) = static_cast<uint16_t>(val);
 					}
 					break;
 				}
@@ -369,7 +367,7 @@ SAPPrivate::TagData SAPPrivate::parseTags(void)
 					char *endptr = nullptr;
 					long val = strtol(params, &endptr, 16);
 					if (endptr > params && (*endptr == '\0' || ISSPACE(*endptr))) {
-						*(static_cast<uint16_t*>(kwd->ptr)) = static_cast<uint16_t>(val);
+						*(static_cast<uint16_t*>(kwd.ptr)) = static_cast<uint16_t>(val);
 					}
 					break;
 				}
@@ -381,7 +379,7 @@ SAPPrivate::TagData SAPPrivate::parseTags(void)
 
 					if (!ISSPACE(params[0] && (params[1] == '\0' || ISSPACE(params[1])))) {
 						// Single character.
-						*(static_cast<char*>(kwd->ptr)) = params[0];
+						*(static_cast<char*>(kwd.ptr)) = params[0];
 					}
 					break;
 				}
@@ -405,7 +403,7 @@ SAPPrivate::TagData SAPPrivate::parseTags(void)
 					}
 					// Zero it out and take the string.
 					*dblq = '\0';
-					*(static_cast<string*>(kwd->ptr)) = latin1_to_utf8(params+1, -1);
+					*(static_cast<string*>(kwd.ptr)) = latin1_to_utf8(params+1, -1);
 					break;
 				}
 

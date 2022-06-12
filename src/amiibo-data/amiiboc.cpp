@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (amiibo-data)                      *
  * amiiboc.cpp: Nintendo amiibo binary data compiler.                      *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -564,17 +564,16 @@ int main(int argc, char *argv[])
 	const uint32_t char_len = static_cast<uint32_t>(charTable.size() * sizeof(CharTableEntry));
 	binHeader.char_offset = cpu_to_le32(static_cast<uint32_t>(ftello(f_out)));
 	binHeader.char_len = cpu_to_le32(char_len);
-	const auto charTable_cend = charTable.cend();
-	for (auto iter = charTable.cbegin(); iter != charTable_cend; ++iter) {
-#if SYS_BYTEORDER == SYS_BIG_ENDIAN
+	for (auto &&p : charTable) {
+#if SYS_BYTEORDER != SYS_LIL_ENDIAN
 		// Byteswap the entry first.
-		CharTableEntry entry = iter->second;
+		CharTableEntry entry = p.second;
 		entry.char_id	= cpu_to_le32(entry.char_id);
 		entry.name	= cpu_to_le32(entry.name);
 		fwrite(&entry, 1, sizeof(entry), f_out);
 #else /* SYS_BYTEORDER == SYS_LIL_ENDIAN */
 		// No byteswap is needed.
-		fwrite(&(iter->second), 1, sizeof(iter->second), f_out);
+		fwrite(&(p.second), 1, sizeof(p.second), f_out);
 #endif
 	}
 
@@ -582,22 +581,19 @@ int main(int argc, char *argv[])
 	alignFileTo16Bytes(f_out);
 	uint32_t cvar_len = 0;
 	binHeader.cvar_offset = cpu_to_le32(static_cast<uint32_t>(ftello(f_out)));
-	const auto charVarTable_cend = charVarTable.cend();
-	for (auto iter = charVarTable.cbegin(); iter != charVarTable_cend; ++iter) {
-		const CharVariantMap &map = iter->second;
-		const auto map_cend = map.cend();
-		for (auto iter = map.cbegin(); iter != map_cend; ++iter) {
-#if SYS_BYTEORDER == SYS_BIG_ENDIAN
+	for (auto &&p : charVarTable) {
+		for (auto &&q : p.second) {
+#if SYS_BYTEORDER != SYS_LIL_ENDIAN
 			// Byteswap the entry first.
-			CharVariantTableEntry entry = iter->second;
+			CharVariantTableEntry entry = q.second;
 			entry.char_id	= cpu_to_le16(entry.char_id);
 			entry.name	= cpu_to_le32(entry.name);
 			fwrite(&entry, 1, sizeof(entry), f_out);
 #else /* SYS_BYTEORDER == SYS_LIL_ENDIAN */
 			// No byteswap is needed.
-			fwrite(&(iter->second), 1, sizeof(iter->second), f_out);
+			fwrite(&(q.second), 1, sizeof(q.second), f_out);
 #endif
-			cvar_len += static_cast<uint32_t>(sizeof(iter->second));
+			cvar_len += static_cast<uint32_t>(sizeof(q.second));
 		}
 	}
 	binHeader.cvar_len = cpu_to_le32(cvar_len);
@@ -618,11 +614,10 @@ int main(int argc, char *argv[])
 	const uint32_t amiibo_len = static_cast<uint32_t>(amiiboTable.size() * sizeof(AmiiboIDTableEntry));
 	binHeader.amiibo_offset = cpu_to_le32(static_cast<uint32_t>(ftello(f_out)));
 	binHeader.amiibo_len = cpu_to_le32(amiibo_len);
-#if SYS_BYTEORDER == SYS_BIG_ENDIAN
+#if SYS_BYTEORDER != SYS_LIL_ENDIAN
 	// Byteswapping is needed, so we have to process each entry.
-	const auto amiiboTable_cend = amiiboTable.cend();
-	for (auto iter = amiiboTable.cbegin(); iter != amiiboTable_cend; ++iter) {
-		AmiiboIDTableEntry entry = *iter;
+	for (auto &&p : amiiboTable) {
+		AmiiboIDTableEntry entry = p;
 		entry.release_no	= cpu_to_le16(entry.release_no);
 		entry.name		= cpu_to_le32(entry.name);
 		fwrite(&entry, 1, sizeof(entry), f_out);

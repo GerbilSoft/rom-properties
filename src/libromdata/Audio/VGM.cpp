@@ -918,16 +918,14 @@ int VGM::loadMetaData(void)
 				// on KDE Dolphin 18.08.1. Needs a description property.
 				// Also needs verification on Windows.
 				{Property::Subject,	GD3_TAG_NOTES},
-
-				{Property::Empty,	GD3_TAG_MAX}
 			};
 
-			for (const gd3_tag_prop_tbl_t *pTag = gd3_tag_prop_tbl; pTag->prop != Property::Empty; pTag++) {
-				const string &str = (*gd3_tags)[pTag->idx];
+			for (auto &&p : gd3_tag_prop_tbl) {
+				const string &str = (*gd3_tags)[p.idx];
 				if (str.empty())
 					continue;
 
-				if (pTag->prop == Property::ReleaseYear) {
+				if (p.prop == Property::ReleaseYear) {
 					// Special handling for ReleaseYear.
 
 					// Parse the release date.
@@ -946,7 +944,7 @@ int VGM::loadMetaData(void)
 					}
 				} else {
 					// Standard string property.
-					d->metaData->addMetaData_string(pTag->prop, str);
+					d->metaData->addMetaData_string(p.prop, str);
 				}
 			}
 

@@ -87,10 +87,9 @@ void OptionsMenuButton::reinitMenu(const LibRpBase::RomData *romData)
 		romOps_firstActionIndex = menuOptions->children().count();
 
 		int i = 0;
-		const auto ops_end = ops.cend();
-		for (auto iter = ops.cbegin(); iter != ops_end; ++iter, i++) {
-			QAction *const action = menuOptions->addAction(U82Q(iter->desc));
-			action->setEnabled(!!(iter->flags & RomData::RomOp::ROF_ENABLED));
+		for (auto &&op : ops) {
+			QAction *const action = menuOptions->addAction(U82Q(op.desc));
+			action->setEnabled(!!(op.flags & RomData::RomOp::ROF_ENABLED));
 #ifdef RP_OMB_USE_LAMBDA_FUNCTIONS
 			// Qt5: Use a lambda function.
 			QObject::connect(action, &QAction::triggered,
@@ -101,6 +100,9 @@ void OptionsMenuButton::reinitMenu(const LibRpBase::RomData *romData)
 				mapperOptionsMenu, SLOT(map()));
 			mapperOptionsMenu->setMapping(action, i);
 #endif /* RP_OMB_USE_LAMBDA_FUNCTIONS */
+
+			// Next operation.
+			i++;
 		}
 	}
 }

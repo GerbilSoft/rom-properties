@@ -262,12 +262,9 @@ int Nintendo3DSPrivate::loadNCCH(int idx, NCCHReader **pOutNcchReader)
 
 			// Determine the content start position.
 			// Need to add all content chunk sizes, algined to 64 bytes.
-			const auto content_chunks_cend = content_chunks.cend();
-			for (auto iter = content_chunks.cbegin();
-			     iter != content_chunks_cend; ++iter)
-			{
-				const uint32_t cur_size = static_cast<uint32_t>(be64_to_cpu(iter->size));
-				if (be16_to_cpu(iter->index) == idx) {
+			for (auto &&p : content_chunks) {
+				const uint32_t cur_size = static_cast<uint32_t>(be64_to_cpu(p.size));
+				if (be16_to_cpu(p.index) == idx) {
 					// Found the content chunk.
 					length = cur_size;
 					break;
@@ -333,14 +330,11 @@ int Nintendo3DSPrivate::loadNCCH(int idx, NCCHReader **pOutNcchReader)
 		// Check if this content is encrypted.
 		// If it is, we'll need to create a CIAReader.
 		N3DS_Ticket_t *ticket = nullptr;
-		const auto content_chunks_cend = content_chunks.cend();
-		for (auto iter = content_chunks.cbegin();
-		     iter != content_chunks_cend; ++iter)
-		{
-			const uint16_t content_index = be16_to_cpu(iter->index);
+		for (auto &&p : content_chunks) {
+			const uint16_t content_index = be16_to_cpu(p.index);
 			if (content_index == idx) {
 				// Found the content index.
-				if (iter->type & cpu_to_be16(N3DS_CONTENT_CHUNK_ENCRYPTED)) {
+				if (p.type & cpu_to_be16(N3DS_CONTENT_CHUNK_ENCRYPTED)) {
 					// Content is encrypted.
 					ticket = &mxh.ticket;
 				}

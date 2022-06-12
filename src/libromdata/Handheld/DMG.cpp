@@ -1360,9 +1360,8 @@ int DMG::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
 
 		// Manually filter out characters that are rejected by CacheKeys.
 		img_filename.reserve(s_title.size() + 8);
-		const auto s_title_cend = s_title.cend();
-		for (auto iter = s_title.cbegin(); iter != s_title_cend; ++iter) {
-			switch (*iter) {
+		for (char p : s_title) {
+			switch (p) {
 				case ':':
 				case '/':
 				case '\\':
@@ -1371,7 +1370,7 @@ int DMG::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
 					img_filename += '_';
 					break;
 				default:
-					img_filename += *iter;
+					img_filename += p;
 					break;
 			}
 		}

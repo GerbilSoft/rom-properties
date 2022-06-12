@@ -504,20 +504,18 @@ int GdiReader::readBlock(uint32_t blockIdx, int pos, void *ptr, size_t size)
 
 	// Find the block.
 	// TODO: Cache this lookup somewhere or something.
+	// NOTE: Using volatile because it can change in d->openTrack().
 	const GdiReaderPrivate::BlockRange *blockRange = nullptr;
-	const auto blockRanges_cend = d->blockRanges.cend();
-	for (auto iter = d->blockRanges.cbegin(); iter != blockRanges_cend; ++iter) {
-		// NOTE: Using volatile because it can change in d->openTrack().
-		const volatile GdiReaderPrivate::BlockRange *const vbr = &(*iter);
-		if (blockIdx < vbr->blockStart) {
+	for (const volatile GdiReaderPrivate::BlockRange &vbr : d->blockRanges) {
+		if (blockIdx < vbr.blockStart) {
 			// Not in this track.
 			continue;
 		}
 
 		// Is the track loaded?
-		if (vbr->blockEnd == 0) {
+		if (vbr.blockEnd == 0) {
 			// Track isn't loaded. Load it.
-			int ret = d->openTrack(vbr->trackNumber);
+			int ret = d->openTrack(vbr.trackNumber);
 			if (ret != 0) {
 				// Unable to load the track.
 				// Skip for now.
@@ -526,9 +524,9 @@ int GdiReader::readBlock(uint32_t blockIdx, int pos, void *ptr, size_t size)
 		}
 
 		// Check the end block.
-		if (vbr->blockEnd != 0 && blockIdx <= vbr->blockEnd) {
+		if (vbr.blockEnd != 0 && blockIdx <= vbr.blockEnd) {
 			// Found the track.
-			blockRange = (const GdiReaderPrivate::BlockRange*)vbr;
+			blockRange = (const GdiReaderPrivate::BlockRange*)&vbr;
 			break;
 		}
 	}

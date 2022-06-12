@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * TImageTypesConfig.cpp: Image Types editor template.                     *
  *                                                                         *
- * Copyright (c) 2016-2017 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -319,8 +319,7 @@ int TImageTypesConfig<ComboBox>::save(void)
 		static_assert(ARRAY_SIZE(conf_imageTypeNames) == IMG_TYPE_COUNT, "conf_imageTypeNames[] is the wrong size.");
 
 		bool hasOne = false;
-		for (unsigned int i = 0; i < ARRAY_SIZE(imgTypePrio); i++) {
-			const uint8_t imageType = imgTypePrio[i];
+		for (uint8_t &imageType : imgTypePrio) {
 			if (imageType < IMG_TYPE_COUNT) {
 				if (hasOne)
 					imageTypeList += ',';

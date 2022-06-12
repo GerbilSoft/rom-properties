@@ -205,9 +205,7 @@ public:
 
 		// Determine the column widths.
 		unsigned int col = 0;
-		const auto names_cend = bitfieldDesc.names->cend();
-		for (auto iter = bitfieldDesc.names->cbegin(); iter != names_cend; ++iter) {
-			const string &name = *iter;
+		for (auto &&name : *(bitfieldDesc.names)) {
 			if (name.empty())
 				continue;
 
@@ -226,6 +224,7 @@ public:
 		os << left;
 		col = 0;
 		uint32_t bitfield = romField.data.bitfield;
+		const auto names_cend = bitfieldDesc.names->cend();
 		for (auto iter = bitfieldDesc.names->cbegin(); iter != names_cend; ++iter, bitfield >>= 1) {
 			const string &name = *iter;
 			if (name.empty())
@@ -311,9 +310,9 @@ public:
 		size_t totalWidth = col_count + 1;
 		if (listDataDesc.names) {
 			int i = 0;
-			const auto names_cend = listDataDesc.names->cend();
-			for (auto it = listDataDesc.names->cbegin(); it != names_cend; ++it, ++i) {
-				colSize[i] = it->size();
+			for (auto &&p : *(listDataDesc.names)) {
+				colSize[i] = p.size();
+				i++;
 			}
 		}
 
