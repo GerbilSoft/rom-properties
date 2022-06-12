@@ -139,7 +139,7 @@ class RomDataFactoryPrivate
 		 * @param klass Class name.
 		 */
 		template<typename klass>
-		static LibRpBase::RomData *RomData_ctor(LibRpFile::IRpFile *file)
+		static LibRpBase::RomData *RomData_ctor(IRpFile *file)
 		{
 			return new klass(file);
 		}
@@ -148,13 +148,13 @@ class RomDataFactoryPrivate
 	{sys::isRomSupported_static, \
 	 RomDataFactoryPrivate::RomData_ctor<sys>, \
 	 sys::romDataInfo, \
-	 attrs, 0, 0}
+	 (attrs), 0, 0}
 
 #define GetRomDataFns_addr(sys, attrs, address, size) \
 	{sys::isRomSupported_static, \
 	 RomDataFactoryPrivate::RomData_ctor<sys>, \
 	 sys::romDataInfo, \
-	 attrs, address, size}
+	 (attrs), (address), (size)}
 
 		// RomData subclasses that use a header at 0 and
 		// definitely have a 32-bit magic number in the header.
@@ -186,9 +186,9 @@ class RomDataFactoryPrivate
 		// We want to collect them once per session instead of
 		// repeatedly collecting them, since the caller might
 		// not cache them.
-		// pthread_once() control variable.
 		static vector<RomDataFactory::ExtInfo> vec_exts;
 		static vector<const char*> vec_mimeTypes;
+		// pthread_once() control variables
 		static pthread_once_t once_exts;
 		static pthread_once_t once_mimeTypes;
 
@@ -477,11 +477,11 @@ RomData *RomDataFactoryPrivate::checkISO(IRpFile *file)
 		is2048 = true;
 	} else {
 		// Check for a PVD with 2352-byte or 2448-byte sectors.
-		static const unsigned int sector_sizes[] = {2352, 2448, 0};
+		static const unsigned int sector_sizes[] = {2352, 2448};
 		is2048 = false;
 
-		for (const unsigned int *p = sector_sizes; *p != 0; p++) {
-			size_t size = file->seekAndRead(*p * ISO_PVD_LBA, &sector, sizeof(sector));
+		for (unsigned int p : sector_sizes) {
+			size_t size = file->seekAndRead(p * ISO_PVD_LBA, &sector, sizeof(sector));
 			if (size != sizeof(sector)) {
 				// Unable to read the PVD.
 				return nullptr;
