@@ -199,7 +199,7 @@ uint32_t SegaSaturnPrivate::parsePeripherals(const char *peripherals, int size)
 			SATURN_IO_SUPPORT_ENTRY(MPEG_CARD),
 		};
 
-		for (auto &&p : saturn_io_lkup_tbl) {
+		for (const auto &p : saturn_io_lkup_tbl) {
 			if (p.io_chr == peripherals[i]) {
 				ret |= p.io_bf;
 				break;

@@ -110,7 +110,7 @@ uint32_t EXEPrivate::pe_vaddr_to_paddr(uint32_t vaddr, uint32_t size)
 		}
 	}
 
-	for (auto &&p : pe_sections) {
+	for (const IMAGE_SECTION_HEADER &p : pe_sections) {
 		if (p.VirtualAddress <= vaddr) {
 			if ((p.VirtualAddress + p.SizeOfRawData) >= (vaddr+size)) {
 				// Found the section. Adjust the address.
@@ -419,7 +419,7 @@ int EXEPrivate::findPERuntimeDLL(string &refDesc, string &refLink)
 			&c_or_cpp, &dll_name_version, &is_debug, &last_char);
 		if (n == 4 && (c_or_cpp == 'p' || c_or_cpp == 'r') && is_debug == 'd' && last_char == 'l') {
 			// Found an MSVC debug DLL.
-			for (auto &&p : msvc_dll_tbl) {
+			for (const auto &p : msvc_dll_tbl) {
 				if (p.dll_name_version == dll_name_version) {
 					// Found a matching version.
 					refDesc = rp_sprintf(
@@ -437,7 +437,7 @@ int EXEPrivate::findPERuntimeDLL(string &refDesc, string &refLink)
 		n = sscanf(dll_name, "msvc%c%u.dl%c", &c_or_cpp, &dll_name_version, &last_char);
 		if (n == 3 && (c_or_cpp == 'p' || c_or_cpp == 'r') && last_char == 'l') {
 			// Found an MSVC release DLL.
-			for (auto &&p : msvc_dll_tbl) {
+			for (const auto &p : msvc_dll_tbl) {
 				if (p.dll_name_version == dll_name_version) {
 					// Found a matching version.
 					refDesc = rp_sprintf(
@@ -474,7 +474,7 @@ int EXEPrivate::findPERuntimeDLL(string &refDesc, string &refLink)
 		// Check for Visual Basic DLLs.
 		// NOTE: There's only three 32-bit versions of Visual Basic,
 		// and .NET versions don't count.
-		for (auto &&p : msvb_dll_tbl) {
+		for (const auto &p : msvb_dll_tbl) {
 			if (!strcmp(dll_name, p.dll_name)) {
 				// Found a matching version.
 				refDesc = rp_sprintf(C_("EXE|Runtime", "Microsoft Visual Basic %u.%u Runtime"),

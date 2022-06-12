@@ -437,7 +437,7 @@ int VGM::loadFieldData(void)
 				GD3_TAG_FIELD_TBL_ENTRY("RomData|Audio",	NOP_C_("RomData|Audio", "Notes"),	GD3_TAG_NOTES),
 			};
 
-			for (auto &&p : gd3_tag_field_tbl) {
+			for (const auto &p : gd3_tag_field_tbl) {
 				const string &str = (*gd3_tags)[p.idx];
 				if (!str.empty()) {
 					d->fields->addField_string(
@@ -920,7 +920,7 @@ int VGM::loadMetaData(void)
 				{Property::Subject,	GD3_TAG_NOTES},
 			};
 
-			for (auto &&p : gd3_tag_prop_tbl) {
+			for (const auto &p : gd3_tag_prop_tbl) {
 				const string &str = (*gd3_tags)[p.idx];
 				if (str.empty())
 					continue;

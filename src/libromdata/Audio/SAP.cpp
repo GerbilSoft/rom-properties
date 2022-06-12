@@ -330,7 +330,7 @@ SAPPrivate::TagData SAPPrivate::parseTags(void)
 
 		// TODO: Show errors for unsupported tags?
 		// TODO: Print errors?
-		for (auto &&kwd : kwds) {
+		for (const KeywordDef &kwd : kwds) {
 			if (strcasecmp(kwd.keyword, token) != 0) {
 				// Not a match. Keep going.
 				continue;

@@ -865,7 +865,7 @@ void KhronosKTXPrivate::loadKeyValueData(void)
 				{{'S','=','l',',','T','=','u'}, rp_image::FLIP_VH},
 			};
 
-			for (auto &&p : orientation_lkup_tbl) {
+			for (const auto &p : orientation_lkup_tbl) {
 				if (!strncmp(v, p.str, 7)) {
 					// Found a match.
 					flipOp = p.flipOp;

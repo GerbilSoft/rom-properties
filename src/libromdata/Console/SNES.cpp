@@ -1321,7 +1321,7 @@ int SNES::loadFieldData(void)
 	};
 
 	const char *s_rom_mapping = nullptr;
-	for (auto &&p : rom_mapping_tbl) {
+	for (const auto &p : rom_mapping_tbl) {
 		if (p.rom_mapping == rom_mapping) {
 			// Found a match.
 			s_rom_mapping = p.s_rom_mapping;

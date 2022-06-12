@@ -1077,7 +1077,7 @@ int DMG::loadFieldData(void)
 
 		const char *s_mapper = nullptr;
 		const uint32_t lkup = be32_to_cpu(gbxFooter->mapper_id);
-		for (auto &&p : gbx_mapper_tbl) {
+		for (const gbx_mapper_tbl_t &p : gbx_mapper_tbl) {
 			if (p.mapper_id == lkup) {
 				// Found the mapper.
 				s_mapper = p.desc;

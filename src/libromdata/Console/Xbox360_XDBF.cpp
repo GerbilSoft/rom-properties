@@ -563,7 +563,7 @@ string Xbox360_XDBF_Private::loadString_GPD(uint16_t string_id)
 
 	// GPD doesn't have string tables.
 	// Instead, each string is its own entry in the main resource table.
-	for (auto &&p : entryTable) {
+	for (const XDBF_Entry &p : entryTable) {
 		if (p.namespace_id != cpu_to_be16(XDBF_GPD_NAMESPACE_STRING)) {
 			// Not a string.
 			continue;
@@ -1424,7 +1424,7 @@ int Xbox360_XDBF_Private::addFields_achievements_GPD(void)
 	unique_ptr<uint8_t[]> buf(new uint8_t[XACH_GPD_BUF_LEN]);
 	const XDBF_XACH_Entry_Header_GPD *const pGPD =
 		reinterpret_cast<const XDBF_XACH_Entry_Header_GPD*>(buf.get());
-	for (auto &&p : entryTable) {
+	for (const XDBF_Entry &p : entryTable) {
 		if (p.namespace_id != cpu_to_be16(XDBF_GPD_NAMESPACE_ACHIEVEMENT)) {
 			// Not an achievement.
 			continue;

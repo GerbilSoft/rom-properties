@@ -80,7 +80,7 @@ int VerifyKeys(void)
 	// Get keys from supported classes.
 	int ret = 0;
 	bool printedOne = false;
-	for (auto &&p : encKeyFns) {
+	for (const EncKeyFns_t &p : encKeyFns) {
 		if (printedOne) {
 			cerr << endl;
 		}

@@ -259,7 +259,7 @@ int EXEPrivate::findNERuntimeDLL(string &refDesc, string &refLink, bool &refHasK
 			// Check for Visual Basic DLLs.
 			// NOTE: There's only three 32-bit versions of Visual Basic,
 			// and .NET versions don't count.
-			for (auto &&p : msvb_dll_tbl) {
+			for (const auto &p : msvb_dll_tbl) {
 				if (!strncmp(pDllName, p.dll_name, sizeof(p.dll_name))) {
 					// Found a matching version.
 					refDesc = rp_sprintf(C_("EXE|Runtime", "Microsoft Visual Basic %u.%u Runtime"),

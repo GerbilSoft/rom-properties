@@ -1438,7 +1438,7 @@ rom_data_view_update_multi(RomDataView *page, uint32_t user_lc)
 	set<uint32_t> set_lc;
 
 	// RFT_STRING_MULTI
-	for (auto &&vsm : cxx->vecStringMulti) {
+	for (const Data_StringMulti_t &vsm : cxx->vecStringMulti) {
 		GtkWidget *const lblString = vsm.first;
 		const RomFields::Field *const pField = vsm.second;
 		const auto *const pStr_multi = pField->data.str_multi;
@@ -1452,7 +1452,7 @@ rom_data_view_update_multi(RomDataView *page, uint32_t user_lc)
 		if (!page->cboLanguage) {
 			// Need to add all supported languages.
 			// TODO: Do we need to do this for all of them, or just one?
-			for (auto &&psm : *pStr_multi) {
+			for (const auto &psm : *pStr_multi) {
 				set_lc.emplace(psm.first);
 			}
 		}
@@ -1464,7 +1464,7 @@ rom_data_view_update_multi(RomDataView *page, uint32_t user_lc)
 	}
 
 	// RFT_LISTDATA_MULTI
-	for (auto &&vldm : cxx->vecListDataMulti) {
+	for (const Data_ListDataMulti_t &vldm : cxx->vecListDataMulti) {
 		GtkListStore *const listStore = vldm.listStore;
 		const RomFields::Field *const pField = vldm.field;
 		const auto *const pListData_multi = pField->data.list_data.data.multi;
@@ -1478,7 +1478,7 @@ rom_data_view_update_multi(RomDataView *page, uint32_t user_lc)
 		if (!page->cboLanguage) {
 			// Need to add all supported languages.
 			// TODO: Do we need to do this for all of them, or just one?
-			for (auto &&pldm : *pListData_multi) {
+			for (const auto &pldm : *pListData_multi) {
 				set_lc.emplace(pldm.first);
 			}
 		}

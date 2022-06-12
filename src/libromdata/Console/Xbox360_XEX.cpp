@@ -1280,7 +1280,7 @@ const Xbox360_XDBF *Xbox360_XEX_Private::initXDBF(void)
 		if (fileFormatInfo.compression_type == XEX2_COMPRESSION_TYPE_BASIC) {
 			// File has zero padding removed.
 			// Determine the actual physical address.
-			for (auto &&p : basicZDataSegments) {
+			for (const BasicZDataSeg_t &p : basicZDataSegments) {
 				if (xdbf_physaddr >= p.vaddr &&
 				    xdbf_physaddr < (p.vaddr + p.length))
 				{

@@ -62,7 +62,7 @@ void OptionsMenuButton::reinitMenu(const LibRpBase::RomData *romData)
 	menuOptions->clear();
 
 	// Add the standard actions.
-	for (auto &&p : stdacts) {
+	for (const option_menu_action_t &p : stdacts) {
 		QAction *const action = menuOptions->addAction(
 			U82Q(dpgettext_expr(RP_I18N_DOMAIN, "OptionsMenuButton", p.desc)));
 #ifdef RP_OMB_USE_LAMBDA_FUNCTIONS
@@ -87,7 +87,7 @@ void OptionsMenuButton::reinitMenu(const LibRpBase::RomData *romData)
 		romOps_firstActionIndex = menuOptions->children().count();
 
 		int i = 0;
-		for (auto &&op : ops) {
+		for (const RomData::RomOp &op : ops) {
 			QAction *const action = menuOptions->addAction(U82Q(op.desc));
 			action->setEnabled(!!(op.flags & RomData::RomOp::ROF_ENABLED));
 #ifdef RP_OMB_USE_LAMBDA_FUNCTIONS

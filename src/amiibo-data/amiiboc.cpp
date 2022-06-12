@@ -564,7 +564,7 @@ int main(int argc, char *argv[])
 	const uint32_t char_len = static_cast<uint32_t>(charTable.size() * sizeof(CharTableEntry));
 	binHeader.char_offset = cpu_to_le32(static_cast<uint32_t>(ftello(f_out)));
 	binHeader.char_len = cpu_to_le32(char_len);
-	for (auto &&p : charTable) {
+	for (const auto &p : charTable) {
 #if SYS_BYTEORDER != SYS_LIL_ENDIAN
 		// Byteswap the entry first.
 		CharTableEntry entry = p.second;
@@ -581,8 +581,8 @@ int main(int argc, char *argv[])
 	alignFileTo16Bytes(f_out);
 	uint32_t cvar_len = 0;
 	binHeader.cvar_offset = cpu_to_le32(static_cast<uint32_t>(ftello(f_out)));
-	for (auto &&p : charVarTable) {
-		for (auto &&q : p.second) {
+	for (const auto &p : charVarTable) {
+		for (const auto &q : p.second) {
 #if SYS_BYTEORDER != SYS_LIL_ENDIAN
 			// Byteswap the entry first.
 			CharVariantTableEntry entry = q.second;
@@ -616,7 +616,7 @@ int main(int argc, char *argv[])
 	binHeader.amiibo_len = cpu_to_le32(amiibo_len);
 #if SYS_BYTEORDER != SYS_LIL_ENDIAN
 	// Byteswapping is needed, so we have to process each entry.
-	for (auto &&p : amiiboTable) {
+	for (const AmiiboIDTableEntry &p : amiiboTable) {
 		AmiiboIDTableEntry entry = p;
 		entry.release_no	= cpu_to_le16(entry.release_no);
 		entry.name		= cpu_to_le32(entry.name);

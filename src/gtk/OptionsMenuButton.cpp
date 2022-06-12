@@ -570,7 +570,7 @@ options_menu_button_reinit_menu(OptionsMenuButton *widget,
 
 	GMenu *const menuStdActs = g_menu_new();
 	g_menu_append_section(menuModel, nullptr, G_MENU_MODEL(menuStdActs));
-	for (auto &&p : stdacts) {
+	for (const option_menu_action_t &p : stdacts) {
 		// Create the action.
 		char buf[128];
 		snprintf(buf, sizeof(buf), "%d", p.id);
@@ -594,7 +594,7 @@ options_menu_button_reinit_menu(OptionsMenuButton *widget,
 		g_menu_append_section(menuModel, nullptr, G_MENU_MODEL(menuRomOps));
 
 		int i = 0;
-		for (auto &&op : ops) {
+		for (const RomData::RomOp &op : ops) {
 			// Create the action.
 			char buf[128];
 			snprintf(buf, sizeof(buf), "%d", i);
@@ -617,7 +617,7 @@ options_menu_button_reinit_menu(OptionsMenuButton *widget,
 	// Create a new GtkMenu.
 	GtkWidget *const menuOptions = gtk_menu_new();
 
-	for (auto &&p : stdacts) {
+	for (const option_menu_action_t &p : stdacts) {
 		GtkWidget *const menuItem = gtk_menu_item_new_with_label(
 			dpgettext_expr(RP_I18N_DOMAIN, "RomDataView|Options", p.desc));
 		g_object_set_data(G_OBJECT(menuItem), "menuOptions_id", GINT_TO_POINTER(p.id));
@@ -637,7 +637,7 @@ options_menu_button_reinit_menu(OptionsMenuButton *widget,
 		gtk_menu_shell_append(GTK_MENU_SHELL(menuOptions), menuItem);
 
 		int i = 0;
-		for (auto &&op : ops) {
+		for (const RomData::RomOp &op : ops) {
 			const string desc = convert_accel_to_gtk(op.desc);
 			menuItem = gtk_menu_item_new_with_mnemonic(desc.c_str());
 			gtk_widget_set_sensitive(menuItem, !!(op.flags & RomData::RomOp::ROF_ENABLED));

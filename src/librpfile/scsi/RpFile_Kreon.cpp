@@ -94,7 +94,7 @@ bool RpFile::isKreonDriveModel(void)
 
 	// Find the vendor.
 	const char *const *pProdTbl = nullptr;
-	for (auto &&pVendorTbl : vendor_tbl) {
+	for (const auto &pVendorTbl : vendor_tbl) {
 		if (!memcmp(resp.vendor_id, pVendorTbl.vendor, 8)) {
 			// Found a match.
 			pProdTbl = pVendorTbl.product_id_tbl;

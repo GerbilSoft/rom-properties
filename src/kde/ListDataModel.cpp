@@ -180,7 +180,7 @@ void ListDataModelPrivate::updateIconPixmaps(void)
 	icons.clear();
 	icons.reserve(icons_rp.size());
 
-	for (auto &&img : icons_rp) {
+	for (const rp_image *img : icons_rp) {
 		if (!img) {
 			icons.emplace_back(QPixmap());
 			continue;
@@ -218,7 +218,7 @@ vector<QString> ListDataModelPrivate::convertListDataToVector(const RomFields::L
 	const int rowCount = list_data->size();
 
 	data.reserve(columnCount * rowCount);
-	for (auto &&data_row : *list_data) {
+	for (const vector<string> &data_row : *list_data) {
 		if (hasCheckboxes && data_row.empty()) {
 			// Skip this row.
 			continue;
@@ -227,7 +227,7 @@ vector<QString> ListDataModelPrivate::convertListDataToVector(const RomFields::L
 		// Add item text.
 		assert((int)data_row.size() == columnCount);
 		int cols = columnCount;
-		for (auto &&u8_str : data_row) {
+		for (const string &u8_str : data_row) {
 			data.emplace_back(U82Q(u8_str));
 
 			cols--;
@@ -545,7 +545,7 @@ void ListDataModel::setField(const RomFields::Field *pField)
 		d->headers.clear();
 		d->headers.reserve(columnCount);
 
-		for (auto &&u8_str : *(listDataDesc.names)) {
+		for (const string &u8_str : *(listDataDesc.names)) {
 			d->headers.emplace_back(U82Q(u8_str));
 		}
 	} else {
@@ -606,7 +606,7 @@ void ListDataModel::setField(const RomFields::Field *pField)
 		// Also, we can assume all rows are present, since
 		// icons and checkboxes are mutually exclusive.
 		d->icons.reserve(rowCount);
-		for (auto &&icon : *(pField->data.list_data.mxd.icons)) {
+		for (const rp_image *icon : *(pField->data.list_data.mxd.icons)) {
 			d->icons_rp.emplace_back(icon ? icon->ref() : nullptr);
 		}
 		// Update the icons pixmap vector.
@@ -682,7 +682,7 @@ set<uint32_t> ListDataModel::getLCs(void) const
 		}
 	}
 
-	for (auto &&pmd : d->map_data) {
+	for (const auto &pmd : d->map_data) {
 		set_lc.insert(pmd.first);
 	}
 	return set_lc;

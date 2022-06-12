@@ -232,7 +232,7 @@ void CacheCleaner::run(void)
 	unsigned int count = 0;
 	unsigned int dirErrs = 0, fileErrs = 0;
 	bool hasErrors = false;
-	for (auto &&p : rlist) {
+	for (const auto &p : rlist) {
 		if (p.second == DT_DIR) {
 			// Remove the directory.
 			int ret = rmdir(p.first.c_str());

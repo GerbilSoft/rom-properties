@@ -640,7 +640,7 @@ static LONG UnregisterFromApplications(RegKey& hkcr)
 		return lResult;
 	}
 
-	for (auto &&subKey : lstSubKeys) {
+	for (const tstring &subKey : lstSubKeys) {
 		RegKey hkey_app(hkcr, subKey.c_str(), KEY_READ|KEY_WRITE, false);
 		if (!hkey_app.isOpen())
 			continue;

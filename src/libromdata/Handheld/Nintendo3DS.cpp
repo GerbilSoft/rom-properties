@@ -262,7 +262,7 @@ int Nintendo3DSPrivate::loadNCCH(int idx, NCCHReader **pOutNcchReader)
 
 			// Determine the content start position.
 			// Need to add all content chunk sizes, algined to 64 bytes.
-			for (auto &&p : content_chunks) {
+			for (const N3DS_Content_Chunk_Record_t &p : content_chunks) {
 				const uint32_t cur_size = static_cast<uint32_t>(be64_to_cpu(p.size));
 				if (be16_to_cpu(p.index) == idx) {
 					// Found the content chunk.
@@ -330,7 +330,7 @@ int Nintendo3DSPrivate::loadNCCH(int idx, NCCHReader **pOutNcchReader)
 		// Check if this content is encrypted.
 		// If it is, we'll need to create a CIAReader.
 		N3DS_Ticket_t *ticket = nullptr;
-		for (auto &&p : content_chunks) {
+		for (const N3DS_Content_Chunk_Record_t &p : content_chunks) {
 			const uint16_t content_index = be16_to_cpu(p.index);
 			if (content_index == idx) {
 				// Found the content index.
@@ -788,11 +788,10 @@ void Nintendo3DSPrivate::addTitleIdAndProductCodeFields(bool showContentType)
 		f_logo->unref();
 	}
 
-	struct logo_crc_tbl_t {
+	static const struct {
 		uint32_t crc;
 		const char *name;
-	};
-	static const logo_crc_tbl_t logo_crc_tbl[] = {
+	} logo_crc_tbl[] = {
 		// Official logos
 		// NOTE: Not translatable!
 		{0xCFD0EB8BU,	"Nintendo"},
@@ -819,7 +818,7 @@ void Nintendo3DSPrivate::addTitleIdAndProductCodeFields(bool showContentType)
 	const char *logo_name = nullptr;
 	if (crc != 0) {
 		// Search for a matching logo.
-		for (auto &&p : logo_crc_tbl) {
+		for (const auto &p : logo_crc_tbl) {
 			if (p.crc == crc) {
 				// Found a matching logo.
 				logo_name = p.name;

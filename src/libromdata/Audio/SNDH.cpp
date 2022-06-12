@@ -722,7 +722,7 @@ int SNDH::isRomSupported_static(const DetectInfo *info)
 				{4, {'H','D','N','S'}},
 			};
 
-			for (auto &&fragment : fragments) {
+			for (const auto &fragment : fragments) {
 				void *p = memmem(&info->header.pData[12], sz, fragment.data, fragment.len);
 				if (p) {
 					// Found a matching fragment.

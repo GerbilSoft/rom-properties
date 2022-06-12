@@ -205,7 +205,7 @@ public:
 
 		// Determine the column widths.
 		unsigned int col = 0;
-		for (auto &&name : *(bitfieldDesc.names)) {
+		for (const string &name : *(bitfieldDesc.names)) {
 			if (name.empty())
 				continue;
 
@@ -310,8 +310,8 @@ public:
 		size_t totalWidth = col_count + 1;
 		if (listDataDesc.names) {
 			int i = 0;
-			for (auto &&p : *(listDataDesc.names)) {
-				colSize[i] = p.size();
+			for (const string &name : *(listDataDesc.names)) {
+				colSize[i] = name.size();
 				i++;
 			}
 		}

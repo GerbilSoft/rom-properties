@@ -104,7 +104,7 @@ struct ExtractParam {
 */
 static void ExtractImages(const RomData *romData, vector<ExtractParam>& extract) {
 	int supported = romData->supportedImageTypes();
-	for (auto &&p : extract) {
+	for (const ExtractParam &p : extract) {
 		if (!p.filename) continue;
 		bool found = false;
 		

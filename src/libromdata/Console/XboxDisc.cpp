@@ -554,7 +554,7 @@ int XboxDisc::isRomSupported_static(
 		//   - 16, -08:00
 	};
 
-	for (auto &&p : xgd_tbl) {
+	for (const xgd_pvd_t &p : xgd_tbl) {
 		if (p.btime == btime) {
 			// Found a match!
 			if (pWave) {

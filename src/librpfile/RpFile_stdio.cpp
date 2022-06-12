@@ -163,7 +163,7 @@ int RpFilePrivate::reOpenFile(void)
 
 #ifndef NO_PATTERNS_FOR_THIS_OS
 		bool isMatch = false;
-		for (auto &&pattern : fileNamePatterns) {
+		for (const auto &pattern : fileNamePatterns) {
 			if (!strncasecmp(filename.c_str(), &pattern[1], (uint8_t)pattern[0])) {
 				// Found a match!
 				isMatch = true;

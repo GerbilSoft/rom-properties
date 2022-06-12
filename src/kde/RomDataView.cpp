@@ -1006,7 +1006,7 @@ void RomDataViewPrivate::updateMulti(uint32_t user_lc)
 	set<uint32_t> set_lc;
 
 	// RFT_STRING_MULTI
-	for (auto &&vsm : vecStringMulti) {
+	for (const auto &vsm : vecStringMulti) {
 		QLabel *const lblString = vsm.first;
 		const RomFields::Field *const pField = vsm.second;
 		const auto *const pStr_multi = pField->data.str_multi;
@@ -1020,7 +1020,7 @@ void RomDataViewPrivate::updateMulti(uint32_t user_lc)
 		if (!cboLanguage) {
 			// Need to add all supported languages.
 			// TODO: Do we need to do this for all of them, or just one?
-			for (auto &&psm : *pStr_multi) {
+			for (const auto &psm : *pStr_multi) {
 				set_lc.emplace(psm.first);
 			}
 		}
@@ -1032,7 +1032,7 @@ void RomDataViewPrivate::updateMulti(uint32_t user_lc)
 	}
 
 	// RFT_LISTDATA_MULTI
-	for (auto &&vldm : vecListDataMulti) {
+	for (const auto &vldm : vecListDataMulti) {
 		QTreeView *const treeView = vldm.first;
 		ListDataModel *const listModel = vldm.second;
 

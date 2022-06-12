@@ -316,12 +316,11 @@ int Nintendo3DSFirm::loadFieldData(void)
 		// Check for ARM9 homebrew.
 
 		// Version strings.
-		struct Arm9VerStr_t {
+		static const struct {
 			const char *title;	// Application title.
 			const char *searchstr;	// Search string.
 			unsigned int searchlen;	// Search string length, without the NULL terminator.
-		};
-		static const Arm9VerStr_t arm9VerStr_tbl[] = {
+		} arm9VerStr_tbl[] = {
 			{"Luma3DS",		"Luma3DS v", 9},
 			{"GodMode9",		"GodMode9 Explorer v", 19},	// Older versions
 			{"GodMode9",		"GodMode9 v", 10},		// Newer versions (v1.9.1; TODO check for first one?)
@@ -335,7 +334,7 @@ int Nintendo3DSFirm::loadFieldData(void)
 
 		const char *arm9VerStr_title = nullptr;
 		string s_verstr;
-		for (auto &&p : arm9VerStr_tbl) {
+		for (const auto &p : arm9VerStr_tbl) {
 			const char *verstr = static_cast<const char*>(memmem(
 				firmBuf.get(), szFile, p.searchstr, p.searchlen));
 			if (!verstr)
@@ -368,11 +367,10 @@ int Nintendo3DSFirm::loadFieldData(void)
 		// TODO: If it's SPI, we need to decrypt the FIRM contents.
 		// Reference: https://github.com/TuxSH/firmtool/blob/master/firmtool/__main__.py
 		const uint32_t first4 = be32_to_cpu(*(reinterpret_cast<const uint32_t*>(firmHeader->signature)));
-		struct SighaxStatus_t {
+		static const struct {
 			uint32_t first4;
 			const char *status;
-		};
-		static const SighaxStatus_t sighaxStatus_tbl[] = {
+		} sighaxStatus_tbl[] = {
 			{0xB6724531,	"NAND retail"},		// SciresM
 			{0x6EFF209C,	"NAND retail"},		// sighax.com
 			{0x88697CDC,	"NAND devkit"},		// SciresM
@@ -385,7 +383,7 @@ int Nintendo3DSFirm::loadFieldData(void)
 		};
 
 		const char *s_sighax_status = nullptr;
-		for (auto &&p : sighaxStatus_tbl) {
+		for (const auto &p : sighaxStatus_tbl) {
 			if (p.first4 == first4) {
 				s_sighax_status = p.status;
 				break;

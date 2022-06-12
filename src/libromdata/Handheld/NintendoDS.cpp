@@ -1142,7 +1142,7 @@ int NintendoDS::loadFieldData(void)
 	};
 
 	const char *s_dsi_filetype = nullptr;
-	for (auto &&p : dsi_filetype_lkup_tbl) {
+	for (const auto &p : dsi_filetype_lkup_tbl) {
 		if (p.dsi_filetype == dsi_filetype) {
 			// Found a match.
 			s_dsi_filetype = p.s_dsi_filetype;

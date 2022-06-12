@@ -351,7 +351,7 @@ int DirectDrawSurfacePrivate::updatePixelFormat(void)
 			{DDPF_FOURCC_PTC4, DXGI_FORMAT_FAKE_PVRTC_4bpp, DDS_ALPHA_MODE_STRAIGHT},
 		};
 
-		for (auto &&p : fourCC_dxgi_lkup_tbl) {
+		for (const auto &p : fourCC_dxgi_lkup_tbl) {
 			if (ddspf.dwFourCC == p.dwFourCC) {
 				// Found a match.
 				dxgi_format = p.dxgi_format;
@@ -416,7 +416,7 @@ int DirectDrawSurfacePrivate::updatePixelFormat(void)
 
 			// If the dxgi_format is not listed in the table, we'll use it
 			// as-is, assuming it's compressed.
-			for (auto &&p : dx10_lkup_tbl) {
+			for (const auto &p : dx10_lkup_tbl) {
 				if (dxgi_format == p.dxgi_format) {
 					// Found a match.
 					pxf_uncomp = p.pxf_uncomp;

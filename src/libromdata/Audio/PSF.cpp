@@ -226,7 +226,7 @@ const char *PSFPrivate::getRippedByTagName(uint8_t version)
 		{PSF_VERSION_QSOUND,		"qsfby"},
 	};
 
-	for (auto &&p : psfby_lkup_tbl) {
+	for (const auto &p : psfby_lkup_tbl) {
 		if (p.version == version) {
 			// Found a match.
 			return p.tag_name;
@@ -519,7 +519,7 @@ int PSF::loadFieldData(void)
 
 	const uint8_t psf_version = psfHeader->version;
 	const char *sysname = nullptr;
-	for (auto &&p : sysname_lkup_tbl) {
+	for (const auto &p : sysname_lkup_tbl) {
 		if (p.version == psf_version) {
 			// Found a match.
 			sysname = p.sysname;

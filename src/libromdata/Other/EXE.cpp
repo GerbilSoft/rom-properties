@@ -168,7 +168,7 @@ void EXEPrivate::addFields_VS_VERSION_INFO(const VS_FIXEDFILEINFO *pVsFfi, const
 
 	const uint32_t dwFileOS = pVsFfi->dwFileOS;
 	const char *s_fileOS = nullptr;
-	for (auto &&p : fileOS_lkup_tbl) {
+	for (const auto &p : fileOS_lkup_tbl) {
 		if (p.dwFileOS == dwFileOS) {
 			// Found a match.
 			s_fileOS = p.s_fileOS;

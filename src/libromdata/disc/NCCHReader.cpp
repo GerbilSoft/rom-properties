@@ -284,7 +284,7 @@ NCCHReaderPrivate::NCCHReaderPrivate(NCCHReader *q,
 					0, N3DS_NCCH_SECTION_EXEFS));
 
 				// ExeFS files
-				for (auto &&p : exefs_header.files) {
+				for (const N3DS_ExeFS_File_Header_t &p : exefs_header.files) {
 					if (p.name[0] == 0)
 						continue;	// or break?
 
@@ -1024,7 +1024,7 @@ IRpFile *NCCHReader::open(int section, const char *filename)
 	}
 
 	const N3DS_ExeFS_File_Header_t *file_header = nullptr;
-	for (auto &&p : exefs_header->files) {
+	for (const N3DS_ExeFS_File_Header_t &p : exefs_header->files) {
 		if (!strncmp(p.name, filename, sizeof(p.name))) {
 			// Found the file.
 			file_header = &p;
